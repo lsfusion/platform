@@ -3244,11 +3244,11 @@ nonRoundRetailPriceShipmentDetail 'Цена розничная (неокругл
 //nonRoundRetailPriceShipmentDetail 'Цена розничная (неокруглен.)'(shipmentDetail) = supplierPriceShipmentDetail(shipmentDetail) (+) markupPriceShipmentDetail(shipmentDetail) (+) saleVATPriceShipmentDetail(shipmentDetail);
 
 calculatedRetailPriceShipmentDetail 'Новая розничная цена (расч.)' (shipmentDetail) = IF isFixPriceShipmentDetail(shipmentDetail)
-    THEN roundM1(importerPriceShipmentDetail(shipmentDetail) (+) warePriceShipmentDetail(shipmentDetail))
-    ELSE roundM1(nonRoundRetailPriceShipmentDetail(shipmentDetail) (+) warePriceShipmentDetail(shipmentDetail));
+    THEN importerPriceShipmentDetail(shipmentDetail) (+) warePriceShipmentDetail(shipmentDetail)
+    ELSE nonRoundRetailPriceShipmentDetail(shipmentDetail) (+) warePriceShipmentDetail(shipmentDetail);
 
 retailPriceShipmentDetail (shipmentDetail) <-
-    calculatedRetailPriceShipmentDetail (shipmentDetail)
+    roundPrice(calculatedRetailPriceShipmentDetail (shipmentDetail))
     WHEN CHANGED(calculatedRetailPriceShipmentDetail (shipmentDetail));
 
 // Запись текущих параметров
@@ -8996,6 +8996,7 @@ NAVIGATOR {
             ADD operationCashRegister;
         }
         NEW priceManagement 'Управление ценами' {
+            ADD priceIntervals;
             ADD userPriceChanges;
             ADD promotions;
         }

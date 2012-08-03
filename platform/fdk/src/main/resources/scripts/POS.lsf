@@ -8,9 +8,8 @@ REQUIRE System,
         CashOperation,
         Sales,
         RetailCRM,
+        PriceInterval,
         AccountDocument; // todo : эту зависимость надо будет убить, но сейчас не получается из-за того что нельзя донаследовать классы
-
-POSRoundDecimals () = -1;
 
 // ------------------------------------- Объявление Z-отчета ---------------------------------------- //
 
@@ -126,10 +125,16 @@ descriptionSaleReceiptReturnDetail 'Чек продажи' (returnDetail) =
 quantityReceiptSaleDetail 'Количество' (receiptDetail) = DATA NUMERIC[14,3] (receiptSaleDetail);
 priceReceiptSaleDetail 'Цена' (receiptDetail) = DATA NUMERIC[14,2] (receiptSaleDetail);
 sumReceiptSaleDetail 'Сумма' (receiptDetail) = DATA NUMERIC[16,2] (receiptSaleDetail);
+discountPercentReceiptSaleDetail 'Процент скидки' (receiptDetail) = DATA NUMERIC[6,2] (receiptSaleDetail);
 discountSumReceiptSaleDetail 'Сумма скидки' (receiptDetail) = DATA NUMERIC[16,2] (receiptSaleDetail);
 
-calcSumReceiptSaleDetail (detail) = quantityReceiptSaleDetail(detail) * priceReceiptSaleDetail(detail) (-) discountSumReceiptSaleDetail(detail);
-sumReceiptSaleDetail (detail) <- calcSumReceiptSaleDetail(detail) WHEN CHANGED (calcSumReceiptSaleDetail(detail));
+priceSumReceiptSaleDetail 'Сумма без скидки' = quantityReceiptSaleDetail(detail) * priceReceiptSaleDetail(detail);
+
+calcDiscountSumReceiptSaleDetail (detail) = priceSumReceiptSaleDetail(detail) * discountPercentReceiptSaleDetail (detail) / 100;
+discountSumReceiptSaleDetail (detail) <- round(calcDiscountSumReceiptSaleDetail (detail), priceRound()) WHEN CHANGED (calcDiscountSumReceiptSaleDetail(detail));
+
+calcSumReceiptSaleDetail (detail) = priceSumReceiptSaleDetail(detail) (-) discountSumReceiptSaleDetail(detail);
+sumReceiptSaleDetail (detail) <- round(calcSumReceiptSaleDetail(detail), priceRound()) WHEN CHANGED (calcSumReceiptSaleDetail(detail));
 
 quantityReceiptReturnDetail 'Количество' (receiptDetail) = DATA NUMERIC[14,3] (receiptReturnDetail);
 priceReceiptReturnDetail 'Цена' (receiptDetail) = DATA NUMERIC[14,2] (receiptReturnDetail);
@@ -139,10 +144,10 @@ discountSumReceiptReturnDetail 'Сумма скидки' (receiptDetail) = DATA 
 quantityReturnedReceiptSaleDetail 'Возвращено' (saleDetail) = GROUP SUM quantityReceiptReturnDetail(returnDetail) BY receiptSaleDetailReceiptReturnDetail(returnDetail) PERSISTENT;
 CONSTRAINT quantityReturnedReceiptSaleDetail(detail) > quantityReceiptSaleDetail (detail) MESSAGE 'Количество возвратов по строке чека превышает проданное количество';
 
-calcSumReceiptReturnDetail(detail) = round(quantityReceiptReturnDetail(detail) * sumReceiptSaleDetail(receiptSaleDetailReceiptReturnDetail(detail)) / quantityReceiptSaleDetail(receiptSaleDetailReceiptReturnDetail(detail)), POSRoundDecimals());
+calcSumReceiptReturnDetail(detail) = round(quantityReceiptReturnDetail(detail) * sumReceiptSaleDetail(receiptSaleDetailReceiptReturnDetail(detail)) / quantityReceiptSaleDetail(receiptSaleDetailReceiptReturnDetail(detail)), priceRound());
 sumReceiptReturnDetail (detail) <- calcSumReceiptReturnDetail(detail) WHEN CHANGED (calcSumReceiptReturnDetail(detail));
 
-calcDiscountSumReceiptReturnDetail(detail) = round(quantityReceiptReturnDetail(detail) * discountSumReceiptSaleDetail(receiptSaleDetailReceiptReturnDetail(detail)) / quantityReceiptSaleDetail(receiptSaleDetailReceiptReturnDetail(detail)), POSRoundDecimals());
+calcDiscountSumReceiptReturnDetail(detail) = round(quantityReceiptReturnDetail(detail) * discountSumReceiptSaleDetail(receiptSaleDetailReceiptReturnDetail(detail)) / quantityReceiptSaleDetail(receiptSaleDetailReceiptReturnDetail(detail)), priceRound());
 discountSumReceiptReturnDetail (detail) <- calcDiscountSumReceiptReturnDetail(detail) WHEN CHANGED (calcDiscountSumReceiptReturnDetail(detail));
 
 quantityReceiptDetail 'Количество' (receiptDetail) = UNION EXCLUSIVE quantityReceiptReturnDetail(receiptDetail), quantityReceiptSaleDetail(receiptDetail) PERSISTENT;
@@ -310,7 +315,7 @@ FORM zReport 'Z-отчет'
                            // todo : добавить операции возврата по штрих-коду
 
     PROPERTIES(d) typeReceiptDetail, idBarcodeReceiptDetail, nameSkuReceiptDetail, quantityReceiptDetail, quantityReturnedReceiptSaleDetail FORCE GRID, priceReceiptDetail,
-                  sumReceiptDetail, discountSumReceiptDetail, descriptionSaleReceiptReturnDetail, ADDOBJ, delete
+                  sumReceiptDetail, discountPercentReceiptSaleDetail FORCE GRID, discountSumReceiptDetail, descriptionSaleReceiptReturnDetail, ADDOBJ, delete
 
     FILTERS receiptReceiptDetail(d)==b
 
@@ -371,7 +376,7 @@ FORM zReports 'Z-отчеты'
 
     OBJECTS d=receiptDetail
     PROPERTIES(d) READONLY  typeReceiptDetail, idBarcodeReceiptDetail, nameSkuReceiptDetail, quantityReceiptDetail, quantityReturnedReceiptSaleDetail FORCE GRID, priceReceiptDetail,
-                            costSumSkuLedger, sumReceiptDetail, discountSumReceiptDetail, descriptionSaleReceiptReturnDetail
+                            costSumSkuLedger, sumReceiptDetail, discountPercentReceiptSaleDetail FORCE GRID, discountSumReceiptDetail, descriptionSaleReceiptReturnDetail
 
     FILTERS receiptReceiptDetail(d)==b
 
@@ -638,7 +643,8 @@ FORM scanBarcodeReturnReceipt 'Выбор строки возврата'
 
     OBJECTS r = receiptSaleDetail FIXED GRID
     PROPERTIES(r) READONLY numberReceiptReceiptDetail, dateTimeReceiptSaleDetail, numberDiscountCardReceiptDetail, nameClientDiscountCardReceiptDetail, sumReceiptDetailReceiptDetail,
-                           indexReceiptDetail, quantityReceiptDetail, quantityReturnedReceiptSaleDetail, priceReceiptDetail, sumReceiptDetail, discountSumReceiptDetail
+                           indexReceiptDetail, quantityReceiptDetail, quantityReturnedReceiptSaleDetail, priceReceiptDetail,
+                           sumReceiptDetail, discountPercentReceiptSaleDetail FORCE GRID, discountSumReceiptDetail
     FILTERS departmentStoreReceiptSaleDetail(r) == d,
             skuReceiptSaleDetail(r) == s
 ;
@@ -680,8 +686,8 @@ FORM searchSkuReturnReceipt 'Поиск строки возврата'
     FILTERS departmentStoreReceipt(s) == st
 
     OBJECTS r = receiptSaleDetail FIXED GRID
-    PROPERTIES(r) READONLY  idBarcodeReceiptDetail, nameSkuReceiptDetail, quantityReceiptDetail, quantityReturnedReceiptSaleDetail FORCE GRID, priceReceiptDetail,
-                            sumReceiptDetail, discountSumReceiptDetail
+    PROPERTIES(r) READONLY  idBarcodeReceiptDetail, nameSkuReceiptDetail, quantityReceiptDetail, quantityReturnedReceiptSaleDetail, priceReceiptDetail,
+                            sumReceiptDetail, discountPercentReceiptSaleDetail, discountSumReceiptDetail
     FILTERS receiptReceiptSaleDetail(r) == s
 ;
 
@@ -726,7 +732,7 @@ FORM POS
 
     OBJECTS d = receiptDetail FIXED GRID
     PROPERTIES(d) SHOWIF currentZReport() READONLY indexReceiptDetail, typeReceiptDetail, idBarcodeReceiptDetail, nameSkuReceiptDetail, prevCurrentBalanceReceiptDetail
-    PROPERTIES(d) SHOWIF currentZReport()          quantityReceiptDetail, priceReceiptDetail, sumReceiptDetail, discountSumReceiptDetail, delete
+    PROPERTIES(d) SHOWIF currentZReport()          quantityReceiptDetail, priceReceiptDetail, sumReceiptDetail, discountPercentReceiptSaleDetail FORCE GRID, discountSumReceiptDetail, delete
     FILTERS receiptReceiptDetail(d) == r
 
     PROPERTIES() openCurrentZReport SHOWIF closedCurrentZReport(), closeCurrentZReport SHOWIF currentZReport()
@@ -750,6 +756,7 @@ DESIGN POS FROM DEFAULT {
                 PROPERTY(quantityReceiptDetail) { font = 'Tahoma 16'; }
                 PROPERTY(priceReceiptDetail) { font = 'Tahoma 16'; }
                 PROPERTY(sumReceiptDetail) { font = 'Tahoma 16'; }
+                PROPERTY(discountPercentReceiptSaleDetail) { font = 'Tahoma 16'; }
                 PROPERTY(discountSumReceiptDetail) { font = 'Tahoma 16'; }
                 PROPERTY(delete) { font = 'Tahoma 16'; }
             }
