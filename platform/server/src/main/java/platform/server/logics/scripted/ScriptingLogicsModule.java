@@ -393,10 +393,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addAbstractListAProp(paramCnt);
     }
 
-    public void addImplementationToAbstract(String abstractPropName, LPWithParams implement) throws ScriptingErrorLog.SemanticErrorException {
-        scriptLogger.info("addImplementationToAbstract(" + abstractPropName + ", " + implement + ");");
+    public void addImplementationToAbstract(String abstractPropName, List<String> context, LPWithParams implement) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addImplementationToAbstract(" + abstractPropName + ", " + context + ", " + implement + ");");
 
         LP abstractLP = findLPByCompoundName(abstractPropName);
+        checkParamCount(abstractLP, context.size());
         checkAbstractProperty(abstractLP, abstractPropName);
 
         List<Object> params = getParamsPlainList(Arrays.asList(implement));

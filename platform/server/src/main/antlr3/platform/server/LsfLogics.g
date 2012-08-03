@@ -1117,6 +1117,7 @@ abstractActionPropertyDefinition returns [LP property]
 			params=idList
 		')'	
 	;
+	
 
 unionPropertyDefinition[List<String> context, boolean dynamic] returns [LPWithParams property]
 @init {
@@ -1830,7 +1831,7 @@ overrideStatement
 }
 @after {
 	if (inPropParseState()) {
-		self.addImplementationToAbstract($propName.sid, property);
+		self.addImplementationToAbstract($propName.sid, $list.ids, property);
 	}
 }
 	:	propName=compoundID
