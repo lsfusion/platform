@@ -175,10 +175,13 @@ notMethodPriceSetDocumentArticle = TRUE IF NOT methodPriceSetDocumentArticle(bas
 
 nameMethodPriceSetDocumentArticle 'Метод расчёта' (basePriceSetDocument, article) = name(methodPriceSetDocumentArticle(basePriceSetDocument, article)) MAXCHARWIDTH 20;
 
+prevMethodPriceSetDocumentArticleDateTime(article, dateTime) = PREV(methodPriceSetDocumentArticle(basePriceSetDocumentArticleDateTime(article, dateTime), article));
+prevMethodPriceSetDocumentArticle 'Метод расчёта (предыдущий)' (document, article) = prevMethodPriceSetDocumentArticleDateTime(article, dateTimePriceSetDocument(document));
+
 RRPRatePriceSetDocumentArticle 'Рекомендуемая (руб.)' (basePriceSetDocument, article) = round0(RRPPriceSetDocumentArticle(basePriceSetDocument, article) *
                                                                                                      ratePriceSetDocumentArticle(basePriceSetDocument, article)) MINCHARWIDTH 15;
 
-priceOutRatePriceSetDocumentArticle 'Ценва с надбавкой (руб.)' (basePriceSetDocument, article) = round0(priceOutPriceSetDocumentArticle(basePriceSetDocument, article) *
+priceOutRatePriceSetDocumentArticle 'Цена с надбавкой (руб.)' (basePriceSetDocument, article) = round0(priceOutPriceSetDocumentArticle(basePriceSetDocument, article) *
                                                                                                         ratePriceSetDocumentArticle(basePriceSetDocument, article)) MINCHARWIDTH 15;
 
 
@@ -220,6 +223,9 @@ RRPPriceSetDocumentArticle(basePriceSetDocument, article) <- prevRRPBBasePriceSe
     WHEN ASSIGNED(inArticlePriceSetDocument(basePriceSetDocument, article));
 
 percentDiscountPriceSetDocumentArticle (document, article) <- prevPercentDiscountPriceSetDocumentArticle (document, article)
+    WHEN ASSIGNED(inArticlePriceSetDocument(document, article));
+
+methodPriceSetDocumentArticle (document, article) <- prevMethodPriceSetDocumentArticle (document, article)
     WHEN ASSIGNED(inArticlePriceSetDocument(document, article));
 
 pricePriceSetDocumentArticleDateTime(article, dateTime) = priceBasePriceSetDocumentArticleDateTime(article, dateTime) OR priceDiscountPriceSetDocumentArticleDateTime(article, dateTime);
