@@ -213,6 +213,7 @@ fillWHfromRFDetailsSkuFreightUnit 'Заполнить строки из коро
 } EDITKEY 'F5' CONFIRM;
 
 shouldBePrintWHfromRF = SESSION DATA BOOLEAN (sku);
+countSku = SESSION DATA INTEGER (sku);
 
 priceBaseWHfromRFDateTimeSku 'Цена' (sku, dateTime) = priceBasePriceSetDocumentArticleDateTime(articleSku(sku), dateTime);
 priceDiscountWHfromRFDateTimeSku 'Цена скидочная' (sku, dateTime) = priceDiscountPriceSetDocumentArticleDateTime(articleSku(sku), dateTime);
@@ -257,7 +258,7 @@ FORM printMarksWHfromRF 'Печать маркировок товара' PRINT
     OBJECTS s = sku
     PROPERTIES(s) READONLY sidArticleSku, nameCommonSizeSku, sidGenderArticleSku, nameCategoryArticleSku,
                            mainCompositionSku, nameCountryBrandSupplier, nameBrandSupplierArticleSku,
-                           barcode, nameCountrySku, nameColorSupplierItem, nameSupplierArticleSku
+                           barcode, nameCountrySku, nameColorSupplierItem, nameSupplierArticleSku, countSku
 
     PROPERTIES(s, dt)      priceBaseWHfromRFDateTimeSku, priceDiscountWHfromRFDateTimeSku
 
@@ -267,7 +268,9 @@ FORM printMarksWHfromRF 'Печать маркировок товара' PRINT
 printMarksSkuFreightUnit 'Печать маркировок товаров' (WHfromRF) = ACTION (WHfromRF) {
 
     SET shouldBePrintWHfromRF(sku) <- NULL;
+    SET countSku(sku) <- NULL;
     SET shouldBePrintWHfromRF(sku) <- TRUE IF quantitySkuFreightUnitWHfromRF(sku, currentFreightUnit(WHfromRF), WHfromRF);
+    SET countSku(sku) <- castToInteger(quantitySkuFreightUnitWHfromRF(sku, currentFreightUnit(WHfromRF), WHfromRF));
     FORM printMarksWHfromRF OBJECTS dt = dateTimeWHfromRF(WHfromRF) MODAL;
 
 } CONFIRM;
@@ -275,7 +278,9 @@ printMarksSkuFreightUnit 'Печать маркировок товаров' (WHf
 printMarksSkuWHfromRF 'Печать маркировок товаров' (WHfromRF) = ACTION (WHfromRF) {
 
     SET shouldBePrintWHfromRF(sku) <- NULL;
+    SET countSku(sku) <- NULL;
     SET shouldBePrintWHfromRF(sku) <- TRUE IF quantitySkuInWHfromRF(WHfromRF, sku);
+    SET countSku(sku) <- castToInteger(quantitySkuInWHfromRF(WHfromRF, sku));
     FORM printMarksWHfromRF OBJECTS dt = dateTimeWHfromRF(WHfromRF) MODAL;
 
 } CONFIRM TOOLBAR;

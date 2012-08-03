@@ -29,6 +29,9 @@
 		</box>
 		<paragraph leftIndent="2" rightIndent="2"/>
 	</style>
+	<parameter name="REPORT_REPEAT_FIELD" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["countSku"]]></defaultValueExpression>
+	</parameter>
 	<field name="s" class="java.lang.Integer"/>
 	<field name="sidArticleSku" class="java.lang.String"/>
 	<field name="nameCommonSizeSku" class="java.lang.String"/>
@@ -45,6 +48,7 @@
 	<field name="priceDiscountWHfromCSRDateTimeSku" class="java.lang.Double"/>
 	<field name="dt" class="java.util.Date"/>
 	<field name="objectValueProperty_DateTimeClass" class="java.util.Date"/>
+	<field name="countSku" class="java.lang.Integer"/>
 	<group name="designGroup10">
 		<groupExpression><![CDATA[String.valueOf($F{dt})]]></groupExpression>
 	</group>

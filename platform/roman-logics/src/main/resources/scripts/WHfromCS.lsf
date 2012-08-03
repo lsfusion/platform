@@ -286,6 +286,7 @@ fillWHfromCSRDetailsSkuFreightUnit 'Заполнить строки из кор�
 } EDITKEY 'F5' CONFIRM;
 
 shouldBePrintWHfromCSR = SESSION DATA BOOLEAN (sku);
+countSku = SESSION DATA INTEGER (sku);
 
 priceBaseWHfromCSRDateTimeSku 'Цена' (sku, dateTime) = priceBasePriceSetDocumentArticleDateTime(articleSku(sku), dateTime);
 priceDiscountWHfromCSRDateTimeSku 'Цена скидочная' (sku, dateTime) = priceDiscountPriceSetDocumentArticleDateTime(articleSku(sku), dateTime);
@@ -329,7 +330,7 @@ FORM printMarksWHfromCSR 'Печать маркировок товара' PRINT
     OBJECTS s = sku
     PROPERTIES(s) READONLY sidArticleSku, nameCommonSizeSku, sidGenderArticleSku, nameCategoryArticleSku,
                            mainCompositionSku, nameCountryBrandSupplier, nameBrandSupplierArticleSku,
-                           barcode, nameCountrySku, nameColorSupplierItem, nameSupplierArticleSku
+                           barcode, nameCountrySku, nameColorSupplierItem, nameSupplierArticleSku, countSku
 
     PROPERTIES(s, dt)      priceBaseWHfromCSRDateTimeSku, priceDiscountWHfromCSRDateTimeSku
 
@@ -339,7 +340,9 @@ FORM printMarksWHfromCSR 'Печать маркировок товара' PRINT
 printMarksSkuFreightUnit 'Печать маркировок товаров' (WHfromCSR) = ACTION (WHfromCSR) {
 
     SET shouldBePrintWHfromCSR(sku) <- NULL;
+    SET countSku(sku) <- NULL;
     SET shouldBePrintWHfromCSR(sku) <- TRUE IF quantitySkuFreightUnitCStoWH(sku, currentFreightUnit(WHfromCSR), CStoWHWHfromCSI(WHfromCSIWHfromCSR(WHfromCSR)));
+    SET countSku(sku) <- castToInteger(quantitySkuFreightUnitCStoWH(sku, currentFreightUnit(WHfromCSR), CStoWHWHfromCSI(WHfromCSIWHfromCSR(WHfromCSR))));
     FORM printMarksWHfromCSR OBJECTS dt = dateTimeWHfromCSR(WHfromCSR) MODAL;
 
 } CONFIRM;
@@ -347,7 +350,9 @@ printMarksSkuFreightUnit 'Печать маркировок товаров' (WHf
 printMarksSkuWHfromCSR 'Печать маркировок товаров' (WHfromCSR) = ACTION (WHfromCSR) {
 
     SET shouldBePrintWHfromCSR(sku) <- NULL;
+    SET countSku(sku) <- NULL;
     SET shouldBePrintWHfromCSR(sku) <- TRUE IF quantitySkuInWHfromCSR(WHfromCSR, sku);
+    SET countSku(sku) <- castToInteger(quantitySkuInWHfromCSR(WHfromCSR, sku));
     FORM printMarksWHfromCSR OBJECTS dt = dateTimeWHfromCSR(WHfromCSR) MODAL;
 
 } CONFIRM TOOLBAR;
