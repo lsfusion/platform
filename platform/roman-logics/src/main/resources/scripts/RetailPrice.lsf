@@ -607,7 +607,45 @@ DESIGN priceSetDocument FROM DEFAULT {
     ADD functions.box;
 }
 
+quantityStorePriceSetDocumentArticle 'Кол-во' (store, priceSetDocument, article) =
+    GROUP SUM balanceBSkuStockDateTime(sku, primaryDepartmentStoreStore(store), dateTimePriceSetDocument(priceSetDocument))
+    BY store, priceSetDocument, articleSku(sku);
+
+countStorePriceSetDocumentArticle(store, priceSetDocument, article) = castToInteger(quantityStorePriceSetDocumentArticle(store, priceSetDocument, article));
+
+shouldBePrintArticle(article) = SESSION DATA BOOLEAN (article);
+
+printPriceBasePriceSetDocumentArticle 'Базовая цена' (priceSetDocument, article) =
+    priceBasePriceSetDocumentArticleDateTime(article, dateTimePriceSetDocument(priceSetDocument));
+printPriceDiscountPriceSetDocumentArticle 'Скидочная цена' (priceSetDocument, article) =
+    priceDiscountPriceSetDocumentArticleDateTime(article, dateTimePriceSetDocument(priceSetDocument));
+
+FORM priceArticlePriceSetDocumentPrint 'Цены для маркировки' PRINT
+
+    OBJECTS s = store FIXED PANEL, p = priceSetDocument FIXED PANEL, a = article
+    PROPERTIES(p, a) READONLY printPriceBasePriceSetDocumentArticle, printPriceDiscountPriceSetDocumentArticle
+    PROPERTIES(s, p, a) READONLY countStorePriceSetDocumentArticle
+
+    FILTERS shouldBePrintArticle(a)
+;
+
+printPricePriceSetDocumentArticle 'Печать цен для маркировки' = [ACTION (store, priceSetDocument, article) {
+    SET shouldBePrintArticle(a) <- NULL;
+    SET shouldBePrintArticle(a) <- TRUE IF (a == (article AS article));
+    FORM priceArticlePriceSetDocumentPrint OBJECTS s = store, p = priceSetDocument MODAL;
+}](store, priceSetDocument, article) AND isPostedPriceSetDocument(priceSetDocument);
+
+printAllPricePriceSetDocumentArticle 'Печать цен для маркировки' = ACTION (store, priceSetDocument) {
+    SET shouldBePrintArticle(article) <- NULL;
+    SET shouldBePrintArticle(article) <- TRUE IF (quantityStorePriceSetDocumentArticle(store, priceSetDocument, article) AND
+                                                  inArticlePriceSetDocument(priceSetDocument, article));
+    FORM priceArticlePriceSetDocumentPrint OBJECTS s = store, p = priceSetDocument MODAL;
+} TOOLBAR;
+
 FORM priceSetDocuments 'Розничные прайсы'
+
+    OBJECTS s = RomanLogicsModule.store
+    PROPERTIES(s) READONLY name
 
     OBJECTS p=priceSetDocument
     PROPERTIES(p) READONLY statusPriceSetDocument, numberObject, seriesObject, datePriceSetDocument, timePriceSetDocument, dateTimeToPriceSetDocument
@@ -627,11 +665,36 @@ FORM priceSetDocuments 'Розничные прайсы'
     PROPERTIES(d) name
     PROPERTIES(d, p) createUserPriceChangeDepartmentStorePriceSetDocument
 
+    PROPERTIES(s, p, a) READONLY quantityStorePriceSetDocumentArticle
+
+    PROPERTIES(s, p, a) printPricePriceSetDocumentArticle
+
+    PROPERTIES(s, p) printAllPricePriceSetDocumentArticle TODRAW a FORCE PANEL
+
     FILTERS inArticlePriceSetDocument(p, a)
 ;
 
 DESIGN priceSetDocuments FROM DEFAULT {
 
+    NEW topContainer {
+
+        type = SPLITV;
+        ADD p.box;
+        NEW firstContainer{
+            type = SPLITV;
+            NEW secondContainer{
+                type = SPLITH;
+                ADD s.box;
+                ADD a.box{
+                    fillHorizontal = 3;
+                }
+                POSITION a.box TO THE RIGHT s.box;
+            }
+            ADD d.box;
+        }
+    }
+
+    ADD functions.box;
     PROPERTY (delete(p)) {
         panelLocation = TOOLBAR;
         askConfirm = TRUE;

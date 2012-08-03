@@ -16,10 +16,12 @@ castToString255 = FORMULA STRING[255] 'CAST($1 AS character(255))';
 castToString3 = FORMULA STRING[3] 'CAST($1 AS character(3))';
 isWordInCSV = FORMULA INTEGER 'CASE WHEN CAST($1 AS text)=ANY(string_to_array($2,\',\')) THEN 1 ELSE 0 END';
 
-// --------------------------------------------- Округления --------------------------------- //
 
 ceil = FORMULA 'ceil($1)';
 
+castToInteger = FORMULA INTEGER 'CAST($1 AS integer)';
+
+// --------------------------------------------- Округления --------------------------------- //
 roundM1 (number) = round(number, -1);
 round0 (number) = round(number, 0);
 round1 (number) = round(number, 1);

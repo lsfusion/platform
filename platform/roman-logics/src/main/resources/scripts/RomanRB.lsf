@@ -217,5 +217,6 @@ NAVIGATOR {
         ADD consignmentSimpleVertical;
         ADD consignmentSimpleAttach;
         ADD consignment;
+        ADD priceArticlePriceSetDocumentPrint;
     }
 }
