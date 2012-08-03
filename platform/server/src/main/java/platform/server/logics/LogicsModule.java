@@ -657,6 +657,11 @@ public abstract class LogicsModule {
                 readActionImplements(listInterfaces, params))));
     }
 
+    protected LAP addAbstractListAProp(int paramCnt) {
+        List<PropertyInterface> listInterfaces = genInterfaces(paramCnt);
+        return addProperty(null, new LAP(new ListActionProperty(genSID(), "sys", true, listInterfaces, new ArrayList<ActionPropertyMapImplement<?, PropertyInterface>>())));
+    }
+
     protected LAP addIfAProp(Object... params) {
         return addIfAProp(false, params);    }
 

@@ -975,12 +975,13 @@ expressionFriendlyPD[List<String> context, boolean dynamic] returns [LPWithParam
 
 expressionUnfriendlyPD[List<String> context, boolean dynamic, boolean innerPD] returns [LP property]
 	:	ciPD=contextIndependentPD[innerPD] { $property = $ciPD.property; }
-	|	actPD=actionPropertyDefinition[context, dynamic] { $property = $actPD.property; }	
+	|	actPD=actionPropertyDefinition[context, dynamic] { if (inPropParseState()) $property = $actPD.property.property; }	
 	;
 
 contextIndependentPD[boolean innerPD] returns [LP property]
 	: 	dataDef=dataPropertyDefinition[innerPD] { $property = $dataDef.property; }
 	|	abstractDef=abstractPropertyDefinition { $property = $abstractDef.property; }
+	|	abstractActionDef=abstractActionPropertyDefinition { $property = $abstractActionDef.property; }
 	|	formulaProp=formulaPropertyDefinition { $property = $formulaProp.property; }
 	|	groupDef=groupPropertyDefinition { $property = $groupDef.property; }
 	|	typeDef=typePropertyDefinition { $property = $typeDef.property; }
@@ -1104,7 +1105,18 @@ abstractPropertyDefinition returns [LP property]
 			paramClassNames=classIdList
 		')'
 	;
-	
+
+abstractActionPropertyDefinition returns [LP property]
+@after {
+	if (inPropParseState()) {
+		$property = self.addScriptedAbstractActionProp($params.ids.size());	
+	}
+}
+	:	'ABSTRACT' 'ACTION' 
+		'(' 
+			params=idList
+		')'	
+	;
 
 unionPropertyDefinition[List<String> context, boolean dynamic] returns [LPWithParams property]
 @init {
@@ -1461,7 +1473,7 @@ eventSetting [LP property, List<String> context]
 ////////////////////////////////// ACTION PROPERTIES ///////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-actionPropertyDefinition[List<String> context, boolean dynamic] returns [LP property]
+actionPropertyDefinition[List<String> context, boolean dynamic] returns [LPWithParams property]
 @init {
 	List<String> localContext = context;
 	boolean localDynamic = dynamic;
@@ -1469,7 +1481,7 @@ actionPropertyDefinition[List<String> context, boolean dynamic] returns [LP prop
 }
 @after {
 	if (inPropParseState()) {
-		self.checkActionAllParamsUsed(context, $property, ownContext);
+		self.checkActionAllParamsUsed(context, $property.property, ownContext);
 	}
 }
 	:	'ACTION'
@@ -1482,7 +1494,7 @@ actionPropertyDefinition[List<String> context, boolean dynamic] returns [LP prop
 				}
 			} 
 		)?
-		pdb=actionPropertyDefinitionBody[localContext, localDynamic] { if (inPropParseState()) $property = $pdb.property.property; }
+		pdb=actionPropertyDefinitionBody[localContext, localDynamic] { if (inPropParseState()) $property = $pdb.property; }
 	;
 
 actionPropertyDefinitionBody[List<String> context, boolean dynamic] returns [LPWithParams property]
@@ -1814,16 +1826,19 @@ overrideStatement
 @init {
 	List<String> context = new ArrayList<String>();
 	boolean dynamic = true;
+	LPWithParams property = null;
 }
 @after {
 	if (inPropParseState()) {
-		self.addImplementationToAbstract($propName.sid, $expr.property);
+		self.addImplementationToAbstract($propName.sid, property);
 	}
 }
 	:	propName=compoundID
-		('(' list=idList ')' { context = $list.ids; dynamic = false; })?
+		'(' list=idList ')' { context = $list.ids; dynamic = false; }
 		'+='
-		expr=propertyExpression[context, dynamic]
+		(	expr=propertyExpression[context, dynamic] { property = $expr.property; }
+		|	action=actionPropertyDefinition[context, dynamic] { property = $action.property; }
+		)
 		';'
 	;
 

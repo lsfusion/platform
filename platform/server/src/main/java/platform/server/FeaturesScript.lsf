@@ -181,9 +181,19 @@ onlyIncomeQuantity(store, article) = ioQuantity(store, article)[1];
 // ABSTRACT returnClass ( [paramClass1, ..., paramClassN] )
 testAbstract(named) = ABSTRACT INTEGER (namedClass);
 // overriding abstract property syntax:
-// propertyName [(namedParam1, ..., namedParamN)] += expression;
-testAbstract += 5 AND named IS article;
+// propertyName(namedParam1, ..., namedParamN) += expression;
+testAbstract(named) += 5 AND named IS article;
 testAbstract(named) += 6 AND named IS store;
+
+// Abstract action property
+// Expression syntax:
+// ABSTRACT ACTION ( [param1, ..., paramN] )
+testAbstractAction(object) = ABSTRACT ACTION (object);
+// overriding abstract action property syntax:
+// propertyName(namedParam1, ..., namedParamN) += ACTION actionBody;
+
+testAbstractAction(store) += ACTION MESSAGE 'testing store' AND store IS store;
+testAbstractAction(document) += ACTION MESSAGE 'testing document' AND document IS document;
 
 // Formula property
 // Expression syntax:
@@ -406,10 +416,10 @@ OBJECTS document, article
 //                     [HEADER <mappedProperty>] [FOOTER <mappedProperty>] [READONLYIF <mappedProperty>] [FORCE PANEL | HIDE | GRID] [TODRAW <groupObject>]
 //                     [FOREGROUND <mappedProperty>] [ON (CHANGE | CHANGEWYS) action] [(BEFORE | AFTER) propertyAlias]
 
-PROPERTIES store(document), name(article), storeName(document), documentTypeString(document)
+PROPERTIES store(document), name(article), storeName(document) ON CHANGE { REQUEST STRING[50] INPUT; SET storeName(document) <- requestedString(); } , documentTypeString(document)
 PROPERTIES quantity(document, article)
 PROPERTIES inQuantity(document, article), outQuantity(document, article), documentBalance(document, article)
-PROPERTIES ADDOBJ(document), ADDOBJ(article)
+PROPERTIES ADDOBJ(document), ADDOBJ(article), testAbstractAction(document)
 PROPERTIES globalInt()
 
 // Filters list syntax:
@@ -533,7 +543,7 @@ OBJECTS s=store '-Склад-', a=article
 PROPERTIES ssel=SELECTION(s), sname=name(s), obja=OBJVALUE(a), aname=name(a)
 PROPERTIES TODRAW s FORCE PANEL copyStoreNameToArticles(s), copyStoreNameToArticle(s, a), copyStoreNameToArticleError(s, a), createNewStore(), showDocumentArticleModalForm(), showTestModalForm(), testRequestInput(s)
 PROPERTIES(s, a) SHOWIF storeIsHuge(s) incomeQuantity2, outcomeQuantity2
-PROPERTIES(s) storeSizeName, ssc1=storeSizeCode, storeIsHuge, stime, sdate, sdatetime, simage, spdf, scustom, sexcel, scolor, sword BEFORE simage
+PROPERTIES(s) storeSizeName, ssc1=storeSizeCode, storeIsHuge, stime, sdate, sdatetime, simage, spdf, scustom, sexcel, scolor, sword BEFORE simage, testAbstractAction
 PROPERTIES(s, a) incomeQuantity, outcomeQuantity, foo, foo2 SHOWIF storeIsHuge(s), bar, foobar HEADER name(a), bar2, baz, baz2, balanceQuantity, testUnion HEADER name(s), testPartition, testFormula
 FILTERGROUP filters1
     FILTER 'Показывать только огромные склады' 'F10' storeIsHuge(s)

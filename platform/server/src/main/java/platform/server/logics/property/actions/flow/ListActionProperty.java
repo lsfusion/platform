@@ -17,12 +17,18 @@ import static platform.base.BaseUtils.reverse;
 public class ListActionProperty extends KeepContextActionProperty {
 
     private final List<ActionPropertyMapImplement<?, PropertyInterface>> actions;
+    private boolean isAbstract = false;
 
     // так, а не как в Join'е, потому как нужны ClassPropertyInterface'ы а там нужны классы
     public <I extends PropertyInterface> ListActionProperty(String sID, String caption, List<I> innerInterfaces, List<ActionPropertyMapImplement<?, I>> actions)  {
+        this(sID, caption, false, innerInterfaces, actions);
+    }
+
+    public <I extends PropertyInterface> ListActionProperty(String sID, String caption, boolean isAbstract, List<I> innerInterfaces, List<ActionPropertyMapImplement<?, I>> actions)  {
         super(sID, caption, innerInterfaces.size());
 
         this.actions = DerivedProperty.mapActionImplements(reverse(getMapInterfaces(innerInterfaces)), actions);
+        this.isAbstract = isAbstract;
 
         finalizeInit();
     }
@@ -106,6 +112,14 @@ public class ListActionProperty extends KeepContextActionProperty {
             }
         }
         return result;
+    }
+
+    public boolean isAbstract() {
+        return isAbstract;
+    }
+
+    public void addAction(ActionPropertyMapImplement<?, PropertyInterface> action) {
+        actions.add(action);
     }
 
 }

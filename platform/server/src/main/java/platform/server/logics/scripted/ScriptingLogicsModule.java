@@ -40,6 +40,7 @@ import platform.server.logics.panellocation.PanelLocation;
 import platform.server.logics.panellocation.ShortcutPanelLocation;
 import platform.server.logics.panellocation.ToolbarPanelLocation;
 import platform.server.logics.property.*;
+import platform.server.logics.property.actions.flow.ListActionProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.table.ImplementTable;
 import platform.server.mail.AttachmentFormat;
@@ -387,15 +388,26 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addAUProp(null, genSID(), false, "", value, params);
     }
 
-    public void addImplementationToAbstract(String propName, LPWithParams implement) throws ScriptingErrorLog.SemanticErrorException {
-        scriptLogger.info("addImplementationToAbstract(" + propName + ", " + implement + ");");
+    public LP addScriptedAbstractActionProp(int paramCnt) {
+        scriptLogger.info("addScriptedAbstractActionProp(" + paramCnt + ");");
+        return addAbstractListAProp(paramCnt);
+    }
 
-        LP lp = findLPByCompoundName(propName);
-        checkCalculationProperty(lp);
-        LCP mainProperty = (LCP) lp;
-        checkAbstractProperty(mainProperty, propName);
+    public void addImplementationToAbstract(String abstractPropName, LPWithParams implement) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addImplementationToAbstract(" + abstractPropName + ", " + implement + ");");
 
-        mainProperty.addOperand(getParamsPlainList(asList(implement)).toArray());
+        LP abstractLP = findLPByCompoundName(abstractPropName);
+        checkAbstractProperty(abstractLP, abstractPropName);
+
+        List<Object> params = getParamsPlainList(Arrays.asList(implement));
+        if (abstractLP instanceof LCP) {
+            checkCalculationProperty(implement.property);
+            ((LCP) abstractLP).addOperand(params.toArray());
+        } else if (abstractLP instanceof LAP) {
+            checkActionProperty(implement.property);
+            List<ActionPropertyMapImplement<?, PropertyInterface>> actionImplements = readActionImplements(abstractLP.listInterfaces, params.toArray());
+            ((ListActionProperty) abstractLP.property).addAction(actionImplements.get(0));
+        } else assert false;
     }
 
     public int getParamIndex(String param, List<String> namedParams, boolean dynamic, boolean insideRecursion) throws ScriptingErrorLog.SemanticErrorException {
@@ -479,8 +491,10 @@ public class ScriptingLogicsModule extends LogicsModule {
             setNotNull((LCP)property, notNullSession, notNullResolve ? PropertyFollows.RESOLVE_FALSE : PropertyFollows.RESOLVE_NOTHING);
         }
 
-        checkPropertyValue(property, name);
-        checkClassWhere(property, name);
+        if (property.property instanceof CalcProperty) {
+            checkPropertyValue(property, name);
+            checkClassWhere(property, name);
+        }
         addNamedParams(property.property.getSID(), namedParams);
     }
 
@@ -1739,7 +1753,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     private void checkPropertyValue(LP property, String name) throws ScriptingErrorLog.SemanticErrorException {
-        if (!property.property.check()) {
+        if (property.property instanceof CalcProperty && !property.property.check()) {
             errLog.emitPropertyAlwaysNullError(parser, name);
         }
     }
@@ -2029,7 +2043,8 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public void checkAbstractProperty(LP property, String propName) throws ScriptingErrorLog.SemanticErrorException {
-        if (!(property.property instanceof ExclusiveUnionProperty && ((ExclusiveUnionProperty)property.property).isAbstract())) {
+        if (!(property.property instanceof ExclusiveUnionProperty && ((ExclusiveUnionProperty)property.property).isAbstract()) &&
+            !(property.property instanceof ListActionProperty && ((ListActionProperty)property.property).isAbstract())) {
             errLog.emitNotAbstractPropertyError(parser, propName);
         }
     }
