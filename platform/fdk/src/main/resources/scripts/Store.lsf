@@ -242,11 +242,13 @@ CLASS manufactoryStore 'Цех' : departmentStore;
 // -------------------------------------- Макросы ----------------------------------------------- //
 
 META defineDocumentHeaderDepartmentStore (object)
-    @defineDocumentHeaderStock(object, departmentStore, 'Отдел документа');
+    @defineDocumentHeaderStock(object, departmentStore, 'Отдел магазина');
 END
 
 META defineDocumentDetailDepartmentStoreCustom (object, detail)
-   @defineDocumentDetailStockCustom (object, detail, departmentStore, 'Отдел документа');
+   @defineDocumentDetailStockCustom (object, detail, departmentStore, 'Отдел магазина');
+   store###detail (detail) = storeDepartmentStore(departmentStore###detail(detail));
+   nameStore###detail 'Магазин' (detail) = name(store###detail(detail));
 END
 META defineDocumentDetailDepartmentStore (object)
     @defineDocumentDetailDepartmentStoreCustom (object, object##Detail);

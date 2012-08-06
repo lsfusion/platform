@@ -1,6 +1,7 @@
 MODULE POS;
 
 REQUIRE System,
+        Utils,
         Document,
         Store,
         Stock,
@@ -155,13 +156,13 @@ priceReceiptDetail 'Цена' (receiptDetail) = UNION EXCLUSIVE priceReceiptRetu
 sumReceiptDetail 'Сумма' (receiptDetail) = UNION EXCLUSIVE sumReceiptReturnDetail(receiptDetail), sumReceiptSaleDetail(receiptDetail) PERSISTENT;
 discountSumReceiptDetail 'Сумма скидки' (receiptDetail) = UNION EXCLUSIVE discountSumReceiptReturnDetail(receiptDetail), discountSumReceiptSaleDetail(receiptDetail) PERSISTENT;
 
-sumSaleReceiptDetailSaleReceipt 'Сумма продажи' (receipt) = GROUP SUM sumReceiptSaleDetail(receiptDetail)
+sumReceiptSaleDetailReceipt 'Сумма продажи' (receipt) = GROUP SUM sumReceiptSaleDetail(receiptDetail)
     BY receiptReceiptSaleDetail (receiptDetail) IN documentSumGroup PERSISTENT;
 
-sumReturnReceiptDetailReturnReceipt 'Сумма возврата' (receipt) = GROUP SUM sumReceiptReturnDetail(receiptDetail)
+sumReceiptReturnDetailReceipt 'Сумма возврата' (receipt) = GROUP SUM sumReceiptReturnDetail(receiptDetail)
     BY receiptReceiptReturnDetail (receiptDetail) IN documentSumGroup PERSISTENT;
 
-sumReceiptDetailReceipt 'Сумма чека' (receipt) = sumSaleReceiptDetailSaleReceipt(receipt) (-) sumReturnReceiptDetailReturnReceipt(receipt) PERSISTENT;
+sumReceiptDetailReceipt 'Сумма чека' (receipt) = sumReceiptSaleDetailReceipt(receipt) (-) sumReceiptReturnDetailReceipt(receipt) PERSISTENT;
 sumReceiptDetailReceiptDetail 'Сумма чека' (receiptDetail) = sumReceiptDetailReceipt(receiptReceiptDetail(receiptDetail));
 
 discountSumSaleReceiptDetailSaleReceipt 'Сумма скидки (продажи)' (receipt) = GROUP SUM discountSumReceiptSaleDetail(receiptDetail)
@@ -179,6 +180,7 @@ discountSumReceipt 'Сумма скидки по чеку' (receipt) = discountS
 
 @defineDocumentHeaderQuantity(receipt);
 @defineDocumentHeaderSkuQuantity(receipt, sku);
+@defineDocumentHeaderSkuQuantityCustom(receipt, receiptSaleDetail, sku);
 
 VATReceiptSaleDetail = DATA range (receiptSaleDetail);
 VATReceiptReturnDetail = DATA range (receiptReturnDetail);
@@ -718,22 +720,112 @@ closeCurrentZReport 'Закрыть Z-отчет' = ACTION () {
     EXEC apply();
 } CONFIRM IN receiptZReportGroup;
 
+// --------------------------------- Применение акций ----------------------------- //
+
+TABLE receiptSaleDetailPromotionCondition(receiptSaleDetail, promotionCondition);
+quantityReceiptSaleDetailPromotionCondition 'Кол-во по акции' = DATA NUMERIC[14,3] (receiptSaleDetail, promotionCondition) INDEXED;
+promotionSumReceiptSaleDetailPromotionCondition 'Сумма скидки' (detail, condition) =
+    quantityReceiptSaleDetailPromotionCondition(detail, condition) * priceReceiptSaleDetail(detail) * percentPromotionCondition(condition) / 100;
+
+promotionSumReceiptSaleDetail (detail) = GROUP SUM promotionSumReceiptSaleDetailPromotionCondition(detail, condition)
+                                               BY detail;
+
+inReceiptPromotion (receipt, promotion) = inPromotionStore(promotion, storeReceipt(receipt)) AND
+                                          dateReceipt(receipt) >= dateFromPromotion(promotion) AND dateReceipt(receipt) <= dateToPromotion(promotion);
+
+maxSalePriceReceiptSku (receipt, sku) = GROUP MAX priceReceiptSaleDetail(detail) BY receiptReceiptSaleDetail(detail), skuReceiptSaleDetail(detail);
+
+calculatePromotionsReceipt 'Рассчитать акции' = ACTION (receipt) {
+
+    SET quantityReceiptSaleDetailPromotionCondition(detail, condition) IF receiptReceiptSaleDetail(detail) == receipt <- NULL;
+
+    FOR promotionGroup IS promotionGroup DO {
+        LOCAL leftSku = NUMERIC[14,3] (sku);
+        SET leftSku(sku) <- quantityReceiptSaleDetailSkuReceipt (sku, receipt);
+
+        LOCAL leftReceiptSaleDetail = NUMERIC[14,3] (receiptSaleDetail);
+        SET leftReceiptSaleDetail(detail) <- quantityReceiptSaleDetail(detail) IF receiptReceiptSaleDetail(detail) == receipt;
+
+        FOR promotionGroupPromotion(promotion) == promotionGroup ORDER orderPromotion(promotion) DO {
+            LOCAL quantityPromotionCondition = NUMERIC[14,3] (promotionCondition);
+            SET quantityPromotionCondition(promotionCondition) <- [GROUP SUM leftSku (sku)
+                                                                             IF inPromotionConditionSku(promotionCondition, sku)
+                                                                             BY promotionCondition](promotionCondition) AND
+                                                                                promotionPromotionCondition(promotionCondition) == promotion;
+
+            LOCAL countPromotionCondition = INTEGER (promotionCondition);
+            SET countPromotionCondition(promotionCondition) <- divideInteger(quantityPromotionCondition (promotionCondition), minQuantityPromotionCondition (promotionCondition));
+
+            LOCAL countPromotion = INTEGER ();
+            SET countPromotion () <- [GROUP MIN countPromotionCondition(promotionCondition)]();
+
+            // Если все условия сработали хотя бы один раз
+            IF countPromotion() > 0 AND [GROUP SUM 1 IF countPromotionCondition(promotionCondition) > 0]() == countPromotionConditionPromotion(promotion) THEN {
+                LOCAL takenPromotionCondition = NUMERIC[14,3] (promotionCondition);
+                SET takenPromotionCondition(promotionCondition) <- min(countPromotion() * quantityDiscountPromotionCondition(promotionCondition), quantityPromotionCondition(promotionCondition));
+
+                LOCAL maxSalePriceSku = NUMERIC[14,2] (sku);
+                SET maxSalePriceSku(sku) <- maxSalePriceReceiptSku(receipt, sku);
+
+                LOCAL takenSkuPromotionCondition = NUMERIC[14,3] (sku, promotionCondition);
+                SET takenSkuPromotionCondition(sku, promotionCondition) <- [PARTITION UNGROUP takenPromotionCondition
+                                                                                      LIMIT leftSku (sku)
+                                                                                            IF inPromotionConditionSku(promotionCondition, sku)
+                                                                                      BY promotionCondition
+                                                                                      ORDER maxSalePriceSku(sku), sku] (sku, promotionCondition);
+
+                LOCAL takenSku = NUMERIC[14,3] (sku);
+                SET takenSku(sku) <- [GROUP SUM takenSkuPromotionCondition(sku, promotionCondition) BY sku] (sku);
+
+                SET leftSku(sku) <- leftSku(sku) (-) takenSku(sku);
+
+                LOCAL takenReceiptSaleDetailPromotionCondition = NUMERIC[14,3] (receiptSaleDetail, promotionCondition);
+                SET takenReceiptSaleDetailPromotionCondition (detail, condition) <- [PARTITION UNGROUP takenSkuPromotionCondition
+                                                                                               LIMIT leftReceiptSaleDetail(detail)
+                                                                                               BY skuReceiptSaleDetail(detail), promotionCondition
+                                                                                               ORDER DESC detail](detail, condition);
+
+                LOCAL takenReceiptSaleDetail = NUMERIC[14,3] (receiptSaleDetail);
+                SET takenReceiptSaleDetail(detail) <- [GROUP SUM takenReceiptSaleDetailPromotionCondition(detail, condition) BY detail](detail);
+
+                SET leftReceiptSaleDetail(detail) <- leftReceiptSaleDetail(detail) (-) takenReceiptSaleDetail(detail);
+
+                SET quantityReceiptSaleDetailPromotionCondition(detail, condition) <- takenReceiptSaleDetailPromotionCondition(detail, condition)
+                    WHERE takenReceiptSaleDetailPromotionCondition(detail, condition);
+            }
+        }
+    }
+
+    // todo : лучше расписывать по каждой группе и считать считать скидку после всех скидок
+    SET discountSumReceiptSaleDetail(detail) IF receiptReceiptSaleDetail(detail) == receipt <- promotionSumReceiptSaleDetail(detail);
+}
+
+WHEN CHANGED(quantityReceiptDetailReceipt(receipt)) DO EXEC calculatePromotionsReceipt(receipt) SESSION;
+
 // Форма POS-терминала
 
 prevCurrentBalanceSkuReceipt (sku, receipt) = [PREV(currentBalanceSkuStock(sku, stock))] (sku, departmentStoreReceipt(receipt));
 prevCurrentBalanceReceiptDetail 'Тек. остаток' (receiptDetail) = prevCurrentBalanceSkuReceipt(skuReceiptDetail(receiptDetail), receiptReceiptDetail(receiptDetail));
+
 
 FORM POS
     PROPERTIES() READONLY hostnameCurrentComputer, numberCurrentZReport, currentDateTime
 
     OBJECTS r = receipt FIXED PANEL
     PROPERTIES(r) SHOWIF currentZReport() discountSumReceiptDetailReceipt, sumReceiptDetailReceipt,
-                                          searchSkuSaleReceipt, scanBarcodeSaleReceipt, searchSkuReturnReceipt, scanBarcodeReturnReceipt, postReceipt, postCardReceipt, postCashReceipt, cancelReceipt
+                                          searchSkuSaleReceipt, scanBarcodeSaleReceipt,
+                                          searchSkuReturnReceipt, scanBarcodeReturnReceipt,
+                                          postReceipt, postCardReceipt, postCashReceipt, cancelReceipt
 
     OBJECTS d = receiptDetail FIXED GRID
     PROPERTIES(d) SHOWIF currentZReport() READONLY indexReceiptDetail, typeReceiptDetail, idBarcodeReceiptDetail, nameSkuReceiptDetail, prevCurrentBalanceReceiptDetail
     PROPERTIES(d) SHOWIF currentZReport()          quantityReceiptDetail, priceReceiptDetail, sumReceiptDetail, discountPercentReceiptSaleDetail FORCE GRID, discountSumReceiptDetail, delete
     FILTERS receiptReceiptDetail(d) == r
+
+    OBJECTS pc = promotionCondition
+    PROPERTIES(pc) READONLY namePromotionPromotionCondition, name, dateFromPromotionCondition, dateToPromotionCondition, percentPromotionCondition
+    PROPERTIES(d, pc)       quantityReceiptSaleDetailPromotionCondition
+    FILTERS quantityReceiptSaleDetailPromotionCondition(d, pc)
 
     PROPERTIES() openCurrentZReport SHOWIF closedCurrentZReport(), closeCurrentZReport SHOWIF currentZReport()
 
@@ -747,18 +839,26 @@ DESIGN POS FROM DEFAULT {
 
         NEW centerContainer BEFORE functions.box {
             childConstraints = TO THE RIGHT;
-            ADD d.box {
-                PROPERTY(indexReceiptDetail) { focusable = FALSE; font = 'Tahoma 16'; }
-                PROPERTY(typeReceiptDetail) { focusable = FALSE; font = 'Tahoma 16'; }
-                PROPERTY(idBarcodeReceiptDetail) { focusable = FALSE; font = 'Tahoma 16'; }
-                PROPERTY(nameSkuReceiptDetail) { focusable = FALSE; font = 'Tahoma 16'; }
-                PROPERTY(prevCurrentBalanceReceiptDetail) { focusable = FALSE; font = 'Tahoma 16'; }
-                PROPERTY(quantityReceiptDetail) { font = 'Tahoma 16'; }
-                PROPERTY(priceReceiptDetail) { font = 'Tahoma 16'; }
-                PROPERTY(sumReceiptDetail) { font = 'Tahoma 16'; }
-                PROPERTY(discountPercentReceiptSaleDetail) { font = 'Tahoma 16'; }
-                PROPERTY(discountSumReceiptDetail) { font = 'Tahoma 16'; }
-                PROPERTY(delete) { font = 'Tahoma 16'; }
+            NEW receiptContainer {
+                type = SPLITV;
+                childConstraints = TO THE BOTTOM;
+                ADD d.box {
+                    fillVertical = 3;
+                    PROPERTY(indexReceiptDetail) { focusable = FALSE; font = 'Tahoma 16'; }
+                    PROPERTY(typeReceiptDetail) { focusable = FALSE; font = 'Tahoma 16'; }
+                    PROPERTY(idBarcodeReceiptDetail) { focusable = FALSE; font = 'Tahoma 16'; }
+                    PROPERTY(nameSkuReceiptDetail) { focusable = FALSE; font = 'Tahoma 16'; }
+                    PROPERTY(prevCurrentBalanceReceiptDetail) { focusable = FALSE; font = 'Tahoma 16'; }
+                    PROPERTY(quantityReceiptDetail) { font = 'Tahoma 16'; }
+                    PROPERTY(priceReceiptDetail) { font = 'Tahoma 16'; }
+                    PROPERTY(sumReceiptDetail) { font = 'Tahoma 16'; }
+                    PROPERTY(discountPercentReceiptSaleDetail) { font = 'Tahoma 16'; }
+                    PROPERTY(discountSumReceiptDetail) { font = 'Tahoma 16'; }
+                    PROPERTY(delete) { font = 'Tahoma 16'; }
+                }
+                ADD pc.box {
+                    fillVertical = 0.3;
+                }
             }
             NEW eastContainer {
                 childConstraints = TO THE BOTTOM;

@@ -49,7 +49,7 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
             public Expr getExpr(PropertyField property) {
                 ObjectValue propertyValue = propertyValues.get(property);
                 if(propertyValue!=null)
-                    return propertyValue.getExpr();
+                    return propertyValue.getExpr().and(tableJoin.getWhere());
                 else
                     return tableJoin.getExpr(property);
             }
