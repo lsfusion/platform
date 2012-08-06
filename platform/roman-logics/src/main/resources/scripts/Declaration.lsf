@@ -522,8 +522,11 @@ inFreightUnitDeclarationDetail 'Кол-во' (freightUnit, declarationDetail) = 
 inFreightUnitDeclaration 'Кол-во' (freightUnit, declaration) = GROUP SUM inFreightUnitDeclarationDetail(freightUnit, declarationDetail)
                                                                       BY freightUnit, declarationDeclarationDetail(declarationDetail);
 
-quantityGroupDeclaration 'Кол-во' (groupDeclaration) = GROUP SUM quantityDeclarationDetail(declarationDetail)
-                                                              BY groupDeclarationDeclarationDetail(declarationDetail) IN baseGroup PERSISTENT;
+//quantityGroupDeclaration 'Кол-во' (groupDeclaration) = GROUP SUM quantityDeclarationDetail(declarationDetail)
+//                                                              BY groupDeclarationDeclarationDetail(declarationDetail) IN baseGroup PERSISTENT;
+
+quantityGroupDeclaration 'Кол-во' (groupDeclaration) = GROUP SUM quantityDeclarationDetail(declarationDetail) IF inGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail)
+                                                              BY groupDeclaration PERSISTENT;
 
 netWeightGroupDeclarationDeclarationDetail 'Доля' (groupDeclaration, declarationDetail) = (sumNetWeightDeclarationDetail(declarationDetail) *
                                                                                            percentGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail))/100
@@ -547,13 +550,12 @@ sumGroupDeclarationDeclarationDetail 'Доля' (groupDeclaration, declarationDe
                                                                                  IF inGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail);
 
 sumGroupDeclaration 'Стоимость (расч.)' (groupDeclaration) = GROUP SUM sumGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail)
-                                                                    BY groupDeclaration IN baseGroup PERSISTENT;
+                                                                    BY groupDeclaration IN baseGroup PERSISTENT MINCHARWIDTH 15;
 
 
 dutyGroupDeclaration 'Пошлина (расч.)' (groupDeclaration) = UNION MAX
                                 rateExchangeCustomDeclaration(declarationGroupDeclaration(groupDeclaration)) * netWeightGroupDeclaration(groupDeclaration) * dutySumCustomCategory10TypeDuty(customCategory10GroupDeclaration(groupDeclaration), typeDutyDuty()),
-                                sumGroupDeclaration(groupDeclaration) * (dutyPercentCustomCategory10TypeDuty(customCategory10GroupDeclaration(groupDeclaration), typeDutyDuty())/100) PERSISTENT;
-
+                                sumGroupDeclaration(groupDeclaration) * (dutyPercentCustomCategory10TypeDuty(customCategory10GroupDeclaration(groupDeclaration), typeDutyDuty())/100) PERSISTENT MINCHARWIDTH 15;
 
 // старые пошлины
 dutyPercentDeclarationDetail 'Пошлина (%)' (declarationDetail) = dutyPercentCustomCategory10TypeDuty(customCategory10DeclarationDetail(declarationDetail), typeDutyDuty());
@@ -571,13 +573,13 @@ dutyDeclaration 'Сумма пошлин' (declaration) = GROUP SUM dutyUnionDec
                                                       BY declarationDeclarationDetail(declarationDetail) IN sumGroup PERSISTENT MINCHARWIDTH 17;
 
 // импорт из Декларанта
-sumDataGroupDeclaration 'Стоимость' = DATA NUMERIC[14,2](groupDeclaration);
+sumDataGroupDeclaration 'Стоимость' = DATA NUMERIC[14,2](groupDeclaration) MINCHARWIDTH 15;
 
-sumCorrectionGroupDeclaration 'Скорректированная стоимость' = DATA NUMERIC[14,2](correction, groupDeclaration);
+sumCorrectionGroupDeclaration 'Скорректированная стоимость' = DATA NUMERIC[14,2](correction, groupDeclaration) MINCHARWIDTH 15;
 correctionSumGroupDeclaration 'Скорректированная стоимость' (groupDeclaration) = GROUP MAX sumCorrectionGroupDeclaration(correction, groupDeclaration) BY groupDeclaration PERSISTENT;
 
-dutyDataGroupDeclaration 'Пошлина' = DATA NUMERIC[14,2](groupDeclaration);
-dutyImportDeclaration 'Пошлина' (declaration) = GROUP SUM dutyDataGroupDeclaration(groupDeclaration) BY declarationGroupDeclaration(groupDeclaration) PERSISTENT;
+dutyDataGroupDeclaration 'Пошлина' = DATA NUMERIC[14,2](groupDeclaration) MINCHARWIDTH 15;
+dutyImportDeclaration 'Пошлина' (declaration) = GROUP SUM dutyDataGroupDeclaration(groupDeclaration) BY declarationGroupDeclaration(groupDeclaration) PERSISTENT MINCHARWIDTH 15;
 
 VATRangeDataGroupDeclaration 'Шкала НДС (ИД)' = DATA range(groupDeclaration);
 numberVATRangeGroupDeclaration 'Шкала НДС' (groupDeclaration) = numberRange(VATRangeDataGroupDeclaration(groupDeclaration));
@@ -589,18 +591,26 @@ coeffGroupDeclarationDeclarationDetail '' (groupDeclaration, declarationDetail) 
 sumReverseGroupDeclarationDetail 'Часть стоимости' (groupDeclaration, declarationDetail) = sumDataGroupDeclaration(groupDeclaration) * coeffGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail)
                                                                                            IF inGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail);
 
-sumReverseDeclarationDetail 'Стоимость' (declarationDetail) = GROUP SUM sumReverseGroupDeclarationDetail(groupDeclaration, declarationDetail) BY declarationDetail;
+sumReverseDeclarationDetail 'Стоимость' (declarationDetail) = GROUP SUM sumReverseGroupDeclarationDetail(groupDeclaration, declarationDetail) BY declarationDetail PERSISTENT MINCHARWIDTH 15;
 
 priceReverseDeclarationDetail 'Цена' (declarationDetail) = sumReverseDeclarationDetail(declarationDetail)/quantityDeclarationDetail(declarationDetail);
+
+correctionSumReverseGroupDeclarationDetail 'Часть корр. стоимости' (groupDeclaration, declarationDetail) = correctionSumGroupDeclaration(groupDeclaration) * coeffGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail)
+                                                                                                           IF inGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail);
+
+correctionSumReverseDeclarationDetail 'Корр. стоимость' (declarationDetail) = GROUP SUM correctionSumReverseGroupDeclarationDetail(groupDeclaration, declarationDetail) BY declarationDetail PERSISTENT MINCHARWIDTH 15;
+
+sumUnionReverseDeclarationDetail 'Стоимость' (declarationDetail) = UNION OVERRIDE sumReverseDeclarationDetail(declarationDetail),
+                                                                                  correctionSumReverseDeclarationDetail(declarationDetail);
 
 dutyReverseGroupDeclarationDetail 'Часть пошлины' (groupDeclaration, declarationDetail) = dutyDataGroupDeclaration(groupDeclaration) * coeffGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail)
                                                                                           IF inGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail);
 
-dutyReverseDeclarationDetail 'Пошлина' (declarationDetail) = GROUP SUM dutyReverseGroupDeclarationDetail(groupDeclaration, declarationDetail) BY declarationDetail;
+dutyReverseDeclarationDetail 'Пошлина' (declarationDetail) = GROUP SUM dutyReverseGroupDeclarationDetail(groupDeclaration, declarationDetail) BY declarationDetail PERSISTENT MINCHARWIDTH 15;
 
 dutyReverseDeclaration 'Сумма пошлин' (declaration) = GROUP SUM dutyReverseDeclarationDetail(declarationDetail) BY declarationDeclarationDetail(declarationDetail) IN sumGroup PERSISTENT;
 
-sumDutyReverseDeclarationDetail 'Стоимость с пошлиной' (declarationDetail) = UNION SUM sumReverseDeclarationDetail(declarationDetail),
+sumDutyReverseDeclarationDetail 'Стоимость с пошлиной' (declarationDetail) = UNION SUM sumUnionReverseDeclarationDetail(declarationDetail),
                                                                                        dutyReverseDeclarationDetail(declarationDetail);
 
 VATRangeReverseDeclarationDetail 'Шкала НДС (ИД)' (declarationDetail) = VATRangeDataGroupDeclaration(primaryGroupDeclarationDeclarationDetail(declarationDetail));
@@ -609,7 +619,14 @@ valueVATRangeReverseDeclarationDetail 'НДС (%)' (declarationDetail) = valueRa
 
 VATReverseDeclarationDetail 'НДС' (declarationDetail) = sumDutyReverseDeclarationDetail(declarationDetail) * valueVATRangeReverseDeclarationDetail(declarationDetail)/100;
 
-VATReverseDeclaration 'Сумма НДС' (declaration) = GROUP SUM VATReverseDeclarationDetail(declarationDetail) BY declarationDeclarationDetail(declarationDetail) IN sumGroup PERSISTENT;;
+VATReverseDeclaration 'Сумма НДС' (declaration) = GROUP SUM VATReverseDeclarationDetail(declarationDetail) BY declarationDeclarationDetail(declarationDetail) IN sumGroup PERSISTENT MINCHARWIDTH 15;
+
+setSumGroupDeclaration 'Взять стоимость и пошлину' = ACTION (declaration) {
+   FOR declarationGroupDeclaration(groupDeclaration) == declaration DO {
+      SET sumDataGroupDeclaration(groupDeclaration) <- sumGroupDeclaration(groupDeclaration);
+      SET dutyDataGroupDeclaration(groupDeclaration) <- dutyGroupDeclaration(groupDeclaration);
+   };
+};
 
 
 // прошлое
@@ -803,7 +820,8 @@ FORM declaration 'Декларация'
                   innerInvoicesDeclaration, dateDeclaration, timeDeclaration, beginTimeDeclaration, endTimeDeclaration,
                   nameTypeExchangeCustomDeclaration, rateExchangeCustomDataDeclaration, nameTypeExchangeManagerialDeclaration,
                   rateExchangeManagerialDataDeclaration, sumRegistrationUnionDeclaration, dutyReverseDeclaration, VATReverseDeclaration, totalCustomSum,
-                  diffDutyDeclararion, diffVATDeclararion, diffDeclaration, expenseCertificateDeclaration, showFormDeclarationInvoices, toCreateGroupsDeclaration
+                  diffDutyDeclararion, diffVATDeclararion, diffDeclaration, expenseCertificateDeclaration, showFormDeclarationInvoices,
+                  toCreateGroupsDeclaration, setSumGroupDeclaration
 
     OBJECTS c=correction
     PROPERTIES(c) date, dateTimePayCorrection, ADDOBJ, delete
@@ -817,7 +835,7 @@ FORM declaration 'Декларация'
     PROPERTIES (dd) READONLY netWeightDeclarationDetail, sumNetWeightDeclarationDetail,
                     sumGrossWeightDeclarationDetail, quantityDeclarationDetail, shortNameUOMDeclarationDetail, priceContractDeclarationDetail,
                     declarationPriceDeclarationDetail, supplierPriceDeclarationDetail, declarationSumRateDeclarationDetail,
-                    sumReverseDeclarationDetail, dutyReverseDeclarationDetail, numberVATRangeReverseDeclarationDetail,
+                    sumUnionReverseDeclarationDetail, dutyReverseDeclarationDetail, numberVATRangeReverseDeclarationDetail,
                     valueVATRangeReverseDeclarationDetail, VATReverseDeclarationDetail, registrationSumUnionDeclarationDetail
 
     FILTERS inDeclarationDeclarationDetail(d, dd)
@@ -888,6 +906,7 @@ DESIGN declaration FROM DEFAULT{
                             ADD PROPERTY(innerInvoicesDeclaration);
                             ADD PROPERTY(showFormDeclarationInvoices);
                             ADD PROPERTY(toCreateGroupsDeclaration);
+                            ADD PROPERTY(setSumGroupDeclaration);
                         }
 
                         NEW datetimeContainer {
@@ -955,7 +974,7 @@ DESIGN declaration FROM DEFAULT{
     PROPERTY(supplierPriceDeclarationDetail) { background = #AAFFCC; }
     PROPERTY(declarationSumRateDeclarationDetail) { background = #AAFFCC; }
 
-    PROPERTY(sumReverseDeclarationDetail) { background = #AAFFFF; }
+    PROPERTY(sumUnionReverseDeclarationDetail) { background = #AAFFFF; }
     PROPERTY(dutyReverseDeclarationDetail) { background = #AAFFFF; }
     PROPERTY(numberVATRangeReverseDeclarationDetail) { background = #AAFFFF; }
     PROPERTY(valueVATRangeReverseDeclarationDetail) { background = #AAFFFF; }
@@ -982,7 +1001,7 @@ FORM declarations 'Декларации'
                    netWeightDeclarationDetail, sumNetWeightDeclarationDetail, sumGrossWeightDeclarationDetail,
                    quantityDeclarationDetail, shortNameUOMDeclarationDetail, priceContractDeclarationDetail, declarationPriceDeclarationDetail,
                    supplierPriceDeclarationDetail, declarationSumRateDeclarationDetail,
-                   sumReverseDeclarationDetail, dutyReverseDeclarationDetail, numberVATRangeReverseDeclarationDetail,
+                   sumUnionReverseDeclarationDetail, dutyReverseDeclarationDetail, numberVATRangeReverseDeclarationDetail,
                    valueVATRangeReverseDeclarationDetail, VATReverseDeclarationDetail, registrationSumUnionDeclarationDetail,
                    correctionPriceDeclarationDetail, priceCustomDeclarationDetail, priceManagerialDeclarationDetail, priceManagerialCustomDeclarationDetail
 
@@ -1034,7 +1053,7 @@ DESIGN declarations FROM DEFAULT {
     PROPERTY(supplierPriceDeclarationDetail) { background = #AAFFCC; }
     PROPERTY(declarationSumRateDeclarationDetail) { background = #AAFFCC; }
 
-    PROPERTY(sumReverseDeclarationDetail) { background = #AAFFFF; }
+    PROPERTY(sumUnionReverseDeclarationDetail) { background = #AAFFFF; }
     PROPERTY(dutyReverseDeclarationDetail) { background = #AAFFFF; }
     PROPERTY(numberVATRangeReverseDeclarationDetail) { background = #AAFFFF; }
     PROPERTY(valueVATRangeReverseDeclarationDetail) { background = #AAFFFF; }
