@@ -204,8 +204,12 @@ percentDiscountPriceSetDocumentArticle 'Процент уценки' = DATA NUME
 prevPercentDiscountPriceSetDocumentArticleDateTime(article, dateTime) = PREV(percentDiscountPriceSetDocumentArticle(discountPriceSetDocumentArticleDateTime(article, dateTime), article));
 prevPercentDiscountPriceSetDocumentArticle 'Процент скидки (предыдущий)' (document, article) = prevPercentDiscountPriceSetDocumentArticleDateTime(article, dateTimePriceSetDocument(document));
 
+priceAllowancePriceSetDocumentArticle (discountPriceSetDocument, article) = IF article IS article AND discountPriceSetDocument IS discountPriceSetDocument AND NOT discountPriceSetDocument IS basePriceSetDocument
+                         THEN priceBBasePriceSetDocumentArticle(discountPriceSetDocument, article)
+                         ELSE priceDataBasePriceSetDocumentArticle(discountPriceSetDocument, article);
+
 priceDiscountPriceSetDocumentArticle 'Цена без процентов' (discountPriceSetDocument, article) = [roundM1(X*(100-Y)/100)]
-                                                                                                        (priceDataBasePriceSetDocumentArticle(discountPriceSetDocument, article), // priceBBasePriceSetDocumentArticle
+                                                                                                         (priceAllowancePriceSetDocumentArticle (discountPriceSetDocument, article),
                                                                                                          percentDiscountPriceSetDocumentArticle(discountPriceSetDocument, article)) IN baseGroup;
 
 priceDataDiscountPriceSetDocumentArticle(discountPriceSetDocument, article) <- roundPrice(priceDiscountPriceSetDocumentArticle(discountPriceSetDocument, article))
