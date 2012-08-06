@@ -205,7 +205,7 @@ prevPercentDiscountPriceSetDocumentArticleDateTime(article, dateTime) = PREV(per
 prevPercentDiscountPriceSetDocumentArticle 'Процент скидки (предыдущий)' (document, article) = prevPercentDiscountPriceSetDocumentArticleDateTime(article, dateTimePriceSetDocument(document));
 
 priceDiscountPriceSetDocumentArticle 'Цена без процентов' (discountPriceSetDocument, article) = [roundM1(X*(100-Y)/100)]
-                                                                                                        (priceBBasePriceSetDocumentArticle(discountPriceSetDocument, article),
+                                                                                                        (priceDataBasePriceSetDocumentArticle(discountPriceSetDocument, article), // priceBBasePriceSetDocumentArticle
                                                                                                          percentDiscountPriceSetDocumentArticle(discountPriceSetDocument, article)) IN baseGroup;
 
 priceDataDiscountPriceSetDocumentArticle(discountPriceSetDocument, article) <- roundPrice(priceDiscountPriceSetDocumentArticle(discountPriceSetDocument, article))
@@ -214,6 +214,15 @@ priceDataDiscountPriceSetDocumentArticle(discountPriceSetDocument, article) <- r
 inArticlePriceSetDocument 'Артикул в документе' = DATA BOOLEAN(priceSetDocument, article);
 inFreightArticle (freight, article) = TRUE IF quantityFreightArticle(freight, article);
 
+typeExchangePriceSetDocumentArticle 'Тип обмена ИД' = DATA typeExchange (priceSetDocument, article) IN idGroup;
+nameTypeExchangePriceSetDocumentArticle 'Тип обмена' (priceSetDocument, article) = name(typeExchangePriceSetDocumentArticle(priceSetDocument, article));
+typeExchangePriceSetDocumentArticle(priceSetDocument, article) <- typeExchangeRetail() AND priceSetDocument IS priceSetDocument AND article IS article
+                                                                  WHEN ASSIGNED (inArticlePriceSetDocument(priceSetDocument, article));
+
+currencyPriceSetDocumentArticle 'Валюта ИД' = DATA currency (priceSetDocument, article) IN idGroup;
+nameCurrencyPriceSetDocumentArticle 'Валюта' = name(currencyPriceSetDocumentArticle(priceSetDocument, article));
+currencyPriceSetDocumentArticle(priceSetDocument, article) <- currencyTypeExchange(typeExchangeSTX()) AND priceSetDocument IS priceSetDocument AND article IS article
+                                                                  WHEN ASSIGNED (inArticlePriceSetDocument(priceSetDocument, article));
 
 //проставление текущих значений при расценке
 priceInPriceSetDocumentArticle(basePriceSetDocument, article) <- prevPriceInBBasePriceSetDocumentArticle (basePriceSetDocument, article)
@@ -536,6 +545,7 @@ FORM priceSetDocument 'Розничный прайс'
     PROPERTIES(a) READONLY sidArticle, nameCategoryArticle, nameBrandSupplierArticle
     PROPERTIES (p, a) priceInPriceSetDocumentArticle,
                       RRPPriceSetDocumentArticle, markupPriceSetDocumentArticle, priceOutPriceSetDocumentArticle,
+                      nameTypeExchangePriceSetDocumentArticle, nameCurrencyPriceSetDocumentArticle,
                       ratePriceSetDocumentArticle, RRPRatePriceSetDocumentArticle, priceOutRatePriceSetDocumentArticle,
                       priceBBasePriceSetDocumentArticle, nameMethodPriceSetDocumentArticle, priceRetailPriceSetDocumentArticle,
                       priceDataBasePriceSetDocumentArticle
@@ -671,6 +681,7 @@ FORM priceSetDocuments 'Розничные прайсы'
     PROPERTIES(a) READONLY sidArticle, nameCategoryArticle, nameBrandSupplierArticle
     PROPERTIES (p, a) READONLY priceInPriceSetDocumentArticle,
                                RRPPriceSetDocumentArticle, markupPriceSetDocumentArticle, priceOutPriceSetDocumentArticle,
+                               nameTypeExchangePriceSetDocumentArticle, nameCurrencyPriceSetDocumentArticle,
                                ratePriceSetDocumentArticle, priceBBasePriceSetDocumentArticle, priceRetailPriceSetDocumentArticle,
                                priceDataBasePriceSetDocumentArticle, priceInRateBBasePriceSetDocumentArticle, percentDiscountPriceSetDocumentArticle,
                                priceBDiscountPriceSetDocumentArticle, priceDataDiscountPriceSetDocumentArticle
