@@ -617,6 +617,14 @@ quantityStorePriceSetDocumentArticle 'Кол-во' (store, priceSetDocument, art
     GROUP SUM balanceBSkuStockDateTime(sku, departmentStore, dateTimePriceSetDocument(priceSetDocument))
     BY storeDepartmentStore(departmentStore), priceSetDocument, articleSku(sku);
 
+quantityDepartmentStorePriceSetDocument (departmentStore, priceSetDocument) =
+    GROUP SUM balanceBSkuStockDateTime(sku, departmentStore, dateTimePriceSetDocument(priceSetDocument))
+    IF inArticlePriceSetDocument(priceSetDocument, articleSku(sku))
+    BY departmentStore, priceSetDocument;
+quantityStorePriceSetDocument (store, priceSetDocument) = GROUP SUM balanceBSkuStockDateTime(sku, departmentStore, dateTimePriceSetDocument(priceSetDocument))
+    IF inArticlePriceSetDocument(priceSetDocument, articleSku(sku))
+    BY storeDepartmentStore(departmentStore), priceSetDocument;
+
 countStorePriceSetDocumentArticle(store, priceSetDocument, article) = castToInteger(quantityStorePriceSetDocumentArticle(store, priceSetDocument, article));
 
 shouldBePrintArticle(article) = SESSION DATA BOOLEAN (article);
@@ -650,14 +658,14 @@ printAllPricePriceSetDocumentArticle 'Печать цен для маркиро�
 
 FORM priceSetDocuments 'Розничные прайсы'
 
-    OBJECTS s = RomanLogicsModule.store
-    PROPERTIES(s) READONLY name
-
     OBJECTS p=priceSetDocument
     PROPERTIES(p) READONLY statusPriceSetDocument, numberObject, seriesObject, datePriceSetDocument, timePriceSetDocument, dateTimeToPriceSetDocument
     PROPERTIES(p) FORCE PANEL postPriceSetDocument SHOWIF isDraftPriceSetDocument(p),
                               unpostPriceSetDocument SHOWIF isPostedPriceSetDocument(p), ADDFORM,
                               EDITFORM SHOWIF isDraftPriceSetDocument(p), delete SHOWIF isDraftPriceSetDocument(p)
+
+    OBJECTS s = RomanLogicsModule.store
+    PROPERTIES(s) READONLY name
 
     OBJECTS a=article
     PROPERTIES(a) READONLY sidArticle, nameCategoryArticle, nameBrandSupplierArticle
@@ -678,6 +686,10 @@ FORM priceSetDocuments 'Розничные прайсы'
     PROPERTIES(s, p) printAllPricePriceSetDocumentArticle TODRAW a FORCE PANEL
 
     FILTERS inArticlePriceSetDocument(p, a)
+    FILTERGROUP filters1
+        FILTER 'Магазины с остатками' 'F10' quantityStorePriceSetDocument(s, p) DEFAULT
+    FILTERGROUP filters2
+        FILTER 'Отделы с остатками' 'F9' quantityDepartmentStorePriceSetDocument(d, p) DEFAULT
 ;
 
 DESIGN priceSetDocuments FROM DEFAULT {
