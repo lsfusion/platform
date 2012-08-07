@@ -409,7 +409,7 @@ certificatedGroupDeclaration 'Необходимость сертификаци�
 
 sidArticleGroupDeclaration 'Артикул' (groupDeclaration) = sidArticle(articleGroupDeclaration(groupDeclaration)) IN baseGroup;
 sidCustomCategory10GroupDeclaration 'ТН ВЭД' (groupDeclaration) = sidCustomCategory10(customCategory10GroupDeclaration(groupDeclaration)) IN baseGroup;
-nameCountryGroupDeclaration 'Страна' (groupDeclaration) = name(countryGroupDeclaration(groupDeclaration)) IN baseGroup;
+nameCountryGroupDeclaration 'Страна' (groupDeclaration) = name(countryGroupDeclaration(groupDeclaration)) IN baseGroup MINCHARWIDTH 10;
 sidCountryGroupDeclaration 'Цифровой код страны' (groupDeclaration) = sidCountry(countryGroupDeclaration(groupDeclaration)) IN baseGroup;
 sidOrigin2CountryGroupDeclaration 'Буквенный код страны' (groupDeclaration) = sidOrigin2Country(countryGroupDeclaration(groupDeclaration)) IN baseGroup MINCHARWIDTH 3;
 
@@ -439,8 +439,8 @@ uniqueGroupDeclaration = GROUP UNIQUE groupDeclaration BY declarationGroupDeclar
 // свойства от артикула
 nameBrandGroupDeclaration 'Бренд' (groupDeclaration) = nameBrandSupplierArticle(articleGroupDeclaration(groupDeclaration));
 nameCategoryGroupDeclaration 'Ном. группа' (groupDeclaration) = nameCategoryArticle(articleGroupDeclaration(groupDeclaration));
-sidGenderGroupDeclaration 'Пол' (groupDeclaration) = sidGenderArticle(articleGroupDeclaration(groupDeclaration));
-nameTypeFabricGroupDeclaration 'Тип одежды' (groupDeclaration) = nameTypeFabricArticle(articleGroupDeclaration(groupDeclaration));
+sidGenderGroupDeclaration 'Пол' (groupDeclaration) = sidGenderArticle(articleGroupDeclaration(groupDeclaration)) MINCHARWIDTH 3;
+nameTypeFabricGroupDeclaration 'Тип одежды' (groupDeclaration) = nameTypeFabricArticle(articleGroupDeclaration(groupDeclaration)) MINCHARWIDTH 10;
 
 unitOfMeasureArticleGroupDeclaration 'Ед. изм.(ИД)' (groupDeclaration) = unitOfMeasureArticle(articleGroupDeclaration(groupDeclaration));
 unitOfMeasureDataGroupDeclaration 'Ед. изм.(ИД)' = DATA unitOfMeasure(groupDeclaration);
@@ -449,7 +449,7 @@ unitOfMeasureGroupDeclaration 'Ед. изм.(ИД)' = UNION OVERRIDE unitOfMeasu
                                                               unitOfMeasureDataGroupDeclaration(groupDeclaration);
 
 sidUnitOfMeasureGroupDeclaration 'Ед. изм.(код)' (groupDeclaration) = sidUnitOfMeasure(unitOfMeasureGroupDeclaration(groupDeclaration));
-nameUnitOfMeasureGroupDeclaration 'Ед. изм.' (groupDeclaration) = name(unitOfMeasureGroupDeclaration(groupDeclaration));
+nameUnitOfMeasureGroupDeclaration 'Ед. изм.' (groupDeclaration) = name(unitOfMeasureGroupDeclaration(groupDeclaration)) MINCHARWIDTH 5;
 
 
 stringGroupDeclaration 'Наименование' (groupDeclaration) =
@@ -470,25 +470,6 @@ percentDataGroupDeclarationDeclarationDetail '%' = DATA NUMERIC[14,2] (groupDecl
 percentGroupDeclarationDeclarationDetail '%' (groupDeclaration, declarationDetail) =
                          (UNION OVERRIDE 100 IF (groupDeclaration IS groupDeclaration AND declarationDetail IS declarationDetail),
                                          percentDataGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail)) IF inGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail);
-
-toCreateGroupsDeclaration 'Создать строки' = ACTION (declaration) {
-    FOR quantityDeclarationGroup(declaration, article, customCategory10, STRING, country) DO {
-        ADDOBJ groupDeclaration;
-        FOR g == addedObject() DO {
-            SET declarationGroupDeclaration(g) <- declaration AS declaration;
-            SET articleGroupDeclaration(g) <- article AS article;
-            SET customCategory10GroupDeclaration(g) <- customCategory10 AS customCategory10;
-            SET mainCompositionGroupDeclaration(g) <- STRING;
-            SET countryGroupDeclaration(g) <- country AS country;
-
-            FOR declarationDeclarationDetail(declarationDetail) == declaration AND articleDeclarationDetail(declarationDetail) == article AND
-                customCategory10DeclarationDetail(declarationDetail) == customCategory10 AND mainCompositionDeclarationDetail(declarationDetail) == STRING AND
-                countryDeclarationDetail(declarationDetail) == country DO {
-                SET inGroupDeclarationDeclarationDetail(g, declarationDetail) <- TRUE;
-            }
-        };
-    };
-} TOOLBAR IN docGroup;
 
 groupDeclarationDeclarationDetail 'Группа строки декларации (ИД)'(declarationDetail) = uniqueGroupDeclaration(
                                                                                        declarationDeclarationDetail(declarationDetail),
@@ -606,7 +587,7 @@ supplierSumDeclarationDetail 'Стоимость' (declarationDetail) = UNION OV
                                                                               correctionSumReverseDeclarationDetail(declarationDetail);
 
 dutyReverseGroupDeclarationDetail 'Часть пошлины' (groupDeclaration, declarationDetail) = dutyDataGroupDeclaration(groupDeclaration) * coeffGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail)
-                                                                                          IF inGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail);
+                                                                                          IF inGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail) PERSISTENT;
 
 dutyReverseDeclarationDetail 'Пошлина' (declarationDetail) = GROUP SUM dutyReverseGroupDeclarationDetail(groupDeclaration, declarationDetail) BY declarationDetail PERSISTENT MINCHARWIDTH 15;
 
@@ -642,6 +623,25 @@ setSumGroupDeclaration 'Взять стоимость и пошлину' = ACTIO
    };
 };
 
+toCreateGroupsDeclaration 'Создать строки' = ACTION (declaration) {
+    FOR quantityDeclarationGroup(declaration, article, customCategory10, mainComposition, country) DO {
+        ADDOBJ groupDeclaration;
+        FOR g == addedObject() DO {
+            SET declarationGroupDeclaration(g) <- declaration;
+            SET articleGroupDeclaration(g) <- article;
+            SET customCategory10GroupDeclaration(g) <- customCategory10;
+            SET mainCompositionGroupDeclaration(g) <- mainComposition;
+            SET countryGroupDeclaration(g) <- country;
+
+            SET inGroupDeclarationDeclarationDetail(g, declarationDetail) <- declarationDeclarationDetail(declarationDetail) == declaration AND
+                articleDeclarationDetail(declarationDetail) == article AND customCategory10DeclarationDetail(declarationDetail) == customCategory10 AND
+                mainCompositionDeclarationDetail(declarationDetail) == mainComposition AND countryDeclarationDetail(declarationDetail) == country;
+        };
+    };
+
+    EXEC setSumGroupDeclaration(declaration AS declaration);
+
+} TOOLBAR;
 
 // прошлое
 //sumGroupDeclarationDetail 'Стоимость (из Декларанта)' (declarationDetail) = (sumDeclarationDetail(declarationDetail) * sumDataGroupDeclaration(groupDeclarationDeclarationDetail(declarationDetail)))/
@@ -834,8 +834,7 @@ FORM declaration 'Декларация'
                   innerInvoicesDeclaration, dateDeclaration, timeDeclaration, beginTimeDeclaration, endTimeDeclaration,
                   nameTypeExchangeCustomDeclaration, rateExchangeCustomDataDeclaration, nameTypeExchangeManagerialDeclaration,
                   rateExchangeManagerialDataDeclaration, sumRegistrationUnionDeclaration, dutyReverseDeclaration, VATReverseDeclaration, totalCustomSum,
-                  expenseCertificateDeclaration, showFormDeclarationInvoices,
-                  toCreateGroupsDeclaration, setSumGroupDeclaration
+                  expenseCertificateDeclaration, showFormDeclarationInvoices
 
     OBJECTS c=correction
     PROPERTIES(c) date, dateTimePayCorrection, ADDOBJ, delete
@@ -848,8 +847,8 @@ FORM declaration 'Декларация'
     PROPERTIES (dd) sidCustomCategory10DeclarationDetail
     PROPERTIES (dd) READONLY netWeightDeclarationDetail, sumNetWeightDeclarationDetail,
                     sumGrossWeightDeclarationDetail, quantityDeclarationDetail, shortNameUOMDeclarationDetail, priceContractDeclarationDetail,
-                    declarationPriceDeclarationDetail, supplierPriceDeclarationDetail, declarationSumRateDeclarationDetail,
-                    supplierSumDeclarationDetail, dutyReverseDeclarationDetail, numberVATRangeReverseDeclarationDetail,
+                    declarationPriceDeclarationDetail, priceRateDeclarationDetail, declarationSumRateDeclarationDetail,
+                    sumReverseDeclarationDetail, correctionSumReverseDeclarationDetail, supplierSumDeclarationDetail, dutyReverseDeclarationDetail, numberVATRangeReverseDeclarationDetail,
                     valueVATRangeReverseDeclarationDetail, VATReverseDeclarationDetail, registrationSumUnionDeclarationDetail
 
     FILTERS inDeclarationDeclarationDetail(d, dd)
@@ -869,6 +868,8 @@ FORM declaration 'Декларация'
                     netWeightGroupDeclaration, grossWeightGroupDeclaration, sumGroupDeclaration, dutyGroupDeclaration
     PROPERTIES (gd) sumDataGroupDeclaration, dutyDataGroupDeclaration, numberVATRangeGroupDeclaration, valueVATRangeGroupDeclaration, ADDOBJ, delete
     PROPERTIES (c, gd) sumCorrectionGroupDeclaration
+
+    PROPERTIES (d) toCreateGroupsDeclaration TODRAW gd FORCE PANEL, setSumGroupDeclaration TODRAW gd FORCE PANEL
 
     FILTERGROUP filterDetail
         FILTER 'Для текущей позиции' 'F11' inGroupDeclarationDeclarationDetail(gd, dd)
@@ -918,8 +919,8 @@ DESIGN declaration FROM DEFAULT{
                             ADD PROPERTY(nameImporterDeclaration);
                             ADD PROPERTY(innerInvoicesDeclaration);
                             ADD PROPERTY(showFormDeclarationInvoices);
-                            ADD PROPERTY(toCreateGroupsDeclaration);
-                            ADD PROPERTY(setSumGroupDeclaration);
+                            //ADD PROPERTY(toCreateGroupsDeclaration);
+                            //ADD PROPERTY(setSumGroupDeclaration);
                         }
 
                         NEW datetimeContainer {
@@ -971,6 +972,13 @@ DESIGN declaration FROM DEFAULT{
 
                   ADD gd.box {
                     fillVertical = 1;
+                    PROPERTY (toCreateGroupsDeclaration(d)) {
+                        panelLocation = TOOLBAR;
+                    }
+
+                    PROPERTY (setSumGroupDeclaration(d)) {
+                        panelLocation = TOOLBAR;
+                    }
                   }
                 }
 
@@ -984,7 +992,7 @@ DESIGN declaration FROM DEFAULT{
 
     PROPERTY(priceContractDeclarationDetail) { background = #AAFFCC; }
     PROPERTY(declarationPriceDeclarationDetail) { background = #AAFFCC; }
-    PROPERTY(supplierPriceDeclarationDetail) { background = #AAFFCC; }
+    PROPERTY(priceRateDeclarationDetail) { background = #AAFFCC; }
     PROPERTY(declarationSumRateDeclarationDetail) { background = #AAFFCC; }
 
     PROPERTY(supplierSumDeclarationDetail) { background = #AAFFFF; }
@@ -993,6 +1001,7 @@ DESIGN declaration FROM DEFAULT{
     PROPERTY(valueVATRangeReverseDeclarationDetail) { background = #AAFFFF; }
     PROPERTY(VATReverseDeclarationDetail) { background = #AAFFFF; }
     PROPERTY(registrationSumUnionDeclarationDetail) { background = #AAFFFF; }
+
 
     ADD functions.box;
 };
@@ -1013,7 +1022,7 @@ FORM declarations 'Декларации'
                    nameCountryDeclarationDetail, sidCustomCategory10DeclarationDetail,
                    netWeightDeclarationDetail, sumNetWeightDeclarationDetail, sumGrossWeightDeclarationDetail,
                    quantityDeclarationDetail, shortNameUOMDeclarationDetail, priceContractDeclarationDetail, declarationPriceDeclarationDetail,
-                   supplierPriceDeclarationDetail, declarationSumRateDeclarationDetail,
+                   priceRateDeclarationDetail, declarationSumRateDeclarationDetail,
                    supplierSumDeclarationDetail, dutyReverseDeclarationDetail, numberVATRangeReverseDeclarationDetail,
                    valueVATRangeReverseDeclarationDetail, VATReverseDeclarationDetail, registrationSumUnionDeclarationDetail,
                    priceCustomDeclarationDetail, priceManagerialDeclarationDetail, priceManagerialCustomDeclarationDetail
@@ -1063,7 +1072,7 @@ DESIGN declarations FROM DEFAULT {
 
     PROPERTY(priceContractDeclarationDetail) { background = #AAFFCC; }
     PROPERTY(declarationPriceDeclarationDetail) { background = #AAFFCC; }
-    PROPERTY(supplierPriceDeclarationDetail) { background = #AAFFCC; }
+    PROPERTY(priceRateDeclarationDetail) { background = #AAFFCC; }
     PROPERTY(declarationSumRateDeclarationDetail) { background = #AAFFCC; }
 
     PROPERTY(supplierSumDeclarationDetail) { background = #AAFFFF; }
