@@ -194,7 +194,8 @@ inPromotionStore 'В акции' = DATA BOOLEAN (promotion, store);
 inPromotionDiscountCard 'В акции' = DATA BOOLEAN (promotion, discountCard);
 
 cumulativeSumPromotion 'Накоп. сумма' (promotion) = DATA NUMERIC[14,2] (promotion);
-minSumBillPromotion 'Сумма чека' (promotion) = DATA NUMERIC[14,2] (promotion);
+minSumBillPromotion 'Сумма чека ОТ' (promotion) = DATA NUMERIC[14,2] (promotion);
+maxSumBillPromotion 'Сумма чека ДО' (promotion) = DATA NUMERIC[14,2] (promotion);
 
 promotionPromotionCondition = DATA promotion (promotionCondition) NOT NULL DELETE;
 namePromotionPromotionCondition 'Акция' (promotionCondition) = name(promotionPromotionCondition(promotionCondition));
@@ -229,7 +230,7 @@ FORM promotion 'Акция'
     PROPERTIES(sh)     name, namePromotionGroupPromotion,
                        nameNumeratorObject, numberObject, seriesObject,
                        dateFromPromotion, dateToPromotion, timeOfFromPromotion, timeOfToPromotion,
-                       cumulativeSumPromotion, minSumBillPromotion
+                       cumulativeSumPromotion, minSumBillPromotion, maxSumBillPromotion
     OBJECTS d=DOW
     PROPERTIES(d)     READONLY name
     PROPERTIES(sh, d)  inPromotionDay
@@ -315,6 +316,7 @@ DESIGN promotion FROM DEFAULT {
                 childConstraints = TO THE BOTTOM;
                 ADD PROPERTY(cumulativeSumPromotion);
                 ADD PROPERTY(minSumBillPromotion);
+                ADD PROPERTY(maxSumBillPromotion);
             }
         }
 
@@ -366,7 +368,7 @@ DESIGN promotion FROM DEFAULT {
 FORM promotions 'Акции'
     OBJECTS sh=promotion
     PROPERTIES(sh)     READONLY name, numberObject, seriesObject, dateFromPromotion, dateToPromotion, timeOfFromPromotion, timeOfToPromotion,
-                       cumulativeSumPromotion, minSumBillPromotion
+                       cumulativeSumPromotion, minSumBillPromotion, maxSumBillPromotion
     PROPERTIES(sh)     ADDFORM, EDITFORM, delete
 
     PROPERTIES (sh) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated
@@ -380,7 +382,7 @@ FORM promotionGroup 'Группа акций'
     OBJECTS sh=promotion
     PROPERTIES(sh)     userOrderPromotion
     PROPERTIES(sh)     READONLY name, seriesObject, numberObject, dateFromPromotion, dateToPromotion, timeOfFromPromotion, timeOfToPromotion,
-                       cumulativeSumPromotion, minSumBillPromotion
+                       cumulativeSumPromotion, minSumBillPromotion, maxSumBillPromotion
     PROPERTIES(sh)     ADDFORM, EDITFORM, delete
 
     FILTERS promotionGroupPromotion(sh)==st
@@ -396,7 +398,7 @@ FORM promotionGroups 'Группы акций'
     OBJECTS sh=promotion
     PROPERTIES(sh)     READONLY orderPromotion
     PROPERTIES(sh)     READONLY name, seriesObject, numberObject, dateFromPromotion, dateToPromotion, timeOfFromPromotion, timeOfToPromotion,
-                       cumulativeSumPromotion, minSumBillPromotion
+                       cumulativeSumPromotion, minSumBillPromotion, maxSumBillPromotion
     PROPERTIES(sh)     ADDFORM, EDITFORM, delete
     ORDER BY orderPromotion
 

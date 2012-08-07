@@ -472,10 +472,19 @@ DESIGN postReceiptPayment FROM DEFAULT {
 
     main {
         preferredSize = (600, 250);
-        PROPERTY(sumPayment) { font = 'Tahoma bold 48'; }
-        PROPERTY(namePaymentTypePayment) { font = 'Tahoma bold 48'; }
-        PROPERTY(delete) { font = 'Tahoma bold 48'; }
-        ADD PROPERTY(changePaymentReceipt) BEFORE functions.box { panelLabelAbove = TRUE; focusable = FALSE; font = 'Tahoma bold 72'; }
+        NEW payContainer {
+            childConstraints = TO THE RIGHT;
+            ADD p.box {
+                PROPERTY(sumPayment) { font = 'Tahoma bold 36'; }
+                PROPERTY(namePaymentTypePayment) { font = 'Tahoma bold 36'; }
+                PROPERTY(delete) { font = 'Tahoma bold 36'; }
+            }
+            NEW rightContainer {
+                childConstraints = TO THE BOTTOM;
+                ADD PROPERTY(changePaymentReceipt) { panelLabelAbove = TRUE; focusable = FALSE; font = 'Tahoma bold 72'; }
+                ADD functions.box;
+            }
+        }
     }
 }
 
@@ -724,29 +733,35 @@ closeCurrentZReport 'Закрыть Z-отчет' = ACTION () {
 
 TABLE receiptSaleDetailPromotionCondition(receiptSaleDetail, promotionCondition);
 quantityReceiptSaleDetailPromotionCondition 'Кол-во по акции' = DATA NUMERIC[14,3] (receiptSaleDetail, promotionCondition) INDEXED;
-promotionSumReceiptSaleDetailPromotionCondition 'Сумма скидки' (detail, condition) =
-    quantityReceiptSaleDetailPromotionCondition(detail, condition) * priceReceiptSaleDetail(detail) * percentPromotionCondition(condition) / 100;
+promotionSumReceiptSaleDetailPromotionCondition 'Сумма скидки' = DATA NUMERIC[14,3] (receiptSaleDetail, promotionCondition);
 
 promotionSumReceiptSaleDetail (detail) = GROUP SUM promotionSumReceiptSaleDetailPromotionCondition(detail, condition)
                                                BY detail;
 
 inReceiptPromotion (receipt, promotion) = inPromotionStore(promotion, storeReceipt(receipt)) AND
-                                          dateReceipt(receipt) >= dateFromPromotion(promotion) AND dateReceipt(receipt) <= dateToPromotion(promotion);
+                                          dateReceipt(receipt) >= dateFromPromotion(promotion) AND dateReceipt(receipt) <= dateToPromotion(promotion) AND
+                                          NOT timeReceipt(receipt) < timeOfFromPromotion(promotion) AND NOT timeReceipt(receipt) > timeOfToPromotion(promotion) AND
+                                          NOT sumReceiptDetailReceipt(receipt) < minSumBillPromotion(promotion) AND NOT sumReceiptDetailReceipt(receipt) > maxSumBillPromotion(promotion);
 
 maxSalePriceReceiptSku (receipt, sku) = GROUP MAX priceReceiptSaleDetail(detail) BY receiptReceiptSaleDetail(detail), skuReceiptSaleDetail(detail);
 
 calculatePromotionsReceipt 'Рассчитать акции' = ACTION (receipt) {
 
     SET quantityReceiptSaleDetailPromotionCondition(detail, condition) IF receiptReceiptSaleDetail(detail) == receipt <- NULL;
+    SET promotionSumReceiptSaleDetailPromotionCondition(detail, condition) IF receiptReceiptSaleDetail(detail) == receipt <- NULL;
+    SET discountSumReceiptSaleDetail(detail) IF receiptReceiptSaleDetail(detail) == receipt <- NULL;
 
     FOR promotionGroup IS promotionGroup DO {
         LOCAL leftSku = NUMERIC[14,3] (sku);
         SET leftSku(sku) <- quantityReceiptSaleDetailSkuReceipt (sku, receipt);
 
-        LOCAL leftReceiptSaleDetail = NUMERIC[14,3] (receiptSaleDetail);
-        SET leftReceiptSaleDetail(detail) <- quantityReceiptSaleDetail(detail) IF receiptReceiptSaleDetail(detail) == receipt;
+        LOCAL leftQuantityReceiptSaleDetail = NUMERIC[14,3] (receiptSaleDetail);
+        SET leftQuantityReceiptSaleDetail(detail) <- quantityReceiptSaleDetail(detail) IF receiptReceiptSaleDetail(detail) == receipt;
 
-        FOR promotionGroupPromotion(promotion) == promotionGroup ORDER orderPromotion(promotion) DO {
+        LOCAL leftSumReceiptSaleDetail = NUMERIC[16,3] (receiptSaleDetail);
+        SET leftSumReceiptSaleDetail(detail) <- (priceSumReceiptSaleDetail(detail) (-) promotionSumReceiptSaleDetail(detail)) IF receiptReceiptSaleDetail(detail) == receipt;
+
+        FOR promotionGroupPromotion(promotion) == promotionGroup AND inReceiptPromotion(receipt, promotion) ORDER orderPromotion(promotion) DO {
             LOCAL quantityPromotionCondition = NUMERIC[14,3] (promotionCondition);
             SET quantityPromotionCondition(promotionCondition) <- [GROUP SUM leftSku (sku)
                                                                              IF inPromotionConditionSku(promotionCondition, sku)
@@ -781,22 +796,27 @@ calculatePromotionsReceipt 'Рассчитать акции' = ACTION (receipt) 
 
                 LOCAL takenReceiptSaleDetailPromotionCondition = NUMERIC[14,3] (receiptSaleDetail, promotionCondition);
                 SET takenReceiptSaleDetailPromotionCondition (detail, condition) <- [PARTITION UNGROUP takenSkuPromotionCondition
-                                                                                               LIMIT leftReceiptSaleDetail(detail)
+                                                                                               LIMIT leftQuantityReceiptSaleDetail(detail)
                                                                                                BY skuReceiptSaleDetail(detail), promotionCondition
                                                                                                ORDER DESC detail](detail, condition);
 
                 LOCAL takenReceiptSaleDetail = NUMERIC[14,3] (receiptSaleDetail);
                 SET takenReceiptSaleDetail(detail) <- [GROUP SUM takenReceiptSaleDetailPromotionCondition(detail, condition) BY detail](detail);
 
-                SET leftReceiptSaleDetail(detail) <- leftReceiptSaleDetail(detail) (-) takenReceiptSaleDetail(detail);
+                SET leftQuantityReceiptSaleDetail(detail) <- leftQuantityReceiptSaleDetail(detail) (-) takenReceiptSaleDetail(detail);
 
                 SET quantityReceiptSaleDetailPromotionCondition(detail, condition) <- takenReceiptSaleDetailPromotionCondition(detail, condition)
+                    WHERE takenReceiptSaleDetailPromotionCondition(detail, condition);
+
+                SET promotionSumReceiptSaleDetailPromotionCondition (detail, condition) <-
+                    takenReceiptSaleDetailPromotionCondition(detail, condition) / quantityReceiptSaleDetail(detail) *
+                    leftSumReceiptSaleDetail(detail) *
+                    percentPromotionCondition(condition) / 100
                     WHERE takenReceiptSaleDetailPromotionCondition(detail, condition);
             }
         }
     }
 
-    // todo : лучше расписывать по каждой группе и считать считать скидку после всех скидок
     SET discountSumReceiptSaleDetail(detail) IF receiptReceiptSaleDetail(detail) == receipt <- promotionSumReceiptSaleDetail(detail);
 }
 
@@ -824,7 +844,7 @@ FORM POS
 
     OBJECTS pc = promotionCondition
     PROPERTIES(pc) READONLY namePromotionPromotionCondition, name, dateFromPromotionCondition, dateToPromotionCondition, percentPromotionCondition
-    PROPERTIES(d, pc)       quantityReceiptSaleDetailPromotionCondition
+    PROPERTIES(d, pc)       quantityReceiptSaleDetailPromotionCondition, promotionSumReceiptSaleDetailPromotionCondition
     FILTERS quantityReceiptSaleDetailPromotionCondition(d, pc)
 
     PROPERTIES() openCurrentZReport SHOWIF closedCurrentZReport(), closeCurrentZReport SHOWIF currentZReport()
@@ -837,7 +857,9 @@ DESIGN POS FROM DEFAULT {
     main {
         childConstraints = TO THE BOTTOM;
 
-        NEW centerContainer BEFORE functions.box {
+        REMOVE functions.box CASCADE;
+
+        NEW centerContainer {
             childConstraints = TO THE RIGHT;
             NEW receiptContainer {
                 type = SPLITV;
@@ -888,7 +910,7 @@ DESIGN POS FROM DEFAULT {
             }
         }
 
-        NEW southContainer BEFORE functions.box {
+        NEW southContainer {
             childConstraints = TO THE RIGHT;
             ADD NOGROUP.receiptZReportGroup {
                 childConstraints = TO THE RIGHT;
