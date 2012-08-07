@@ -26,6 +26,7 @@ REQUIRE System,
         WHtoLegalEntity,
         InnerOrder,
         PriceInterval,
+        WriteOff,
         Customer,
         RomanLogicsModule;
 
@@ -193,6 +194,10 @@ NAVIGATOR {
         NEW retailAggregations 'Сводная информация' {
             ADD sumAccountDocumentLedger;
         }
+        NEW retirement 'Списание' {
+            ADD writeOffs;
+            ADD writeOffCommitteeDialog;
+        }
     }
     wholesaleTrade {
         NEW tradeClassifier  'Справочники' TO leftToolbar {
@@ -218,5 +223,6 @@ NAVIGATOR {
         ADD consignmentSimpleAttach;
         ADD consignment;
         ADD priceArticlePriceSetDocumentPrint;
+        ADD writeOffPrint;
     }
 }

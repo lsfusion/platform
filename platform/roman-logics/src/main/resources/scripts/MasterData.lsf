@@ -7,6 +7,7 @@ REQUIRE System,
         Barcode,
         RetailCRM,
         AccountDocument,
+        Employee,
         RomanLogicsModule;
 
 PRIORITY Stock, LegalEntity, Store, RomanLogicsModule;
@@ -93,8 +94,8 @@ priceManagerialDateTime(article, dateTime) = priceManagerialBatch(batchPriceMana
 
 
 //---------------------------------  -------------------------------------------//
-CLASS warehouse 'Склад' : Stock.stock;
-CLASS groupWarehouse 'Группа складов' : stockGroup;
+CLASS warehouse 'Склад' : Stock.stock, employeeDivision;
+CLASS groupWarehouse 'Группа складов' : stockGroup, employeeDivisionGroup;
 
 @defineHierarchy(groupWarehouse);
 parentStockGroup (stockGroup) += parentGroupWarehouse (stockGroup);
@@ -110,6 +111,8 @@ stockGroupStock (stock) += groupWarehouseWarehouse (stock);
 
 addressWarehouse 'Адрес' (warehouse) = DATA STRING[100] (warehouse);
 addressStock(stock) += addressWarehouse(stock);
+
+employeeDivisionGroupEmployeeDivision (warehouse) += groupWarehouseWarehouse(warehouse);
 
 FORM warehouse 'Оптовый склад'
 
