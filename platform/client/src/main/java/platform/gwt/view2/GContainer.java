@@ -6,18 +6,13 @@ public class GContainer extends GComponent {
     public String title;
     public String description;
     public GContainerType type;
-    public boolean gwtIsLayout;
-    public boolean gwtVertical;
-    public Alignment hAlign;
+    public boolean isLayout;
+    public boolean isVertical;
     public boolean resizable;
 
     public enum GwtContainer {
         VLAYOUT,
 
-    }
-
-    public enum Alignment {
-        LEFT, RIGHT, CENTER
     }
 
     @Override
@@ -26,8 +21,8 @@ public class GContainer extends GComponent {
                 "[" + sID + "]" +
                 "[" + type + "]{" +
                 "title='" + title + '\'' +
-                ", isLayout=" + gwtIsLayout +
-                ", isVertical=" + gwtVertical +
+                ", isLayout=" + isLayout +
+                ", isVertical=" + isVertical +
                 ", hAlign=" + hAlign +
                 ", resizable=" + resizable +
                 '}';

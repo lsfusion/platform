@@ -35,12 +35,11 @@ public class TextPanelRenderer implements PanelRenderer {
 
     @Override
     public void updateCellBackgroundValue(Object value) {
-        //todo:
+        textArea.getElement().getStyle().setBackgroundColor((String) value);
     }
 
     @Override
     public void updateCellForegroundValue(Object value) {
-        //todo:
-
+        textArea.getElement().getStyle().setColor((String) value);
     }
 }

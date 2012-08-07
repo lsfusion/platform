@@ -9,7 +9,7 @@ import java.util.Map;
 
 public class GGridController {
     private GGrid grid;
-    private Panel gridView;
+    private CellPanel gridView;
     private GGridTable table;
 
     public GGridController(GGrid igrid, GFormController iformController, GGroupObjectController igroupObject) {
@@ -18,11 +18,12 @@ public class GGridController {
         table = new GGridTable(iformController, igroupObject);
 
         ResizeLayoutPanel panel = new ResizeLayoutPanel();
-        panel.setPixelSize(700, 200);
+        panel.setStyleName("gridResizePanel");
+        gridView.setSize("100%", "100%");
         panel.setWidget(table);
         gridView.add(panel);
 
-//        gridView.add(table);
+        gridView.setCellHeight(panel, "100%");
         gridView.add(igroupObject.getGridToolbar());
     }
 
@@ -36,6 +37,7 @@ public class GGridController {
 
     public void addToLayout(GFormLayout formLayout) {
         formLayout.add(grid, gridView);
+//        formLayout.setTableCellSize(grid.container, gridView, "100%", false);
     }
 
     public void hide() {

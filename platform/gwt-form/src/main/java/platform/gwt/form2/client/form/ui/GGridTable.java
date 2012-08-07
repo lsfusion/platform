@@ -1,11 +1,11 @@
 package platform.gwt.form2.client.form.ui;
 
-import com.google.gwt.cell.client.Cell;
-import com.google.gwt.cell.client.FieldUpdater;
+import com.google.gwt.cell.client.*;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.DataGrid;
+import com.google.gwt.user.cellview.client.Header;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.view.client.CellPreviewEvent;
 import com.google.gwt.view.client.DefaultSelectionEventManager;
@@ -42,6 +42,7 @@ public class GGridTable extends DataGrid implements FieldUpdater<GridDataRecord,
     private final GwtEditPropertyActionDispatcher editDispatcher;
 
     public ArrayList<GPropertyDraw> properties = new ArrayList<GPropertyDraw>();
+    public ArrayList<GridHeader> headers = new ArrayList<GridHeader>();
 
     public ArrayList<GGroupObjectValue> keys = new ArrayList<GGroupObjectValue>();
     public HashMap<GPropertyDraw, Map<GGroupObjectValue, Object>> values = new HashMap<GPropertyDraw, Map<GGroupObjectValue, Object>>();
@@ -137,7 +138,9 @@ public class GGridTable extends DataGrid implements FieldUpdater<GridDataRecord,
 
         Column<GridDataRecord, Object> gridColumn = property.createGridColumn(this, form);
         gridColumn.setFieldUpdater(this);
-        insertColumn(ins, gridColumn, property.getCaptionOrEmpty());
+        GridHeader header = new GridHeader(property.getCaptionOrEmpty());
+        headers.add(ins, header);
+        insertColumn(ins, gridColumn, header);
         setColumnWidth(gridColumn, "150px");
 
         dataUpdated = true;
@@ -194,54 +197,46 @@ public class GGridTable extends DataGrid implements FieldUpdater<GridDataRecord,
             internalSelecting = false;
         }
 
-        boolean needsFieldsRefresh = false;
+        updatePropertyReaders();
+
+        boolean needsHeaderRefresh = false;
         for (GPropertyDraw property : properties) {
             Map<GGroupObjectValue, Object> captions = propertyCaptions.get(property);
             if (captions != null) {
                 Object value = captions.values().iterator().next();
-//                getField(property.sID).setTitle(value == null ? null : value.toString().trim());
-                needsFieldsRefresh = true;
+                headers.get(properties.indexOf(property)).setCaption(value == null ? "" : value.toString().trim());
+                needsHeaderRefresh = true;
             }
         }
-        if (needsFieldsRefresh) {
-//            refreshFields();
+        if (needsHeaderRefresh) {
+            redrawHeaders();
         }
     }
 
-//    @Override
-//    protected String getCellCSSText(ListGridRecord record, int rowNum, int colNum) {
-//        String cssText = "";
-//
-//        GPropertyDraw property = null;
-//        for (GPropertyDraw prop : properties) {
-//            if (getFieldName(colNum).equals(prop.sID)) {
-//                property = prop;
-//            }
-//        }
-//        if (property != null) {
-//            Object background = null;
-//            if (rowBackgroundValues.get(((GridDataRecord) record).key) != null) {
-//                background = rowBackgroundValues.get(((GridDataRecord) record).key);
-//            } else if (cellBackgroundValues.get(property) != null) {
-//                background = cellBackgroundValues.get(property).get(((GridDataRecord) record).key);
-//            }
-//            if (background != null) {
-//                cssText += "background-color:" + background + ";";
-//            }
-//
-//            Object foreground = null;
-//            if (rowForegroundValues.get(((GridDataRecord) record).key) != null) {
-//                foreground = rowForegroundValues.get(((GridDataRecord) record).key);
-//            } else if (cellForegroundValues.get(property) != null) {
-//                foreground = cellForegroundValues.get(property).get(((GridDataRecord) record).key);
-//            }
-//            if (foreground != null) {
-//                cssText += "color:" + foreground + ";";
-//            }
-//        }
-//
-//        return cssText.isEmpty() ? super.getCellCSSText(record, rowNum, colNum) : cssText;
-//    }
+    private void updatePropertyReaders() {
+        for (int i = 0; i < keys.size(); i++) {
+            Object rowBackground = rowBackgroundValues.get(keys.get(i));
+            Object rowForeground = rowForegroundValues.get(keys.get(i));
+
+            for (GPropertyDraw property : properties) {
+                Object cellBackground = rowBackground;
+                if (cellBackground == null && cellBackgroundValues.get(property) != null) {
+                    cellBackground = cellBackgroundValues.get(property).get(keys.get(i));
+                }
+                if (cellBackground != null) {
+                    getRowElement(i).getCells().getItem(properties.indexOf(property)).getStyle().setBackgroundColor((String) cellBackground);
+                }
+
+                Object cellForeground = rowForeground;
+                if (cellForeground == null && cellForegroundValues.get(property) != null) {
+                    cellForeground = cellForegroundValues.get(property).get(keys.get(i));
+                }
+                if (cellForeground != null) {
+                    getRowElement(i).getCells().getItem(properties.indexOf(property)).getStyle().setColor((String) cellForeground);
+                }
+            }
+        }
+    }
 
     public boolean isEmpty() {
         return values.isEmpty() || properties.isEmpty();
@@ -320,5 +315,23 @@ public class GGridTable extends DataGrid implements FieldUpdater<GridDataRecord,
         editContext = null;
         editCellParent = null;
         editType = null;
+    }
+
+    private class GridHeader extends Header<String> {
+        private String caption;
+
+        public GridHeader(String caption) {
+            super(new TextCell());
+            this.caption = caption;
+        }
+
+        public void setCaption(String caption) {
+            this.caption = caption;
+        }
+
+        @Override
+        public String getValue() {
+            return caption;
+        }
     }
 }

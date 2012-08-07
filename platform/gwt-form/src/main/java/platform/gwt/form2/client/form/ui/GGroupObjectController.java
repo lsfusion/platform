@@ -2,6 +2,7 @@ package platform.gwt.form2.client.form.ui;
 
 import com.google.gwt.user.client.ui.Widget;
 import platform.gwt.base.shared.GClassViewType;
+import platform.gwt.view2.GContainer;
 import platform.gwt.view2.GGroupObject;
 import platform.gwt.view2.GPropertyDraw;
 import platform.gwt.view2.changes.GFormChanges;
@@ -42,7 +43,11 @@ public class GGroupObjectController implements GGroupObjectLogicsSupplier {
             grid = new GGridController(groupObject.grid, formController, this);
             grid.addToLayout(formLayout);
 
-            formLayout.add(groupObject.grid.container, panelToolbar);
+            GContainer gridContainer = groupObject.grid.container;
+            formLayout.setTableCellSize(gridContainer.container, gridContainer, "100%", true);
+            formLayout.setTableCellSize(gridContainer.container, gridContainer, "100%", false);
+
+            formLayout.add(gridContainer, panelToolbar);
 
             showTypeView = new GShowTypeView(formController, groupObject) {
                 protected void needToBeShown() {
@@ -184,10 +189,13 @@ public class GGroupObjectController implements GGroupObjectLogicsSupplier {
 
     private void updateToolbar() {
         if (groupObject != null) {
+            GContainer gridContainer = groupObject.grid.container;
             if (classViewType == GClassViewType.GRID) {
                 panelToolbar.removeComponent(showTypeView);
                 gridToolbar.addComponent(showTypeView);
                 grid.show();
+                formLayout.setTableCellSize(gridContainer.container, panelToolbar, "auto", false);
+                formLayout.setTableCellSize(gridContainer.container, gridContainer, "100%", false);
             } else {
 //                formLayout.add(groupObject.showType, showTypeView);
                 for (Widget widget : gridToolbar) {
@@ -196,6 +204,8 @@ public class GGroupObjectController implements GGroupObjectLogicsSupplier {
                 }
                 panelToolbar.addComponent(showTypeView);
                 grid.hide();
+                formLayout.setTableCellSize(gridContainer.container, panelToolbar, "100%", false);
+                formLayout.setTableCellSize(gridContainer.container, gridContainer, "auto", false);
             }
         }
     }

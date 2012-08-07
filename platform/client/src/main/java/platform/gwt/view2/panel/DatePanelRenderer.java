@@ -1,5 +1,6 @@
 package platform.gwt.view2.panel;
 
+import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
@@ -7,6 +8,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.datepicker.client.DateBox;
 import platform.gwt.view2.GPropertyDraw;
 
+import java.sql.Time;
 import java.util.Date;
 
 public class DatePanelRenderer implements PanelRenderer {
@@ -15,10 +17,11 @@ public class DatePanelRenderer implements PanelRenderer {
     protected final DateBox dateBox;
     protected final HorizontalPanel panel;
 
-    public DatePanelRenderer(GPropertyDraw property) {
+    public DatePanelRenderer(GPropertyDraw property, DateTimeFormat format) {
         label = new Label(property.getCaptionOrEmpty() + ": ");
 
         dateBox = new DateBox();
+        dateBox.setFormat(new DateBox.DefaultFormat(format));
 
         panel = new HorizontalPanel();
         panel.add(label);
@@ -33,6 +36,9 @@ public class DatePanelRenderer implements PanelRenderer {
 
     @Override
     public void setValue(Object value) {
+        if (value instanceof Time) {
+            value = new Date(((Time) value).getTime());
+        }
         dateBox.setValue((Date) value);
     }
 
@@ -43,13 +49,11 @@ public class DatePanelRenderer implements PanelRenderer {
 
     @Override
     public void updateCellBackgroundValue(Object value) {
-        //todo:
-
+        dateBox.getElement().getStyle().setBackgroundColor((String) value);
     }
 
     @Override
     public void updateCellForegroundValue(Object value) {
-        //todo:
-
+        dateBox.getElement().getStyle().setColor((String) value);
     }
 }

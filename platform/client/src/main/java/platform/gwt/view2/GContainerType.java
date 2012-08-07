@@ -13,4 +13,8 @@ public enum GContainerType {
     public boolean isTabbed() {
         return this == TABBED_PANEL;
     }
+
+    public boolean isContainer() {
+        return !isSplit() && !isTabbed();
+    }
 }

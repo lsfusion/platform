@@ -241,8 +241,8 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
                 break;
         }
 
-        container.gwtVertical = isSplitPane() ? type == SPLIT_PANE_VERTICAL : !getConstraints().childConstraints.equals(SingleSimplexConstraint.TOTHE_RIGHT);
-        container.gwtIsLayout = container.gwtVertical ? getConstraints().fillVertical != 0 : getConstraints().fillHorizontal != 0;
+        container.isVertical = isSplitPane() ? type == SPLIT_PANE_VERTICAL : !getConstraints().childConstraints.equals(SingleSimplexConstraint.TOTHE_RIGHT);
+        container.isLayout = container.isVertical ? getConstraints().fillVertical != 0 : getConstraints().fillHorizontal != 0;
     }
 
     private GContainer gwtContainer;
@@ -255,19 +255,9 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
             for (ClientComponent child : children) {
                 gwtContainer.children.add(child.getGwtComponent());
             }
-            gwtContainer.hAlign = getChildrenHAlignment();
             gwtContainer.resizable = gwtResizable;
         }
 
         return gwtContainer;
-    }
-
-    private GContainer.Alignment getChildrenHAlignment () {
-        for (ClientComponent child : children) {
-            if (child.constraints.directions.L > 0) {
-                return GContainer.Alignment.LEFT;
-            }
-        }
-        return GContainer.Alignment.RIGHT;
     }
 }

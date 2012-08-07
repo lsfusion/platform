@@ -7,7 +7,7 @@ import platform.client.form.PropertyRendererComponent;
 import platform.client.form.editor.DateTimePropertyEditor;
 import platform.client.form.renderer.DateTimePropertyRenderer;
 import platform.client.logics.ClientPropertyDraw;
-import platform.gwt.view2.classes.GDateType;
+import platform.gwt.view2.classes.GDateTimeType;
 import platform.gwt.view2.classes.GType;
 import platform.interop.Data;
 
@@ -72,7 +72,7 @@ public class ClientDateTimeClass extends ClientDataClass implements ClientTypeCl
 
     @Override
     public GType getGwtType() {
-        return GDateType.instance;
+        return GDateTimeType.instance;
     }
 
     @Override

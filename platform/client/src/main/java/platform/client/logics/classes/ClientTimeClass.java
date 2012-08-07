@@ -6,6 +6,8 @@ import platform.client.form.PropertyRendererComponent;
 import platform.client.form.editor.TimePropertyEditor;
 import platform.client.form.renderer.TimePropertyRenderer;
 import platform.client.logics.ClientPropertyDraw;
+import platform.gwt.view2.classes.GTimeType;
+import platform.gwt.view2.classes.GType;
 import platform.interop.Data;
 
 import java.awt.*;
@@ -65,5 +67,10 @@ public class ClientTimeClass extends ClientDataClass implements ClientTypeClass 
     @Override
     public int getPreferredWidth(int prefCharWidth, FontMetrics fontMetrics) {
         return 65;
+    }
+
+    @Override
+    public GType getGwtType() {
+        return GTimeType.instance;
     }
 }

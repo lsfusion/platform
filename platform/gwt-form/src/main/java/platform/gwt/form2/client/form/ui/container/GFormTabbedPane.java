@@ -3,8 +3,6 @@ package platform.gwt.form2.client.form.ui.container;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
-import com.google.gwt.user.client.ui.Panel;
-import com.google.gwt.user.client.ui.SimpleLayoutPanel;
 import com.google.gwt.user.client.ui.TabLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
 import platform.gwt.form2.client.form.ui.GFormController;
@@ -13,13 +11,11 @@ import platform.gwt.view2.GContainer;
 
 public class GFormTabbedPane extends GAbstractFormContainer {
     private TabLayoutPanel tabsPanel;
-    private SimpleLayoutPanel tabsContainer;
 
     public GFormTabbedPane(final GFormController formController, final GContainer key) {
         this.key = key;
 
-        tabsContainer = new SimpleLayoutPanel();
-        tabsContainer.add(tabsPanel = new TabLayoutPanel(2, Style.Unit.EM));
+        tabsPanel = new TabLayoutPanel(2, Style.Unit.EM);
 
         tabsPanel.addSelectionHandler(new SelectionHandler<Integer>() {
             @Override
@@ -31,8 +27,8 @@ public class GFormTabbedPane extends GAbstractFormContainer {
     }
 
     @Override
-    public Panel getUndecoratedView() {
-        return tabsContainer;
+    public Widget getUndecoratedView() {
+        return tabsPanel;
     }
 
     @Override

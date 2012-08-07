@@ -7,10 +7,7 @@ import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.CheckBox;
-import com.google.gwt.user.client.ui.ListBox;
-import com.google.gwt.user.client.ui.ScrollPanel;
-import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.*;
 import net.customware.gwt.dispatch.client.DefaultExceptionHandler;
 import net.customware.gwt.dispatch.shared.Action;
 import net.customware.gwt.dispatch.shared.Result;
@@ -38,7 +35,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class GFormController extends ScrollPanel implements FormLogicsProvider {
+public class GFormController extends SimplePanel implements FormLogicsProvider {
     @Override
     public boolean isEditingEnabled() {
         // пока отключаем редактирование в production
@@ -104,6 +101,8 @@ public class GFormController extends ScrollPanel implements FormLogicsProvider {
         initializeControllers();
 
         initializeRegularFilters();
+
+        formLayout.initializeSplits();
 
         getRemoteChanges();
     }

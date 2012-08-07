@@ -1,7 +1,8 @@
 package platform.gwt.form2.client.navigator;
 
-import com.google.gwt.event.logical.shared.SelectionEvent;
-import com.google.gwt.event.logical.shared.SelectionHandler;
+import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.EventListener;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.Tree;
 import com.google.gwt.user.client.ui.TreeItem;
@@ -29,17 +30,6 @@ public class NavigatorPanel extends ScrollPanel {
         tree = new Tree();
         tree.setAnimationEnabled(false);
 
-        tree.addSelectionHandler(new SelectionHandler<TreeItem>() {
-            @Override
-            public void onSelection(SelectionEvent<TreeItem> event) {
-                TreeItem item = event.getSelectedItem();
-                GNavigatorElement element = (GNavigatorElement) item.getUserObject();
-                if (element.isForm) {
-                    OpenFormEvent.fireEvent(element.sid, element.caption);
-                }
-            }
-        });
-
         dispatcher.execute(new GetNavigatorElements(), new ErrorAsyncCallback<GetNavigatorElementsResult>() {
             @Override
             public void success(GetNavigatorElementsResult result) {
@@ -47,8 +37,21 @@ public class NavigatorPanel extends ScrollPanel {
             }
 
             private void addNavigatorElement(TreeItem parent, GNavigatorElement element) {
-                TreeItem node = parent == null ? tree.addItem(element.caption) : parent.addItem(element.caption);
+                final TreeItem node = parent == null ? tree.addItem(element.caption) : parent.addItem(element.caption);
                 node.setUserObject(element);
+
+                DOM.sinkEvents(node.getElement(), Event.ONDBLCLICK);
+                DOM.setEventListener(node.getElement(), new EventListener() {
+                    @Override
+                    public void onBrowserEvent(Event event) {
+                        GNavigatorElement element = (GNavigatorElement) node.getUserObject();
+                        if (element.isForm) {
+                            OpenFormEvent.fireEvent(element.sid, element.caption);
+                            event.stopPropagation();
+                        }
+                    }
+                });
+
                 for (GNavigatorElement child : element.children) {
                     addNavigatorElement(node, child);
                 }

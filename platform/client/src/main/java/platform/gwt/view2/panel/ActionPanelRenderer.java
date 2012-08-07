@@ -28,11 +28,11 @@ public class ActionPanelRenderer implements PanelRenderer {
 
     @Override
     public void updateCellBackgroundValue(Object value) {
-        //todo:
+        button.getElement().getStyle().setBorderColor((String) value);
     }
 
     @Override
     public void updateCellForegroundValue(Object value) {
-        //todo:
+        button.getElement().getStyle().setColor((String) value);
     }
 }

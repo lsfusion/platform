@@ -259,6 +259,14 @@ public abstract class ClientComponent extends ContextIdentityObject implements S
         component.container = container == null ? null : container.getGwtComponent();
         component.defaultComponent = defaultComponent;
         component.drawToToolbar = drawToToolbar();
+
+        if (preferredSize != null && preferredSize.equals(minimumSize) && preferredSize.equals(maximumSize)) {
+            component.absoluteWidth = preferredSize.width;
+            component.absoluteHeight = preferredSize.height;
+        }
+        component.fillHorizontal = constraints.fillHorizontal;
+        component.fillVertical = constraints.fillVertical;
+        component.hAlign = constraints.directions.R > 0 ? GComponent.Alignment.RIGHT : GComponent.Alignment.LEFT;
     }
 
     private GComponent gwtComponent;

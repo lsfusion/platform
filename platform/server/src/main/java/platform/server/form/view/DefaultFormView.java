@@ -99,7 +99,6 @@ public class DefaultFormView extends FormView {
             panelContainers.get(mgroupObjects.get(group)).add(controlsContainers.get(mgroupObjects.get(group)));
         }
         formButtonContainer = formSet.getFormButtonContainer();
-        formButtonContainer.gwtResizable = false;
         mainContainer.add(formButtonContainer);
 
         initFormButtons();
@@ -140,8 +139,11 @@ public class DefaultFormView extends FormView {
 
         ContainerView leftControlsContainer = createContainer(null, null, "leftControls");
         leftControlsContainer.getConstraints().childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
+        leftControlsContainer.gwtResizable = false;
         ContainerView rightControlsContainer = createContainer(null, null, "rightControls");
         rightControlsContainer.getConstraints().childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
+        rightControlsContainer.gwtResizable = false;
+        rightControlsContainer.constraints.directions = new SimplexComponentDirections(0, 0, 0.01, 0.01);
 
         leftControlsContainer.add(printFunction);
         leftControlsContainer.add(xlsFunction);

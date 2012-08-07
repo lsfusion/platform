@@ -1,38 +1,36 @@
 package platform.gwt.form2.client.form.ui.container;
 
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.Panel;
-import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.i18n.client.HasDirection;
+import com.google.gwt.user.client.ui.*;
 import platform.gwt.view2.GComponent;
 import platform.gwt.view2.GContainer;
 
 public class GFormContainer extends GAbstractFormContainer {
-    private Panel panel;
+    private CellPanel panel;
 
     public GFormContainer(GContainer key) {
         this.key = key;
 
-        if (key.gwtVertical) {
+        if (key.isVertical) {
             panel = new VerticalPanel();
             panel.addStyleName("gwtVertical");
         } else {
             panel = new HorizontalPanel();
-            panel.addStyleName("getHorizontal");
+            panel.addStyleName("gwtHorizontal");
         }
     }
 
     @Override
-    public Panel getUndecoratedView() {
+    public Widget getUndecoratedView() {
         return panel;
     }
 
     @Override
     protected void addToContainer(GComponent childKey, Widget childView, int position) {
-        if (key.gwtIsLayout) {
-            panel.add(childView);
-        } else {
-            panel.add(childView);
+        panel.add(childView);
+
+        if (childKey.hAlign.equals(GContainer.Alignment.RIGHT)) {
+            panel.setCellHorizontalAlignment(childView, HasHorizontalAlignment.HorizontalAlignmentConstant.endOf(HasDirection.Direction.LTR));
         }
     }
 
@@ -49,5 +47,14 @@ public class GFormContainer extends GAbstractFormContainer {
             }
         }
         return false;
+    }
+
+    @Override
+    public void setTableCellSize(Widget child, String size, boolean width) {
+        if (width) {
+            panel.setCellWidth(child, size);
+        } else {
+            panel.setCellHeight(child, size);
+        }
     }
 }

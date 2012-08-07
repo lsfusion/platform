@@ -11,6 +11,8 @@ public class ColorPanelRenderer extends TextBoxPanelRenderer {
     @Override
     public void setValue(Object value) {
         super.setValue(value);
-        textBox.getElement().getStyle().setBackgroundColor(value.toString());
+        if (value != null) {
+            textBox.getElement().getStyle().setBackgroundColor(value.toString());
+        }
     }
 }

@@ -93,13 +93,17 @@ public class GPanelController {
                 if (background == null && cellBackgroundValues.get(property) != null) {
                     background = cellBackgroundValues.get(property).values().iterator().next();
                 }
-                renderer.updateCellBackgroundValue(background);
+                if (background != null) {
+                    renderer.updateCellBackgroundValue(background);
+                }
 
                 Object foreground = rowForeground != null ? rowForeground : null;
                 if (foreground == null && cellForegroundValues.get(property) != null) {
                     foreground = cellForegroundValues.get(property).values().iterator().next();
                 }
-                renderer.updateCellForegroundValue(foreground);
+                if (foreground != null) {
+                    renderer.updateCellForegroundValue(foreground);
+                }
             }
         }
     }

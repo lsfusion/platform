@@ -29,11 +29,11 @@ public class LogicalPanelRenderer implements PanelRenderer {
 
     @Override
     public void updateCellBackgroundValue(Object value) {
-        //todo:
+        checkBox.getElement().getStyle().setBackgroundColor((String) value);
     }
 
     @Override
     public void updateCellForegroundValue(Object value) {
-        //todo:
+        checkBox.getElement().getStyle().setColor((String) value);
     }
 }

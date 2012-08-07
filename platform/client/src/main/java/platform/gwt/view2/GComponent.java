@@ -8,6 +8,15 @@ public class GComponent implements Serializable {
     public GContainer container;
     public boolean defaultComponent;
     public boolean drawToToolbar;
+    public double fillHorizontal = -1;
+    public double fillVertical = -1;
+    public int absoluteWidth = -1;
+    public int absoluteHeight = -1;
+    public Alignment hAlign;
+
+    public enum Alignment {
+        LEFT, RIGHT, CENTER
+    }
 
     @Override
     public String toString() {

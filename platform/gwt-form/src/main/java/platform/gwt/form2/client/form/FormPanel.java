@@ -1,10 +1,11 @@
 package platform.gwt.form2.client.form;
 
 import com.google.gwt.dom.client.Style;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.i18n.client.Dictionary;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.SimpleLayoutPanel;
-import com.google.gwt.user.client.ui.TabLayoutPanel;
+import com.google.gwt.user.client.ui.*;
 import platform.gwt.form2.client.events.GlobalEventBus;
 import platform.gwt.form2.client.events.OpenFormEvent;
 import platform.gwt.form2.client.events.OpenFormHandler;
@@ -31,7 +32,9 @@ public class FormPanel extends SimpleLayoutPanel {
     }
 
     public void openForm(String formSID, String caption) {
-        formTabsPanel.add(new GFormController(formSID), caption);
+        GFormController formController = new GFormController(formSID);
+        formTabsPanel.add(formController, new TabWidget(caption));
+        formTabsPanel.selectTab(formController);
     }
 
     //todo: quick open form from request
@@ -57,5 +60,33 @@ public class FormPanel extends SimpleLayoutPanel {
         }
 
         return params;
+    }
+
+    private class TabWidget extends HorizontalPanel {
+        private Label label;
+        private Button closeButton;
+
+        public TabWidget(String title) {
+            label = new Label(title);
+            closeButton = new Button("&#215;");
+            closeButton.setStyleName("closeTabButton");
+
+            add(label);
+            add(closeButton);
+
+            setCellVerticalAlignment(label, ALIGN_MIDDLE);
+            setCellVerticalAlignment(closeButton, ALIGN_MIDDLE);
+
+            closeButton.addClickHandler(new ClickHandler() {
+                @Override
+                public void onClick(ClickEvent event) {
+                    for (int i = 0; i < formTabsPanel.getWidgetCount(); i++) {
+                        if (getElement().equals(formTabsPanel.getTabWidget(i).getElement())) {
+                            formTabsPanel.remove(formTabsPanel.getWidget(i));
+                        }
+                    }
+                }
+            });
+        }
     }
 }

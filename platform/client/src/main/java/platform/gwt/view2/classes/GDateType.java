@@ -1,5 +1,6 @@
 package platform.gwt.view2.classes;
 
+import platform.gwt.utils.GwtSharedUtils;
 import platform.gwt.view2.GPropertyDraw;
 import platform.gwt.view2.logics.FormLogicsProvider;
 import platform.gwt.view2.panel.DatePanelRenderer;
@@ -12,7 +13,7 @@ public class GDateType extends GDataType {
 
     @Override
     public PanelRenderer createPanelRenderer(FormLogicsProvider formLogics, GPropertyDraw property) {
-        return new DatePanelRenderer(property);
+        return new DatePanelRenderer(property, GwtSharedUtils.getDefaultDateFormat());
     }
 
     @Override

@@ -1,9 +1,6 @@
 package platform.gwt.form2.client.form.ui.container;
 
-import com.google.gwt.user.client.ui.CaptionPanel;
-import com.google.gwt.user.client.ui.Panel;
-import com.google.gwt.user.client.ui.SimplePanel;
-import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.*;
 import platform.gwt.view2.GComponent;
 import platform.gwt.view2.GContainer;
 
@@ -42,10 +39,6 @@ public abstract class GAbstractFormContainer {
     }
 
     public boolean isInTabbedPane() {
-        return key.container != null && key.container.type.isSplit();
-    }
-
-    public boolean isInSplitPane() {
         return key.container != null && key.container.type.isTabbed();
     }
 
@@ -54,21 +47,30 @@ public abstract class GAbstractFormContainer {
         return childView != null && childView.isVisible() && containerHasChild(childView);
     }
 
-    private Panel containerView;
-    public Panel getContainerView() {
+    private Widget containerView;
+    public Widget getContainerView() {
         if (containerView == null) {
             containerView = getUndecoratedView();
+            containerView.setSize("100%", "100%");
             if (key.title != null && !key.container.type.isTabbed()) {
                 CaptionPanel captionedPanel = new CaptionPanel(key.title);
-                captionedPanel.add(containerView);
-                containerView = new SimplePanel(captionedPanel);
+                captionedPanel.setContentWidget(containerView);
+
+                final ResizeLayoutPanel captionPanelWrapper = new ResizeLayoutPanel();
+                captionPanelWrapper.setWidget(captionedPanel);
+                captionPanelWrapper.setSize("100%", "100%");
+                containerView = captionPanelWrapper;
+
+//                captionedPanel.setSize("100%", "100%");
+//                containerView = captionedPanel;
             }
         }
         return containerView;
     }
 
-    protected abstract Panel getUndecoratedView();
+    protected abstract Widget getUndecoratedView();
     protected abstract boolean containerHasChild(Widget widget);
     protected abstract void addToContainer(GComponent childKey, Widget childView, int position);
     protected abstract void removeFromContainer(GComponent childKey, Widget childView);
+    public void setTableCellSize(Widget child, String size, boolean width) {}
 }
