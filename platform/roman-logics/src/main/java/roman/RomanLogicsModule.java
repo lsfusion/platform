@@ -1499,7 +1499,10 @@ public class RomanLogicsModule extends LogicsModule {
         addTable("freightArticle", freight, article);
         addTable("freightCategory", freight, category);
         addTable("shipmentFreight", shipment, freight);
+
+        addTable("orderInvoiceSku", order, invoice, sku);
         addTable("invoiceShipment", invoice, shipment);
+        addTable("orderShipmentSku", order, shipment, sku);
         addTable("shipmentStockSku", shipment, stock, sku);
         addTable("invoiceStockSku", invoice, stock, sku);
         addTable("importerFreightSupplier", importer, freight, supplier);

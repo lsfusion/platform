@@ -386,8 +386,9 @@ toSetRangeCustomCategories10 'Взять шкалы' = ACTION () NEWSESSION AUTO
 };
 
 // для экспорта в Декларант
-TABLE groupDeclaration (groupDeclaration);
-TABLE groupDeclarationInnerInvoice (groupDeclaration, innerInvoice);
+TABLE groupDeclaration(groupDeclaration);
+TABLE groupDeclarationInnerInvoice(groupDeclaration, innerInvoice);
+TABLE groupDeclarationDeclarationDetail(groupDeclaration, declarationDetail);
 TABLE declarationArtCatCompCountry(declaration, article, customCategory10, STRING[200], country);
 
 quantityDeclarationGroup 'Кол-во' = GROUP SUM quantityDeclarationDetail(declarationDetail)
@@ -487,6 +488,9 @@ inDeclarationDetailInnerInvoice 'Связка' (declarationDetail, innerInvoice)
 inGroupDeclarationInnerInvoice 'Связка' (groupDeclaration, innerInvoice) = GROUP SUM inDeclarationDetailInnerInvoice(declarationDetail, innerInvoice)
                                                                                   BY groupDeclarationDeclarationDetail(declarationDetail), innerInvoice PERSISTENT;
 
+TABLE freightDeclarationSku(freight, declaration, sku);
+TABLE declarationFreightUnitSku(declaration, freightUnit, sku);
+
 quantityFreightDeclarationSku 'Кол-во' (freight, declaration, sku) = GROUP SUM quantityInnerInvoiceSku(innerInvoice, sku) BY freightInnerInvoice(innerInvoice),
                                                                                                                              declarationInnerInvoice(innerInvoice),
                                                                                                                              sku PERSISTENT;
@@ -579,7 +583,7 @@ sumReverseDeclarationDetail 'Стоимость' (declarationDetail) = GROUP SUM
 priceReverseDeclarationDetail 'Цена' (declarationDetail) = sumReverseDeclarationDetail(declarationDetail)/quantityDeclarationDetail(declarationDetail);
 
 correctionSumReverseGroupDeclarationDetail 'Часть корр. стоимости' (groupDeclaration, declarationDetail) = correctionSumGroupDeclaration(groupDeclaration) * coeffGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail)
-                                                                                                           IF inGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail);
+                                                                                                           IF inGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail) PERSISTENT;
 
 correctionSumReverseDeclarationDetail 'Корр. стоимость' (declarationDetail) = GROUP SUM correctionSumReverseGroupDeclarationDetail(groupDeclaration, declarationDetail) BY declarationDetail PERSISTENT MINCHARWIDTH 15;
 
@@ -606,6 +610,7 @@ VATReverseDeclaration 'Сумма НДС' (declaration) = GROUP SUM VATReverseDe
 
 supplierPriceDeclarationDetail 'Цена' (declarationDetail) = supplierSumDeclarationDetail(declarationDetail)/quantityDeclarationDetail(declarationDetail);
 
+quantityDiffDeclarationDetail 'Кол-во' (declarationDetail) = quantityDeclarationDetail(declarationDetail) (-) quantityCertificatedDeclarationDetail(declarationDetail);
 
 @implementBatch(declaration, sku, customStore, supplierPrice);
 quantityBatch (batch) += quantityDeclarationDetail(batch);
@@ -616,7 +621,7 @@ rangeVATBatchA (batch) += supplierVATRangeDeclarationDetail(batch);
 sumInSkuLedger(batch) += supplierSumDeclarationDetail(batch);
 
 
-setSumGroupDeclaration 'Взять стоимость и пошлину' = ACTION (declaration) {
+setSumGroupDeclaration 'Расчитать стоимость и пошлину' = ACTION (declaration) {
    FOR declarationGroupDeclaration(groupDeclaration) == declaration DO {
       SET sumDataGroupDeclaration(groupDeclaration) <- sumGroupDeclaration(groupDeclaration);
       SET dutyDataGroupDeclaration(groupDeclaration) <- dutyGroupDeclaration(groupDeclaration);
@@ -861,12 +866,14 @@ FORM declaration 'Декларация'
 
     OBJECTS gd=groupDeclaration
     PROPERTIES (gd, dd) inGroupDeclarationDeclarationDetail, percentGroupDeclarationDeclarationDetail
-    PROPERTIES (gd) numberGroupDeclaration, nameCategoryGroupDeclaration, nameBrandGroupDeclaration, sidArticleGroupDeclaration,
-                    sidGenderGroupDeclaration, nameTypeFabricGroupDeclaration, mainCompositionGroupDeclaration, nameGroupDeclaration,
+    PROPERTIES (gd) READONLY numberGroupDeclaration, nameCategoryGroupDeclaration, nameBrandGroupDeclaration
+    PROPERTIES (gd) sidArticleGroupDeclaration
+    PROPERTIES (gd) READONLY sidGenderGroupDeclaration, nameTypeFabricGroupDeclaration
+    PROPERTIES (gd) mainCompositionGroupDeclaration, nameGroupDeclaration,
                     nameCountryGroupDeclaration, sidCountryGroupDeclaration, sidOrigin2CountryGroupDeclaration, sidCustomCategory10GroupDeclaration,
                     quantityGroupDeclaration, sidUnitOfMeasureGroupDeclaration, nameUnitOfMeasureGroupDeclaration,
-                    netWeightGroupDeclaration, grossWeightGroupDeclaration, sumGroupDeclaration, dutyGroupDeclaration
-    PROPERTIES (gd) sumDataGroupDeclaration, dutyDataGroupDeclaration, numberVATRangeGroupDeclaration, valueVATRangeGroupDeclaration, ADDOBJ, delete
+                    netWeightGroupDeclaration, grossWeightGroupDeclaration, sumGroupDeclaration, dutyGroupDeclaration,
+                    sumDataGroupDeclaration, dutyDataGroupDeclaration, numberVATRangeGroupDeclaration, valueVATRangeGroupDeclaration, ADDOBJ, delete
     PROPERTIES (c, gd) sumCorrectionGroupDeclaration
 
     PROPERTIES (d) toCreateGroupsDeclaration TODRAW gd FORCE PANEL, setSumGroupDeclaration TODRAW gd FORCE PANEL
@@ -967,7 +974,7 @@ DESIGN declaration FROM DEFAULT{
                   title = 'Основные данные';
 
                   ADD dd.box {
-                      fillVertical = 5;
+                      fillVertical = 4;
                   };
 
                   ADD gd.box {
