@@ -601,6 +601,8 @@ signedQuantityInnerOrderDiffDetail 'Кол-во' (detail) = UNION EXCLUSIVE quan
 
 EXTEND FORM innerOrders
     OBJECTS f = innerOrderDiffDetail
+
+    FILTERS innerOrderInnerOrderDiffDetail(f) == o
 ;
 
 EXTEND DESIGN innerOrders {

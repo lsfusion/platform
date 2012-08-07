@@ -691,7 +691,7 @@ FORM priceSetDocuments 'Розничные прайсы'
                                priceBDiscountPriceSetDocumentArticle, priceDataDiscountPriceSetDocumentArticle
 
     OBJECTS d=departmentStore
-    PROPERTIES(d) name
+    PROPERTIES(d) READONLY name
     PROPERTIES(d, p) createUserPriceChangeDepartmentStorePriceSetDocument
 
     PROPERTIES(s, p, a) READONLY quantityStorePriceSetDocumentArticle
