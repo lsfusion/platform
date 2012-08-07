@@ -741,7 +741,8 @@ promotionSumReceiptSaleDetail (detail) = GROUP SUM promotionSumReceiptSaleDetail
 inReceiptPromotion (receipt, promotion) = inPromotionStore(promotion, storeReceipt(receipt)) AND
                                           dateReceipt(receipt) >= dateFromPromotion(promotion) AND dateReceipt(receipt) <= dateToPromotion(promotion) AND
                                           NOT timeReceipt(receipt) < timeOfFromPromotion(promotion) AND NOT timeReceipt(receipt) > timeOfToPromotion(promotion) AND
-                                          NOT sumReceiptDetailReceipt(receipt) < minSumBillPromotion(promotion) AND NOT sumReceiptDetailReceipt(receipt) > maxSumBillPromotion(promotion);
+                                          NOT sumReceiptDetailReceipt(receipt) < minSumBillPromotion(promotion) AND NOT sumReceiptDetailReceipt(receipt) > maxSumBillPromotion(promotion)
+                                          AND NOT skipPromotionDOW(promotion, DOWInDate(dateReceipt(receipt)));
 
 maxSalePriceReceiptSku (receipt, sku) = GROUP MAX priceReceiptSaleDetail(detail) BY receiptReceiptSaleDetail(detail), skuReceiptSaleDetail(detail);
 
@@ -816,9 +817,10 @@ calculatePromotionsReceipt 'Рассчитать акции' = ACTION (receipt) 
                     WHERE takenReceiptSaleDetailPromotionCondition(detail, condition);
 
                 SET promotionSumReceiptSaleDetailPromotionCondition (detail, condition) <-
-                    takenReceiptSaleDetailPromotionCondition(detail, condition) / quantityReceiptSaleDetail(detail) *
-                    leftSumReceiptSaleDetail(detail) *
-                    percentPromotionCondition(condition) / 100
+                    IF resultPricePromotionCondition(condition) THEN
+                        takenReceiptSaleDetailPromotionCondition(detail, condition) * (leftSumReceiptSaleDetail(detail) / quantityReceiptSaleDetail(detail) - resultPricePromotionCondition(condition))
+                    ELSE
+                        takenReceiptSaleDetailPromotionCondition(detail, condition) * (leftSumReceiptSaleDetail(detail) / quantityReceiptSaleDetail(detail) * percentPromotionCondition(condition) / 100)
                     WHERE takenReceiptSaleDetailPromotionCondition(detail, condition);
             }
         }

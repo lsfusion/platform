@@ -189,7 +189,7 @@ dateToPromotion 'ДО:' = DATA DATE (promotion) IN retailCRMGroup NOT NULL;
 timeOfFromPromotion 'ОТ:' =  DATA TIME (promotion) IN retailCRMGroup;
 timeOfToPromotion 'ДО:' =  DATA TIME (promotion) IN retailCRMGroup;
 
-inPromotionDay 'В акции' = DATA BOOLEAN (promotion, DOW);
+skipPromotionDOW 'Исключить' = DATA BOOLEAN (promotion, DOW);
 
 inPromotionStore 'В акции' = DATA BOOLEAN (promotion, store);
 storePromotion 'Магазины' (promotion) = GROUP CONCAT name(store) IF inPromotionStore(promotion, store), ', ' BY promotion PERSISTENT MINCHARWIDTH 20 PREFCHARWIDTH 40;
@@ -212,7 +212,7 @@ minQuantityPromotionCondition 'Количество (от)' = DATA NUMERIC[14,3]
 minSumPromotionCondition 'Сумма (от)' = DATA NUMERIC[16,2] (promotionCondition);
 
 quantityDiscountPromotionCondition 'Кол-во товаров со скидкой' = DATA NUMERIC[14,3] (promotionCondition) NOT NULL;
-percentPromotionCondition 'Процент скидки'  = DATA NUMERIC[8,3] (promotionCondition) NOT NULL;
+percentPromotionCondition 'Процент скидки'  = DATA NUMERIC[8,3] (promotionCondition);
 resultPricePromotionCondition 'Цена со скидкой' = DATA NUMERIC[14,2] (promotionCondition);
 
 TABLE promotionConditionSku (promotionCondition, sku);
@@ -235,9 +235,9 @@ FORM promotion 'Акция'
                        cumulativeSumPromotion, minSumBillPromotion, maxSumBillPromotion
     OBJECTS d=DOW
     PROPERTIES(d)     READONLY name
-    PROPERTIES(sh, d)  inPromotionDay
+    PROPERTIES(sh, d)  skipPromotionDOW
     FILTERGROUP filterDOW
-        FILTER 'Только отмеченные' 'F11' inPromotionDay(sh, d) DEFAULT
+        FILTER 'Только отмеченные' 'F11' skipPromotionDOW(sh, d)
 
     OBJECTS sg=promotionCondition
     PROPERTIES(sg)     name, minQuantityPromotionCondition, minSumPromotionCondition, quantityDiscountPromotionCondition, percentPromotionCondition,
