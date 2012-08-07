@@ -751,6 +751,9 @@ calculatePromotionsReceipt 'Рассчитать акции' = ACTION (receipt) 
     SET promotionSumReceiptSaleDetailPromotionCondition(detail, condition) IF receiptReceiptSaleDetail(detail) == receipt <- NULL;
     SET discountSumReceiptSaleDetail(detail) IF receiptReceiptSaleDetail(detail) == receipt <- NULL;
 
+    LOCAL maxSalePriceSku = NUMERIC[14,2] (sku);
+    SET maxSalePriceSku(sku) <- maxSalePriceReceiptSku(receipt, sku);
+
     FOR promotionGroup IS promotionGroup DO {
         LOCAL leftSku = NUMERIC[14,3] (sku);
         SET leftSku(sku) <- quantityReceiptSaleDetailSkuReceipt (sku, receipt);
@@ -768,8 +771,15 @@ calculatePromotionsReceipt 'Рассчитать акции' = ACTION (receipt) 
                                                                              BY promotionCondition](promotionCondition) AND
                                                                                 promotionPromotionCondition(promotionCondition) == promotion;
 
+            LOCAL sumPromotionCondition = NUMERIC[14,3] (promotionCondition);
+            SET sumPromotionCondition(promotionCondition) <- [GROUP SUM leftSku (sku) * maxSalePriceSku(sku)
+                                                                    IF inPromotionConditionSku(promotionCondition, sku)
+                                                                    BY promotionCondition](promotionCondition) AND
+                                                                       promotionPromotionCondition(promotionCondition) == promotion;
+
             LOCAL countPromotionCondition = INTEGER (promotionCondition);
-            SET countPromotionCondition(promotionCondition) <- divideInteger(quantityPromotionCondition (promotionCondition), minQuantityPromotionCondition (promotionCondition));
+            SET countPromotionCondition(promotionCondition) <- -(UNION MAX -divideInteger(quantityPromotionCondition (promotionCondition), minQuantityPromotionCondition (promotionCondition)),
+                                                                           -divideInteger(sumPromotionCondition(promotionCondition), minSumPromotionCondition(promotionCondition)));
 
             LOCAL countPromotion = INTEGER ();
             SET countPromotion () <- [GROUP MIN countPromotionCondition(promotionCondition)]();
@@ -778,9 +788,6 @@ calculatePromotionsReceipt 'Рассчитать акции' = ACTION (receipt) 
             IF countPromotion() > 0 AND [GROUP SUM 1 IF countPromotionCondition(promotionCondition) > 0]() == countPromotionConditionPromotion(promotion) THEN {
                 LOCAL takenPromotionCondition = NUMERIC[14,3] (promotionCondition);
                 SET takenPromotionCondition(promotionCondition) <- min(countPromotion() * quantityDiscountPromotionCondition(promotionCondition), quantityPromotionCondition(promotionCondition));
-
-                LOCAL maxSalePriceSku = NUMERIC[14,2] (sku);
-                SET maxSalePriceSku(sku) <- maxSalePriceReceiptSku(receipt, sku);
 
                 LOCAL takenSkuPromotionCondition = NUMERIC[14,3] (sku, promotionCondition);
                 SET takenSkuPromotionCondition(sku, promotionCondition) <- [PARTITION UNGROUP takenPromotionCondition

@@ -190,24 +190,26 @@ timeOfFromPromotion 'ОТ:' =  DATA TIME (promotion) IN retailCRMGroup;
 timeOfToPromotion 'ДО:' =  DATA TIME (promotion) IN retailCRMGroup;
 
 inPromotionDay 'В акции' = DATA BOOLEAN (promotion, DOW);
+
 inPromotionStore 'В акции' = DATA BOOLEAN (promotion, store);
+storePromotion 'Магазины' (promotion) = GROUP CONCAT name(store) IF inPromotionStore(promotion, store), ', ' BY promotion PERSISTENT MINCHARWIDTH 20 PREFCHARWIDTH 40;
+
 inPromotionDiscountCard 'В акции' = DATA BOOLEAN (promotion, discountCard);
 
 cumulativeSumPromotion 'Накоп. сумма' (promotion) = DATA NUMERIC[14,2] (promotion);
-minSumBillPromotion 'Сумма чека ОТ' (promotion) = DATA NUMERIC[14,2] (promotion);
-maxSumBillPromotion 'Сумма чека ДО' (promotion) = DATA NUMERIC[14,2] (promotion);
+minSumBillPromotion 'Сумма чека (от)' (promotion) = DATA NUMERIC[14,2] (promotion);
+maxSumBillPromotion 'Сумма чека (до)' (promotion) = DATA NUMERIC[14,2] (promotion);
 
 promotionPromotionCondition = DATA promotion (promotionCondition) NOT NULL DELETE;
 namePromotionPromotionCondition 'Акция' (promotionCondition) = name(promotionPromotionCondition(promotionCondition));
-dateFromPromotionCondition 'Действует С' (promotionCondition) = dateFromPromotion(promotionPromotionCondition(promotionCondition));
-dateToPromotionCondition 'Действует ПО' (promotionCondition) = dateToPromotion(promotionPromotionCondition(promotionCondition));
+dateFromPromotionCondition 'Действует (от)' (promotionCondition) = dateFromPromotion(promotionPromotionCondition(promotionCondition));
+dateToPromotionCondition 'Действует (до)' (promotionCondition) = dateToPromotion(promotionPromotionCondition(promotionCondition));
 
 countPromotionConditionPromotion 'Кол-во условий' (promotion) = GROUP SUM 1 IF promotionPromotionCondition(promotionCondition) == promotion BY promotion PERSISTENT;
 
 minQuantityPromotionCondition 'Количество (от)' = DATA NUMERIC[14,3] (promotionCondition);
 
-minSumPromotionCondition 'Диапазон сумм С' = DATA NUMERIC[16,2] (promotionCondition);
-maxSumPromotionCondition 'Диапазон сумм ПО' = DATA NUMERIC[16,2] (promotionCondition);
+minSumPromotionCondition 'Сумма (от)' = DATA NUMERIC[16,2] (promotionCondition);
 
 quantityDiscountPromotionCondition 'Кол-во товаров со скидкой' = DATA NUMERIC[14,3] (promotionCondition) NOT NULL;
 percentPromotionCondition 'Процент скидки'  = DATA NUMERIC[8,3] (promotionCondition) NOT NULL;
@@ -238,7 +240,7 @@ FORM promotion 'Акция'
         FILTER 'Только отмеченные' 'F11' inPromotionDay(sh, d) DEFAULT
 
     OBJECTS sg=promotionCondition
-    PROPERTIES(sg)     name, minQuantityPromotionCondition, minSumPromotionCondition, maxSumPromotionCondition, quantityDiscountPromotionCondition, percentPromotionCondition,
+    PROPERTIES(sg)     name, minQuantityPromotionCondition, minSumPromotionCondition, quantityDiscountPromotionCondition, percentPromotionCondition,
                        resultPricePromotionCondition, allSkuPromotionCondition, ADDOBJ, delete
 
     FILTERS            promotionPromotionCondition(sg)==sh
@@ -367,8 +369,8 @@ DESIGN promotion FROM DEFAULT {
 
 FORM promotions 'Акции'
     OBJECTS sh=promotion
-    PROPERTIES(sh)     READONLY name, numberObject, seriesObject, dateFromPromotion, dateToPromotion, timeOfFromPromotion, timeOfToPromotion,
-                       cumulativeSumPromotion, minSumBillPromotion, maxSumBillPromotion
+    PROPERTIES(sh)     READONLY name, numberObject, seriesObject, dateFromPromotion, dateToPromotion, storePromotion,
+                                timeOfFromPromotion, timeOfToPromotion, cumulativeSumPromotion, minSumBillPromotion, maxSumBillPromotion
     PROPERTIES(sh)     ADDFORM, EDITFORM, delete
 
     PROPERTIES (sh) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated
@@ -381,9 +383,10 @@ FORM promotionGroup 'Группа акций'
 
     OBJECTS sh=promotion
     PROPERTIES(sh)     userOrderPromotion
-    PROPERTIES(sh)     READONLY name, seriesObject, numberObject, dateFromPromotion, dateToPromotion, timeOfFromPromotion, timeOfToPromotion,
-                       cumulativeSumPromotion, minSumBillPromotion, maxSumBillPromotion
+    PROPERTIES(sh)     READONLY name, seriesObject, numberObject, dateFromPromotion, dateToPromotion, storePromotion,
+                                timeOfFromPromotion, timeOfToPromotion, cumulativeSumPromotion, minSumBillPromotion, maxSumBillPromotion
     PROPERTIES(sh)     ADDFORM, EDITFORM, delete
+    ORDER BY userOrderPromotion
 
     FILTERS promotionGroupPromotion(sh)==st
 
@@ -397,8 +400,8 @@ FORM promotionGroups 'Группы акций'
 
     OBJECTS sh=promotion
     PROPERTIES(sh)     READONLY orderPromotion
-    PROPERTIES(sh)     READONLY name, seriesObject, numberObject, dateFromPromotion, dateToPromotion, timeOfFromPromotion, timeOfToPromotion,
-                       cumulativeSumPromotion, minSumBillPromotion, maxSumBillPromotion
+    PROPERTIES(sh)     READONLY name, seriesObject, numberObject, dateFromPromotion, dateToPromotion, storePromotion,
+                                timeOfFromPromotion, timeOfToPromotion, cumulativeSumPromotion, minSumBillPromotion, maxSumBillPromotion
     PROPERTIES(sh)     ADDFORM, EDITFORM, delete
     ORDER BY orderPromotion
 
