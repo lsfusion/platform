@@ -78,6 +78,9 @@ currentBalanceArticle 'Тек. остаток' = GROUP SUM currentBalanceArticle
 CLASS ABSTRACT batchA 'Бухгалтерская партия' : batch;
 CLASS ABSTRACT batchB 'Управленческая партия' : batch;
 
+typeBatch 'Тип партии' (batch) = IF batch IS batchA THEN 'А' AND batch IS batchA
+                                                    ELSE 'Б' AND batch IS batchB;
+
 orderABatch (batch) = IF batch IS batchA THEN 0 IF batch IS batchA ELSE 1 IF batch IS batchB PERSISTENT;
 orderBBatch (batch) = IF batch IS batchB THEN 0 IF batch IS batchB ELSE 1 IF batch IS batchA PERSISTENT;
 
@@ -115,7 +118,7 @@ EXTEND FORM currentBalanceBatchStock
 ;
 
 EXTEND FORM currentBalanceSkuStock
-    PROPERTIES(bt) nameOwnerBatchA FORCE GRID
+    PROPERTIES(bt) nameOwnerBatchA FORCE GRID, importerPriceBatchA FORCE GRID, supplierPriceBatchA FORCE GRID, typeBatch READONLY
 ;
 
 EXTEND FORM costSkuLedger
