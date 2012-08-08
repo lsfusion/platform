@@ -470,7 +470,7 @@ primaryGroupDeclarationDeclarationDetail 'Главная строка для п�
 
 percentDataGroupDeclarationDeclarationDetail '%' = DATA NUMERIC[14,2] (groupDeclaration, declarationDetail);
 percentGroupDeclarationDeclarationDetail '%' (groupDeclaration, declarationDetail) =
-                         (UNION OVERRIDE 100 IF (groupDeclaration IS groupDeclaration AND declarationDetail IS declarationDetail),
+                         (UNION OVERRIDE 100.0 IF (groupDeclaration IS groupDeclaration AND declarationDetail IS declarationDetail),
                                          percentDataGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail)) IF inGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail);
 
 groupDeclarationDeclarationDetail 'Группа строки декларации (ИД)'(declarationDetail) = uniqueGroupDeclaration(
