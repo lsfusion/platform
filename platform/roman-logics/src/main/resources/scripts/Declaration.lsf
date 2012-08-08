@@ -389,6 +389,7 @@ toSetRangeCustomCategories10 'Взять шкалы' = ACTION () NEWSESSION AUTO
 TABLE groupDeclaration(groupDeclaration);
 TABLE groupDeclarationInnerInvoice(groupDeclaration, innerInvoice);
 TABLE groupDeclarationDeclarationDetail(groupDeclaration, declarationDetail);
+TABLE correctionGroupDeclaration(correction, groupDeclaration);
 TABLE declarationArtCatCompCountry(declaration, article, customCategory10, STRING[200], country);
 
 quantityDeclarationGroup 'Кол-во' = GROUP SUM quantityDeclarationDetail(declarationDetail)
@@ -583,7 +584,7 @@ sumReverseDeclarationDetail 'Стоимость' (declarationDetail) = GROUP SUM
 priceReverseDeclarationDetail 'Цена' (declarationDetail) = sumReverseDeclarationDetail(declarationDetail)/quantityDeclarationDetail(declarationDetail);
 
 correctionSumReverseGroupDeclarationDetail 'Часть корр. стоимости' (groupDeclaration, declarationDetail) = correctionSumGroupDeclaration(groupDeclaration) * coeffGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail)
-                                                                                                           IF inGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail) PERSISTENT;
+                                                                                                           IF inGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail);
 
 correctionSumReverseDeclarationDetail 'Корр. стоимость' (declarationDetail) = GROUP SUM correctionSumReverseGroupDeclarationDetail(groupDeclaration, declarationDetail) BY declarationDetail PERSISTENT MINCHARWIDTH 15;
 
@@ -591,7 +592,7 @@ supplierSumDeclarationDetail 'Стоимость' (declarationDetail) = UNION OV
                                                                               correctionSumReverseDeclarationDetail(declarationDetail);
 
 dutyReverseGroupDeclarationDetail 'Часть пошлины' (groupDeclaration, declarationDetail) = dutyDataGroupDeclaration(groupDeclaration) * coeffGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail)
-                                                                                          IF inGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail) PERSISTENT;
+                                                                                          IF inGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail);
 
 dutyReverseDeclarationDetail 'Пошлина' (declarationDetail) = GROUP SUM dutyReverseGroupDeclarationDetail(groupDeclaration, declarationDetail) BY declarationDetail PERSISTENT MINCHARWIDTH 15;
 
@@ -613,7 +614,7 @@ supplierPriceDeclarationDetail 'Цена' (declarationDetail) = supplierSumDecla
 quantityDiffDeclarationDetail 'Кол-во' (declarationDetail) = quantityDeclarationDetail(declarationDetail) (-) quantityCertificatedDeclarationDetail(declarationDetail);
 
 @implementBatch(declaration, sku, customStore, supplierPrice);
-quantityBatch (batch) += quantityDeclarationDetail(batch);
+quantityBatch (batch) += quantityDiffDeclarationDetail(batch);
 ownerBatchA (batch) += importerDeclarationDetail(batch);
 importerPriceBatchA (batch) += supplierPriceDeclarationDetail(batch);
 supplierPriceBatchA (batch) += supplierPriceDeclarationDetail(batch);
@@ -853,16 +854,15 @@ FORM declaration 'Декларация'
     PROPERTIES (dd) READONLY netWeightDeclarationDetail, sumNetWeightDeclarationDetail,
                     sumGrossWeightDeclarationDetail, quantityDeclarationDetail, shortNameUOMDeclarationDetail, priceContractDeclarationDetail,
                     declarationPriceDeclarationDetail, priceRateDeclarationDetail, declarationSumRateDeclarationDetail,
-                    sumReverseDeclarationDetail, correctionSumReverseDeclarationDetail, supplierSumDeclarationDetail, dutyReverseDeclarationDetail, numberVATRangeReverseDeclarationDetail,
-                    valueVATRangeReverseDeclarationDetail, VATReverseDeclarationDetail, registrationSumUnionDeclarationDetail
-
-    FILTERS inDeclarationDeclarationDetail(d, dd)
-
-    PROPERTIES (dd) priceCustomDeclarationDetail, priceManagerialDeclarationDetail, priceManagerialCustomDeclarationDetail
+                    supplierSumDeclarationDetail, dutyReverseDeclarationDetail, numberVATRangeReverseDeclarationDetail,
+                    valueVATRangeReverseDeclarationDetail, VATReverseDeclarationDetail, registrationSumUnionDeclarationDetail,
+                    priceCustomDeclarationDetail, priceManagerialDeclarationDetail, priceManagerialCustomDeclarationDetail
 
     PROPERTIES (dd) certificatedDeclarationDetail,
                     sidTemporalCertificateDeclarationDetail BACKGROUND isCertificatePreparedDeclarationDetail(dd),
                     sidPermanentCertificateDeclarationDetail BACKGROUND isCertificatePreparedDeclarationDetail(dd)
+
+    FILTERS inDeclarationDeclarationDetail(d, dd)
 
     OBJECTS gd=groupDeclaration
     PROPERTIES (gd, dd) inGroupDeclarationDeclarationDetail, percentGroupDeclarationDeclarationDetail
