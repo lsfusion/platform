@@ -2092,12 +2092,13 @@ public class BaseUtils {
     }
 
     public static <K, V, M extends Map<K,V>> M getNearObject(V findValue, List<M> keys) {
+        if(keys.size()<=1)
+            return null;
+
         M nearObject = null;
         for (M key : keys) {
             if (key.values().contains(findValue) && nearObject == null) {
                 int index = keys.indexOf(key);
-                if (keys.size() == 1)
-                    continue;
                 index = index == keys.size() - 1 ? index - 1 : index + 1;
                 nearObject = keys.get(index);
             }
