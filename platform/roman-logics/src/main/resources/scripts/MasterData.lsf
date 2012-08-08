@@ -230,3 +230,14 @@ EXTEND FORM freightListForm
     PROPERTIES(freight) canonicalBrandFreight BEFORE dateArrivalFreight
 ;
 
+
+FORM skuDialog 'SKU'
+
+    OBJECTS s=sku
+
+    PROPERTIES(s) READONLY barcode, nameSku, nameCategoryArticleSku, nameBrandSupplierArticleSku, sidArticleSku, shortNameUOMSku,
+                           nameSupplierArticleSku, sidSizeSupplierItem FORCE GRID, sidColorSupplierItem FORCE GRID, nameColorSupplierItem FORCE GRID
+
+    DIALOG sku OBJECT s
+;
+
