@@ -67,6 +67,13 @@ commissionContractSkuTransferOutDetail (detail) = commissionContractSkuTransferO
 useRetailPriceTransferOutDetail(detail) = stockTransferOutDetail(detail) IS departmentStore OR commissionContractSkuTransferOutDetail(detail) IS contractSku;
 @defineDocumentTransferAccount(transferOut, useRetailPriceTransferOutDetail);
 
+importerPriceTransferOutBatchDetail 'Цена импортера' (detail) = importerPriceBatchA(batchTransferOutBatchDetail(detail));
+supplierPriceTransferOutBatchDetail 'Цена поставщика' (detail) = supplierPriceBatchA(batchTransferOutBatchDetail(detail));
+EXTEND FORM transferOuts
+    PROPERTIES(o) READONLY importerPriceTransferOutBatchDetail, supplierPriceTransferOutBatchDetail
+;
+
+
 // Проводим по регистру
 @implementSkuLedger(transferOut, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantityTransferOutDetail (ledger);
@@ -133,8 +140,6 @@ CLASS transferInDetail 'Строка поступления товаров по 
 @defineDocumentTransferIn(transfer, 'Поступление товаров по накладным', sku, stock);
 @defineDocumentFormTransferIn(transfer, 'Поступление товаров по накладным');
 
-@defineDocumentDetailSkuArticle(transferIn);
-@extendDocumentFormDetailSkuArticleReadonly(transferIns, d, transferIn);
 
 costTransferInBatch(transferIn, batch) = GROUP SUM costSkuLedgerBatch(ledger, batch) BY transferInTransferInDetail(ledger), batch PERSISTENT;
 
@@ -143,8 +148,11 @@ retailSumTransferInDetail 'Сумма розничная' (detail) = quantityTra
 
 commissionContractSkuTransferInDetail (detail) = commissionContractSkuTransferOutDetail(transferOutDetailTransferInDetail(detail));
 
-useRetailPriceTransferInDetail(detail) = stockTransferOutDetail(detail) IS departmentStore OR commissionContractSkuTransferInDetail(detail) IS contractSku;
+useRetailPriceTransferInDetail(detail) = stockTransferInDetail(detail) IS departmentStore OR commissionContractSkuTransferInDetail(detail) IS contractSku;
 @defineDocumentTransferAccount(transferIn, useRetailPriceTransferInDetail);
+
+@defineDocumentDetailSkuArticle(transferIn);
+@extendDocumentFormDetailSkuArticleReadonly(transferIns, d, transferIn);
 
 @implementSkuLedger(transferIn, sku, stock);
 quantityInLIFOSkuLedger (ledger) += quantityTransferInDetail(ledger);

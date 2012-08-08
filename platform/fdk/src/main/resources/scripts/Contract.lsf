@@ -152,7 +152,7 @@ FORM contractSkuCompany 'Договор'
 FORM contractsSkuCompany 'Договора'
     OBJECTS c=contractSkuCompany
     PROPERTIES(c) READONLY numberContract, dateFromContract, dateToContract,
-                           nameCompanyAContractSkuCompany, nameCompanyBContractSkuCompany
+                           nameCompanyAContractSkuCompany, nameCompanyBContractSkuCompany, nameTypeContractSku
 
     PROPERTIES(c) ADDFORM, EDITFORM, delete
     ORDER BY dateFromContract

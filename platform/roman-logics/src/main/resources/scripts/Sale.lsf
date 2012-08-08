@@ -66,7 +66,9 @@ EXTEND FORM saleOuts
 
 @defineDocumentTransferRetail(saleOut);
 
-useRetailPriceSaleOutDetail(detail) = stockSaleOutDetail(detail) IS departmentStore;
+isCommissionSaleOutDetail(detail) = isCommissionSaleOut(saleOutSaleOutDetail(detail));
+
+useRetailPriceSaleOutDetail(detail) = stockSaleOutDetail(detail) IS departmentStore OR isCommissionSaleOutDetail(detail);
 @defineDocumentTransferAccount(saleOut, useRetailPriceSaleOutDetail);
 
 // Проводим по регистру
@@ -163,6 +165,8 @@ quantitySaleInBatchDetail 'Кол-во' (detail) = costDataSkuLedgerBatch(saleOu
 contractSkuCompanySaleInBatchDetail (detail) = contractSkuCompanySaleOut(saleOutSaleInBatchDetail(detail));
 isCommissionSaleInBatchDetail 'Продажа на комиссию' (detail) = isCommissionSaleOut(saleOutSaleInBatchDetail(detail));
 
+isCommissionSaleIn 'Продажа на комиссию' (saleIn) = isCommissionSaleOut(saleOutSaleIn(saleIn));
+
 costSaleInBatchDetail = DATA NUMERIC[14,2] (saleInBatchDetail);
 costSaleInBatchDetail (detail) <- [PREV(costBatch(batch))](batchSaleInBatchDetail(detail)) WHEN ASSIGNED(isPostedSaleInBatchDetail(detail));
 
@@ -183,6 +187,7 @@ accountPriceSaleInBatchDetail (detail) = IF isCommissionSaleInBatchDetail(detail
 costSaleInBatch (saleIn, batch) = quantitySaleInBatchDetail(batch) AND saleIn == saleInSaleInBatchDetail(batch) PERSISTENT;
 
 EXTEND FORM saleIns
+    PROPERTIES(t) READONLY isCommissionSaleIn BEFORE countSaleInDetailSaleIn
     OBJECTS b = saleInBatchDetail
     FILTERS saleInSaleInBatchDetail(b) == t
 ;
@@ -205,7 +210,7 @@ EXTEND FORM saleIns
 retailPriceSaleInBatchDetail 'Цена розничная' (detail) = retailPriceSaleOutDetail(saleOutDetailSaleInBatchDetail(detail));
 retailSumSaleInBatchDetail 'Сумма розничная' (detail) = quantitySaleInBatchDetail(detail) * retailPriceSaleInBatchDetail(detail);
 
-useRetailPriceSaleInBatchDetail(detail) = stockSaleInDetail(detail) IS departmentStore OR isCommissionSaleInBatchDetail(detail);
+useRetailPriceSaleInBatchDetail(detail) = stockSaleInBatchDetail(detail) IS departmentStore OR isCommissionSaleInBatchDetail(detail);
 @defineDocumentTransferAccountCustom(saleIn, useRetailPriceSaleInBatchDetail, saleInBatchDetail, b);
 
 @implementBatch(saleInBatch, sku, stock, cost);
