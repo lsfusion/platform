@@ -184,7 +184,6 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
 
     @SuppressWarnings("deprecation")
     private void internalRemoveEditor() {
-        Component editorComp = getEditorComponent();
         Component nextComp = null;
         if (editorComp instanceof JComponent) {
             nextComp = ((JComponent) editorComp).getNextFocusableComponent();
@@ -198,8 +197,8 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
         TableCellEditor editor = getCellEditor();
         if(editor != null) {
             editor.removeCellEditorListener(this);
-            if (this.editorComp != null) {
-                remove(this.editorComp);
+            if (editorComp != null) {
+                remove(editorComp);
             }
 
             Rectangle cellRect = getCellRect(editingRow, editingColumn, false);
@@ -207,7 +206,7 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
             setCellEditor(null);
             setEditingColumn(-1);
             setEditingRow(-1);
-            this.editorComp = null;
+            editorComp = null;
 
             repaint(cellRect);
         }

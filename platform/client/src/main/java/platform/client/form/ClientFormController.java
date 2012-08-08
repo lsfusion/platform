@@ -722,12 +722,24 @@ public class ClientFormController implements AsyncView {
         });
     }
 
-    public ServerResponse continueServerInvocation(Object[] actionResults) throws RemoteException {
-        return remoteForm.continueServerInvocation(actionResults);
+    public ServerResponse continueServerInvocation(final Object[] actionResults) throws RemoteException {
+        BusyDisplayer busyDisplayer = new BusyDisplayer(serverMessageProvider);
+        busyDisplayer.start();
+        try {
+            return remoteForm.continueServerInvocation(actionResults);
+        } finally {
+            busyDisplayer.stop();
+        }
     }
 
     public ServerResponse throwInServerInvocation(Exception ex) throws RemoteException {
-        return remoteForm.throwInServerInvocation(ex);
+        BusyDisplayer busyDisplayer = new BusyDisplayer(serverMessageProvider);
+        busyDisplayer.start();
+        try {
+            return remoteForm.throwInServerInvocation(ex);
+        } finally {
+            busyDisplayer.stop();
+        }
     }
 
     public void gainedFocus() {
