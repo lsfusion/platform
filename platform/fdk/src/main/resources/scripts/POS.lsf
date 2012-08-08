@@ -102,9 +102,11 @@ maxNumberReceiptZReport 'Максимальный номер чека' (zReport)
 
 zReportReceiptToReceipt (zReport, receipt, cashRegister) = GROUP UNIQUE receipt BY numberZReport(zReportReceipt(receipt)), numberReceipt(receipt), numberCashRegister(cashRegisterZReport(zReportReceipt(receipt))) WHERE receipt IS receipt;
 
+GROUP receiptDiscountGroup 'Дисконтная карта' : publicGroup;
+
 discountCardReceipt (receipt) = DATA discountCard (receipt);
-numberDiscountCardReceipt 'Номер дисконтной карты' (receipt) = seriesNumberObject(discountCardReceipt(receipt));
-nameClientDiscountCardReceipt 'Держатель дисконтной карты' (receipt) = nameClientDiscountCard(discountCardReceipt(receipt));
+numberDiscountCardReceipt 'Номер дисконтной карты' (receipt) = seriesNumberObject(discountCardReceipt(receipt)) IN receiptDiscountGroup;
+nameClientDiscountCardReceipt 'Держатель дисконтной карты' (receipt) = nameClientDiscountCard(discountCardReceipt(receipt)) IN receiptDiscountGroup;
 numberDiscountCardReceiptDetail 'Номер дисконтной карты' (receiptDetail) = numberDiscountCardReceipt(receiptReceiptDetail(receiptDetail));
 nameClientDiscountCardReceiptDetail 'Держатель дисконтной карты' (receiptDetail) = nameClientDiscountCardReceipt(receiptReceiptDetail(receiptDetail));
 
@@ -709,6 +711,42 @@ searchSkuReturnReceipt 'Поиск' = ACTION (receipt) {
     }
 } EDITKEY 'F6' IN receiptReturnActionGroup;
 
+// Дисконтные карты
+
+FORM inputDiscountCardNumberReceipt 'Ввод номера дисконтной карты'
+    OBJECTS (n = STRING[18], s = STRING[2]) FIXED PANEL
+    PROPERTIES number = OBJVALUE(n), series = OBJVALUE(s)
+;
+
+DESIGN inputDiscountCardNumberReceipt FROM DEFAULT{
+    NEW centerContainer BEFORE functions.box {
+        childConstraints = TO THE RIGHT;
+        ADD PROPERTY(number) { caption = 'Номер'; font = 'Tahoma bold 72'; }
+        ADD PROPERTY(series) { minimumCharWidth = 3; caption = 'Серия'; font = 'Tahoma bold 72'; }
+    }
+}
+
+inputDiscountCardNumberReceipt 'Ввести номер' = ACTION (receipt) {
+    FORM inputDiscountCardNumberReceipt MODAL;
+    IF formResult() == formResult.ok THEN {
+        IF TRUE AND NOT chosenString('s') == '' THEN {
+            IF discountCardSeriesNumber(ustring2(chosenString('s'),chosenString('n'))) THEN
+                SET discountCardReceipt(receipt) <- discountCardSeriesNumber(ustring2(chosenString('s'),chosenString('n')))
+            ELSE
+                MESSAGE 'Дисконтная карта с такой серией и номером не найдена';
+        } ELSE {
+            IF discountCardNumber(chosenString('n')) THEN
+                SET discountCardReceipt(receipt) <- discountCardNumber(chosenString('n'))
+            ELSE
+                MESSAGE 'Дисконтная карта с таким номером не найдена';
+        }
+    }
+} IN receiptDiscountGroup EDITKEY 'F5';
+
+clearDiscountCardReceipt 'Сбросить' = ACTION (receipt) {
+    SET discountCardReceipt(receipt) <- NULL;
+} IN receiptDiscountGroup EDITKEY 'shift F5';
+
 // Операции с Z-отчетами
 
 openCurrentZReport 'Открыть Z-отчет' = ACTION () {
@@ -731,6 +769,19 @@ closeCurrentZReport 'Закрыть Z-отчет' = ACTION () {
 
 // --------------------------------- Применение акций ----------------------------- //
 
+// Накопленные суммы
+
+posSumDiscountCard 'Сумма продаж' (discountCard) = GROUP SUM sumReceiptDetailReceipt (receipt) BY discountCardReceipt(receipt) PERSISTENT;
+cumulativeSumDiscountCard 'Накопленная сумма' (discountCard) = initialSumDiscountCard(discountCard) (+) posSumDiscountCard(discountCard) PERSISTENT;
+
+prevCumulativeSumReceipt (receipt) = (0 AND receipt IS receipt) OR [PREV(cumulativeSumDiscountCard(discountCard))](discountCardReceipt(receipt));
+
+EXTEND FORM discountCards
+    PROPERTIES(d) posSumDiscountCard, cumulativeSumDiscountCard
+;
+
+// Расчет сумм скидок
+
 TABLE receiptSaleDetailPromotionCondition(receiptSaleDetail, promotionCondition);
 quantityReceiptSaleDetailPromotionCondition 'Кол-во по акции' = DATA NUMERIC[14,3] (receiptSaleDetail, promotionCondition) INDEXED;
 promotionSumReceiptSaleDetailPromotionCondition 'Сумма скидки' = DATA NUMERIC[14,3] (receiptSaleDetail, promotionCondition);
@@ -742,7 +793,9 @@ inReceiptPromotion (receipt, promotion) = inPromotionStore(promotion, storeRecei
                                           dateReceipt(receipt) >= dateFromPromotion(promotion) AND dateReceipt(receipt) <= dateToPromotion(promotion) AND
                                           NOT timeReceipt(receipt) < timeOfFromPromotion(promotion) AND NOT timeReceipt(receipt) > timeOfToPromotion(promotion) AND
                                           NOT sumReceiptDetailReceipt(receipt) < minSumBillPromotion(promotion) AND NOT sumReceiptDetailReceipt(receipt) > maxSumBillPromotion(promotion)
-                                          AND NOT skipPromotionDOW(promotion, DOWInDate(dateReceipt(receipt)));
+                                          AND NOT skipPromotionDOW(promotion, DOWInDate(dateReceipt(receipt)))
+                                          AND NOT prevCumulativeSumReceipt(receipt) < minCumulativeSumPromotion(promotion) AND NOT prevCumulativeSumReceipt(receipt) > maxCumulativeSumPromotion(promotion)
+                                          AND NOT (hasDiscountCardPromotion(promotion) AND NOT inPromotionDiscountCard(promotion, discountCardReceipt(receipt)));
 
 maxSalePriceReceiptSku (receipt, sku) = GROUP MAX priceReceiptSaleDetail(detail) BY receiptReceiptSaleDetail(detail), skuReceiptSaleDetail(detail);
 
@@ -787,6 +840,12 @@ calculatePromotionsReceipt 'Рассчитать акции' = ACTION (receipt) 
 
             // Если все условия сработали хотя бы один раз
             IF countPromotion() > 0 AND [GROUP SUM 1 IF countPromotionCondition(promotionCondition) > 0]() == countPromotionConditionPromotion(promotion) THEN {
+
+//                MESSAGE name(promotion);
+//                MESSAGE castToString255(cumulativeSumReceipt(receipt));
+//                MESSAGE castToString255(minCumulativeSumPromotion(promotion));
+//                MESSAGE castToString255(cumulativeSumReceipt(receipt) < minCumulativeSumPromotion(promotion));
+//
                 LOCAL takenPromotionCondition = NUMERIC[14,3] (promotionCondition);
                 SET takenPromotionCondition(promotionCondition) <- min(countPromotion() * quantityDiscountPromotionCondition(promotionCondition), quantityPromotionCondition(promotionCondition));
 
@@ -829,7 +888,7 @@ calculatePromotionsReceipt 'Рассчитать акции' = ACTION (receipt) 
     SET discountSumReceiptSaleDetail(detail) IF receiptReceiptSaleDetail(detail) == receipt <- promotionSumReceiptSaleDetail(detail);
 }
 
-WHEN CHANGED(quantityReceiptDetailReceipt(receipt)) DO EXEC calculatePromotionsReceipt(receipt) SESSION;
+WHEN CHANGED(quantityReceiptDetailReceipt(receipt)) OR CHANGED(discountCardReceipt(receipt)) DO EXEC calculatePromotionsReceipt(receipt) SESSION;
 
 // Форма POS-терминала
 
@@ -844,7 +903,9 @@ FORM POS
     PROPERTIES(r) SHOWIF currentZReport() discountSumReceiptDetailReceipt, sumReceiptDetailReceipt,
                                           searchSkuSaleReceipt, scanBarcodeSaleReceipt,
                                           searchSkuReturnReceipt, scanBarcodeReturnReceipt,
-                                          postReceipt, postCardReceipt, postCashReceipt, cancelReceipt
+                                          postReceipt, postCardReceipt, postCashReceipt, cancelReceipt,
+                                          numberDiscountCardReceipt, nameClientDiscountCardReceipt,
+                                          inputDiscountCardNumberReceipt, clearDiscountCardReceipt
 
     OBJECTS d = receiptDetail FIXED GRID
     PROPERTIES(d) SHOWIF currentZReport() READONLY indexReceiptDetail, typeReceiptDetail, idBarcodeReceiptDetail, nameSkuReceiptDetail, prevCurrentBalanceReceiptDetail
@@ -852,8 +913,8 @@ FORM POS
     FILTERS receiptReceiptDetail(d) == r
 
     OBJECTS pc = promotionCondition
-    PROPERTIES(pc) READONLY namePromotionPromotionCondition, name, dateFromPromotionCondition, dateToPromotionCondition, percentPromotionCondition
-    PROPERTIES(d, pc)       quantityReceiptSaleDetailPromotionCondition, promotionSumReceiptSaleDetailPromotionCondition
+    PROPERTIES(pc) SHOWIF currentZReport() READONLY namePromotionPromotionCondition, name, dateFromPromotionCondition, dateToPromotionCondition, percentPromotionCondition
+    PROPERTIES(d, pc) SHOWIF currentZReport()       quantityReceiptSaleDetailPromotionCondition, promotionSumReceiptSaleDetailPromotionCondition
     FILTERS quantityReceiptSaleDetailPromotionCondition(d, pc)
 
     PROPERTIES() openCurrentZReport SHOWIF closedCurrentZReport(), closeCurrentZReport SHOWIF currentZReport()
@@ -909,6 +970,16 @@ DESIGN POS FROM DEFAULT {
                     PROPERTY(postCardReceipt) { focusable = FALSE; font = 'Tahoma bold 24'; }
                     PROPERTY(postCashReceipt) { focusable = FALSE; font = 'Tahoma bold 24'; }
                     PROPERTY(cancelReceipt) { focusable = FALSE; font = 'Tahoma bold 24'; }
+                }
+                ADD r.receiptDiscountGroup {
+                    childConstraints = TO THE BOTTOM;
+                    PROPERTY(numberDiscountCardReceipt) { panelLabelAbove = TRUE; focusable = FALSE; font = 'Tahoma bold 24'; }
+                    PROPERTY(nameClientDiscountCardReceipt) { panelLabelAbove = TRUE; focusable = FALSE; font = 'Tahoma bold 24'; }
+                    NEW buttonDiscountContainer {
+                        childConstraints = TO THE RIGHT;
+                        ADD PROPERTY(inputDiscountCardNumberReceipt) { focusable = FALSE; font = 'Tahoma bold 14'; }
+                        ADD PROPERTY(clearDiscountCardReceipt) { focusable = FALSE; font = 'Tahoma bold 14'; }
+                    }
                 }
                 NEW sumContainer {
                     title = 'Итого';

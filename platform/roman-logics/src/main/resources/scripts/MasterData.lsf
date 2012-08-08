@@ -14,11 +14,7 @@ PRIORITY Stock, LegalEntity, Store, RomanLogicsModule;
 
 //--------------------------------- Дисконтные группы -------------------------------------------//
 
-inDiscountCardBrandSupplier 'Вкл.' (discountCard, brandSupplier) = DATA BOOLEAN (discountCard, brandSupplier);
-
 inDiscountSkuGroupSku (discountSkuGroup, sku) += brandSupplierArticleSku(sku) == discountSkuGroup;
-inDiscountCardDiscountSkuGroup (discountCard, discountSkuGroup) += inDiscountCardBrandSupplier(discountCard, discountSkuGroup);
-
 
 // отбор артикулов
 inBrandSupplier (supplier, brandSupplier) = supplierBrandSupplier(brandSupplier) == supplier;

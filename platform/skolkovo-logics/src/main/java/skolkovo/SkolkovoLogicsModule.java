@@ -1803,7 +1803,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nameForeignProjectVote = addJProp(baseGroup, "nameForeignProjectVote", "Проект (иностр.)", nameForeignProject, projectVote, 1);
 
         dataDocumentNameExpert = addDProp(baseGroup, "dataDocumentNameExpert", "Имя для документов", StringClass.get(70), expert);
-        documentNameExpert = addSUProp("documentNameExpert", "Имя для документов", Union.OVERRIDE, addJProp(baseLM.and1, addJProp(baseLM.insensitiveString2, baseLM.userLastName, 1, baseLM.userFirstName, 1), 1, is(expert), 1), dataDocumentNameExpert);
+        documentNameExpert = addSUProp("documentNameExpert", "Имя для документов", Union.OVERRIDE, addJProp(baseLM.and1, addJProp(baseLM.istring2SP, baseLM.userLastName, 1, baseLM.userFirstName, 1), 1, is(expert), 1), dataDocumentNameExpert);
         documentNameExpert.setMinimumCharWidth(20);
 
         isScientificExpert = addDProp("isScientificExpert", "Научный эксперт", LogicalClass.instance, expert);
@@ -2767,7 +2767,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         hidePostfixDocument = addJProp(baseLM.and1, addCProp(StringClass.get(40), "Постфикс", document), 1, multipleDocument, 1);
 
         LCP translateNameDocument = addJProp("Перевод", translateLanguageDocumentType, languageDocument, 1, typeDocument, 1);
-        nameDocument = addJProp("nameDocument", "Заголовок", baseLM.string2, translateNameDocument, 1, addSUProp(Union.OVERRIDE, addCProp(StringClass.get(15), "", document), postfixDocument), 1);
+        nameDocument = addJProp("nameDocument", "Заголовок", baseLM.string2SP, translateNameDocument, 1, addSUProp(Union.OVERRIDE, addCProp(StringClass.get(15), "", document), postfixDocument), 1);
 
         quantityProjectLanguageDocumentType = addSGProp("projectLanguageDocumentType", true, "Кол-во док.", addCProp(IntegerClass.instance, 1, document), projectDocument, 1, languageDocument, 1, typeDocument, 1); // сколько экспертов высказалось
         LCP notEnoughProjectLanguageDocumentType = addSUProp(Union.OVERRIDE, addJProp(baseLM.greater2, quantityProjectLanguageDocumentType, 1, 2, 3, quantityMaxLanguageDocumentType, 2, 3),
@@ -3735,7 +3735,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         claimerEmailVote = addJProp("claimerEmailVote", "E-mail (заявителя)", baseLM.email, claimerVote, 1);
         addEARecipients(emailClaimerVoteEA, claimerEmailVote, 1);
 
-        emailClaimerHeaderVote = addJProp("emailClaimerHeaderVote", "Заголовок уведомления заявителю", baseLM.string2, addCProp(StringClass.get(2000), "Уведомление."), nameNativeClaimerVote, 1);
+        emailClaimerHeaderVote = addJProp("emailClaimerHeaderVote", "Заголовок уведомления заявителю", baseLM.string2SP, addCProp(StringClass.get(2000), "Уведомление."), nameNativeClaimerVote, 1);
         emailClaimerVote = addJoinAProp(actionGroup, "emailClaimerVote", "Письмо о рассмотрении", emailClaimerVoteEA, 1, emailClaimerHeaderVote, 1);
         emailClaimerVote.property.askConfirm = true;
 
@@ -3743,7 +3743,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         emailFondVoteEA = addEAProp(emailIO, vote);
         addEARecipients(emailFondVoteEA, emailFondStartVote);
-        emailFondHeaderVote = addJProp("emailFondHeaderVote", "Заголовок уведомления в фонд", baseLM.string2, addCProp(StringClass.get(2000), "Уведомление."), nameNativeClaimerVote, 1);
+        emailFondHeaderVote = addJProp("emailFondHeaderVote", "Заголовок уведомления в фонд", baseLM.string2SP, addCProp(StringClass.get(2000), "Уведомление."), nameNativeClaimerVote, 1);
         emailFondVote = addJoinAProp(actionGroup, "emailFondVote", "Письмо о рассмотрении", emailFondVoteEA, 1, emailFondHeaderVote, 1);
         emailFondVote.property.askConfirm = true;
         emailFondVote.setEventSetAction(this, openedVote, 1);
@@ -3896,7 +3896,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         addEARecipients(emailClaimerFormalControlEA, claimerEmailFormalControl, 1);
 
-        emailClaimerHeaderFormalControl = addJProp("emailClaimerHeaderFormalControl", "Заголовок уведомления заявителю", baseLM.string2, addCProp(StringClass.get(2000), "Уведомление."), nameNativeClaimerFormalControl, 1);
+        emailClaimerHeaderFormalControl = addJProp("emailClaimerHeaderFormalControl", "Заголовок уведомления заявителю", baseLM.string2SP, addCProp(StringClass.get(2000), "Уведомление."), nameNativeClaimerFormalControl, 1);
   //      emailClaimerFormalControl = addJProp(actionGroup, true, "emailClaimerFormalControl", "Письмо о формальной экспертизе", emailClaimerFormalControlEA, 1, emailClaimerHeaderFormalControl, 1);
 
         needEmailClaimerFormalControl = addSUProp("needEmailClaimerFormalControl", "Требуется уведомление", Union.OVERRIDE, addJProp(baseLM.equals2, resultFormalControl, 1, addCProp(formalControlResult, "notEnoughDocuments")), addJProp(baseLM.equals2, resultFormalControl, 1, addCProp(formalControlResult, "repeatedFC")));
@@ -3912,7 +3912,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailFondFormalControlEA = addEAProp(emailIO, formalControl);
         addEARecipients(emailFondFormalControlEA, emailIO);
         addEARecipients(emailFondFormalControlEA, MimeMessage.RecipientType.CC, emailFondFC);
-        emailFondHeaderFormalControl = addJProp("emailFondHeaderFormalControl", "Заголовок уведомления", baseLM.string2, addCProp(StringClass.get(2000), "Уведомление."), nameNativeClaimerFormalControl, 1);
+        emailFondHeaderFormalControl = addJProp("emailFondHeaderFormalControl", "Заголовок уведомления", baseLM.string2SP, addCProp(StringClass.get(2000), "Уведомление."), nameNativeClaimerFormalControl, 1);
 
         emailFondFormalControl = addJoinAProp(actionGroup, "emailFondFormalControl", "Письмо о формальной экспертизе", emailFondFormalControlEA, 1, emailFondHeaderFormalControl, 1);
         emailFondFormalControl.setImage("email.png");
@@ -3940,7 +3940,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         addEARecipients(emailClaimerLegalCheckEA, MimeMessage.RecipientType.BCC, emailIO);
 //        addEARecipients(emailClaimerLegalCheckEA, MimeMessage.RecipientType.BCC, emailFinalClusterLegalCheck, 1);
 
-        emailClaimerHeaderLegalCheck = addJProp("emailClaimerHeaderLegalCheck", "Заголовок уведомления заявителю", baseLM.string2, addCProp(StringClass.get(2000), "Уведомление."), nameNativeClaimerLegalCheck, 1);
+        emailClaimerHeaderLegalCheck = addJProp("emailClaimerHeaderLegalCheck", "Заголовок уведомления заявителю", baseLM.string2SP, addCProp(StringClass.get(2000), "Уведомление."), nameNativeClaimerLegalCheck, 1);
 
         emailClaimerLegalCheck = addIfAProp(actionGroup, "emailClaimerLegalCheck", "Письмо о формальной экспертизе", object(legalCheck), 1,
                 addListAProp(

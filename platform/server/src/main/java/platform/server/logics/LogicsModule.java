@@ -1003,24 +1003,28 @@ public abstract class LogicsModule {
         return addProperty(null, new LCP<CompareFormulaProperty.Interface>(new CompareFormulaProperty(name, compare)));
     }
 
-    protected <P extends PropertyInterface> LCP addSProp(String name, int intNum) {
-        return addProperty(null, new LCP<StringConcatenateProperty.Interface>(new StringConcatenateProperty(name, ServerResourceBundle.getString("logics.join"), intNum, " ")));
-    }
-
     protected <P extends PropertyInterface> LCP addSProp(int intNum) {
-        return addProperty(null, new LCP<StringConcatenateProperty.Interface>(new StringConcatenateProperty(genSID(), ServerResourceBundle.getString("logics.join"), intNum, " ")));
+        return addSProp(genSID(), intNum);
     }
 
-    protected <P extends PropertyInterface> LCP addSProp(int intNum, String separator) {
-        return addProperty(null, new LCP<StringConcatenateProperty.Interface>(new StringConcatenateProperty(genSID(), ServerResourceBundle.getString("logics.join"), intNum, separator)));
+    protected <P extends PropertyInterface> LCP addSProp(String name, int intNum) {
+        return addSProp(name, intNum, " ");
+    }
+
+    protected <P extends PropertyInterface> LCP addSProp(String name, int intNum, String separator) {
+        return addProperty(null, new LCP<StringConcatenateProperty.Interface>(new StringConcatenateProperty(name, ServerResourceBundle.getString("logics.join"), intNum, separator)));
     }
 
     protected <P extends PropertyInterface> LCP addInsensitiveSProp(int intNum) {
-        return addProperty(null, new LCP<StringConcatenateProperty.Interface>(new StringConcatenateProperty(genSID(), ServerResourceBundle.getString("logics.join"), intNum, " ", false)));
+        return addInsensitiveSProp(genSID(), intNum);
     }
 
-    protected <P extends PropertyInterface> LCP addInsensitiveSProp(int intNum, String separator) {
-        return addProperty(null, new LCP<StringConcatenateProperty.Interface>(new StringConcatenateProperty(genSID(), ServerResourceBundle.getString("logics.join"), intNum, separator, false)));
+    protected <P extends PropertyInterface> LCP addInsensitiveSProp(String name, int intNum) {
+        return addInsensitiveSProp(name, intNum, " ");
+    }
+
+    protected <P extends PropertyInterface> LCP addInsensitiveSProp(String name, int intNum, String separator) {
+        return addProperty(null, new LCP<StringConcatenateProperty.Interface>(new StringConcatenateProperty(name, ServerResourceBundle.getString("logics.join"), intNum, separator, false)));
     }
 
 
@@ -1756,14 +1760,14 @@ public abstract class LogicsModule {
         return result;
     }
 
-    protected LCP addUProp(AbstractGroup group, String caption, Union unionType, String delimeter, int[] coeffs, Object... params) {
+    protected LCP addUProp(AbstractGroup group, String caption, Union unionType, String delimiter, int[] coeffs, Object... params) {
         return addUProp(group, genSID(), false, caption, unionType, null, coeffs, params);
     }
 
-    protected LCP addUProp(AbstractGroup group, String name, boolean persistent, String caption, Union unionType, String delimeter, int[] coeffs, Object... params) {
+    protected LCP addUProp(AbstractGroup group, String name, boolean persistent, String caption, Union unionType, String delimiter, int[] coeffs, Object... params) {
 
         assert (unionType==Union.SUM)==(coeffs!=null);
-        assert (unionType==Union.STRING_AGG)==(delimeter!=null);
+        assert (unionType==Union.STRING_AGG)==(delimiter!=null);
 
         int intNum = getIntNum(params);
         List<UnionProperty.Interface> listInterfaces = UnionProperty.getInterfaces(intNum);
@@ -1792,7 +1796,7 @@ public abstract class LogicsModule {
                 property = new ExclusiveUnionProperty(name, caption, listInterfaces, listOperands);
                 break;
             case STRING_AGG:
-                property = new StringAggUnionProperty(name, caption, listInterfaces, listOperands, delimeter);
+                property = new StringAggUnionProperty(name, caption, listInterfaces, listOperands, delimiter);
                 break;
         }
 
@@ -1994,6 +1998,11 @@ public abstract class LogicsModule {
     protected LCP addSFUProp(AbstractGroup group, String name, boolean persistent, String caption, String delimiter, LCP... props) {
         return addUProp(group, name, persistent, caption, Union.STRING_AGG, delimiter, null, getUParams(props));
     }
+
+    protected LCP addSFUProp(String name, String delimiter, int intNum) {
+        return addUProp(null, name, false, ServerResourceBundle.getString("logics.join"), Union.STRING_AGG, delimiter, null, getUParams(intNum));
+    }
+
     protected LCP addXSUProp(AbstractGroup group, String caption, LCP... props) {
         return addXSUProp(group, genSID(), caption, props);
     }

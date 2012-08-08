@@ -82,6 +82,13 @@ public class PropertyUtils {
         return result;
     }
 
+    public static Object[] getUParams(int intNum) {
+        Object[] result = new Object[intNum];
+        for (int i = 1; i <= intNum; i++)
+            result[i-1] = i;
+        return result;
+    }
+
     public static Object[] directLI(LP prop) {
         return BaseUtils.add(prop, getParams(prop));
     }

@@ -146,8 +146,11 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP sumDate;
     public LCP subtractDate;
     public LCP toDateTime;
-    public LCP string2;
-    public LCP insensitiveString2;
+
+    public LCP string2SP, istring2SP;
+    public LCP string2, istring2;
+    public LCP ustring2SP, ustring2;
+
     protected LCP concat2;
     public LCP percent;
     public LCP percent2;
@@ -717,8 +720,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         object1 = addAFProp();
         and1 = addAFProp("and1", false);
         andNot1 = addAFProp(true);
-        string2 = addSProp("string2", 2);
-        insensitiveString2 = addInsensitiveSProp(2);
         concat2 = addCCProp(2);
         groeq2 = addCFProp(Compare.GREATER_EQUALS);
         greater2 = addCFProp("greater2", Compare.GREATER);
@@ -728,6 +729,15 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         less22 = addJProp(less2, concat2, 1, 2, concat2, 3, 4);
         diff2 = addCFProp("diff2", Compare.NOT_EQUALS);
         between = addJProp("between", getString("logics.between"), and1, groeq2, 1, 2, groeq2, 3, 1);
+
+        string2SP = addSProp("string2SP", 2);
+        istring2SP = addInsensitiveSProp("istring2SP", 2);
+
+        string2 = addSProp("string2", 2, "");
+        istring2 = addInsensitiveSProp("istring2", 2, "");
+
+        ustring2SP = addSFUProp("ustring2SP", " ", 2);
+        ustring2 = addSFUProp("ustring2", "", 2);
 
         sum = addSFProp("sum", "((prm1)+(prm2))", 2);
         sumDate = addSFProp("sumDate", "((prm1)+(prm2))", DateClass.instance, 2);
@@ -894,7 +904,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         generateLoginPassword = addAProp(actionGroup, new GenerateLoginPasswordActionProperty(email, userLogin, userPassword, customUser));
 
         name = addCUProp(recognizeGroup, "commonName", getString("logics.name"), dataName,
-                addJProp(insensitiveString2, userFirstName, 1, userLastName, 1));
+                addJProp(istring2SP, userFirstName, 1, userLastName, 1));
         ((CalcProperty)name.property).aggProp = true;
 
         connectionComputer = addDProp("connectionComputer", getString("logics.computer"), computer, connection);

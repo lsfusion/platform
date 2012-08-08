@@ -51,8 +51,7 @@ TABLE numberedObject (numberedObject);
 numberObject 'Номер' = DATA STRING[18] (numberedObject) IN numberedGroup MINCHARWIDTH 7;
 seriesObject 'Серия' = DATA STRING[2] (numberedObject) IN numberedGroup FIXEDCHARWIDTH 3;
 
-seriesNumberObject 'Серия/Номер' (numberedObject) = [FORMULA STRING[21] '$1 || $2']
-                                                    (seriesObject(numberedObject), numberObject(numberedObject));
+seriesNumberObject 'Серия/Номер' (numberedObject) = ustring2(seriesObject(numberedObject), numberObject(numberedObject)) PERSISTENT;
 
 initValueNumberObject = ABSTRACT STRING[18] (numberedObject);
 initValueSeriesObject = ABSTRACT STRING[2] (numberedObject);
