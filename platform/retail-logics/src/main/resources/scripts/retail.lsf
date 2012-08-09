@@ -429,12 +429,6 @@ TABLE itemGroupItem (itemGroup, item);
 
 isParentItemGroupItem (itemGroup, item) = isParentItemGroupItemGroup(itemGroupItem(item), itemGroup) PERSISTENT;
 
-//--------------------------------- Дисконтные группы -------------------------------------------//
-
-inDiscountCardItemGroup 'Вкл.' (discountCard, itemGroup) = DATA BOOLEAN (discountCard, itemGroup);
-
-inDiscountSkuGroupSku (discountSkuGroup, sku) += itemGroupItem(sku) == discountSkuGroup;
-inDiscountCardDiscountSkuGroup (discountCard, discountSkuGroup) += inDiscountCardItemGroup(discountCard, discountSkuGroup);
 //-----------------------------------------------------------------------------------------------//
 
 //descriptionGroup
