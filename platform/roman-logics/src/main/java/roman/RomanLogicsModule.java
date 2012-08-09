@@ -3574,7 +3574,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         addFormEntity(new SkuFormEntity(itemClassifier, "skus", "Товары"));
 
-        CategoryFormEntity categoryForm = addFormEntity(new CategoryFormEntity(itemClassifier, "category", "Товарные группы"));
+        CategoryFormEntity categoryForm = addFormEntity(new CategoryFormEntity(itemClassifier, "categories", "Товарные группы"));
         category.setDialogForm(categoryForm, categoryForm.objCategory);
 
         NavigatorElement contragentClassifier = addNavigatorElement(classifier, "contragentClassifier", "Контрагенты");

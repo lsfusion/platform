@@ -29,7 +29,7 @@ EXTEND FORM UOMs
 
 // объявляем группы sku
 @defineHierarchy(category);
-EXTEND FORM category
+EXTEND FORM categories
     PROPERTIES (c) nameParentCategory;
 ;
 
