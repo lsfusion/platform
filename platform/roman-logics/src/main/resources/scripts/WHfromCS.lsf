@@ -368,7 +368,16 @@ mainCompositionOriginArticleSkuWHfromCSRDetail 'Состав(ориг.)' (WHfrom
 // Внутренние атрибуты
 
 sidGenderArticleSkuWHfromCSRDetail 'Пол товара' (WHfromCSRDetail) = sidGenderArticleSku(skuWHfromCSRDetail(WHfromCSRDetail));
+
 nameCategoryArticleSkuWHfromCSRDetail 'Номенклатурная группа' (WHfromCSRDetail) = nameCategoryArticleSku(skuWHfromCSRDetail(WHfromCSRDetail));
+changeNameCategoryArticleSkuWHfromCSRDetail = ACTION (WHfromCSRDetail) {
+    MESSAGE 'Change';
+    REQUEST OBJECT c FORM categories MODAL;
+    IF formResult() == formResult.ok THEN {
+        SET categoryArticle(article) IF article == articleSku(skuWHfromCSRDetail(WHfromCSRDetail)) <- chosenObject('c');
+    }
+}
+
 nameTypeFabricArticleSkuWHfromCSRDetail 'Тип одежды' (WHfromCSRDetail) = nameTypeFabricArticleSku(skuWHfromCSRDetail(WHfromCSRDetail));
 nameUnitOfMeasureArticleSkuWHfromCSRDetail 'Ед. измерения товара' (WHfromCSRDetail) = nameUnitOfMeasureArticleSku(skuWHfromCSRDetail(WHfromCSRDetail));
 netWeightSkuWHfromCSRDetail 'Весс нетто(ед.)' (WHfromCSRDetail) = netWeightSku(skuWHfromCSRDetail(WHfromCSRDetail));
@@ -407,7 +416,7 @@ FORM WHfromCSR 'Приемка на оптовый склад'
                                        mainCompositionOriginArticleSkuWHfromCSRDetail
 
     PROPERTIES(d) FORCE PANEL sidGenderArticleSkuWHfromCSRDetail BACKGROUND backgroundWHfromCSRDetail(d),
-                              c = nameCategoryArticleSkuWHfromCSRDetail BACKGROUND backgroundWHfromCSRDetail(d), // ON CHANGE EXEC changeNameCategoryArticleSkuWHfromCSRDetail(d),
+                              c = nameCategoryArticleSkuWHfromCSRDetail BACKGROUND backgroundWHfromCSRDetail(d) ON CHANGE EXEC changeNameCategoryArticleSkuWHfromCSRDetail(d),
                               nameTypeFabricArticleSkuWHfromCSRDetail BACKGROUND backgroundWHfromCSRDetail(d),
                               u = nameUnitOfMeasureArticleSkuWHfromCSRDetail BACKGROUND backgroundWHfromCSRDetail(d),
                               netWeightSkuWHfromCSRDetail BACKGROUND backgroundWHfromCSRDetail(d),
