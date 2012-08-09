@@ -26,10 +26,16 @@ FORM reasonOff 'Причина списания'
     PROPERTIES(r) name
 ;
 
-CLASS writeOff 'Списание' : outAccountDocumentLedger, historyObject, numeratedDocument;
+CLASS writeOff 'Списание' : outAccountDocumentLedger, historyObject, numeratedObject;
 CLASS writeOffDetail 'Строка списания' : outFIFOSkuLedger;
 CLASS writeOffPosted 'Закрытое списание' : writeOff, postedObject;
 CLASS writeOffBatchDetail 'Строка списания товара (по партиям)';
+
+defaultNumeratorWriteOff = DATA numerator ();
+nameDefaultNumeratorWriteOff 'Нумератор для актов списания' = name(defaultNumeratorWriteOff());
+
+initValueNumeratorObject(object) += defaultNumeratorWriteOff() IF object IS writeOff;
+initWhenNumeratorObject(object) += ASSIGNED(object IS writeOff);
 
 @defineDocument(writeOff);
 @defineDocumentStock(writeOff, stock, 'Отдел');
@@ -73,15 +79,15 @@ writeOffWriteOffBatchDetail (detail) = writeOffWriteOffDetail(writeOffDetailWrit
 descriptionBatchWriteOffBatchDetail 'Партия' (detail) = descriptionBatch(batchWriteOffBatchDetail(detail));
 quantityWriteOffBatchDetail 'Кол-во' (detail) = costDataSkuLedgerBatch(writeOffDetailWriteOffBatchDetail(detail), batchWriteOffBatchDetail(detail));
 
-//CONSTRAINT writeOff IS writeOff AND stockWriteOff(writeOff) IS customStore
-//    CHECKED BY stockWriteOff MESSAGE 'Для списания выбран не тот отдел';
+notChangeBalanceWriteOff 'Не проводить по учету' (writeOff) = DATA BOOLEAN (writeOff) IN documentPrmGroup;
+notChangeBalanceWriteOffDetail 'Не проводить по учету' (writeOffDetail) = notChangeBalanceWriteOff(writeOffWriteOffDetail(writeOffDetail));
 
 FORM writeOff 'Списание товара'
     OBJECTS t = writeOff FIXED PANEL
 
-    PROPERTIES (t) numberObject, seriesObject, dateWriteOff, timeWriteOff,
+    PROPERTIES (t) nameNumeratorObject, numberObject, seriesObject, dateWriteOff, timeWriteOff,
                    nameStockWriteOff, noteWriteOff,
-                   countWriteOffDetailWriteOff, quantityWriteOffDetailWriteOff, nameReasonOffWriteOff
+                   countWriteOffDetailWriteOff, quantityWriteOffDetailWriteOff, nameReasonOffWriteOff, notChangeBalanceWriteOff
 
     OBJECTS d = writeOffDetail
     PROPERTIES(d)  indexWriteOffDetail, barcodeWriteOffDetail,
@@ -109,6 +115,7 @@ DESIGN writeOff FROM DEFAULT {
                 ADD t.documentHeaderGroup {
                     childConstraints = TO THE RIGHT;
                     ADD PROPERTY (nameStockWriteOff);
+                    ADD PROPERTY (nameNumeratorObject);
                     ADD PROPERTY (numberObject);
                     ADD PROPERTY (seriesObject);
                     ADD PROPERTY (dateWriteOff);
@@ -145,7 +152,6 @@ FORM writeOffs 'Списания товара'
     FILTERS writeOffWriteOffDetail(d) == t
 
     OBJECTS o = writeOffBatchDetail
-    PROPERTIES(o) READONLY descriptionBatchWriteOffBatchDetail
     FILTERS writeOffWriteOffBatchDetail(o) == t
 ;
 
@@ -183,14 +189,22 @@ DESIGN writeOffs FROM DEFAULT {
 
 
 @defineDocumentTransferRetail(writeOff);
+
 useRetailPriceWriteOffDetail(detail) = stockWriteOffDetail(detail) IS departmentStore;
 accountPriceWriteOffBatchDetail 'Учетная цена' (detail) = IF useRetailPriceWriteOffDetail(writeOffDetailWriteOffBatchDetail(detail))
         THEN retailPriceWriteOffDetail(writeOffDetailWriteOffBatchDetail(detail))
         ELSE supplierPriceBatchA(batchWriteOffBatchDetail(detail));
 accountSumWriteOffBatchDetail 'Учетная сумма' (detail) = accountPriceWriteOffBatchDetail(detail)*quantityWriteOffBatchDetail(detail);
 
-@extendDocumentFormDetailSkuArticleReadonly(writeOffs, o, writeOffBatch);
+importerPriceWriteOffBatchDetail 'Цена импортера' (detail) = importerPriceBatchA(batchWriteOffBatchDetail(detail));
+supplierPriceWriteOffBatchDetail 'Цена поставщика' (detail) = supplierPriceBatchA(batchWriteOffBatchDetail(detail));
+
 @defineDocumentTransferAccount(writeOff, useRetailPriceWriteOffDetail);
+@extendDocumentFormDetailSkuArticleReadonly(writeOffs, o, writeOffBatch);
+
+EXTEND FORM writeOffs
+    PROPERTIES(o) READONLY descriptionBatchWriteOffBatchDetail, importerPriceWriteOffBatchDetail, supplierPriceWriteOffBatchDetail
+;
 
 //--------------------------------Комиссия для списания----------------------------------//
 CLASS writeOffCommittee 'Комиссия для списания товаров' : committee;
@@ -296,12 +310,12 @@ FORM writeOffPrint 'Списание' PRINT
     EDIT writeOff OBJECT w
 ;
 
-toPrintWriteOff 'Списание' (writeOff) = ACTION FORM writeOffPrint OBJECTS w IMAGE 'print.png' IN printGroup;
+toPrintWriteOff 'Акт списания' (writeOff) = ACTION FORM writeOffPrint OBJECTS w IMAGE 'print.png' IN printGroup;
 
-
+isPostedNotChangeBalanceWriteOff (writeOff) = isPostedWriteOff(writeOff) AND NOT notChangeBalanceWriteOff(writeOff);
 EXTEND FORM writeOffs
-    PROPERTIES (o) READONLY accountPriceWriteOffBatchDetail, accountSumWriteOffBatchDetail
-    PROPERTIES(t) FORCE PANEL toPrintWriteOff
+    PROPERTIES     FORCE PANEL toPrintWriteOff(t) SHOWIF isPostedNotChangeBalanceWriteOff(t)
+    PROPERTIES(t) READONLY notChangeBalanceWriteOff
 ;
 //EXTEND DESIGN writeOffs {
 //    documentDetail {
@@ -322,6 +336,7 @@ quantityOutFIFOSkuLedger (ledger) += quantityWriteOffDetail (ledger);
 limitOutFIFOSkuLedgerBatch(ledger, batch) += currentBalanceBatchStock(batch, stockWriteOffDetail(ledger));
 sumOutSkuLedger(ledger) += accountSumWriteOffDetail(ledger);
 
+skipSkuLedger (ledger) += notChangeBalanceWriteOffDetail(ledger);
 //---------------------------------------- Товарный отчет ------------------------- //
 
 dateTimeAccountDocumentLedger (ledger) += dateTimeWriteOff(ledger);
