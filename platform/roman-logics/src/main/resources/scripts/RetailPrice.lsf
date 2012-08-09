@@ -117,6 +117,9 @@ keepDiscountPriceSetDocument 'Учитывать скидки' = DATA BOOLEAN(pr
 //связь документа и фрахта
 freightPriceSetDocument 'Фрахт документа (ИД)' = DATA freight(basePriceSetDocument) IN idGroup;
 
+reasonPriceSetDocument 'Основание прайса' (priceSetDocument) = UNION OVERRIDE descriptionFreight(freightPriceSetDocument (priceSetDocument)),
+                                                                                [DATA STRING[20] (priceSetDocument)](priceSetDocument);
+
 quantityPriceSetDocumentFreight (freight) = GROUP SUM 1 IF freightPriceSetDocument(basePriceSetDocument) BY freightPriceSetDocument(basePriceSetDocument);
 isPriceSetDocumentFreight (freight) = TRUE IF NOT quantityPriceSetDocumentFreight(freight) AND freight IS freight;
 
@@ -536,7 +539,8 @@ DESIGN discountPriceSetDocuments FROM DEFAULT {
 
 FORM priceSetDocument 'Розничный прайс'
     OBJECTS p=priceSetDocument FIXED PANEL
-    PROPERTIES(p) nameNumeratorObject, numberObject, seriesObject, datePriceSetDocument, timePriceSetDocument, dateTimeToPriceSetDocument
+    PROPERTIES(p) nameNumeratorObject, numberObject, seriesObject, datePriceSetDocument, timePriceSetDocument,
+                  dateTimeToPriceSetDocument, reasonPriceSetDocument
 
     TREE treeSupplierBrand v=STRING[3], s=supplier, b=brandSupplier
     PROPERTIES READONLY OBJVALUE(v), name(s), name(b)
@@ -595,6 +599,7 @@ DESIGN priceSetDocument FROM DEFAULT {
             ADD PROPERTY(datePriceSetDocument);
             ADD PROPERTY(timePriceSetDocument);
             ADD PROPERTY(dateTimeToPriceSetDocument);
+            ADD PROPERTY(reasonPriceSetDocument);
         }
 
         NEW allContainer {
@@ -681,7 +686,7 @@ FORM priceSetDocuments 'Розничные прайсы'
 
     OBJECTS p=priceSetDocument
     PROPERTIES(p) READONLY statusPriceSetDocument, objectClassName, numberObject, seriesObject, datePriceSetDocument,
-                           timePriceSetDocument, dateTimeToPriceSetDocument, canonicalBrandPriceSetDocument
+                           timePriceSetDocument, dateTimeToPriceSetDocument, canonicalBrandPriceSetDocument, reasonPriceSetDocument
     PROPERTIES(p) FORCE PANEL postPriceSetDocument SHOWIF isDraftPriceSetDocument(p),
                               unpostPriceSetDocument SHOWIF isPostedPriceSetDocument(p), ADDFORM,
                               EDITFORM SHOWIF isDraftPriceSetDocument(p), delete SHOWIF isDraftPriceSetDocument(p)
