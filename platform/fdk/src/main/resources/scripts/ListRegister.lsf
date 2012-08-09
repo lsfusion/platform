@@ -236,12 +236,12 @@ printInputListRegister 'Реестр цен' (inputListRegister) = ACTION FORM i
 
 FORM inputListRegisters 'Реестр цен (приход)'
     OBJECTS l=inputListRegister
-    PROPERTIES (l)  READONLY numberListRegister, seriesListRegister, objectClassName, dateListRegister, nameDepartmentStoreListRegister,
+    PROPERTIES (l)  READONLY notPassToBookkeepingListRegister, objectClassName, numberListRegister, seriesListRegister, dateListRegister, nameDepartmentStoreListRegister,
                     shipperListRegister, consigneeListRegister,
                     quantityListRegisterDetailListRegister, supplierSumListRegisterDetailListRegister,
                     wareSumListRegisterDetailListRegister, wareVATSumListRegisterDetailListRegister,  markupSumListRegisterDetailListRegister,
-                    retailVATSumListRegisterDetailListRegister, retailSumListRegisterDetailListRegister, nameRegisterCommitteeListRegister,
-                    notPassToBookkeepingListRegister
+                    retailVATSumListRegisterDetailListRegister, retailSumListRegisterDetailListRegister, nameRegisterCommitteeListRegister
+
     PROPERTIES (l)  printInputListRegister FORCE PANEL
 
 

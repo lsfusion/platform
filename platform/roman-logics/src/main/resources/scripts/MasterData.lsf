@@ -66,6 +66,32 @@ FORM syncBarcodeSkuForm 'Синхронизация шрих-кодов'
     PROPERTIES(s) syncBarcodeSku
 ;
 
+// ---------------------------------- Формы для выбора атрибутов ------------------------------------ //
+
+FORM genders 'Пол'
+    OBJECTS g = gender
+    PROPERTIES(g) READONLY sidGender
+    DIALOG gender OBJECT g;
+;
+
+FORM typeFabrics 'Типы одежды'
+    OBJECTS t = typeFabric
+    PROPERTIES(t) READONLY name
+    DIALOG typeFabric OBJECT t
+;
+
+FORM unitOfMeasures 'Единицы измерений'
+    OBJECTS u = unitOfMeasure
+    PROPERTIES(u) READONLY name, shortName, nameOrigin
+    DIALOG unitOfMeasure OBJECT u
+;
+
+//FORM countries 'Страны'
+//    OBJECTS c = country
+//    PROPERTIES(c) name, nameOriginCountry, sidCountry, sidOrigin2Country, sidOrigin3Country, sid3Country
+//    DIALOG country OBJECT c
+//;
+
 //----------------------Определения себестоимости при создании оптового прайса  ----------------------//
 
 // todo : это нужно убрать

@@ -3599,7 +3599,7 @@ public class RomanLogicsModule extends LogicsModule {
         ThemeSupplierFormEntity themeSupplierForm = new ThemeSupplierFormEntity(null, "themeSupplierForm", "Тема поставщика");
         themeSupplier.setDialogForm(themeSupplierForm, themeSupplierForm.objTheme);
 
-        GenderSupplierFormEntity genderSupplierForm = new GenderSupplierFormEntity(null, "genderSupplierForm", "Пол поставщика");
+        GenderSupplierFormEntity genderSupplierForm = new GenderSupplierFormEntity(null, "genderSuppliers", "Пол поставщика");
         genderSupplier.setDialogForm(genderSupplierForm, genderSupplierForm.objGender);
 
         CommonSizeFormEntity commonSizeForm = new CommonSizeFormEntity(null, "commonSizeForm", "Унифицированный размер");
@@ -3925,7 +3925,7 @@ public class RomanLogicsModule extends LogicsModule {
         public GenderSupplierFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
 
-            objGender = addSingleGroupObject(genderSupplier, "Пол поставщика", sidGenderSupplier, nameSupplierGenderSupplier/*, nameGenderSupplierSku*/);
+            objGender = addSingleGroupObject('g', genderSupplier, "Пол поставщика", sidGenderSupplier, nameSupplierGenderSupplier/*, nameGenderSupplierSku*/);
             setEditType(PropertyEditType.READONLY);
 
             addFormActions(this, objGender);

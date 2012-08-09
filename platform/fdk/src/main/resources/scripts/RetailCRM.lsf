@@ -83,10 +83,10 @@ generateDiscountCards 'Сгенерировать дисконтные карт�
     IF formResult() == formResult.ok THEN {
         LOCAL num = INTEGER();
         SET num() <- 0;
-        WHILE num() < (chosenInt('quantityCards') AS INTEGER) DO {
+        WHILE num() < (chosenInteger('quantityCards') AS INTEGER) DO {
             ADDOBJ discountCard;
             FOR d == addedObject() DO {
-                SET numeratorObject(d) <-chosenObject('n') AS numerator;
+                SET numeratorObject(d) <- chosenObject('n') AS numerator;
                 SET num() <- num() + 1;
             }
         }

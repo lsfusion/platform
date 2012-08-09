@@ -370,10 +370,15 @@ mainCompositionOriginArticleSkuWHfromCSRDetail 'Состав(ориг.)' (WHfrom
 // Внутренние атрибуты
 
 sidGenderArticleSkuWHfromCSRDetail 'Пол товара' (WHfromCSRDetail) = sidGenderArticleSku(skuWHfromCSRDetail(WHfromCSRDetail));
+changeGenderArticleSkuWHfromCSRDetail = ACTION (WHfromCSRDetail) {
+    REQUEST OBJECT g FORM genders MODAL;
+    IF formResult() == formResult.ok THEN {
+        SET genderArticle(article) IF article == articleSku(skuWHfromCSRDetail(WHfromCSRDetail)) <- chosenObject('g');
+    }
+}
 
 nameCategoryArticleSkuWHfromCSRDetail 'Номенклатурная группа' (WHfromCSRDetail) = nameCategoryArticleSku(skuWHfromCSRDetail(WHfromCSRDetail));
-changeNameCategoryArticleSkuWHfromCSRDetail = ACTION (WHfromCSRDetail) {
-    MESSAGE 'Change';
+changeCategoryArticleSkuWHfromCSRDetail = ACTION (WHfromCSRDetail) {
     REQUEST OBJECT c FORM categories MODAL;
     IF formResult() == formResult.ok THEN {
         SET categoryArticle(article) IF article == articleSku(skuWHfromCSRDetail(WHfromCSRDetail)) <- chosenObject('c');
@@ -381,12 +386,52 @@ changeNameCategoryArticleSkuWHfromCSRDetail = ACTION (WHfromCSRDetail) {
 }
 
 nameTypeFabricArticleSkuWHfromCSRDetail 'Тип одежды' (WHfromCSRDetail) = nameTypeFabricArticleSku(skuWHfromCSRDetail(WHfromCSRDetail));
+changeTypeFabricArticleSkuWHfromCSRDetail = ACTION (WHfromCSRDetail) {
+    REQUEST OBJECT t FORM typeFabrics MODAL;
+    IF formResult() == formResult.ok THEN {
+        SET typeFabricArticle(article) IF article == articleSku(skuWHfromCSRDetail(WHfromCSRDetail)) <- chosenObject('t');
+    }
+}
+
 nameUnitOfMeasureArticleSkuWHfromCSRDetail 'Ед. измерения товара' (WHfromCSRDetail) = nameUnitOfMeasureArticleSku(skuWHfromCSRDetail(WHfromCSRDetail));
-netWeightSkuWHfromCSRDetail 'Весс нетто(ед.)' (WHfromCSRDetail) = netWeightSku(skuWHfromCSRDetail(WHfromCSRDetail));
+changeUnitOfMeasureArticleSkuWHfromCSRDetail = ACTION (WHfromCSRDetail) {
+    REQUEST OBJECT u FORM unitOfMeasures MODAL;
+    IF formResult() == formResult.ok THEN {
+        SET unitOfMeasureArticle(article) IF article == articleSku(skuWHfromCSRDetail(WHfromCSRDetail)) <- chosenObject('u');
+    }
+}
+
+netWeightSkuWHfromCSRDetail 'Вес нетто(ед.)' (WHfromCSRDetail) = netWeightSku(skuWHfromCSRDetail(WHfromCSRDetail));
+changeNetWeightSkuWHfromCSRDetail = ACTION (WHfromCSRDetail) {
+    REQUEST NUMERIC[14,6] INPUT;
+    SET netWeightSku(sku) IF sku == skuWHfromCSRDetail(WHfromCSRDetail) <- requestedNumeric();
+}
+
 nameCountryOfOriginSkuWHfromCSRDetail 'Страна происхождения' (WHfromCSRDetail) = nameCountryOfOriginSku(skuWHfromCSRDetail(WHfromCSRDetail));
+changeCountryOfOriginSkuWHfromCSRDetail = ACTION (WHfromCSRDetail) {
+    REQUEST OBJECT c FORM countries MODAL;
+    IF formResult() == formResult.ok THEN {
+        SET countryOfOriginSku(sku) IF sku == skuWHfromCSRDetail(WHfromCSRDetail) <- chosenObject('c');
+    }
+}
+
 mainCompositionOriginSkuWHfromCSRDetail 'Состав' (WHfromCSRDetail) = mainCompositionOriginSku(skuWHfromCSRDetail(WHfromCSRDetail));
+changeMainCompositionOriginSkuWHfromCSRDetail = ACTION (WHfromCSRDetail) {
+    REQUEST STRING[200] INPUT;
+    SET mainCompositionOriginSku(sku) IF sku == skuWHfromCSRDetail(WHfromCSRDetail) <- requestedString();
+}
+
 additionalCompositionOriginSkuWHfromCSRDetail 'Дополнительный состав' (WHfromCSRDetail) = additionalCompositionOriginSku(skuWHfromCSRDetail(WHfromCSRDetail));
+changeAdditionalCompositionOriginSkuWHfromCSRDetail = ACTION (WHfromCSRDetail) {
+    REQUEST STRING[200] INPUT;
+    SET additionalCompositionOriginSku(sku) IF sku == skuWHfromCSRDetail(WHfromCSRDetail) <- requestedString();
+}
+
 coefficientArticleSkuWHfromCSRDetail 'Кол-во в комплекте' (WHfromCSRDetail) = coefficientArticleSku(skuWHfromCSRDetail(WHfromCSRDetail));
+changeCoefficientArticleSkuWHfromCSRDetail = ACTION (WHfromCSRDetail) {
+    REQUEST INTEGER INPUT;
+    SET coefficientArticle(article) IF article == articleSku(skuWHfromCSRDetail(WHfromCSRDetail)) <- requestedInteger();
+}
 
 backgroundWHfromCSRDetail 'Цвет' (WHfromCSRDetail) = RGB(255, 128, 128) IF quantityWHfromCSRDetail(WHfromCSRDetail) == 1;
 
@@ -417,15 +462,15 @@ FORM WHfromCSR 'Приемка на оптовый склад'
                                        nameBrandSupplierArticleSkuWHfromCSRDetail, netWeightArticleSkuWHfromCSRDetail,
                                        mainCompositionOriginArticleSkuWHfromCSRDetail
 
-    PROPERTIES(d) FORCE PANEL sidGenderArticleSkuWHfromCSRDetail BACKGROUND backgroundWHfromCSRDetail(d),
-                              c = nameCategoryArticleSkuWHfromCSRDetail BACKGROUND backgroundWHfromCSRDetail(d) ON CHANGE EXEC changeNameCategoryArticleSkuWHfromCSRDetail(d),
-                              nameTypeFabricArticleSkuWHfromCSRDetail BACKGROUND backgroundWHfromCSRDetail(d),
-                              u = nameUnitOfMeasureArticleSkuWHfromCSRDetail BACKGROUND backgroundWHfromCSRDetail(d),
-                              netWeightSkuWHfromCSRDetail BACKGROUND backgroundWHfromCSRDetail(d),
-                              nameCountryOfOriginSkuWHfromCSRDetail BACKGROUND backgroundWHfromCSRDetail(d),
-                              mainCompositionOriginSkuWHfromCSRDetail BACKGROUND backgroundWHfromCSRDetail(d),
-                              additionalCompositionOriginSkuWHfromCSRDetail BACKGROUND backgroundWHfromCSRDetail(d),
-                              coefficientArticleSkuWHfromCSRDetail BACKGROUND backgroundWHfromCSRDetail(d)
+    PROPERTIES(d) FORCE PANEL sidGenderArticleSkuWHfromCSRDetail BACKGROUND backgroundWHfromCSRDetail(d) ON CHANGE EXEC changeGenderArticleSkuWHfromCSRDetail(d),
+                              c = nameCategoryArticleSkuWHfromCSRDetail BACKGROUND backgroundWHfromCSRDetail(d) ON CHANGE EXEC changeCategoryArticleSkuWHfromCSRDetail(d),
+                              nameTypeFabricArticleSkuWHfromCSRDetail BACKGROUND backgroundWHfromCSRDetail(d) ON CHANGE EXEC changeTypeFabricArticleSkuWHfromCSRDetail(d),
+                              u = nameUnitOfMeasureArticleSkuWHfromCSRDetail BACKGROUND backgroundWHfromCSRDetail(d) ON CHANGE EXEC changeUnitOfMeasureArticleSkuWHfromCSRDetail(d),
+                              netWeightSkuWHfromCSRDetail BACKGROUND backgroundWHfromCSRDetail(d) ON CHANGE EXEC changeNetWeightSkuWHfromCSRDetail(d),
+                              nameCountryOfOriginSkuWHfromCSRDetail BACKGROUND backgroundWHfromCSRDetail(d) ON CHANGE EXEC changeCountryOfOriginSkuWHfromCSRDetail(d),
+                              mainCompositionOriginSkuWHfromCSRDetail BACKGROUND backgroundWHfromCSRDetail(d) ON CHANGE EXEC changeMainCompositionOriginSkuWHfromCSRDetail(d),
+                              additionalCompositionOriginSkuWHfromCSRDetail BACKGROUND backgroundWHfromCSRDetail(d) ON CHANGE EXEC changeAdditionalCompositionOriginSkuWHfromCSRDetail(d),
+                              coefficientArticleSkuWHfromCSRDetail BACKGROUND backgroundWHfromCSRDetail(d) ON CHANGE EXEC changeCoefficientArticleSkuWHfromCSRDetail(d)
 
     FILTERS inWHfromCSRWHfromCSRDetail(w, d)
 

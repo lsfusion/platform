@@ -2439,7 +2439,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         public CountriesFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, getString("logics.country.countries"));
 
-            ObjectEntity objCountry = addSingleGroupObject(country, getString("logics.country"));
+            ObjectEntity objCountry = addSingleGroupObject("c", country, getString("logics.country"));
             addPropertyDraw(objCountry, baseLM.name, nameOriginCountry, sidCountry, sidOrigin2Country, sidOrigin3Country, residentCountry);
             setEditType(PropertyEditType.READONLY);
 
