@@ -572,7 +572,7 @@ numberVATRangeGroupDeclaration 'Шкала НДС' (groupDeclaration) = numberRa
 valueVATRangeGroupDeclaration 'НДС (%)' (groupDeclaration) = valueRateRangeDate(VATRangeDataGroupDeclaration(groupDeclaration),
                                                                                 dateDeclaration(declarationGroupDeclaration(groupDeclaration)));
 
-VATRangeReverseDeclarationDetail 'Шкала НДС (ИД)' (declarationDetail) = VATRangeGroupDeclaration(primaryGroupDeclarationDeclarationDetail(declarationDetail));
+VATRangeReverseDeclarationDetail 'Шкала НДС (ИД)' (declarationDetail) = VATRangeDataGroupDeclaration(primaryGroupDeclarationDeclarationDetail(declarationDetail));
 numberVATRangeReverseDeclarationDetail 'Шкала НДС' (declarationDetail) = numberRange(VATRangeReverseDeclarationDetail(declarationDetail));
 valueVATRangeReverseDeclarationDetail 'НДС (%)' (declarationDetail) = valueRateRangeDate(VATRangeReverseDeclarationDetail(declarationDetail), dateDeclaration(declarationDeclarationDetail(declarationDetail)));
 
