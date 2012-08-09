@@ -218,6 +218,13 @@ priceDataDiscountPriceSetDocumentArticle(discountPriceSetDocument, article) <- r
 inArticlePriceSetDocument 'Артикул в документе' = DATA BOOLEAN(priceSetDocument, article);
 inFreightArticle (freight, article) = TRUE IF quantityFreightArticle(freight, article);
 
+quantityPriceSetDocumentBrandSupplier (priceSetDocument, brandSupplier) = GROUP SUM 1 IF inArticlePriceSetDocument(priceSetDocument, article)
+    BY priceSetDocument, brandSupplierArticle(article);
+
+canonicalBrandPriceSetDocument 'Бренды' (priceSetDocument) = castToString255(
+    [GROUP CONCAT commonName(brandSupplier) IF quantityPriceSetDocumentBrandSupplier(priceSetDocument, brandSupplier), ' , ' BY priceSetDocument](priceSetDocument))
+    MINCHARWIDTH 50 MAXCHARWIDTH 100 PREFCHARWIDTH 100 PERSISTENT;
+
 typeExchangePriceSetDocumentArticle 'Тип обмена ИД' = DATA typeExchange (priceSetDocument, article) IN idGroup;
 nameTypeExchangePriceSetDocumentArticle 'Тип обмена' (priceSetDocument, article) = name(typeExchangePriceSetDocumentArticle(priceSetDocument, article));
 typeExchangePriceSetDocumentArticle(priceSetDocument, article) <- typeExchangeRetail() AND priceSetDocument IS priceSetDocument AND article IS article
@@ -673,7 +680,8 @@ printAllPricePriceSetDocumentArticle 'Печать цен для маркиро�
 FORM priceSetDocuments 'Розничные прайсы'
 
     OBJECTS p=priceSetDocument
-    PROPERTIES(p) READONLY statusPriceSetDocument, objectClassName, numberObject, seriesObject, datePriceSetDocument, timePriceSetDocument, dateTimeToPriceSetDocument
+    PROPERTIES(p) READONLY statusPriceSetDocument, objectClassName, numberObject, seriesObject, datePriceSetDocument,
+                           timePriceSetDocument, dateTimeToPriceSetDocument, canonicalBrandPriceSetDocument
     PROPERTIES(p) FORCE PANEL postPriceSetDocument SHOWIF isDraftPriceSetDocument(p),
                               unpostPriceSetDocument SHOWIF isPostedPriceSetDocument(p), ADDFORM,
                               EDITFORM SHOWIF isDraftPriceSetDocument(p), delete SHOWIF isDraftPriceSetDocument(p)
