@@ -673,7 +673,7 @@ printAllPricePriceSetDocumentArticle 'Печать цен для маркиро�
 FORM priceSetDocuments 'Розничные прайсы'
 
     OBJECTS p=priceSetDocument
-    PROPERTIES(p) READONLY statusPriceSetDocument, numberObject, seriesObject, datePriceSetDocument, timePriceSetDocument, dateTimeToPriceSetDocument
+    PROPERTIES(p) READONLY statusPriceSetDocument, objectClassName, numberObject, seriesObject, datePriceSetDocument, timePriceSetDocument, dateTimeToPriceSetDocument
     PROPERTIES(p) FORCE PANEL postPriceSetDocument SHOWIF isDraftPriceSetDocument(p),
                               unpostPriceSetDocument SHOWIF isPostedPriceSetDocument(p), ADDFORM,
                               EDITFORM SHOWIF isDraftPriceSetDocument(p), delete SHOWIF isDraftPriceSetDocument(p)
@@ -718,12 +718,13 @@ DESIGN priceSetDocuments FROM DEFAULT {
             NEW secondContainer{
                 type = SPLITH;
                 ADD s.box;
-                ADD a.box{
-                    fillHorizontal = 3;
-                }
-                POSITION a.box TO THE RIGHT s.box;
+                ADD d.box;
+                POSITION d.box TO THE RIGHT s.box;
+                fillVertical = 1;
             }
-            ADD d.box;
+            ADD a.box {
+                fillVertical = 3;
+            };
         }
     }
 
@@ -731,6 +732,9 @@ DESIGN priceSetDocuments FROM DEFAULT {
     PROPERTY (delete(p)) {
         panelLocation = TOOLBAR;
         askConfirm = TRUE;
+    }
+    PROPERTY(objectClassName) {
+        preferredCharWidth = 10;
     }
 
 }
