@@ -10,12 +10,12 @@
 		</box>
 	</style>
 	<field name="expert" class="java.lang.Integer"/>
-	<field name="userLastName2" class="java.lang.String"/>
-	<field name="userFirstName2" class="java.lang.String"/>
+	<field name="userLastName1" class="java.lang.String"/>
+	<field name="userFirstName1" class="java.lang.String"/>
 	<field name="numberOldExpertVote" class="java.lang.Integer"/>
-	<field name="documentNameExpert2" class="java.lang.String"/>
+	<field name="documentNameExpert1" class="java.lang.String"/>
 	<field name="quantityInOldVote" class="java.lang.Integer"/>
-	<field name="sidExpert2" class="java.lang.String"/>
+	<field name="sidExpert1" class="java.lang.String"/>
 	<field name="readInformation" class="java.lang.Boolean"/>
 	<detail>
 		<band height="16">
@@ -24,7 +24,7 @@
 				<textElement>
 					<paragraph firstLineIndent="40"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{numberOldExpertVote}+") "+($F{readInformation}==null?$F{sidExpert2}:$F{documentNameExpert2})+ ($F{numberOldExpertVote} == $F{quantityInOldVote} ? "." : ";")]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{numberOldExpertVote}+") "+($F{readInformation}==null?$F{sidExpert1}:$F{documentNameExpert1})+ ($F{numberOldExpertVote} == $F{quantityInOldVote} ? "." : ";")]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
