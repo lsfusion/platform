@@ -126,7 +126,7 @@ createInnerOrderStoreWHfromCSI 'Создать внутренний заказ' 
         ADDOBJ orderPickingPosted;
         FOR p == addedObject() DO {
             SET innerOrderOrderPicking (p) <- i AS innerOrder;
-            FOR WHfromCSIWHfromCSR(WHfromCSRWHfromCSRDetail(WHfromCSRDetail)) == WHfromCSI DO {
+            FOR WHfromCSIWHfromCSR(WHfromCSRWHfromCSRDetail(WHfromCSRDetail)) == WHfromCSI AND destinationWHfromCSRDetail(WHfromCSRDetail) == store DO {
                 ADDOBJ innerOrderDetail;
                 FOR d == addedObject() DO {
                     SET skuInnerOrderDetail(d) <- skuWHfromCSRDetail(WHfromCSRDetail);
@@ -143,7 +143,9 @@ createInnerOrderStoreWHfromCSI 'Создать внутренний заказ' 
         }
     }
     EXEC apply();
-}] (store, WHfromCSI) AND NOT innerOrderStoreWHfromCSI(store, WHfromCSI);
+    FORM innerOrder OBJECTS o = innerOrderStoreWHfromCSI (store, WHfromCSI)  MODAL;
+
+}] (store, WHfromCSI) AND NOT innerOrderStoreWHfromCSI(store, WHfromCSI) CONFIRM;
 
 FORM addBarcodeWHfromCSRFreightUnitSku 'Поиск товара(с коробами и выбором шрих-кода)'
 

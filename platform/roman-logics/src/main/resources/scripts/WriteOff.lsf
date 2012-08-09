@@ -38,7 +38,7 @@ initValueNumeratorObject(object) += defaultNumeratorWriteOff() IF object IS writ
 initWhenNumeratorObject(object) += ASSIGNED(object IS writeOff);
 
 @defineDocument(writeOff);
-@defineDocumentStock(writeOff, stock, 'Отдел');
+@defineDocumentStock(writeOff, stock, 'Склад');
 @defineDocumentPosted(writeOff);
 @defineDocumentDescription (writeOff, 'Списание товара');
 
