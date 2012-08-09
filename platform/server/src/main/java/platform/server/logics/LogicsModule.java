@@ -2171,6 +2171,7 @@ public abstract class LogicsModule {
                 addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "Int", captionPrefix + " Int", classes, IntegerClass.instance))),
                 addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "Long", captionPrefix + " Long", classes, LongClass.instance))),
                 addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "Double", captionPrefix + " Double", classes, DoubleClass.instance))),
+                addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "Numeric", captionPrefix + " Numeric", classes, NumericClass.get(20, 7)))),
                 addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "Year", captionPrefix + " Year", classes, YearClass.instance))),
                 addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "DateTime", captionPrefix + " DateTime", classes, DateTimeClass.instance))),
                 addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty(sidPrefix + "Logical", captionPrefix + " Logical", classes, LogicalClass.instance))),

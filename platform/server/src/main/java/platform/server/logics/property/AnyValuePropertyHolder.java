@@ -15,6 +15,7 @@ public class AnyValuePropertyHolder {
     private final LCP intProperty;
     private final LCP longProperty;
     private final LCP doubleProperty;
+    private final LCP numericProperty;
     private final LCP yearProperty;
     private final LCP dateTimeProperty;
     private final LCP logicalProperty;
@@ -27,7 +28,7 @@ public class AnyValuePropertyHolder {
     private final LCP customFileProperty;
     private final LCP excelFileProperty;
 
-    public AnyValuePropertyHolder(LCP objectProperty, LCP textProperty, LCP stringProperty, LCP intProperty, LCP longProperty, LCP doubleProperty, LCP yearProperty,
+    public AnyValuePropertyHolder(LCP objectProperty, LCP textProperty, LCP stringProperty, LCP intProperty, LCP longProperty, LCP doubleProperty, LCP numericProperty, LCP yearProperty,
                                   LCP dateTimeProperty, LCP logicalProperty, LCP dateProperty, LCP timeProperty, LCP colorProperty, LCP wordFileProperty, LCP imageFileProperty,
                                   LCP pdfFileProperty, LCP customFileProperty, LCP excelFileProperty) {
         assert objectProperty.property.getType() == ObjectType.instance
@@ -36,6 +37,7 @@ public class AnyValuePropertyHolder {
                 && intProperty.property.getType() == IntegerClass.instance
                 && longProperty.property.getType() == LongClass.instance
                 && doubleProperty.property.getType() == DoubleClass.instance
+                && numericProperty.property.getType().getCompatible(NumericClass.get(0, 0)) != null
                 && yearProperty.property.getType() == YearClass.instance
                 && dateTimeProperty.property.getType() == DateTimeClass.instance
                 && logicalProperty.property.getType() == LogicalClass.instance
@@ -55,6 +57,7 @@ public class AnyValuePropertyHolder {
         this.intProperty = intProperty;
         this.longProperty = longProperty;
         this.doubleProperty = doubleProperty;
+        this.numericProperty = numericProperty;
         this.yearProperty = yearProperty;
         this.dateTimeProperty = dateTimeProperty;
         this.logicalProperty = logicalProperty;
@@ -86,6 +89,9 @@ public class AnyValuePropertyHolder {
 
         } else if (valueType instanceof DoubleClass) {
             doubleProperty.change(value, context, keys);
+
+        } else if (valueType instanceof NumericClass) {
+            numericProperty.change(value, context, keys);
 
         } else if (valueType instanceof YearClass) {
             yearProperty.change(value, context, keys);
@@ -124,6 +130,7 @@ public class AnyValuePropertyHolder {
             throw new IllegalStateException(valueType + " is not supported by AnyValueProperty");
         }
     }
+
     public Object read(Type valueType, ExecutionContext context, DataObject... keys) throws SQLException {
         if (valueType instanceof ObjectType) {
             return objectProperty.read(context, keys);
@@ -142,6 +149,9 @@ public class AnyValuePropertyHolder {
 
         } else if (valueType instanceof DoubleClass) {
             return doubleProperty.read(context, keys);
+
+        } else if (valueType instanceof NumericClass) {
+            return numericProperty.read(context, keys);
 
         } else if (valueType instanceof YearClass) {
             return yearProperty.read(context, keys);
