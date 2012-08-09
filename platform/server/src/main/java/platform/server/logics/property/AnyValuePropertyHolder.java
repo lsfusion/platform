@@ -125,7 +125,7 @@ public class AnyValuePropertyHolder {
         }
     }
     public Object read(Type valueType, ExecutionContext context, DataObject... keys) throws SQLException {
-        if (valueType instanceof CustomClass) {
+        if (valueType instanceof ObjectType) {
             return objectProperty.read(context, keys);
 
         } else if (valueType instanceof TextClass) {

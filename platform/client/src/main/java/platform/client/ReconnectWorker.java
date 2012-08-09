@@ -11,6 +11,7 @@ import java.awt.event.WindowEvent;
 import java.rmi.ConnectException;
 import java.rmi.Naming;
 import java.rmi.NoSuchObjectException;
+import java.rmi.NotBoundException;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -39,6 +40,7 @@ public final class ReconnectWorker extends SwingWorker<RemoteLoaderInterface, In
                 remoteLoader = (RemoteLoaderInterface) Naming.lookup(serverUrl);
             } catch (ConnectException ignore) {
             } catch (NoSuchObjectException ignore) {
+            } catch (NotBoundException ignore) {
             }
 
             if (remoteLoader != null) {
