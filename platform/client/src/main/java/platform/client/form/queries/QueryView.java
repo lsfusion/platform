@@ -120,6 +120,7 @@ public abstract class QueryView extends JPanel implements QueryConditionView.UIH
         comp.getActionMap().put("newFilter", new AbstractAction() {
             public void actionPerformed(ActionEvent ae) {
                 controller.addConditionPressed(true);
+                startEditing(null, null);
             }
         });
 
