@@ -386,18 +386,15 @@ public class GridTable extends ClientPropertyTable {
 
     private void changeCurrentObjectLater() {
         final ClientGroupObjectValue selectedObject = getSelectedObject();
-        if (!currentObject.equals(selectedObject)) {
+        if (!currentObject.equals(selectedObject) && selectedObject != null) {
             setCurrentObject(selectedObject);
-
-            if (selectedObject != null) {
-                SwingUtils.invokeLaterSingleAction(
-                        groupObject.getActionID(),
-                        new ActionListener() {
-                            public void actionPerformed(ActionEvent ae) {
-                                changeCurrentObject(selectedObject);
-                            }
-                        }, 50);
-            }
+            SwingUtils.invokeLaterSingleAction(
+                    groupObject.getActionID(),
+                    new ActionListener() {
+                        public void actionPerformed(ActionEvent ae) {
+                            changeCurrentObject(selectedObject);
+                        }
+                    }, 50);
         }
     }
 

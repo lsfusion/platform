@@ -75,7 +75,9 @@ public class GridSelectionController {
         Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> newMap = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>(selectedCells);
         for (int column = Math.min(firstColumnIndex, lastColumnIndex); column <= Math.max(firstColumnIndex, lastColumnIndex); column++) {
             ClientPropertyDraw property = table.getProperty(0, column);
-            Map<ClientGroupObjectValue, Object> valueMap = new HashMap<ClientGroupObjectValue, Object>(selectedCells.get(property));
+            Map<ClientGroupObjectValue, Object> valueMap = selectedCells.get(property) != null ?
+                    new HashMap<ClientGroupObjectValue, Object>(selectedCells.get(property)) :
+                    new HashMap<ClientGroupObjectValue, Object>();
             for (ClientGroupObjectValue key : temporaryValues.keySet()) {
                 if (temporaryValues.containsKey(key) && temporaryValues.get(key).containsKey(property)) {
                     if (temporarySelectionAddition) {
@@ -105,7 +107,7 @@ public class GridSelectionController {
                     addToSelection(newProperty, rowIndex);
                 }
                 ClientPropertyDraw selProp = table.getProperty(rowIndex, columnIndex);
-                temporarySelectionAddition = selectedCells.get(selProp).containsKey(getRowKeys().get(rowIndex));
+                temporarySelectionAddition = selectedCells.get(selProp) != null && selectedCells.get(selProp).containsKey(getRowKeys().get(rowIndex));
                 addToTemporaryValues(rowIndex);
             }
         } else {
@@ -125,7 +127,11 @@ public class GridSelectionController {
     }
 
     private void addToSelection(ClientPropertyDraw property, int rowIndex) {
-        selectedCells.get(property).put(getRowKeys().get(rowIndex), table.getValueAt(rowIndex, indexOf(property)));
+        if (selectedCells.get(property) != null) {
+            selectedCells.get(property).put(getRowKeys().get(rowIndex), table.getValueAt(rowIndex, indexOf(property)));
+        } else {
+            resetSelection();
+        }
     }
 
     private void modifyTemporaryValues(int currentRow) {
@@ -145,7 +151,7 @@ public class GridSelectionController {
     }
 
     private boolean removeFromSelection(ClientPropertyDraw property, int rowIndex) {
-        if (selectedCells.get(property).containsKey(getRowKeys().get(rowIndex))) {
+        if (selectedCells.get(property) != null && selectedCells.get(property).containsKey(getRowKeys().get(rowIndex))) {
             selectedCells.get(property).remove(getRowKeys().get(rowIndex));
             return true;
         }
@@ -269,12 +275,14 @@ public class GridSelectionController {
     }
 
     public String getSelectedTableString() throws ParseException {
+        commitSelection();
+
         if (selectedCells.isEmpty())
             return null;
 
         int firstPropertyIndex = -1, lastPropertyIndex = -1;
         for (int i = 0; i < getProperties().size(); i++) {
-            if (!selectedCells.get(getProperties().get(i)).isEmpty()) {
+            if (selectedCells.get(getProperties().get(i)) != null && !selectedCells.get(getProperties().get(i)).isEmpty()) {
                 if (firstPropertyIndex == -1)
                     firstPropertyIndex = i;
                 lastPropertyIndex = i;
