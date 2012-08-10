@@ -145,6 +145,8 @@ NAVIGATOR {
         }
         NEW transfers 'Трансферы' {
             ADD innerOrders;
+            ADD orderPickings;
+            ADD innerOrderRecs;
         }
 
         NEW logisticsIncome 'Приходы' {
