@@ -429,6 +429,11 @@ META implementBatch(concrete, skuProp, stockProp, costProp)
     costBatch (batch) += costProp###concrete##Detail(batch);
 END
 
+META defineConstraintSkuLedgerCosted (concrete, caption)
+    CONSTRAINT isPosted###concrete##Detail(detail) AND NOT quantity###concrete##Detail(detail) == costedDataSkuLedger(detail)
+        MESSAGE caption;
+END
+
 // ---------------------------------------------- Макросы для документов ------------------------------------------------- //
 
 // Склады
@@ -461,8 +466,8 @@ END
 // Sku
 META defineDocumentDetailSkuPrefix (object, skuClass, prefix, caption)
     prefix###skuClass###object##Detail (detail) = DATA skuClass (object###Detail);
-    prefix###nameSku###object##Detail 'SKU'###caption (detail) = nameSku(prefix###skuClass###object##Detail(detail));
-    prefix###idBarcodeSku###object##Detail 'Штрих-код'###caption (detail) = idBarcodeSku(prefix###skuClass###object##Detail(detail));
+    prefix###nameSku###object##Detail 'SKU'###caption (detail) = nameSku(prefix###skuClass###object##Detail(detail)) IN recognizeGroup;
+    prefix###idBarcodeSku###object##Detail 'Штрих-код'###caption (detail) = idBarcodeSku(prefix###skuClass###object##Detail(detail)) IN recognizeGroup;
 END
 META defineDocumentDetailSku (object, skuClass)
     @defineDocumentDetailSkuPrefix(object, skuClass, ,);
@@ -497,8 +502,8 @@ END
 // Sku
 META defineDocumentAggregationDetailSkuPrefix (primObject, aggrObject, skuProp, prefix)
     skuProp###aggrObject##Detail (detail) = prefix###skuProp###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
-    nameSku###aggrObject##Detail 'SKU' (detail) = nameSku(skuProp###aggrObject##Detail(detail));
-    idBarcodeSku###aggrObject##Detail 'Штрих-код' (detail) = idBarcodeSku(skuProp###aggrObject##Detail(detail));
+    nameSku###aggrObject##Detail 'SKU' (detail) = nameSku(skuProp###aggrObject##Detail(detail)) IN recognizeGroup;
+    idBarcodeSku###aggrObject##Detail 'Штрих-код' (detail) = idBarcodeSku(skuProp###aggrObject##Detail(detail)) IN recognizeGroup;
 END
 META defineDocumentAggregationDetailSku (primObject, aggrObject, skuProp)
     @defineDocumentAggregationDetailSkuPrefix(primObject, aggrObject, skuProp, );

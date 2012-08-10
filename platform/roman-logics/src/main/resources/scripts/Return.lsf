@@ -100,6 +100,8 @@ quantityOutFIFOSkuLedger (ledger) += quantityReturnOutDetail (ledger);
 limitOutFIFOSkuLedgerBatch (ledger, batch) += quantityReturnOutDetail(ledger) IF batch == saleInBatchDetailReturnOutDetail(ledger);
 sumOutSkuLedger(ledger) += accountSumReturnOutDetail(ledger);
 
+@defineConstraintSkuLedgerCosted(returnOut, 'Не хватает остатков по партиям для возврата товаров');
+
 // Товарные накладные
 
 @defineConsignment(returnOut);

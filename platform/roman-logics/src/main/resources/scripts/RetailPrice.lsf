@@ -218,10 +218,10 @@ priceDiscountPriceSetDocumentArticle 'Цена без процентов' (disco
 priceDataDiscountPriceSetDocumentArticle(discountPriceSetDocument, article) <- roundPrice(priceDiscountPriceSetDocumentArticle(discountPriceSetDocument, article))
                                         WHEN CHANGED (priceDiscountPriceSetDocumentArticle(discountPriceSetDocument, article));
 
-inArticlePriceSetDocument 'Артикул в документе' = DATA BOOLEAN(priceSetDocument, article);
+inPriceSetDocumentArticle 'Артикул в документе' = DATA BOOLEAN(priceSetDocument, article);
 inFreightArticle (freight, article) = TRUE IF quantityFreightArticle(freight, article);
 
-quantityPriceSetDocumentBrandSupplier (priceSetDocument, brandSupplier) = GROUP SUM 1 IF inArticlePriceSetDocument(priceSetDocument, article)
+quantityPriceSetDocumentBrandSupplier (priceSetDocument, brandSupplier) = GROUP SUM 1 IF inPriceSetDocumentArticle(priceSetDocument, article)
     BY priceSetDocument, brandSupplierArticle(article);
 
 canonicalBrandPriceSetDocument 'Бренды' (priceSetDocument) = castToString255(
@@ -231,25 +231,25 @@ canonicalBrandPriceSetDocument 'Бренды' (priceSetDocument) = castToString2
 typeExchangePriceSetDocumentArticle 'Тип обмена ИД' = DATA typeExchange (priceSetDocument, article) IN idGroup;
 nameTypeExchangePriceSetDocumentArticle 'Тип обмена' (priceSetDocument, article) = name(typeExchangePriceSetDocumentArticle(priceSetDocument, article));
 typeExchangePriceSetDocumentArticle(priceSetDocument, article) <- typeExchangeRetail() AND priceSetDocument IS priceSetDocument AND article IS article
-                                                                  WHEN ASSIGNED (inArticlePriceSetDocument(priceSetDocument, article));
+                                                                  WHEN ASSIGNED (inPriceSetDocumentArticle(priceSetDocument, article));
 
 currencyPriceSetDocumentArticle 'Валюта ИД' = DATA currency (priceSetDocument, article) IN idGroup;
 nameCurrencyPriceSetDocumentArticle 'Валюта' = name(currencyPriceSetDocumentArticle(priceSetDocument, article));
 currencyPriceSetDocumentArticle(priceSetDocument, article) <- currencyTypeExchange(typeExchangeSTX()) AND priceSetDocument IS priceSetDocument AND article IS article
-                                                                  WHEN ASSIGNED (inArticlePriceSetDocument(priceSetDocument, article));
+                                                                  WHEN ASSIGNED (inPriceSetDocumentArticle(priceSetDocument, article));
 
 //проставление текущих значений при расценке
 priceInPriceSetDocumentArticle(basePriceSetDocument, article) <- prevPriceInBBasePriceSetDocumentArticle (basePriceSetDocument, article)
-    WHEN ASSIGNED(inArticlePriceSetDocument(basePriceSetDocument, article));
+    WHEN ASSIGNED(inPriceSetDocumentArticle(basePriceSetDocument, article));
 
 RRPPriceSetDocumentArticle(basePriceSetDocument, article) <- prevRRPBBasePriceSetDocumentArticle (basePriceSetDocument, article)
-    WHEN ASSIGNED(inArticlePriceSetDocument(basePriceSetDocument, article));
+    WHEN ASSIGNED(inPriceSetDocumentArticle(basePriceSetDocument, article));
 
 percentDiscountPriceSetDocumentArticle (document, article) <- prevPercentDiscountPriceSetDocumentArticle (document, article)
-    WHEN ASSIGNED(inArticlePriceSetDocument(document, article));
+    WHEN ASSIGNED(inPriceSetDocumentArticle(document, article));
 
 methodPriceSetDocumentArticle (document, article) <- prevMethodPriceSetDocumentArticle (document, article)
-    WHEN ASSIGNED(inArticlePriceSetDocument(document, article));
+    WHEN ASSIGNED(inPriceSetDocumentArticle(document, article));
 
 pricePriceSetDocumentArticleDateTime(article, dateTime) = priceBasePriceSetDocumentArticleDateTime(article, dateTime) OR priceDiscountPriceSetDocumentArticleDateTime(article, dateTime);
 
@@ -263,7 +263,7 @@ FORM logPriceArticle 'История цен'
     PROPERTIES(d) READONLY dateTimePriceSetDocument
     PROPERTIES (d, a) READONLY priceDataDiscountPriceSetDocumentArticle
 
-    FILTERS inArticlePriceSetDocument(d, a)
+    FILTERS inPriceSetDocumentArticle(d, a)
 
 ;
 
@@ -280,7 +280,7 @@ createUserPriceChangeDepartmentStorePriceSetDocument 'Создать докум�
             SET dateUserPriceChange(p) <- datePriceSetDocument(priceSetDocument);
             SET timeUserPriceChange(p) <- timePriceSetDocument(priceSetDocument);
 
-            FOR balanceBASkuStockDateTime(sku, departmentStore, priceDateTime()) !=0 AND inArticlePriceSetDocument(priceSetDocument, articleSku(sku))
+            FOR balanceBASkuStockDateTime(sku, departmentStore, priceDateTime()) !=0 AND inPriceSetDocumentArticle(priceSetDocument, articleSku(sku))
                 AND pricePriceSetDocumentArticleDateTime(articleSku(sku), priceDateTime()) != retailPriceBLedgerDateTime(sku, departmentStore, priceDateTime())
                 AND isPostedPriceSetDocument(priceSetDocument) DO {
                 ADDOBJ userPriceChangeDetail;
@@ -322,12 +322,13 @@ FORM priceSetDocument 'Розничный прайс'
     OBJECTS aa=article
     PROPERTIES (aa) READONLY sidArticle, nameCategoryArticle, nameBrandSupplierArticle, currentBalanceArticle
     PROPERTIES (p, aa) READONLY priceBBasePriceSetDocumentArticle, priceBDiscountPriceSetDocumentArticle
-    PROPERTIES (p, aa) inArticlePriceSetDocument
+    PROPERTIES (p, aa) inPriceSetDocumentArticle
 
     FILTERS stringEqualsAll(v), inBrandSupplier(s, b), inSupplierBrandArticle(s, b, aa), stringEqualsAll(vv),
             inArticleCategory(c, aa)
 
     OBJECTS a=article
+    PROPERTIES (p, a) inPriceSetDocumentArticle
     PROPERTIES(a) READONLY sidArticle, nameCategoryArticle, nameBrandSupplierArticle
     PROPERTIES (p, a) priceInPriceSetDocumentArticle,
                       RRPPriceSetDocumentArticle, markupPriceSetDocumentArticle, priceOutPriceSetDocumentArticle,
@@ -339,7 +340,7 @@ FORM priceSetDocument 'Розничный прайс'
     PROPERTIES (p, a) percentDiscountPriceSetDocumentArticle, priceDiscountPriceSetDocumentArticle, priceBDiscountPriceSetDocumentArticle,
                       priceDataDiscountPriceSetDocumentArticle//, priceRetailPriceSetDocumentArticle
 
-    FILTERS inArticlePriceSetDocument(p, a), inSupplierBrandArticle(s, b, a), inArticleCategory(c, a)
+    FILTERS inPriceSetDocumentArticle(p, a), inSupplierBrandArticle(s, b, a), inArticleCategory(c, a)
 
     FILTERGROUP filters
         FILTER 'Есть рекомендуемая цена' 'F7' RRPPriceSetDocumentArticle(p, a)
@@ -386,13 +387,12 @@ DESIGN priceSetDocument FROM DEFAULT {
 
                     childConstraints = TO THE RIGHT;
                     type = SPLITH;
-                    fillHorizontal = 2;
                     ADD treeSupplierBrand.tree.box {
-                        fillHorizontal = 1.5;
+                        fillHorizontal = 1;
                     }
 
                     ADD treeCategory.tree.box {
-                        fillHorizontal = 1.5;
+                        fillHorizontal = 1;
                     }
                 }
 
@@ -402,6 +402,7 @@ DESIGN priceSetDocument FROM DEFAULT {
             }
 
             ADD a.box {
+                fillHorizontal = 5;
                 fillVertical = 1.5;
             }
         }
@@ -416,10 +417,10 @@ quantityStorePriceSetDocumentArticle 'Кол-во' (store, priceSetDocument, art
 
 quantityDepartmentStorePriceSetDocument (departmentStore, priceSetDocument) =
     GROUP SUM balanceBSkuStockDateTime(sku, departmentStore, dateTimePriceSetDocument(priceSetDocument))
-    IF inArticlePriceSetDocument(priceSetDocument, articleSku(sku))
+    IF inPriceSetDocumentArticle(priceSetDocument, articleSku(sku))
     BY departmentStore, priceSetDocument;
 quantityStorePriceSetDocument (store, priceSetDocument) = GROUP SUM balanceBSkuStockDateTime(sku, departmentStore, dateTimePriceSetDocument(priceSetDocument))
-    IF inArticlePriceSetDocument(priceSetDocument, articleSku(sku))
+    IF inPriceSetDocumentArticle(priceSetDocument, articleSku(sku))
     BY storeDepartmentStore(departmentStore), priceSetDocument;
 
 countStorePriceSetDocumentArticle(store, priceSetDocument, article) = castToInteger(quantityStorePriceSetDocumentArticle(store, priceSetDocument, article));
@@ -449,7 +450,7 @@ printPricePriceSetDocumentArticle 'Печать цен для маркировк
 printAllPricePriceSetDocumentArticle 'Печать цен для маркировки' = ACTION (store, priceSetDocument) {
     SET shouldBePrintArticle(article) <- NULL;
     SET shouldBePrintArticle(article) <- TRUE IF (quantityStorePriceSetDocumentArticle(store, priceSetDocument, article) AND
-                                                  inArticlePriceSetDocument(priceSetDocument, article));
+                                                  inPriceSetDocumentArticle(priceSetDocument, article));
     FORM priceArticlePriceSetDocumentPrint OBJECTS s = store, p = priceSetDocument MODAL;
 } TOOLBAR;
 
@@ -484,7 +485,7 @@ FORM priceSetDocuments 'Розничные прайсы'
 
     PROPERTIES(s, p) printAllPricePriceSetDocumentArticle TODRAW a FORCE PANEL
 
-    FILTERS inArticlePriceSetDocument(p, a)
+    FILTERS inPriceSetDocumentArticle(p, a)
     FILTERGROUP filters1
         FILTER 'Магазины с остатками' 'F10' quantityStorePriceSetDocument(s, p) DEFAULT
     FILTERGROUP filters2
@@ -530,7 +531,7 @@ createPriceSetDocument 'Расценить' =  ACTION (freight) NEWSESSION {
         SET freightPriceSetDocument(p) <- freight AS freight;
         SET priceInPriceSetDocumentArticle(p, article) <- priceInFreightArticle(freight, article);
         SET RRPPriceSetDocumentArticle(p, article) <- RRPFreightArticle(freight, article);
-        SET inArticlePriceSetDocument(p, article) <- inFreightArticle(freight, article);
+        SET inPriceSetDocumentArticle(p, article) <- inFreightArticle(freight, article);
         FORM priceSetDocument OBJECTS p=addedObject() MODAL;
         IF formResult() == formResult.ok THEN {
             EXEC apply();

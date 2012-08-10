@@ -74,9 +74,11 @@ useRetailPriceSaleOutDetail(detail) = stockSaleOutDetail(detail) IS departmentSt
 // Проводим по регистру
 @implementSkuLedger(saleOut, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantitySaleOutDetail (ledger);
-limitOutFIFOSkuLedgerBatch(ledger, batch) += currentBalanceBatchStock(batch, stockSaleOutDetail(ledger)) AND NOT commissionContractSkuBatchA(batch);
+limitOutFIFOSkuLedgerBatch(ledger, batch) += currentBalanceABatchStock(batch, stockSaleOutDetail(ledger)) AND NOT commissionContractSkuBatchA(batch)
+                                             AND batch IS batchA;
 sumOutSkuLedger(ledger) += accountSumSaleOutDetail(ledger);
 
+@defineConstraintSkuLedgerCosted(saleOut, 'Не хватает остатков по партиям для продажи товаров');
 
 // Товарные накладные
 @defineDocumentDetailPackWeightSku(saleOutBatch);

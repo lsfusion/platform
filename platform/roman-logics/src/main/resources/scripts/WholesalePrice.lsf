@@ -32,7 +32,7 @@ isPriceSetDeclaration 'Статус' (declaration) = IF isWholesalePriceSetDocum
 
 backgroundWholesalePriceSetDocument 'Цвет' (declaration) = RGB(212,255,212) IF isWholesalePriceSetDocumentDeclaration(declaration);
 
-inArticleWholesalePriceDocument 'Товар в документе' = DATA BOOLEAN(wholesalePriceDocument, article);
+inWholesalePriceDocumentArticle 'Товар в документе' = DATA BOOLEAN(wholesalePriceDocument, article);
 
 priceCustomWholesalePriceDocumentArticle 'Себестоимость (БУ)' (wholesalePriceDocument, article) = DATA NUMERIC[14,2](wholesalePriceDocument, article) IN baseGroup;
 
@@ -41,7 +41,7 @@ priceManagerialWholesalePriceDocumentArticle 'Себестоимость (УУ)'
 markupWholesalePriceDocumentArticle 'Оптовая надбавка' = DATA NUMERIC[8,3] (wholesalePriceDocument, article);
 
 markupWholesalePriceDocumentArticle(wholesalePriceDocument, article) <- 0.0 //IF (wholesalePriceDocument IS wholesalePriceDocument AND article IS article)
-    WHEN ASSIGNED (inArticleWholesalePriceDocument(wholesalePriceDocument, article));
+    WHEN ASSIGNED (inWholesalePriceDocumentArticle(wholesalePriceDocument, article));
 
 priceWholesalePriceDocumentArticle 'Оптовая цена' = DATA NUMERIC[14,2](wholesalePriceDocument, article) IN baseGroup;
 
@@ -65,13 +65,13 @@ priceCustomWholesaleArticleDateTime(article, dateTime) =  priceCustomWholesalePr
 prevPriceCustomWholesaleArticleDateTime(article, dateTime) =  PREV(priceCustomWholesalePriceDocumentArticle (documentWholesalePriceArticleDateTime(article, dateTime), article));
 
 priceCustomWholesalePriceDocumentArticle (wholesalePriceDocument, article) <- prevPriceCustomWholesaleArticleDateTime(article, dateTimeWholesalePriceDocument(wholesalePriceDocument))
-    WHEN ASSIGNED (inArticleWholesalePriceDocument(wholesalePriceDocument, article));
+    WHEN ASSIGNED (inWholesalePriceDocumentArticle(wholesalePriceDocument, article));
 
 priceManagerialWholesaleArticleDateTime(article, dateTime) =  priceManagerialWholesalePriceDocumentArticle (documentWholesalePriceArticleDateTime(article, dateTime), article);
 prevPriceManagerialWholesaleArticleDateTime(article, dateTime) =  PREV(priceManagerialWholesalePriceDocumentArticle (documentWholesalePriceArticleDateTime(article, dateTime), article));
 
 priceManagerialWholesalePriceDocumentArticle (wholesalePriceDocument, article) <- prevPriceManagerialWholesaleArticleDateTime(article, dateTimeWholesalePriceDocument(wholesalePriceDocument))
-    WHEN ASSIGNED (inArticleWholesalePriceDocument(wholesalePriceDocument, article));
+    WHEN ASSIGNED (inWholesalePriceDocumentArticle(wholesalePriceDocument, article));
 
 FORM wholesalePriceDocument 'Оптовый прайс'
 
@@ -86,16 +86,17 @@ FORM wholesalePriceDocument 'Оптовый прайс'
 
     OBJECTS aa=article
     PROPERTIES (aa) READONLY sidArticle, nameCategoryArticle, nameBrandSupplierArticle, currentBalanceArticle
-    PROPERTIES (w, aa) inArticleWholesalePriceDocument
+    PROPERTIES (w, aa) inWholesalePriceDocumentArticle
 
     FILTERS stringEqualsAll(v), inBrandSupplier(s, b), inSupplierBrandArticle(s, b, aa), stringEqualsAll(vv), inArticleCategory(c, aa)
 
     OBJECTS a=article
+    PROPERTIES (w, a) inWholesalePriceDocumentArticle
     PROPERTIES(a) READONLY sidArticle, nameCategoryArticle, nameBrandSupplierArticle
     PROPERTIES (w, a) priceCustomWholesalePriceDocumentArticle, priceManagerialWholesalePriceDocumentArticle,
                       markupWholesalePriceDocumentArticle, priceWholesalePriceDocumentArticle
 
-    FILTERS inArticleWholesalePriceDocument(w, a), inSupplierBrandArticle(s, b, a), inArticleCategory(c, a)
+    FILTERS inWholesalePriceDocumentArticle(w, a), inSupplierBrandArticle(s, b, a), inArticleCategory(c, a)
 
     FILTERGROUP filtersBalance
         FILTER 'Ненулевые остатки' 'F8' currentBalanceArticle(aa) DEFAULT
@@ -131,25 +132,19 @@ DESIGN wholesalePriceDocument FROM DEFAULT {
                 type = SPLITH;
 
                 NEW treeContainer {
-
                     childConstraints = TO THE RIGHT;
                     type = SPLITH;
-
-                    ADD treeSupplierBrand.tree.box {
-                        fillHorizontal = 1.5;
-                    }
-
-                    ADD treeCategory.tree.box {
-                        fillHorizontal = 1.5;
-                    }
+                    ADD treeSupplierBrand.tree.box;
+                    ADD treeCategory.tree.box;
                 }
 
                 ADD aa.box {
-                    fillHorizontal = 1.5;
+                    fillHorizontal = 3;
                 }
             }
 
             ADD a.box {
+                fillHorizontal = 5;
                 fillVertical = 1.5;
             }
         }
@@ -170,7 +165,7 @@ FORM wholesalePriceDocuments 'Оптовые прайсы'
     PROPERTIES (w, a) READONLY priceCustomWholesalePriceDocumentArticle, priceManagerialWholesalePriceDocumentArticle,
                                markupWholesalePriceDocumentArticle, priceWholesalePriceDocumentArticle
 
-    FILTERS inArticleWholesalePriceDocument(w, a)
+    FILTERS inWholesalePriceDocumentArticle(w, a)
 ;
 
 
@@ -180,7 +175,7 @@ toCreateWholesalePriceDocument 'Расценить' =  ACTION (declaration) NEWS
         SET declarationWholesalePriceDocument(w) <- declaration AS declaration;
         SET priceCustomWholesalePriceDocumentArticle(w, article) <- priceCustomDeclarationArticle(declaration, article);
         SET priceManagerialWholesalePriceDocumentArticle(w, article) <- priceManagerialDeclarationArticle(declaration, article);
-        SET inArticleWholesalePriceDocument(w, article) <- inDeclarationArticle(declaration, article);
+        SET inWholesalePriceDocumentArticle(w, article) <- inDeclarationArticle(declaration, article);
 
         FORM wholesalePriceDocument OBJECTS w=addedObject() MODAL;
         IF formResult() == formResult.ok THEN {

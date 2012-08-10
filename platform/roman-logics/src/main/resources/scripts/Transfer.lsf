@@ -78,12 +78,13 @@ EXTEND FORM transferOuts
 @implementSkuLedger(transferOut, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantityTransferOutDetail (ledger);
 limitOutFIFOSkuLedgerBatch(ledger, batch) += IF commissionContractSkuTransferOutDetail(ledger)
-                                                THEN currentBalanceBatchStock(batch, stockTransferOutDetail(ledger)) AND commissionContractSkuBatchA(batch) == commissionContractSkuTransferOutDetail(ledger)
-                                                ELSE currentBalanceBatchStock(batch, stockTransferOutDetail(ledger)) AND NOT commissionContractSkuBatchA(batch);
+                                                THEN currentBalanceABatchStock(batch, stockTransferOutDetail(ledger)) AND commissionContractSkuBatchA(batch) == commissionContractSkuTransferOutDetail(ledger)
+                                                ELSE currentBalanceABatchStock(batch, stockTransferOutDetail(ledger)) AND NOT commissionContractSkuBatchA(batch)
+                                             AND batch IS batchA;
 sumOutSkuLedger(ledger) += accountSumTransferOutDetail(ledger);
 
-//CONSTRAINT isPostedTransferOutDetail(detail) AND NOT quantityTransferOutDetail(detail) == costedDataSkuLedger(detail)
-//    MESSAGE 'Не хватает остатков по партиям для перемещения товаров';
+// Запрет на не полностью расписанные партии
+@defineConstraintSkuLedgerCosted(transferOut, 'Не хватает остатков по партиям для перемещения товаров');
 
 // Товарные накладные
 @defineDocumentDetailPackWeightSku(transferOutBatch); // вес и к-во мест для партий
@@ -148,11 +149,11 @@ retailSumTransferInDetail 'Сумма розничная' (detail) = quantityTra
 
 commissionContractSkuTransferInDetail (detail) = commissionContractSkuTransferOutDetail(transferOutDetailTransferInDetail(detail));
 
-useRetailPriceTransferInDetail(detail) = stockTransferInDetail(detail) IS departmentStore OR commissionContractSkuTransferInDetail(detail) IS contractSku;
-@defineDocumentTransferAccount(transferIn, useRetailPriceTransferInDetail);
-
 @defineDocumentDetailSkuArticle(transferIn);
 @extendDocumentFormDetailSkuArticleReadonly(transferIns, d, transferIn);
+
+useRetailPriceTransferInDetail(detail) = stockTransferInDetail(detail) IS departmentStore OR commissionContractSkuTransferInDetail(detail) IS contractSku;
+@defineDocumentTransferAccount(transferIn, useRetailPriceTransferInDetail);
 
 @implementSkuLedger(transferIn, sku, stock);
 quantityInLIFOSkuLedger (ledger) += quantityTransferInDetail(ledger);

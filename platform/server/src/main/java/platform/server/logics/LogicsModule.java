@@ -2404,8 +2404,8 @@ public abstract class LogicsModule {
                 DerivedProperty.createListAction(
                         new ArrayList<ClassPropertyInterface>(),
                         BaseUtils.<ActionPropertyMapImplement<?, ClassPropertyInterface>>toList(
-                                baseLM.cancel.property.getImplement(new ArrayList<ClassPropertyInterface>()),
-                                new LogPropertyActionProperty<T>(property).getImplement()
+                                new LogPropertyActionProperty<T>(property).getImplement(),
+                                baseLM.cancel.property.getImplement(new ArrayList<ClassPropertyInterface>())
                         )
                 );
         constraintAction.mapEventAction(this, DerivedProperty.createAnyGProp(property).getImplement(), false, false);

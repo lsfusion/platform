@@ -79,7 +79,7 @@ CLASS ABSTRACT batchA 'Бухгалтерская партия' : batch;
 CLASS ABSTRACT batchB 'Управленческая партия' : batch;
 
 typeBatch 'Тип партии' (batch) = IF batch IS batchA THEN 'А' AND batch IS batchA
-                                                    ELSE 'Б' AND batch IS batchB;
+                                                    ELSE 'Б' AND batch IS batchB FIXEDCHARWIDTH 2;
 
 orderABatch (batch) = IF batch IS batchA THEN 0 IF batch IS batchA ELSE 1 IF batch IS batchB PERSISTENT;
 orderBBatch (batch) = IF batch IS batchB THEN 0 IF batch IS batchB ELSE 1 IF batch IS batchA PERSISTENT;

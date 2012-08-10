@@ -129,7 +129,7 @@ END
 META defineDocumentDetailIndexCustom (object, detail)
     index###detail 'Номер строки' (idetail) =
         PARTITION SUM 1 IF idetail IS detail BY object###detail(idetail)
-        ORDER idetail IN recognizeGroup MINCHARWIDTH 4 PREFCHARWIDTH 4;
+        ORDER idetail IN recognizeGroup MINCHARWIDTH 4 PREFCHARWIDTH 4 IN recognizeGroup;
 END
 
 META defineDocumentDetailIndex (object)
