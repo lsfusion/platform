@@ -34,8 +34,9 @@ barcodeSku(sku) = [GROUP MIN barcode BY skuBarcode(barcode)](sku) OR dataBarcode
 
 primaryBarcode 'Основной' (barcode) = barcodeSku(skuBarcode(barcode)) == barcode;
 
-idBarcodeSku 'Штрих-код' = idBarcode(barcodeSku(sku)) IN baseGroup PERSISTENT;
+idBarcodeSku 'Штрих-код' (sku) = idBarcode(barcodeSku(sku)) IN baseGroup PERSISTENT;
 idBarcodeSkuBatch 'Штрих-код' (batch) = idBarcodeSku(skuBatch(batch));
+idBarcodeSkuSkuLedger 'Штрих-код' (skuLedger) = idBarcodeSku(skuSkuLedger(skuLedger));
 
 // UOM
 
@@ -100,5 +101,13 @@ END
 @defineDialogSkuBarcode(dialogSku);
 
 EXTEND FORM currentBalanceSkuStock
-    PROPERTIES(s) READONLY idBarcodeSku
+    PROPERTIES(s) READONLY idBarcodeSku AFTER nameSku
+;
+
+EXTEND FORM currentBalanceBatchStock
+    PROPERTIES(bt) READONLY idBarcodeSkuBatch AFTER nameSkuBatch
+;
+
+EXTEND FORM costSkuLedger
+    PROPERTIES(bil) READONLY idBarcodeSkuSkuLedger AFTER nameSkuSkuLedger
 ;

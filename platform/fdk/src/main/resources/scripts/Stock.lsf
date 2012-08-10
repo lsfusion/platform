@@ -165,7 +165,7 @@ orderInLIFOSkuLedgerBatch = ABSTRACT LONG (inLIFOSkuLedger, batch);
 
 quantityInLIFOSkuLedgerBatch (ledger, batch) =
         PARTITION UNGROUP quantityInLIFOSkuLedger
-                  LIMIT limitInLIFOSkuLedgerBatch(ledger, batch) AND skuBatch(batch) == skuDataSkuLedger(ledger)
+                  LIMIT STRICT limitInLIFOSkuLedgerBatch(ledger, batch) AND skuBatch(batch) == skuDataSkuLedger(ledger)
                   BY ledger
                   ORDER DESC orderInLIFOSkuLedgerBatch(ledger, batch), orderBatch(batch);
 
@@ -174,7 +174,7 @@ orderOutFIFOSkuLedgerBatch = ABSTRACT LONG (outFIFOSkuLedger, batch);
 
 quantityOutFIFOSkuLedgerBatch (ledger, batch) =
         PARTITION UNGROUP quantityOutFIFOSkuLedger
-                  LIMIT limitOutFIFOSkuLedgerBatch(ledger, batch) AND skuBatch(batch) == skuDataSkuLedger(ledger)
+                  LIMIT STRICT limitOutFIFOSkuLedgerBatch(ledger, batch) AND skuBatch(batch) == skuDataSkuLedger(ledger)
                   BY ledger
                   ORDER orderOutFIFOSkuLedgerBatch(ledger, batch), orderBatch(batch);
 
@@ -664,7 +664,7 @@ FORM currentBalanceSkuStock 'Текущие остатки'
         FILTER 'Товары с движением не позднее 30 дней' 'F7' balanceSkuStockDatePeriod(s, st, currentDate(), 30)
 
     OBJECTS bil=skuLedger
-    PROPERTIES(bil) READONLY descriptionSkuLedger, dateTimeSkuLedger, signedQuantitySkuLedger, signedSumSkuLedger
+    PROPERTIES(bil) READONLY descriptionSkuLedger, dateTimeSkuLedger, signedQuantitySkuLedger, signedSumSkuLedger, skipSkuLedger
     FILTERS isPostedSkuLedger(bil) AND skuSkuLedger(bil)==s AND stockSkuLedger(bil)==st
     ORDER BY dateTimeSkuLedger DESC
 
@@ -825,7 +825,7 @@ FORM currentBalanceBatchStock 'Текущие остатки по партиям
     ORDER BY skuTreeName
 
     OBJECTS           stb=(st=stock, bt=batch)
-    PROPERTIES        READONLY stockName = name(st), nameSkuBatch(bt)
+    PROPERTIES        READONLY nameSkuBatch(bt), stockName = name(st)
     PROPERTIES        currentBalanceBatchStock(bt, st)
     PROPERTIES(bt)    READONLY dateTimeBatch, descriptionBatch, quantityBatch, costBatch, expiryDateBatch
     FILTERS           isParentSkuGroupBatch(sk, bt),
@@ -833,7 +833,7 @@ FORM currentBalanceBatchStock 'Текущие остатки по партиям
     ORDER BY          dateTimeBatch
 
     OBJECTS bil=skuLedger
-    PROPERTIES(bil) descriptionSkuLedger, dateTimeSkuLedger, signedQuantitySkuLedger READONLY
+    PROPERTIES(bil) READONLY descriptionSkuLedger, dateTimeSkuLedger, signedQuantitySkuLedger, skipSkuLedger
     FILTERS isPostedSkuLedger(bil) AND skuSkuLedger(bil)==skuBatch(bt) AND stockSkuLedger(bil)==st
     ORDER BY dateTimeSkuLedger DESC
 
