@@ -718,12 +718,10 @@ VATRateDeclarationDetail 'НДС (в валюте)' (declarationDetail) = round2
 
 priceCustomDeclarationDetail 'Себестоимость (БУ)' (declarationDetail) = UNION SUM priceReverseDeclarationDetail(declarationDetail),
                                                                                   dutyFinDeclarationDetail(declarationDetail),
-                                                                                  VATFinDeclarationDetail(declarationDetail),
                                                                                   registrationDeclarationDetail(declarationDetail) PERSISTENT;
 
 priceManagerialCustomDeclarationDetail 'Себестоимость (УУ)' (declarationDetail) = UNION SUM priceManagerialDeclarationDetail(declarationDetail),
                                                                                             dutyRateDeclarationDetail(declarationDetail),
-                                                                                            VATRateDeclarationDetail(declarationDetail),
                                                                                             registrationRateDeclarationDetail(declarationDetail) PERSISTENT;
 
 priceCustomBatch (batch) += priceCustomDeclarationDetail(batch);
