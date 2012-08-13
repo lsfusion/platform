@@ -364,6 +364,9 @@ public class ClientFormController implements AsyncView {
                     if (preferences.getFormColumnUserPreferences().get(propertySID).getWidthUser() != null) {
                         property.widthUser = preferences.getFormColumnUserPreferences().get(propertySID).getWidthUser();
                     }
+                    if (preferences.getFormColumnUserPreferences().get(propertySID).getOrderUser() != null) {
+                        property.orderUser = preferences.getFormColumnUserPreferences().get(propertySID).getOrderUser();
+                    }
                 }
             }
         }
@@ -986,7 +989,7 @@ public class ClientFormController implements AsyncView {
         Map<String, FormColumnUserPreferences> columnPreferences = new HashMap<String, FormColumnUserPreferences>();
         for (GroupObjectController controller : controllers.values()) {
             for (ClientPropertyDraw property : controller.getPropertyDraws()) {
-                columnPreferences.put(property.getSID(), new FormColumnUserPreferences(needToHideProperty(property), property.widthUser));
+                columnPreferences.put(property.getSID(), new FormColumnUserPreferences(needToHideProperty(property), property.widthUser, property.orderUser));
             }
         }
         return new FormUserPreferences(columnPreferences);

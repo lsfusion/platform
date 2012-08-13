@@ -337,6 +337,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP columnWidthPropertyDrawCustomUser;
     public LCP columnWidthPropertyDraw;
     public LCP columnWidthOverridePropertyDrawCustomUser;
+    public LCP columnOrderPropertyDrawCustomUser;
+    public LCP columnOrderPropertyDraw;
+    public LCP columnOrderOverridePropertyDrawCustomUser;
 
     public LCP messageException;
     public LCP dateException;
@@ -381,6 +384,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP forbidViewProperty;
     public LCP permitChangeProperty;
     public LCP forbidChangeProperty;
+    public LCP notNullPermissionUserProperty;
 
     public LCP SIDToNavigatorElement;
     public LCP parentNavigatorElement;
@@ -1014,6 +1018,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         columnWidthPropertyDrawCustomUser = addDProp(baseGroup, "columnWidthPropertyDrawCustomUser", getString("logics.forms.property.width.user"), IntegerClass.instance, propertyDraw, customUser);
         columnWidthPropertyDraw = addDProp(baseGroup, "columnWidthPropertyDraw", getString("logics.forms.property.width"), IntegerClass.instance, propertyDraw);
         columnWidthOverridePropertyDrawCustomUser = addSUProp(baseGroup, "columnWidthOverridePropertyDrawCustomUser", getString("logics.forms.property.width"), Union.OVERRIDE, addJProp(and1, columnWidthPropertyDraw, 1, is(customUser), 2), columnWidthPropertyDrawCustomUser);
+        columnOrderPropertyDrawCustomUser = addDProp(baseGroup, "columnOrderPropertyDrawCustomUser", getString("logics.forms.property.order.user"), IntegerClass.instance, propertyDraw, customUser);
+        columnOrderPropertyDraw = addDProp(baseGroup, "columnOrderPropertyDraw", getString("logics.forms.property.order"), IntegerClass.instance, propertyDraw);
+        columnOrderOverridePropertyDrawCustomUser = addSUProp(baseGroup, "columnOrderOverridePropertyDrawCustomUser", getString("logics.forms.property.order"), Union.OVERRIDE, addJProp(and1, columnOrderPropertyDraw, 1, is(customUser), 2), columnOrderPropertyDrawCustomUser);
 
         messageException = addDProp(baseGroup, "messageException", getString("logics.exception.message"), propertyCaptionValueClass, exception);
         dateException = addDProp(baseGroup, "dateException", getString("logics.exception.date"), DateTimeClass.instance, exception);
@@ -1059,6 +1066,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         permitChangeUserProperty = addJProp(baseGroup, "permitChangeUserProperty", getString("logics.policy.permit.property.change"), permitChangeUserRoleProperty, userMainRole, 1, 2);
         forbidChangeUserRoleProperty = addDProp(baseGroup, "forbidChangeUserRoleProperty", getString("logics.policy.forbid.property.change"), LogicalClass.instance, userRole, property);
         forbidChangeUserProperty = addJProp(baseGroup, "forbidChangeUserProperty", getString("logics.policy.forbid.property.change"), forbidChangeUserRoleProperty, userMainRole, 1, 2);
+        notNullPermissionUserProperty = addSUProp("notNullPermissionUserProperty", Union.OVERRIDE, permitViewUserProperty, forbidViewUserProperty, permitChangeUserProperty, forbidChangeUserProperty);
         permitViewProperty = addDProp(baseGroup, "permitViewProperty", getString("logics.policy.permit.property.view"), LogicalClass.instance, property);
         forbidViewProperty = addDProp(baseGroup, "forbidViewProperty", getString("logics.policy.forbid.property.view"), LogicalClass.instance, property);
         permitChangeProperty = addDProp(baseGroup, "permitChangeProperty", getString("logics.policy.permit.property.change"), LogicalClass.instance, property);
@@ -2261,6 +2269,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             addPropertyDraw(nameShowPropertyDrawCustomUser, objPropertyDraw, objUser);
             addPropertyDraw(columnWidthPropertyDraw, objPropertyDraw);
             addPropertyDraw(columnWidthPropertyDrawCustomUser, objPropertyDraw, objUser);
+            addPropertyDraw(columnOrderPropertyDraw, objPropertyDraw);
+            addPropertyDraw(columnOrderPropertyDrawCustomUser, objPropertyDraw, objUser);
 
             objUser.groupTo.initClassView = ClassViewType.PANEL;
 
@@ -2272,6 +2282,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             setEditType(nameShowPropertyDrawCustomUser, PropertyEditType.EDITABLE);
             setEditType(columnWidthPropertyDrawCustomUser, PropertyEditType.EDITABLE);
             setEditType(columnWidthPropertyDraw, PropertyEditType.EDITABLE);
+            setEditType(columnOrderPropertyDrawCustomUser, PropertyEditType.EDITABLE);
+            setEditType(columnOrderPropertyDraw, PropertyEditType.EDITABLE);
         }
     }
 

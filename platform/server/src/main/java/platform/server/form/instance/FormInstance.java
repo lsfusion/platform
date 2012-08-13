@@ -125,9 +125,9 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     }
 
     private Modifier modifier;
-    
+
     protected FunctionSet<CalcProperty> getNoHints() {
-        if(Settings.instance.isDisableChangeModifierAllHints())
+        if (Settings.instance.isDisableChangeModifierAllHints())
             return BaseUtils.universal(entity.getChangeModifierProps().isEmpty());
         else
             return CalcProperty.getDependsSet(entity.getChangeModifierProps()); // тут какая то проблема есть
@@ -168,8 +168,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             }
 
         Set<FilterEntity> allFixedFilters = additionalFixedFilters == null
-                                            ? entity.fixedFilters
-                                            : mergeSet(entity.fixedFilters, additionalFixedFilters);
+                ? entity.fixedFilters
+                : mergeSet(entity.fixedFilters, additionalFixedFilters);
         for (FilterEntity filterEntity : allFixedFilters) {
             FilterInstance filter = filterEntity.getInstance(instanceFactory);
             filter.getApplyObject().fixedFilters.add(filter);
@@ -225,7 +225,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         applyFilters();
         fireOnInit();
 
-        if(!interactive) {
+        if (!interactive) {
             endApply();
             this.mapObjects = mapObjects;
         }
@@ -240,7 +240,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             ObjectValue formValue = BL.LM.SIDToNavigatorElement.readClasses(session, new DataObject(entity.getSID(), StringClass.get(50)));
             if (formValue.isNull())
                 return null;
-            
+
             DataObject formObject = (DataObject) formValue;
 
             KeyExpr propertyDrawExpr = new KeyExpr("propertyDraw");
@@ -257,6 +257,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             query.properties.put("propertyDrawSID", BL.LM.propertyDrawSID.getExpr(propertyDrawExpr));
             query.properties.put("nameShowOverridePropertyDrawCustomUser", BL.LM.nameShowOverridePropertyDrawCustomUser.getExpr(propertyDrawExpr, customUserExpr));
             query.properties.put("columnWidthOverridePropertyDrawCustomUser", BL.LM.columnWidthOverridePropertyDrawCustomUser.getExpr(propertyDrawExpr, customUserExpr));
+            query.properties.put("columnOrderOverridePropertyDrawCustomUser", BL.LM.columnOrderOverridePropertyDrawCustomUser.getExpr(propertyDrawExpr, customUserExpr));
             query.and(BL.LM.formPropertyDraw.getExpr(propertyDrawExpr).compare(formObject.getExpr(), Compare.EQUALS));
 
             OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(session.sql);
@@ -272,7 +273,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                         needToHide = false;
                 }
                 Integer width = (Integer) values.get("columnWidthOverridePropertyDrawCustomUser");
-                preferences.put(propertyDrawSID, new FormColumnUserPreferences(needToHide, width));
+                Integer order = (Integer) values.get("columnOrderOverridePropertyDrawCustomUser");
+                preferences.put(propertyDrawSID, new FormColumnUserPreferences(needToHide, width, order));
             }
         } catch (SQLException e) {
             Throwables.propagate(e);
@@ -288,14 +290,18 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 Integer id = (Integer) BL.LM.SIDNavigatorElementSIDPropertyDrawToPropertyDraw.read(dataSession, new DataObject(entity.getSID(), StringClass.get(50)), new DataObject(entry.getKey(), StringClass.get(50)));
                 DataObject propertyDrawObject = dataSession.getDataObject(id, ObjectType.instance);
                 if (entry.getValue().isNeedToHide() != null) {
-                    int idShow = !entry.getValue().isNeedToHide() ? BL.LM.propertyDrawShowStatus.getID("Hide") : BL.LM.propertyDrawShowStatus.getID("Show");
+                    int idShow = entry.getValue().isNeedToHide() ? BL.LM.propertyDrawShowStatus.getID("Hide") : BL.LM.propertyDrawShowStatus.getID("Show");
                     BL.LM.showPropertyDrawCustomUser.change(idShow, dataSession, propertyDrawObject, userObject);
                     if (forAllUsers)
                         BL.LM.showPropertyDraw.change(idShow, dataSession, propertyDrawObject, userObject);
                 }
                 BL.LM.columnWidthPropertyDrawCustomUser.change(entry.getValue().getWidthUser(), dataSession, propertyDrawObject, userObject);
-                if (forAllUsers)
+                BL.LM.columnOrderPropertyDrawCustomUser.change(entry.getValue().getOrderUser(), dataSession, propertyDrawObject, userObject);
+                if (forAllUsers) {
                     BL.LM.columnWidthPropertyDraw.change(entry.getValue().getWidthUser(), dataSession, propertyDrawObject);
+                    BL.LM.columnOrderPropertyDraw.change(entry.getValue().getOrderUser(), dataSession, propertyDrawObject);
+                }
+
             }
             dataSession.apply(BL);
         } catch (SQLException e) {
@@ -305,8 +311,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     public boolean areObjectsFound() {
         assert !interactive;
-        for(Entry<ObjectEntity, ? extends ObjectValue> mapObjectInstance : mapObjects.entrySet())
-            if(!instanceFactory.getInstance(mapObjectInstance.getKey()).getObjectValue().equals(mapObjectInstance.getValue()))
+        for (Entry<ObjectEntity, ? extends ObjectValue> mapObjectInstance : mapObjects.entrySet())
+            if (!instanceFactory.getInstance(mapObjectInstance.getKey()).getObjectValue().equals(mapObjectInstance.getValue()))
                 return false;
         return true;
     }
@@ -435,7 +441,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 expandCurrentGroupObject(object);
         }
     }
-    
+
     public void expandCurrentGroupObject(ObjectInstance object) throws SQLException {
         GroupObjectInstance groupObject = object.groupTo;
         if (groupObject != null && groupObject.isInTree()) {
@@ -525,10 +531,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 if (property.autoset) {
                     ValueClass interfaceClass = BaseUtils.singleValue(property.getInterfaceClasses());
                     ValueClass valueClass = property.getValueClass();
-                    if (valueClass instanceof CustomClass && interfaceClass instanceof CustomClass&&
-                            cls.isChild((CustomClass)interfaceClass)) { // в общем то для оптимизации
+                    if (valueClass instanceof CustomClass && interfaceClass instanceof CustomClass &&
+                            cls.isChild((CustomClass) interfaceClass)) { // в общем то для оптимизации
                         Integer obj = getClassListener().getObject((CustomClass) valueClass);
-                        if(obj!=null)
+                        if (obj != null)
                             lcp.change(obj, this, addObject);
                     }
                 }
@@ -571,7 +577,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     }
 
     public void changeClass(PropertyObjectInterfaceInstance objectInstance, DataObject dataObject, ConcreteObjectClass cls) throws SQLException {
-        if(objectInstance instanceof CustomObjectInstance) {
+        if (objectInstance instanceof CustomObjectInstance) {
             CustomObjectInstance object = (CustomObjectInstance) objectInstance;
 
             if (securityPolicy.cls.edit.change.checkPermission(object.currentClass)) {
@@ -587,7 +593,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     }
 
     public void executeEditAction(PropertyDrawInstance property, String editActionSID, Map<ObjectInstance, DataObject> keys, ObjectValue pushChange, DataObject pushAdd, boolean pushConfirm) throws SQLException {
-        if(property.propertyReadOnly != null && property.propertyReadOnly.getRemappedPropertyObject(keys).read(this) != null) {
+        if (property.propertyReadOnly != null && property.propertyReadOnly.getRemappedPropertyObject(keys).read(this) != null) {
             Context.context.get().delayUserInteraction(EditNotPerformedClientAction.instance);
             return;
         }
@@ -595,7 +601,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         if (editActionSID.equals(ServerResponse.CHANGE) || editActionSID.equals(ServerResponse.GROUP_CHANGE)) { //ask confirm logics...
             PropertyDrawEntity propertyDraw = property.getEntity();
             if (!pushConfirm && propertyDraw.askConfirm) {
-                int result = (Integer)Context.context.get().requestUserInteraction(new ConfirmClientAction("LS Fusion",
+                int result = (Integer) Context.context.get().requestUserInteraction(new ConfirmClientAction("LS Fusion",
                         entity.getRichDesign().get(propertyDraw).getAskConfirmMessage()));
                 if (result != JOptionPane.YES_OPTION) {
                     return;
@@ -639,7 +645,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     }
 
     private List<Map<ObjectInstance, DataObject>> readObjects(List<Map<Integer, Object>> keyIds) throws SQLException {
-        
+
         List<Map<ObjectInstance, DataObject>> result = new ArrayList<Map<ObjectInstance, DataObject>>();
         for(Map<Integer, Object> keyId : keyIds) {
             Map<ObjectInstance, DataObject> key = new HashMap<ObjectInstance, DataObject>();
@@ -938,32 +944,34 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     protected Set<PropertyReaderInstance> pendingHidden = new HashSet<PropertyReaderInstance>();
 
     private boolean isHidden(PropertyDrawInstance<?> property, boolean grid) {
-        if(Settings.instance.isDisableTabbedOptimization())
+        if (Settings.instance.isDisableTabbedOptimization())
             return false;
-            
+
         ComponentView container = entity.getDrawTabContainer(property.entity, grid);
         return container != null && isHidden(container); // первая проверка - cheat / оптимизация
     }
+
     private boolean isHidden(GroupObjectInstance group) {
-        if(Settings.instance.isDisableTabbedOptimization())
+        if (Settings.instance.isDisableTabbedOptimization())
             return false;
 
         FormEntity.ComponentSet containers = entity.getDrawTabContainers(group.entity);
-        if(containers==null) // cheat / оптимизация, иначе пришлось бы в isHidden и еще в нескольких местах явную проверку на null
+        if (containers == null) // cheat / оптимизация, иначе пришлось бы в isHidden и еще в нескольких местах явную проверку на null
             return false;
-        for(ComponentView component : containers)
-            if(!isHidden(component))
+        for (ComponentView component : containers)
+            if (!isHidden(component))
                 return false;
         return true;
-    }    
+    }
+
     private boolean isHidden(ComponentView component) {
         ContainerView parent = component.getContainer();
         assert parent.type == ContainerType.TABBED_PANE;
 
         ComponentView visible = visibleTabs.get(parent);
-        if(visible==null && parent.children.size() > 0) // аналогичные проверки на клиентах, чтобы при init'е не вызывать
+        if (visible == null && parent.children.size() > 0) // аналогичные проверки на клиентах, чтобы при init'е не вызывать
             visible = parent.children.iterator().next();
-        if(!component.equals(visible))
+        if (!component.equals(visible))
             return true;
 
         ComponentView tabContainer = parent.getTabContainer();
@@ -971,6 +979,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     }
 
     protected Map<ContainerView, ComponentView> visibleTabs = new HashMap<ContainerView, ComponentView>();
+
     public void setTabVisible(ContainerView view, ComponentView page) {
         assert view.type == ContainerType.TABBED_PANE;
         visibleTabs.put(view, page);
@@ -1068,7 +1077,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         GroupObjectValue updateGroupObject = null; // так как текущий groupObject идет относительно treeGroup, а не group
         for (GroupObjectInstance group : groups) {
             Map<ObjectInstance, DataObject> selectObjects = group.updateKeys(session.sql, queryEnv, getModifier(), BL.LM.baseClass, isHidden(group), refresh, result, changedProps);
-            if(selectObjects!=null) // то есть нужно изменять объект
+            if (selectObjects != null) // то есть нужно изменять объект
                 updateGroupObject = new GroupObjectValue(group, selectObjects);
 
             if (group.getDownTreeGroups().size() == 0 && updateGroupObject != null) { // так как в tree группе currentObject друг на друга никак не влияют, то можно и нужно делать updateGroupObject в конце
@@ -1097,8 +1106,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     }
 
     private void fillChangedReader(CalcPropertyObjectInstance<?> drawProperty, PropertyReaderInstance propertyReader, Set<GroupObjectInstance> columnGroupGrids, boolean hidden, boolean read, Map<PropertyReaderInstance, Set<GroupObjectInstance>> readProperties, FunctionSet<CalcProperty> changedProps) {
-        if (drawProperty!=null && (read || (!hidden && pendingHidden.contains(propertyReader)) || propertyUpdated(drawProperty, columnGroupGrids, changedProps))) {
-            if(hidden)
+        if (drawProperty != null && (read || (!hidden && pendingHidden.contains(propertyReader)) || propertyUpdated(drawProperty, columnGroupGrids, changedProps))) {
+            if (hidden)
                 pendingHidden.add(propertyReader);
             else {
                 readProperties.put(propertyReader, columnGroupGrids);
@@ -1131,24 +1140,24 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 inInterface = false;
 
             Boolean previous = isInInterface.put(drawProperty, inInterface);
-            if(inInterface!=null) { // hidden проверка внутри чтобы вкладки если что уходили
+            if (inInterface != null) { // hidden проверка внутри чтобы вкладки если что уходили
                 boolean hidden = isHidden(drawProperty, inInterface);
 
                 boolean read = refresh || !inInterface.equals(previous) // если изменилось представление
                         || groupUpdated(drawProperty.columnGroupObjects, UPDATED_CLASSVIEW); // изменились группы в колонки (так как отбираются только GRID)
-                
+
                 // расширенный fillChangedReader, но есть часть специфики, поэтому дублируется
-                if(read || (!hidden && pendingHidden.contains(drawProperty)) || propertyUpdated(drawProperty.getDrawInstance(), drawGridObjects, changedProps)) {
-                    if(hidden) { // если спрятан
-                        if(read) { // все равно надо отослать клиенту, так как влияет на наличие вкладки, но с "hidden" значениями
+                if (read || (!hidden && pendingHidden.contains(drawProperty)) || propertyUpdated(drawProperty.getDrawInstance(), drawGridObjects, changedProps)) {
+                    if (hidden) { // если спрятан
+                        if (read) { // все равно надо отослать клиенту, так как влияет на наличие вкладки, но с "hidden" значениями
                             readProperties.put(drawProperty.hiddenReader, drawGridObjects);
-                            if(!inInterface) // говорим клиенту, что свойство в панели
+                            if (!inInterface) // говорим клиенту, что свойство в панели
                                 result.panelProperties.add(drawProperty);
                         }
                         pendingHidden.add(drawProperty); // помечаем что когда станет видимым надо будет обновить
                     } else {
                         readProperties.put(drawProperty, drawGridObjects);
-                        if(!inInterface) // говорим клиенту что свойство в панели
+                        if (!inInterface) // говорим клиенту что свойство в панели
                             result.panelProperties.add(drawProperty);
                         pendingHidden.remove(drawProperty);
                     }
@@ -1163,7 +1172,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
                 fillChangedReader(drawProperty.propertyForeground, drawProperty.foregroundReader, drawGridObjects, hidden, read, readProperties, changedProps);
 
-            } else if (previous!=null) // говорим клиенту что свойство надо удалить
+            } else if (previous != null) // говорим клиенту что свойство надо удалить
                 result.dropProperties.add(drawProperty);
         }
 
@@ -1207,8 +1216,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     public FormData getFormData(int orderTop) throws SQLException {
         List<PropertyDrawInstance> calcProps = new ArrayList<PropertyDrawInstance>();
-        for(PropertyDrawInstance property : properties)
-            if(property.propertyObject instanceof CalcPropertyObjectInstance)
+        for (PropertyDrawInstance property : properties)
+            if (property.propertyObject instanceof CalcPropertyObjectInstance)
                 calcProps.add(property);
         return getFormData(calcProps, groups, orderTop);
     }
@@ -1281,17 +1290,17 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         for (MaxChangeProperty<?, P> constrainedProperty : implementProperty.getMaxChangeProperties(BL.getCheckConstrainedProperties(implementProperty))) {
             pullProps.add(constrainedProperty);
             fixedFilters.add(new NotFilterEntity(new NotNullFilterEntity<MaxChangeProperty.Interface<P>>(
-                            constrainedProperty.getPropertyObjectEntity(implement.mapping, editForm.object))));
+                    constrainedProperty.getPropertyObjectEntity(implement.mapping, editForm.object))));
         }
 
         for (FilterEntity filterEntity : entity.fixedFilters) {
             FilterInstance filter = filterEntity.getInstance(instanceFactory);
             if (filter.getApplyObject() == selectionGroupObject) {
-                for(CalcPropertyValueImplement<?> filterImplement : filter.getResolveChangeProperties(implementProperty)) {
-                    OnChangeProperty<F, P> onChangeProperty = (OnChangeProperty<F, P>) ((CalcProperty)filterImplement.property).getOnChangeProperty((CalcProperty) implement.property);
+                for (CalcPropertyValueImplement<?> filterImplement : filter.getResolveChangeProperties(implementProperty)) {
+                    OnChangeProperty<F, P> onChangeProperty = (OnChangeProperty<F, P>) ((CalcProperty) filterImplement.property).getOnChangeProperty((CalcProperty) implement.property);
                     pullProps.add(onChangeProperty);
                     fixedFilters.add(new NotNullFilterEntity<OnChangeProperty.Interface<F, P>>(
-                                    onChangeProperty.getPropertyObjectEntity((Map<F,DataObject>) filterImplement.mapping, implement.mapping, editForm.object)));
+                            onChangeProperty.getPropertyObjectEntity((Map<F, DataObject>) filterImplement.mapping, implement.mapping, editForm.object)));
                 }
             }
         }
@@ -1331,12 +1340,12 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
         Object currentObject = propertyValues.read(this);
         if (currentObject == null && objectClass instanceof ConcreteCustomClass) {
-            currentObject = addObject((ConcreteCustomClass)objectClass).object;
+            currentObject = addObject((ConcreteCustomClass) objectClass).object;
         }
 
         return currentObject == null
-               ? null
-               : new DialogInstance<T>(classForm.form, BL, session, securityPolicy, getFocusListener(), getClassListener(), classForm.object, currentObject, instanceFactory.computer);
+                ? null
+                : new DialogInstance<T>(classForm.form, BL, session, securityPolicy, getFocusListener(), getClassListener(), classForm.object, currentObject, instanceFactory.computer);
     }
 
     public DialogInstance<T> createChangeEditorDialog(CalcPropertyValueImplement propertyValues, GroupObjectInstance groupObject, CalcProperty filterProperty) throws SQLException {
@@ -1412,7 +1421,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         if (actionsOnEvent != null) {
             for (ActionPropertyObjectEntity<?> autoAction : actionsOnEvent) {
                 ActionPropertyObjectInstance<? extends PropertyInterface> autoInstance = instanceFactory.getInstance(autoAction);
-                if(autoInstance.isInInterface(null)) // для проверки null'ов
+                if (autoInstance.isInInterface(null)) // для проверки null'ов
                     autoInstance.execute(this);
             }
         }
@@ -1430,7 +1439,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     @ManualLazy
     public Modifier getModifier() {
-        if(modifier==null) {
+        if (modifier == null) {
             FunctionSet<CalcProperty> noHints = getNoHints();
             modifier = new OverrideSessionModifier(createEnvironmentIncrement(isModal, this instanceof DialogInstance, isNewSession), noHints, noHints, entity.hintsIncrementTable, entity.hintsNoUpdate, session.getModifier());
         }
@@ -1466,7 +1475,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     public void formNull() throws SQLException {
         fireOnNull();
-        
+
         Context.context.get().delayUserInteraction(new HideFormClientAction());
     }
 

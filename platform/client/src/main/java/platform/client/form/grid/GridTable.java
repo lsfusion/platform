@@ -127,7 +127,7 @@ public class GridTable extends ClientPropertyTable {
         addFocusListener(new FocusAdapter() {
             @Override
             public void focusGained(FocusEvent e) {
-                if(groupObject!=null) {
+                if (groupObject != null) {
                     ClientForm.lastActiveGroupObject = groupObject;
                 }
             }
@@ -271,12 +271,12 @@ public class GridTable extends ClientPropertyTable {
         if (value instanceof Date) {
             value = Main.formatDate(value);
         } else if (value instanceof Double) {
-            value = (double) Math.round(((Double) value) * 1000) /1000;
+            value = (double) Math.round(((Double) value) * 1000) / 1000;
         } else if (value instanceof Color) {
             value = "#" + Integer.toHexString(((Color) value).getRGB()).substring(2, 8);
         }
         Format format = (rowIndex != -1 && colIndex != -1 && value instanceof Double) ? getProperty(rowIndex, colIndex).getFormat() : NumberFormat.getInstance();
-        String formattedValue = (value instanceof Double)? format.format(value) : BaseUtils.rtrim(String.valueOf(value));
+        String formattedValue = (value instanceof Double) ? format.format(value) : BaseUtils.rtrim(String.valueOf(value));
         return (value != null) ? SwingUtils.toMultilineHtml(formattedValue, createToolTip().getFont()) : null;
     }
 
@@ -542,11 +542,11 @@ public class GridTable extends ClientPropertyTable {
     }
 
     public void modifyGroupObject(ClientGroupObjectValue rowKey, boolean add) {
-        if(add) {
+        if (add) {
             rowKeys.add(rowKey);
             setCurrentObject(rowKey);
         } else {
-            if(currentObject.equals(rowKey))
+            if (currentObject.equals(rowKey))
                 setCurrentObject(BaseUtils.getNearObject(BaseUtils.singleValue(rowKey), rowKeys));
             rowKeys.remove(rowKey);
         }
@@ -609,8 +609,8 @@ public class GridTable extends ClientPropertyTable {
     @Override
     public void doLayout() {
         int newAutoResizeMode = fitWidth()
-                                ? JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS
-                                : JTable.AUTO_RESIZE_OFF;
+                ? JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS
+                : JTable.AUTO_RESIZE_OFF;
         if (newAutoResizeMode != autoResizeMode) {
             autoResizeMode = newAutoResizeMode;
             setAutoResizeMode(newAutoResizeMode);
@@ -653,10 +653,10 @@ public class GridTable extends ClientPropertyTable {
     public ClientPropertyDraw getCurrentProperty() {
         ClientPropertyDraw selectedProperty = getSelectedProperty();
         return selectedProperty != null
-               ? selectedProperty
-               : model.getColumnCount() > 0
-                 ? model.getColumnProperty(0)
-                 : null;
+                ? selectedProperty
+                : model.getColumnCount() > 0
+                ? model.getColumnProperty(0)
+                : null;
     }
 
     public void pasteTable(List<List<String>> table) {
@@ -899,12 +899,8 @@ public class GridTable extends ClientPropertyTable {
         return model.getColumnProperty(col);
     }
 
-    public int getPropertyCount() {
-        return properties.size();
-    }
-
-    public String getPropertyName(int num) {
-        return properties.get(num).caption;
+    public List<ClientPropertyDraw> getProperties(){
+        return properties;
     }
 
     public ClientGroupObjectValue getColumnKey(int row, int col) {
@@ -1061,7 +1057,7 @@ public class GridTable extends ClientPropertyTable {
                     column = next % getColumnCount();
                 }
                 if (((row == 0 && column == 0 && forward) || (row == getRowCount() - 1 && column == getColumnCount() - 1 && (!forward)))
-                    && isCellFocusable(initRow, initColumn)) {
+                        && isCellFocusable(initRow, initColumn)) {
                     row = initRow;
                     column = 0;
                     break;

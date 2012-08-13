@@ -569,6 +569,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             Expr propExpr = LM.SIDProperty.getExpr(session.getModifier(), qp.mapKeys.get("propertyId"));
             qp.and(propExpr.getWhere());
             qp.and(qp.mapKeys.get("userId").compare(new DataObject(user.ID, LM.customUser), Compare.EQUALS));
+            qp.and(LM.notNullPermissionUserProperty.getExpr(session.getModifier(),qp.mapKeys.get("userId"), qp.mapKeys.get("propertyId")).getWhere());
 
             qp.properties.put("sid", propExpr);
             qp.properties.put("permitView", LM.permitViewUserProperty.getExpr(session.getModifier(), qp.mapKeys.get("userId"), qp.mapKeys.get("propertyId")));

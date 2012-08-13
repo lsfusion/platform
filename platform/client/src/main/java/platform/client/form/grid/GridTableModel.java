@@ -7,9 +7,8 @@ import platform.client.logics.classes.ClientObjectType;
 
 import javax.swing.table.AbstractTableModel;
 import java.awt.*;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 import static platform.base.BaseUtils.toCaption;
 
@@ -65,12 +64,14 @@ public class GridTableModel extends AbstractTableModel {
         List<ClientPropertyDraw> columnPropsList = new ArrayList<ClientPropertyDraw>();
         List<ClientGroupObjectValue> columnKeysList = new ArrayList<ClientGroupObjectValue>();
 
+        Collections.sort(columnProperties, COMPARATOR);
+
         for (ClientPropertyDraw property : columnProperties) {
             if (mapColumnKeys.containsKey(property)) {
                 Map<ClientGroupObjectValue, Object> columnCaption = columnCaptions.get(property);
                 for (ClientGroupObjectValue key : mapColumnKeys.get(property)) {
                     //не показываем колонку, если propertyCaption равно null
-                    Boolean needToHide = property.hideUser==null ? property.hide : property.hideUser;
+                    Boolean needToHide = property.hideUser == null ? property.hide : property.hideUser;
                     if ((columnCaption == null || columnCaption.get(key) != null) && !needToHide) {
                         columnKeysList.add(key);
                         columnPropsList.add(property);
@@ -98,8 +99,8 @@ public class GridTableModel extends AbstractTableModel {
             if (propColumnCaptions != null) {
                 String columnCaption = toCaption(propColumnCaptions.get(columnKeys[i]));
                 resultCaption += resultCaption.isEmpty()
-                                 ? columnCaption
-                                 : " [" + columnCaption + "]";
+                        ? columnCaption
+                        : " [" + columnCaption + "]";
             }
 
             columnNames[i] = resultCaption;
@@ -145,7 +146,7 @@ public class GridTableModel extends AbstractTableModel {
 
     public int getPropertyIndex(ClientPropertyDraw property, ClientGroupObjectValue columnKey) {
         for (int i = 0; i < columnProps.length; ++i) {
-            if (property == columnProps[i] && (columnKey==null || columnKey.equals(columnKeys[i]))) {
+            if (property == columnProps[i] && (columnKey == null || columnKey.equals(columnKeys[i]))) {
                 return i;
             }
         }
@@ -171,4 +172,14 @@ public class GridTableModel extends AbstractTableModel {
     public Color getForegroundColor(int row, int column) {
         return foregroundColor[row][column];
     }
+
+    private static Comparator<ClientPropertyDraw> COMPARATOR = new Comparator<ClientPropertyDraw>() {
+        public int compare(ClientPropertyDraw c1, ClientPropertyDraw c2) {
+            if (c1.orderUser == null || c2.orderUser == null)
+                return 0;
+            else
+                return c1.orderUser - c2.orderUser;
+        }
+    };
+
 }
