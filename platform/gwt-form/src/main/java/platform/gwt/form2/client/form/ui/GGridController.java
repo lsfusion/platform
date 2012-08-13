@@ -19,6 +19,7 @@ public class GGridController {
 
         ResizeLayoutPanel panel = new ResizeLayoutPanel();
         panel.setStyleName("gridResizePanel");
+        panel.setSize("100%", "100%");
         gridView.setSize("100%", "100%");
         panel.setWidget(table);
         gridView.add(panel);

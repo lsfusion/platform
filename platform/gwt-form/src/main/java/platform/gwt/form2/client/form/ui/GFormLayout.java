@@ -29,6 +29,8 @@ public abstract class GFormLayout extends FlowPanel {
         adjustFills(mainContainer);
         adjustContainerSizes(mainContainer);
 
+        setSize("100%", "100%");
+
         add(this.mainContainer);
     }
 
@@ -113,6 +115,9 @@ public abstract class GFormLayout extends FlowPanel {
             containerView.setVisible(
                     hasVisibleChildren(container)
             );
+            if (getFormContainer(container).isInSplitPane()) {
+                ((GFormSplitPane) getFormContainer(container.container)).update();
+            }
         }
     }
 
@@ -185,7 +190,7 @@ public abstract class GFormLayout extends FlowPanel {
                 }
             }
 
-            if (container.container != null && !container.container.type.isContainer()) {
+            if (container.container != null && container.container.type.isTabbed()) {
                 width = "100%";
                 height = "100%";
             } else {
@@ -195,19 +200,28 @@ public abstract class GFormLayout extends FlowPanel {
         }
 
         GAbstractFormContainer parentView = getComponentParentFormContainer(container);
-        if (parentView != null && parentView.getContainerView() instanceof CellPanel) {
+        if (parentView != null && parentView.isSplit()) {
             if (width != null) {
-                ((CellPanel) parentView.getContainerView()).setCellWidth(view, width);
+                ((GFormSplitPane) parentView).setWidgetSize(view, width, true);
             }
             if (height != null) {
-                ((CellPanel) parentView.getContainerView()).setCellHeight(view, height);
+                ((GFormSplitPane) parentView).setWidgetSize(view, height, false);
             }
         } else {
-            if (width != null) {
-                view.setWidth(width);
-            }
-            if (height != null) {
-                view.setHeight(height);
+            if (parentView != null && parentView.getContainerView() instanceof CellPanel) {
+                if (width != null) {
+                    ((CellPanel) parentView.getContainerView()).setCellWidth(view, width);
+                }
+                if (height != null) {
+                    ((CellPanel) parentView.getContainerView()).setCellHeight(view, height);
+                }
+            } else {
+                if (width != null) {
+                    view.setWidth(width);
+                }
+                if (height != null) {
+                    view.setHeight(height);
+                }
             }
         }
     }
@@ -250,12 +264,6 @@ public abstract class GFormLayout extends FlowPanel {
 
     public GContainer getMainKey() {
         return mainKey;
-    }
-
-    public void initializeSplits() {
-        for (GFormSplitPane split : splitPanels) {
-            split.setSplittersInitialPosition();
-        }
     }
 
     public void setTableCellSize(GContainer container, GContainer childContainer, String size, boolean width) {

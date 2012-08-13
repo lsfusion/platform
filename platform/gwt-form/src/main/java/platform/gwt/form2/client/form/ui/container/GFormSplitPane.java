@@ -1,48 +1,28 @@
 package platform.gwt.form2.client.form.ui.container;
 
 import com.google.gwt.user.client.ui.*;
+import platform.gwt.form2.client.form.ui.GSplitPane;
 import platform.gwt.view2.GComponent;
 import platform.gwt.view2.GContainer;
+import platform.gwt.view2.GContainerType;
 
 public class GFormSplitPane extends GAbstractFormContainer {
-    private GFormSplitPanel splitPane;
+    private GSplitPane splitPane;
 
     public GFormSplitPane(GContainer key) {
         this.key = key;
 
-        splitPane = new GFormSplitPanel();
+        splitPane = new GSplitPane(key.type == GContainerType.VERTICAL_SPLIT_PANEL);
     }
 
     @Override
     public Widget getUndecoratedView() {
-        return splitPane;
+        return splitPane.getComponent();
     }
 
     @Override
     protected void addToContainer(GComponent childKey, Widget childView, int position) {
-        if (key.isVertical) {
-            if (position == 0) {
-                splitPane.addNorth(childView, 250);
-            } else if (splitPane.getCenter() != null) {
-                Widget center = splitPane.getCenter();
-                splitPane.remove(center);
-                splitPane.addNorth(center, 250);
-                splitPane.add(childView);
-            } else {
-                splitPane.add(childView);
-            }
-        } else {
-            if (position == 0) {
-                splitPane.addWest(childView, 250);
-            } else if (splitPane.getCenter() != null) {
-                Widget center = splitPane.getCenter();
-                splitPane.remove(center);
-                splitPane.addWest(center, 250);
-                splitPane.add(childView);
-            } else {
-                splitPane.add(childView);
-            }
-        }
+        splitPane.addWidget(childView);
     }
 
     @Override
@@ -52,43 +32,14 @@ public class GFormSplitPane extends GAbstractFormContainer {
 
     @Override
     protected boolean containerHasChild(Widget childView) {
-        return splitPane.getWidgetIndex(childView) != -1;
+        return splitPane.hasChild(childView);
     }
 
-    public void setSplittersInitialPosition() {
-        int index = 0;
-        double previousSizes = 0;
-        for (GComponent  child : childrenViews.keySet()) {
-            if (index < childrenViews.size() - 1) {
-                double size = 0;
-                if (!key.isVertical && child.absoluteWidth != -1) {
-                    size = child.absoluteWidth;
-                } else if (key.isVertical && child.absoluteHeight != -1) {
-                    size = child.absoluteHeight;
-                }
-                if (size == 0) {
-                    size = (key.isVertical ? child.fillVertical : child.fillHorizontal) / getTotalFill(!key.isVertical) *
-                            (key.isVertical ? splitPane.getOffsetHeight() : splitPane.getOffsetWidth());
-                }
-
-                splitPane.setWidgetSize(childrenViews.get(child), previousSizes + size);
-                previousSizes += size;
-            }
-            index++;
-        }
+    public void setWidgetSize(Widget widget, String size, boolean width) {
+        splitPane.setWidgetSize(widget, size, width);
     }
 
-    private double getTotalFill(boolean width) {
-        double sum = 0;
-        for (GComponent child : childrenViews.keySet()) {
-            sum += width ? child.fillHorizontal : child.fillVertical;
-        }
-        return sum;
-    }
-
-    class GFormSplitPanel extends SplitLayoutPanel {
-        public Widget getCenter() {
-            return super.getCenter();
-        }
+    public void update() {
+        splitPane.update();
     }
 }

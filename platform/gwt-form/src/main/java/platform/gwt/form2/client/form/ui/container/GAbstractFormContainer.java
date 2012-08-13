@@ -1,6 +1,7 @@
 package platform.gwt.form2.client.form.ui.container;
 
 import com.google.gwt.user.client.ui.*;
+import platform.gwt.form2.client.form.ui.GCaptionPanel;
 import platform.gwt.view2.GComponent;
 import platform.gwt.view2.GContainer;
 
@@ -42,6 +43,10 @@ public abstract class GAbstractFormContainer {
         return key.container != null && key.container.type.isTabbed();
     }
 
+    public boolean isInSplitPane() {
+        return key.container != null && key.container.type.isSplit();
+    }
+
     public boolean isChildVisible(GComponent child) {
         Widget childView = childrenViews.get(child);
         return childView != null && childView.isVisible() && containerHasChild(childView);
@@ -53,16 +58,8 @@ public abstract class GAbstractFormContainer {
             containerView = getUndecoratedView();
             containerView.setSize("100%", "100%");
             if (key.title != null && !key.container.type.isTabbed()) {
-                CaptionPanel captionedPanel = new CaptionPanel(key.title);
-                captionedPanel.setContentWidget(containerView);
-
-                final ResizeLayoutPanel captionPanelWrapper = new ResizeLayoutPanel();
-                captionPanelWrapper.setWidget(captionedPanel);
-                captionPanelWrapper.setSize("100%", "100%");
-                containerView = captionPanelWrapper;
-
-//                captionedPanel.setSize("100%", "100%");
-//                containerView = captionedPanel;
+                GCaptionPanel captionedPanel = new GCaptionPanel(key.title, containerView);
+                containerView = captionedPanel;
             }
         }
         return containerView;

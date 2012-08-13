@@ -102,8 +102,6 @@ public class GFormController extends SimplePanel implements FormLogicsProvider {
 
         initializeRegularFilters();
 
-        formLayout.initializeSplits();
-
         getRemoteChanges();
     }
 
