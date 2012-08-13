@@ -269,16 +269,25 @@ FORM logPriceArticle 'История цен'
 
 showFormLogPriceArticle 'История' (article) = ACTION FORM logPriceArticle OBJECTS a NEWSESSION MODAL;
 
+userPriceChangeDepartmentStorePriceSetDocument (departmentStore, priceSetDocument) = DATA userPriceChange (departmentStore, priceSetDocument);
+nameUserPriceChangeDepartmentStorePriceSetDocument 'Документ переоценки' (departmentStore, priceSetDocument) = descriptionUserPriceChange(
+    userPriceChangeDepartmentStorePriceSetDocument (departmentStore, priceSetDocument)) MINCHARWIDTH 30 MAXCHARWIDTH 30 PREFCHARWIDTH 30;
 
+descriptionDocumentPriceSetDocument 'Название документа' (priceSetDocument) =
+    [FORMULA STRING[200] 'CAST($1 AS TEXT) || \' \' || CAST($2 AS TEXT) ||  \' от \' || CAST($3 AS TEXT)'](
+    objectClassName(priceSetDocument), seriesNumberObject(priceSetDocument), datePriceSetDocument(priceSetDocument));
 
-createUserPriceChangeDepartmentStorePriceSetDocument 'Создать документ переоценки' =  ACTION (departmentStore, priceSetDocument) NEWSESSION AUTOAPPLY {
+createUserPriceChangeDepartmentStorePriceSetDocument 'Создать документ переоценки' =  [ACTION (departmentStore, priceSetDocument) NEWSESSION {
     LOCAL priceDateTime = DATETIME ();
     SET priceDateTime() <- dateTimePriceSetDocument(priceSetDocument);
+
         ADDOBJ userPriceChange;
         FOR p == addedObject() DO {
+            SET userPriceChangeDepartmentStorePriceSetDocument(departmentStore, priceSetDocument) <- p AS userPriceChange;
             SET departmentStoreUserPriceChange(p) <- departmentStore AS departmentStore;
             SET dateUserPriceChange(p) <- datePriceSetDocument(priceSetDocument);
             SET timeUserPriceChange(p) <- timePriceSetDocument(priceSetDocument);
+            SET noteUserPriceChange(p) <- descriptionDocumentPriceSetDocument(priceSetDocument);
 
             FOR balanceBASkuStockDateTime(sku, departmentStore, priceDateTime()) !=0 AND inPriceSetDocumentArticle(priceSetDocument, articleSku(sku))
                 AND pricePriceSetDocumentArticleDateTime(articleSku(sku), priceDateTime()) != retailPriceBLedgerDateTime(sku, departmentStore, priceDateTime())
@@ -306,7 +315,14 @@ createUserPriceChangeDepartmentStorePriceSetDocument 'Создать докум�
                 }
             }
         }
-} CONFIRM;
+    EXEC apply();
+    FORM userPriceChange OBJECTS u = userPriceChangeDepartmentStorePriceSetDocument (departmentStore, priceSetDocument)  MODAL;
+
+}] (departmentStore, priceSetDocument) AND NOT userPriceChangeDepartmentStorePriceSetDocument(departmentStore, priceSetDocument) AND isPostedPriceSetDocument(priceSetDocument) CONFIRM;
+
+EXTEND FORM userPriceChanges
+    PROPERTIES(u) noteUserPriceChange AFTER nameDepartmentStoreUserPriceChange
+;
 
 FORM priceSetDocument 'Розничный прайс'
     OBJECTS p=priceSetDocument FIXED PANEL
@@ -478,6 +494,7 @@ FORM priceSetDocuments 'Розничные прайсы'
     OBJECTS d=departmentStore
     PROPERTIES(d) READONLY name
     PROPERTIES(d, p) createUserPriceChangeDepartmentStorePriceSetDocument
+    PROPERTIES(d, p) READONLY nameUserPriceChangeDepartmentStorePriceSetDocument
 
     PROPERTIES(s, p, a) READONLY quantityStorePriceSetDocumentArticle
 
