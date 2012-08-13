@@ -142,8 +142,10 @@ createInnerOrderStoreWHfromCSI 'Создать внутренний заказ' 
             }
         }
     }
-    EXEC apply();
     FORM innerOrder OBJECTS o = innerOrderStoreWHfromCSI (store, WHfromCSI)  MODAL;
+    IF formResult() == formResult.ok THEN {
+        EXEC apply();
+    }
 
 }] (store, WHfromCSI) AND NOT innerOrderStoreWHfromCSI(store, WHfromCSI) CONFIRM;
 
@@ -704,6 +706,13 @@ FORM WHfromCSIs 'Поступления товара с СВХ'
 
     FILTERS quantitySkuStoreWHfromCSI(s, w) > 0
 
+    OBJECTS o = innerOrder
+    PROPERTIES (o) READONLY numberObject, seriesObject, dateInnerOrder, timeInnerOrder,
+                            nameStockInnerOrder, nameDestinationStockInnerOrder, noteInnerOrder,
+                            countInnerOrderDetailInnerOrder, quantityInnerOrderDetailInnerOrder, statusInnerOrder
+
+    FILTERS innerOrderStoreWHfromCSI (s, w) ==o
+
 ;
 
 DESIGN WHfromCSIs FROM DEFAULT {
@@ -735,9 +744,13 @@ DESIGN WHfromCSIs FROM DEFAULT {
             ADD df.box {
                  title = 'Акт расхождений';
             }
-
-            ADD s.box{
+            NEW wor {
                 title = 'Внутренние заказы';
+                ADD s.box{
+                }
+                ADD o.box {
+                    title = 'Заказы';
+                }
             }
         }
     }
