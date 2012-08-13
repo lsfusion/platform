@@ -220,6 +220,8 @@ createSkuWHfromCSR = ACTION (barcode) NEWSESSION {
     }
 }
 
+detailWHfromCSRFreightUnitSku (WHfromCSR, freightUnit, sku) = GROUP MAX WHfromCSRDetail BY WHfromCSRWHfromCSRDetail(WHfromCSRDetail), freightUnitWHfromCSRDetail(WHfromCSRDetail), skuWHfromCSRDetail(WHfromCSRDetail);
+
 addDialogSkuFreightUnitBarcode 'Ввод штрих-кода' (WHfromCSR) = ACTION (WHfromCSR) {
 
     LOCAL selectedBarcode = STRING[14] ();
@@ -237,7 +239,7 @@ addDialogSkuFreightUnitBarcode 'Ввод штрих-кода' (WHfromCSR) = ACTI
         } ELSE {
 
             SET dialogBarcodeSku() <- skuBarcodeIdDate(selectedBarcode(), dateWHfromCSR (WHfromCSR));
-            SET dialogBarcodeDetail() <- detailWHfromCSRSku(WHfromCSR, dialogBarcodeSku());
+            SET dialogBarcodeDetail() <- detailWHfromCSRFreightUnitSku(WHfromCSR, currentFreightUnit(WHfromCSR), dialogBarcodeSku());
 
             IF selectedBarcode() IS STRING[14] AND NOT dialogBarcodeSku() IS sku THEN {
 
@@ -257,19 +259,19 @@ addDialogSkuFreightUnitBarcode 'Ввод штрих-кода' (WHfromCSR) = ACTI
 
             IF dialogBarcodeSku() IS sku THEN {
 
-                IF dialogBarcodeDetail() IS WHfromCSRDetail THEN {
+                IF dialogBarcodeDetail() IS WHfromCSRDetail  THEN {
                     SET quantityWHfromCSRDetail(detail) IF detail == dialogBarcodeDetail() <-
                         quantityWHfromCSRDetail(detail) (+) (1.0 IF detail IS WHfromCSRDetail);
                     } ELSE {
 
-                        ADDOBJ WHfromCSRDetail;
-                        FOR w == addedObject() DO {
-                            SET WHfromCSRWHfromCSRDetail(w) <- WHfromCSR AS WHfromCSR;
-                            SET skuWHfromCSRDetail(w) <- dialogBarcodeSku();
-                            SET freightUnitWHfromCSRDetail(w) <- currentFreightUnit(WHfromCSR);
-                            SET quantityWHfromCSRDetail(w) <- 1.0;
-                        }
+                    ADDOBJ WHfromCSRDetail;
+                    FOR w == addedObject() DO {
+                        SET WHfromCSRWHfromCSRDetail(w) <- WHfromCSR AS WHfromCSR;
+                        SET skuWHfromCSRDetail(w) <- dialogBarcodeSku();
+                        SET freightUnitWHfromCSRDetail(w) <- currentFreightUnit(WHfromCSR);
+                        SET quantityWHfromCSRDetail(w) <- 1.0;
                     }
+                }
             }
         }
     }
