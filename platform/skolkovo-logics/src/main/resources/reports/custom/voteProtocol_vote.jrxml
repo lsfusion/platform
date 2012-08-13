@@ -2,7 +2,7 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="vote" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="192"/>
+	<property name="ireport.y" value="0"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="12" pdfEncoding="Cp1251" isPdfEmbedded="false"/>
 	<style name="GroupCellStyle0" mode="Opaque" backcolor="#DFDFDF" vAlign="Middle" fontName="Serif" fontSize="10" pdfFontName="lsf.Times" pdfEncoding="Cp1251" isPdfEmbedded="false">
 		<box leftPadding="2" rightPadding="2">
@@ -92,18 +92,6 @@
 	<field name="nameNativeClusterVote" class="java.lang.String"/>
 	<field name="nameMaxForesightVote" class="java.lang.String"/>
 	<field name="acceptedVote" class="java.lang.Boolean"/>
-	<variable name="statusPrev" class="java.lang.String">
-		<variableExpression><![CDATA[]]></variableExpression>
-		<initialValueExpression><![CDATA[($F{isStatusVote}==null?"Заявителя по предварительной экспертизе":"Соискателя")]]></initialValueExpression>
-	</variable>
-	<variable name="statusPrevT" class="java.lang.String">
-		<variableExpression><![CDATA[]]></variableExpression>
-		<initialValueExpression><![CDATA[($F{isStatusVote}==null?"Заявителем по предварительной экспертизе":"Соискателем")]]></initialValueExpression>
-	</variable>
-	<variable name="statusPrevD" class="java.lang.String">
-		<variableExpression><![CDATA[]]></variableExpression>
-		<initialValueExpression><![CDATA[($F{isStatusVote}==null?"Заявителю по предварительной экспертизе":"Соискателю")]]></initialValueExpression>
-	</variable>
 	<group name="textGroup1">
 		<groupExpression><![CDATA[String.valueOf($F{vote})]]></groupExpression>
 		<groupHeader>
@@ -115,7 +103,7 @@
 					</textElement>
 					<textFieldExpression><![CDATA["ПРОТОКОЛ\n" +
 "заседания Экспертной коллегии\n" +
-"по вопросу о соответствии проекта, представленного "+($F{isR1ProjectVote}==null?$V{statusPrevT}:"Соискателем")+",\n" +
+"по вопросу о соответствии проекта, представленного "+($F{isR1ProjectVote}==null?($F{isStatusVote}==null?"Заявителем по предварительной экспертизе":"Соискателем"):"Соискателем")+",\n" +
 "критериям, указанным в подпункте"+" "+($F{isR1ProjectVote}==null?"2.6":"E")+" пункта 2 Положения\n" +
 "о присвоении и утрате статуса участника проекта создания\n" +
 "и обеспечения функционирования инновационного центра «Сколково»\n"]]></textFieldExpression>
@@ -127,7 +115,7 @@
 					<textElement textAlignment="Justified">
 						<paragraph firstLineIndent="40"/>
 					</textElement>
-					<textFieldExpression><![CDATA["1. В соответствии с пунктами"+($F{isR1ProjectVote}==null?" 8-19":" 6-16")+" Положения об Экспертных коллегиях Фонда и на основании решения Фонда о направлении заявки "+($F{isR1ProjectVote}==null?$V{statusPrev}:" Соискателя")+" на рассмотрение в Экспертную коллегию для проведения экспертизы заявки по существу и о созыве заседания Экспертной коллегии от " + platform.base.BaseUtils.formatRussian($F{date}) + " года;"]]></textFieldExpression>
+					<textFieldExpression><![CDATA["1. В соответствии с пунктами"+($F{isR1ProjectVote}==null?" 8-19":" 6-16")+" Положения об Экспертных коллегиях Фонда и на основании решения Фонда о направлении заявки "+($F{isR1ProjectVote}==null?($F{isStatusVote}==null?"Заявителя по предварительной экспертизе":"Соискателя"):" Соискателя")+" на рассмотрение в Экспертную коллегию для проведения экспертизы заявки по существу и о созыве заседания Экспертной коллегии от " + platform.base.BaseUtils.formatRussian($F{date}) + " года;"]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement positionType="Float" x="50" y="206" width="489" height="14" isRemoveLineWhenBlank="true">
@@ -161,6 +149,9 @@
 
 ]]></text>
 				</staticText>
+				<break>
+					<reportElement x="0" y="0" width="100" height="1"/>
+				</break>
 			</band>
 			<band>
 				<printWhenExpression><![CDATA[$F{prevDateVote}!=null]]></printWhenExpression>
@@ -177,7 +168,7 @@
 					<textElement textAlignment="Justified">
 						<paragraph firstLineIndent="40"/>
 					</textElement>
-					<textFieldExpression><![CDATA["для проведения экспертизы заявки "+($F{isR1ProjectVote}==null?"":"Соискателя - ")+ $F{nameNativeClaimerVote} + " (проект «" + $F{nameNativeProjectVote} + "») по существу было созвано заседание Экспертной коллегии, для чего был определен ее состав "+($F{isR1ProjectVote}==null?"из числа экспертов по Инновационному приоритету «"+$F{nameMaxForesightVote}+"», в рамках Направления деятельности «"+$F{nameNativeClusterVote}+"» в количестве "+$F{quantityInVote}+" членов и направлены членам Экспертной коллегии Анкета "+$V{statusPrev}+" (в электронном виде), а так же Бюллетень оценки.":"в количестве " + $F{quantityInVote} + " членов и направлены членам Экспертной коллегии материалы заявки Соискателя (в электронном виде), а также Бюллетень оценки.")]]></textFieldExpression>
+					<textFieldExpression><![CDATA["для проведения экспертизы заявки "+($F{isR1ProjectVote}==null?"":"Соискателя - ")+ $F{nameNativeClaimerVote} + " (проект «" + $F{nameNativeProjectVote} + "») по существу было созвано заседание Экспертной коллегии, для чего был определен ее состав "+($F{isR1ProjectVote}==null?"из числа экспертов по Инновационному приоритету «"+$F{nameMaxForesightVote}+"», в рамках Направления деятельности «"+$F{nameNativeClusterVote}+"» в количестве "+$F{quantityInVote}+" членов и направлены членам Экспертной коллегии Анкета "+($F{isStatusVote}==null?"Заявителя по предварительной экспертизе":"Соискателя")+" (в электронном виде), а так же Бюллетень оценки.":"в количестве " + $F{quantityInVote} + " членов и направлены членам Экспертной коллегии материалы заявки Соискателя (в электронном виде), а также Бюллетень оценки.")]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement positionType="Float" x="50" y="36" width="489" height="14"/>
@@ -191,7 +182,7 @@
 					<textElement textAlignment="Justified">
 						<paragraph firstLineIndent="40"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Из них в " + $F{quantityDoneNewVote} + " " + new ChoiceFormat("0#Бюллетенях|1#Бюллетене|1<Бюллетенях").format($F{quantityDoneNewVote}) + " оценки члены Экспертной коллегии указали на то, что они не являются заинтересованными лицами по отношению к "+($F{isR1ProjectVote}==null?$V{statusPrevD}:"Соискателю")+"."]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Из них в " + $F{quantityDoneNewVote} + " " + new ChoiceFormat("0#Бюллетенях|1#Бюллетене|1<Бюллетенях").format($F{quantityDoneNewVote}) + " оценки члены Экспертной коллегии указали на то, что они не являются заинтересованными лицами по отношению к "+($F{isR1ProjectVote}==null?($F{isStatusVote}==null?"Заявителю по предварительной экспертизе":"Соискателю"):"Соискателю")+"."]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement positionType="Float" x="50" y="78" width="489" height="14"/>
@@ -341,7 +332,7 @@
 					<textElement textAlignment="Justified">
 						<paragraph firstLineIndent="40"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Результат: Экспертной коллегией принято решение о " + ($F{acceptedCompetitiveAdvantagesVote}==null ? "не" : "") + "соответствии проекта, представленного "+$V{statusPrevT}+", данному Критерию."]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Результат: Экспертной коллегией принято решение о " + ($F{acceptedCompetitiveAdvantagesVote}==null ? "не" : "") + "соответствии проекта, представленного "+($F{isStatusVote}==null?"Заявителем по предварительной экспертизе":"Соискателем")+", данному Критерию."]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement positionType="Float" x="50" y="90" width="489" height="14"/>
@@ -362,7 +353,7 @@
 					<textElement textAlignment="Justified">
 						<paragraph firstLineIndent="40"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Результат: Экспертной коллегией принято решение о " + ($F{acceptedCommercePotentialVote}==null ? "не" : "") + "соответствии проекта, представленного "+$V{statusPrevT}+", данному Критерию."]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Результат: Экспертной коллегией принято решение о " + ($F{acceptedCommercePotentialVote}==null ? "не" : "") + "соответствии проекта, представленного "+($F{isStatusVote}==null?"Заявителем по предварительной экспертизе":"Соискателем")+", данному Критерию."]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement positionType="Float" x="50" y="76" width="489" height="14"/>
@@ -397,7 +388,7 @@
 					<textElement textAlignment="Justified">
 						<paragraph firstLineIndent="40"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Результат: Экспертной коллегией принято решение о "+ ($F{acceptedCanBeImplementedVote}==null ? "не" : "") + "соответствии проекта, представленного "+$V{statusPrevT}+", данному Критерию."]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Результат: Экспертной коллегией принято решение о "+ ($F{acceptedCanBeImplementedVote}==null ? "не" : "") + "соответствии проекта, представленного "+($F{isStatusVote}==null?"Заявителем по предварительной экспертизе":"Соискателем")+", данному Критерию."]]></textFieldExpression>
 				</textField>
 			</band>
 			<band height="65">
@@ -414,7 +405,7 @@
 					<textElement textAlignment="Justified">
 						<paragraph firstLineIndent="40"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Результат: Экспертной коллегией принято решение о " + ($F{acceptedHaveExpertiseVote}==null ? "не" : "") + "соответствии проекта, представленного "+$V{statusPrevT}+", данному Критерию."]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Результат: Экспертной коллегией принято решение о " + ($F{acceptedHaveExpertiseVote}==null ? "не" : "") + "соответствии проекта, представленного "+($F{isStatusVote}==null?"Заявителем по предварительной экспертизе":"Соискателем")+", данному Критерию."]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement positionType="Float" x="50" y="5" width="489" height="14"/>
@@ -452,7 +443,7 @@
 					<textElement textAlignment="Justified">
 						<paragraph firstLineIndent="40"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Результат: Экспертной коллегией принято решение о " + ($F{acceptedInternationalExperienceVote}==null ? "не" : "") + "соответствии проекта, представленного "+$V{statusPrevT}+", данному Критерию."]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Результат: Экспертной коллегией принято решение о " + ($F{acceptedInternationalExperienceVote}==null ? "не" : "") + "соответствии проекта, представленного "+($F{isStatusVote}==null?"Заявителем по предварительной экспертизе":"Соискателем")+", данному Критерию."]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement positionType="Float" x="50" y="19" width="489" height="14"/>
@@ -499,7 +490,7 @@
 					<textElement textAlignment="Justified">
 						<paragraph firstLineIndent="40"/>
 					</textElement>
-					<textFieldExpression><![CDATA[($F{succeededVote}!=null?"9.":"3.")+($F{acceptedEnoughDocumentsVote}!=null?" Учитывая изложенное, проект, представленный "+$V{statusPrevT}+", признан "+($F{acceptedVote}!=null?"":"не")+" соответствующим критериям, указанным в подпункте 2.6 пункта 2 Положения о присвоении и утрате статуса участника проекта создания и обеспечения функционирования инновационного центра «Сколково».":" Учитывая изложенное и в соответствии с пунктом 29 Положения о присвоении и утрате статуса участника проекта создания и обеспечения функционирования инновационного центра «Сколково», заявка "+$V{statusPrev}+" остается без рассмотрения.")]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{succeededVote}!=null?"9.":"3.")+($F{acceptedEnoughDocumentsVote}!=null?" Учитывая изложенное, проект, представленный "+($F{isStatusVote}==null?"Заявителем по предварительной экспертизе":"Соискателем")+", признан "+($F{acceptedVote}!=null?"":"не")+" соответствующим критериям, указанным в подпункте 2.6 пункта 2 Положения о присвоении и утрате статуса участника проекта создания и обеспечения функционирования инновационного центра «Сколково».":" Учитывая изложенное и в соответствии с пунктом 29 Положения о присвоении и утрате статуса участника проекта создания и обеспечения функционирования инновационного центра «Сколково», заявка "+($F{isStatusVote}==null?"Заявителя по предварительной экспертизе":"Соискателя")+" остается без рассмотрения.")]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement positionType="Float" x="50" y="19" width="489" height="14"/>
