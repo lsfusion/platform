@@ -226,5 +226,6 @@ NAVIGATOR {
         ADD consignment;
         ADD priceArticlePriceSetDocumentPrint;
         ADD writeOffPrint;
+        ADD orderPickingPrint;
     }
 }
