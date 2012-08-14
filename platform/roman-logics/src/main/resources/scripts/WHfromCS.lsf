@@ -116,6 +116,8 @@ quantitySkuStoreWHfromCSI (store, WHfromCSI) = GROUP SUM quantityWHfromCSRDetail
 
 innerOrderStoreWHfromCSI (store, WHfromCSI) = DATA innerOrder (RomanLogicsModule.store, WHfromCSI);
 
+orderPickingInnerOrder (innerOrder) = GROUP MAX orderPicking BY innerOrderOrderPicking(orderPicking);
+
 createInnerOrderStoreWHfromCSI 'Создать внутренний заказ' = [ACTION (store, WHfromCSI) NEWSESSION {
 
     ADDOBJ innerOrder;
@@ -123,28 +125,45 @@ createInnerOrderStoreWHfromCSI 'Создать внутренний заказ' 
         SET innerOrderStoreWHfromCSI(store, WHfromCSI) <- i AS innerOrder;
         SET stockInnerOrder(i) <- warehouseWHfromCSI(WHfromCSI);
         SET destinationStockInnerOrder(i) <- primaryDepartmentStoreStore(store AS RomanLogicsModule.store);
-        ADDOBJ orderPickingPosted;
-        FOR p == addedObject() DO {
-            SET innerOrderOrderPicking (p) <- i AS innerOrder;
+//        ADDOBJ orderPickingPosted;
+//        FOR p == addedObject() DO {
+//            SET innerOrderOrderPicking (p) <- i AS innerOrder;
             FOR WHfromCSIWHfromCSR(WHfromCSRWHfromCSRDetail(WHfromCSRDetail)) == WHfromCSI AND destinationWHfromCSRDetail(WHfromCSRDetail) == store DO {
                 ADDOBJ innerOrderDetail;
                 FOR d == addedObject() DO {
                     SET skuInnerOrderDetail(d) <- skuWHfromCSRDetail(WHfromCSRDetail);
                     SET innerOrderInnerOrderDetail(d) <- i AS innerOrder;
                     SET quantityInnerOrderDetail(d) <- quantityWHfromCSRDetail(WHfromCSRDetail);
-                    ADDOBJ orderPickingDetail;
-                    FOR pd == addedObject() DO {
-                        SET skuOrderPickingDetail(pd) <- skuWHfromCSRDetail(WHfromCSRDetail);
-                        SET orderPickingOrderPickingDetail(pd) <- p AS orderPickingPosted;
-                        SET quantityOrderPickingDetail(pd) <- quantityWHfromCSRDetail(WHfromCSRDetail);
-                    }
+//                    ADDOBJ orderPickingDetail;
+//                    FOR pd == addedObject() DO {
+//                        SET skuOrderPickingDetail(pd) <- skuWHfromCSRDetail(WHfromCSRDetail);
+//                        SET orderPickingOrderPickingDetail(pd) <- p AS orderPickingPosted;
+//                        SET quantityOrderPickingDetail(pd) <- quantityWHfromCSRDetail(WHfromCSRDetail);
+//                    }
                 }
             }
-        }
+//        }
     }
     FORM innerOrder OBJECTS o = innerOrderStoreWHfromCSI (store, WHfromCSI)  MODAL;
     IF formResult() == formResult.ok THEN {
         EXEC apply();
+
+        ADDOBJ orderPickingPosted;
+        FOR p == addedObject() DO {
+            SET innerOrderOrderPicking (p) <- innerOrderStoreWHfromCSI(store, WHfromCSI);
+            FOR WHfromCSIWHfromCSR(WHfromCSRWHfromCSRDetail(WHfromCSRDetail)) == WHfromCSI AND destinationWHfromCSRDetail(WHfromCSRDetail) == store DO {
+                ADDOBJ orderPickingDetail;
+                FOR pd == addedObject() DO {
+                    SET skuOrderPickingDetail(pd) <- skuWHfromCSRDetail(WHfromCSRDetail);
+                    SET orderPickingOrderPickingDetail(pd) <- p AS orderPickingPosted;
+                    SET quantityOrderPickingDetail(pd) <- quantityWHfromCSRDetail(WHfromCSRDetail);
+                }
+            }
+        }
+        FORM orderPicking OBJECTS p = orderPickingInnerOrder(innerOrderStoreWHfromCSI (store, WHfromCSI))  MODAL;
+        IF formResult() == formResult.ok THEN {
+            EXEC apply();
+        }
     }
 
 }] (store, WHfromCSI) AND NOT innerOrderStoreWHfromCSI(store, WHfromCSI) CONFIRM;
@@ -665,6 +684,13 @@ skipASkuLedger (ledger) += ledger IS WHfromCSDSDetail;
 nameCategoryArticleSkuWHfromCSDDetail 'Номенклатурная группа' (WHfromCSDDetail) = nameCategoryArticleSku(skuWHfromCSDDetail(WHfromCSDDetail));
 nameUnitOfMeasureArticleSkuWHfromCSDDetail 'Ед. измерения товара' (WHfromCSDDetail) = nameUnitOfMeasureArticleSku(skuWHfromCSDDetail(WHfromCSDDetail));
 
+editInnerOrder 'Редактировать' (innerOrder) = ACTION (innerOrder) {
+    IF innerOrder IS innerOrder  THEN {
+        FORM innerOrder OBJECTS o = innerOrder MODAL;
+    }
+
+} IMAGE 'edit.png' IN documentPrmGroup;
+
 FORM WHfromCSIs 'Поступления товара с СВХ'
     OBJECTS w = WHfromCSI
     PROPERTIES (w) READONLY isPostedWHfromCSI FORCE GRID, numberWHfromCSI, seriesWHfromCSI, dateWHfromCSI, timeWHfromCSI,
@@ -706,10 +732,11 @@ FORM WHfromCSIs 'Поступления товара с СВХ'
 
     FILTERS quantitySkuStoreWHfromCSI(s, w) > 0
 
-    OBJECTS o = innerOrder
+    OBJECTS o = innerOrder FIXED PANEL
     PROPERTIES (o) READONLY numberObject, seriesObject, dateInnerOrder, timeInnerOrder,
                             nameStockInnerOrder, nameDestinationStockInnerOrder, noteInnerOrder,
                             countInnerOrderDetailInnerOrder, quantityInnerOrderDetailInnerOrder, statusInnerOrder
+    PROPERTIES (o) editInnerOrder
 
     FILTERS innerOrderStoreWHfromCSI (s, w) ==o
 
@@ -722,9 +749,11 @@ DESIGN WHfromCSIs FROM DEFAULT {
         type = SPLITV;
         childConstraints = TO THE BOTTOM;
 
-        ADD w.box;
+        ADD w.box {
+            fillVertical = 1;
+        }
         NEW docDetail{
-
+            fillVertical = 2;
             type = TABBED;
             ADD di.box {
                title = 'Спецификация';
@@ -746,10 +775,33 @@ DESIGN WHfromCSIs FROM DEFAULT {
             }
             NEW wor {
                 title = 'Внутренние заказы';
+                childConstraints = TO THE BOTTOM;
                 ADD s.box{
                 }
                 ADD o.box {
                     title = 'Заказы';
+                    childConstraints = TO THE RIGHTBOTTOM;
+                    ADD o.numberedGroup {
+                        childConstraints = TO THE BOTTOM;
+                    }
+                    ADD o.documentHeaderGroup {
+                        childConstraints = TO THE BOTTOM;
+                        NEW www {
+                            childConstraints = TO THE RIGHT;
+                            ADD PROPERTY (dateInnerOrder);
+                            ADD PROPERTY (timeInnerOrder);
+                        }
+                    }
+                    ADD o.documentPrmGroup {
+                        childConstraints = TO THE BOTTOM;
+                    }
+                    ADD o.documentSumGroup {
+                        childConstraints = TO THE BOTTOM;
+                    }
+                    NEW vvv {
+                        title = 'Редактирование';
+                        ADD PROPERTY(editInnerOrder);
+                    }
                 }
             }
         }

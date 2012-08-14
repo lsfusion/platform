@@ -26,6 +26,12 @@ nameDefaultNumeratorInnerOrder 'Нумератор для внутренних �
 initValueNumeratorObject(object) += defaultNumeratorInnerOrders() IF object IS innerOrder;
 initWhenNumeratorObject(object) += ASSIGNED(object IS innerOrder);
 
+defaultNumeratorOrderPickings = DATA numerator ();
+nameDefaultNumeratorOrderPicking 'Нумератор для подборок товара по заказу' = name(defaultNumeratorOrderPickings());
+
+initValueNumeratorObject(object) += defaultNumeratorOrderPickings() IF object IS orderPicking;
+initWhenNumeratorObject(object) += ASSIGNED(object IS orderPicking);
+
 @defineDocument(innerOrder);
 
 @defineDocumentStock(innerOrder, stock, 'Склад-отправитель');
@@ -144,7 +150,7 @@ DESIGN innerOrders FROM DEFAULT {
 @extendDocumentFormDetailSkuArticleReadonly(innerOrders, d, innerOrder);
 
 // ---------------------------------------- Подбор товара ------------------------------------ //
-CLASS orderPicking 'Подбор товара по заказу': historyObject, numberedObject;
+CLASS orderPicking 'Подбор товара по заказу': historyObject, numeratedObject;
 CLASS orderPickingPosted 'Проведенный подбор товара по заказу': orderPicking, postedObject;
 
 CLASS orderPickingDetail 'Строка подбора товара по заказу';
@@ -209,7 +215,7 @@ FORM orderPicking 'Подбор товара'
     OBJECTS o = innerOrder
     OBJECTS p = orderPicking FIXED PANEL
 
-    PROPERTIES (p) numberObject, seriesObject, dateOrderPicking, timeOrderPicking,
+    PROPERTIES (p) nameNumeratorObject, numberObject, seriesObject, dateOrderPicking, timeOrderPicking,
         nameStockOrderPicking, nameDestinationStockOrderPicking, noteOrderPicking,
         countOrderPickingDetailOrderPicking, quantityOrderPickingDetailOrderPicking
 
@@ -252,6 +258,7 @@ DESIGN orderPicking FROM DEFAULT {
                         childConstraints = TO THE RIGHT;
                         ADD PROPERTY (nameStockOrderPicking);
                         ADD PROPERTY (nameDestinationStockOrderPicking);
+                        ADD PROPERTY (nameNumeratorObject);
                         ADD PROPERTY (numberObject);
                         ADD PROPERTY (seriesObject);
                         ADD PROPERTY (dateOrderPicking);
@@ -401,7 +408,7 @@ statusInnerOrder 'Статус' (innerOrder) =
     IF quantityInnerDocumentInnerOrder (innerOrder)  THEN 'Документы сформированы' IF innerOrder IS innerOrder ELSE
     IF quantityOrderPickingPostedInnerOrder (innerOrder) == quantityOrderPickingInnerOrder(innerOrder)  THEN 'Товары подобраны частично' IF innerOrder IS innerOrder ELSE
     IF quantityOrderPickingPostedInnerOrder (innerOrder) != quantityOrderPickingInnerOrder(innerOrder) AND quantityOrderPickingInnerOrder (innerOrder) THEN 'Товары подобираются' IF innerOrder IS innerOrder ELSE
-    'Требуется подборка' IF innerOrder IS innerOrder PREFCHARWIDTH 25 MINCHARWIDTH 25;
+    'Требуется подборка' IF innerOrder IS innerOrder IN documentPrmGroup PREFCHARWIDTH 25 MINCHARWIDTH 25;
 
 
 statusOrderPicking 'Статус' (orderPicking) =
@@ -416,7 +423,7 @@ statusOrderPicking 'Статус' (orderPicking) =
 EXTEND FORM innerOrders
     OBJECTS p = orderPicking
 
-    PROPERTIES (p) READONLY isPostedOrderPicking FORCE GRID, nameNumeratorObject, numberObject, seriesObject, dateOrderPicking, timeOrderPicking,
+    PROPERTIES (p) READONLY isPostedOrderPicking FORCE GRID, numberObject, seriesObject, dateOrderPicking, timeOrderPicking,
         nameStockOrderPicking, nameDestinationStockOrderPicking, noteOrderPicking,
         countOrderPickingDetailOrderPicking, quantityOrderPickingDetailOrderPicking, quantityInnerDocumentOrderPicking,
         quantityPostedInnerDocumentOrderPicking, quantityDraftInnerDocumentOrderPicking, statusOrderPicking
