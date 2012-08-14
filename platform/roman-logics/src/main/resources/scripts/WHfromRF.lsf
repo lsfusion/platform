@@ -22,7 +22,31 @@ CLASS WHfromRFDetail 'Строка прихода из РФ' : batchB;
 
 @defineDocumentTables(WHfromRF);
 
+// расходы для фрахтов РФ
+currencyPayFreight 'Валюта платежей за РФ (ИД)' (freight) = currencyPayFreights() IF routeFreight(freight) == route.rf;
+typeExchangePayFreight 'Тип обмена (ИД)' (freight) = typeExchangeSTX() IF routeFreight(freight) == route.rf;
+
+@defineNearestRateExchangeObject(freight, pay, pay, dateArrivalFreight, baseGroup);
+
+tariffVolumeFreight 'Тариф для перевозок (м3)' = DATA NUMERIC[14,2](freight);
+percentCostFreight 'Процент расходов за оформление' = DATA NUMERIC[14,2](freight);
+
+tariffVolumeFreight(freight) <- tariffVolumeFreights() WHEN freight IS freight;
+percentCostFreight(freight) <- percentCostFreights() WHEN freight IS freight;
+
 isWHfromRFFreight(freight) = TRUE IF (routeFreight(freight) == route.rf AND freight IS freightArrived);
+
+sumRegistrationFreightSku 'Затраты на оформление' (freight, sku) = (priceInFullFreightSku(freight, sku) * percentCostFreight(freight))/100 IF routeFreight(freight) == route.rf;
+sumDeliveryFreight 'Затраты на доставку' (freight) = volumeDataFreight(freight) * tariffVolumeFreight(freight) * rateExchangePayPayFreight(freight) IF routeFreight(freight) == route.rf;
+
+sumDeliveryFreightSku 'Затраты на доставку' (freight, sku) = (sumDeliveryFreight(freight) * sumGrossWeightFreightSku(freight, sku))/grossWeightFreight(freight);
+
+priceRFFreightSku 'Себестоимость' (freight, sku) = UNION SUM priceInFullFreightSku(freight, sku), sumRegistrationFreightSku(freight, sku), sumDeliveryFreightSku(freight, sku);
+
+EXTEND FORM freightInvoiceForm
+    PROPERTIES tariffVolumeFreight(freight), percentCostFreight(freight)
+    PROPERTIES FORCE GRID sumRegistrationFreightSku(freight, sku), sumDeliveryFreightSku(freight, sku), priceRFFreightSku(freight, sku)
+;
 
 //@defineAggregation(freight, WHfromRF, isWHfromRFFreight);
 
@@ -214,6 +238,8 @@ fillWHfromRFDetailsSkuFreightUnit 'Заполнить строки из коро
 
 shouldBePrintWHfromRF = SESSION DATA BOOLEAN (sku);
 countSku = SESSION DATA INTEGER (sku);
+
+///UNION SUM priceInFullFreightSku()
 
 priceBaseWHfromRFDateTimeSku 'Цена' (sku, dateTime) = priceBasePriceSetDocumentArticleDateTime(articleSku(sku), dateTime);
 priceDiscountWHfromRFDateTimeSku 'Цена скидочная' (sku, dateTime) = priceDiscountPriceSetDocumentArticleDateTime(articleSku(sku), dateTime);

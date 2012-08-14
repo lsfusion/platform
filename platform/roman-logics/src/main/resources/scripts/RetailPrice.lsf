@@ -138,7 +138,7 @@ isNotRRPPriceSetDocumentArticle 'Нет рекомендуемой цены' (ba
 
 typeExchangePriceSetDocument (priceSetDocument) = typeExchangeRetail() AND priceSetDocument IS priceSetDocument;
 currencyPriceSetDocument (priceSetDocument) = currencyTypeExchange(typeExchangeSTX()) AND priceSetDocument IS priceSetDocument;
-@defineNearestRateExchangeObject(priceSetDocument, , datePriceSetDocument, publicGroup);
+@defineNearestRateExchangeObject(priceSetDocument, , , datePriceSetDocument, publicGroup);
 
 rateDataPriceSetDocumentArticle 'Обменный курс' = DATA NUMERIC[14,2](priceSetDocument, article) IN baseGroup;
 
@@ -560,7 +560,7 @@ FORM freights 'Расценка фрахтов'
 
     OBJECTS f = freightPriced
     PROPERTIES(f) READONLY isPriceSetFreight BACKGROUND backgroundPriceSetDocument(f), date, objectClassName, canonicalBrandFreight, dateArrivalFreight,
-                           nameRouteFreight, nameExporterFreight, freightGrossWeight
+                           nameRouteFreight, nameExporterFreight, grossWeightFreight
     PROPERTIES(f) FORCE PANEL createPriceSetDocument SHOWIF isPriceSetDocumentFreight(f)
 
     FILTERGROUP filtersDocument

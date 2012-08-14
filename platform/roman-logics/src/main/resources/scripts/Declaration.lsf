@@ -100,7 +100,7 @@ quantityFormedInvoice 'Кол-во в инвойсе' (innerInvoice) = GROUP SUM
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 typeExchangeExpensesDirectInvoice 'Тип обмена (ИД)' (directInvoice) = typeExchangeSTX() IF directInvoice IS directInvoice IN idGroup;
 currencyDirectInvoice '' (directInvoice) = currencyInnerInvoice(directInvoice) IF directInvoice IS directInvoice;
-@defineNearestRateExchangeObject(directInvoice, expenses, date, baseGroup);
+@defineNearestRateExchangeObject(directInvoice, expenses, , date, baseGroup);
 
 priceFormedInvoiceSku 'Цена в инвойсе' (formedInvoice, sku) = priceFullImporterFreightSku(importerFormedInvoice(formedInvoice),
                                                                                           freightFormedInvoice(formedInvoice),
@@ -341,9 +341,9 @@ nameTypeExchangeManagerialDeclaration 'Тип обмена (УУ)' (declaration)
 typeExchangeCustomDeclaration(declaration) <- typeExchangePayCustom() WHEN CHANGED (dateDeclaration(declaration));
 typeExchangeManagerialDeclaration(declaration) <- typeExchangePayManagerial() WHEN CHANGED (dateDeclaration(declaration));
 
-@defineNearestRateExchangeObject(declaration, custom, dateDeclaration, baseGroup);
-@defineNearestRateExchangeObject(declaration, managerial, dateDeclaration, baseGroup);
-@defineNearestRateExchangeObject(declaration, duty, dateDeclaration, baseGroup);
+@defineNearestRateExchangeObject(declaration, custom, , dateDeclaration, baseGroup);
+@defineNearestRateExchangeObject(declaration, managerial, , dateDeclaration, baseGroup);
+@defineNearestRateExchangeObject(declaration, duty, , dateDeclaration, baseGroup);
 
 rateExchangeCustomDataDeclaration(declaration) <- rateExchangeCustomDeclaration(declaration) WHEN (CHANGED (dateDeclaration(declaration)) OR CHANGED (currencyDeclaration(declaration)));
 rateExchangeManagerialDataDeclaration(declaration) <- rateExchangeManagerialDeclaration(declaration) WHEN (CHANGED (dateDeclaration(declaration)) OR CHANGED (currencyDeclaration(declaration)));
@@ -422,7 +422,8 @@ quantityDeclarationGroup 'Кол-во' = GROUP SUM quantityDeclarationDetail(dec
 
 CLASS groupDeclaration 'Строка декларации';
 
-declarationGroupDeclaration 'Декларация (ИД)' = DATA declaration(groupDeclaration) IN idGroup;
+declarationGroupDeclaration 'Декларация (ИД)' = DATA declaration(groupDeclaration) IN idGroup NOT NULL DELETE;
+
 articleGroupDeclaration 'Артикул (ИД)' = DATA article(groupDeclaration) IN idGroup;
 customCategory10GroupDeclaration 'ТН ВЭД (ИД)' = DATA customCategory10(groupDeclaration) IN idGroup;
 mainCompositionGroupDeclaration 'Состав' = DATA STRING[200](groupDeclaration) IN baseGroup;
@@ -698,16 +699,44 @@ registrationDeclarationDetail 'Таможенный сбор (ед.)' (declarati
 registrationRateDeclarationDetail 'Таможенный сбор (в валюте)' (declarationDetail) = round2(registrationDeclarationDetail(declarationDetail)/rateExchangeManagerialDeclarationDetail(declarationDetail));
 
 
-// учёт расходов на сертификацию
+// учёт расходов на сертификацию и консультации
 expenseCertificateDeclaration 'Расходы на сертификацию (БУ)' (declaration) = GROUP SUM priceRateDeclarationDetail(declarationDetail) *
                                                                                        quantityCertificatedDeclarationSku(declarationDeclarationDetail(declarationDetail), skuDeclarationDetail(declarationDetail))
                                                                                     IF certificatedDeclarationDetail(declarationDetail)
                                                                                     BY declarationDeclarationDetail(declarationDetail) IN corrGroup PERSISTENT;
 
-expenseCertificateManagerialDeclaration 'Расходы на сертификацию (УУ)' (declaration) = GROUP SUM priceManagerialDeclarationDetail(declarationDetail) *
-                                                                                                 quantityCertificatedDeclarationSku(declarationDeclarationDetail(declarationDetail), skuDeclarationDetail(declarationDetail))
-                                                                                              IF certificatedDeclarationDetail(declarationDetail)
+quantityDeclarationCertificate 'Кол-во на сертификат' (declaration, certificate) = GROUP SUM quantityDiffDeclarationDetail(declarationDetail)
+                                                                                          BY declarationDeclarationDetail(declarationDetail),
+                                                                                             certificatePreparedDeclarationDetail(declarationDetail) PERSISTENT;
+
+expenseCertificateManagerialDeclarationDetail 'Расходы на сертификацию' (declarationDetail) = priceManagerialDeclarationDetail(declarationDetail) *
+                                                                                              quantityCertificatedDeclarationSku(declarationDeclarationDetail(declarationDetail), skuDeclarationDetail(declarationDetail))
+                                                                                              IF certificatedDeclarationDetail(declarationDetail);
+
+
+sumExpenseDeclarationCertificate '' (declaration, certificate) = GROUP SUM expenseCertificateManagerialDeclarationDetail(declarationDetail)
+                                                                        BY declarationDeclarationDetail(declarationDetail),
+                                                                           certificatePreparedDeclarationDetail(declarationDetail) PERSISTENT;
+
+expenseDeclarationCertificate '' (declaration, certificate) = sumExpenseDeclarationCertificate(declaration, certificate)/quantityDeclarationCertificate(declaration, certificate);
+
+expenseDeclarationDetail 'Затраты' (declarationDetail) = expenseDeclarationCertificate(declarationDeclarationDetail(declarationDetail), certificatePreparedDeclarationDetail(declarationDetail));
+
+expenseCertificateManagerialDeclaration 'Расходы на сертификацию (УУ)' (declaration) = GROUP SUM expenseCertificateManagerialDeclarationDetail(declarationDetail)
                                                                                               BY declarationDeclarationDetail(declarationDetail) PERSISTENT;
+
+consultationDeclarationDetail 'Консультация' = DATA BOOLEAN(declarationDetail);
+sumConsultationDeclaration 'Сумма за консультацию' = DATA NUMERIC[14,3](declaration) IN sumGroup;
+
+quantityConsultationDetailDeclaration '' (declaration) = GROUP SUM 1 IF consultationDeclarationDetail(declarationDetail)
+                                                                BY declarationDeclarationDetail(declarationDetail);
+
+consultationDeclaration '' (declaration) = sumConsultationDeclaration(declaration)/quantityConsultationDetailDeclaration(declaration);
+
+sumConsultationDeclarationDetail 'За консультацию' (declarationDetail) = consultationDeclaration(declarationDeclarationDetail(declarationDetail))/
+                                                                         quantityDiffDeclarationDetail(declarationDetail) IF consultationDeclarationDetail(declarationDetail);
+
+sumConsultationRateDeclarationDetail 'За консультацию (в валюте)' = sumConsultationDeclarationDetail(declarationDetail)/rateExchangeManagerialDeclarationDetail(declarationDetail);
 
 // для себестоимости
 dutyFinDeclarationDetail 'Пошлина' = round0(dutyReverseDeclarationDetail(declarationDetail)/quantityDeclarationDetail(declarationDetail));
@@ -722,7 +751,9 @@ priceCustomDeclarationDetail 'Себестоимость (БУ)' (declarationDet
 
 priceManagerialCustomDeclarationDetail 'Себестоимость (УУ)' (declarationDetail) = UNION SUM priceManagerialDeclarationDetail(declarationDetail),
                                                                                             dutyRateDeclarationDetail(declarationDetail),
-                                                                                            registrationRateDeclarationDetail(declarationDetail) PERSISTENT;
+                                                                                            registrationRateDeclarationDetail(declarationDetail),
+                                                                                            expenseDeclarationDetail(declarationDetail),
+                                                                                            sumConsultationRateDeclarationDetail(declarationDetail) PERSISTENT;
 
 priceCustomBatch (batch) += priceCustomDeclarationDetail(batch);
 priceManagerialBatch (batch) += priceManagerialCustomDeclarationDetail(batch);
@@ -782,7 +813,7 @@ FORM declaration 'Декларация'
                   innerInvoicesDeclaration, dateDeclaration, timeDeclaration, beginTimeDeclaration, endTimeDeclaration,
                   nameTypeExchangeCustomDeclaration, rateExchangeCustomDataDeclaration, nameTypeExchangeManagerialDeclaration,
                   rateExchangeManagerialDataDeclaration, sumRegistrationUnionDeclaration, dutyReverseDeclaration, VATReverseDeclaration, totalCustomSum,
-                  expenseCertificateDeclaration
+                  expenseCertificateDeclaration, sumConsultationDeclaration
 
     OBJECTS c=correction
     PROPERTIES(c) date, dateTimePayCorrection, ADDOBJ, delete
@@ -798,9 +829,10 @@ FORM declaration 'Декларация'
                     declarationPriceDeclarationDetail, priceRateDeclarationDetail, declarationSumRateDeclarationDetail,
                     supplierSumDeclarationDetail, dutyReverseDeclarationDetail, numberVATRangeReverseDeclarationDetail,
                     valueVATRangeReverseDeclarationDetail, VATReverseDeclarationDetail, registrationSumUnionDeclarationDetail,
-                    priceCustomDeclarationDetail, priceManagerialDeclarationDetail, priceManagerialCustomDeclarationDetail
+                    priceCustomDeclarationDetail, priceManagerialDeclarationDetail, expenseDeclarationDetail, sumConsultationRateDeclarationDetail,
+                    priceManagerialCustomDeclarationDetail
 
-    PROPERTIES (dd) certificatedDeclarationDetail,
+    PROPERTIES (dd) consultationDeclarationDetail, certificatedDeclarationDetail,
                     sidTemporalCertificateDeclarationDetail BACKGROUND isCertificatePreparedDeclarationDetail(dd),
                     sidPermanentCertificateDeclarationDetail BACKGROUND isCertificatePreparedDeclarationDetail(dd)
 
