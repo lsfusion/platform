@@ -1,21 +1,20 @@
 package platform.gwt.form2.client.form.ui.container;
 
-import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
-import com.google.gwt.user.client.ui.TabLayoutPanel;
-import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.*;
 import platform.gwt.form2.client.form.ui.GFormController;
 import platform.gwt.view2.GComponent;
 import platform.gwt.view2.GContainer;
 
 public class GFormTabbedPane extends GAbstractFormContainer {
-    private TabLayoutPanel tabsPanel;
+    private TabPanel tabsPanel;
 
     public GFormTabbedPane(final GFormController formController, final GContainer key) {
         this.key = key;
 
-        tabsPanel = new TabLayoutPanel(2, Style.Unit.EM);
+        tabsPanel = new TabPanel();
+        tabsPanel.getDeckPanel().setHeight("100%");
 
         tabsPanel.addSelectionHandler(new SelectionHandler<Integer>() {
             @Override
@@ -42,6 +41,10 @@ public class GFormTabbedPane extends GAbstractFormContainer {
         }
 
         tabsPanel.insert(childView, tabTitle, position == -1 ? tabsPanel.getWidgetCount() : position);
+
+        if (tabsPanel.getTabBar().getSelectedTab() == -1) {
+            tabsPanel.selectTab(0);
+        }
     }
 
     @Override

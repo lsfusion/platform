@@ -6,7 +6,6 @@ public class GContainer extends GComponent {
     public String title;
     public String description;
     public GContainerType type;
-    public boolean isLayout;
     public boolean isVertical;
     public boolean resizable;
 
@@ -21,7 +20,6 @@ public class GContainer extends GComponent {
                 "[" + sID + "]" +
                 "[" + type + "]{" +
                 "title='" + title + '\'' +
-                ", isLayout=" + isLayout +
                 ", isVertical=" + isVertical +
                 ", hAlign=" + hAlign +
                 ", resizable=" + resizable +

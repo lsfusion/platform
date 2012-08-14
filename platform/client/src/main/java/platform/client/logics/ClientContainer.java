@@ -242,7 +242,6 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
         }
 
         container.isVertical = isSplitPane() ? type == SPLIT_PANE_VERTICAL : !getConstraints().childConstraints.equals(SingleSimplexConstraint.TOTHE_RIGHT);
-        container.isLayout = container.isVertical ? getConstraints().fillVertical != 0 : getConstraints().fillHorizontal != 0;
     }
 
     private GContainer gwtContainer;

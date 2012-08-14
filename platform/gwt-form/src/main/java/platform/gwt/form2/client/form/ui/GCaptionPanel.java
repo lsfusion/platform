@@ -9,7 +9,7 @@ public class GCaptionPanel extends VerticalPanel {
 
         VerticalPanel container = new VerticalPanel();
         container.setSize("100%", "100%");
-        container.setStyleName("captionPanelFieldset");
+        container.setStyleName("captionPanelContainer");
 
         HTMLPanel legend = new HTMLPanel(title);
         legend.setStyleName("captionPanelLegend");
