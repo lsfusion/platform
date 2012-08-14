@@ -124,8 +124,9 @@ FORM userPriceChange 'Переоценка товаров'
     PROPERTIES (u) nameNumeratorObject, numberObject, seriesObject, setValueNumeratedObject,
                    dateUserPriceChange, timeUserPriceChange, nameDepartmentStoreUserPriceChange,
                    diffSupplierISumPriceChangeDocumentDetailPriceChangeDocument, diffMarkupSumPriceChangeDocumentDetailPriceChangeDocument, diffRetailVATISumPriceChangeDocumentDetailPriceChangeDocument,
-                   diffWareSumPriceChangeDocumentDetailPriceChangeDocument, diffWareVATSumPriceChangeDocumentDetailPriceChangeDocument,
+                   diffWareSumPriceChangeDocumentDetailPriceChangeDocument SHOWIF hideWare(), diffWareVATSumPriceChangeDocumentDetailPriceChangeDocument SHOWIF hideWare(),
                    noteUserPriceChange, numberDisposalUserPriceChange, namePriceChangeCommitteeUserPriceChange
+//    PROPERTIES()   hideWare
 
     OBJECTS d=userPriceChangeDetail
     PROPERTIES (d) indexUserPriceChangeDetail, idBarcodeSkuUserPriceChangeDetail, nameSkuUserPriceChangeDetail, quantityUserPriceChangeDetail,
@@ -134,9 +135,9 @@ FORM userPriceChange 'Переоценка товаров'
                    curCalcRetailMarkupPriceChangeDocumentDetail, calcRetailMarkupPriceChangeDocumentDetail,
                    curNumberRetailVATUserPriceChangeDetail, curValueRetailVATUserPriceChangeDetail,
                    numberRetailVATUserPriceChangeDetail, valueRetailVATUserPriceChangeDetail,
-                   curWarePriceUserPriceChangeDetail SHOWIF toShowWareUserPriceChange(u), warePriceUserPriceChangeDetail SHOWIF toShowWareUserPriceChange(u),
-                   curNumberWareRangeUserPriceChangeDetail SHOWIF toShowWareUserPriceChange(u), curValueWareRangeUserPriceChangeDetail SHOWIF toShowWareUserPriceChange(u),
-                   numberWareRangeUserPriceChangeDetail SHOWIF toShowWareUserPriceChange(u), valueWareRangeUserPriceChangeDetail SHOWIF toShowWareUserPriceChange(u),
+                   curWarePriceUserPriceChangeDetail SHOWIF hideWare(), warePriceUserPriceChangeDetail SHOWIF hideWare(),
+                   curNumberWareRangeUserPriceChangeDetail SHOWIF hideWare(), curValueWareRangeUserPriceChangeDetail SHOWIF hideWare(),
+                   numberWareRangeUserPriceChangeDetail SHOWIF hideWare(), valueWareRangeUserPriceChangeDetail SHOWIF hideWare(),
                    curRetailPriceUserPriceChangeDetail, retailPriceUserPriceChangeDetail, ADDOBJ, delete
 
     PROPERTIES dialogAddPercMarkupUserPriceChange(u) TODRAW d SHOWIF toShowMarkupUserPriceChange(u),
@@ -195,7 +196,7 @@ FORM userPriceChanges 'Переоценки товаров'
     OBJECTS u=userPriceChange
     PROPERTIES (u) READONLY objectClassName, numberObject, seriesObject, dateUserPriceChange, timeUserPriceChange, nameDepartmentStoreUserPriceChange,
                    diffSupplierISumPriceChangeDocumentDetailPriceChangeDocument, diffMarkupSumPriceChangeDocumentDetailPriceChangeDocument, diffRetailVATISumPriceChangeDocumentDetailPriceChangeDocument,
-                   diffWareSumPriceChangeDocumentDetailPriceChangeDocument, diffWareVATSumPriceChangeDocumentDetailPriceChangeDocument, diffRetailSumPriceChangeDocumentDetailPriceChangeDocument
+                   diffWareSumPriceChangeDocumentDetailPriceChangeDocument SHOWIF hideWare(), diffWareVATSumPriceChangeDocumentDetailPriceChangeDocument SHOWIF hideWare(), diffRetailSumPriceChangeDocumentDetailPriceChangeDocument
 
 
     PROPERTIES (u) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
@@ -211,9 +212,9 @@ FORM userPriceChanges 'Переоценки товаров'
                             curCalcRetailMarkupPriceChangeDocumentDetail, calcRetailMarkupPriceChangeDocumentDetail,
                             curNumberRetailVATUserPriceChangeDetail, curValueRetailVATUserPriceChangeDetail,
                             numberRetailVATUserPriceChangeDetail, valueRetailVATUserPriceChangeDetail,
-                            curWarePriceUserPriceChangeDetail, warePriceUserPriceChangeDetail,
-                            curNumberWareRangeUserPriceChangeDetail, curValueWareRangeUserPriceChangeDetail,
-                            numberWareRangeUserPriceChangeDetail, valueWareRangeUserPriceChangeDetail,
+                            curWarePriceUserPriceChangeDetail SHOWIF hideWare(), warePriceUserPriceChangeDetail SHOWIF hideWare(),
+                            curNumberWareRangeUserPriceChangeDetail SHOWIF hideWare(), curValueWareRangeUserPriceChangeDetail SHOWIF hideWare(),
+                            numberWareRangeUserPriceChangeDetail SHOWIF hideWare(), valueWareRangeUserPriceChangeDetail SHOWIF hideWare(),
                             curRetailPriceUserPriceChangeDetail, retailPriceUserPriceChangeDetail
 
 
