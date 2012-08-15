@@ -171,7 +171,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
-                if (synchronize || e.getValueIsAdjusting()) {
+                if (synchronize) {
                     return;
                 }
 
@@ -371,6 +371,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
     }
 
     public void setCurrentPath(final ClientGroupObjectValue objects) {
+        System.out.println("Setting current path to: " + objects);
         enumerateNodesDepthFirst(new NodeProccessor() {
             @Override
             public void processPath(TreePath nodePath) {
