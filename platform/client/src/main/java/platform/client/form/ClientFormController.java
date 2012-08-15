@@ -644,9 +644,7 @@ public class ClientFormController implements AsyncView {
 
             @Override
             protected void onResponse(long requestIndex, ServerResponse result) throws Exception {
-                if (property.getGroupObject() != null) {
-                    SwingUtils.stopSingleAction(property.getGroupObject().getActionID(), true);
-                }
+                SwingUtils.commitDelayedGroupObjectChange(property.getGroupObject());
                 processServerResponse(result);
             }
         });
@@ -719,10 +717,7 @@ public class ClientFormController implements AsyncView {
     public ServerResponse executeEditAction(final ClientPropertyDraw property, final ClientGroupObjectValue columnKey, final String actionSID) throws IOException {
         commitOrCancelCurrentEditing();
 
-        // для глобальных свойств пока не может быть отложенных действий
-        if (property.getGroupObject() != null) {
-            SwingUtils.stopSingleAction(property.getGroupObject().getActionID(), true);
-        }
+        SwingUtils.commitDelayedGroupObjectChange(property.getGroupObject());
 
         return rmiQueue.syncRequest(new RmiRequest<ServerResponse>() {
             @Override
@@ -837,7 +832,7 @@ public class ClientFormController implements AsyncView {
     public void changeClassView(final ClientGroupObject groupObject, final ClassViewType show) throws IOException {
         commitOrCancelCurrentEditing();
 
-        SwingUtils.stopSingleAction(groupObject.getActionID(), true);
+        SwingUtils.commitDelayedGroupObjectChange(groupObject);
 
         rmiQueue.syncRequest(new ProcessServerResponseRmiRequest() {
             @Override

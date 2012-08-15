@@ -6,6 +6,7 @@ import org.jdesktop.swingx.SwingXUtilities;
 import platform.base.ERunnable;
 import platform.client.form.ClientFormLayout;
 import platform.client.form.TableTransferHandler;
+import platform.client.logics.ClientGroupObject;
 import platform.interop.KeyStrokes;
 import sun.swing.SwingUtilities2;
 
@@ -116,6 +117,18 @@ public class SwingUtils {
             } else {
                 timer.cancel();
             }
+        }
+    }
+
+    public static void commitDelayedGroupObjectChange(ClientGroupObject groupObject) {
+        if (groupObject != null) {
+            SwingUtils.stopSingleAction(groupObject.getActionID(), true);
+        }
+    }
+
+    public static void cancelDelayedGroupObjectChange(ClientGroupObject groupObject) {
+        if (groupObject != null) {
+            SwingUtils.stopSingleAction(groupObject.getActionID(), false);
         }
     }
 
