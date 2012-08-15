@@ -325,16 +325,97 @@ mainCompositionOriginArticleSkuWHfromRFDetail 'Состав(ориг.)' (WHfromR
 // Внутренние атрибуты
 
 sidGenderArticleSkuWHfromRFDetail 'Пол товара' (WHfromRFDetail) = sidGenderArticleSku(skuWHfromRFDetail(WHfromRFDetail));
-nameCategoryArticleSkuWHfromRFDetail 'Номенклатурная группа' (WHfromRFDetail) = nameCategoryArticleSku(skuWHfromRFDetail(WHfromRFDetail));
-nameTypeFabricArticleSkuWHfromRFDetail 'Тип одежды' (WHfromRFDetail) = nameTypeFabricArticleSku(skuWHfromRFDetail(WHfromRFDetail));
-nameUnitOfMeasureArticleSkuWHfromRFDetail 'Ед. измерения товара' (WHfromRFDetail) = nameUnitOfMeasureArticleSku(skuWHfromRFDetail(WHfromRFDetail));
-netWeightSkuWHfromRFDetail 'Весс нетто(ед.)' (WHfromRFDetail) = netWeightSku(skuWHfromRFDetail(WHfromRFDetail));
-nameCountryOfOriginSkuWHfromRFDetail 'Страна происхождения' (WHfromRFDetail) = nameCountryOfOriginSku(skuWHfromRFDetail(WHfromRFDetail));
-mainCompositionOriginSkuWHfromRFDetail 'Состав' (WHfromRFDetail) = mainCompositionOriginSku(skuWHfromRFDetail(WHfromRFDetail));
-additionalCompositionOriginSkuWHfromRFDetail 'Дополнительный состав' (WHfromRFDetail) = additionalCompositionOriginSku(skuWHfromRFDetail(WHfromRFDetail));
-coefficientArticleSkuWHfromRFDetail 'Кол-во в комплекте' (WHfromRFDetail) = coefficientArticleSku(skuWHfromRFDetail(WHfromRFDetail));
+changeGenderArticleSkuWHfromRFDetail = ACTION (WHfromRFDetail) {
+    REQUEST OBJECT g FORM genders MODAL;
+    IF formResult() == formResult.ok THEN {
+        SET genderArticle(article) IF article == articleSku(skuWHfromRFDetail(WHfromRFDetail)) <- chosenObject('g');
+    }
+}
 
-backgroundWHfromRFDetail 'Цвет' (WHfromRFDetail) = RGB(255, 128, 128) IF quantityWHfromRFDetail(WHfromRFDetail) == 1;
+nameCategoryArticleSkuWHfromRFDetail 'Номенклатурная группа' (WHfromRFDetail) = nameCategoryArticleSku(skuWHfromRFDetail(WHfromRFDetail));
+changeCategoryArticleSkuWHfromRFDetail = ACTION (WHfromRFDetail) {
+    REQUEST OBJECT c FORM categories MODAL;
+    IF formResult() == formResult.ok THEN {
+        SET categoryArticle(article) IF article == articleSku(skuWHfromRFDetail(WHfromRFDetail)) <- chosenObject('c');
+    }
+}
+
+nameTypeFabricArticleSkuWHfromRFDetail 'Тип одежды' (WHfromRFDetail) = nameTypeFabricArticleSku(skuWHfromRFDetail(WHfromRFDetail));
+changeTypeFabricArticleSkuWHfromRFDetail = ACTION (WHfromRFDetail) {
+    REQUEST OBJECT t FORM typeFabrics MODAL;
+    IF formResult() == formResult.ok THEN {
+        SET typeFabricArticle(article) IF article == articleSku(skuWHfromRFDetail(WHfromRFDetail)) <- chosenObject('t');
+    }
+}
+
+nameUnitOfMeasureArticleSkuWHfromRFDetail 'Ед. измерения товара' (WHfromRFDetail) = nameUnitOfMeasureArticleSku(skuWHfromRFDetail(WHfromRFDetail));
+changeUnitOfMeasureArticleSkuWHfromRFDetail = ACTION (WHfromRFDetail) {
+    REQUEST OBJECT u FORM unitOfMeasures MODAL;
+    IF formResult() == formResult.ok THEN {
+        SET unitOfMeasureArticle(article) IF article == articleSku(skuWHfromRFDetail(WHfromRFDetail)) <- chosenObject('u');
+    }
+}
+
+netWeightSkuWHfromRFDetail 'Весс нетто(ед.)' (WHfromRFDetail) = netWeightSku(skuWHfromRFDetail(WHfromRFDetail));
+changeNetWeightSkuWHfromRFDetail = ACTION (WHfromRFDetail) {
+    REQUEST NUMERIC[14,6] INPUT;
+    SET netWeightSku(sku) IF sku == skuWHfromRFDetail(WHfromRFDetail) <- requestedNumeric();
+}
+
+nameCountryOfOriginSkuWHfromRFDetail 'Страна происхождения' (WHfromRFDetail) = nameCountryOfOriginSku(skuWHfromRFDetail(WHfromRFDetail));
+changeCountryOfOriginSkuWHfromRFDetail = ACTION (WHfromRFDetail) {
+    REQUEST OBJECT c FORM countries MODAL;
+    IF formResult() == formResult.ok THEN {
+        SET countryOfOriginSku(sku) IF sku == skuWHfromRFDetail(WHfromRFDetail) <- chosenObject('c');
+    }
+}
+
+mainCompositionOriginSkuWHfromRFDetail 'Состав' (WHfromRFDetail) = mainCompositionOriginSku(skuWHfromRFDetail(WHfromRFDetail));
+changeMainCompositionOriginSkuWHfromRFDetail = ACTION (WHfromRFDetail) {
+    REQUEST STRING[200] INPUT;
+    SET mainCompositionOriginSku(sku) IF sku == skuWHfromRFDetail(WHfromRFDetail) <- requestedString();
+}
+
+
+additionalCompositionOriginSkuWHfromRFDetail 'Дополнительный состав' (WHfromRFDetail) = additionalCompositionOriginSku(skuWHfromRFDetail(WHfromRFDetail));
+changeAdditionalCompositionOriginSkuWHfromRFDetail = ACTION (WHfromRFDetail) {
+    REQUEST STRING[200] INPUT;
+    SET additionalCompositionOriginSku(sku) IF sku == skuWHfromRFDetail(WHfromRFDetail) <- requestedString();
+}
+
+coefficientArticleSkuWHfromRFDetail 'Кол-во в комплекте' (WHfromRFDetail) = coefficientArticleSku(skuWHfromRFDetail(WHfromRFDetail));
+changeCoefficientArticleSkuWHfromRFDetail = ACTION (WHfromRFDetail) {
+    REQUEST INTEGER INPUT;
+    SET coefficientArticle(article) IF article == articleSku(skuWHfromRFDetail(WHfromRFDetail)) <- requestedInteger();
+}
+
+quantityArticleWHfromRF (article, WHfromRF) = GROUP SUM quantityWHfromRFDetail(WHfromRFDetail)
+    BY articleSku(skuWHfromRFDetail(WHfromRFDetail)), WHfromRFWHfromRFDetail(WHfromRFDetail);
+
+quantityArticleWHfromRFDetail (WHfromRFDetail) =
+    quantityArticleWHfromRF(articleSku(skuWHfromRFDetail(WHfromRFDetail)), WHfromRFWHfromRFDetail(WHfromRFDetail));
+
+backgroundArticleWHfromRFDetail 'Цвет' (WHfromRFDetail) = RGB(255, 128, 128) IF quantityArticleWHfromRFDetail(WHfromRFDetail) == 1;
+
+quantityArticleSizeWHfromRF (article, sizeSupplier, WHfromRF) = GROUP SUM quantityWHfromRFDetail(WHfromRFDetail)
+    BY articleSku(skuWHfromRFDetail(WHfromRFDetail)), sizeSupplierItem(skuWHfromRFDetail(WHfromRFDetail)), WHfromRFWHfromRFDetail(WHfromRFDetail);
+
+quantityArticleSizeWHfromRFDetail (WHfromRFDetail) =
+    quantityArticleSizeWHfromRF(articleSku(skuWHfromRFDetail(WHfromRFDetail)),
+                                sizeSupplierItem(skuWHfromRFDetail(WHfromRFDetail)),
+                                WHfromRFWHfromRFDetail(WHfromRFDetail));
+
+backgroundArticleSizeWHfromRFDetail 'Цвет' (WHfromRFDetail) = RGB(255, 128, 128) IF quantityArticleSizeWHfromRFDetail(WHfromRFDetail) == 1;
+
+quantityArticleColorWHfromRF (article, colorSupplier, WHfromRF) = GROUP SUM quantityWHfromRFDetail(WHfromRFDetail)
+    BY articleSku(skuWHfromRFDetail(WHfromRFDetail)), colorSupplierItem(skuWHfromRFDetail(WHfromRFDetail)), WHfromRFWHfromRFDetail(WHfromRFDetail);
+
+quantityArticleColorWHfromRFDetail (WHfromRFDetail) =
+    quantityArticleColorWHfromRF(articleSku(skuWHfromRFDetail(WHfromRFDetail)),
+                                colorSupplierItem(skuWHfromRFDetail(WHfromRFDetail)),
+                                WHfromRFWHfromRFDetail(WHfromRFDetail));
+
+backgroundArticleColorWHfromRFDetail 'Цвет' (WHfromRFDetail) = RGB(255, 128, 128) IF quantityArticleColorWHfromRFDetail(WHfromRFDetail) == 1;
 
 costWHfromRFDetail(WHfromRFDetail) =
     priceInFreightSku(freightWHfromRF(WHfromRFWHfromRFDetail(WHfromRFDetail)), skuWHfromRFDetail(WHfromRFDetail));
@@ -366,15 +447,15 @@ OBJECTS w = WHfromRF FIXED PANEL, d = WHfromRFDetail
                                        nameBrandSupplierArticleSkuWHfromRFDetail, netWeightArticleSkuWHfromRFDetail,
                                        mainCompositionOriginArticleSkuWHfromRFDetail
 
-    PROPERTIES(d) FORCE PANEL sidGenderArticleSkuWHfromRFDetail BACKGROUND backgroundWHfromRFDetail(d),
-                              c = nameCategoryArticleSkuWHfromRFDetail BACKGROUND backgroundWHfromRFDetail(d),
-                              nameTypeFabricArticleSkuWHfromRFDetail BACKGROUND backgroundWHfromRFDetail(d),
-                              u = nameUnitOfMeasureArticleSkuWHfromRFDetail BACKGROUND backgroundWHfromRFDetail(d),
-                              netWeightSkuWHfromRFDetail BACKGROUND backgroundWHfromRFDetail(d),
-                              nameCountryOfOriginSkuWHfromRFDetail BACKGROUND backgroundWHfromRFDetail(d),
-                              mainCompositionOriginSkuWHfromRFDetail BACKGROUND backgroundWHfromRFDetail(d),
-                              additionalCompositionOriginSkuWHfromRFDetail BACKGROUND backgroundWHfromRFDetail(d),
-                              coefficientArticleSkuWHfromRFDetail BACKGROUND backgroundWHfromRFDetail(d)
+    PROPERTIES(d) FORCE PANEL sidGenderArticleSkuWHfromRFDetail BACKGROUND backgroundArticleWHfromRFDetail(d) ON CHANGE EXEC changeGenderArticleSkuWHfromRFDetail(d),
+                              c = nameCategoryArticleSkuWHfromRFDetail BACKGROUND backgroundArticleWHfromRFDetail(d) ON CHANGE EXEC changeCategoryArticleSkuWHfromRFDetail(d),
+                              nameTypeFabricArticleSkuWHfromRFDetail BACKGROUND backgroundArticleWHfromRFDetail(d) ON CHANGE EXEC changeTypeFabricArticleSkuWHfromRFDetail(d),
+                              u = nameUnitOfMeasureArticleSkuWHfromRFDetail BACKGROUND backgroundArticleWHfromRFDetail(d) ON CHANGE EXEC changeUnitOfMeasureArticleSkuWHfromRFDetail(d),
+                              netWeightSkuWHfromRFDetail BACKGROUND backgroundArticleSizeWHfromRFDetail(d) ON CHANGE EXEC changeNetWeightSkuWHfromRFDetail(d),
+                              nameCountryOfOriginSkuWHfromRFDetail BACKGROUND backgroundArticleColorWHfromRFDetail(d) ON CHANGE EXEC changeCountryOfOriginSkuWHfromRFDetail(d),
+                              mainCompositionOriginSkuWHfromRFDetail BACKGROUND backgroundArticleColorWHfromRFDetail(d) ON CHANGE EXEC changeMainCompositionOriginSkuWHfromRFDetail(d),
+                              additionalCompositionOriginSkuWHfromRFDetail BACKGROUND backgroundArticleColorWHfromRFDetail(d) ON CHANGE EXEC changeAdditionalCompositionOriginSkuWHfromRFDetail(d),
+                              coefficientArticleSkuWHfromRFDetail BACKGROUND backgroundArticleWHfromRFDetail(d) ON CHANGE EXEC changeCoefficientArticleSkuWHfromRFDetail(d)
 
     FILTERS inWHfromRFWHfromRFDetail(w, d)
 

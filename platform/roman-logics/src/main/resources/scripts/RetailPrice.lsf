@@ -136,8 +136,8 @@ RRPPriceSetDocumentArticle 'Рекомендуемая цена' = DATA NUMERIC[
 isNotRRPPriceSetDocumentArticle 'Нет рекомендуемой цены' (basePriceSetDocument, article) =
     basePriceSetDocument IS basePriceSetDocument AND article IS article AND NOT RRPPriceSetDocumentArticle(basePriceSetDocument, article);
 
-typeExchangePriceSetDocument (priceSetDocument) = typeExchangeRetail() AND priceSetDocument IS priceSetDocument;
-currencyPriceSetDocument (priceSetDocument) = currencyTypeExchange(typeExchangeSTX()) AND priceSetDocument IS priceSetDocument;
+typeExchangePriceSetDocument 'Тип обмена' (priceSetDocument) = typeExchangeRetail() AND priceSetDocument IS priceSetDocument;
+currencyPriceSetDocument 'Валюта обмена' (priceSetDocument) = currencyTypeExchange(typeExchangeSTX()) AND priceSetDocument IS priceSetDocument;
 @defineNearestRateExchangeObject(priceSetDocument, , , datePriceSetDocument, publicGroup);
 
 rateDataPriceSetDocumentArticle 'Обменный курс' = DATA NUMERIC[14,2](priceSetDocument, article) IN baseGroup;

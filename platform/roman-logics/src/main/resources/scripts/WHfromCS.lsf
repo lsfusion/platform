@@ -456,7 +456,33 @@ changeCoefficientArticleSkuWHfromCSRDetail = ACTION (WHfromCSRDetail) {
     SET coefficientArticle(article) IF article == articleSku(skuWHfromCSRDetail(WHfromCSRDetail)) <- requestedInteger();
 }
 
-backgroundWHfromCSRDetail 'Цвет' (WHfromCSRDetail) = RGB(255, 128, 128) IF quantityWHfromCSRDetail(WHfromCSRDetail) == 1;
+quantityArticleWHfromCSR (article, WHfromCSR) = GROUP SUM quantityWHfromCSRDetail(WHfromCSRDetail)
+    BY articleSku(skuWHfromCSRDetail(WHfromCSRDetail)), WHfromCSRWHfromCSRDetail(WHfromCSRDetail);
+
+quantityArticleWHfromCSRDetail (WHfromCSRDetail) =
+    quantityArticleWHfromCSR(articleSku(skuWHfromCSRDetail(WHfromCSRDetail)), WHfromCSRWHfromCSRDetail(WHfromCSRDetail));
+
+backgroundArticleWHfromCSRDetail 'Цвет' (WHfromCSRDetail) = RGB(255, 128, 128) IF quantityArticleWHfromCSRDetail(WHfromCSRDetail) == 1;
+
+quantityArticleSizeWHfromCSR (article, sizeSupplier, WHfromCSR) = GROUP SUM quantityWHfromCSRDetail(WHfromCSRDetail)
+    BY articleSku(skuWHfromCSRDetail(WHfromCSRDetail)), sizeSupplierItem(skuWHfromCSRDetail(WHfromCSRDetail)), WHfromCSRWHfromCSRDetail(WHfromCSRDetail);
+
+quantityArticleSizeWHfromCSRDetail (WHfromCSRDetail) =
+    quantityArticleSizeWHfromCSR(articleSku(skuWHfromCSRDetail(WHfromCSRDetail)),
+                                sizeSupplierItem(skuWHfromCSRDetail(WHfromCSRDetail)),
+                                WHfromCSRWHfromCSRDetail(WHfromCSRDetail));
+
+backgroundArticleSizeWHfromCSRDetail 'Цвет' (WHfromCSRDetail) = RGB(255, 128, 128) IF quantityArticleSizeWHfromCSRDetail(WHfromCSRDetail) == 1;
+
+quantityArticleColorWHfromCSR (article, colorSupplier, WHfromCSR) = GROUP SUM quantityWHfromCSRDetail(WHfromCSRDetail)
+    BY articleSku(skuWHfromCSRDetail(WHfromCSRDetail)), colorSupplierItem(skuWHfromCSRDetail(WHfromCSRDetail)), WHfromCSRWHfromCSRDetail(WHfromCSRDetail);
+
+quantityArticleColorWHfromCSRDetail (WHfromCSRDetail) =
+    quantityArticleColorWHfromCSR(articleSku(skuWHfromCSRDetail(WHfromCSRDetail)),
+                                colorSupplierItem(skuWHfromCSRDetail(WHfromCSRDetail)),
+                                WHfromCSRWHfromCSRDetail(WHfromCSRDetail));
+
+backgroundArticleColorWHfromCSRDetail 'Цвет' (WHfromCSRDetail) = RGB(255, 128, 128) IF quantityArticleColorWHfromCSRDetail(WHfromCSRDetail) == 1;
 
 FORM WHfromCSR 'Приемка на оптовый склад'
 
@@ -485,15 +511,15 @@ FORM WHfromCSR 'Приемка на оптовый склад'
                                        nameBrandSupplierArticleSkuWHfromCSRDetail, netWeightArticleSkuWHfromCSRDetail,
                                        mainCompositionOriginArticleSkuWHfromCSRDetail
 
-    PROPERTIES(d) FORCE PANEL sidGenderArticleSkuWHfromCSRDetail BACKGROUND backgroundWHfromCSRDetail(d) ON CHANGE EXEC changeGenderArticleSkuWHfromCSRDetail(d),
-                              c = nameCategoryArticleSkuWHfromCSRDetail BACKGROUND backgroundWHfromCSRDetail(d) ON CHANGE EXEC changeCategoryArticleSkuWHfromCSRDetail(d),
-                              nameTypeFabricArticleSkuWHfromCSRDetail BACKGROUND backgroundWHfromCSRDetail(d) ON CHANGE EXEC changeTypeFabricArticleSkuWHfromCSRDetail(d),
-                              u = nameUnitOfMeasureArticleSkuWHfromCSRDetail BACKGROUND backgroundWHfromCSRDetail(d) ON CHANGE EXEC changeUnitOfMeasureArticleSkuWHfromCSRDetail(d),
-                              netWeightSkuWHfromCSRDetail BACKGROUND backgroundWHfromCSRDetail(d) ON CHANGE EXEC changeNetWeightSkuWHfromCSRDetail(d),
-                              nameCountryOfOriginSkuWHfromCSRDetail BACKGROUND backgroundWHfromCSRDetail(d) ON CHANGE EXEC changeCountryOfOriginSkuWHfromCSRDetail(d),
-                              mainCompositionOriginSkuWHfromCSRDetail BACKGROUND backgroundWHfromCSRDetail(d) ON CHANGE EXEC changeMainCompositionOriginSkuWHfromCSRDetail(d),
-                              additionalCompositionOriginSkuWHfromCSRDetail BACKGROUND backgroundWHfromCSRDetail(d) ON CHANGE EXEC changeAdditionalCompositionOriginSkuWHfromCSRDetail(d),
-                              coefficientArticleSkuWHfromCSRDetail BACKGROUND backgroundWHfromCSRDetail(d) ON CHANGE EXEC changeCoefficientArticleSkuWHfromCSRDetail(d)
+    PROPERTIES(d) FORCE PANEL sidGenderArticleSkuWHfromCSRDetail BACKGROUND backgroundArticleWHfromCSRDetail(d) ON CHANGE EXEC changeGenderArticleSkuWHfromCSRDetail(d),
+                              c = nameCategoryArticleSkuWHfromCSRDetail BACKGROUND backgroundArticleWHfromCSRDetail(d) ON CHANGE EXEC changeCategoryArticleSkuWHfromCSRDetail(d),
+                              nameTypeFabricArticleSkuWHfromCSRDetail BACKGROUND backgroundArticleWHfromCSRDetail(d) ON CHANGE EXEC changeTypeFabricArticleSkuWHfromCSRDetail(d),
+                              u = nameUnitOfMeasureArticleSkuWHfromCSRDetail BACKGROUND backgroundArticleWHfromCSRDetail(d) ON CHANGE EXEC changeUnitOfMeasureArticleSkuWHfromCSRDetail(d),
+                              netWeightSkuWHfromCSRDetail BACKGROUND backgroundArticleSizeWHfromCSRDetail(d) ON CHANGE EXEC changeNetWeightSkuWHfromCSRDetail(d),
+                              nameCountryOfOriginSkuWHfromCSRDetail BACKGROUND backgroundArticleColorWHfromCSRDetail(d) ON CHANGE EXEC changeCountryOfOriginSkuWHfromCSRDetail(d),
+                              mainCompositionOriginSkuWHfromCSRDetail BACKGROUND backgroundArticleColorWHfromCSRDetail(d) ON CHANGE EXEC changeMainCompositionOriginSkuWHfromCSRDetail(d),
+                              additionalCompositionOriginSkuWHfromCSRDetail BACKGROUND backgroundArticleColorWHfromCSRDetail(d) ON CHANGE EXEC changeAdditionalCompositionOriginSkuWHfromCSRDetail(d),
+                              coefficientArticleSkuWHfromCSRDetail BACKGROUND backgroundArticleWHfromCSRDetail(d) ON CHANGE EXEC changeCoefficientArticleSkuWHfromCSRDetail(d)
 
     FILTERS inWHfromCSRWHfromCSRDetail(w, d)
 
