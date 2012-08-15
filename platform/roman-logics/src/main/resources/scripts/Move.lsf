@@ -14,7 +14,7 @@ PRIORITY Stock, RomanLogicsModule;
 
 // ---------------------------------------- Перемещение ------------------------------------ //
 
-CLASS moveOut 'Перемещение товаров' : historyObject, numberedObject, innerDocument;
+CLASS moveOut 'Перемещение товаров' : historyObject, numeratedObject, innerDocument;
 CLASS moveOutPosted 'Проведенное перемещение товаров' : moveOut, postedObject;
 CLASS moveOutDetail 'Строка перемещения товаров' : outFIFOSkuLedger;
 
@@ -26,6 +26,22 @@ dateInnerDocument (innerDocument) += dateMoveOut (innerDocument);
 @defineDocumentDetailSkuArticle(moveOut);
 @extendDocumentFormDetailSkuArticle(moveOut, d, moveOut);
 @extendDocumentFormDetailSkuArticleReadonly(moveOuts, d, moveOut);
+
+defaultNumeratorMoveOuts = DATA numerator ();
+nameDefaultNumeratorMoveOut 'Нумератор для перемещения товаров' = name(defaultNumeratorMoveOuts());
+
+initValueNumeratorObject(object) += defaultNumeratorMoveOuts() IF object IS moveOut;
+initWhenNumeratorObject(object) += ASSIGNED(object IS moveOut);
+
+
+EXTEND FORM moveOut
+    PROPERTIES (t) nameNumeratorObject
+;
+EXTEND DESIGN moveOut {
+    t.documentHeaderGroup {
+        ADD PROPERTY (nameNumeratorObject) BEFORE PROPERTY(numberObject);
+    }
+}
 
 // Проводим по регистру
 @implementSkuLedger(moveOut, sku, stock);
