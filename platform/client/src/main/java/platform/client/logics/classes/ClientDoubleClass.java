@@ -47,7 +47,6 @@ public class ClientDoubleClass extends ClientIntegralClass implements ClientType
 
     public Object parseString(String s) throws ParseException {
         try {
-            //String decimalSeparator = String.valueOf(((DecimalFormat) NumberFormat.getInstance()).getDecimalFormatSymbols().getDecimalSeparator());
             return NumberFormat.getInstance().parse(s).doubleValue();
         } catch (NumberFormatException nfe) {
             throw new ParseException(s + ClientResourceBundle.getString("logics.classes.can.not.be.converted.to.double"), 0);
