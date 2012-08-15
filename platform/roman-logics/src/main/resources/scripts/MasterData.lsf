@@ -8,6 +8,7 @@ REQUIRE System,
         RetailCRM,
         AccountDocument,
         Employee,
+        UserPriceChange,
         RomanLogicsModule;
 
 PRIORITY Stock, LegalEntity, Store, RomanLogicsModule;
@@ -263,3 +264,9 @@ FORM skuDialog 'SKU'
     DIALOG sku OBJECT s
 ;
 
+//---------------------
+
+//@implementSkuLedger(userPriceChange, sku, departmentStore);
+//quantityInLIFOSkuLedger (ledger) += quantityUserPriceChangeDetail(ledger) (-) quantityUserPriceChangeDetail(ledger);
+//limitInLIFOSkuLedgerBatch (ledger, batch) +=  (quantityUserPriceChangeDetail(ledger) (-) quantityUserPriceChangeDetail(ledger)) AND  batch IS batch;
+//sumInSkuLedger(ledger) += (retailPriceUserPriceChangeDetail(ledger) (-) curRetailPriceUserPriceChangeDetail(ledger))*quantityUserPriceChangeDetail(ledger);

@@ -447,7 +447,7 @@ END
 EXTEND FORM currentBalanceSkuStock
     PROPERTIES(s, st)   currentImporterPriceLedger, currentSupplierPriceLedger,
                         currentValueRetailVATLedger, currentRetailPriceLedger,
-                        currentWarePriceLedger
+                        currentWarePriceLedger SHOWIF hideWare()
 
     OBJECTS rpl=retailPriceLedger
     PROPERTIES (rpl) descriptionRetailPriceLedger, dateTimeRetailPriceLedger, retailPriceRetailPriceLedger
@@ -471,7 +471,7 @@ EXTEND FORM currentBalanceSkuStock
     ORDER BY dateTimeRetailVATLedger DESC
 
     OBJECTS wpl=warePriceLedger
-    PROPERTIES(wpl) descriptionWarePriceLedger, dateTimeWarePriceLedger, nameWareWarePriceLedger, warePriceWarePriceLedger
+    PROPERTIES(wpl) descriptionWarePriceLedger SHOWIF hideWare(), dateTimeWarePriceLedger SHOWIF hideWare(), nameWareWarePriceLedger SHOWIF hideWare(), warePriceWarePriceLedger SHOWIF hideWare()
     FILTERS isPostedWarePriceLedger(wpl) AND skuWarePriceLedger(wpl)==s AND departmentStoreWarePriceLedger(wpl)==st
     ORDER BY dateTimeWarePriceLedger DESC
 ;
@@ -489,7 +489,7 @@ EXTEND DESIGN currentBalanceSkuStock {
 EXTEND FORM balanceSkuStock
     PROPERTIES (s, st, t) READONLY importerPriceALedgerDateTime, supplierPriceALedgerDateTime,
                                    valueRetailVATALedgerDateTime,
-                                   retailPriceALedgerDateTime, warePriceALedgerDateTime
+                                   retailPriceALedgerDateTime, warePriceALedgerDateTime SHOWIF hideWare()
 
     OBJECTS rpl=retailPriceLedger
     PROPERTIES (rpl) descriptionRetailPriceLedger, dateTimeRetailPriceLedger, retailPriceRetailPriceLedger
@@ -512,7 +512,7 @@ EXTEND FORM balanceSkuStock
     ORDER BY dateTimeRetailVATLedger DESC
 
     OBJECTS wpl= warePriceLedger
-    PROPERTIES(wpl) descriptionWarePriceLedger, dateTimeWarePriceLedger, nameWareWarePriceLedger, warePriceWarePriceLedger
+    PROPERTIES(wpl) descriptionWarePriceLedger SHOWIF hideWare(), dateTimeWarePriceLedger SHOWIF hideWare(), nameWareWarePriceLedger SHOWIF hideWare(), warePriceWarePriceLedger SHOWIF hideWare()
     FILTERS isPostedWarePriceLedger(wpl) AND skuWarePriceLedger(wpl)==s AND departmentStoreWarePriceLedger(wpl)==st
     ORDER BY dateTimeWarePriceLedger DESC
 ;

@@ -11,10 +11,8 @@ CLASS priceChangeCommittee 'Комиссия переоценки' : committee;
 CLASS ABSTRACT priceChangeDocument 'Акт переоценки' : incAccountDocumentLedger;
 TABLE priceChangeDocument (priceChangeDocument);
 
-CLASS ABSTRACT priceChangeDocumentDetail 'Строка переоценки';
+CLASS ABSTRACT priceChangeDocumentDetail 'Строка переоценки': inLIFOSkuLedger;
 TABLE priceChangeDocumentDetail (priceChangeDocumentDetail);
-
-hideWare 'Показывать стеклопосуду' = DATA BOOLEAN ();
 
 dateTimePriceChangeDocument 'Дата/время' (priceChangeDocument) = ABSTRACT DATETIME (priceChangeDocument) PERSISTENT INDEXED;
 datePriceChangeDocument 'Дата' (priceChangeDocument) = dateInTime(dateTimePriceChangeDocument(priceChangeDocument)) PERSISTENT;
@@ -184,7 +182,8 @@ FORM priceChangeDocuments 'Акты переоценки'
     PROPERTIES(pc) READONLY objectClassName, isPostedPriceChangeDocument FORCE GRID, dateTimePriceChangeDocument, nameDepartmentStorePriceChangeDocument,
                             numberPriceChangeDocument, seriesPriceChangeDocument,
                             diffSupplierISumPriceChangeDocumentDetailPriceChangeDocument, diffMarkupSumPriceChangeDocumentDetailPriceChangeDocument, diffRetailVATISumPriceChangeDocumentDetailPriceChangeDocument,
-                            diffWareSumPriceChangeDocumentDetailPriceChangeDocument, diffWareVATSumPriceChangeDocumentDetailPriceChangeDocument, diffRetailSumPriceChangeDocumentDetailPriceChangeDocument, namePriceChangeCommitteePriceChangeDocument
+                            diffWareSumPriceChangeDocumentDetailPriceChangeDocument SHOWIF hideWare(), diffWareVATSumPriceChangeDocumentDetailPriceChangeDocument SHOWIF hideWare(),
+                            diffRetailSumPriceChangeDocumentDetailPriceChangeDocument, namePriceChangeCommitteePriceChangeDocument
 
     OBJECTS pcd=priceChangeDocumentDetail
     PROPERTIES(pcd) READONLY nameSkuPriceChangeDocumentDetail, quantityPriceChangeDocumentDetail,
@@ -192,7 +191,7 @@ FORM priceChangeDocuments 'Акты переоценки'
                              curSupplierPricePriceChangeDocumentDetail, supplierPricePriceChangeDocumentDetail,
                              curValueRetailVATPriceChangeDocumentDetail, valueRetailVATPriceChangeDocumentDetail,
                              curRetailPricePriceChangeDocumentDetail, retailPricePriceChangeDocumentDetail,
-                             curWarePricePriceChangeDocumentDetail, warePricePriceChangeDocumentDetail
+                             curWarePricePriceChangeDocumentDetail SHOWIF hideWare(), warePricePriceChangeDocumentDetail SHOWIF hideWare()
 
     PROPERTIES(pc) FORCE PANEL printPriceChange
 
@@ -392,3 +391,13 @@ END
 META implementPriceChangeDocumentDetailRetailPrice (object)
     @implementPriceChangeDocumentDetailRetailPricePrefix(object, );
 END
+
+dateTimePriceChangeDocumentDetail (priceChangeDocumentDetail) = dateTimePriceChangeDocument(priceChangeDocumentPriceChangeDocumentDetail(priceChangeDocumentDetail));
+isPostedPriceChangeDocumentDetail (priceChangeDocumentDetail) = isPostedPriceChangeDocument(priceChangeDocumentPriceChangeDocumentDetail(priceChangeDocumentDetail));
+departmentStorePriceChangeDocumentDetail (priceChangeDocumentDetail) = departmentStorePriceChangeDocument(priceChangeDocumentPriceChangeDocumentDetail(priceChangeDocumentDetail));
+descriptionPriceChangeDocumentDetail (priceChangeDocumentDetail)= descriptionPriceChangeDocument(priceChangeDocumentPriceChangeDocumentDetail(priceChangeDocumentDetail));
+
+@implementSkuLedger(priceChangeDocument, sku, departmentStore);
+quantityInLIFOSkuLedger (ledger) += 0.0 IF ledger IS priceChangeDocumentDetail;
+limitInLIFOSkuLedgerBatch (ledger, batch) +=  0.0 IF ledger IS priceChangeDocumentDetail AND  batch IS batch;
+sumInSkuLedger(ledger) += diffRetailSumPriceChangeDocumentDetail(ledger);
