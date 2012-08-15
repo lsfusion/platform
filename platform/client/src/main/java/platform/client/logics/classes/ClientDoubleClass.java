@@ -1,6 +1,7 @@
 package platform.client.logics.classes;
 
 import platform.client.ClientResourceBundle;
+import platform.client.StartupProperties;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.form.editor.DoublePropertyEditor;
 import platform.client.logics.ClientPropertyDraw;
@@ -38,23 +39,16 @@ public class ClientDoubleClass extends ClientIntegralClass implements ClientType
         DecimalFormat format = (DecimalFormat) super.getDefaultFormat();
         format.setMaximumFractionDigits(10);
         DecimalFormatSymbols dfs = format.getDecimalFormatSymbols();
-        if (dfs.getGroupingSeparator() != '.')
+        if ((dfs.getGroupingSeparator() != '.') && StartupProperties.dotSeparator)
             dfs.setDecimalSeparator('.');
         format.setDecimalFormatSymbols(dfs);
         return format;
     }
 
-    public String reformatString(String string) {
-        DecimalFormat format = (DecimalFormat) getDefaultFormat();
-        if (format.getDecimalFormatSymbols().getGroupingSeparator() != '.')
-            return string.replace(",", ".");
-        else
-            return string;
-    }
-
     public Object parseString(String s) throws ParseException {
         try {
-            return Double.parseDouble(reformatString(s));
+            //String decimalSeparator = String.valueOf(((DecimalFormat) NumberFormat.getInstance()).getDecimalFormatSymbols().getDecimalSeparator());
+            return NumberFormat.getInstance().parse(s).doubleValue();
         } catch (NumberFormatException nfe) {
             throw new ParseException(s + ClientResourceBundle.getString("logics.classes.can.not.be.converted.to.double"), 0);
         }
@@ -62,7 +56,7 @@ public class ClientDoubleClass extends ClientIntegralClass implements ClientType
 
     @Override
     public String formatString(Object obj) {
-        return reformatString(obj.toString());
+        return NumberFormat.getInstance().format(obj);
     }
 
     public PropertyEditorComponent getDataClassEditorComponent(Object value, ClientPropertyDraw property) {

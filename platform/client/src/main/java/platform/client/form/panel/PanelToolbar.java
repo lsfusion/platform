@@ -1,6 +1,7 @@
 package platform.client.form.panel;
 
 import platform.client.ClientResourceBundle;
+import platform.client.StartupProperties;
 import platform.client.form.ClientFormController;
 import platform.client.form.ClientFormLayout;
 import platform.client.form.cell.PropertyController;
@@ -128,8 +129,8 @@ public class PanelToolbar {
 
     public void updateSelectionInfo(int quantity, String sum, String avg) {
         String text = "";
-        text += avg == null ? "" : ClientResourceBundle.getString("form.grid.selection.average") + avg.replace(',', '.') + "  ";
-        text += sum == null ? "" : ClientResourceBundle.getString("form.grid.selection.sum") + sum.replace(',', '.') + "  ";
+        text += avg == null ? "" : ClientResourceBundle.getString("form.grid.selection.average") + (StartupProperties.dotSeparator ? avg.replace(',', '.') : avg) + "  ";
+        text += sum == null ? "" : ClientResourceBundle.getString("form.grid.selection.sum") + (StartupProperties.dotSeparator ? sum.replace(',', '.') : sum) + "  ";
         text += quantity <= 1 ? "" : ClientResourceBundle.getString("form.grid.selection.quantity") + quantity;
         selectionInfoLabel.setText(text);
         selectionInfoLabel.setVisible(!text.isEmpty());

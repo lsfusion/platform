@@ -39,9 +39,13 @@ public class StartupProperties {
     public static final String PLATFORM_CLIENT_BLOCKER_AUTORECONNECT = "platform.client.blocker.autoreconnect";
 
     public static final String PLATFORM_CLIENT_ISDEBUG = "platform.client.isdebug";
+    
+    public static final String PLATFORM_CLIENT_DECIMAL_SEPARATOR = "platform.client.decimal.separator";
 
     public static final String PLATFORM_CLIENT_ASYNC_TIMEOUT = "platform.client.async.timeout";
 
+    public static final boolean dotSeparator = ".".equals(System.getProperty(StartupProperties.PLATFORM_CLIENT_DECIMAL_SEPARATOR));
+    
     public final static boolean autoReconnect = System.getProperty(StartupProperties.PLATFORM_CLIENT_BLOCKER_AUTORECONNECT) != null;
 
     public final static boolean preventBlockerActivation = autoReconnect || System.getProperty(StartupProperties.PLATFORM_CLIENT_BLOCKER_ACTIVATION_OFF) != null;

@@ -75,4 +75,11 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
             return super.toString();
         }
     }
+
+    @Override
+    public void replaceSelection(String content){
+        if(content.endsWith("\n"))
+            content = content.substring(0, content.length()-1);
+        super.replaceSelection(content);
+    }
 }

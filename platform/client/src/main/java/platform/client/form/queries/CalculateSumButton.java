@@ -1,6 +1,7 @@
 package platform.client.form.queries;
 
 import platform.client.ClientResourceBundle;
+import platform.client.StartupProperties;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
@@ -23,14 +24,14 @@ public abstract class CalculateSumButton extends ToolbarGridButton {
         menu.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.RAISED, Color.GRAY, Color.LIGHT_GRAY));
 
         if (sum != null) {
-            label = new JLabel(ClientResourceBundle.getString("form.queries.sum.result")+" [" + caption + "]: ");
+            label = new JLabel(ClientResourceBundle.getString("form.queries.sum.result") + " [" + caption + "]: ");
             JTextField field = new JTextField(10);
             field.setHorizontalAlignment(JTextField.RIGHT);
             field.setText(format(sum));
             panel.add(label);
             panel.add(field);
         } else {
-            label = new JLabel(ClientResourceBundle.getString("form.queries.unable.to.calculate.sum")+" [" + caption + "]");
+            label = new JLabel(ClientResourceBundle.getString("form.queries.unable.to.calculate.sum") + " [" + caption + "]");
             panel.add(label);
         }
 
@@ -41,6 +42,9 @@ public abstract class CalculateSumButton extends ToolbarGridButton {
 
     public String format(Object number) {
         NumberFormat nf = NumberFormat.getNumberInstance();
-        return nf.format(number).replace(',', '.');
+        if (StartupProperties.dotSeparator)
+            return nf.format(number).replace(',', '.');
+        else
+            return nf.format(number);
     }
 }

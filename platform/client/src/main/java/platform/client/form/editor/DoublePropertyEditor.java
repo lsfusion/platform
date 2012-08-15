@@ -1,5 +1,6 @@
 package platform.client.form.editor;
 
+import platform.client.StartupProperties;
 import platform.interop.ComponentDesign;
 
 import javax.swing.*;
@@ -36,8 +37,8 @@ public class DoublePropertyEditor extends TextFieldPropertyEditor {
             public Object stringToValue(String text) throws ParseException {
                 lastZero = 0;
                 if (text != null && text.length() > 0) {
-                    if (!isGroupSeparatorDot)
-                        text = text.replace(',', separator).replace('.', separator);
+                    if (!isGroupSeparatorDot && StartupProperties.dotSeparator)
+                            text = text.replace(",", ".");
                     if (text.indexOf(separator) != -1) {
                         while (lastZero < text.length() - 1 && text.charAt(text.length() - 1 - lastZero) == '0') {
                             lastZero++;
