@@ -39,6 +39,7 @@ public abstract class QueryView extends JPanel implements QueryConditionView.UIH
     private final QueryController controller;
 
     QueryView(QueryController ilistener) {
+        setFocusable(false);
         this.controller = ilistener;
 
         setAlignmentY(Component.TOP_ALIGNMENT);
