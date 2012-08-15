@@ -725,7 +725,7 @@ public class GridTable extends ClientPropertyTable {
         if (isInternalNavigating || isCellFocusable(rowIndex, columnIndex)) {
             if (!properties.isEmpty() && model.getColumnCount() > 0) {
                 if (rowIndex >= getRowCount()) {
-                    changeSelection(rowIndex - 1, columnIndex, toggle, extend);
+                    changeSelection(getRowCount() - 1, columnIndex, toggle, extend);
                     return;
                 }
                 selectionController.changeSelection(rowIndex, columnIndex, toggle, extend);

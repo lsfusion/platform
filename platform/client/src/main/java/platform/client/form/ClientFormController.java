@@ -590,6 +590,7 @@ public class ClientFormController implements AsyncView {
                 new RmiRequest<ServerResponse>() {
                     @Override
                     public void onAsyncRequest(long requestIndex) {
+//                        System.out.println("!!Async changing group object with req#: " + requestIndex + " on " + objectValue);
                         lastChangeCurrentObjectsRequestIndices.put(group, requestIndex);
                     }
 
@@ -625,6 +626,9 @@ public class ClientFormController implements AsyncView {
 
             @Override
             protected void onAsyncRequest(long requestIndex) {
+//                System.out.println("!!Async changing property with req#: " + requestIndex);
+//                ExceptionUtils.dumpStack();
+//                System.out.println("------------------------");
                 GroupObjectController controller = controllers.get(property.groupObject);
 
                 propertyKey = controller != null && !controller.panelProperties.contains(property) ? new ClientGroupObjectValue(controller.getCurrentObject(), columnKey) : columnKey;
@@ -640,6 +644,9 @@ public class ClientFormController implements AsyncView {
 
             @Override
             protected void onResponse(long requestIndex, ServerResponse result) throws Exception {
+                if (property.getGroupObject() != null) {
+                    SwingUtils.stopSingleAction(property.getGroupObject().getActionID(), true);
+                }
                 processServerResponse(result);
             }
         });
