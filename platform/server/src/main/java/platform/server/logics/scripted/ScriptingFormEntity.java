@@ -304,7 +304,7 @@ public class ScriptingFormEntity {
         }
 
         if (options.getNeighbourPropertyName() != null) {
-            PropertyDrawEntity neighbour = getPropertyDrawByName(options.getNeighbourPropertyName());
+            PropertyDrawEntity neighbour = getPropertyDrawBySID(options.getNeighbourPropertyName());
             if (neighbour.getToDraw(form) != property.getToDraw(form)) {
                 LM.getErrLog().emitNeighbourPropertyError(LM.getParser(), options.getNeighbourPropertyName(), property.getSID());
             }
@@ -352,17 +352,14 @@ public class ScriptingFormEntity {
         }
     }
 
-    public PropertyDrawEntity getPropertyDrawByName(String alias) throws ScriptingErrorLog.SemanticErrorException {
-        PropertyDrawEntity property = aliasToPropertyMap.get(alias);
-        if (property != null) {
-            return property;
-        }
-
-        property = form.getPropertyDraw(LM.findLPByCompoundName(alias));
+    public PropertyDrawEntity getPropertyDrawBySID(String sid) throws ScriptingErrorLog.SemanticErrorException {
+        PropertyDrawEntity property = aliasToPropertyMap.get(sid);
         if (property == null) {
-            LM.getErrLog().emitPropertyNotFoundError(LM.getParser(), alias);
+            property = form.getPropertyDraw(sid);
+            if (property == null) {
+                LM.getErrLog().emitPropertyNotFoundError(LM.getParser(), sid);
+            }
         }
-
         return property;
     }
 
@@ -428,10 +425,10 @@ public class ScriptingFormEntity {
 
     public void addScriptedDefaultOrder(List<String> properties, List<Boolean> orders) throws ScriptingErrorLog.SemanticErrorException {
         for (int i = 0; i < properties.size(); ++i) {
-            String alias = properties.get(i);
+            String sid = properties.get(i);
             Boolean order = orders.get(i);
 
-            form.addDefaultOrder(getPropertyDrawByName(alias), order);
+            form.addDefaultOrder(getPropertyDrawBySID(sid), order);
         }
     }
 

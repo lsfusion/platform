@@ -165,16 +165,20 @@ public class ScriptingFormView {
 
     public PropertyDrawView getPropertyView(String name) throws ScriptingErrorLog.SemanticErrorException {
         PropertyDrawEntity drawEntity = view.entity.getPropertyDraw(name);
-        if (drawEntity == null) {
-            drawEntity = view.entity.getPropertyDraw(LM.findLPByCompoundName(name));
-        }
-
-        return view.get(drawEntity);
+        return getPropertyView(name, drawEntity);
     }
 
     public PropertyDrawView getPropertyView(String name, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
         MappedProperty mappedProp = LM.getPropertyWithMapping(view.entity, name, mapping);
-        return view.get(view.entity.getPropertyDraw(mappedProp.property, mappedProp.mapping));
+        PropertyDrawEntity drawEntity = view.entity.getPropertyDraw(mappedProp.property, mappedProp.mapping);
+        return getPropertyView(name, drawEntity);
+    }
+
+    private PropertyDrawView getPropertyView(String name, PropertyDrawEntity drawEntity) throws ScriptingErrorLog.SemanticErrorException {
+        if (drawEntity == null) {
+            errLog.emitPropertyNotFoundError(parser, name);
+        }
+        return view.get(drawEntity);
     }
 
     public ContainerView getMainContainer() {

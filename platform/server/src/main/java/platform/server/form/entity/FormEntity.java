@@ -512,7 +512,6 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         }
         propertyDraws.add(ind + 1, newPropertyDraw);
 
-//        assert richDesign == null;
         if (richDesign != null)
             richDesign.addPropertyDraw(newPropertyDraw);
 
