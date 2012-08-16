@@ -28,6 +28,7 @@ REQUIRE System,
         PriceInterval,
         WriteOff,
         Customer,
+        Inventory,
         RomanLogicsModule;
 
 PRIORITY RomanLogicsModule, Utils, Stock, Store;
@@ -193,6 +194,10 @@ NAVIGATOR {
             ADD promotionGroups;
             ADD promotions;
         }
+        NEW Invent 'Инвентаризация' {
+            ADD inventories;
+        }
+
         NEW retailAggregations 'Сводная информация' {
             ADD sumAccountDocumentLedger;
         }

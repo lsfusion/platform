@@ -83,7 +83,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             "/scripts/WHtoLegalEntity.lsf",
             "/scripts/WriteOff.lsf",
             "/scripts/PriceChange.lsf",
-            "/scripts/UserPriceChange.lsf"                
+            "/scripts/UserPriceChange.lsf",
+            "/scripts/Inventory.lsf"
         );
         RomanLM = addModule(new RomanLogicsModule(LM, this));
         RomanLM.setRequiredModules(Arrays.asList("System", "Utils", "Hierarchy", "Historizable", "Numerator", "Stock", "Document"));

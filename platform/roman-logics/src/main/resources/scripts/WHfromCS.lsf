@@ -754,7 +754,7 @@ FORM WHfromCSIs 'Поступления товара с СВХ'
 
     OBJECTS s = RomanLogicsModule.store
     PROPERTIES(s) READONLY name
-    PROPERTIES createInnerOrderStoreWHfromCSI(s, w)
+    PROPERTIES createInnerOrderStoreWHfromCSI(s, w) READONLYIF innerOrderStoreWHfromCSI(s, w)
 
     FILTERS quantitySkuStoreWHfromCSI(s, w) > 0
 
