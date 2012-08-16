@@ -629,13 +629,15 @@ supplierPriceDeclarationDetail 'Цена' (declarationDetail) = supplierSumDecla
 
 quantityDiffDeclarationDetail 'Кол-во' (declarationDetail) = quantityDeclarationDetail(declarationDetail) (-) quantityCertificatedDeclarationDetail(declarationDetail);
 
+sumDiffDeclarationDetail 'Сумма' (declarationDetail) = supplierPriceDeclarationDetail(declarationDetail) * quantityDiffDeclarationDetail(declarationDetail);
+
 @implementBatch(declaration, sku, customStore, supplierPrice);
 quantityBatch (batch) += quantityDiffDeclarationDetail(batch);
 ownerBatchA (batch) += importerDeclarationDetail(batch);
 importerPriceBatchA (batch) += supplierPriceDeclarationDetail(batch);
 supplierPriceBatchA (batch) += supplierPriceDeclarationDetail(batch);
 rangeVATBatchA (batch) += VATRangeReverseDeclarationDetail(batch);
-sumInSkuLedger(batch) += supplierSumDeclarationDetail(batch);
+sumInSkuLedger(batch) += sumDiffDeclarationDetail(batch);
 
 
 setSumGroupDeclaration 'Расчитать стоимость и пошлину' = ACTION (declaration) {

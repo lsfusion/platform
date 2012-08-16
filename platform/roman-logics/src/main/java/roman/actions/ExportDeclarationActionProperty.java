@@ -36,7 +36,7 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) {
         try {
             List<String> exportProperties = BaseUtils.toList("numberGroupDeclaration", "nameBrandGroupDeclaration",
-                    "nameCategoryGroupDeclaration", "sidGenderGroupDeclaration", "nameTypeFabricGroupDeclaration",
+                    "nameCategoryGroupDeclaration", "sidGenderGroupDeclaration", "nameTypeFabricGroupDeclaration", "nameGroupDeclaration",
                     "sidArticleGroupDeclaration", "sidCustomCategory10GroupDeclaration", "mainCompositionGroupDeclaration",
                     "sidCountryGroupDeclaration", "sidOrigin2CountryGroupDeclaration", "quantityGroupDeclaration", "sidUnitOfMeasureGroupDeclaration",
                     "nameUnitOfMeasureGroupDeclaration", "sumGroupDeclaration", "netWeightGroupDeclaration",
@@ -169,11 +169,13 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
                 Map<String, Object> values = entry.getValue();
                 addStringCellToRow(entry.getKey(), ";"); //numberGroupDeclaration
 
-                addPartStringCellToRow(values.get("nameCategoryGroupDeclaration"), null, " ", false);
-                addPartStringCellToRow(values.get("sidGenderGroupDeclaration"), null, ",", false);
-                addPartStringCellToRow(values.get("nameTypeFabricGroupDeclaration"), null, ",", false);
-                addPartStringCellToRow(values.get("nameBrandGroupDeclaration"), "Торговая марка ", ",", false);
-                addPartStringCellToRow(values.get("mainCompositionGroupDeclaration"), " Состав:", ";", true);
+                //addPartStringCellToRow(values.get("nameCategoryGroupDeclaration"), null, " ", false);
+                //addPartStringCellToRow(values.get("sidGenderGroupDeclaration"), null, ",", false);
+                //addPartStringCellToRow(values.get("nameTypeFabricGroupDeclaration"), null, ",", false);
+                //addPartStringCellToRow(values.get("nameBrandGroupDeclaration"), "Торговая марка ", ",", false);
+                //addPartStringCellToRow(values.get("mainCompositionGroupDeclaration"), " Состав:", ";", true);
+
+                addStringCellToRow(values.get("nameGroupDeclaration"), ";");
 
                 addDoubleCellToRow(values.get("grossWeightGroupDeclaration"), ";", 3);
                 addDoubleCellToRow(values.get("netWeightGroupDeclaration"), ";", 3);

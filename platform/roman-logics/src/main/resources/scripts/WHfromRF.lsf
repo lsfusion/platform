@@ -30,24 +30,26 @@ typeExchangePayFreight 'Тип обмена (ИД)' (freight) = typeExchangeSTX(
 
 tariffVolumeFreight 'Тариф для перевозок (м3)' = DATA NUMERIC[14,2](freight);
 percentCostFreight 'Процент расходов за оформление' = DATA NUMERIC[14,2](freight);
+rateExchangeDataPayFreight 'Курс обмена' = DATA NUMERIC[14,2](freight);
 
 tariffVolumeFreight(freight) <- tariffVolumeFreights() WHEN freight IS freight;
 percentCostFreight(freight) <- percentCostFreights() WHEN freight IS freight;
+rateExchangeDataPayFreight(freight) <- rateExchangePayPayFreight(freight) WHEN CHANGED (dateArrivalFreight(freight));
 
 isWHfromRFFreight(freight) = TRUE IF (routeFreight(freight) == route.rf AND freight IS freightArrived);
 
 sumRateRegistrationFreightSku 'Затраты на оформление' (freight, sku) = (priceInFullFreightSku(freight, sku) * percentCostFreight(freight))/100 IF routeFreight(freight) == route.rf;
-sumRegistrationFreightSku 'Затраты на оформление' (freight, sku) = sumRateRegistrationFreightSku(freight, sku)/rateExchangePayPayFreight(freight);
+sumRegistrationFreightSku 'Затраты на оформление' (freight, sku) = sumRateRegistrationFreightSku(freight, sku)/rateExchangeDataPayFreight(freight);
 
 sumDeliveryFreight 'Затраты на доставку' (freight) = volumeDataFreight(freight) * tariffVolumeFreight(freight) IF routeFreight(freight) == route.rf;
-sumRateDeliveryFreight 'Затраты на доставку (конверт.)' (freight) = sumDeliveryFreight(freight) * rateExchangePayPayFreight(freight);
+sumRateDeliveryFreight 'Затраты на доставку (конверт.)' (freight) = sumDeliveryFreight(freight) * rateExchangeDataPayFreight(freight);
 
 sumDeliveryFreightSku 'Затраты на доставку' (freight, sku) = (sumRateDeliveryFreight(freight) * sumGrossWeightFreightSku(freight, sku))/grossWeightFreight(freight);
 
 priceRFFreightSku 'Себестоимость' (freight, sku) = UNION SUM priceInFullFreightSku(freight, sku), sumRateRegistrationFreightSku(freight, sku), sumDeliveryFreightSku(freight, sku);
 
 EXTEND FORM freightInvoiceForm
-    PROPERTIES tariffVolumeFreight(freight), percentCostFreight(freight)
+    PROPERTIES tariffVolumeFreight(freight), percentCostFreight(freight), rateExchangeDataPayFreight(freight)
     PROPERTIES FORCE GRID sumRateRegistrationFreightSku(freight, sku), sumDeliveryFreightSku(freight, sku), priceRFFreightSku(freight, sku)
 ;
 
@@ -78,6 +80,8 @@ descriptionFreightWHfromRF 'Фрахт' (WHfromRF) = castFreightWHfromRF(dateArr
 @defineDocumentHeaderSkuQuantity(WHfromRF, sku);
 
 @defineDocumentDetailSkuArticle(WHfromRF);
+
+priceRFWHfromRFDetail 'Себестоимость' (WHfromRFDetail) = priceRFFreightSku(freightWHfromRF(WHfromRFWHfromRFDetail(WHfromRFDetail)), skuWHfromRFDetail(WHfromRFDetail));
 
 //для учета по коробам
 freightUnitWHfromRFDetail 'Короб (ИД)' (WHfromRFDetail) = DATA freightUnit(WHfromRFDetail);
