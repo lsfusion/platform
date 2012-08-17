@@ -35,10 +35,10 @@
 	<field name="sidImporterFreight" class="java.lang.String"/>
 	<field name="brand" class="java.lang.Integer"/>
 	<field name="commonName1" class="java.lang.String"/>
-	<field name="freightBox" class="java.lang.Integer"/>
+	<field name="freightUnit" class="java.lang.Integer"/>
 	<field name="barcode" class="java.lang.String"/>
 	<field name="quantityFreightUnitBrandSupplier" class="java.lang.Double"/>
-	<field name="nameDestinationFreightBox" class="java.lang.String"/>
+	<field name="nameDestinationFreightUnit" class="java.lang.String"/>
 	<group name="designGroup4">
 		<groupExpression><![CDATA[String.valueOf($F{brand})]]></groupExpression>
 		<groupHeader>
@@ -124,7 +124,7 @@
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="299" y="0" width="187" height="18"/>
 				<textElement textAlignment="Right"/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{nameDestinationFreightBox}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{nameDestinationFreightUnit}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

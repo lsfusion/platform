@@ -43,8 +43,8 @@ declarationCStoWHDetail (CStoWHDetail) = declarationDeclarationDetail(declaratio
 
 freightUnitCStoWHDetail (CStoWHDetail) = DATA freightUnit(CStoWHDetail) IN idGroup;
 barcodeFreightUnitCStoWHDetail 'Штрих-код короба' (CStoWHDetail) = barcode(freightUnitCStoWHDetail(CStoWHDetail));
-destinationCStoWHDetail (CStoWHDetail) = destinationFreightBox(freightUnitCStoWHDetail(CStoWHDetail));
-nameDestinationCStoWHDetail 'Пункт назначения' (CStoWHDetail) = nameDestinationFreightBox(freightUnitCStoWHDetail(CStoWHDetail));
+destinationCStoWHDetail (CStoWHDetail) = destinationFreightUnit(freightUnitCStoWHDetail(CStoWHDetail));
+nameDestinationCStoWHDetail 'Пункт назначения' (CStoWHDetail) = nameDestinationFreightUnit(freightUnitCStoWHDetail(CStoWHDetail));
 
 netWeightCStoWHDetail 'Вес нетто (ед.)' (CStoWHDetail) = netWeightDeclarationDetail(declarationDetailCStoWHDetail(CStoWHDetail));
 sumNetWeightCStoWHDetail 'Вес нетто' (CStoWHDetail) = netWeightCStoWHDetail(CStoWHDetail)*quantityCStoWHDetail(CStoWHDetail);
@@ -165,7 +165,7 @@ FORM declarationDetailCStoWHInput 'Подбор строк декларации'
     PROPERTIES(d) toFillQuantityInputAllDeclarationDetails
 
     OBJECTS f=freightUnit
-    PROPERTIES READONLY barcodeFreightUnit = barcode(f), nameDestinationFreightBox(f) FORCE GRID, currentBalanceDeclarationFreightUnit(d, f)
+    PROPERTIES READONLY barcodeFreightUnit = barcode(f), nameDestinationFreightUnit(f) FORCE GRID, currentBalanceDeclarationFreightUnit(d, f)
     PROPERTIES(d, f)    quantityInputDeclarationFreightUnit READONLY, toFillQuantityInputDetailDeclarationFreightUnit
 
     OBJECTS dd=declarationDetail

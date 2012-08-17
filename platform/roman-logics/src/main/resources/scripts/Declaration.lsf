@@ -463,12 +463,24 @@ uniqueGroupDeclaration = GROUP UNIQUE groupDeclaration BY declarationGroupDeclar
 // свойства от артикула
 nameBrandGroupDeclaration 'Бренд' (groupDeclaration) = nameBrandSupplierArticle(articleGroupDeclaration(groupDeclaration));
 nameCategoryGroupDeclaration 'Ном. группа' (groupDeclaration) = nameCategoryArticle(articleGroupDeclaration(groupDeclaration));
-sidGenderGroupDeclaration 'Пол' (groupDeclaration) = sidGenderArticle(articleGroupDeclaration(groupDeclaration)) MINCHARWIDTH 3;
-nameTypeFabricGroupDeclaration 'Тип одежды' (groupDeclaration) = nameTypeFabricArticle(articleGroupDeclaration(groupDeclaration)) MINCHARWIDTH 10;
+translateNameGroupDeclaration 'Наименование' (groupDeclaration) = translateNameArticle(articleGroupDeclaration(groupDeclaration));
+
+nameInvoiceGroupDeclaration 'Наименование' (groupDeclaration) = UNION OVERRIDE translateNameGroupDeclaration(groupDeclaration),
+                                                                               nameCategoryGroupDeclaration(groupDeclaration);
+
+genderArticleGroupDeclaration 'Пол (ИД)' (groupDeclaration) = genderArticle(articleGroupDeclaration(groupDeclaration)) IN idGroup;
+genderDataGroupDeclaration 'Пол (ИД)' = DATA gender(groupDeclaration) IN idGroup;
+genderGroupDeclaration'Пол (ИД)' (groupDeclaration) = UNION OVERRIDE genderArticleGroupDeclaration(groupDeclaration), genderDataGroupDeclaration(groupDeclaration) IN idGroup;
+sidGenderGroupDeclaration 'Пол' (groupDeclaration) = sidGender(genderGroupDeclaration(groupDeclaration)) MINCHARWIDTH 3;
+
+typeFabricArticleGroupDeclaration 'Тип одежды (ИД)' (groupDeclaration) = typeFabricArticle(articleGroupDeclaration(groupDeclaration)) IN idGroup;
+typeFabricDataGroupDeclaration 'Тип одежды (ИД)' = DATA typeFabric(groupDeclaration) IN idGroup;
+typeFabricGroupDeclaration 'Тип одежды (ИД)' (groupDeclaration) = UNION OVERRIDE typeFabricArticleGroupDeclaration(groupDeclaration),
+                                                                                 typeFabricDataGroupDeclaration(groupDeclaration) IN idGroup;
+nameTypeFabricGroupDeclaration 'Тип одежды' (groupDeclaration) = name(typeFabricGroupDeclaration(groupDeclaration)) MINCHARWIDTH 10;
 
 unitOfMeasureArticleGroupDeclaration 'Ед. изм.(ИД)' (groupDeclaration) = unitOfMeasureArticle(articleGroupDeclaration(groupDeclaration));
 unitOfMeasureDataGroupDeclaration 'Ед. изм.(ИД)' = DATA unitOfMeasure(groupDeclaration);
-
 unitOfMeasureGroupDeclaration 'Ед. изм.(ИД)' = UNION OVERRIDE unitOfMeasureArticleGroupDeclaration(groupDeclaration),
                                                               unitOfMeasureDataGroupDeclaration(groupDeclaration);
 
@@ -477,7 +489,7 @@ nameUnitOfMeasureGroupDeclaration 'Ед. изм.' (groupDeclaration) = name(unit
 
 stringGroupDeclaration 'Наименование' (groupDeclaration) =
     [FORMULA STRING[200] 'CAST($1 AS TEXT) ||  \',\' || CAST($2 AS TEXT) || \',\' || CAST($3 AS TEXT) ||  \',Торговая марка \' || CAST($4 AS TEXT) || \', Состав: \' || CAST($5 AS TEXT)'] (
-    nameCategoryGroupDeclaration(groupDeclaration), sidGenderGroupDeclaration(groupDeclaration), nameTypeFabricGroupDeclaration(groupDeclaration),
+    nameInvoiceGroupDeclaration(groupDeclaration), sidGenderGroupDeclaration(groupDeclaration), nameTypeFabricGroupDeclaration(groupDeclaration),
     nameBrandGroupDeclaration(groupDeclaration), mainCompositionGroupDeclaration(groupDeclaration));
 
 nameDataGroupDeclaration 'Наименование' = DATA STRING[200] (groupDeclaration);
@@ -842,9 +854,8 @@ FORM declaration 'Декларация'
 
     OBJECTS gd=groupDeclaration
     PROPERTIES (gd, dd) inGroupDeclarationDeclarationDetail, percentGroupDeclarationDeclarationDetail
-    PROPERTIES (gd) READONLY numberGroupDeclaration, nameCategoryGroupDeclaration, nameBrandGroupDeclaration
-    PROPERTIES (gd) sidArticleGroupDeclaration
-    PROPERTIES (gd) READONLY sidGenderGroupDeclaration, nameTypeFabricGroupDeclaration
+    PROPERTIES (gd) READONLY numberGroupDeclaration, nameInvoiceGroupDeclaration, nameBrandGroupDeclaration
+    PROPERTIES (gd) sidArticleGroupDeclaration, sidGenderGroupDeclaration, nameTypeFabricGroupDeclaration
     PROPERTIES (gd) mainCompositionGroupDeclaration, nameGroupDeclaration,
                     nameCountryGroupDeclaration, sidCountryGroupDeclaration, sidOrigin2CountryGroupDeclaration, sidCustomCategory10GroupDeclaration,
                     quantityGroupDeclaration, sidUnitOfMeasureGroupDeclaration, nameUnitOfMeasureGroupDeclaration,
@@ -895,7 +906,7 @@ FORM declaration 'Декларация'
     OBJECTS sf=(s=sku, fu=freightUnit)
     PROPERTIES READONLY FORCE GRID barcodeSku = barcode(s), nameCategoryArticleSku(s), nameBrandSupplierArticleSku(s), sidArticleSku(s),
                         sidSizeSupplierItem(s), sidColorSupplierItem(s), nameColorSupplierItem(s), mainCompositionSku(s),
-                        barcodeFreightUnit = barcode(fu), nameDestinationFreightBox(fu)
+                        barcodeFreightUnit = barcode(fu), nameDestinationFreightUnit(fu)
 
     PROPERTIES (d, s) quantityDeclarationSku
     PROPERTIES (fu, s) quantityFreightUnitSku
