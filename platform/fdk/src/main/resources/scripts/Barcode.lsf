@@ -60,6 +60,36 @@ DESIGN barcodeInput FROM DEFAULT {
 }
 
 // ------------------------------------ Добавление сканированием строк в документ ----------------------//
+META defineAddDetailDialogBarcodeCustom(object, idetail, skuProp)
+    idetail###object##Sku(object, sku) = GROUP MAX detail BY object###idetail(detail), skuProp###idetail(detail);
+    addDetailDialogBarcode###idetail###object 'Ввод штрих-кода' = ACTION (object) {
+        FORM barcodeInput MODAL;
+
+        IF formResult() == formResult.ok THEN {
+            LOCAL dialogBarcodeSku = sku();
+            SET dialogBarcodeSku() <- skuBarcodeIdDate(chosenString('barcode'), date###object(object));
+
+            IF dialogBarcodeSku() IS sku THEN {
+                LOCAL dialogBarcodeDetail = idetail();
+                SET dialogBarcodeDetail() <- idetail###object##Sku(object, dialogBarcodeSku());
+                IF dialogBarcodeDetail() IS idetail THEN {
+                    SET quantity###idetail(detail) IF detail == dialogBarcodeDetail() <-
+                        quantity###idetail(detail) (+) (1.0 IF detail IS idetail);
+                } ELSE {
+                    ADDOBJ idetail;
+                    FOR w == addedObject() DO {
+                        SET object###idetail(w) <- object AS object;
+                        SET skuProp###idetail(w) <- dialogBarcodeSku();
+                        SET quantity###idetail(w) <- 1.0;
+                    }
+                }
+            } ELSE
+                MESSAGE 'Не найден штрих-код';
+        }
+    } TOOLBAR EDITKEY 'F4';
+END
+
+
 META defineAddDetailDialogBarcode(object, skuProp)
     detail###object##Sku(object, sku) = GROUP MAX detail BY object###object##Detail(detail), skuProp###object##Detail(detail);
     addDetailDialogBarcode###object##Detail###object 'Ввод штрих-кода' = ACTION (object) {

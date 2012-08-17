@@ -53,6 +53,18 @@ META defineDocumentRelation (object)
     @defineDocumentRelationCustom(object, object##Detail);
 END
 
+META defineDocumentRelationCustomCaption (object, detail, caption)
+    object###detail = DATA object (detail) IN idGroup NOT NULL DELETE;
+    in###object###detail(iobject, idetail) = object###detail(idetail) == iobject;
+
+    @defineDocumentHeaderCountCustomCaption(object, detail, caption);
+END
+
+META defineDocumentHeaderCountCustomCaption (object, detail, caption)
+    count###detail###object 'Количество строк в документе'###caption (iobject) =
+        GROUP SUM 1 IF object###detail(idetail) == iobject BY iobject PERSISTENT IN documentSumGroup;
+END
+
 META defineDocumentHeaderCountCustom (object, detail)
     count###detail###object 'Количество строк в документе' (iobject) =
         GROUP SUM 1 IF object###detail(idetail) == iobject BY iobject PERSISTENT IN documentSumGroup;
@@ -136,6 +148,14 @@ META defineDocumentDetailIndex (object)
     @defineDocumentDetailIndexCustom(object, object##Detail);
 END
 
+META defineDocumentDetailActionsCustom (object, idetail)
+    delete###idetail###object 'Очистить' = ACTION (object) {
+        FOR object###idetail (detail) == object DO {
+            EXEC delete(detail AS idetail);
+        };
+    } IN documentPrmGroup TOOLBAR CONFIRM;
+END
+
 META defineDocumentDetailActions (object)
     delete###object##Detail###object 'Очистить' = ACTION (object) {
         FOR object###object##Detail (detail) == object DO {
@@ -144,11 +164,26 @@ META defineDocumentDetailActions (object)
     } IN documentPrmGroup TOOLBAR CONFIRM;
 END
 
+META defineDocumentDetailNumberedCustom (object, idetail)
+    number###idetail 'Номер' (detail) = numberObject(object###idetail(detail));
+    series###idetail 'Серия' (detail) = seriesObject(object###idetail(detail));
+    seriesNumber###idetail 'Серия/номер' (detail) = seriesNumberObject(object###idetail(detail));
+END
+
+
 META defineDocumentDetailNumbered (object)
     number###object##Detail 'Номер' (detail) = numberObject(object###object##Detail(detail));
     series###object##Detail 'Серия' (detail) = seriesObject(object###object##Detail(detail));
     seriesNumber###object##Detail 'Серия/номер' (detail) = seriesNumberObject(object###object##Detail(detail));
 END
+
+META defineDocumentDetailQuantityCustomPrefix (idetail, prefix, caption)
+    prefix###quantity###idetail 'Кол-во'###caption = DATA NUMERIC[14,3] (idetail);
+END
+META defineDocumentDetailQuantityCustom (idetail)
+    @defineDocumentDetailQuantityCustomPrefix(idetail, , );
+END
+
 
 META defineDocumentDetailQuantityPrefix (object, prefix, caption)
     prefix###quantity###object##Detail 'Кол-во'###caption = DATA NUMERIC[14,3] (object##Detail);

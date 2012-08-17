@@ -29,6 +29,7 @@ REQUIRE System,
         WriteOff,
         Customer,
         Inventory,
+        DisparityBatch,
         RomanLogicsModule;
 
 PRIORITY RomanLogicsModule, Utils, Stock, Store;
@@ -88,7 +89,8 @@ DESIGN store FROM DEFAULT {
 EXTEND FORM globalParamForm
     PROPERTIES nameDefaultNumeratorDiscountCard(), nameDefaultNumeratorPromotion(), nameDefaultNumeratorPriceSetDocument(),
                nameDefaultNumeratorWholesalePriceDocument(), nameDefaultNumeratorInnerOrder(), nameDefaultNumeratorWriteOff(),
-               nameDefaultNumeratorOrderPicking(), nameDefaultNumeratorMoveOut(),  toSetRangeCustomCategories10(), hideWare()
+               nameDefaultNumeratorOrderPicking(), nameDefaultNumeratorMoveOut(), nameDefaultNumeratorDisparity(),
+               toSetRangeCustomCategories10(), hideWare()
 ;
 
 
@@ -170,6 +172,10 @@ NAVIGATOR {
         NEW logisticsAggregations 'Сводная информация' {
             ADD stockCost;
             ADD stockBalance;
+            NEW disparityDocument 'Пересорт по партиям' {
+                ADD stockDisparity;
+                ADD disparityBatches;
+            }
         }
     }
 

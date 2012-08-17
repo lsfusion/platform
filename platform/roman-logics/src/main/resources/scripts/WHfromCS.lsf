@@ -125,24 +125,15 @@ createInnerOrderStoreWHfromCSI 'Создать внутренний заказ' 
         SET innerOrderStoreWHfromCSI(store, WHfromCSI) <- i AS innerOrder;
         SET stockInnerOrder(i) <- warehouseWHfromCSI(WHfromCSI);
         SET destinationStockInnerOrder(i) <- primaryDepartmentStoreStore(store AS RomanLogicsModule.store);
-//        ADDOBJ orderPickingPosted;
-//        FOR p == addedObject() DO {
-//            SET innerOrderOrderPicking (p) <- i AS innerOrder;
+
             FOR WHfromCSIWHfromCSR(WHfromCSRWHfromCSRDetail(WHfromCSRDetail)) == WHfromCSI AND destinationWHfromCSRDetail(WHfromCSRDetail) == store DO {
                 ADDOBJ innerOrderDetail;
                 FOR d == addedObject() DO {
                     SET skuInnerOrderDetail(d) <- skuWHfromCSRDetail(WHfromCSRDetail);
                     SET innerOrderInnerOrderDetail(d) <- i AS innerOrder;
                     SET quantityInnerOrderDetail(d) <- quantityWHfromCSRDetail(WHfromCSRDetail);
-//                    ADDOBJ orderPickingDetail;
-//                    FOR pd == addedObject() DO {
-//                        SET skuOrderPickingDetail(pd) <- skuWHfromCSRDetail(WHfromCSRDetail);
-//                        SET orderPickingOrderPickingDetail(pd) <- p AS orderPickingPosted;
-//                        SET quantityOrderPickingDetail(pd) <- quantityWHfromCSRDetail(WHfromCSRDetail);
-//                    }
                 }
             }
-//        }
     }
     FORM innerOrder OBJECTS o = innerOrderStoreWHfromCSI (store, WHfromCSI)  MODAL;
     IF formResult() == formResult.ok THEN {

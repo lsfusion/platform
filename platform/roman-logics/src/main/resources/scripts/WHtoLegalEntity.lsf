@@ -172,7 +172,7 @@ DESIGN invoiceWHOuts FROM DEFAULT {
 // Проводим по регистру
 @implementSkuLedger(invoiceWHOut, sku, warehouse);
 quantityOutFIFOSkuLedger (ledger) += quantityInvoiceWHOutDetail (ledger);
-limitOutFIFOSkuLedgerBatch(ledger, batch) += currentBalanceBatchStock(batch, warehouseInvoiceWHOutDetail(ledger)) AND NOT commissionContractSkuBatchA(batch);
+limitOutFIFOSkuLedgerBatch(ledger, batch) += quantityInvoiceWHOutDetail (ledger) AND batchAInvoiceWHOutDetail(ledger) == batch; //AND NOT commissionContractSkuBatchA(batch);
 sumOutSkuLedger(ledger) += supplierSumInvoiceWHOutDetail(ledger);
 
 skipSkuLedger (ledger) += notChangeBalanceInvoiceWHOutDetail(ledger);

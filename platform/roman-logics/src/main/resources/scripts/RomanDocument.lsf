@@ -129,6 +129,54 @@ META extendDocumentFormDetailSkuArticleReadonly (form, object, concrete)
     @extendDocumentFormDetailSkuArticleReadonlyQuantity(form, object, concrete, quantity###concrete##Detail);
 END
 
+//---------------------------Несколько Detail у документа------------------------------------------------//
+META defineDocumentDetailSkuArticleCustom (idetail)
+
+    barcode###idetail 'Штрих-код' (idetail) = barcode(sku###idetail(idetail));
+
+    sidSize###idetail 'Размер' (idetail) = sidSizeSupplierItem(sku###idetail(idetail));
+    sidColor###idetail 'Цвет (код)' (idetail) = sidColorSupplierItem(sku###idetail(idetail));
+    nameColor###idetail 'Цвет' (idetail) = nameColorSupplierItem(sku###idetail(idetail));
+
+    article###idetail 'Артикул (ИД)' (idetail) = articleSku(sku###idetail(idetail)) IN idGroup;
+    sidArticle###idetail 'Артикул' (idetail) = sidArticle(article###idetail(idetail));
+    brand###idetail 'Бренд (ИД)' (idetail) = brandSupplierArticle(article###idetail(idetail)) IN idGroup;
+    nameBrand###idetail 'Бренд' (idetail) = name(brand###idetail(idetail)) MINCHARWIDTH 15;
+    category###idetail 'Номенклатурная группа (ИД)' (idetail) = categoryArticle(article###idetail(idetail)) IN idGroup;
+    nameCategory###idetail 'Номенклатурная группа' (idetail) = name(category###idetail(idetail)) MINCHARWIDTH 15;
+
+    shortNameUOM###idetail 'Единица измерения' (idetail) = shortNameUOMSku(sku###idetail(idetail));
+END
+
+META extendDocumentFormDetailSkuArticleQuantityCustom (form, object, idetail, quantityProp)
+    EXTEND FORM form
+        PROPERTIES(object) index###idetail, barcode###idetail,
+                           nameCategory###idetail, nameBrand###idetail,
+                           sidArticle###idetail, sidSize###idetail,
+                           sidColor###idetail, nameColor###idetail,
+                           quantityProp, shortNameUOM###idetail,
+                           ADDOBJ, delete
+    ;
+END
+META extendDocumentFormDetailSkuArticleCustom (form, object, idetail)
+    @extendDocumentFormDetailSkuArticleQuantityCustom(form, object, idetail, quantity###idetail);
+END
+
+META extendDocumentFormDetailSkuArticleReadonlyQuantityCustom (form, object, idetail, quantityProp)
+    EXTEND FORM form
+        PROPERTIES(object) READONLY index###idetail, barcode###idetail,
+                                    nameCategory###idetail, nameBrand###idetail,
+                                    sidArticle###idetail, sidSize###idetail,
+                                    sidColor###idetail, nameColor###idetail,
+                                    quantityProp, shortNameUOM###idetail
+    ;
+END
+META extendDocumentFormDetailSkuArticleReadonlyCustom (form, object, idetail)
+    @extendDocumentFormDetailSkuArticleReadonlyQuantityCustom(form, object, idetail, quantity###idetail);
+END
+
+
+
 // ---------------------------------------------------- Трансферы -------------------------------------------- //
 
 META defineDocumentTransferRetail (concrete)
