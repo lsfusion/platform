@@ -23,17 +23,17 @@ public class LogicalGridEditor implements GridCellEditor {
 
     @Override
     public void onBrowserEvent(Cell.Context context, Element parent, Object value, NativeEvent event, ValueUpdater<Object> valueUpdater) {
-        //NP
+        //NOP
     }
 
     @Override
     public void render(Cell.Context context, Object value, SafeHtmlBuilder sb) {
-        //NP
+        //NOP
     }
 
     @Override
     public boolean resetFocus(Cell.Context context, Element parent, Object value) {
-        //NP
+        //NOP
         return true;
     }
 }

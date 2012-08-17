@@ -13,11 +13,6 @@ public class GDoubleType extends GIntegralType {
         return Double.parseDouble(strValue);
     }
 
-//    @Override
-//    public PanelRenderer createPanelRenderer(GFormController form, GPropertyDraw property) {
-//        return new DoublePanelRenderer(property);
-//    }
-
     @Override
     public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty, Object oldValue) {
         return new DoubleGridEditor(editManager, oldValue);

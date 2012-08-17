@@ -22,7 +22,7 @@ public class DataPanelRenderer implements PanelRenderer {
         valueTable.setHeight("100%");
 
         ResizeLayoutPanel gridPanel = new ResizeLayoutPanel();
-        gridPanel.setPixelSize(250, 32);
+        gridPanel.setPixelSize(250, 27);
         gridPanel.addStyleName("dataPanelRendererGridPanel");
         gridPanel.add(valueTable);
 

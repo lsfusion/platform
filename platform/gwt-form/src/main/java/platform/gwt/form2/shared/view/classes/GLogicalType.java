@@ -10,11 +10,6 @@ import platform.gwt.form2.shared.view.grid.renderer.LogicalGridRenderer;
 public class GLogicalType extends GDataType {
     public static GLogicalType instance = new GLogicalType();
 
-//    @Override
-//    public PanelRenderer createPanelRenderer(GFormController form, GPropertyDraw property) {
-//        return new LogicalPanelRenderer(property);
-//    }
-
     @Override
     public GridCellRenderer createGridCellRenderer() {
         return new LogicalGridRenderer();

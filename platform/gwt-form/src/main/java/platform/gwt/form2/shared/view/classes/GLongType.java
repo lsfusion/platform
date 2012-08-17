@@ -13,11 +13,6 @@ public class GLongType extends GIntegralType {
         return Long.parseLong(strValue);
     }
 
-//    @Override
-//    public PanelRenderer createPanelRenderer(GFormController form, GPropertyDraw property) {
-//        return new LongPanelRenderer(property);
-//    }
-
     @Override
     public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty, Object oldValue) {
         return new IntegerGridEditor(editManager, oldValue);

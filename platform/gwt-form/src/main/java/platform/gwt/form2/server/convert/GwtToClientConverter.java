@@ -7,6 +7,7 @@ import platform.interop.ClassViewType;
 import platform.interop.form.UserInputResult;
 
 import java.awt.*;
+import java.util.Date;
 
 @SuppressWarnings("UnusedDeclaration")
 public class GwtToClientConverter extends ObjectConverter {
@@ -24,6 +25,11 @@ public class GwtToClientConverter extends ObjectConverter {
     @Converter(from = ColorDTO.class)
     public Color convertColorDTO(ColorDTO dto) {
         return Color.decode(dto.value);
+    }
+
+    @Converter(from = Date.class)
+    public java.sql.Date convertDate(Date date) {
+        return new java.sql.Date(date.getTime());
     }
 
     @Converter(from = GUserInputResult.class)

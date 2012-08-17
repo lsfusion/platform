@@ -7,11 +7,6 @@ import platform.gwt.form2.shared.view.grid.renderer.GridCellRenderer;
 public class GTimeType extends GDataType {
     public static GTimeType instance = new GTimeType();
 
-//    @Override
-//    public PanelRenderer createPanelRenderer(GFormController form, GPropertyDraw property) {
-//        return new DatePanelRenderer(property, DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.TIME_MEDIUM));
-//    }
-
     @Override
     public GridCellRenderer createGridCellRenderer() {
         return new DateGridRenderer(DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.TIME_MEDIUM));

@@ -13,11 +13,6 @@ public class GIntegerType extends GIntegralType {
         return Integer.parseInt(strValue);
     }
 
-//    @Override
-//    public PanelRenderer createPanelRenderer(GFormController form, GPropertyDraw property) {
-//        return new IntegerPanelRenderer(property);
-//    }
-
     @Override
     public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty, Object oldValue) {
         return new IntegerGridEditor(editManager, oldValue);
