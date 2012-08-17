@@ -5,10 +5,10 @@ import platform.gwt.form2.client.form.ui.container.GAbstractFormContainer;
 import platform.gwt.form2.client.form.ui.container.GFormContainer;
 import platform.gwt.form2.client.form.ui.container.GFormSplitPane;
 import platform.gwt.form2.client.form.ui.container.GFormTabbedPane;
-import platform.gwt.view2.GComponent;
-import platform.gwt.view2.GContainer;
-import platform.gwt.view2.GGroupObject;
-import platform.gwt.view2.GShowType;
+import platform.gwt.form2.shared.view.GComponent;
+import platform.gwt.form2.shared.view.GContainer;
+import platform.gwt.form2.shared.view.GGroupObject;
+import platform.gwt.form2.shared.view.GShowType;
 
 import java.util.ArrayList;
 import java.util.HashMap;

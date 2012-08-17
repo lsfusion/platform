@@ -4,7 +4,7 @@ import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
 import platform.gwt.base.server.FormSessionObject;
 import platform.gwt.base.shared.GClassViewType;
-import platform.gwt.form2.server.GwtToClientConverter;
+import platform.gwt.form2.server.convert.GwtToClientConverter;
 import platform.gwt.form2.server.RemoteServiceImpl;
 import platform.gwt.form2.shared.actions.form.ChangeClassView;
 import platform.gwt.form2.shared.actions.form.ServerResponseResult;

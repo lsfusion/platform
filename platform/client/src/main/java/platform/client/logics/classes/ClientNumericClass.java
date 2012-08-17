@@ -1,7 +1,5 @@
 package platform.client.logics.classes;
 
-import platform.gwt.view2.classes.GNumericType;
-import platform.gwt.view2.classes.GType;
 import platform.client.ClientResourceBundle;
 import platform.interop.Data;
 
@@ -79,14 +77,5 @@ public class ClientNumericClass extends ClientDoubleClass {
         format.setMaximumIntegerDigits(length - precision - ((precision > 0) ? 1 : 0));
         format.setMaximumFractionDigits(precision);
         return format;
-    }
-
-    private GNumericType gwtType;
-    @Override
-    public GType getGwtType() {
-        if (gwtType == null) {
-            gwtType = new GNumericType(length, precision);
-        }
-        return gwtType;
     }
 }

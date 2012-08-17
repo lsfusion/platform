@@ -5,7 +5,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import platform.gwt.base.shared.GClassViewType;
-import platform.gwt.view2.GGroupObject;
+import platform.gwt.form2.shared.view.GGroupObject;
 
 import java.util.ArrayList;
 import java.util.List;

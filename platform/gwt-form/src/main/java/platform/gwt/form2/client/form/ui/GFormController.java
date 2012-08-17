@@ -7,7 +7,10 @@ import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.*;
+import com.google.gwt.user.client.ui.CheckBox;
+import com.google.gwt.user.client.ui.ListBox;
+import com.google.gwt.user.client.ui.SimplePanel;
+import com.google.gwt.user.client.ui.Widget;
 import net.customware.gwt.dispatch.client.DefaultExceptionHandler;
 import net.customware.gwt.dispatch.shared.Action;
 import net.customware.gwt.dispatch.shared.Result;
@@ -15,19 +18,23 @@ import platform.gwt.base.client.ErrorAsyncCallback;
 import platform.gwt.base.client.WrapperAsyncCallbackEx;
 import platform.gwt.base.shared.GClassViewType;
 import platform.gwt.form2.client.dispatch.FormDispatchAsync;
-import platform.gwt.form2.client.form.classes.ClassChosenHandler;
-import platform.gwt.form2.client.form.dispatch.GwtFormActionDispatcher;
-import platform.gwt.form2.client.form.ui.dialog.MessageBox;
+import platform.gwt.form2.client.form.dispatch.GFormActionDispatcher;
+import platform.gwt.form2.client.form.ui.classes.ClassChosenHandler;
+import platform.gwt.form2.client.form.ui.classes.GClassDialog;
+import platform.gwt.form2.client.form.ui.dialog.DialogBoxHelper;
+import platform.gwt.form2.client.form.ui.dialog.GModalDialog;
+import platform.gwt.form2.client.form.ui.dialog.GModalForm;
+import platform.gwt.form2.client.form.ui.dialog.WindowHiddenHandler;
 import platform.gwt.form2.shared.actions.GetForm;
 import platform.gwt.form2.shared.actions.GetFormResult;
 import platform.gwt.form2.shared.actions.form.*;
-import platform.gwt.view2.*;
-import platform.gwt.view2.changes.GFormChanges;
-import platform.gwt.view2.changes.GGroupObjectValue;
-import platform.gwt.view2.changes.dto.GFormChangesDTO;
-import platform.gwt.view2.changes.dto.GGroupObjectValueDTO;
-import platform.gwt.view2.classes.GObjectClass;
-import platform.gwt.view2.logics.FormLogicsProvider;
+import platform.gwt.form2.shared.view.*;
+import platform.gwt.form2.shared.view.changes.GFormChanges;
+import platform.gwt.form2.shared.view.changes.GGroupObjectValue;
+import platform.gwt.form2.shared.view.changes.dto.GFormChangesDTO;
+import platform.gwt.form2.shared.view.changes.dto.GGroupObjectValueDTO;
+import platform.gwt.form2.shared.view.classes.GObjectClass;
+import platform.gwt.form2.shared.view.logics.FormLogicsProvider;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -45,7 +52,7 @@ public class GFormController extends SimplePanel implements FormLogicsProvider {
 
     private final FormDispatchAsync dispatcher = new FormDispatchAsync(new DefaultExceptionHandler());
 
-    private final GwtFormActionDispatcher actionDispatcher = new GwtFormActionDispatcher(this);
+    private final GFormActionDispatcher actionDispatcher = new GFormActionDispatcher(this);
 
     private GForm form;
     private GFormLayout formLayout;
@@ -214,37 +221,15 @@ public class GFormController extends SimplePanel implements FormLogicsProvider {
     }
 
     public void showModalDialog(GForm form, final WindowHiddenHandler handler) {
-        //todo: http://stackoverflow.com/questions/2061699/disable-user-interaction-in-a-gwt-container
-////        disable();
-//        GModalDialog.showDialog(form, new WindowHiddenHandler() {
-//            @Override
-//            public void onHidden() {
-////                enable();
-//                handler.onHidden();
-//            }
-//        });
+        GModalDialog.showDialog(form, handler);
     }
 
     public void showModalForm(GForm form, final WindowHiddenHandler handler) {
-////        disable();
-//        GModalForm.showForm(form, new WindowHiddenHandler() {
-//            @Override
-//            public void onHidden() {
-////                enable();
-//                handler.onHidden();
-//            }
-//        });
+        GModalForm.showForm(form, handler);
     }
 
     public void showClassDialog(GObjectClass baseClass, GObjectClass defaultClass, boolean concreate, final ClassChosenHandler classChosenHandler) {
-////        disable();
-//        GClassDialog.showDialog(baseClass, defaultClass, concreate, new ClassChosenHandler() {
-//            @Override
-//            public void onClassChosen(GObjectClass chosenClass) {
-////                enable();
-//                classChosenHandler.onClassChosen(chosenClass);
-//            }
-//        });
+        GClassDialog.showDialog(baseClass, defaultClass, concreate, classChosenHandler);
     }
 
     public void changeGroupObject(GGroupObject group, GGroupObjectValue key) {
@@ -280,6 +265,7 @@ public class GFormController extends SimplePanel implements FormLogicsProvider {
     }
 
     public <T extends Result> void syncDispatch(Action<T> action, AsyncCallback<T> callback) {
+        //todo: http://stackoverflow.com/questions/2061699/disable-user-interaction-in-a-gwt-container
 //        disable();
         dispatcher.execute(action, new WrapperAsyncCallbackEx<T>(callback) {
             @Override
@@ -330,35 +316,20 @@ public class GFormController extends SimplePanel implements FormLogicsProvider {
     }
 
     private void openReportWindow(String reportSID, String type) {
-        String url = GWT.getHostPageBaseURL() + "report?file=" + reportSID + "&type=" + type;
-        Window.open(url, "Report", "");
+        String reportUrl = GWT.getHostPageBaseURL() + "report?file=" + reportSID + "&type=" + type;
+        Window.open(reportUrl, "Report", "");
     }
 
-    public void blockingConfirm(String caption, String message, final MessageBox.CloseCallback callback) {
-//        disable();
-        MessageBox.showConfirmBox(caption, message, new MessageBox.CloseCallback() {
-            @Override
-            public void closed(boolean okPressed) {
-//                enable();
-                callback.closed(okPressed);
-            }
-        });
+    public void blockingConfirm(String caption, String message, final DialogBoxHelper.CloseCallback callback) {
+        DialogBoxHelper.showConfirmBox(caption, message, callback);
     }
 
-    public void blockingMessage(String caption, String message, final MessageBox.CloseCallback callback) {
+    public void blockingMessage(String caption, String message, final DialogBoxHelper.CloseCallback callback) {
         blockingMessage(false, caption, message, callback);
     }
 
-    public void blockingMessage(boolean isError, String caption, String message, final MessageBox.CloseCallback callback) {
-//        disable();
-
-        MessageBox.showMessageBox(isError, caption, message, new MessageBox.CloseCallback() {
-            @Override
-            public void closed(boolean okPressed) {
-//                enable();
-                callback.closed(okPressed);
-            }
-        });
+    public void blockingMessage(boolean isError, String caption, String message, final DialogBoxHelper.CloseCallback callback) {
+        DialogBoxHelper.showMessageBox(isError, caption, message, callback);
     }
 
     private class ServerResponseCallback extends ErrorAsyncCallback<ServerResponseResult> {

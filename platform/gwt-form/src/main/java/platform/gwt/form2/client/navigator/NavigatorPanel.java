@@ -12,13 +12,12 @@ import platform.gwt.form2.client.dispatch.FormDispatchAsync;
 import platform.gwt.form2.client.events.OpenFormEvent;
 import platform.gwt.form2.shared.actions.navigator.GetNavigatorElements;
 import platform.gwt.form2.shared.actions.navigator.GetNavigatorElementsResult;
-import platform.gwt.view2.GNavigatorElement;
+import platform.gwt.form2.shared.view.GNavigatorElement;
 
 public class NavigatorPanel extends ScrollPanel {
     private final FormDispatchAsync dispatcher = new FormDispatchAsync(new DefaultExceptionHandler());
 
     private Tree tree;
-
 
     public NavigatorPanel() {
         createTreeGrid();

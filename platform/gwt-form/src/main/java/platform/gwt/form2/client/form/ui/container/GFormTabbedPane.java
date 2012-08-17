@@ -4,8 +4,8 @@ import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.ui.*;
 import platform.gwt.form2.client.form.ui.GFormController;
-import platform.gwt.view2.GComponent;
-import platform.gwt.view2.GContainer;
+import platform.gwt.form2.shared.view.GComponent;
+import platform.gwt.form2.shared.view.GContainer;
 
 public class GFormTabbedPane extends GAbstractFormContainer {
     private TabPanel tabsPanel;

@@ -87,10 +87,6 @@ public abstract class LogicsDispatchServlet<T extends RemoteLogicsInterface> ext
         return getSpringContext().getBean(NavigatorProvider.class);
     }
 
-    public FormSessionManager getFormSessionManager() {
-        return getSpringContext().getBean(FormSessionManager.class);
-    }
-
     //todo: это будет не нужно после интеграции сервлетов в Spring
     protected WebApplicationContext getSpringContext() {
         return WebApplicationContextUtils.getWebApplicationContext(getServletContext());

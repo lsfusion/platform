@@ -371,7 +371,6 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
     }
 
     public void setCurrentPath(final ClientGroupObjectValue objects) {
-        System.out.println("Setting current path to: " + objects);
         enumerateNodesDepthFirst(new NodeProccessor() {
             @Override
             public void processPath(TreePath nodePath) {

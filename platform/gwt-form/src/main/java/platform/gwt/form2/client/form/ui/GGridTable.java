@@ -1,45 +1,53 @@
 package platform.gwt.form2.client.form.ui;
 
-import com.google.gwt.cell.client.*;
+import com.google.gwt.cell.client.Cell;
+import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.DataGrid;
 import com.google.gwt.user.cellview.client.Header;
 import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.view.client.CellPreviewEvent;
+import com.google.gwt.user.client.ui.HeaderPanel;
+import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.view.client.DefaultSelectionEventManager;
 import com.google.gwt.view.client.SelectionChangeEvent;
-import com.google.gwt.view.client.SingleSelectionModel;
-import platform.gwt.form2.client.form.dispatch.GwtEditPropertyActionDispatcher;
+import platform.gwt.form2.client.form.dispatch.GEditPropertyDispatcher;
+import platform.gwt.form2.client.form.dispatch.GEditPropertyHandler;
 import platform.gwt.utils.GwtSharedUtils;
-import platform.gwt.view2.GGroupObject;
-import platform.gwt.view2.GPropertyDraw;
-import platform.gwt.view2.GridDataRecord;
-import platform.gwt.view2.changes.GGroupObjectValue;
-import platform.gwt.view2.classes.GType;
-import platform.gwt.view2.grid.EditManager;
-import platform.gwt.view2.grid.editor.GridCellEditor;
-import platform.gwt.view2.grid.GridEditableCell;
+import platform.gwt.form2.shared.view.GGroupObject;
+import platform.gwt.form2.shared.view.GPropertyDraw;
+import platform.gwt.form2.shared.view.GridDataRecord;
+import platform.gwt.form2.shared.view.changes.GGroupObjectValue;
+import platform.gwt.form2.shared.view.classes.GType;
+import platform.gwt.form2.shared.view.grid.EditManager;
+import platform.gwt.form2.shared.view.grid.GridEditableCell;
+import platform.gwt.form2.shared.view.grid.editor.GridCellEditor;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class GGridTable extends DataGrid implements FieldUpdater<GridDataRecord, Object>, EditManager {
+public class GGridTable extends DataGrid implements EditManager, GEditPropertyHandler {
 
     /**
      * Default style's overrides
      */
     public interface GGridTableResource extends Resources {
         @Source("GGridTable.css")
-        DataGrid.Style dataGridStyle();
+        GGridTableStyle dataGridStyle();
     }
+
+    public interface GGridTableStyle extends Style {}
+
     public static final GGridTableResource GGRID_RESOURCES = GWT.create(GGridTableResource.class);
 
     private final GFormController form;
     private final GGroupObjectController groupController;
-    private final GwtEditPropertyActionDispatcher editDispatcher;
+    private final GEditPropertyDispatcher editDispatcher;
+
+    private final GGridTableSelectionModel selectionModel;
 
     public ArrayList<GPropertyDraw> properties = new ArrayList<GPropertyDraw>();
     public ArrayList<GridHeader> headers = new ArrayList<GridHeader>();
@@ -67,51 +75,77 @@ public class GGridTable extends DataGrid implements FieldUpdater<GridDataRecord,
         this.form = iform;
         this.groupController = igroupController;
         this.groupObject = groupController.groupObject;
-        this.editDispatcher = new GwtEditPropertyActionDispatcher(form);
+        this.editDispatcher = new GEditPropertyDispatcher(form);
 
         setEmptyTableWidget(new HTML("The table is empty"));
 
         addStyleName("gridTable");
 
-        setKeyboardSelectionPolicy(KeyboardSelectionPolicy.BOUND_TO_SELECTION);
-
-        addCellPreviewHandler(new CellPreviewEvent.Handler() {
-            @Override
-            public void onCellPreview(CellPreviewEvent event) {
-                System.out.println(event.getNativeEvent().getType());
-                if (event.getNativeEvent().getType().equals("keyup")) {
-                    System.out.println("    " + event.getNativeEvent().getKeyCode());
-                }
-            }
-        });
-
-        final SingleSelectionModel<GridDataRecord> selectionModel = new SingleSelectionModel<GridDataRecord>();
+        selectionModel = new GGridTableSelectionModel();
         setSelectionModel(selectionModel, DefaultSelectionEventManager.<GridDataRecord>createDefaultManager());
         selectionModel.addSelectionChangeHandler(new SelectionChangeEvent.Handler() {
             @Override
             public void onSelectionChange(SelectionChangeEvent event) {
-                GridDataRecord selectedRecord = selectionModel.getSelectedObject();
-                if (selectedRecord != null) {
-                    System.out.println("changing current object");
+                GridDataRecord selectedRecord = selectionModel.getSelectedRecord();
+                if (selectedRecord != null && !selectedRecord.key.equals(currentKey)) {
+                    System.out.println("changing current object: " + selectedRecord);
+                    storeScrolling(selectedRecord);
                     form.changeGroupObject(groupObject, selectedRecord.key);
                 }
             }
         });
+
+        setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
+//        setKeyboardSelectionPolicy(KeyboardSelectionPolicy.ENABLED);
+//        addDomHandler(new KeyDownHandler() {
+//            @Override
+//            public void onKeyDown(KeyDownEvent event) {
+//                if (selectionModel.getSelectedRecord() != null) {
+//                    int pos;
+//                    GridDataRecord object;
+//                    int key = event.getNativeEvent().getKeyCode();
+//                    switch (key) {
+//                        case KeyCodes.KEY_UP:
+//                            pos = currentInd;
+//                            if (pos > 0) {
+//                                object = getVisibleItems().get(pos - 1);
+//                                selectionModel.setSelected(object, true);
+//                                event.stopPropagation();
+//                                event.preventDefault();
+//                            }
+//                            break;
+//                        case KeyCodes.KEY_DOWN:
+//                            pos = currentInd;
+//                            if (pos != -1 && pos != getVisibleItems().size() - 1) {
+//                                object = getVisibleItems().get(pos + 1);
+//                                selectionModel.setSelected(object, true);
+//                                event.stopPropagation();
+//                                event.preventDefault();
+//                            }
+//                            break;
+//                    }
+//                }
+//            }
+//        }, KeyDownEvent.getType());
+//        sinkEvents(Event.ONKEYDOWN);
     }
 
-//    private void storeScrolling(GridDataRecord selectedRecord) {
-//        currentKey = selectedRecord.key;
-//    }
-//
+    public ScrollPanel getScrollPanel() {
+        HeaderPanel header = (HeaderPanel) getWidget();
+        return (ScrollPanel) header.getContentWidget();
+    }
+
+    private void storeScrolling(GridDataRecord selectedRecord) {
+        setCurrentKey(selectedRecord.key);
+        currentInd = keys.indexOf(currentKey);
+    }
+
+    //
     private void restoreScrolling() {
         if (currentInd == -1) {
             return;
         }
 //        scrollRecordIntoView(currentInd);
-    }
-
-    public GPropertyDraw getProperty(int colNum) {
-        return properties.get(colNum);
     }
 
     public void removeProperty(GPropertyDraw property) {
@@ -136,19 +170,14 @@ public class GGridTable extends DataGrid implements FieldUpdater<GridDataRecord,
         int ins = GwtSharedUtils.relativePosition(property, form.getPropertyDraws(), properties);
         properties.add(ins, property);
 
-        Column<GridDataRecord, Object> gridColumn = property.createGridColumn(this, form);
-        gridColumn.setFieldUpdater(this);
         GridHeader header = new GridHeader(property.getCaptionOrEmpty());
         headers.add(ins, header);
+
+        Column<GridDataRecord, Object> gridColumn = property.createGridColumn(this, form);
         insertColumn(ins, gridColumn, header);
         setColumnWidth(gridColumn, "150px");
 
         dataUpdated = true;
-    }
-
-    @Override
-    public void update(int index, GridDataRecord object, Object value) {
-        //todo: commit values...
     }
 
     public GGroupObjectValue getCurrentKey() {
@@ -172,33 +201,79 @@ public class GGridTable extends DataGrid implements FieldUpdater<GridDataRecord,
     }
 
     private boolean dataUpdated = false;
-    private boolean internalSelecting = false;
+
+    ArrayList<GridDataRecord> records;
 
     public void update() {
         if (currentKey == null) {
-//            GridDataRecord selected = (GridDataRecord) getSelectedRecord();
-//            if (selected != null) {
-//                currentKey = selected.key;
-//            }
+            GridDataRecord selected = selectionModel.getSelectedRecord();
+            if (selected != null) {
+                currentKey = selected.key;
+            }
         }
 
-        if (dataUpdated) {
-            setRowData(GridDataRecord.createRecords(keys, values));
-            dataUpdated = false;
+        int rowScrollTop = -1;
+        if (currentInd != -1) {
+            TableRowElement rowElement = getRowElement(currentInd);
+            rowScrollTop = rowElement.getAbsoluteTop() - getScrollPanel().getAbsoluteTop();
         }
 
         currentInd = currentKey == null ? -1 : keys.indexOf(currentKey);
 
+        if (dataUpdated) {
+            records = GridDataRecord.createRecords(keys, values);
+            setRowData(records);
+            dataUpdated = false;
+        }
+
         restoreScrolling();
 
         if (currentInd != -1) {
-            internalSelecting = true;
-//            selectSingleRecord(currentInd);
-            internalSelecting = false;
+            scrollRowToVerticalPosition(currentInd, rowScrollTop);
+            selectionModel.setSelected(records.get(currentInd), true);
         }
 
         updatePropertyReaders();
 
+        updateHeader();
+    }
+
+    private void scrollRowToVerticalPosition(int rowIndex, int rowScrollTop) {
+        //todo: учесть, что высота рядов может быть различной... или сделать высоту постоянной...
+        if (rowScrollTop != -1 && rowIndex >= 0 && rowIndex < getRowCount()) {
+            int rowHeight = getRowElement(rowIndex).getOffsetHeight();
+            getScrollPanel().setVerticalScrollPosition(rowIndex * rowHeight - rowScrollTop);
+        }
+    }
+
+    private void updatePropertyReaders() {
+        for (int i = 0; i < keys.size(); i++) {
+            GGroupObjectValue key = keys.get(i);
+
+            Object rowBackground = rowBackgroundValues.get(key);
+            Object rowForeground = rowForegroundValues.get(key);
+
+            for (GPropertyDraw property : properties) {
+                Object cellBackground = rowBackground;
+                if (cellBackground == null && cellBackgroundValues.get(property) != null) {
+                    cellBackground = cellBackgroundValues.get(property).get(key);
+                }
+                if (cellBackground != null) {
+                    getRowElement(i).getCells().getItem(properties.indexOf(property)).getStyle().setBackgroundColor((String) cellBackground);
+                }
+
+                Object cellForeground = rowForeground;
+                if (cellForeground == null && cellForegroundValues.get(property) != null) {
+                    cellForeground = cellForegroundValues.get(property).get(key);
+                }
+                if (cellForeground != null) {
+                    getRowElement(i).getCells().getItem(properties.indexOf(property)).getStyle().setColor((String) cellForeground);
+                }
+            }
+        }
+    }
+
+    private void updateHeader() {
         boolean needsHeaderRefresh = false;
         for (GPropertyDraw property : properties) {
             Map<GGroupObjectValue, Object> captions = propertyCaptions.get(property);
@@ -210,31 +285,6 @@ public class GGridTable extends DataGrid implements FieldUpdater<GridDataRecord,
         }
         if (needsHeaderRefresh) {
             redrawHeaders();
-        }
-    }
-
-    private void updatePropertyReaders() {
-        for (int i = 0; i < keys.size(); i++) {
-            Object rowBackground = rowBackgroundValues.get(keys.get(i));
-            Object rowForeground = rowForegroundValues.get(keys.get(i));
-
-            for (GPropertyDraw property : properties) {
-                Object cellBackground = rowBackground;
-                if (cellBackground == null && cellBackgroundValues.get(property) != null) {
-                    cellBackground = cellBackgroundValues.get(property).get(keys.get(i));
-                }
-                if (cellBackground != null) {
-                    getRowElement(i).getCells().getItem(properties.indexOf(property)).getStyle().setBackgroundColor((String) cellBackground);
-                }
-
-                Object cellForeground = rowForeground;
-                if (cellForeground == null && cellForegroundValues.get(property) != null) {
-                    cellForeground = cellForegroundValues.get(property).get(keys.get(i));
-                }
-                if (cellForeground != null) {
-                    getRowElement(i).getCells().getItem(properties.indexOf(property)).getStyle().setColor((String) cellForeground);
-                }
-            }
         }
     }
 
@@ -267,15 +317,26 @@ public class GGridTable extends DataGrid implements FieldUpdater<GridDataRecord,
         return values.get(getProperty(column)).get(keys.get(row));
     }
 
-    public void startEditing(GType type, Object oldValue) {
-        editType = type;
+    public GPropertyDraw getProperty(int colNum) {
+        return properties.get(colNum);
+    }
 
-        GridCellEditor cellEditor = type.createGridCellEditor(this, getProperty(editContext.getColumn()), oldValue);
+    @Override
+    public void requestValue(GType valueType, Object oldValue) {
+        editType = valueType;
+
+        GridCellEditor cellEditor = valueType.createGridCellEditor(this, getProperty(editContext.getColumn()), oldValue);
         if (cellEditor != null) {
             editCell.startEditing(editContext, editCellParent, cellEditor);
         } else {
             cancelEditing();
         }
+    }
+
+    @Override
+    public void updateEditValue(Object value) {
+        //todo:
+
     }
 
     @Override
@@ -289,7 +350,7 @@ public class GGridTable extends DataGrid implements FieldUpdater<GridDataRecord,
         this.editCell = editCell;
         this.editContext = editContext;
         this.editCellParent = parent;
-        editDispatcher.executePropertyEditAction(GGridTable.this, getEditCellCurrentValue(), editContext);
+        editDispatcher.executePropertyEditAction(this, getProperty(editContext.getColumn()), getEditCellCurrentValue(), editContext);
     }
 
     private Object getEditCellCurrentValue() {
@@ -298,18 +359,18 @@ public class GGridTable extends DataGrid implements FieldUpdater<GridDataRecord,
 
     @Override
     public void commitEditing(Object value) {
-        clearEditState(value);
+        clearEditState();
         editDispatcher.commitValue(value);
     }
 
     @Override
     public void cancelEditing() {
-        clearEditState(getEditCellCurrentValue());
+        clearEditState();
         editDispatcher.cancelEdit();
     }
 
-    private void clearEditState(Object newValue) {
-        editCell.finishEditing(editContext, editCellParent, newValue);
+    private void clearEditState() {
+        editCell.finishEditing(editContext, editCellParent, getEditCellCurrentValue());
 
         editCell = null;
         editContext = null;

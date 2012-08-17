@@ -140,6 +140,18 @@
         </antcall>
     </target>
 
+    <target name="fdk-recursiveCompile">
+        <antcall target="recursiveCompile">
+            <param name="artifactId" value="fdk"/>
+        </antcall>
+    </target>
+
+    <target name="fdk-quickCompile">
+        <antcall target="quickCompile">
+            <param name="artifactId" value="fdk"/>
+        </antcall>
+    </target>
+
     <target name="tmc-recursiveCompile">
         <antcall target="recursiveCompile">
             <param name="artifactId" value="tmc"/>
@@ -224,6 +236,18 @@
         </antcall>
     </target>
 
+    <target name="equ-api-recursiveCompile">
+        <antcall target="recursiveCompile">
+            <param name="artifactId" value="equ-api"/>
+        </antcall>
+    </target>
+
+    <target name="equ-api-quickCompile">
+        <antcall target="quickCompile">
+            <param name="artifactId" value="equ-api"/>
+        </antcall>
+    </target>
+
     <target name="equ-clt-recursiveCompile">
         <antcall target="recursiveCompile">
             <param name="artifactId" value="equ-clt"/>
@@ -233,6 +257,18 @@
     <target name="equ-clt-quickCompile">
         <antcall target="quickCompile">
             <param name="artifactId" value="equ-clt"/>
+        </antcall>
+    </target>
+
+    <target name="equ-srv-recursiveCompile">
+        <antcall target="recursiveCompile">
+            <param name="artifactId" value="equ-srv"/>
+        </antcall>
+    </target>
+
+    <target name="equ-srv-quickCompile">
+        <antcall target="quickCompile">
+            <param name="artifactId" value="equ-srv"/>
         </antcall>
     </target>
 
@@ -305,6 +341,18 @@
     <target name="paas-web-quickCompile">
         <antcall target="quickCompile">
             <param name="artifactId" value="paas-web"/>
+        </antcall>
+    </target>
+
+    <target name="serveragent-recursiveCompile">
+        <antcall target="recursiveCompile">
+            <param name="artifactId" value="serveragent"/>
+        </antcall>
+    </target>
+
+    <target name="serveragent-quickCompile">
+        <antcall target="quickCompile">
+            <param name="artifactId" value="serveragent"/>
         </antcall>
     </target>
 

@@ -1,14 +1,13 @@
 package platform.client.logics;
 
-import platform.base.identity.IdentityObject;
 import platform.base.OrderedMap;
-import platform.client.SwingUtils;
 import platform.base.context.ApplicationContext;
 import platform.base.context.ApplicationContextHolder;
+import platform.base.identity.IdentityObject;
+import platform.client.SwingUtils;
 import platform.client.form.LogicsSupplier;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
-import platform.gwt.view2.GForm;
 import platform.interop.form.layout.AbstractForm;
 
 import javax.swing.*;
@@ -242,32 +241,5 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
 
     public ClientContainer findContainerBySID(String sID) {
         return mainContainer.findContainerBySID(sID);
-    }
-
-    private GForm gwtForm;
-    public GForm getGwtForm() {
-        if (gwtForm == null) {
-            gwtForm = new GForm();
-            gwtForm.caption = caption;
-            gwtForm.mainContainer = mainContainer.getGwtComponent();
-
-            for (ClientTreeGroup treeGroup : treeGroups) {
-                gwtForm.treeGroups.add(treeGroup.getGwtComponent());
-            }
-
-            for (ClientGroupObject group : groupObjects) {
-                gwtForm.groupObjects.add(group.getGwtGroupObject());
-            }
-
-            for (ClientPropertyDraw property : propertyDraws) {
-                gwtForm.propertyDraws.add(property.getGwtPropertyDraw());
-            }
-
-            for (ClientRegularFilterGroup filterGroup : regularFilterGroups) {
-                gwtForm.regularFilterGroups.add(filterGroup.getGwtRegularFilterGroup());
-            }
-        }
-
-        return gwtForm;
     }
 }

@@ -1,10 +1,10 @@
 package platform.gwt.form2.client.form.ui;
 
 import platform.gwt.utils.GwtSharedUtils;
-import platform.gwt.view2.GForm;
-import platform.gwt.view2.GGroupObject;
-import platform.gwt.view2.GPropertyDraw;
-import platform.gwt.view2.changes.GGroupObjectValue;
+import platform.gwt.form2.shared.view.GForm;
+import platform.gwt.form2.shared.view.GGroupObject;
+import platform.gwt.form2.shared.view.GPropertyDraw;
+import platform.gwt.form2.shared.view.changes.GGroupObjectValue;
 
 import java.util.*;
 

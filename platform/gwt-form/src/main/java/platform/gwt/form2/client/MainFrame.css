@@ -18,6 +18,16 @@
     margin-bottom: 10px;
 }
 
+.labelBasedPanelRendererValueLabel {
+    border: 1px solid #0055aa;
+    margin: 2px;
+}
+
+.dataPanelRendererGridPanel {
+    border: 1px solid #0055aa;
+    margin: 2px;
+}
+
 .gwt-TabLayoutPanel .gwt-TabLayoutPanelContent {
     padding: 1px;
     overflow: auto !important;
@@ -25,6 +35,11 @@
 
 .gwt-TabLayoutPanel .gwt-TabLayoutPanelTab {
     padding: 0px 3px 0px 5px;
+}
+
+.gwt-DecoratorPanel .middleCenter {
+    height: 100%;
+    width: 100%;
 }
 
 .closeTabButton {

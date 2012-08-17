@@ -4,14 +4,12 @@ import platform.client.ClientResourceBundle;
 import platform.client.form.ClientFormController;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.form.PropertyRendererComponent;
-import platform.client.form.cell.ActionCellView;
+import platform.client.form.cell.ActionPanelView;
 import platform.client.form.cell.PanelView;
 import platform.client.form.editor.ActionPropertyEditor;
 import platform.client.form.renderer.ActionPropertyRenderer;
 import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
-import platform.gwt.view2.classes.GActionType;
-import platform.gwt.view2.classes.GType;
 import platform.interop.Data;
 
 import java.awt.*;
@@ -55,7 +53,7 @@ public class ClientActionClass extends ClientDataClass implements ClientTypeClas
     }
 
     public PanelView getPanelView(ClientPropertyDraw key, ClientGroupObjectValue columnKey, ClientFormController form) {
-        return new ActionCellView(key, columnKey, form);
+        return new ActionPanelView(key, columnKey, form);
     }
 
     protected PropertyEditorComponent getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
@@ -79,10 +77,5 @@ public class ClientActionClass extends ClientDataClass implements ClientTypeClas
     @Override
     public String toString() {
         return ClientResourceBundle.getString("logics.classes.actionclass");
-    }
-
-    @Override
-    public GType getGwtType() {
-        return GActionType.instance;
     }
 }

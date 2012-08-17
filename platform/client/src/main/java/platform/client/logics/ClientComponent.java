@@ -8,7 +8,6 @@ import platform.client.descriptor.nodes.ComponentNode;
 import platform.client.form.panel.location.ClientPanelLocation;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
-import platform.gwt.view2.GComponent;
 import platform.interop.ComponentDesign;
 import platform.interop.form.layout.AbstractComponent;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
@@ -251,31 +250,5 @@ public abstract class ClientComponent extends ContextIdentityObject implements S
         name = name.substring(0, 1).toUpperCase() + name.substring(1);
 
         return sID.substring(0, i + 1) + name;
-    }
-
-    protected void initGwtComponent(GComponent component) {
-        component.ID = ID;
-        component.sID = sID;
-        component.container = container == null ? null : container.getGwtComponent();
-        component.defaultComponent = defaultComponent;
-        component.drawToToolbar = drawToToolbar();
-
-        if (preferredSize != null && preferredSize.equals(minimumSize) && preferredSize.equals(maximumSize)) {
-            component.absoluteWidth = preferredSize.width;
-            component.absoluteHeight = preferredSize.height;
-        }
-        component.fillHorizontal = constraints.fillHorizontal;
-        component.fillVertical = constraints.fillVertical;
-        component.hAlign = constraints.directions.R > 0 ? GComponent.Alignment.RIGHT : GComponent.Alignment.LEFT;
-    }
-
-    private GComponent gwtComponent;
-    public GComponent getGwtComponent() {
-        if (gwtComponent == null) {
-            gwtComponent = new GComponent();
-            initGwtComponent(gwtComponent);
-        }
-
-        return gwtComponent;
     }
 }

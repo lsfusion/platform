@@ -1,8 +1,8 @@
 package platform.gwt.form2.shared.actions.form;
 
 import net.customware.gwt.dispatch.shared.Result;
-import platform.gwt.view2.GUserInputResult;
-import platform.gwt.view2.actions.GAction;
+import platform.gwt.form2.shared.view.GUserInputResult;
+import platform.gwt.form2.shared.view.actions.GAction;
 
 import java.sql.Date;
 import java.sql.Timestamp;

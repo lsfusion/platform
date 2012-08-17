@@ -1,7 +1,7 @@
 package platform.gwt.form2.client.form.ui;
 
-import platform.gwt.view2.GGroupObject;
-import platform.gwt.view2.changes.GGroupObjectValue;
+import platform.gwt.form2.shared.view.GGroupObject;
+import platform.gwt.form2.shared.view.changes.GGroupObjectValue;
 
 public class GTreeTableNode {//extends TreeNode {
     GGroupObject group;

@@ -24,4 +24,8 @@ public class RemoteServiceImpl extends LogicsDispatchServlet<RemoteLogicsInterfa
         registry.addHandler(new ContinueInvocationHandler(this));
         registry.addHandler(new ThrowInInvocationHandler(this));
     }
+
+    public FormSessionManager getFormSessionManager() {
+        return getSpringContext().getBean(FormSessionManager.class);
+    }
 }

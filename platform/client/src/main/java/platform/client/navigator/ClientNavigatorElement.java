@@ -1,7 +1,6 @@
 package platform.client.navigator;
 
 import platform.base.IOUtils;
-import platform.gwt.view2.GNavigatorElement;
 
 import javax.swing.*;
 import java.io.DataInputStream;
@@ -129,21 +128,5 @@ public class ClientNavigatorElement {
             }
         }
         return false;
-    }
-
-    private GNavigatorElement gwtNavigatorElement;
-    public GNavigatorElement getGwtElement() {
-        if (gwtNavigatorElement == null) {
-            gwtNavigatorElement = new GNavigatorElement();
-            gwtNavigatorElement.sid = sID;
-            gwtNavigatorElement.caption = caption;
-            gwtNavigatorElement.children = new ArrayList<GNavigatorElement>();
-            gwtNavigatorElement.icon = "open.png";
-            gwtNavigatorElement.isForm = false;
-            for (ClientNavigatorElement child : children) {
-                gwtNavigatorElement.children.add(child.getGwtElement());
-            }
-        }
-        return gwtNavigatorElement;
     }
 }

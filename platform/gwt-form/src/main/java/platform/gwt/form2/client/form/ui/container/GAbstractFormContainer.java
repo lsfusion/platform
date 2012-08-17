@@ -2,8 +2,8 @@ package platform.gwt.form2.client.form.ui.container;
 
 import com.google.gwt.user.client.ui.*;
 import platform.gwt.form2.client.form.ui.GCaptionPanel;
-import platform.gwt.view2.GComponent;
-import platform.gwt.view2.GContainer;
+import platform.gwt.form2.shared.view.GComponent;
+import platform.gwt.form2.shared.view.GContainer;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -58,8 +58,7 @@ public abstract class GAbstractFormContainer {
             containerView = getUndecoratedView();
             containerView.setSize("100%", "100%");
             if (key.title != null && !key.container.type.isTabbed()) {
-                GCaptionPanel captionedPanel = new GCaptionPanel(key.title, containerView);
-                containerView = captionedPanel;
+                containerView = new GCaptionPanel(key.title, containerView);
             }
         }
         return containerView;

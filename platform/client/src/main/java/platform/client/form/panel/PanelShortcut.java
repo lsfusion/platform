@@ -3,7 +3,7 @@ package platform.client.form.panel;
 import org.jdesktop.swingx.VerticalLayout;
 import platform.client.form.ClientFormController;
 import platform.client.form.PropertyRendererComponent;
-import platform.client.form.cell.ActionCellView;
+import platform.client.form.cell.ActionPanelView;
 import platform.client.form.cell.PropertyController;
 import platform.client.form.panel.location.ClientShortcutPanelLocation;
 import platform.client.logics.ClientPropertyDraw;
@@ -130,7 +130,7 @@ public class PanelShortcut extends JPopupMenu {
         //затем - ActionProperties в виде пунктов меню
         boolean defaultSet = false;
         for (PropertyController controller : actionProperties) {
-            final ActionCellView button = (ActionCellView) controller.getView();
+            final ActionPanelView button = (ActionPanelView) controller.getView();
 
             boolean isDefault = false;
             if (!defaultSet)
@@ -176,7 +176,7 @@ public class PanelShortcut extends JPopupMenu {
             if (((ClientShortcutPanelLocation) property.panelLocation).isDefault() && property.baseType instanceof ClientActionClass) {
                 final PropertyController propertyController = panel.getProperties().get(property).values().iterator().next();
                 if (propertyController != null) {
-                    ((ActionCellView) propertyController.getView()).doClick();
+                    ((ActionPanelView) propertyController.getView()).doClick();
                     return true;
                 }
             }

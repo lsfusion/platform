@@ -1,10 +1,10 @@
 package platform.gwt.form2.client.form.ui.container;
 
-import com.google.gwt.user.client.ui.*;
+import com.google.gwt.user.client.ui.Widget;
 import platform.gwt.form2.client.form.ui.GSplitPane;
-import platform.gwt.view2.GComponent;
-import platform.gwt.view2.GContainer;
-import platform.gwt.view2.GContainerType;
+import platform.gwt.form2.shared.view.GComponent;
+import platform.gwt.form2.shared.view.GContainer;
+import platform.gwt.form2.shared.view.GContainerType;
 
 public class GFormSplitPane extends GAbstractFormContainer {
     private GSplitPane splitPane;

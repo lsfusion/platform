@@ -6,8 +6,6 @@ import platform.client.form.PropertyRendererComponent;
 import platform.client.form.editor.ColorPropertyEditor;
 import platform.client.form.renderer.ColorPropertyRenderer;
 import platform.client.logics.ClientPropertyDraw;
-import platform.gwt.view2.classes.GColorType;
-import platform.gwt.view2.classes.GType;
 import platform.interop.Data;
 
 import java.awt.*;
@@ -75,10 +73,5 @@ public class ClientColorClass extends ClientDataClass implements ClientTypeClass
     @Override
     public int getPreferredWidth(int prefCharWidth, FontMetrics fontMetrics) {
         return 50;
-    }
-
-    @Override
-    public GType getGwtType() {
-        return GColorType.instance;
     }
 }

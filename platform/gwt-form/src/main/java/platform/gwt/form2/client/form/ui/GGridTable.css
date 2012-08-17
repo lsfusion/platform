@@ -1,4 +1,4 @@
-/* modifed copy com/google/gwt/user/cellview/client/DataGrid.css */
+/* modified copy com/google/gwt/user/cellview/client/DataGrid.css */
 
 .dataGridWidget {
 
@@ -120,9 +120,9 @@
     /*border: 2px solid #628cd5;*/
 }
 
-    /**
-    * The keyboard selected cell is visible over selection.
-    */
+/**
+* The keyboard selected cell is visible over selection.
+*/
 .dataGridKeyboardSelectedCell {
     border: 2px solid #d7dde8;
 }

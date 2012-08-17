@@ -1,7 +1,7 @@
 package platform.gwt.form2.client.events;
 
 import com.google.gwt.event.shared.GwtEvent;
-import platform.gwt.view2.GForm;
+import platform.gwt.form2.shared.view.GForm;
 
 public class OpenFormEvent extends GwtEvent<OpenFormHandler> {
     private static Type<OpenFormHandler> TYPE;

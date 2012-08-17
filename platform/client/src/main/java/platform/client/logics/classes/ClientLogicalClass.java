@@ -7,8 +7,6 @@ import platform.client.form.PropertyRendererComponent;
 import platform.client.form.editor.LogicalPropertyEditor;
 import platform.client.form.renderer.LogicalPropertyRenderer;
 import platform.client.logics.ClientPropertyDraw;
-import platform.gwt.view2.classes.GLogicalType;
-import platform.gwt.view2.classes.GType;
 import platform.interop.Data;
 
 import java.awt.*;
@@ -71,10 +69,5 @@ public class ClientLogicalClass extends ClientDataClass implements ClientTypeCla
     @Override
     public String toString() {
         return ClientResourceBundle.getString("logics.classes.boolean");
-    }
-
-    @Override
-    public GType getGwtType() {
-        return GLogicalType.instance;
     }
 }

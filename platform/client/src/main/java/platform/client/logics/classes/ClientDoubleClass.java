@@ -5,8 +5,6 @@ import platform.client.StartupProperties;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.form.editor.DoublePropertyEditor;
 import platform.client.logics.ClientPropertyDraw;
-import platform.gwt.view2.classes.GDoubleType;
-import platform.gwt.view2.classes.GType;
 import platform.interop.Data;
 
 import java.io.DataInputStream;
@@ -65,10 +63,5 @@ public class ClientDoubleClass extends ClientIntegralClass implements ClientType
     @Override
     public String toString() {
         return ClientResourceBundle.getString("logics.classes.real.number");
-    }
-
-    @Override
-    public GType getGwtType() {
-        return GDoubleType.instance;
     }
 }

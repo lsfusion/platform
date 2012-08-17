@@ -2,14 +2,14 @@ package platform.gwt.form2.client.form.ui;
 
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.VerticalPanel;
-import platform.gwt.view2.GForm;
-import platform.gwt.view2.GGroupObject;
-import platform.gwt.view2.GPropertyDraw;
-import platform.gwt.view2.GTreeGroup;
-import platform.gwt.view2.changes.GFormChanges;
-import platform.gwt.view2.changes.GGroupObjectValue;
-import platform.gwt.view2.logics.GGroupObjectLogicsSupplier;
-import platform.gwt.view2.reader.*;
+import platform.gwt.form2.shared.view.GForm;
+import platform.gwt.form2.shared.view.GGroupObject;
+import platform.gwt.form2.shared.view.GPropertyDraw;
+import platform.gwt.form2.shared.view.GTreeGroup;
+import platform.gwt.form2.shared.view.changes.GFormChanges;
+import platform.gwt.form2.shared.view.changes.GGroupObjectValue;
+import platform.gwt.form2.shared.view.logics.GGroupObjectLogicsSupplier;
+import platform.gwt.form2.shared.view.reader.*;
 
 import java.util.Map;
 

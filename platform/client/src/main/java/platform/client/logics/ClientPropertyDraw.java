@@ -15,11 +15,6 @@ import platform.client.logics.classes.ClientType;
 import platform.client.logics.classes.ClientTypeSerializer;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
-import platform.gwt.view2.*;
-import platform.gwt.view2.reader.GBackgroundReader;
-import platform.gwt.view2.reader.GCaptionReader;
-import platform.gwt.view2.reader.GFooterReader;
-import platform.gwt.view2.reader.GForegroundReader;
 import platform.interop.PropertyEditType;
 import platform.interop.form.PropertyReadType;
 import platform.interop.form.layout.SimplexConstraints;
@@ -523,45 +518,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         String editKeyText = editKey == null ? "" : String.format(editKeyToolTipFormat, SwingUtils.getKeyStrokeCaption(editKey));
         String script = creationScript != null ? creationScript.replace("\n", "<br>") : "";
         return String.format(toolTipFormat, propCaption, sid, tableName, ifaceObjects, ifaceClasses, returnClass, editKeyText, script);
-    }
-
-    private GPropertyDraw gwtPropertyDraw;
-
-    public GPropertyDraw getGwtPropertyDraw() {
-        return getGwtComponent();
-    }
-
-    public GPropertyDraw getGwtComponent() {
-        if (gwtPropertyDraw == null) {
-            gwtPropertyDraw = new GPropertyDraw();
-
-            initGwtComponent(gwtPropertyDraw);
-
-            gwtPropertyDraw.ID = ID;
-            gwtPropertyDraw.sID = sID;
-            gwtPropertyDraw.caption = caption;
-            gwtPropertyDraw.groupObject = groupObject == null ? null : groupObject.getGwtGroupObject();
-            gwtPropertyDraw.baseType = baseType.getGwtType();
-            gwtPropertyDraw.changeType = changeType == null ? null : changeType.getGwtType();
-            gwtPropertyDraw.iconPath = design.iconPath;
-            try {
-                gwtPropertyDraw.editType = GPropertyEditType.deserialize(editType.serialize());
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            gwtPropertyDraw.focusable = focusable;
-            gwtPropertyDraw.checkEquals = checkEquals;
-
-            if (captionReader != null)
-                gwtPropertyDraw.captionReader = new GCaptionReader(captionReader.getID(), captionReader.getGroupObject() != null ? captionReader.getGroupObject().ID : -1);
-            if (footerReader != null)
-                gwtPropertyDraw.footerReader = new GFooterReader(footerReader.getID(), footerReader.getGroupObject() != null ? footerReader.getGroupObject().ID : -1);
-            if (backgroundReader != null)
-                gwtPropertyDraw.backgroundReader = new GBackgroundReader(backgroundReader.getID(), backgroundReader.getGroupObject() != null ? backgroundReader.getGroupObject().ID : -1);
-            if (foregroundReader != null)
-                gwtPropertyDraw.foregroundReader = new GForegroundReader(foregroundReader.getID(), foregroundReader.getGroupObject() != null ? foregroundReader.getGroupObject().ID : -1);
-        }
-        return gwtPropertyDraw;
     }
 
     public class CaptionReader implements ClientPropertyReader {

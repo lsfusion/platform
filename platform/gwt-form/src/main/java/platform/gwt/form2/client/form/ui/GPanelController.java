@@ -1,9 +1,9 @@
 package platform.gwt.form2.client.form.ui;
 
 import platform.gwt.utils.GwtSharedUtils;
-import platform.gwt.view2.GPropertyDraw;
-import platform.gwt.view2.changes.GGroupObjectValue;
-import platform.gwt.view2.panel.PanelRenderer;
+import platform.gwt.form2.shared.view.GPropertyDraw;
+import platform.gwt.form2.shared.view.changes.GGroupObjectValue;
+import platform.gwt.form2.shared.view.panel.PanelRenderer;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -57,20 +57,22 @@ public class GPanelController {
     public void update() {
         List<GPropertyDraw> toDraw = new ArrayList<GPropertyDraw>();
         for (GPropertyDraw property : orderedProperties) {
-            PanelRenderer renderer = null;
-            if (!(propertyCaptions.get(property) != null && propertyCaptions.get(property).values().iterator().next() == null)) {
-                renderer = properties.get(property);
-                if (renderer == null) {
-                    renderer = property.createPanelRenderer(form);
-                    properties.put(property, renderer);
-                    formLayout.add(property, renderer.getComponent(), property.container.children.indexOf(property));
+            if (property.container != null) {
+                PanelRenderer renderer = null;
+                if (!(propertyCaptions.get(property) != null && propertyCaptions.get(property).values().iterator().next() == null)) {
+                    renderer = properties.get(property);
+                    if (renderer == null) {
+                        renderer = property.createPanelRenderer(form);
+                        properties.put(property, renderer);
+                        formLayout.add(property, renderer.getComponent(), property.container.children.indexOf(property));
+                    }
+                    toDraw.add(property);
                 }
-                toDraw.add(property);
-            }
 
-            Object propValue = values.get(property);
-            if (renderer != null) {
-                renderer.setValue(propValue);
+                Object propValue = values.get(property);
+                if (renderer != null) {
+                    renderer.setValue(propValue);
+                }
             }
         }
 
@@ -86,7 +88,7 @@ public class GPanelController {
             if (renderer != null) {
                 Map<GGroupObjectValue, Object> caption = propertyCaptions.get(property);
                 if (caption != null) {
-                    renderer.setTitle(caption.values().iterator().next().toString());
+                    renderer.setCaption(caption.values().iterator().next().toString());
                 }
 
                 Object background = rowBackground != null ? rowBackground : null;

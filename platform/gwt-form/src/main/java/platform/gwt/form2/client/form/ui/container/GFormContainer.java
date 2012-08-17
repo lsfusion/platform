@@ -2,8 +2,8 @@ package platform.gwt.form2.client.form.ui.container;
 
 import com.google.gwt.i18n.client.HasDirection;
 import com.google.gwt.user.client.ui.*;
-import platform.gwt.view2.GComponent;
-import platform.gwt.view2.GContainer;
+import platform.gwt.form2.shared.view.GComponent;
+import platform.gwt.form2.shared.view.GContainer;
 
 public class GFormContainer extends GAbstractFormContainer {
     private CellPanel panel;

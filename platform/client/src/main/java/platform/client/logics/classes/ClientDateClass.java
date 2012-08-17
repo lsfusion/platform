@@ -7,8 +7,6 @@ import platform.client.form.PropertyRendererComponent;
 import platform.client.form.editor.DatePropertyEditor;
 import platform.client.form.renderer.DatePropertyRenderer;
 import platform.client.logics.ClientPropertyDraw;
-import platform.gwt.view2.classes.GDateType;
-import platform.gwt.view2.classes.GType;
 import platform.interop.Data;
 
 import java.awt.*;
@@ -77,11 +75,6 @@ public class ClientDateClass extends ClientDataClass implements ClientTypeClass 
     @Override
     public String toString() {
         return ClientResourceBundle.getString("logics.classes.date");
-    }
-
-    @Override
-    public GType getGwtType() {
-        return GDateType.instance;
     }
 
     @Override

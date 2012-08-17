@@ -1,7 +1,6 @@
 package platform.gwt.form2.client.form.ui.dialog;
 
-import platform.gwt.form2.client.form.ui.WindowHiddenHandler;
-import platform.gwt.view2.GForm;
+import platform.gwt.form2.shared.view.GForm;
 
 public class GModalDialog extends GModalForm {
 
@@ -11,7 +10,7 @@ public class GModalDialog extends GModalForm {
 
     public static GModalDialog showDialog(GForm form, WindowHiddenHandler hiddenHandler) {
         GModalDialog dlg = new GModalDialog(form, hiddenHandler);
-        dlg.show();
+        dlg.center();
         return dlg;
     }
 }

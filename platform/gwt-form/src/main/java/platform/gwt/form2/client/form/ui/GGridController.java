@@ -1,9 +1,9 @@
 package platform.gwt.form2.client.form.ui;
 
 import com.google.gwt.user.client.ui.*;
-import platform.gwt.view2.GGrid;
-import platform.gwt.view2.GPropertyDraw;
-import platform.gwt.view2.changes.GGroupObjectValue;
+import platform.gwt.form2.shared.view.GGrid;
+import platform.gwt.form2.shared.view.GPropertyDraw;
+import platform.gwt.form2.shared.view.changes.GGroupObjectValue;
 
 import java.util.Map;
 

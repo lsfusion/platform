@@ -1,11 +1,10 @@
 package platform.client.logics;
 
+import platform.base.context.ApplicationContext;
 import platform.client.ClientResourceBundle;
 import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.editor.ComponentEditor;
 import platform.client.serialization.ClientSerializationPool;
-import platform.base.context.ApplicationContext;
-import platform.gwt.view2.GShowType;
 import platform.interop.form.layout.SimplexConstraints;
 
 import javax.swing.*;
@@ -79,15 +78,5 @@ public class ClientShowType extends ClientComponent {
     @Override
     public boolean shouldBeDeclared() {
         return true;
-    }
-
-    private GShowType gwtShowType;
-    public GShowType getGwtComponent() {
-        if (gwtShowType == null) {
-            gwtShowType = new GShowType();
-            initGwtComponent(gwtShowType);
-            gwtShowType.groupObject = groupObject.getGwtGroupObject();
-        }
-        return gwtShowType;
     }
 }

@@ -1,7 +1,5 @@
 package platform.client.logics.classes;
 
-import platform.gwt.view2.classes.GInsensitiveStringType;
-import platform.gwt.view2.classes.GType;
 import platform.client.ClientResourceBundle;
 import platform.interop.Data;
 
@@ -44,14 +42,5 @@ public class ClientInsensitiveStringClass extends ClientStringClass {
     @Override
     public String toString() {
         return ClientResourceBundle.getString("logics.classes.unsensitive.string")+"(" + length + ")";
-    }
-
-    private GInsensitiveStringType gwtType;
-    @Override
-    public GType getGwtType() {
-        if (gwtType == null) {
-            gwtType = new GInsensitiveStringType(length);
-        }
-        return gwtType;
     }
 }

@@ -3,7 +3,6 @@ package platform.client.logics;
 import platform.base.context.ApplicationContext;
 import platform.client.ClientResourceBundle;
 import platform.client.serialization.ClientSerializationPool;
-import platform.gwt.view2.GRegularFilterGroup;
 import platform.interop.form.layout.SimplexConstraints;
 
 import java.io.DataInputStream;
@@ -72,26 +71,5 @@ public class ClientRegularFilterGroup extends ClientComponent {
 
     public String getCodeConstructor(String descriptorName) {
         return "design.createRegularFilterGroup(" + descriptorName + ")";
-    }
-
-    @Override
-    public GRegularFilterGroup getGwtComponent() {
-        if (gwtFilterGroup == null) {
-            gwtFilterGroup = new GRegularFilterGroup();
-
-            initGwtComponent(gwtFilterGroup);
-            gwtFilterGroup.defaultFilter = defaultFilter;
-            gwtFilterGroup.groupObject = groupObject.getGwtGroupObject();
-
-            for (ClientRegularFilter filter : filters) {
-                gwtFilterGroup.filters.add(filter.getGwtRegularFilter());
-            }
-        }
-        return gwtFilterGroup;
-    }
-
-    private GRegularFilterGroup gwtFilterGroup;
-    public GRegularFilterGroup getGwtRegularFilterGroup() {
-        return getGwtComponent();
     }
 }

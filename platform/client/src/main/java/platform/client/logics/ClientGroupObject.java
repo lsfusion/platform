@@ -11,9 +11,6 @@ import platform.client.form.ClientFormController;
 import platform.client.form.GroupObjectLogicsSupplier;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
-import platform.gwt.view2.GGroupObject;
-import platform.gwt.view2.reader.GRowBackgroundReader;
-import platform.gwt.view2.reader.GRowForegroundReader;
 import platform.interop.ClassViewType;
 import platform.interop.form.PropertyReadType;
 import platform.interop.form.layout.AbstractGroupObject;
@@ -180,36 +177,6 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
         return ind == parent.groups.size() - 1
                ? null
                : parent.groups.get(ind + 1);
-    }
-
-    private GGroupObject gwtGroupObject;
-    public GGroupObject getGwtGroupObject() {
-        if (gwtGroupObject == null) {
-            gwtGroupObject = new GGroupObject();
-            gwtGroupObject.ID = ID;
-            for (ClientObject clientObject : objects) {
-                gwtGroupObject.objects.add(clientObject.getGwtObject());
-            }
-            gwtGroupObject.grid = grid.getGwtComponent();
-            gwtGroupObject.showType = showType.getGwtComponent();
-            gwtGroupObject.banClassView = new ArrayList<String>();
-            for (ClassViewType banView : banClassView) {
-                gwtGroupObject.banClassView.add(banView.name());
-            }
-
-            gwtGroupObject.isRecursive = isRecursive;
-            if (parent != null)
-                gwtGroupObject.parent = parent.getGwtComponent();
-            for (ClientGroupObject upGroup : upTreeGroups) {
-                gwtGroupObject.upTreeGroups.add(upGroup.getGwtGroupObject());
-            }
-
-            if (rowBackgroundReader != null)
-                gwtGroupObject.rowBackgroundReader = new GRowBackgroundReader(rowBackgroundReader.getID());
-            if (rowForegroundReader != null)
-                gwtGroupObject.rowForegroundReader = new GRowForegroundReader(rowForegroundReader.getID());
-        }
-        return gwtGroupObject;
     }
 
     public class RowBackgroundReader implements ClientPropertyReader {

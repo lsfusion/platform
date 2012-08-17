@@ -5,7 +5,6 @@ import platform.client.ClientResourceBundle;
 import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.editor.GridEditor;
 import platform.client.serialization.ClientSerializationPool;
-import platform.gwt.view2.GGrid;
 import platform.interop.form.layout.SimplexConstraints;
 
 import javax.swing.*;
@@ -200,15 +199,5 @@ public class ClientGrid extends ClientComponent {
     @Override
     public boolean shouldBeDeclared() {
         return true;
-    }
-    
-    private GGrid gwtGrid;
-
-    public GGrid getGwtComponent() {
-        if (gwtGrid == null) {
-            gwtGrid = new GGrid();
-            initGwtComponent(gwtGrid);
-        }
-        return gwtGrid;
     }
 }

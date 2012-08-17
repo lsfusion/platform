@@ -7,7 +7,8 @@ import java.io.IOException;
 import java.text.Format;
 import java.text.ParseException;
 
-import static platform.interop.Compare.*;
+import static platform.interop.Compare.EQUALS;
+import static platform.interop.Compare.NOT_EQUALS;
 
 public abstract class ClientFileClass extends ClientDataClass implements ClientTypeClass {
 
@@ -49,5 +50,4 @@ public abstract class ClientFileClass extends ClientDataClass implements ClientT
     public Compare getDefaultCompare() {
         return EQUALS;
     }
-
 }

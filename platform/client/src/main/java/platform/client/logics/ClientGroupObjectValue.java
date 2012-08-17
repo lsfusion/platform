@@ -1,7 +1,5 @@
 package platform.client.logics;
 
-import platform.gwt.view2.changes.dto.GGroupObjectValueDTO;
-
 import java.io.*;
 import java.util.Collection;
 import java.util.HashMap;
@@ -77,17 +75,6 @@ public class ClientGroupObjectValue extends HashMap<ClientObject, Object> implem
 
     public boolean contentEquals(ClientGroupObjectValue other) {
         return other != null && other.size() == size() && contains(other);
-    }
-
-    private GGroupObjectValueDTO gwtGroupObjectValue;
-    public GGroupObjectValueDTO getGwtGroupObjectValueDTO() {
-        if (gwtGroupObjectValue == null) {
-            gwtGroupObjectValue = new GGroupObjectValueDTO();
-            for (Map.Entry<ClientObject, Object> keyPart : entrySet()) {
-                gwtGroupObjectValue.put(keyPart.getKey().ID, keyPart.getValue());
-            }
-        }
-        return gwtGroupObjectValue;
     }
 
     public void removeAll(Collection<ClientObject> keys) {

@@ -44,7 +44,7 @@ public class GActionType extends GDataType {
         if (property.caption != null) {
             buttonItem.setTitle(property.caption);
         }
-        buttonItem.addShowValueHandler(new ShowValueHandler() {
+        buttonItem.addShowValueHandler( new ShowValueHandler() {
             @Override
             public void onShowValue(ShowValueEvent event) {
                 event.getItem().setDisabled(event.getDataValue() == null);

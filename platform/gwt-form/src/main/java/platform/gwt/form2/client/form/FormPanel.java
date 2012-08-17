@@ -81,8 +81,8 @@ public class FormPanel extends SimpleLayoutPanel {
                 @Override
                 public void onClick(ClickEvent event) {
                     for (int i = 0; i < formTabsPanel.getWidgetCount(); i++) {
-                        if (getElement().equals(formTabsPanel.getTabWidget(i).getElement())) {
-                            formTabsPanel.remove(formTabsPanel.getWidget(i));
+                        if (formTabsPanel.getTabWidget(i) == TabWidget.this) {
+                            formTabsPanel.remove(i);
                         }
                     }
                 }

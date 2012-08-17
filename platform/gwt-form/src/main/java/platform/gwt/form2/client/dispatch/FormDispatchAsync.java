@@ -9,7 +9,7 @@ import net.customware.gwt.dispatch.shared.Result;
 import platform.gwt.base.client.AsyncCallbackEx;
 import platform.gwt.form2.shared.actions.form.FormBoundAction;
 import platform.gwt.form2.shared.actions.form.FormRequestIndexCountingAction;
-import platform.gwt.view2.GForm;
+import platform.gwt.form2.shared.view.GForm;
 
 import java.util.LinkedList;
 

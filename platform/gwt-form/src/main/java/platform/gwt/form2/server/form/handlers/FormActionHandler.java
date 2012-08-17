@@ -2,6 +2,7 @@ package platform.gwt.form2.server.form.handlers;
 
 import net.customware.gwt.dispatch.shared.Action;
 import net.customware.gwt.dispatch.shared.Result;
+import platform.gwt.form2.server.FormSessionManager;
 import platform.gwt.base.server.FormSessionObject;
 import platform.gwt.base.server.handlers.SimpleActionHandlerEx;
 import platform.gwt.form2.server.RemoteServiceImpl;
@@ -18,12 +19,17 @@ public abstract class FormActionHandler<A extends Action<R>, R extends Result> e
         return servlet.getSession();
     }
 
+    public FormSessionManager getFormSessionManager() {
+        return ((RemoteServiceImpl)servlet).getFormSessionManager();
+
+    }
+
     /**
-     * Ищет форму в сессии с name=sessionId
-     *
-     * Если форма не найдена, то выбрасывает RuntimeException
-     * @throws RuntimeException
-     */
+    * Ищет форму в сессии с name=sessionId
+    *
+    * Если форма не найдена, то выбрасывает RuntimeException
+    * @throws RuntimeException
+    */
     public FormSessionObject getFormSessionObject(String sessionId) throws RuntimeException {
         Object formObj = getSession().getAttribute(sessionId);
         if (formObj instanceof FormSessionObject) {

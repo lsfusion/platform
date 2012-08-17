@@ -4,12 +4,10 @@ import platform.base.BaseUtils;
 import platform.client.ClientResourceBundle;
 import platform.client.form.ClientFormController;
 import platform.client.form.PropertyEditorComponent;
+import platform.client.form.cell.DataPanelView;
 import platform.client.form.cell.PanelView;
-import platform.client.form.cell.DataCellView;
 import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
-import platform.gwt.view2.classes.GStringType;
-import platform.gwt.view2.classes.GType;
 import platform.interop.Compare;
 
 import java.awt.*;
@@ -82,7 +80,7 @@ public abstract class ClientDataClass extends ClientClass implements ClientType 
     public abstract String getPreferredMask();
 
     public PanelView getPanelView(ClientPropertyDraw key, ClientGroupObjectValue columnKey, ClientFormController form) {
-        return new DataCellView(form, key, columnKey);
+        return new DataPanelView(form, key, columnKey);
     }
 
     public PropertyEditorComponent getChangeEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value) {
@@ -134,10 +132,5 @@ public abstract class ClientDataClass extends ClientClass implements ClientType 
     @Override
     public Compare getDefaultCompare() {
         return EQUALS;
-    }
-
-    @Override
-    public GType getGwtType() {
-        return new GStringType();
     }
 }

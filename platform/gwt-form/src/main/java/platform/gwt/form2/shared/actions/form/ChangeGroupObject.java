@@ -1,7 +1,7 @@
 package platform.gwt.form2.shared.actions.form;
 
 
-import platform.gwt.view2.changes.dto.GGroupObjectValueDTO;
+import platform.gwt.form2.shared.view.changes.dto.GGroupObjectValueDTO;
 
 public class ChangeGroupObject extends FormRequestIndexCountingAction<ServerResponseResult> {
     public int groupId;

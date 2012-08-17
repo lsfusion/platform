@@ -1,7 +1,5 @@
 package platform.client.logics.classes;
 
-import platform.client.ClientResourceBundle;
-import platform.client.form.ClientFormController;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.form.PropertyRendererComponent;
 import platform.client.form.editor.FilePropertyEditor;
@@ -9,7 +7,6 @@ import platform.client.form.renderer.CustomStaticFormatFileRenderer;
 import platform.client.logics.ClientPropertyDraw;
 import platform.interop.Data;
 
-import java.awt.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
