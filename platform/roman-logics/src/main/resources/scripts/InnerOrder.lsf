@@ -9,6 +9,8 @@ REQUIRE System,
         DocumentTransfer,
         Move,
         Transfer,
+        Sale,
+        Return,
         RomanLogicsModule;
 
 PRIORITY Stock, RomanLogicsModule;
@@ -165,7 +167,7 @@ CLASS orderPickingPosted 'Проведенный подбор товара по 
 
 CLASS orderPickingDetail 'Строка подбора товара по заказу';
 
-innerOrderOrderPicking 'Подбор товара по заказу (ИД)' (orderPicking) = DATA innerOrder (orderPicking) IN idGroup AUTOSET;
+innerOrderOrderPicking 'Подбор товара по заказу (ИД)' (orderPicking) = DATA innerOrder (orderPicking) IN idGroup AUTOSET NOT NULL DELETE;
 //orderPickingInnerOrder 'Подбор заказа (ИД)' (innerOrder) = GROUP UNIQUE  orderPicking BY innerOrderOrderPicking(orderPicking);
 
 inInnerOrderOrderPicking (innerOrder, orderPicking) = innerOrderOrderPicking(orderPicking) == innerOrder;
@@ -179,7 +181,8 @@ inInnerOrderOrderPicking (innerOrder, orderPicking) = innerOrderOrderPicking(ord
 @defineDocumentAggregationHeaderStockPrefix(innerOrder, orderPicking, stock, 'Склад-получатель', destination, destination);
 @defineDocumentAggregationHeaderStockPrefix(innerOrder, orderPicking, stock, 'Склад-отправитель', , );
 
-
+companyOrderPicking(orderPicking) = companyStock(stockOrderPicking(orderPicking));
+destinationCompanyOrderPicking(orderPicking) = companyStock(destinationStockOrderPicking(orderPicking));
 
 @defineDocumentAggregationHeaderNumber(innerOrder, orderPicking);
 
@@ -341,8 +344,6 @@ DESIGN orderPicking FROM DEFAULT {
 //Свойства генерируемых документов
 orderPickingInnerDocument (innerDocument) = ABSTRACT orderPicking (innerDocument);
 
-orderPickingMoveOut (moveOut) = DATA orderPicking (moveOut);
-
 quantityInnerDocumentOrderPicking 'Количество документов' (orderPicking) =
     GROUP SUM 1 IF orderPickingInnerDocument (innerDocument) == orderPicking BY orderPicking;
 
@@ -365,37 +366,256 @@ quantityPostedInnerDocumentInnerOrder 'Количество проведенны
 quantityDraftInnerDocumentInnerOrder 'Количество непроведенных документов' (innerOrder) = GROUP SUM quantityDraftInnerDocumentOrderPicking(orderPicking)
     BY innerOrderOrderPicking(orderPicking);
 
+// Перемещение по накладным
+orderPickingTransferOut (moveOut) = DATA orderPicking (transferOut);
+
+orderPickingInnerDocument (innerDocument) += orderPickingTransferOut (innerDocument);
+stockInnerDocument (innerDocument) += stockTransferOut (innerDocument);
+destinationStockInnerDocument (innerDocument) += destinationStockTransferOut (innerDocument);
+
+dateInnerDocument (innerDocument) += dateTransferOut (innerDocument);
+
+isPostedInnerDocument (innerDocument) += isPostedTransferOut (innerDocument);
+isDraftInnerDocument (innerDocument) += isDraftTransferOut (innerDocument);
+
+countDetailInnerDocument (innerDocument) += countTransferOutDetailTransferOut (innerDocument);
+quantityDetailInnerDocument (innerDocument) += quantityTransferOutDetailTransferOut (innerDocument);
+
+// Продажа товара
+orderPickingSaleOut (saleOut) = DATA orderPicking (saleOut);
+
+orderPickingInnerDocument (innerDocument) += orderPickingSaleOut (innerDocument);
+stockInnerDocument (innerDocument) += stockSaleOut (innerDocument);
+destinationStockInnerDocument (innerDocument) += destinationStockSaleOut (innerDocument);
+
+dateInnerDocument (innerDocument) += dateSaleOut (innerDocument);
+
+isPostedInnerDocument (innerDocument) += isPostedSaleOut (innerDocument);
+isDraftInnerDocument (innerDocument) += isDraftSaleOut (innerDocument);
+
+countDetailInnerDocument (innerDocument) += countSaleOutDetailSaleOut (innerDocument);
+quantityDetailInnerDocument (innerDocument) += quantitySaleOutDetailSaleOut (innerDocument);
+
+// Возврат товара
+orderPickingReturnOut (returnOut) = DATA orderPicking (returnOut);
+
+orderPickingInnerDocument (innerDocument) += orderPickingReturnOut (innerDocument);
+stockInnerDocument (innerDocument) += stockReturnOut (innerDocument);
+destinationStockInnerDocument (innerDocument) += destinationStockReturnOut (innerDocument);
+
+dateInnerDocument (innerDocument) += dateReturnOut (innerDocument);
+
+isPostedInnerDocument (innerDocument) += isPostedReturnOut (innerDocument);
+isDraftInnerDocument (innerDocument) += isDraftReturnOut (innerDocument);
+
+countDetailInnerDocument (innerDocument) += countReturnOutDetailReturnOut (innerDocument);
+quantityDetailInnerDocument (innerDocument) += quantityReturnOutDetailReturnOut (innerDocument);
+
+// Перемещение без накладных
+orderPickingMoveOut (moveOut) = DATA orderPicking (moveOut);
+
 orderPickingInnerDocument (innerDocument) += orderPickingMoveOut (innerDocument);
 stockInnerDocument (innerDocument) += stockMoveOut (innerDocument);
 destinationStockInnerDocument (innerDocument) += destinationStockMoveOut (innerDocument);
 
-countDetailInnerDocument (innerDocument) += countTransferOutDetailTransferOut (innerDocument);
-countDetailInnerDocument (innerDocument) += countMoveOutDetailMoveOut (innerDocument);
+dateInnerDocument (innerDocument) += dateMoveOut (innerDocument);
 
-quantityDetailInnerDocument (innerDocument) += quantityTransferOutDetailTransferOut (innerDocument);
-quantityDetailInnerDocument (innerDocument) += quantityMoveOutDetailMoveOut (innerDocument);
-
-isPostedInnerDocument (innerDocument) += isPostedTransferOut (innerDocument);
 isPostedInnerDocument (innerDocument) += isPostedMoveOut (innerDocument);
-
-isDraftInnerDocument (innerDocument) += isDraftTransferOut (innerDocument);
 isDraftInnerDocument (innerDocument) += isDraftMoveOut (innerDocument);
 
-createDocumentsOrderPicking 'Создать документы' (orderPicking) = ACTION (orderPicking) {
-    IF isPostedOrderPicking (orderPicking)
-    THEN {
-        ADDOBJ moveOut;
-        FOR m == addedObject() DO {
-            SET stockMoveOut(m) <- stockOrderPicking(orderPicking);
-            SET destinationStockMoveOut(m) <- destinationStockOrderPicking(orderPicking);
-            SET orderPickingMoveOut(m) <- orderPicking;
+countDetailInnerDocument (innerDocument) += countMoveOutDetailMoveOut (innerDocument);
+quantityDetailInnerDocument (innerDocument) += quantityMoveOutDetailMoveOut (innerDocument);
 
-            FOR orderPickingOrderPickingDetail(orderPickingDetail) == orderPicking DO {
-                ADDOBJ moveOutDetail;
-                FOR d == addedObject() DO {
-                     SET moveOutMoveOutDetail(d) <- m;
-                     SET skuMoveOutDetail(d) <- skuOrderPickingDetail (orderPickingDetail);
-                     SET quantityMoveOutDetail(d) <- quantityOrderPickingDetail (orderPickingDetail);
+// Расчет партий с которых будем создавать перемещения
+quantityOrderPickingDetailBatchOrderPicking (batch, orderPicking) =
+            PARTITION UNGROUP quantityOrderPickingDetailSkuOrderPicking
+                  LIMIT STRICT currentBalanceBatchStock(batch, stockOrderPicking(orderPicking))
+                  BY skuBatch(batch), orderPicking
+                  ORDER orderBBatch(batch);
+
+quantityAOrderPickingDetailSkuOrderPicking (sku, orderPicking) = GROUP SUM
+    quantityOrderPickingDetailBatchOrderPicking (batch, orderPicking) IF batch IS batchA AND NOT commissionContractSkuBatchA(batch)
+    BY skuBatch(batch), orderPicking;
+
+quantityOrderPickingDetailSkuContractSkuCompanyOrderPicking(sku, contractSkuCompany, orderPicking) = GROUP SUM
+    quantityOrderPickingDetailBatchOrderPicking (batch, orderPicking) AND NOT commissionContractSkuBatchA(batch)
+    BY skuBatch(batch), contractSkuCompanySaleInBatchDetail(batch), orderPicking;
+
+quantityOrderPickingDetailSkuCompanyOrderPicking(sku, company, orderPicking) = GROUP SUM
+    quantityOrderPickingDetailSkuContractSkuCompanyOrderPicking(sku, contractSkuCompany, orderPicking)
+    BY sku, companyAContractSkuCompany(contractSkuCompany), orderPicking;
+
+leftOrderPickingDetailSkuCompanyOrderPicking(sku, company, orderPicking) = quantityAOrderPickingDetailSkuOrderPicking (sku, orderPicking) (-)
+                                                                           quantityOrderPickingDetailSkuCompanyOrderPicking(sku, company, orderPicking);
+
+quantityOrderPickingDetailSkuCommissionContractOrderPicking (sku, commissionContract, orderPicking) = GROUP SUM
+    quantityOrderPickingDetailBatchOrderPicking (batch, orderPicking)
+    BY skuBatch(batch), commissionContractSkuBatchA(batch), orderPicking;
+
+stockOrderPickingDetailCommissionContractOrderPicking (commissionContract, orderPicking) = GROUP MAX
+    destinationStockSaleInBatchDetail(batch) IF quantityOrderPickingDetailBatchOrderPicking(batch, orderPicking)
+    BY commissionContractSkuBatchA(batch), orderPicking;
+
+quantityOrderPickingDetailCommissionContractOrderPicking (commissionContract, orderPicking) = GROUP SUM
+    quantityOrderPickingDetailSkuCommissionContractOrderPicking(sku, commissionContract, orderPicking)
+    BY commissionContract, orderPicking;
+
+
+quantityBOrderPickingDetailSkuOrderPicking (sku, orderPicking) = GROUP SUM
+    quantityOrderPickingDetailBatchOrderPicking (batch, orderPicking) IF batch IS batchB
+    BY skuBatch(batch), orderPicking;
+
+createDocumentsOrderPicking 'Создать документы' (orderPicking) = ACTION (orderPicking) {
+    IF isPostedOrderPicking (orderPicking) THEN {
+        IF companyOrderPicking(orderPicking) == destinationCompanyOrderPicking(orderPicking) THEN {
+            IF [GROUP SUM quantityAOrderPickingDetailSkuOrderPicking(sku, orderPicking) BY orderPicking](orderPicking) THEN {
+                ADDOBJ transferOut;
+                FOR t == addedObject() DO {
+                    SET stockTransferOut(t) <- stockOrderPicking(orderPicking);
+                    SET destinationStockTransferOut(t) <- destinationStockOrderPicking(orderPicking);
+                    SET orderPickingTransferOut(t) <- orderPicking;
+
+                    FOR quantityAOrderPickingDetailSkuOrderPicking(sku, orderPicking) DO {
+                        ADDOBJ transferOutDetail;
+                        FOR d == addedObject() DO {
+                             SET transferOutTransferOutDetail(d) <- t;
+                             SET skuTransferOutDetail(d) <- sku;
+                             SET quantityTransferOutDetail(d) <- quantityAOrderPickingDetailSkuOrderPicking (sku, orderPicking);
+                        }
+                    }
+                }
+            }
+            FOR quantityOrderPickingDetailCommissionContractOrderPicking(commissionContract, orderPicking) DO {
+                ADDOBJ transferOut;
+                FOR t == addedObject() DO {
+                    SET stockTransferOut(t) <- stockOrderPicking(orderPicking);
+                    SET destinationStockTransferOut(t) <- destinationStockOrderPicking(orderPicking);
+                    SET orderPickingTransferOut(t) <- orderPicking;
+                    SET commissionContractSkuTransferOut(t) <- commissionContract;
+
+                    FOR quantityOrderPickingDetailSkuCommissionContractOrderPicking(sku, commissionContract, orderPicking) DO {
+                        ADDOBJ transferOutDetail;
+                        FOR d == addedObject() DO {
+                             SET transferOutTransferOutDetail(d) <- t;
+                             SET skuTransferOutDetail(d) <- sku;
+                             SET quantityTransferOutDetail(d) <- quantityOrderPickingDetailSkuCommissionContractOrderPicking(sku, commissionContract, orderPicking);
+                        }
+                    }
+                }
+            }
+        } ELSE {
+            // Делаем возвраты поставщику, если эти партии от него же и приходили
+            FOR quantityOrderPickingDetailSkuContractSkuCompanyOrderPicking(sku, contractSkuCompany, orderPicking) AND
+                companyAContractSkuCompany(contractSkuCompany) == destinationCompanyOrderPicking(orderPicking) DO {
+                ADDOBJ returnOut;
+                FOR r == addedObject() DO {
+                    SET stockReturnOut(r) <- stockOrderPicking(orderPicking);
+                    SET destinationStockReturnOut(r) <- destinationStockOrderPicking(orderPicking);
+                    SET orderPickingReturnOut(r) <- orderPicking;
+                    SET contractSkuCompanyReturnOut(r) <- contractSkuCompany;
+
+                    FOR quantityOrderPickingDetailBatchOrderPicking (batch, orderPicking) IF contractSkuCompanySaleInBatchDetail(batch) == contractSkuCompany DO {
+                        ADDOBJ returnOutDetail;
+                        FOR d == addedObject() DO {
+                             SET returnOutReturnOutDetail(d) <- r;
+                             SET skuReturnOutDetail(d) <- skuBatch(batch);
+                             SET saleInBatchDetailReturnOutDetail(d) <- batch;
+                             SET quantityReturnOutDetail(d) <- quantityOrderPickingDetailBatchOrderPicking (batch, orderPicking);
+                        }
+                    }
+                }
+            }
+            // Все оставшееся кидаем договором продажи
+            IF [GROUP SUM leftOrderPickingDetailSkuCompanyOrderPicking(sku, destinationCompanyOrderPicking(orderPicking), orderPicking) BY orderPicking](orderPicking) THEN {
+                ADDOBJ saleOut;
+                FOR s == addedObject() DO {
+                    SET stockSaleOut(s) <- stockOrderPicking(orderPicking);
+                    SET destinationStockSaleOut(s) <- destinationStockOrderPicking(orderPicking);
+                    SET orderPickingSaleOut(s) <- orderPicking;
+
+                    FOR leftOrderPickingDetailSkuCompanyOrderPicking(sku, destinationCompanyOrderPicking(orderPicking), orderPicking) DO {
+                        ADDOBJ saleOutDetail;
+                        FOR d == addedObject() DO {
+                             SET saleOutSaleOutDetail(d) <- s;
+                             SET skuSaleOutDetail(d) <- sku;
+                             SET quantitySaleOutDetail(d) <- leftOrderPickingDetailSkuCompanyOrderPicking(sku, destinationCompanyOrderPicking(orderPicking), orderPicking);
+                        }
+                    }
+                }
+            }
+            FOR quantityOrderPickingDetailCommissionContractOrderPicking(commissionContract, orderPicking) DO {
+                // значит просто возврат на указанный склад
+                IF destinationCompanyOrderPicking(orderPicking) == companyAContractSkuCompany(commissionContract) THEN {
+                    ADDOBJ returnOut;
+                    FOR r == addedObject() DO {
+                        SET stockReturnOut(r) <- stockOrderPicking(orderPicking);
+                        SET destinationStockReturnOut(r) <- destinationStockOrderPicking(orderPicking);
+                        SET orderPickingReturnOut(r) <- orderPicking;
+                        SET contractSkuCompanyReturnOut(r) <- commissionContract;
+
+                        FOR quantityOrderPickingDetailBatchOrderPicking (batch, orderPicking) IF commissionContractSkuBatchA(batch) == commissionContract DO {
+                            ADDOBJ returnOutDetail;
+                            FOR d == addedObject() DO {
+                                 SET returnOutReturnOutDetail(d) <- r;
+                                 SET skuReturnOutDetail(d) <- skuBatch(batch);
+                                 SET saleInBatchDetailReturnOutDetail(d) <- batch;
+                                 SET quantityReturnOutDetail(d) <- quantityOrderPickingDetailBatchOrderPicking (batch, orderPicking);
+                            }
+                        }
+                    }
+                } ELSE {
+                    // Возврат на один из складов
+                    ADDOBJ returnOut;
+                    FOR r == addedObject() DO {
+                        SET stockReturnOut(r) <- stockOrderPicking(orderPicking);
+                        SET destinationStockReturnOut(r) <- stockOrderPickingDetailCommissionContractOrderPicking(commissionContract, orderPicking);
+                        SET orderPickingReturnOut(r) <- orderPicking;
+                        SET contractSkuCompanyReturnOut(r) <- commissionContract;
+
+                        FOR quantityOrderPickingDetailBatchOrderPicking (batch, orderPicking) IF commissionContractSkuBatchA(batch) == commissionContract DO {
+                            ADDOBJ returnOutDetail;
+                            FOR d == addedObject() DO {
+                                 SET returnOutReturnOutDetail(d) <- r;
+                                 SET skuReturnOutDetail(d) <- skuBatch(batch);
+                                 SET saleInBatchDetailReturnOutDetail(d) <- batch;
+                                 SET quantityReturnOutDetail(d) <- quantityOrderPickingDetailBatchOrderPicking (batch, orderPicking);
+                            }
+                        }
+                    }
+                    // Продажа всей этой хрени
+                    ADDOBJ saleOut;
+                    FOR s == addedObject() DO {
+                        SET stockSaleOut(s) <- stockOrderPickingDetailCommissionContractOrderPicking(commissionContract, orderPicking);
+                        SET destinationStockSaleOut(s) <- destinationStockOrderPicking(orderPicking);
+                        SET orderPickingSaleOut(s) <- orderPicking;
+
+                        FOR quantityOrderPickingDetailBatchOrderPicking (batch, orderPicking) IF commissionContractSkuBatchA(batch) == commissionContract DO {
+                            ADDOBJ saleOutDetail;
+                            FOR d == addedObject() DO {
+                                 SET saleOutSaleOutDetail(d) <- s;
+                                 SET skuSaleOutDetail(d) <- skuBatch(batch);
+                                 SET quantitySaleOutDetail(d) <- quantityOrderPickingDetailBatchOrderPicking (batch, orderPicking);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        // Все партии типа B перемещаем своим документом
+        IF [GROUP SUM quantityBOrderPickingDetailSkuOrderPicking(sku, orderPicking) BY orderPicking](orderPicking) THEN {
+            ADDOBJ moveOut;
+            FOR m == addedObject() DO {
+                SET stockMoveOut(m) <- stockOrderPicking(orderPicking);
+                SET destinationStockMoveOut(m) <- destinationStockOrderPicking(orderPicking);
+                SET orderPickingMoveOut(m) <- orderPicking;
+
+                FOR quantityBOrderPickingDetailSkuOrderPicking(sku, orderPicking) DO {
+                    ADDOBJ moveOutDetail;
+                    FOR d == addedObject() DO {
+                         SET moveOutMoveOutDetail(d) <- m;
+                         SET skuMoveOutDetail(d) <- sku;
+                         SET quantityMoveOutDetail(d) <- quantityBOrderPickingDetailSkuOrderPicking (sku, orderPicking);
+                    }
                 }
             }
         }
@@ -409,7 +629,13 @@ editInnerDocument 'Редактировать' (innerDocument) = ACTION (innerDo
     } ELSE {
         IF innerDocument IS transferOut THEN {
             FORM transferOut OBJECTS t = innerDocument MODAL;
-        }
+        } ELSE
+            IF innerDocument IS saleOut THEN {
+                FORM saleOut OBJECTS t = innerDocument MODAL;
+            } ELSE
+                IF innerDocument IS returnOut THEN {
+                    FORM returnOut OBJECTS t = innerDocument MODAL;
+                }
     }
 } IMAGE 'edit.png';
 
@@ -421,7 +647,15 @@ postInnerDocument 'Провести' (innerDocument) = ACTION (innerDocument) {
         IF innerDocument IS transferOut THEN {
             CHANGECLASS innerDocument TO transferOutPosted;
             EXEC apply();
-        }
+        } ELSE
+            IF innerDocument IS saleOut THEN {
+                CHANGECLASS innerDocument TO saleOutPosted;
+                EXEC apply();
+            } ELSE
+                IF innerDocument IS returnOut THEN {
+                    CHANGECLASS innerDocument TO returnOutPosted;
+                    EXEC apply();
+                }
     }
 } CONFIRM;
 
@@ -433,7 +667,15 @@ unpostInnerDocument 'Распровести' (innerDocument) = ACTION (innerDocu
         IF innerDocument IS transferOut THEN {
             CHANGECLASS innerDocument TO transferOut;
             EXEC apply();
-        }
+        } ELSE
+            IF innerDocument IS saleOut THEN {
+                CHANGECLASS innerDocument TO saleOut;
+                EXEC apply();
+            } ELSE
+                IF innerDocument IS returnOut THEN {
+                    CHANGECLASS innerDocument TO returnOut;
+                    EXEC apply();
+                }
     }
 } CONFIRM;
 
@@ -483,7 +725,7 @@ EXTEND FORM innerOrders
     PROPERTIES (id) READONLY isPostedInnerDocument, objectClassName, seriesObject, numberObject, dateInnerDocument,
                     nameStockInnerDocument, nameDestinationStockInnerDocument, countDetailInnerDocument, quantityDetailInnerDocument
     PROPERTIES (id) editInnerDocument SHOWIF isDraftInnerDocument(id), postInnerDocument SHOWIF isDraftInnerDocument(id),
-                    unpostInnerDocument SHOWIF isPostedInnerDocument(id)
+                    unpostInnerDocument SHOWIF isPostedInnerDocument(id), delete
     PROPERTIES (p) TODRAW id FORCE PANEL  createDocumentsOrderPicking SHOWIF needInnerDocumentOrderPicking(p)
 
     FILTERS orderPickingInnerDocument(id)==p

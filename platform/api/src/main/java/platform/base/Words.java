@@ -1,6 +1,5 @@
 package platform.base;
 
-import java.text.NumberFormat;
 import java.util.HashMap;
 
 public class Words {
@@ -197,6 +196,10 @@ public class Words {
         return toString(number.longValue(), "number0", null, female);
     }
 
+    public static String toString(Integer number) {
+        return toString(number, false);
+    }
+
     //для дабла с типом
     public static String toString(Double numObject, String type) {
         if (decimalPostfix.containsKey(type) && fractalPostfix.containsKey(type + 2)) {
@@ -229,14 +232,18 @@ public class Words {
         return toString(numObject, numOfDigits, false);
     }
 
-    public static String toString(Double numObject) {
+    public static String toString(Double numObject, Boolean female) {
         double num = numObject == null ? 0.0 : numObject;
         int numOfDig = 0;
         while ((num - (int)num) != 0) {
             numOfDig++;
             num = num * 10;
         }
-        return toString(numObject, Math.min(numOfDig, 4));
+        return toString(numObject, Math.min(numOfDig, 4), female);
 
+    }
+
+    public static String toString(Double numObject) {
+        return toString(numObject, false);
     }
 }

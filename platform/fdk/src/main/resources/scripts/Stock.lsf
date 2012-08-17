@@ -135,7 +135,7 @@ nameSkuSkuLedger 'SKU' (ledger) = nameSku(skuSkuLedger(ledger));
 stockSkuLedger (ledger) = UNION EXCLUSIVE stockDataSkuLedger (ledger), stockBatch (ledger) PERSISTENT INDEXED;
 nameStockSkuLedger 'Склад' (ledger) = name(stockSkuLedger(ledger));
 
-descriptionSkuLedger 'Закрыт' (ledger) = UNION EXCLUSIVE descriptionDataSkuLedger (ledger), descriptionBatch (ledger) PERSISTENT;
+descriptionSkuLedger 'Описание' (ledger) = UNION EXCLUSIVE descriptionDataSkuLedger (ledger), descriptionBatch (ledger) PERSISTENT;
 
 // -------------------------------- Количества ---------------------------- //
 

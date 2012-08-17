@@ -17,7 +17,7 @@ PRIORITY Stock, RomanLogicsModule;
 
 // ---------------------------------------- Перемещение ------------------------------------ //
 
-CLASS saleOut 'Продажа товаров по накладным' : historyObject, numberedObject, consignment, outAccountDocumentLedger;
+CLASS saleOut 'Продажа товаров по накладным' : historyObject, numberedObject, consignment, outAccountDocumentLedger, innerDocument;
 CLASS saleOutPosted 'Проведенная продажа товаров по накладным' : saleOut, postedObject;
 CLASS saleOutDetail 'Строка продажи товаров по накладным' : outFIFOSkuLedger;
 CLASS saleOutBatchDetail 'Строка продажи товаров по накладным (по партиям)': consignmentDetail;
