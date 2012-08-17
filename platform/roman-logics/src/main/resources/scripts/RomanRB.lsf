@@ -173,7 +173,6 @@ NAVIGATOR {
             ADD stockCost;
             ADD stockBalance;
             NEW disparityDocument 'Пересорт по партиям' {
-                ADD stockDisparity;
                 ADD disparityBatches;
             }
         }
