@@ -224,7 +224,7 @@ DESIGN disparityBatches FROM DEFAULT {
 @extendDocumentFormDetailSkuArticleCustom(disparityBatch, do, disparityOutBatchDetail);
 @extendDocumentFormDetailSkuArticleReadonlyCustom(disparityBatches, do, disparityOutBatchDetail);
 
-createMixDisparityBatch 'Сделать подборку строк пересорта' = ACTION (disparityBatch) NEWSESSION {
+createMixDisparityBatch 'Сделать подборку строк пересорта' = ACTION (disparityBatch) {
 
     FOR quantityNegativeDisparityBatchStock(batch, stockDisparityBatch(disparityBatch)) DO {
         ADDOBJ disparityOutBatchDetail;
@@ -245,8 +245,6 @@ createMixDisparityBatch 'Сделать подборку строк пересо
             SET quantityDisparityInBatchDetail(d) <- quantityPositiveDisparityBatchStock(batch, stockDisparityBatch(disparityBatch));
         }
     }
-    EXEC apply();
-
 } IN documentPrmGroup CONFIRM;
 
 @implementSkuLedgerCustom(disparityOutBatchDetail, sku, stock);

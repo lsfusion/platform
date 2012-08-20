@@ -371,6 +371,51 @@ DESIGN consignment FROM DEFAULT {
 
 editConsignment 'Заполнить атрибуты накладной' (consignment) = ACTION FORM consignment OBJECTS c MODAL IMAGE 'edit.png';
 
+
+FORM printConsignment 'Печать накладных'
+    OBJECTS c=consignment FIXED PANEL
+
+    PROPERTIES (c)  printConsignmentSimpleVertical, printConsignmentSimpleHorizontal, printConsignmentSimpleAttach,
+                    printConsignmentVerticalA, printConsignmentHorizontalA, printConsignmentVerticalB,
+                    printConsignmentHorizontalB, printConsignmentAttach
+;
+
+DESIGN printConsignment FROM DEFAULT {
+
+    c.box {
+
+        childConstraints = TO THE BOTTOM;
+        NEW tn{
+            childConstraints = TO THE RIGHT;
+            title = 'ТН-2';
+            ADD PROPERTY(printConsignmentSimpleVertical);
+            ADD PROPERTY(printConsignmentSimpleHorizontal);
+            ADD PROPERTY(printConsignmentSimpleAttach);
+        }
+        NEW ttn1{
+            childConstraints = TO THE RIGHT;
+            title = 'ТТН-1';
+            NEW ttn1V {
+                childConstraints = TO THE BOTTOM;
+                ADD PROPERTY(printConsignmentVerticalA);
+                ADD PROPERTY(printConsignmentVerticalB);
+            }
+            NEW ttn1H {
+                childConstraints = TO THE BOTTOM;
+                ADD PROPERTY(printConsignmentHorizontalA);
+                ADD PROPERTY(printConsignmentHorizontalB);
+            }
+            NEW ttn1A {
+                ADD PROPERTY(printConsignmentAttach);
+            }
+        }
+
+    }
+}
+
+printConsignment 'Печать' (consignment) = ACTION FORM printConsignment OBJECTS c = consignment MODAL IMAGE 'print.png';
+
+
 // ------------------------------------- Метакод по объявлению и имплементации накладных ------------------ //
 
 META defineConsignment (object)
