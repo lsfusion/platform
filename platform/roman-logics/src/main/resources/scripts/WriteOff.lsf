@@ -85,7 +85,7 @@ notChangeBalanceWriteOffDetail 'Не проводить по учету' (writeO
 FORM writeOff 'Списание товара'
     OBJECTS t = writeOff FIXED PANEL
 
-    PROPERTIES (t) nameNumeratorObject, numberObject, seriesObject, dateWriteOff, timeWriteOff,
+    PROPERTIES (t) objectClassName, nameNumeratorObject, numberObject, seriesObject, dateWriteOff, timeWriteOff,
                    nameStockWriteOff, noteWriteOff,
                    countWriteOffDetailWriteOff, quantityWriteOffDetailWriteOff, nameReasonOffWriteOff, notChangeBalanceWriteOff
 
@@ -102,6 +102,9 @@ FORM writeOff 'Списание товара'
 
     FILTERS writeOffWriteOffDetail(d) == t
 
+    EVENTS
+        ON OK EXEC prePostWriteOff(t)
+
     EDIT writeOff OBJECT t
 ;
 
@@ -114,6 +117,7 @@ DESIGN writeOff FROM DEFAULT {
                 childConstraints = TO THE BOTTOM;
                 ADD t.documentHeaderGroup {
                     childConstraints = TO THE RIGHT;
+                    ADD PROPERTY (objectClassName);
                     ADD PROPERTY (nameStockWriteOff);
                     ADD PROPERTY (nameNumeratorObject);
                     ADD PROPERTY (numberObject);
@@ -129,6 +133,9 @@ DESIGN writeOff FROM DEFAULT {
                 }
             }
         }
+        PROPERTY(formOkAction) {
+            caption = 'Провести';
+        }
     }
 }
 
@@ -140,8 +147,7 @@ FORM writeOffs 'Списания товара'
 
     PROPERTIES (t) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
-    PROPERTIES (t) ADDFORM, EDITFORM SHOWIF isDraftWriteOff(t), delete FORCE PANEL SHOWIF isDraftWriteOff(t),
-                   postWriteOff SHOWIF isDraftWriteOff(t), unpostWriteOff SHOWIF isPostedWriteOff(t)
+    PROPERTIES (t) ADDFORM, EDITFORM, delete FORCE PANEL
 
     OBJECTS d = writeOffDetail
     PROPERTIES(d) READONLY  indexWriteOffDetail, barcodeWriteOffDetail,
@@ -313,21 +319,23 @@ FORM writeOffPrint 'Списание' PRINT
 toPrintWriteOff 'Акт списания' (writeOff) = ACTION FORM writeOffPrint OBJECTS w IMAGE 'print.png' IN printGroup;
 
 isPostedNotChangeBalanceWriteOff (writeOff) = isPostedWriteOff(writeOff) AND NOT notChangeBalanceWriteOff(writeOff);
+
 EXTEND FORM writeOffs
     PROPERTIES     FORCE PANEL toPrintWriteOff(t) SHOWIF isPostedNotChangeBalanceWriteOff(t)
     PROPERTIES(t) READONLY notChangeBalanceWriteOff
 ;
-//EXTEND DESIGN writeOffs {
-//    documentDetail {
-//        NEW printCase {
-////            childConstraints = TO THE BOTTOM;
-//            title = 'Печатные формы';
-//            NEW tempCont {
-//                ADD PROPERTY (toPrintWriteOff);
-//            }
-//        }
-//    }
-//}
+EXTEND DESIGN writeOffs {
+    documentDetail {
+        NEW printTab {
+            title = 'Печатные формы';
+            NEW printContainer {
+                childConstraints = TO THE BOTTOM;
+                fillVertical = 1.0; // todo : иначе кнопка не всегда показывается, нужно будет пофиксить как-нибудь
+                ADD PROPERTY (toPrintWriteOff);
+            }
+        }
+    }
+}
 
 
 // Проводим по регистру
