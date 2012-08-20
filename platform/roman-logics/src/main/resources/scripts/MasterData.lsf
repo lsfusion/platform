@@ -249,10 +249,20 @@ canonicalBrandFreight 'Бренды' (freight) = castToString255(
     [GROUP CONCAT commonName(brandSupplier) IF quantityFreightBrandSupplier(freight, brandSupplier), ' , ' BY freight](freight))
     MINCHARWIDTH 50 MAXCHARWIDTH 100 PREFCHARWIDTH 100 PERSISTENT;
 
+
+defaultNumeratorFreights = DATA numerator ();
+nameDefaultNumeratorFreights 'Нумератор для фрахтов' = name(defaultNumeratorFreights());
+
+initValueNumeratorObject(object) += defaultNumeratorFreights() IF object IS freight;
+initWhenNumeratorObject(object) += ASSIGNED(object IS freight);
+
 EXTEND FORM freightListForm
-    PROPERTIES(freight) canonicalBrandFreight BEFORE dateArrivalFreight
+    PROPERTIES(freight) seriesObject BEFORE date, numberObject BEFORE seriesObject, canonicalBrandFreight BEFORE dateArrivalFreight
 ;
 
+EXTEND FORM globalParamForm
+    PROPERTIES nameDefaultNumeratorFreights()
+;
 
 FORM skuDialog 'SKU'
 
@@ -270,3 +280,5 @@ FORM skuDialog 'SKU'
 //quantityInLIFOSkuLedger (ledger) += quantityUserPriceChangeDetail(ledger) (-) quantityUserPriceChangeDetail(ledger);
 //limitInLIFOSkuLedgerBatch (ledger, batch) +=  (quantityUserPriceChangeDetail(ledger) (-) quantityUserPriceChangeDetail(ledger)) AND  batch IS batch;
 //sumInSkuLedger(ledger) += (retailPriceUserPriceChangeDetail(ledger) (-) curRetailPriceUserPriceChangeDetail(ledger))*quantityUserPriceChangeDetail(ledger);
+
+

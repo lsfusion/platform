@@ -1410,7 +1410,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         freightBox = addConcreteClass("freightBox", "Короб для транспортировки", stock, freightUnit);
 
-        freight = addConcreteClass("freight", "Фрахт", baseClass.named, baseLM.transaction);
+        freight = addConcreteClass("freight", "Фрахт", baseClass.named, baseLM.transaction, (CustomClass) BL.Numerator.getClassByName("numeratedObject"));
         freightComplete = addConcreteClass("freightComplete", "Скомплектованный фрахт", freight);
         freightChanged = addConcreteClass("freightChanged", "Обработанный фрахт", freightComplete);
         freightPriced = addConcreteClass("freightPriced", "Расцененный фрахт", freightChanged);

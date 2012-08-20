@@ -23,6 +23,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     public ScriptingLogicsModule Stock;
     public ScriptingLogicsModule LegalEntity;
     public ScriptingLogicsModule Store;
+    public ScriptingLogicsModule Numerator;
     public RomanLogicsModule RomanLM;
     public ScriptingLogicsModule RomanRB;
     public ScriptingLogicsModule RetailCRM;
@@ -40,12 +41,13 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         Stock = addModuleFromResource("/scripts/Stock.lsf");
         LegalEntity = addModuleFromResource("/scripts/LegalEntity.lsf");
         Store = addModuleFromResource("/scripts/Store.lsf");
+        Numerator = addModuleFromResource("/scripts/Numerator.lsf");
         RetailCRM = addModuleFromResource("/scripts/RetailCRM.lsf");
         addModulesFromResource(
             "/scripts/Utils.lsf",
             "/scripts/Hierarchy.lsf",
             "/scripts/Historizable.lsf",
-            "/scripts/Numerator.lsf",
+            //"/scripts/Numerator.lsf",
             "/scripts/Document.lsf",
             "/scripts/Consignment.lsf",
             "/scripts/Employee.lsf",

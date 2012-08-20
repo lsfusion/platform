@@ -16,17 +16,19 @@ CLASS coefficientRetail 'Надбавка';
 
 dateCoefficientRetail 'Дата введения' = DATA DATE(coefficientRetail) IN baseGroup;
 markupCoefficientRetail 'Множитель' = DATA NUMERIC[14,3](coefficientRetail) IN baseGroup;
+brandSupplierCoefficientRetail 'Бренд (ИД)' = DATA brandSupplier(coefficientRetail) IN idGroup;
+nameBrandSupplierCoefficientRetail 'Бренд' (coefficientRetail) = name(brandSupplierCoefficientRetail(coefficientRetail)) IN baseGroup;
 
-uniqueCoefficientRetail() = GROUP UNIQUE coefficientRetail BY dateCoefficientRetail(coefficientRetail)
-                                                        WHERE coefficientRetail IS coefficientRetail;
+uniqueCoefficientRetail = GROUP UNIQUE coefficientRetail BY brandSupplierCoefficientRetail(coefficientRetail), dateCoefficientRetail(coefficientRetail)
+                                                      WHERE coefficientRetail IS coefficientRetail;
 
-coefficientRetailDate(coefficientRetail, date) = coefficientRetail IF dateCoefficientRetail(coefficientRetail) <= date AND date AS DATE;
-actingCoefficientRetailDate(date) = GROUP MAX dateCoefficientRetail(coefficientRetailDate(coefficientRetail, date)) BY date;
+coefficientRetailBrandDate(coefficientRetail, brandSupplier, date) = coefficientRetail IF dateCoefficientRetail(coefficientRetail) <= date AND date AS DATE AND brandSupplierCoefficientRetail(coefficientRetail) == brandSupplier;
+actingCoefficientRetailBrandDate(brandSupplier, date) = GROUP MAX dateCoefficientRetail(coefficientRetailBrandDate(coefficientRetail, brandSupplier, date)) BY brandSupplier, date;
 
 FORM coefficientRetail 'Надбавка'
 
     OBJECTS c=coefficientRetail FIXED PANEL
-    PROPERTIES(c) dateCoefficientRetail, markupCoefficientRetail
+    PROPERTIES(c) nameBrandSupplierCoefficientRetail, dateCoefficientRetail, markupCoefficientRetail
 
     EDIT coefficientRetail OBJECT c
 ;
@@ -34,7 +36,7 @@ FORM coefficientRetail 'Надбавка'
 FORM coefficientRetails 'Надбавки'
 
     OBJECTS c=coefficientRetail
-    PROPERTIES(c) READONLY dateCoefficientRetail, markupCoefficientRetail
+    PROPERTIES(c) READONLY nameBrandSupplierCoefficientRetail, dateCoefficientRetail, markupCoefficientRetail
     PROPERTIES(c) ADDFORM, EDITFORM, delete
 ;
 
@@ -114,6 +116,9 @@ CONSTRAINT dateTimeToPriceSetDocument(document) < dateTimePriceSetDocument(docum
 isDiscountPriceSetDocument 'Распродажа' = DATA BOOLEAN(priceSetDocument) IN baseGroup;
 keepDiscountPriceSetDocument 'Учитывать скидки' = DATA BOOLEAN(priceSetDocument) IN baseGroup;
 
+currencyBasePriceSetDocument 'Валюта документа (ИД)' = DATA currency(basePriceSetDocument) IN idGroup;
+nameCurrencyBasePriceSetDocument 'Валюта документа' (basePriceSetDocument) = name(currencyBasePriceSetDocument(basePriceSetDocument));
+
 //связь документа и фрахта
 freightPriceSetDocument 'Фрахт документа (ИД)' = DATA freight(basePriceSetDocument) IN idGroup;
 
@@ -138,16 +143,20 @@ isNotRRPPriceSetDocumentArticle 'Нет рекомендуемой цены' (ba
 
 typeExchangePriceSetDocument 'Тип обмена' (priceSetDocument) = typeExchangeRetail() AND priceSetDocument IS priceSetDocument;
 currencyPriceSetDocument 'Валюта обмена' (priceSetDocument) = currencyTypeExchange(typeExchangeSTX()) AND priceSetDocument IS priceSetDocument;
-@defineNearestRateExchangeObject(priceSetDocument, , , datePriceSetDocument, publicGroup);
+
+@defineNearestRateExchangeObject(priceSetDocument, , base, datePriceSetDocument, publicGroup);
 
 rateDataPriceSetDocumentArticle 'Обменный курс' = DATA NUMERIC[14,2](priceSetDocument, article) IN baseGroup;
 
-ratePriceSetDocumentArticle 'Обменный курс' (basePriceSetDocument, article) = UNION OVERRIDE rateExchangePriceSetDocument(basePriceSetDocument) AND article IS article,
+ratePriceSetDocumentArticle 'Обменный курс' (basePriceSetDocument, article) = UNION OVERRIDE rateExchangeBasePriceSetDocument(basePriceSetDocument) AND article IS article,
                                                                                              rateDataPriceSetDocumentArticle(basePriceSetDocument, article);
 
-coefficientRetailPriceSetDocument 'Коэффициент документа' (basePriceSetDocument) = uniqueCoefficientRetail(actingCoefficientRetailDate(datePriceSetDocument(basePriceSetDocument))) IN idGroup;
-markupCoefficientRetailPriceSetDocumentArticle 'Коэффициент документа' (basePriceSetDocument, article) = markupCoefficientRetail(coefficientRetailPriceSetDocument(basePriceSetDocument))
-                                                                                                               AND article IS article IN baseGroup;
+//coefficientRetailPriceSetDocument 'Коэффициент документа' (basePriceSetDocument) = uniqueCoefficientRetail(actingCoefficientRetailDate(datePriceSetDocument(basePriceSetDocument))) IN idGroup;
+coefficientRetailPriceSetDocumentArticle 'Коэффициент' (basePriceSetDocument, article) = uniqueCoefficientRetail(brandSupplierArticle(article),
+                                                                                                                 actingCoefficientRetailBrandDate(brandSupplierArticle(article),
+                                                                                                                                                  datePriceSetDocument(basePriceSetDocument))) IN idGroup;
+
+markupCoefficientRetailPriceSetDocumentArticle 'Коэффициент документа' (basePriceSetDocument, article) = markupCoefficientRetail(coefficientRetailPriceSetDocumentArticle(basePriceSetDocument, article));
 
 markupPriceSetDocumentArticle 'Коэффициент артикула' = DATA NUMERIC[14,2] (basePriceSetDocument, article);
 markupPriceSetDocumentArticle (basePriceSetDocument, article) <- markupCoefficientRetailPriceSetDocumentArticle(basePriceSetDocument, article) WHEN ASSIGNED(basePriceSetDocument IS basePriceSetDocument);
@@ -546,6 +555,7 @@ createPriceSetDocument 'Расценить' =  ACTION (freight) NEWSESSION {
     ADDOBJ basePriceSetDocument;
     FOR p == addedObject() DO {
         SET freightPriceSetDocument(p) <- freight AS freight;
+        SET currencyBasePriceSetDocument(p) <- currencyFreight(freight);
         SET priceInPriceSetDocumentArticle(p, article) <- priceInFreightArticle(freight, article);
         SET RRPPriceSetDocumentArticle(p, article) <- RRPFreightArticle(freight, article);
         SET inPriceSetDocumentArticle(p, article) <- inFreightArticle(freight, article);
@@ -559,8 +569,8 @@ createPriceSetDocument 'Расценить' =  ACTION (freight) NEWSESSION {
 FORM freights 'Расценка фрахтов'
 
     OBJECTS f = freightPriced
-    PROPERTIES(f) READONLY isPriceSetFreight BACKGROUND backgroundPriceSetDocument(f), date, objectClassName, canonicalBrandFreight, dateArrivalFreight,
-                           nameRouteFreight, nameExporterFreight, grossWeightFreight
+    PROPERTIES(f) READONLY isPriceSetFreight BACKGROUND backgroundPriceSetDocument(f), numberObject, date, objectClassName,
+                  canonicalBrandFreight, dateArrivalFreight, nameRouteFreight, nameExporterFreight, grossWeightFreight
     PROPERTIES(f) FORCE PANEL createPriceSetDocument SHOWIF isPriceSetDocumentFreight(f)
 
     FILTERGROUP filtersDocument
