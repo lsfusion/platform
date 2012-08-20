@@ -149,7 +149,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     public LCP string2SP, istring2SP;
     public LCP string2, istring2;
-    public LCP ustring2SP, ustring2;
+    public LCP ustring2SP, ustring2, ustring5CM;
 
     protected LCP concat2;
     public LCP percent;
@@ -742,6 +742,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         ustring2SP = addSFUProp("ustring2SP", " ", 2);
         ustring2 = addSFUProp("ustring2", "", 2);
+
+        ustring5CM = addSFUProp("ustring5CM", ",", 5);
 
         sum = addSFProp("sum", "((prm1)+(prm2))", 2);
         sumDate = addSFProp("sumDate", "((prm1)+(prm2))", DateClass.instance, 2);

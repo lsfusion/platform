@@ -230,6 +230,12 @@ freightDeclarationDetail 'Фрахт позиции (ИД)' (declarationDetail) 
 importerDeclarationDetail 'Импортёр позиции (ИД)' (declarationDetail) = importerDeclaration(declarationDeclarationDetail(declarationDetail)) IN idGroup;
 
 //--------------------------------------- Свойства товаров ---------------------------------------------------------//
+translateNameDeclarationDetail 'Наименование' (declarationDetail) = translateNameArticle(articleDeclarationDetail(declarationDetail));
+
+nameInvoiceDeclarationDetail 'Наименование' (declarationDetail) = UNION OVERRIDE translateNameDeclarationDetail(declarationDetail),
+                                                                                 nameCategoryDeclarationDetail(declarationDetail);
+
+
 netWeightDeclarationDetail 'Вес нетто товара' (declarationDetail) = netWeightFreightSku(freightDeclarationDetail(declarationDetail),
                                                                                         skuDeclarationDetail(declarationDetail));
 
@@ -487,10 +493,18 @@ unitOfMeasureGroupDeclaration 'Ед. изм.(ИД)' = UNION OVERRIDE unitOfMeasu
 sidUnitOfMeasureGroupDeclaration 'Ед. изм.(код)' (groupDeclaration) = sidUnitOfMeasure(unitOfMeasureGroupDeclaration(groupDeclaration));
 nameUnitOfMeasureGroupDeclaration 'Ед. изм.' (groupDeclaration) = name(unitOfMeasureGroupDeclaration(groupDeclaration)) MINCHARWIDTH 5;
 
-stringGroupDeclaration 'Наименование' (groupDeclaration) =
-    [FORMULA STRING[200] 'CAST($1 AS TEXT) ||  \',\' || CAST($2 AS TEXT) || \',\' || CAST($3 AS TEXT) ||  \',Торговая марка \' || CAST($4 AS TEXT) || \', Состав: \' || CAST($5 AS TEXT)'] (
-    nameInvoiceGroupDeclaration(groupDeclaration), sidGenderGroupDeclaration(groupDeclaration), nameTypeFabricGroupDeclaration(groupDeclaration),
-    nameBrandGroupDeclaration(groupDeclaration), mainCompositionGroupDeclaration(groupDeclaration));
+//stringGroupDeclaration 'Наименование' (groupDeclaration) =
+//    [FORMULA STRING[200] 'CAST($1 AS TEXT) ||  \',\' || CAST($2 AS TEXT) || \',\' || CAST($3 AS TEXT) ||  \',Торговая марка \' || CAST($4 AS TEXT) || \', Состав: \' || CAST($5 AS TEXT)'] (
+//    nameInvoiceGroupDeclaration(groupDeclaration), sidGenderGroupDeclaration(groupDeclaration), nameTypeFabricGroupDeclaration(groupDeclaration),
+//    nameBrandGroupDeclaration(groupDeclaration), mainCompositionGroupDeclaration(groupDeclaration));
+
+stringGroupDeclaration 'Наименование' (groupDeclaration) = ustring5CM(string2(nameInvoiceGroupDeclaration(groupDeclaration), ''),
+                                                                      string2(sidGenderGroupDeclaration(groupDeclaration), ''),
+                                                                      string2(nameTypeFabricGroupDeclaration(groupDeclaration), ''),
+                                                                      string2('Торговая марка ', nameBrandGroupDeclaration(groupDeclaration)),
+                                                                      string2('Состав:', mainCompositionGroupDeclaration(groupDeclaration))
+                                                                      );
+
 
 nameDataGroupDeclaration 'Наименование' = DATA STRING[200] (groupDeclaration);
 nameGroupDeclaration 'Наименование' (groupDeclaration) = UNION OVERRIDE stringGroupDeclaration(groupDeclaration), nameDataGroupDeclaration(groupDeclaration);
@@ -834,7 +848,7 @@ FORM declaration 'Декларация'
     FILTERS inDeclarationCorrection(d, c)
 
     OBJECTS dd=declarationDetail
-    PROPERTIES (dd) READONLY numberDeclarationDetail, barcodeDeclarationDetail, nameCategoryDeclarationDetail, nameBrandDeclarationDetail,
+    PROPERTIES (dd) READONLY numberDeclarationDetail, barcodeDeclarationDetail, nameInvoiceDeclarationDetail, nameBrandDeclarationDetail,
                     sidArticleDeclarationDetail, sidSizeDeclarationDetail, sidColorDeclarationDetail, nameColorDeclarationDetail,
                     sidGenderGroupDeclaration, nameTypeFabricGroupDeclaration, mainCompositionDeclarationDetail, nameCountryDeclarationDetail
     PROPERTIES (dd) sidCustomCategory10DeclarationDetail
@@ -882,7 +896,7 @@ FORM declaration 'Декларация'
 
     OBJECTS dd2=declarationDetail
     PROPERTIES (gd2, dd2) inGroupDeclarationDeclarationDetail, percentGroupDeclarationDeclarationDetail
-    PROPERTIES (dd2) READONLY numberDeclarationDetail, barcodeDeclarationDetail, nameCategoryDeclarationDetail, nameBrandDeclarationDetail,
+    PROPERTIES (dd2) READONLY numberDeclarationDetail, barcodeDeclarationDetail, nameInvoiceDeclarationDetail, nameBrandDeclarationDetail,
                     sidArticleDeclarationDetail, sidSizeDeclarationDetail, sidColorDeclarationDetail, nameColorDeclarationDetail,
                     sidGenderGroupDeclaration, nameTypeFabricGroupDeclaration, mainCompositionDeclarationDetail, nameCountryDeclarationDetail
     PROPERTIES (dd2) sidCustomCategory10DeclarationDetail
@@ -1060,7 +1074,7 @@ FORM declarations 'Декларации'
     PROPERTIES(d) FORCE PANEL exportDeclaration, ADDFORM, EDITFORM, delete
 
     OBJECTS dd=declarationDetail
-    PROPERTIES(dd) READONLY numberDeclarationDetail, barcodeDeclarationDetail, nameCategoryDeclarationDetail, nameBrandDeclarationDetail,
+    PROPERTIES(dd) READONLY numberDeclarationDetail, barcodeDeclarationDetail, nameInvoiceDeclarationDetail, nameBrandDeclarationDetail,
                    sidArticleDeclarationDetail, sidSizeDeclarationDetail, sidColorDeclarationDetail, nameColorDeclarationDetail,
                    sidGenderGroupDeclaration, nameTypeFabricGroupDeclaration, mainCompositionDeclarationDetail,
                    nameCountryDeclarationDetail, sidCustomCategory10DeclarationDetail,

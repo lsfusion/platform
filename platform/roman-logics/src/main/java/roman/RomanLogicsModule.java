@@ -4011,6 +4011,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             objCustomCategory10 = addSingleGroupObject(customCategory10, "ТН ВЭД", sidCustomCategory10, nameCustomCategory, nameCustomCategory4CustomCategory10, numberIdCustomCategory10);
             objCustomCategory10.groupTo.initClassView = ClassViewType.GRID;
+            setEditType(PropertyEditType.READONLY);
 
             addDefaultOrder(numberIdCustomCategory10, true);
         }
