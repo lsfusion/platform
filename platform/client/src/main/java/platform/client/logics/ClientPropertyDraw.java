@@ -16,6 +16,7 @@ import platform.client.logics.classes.ClientTypeSerializer;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
 import platform.interop.PropertyEditType;
+import platform.interop.form.GlobalConstants;
 import platform.interop.form.PropertyReadType;
 import platform.interop.form.layout.SimplexConstraints;
 import platform.interop.form.screen.ExternalScreenConstraints;
@@ -431,7 +432,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     }
 
     public String getDynamicCaption(String caption) {
-        return PropertyReadType.CAPTION_ORIGINAL.equals(caption) ? this.caption : caption;
+        return GlobalConstants.CAPTION_ORIGINAL.equals(caption) ? this.caption : caption;
     }
 
     @Override

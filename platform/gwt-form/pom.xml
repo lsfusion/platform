@@ -28,6 +28,10 @@
             <groupId>com.smartgwt</groupId>
             <artifactId>smartgwt</artifactId>
         </dependency>
+        <dependency>
+            <groupId>net.auroris</groupId>
+            <artifactId>colorpicker</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>by.luxsoft.platform</groupId>

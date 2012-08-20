@@ -6,7 +6,7 @@ import com.google.gwt.dom.client.Element;
 public interface EditManager {
     public boolean isCurrentlyEditing();
 
-    void executePropertyEditAction(GridEditableCell gridEditableCell, Cell.Context context, Element parent);
+    void executePropertyEditAction(GridEditableCell editCell, Cell.Context context, Element parent);
 
     void commitEditing(Object value);
 

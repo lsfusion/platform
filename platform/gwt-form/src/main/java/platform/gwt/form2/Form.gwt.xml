@@ -6,14 +6,17 @@
     <inherits name="platform.gwt.base.Base"/>
     <inherits name="platform.gwt.Resources"/>
 
+    <!--  GWT dispatch -->
+    <inherits name='net.customware.gwt.dispatch.Dispatch' />
+
+    <!--  Color Picker -->
+    <inherits name="net.auroris.ColorPicker.client"/>
+
     <!-- GWT theme -->
     <!--<inherits name='com.google.gwt.user.theme.standard.Standard'/>-->
     <!--<inherits name="com.google.gwt.user.theme.chrome.Chrome"/>-->
     <!--<inherits name='com.google.gwt.user.theme.dark.Dark'/>-->
     <inherits name='com.google.gwt.user.theme.clean.Clean'/>
-
-    <!--  GWT dispatch -->
-    <inherits name='net.customware.gwt.dispatch.Dispatch' />
 
     <entry-point class='platform.gwt.form2.client.MainFrame'/>
 

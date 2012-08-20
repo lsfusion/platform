@@ -4,7 +4,6 @@ public class PropertyReadType {
     public final static byte DRAW = 0;
 
     public final static byte CAPTION = 1;
-    public final static String CAPTION_ORIGINAL = "CAPTION_ORIGINAL";
 
     public final static byte CELL_BACKGROUND = 2;
 

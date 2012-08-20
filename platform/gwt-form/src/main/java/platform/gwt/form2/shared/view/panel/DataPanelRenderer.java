@@ -5,6 +5,7 @@ import com.google.gwt.user.client.ui.*;
 import platform.gwt.form2.client.form.ui.GFormController;
 import platform.gwt.form2.client.form.ui.GSinglePropertyTable;
 import platform.gwt.form2.shared.view.GPropertyDraw;
+import platform.gwt.form2.shared.view.changes.dto.ColorDTO;
 
 public class DataPanelRenderer implements PanelRenderer {
 
@@ -49,11 +50,11 @@ public class DataPanelRenderer implements PanelRenderer {
 
     @Override
     public void updateCellBackgroundValue(Object value) {
-        valueTable.setBackgroundColor((String) value);
+        valueTable.setBackgroundColor((ColorDTO) value);
     }
 
     @Override
     public void updateCellForegroundValue(Object value) {
-        valueTable.setForegroundColor((String) value);
+        valueTable.setForegroundColor((ColorDTO) value);
     }
 }

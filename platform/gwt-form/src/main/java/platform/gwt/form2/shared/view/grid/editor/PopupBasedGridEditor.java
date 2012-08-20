@@ -13,8 +13,6 @@ import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.Widget;
 import platform.gwt.form2.shared.view.grid.EditManager;
 
-import java.util.Date;
-
 public abstract class PopupBasedGridEditor implements GridCellEditor {
     protected final SafeHtmlRenderer<String> renderer = SimpleSafeHtmlRenderer.getInstance();
 
@@ -40,17 +38,25 @@ public abstract class PopupBasedGridEditor implements GridCellEditor {
 
     @Override
     public final void startEditing(Cell.Context context, final Element parent) {
-        popup.setPopupPositionAndShow(new PopupPanel.PositionCallback() {
-            @Override
-            public void setPosition(int offsetWidth, int offsetHeight) {
-                popup.setPopupPosition(parent.getAbsoluteLeft(), parent.getAbsoluteBottom());
-            }
-        });
+        showPopup(parent);
     }
 
-    protected final void commitEditing(Date date) {
+    public final void showPopup(final Element parent) {
+        if (parent == null) {
+            popup.center();
+        } else {
+            popup.setPopupPositionAndShow(new PopupPanel.PositionCallback() {
+                @Override
+                public void setPosition(int offsetWidth, int offsetHeight) {
+                    popup.setPopupPosition(parent.getAbsoluteLeft(), parent.getAbsoluteBottom());
+                }
+            });
+        }
+    }
+
+    protected final void commitEditing(Object value) {
         popup.hide();
-        editManager.commitEditing(date);
+        editManager.commitEditing(value);
     }
 
     protected final void cancelEditing() {

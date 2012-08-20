@@ -1,6 +1,7 @@
 package platform.gwt.form2.server.convert;
 
 import platform.client.logics.*;
+import platform.gwt.form2.shared.view.changes.dto.ColorDTO;
 import platform.gwt.utils.GwtSharedUtils;
 import platform.gwt.form2.shared.view.changes.dto.GFormChangesDTO;
 import platform.gwt.form2.shared.view.changes.dto.GGroupObjectValueDTO;
@@ -66,7 +67,7 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
             for (Map.Entry<ClientGroupObjectValue, Object> clientValues : entry.getValue().entrySet()) {
                 GGroupObjectValueDTO groupObjectValueDTO = convertOrCast(clientValues.getKey());
 
-                propValues.put(groupObjectValueDTO, convertValue(clientValues.getValue()));
+                propValues.put(groupObjectValueDTO, convertOrCast(clientValues.getValue()));
             }
             ClientPropertyReader reader = entry.getKey();
             changesDTO.properties.put(new GPropertyReaderDTO(reader.getID(), reader.getGroupObject() != null ? reader.getGroupObject().ID : -1, reader.getType()), propValues);
@@ -87,16 +88,15 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
         return changesDTO;
     }
 
-    private Object convertValue(Object value) {
-        if (value instanceof Color) {
-            return "#" + Integer.toHexString(((Color) value).getRGB()).substring(2, 8);
-        } else if (value instanceof String) {
-            return GwtSharedUtils.rtrim((String) value);
-        } else {
-            return value;
-        }
+    @Converter(from = Color.class)
+    public ColorDTO convertColor(Color color) {
+        return new ColorDTO(Integer.toHexString(color.getRGB()).substring(2, 8));
     }
 
+    @Converter(from = String.class)
+    public String convertString(String s) {
+        return GwtSharedUtils.rtrim(s);
+    }
 
     @Converter(from = ClientGroupObjectValue.class)
     public GGroupObjectValueDTO convertIntegerClass(ClientGroupObjectValue groupObjectValue) {

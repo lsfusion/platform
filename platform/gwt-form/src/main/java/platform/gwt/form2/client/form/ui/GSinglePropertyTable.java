@@ -7,6 +7,8 @@ import platform.gwt.form2.client.form.dispatch.GEditPropertyDispatcher;
 import platform.gwt.form2.client.form.dispatch.GEditPropertyHandler;
 import platform.gwt.form2.shared.view.GPropertyDraw;
 import platform.gwt.form2.shared.view.GridDataRecord;
+import platform.gwt.form2.shared.view.changes.GGroupObjectValue;
+import platform.gwt.form2.shared.view.changes.dto.ColorDTO;
 import platform.gwt.form2.shared.view.classes.GType;
 import platform.gwt.form2.shared.view.grid.EditManager;
 import platform.gwt.form2.shared.view.grid.GridEditableCell;
@@ -20,6 +22,7 @@ public class GSinglePropertyTable extends DataGrid implements EditManager, GEdit
     private final GEditPropertyDispatcher editDispatcher;
     private final GPropertyDraw property;
     private Object value;
+    private GridDataRecord valueRecord;
 
     private GridEditableCell editCell;
     private Cell.Context editContext;
@@ -39,18 +42,18 @@ public class GSinglePropertyTable extends DataGrid implements EditManager, GEdit
 
     public void setValue(Object value) {
         this.value = value;
-        setRowData(Arrays.asList(new GridDataRecord(property.sID, value)));
+        this.valueRecord = new GridDataRecord(property.sID, value);
+        setRowData(Arrays.asList(valueRecord));
     }
 
-    public void setBackgroundColor(String color) {
+    public void setBackgroundColor(ColorDTO color) {
         //todo:
     }
 
-    public void setForegroundColor(String color) {
+    public void setForegroundColor(ColorDTO color) {
         //todo:
     }
 
-    @Override
     public GPropertyDraw getProperty(int column) {
         return property;
     }
@@ -83,7 +86,8 @@ public class GSinglePropertyTable extends DataGrid implements EditManager, GEdit
         this.editCell = editCell;
         this.editContext = editContext;
         this.editCellParent = parent;
-        editDispatcher.executePropertyEditAction(this, property, value, editContext);
+        GGroupObjectValue columnKey = ((GridDataRecord) editContext.getKey()).key;
+        editDispatcher.executePropertyEditAction(this, property, value, columnKey);
     }
 
     @Override

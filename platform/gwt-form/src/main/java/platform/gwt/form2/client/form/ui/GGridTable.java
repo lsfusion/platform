@@ -259,7 +259,7 @@ public class GGridTable extends DataGrid implements EditManager, GEditPropertyHa
                     cellBackground = cellBackgroundValues.get(property).get(key);
                 }
                 if (cellBackground != null) {
-                    getRowElement(i).getCells().getItem(properties.indexOf(property)).getStyle().setBackgroundColor((String) cellBackground);
+                    getRowElement(i).getCells().getItem(properties.indexOf(property)).getStyle().setBackgroundColor(cellBackground.toString());
                 }
 
                 Object cellForeground = rowForeground;
@@ -267,7 +267,7 @@ public class GGridTable extends DataGrid implements EditManager, GEditPropertyHa
                     cellForeground = cellForegroundValues.get(property).get(key);
                 }
                 if (cellForeground != null) {
-                    getRowElement(i).getCells().getItem(properties.indexOf(property)).getStyle().setColor((String) cellForeground);
+                    getRowElement(i).getCells().getItem(properties.indexOf(property)).getStyle().setColor(cellForeground.toString());
                 }
             }
         }
@@ -350,7 +350,8 @@ public class GGridTable extends DataGrid implements EditManager, GEditPropertyHa
         this.editCell = editCell;
         this.editContext = editContext;
         this.editCellParent = parent;
-        editDispatcher.executePropertyEditAction(this, getProperty(editContext.getColumn()), getEditCellCurrentValue(), editContext);
+        GGroupObjectValue columnKey = ((GridDataRecord) editContext.getKey()).key;
+        editDispatcher.executePropertyEditAction(this, getProperty(editContext.getColumn()), getEditCellCurrentValue(), columnKey);
     }
 
     private Object getEditCellCurrentValue() {

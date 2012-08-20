@@ -69,14 +69,24 @@ public class ClientTypeToGwtConverter extends CachedObjectConverter {
         return GDateTimeType.instance;
     }
 
-    @Converter(from = ClientDateClass.class)
-    public GDateType convertDateClass(ClientDateClass clientDateClass) {
-        return GDateType.instance;
+    @Converter(from = ClientPDFClass.class)
+    public GPDFType convertPDFClass(ClientPDFClass pdfClass) {
+        return GPDFType.instance;
     }
 
-    @Converter(from = ClientColorClass.class)
-    public GColorType convertColorClass(ClientColorClass clientColorClass) {
-        return GColorType.instance;
+    @Converter(from = ClientImageClass.class)
+    public GImageType convertImageClass(ClientImageClass imageClass) {
+        return GImageType.instance;
+    }
+
+    @Converter(from = ClientWordClass.class)
+    public GWordType convertWordClass(ClientWordClass wordClass) {
+        return GWordType.instance;
+    }
+
+    @Converter(from = ClientExcelClass.class)
+    public GExcelType convertExcelClass(ClientExcelClass excelClass) {
+        return GExcelType.instance;
     }
 
     @Cached
@@ -89,6 +99,16 @@ public class ClientTypeToGwtConverter extends CachedObjectConverter {
     @Converter(from = ClientInsensitiveStringClass.class)
     public GInsensitiveStringType convertIntegerClass(ClientInsensitiveStringClass clientInsensitiveStringClass) {
         return new GInsensitiveStringType(clientInsensitiveStringClass.length);
+    }
+
+    @Converter(from = ClientDateClass.class)
+    public GDateType convertDateClass(ClientDateClass clientDateClass) {
+        return GDateType.instance;
+    }
+
+    @Converter(from = ClientColorClass.class)
+    public GColorType convertColorClass(ClientColorClass clientColorClass) {
+        return GColorType.instance;
     }
 
     @Converter(from = ClientObjectType.class)

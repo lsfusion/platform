@@ -166,10 +166,10 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         });
     }
 
-    private ServerResponse prepareRemoteChangesResponse(List<ClientAction> pendingActions, boolean pendRemoteChanges) {
-        if (numberOfFormChangesRequests.get() > 1 || pendRemoteChanges) {
+    private ServerResponse prepareRemoteChangesResponse(List<ClientAction> pendingActions, boolean delayRemoteChanges) {
+        if (numberOfFormChangesRequests.get() > 1 || delayRemoteChanges) {
             //todo: возможно стоит сохранять количество пропущенных изменений, и высылать таки их, если пропустили слишком много
-            return new ServerResponse(pendingActions.toArray(new ClientAction[pendingActions.size()]), false, pendRemoteChanges);
+            return new ServerResponse(pendingActions.toArray(new ClientAction[pendingActions.size()]), false, delayRemoteChanges);
         }
 
         byte[] formChanges = getFormChangesByteArray();

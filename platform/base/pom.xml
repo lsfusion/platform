@@ -65,6 +65,7 @@
         <gwt.platform.version>0.7</gwt.platform.version>
         <gwt.uload.version>0.6.3-compat</gwt.uload.version>
         <gwt.mosaic.version>0.4.0-rc4</gwt.mosaic.version>
+        <color.picker.version>2.1</color.picker.version>
 
         <maven.compiler.source>1.6</maven.compiler.source>
         <maven.compiler.target>1.6</maven.compiler.target>
@@ -604,6 +605,11 @@
                 <groupId>com.googlecode.gwtmosaic</groupId>
                 <artifactId>gwt-beans-binding</artifactId>
                 <version>${gwt.mosaic.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.auroris</groupId>
+                <artifactId>colorpicker</artifactId>
+                <version>${color.picker.version}</version>
             </dependency>
 
             <!-- Platform modules -->

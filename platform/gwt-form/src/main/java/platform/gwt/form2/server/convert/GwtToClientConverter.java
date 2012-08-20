@@ -24,7 +24,8 @@ public class GwtToClientConverter extends ObjectConverter {
 
     @Converter(from = ColorDTO.class)
     public Color convertColorDTO(ColorDTO dto) {
-        return Color.decode(dto.value);
+        int c = Integer.parseInt(dto.value, 16);
+        return new Color((c >> 16) & 0xFF, (c >> 8) & 0xFF, c & 0xFF);
     }
 
     @Converter(from = Date.class)

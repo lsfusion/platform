@@ -8,7 +8,8 @@ import com.google.gwt.text.shared.SimpleSafeHtmlRenderer;
 public class ColorGridRenderer implements GridCellRenderer {
     @Override
     public void render(Cell.Context context, Object value, SafeHtmlBuilder sb) {
-        SafeHtml safeColor = SimpleSafeHtmlRenderer.getInstance().render((String) value);
+        String color = value == null ? null : value.toString();
+        SafeHtml safeColor = SimpleSafeHtmlRenderer.getInstance().render(color);
         sb.appendHtmlConstant("<div style=\"border: 0px solid black; background: " + safeColor.asString() + ";color: " + safeColor.asString() + ";\">&nbsp</div>");
     }
 }

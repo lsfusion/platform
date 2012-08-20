@@ -4,15 +4,17 @@ import com.google.gwt.user.cellview.client.Column;
 import platform.gwt.form2.client.form.ui.GFormController;
 import platform.gwt.form2.shared.view.changes.GGroupObjectValue;
 import platform.gwt.form2.shared.view.classes.GType;
+import platform.gwt.form2.shared.view.grid.EditManager;
 import platform.gwt.form2.shared.view.logics.FormLogicsProvider;
 import platform.gwt.form2.shared.view.logics.GGroupObjectLogicsSupplier;
-import platform.gwt.form2.shared.view.reader.*;
 import platform.gwt.form2.shared.view.panel.PanelRenderer;
-import platform.gwt.form2.shared.view.grid.EditManager;
+import platform.gwt.form2.shared.view.reader.*;
 
 import java.util.Map;
 
 public class GPropertyDraw extends GComponent implements GPropertyReader {
+    public static final String CAPTION_ORIGINAL = "CAPTION_ORIGINAL";
+
     public int ID;
     public GGroupObject groupObject;
     public String sID;
@@ -50,6 +52,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
 
     public String getCaptionOrEmpty() {
         return caption == null ? "" : caption;
+    }
+
+    public String getDynamicCaption(String caption) {
+        return CAPTION_ORIGINAL.equals(caption) ? this.caption : caption;
     }
 
     @Override

@@ -88,7 +88,8 @@ public class GPanelController {
             if (renderer != null) {
                 Map<GGroupObjectValue, Object> caption = propertyCaptions.get(property);
                 if (caption != null) {
-                    renderer.setCaption(caption.values().iterator().next().toString());
+                    String dynamicCaption = property.getDynamicCaption(caption.values().iterator().next().toString());
+                    renderer.setCaption(dynamicCaption);
                 }
 
                 Object background = rowBackground != null ? rowBackground : null;

@@ -1,13 +1,11 @@
 package platform.gwt.form2.client.form.dispatch;
 
 import com.allen_sauer.gwt.log.client.Log;
-import com.google.gwt.cell.client.Cell;
 import platform.gwt.base.client.ErrorAsyncCallback;
 import platform.gwt.form2.client.form.ui.GFormController;
 import platform.gwt.form2.shared.actions.form.ServerResponseResult;
 import platform.gwt.form2.shared.view.GPropertyDraw;
 import platform.gwt.form2.shared.view.GUserInputResult;
-import platform.gwt.form2.shared.view.GridDataRecord;
 import platform.gwt.form2.shared.view.actions.GRequestUserInputAction;
 import platform.gwt.form2.shared.view.changes.GGroupObjectValue;
 import platform.gwt.form2.shared.view.classes.GType;
@@ -28,9 +26,8 @@ public class GEditPropertyDispatcher extends GFormActionDispatcher {
         super(form);
     }
 
-    public void executePropertyEditAction(final GEditPropertyHandler ieditHandler, GPropertyDraw editProperty, Object oldValue, Cell.Context context) {
+    public void executePropertyEditAction(final GEditPropertyHandler ieditHandler, GPropertyDraw editProperty, Object oldValue, GGroupObjectValue columnKey) {
         editHandler = ieditHandler;
-        final GridDataRecord record = (GridDataRecord) context.getKey();
 
         valueRequested = false;
         simpleChangeProperty = null;
@@ -38,13 +35,13 @@ public class GEditPropertyDispatcher extends GFormActionDispatcher {
         editColumnKey = null;
 
         if (editProperty.changeType != null) {
-            editColumnKey = record.key;
+            editColumnKey = columnKey;
             simpleChangeProperty = editProperty;
             requestValue(simpleChangeProperty.changeType, oldValue);
             return;
         }
 
-        form.executeEditAction(editProperty, record.key, "change", new ErrorAsyncCallback<ServerResponseResult>() {
+        form.executeEditAction(editProperty, columnKey, "change", new ErrorAsyncCallback<ServerResponseResult>() {
             @Override
             public void success(ServerResponseResult response) {
                 Log.debug("Execute edit action response recieved...");

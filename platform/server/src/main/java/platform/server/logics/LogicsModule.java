@@ -6,7 +6,7 @@ import platform.base.OrderedMap;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.KeyStrokes;
-import platform.interop.form.PropertyReadType;
+import platform.interop.form.GlobalConstants;
 import platform.server.Settings;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.*;
@@ -2284,7 +2284,7 @@ public abstract class LogicsModule {
      * @return свойство, которое должно использоваться в качестве propertyCaption для скрываемого свойства
      */
     protected LCP addHideCaptionProp(AbstractGroup group, String caption, LCP hideProperty) {
-        String captionOriginal = PropertyReadType.CAPTION_ORIGINAL;
+        String captionOriginal = GlobalConstants.CAPTION_ORIGINAL;
         LCP originalCaption = addCProp(StringClass.get(captionOriginal.length()), captionOriginal);
         return addJProp(group, caption, baseLM.and1, add(new Object[]{originalCaption}, directLI(hideProperty)));
     }

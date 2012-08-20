@@ -57,7 +57,7 @@ public abstract class GAbstractFormContainer {
         if (containerView == null) {
             containerView = getUndecoratedView();
             containerView.setSize("100%", "100%");
-            if (key.title != null && !key.container.type.isTabbed()) {
+            if (key.title != null && key.container != null && !key.container.type.isTabbed()) {
                 containerView = new GCaptionPanel(key.title, containerView);
             }
         }
