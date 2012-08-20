@@ -41,14 +41,14 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
     }
 
     public ActionPanelView(final ClientPropertyDraw ikey, final ClientGroupObjectValue icolumnKey, final ClientFormController iform) {
-        super(ikey.getFullCaption());
+        super(ikey.getEditCaption());
 
         this.defaultBackground = getBackground();
         this.key = ikey;
         this.columnKey = icolumnKey;
         this.form = iform;
 
-        setToolTip(key.caption);
+        setToolTip(key.getCaption());
 
         if (key.isReadOnly()) {
             setEnabled(false);
@@ -83,7 +83,7 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
 
     public void setCaption(String caption) {
         this.caption = caption;
-        setText(key.getFullCaption(caption));
+        setText(key.getEditCaption(caption));
     }
 
     public void setBackgroundColor(Color background) {

@@ -2925,8 +2925,8 @@ public class RomanLogicsModule extends LogicsModule {
         necessaryStampSkuShipmentDetail = addJProp("necessaryStampSkuShipmentDetail", necessaryStampCategory, categoryArticleSkuShipmentDetail, 1);
         sidStampShipmentDetail = addJProp(intraAttributeGroup, "sidStampShipmentDetail", "Контрольная марка",  sidStamp, stampShipmentDetail, 1);
         seriesOfStampShipmentDetail = addJProp(intraAttributeGroup, "seriesOfStampShipmentDetail", "Серия контрольной марки",  seriesOfStamp, stampShipmentDetail, 1);
-        hideSidStampShipmentDetail = addHideCaptionProp(privateGroup, "Контрольная марка", sidStampShipmentDetail, necessaryStampSkuShipmentDetail);
-        hideSeriesOfStampShipmentDetail = addHideCaptionProp(privateGroup, "Серия контрольной марки", seriesOfStampShipmentDetail, necessaryStampSkuShipmentDetail);
+        hideSidStampShipmentDetail = addHideCaptionProp(privateGroup, "Контрольная марка", necessaryStampSkuShipmentDetail);
+        hideSeriesOfStampShipmentDetail = addHideCaptionProp(privateGroup, "Серия контрольной марки", necessaryStampSkuShipmentDetail);
         shipmentDetailStamp = addAGProp(idGroup, "shipmentDetailStamp", "Контрольная марка (ИД)", shipmentDetail, stampShipmentDetail);
 
         // Transfer
@@ -3790,10 +3790,13 @@ public class RomanLogicsModule extends LogicsModule {
         NavigatorElement prices = addNavigatorElement(baseLM.baseElement, "prices", "Ценообразование");
         prices.window = leftToolbar;
 
+        NavigatorElement stock = addNavigatorElement(baseLM.baseElement, "stock", "Управление складом");
+        stock.window = leftToolbar;
+
+        NavigatorElement stockClassifier = addNavigatorElement(stock, "stockClassifier", "Справочники");
+
         NavigatorElement logistics = addNavigatorElement(baseLM.baseElement, "logistics", "Логистика");
         logistics.window = leftToolbar;
-
-        NavigatorElement logisticsClassifier = addNavigatorElement(logistics, "logisticsClassifier", "Справочники");
 
         NavigatorElement retail = addNavigatorElement(baseLM.baseElement, "retail", "Розничная торговля");
         retail.window = leftToolbar;

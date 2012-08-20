@@ -244,7 +244,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return format;
     }
 
-    public String getFullCaption(String caption) {
+    public String getEditCaption(String caption) {
         if (caption == null) {
             caption = this.caption;
         }
@@ -254,8 +254,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
                : caption;
     }
 
-    public String getFullCaption() {
-        return getFullCaption(caption);
+    public String getEditCaption() {
+        return getEditCaption(caption);
     }
 
     public String getSID() {
@@ -428,6 +428,10 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     @Override
     public String getCaption() {
         return caption;
+    }
+
+    public String getDynamicCaption(String caption) {
+        return PropertyReadType.CAPTION_ORIGINAL.equals(caption) ? this.caption : caption;
     }
 
     @Override

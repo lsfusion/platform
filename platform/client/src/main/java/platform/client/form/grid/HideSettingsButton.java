@@ -1,5 +1,6 @@
 package platform.client.form.grid;
 
+import platform.base.BaseUtils;
 import platform.client.ArrayListTransferHandler;
 import platform.client.Main;
 import platform.client.descriptor.editor.base.TitledPanel;
@@ -107,7 +108,7 @@ public abstract class HideSettingsButton extends ToolbarGridButton {
 
             int i = 0;
             for (Map.Entry<ClientPropertyDraw, Integer> entry : propertyOrderTreeMap.entrySet()) {
-                String caption = entry.getKey().getCaption() == null ? entry.getKey().toString() : entry.getKey().getCaption().trim();
+                String caption = BaseUtils.nullTrim(entry.getKey().getCaption());
                 orderMap.put(caption, i);
 
                 Boolean needToHide = entry.getKey().hideUser == null ? entry.getKey().hide : entry.getKey().hideUser;

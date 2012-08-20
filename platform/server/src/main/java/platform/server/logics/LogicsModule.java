@@ -6,6 +6,7 @@ import platform.base.OrderedMap;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.KeyStrokes;
+import platform.interop.form.PropertyReadType;
 import platform.server.Settings;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.*;
@@ -1230,14 +1231,14 @@ public abstract class LogicsModule {
     }
 
     public void showIf(FormEntity<?> form, LP property, LCP ifProperty, ObjectEntity... objects) {
-        PropertyObjectEntity hideCaptionProp = form.addPropertyObject(addHideCaptionProp(property, ifProperty), objects);
+        PropertyObjectEntity hideCaptionProp = form.addPropertyObject(addHideCaptionProp(ifProperty), objects);
         for (PropertyDrawEntity propertyDraw : form.getProperties(property.property)) {
             propertyDraw.propertyCaption = (CalcPropertyObjectEntity) hideCaptionProp;
         }
     }
 
     public void showIf(FormEntity<?> form, PropertyDrawEntity property, LCP ifProperty, PropertyObjectInterfaceEntity... objects) {
-        property.propertyCaption = form.addPropertyObject(addHideCaptionProp(property.propertyObject.property, ifProperty), objects);
+        property.propertyCaption = form.addPropertyObject(addHideCaptionProp(ifProperty), objects);
     }
 
     private <P extends PropertyInterface, L extends PropertyInterface> LCP mapLProp(AbstractGroup group, boolean persistent, CalcPropertyMapImplement<L, P> implement, List<P> listInterfaces) {
@@ -2250,12 +2251,8 @@ public abstract class LogicsModule {
     }
 
 
-    protected LCP addHideCaptionProp(LP original, LCP hideProperty) {
-        return addHideCaptionProp(original.property, hideProperty);
-    }
-
-    protected LCP addHideCaptionProp(Property original, LCP hideProperty) {
-        return addHideCaptionProp(privateGroup, "hideCaption", original, hideProperty);
+    protected LCP addHideCaptionProp(LCP hideProperty) {
+        return addHideCaptionProp(privateGroup, "hideCaption", hideProperty);
     }
 
     /**
@@ -2280,20 +2277,16 @@ public abstract class LogicsModule {
      *         descriptionDraw.setPropertyCaption(descriptorCaptionDraw.propertyObject);
      * </pre>
      *
+     *
      * @param group        ...
      * @param caption      ...
-     * @param original     свойство, к которому будет применятся критерий сокрытия
      * @param hideProperty критерий
      * @return свойство, которое должно использоваться в качестве propertyCaption для скрываемого свойства
      */
-    protected LCP addHideCaptionProp(AbstractGroup group, String caption, LP original, LCP hideProperty) {
-        return addHideCaptionProp(group, caption, original.property, hideProperty);
-    }
-
-    protected LCP addHideCaptionProp(AbstractGroup group, String caption, Property original, LCP hideProperty) {
-        LCP originalCaption = addCProp(StringClass.get(100), original.caption);
-        LCP result = addJProp(group, caption, baseLM.and1, add(new Object[]{originalCaption}, directLI(hideProperty)));
-        return result;
+    protected LCP addHideCaptionProp(AbstractGroup group, String caption, LCP hideProperty) {
+        String captionOriginal = PropertyReadType.CAPTION_ORIGINAL;
+        LCP originalCaption = addCProp(StringClass.get(captionOriginal.length()), captionOriginal);
+        return addJProp(group, caption, baseLM.and1, add(new Object[]{originalCaption}, directLI(hideProperty)));
     }
 
     public LAP addProp(ActionProperty prop) {

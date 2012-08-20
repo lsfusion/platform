@@ -32,12 +32,12 @@ META defineDocumentTransferOut(object, caption, skuProp, stockProp)
 
 END
 
-META defineDocumentFormTransferOut(object, caption)
+META defineDocumentFormTransferOut(object, formCaption)
 
-    FORM object##Out caption
+    FORM object##Out formCaption
         OBJECTS t = object##Out FIXED PANEL
 
-        PROPERTIES (t) numberObject, seriesObject, date###object##Out, time###object##Out,
+        PROPERTIES (t) objectClassName, numberObject, seriesObject, date###object##Out, time###object##Out,
                        nameStock###object##Out, nameDestinationStock###object##Out, note###object##Out,
                        count###object##OutDetail###object##Out, quantity###object##OutDetail###object##Out
 
@@ -47,6 +47,9 @@ META defineDocumentFormTransferOut(object, caption)
                                delete###object##OutDetail###object##Out
 
         FILTERS object##Out###object##OutDetail(d) == t
+
+        EVENTS
+            ON OK EXEC prePost###object##Out(t)
 
         EDIT object##Out OBJECT t
     ;
@@ -60,6 +63,7 @@ META defineDocumentFormTransferOut(object, caption)
                     childConstraints = TO THE BOTTOM;
                     ADD t.documentHeaderGroup {
                         childConstraints = TO THE RIGHT;
+                        ADD PROPERTY (objectClassName);
                         ADD PROPERTY (nameStock###object##Out);
                         ADD PROPERTY (nameDestinationStock###object##Out);
                         ADD PROPERTY (numberObject);
@@ -75,10 +79,14 @@ META defineDocumentFormTransferOut(object, caption)
                     }
                 }
             }
+
+            PROPERTY(formOkAction) {
+                caption = 'Провести';
+            }
         }
     }
 
-    FORM object##Out##s caption
+    FORM object##Out##s formCaption
         OBJECTS t = object##Out
         PROPERTIES (t) READONLY isPosted###object##Out FORCE GRID, numberObject, seriesObject, date###object##Out, time###object##Out,
                                 nameStock###object##Out, nameDestinationStock###object##Out, note###object##Out,
@@ -86,8 +94,7 @@ META defineDocumentFormTransferOut(object, caption)
 
         PROPERTIES (t) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
-        PROPERTIES (t) ADDFORM, EDITFORM SHOWIF isDraft###object##Out(t), delete FORCE PANEL SHOWIF isDraft###object##Out(t),
-                       post###object##Out SHOWIF isDraft###object##Out(t), unpost###object##Out SHOWIF isPosted###object##Out(t)
+        PROPERTIES (t) ADDFORM, EDITFORM, delete FORCE PANEL
 
         OBJECTS d = object##OutDetail
 

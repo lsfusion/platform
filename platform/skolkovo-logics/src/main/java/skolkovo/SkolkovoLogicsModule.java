@@ -2456,15 +2456,15 @@ public class SkolkovoLogicsModule extends LogicsModule {
         foreignSubstantiationProjectCluster.setMinimumWidth(10);
         foreignSubstantiationProjectCluster.setPreferredWidth(50);
         isOtherClusterProject = addDProp(projectOtherClusterGroup, "isOtherClusterProject", "Иной кластер", LogicalClass.instance, project);
-        hideIsOtherClusterProject = addHideCaptionProp(privateGroup, "Иной кластер", isOtherClusterProject, isOtherClusterProject);
+        hideIsOtherClusterProject = addHideCaptionProp(privateGroup, "Иной кластер", isOtherClusterProject);
         nativeSubstantiationOtherClusterProject = addDProp(projectOtherClusterGroup, "nativeSubstantiationOtherClusterProject", "Обоснование выбора", InsensitiveStringClass.get(2000), project);
         nativeSubstantiationOtherClusterProject.setMinimumWidth(10);
         nativeSubstantiationOtherClusterProject.setPreferredWidth(50);
-        hideNativeSubstantiationOtherClusterProject = addHideCaptionProp(privateGroup, "Укажите", nativeSubstantiationOtherClusterProject, isOtherClusterProject);
+        hideNativeSubstantiationOtherClusterProject = addHideCaptionProp(privateGroup, "Укажите", isOtherClusterProject);
         foreignSubstantiationOtherClusterProject = addDProp(projectOtherClusterGroup, "foreignSubstantiationOtherClusterProject", "Description of choice", InsensitiveStringClass.get(2000), project);
         foreignSubstantiationOtherClusterProject.setMinimumWidth(10);
         foreignSubstantiationOtherClusterProject.setPreferredWidth(50);
-        hideForeignSubstantiationOtherClusterProject = addHideCaptionProp(privateGroup, "Укажите", foreignSubstantiationOtherClusterProject, isOtherClusterProject);
+        hideForeignSubstantiationOtherClusterProject = addHideCaptionProp(privateGroup, "Укажите", isOtherClusterProject);
         fileNativeSummaryProject = addDProp("fileNativeSummaryProject", "Файл резюме проекта", DynamicFormatFileClass.instance, project);
         loadFileNativeSummaryProject = addLFAProp(executiveSummaryGroup, "Загрузить файл резюме проекта", fileNativeSummaryProject);
         openFileNativeSummaryProject = addOFAProp(executiveSummaryGroup, "Открыть файл резюме проекта", fileNativeSummaryProject);
@@ -2486,8 +2486,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nameReturnInvestorProject.setMinimumWidth(10);
         nameReturnInvestorProject.setPreferredWidth(50);
         amountReturnFundsProject = addDProp(sourcesFundingGroup, "amountReturnFundsProject", "Объем средств на возвратной основе (тыс. руб.)", StringClass.get(30), project);
-        hideNameReturnInvestorProject = addHideCaptionProp(privateGroup, "укажите данных лиц и их контактную информацию", nameReturnInvestorProject, isReturnInvestmentsProject);
-        hideAmountReturnFundsProject = addHideCaptionProp(privateGroup, "укажите объем привлекаемых средств (тыс. руб.)", amountReturnFundsProject, isReturnInvestmentsProject);
+        hideNameReturnInvestorProject = addHideCaptionProp(privateGroup, "укажите данных лиц и их контактную информацию", isReturnInvestmentsProject);
+        hideAmountReturnFundsProject = addHideCaptionProp(privateGroup, "укажите объем привлекаемых средств (тыс. руб.)", isReturnInvestmentsProject);
 
         isNonReturnInvestmentsProject = addDProp(sourcesFundingGroup, "isNonReturnInvestmentsProject", "Средства третьих лиц, привлекаемые на безвозвратной основе (гранты и т.п.)", LogicalClass.instance, project);
 
@@ -2501,33 +2501,33 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nameNonReturnInvestorProject.setMinimumWidth(10);
         nameNonReturnInvestorProject.setPreferredWidth(50);
         amountNonReturnFundsProject = addDProp(nonReturnFundingGroup, "amountNonReturnFundsProject", "Объем средств на безвозвратной основе (тыс. руб.)", StringClass.get(30), project);
-        hideNameNonReturnInvestorProject = addHideCaptionProp(privateGroup, "укажите данных лиц и их контактную информацию", nameReturnInvestorProject, isNonReturnInvestmentsProject);
-        hideAmountNonReturnFundsProject = addHideCaptionProp(privateGroup, "укажите объем привлекаемых средств (тыс. руб.)", amountNonReturnFundsProject, isNonReturnInvestmentsProject);
+        hideNameNonReturnInvestorProject = addHideCaptionProp(privateGroup, "укажите данных лиц и их контактную информацию", isNonReturnInvestmentsProject);
+        hideAmountNonReturnFundsProject = addHideCaptionProp(privateGroup, "укажите объем привлекаемых средств (тыс. руб.)", isNonReturnInvestmentsProject);
 
         commentOtherNonReturnInvestmentsProject = addDProp(nonReturnFundingGroup, "commentOtherNonReturnInvestmentsProject", "Комментарий", InsensitiveStringClass.get(2000), project);
         commentOtherNonReturnInvestmentsProject.setMinimumWidth(10);
         commentOtherNonReturnInvestmentsProject.setPreferredWidth(50);
 
-        hideIsCapitalInvestmentProject = addHideCaptionProp(privateGroup, "Укажите", isCapitalInvestmentProject, isNonReturnInvestmentsProject);
-        hideIsPropertyInvestmentProject = addHideCaptionProp(privateGroup, "Укажите", isPropertyInvestmentProject, isNonReturnInvestmentsProject);
-        hideIsGrantsProject = addHideCaptionProp(privateGroup, "Укажите", isGrantsProject, isNonReturnInvestmentsProject);
-        hideIsOtherNonReturnInvestmentsProject = addHideCaptionProp(privateGroup, "Укажите", isOtherNonReturnInvestmentsProject, isNonReturnInvestmentsProject);
+        hideIsCapitalInvestmentProject = addHideCaptionProp(privateGroup, "Укажите", isNonReturnInvestmentsProject);
+        hideIsPropertyInvestmentProject = addHideCaptionProp(privateGroup, "Укажите", isNonReturnInvestmentsProject);
+        hideIsGrantsProject = addHideCaptionProp(privateGroup, "Укажите", isNonReturnInvestmentsProject);
+        hideIsOtherNonReturnInvestmentsProject = addHideCaptionProp(privateGroup, "Укажите", isNonReturnInvestmentsProject);
 
-        hideCommentOtherNonReturnInvestmentsProject = addHideCaptionProp(privateGroup, "Укажите", commentOtherNonReturnInvestmentsProject, isOtherNonReturnInvestmentsProject);
+        hideCommentOtherNonReturnInvestmentsProject = addHideCaptionProp(privateGroup, "Укажите", isOtherNonReturnInvestmentsProject);
 
         isOwnFundsProject = addDProp(sourcesFundingGroup, "isOwnFundsProject", "Собственные средства организации", LogicalClass.instance, project);
         amountOwnFundsProject = addDProp(sourcesFundingGroup, "amountOwnFundsProject", "Объем собственных средств (тыс. руб.)", StringClass.get(30), project);
-        hideAmountOwnFundsProject = addHideCaptionProp(privateGroup, "Укажите", amountOwnFundsProject, isOwnFundsProject);
+        hideAmountOwnFundsProject = addHideCaptionProp(privateGroup, "Укажите", isOwnFundsProject);
 
         isPlanningSearchSourceProject = addDProp(sourcesFundingGroup, "isPlanningSearchSourceProject", "Планируется поиск источника финансирования проекта", LogicalClass.instance, project);
         amountFundsProject = addDProp(sourcesFundingGroup, "amountFundsProject", "Требуемый объем средств (тыс. руб.)", StringClass.get(30), project);
-        hideAmountFundsProject = addHideCaptionProp(privateGroup, "Укажите", amountFundsProject, isPlanningSearchSourceProject);
+        hideAmountFundsProject = addHideCaptionProp(privateGroup, "Укажите", isPlanningSearchSourceProject);
 
         isOtherSoursesProject = addDProp(sourcesFundingGroup, "isOtherSoursesProject", "Иное", LogicalClass.instance, project);
         commentOtherSoursesProject = addDProp(sourcesFundingGroup, "commentOtherSoursesProject", "Комментарий", InsensitiveStringClass.get(2000), project);
         commentOtherSoursesProject.setMinimumWidth(10);
         commentOtherSoursesProject.setPreferredWidth(50);
-        hideCommentOtherSoursesProject = addHideCaptionProp(privateGroup, "Укажите", commentOtherSoursesProject, isOtherSoursesProject);
+        hideCommentOtherSoursesProject = addHideCaptionProp(privateGroup, "Укажите", isOtherSoursesProject);
 
         // оборудование
         isOwnedEquipmentProject = addDProp(equipmentGroup, "isOwnedEquipmentProject", "Оборудование имеется в собственности и/или в пользовании Вашей организации", LogicalClass.instance, project);
@@ -2541,26 +2541,26 @@ public class SkolkovoLogicsModule extends LogicsModule {
         ownerEquipmentProject = addDProp(equipmentGroup, "ownerEquipmentProject", "Укажите собственника оборудования и его контактную информацию", InsensitiveStringClass.get(2000), project);
         ownerEquipmentProject.setMinimumWidth(10);
         ownerEquipmentProject.setPreferredWidth(50);
-        hideDescriptionTransferEquipmentProject = addHideCaptionProp(privateGroup, "Укажите", descriptionTransferEquipmentProject, isTransferEquipmentProject);
-        hideOwnerEquipmentProject = addHideCaptionProp(privateGroup, "Укажите", ownerEquipmentProject, isTransferEquipmentProject);
+        hideDescriptionTransferEquipmentProject = addHideCaptionProp(privateGroup, "Укажите", isTransferEquipmentProject);
+        hideOwnerEquipmentProject = addHideCaptionProp(privateGroup, "Укажите", isTransferEquipmentProject);
 
         isPlanningEquipmentProject = addDProp(equipmentGroup, "isPlanningEquipmentProject", "Ваша организация планирует использовать для реализации проекта оборудование, которое имеется в собственности или в пользовании Фонда «Сколково» (учрежденных им юридических лиц)", LogicalClass.instance, project);
         specificationEquipmentProject = addDProp(equipmentGroup, "specificationEquipmentProject", "Укажите данное оборудование", InsensitiveStringClass.get(2000), project);
         specificationEquipmentProject.setMinimumWidth(10);
         specificationEquipmentProject.setPreferredWidth(50);
-        hideSpecificationEquipmentProject = addHideCaptionProp(privateGroup, "Укажите", specificationEquipmentProject, isPlanningEquipmentProject);
+        hideSpecificationEquipmentProject = addHideCaptionProp(privateGroup, "Укажите", isPlanningEquipmentProject);
 
         isSeekEquipmentProject = addDProp(equipmentGroup, "isSeekEquipmentProject", "Оборудование имеется на рынке, но Ваша организация не имеет возможности приобрести его в собственность или в пользование и ищет возможность получить доступ к такому оборудованию", LogicalClass.instance, project);
         descriptionEquipmentProject = addDProp(equipmentGroup, "descriptionEquipmentProject", "Опишите данное оборудование", InsensitiveStringClass.get(2000), project);
         descriptionEquipmentProject.setMinimumWidth(10);
         descriptionEquipmentProject.setPreferredWidth(50);
-        hideDescriptionEquipmentProject = addHideCaptionProp(privateGroup, "Укажите", descriptionEquipmentProject, isSeekEquipmentProject);
+        hideDescriptionEquipmentProject = addHideCaptionProp(privateGroup, "Укажите", isSeekEquipmentProject);
 
         isOtherEquipmentProject = addDProp(equipmentGroup, "isOtherEquipmentProject", "Иное", LogicalClass.instance, project);
         commentEquipmentProject = addDProp(equipmentGroup, "commentEquipmentProject", "Комментарий", InsensitiveStringClass.get(2000), project);
         commentEquipmentProject.setMinimumWidth(10);
         commentEquipmentProject.setPreferredWidth(50);
-        hideCommentEquipmentProject = addHideCaptionProp(privateGroup, "Укажите", commentEquipmentProject, isOtherEquipmentProject);
+        hideCommentEquipmentProject = addHideCaptionProp(privateGroup, "Укажите", isOtherEquipmentProject);
 
         // документы
         fileNativeRoadMapProject = addDProp("fileNativeRoadMapProject", "Файл дорожной карты", DynamicFormatFileClass.instance, project);
@@ -2630,12 +2630,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
         loadFileIntentionOwnerPatent = addLFAProp(baseGroup, "Загрузить файл документа о передаче права", fileIntentionOwnerPatent);
         openFileIntentionOwnerPatent = addOFAProp(baseGroup, "Открыть файл документа о передаче права", fileIntentionOwnerPatent);
 
-        hideOwnerPatent = addHideCaptionProp(privateGroup, "Укажите", ownerPatent, isOwned);
-        hideNameNativeOwnerTypePatent = addHideCaptionProp(privateGroup, "Укажите", nameNativeOwnerTypePatent, isOwned);
-        hideNameForeignOwnerTypePatent = addHideCaptionProp(privateGroup, "Укажите", nameForeignOwnerTypePatent, isOwned);
-        hideFileIntentionOwnerPatent = addHideCaptionProp(privateGroup, "Укажите", fileIntentionOwnerPatent, isOwned);
-        hideLoadFileIntentionOwnerPatent = addHideCaptionProp(privateGroup, "Укажите", loadFileIntentionOwnerPatent, isOwned);
-        hideOpenFileIntentionOwnerPatent = addHideCaptionProp(privateGroup, "Укажите", openFileIntentionOwnerPatent, isOwned);
+        hideOwnerPatent = addHideCaptionProp(privateGroup, "Укажите", isOwned);
+        hideNameNativeOwnerTypePatent = addHideCaptionProp(privateGroup, "Укажите", isOwned);
+        hideNameForeignOwnerTypePatent = addHideCaptionProp(privateGroup, "Укажите", isOwned);
+        hideFileIntentionOwnerPatent = addHideCaptionProp(privateGroup, "Укажите", isOwned);
+        hideLoadFileIntentionOwnerPatent = addHideCaptionProp(privateGroup, "Укажите", isOwned);
+        hideOpenFileIntentionOwnerPatent = addHideCaptionProp(privateGroup, "Укажите", isOwned);
 
         isValuated = addDProp(baseGroup, "isValuated", "Проводилась ли оценка указанных результатов интеллектальной деятельности", LogicalClass.instance, patent);
         valuatorPatent = addDProp(baseGroup, "valuatorPatent", "Укажите оценщика и его контактную информацию", InsensitiveStringClass.get(2000), patent);
@@ -2644,10 +2644,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
         fileActValuationPatent = addDProp("fileActValuationPatent", "Файл акта оценки", DynamicFormatFileClass.instance, patent);
         loadFileActValuationPatent = addLFAProp(baseGroup, "Загрузить файл акта оценки", fileActValuationPatent);
         openFileActValuationPatent = addOFAProp(baseGroup, "Открыть файл акта оценки", fileActValuationPatent);
-        hideValuatorPatent = addHideCaptionProp(privateGroup, "Укажите", valuatorPatent, isValuated);
-        hideFileActValuationPatent = addHideCaptionProp(privateGroup, "Укажите", fileActValuationPatent, isValuated);
-        hideLoadFileActValuationPatent = addHideCaptionProp(privateGroup, "Укажите", loadFileActValuationPatent, isValuated);
-        hideOpenFileActValuationPatent = addHideCaptionProp(privateGroup, "Укажите", openFileActValuationPatent, isValuated);
+        hideValuatorPatent = addHideCaptionProp(privateGroup, "Укажите", isValuated);
+        hideFileActValuationPatent = addHideCaptionProp(privateGroup, "Укажите", isValuated);
+        hideLoadFileActValuationPatent = addHideCaptionProp(privateGroup, "Укажите", isValuated);
+        hideOpenFileActValuationPatent = addHideCaptionProp(privateGroup, "Укажите", isValuated);
 
         // учёные
         projectAcademic = addDProp(idGroup, "projectAcademic", "Проект ученого", project, academic);
@@ -3187,7 +3187,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         generateVoteProject = addAProp(actionGroup, new GenerateVoteActionProperty());
         copyResultsVote = addAProp(actionGroup, new CopyResultsActionProperty());
         needNameExtraVoteProject = addJProp(and(false, false, false, false), needExtraVoteProject, 1, nameNativeProject, 1, nameForeignProject, 1, nameNativeClaimerProject, 1, nameForeignClaimerProject, 1);
-        hideGenerateVoteProject = addHideCaptionProp(privateGroup, "Сгенерировать заседание", generateVoteProject, needNameExtraVoteProject);
+        hideGenerateVoteProject = addHideCaptionProp(privateGroup, "Сгенерировать заседание", needNameExtraVoteProject);
 //        generateVoteProject.setDerivedForcedChange(addCProp(ActionClass.instance, true), needExtraVoteProject, 1, autoGenerateProject, 1);
 
         includeProjectClusterForesight = addAProp(actionGroup, new IncludeProjectClusterForesightActionProperty(project, cluster, foresight));
@@ -5623,10 +5623,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addPropertyDraw(objProject, editR1Project, editR2Project, editClaimerProject);
 
             setForceViewType(editR1Project, ClassViewType.PANEL);
-            getPropertyDraw(editR1Project).propertyCaption = addPropertyObject(addHideCaptionProp(editR1Project, isR1Project), objProject);
+            getPropertyDraw(editR1Project).propertyCaption = addPropertyObject(addHideCaptionProp(isR1Project), objProject);
 
             setForceViewType(editR2Project, ClassViewType.PANEL);
-            getPropertyDraw(editR2Project).propertyCaption = addPropertyObject(addHideCaptionProp(editR2Project, isR2Project), objProject);
+            getPropertyDraw(editR2Project).propertyCaption = addPropertyObject(addHideCaptionProp(isR2Project), objProject);
 
             setForceViewType(editClaimerProject, ClassViewType.PANEL);
 
@@ -7308,7 +7308,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             setForceViewType(nameNativeShortCurrentCluster, ClassViewType.PANEL);
 
             addPropertyDraw(objProject, resolutionIPGroup);
-            hideLoadFileResolutionIPProject = addHideCaptionProp(privateGroup, "Загрузить", loadFileResolutionIPProject, addJProp(baseLM.andNot1, addCProp(LogicalClass.instance, true, project), 1, fileResolutionIPProject, 1));
+            hideLoadFileResolutionIPProject = addHideCaptionProp(privateGroup, "Загрузить", addJProp(baseLM.andNot1, addCProp(LogicalClass.instance, true, project), 1, fileResolutionIPProject, 1));
             getPropertyDraw(loadFileResolutionIPProject).propertyCaption = addPropertyObject(hideLoadFileResolutionIPProject, objProject);
             getPropertyDraw(loadFileResolutionIPProject).forceViewType = ClassViewType.PANEL;
 

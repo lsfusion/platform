@@ -41,7 +41,7 @@ public class DataPanelView extends JPanel implements PanelView {
 
         label = new JLabel();
         label.setBorder(BorderFactory.createEmptyBorder(0, 4, 0, 4));
-        label.setText(property.getFullCaption());
+        label.setText(property.getEditCaption());
         label.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         property.design.designHeader(label);
@@ -50,7 +50,7 @@ public class DataPanelView extends JPanel implements PanelView {
         //readOnly будет проверяться на уровне сервера и обрезаться возвратом пустого changeType
         table = new DataPanelViewTable(iform, this, columnKey, property);
 
-        setToolTip(property.caption);
+        setToolTip(property.getCaption());
 
         if (property.showTableFirst) {
             add(table);

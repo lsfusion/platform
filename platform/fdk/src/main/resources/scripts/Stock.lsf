@@ -122,6 +122,8 @@ stockDataSkuLedger = ABSTRACT stock(dataSkuLedger) PERSISTENT INDEXED;
 
 descriptionDataSkuLedger 'Название документа' = ABSTRACT STRING[200] (skuLedger) PERSISTENT;
 
+changedDataSkuLedger = ABSTRACT BOOLEAN (dataSkuLedger);
+
 // -------------------------------- Для всего ledger'а -------------------- //
 
 dateTimeSkuLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateTimeDataSkuLedger (ledger), dateTimeBatch (ledger) PERSISTENT INDEXED;
@@ -149,6 +151,9 @@ quantityInSkuLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quantityBatch(ledge
 quantityOutFIFOSkuLedger 'Кол-во' = ABSTRACT NUMERIC[14,3] (outFIFOSkuLedger) PERSISTENT;
 
 quantityOutSkuLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quantityOutFIFOSkuLedger(ledger) PERSISTENT;
+
+quantityDataSkuLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quantityInLIFOSkuLedger(ledger),
+                                                          quantityOutFIFOSkuLedger(ledger) PERSISTENT;
 
 quantitySkuLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quantityInSkuLedger(ledger),
                                                       quantityOutSkuLedger(ledger) PERSISTENT;
@@ -211,10 +216,17 @@ iterate(i, from, to) = RECURSION i==from AND from IS INTEGER AND to IS INTEGER S
 // мгновенный расчет себестоимости
 //WHEN ASSIGNED(isPostedDataSkuLedger(ledger)) DO EXEC resetCostDataSkuLedger (ledger) ORDER orderDataSkuLedger(ledger);
 ON APPLY SINGLE {
-    SET costDataSkuLedgerBatch(ledger, batch) <- NULL WHERE ASSIGNED(isPostedDataSkuLedger(ledger));
+    LOCAL changedLedger = BOOLEAN (dataSkuLedger);
+    SET changedLedger(ledger) <- (ASSIGNED(isPostedDataSkuLedger(ledger))
+                                  OR CHANGED(quantityDataSkuLedger(ledger))
+                                  OR CHANGED(skuDataSkuLedger(ledger))
+                                  OR CHANGED(stockDataSkuLedger(ledger))
+                                  OR CHANGED(changedDataSkuLedger(ledger)))
+                                 AND isPostedDataSkuLedger(ledger);
+    SET costDataSkuLedgerBatch(ledger, batch) <- NULL WHERE changedLedger(ledger);
 
     LOCAL orderedLedger = INTEGER (dataSkuLedger);
-    SET orderedLedger(ledger) <- PARTITION SUM 1 IF ASSIGNED(isPostedDataSkuLedger(ledger)) BY skuDataSkuLedger(ledger) ORDER orderDataSkuLedger(ledger);
+    SET orderedLedger(ledger) <- PARTITION SUM 1 IF changedLedger(ledger) BY skuDataSkuLedger(ledger) ORDER orderDataSkuLedger(ledger);
 
     FOR iterate(i, 1, [GROUP MAX orderedLedger(ledger)]()) DO
         SET costDataSkuLedgerBatch(ledger, batch) <- quantityDataSkuLedgerBatch(ledger, batch) WHERE orderedLedger(ledger) == i;

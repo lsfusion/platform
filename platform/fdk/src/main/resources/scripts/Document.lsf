@@ -117,6 +117,9 @@ META defineDocumentHeaderPosted (object)
     isDraft###object 'Открыт' (object) = object IS object AND NOT object IS object##Posted PERSISTENT;
     isPosted###object 'Закрыт' (object) = object IS object##Posted PERSISTENT;
 
+    prePost###object 'Провести' (object) = [ACTION CHANGECLASS object TO object##Posted ] (object)
+                                    IF object IS object AND NOT object IS object##Posted TOOLBAR CONFIRM;
+
     post###object 'Провести' (object) = [ACTION (object) NEWSESSION AUTOAPPLY { CHANGECLASS object TO object##Posted; } ] (object)
                                     IF object IS object AND NOT object IS object##Posted TOOLBAR CONFIRM;
 

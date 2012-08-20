@@ -142,10 +142,20 @@ NAVIGATOR {
         }
     }
 
-    logistics {
-        logisticsClassifier {
+    stock {
+        stockClassifier {
             ADD warehouses;
         }
+        NEW inventory 'Инвентаризация' {
+            ADD inventories;
+        }
+        NEW retirement 'Списание' {
+            ADD writeOffs;
+            ADD writeOffCommitteeDialog;
+        }
+    }
+
+    logistics {
         NEW transfers 'Трансферы' {
             ADD innerOrders;
             ADD orderPickings;
@@ -193,22 +203,14 @@ NAVIGATOR {
             ADD operationCashRegister;
             ADD POS;
         }
-        NEW RetailCRM 'CRM' {
+        NEW retailCRM 'CRM' {
             ADD clients;
             ADD discountCards;
             ADD promotionGroups;
             ADD promotions;
         }
-        NEW Invent 'Инвентаризация' {
-            ADD inventories;
-        }
-
         NEW retailAggregations 'Сводная информация' {
             ADD sumAccountDocumentLedger;
-        }
-        NEW retirement 'Списание' {
-            ADD writeOffs;
-            ADD writeOffCommitteeDialog;
         }
     }
     wholesaleTrade {

@@ -98,6 +98,7 @@ useRetailPriceReturnOutDetail(detail) = stockReturnOutDetail(detail) IS departme
 @implementSkuLedger(returnOut, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantityReturnOutDetail (ledger);
 limitOutFIFOSkuLedgerBatch (ledger, batch) += quantityReturnOutDetail(ledger) IF batch == saleInBatchDetailReturnOutDetail(ledger);
+changedDataSkuLedger(ledger) += CHANGED(saleInBatchDetailReturnOutDetail(ledger));
 sumOutSkuLedger(ledger) += accountSumReturnOutDetail(ledger);
 
 @defineConstraintSkuLedgerCosted(returnOut, 'Не хватает остатков по партиям для возврата товаров');

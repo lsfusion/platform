@@ -146,7 +146,7 @@ public class GridController {
                         public void actionPerformed(ActionEvent e) {
                             try {
                                 ClientPropertyDraw property = getCurrentProperty();
-                                String caption = property.getCaption() != null ? property.getCaption() : table.getColumnName(table.getSelectedColumn()).trim();
+                                String caption = property.getCaption();
                                 if (property.baseType instanceof ClientIntegralClass) {
                                     ClientGroupObjectValue columnKey = table.getTableModel().getColumnKey(table.getSelectedColumn());
                                     Object sum = form.calculateSum(property.getID(), columnKey.serialize());

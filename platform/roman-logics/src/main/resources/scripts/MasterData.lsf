@@ -137,7 +137,7 @@ addressStock(stock) += addressWarehouse(stock);
 
 employeeDivisionGroupEmployeeDivision (warehouse) += groupWarehouseWarehouse(warehouse);
 
-FORM warehouse 'Оптовый склад'
+FORM warehouse 'Склад'
 
     OBJECTS           w=warehouse FIXED PANEL
     PROPERTIES(w)     name, nameGroupWarehouseWarehouse, addressWarehouse, nameCompanyWarehouse
@@ -146,7 +146,7 @@ FORM warehouse 'Оптовый склад'
     EDIT warehouse OBJECT w
 ;
 
-FORM warehouses 'Оптовые склады'
+FORM warehouses 'Склады'
 
     OBJECTS           w=warehouse
     PROPERTIES(w)     READONLY name, addressWarehouse, nameCompanyWarehouse

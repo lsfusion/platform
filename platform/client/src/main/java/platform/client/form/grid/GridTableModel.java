@@ -1,6 +1,5 @@
 package platform.client.form.grid;
 
-import platform.client.logics.ClientGroupObject;
 import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
 import platform.client.logics.classes.ClientObjectType;
@@ -93,17 +92,10 @@ public class GridTableModel extends AbstractTableModel {
 
         //заполняем имена колонок
         for (int i = 0; i < columnNames.length; ++i) {
-            String resultCaption = toCaption(columnProps[i].getFullCaption());
-
             Map<ClientGroupObjectValue, Object> propColumnCaptions = columnCaptions.get(columnProps[i]);
-            if (propColumnCaptions != null) {
-                String columnCaption = toCaption(propColumnCaptions.get(columnKeys[i]));
-                resultCaption += resultCaption.isEmpty()
-                        ? columnCaption
-                        : " [" + columnCaption + "]";
-            }
-
-            columnNames[i] = resultCaption;
+            columnNames[i] = propColumnCaptions != null ?
+                                       columnProps[i].getDynamicCaption(toCaption(propColumnCaptions.get(columnKeys[i]))) :
+                                       toCaption(columnProps[i].getCaption());
         }
     }
 

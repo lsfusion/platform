@@ -1,5 +1,6 @@
 package platform.server.logics.property.actions.form;
 
+import platform.interop.form.PropertyReadType;
 import platform.server.classes.ValueClass;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.PropertyDrawEntity;
@@ -64,7 +65,7 @@ public abstract class FormToolbarActionProperty extends CustomActionProperty {
         CalcPropertyMapImplement showIfImplement = createAnd(interfaces, createTrue(), ands, nots);
 
         propertyDraw.propertyCaption = form.addPropertyObject(
-                new LCP(createAnd(new ArrayList(), createStatic(showCaption ? caption : ""), showIfImplement).property)
+                new LCP(createAnd(new ArrayList(), createStatic(PropertyReadType.CAPTION_ORIGINAL), showIfImplement).property)
         );
     }
 
