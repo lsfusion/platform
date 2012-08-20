@@ -122,6 +122,7 @@ namePositionChairmanInventory 'Должность председателя' (inv
 nameEmployeeInventory 'Члены комиссии' (inventory) = nameEmployeeCommittee(committeeInventory(inventory)) IN inventoryCommitteeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
 inInventoryEmployee 'Является членом комиссии' (inventory, employee) = inCommitteeEmployee(committeeInventory(inventory), employee);
 
+isBatchInventory 'По партиям' (inventory) = DATA BOOLEAN (inventory);
 
 CLASS listInventory 'Опись (открытая)';
 TABLE listInventory (listInventory);
@@ -192,6 +193,12 @@ idBarcodePageInventoryDetail 'Штрих-код' (pageInventoryDetail) = idBarco
 @defineDocumentHeaderQuantity(pageInventory);
 @defineDocumentHeaderSum(pageInventory);
 
+// Для инвентаризации по партиям
+batchPageInventoryDetail 'Партия (ИД)' (pageInventoryDetail) = DATA batch (pageInventoryDetail);
+
+CONSTRAINT skuBatch(batchPageInventoryDetail(pageInventoryDetail)) != skuPageInventoryDetail(pageInventoryDetail)
+    CHECKED BY batchPageInventoryDetail MESSAGE 'Партия не текущего товара';
+
 // Сличительная ведомость
 
 CLASS ABSTRACT collationSheet 'Сличительная ведомость' : outAccountDocumentLedger;
@@ -200,6 +207,10 @@ TABLE collationSheet (collationSheet);
 CLASS registerCollationSheet 'Сличительная ведомость по описи' : collationSheet;
 CLASS remainsCollationSheet 'Сличительная ведомость по остаткам' : collationSheet;
 CLASS manyCollationSheet 'Сличительная ведомость по множеству товаров' : collationSheet;
+
+CLASS registerBCollationSheet 'Сличительная ведомость по описи (по партиям)' : registerCollationSheet;
+CLASS remainsBCollationSheet 'Сличительная ведомость по остаткам (по партиям)' : remainsCollationSheet;
+CLASS manyBCollationSheet 'Сличительная ведомость по множеству товаров (по партиям)' : manyCollationSheet;
 
 @defineDocumentHeaderDepartmentStore(collationSheet);
 
@@ -282,7 +293,7 @@ pricePageInventoryDetailListInventorySku 'Цена в описи' (listInventory
 sumPageInventoryDetailListInventorySku 'Сумма в описи' (listInventory, sku) = GROUP SUM sumPageInventoryDetail(pageInventoryDetail)
     BY listInventoryPageInventoryDetail(pageInventoryDetail), skuPageInventoryDetail(pageInventoryDetail);
 
-indexListInventorySku '№ п/п' (listInventory, sku) = PARTITION SUM 1 IF  quantityPageInventoryDetailListInventorySku(listInventory, sku) > 0 BY listInventory ORDER nameSku(sku);
+indexListInventorySku 'Номер строки' (listInventory, sku) = PARTITION SUM 1 IF  quantityPageInventoryDetailListInventorySku(listInventory, sku) > 0 BY listInventory ORDER nameSku(sku);
 countIndexListInventory 'Количество наименований товара'(listInventory) = GROUP SUM 1 IF quantityPageInventoryDetailListInventorySku(listInventory, sku) > 0
     BY listInventory IN documentSumGroup;
 
@@ -379,21 +390,41 @@ convertPriceCollationSheet 'Пересчитать цены в сличител�
 
 // автоматическое создание сличительной ведомости (товары из описей) //
 includeRegisterDepartmentStoreInventory(departmentStore, inventory) =
-    includeDepartmentStoreInventory(departmentStore, inventory) AND typeOfAdditionDepartmentStoreInventory(departmentStore, inventory) == typeOfAddition.register;
+    includeDepartmentStoreInventory(departmentStore, inventory) AND typeOfAdditionDepartmentStoreInventory(departmentStore, inventory) == typeOfAddition.register
+    AND NOT isBatchInventory(inventory);
 
 @defineAggregationDoubleCustom(departmentStoreCollationSheet, inventoryCollationSheet, departmentStore, inventory, registerCollationSheet, includeRegisterDepartmentStoreInventory);
 
+includeBRegisterDepartmentStoreInventory(departmentStore, inventory) =
+    includeDepartmentStoreInventory(departmentStore, inventory) AND typeOfAdditionDepartmentStoreInventory(departmentStore, inventory) == typeOfAddition.register
+    AND isBatchInventory(inventory);
+
+@defineAggregationDoubleCustom(departmentStoreCollationSheet, inventoryCollationSheet, departmentStore, inventory, registerBCollationSheet, includeBRegisterDepartmentStoreInventory);
 // автоматическое создание сличительной ведомости (по остаткам) //
 includeRemainsDepartmentStoreInventory(departmentStore, inventory) =
-    includeDepartmentStoreInventory(departmentStore, inventory) AND typeOfAdditionDepartmentStoreInventory(departmentStore, inventory) == typeOfAddition.remains;
+    includeDepartmentStoreInventory(departmentStore, inventory) AND typeOfAdditionDepartmentStoreInventory(departmentStore, inventory) == typeOfAddition.remains
+    AND NOT isBatchInventory(inventory);
 
 @defineAggregationDoubleCustom(departmentStoreCollationSheet, inventoryCollationSheet, departmentStore, inventory, remainsCollationSheet, includeRemainsDepartmentStoreInventory);
 
+includeBRemainsDepartmentStoreInventory(departmentStore, inventory) =
+    includeDepartmentStoreInventory(departmentStore, inventory) AND typeOfAdditionDepartmentStoreInventory(departmentStore, inventory) == typeOfAddition.remains
+    AND isBatchInventory(inventory);
+
+@defineAggregationDoubleCustom(departmentStoreCollationSheet, inventoryCollationSheet, departmentStore, inventory, remainsBCollationSheet, includeBRemainsDepartmentStoreInventory);
+
 // автоматическое создание сличительной ведомости (по множеству товаров) //
 includeManyDepartmentStoreInventory(departmentStore, inventory) =
-    includeDepartmentStoreInventory(departmentStore, inventory) AND typeOfAdditionDepartmentStoreInventory(departmentStore, inventory) == typeOfAddition.many;
+    includeDepartmentStoreInventory(departmentStore, inventory) AND typeOfAdditionDepartmentStoreInventory(departmentStore, inventory) == typeOfAddition.many
+    AND NOT isBatchInventory(inventory);
 
 @defineAggregationDoubleCustom(departmentStoreCollationSheet, inventoryCollationSheet, departmentStore, inventory, manyCollationSheet, includeManyDepartmentStoreInventory);
+
+includeBManyDepartmentStoreInventory(departmentStore, inventory) =
+    includeDepartmentStoreInventory(departmentStore, inventory) AND typeOfAdditionDepartmentStoreInventory(departmentStore, inventory) == typeOfAddition.many
+    AND isBatchInventory(inventory);
+
+@defineAggregationDoubleCustom(departmentStoreCollationSheet, inventoryCollationSheet, departmentStore, inventory, manyBCollationSheet, includeBManyDepartmentStoreInventory);
 
 //---------------------------- Изменение остатка инвентаризации ----------------------------//
 
@@ -751,7 +782,7 @@ toPrintDetailCollationSheet 'Слич. в-ть' (collationSheet) =
 
 FORM inventory 'Инвентаризация'
     OBJECTS          in=inventory FIXED PANEL
-    PROPERTIES (in)  nameNumeratorObject, numberObject, seriesObject, setValueNumeratedObject,
+    PROPERTIES (in)  isBatchInventory, nameNumeratorObject, numberObject, seriesObject, setValueNumeratedObject,
                      nameInventory, nameTypeOfAdditionInventory, dateInventory, timeInventory,
                      noteInventory, infoInventory, nameDepartmentInventory, dialogDepartmentByInventory, convertPriceInventory,
                      fillBalanceInventory, timeFromInventory, timeToInventory, nameHeadManInventory,
@@ -771,7 +802,7 @@ FORM inventory 'Инвентаризация'
     PROPERTIES(pl)   READONLY countPageInventoryDetailPageInventory, quantityPageInventoryDetailPageInventory, sumPageInventoryDetailPageInventory, dumb1
 
     OBJECTS          dp=pageInventoryDetail
-    PROPERTIES (dp)  READONLY indexPageInventoryDetail, idBarcodePageInventoryDetail, nameSkuPageInventoryDetail, quantityPageInventoryDetail,
+    PROPERTIES (dp)  READONLY indexPageInventoryDetail, idBarcodePageInventoryDetail, nameSkuPageInventoryDetail, batchPageInventoryDetail, quantityPageInventoryDetail,
                      pricePageInventoryDetail, sumPageInventoryDetail
 
     OBJECTS         it=sku
@@ -959,7 +990,7 @@ FORM inventories 'Инвентаризации'
     PROPERTIES(in) READONLY objectClassName, numberObject, seriesObject, dateInventory, timeInventory,
                             nameDepartmentInventory, nameInventory, noteInventory
 
-    PROPERTIES(in) FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
+    PROPERTIES(in) FORCE PANEL READONLY nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
     PROPERTIES(in)  ADDFORM, EDITFORM SHOWIF isDraftInventory(in), delete FORCE PANEL SHOWIF isDraftInventory(in),
                     postInventory SHOWIF isDraftInventory(in), unpostInventory SHOWIF isPostedInventory(in)//(in) ADDFORM, EDITFORM, delete
@@ -973,9 +1004,9 @@ FORM inventories 'Инвентаризации'
                    quantityPageInventoryDetailListInventory, sumPageInventoryDetailListInventory
 
     OBJECTS         i=sku
-    PROPERTIES (li,i) indexListInventorySku
-    PROPERTIES (i)    idBarcodeSku, nameSku
-    PROPERTIES (li,i) quantityPageInventoryDetailListInventorySku, pricePageInventoryDetailListInventorySku, sumPageInventoryDetailListInventorySku
+    PROPERTIES (li,i) READONLY indexListInventorySku
+    PROPERTIES (i)    READONLY idBarcodeSku, nameSku
+    PROPERTIES (li,i) READONLY quantityPageInventoryDetailListInventorySku, pricePageInventoryDetailListInventorySku, sumPageInventoryDetailListInventorySku
 
     PROPERTIES(li)  toPrintListInventory
 
@@ -985,7 +1016,7 @@ FORM inventories 'Инвентаризации'
                      quantityPageInventoryDetailCollationSheet, quantityBalanceCollationSheet, quantityShortageCollationSheet,
                      sumPageInventoryDetailCollationSheet, sumBalanceCollationSheet, sumShortageCollationSheet
 
-    PROPERTIES (cs)  FORCE PANEL sumSkuPageInventoryDetailCollationSheet, sumContainerPageInventoryDetailCollationSheet,
+    PROPERTIES (cs)  FORCE PANEL READONLY sumSkuPageInventoryDetailCollationSheet, sumContainerPageInventoryDetailCollationSheet,
                      sumSkuBalanceCollationSheet, sumContainerBalanceCollationSheet,
                      sumSkuShortageCollationSheet, sumContainerShortageCollationSheet
 
@@ -993,7 +1024,7 @@ FORM inventories 'Инвентаризации'
     PROPERTIES (it)   READONLY nASku=nameSku, idBarcodeSku
 
     PROPERTIES(cs, it) READONLY quantityPageInventoryDetailCollationSheetSku, quantityBalanceCollationSheetSku, quantityShortageCollationSheetSku
-    PROPERTIES       pricePageInventoryDetailCollationSheetSku (cs,it) BACKGROUND differentPriceCollationSheetSku(cs, it),
+    PROPERTIES       READONLY pricePageInventoryDetailCollationSheetSku (cs,it) BACKGROUND differentPriceCollationSheetSku(cs, it),
                      priceBalanceCollationSheetSku(cs, it) BACKGROUND differentPriceCollationSheetSku(cs, it)
 
     PROPERTIES(cs, it) READONLY sumPageInventoryDetailCollationSheetSku, sumBalanceCollationSheetSku, sumShortageCollationSheetSku
