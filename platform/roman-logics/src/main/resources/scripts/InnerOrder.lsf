@@ -675,7 +675,7 @@ EXTEND DESIGN innerOrders {
 
 // ---------------------------------------- Приемка ------------------------------------ //
 
-CLASS innerOrderRec 'Приемка товаров по внутреннему заказу' : historyObject, numberedObject;
+CLASS innerOrderRec 'Приемка товаров по внутреннему заказу' : historyObject;
 CLASS innerOrderRecPosted 'Проведенная приемка товаров по внутреннему заказу' : innerOrderRec, postedObject;
 
 CLASS innerOrderRecDetail 'Строка приемки товаров по внутреннему заказу';
@@ -688,8 +688,7 @@ innerOrderRecOrderPicking (orderPicking) = GROUP UNIQUE innerOrderRec BY orderPi
 orderPickingInnerOrderRecDetail (detail) = orderPickingInnerOrderRec(innerOrderRecInnerOrderRecDetail(detail));
 innerOrderRecOrderPickingDetail (detail) = innerOrderRecOrderPicking(orderPickingOrderPickingDetail(detail));
 
-
-
+@defineDocumentAggregationHeaderNumber(orderPicking, innerOrderRec);
 @defineDocumentAggregationHeaderStockPrefix(orderPicking, innerOrderRec, stock, 'Склад-получатель', destination, );
 
 @defineDocumentPosted(innerOrderRec);
@@ -707,7 +706,7 @@ innerOrderRecOrderPickingDetail (detail) = innerOrderRecOrderPicking(orderPickin
 FORM innerOrderRec 'Приемка товаров по внутреннему заказу'
     OBJECTS t = innerOrderRec FIXED PANEL
 
-    PROPERTIES (t) dateInnerOrderRec, timeInnerOrderRec,
+    PROPERTIES (t) numberInnerOrderRec, seriesInnerOrderRec, dateInnerOrderRec, timeInnerOrderRec,
                    nameStockInnerOrderRec, noteInnerOrderRec,
                    countInnerOrderRecDetailInnerOrderRec, quantityInnerOrderRecDetailInnerOrderRec
 
@@ -731,6 +730,8 @@ DESIGN innerOrderRec FROM DEFAULT {
                 ADD t.documentHeaderGroup {
                     childConstraints = TO THE RIGHT;
                     ADD PROPERTY (nameStockInnerOrderRec);
+                    ADD PROPERTY (numberInnerOrderRec);
+                    ADD PROPERTY (seriesInnerOrderRec);
                     ADD PROPERTY (dateInnerOrderRec);
                     ADD PROPERTY (timeInnerOrderRec);
                 }
@@ -850,7 +851,7 @@ innerOrderDiffInnerOrderDiffSDetail (detail) = innerOrderDiffInnerOrderRec(inner
 @defineDocumentDetailTimeCustom(innerOrderDiff, innerOrderDiffEDetail);
 @defineDocumentDetailTimeCustom(innerOrderDiff, innerOrderDiffSDetail);
 
-@defineDocumentAggregationHeaderNumber(innerOrderRec, innerOrderDiff);
+@defineDocumentAggregationHeaderNumberCustom(innerOrderRec, innerOrderDiff, innerOrderRec);
 
 @defineDocumentHeaderDescriptionCustom(innerOrderDiff, seriesNumberInnerOrderDiff, 'Акт расхождений приемки товаров по внутреннему заказу');
 @defineDocumentDetailDescriptionCustom(innerOrderDiff, innerOrderDiffEDetail);
