@@ -84,7 +84,7 @@ dateTimeReceiptDetail 'Дата/время' (receiptDetail) = UNION EXCLUSIVE da
 
 @defineDocumentDetailPostedCustom(receipt, receiptSaleDetail);
 @defineDocumentDetailPostedCustom(receipt, receiptReturnDetail);
-isPostedReceiptDetail 'Закрыт' (receiptDetail) = UNION EXCLUSIVE isPostedReceiptReturnDetail(receiptDetail), isPostedReceiptSaleDetail(receiptDetail) PERSISTENT;
+isPostedReceiptDetail 'Проведен' (receiptDetail) = UNION EXCLUSIVE isPostedReceiptReturnDetail(receiptDetail), isPostedReceiptSaleDetail(receiptDetail) PERSISTENT;
 
 @defineDocumentDetailDepartmentStoreCustom(receipt, receiptSaleDetail);
 @defineDocumentDetailDepartmentStoreCustom(receipt, receiptReturnDetail);

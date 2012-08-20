@@ -11,7 +11,7 @@ CLASS ABSTRACT outAccountDocumentLedger 'Учетный документ (рас
 dateTimeAccountDocumentLedger 'Дата/время' (ledger) = ABSTRACT DATETIME (accountDocumentLedger) PERSISTENT INDEXED;
 dateAccountDocumentLedger 'Дата' (ledger) = dateInTime(dateTimeAccountDocumentLedger(ledger)) PERSISTENT;
 
-isPostedAccountDocumentLedger 'Закрыт' (ledger) = ABSTRACT BOOLEAN (accountDocumentLedger) PERSISTENT;
+isPostedAccountDocumentLedger 'Проведен' (ledger) = ABSTRACT BOOLEAN (accountDocumentLedger) PERSISTENT;
 
 stockAccountDocumentLedger (ledger) = ABSTRACT stock (accountDocumentLedger) PERSISTENT;
 nameStockAccountDocumentLedger 'Отдел' (ledger) = name(stockAccountDocumentLedger(ledger));

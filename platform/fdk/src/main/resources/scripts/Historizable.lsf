@@ -244,7 +244,7 @@ META defineHistorizableLedgerDouble(property, caption, type, key0, key1)
     dateTime###property##Ledger 'Дата/время' (ledger) = ABSTRACT DATETIME (property##Ledger) PERSISTENT INDEXED;
     date###property##Ledger 'Дата' (ledger) = dateInTime(dateTime###property##Ledger(ledger)) PERSISTENT;
 
-    isPosted###property##Ledger 'Закрыт' (ledger) = ABSTRACT BOOLEAN (property##Ledger) PERSISTENT;
+    isPosted###property##Ledger 'Проведен' (ledger) = ABSTRACT BOOLEAN (property##Ledger) PERSISTENT;
 
     key0###property##Ledger (ledger) = ABSTRACT key0 (property##Ledger) PERSISTENT INDEXED;
 

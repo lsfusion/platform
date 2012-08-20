@@ -17,7 +17,7 @@ TABLE priceChangeDocumentDetail (priceChangeDocumentDetail);
 dateTimePriceChangeDocument 'Дата/время' (priceChangeDocument) = ABSTRACT DATETIME (priceChangeDocument) PERSISTENT INDEXED;
 datePriceChangeDocument 'Дата' (priceChangeDocument) = dateInTime(dateTimePriceChangeDocument(priceChangeDocument)) PERSISTENT;
 
-isPostedPriceChangeDocument 'Закрыт' (priceChangeDocument) = ABSTRACT BOOLEAN (priceChangeDocument) PERSISTENT;
+isPostedPriceChangeDocument 'Проведен' (priceChangeDocument) = ABSTRACT BOOLEAN (priceChangeDocument) PERSISTENT;
 
 numberPriceChangeDocument 'Номер документа' (priceChangeDocument) = ABSTRACT STRING[18] (priceChangeDocument) PERSISTENT;
 seriesPriceChangeDocument 'Серия документа' (priceChangeDocument) = ABSTRACT STRING[2] (priceChangeDocument) PERSISTENT;

@@ -208,7 +208,7 @@ inputDeclarationDetailCStoWH 'Подбор строк декларации' = AC
 
 FORM CStoWH 'Расход с СВХ'
     OBJECTS c = CStoWH FIXED PANEL
-    PROPERTIES (c) numberObject, seriesObject, dateCStoWH, timeCStoWH, nameCustomStoreCStoWH, nameWarehouseCStoWH,
+    PROPERTIES (c) objectClassName, numberObject, seriesObject, dateCStoWH, timeCStoWH, nameCustomStoreCStoWH, nameWarehouseCStoWH,
                    quantityCStoWHDetailCStoWH, sumCStoWHDetailCStoWH,
                    inputDeclarationDetailCStoWH, shortNameCurrencyCStoWH
     PROPERTIES (c) READONLY declarationsCStoWH, innerInvoicesCStoWH
@@ -222,6 +222,9 @@ FORM CStoWH 'Расход с СВХ'
 
     FILTERS inCStoWHCStoWHDetail(c, d)
 
+    EVENTS
+        ON OK EXEC prePostCStoWH(c)
+
     EDIT CStoWH OBJECT c
 ;
 
@@ -234,6 +237,7 @@ DESIGN CStoWH FROM DEFAULT {
                 childConstraints = TO THE BOTTOM;
                 ADD c.documentHeaderGroup {
                     childConstraints = TO THE RIGHT;
+                    ADD PROPERTY (objectClassName);
                     ADD PROPERTY (nameCustomStoreCStoWH);
                     ADD PROPERTY (nameWarehouseCStoWH);
                     ADD PROPERTY (numberObject);
@@ -241,17 +245,19 @@ DESIGN CStoWH FROM DEFAULT {
                     ADD PROPERTY (dateCStoWH);
                     ADD PROPERTY (timeCStoWH);
                 }
-                ADD c.documentPrmGroup {
-                    title = 'Справочная информация';
+                NEW row12 {
                     childConstraints = TO THE RIGHT;
-                };
-            }
-
-            NEW columnHeaderDeclaration {
-                title = 'Декларации';
-                childConstraints = TO THE BOTTOM;
-                ADD PROPERTY(inputDeclarationDetailCStoWH);
-                ADD PROPERTY(declarationsCStoWH);
+                    ADD c.documentPrmGroup {
+                        title = 'Справочная информация';
+                        childConstraints = TO THE RIGHT;
+                    }
+                    NEW columnHeaderDeclaration {
+                        title = 'Декларации';
+                        childConstraints = TO THE RIGHT;
+                        ADD PROPERTY(inputDeclarationDetailCStoWH);
+                        ADD PROPERTY(declarationsCStoWH);
+                    }
+                }
             }
             NEW columnHeaderSum {
                 ADD c.documentSumGroup {
@@ -260,17 +266,19 @@ DESIGN CStoWH FROM DEFAULT {
             }
         }
     }
+    PROPERTY(formOkAction) {
+        caption = 'Провести';
+    }
 }
 
 FORM CStoWHs 'Расходы с СВХ'
     OBJECTS c = CStoWH
-    PROPERTIES (c) READONLY isPostedCStoWH FORCE GRID, numberObject, seriesObject, dateCStoWH, timeCStoWH, nameCustomStoreCStoWH,
+    PROPERTIES (c) READONLY objectClassName, numberObject, seriesObject, dateCStoWH, timeCStoWH, nameCustomStoreCStoWH,
                             nameWarehouseCStoWH, declarationsCStoWH, innerInvoicesCStoWH, quantityCStoWHDetailCStoWH, sumCStoWHDetailCStoWH
 
     PROPERTIES (c) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
-    PROPERTIES (c) ADDFORM, EDITFORM SHOWIF isDraftCStoWH(c), delete FORCE PANEL SHOWIF isDraftCStoWH(c),
-                   postCStoWH SHOWIF isDraftCStoWH(c), unpostCStoWH SHOWIF isPostedCStoWH(c)
+    PROPERTIES (c) ADDFORM, EDITFORM, delete FORCE PANEL
 
     PROPERTIES (c)  FORCE PANEL printConsignmentVerticalA, printConsignmentHorizontalA,
                      printConsignmentVerticalB, printConsignmentHorizontalB,

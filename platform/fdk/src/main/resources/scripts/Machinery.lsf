@@ -154,7 +154,7 @@ portMachinery 'Адрес/порт' = DATA STRING[100] (machinery) IN baseGroup;
 CLASS ABSTRACT priceTransactionDocument 'Документ, требующий загрузки в оборудование';
 TABLE priceTransactionDocument (priceTransactionDocument);
 
-isDraftPriceTransactionDocument 'Открыт' = ABSTRACT BOOLEAN (priceTransactionDocument);
+isDraftPriceTransactionDocument 'Не проведен' = ABSTRACT BOOLEAN (priceTransactionDocument);
 descriptionPriceTransactionDocument 'Название документа загрузки' = ABSTRACT STRING[200] (priceTransactionDocument);
 
 //----------------------------------- Загрузка в ВУ -------------------------------------------------------

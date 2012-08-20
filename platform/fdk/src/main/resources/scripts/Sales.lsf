@@ -8,7 +8,7 @@ TABLE salesLedger(salesLedger);
 dateTimeSalesLedger 'Дата/время' (ledger) = ABSTRACT DATETIME (salesLedger) PERSISTENT INDEXED;
 dateSalesLedger 'Дата' (ledger) = dateInTime(dateTimeSalesLedger(ledger)) PERSISTENT INDEXED;
 
-isPostedSalesLedger 'Закрыт' (ledger) = ABSTRACT BOOLEAN (salesLedger) PERSISTENT;
+isPostedSalesLedger 'Проведен' (ledger) = ABSTRACT BOOLEAN (salesLedger) PERSISTENT;
 
 skuSalesLedger (ledger) = ABSTRACT sku (salesLedger) PERSISTENT INDEXED;
 nameSkuSalesLedger 'SKU' (ledger) = nameSku(skuSalesLedger(ledger));

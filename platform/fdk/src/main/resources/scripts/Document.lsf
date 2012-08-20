@@ -10,11 +10,11 @@ TABLE postedObject (postedObject);
 GROUP postedGroup 'Информация о закрытии' : baseGroup;
 
 timeClosed 'Время закрытия' = DATA DATETIME (postedObject) IN postedGroup;
-userClosed 'Закрыт пользователем' = DATA customUser (postedObject) IN idGroup;
-computerClosed 'Закрыт на компьютере' = DATA computer (postedObject) IN idGroup;
+userClosed 'Проведен пользователем' = DATA customUser (postedObject) IN idGroup;
+computerClosed 'Проведен на компьютере' = DATA computer (postedObject) IN idGroup;
 
-nameUserClosed 'Закрыт пользователем' (postedObject) = commonName(userClosed(postedObject)) IN postedGroup;
-hostnameComputerClosed 'Закрыт на компьютере' (postedObject) = hostname(computerClosed(postedObject)) IN postedGroup;
+nameUserClosed 'Проведен пользователем' (postedObject) = commonName(userClosed(postedObject)) IN postedGroup;
+hostnameComputerClosed 'Проведен на компьютере' (postedObject) = hostname(computerClosed(postedObject)) IN postedGroup;
 
 timeClosed(postedObject) <- currentDateTime() WHEN ASSIGNED(postedObject IS postedObject);
 userClosed(postedObject) <- currentUser() WHEN ASSIGNED(postedObject IS postedObject);
@@ -114,11 +114,11 @@ END
 
 META defineDocumentHeaderPosted (object)
 
-    isDraft###object 'Открыт' (object) = object IS object AND NOT object IS object##Posted PERSISTENT;
-    isPosted###object 'Закрыт' (object) = object IS object##Posted PERSISTENT;
+    isDraft###object 'Не проведен' (object) = object IS object AND NOT object IS object##Posted PERSISTENT;
+    isPosted###object 'Проведен' (object) = object IS object##Posted PERSISTENT;
 
     prePost###object 'Провести' (object) = [ACTION CHANGECLASS object TO object##Posted ] (object)
-                                    IF object IS object AND NOT object IS object##Posted TOOLBAR CONFIRM;
+                                    IF object IS object AND NOT object IS object##Posted;
 
     post###object 'Провести' (object) = [ACTION (object) NEWSESSION AUTOAPPLY { CHANGECLASS object TO object##Posted; } ] (object)
                                     IF object IS object AND NOT object IS object##Posted TOOLBAR CONFIRM;
@@ -128,8 +128,8 @@ META defineDocumentHeaderPosted (object)
 END
 
 META defineDocumentDetailPostedCustom (object, detail)
-    isPosted###detail 'Закрыт' (idetail) = isPosted###object(object###detail(idetail));
-    isNotPosted###detail 'Открыт' (idetail) = idetail IS detail AND NOT isPosted###detail(idetail);
+    isPosted###detail 'Проведен' (idetail) = isPosted###object(object###detail(idetail));
+    isNotPosted###detail 'Не проведен' (idetail) = idetail IS detail AND NOT isPosted###detail(idetail);
 END
 
 META defineDocumentDetailPosted (object)
@@ -299,11 +299,11 @@ END
 
 // Posted
 META defineDocumentAggregationHeaderPosted (primObject, aggrObject)
-    isPosted###aggrObject 'Закрыт' (object) = isPosted###primObject(primObject###aggrObject(object));
+    isPosted###aggrObject 'Проведен' (object) = isPosted###primObject(primObject###aggrObject(object));
 END
 
 META defineDocumentAggregationDetailPosted (primObject, aggrObject)
-    isPosted###aggrObject##Detail 'Закрыт' (detail) = isPosted###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
+    isPosted###aggrObject##Detail 'Проведен' (detail) = isPosted###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
 END
 
 META defineDocumentAggregationPosted (primObject, aggrObject)

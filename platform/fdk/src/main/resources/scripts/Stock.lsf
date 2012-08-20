@@ -88,7 +88,7 @@ TABLE batchStock(batch, stock);
 dateTimeBatch 'Дата/время' (batch) = ABSTRACT DATETIME (batch) PERSISTENT INDEXED;
 dateBatch 'Дата' (batch) = dateInTime(dateTimeBatch(batch));
 
-isPostedBatch 'Закрыт' (batch) = ABSTRACT BOOLEAN (batch) PERSISTENT;
+isPostedBatch 'Проведен' (batch) = ABSTRACT BOOLEAN (batch) PERSISTENT;
 
 skuBatch (batch) = ABSTRACT sku (batch) PERSISTENT INDEXED;
 nameSkuBatch 'Наименование' (batch) = nameSku(skuBatch(batch)) IN recognizeGroup;
@@ -114,7 +114,7 @@ isParentSkuGroupBatch (skuGroup, batch) = isParentSkuGroupSku(skuGroup, skuBatch
 dateTimeDataSkuLedger 'Дата/время' = ABSTRACT DATETIME (dataSkuLedger) PERSISTENT INDEXED;
 dateDataSkuLedger 'Дата' (ledger) = dateInTime(dateTimeDataSkuLedger(ledger)) PERSISTENT;
 
-isPostedDataSkuLedger 'Закрыт' = ABSTRACT BOOLEAN (dataSkuLedger) PERSISTENT;
+isPostedDataSkuLedger 'Проведен' = ABSTRACT BOOLEAN (dataSkuLedger) PERSISTENT;
 
 skuDataSkuLedger = ABSTRACT sku (dataSkuLedger) PERSISTENT INDEXED;
 
@@ -129,7 +129,7 @@ changedDataSkuLedger = ABSTRACT BOOLEAN (dataSkuLedger);
 dateTimeSkuLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateTimeDataSkuLedger (ledger), dateTimeBatch (ledger) PERSISTENT INDEXED;
 dateSkuLedger 'Дата' (ledger) = dateInTime(dateTimeSkuLedger(ledger)) PERSISTENT INDEXED;
 
-isPostedSkuLedger 'Закрыт' (ledger) = UNION EXCLUSIVE isPostedDataSkuLedger (ledger), isPostedBatch (ledger) PERSISTENT;
+isPostedSkuLedger 'Проведен' (ledger) = UNION EXCLUSIVE isPostedDataSkuLedger (ledger), isPostedBatch (ledger) PERSISTENT;
 
 skuSkuLedger (ledger) = UNION EXCLUSIVE skuDataSkuLedger (ledger), skuBatch (ledger) PERSISTENT INDEXED;
 nameSkuSkuLedger 'SKU' (ledger) = nameSku(skuSkuLedger(ledger));

@@ -528,7 +528,7 @@ DESIGN WHfromRF FROM DEFAULT {
 }
 
 statusRecWHfromRF 'Статус приемки' (WHfromRF) =
-    IF WHfromRF IS WHfromRFPosted THEN 'Закрыт' ELSE 'Открыт' IF (WHfromRF IS WHfromRF) PREFCHARWIDTH 15 MINCHARWIDTH 15;
+    IF WHfromRF IS WHfromRFPosted THEN 'Проведен' ELSE 'Не проведен' IF (WHfromRF IS WHfromRF) PREFCHARWIDTH 15 MINCHARWIDTH 15;
 
 FORM WHfromRFs 'Приход товара из РФ'
 
