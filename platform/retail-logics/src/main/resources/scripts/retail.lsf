@@ -38,6 +38,7 @@ REQUIRE System,
         UserPriceChange,
         CashOperation,
         POS,
+        ContractLedger,
         Inventory;
 
 GROUP emailGroup 'E-mail' : baseGroup;
@@ -2695,7 +2696,9 @@ noteConsignmentDetail (consignmentDetail) += noteStatementDetail (consignmentDet
 GROUP shipmentOrderGroup 'Заказ' : documentPrmGroup;
 GROUP additionalInfo 'Дополнительно' : baseGroup;
 
-CLASS shipment 'Поставка' : incAccountDocumentLedger, historyObject, numberedObject, priceTransactionDocument, listRegister;
+CLASS shipmentContractLedger : contractLedger;
+
+CLASS shipment 'Поставка' : incAccountDocumentLedger, historyObject, numberedObject, priceTransactionDocument, listRegister, contractALedger, inContractLedger;
 CLASS shipmentDetail 'Строка поставки' : batch, importerPriceLedger, supplierPriceLedger, retailVATLedger, retailPriceLedger, warePriceLedger, listRegisterDetail;
 CLASS shipmentPosted 'Закрытая поставка' : shipment, postedObject;
 
@@ -2782,6 +2785,21 @@ sumContainerIncAccountDocumentLedger (ledger) += retailSumContainerShipmentDetai
 
 isDraftPriceTransactionDocument (document) += isDraftShipment(document);
 descriptionPriceTransactionDocument (document) += descriptionShipment(document);
+
+@implementContractLedger(a, shipment);
+sumContractALedger(contractALedger) += invoiceSumShipmentDetailShipment(contractALedger);
+
+needToCreateShipmentContractLedger (shipment) =  formContractSkuDate(contractShipment(shipment), dateShipment(shipment)) == contractSkuForm.prepayment;
+
+@defineAggregation(shipment, shipmentContractLedger, needToCreateShipmentContractLedger);
+
+//@implementContractLedger( ,shipment);
+//dateTimeContractLedger(shipmentContractLedger) += sumDateTimeDay(dateTimeShipment(shipmentShipmentContractLedger(shipmentContractLedger)),
+//                                                                 delayContractSku(contractShipment(shipmentShipmentContractLedger(shipmentContractLedger)))*86400);
+dateTimeContractLedger(shipmentContractLedger) += dateTimeShipment(shipmentShipmentContractLedger(shipmentContractLedger));
+contractContractLedger(shipmentContractLedger) += contractShipment(shipmentShipmentContractLedger(shipmentContractLedger));
+descriptionContractLedger(shipmentContractLedger) += descriptionShipment(shipmentShipmentContractLedger(shipmentContractLedger));
+sumContractLedger(shipmentContractLedger) += invoiceSumShipmentDetailShipment(shipmentShipmentContractLedger(shipmentContractLedger));
 
 //----------------------------------Для реестра цен----------------------------//
 
@@ -3307,7 +3325,7 @@ nameSenderDepartmentPriceChangeInnerArrival 'Отдел-отправитель' 
 
 //----------------------------- Возврат поставщику ---------------------------------------------------------------//
 
-CLASS returnSupplier 'Возврат поставщику' : outAccountDocumentLedger, historyObject, numberedObject, consignment;
+CLASS returnSupplier 'Возврат поставщику' : outAccountDocumentLedger, historyObject, numberedObject, consignment, contractLedger, contractALedger, inContractLedger;
 CLASS returnSupplierDetail 'Строка возврата поставщику' : outFIFOSkuLedger, consignmentDetail;
 CLASS returnSupplierPosted 'Закрытый возврат поставщику' : returnSupplier, postedObject;
 
@@ -3419,6 +3437,12 @@ sumOutSkuLedger (ledger) += retailSumReturnSupplierDetail(ledger);
 sumOutAccountDocumentLedger (ledger) += retailSumReturnSupplierDetailReturnSupplier(ledger);
 sumItemOutAccountDocumentLedger (ledger) += retailSumItemReturnSupplierDetailReturnSupplier(ledger);
 sumContainerOutAccountDocumentLedger (ledger) += retailSumContainerReturnSupplierDetailReturnSupplier(ledger);
+
+@implementContractLedger(, returnSupplier);
+sumContractLedger(contractLedger) += -invoiceSumReturnSupplierDetailReturnSupplier(contractLedger);
+
+@implementContractLedger(a, returnSupplier);
+sumContractALedger(contractALedger) += -invoiceSumReturnSupplierDetailReturnSupplier(contractALedger);
 
 // для возвратной накладной (шапка и хвост)
 
@@ -6807,14 +6831,6 @@ volumeSoldItemDepartmentStoreDateFromTo 'Объем проданного тов�
 // sumSoldSkuStockDateFromTo 'Продано, сумма' (item, departmentStore, dateFrom, dateTo)   - рубли
 //quantitySoldSkuStockDateFromTo (item, departmentStore, dateFrom, dateTo)                      - шт.
 
-retailSumCardDepartmentDateFromTo 'Продано с использованием банк. карточек' (departmentStore, dateFrom, dateTo) = GROUP SUM sumPayment(payment) AND paymentMeansPayment(payment)==paymentMeans.paymentMeansCard
-    AND dateReceipt(receiptPayment(payment)) >= (dateFrom AS DATE) AND dateReceipt(receiptPayment(payment)) <= (dateTo AS DATE) AND isPostedReceipt(receiptPayment(payment))
-        BY departmentStoreReceipt(receiptPayment(payment)), dateFrom, dateTo;
-
-retailSumSaleDepartmentDateFromTo 'Продано по кассе' (departmentStore, dateFrom, dateTo) = GROUP SUM sumReceiptDetailReceipt(receipt)
-    AND dateReceipt(receipt) >= (dateFrom AS DATE) AND dateReceipt(receipt) <= (dateTo AS DATE) AND isPostedReceipt(receipt)
-        BY departmentStoreReceipt(receipt), dateFrom, dateTo;
-
                             //с коэффициентом пересчета за период//
 //всего
 quantitySoldByStatisticGroupDateFromTo 'Продано, шт' (statisticGroup, departmentStore, dateFrom, dateTo)=
@@ -6971,7 +6987,7 @@ FORM statisticalReport '12-Торг (продажи) справочно'
                       balanceASkuStockDate(i, dep, dTo)
     PROPERTIES  FORCE PANEL valueByStatisticGroupDateFromTo(g, ds, dFrom, dTo), valueResidentByStatisticGroupDateFromTo(g, ds, dFrom, dTo)
     PROPERTIES  FORCE PANEL valueByStatisticGroupDateTo(g, ds, dTo), valueResidentByStatisticGroupDateTo(g, ds, dTo)
-    PROPERTIES  FORCE PANEL retailSumCardDepartmentDateFromTo(ds, dFrom, dTo), retailSumSaleDepartmentDateFromTo(ds, dFrom, dTo)
+    PROPERTIES  FORCE PANEL sumCardDepartmentStoreDateFromTo(ds, dFrom, dTo), sumSaleDepartmentStoreDateFromTo(ds, dFrom, dTo)
 ;
 
 DESIGN statisticalReport FROM DEFAULT {
@@ -7017,8 +7033,8 @@ DESIGN statisticalReport FROM DEFAULT {
             }
             NEW row2 {
             title = 'По отделу, руб.';
-            ADD PROPERTY(retailSumCardDepartmentDateFromTo(ds, dFrom, dTo));
-            ADD PROPERTY(retailSumSaleDepartmentDateFromTo(ds, dFrom, dTo));
+            ADD PROPERTY(sumCardDepartmentStoreDateFromTo(ds, dFrom, dTo));
+            ADD PROPERTY(sumSaleDepartmentStoreDateFromTo(ds, dFrom, dTo));
             }
         }
     }
@@ -7171,11 +7187,11 @@ totalRetailSumSoldByStatisticGroupRegionDateFromTo 'Итого продано, �
     BY statisticGroup, companyDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateFrom, dateTo;
 
 retailSumCardCompanyRegionDateFromTo 'Продано с использованием банк. карточек' (company, region, dateFrom, dateTo) =
-    GROUP SUM  retailSumCardDepartmentDateFromTo(departmentStore, dateFrom, dateTo)
+    GROUP SUM  sumCardDepartmentStoreDateFromTo(departmentStore, dateFrom, dateTo)
         BY companyDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateFrom, dateTo;
 
 retailSumSaleCompanyRegionDateFromTo 'Продано по кассе' (company, region, dateFrom, dateTo) =
-    GROUP SUM  retailSumSaleDepartmentDateFromTo(departmentStore, dateFrom, dateTo)
+    GROUP SUM  sumSaleDepartmentStoreDateFromTo(departmentStore, dateFrom, dateTo)
         BY companyDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateFrom, dateTo;
 
 
@@ -7692,7 +7708,7 @@ fillDatabaseDefaultValues 'Заполнить базу значениями по
 FORM parameters 'Параметры'
     PROPERTIES()    nameDefaultNumeratorDocuments, nameDefaultNumeratorOrders, nameDefaultNumeratorCollection,
                     nameDefaultNumeratorDiscountCard, skuStockAverageInterval, calcCurrentQuantitySoldInterval,
-                    hideWare
+                    hideWare, nameDefaultNumeratorPayment, nameDefaultNumeratorPaymentRequest
 ;
 
 //---------------------------------------------- Заполнение БД -------------------------------------------------//
@@ -8011,6 +8027,7 @@ NAVIGATOR {
         ADD priceChangeDocuments;
         ADD stockCost;
         ADD stockBalance;
+        ADD contractLedger;
         NEW sales 'Продажи' {
             ADD salesLedger;
             ADD salesSkuStock;

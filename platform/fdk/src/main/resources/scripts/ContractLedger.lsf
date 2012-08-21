@@ -1,0 +1,282 @@
+MODULE ContractLedger;
+
+REQUIRE Contract,
+        LegalEntity,
+        Numerator;
+
+META defineContractLedgerPrefix (caption, prefix)
+
+    CLASS ABSTRACT contract###prefix##Ledger caption;
+    TABLE contract###prefix##Ledger(contract###prefix##Ledger);
+
+    dateTimeContract###prefix##Ledger 'Дата/время' (contract###prefix##Ledger) = ABSTRACT DATETIME (contract###prefix##Ledger);
+    dateContract###prefix##Ledger 'Дата' (contract###prefix##Ledger) = dateInTime(dateTimeContract###prefix##Ledger(contract###prefix##Ledger));
+    timeContract###prefix##Ledger 'Время' (contract###prefix##Ledger) = timeInDateTime(dateTimeContract###prefix##Ledger(contract###prefix##Ledger));
+
+    contractContract###prefix##Ledger 'Договор' (contract###prefix##Ledger) = ABSTRACT contract (contract###prefix##Ledger);
+
+    descriptionContract###prefix##Ledger 'Название документа' (contract###prefix##Ledger) = ABSTRACT STRING[200] (contract###prefix##Ledger);
+
+    sumContract###prefix##Ledger 'Сумма' (contract###prefix##Ledger) = ABSTRACT NUMERIC[16,2] (contract###prefix##Ledger);
+
+    currentBalance###prefix##Contract 'Текущая сумма задолженности по договору' (contract)=
+        GROUP SUM sumContract###prefix##Ledger(contract###prefix##Ledger)
+              BY contractContract###prefix##Ledger(contract###prefix##Ledger);
+
+    balanceB###prefix##ContractDate 'Сумма задолженности по договору на дату (до)' (contract, date) =
+        (currentBalance###prefix##Contract(contract) AND date AS DATE) (-)
+        [GROUP SUM sumContract###prefix##Ledger(contract###prefix##Ledger)
+                  IF dateContract###prefix##Ledger(contract###prefix##Ledger) >= (date AS DATE)
+              BY contractContract###prefix##Ledger(contract###prefix##Ledger), date](contract, date);
+
+    balanceA###prefix##ContractDate 'Сумма задолженности по договору на дату (после)' (contract, date) =
+        (currentBalance###prefix##Contract(contract) AND date AS DATE) (-)
+        [GROUP SUM sumContract###prefix##Ledger(contract###prefix##Ledger)
+                  IF dateContract###prefix##Ledger(contract###prefix##Ledger) > (date AS DATE)
+              BY contractContract###prefix##Ledger(contract###prefix##Ledger), date](contract, date);
+
+END
+
+META implementContractLedger(prefix, object)
+
+    dateTimeContract###prefix##Ledger(contract###prefix##Ledger) += dateTime###object(contract###prefix##Ledger);
+    contractContract###prefix##Ledger(contract###prefix##Ledger) += contract###object(contract###prefix##Ledger);
+    descriptionContract###prefix##Ledger(contract###prefix##Ledger) += description###object(contract###prefix##Ledger);
+
+END
+
+@defineContractLedgerPrefix('Изменение управленческого долга по контракту', );
+@defineContractLedgerPrefix('Изменение бухгалтерского долга по контракту', a);
+
+//--------------------------------------------- Логика приходов и расходов ------------------------------------------------------//
+
+META defineInOutContractLedgerPrefix(caption, prefix)
+
+    CLASS ABSTRACT prefix##ContractLedger caption;
+    TABLE prefix##ContractLedger(prefix##ContractLedger);
+
+    dateTime###prefix##ContractLedger 'Дата/время' (prefix##ContractLedger) = ABSTRACT DATETIME (prefix##ContractLedger);
+    date###prefix##ContractLedger 'Дата' (prefix##ContractLedger) = dateInTime(dateTime###prefix##ContractLedger(prefix##ContractLedger));
+    time###prefix##ContractLedger 'Время' (prefix##ContractLedger) = timeInDateTime(dateTime###prefix##ContractLedger(prefix##ContractLedger));
+
+    contract###prefix##ContractLedger 'Договор' (prefix##ContractLedger) = ABSTRACT contract (prefix##ContractLedger);
+
+END
+
+@defineInOutContractLedgerPrefix('Приход', in);
+@defineInOutContractLedgerPrefix('Расход', out);
+
+costInOutContractLedger 'Оплачено из документу' (inContractLedger, outContractLedger) = ABSTRACT NUMERIC[14,3] (inContractLedger, outContractLedger);
+
+costedInOutContractLedger 'Оплачено по документу' (inContractLedger) = GROUP SUM costInOutContractLedger(inContractLedger, outContractLedger) BY inContractLedger;
+
+//-------------------------------------------- Логика платежей ----------------------------------------------------------------//
+
+CLASS payment 'Платеж' : numeratedObject, contractLedger, contractALedger, outContractLedger;
+
+dateTimePayment 'Дата время' (payment) = DATA DATETIME (payment);
+dateTimePayment(payment) <- currentDateTime() WHEN ASSIGNED(payment IS payment);
+datePayment 'Дата' (payment) = dateInTime(dateTimePayment(payment));
+timePayment 'Время' (payment) = timeInDateTime(dateTimePayment(payment));
+
+contractPayment 'Контракт' (payment) = DATA contract (payment);
+numberContractPayment 'Номер контракта' (payment) = numberContract(contractPayment(payment));
+
+payerPayment(payment) = DATA legalEntity (payment);
+payerPayment(payment) <- partyBContract(contractPayment(payment)) WHEN ASSIGNED (contractPayment(payment));
+namePayerPayment 'Плательщик' (payment) = name(payerPayment(payment));
+beneficiaryPayment(payment) = DATA legalEntity (payment);
+beneficiaryPayment(payment) <- partyAContract(contractPayment(payment)) WHEN ASSIGNED (contractPayment(payment));
+nameBeneficiaryPayment 'Бенефициар' (payment) = name(beneficiaryPayment(payment));
+
+sumPayment 'Сумма платежа' (payment) = DATA NUMERIC[16,2] (payment);
+
+defaultNumeratorPayment = DATA numerator ();
+nameDefaultNumeratorPayment 'Нумератор для платежей' = name(defaultNumeratorPayment());
+
+initValueNumeratorObject(object) += defaultNumeratorPayment() IF object IS payment;
+initWhenNumeratorObject(object) += ASSIGNED(object IS payment);
+
+descriptionPayment 'Название документа' =
+    [FORMULA STRING[200] '\'Платеж \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)'](
+    seriesNumberObject(payment), datePayment(payment), nameBeneficiaryPayment(payment));
+
+@implementContractLedger( ,payment);
+sumContractLedger(contractLedger) += -sumPayment(contractLedger);
+
+@implementContractLedger(a ,payment);
+sumContractALedger(contractALedger) += -sumPayment(contractALedger);
+
+FORM payment 'Платеж'
+
+    OBJECTS p = payment FIXED PANEL
+    PROPERTIES(p) numberObject, seriesObject, dateTimePayment, numberContractPayment
+    PROPERTIES(p) READONLY namePayerPayment, nameBeneficiaryPayment
+    PROPERTIES(p) sumPayment
+
+    EDIT payment OBJECT p
+;
+
+DESIGN payment FROM DEFAULT{
+
+    NEW topContainer{
+
+        childConstraints = TO THE RIGHT;
+        ADD PROPERTY(numberObject);
+        ADD PROPERTY(seriesObject);
+        ADD PROPERTY(dateTimePayment);
+    }
+
+    ADD PROPERTY(numberContractPayment);
+    ADD PROPERTY(namePayerPayment);
+    ADD PROPERTY(nameBeneficiaryPayment);
+    ADD PROPERTY(sumPayment);
+
+    ADD functions.box;
+}
+
+//--------------------------------------------- Платежное требование ------------------------------------------------------//
+
+CLASS paymentRequest 'Платежное требование' : numeratedObject, contractLedger, contractALedger, inContractLedger;
+
+dateTimePaymentRequest 'Дата время' (paymentRequest) = DATA DATETIME (paymentRequest);
+dateTimePaymentRequest(paymentRequest) <- currentDateTime() WHEN ASSIGNED(paymentRequest IS paymentRequest);
+datePaymentRequest 'Дата' (paymentRequest) = dateInTime(dateTimePaymentRequest(paymentRequest));
+timePaymentRequest 'Время' (paymentRequest) = timeInDateTime(dateTimePaymentRequest(paymentRequest));
+
+contractPaymentRequest 'Контракт' (paymentRequest) = DATA contract (paymentRequest);
+numberContractPaymentRequest 'Номер контракта' (paymentRequest) = numberContract(contractPaymentRequest(paymentRequest));
+
+payerPaymentRequest(paymentRequest) = DATA legalEntity (paymentRequest);
+payerPaymentRequest(paymentRequest) <- partyBContract(contractPaymentRequest(paymentRequest)) WHEN ASSIGNED (contractPaymentRequest(paymentRequest));
+namePayerPaymentRequest 'Плательщик' (paymentRequest) = name(payerPaymentRequest(paymentRequest));
+lenderPaymentRequest(paymentRequest) = DATA legalEntity (paymentRequest);
+lenderPaymentRequest(paymentRequest) <- partyAContract(contractPaymentRequest(paymentRequest)) WHEN ASSIGNED (contractPaymentRequest(paymentRequest));
+nameLenderPaymentRequest 'Бенефициар' (paymentRequest) = name(lenderPaymentRequest(paymentRequest));
+
+sumPaymentRequest 'Сумма платежа' (paymentRequest) = DATA NUMERIC[16,2] (paymentRequest);
+
+defaultNumeratorPaymentRequest = DATA numerator ();
+nameDefaultNumeratorPaymentRequest 'Нумератор для платежных требований' = name(defaultNumeratorPaymentRequest());
+
+initValueNumeratorObject(object) += defaultNumeratorPaymentRequest() IF object IS paymentRequest;
+initWhenNumeratorObject(object) += ASSIGNED(object IS paymentRequest);
+
+descriptionPaymentRequest 'Название документа' =
+    [FORMULA STRING[200] '\'Платежное требование \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)'](
+    seriesNumberObject(paymentRequest), datePaymentRequest(paymentRequest), nameLenderPaymentRequest(paymentRequest));
+
+@implementContractLedger( ,paymentRequest);
+sumContractLedger(contractLedger) += sumPaymentRequest(contractLedger);
+
+@implementContractLedger(a ,paymentRequest);
+sumContractALedger(contractALedger) += sumPaymentRequest(contractALedger);
+
+FORM paymentRequest 'Платежное требование'
+
+    OBJECTS p = paymentRequest FIXED PANEL
+    PROPERTIES(p) numberObject, seriesObject, dateTimePaymentRequest, numberContractPaymentRequest
+    PROPERTIES(p) READONLY namePayerPaymentRequest, nameLenderPaymentRequest
+    PROPERTIES(p) sumPaymentRequest
+
+    EDIT paymentRequest OBJECT p
+;
+
+DESIGN paymentRequest FROM DEFAULT{
+
+    NEW topContainer{
+
+        childConstraints = TO THE RIGHT;
+        ADD PROPERTY(numberObject);
+        ADD PROPERTY(seriesObject);
+        ADD PROPERTY(dateTimePaymentRequest);
+    }
+
+    ADD PROPERTY(numberContractPaymentRequest);
+    ADD PROPERTY(namePayerPaymentRequest);
+    ADD PROPERTY(nameLenderPaymentRequest);
+    ADD PROPERTY(sumPaymentRequest);
+
+    ADD functions.box;
+}
+
+FORM contractLedger 'Задолженности и платежи по контракту'
+
+    OBJECTS d = DATE FIXED PANEL
+    PROPERTIES(d) OBJVALUE
+
+    OBJECTS p = legalEntity FIXED PANEL
+    PROPERTIES(p) SELECTOR name
+
+    OBJECTS b = legalEntity FIXED PANEL
+    PROPERTIES(b) SELECTOR name
+
+    OBJECTS c = contract
+    PROPERTIES(c) READONLY numberContract, currentBalanceContract, currentBalanceAContract
+    PROPERTIES(c, d) READONLY balanceBContractDate, balanceBAContractDate,
+                              balanceAContractDate, balanceAAContractDate
+
+    OBJECTS cl = contractLedger
+    PROPERTIES(cl) READONLY dateContractLedger, sumContractLedger, descriptionContractLedger
+
+    OBJECTS cal = contractALedger
+    PROPERTIES(cal) READONLY dateContractALedger, sumContractALedger, descriptionContractALedger
+
+    OBJECTS pm = payment
+    PROPERTIES(pm) READONLY dateTimePayment, seriesNumberObject, namePayerPayment, nameBeneficiaryPayment, sumPayment
+    PROPERTIES(pm) ADDFORM, EDITFORM, delete
+
+    OBJECTS pr = paymentRequest
+    PROPERTIES(pr) READONLY dateTimePaymentRequest, seriesNumberObject, namePayerPaymentRequest, nameLenderPaymentRequest,
+                            sumPaymentRequest
+    PROPERTIES(pr) ADDFORM, EDITFORM, delete
+
+    FILTERS contractContractLedger(cl) == c,
+            contractContractALedger(cal) == c,
+            contractPayment(pm) == c,
+            contractPaymentRequest(pr) == c,
+            partyBContract(c) == p,
+            partyAContract(c) == b
+;
+
+DESIGN contractLedger FROM DEFAULT{
+
+    NEW topContainer {
+
+        childConstraints = TO THE BOTTOM;
+        NEW headerContainer {
+            childConstraints = TO THE RIGHT;
+            ADD d.box;
+            ADD p.box{
+                caption = 'Компания';
+            }
+            ADD b.box{
+                caption = 'Поставщик';
+            }
+        }
+        NEW firstContainer {
+
+            type = SPLITV;
+            ADD c.box;
+            NEW firstSecondContainer {
+
+                type = SPLITV;
+                NEW firstThirdContainer {
+
+                    type = SPLITH;
+                    childConstraints = TO THE RIGHT;
+                    ADD cl.box;
+                    ADD cal.box;
+                }
+                NEW secondContainer {
+
+                    type = TABBED;
+                    ADD pm.box;
+                    ADD pr.box;
+                }
+            }
+        }
+    }
+
+    ADD functions.box;
+}
