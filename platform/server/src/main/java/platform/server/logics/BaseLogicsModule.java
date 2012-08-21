@@ -144,6 +144,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP divideIntegerNeg;
     public LCP divideIntegerRnd;
     public LCP sumDate;
+    public LCP sumDateTime;
     public LCP subtractDate;
     public LCP toDateTime;
 
@@ -747,6 +748,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         sum = addSFProp("sum", "((prm1)+(prm2))", 2);
         sumDate = addSFProp("sumDate", "((prm1)+(prm2))", DateClass.instance, 2);
+        sumDateTime = addSFProp("sumDateTime", "((prm1)+(prm2))", DateTimeClass.instance, 2);
 
         multiply = addMFProp("multiply", 2);
 
