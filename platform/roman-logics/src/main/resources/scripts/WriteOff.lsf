@@ -79,8 +79,8 @@ writeOffWriteOffBatchDetail (detail) = writeOffWriteOffDetail(writeOffDetailWrit
 descriptionBatchWriteOffBatchDetail 'Партия' (detail) = descriptionBatch(batchWriteOffBatchDetail(detail));
 quantityWriteOffBatchDetail 'Кол-во' (detail) = costDataSkuLedgerBatch(writeOffDetailWriteOffBatchDetail(detail), batchWriteOffBatchDetail(detail));
 
-notChangeBalanceWriteOff 'Не проводить по учету' (writeOff) = DATA BOOLEAN (writeOff) IN documentPrmGroup;
-notChangeBalanceWriteOffDetail 'Не проводить по учету' (writeOffDetail) = notChangeBalanceWriteOff(writeOffWriteOffDetail(writeOffDetail));
+notChangeBalanceWriteOff 'Управленческое списание' (writeOff) = DATA BOOLEAN (writeOff) IN documentPrmGroup;
+notChangeBalanceWriteOffDetail 'Управленческое списание' (writeOffDetail) = notChangeBalanceWriteOff(writeOffWriteOffDetail(writeOffDetail));
 
 FORM writeOff 'Списание товара'
     OBJECTS t = writeOff FIXED PANEL
@@ -341,10 +341,12 @@ EXTEND DESIGN writeOffs {
 // Проводим по регистру
 @implementSkuLedger(writeOff, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantityWriteOffDetail (ledger);
-limitOutFIFOSkuLedgerBatch(ledger, batch) += currentBalanceBatchStock(batch, stockWriteOffDetail(ledger));
+limitOutFIFOSkuLedgerBatch(ledger, batch) += IF notChangeBalanceWriteOffDetail(ledger) THEN
+                                                currentBalanceBatchStock(batch, stockWriteOffDetail(ledger)) AND batch IS batchB ELSE
+                                                currentBalanceABatchStock(batch, stockWriteOffDetail(ledger)) AND batch IS batchA;
 sumOutSkuLedger(ledger) += accountSumWriteOffDetail(ledger);
 
-skipSkuLedger (ledger) += notChangeBalanceWriteOffDetail(ledger);
+skipASkuLedger (ledger) += notChangeBalanceWriteOffDetail(ledger);
 //---------------------------------------- Товарный отчет ------------------------- //
 
 dateTimeAccountDocumentLedger (ledger) += dateTimeWriteOff(ledger);
