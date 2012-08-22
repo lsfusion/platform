@@ -273,7 +273,7 @@ CLASS permanentCertificate 'Постоянный сертификат' : certifi
 
 TABLE certificate (certificate);
 
-sidCertificate 'Номер' = DATA STRING[20] (certificate) IN baseGroup AGGPROP;
+sidCertificate 'Номер' = DATA STRING[30] (certificate) IN baseGroup AGGPROP;
 dateIssueCertificate 'Дата выдачи' = DATA DATE (certificate) IN baseGroup;
 dateValidityCertificate 'Действует до' = DATA DATE (certificate) IN baseGroup;
 
@@ -756,13 +756,13 @@ expenseCertificateManagerialDeclaration 'Расходы на сертифика�
 consultationDeclarationDetail 'Консультация' = DATA BOOLEAN(declarationDetail);
 sumConsultationDeclaration 'Сумма за консультацию' = DATA NUMERIC[14,3](declaration) IN sumGroup;
 
-quantityConsultationDetailDeclaration '' (declaration) = GROUP SUM 1 IF consultationDeclarationDetail(declarationDetail)
-                                                                BY declarationDeclarationDetail(declarationDetail);
+//quantityConsultationDetailDeclaration '' (declaration) = GROUP SUM 1 IF consultationDeclarationDetail(declarationDetail)
+//                                                                BY declarationDeclarationDetail(declarationDetail);
 
-consultationDeclaration '' (declaration) = sumConsultationDeclaration(declaration)/quantityConsultationDetailDeclaration(declaration);
+//consultationDeclaration '' (declaration) = sumConsultationDeclaration(declaration)/quantityConsultationDetailDeclaration(declaration);
 
-sumConsultationDeclarationDetail 'За консультацию' (declarationDetail) = consultationDeclaration(declarationDeclarationDetail(declarationDetail))/
-                                                                         quantityDiffDeclarationDetail(declarationDetail) IF consultationDeclarationDetail(declarationDetail);
+sumConsultationDeclarationDetail 'За консультацию' (declarationDetail) = sumConsultationDeclaration(declarationDeclarationDetail(declarationDetail)) *
+                                                                         coeffDeclarationDetailDeclaration(declarationDetail);
 
 sumConsultationRateDeclarationDetail 'За консультацию (в валюте)' = sumConsultationDeclarationDetail(declarationDetail)/rateExchangeManagerialDeclarationDetail(declarationDetail);
 
@@ -860,7 +860,7 @@ FORM declaration 'Декларация'
                     priceCustomDeclarationDetail, priceManagerialDeclarationDetail, expenseDeclarationDetail, sumConsultationRateDeclarationDetail,
                     priceManagerialCustomDeclarationDetail
 
-    PROPERTIES (dd) consultationDeclarationDetail, certificatedDeclarationDetail,
+    PROPERTIES (dd) certificatedDeclarationDetail,
                     sidTemporalCertificateDeclarationDetail BACKGROUND isCertificatePreparedDeclarationDetail(dd),
                     sidPermanentCertificateDeclarationDetail BACKGROUND isCertificatePreparedDeclarationDetail(dd)
 
