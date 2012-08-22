@@ -222,6 +222,11 @@ priceDataDiscountPriceSetDocumentArticle(discountPriceSetDocument, article) <- r
                                         WHEN CHANGED (priceDiscountPriceSetDocumentArticle(discountPriceSetDocument, article));
 
 inPriceSetDocumentArticle 'Артикул в документе' = DATA BOOLEAN(priceSetDocument, article);
+
+priceDataBasePriceSetDocumentArticle(document, article) => inPriceSetDocumentArticle(document, article) RESOLVE FALSE;
+priceDataDiscountPriceSetDocumentArticle(document, article) => inPriceSetDocumentArticle(document, article) RESOLVE FALSE;
+percentDiscountPriceSetDocumentArticle(document, article) => inPriceSetDocumentArticle(document, article) RESOLVE FALSE;
+
 inFreightArticle (freight, article) = TRUE IF quantityFreightArticle(freight, article);
 
 quantityPriceSetDocumentBrandSupplier (priceSetDocument, brandSupplier) = GROUP SUM 1 IF inPriceSetDocumentArticle(priceSetDocument, article)
@@ -284,42 +289,44 @@ createUserPriceChangeDepartmentStorePriceSetDocument 'Создать докум�
     LOCAL priceDateTime = DATETIME ();
     SET priceDateTime() <- dateTimePriceSetDocument(priceSetDocument);
 
-        ADDOBJ userPriceChange;
-        FOR p == addedObject() DO {
-            SET userPriceChangeDepartmentStorePriceSetDocument(departmentStore, priceSetDocument) <- p AS userPriceChange;
-            SET departmentStoreUserPriceChange(p) <- departmentStore AS departmentStore;
-            SET dateUserPriceChange(p) <- datePriceSetDocument(priceSetDocument);
-            SET timeUserPriceChange(p) <- timePriceSetDocument(priceSetDocument);
-            SET noteUserPriceChange(p) <- descriptionDocumentPriceSetDocument(priceSetDocument);
+    ADDOBJ userPriceChangePosted;
+    FOR p == addedObject() DO {
+        SET userPriceChangeDepartmentStorePriceSetDocument(departmentStore, priceSetDocument) <- p AS userPriceChange;
+        SET departmentStoreUserPriceChange(p) <- departmentStore AS departmentStore;
+        SET dateUserPriceChange(p) <- datePriceSetDocument(priceSetDocument);
+        SET timeUserPriceChange(p) <- timePriceSetDocument(priceSetDocument);
+        SET noteUserPriceChange(p) <- descriptionDocumentPriceSetDocument(priceSetDocument);
 
-            FOR balanceBASkuStockDateTime(sku, departmentStore, priceDateTime()) !=0 AND inPriceSetDocumentArticle(priceSetDocument, articleSku(sku))
-                AND pricePriceSetDocumentArticleDateTime(articleSku(sku), priceDateTime()) != retailPriceBLedgerDateTime(sku, departmentStore, priceDateTime())
-                AND isPostedPriceSetDocument(priceSetDocument) DO {
-                ADDOBJ userPriceChangeDetail;
-                FOR  d == addedObject() DO {
-                    SET userPriceChangeUserPriceChangeDetail(d) <- p AS userPriceChange;
-                    SET skuUserPriceChangeDetail(d) <- sku AS sku;
-                    SET quantityUserPriceChangeDetail(d) <- balanceBASkuStockDateTime(sku, departmentStore, priceDateTime());
+        FOR balanceBASkuStockDateTime(sku, departmentStore, priceDateTime()) !=0 AND inPriceSetDocumentArticle(priceSetDocument, articleSku(sku))
+            AND pricePriceSetDocumentArticleDateTime(articleSku(sku), priceDateTime()) != retailPriceBLedgerDateTime(sku, departmentStore, priceDateTime())
+            AND isPostedPriceSetDocument(priceSetDocument) DO {
+            ADDOBJ userPriceChangeDetail;
+            FOR  d == addedObject() DO {
+                SET userPriceChangeUserPriceChangeDetail(d) <- p AS userPriceChange;
+                SET skuUserPriceChangeDetail(d) <- sku AS sku;
+                SET quantityUserPriceChangeDetail(d) <- balanceBASkuStockDateTime(sku, departmentStore, priceDateTime());
 
-                    SET curImporterPriceUserPriceChangeDetail(d) <- importerPriceBLedgerDateTime(sku, departmentStore, priceDateTime());
-                    SET curSupplierPriceUserPriceChangeDetail(d) <- supplierPriceBLedgerDateTime(sku, departmentStore, priceDateTime());
-                    SET curRetailVATUserPriceChangeDetail(d) <- retailVATBLedgerDateTime(sku, departmentStore, priceDateTime());
-                    SET curWareUserPriceChangeDetail(d) <- wareBLedgerDateTime(sku, departmentStore, priceDateTime());
-                    SET curWarePriceUserPriceChangeDetail(d) <- warePriceBLedgerDateTime(sku, departmentStore, priceDateTime());
-                    SET curRetailPriceUserPriceChangeDetail(d) <- retailPriceBLedgerDateTime(sku, departmentStore, priceDateTime());
+                SET curImporterPriceUserPriceChangeDetail(d) <- importerPriceBLedgerDateTime(sku, departmentStore, priceDateTime());
+                SET curSupplierPriceUserPriceChangeDetail(d) <- supplierPriceBLedgerDateTime(sku, departmentStore, priceDateTime());
+                SET curRetailVATUserPriceChangeDetail(d) <- retailVATBLedgerDateTime(sku, departmentStore, priceDateTime());
+                SET curWareUserPriceChangeDetail(d) <- wareBLedgerDateTime(sku, departmentStore, priceDateTime());
+                SET curWarePriceUserPriceChangeDetail(d) <- warePriceBLedgerDateTime(sku, departmentStore, priceDateTime());
+                SET curRetailPriceUserPriceChangeDetail(d) <- retailPriceBLedgerDateTime(sku, departmentStore, priceDateTime());
 
-                    SET importerPriceUserPriceChangeDetail(d) <- importerPriceBLedgerDateTime(sku, departmentStore, priceDateTime());
-                    SET supplierPriceUserPriceChangeDetail(d) <- supplierPriceBLedgerDateTime(sku, departmentStore, priceDateTime());
-                    SET retailVATUserPriceChangeDetail(d) <- retailVATBLedgerDateTime(sku, departmentStore, priceDateTime());
-                    SET wareUserPriceChangeDetail(d) <- wareBLedgerDateTime(sku, departmentStore, priceDateTime());
-                    SET warePriceUserPriceChangeDetail(d) <- warePriceBLedgerDateTime(sku, departmentStore, priceDateTime());
-                    SET retailPriceUserPriceChangeDetail(d) <- pricePriceSetDocumentArticleDateTime(articleSku(sku), priceDateTime());
+                SET importerPriceUserPriceChangeDetail(d) <- importerPriceBLedgerDateTime(sku, departmentStore, priceDateTime());
+                SET supplierPriceUserPriceChangeDetail(d) <- supplierPriceBLedgerDateTime(sku, departmentStore, priceDateTime());
+                SET retailVATUserPriceChangeDetail(d) <- retailVATBLedgerDateTime(sku, departmentStore, priceDateTime());
+                SET wareUserPriceChangeDetail(d) <- wareBLedgerDateTime(sku, departmentStore, priceDateTime());
+                SET warePriceUserPriceChangeDetail(d) <- warePriceBLedgerDateTime(sku, departmentStore, priceDateTime());
+                SET retailPriceUserPriceChangeDetail(d) <- pricePriceSetDocumentArticleDateTime(articleSku(sku), priceDateTime());
 
-                }
             }
         }
-    EXEC apply();
-    FORM userPriceChange OBJECTS u = userPriceChangeDepartmentStorePriceSetDocument (departmentStore, priceSetDocument)  MODAL;
+    }
+    FORM userPriceChange OBJECTS u = userPriceChangeDepartmentStorePriceSetDocument (departmentStore, priceSetDocument) MODAL;
+    IF formResult() == formResult.ok THEN {
+        EXEC apply();
+    }
 
 }] (departmentStore, priceSetDocument) AND NOT userPriceChangeDepartmentStorePriceSetDocument(departmentStore, priceSetDocument) AND isPostedPriceSetDocument(priceSetDocument) CONFIRM;
 

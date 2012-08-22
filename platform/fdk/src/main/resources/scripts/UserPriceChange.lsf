@@ -5,7 +5,7 @@ REQUIRE System, Stock, PriceChange, Numerator, Machinery, Terminal, Barcode;
 
 CLASS userPriceChange 'Переоценка товаров' : priceChangeDocument, numeratedDocument, priceTransactionDocument, historyObject;
 CLASS userPriceChangeDetail 'Строка переоценки товаров' : priceChangeDocumentDetail, importerPriceLedger, supplierPriceLedger, retailPriceLedger, retailVATLedger, warePriceLedger;
-CLASS userPriceChangePosted 'Закрытая переоценка товаров' : userPriceChange, postedObject;
+CLASS userPriceChangePosted 'Проведенная переоценка товаров' : userPriceChange, postedObject;
 
 @defineDocument(userPriceChange);
 @defineDocumentDepartmentStore(userPriceChange);
@@ -121,7 +121,7 @@ toShowWareUserPriceChange 'Показывать строки с посудой' 
 
 FORM userPriceChange 'Переоценка товаров'
     OBJECTS u=userPriceChange FIXED PANEL
-    PROPERTIES (u) nameNumeratorObject, numberObject, seriesObject, setValueNumeratedObject,
+    PROPERTIES (u) objectClassName, nameNumeratorObject, numberObject, seriesObject, setValueNumeratedObject,
                    dateUserPriceChange, timeUserPriceChange, nameDepartmentStoreUserPriceChange,
                    diffSupplierISumPriceChangeDocumentDetailPriceChangeDocument, diffMarkupSumPriceChangeDocumentDetailPriceChangeDocument, diffRetailVATISumPriceChangeDocumentDetailPriceChangeDocument,
                    diffWareSumPriceChangeDocumentDetailPriceChangeDocument SHOWIF hideWare(), diffWareVATSumPriceChangeDocumentDetailPriceChangeDocument SHOWIF hideWare(),
@@ -148,6 +148,9 @@ FORM userPriceChange 'Переоценка товаров'
 
     FILTERS inUserPriceChangeUserPriceChangeDetail(u, d)
 
+    EVENTS
+        ON OK EXEC prePostUserPriceChange(u)
+
     EDIT userPriceChange OBJECT u
 ;
 
@@ -162,6 +165,7 @@ DESIGN userPriceChange FROM DEFAULT {
                 childConstraints = TO THE BOTTOM;
                 ADD u.documentHeaderGroup {
                     childConstraints = TO THE RIGHT;
+                    ADD PROPERTY(objectClassName);
                     ADD PROPERTY(nameDepartmentStoreUserPriceChange);
                     ADD PROPERTY(nameNumeratorObject);
                     ADD PROPERTY(numberObject);
@@ -188,6 +192,10 @@ DESIGN userPriceChange FROM DEFAULT {
         PROPERTY(numberWareRangeUserPriceChangeDetail) { background = #FFFFCC; }
         PROPERTY(valueWareRangeUserPriceChangeDetail) { background = #FFFFCC; }
         PROPERTY(retailPriceUserPriceChangeDetail) { background = #FFFFCC; }
+
+        PROPERTY(formOkAction) {
+            caption = 'Провести';
+        }
     }
 }
 
@@ -202,8 +210,7 @@ FORM userPriceChanges 'Переоценки товаров'
     PROPERTIES (u) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
     PROPERTIES (u)          printPriceChange FORCE PANEL,
-                            ADDFORM, EDITFORM SHOWIF isDraftUserPriceChange(u), delete FORCE PANEL SHOWIF isDraftUserPriceChange(u),
-                            postUserPriceChange SHOWIF isDraftUserPriceChange(u), unpostUserPriceChange SHOWIF isPostedUserPriceChange(u)
+                            ADDFORM, EDITFORM, delete FORCE PANEL
 
     OBJECTS d=userPriceChangeDetail
     PROPERTIES (d) READONLY indexUserPriceChangeDetail, idBarcodeSkuUserPriceChangeDetail, nameSkuUserPriceChangeDetail, quantityUserPriceChangeDetail,

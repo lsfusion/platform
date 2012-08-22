@@ -501,9 +501,9 @@ nameUnitOfMeasureGroupDeclaration 'Ед. изм.' (groupDeclaration) = name(unit
 stringGroupDeclaration 'Наименование' (groupDeclaration) = ustring5CM(string2(nameInvoiceGroupDeclaration(groupDeclaration), ''),
                                                                       string2(sidGenderGroupDeclaration(groupDeclaration), ''),
                                                                       string2(nameTypeFabricGroupDeclaration(groupDeclaration), ''),
-                                                                      string2('Торговая марка ', nameBrandGroupDeclaration(groupDeclaration)),
+                                                                      string2('Торговая марка: ', nameBrandGroupDeclaration(groupDeclaration)),
                                                                       string2('Состав:', mainCompositionGroupDeclaration(groupDeclaration))
-                                                                      );
+                                                                      ) PERSISTENT;
 
 
 nameDataGroupDeclaration 'Наименование' = DATA STRING[200] (groupDeclaration);

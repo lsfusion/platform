@@ -4,9 +4,7 @@ import platform.server.caches.IdentityLazy;
 import platform.server.classes.DataClass;
 import platform.server.classes.InsensitiveStringClass;
 import platform.server.logics.property.CalcPropertyInterfaceImplement;
-import platform.server.logics.property.CalcPropertyMapImplement;
 import platform.server.logics.property.FormulaUnionProperty;
-import platform.server.logics.property.CalcPropertyMapImplement;
 
 import java.util.HashMap;
 import java.util.List;
@@ -37,7 +35,7 @@ public class StringAggUnionProperty extends FormulaUnionProperty {
     }
 
     protected DataClass getDataClass() {
-        return InsensitiveStringClass.get(20);
+        return InsensitiveStringClass.get(200);
     }
 
     @IdentityLazy
