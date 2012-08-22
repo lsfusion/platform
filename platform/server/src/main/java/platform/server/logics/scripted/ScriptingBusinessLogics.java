@@ -5,6 +5,7 @@ import platform.server.auth.User;
 import platform.server.data.sql.DataAdapter;
 import platform.server.logics.BusinessLogics;
 
+import java.io.File;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
@@ -32,14 +33,18 @@ public class ScriptingBusinessLogics extends BusinessLogics<ScriptingBusinessLog
         super.createModules();
 
         for (String filePath : scriptFilePaths) {
-            Pattern pattern = Pattern.compile(".*" + modifySlashes(filePath) + ".*\\.lsf");
-            final Collection<String> list = ResourceList.getResources(pattern);
-            for (String name : list) {
-                addModule(new ScriptingLogicsModule(name, LM, this));
+            if (new File(filePath).isFile())
+                addModule(new ScriptingLogicsModule(filePath, LM, this));
+            else {
+                Pattern pattern = Pattern.compile(".*" + modifySlashes(filePath) + ".*\\.lsf");
+                Collection<String> list = ResourceList.getResources(pattern);
+                for (String name : list) {
+                    addModule(new ScriptingLogicsModule(name, LM, this));
+                }
             }
         }
     }
-    
+
     private String modifySlashes(String regexp) {
         return regexp.replace("/", "\\\\");
     }
