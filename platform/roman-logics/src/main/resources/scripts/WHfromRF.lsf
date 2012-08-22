@@ -427,10 +427,10 @@ costWHfromRFDetail(WHfromRFDetail) =
 quantityBatch (batch) += quantityWHfromRFDetail(batch);
 skipASkuLedger (ledger) += ledger IS WHfromRFDetail;
 
-FORM WHfromRF 'Приемка товара на оптовый склад'
+FORM WHfromRF 'Приход товара из РФ'
 
-OBJECTS w = WHfromRF FIXED PANEL, d = WHfromRFDetail
-    PROPERTIES(w) numberObject, seriesObject, dateWHfromRF, timeWHfromRF, nameFreightWHfromRF, nameWarehouseWHfromRF, barcodeCurrentFreightUnit,
+    OBJECTS w = WHfromRF FIXED PANEL, d = WHfromRFDetail
+    PROPERTIES(w) objectClassName, numberObject, seriesObject, dateWHfromRF, timeWHfromRF, nameFreightWHfromRF, nameWarehouseWHfromRF, barcodeCurrentFreightUnit,
                   fillWHfromRFDetailsSkuFreightUnit, printMarksSkuFreightUnit, printMarksSkuWHfromRF TODRAW d FORCE PANEL
     PROPERTIES(w) READONLY quantityRemainedPositionSkuWHfromRF SHOWIF barcodeCurrentFreightUnit(w),
                            quantityRemainedSkuWHfromRF SHOWIF barcodeCurrentFreightUnit(w)
@@ -466,6 +466,9 @@ OBJECTS w = WHfromRF FIXED PANEL, d = WHfromRFDetail
     FILTERGROUP filtersQuantity
         FILTER 'Показывать принятые' 'F9' quantityWHfromRFDetail(d) DEFAULT
 
+    EVENTS
+        ON OK EXEC prePostWHfromRF(w)
+
     EDIT WHfromRF OBJECT w
 ;
 
@@ -480,6 +483,7 @@ DESIGN WHfromRF FROM DEFAULT {
                 NEW head{
                     caption = 'Шапка документа';
                     childConstraints = TO THE RIGHT;
+                    ADD PROPERTY(objectClassName);
                     ADD PROPERTY(numberObject);
                     ADD PROPERTY(seriesObject);
                     ADD PROPERTY(dateWHfromRF);
@@ -524,6 +528,10 @@ DESIGN WHfromRF FROM DEFAULT {
         }
 
         ADD functions.box;
+
+        PROPERTY(formOkAction) {
+            caption = 'Провести';
+        }
     }
 }
 
@@ -534,12 +542,11 @@ FORM WHfromRFs 'Приход товара из РФ'
 
     OBJECTS w = WHfromRF
 
-    PROPERTIES(w) READONLY numberObject, seriesObject, dateWHfromRF, timeWHfromRF, nameFreightWHfromRF, nameWarehouseWHfromRF,
+    PROPERTIES(w) READONLY objectClassName, numberObject, seriesObject, dateWHfromRF, timeWHfromRF, nameFreightWHfromRF, nameWarehouseWHfromRF,
                            countWHfromRFDetailWHfromRF, quantityWHfromRFDetailWHfromRF, statusRecWHfromRF,
                            descriptionFreightWHfromRF
 
-    PROPERTIES(w) FORCE PANEL ADDFORM, EDITFORM SHOWIF isDraftWHfromRF(w), postWHfromRF SHOWIF isDraftWHfromRF(w),
-                              unpostWHfromRF SHOWIF isPostedWHfromRF(w), delete
+    PROPERTIES(w) ADDFORM, EDITFORM, delete FORCE PANEL
 
     PROPERTIES (w) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed,
                                         hostnameComputerClosed
