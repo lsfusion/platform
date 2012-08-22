@@ -74,14 +74,14 @@ sumCashCashRegisterDateTime 'Сумма наличных в кассе на да
 CLASS collection 'Инкассация' : outcomeCashOrder, historyObject, numeratedObject;
 TABLE collection (collection);
 
+@defineNumeratedObject(collection, 'Нумератор для инкассаций', 'ИН');
+
 @defineDocumentHeaderTime(collection);
 @defineDocumentHeaderDepartmentStore(collection);
 
 cashRegisterCollection (collection) = DATA cashRegister (collection);
 numberCashRegisterCollection 'Касса инкассации' (collection) = numberCashRegister(cashRegisterCollection(collection)) IN documentPrmGroup;
 sumCashCollection 'Сумма инкассации' = DATA NUMERIC[16,2] (collection) IN documentSumGroup;
-defaultNumeratorCollection = DATA numerator ();
-nameDefaultNumeratorCollection 'Нумератор инкассации' = name(defaultNumeratorCollection());
 castBasisCollection =
     FORMULA STRING[100] '\'Инкассация №\' || CAST($1 AS TEXT) || \' с кассы \' || CAST($2 AS TEXT) || \' от \' || CAST($3 AS TEXT)';
 basisCollection 'Основание' (collection) =
@@ -162,7 +162,6 @@ addCollection 'Провести инкассацию' = ACTION (cashRegister, de
         SET dateCollection(c) <- dateInTime(dateTime AS DATETIME);
         SET timeCollection(c) <- timeInDateTime(dateTime AS DATETIME);
         SET sumCashCollection(c) <- sumCashForCollection(cashRegister AS cashRegister);
-        SET numeratorObject(c) <- defaultNumeratorCollection();
         EXEC setValueNumeratedObject(c AS collection);
     }
 }
@@ -265,7 +264,6 @@ addCollectionForm 'Инкассация' (departmentStore) = ACTION (departmentS
                // SET dateCollection(c) <- dateInTime(chosenDateTime('dt'));
                // SET timeCollection(c) <- timeInDateTime(chosenDateTime('dt'));
                 SET sumCashCollection(c) <- sumCashForCollection(cashRegister AS cashRegister);
-                SET numeratorObject(c) <- defaultNumeratorCollection();
                 EXEC setValueNumeratedObject(c AS collection);
             }
         }

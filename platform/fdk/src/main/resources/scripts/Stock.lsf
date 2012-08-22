@@ -5,7 +5,7 @@ REQUIRE System, Utils, Hierarchy, LegalEntity;
 // ----------------------------------- Склады ------------------------------------------ //
 
 
-hideWare 'Показывать стеклопосуду' = DATA BOOLEAN ();
+showWare 'Показывать стеклопосуду' = DATA BOOLEAN ();
 
 CLASS ABSTRACT stockGroup 'Группа складов' : named;
 @defineHierarchyAbstract(stockGroup);

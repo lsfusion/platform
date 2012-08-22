@@ -2,6 +2,8 @@ MODULE Numerator;
 
 REQUIRE System;
 
+// ------------------------------------------- Нумераторы ----------------------------------------------- //
+
 CLASS numerator 'Нумератор' : named;
 TABLE numerator (numerator);
 
@@ -28,6 +30,8 @@ incrementValueNumerator 'Увеличить значение' = ACTION (numerato
     };
 };
 
+generateDefaultNumerators 'Сгенерировать нумераторы по умолчанию' = ABSTRACT ACTION();
+
 FORM numerator 'Нумератор'
     OBJECTS n = numerator FIXED PANEL
     PROPERTIES(n) name, seriesNumerator, minValueNumerator, maxValueNumerator, stringLengthNumerator, curValueNumerator, curStringValueNumerator
@@ -42,6 +46,32 @@ FORM numerators 'Нумераторы'
 
     DIALOG numerator OBJECT n
 ;
+
+FORM defaultNumerators 'Нумераторы'
+    OBJECTS n = numerator
+    PROPERTIES(n) READONLY name, seriesNumerator, minValueNumerator, maxValueNumerator, stringLengthNumerator, curValueNumerator, curStringValueNumerator
+    PROPERTIES(n)          ADDFORM, EDITFORM, delete
+
+    PROPERTIES() generateDefaultNumerators
+;
+
+DESIGN defaultNumerators FROM DEFAULT {
+    main {
+        NEW defaultContainer AFTER n.box {
+            title = 'Нумераторы по умолчанию';
+
+            ADD PROPERTY(generateDefaultNumerators);
+        }
+    }
+}
+
+NAVIGATOR {
+    catalogElement {
+        ADD defaultNumerators;
+    }
+}
+
+// ---------------------------------------------- Нумерованные объекты ----------------------------------------------- //
 
 GROUP numberedGroup 'Нумератор' : baseGroup;
 
@@ -78,3 +108,36 @@ setValueNumeratedObject 'Сгенерировать номер' = ACTION (numera
 } IN numberedGroup SHORTCUT numberObject;
 
 WHEN CHANGED(numeratorObject(numeratedObject)) DO EXEC setValueNumeratedObject(numeratedObject) ;
+
+// --------------------------------------------- Макрос по объявлению нумерируемого объекта ---------------------------- //
+
+META defineNumeratedObject (object, caption, series)
+
+    defaultNumerator###object = DATA numerator ();
+    nameDefaultNumerator###object caption = name(defaultNumerator###object());
+
+    initValueNumeratorObject(object) += defaultNumerator###object() IF object IS object;
+    initWhenNumeratorObject(object) += ASSIGNED(object IS object);
+
+    EXTEND FORM defaultNumerators
+        PROPERTIES() nameDefaultNumerator###object
+    ;
+    EXTEND DESIGN defaultNumerators {
+        defaultContainer {
+            ADD PROPERTY(nameDefaultNumerator###object);
+        }
+    }
+
+    generateDefaultNumerators() += ACTION () {
+        ADDOBJ numerator;
+        FOR n == addedObject() DO {
+            SET name(n) <- caption;
+            SET seriesNumerator(n) <- series;
+            SET minValueNumerator(n) <- 1;
+            SET maxValueNumerator(n) <- 99999;
+            SET stringLengthNumerator(n) <- 5;
+
+            SET defaultNumerator###object() <- n;
+        }
+    };
+END

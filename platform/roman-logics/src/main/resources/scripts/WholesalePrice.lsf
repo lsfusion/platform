@@ -12,13 +12,8 @@ CLASS wholesalePriceDocument 'Оптовый прайс' : numeratedObject;
 TABLE wholesalePriceDocument (wholesalePriceDocument);
 TABLE wholesalePriceDocumentArticle (wholesalePriceDocument, article);
 
+@defineNumeratedObject(wholesalePriceDocument, 'Нумератор для оптовых прайсов', 'ОП');
 @defineDocumentHeaderTime(wholesalePriceDocument);
-
-defaultNumeratorWholesalePriceDocument = DATA numerator ();
-nameDefaultNumeratorWholesalePriceDocument 'Нумератор для оптовых прайсов' = name(defaultNumeratorWholesalePriceDocument());
-
-initValueNumeratorObject(object) += defaultNumeratorWholesalePriceDocument() IF object IS wholesalePriceDocument;
-initWhenNumeratorObject(object) += ASSIGNED(object IS wholesalePriceDocument);
 
 declarationWholesalePriceDocument 'Декларация оптового прайса (ИД)' = DATA declaration(wholesalePriceDocument) IN idGroup;
 

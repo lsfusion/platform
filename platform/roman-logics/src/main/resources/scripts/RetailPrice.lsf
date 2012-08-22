@@ -97,15 +97,10 @@ TABLE priceSetDocument (priceSetDocument);
 TABLE basePriceSetDocument (basePriceSetDocument);
 TABLE discountPriceSetDocument (discountPriceSetDocument);
 
+@defineNumeratedObject(priceSetDocument, 'Нумератор для розничных прайсов', 'РП');
 @defineDocumentHeaderTime(priceSetDocument);
 
 TABLE priceSetDocumentArticle(priceSetDocument, article);
-
-defaultNumeratorPriceSetDocuments = DATA numerator ();
-nameDefaultNumeratorPriceSetDocument 'Нумератор для розничных прайсов' = name(defaultNumeratorPriceSetDocuments());
-
-initValueNumeratorObject(object) += defaultNumeratorPriceSetDocuments() IF object IS priceSetDocument;
-initWhenNumeratorObject(object) += ASSIGNED(object IS priceSetDocument);
 
 dateTimeToDataPriceSetDocument 'Дата/время окончания' = DATA DATETIME(priceSetDocument) IN documentPrmGroup;
 dateTimeToPriceSetDocument 'Дата/время окончания' (priceSetDocument) = UNION OVERRIDE maxDateTime() IF priceSetDocument IS priceSetDocument,

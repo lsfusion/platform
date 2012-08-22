@@ -34,6 +34,8 @@ FORM clients 'Покупатели (Ф.Л.)'
 CLASS discountCard 'Дисконтная карта' : numeratedObject;
 TABLE discountCard (discountCard);
 
+@defineNumeratedObject(discountCard, 'Нумератор для дисконтных карт', 'ДС');
+
 CLASS ABSTRACT discountSkuGroup 'Дисконтная группа товаров' : named;
 
 discountCardSeriesNumber (discountCard) = GROUP UNIQUE discountCard BY seriesNumberObject (discountCard) WHERE discountCard IS discountCard;
@@ -55,14 +57,6 @@ initialSumDiscountCard 'Начальная сумма' (discountCard) = DATA NUM
 
 // накопительная сумма  : потом посчитать ее по карте
 
-// ---------------------------- Нумераторы по умолчанию --------------------------------- //
-
-defaultNumeratorDiscountCards = DATA numerator ();
-nameDefaultNumeratorDiscountCard 'Нумератор для дисконтных карт' = name(defaultNumeratorDiscountCards());
-
-initValueNumeratorObject(object) += defaultNumeratorDiscountCards() IF object IS discountCard;
-initWhenNumeratorObject(object) += ASSIGNED(object IS discountCard);
-
 FORM generationDiscountCards 'Генерация дисконтных карт'
     OBJECTS n=numerator  FIXED PANEL
     PROPERTIES(n) SELECTOR name
@@ -79,7 +73,7 @@ DESIGN generationDiscountCards FROM DEFAULT {
 }
 
 generateDiscountCards 'Сгенерировать дисконтные карты' = ACTION() {
-    FORM generationDiscountCards OBJECTS n=defaultNumeratorDiscountCards() MODAL CHECK;
+    FORM generationDiscountCards OBJECTS n=defaultNumeratorDiscountCard() MODAL CHECK;
     IF formResult() == formResult.ok THEN {
         LOCAL num = INTEGER();
         SET num() <- 0;
@@ -150,12 +144,7 @@ TABLE promotionGroup (promotionGroup);
 CLASS promotion 'Акция' : historyObject, numeratedObject, named;
 TABLE promotion (promotion);
 
-// ----------------- Нумератор -------------------- //
-defaultNumeratorPromotion = DATA numerator ();
-nameDefaultNumeratorPromotion 'Нумератор для акций' = name(defaultNumeratorPromotion());
-
-initValueNumeratorObject(object) += defaultNumeratorPromotion() IF object IS promotion;
-initWhenNumeratorObject(object) += ASSIGNED(object IS promotion);
+@defineNumeratedObject(promotion, 'Нумератор для акций', 'АК');
 
 promotionGroupPromotion (promotion) = DATA promotionGroup(promotion) IN idGroup AUTOSET NOT NULL;
 namePromotionGroupPromotion 'Группа акций' (promotion) = name(promotionGroupPromotion(promotion)) IN baseGroup;

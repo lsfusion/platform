@@ -31,11 +31,7 @@ CLASS writeOffDetail 'Строка списания' : outFIFOSkuLedger;
 CLASS writeOffPosted 'Закрытое списание' : writeOff, postedObject;
 CLASS writeOffBatchDetail 'Строка списания товара (по партиям)';
 
-defaultNumeratorWriteOff = DATA numerator ();
-nameDefaultNumeratorWriteOff 'Нумератор для актов списания' = name(defaultNumeratorWriteOff());
-
-initValueNumeratorObject(object) += defaultNumeratorWriteOff() IF object IS writeOff;
-initWhenNumeratorObject(object) += ASSIGNED(object IS writeOff);
+@defineNumeratedObject(writeOff, 'Нумератор для актов списания', 'АС');
 
 @defineDocument(writeOff);
 @defineDocumentStock(writeOff, stock, 'Склад');

@@ -182,7 +182,7 @@ FORM priceChangeDocuments 'Акты переоценки'
     PROPERTIES(pc) READONLY objectClassName, isPostedPriceChangeDocument FORCE GRID, dateTimePriceChangeDocument, nameDepartmentStorePriceChangeDocument,
                             numberPriceChangeDocument, seriesPriceChangeDocument,
                             diffSupplierISumPriceChangeDocumentDetailPriceChangeDocument, diffMarkupSumPriceChangeDocumentDetailPriceChangeDocument, diffRetailVATISumPriceChangeDocumentDetailPriceChangeDocument,
-                            diffWareSumPriceChangeDocumentDetailPriceChangeDocument SHOWIF hideWare(), diffWareVATSumPriceChangeDocumentDetailPriceChangeDocument SHOWIF hideWare(),
+                            diffWareSumPriceChangeDocumentDetailPriceChangeDocument SHOWIF showWare(), diffWareVATSumPriceChangeDocumentDetailPriceChangeDocument SHOWIF showWare(),
                             diffRetailSumPriceChangeDocumentDetailPriceChangeDocument, namePriceChangeCommitteePriceChangeDocument
 
     OBJECTS pcd=priceChangeDocumentDetail
@@ -191,7 +191,7 @@ FORM priceChangeDocuments 'Акты переоценки'
                              curSupplierPricePriceChangeDocumentDetail, supplierPricePriceChangeDocumentDetail,
                              curValueRetailVATPriceChangeDocumentDetail, valueRetailVATPriceChangeDocumentDetail,
                              curRetailPricePriceChangeDocumentDetail, retailPricePriceChangeDocumentDetail,
-                             curWarePricePriceChangeDocumentDetail SHOWIF hideWare(), warePricePriceChangeDocumentDetail SHOWIF hideWare()
+                             curWarePricePriceChangeDocumentDetail SHOWIF showWare(), warePricePriceChangeDocumentDetail SHOWIF showWare()
 
     PROPERTIES(pc) FORCE PANEL printPriceChange
 

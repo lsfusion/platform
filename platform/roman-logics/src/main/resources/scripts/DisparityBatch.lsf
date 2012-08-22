@@ -24,6 +24,7 @@ TABLE disparityInBatchDetail(disparityInBatchDetail);
 CLASS disparityOutBatchDetail 'Строка пересорта м/у партиями (Out)' : outFIFOSkuLedger;
 TABLE disparityOutBatchDetail(disparityOutBatchDetail);
 
+@defineNumeratedObject(disparityBatch, 'Нумератор для пересорта', 'ПР');
 
 @defineDocumentRelationCustomCaption (disparityBatch, disparityInBatchDetail, '(In)');
 @defineDocumentRelationCustomCaption (disparityBatch, disparityOutBatchDetail, '(Out)');
@@ -75,13 +76,6 @@ TABLE disparityOutBatchDetail(disparityOutBatchDetail);
 
 @defineDocumentDetailBatchCustom(disparityInBatchDetail, batch);
 @defineDocumentDetailBatchCustom(disparityOutBatchDetail, batch);
-
-
-defaultNumeratorDisparities = DATA numerator ();
-nameDefaultNumeratorDisparity 'Нумератор для пересорта' = name(defaultNumeratorDisparities());
-
-initValueNumeratorObject(object) += defaultNumeratorDisparities() IF object IS disparityBatch;
-initWhenNumeratorObject(object) += ASSIGNED(object IS disparityBatch);
 
 
 CONSTRAINT disparityBatch IS disparityBatch AND quantityDisparityInBatchDetailSkuDisparityBatch(sku, disparityBatch) != quantityDisparityOutBatchDetailSkuDisparityBatch(sku, disparityBatch)

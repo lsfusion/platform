@@ -3938,11 +3938,7 @@ TABLE supplierDepartmentStoreDate (supplier, departmentStore, DATE);
 CLASS ABSTRACT order 'Заказ' : historyObject, numeratedObject;
 //TABLE order(order);
 
-defaultNumeratorOrders = DATA numerator ();
-nameDefaultNumeratorOrders 'Нумератор для заказов' = name(defaultNumeratorOrders());
-
-initValueNumeratorObject(object) += defaultNumeratorOrders() IF object IS order;
-initWhenNumeratorObject(object) += ASSIGNED(object IS order);
+@defineNumeratedObject(order, 'Нумератор для заказов', 'ЗК');
 
 CLASS orderSupplier 'Заказ поставщику' : order;
 CLASS orderSupplierPosted 'Закрытый заказ поставщику' :orderSupplier, postedObject;
@@ -7671,17 +7667,6 @@ addNumerator 'Добавить нумератор' = ACTION(string1, string2, lo
     }
 }
 
-fillNumeratorDefaultValues 'Заполнить значения нумераторов по умолчанию' = ACTION() {
-    EXEC addNumerator('Документы', 'AA', 1, 10000, 4);
-    SET defaultNumeratorDocuments() <- addedNumerator();
-    EXEC addNumerator('Заказы', 'AA', 1, 10000, 4);
-    SET defaultNumeratorOrders() <- addedNumerator();
-    EXEC addNumerator('Дисконтные карты', 'AA', 1, 10000, 4);
-    SET defaultNumeratorDiscountCards() <- addedNumerator();
-    EXEC addNumerator('Инкассации', 'AA', 1, 10000, 4);
-    SET defaultNumeratorCollection() <- addedNumerator();
-}
-
 fillDatabaseDefaultValues 'Заполнить базу значениями по умолчанию' = ACTION() {
     EXEC fillVATDefaultValues();
     EXEC fillCountryDefaultValues();
@@ -7693,16 +7678,12 @@ fillDatabaseDefaultValues 'Заполнить базу значениями по
     EXEC fillDocumentTypeDefaultValues();
     EXEC fillLabelTypeDefaultValues();
     EXEC fillPaymentTypeDefaultValues();
-    EXEC fillNumeratorDefaultValues();
 }
 
 //---------------------------------------------- Параметры -----------------------------------------------------//
 
 FORM parameters 'Параметры'
-    PROPERTIES()    nameDefaultNumeratorDocuments, nameDefaultNumeratorOrders, nameDefaultNumeratorCollection,
-                    nameDefaultNumeratorDiscountCard, skuStockAverageInterval, calcCurrentQuantitySoldInterval,
-                    hideWare, nameDefaultNumeratorPayment, nameDefaultNumeratorPaymentRequest,
-                    nameDefaultNumeratorCreditNote
+    PROPERTIES()    skuStockAverageInterval, calcCurrentQuantitySoldInterval, showWare
 ;
 
 //---------------------------------------------- Заполнение БД -------------------------------------------------//
@@ -7712,7 +7693,7 @@ FORM fillDataBase 'Заполнение БД'
     PROPERTIES()    fillVATDefaultValues, fillCountryDefaultValues, fillUOMDefaultValues, fillCurrencyDefaultValues,
                     fillStatisticGroupDefaultValues, fillLossItemGroupDefaultValues, fillMachineryModelDefaultValues,
                     fillDocumentTypeDefaultValues, fillLabelTypeDefaultValues, fillPaymentTypeDefaultValues,
-                    fillNumeratorDefaultValues, fillDatabaseDefaultValues
+                    fillDatabaseDefaultValues
 
     OBJECTS         es=equipmentServer FIXED PANEL
     PROPERTIES(es)  SELECTOR name
@@ -7797,7 +7778,6 @@ DESIGN fillDataBase FROM DEFAULT {
             ADD PROPERTY(fillLossItemGroupDefaultValues());
             ADD PROPERTY(fillLabelTypeDefaultValues());
             ADD PROPERTY(fillPaymentTypeDefaultValues());
-            ADD PROPERTY(fillNumeratorDefaultValues());
             ADD PROPERTY(fillDatabaseDefaultValues());
 
             NEW containerFillMachinery {
@@ -8060,10 +8040,6 @@ NAVIGATOR {
         ADD parameters;
         ADD fillDataBase;
         ADD importData;
-    }
-
-    catalogElement {
-        ADD numerators;
     }
 }
 

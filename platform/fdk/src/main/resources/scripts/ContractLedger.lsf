@@ -89,6 +89,8 @@ costedInOutContractLedger 'Оплачено по документу' (inContract
 
 CLASS payment 'Платеж' : numeratedObject, contractLedger, contractALedger, outContractLedger;
 
+@defineNumeratedObject(payment, 'Нумератор для платежей', 'ПЛ');
+
 dateTimePayment 'Дата время' (payment) = DATA DATETIME (payment);
 dateTimePayment(payment) <- currentDateTime() WHEN ASSIGNED(payment IS payment);
 datePayment 'Дата' (payment) = dateInTime(dateTimePayment(payment));
@@ -105,12 +107,6 @@ beneficiaryPayment(payment) <- partyAContract(contractPayment(payment)) WHEN ASS
 nameBeneficiaryPayment 'Сторона А(Бенефициар)' (payment) = name(beneficiaryPayment(payment));
 
 sumPayment 'Сумма платежа' (payment) = DATA NUMERIC[16,2] (payment);
-
-defaultNumeratorPayment = DATA numerator ();
-nameDefaultNumeratorPayment 'Нумератор для платежей' = name(defaultNumeratorPayment());
-
-initValueNumeratorObject(object) += defaultNumeratorPayment() IF object IS payment;
-initWhenNumeratorObject(object) += ASSIGNED(object IS payment);
 
 descriptionPayment 'Название документа' =
     [FORMULA STRING[200] '\'Платеж \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)'](
@@ -155,6 +151,8 @@ DESIGN payment FROM DEFAULT{
 
 CLASS paymentRequest 'Платежное требование' : numeratedObject, contractLedger, inContractLedger;
 
+@defineNumeratedObject(paymentRequest, 'Нумератор для платежных требований', 'ПТ');
+
 dateTimePaymentRequest 'Дата время' (paymentRequest) = DATA DATETIME (paymentRequest);
 dateTimePaymentRequest(paymentRequest) <- currentDateTime() WHEN ASSIGNED(paymentRequest IS paymentRequest);
 datePaymentRequest 'Дата' (paymentRequest) = dateInTime(dateTimePaymentRequest(paymentRequest));
@@ -171,12 +169,6 @@ lenderPaymentRequest(paymentRequest) <- partyAContract(contractPaymentRequest(pa
 nameLenderPaymentRequest 'Сторона А' (paymentRequest) = name(lenderPaymentRequest(paymentRequest));
 
 sumPaymentRequest 'Сумма' (paymentRequest) = DATA NUMERIC[16,2] (paymentRequest);
-
-defaultNumeratorPaymentRequest = DATA numerator ();
-nameDefaultNumeratorPaymentRequest 'Нумератор для платежных требований' = name(defaultNumeratorPaymentRequest());
-
-initValueNumeratorObject(object) += defaultNumeratorPaymentRequest() IF object IS paymentRequest;
-initWhenNumeratorObject(object) += ASSIGNED(object IS paymentRequest);
 
 descriptionPaymentRequest 'Название документа' =
     [FORMULA STRING[200] '\'Платежное требование \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)'](
@@ -218,6 +210,8 @@ DESIGN paymentRequest FROM DEFAULT{
 
 CLASS creditNote 'Кредитная нота' : numeratedObject, contractLedger, contractALedger, inContractLedger, outContractLedger;
 
+@defineNumeratedObject(creditNote, 'Нумератор для кредитных нот', 'КН');
+
 dateTimeCreditNote 'Дата время' (creditNote) = DATA DATETIME (creditNote);
 dateTimeCreditNote(creditNote) <- currentDateTime() WHEN ASSIGNED(creditNote IS creditNote);
 dateCreditNote 'Дата' (creditNote) = dateInTime(dateTimeCreditNote(creditNote));
@@ -234,12 +228,6 @@ partyACreditNote(creditNote) <- partyAContract(contractCreditNote(creditNote)) W
 namePartyACreditNote 'Сторона А' (creditNote) = name(partyACreditNote(creditNote));
 
 sumCreditNote 'Сумма' (creditNote) = DATA NUMERIC[16,2] (creditNote);
-
-defaultNumeratorCreditNote = DATA numerator ();
-nameDefaultNumeratorCreditNote 'Нумератор для кредитных нот' = name(defaultNumeratorCreditNote());
-
-initValueNumeratorObject(object) += defaultNumeratorCreditNote() IF object IS creditNote;
-initWhenNumeratorObject(object) += ASSIGNED(object IS creditNote);
 
 descriptionCreditNote 'Название документа' =
     [FORMULA STRING[200] '\'Кредитная нота \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)'](

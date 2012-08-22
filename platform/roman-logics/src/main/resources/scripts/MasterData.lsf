@@ -250,18 +250,10 @@ canonicalBrandFreight 'Бренды' (freight) = castToString255(
     MINCHARWIDTH 50 MAXCHARWIDTH 100 PREFCHARWIDTH 100 PERSISTENT;
 
 
-defaultNumeratorFreights = DATA numerator ();
-nameDefaultNumeratorFreights 'Нумератор для фрахтов' = name(defaultNumeratorFreights());
-
-initValueNumeratorObject(object) += defaultNumeratorFreights() IF object IS freight;
-initWhenNumeratorObject(object) += ASSIGNED(object IS freight);
+@defineNumeratedObject(freight, 'Нумератор для фрахтов', 'ФР');
 
 EXTEND FORM freightListForm
     PROPERTIES(freight) numberObject BEFORE date, seriesObject BEFORE date, canonicalBrandFreight BEFORE dateArrivalFreight
-;
-
-EXTEND FORM globalParamForm
-    PROPERTIES nameDefaultNumeratorFreights()
 ;
 
 FORM skuDialog 'SKU'
