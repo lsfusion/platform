@@ -2696,8 +2696,6 @@ noteConsignmentDetail (consignmentDetail) += noteStatementDetail (consignmentDet
 GROUP shipmentOrderGroup 'Заказ' : documentPrmGroup;
 GROUP additionalInfo 'Дополнительно' : baseGroup;
 
-CLASS shipmentContractLedger : contractLedger;
-
 CLASS shipment 'Поставка' : incAccountDocumentLedger, historyObject, numberedObject, priceTransactionDocument, listRegister, contractALedger, inContractLedger;
 CLASS shipmentDetail 'Строка поставки' : batch, importerPriceLedger, supplierPriceLedger, retailVATLedger, retailPriceLedger, warePriceLedger, listRegisterDetail;
 CLASS shipmentPosted 'Закрытая поставка' : shipment, postedObject;
@@ -2786,19 +2784,12 @@ sumContainerIncAccountDocumentLedger (ledger) += retailSumContainerShipmentDetai
 isDraftPriceTransactionDocument (document) += isDraftShipment(document);
 descriptionPriceTransactionDocument (document) += descriptionShipment(document);
 
+//--------------------------------------- Расчет с поставщиками -------------------------------------------------------//
+
 @implementContractLedger(a, shipment);
 sumContractALedger(contractALedger) += invoiceSumShipmentDetailShipment(contractALedger);
 
-needToCreateShipmentContractLedger (shipment) =  formContractSkuDate(contractShipment(shipment), dateShipment(shipment)) == contractSkuForm.prepayment;
-
-@defineAggregation(shipment, shipmentContractLedger, needToCreateShipmentContractLedger);
-
-//@implementContractLedger( ,shipment);
-//dateTimeContractLedger(shipmentContractLedger) += sumDateTimeDay(dateTimeShipment(shipmentShipmentContractLedger(shipmentContractLedger)),
-//                                                                 delayContractSku(contractShipment(shipmentShipmentContractLedger(shipmentContractLedger)))*86400);
-dateTimeContractLedger(shipmentContractLedger) += dateTimeShipment(shipmentShipmentContractLedger(shipmentContractLedger));
-contractContractLedger(shipmentContractLedger) += contractShipment(shipmentShipmentContractLedger(shipmentContractLedger));
-descriptionContractLedger(shipmentContractLedger) += descriptionShipment(shipmentShipmentContractLedger(shipmentContractLedger));
+@implementContractPrepaymentLedger(shipment);
 sumContractLedger(shipmentContractLedger) += invoiceSumShipmentDetailShipment(shipmentShipmentContractLedger(shipmentContractLedger));
 
 //----------------------------------Для реестра цен----------------------------//
@@ -3437,6 +3428,8 @@ sumOutSkuLedger (ledger) += retailSumReturnSupplierDetail(ledger);
 sumOutAccountDocumentLedger (ledger) += retailSumReturnSupplierDetailReturnSupplier(ledger);
 sumItemOutAccountDocumentLedger (ledger) += retailSumItemReturnSupplierDetailReturnSupplier(ledger);
 sumContainerOutAccountDocumentLedger (ledger) += retailSumContainerReturnSupplierDetailReturnSupplier(ledger);
+
+//--------------------------------------- Расчет с поставщиками -------------------------------------------------------//
 
 @implementContractLedger(, returnSupplier);
 sumContractLedger(contractLedger) += -invoiceSumReturnSupplierDetailReturnSupplier(contractLedger);
@@ -7708,7 +7701,8 @@ fillDatabaseDefaultValues 'Заполнить базу значениями по
 FORM parameters 'Параметры'
     PROPERTIES()    nameDefaultNumeratorDocuments, nameDefaultNumeratorOrders, nameDefaultNumeratorCollection,
                     nameDefaultNumeratorDiscountCard, skuStockAverageInterval, calcCurrentQuantitySoldInterval,
-                    hideWare, nameDefaultNumeratorPayment, nameDefaultNumeratorPaymentRequest
+                    hideWare, nameDefaultNumeratorPayment, nameDefaultNumeratorPaymentRequest,
+                    nameDefaultNumeratorCreditNote
 ;
 
 //---------------------------------------------- Заполнение БД -------------------------------------------------//
