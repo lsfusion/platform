@@ -11,33 +11,33 @@
     <packaging>jar</packaging>
     <name>Server</name>
 
-    <profiles>
-        <profile>
-            <id>fullBuild</id>
-            <activation>
-                <property>
-                    <name>!quickbuild</name>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>aspectj-maven-plugin</artifactId>
-                    </plugin>
-                    <plugin>
-                        <artifactId>maven-assembly-plugin</artifactId>
-                        <configuration>
-                            <finalName>server</finalName>
-                            <descriptors>
-                                <descriptor>src/assemble/jardistrib.xml</descriptor>
-                            </descriptors>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
+    <!--<profiles>-->
+        <!--<profile>-->
+            <!--<id>fullBuild</id>-->
+            <!--<activation>-->
+                <!--<property>-->
+                    <!--<name>!quickbuild</name>-->
+                <!--</property>-->
+            <!--</activation>-->
+            <!--<build>-->
+                <!--<plugins>-->
+                    <!--<plugin>-->
+                        <!--<groupId>org.codehaus.mojo</groupId>-->
+                        <!--<artifactId>aspectj-maven-plugin</artifactId>-->
+                    <!--</plugin>-->
+                    <!--<plugin>-->
+                        <!--<artifactId>maven-assembly-plugin</artifactId>-->
+                        <!--<configuration>-->
+                            <!--<finalName>server</finalName>-->
+                            <!--<descriptors>-->
+                                <!--<descriptor>src/assemble/jardistrib.xml</descriptor>-->
+                            <!--</descriptors>-->
+                        <!--</configuration>-->
+                    <!--</plugin>-->
+                <!--</plugins>-->
+            <!--</build>-->
+        <!--</profile>-->
+    <!--</profiles>-->
 
     <build>
         <plugins>
@@ -55,6 +55,23 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <finalName>fusion</finalName>
+                    <archive>
+                        <manifest>
+                            <mainClass>platform.server.logics.BusinessLogics</mainClass>
+                        </manifest>
+                        <manifestEntries>
+                            <SCM-Version>${platform.revision}</SCM-Version>
+                        </manifestEntries>
+                    </archive>
+                    <descriptors>
+                        <descriptor>../server/src/assemble/distribution.xml</descriptor>
+                    </descriptors>
+                </configuration>
             </plugin>
         </plugins>
     </build>

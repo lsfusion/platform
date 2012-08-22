@@ -1,5 +1,6 @@
 package platform.server.logics.scripted;
 
+import platform.base.ResourceList;
 import platform.server.auth.User;
 import platform.server.data.sql.DataAdapter;
 import platform.server.logics.BusinessLogics;
@@ -8,7 +9,9 @@ import java.io.IOException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import java.util.regex.Pattern;
 
 public class ScriptingBusinessLogics extends BusinessLogics<ScriptingBusinessLogics> {
     private final String name;
@@ -28,10 +31,17 @@ public class ScriptingBusinessLogics extends BusinessLogics<ScriptingBusinessLog
     protected void createModules() throws IOException {
         super.createModules();
 
-        for (int i = 0; i < scriptFilePaths.size(); ++i) {
-            ScriptingLogicsModule scriptedLM = new ScriptingLogicsModule(scriptFilePaths.get(i), LM, this);
-            addModule(scriptedLM);
+        for (String filePath : scriptFilePaths) {
+            Pattern pattern = Pattern.compile(".*" + modifySlashes(filePath) + ".*\\.lsf");
+            final Collection<String> list = ResourceList.getResources(pattern);
+            for (String name : list) {
+                addModule(new ScriptingLogicsModule(name, LM, this));
+            }
         }
+    }
+    
+    private String modifySlashes(String regexp) {
+        return regexp.replace("/", "\\\\");
     }
 
     protected void initAuthentication() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
