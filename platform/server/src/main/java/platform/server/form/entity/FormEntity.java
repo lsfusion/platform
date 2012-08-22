@@ -518,6 +518,22 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         return newPropertyDraw;
     }
 
+    public void movePropertyDrawTo(PropertyDrawEntity property, PropertyDrawEntity newNeighbour, boolean isRightNeighbour) {
+        propertyDraws.remove(property);
+        int neighbourIndex = propertyDraws.indexOf(newNeighbour);
+        if (isRightNeighbour) {
+            ++neighbourIndex;
+        }
+        if (newNeighbour.shouldBeLast) {   // поддерживаем shouldBeLast на всякий случай
+            property.shouldBeLast = true;
+        }
+        propertyDraws.add(neighbourIndex, property);
+
+        if (richDesign != null) {
+            richDesign.movePropertyDrawTo(property, newNeighbour, isRightNeighbour);
+        }
+    }
+
     public void setPropertyDrawGeneratedSID(PropertyDrawEntity property, String baseSID) {
         assert baseSID != null;
 

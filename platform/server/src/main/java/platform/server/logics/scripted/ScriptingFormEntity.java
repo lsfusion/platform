@@ -304,19 +304,10 @@ public class ScriptingFormEntity {
         }
 
         if (options.getNeighbourPropertyDraw() != null) {
-            PropertyDrawEntity neighbour = options.getNeighbourPropertyDraw();
-            if (neighbour.getToDraw(form) != property.getToDraw(form)) {
+            if (options.getNeighbourPropertyDraw().getToDraw(form) != property.getToDraw(form)) {
                 LM.getErrLog().emitNeighbourPropertyError(LM.getParser(), options.getNeighbourPropertyText(), property.getSID());
             }
-            form.removePropertyDraw(property);
-            int neighbourIndex = form.propertyDraws.indexOf(neighbour);
-            if (!options.isRightNeighbour()) {
-                ++neighbourIndex;
-            }
-            if (neighbour.shouldBeLast) {   // поддерживаем shouldBeLast на всякий случай
-                property.shouldBeLast = true;
-            }
-            form.propertyDraws.add(neighbourIndex, property);
+            form.movePropertyDrawTo(property, options.getNeighbourPropertyDraw(), options.isRightNeighbour());
         }
     }
 

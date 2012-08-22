@@ -141,6 +141,19 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
         return addPropertyDrawBase(property);
     }
 
+    public void movePropertyDrawTo(PropertyDrawEntity property, PropertyDrawEntity newNeighbour, boolean isRightNeighbour) {
+        PropertyDrawView propertyView = mproperties.get(property);
+        PropertyDrawView neighbourView = mproperties.get(newNeighbour);
+        assert propertyView != null && neighbourView != null;
+
+        properties.remove(propertyView);
+        int neighbourIndex = properties.indexOf(neighbourView);
+        if (isRightNeighbour) {
+            ++neighbourIndex;
+        }
+        properties.add(neighbourIndex, propertyView);
+    }
+
     private void addGroupObjectView(GroupObjectView groupObjectView) {
         mgroupObjects.put(groupObjectView.entity, groupObjectView);
         setComponentSID(groupObjectView.getGrid(), getGridSID(groupObjectView.entity));
