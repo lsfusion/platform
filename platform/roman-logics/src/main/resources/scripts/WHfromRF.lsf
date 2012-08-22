@@ -60,6 +60,9 @@ nameFreightWHfromRF 'Фрахт' (WHfromRF) =  name(freightWHfromRF(WHfromRF));
 castFreightWHfromRF = FORMULA STRING[100] '\'Фрахт от \' || CAST($1 AS TEXT) || \' (\' || CAST($2 AS TEXT) || \')\'';
 descriptionFreightWHfromRF 'Фрахт' (WHfromRF) = castFreightWHfromRF(dateArrivalFreight(freightWHfromRF(WHfromRF)), nameExporterFreight(freightWHfromRF(WHfromRF)));
 
+companyWHfromRF 'Импортёр (ИД)' = DATA company(WHfromRF) IN idGroup;
+nameCompanyWHfromRF 'Импортёр' = name(companyWHfromRF(WHfromRF)) IN baseGroup;
+
 //@defineDocumentAggregationHeaderStock(freight, WHfromRF, warehouse, 'Оптовый склад');
 
 @defineDocumentRelation(WHfromRF);
@@ -288,12 +291,16 @@ FORM printMarksWHfromRF 'Печать маркировок товара' PRINT
     OBJECTS dt = DATETIME FIXED PANEL
     PROPERTIES(dt) OBJVALUE
 
+    OBJECTS imp = company FIXED PANEL
+    PROPERTIES(imp) OBJVALUE
+
     OBJECTS s = sku
-    PROPERTIES(s) READONLY sidArticleSku, nameCommonSizeSku, sidGenderArticleSku, nameCategoryArticleSku,
-                           mainCompositionSku, nameCountryBrandSupplier, nameBrandSupplierArticleSku,
-                           barcode, nameCountrySku, nameColorSupplierItem, nameSupplierArticleSku, countSku
+    PROPERTIES(s) READONLY sidArticleSku, sidSizeSupplierItem, nameCommonSizeSku, sidGenderArticleSku, nameCategoryArticleSku,
+                           mainCompositionSku, nameCountryBrandSupplier, nameBrandSupplierArticleSku, barcode, nameCountrySku,
+                           sidColorSupplierItem, nameColorSupplierItem, nameSupplierArticleSku, addressSupplierArticleSku, countSku
 
     PROPERTIES(s, dt)      priceBaseWHfromRFDateTimeSku, priceDiscountWHfromRFDateTimeSku
+    PROPERTIES(imp, s)     nameImporterSku, addressImporterSku
 
     FILTERS shouldBePrintWHfromRF(s)
 ;
@@ -304,7 +311,7 @@ printMarksSkuFreightUnit 'Печать маркировок товаров' (WHf
     SET countSku(sku) <- NULL;
     SET shouldBePrintWHfromRF(sku) <- TRUE IF quantitySkuFreightUnitWHfromRF(sku, currentFreightUnit(WHfromRF), WHfromRF);
     SET countSku(sku) <- castToInteger(quantitySkuFreightUnitWHfromRF(sku, currentFreightUnit(WHfromRF), WHfromRF));
-    FORM printMarksWHfromRF OBJECTS dt = dateTimeWHfromRF(WHfromRF) MODAL;
+    FORM printMarksWHfromRF OBJECTS dt = dateTimeWHfromRF(WHfromRF), imp = companyWarehouse(WHfromRF) MODAL;
 
 } CONFIRM;
 
@@ -314,7 +321,7 @@ printMarksSkuWHfromRF 'Печать маркировок товаров' (WHfrom
     SET countSku(sku) <- NULL;
     SET shouldBePrintWHfromRF(sku) <- TRUE IF quantitySkuInWHfromRF(WHfromRF, sku);
     SET countSku(sku) <- castToInteger(quantitySkuInWHfromRF(WHfromRF, sku));
-    FORM printMarksWHfromRF OBJECTS dt = dateTimeWHfromRF(WHfromRF) MODAL;
+    FORM printMarksWHfromRF OBJECTS dt = dateTimeWHfromRF(WHfromRF), imp = companyWarehouse(WHfromRF) MODAL;
 
 } CONFIRM TOOLBAR;
 
@@ -544,7 +551,7 @@ FORM WHfromRFs 'Приход товара из РФ'
 
     PROPERTIES(w) READONLY objectClassName, numberObject, seriesObject, dateWHfromRF, timeWHfromRF, nameFreightWHfromRF, nameWarehouseWHfromRF,
                            countWHfromRFDetailWHfromRF, quantityWHfromRFDetailWHfromRF, statusRecWHfromRF,
-                           descriptionFreightWHfromRF
+                           descriptionFreightWHfromRF, nameCompanyWHfromRF
 
     PROPERTIES(w) ADDFORM, EDITFORM, delete FORCE PANEL
 

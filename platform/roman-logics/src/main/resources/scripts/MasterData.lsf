@@ -274,6 +274,11 @@ FORM skuDialog 'SKU'
     DIALOG sku OBJECT s
 ;
 
+//----------------------------- для печати маркировок ----------------------------------------------------------------//
+
+nameImporterSku 'Наименование' (importer, sku) = name(importer) AND importer IS company AND sku IS sku;
+addressImporterSku 'Адрес' (importer, sku) = addressLegalEntity(importer) AND importer IS company AND sku IS sku;
+
 //---------------------
 
 //@implementSkuLedger(userPriceChange, sku, departmentStore);

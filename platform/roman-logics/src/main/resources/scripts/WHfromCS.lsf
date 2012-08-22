@@ -343,15 +343,16 @@ FORM printMarksWHfromCSR 'Печать маркировок товара' PRINT
     OBJECTS dt = DATETIME FIXED PANEL
     PROPERTIES(dt) OBJVALUE
 
+    OBJECTS imp = company FIXED PANEL
+    PROPERTIES(imp) OBJVALUE, name, addressLegalEntity
+
     OBJECTS s = sku
     PROPERTIES(s) READONLY sidArticleSku, sidSizeSupplierItem, nameCommonSizeSku, sidGenderArticleSku, nameCategoryArticleSku,
                            mainCompositionSku, nameCountryBrandSupplier, nameBrandSupplierArticleSku, barcode, nameCountrySku,
                            sidColorSupplierItem, nameColorSupplierItem, nameSupplierArticleSku, addressSupplierArticleSku, countSku
 
     PROPERTIES(s, dt)      priceBaseWHfromCSRDateTimeSku, priceDiscountWHfromCSRDateTimeSku
-
-    OBJECTS imp = company FIXED PANEL
-    PROPERTIES(imp) OBJVALUE, name, addressLegalEntity
+    PROPERTIES(imp, s)     nameImporterSku, addressImporterSku
 
     FILTERS shouldBePrintWHfromCSR(s)
 ;

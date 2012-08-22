@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Печать маркировок товара" pageWidth="170" pageHeight="113" orientation="Landscape" columnWidth="170" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Печать маркировок товара" pageWidth="141" pageHeight="198" orientation="Landscape" columnWidth="141" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
@@ -18,7 +18,7 @@
 				<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="0" height="0"/>
 				<parametersMapExpression><![CDATA[$P{dt_params}]]></parametersMapExpression>
 				<dataSourceExpression><![CDATA[$P{dt_source}]]></dataSourceExpression>
-				<subreportExpression><![CDATA[$P{dt_report}]]></subreportExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{dt_report}]]></subreportExpression>
 			</subreport>
 		</band>
 	</detail>
