@@ -1847,7 +1847,7 @@ overrideStatement
 		(	expr=propertyExpression[context, dynamic] { property = $expr.property; }
 		|	action=actionPropertyDefinition[context, dynamic] { property = $action.property; }
 		)
-		';'
+		( {!self.semicolonNeeded()}?=>  | ';')
 	;
 
 ////////////////////////////////////////////////////////////////////////////////
