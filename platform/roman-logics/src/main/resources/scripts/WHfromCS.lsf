@@ -107,8 +107,8 @@ barcodeCurrentFreightUnit 'Тек. короб (штрих-код)' (WHfromCSR) =
 
 withOutBarcodeSku (sku) = sku IS RomanLogicsModule.item AND NOT barcode(sku);
 
-destinationWHfromCSRDetail (WHfromCSRDetail) = destinationFreightBox(freightUnitWHfromCSRDetail(WHfromCSRDetail));
-nameDestinationWHfromCSRDetail 'Пункт назначения' (WHfromCSRDetail) = nameDestinationFreightBox(freightUnitWHfromCSRDetail(WHfromCSRDetail));
+destinationWHfromCSRDetail (WHfromCSRDetail) = destinationFreightUnit(freightUnitWHfromCSRDetail(WHfromCSRDetail));
+nameDestinationWHfromCSRDetail 'Пункт назначения' (WHfromCSRDetail) = nameDestinationFreightUnit(freightUnitWHfromCSRDetail(WHfromCSRDetail));
 
 quantitySkuStoreWHfromCSI (store, WHfromCSI) = GROUP SUM quantityWHfromCSRDetail(WHfromCSRDetail)
                                                BY destinationWHfromCSRDetail(WHfromCSRDetail),
@@ -344,11 +344,14 @@ FORM printMarksWHfromCSR 'Печать маркировок товара' PRINT
     PROPERTIES(dt) OBJVALUE
 
     OBJECTS s = sku
-    PROPERTIES(s) READONLY sidArticleSku, nameCommonSizeSku, sidGenderArticleSku, nameCategoryArticleSku,
-                           mainCompositionSku, nameCountryBrandSupplier, nameBrandSupplierArticleSku,
-                           barcode, nameCountrySku, nameColorSupplierItem, nameSupplierArticleSku, countSku
+    PROPERTIES(s) READONLY sidArticleSku, sidSizeSupplierItem, nameCommonSizeSku, sidGenderArticleSku, nameCategoryArticleSku,
+                           mainCompositionSku, nameCountryBrandSupplier, nameBrandSupplierArticleSku, barcode, nameCountrySku,
+                           sidColorSupplierItem, nameColorSupplierItem, nameSupplierArticleSku, addressSupplierArticleSku, countSku
 
     PROPERTIES(s, dt)      priceBaseWHfromCSRDateTimeSku, priceDiscountWHfromCSRDateTimeSku
+
+    OBJECTS imp = company FIXED PANEL
+    PROPERTIES(imp) OBJVALUE, name, addressLegalEntity
 
     FILTERS shouldBePrintWHfromCSR(s)
 ;
@@ -359,7 +362,7 @@ printMarksSkuFreightUnit 'Печать маркировок товаров' (WHf
     SET countSku(sku) <- NULL;
     SET shouldBePrintWHfromCSR(sku) <- TRUE IF quantitySkuFreightUnitCStoWH(sku, currentFreightUnit(WHfromCSR), CStoWHWHfromCSI(WHfromCSIWHfromCSR(WHfromCSR)));
     SET countSku(sku) <- castToInteger(quantitySkuFreightUnitCStoWH(sku, currentFreightUnit(WHfromCSR), CStoWHWHfromCSI(WHfromCSIWHfromCSR(WHfromCSR))));
-    FORM printMarksWHfromCSR OBJECTS dt = dateTimeWHfromCSR(WHfromCSR) MODAL;
+    FORM printMarksWHfromCSR OBJECTS dt = dateTimeWHfromCSR(WHfromCSR), imp = companyWarehouse(warehouseWHfromCSR(WHfromCSR)) MODAL;
 
 } CONFIRM;
 
@@ -369,7 +372,7 @@ printMarksSkuWHfromCSR 'Печать маркировок товаров' (WHfro
     SET countSku(sku) <- NULL;
     SET shouldBePrintWHfromCSR(sku) <- TRUE IF quantitySkuInWHfromCSR(WHfromCSR, sku);
     SET countSku(sku) <- castToInteger(quantitySkuInWHfromCSR(WHfromCSR, sku));
-    FORM printMarksWHfromCSR OBJECTS dt = dateTimeWHfromCSR(WHfromCSR) MODAL;
+    FORM printMarksWHfromCSR OBJECTS dt = dateTimeWHfromCSR(WHfromCSR), imp = companyWarehouse(warehouseWHfromCSR(WHfromCSR)) MODAL;
 
 } CONFIRM TOOLBAR;
 
@@ -474,6 +477,8 @@ quantityArticleColorWHfromCSRDetail (WHfromCSRDetail) =
                                 WHfromCSRWHfromCSRDetail(WHfromCSRDetail));
 
 backgroundArticleColorWHfromCSRDetail 'Цвет' (WHfromCSRDetail) = RGB(255, 128, 128) IF quantityArticleColorWHfromCSRDetail(WHfromCSRDetail) == 1;
+
+nameCompanyWHfromCSR 'компания'(WHfromCSR) = name(companyWarehouse(warehouseWHfromCSR(WHfromCSR)));
 
 FORM WHfromCSR 'Приемка на оптовый склад'
 

@@ -227,8 +227,10 @@ public class RomanLogicsModule extends LogicsModule {
     private LCP sidBrandSupplierArticleSku;
     public LCP nameBrandSupplierArticleSku;
     private LCP nameBrandSupplierArticleSkuShipmentDetail;
+    public LCP addressSupplier;
     private LCP supplierArticleSku;
     private LCP nameSupplierArticleSku;
+    private LCP addressSupplierArticleSku;
     public LCP supplierThemeSupplier;
     public LCP supplierSeasonSupplier;
     public LCP sidDestinationSupplier;
@@ -1373,7 +1375,7 @@ public class RomanLogicsModule extends LogicsModule {
         seller = addAbstractClass("seller", "Продавец", baseClass);
         //buyer = addAbstractClass("buyer", "Покупатель", baseClass.named);
 
-        supplier = addConcreteClass("supplier", "Поставщик", baseClass.named, seller);
+        supplier = addConcreteClass("supplier", "Поставщик", baseClass.named, seller, (CustomClass) BL.LegalEntity.getClassByName("legalEntity"));
 
         boxSupplier = addConcreteClass("boxSupplier", "Поставщик по коробам", supplier);
         simpleSupplier = addConcreteClass("simpleSupplier", "Поставщик без коробов", supplier);
@@ -2140,8 +2142,11 @@ public class RomanLogicsModule extends LogicsModule {
         executeChangeFreightShippedClass.property.askConfirm = true;
         executeChangeFreightShippedClass.setImage("sign_tick.png");
 
+        addressSupplier = BL.LegalEntity.getLCPByName("addressLegalEntity");
+
         supplierArticleSku = addJProp(idGroup, "supplierArticleSku", "Поставщик (ИД)", supplierArticle, articleSku, 1);
         nameSupplierArticleSku = addJProp(baseGroup, "nameSupplierArticleSku", "Поставщик", baseLM.name, supplierArticleSku, 1);
+        addressSupplierArticleSku = addJProp(baseGroup, "addressSupplierArticleSku", "Адрес", addressSupplier, supplierArticleSku, 1);
 
         jennyferSupplierArticleSku = addJProp("jennyferSupplierArticleSku", "Поставщик Jennyfer (ИД)", jennyferSupplierArticle, articleSku, 1);
 
@@ -7307,7 +7312,7 @@ public class RomanLogicsModule extends LogicsModule {
         private ColorSizeSupplierFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
 
-            objSupplier = addSingleGroupObject(supplier, "Поставщик", baseLM.name, nameBrandSupplierSupplier, nameCurrencySupplier);
+            objSupplier = addSingleGroupObject(supplier, "Поставщик", baseLM.name, nameBrandSupplierSupplier, nameCurrencySupplier, BL.LegalEntity.getLPByName("addressLegalEntity"), BL.LegalEntity.getLPByName("dialogAddressLegalEntity"));
             addObjectActions(this, objSupplier);
 
             objBrand = addSingleGroupObject(brandSupplier, "Бренд", sidBrandSupplier, baseLM.name, nameCountryBrandSupplier, sidGenderBrandSupplier);
