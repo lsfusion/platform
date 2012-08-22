@@ -24,7 +24,8 @@ public class FormPropertyOptions {
     private GroupObjectEntity toDraw;
     private List<String> eventTypes;
     private List<ActionPropertyObjectEntity> events;
-    private String neighbourPropertyName;
+    private PropertyDrawEntity neighbourPropertyDraw;
+    private String neighbourPropertyText;
     private Boolean isRightNeighbour;
 
     public PropertyEditType getEditType() {
@@ -55,40 +56,40 @@ public class FormPropertyOptions {
         return readOnlyIf;
     }
 
-    public void setReadOnlyIf(PropertyObjectEntity readOnlyIf) {
-        this.readOnlyIf = (CalcPropertyObjectEntity) readOnlyIf;
+    public void setReadOnlyIf(CalcPropertyObjectEntity readOnlyIf) {
+        this.readOnlyIf = readOnlyIf;
     }
 
     public CalcPropertyObjectEntity getBackground() {
         return background;
     }
 
-    public void setBackground(PropertyObjectEntity background) {
-        this.background = (CalcPropertyObjectEntity) background;
+    public void setBackground(CalcPropertyObjectEntity background) {
+        this.background = background;
     }
 
     public CalcPropertyObjectEntity getForeground() {
         return foreground;
     }
 
-    public void setForeground(PropertyObjectEntity foreground) {
-        this.foreground = (CalcPropertyObjectEntity) foreground;
+    public void setForeground(CalcPropertyObjectEntity foreground) {
+        this.foreground = foreground;
     }
 
     public CalcPropertyObjectEntity getHeader() {
         return header;
     }
 
-    public void setHeader(PropertyObjectEntity header) {
-        this.header = (CalcPropertyObjectEntity) header;
+    public void setHeader(CalcPropertyObjectEntity header) {
+        this.header = header;
     }
 
     public CalcPropertyObjectEntity getFooter() {
         return footer;
     }
 
-    public void setFooter(PropertyObjectEntity footer) {
-        this.footer = (CalcPropertyObjectEntity) footer;
+    public void setFooter(CalcPropertyObjectEntity footer) {
+        this.footer = footer;
     }
 
     public void setForceViewType(ClassViewType forceViewType) {
@@ -148,12 +149,17 @@ public class FormPropertyOptions {
         this.events = events;
    }
 
-    public String getNeighbourPropertyName() {
-        return neighbourPropertyName;
+    public PropertyDrawEntity getNeighbourPropertyDraw() {
+        return neighbourPropertyDraw;
     }
 
-    public void setNeighbourPropertyName(String neighbourPropertyName) {
-        this.neighbourPropertyName = neighbourPropertyName;
+    public String getNeighbourPropertyText() {
+        return neighbourPropertyText;
+    }
+
+    public void setNeighbourPropertyDraw(PropertyDrawEntity neighbourPropertyDraw, String propText) {
+        this.neighbourPropertyDraw = neighbourPropertyDraw;
+        this.neighbourPropertyText = propText;
     }
 
     public Boolean isRightNeighbour() {
@@ -181,7 +187,7 @@ public class FormPropertyOptions {
         merged.setToDraw(nvl(overrides.getToDraw(), toDraw));
         merged.setEvents(nvl(overrides.getEvents(), events));
         merged.setEventTypes(nvl(overrides.getEventTypes(), eventTypes));
-        merged.setNeighbourPropertyName(nvl(overrides.getNeighbourPropertyName(), neighbourPropertyName));
+        merged.setNeighbourPropertyDraw(nvl(overrides.getNeighbourPropertyDraw(), neighbourPropertyDraw), nvl(overrides.getNeighbourPropertyText(), neighbourPropertyText));
         merged.setNeighbourType(nvl(overrides.isRightNeighbour(), isRightNeighbour));
         return merged;
     }

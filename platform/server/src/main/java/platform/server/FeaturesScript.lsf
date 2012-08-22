@@ -193,7 +193,9 @@ testAbstractAction(object) = ABSTRACT ACTION (object);
 // propertyName(namedParam1, ..., namedParamN) += ACTION actionBody;
 
 testAbstractAction(store) += ACTION MESSAGE 'testing store' AND store IS store;
+testAbstractAction(store) += ACTION MESSAGE 'testing store2' AND store IS store;
 testAbstractAction(document) += ACTION MESSAGE 'testing document' AND document IS document;
+testAbstractAction(document) += ACTION MESSAGE 'testing document2' AND document IS document;
 
 // Formula property
 // Expression syntax:
@@ -414,7 +416,7 @@ OBJECTS document, article
 // Special properties: SELECTION, OBJVALUE, ADDOBJ, ADDFORM, ADDSESSIONFORM, EDITFORM, EDITSESSIONFORM
 // Property option:    [READONLY] [EDITABLE] [SELECTOR] [HINTNOUPDATE] [HINTTABLE] [COLUMNS (<groupObject list>)] [SHOWIF <mappedProperty>] [BACKGROUND <mappedProperty>]
 //                     [HEADER <mappedProperty>] [FOOTER <mappedProperty>] [READONLYIF <mappedProperty>] [FORCE PANEL | HIDE | GRID] [TODRAW <groupObject>]
-//                     [FOREGROUND <mappedProperty>] [ON (CHANGE | CHANGEWYS) action] [(BEFORE | AFTER) propertyAlias]
+//                     [FOREGROUND <mappedProperty>] [ON (CHANGE | CHANGEWYS) action] [(BEFORE | AFTER) (propertyAlias | <mappedProperty>)]
 
 PROPERTIES store(document), name(article), storeName(document) ON CHANGE { REQUEST STRING[50] INPUT; SET storeName(document) <- requestedString(); } , documentTypeString(document)
 PROPERTIES quantity(document, article)
@@ -438,6 +440,8 @@ EVENTS
 // Hints list syntax:
 // HINTNOUPDATE | HINTTABLE propertyName1, ..., propertyNameN
 
+// Order list syntax:
+// ORDER BY (propertyAlias1 | <mappedProperty1>), ..., (propertyAliasN | <mappedPropertyN>)
 
 showForm(document) = ACTION FORM documentArticle OBJECTS document NEWSESSION MODAL;
 
@@ -492,7 +496,7 @@ PROPERTIES name(article), name(store), OBJVALUE(s), OBJVALUE(i)
 showTestModalForm 'Показать тестовую форму' = ACTION() {
     FORM testModalForm NEWSESSION MODAL;
     SET name(k) IF k == chosenObject('store') IF (formResult() == formResult.ok) <- chosenString('s');
-    SET name(k) IF k == chosenObject('article') IF (formResult() == formResult.ok) <- [FORMULA STRING[30] '$1 || CAST($2 as char(20))']('Товар ', chosenInt('i'));
+    SET name(k) IF k == chosenObject('article') IF (formResult() == formResult.ok) <- [FORMULA STRING[30] '$1 || CAST($2 as char(20))']('Товар ', chosenInteger('i'));
 };
 
 remindPasswordEmail 'Выслать пароль на этот email' (u, to) = ACTION EMAIL
@@ -543,11 +547,19 @@ OBJECTS s=store '-Склад-', a=article
 PROPERTIES ssel=SELECTION(s), sname=name(s), obja=OBJVALUE(a), aname=name(a)
 PROPERTIES TODRAW s FORCE PANEL copyStoreNameToArticles(s), copyStoreNameToArticle(s, a), copyStoreNameToArticleError(s, a), createNewStore(), showDocumentArticleModalForm(), showTestModalForm(), testRequestInput(s)
 PROPERTIES(s, a) SHOWIF storeIsHuge(s) incomeQuantity2, outcomeQuantity2
-PROPERTIES(s) storeSizeName, ssc1=storeSizeCode, storeIsHuge, stime, sdate, sdatetime, simage, spdf, scustom, sexcel, scolor, sword BEFORE simage, testAbstractAction
+PROPERTIES(s) storeSizeName, ssc1=storeSizeCode, storeIsHuge, stime, sdate, sdatetime, ssi=Features.simage, spdf, scustom, sexcel, testAbstractAction
 PROPERTIES(s, a) incomeQuantity, outcomeQuantity, foo, foo2 SHOWIF storeIsHuge(s), bar, foobar HEADER name(a), bar2, baz, baz2, balanceQuantity, testUnion HEADER name(s), testPartition, testFormula
 FILTERGROUP filters1
     FILTER 'Показывать только огромные склады' 'F10' storeIsHuge(s)
-ORDER BY sname, foo, ssel
+ORDER BY name(s) DESC, foo, ssel
+;
+
+EXTEND FORM storeArticle
+PROPERTIES(s) ssw=sword AFTER ssi
+;
+
+EXTEND FORM storeArticle
+PROPERTIES(s) scolor AFTER ssw
 ;
 
 FORM editStore 'Редактирование склада'

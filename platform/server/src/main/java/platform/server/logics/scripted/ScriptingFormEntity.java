@@ -37,8 +37,6 @@ public class ScriptingFormEntity {
     private ScriptingLogicsModule LM;
     private FormEntity form;
 
-    private Map<String, PropertyDrawEntity> aliasToPropertyMap = new HashMap<String, PropertyDrawEntity>();
-
     public ScriptingFormEntity(ScriptingLogicsModule LM, FormEntity form) {
         assert form != null && LM != null;
         this.LM = LM;
@@ -95,7 +93,8 @@ public class ScriptingFormEntity {
 
         for (int i = 0; i < groupObjects.size(); i++) {
             if (groupObjects.get(i).reportPathPropName != null) {
-                groups.get(i).reportPathProp = (CalcPropertyObjectEntity<?>) addPropertyObject(groupObjects.get(i).reportPathPropName, groupObjects.get(i).reportPathMapping);
+                // todo [dale]: перейти на formPropertyObject?
+                groups.get(i).reportPathProp = addCalcPropertyObject(groupObjects.get(i).reportPathPropName, groupObjects.get(i).reportPathMapping);
             }
         }
         return groups;
@@ -283,6 +282,7 @@ public class ScriptingFormEntity {
         }
         MappedProperty showIf = options.getShowIf();
         if (showIf != null) {
+            // todo [dale]: нужна проверка на LCP
             LM.showIf(form, property, (LCP) showIf.property, showIf.mapping);
         }
 
@@ -303,10 +303,10 @@ public class ScriptingFormEntity {
             }
         }
 
-        if (options.getNeighbourPropertyName() != null) {
-            PropertyDrawEntity neighbour = getPropertyDrawBySID(options.getNeighbourPropertyName());
+        if (options.getNeighbourPropertyDraw() != null) {
+            PropertyDrawEntity neighbour = options.getNeighbourPropertyDraw();
             if (neighbour.getToDraw(form) != property.getToDraw(form)) {
-                LM.getErrLog().emitNeighbourPropertyError(LM.getParser(), options.getNeighbourPropertyName(), property.getSID());
+                LM.getErrLog().emitNeighbourPropertyError(LM.getParser(), options.getNeighbourPropertyText(), property.getSID());
             }
             form.removePropertyDraw(property);
             int neighbourIndex = form.propertyDraws.indexOf(neighbour);
@@ -330,18 +330,12 @@ public class ScriptingFormEntity {
                 BaseUtils.join(mapImpl.mapping, (Map<PropertyInterface,PropertyObjectInterfaceEntity>) groundProperty.mapping), null);
     }
 
-    private void setPropertyDrawAlias(String alias, PropertyDrawEntity property) throws ScriptingErrorLog.SemanticErrorException {
+    private void setPropertyDrawAlias(String alias, PropertyDrawEntity property) {
         assert property != null;
 
         if (alias == null) {
             return;
         }
-
-        if (aliasToPropertyMap.containsKey(alias)) {
-            LM.getErrLog().emitAlreadyDefinedError(LM.getParser(), "alias", alias);
-        }
-
-        aliasToPropertyMap.put(alias, property);
 
         PropertyDrawEntity oldSIDOwner = form.getPropertyDraw(alias);
 
@@ -352,14 +346,38 @@ public class ScriptingFormEntity {
         }
     }
 
-    public PropertyDrawEntity getPropertyDrawBySID(String sid) throws ScriptingErrorLog.SemanticErrorException {
-        PropertyDrawEntity property = aliasToPropertyMap.get(sid);
+    public PropertyDrawEntity getPropertyDraw(String sid) throws ScriptingErrorLog.SemanticErrorException {
+        return getPropertyDraw(LM, form, sid);
+    }
+
+    static public PropertyDrawEntity getPropertyDraw(ScriptingLogicsModule LM, FormEntity form, String sid) throws ScriptingErrorLog.SemanticErrorException {
+        PropertyDrawEntity property = form.getPropertyDraw(sid);
         if (property == null) {
-            property = form.getPropertyDraw(sid);
-            if (property == null) {
-                LM.getErrLog().emitPropertyNotFoundError(LM.getParser(), sid);
-            }
+            LM.getErrLog().emitPropertyNotFoundError(LM.getParser(), sid);
         }
+        return property;
+    }
+
+    public PropertyDrawEntity getPropertyDraw(String sid, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
+        return getPropertyDraw(LM, form, sid, mapping);
+    }
+
+    static public PropertyDrawEntity getPropertyDraw(ScriptingLogicsModule LM, FormEntity form, String sid, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
+        MappedProperty mappedProp = LM.getPropertyWithMapping(form, sid, mapping);
+        PropertyDrawEntity property = form.getPropertyDraw(mappedProp.property, mappedProp.mapping);
+
+        if (property == null) {
+            String params = "(";
+            for (int i = 0; i < mapping.size(); i++) {
+                if (i > 0) {
+                    params = params + ", ";
+                }
+                params = params + mapping.get(i);
+            }
+            params = params + ")";
+            LM.getErrLog().emitPropertyNotFoundError(LM.getParser(), sid + params);
+        }
+
         return property;
     }
 
@@ -418,17 +436,22 @@ public class ScriptingFormEntity {
         }
     }
 
+    public CalcPropertyObjectEntity addCalcPropertyObject(String property, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
+        PropertyObjectEntity propObject = addPropertyObject(property, mapping);
+        if (!(propObject instanceof CalcPropertyObjectEntity)) {
+            LM.getErrLog().emitNotCalculationPropertyError(LM.getParser());
+        }
+        return (CalcPropertyObjectEntity) propObject;
+    }
+
     public PropertyObjectEntity addPropertyObject(String property, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
         MappedProperty prop = getPropertyWithMapping(property, mapping);
         return form.addPropertyObject(prop.property, prop.mapping);
     }
 
-    public void addScriptedDefaultOrder(List<String> properties, List<Boolean> orders) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedDefaultOrder(List<PropertyDrawEntity> properties, List<Boolean> orders) throws ScriptingErrorLog.SemanticErrorException {
         for (int i = 0; i < properties.size(); ++i) {
-            String sid = properties.get(i);
-            Boolean order = orders.get(i);
-
-            form.addDefaultOrder(getPropertyDrawBySID(sid), order);
+            form.addDefaultOrder(properties.get(i), orders.get(i));
         }
     }
 

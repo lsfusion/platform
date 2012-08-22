@@ -257,7 +257,7 @@ initValueNumeratorObject(object) += defaultNumeratorFreights() IF object IS frei
 initWhenNumeratorObject(object) += ASSIGNED(object IS freight);
 
 EXTEND FORM freightListForm
-    PROPERTIES(freight) seriesObject BEFORE date, numberObject BEFORE seriesObject, canonicalBrandFreight BEFORE dateArrivalFreight
+    PROPERTIES(freight) numberObject BEFORE date, seriesObject BEFORE date, canonicalBrandFreight BEFORE dateArrivalFreight
 ;
 
 EXTEND FORM globalParamForm

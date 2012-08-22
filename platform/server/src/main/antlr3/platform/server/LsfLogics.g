@@ -15,7 +15,9 @@ grammar LsfLogics;
 	import platform.server.data.expr.query.PartitionType;
 	import platform.server.form.entity.GroupObjectEntity;
 	import platform.server.form.entity.PropertyObjectEntity;
+	import platform.server.form.entity.PropertyDrawEntity;
 	import platform.server.form.entity.ActionPropertyObjectEntity;
+	import platform.server.form.entity.CalcPropertyObjectEntity;
 	import platform.server.form.navigator.NavigatorElement;
 	import platform.server.form.view.ComponentView;
 	import platform.server.form.view.GroupObjectView;
@@ -417,7 +419,7 @@ formCommonGroupObject returns [ScriptingGroupObject groupObject]
 	;
 
 formGroupObjectReportPath returns [String propName, List<String> mapping]
-	:	'REPORTFILE' prop=formMappedProperty { $propName = $prop.name; $mapping = $prop.mapping; }
+	:	'REPORTFILE' prop=mappedProperty { $propName = $prop.name; $mapping = $prop.mapping; }
 	;
 
 formGroupObjectViewType returns [ClassViewType type, boolean isInitType]
@@ -498,20 +500,25 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'HINTNOUPDATE' { $options.setHintNoUpdate(true); }
 		|	'HINTTABLE' { $options.setHintTable(true); }
 		|	'COLUMNS' '(' ids=nonEmptyIdList ')' { $options.setColumns(getGroupObjectsList($ids.ids)); }
-		|	'SHOWIF' mappedProp=formMappedProperty { $options.setShowIf(getPropertyWithMapping($mappedProp.name, $mappedProp.mapping)); }
-		|	'READONLYIF' propObj=formPropertyObject { $options.setReadOnlyIf($propObj.property); }
-		|	'BACKGROUND' propObj=formPropertyObject { $options.setBackground($propObj.property); }
-		|	'FOREGROUND' propObj=formPropertyObject { $options.setForeground($propObj.property); }
-		|	'HEADER' propObj=formPropertyObject { $options.setHeader($propObj.property); }
-		|	'FOOTER' propObj=formPropertyObject { $options.setFooter($propObj.property); }
+		|	'SHOWIF' mappedProp=mappedProperty { $options.setShowIf(getPropertyWithMapping($mappedProp.name, $mappedProp.mapping)); }  // refactor to formPropertyObject? 
+		|	'READONLYIF' propObj=formCalcPropertyObject { $options.setReadOnlyIf($propObj.property); }
+		|	'BACKGROUND' propObj=formCalcPropertyObject { $options.setBackground($propObj.property); }
+		|	'FOREGROUND' propObj=formCalcPropertyObject { $options.setForeground($propObj.property); }
+		|	'HEADER' propObj=formCalcPropertyObject { $options.setHeader($propObj.property); }
+		|	'FOOTER' propObj=formCalcPropertyObject { $options.setFooter($propObj.property); }
 		|	'FORCE' viewType=classViewType { $options.setForceViewType($viewType.type); }
 		|	'TODRAW' toDraw=formGroupObjectEntity { $options.setToDraw($toDraw.groupObject); }
-		|	'BEFORE' pdraw=ID { $options.setNeighbourPropertyName($pdraw.text); $options.setNeighbourType(true); }
-		|	'AFTER'  pdraw=ID { $options.setNeighbourPropertyName($pdraw.text); $options.setNeighbourType(false); }
+		|	'BEFORE' pdraw=formPropertyDraw { $options.setNeighbourPropertyDraw($pdraw.property, $pdraw.text); $options.setNeighbourType(true); }
+		|	'AFTER'  pdraw=formPropertyDraw { $options.setNeighbourPropertyDraw($pdraw.property, $pdraw.text); $options.setNeighbourType(false); }
 		|	event = formPropertyEvent { $options.addEvent($event.type, $event.action); }
 		)*
 	;
 
+
+formPropertyDraw returns [PropertyDrawEntity property]
+	:	id=ID 				{ if (inPropParseState()) $property = $formStatement::form.getPropertyDraw($id.text); }
+	|	prop=mappedProperty { if (inPropParseState()) $property = $formStatement::form.getPropertyDraw($prop.name, $prop.mapping); }
+	;
 
 formMappedPropertiesList returns [List<String> aliases, List<String> properties, List<List<String>> mapping, List<FormPropertyOptions> options]
 @init {
@@ -543,11 +550,11 @@ formMappedPropertiesList returns [List<String> aliases, List<String> properties,
 		)*
 	;
 
-formPropertyObject returns [PropertyObjectEntity property = null]
-	:	mappedProperty=formMappedProperty
+formCalcPropertyObject returns [CalcPropertyObjectEntity property = null]
+	:	mProperty=mappedProperty
 		{
 			if (inPropParseState()) {
-				$property = $formStatement::form.addPropertyObject(mappedProperty.name, mappedProperty.mapping);
+				$property = $formStatement::form.addCalcPropertyObject($mProperty.name, $mProperty.mapping);
 			}
 		}
 	;
@@ -737,7 +744,7 @@ filterSetDefault returns [boolean isDefault = false]
 formOrderByList
 @init {
 	boolean ascending = true;
-	List<String> properties = new ArrayList<String>();
+	List<PropertyDrawEntity> properties = new ArrayList<PropertyDrawEntity>();
 	List<Boolean> orders = new ArrayList<Boolean>();
 }
 @after {
@@ -745,12 +752,12 @@ formOrderByList
 		$formStatement::form.addScriptedDefaultOrder(properties, orders);
 	}
 }
-	:	'ORDER' 'BY' orderedProp=formPropertyWithOrder { properties.add($orderedProp.id); orders.add($orderedProp.order); }
-		(',' orderedProp=formPropertyWithOrder { properties.add($orderedProp.id); orders.add($orderedProp.order); } )*
+	:	'ORDER' 'BY' orderedProp=formPropertyDrawWithOrder { properties.add($orderedProp.property); orders.add($orderedProp.order); }
+		(',' orderedProp=formPropertyDrawWithOrder { properties.add($orderedProp.property); orders.add($orderedProp.order); } )*
 	;
 	
-formPropertyWithOrder returns [String id, boolean order = true]
-	:	ID { $id = $ID.text; } ('ASC' | 'DESC' { $order = false; })?
+formPropertyDrawWithOrder returns [PropertyDrawEntity property, boolean order = true]
+	:	pDraw=formPropertyDraw { $property = $pDraw.property; } ('ASC' | 'DESC' { $order = false; })?
 	;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1885,7 +1892,7 @@ followsStatement
 		self.addScriptedFollows(mainProp, context, options, props, sessions);
 	}
 }
-	:	prop=propertyWithNamedParams { mainProp = $prop.name; context = $prop.params; }
+	:	prop=mappedProperty { mainProp = $prop.name; context = $prop.mapping; }
 		'=>'
 		firstExpr=propertyExpression[context, false] ('RESOLVE' type=followsResolveType session=sessionType { inSession = $session.session; })?
 		{
@@ -1919,14 +1926,14 @@ followsResolveType returns [Integer type]
 writeWhenStatement
 @after {
 	if (inPropParseState()) {
-		self.addScriptedWriteWhen($mainProp.name, $mainProp.params, $valueExpr.property, $whenExpr.property);
+		self.addScriptedWriteWhen($mainProp.name, $mainProp.mapping, $valueExpr.property, $whenExpr.property);
 	}
 }
-	:	mainProp=propertyWithNamedParams 
+	:	mainProp=mappedProperty 
 		'<-'
-		valueExpr=propertyExpression[$mainProp.params, false] 
+		valueExpr=propertyExpression[$mainProp.mapping, false] 
 		'WHEN'
-		whenExpr=propertyExpression[$mainProp.params, false]
+		whenExpr=propertyExpression[$mainProp.mapping, false]
 		';'
 	;
 
@@ -1988,13 +1995,13 @@ aspectStatement
 }
 @after {
 	if (inPropParseState()) {
-		self.addScriptedAspect($mainProp.name, $mainProp.params, $action.property, before);
+		self.addScriptedAspect($mainProp.name, $mainProp.mapping, $action.property, before);
 	}
 }
 	:	(	'BEFORE' 
 		| 	'AFTER' { before = false; }
 		)
-		mainProp=propertyWithNamedParams 'DO' action=actionPropertyDefinitionBody[$mainProp.params, false]
+		mainProp=mappedProperty 'DO' action=actionPropertyDefinitionBody[$mainProp.mapping, false]
 		';'
 	;
 
@@ -2334,13 +2341,13 @@ componentSelector returns [ComponentView component]
 
 
 propertySelector returns [PropertyDrawView propertyView = null]
-	:	pname=formPropertyName
+	:	pname=compoundID
 		{
 			if (inPropParseState()) {
-				$propertyView = $designStatement::design.getPropertyView($pname.name);
+				$propertyView = $designStatement::design.getPropertyView($pname.sid);
 			}
 		}
-	|	mappedProp=formMappedProperty
+	|	mappedProp=mappedProperty
 		{
 			if (inPropParseState()) {
 				$propertyView = $designStatement::design.getPropertyView($mappedProp.name, $mappedProp.mapping);
@@ -2448,10 +2455,10 @@ emptyStatement
 	:	';'
 	;
 
-propertyWithNamedParams returns [String name, List<String> params]
+mappedProperty returns [String name, List<String> mapping]
 	:	propName=compoundID { $name = $propName.sid; }
 		'('
-		list=idList { $params = $list.ids; }
+		list=idList { $mapping = $list.ids; }
 		')'
 	;
 
