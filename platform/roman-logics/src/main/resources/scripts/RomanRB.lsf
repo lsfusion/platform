@@ -148,6 +148,7 @@ NAVIGATOR {
         }
         NEW inventory 'Инвентаризация' {
             ADD inventories;
+            ADD inventoryCommitteeDialog;
         }
         NEW retirement 'Списание' {
             ADD writeOffs;
