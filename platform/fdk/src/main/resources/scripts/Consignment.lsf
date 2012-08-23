@@ -377,7 +377,7 @@ FORM printConsignment 'Печать накладных'
 
     PROPERTIES (c)  printConsignmentSimpleVertical, printConsignmentSimpleHorizontal, printConsignmentSimpleAttach,
                     printConsignmentVerticalA, printConsignmentHorizontalA, printConsignmentVerticalB,
-                    printConsignmentHorizontalB, printConsignmentAttach
+                    printConsignmentHorizontalB, printConsignmentAttach, editConsignment
 ;
 
 DESIGN printConsignment FROM DEFAULT {
@@ -385,12 +385,21 @@ DESIGN printConsignment FROM DEFAULT {
     c.box {
 
         childConstraints = TO THE BOTTOM;
-        NEW tn{
-            childConstraints = TO THE RIGHT;
-            title = 'ТН-2';
-            ADD PROPERTY(printConsignmentSimpleVertical);
-            ADD PROPERTY(printConsignmentSimpleHorizontal);
-            ADD PROPERTY(printConsignmentSimpleAttach);
+
+        NEW case55{
+            childConstraints = TO THE BOTTOM;
+
+            NEW contOne {
+                title = 'Накладная';
+                ADD PROPERTY(editConsignment);
+            }
+            NEW tn{
+                childConstraints = TO THE RIGHT;
+                title = 'ТН-2';
+                ADD PROPERTY(printConsignmentSimpleVertical);
+                ADD PROPERTY(printConsignmentSimpleHorizontal);
+                ADD PROPERTY(printConsignmentSimpleAttach);
+            }
         }
         NEW ttn1{
             childConstraints = TO THE RIGHT;

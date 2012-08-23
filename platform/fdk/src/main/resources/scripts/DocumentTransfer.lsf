@@ -120,10 +120,15 @@ META defineDocumentFormTransferOut(object, formCaption)
                     title = 'Спецификация';
                 }
                 NEW documentHistory {
+                    childConstraints = TO THE RIGHT;
                     title = 'История';
 
-                    ADD t.historyGroup;
-                    ADD t.postedGroup;
+                    ADD t.historyGroup {
+                        childConstraints = TO THE BOTTOM;
+                    }
+                    ADD t.postedGroup {
+                        childConstraints = TO THE BOTTOM;
+                    }
                 }
             }
         }
