@@ -45,15 +45,15 @@
 	<field name="sumShortageCollationSheet" class="java.lang.Double"/>
 	<field name="countListInventoryCollationSheet" class="java.lang.Integer"/>
 	<field name="countPageInventoryCollationSheet" class="java.lang.Integer"/>
-	<field name="overDateCollationSheet" class="java.util.Date"/>
-	<field name="sumSkuPageInventoryDetailCollationSheet" class="java.lang.Double"/>
+	<field name="prevDateCollationSheet" class="java.util.Date"/>
+	<field name="sumItemPageInventoryDetailCollationSheet" class="java.lang.Double"/>
 	<field name="sumContainerPageInventoryDetailCollationSheet" class="java.lang.Double"/>
-	<field name="sumSkuBalanceCollationSheet" class="java.lang.Double"/>
+	<field name="sumItemBalanceCollationSheet" class="java.lang.Double"/>
 	<field name="sumContainerBalanceCollationSheet" class="java.lang.Double"/>
-	<field name="sumSkuShortageCollationSheet" class="java.lang.Double"/>
+	<field name="sumItemShortageCollationSheet" class="java.lang.Double"/>
 	<field name="sumContainerShortageCollationSheet" class="java.lang.Double"/>
 	<field name="isBatchCollationSheet" class="java.lang.Boolean"/>
-	<field name="isNotBatchCollationSheet" class="java.lang.Boolean"/>
+	<field name="isSkuCollationSheet" class="java.lang.Boolean"/>
 	<group name="captionGroup10">
 		<groupExpression><![CDATA[String.valueOf($F{cs})]]></groupExpression>
 	</group>
@@ -203,7 +203,7 @@
 	</pageHeader>
 	<detail>
 		<band>
-			<printWhenExpression><![CDATA[$F{isNotBatchCollationSheet}!=null]]></printWhenExpression>
+			<printWhenExpression><![CDATA[$F{isSkuCollationSheet}!=null]]></printWhenExpression>
 			<subreport>
 				<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="0" height="0"/>
 				<parametersMapExpression><![CDATA[$P{i_params}]]></parametersMapExpression>

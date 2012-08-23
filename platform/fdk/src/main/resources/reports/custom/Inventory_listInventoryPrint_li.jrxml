@@ -43,7 +43,7 @@
 	<field name="countIndexListInventory" class="java.lang.Integer"/>
 	<field name="countIndexBatchListInventory" class="java.lang.Integer"/>
 	<field name="isBatchListInventory" class="java.lang.Boolean"/>
-	<field name="isNotBatchListInventory" class="java.lang.Boolean"/>
+	<field name="isSkuListInventory" class="java.lang.Boolean"/>
 	<group name="captionGroup10">
 		<groupExpression><![CDATA[String.valueOf($F{li})]]></groupExpression>
 	</group>
@@ -186,7 +186,7 @@
 				</textField>
 			</band>
 			<band height="18">
-				<printWhenExpression><![CDATA[$F{isNotBatchListInventory}!=null]]></printWhenExpression>
+				<printWhenExpression><![CDATA[$F{isSkuListInventory}!=null]]></printWhenExpression>
 				<textField isStretchWithOverflow="true">
 					<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="32" height="18"/>
 					<textElement textAlignment="Center">
@@ -285,7 +285,7 @@
 		</groupHeader>
 		<groupFooter>
 			<band height="24">
-				<printWhenExpression><![CDATA[$F{isNotBatchListInventory}!=null]]></printWhenExpression>
+				<printWhenExpression><![CDATA[$F{isSkuListInventory}!=null]]></printWhenExpression>
 				<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
 					<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="327" y="0" width="70" height="14"/>
 					<textElement textAlignment="Right"/>
@@ -356,7 +356,7 @@
 				</textField>
 			</band>
 			<band height="15">
-				<printWhenExpression><![CDATA[$F{isNotBatchListInventory}!=null]]></printWhenExpression>
+				<printWhenExpression><![CDATA[$F{isSkuListInventory}!=null]]></printWhenExpression>
 				<textField>
 					<reportElement x="0" y="0" width="220" height="12"/>
 					<box>
@@ -894,7 +894,7 @@
 	</pageHeader>
 	<detail>
 		<band>
-			<printWhenExpression><![CDATA[$F{isNotBatchListInventory}!=null]]></printWhenExpression>
+			<printWhenExpression><![CDATA[$F{isSkuListInventory}!=null]]></printWhenExpression>
 			<subreport>
 				<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="0" height="0"/>
 				<parametersMapExpression><![CDATA[$P{i_params}]]></parametersMapExpression>

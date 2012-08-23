@@ -280,7 +280,7 @@ signedSumSkuLedger 'Сумма' (ledger) = UNION EXCLUSIVE sumInSkuLedger(ledger
                                                       -sumOutSkuLedger(ledger) PERSISTENT;
 
 // управленческие цены
-priceSkuStockDateTime 'Цена' (sku, stock, dateTime) = ABSTRACT NUMERIC[14,2] (sku, stock, DATETIME);
+priceSkuStockDateTime 'Цена' = ABSTRACT NUMERIC[14,2] (sku, stock, DATETIME);
 priceBatchStockDateTime 'Цена' = ABSTRACT NUMERIC[14,2] (batch, stock, DATETIME);
 
 // ---------------------------- Остаток по товару -------------------------------- //
@@ -698,7 +698,7 @@ FORM currentBalanceSkuStock 'Текущие остатки'
 
     TREE stockTree sg = stockGroup PARENT parentStockGroup, ts = stock
     PROPERTIES READONLY sgTreeName = name(sg), tsTreeName = name(ts)
-    FILTERS isParentStockGroupStock(sg, ts)
+    FILTERS stockGroupStock(ts) == sg
 
     TREE skuTree sk = skuGroup PARENT parentSkuGroup
     PROPERTIES READONLY skuTreeName = name(sk)

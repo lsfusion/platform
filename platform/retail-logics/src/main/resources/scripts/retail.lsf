@@ -1574,7 +1574,7 @@ DESIGN inventoryCommittee FROM DEFAULT {
     }
 }
 
-FORM inventoryCommitteeDialog 'Комиссии для инвентаризации'
+FORM inventoryCommittees 'Комиссии для инвентаризации'
     OBJECTS ic=inventoryCommittee
     PROPERTIES(ic)      READONLY name, nameEmployeeDivisionCommittee, nameEmployeeCommittee, nameChairmanCommittee
     PROPERTIES(ic)      ADDFORM, EDITFORM
@@ -7903,7 +7903,7 @@ NAVIGATOR {
             NEW committeeRelations 'Комиссии' {
                 ADD registerCommitteeDialog;
                 ADD priceChangeCommitteeDialog;
-                ADD inventoryCommitteeDialog;
+                ADD inventoryCommittees;
                 ADD wastageCommitteeDialog;
             }
         }
@@ -8030,8 +8030,8 @@ NAVIGATOR {
         ADD writeOffPrint;
         ADD orderSupplierPrint;
         ADD listInventoryPrint;
-        ADD collationSheetPrint;
-        ADD detailCollationSheetPrint;
+        ADD printTotalCollationSheet;
+        ADD printCollationSheet;
         ADD incomeCashOrderPrint;
         ADD outcomeCashOrderPrint;
     }

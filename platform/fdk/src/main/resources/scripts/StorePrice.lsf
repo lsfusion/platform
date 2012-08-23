@@ -397,6 +397,7 @@ TABLE retailPriceLedger (retailPriceLedger);
 currentRetailPriceBarcodeDepartmentStore 'Розничная цена' (barcode, departmentStore) = currentRetailPriceLedger(skuBarcode(barcode), departmentStore);
 
 priceSkuStockDateTime(sku, departmentStore, dateTime) += retailPriceBLedgerDateTime(sku, departmentStore, dateTime);
+priceBatchStockDateTime(batch, departmentStore, dateTime) += retailPriceBLedgerDateTime(skuBatch(batch), departmentStore, dateTime);
 
 // ------------------------------------- Заполнение текущих параметров --------------------------------- //
 

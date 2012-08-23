@@ -44,12 +44,12 @@
 	<field name="sumShortageCollationSheet" class="java.lang.Double"/>
 	<field name="countListInventoryCollationSheet" class="java.lang.Integer"/>
 	<field name="countPageInventoryCollationSheet" class="java.lang.Integer"/>
-	<field name="overDateCollationSheet" class="java.util.Date"/>
-	<field name="sumSkuBalanceCollationSheet" class="java.lang.Double"/>
+	<field name="prevDateCollationSheet" class="java.util.Date"/>
+	<field name="sumItemBalanceCollationSheet" class="java.lang.Double"/>
 	<field name="sumContainerBalanceCollationSheet" class="java.lang.Double"/>
-	<field name="sumSkuPageInventoryDetailCollationSheet" class="java.lang.Double"/>
+	<field name="sumItemPageInventoryDetailCollationSheet" class="java.lang.Double"/>
 	<field name="sumContainerPageInventoryDetailCollationSheet" class="java.lang.Double"/>
-	<field name="sumSkuShortageCollationSheet" class="java.lang.Double"/>
+	<field name="sumItemShortageCollationSheet" class="java.lang.Double"/>
 	<field name="sumContainerShortageCollationSheet" class="java.lang.Double"/>
 	<group name="captionGroup1">
 		<groupExpression><![CDATA[String.valueOf($F{cs})]]></groupExpression>
@@ -376,28 +376,28 @@
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{sumSkuShortageCollationSheet}!=null?($F{sumSkuShortageCollationSheet}>=0?$F{sumSkuShortageCollationSheet}:0):0)]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{sumItemShortageCollationSheet}!=null?($F{sumItemShortageCollationSheet}>=0?$F{sumItemShortageCollationSheet}:0):0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0">
 				<reportElement stretchType="RelativeToBandHeight" x="137" y="240" width="80" height="14"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{sumSkuBalanceCollationSheet},0)]]></textFieldExpression>
+				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{sumItemBalanceCollationSheet},0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0">
 				<reportElement stretchType="RelativeToBandHeight" x="217" y="240" width="80" height="14"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{sumSkuPageInventoryDetailCollationSheet},0)]]></textFieldExpression>
+				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{sumItemPageInventoryDetailCollationSheet},0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0">
 				<reportElement stretchType="RelativeToBandHeight" x="377" y="240" width="80" height="14"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{sumSkuShortageCollationSheet}!=null?($F{sumSkuShortageCollationSheet}<0?-$F{sumSkuShortageCollationSheet}:0):0)]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{sumItemShortageCollationSheet}!=null?($F{sumItemShortageCollationSheet}<0?-$F{sumItemShortageCollationSheet}:0):0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement stretchType="RelativeToBandHeight" x="0" y="254" width="32" height="14"/>
@@ -535,7 +535,7 @@
 					<font size="8" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA["При товарообороте по счету 90 \n"+
-"На время с "+($F{overDateCollationSheet}!=null?platform.base.BaseUtils.formatRussian($F{overDateCollationSheet}):"_____________")+" по "+platform.base.BaseUtils.formatRussian($F{dateCollationSheet})]]></textFieldExpression>
+"На время с "+($F{prevDateCollationSheet}!=null?platform.base.BaseUtils.formatRussian($F{prevDateCollationSheet}):"_____________")+" по "+platform.base.BaseUtils.formatRussian($F{dateCollationSheet})]]></textFieldExpression>
 			</textField>
 			<line>
 				<reportElement x="159" y="347" width="138" height="1"/>

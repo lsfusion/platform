@@ -281,7 +281,7 @@ DESIGN writeOffCommittee FROM DEFAULT {
     }
 }
 
-FORM writeOffCommitteeDialog 'Комиссии для списания товара'
+FORM writeOffCommittees 'Комиссии для списания товара'
     OBJECTS w=writeOffCommittee
     PROPERTIES(w)      READONLY name, nameEmployeeDivisionCommittee, nameEmployeeCommittee
     PROPERTIES(w)      ADDFORM, EDITFORM
