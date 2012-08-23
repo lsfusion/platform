@@ -47,14 +47,14 @@ CLASS innerOrderDetail 'Строка внутреннего заказа';
 @defineAddDetailDialogSkuStock(innerOrder, sku, stock, dialogSku);
 @defineAddDetailDialogBarcode(innerOrder, sku);
 
-messageInnerOrder 'Сообщение' (innerOrder) = DATA TEXT (innerOrder);
+messageInnerOrder 'Сообщение' (innerOrder) = DATA TEXT (innerOrder) IN documentPrmGroup;
 
 FORM innerOrder 'Внутренний заказ'
     OBJECTS o = innerOrder FIXED PANEL
 
     PROPERTIES (o) nameNumeratorObject, numberObject, seriesObject, dateInnerOrder, timeInnerOrder,
-        nameStockInnerOrder, nameDestinationStockInnerOrder, noteInnerOrder,
-        countInnerOrderDetailInnerOrder, quantityInnerOrderDetailInnerOrder, messageInnerOrder
+        nameStockInnerOrder, nameDestinationStockInnerOrder, countInnerOrderDetailInnerOrder, quantityInnerOrderDetailInnerOrder,
+        messageInnerOrder
 
     OBJECTS d = innerOrderDetail
 
@@ -70,6 +70,7 @@ DESIGN innerOrder FROM DEFAULT {
     main {
         preferredSize = (1024, 768);
         o.box {
+            childConstraints = TO THE RIGHT;
             NEW columnHeaderPrm {
                 childConstraints = TO THE BOTTOM;
                 ADD o.documentHeaderGroup {
@@ -82,17 +83,15 @@ DESIGN innerOrder FROM DEFAULT {
                     ADD PROPERTY (dateInnerOrder);
                     ADD PROPERTY (timeInnerOrder);
                 }
-                ADD o.documentPrmGroup;
-                NEW messageCase {
-                    childConstraints = TO THE RIGHT;
-                    ADD o.documentSumGroup {
-                        childConstraints = TO THE BOTTOM;
-                    }
-                    NEW messageCase1 {
-                        title = 'Замечание';
-                        ADD PROPERTY (messageInnerOrder) {
-                            preferredSize = (500, 35);
-                        }
+                ADD o.documentPrmGroup {
+                    childConstraints = TO THE BOTTOM;
+                };
+            }
+            NEW columnHeaderSum {
+                ADD o.documentSumGroup {
+                    childConstraints = TO THE BOTTOM;
+                    PROPERTY (messageInnerOrder) {
+                        preferredSize = (1024, 100);
                     }
                 }
             }
@@ -103,7 +102,7 @@ DESIGN innerOrder FROM DEFAULT {
 FORM innerOrders 'Внутренние заказы'
     OBJECTS o = innerOrder
     PROPERTIES (o) READONLY numberObject, seriesObject, dateInnerOrder, timeInnerOrder,
-                            nameStockInnerOrder, nameDestinationStockInnerOrder, noteInnerOrder,
+                            nameStockInnerOrder, nameDestinationStockInnerOrder,
                             countInnerOrderDetailInnerOrder, quantityInnerOrderDetailInnerOrder
 
     PROPERTIES (o) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
@@ -197,7 +196,7 @@ retailPriceOrderPickingDetail(orderPickingDetail) <- priceDiscountPriceSetDocume
 @defineAddDetailDialogSkuStock(orderPicking, sku, stock, dialogSku);
 @defineAddDetailDialogBarcode(orderPicking, sku);
 
-messageOrderPicking 'Сообщение' (orderPicking) = messageInnerOrder(innerOrderOrderPicking(orderPicking));
+messageOrderPicking 'Сообщение' (orderPicking) = messageInnerOrder(innerOrderOrderPicking(orderPicking)) IN documentPrmGroup;
 
 quantitySkuInnerOrder 'Количество подобрано по всем подборкам' (sku, innerOrder) = GROUP SUM
     quantityOrderPickingDetailSkuOrderPicking (sku, orderPicking) BY sku, innerOrderOrderPicking(orderPicking);
@@ -247,35 +246,35 @@ EXTEND FORM orderPicking
 DESIGN orderPicking FROM DEFAULT {
     main {
         preferredSize = (1024, 768);
-            p.box {
-                NEW columnHeaderPrm {
+        p.box {
+            childConstraints = TO THE RIGHT;
+            NEW columnHeaderPrm {
+                childConstraints = TO THE BOTTOM;
+                ADD p.documentHeaderGroup {
+                    childConstraints = TO THE RIGHT;
+                    ADD PROPERTY (objectClassName);
+                    ADD PROPERTY (nameStockOrderPicking);
+                    ADD PROPERTY (nameDestinationStockOrderPicking);
+                    ADD PROPERTY (nameNumeratorObject);
+                    ADD PROPERTY (numberObject);
+                    ADD PROPERTY (seriesObject);
+                    ADD PROPERTY (dateOrderPicking);
+                    ADD PROPERTY (timeOrderPicking);
+                }
+                ADD p.documentPrmGroup {
                     childConstraints = TO THE BOTTOM;
-                    ADD p.documentHeaderGroup {
-                        childConstraints = TO THE RIGHT;
-                        ADD PROPERTY (objectClassName);
-                        ADD PROPERTY (nameStockOrderPicking);
-                        ADD PROPERTY (nameDestinationStockOrderPicking);
-                        ADD PROPERTY (nameNumeratorObject);
-                        ADD PROPERTY (numberObject);
-                        ADD PROPERTY (seriesObject);
-                        ADD PROPERTY (dateOrderPicking);
-                        ADD PROPERTY (timeOrderPicking);
-                    }
-                    ADD p.documentPrmGroup;
-                    NEW messageCase {
-                        childConstraints = TO THE RIGHT;
-                        ADD p.documentSumGroup {
-                            childConstraints = TO THE BOTTOM;
-                        }
-                        NEW messageCase1 {
-                            title = 'Замечание';
-                            ADD PROPERTY (messageOrderPicking) {
-                                preferredSize = (500, 35);
-                            }
-                        }
+                }
+            }
+            NEW columnHeaderSum {
+                ADD p.documentSumGroup {
+                    childConstraints = TO THE BOTTOM;
+                    PROPERTY (messageOrderPicking) {
+                        preferredSize = (1024, 100);
                     }
                 }
+            }
         }
+
         NEW details.box BEFORE functions.box {
             type = SPLITH;
             ADD s.box;
