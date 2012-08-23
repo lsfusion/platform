@@ -96,7 +96,13 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public ConcreteCustomClass dropColumn;
 
     public ConcreteCustomClass currency;
-
+    public ConcreteCustomClass typeExchange;
+    public LCP currencyTypeExchange;
+    public LCP nameCurrencyTypeExchange;
+    public LCP rateExchange;
+    private LCP lessCmpDate;
+    public LCP nearestPredDate;
+    public LCP nearestRateExchange;
 
     public AbstractCustomClass transaction, transactionTime, barcodeObject, externalObject, historyObject;
 
@@ -616,6 +622,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
                 new String[]{"Неизвестно", "Принять", "Закрыть"});
 
         currency = addConcreteClass("currency", getString("logics.currency"), baseClass.named);
+        typeExchange = addConcreteClass("typeExchange", "Тип обмена", baseClass.named);
 
     }
 
@@ -692,6 +699,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         addTable("month", month);
         addTable("dow", DOW);
+
+        addTable("rateExchange", typeExchange, baseLM.currency, DateClass.instance);
     }
 
     @Override
@@ -1176,6 +1185,15 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         translationDictionaryTerm = addCGProp(null, "translationDictionayTerm", getString("logics.dictionary.translation"), translationDictionary, termDictionary, entryDictionary, 1, termDictionary, 1);
         nameEntryDictionary = addJProp(baseGroup, "nameEntryDictionary", getString("logics.dictionary"), name, entryDictionary, 1);
 
+        currencyTypeExchange = addDProp(idGroup, "currencyTypeExchange", "Валюта типа обмена (ИД)", currency, typeExchange);
+        nameCurrencyTypeExchange = addJProp(baseGroup, "nameCurrencyTypeExchange", "Валюта типа обмена (наим.)", name, currencyTypeExchange, 1);
+        rateExchange = addDProp(baseGroup, "rateExchange", "Курс обмена", NumericClass.get(15, 8), typeExchange, baseLM.currency, DateClass.instance);
+
+         //lessCmpDate = addJProp(and(false, true, false), object(DateClass.instance), 3, rateExchange, 1, 2, 3, greater2, 3, 4, is(DateClass.instance), 4);
+        lessCmpDate = addJProp(and(false, true, false), object(DateClass.instance), 3, rateExchange, 1, 2, 3, addJProp(greater2, 3, date, 4), 1, 2, 3, 4, is(transaction), 4);
+        nearestPredDate = addMGProp((AbstractGroup) null, "nearestPredDate", "Ближайшая меньшая дата", lessCmpDate, 1, 2, 4);
+        nearestRateExchange = addJProp("nearestRateExchange", "Ближайший курс обмена", rateExchange, 1, 2, nearestPredDate, 1, 2, 3);
+
         initNavigators();
     }
 
@@ -1496,15 +1514,19 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         addFormEntity(new NotificationFormEntity(configElement, "notification"));
 
         catalogElement = addNavigatorElement(adminElement, "catalogElement", getString("logics.administration.catalogs"));
+
+        NavigatorElement classifierCurrency = addNavigatorElement(catalogElement, "classifierCurrency", "Валюты и курсы");
+        addFormEntity(new CurrenciesFormEntity(classifierCurrency, "currencies"));
+        classifierCurrency.add(baseLM.typeExchange.getListForm(baseLM).form);
+        addFormEntity(new RateCurrencyFormEntity(classifierCurrency, "rateCurrencyForm", "Курсы валют"));
+
         addFormEntity(new DaysOffFormEntity(catalogElement, "daysOffForm"));
         dictionaryForm = addFormEntity(new DictionariesFormEntity(catalogElement, "dictionariesForm"));
 
-        addFormEntity(new AdminFormEntity(adminElement, "adminForm"));
-
-        addFormEntity(new RemindUserPassFormEntity(null, "remindPasswordLetter"));
-
-        addFormEntity(new CurrenciesFormEntity(catalogElement, "currencies"));
         addFormEntity(new CountriesFormEntity(catalogElement, "countries"));
+
+        addFormEntity(new AdminFormEntity(adminElement, "adminForm"));
+        addFormEntity(new RemindUserPassFormEntity(null, "remindPasswordLetter"));
     }
 
     public void initClassForms() {
@@ -2525,6 +2547,45 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             return design;
         }
 
+    }
+
+    private class RateCurrencyFormEntity extends FormEntity<T> {
+
+        private ObjectEntity objTypeExchange;
+        private ObjectEntity objCurrency;
+        private ObjectEntity objDate;
+        private ObjectEntity objDateRate;
+
+        private RateCurrencyFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
+
+            objTypeExchange = addSingleGroupObject(baseLM.typeExchange, "Тип обмена", baseLM.objectValue, baseLM.name, baseLM.nameCurrencyTypeExchange);
+            objTypeExchange.groupTo.initClassView = ClassViewType.PANEL;
+
+            objCurrency = addSingleGroupObject(baseLM.currency, "Валюта", baseLM.name);
+            objCurrency.groupTo.initClassView = ClassViewType.GRID;
+
+            objDate = addSingleGroupObject(DateClass.instance, "Дата", baseLM.objectValue);
+            objDate.groupTo.setSingleClassView(ClassViewType.PANEL);
+
+            addPropertyDraw(baseLM.rateExchange, objTypeExchange, objCurrency, objDate);
+
+            objDateRate = addSingleGroupObject(DateClass.instance, "Дата", baseLM.objectValue);
+
+            addPropertyDraw(baseLM.rateExchange, objTypeExchange, objCurrency, objDateRate);
+            setEditType(baseLM.rateExchange, PropertyEditType.READONLY, objDateRate.groupTo);
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(baseLM.rateExchange, objTypeExchange, objCurrency, objDateRate)));
+        }
+
+        @Override
+        public FormView createDefaultRichDesign() {
+            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
+
+            design.get(objCurrency.groupTo).grid.constraints.fillVertical = 1;
+            design.get(objDateRate.groupTo).grid.constraints.fillVertical = 3;
+
+            return design;
+        }
     }
 
 

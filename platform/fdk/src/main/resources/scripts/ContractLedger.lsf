@@ -2,7 +2,8 @@ MODULE ContractLedger;
 
 REQUIRE Contract,
         LegalEntity,
-        Numerator;
+        Numerator,
+        Currency;
 
 META defineContractLedgerPrefix (caption, prefix)
 
@@ -106,24 +107,42 @@ beneficiaryPayment(payment) = DATA legalEntity (payment);
 beneficiaryPayment(payment) <- partyAContract(contractPayment(payment)) WHEN ASSIGNED (contractPayment(payment));
 nameBeneficiaryPayment 'Сторона А(Бенефициар)' (payment) = name(beneficiaryPayment(payment));
 
+currencyPayment 'Валюта платежа' (payment) = DATA currency (payment);
+nameCurrencyPayment 'Валюта платежа' (payment) = name(currencyPayment(payment));
+typeExchangePayment (payment) = DATA typeExchange (payment);
+nameTypeExchangePayment 'Тип обмена' (payment) = name(typeExchangePayment(payment));
+rateExchangePayment 'Курс' (payment) = DATA NUMERIC[15,8] (payment);
+rateExchangePayment (payment) <- rateTypeExchangeCurrencyDate(typeExchangePayment(payment), currencyPayment(payment), datePayment(payment))
+    WHEN CHANGED (currencyPayment(payment)) OR
+         CHANGED (typeExchangePayment(payment)) OR
+         CHANGED (datePayment(payment));
+
+CONSTRAINT currencyTypeExchange(typeExchangePayment(payment)) != currencyContract(contractPayment(payment))
+    CHECKED BY typeExchangePayment MESSAGE 'Валюта типа обмена должны соответствовать валюте договора+';
+
 sumPayment 'Сумма платежа' (payment) = DATA NUMERIC[16,2] (payment);
+sumRateExchangePayment 'Сумма платежа(конверт.)' (payment) = sumPayment(payment) * rateExchangePayment(payment);
+
+isNotSameCurrencyPayment (payment) = currencyContract(contractPayment(payment)) != currencyPayment(payment);
 
 descriptionPayment 'Название документа' =
     [FORMULA STRING[200] '\'Платеж \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)'](
     seriesNumberObject(payment), datePayment(payment), nameBeneficiaryPayment(payment));
 
 @implementContractLedger( ,payment);
-sumContractLedger(contractLedger) += -sumPayment(contractLedger);
+sumContractLedger(contractLedger) += -sumRateExchangePayment(contractLedger);
 
 @implementContractLedger(a ,payment);
-sumContractALedger(contractALedger) += -sumPayment(contractALedger);
+sumContractALedger(contractALedger) += -sumRateExchangePayment(contractALedger);
 
 FORM payment 'Платеж'
 
     OBJECTS p = payment FIXED PANEL
-    PROPERTIES(p) nameNumeratorObject, numberObject, seriesObject, dateTimePayment, numberContractPayment
+    PROPERTIES(p) nameNumeratorObject, numberObject, seriesObject, datePayment, timePayment, numberContractPayment
     PROPERTIES(p) READONLY namePayerPayment, nameBeneficiaryPayment
-    PROPERTIES(p) sumPayment
+    PROPERTIES(p) nameCurrencyPayment, nameTypeExchangePayment SHOWIF isNotSameCurrencyPayment(p), sumPayment,
+                  rateExchangePayment SHOWIF isNotSameCurrencyPayment(p),
+                  sumRateExchangePayment SHOWIF isNotSameCurrencyPayment(p)
 
     EDIT payment OBJECT p
 ;
@@ -136,13 +155,18 @@ DESIGN payment FROM DEFAULT{
         ADD PROPERTY(nameNumeratorObject);
         ADD PROPERTY(numberObject);
         ADD PROPERTY(seriesObject);
-        ADD PROPERTY(dateTimePayment);
+        ADD PROPERTY(datePayment);
+        ADD PROPERTY(timePayment);
     }
 
     ADD PROPERTY(numberContractPayment);
     ADD PROPERTY(namePayerPayment);
     ADD PROPERTY(nameBeneficiaryPayment);
+    ADD PROPERTY(nameCurrencyPayment);
+    ADD PROPERTY(nameTypeExchangePayment);
     ADD PROPERTY(sumPayment);
+    ADD PROPERTY(rateExchangePayment);
+    ADD PROPERTY(sumRateExchangePayment);
 
     ADD functions.box;
 }
@@ -180,7 +204,8 @@ sumContractLedger(contractLedger) += sumPaymentRequest(contractLedger);
 FORM paymentRequest 'Платежное требование'
 
     OBJECTS p = paymentRequest FIXED PANEL
-    PROPERTIES(p) nameNumeratorObject, numberObject, seriesObject, dateTimePaymentRequest, numberContractPaymentRequest
+    PROPERTIES(p) nameNumeratorObject, numberObject, seriesObject, datePaymentRequest, timePaymentRequest,
+                  numberContractPaymentRequest
     PROPERTIES(p) READONLY namePayerPaymentRequest, nameLenderPaymentRequest
     PROPERTIES(p) sumPaymentRequest
 
@@ -195,7 +220,8 @@ DESIGN paymentRequest FROM DEFAULT{
         ADD PROPERTY(nameNumeratorObject);
         ADD PROPERTY(numberObject);
         ADD PROPERTY(seriesObject);
-        ADD PROPERTY(dateTimePaymentRequest);
+        ADD PROPERTY(datePaymentRequest);
+        ADD PROPERTY(timePaymentRequest);
     }
 
     ADD PROPERTY(numberContractPaymentRequest);
@@ -242,7 +268,7 @@ sumContractALedger(contractALedger) += sumCreditNote(contractALedger);
 FORM creditNote 'Кредитная нота'
 
     OBJECTS c = creditNote FIXED PANEL
-    PROPERTIES(c) nameNumeratorObject, numberObject, seriesObject, dateTimeCreditNote, numberContractCreditNote
+    PROPERTIES(c) nameNumeratorObject, numberObject, seriesObject, dateCreditNote, timeCreditNote, numberContractCreditNote
     PROPERTIES(c) READONLY namePartyBCreditNote, namePartyACreditNote
     PROPERTIES(c) sumCreditNote
 
@@ -257,7 +283,8 @@ DESIGN creditNote FROM DEFAULT{
         ADD PROPERTY(nameNumeratorObject);
         ADD PROPERTY(numberObject);
         ADD PROPERTY(seriesObject);
-        ADD PROPERTY(dateTimeCreditNote);
+        ADD PROPERTY(dateCreditNote);
+        ADD PROPERTY(timeCreditNote);
     }
 
     ADD PROPERTY(numberContractCreditNote);
@@ -283,7 +310,7 @@ FORM contractLedger 'Задолженности и платежи по конт�
     PROPERTIES() namePartyA, namePartyB
 
     OBJECTS c = contract
-    PROPERTIES(c) READONLY numberContract, namePartyAContract, namePartyBContract
+    PROPERTIES(c) READONLY numberContract, namePartyAContract, namePartyBContract, nameCurrencyContract
     PROPERTIES(c, d) READONLY balanceBContractDate, balanceBAContractDate,
                               balanceAContractDate, balanceAAContractDate
 
@@ -294,7 +321,10 @@ FORM contractLedger 'Задолженности и платежи по конт�
     PROPERTIES(cal) READONLY dateContractALedger, sumContractALedger, descriptionContractALedger
 
     OBJECTS pm = payment
-    PROPERTIES(pm) READONLY dateTimePayment, seriesNumberObject, namePayerPayment, nameBeneficiaryPayment, sumPayment
+    PROPERTIES(pm) READONLY dateTimePayment, seriesNumberObject, namePayerPayment, nameBeneficiaryPayment, nameCurrencyPayment,
+                            nameTypeExchangePayment SHOWIF isNotSameCurrencyPayment(pm), sumPayment,
+                            rateExchangePayment SHOWIF isNotSameCurrencyPayment(pm),
+                            sumRateExchangePayment SHOWIF isNotSameCurrencyPayment(pm)
     PROPERTIES(pm) ADDFORM, EDITFORM, delete
 
     OBJECTS pr = paymentRequest
@@ -317,6 +347,7 @@ FORM contractLedger 'Задолженности и платежи по конт�
             datePayment(pm) <= d,
             datePaymentRequest(pr) <= d,
             dateCreditNote(cn) <= d
+
 ;
 
 DESIGN contractLedger FROM DEFAULT{
