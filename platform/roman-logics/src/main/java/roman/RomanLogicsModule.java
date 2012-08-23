@@ -7872,7 +7872,7 @@ public class RomanLogicsModule extends LogicsModule {
         private FreightCreateFormEntity(NavigatorElement<RomanBusinessLogics> parent, String sID, String caption) {
             super(parent, sID, caption);
 
-            objFreight = addSingleGroupObject(freight, "Фрахт", baseLM.date, baseLM.objectClassName, dateArrivalFreight, nameRouteFreight, nameExporterFreight, descriptionFreight, tonnageDataFreight, volumeDataFreight, palletCountDataFreight, nameCurrencyFreight, sumFreightFreight);
+            objFreight = addSingleGroupObject("freight", freight, "Фрахт", baseLM.date, baseLM.objectClassName, dateArrivalFreight, nameRouteFreight, nameExporterFreight, descriptionFreight, tonnageDataFreight, volumeDataFreight, palletCountDataFreight, nameCurrencyFreight, sumFreightFreight);
 //            addObjectActions(this, objFreight);
             objFreight.groupTo.setSingleClassView(ClassViewType.PANEL);
 
