@@ -179,6 +179,9 @@ createSkuWHfromRF = ACTION (barcode) NEWSESSION {
     }
 }
 
+detailWHfromRFFreightUnitSku (WHfromRF, freightUnit, sku) = GROUP MAX WHfromRFDetail BY WHfromRFWHfromRFDetail(WHfromRFDetail), freightUnitWHfromRFDetail(WHfromRFDetail), skuWHfromRFDetail(WHfromRFDetail);
+
+
 addDialogSkuFreightUnitBarcode 'Ввод штрих-кода' (WHfromRF) = ACTION (WHfromRF) {
 
     LOCAL selectedBarcode = STRING[14] ();
@@ -196,7 +199,7 @@ addDialogSkuFreightUnitBarcode 'Ввод штрих-кода' (WHfromRF) = ACTIO
         } ELSE {
 
             SET dialogBarcodeSku() <- skuBarcodeIdDate(selectedBarcode(), dateWHfromRF (WHfromRF));
-            SET dialogBarcodeDetail() <- detailWHfromRFSku(WHfromRF, dialogBarcodeSku());
+            SET dialogBarcodeDetail() <- detailWHfromRFFreightUnitSku(WHfromRF, currentFreightUnit(WHfromRF), dialogBarcodeSku());
 
             IF selectedBarcode() IS STRING[14] AND NOT dialogBarcodeSku() IS sku THEN {
 
