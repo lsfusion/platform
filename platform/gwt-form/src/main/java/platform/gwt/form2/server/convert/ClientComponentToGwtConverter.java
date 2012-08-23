@@ -36,6 +36,11 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         component.defaultComponent = clientComponent.defaultComponent;
         component.drawToToolbar = clientComponent.drawToToolbar();
 
+        if (clientComponent.preferredSize != null) {
+            component.prefferedWidth = clientComponent.preferredSize.width;
+            component.prefferedHeight = clientComponent.preferredSize.height;
+        }
+
         if (clientComponent.preferredSize != null && clientComponent.preferredSize.equals(clientComponent.minimumSize) && clientComponent.preferredSize.equals(clientComponent.maximumSize)) {
             component.absoluteWidth = clientComponent.preferredSize.width;
             component.absoluteHeight = clientComponent.preferredSize.height;

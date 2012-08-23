@@ -58,6 +58,17 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
         return CAPTION_ORIGINAL.equals(caption) ? this.caption : caption;
     }
 
+    public String getIconPath(boolean enabled) {
+        if (!enabled && iconPath != null) {
+            int dotInd = iconPath.lastIndexOf(".");
+            if (dotInd != -1) {
+                return iconPath.substring(0, dotInd) + "_Disabled" + iconPath.substring(dotInd);
+            }
+        }
+
+        return iconPath;
+    }
+
     @Override
     public String toString() {
         return "GPropertyDraw{" +

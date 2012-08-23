@@ -6,6 +6,7 @@ import platform.gwt.form2.client.form.ui.GFormController;
 import platform.gwt.form2.shared.actions.form.ServerResponseResult;
 import platform.gwt.form2.shared.view.GPropertyDraw;
 import platform.gwt.form2.shared.view.GUserInputResult;
+import platform.gwt.form2.shared.view.actions.GAsyncResultAction;
 import platform.gwt.form2.shared.view.actions.GRequestUserInputAction;
 import platform.gwt.form2.shared.view.changes.GGroupObjectValue;
 import platform.gwt.form2.shared.view.classes.GType;
@@ -100,5 +101,10 @@ public class GEditPropertyDispatcher extends GFormActionDispatcher {
         pauseDispatching();
 
         return null;
+    }
+
+    @Override
+    public void execute(GAsyncResultAction action) {
+        editHandler.updateEditValue(action.value);
     }
 }

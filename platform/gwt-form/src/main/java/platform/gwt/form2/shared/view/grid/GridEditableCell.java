@@ -38,6 +38,8 @@ public class GridEditableCell extends AbstractCell<Object> {
         } else if (!editManager.isCurrentlyEditing()) {
             //пока редактирование только по дабл-клику
             if ("dblclick".equals(event.getType())) {
+                event.preventDefault();
+                event.stopPropagation();
                 editManager.executePropertyEditAction(this, context, parent);
             }
         }

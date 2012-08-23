@@ -24,4 +24,6 @@ public interface GActionDispatcher {
     public void execute(GProcessFormChangesAction action);
 
     public Object execute(GRequestUserInputAction action);
+
+    public void execute(GAsyncResultAction action);
 }

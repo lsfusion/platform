@@ -10,7 +10,7 @@ import platform.gwt.form2.shared.actions.form.ServerResponseResult;
 import platform.gwt.form2.shared.view.actions.*;
 import platform.gwt.form2.shared.view.classes.GObjectClass;
 
-public class GFormActionDispatcher extends GActionDispatcher {
+public class GFormActionDispatcher extends GwtActionDispatcher {
     protected final GFormController form;
 
     public GFormActionDispatcher(GFormController form) {
@@ -18,8 +18,10 @@ public class GFormActionDispatcher extends GActionDispatcher {
     }
 
     @Override
-    public void execute(GProcessFormChangesAction action) {
-        form.applyRemoteChanges(action.formChanges);
+    protected void postDispatchResponse(ServerResponseResult response) {
+        if (response.pendingRemoteChanges) {
+            form.processRemoteChanges();
+        }
     }
 
     @Override
@@ -123,5 +125,10 @@ public class GFormActionDispatcher extends GActionDispatcher {
     @Override
     public void execute(GHideFormAction action) {
         form.hideForm();
+    }
+
+    @Override
+    public void execute(GProcessFormChangesAction action) {
+        form.applyRemoteChanges(action.formChanges);
     }
 }

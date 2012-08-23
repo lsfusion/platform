@@ -57,7 +57,9 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
 
     @Override
     public void setValue(Object value) {
-        button.setEnabled(value != null && (Boolean)value);
+        boolean enabled = value != null && (Boolean) value;
+        button.setEnabled(enabled);
+        button.setImagePath(property.getIconPath(enabled));
     }
 
     @Override

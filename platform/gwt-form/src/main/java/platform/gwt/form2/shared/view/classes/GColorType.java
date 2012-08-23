@@ -16,7 +16,7 @@ public class GColorType extends GDataType {
     }
 
     @Override
-    public GridCellRenderer createGridCellRenderer() {
+    public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
         return new ColorGridRenderer();
     }
 }

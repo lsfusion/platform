@@ -1,5 +1,6 @@
 package platform.server.logics.property.actions.edit;
 
+import com.google.common.base.Throwables;
 import platform.base.BaseUtils;
 import platform.interop.action.AsyncResultClientAction;
 import platform.interop.action.EditNotPerformedClientAction;
@@ -17,6 +18,7 @@ import platform.server.logics.property.*;
 import platform.server.logics.property.actions.CustomActionProperty;
 import platform.server.session.Modifier;
 
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
@@ -91,8 +93,15 @@ public class DefaultChangeActionProperty<P extends PropertyInterface> extends Cu
                     }
 
                     if(filterProperty!=null && changeValue!=null) {
-                        context.delayUserInteraction(new AsyncResultClientAction(filterProperty.read(context.getSession().sql,
-                                Collections.singletonMap(BaseUtils.single(filterProperty.interfaces), changeValue), modifier, context.getQueryEnv())));
+                        Object updatedValue = filterProperty.read(
+                                context.getSession().sql, Collections.singletonMap(BaseUtils.single(filterProperty.interfaces), changeValue), modifier, context.getQueryEnv()
+                        );
+
+                        try {
+                            context.delayUserInteraction(new AsyncResultClientAction(BaseUtils.serializeObject(updatedValue)));
+                        } catch (IOException e) {
+                            Throwables.propagate(e);
+                        }
                         context.delayRemoteChanges();
                     }
                 } else {

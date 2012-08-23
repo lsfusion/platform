@@ -27,6 +27,6 @@ public abstract class ServerResponseActionHandler<A extends Action<ServerRespons
             resultActions.add(clientActionConverter.convertAction(action, getSession(), form, servlet));
         }
 
-        return new ServerResponseResult(resultActions.toArray(new GAction[resultActions.size()]), serverResponse.resumeInvocation);
+        return new ServerResponseResult(resultActions.toArray(new GAction[resultActions.size()]), serverResponse.resumeInvocation, serverResponse.pendingRemoteChanges);
     }
 }

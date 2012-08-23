@@ -4,9 +4,9 @@ import java.io.IOException;
 
 public class AsyncResultClientAction extends ExecuteClientAction {
 
-    public final Object value;
+    public final byte[] value;
 
-    public AsyncResultClientAction(Object value) {
+    public AsyncResultClientAction(byte[] value) {
         this.value = value;
     }
 

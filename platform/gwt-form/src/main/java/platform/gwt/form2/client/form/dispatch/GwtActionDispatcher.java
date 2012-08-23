@@ -7,7 +7,7 @@ import platform.gwt.form2.client.form.ui.dialog.DialogBoxHelper;
 import platform.gwt.form2.shared.actions.form.ServerResponseResult;
 import platform.gwt.form2.shared.view.actions.*;
 
-public abstract class GActionDispatcher implements platform.gwt.form2.shared.view.actions.GActionDispatcher {
+public abstract class GwtActionDispatcher implements GActionDispatcher {
     private boolean dispatchingPaused;
 
     private ServerResponseResult currentResponse = null;
@@ -65,10 +65,16 @@ public abstract class GActionDispatcher implements platform.gwt.form2.shared.vie
                         dispatchResponse(response);
                     }
                 });
+            } else {
+                postDispatchResponse(response);
             }
         } catch (Exception e) {
             handleDispatchException(e);
         }
+    }
+
+    protected void postDispatchResponse(ServerResponseResult response) {
+        assert !response.resumeInvocation && !response.pendingRemoteChanges;
     }
 
     protected void handleDispatchException(Exception e) {
@@ -147,5 +153,9 @@ public abstract class GActionDispatcher implements platform.gwt.form2.shared.vie
     @Override
     public Object execute(GRequestUserInputAction action) {
         return null;
+    }
+
+    @Override
+    public void execute(GAsyncResultAction action) {
     }
 }

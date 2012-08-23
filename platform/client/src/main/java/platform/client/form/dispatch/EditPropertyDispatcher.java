@@ -158,6 +158,10 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
 
     @Override
     public void execute(AsyncResultClientAction action) {
-        handler.updateEditValue(action.value);
-   }
+        try {
+            handler.updateEditValue(deserializeObject(action.value));
+        } catch (IOException e) {
+            Throwables.propagate(e);
+        }
+    }
 }

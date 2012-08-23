@@ -11,7 +11,7 @@ public class GLogicalType extends GDataType {
     public static GLogicalType instance = new GLogicalType();
 
     @Override
-    public GridCellRenderer createGridCellRenderer() {
+    public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
         return new LogicalGridRenderer();
     }
 

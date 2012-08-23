@@ -1,11 +1,12 @@
 /* modified copy com/google/gwt/user/cellview/client/DataGrid.css */
 
+@def selectionBorderWidth 0px;
 .dataGridWidget {
 
 }
 
 .dataGridFirstColumn {
-    border-left: 1px solid #999999;
+
 }
 
 .dataGridLastColumn {
@@ -30,15 +31,13 @@
     text-shadow: #ddf 1px 1px 0;
     overflow: hidden;
     white-space: nowrap;
-    text-overflow: ellipsis;
 }
 
 .dataGridCell {
-    border-bottom: 1px solid #999999;
-    border-right: 1px solid #999999;
-
-    padding: 2px 5px;
-
+    height: 26px;
+    padding: 0px 15px;
+    overflow: hidden;
+    white-space: nowrap;
     overflow: hidden;
     white-space: nowrap;
 }
@@ -48,6 +47,7 @@
     white-space: nowrap;
     text-overflow: ellipsis;
 }
+
 
 .dataGridFirstColumnFooter {
 
@@ -66,6 +66,7 @@
 }
 
 .dataGridSortableHeader {
+    cursor: pointer;
     cursor: hand;
 }
 
@@ -86,24 +87,23 @@
 }
 
 .dataGridEvenRowCell {
-    /*border: 2px solid #ffffff;*/
+    border: selectionBorderWidth solid #ffffff;
 }
 
-/* убираем чередующиеся ряды */
 .dataGridOddRow {
-    background: #ffffff;
+    background: #f3f7fb;
 }
 
 .dataGridOddRowCell {
-    /*border: 2px solid #ffffff;*/
+    border: selectionBorderWidth solid #f3f7fb;
 }
 
 .dataGridHoveredRow {
-    /*background: #eee;*/
+    background: #eee;
 }
 
 .dataGridHoveredRowCell {
-    /*border: 2px solid #eee;*/
+    border: selectionBorderWidth solid #eee;
 }
 
 .dataGridKeyboardSelectedRow {
@@ -111,27 +111,23 @@
 }
 
 .dataGridKeyboardSelectedRowCell {
-    /*border: 2px solid #ffc;*/
+    border: selectionBorderWidth solid #ffc;
 }
 
-/* стайлим выделенный ряд, так же как ряд с клавиатурным выделением,
-   чтобы спокойно совместить понятия выделенного и текущего ряда */
 .dataGridSelectedRow {
-    background: #ffc;
-    /*background: #628cd5;*/
-    /*color: white;*/
-    /*height: auto;*/
-    /*overflow: auto;*/
+    background: #628cd5;
+    color: white;
+    height: auto;
+    overflow: auto;
 }
 
 .dataGridSelectedRowCell {
-    /*border: 2px solid #ffc;*/
-    /*border: 2px solid #628cd5;*/
+    border: selectionBorderWidth solid #628cd5;
 }
 
-/**
-* The keyboard selected cell is visible over selection.
-*/
+    /**
+    * The keyboard selected cell is visible over selection.
+    */
 .dataGridKeyboardSelectedCell {
-    /*border: 2px solid #d7dde8;*/
+    border: selectionBorderWidth solid #d7dde8;
 }

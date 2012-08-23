@@ -10,6 +10,8 @@ public class GComponent implements Serializable {
     public boolean drawToToolbar;
     public double fillHorizontal = -1;
     public double fillVertical = -1;
+    public int prefferedWidth = -1;
+    public int prefferedHeight = -1;
     public int absoluteWidth = -1;
     public int absoluteHeight = -1;
     public Alignment hAlign;

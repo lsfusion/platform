@@ -88,7 +88,6 @@ public class GGridTable extends DataGrid implements EditManager, GEditPropertyHa
             public void onSelectionChange(SelectionChangeEvent event) {
                 GridDataRecord selectedRecord = selectionModel.getSelectedRecord();
                 if (selectedRecord != null && !selectedRecord.key.equals(currentKey)) {
-                    System.out.println("changing current object: " + selectedRecord);
                     storeScrolling(selectedRecord);
                     form.changeGroupObject(groupObject, selectedRecord.key);
                 }
@@ -212,7 +211,7 @@ public class GGridTable extends DataGrid implements EditManager, GEditPropertyHa
             }
         }
 
-        int rowScrollTop = -1;
+        int rowScrollTop = 0;
         if (currentInd != -1) {
             TableRowElement rowElement = getRowElement(currentInd);
             rowScrollTop = rowElement.getAbsoluteTop() - getScrollPanel().getAbsoluteTop();
@@ -239,10 +238,9 @@ public class GGridTable extends DataGrid implements EditManager, GEditPropertyHa
     }
 
     private void scrollRowToVerticalPosition(int rowIndex, int rowScrollTop) {
-        //todo: учесть, что высота рядов может быть различной... или сделать высоту постоянной...
         if (rowScrollTop != -1 && rowIndex >= 0 && rowIndex < getRowCount()) {
-            int rowHeight = getRowElement(rowIndex).getOffsetHeight();
-            getScrollPanel().setVerticalScrollPosition(rowIndex * rowHeight - rowScrollTop);
+            int rowOffsetTop = getRowElement(rowIndex).getOffsetTop();
+            getScrollPanel().setVerticalScrollPosition(rowOffsetTop - rowScrollTop);
         }
     }
 

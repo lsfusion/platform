@@ -35,6 +35,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     }
 
     private final ClientTypeToGwtConverter typeConverter = ClientTypeToGwtConverter.getInstance();
+    private final ClientFormChangesToGwtConverter valuesConverter = ClientFormChangesToGwtConverter.getInstance();
 
     private ClientActionToGwtConverter() {
     }
@@ -110,9 +111,13 @@ public class ClientActionToGwtConverter extends ObjectConverter {
                 ClientTypeSerializer.deserializeClientType(action.readType)
         ) ;
 
-        Object value = deserializeObject(action.oldValue);
+        Object value = deserializeServerValue(action.oldValue);
 
         return new GRequestUserInputAction(type, value);
+    }
+
+    private Object deserializeServerValue(byte[] valueBytes) throws IOException {
+        return valuesConverter.convertOrCast(deserializeObject(valueBytes));
     }
 
     @Converter(from = RunPrintReportClientAction.class)
@@ -123,6 +128,11 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     @Converter(from = RunOpenInExcelClientAction.class)
     public GRunOpenInExcelAction convertAction(RunOpenInExcelClientAction action, HttpSession session, FormSessionObject form) throws IOException {
         return new GRunOpenInExcelAction(generateReport(session, form, false));
+    }
+
+    @Converter(from = AsyncResultClientAction.class)
+    public GAsyncResultAction convertAction(AsyncResultClientAction action, HttpSession session, FormSessionObject form) throws IOException {
+        return new GAsyncResultAction(deserializeServerValue(action.value));
     }
 
     private String generateReport(HttpSession session, FormSessionObject form, boolean isPdf) {

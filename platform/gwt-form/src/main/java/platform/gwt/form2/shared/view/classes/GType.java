@@ -25,7 +25,7 @@ public abstract class GType implements Serializable {
     }
 
     public Column<GridDataRecord, Object> createGridColumn(EditManager editManager, final FormLogicsProvider form, final GPropertyDraw property) {
-        return new Column<GridDataRecord, Object>(new GridEditableCell(editManager, createGridCellRenderer())) {
+        return new Column<GridDataRecord, Object>(new GridEditableCell(editManager, createGridCellRenderer(property))) {
             @Override
             public Object getValue(GridDataRecord record) {
                 return record.getAttribute(property.sID);
@@ -33,7 +33,7 @@ public abstract class GType implements Serializable {
         };
     }
 
-    public GridCellRenderer createGridCellRenderer() {
+    public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
         return new StringGridRenderer();
     }
 

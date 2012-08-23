@@ -1,6 +1,7 @@
 package platform.gwt.form2.client.form.ui;
 
 import com.google.gwt.cell.client.Cell;
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.cellview.client.DataGrid;
 import platform.gwt.form2.client.form.dispatch.GEditPropertyDispatcher;
@@ -17,6 +18,16 @@ import platform.gwt.form2.shared.view.grid.editor.GridCellEditor;
 import java.util.Arrays;
 
 public class GSinglePropertyTable extends DataGrid implements EditManager, GEditPropertyHandler {
+    /**
+     * Default style's overrides
+     */
+    public interface GSinglePropertyTableResource extends Resources {
+        @Source("GSinglePropertyTable.css")
+        GSinglePropertyTableStyle dataGridStyle();
+    }
+    public interface GSinglePropertyTableStyle extends Style {}
+
+    public static final GSinglePropertyTableResource GSINGLE_PROPERTY_TABLE_RESOURCE = GWT.create(GSinglePropertyTableResource.class);
 
     private final GFormController form;
     private final GEditPropertyDispatcher editDispatcher;
@@ -30,6 +41,8 @@ public class GSinglePropertyTable extends DataGrid implements EditManager, GEdit
     private GType editType;
 
     public GSinglePropertyTable(GFormController iform, GPropertyDraw iproperty) {
+        super(50, GSINGLE_PROPERTY_TABLE_RESOURCE);
+
         this.form = iform;
         this.property = iproperty;
 

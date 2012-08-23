@@ -17,6 +17,7 @@ import net.customware.gwt.dispatch.shared.Result;
 import platform.gwt.base.client.ErrorAsyncCallback;
 import platform.gwt.base.client.WrapperAsyncCallbackEx;
 import platform.gwt.base.shared.GClassViewType;
+import platform.gwt.form2.client.LoadingBlocker;
 import platform.gwt.form2.client.dispatch.FormDispatchAsync;
 import platform.gwt.form2.client.form.dispatch.GFormActionDispatcher;
 import platform.gwt.form2.client.form.ui.classes.ClassChosenHandler;
@@ -109,7 +110,7 @@ public class GFormController extends SimplePanel implements FormLogicsProvider {
 
         initializeRegularFilters();
 
-        getRemoteChanges();
+        processRemoteChanges();
     }
 
     private void initializeRegularFilters() {
@@ -193,8 +194,6 @@ public class GFormController extends SimplePanel implements FormLogicsProvider {
                 controllers.put(null, new GGroupObjectController(this, null, formLayout));
             }
         }
-
-        getRemoteChanges();
     }
 
     public GPropertyDraw getProperty(int id) {
@@ -205,7 +204,7 @@ public class GFormController extends SimplePanel implements FormLogicsProvider {
         return form.getGroupObject(groupID);
     }
 
-    private void getRemoteChanges() {
+    public void processRemoteChanges() {
         dispatcher.execute(new GetRemoteChanges(), new ServerResponseCallback());
     }
 
@@ -265,12 +264,13 @@ public class GFormController extends SimplePanel implements FormLogicsProvider {
     }
 
     public <T extends Result> void syncDispatch(Action<T> action, AsyncCallback<T> callback) {
+        //todo: возможно понадобится сделать чтото более сложное как в
         //todo: http://stackoverflow.com/questions/2061699/disable-user-interaction-in-a-gwt-container
-//        disable();
+        LoadingBlocker.getInstance().start();
         dispatcher.execute(action, new WrapperAsyncCallbackEx<T>(callback) {
             @Override
             public void preProcess() {
-//                enable();
+                LoadingBlocker.getInstance().stop();
             }
         });
     }
@@ -280,23 +280,23 @@ public class GFormController extends SimplePanel implements FormLogicsProvider {
     }
 
     public void changeClassView(GGroupObject groupObject, GClassViewType newClassView) {
-        dispatcher.execute(new ChangeClassView(groupObject.ID, newClassView), new ServerResponseCallback());
+        syncDispatch(new ChangeClassView(groupObject.ID, newClassView), new ServerResponseCallback());
     }
 
     public void expandGroupObject(GGroupObject group, GGroupObjectValue value) {
-        dispatcher.execute(new ExpandGroupObject(group.ID, value.getValueDTO()), new ServerResponseCallback());
+        syncDispatch(new ExpandGroupObject(group.ID, value.getValueDTO()), new ServerResponseCallback());
     }
 
     public void collapseGroupObject(GGroupObject group, GGroupObjectValue value) {
-        dispatcher.execute(new CollapseGroupObject(group.ID, value.getValueDTO()), new ServerResponseCallback());
+        syncDispatch(new CollapseGroupObject(group.ID, value.getValueDTO()), new ServerResponseCallback());
     }
 
     public void setTabVisible(GContainer tabbedPane, GComponent visibleComponent) {
-        dispatcher.execute(new SetTabVisible(tabbedPane.ID, visibleComponent.ID), new ServerResponseCallback());
+        syncDispatch(new SetTabVisible(tabbedPane.ID, visibleComponent.ID), new ServerResponseCallback());
     }
 
     private void setRemoteRegularFilter(GRegularFilterGroup filterGroup, GRegularFilter filter) {
-        dispatcher.execute(new SetRegularFilter(filterGroup.ID, (filter == null) ? -1 : filter.ID), new ServerResponseCallback());
+        syncDispatch(new SetRegularFilter(filterGroup.ID, (filter == null) ? -1 : filter.ID), new ServerResponseCallback());
     }
 
     public List<GPropertyDraw> getPropertyDraws() {
@@ -330,6 +330,14 @@ public class GFormController extends SimplePanel implements FormLogicsProvider {
 
     public void blockingMessage(boolean isError, String caption, String message, final DialogBoxHelper.CloseCallback callback) {
         DialogBoxHelper.showMessageBox(isError, caption, message, callback);
+    }
+
+    public int getPreferredWidth() {
+        return formLayout.getMainKey().prefferedWidth;
+    }
+
+    public int getPreferredHeight() {
+        return formLayout.getMainKey().prefferedHeight;
     }
 
     private class ServerResponseCallback extends ErrorAsyncCallback<ServerResponseResult> {
