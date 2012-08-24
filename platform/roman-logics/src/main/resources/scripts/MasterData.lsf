@@ -9,6 +9,8 @@ REQUIRE System,
         AccountDocument,
         Employee,
         UserPriceChange,
+        Contract,
+        Supplier,
         Warehouse,
         RomanLogicsModule;
 
@@ -247,3 +249,41 @@ addressImporterSku 'Адрес' (importer, sku) = addressLegalEntity(importer) A
 //sumInSkuLedger(ledger) += (retailPriceUserPriceChangeDetail(ledger) (-) curRetailPriceUserPriceChangeDetail(ledger))*quantityUserPriceChangeDetail(ledger);
 
 
+//---------------------------------------------- Контракты для инвойсов ----------------------------------------------//
+
+contractInvoice 'Договор инвойса' = DATA contractSkuSupplier (invoice);
+numberContractInvoice 'Номер договора инвойса' (invoice) = numberContract(contractInvoice(invoice));
+
+contractDirectInvoice 'Договор инвойса напрямую' = DATA contractSkuSupplier (directInvoice);
+numberContractDirectInvoice 'Номер договора инвойса напрямую' (directInvoice) = numberContract(contractDirectInvoice(directInvoice));
+
+contractInvoiceDirectInvoice 'Договор' (invoice) = UNION OVERRIDE contractInvoice(invoice), contractDirectInvoice(invoice);
+numberContractInvoiceDirectInvoice 'Номер договора' (invoice) = numberContract(contractInvoiceDirectInvoice(invoice));
+
+CONSTRAINT partyAContract(contractInvoice(invoice)) != supplierDocument(invoice)
+    CHECKED BY contractInvoice MESSAGE 'Сторона А договора должна соответствовать поставщику инвойса';
+
+CONSTRAINT partyAContract(contractDirectInvoice(directInvoice)) != supplierDocument(directInvoice)
+    CHECKED BY contractDirectInvoice MESSAGE 'Сторона А договора должна соответствовать поставщику инвойса напрямую';
+
+CONSTRAINT partyBContract(contractInvoice(invoice)) != exporterInvoice(invoice)
+    CHECKED BY contractInvoice MESSAGE 'Сторона Б договора должна соответствовать экспортеру инвойса';
+
+CONSTRAINT partyBContract(contractDirectInvoice(directInvoice)) != importerDirectInvoice(directInvoice)
+    CHECKED BY contractDirectInvoice MESSAGE 'Сторона Б договора должна соответствовать импортеру инвойса напрямую';
+
+// По коробам
+EXTEND FORM boxInvoiceForm
+
+PROPERTIES(invoice) numberContractInvoice AFTER nameExporterInvoice, numberContractDirectInvoice,
+                    numberContractInvoiceDirectInvoice TODRAW invoice FORCE PANEL
+
+;
+
+//Без коробов
+EXTEND FORM simpleInvoiceForm
+
+PROPERTIES(invoice) numberContractInvoice AFTER nameExporterInvoice, numberContractDirectInvoice,
+                    numberContractInvoiceDirectInvoice TODRAW invoice FORCE PANEL
+
+;

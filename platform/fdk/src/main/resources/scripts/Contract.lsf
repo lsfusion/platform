@@ -122,6 +122,17 @@ FORM contractSku 'Договор на поставку товаров'
     EDIT contract OBJECT c
 ;
 
+FORM contractSkus 'Договора на поставку товаров'
+    OBJECTS c=contract
+    PROPERTIES(c) READONLY namePartyAContract, namePartyBContract, numberContract, dateFromContract, dateToContract,
+                           nameCurrencyContract, noteContract, nameTypeContractSku ON CHANGE EXEC dialogTypeContractSku(c),
+                           nameFormContractSku ON CHANGE EXEC dialogFormContractSku(c),
+                           delayContractSku ON CHANGE EXEC dialogDelayContractSku(c)
+
+    PROPERTIES(c) ADDFORM, EDITFORM, delete
+
+;
+
 // --------------------------------------- Договора между юрлицами ------------------------------------- //
 
 CLASS contractSkuCompany 'Договор на поставку между компаниями' : contractSku;

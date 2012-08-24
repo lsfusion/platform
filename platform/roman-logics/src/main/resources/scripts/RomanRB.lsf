@@ -12,6 +12,7 @@ REQUIRE System,
         Declaration,
         WHfromCS,
         WHfromRF,
+        Contract,
         Transfer,
         Sale,
         Return,
@@ -104,6 +105,10 @@ NAVIGATOR {
 
     taxClassifier {
         ADD taxes;
+    }
+
+    purchase{
+        ADD contractSkus;
     }
 
     customs {
