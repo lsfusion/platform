@@ -51,6 +51,7 @@ import javax.mail.Message;
 import javax.swing.*;
 import java.io.IOException;
 import java.io.InputStream;
+import java.sql.Timestamp;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -99,7 +100,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public enum State {INIT, GROUP, CLASS, PROP, TABLE, INDEX}
-    public enum ConstType { INT, REAL, STRING, LOGICAL, ENUM, LONG, DATE, COLOR, NULL }
+    public enum ConstType { INT, REAL, STRING, LOGICAL, ENUM, LONG, DATE, DATETIME, COLOR, NULL }
     public enum InsertPosition {IN, BEFORE, AFTER}
     public enum WindowType {MENU, PANEL, TOOLBAR, TREE}
     public enum GroupingType {SUM, MAX, MIN, CONCAT, UNIQUE, EQUAL}
@@ -1239,6 +1240,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             case STRING: return addCProp(StringClass.get(((String)value).length()), value);
             case LOGICAL: return addCProp(LogicalClass.instance, value);
             case DATE: return addCProp(DateClass.instance, value);
+            case DATETIME: return addCProp(DateTimeClass.instance, value);
             case ENUM: return addStaticClassConst((String) value);
             case COLOR: return addCProp(ColorClass.instance, value);
             case NULL: return baseLM.vnull;
@@ -1248,6 +1250,11 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public java.sql.Date dateLiteralToDate(String text) {
         return new java.sql.Date(Integer.parseInt(text.substring(0, 4)) - 1900, Integer.parseInt(text.substring(5, 7)) - 1, Integer.parseInt(text.substring(8, 10)));
+    }
+
+    public Timestamp dateTimeLiteralToTimestamp(String text) {
+        return new Timestamp(Integer.parseInt(text.substring(0, 4)) - 1900, Integer.parseInt(text.substring(5, 7)) - 1, Integer.parseInt(text.substring(8, 10)),
+                Integer.parseInt(text.substring(11, 13)), Integer.parseInt(text.substring(14, 16)), 0, 0);
     }
 
     public LPWithParams addScriptedFAProp(String formName, List<String> objectNames, List<LPWithParams> mapping, List<LPWithParams> props, String className, boolean newSession, boolean isModal, boolean checkOnOk) throws ScriptingErrorLog.SemanticErrorException {
