@@ -153,6 +153,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP sumDateTimeDay;
     public LCP subtractDate;
     public LCP toDateTime;
+    public LCP timeDate;
 
     public LCP string2SP, istring2SP;
     public LCP string2, istring2;
@@ -804,9 +805,10 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         numberMonthInDate = addSFProp("numberMonthInDate", "(extract(month from (prm1)))", IntegerClass.instance, 1);
         yearInDate = addSFProp("yearInDate", "(extract(year from (prm1)))", IntegerClass.instance, 1);
         dayInDate = addJProp("dayInDate", "День даты", baseLM.and1, addSFProp("(extract(day from (prm1)))", IntegerClass.instance, 1), 1, is(DateClass.instance), 1);
+
         dateInTime = addSFProp("dateInTime", "(CAST((prm1) as date))", DateClass.instance, 1);
         toDateTime = addSFProp("toDateTime", "to_timestamp(CAST(prm1 as char(10)) || CAST(prm2 as char(8)), \'YYYY-MM-DDHH24:MI:SS\')", DateTimeClass.instance, 2);
-
+        timeDate = addSFProp("timeDate", "(CAST((prm1) as timestamp))", DateTimeClass.instance, 1);
         timeInDateTime = addSFProp("timeInDateTime", "(CAST((prm1) as time))", TimeClass.instance, 1);
 
         numberMonth = addOProp(baseGroup, "numberMonth", true, getString("logics.month.number"), addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), is(month), 1), PartitionType.SUM, true, true, 0, 1);
