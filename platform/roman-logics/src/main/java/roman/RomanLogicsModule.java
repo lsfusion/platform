@@ -347,7 +347,11 @@ public class RomanLogicsModule extends LogicsModule {
     private LCP typeInvoiceCategory;
     private LCP nameTypeInvoiceCategory;
     private LCP categoryArticle;
-    private LCP sidUnitOfMeasure;
+    private LCP warrantyCategory;
+    private LCP warrantyCategoryArticleSku;
+    private LCP warrantyDataSku;
+    private LCP warrantySku;
+        private LCP sidUnitOfMeasure;
     private LCP unitOfMeasureDataArticle;
     private LCP unitOfMeasureCategoryArticle;
     private LCP nameOriginUnitOfMeasureArticleSku;
@@ -1979,6 +1983,8 @@ public class RomanLogicsModule extends LogicsModule {
         nameTypeInvoiceCategory = addJProp(baseGroup, "nameTypeInvoiceCategory", "Тип инвойса номенклатурной группы", baseLM.name, typeInvoiceCategory, 1);
         setNotNull(typeInvoiceCategory);
         
+        warrantyCategory = addDProp(baseGroup, "warrantyCategory", "Гарантийный срок", NumericClass.get(14, 3), category);
+
         categoryArticle = addDProp(idGroup, "categoryArticle", "Номенклатурная группа товара (ИД)", category, article);
         nameOriginCategoryArticle = addJProp(intraAttributeGroup, "nameOriginCategoryArticle", "Номенклатурная группа товара (ориг.)", nameOrigin, categoryArticle, 1);
         nameCategoryArticle = addJProp(intraAttributeGroup, "nameCategoryArticle", "Номенклатурная группа товара", baseLM.name, categoryArticle, 1);
@@ -1989,6 +1995,11 @@ public class RomanLogicsModule extends LogicsModule {
         nameCategoryArticleSku.property.preferredCharWidth = 50;
         nameCategoryArticleSku.property.minimumCharWidth = 15;
         nameOriginCategoryArticleSku = addJProp(intraAttributeGroup, "nameOriginCategoryArticleSku", "Номенклатурная группа товара", nameOrigin, categoryArticleSku, 1);
+
+        warrantyCategoryArticleSku = addJProp("warrantyCategoryArticleSku", "Гарантийный срок", warrantyCategory, categoryArticleSku, 1);
+        warrantyDataSku = addDProp("warrantyDataSku", "Гарантийный срок", NumericClass.get(14, 3), sku);
+
+        warrantySku = addSUProp("warrantySku", "Гарантийный срок", Union.OVERRIDE, warrantyCategoryArticleSku, warrantyDataSku);
 
         typeInvoiceCategoryArticle = addJProp(idGroup, "typeInvoiceCategoryArticle", "Тип инвойса артикула (ИД)", typeInvoiceCategory, categoryArticle, 1);
         typeInvoiceCategoryArticleSku = addJProp(idGroup, "typeInvoiceCategoryArticleSku", "Тип инвойса товара (ИД)", typeInvoiceCategory, categoryArticleSku, 1);
@@ -5917,11 +5928,11 @@ public class RomanLogicsModule extends LogicsModule {
             objArticle = addSingleGroupObject("article", article, "Артикул", sidArticle, nameSupplierArticle, nameBrandSupplierArticle, nameThemeSupplierArticle, sidGenderArticle, nameCategoryArticle, nameTypeFabricArticle, nameArticle);
             addObjectActions(this, objArticle);
 
-            objSku = addSingleGroupObject(sku, "SKU", baseLM.selection, baseLM.barcode, nameSupplierArticleSku, nameBrandSupplierArticleSku, nameThemeSupplierArticleSku, sidGenderArticleSku, sidSeasonSupplierArticleSku,
-                    nameCategoryArticleSku, nameTypeFabricArticleSku, sidArticleSku, nameArticleSku,
-                    sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem, nameCommonSizeSku,
-                    nameCountrySku, netWeightSku,
-                    mainCompositionSku, additionalCompositionSku, quantityAllSku);
+            objSku = addSingleGroupObject(sku, "SKU", baseLM.selection, baseLM.barcode, nameSupplierArticleSku, nameBrandSupplierArticleSku,
+                    nameThemeSupplierArticleSku, sidGenderArticleSku, sidSeasonSupplierArticleSku, nameCategoryArticleSku,
+                    nameTypeFabricArticleSku, sidArticleSku, nameArticleSku, sidColorSupplierItem, nameColorSupplierItem,
+                    sidSizeSupplierItem, nameCommonSizeSku, nameCountrySku, netWeightSku,
+                    mainCompositionSku, additionalCompositionSku, warrantySku, quantityAllSku);
             addObjectActions(this, objSku);
 
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku.groupTo);

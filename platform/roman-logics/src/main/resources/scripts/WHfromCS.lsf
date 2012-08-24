@@ -349,7 +349,7 @@ FORM printMarksWHfromCSR 'Печать маркировок товара' PRINT
     OBJECTS s = sku
     PROPERTIES(s) READONLY sidArticleSku, sidSizeSupplierItem, nameCommonSizeSku, sidGenderArticleSku, nameCategoryArticleSku,
                            mainCompositionSku, nameCountryBrandSupplierSku, nameBrandSupplierArticleSku, barcode, nameCountrySku,
-                           sidColorSupplierItem, nameColorSupplierItem, nameSupplierArticleSku, addressSupplierArticleSku, countSku
+                           sidColorSupplierItem, nameColorSupplierItem, nameSupplierArticleSku, addressSupplierArticleSku, warrantySku, countSku
 
     PROPERTIES(s, dt)      priceBaseWHfromCSRDateTimeSku, priceDiscountWHfromCSRDateTimeSku
     PROPERTIES(imp, s)     nameImporterSku, addressImporterSku

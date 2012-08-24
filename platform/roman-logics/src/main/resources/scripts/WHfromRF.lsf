@@ -295,12 +295,12 @@ FORM printMarksWHfromRF 'Печать маркировок товара' PRINT
     PROPERTIES(dt) OBJVALUE
 
     OBJECTS imp = company FIXED PANEL
-    PROPERTIES(imp) OBJVALUE
+    PROPERTIES(imp) OBJVALUE, name, addressLegalEntity
 
     OBJECTS s = sku
     PROPERTIES(s) READONLY sidArticleSku, sidSizeSupplierItem, nameCommonSizeSku, sidGenderArticleSku, nameCategoryArticleSku,
                            mainCompositionSku, nameCountryBrandSupplierSku, nameBrandSupplierArticleSku, barcode, nameCountrySku,
-                           sidColorSupplierItem, nameColorSupplierItem, nameSupplierArticleSku, addressSupplierArticleSku, countSku
+                           sidColorSupplierItem, nameColorSupplierItem, nameSupplierArticleSku, addressSupplierArticleSku, warrantySku, countSku
 
     PROPERTIES(s, dt)      priceBaseWHfromRFDateTimeSku, priceDiscountWHfromRFDateTimeSku
     PROPERTIES(imp, s)     nameImporterSku, addressImporterSku
@@ -314,7 +314,7 @@ printMarksSkuFreightUnit 'Печать маркировок товаров' (WHf
     SET countSku(sku) <- NULL;
     SET shouldBePrintWHfromRF(sku) <- TRUE IF quantitySkuFreightUnitWHfromRF(sku, currentFreightUnit(WHfromRF), WHfromRF);
     SET countSku(sku) <- castToInteger(quantitySkuFreightUnitWHfromRF(sku, currentFreightUnit(WHfromRF), WHfromRF));
-    FORM printMarksWHfromRF OBJECTS dt = dateTimeWHfromRF(WHfromRF), imp = companyWarehouse(WHfromRF) MODAL;
+    FORM printMarksWHfromRF OBJECTS dt = dateTimeWHfromRF(WHfromRF), imp = companyWHfromRF(WHfromRF) MODAL;
 
 } CONFIRM;
 
@@ -324,7 +324,7 @@ printMarksSkuWHfromRF 'Печать маркировок товаров' (WHfrom
     SET countSku(sku) <- NULL;
     SET shouldBePrintWHfromRF(sku) <- TRUE IF quantitySkuInWHfromRF(WHfromRF, sku);
     SET countSku(sku) <- castToInteger(quantitySkuInWHfromRF(WHfromRF, sku));
-    FORM printMarksWHfromRF OBJECTS dt = dateTimeWHfromRF(WHfromRF), imp = companyWarehouse(WHfromRF) MODAL;
+    FORM printMarksWHfromRF OBJECTS dt = dateTimeWHfromRF(WHfromRF), imp = companyWHfromRF(WHfromRF) MODAL;
 
 } CONFIRM TOOLBAR;
 
@@ -440,7 +440,7 @@ skipASkuLedger (ledger) += ledger IS WHfromRFDetail;
 FORM WHfromRF 'Приход товара из РФ'
 
     OBJECTS w = WHfromRF FIXED PANEL, d = WHfromRFDetail
-    PROPERTIES(w) objectClassName, numberObject, seriesObject, dateWHfromRF, timeWHfromRF, nameFreightWHfromRF, nameWarehouseWHfromRF, barcodeCurrentFreightUnit,
+    PROPERTIES(w) objectClassName, numberObject, seriesObject, dateWHfromRF, timeWHfromRF, nameCompanyWHfromRF, nameFreightWHfromRF, nameWarehouseWHfromRF, barcodeCurrentFreightUnit,
                   fillWHfromRFDetailsSkuFreightUnit, printMarksSkuFreightUnit, printMarksSkuWHfromRF TODRAW d FORCE PANEL
     PROPERTIES(w) READONLY quantityRemainedPositionSkuWHfromRF SHOWIF barcodeCurrentFreightUnit(w),
                            quantityRemainedSkuWHfromRF SHOWIF barcodeCurrentFreightUnit(w)

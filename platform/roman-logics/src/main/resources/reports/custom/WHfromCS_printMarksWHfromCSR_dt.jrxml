@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="dt" pageWidth="141" pageHeight="198" columnWidth="141" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
-	<property name="ireport.zoom" value="2.5937424601000036"/>
+	<property name="ireport.zoom" value="3.452271214393106"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="0"/>
+	<property name="ireport.y" value="111"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
 		<box>
 			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
@@ -55,6 +55,9 @@
 	<field name="imp" class="java.lang.Integer"/>
 	<field name="nameImporterSku" class="java.lang.String"/>
 	<field name="addressImporterSku" class="java.lang.String"/>
+	<field name="warrantySku" class="java.lang.Double">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
 	<group name="designGroup10">
 		<groupExpression><![CDATA[String.valueOf($F{dt})]]></groupExpression>
 	</group>
@@ -112,42 +115,42 @@
 				<textFieldExpression class="java.lang.String"><![CDATA["Артикул: "]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="0" y="42" width="131" height="16"/>
+				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="0" y="41" width="131" height="16"/>
 				<textElement textAlignment="Left" verticalAlignment="Top">
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA["Размер: " + $F{nameCommonSizeSku}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="0" y="120" width="131" height="8"/>
+				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="0" y="114" width="131" height="8"/>
 				<textElement textAlignment="Left">
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA["Торговая марка: " + $F{nameBrandSupplierArticleSku}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="0" y="68" width="131" height="24"/>
+				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="0" y="65" width="131" height="24"/>
 				<textElement textAlignment="Left" verticalAlignment="Top">
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA["Изготовитель: " + $F{nameSupplierArticleSku} + " " + $F{addressSupplierArticleSku} + " " + $F{nameCountryBrandSupplierSku}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="0" y="111" width="131" height="8"/>
+				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="0" y="105" width="131" height="8"/>
 				<textElement textAlignment="Left">
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA["Сделано в " + $F{nameCountrySku}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="0" y="59" width="19" height="8"/>
+				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="0" y="57" width="19" height="8"/>
 				<textElement textAlignment="Left">
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{sidColorSupplierItem} + ";"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="0" y="129" width="131" height="8"/>
+				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="0" y="122" width="131" height="8"/>
 				<textElement textAlignment="Left">
 					<font size="6"/>
 				</textElement>
@@ -202,7 +205,7 @@
 				<textFieldExpression class="java.lang.String"><![CDATA["Размерный код: " + $F{sidSizeSupplierItem}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0_1" x="64" y="59" width="67" height="8"/>
+				<reportElement style="GroupCellStyle0_1" x="64" y="57" width="67" height="8"/>
 				<textElement>
 					<font size="6"/>
 				</textElement>
@@ -216,7 +219,7 @@
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{sidArticleSku}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="0" y="94" width="131" height="16"/>
+				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="0" y="89" width="131" height="16"/>
 				<textElement>
 					<font size="6"/>
 				</textElement>
@@ -232,7 +235,7 @@
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{priceBaseWHfromCSRDateTimeSku}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0_1" x="19" y="59" width="45" height="8"/>
+				<reportElement style="GroupCellStyle0_1" x="19" y="57" width="45" height="8"/>
 				<textElement>
 					<font size="6"/>
 				</textElement>
@@ -243,11 +246,20 @@
 				<imageExpression class="java.lang.String"><![CDATA["C:\\Documents and Settings\\Admin\\Мои документы\\Мои рисунки\\emb.jpg"]]></imageExpression>
 			</image>
 			<textField>
-				<reportElement style="GroupCellStyle0_1" x="0" y="138" width="100" height="8"/>
+				<reportElement style="GroupCellStyle0_1" x="0" y="130" width="100" height="8"/>
 				<textElement>
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA["Товар сертифицирован в РБ"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0_1" x="0" y="139" width="131" height="8">
+					<printWhenExpression><![CDATA[$F{warrantySku}!=null]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font size="6"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Гарантийный срок - " + ($F{warrantySku}).intValue() + " дней"]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
