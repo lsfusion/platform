@@ -26,8 +26,8 @@ TABLE disparityOutBatchDetail(disparityOutBatchDetail);
 
 @defineNumeratedObject(disparityBatch, 'Нумератор для пересорта', 'ПР');
 
-@defineDocumentRelationCustomCaption (disparityBatch, disparityInBatchDetail, '(In)');
-@defineDocumentRelationCustomCaption (disparityBatch, disparityOutBatchDetail, '(Out)');
+@defineDocumentRelationCustomCaption (disparityBatch, disparityInBatchDetail, ' (In)');
+@defineDocumentRelationCustomCaption (disparityBatch, disparityOutBatchDetail, ' (Out)');
 
 @defineDocumentDetailIndexCustom(disparityBatch, disparityInBatchDetail);
 @defineDocumentDetailIndexCustom(disparityBatch, disparityOutBatchDetail);
@@ -62,15 +62,15 @@ TABLE disparityOutBatchDetail(disparityOutBatchDetail);
 @defineDocumentDetailQuantityCustom(disparityInBatchDetail);
 @defineDocumentDetailQuantityCustom(disparityOutBatchDetail);
 
-@defineDocumentHeaderQuantityCustomPrefix (disparityBatch, disparityInBatchDetail, , '(In)');
-@defineDocumentHeaderQuantityCustomPrefix (disparityBatch, disparityOutBatchDetail, , '(Out)');
+@defineDocumentHeaderQuantityCustomPrefix (disparityBatch, disparityInBatchDetail, , ' (In)');
+@defineDocumentHeaderQuantityCustomPrefix (disparityBatch, disparityOutBatchDetail, , ' (Out)');
 
-@defineDocumentHeaderSkuQuantityCaptionCustom (disparityBatch, disparityInBatchDetail, sku, '(In)');
-@defineDocumentHeaderSkuQuantityCaptionCustom (disparityBatch, disparityOutBatchDetail, sku, '(Out)');
+@defineDocumentHeaderSkuQuantityCaptionCustom (disparityBatch, disparityInBatchDetail, sku, ' (In)');
+@defineDocumentHeaderSkuQuantityCaptionCustom (disparityBatch, disparityOutBatchDetail, sku, ' (Out)');
 
 // Кнопки подбора
-@defineAddDetailDialogSkuStockCustom (disparityBatch, disparityInBatchDetail, '(In)', sku, stock, dialogSku);
-@defineAddDetailDialogSkuStockCustom (disparityBatch, disparityOutBatchDetail, '(Out)', sku, stock, dialogSku);
+@defineAddDetailDialogSkuStockCustom (disparityBatch, disparityInBatchDetail, ' (In)', sku, stock, dialogSku);
+@defineAddDetailDialogSkuStockCustom (disparityBatch, disparityOutBatchDetail, ' (Out)', sku, stock, dialogSku);
 @defineAddDetailDialogBarcodeCustom(disparityBatch, disparityInBatchDetail, sku);
 @defineAddDetailDialogBarcodeCustom(disparityBatch, disparityOutBatchDetail, sku);
 
@@ -78,7 +78,8 @@ TABLE disparityOutBatchDetail(disparityOutBatchDetail);
 @defineDocumentDetailBatchCustom(disparityOutBatchDetail, batch);
 
 
-CONSTRAINT disparityBatch IS disparityBatch AND quantityDisparityInBatchDetailSkuDisparityBatch(sku, disparityBatch) != quantityDisparityOutBatchDetailSkuDisparityBatch(sku, disparityBatch)
+CONSTRAINT disparityBatch IS disparityBatch AND  isPostedDisparityBatch(disparityBatch)
+    AND quantityDisparityInBatchDetailSkuDisparityBatch(sku, disparityBatch) != quantityDisparityOutBatchDetailSkuDisparityBatch(sku, disparityBatch)
     MESSAGE 'Количество для SKU и документа по (In) и (Out) должны быть равны';
 
 
@@ -93,7 +94,7 @@ diffBalanceSkuStock 'Разница' (sku, stock) = min(diffNegativeBalanceSkuSt
 
 
 diffBalanceStock 'К-во годное к пересорту' (stock) = GROUP SUM diffBalanceSkuStock(sku, stock) BY stock;
-diffBalanceDisparityBatch 'К-во годное к пересорту' (disparityBatch) = diffBalanceStock(stockDisparityBatch(disparityBatch));
+diffBalanceDisparityBatch 'К-во годное к пересорту' (disparityBatch) = diffBalanceStock(stockDisparityBatch(disparityBatch)) IN documentPrmGroup;
 
 quantityPositiveDisparityBatchStock(batch, stock) = PARTITION UNGROUP diffBalanceSkuStock
                                                       LIMIT diffPositiveBalanceBatchStock (batch, stock)
@@ -111,9 +112,9 @@ disparityBatchStock (stock) = GROUP MAX disparityBatch BY stockDisparityBatch(di
 FORM disparityBatch 'Пересорт м/у партиями'
     OBJECTS o = disparityBatch FIXED PANEL
 
-    PROPERTIES (o) nameNumeratorObject, numberObject, seriesObject, dateDisparityBatch, timeDisparityBatch, noteDisparityBatch, //nameStockDisparityBatch
+    PROPERTIES (o) objectClassName, nameNumeratorObject, numberObject, seriesObject, dateDisparityBatch, timeDisparityBatch, noteDisparityBatch, //nameStockDisparityBatch
                    countDisparityInBatchDetailDisparityBatch, quantityDisparityInBatchDetailDisparityBatch,
-                   countDisparityOutBatchDetailDisparityBatch, quantityDisparityOutBatchDetailDisparityBatch
+                   countDisparityOutBatchDetailDisparityBatch, quantityDisparityOutBatchDetailDisparityBatch, diffBalanceDisparityBatch
 
     OBJECTS di = disparityInBatchDetail
     OBJECTS do = disparityOutBatchDetail
@@ -126,6 +127,9 @@ FORM disparityBatch 'Пересорт м/у партиями'
 
     FILTERS disparityBatchDisparityInBatchDetail(di) == o,
             disparityBatchDisparityOutBatchDetail(do) == o
+
+    EVENTS
+        ON OK EXEC prePostDisparityBatch(o)
 
     EDIT disparityBatch OBJECT o
 ;
@@ -141,6 +145,7 @@ DESIGN disparityBatch FROM DEFAULT {
                     childConstraints = TO THE BOTTOM;
                     ADD o.documentHeaderGroup {
                         childConstraints = TO THE RIGHT;
+                        ADD PROPERTY (objectClassName);
                         ADD PROPERTY (nameNumeratorObject);
                         ADD PROPERTY (numberObject);
                         ADD PROPERTY (seriesObject);
@@ -156,19 +161,21 @@ DESIGN disparityBatch FROM DEFAULT {
                 }
             }
         }
+        PROPERTY(formOkAction) {
+            caption = 'Провести';
+        }
     }
 }
 
 FORM disparityBatches 'Пересорты м/у партиями'
     OBJECTS o = disparityBatch
-    PROPERTIES (o) READONLY numberObject, seriesObject, dateDisparityBatch, timeDisparityBatch, nameStockDisparityBatch, noteDisparityBatch,
+    PROPERTIES (o) READONLY isPostedDisparityBatch FORCE GRID, numberObject, seriesObject, dateDisparityBatch, timeDisparityBatch, nameStockDisparityBatch, noteDisparityBatch,
                    countDisparityInBatchDetailDisparityBatch, quantityDisparityInBatchDetailDisparityBatch,
                    countDisparityOutBatchDetailDisparityBatch, quantityDisparityOutBatchDetailDisparityBatch
 
     PROPERTIES (o) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
-    PROPERTIES (o)    ADDFORM, EDITFORM SHOWIF isDraftDisparityBatch(o), delete FORCE PANEL SHOWIF isDraftDisparityBatch(o),
-                                postDisparityBatch SHOWIF isDraftDisparityBatch(o), unpostDisparityBatch SHOWIF isPostedDisparityBatch(o)
+    PROPERTIES (o)    ADDFORM, EDITFORM, delete FORCE PANEL
 
     OBJECTS di = disparityInBatchDetail
     OBJECTS do = disparityOutBatchDetail
@@ -244,12 +251,14 @@ createMixDisparityBatch 'Сделать подборку строк пересо
 @implementSkuLedgerCustom(disparityOutBatchDetail, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantityDisparityOutBatchDetail(ledger);
 limitOutFIFOSkuLedgerBatch (ledger, batch) += quantityDisparityOutBatchDetail(ledger) AND batchDisparityOutBatchDetail(ledger) == batch;
+changedDataSkuLedger(ledger) += CHANGED(batchDisparityOutBatchDetail(ledger));
 sumOutSkuLedger(ledger) += 0.0 IF ledger IS disparityOutBatchDetail;
 skipASkuLedger (ledger) += ledger IS disparityOutBatchDetail;
 
 @implementSkuLedgerCustom(disparityInBatchDetail, sku, stock);
 quantityInLIFOSkuLedger (ledger) += quantityDisparityInBatchDetail(ledger);
 limitInLIFOSkuLedgerBatch (ledger, batch) += quantityDisparityInBatchDetail(ledger) AND batchDisparityInBatchDetail(ledger) == batch;
+changedDataSkuLedger(ledger) += CHANGED(batchDisparityInBatchDetail(ledger));
 sumInSkuLedger(ledger) += 0.0 IF ledger IS disparityInBatchDetail;
 skipASkuLedger (ledger) += ledger IS disparityInBatchDetail;
 
@@ -289,7 +298,7 @@ DESIGN stockDisparity FROM DEFAULT {
 showActionDisparityBatch (disparityBatch)= disparityBatch IS disparityBatch AND NOT quantityDisparityInBatchDetailDisparityBatch(disparityBatch)
     AND NOT quantityDisparityOutBatchDetailDisparityBatch(disparityBatch);
 
-stockForDisparityBatch 'Партия' (disparityBatch) = ACTION (disparityBatch) {
+stockForDisparityBatch 'Склад' (disparityBatch) = ACTION (disparityBatch) {
     FORM stockDisparity OBJECTS o = disparityBatch MODAL;
     IF formResult() == formResult.ok THEN {
         SET stockDisparityBatch(disparityBatch) <- chosenObject('ts');
@@ -312,6 +321,308 @@ EXTEND DESIGN disparityBatch {
 EXTEND FORM disparityBatches
     PROPERTIES(di) READONLY descriptionBatchDisparityInBatchDetail
     PROPERTIES(do) READONLY descriptionBatchDisparityOutBatchDetail
+;
+
+// ---------------------------------------- Пересорт на складе ------------------------------------ //
+
+CLASS disparityBatchA 'Пересорт м/у партиями (бухг.)': historyObject, numeratedObject;
+TABLE disparityBatchA(disparityBatchA);
+CLASS disparityBatchAPosted 'Проведенный пересорт м/у партиями (бухг.)' : disparityBatchA, postedObject;
+
+CLASS disparityInBatchADetail 'Строка пересорта м/у партиями (бухг.) (In)' : inLIFOSkuLedger;
+TABLE disparityInBatchADetail(disparityInBatchADetail);
+
+CLASS disparityOutBatchADetail 'Строка пересорта м/у партиями (бухг.) (Out)' : outFIFOSkuLedger;
+TABLE disparityOutBatchADetail(disparityOutBatchADetail);
+
+@defineNumeratedObject(disparityBatchA, 'Нумератор для пересорта м/у партиями (бухг.)', 'ПБ');
+
+@defineDocumentRelationCustomCaption (disparityBatchA, disparityInBatchADetail, ' (In)');
+@defineDocumentRelationCustomCaption (disparityBatchA, disparityOutBatchADetail, ' (Out)');
+
+@defineDocumentDetailIndexCustom(disparityBatchA, disparityInBatchADetail);
+@defineDocumentDetailIndexCustom(disparityBatchA, disparityOutBatchADetail);
+
+@defineDocumentHeaderTime(disparityBatchA);
+@defineDocumentDetailTimeCustom(disparityBatchA, disparityInBatchADetail);
+@defineDocumentDetailTimeCustom(disparityBatchA, disparityOutBatchADetail);
+
+@defineDocumentHeaderNote(disparityBatchA);
+
+@defineDocumentDetailActionsCustom(disparityBatchA, disparityInBatchADetail);
+@defineDocumentDetailActionsCustom(disparityBatchA, disparityOutBatchADetail);
+
+@defineDocumentHeaderStock(disparityBatchA, stock, 'Склад');
+@defineDocumentDetailStockCustom (disparityBatchA, disparityInBatchADetail, stock, 'Склад');
+@defineDocumentDetailStockCustom (disparityBatchA, disparityOutBatchADetail, stock, 'Склад');
+
+@defineDocumentHeaderPosted (disparityBatchA);
+@defineDocumentDetailPostedCustom (disparityBatchA, disparityInBatchADetail);
+@defineDocumentDetailPostedCustom (disparityBatchA, disparityOutBatchADetail);
+
+@defineDocumentDescriptionHeader(disparityBatchA, 'Пересорт м/у партиями (бухг.)');
+@defineDocumentDetailDescriptionCustom(disparityBatchA, disparityInBatchADetail);
+@defineDocumentDetailDescriptionCustom(disparityBatchA, disparityOutBatchADetail);
+
+@defineDocumentDetailNumberedCustom(disparityBatchA, disparityInBatchADetail);
+@defineDocumentDetailNumberedCustom(disparityBatchA, disparityOutBatchADetail);
+
+@defineDocumentDetailSkuCustom(disparityInBatchADetail, sku);
+@defineDocumentDetailSkuCustom(disparityOutBatchADetail, sku);
+
+@defineDocumentDetailQuantityCustom(disparityInBatchADetail);
+@defineDocumentDetailQuantityCustom(disparityOutBatchADetail);
+
+@defineDocumentHeaderQuantityCustomPrefix (disparityBatchA, disparityInBatchADetail, , ' (In)');
+@defineDocumentHeaderQuantityCustomPrefix (disparityBatchA, disparityOutBatchADetail, , ' (Out)');
+
+@defineDocumentHeaderSkuQuantityCaptionCustom (disparityBatchA, disparityInBatchADetail, sku, ' (In)');
+@defineDocumentHeaderSkuQuantityCaptionCustom (disparityBatchA, disparityOutBatchADetail, sku, ' (Out)');
+
+// Кнопки подбора
+@defineAddDetailDialogSkuStockCustom (disparityBatchA, disparityInBatchADetail, ' (In)', sku, stock, dialogSku);
+@defineAddDetailDialogSkuStockCustom (disparityBatchA, disparityOutBatchADetail, ' (Out)', sku, stock, dialogSku);
+@defineAddDetailDialogBarcodeCustom(disparityBatchA, disparityInBatchADetail, sku);
+@defineAddDetailDialogBarcodeCustom(disparityBatchA, disparityOutBatchADetail, sku);
+
+@defineDocumentDetailBatchCustom(disparityInBatchADetail, batch);
+@defineDocumentDetailBatchCustom(disparityOutBatchADetail, batch);
+
+@defineDocumentHeaderAndDetailSumCustomCaption (disparityBatchA, disparityInBatchADetail, ' (всего) (In)');
+@defineDocumentHeaderAndDetailSumCustomCaption (disparityBatchA, disparityOutBatchADetail, ' (всего) (Out)');
+
+
+CONSTRAINT disparityBatchA IS disparityBatchA AND isPostedDisparityBatchA(disparityBatchA)
+    AND sumDisparityInBatchADetailDisparityBatchA(disparityBatchA) != sumDisparityOutBatchADetailDisparityBatchA(disparityBatchA)
+    MESSAGE 'Суммы для документа по (In) и (Out) должны быть равны';
+
+priceDisparityInBatchADetail(disparityInBatchADetail) <- priceBatchStockDateTime(batchDisparityInBatchADetail(disparityInBatchADetail), stockDisparityInBatchADetail(disparityInBatchADetail), dateTimeDisparityInBatchADetail(disparityInBatchADetail))
+    WHEN CHANGED (batchDisparityInBatchADetail(disparityInBatchADetail)) OR CHANGED (dateTimeDisparityInBatchADetail(disparityInBatchADetail));
+
+priceDisparityOutBatchADetail(disparityOutBatchADetail) <- priceBatchStockDateTime(batchDisparityOutBatchADetail(disparityOutBatchADetail), stockDisparityOutBatchADetail(disparityOutBatchADetail), dateTimeDisparityOutBatchADetail(disparityOutBatchADetail))
+    WHEN CHANGED (batchDisparityOutBatchADetail(disparityOutBatchADetail)) OR CHANGED (dateTimeDisparityOutBatchADetail(disparityOutBatchADetail));
+
+
+diffSumNegativeBalanceBatchDisparityBatchA 'Отрицательные сумма' (batch, disparityBatchA)= diffNegativeBalanceBatchStock(batch, stockDisparityBatchA(disparityBatchA)) *
+    priceBatchStockDateTime(batch, stockDisparityBatchA(disparityBatchA), dateTimeDisparityBatchA(disparityBatchA));
+diffSumPositiveBalanceBatchDisparityBatchA 'Положительные сумма' (batch, disparityBatchA)= diffPositiveBalanceBatchStock(batch, stockDisparityBatchA(disparityBatchA)) *
+    priceBatchStockDateTime(batch, stockDisparityBatchA(disparityBatchA), dateTimeDisparityBatchA(disparityBatchA));
+
+diffSumNegativeBalanceStock 'Отрицательные' (stock) =  GROUP SUM diffSumNegativeBalanceBatchDisparityBatchA(batch, disparityBatchA)  BY stockDisparityBatchA(disparityBatchA);
+diffSumPositiveBalanceStock 'Положительные' (stock) =  GROUP SUM  diffSumPositiveBalanceBatchDisparityBatchA(batch, disparityBatchA)  BY stockDisparityBatchA(disparityBatchA);
+
+diffSumBalanceStock 'Сумма годная к пересорту' (stock) = min(diffSumNegativeBalanceStock (stock), diffSumPositiveBalanceStock (stock));
+diffSumBalanceDisparityBatchA 'Сумма годная к пересорту' (disparityBatchA) = diffSumBalanceStock(stockDisparityBatchA(disparityBatchA)) IN documentPrmGroup;
+
+sumPositiveDisparityBatchDisparityBatchA(batch, disparityBatchA) = PARTITION UNGROUP diffSumBalanceStock
+                                                      LIMIT diffSumPositiveBalanceBatchDisparityBatchA (batch, disparityBatchA)
+                                                      BY stockDisparityBatchA(disparityBatchA)
+                                                      ORDER orderBatch(batch);
+
+sumNegativeDisparityBatchDisparityBatchA(batch, disparityBatchA) = PARTITION UNGROUP diffSumBalanceStock
+                                                      LIMIT diffSumNegativeBalanceBatchDisparityBatchA (batch, disparityBatchA)
+                                                      BY stockDisparityBatchA(disparityBatchA)
+                                                      ORDER orderBatch(batch);
+
+integerQuantityPositiveBatchDisparityBatchA 'Целое' (batch, disparityBatchA) = divideInteger(sumPositiveDisparityBatchDisparityBatchA(batch, disparityBatchA),
+    priceBatchStockDateTime(batch, stockDisparityBatchA(disparityBatchA), dateTimeDisparityBatchA(disparityBatchA)));
+integerQuantityNegativeBatchDisparityBatchA 'Целое' (batch, disparityBatchA) = divideInteger(sumNegativeDisparityBatchDisparityBatchA(batch, disparityBatchA),
+    priceBatchStockDateTime(batch, stockDisparityBatchA(disparityBatchA), dateTimeDisparityBatchA(disparityBatchA)));
+
+
+sumDiffDisparityBatchADetailDisparityBatchA 'Разница суммы всего In и Out' (disparityBatchA) = sumDisparityInBatchADetailDisparityBatchA(disparityBatchA) (-)
+    sumDisparityOutBatchADetailDisparityBatchA(disparityBatchA) IN documentSumGroup;
+
+FORM disparityBatchA 'Пересорт м/у партиями (бухг.)'
+    OBJECTS o = disparityBatchA FIXED PANEL
+
+    PROPERTIES (o) objectClassName, nameNumeratorObject, numberObject, seriesObject, dateDisparityBatchA, timeDisparityBatchA, noteDisparityBatchA, //nameStockDisparityBatchA
+                   countDisparityInBatchADetailDisparityBatchA, quantityDisparityInBatchADetailDisparityBatchA, sumDisparityInBatchADetailDisparityBatchA,
+                   countDisparityOutBatchADetailDisparityBatchA, quantityDisparityOutBatchADetailDisparityBatchA, sumDisparityOutBatchADetailDisparityBatchA,
+                   sumDiffDisparityBatchADetailDisparityBatchA
+
+    OBJECTS di = disparityInBatchADetail
+    OBJECTS do = disparityOutBatchADetail
+
+    PROPERTIES(o) TODRAW di addDetailDialogSkuStockDisparityInBatchADetailDisparityBatchA, addDetailDialogBarcodeDisparityInBatchADetailDisparityBatchA,
+                            deleteDisparityInBatchADetailDisparityBatchA
+
+    PROPERTIES(o) TODRAW do addDetailDialogSkuStockDisparityOutBatchADetailDisparityBatchA, addDetailDialogBarcodeDisparityOutBatchADetailDisparityBatchA,
+                            deleteDisparityOutBatchADetailDisparityBatchA
+
+    FILTERS disparityBatchADisparityInBatchADetail(di) == o,
+            disparityBatchADisparityOutBatchADetail(do) == o
+
+    EVENTS
+        ON OK EXEC prePostDisparityBatchA(o)
+
+    EDIT disparityBatchA OBJECT o
+;
+
+DESIGN disparityBatchA FROM DEFAULT {
+    main {
+        preferredSize = (1024, 768);
+        o.box {
+            childConstraints = TO THE RIGHT;
+            NEW columnHeaderPrm {
+                childConstraints = TO THE RIGHT;
+                NEW columnHeaderPrm1 {
+                    childConstraints = TO THE BOTTOM;
+                    ADD o.documentHeaderGroup {
+                        childConstraints = TO THE RIGHT;
+                        ADD PROPERTY (objectClassName);
+                        ADD PROPERTY (nameNumeratorObject);
+                        ADD PROPERTY (numberObject);
+                        ADD PROPERTY (seriesObject);
+                        ADD PROPERTY (dateDisparityBatchA);
+                        ADD PROPERTY (timeDisparityBatchA);
+                    }
+                    ADD o.documentPrmGroup {
+                        childConstraints = TO THE RIGHT;
+                    }
+                }
+                ADD o.documentSumGroup {
+                    childConstraints = TO THE BOTTOM;
+                    NEW row1 {
+                        title = 'Строки';
+                        childConstraints = TO THE RIGHT;
+                        ADD PROPERTY (countDisparityInBatchADetailDisparityBatchA);
+                        ADD PROPERTY (countDisparityOutBatchADetailDisparityBatchA);
+                    }
+                    NEW row2 {
+                        childConstraints = TO THE RIGHT;
+                        title = 'Количество';
+                        ADD PROPERTY (quantityDisparityInBatchADetailDisparityBatchA);
+                        ADD PROPERTY (quantityDisparityOutBatchADetailDisparityBatchA);
+                    }
+                    NEW row3 {
+                        childConstraints = TO THE RIGHT;
+                        title = 'Сумма';
+                        ADD PROPERTY (sumDisparityInBatchADetailDisparityBatchA);
+                        ADD PROPERTY (sumDisparityOutBatchADetailDisparityBatchA);
+                    }
+                    NEW row4 {
+                        childConstraints = TO THE RIGHT;
+                        title = 'Разница';
+                        ADD PROPERTY (sumDiffDisparityBatchADetailDisparityBatchA);
+                    }
+                }
+            }
+        }
+        PROPERTY(formOkAction) {
+            caption = 'Провести';
+        }
+    }
+}
+
+FORM disparityBatchAs 'Пересорты м/у партиями (бухг.)'
+    OBJECTS o = disparityBatchA
+    PROPERTIES (o) READONLY isPostedDisparityBatchA FORCE GRID, numberObject, seriesObject, dateDisparityBatchA, timeDisparityBatchA, nameStockDisparityBatchA, noteDisparityBatchA,
+                   countDisparityInBatchADetailDisparityBatchA, quantityDisparityInBatchADetailDisparityBatchA, sumDisparityInBatchADetailDisparityBatchA,
+                   countDisparityOutBatchADetailDisparityBatchA, quantityDisparityOutBatchADetailDisparityBatchA, sumDisparityOutBatchADetailDisparityBatchA
+
+    PROPERTIES (o) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
+
+    PROPERTIES (o)    ADDFORM, EDITFORM, delete FORCE PANEL
+
+    OBJECTS di = disparityInBatchADetail
+    OBJECTS do = disparityOutBatchADetail
+
+    FILTERS disparityBatchADisparityInBatchADetail(di) == o,
+            disparityBatchADisparityOutBatchADetail(do) == o
+;
+
+DESIGN disparityBatchAs FROM DEFAULT {
+    PROPERTY (delete(o)) {
+        panelLocation = TOOLBAR;
+        askConfirm = TRUE;
+    }
+
+    NEW documentContainer BEFORE functions.box {
+        type = SPLITV;
+        childConstraints = TO THE BOTTOM;
+
+        ADD o.box {
+            fillVertical = 1;
+        };
+
+        NEW documentDetail {
+            type = TABBED;
+            fillVertical = 2.5;
+            NEW detail {
+                title = 'Спецификация';
+                ADD di.box;
+                ADD do.box;
+
+            }
+            NEW documentHistory {
+                title = 'История';
+
+                ADD o.historyGroup;
+                ADD o.postedGroup;
+            }
+        }
+    }
+}
+
+@defineDocumentDetailSkuArticleCustom(disparityInBatchADetail);
+@extendDocumentFormDetailSkuArticleCustom(disparityBatchA, di, disparityInBatchADetail);
+@extendDocumentFormDetailSkuArticleReadonlyCustom(disparityBatchAs, di, disparityInBatchADetail);
+
+@defineDocumentDetailSkuArticleCustom(disparityOutBatchADetail);
+@extendDocumentFormDetailSkuArticleCustom(disparityBatchA, do, disparityOutBatchADetail);
+@extendDocumentFormDetailSkuArticleReadonlyCustom(disparityBatchAs, do, disparityOutBatchADetail);
+
+createMixDisparityBatchA 'Сделать подборку строк пересорта' = ACTION (disparityBatchA) {
+
+    FOR integerQuantityNegativeBatchDisparityBatchA(batch, disparityBatchA) DO {
+        ADDOBJ disparityOutBatchADetail;
+        FOR d == addedObject() DO {
+            SET disparityBatchADisparityOutBatchADetail(d) <- disparityBatchA;
+            SET skuDisparityOutBatchADetail(d) <- skuBatch(batch);
+            SET batchDisparityOutBatchADetail(d) <- batch;
+            SET quantityDisparityOutBatchADetail(d) <- castToNumeric14p3(integerQuantityNegativeBatchDisparityBatchA(batch, disparityBatchA));
+            SET priceDisparityOutBatchADetail(d) <- priceBatchStockDateTime(batch, stockDisparityBatchA(disparityBatchA), dateTimeDisparityBatchA(disparityBatchA));
+        }
+    }
+
+    FOR integerQuantityPositiveBatchDisparityBatchA(batch, disparityBatchA) DO {
+        ADDOBJ disparityInBatchADetail;
+        FOR d == addedObject() DO {
+            SET disparityBatchADisparityInBatchADetail(d) <- disparityBatchA;
+            SET skuDisparityInBatchADetail(d) <- skuBatch(batch);
+            SET batchDisparityInBatchADetail(d) <- batch;
+            SET quantityDisparityInBatchADetail(d) <- castToNumeric14p3(integerQuantityPositiveBatchDisparityBatchA(batch, disparityBatchA));
+            SET priceDisparityInBatchADetail(d) <- priceBatchStockDateTime(batch, stockDisparityBatchA(disparityBatchA), dateTimeDisparityBatchA(disparityBatchA));
+        }
+    }
+} IN documentPrmGroup CONFIRM;
+
+@implementSkuLedgerCustom(disparityOutBatchADetail, sku, stock);
+quantityOutFIFOSkuLedger (ledger) += quantityDisparityOutBatchADetail(ledger);
+limitOutFIFOSkuLedgerBatch (ledger, batch) += quantityDisparityOutBatchADetail(ledger) AND batchDisparityOutBatchADetail(ledger) == batch;
+sumOutSkuLedger(ledger) += sumDisparityOutBatchADetail(ledger);
+
+@implementSkuLedgerCustom(disparityInBatchADetail, sku, stock);
+quantityInLIFOSkuLedger (ledger) += quantityDisparityInBatchADetail(ledger);
+limitInLIFOSkuLedgerBatch (ledger, batch) += quantityDisparityInBatchADetail(ledger) AND batchDisparityInBatchADetail(ledger) == batch;
+sumInSkuLedger(ledger) += sumDisparityInBatchADetail(ledger);
+
+EXTEND FORM disparityBatchA
+    PROPERTIES(o)  nameStockDisparityBatchA, createMixDisparityBatchA
+    PROPERTIES(di) descriptionBatchDisparityInBatchADetail, priceDisparityInBatchADetail, sumDisparityInBatchADetail
+    PROPERTIES(do) descriptionBatchDisparityOutBatchADetail, priceDisparityOutBatchADetail, sumDisparityOutBatchADetail
+;
+EXTEND DESIGN disparityBatchA {
+    o.documentHeaderGroup {
+        ADD PROPERTY (nameStockDisparityBatchA) BEFORE PROPERTY (nameNumeratorObject);
+    }
+}
+
+
+EXTEND FORM disparityBatchAs
+    PROPERTIES(di) READONLY descriptionBatchDisparityInBatchADetail, priceDisparityInBatchADetail, sumDisparityInBatchADetail
+    PROPERTIES(do) READONLY descriptionBatchDisparityOutBatchADetail, priceDisparityOutBatchADetail, sumDisparityOutBatchADetail
 ;
 
 

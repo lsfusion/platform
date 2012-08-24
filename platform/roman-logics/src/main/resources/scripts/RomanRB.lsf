@@ -180,8 +180,9 @@ NAVIGATOR {
         NEW logisticsAggregations 'Сводная информация' {
             ADD stockCost;
             ADD stockBalance;
-            NEW disparityDocument 'Пересорт по партиям' {
+            NEW disparityDocument 'Пересорт' {
                 ADD disparityBatches;
+                ADD disparityBatchAs;
             }
         }
     }
