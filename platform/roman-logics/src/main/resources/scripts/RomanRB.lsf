@@ -185,6 +185,7 @@ NAVIGATOR {
         NEW logisticsAggregations 'Сводная информация' {
             ADD stockCost;
             ADD stockBalance;
+            ADD contractLedger;
             NEW disparityDocument 'Пересорт' {
                 ADD disparityBatches;
                 ADD disparityBatchAs;

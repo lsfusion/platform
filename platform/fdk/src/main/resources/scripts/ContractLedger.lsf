@@ -59,8 +59,8 @@ META implementContractPrepaymentLedger(object)
 
     dateTimeContractLedger(object##ContractLedger) += sumDateTimeDay(dateTime###object(object###object##ContractLedger(object##ContractLedger)),
                                                                      delayContractSku(contract###object(object###object##ContractLedger(object##ContractLedger))));
-    contractContractLedger(object##ContractLedger) += contractShipment(object###object##ContractLedger(object##ContractLedger));
-    descriptionContractLedger(object##ContractLedger) += descriptionShipment(object###object##ContractLedger(object##ContractLedger));
+    contractContractLedger(object##ContractLedger) += contract###object(object###object##ContractLedger(object##ContractLedger));
+    descriptionContractLedger(object##ContractLedger) += description###object(object###object##ContractLedger(object##ContractLedger));
 
 END
 
@@ -112,7 +112,7 @@ nameCurrencyPayment 'Валюта платежа' (payment) = name(currencyPayme
 typeExchangePayment (payment) = DATA typeExchange (payment);
 nameTypeExchangePayment 'Тип обмена' (payment) = name(typeExchangePayment(payment));
 rateExchangePayment 'Курс' (payment) = DATA NUMERIC[15,8] (payment);
-rateExchangePayment (payment) <- rateTypeExchangeCurrencyDate(typeExchangePayment(payment), currencyPayment(payment), datePayment(payment))
+rateExchangePayment (payment) <- UNION OVERRIDE 1.0 IF payment IS payment, rateTypeExchangeCurrencyDate(typeExchangePayment(payment), currencyPayment(payment), datePayment(payment))
     WHEN CHANGED (currencyPayment(payment)) OR
          CHANGED (typeExchangePayment(payment)) OR
          CHANGED (datePayment(payment));
@@ -138,7 +138,7 @@ sumContractALedger(contractALedger) += -sumRateExchangePayment(contractALedger);
 FORM payment 'Платеж'
 
     OBJECTS p = payment FIXED PANEL
-    PROPERTIES(p) nameNumeratorObject, numberObject, seriesObject, datePayment, timePayment, numberContractPayment
+    PROPERTIES(p) nameNumeratorObject, numberObject, seriesObject, dateTimePayment, numberContractPayment
     PROPERTIES(p) READONLY namePayerPayment, nameBeneficiaryPayment
     PROPERTIES(p) nameCurrencyPayment, nameTypeExchangePayment SHOWIF isNotSameCurrencyPayment(p), sumPayment,
                   rateExchangePayment SHOWIF isNotSameCurrencyPayment(p),
@@ -155,8 +155,7 @@ DESIGN payment FROM DEFAULT{
         ADD PROPERTY(nameNumeratorObject);
         ADD PROPERTY(numberObject);
         ADD PROPERTY(seriesObject);
-        ADD PROPERTY(datePayment);
-        ADD PROPERTY(timePayment);
+        ADD PROPERTY(dateTimePayment);
     }
 
     ADD PROPERTY(numberContractPayment);
@@ -204,7 +203,7 @@ sumContractLedger(contractLedger) += sumPaymentRequest(contractLedger);
 FORM paymentRequest 'Платежное требование'
 
     OBJECTS p = paymentRequest FIXED PANEL
-    PROPERTIES(p) nameNumeratorObject, numberObject, seriesObject, datePaymentRequest, timePaymentRequest,
+    PROPERTIES(p) nameNumeratorObject, numberObject, seriesObject, dateTimePaymentRequest,
                   numberContractPaymentRequest
     PROPERTIES(p) READONLY namePayerPaymentRequest, nameLenderPaymentRequest
     PROPERTIES(p) sumPaymentRequest
@@ -220,8 +219,7 @@ DESIGN paymentRequest FROM DEFAULT{
         ADD PROPERTY(nameNumeratorObject);
         ADD PROPERTY(numberObject);
         ADD PROPERTY(seriesObject);
-        ADD PROPERTY(datePaymentRequest);
-        ADD PROPERTY(timePaymentRequest);
+        ADD PROPERTY(dateTimePaymentRequest);
     }
 
     ADD PROPERTY(numberContractPaymentRequest);
@@ -268,7 +266,7 @@ sumContractALedger(contractALedger) += sumCreditNote(contractALedger);
 FORM creditNote 'Кредитная нота'
 
     OBJECTS c = creditNote FIXED PANEL
-    PROPERTIES(c) nameNumeratorObject, numberObject, seriesObject, dateCreditNote, timeCreditNote, numberContractCreditNote
+    PROPERTIES(c) nameNumeratorObject, numberObject, seriesObject, dateTimeCreditNote, numberContractCreditNote
     PROPERTIES(c) READONLY namePartyBCreditNote, namePartyACreditNote
     PROPERTIES(c) sumCreditNote
 
@@ -283,8 +281,7 @@ DESIGN creditNote FROM DEFAULT{
         ADD PROPERTY(nameNumeratorObject);
         ADD PROPERTY(numberObject);
         ADD PROPERTY(seriesObject);
-        ADD PROPERTY(dateCreditNote);
-        ADD PROPERTY(timeCreditNote);
+        ADD PROPERTY(dateTimeCreditNote);
     }
 
     ADD PROPERTY(numberContractCreditNote);
