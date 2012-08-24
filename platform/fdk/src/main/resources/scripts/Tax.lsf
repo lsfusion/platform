@@ -52,6 +52,7 @@ TABLE taxUnit(taxUnit);
 taxUnitGroupTaxUnit = ABSTRACT taxUnitGroup (taxUnit) PERSISTENT;
 descriptionTaxUnit 'Название налогового субъекта' = ABSTRACT STRING[255] (taxUnit) PERSISTENT;
 
+TABLE rangeTaxUnit (range, taxUnit);
 inRangeTaxUnit 'Вкл.' (range, taxUnit) = DATA BOOLEAN (range, taxUnit);
 inRangeTaxUnit (range, taxUnit) => isUnitsTypeRange(range) RESOLVE FALSE;
 

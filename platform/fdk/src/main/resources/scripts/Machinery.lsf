@@ -96,6 +96,7 @@ nameStockGroupMachinery 'Склад' (groupMachinery) = name(stockGroupMachinery
 
 filterSkuGroupMachinery 'Фильтровать по классификатору' = DATA BOOLEAN (groupMachinery);
 
+TABLE groupMachinerySkuGroup (groupMachinery, skuGroup);
 inGroupMachinerySkuGroup 'Вкл' = DATA BOOLEAN (groupMachinery, skuGroup);
 
 FORM filterSkuGroupMachinery 'Фильтрация по классификатору'
@@ -249,6 +250,7 @@ quantityMachineryPriceTransactionErrorMachineryPriceTransaction 'Количес�
     BY machineryPriceTransactionMachineryPriceTransactionError (machineryPriceTransactionError) IN baseGroup;
 
 // Загрузка в конкретные устройства
+TABLE machineryPriceTransactionMachinery (machineryPriceTransaction, machinery);
 inMachineryPriceTransactionMachinery 'Вкл' = DATA BOOLEAN (machineryPriceTransaction, machinery);
 nppsMachineryPriceTransaction 'Номера устройств' = GROUP CONCAT castToString3(nppMachinery(machinery)) IF inMachineryPriceTransactionMachinery(transaction, machinery), ',' BY transaction PERSISTENT;
 

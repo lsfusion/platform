@@ -142,6 +142,7 @@ TABLE declarationSku (declaration, sku);
 TABLE declarationDetailInnerInvoice (declarationDetail, innerInvoice);
 
 CLASS correction 'КТС' : transaction;
+TABLE correction (correction);
 
 GROUP sumGroup 'Итого' : publicGroup;
 GROUP corrGroup 'Доплата' : publicGroup;
@@ -743,14 +744,14 @@ expenseCertificateDeclaration 'Расходы на сертификацию (Б�
                                                                                     IF certificatedDeclarationDetail(declarationDetail)
                                                                                     BY declarationDeclarationDetail(declarationDetail) IN corrGroup PERSISTENT;
 
-quantityDeclarationCertificate 'Кол-во на сертификат' (declaration, certificate) = GROUP SUM quantityDiffDeclarationDetail(declarationDetail)
-                                                                                          BY declarationDeclarationDetail(declarationDetail),
-                                                                                             certificatePreparedDeclarationDetail(declarationDetail) PERSISTENT;
-
 expenseCertificateManagerialDeclarationDetail 'Расходы на сертификацию' (declarationDetail) = priceManagerialDeclarationDetail(declarationDetail) *
                                                                                               quantityCertificatedDeclarationSku(declarationDeclarationDetail(declarationDetail), skuDeclarationDetail(declarationDetail))
                                                                                               IF certificatedDeclarationDetail(declarationDetail);
 
+TABLE declarationCertificate (declaration, certificate);
+quantityDeclarationCertificate 'Кол-во на сертификат' (declaration, certificate) = GROUP SUM quantityDiffDeclarationDetail(declarationDetail)
+                                                                                          BY declarationDeclarationDetail(declarationDetail),
+                                                                                             certificatePreparedDeclarationDetail(declarationDetail) PERSISTENT;
 
 sumExpenseDeclarationCertificate '' (declaration, certificate) = GROUP SUM expenseCertificateManagerialDeclarationDetail(declarationDetail)
                                                                         BY declarationDeclarationDetail(declarationDetail),

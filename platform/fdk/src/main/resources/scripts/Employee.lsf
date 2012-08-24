@@ -34,6 +34,7 @@ namePositionEmployee 'Должность сотрудника' (employee) = name
 positionNameEmployee 'Должность ФИО' (employee) = [FORMULA STRING[40] ' CAST($1 AS TEXT) || \' \' || CAST($2 AS TEXT)']
                                                          (namePositionEmployee(employee), commonName(employee));
 
+TABLE employeeDivisionEmployee (employeeDivision, employee);
 inEmployeeDivisionEmployee 'Сотрудник отдела' = DATA BOOLEAN (employeeDivision, employee);
 
 FORM employee 'Сотрудник'
@@ -125,8 +126,10 @@ END
 CLASS ABSTRACT committee 'Комиссия' : named;
 TABLE committee (committee);
 
+TABLE committeeEmployee (committee, employee);
 inCommitteeEmployee 'Является членом комиссии' (committee, employee) = DATA BOOLEAN (committee, employee);
 
+TABLE committeeEmployeeDivision (committee, employeeDivision);
 inCommitteeEmployeeDivision 'Вкл.' (committee, employeeDivision) = DATA BOOLEAN (committee, employeeDivision);
 
 inEmployeeDivisionEmployeeCommittee(employeeDivision, employee, committee) = inCommitteeEmployeeDivision(committee, employeeDivision) AND inEmployeeDivisionEmployee(employeeDivision, employee);

@@ -121,6 +121,7 @@ priceManagerialDateTime(article, dateTime) = priceManagerialBatch(batchPriceMana
 
 //--------------------------------- Склады временного хранения -------------------------------------------//
 
+TABLE customStore (customStore);
 groupWarehouseCustomStore = DATA groupWarehouse(customStore);
 nameGroupWarehouseCustomStore 'Группа складов' (customStore) = name(groupWarehouseCustomStore(customStore));
 

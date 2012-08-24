@@ -108,6 +108,7 @@ timeToInventory 'Закончено' (inventory) = DATA DATETIME (inventory) IN 
 headManInventory (inventory) = DATA employee (inventory);
 nameHeadManInventory  'Зав. складом' (inventory) = commonName(headManInventory(inventory)) IN documentPrmGroup;
 
+TABLE stockInventory (stock, inventory);
 includeStockInventory 'Вкл' = DATA BOOLEAN (stock, inventory);
 nameStockInventory 'Отделы документа' (inventory) =
     GROUP CONCAT name(stock) IF includeStockInventory(stock, inventory), ', ' BY inventory MINCHARWIDTH 50 PREFCHARWIDTH 150;
@@ -316,11 +317,15 @@ inCollationSheetEmployee 'Является членом комиссии' (colla
 
 //---------------------------- Состав сличительной ведомости (Sku) ----------------------------//
 
+TABLE collationSheetSku (collationSheet, sku);
+
 inManyCollationSheetSku 'Вкл в ведомость' = DATA BOOLEAN (manyCollationSheet, sku) IN baseGroup;
 quantityBalanceCollationSheetSku 'Кол-во по остаткам' (collationSheet, sku) = DATA NUMERIC[14,3] (collationSheet, sku);
 priceBalanceCollationSheetSku 'Цена по остаткам' (collationSheet, sku) = DATA NUMERIC[14,2] (collationSheet, sku);
 
 //---------------------------- Состав сличительной ведомости (Партия) ----------------------------//
+
+TABLE collationSheetBatch (collationSheet, batch);
 
 quantityBalanceCollationSheetBatch 'Кол-во по остаткам' (collationSheet, batch) = DATA NUMERIC[14,3] (collationSheet, batch);
 

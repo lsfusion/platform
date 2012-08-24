@@ -165,8 +165,10 @@ dateToPromotion 'ДО:' = DATA DATE (promotion) IN retailCRMGroup NOT NULL;
 timeOfFromPromotion 'ОТ:' =  DATA TIME (promotion) IN retailCRMGroup;
 timeOfToPromotion 'ДО:' =  DATA TIME (promotion) IN retailCRMGroup;
 
+TABLE promotionDOW (promotion, DOW);
 skipPromotionDOW 'Исключить' = DATA BOOLEAN (promotion, DOW);
 
+TABLE promotionStore (promotion, store);
 inPromotionStore 'В акции' = DATA BOOLEAN (promotion, store);
 storePromotion 'Магазины' (promotion) = GROUP CONCAT name(store) IF inPromotionStore(promotion, store), ', ' BY promotion PERSISTENT MINCHARWIDTH 20 PREFCHARWIDTH 40;
 
@@ -175,6 +177,8 @@ maxSumBillPromotion 'Сумма чека (до)' (promotion) = DATA NUMERIC[14,2
 
 hasDiscountCardPromotion 'Есть дисконтная карта' = DATA BOOLEAN (promotion);
 allDiscountCardPromotion 'Любая дисконтная карта' = DATA BOOLEAN (promotion);
+
+TABLE promotionDiscountCard (promotion, discountCard);
 inDataPromotionDiscountCard 'В акции' = DATA BOOLEAN (promotion, discountCard);
 
 inPromotionDiscountCard 'В акции' (promotion, discountCard) = UNION OVERRIDE allDiscountCardPromotion(promotion) AND discountCard IS discountCard,

@@ -285,7 +285,8 @@ priceBatchStockDateTime 'Цена' = ABSTRACT NUMERIC[14,2] (batch, stock, DATET
 
 // ---------------------------- Остаток по товару -------------------------------- //
 
-TABLE stockSku(stock, sku);
+TABLE skuStock(sku, stock);
+TABLE skuStockDate(sku, stock, DATE);
 
 META defineSkuLedgerBalanceProperties(postfix, caption)
     skip##postfix##SkuLedger 'Не проводить по учету'###caption = ABSTRACT BOOLEAN (skuLedger) PERSISTENT;

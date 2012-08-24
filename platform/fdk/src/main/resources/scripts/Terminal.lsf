@@ -4,12 +4,14 @@ REQUIRE System, Machinery;
 
 // Группы
 CLASS groupTerminal 'Группы ТСД' : groupMachinery;
+TABLE groupTerminal (groupTerminal);
 
 stockGroupTerminal = DATA stock (groupTerminal);
 stockGroupMachinery (groupMachinery) += stockGroupTerminal(groupMachinery);
 
 // Модели
 CLASS terminalModel 'Модель ТСД' : model;
+TABLE terminalModel (terminalModel);
 
 FORM terminalModel 'Модель ТСД'
     OBJECTS t=terminalModel FIXED PANEL
@@ -25,6 +27,8 @@ FORM terminalModels 'Модели ТСД'
 
 // Терминалы
 CLASS terminal 'ТСД' : machinery;
+TABLE terminal (terminal);
+
 isTerminal (machinery) = machinery IS terminal;
 
 groupTerminalTerminal = DATA groupTerminal (terminal);
@@ -43,6 +47,7 @@ FORM terminal 'ТСД'
 
 // ------------------------ Группы типов документов ------------------------- //
 CLASS groupTerminalDocumentType 'Группа типов документов';
+TABLE groupTerminalDocumentType (groupTerminalDocumentType);
 
 nameGroupTerminalDocumentType 'Наименование группы' = DATA STRING[200] (groupTerminalDocumentType) IN baseGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
 groupTerminalDocumentTypeGroupTerminal 'Группа типов документов (ИД)' = DATA groupTerminalDocumentType (groupTerminal);
@@ -67,6 +72,7 @@ FORM handbooksTerminalDocumentType 'Виды справочников ТСД'
 //---------------------------- типы документов ----------------------------------------//
 
 CLASS terminalDocumentType 'Тип документов';
+TABLE terminalDocumentType (terminalDocumentType);
 
 groupTerminalDocumentTypeTerminalDocumentType = DATA groupTerminalDocumentType (terminalDocumentType);
 nameGroupTerminalDocumentTypeTerminalDocumentType 'Группа типов документов' (terminalDocumentType) = nameGroupTerminalDocumentType(groupTerminalDocumentTypeTerminalDocumentType(terminalDocumentType));
@@ -173,6 +179,7 @@ DESIGN groupsTerminal FROM DEFAULT {
 // ------------------------------------ Документы ТСД ------------------------------- //
 
 CLASS terminalDocument 'Документ ТСД';
+TABLE terminalDocument (terminalDocument);
 
 idTerminalDocument 'Номер' = DATA INTEGER (terminalDocument) IN baseGroup;
 terminalDocumentID (terminalDocument) = GROUP UNIQUE terminalDocument BY idTerminalDocument (terminalDocument)
@@ -194,6 +201,7 @@ notUsedTerminalDocument 'Неиспользован' (terminalDocument) = termin
 terminalDocumentTerminalDocumentDetail = DATA terminalDocument(terminalDocumentDetail);
 
 CLASS terminalDocumentDetail 'Строка документа ТСД';
+TABLE terminalDocumentDetail (terminalDocumentDetail);
 
 numberTerminalDocumentDetail 'Номер' = DATA INTEGER (terminalDocumentDetail) IN baseGroup;
 terminalDocumentDetailIDDocumentIDDetail (terminalDocumentDetail, terminalDocument) =

@@ -3,6 +3,7 @@ MODULE PriceInterval;
 REQUIRE System, Utils;
 
 CLASS priceInterval 'Диапазон цен';
+TABLE priceInterval (priceInterval);
 
 fromPriceInterval 'от' = DATA NUMERIC[14,3](priceInterval) IN baseGroup;
 toPriceInterval 'до' = DATA NUMERIC[14,3](priceInterval) IN baseGroup;

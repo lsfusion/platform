@@ -13,10 +13,12 @@ PRIORITY MasterData, RomanLogicsModule;
 // -------------------------------------- Надбавки --------------------------------------- //
 
 CLASS coefficientRetail 'Надбавка';
+TABLE coefficientRetail (coefficientRetail);
 
 dateCoefficientRetail 'Дата введения' = DATA DATE(coefficientRetail) IN baseGroup;
 markupCoefficientRetail 'Множитель' = DATA NUMERIC[14,3](coefficientRetail) IN baseGroup;
-brandSupplierCoefficientRetail 'Бренд (ИД)' = DATA brandSupplier(coefficientRetail) IN idGroup;
+
+brandSupplierCoefficientRetail = DATA brandSupplier(coefficientRetail) IN idGroup;
 nameBrandSupplierCoefficientRetail 'Бренд' (coefficientRetail) = name(brandSupplierCoefficientRetail(coefficientRetail)) IN baseGroup;
 
 uniqueCoefficientRetail = GROUP UNIQUE coefficientRetail BY brandSupplierCoefficientRetail(coefficientRetail), dateCoefficientRetail(coefficientRetail)
@@ -100,8 +102,6 @@ TABLE discountPriceSetDocument (discountPriceSetDocument);
 @defineNumeratedObject(priceSetDocument, 'Нумератор для розничных прайсов', 'РП');
 @defineDocumentHeaderTime(priceSetDocument);
 
-TABLE priceSetDocumentArticle(priceSetDocument, article);
-
 dateTimeToDataPriceSetDocument 'Дата/время окончания' = DATA DATETIME(priceSetDocument) IN documentPrmGroup;
 dateTimeToPriceSetDocument 'Дата/время окончания' (priceSetDocument) = UNION OVERRIDE maxDateTime() IF priceSetDocument IS priceSetDocument,
                                                                                             dateTimeToDataPriceSetDocument(priceSetDocument) IN baseGroup PERSISTENT;
@@ -129,6 +129,10 @@ isPriceSetFreight 'Статус' (freight) = IF isPriceSetDocumentFreight(freigh
 
 backgroundPriceSetDocument 'Цвет' (freight) = RGB(212,255,212) IF isPriceSetDocumentFreight(freight);
 
+TABLE priceSetDocumentArticle(priceSetDocument, article);
+
+inPriceSetDocumentArticle 'Артикул в документе' = DATA BOOLEAN(priceSetDocument, article);
+
 priceInPriceSetDocumentArticle 'Цена поставщика' = DATA NUMERIC[14,2](basePriceSetDocument, article) IN baseGroup;
 
 RRPPriceSetDocumentArticle 'Рекомендуемая цена' = DATA NUMERIC[14,2](basePriceSetDocument, article) IN baseGroup;
@@ -154,7 +158,7 @@ coefficientRetailPriceSetDocumentArticle 'Коэффициент' (basePriceSetD
 markupCoefficientRetailPriceSetDocumentArticle 'Коэффициент документа' (basePriceSetDocument, article) = markupCoefficientRetail(coefficientRetailPriceSetDocumentArticle(basePriceSetDocument, article));
 
 markupPriceSetDocumentArticle 'Коэффициент артикула' = DATA NUMERIC[14,2] (basePriceSetDocument, article);
-markupPriceSetDocumentArticle (basePriceSetDocument, article) <- markupCoefficientRetailPriceSetDocumentArticle(basePriceSetDocument, article) WHEN ASSIGNED(basePriceSetDocument IS basePriceSetDocument);
+markupPriceSetDocumentArticle (basePriceSetDocument, article) <- markupCoefficientRetailPriceSetDocumentArticle(basePriceSetDocument, article) WHEN ASSIGNED(inPriceSetDocumentArticle(basePriceSetDocument, article));
 
 priceOutPriceSetDocumentArticle 'Цена с надбавкой' (basePriceSetDocument, article) = round2(priceInPriceSetDocumentArticle(basePriceSetDocument, article) *
                                                                                                   markupPriceSetDocumentArticle(basePriceSetDocument, article));
@@ -216,8 +220,6 @@ priceDiscountPriceSetDocumentArticle 'Цена без процентов' (disco
 priceDataDiscountPriceSetDocumentArticle(discountPriceSetDocument, article) <- roundPrice(priceDiscountPriceSetDocumentArticle(discountPriceSetDocument, article))
                                         WHEN CHANGED (priceDiscountPriceSetDocumentArticle(discountPriceSetDocument, article));
 
-inPriceSetDocumentArticle 'Артикул в документе' = DATA BOOLEAN(priceSetDocument, article);
-
 priceDataBasePriceSetDocumentArticle(document, article) => inPriceSetDocumentArticle(document, article) RESOLVE FALSE;
 priceDataDiscountPriceSetDocumentArticle(document, article) => inPriceSetDocumentArticle(document, article) RESOLVE FALSE;
 percentDiscountPriceSetDocumentArticle(document, article) => inPriceSetDocumentArticle(document, article) RESOLVE FALSE;
@@ -272,6 +274,7 @@ FORM logPriceArticle 'История цен'
 
 showFormLogPriceArticle 'История' (article) = ACTION FORM logPriceArticle OBJECTS a NEWSESSION MODAL;
 
+TABLE departmentStorePriceSetDocument(departmentStore, priceSetDocument);
 userPriceChangeDepartmentStorePriceSetDocument (departmentStore, priceSetDocument) = DATA userPriceChange (departmentStore, priceSetDocument);
 nameUserPriceChangeDepartmentStorePriceSetDocument 'Документ переоценки' (departmentStore, priceSetDocument) = descriptionUserPriceChange(
     userPriceChangeDepartmentStorePriceSetDocument (departmentStore, priceSetDocument)) MINCHARWIDTH 30 MAXCHARWIDTH 30 PREFCHARWIDTH 30;

@@ -11,6 +11,7 @@ REQUIRE System,
 // ---------------------------------------- Договоры ------------------------------------ //
 
 CLASS customer 'Оптовый покупатель' : legalEntity;
+TABLE customer (customer);
 
 CLASS contractSkuCustomer 'Договор с опт. покупателем' : contractSku;
 
@@ -22,6 +23,7 @@ customerContractSkuCustomer = DATA customer (contractSkuCustomer) AUTOSET;
 nameCustomerContractSkuCustomer 'Покупатель' (contractSkuCustomer) = name(customerContractSkuCustomer(contractSkuCustomer)) IN recognizeGroup MAXCHARWIDTH 30 PREFCHARWIDTH 30;
 partyBContract (contract) += customerContractSkuCustomer(contract);
 
+TABLE companyCustomer(company, customer);
 @defineContractDefault(contractSkuCustomer, company, customer);
 
 // Формы

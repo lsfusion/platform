@@ -114,6 +114,7 @@ quantitySkuStoreWHfromCSI (store, WHfromCSI) = GROUP SUM quantityWHfromCSRDetail
                                                BY destinationWHfromCSRDetail(WHfromCSRDetail),
                                                   WHfromCSIWHfromCSR(WHfromCSRWHfromCSRDetail(WHfromCSRDetail));
 
+TABLE storeWHfromCSI (RomanLogicsModule.store, WHfromCSI);
 innerOrderStoreWHfromCSI (store, WHfromCSI) = DATA innerOrder (RomanLogicsModule.store, WHfromCSI);
 
 orderPickingInnerOrder (innerOrder) = GROUP MAX orderPicking BY innerOrderOrderPicking(orderPicking);
