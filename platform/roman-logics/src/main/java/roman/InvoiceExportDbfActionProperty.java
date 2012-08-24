@@ -135,8 +135,8 @@ public class InvoiceExportDbfActionProperty extends CustomActionProperty {
             map.put(price, formInstance.getPropertyDraw(BL.RomanLM.priceInvoiceImporterFreightSku));
             map.put(sum, formInstance.getPropertyDraw(BL.RomanLM.sumInvoiceImporterStockSku));
             map.put(rrp, formInstance.getPropertyDraw(BL.RomanLM.RRPInImporterFreightSku));
-            map.put(contractIn, formInstance.getPropertyDraw(BL.RomanLM.sidContractInProxyImporterStockSku));
-            map.put(dateConIn, formInstance.getPropertyDraw(BL.RomanLM.dateContractInProxyImporterStockSku));
+            //map.put(contractIn, formInstance.getPropertyDraw(BL.RomanLM.sidContractInProxyImporterStockSku));
+            //map.put(dateConIn, formInstance.getPropertyDraw(BL.RomanLM.dateContractInProxyImporterStockSku));
             map.put(priceIn, formInstance.getPropertyDraw(BL.RomanLM.priceInImporterFreightSku));
             map.put(sumIn, formInstance.getPropertyDraw(BL.RomanLM.sumInImporterStockSku));
             map.put(imp, formInstance.getPropertyDraw(BL.LM.name, objImporter.groupTo));
@@ -173,8 +173,8 @@ public class InvoiceExportDbfActionProperty extends CustomActionProperty {
             putDouble(priceIn, row.values.get(map.get(priceIn)));
             putDouble(sumIn, row.values.get(map.get(sumIn)));
             putString(imp, row.values.get(map.get(imp)));
-            putString(contract, row.values.get(map.get(contract)));
-            putDate(dateCon, row.values.get(map.get(dateCon)));
+            //putString(contract, row.values.get(map.get(contract)));
+            //putDate(dateCon, row.values.get(map.get(dateCon)));
             dbfInvoice.write();
         }
     }
