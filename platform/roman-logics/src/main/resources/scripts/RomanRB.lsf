@@ -196,6 +196,7 @@ NAVIGATOR {
         NEW retailPriceDocument 'Документы расценки' {
             ADD inputListRegisters;
             ADD userPriceChanges;
+            ADD priceChangeDocuments;
         }
         NEW POSSales 'Розничные продажи' {
             ADD zReports;
