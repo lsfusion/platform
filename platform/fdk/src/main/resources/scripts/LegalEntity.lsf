@@ -50,6 +50,8 @@ UNPLegalEntity 'УНП' = DATA STRING[9] (legalEntity) IN docGroup FIXEDCHARWIDT
 OKPOLegalEntity 'ОКПО' = DATA STRING[20] (legalEntity) IN docGroup MINCHARWIDTH 15 PREFCHARWIDTH 15;
 OKYLPLegalEntity 'ОКЮЛП' = DATA STRING[20] (legalEntity) IN docGroup MINCHARWIDTH 15 PREFCHARWIDTH 15;
 
+allowImportFromXLSLegalEntity 'Разрешить импорт из Excel-файлов' = DATA BOOLEAN (legalEntity) IN lawGroup;
+
 // ----------------------------------- Банк ------------------------------------------- //
 
 CLASS bank 'Банк' : named, externalObject;

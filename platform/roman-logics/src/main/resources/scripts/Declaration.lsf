@@ -156,6 +156,8 @@ sidDeclaration 'Номер' = DATA STRING[10] (declaration) IN docGroup MINCHARW
 beginTimeDeclaration 'Начало обработки' = DATA DATETIME (declaration) IN datetimeGroup;
 endTimeDeclaration 'Конец обработки' = DATA DATETIME (declaration) IN datetimeGroup;
 
+allowImportFromXLSDeclaration(declaration) = allowImportFromXLSLegalEntity(customStoreDeclaration(declaration));
+
 exportDeclaration 'Экспортировать декларацию' = ACTION CUSTOM 'roman.actions.ExportDeclarationActionProperty' IN docGroup;
 
 importerDeclaration 'Импортер (ИД)' = DATA importer (declaration) IN idGroup;
@@ -249,6 +251,9 @@ sumGrossWeightDeclarationDetail 'Суммарный вес брутто' (declar
                                                                              quantityDeclarationDetail(declarationDetail) IN baseGroup;
 
 mainCompositionDeclarationDetail 'Состав товара' (declarationDetail) = mainCompositionFreightSku(freightDeclarationDetail(declarationDetail),
+                                                                                                 skuDeclarationDetail(declarationDetail)) MINCHARWIDTH 20;
+
+userNumberDeclarationDetail 'Пользовательский номер' (declarationDetail) = userNumberFreightSku(freightDeclarationDetail(declarationDetail),
                                                                                                  skuDeclarationDetail(declarationDetail)) MINCHARWIDTH 20;
 
 countryDeclarationDetail 'Страна товара (ИД)' (declarationDetail) = countryOfOriginFreightSku(freightDeclarationDetail(declarationDetail),
@@ -446,17 +451,14 @@ sidOrigin2CountryGroupDeclaration 'Буквенный код страны' (grou
 numberGroupDeclaration 'Номер' (groupDeclaration) =
         PARTITION SUM 1 IF groupDeclaration IS groupDeclaration BY declarationGroupDeclaration(groupDeclaration)
         ORDER groupDeclaration;
-
+userNumberGroupDeclaration 'Пользовательский номер' (groupDeclaration) = DATA INTEGER (groupDeclaration) IN idGroup;
+overNumberGroupDeclaration 'Номер' (groupDeclaration) = UNION OVERRIDE numberGroupDeclaration(groupDeclaration), userNumberGroupDeclaration(groupDeclaration);
+uniqueGroupDeclaration = GROUP UNIQUE groupDeclaration BY userNumberGroupDeclaration (groupDeclaration),
+                                                          declarationGroupDeclaration (groupDeclaration)
+                                                          WHERE groupDeclaration IS groupDeclaration;
 inDeclarationGroupDeclaration (declaration, groupDeclaration) = declarationGroupDeclaration(groupDeclaration)==declaration;
 
 TABLE groupstring (object, object, object, object, STRING[200]);
-
-uniqueGroupDeclaration = GROUP UNIQUE groupDeclaration BY declarationGroupDeclaration(groupDeclaration),
-                                                          articleGroupDeclaration(groupDeclaration),
-                                                          customCategory10GroupDeclaration(groupDeclaration),
-                                                          mainCompositionGroupDeclaration(groupDeclaration),
-                                                          countryGroupDeclaration(groupDeclaration)
-                                                    WHERE groupDeclaration IS groupDeclaration PERSISTENT;
 
 //quantityDeclarationGroup(declaration, article, customCategory10, STRING, country) => uniqueGroupDeclaration(declaration, article, customCategory10, STRING, country) RESOLVE TRUE;
 //isGroupDeclaration(group) = group IS groupDeclaration;
@@ -524,11 +526,9 @@ percentGroupDeclarationDeclarationDetail '%' (groupDeclaration, declarationDetai
                                          percentDataGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail)) IF inGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail);
 
 groupDeclarationDeclarationDetail 'Группа строки декларации (ИД)'(declarationDetail) = uniqueGroupDeclaration(
-                                                                                       declarationDeclarationDetail(declarationDetail),
-                                                                                       articleDeclarationDetail(declarationDetail),
-                                                                                       customCategory10DeclarationDetail(declarationDetail),
-                                                                                       mainCompositionDeclarationDetail(declarationDetail),
-                                                                                       countryDeclarationDetail(declarationDetail)) IN idGroup;
+                                                                                       userNumberDeclarationDetail(declarationDetail),
+                                                                                       declarationDeclarationDetail(declarationDetail))
+                                                                                       IN idGroup;
 
 numberGroupDeclarationDeclarationDetail 'Группа строки декларации'(declarationDetail) = numberGroupDeclaration(groupDeclarationDeclarationDetail(declarationDetail)) IN baseGroup;
 
@@ -692,6 +692,16 @@ toCreateGroupsDeclaration 'Создать строки' = ACTION (declaration) {
     EXEC setSumGroupDeclaration(declaration AS declaration);
 
 } TOOLBAR;
+
+isSubstringGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail) = isSubstring(nameGroupDeclaration(groupDeclaration), sidArticleDeclarationDetail (declarationDetail));
+
+fillInGroupDeclarationDeclarationDetail 'Связать позиции декларации по артикулам' = ACTION(declaration) {
+    SET inGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail) <-
+        isSubstringGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail)
+        WHERE declarationGroupDeclaration(groupDeclaration) == declaration AND declarationDeclarationDetail(declarationDetail) == declaration;
+}
+
+importGroupsDeclaration 'Импортировать строки декларации' = ACTION CUSTOM 'roman.actions.ImportGroupsDeclarationActionProperty' IN docGroup;
 
 //
 sumDeclaration 'Сумма' (declaration) = GROUP SUM declarationSumRateDeclarationDetail(declarationDetail) BY declarationDeclarationDetail(declarationDetail) IN sumGroup PERSISTENT;
@@ -868,7 +878,7 @@ FORM declaration 'Декларация'
 
     OBJECTS gd=groupDeclaration
     PROPERTIES (gd, dd) inGroupDeclarationDeclarationDetail, percentGroupDeclarationDeclarationDetail
-    PROPERTIES (gd) READONLY numberGroupDeclaration, nameInvoiceGroupDeclaration, nameBrandGroupDeclaration
+    PROPERTIES (gd) READONLY overNumberGroupDeclaration, nameInvoiceGroupDeclaration, nameBrandGroupDeclaration
     PROPERTIES (gd) sidArticleGroupDeclaration, sidGenderGroupDeclaration, nameTypeFabricGroupDeclaration
     PROPERTIES (gd) mainCompositionGroupDeclaration, nameGroupDeclaration,
                     nameCountryGroupDeclaration, sidCountryGroupDeclaration, sidOrigin2CountryGroupDeclaration, sidCustomCategory10GroupDeclaration,
@@ -879,12 +889,14 @@ FORM declaration 'Декларация'
 
     PROPERTIES (d) showFormDeclarationInvoices TODRAW dd FORCE PANEL
     PROPERTIES (d) toCreateGroupsDeclaration TODRAW gd FORCE PANEL, setSumGroupDeclaration TODRAW gd FORCE PANEL
+    PROPERTIES (d) importGroupsDeclaration TODRAW gd FORCE PANEL SHOWIF allowImportFromXLSDeclaration(d)
+    PROPERTIES (d) fillInGroupDeclarationDeclarationDetail  TODRAW gd FORCE PANEL SHOWIF allowImportFromXLSDeclaration(d)
 
     FILTERGROUP filterDetail
         FILTER 'Для текущей позиции' 'F11' inGroupDeclarationDeclarationDetail(gd, dd)
 
     OBJECTS gd2=groupDeclaration
-    PROPERTIES (gd2) READONLY numberGroupDeclaration, nameCategoryGroupDeclaration, nameBrandGroupDeclaration
+    PROPERTIES (gd2) READONLY overNumberGroupDeclaration, nameCategoryGroupDeclaration, nameBrandGroupDeclaration
     PROPERTIES (gd2) sidArticleGroupDeclaration
     PROPERTIES (gd2) READONLY sidGenderGroupDeclaration, nameTypeFabricGroupDeclaration
     PROPERTIES (gd2) mainCompositionGroupDeclaration, nameGroupDeclaration,
@@ -1019,6 +1031,13 @@ DESIGN declaration FROM DEFAULT{
                             panelLocation = TOOLBAR;
                         }
 
+                        PROPERTY (importGroupsDeclaration(d)) {
+                            panelLocation = TOOLBAR;
+                        }
+                        PROPERTY (fillInGroupDeclarationDeclarationDetail(d)) {
+                            panelLocation = TOOLBAR;
+                        }
+
                         PROPERTY (setSumGroupDeclaration(d)) {
                             panelLocation = TOOLBAR;
                         }
@@ -1101,7 +1120,7 @@ FORM declarations 'Декларации'
 
     OBJECTS gd=groupDeclaration
     //PROPERTIES (gd, dd) inGroupDeclarationDeclarationDetail, percentGroupDeclarationDeclarationDetail
-    PROPERTIES (gd) READONLY numberGroupDeclaration, nameCategoryGroupDeclaration, nameBrandGroupDeclaration, sidArticleGroupDeclaration,
+    PROPERTIES (gd) READONLY overNumberGroupDeclaration, nameCategoryGroupDeclaration, nameBrandGroupDeclaration, sidArticleGroupDeclaration,
                     sidGenderGroupDeclaration, nameTypeFabricGroupDeclaration, mainCompositionGroupDeclaration, nameGroupDeclaration,
                     nameCountryGroupDeclaration, sidCountryGroupDeclaration, sidOrigin2CountryGroupDeclaration, sidCustomCategory10GroupDeclaration,
                     quantityGroupDeclaration, sidUnitOfMeasureGroupDeclaration, nameUnitOfMeasureGroupDeclaration,

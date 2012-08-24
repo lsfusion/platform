@@ -1092,6 +1092,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LCP nameSubCategoryFreightSku;
     private LCP mainCompositionOriginFreightSku;
     public LCP mainCompositionFreightSku;
+    public LCP userNumberFreightSku;
     private LCP additionalCompositionOriginFreightSku;
     private LCP additionalCompositionFreightSku;
     private LCP countryOfOriginFreightSku;
@@ -3160,6 +3161,8 @@ public class RomanLogicsModule extends LogicsModule {
 
         mainCompositionFreightSku = addDProp(baseGroup, "mainCompositionFreightSku", "Состав (перевод)", COMPOSITION_CLASS, freight, sku);
         mainCompositionFreightSku.setEventChangeNewSet(addJProp(baseLM.and1, mainCompositionSku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
+
+        userNumberFreightSku = addDProp(baseGroup, "userNumberFreightSku", "Пользовательский номер", IntegerClass.instance, freight, sku);
 
         addConstraint(addJProp("Для SKU должен быть задан состав", and(true, false), is(freightChanged), 1, mainCompositionFreightSku, 1, 2, quantityFreightSku, 1, 2), false);
 
