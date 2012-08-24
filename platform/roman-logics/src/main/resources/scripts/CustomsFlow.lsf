@@ -299,6 +299,10 @@ DESIGN CStoWHs FROM DEFAULT {
 
         type = SPLITV;
 
+        PROPERTY(objectClassName) {
+                preferredCharWidth = 15;
+        }
+
         ADD c.box{
             PROPERTY (delete(c)) {
                 panelLocation = TOOLBAR;

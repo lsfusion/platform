@@ -1,0 +1,47 @@
+MODULE Warehouse;
+
+REQUIRE System,
+        Stock,
+        Employee,
+        Hierarchy,
+        LegalEntity;
+
+// ----------------------------------------- Группы складов ------------------------------ //
+CLASS groupWarehouse 'Группа складов' : stockGroup, employeeDivisionGroup;
+
+@defineHierarchy(groupWarehouse);
+parentStockGroup (stockGroup) += parentGroupWarehouse (stockGroup);
+
+// ----------------------------------------- Склады ------------------------------ //
+
+CLASS warehouse 'Склад' : stock, employeeDivision;
+
+groupWarehouseWarehouse (warehouse) = DATA groupWarehouse (warehouse);
+nameGroupWarehouseWarehouse 'Группа складов' (warehouse) = name(groupWarehouseWarehouse(warehouse)) IN baseGroup;
+stockGroupStock (stock) += groupWarehouseWarehouse (stock);
+
+companyWarehouse (warehouse) = DATA company (warehouse);
+nameCompanyWarehouse 'Компания' (warehouse) = name(companyWarehouse(warehouse)) IN baseGroup;
+companyStock (stock) += companyWarehouse(stock);
+
+addressWarehouse 'Адрес' (warehouse) = DATA STRING[100] (warehouse);
+addressStock(stock) += addressWarehouse(stock);
+
+employeeDivisionGroupEmployeeDivision (warehouse) += groupWarehouseWarehouse(warehouse);
+
+// -------------------------------------------------- Формы ----------------------------------------- //
+FORM warehouse 'Склад'
+    OBJECTS           w=warehouse FIXED PANEL
+    PROPERTIES(w)     name, nameGroupWarehouseWarehouse, addressWarehouse, nameCompanyWarehouse
+
+    ORDER BY          name
+    EDIT warehouse OBJECT w
+;
+
+FORM warehouses 'Склады'
+    OBJECTS           w=warehouse
+    PROPERTIES(w)     READONLY name, addressWarehouse, nameCompanyWarehouse
+    PROPERTIES(w)     ADDFORM, EDITFORM, delete
+
+    ORDER BY          name
+;

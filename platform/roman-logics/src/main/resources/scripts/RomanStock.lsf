@@ -1,6 +1,6 @@
 MODULE RomanStock;
 
-REQUIRE Stock, Barcode, RomanLogicsModule, Contract;
+REQUIRE Stock, Warehouse, Barcode, RomanLogicsModule, Contract;
 
 PRIORITY Stock, RomanLogicsModule;
 
@@ -139,3 +139,5 @@ FORM batchADialogForm 'Партия'
 
     DIALOG batchA OBJECT ba
 ;
+
+priceBatchStockDateTime(batch, stock, dateTime) += supplierPriceBatchA(batch) IF stock IS warehouse AND dateTime IS DATETIME;

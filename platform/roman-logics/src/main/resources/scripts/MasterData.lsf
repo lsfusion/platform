@@ -9,6 +9,7 @@ REQUIRE System,
         AccountDocument,
         Employee,
         UserPriceChange,
+        Warehouse,
         RomanLogicsModule;
 
 PRIORITY Stock, LegalEntity, Store, RomanLogicsModule;
@@ -116,44 +117,7 @@ batchPriceManagerialArticleDateTime (article, dateTime) = concatPriceManagerialB
 priceManagerialDateTime(article, dateTime) = priceManagerialBatch(batchPriceManagerialArticleDateTime(article, dateTime));
 
 
-//---------------------------------  -------------------------------------------//
-CLASS warehouse 'Склад' : Stock.stock, employeeDivision;
-CLASS groupWarehouse 'Группа складов' : stockGroup, employeeDivisionGroup;
-
-@defineHierarchy(groupWarehouse);
-parentStockGroup (stockGroup) += parentGroupWarehouse (stockGroup);
-
-companyWarehouse (warehouse) = DATA company(warehouse);
-nameCompanyWarehouse 'Компания ' (warehouse) = name(companyWarehouse(warehouse)) IN baseGroup;
-companyStock (stock) += companyWarehouse(stock);
-
-groupWarehouseWarehouse (warehouse) = DATA groupWarehouse(warehouse);
-nameGroupWarehouseWarehouse 'Группа складов' (warehouse) = name(groupWarehouseWarehouse(warehouse)) IN baseGroup;
-
-stockGroupStock (stock) += groupWarehouseWarehouse (stock);
-
-addressWarehouse 'Адрес' (warehouse) = DATA STRING[100] (warehouse);
-addressStock(stock) += addressWarehouse(stock);
-
-employeeDivisionGroupEmployeeDivision (warehouse) += groupWarehouseWarehouse(warehouse);
-
-FORM warehouse 'Склад'
-
-    OBJECTS           w=warehouse FIXED PANEL
-    PROPERTIES(w)     name, nameGroupWarehouseWarehouse, addressWarehouse, nameCompanyWarehouse
-
-    ORDER BY          name
-    EDIT warehouse OBJECT w
-;
-
-FORM warehouses 'Склады'
-
-    OBJECTS           w=warehouse
-    PROPERTIES(w)     READONLY name, addressWarehouse, nameCompanyWarehouse
-    PROPERTIES(w)     ADDFORM, EDITFORM, delete
-
-    ORDER BY          name
-;
+//--------------------------------- Склады временного хранения -------------------------------------------//
 
 groupWarehouseCustomStore = DATA groupWarehouse(customStore);
 nameGroupWarehouseCustomStore 'Группа складов' (customStore) = name(groupWarehouseCustomStore(customStore));

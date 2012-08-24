@@ -1286,12 +1286,12 @@ FORM inventories 'Инвентаризации'
     ORDER BY                  indexListInventorySku
 
     OBJECTS         b=batch
-    PROPERTIES(li,b) SHOWIF isBatchListInventory(li) indexListInventoryBatch
-    PROPERTIES(b)    SHOWIF isBatchListInventory(li) idBarcodeSkuBatch, nameSkuBatch, descriptionBatch
-    PROPERTIES(li,b) SHOWIF isBatchListInventory(li) quantityPageInventoryDetailListInventoryBatch,
-                                                     pricePageInventoryDetailListInventoryBatch,
-                                                     sumPageInventoryDetailListInventoryBatch
-    FILTERS                                          quantityPageInventoryDetailListInventoryBatch(li,b)
+    PROPERTIES(li,b) READONLY SHOWIF isBatchListInventory(li) indexListInventoryBatch
+    PROPERTIES(b)    READONLY SHOWIF isBatchListInventory(li) idBarcodeSkuBatch, nameSkuBatch, descriptionBatch
+    PROPERTIES(li,b) READONLY SHOWIF isBatchListInventory(li) quantityPageInventoryDetailListInventoryBatch,
+                                                              pricePageInventoryDetailListInventoryBatch,
+                                                              sumPageInventoryDetailListInventoryBatch
+    FILTERS                                                   quantityPageInventoryDetailListInventoryBatch(li,b)
 
     OBJECTS         cs=collationSheet
     PROPERTIES(cs)  READONLY             nameCollationSheet, nameTypeOfAdditionCollationSheet, nameStockCollationSheet,
