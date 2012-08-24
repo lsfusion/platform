@@ -8029,7 +8029,7 @@ NAVIGATOR {
         ADD naturalLossPrint;
         ADD writeOffPrint;
         ADD orderSupplierPrint;
-        ADD listInventoryPrint;
+        ADD printListInventory;
         ADD printTotalCollationSheet;
         ADD printCollationSheet;
         ADD incomeCashOrderPrint;
