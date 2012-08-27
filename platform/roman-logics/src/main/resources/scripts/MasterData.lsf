@@ -12,7 +12,6 @@ REQUIRE System,
         Contract,
         Supplier,
         Warehouse,
-        ContractLedger,
         RomanLogicsModule;
 
 PRIORITY Stock, LegalEntity, Store, RomanLogicsModule;
@@ -249,58 +248,3 @@ addressImporterSku 'Адрес' (importer, sku) = addressLegalEntity(importer) A
 //quantityInLIFOSkuLedger (ledger) += quantityUserPriceChangeDetail(ledger) (-) quantityUserPriceChangeDetail(ledger);
 //limitInLIFOSkuLedgerBatch (ledger, batch) +=  (quantityUserPriceChangeDetail(ledger) (-) quantityUserPriceChangeDetail(ledger)) AND  batch IS batch;
 //sumInSkuLedger(ledger) += (retailPriceUserPriceChangeDetail(ledger) (-) curRetailPriceUserPriceChangeDetail(ledger))*quantityUserPriceChangeDetail(ledger);
-
-
-//---------------------------------------------- Контракты для инвойсов ----------------------------------------------//
-
-userContractInvoice 'Договор инвойса' = DATA contractSkuSupplier (invoice);
-numberUserContractInvoice 'Номер договора инвойса' (invoice) = numberContract(userContractInvoice(invoice));
-
-contractDirectInvoice 'Договор инвойса напрямую' = DATA contractSkuSupplier (directInvoice);
-numberContractDirectInvoice 'Номер договора инвойса напрямую' (directInvoice) = numberContract(contractDirectInvoice(directInvoice));
-
-contractInvoice 'Договор' (invoice) = UNION OVERRIDE userContractInvoice(invoice), contractDirectInvoice(invoice);
-numberContractInvoice 'Номер договора' (invoice) = numberContract(contractInvoice(invoice));
-
-CONSTRAINT partyAContract(userContractInvoice(invoice)) != supplierDocument(invoice)
-    CHECKED BY userContractInvoice MESSAGE 'Сторона А договора должна соответствовать поставщику инвойса';
-
-CONSTRAINT partyAContract(contractDirectInvoice(directInvoice)) != supplierDocument(directInvoice)
-    CHECKED BY contractDirectInvoice MESSAGE 'Сторона А договора должна соответствовать поставщику инвойса напрямую';
-
-CONSTRAINT partyBContract(userContractInvoice(invoice)) != exporterInvoice(invoice)
-    CHECKED BY userContractInvoice MESSAGE 'Сторона Б договора должна соответствовать экспортеру инвойса';
-
-CONSTRAINT partyBContract(contractDirectInvoice(directInvoice)) != importerDirectInvoice(directInvoice)
-    CHECKED BY contractDirectInvoice MESSAGE 'Сторона Б договора должна соответствовать импортеру инвойса напрямую';
-
-// По коробам
-EXTEND FORM boxInvoiceForm
-
-PROPERTIES(invoice) numberUserContractInvoice AFTER nameExporterInvoice, numberContractDirectInvoice,
-                    numberContractInvoice TODRAW invoice FORCE PANEL
-
-;
-
-//Без коробов
-EXTEND FORM simpleInvoiceForm
-
-PROPERTIES(invoice) numberUserContractInvoice AFTER nameExporterInvoice, numberContractDirectInvoice,
-                    numberContractInvoice TODRAW invoice FORCE PANEL
-
-;
-
-//------------------------------------------------ Расчет с поставщиками ---------------------------------------------//
-
-dateTimeInvoice 'Дата/время' (invoice) = timeDate(date((invoice))) AND invoice IS invoice;
-dateInvoice 'Дата' (invoice) = date((invoice)) AND invoice IS invoice;
-sumInvoice 'Сумма инвойса' (invoice) = sumDocument(invoice) AND invoice IS invoice;
-descriptionInvoice 'Название документа' (invoice) =
-    [FORMULA STRING[200] '\'Инвойс \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)'](
-    sidDocument(invoice), date(invoice), name(supplierDocument(invoice))) AND invoice IS invoice;
-
-@implementContractLedger(a, invoice);
-sumContractALedger(contractALedger) += sumInvoice(contractALedger);
-
-@implementContractPrepaymentLedger(invoice);
-sumContractLedger(invoiceContractLedger) += sumInvoice(invoiceInvoiceContractLedger(invoiceContractLedger));

@@ -1342,7 +1342,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         typeInvoice = addConcreteClass("typeInvoice", "Тип инвойса", baseClass.named);
 
-        invoice = addAbstractClass("invoice", "Инвойс", priceDocument, destinationDocument, (CustomClass) BL.ContractLedger.getClassByName("contractLedger"), (CustomClass) BL.ContractLedger.getClassByName("contractALedger"), (CustomClass) BL.ContractLedger.getClassByName("inContractLedger"));
+        invoice = addAbstractClass("invoice", "Инвойс", priceDocument, destinationDocument);//, (CustomClass) BL.ContractLedger.getClassByName("contractLedger"), (CustomClass) BL.ContractLedger.getClassByName("contractALedger"), (CustomClass) BL.ContractLedger.getClassByName("inContractLedger"));
         boxInvoice = addConcreteClass("boxInvoice", "Инвойс по коробам", invoice);
 
         innerInvoice = addAbstractClass("innerInvoice", "Внутренний инвойс", baseClass);

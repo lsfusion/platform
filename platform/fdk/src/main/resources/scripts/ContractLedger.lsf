@@ -121,7 +121,7 @@ CONSTRAINT currencyTypeExchange(typeExchangePayment(payment)) != currencyContrac
     CHECKED BY typeExchangePayment MESSAGE 'Валюта типа обмена должны соответствовать валюте договора+';
 
 sumPayment 'Сумма платежа' (payment) = DATA NUMERIC[16,2] (payment);
-sumRateExchangePayment 'Сумма платежа(конверт.)' (payment) = sumPayment(payment) * rateExchangePayment(payment);
+sumRateExchangePayment 'Сумма платежа(конверт.)' (payment) = sumPayment(payment) / rateExchangePayment(payment);
 
 isNotSameCurrencyPayment (payment) = currencyContract(contractPayment(payment)) != currencyPayment(payment);
 
@@ -167,6 +167,44 @@ DESIGN payment FROM DEFAULT{
     ADD PROPERTY(rateExchangePayment);
     ADD PROPERTY(sumRateExchangePayment);
 
+    ADD functions.box;
+}
+
+partyA = SESSION DATA legalEntity();
+namePartyA 'Сторона А' = name(partyA());
+partyB = SESSION DATA legalEntity();
+namePartyB 'Сторона Б' = name(partyB());
+
+FORM payments 'Платежи'
+
+    OBJECTS d = DATE FIXED PANEL
+    PROPERTIES(d) date = OBJVALUE
+
+    PROPERTIES() namePartyA, namePartyB
+
+    OBJECTS p = payment
+    PROPERTIES(p) READONLY numberObject, seriesObject, dateTimePayment, numberContractPayment, namePayerPayment,
+                           nameBeneficiaryPayment, nameCurrencyPayment, nameTypeExchangePayment, sumPayment,
+                           rateExchangePayment, sumRateExchangePayment
+
+    PROPERTIES(p) ADDFORM, EDITFORM, delete
+
+    FILTERS payerPayment(p) == partyB() OR (p IS payment AND NOT partyB()),
+            beneficiaryPayment(p) == partyA() OR (p IS payment AND NOT partyA()),
+            datePayment(p) <= d
+
+;
+
+DESIGN payments FROM DEFAULT{
+
+    NEW headerContainer {
+        childConstraints = TO THE RIGHT;
+        caption = 'Шапка';
+        ADD PROPERTY(date);
+        ADD PROPERTY(namePartyA);
+        ADD PROPERTY(namePartyB);
+    }
+    ADD p.box;
     ADD functions.box;
 }
 
@@ -294,12 +332,7 @@ DESIGN creditNote FROM DEFAULT{
 
 //-------------------------------------------- Сводная форма ---------------------------------------------------------//
 
-partyA = SESSION DATA legalEntity();
-namePartyA 'Сторона А' = name(partyA());
-partyB = SESSION DATA legalEntity();
-namePartyB 'Сторона Б' = name(partyB());
-
-FORM contractLedger 'Задолженности и платежи по контракту'
+FORM contractLedger 'Задолженности и платежи по договору'
 
     OBJECTS d = DATE FIXED PANEL
     PROPERTIES(d) date = OBJVALUE
