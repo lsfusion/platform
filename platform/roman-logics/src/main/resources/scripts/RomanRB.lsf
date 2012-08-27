@@ -31,6 +31,7 @@ REQUIRE System,
         Customer,
         Inventory,
         DisparityBatch,
+        PriceChangeDiscount,
         RomanLogicsModule;
 
 PRIORITY RomanLogicsModule, Utils, Stock, Store;

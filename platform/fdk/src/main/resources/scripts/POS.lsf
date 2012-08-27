@@ -10,8 +10,6 @@ REQUIRE System,
         Sales,
         RetailCRM,
         PriceInterval,
-        PriceChange,
-        Tax,
         AccountDocument; // todo : эту зависимость надо будет убить, но сейчас не получается из-за того что нельзя донаследовать классы
 
 // ------------------------------------- Объявление Z-отчета ---------------------------------------- //
@@ -1019,90 +1017,3 @@ DESIGN POS FROM DEFAULT {
     }
 }
 
-//-----------------Переоценка проданных со скидкой позиций---------------------------------
-CLASS priceChangeZReport 'Переоценка по проданным товарам' : priceChangeDocument;
-CLASS priceChangeZReportDetail 'Строка переоценки по проданным товарам' : priceChangeDocumentDetail;
-
-@defineDocumentHeaderNote(zReport);
-
-needToPriceChangeReceiptSaleDetail (receiptSaleDetail) = TRUE IF discountSumReceiptSaleDetail (receiptSaleDetail) > 0;
-
-needToPriceChangeZReport (zReport) = GROUP SUM 1 IF needToPriceChangeReceiptSaleDetail (receiptSaleDetail)
-    BY zReportReceipt (receiptReceiptSaleDetail(receiptSaleDetail));
-
-@defineDocumentAggregationHeader(zReport, priceChangeZReport, needToPriceChangeZReport);
-
-@defineAggregation(receiptSaleDetail, priceChangeZReportDetail, needToPriceChangeReceiptSaleDetail);
-priceChangeZReportPriceChangeZReportDetail (detail) = priceChangeZReportZReport(zReportReceiptDetail(receiptSaleDetailPriceChangeZReportDetail(detail)));
-
-@defineDocumentHeaderCount(priceChangeZReport);
-
-departmentStorePriceChangeZReport (priceChangeZReport) = departmentStoreZReport(zReportPriceChangeZReport(priceChangeZReport));
-departmentStorePriceChangeZReportDetail (priceChangeZReportDetail) =
-    departmentStoreReceiptDetail(receiptSaleDetailPriceChangeZReportDetail(priceChangeZReportDetail));
-
-@defineDocumentAggregationHeaderPosted(zReport, priceChangeZReport);
-
-isPostedPriceChangeZReportDetail 'Проведен' (priceChangeZReportDetail) = isPostedReceiptDetail(receiptSaleDetailPriceChangeZReportDetail(priceChangeZReportDetail));
-
-@defineDocumentAggregationHeaderDescription(zReport, priceChangeZReport);
-
-@defineDocumentPriceChangeNumber(zReport);
-
-skuPriceChangeZReportDetail (priceChangeZReportDetail) = skuReceiptSaleDetail (receiptSaleDetailPriceChangeZReportDetail(priceChangeZReportDetail));
-nameSkuPriceChangeZReportDetail 'SKU' (priceChangeZReportDetail) = nameSku(skuPriceChangeZReportDetail(priceChangeZReportDetail)) IN recognizeGroup;
-idBarcodeSkuPriceChangeZReportDetail 'Штрих-код' (priceChangeZReportDetail) = idBarcodeSku(skuPriceChangeZReportDetail(priceChangeZReportDetail)) IN recognizeGroup;
-
-quantityPriceChangeZReportDetail 'Количество' (priceChangeZReportDetail) = quantityReceiptDetail(receiptSaleDetailPriceChangeZReportDetail(priceChangeZReportDetail));
-
-//@defineDocumentPriceChangePrice(zReport);
-//@defineDocumentPriceChangeRetailPricePrefix(zReport, cur, ' (тек.)');
-dateTimePriceChangeZReportDetail (priceChangeZReportDetail) = dateTimeReceiptSaleDetail (receiptSaleDetailPriceChangeZReportDetail(priceChangeZReportDetail));
-
-curImporterPricePriceChangeZReportDetail (priceChangeZReportDetail) = importerPriceBLedgerDateTime
-    (skuPriceChangeZReportDetail(priceChangeZReportDetail), departmentStorePriceChangeZReportDetail(priceChangeZReportDetail), dateTimePriceChangeZReportDetail(priceChangeZReportDetail));
-
-curSupplierPricePriceChangeZReportDetail (priceChangeZReportDetail) = supplierPriceBLedgerDateTime
-    (skuPriceChangeZReportDetail(priceChangeZReportDetail), departmentStorePriceChangeZReportDetail(priceChangeZReportDetail), dateTimePriceChangeZReportDetail(priceChangeZReportDetail));
-
-curRetailVATPriceChangeZReportDetail (priceChangeZReportDetail) = retailVATBLedgerDateTime
-    (skuPriceChangeZReportDetail(priceChangeZReportDetail), departmentStorePriceChangeZReportDetail(priceChangeZReportDetail), dateTimePriceChangeZReportDetail(priceChangeZReportDetail));
-
-curValueRetailVATPriceChangeZReportDetail (priceChangeZReportDetail) = valueRateRangeDate (curRetailVATPriceChangeZReportDetail (priceChangeZReportDetail),
-    dateInTime(dateTimePriceChangeZReportDetail(priceChangeZReportDetail)));
-
-curWarePriceChangeZReportDetail (priceChangeZReportDetail) = wareBLedgerDateTime
-    (skuPriceChangeZReportDetail(priceChangeZReportDetail), departmentStorePriceChangeZReportDetail(priceChangeZReportDetail), dateTimePriceChangeZReportDetail(priceChangeZReportDetail));
-
-curWarePricePriceChangeZReportDetail (priceChangeZReportDetail) = warePriceBLedgerDateTime
-    (skuPriceChangeZReportDetail(priceChangeZReportDetail), departmentStorePriceChangeZReportDetail(priceChangeZReportDetail), dateTimePriceChangeZReportDetail(priceChangeZReportDetail));
-
-curRetailPricePriceChangeZReportDetail (priceChangeZReportDetail) = priceReceiptSaleDetail (receiptSaleDetailPriceChangeZReportDetail(priceChangeZReportDetail));
-
-importerPricePriceChangeZReportDetail (priceChangeZReportDetail) = importerPriceBLedgerDateTime
-    (skuPriceChangeZReportDetail(priceChangeZReportDetail), departmentStorePriceChangeZReportDetail(priceChangeZReportDetail), dateTimePriceChangeZReportDetail(priceChangeZReportDetail));
-
-supplierPricePriceChangeZReportDetail (priceChangeZReportDetail) = supplierPriceBLedgerDateTime
-    (skuPriceChangeZReportDetail(priceChangeZReportDetail), departmentStorePriceChangeZReportDetail(priceChangeZReportDetail), dateTimePriceChangeZReportDetail(priceChangeZReportDetail));
-
-retailVATPriceChangeZReportDetail (priceChangeZReportDetail) = retailVATBLedgerDateTime
-    (skuPriceChangeZReportDetail(priceChangeZReportDetail), departmentStorePriceChangeZReportDetail(priceChangeZReportDetail), dateTimePriceChangeZReportDetail(priceChangeZReportDetail));
-
-valueRetailVATPriceChangeZReportDetail (priceChangeZReportDetail) = valueRateRangeDate (retailVATPriceChangeZReportDetail (priceChangeZReportDetail),
-    dateInTime(dateTimePriceChangeZReportDetail(priceChangeZReportDetail)));
-
-warePriceChangeZReportDetail (priceChangeZReportDetail) = wareBLedgerDateTime
-    (skuPriceChangeZReportDetail(priceChangeZReportDetail), departmentStorePriceChangeZReportDetail(priceChangeZReportDetail), dateTimePriceChangeZReportDetail(priceChangeZReportDetail));
-
-warePricePriceChangeZReportDetail (priceChangeZReportDetail) = warePriceBLedgerDateTime
-    (skuPriceChangeZReportDetail(priceChangeZReportDetail), departmentStorePriceChangeZReportDetail(priceChangeZReportDetail), dateTimePriceChangeZReportDetail(priceChangeZReportDetail));
-
-retailPricePriceChangeZReportDetail (priceChangeZReportDetail) =
-    (priceReceiptSaleDetail (receiptSaleDetailPriceChangeZReportDetail(priceChangeZReportDetail)) * quantityPriceChangeZReportDetail (priceChangeZReportDetail) -
-     discountSumReceiptSaleDetail (receiptSaleDetailPriceChangeZReportDetail(priceChangeZReportDetail)))/quantityPriceChangeZReportDetail (priceChangeZReportDetail);
-
-numberDisposalPriceChangeZReport '№ распоряжения на переоценку' (priceChangeZReport) = DATA STRING[30] (priceChangeZReport);
-priceChangeCommitteePriceChangeZReport 'Комиссия переоценки ИД' (priceChangeZReport) = DATA priceChangeCommittee (priceChangeZReport);
-
-@implementPriceChangeDocument(priceChangeZReport, sku);
-@implementPriceChangeDocumentDetailAllPrice (priceChangeZReport);
