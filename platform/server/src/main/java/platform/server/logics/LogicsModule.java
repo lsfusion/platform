@@ -3,6 +3,7 @@ package platform.server.logics;
 import org.apache.commons.lang.StringUtils;
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
+import platform.base.Pair;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.KeyStrokes;
@@ -106,7 +107,7 @@ public abstract class LogicsModule {
     private final Map<String, ImplementTable> moduleTables = new HashMap<String, ImplementTable>();
 
     private final Map<String, List<String>> propNamedParams = new HashMap<String, List<String>>();
-    private final Map<String, MetaCodeFragment> metaCodeFragments = new HashMap<String, MetaCodeFragment>();
+    private final Map<Pair<String, Integer>, MetaCodeFragment> metaCodeFragments = new HashMap<Pair<String, Integer>, MetaCodeFragment>();
 
     protected LogicsModule() {}
 
@@ -224,17 +225,17 @@ public abstract class LogicsModule {
         propNamedParams.put(sID, namedParams);
     }
 
-    public MetaCodeFragment getMetaCodeFragmentByName(String name) {
-        return getMetaCodeFragmentBySID(transformNameToSID(name));
+    public MetaCodeFragment getMetaCodeFragmentByName(String name, int paramCnt) {
+        return getMetaCodeFragmentBySID(transformNameToSID(name), paramCnt);
     }
 
-    protected MetaCodeFragment getMetaCodeFragmentBySID(String sid) {
-        return metaCodeFragments.get(sid);
+    protected MetaCodeFragment getMetaCodeFragmentBySID(String sid, int paramCnt) {
+        return metaCodeFragments.get(new Pair<String, Integer>(sid, paramCnt));
     }
 
     protected void addMetaCodeFragment(String name, MetaCodeFragment fragment) {
-        assert !metaCodeFragments.containsKey(transformNameToSID(name));
-        metaCodeFragments.put(transformNameToSID(name), fragment);
+        assert !metaCodeFragments.containsKey(new Pair<String, Integer>(transformNameToSID(name), fragment.parameters.size()));
+        metaCodeFragments.put(new Pair<String, Integer>(transformNameToSID(name), fragment.parameters.size()), fragment);
     }
 
     // aliases для использования внутри иерархии логических модулей

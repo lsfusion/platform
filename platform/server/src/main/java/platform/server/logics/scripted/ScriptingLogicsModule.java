@@ -59,9 +59,7 @@ import java.util.regex.Pattern;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Arrays.asList;
 import static platform.base.BaseUtils.*;
-import static platform.server.logics.PropertyUtils.getIntNum;
-import static platform.server.logics.PropertyUtils.readActionImplements;
-import static platform.server.logics.PropertyUtils.readCalcImplements;
+import static platform.server.logics.PropertyUtils.*;
 import static platform.server.logics.scripted.ScriptingLogicsModule.InsertPosition.IN;
 
 /**
@@ -78,7 +76,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     private final CompoundNameResolver<AbstractGroup> groupResolver = new AbstractGroupNameResolver();
     private final CompoundNameResolver<NavigatorElement> navigatorResolver = new NavigatorElementNameResolver();
     private final CompoundNameResolver<AbstractWindow> windowResolver = new WindowNameResolver();
-    private final CompoundNameResolver<MetaCodeFragment> metaCodeFragmentResolver = new MetaCodeFragmentNameResolver();
+    private final MetaCodeFragmentNameResolver metaCodeFragmentResolver = new MetaCodeFragmentNameResolver();
     private final CompoundNameResolver<ImplementTable> tableResolver = new TableNameResolver();
     private final CompoundNameResolver<ValueClass> classResolver = new ClassNameResolver();
 
@@ -293,7 +291,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         return (FormEntity) navigator;
     }
 
-    public MetaCodeFragment findMetaCodeFragmentByCompoundName(String name) throws ScriptingErrorLog.SemanticErrorException {
+    public MetaCodeFragment findMetaCodeFragmentByCompoundName(String name, int paramCnt) throws ScriptingErrorLog.SemanticErrorException {
+        metaCodeFragmentResolver.setParamCnt(paramCnt); // todo [dale]: криво, надо по-хорошему как-то обобщить resolver
         MetaCodeFragment code = metaCodeFragmentResolver.resolve(name);
         checkMetaCodeFragment(code, name);
         return code;
@@ -1303,7 +1302,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     public void addScriptedMetaCodeFragment(String name, List<String> params, List<String> metaCode) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedMetaCodeFragment(" + name + ", " + params + ", " + metaCode + ");");
 
-        checkDuplicateMetaCodeFragment(name);
+        checkDuplicateMetaCodeFragment(name, params.size());
         checkDistinctParameters(params);
 
         MetaCodeFragment fragment = new MetaCodeFragment(params, metaCode);
@@ -1311,7 +1310,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public void runMetaCode(String name, List<String> params) throws ScriptingErrorLog.SemanticErrorException {
-        MetaCodeFragment metaCode = findMetaCodeFragmentByCompoundName(name);
+        MetaCodeFragment metaCode = findMetaCodeFragmentByCompoundName(name, params.size());
         checkMetaCodeParamCount(metaCode, params.size());
 
         String code = metaCode.getCode(params);
@@ -1796,8 +1795,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    private void checkDuplicateMetaCodeFragment(String name) throws ScriptingErrorLog.SemanticErrorException {
-        if (getMetaCodeFragmentByName(name) != null) {
+    private void checkDuplicateMetaCodeFragment(String name, int paramCnt) throws ScriptingErrorLog.SemanticErrorException {
+        if (getMetaCodeFragmentByName(name, paramCnt) != null) {
             errLog.emitAlreadyDefinedError(parser, "meta code", name);
         }
     }
@@ -2294,9 +2293,15 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     private class MetaCodeFragmentNameResolver extends CompoundNameResolver<MetaCodeFragment> {
+        private int paramCnt;
+
+        public void setParamCnt(int paramCnt) {
+            this.paramCnt = paramCnt;
+        }
+
         @Override
         public MetaCodeFragment resolveInModule(LogicsModule module, String simpleName) {
-            return module.getMetaCodeFragmentByName(simpleName);
+            return module.getMetaCodeFragmentByName(simpleName, paramCnt);
         }
     }
 
