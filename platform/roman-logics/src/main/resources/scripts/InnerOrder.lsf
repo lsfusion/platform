@@ -214,7 +214,7 @@ FORM orderPicking 'Подбор товара'
 
 
     OBJECTS s = sku
-    PROPERTIES(s) READONLY barcode, nameSku, nameCategoryArticleSku, nameBrandSupplierArticleSku, sidArticleSku,
+    PROPERTIES(s) READONLY barcode, nameCategoryArticleSku, nameBrandSupplierArticleSku, sidArticleSku,
                            sidSizeSupplierItem FORCE GRID, sidColorSupplierItem FORCE GRID, nameColorSupplierItem FORCE GRID, shortNameUOMSku
     PROPERTIES(s, o) quantityInnerOrderDetailSkuInnerOrder, quantitySkuInnerOrder
     PROPERTIES(s, p) quantityOrderPickingDetailSkuOrderPicking
@@ -394,6 +394,10 @@ quantityOrderPickingDetailSkuContractSkuCompanyOrderPicking(sku, contractSkuComp
     quantityOrderPickingDetailBatchOrderPicking (batch, orderPicking) AND NOT commissionContractSkuBatchA(batch)
     BY skuBatch(batch), contractSkuCompanySaleInBatchDetail(batch), orderPicking;
 
+quantityOrderPickingDetailSkuContractCompanyOrderPicking(contractSkuCompany, orderPicking) = GROUP SUM
+    quantityOrderPickingDetailSkuContractSkuCompanyOrderPicking(sku, contractSkuCompany, orderPicking)
+    BY contractSkuCompany, orderPicking;
+
 quantityOrderPickingDetailSkuCompanyOrderPicking(sku, company, orderPicking) = GROUP SUM
     quantityOrderPickingDetailSkuContractSkuCompanyOrderPicking(sku, contractSkuCompany, orderPicking)
     BY sku, companyAContractSkuCompany(contractSkuCompany), orderPicking;
@@ -458,7 +462,7 @@ createDocumentsOrderPicking 'Создать документы' (orderPicking) =
             }
         } ELSE {
             // Делаем возвраты поставщику, если эти партии от него же и приходили
-            FOR quantityOrderPickingDetailSkuContractSkuCompanyOrderPicking(sku, contractSkuCompany, orderPicking) AND
+            FOR quantityOrderPickingDetailSkuContractCompanyOrderPicking(contractSkuCompany, orderPicking) AND
                 companyAContractSkuCompany(contractSkuCompany) == destinationCompanyOrderPicking(orderPicking) DO {
                 ADDOBJ returnOutPosted;
                 FOR r == addedObject() DO {
