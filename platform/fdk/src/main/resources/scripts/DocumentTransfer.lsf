@@ -43,7 +43,7 @@ META defineDocumentFormTransferOut(object, formCaption)
 
         OBJECTS d = object##OutDetail
 
-        PROPERTIES(t) TODRAW d addDetailDialogSkuStock###object##OutDetail###object##Out, addDetailDialogBarcode###object##OutDetail###object##Out,
+        PROPERTIES(t) TODRAW d addDetailDialogSkuStock###object##OutDetail###object##Out, addDetailInputBarcode###object##OutDetail###object##Out,
                                delete###object##OutDetail###object##Out
 
         FILTERS object##Out###object##OutDetail(d) == t
@@ -330,7 +330,7 @@ META defineDocumentFormTransferRec(object, caption)
 
         OBJECTS d = object##RecDetail
 
-        PROPERTIES(t) TODRAW d addDetailDialogSkuStock###object##RecDetail###object##Rec, addDetailDialogBarcode###object##RecDetail###object##Rec,
+        PROPERTIES(t) TODRAW d addDetailDialogSkuStock###object##RecDetail###object##Rec, addDetailInputBarcode###object##RecDetail###object##Rec,
                                delete###object##RecDetail###object##Rec
 
         FILTERS object##Rec###object##RecDetail(d) == t

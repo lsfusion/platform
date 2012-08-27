@@ -82,7 +82,7 @@ FORM invoiceWHOut 'Реализация товара по безналичном
 
     OBJECTS d = invoiceWHOutDetail
 
-    PROPERTIES(t) TODRAW d addDetailDialogSkuStockInvoiceWHOutDetailInvoiceWHOut, addDetailDialogBarcodeInvoiceWHOutDetailInvoiceWHOut,
+    PROPERTIES(t) TODRAW d addDetailDialogSkuStockInvoiceWHOutDetailInvoiceWHOut, addDetailInputBarcodeInvoiceWHOutDetailInvoiceWHOut,
                            deleteInvoiceWHOutDetailInvoiceWHOut
 
     FILTERS invoiceWHOutInvoiceWHOutDetail(d) == t

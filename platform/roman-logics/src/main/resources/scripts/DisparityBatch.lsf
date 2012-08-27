@@ -119,10 +119,10 @@ FORM disparityBatch 'Пересорт м/у партиями'
     OBJECTS di = disparityInBatchDetail
     OBJECTS do = disparityOutBatchDetail
 
-    PROPERTIES(o) TODRAW di addDetailDialogSkuStockDisparityInBatchDetailDisparityBatch, addDetailDialogBarcodeDisparityInBatchDetailDisparityBatch,
+    PROPERTIES(o) TODRAW di addDetailDialogSkuStockDisparityInBatchDetailDisparityBatch, addDetailInputBarcodeDisparityInBatchDetailDisparityBatch,
                             deleteDisparityInBatchDetailDisparityBatch
 
-    PROPERTIES(o) TODRAW do addDetailDialogSkuStockDisparityOutBatchDetailDisparityBatch, addDetailDialogBarcodeDisparityOutBatchDetailDisparityBatch,
+    PROPERTIES(o) TODRAW do addDetailDialogSkuStockDisparityOutBatchDetailDisparityBatch, addDetailInputBarcodeDisparityOutBatchDetailDisparityBatch,
                             deleteDisparityOutBatchDetailDisparityBatch
 
     FILTERS disparityBatchDisparityInBatchDetail(di) == o,
@@ -444,10 +444,10 @@ FORM disparityBatchA 'Пересорт м/у партиями (бухг.)'
     OBJECTS di = disparityInBatchADetail
     OBJECTS do = disparityOutBatchADetail
 
-    PROPERTIES(o) TODRAW di addDetailDialogSkuStockDisparityInBatchADetailDisparityBatchA, addDetailDialogBarcodeDisparityInBatchADetailDisparityBatchA,
+    PROPERTIES(o) TODRAW di addDetailDialogSkuStockDisparityInBatchADetailDisparityBatchA, addDetailInputBarcodeDisparityInBatchADetailDisparityBatchA,
                             deleteDisparityInBatchADetailDisparityBatchA
 
-    PROPERTIES(o) TODRAW do addDetailDialogSkuStockDisparityOutBatchADetailDisparityBatchA, addDetailDialogBarcodeDisparityOutBatchADetailDisparityBatchA,
+    PROPERTIES(o) TODRAW do addDetailDialogSkuStockDisparityOutBatchADetailDisparityBatchA, addDetailInputBarcodeDisparityOutBatchADetailDisparityBatchA,
                             deleteDisparityOutBatchADetailDisparityBatchA
 
     FILTERS disparityBatchADisparityInBatchADetail(di) == o,

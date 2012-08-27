@@ -93,7 +93,7 @@ FORM writeOff 'Списание товара'
                    quantityWriteOffDetail, shortNameUOMWriteOffDetail,
                    ADDOBJ, delete
 
-    PROPERTIES(t) TODRAW d addDetailDialogSkuStockWriteOffDetailWriteOff, addDetailDialogBarcodeWriteOffDetailWriteOff,
+    PROPERTIES(t) TODRAW d addDetailDialogSkuStockWriteOffDetailWriteOff, addDetailInputBarcodeWriteOffDetailWriteOff,
                            deleteWriteOffDetailWriteOff
 
     FILTERS writeOffWriteOffDetail(d) == t

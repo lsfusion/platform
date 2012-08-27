@@ -4943,7 +4943,7 @@ FORM writeOff 'Списание'
                                     balanceDepartmentStoreItemWriteOff(d)
 
     PROPERTIES(w) TODRAW d addDetailDialogSkuStockWriteOffDetailWriteOff, addDetailDialogTerminalWriteOffDetailWriteOff,
-                           addDetailDialogBarcodeWriteOffDetailWriteOff, deleteWriteOffDetailWriteOff
+                           addDetailInputBarcodeWriteOffDetailWriteOff, deleteWriteOffDetailWriteOff
     FILTERS inWriteOffWriteOffDetail(w, d)
 
     EDIT writeOff OBJECT w
@@ -5084,7 +5084,7 @@ FORM disparity 'Пересортица'
     PROPERTIES(d)   ADDOBJ, delete
 
     PROPERTIES(dis) TODRAW d addDetailDialogSkuStockDisparityDetailDisparity, addDetailDialogTerminalDisparityDetailDisparity,
-                             addDetailDialogBarcodeDisparityDetailDisparity, deleteDisparityDetailDisparity
+                             addDetailInputBarcodeDisparityDetailDisparity, deleteDisparityDetailDisparity
 
     PROPERTIES (d)  FORCE PANEL importerPriceDisparityDetail, supplierPriceDisparityDetail, nameWareDisparityDetail,
                                 warePriceDisparityDetail, valueRetailVATDisparityDetail, balanceBeforeDisparityDetail,
@@ -5266,7 +5266,7 @@ FORM shipment 'Поставка'
                                valueWareRangeShipmentDetail SHOWIF inWareShipmentDetail(d), curWarePriceShipmentDetail SHOWIF inWareShipmentDetail(d)
 
     PROPERTIES(s) TODRAW d addDetailDialogSkuShipmentDetailShipment, addDetailDialogTerminalShipmentDetailShipment,
-                           addDetailDialogBarcodeShipmentDetailShipment, deleteShipmentDetailShipment
+                           addDetailInputBarcodeShipmentDetailShipment, deleteShipmentDetailShipment
 
     FILTERS inShipmentShipmentDetail(s, d)
 
@@ -5518,7 +5518,7 @@ FORM returnSupplier 'Возврат поставщику'
     PROPERTIES(d) ADDOBJ, delete
 
     PROPERTIES(r) TODRAW d addDetailDialogSkuStockSupplierReturnSupplierDetailReturnSupplier, addDetailDialogTerminalReturnSupplierDetailReturnSupplier,
-                           addDetailDialogBarcodeReturnSupplierDetailReturnSupplier, deleteReturnSupplierDetailReturnSupplier
+                           addDetailInputBarcodeReturnSupplierDetailReturnSupplier, deleteReturnSupplierDetailReturnSupplier
 
     PROPERTIES FORCE PANEL READONLY curImporterPriceReturnSupplierDetail(d), curSupplierPriceReturnSupplierDetail(d),
                                     curRetailPriceReturnSupplierDetail(d), curValueRetailVATReturnSupplierDetail(d),
@@ -5822,7 +5822,7 @@ FORM innerFlow 'Расход в другой отдел'
                    retailPriceInnerFlowDetail, retailSumInnerFlowDetail, ADDOBJ, delete
 
     PROPERTIES(f) TODRAW d addDetailDialogSkuStockInnerFlowDetailInnerFlow, addDetailDialogTerminalInnerFlowDetailInnerFlow,
-                           addDetailDialogBarcodeInnerFlowDetailInnerFlow, deleteInnerFlowDetailInnerFlow
+                           addDetailInputBarcodeInnerFlowDetailInnerFlow, deleteInnerFlowDetailInnerFlow
     FILTERS inInnerFlowInnerFlowDetail(f, d)
 
     EDIT innerFlow OBJECT f
@@ -6058,7 +6058,7 @@ FORM innerArrival 'Приход из другого отдела'
                    curWarePriceInnerArrivalDetail, curValueRetailVATInnerArrivalDetail, curRetailPriceInnerArrivalDetail
 
     PROPERTIES(a) TODRAW d addDetailDialogSkuInnerArrivalDetailInnerArrival, addDetailDialogTerminalUserPriceChangeDetailUserPriceChange,
-                           addDetailDialogBarcodeInnerArrivalDetailInnerArrival, deleteInnerArrivalDetailInnerArrival
+                           addDetailInputBarcodeInnerArrivalDetailInnerArrival, deleteInnerArrivalDetailInnerArrival
 
     FILTERS inInnerArrivalInnerArrivalDetail(a, d)
 
@@ -6283,7 +6283,7 @@ FORM specification 'Счет-фактура'
                    BACKGROUND highlightSpecificationDetail(d), availableQuantityItemBySpecificationDetail(d) BACKGROUND notNullAvailableQuantityItemBySpecificationDetail(d)
 
     PROPERTIES(sp) TODRAW d addDetailDialogSkuStockSpecificationDetailSpecification, addDetailDialogTerminalSpecificationDetailSpecification,
-                            addDetailDialogBarcodeSpecificationDetailSpecification, deleteSpecificationDetailSpecification
+                            addDetailInputBarcodeSpecificationDetailSpecification, deleteSpecificationDetailSpecification
 
     FILTERS inSpecificationSpecificationDetail(sp, d)
 
@@ -6431,7 +6431,7 @@ FORM statement 'Отгрузка из розницы'
                                 balanceDepartmentStoreItemStatementDetail BACKGROUND highlightStatementDetail(d)
 
     PROPERTIES(st) TODRAW d addDetailDialogSkuStatementDetailStatement, addDetailDialogTerminalStatementDetailStatement,
-                            addDetailDialogBarcodeStatementDetailStatement, deleteStatementDetailStatement
+                            addDetailInputBarcodeStatementDetailStatement, deleteStatementDetailStatement
 
     FILTERS         inStatementStatementDetail(st, d)
 

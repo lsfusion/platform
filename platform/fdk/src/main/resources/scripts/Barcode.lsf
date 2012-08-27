@@ -56,69 +56,55 @@ DESIGN barcodeInput FROM DEFAULT {
         caption = 'Штрих-код';
         font = 'Tahoma bold 64';
         panelLabelAbove = TRUE;
+        editKey = 'F4';
     }
 }
 
 // ------------------------------------ Добавление сканированием строк в документ ----------------------//
+
 META defineAddDetailDialogBarcodeCustom(object, idetail, skuProp)
     idetail###object##Sku(object, sku) = GROUP MAX detail BY object###idetail(detail), skuProp###idetail(detail);
+
+    addDetailBarcode###idetail###object = ACTION (object, barcode) {
+        LOCAL dialogBarcodeSku = sku();
+        SET dialogBarcodeSku() <- skuBarcodeIdDate(barcode, date###object(object));
+
+        IF dialogBarcodeSku() IS sku THEN {
+            LOCAL dialogBarcodeDetail = idetail();
+            SET dialogBarcodeDetail() <- idetail###object##Sku(object, dialogBarcodeSku());
+            IF dialogBarcodeDetail() IS idetail THEN {
+                SET quantity###idetail(detail) IF detail == dialogBarcodeDetail() <-
+                    quantity###idetail(detail) (+) (1.0 IF detail IS idetail);
+            } ELSE {
+                ADDOBJ idetail;
+                FOR w == addedObject() DO {
+                    SET object###idetail(w) <- object AS object;
+                    SET skuProp###idetail(w) <- dialogBarcodeSku();
+                    SET quantity###idetail(w) <- 1.0;
+                }
+            }
+        } ELSE
+            MESSAGE 'Не найден штрих-код';
+    }
+
     addDetailDialogBarcode###idetail###object 'Ввод штрих-кода' = ACTION (object) {
         FORM barcodeInput MODAL;
 
-        IF formResult() == formResult.ok THEN {
-            LOCAL dialogBarcodeSku = sku();
-            SET dialogBarcodeSku() <- skuBarcodeIdDate(chosenString('barcode'), date###object(object));
-
-            IF dialogBarcodeSku() IS sku THEN {
-                LOCAL dialogBarcodeDetail = idetail();
-                SET dialogBarcodeDetail() <- idetail###object##Sku(object, dialogBarcodeSku());
-                IF dialogBarcodeDetail() IS idetail THEN {
-                    SET quantity###idetail(detail) IF detail == dialogBarcodeDetail() <-
-                        quantity###idetail(detail) (+) (1.0 IF detail IS idetail);
-                } ELSE {
-                    ADDOBJ idetail;
-                    FOR w == addedObject() DO {
-                        SET object###idetail(w) <- object AS object;
-                        SET skuProp###idetail(w) <- dialogBarcodeSku();
-                        SET quantity###idetail(w) <- 1.0;
-                    }
-                }
-            } ELSE
-                MESSAGE 'Не найден штрих-код';
-        }
+        IF formResult() == formResult.ok THEN
+            EXEC addDetailBarcode###idetail###object(object, chosenString('barcode'));
     } TOOLBAR EDITKEY 'F4';
-END
 
+    changeAddDetailInputBarcode###idetail###object = ACTION (object) {
+        REQUEST STRING[14] INPUT;
+        EXEC addDetailBarcode###idetail###object(object, requestedString());
+    };
+    addDetailInputBarcode###idetail###object 'Ввод штрих-кода :' (object) = SESSION DATA STRING[14] (object) TOOLBAR EDITKEY 'F4'
+                                                                            ON CHANGE EXEC changeAddDetailInputBarcode###idetail###object(object);
+END
 
 META defineAddDetailDialogBarcode(object, skuProp)
-    detail###object##Sku(object, sku) = GROUP MAX detail BY object###object##Detail(detail), skuProp###object##Detail(detail);
-    addDetailDialogBarcode###object##Detail###object 'Ввод штрих-кода' = ACTION (object) {
-        FORM barcodeInput MODAL;
-
-        IF formResult() == formResult.ok THEN {
-            LOCAL dialogBarcodeSku = sku();
-            SET dialogBarcodeSku() <- skuBarcodeIdDate(chosenString('barcode'), date###object(object));
-
-            IF dialogBarcodeSku() IS sku THEN {
-                LOCAL dialogBarcodeDetail = object##Detail();
-                SET dialogBarcodeDetail() <- detail###object##Sku(object, dialogBarcodeSku());
-                IF dialogBarcodeDetail() IS object##Detail THEN {
-                    SET quantity###object##Detail(detail) IF detail == dialogBarcodeDetail() <-
-                        quantity###object##Detail(detail) (+) (1.0 IF detail IS object###Detail);
-                } ELSE {
-                    ADDOBJ object##Detail;
-                    FOR w == addedObject() DO {
-                        SET object###object##Detail(w) <- object AS object;
-                        SET skuProp###object##Detail(w) <- dialogBarcodeSku();
-                        SET quantity###object##Detail(w) <- 1.0;
-                    }
-                }
-            } ELSE
-                MESSAGE 'Не найден штрих-код';
-        }
-    } TOOLBAR EDITKEY 'F4';
+    @defineAddDetailDialogBarcodeCustom(object, object##Detail, skuProp);
 END
-
 
 // ----------------------------------- Расширение подбора товаров ---------------------------- //
 

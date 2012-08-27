@@ -144,7 +144,7 @@ FORM userPriceChange 'Переоценка товаров'
                dialogAddPercDiscountUserPriceChange(u) TODRAW d SHOWIF toShowDiscountUserPriceChange(u)
 
     PROPERTIES(u) TODRAW d addDetailDialogSkuStockUserPriceChangeDetailUserPriceChange, addDetailDialogTerminalUserPriceChangeDetailUserPriceChange,
-                           addDetailDialogBarcodeUserPriceChangeDetailUserPriceChange, deleteUserPriceChangeDetailUserPriceChange
+                           addDetailInputBarcodeUserPriceChangeDetailUserPriceChange, deleteUserPriceChangeDetailUserPriceChange
 
     FILTERS inUserPriceChangeUserPriceChangeDetail(u, d)
 

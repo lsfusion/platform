@@ -583,18 +583,16 @@ createReceiptSaleDetail 'Добавить строку продажи' = ACTION 
 GROUP receiptSaleActionGroup 'Продажа' : publicGroup;
 
 // По штрих-коду
-scanBarcodeSaleReceipt 'Ввести штрих-код' = ACTION (receipt) {
-    FORM barcodeInput MODAL;
-    IF formResult() == formResult.ok THEN {
-        LOCAL dialogBarcodeSku = sku();
-        SET dialogBarcodeSku() <- skuBarcodeIdDate(chosenString('barcode'), currentDate());
+changeBarcodeSaleReceipt = ACTION (receipt) {
+    REQUEST STRING[14] INPUT;
+    LOCAL dialogBarcodeSku = sku();
+    SET dialogBarcodeSku() <- skuBarcodeIdDate(requestedString(), currentDate());
 
-        IF dialogBarcodeSku() IS sku THEN {
-            EXEC createReceiptSaleDetail(receipt, dialogBarcodeSku(), chosenString('barcode'));
-        } ELSE
-            MESSAGE 'Не найден штрих-код';
-    }
-} EDITKEY 'F4' IN receiptSaleActionGroup;
+    IF dialogBarcodeSku() IS sku THEN {
+        EXEC createReceiptSaleDetail(receipt, dialogBarcodeSku(), requestedString());
+    } ELSE
+        MESSAGE 'Не найден штрих-код';
+};
 
 // Поиск подбором
 FORM searchSkuSaleReceipt 'Поиск SKU'
@@ -909,7 +907,7 @@ FORM POS
 
     OBJECTS r = receipt FIXED PANEL
     PROPERTIES(r) SHOWIF currentZReport() discountSumReceiptDetailReceipt, sumReceiptDetailReceipt,
-                                          searchSkuSaleReceipt, scanBarcodeSaleReceipt,
+                                          searchSkuSaleReceipt,
                                           searchSkuReturnReceipt, scanBarcodeReturnReceipt,
                                           postReceipt, postCardReceipt, postCashReceipt, cancelReceipt,
                                           numberDiscountCardReceipt, nameClientDiscountCardReceipt,
@@ -919,6 +917,9 @@ FORM POS
     PROPERTIES(d) SHOWIF currentZReport() READONLY indexReceiptDetail, typeReceiptDetail, idBarcodeReceiptDetail, nameSkuReceiptDetail, prevCurrentBalanceReceiptDetail
     PROPERTIES(d) SHOWIF currentZReport()          quantityReceiptDetail, priceReceiptDetail, sumReceiptDetail, discountPercentReceiptSaleDetail FORCE GRID, discountSumReceiptDetail, delete
     FILTERS receiptReceiptDetail(d) == r
+
+    OBJECTS bs = STRING[14] FIXED PANEL
+    PROPERTIES(bs) barcodeSale = OBJVALUE ON CHANGE EXEC changeBarcodeSaleReceipt(r)
 
     OBJECTS pc = promotionCondition
     PROPERTIES(pc) SHOWIF currentZReport() READONLY namePromotionPromotionCondition, name, dateFromPromotionCondition, dateToPromotionCondition, percentPromotionCondition
@@ -965,7 +966,7 @@ DESIGN POS FROM DEFAULT {
                 ADD r.receiptSaleActionGroup {
                     childConstraints = TO THE BOTTOM;
                     PROPERTY(searchSkuSaleReceipt) { focusable = FALSE; font = 'Tahoma bold 24'; }
-                    PROPERTY(scanBarcodeSaleReceipt) { focusable = FALSE; font = 'Tahoma bold 24'; }
+                    ADD PROPERTY(barcodeSale) { caption = 'Ввести штрих-код'; panelLabelAbove = TRUE; focusable = FALSE; font = 'Tahoma bold 24'; editKey = 'F4'; }
                 }
                 ADD r.receiptReturnActionGroup {
                     childConstraints = TO THE BOTTOM;

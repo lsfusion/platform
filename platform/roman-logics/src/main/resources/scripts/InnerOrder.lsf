@@ -58,7 +58,7 @@ FORM innerOrder 'Внутренний заказ'
 
     OBJECTS d = innerOrderDetail
 
-    PROPERTIES(o) TODRAW d addDetailDialogSkuStockInnerOrderDetailInnerOrder, addDetailDialogBarcodeInnerOrderDetailInnerOrder,
+    PROPERTIES(o) TODRAW d addDetailDialogSkuStockInnerOrderDetailInnerOrder, addDetailInputBarcodeInnerOrderDetailInnerOrder,
                            deleteInnerOrderDetailInnerOrder
 
     FILTERS innerOrderInnerOrderDetail(d) == o
@@ -226,7 +226,7 @@ FORM orderPicking 'Подбор товара'
 
     OBJECTS d = orderPickingDetail
 
-    PROPERTIES(p) TODRAW d addDetailDialogSkuStockOrderPickingDetailOrderPicking, addDetailDialogBarcodeOrderPickingDetailOrderPicking,
+    PROPERTIES(p) TODRAW d addDetailDialogSkuStockOrderPickingDetailOrderPicking, addDetailInputBarcodeOrderPickingDetailOrderPicking,
                            deleteOrderPickingDetailOrderPicking
 
     FILTERS orderPickingOrderPickingDetail(d) == p
@@ -700,7 +700,7 @@ FORM innerOrderRec 'Приемка товаров по внутреннему з
 
     OBJECTS d = innerOrderRecDetail
 
-    PROPERTIES(t) TODRAW d addDetailDialogSkuStockInnerOrderRecDetailInnerOrderRec, addDetailDialogBarcodeInnerOrderRecDetailInnerOrderRec,
+    PROPERTIES(t) TODRAW d addDetailDialogSkuStockInnerOrderRecDetailInnerOrderRec, addDetailInputBarcodeInnerOrderRecDetailInnerOrderRec,
                            deleteInnerOrderRecDetailInnerOrderRec
 
     FILTERS innerOrderRecInnerOrderRecDetail(d) == t
