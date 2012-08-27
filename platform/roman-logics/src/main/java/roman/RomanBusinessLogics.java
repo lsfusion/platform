@@ -95,6 +95,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             "/scripts/WriteOff.lsf",
             "/scripts/PriceChange.lsf",
             "/scripts/UserPriceChange.lsf",
+            "/scripts/Surplus.lsf",
             "/scripts/Inventory.lsf",
             "/scripts/Warehouse.lsf",
             "/scripts/PriceChangeDiscount.lsf"

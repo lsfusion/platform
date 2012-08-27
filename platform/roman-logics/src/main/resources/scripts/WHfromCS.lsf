@@ -117,9 +117,9 @@ quantitySkuStoreWHfromCSI (store, WHfromCSI) = GROUP SUM quantityWHfromCSRDetail
 TABLE storeWHfromCSI (RomanLogicsModule.store, WHfromCSI);
 innerOrderStoreWHfromCSI (store, WHfromCSI) = DATA innerOrder (RomanLogicsModule.store, WHfromCSI);
 
-orderPickingInnerOrder (innerOrder) = GROUP MAX orderPicking BY innerOrderOrderPicking(orderPicking);
-
 createInnerOrderStoreWHfromCSI 'Создать внутренний заказ' = [ACTION (store, WHfromCSI) NEWSESSION {
+
+    LOCAL picking = orderPickingPosted();
 
     ADDOBJ innerOrder;
     FOR i == addedObject() DO {
@@ -142,6 +142,7 @@ createInnerOrderStoreWHfromCSI 'Создать внутренний заказ' 
 
         ADDOBJ orderPickingPosted;
         FOR p == addedObject() DO {
+            SET picking() <- p AS orderPickingPosted;
             SET innerOrderOrderPicking (p) <- innerOrderStoreWHfromCSI(store, WHfromCSI);
             FOR WHfromCSIWHfromCSR(WHfromCSRWHfromCSRDetail(WHfromCSRDetail)) == WHfromCSI AND destinationWHfromCSRDetail(WHfromCSRDetail) == store DO {
                 ADDOBJ orderPickingDetail;
@@ -152,7 +153,7 @@ createInnerOrderStoreWHfromCSI 'Создать внутренний заказ' 
                 }
             }
         }
-        FORM orderPicking OBJECTS p = orderPickingInnerOrder(innerOrderStoreWHfromCSI (store, WHfromCSI))  MODAL;
+        FORM orderPicking OBJECTS p = picking()  MODAL;
         IF formResult() == formResult.ok THEN {
             EXEC apply();
         }

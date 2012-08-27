@@ -496,3 +496,36 @@ META defineDocumentFormTransferDiff(object)
     }
 
 END
+
+// ---------------------------------------------- Не проводить по учету------------------------------- //
+
+META defineDocumentHeaderSkipSkuLedgerCustom(object)
+
+    skipSkuLedger###object 'Не проводить по учету' (object) = DATA BOOLEAN (object) IN documentPrmGroup;
+END
+
+META defineDocumentDetailSkipSkuLedgerCustom(object, detail)
+
+    skipSkuLedger###detail 'Не проводить по учету' (idetail) = skipSkuLedger###object(object###detail(idetail));
+END
+
+META defineDocumentSkipSkuLedgerCustom(object, detail)
+    @defineDocumentHeaderSkipSkuLedgerCustom(object);
+    @defineDocumentDetailSkipSkuLedgerCustom(object, detail);
+END
+
+
+META extendDocumentFormSkipSkuLedgerCustom(form, object, concrete)
+
+    EXTEND FORM form
+        PROPERTIES(object) skipSkuLedger###concrete
+
+    ;
+END
+META extendDocumentFormSkipSkuLedgerCustomReadonly(form, object, concrete)
+
+    EXTEND FORM form
+        PROPERTIES(object) READONLY skipSkuLedger###concrete
+
+    ;
+END

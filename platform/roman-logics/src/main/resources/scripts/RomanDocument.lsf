@@ -236,3 +236,5 @@ quantityDetailInnerDocument 'Кол-во (всего)' (innerDocument) = ABSTRAC
 
 isPostedInnerDocument 'Проведен' (innerDocument) = ABSTRACT BOOLEAN (innerDocument);
 isDraftInnerDocument 'Не проведен' (innerDocument) = ABSTRACT BOOLEAN (innerDocument);
+
+skipSkuLedgerInnerDocument 'Не проводить по учету' (innerDocument) = ABSTRACT BOOLEAN (innerDocument);

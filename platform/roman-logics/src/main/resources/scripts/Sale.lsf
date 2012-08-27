@@ -71,12 +71,17 @@ isCommissionSaleOutDetail(detail) = isCommissionSaleOut(saleOutSaleOutDetail(det
 useRetailPriceSaleOutDetail(detail) = stockSaleOutDetail(detail) IS departmentStore OR isCommissionSaleOutDetail(detail);
 @defineDocumentTransferAccount(saleOut, useRetailPriceSaleOutDetail);
 
+@defineDocumentSkipSkuLedgerCustom(saleOut, saleOutDetail);
+@extendDocumentFormSkipSkuLedgerCustom(saleOut, t, saleOut);
+@extendDocumentFormSkipSkuLedgerCustomReadonly(saleOuts, t, saleOut);
+
 // Проводим по регистру
 @implementSkuLedger(saleOut, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantitySaleOutDetail (ledger);
 limitOutFIFOSkuLedgerBatch(ledger, batch) += currentBalanceABatchStock(batch, stockSaleOutDetail(ledger)) AND NOT commissionContractSkuBatchA(batch)
                                              AND batch IS batchA;
 sumOutSkuLedger(ledger) += accountSumSaleOutDetail(ledger);
+skipSkuLedger (ledger) += skipSkuLedgerSaleOutDetail(ledger);
 
 @defineConstraintSkuLedgerCosted(saleOut, 'Не хватает остатков по партиям для продажи товаров');
 
@@ -153,6 +158,9 @@ TABLE saleInBatchDetail(saleInBatchDetail);
 saleOutSaleInBatchDetail (detail) = saleOutSaleOutDetail(saleOutDetailSaleInBatchDetail(detail));
 saleInSaleInBatchDetail (detail) = saleInSaleOut(saleOutSaleInBatchDetail(detail));
 
+skipSkuLedgerSaleIn 'Не проводить по учету' (saleIn) = skipSkuLedgerSaleOut(saleOutSaleIn(saleIn));
+skipSkuLedgerSaleInBatchDetail (detail) = skipSkuLedgerSaleOutDetail(saleOutDetailSaleInBatchDetail(detail));
+
 @defineDocumentDetailIndexCustom(saleIn, saleInBatchDetail);
 
 @defineDocumentAggregationDetailTime(saleOut, saleInBatch);
@@ -189,7 +197,7 @@ accountPriceSaleInBatchDetail (detail) = IF isCommissionSaleInBatchDetail(detail
 costSaleInBatch (saleIn, batch) = quantitySaleInBatchDetail(batch) AND saleIn == saleInSaleInBatchDetail(batch) PERSISTENT;
 
 EXTEND FORM saleIns
-    PROPERTIES(t) READONLY isCommissionSaleIn BEFORE countSaleInDetailSaleIn
+    PROPERTIES(t) READONLY isCommissionSaleIn BEFORE countSaleInDetailSaleIn, skipSkuLedgerSaleIn
     OBJECTS b = saleInBatchDetail
     FILTERS saleInSaleInBatchDetail(b) == t
 ;
@@ -223,6 +231,7 @@ importerPriceBatchA(batch) += importerPriceSaleInBatchDetail(batch);
 supplierPriceBatchA(batch) += supplierPriceSaleInBatchDetail(batch);
 rangeVATBatchA(batch) += rangeVATSaleInBatchDetail(batch);
 sumInSkuLedger(batch) += accountSumSaleInBatchDetail(batch);
+skipSkuLedger (ledger) += skipSkuLedgerSaleInBatchDetail(ledger);
 
 // ---------------------------------------- Приемка ------------------------------------ //
 

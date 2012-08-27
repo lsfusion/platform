@@ -73,6 +73,9 @@ EXTEND FORM transferOuts
     PROPERTIES(o) READONLY importerPriceTransferOutBatchDetail, supplierPriceTransferOutBatchDetail
 ;
 
+@defineDocumentSkipSkuLedgerCustom(transferOut, transferOutDetail);
+@extendDocumentFormSkipSkuLedgerCustom(transferOut, t, transferOut);
+@extendDocumentFormSkipSkuLedgerCustomReadonly(transferOuts, t, transferOut);
 
 // Проводим по регистру
 @implementSkuLedger(transferOut, sku, stock);
@@ -82,6 +85,7 @@ limitOutFIFOSkuLedgerBatch(ledger, batch) += IF commissionContractSkuTransferOut
                                                 ELSE currentBalanceABatchStock(batch, stockTransferOutDetail(ledger)) AND NOT commissionContractSkuBatchA(batch)
                                              AND batch IS batchA;
 sumOutSkuLedger(ledger) += accountSumTransferOutDetail(ledger);
+skipSkuLedger (ledger) += skipSkuLedgerTransferOutDetail(ledger);
 
 // Запрет на не полностью расписанные партии
 @defineConstraintSkuLedgerCosted(transferOut, 'Не хватает остатков по партиям для перемещения товаров');
@@ -147,10 +151,14 @@ costTransferInBatch(transferIn, batch) = GROUP SUM costSkuLedgerBatch(ledger, ba
 retailPriceTransferInDetail 'Цена розничная' (detail) = retailPriceTransferOutDetail(transferOutDetailTransferInDetail(detail));
 retailSumTransferInDetail 'Сумма розничная' (detail) = quantityTransferInDetail(detail) * retailPriceTransferInDetail(detail);
 
+skipSkuLedgerTransferIn 'Не проводить по учету' (transferIn) = skipSkuLedgerTransferOut(transferOutTransferIn(transferIn));
+skipSkuLedgerTransferInDetail (detail) = skipSkuLedgerTransferOutDetail(transferOutDetailTransferInDetail(detail));
+
 commissionContractSkuTransferInDetail (detail) = commissionContractSkuTransferOutDetail(transferOutDetailTransferInDetail(detail));
 
 @defineDocumentDetailSkuArticle(transferIn);
 @extendDocumentFormDetailSkuArticleReadonly(transferIns, d, transferIn);
+@extendDocumentFormSkipSkuLedgerCustomReadonly(transferIns, t, transferIn);
 
 useRetailPriceTransferInDetail(detail) = stockTransferInDetail(detail) IS departmentStore OR commissionContractSkuTransferInDetail(detail) IS contractSku;
 @defineDocumentTransferAccount(transferIn, useRetailPriceTransferInDetail);
@@ -159,6 +167,7 @@ useRetailPriceTransferInDetail(detail) = stockTransferInDetail(detail) IS depart
 quantityInLIFOSkuLedger (ledger) += quantityTransferInDetail(ledger);
 limitInLIFOSkuLedgerBatch (ledger, batch) += costSkuLedgerBatch(transferOutDetailTransferInDetail(ledger), batch);
 sumInSkuLedger(ledger) += accountSumTransferInDetail(ledger);
+skipSkuLedger (ledger) += skipSkuLedgerTransferInDetail(ledger);
 
 // ---------------------------------------- Приемка ------------------------------------ //
 

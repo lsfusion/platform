@@ -94,12 +94,17 @@ isCommissionReturnOutDetail(detail) = isCommissionReturnOut(returnOutReturnOutDe
 useRetailPriceReturnOutDetail(detail) = stockReturnOutDetail(detail) IS departmentStore OR isCommissionReturnOutDetail(detail);
 @defineDocumentTransferAccount(returnOut, useRetailPriceReturnOutDetail);
 
+@defineDocumentSkipSkuLedgerCustom(returnOut, returnOutDetail);
+@extendDocumentFormSkipSkuLedgerCustom(returnOut, t, returnOut);
+@extendDocumentFormSkipSkuLedgerCustomReadonly(returnOuts, t, returnOut);
+
 // Проводим по регистру
 @implementSkuLedger(returnOut, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantityReturnOutDetail (ledger);
 limitOutFIFOSkuLedgerBatch (ledger, batch) += quantityReturnOutDetail(ledger) IF batch == saleInBatchDetailReturnOutDetail(ledger);
 changedDataSkuLedger(ledger) += CHANGED(saleInBatchDetailReturnOutDetail(ledger));
 sumOutSkuLedger(ledger) += accountSumReturnOutDetail(ledger);
+skipSkuLedger (ledger) += skipSkuLedgerReturnOutDetail(ledger);
 
 @defineConstraintSkuLedgerCosted(returnOut, 'Не хватает остатков по партиям для возврата товаров');
 
@@ -167,15 +172,21 @@ EXTEND FORM returnIns
 retailPriceReturnInDetail 'Цена розничная' (detail) = retailPriceReturnOutDetail(returnOutDetailReturnInDetail(detail));
 retailSumReturnInDetail 'Сумма розничная' (detail) = quantityReturnInDetail(detail) * retailPriceReturnInDetail(detail);
 
+skipSkuLedgerReturnIn 'Не проводить по учету' (returnIn) = skipSkuLedgerReturnOut(returnOutReturnIn(returnIn));
+skipSkuLedgerReturnInDetail (detail) = skipSkuLedgerReturnOutDetail(returnOutDetailReturnInDetail(detail));
+
 isCommissionReturnInDetail(detail) = isCommissionReturnOutDetail(returnOutDetailReturnInDetail(detail));
 
 useRetailPriceReturnInDetail(detail) = stockReturnInDetail(detail) IS departmentStore OR isCommissionReturnInDetail(detail);
 @defineDocumentTransferAccount(returnIn, useRetailPriceReturnInDetail);
+@extendDocumentFormSkipSkuLedgerCustomReadonly(returnIns, t, returnIn);
+
 
 @implementSkuLedger(returnIn, sku, stock);
 quantityInLIFOSkuLedger (ledger) += quantityReturnInDetail(ledger);
 limitInLIFOSkuLedgerBatch (ledger, batch) += quantityReturnInDetail(ledger) AND batch == batchReturnInDetail(ledger);
 sumInSkuLedger(ledger) += accountSumReturnInDetail(ledger);
+skipSkuLedger (ledger) += skipSkuLedgerReturnInDetail(ledger);
 
 // ---------------------------------------- Приемка ------------------------------------ //
 

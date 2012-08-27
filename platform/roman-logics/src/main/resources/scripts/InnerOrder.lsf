@@ -328,6 +328,8 @@ isDraftInnerDocument (innerDocument) += isDraftTransferOut (innerDocument);
 countDetailInnerDocument (innerDocument) += countTransferOutDetailTransferOut (innerDocument);
 quantityDetailInnerDocument (innerDocument) += quantityTransferOutDetailTransferOut (innerDocument);
 
+skipSkuLedgerInnerDocument (innerDocument) += skipSkuLedgerTransferOut (innerDocument);
+
 // Продажа товара
 orderPickingSaleOut (saleOut) = DATA orderPicking (saleOut);
 
@@ -343,6 +345,8 @@ isDraftInnerDocument (innerDocument) += isDraftSaleOut (innerDocument);
 countDetailInnerDocument (innerDocument) += countSaleOutDetailSaleOut (innerDocument);
 quantityDetailInnerDocument (innerDocument) += quantitySaleOutDetailSaleOut (innerDocument);
 
+skipSkuLedgerInnerDocument (innerDocument) += skipSkuLedgerSaleOut (innerDocument);
+
 // Возврат товара
 orderPickingReturnOut (returnOut) = DATA orderPicking (returnOut);
 
@@ -357,6 +361,8 @@ isDraftInnerDocument (innerDocument) += isDraftReturnOut (innerDocument);
 
 countDetailInnerDocument (innerDocument) += countReturnOutDetailReturnOut (innerDocument);
 quantityDetailInnerDocument (innerDocument) += quantityReturnOutDetailReturnOut (innerDocument);
+
+skipSkuLedgerInnerDocument (innerDocument) += skipSkuLedgerReturnOut (innerDocument);
 
 // Перемещение без накладных
 orderPickingMoveOut (moveOut) = DATA orderPicking (moveOut);

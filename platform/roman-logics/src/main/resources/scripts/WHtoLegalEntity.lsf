@@ -20,7 +20,7 @@ PRIORITY Stock, RomanLogicsModule;
 
 // ---------------------------------------- Перемещение ------------------------------------ //
 
-CLASS invoiceWHOut 'Реализация товара по безналичному расчету' : historyObject, numberedObject, consignment, outAccountDocumentLedger;
+CLASS invoiceWHOut 'Реализация товара по безналичному расчету' : historyObject, numberedObject, consignment, outAccountDocumentLedger, innerDocument;
 CLASS invoiceWHOutPosted 'Проведенная реализация товара по безналичному расчету' : invoiceWHOut, postedObject;
 CLASS invoiceWHOutDetail 'Строка реализации товара по безналичному расчету' : outFIFOSkuLedger, consignmentDetail;
 
@@ -57,8 +57,8 @@ companyInvoiceWHOut (invoiceWHOut) = companyWarehouse(warehouseInvoiceWHOut(invo
                         'Сторона A договора продажи товаров не соответствуют компании склада-отправителя',
                         'Сторона B договора продажи товаров не соответствуют компании склада-получателя');
 
-notChangeBalanceInvoiceWHOut 'Не проводить по учету' (invoiceWHOut) = DATA BOOLEAN (invoiceWHOut) IN documentPrmGroup;
-notChangeBalanceInvoiceWHOutDetail 'Не проводить по учету' (invoiceWHOutDetail) = notChangeBalanceInvoiceWHOut(invoiceWHOutInvoiceWHOutDetail(invoiceWHOutDetail));
+skipSkuLedgerInvoiceWHOut 'Не проводить по учету' (invoiceWHOut) = DATA BOOLEAN (invoiceWHOut) IN documentPrmGroup;
+skipSkuLedgerInvoiceWHOutDetail 'Не проводить по учету' (invoiceWHOutDetail) = skipSkuLedgerInvoiceWHOut(invoiceWHOutInvoiceWHOutDetail(invoiceWHOutDetail));
 
 supplierPriceInvoiceWHOutDetail 'Отпускная цена' = DATA NUMERIC[14,2] (invoiceWHOutDetail);
 supplierPriceInvoiceWHOutDetail (invoiceWHOutDetail) <- priceWholesaleArticleDateTime(articleSku(skuInvoiceWHOutDetail(invoiceWHOutDetail)), dateTimeInvoiceWHOutDetail(invoiceWHOutDetail))
@@ -172,10 +172,13 @@ DESIGN invoiceWHOuts FROM DEFAULT {
 // Проводим по регистру
 @implementSkuLedger(invoiceWHOut, sku, warehouse);
 quantityOutFIFOSkuLedger (ledger) += quantityInvoiceWHOutDetail (ledger);
-limitOutFIFOSkuLedgerBatch(ledger, batch) += quantityInvoiceWHOutDetail (ledger) AND batchAInvoiceWHOutDetail(ledger) == batch; //AND NOT commissionContractSkuBatchA(batch);
+limitOutFIFOSkuLedgerBatch(ledger, batch) += IF batchAInvoiceWHOutDetail(ledger) THEN
+                                                quantityInvoiceWHOutDetail (ledger) AND batchAInvoiceWHOutDetail(ledger) == batch
+                                                ELSE currentBalanceABatchStock(batch, warehouseInvoiceWHOutDetail(ledger)); //AND NOT commissionContractSkuBatchA(batch);
+changedDataSkuLedger(ledger) += CHANGED(batchAInvoiceWHOutDetail(ledger));
 sumOutSkuLedger(ledger) += supplierSumInvoiceWHOutDetail(ledger);
 
-skipSkuLedger (ledger) += notChangeBalanceInvoiceWHOutDetail(ledger);
+skipSkuLedger (ledger) += skipSkuLedgerInvoiceWHOutDetail(ledger);
 
 
 // Товарные накладные
@@ -243,13 +246,27 @@ dialogBatchAInvoiceWHOutDetail 'Партия' (invoiceWHOutDetail) = ACTION (inv
 }
 
 EXTEND FORM invoiceWHOut
-    PROPERTIES(t) numberContractSkuCustomerInvoiceWHOut, notChangeBalanceInvoiceWHOut
+    PROPERTIES(t) numberContractSkuCustomerInvoiceWHOut, skipSkuLedgerInvoiceWHOut
     PROPERTIES(d) descriptionBatchInvoiceWHOutDetail ON CHANGE EXEC dialogBatchAInvoiceWHOutDetail(d), supplierPriceInvoiceWHOutDetail, supplierSumInvoiceWHOutDetail,
                   valueSupplierVATInvoiceWHOutDetail, sumVATInvoiceWHOutDetail, sumInvoiceInvoiceWHOutDetail, currentBalanceInvoiceWHOutDetail
 ;
 
 EXTEND FORM invoiceWHOuts
-    PROPERTIES(t) READONLY notChangeBalanceInvoiceWHOut
+    PROPERTIES(t) READONLY skipSkuLedgerInvoiceWHOut
     PROPERTIES(d) READONLY supplierPriceInvoiceWHOutDetail
 ;
 
+//-------------------------------------------------------
+
+stockInnerDocument (innerDocument) += warehouseInvoiceWHOut (innerDocument);
+//destinationStockInnerDocument (innerDocument) += destinationCustomerInvoiceWHOut (innerDocument);
+
+dateInnerDocument (innerDocument) += dateInvoiceWHOut (innerDocument);
+
+isPostedInnerDocument (innerDocument) += isPostedInvoiceWHOut (innerDocument);
+isDraftInnerDocument (innerDocument) += isDraftInvoiceWHOut (innerDocument);
+
+countDetailInnerDocument (innerDocument) += countInvoiceWHOutDetailInvoiceWHOut (innerDocument);
+quantityDetailInnerDocument (innerDocument) += quantityInvoiceWHOutDetailInvoiceWHOut (innerDocument);
+
+skipSkuLedgerInnerDocument (innerDocument) += skipSkuLedgerInvoiceWHOut (innerDocument);

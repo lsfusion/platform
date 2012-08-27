@@ -75,15 +75,15 @@ writeOffWriteOffBatchDetail (detail) = writeOffWriteOffDetail(writeOffDetailWrit
 descriptionBatchWriteOffBatchDetail 'Партия' (detail) = descriptionBatch(batchWriteOffBatchDetail(detail));
 quantityWriteOffBatchDetail 'Кол-во' (detail) = costDataSkuLedgerBatch(writeOffDetailWriteOffBatchDetail(detail), batchWriteOffBatchDetail(detail));
 
-notChangeBalanceWriteOff 'Управленческое списание' (writeOff) = DATA BOOLEAN (writeOff) IN documentPrmGroup;
-notChangeBalanceWriteOffDetail 'Управленческое списание' (writeOffDetail) = notChangeBalanceWriteOff(writeOffWriteOffDetail(writeOffDetail));
+skipSkuLedgerWriteOff 'Управленческое списание' (writeOff) = DATA BOOLEAN (writeOff) IN documentPrmGroup;
+skipSkuLedgerWriteOffDetail 'Управленческое списание' (writeOffDetail) = skipSkuLedgerWriteOff(writeOffWriteOffDetail(writeOffDetail));
 
 FORM writeOff 'Списание товара'
     OBJECTS t = writeOff FIXED PANEL
 
     PROPERTIES (t) objectClassName, nameNumeratorObject, numberObject, seriesObject, dateWriteOff, timeWriteOff,
                    nameStockWriteOff, noteWriteOff,
-                   countWriteOffDetailWriteOff, quantityWriteOffDetailWriteOff, nameReasonOffWriteOff, notChangeBalanceWriteOff
+                   countWriteOffDetailWriteOff, quantityWriteOffDetailWriteOff, nameReasonOffWriteOff, skipSkuLedgerWriteOff
 
     OBJECTS d = writeOffDetail
     PROPERTIES(d)  indexWriteOffDetail, barcodeWriteOffDetail,
@@ -314,11 +314,11 @@ FORM writeOffPrint 'Списание' PRINT
 
 toPrintWriteOff 'Акт списания' (writeOff) = ACTION FORM writeOffPrint OBJECTS w IMAGE 'print.png' IN printGroup;
 
-isPostedNotChangeBalanceWriteOff (writeOff) = isPostedWriteOff(writeOff) AND NOT notChangeBalanceWriteOff(writeOff);
+isPostedSkipSkuLedgerWriteOff (writeOff) = isPostedWriteOff(writeOff) AND NOT skipSkuLedgerWriteOff(writeOff);
 
 EXTEND FORM writeOffs
-    PROPERTIES     FORCE PANEL toPrintWriteOff(t) SHOWIF isPostedNotChangeBalanceWriteOff(t)
-    PROPERTIES(t) READONLY notChangeBalanceWriteOff
+    PROPERTIES     FORCE PANEL toPrintWriteOff(t) SHOWIF isPostedSkipSkuLedgerWriteOff(t)
+    PROPERTIES(t) READONLY skipSkuLedgerWriteOff
 ;
 EXTEND DESIGN writeOffs {
     documentDetail {
@@ -337,12 +337,12 @@ EXTEND DESIGN writeOffs {
 // Проводим по регистру
 @implementSkuLedger(writeOff, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantityWriteOffDetail (ledger);
-limitOutFIFOSkuLedgerBatch(ledger, batch) += IF notChangeBalanceWriteOffDetail(ledger) THEN
+limitOutFIFOSkuLedgerBatch(ledger, batch) += IF skipSkuLedgerWriteOffDetail(ledger) THEN
                                                 currentBalanceBatchStock(batch, stockWriteOffDetail(ledger)) AND batch IS batchB ELSE
                                                 currentBalanceABatchStock(batch, stockWriteOffDetail(ledger)) AND batch IS batchA;
 sumOutSkuLedger(ledger) += accountSumWriteOffDetail(ledger);
 
-skipASkuLedger (ledger) += notChangeBalanceWriteOffDetail(ledger);
+skipASkuLedger (ledger) += skipSkuLedgerWriteOffDetail(ledger);
 //---------------------------------------- Товарный отчет ------------------------- //
 
 dateTimeAccountDocumentLedger (ledger) += dateTimeWriteOff(ledger);
