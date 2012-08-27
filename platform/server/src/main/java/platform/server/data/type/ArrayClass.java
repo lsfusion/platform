@@ -74,7 +74,7 @@ public class ArrayClass<T> extends DataClass<T[]> {
         return Stat.ALOT;
     }
 
-    public Object parseString(String s) throws ParseException {
+    public T[] parseString(String s) throws ParseException {
         throw new RuntimeException("not supported");
     }
 

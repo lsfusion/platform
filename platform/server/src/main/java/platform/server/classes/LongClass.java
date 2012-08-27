@@ -67,7 +67,7 @@ public class LongClass extends IntegralClass<Long> {
         return NumberFormat.getIntegerInstance();
     }
 
-    public Object parseString(String s) throws ParseException {
+    public Long parseString(String s) throws ParseException {
         try {
             return Long.parseLong(s);
         } catch (Exception e) {

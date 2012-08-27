@@ -59,7 +59,7 @@ public class DoubleClass extends IntegralClass<Double> {
         return 0.0;
     }
 
-    public Object parseString(String s) throws ParseException {
+    public Double parseString(String s) throws ParseException {
         try {
             return Double.parseDouble(s.replace(',','.'));
         } catch (Exception e) {

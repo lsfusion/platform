@@ -26,13 +26,13 @@ public class DateSaleExportTask extends AbstractSaleExportTask {
         return "datadat.dbf";
     }
 
-    private Date exportDate;
+    private java.sql.Date exportDate;
     private Date getExportDate() throws ParseException {
 
         if (exportDate == null) {
 
             DateFormat formatter = new SimpleDateFormat("dd.MM.yy");
-            exportDate = formatter.parse(new String(flagContent)); 
+            exportDate = DateConverter.safeDateToSql(formatter.parse(new String(flagContent)));
         }
 
         return exportDate;
@@ -41,7 +41,7 @@ public class DateSaleExportTask extends AbstractSaleExportTask {
     protected void setRemoteFormFilter(FormInstance formInstance) throws ParseException {
 
         PropertyDrawInstance<?> date = formInstance.getPropertyDraw(BL.VEDLM.baseLM.date);
-        date.toDraw.addTempFilter(new CompareFilterInstance((CalcPropertyObjectInstance) date.propertyObject, Compare.EQUALS, new DataObject(DateConverter.dateToSql(getExportDate()), DateClass.instance)));
+        date.toDraw.addTempFilter(new CompareFilterInstance((CalcPropertyObjectInstance) date.propertyObject, Compare.EQUALS, new DataObject(getExportDate(), DateClass.instance)));
     }
 
     protected void updateRemoteFormProperties(FormInstance formInstance) throws SQLException {

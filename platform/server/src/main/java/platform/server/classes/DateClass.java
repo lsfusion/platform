@@ -57,7 +57,7 @@ public class DateClass extends DataClass<Date> {
     }
 
     public Object getDefaultValue() {
-        return new Date(System.currentTimeMillis());
+        return DateConverter.getCurrentDate();
     }
 
     public String getDB(SQLSyntax syntax) {
@@ -68,8 +68,7 @@ public class DateClass extends DataClass<Date> {
     }
 
     public Date read(Object value) {
-        if(value==null) return null;
-        return (Date)value;
+        return DateConverter.safeDateToSql((java.util.Date)value);
     }
 
     public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException {
@@ -102,7 +101,7 @@ public class DateClass extends DataClass<Date> {
 
     public Date parseString(String s) throws ParseException {
         try {
-            return DateConverter.dateToSql(getDateFormat().parse(s));
+            return DateConverter.safeDateToSql(getDateFormat().parse(s));
         } catch (Exception e) {
             throw new ParseException("error parsing date", e);
         }
@@ -118,7 +117,7 @@ public class DateClass extends DataClass<Date> {
 
     @Override
     public Object getInfiniteValue() {
-        return new Date(Long.MAX_VALUE);
+        return DateConverter.dateToSql(new java.util.Date(Long.MAX_VALUE));
     }
 
     public Stat getTypeStat() {

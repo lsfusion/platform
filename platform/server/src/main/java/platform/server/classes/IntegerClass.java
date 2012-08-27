@@ -65,7 +65,7 @@ public class IntegerClass extends IntegralClass<Integer> {
         return NumberFormat.getIntegerInstance();
     }
 
-    public Object parseString(String s) throws ParseException {
+    public Integer parseString(String s) throws ParseException {
         try {
             return Integer.parseInt(s);
         } catch (Exception e) {

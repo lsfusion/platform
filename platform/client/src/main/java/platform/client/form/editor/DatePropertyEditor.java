@@ -103,8 +103,7 @@ public class DatePropertyEditor extends JDateChooser implements PropertyEditorCo
     }
 
     public Object getCellEditorValue() {
-
-        return DateConverter.dateToSql(getDate());
+        return DateConverter.safeDateToSql(getDate());
     }
 
     @Override

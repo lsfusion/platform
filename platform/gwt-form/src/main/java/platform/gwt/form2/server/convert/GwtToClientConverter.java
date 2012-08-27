@@ -1,5 +1,6 @@
 package platform.gwt.form2.server.convert;
 
+import platform.base.DateConverter;
 import platform.gwt.base.shared.GClassViewType;
 import platform.gwt.form2.shared.view.GUserInputResult;
 import platform.gwt.form2.shared.view.changes.dto.ColorDTO;
@@ -30,7 +31,7 @@ public class GwtToClientConverter extends ObjectConverter {
 
     @Converter(from = Date.class)
     public java.sql.Date convertDate(Date date) {
-        return new java.sql.Date(date.getTime());
+        return DateConverter.safeDateToSql(date);
     }
 
     @Converter(from = GUserInputResult.class)

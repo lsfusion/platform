@@ -102,7 +102,7 @@ public class LogicalClass extends DataClass<Boolean> {
         return object==null?true:null;
     }
 
-    public Object parseString(String s) throws ParseException {
+    public Boolean parseString(String s) throws ParseException {
         try {
             return Boolean.parseBoolean(s);
         } catch (Exception e) {

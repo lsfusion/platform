@@ -98,9 +98,9 @@ public class DateTimeClass extends DataClass<Timestamp> {
         throw new RuntimeException("not supported");
     }
 
-    public Date parseString(String s) throws ParseException {
+    public Timestamp parseString(String s) throws ParseException {
         try {
-            return DateConverter.dateToSql(DateClass.getDateFormat().parse(s));
+            return DateConverter.dateToStamp(DateClass.getDateFormat().parse(s));
         } catch (Exception e) {
             throw new ParseException("error parsing datetime", e);
         }

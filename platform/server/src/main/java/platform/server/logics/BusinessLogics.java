@@ -1595,7 +1595,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         DataSession session = createSession();
 
         java.sql.Date currentDate = (java.sql.Date)LM.currentDate.read(session);
-        java.sql.Date newDate = DateConverter.dateToSql(new Date());
+        java.sql.Date newDate = DateConverter.getCurrentDate();
         if (currentDate == null || currentDate.getDay() != newDate.getDay() || currentDate.getMonth() != newDate.getMonth() || currentDate.getYear() != newDate.getYear()) {
             LM.currentDate.change(newDate, session);
             session.apply(this);

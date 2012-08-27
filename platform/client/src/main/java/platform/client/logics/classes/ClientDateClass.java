@@ -1,5 +1,6 @@
 package platform.client.logics.classes;
 
+import platform.base.DateConverter;
 import platform.client.ClientResourceBundle;
 import platform.client.Main;
 import platform.client.form.PropertyEditorComponent;
@@ -58,7 +59,7 @@ public class ClientDateClass extends ClientDataClass implements ClientTypeClass 
 
     public Object parseString(String s) throws ParseException {
         try {
-            return new java.sql.Date(getSimpleDateFormat().parse(s).getTime());
+            return DateConverter.safeDateToSql(getSimpleDateFormat().parse(s));
         } catch (Exception e) {
             throw new ParseException(s +  ClientResourceBundle.getString("logics.classes.can.not.be.converted.to.date"), 0);
         }

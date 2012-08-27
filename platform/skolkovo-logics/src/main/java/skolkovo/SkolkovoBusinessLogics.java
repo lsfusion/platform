@@ -169,7 +169,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                     throw new RuntimeException("Эксперт уже голосовал по этому заседанию.");
                 }
 
-                SkolkovoLM.dateExpertVote.change(DateConverter.dateToSql(new Date()), session, vo.expertObj, vo.voteObj);
+                SkolkovoLM.dateExpertVote.change(DateConverter.getCurrentDate(), session, vo.expertObj, vo.voteObj);
                 SkolkovoLM.voteResultExpertVote.change(SkolkovoLM.voteResult.getID(voteInfo.voteResult), session, vo.expertObj, vo.voteObj);
                 SkolkovoLM.ipExpertVote.change(voteInfo.expertIP, session, vo.expertObj, vo.voteObj);
                 if (voteInfo.voteResult.equals("voted")) {

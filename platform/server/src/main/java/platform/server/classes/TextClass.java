@@ -80,7 +80,7 @@ public class TextClass extends DataClass<String> {
         throw new RuntimeException("not supported");
     }
 
-    public Object parseString(String s) throws ParseException {
+    public String parseString(String s) throws ParseException {
         return s;
     }
 

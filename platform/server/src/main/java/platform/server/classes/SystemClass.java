@@ -71,7 +71,7 @@ public class SystemClass extends DataClass<Integer> {
         throw new RuntimeException("not supported yet");
     }
 
-    public Object parseString(String s) throws ParseException {
+    public Integer parseString(String s) throws ParseException {
         throw new RuntimeException("not supported");
     }
 

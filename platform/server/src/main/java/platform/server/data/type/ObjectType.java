@@ -109,7 +109,7 @@ public class ObjectType extends AbstractType<Integer> {
         return 8;
     }
 
-    public Object parseString(String s) throws ParseException {
+    public Integer parseString(String s) throws ParseException {
         try {
             return Integer.parseInt(s);
         } catch (Exception e) {

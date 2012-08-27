@@ -111,7 +111,7 @@ public class StringClass extends DataClass<String> {
         return length * (charBinary?1:2);
     }
 
-    public Object parseString(String s) throws ParseException {
+    public String parseString(String s) throws ParseException {
         return s;
     }
 

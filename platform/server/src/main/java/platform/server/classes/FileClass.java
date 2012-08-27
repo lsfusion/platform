@@ -74,7 +74,7 @@ public abstract class FileClass extends DataClass<byte[]> {
         throw new RuntimeException("not supported");
     }
 
-    public Object parseString(String s) throws ParseException {
+    public byte[] parseString(String s) throws ParseException {
         throw new RuntimeException("not supported");
     }
 

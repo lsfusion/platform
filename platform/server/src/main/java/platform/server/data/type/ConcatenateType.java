@@ -184,7 +184,7 @@ public class ConcatenateType extends AbstractType<byte[]> {
         return getDataClass(value, session, baseClass);
     }
 
-    public Object parseString(String s) throws ParseException {
+    public byte[] parseString(String s) throws ParseException {
         throw new RuntimeException("Parsing values from string is not supported");
     }
 

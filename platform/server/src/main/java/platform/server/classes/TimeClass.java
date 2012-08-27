@@ -40,13 +40,13 @@ public class TimeClass extends DataClass<Time> {
         return DateFormat.getTimeInstance(DateFormat.SHORT);
     }
 
-    public Format getDefaultFormat() {
+    public SimpleDateFormat getDefaultFormat() {
         return new SimpleDateFormat("HH:mm:ss");
     }
 
-    public Object parseString(String s) throws ParseException {
+    public Time parseString(String s) throws ParseException {
         try {
-            return getDefaultFormat().parseObject(s);
+            return (Time) getDefaultFormat().parseObject(s);
         } catch (Exception e) {
             throw new ParseException("error parsing time", e);
         }
