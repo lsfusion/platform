@@ -3,7 +3,7 @@ MODULE UserPriceChange;
 REQUIRE System, Stock, PriceChange, Numerator, Machinery, Terminal, Barcode;
 
 
-CLASS userPriceChange 'Переоценка товаров' : priceChangeDocument, numeratedDocument, priceTransactionDocument, historyObject;
+CLASS userPriceChange 'Переоценка товаров' : priceChangeDocument, numeratedObject, priceTransactionDocument, historyObject;
 CLASS userPriceChangeDetail 'Строка переоценки товаров' : priceChangeDocumentDetail, importerPriceLedger, supplierPriceLedger, retailPriceLedger, retailVATLedger, warePriceLedger;
 CLASS userPriceChangePosted 'Проведенная переоценка товаров' : userPriceChange, postedObject;
 
@@ -14,6 +14,7 @@ CLASS userPriceChangePosted 'Проведенная переоценка тов�
 numberUserPriceChange (userPriceChange) = numberObject(userPriceChange) AND userPriceChange IS userPriceChange;
 seriesUserPriceChange (userPriceChange) = seriesObject(userPriceChange) AND userPriceChange IS userPriceChange;
 
+@defineNumeratedObject(userPriceChange, 'Нумератор для переоценки товара', 'ПT');
 @defineDocumentDetailSku(userPriceChange, sku);
 
 @defineDocumentDetailQuantity(userPriceChange);
@@ -121,7 +122,7 @@ toShowWareUserPriceChange 'Показывать строки с посудой' 
 
 FORM userPriceChange 'Переоценка товаров'
     OBJECTS u=userPriceChange FIXED PANEL
-    PROPERTIES (u) objectClassName, nameNumeratorObject, numberObject, seriesObject, setValueNumeratedObject,
+    PROPERTIES (u) objectClassName, nameNumeratorObject, numberObject, seriesObject,
                    dateUserPriceChange, timeUserPriceChange, nameDepartmentStoreUserPriceChange,
                    diffSupplierISumPriceChangeDocumentDetailPriceChangeDocument, diffMarkupSumPriceChangeDocumentDetailPriceChangeDocument, diffRetailVATISumPriceChangeDocumentDetailPriceChangeDocument,
                    diffWareSumPriceChangeDocumentDetailPriceChangeDocument SHOWIF showWare(), diffWareVATSumPriceChangeDocumentDetailPriceChangeDocument SHOWIF showWare(),
