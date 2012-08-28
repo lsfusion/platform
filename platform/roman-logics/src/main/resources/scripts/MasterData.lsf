@@ -21,12 +21,18 @@ PRIORITY Stock, LegalEntity, Store, RomanLogicsModule;
 
 inDiscountSkuGroupSku (discountSkuGroup, sku) += brandSupplierArticleSku(sku) == discountSkuGroup;
 
-// отбор артикулов
+// для фильтров
+
+inArticleSku(article, sku) = articleSku(sku)==article;
+
 inBrandSupplier (supplier, brandSupplier) = supplierBrandSupplier(brandSupplier) == supplier;
 inArticleBrand (brandSupplier, article) = brandSupplierArticle(article) == brandSupplier;
+inSkuBrand(brandSupplier, sku) = brandSupplierArticleSku(sku) == brandSupplier;
 
 inArticleCategory (category, article) = UNION OVERRIDE categoryArticle(article) == category,
                                                        article == article AND NOT category;
+
+inSkuCategory (category, sku) = UNION OVERRIDE categoryArticleSku(sku) == category, sku == sku AND NOT category;
 
 //stringEqualsAll(string) = string == 'Все';
 
@@ -34,10 +40,11 @@ inSupplierBrandArticle(supplier, brand, article) = UNION OVERRIDE brandSupplierA
                                                                   supplierArticle(article) == supplier AND NOT brand,
                                                                   article == article AND NOT supplier AND NOT brand;
 
-
+inSupplierBrandSku(supplier, brand, sku) = UNION OVERRIDE brandSupplierArticleSku(sku) == brand AND supplier IS supplier,
+                                                          supplierArticleSku(sku) == supplier AND NOT brand,
+                                                          sku == sku AND NOT supplier AND NOT brand;
 
 // подбор курса обмена валют
-
 META defineNearestRateExchangeObject(object, typeEx, typeCur, propDate, group)
 
     nearestPredDate###typeEx###typeCur###object(object) = GROUP MAX date IF rateExchange(typeExchange###typeEx###object(object), currency###typeCur###object(object), date) AND date < propDate(object) AND date IS DATE BY object;
@@ -258,8 +265,6 @@ FORM skuDialog 'SKU'
 
     DIALOG sku OBJECT s
 ;
-
-inArticleSku (article, sku) = articleSku(sku)==article;
 
 //----------------------------- для печати маркировок ----------------------------------------------------------------//
 

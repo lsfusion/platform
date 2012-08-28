@@ -184,7 +184,7 @@ META defineDocumentTransferRetail (concrete)
     retailPrice###concrete##Detail 'Цена розничная' = DATA NUMERIC[14,2] (concrete##Detail);
     retailSum###concrete##Detail 'Сумма розничная' (detail) = quantity###concrete##Detail(detail) * retailPrice###concrete##Detail(detail);
 
-    retailPrice###concrete##Detail(concrete##Detail) <- pricePriceSetDocumentArticleDateTime(articleSku(sku###concrete##Detail(concrete##Detail)), dateTime###concrete##Detail(concrete##Detail))
+    retailPrice###concrete##Detail(concrete##Detail) <- pricePriceSetDocumentSkuDateTime(sku###concrete##Detail(concrete##Detail), dateTime###concrete##Detail(concrete##Detail))
                                                             WHEN CHANGED(dateTime###concrete##Detail(concrete##Detail))
                                                                  OR CHANGED(sku###concrete##Detail(concrete##Detail));
 
