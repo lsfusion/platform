@@ -32,9 +32,8 @@ FORM contractSkuCustomer 'Договор с опт. покупателем'
     PROPERTIES(c) nameCompanyContractSkuCustomer, nameCustomerContractSkuCustomer,
                   numberContract, dateFromContract, dateToContract,
                   nameCurrencyContract, noteContract,
-                  nameTypeContractSku ON CHANGE EXEC dialogTypeContractSku(c),
-                  nameFormContractSku ON CHANGE EXEC dialogFormContractSku(c),
-                  delayContractSku ON CHANGE EXEC dialogDelayContractSku(c)
+                  nameTypeContractSku,
+                  nameFormContractSku
 
     EDIT contractSkuCustomer OBJECT c
 ;
@@ -69,7 +68,7 @@ FORM customer 'Оптовый покупатель'
     PROPERTIES(co, cu)   numberContractSkuCustomerCompanyCustomer
 
     OBJECTS c=contractSkuCustomer
-    PROPERTIES(c)  READONLY numberContract, nameCompanyContractSkuCustomer, nameTypeContractSku, nameFormContractSku, delayContractSku, dateFromContract,
+    PROPERTIES(c)  READONLY numberContract, nameCompanyContractSkuCustomer, nameTypeContractSku, nameFormContractSku, dateFromContract,
                    dateToContract, nameCurrencyContract, noteContract
     PROPERTIES(c)  ADDFORM, EDITFORM, delete
     FILTERS companyContractSkuCustomer(c) == co,

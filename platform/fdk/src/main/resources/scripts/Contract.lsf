@@ -90,6 +90,7 @@ FORM contract 'Договор'
 
 // ------------------------------------ Договора на перемещение товаров ---------------- //
 
+
 CLASS ABSTRACT contractSku 'Договор на поставку' : contract;
 
 GROUP paymentGroup 'Взаиморасчеты' : publicGroup;
@@ -98,16 +99,80 @@ CLASS STATIC contractSkuType 'Тип договора на поставку' {
     sale 'Договор купли-продажи',
     commission 'Договор комиссии'
 }
-@defineHistorizableCustom(typeContractSku, 'Тип договора', contractSkuType, name, contract, numberContract, paymentGroup);
+//@defineHistorizableCustom(typeContractSku, 'Тип договора', contractSkuType, name, contract, numberContract, paymentGroup);
 
 CLASS STATIC contractSkuForm 'Порядок оплаты договора на поставку' {
     prepayment 'С отсрочкой платежа',
     implement 'По факту реализации',
     requirement 'Платежное требование'
 }
-@defineHistorizableCustom(formContractSku, 'Порядок оплаты', contractSkuForm, name, contract, numberContract, paymentGroup);
+//@defineHistorizableCustom(formContractSku, 'Порядок оплаты', contractSkuForm, name, contract, numberContract, paymentGroup);
 
-@defineHistorizable(delayContractSku, 'Отсрочка платежа (календ. дней)', INTEGER, contract, numberContract, paymentGroup);
+//@defineHistorizable(delayContractSku, 'Отсрочка платежа (календ. дней)', INTEGER, contract, numberContract, paymentGroup);
+
+CLASS paymentCondition 'Условия оплаты';
+
+datePaymentCondition 'Дата' = DATA DATE (paymentCondition);
+datePaymentCondition (paymentCondition) <- currentDate() WHEN ASSIGNED(paymentCondition IS paymentCondition);
+contractPaymentCondition 'Договор' = DATA contractSku (paymentCondition) AUTOSET;
+numberContractPaymentCondition 'Номер договора' (paymentCondition) = numberContract(contractPaymentCondition(paymentCondition));
+
+TABLE contractSkuDate (contractSku, DATE);
+dataPaymentConditionContractDate 'Условия оплаты для контракта и даты' (contract, date) =
+    GROUP UNIQUE paymentCondition BY contractPaymentCondition(paymentCondition), datePaymentCondition(paymentCondition) PERSISTENT;
+
+datePaymentConditionContractDate 'Дата' (contract, date) =
+    GROUP MAX datePaymentCondition(paymentCondition) AND datePaymentCondition(paymentCondition) <= (date AS DATE)
+    BY contractPaymentCondition(paymentCondition), date;
+
+paymentConditionContractDate 'Условия оплаты для контракта на дату' (contract, date) =
+    dataPaymentConditionContractDate(contract, datePaymentConditionContractDate(contract, date));
+
+typePaymentCondition = DATA contractSkuType (paymentCondition);
+nameTypePaymentCondition 'Тип договора' (paymentCondition) = name(typePaymentCondition(paymentCondition));
+
+formPaymentCondition = DATA contractSkuForm (paymentCondition);
+nameFormPaymentCondition 'Порядок оплаты' (paymentCondition) = name(formPaymentCondition(paymentCondition));
+
+//для обратной совместимости
+
+typeContractSkuDate(contract, date) = typePaymentCondition(paymentConditionContractDate(contract, date));
+typeContractSku(contract) = typeContractSkuDate(contract, currentDate());
+nameTypeContractSku 'Тип договора' (contract) = name(typeContractSku(contract));
+formContractSkuDate(contract, date) = formPaymentCondition(paymentConditionContractDate(contract, date));
+formContractSku(contract) = formContractSkuDate(contract, currentDate());
+nameFormContractSku 'Условия оплаты' (contract) = name(formContractSku(contract));
+
+CLASS paymentPeriod 'Период рассрочки';
+
+countDaysPaymentPeriod 'Кол-во дней' = DATA NUMERIC[8,3] (paymentPeriod);
+percentPaymentPeriod 'Процент' = DATA NUMERIC[8,3] (paymentPeriod);
+paymentConditionPaymentPeriod 'Условия оплаты периода рассрочки' = DATA paymentCondition (paymentPeriod);
+
+CLASS bonusPeriod 'Период бонуса';
+
+countDaysBonusPeriod 'Кол-во дней' = DATA NUMERIC[8,3] (bonusPeriod);
+percentBonusPeriod 'Процент' = DATA NUMERIC[8,3] (bonusPeriod);
+paymentConditionBonusPeriod 'Условия оплаты периода бонуса' = DATA paymentCondition (bonusPeriod);
+
+FORM paymentCondition 'Условия оплаты'
+
+    OBJECTS pc = paymentCondition FIXED PANEL
+    PROPERTIES(pc) datePaymentCondition, numberContractPaymentCondition, nameTypePaymentCondition, nameFormPaymentCondition
+
+    OBJECTS pp = paymentPeriod
+    PROPERTIES(pp) countDaysPaymentPeriod, percentPaymentPeriod
+    PROPERTIES(pp) ADDOBJ, delete
+
+    OBJECTS bp = bonusPeriod
+    PROPERTIES(bp) countDaysBonusPeriod, percentBonusPeriod
+    PROPERTIES(bp) ADDOBJ, delete
+
+    FILTERS paymentConditionPaymentPeriod(pp) == pc,
+            paymentConditionBonusPeriod(bp) == pc
+
+    EDIT paymentCondition OBJECT pc
+;
 
 // Формы
 FORM contractSku 'Договор на поставку товаров'
@@ -115,9 +180,16 @@ FORM contractSku 'Договор на поставку товаров'
     PROPERTIES(c) namePartyAContract, namePartyBContract,
                   numberContract, dateFromContract, dateToContract,
                   nameCurrencyContract, noteContract,
-                  nameTypeContractSku ON CHANGE EXEC dialogTypeContractSku(c),
-                  nameFormContractSku ON CHANGE EXEC dialogFormContractSku(c),
-                  delayContractSku ON CHANGE EXEC dialogDelayContractSku(c)
+                  nameTypeContractSku,
+                  nameFormContractSku
+
+    OBJECTS pc = paymentCondition
+    PROPERTIES(pc) READONLY datePaymentCondition, numberContractPaymentCondition, nameTypePaymentCondition,
+                            nameFormPaymentCondition
+    PROPERTIES(pc) ADDSESSIONFORM, EDITSESSIONFORM, delete
+    ORDER BY datePaymentCondition
+
+    FILTERS contractPaymentCondition(pc) == c
 
     EDIT contract OBJECT c
 ;
@@ -125,9 +197,8 @@ FORM contractSku 'Договор на поставку товаров'
 FORM contractSkus 'Договора на поставку товаров'
     OBJECTS c=contract
     PROPERTIES(c) READONLY namePartyAContract, namePartyBContract, numberContract, dateFromContract, dateToContract,
-                           nameCurrencyContract, noteContract, nameTypeContractSku ON CHANGE EXEC dialogTypeContractSku(c),
-                           nameFormContractSku ON CHANGE EXEC dialogFormContractSku(c),
-                           delayContractSku ON CHANGE EXEC dialogDelayContractSku(c)
+                           nameCurrencyContract, noteContract, nameTypeContractSku,
+                           nameFormContractSku
 
     PROPERTIES(c) ADDFORM, EDITFORM, delete
 
@@ -153,9 +224,8 @@ FORM contractSkuCompany 'Договор'
     PROPERTIES(c) nameCompanyAContractSkuCompany, nameCompanyBContractSkuCompany,
                   numberContract, dateFromContract, dateToContract,
                   nameCurrencyContract, noteContract,
-                  nameTypeContractSku ON CHANGE EXEC dialogTypeContractSku(c),
-                  nameFormContractSku ON CHANGE EXEC dialogFormContractSku(c),
-                  delayContractSku ON CHANGE EXEC dialogDelayContractSku(c)
+                  nameTypeContractSku,
+                  nameFormContractSku
 
     EDIT contractSkuCompany OBJECT c
 ;
@@ -179,7 +249,7 @@ EXTEND FORM company
 
     OBJECTS cc=contractSkuCompany
     PROPERTIES(cc)  READONLY numberContract, dateFromContract, dateToContract,
-                            nameTypeContractSku, nameFormContractSku, delayContractSku,
+                            nameTypeContractSku, nameFormContractSku,
                             nameCurrencyContract, noteContract
     PROPERTIES(co, cb, cc) isCompanyCompanyContractSkuCompany
     PROPERTIES(cc)  ADDFORM, EDITFORM, delete

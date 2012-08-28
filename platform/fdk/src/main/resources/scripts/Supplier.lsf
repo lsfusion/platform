@@ -47,9 +47,8 @@ FORM contractSkuSupplier 'Договор'
     PROPERTIES(c) nameCompanyContractSkuSupplier, nameSupplierContractSkuSupplier,
                   numberContract, dateFromContract, dateToContract,
                   nameCurrencyContract, noteContract,
-                  nameTypeContractSku ON CHANGE EXEC dialogTypeContractSku(c),
-                  nameFormContractSku ON CHANGE EXEC dialogFormContractSku(c),
-                  delayContractSku ON CHANGE EXEC dialogDelayContractSku(c)
+                  nameTypeContractSku,
+                  nameFormContractSku
 
     EDIT contractSkuSupplier OBJECT c
 ;
@@ -93,7 +92,7 @@ FORM supplier 'Поставщик'
 
     OBJECTS c=contractSkuSupplier
     PROPERTIES(c)  READONLY numberContract, dateFromContract, dateToContract,
-                            nameTypeContractSku, nameFormContractSku, delayContractSku,
+                            nameTypeContractSku, nameFormContractSku,
                             nameCurrencyContract, noteContract
     PROPERTIES(s, co, c) isSupplierCompanyContractSkuSupplier
     PROPERTIES(c)  ADDFORM, EDITFORM, delete
@@ -196,7 +195,7 @@ EXTEND FORM company
     PROPERTIES(s, co)   numberContractSkuSupplierSupplierCompany
 
     OBJECTS c=contractSkuSupplier
-    PROPERTIES(c)  READONLY numberContract, nameSupplierContractSkuSupplier, nameTypeContractSku, nameFormContractSku, delayContractSku, dateFromContract,
+    PROPERTIES(c)  READONLY numberContract, nameSupplierContractSkuSupplier, nameTypeContractSku, nameFormContractSku, dateFromContract,
                    dateToContract, nameCurrencyContract, noteContract
     PROPERTIES(c)  ADDFORM, EDITFORM, delete
     FILTERS companyContractSkuSupplier(c) == co,

@@ -57,8 +57,9 @@ META implementContractPrepaymentLedger(object)
 
     @defineAggregation(object, object##ContractLedger, needToCreate###object##ContractLedger);
 
-    dateTimeContractLedger(object##ContractLedger) += sumDateTimeDay(dateTime###object(object###object##ContractLedger(object##ContractLedger)),
-                                                                     delayContractSku(contract###object(object###object##ContractLedger(object##ContractLedger))));
+    dateTimeContractLedger(object##ContractLedger) += dateTime###object(object###object##ContractLedger(object##ContractLedger));
+    //dateTimeContractLedger(object##ContractLedger) += sumDateTimeDay(dateTime###object(object###object##ContractLedger(object##ContractLedger)),
+    //                                                                 delayContractSku(contract###object(object###object##ContractLedger(object##ContractLedger))));
     contractContractLedger(object##ContractLedger) += contract###object(object###object##ContractLedger(object##ContractLedger));
     descriptionContractLedger(object##ContractLedger) += description###object(object###object##ContractLedger(object##ContractLedger));
 
