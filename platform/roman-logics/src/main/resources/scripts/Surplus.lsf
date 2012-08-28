@@ -55,12 +55,9 @@ CLASS surplusOutDetail 'Строка реализации излишков' : ou
 
 //----------------
 
-//currentBalanceTotalAStock 'Остаток всего (бухг.)' (stock) =  GROUP SUM  currentBalanceABatchStock(batch, stock) BY  stock;
-//currentBalanceTotalStock 'Остаток всего' (stock) = GROUP SUM currentBalanceBatchStock(batch, stock) BY  stock;
+createDetailSurplusOut 'Сделать подборку строк излишков' = [ACTION (surplusOut) {
 
-createDetailSurplusOut 'Сделать подборку строк излишков' = ACTION (surplusOut) {
-
-    FOR diffPositiveBalanceSkuStock(sku, stockSurplusOut(surplusOut)) DO {
+    FOR diffBalanceSkuStock(sku, stockSurplusOut(surplusOut)) DO {
         ADDOBJ surplusOutDetail;
         FOR d == addedObject() DO {
             SET surplusOutSurplusOutDetail(d) <- surplusOut;
@@ -69,7 +66,7 @@ createDetailSurplusOut 'Сделать подборку строк излишк�
         }
     }
 
-} IN documentPrmGroup CONFIRM;
+}](surplusOut) AND diffBalanceStock(stockSurplusOut(surplusOut)) IN documentPrmGroup CONFIRM;
 
 
 innerOrderSurplusOut (surplusOut) = DATA innerOrder (surplusOut);
@@ -87,7 +84,7 @@ createInnerOrderSurplusOut 'Создать внутренний заказ' = [A
         SET destinationStockInnerOrder(i) <- destinationStockSurplusOut(surplusOut);
         SET order() <- i;
 
-        FOR diffPositiveBalanceSkuStock(sku, stockSurplusOut(surplusOut)) DO {
+        FOR diffBalanceSkuStock(sku, stockSurplusOut(surplusOut)) DO {
             ADDOBJ innerOrderDetail;
             FOR d == addedObject() DO {
                 SET innerOrderInnerOrderDetail(d) <- i AS innerOrder;
@@ -103,7 +100,7 @@ createInnerOrderSurplusOut 'Создать внутренний заказ' = [A
         SET picking() <- p;
         SET innerOrderOrderPicking (p) <- order();
 
-        FOR diffPositiveBalanceSkuStock(sku, stockSurplusOut(surplusOut)) DO {
+        FOR diffBalanceSkuStock(sku, stockSurplusOut(surplusOut)) DO {
             ADDOBJ orderPickingDetail;
             FOR pd == addedObject() DO {
                 SET orderPickingOrderPickingDetail(pd) <- p AS orderPickingPosted;
