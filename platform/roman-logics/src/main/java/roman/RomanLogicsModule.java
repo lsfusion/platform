@@ -102,6 +102,8 @@ public class RomanLogicsModule extends LogicsModule {
     private LCP RRPImporterFreightSku;
     private LCP RRPFreightArticle;
     private LCP RRPFreightSku;
+    private LCP companyInvoice;
+    private LCP nameCompanyInvoice;
 
 
     public RomanLogicsModule(BaseLogicsModule<RomanBusinessLogics> baseLM, RomanBusinessLogics BL) {
@@ -1921,8 +1923,6 @@ public class RomanLogicsModule extends LogicsModule {
 
         // Invoice
         exporterInvoice = addDProp(idGroup, "exporterInvoice", "Экспортер (ИД)", exporter, invoice);
-        nameExporterInvoice = addJProp(baseGroup, "nameExporterInvoice", "Экспортер", baseLM.name, exporterInvoice, 1);
-        nameExporterInvoice.property.preferredCharWidth = 50;
 
         exporterProxyInvoice = addJProp(idGroup, "exporterProxyInvoice", "Экспортер (ИД)", baseLM.andNot1, exporterInvoice, 1, is(directInvoice), 1);
 
@@ -1934,6 +1934,10 @@ public class RomanLogicsModule extends LogicsModule {
         nameImporterDirectInvoice.property.minimumCharWidth = 30;
 
         addConstraint(addJProp("Для инвойса должен быть задан импортёр", baseLM.andNot1, is(directInvoice), 1, importerDirectInvoice, 1), false);
+
+        companyInvoice = addSUProp(Union.OVERRIDE, exporterProxyInvoice, importerDirectInvoice);
+        nameCompanyInvoice = addJProp("nameCompanyInvoice", "Компания", baseLM.name, companyInvoice, 1);
+        nameCompanyInvoice.property.preferredCharWidth = 50;
 
         //contractInvoice = addDProp(idGroup, "contractInvoice", "Договор (ИД)", contract, invoice);
         //sidContractInvoice = addJProp(baseGroup, "sidContractInvoice", "Договор", sidContract, contractInvoice, 1);
@@ -4370,7 +4374,7 @@ public class RomanLogicsModule extends LogicsModule {
                 setAddOnEvent(objInvoice, RomanLogicsModule.this, FormEventType.INIT);
             }
 
-            addPropertyDraw(objInvoice, baseLM.date, baseLM.objectClassName, sidDocument, nameCurrencyDocument, sumDocument, quantityDocument, netWeightDocument, nameExporterInvoice, nameImporterDirectInvoice, sidDestinationDestinationDocument, nameDestinationDestinationDocument);
+            addPropertyDraw(objInvoice, baseLM.date, baseLM.objectClassName, sidDocument, nameCurrencyDocument, sumDocument, quantityDocument, netWeightDocument, nameCompanyInvoice, sidDestinationDestinationDocument, nameDestinationDestinationDocument);
             objInvoice.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             ObjectEntity objList;
@@ -4566,7 +4570,7 @@ public class RomanLogicsModule extends LogicsModule {
             objSupplier.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             objInvoice = addSingleGroupObject("invoice", (box ? boxInvoice : simpleInvoice), "Инвойс", baseLM.date, baseLM.objectClassName, sidDocument, nameCurrencyDocument, sumDocument,
-                    quantityDocument, netWeightDocument, nameExporterInvoice, nameImporterDirectInvoice, sidDestinationDestinationDocument, nameDestinationDestinationDocument, baseLM.delete);
+                    quantityDocument, netWeightDocument, nameCompanyInvoice, sidDestinationDestinationDocument, nameDestinationDestinationDocument, baseLM.delete);
             //addObjectActions(this, objInvoice);
 
             if (box) {

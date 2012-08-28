@@ -29,18 +29,12 @@ CONSTRAINT partyBContract(contractDirectInvoice(directInvoice)) != importerDirec
 
 // По коробам
 EXTEND FORM boxInvoiceForm
-
-PROPERTIES(invoice) numberUserContractInvoice AFTER nameExporterInvoice, numberContractDirectInvoice,
-                    numberContractInvoice TODRAW invoice FORCE PANEL
-
+    PROPERTIES(invoice) numberContractInvoice AFTER nameCompanyInvoice
 ;
 
 //Без коробов
 EXTEND FORM simpleInvoiceForm
-
-PROPERTIES(invoice) numberUserContractInvoice AFTER nameExporterInvoice, numberContractDirectInvoice,
-                    numberContractInvoice TODRAW invoice FORCE PANEL
-
+    PROPERTIES(invoice) numberContractInvoice AFTER nameCompanyInvoice
 ;
 
 //---------------------------------------------- Коммерческие инвойсы ------------------------------------------------//
