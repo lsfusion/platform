@@ -60,7 +60,7 @@ public class DataPanelView extends JPanel implements PanelView {
             add(table);
         }
 
-        if (property.eventSID != null) {
+        if (property.eventID != null) {
             valueEventListener = new ValueEventListener() {
                 @Override
                 public void actionPerfomed(final ValueEvent event) {
@@ -77,7 +77,7 @@ public class DataPanelView extends JPanel implements PanelView {
                     });
                 }
             };
-            Main.eventBus.addListener(valueEventListener, property.eventSID);
+            Main.eventBus.addListener(valueEventListener, property.eventID);
         }
     }
 

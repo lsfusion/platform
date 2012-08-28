@@ -10,10 +10,10 @@ import platform.interop.form.ServerResponse;
 import platform.server.Settings;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.ManualLazy;
-import platform.server.classes.*;
+import platform.server.classes.ActionClass;
+import platform.server.classes.LogicalClass;
+import platform.server.classes.ValueClass;
 import platform.server.classes.sets.AndClassSet;
-import platform.server.data.QueryEnvironment;
-import platform.server.data.SQLSession;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.where.cases.CaseExpr;
 import platform.server.data.query.MapKeysInterface;
@@ -32,7 +32,9 @@ import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.property.group.AbstractNode;
 import platform.server.serialization.ServerIdentitySerializable;
 import platform.server.serialization.ServerSerializationPool;
-import platform.server.session.*;
+import platform.server.session.Modifier;
+import platform.server.session.PropertyChange;
+import platform.server.session.PropertyChanges;
 
 import javax.swing.*;
 import java.io.DataInputStream;
@@ -95,6 +97,8 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     public Boolean askConfirm;
     public String askConfirmMessage;
+
+    public String eventID;
 
     public String toString() {
         return caption + " (" + sID + ")";
@@ -303,6 +307,8 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
             entity.askConfirm = askConfirm;
         if (askConfirmMessage != null)
             entity.askConfirmMessage = askConfirmMessage;
+        if (eventID != null)
+            entity.eventID = eventID;
 
         //перемещаем свойство в контекстном меню в тот же groupObject, что и свойство, к которому оно привязано
         if (panelLocation != null && panelLocation.isShortcutLocation() && ((ShortcutPanelLocation) panelLocation).getOnlyProperty() != null) {

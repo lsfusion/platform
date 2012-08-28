@@ -96,7 +96,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public boolean showTableFirst;
     public boolean clearText;
     public String tableName;
-    public String eventSID;
+    public String eventID;
     public boolean editOnSingleClick;
     public boolean hide;
 
@@ -385,7 +385,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         }
 
         returnClass = ClientTypeSerializer.deserializeClientClass(inStream);
-        eventSID = pool.readString(inStream);
+        eventID = pool.readString(inStream);
 
         creationScript = pool.readString(inStream);
 

@@ -10,12 +10,12 @@ public class EventBus implements Serializable {
 
     private WeakHashMap<ValueEventListener, String> listeners = new WeakHashMap<ValueEventListener, String>();
 
-    public synchronized void addListener(ValueEventListener listener, String eventSID) {
-        listeners.put(listener, eventSID);
+    public synchronized void addListener(ValueEventListener listener, String eventID) {
+        listeners.put(listener, eventID);
     }
 
-    public void fireValueChanged(String eventSID, Object value) {
-        fireEvent(new ValueEvent(eventSID, value));
+    public void fireValueChanged(String eventID, Object value) {
+        fireEvent(new ValueEvent(eventID, value));
     }
 
     public synchronized void fireEvent(ValueEvent event) {

@@ -3848,7 +3848,7 @@ public class RomanLogicsModule extends LogicsModule {
 
 //            objBarcode.resetOnApply = true;
 
-            getPropertyDraw(baseLM.objectValue, objBarcode).eventSID = ScannerDaemonTask.SCANNER_SID;
+            getPropertyDraw(baseLM.objectValue, objBarcode).eventID = ScannerDaemonTask.SCANNER_SID;
 
             addPropertyDraw(baseLM.reverseBarcode);
         }
@@ -4885,7 +4885,7 @@ public class RomanLogicsModule extends LogicsModule {
             getPropertyDraw(nameCategoryArticleSkuShipmentDetail).setPropertyBackground(oneArticleProperty);
             getPropertyDraw(nameUnitOfMeasureArticleSkuShipmentDetail).setPropertyBackground(oneArticleProperty);
             getPropertyDraw(netWeightSkuShipmentDetail).setPropertyBackground(oneArticleSizeProperty);
-            getPropertyDraw(netWeightSkuShipmentDetail).eventSID = WeightDaemonTask.SCALES_SID;
+            getPropertyDraw(netWeightSkuShipmentDetail).eventID = WeightDaemonTask.SCALES_SID;
             getPropertyDraw(nameCountryOfOriginSkuShipmentDetail).setPropertyBackground(oneArticleColorProperty);
             getPropertyDraw(mainCompositionOriginSkuShipmentDetail).setPropertyBackground(oneArticleColorProperty);
             getPropertyDraw(additionalCompositionOriginSkuShipmentDetail).setPropertyBackground(oneArticleColorProperty);
