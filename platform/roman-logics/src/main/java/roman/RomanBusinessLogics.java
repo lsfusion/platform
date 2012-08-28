@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Currency;
 
 @SuppressWarnings({"FieldCanBeLocal", "UnusedDeclaration", "DuplicateThrows"})
 public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
@@ -31,6 +30,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     public ScriptingLogicsModule Currency;
     public ScriptingLogicsModule ContractLedger;
     public ScriptingLogicsModule Supplier;
+    public ScriptingLogicsModule I18n;
     EquipmentServer equipmentServer;
 
     public RomanBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
@@ -50,6 +50,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         Currency = addModuleFromResource("/scripts/Currency.lsf");
         ContractLedger = addModuleFromResource("/scripts/ContractLedger.lsf");
         Supplier = addModuleFromResource("/scripts/Supplier.lsf");
+        I18n = addModuleFromResource("/scripts/I18n.lsf");
 
         addModulesFromResource(
             "/scripts/Utils.lsf",

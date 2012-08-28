@@ -93,7 +93,7 @@ departmentStoreReceiptDetail (receiptDetail) = UNION EXCLUSIVE departmentStoreRe
 @defineDocumentDetailSku(receiptSale, sku);
 @defineDocumentDetailSku(receiptReturn, sku);
 skuReceiptDetail (receiptDetail) = skuReceiptReturnDetail(receiptDetail) OR skuReceiptSaleDetail(receiptDetail);
-nameSkuReceiptDetail 'Товар' (receiptDetail) = nameSku(skuReceiptDetail(receiptDetail)) IN recognizeGroup;
+nameSkuReceiptDetail 'Товар' (receiptDetail) = nameSkuStock(skuReceiptDetail(receiptDetail), departmentStoreReceiptDetail(receiptDetail)) IN recognizeGroup;
 
 numberReceipt 'Номер чека' (receipt) = DATA INTEGER (receipt) IN documentHeaderGroup;
 numberReceiptReceiptDetail 'Номер чека' (receiptDetail) = numberReceipt(receiptReceiptDetail(receiptDetail));
@@ -599,13 +599,13 @@ FORM searchSkuSaleReceipt 'Поиск SKU'
     OBJECTS st = departmentStore
 
     TREE skuTree sk = skuGroup PARENT parentSkuGroup
-    PROPERTIES READONLY skuTreeName = name(sk)
+    PROPERTIES READONLY skuTreeName = nameSkuGroupStock(sk, st)
     ORDER BY skuTreeName
 
     OBJECTS           s=sku
-    PROPERTIES        READONLY nameSku(s), idBarcodeSku(s)
+    PROPERTIES        READONLY nameSkuStock(s, st), idBarcodeSku(s)
     FILTERS           isParentSkuGroupSku(sk, s)
-    ORDER BY          nameSku
+    ORDER BY          nameSkuStock
 
     PROPERTIES(s, st) READONLY currentBalanceSkuStock HINTNOUPDATE, currentPOSPriceSkuDepartmentStore
 
@@ -658,7 +658,7 @@ FORM scanBarcodeReturnReceipt 'Выбор строки возврата'
     OBJECTS d = departmentStore FIXED PANEL
 
     OBJECTS s = sku FIXED PANEL
-    PROPERTIES(s) READONLY idBarcodeSku, nameSku
+    PROPERTIES idBarcodeSku(s) READONLY, nameSkuStock(s, d)
 
     OBJECTS r = receiptSaleDetail FIXED GRID
     PROPERTIES(r) READONLY numberReceiptReceiptDetail, dateTimeReceiptSaleDetail, numberDiscountCardReceiptDetail, nameClientDiscountCardReceiptDetail, sumReceiptDetailReceiptDetail,
@@ -672,7 +672,7 @@ DESIGN scanBarcodeReturnReceipt FROM DEFAULT {
     PROPERTY(idBarcodeSku) {
         focusable = FALSE;
     }
-    PROPERTY(nameSku) {
+    PROPERTY(nameSkuStock) {
         focusable = FALSE;
     }
 }
@@ -919,7 +919,7 @@ FORM POS
     FILTERS receiptReceiptDetail(d) == r
 
     OBJECTS bs = STRING[14] FIXED PANEL
-    PROPERTIES(bs) barcodeSale = OBJVALUE ON CHANGE EXEC changeBarcodeSaleReceipt(r)
+    PROPERTIES(bs) SHOWIF currentZReport() barcodeSale = OBJVALUE ON CHANGE EXEC changeBarcodeSaleReceipt(r)
 
     OBJECTS pc = promotionCondition
     PROPERTIES(pc) SHOWIF currentZReport() READONLY namePromotionPromotionCondition, name, dateFromPromotionCondition, dateToPromotionCondition, percentPromotionCondition

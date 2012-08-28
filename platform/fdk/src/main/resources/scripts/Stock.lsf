@@ -1,6 +1,6 @@
 MODULE Stock;
 
-REQUIRE System, Utils, Hierarchy, LegalEntity;
+REQUIRE System, Utils, Hierarchy, LegalEntity, I18n;
 
 // ----------------------------------- Склады ------------------------------------------ //
 
@@ -13,11 +13,12 @@ CLASS ABSTRACT stockGroup 'Группа складов' : named;
 CLASS ABSTRACT stock 'Склад' : named;
 TABLE stock(stock);
 
-stockGroupStock (stock) = ABSTRACT stockGroup (stock);
+stockGroupStock (stock) = ABSTRACT stockGroup (stock) PERSISTENT;
 
-companyStock (stock) = ABSTRACT company (stock);
+companyStock (stock) = ABSTRACT company (stock) PERSISTENT;
 nameCompanyStock 'Компания' (stock) = name(companyStock(stock));
 UNPStock 'УНП' (stock) = UNPLegalEntity(companyStock(stock));
+languageStock (stock) = languageLegalEntity(companyStock(stock)) PERSISTENT;
 
 addressStock 'Адрес' (stock) = ABSTRACT STRING[100] (stock);
 
@@ -45,16 +46,28 @@ FORM UOMs 'Единицы измерений'
     PROPERTIES(u) ADDFORM, EDITFORM, delete
 ;
 
-// ----------------------------------- Sku ------------------------------------------ //
+// ----------------------------------- Sku Group ------------------------------------------ //
 
 CLASS ABSTRACT skuGroup 'Группа SKU' : named;
 @defineHierarchyAbstract(skuGroup);
+
+TABLE skuGroupLanguage(skuGroup, language);
+nameSkuGroupLanguage 'Наименование (иностр.)' = ABSTRACT STRING[110] (skuGroup, language) PERSISTENT MINCHARWIDTH 40 PREFCHARWIDTH 80 INDEXED AGGPROP;
+
+nameSkuGroupStock 'Наименование (иностр.)' (skuGroup, stock) = IF languageStock(stock) THEN nameSkuGroupLanguage(skuGroup, languageStock(stock)) ELSE name(skuGroup);
+
+// ----------------------------------- Sku ------------------------------------------ //
 
 CLASS ABSTRACT sku 'SKU';
 TABLE sku(sku);
 
 skuGroupSku (sku) = ABSTRACT skuGroup (sku);
 nameSku 'Наименование' (sku) = ABSTRACT STRING[200] (sku) PERSISTENT MINCHARWIDTH 40 PREFCHARWIDTH 80 INDEXED AGGPROP IN recognizeGroup;
+
+TABLE skuLanguage(sku, language);
+nameSkuLanguage 'Наименование (иностр.)' = ABSTRACT STRING[200] (sku, language) PERSISTENT MINCHARWIDTH 40 PREFCHARWIDTH 80 INDEXED AGGPROP;
+
+nameSkuStock 'Наименование (иностр.)' (sku, stock) = IF languageStock(stock) THEN nameSkuLanguage(sku, languageStock(stock)) ELSE nameSku(sku);
 
 UOMSku (sku) = ABSTRACT UOM (sku);
 shortNameUOMSku 'Ед. изм.' (sku) = shortName(UOMSku(sku)) IN recognizeGroup;
@@ -1057,8 +1070,8 @@ META defineDialogSku (form)
 
         PROPERTIES form###nameStock()
 
-        OBJECTS s=sku
-        PROPERTIES READONLY    inputName = nameSku(s)
+        OBJECTS s=sku                                 //form###nameSku 'Наименование' (sku) = IF form###stock() THEN nameSkuStock(sku, form###stock()) ELSE nameSku(sku);
+        PROPERTIES READONLY    inputName = nameSku(s) //form###nameSku(s)
         PROPERTIES(s)          form###quantity
         PROPERTIES(s) READONLY form###balance SHOWIF form###stock()
         PROPERTIES(s)          form###all SHOWIF form###stock()

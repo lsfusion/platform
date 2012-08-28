@@ -3,6 +3,7 @@ MODULE MasterData;
 REQUIRE System,
         Stock,
         Store,
+        I18n,
         LegalEntity,
         Barcode,
         RetailCRM,
@@ -70,6 +71,27 @@ FORM syncBarcodeSkuForm 'Синхронизация шрих-кодов'
     PROPERTIES(s) syncBarcodeSku
 ;
 
+// ---------------------------------- Формы изменения атрибутов ------------------------------------- //
+@defineHierarchy(category);
+
+FORM category 'Товарная группа'
+    OBJECTS c = category FIXED PANEL
+    PROPERTIES(c) nameParentCategory, name, nameOrigin, nameTypeInvoiceCategory, warrantyCategory, nameUnitOfMeasureCategory, necessaryStampCategory
+
+    OBJECTS l = language
+    PROPERTIES name(l) READONLY, languageName(c, l)
+
+    EDIT category OBJECT c
+;
+
+FORM categories 'Товарные группы'
+    OBJECTS c = category
+    PROPERTIES(c) READONLY name, nameOrigin, nameTypeInvoiceCategory, warrantyCategory, nameUnitOfMeasureCategory, necessaryStampCategory
+    PROPERTIES(c)          nameParentCategory
+    PROPERTIES(c) ADDFORM, EDITFORM, delete
+
+    DIALOG category OBJECT c
+;
 // ---------------------------------- Формы для выбора атрибутов ------------------------------------ //
 
 FORM genders 'Пол'

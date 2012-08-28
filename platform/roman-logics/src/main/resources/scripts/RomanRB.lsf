@@ -97,6 +97,7 @@ EXTEND FORM globalParamForm
 
 NAVIGATOR {
     itemClassifier {
+        ADD categories;
         ADD UOMs;
     }
 

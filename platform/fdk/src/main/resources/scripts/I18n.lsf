@@ -1,0 +1,38 @@
+MODULE I18n;
+
+REQUIRE System;
+
+// ------------------------------------------------ Язык ---------------------------------------------- //
+
+CLASS language 'Язык' : named;
+TABLE language(language);
+
+localeLanguage 'Locale' = DATA STRING[5] (language);
+
+FORM language 'Язык'
+    OBJECTS l = language
+    PROPERTIES(l) name, localeLanguage
+
+    EDIT language OBJECT l
+;
+
+FORM languages 'Языки'
+    OBJECTS l = language
+    PROPERTIES(l) READONLY name, localeLanguage
+    PROPERTIES(l)          ADDFORM, EDITFORM, delete
+
+    DIALOG language OBJECT l
+;
+
+NAVIGATOR {
+    catalogElement {
+        ADD languages;
+    }
+}
+
+// ---------------------------------------------- Мультиязычный объект -------------------------------- //
+
+CLASS multiLanguageNamed 'Мультиязычный объект';
+
+TABLE multiLanguageNamedLanguage(multiLanguageNamed, language);
+languageName 'Название (иностр.)' = DATA ISTRING[110] (multiLanguageNamed, language);

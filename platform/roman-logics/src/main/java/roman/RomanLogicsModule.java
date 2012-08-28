@@ -1421,7 +1421,10 @@ public class RomanLogicsModule extends LogicsModule {
 
         pallet = addConcreteClass("pallet", "Паллета", baseLM.barcodeObject);
 
-        category = addConcreteClass("category", "Номенклатурная группа", secondNameClass, baseClass.named, (CustomClass) BL.Stock.getClassByName("skuGroup"));
+        category = addConcreteClass("category", "Номенклатурная группа", secondNameClass,
+                                                                         baseClass.named,
+                                                                         (CustomClass) BL.Stock.getClassByName("skuGroup"),
+                                                                         (CustomClass) BL.I18n.getClassByName("multiLanguageNamed"));
 
         customCategory = addAbstractClass("customCategory", "Уровень ТН ВЭД", baseClass);
 
@@ -3615,9 +3618,6 @@ public class RomanLogicsModule extends LogicsModule {
         NavigatorElement itemClassifier = addNavigatorElement(classifier, "itemClassifier", "Номенклатура");
 
         addFormEntity(new SkuFormEntity(itemClassifier, "skus", "Товары"));
-
-        CategoryFormEntity categoryForm = addFormEntity(new CategoryFormEntity(itemClassifier, "categories", "Товарные группы"));
-        category.setDialogForm(categoryForm, categoryForm.objCategory);
 
         NavigatorElement contragentClassifier = addNavigatorElement(classifier, "contragentClassifier", "Контрагенты");
 

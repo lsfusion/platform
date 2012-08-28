@@ -1,6 +1,6 @@
 MODULE RomanStock;
 
-REQUIRE Stock, Warehouse, Barcode, RomanLogicsModule, Contract;
+REQUIRE Stock, Warehouse, Barcode, RomanLogicsModule, Contract, MasterData, I18n;
 
 PRIORITY Stock, RomanLogicsModule;
 
@@ -9,12 +9,20 @@ EXTEND FORM dialogSku
                              sidSizeSupplierItem, sidColorSupplierItem, nameColorSupplierItem
 ;
 
+nameCategoryArticleSkuLanguage 'Наименование (иностр.)' (sku, language) =
+    languageName(categoryArticleSku(sku), language);
+
 // implement абстрактных свойств
-descriptionItem 'Наименование товара' (item) =
+descriptionItem 'Наименование' (item) =
         [FORMULA STRING[200] ' CAST($1 AS TEXT) || \'/\' || CAST($2 AS TEXT) || \'/\' || CAST($3 AS TEXT) || \' (\' || CAST($4 AS TEXT) || \', \' || CAST($5 AS TEXT) || \')\''](
         sidArticleSku(item), sidSizeSupplierItem(item), sidColorSupplierItem(item), nameCategoryArticleSku(item), nameBrandSupplierArticleSku(item));
 
+descriptionItemLanguage 'Наименование (иностр.)' (item, language) =
+        [FORMULA STRING[200] ' CAST($1 AS TEXT) || \'/\' || CAST($2 AS TEXT) || \'/\' || CAST($3 AS TEXT) || \' (\' || CAST($4 AS TEXT) || \', \' || CAST($5 AS TEXT) || \')\''](
+        sidArticleSku(item), sidSizeSupplierItem(item), sidColorSupplierItem(item), nameCategoryArticleSkuLanguage(item, language), nameBrandSupplierArticleSku(item));
+
 nameSku(sku) += descriptionItem (sku);
+nameSkuLanguage(sku, language) += descriptionItemLanguage(sku, language);
 
 // Единицы измерения
 UOMSku (sku) += unitOfMeasureArticleSku (sku);
@@ -28,12 +36,9 @@ EXTEND FORM UOMs
 ;
 
 // объявляем группы sku
-@defineHierarchy(category);
-EXTEND FORM categories
-    PROPERTIES (c) nameParentCategory;
-;
-
 parentSkuGroup (skuGroup) += parentCategory(skuGroup);
+nameSkuGroupLanguage(skuGroup, language) += languageName(skuGroup, language) IF skuGroup IS category;
+
 skuGroupSku (sku) += categoryArticleSku(sku);
 
 // добавляем еще один регистр (бухгалтерский)

@@ -39,8 +39,6 @@ CLASS doubleNamed 'Объект с кратким наименованием' : 
 
 shortName 'Краткое наименование' = DATA STRING[5] (doubleNamed) MINCHARWIDTH 4 PREFCHARWIDTH 4 MAXCHARWIDTH 5 IN baseGroup;
 
-CLASS language 'Язык' : doubleNamed;
-
 // --------------------------------------------- Yes/No --------------------------------- //
 CLASS STATIC yesNo 'Логическое' {
     yes 'ДА',

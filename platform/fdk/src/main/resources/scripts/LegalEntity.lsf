@@ -1,6 +1,6 @@
 MODULE LegalEntity;
 
-REQUIRE System, Historizable, Tax;
+REQUIRE System, Historizable, Tax, I18n;
 
 // ----------------------------------- Форма собственности ------------------------------------------ //
 
@@ -20,6 +20,9 @@ FORM ownership 'Форма собственности'
 CLASS ABSTRACT legalEntity 'Юридическое лицо' : named, externalObject;
 TABLE legalEntity (legalEntity);
 TABLE legalEntityDate (legalEntity, DATE);
+
+languageLegalEntity = DATA language(legalEntity);
+nameLanguageLegalEntity 'Язык' (legalEntity) = name(languageLegalEntity(legalEntity)) MINCHARWIDTH 5 PREFCHARWIDTH 10 MAXCHARWIDTH 15;
 
 GROUP lawGroup 'Реквизиты' : publicGroup;
 
@@ -134,7 +137,8 @@ TABLE company (company);
 
 FORM company 'Компания'
     OBJECTS co=company FIXED PANEL
-    PROPERTIES(co) name, nameOwnershipLegalEntity, shortNameOwnershipLegalEntity, fullNameLegalEntity,
+    PROPERTIES(co) name, nameLanguageLegalEntity,
+                   nameOwnershipLegalEntity, shortNameOwnershipLegalEntity, fullNameLegalEntity,
                    addressLegalEntity ON CHANGE EXEC dialogAddressLegalEntity(co),
                    postAddressLegalEntity ON CHANGE EXEC dialogPostAddressLegalEntity(co),
                    managerLegalEntity ON CHANGE EXEC dialogManagerLegalEntity(co),
@@ -158,7 +162,11 @@ DESIGN company FROM DEFAULT {
             NEW column1 {
                 childConstraints = TO THE BOTTOM;
 
-                ADD PROPERTY(name(co));
+                NEW row11 {
+                    childConstraints = TO THE RIGHT;
+                    ADD PROPERTY(name(co));
+                    ADD PROPERTY(nameLanguageLegalEntity);
+                }
                 ADD co.lawGroup;
             }
 
