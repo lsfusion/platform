@@ -3824,6 +3824,9 @@ FORM naturalLoss 'Ведомость естественной убыли'
 
     FILTERS inNaturalLossNaturalLossDetail(s, d)
 
+    EVENTS
+        ON OK EXEC prePostNaturalLoss(s)
+
     EDIT naturalLoss OBJECT s
 ;
 
@@ -3856,6 +3859,9 @@ DESIGN naturalLoss FROM DEFAULT{
         ADD s.documentSumGroup {
             childConstraints = TO THE BOTTOM;
         }
+        PROPERTY(formOkAction) {
+            caption = 'Провести';
+        }
     }
 }
 
@@ -3866,8 +3872,7 @@ FORM naturalLosses 'Ведомости естественной убыли'
                            quantityNaturalLossDetailNaturalLoss, invoiceSumNaturalLossDetailNaturalLoss,
                            retailSumNaturalLossDetailNaturalLoss, noteNaturalLoss
     PROPERTIES(s) toPrintNaturalLoss FORCE PANEL
-    PROPERTIES(s) ADDFORM, EDITFORM SHOWIF isDraftNaturalLoss(s), delete FORCE PANEL SHOWIF isDraftNaturalLoss(s),
-                  postNaturalLoss SHOWIF isDraftNaturalLoss(s), unpostNaturalLoss SHOWIF isPostedNaturalLoss(s)
+    PROPERTIES(s) ADDFORM, EDITFORM, delete FORCE PANEL
     PROPERTIES(s) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
     OBJECTS d=naturalLossDetail
     PROPERTIES(d) READONLY indexNaturalLossDetail, nameAttributeItemNaturalLossDetail, codeNaturalLossDetail,
@@ -4507,6 +4512,9 @@ FORM orderSupplier 'Заказ поставщику'
     FILTERGROUP filters1
         FILTER 'Показывать только заказанные позиции' 'F10' sumQuantityItemOrderSupplier(o, i) DEFAULT
 
+    EVENTS
+        ON OK EXEC prePostOrderSupplier(o)
+
     EDIT orderSupplier OBJECT o
 ;
 
@@ -4534,6 +4542,9 @@ DESIGN orderSupplier FROM DEFAULT {
             ADD o.orderSupplierGroup {
                 childConstraints = TO THE BOTTOM;
             };
+        }
+        PROPERTY(formOkAction) {
+            caption = 'Провести';
         }
     }
 
@@ -4627,8 +4638,7 @@ FORM orderSuppliers 'Заказы поставщику'
                            nameSupplierOrderSupplier, completePercentageOrderSupplier, totalSumOrderSupplier, timeCreated,
                            nameUserCreated, allowablePercentOrderSupplier
 
-    PROPERTIES(o)          ADDFORM, EDITFORM SHOWIF isDraftOrderSupplier(o), delete FORCE PANEL SHOWIF isDraftOrderSupplier(o),
-                           postOrderSupplier SHOWIF isDraftOrderSupplier(o), unpostOrderSupplier SHOWIF isPostedOrderSupplier(o)
+    PROPERTIES(o)          ADDFORM, EDITFORM, delete FORCE PANEL
     PROPERTIES(o) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
     PROPERTIES(o) FORCE PANEL toPrintOrderSupplier, emailPrintOrderSupplier
@@ -4946,6 +4956,9 @@ FORM writeOff 'Списание'
                            addDetailInputBarcodeWriteOffDetailWriteOff, deleteWriteOffDetailWriteOff
     FILTERS inWriteOffWriteOffDetail(w, d)
 
+    EVENTS
+        ON OK EXEC prePostWriteOff(w)
+
     EDIT writeOff OBJECT w
 ;
 
@@ -4983,6 +4996,9 @@ DESIGN writeOff FROM DEFAULT{
         d.panel{
             childConstraints = TO THE BOTTOM;
         }
+        PROPERTY(formOkAction) {
+            caption = 'Провести';
+        }
     }
 }
 
@@ -4992,9 +5008,7 @@ FORM writeOffs 'Списания'
                             nameReasonOffWriteOff, noteWriteOff, quantityWriteOffDetailWriteOff, countWriteOffDetailWriteOff,
                             sumWriteOffDetailWriteOff, nameWastageCommitteeWriteOff
 
-    PROPERTIES (w) ADDFORM, EDITFORM SHOWIF isDraftWriteOff(w), delete FORCE PANEL SHOWIF isDraftWriteOff(w),
-                   postWriteOff SHOWIF isDraftWriteOff(w), unpostWriteOff SHOWIF isPostedWriteOff(w)
-
+    PROPERTIES (w) ADDFORM, EDITFORM, delete FORCE PANEL
 
     OBJECTS d=writeOffDetail
     PROPERTIES (d) READONLY indexWriteOffDetail, idBarcodeSkuWriteOffDetail, nameAttributeItemWriteOffDetail, quantityWriteOffDetail,
@@ -5095,6 +5109,9 @@ FORM disparity 'Пересортица'
 
     FILTERS         disparityDisparityDetail(d) == dis
 
+    EVENTS
+        ON OK EXEC prePostDisparity(dis)
+
     EDIT disparity OBJECT dis
 ;
 
@@ -5168,6 +5185,9 @@ DESIGN disparity FROM DEFAULT {
             }
         }
         ADD functions.box;
+        PROPERTY(formOkAction) {
+            caption = 'Провести';
+        }
     }
 }
 
@@ -5188,8 +5208,7 @@ FORM disparities 'Пересортицы'
                      createSnapshotDisparityMachineryPriceTransaction FORCE PANEL SHOWIF isPostedDisparity(dis),
                      printPriceChangeDisparity FORCE PANEL SHOWIF needToPriceChangeDisparity(dis),
                      printInputPriceChangeDisparity FORCE PANEL SHOWIF needToInputPriceChangeDisparity(dis),
-                     ADDFORM, EDITFORM SHOWIF isDraftDisparity(dis), delete FORCE PANEL SHOWIF isDraftDisparity(dis),
-                     postDisparity SHOWIF isDraftDisparity(dis), unpostDisparity SHOWIF isPostedDisparity(dis)
+                     ADDFORM, EDITFORM, delete FORCE PANEL
 
     OBJECTS d=disparityDetail
     PROPERTIES(d)   READONLY indexDisparityDetail,
@@ -5281,6 +5300,9 @@ FORM shipment 'Поставка'
                   balanceBSkuStockDateTime, importerPriceBLedgerDateTime, wareBLedgerDateTime, warePriceBLedgerDateTime,
                   retailVATBLedgerDateTime, retailPriceBLedgerDateTime, supplierPriceBLedgerDateTime
 
+    EVENTS
+        ON OK EXEC prePostShipment(s)
+
     EDIT shipment OBJECT s
 ;
 
@@ -5336,7 +5358,7 @@ DESIGN shipment FROM DEFAULT{
                     ADD PROPERTY(seriesObject);
                     ADD PROPERTY(dateShipment);
                     ADD PROPERTY(timeShipment);
-                };
+                }
 
                 NEW headerCol1Row2 {
                     childConstraints = TO THE RIGHT;
@@ -5353,9 +5375,12 @@ DESIGN shipment FROM DEFAULT{
             ADD s.documentSumGroup {
                 childConstraints = TO THE BOTTOM;
             }
-        };
-    };
-};
+        }
+        PROPERTY(formOkAction) {
+            caption = 'Провести';
+        }
+    }
+}
 
 FORM shipments 'Поставки'
     OBJECTS s=shipment
@@ -5372,8 +5397,7 @@ FORM shipments 'Поставки'
                             createShipmentMachineryPriceTransaction FORCE PANEL SHOWIF showCreateMachineryPriceTransactionShipment(s),
                             createSnapshotShipmentMachineryPriceTransaction FORCE PANEL SHOWIF isPostedShipment(s),
                             printPriceChangeShipment FORCE PANEL SHOWIF needToPriceChangeShipment(s), printListRegister FORCE PANEL,
-                            ADDFORM, EDITFORM SHOWIF isDraftShipment(s), delete FORCE PANEL SHOWIF isDraftShipment(s),
-                            postShipment SHOWIF isDraftShipment(s), unpostShipment SHOWIF isPostedShipment(s)
+                            ADDFORM, EDITFORM, delete FORCE PANEL
 
     OBJECTS d=shipmentDetail
     PROPERTIES (d) READONLY  indexShipmentDetail, idBarcodeSkuShipmentDetail, nameAttributeItemShipmentDetail, quantityShipmentDetail,
@@ -5530,6 +5554,9 @@ FORM returnSupplier 'Возврат поставщику'
 
     FILTERS returnSupplierReturnSupplierDetail(d) == r
 
+    EVENTS
+        ON OK EXEC prePostReturnSupplier(r)
+
     EDIT returnSupplier OBJECT r
 ;
 
@@ -5547,8 +5574,7 @@ FORM returnSuppliers 'Возвраты поставщику'
                               printConsignmentSimpleVertical, printConsignmentSimpleAttach, editConsignment,
                               printPriceChangeReturnSupplier SHOWIF needToPriceChangeReturnSupplier(r)
 
-    PROPERTIES(r) postReturnSupplier SHOWIF isDraftReturnSupplier(r), unpostReturnSupplier SHOWIF isPostedReturnSupplier(r),
-                  ADDFORM, EDITFORM SHOWIF isDraftReturnSupplier(r), delete FORCE PANEL SHOWIF isDraftReturnSupplier(r)
+    PROPERTIES(r) ADDFORM, EDITFORM, delete FORCE PANEL
 
     OBJECTS d=returnSupplierDetail
     PROPERTIES(d) READONLY indexReturnSupplierDetail, idBarcodeSkuReturnSupplierDetail, nameAttributeItemReturnSupplierDetail,
@@ -5619,8 +5645,10 @@ DESIGN returnSupplier FROM DEFAULT {
             }
 
         }
-
-    };
+        PROPERTY(formOkAction) {
+            caption = 'Провести';
+        }
+    }
 
     NEW header.box BEFORE specification.box {
 
@@ -5825,6 +5853,9 @@ FORM innerFlow 'Расход в другой отдел'
                            addDetailInputBarcodeInnerFlowDetailInnerFlow, deleteInnerFlowDetailInnerFlow
     FILTERS inInnerFlowInnerFlowDetail(f, d)
 
+    EVENTS
+        ON OK EXEC prePostInnerFlow(f)
+
     EDIT innerFlow OBJECT f
 ;
 
@@ -5838,8 +5869,8 @@ DESIGN innerFlow FROM DEFAULT{
                 title = 'Спецификация';
                 ADD d.grid{
                     fillVertical = 12;
-                };
-            };
+                }
+            }
             NEW consignment{
                 title = 'Накладная';
                 childConstraints = TO THE BOTTOM;
@@ -5847,13 +5878,13 @@ DESIGN innerFlow FROM DEFAULT{
                     childConstraints = TO THE RIGHT;
 
                 ADD f.carConsignmentGroup{
-                };
+                }
                 NEW caseTwo {
                     childConstraints = TO THE BOTTOM;
                     ADD f.issuanceConsignmentGroup {
-                    };
+                    }
                     ADD f.loadingConsignmentGroup{
-                    };
+                    }
 
                     ADD f.sumConsignmentGroup{
                         childConstraints = TO THE BOTTOM;
@@ -5869,10 +5900,10 @@ DESIGN innerFlow FROM DEFAULT{
                             ADD PROPERTY (sumVATConsignmentDetailConsignment);
                             ADD PROPERTY (sumInvoiceConsignmentDetailConsignment);
                         }
-                    };
+                    }
                 }
-            };
-        };
+            }
+        }
 
         NEW header.box BEFORE specification.box {
             childConstraints = TO THE RIGHT;
@@ -5899,8 +5930,11 @@ DESIGN innerFlow FROM DEFAULT{
                 childConstraints = TO THE BOTTOM;
             }
         }
-    };
-};
+        PROPERTY(formOkAction) {
+            caption = 'Провести';
+        }
+    }
+}
 
 FORM innerFlows 'Расходы в другие отделы'
     OBJECTS f=innerFlow
@@ -5914,8 +5948,7 @@ FORM innerFlows 'Расходы в другие отделы'
                                printConsignmentAttach, printConsignmentSimpleHorizontal, printConsignmentSimpleVertical,
                                printConsignmentSimpleAttach, editConsignment
 
-    PROPERTIES (f) ADDFORM, EDITFORM SHOWIF isDraftInnerFlow(f), delete FORCE PANEL SHOWIF isDraftInnerFlow(f),
-                   postInnerFlow SHOWIF isDraftInnerFlow(f), unpostInnerFlow SHOWIF isPostedInnerFlow(f)
+    PROPERTIES (f) ADDFORM, EDITFORM, delete FORCE PANEL
 
     OBJECTS d=innerFlowDetail
     PROPERTIES (d) READONLY indexInnerFlowDetail, idBarcodeSkuInnerFlowDetail, nameAttributeItemInnerFlowDetail,
@@ -6068,6 +6101,9 @@ FORM innerArrival 'Приход из другого отдела'
                              diffQuantityItemInnerArrival, importerPriceItemInnerArrival, retailPriceItemInnerArrival
     FILTERS quantityInnerArrivalDetailItemInnerArrival(i, a)
 
+    EVENTS
+        ON OK EXEC prePostInnerArrival(a)
+
     EDIT innerArrival OBJECT a
 ;
 
@@ -6121,6 +6157,9 @@ DESIGN innerArrival FROM DEFAULT{
                 childConstraints = TO THE BOTTOM;
             }
         }
+        PROPERTY(formOkAction) {
+            caption = 'Провести';
+        }
     }
 }
 
@@ -6137,8 +6176,7 @@ FORM innerArrivals 'Приходы из других отделов'
                             createSnapshotInnerArrivalMachineryPriceTransaction FORCE PANEL SHOWIF isPostedInnerArrival(a),
                             printPriceChangeInnerArrival FORCE PANEL SHOWIF needToPriceChangeInnerArrival(a),
                             printInputListRegister FORCE PANEL,
-                            ADDFORM, EDITFORM SHOWIF isDraftInnerArrival(a), delete FORCE PANEL SHOWIF isDraftInnerArrival(a),
-                            postInnerArrival SHOWIF isDraftInnerArrival(a), unpostInnerArrival SHOWIF isPostedInnerArrival(a)
+                            ADDFORM, EDITFORM, delete FORCE PANEL
 
     PROPERTIES(a) FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
@@ -6435,6 +6473,9 @@ FORM statement 'Отгрузка из розницы'
 
     FILTERS         inStatementStatementDetail(st, d)
 
+    EVENTS
+        ON OK EXEC prePostStatement(st)
+
     EDIT statement OBJECT st
 ;
 
@@ -6505,6 +6546,9 @@ DESIGN statement FROM DEFAULT {
                 childConstraints = TO THE BOTTOM;
             }
         }
+        PROPERTY(formOkAction) {
+            caption = 'Провести';
+        }
     }
 }
 
@@ -6520,8 +6564,7 @@ FORM statements 'Отгрузки из розницы'
                      printConsignmentSimpleVertical, printConsignmentSimpleAttach, printPriceChangeStatement SHOWIF needToPriceChangeStatement(st),
                      nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
-    PROPERTIES (st)  ADDFORM, EDITFORM SHOWIF isDraftStatement(st), delete FORCE PANEL SHOWIF isDraftStatement(st),
-                     postStatement SHOWIF isDraftStatement(st), unpostStatement SHOWIF isPostedStatement(st)
+    PROPERTIES (st)  ADDFORM, EDITFORM, delete FORCE PANEL
 
     OBJECTS d=statementDetail
     PROPERTIES (d)   READONLY indexStatementDetail, idBarcodeSkuStatementDetail, nameAttributeItemStatementDetail, quantityStatementDetail,
@@ -6636,6 +6679,9 @@ FORM actOfStudy 'Акт проработки'
     FILTERS         actOfStudyStudyInputDetail(sid) == a,
                     studyInputDetailStudyOutputDetail(sod) == sid
 
+    EVENTS
+        ON OK EXEC prePostActOfStudy(a)
+
     EDIT actOfStudy OBJECT a
 ;
 
@@ -6695,6 +6741,9 @@ DESIGN actOfStudy FROM DEFAULT {
                 }
             }
         }
+        PROPERTY(formOkAction) {
+            caption = 'Провести';
+        }
     }
 }
 
@@ -6713,8 +6762,7 @@ FORM actOfStudies 'Акты проработки'
                             createSnapshotActOfStudyLabelTransaction FORCE PANEL SHOWIF isPostedActOfStudy(a),
                             createActOfStudyMachineryPriceTransaction FORCE PANEL SHOWIF showCreateMachineryPriceTransactionActOfStudy(a),
                             createSnapshotActOfStudyMachineryPriceTransaction FORCE PANEL SHOWIF isPostedActOfStudy(a),
-                            ADDFORM, EDITFORM SHOWIF isDraftActOfStudy(a), delete FORCE PANEL SHOWIF isDraftActOfStudy(a),
-                            postActOfStudy SHOWIF isDraftActOfStudy(a), unpostActOfStudy SHOWIF isPostedActOfStudy(a)
+                            ADDFORM, EDITFORM, delete FORCE PANEL
 
     OBJECTS i = item
     PROPERTIES(i)      READONLY nameAttributeItem, shortNameUOMItem
