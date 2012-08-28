@@ -16,11 +16,13 @@ REQUIRE System,
 
 PRIORITY RomanLogicsModule, Stock;
 
-CLASS WHfromRF 'Приход из РФ' : historyObject, numberedObject;
+CLASS WHfromRF 'Приход из РФ' : historyObject, numeratedObject;
 CLASS WHfromRFPosted 'Закрытый приход из РФ' : WHfromRF, postedObject;
 CLASS WHfromRFDetail 'Строка прихода из РФ' : batchB;
 
 @defineDocumentTables(WHfromRF);
+
+@defineNumeratedObject(WHfromRF, 'Нумератор для прихода из РФ', 'РФ');
 
 // расходы для фрахтов РФ
 currencyPayFreight 'Валюта платежей за РФ (ИД)' (freight) = currencyPayFreights() IF routeFreight(freight) == route.rf;
@@ -440,7 +442,7 @@ skipASkuLedger (ledger) += ledger IS WHfromRFDetail;
 FORM WHfromRF 'Приход товара из РФ'
 
     OBJECTS w = WHfromRF FIXED PANEL, d = WHfromRFDetail
-    PROPERTIES(w) objectClassName, numberObject, seriesObject, dateWHfromRF, timeWHfromRF, nameCompanyWHfromRF, nameFreightWHfromRF, nameWarehouseWHfromRF, barcodeCurrentFreightUnit,
+    PROPERTIES(w) objectClassName, nameNumeratorObject, numberObject, seriesObject, dateWHfromRF, timeWHfromRF, nameCompanyWHfromRF, nameFreightWHfromRF, nameWarehouseWHfromRF, barcodeCurrentFreightUnit,
                   fillWHfromRFDetailsSkuFreightUnit, printMarksSkuFreightUnit, printMarksSkuWHfromRF TODRAW d FORCE PANEL
     PROPERTIES(w) READONLY quantityRemainedPositionSkuWHfromRF SHOWIF barcodeCurrentFreightUnit(w),
                            quantityRemainedSkuWHfromRF SHOWIF barcodeCurrentFreightUnit(w)
@@ -494,6 +496,7 @@ DESIGN WHfromRF FROM DEFAULT {
                     caption = 'Шапка документа';
                     childConstraints = TO THE RIGHT;
                     ADD PROPERTY(objectClassName);
+                    ADD PROPERTY(nameNumeratorObject);
                     ADD PROPERTY(numberObject);
                     ADD PROPERTY(seriesObject);
                     ADD PROPERTY(dateWHfromRF);
