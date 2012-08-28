@@ -388,8 +388,8 @@ TABLE disparityOutBatchADetail(disparityOutBatchADetail);
 @defineDocumentDetailBatchCustom(disparityInBatchADetail, batch);
 @defineDocumentDetailBatchCustom(disparityOutBatchADetail, batch);
 
-@defineDocumentHeaderAndDetailSumCustomCaption (disparityBatchA, disparityInBatchADetail, ' (всего) (In)');
-@defineDocumentHeaderAndDetailSumCustomCaption (disparityBatchA, disparityOutBatchADetail, ' (всего) (Out)');
+@defineDocumentHeaderAndDetailSumCustomCaption (disparityBatchA, disparityInBatchADetail, ' (всего) (In)', );
+@defineDocumentHeaderAndDetailSumCustomCaption (disparityBatchA, disparityOutBatchADetail, ' (всего) (Out)', );
 
 
 CONSTRAINT disparityBatchA IS disparityBatchA AND isPostedDisparityBatchA(disparityBatchA)

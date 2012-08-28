@@ -51,26 +51,12 @@ CLASS surplusOutDetail 'Строка реализации излишков' : ou
 @defineAddDetailDialogSkuStock(surplusOut, sku, stock, dialogSku);
 @defineAddDetailDialogBarcode(surplusOut, sku);
 
-//@defineDocumentDetailBatchCustom(surplusOutDetail, batchA);
-@defineDocumentHeaderAndDetailSumCustomCaption (surplusOut, surplusOutDetail, );
+@defineDocumentHeaderAndDetailSumCustomCaption (surplusOut, surplusOutDetail, , ' отгрузки');
 
 //----------------
 
-//diffCurrentBalanceBatchStock 'Разница' (batch, stock)= currentBalanceABatchStock(batch, stock) (-) currentBalanceBatchStock(batch, stock);
-
-//diffPositiveBalanceBatchStock 'Положительные' (batch, stock) =  diffCurrentBalanceBatchStock(batch, stock) IF  diffCurrentBalanceBatchStock(batch, stock) >0;
-
-currentBalanceTotalAStock 'Остаток всего (бухг.)' (stock) =  GROUP SUM  currentBalanceABatchStock(batch, stock) BY  stock;
-currentBalanceTotalStock 'Остаток всего' (stock) = GROUP SUM currentBalanceBatchStock(batch, stock) BY  stock;
-
-
-//diffNegativeBalanceBatchStock 'Отрицательные' (batch, stock) =  -diffCurrentBalanceBatchStock(batch, stock) IF  diffCurrentBalanceBatchStock(batch, stock) <0;
-//diffPositiveBalanceBatchStock 'Положительные' (batch, stock) =  diffCurrentBalanceBatchStock(batch, stock) IF  diffCurrentBalanceBatchStock(batch, stock) >0;
-//
-//diffNegativeBalanceSkuStock 'Отрицательные' (sku, stock) =  GROUP SUM  diffNegativeBalanceBatchStock(batch, stock) BY skuBatch(batch), stock;
-//diffPositiveBalanceSkuStock 'Положительные' (sku, stock) =  GROUP SUM  diffPositiveBalanceBatchStock(batch, stock) BY skuBatch(batch), stock;
-
-
+//currentBalanceTotalAStock 'Остаток всего (бухг.)' (stock) =  GROUP SUM  currentBalanceABatchStock(batch, stock) BY  stock;
+//currentBalanceTotalStock 'Остаток всего' (stock) = GROUP SUM currentBalanceBatchStock(batch, stock) BY  stock;
 
 createDetailSurplusOut 'Сделать подборку строк излишков' = ACTION (surplusOut) {
 
@@ -94,47 +80,41 @@ createInnerOrderSurplusOut 'Создать внутренний заказ' = [A
     LOCAL order = innerOrder();
     LOCAL picking = orderPickingPosted();
 
-
     ADDOBJ innerOrder;
     FOR i == addedObject() DO {
         SET innerOrderSurplusOut(surplusOut) <- i AS innerOrder;
         SET stockInnerOrder(i) <- stockSurplusOut(surplusOut);
         SET destinationStockInnerOrder(i) <- destinationStockSurplusOut(surplusOut);
-        SET order() <- i AS innerOrder;
+        SET order() <- i;
 
-        FOR diffPositiveBalanceSkuStock(sku, stockSurplusOut(surplusOut)) DO {//AND surplusOutSurplusOutDetail(surplusOutDetail) == surplusOut
+        FOR diffPositiveBalanceSkuStock(sku, stockSurplusOut(surplusOut)) DO {
             ADDOBJ innerOrderDetail;
             FOR d == addedObject() DO {
                 SET innerOrderInnerOrderDetail(d) <- i AS innerOrder;
-                SET skuInnerOrderDetail(d) <- sku AS sku; // skuSurplusOutDetail(surplusOutDetail)
-                SET quantityInnerOrderDetail(d) <- diffPositiveBalanceSkuStock(sku, stockSurplusOut(surplusOut)); //  quantitySurplusOutDetail(surplusOutDetail)
+                SET skuInnerOrderDetail(d) <- sku AS sku;
+                SET quantityInnerOrderDetail(d) <- diffPositiveBalanceSkuStock(sku, stockSurplusOut(surplusOut));
             }
         }
     }
     FORM innerOrder OBJECTS o = order()  MODAL;
-    IF formResult() == formResult.ok THEN {
-        EXEC apply();
 
-        ADDOBJ orderPickingPosted;
-        FOR p == addedObject() DO {
-            SET picking() <- p AS orderPickingPosted;
-            SET innerOrderOrderPicking (p) <- order();
-            SET stockOrderPicking (p) <- stockSurplusOut(surplusOut);
-            SET destinationStockOrderPicking (p) <- destinationStockSurplusOut(surplusOut);
+    ADDOBJ orderPickingPosted;
+    FOR p == addedObject() DO {
+        SET picking() <- p;
+        SET innerOrderOrderPicking (p) <- order();
 
-            FOR diffPositiveBalanceSkuStock(sku, stockSurplusOut(surplusOut)) DO {
-                ADDOBJ orderPickingDetail;
-                FOR pd == addedObject() DO {
-                    SET orderPickingOrderPickingDetail(pd) <- p AS orderPickingPosted;
-                    SET skuOrderPickingDetail(pd) <- sku AS sku;
-                    SET quantityOrderPickingDetail(pd) <- diffPositiveBalanceSkuStock(sku, stockSurplusOut(surplusOut));
-                }
+        FOR diffPositiveBalanceSkuStock(sku, stockSurplusOut(surplusOut)) DO {
+            ADDOBJ orderPickingDetail;
+            FOR pd == addedObject() DO {
+                SET orderPickingOrderPickingDetail(pd) <- p AS orderPickingPosted;
+                SET skuOrderPickingDetail(pd) <- sku AS sku;
+                SET quantityOrderPickingDetail(pd) <- diffPositiveBalanceSkuStock(sku, stockSurplusOut(surplusOut));
             }
         }
-        FORM orderPicking OBJECTS p = picking() MODAL;
-        IF formResult() == formResult.ok THEN {
-            EXEC apply();
-        }
+    }
+    FORM orderPicking OBJECTS o = innerOrderOrderPicking(picking()), p = picking() MODAL;
+    IF formResult() == formResult.ok THEN {
+        EXEC apply();
     }
 
 }] (surplusOut )AND NOT innerOrderSurplusOut (surplusOut) IN documentPrmGroup CONFIRM;
@@ -156,10 +136,12 @@ editInnerOrder 'Редактировать' (innerOrder) = ACTION (innerOrder) {
 invoiceWHOutSurplusOut (surplusOut)= DATA invoiceWHOut (surplusOut);
 
 createInnerDocumentSurplusOut 'Создать документы' = ACTION (surplusOut) NEWSESSION {
-    FOR innerOrderOrderPicking(orderPicking) == innerOrderSurplusOut(surplusOut) DO {
-        EXEC createDocumentsOrderPicking(orderPicking);
-        FOR innerOrderOrderPicking(orderPickingInnerDocument (innerDocument)) == innerOrderSurplusOut(surplusOut) DO {
-            SET skipSkuLedgerInnerDocument(innerDocument) <- TRUE ;
+    IF  stockSurplusOut(surplusOut) != destinationStockSurplusOut(surplusOut) THEN {
+        FOR innerOrderOrderPicking(orderPicking) == innerOrderSurplusOut(surplusOut) DO {
+            EXEC createDocumentsOrderPicking(orderPicking);
+            FOR innerOrderOrderPicking(orderPickingInnerDocument (innerDocument)) == innerOrderSurplusOut(surplusOut) DO {
+                SET skipSkuLedgerInnerDocument(innerDocument) <- TRUE ;
+            }
         }
     }
     EXEC apply();
@@ -239,14 +221,13 @@ inInnerDocumentOrderPickingSurplusOut (innerDocument, orderPicking, surplusOut) 
 
 FORM surplusOuts 'Реализации излишков'
     OBJECTS t = surplusOut
-    PROPERTIES (t) READONLY isPostedSurplusOut FORCE GRID, numberObject, seriesObject, dateSurplusOut, timeSurplusOut,
+    PROPERTIES (t) READONLY numberObject, seriesObject, dateSurplusOut, timeSurplusOut,
                             nameStockSurplusOut, nameDestinationStockSurplusOut, nameDestinationCustomerSurplusOut, noteSurplusOut,
                             countSurplusOutDetailSurplusOut, quantitySurplusOutDetailSurplusOut
 
     PROPERTIES (t) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
-    PROPERTIES (t) ADDFORM, EDITFORM SHOWIF isDraftSurplusOut(t), delete FORCE PANEL SHOWIF isDraftSurplusOut(t),
-                   postSurplusOut SHOWIF isDraftSurplusOut(t), unpostSurplusOut SHOWIF isPostedSurplusOut(t)
+    PROPERTIES (t) ADDFORM, EDITFORM, delete FORCE PANEL
 
     OBJECTS d = surplusOutDetail
 
@@ -263,7 +244,7 @@ FORM surplusOuts 'Реализации излишков'
     PROPERTIES (id) READONLY isPostedInnerDocument, objectClassName, seriesObject, numberObject, dateInnerDocument,
                     nameStockInnerDocument, nameDestinationStockInnerDocument, countDetailInnerDocument, quantityDetailInnerDocument
 
-    PROPERTIES (id) editInnerDocument, delete, printConsignment FORCE GRID
+    PROPERTIES (id) editInnerDocument FORCE GRID, delete, printConsignment FORCE GRID
     PROPERTIES (t) FORCE PANEL  createInnerOrderSurplusOut, createInnerDocumentSurplusOut SHOWIF needInnerDocumentOrderPicking(o)
 
     FILTERS surplusOutSurplusOutDetail(d) == t,
@@ -337,10 +318,4 @@ EXTEND FORM surplusOuts
 
 @defineDocumentTransferRetail(surplusOut);
 
-//// Проводим по регистру
-//@implementSkuLedger(surplusOut, sku, warehouse);
-//quantityOutFIFOSkuLedger (ledger) += quantitySurplusOutDetail (ledger);
-//limitOutFIFOSkuLedgerBatch(ledger, batch) += quantitySurplusOutDetail (ledger) AND batchASurplusOutDetail(ledger) == batch; //AND NOT commissionContractSkuBatchA(batch);
-//sumOutSkuLedger(ledger) += supplierSumSurplusOutDetail(ledger);
-//
-//skipSkuLedger (ledger) += skipSkuLedgerSurplusOutDetail(ledger);
+

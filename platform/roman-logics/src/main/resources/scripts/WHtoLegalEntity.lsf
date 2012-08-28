@@ -256,10 +256,10 @@ EXTEND FORM invoiceWHOuts
     PROPERTIES(d) READONLY supplierPriceInvoiceWHOutDetail
 ;
 
-//-------------------------------------------------------
+//-------------------------------Имплементация внутреннего документа----------------------------------//
 
 stockInnerDocument (innerDocument) += warehouseInvoiceWHOut (innerDocument);
-//destinationStockInnerDocument (innerDocument) += destinationCustomerInvoiceWHOut (innerDocument);
+nameDestinationStockInnerDocument (innerDocument) += nameDestinationCustomerInvoiceWHOut (innerDocument);
 
 dateInnerDocument (innerDocument) += dateInvoiceWHOut (innerDocument);
 

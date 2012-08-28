@@ -565,16 +565,16 @@ META defineDocumentHeaderSum (object)
     @defineDocumentHeaderSumCustom(object, object##Detail);
 END
 
-META defineDocumentDetailPriceCustom (detail)
-    price###detail 'Цена' = DATA NUMERIC[14,2] (detail) IN baseGroup;
+META defineDocumentDetailPriceCustom (detail, captionDetail)
+    price###detail 'Цена'###captionDetail = DATA NUMERIC[14,2] (detail) IN baseGroup;
 END
 
 META defineDocumentHeaderSumCustomCaption (object, detail, caption)
     sum###detail###object 'Сумма'###caption (object) = GROUP SUM sum###detail(idetail) BY object###detail(idetail) IN documentSumGroup;
 END
 
-META defineDocumentHeaderAndDetailSumCustomCaption (object, detail, caption)
-    @defineDocumentDetailPriceCustom(detail);
+META defineDocumentHeaderAndDetailSumCustomCaption (object, detail, caption, captionDetail)
+    @defineDocumentDetailPriceCustom(detail, captionDetail);
     @defineDocumentDetailSumCustom (object, detail);
     @defineDocumentHeaderSumCustomCaption(object, detail, caption);
 END

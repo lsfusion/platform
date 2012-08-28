@@ -226,10 +226,12 @@ CLASS ABSTRACT innerDocument 'Внутренний документ' : historyOb
 dateInnerDocument 'Дата' (innerDocument) = ABSTRACT DATE (innerDocument);
 
 stockInnerDocument 'Склад-отправитель (ИД)' (innerDocument) = ABSTRACT stock (innerDocument);
-nameStockInnerDocument 'Склад-отправитель' (innerDocument) = name(stockInnerDocument(innerDocument));
+nameStockInnerDocument 'Склад-отправитель' (innerDocument) = name(stockInnerDocument(innerDocument)) MINCHARWIDTH 30 PREFCHARWIDTH 50;
 
-destinationStockInnerDocument 'Склад-получатель (ИД)' (innerDocument) = ABSTRACT stock (innerDocument);
-nameDestinationStockInnerDocument 'Склад-получатель' (innerDocument) = name(destinationStockInnerDocument(innerDocument));
+//destinationStockInnerDocument 'Склад-получатель (ИД)' (innerDocument) = ABSTRACT stock (innerDocument);
+//nameDestinationStockInnerDocument 'Склад-получатель' (innerDocument) = name(destinationStockInnerDocument(innerDocument));
+
+nameDestinationStockInnerDocument 'Получатель' (innerDocument) = ABSTRACT STRING[200] (innerDocument) MINCHARWIDTH 30 PREFCHARWIDTH 50;
 
 countDetailInnerDocument 'Количество строк в документе' (innerDocument) = ABSTRACT INTEGER (innerDocument);
 quantityDetailInnerDocument 'Кол-во (всего)' (innerDocument) = ABSTRACT NUMERIC[14,3] (innerDocument);

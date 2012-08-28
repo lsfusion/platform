@@ -11,6 +11,7 @@ REQUIRE System,
         Transfer,
         Sale,
         Return,
+        WHtoLegalEntity,
         RomanLogicsModule;
 
 PRIORITY Stock, RomanLogicsModule;
@@ -318,7 +319,7 @@ orderPickingTransferOut (moveOut) = DATA orderPicking (transferOut);
 
 orderPickingInnerDocument (innerDocument) += orderPickingTransferOut (innerDocument);
 stockInnerDocument (innerDocument) += stockTransferOut (innerDocument);
-destinationStockInnerDocument (innerDocument) += destinationStockTransferOut (innerDocument);
+nameDestinationStockInnerDocument (innerDocument) += nameDestinationStockTransferOut (innerDocument);
 
 dateInnerDocument (innerDocument) += dateTransferOut (innerDocument);
 
@@ -335,7 +336,7 @@ orderPickingSaleOut (saleOut) = DATA orderPicking (saleOut);
 
 orderPickingInnerDocument (innerDocument) += orderPickingSaleOut (innerDocument);
 stockInnerDocument (innerDocument) += stockSaleOut (innerDocument);
-destinationStockInnerDocument (innerDocument) += destinationStockSaleOut (innerDocument);
+nameDestinationStockInnerDocument (innerDocument) += nameDestinationStockSaleOut (innerDocument);
 
 dateInnerDocument (innerDocument) += dateSaleOut (innerDocument);
 
@@ -352,7 +353,7 @@ orderPickingReturnOut (returnOut) = DATA orderPicking (returnOut);
 
 orderPickingInnerDocument (innerDocument) += orderPickingReturnOut (innerDocument);
 stockInnerDocument (innerDocument) += stockReturnOut (innerDocument);
-destinationStockInnerDocument (innerDocument) += destinationStockReturnOut (innerDocument);
+nameDestinationStockInnerDocument (innerDocument) += nameDestinationStockReturnOut (innerDocument);
 
 dateInnerDocument (innerDocument) += dateReturnOut (innerDocument);
 
@@ -369,7 +370,7 @@ orderPickingMoveOut (moveOut) = DATA orderPicking (moveOut);
 
 orderPickingInnerDocument (innerDocument) += orderPickingMoveOut (innerDocument);
 stockInnerDocument (innerDocument) += stockMoveOut (innerDocument);
-destinationStockInnerDocument (innerDocument) += destinationStockMoveOut (innerDocument);
+nameDestinationStockInnerDocument (innerDocument) += nameDestinationStockMoveOut (innerDocument);
 
 dateInnerDocument (innerDocument) += dateMoveOut (innerDocument);
 
@@ -592,6 +593,9 @@ editInnerDocument 'Редактировать' (innerDocument) = ACTION (innerDo
             } ELSE
                 IF innerDocument IS returnOut THEN {
                     FORM returnOut OBJECTS t = innerDocument MODAL;
+                } ELSE
+                    IF innerDocument IS invoiceWHOut THEN {
+                        FORM invoiceWHOut OBJECTS t = innerDocument MODAL;
                 }
     }
 } IMAGE 'edit.png' EDITKEY 'BACK_SPACE';
