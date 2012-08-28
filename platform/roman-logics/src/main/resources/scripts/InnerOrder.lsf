@@ -384,7 +384,7 @@ quantityOrderPickingDetailBatchOrderPicking (batch, orderPicking) =
             PARTITION UNGROUP quantityOrderPickingDetailSkuOrderPicking
                   LIMIT STRICT currentBalanceBatchStock(batch, stockOrderPicking(orderPicking))
                   BY skuBatch(batch), orderPicking
-                  ORDER orderBBatch(batch);
+                  ORDER orderBBatch(batch), orderBatch(batch);
 
 quantityAOrderPickingDetailSkuOrderPicking (sku, orderPicking) = GROUP SUM
     quantityOrderPickingDetailBatchOrderPicking (batch, orderPicking) IF batch IS batchA AND NOT commissionContractSkuBatchA(batch)
