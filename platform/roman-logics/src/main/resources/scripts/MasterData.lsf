@@ -237,6 +237,8 @@ FORM skuDialog 'SKU'
     DIALOG sku OBJECT s
 ;
 
+inArticleSku (article, sku) = articleSku(sku)==article;
+
 //----------------------------- для печати маркировок ----------------------------------------------------------------//
 
 nameImporterSku 'Наименование' (importer, sku) = name(importer) AND importer IS company AND sku IS sku;

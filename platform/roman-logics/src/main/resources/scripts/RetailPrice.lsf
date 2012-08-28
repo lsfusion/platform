@@ -47,6 +47,12 @@ FORM coefficientRetails 'Надбавки'
 META metaCodePriceBaseDiscount(document, caption)
 
     priceData###document##Article caption = DATA NUMERIC[14,2](document, article) IN baseGroup;
+    priceData###document##Sku caption = DATA NUMERIC[14,2](document, sku) IN baseGroup;
+
+    price###document##ArticleSku (document, sku) = priceData###document##Article(document, articleSku(sku));
+
+    priceU###document##Sku (document, sku) = UNION OVERRIDE price###document##ArticleSku(document, sku), priceData###document##Sku(document, sku);
+    //правка названия
 
     order###document = LIST(dateTimePriceSetDocument(document), document) PERSISTENT;
 
@@ -57,21 +63,45 @@ META metaCodePriceBaseDiscount(document, caption)
                                                                        isPostedPriceSetDocument(document)
                                                                     BY article, dateTime;
 
-    document##ArticleDateTime (article, dateTime) = concat###document##ArticleDateTime(article, dateTime)[2];
+    concat###document##SkuDateTime (sku, dateTime) = GROUP MAX order###document(document) AND
+                                                               priceU###document##Sku (document, sku) AND
+                                                               dateTimePriceSetDocument(document) <= (dateTime AS DATETIME) AND
+                                                               dateTimeToPriceSetDocument(document) > (dateTime AS DATETIME) AND
+                                                               isPostedPriceSetDocument(document)
+                                                            BY sku, dateTime;
 
+    document##ArticleDateTime (article, dateTime) = concat###document##ArticleDateTime(article, dateTime)[2];
+    document##SkuDateTime (sku, dateTime) = concat###document##SkuDateTime(sku, dateTime)[2];
+
+    // цены поставщика
     price###document##ArticleDateTime(article, dateTime) = priceData###document##Article(document##ArticleDateTime(article, dateTime), article);
     priceIn###document##ArticleDateTime(article, dateTime) = priceInPriceSetDocumentArticle(document##ArticleDateTime(article, dateTime), article);
     prevPriceIn###document##ArticleDateTime(article, dateTime) = PREV(priceInPriceSetDocumentArticle(document##ArticleDateTime(article, dateTime), article));
-
-    RRP###document##ArticleDateTime(article, dateTime) = RRPPriceSetDocumentArticle(document##ArticleDateTime(article, dateTime), article);
-    prevRRP###document##ArticleDateTime(article, dateTime) = PREV(RRPPriceSetDocumentArticle(document##ArticleDateTime(article, dateTime), article));
 
     priceB###document##Article caption###' (предыдущая)' (document, article) = price###document##ArticleDateTime(article, dateTimePriceSetDocument(document)) MINCHARWIDTH 15;
     priceInB###document##Article 'Цена поставщика (предыдущая)' (document, article) = prevPriceIn###document##ArticleDateTime(article, dateTimePriceSetDocument(document));
     prevPriceInB###document##Article 'Цена поставщика (предыдущая)' (document, article) = prevPriceIn###document##ArticleDateTime(article, dateTimePriceSetDocument(document));
 
+    price###document##SkuDateTime(sku, dateTime) = priceU###document##Sku(document##SkuDateTime(sku, dateTime), sku);
+    priceIn###document##SkuDateTime(sku, dateTime) = priceInPriceSetDocumentSku(document##SkuDateTime(sku, dateTime), sku);
+    prevPriceIn###document##SkuDateTime(sku, dateTime) = PREV(priceInPriceSetDocumentSku(document##SkuDateTime(sku, dateTime), sku));
+
+    priceB###document##Sku caption###' (предыдущая)' (document, sku) = price###document##SkuDateTime(sku, dateTimePriceSetDocument(document)) MINCHARWIDTH 15;
+    priceInB###document##Sku 'Цена поставщика (предыдущая)' (document, sku) = prevPriceIn###document##SkuDateTime(sku, dateTimePriceSetDocument(document));
+    prevPriceInB###document##Sku 'Цена поставщика (предыдущая)' (document, sku) = prevPriceIn###document##SkuDateTime(sku, dateTimePriceSetDocument(document));
+
+    // рекомендуемые цены
+    RRP###document##ArticleDateTime(article, dateTime) = RRPPriceSetDocumentArticle(document##ArticleDateTime(article, dateTime), article);
+    prevRRP###document##ArticleDateTime(article, dateTime) = PREV(RRPPriceSetDocumentArticle(document##ArticleDateTime(article, dateTime), article));
+
     prevRRPB###document##Article 'Рекомендуемая цена (предыдущая)' (document, article) = prevRRP###document##ArticleDateTime(article, dateTimePriceSetDocument(document));
     RRPB###document##Article 'Рекомендуемая цена (предыдущая)' (document, article) = RRP###document##ArticleDateTime(article, dateTimePriceSetDocument(document));
+
+    RRP###document##SkuDateTime(sku, dateTime) = RRPPriceSetDocumentSku(document##SkuDateTime(sku, dateTime), sku);
+    prevRRP###document##SkuDateTime(sku, dateTime) = PREV(RRPPriceSetDocumentSku(document##SkuDateTime(sku, dateTime), sku));
+
+    prevRRPB###document##Sku 'Рекомендуемая цена (предыдущая)' (document, sku) = prevRRP###document##SkuDateTime(sku, dateTimePriceSetDocument(document));
+    RRPB###document##Sku 'Рекомендуемая цена (предыдущая)' (document, sku) = RRP###document##SkuDateTime(sku, dateTimePriceSetDocument(document));
 
 END
 
@@ -111,8 +141,8 @@ CONSTRAINT dateTimeToPriceSetDocument(document) < dateTimePriceSetDocument(docum
 isDiscountPriceSetDocument 'Распродажа' = DATA BOOLEAN(priceSetDocument) IN baseGroup;
 keepDiscountPriceSetDocument 'Учитывать скидки' = DATA BOOLEAN(priceSetDocument) IN baseGroup;
 
-currencyBasePriceSetDocument 'Валюта документа (ИД)' = DATA currency(basePriceSetDocument) IN idGroup;
-nameCurrencyBasePriceSetDocument 'Валюта документа' (basePriceSetDocument) = name(currencyBasePriceSetDocument(basePriceSetDocument));
+//currencyBasePriceSetDocument 'Валюта документа (ИД)' = DATA currency(basePriceSetDocument) IN idGroup;
+//nameCurrencyBasePriceSetDocument 'Валюта документа' (basePriceSetDocument) = name(currencyBasePriceSetDocument(basePriceSetDocument));
 
 //связь документа и фрахта
 freightPriceSetDocument 'Фрахт документа (ИД)' = DATA freight(basePriceSetDocument) IN idGroup;
@@ -132,10 +162,13 @@ backgroundPriceSetDocument 'Цвет' (freight) = RGB(212,255,212) IF isPriceSet
 TABLE priceSetDocumentArticle(priceSetDocument, article);
 
 inPriceSetDocumentArticle 'Артикул в документе' = DATA BOOLEAN(priceSetDocument, article);
+inPriceSetDocumentSku 'Товар в документе' = DATA BOOLEAN(priceSetDocument, sku);
 
 priceInPriceSetDocumentArticle 'Цена поставщика' = DATA NUMERIC[14,2](basePriceSetDocument, article) IN baseGroup;
+priceInPriceSetDocumentSku 'Цена поставщика' = DATA NUMERIC[14,2](basePriceSetDocument, sku) IN baseGroup;
 
 RRPPriceSetDocumentArticle 'Рекомендуемая цена' = DATA NUMERIC[14,2](basePriceSetDocument, article) IN baseGroup;
+RRPPriceSetDocumentSku 'Рекомендуемая цена' = DATA NUMERIC[14,2](basePriceSetDocument, sku) IN baseGroup;
 
 isNotRRPPriceSetDocumentArticle 'Нет рекомендуемой цены' (basePriceSetDocument, article) =
     basePriceSetDocument IS basePriceSetDocument AND article IS article AND NOT RRPPriceSetDocumentArticle(basePriceSetDocument, article);
@@ -143,12 +176,16 @@ isNotRRPPriceSetDocumentArticle 'Нет рекомендуемой цены' (ba
 typeExchangePriceSetDocument 'Тип обмена' (priceSetDocument) = typeExchangeRetail() AND priceSetDocument IS priceSetDocument;
 currencyPriceSetDocument 'Валюта обмена' (priceSetDocument) = currencyTypeExchange(typeExchangeSTX()) AND priceSetDocument IS priceSetDocument;
 
-@defineNearestRateExchangeObject(priceSetDocument, , base, datePriceSetDocument, publicGroup);
+@defineNearestRateExchangeObject(priceSetDocument, , , datePriceSetDocument, publicGroup);
 
 rateDataPriceSetDocumentArticle 'Обменный курс' = DATA NUMERIC[14,2](priceSetDocument, article) IN baseGroup;
+rateDataPriceSetDocumentSku 'Обменный курс' = DATA NUMERIC[14,2](priceSetDocument, sku) IN baseGroup;
 
-ratePriceSetDocumentArticle 'Обменный курс' (basePriceSetDocument, article) = UNION OVERRIDE rateExchangeBasePriceSetDocument(basePriceSetDocument) AND article IS article,
+ratePriceSetDocumentArticle 'Обменный курс' (basePriceSetDocument, article) = UNION OVERRIDE rateExchangePriceSetDocument(basePriceSetDocument) AND article IS article,
                                                                                              rateDataPriceSetDocumentArticle(basePriceSetDocument, article);
+
+ratePriceSetDocumentSku 'Обменный курс' (basePriceSetDocument, sku) = UNION OVERRIDE rateExchangePriceSetDocument(basePriceSetDocument) AND sku IS sku,
+                                                                                     rateDataPriceSetDocumentSku(basePriceSetDocument, sku);
 
 //coefficientRetailPriceSetDocument 'Коэффициент документа' (basePriceSetDocument) = uniqueCoefficientRetail(actingCoefficientRetailDate(datePriceSetDocument(basePriceSetDocument))) IN idGroup;
 coefficientRetailPriceSetDocumentArticle 'Коэффициент' (basePriceSetDocument, article) = uniqueCoefficientRetail(brandSupplierArticle(article),
@@ -158,10 +195,20 @@ coefficientRetailPriceSetDocumentArticle 'Коэффициент' (basePriceSetD
 markupCoefficientRetailPriceSetDocumentArticle 'Коэффициент документа' (basePriceSetDocument, article) = markupCoefficientRetail(coefficientRetailPriceSetDocumentArticle(basePriceSetDocument, article));
 
 markupPriceSetDocumentArticle 'Коэффициент артикула' = DATA NUMERIC[14,2] (basePriceSetDocument, article);
-markupPriceSetDocumentArticle (basePriceSetDocument, article) <- markupCoefficientRetailPriceSetDocumentArticle(basePriceSetDocument, article) WHEN ASSIGNED(inPriceSetDocumentArticle(basePriceSetDocument, article));
+markupDataPriceSetDocumentSku 'Коэффициент товара' = DATA NUMERIC[14,2] (basePriceSetDocument, sku);
+
+markupPriceSetDocumentArticleSku(basePriceSetDocument, sku) = markupPriceSetDocumentArticle(basePriceSetDocument, articleSku(sku));
+markupPriceSetDocumentSku 'Коэффициент товара' (basePriceSetDocument, sku) = UNION OVERRIDE markupPriceSetDocumentArticleSku(basePriceSetDocument, sku),
+                                                                                            markupDataPriceSetDocumentSku(basePriceSetDocument, sku);
+
+markupPriceSetDocumentArticle (basePriceSetDocument, article) <- markupCoefficientRetailPriceSetDocumentArticle(basePriceSetDocument, article) WHEN ASSIGNED(basePriceSetDocument IS basePriceSetDocument);
 
 priceOutPriceSetDocumentArticle 'Цена с надбавкой' (basePriceSetDocument, article) = round2(priceInPriceSetDocumentArticle(basePriceSetDocument, article) *
-                                                                                                  markupPriceSetDocumentArticle(basePriceSetDocument, article));
+                                                                                            markupPriceSetDocumentArticle(basePriceSetDocument, article));
+
+priceOutPriceSetDocumentSku 'Цена с надбавкой' (basePriceSetDocument, sku) = round2(priceInPriceSetDocumentSku(basePriceSetDocument, sku) *
+                                                                                    markupPriceSetDocumentSku(basePriceSetDocument, sku));
+
 
 isPostedPriceSetDocument 'Проведен' (priceSetDocument) = DATA BOOLEAN (priceSetDocument);
 isDraftPriceSetDocument 'Не проведен' (priceSetDocument) = priceSetDocument IS priceSetDocument AND NOT isPostedPriceSetDocument(priceSetDocument);
@@ -177,34 +224,56 @@ statusPriceSetDocument 'Статус' (priceSetDocument) = IF isPostedPriceSetDo
 
 methodPriceSetDocumentArticle 'Метод расчёта (ИД)' = DATA methodPrice(basePriceSetDocument, article);
 notMethodPriceSetDocumentArticle = TRUE IF NOT methodPriceSetDocumentArticle(basePriceSetDocument, article);
+methodPriceSetDocumentSku 'Метод расчёта (ИД)' = DATA methodPrice(basePriceSetDocument, sku);
 
 nameMethodPriceSetDocumentArticle 'Метод расчёта' (basePriceSetDocument, article) = name(methodPriceSetDocumentArticle(basePriceSetDocument, article)) MAXCHARWIDTH 20;
+nameMethodPriceSetDocumentSku 'Метод расчёта' (basePriceSetDocument, sku) = name(methodPriceSetDocumentSku(basePriceSetDocument, sku)) MAXCHARWIDTH 20;
 
 prevMethodPriceSetDocumentArticleDateTime(article, dateTime) = PREV(methodPriceSetDocumentArticle(basePriceSetDocumentArticleDateTime(article, dateTime), article));
 prevMethodPriceSetDocumentArticle 'Метод расчёта (предыдущий)' (document, article) = prevMethodPriceSetDocumentArticleDateTime(article, dateTimePriceSetDocument(document));
 
 RRPRatePriceSetDocumentArticle 'Рекомендуемая (руб.)' (basePriceSetDocument, article) = round0(RRPPriceSetDocumentArticle(basePriceSetDocument, article) *
-                                                                                                     ratePriceSetDocumentArticle(basePriceSetDocument, article)) MINCHARWIDTH 15;
+                                                                                               ratePriceSetDocumentArticle(basePriceSetDocument, article)) MINCHARWIDTH 15;
+
+RRPRatePriceSetDocumentSku 'Рекомендуемая (руб.)' (basePriceSetDocument, sku) = round0(RRPPriceSetDocumentSku(basePriceSetDocument, sku) *
+                                                                                       ratePriceSetDocumentSku(basePriceSetDocument, sku)) MINCHARWIDTH 15;
 
 priceOutRatePriceSetDocumentArticle 'Цена с надбавкой (руб.)' (basePriceSetDocument, article) = round0(priceOutPriceSetDocumentArticle(basePriceSetDocument, article) *
-                                                                                                        ratePriceSetDocumentArticle(basePriceSetDocument, article)) MINCHARWIDTH 15;
+                                                                                                       ratePriceSetDocumentArticle(basePriceSetDocument, article)) MINCHARWIDTH 15;
 
+priceOutRatePriceSetDocumentSku 'Цена с надбавкой (руб.)' (basePriceSetDocument, sku) = round0(priceOutPriceSetDocumentSku(basePriceSetDocument, sku) *
+                                                                                                       ratePriceSetDocumentSku(basePriceSetDocument, sku)) MINCHARWIDTH 15;
 
 priceRetailPriceSetDocumentArticle 'Цена розничная' (basePriceSetDocument, article) =
            IF methodPriceSetDocumentArticle(basePriceSetDocument, article) == methodPrice.coefficient THEN roundPrice(priceOutRatePriceSetDocumentArticle(basePriceSetDocument, article)) ELSE
              IF methodPriceSetDocumentArticle(basePriceSetDocument, article) == methodPrice.RRP THEN roundPrice(RRPRatePriceSetDocumentArticle(basePriceSetDocument, article)) ELSE
                 PREV(priceBBasePriceSetDocumentArticle(basePriceSetDocument, article)) IF methodPriceSetDocumentArticle(basePriceSetDocument, article) == methodPrice.previous;
 
+priceRetailPriceSetDocumentSku 'Цена розничная' (basePriceSetDocument, sku) =
+           IF methodPriceSetDocumentSku(basePriceSetDocument, sku) == methodPrice.coefficient THEN roundPrice(priceOutRatePriceSetDocumentSku(basePriceSetDocument, sku)) ELSE
+             IF methodPriceSetDocumentSku(basePriceSetDocument, sku) == methodPrice.RRP THEN roundPrice(RRPRatePriceSetDocumentSku(basePriceSetDocument, sku)) ELSE
+                PREV(priceBBasePriceSetDocumentSku(basePriceSetDocument, sku)) IF methodPriceSetDocumentSku(basePriceSetDocument, sku) == methodPrice.previous;
+
 priceDataBasePriceSetDocumentArticle(basePriceSetDocument, article) <- priceRetailPriceSetDocumentArticle(basePriceSetDocument, article)
                             WHEN CHANGED (methodPriceSetDocumentArticle(basePriceSetDocument, article)) OR
                                  CHANGED (priceOutRatePriceSetDocumentArticle(basePriceSetDocument, article)) OR
                                  CHANGED (RRPRatePriceSetDocumentArticle(basePriceSetDocument, article));
 
+priceDataBasePriceSetDocumentSku(basePriceSetDocument, sku) <- priceRetailPriceSetDocumentSku(basePriceSetDocument, sku)
+                            WHEN CHANGED (methodPriceSetDocumentSku(basePriceSetDocument, sku)) OR
+                                 CHANGED (priceOutRatePriceSetDocumentSku(basePriceSetDocument, sku)) OR
+                                 CHANGED (RRPRatePriceSetDocumentSku(basePriceSetDocument, sku));
+
 // для уценки
 priceInRateBBasePriceSetDocumentArticle 'Цена поставщика (руб.)' (discountPriceSetDocument, article) = ratePriceSetDocumentArticle (discountPriceSetDocument, article) *
-                                                                                                             priceInBBasePriceSetDocumentArticle(discountPriceSetDocument, article) MINCHARWIDTH 15;
+                                                                                                       prevPriceInBBasePriceSetDocumentArticle(discountPriceSetDocument, article) MINCHARWIDTH 15;
 
 percentDiscountPriceSetDocumentArticle 'Процент уценки' = DATA NUMERIC[14,2](discountPriceSetDocument, article) IN baseGroup;
+percentDiscountPriceSetDocumentArticleSku 'Процент уценки' (discountPriceSetDocument, sku) = percentDiscountPriceSetDocumentArticle(discountPriceSetDocument, articleSku(sku));
+
+percentDataDiscountPriceSetDocumentSku 'Процент уценки' = DATA NUMERIC[14,2](discountPriceSetDocument, sku) IN baseGroup;
+percentDiscountPriceSetDocumentSku 'Процент уценки' (discountPriceSetDocument, sku) = UNION OVERRIDE percentDiscountPriceSetDocumentArticleSku(discountPriceSetDocument, sku),
+                                                                                                     percentDataDiscountPriceSetDocumentSku(discountPriceSetDocument, sku);
 
 prevPercentDiscountPriceSetDocumentArticleDateTime(article, dateTime) = PREV(percentDiscountPriceSetDocumentArticle(discountPriceSetDocumentArticleDateTime(article, dateTime), article));
 prevPercentDiscountPriceSetDocumentArticle 'Процент скидки (предыдущий)' (document, article) = prevPercentDiscountPriceSetDocumentArticleDateTime(article, dateTimePriceSetDocument(document));
@@ -213,18 +282,29 @@ priceAllowancePriceSetDocumentArticle (discountPriceSetDocument, article) = IF a
                          THEN priceBBasePriceSetDocumentArticle(discountPriceSetDocument, article)
                          ELSE priceDataBasePriceSetDocumentArticle(discountPriceSetDocument, article);
 
+priceAllowancePriceSetDocumentSku (discountPriceSetDocument, sku) = IF sku IS sku AND discountPriceSetDocument IS discountPriceSetDocument AND NOT discountPriceSetDocument IS basePriceSetDocument
+                         THEN priceBBasePriceSetDocumentSku(discountPriceSetDocument, sku)
+                         ELSE priceDataBasePriceSetDocumentSku(discountPriceSetDocument, sku);
+
 priceDiscountPriceSetDocumentArticle 'Цена без процентов' (discountPriceSetDocument, article) = [roundM1(X*(100-Y)/100)]
                                                                                                          (priceAllowancePriceSetDocumentArticle (discountPriceSetDocument, article),
                                                                                                          percentDiscountPriceSetDocumentArticle(discountPriceSetDocument, article)) IN baseGroup;
 
+priceDiscountPriceSetDocumentSku 'Цена без процентов' (discountPriceSetDocument, sku) = [roundM1(X*(100-Y)/100)]
+                                                                                                     (priceAllowancePriceSetDocumentSku (discountPriceSetDocument, sku),
+                                                                                                     percentDiscountPriceSetDocumentSku(discountPriceSetDocument, sku)) IN baseGroup;
+
 priceDataDiscountPriceSetDocumentArticle(discountPriceSetDocument, article) <- roundPrice(priceDiscountPriceSetDocumentArticle(discountPriceSetDocument, article))
                                         WHEN CHANGED (priceDiscountPriceSetDocumentArticle(discountPriceSetDocument, article));
+
+//inPriceSetDocumentArticle 'Артикул в документе' = DATA BOOLEAN(priceSetDocument, article);
 
 priceDataBasePriceSetDocumentArticle(document, article) => inPriceSetDocumentArticle(document, article) RESOLVE FALSE;
 priceDataDiscountPriceSetDocumentArticle(document, article) => inPriceSetDocumentArticle(document, article) RESOLVE FALSE;
 percentDiscountPriceSetDocumentArticle(document, article) => inPriceSetDocumentArticle(document, article) RESOLVE FALSE;
 
 inFreightArticle (freight, article) = TRUE IF quantityFreightArticle(freight, article);
+inFreightSku (freight, sku) = TRUE IF quantityFreightSku(freight, sku);
 
 quantityPriceSetDocumentBrandSupplier (priceSetDocument, brandSupplier) = GROUP SUM 1 IF inPriceSetDocumentArticle(priceSetDocument, article)
     BY priceSetDocument, brandSupplierArticle(article);
@@ -233,7 +313,9 @@ canonicalBrandPriceSetDocument 'Бренды' (priceSetDocument) = castToString2
     [GROUP CONCAT commonName(brandSupplier) IF quantityPriceSetDocumentBrandSupplier(priceSetDocument, brandSupplier), ' , ' BY priceSetDocument](priceSetDocument))
     MINCHARWIDTH 50 MAXCHARWIDTH 100 PREFCHARWIDTH 100 PERSISTENT;
 
-typeExchangePriceSetDocumentArticle 'Тип обмена ИД' = DATA typeExchange (priceSetDocument, article) IN idGroup;
+typeExchangePriceSetDocumentArticle 'Тип обмена (ИД)' = DATA typeExchange (priceSetDocument, article) IN idGroup;
+typeExchangePriceSetDocumentSku 'Тип обмена (ИД)' = DATA typeExchange (priceSetDocument, sku) IN idGroup;
+
 nameTypeExchangePriceSetDocumentArticle 'Тип обмена' (priceSetDocument, article) = name(typeExchangePriceSetDocumentArticle(priceSetDocument, article));
 typeExchangePriceSetDocumentArticle(priceSetDocument, article) <- typeExchangeRetail() AND priceSetDocument IS priceSetDocument AND article IS article
                                                                   WHEN ASSIGNED (inPriceSetDocumentArticle(priceSetDocument, article));
@@ -351,6 +433,12 @@ FORM priceSetDocument 'Розничный прайс'
     FILTERS stringEqualsAll(v), inBrandSupplier(s, b), inSupplierBrandArticle(s, b, aa), stringEqualsAll(vv),
             inArticleCategory(c, aa)
 
+    OBJECTS ss=sku
+    PROPERTIES (ss) READONLY FORCE GRID sidSizeSupplierItem, sidColorSupplierItem
+    PROPERTIES (p, ss) inPriceSetDocumentSku
+
+    FILTERS inArticleSku(aa, ss)
+
     OBJECTS a=article
     PROPERTIES (p, a) inPriceSetDocumentArticle
     PROPERTIES(a) READONLY sidArticle, nameCategoryArticle, nameBrandSupplierArticle
@@ -380,6 +468,15 @@ FORM priceSetDocument 'Розничный прайс'
         FILTER 'Показывать артикулы ном. группы' 'F10' inArticleCategory(c, a)
     FILTERGROUP filtersBrand
         FILTER 'Показывать артикулы бренда' 'F11' inArticleBrand(b, a)
+
+    OBJECTS sk=sku
+    PROPERTIES (p, sk) inPriceSetDocumentSku
+    PROPERTIES(sk) READONLY FORCE GRID barcode, sidArticleSku, nameCategoryArticleSku, nameBrandSupplierArticleSku, sidSizeSupplierItem, sidColorSupplierItem
+    PROPERTIES (p, sk) priceInPriceSetDocumentSku, RRPPriceSetDocumentSku, markupPriceSetDocumentSku, priceOutPriceSetDocumentSku,
+                       ratePriceSetDocumentSku, RRPRatePriceSetDocumentSku, priceOutRatePriceSetDocumentSku, priceBBasePriceSetDocumentSku,
+                       nameMethodPriceSetDocumentSku, priceRetailPriceSetDocumentSku, priceDataBasePriceSetDocumentSku
+
+    FILTERS inPriceSetDocumentSku(p, sk)
 
     EVENTS
         ON OK EXEC prePostPriceSetDocument(p)
@@ -412,9 +509,9 @@ DESIGN priceSetDocument FROM DEFAULT {
                 type = SPLITH;
 
                 NEW treeContainer {
-
                     childConstraints = TO THE RIGHT;
                     type = SPLITH;
+
                     ADD treeSupplierBrand.tree.box {
                         fillHorizontal = 1;
                     }
@@ -424,15 +521,33 @@ DESIGN priceSetDocument FROM DEFAULT {
                     }
                 }
 
-                ADD aa.box {
-                    fillHorizontal = 3;
+                NEW checkContainer {
+                    type = SPLITH;
+
+                    ADD aa.box {
+                        fillHorizontal = 2;
+                    }
+
+                    ADD ss.box {
+                        fillHorizontal = 1;
+                    }
                 }
             }
 
-            ADD a.box {
-                fillHorizontal = 5;
-                fillVertical = 1.5;
+            NEW articleSkuContainer {
+
+                type = TABBED;
+                ADD a.box {
+                    fillHorizontal = 5;
+                    fillVertical = 1.5;
+                }
+
+                ADD sk.box {
+                    fillHorizontal = 5;
+                    fillVertical = 1.5;
+                }
             }
+
         }
     }
 
@@ -521,6 +636,14 @@ FORM priceSetDocuments 'Розничные прайсы'
         FILTER 'Магазины с остатками' 'F10' quantityStorePriceSetDocument(s, p) DEFAULT
     FILTERGROUP filters2
         FILTER 'Отделы с остатками' 'F9' quantityDepartmentStorePriceSetDocument(d, p) DEFAULT
+
+    OBJECTS sk=sku
+    PROPERTIES(sk) READONLY FORCE GRID barcode, sidArticleSku, nameCategoryArticleSku, nameBrandSupplierArticleSku, sidSizeSupplierItem, sidColorSupplierItem
+    PROPERTIES (p, sk) READONLY priceInPriceSetDocumentSku, RRPPriceSetDocumentSku, markupPriceSetDocumentSku, priceOutPriceSetDocumentSku,
+                       ratePriceSetDocumentSku, RRPRatePriceSetDocumentSku, priceOutRatePriceSetDocumentSku, priceBBasePriceSetDocumentSku,
+                       nameMethodPriceSetDocumentSku, priceRetailPriceSetDocumentSku, priceDataBasePriceSetDocumentSku
+
+    FILTERS inPriceSetDocumentSku(p, sk)
 ;
 
 DESIGN priceSetDocuments FROM DEFAULT {
@@ -538,9 +661,17 @@ DESIGN priceSetDocuments FROM DEFAULT {
                 POSITION d.box TO THE RIGHT s.box;
                 fillVertical = 1;
             }
-            ADD a.box {
-                fillVertical = 3;
-            };
+
+            NEW bottomContainer {
+                type = TABBED;
+                ADD a.box {
+                    fillVertical = 3;
+                };
+
+                ADD sk.box {
+                    fillVertical = 3;
+                };
+            }
         }
     }
 
@@ -552,7 +683,6 @@ DESIGN priceSetDocuments FROM DEFAULT {
     PROPERTY(objectClassName) {
         preferredCharWidth = 10;
     }
-
 }
 
 // розничный прайс по фрахту
@@ -560,10 +690,14 @@ createPriceSetDocument 'Расценить' =  ACTION (freight) NEWSESSION {
     ADDOBJ basePriceSetDocument;
     FOR p == addedObject() DO {
         SET freightPriceSetDocument(p) <- freight AS freight;
-        SET currencyBasePriceSetDocument(p) <- currencyFreight(freight);
+        SET currencyPriceSetDocument(p) <- currencyFreight(freight);
         SET priceInPriceSetDocumentArticle(p, article) <- priceInFreightArticle(freight, article);
         SET RRPPriceSetDocumentArticle(p, article) <- RRPFreightArticle(freight, article);
         SET inPriceSetDocumentArticle(p, article) <- inFreightArticle(freight, article);
+        SET inPriceSetDocumentSku(p, sku) <- inFreightSku(freight, sku);
+        SET priceInPriceSetDocumentSku(p, sku) <- priceInFreightSku(freight, sku);
+        SET RRPPriceSetDocumentSku(p, sku) <- RRPFreightSku(freight, sku);
+
         FORM priceSetDocument OBJECTS p=addedObject() MODAL;
         IF formResult() == formResult.ok THEN {
             EXEC apply();
