@@ -23,6 +23,8 @@ CLASS moveOutDetail 'Строка перемещения товаров' : outFI
 @defineDocumentTransferOut(move, 'Перемещение товаров', sku, stock);
 @defineDocumentFormTransferOut(move, 'Перемещение товаров');
 
+@defineDocumentAndDeriveCurrency(moveOut, stock);
+
 @defineDocumentDetailSkuArticle(moveOut);
 @extendDocumentFormDetailSkuArticle(moveOut, d, moveOut);
 @extendDocumentFormDetailSkuArticleReadonly(moveOuts, d, moveOut);
@@ -43,6 +45,13 @@ quantityOutFIFOSkuLedger (ledger) += quantityMoveOutDetail (ledger);
 sumOutSkuLedger(ledger) += costSumSkuLedger(ledger) IF ledger IS moveOutDetail;
 skipASkuLedger (ledger) += ledger IS moveOutDetail;
 
+
+EXTEND FORM moveOut
+    PROPERTIES(t) nameCurrencyMoveOut
+;
+EXTEND FORM moveOuts
+    PROPERTIES(t) READONLY nameCurrencyMoveOut
+;
 // ---------------------------------------- Поступление ------------------------------------ //
 
 CLASS moveIn 'Поступление товаров' : historyObject;
@@ -61,6 +70,8 @@ quantityInLIFOSkuLedger (ledger) += quantityMoveInDetail(ledger);
 limitInLIFOSkuLedgerBatch (ledger, batch) += costSkuLedgerBatch(moveOutDetailMoveInDetail(ledger), batch);
 sumInSkuLedger(ledger) += costSumSkuLedger(ledger) IF ledger IS moveInDetail;
 skipASkuLedger (ledger) += ledger IS moveInDetail;
+
+nameCurrencyMoveIn 'Валюта' (moveIn) = nameCurrencyMoveOut(moveOutMoveIn(moveIn)) MINCHARWIDTH 10 PREFCHARWIDTH 10 MAXCHARWIDTH 15;
 
 // ---------------------------------------- Приемка ------------------------------------ //
 
@@ -102,3 +113,7 @@ limitOutFIFOSkuLedgerBatch (ledger, batch) += costMoveInBatch(moveInMoveDiffSDet
 orderOutFIFOSkuLedgerBatch (ledger, batch) += orderBBatch(batch) IF ledger IS moveDiffSDetail;
 sumOutSkuLedger(ledger) += costSumSkuLedger(ledger) IF ledger IS moveDiffSDetail;
 skipASkuLedger (ledger) += ledger IS moveDiffSDetail;
+
+EXTEND FORM moveIns
+    PROPERTIES(t) READONLY nameCurrencyMoveIn
+;

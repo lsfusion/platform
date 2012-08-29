@@ -24,6 +24,9 @@ TABLE legalEntityDate (legalEntity, DATE);
 languageLegalEntity = DATA language(legalEntity);
 nameLanguageLegalEntity 'Язык' (legalEntity) = name(languageLegalEntity(legalEntity)) MINCHARWIDTH 5 PREFCHARWIDTH 10 MAXCHARWIDTH 15;
 
+currencyLegalEntity = DATA currency(legalEntity);
+nameCurrencyLegalEntity 'Базовая валюта' (legalEntity) = name(currencyLegalEntity(legalEntity)) MINCHARWIDTH 10 PREFCHARWIDTH 10 MAXCHARWIDTH 15;
+
 GROUP lawGroup 'Реквизиты' : publicGroup;
 
 ownershipLegalEntity = DATA ownership (legalEntity);
@@ -137,7 +140,7 @@ TABLE company (company);
 
 FORM company 'Компания'
     OBJECTS co=company FIXED PANEL
-    PROPERTIES(co) name, nameLanguageLegalEntity,
+    PROPERTIES(co) name, nameLanguageLegalEntity, nameCurrencyLegalEntity,
                    nameOwnershipLegalEntity, shortNameOwnershipLegalEntity, fullNameLegalEntity,
                    addressLegalEntity ON CHANGE EXEC dialogAddressLegalEntity(co),
                    postAddressLegalEntity ON CHANGE EXEC dialogPostAddressLegalEntity(co),
@@ -166,6 +169,7 @@ DESIGN company FROM DEFAULT {
                     childConstraints = TO THE RIGHT;
                     ADD PROPERTY(name(co));
                     ADD PROPERTY(nameLanguageLegalEntity);
+                    ADD PROPERTY(nameCurrencyLegalEntity);
                 }
                 ADD co.lawGroup;
             }

@@ -46,6 +46,8 @@ CLASS invoiceWHOutDetail 'Строка реализации товара по б
 @defineDocumentHeaderQuantity(invoiceWHOut);
 @defineDocumentHeaderSkuQuantity(invoiceWHOut, sku);
 
+@defineDocumentAndDeriveCurrency(invoiceWHOut, warehouse);
+
 // Кнопки подбора
 @defineAddDetailDialogSkuStock(invoiceWHOut, sku, warehouse, dialogSku);
 @defineAddDetailDialogBarcode(invoiceWHOut, sku);
@@ -61,8 +63,11 @@ skipSkuLedgerInvoiceWHOut 'Не проводить по учету' (invoiceWHOu
 skipSkuLedgerInvoiceWHOutDetail 'Не проводить по учету' (invoiceWHOutDetail) = skipSkuLedgerInvoiceWHOut(invoiceWHOutInvoiceWHOutDetail(invoiceWHOutDetail));
 
 supplierPriceInvoiceWHOutDetail 'Отпускная цена' = DATA NUMERIC[14,2] (invoiceWHOutDetail);
-supplierPriceInvoiceWHOutDetail (invoiceWHOutDetail) <- priceWholesaleArticleDateTime(articleSku(skuInvoiceWHOutDetail(invoiceWHOutDetail)), dateTimeInvoiceWHOutDetail(invoiceWHOutDetail))
-    WHEN CHANGED(skuInvoiceWHOutDetail(invoiceWHOutDetail)) OR CHANGED(dateTimeInvoiceWHOutDetail(invoiceWHOutDetail));
+//supplierPriceInvoiceWHOutDetail (invoiceWHOutDetail) <- priceWholesaleArticleDateTime(articleSku(skuInvoiceWHOutDetail(invoiceWHOutDetail)), dateTimeInvoiceWHOutDetail(invoiceWHOutDetail))
+//    WHEN CHANGED(skuInvoiceWHOutDetail(invoiceWHOutDetail)) OR CHANGED(dateTimeInvoiceWHOutDetail(invoiceWHOutDetail));
+
+supplierPriceInvoiceWHOutDetail (invoiceWHOutDetail) <- priceWholesaleArticleCurrencyDateTime(articleSku(skuInvoiceWHOutDetail(invoiceWHOutDetail)), currencyInvoiceWHOutDetail(invoiceWHOutDetail), dateTimeInvoiceWHOutDetail(invoiceWHOutDetail))
+    WHEN CHANGED(skuInvoiceWHOutDetail(invoiceWHOutDetail)) OR CHANGED(dateTimeInvoiceWHOutDetail(invoiceWHOutDetail)) OR CHANGED(currencyInvoiceWHOutDetail(invoiceWHOutDetail));
 
 supplierSumInvoiceWHOutDetail 'Сумма без НДС' = supplierPriceInvoiceWHOutDetail(invoiceWHOutDetail) * quantityInvoiceWHOutDetail(invoiceWHOutDetail);
 
@@ -246,13 +251,13 @@ dialogBatchAInvoiceWHOutDetail 'Партия' (invoiceWHOutDetail) = ACTION (inv
 }
 
 EXTEND FORM invoiceWHOut
-    PROPERTIES(t) numberContractSkuCustomerInvoiceWHOut, skipSkuLedgerInvoiceWHOut
+    PROPERTIES(t) numberContractSkuCustomerInvoiceWHOut, nameCurrencyInvoiceWHOut, skipSkuLedgerInvoiceWHOut
     PROPERTIES(d) descriptionBatchInvoiceWHOutDetail ON CHANGE EXEC dialogBatchAInvoiceWHOutDetail(d), supplierPriceInvoiceWHOutDetail, supplierSumInvoiceWHOutDetail,
                   valueSupplierVATInvoiceWHOutDetail, sumVATInvoiceWHOutDetail, sumInvoiceInvoiceWHOutDetail, currentBalanceInvoiceWHOutDetail
 ;
 
 EXTEND FORM invoiceWHOuts
-    PROPERTIES(t) READONLY skipSkuLedgerInvoiceWHOut
+    PROPERTIES(t) READONLY nameCurrencyInvoiceWHOut, skipSkuLedgerInvoiceWHOut
     PROPERTIES(d) READONLY supplierPriceInvoiceWHOutDetail
 ;
 

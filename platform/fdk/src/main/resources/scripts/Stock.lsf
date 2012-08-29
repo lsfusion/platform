@@ -20,6 +20,9 @@ nameCompanyStock 'Компания' (stock) = name(companyStock(stock));
 UNPStock 'УНП' (stock) = UNPLegalEntity(companyStock(stock));
 languageStock (stock) = languageLegalEntity(companyStock(stock)) PERSISTENT;
 
+currencyStock (stock) = currencyLegalEntity(companyStock(stock)) PERSISTENT;
+nameCurrencyStock 'Базовая валюта' (stock) = nameCurrencyLegalEntity(companyStock(stock));
+
 addressStock 'Адрес' (stock) = ABSTRACT STRING[100] (stock);
 
 TABLE stockGroupStock (stockGroup, stock);

@@ -253,6 +253,35 @@ META defineDocument (object)
     @defineDocumentDetailActions(object);
 END
 
+META defineDocumentHeaderCurrency (object)
+    currency###object 'Валюта ИД' (object) = DATA currency (object);
+    nameCurrency###object 'Валюта' (object)= name(currency###object(object)) IN documentPrmGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
+END
+
+META defineDocumentDetailCurrencyCustom (object, detail)
+    currency###detail 'Валюта ИД' (idetail) = currency###object(object###detail(idetail));
+    nameCurrency###detail 'Валюта' (idetail) = nameCurrency###object(object###detail(idetail));
+END
+
+META defineDocumentCurrencyCustom (object, detail)
+    @defineDocumentHeaderCurrency(object);
+    @defineDocumentDetailCurrencyCustom(object, detail);
+END
+
+META defineDocumentCurrency (object)
+    @defineDocumentHeaderCurrency(object);
+    @defineDocumentDetailCurrencyCustom(object, object##Detail);
+END
+
+META deriveDocumentCurrency (object, stockProp)
+    currency###object (object) <- currencyStock(stockProp###object(object)) WHEN ASSIGNED(object AS object);
+END
+
+META defineDocumentAndDeriveCurrency (object, stockProp)
+    @defineDocumentCurrency(object);
+    @deriveDocumentCurrency(object, stockProp);
+END
+
 // ------------------------- Основной - агрегированный документы ---------------------------------- //
 
 META defineDocumentAggregationHeader(primObject, aggrObject, aggrProperty)

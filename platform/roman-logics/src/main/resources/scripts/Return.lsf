@@ -28,6 +28,8 @@ CONSTRAINT companyStock(stockReturnOut(returnOut)) == companyStock(destinationSt
 @extendDocumentFormDetailSkuArticle(returnOut, d, returnOut);
 @extendDocumentFormDetailSkuArticleReadonly(returnOuts, d, returnOut);
 
+@defineDocumentAndDeriveCurrency(returnOut, stock);
+
 companyReturnOut (returnOut) = companyStock(stockReturnOut(returnOut));
 destinationCompanyReturnOut(returnOut) = companyStock(destinationStockReturnOut(returnOut));
 
@@ -149,6 +151,13 @@ noteConsignmentDetail (consignmentDetail) += noteReturnOutDetail(consignmentDeta
 @defineDocumentFormTransferOutConsignment(return, t);
 // todo: заполнить необходимыми данными
 
+EXTEND FORM returnOut
+    PROPERTIES(t) nameCurrencyReturnOut
+;
+EXTEND FORM returnOuts
+    PROPERTIES(t) READONLY nameCurrencyReturnOut
+;
+
 // ---------------------------------------- Поступление ------------------------------------ //
 
 CLASS returnIn 'Получение товаров по накладным' : historyObject, incAccountDocumentLedger;
@@ -187,6 +196,8 @@ quantityInLIFOSkuLedger (ledger) += quantityReturnInDetail(ledger);
 limitInLIFOSkuLedgerBatch (ledger, batch) += quantityReturnInDetail(ledger) AND batch == batchReturnInDetail(ledger);
 sumInSkuLedger(ledger) += accountSumReturnInDetail(ledger);
 skipSkuLedger (ledger) += skipSkuLedgerReturnInDetail(ledger);
+
+nameCurrencyReturnIn 'Валюта' (returnIn) = nameCurrencyReturnOut(returnOutReturnIn(returnIn)) MINCHARWIDTH 10 PREFCHARWIDTH 10 MAXCHARWIDTH 15;
 
 // ---------------------------------------- Приемка ------------------------------------ //
 
@@ -232,6 +243,10 @@ accountSumReturnDiffSDetail (detail) = GROUP SUM costDataSkuLedgerBatch(detail, 
 sumOutSkuLedger(ledger) += accountSumReturnDiffSDetail(ledger);
 
 skipASkuLedger (ledger) += ledger IS returnDiffSDetail;
+
+EXTEND FORM returnIns
+    PROPERTIES(t) READONLY nameCurrencyReturnIn
+;
 
 //---------------------------------------- Товарный отчет ------------------------- //
 

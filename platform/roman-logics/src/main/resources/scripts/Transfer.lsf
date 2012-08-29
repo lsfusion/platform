@@ -25,6 +25,7 @@ CLASS transferOutBatchDetail 'Строка перемещения товаров
 
 @defineDocumentTransferOut(transfer, 'Перемещение товаров по накладным', sku, stock);
 @defineDocumentFormTransferOut(transfer, 'Перемещение товаров по накладным');
+@defineDocumentAndDeriveCurrency(transferOut, stock);
 
 companyTransferOut (transferOut) = companyStock(stockTransferOut(transferOut));
 
@@ -137,6 +138,12 @@ shortNameUOMConsignmentDetail (consignmentDetail) += shortNameUOMTransferOutBatc
 @defineDocumentFormTransferOutConsignment(transfer, t);
 // todo: заполнить необходимыми данными
 
+EXTEND FORM transferOut
+    PROPERTIES(t) nameCurrencyTransferOut
+;
+EXTEND FORM transferOuts
+    PROPERTIES(t) READONLY nameCurrencyTransferOut
+;
 // ---------------------------------------- Поступление ------------------------------------ //
 
 CLASS transferIn 'Поступление товаров по накладным' : historyObject, incAccountDocumentLedger;
@@ -144,7 +151,6 @@ CLASS transferInDetail 'Строка поступления товаров по 
 
 @defineDocumentTransferIn(transfer, 'Поступление товаров по накладным', sku, stock);
 @defineDocumentFormTransferIn(transfer, 'Поступление товаров по накладным');
-
 
 costTransferInBatch(transferIn, batch) = GROUP SUM costSkuLedgerBatch(ledger, batch) BY transferInTransferInDetail(ledger), batch PERSISTENT;
 
@@ -168,6 +174,8 @@ quantityInLIFOSkuLedger (ledger) += quantityTransferInDetail(ledger);
 limitInLIFOSkuLedgerBatch (ledger, batch) += costSkuLedgerBatch(transferOutDetailTransferInDetail(ledger), batch);
 sumInSkuLedger(ledger) += accountSumTransferInDetail(ledger);
 skipSkuLedger (ledger) += skipSkuLedgerTransferInDetail(ledger);
+
+nameCurrencyTransferIn 'Валюта' (transferIn) = nameCurrencyTransferOut(transferOutTransferIn(transferIn)) MINCHARWIDTH 10 PREFCHARWIDTH 10 MAXCHARWIDTH 15;
 
 // ---------------------------------------- Приемка ------------------------------------ //
 
@@ -226,6 +234,10 @@ prevRangeVATBatch (batch) = PREV(rangeVATBatchA(batch)) AND batch IS batch;
 notPassToBookkeepingListRegister (inputListRegister) += destinationStockTransferOut(transferOutTransferPriceActTransfer(inputListRegister)) IS departmentStore
     AND stockTransferOut(transferOutTransferPriceActTransfer(inputListRegister)) IS departmentStore
     OR  isCommissionTransferOut(transferOutTransferPriceActTransfer(inputListRegister));
+
+EXTEND FORM transferIns
+    PROPERTIES(t) READONLY nameCurrencyTransferIn
+;
 
 //---------------------------------------- Товарный отчет ------------------------- //
 

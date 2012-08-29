@@ -28,6 +28,8 @@ CLASS saleOutBatchDetail 'Строка продажи товаров по нак
 @defineDocumentTransferOutBatch(sale, sku);
 @defineDocumentFormTransferOutBatch(sale);
 
+@defineDocumentAndDeriveCurrency(saleOut, stock);
+
 @extendDocumentFormDetailSkuArticleReadonly(saleOuts, o, saleOutBatch);
 
 importerPriceSaleOutBatchDetail 'Цена импортера' (detail) = importerPriceBatchA(batchSaleOutBatchDetail(detail));
@@ -51,8 +53,11 @@ destinationCompanySaleOut(saleOut) = companyStock(destinationStockSaleOut(saleOu
                         'Сторона B договора продажи товаров не соответствуют компании склада-получателя');
 
 supplierPriceSaleOutDetail 'Цена оптовая' = DATA NUMERIC[14,2] (saleOutDetail);
-supplierPriceSaleOutDetail (saleOutDetail) <- priceWholesaleArticleDateTime(articleSku(skuSaleOutDetail(saleOutDetail)), dateTimeSaleOutDetail(saleOutDetail))
-    WHEN CHANGED(skuSaleOutDetail(saleOutDetail)) OR CHANGED(dateTimeSaleOutDetail(saleOutDetail));
+//supplierPriceSaleOutDetail (saleOutDetail) <- priceWholesaleArticleDateTime(articleSku(skuSaleOutDetail(saleOutDetail)), dateTimeSaleOutDetail(saleOutDetail))
+//    WHEN CHANGED(skuSaleOutDetail(saleOutDetail)) OR CHANGED(dateTimeSaleOutDetail(saleOutDetail));
+
+supplierPriceSaleOutDetail (saleOutDetail) <- priceWholesaleArticleCurrencyDateTime(articleSku(skuSaleOutDetail(saleOutDetail)), currencySaleOutDetail(saleOutDetail), dateTimeSaleOutDetail(saleOutDetail))
+    WHEN CHANGED(skuSaleOutDetail(saleOutDetail)) OR CHANGED(dateTimeSaleOutDetail(saleOutDetail)) OR CHANGED(currencySaleOutDetail(saleOutDetail));
 
 EXTEND FORM saleOut
     PROPERTIES(t) numberContractSkuCompanySaleOut
@@ -139,6 +144,12 @@ noteConsignmentDetail (consignmentDetail) += noteSaleOutBatchDetail(consignmentD
 @defineDocumentFormTransferOutConsignment(sale, t);
 // todo: заполнить необходимыми данными
 
+EXTEND FORM saleOut
+    PROPERTIES(t) nameCurrencySaleOut
+;
+EXTEND FORM saleOuts
+    PROPERTIES(t) READONLY nameCurrencySaleOut
+;
 // ---------------------------------------- Поступление ------------------------------------ //
 
 CLASS saleIn 'Покупка товаров по накладным' : historyObject, incAccountDocumentLedger;
@@ -233,6 +244,8 @@ rangeVATBatchA(batch) += rangeVATSaleInBatchDetail(batch);
 sumInSkuLedger(batch) += accountSumSaleInBatchDetail(batch);
 skipSkuLedger (ledger) += skipSkuLedgerSaleInBatchDetail(ledger);
 
+nameCurrencySaleIn 'Валюта' (saleIn) = nameCurrencySaleOut(saleOutSaleIn(saleIn)) MINCHARWIDTH 10 PREFCHARWIDTH 10 MAXCHARWIDTH 15;
+
 // ---------------------------------------- Приемка ------------------------------------ //
 
 CLASS saleRec 'Приемка товаров по накладной (продажа)' : historyObject;
@@ -290,6 +303,10 @@ prevRangeVATBatch (batch) = PREV(rangeVATBatchA(batch)) AND batch IS batch;
 @defineDocumentTransferPriceAct (sale, 'Акт расценки (продажа)', 'Строка акта расценки (продажа)', sku, stock, prevImporterPriceBatch, prevSupplierPriceBatch, prevRangeVATBatch);
 
 notPassToBookkeepingListRegister (inputListRegister) += isCommissionSaleOut(saleOutTransferPriceActSale(inputListRegister));
+
+EXTEND FORM saleIns
+    PROPERTIES(t) READONLY nameCurrencySaleIn
+;
 
 //---------------------------------------- Товарный отчет ------------------------- //
 

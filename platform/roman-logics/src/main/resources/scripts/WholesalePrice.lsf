@@ -14,6 +14,7 @@ TABLE wholesalePriceDocumentArticle (wholesalePriceDocument, article);
 
 @defineNumeratedObject(wholesalePriceDocument, 'Нумератор для оптовых прайсов', 'ОП');
 @defineDocumentHeaderTime(wholesalePriceDocument);
+@defineDocumentHeaderCurrency(wholesalePriceDocument);
 
 declarationWholesalePriceDocument 'Декларация оптового прайса (ИД)' = DATA declaration(wholesalePriceDocument) IN idGroup;
 
@@ -46,32 +47,53 @@ priceWholesalePriceDocumentArticle(wholesalePriceDocument, article) <-
 
 orderWholesalePriceDocument = LIST(dateTimeWholesalePriceDocument(wholesalePriceDocument), wholesalePriceDocument) PERSISTENT;
 
-concatWholesalePriceDocumentArticleDateTime (article, dateTime) = GROUP MAX orderWholesalePriceDocument(wholesalePriceDocument) AND
+//concatWholesalePriceDocumentArticleDateTime (article, dateTime) = GROUP MAX orderWholesalePriceDocument(wholesalePriceDocument) AND
+//                                                                   priceWholesalePriceDocumentArticle(wholesalePriceDocument, article) AND
+//                                                                   dateTimeWholesalePriceDocument(wholesalePriceDocument) < (dateTime AS DATETIME)
+//                                                                BY article, dateTime;
+//
+//documentWholesalePriceArticleDateTime (article, dateTime) = concatWholesalePriceDocumentArticleDateTime(article, dateTime)[2];
+//
+//priceWholesaleArticleDateTime(article, dateTime) = priceWholesalePriceDocumentArticle(documentWholesalePriceArticleDateTime(article, dateTime), article);
+
+concatWholesalePriceDocumentArticleCurrencyDateTime (article, currency, dateTime) = GROUP MAX orderWholesalePriceDocument(wholesalePriceDocument) AND
                                                                    priceWholesalePriceDocumentArticle(wholesalePriceDocument, article) AND
                                                                    dateTimeWholesalePriceDocument(wholesalePriceDocument) < (dateTime AS DATETIME)
-                                                                BY article, dateTime;
+                                                                   BY article, currencyWholesalePriceDocument(wholesalePriceDocument), dateTime;
 
-documentWholesalePriceArticleDateTime (article, dateTime) = concatWholesalePriceDocumentArticleDateTime(article, dateTime)[2];
+documentWholesalePriceArticleCurrencyDateTime (article, currency, dateTime) = concatWholesalePriceDocumentArticleCurrencyDateTime(article, currency, dateTime)[2];
+priceWholesaleArticleCurrencyDateTime(article, currency, dateTime) = priceWholesalePriceDocumentArticle(documentWholesalePriceArticleCurrencyDateTime(article, currency, dateTime), article);
 
-priceWholesaleArticleDateTime(article, dateTime) = priceWholesalePriceDocumentArticle(documentWholesalePriceArticleDateTime(article, dateTime), article);
 
 //подстановка значений себестоимости из последнего оптового прайса
-priceCustomWholesaleArticleDateTime(article, dateTime) =  priceCustomWholesalePriceDocumentArticle (documentWholesalePriceArticleDateTime(article, dateTime), article);
-prevPriceCustomWholesaleArticleDateTime(article, dateTime) =  PREV(priceCustomWholesalePriceDocumentArticle (documentWholesalePriceArticleDateTime(article, dateTime), article));
+//priceCustomWholesaleArticleDateTime(article, dateTime) =  priceCustomWholesalePriceDocumentArticle (documentWholesalePriceArticleDateTime(article, dateTime), article);
+//prevPriceCustomWholesaleArticleDateTime(article, dateTime) =  PREV(priceCustomWholesalePriceDocumentArticle (documentWholesalePriceArticleDateTime(article, dateTime), article));
+//
+//priceCustomWholesalePriceDocumentArticle (wholesalePriceDocument, article) <- prevPriceCustomWholesaleArticleDateTime(article, dateTimeWholesalePriceDocument(wholesalePriceDocument))
+//    WHEN ASSIGNED (inWholesalePriceDocumentArticle(wholesalePriceDocument, article));
+//
+//priceManagerialWholesaleArticleDateTime(article, dateTime) =  priceManagerialWholesalePriceDocumentArticle (documentWholesalePriceArticleDateTime(article, dateTime), article);
+//prevPriceManagerialWholesaleArticleDateTime(article, dateTime) =  PREV(priceManagerialWholesalePriceDocumentArticle (documentWholesalePriceArticleDateTime(article, dateTime), article));
+//
+//priceManagerialWholesalePriceDocumentArticle (wholesalePriceDocument, article) <- prevPriceManagerialWholesaleArticleDateTime(article, dateTimeWholesalePriceDocument(wholesalePriceDocument))
+//    WHEN ASSIGNED (inWholesalePriceDocumentArticle(wholesalePriceDocument, article));
 
-priceCustomWholesalePriceDocumentArticle (wholesalePriceDocument, article) <- prevPriceCustomWholesaleArticleDateTime(article, dateTimeWholesalePriceDocument(wholesalePriceDocument))
+priceCustomWholesaleArticleCurrencyDateTime(article, currency, dateTime) =  priceCustomWholesalePriceDocumentArticle (documentWholesalePriceArticleCurrencyDateTime(article, currency, dateTime), article);
+prevPriceCustomWholesaleArticleCurrencyDateTime(article, currency, dateTime) =  PREV(priceCustomWholesalePriceDocumentArticle (documentWholesalePriceArticleCurrencyDateTime(article, currency, dateTime), article));
+
+priceCustomWholesalePriceDocumentArticle (wholesalePriceDocument, article) <- prevPriceCustomWholesaleArticleCurrencyDateTime(article, currencyWholesalePriceDocument(wholesalePriceDocument), dateTimeWholesalePriceDocument(wholesalePriceDocument))
     WHEN ASSIGNED (inWholesalePriceDocumentArticle(wholesalePriceDocument, article));
 
-priceManagerialWholesaleArticleDateTime(article, dateTime) =  priceManagerialWholesalePriceDocumentArticle (documentWholesalePriceArticleDateTime(article, dateTime), article);
-prevPriceManagerialWholesaleArticleDateTime(article, dateTime) =  PREV(priceManagerialWholesalePriceDocumentArticle (documentWholesalePriceArticleDateTime(article, dateTime), article));
+priceManagerialWholesaleArticleCurrencyDateTime(article, currency, dateTime) =  priceManagerialWholesalePriceDocumentArticle (documentWholesalePriceArticleCurrencyDateTime(article, currency, dateTime), article);
+prevPriceManagerialWholesaleArticleCurrencyDateTime(article, currency, dateTime) =  PREV(priceManagerialWholesalePriceDocumentArticle (documentWholesalePriceArticleCurrencyDateTime(article, currency, dateTime), article));
 
-priceManagerialWholesalePriceDocumentArticle (wholesalePriceDocument, article) <- prevPriceManagerialWholesaleArticleDateTime(article, dateTimeWholesalePriceDocument(wholesalePriceDocument))
+priceManagerialWholesalePriceDocumentArticle (wholesalePriceDocument, article) <- prevPriceManagerialWholesaleArticleCurrencyDateTime(article, currencyWholesalePriceDocument(wholesalePriceDocument), dateTimeWholesalePriceDocument(wholesalePriceDocument))
     WHEN ASSIGNED (inWholesalePriceDocumentArticle(wholesalePriceDocument, article));
 
 FORM wholesalePriceDocument 'Оптовый прайс'
 
     OBJECTS w=wholesalePriceDocument FIXED PANEL
-    PROPERTIES(w) nameNumeratorObject, numberObject, seriesObject, dateWholesalePriceDocument, timeWholesalePriceDocument
+    PROPERTIES(w) nameNumeratorObject, numberObject, seriesObject, dateWholesalePriceDocument, timeWholesalePriceDocument, nameCurrencyWholesalePriceDocument
 
     TREE treeSupplierBrand v=STRING[3], s=supplier, b=brandSupplier
     PROPERTIES READONLY OBJVALUE(v), name(s), name(b)
@@ -115,6 +137,7 @@ DESIGN wholesalePriceDocument FROM DEFAULT {
             ADD PROPERTY(seriesObject);
             ADD PROPERTY(dateWholesalePriceDocument);
             ADD PROPERTY(timeWholesalePriceDocument);
+            ADD PROPERTY(nameCurrencyWholesalePriceDocument);
         }
 
         NEW allContainer {
@@ -171,6 +194,7 @@ toCreateWholesalePriceDocument 'Расценить' =  ACTION (declaration) NEWS
         SET priceCustomWholesalePriceDocumentArticle(w, article) <- priceCustomDeclarationArticle(declaration, article);
         SET priceManagerialWholesalePriceDocumentArticle(w, article) <- priceManagerialDeclarationArticle(declaration, article);
         SET inWholesalePriceDocumentArticle(w, article) <- inDeclarationArticle(declaration, article);
+        SET currencyWholesalePriceDocument(w) <- currencyDeclaration(declaration);
 
         FORM wholesalePriceDocument OBJECTS w=addedObject() MODAL;
         IF formResult() == formResult.ok THEN {
