@@ -1,0 +1,35 @@
+MODULE Country;
+
+REQUIRE System, I18n;
+
+// ---------------------------------------------- Страна -------------------------------- //
+// пока основной код лежит в BaseLogicsModule
+
+languageCountry = DATA language (country);
+nameLanguageCountry 'Язык' (country) = name(languageCountry(country)) MINCHARWIDTH 5 PREFCHARWIDTH 10 MAXCHARWIDTH 15;
+
+FORM country 'Страна'
+    OBJECTS c = country FIXED PANEL
+
+    PROPERTIES(c) name, nameOriginCountry, sidCountry, sidOrigin2Country, sidOrigin3Country,
+                  residentCountry, nameCurrencyCountry, nameLanguageCountry
+
+    EDIT country OBJECT c
+;
+
+FORM countries 'Страны'
+    OBJECTS c = country
+
+    PROPERTIES(c) READONLY name, nameOriginCountry, sidCountry, sidOrigin2Country, sidOrigin3Country,
+                           residentCountry, nameCurrencyCountry, nameLanguageCountry
+
+    PROPERTIES(c) ADDFORM, EDITFORM, delete
+
+    DIALOG country OBJECT c
+;
+
+NAVIGATOR {
+    catalogElement {
+        ADD countries;
+    }
+}

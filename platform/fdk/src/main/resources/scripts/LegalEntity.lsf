@@ -1,6 +1,6 @@
 MODULE LegalEntity;
 
-REQUIRE System, Historizable, Tax, I18n;
+REQUIRE System, Historizable, Tax, Country, I18n;
 
 // ----------------------------------- Форма собственности ------------------------------------------ //
 
@@ -21,11 +21,16 @@ CLASS ABSTRACT legalEntity 'Юридическое лицо' : named, externalOb
 TABLE legalEntity (legalEntity);
 TABLE legalEntityDate (legalEntity, DATE);
 
-languageLegalEntity = DATA language(legalEntity);
-nameLanguageLegalEntity 'Язык' (legalEntity) = name(languageLegalEntity(legalEntity)) MINCHARWIDTH 5 PREFCHARWIDTH 10 MAXCHARWIDTH 15;
+countryLegalEntity = DATA country(legalEntity);
+nameCountryLegalEntity 'Страна' (legalEntity) = name(countryLegalEntity(legalEntity)) MINCHARWIDTH 10 PREFCHARWIDTH 15 MAXCHARWIDTH 20;
 
 currencyLegalEntity = DATA currency(legalEntity);
 nameCurrencyLegalEntity 'Базовая валюта' (legalEntity) = name(currencyLegalEntity(legalEntity)) MINCHARWIDTH 10 PREFCHARWIDTH 10 MAXCHARWIDTH 15;
+currencyLegalEntity(legalEntity) <- currencyCountry(countryLegalEntity(legalEntity)) WHEN CHANGED(countryLegalEntity(legalEntity));
+
+languageLegalEntity = DATA language(legalEntity);
+nameLanguageLegalEntity 'Язык' (legalEntity) = name(languageLegalEntity(legalEntity)) MINCHARWIDTH 5 PREFCHARWIDTH 10 MAXCHARWIDTH 15;
+languageLegalEntity(legalEntity) <- languageCountry(countryLegalEntity(legalEntity)) WHEN CHANGED(countryLegalEntity(legalEntity));
 
 GROUP lawGroup 'Реквизиты' : publicGroup;
 
@@ -140,7 +145,7 @@ TABLE company (company);
 
 FORM company 'Компания'
     OBJECTS co=company FIXED PANEL
-    PROPERTIES(co) name, nameLanguageLegalEntity, nameCurrencyLegalEntity,
+    PROPERTIES(co) name, nameCountryLegalEntity, nameLanguageLegalEntity, nameCurrencyLegalEntity,
                    nameOwnershipLegalEntity, shortNameOwnershipLegalEntity, fullNameLegalEntity,
                    addressLegalEntity ON CHANGE EXEC dialogAddressLegalEntity(co),
                    postAddressLegalEntity ON CHANGE EXEC dialogPostAddressLegalEntity(co),
@@ -168,8 +173,9 @@ DESIGN company FROM DEFAULT {
                 NEW row11 {
                     childConstraints = TO THE RIGHT;
                     ADD PROPERTY(name(co));
-                    ADD PROPERTY(nameLanguageLegalEntity);
+                    ADD PROPERTY(nameCountryLegalEntity);
                     ADD PROPERTY(nameCurrencyLegalEntity);
+                    ADD PROPERTY(nameLanguageLegalEntity);
                 }
                 ADD co.lawGroup;
             }

@@ -18,7 +18,7 @@ TABLE coefficientRetail (coefficientRetail);
 dateCoefficientRetail 'Дата введения' = DATA DATE(coefficientRetail) IN baseGroup;
 markupCoefficientRetail 'Множитель' = DATA NUMERIC[14,3](coefficientRetail) IN baseGroup;
 
-brandSupplierCoefficientRetail = DATA brandSupplier(coefficientRetail) IN idGroup;
+brandSupplierCoefficientRetail = DATA brandSupplier(coefficientRetail) IN idGroup AUTOSET;
 nameBrandSupplierCoefficientRetail 'Бренд' (coefficientRetail) = name(brandSupplierCoefficientRetail(coefficientRetail)) IN baseGroup;
 
 uniqueCoefficientRetail = GROUP UNIQUE coefficientRetail BY brandSupplierCoefficientRetail(coefficientRetail), dateCoefficientRetail(coefficientRetail)

@@ -1534,8 +1534,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         addFormEntity(new DaysOffFormEntity(catalogElement, "daysOffForm"));
         dictionaryForm = addFormEntity(new DictionariesFormEntity(catalogElement, "dictionariesForm"));
 
-        addFormEntity(new CountriesFormEntity(catalogElement, "countries"));
-
         addFormEntity(new AdminFormEntity(adminElement, "adminForm"));
         addFormEntity(new RemindUserPassFormEntity(null, "remindPasswordLetter"));
     }
@@ -2478,21 +2476,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             setEditType(PropertyEditType.READONLY);
 
             addFormActions(this, objCurrency);
-        }
-
-    }
-
-    private class CountriesFormEntity extends FormEntity {
-        ObjectEntity objCountry;
-
-        public CountriesFormEntity(NavigatorElement parent, String sID) {
-            super(parent, sID, getString("logics.country.countries"));
-
-            ObjectEntity objCountry = addSingleGroupObject("c", country, getString("logics.country"));
-            addPropertyDraw(objCountry, baseLM.name, nameOriginCountry, sidCountry, sidOrigin2Country, sidOrigin3Country, residentCountry, nameCurrencyCountry);
-            setEditType(PropertyEditType.READONLY);
-
-            addFormActions(this, objCountry);
         }
 
     }
