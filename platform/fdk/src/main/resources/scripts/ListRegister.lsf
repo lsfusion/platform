@@ -153,6 +153,8 @@ supplierMarkupListRegisterDetail 'Оптовая надбавка/торгова
 
 wareSumListRegisterDetail 'Сумма посуды с НДС' (inputListRegisterDetail) = ABSTRACT NUMERIC[14,2] (inputListRegisterDetail);
 
+nameWareListRegisterDetail 'Посуда' (inputListRegisterDetail) = ABSTRACT STRING[100] (inputListRegisterDetail) MINCHARWIDTH 20 PREFCHARWIDTH 30;
+
 warePriceListRegisterDetail 'Цена посуды с НДС' (inputListRegisterDetail) = ABSTRACT NUMERIC[14,2] (inputListRegisterDetail);
 
 wareVATSumListRegisterDetail 'Сумма НДС по посуде' (inputListRegisterDetail) = ABSTRACT NUMERIC[14,2] (inputListRegisterDetail);
@@ -199,11 +201,12 @@ FORM listRegister 'Реестр цен (поставка)' PRINT
                     retailVATSumListRegisterDetailListRegister, retailSumListRegisterDetailListRegister, nameRegisterCommitteeListRegister,
                     nameFormedManListRegister, nameCheckedManListRegister, nameLabeledManListRegister, nameAccountantManListRegister,
                     nameHeadManListRegister, notPassToBookkeepingListRegister
+    PROPERTIES()    showWare TODRAW l
 
     OBJECTS d=listRegisterDetail
     PROPERTIES (d)  indexListRegisterDetail, idBarcodeSkuListRegisterDetail, nameSkuListRegisterDetail, shortNameUOMSkuListRegisterDetail, quantityListRegisterDetail,
                     importerPriceListRegisterDetail, supplierSumListRegisterDetail, supplierMarkupListRegisterDetail, supplierVATISumListRegisterDetail, valueSupplierVATListRegisterDetail,
-                    wareSumListRegisterDetail, warePriceListRegisterDetail, wareVATSumListRegisterDetail, valueWareRangeListRegisterDetail,
+                    nameWareListRegisterDetail, wareSumListRegisterDetail, warePriceListRegisterDetail, wareVATSumListRegisterDetail, valueWareRangeListRegisterDetail,
                     invoiceSumListRegisterDetail, importerMarkupListRegisterDetail, markupSumListRegisterDetail, valueRetailVATListRegisterDetail,
                     retailVATSumListRegisterDetail, retailPriceListRegisterDetail, retailSumListRegisterDetail
 
@@ -219,11 +222,12 @@ FORM inputListRegister 'Реестр цен (внутр. приход)' PRINT
                     retailVATSumListRegisterDetailListRegister, retailSumListRegisterDetailListRegister, nameRegisterCommitteeListRegister,
                     nameFormedManListRegister, nameCheckedManListRegister, nameLabeledManListRegister, nameAccountantManListRegister,
                     nameHeadManListRegister, notPassToBookkeepingListRegister
+    PROPERTIES()    showWare TODRAW l
 
     OBJECTS d=inputListRegisterDetail
     PROPERTIES (d)  indexListRegisterDetail, idBarcodeSkuListRegisterDetail, nameSkuListRegisterDetail, shortNameUOMSkuListRegisterDetail, quantityListRegisterDetail,
                     importerPriceListRegisterDetail, supplierSumListRegisterDetail, supplierMarkupListRegisterDetail,
-                    wareSumListRegisterDetail, warePriceListRegisterDetail, wareVATSumListRegisterDetail, valueWareRangeListRegisterDetail,
+                    nameWareListRegisterDetail, wareSumListRegisterDetail, warePriceListRegisterDetail, wareVATSumListRegisterDetail, valueWareRangeListRegisterDetail,
                     importerMarkupListRegisterDetail, markupSumListRegisterDetail, valueRetailVATListRegisterDetail,
                     retailVATSumListRegisterDetail, retailPriceListRegisterDetail, retailSumListRegisterDetail
 
@@ -239,7 +243,7 @@ FORM inputListRegisters 'Реестр цен (приход)'
     PROPERTIES (l)  READONLY notPassToBookkeepingListRegister, objectClassName, numberListRegister, seriesListRegister, dateListRegister, nameDepartmentStoreListRegister,
                     shipperListRegister, consigneeListRegister,
                     quantityListRegisterDetailListRegister, supplierSumListRegisterDetailListRegister,
-                    wareSumListRegisterDetailListRegister, wareVATSumListRegisterDetailListRegister,  markupSumListRegisterDetailListRegister,
+                    wareSumListRegisterDetailListRegister SHOWIF showWare(), wareVATSumListRegisterDetailListRegister SHOWIF showWare(),  markupSumListRegisterDetailListRegister,
                     retailVATSumListRegisterDetailListRegister, retailSumListRegisterDetailListRegister, nameRegisterCommitteeListRegister
 
     PROPERTIES (l)  printInputListRegister FORCE PANEL
@@ -248,7 +252,8 @@ FORM inputListRegisters 'Реестр цен (приход)'
     OBJECTS d=inputListRegisterDetail
     PROPERTIES (d)  READONLY indexListRegisterDetail, idBarcodeSkuListRegisterDetail, nameSkuListRegisterDetail, shortNameUOMSkuListRegisterDetail, quantityListRegisterDetail,
                     importerPriceListRegisterDetail, supplierSumListRegisterDetail, supplierMarkupListRegisterDetail,
-                    wareSumListRegisterDetail, warePriceListRegisterDetail, wareVATSumListRegisterDetail, valueWareRangeListRegisterDetail,
+                    nameWareListRegisterDetail SHOWIF showWare(), wareSumListRegisterDetail SHOWIF showWare(), warePriceListRegisterDetail SHOWIF showWare(),
+                    wareVATSumListRegisterDetail SHOWIF showWare(), valueWareRangeListRegisterDetail SHOWIF showWare(),
                     importerMarkupListRegisterDetail, markupSumListRegisterDetail, valueRetailVATListRegisterDetail,
                     retailVATSumListRegisterDetail, retailPriceListRegisterDetail, retailSumListRegisterDetail
 
@@ -325,6 +330,7 @@ META implementInputListRegisterDetail (concrete, skuProp)
     quantityListRegisterDetail (inputListRegisterDetail) += quantity###concrete##Detail (inputListRegisterDetail);
     importerPriceListRegisterDetail (inputListRegisterDetail) += importerPrice###concrete##Detail (inputListRegisterDetail);
     supplierMarkupListRegisterDetail (inputListRegisterDetail) += supplierMarkup###concrete##Detail (inputListRegisterDetail);
+    nameWareListRegisterDetail (inputListRegisterDetail) += nameWare###concrete##Detail (inputListRegisterDetail);
     wareSumListRegisterDetail (inputListRegisterDetail) += wareSum###concrete##Detail (inputListRegisterDetail);
     warePriceListRegisterDetail (inputListRegisterDetail) += warePrice###concrete##Detail (inputListRegisterDetail);
     wareVATSumListRegisterDetail (inputListRegisterDetail) += wareVATSum###concrete##Detail (inputListRegisterDetail);
