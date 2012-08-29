@@ -343,6 +343,8 @@ META defineSkuLedgerBalanceProperties(postfix, caption)
                                                                              (-) [GROUP SUM signedQuantitySkuLedger (ledger) AND dateTimeSkuLedger(ledger) > (dateTime AS DATETIME) AND isPostedSkuLedger(ledger) AND NOT skip##postfix##SkuLedger(ledger)
                                                                                         BY skuSkuLedger(ledger), stockSkuLedger(ledger), dateTime](sku, stock, dateTime);
 
+    currentBalance##postfix##Sku 'Остаток (всего)'###caption (sku) = GROUP SUM currentBalance##postfix##SkuStock(sku, stock) BY sku PERSISTENT;
+
     currentBalance##postfix##BatchStock 'Текущий остаток'###caption (batch, stock) = GROUP SUM signedCostSkuLedgerBatch (ledger, batch) AND isPostedSkuLedger(ledger) AND NOT skip##postfix##SkuLedger(ledger)
                                                                                            BY batch, stockSkuLedger(ledger) PERSISTENT;
 
