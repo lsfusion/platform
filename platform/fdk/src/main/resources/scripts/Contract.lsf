@@ -65,6 +65,10 @@ END
 META defineDocumentContract (concrete, contractType, singleContractProp, partyAProp, partyBProp, partyAMessage, partyBMessage)
     contractType###concrete = DATA contractType (concrete);
     number###contractType###concrete 'Номер договора' (object) = numberContract(contractType###concrete(object)) IN documentPrmGroup;
+    isCommission###concrete 'Продажа на комиссию' = DATA BOOLEAN (object);
+    isCommission###concrete(object) <- typeContractSkuDate(contractType###concrete(object), date###concrete(object)) == contractSkuType.commission
+        WHEN CHANGED(contractType###concrete(object)) OR
+             CHANGED(date###concrete(object));
 
     contractType###concrete(object) <- singleContractProp(partyAProp(object), partyBProp(object))
                                           WHEN CHANGED(partyAProp(object)) OR CHANGED(partyBProp(object));
@@ -75,7 +79,6 @@ META defineDocumentContract (concrete, contractType, singleContractProp, partyAP
     CONSTRAINT contractType###concrete(saleOut) AND NOT partyBProp(saleOut) == companyBContractSkuCompany(contractType###concrete(saleOut))
         CHECKED BY contractType###concrete MESSAGE partyBMessage;
 
-    isCommission###concrete 'Продажа на комиссию' (object) = typeContractSkuDate(contractType###concrete(object), date###concrete(object)) == contractSkuType.commission;
 END
 
 // Формы
@@ -99,16 +102,12 @@ CLASS STATIC contractSkuType 'Тип договора на поставку' {
     sale 'Договор купли-продажи',
     commission 'Договор комиссии'
 }
-//@defineHistorizableCustom(typeContractSku, 'Тип договора', contractSkuType, name, contract, numberContract, paymentGroup);
 
 CLASS STATIC contractSkuForm 'Порядок оплаты договора на поставку' {
     prepayment 'С отсрочкой платежа',
     implement 'По факту реализации',
     requirement 'Платежное требование'
 }
-//@defineHistorizableCustom(formContractSku, 'Порядок оплаты', contractSkuForm, name, contract, numberContract, paymentGroup);
-
-//@defineHistorizable(delayContractSku, 'Отсрочка платежа (календ. дней)', INTEGER, contract, numberContract, paymentGroup);
 
 CLASS paymentCondition 'Условия оплаты';
 
@@ -130,9 +129,13 @@ paymentConditionContractDate 'Условия оплаты для контрак�
 
 typePaymentCondition = DATA contractSkuType (paymentCondition);
 nameTypePaymentCondition 'Тип договора' (paymentCondition) = name(typePaymentCondition(paymentCondition));
+isSaleTypePaymentCondition(paymentCondition) = typePaymentCondition(paymentCondition) == contractSkuType.sale;
 
 formPaymentCondition = DATA contractSkuForm (paymentCondition);
 nameFormPaymentCondition 'Порядок оплаты' (paymentCondition) = name(formPaymentCondition(paymentCondition));
+isPrepaymentFormPaymentCondition(paymentCondition) = formPaymentCondition(paymentCondition) == contractSkuForm.prepayment;
+
+isSaleTypePrepaymentFormPaymentCondition(paymentCondition) = isSaleTypePaymentCondition(paymentCondition) AND isPrepaymentFormPaymentCondition(paymentCondition);
 
 //для обратной совместимости
 
@@ -155,14 +158,20 @@ countDaysBonusPeriod 'Кол-во дней' = DATA NUMERIC[8,3] (bonusPeriod);
 percentBonusPeriod 'Процент' = DATA NUMERIC[8,3] (bonusPeriod);
 paymentConditionBonusPeriod 'Условия оплаты периода бонуса' = DATA paymentCondition (bonusPeriod);
 
+sumPercentPaymentCondition(paymentCondition) = GROUP SUM percentPaymentPeriod(paymentPeriod) BY paymentConditionPaymentPeriod(paymentPeriod);
+CONSTRAINT sumPercentPaymentCondition(paymentCondition) != 100.0 CHECKED BY sumPercentPaymentCondition
+    MESSAGE 'Сумма процентов рассрочки должна быть равна 100';
+
 FORM paymentCondition 'Условия оплаты'
 
     OBJECTS pc = paymentCondition FIXED PANEL
     PROPERTIES(pc) datePaymentCondition, numberContractPaymentCondition, nameTypePaymentCondition, nameFormPaymentCondition
 
     OBJECTS pp = paymentPeriod
-    PROPERTIES(pp) countDaysPaymentPeriod, percentPaymentPeriod
-    PROPERTIES(pp) ADDOBJ, delete
+    PROPERTIES(pp) countDaysPaymentPeriod SHOWIF isSaleTypePrepaymentFormPaymentCondition(pc),
+                   percentPaymentPeriod SHOWIF isSaleTypePrepaymentFormPaymentCondition(pc)
+    PROPERTIES(pp) ADDOBJ SHOWIF isSaleTypePrepaymentFormPaymentCondition(pc),
+                   delete SHOWIF isSaleTypePrepaymentFormPaymentCondition(pc)
 
     OBJECTS bp = bonusPeriod
     PROPERTIES(bp) countDaysBonusPeriod, percentBonusPeriod
@@ -179,9 +188,7 @@ FORM contractSku 'Договор на поставку товаров'
     OBJECTS c=contract FIXED PANEL
     PROPERTIES(c) namePartyAContract, namePartyBContract,
                   numberContract, dateFromContract, dateToContract,
-                  nameCurrencyContract, noteContract,
-                  nameTypeContractSku,
-                  nameFormContractSku
+                  nameCurrencyContract, noteContract
 
     OBJECTS pc = paymentCondition
     PROPERTIES(pc) READONLY datePaymentCondition, numberContractPaymentCondition, nameTypePaymentCondition,
@@ -223,9 +230,15 @@ FORM contractSkuCompany 'Договор'
     OBJECTS c=contractSkuCompany FIXED PANEL
     PROPERTIES(c) nameCompanyAContractSkuCompany, nameCompanyBContractSkuCompany,
                   numberContract, dateFromContract, dateToContract,
-                  nameCurrencyContract, noteContract,
-                  nameTypeContractSku,
-                  nameFormContractSku
+                  nameCurrencyContract, noteContract
+
+    OBJECTS pc = paymentCondition
+    PROPERTIES(pc) READONLY datePaymentCondition, numberContractPaymentCondition, nameTypePaymentCondition,
+                            nameFormPaymentCondition
+    PROPERTIES(pc) ADDSESSIONFORM, EDITSESSIONFORM, delete
+    ORDER BY datePaymentCondition
+
+    FILTERS contractPaymentCondition(pc) == c
 
     EDIT contractSkuCompany OBJECT c
 ;

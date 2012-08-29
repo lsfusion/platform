@@ -49,19 +49,21 @@ META implementContractLedger(prefix, object)
 
 END
 
-META implementContractPrepaymentLedger(object)
+META implementContractPrepaymentLedger(object, sumProp)
 
     CLASS object##ContractLedger : contractLedger;
 
-    needToCreate###object##ContractLedger (object) =  formContractSkuDate(contract###object(object), date###object(object)) == contractSkuForm.prepayment;
+    needToCreate###object##ContractLedger (object, paymentPeriod) =
+        isSaleTypePrepaymentFormPaymentCondition(paymentConditionContractDate(contract###object(object), date###object(object))) AND paymentPeriod IS paymentPeriod;
 
-    @defineAggregation(object, object##ContractLedger, needToCreate###object##ContractLedger);
+    @defineAggregationDouble(object, paymentPeriod, object##ContractLedger, needToCreate###object##ContractLedger);
 
-    dateTimeContractLedger(object##ContractLedger) += dateTime###object(object###object##ContractLedger(object##ContractLedger));
-    //dateTimeContractLedger(object##ContractLedger) += sumDateTimeDay(dateTime###object(object###object##ContractLedger(object##ContractLedger)),
-    //                                                                 delayContractSku(contract###object(object###object##ContractLedger(object##ContractLedger))));
+    dateTimeContractLedger(object##ContractLedger) += sumDateTimeDay(dateTime###object(object###object##ContractLedger(object##ContractLedger)),
+                                                                     countDaysPaymentPeriod(paymentPeriod###object##ContractLedger(object##ContractLedger)));
     contractContractLedger(object##ContractLedger) += contract###object(object###object##ContractLedger(object##ContractLedger));
     descriptionContractLedger(object##ContractLedger) += description###object(object###object##ContractLedger(object##ContractLedger));
+    sumContractLedger(object##ContractLedger) +=
+        sumProp(object###object##ContractLedger(object##ContractLedger)) * percentPaymentPeriod(paymentPeriod###object##ContractLedger(object##ContractLedger)) / 100.0;
 
 END
 

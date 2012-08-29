@@ -2789,8 +2789,8 @@ descriptionPriceTransactionDocument (document) += descriptionShipment(document);
 @implementContractLedger(a, shipment);
 sumContractALedger(contractALedger) += invoiceSumShipmentDetailShipment(contractALedger);
 
-@implementContractPrepaymentLedger(shipment);
-sumContractLedger(shipmentContractLedger) += invoiceSumShipmentDetailShipment(shipmentShipmentContractLedger(shipmentContractLedger));
+@implementContractPrepaymentLedger(shipment, invoiceSumShipmentDetailShipment);
+//sumContractLedger(shipmentContractLedger) += invoiceSumShipmentDetailShipment(shipmentShipmentContractLedger(shipmentContractLedger));
 
 //----------------------------------Для реестра цен----------------------------//
 

@@ -38,7 +38,7 @@ destinationCompanyReturnOut(returnOut) = companyStock(destinationStockReturnOut(
                         'Сторона B договора возврата товаров не соответствуют компании склада-получателя');
 
 EXTEND FORM returnOut
-    PROPERTIES(t) numberContractSkuCompanyReturnOut
+    PROPERTIES(t) numberContractSkuCompanyReturnOut, isCommissionReturnOut
 ;
 
 EXTEND FORM returnOuts

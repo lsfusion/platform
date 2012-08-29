@@ -167,5 +167,5 @@ descriptionCommercialInvoice 'Название документа' (commercialIn
 @implementContractLedger(a, commercialInvoice);
 sumContractALedger(contractALedger) += sumCommercialInvoice(contractALedger);
 
-@implementContractPrepaymentLedger(commercialInvoice);
-sumContractLedger(commercialInvoiceContractLedger) += sumCommercialInvoice(commercialInvoiceCommercialInvoiceContractLedger(commercialInvoiceContractLedger));
+@implementContractPrepaymentLedger(commercialInvoice, sumCommercialInvoice);
+//sumContractLedger(commercialInvoiceContractLedger) += sumCommercialInvoice(commercialInvoiceCommercialInvoiceContractLedger(commercialInvoiceContractLedger));

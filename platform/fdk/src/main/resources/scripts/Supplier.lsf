@@ -46,9 +46,15 @@ FORM contractSkuSupplier 'Договор'
     OBJECTS c=contractSkuSupplier FIXED PANEL
     PROPERTIES(c) nameCompanyContractSkuSupplier, nameSupplierContractSkuSupplier,
                   numberContract, dateFromContract, dateToContract,
-                  nameCurrencyContract, noteContract,
-                  nameTypeContractSku,
-                  nameFormContractSku
+                  nameCurrencyContract, noteContract
+
+    OBJECTS pc = paymentCondition
+    PROPERTIES(pc) READONLY datePaymentCondition, numberContractPaymentCondition, nameTypePaymentCondition,
+                            nameFormPaymentCondition
+    PROPERTIES(pc) ADDSESSIONFORM, EDITSESSIONFORM, delete
+    ORDER BY datePaymentCondition
+
+    FILTERS contractPaymentCondition(pc) == c
 
     EDIT contractSkuSupplier OBJECT c
 ;
