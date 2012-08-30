@@ -189,7 +189,7 @@ destinationCompanyOrderPicking(orderPicking) = companyStock(destinationStockOrde
 retailPriceOrderPickingDetail 'Цена розничная' = DATA NUMERIC[14,2] (orderPickingDetail);
 retailSumOrderPickingDetail 'Сумма розничная' (detail) = quantityOrderPickingDetail(detail) * retailPriceOrderPickingDetail(detail);
 
-retailPriceOrderPickingDetail(orderPickingDetail) <- priceDiscountPriceSetDocumentArticleDateTime(articleSku(skuOrderPickingDetail(orderPickingDetail)), dateTimeOrderPickingDetail(orderPickingDetail))
+retailPriceOrderPickingDetail(orderPickingDetail) <- pricePriceSetDocumentSkuDateTime(skuOrderPickingDetail(orderPickingDetail), dateTimeOrderPickingDetail(orderPickingDetail))
                                                         WHEN CHANGED(dateTimeOrderPickingDetail(orderPickingDetail))
                                                              OR CHANGED(skuOrderPickingDetail(orderPickingDetail));
 

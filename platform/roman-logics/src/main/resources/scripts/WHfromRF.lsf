@@ -256,9 +256,9 @@ shouldBePrintWHfromRF = SESSION DATA BOOLEAN (sku);
 countSku = SESSION DATA INTEGER (sku);
 
 ///UNION SUM priceInFullFreightSku()
-
-priceBaseWHfromRFDateTimeSku 'Цена' (sku, dateTime) = priceBasePriceSetDocumentArticleDateTime(articleSku(sku), dateTime);
-priceDiscountWHfromRFDateTimeSku 'Цена скидочная' (sku, dateTime) = priceDiscountPriceSetDocumentArticleDateTime(articleSku(sku), dateTime);
+// todo убрать промежуточные свойства
+priceBaseWHfromRFDateTimeSku 'Цена' (sku, dateTime) = priceBasePriceSetDocumentSkuDateTime(sku, dateTime) AND sku IS sku;
+priceDiscountWHfromRFDateTimeSku 'Цена скидочная' (sku, dateTime) = priceDiscountPriceSetDocumentSkuDateTime(sku, dateTime) AND sku IS sku;
 
 quantitySkuFreightUnitWHfromRF (sku, freightUnit, WHfromRF) = quantitySkuFreightUnitFreight(sku, freightUnit, freightWHfromRF(WHfromRF));
 quantityPositionsSkuInWHfromRFFreightUnit 'Кол-во позиций в коробе' (WHfromRF, freightUnit) =
