@@ -24,12 +24,15 @@ REQUIRE System,
 //----------------------------Справочник значений НДС --------------------------//
 
 fillVATDefaultValues 'Заполнить значения НДС по умолчанию' = ACTION () {
-    EXEC addTaxNumberValue(1, 0);
-    EXEC addTaxNumberValue(2, 9.09);
-    EXEC addTaxNumberValue(3, 16.67);
-    EXEC addTaxNumberValue(4, 10);
-    EXEC addTaxNumberValue(5, 20);
-    EXEC addTaxNumberValue(6, 24);
+    EXEC addVATNumberValue(112, 1, 0);
+    EXEC addVATNumberValue(112, 2, 9.09);
+    EXEC addVATNumberValue(112, 3, 16.67);
+    EXEC addVATNumberValue(112, 4, 10);
+    EXEC addVATNumberValue(112, 5, 20);
+    EXEC addVATNumberValue(112, 6, 24);
+
+    EXEC addVATNumberValue(804, 1, 0);
+    EXEC addVATNumberValue(804, 2, 20);
 };
 
 //----------------------------Справочник стран --------------------------//

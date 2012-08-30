@@ -12,7 +12,7 @@ META defineDocumentDetailInPrice (object)
     @defineDocumentDetailInPricePrefix(object,,);
 END
 
-META defineDocumentDetailInvoicePrice (object)
+META defineDocumentDetailInvoicePrice (object, stockProp)
     supplierMarkup###object##Detail 'Оптовая надбавка/торговая скидка, %' (detail) = DATA NUMERIC[6,2] (object##Detail) IN priceDetailGroup;
     overSupplierMarkup###object##Detail 'Оптовая надбавка/торговая скидка, %' (detail) =
             UNION OVERRIDE 0 IF detail IS object##Detail, supplierMarkup###object##Detail(detail);
@@ -22,7 +22,10 @@ META defineDocumentDetailInvoicePrice (object)
     valueSupplierVAT###object##Detail 'НДС поставщика,%' (detail) = valueRateRangeDate
         (supplierVAT###object##Detail(detail), date###object##Detail(detail)) IN priceDetailGroup;
 
-    CONSTRAINT taxRange(supplierVAT###object##Detail(detail)) != tax.taxVAT CHECKED BY supplierVAT###object##Detail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
+    CONSTRAINT taxRange(supplierVAT###object##Detail(detail)) != tax.taxVAT OR
+               countryRange(supplierVAT###object##Detail(detail)) != countryStock(stockProp###object##Detail(detail))
+               CHECKED BY supplierVAT###object##Detail
+               MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 END
 
 META defineDocumentDetailWareRangePrefix (object, prefix, caption)
@@ -53,19 +56,22 @@ META defineDocumentDetailRetailPrice (object)
     @defineDocumentDetailRetailPricePrefix(object,,);
 END
 
-META defineDocumentDetailOutPricePrefix (object, prefix, caption)
+META defineDocumentDetailOutPricePrefix (object, stockProp, prefix, caption)
     prefix###retailVAT###object##Detail = DATA range (object##Detail);
     prefix###numberRetailVAT###object##Detail 'НДС розничный, номер'###caption (detail) = numberRange(prefix###retailVAT###object##Detail(detail)) IN priceDetailGroup;
     prefix###valueRetailVAT###object##Detail 'НДС розничный, %'###caption (detail) =
        valueRateRangeDate(prefix###retailVAT###object##Detail(detail), date###object##Detail(detail)) IN priceDetailGroup;
 
-    CONSTRAINT taxRange(prefix###retailVAT###object##Detail(detail)) != tax.taxVAT CHECKED BY prefix###retailVAT###object##Detail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
+    CONSTRAINT taxRange(prefix###retailVAT###object##Detail(detail)) != tax.taxVAT OR
+               countryRange(prefix###retailVAT###object##Detail(detail)) != countryStock(stockProp###object##Detail(detail))
+               CHECKED BY prefix###retailVAT###object##Detail
+               MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 
     @defineDocumentDetailRetailPricePrefix(object, prefix, caption);
     @defineDocumentDetailOutPriceAggregationPrefix (object, prefix, caption);
 END
-META defineDocumentDetailOutPrice (object)
-    @defineDocumentDetailOutPricePrefix(object, ,);
+META defineDocumentDetailOutPrice (object, stockProp)
+    @defineDocumentDetailOutPricePrefix(object, stockProp, ,);
 END
 
 META defineDocumentDetailOutPriceAggregationPrefix (object, prefix, caption)
@@ -85,16 +91,16 @@ META defineDocumentDetailOutPriceAggregation (object)
     @defineDocumentDetailOutPriceAggregationPrefix(object, ,);
 END
 
-META defineDocumentDetailBasePricePrefix (object, prefix, caption)
+META defineDocumentDetailBasePricePrefix (object, stockProp, prefix, caption)
     @defineDocumentDetailWarePrefix(object, prefix, caption);
     @defineDocumentDetailInPricePrefix(object, prefix, caption);
-    @defineDocumentDetailOutPricePrefix(object, prefix, caption);
+    @defineDocumentDetailOutPricePrefix(object, stockProp, prefix, caption);
 END
-META defineDocumentDetailBasePrice (object)
-    @defineDocumentDetailBasePricePrefix(object,,);
+META defineDocumentDetailBasePrice (object, stockProp)
+    @defineDocumentDetailBasePricePrefix(object, stockProp, ,);
 END
 
-META defineDocumentDetailCalcRange (object)
+META defineDocumentDetailCalcRange (object, stockProp)
     calcRange###object##Detail = DATA range (object##Detail);
     calcRange###object##Detail (detail) <- rangeVATTaxTaxUnit(tax.taxVAT,
                                 storeDepartmentStore(departmentStore###object##Detail(detail))) WHEN detail IS object##Detail;
@@ -103,7 +109,10 @@ META defineDocumentDetailCalcRange (object)
     dataCalcRange###object##Detail 'НДС расчетный, %' (detail) =
        valueRateRangeDate(calcRange###object##Detail(detail), date###object##Detail(detail));
 
-    CONSTRAINT taxRange(calcRange###object##Detail(detail)) != tax.taxVAT CHECKED BY calcRange###object##Detail MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
+    CONSTRAINT taxRange(calcRange###object##Detail(detail)) != tax.taxVAT OR
+               countryRange(calcRange###object##Detail(detail)) != countryStock(stockProp###object##Detail(detail))
+               CHECKED BY calcRange###object##Detail
+               MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС и стране склада';
 END
 
 // ----------------------------------- Объявление сумм для detail -------------------------- //

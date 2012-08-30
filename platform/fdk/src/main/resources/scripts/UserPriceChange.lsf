@@ -18,9 +18,9 @@ seriesUserPriceChange (userPriceChange) = seriesObject(userPriceChange) AND user
 @defineDocumentDetailSku(userPriceChange, sku);
 
 @defineDocumentDetailQuantity(userPriceChange);
-@defineDocumentDetailBasePrice(userPriceChange);
+@defineDocumentDetailBasePrice(userPriceChange, departmentStore);
 
-@defineDocumentDetailBasePricePrefix(userPriceChange, cur, ' (тек.)');
+@defineDocumentDetailBasePricePrefix(userPriceChange, departmentStore, cur, ' (тек.)');
 @deriveBasePriceLedgerOnSkuChangePrefix(userPriceChange, cur, sku);
 
 @defineDocumentHeaderSkuQuantity(userPriceChange, sku);

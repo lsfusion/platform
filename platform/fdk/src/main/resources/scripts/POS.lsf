@@ -185,7 +185,17 @@ discountSumReceipt 'Сумма скидки по чеку' (receipt) = discountS
 @defineDocumentHeaderSkuQuantityCustom(receipt, receiptSaleDetail, sku);
 
 VATReceiptSaleDetail = DATA range (receiptSaleDetail);
+CONSTRAINT taxRange(VATReceiptSaleDetail(detail)) != tax.taxVAT OR
+           countryRange(VATReceiptSaleDetail(detail)) != countryStock(departmentStoreReceiptSaleDetail(detail))
+           CHECKED BY VATReceiptSaleDetail
+           MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС и стране магазина';
+
 VATReceiptReturnDetail = DATA range (receiptReturnDetail);
+CONSTRAINT taxRange(VATReceiptReturnDetail(detail)) != tax.taxVAT OR
+           countryRange(VATReceiptReturnDetail(detail)) != countryStock(departmentStoreReceiptReturnDetail(detail))
+           CHECKED BY VATReceiptReturnDetail
+           MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС и стране магазина';
+
 VATReceiptDetail (receiptDetail) = UNION EXCLUSIVE VATReceiptReturnDetail(receiptDetail), VATReceiptSaleDetail(receiptDetail) PERSISTENT;
 
 // используется только для приема реализации из внешних касс

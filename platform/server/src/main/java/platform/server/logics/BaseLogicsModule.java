@@ -471,7 +471,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP sidCountry;
     public LCP residentCountry;
     protected LCP generateDatesCountry;
-    public LCP sidToCountry;
+    public LCP countrySID;
     public LCP nameToCountry;
     protected LCP nameToObject;
     protected LCP isDayOffCountryDate;
@@ -914,6 +914,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         nameOriginCountry = addDProp(baseGroup, "nameOriginCountry", getString("logics.country.name.origin.country"), InsensitiveStringClass.get(50), country);
 
         sidCountry = addDProp(baseGroup, "sidCountry", getString("logics.country.key"), IntegerClass.instance, country);
+        countrySID = addAGProp("countrySID", getString("logics.country"), sidCountry);
+
         sidOrigin2Country = addDProp(baseGroup, "sidOrigin2Country", getString("logics.country.sid.origin.2.country"), StringClass.get(2), country);
         sidOrigin2Country.setMinimumCharWidth(15);
         sidOrigin3Country = addDProp(baseGroup, "sidOrigin3Country", getString("logics.country.sid.origin.3.country"), StringClass.get(3), country);
@@ -924,7 +926,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         nameCurrencyCountry.setPreferredCharWidth(10);
 
         generateDatesCountry = addDProp(privateGroup, "generateDatesCountry", getString("logics.day.generate.days.off"), LogicalClass.instance, country);
-        sidToCountry = addAGProp("sidToCountry", getString("logics.country"), sidCountry);
 
         residentCountry = addDProp(baseGroup, "residentCountry", getString("logics.country.resident.country"), LogicalClass.instance, country);
         residentCountry.setMinimumCharWidth(15);

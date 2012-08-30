@@ -18,10 +18,9 @@ stockGroupStock (stock) = ABSTRACT stockGroup (stock) PERSISTENT;
 companyStock (stock) = ABSTRACT company (stock) PERSISTENT;
 nameCompanyStock 'Компания' (stock) = name(companyStock(stock));
 UNPStock 'УНП' (stock) = UNPLegalEntity(companyStock(stock));
-languageStock (stock) = languageLegalEntity(companyStock(stock)) PERSISTENT;
-
+countryStock (stock) = countryLegalEntity(companyStock(stock)) PERSISTENT;
 currencyStock (stock) = currencyLegalEntity(companyStock(stock)) PERSISTENT;
-nameCurrencyStock 'Базовая валюта' (stock) = nameCurrencyLegalEntity(companyStock(stock));
+languageStock (stock) = languageLegalEntity(companyStock(stock)) PERSISTENT;
 
 addressStock 'Адрес' (stock) = ABSTRACT STRING[100] (stock);
 

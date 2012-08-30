@@ -2237,7 +2237,7 @@ TABLE studyOutputDetail(studyOutputDetail);
 
 @defineDocumentDetailQuantity(studyInput);
 
-@defineDocumentDetailBasePrice(studyInput);
+@defineDocumentDetailBasePrice(studyInput, departmentStore);
 @deriveBasePriceLedgerOnSkuChange(studyInput, item);
 
 @defineDocumentDetailBaseSum(studyInput);
@@ -2298,10 +2298,10 @@ actualQuantityStudyOutputDetail 'Фактический выход п/ф'(studyO
 quantityStudyOutputDetail(studyOutputDetail) = UNION OVERRIDE calculatedStudyOutputDetail(studyOutputDetail),
                                                               actualQuantityStudyOutputDetail(studyOutputDetail);
 
-@defineDocumentDetailBasePrice(studyOutput);
+@defineDocumentDetailBasePrice(studyOutput, departmentStore);
 @defineDocumentDetailBaseSum(studyOutput);
 
-@defineDocumentDetailBasePricePrefix(studyOutput, cur, ' (тек.)');
+@defineDocumentDetailBasePricePrefix(studyOutput, departmentStore, cur, ' (тек.)');
 @deriveBasePriceLedgerOnSkuChangePrefix(studyOutput, cur, item);
 
 @defineDocumentDetailPostedCustom(actOfStudy, studyOutputDetail);
@@ -2464,7 +2464,7 @@ CLASS specificationDetail 'Строка счет-фактуры';
 
 @defineDocumentDetailRetailSum(specification);
 
-@defineDocumentDetailCalcRange(specification);
+@defineDocumentDetailCalcRange(specification, departmentStore);
 @defineDocumentDetailCalcVATSum(specification);
 
 @defineAddDetailDialogSkuStock(specification, item, departmentStore, dialogSku);
@@ -2560,12 +2560,12 @@ CLASS statementPosted 'Закрытая выписка из розницы' : st
 @defineDocumentDetailSkuItem(statement);
 @defineDocumentDetailQuantity(statement);
 
-@defineDocumentDetailBasePrice(statement);
+@defineDocumentDetailBasePrice(statement, departmentStore);
 @deriveBasePriceLedgerOnSkuChange(statement, item);
 
 @defineDocumentDetailRetailSum(statement);
 
-@defineDocumentDetailCalcRange(statement);
+@defineDocumentDetailCalcRange(statement, departmentStore);
 @defineDocumentDetailCalcVATSum(statement);
 
 @defineDocumentDetailRetailPricePrefix(statement, cur, ' (тек.)');
@@ -2713,13 +2713,13 @@ CLASS shipmentPosted 'Закрытая поставка' : shipment, postedObjec
 
 @defineDocumentDetailQuantity(shipment);
 
-@defineDocumentDetailBasePrice(shipment);
+@defineDocumentDetailBasePrice(shipment, departmentStore);
 @defineDocumentDetailBaseSum(shipment);
 
-@defineDocumentDetailInvoicePrice(shipment);
+@defineDocumentDetailInvoicePrice(shipment, departmentStore);
 @defineDocumentDetailInvoiceSum(shipment);
 
-@defineDocumentDetailBasePricePrefix(shipment, cur, ' (тек.)');
+@defineDocumentDetailBasePricePrefix(shipment, departmentStore, cur, ' (тек.)');
 @deriveBasePriceLedgerOnSkuChangePrefix(shipment, cur, item);
 
 @defineAddDetailDialogSku(shipment, item, dialogSku);
@@ -3011,7 +3011,7 @@ CLASS writeOffPosted 'Закрытое списание' : writeOff, postedObjec
 
 @defineDocumentDetailQuantity(writeOff);
 
-@defineDocumentDetailBasePrice(writeOff);
+@defineDocumentDetailBasePrice(writeOff, departmentStore);
 @deriveBasePriceLedgerOnSkuChange(writeOff, item);
 
 @defineDocumentDetailBaseSum(writeOff);
@@ -3066,7 +3066,7 @@ CLASS innerFlowPosted 'Закрытый расход в отдел' : innerFlow,
 
 @defineDocumentDetailQuantity(innerFlow);
 
-@defineDocumentDetailBasePrice(innerFlow);
+@defineDocumentDetailBasePrice(innerFlow, departmentStore);
 @deriveBasePriceLedgerOnSkuChange(innerFlow, item);
 
 @defineDocumentDetailBaseSum(innerFlow);
@@ -3156,10 +3156,10 @@ CLASS innerArrivalPosted 'Закрытый приход в отдел' : innerAr
 @defineDocumentDetailSkuItem(innerArrival);
 
 @defineDocumentDetailQuantity(innerArrival);
-@defineDocumentDetailBasePrice(innerArrival);
+@defineDocumentDetailBasePrice(innerArrival, departmentStore);
 @defineDocumentDetailBaseSum(innerArrival);
 
-@defineDocumentDetailBasePricePrefix(innerArrival, cur, ' (тек.)');
+@defineDocumentDetailBasePricePrefix(innerArrival, departmentStore, cur, ' (тек.)');
 @deriveBasePriceLedgerOnSkuChangePrefix(innerArrival, cur, item);
 
 @defineAddDetailDialogSku(innerArrival, item, dialogSku);
@@ -3331,13 +3331,13 @@ CLASS returnSupplierPosted 'Закрытый возврат поставщику
 
 @defineDocumentDetailQuantity(returnSupplier);
 
-@defineDocumentDetailBasePrice(returnSupplier);
+@defineDocumentDetailBasePrice(returnSupplier, departmentStore);
 @defineDocumentDetailBaseSum(returnSupplier);
 
-@defineDocumentDetailInvoicePrice(returnSupplier);
+@defineDocumentDetailInvoicePrice(returnSupplier, departmentStore);
 @defineDocumentDetailInvoiceSum(returnSupplier);
 
-@defineDocumentDetailBasePricePrefix(returnSupplier, cur, ' (тек.)');
+@defineDocumentDetailBasePricePrefix(returnSupplier, departmentStore, cur, ' (тек.)');
 @deriveBasePriceLedgerOnSkuChangePrefix(returnSupplier, cur, item);
 
 @defineAddDetailDialogSkuStockSupplier(returnSupplier, item, departmentStore, dialogSku);
@@ -3540,7 +3540,7 @@ CLASS disparityDetail 'Строка пересортицы': outFIFOSkuLedger;
 
 @defineDocumentDetailQuantity(disparity);
 
-@defineDocumentDetailBasePrice(disparity);
+@defineDocumentDetailBasePrice(disparity, departmentStore);
 @derivePrevBasePriceLedgerOnSkuChange(disparity, item);
 
 @defineDocumentDetailBaseSum(disparity);
@@ -3569,7 +3569,7 @@ sumOutSkuLedger (ledger) += retailSumDisparityDetail(ledger);
 
 @defineDocumentDetailQuantityPrefix(disparity, input, ' (приход)');
 
-@defineDocumentDetailBasePricePrefix(disparity, input, ' (приход)');
+@defineDocumentDetailBasePricePrefix(disparity, departmentStore, input, ' (приход)');
 @derivePrevBasePriceLedgerOnSkuChangePrefix(disparity, input, inputItem);
 
 //@defineDocumentDetailRetailSumPrefix(disparity, input, ' (приход)');
@@ -3580,7 +3580,7 @@ inputRetailSumDisparityDetail 'Розничная сумма (приход)'(dis
 
                                   // Текущее значение расхода //
 
-@defineDocumentDetailBasePricePrefix(disparity, inputCur, ' (тек.)');
+@defineDocumentDetailBasePricePrefix(disparity, departmentStore, inputCur, ' (тек.)');
 @derivePrevBasePriceLedgerOnSkuChangePrefix(disparity, inputCur, inputItem);
 
 balanceBeforeDisparityDetail 'Остаток до пересорта (расход)' (disparityDetail) = DATA NUMERIC[14,3] (disparityDetail) IN baseGroup;
@@ -3705,7 +3705,7 @@ CLASS naturalLossPosted 'Закрытая ведомость естествен�
 @defineDocumentDetailSkuItem(naturalLoss);
 
 @defineDocumentDetailQuantity(naturalLoss);
-@defineDocumentDetailBasePrice(naturalLoss);
+@defineDocumentDetailBasePrice(naturalLoss, departmentStore);
 
 @defineDocumentHeaderQuantity(naturalLoss);
 
@@ -7716,8 +7716,8 @@ addNumerator 'Добавить нумератор' = ACTION(string1, string2, lo
 }
 
 fillDatabaseDefaultValues 'Заполнить базу значениями по умолчанию' = ACTION() {
-    EXEC fillVATDefaultValues();
     EXEC fillCountryDefaultValues();
+    EXEC fillVATDefaultValues();
     EXEC fillUOMDefaultValues();
     EXEC fillCurrencyDefaultValues();
     EXEC fillStatisticGroupDefaultValues();

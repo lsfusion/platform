@@ -121,7 +121,10 @@ numberSupplierVATBatchA 'НДС, номер' (batchA) = numberRange(rangeVATBatc
 valueSupplierVATBatchA 'НДС,%' (batchA) = valueRateRangeDate
     (rangeVATBatchA(batchA), dateBatch(batchA));
 
-CONSTRAINT taxRange(rangeVATBatchA(batchA)) != tax.taxVAT CHECKED BY rangeVATBatchA MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
+CONSTRAINT taxRange(rangeVATBatchA(batchA)) != tax.taxVAT OR
+           countryRange(rangeVATBatchA(batchA)) != countryLegalEntity(ownerBatchA(batchA))
+           CHECKED BY rangeVATBatchA
+           MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС и стране собственника партии';
 
 EXTEND FORM currentBalanceBatchStock
     PROPERTIES(bt) READONLY FORCE GRID typeBatch, importerPriceBatchA, supplierPriceBatchA, numberSupplierVATBatchA, valueSupplierVATBatchA, nameOwnerBatchA

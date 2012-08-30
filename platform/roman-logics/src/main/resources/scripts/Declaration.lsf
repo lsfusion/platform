@@ -39,9 +39,8 @@ EXTEND FORM customCategoryForm
 ;
 
 toSetRangeCustomCategories10 'Взять шкалы' = ACTION () NEWSESSION AUTOAPPLY {
-
-    SET dataSupplierVATCustomCategory10Date(c, d) <- valueCurrentRangeValue(dutyPercentCustomCategory10TypeDuty(c, typeDutyNDS())) WHERE d == 2011_01_01;
-    SET dataSupplierVATCustomCategory10Date(c, d) <- valueCurrentRangeValue(NDSPercentCustom()) WHERE d == 2011_01_01 AND NOT dutyPercentCustomCategory10TypeDuty(c, typeDutyNDS());
+    SET dataSupplierVATCustomCategory10Date(c, d) <- valueCurrentVATCountryValue(countrySID(112), dutyPercentCustomCategory10TypeDuty(c, typeDutyNDS())) WHERE d == 2011_01_01;
+    SET dataSupplierVATCustomCategory10Date(c, d) <- valueCurrentVATCountryValue(countrySID(112), NDSPercentCustom()) WHERE d == 2011_01_01 AND NOT dutyPercentCustomCategory10TypeDuty(c, typeDutyNDS());
 };
 
 //--------------------------------- Инвойсы -------------------------------------------------------------------------//
@@ -637,6 +636,11 @@ sumDutyReverseDeclarationDetail 'Стоимость с пошлиной' (declar
 VATRangeDataGroupDeclaration 'Шкала НДС (ИД)' = DATA range(groupDeclaration);
 VATRangeGroupDeclaration 'Шкала НДС (ИД)' (groupDeclaration) = supplierVATCustomCategory10Date(customCategory10GroupDeclaration(groupDeclaration),
                                                                                                dateDeclaration(declarationGroupDeclaration(groupDeclaration)));
+
+CONSTRAINT taxRange(VATRangeDataGroupDeclaration(groupDeclaration)) != tax.taxVAT OR
+           countryRange(VATRangeDataGroupDeclaration(groupDeclaration)) != countryLegalEntity(importerDeclaration(declarationGroupDeclaration(groupDeclaration)))
+           CHECKED BY VATRangeDataGroupDeclaration
+           MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС и стране импортера';
 
 VATRangeDataGroupDeclaration(groupDeclaration) <- VATRangeGroupDeclaration(groupDeclaration) WHEN CHANGED (customCategory10GroupDeclaration(groupDeclaration));
 
