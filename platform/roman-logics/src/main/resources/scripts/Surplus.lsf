@@ -57,7 +57,7 @@ CLASS surplusOutDetail 'Строка реализации излишков' : ou
 
 createDetailSurplusOut 'Сделать подборку строк излишков' = [ACTION (surplusOut) {
 
-    FOR diffBalanceSkuStock(sku, stockSurplusOut(surplusOut)) DO {
+    FOR diffPositiveBalanceSkuStock(sku, stockSurplusOut(surplusOut)) DO {
         ADDOBJ surplusOutDetail;
         FOR d == addedObject() DO {
             SET surplusOutSurplusOutDetail(d) <- surplusOut;
@@ -84,7 +84,7 @@ createInnerOrderSurplusOut 'Создать внутренний заказ' = [A
         SET destinationStockInnerOrder(i) <- destinationStockSurplusOut(surplusOut);
         SET order() <- i;
 
-        FOR diffBalanceSkuStock(sku, stockSurplusOut(surplusOut)) DO {
+        FOR diffPositiveBalanceSkuStock(sku, stockSurplusOut(surplusOut)) DO {
             ADDOBJ innerOrderDetail;
             FOR d == addedObject() DO {
                 SET innerOrderInnerOrderDetail(d) <- i AS innerOrder;
@@ -100,7 +100,7 @@ createInnerOrderSurplusOut 'Создать внутренний заказ' = [A
         SET picking() <- p;
         SET innerOrderOrderPicking (p) <- order();
 
-        FOR diffBalanceSkuStock(sku, stockSurplusOut(surplusOut)) DO {
+        FOR diffPositiveBalanceSkuStock(sku, stockSurplusOut(surplusOut)) DO {
             ADDOBJ orderPickingDetail;
             FOR pd == addedObject() DO {
                 SET orderPickingOrderPickingDetail(pd) <- p AS orderPickingPosted;

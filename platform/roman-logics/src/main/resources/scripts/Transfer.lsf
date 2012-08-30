@@ -222,8 +222,8 @@ sumOutSkuLedger(ledger) += accountSumTransferDiffSDetail(ledger);
 skipASkuLedger (ledger) += ledger IS transferDiffSDetail;
 
 // ---------------------------------------- Акт расценки ------------------------------------ //
-CLASS transferPriceActTransfer 'Акт расценки' : transferPriceAct;
-CLASS transferPriceActTransferDetail 'Строка акта расценки': transferPriceActDetail;
+CLASS transferPriceActTransfer 'Акт расценки (внутр.)' : inputTransferPriceAct;
+CLASS transferPriceActTransferDetail 'Строка акта расценки': inputTransferPriceActDetail;
 
 prevImporterPriceBatch (batch) = PREV(importerPriceBatchA(batch)) AND batch IS batch;
 prevSupplierPriceBatch (batch) = PREV(supplierPriceBatchA(batch)) AND batch IS batch;
@@ -235,8 +235,12 @@ notPassToBookkeepingListRegister (inputListRegister) += destinationStockTransfer
     AND stockTransferOut(transferOutTransferPriceActTransfer(inputListRegister)) IS departmentStore
     OR  isCommissionTransferOut(transferOutTransferPriceActTransfer(inputListRegister));
 
+printInputListRegisterTransferIn 'Реестр цен' (transferIn) = printInputListRegister(transferPriceActTransferTransferOut(transferOutTransferIn(transferIn))) TOOLBAR;
+
+
 EXTEND FORM transferIns
     PROPERTIES(t) READONLY nameCurrencyTransferIn
+    PROPERTIES (t) printInputListRegisterTransferIn
 ;
 
 //---------------------------------------- Товарный отчет ------------------------- //

@@ -9,8 +9,11 @@ REQUIRE System,
         Contract,
         Employee;
 
-CLASS transferPriceAct 'Акт расценки' : inputListRegister, historyObject;
-CLASS transferPriceActDetail 'Строка акта расценки': inputListRegisterDetail, importerPriceLedger, supplierPriceLedger, retailVATLedger, retailPriceLedger, warePriceLedger;
+CLASS inputTransferPriceAct 'Акт расценки' : inputListRegister, historyObject;
+CLASS inputTransferPriceActDetail 'Строка акта расценки': inputListRegisterDetail, importerPriceLedger, supplierPriceLedger, retailVATLedger, retailPriceLedger, warePriceLedger;
+
+CLASS transferPriceAct 'Акт расценки' : inputTransferPriceAct, listRegister;
+CLASS transferPriceActDetail 'Строка акта расценки': inputTransferPriceActDetail, listRegisterDetail;
 
 META defineDocumentTransferPriceAct (object, caption, captionDetail, skuProp, stockProp, importerPriceProp, supplierPriceProp, VATProp)
 
@@ -67,13 +70,15 @@ META defineDocumentTransferPriceAct (object, caption, captionDetail, skuProp, st
 
     retailPriceTransferPriceAct###object##Detail 'Цена розничная' (transferPriceAct###object##Detail) = retailPrice###object##OutDetail(object##OutDetailTransferPriceAct###object##Detail(transferPriceAct###object##Detail));
 
-    printInputListRegister###object##In 'Реестр цен' (object##In) = printInputListRegister(transferPriceAct###object###object##Out(object##Out###object##In(object##In))) TOOLBAR;
 
     @implementBaseISkuDepartmentStoreLedger(transferPriceAct###object, skuProp);
 
     // Расчет сумм и показателей для реестра цен
     importerSumTransferPriceAct###object##Detail (transferPriceAct###object##Detail) =
         importerPriceTransferPriceAct###object##Detail(transferPriceAct###object##Detail) * quantityTransferPriceAct###object##Detail(transferPriceAct###object##Detail);
+
+    supplierSumTransferPriceAct###object##Detail (detail) =
+        supplierPriceTransferPriceAct###object##Detail(detail) * quantityTransferPriceAct###object##Detail(detail);
 
     retailSumTransferPriceAct###object##Detail (transferPriceAct###object##Detail) =
         retailPriceTransferPriceAct###object##Detail(transferPriceAct###object##Detail) * quantityTransferPriceAct###object##Detail(transferPriceAct###object##Detail);
@@ -126,7 +131,9 @@ META defineDocumentTransferPriceAct (object, caption, captionDetail, skuProp, st
     skuListRegisterDetail  (inputListRegisterDetail) += skuTransferPriceAct###object##Detail (inputListRegisterDetail);
     quantityListRegisterDetail (inputListRegisterDetail) += quantityTransferPriceAct###object##Detail (inputListRegisterDetail);
     importerPriceListRegisterDetail (inputListRegisterDetail) += importerPriceTransferPriceAct###object##Detail (inputListRegisterDetail);
-    supplierMarkupListRegisterDetail (inputListRegisterDetail) += 0.0 IF inputListRegisterDetail IS transferPriceAct###object##Detail;
+    supplierSumListRegisterDetail (inputListRegisterDetail) += supplierSumTransferPriceAct###object##Detail (inputListRegisterDetail);
+    supplierMarkupListRegisterDetail (inputListRegisterDetail) +=  (supplierPriceTransferPriceAct###object##Detail(inputListRegisterDetail)/
+        importerPriceTransferPriceAct###object##Detail(inputListRegisterDetail) - 1)*100;
     wareSumListRegisterDetail (inputListRegisterDetail) += 0.0 IF inputListRegisterDetail IS transferPriceAct###object##Detail;
     warePriceListRegisterDetail (inputListRegisterDetail) += 0.0 IF inputListRegisterDetail IS transferPriceAct###object##Detail;
     wareVATSumListRegisterDetail (inputListRegisterDetail) += 0.0 IF inputListRegisterDetail IS transferPriceAct###object##Detail;
@@ -147,12 +154,11 @@ META defineDocumentTransferPriceAct (object, caption, captionDetail, skuProp, st
                         sidArticleTransferPriceAct###object##Detail, sidSizeTransferPriceAct###object##Detail,
                         sidColorTransferPriceAct###object##Detail, nameColorTransferPriceAct###object##Detail,
                         quantityTransferPriceAct###object##Detail, shortNameUOMTransferPriceAct###object##Detail,
-                        importerPriceTransferPriceAct###object##Detail, numberRetailVATTransferPriceAct###object##Detail, //retailMarkupTransferPriceActDetail,
+                        importerPriceTransferPriceAct###object##Detail, numberRetailVATTransferPriceAct###object##Detail,
                         valueRetailVATTransferPriceAct###object##Detail, retailPriceTransferPriceAct###object##Detail
 
         FILTERS object##In###object##Out(object##Out###object##OutDetail(object##OutDetailTransferPriceAct###object##Detail(pd)))==t
 
-        PROPERTIES (t) printInputListRegister###object##In//, registerCommitteeTransferIn TODRAW pd FORCE PANEL
     ;
 
     EXTEND DESIGN object##Ins {
@@ -162,5 +168,48 @@ META defineDocumentTransferPriceAct (object, caption, captionDetail, skuProp, st
             }
         }
     }
+
+END
+
+
+META defineDocumentTransferPriceActExtra (object, VATProp)
+
+    supplierVATTransferPriceAct###object##Detail (transferPriceAct###object##Detail) = DATA range (transferPriceAct###object##Detail);
+    supplierVATTransferPriceAct###object##Detail (detail) <- VATProp(batchTransferPriceAct###object##Detail(detail)) WHEN ASSIGNED(isPostedTransferPriceAct###object##Detail(detail));
+    valueSupplierVATTransferPriceAct###object##Detail 'НДС поставщика, %' (transferPriceAct###object##Detail) = valueRateRangeDate
+        (supplierVATTransferPriceAct###object##Detail(transferPriceAct###object##Detail), dateTransferPriceAct###object##Detail(transferPriceAct###object##Detail));
+
+     // Расчет сумм и показателей для реестра цен дополнительные (listRegister)
+
+    supplierVATISumTransferPriceAct###object##Detail 'Сумма НДС поставщика (без посуды)' (detail) =     [X*Y/100]
+        (supplierSumTransferPriceAct###object##Detail(detail), valueSupplierVATTransferPriceAct###object##Detail(detail));
+
+    numberSupplierVATTransferPriceAct###object##Detail 'НДС поставщика, номер' (transferPriceAct###object##Detail) = numberRange(supplierVATTransferPriceAct###object##Detail(transferPriceAct###object##Detail));
+
+
+    invoiceSumTransferPriceAct###object##Detail 'Сумма поставщика с НДС' (detail) = supplierSumTransferPriceAct###object##Detail (detail) (+)
+        supplierVATISumTransferPriceAct###object##Detail(detail);
+
+    supplierVATISumTransferPriceAct###object 'Сумма НДС поставщика (без посуды)' (transferPriceAct###object) = GROUP SUM
+        supplierVATISumTransferPriceAct###object##Detail(detail) BY transferPriceAct###object##TransferPriceAct###object##Detail(detail);
+
+    invoiceSumTransferPriceAct###object 'Сумма поставщика с НДС' (transferPriceAct###object) = GROUP SUM
+        invoiceSumTransferPriceAct###object##Detail(detail) BY transferPriceAct###object##TransferPriceAct###object##Detail(detail);
+
+    // Свойства реестра цен
+    supplierVATISumListRegisterDetailListRegister (listRegister) += supplierVATISumTransferPriceAct###object(listRegister);
+    invoiceSumListRegisterDetailListRegister (listRegister) += invoiceSumTransferPriceAct###object(listRegister);
+    supplierVATISumListRegisterDetail (listRegisterDetail) += supplierVATISumTransferPriceAct###object##Detail (listRegisterDetail);
+    valueSupplierVATListRegisterDetail (listRegisterDetail) += valueSupplierVATTransferPriceAct###object##Detail (listRegisterDetail);
+    invoiceSumListRegisterDetail (listRegisterDetail) += invoiceSumTransferPriceAct###object##Detail (listRegisterDetail);
+
+
+    EXTEND FORM object##Ins
+
+        PROPERTIES (pd)
+                        supplierVATISumTransferPriceAct###object##Detail, numberSupplierVATTransferPriceAct###object##Detail,
+                        valueSupplierVATTransferPriceAct###object##Detail, invoiceSumTransferPriceAct###object##Detail
+
+    ;
 
 END

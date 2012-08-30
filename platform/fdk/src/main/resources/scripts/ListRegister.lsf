@@ -137,6 +137,8 @@ nameHeadManListRegister 'Зав. магазином' (inputListRegister) = nameH
 
 listRegisterListRegisterDetail (inputListRegisterDetail) = ABSTRACT inputListRegister(inputListRegisterDetail);
 
+fullInputListRegister 'Реестр полный' (inputListRegister) = ABSTRACT BOOLEAN (inputListRegister);
+
 indexListRegisterDetail 'Номер строки' (inputListRegisterDetail) = ABSTRACT INTEGER (inputListRegisterDetail);
 skuListRegisterDetail  (inputListRegisterDetail) = ABSTRACT sku (inputListRegisterDetail) IN idGroup;
 nameSkuListRegisterDetail 'Товар' (inputListRegisterDetail) = nameSku(skuListRegisterDetail(inputListRegisterDetail));
@@ -237,24 +239,33 @@ FORM inputListRegister 'Реестр цен (внутр. приход)' PRINT
 printListRegister 'Реестр цен' (listRegister) = ACTION FORM listRegister OBJECTS l IMAGE 'print.png' IN printGroup;
 printInputListRegister 'Реестр цен' (inputListRegister) = ACTION FORM inputListRegister OBJECTS l IMAGE 'print.png' IN printGroup;
 
+printRegister 'Реестр цен' (inputListRegister) = ACTION (inputListRegister) {
+    IF fullInputListRegister(inputListRegister)  THEN {
+        EXEC printListRegister(inputListRegister);
+    } ELSE {
+        EXEC printInputListRegister(inputListRegister);
+    }
+} IMAGE 'print.png' IN printGroup;
 
-FORM inputListRegisters 'Реестр цен (приход)'
+
+FORM inputListRegisters 'Реестры цен' // форма в частности для романа пока
     OBJECTS l=inputListRegister
-    PROPERTIES (l)  READONLY notPassToBookkeepingListRegister, objectClassName, numberListRegister, seriesListRegister, dateListRegister, nameDepartmentStoreListRegister,
-                    shipperListRegister, consigneeListRegister,
-                    quantityListRegisterDetailListRegister, supplierSumListRegisterDetailListRegister,
-                    wareSumListRegisterDetailListRegister SHOWIF showWare(), wareVATSumListRegisterDetailListRegister SHOWIF showWare(),  markupSumListRegisterDetailListRegister,
+    PROPERTIES (l)  READONLY numberListRegister, seriesListRegister, objectClassName, dateListRegister, nameDepartmentStoreListRegister,
+                    shipperListRegister, consigneeListRegister, dataFromContractListRegister FORCE GRID, numberContractListRegister FORCE GRID,
+                    quantityListRegisterDetailListRegister, supplierSumListRegisterDetailListRegister, supplierVATISumListRegisterDetailListRegister FORCE GRID,
+                    wareSumListRegisterDetailListRegister SHOWIF showWare(), wareVATSumListRegisterDetailListRegister SHOWIF showWare(), invoiceSumListRegisterDetailListRegister FORCE GRID,
+                    markupSumListRegisterDetailListRegister,
                     retailVATSumListRegisterDetailListRegister, retailSumListRegisterDetailListRegister, nameRegisterCommitteeListRegister
 
-    PROPERTIES (l)  printInputListRegister FORCE PANEL
-
+    PROPERTIES (l)  printRegister FORCE PANEL
 
     OBJECTS d=inputListRegisterDetail
-    PROPERTIES (d)  READONLY indexListRegisterDetail, idBarcodeSkuListRegisterDetail, nameSkuListRegisterDetail, shortNameUOMSkuListRegisterDetail, quantityListRegisterDetail,
-                    importerPriceListRegisterDetail, supplierSumListRegisterDetail, supplierMarkupListRegisterDetail,
+    PROPERTIES (d)  indexListRegisterDetail, idBarcodeSkuListRegisterDetail, nameSkuListRegisterDetail, shortNameUOMSkuListRegisterDetail, quantityListRegisterDetail,
+                    importerPriceListRegisterDetail, supplierSumListRegisterDetail, supplierMarkupListRegisterDetail, supplierVATISumListRegisterDetail FORCE GRID,
+                    valueSupplierVATListRegisterDetail FORCE GRID,
                     nameWareListRegisterDetail SHOWIF showWare(), wareSumListRegisterDetail SHOWIF showWare(), warePriceListRegisterDetail SHOWIF showWare(),
                     wareVATSumListRegisterDetail SHOWIF showWare(), valueWareRangeListRegisterDetail SHOWIF showWare(),
-                    importerMarkupListRegisterDetail, markupSumListRegisterDetail, valueRetailVATListRegisterDetail,
+                    invoiceSumListRegisterDetail, importerMarkupListRegisterDetail, markupSumListRegisterDetail, valueRetailVATListRegisterDetail,
                     retailVATSumListRegisterDetail, retailPriceListRegisterDetail, retailSumListRegisterDetail
 
     FILTERS listRegisterListRegisterDetail(d) == l
@@ -268,7 +279,7 @@ DESIGN inputListRegisters FROM DEFAULT {
         childConstraints = TO THE BOTTOM;
 
         ADD l.box {
-            PROPERTY (printInputListRegister) {
+            PROPERTY (printRegister) {
                 panelLocation = TOOLBAR;
             }
         };
@@ -277,7 +288,6 @@ DESIGN inputListRegisters FROM DEFAULT {
 
     ADD functions.box;
 }
-
 
 // ----------------------------------- Макрос для задания комиссии для документов ------------------------------------------ //
 GROUP committeeGroup 'Комиссия' : publicGroup;

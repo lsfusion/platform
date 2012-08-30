@@ -293,7 +293,7 @@ sumOutSkuLedger(ledger) += accountSumSaleDiffSDetail(ledger);
 skipASkuLedger (ledger) += ledger IS saleDiffSDetail;
 
 // ---------------------------------------- Акт расценки ------------------------------------ //
-CLASS transferPriceActSale 'Акт расценки' : transferPriceAct;
+CLASS transferPriceActSale 'Акт расценки (поставка)' : transferPriceAct;
 CLASS transferPriceActSaleDetail 'Строка акта расценки': transferPriceActDetail;
 
 prevImporterPriceBatch (batch) = PREV(importerPriceBatchA(batch)) AND batch IS batch;
@@ -301,13 +301,22 @@ prevSupplierPriceBatch (batch) = PREV(supplierPriceBatchA(batch)) AND batch IS b
 prevRangeVATBatch (batch) = PREV(rangeVATBatchA(batch)) AND batch IS batch;
 
 @defineDocumentTransferPriceAct (sale, 'Акт расценки (продажа)', 'Строка акта расценки (продажа)', sku, stock, prevImporterPriceBatch, prevSupplierPriceBatch, prevRangeVATBatch);
-
+@defineDocumentTransferPriceActExtra (sale, prevRangeVATBatch);
 notPassToBookkeepingListRegister (inputListRegister) += isCommissionSaleOut(saleOutTransferPriceActSale(inputListRegister));
+
+contractSkuCompanyTransferPriceActSale(transferPriceActSale) = contractSkuCompanySaleOut(saleOutTransferPriceActSale(transferPriceActSale));
+
+dataFromContractListRegister (listRegister) += dateFromContract(contractSkuCompanyTransferPriceActSale (listRegister));
+numberContractListRegister (listRegister) += numberContract(contractSkuCompanyTransferPriceActSale (listRegister));
+fullInputListRegister (inputListRegister) +=  inputListRegister IS transferPriceActSale;
+
+printInputListRegisterSaleIn 'Реестр цен' (saleIn) = printListRegister(transferPriceActSaleSaleOut(saleOutSaleIn(saleIn))) TOOLBAR;
 
 EXTEND FORM saleIns
     PROPERTIES(t) READONLY nameCurrencySaleIn
-;
+    PROPERTIES (t) printInputListRegisterSaleIn
 
+;
 //---------------------------------------- Товарный отчет ------------------------- //
 
 dateTimeAccountDocumentLedger (ledger) += dateTimeSaleOut(ledger);

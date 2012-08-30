@@ -87,7 +87,7 @@
 		<groupFooter>
 			<band height="16">
 				<staticText>
-					<reportElement style="GroupCellStyle0" x="0" y="0" width="210" height="16" forecolor="#000000" backcolor="#FFFFFF"/>
+					<reportElement style="GroupCellStyle0" x="0" y="0" width="230" height="16" forecolor="#000000" backcolor="#FFFFFF"/>
 					<box>
 						<topPen lineWidth="0.5"/>
 						<leftPen lineWidth="0.5"/>
@@ -110,17 +110,6 @@
 					</textElement>
 					<textFieldExpression><![CDATA[$F{markupSumListRegisterDetailListRegister}]]></textFieldExpression>
 				</textField>
-				<staticText>
-					<reportElement style="GroupCellStyle0" x="210" y="0" width="20" height="16" backcolor="#FFFFFF"/>
-					<box>
-						<topPen lineWidth="0.5"/>
-						<leftPen lineWidth="0.5"/>
-						<bottomPen lineWidth="0.0"/>
-						<rightPen lineWidth="0.5"/>
-					</box>
-					<textElement/>
-					<text><![CDATA[]]></text>
-				</staticText>
 				<textField pattern="#,##0" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" x="615" y="0" width="90" height="16" backcolor="#FFFFFF"/>
 					<box>
@@ -229,7 +218,7 @@
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<staticText>
-					<reportElement style="GroupCellStyle0" x="0" y="0" width="210" height="16" forecolor="#000000" backcolor="#FFFFFF"/>
+					<reportElement style="GroupCellStyle0" x="0" y="0" width="230" height="16" forecolor="#000000" backcolor="#FFFFFF"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Dashed"/>
 						<leftPen lineWidth="0.5"/>
@@ -254,19 +243,6 @@
 					</textElement>
 					<textFieldExpression><![CDATA[$F{wareSumListRegisterDetailListRegister}]]></textFieldExpression>
 				</textField>
-				<staticText>
-					<reportElement style="GroupCellStyle0" x="210" y="0" width="20" height="16" backcolor="#FFFFFF"/>
-					<box>
-						<topPen lineWidth="0.0" lineStyle="Dashed"/>
-						<leftPen lineWidth="0.5"/>
-						<bottomPen lineWidth="0.0"/>
-						<rightPen lineWidth="0.5"/>
-					</box>
-					<textElement>
-						<font isItalic="true"/>
-					</textElement>
-					<text><![CDATA[]]></text>
-				</staticText>
 				<textField pattern="#,##0" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" x="435" y="0" width="90" height="16" backcolor="#FFFFFF"/>
 					<box>
