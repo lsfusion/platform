@@ -60,7 +60,7 @@
                         </manifestEntries>
                     </archive>
                     <descriptors>
-                        <descriptor>../server/src/assemble/distribution.xml</descriptor>
+                        <descriptor>src/assemble/distribution.xml</descriptor>
                     </descriptors>
                 </configuration>
             </plugin>

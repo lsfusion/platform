@@ -13,6 +13,28 @@
     <packaging>pom</packaging>
     <name>Logics</name>
 
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <finalName>fusion</finalName>
+                    <archive>
+                        <manifest>
+                            <mainClass>platform.server.logics.BusinessLogics</mainClass>
+                        </manifest>
+                        <manifestEntries>
+                            <SCM-Version>${platform.revision}</SCM-Version>
+                        </manifestEntries>
+                    </archive>
+                    <descriptors>
+                        <descriptor>../server/src/assemble/distribution.xml</descriptor>
+                    </descriptors>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
     <dependencies>
         <dependency>
             <groupId>by.luxsoft.platform</groupId>
