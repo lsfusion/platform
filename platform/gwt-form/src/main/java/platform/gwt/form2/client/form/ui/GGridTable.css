@@ -5,11 +5,9 @@
 }
 
 .dataGridFirstColumn {
-    border-left: 1px solid #999999;
 }
 
 .dataGridLastColumn {
-
 }
 
 .dataGridFooter {
@@ -34,8 +32,7 @@
 }
 
 .dataGridCell {
-    border-bottom: 1px solid #999999;
-    border-right: 1px solid #999999;
+    border: 1px solid #CCCCCC;
 
     padding: 2px 5px;
 
@@ -111,7 +108,7 @@
 }
 
 .dataGridKeyboardSelectedRowCell {
-    /*border: 2px solid #ffc;*/
+    /*border: 1px solid #add8e6;*/
 }
 
 /* стайлим выделенный ряд, так же как ряд с клавиатурным выделением,
@@ -133,5 +130,5 @@
 * The keyboard selected cell is visible over selection.
 */
 .dataGridKeyboardSelectedCell {
-    /*border: 2px solid #d7dde8;*/
+    border: 1px solid blue;
 }
