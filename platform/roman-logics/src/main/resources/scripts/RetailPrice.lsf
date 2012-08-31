@@ -267,13 +267,13 @@ priceOutRatePriceSetDocumentSku 'Цена с надбавкой (руб.)' (base
                                                                                                        ratePriceSetDocumentSku(basePriceSetDocument, sku)) MINCHARWIDTH 15;
 
 priceRetailPriceSetDocumentArticle 'Цена розничная' (basePriceSetDocument, article) =
-           IF methodPriceSetDocumentArticle(basePriceSetDocument, article) == methodPrice.coefficient THEN roundPrice(priceOutRatePriceSetDocumentArticle(basePriceSetDocument, article)) ELSE
-             IF methodPriceSetDocumentArticle(basePriceSetDocument, article) == methodPrice.RRP THEN roundPrice(RRPRatePriceSetDocumentArticle(basePriceSetDocument, article)) ELSE
+           IF methodPriceSetDocumentArticle(basePriceSetDocument, article) == methodPrice.coefficient THEN roundPriceCurrency(priceOutRatePriceSetDocumentArticle(basePriceSetDocument, article), currencyPriceSetDocument(basePriceSetDocument)) ELSE
+             IF methodPriceSetDocumentArticle(basePriceSetDocument, article) == methodPrice.RRP THEN roundPriceCurrency(RRPRatePriceSetDocumentArticle(basePriceSetDocument, article), currencyPriceSetDocument(basePriceSetDocument)) ELSE
                 PREV(priceBBasePriceSetDocumentArticle(basePriceSetDocument, article)) IF methodPriceSetDocumentArticle(basePriceSetDocument, article) == methodPrice.previous;
 
 priceRetailPriceSetDocumentSku 'Цена розничная' (basePriceSetDocument, sku) =
-           IF methodPriceSetDocumentSku(basePriceSetDocument, sku) == methodPrice.coefficient THEN roundPrice(priceOutRatePriceSetDocumentSku(basePriceSetDocument, sku)) ELSE
-             IF methodPriceSetDocumentSku(basePriceSetDocument, sku) == methodPrice.RRP THEN roundPrice(RRPRatePriceSetDocumentSku(basePriceSetDocument, sku)) ELSE
+           IF methodPriceSetDocumentSku(basePriceSetDocument, sku) == methodPrice.coefficient THEN roundPriceCurrency(priceOutRatePriceSetDocumentSku(basePriceSetDocument, sku), currencyPriceSetDocument(basePriceSetDocument)) ELSE
+             IF methodPriceSetDocumentSku(basePriceSetDocument, sku) == methodPrice.RRP THEN roundPriceCurrency(RRPRatePriceSetDocumentSku(basePriceSetDocument, sku), currencyPriceSetDocument(basePriceSetDocument)) ELSE
                 PREV(priceBBasePriceSetDocumentSku(basePriceSetDocument, sku)) IF methodPriceSetDocumentSku(basePriceSetDocument, sku) == methodPrice.previous;
 
 priceDataBasePriceSetDocumentArticle(basePriceSetDocument, article) <- priceRetailPriceSetDocumentArticle(basePriceSetDocument, article)
@@ -328,10 +328,10 @@ calcPriceDataDiscountPriceSetDocumentSku 'Цена без процентов' (d
 calcPriceDiscountPriceSetDocumentSku 'Цена без процентов' (discountPriceSetDocument, sku) = UNION OVERRIDE calcPriceDiscountPriceSetDocumentArticleSku(discountPriceSetDocument, sku),
                                                                                                            calcPriceDataDiscountPriceSetDocumentSku(discountPriceSetDocument, sku);
 
-priceDataDiscountPriceSetDocumentArticle(discountPriceSetDocument, article) <- roundPrice(calcPriceDiscountPriceSetDocumentArticle(discountPriceSetDocument, article))
+priceDataDiscountPriceSetDocumentArticle(discountPriceSetDocument, article) <- roundPriceCurrency(calcPriceDiscountPriceSetDocumentArticle(discountPriceSetDocument, article), currencyPriceSetDocument(discountPriceSetDocument))
                                         WHEN CHANGED (calcPriceDiscountPriceSetDocumentArticle(discountPriceSetDocument, article));
 
-priceDataDiscountPriceSetDocumentSku(discountPriceSetDocument, sku) <- roundPrice(calcPriceDiscountPriceSetDocumentSku(discountPriceSetDocument, sku))
+priceDataDiscountPriceSetDocumentSku(discountPriceSetDocument, sku) <- roundPriceCurrency(calcPriceDiscountPriceSetDocumentSku(discountPriceSetDocument, sku), currencyPriceSetDocument(discountPriceSetDocument))
                                         WHEN CHANGED (calcPriceDiscountPriceSetDocumentSku(discountPriceSetDocument, sku));
 
 

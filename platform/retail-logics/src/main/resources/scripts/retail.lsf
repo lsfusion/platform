@@ -2738,6 +2738,8 @@ CLASS shipmentPosted 'Закрытая поставка' : shipment, postedObjec
 @defineDocumentHeaderListRegister(shipment);
 @defineDocumentHeaderPriceChange(shipment);
 
+@defineDocumentAndDeriveCurrency (shipment, departmentStore);
+
 sidShipmentDetail 'Уникальный номер накладной' (shipmentDetail) = DATA STRING[50] (shipmentDetail) IN documentHeaderGroup;
 
 sidNumberSeriesToShipmentDetail (sid, number, series) = GROUP UNIQUE shipmentDetail
@@ -2863,7 +2865,7 @@ calculatedRetailPriceShipmentDetail 'Новая розничная цена (р�
     ELSE nonRoundRetailPriceShipmentDetail(shipmentDetail) (+) warePriceShipmentDetail(shipmentDetail);
 
 retailPriceShipmentDetail (shipmentDetail) <-
-    roundPrice(calculatedRetailPriceShipmentDetail (shipmentDetail))
+    roundPriceCurrency(calculatedRetailPriceShipmentDetail (shipmentDetail), currencyShipmentDetail(shipmentDetail))
     WHEN CHANGED(calculatedRetailPriceShipmentDetail (shipmentDetail));
 
 // Запись текущих параметров

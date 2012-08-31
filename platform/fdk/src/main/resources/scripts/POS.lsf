@@ -70,8 +70,15 @@ numberZReportReceipt 'Номер Z-отчета' (receipt) = numberZReport(zRepo
 @defineDocumentDetailDepartmentStoreCustom(zReport, receipt);
 @defineDocumentDetailPostedCustom(zReport, receipt);
 
+@defineDocumentHeaderCurrency (receipt);
+@deriveDocumentCurrency (receipt, departmentStore);
+
 @defineDocumentRelationCustom(receipt, receiptSaleDetail);
 @defineDocumentRelationCustom(receipt, receiptReturnDetail);
+
+@defineDocumentDetailCurrencyCustom (receipt, receiptSaleDetail);
+@defineDocumentDetailCurrencyCustom (receipt, receiptReturnDetail);
+
 receiptReceiptDetail (receiptDetail) = UNION EXCLUSIVE receiptReceiptReturnDetail(receiptDetail), receiptReceiptSaleDetail(receiptDetail) PERSISTENT;
 
 typeReceiptDetail 'Тип' (receiptDetail) = UNION EXCLUSIVE 'Продажа' AND receiptDetail IS receiptSaleDetail, 'Возврат' AND receiptDetail IS receiptReturnDetail FIXEDCHARWIDTH 8;
@@ -134,10 +141,12 @@ discountSumReceiptSaleDetail 'Сумма скидки' (receiptDetail) = DATA NU
 priceSumReceiptSaleDetail 'Сумма без скидки' = quantityReceiptSaleDetail(detail) * priceReceiptSaleDetail(detail);
 
 calcDiscountSumReceiptSaleDetail (detail) = priceSumReceiptSaleDetail(detail) * discountPercentReceiptSaleDetail (detail) / 100;
-discountSumReceiptSaleDetail (detail) <- round(calcDiscountSumReceiptSaleDetail (detail), priceRound()) WHEN CHANGED (calcDiscountSumReceiptSaleDetail(detail));
+discountSumReceiptSaleDetail (detail) <- round(calcDiscountSumReceiptSaleDetail (detail), priceRoundCurrency(currencyReceiptSaleDetail (detail)))
+    WHEN CHANGED (calcDiscountSumReceiptSaleDetail(detail)) OR CHANGED (currencyReceiptSaleDetail (detail));
 
 calcSumReceiptSaleDetail (detail) = priceSumReceiptSaleDetail(detail) (-) discountSumReceiptSaleDetail(detail);
-sumReceiptSaleDetail (detail) <- round(calcSumReceiptSaleDetail(detail), priceRound()) WHEN CHANGED (calcSumReceiptSaleDetail(detail));
+sumReceiptSaleDetail (detail) <- round(calcSumReceiptSaleDetail(detail), priceRoundCurrency(currencyReceiptSaleDetail (detail)))
+    WHEN CHANGED (calcSumReceiptSaleDetail(detail)) OR CHANGED (currencyReceiptSaleDetail (detail));
 
 quantityReceiptReturnDetail 'Количество' (receiptDetail) = DATA NUMERIC[14,3] (receiptReturnDetail);
 priceReceiptReturnDetail 'Цена' (receiptDetail) = DATA NUMERIC[14,2] (receiptReturnDetail);
@@ -147,10 +156,12 @@ discountSumReceiptReturnDetail 'Сумма скидки' (receiptDetail) = DATA 
 quantityReturnedReceiptSaleDetail 'Возвращено' (saleDetail) = GROUP SUM quantityReceiptReturnDetail(returnDetail) BY receiptSaleDetailReceiptReturnDetail(returnDetail) PERSISTENT;
 CONSTRAINT quantityReturnedReceiptSaleDetail(detail) > quantityReceiptSaleDetail (detail) MESSAGE 'Количество возвратов по строке чека превышает проданное количество';
 
-calcSumReceiptReturnDetail(detail) = round(quantityReceiptReturnDetail(detail) * sumReceiptSaleDetail(receiptSaleDetailReceiptReturnDetail(detail)) / quantityReceiptSaleDetail(receiptSaleDetailReceiptReturnDetail(detail)), priceRound());
+calcSumReceiptReturnDetail(detail) = round(quantityReceiptReturnDetail(detail) * sumReceiptSaleDetail(receiptSaleDetailReceiptReturnDetail(detail)) / quantityReceiptSaleDetail(receiptSaleDetailReceiptReturnDetail(detail)),
+    priceRoundCurrency(currencyReceiptReturnDetail (detail)));
 sumReceiptReturnDetail (detail) <- calcSumReceiptReturnDetail(detail) WHEN CHANGED (calcSumReceiptReturnDetail(detail));
 
-calcDiscountSumReceiptReturnDetail(detail) = round(quantityReceiptReturnDetail(detail) * discountSumReceiptSaleDetail(receiptSaleDetailReceiptReturnDetail(detail)) / quantityReceiptSaleDetail(receiptSaleDetailReceiptReturnDetail(detail)), priceRound());
+calcDiscountSumReceiptReturnDetail(detail) = round(quantityReceiptReturnDetail(detail) * discountSumReceiptSaleDetail(receiptSaleDetailReceiptReturnDetail(detail)) / quantityReceiptSaleDetail(receiptSaleDetailReceiptReturnDetail(detail)),
+   priceRoundCurrency(currencyReceiptSaleDetail(receiptSaleDetailReceiptReturnDetail(detail))));
 discountSumReceiptReturnDetail (detail) <- calcDiscountSumReceiptReturnDetail(detail) WHEN CHANGED (calcDiscountSumReceiptReturnDetail(detail));
 
 quantityReceiptDetail 'Количество' (receiptDetail) = UNION EXCLUSIVE quantityReceiptReturnDetail(receiptDetail), quantityReceiptSaleDetail(receiptDetail) PERSISTENT;

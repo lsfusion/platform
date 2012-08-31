@@ -5,74 +5,84 @@ REQUIRE System, Utils;
 CLASS priceInterval 'Диапазон цен';
 TABLE priceInterval (priceInterval);
 
+currencyPriceInterval = DATA currency(priceInterval);
+
 fromPriceInterval 'от' = DATA NUMERIC[14,3](priceInterval) IN baseGroup;
 toPriceInterval 'до' = DATA NUMERIC[14,3](priceInterval) IN baseGroup;
 modifierPriceInterval 'Округлённая цена интервала' = DATA NUMERIC[14,3](priceInterval) IN baseGroup;
 
-denominatorPrice 'Делитель (округление цен)' =  DATA NUMERIC[14,3]();
-minPrice 'Нижний порог (округление цен)' =  DATA NUMERIC[14,3]();
-priceRound 'До скольки знаков округлять розничную цену' =  DATA INTEGER ();
+denominatorPriceCurrency 'Делитель (округление цен)' =  DATA NUMERIC[14,3](currency);
+minPriceCurrency 'Нижний порог (округление цен)' =  DATA NUMERIC[14,3](currency);
+priceRoundCurrency 'До скольки знаков округлять розничную цену' =  DATA INTEGER (currency);
 
-integerPrice 'Целое' (price) = divideInteger((price AS NUMERIC[14,3]), denominatorPrice());
-fractionPrice 'Дробное' (price) = (price AS NUMERIC[14,3]) - integerPrice(price)* denominatorPrice();
+integerPriceCurrency 'Целое' (price, currency) = divideInteger((price AS NUMERIC[14,3]), denominatorPriceCurrency(currency));
+fractionPriceCurrency 'Дробное' (price, currency) = (price AS NUMERIC[14,3]) - integerPriceCurrency(price, currency)* denominatorPriceCurrency(currency);
 
-inIntervalPrice(price, priceInterval) = fractionPrice(price) >= fromPriceInterval(priceInterval)
-    AND fractionPrice(price) <= toPriceInterval(priceInterval);
+inIntervalPriceCurrency(priceInterval, price, currency) = fractionPriceCurrency(price, currency) >= fromPriceInterval(priceInterval)
+    AND fractionPriceCurrency(price, currency) <= toPriceInterval(priceInterval);
 
-priceIntervalPrice (price) = GROUP MAX priceInterval IF inIntervalPrice(price, priceInterval) BY price AS NUMERIC[14,3];
+priceIntervalPriceCurrency (price, currency) = GROUP MAX priceInterval IF inIntervalPriceCurrency(priceInterval, price, currency) BY price AS NUMERIC[14,3], currency;
 
-roundPrice 'Розничная цена с округлением' (price) = IF (price AS NUMERIC[14,3]) > minPrice() AND priceIntervalPrice(price)
-    THEN integerPrice(price)*denominatorPrice() + modifierPriceInterval(priceIntervalPrice(price))
-    ELSE round(price AS NUMERIC[14,3], priceRound());
-
+roundPriceCurrency 'Розничная цена с округлением' (price, currency) = IF (price AS NUMERIC[14,3]) > minPriceCurrency(currency) AND priceIntervalPriceCurrency (price, currency)
+    THEN integerPriceCurrency(price, currency)*denominatorPriceCurrency(currency) + modifierPriceInterval(priceIntervalPriceCurrency(price, currency))
+    ELSE round(price AS NUMERIC[14,3], priceRoundCurrency(currency));
 
 FORM priceIntervals 'Округления розничных цен'
 
+    OBJECTS c=currency FIXED PANEL
+    PROPERTIES (c)  SELECTOR name
+    PROPERTIES (c)  symbolCurrency, shortNameCurrency, denominatorPriceCurrency, minPriceCurrency, priceRoundCurrency
+
     OBJECTS p=priceInterval
     PROPERTIES(p) fromPriceInterval, toPriceInterval, modifierPriceInterval
+
     PROPERTIES(p) ADDOBJ, delete
 
     OBJECTS nu=NUMERIC[14,3] FIXED PANEL
-    PROPERTIES val = OBJVALUE(nu), roundPrice(nu) READONLY
+    PROPERTIES val = OBJVALUE(nu)
 
-    PROPERTIES()  denominatorPrice, minPrice, priceRound
+    PROPERTIES(nu, c) READONLY roundPriceCurrency
+
+    FILTERS currencyPriceInterval(p)==c
+
 ;
 
 DESIGN priceIntervals FROM DEFAULT {
     main {
         childConstraints = TO THE BOTTOM;
-
-        NEW centerContainer {
-            childConstraints = TO THE RIGHT;
+        ADD c.box {
+            childConstraints = TO THE BOTTOM;
             NEW row1 {
-                childConstraints = TO THE BOTTOM;
-                type = TABBED;
-                fillHorizontal = 2.5;
-                ADD p.box;
-                ADD nu.box {
-                    title = 'Форма для тестирования округления цены';
-                    childConstraints = TO THE RIGHT;
-                    ADD PROPERTY (val) {
-                        caption = 'Введите число для примера';
-                        panelLabelAbove = TRUE;
-                        font = 'Tahoma bold 36';
-                    }
-                    ADD PROPERTY (roundPrice(nu)) {
-                        caption = 'Результат';
-                        panelLabelAbove = TRUE;
-                        font = 'Tahoma bold 36';
-                    }
+                childConstraints = TO THE RIGHT;
+                ADD PROPERTY (name(c)) {
+                    preferredCharWidth = 30;
                 }
+                ADD PROPERTY (symbolCurrency(c));
+                ADD PROPERTY (shortNameCurrency(c));
             }
             NEW row2 {
-                childConstraints = TO THE BOTTOM;
-                fillHorizontal = 1;
-                ADD PROPERTY (denominatorPrice) { panelLabelAbove = TRUE; font = 'Tahoma bold 72'; }
-                ADD PROPERTY (minPrice) { panelLabelAbove = TRUE; font = 'Tahoma bold 72'; }
-                ADD PROPERTY (priceRound) { panelLabelAbove = TRUE; font = 'Tahoma bold 72'; }
+                childConstraints = TO THE RIGHT;
+                ADD PROPERTY (denominatorPriceCurrency(c)) { panelLabelAbove = TRUE; font = 'Tahoma bold 24'; }
+                ADD PROPERTY (minPriceCurrency(c))  { panelLabelAbove = TRUE; font = 'Tahoma bold 24'; }
+                ADD PROPERTY (priceRoundCurrency(c))  { panelLabelAbove = TRUE; font = 'Tahoma bold 24'; }
+            }
+        };
+        ADD p.box;
+
+        ADD nu.box {
+            title = 'Тестовая форма';
+            childConstraints = TO THE RIGHT;
+            ADD PROPERTY (val) {
+                caption = 'Введите число для примера';
+                panelLabelAbove = TRUE;
+                font = 'Tahoma bold 36';
+            }
+            ADD PROPERTY (roundPriceCurrency(nu, c)) {
+                caption = 'Результат';
+                panelLabelAbove = TRUE;
+                font = 'Tahoma bold 36';
             }
         }
-
         ADD functions.box;
     }
 }
