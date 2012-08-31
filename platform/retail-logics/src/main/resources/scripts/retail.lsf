@@ -3811,7 +3811,7 @@ toPrintNaturalLoss 'Ведомость естественной убыли' (nat
 
 FORM naturalLoss 'Ведомость естественной убыли'
     OBJECTS s=naturalLoss FIXED PANEL
-    PROPERTIES(s) numberObject, nameDepartmentStoreNaturalLoss, timeNaturalLoss, seriesObject,
+    PROPERTIES(s) objectClassName, numberObject, nameDepartmentStoreNaturalLoss, timeNaturalLoss, seriesObject,
                   dateNaturalLoss, dateFromNaturalLoss, dateToNaturalLoss, toFillNaturalLossDetail,
                   quantityNaturalLossDetailNaturalLoss, invoiceSumNaturalLossDetailNaturalLoss,
                   retailSumNaturalLossDetailNaturalLoss, noteNaturalLoss
@@ -3841,6 +3841,7 @@ DESIGN naturalLoss FROM DEFAULT{
 
             ADD s.documentHeaderGroup {
                 childConstraints = TO THE RIGHT;
+                ADD PROPERTY(objectClassName);
                 ADD PROPERTY(nameDepartmentStoreNaturalLoss);
                 ADD PROPERTY(numberObject);
                 ADD PROPERTY(seriesObject);
@@ -4478,7 +4479,7 @@ FORM orderSupplier 'Заказ поставщику'
 
     OBJECTS o=orderSupplier FIXED PANEL
 
-    PROPERTIES(o)          nameNumeratorObject, numberObject, seriesObject, setValueNumeratedObject,
+    PROPERTIES(o)          objectClassName, nameNumeratorObject, numberObject, seriesObject, setValueNumeratedObject,
                            curDateOrderSupplier, quantityDaysNextOrder, dateOrderSupplier,
                            quantityDaysAfterNextOrder, nextDateOrderSupplier, nameDepartmentStoreOrderSupplier,
                            nameSupplierOrderSupplier, UNPSupplierOrderSupplier, totalSumOrderSupplier, totalSumVatOrderSupplier,
@@ -4530,6 +4531,7 @@ DESIGN orderSupplier FROM DEFAULT {
                 childConstraints = TO THE BOTTOM;
                 ADD o.documentHeaderGroup {
                     childConstraints = TO THE RIGHT;
+                    ADD PROPERTY(objectClassName);
                     ADD PROPERTY(nameDepartmentStoreOrderSupplier);
                     ADD PROPERTY(nameNumeratorObject);
                     ADD PROPERTY(numberObject);
@@ -4942,7 +4944,7 @@ toPrintWriteOff 'Списание' (writeOff) = ACTION FORM writeOffPrint OBJECT
 
 FORM writeOff 'Списание'
     OBJECTS w=writeOff FIXED PANEL
-    PROPERTIES (w) nameNumeratorObject, numberObject, seriesObject, setValueNumeratedObject, nameDepartmentStoreWriteOff,
+    PROPERTIES (w) objectClassName, nameNumeratorObject, numberObject, seriesObject, setValueNumeratedObject, nameDepartmentStoreWriteOff,
                    dateWriteOff, timeWriteOff, nameReasonOffWriteOff, noteWriteOff, quantityWriteOffDetailWriteOff,
                    sumWriteOffDetailWriteOff, nameWastageCommitteeWriteOff
 
@@ -4976,6 +4978,7 @@ DESIGN writeOff FROM DEFAULT{
 
                 ADD w.documentHeaderGroup {
                     childConstraints = TO THE RIGHT;
+                    ADD PROPERTY(objectClassName);
                     ADD PROPERTY(nameDepartmentStoreWriteOff);
                     ADD PROPERTY(nameNumeratorObject);
                     ADD PROPERTY(numberObject);
@@ -5083,7 +5086,7 @@ FORM disparity 'Пересортица'
 
     OBJECTS dis=disparity FIXED PANEL
 
-    PROPERTIES(dis) nameNumeratorObject, numberObject, seriesObject, setValueNumeratedObject, nameDepartmentStoreDisparity,
+    PROPERTIES(dis) objectClassName, nameNumeratorObject, numberObject, seriesObject, setValueNumeratedObject, nameDepartmentStoreDisparity,
                     dateDisparity, timeDisparity,
                     quantityDisparityDetailDisparity, retailSumDisparityDetailDisparity,
                     inputQuantityDisparityDetailDisparity, inputRetailSumDisparityDetailDisparity,
@@ -5126,6 +5129,7 @@ DESIGN disparity FROM DEFAULT {
                 childConstraints = TO THE BOTTOM;
                 ADD dis.documentHeaderGroup {
                     childConstraints = TO THE RIGHT;
+                    ADD PROPERTY(objectClassName);
                     ADD PROPERTY(nameDepartmentStoreDisparity);
                     ADD PROPERTY(nameNumeratorObject);
                     ADD PROPERTY(numberObject);
@@ -5261,7 +5265,7 @@ printPriceChangeShipment 'Акт переоценки' (shipment) = printPriceCh
 
 FORM shipment 'Поставка'
     OBJECTS s=shipment FIXED PANEL
-    PROPERTIES (s) nameDepartmentStoreShipment, numberObject, seriesObject, dateShipment, timeShipment,
+    PROPERTIES (s) objectClassName, nameDepartmentStoreShipment, numberObject, seriesObject, dateShipment, timeShipment,
                    nameSupplierShipment, UNPSupplierShipment, numberContractShipment, ordersShipment, toFillShipmentDetailsShipment,
                    percentOrderedShipmentDetailsShipment, dialogOrdersShipment,
                    carryingChargesShipment, quantityShipmentDetailShipment, invoiceVATSumShipmentDetailShipment, invoiceSumShipmentDetailShipment, retailSumShipmentDetailShipment,
@@ -5354,6 +5358,7 @@ DESIGN shipment FROM DEFAULT{
 
                 ADD s.documentHeaderGroup {
                     childConstraints = TO THE RIGHT;
+                    ADD PROPERTY(objectClassName);
                     ADD PROPERTY(nameDepartmentStoreShipment);
                     ADD PROPERTY(numberObject);
                     ADD PROPERTY(seriesObject);
@@ -5518,7 +5523,7 @@ FORM commonInfoBatchReturnSupplierDetail 'Партии'
 
 FORM returnSupplier 'Возврат поставщику'
     OBJECTS r=returnSupplier FIXED PANEL
-    PROPERTIES(r) numberObject, seriesObject, dateReturnSupplier, timeReturnSupplier,
+    PROPERTIES(r) objectClassName, numberObject, seriesObject, dateReturnSupplier, timeReturnSupplier,
                   nameDepartmentStoreReturnSupplier, nameSupplierReturnSupplier, UNPSupplierReturnSupplier, numberContractReturnSupplier, noteReturnSupplier, carryingChargesReturnSupplier,
                   quantityReturnSupplierDetailReturnSupplier, invoiceVATSumReturnSupplierDetailReturnSupplier, invoiceSumReturnSupplierDetailReturnSupplier,
                   retailSumReturnSupplierDetailReturnSupplier, returnLossSupplierReturnSupplier, numberDisposalReturnSupplier SHOWIF needToPriceChangeReturnSupplier(r),
@@ -5660,6 +5665,7 @@ DESIGN returnSupplier FROM DEFAULT {
 
             ADD r.documentHeaderGroup {
                 childConstraints = TO THE RIGHT;
+                ADD PROPERTY(objectClassName);
                 ADD PROPERTY(nameDepartmentStoreReturnSupplier);
                 ADD PROPERTY(numberObject);
                 ADD PROPERTY(seriesObject);
@@ -5830,7 +5836,7 @@ EXTEND FORM userPriceChanges
 
 FORM innerFlow 'Расход в другой отдел'
     OBJECTS f=innerFlow FIXED PANEL
-    PROPERTIES (f) numberObject, seriesObject, dateInnerFlow, timeInnerFlow, nameDepartmentStoreInnerFlow,
+    PROPERTIES (f) objectClassName, numberObject, seriesObject, dateInnerFlow, timeInnerFlow, nameDepartmentStoreInnerFlow,
                    nameRecipientDepartmentInnerFlow, showWareInnerFlow, noteInnerFlow, quantityInnerFlowDetailInnerFlow,
                    retailSumInnerFlowDetailInnerFlow
 
@@ -5914,6 +5920,7 @@ DESIGN innerFlow FROM DEFAULT{
 
                 ADD f.documentHeaderGroup {
                     childConstraints = TO THE RIGHT;
+                    ADD PROPERTY(objectClassName);
                     ADD PROPERTY(nameDepartmentStoreInnerFlow);
                     ADD PROPERTY(numberObject);
                     ADD PROPERTY(seriesObject);
@@ -6071,7 +6078,7 @@ printPriceChangeInnerArrival 'Акт переоценки' (innerArrival) = prin
 
 FORM innerArrival 'Приход из другого отдела'
     OBJECTS a=innerArrival FIXED PANEL
-    PROPERTIES (a) nameDepartmentStoreInnerArrival
+    PROPERTIES (a) objectClassName, nameDepartmentStoreInnerArrival
     PROPERTIES (a) numberInnerArrival SHOWIF departmentStoreInnerArrival(a), seriesInnerArrival SHOWIF departmentStoreInnerArrival(a),
                    dateInnerArrival SHOWIF departmentStoreInnerArrival(a), timeInnerArrival SHOWIF departmentStoreInnerArrival(a),
                    nameSenderDepartmentInnerArrival READONLY SHOWIF departmentStoreInnerArrival(a), toFillInnerArrivalDetailsInnerArrival SHOWIF departmentStoreInnerArrival(a),
@@ -6130,6 +6137,7 @@ DESIGN innerArrival FROM DEFAULT{
 
                 ADD a.documentHeaderGroup {
                     childConstraints = TO THE RIGHT;
+                    ADD PROPERTY(objectClassName);
                     ADD PROPERTY(nameDepartmentStoreInnerArrival);
                     ADD PROPERTY(numberInnerArrival);
                     ADD PROPERTY(seriesInnerArrival);
@@ -6444,7 +6452,7 @@ printPriceChangeStatement 'Акт переоценки' (statement) = printPrice
 
 FORM statement 'Отгрузка из розницы'
     OBJECTS st=statement FIXED PANEL
-    PROPERTIES (st) numberObject, seriesObject, dateStatement, timeStatement, nameCustomerStatement, UNPCustomerStatement,
+    PROPERTIES (st) objectClassName, numberObject, seriesObject, dateStatement, timeStatement, nameCustomerStatement, UNPCustomerStatement,
                     nameDepartmentStoreStatement, specificationsStatement, toFillStatementDetailsStatement, dialogSpecificationsStatement,
                     noteStatement, quantityStatementDetailStatement, calcSaleSumStatementDetailStatement, calcVATSumStatementDetailStatement, retailSumStatementDetailStatement,
                     numberDisposalStatement SHOWIF needToPriceChangeStatement(st), namePriceChangeCommitteeStatement SHOWIF needToPriceChangeStatement(st)
@@ -6528,6 +6536,7 @@ DESIGN statement FROM DEFAULT {
                 childConstraints = TO THE BOTTOM;
                 ADD st.documentHeaderGroup {
                     childConstraints = TO THE RIGHT;
+                    ADD PROPERTY(objectClassName);
                     ADD PROPERTY(nameDepartmentStoreStatement);
                     ADD PROPERTY(numberObject);
                     ADD PROPERTY(seriesObject);
@@ -6651,7 +6660,7 @@ FORM actOfStudy 'Акт проработки'
 
     OBJECTS a=actOfStudy FIXED PANEL
 
-    PROPERTIES(a)   nameNumeratorObject, numberObject, seriesObject, setValueNumeratedObject, nameDepartmentStoreActOfStudy,
+    PROPERTIES(a)   objectClassName, nameNumeratorObject, numberObject, seriesObject, setValueNumeratedObject, nameDepartmentStoreActOfStudy,
                     dateActOfStudy, timeActOfStudy, nameContractorDepartmentStoreActOfStudy,
                     quantityStudyOutputDetailActOfStudy, retailSumStudyOutputDetailActOfStudy, quantityStudyInputDetailActOfStudy, retailSumStudyInputDetailActOfStudy,
                     numberOutputActOfStudy, seriesOutputActOfStudy, numberInputActOfStudy, seriesInputActOfStudy
@@ -6698,6 +6707,7 @@ DESIGN actOfStudy FROM DEFAULT {
 
                 ADD a.documentHeaderGroup {
                     childConstraints = TO THE RIGHT;
+                    ADD PROPERTY(objectClassName);
                     ADD PROPERTY(nameDepartmentStoreActOfStudy);
                     ADD PROPERTY(nameNumeratorObject);
                     ADD PROPERTY(numberObject);
