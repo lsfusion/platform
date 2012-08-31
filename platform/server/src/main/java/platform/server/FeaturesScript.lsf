@@ -54,7 +54,9 @@ CLASS STATIC storeSize 'Размер склада'
 //                                                                                                 [FIXEDCHARWIDTH <int value>] [MINCHARWIDTH <int value>] [MAXCHARWIDTH <int value>] [PREFCHARWIDTH <int value>]
 //                                                                                                 [IMAGE 'name'] [EDITKEY '<key code>' [SHOW | HIDE]] [AUTOSET] [CONFIRM]
 //                                                                                                 [REGEXP '<expression>' ['<regExp message>']] [LOGGABLE] [ECHO] [INDEXED]
-//                                                                                                 [AGGPROP] [NOT NULL [DELETE [SESSION]]] [ON (CHANGE | CHANGEWYS) action];
+//                                                                                                 [AGGPROP] [NOT NULL [DELETE [SESSION]]] [ON (CHANGE | CHANGEWYS) action]
+//                                                                                                 [EVENTID 'id'];
+
 // Если именованные параметры не указываются, то они выводятся из propertyExpression
 // Специальные имена свойств: PREV, CHANGED, ASSIGNED
 
@@ -214,7 +216,7 @@ testFormula(store, article) = sum12(incomeQuantity(store, article), outcomeQuant
 // *  /
 // - (unary)
 //
-// Instances: 5, 5L, 6.35, TRUE, 'some string', staticClass.object, 2011_10_25, NULL, #ff0000, RGB(255, 0, 0)
+// Instances: 5, 5L, 6.35, TRUE, 'some string', staticClass.object, 2011_10_25, 2011_10_25_18:00, NULL, #ff0000, RGB(255, 0, 0)
 balanceQuantity(store, article) = incomeQuantity(store, article) - outcomeQuantity(store, article);
 
 foo(store, article) = 5 * incomeQuantity($1, $2) - outcomeQuantity($1, $2);
@@ -416,7 +418,7 @@ OBJECTS document, article
 // Special properties: SELECTION, OBJVALUE, ADDOBJ, ADDFORM, ADDSESSIONFORM, EDITFORM, EDITSESSIONFORM
 // Property option:    [READONLY] [EDITABLE] [SELECTOR] [HINTNOUPDATE] [HINTTABLE] [COLUMNS (<groupObject list>)] [SHOWIF <mappedProperty>] [BACKGROUND <mappedProperty>]
 //                     [HEADER <mappedProperty>] [FOOTER <mappedProperty>] [READONLYIF <mappedProperty>] [FORCE PANEL | HIDE | GRID] [TODRAW <groupObject>]
-//                     [FOREGROUND <mappedProperty>] [ON (CHANGE | CHANGEWYS) action] [(BEFORE | AFTER) (propertyAlias | <mappedProperty>)]
+//                     [FOREGROUND <mappedProperty>] [ON (CHANGE | CHANGEWYS) action] [(BEFORE | AFTER) (propertyAlias | <mappedProperty>)] [EVENTID 'id']
 
 PROPERTIES store(document), name(article), storeName(document) ON CHANGE { REQUEST STRING[50] INPUT; SET storeName(document) <- requestedString(); } , documentTypeString(document)
 PROPERTIES quantity(document, article)
@@ -571,6 +573,16 @@ PROPERTIES(s) name, storeSizeName, storeIsHuge, storeIsHuge2
 EDIT store OBJECT s
 ;
 
+dateProp(store) = 2007_12_01 AND store IS store;
+//dateTimeProp(store) = 2007_12_01_18:00 AND store IS store;
+variableDateTime(store) = DATA DATETIME (store);
+
+FORM TestDataPropForm 'Тест дат'
+OBJECTS store
+PROPERTIES(store) dateProp, variableDateTime
+//PROPERTIES dateTimeProp()
+;
+
 //////////////// INDEX STATEMENT //////////////////
 // Syntax:
 // INDEX propertyName1 [, ..., propertyNameN];
@@ -649,6 +661,7 @@ NAVIGATOR {
     ADD dictionariesForm 'Словари' AFTER daysOffForm;
     ADD storeArticle;
     ADD documentArticle;
+    ADD TestDataPropForm;
 }
 
 //////////////// DESIGN STATEMENT /////////////////
@@ -853,11 +866,17 @@ META metaCodeSample(name)
     GROUP name ### group;
 END
 
+META metaCodeSample(name, name2)
+    CLASS name##Class##name2;
+END
+
 @metaCodeSample(testName1);
 @metaCodeSample(testName2);
 
+@metaCodeSample(testName1, testName2);
 
 //////////////// TABLE STATEMENT ////////////////
 // Syntax:
 // TABLE name(className1, ..., classNameN);
 TABLE articleStore(article, store);
+
