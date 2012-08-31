@@ -97,7 +97,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
             if (objectInstance.baseClass instanceof CustomClass) {
                 CustomActionProperty dialogAction = objectInstance.getChangeAction(property);
                 return new ActionPropertyObjectEntity<ClassPropertyInterface>(dialogAction,
-                        Collections.singletonMap(BaseUtils.single(dialogAction.interfaces), (PropertyObjectInterfaceEntity) objectInstance), null);
+                        Collections.singletonMap(BaseUtils.single(dialogAction.interfaces), (PropertyObjectInterfaceEntity) objectInstance));
             }
         }
         return null;

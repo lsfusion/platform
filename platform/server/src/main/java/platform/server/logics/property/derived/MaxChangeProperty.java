@@ -6,7 +6,6 @@ import platform.server.data.expr.query.GroupType;
 import platform.server.data.where.WhereBuilder;
 import platform.server.form.entity.CalcPropertyObjectEntity;
 import platform.server.form.entity.ObjectEntity;
-import platform.server.form.entity.PropertyObjectEntity;
 import platform.server.form.entity.PropertyObjectInterfaceEntity;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.CalcProperty;
@@ -106,6 +105,6 @@ public class MaxChangeProperty<T extends PropertyInterface,P extends PropertyInt
         Map<Interface<P>, PropertyObjectInterfaceEntity> interfaceImplement = new HashMap<Interface<P>, PropertyObjectInterfaceEntity>();
         for(Interface<P> propertyInterface : interfaces)
             interfaceImplement.put(propertyInterface, propertyInterface.getInterface(mapValues, valueObject));
-        return new CalcPropertyObjectEntity<Interface<P>>(this,interfaceImplement, null);
+        return new CalcPropertyObjectEntity<Interface<P>>(this,interfaceImplement);
     }
 }

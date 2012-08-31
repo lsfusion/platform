@@ -210,6 +210,11 @@ statement
 		)
 	;
 
+metaCodeParsingStatement  // metacode parsing rule
+	:	'META' ID '(' idList ')'
+		statements
+		'END'
+	;
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////// CLASS STATEMENT /////////////////////////////
@@ -769,13 +774,15 @@ propertyStatement
 	LP property = null;
 	List<String> context = new ArrayList<String>();
 	boolean dynamic = true;
+	int lineNumber;
 }
 @after {
 	if (inPropParseState()) {
-		self.setPropertyScriptText(property, $text);
+		self.setPropertyScriptInfo(property, $text, lineNumber);
 	}
 }
-	:	declaration=propertyDeclaration { if ($declaration.paramNames != null) { context = $declaration.paramNames; dynamic = false; } }
+	:	{ lineNumber = self.getCurrentParserLineNumber(); }
+		declaration=propertyDeclaration { if ($declaration.paramNames != null) { context = $declaration.paramNames; dynamic = false; } }
 		'=' 
 		(	def=expressionUnfriendlyPD[context, dynamic, false] { property = $def.property; }
 		|	expr=propertyExpression[context, dynamic] { if (inPropParseState()) { self.checkNecessaryProperty($expr.property); property = $expr.property.property; } }
@@ -2396,14 +2403,16 @@ metaCodeDeclarationStatement
 @init {
 	String code;
 	List<String> tokens;
+	int lineNumber;
 }
 @after {
 	if (inGroupParseState()) {
-		self.addScriptedMetaCodeFragment($id.text, $list.ids, tokens);
+		self.addScriptedMetaCodeFragment($id.text, $list.ids, tokens, $text, lineNumber);
 	}
 }
 	
-	:	'META' id=ID '(' list=idList ')'  
+	:	{ lineNumber = self.getCurrentParserLineNumber(); }
+		'META' id=ID '(' list=idList ')'  
 		{
 			tokens = self.grabMetaCode($id.text);
 		}
@@ -2412,10 +2421,14 @@ metaCodeDeclarationStatement
 
 
 metaCodeStatement
-@after {
-	self.runMetaCode($id.sid, $list.ids);
+@init {
+	int lineNumber;
 }
-	:	'@' id=compoundID '(' list=metaCodeIdList ')' ';'	
+@after {
+	self.runMetaCode($id.sid, $list.ids, lineNumber);
+}
+	:	{ lineNumber = self.getCurrentParserLineNumber(); }
+		'@' id=compoundID '(' list=metaCodeIdList ')' ';'	
 	;
 
 

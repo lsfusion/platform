@@ -1,31 +1,26 @@
 package platform.server.logics.linear;
 
-import platform.base.BaseUtils;
-import platform.base.OrderedMap;
-import platform.base.Result;
 import platform.interop.ClassViewType;
-import platform.server.classes.ValueClass;
-import platform.server.data.expr.Expr;
-import platform.server.data.expr.KeyExpr;
-import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassWhere;
-import platform.server.form.entity.*;
+import platform.server.form.entity.PropertyObjectEntity;
+import platform.server.form.entity.PropertyObjectInterfaceEntity;
 import platform.server.logics.DataObject;
 import platform.server.logics.panellocation.PanelLocation;
-import platform.server.logics.property.*;
-import platform.server.session.*;
+import platform.server.logics.property.Property;
+import platform.server.logics.property.PropertyInterface;
 
 import javax.swing.*;
-import java.util.*;
-
-import static platform.server.logics.PropertyUtils.mapCalcImplement;
-import static platform.server.logics.PropertyUtils.readCalcImplements;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public abstract class LP<T extends PropertyInterface, P extends Property<T>> {
 
     public P property;
     public List<T> listInterfaces;
     private String creationScript = null;
+    private String creationPath = null;
 
     public <IT extends PropertyInterface> boolean intersect(LP<IT, ?> lp) {
         assert listInterfaces.size()==lp.listInterfaces.size();
@@ -173,9 +168,16 @@ public abstract class LP<T extends PropertyInterface, P extends Property<T>> {
     public void setCreationScript(String creationScript) {
         this.creationScript = creationScript;
     }
-    
-    public PropertyObjectEntity<T, ?> createObjectEntity(PropertyObjectInterfaceEntity... objects) {
-        return PropertyObjectEntity.create(property, getMap(objects), creationScript);
+
+    public String getCreationPath() {
+        return creationPath;
     }
 
+    public void setCreationPath(String creationPath) {
+        this.creationPath = creationPath;
+    }
+
+    public PropertyObjectEntity<T, ?> createObjectEntity(PropertyObjectInterfaceEntity... objects) {
+        return PropertyObjectEntity.create(property, getMap(objects), creationScript, creationPath);
+    }
 }

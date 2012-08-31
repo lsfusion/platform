@@ -14,8 +14,12 @@ public class CalcPropertyObjectEntity<P extends PropertyInterface> extends Prope
         //нужен для десериализации
     }
 
-    public CalcPropertyObjectEntity(CalcProperty<P> property, Map<P, ? extends PropertyObjectInterfaceEntity> mapping, String creationScript) {
-        super(property, (Map<P,PropertyObjectInterfaceEntity>) mapping, creationScript);
+    public CalcPropertyObjectEntity(CalcProperty<P> property, Map<P, ? extends PropertyObjectInterfaceEntity> mapping) {
+        super(property, (Map<P,PropertyObjectInterfaceEntity>) mapping, null, null);
+    }
+
+    public CalcPropertyObjectEntity(CalcProperty<P> property, Map<P, ? extends PropertyObjectInterfaceEntity> mapping, String creationScript, String creationPath) {
+        super(property, (Map<P,PropertyObjectInterfaceEntity>) mapping, creationScript, creationPath);
     }
 
     @Override
@@ -28,7 +32,7 @@ public class CalcPropertyObjectEntity<P extends PropertyInterface> extends Prope
         for (P iFace : property.interfaces) {
             nmapping.put(iFace, mapping.get(iFace).getRemappedEntity(oldObject, newObject, instanceFactory));
         }
-        return new CalcPropertyObjectEntity<P>(property, nmapping, creationScript);
+        return new CalcPropertyObjectEntity<P>(property, nmapping, creationScript, creationPath);
     }
 
 }

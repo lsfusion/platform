@@ -1,9 +1,6 @@
 package platform.server.logics.scripted;
 
-import org.antlr.runtime.ANTLRFileStream;
-import org.antlr.runtime.ANTLRStringStream;
-import org.antlr.runtime.CharStream;
-import org.antlr.runtime.CommonTokenStream;
+import org.antlr.runtime.*;
 import org.apache.log4j.Logger;
 import platform.base.BaseUtils;
 import platform.base.IOUtils;
@@ -86,7 +83,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     private List<String> namespacePriority;
     private final ScriptingErrorLog errLog;
     private LsfLogicsParser parser;
-    private Stack<LsfLogicsParser> parsers = new Stack<LsfLogicsParser>();
+    private Stack<ParserInfo> parsers = new Stack<ParserInfo>();
     private List<String> warningList = new ArrayList<String>();
 
     private Map<String, LP<?, ?>> currentLocalProperties = new HashMap<String, LP<?, ?>>();
@@ -1299,17 +1296,17 @@ public class ScriptingLogicsModule extends LogicsModule {
         return result;
     }
 
-    public void addScriptedMetaCodeFragment(String name, List<String> params, List<String> metaCode) throws ScriptingErrorLog.SemanticErrorException {
-        scriptLogger.info("addScriptedMetaCodeFragment(" + name + ", " + params + ", " + metaCode + ");");
+    public void addScriptedMetaCodeFragment(String name, List<String> params, List<String> tokens, String code, int lineNumber) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedMetaCodeFragment(" + name + ", " + params + ", " + tokens + ", " + lineNumber + ");");
 
         checkDuplicateMetaCodeFragment(name, params.size());
         checkDistinctParameters(params);
 
-        MetaCodeFragment fragment = new MetaCodeFragment(params, metaCode);
+        MetaCodeFragment fragment = new MetaCodeFragment(params, tokens, code, getName(), lineNumber);
         addMetaCodeFragment(name, fragment);
     }
 
-    public void runMetaCode(String name, List<String> params) throws ScriptingErrorLog.SemanticErrorException {
+    public void runMetaCode(String name, List<String> params, int lineNumber) throws ScriptingErrorLog.SemanticErrorException {
         MetaCodeFragment metaCode = findMetaCodeFragmentByCompoundName(name, params.size());
         checkMetaCodeParamCount(metaCode, params.size());
 
@@ -1324,12 +1321,29 @@ public class ScriptingLogicsModule extends LogicsModule {
             subParser.self = this;
             subParser.parseState = currentState;
 
-            parsers.push(subParser);
-            subParser.statements();
+            parsers.push(new ParserInfo(subParser, metaCode, metaCodeCallString(name, metaCode, params), lineNumber));
+            subParser.metaCodeParsingStatement();
             parsers.pop();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private String metaCodeCallString(String name, MetaCodeFragment metaCode, List<String> actualParams) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("@");
+        builder.append(name);
+        builder.append("(");
+        for (int i = 0; i < actualParams.size(); i++) {
+            if (i > 0) {
+                builder.append(", ");
+            }
+            builder.append(metaCode.getParameters().get(i));
+            builder.append("=");
+            builder.append(actualParams.get(i));
+        }
+        builder.append(")");
+        return builder.toString();
     }
 
     public List<String> grabMetaCode(String metaCodeName) throws ScriptingErrorLog.SemanticErrorException {
@@ -2087,11 +2101,38 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public boolean semicolonNeeded() {
-        return !("}".equals(parsers.peek().input.LT(-1).getText()));
+        return !("}".equals(parsers.peek().getParser().input.LT(-1).getText()));
     }
 
-    public void setPropertyScriptText(LP property, String script) {
+    public void setPropertyScriptInfo(LP property, String script, int lineNumber) {
         property.setCreationScript(script);
+        property.setCreationPath(getCurrentScriptPath(lineNumber));
+    }
+
+    private String getCurrentScriptPath(int lineNumber) {
+        StringBuilder path = new StringBuilder();
+
+        for (int i = 0; i < parsers.size(); i++) {
+            path.append((i == 0 ? getName() : parsers.get(i).getMetacodeDefinitionModuleName()));
+            path.append(":");
+
+            int curLineNumber = lineNumber;
+            if (i+1 < parsers.size()) {
+                curLineNumber = parsers.get(i+1).getLineNumber();
+            }
+            if (i > 0) {
+                curLineNumber += parsers.get(i).getMetacodeDefinitionLineNumber() - 1;
+            }
+
+            path.append(curLineNumber);
+            if (i+1 < parsers.size()) {
+                path.append(":");
+                path.append("\t");
+                path.append(parsers.get(i+1).getMetacodeCallStr());
+            }
+            path.append("\n");
+        }
+        return path.toString();
     }
 
     private void parseStep(State state) {
@@ -2106,7 +2147,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             lexer.parseState = state;
 
             currentState = state;
-            parsers.push(parser);
+            parsers.push(new ParserInfo(parser, null, null, 0));
             if (state == State.INIT) {
                 parser.moduleHeader();
             } else {
@@ -2114,13 +2155,31 @@ public class ScriptingLogicsModule extends LogicsModule {
             }
             parsers.pop();
             currentState = null;
-
-//            arithLexer lexer = new arithLexer(createStream());
-//            arithParser parser = new arithParser(new CommonTokenStream(lexer));
-//            parser.program();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public int getCurrentParserLineNumber() {
+        return getLineNumber(parsers.lastElement().getParser());
+    }
+
+    private int getLineNumber(Parser parser) {
+        Token token = getToken(parser);
+        return token.getLine();
+    }
+
+    private int getPositionInLine(Parser parser) {
+        Token token = getToken(parser);
+        return token.getCharPositionInLine();
+    }
+
+    private Token getToken(Parser parser) {
+        Token token = parser.input.LT(1);
+        if (token.getType() == Token.EOF) {
+            token = parser.input.LT(-1);
+        }
+        return token;
     }
 
     private void initNamespacesToModules(LogicsModule module, Set<LogicsModule> visitedModules) {

@@ -486,7 +486,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     }
 
     public <P extends PropertyInterface> PropertyDrawEntity<P> addPropertyDraw(Property<P> property, Map<P, PropertyObjectInterfaceEntity> mapping) {
-        return addPropertyDraw(null, PropertyObjectEntity.create(property, mapping, null));
+        return addPropertyDraw(null, PropertyObjectEntity.create(property, mapping, null, null));
     }
 
     public <P extends PropertyInterface> PropertyDrawEntity<P> addPropertyDraw(GroupObjectEntity groupObject, PropertyObjectEntity<P, ?> propertyImplement) {
@@ -567,10 +567,10 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     }
 
     public <P extends PropertyInterface> CalcPropertyObjectEntity addPropertyObject(LCP<P> property, PropertyObjectInterfaceEntity... objects) {
-        return new CalcPropertyObjectEntity<P>(property.property, property.getMap(objects), property.getCreationScript());
+        return new CalcPropertyObjectEntity<P>(property.property, property.getMap(objects), property.getCreationScript(), property.getCreationPath());
     }
     public <P extends PropertyInterface> ActionPropertyObjectEntity<P> addPropertyObject(LAP<P> property, PropertyObjectInterfaceEntity... objects) {
-        return new ActionPropertyObjectEntity<P>(property.property, property.getMap(objects), property.getCreationScript());
+        return new ActionPropertyObjectEntity<P>(property.property, property.getMap(objects), property.getCreationScript(), property.getCreationPath());
     }
     public PropertyObjectEntity addPropertyObject(LP property, PropertyObjectInterfaceEntity... objects) {
         if (property instanceof LCP) {

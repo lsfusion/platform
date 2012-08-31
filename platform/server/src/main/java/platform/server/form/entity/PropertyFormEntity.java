@@ -27,6 +27,6 @@ public class PropertyFormEntity<T extends BusinessLogics<T>> extends FormEntity<
         // добавляем все свойства
         addPropertyDraw(recognizeGroup, true, true, groupObject.objects.toArray(new ObjectEntity[groupObject.objects.size()]));
 
-        addFixedFilter(new NotNullFilterEntity<P>(new CalcPropertyObjectEntity<P>(property, mapObjects, null)));
+        addFixedFilter(new NotNullFilterEntity<P>(new CalcPropertyObjectEntity<P>(property, mapObjects)));
     }
 }

@@ -318,7 +318,7 @@ public class ScriptingFormEntity {
                                                                      new CalcPropertyMapImplement(groundProperty.property, BaseUtils.buildMap(groundProperty.property.interfaces, groundProperty.property.interfaces)));
         return new CalcPropertyObjectEntity(
                 mapImpl.property,
-                BaseUtils.join(mapImpl.mapping, (Map<PropertyInterface,PropertyObjectInterfaceEntity>) groundProperty.mapping), null);
+                BaseUtils.join(mapImpl.mapping, (Map<PropertyInterface,PropertyObjectInterfaceEntity>) groundProperty.mapping));
     }
 
     private void setPropertyDrawAlias(String alias, PropertyDrawEntity property) {

@@ -2,9 +2,7 @@ package platform.server.form.entity;
 
 import platform.base.Pair;
 import platform.server.classes.CustomClass;
-import platform.server.classes.ValueClass;
 import platform.server.form.instance.ActionPropertyObjectInstance;
-import platform.server.form.instance.CustomObjectInstance;
 import platform.server.form.instance.InstanceFactory;
 import platform.server.form.instance.Instantiable;
 import platform.server.logics.property.ActionProperty;
@@ -20,11 +18,11 @@ public class ActionPropertyObjectEntity<P extends PropertyInterface> extends Pro
     }
 
     public ActionPropertyObjectEntity(ActionProperty<P> property, Map<P, ? extends PropertyObjectInterfaceEntity> mapping) {
-        this(property, mapping, null);
+        this(property, mapping, null, null);
     }
 
-    public ActionPropertyObjectEntity(ActionProperty<P> property, Map<P, ? extends PropertyObjectInterfaceEntity> mapping, String creationScript) {
-        super(property, (Map<P,PropertyObjectInterfaceEntity>) mapping, creationScript);
+    public ActionPropertyObjectEntity(ActionProperty<P> property, Map<P, ? extends PropertyObjectInterfaceEntity> mapping, String creationScript, String creationPath) {
+        super(property, (Map<P,PropertyObjectInterfaceEntity>) mapping, creationScript, creationPath);
     }
 
     public ActionPropertyObjectInstance<P> getInstance(InstanceFactory instanceFactory) {

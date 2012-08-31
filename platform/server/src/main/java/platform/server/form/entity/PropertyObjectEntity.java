@@ -18,6 +18,7 @@ public abstract class PropertyObjectEntity<P extends PropertyInterface, T extend
     protected PropertyObjectEntity() {
         //нужен для десериализации
         creationScript = null;
+        creationPath = null;
     }
 
     public String toString() {
@@ -33,13 +34,14 @@ public abstract class PropertyObjectEntity<P extends PropertyInterface, T extend
     }
 
     public PropertyObjectEntity(T property, Map<P, PropertyObjectInterfaceEntity> mapping) {
-        this(property, mapping, null);
+        this(property, mapping, null, null);
     }
 
-    public PropertyObjectEntity(T property, Map<P, PropertyObjectInterfaceEntity> mapping, String creationScript) {
+    public PropertyObjectEntity(T property, Map<P, PropertyObjectInterfaceEntity> mapping, String creationScript, String creationPath) {
         this.property = property;
         this.mapping = mapping;
         this.creationScript = creationScript;
+        this.creationPath = creationPath;
     }
 
     public GroupObjectEntity getApplyObject(List<GroupObjectEntity> groupList) {
@@ -95,15 +97,20 @@ public abstract class PropertyObjectEntity<P extends PropertyInterface, T extend
     }
 
     protected final String creationScript;
+    protected final String creationPath;
 
     public String getCreationScript() {
         return creationScript;
     }
 
-    public static <T extends PropertyInterface> PropertyObjectEntity<T, ?> create(Property<T> property, Map<T, PropertyObjectInterfaceEntity> map, String creationScript) {
+    public String getCreationPath() {
+        return creationPath;
+    }
+
+    public static <T extends PropertyInterface> PropertyObjectEntity<T, ?> create(Property<T> property, Map<T, PropertyObjectInterfaceEntity> map, String creationScript, String creationPath) {
         if(property instanceof CalcProperty)
-            return new CalcPropertyObjectEntity<T>((CalcProperty<T>)property, map, creationScript);
+            return new CalcPropertyObjectEntity<T>((CalcProperty<T>)property, map, creationScript, creationPath);
         else
-            return new ActionPropertyObjectEntity<T>((ActionProperty<T>) property, map, creationScript);
+            return new ActionPropertyObjectEntity<T>((ActionProperty<T>) property, map, creationScript, creationPath);
     }
 }

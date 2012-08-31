@@ -107,6 +107,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public Boolean ascendingSortUser;
 
     public String creationScript;
+    public String creationPath;
     
     public ClientPropertyDraw() {
     }
@@ -390,6 +391,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         eventID = pool.readString(inStream);
 
         creationScript = pool.readString(inStream);
+        creationPath = pool.readString(inStream);
 
         String mouseBinding = pool.readString(inStream);
         if (mouseBinding != null) {
@@ -509,7 +511,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
                     "<b>" + getString("logics.grid") + ":</b> %3$s<br>" +
                     "<b>" + getString("logics.objects") + ":</b> %4$s<br>" +
                     "<b>" + getString("logics.signature") + ":</b> %6$s <i>%2$s</i> (%5$s)<br>" +
-                    "<b>" + getString("logics.script") + ":</b> %8$s" +
+                    "<b>" + getString("logics.script") + ":</b> %8$s<br>" +
+                    "<b>" + getString("logics.scriptpath") + ":</b> %9$s" +
                     "</html>";
 
     public static final String editKeyToolTipFormat =
@@ -524,7 +527,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         String returnClass = this.returnClass.toString();
         String editKeyText = editKey == null ? "" : String.format(editKeyToolTipFormat, SwingUtils.getKeyStrokeCaption(editKey));
         String script = creationScript != null ? creationScript.replace("\n", "<br>") : "";
-        return String.format(toolTipFormat, propCaption, sid, tableName, ifaceObjects, ifaceClasses, returnClass, editKeyText, script);
+        String scriptPath = creationPath != null ? creationPath.replace("\n", "<br>") : "";
+        return String.format(toolTipFormat, propCaption, sid, tableName, ifaceObjects, ifaceClasses, returnClass, editKeyText, script, scriptPath);
     }
 
     public class CaptionReader implements ClientPropertyReader {
