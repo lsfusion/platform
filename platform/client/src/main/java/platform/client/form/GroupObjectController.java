@@ -329,6 +329,13 @@ public class GroupObjectController extends AbstractGroupObjectController {
         }
     }
 
+    @Override
+    public void clearOrders() throws IOException {
+        if(grid != null) {
+            grid.clearGridOrders(getGroupObject());
+        }
+    }
+
     // приходится делать именно так, так как логика отображения одного GroupObject може не совпадать с логикой Container-Component
     void addGroupObjectActions(JComponent comp) {
 

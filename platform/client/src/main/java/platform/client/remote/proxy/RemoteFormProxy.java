@@ -1,5 +1,6 @@
 package platform.client.remote.proxy;
 
+import platform.client.logics.ClientGroupObject;
 import platform.interop.ClassViewType;
 import platform.interop.form.FormUserPreferences;
 import platform.interop.form.RemoteFormInterface;
@@ -127,6 +128,14 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         logRemoteMethodStartVoidCall("changePropertyOrder");
         ServerResponse result = target.changePropertyOrder(requestIndex, propertyID, modiType, columnKeys);
         logRemoteMethodEndCall("changePropertyOrder", result);
+        return result;
+    }
+
+    @Override
+    public ServerResponse clearPropertyOrders(long requestIndex, int groupObjectID) throws RemoteException {
+        logRemoteMethodStartVoidCall("clearPropertyOrders");
+        ServerResponse result = target.clearPropertyOrders(requestIndex, groupObjectID);
+        logRemoteMethodEndCall("clearPropertyOrders", result);
         return result;
     }
 

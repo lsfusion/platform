@@ -26,10 +26,6 @@ public abstract class ClientFormActionDispatcher extends SwingClientActionDispat
         return getFormController().getComponent();
     }
 
-    protected FormUserPreferences getFormUserPreferences() {
-        return getFormController().getUserPreferences();
-    }
-
     @Override
     protected void throwInServerInvocation(Exception ex) throws IOException {
         getFormController().throwInServerInvocation(ex);

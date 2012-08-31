@@ -103,6 +103,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public Boolean hideUser;
     public Integer widthUser;
     public Integer orderUser;
+    public Integer sortUser;
+    public Boolean ascendingSortUser;
 
     public String creationScript;
     

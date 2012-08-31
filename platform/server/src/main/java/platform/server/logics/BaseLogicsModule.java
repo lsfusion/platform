@@ -78,6 +78,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public ConcreteCustomClass form;
     public ConcreteCustomClass navigatorAction;
     public ConcreteCustomClass propertyDraw;
+    public ConcreteCustomClass groupObject;
     public StaticCustomClass propertyDrawShowStatus;
     public ConcreteCustomClass abstractGroup;
     public ConcreteCustomClass property;
@@ -335,6 +336,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP captionPropertyDraw;
     public LCP SIDToPropertyDraw;
     public LCP formPropertyDraw;
+    public LCP groupObjectPropertyDraw;
     public LCP SIDNavigatorElementSIDPropertyDrawToPropertyDraw;
     public LCP showPropertyDraw;
     public LCP nameShowPropertyDraw;
@@ -348,7 +350,21 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP columnOrderPropertyDrawCustomUser;
     public LCP columnOrderPropertyDraw;
     public LCP columnOrderOverridePropertyDrawCustomUser;
+    public LCP columnSortPropertyDrawCustomUser;
+    public LCP columnSortPropertyDraw;
+    public LCP columnSortOverridePropertyDrawCustomUser;
+    public LCP columnAscendingSortPropertyDrawCustomUser;
+    public LCP columnAscendingSortPropertyDraw;
+    public LCP columnAscendingSortOverridePropertyDrawCustomUser;
+    public LCP hasUserPreferencesGroupObject;
+    public LCP hasUserPreferencesGroupObjectCustomUser;
+    public LCP hasUserPreferencesOverrideGroupObjectCustomUser;
 
+    public LCP groupObjectSID;
+    public LCP navigatorElementGroupObject;
+    public LCP sidNavigatorElementGroupObject;
+    public LCP SIDNavigatorElementSIDGroupObjectToGroupObject;
+    
     public LCP messageException;
     public LCP dateException;
     public LCP erTraceException;
@@ -600,6 +616,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         propertyDrawShowStatus = addStaticClass("propertyDrawShowStatus", getString("logics.forms.property.show"),
                 new String[]{"Show", "Hide"},
                 new String[]{getString("logics.property.draw.show"), getString("logics.property.draw.hide")});
+        groupObject = addConcreteClass("groupObject", getString("logics.group.object"), baseClass);
         abstractGroup = addConcreteClass("abstractGroup", getString("logics.property.group"), baseClass);
         property = addConcreteClass("property", getString("logics.property"), baseClass);
         notification = addConcreteClass("notification", getString("logics.notification"), baseClass);
@@ -1031,6 +1048,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         propertyDrawSID = addDProp(baseGroup, "propertyDrawSID", getString("logics.forms.property.draw.code"), propertySIDValueClass, propertyDraw);
         captionPropertyDraw = addDProp(baseGroup, "captionPropertyDraw", getString("logics.forms.property.draw.caption"), propertyCaptionValueClass, propertyDraw);
         formPropertyDraw = addDProp(baseGroup, "formPropertyDraw", getString("logics.forms.form"), form, propertyDraw);
+        groupObjectPropertyDraw = addDProp(baseGroup, "groupObjectPropertyDraw", getString("logics.group.object"), groupObject, propertyDraw);
         SIDToPropertyDraw = addAGProp(baseGroup, "SIDToPropertyDraw", getString("logics.property.draw"), formPropertyDraw, propertyDrawSID);
         SIDNavigatorElementSIDPropertyDrawToPropertyDraw = addJProp(baseGroup, "SIDNavigatorElementSIDPropertyDrawToPropertyDraw", getString("logics.forms.code"), SIDToPropertyDraw, SIDToNavigatorElement, 1, 2);
         showPropertyDraw = addDProp(baseGroup, "showPropertyDraw", getString("logics.forms.property.show"), propertyDrawShowStatus, propertyDraw);
@@ -1047,6 +1065,22 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         columnOrderPropertyDrawCustomUser = addDProp(baseGroup, "columnOrderPropertyDrawCustomUser", getString("logics.forms.property.order.user"), IntegerClass.instance, propertyDraw, customUser);
         columnOrderPropertyDraw = addDProp(baseGroup, "columnOrderPropertyDraw", getString("logics.forms.property.order"), IntegerClass.instance, propertyDraw);
         columnOrderOverridePropertyDrawCustomUser = addSUProp(baseGroup, "columnOrderOverridePropertyDrawCustomUser", getString("logics.forms.property.order"), Union.OVERRIDE, addJProp(and1, columnOrderPropertyDraw, 1, is(customUser), 2), columnOrderPropertyDrawCustomUser);
+
+        columnSortPropertyDrawCustomUser = addDProp(baseGroup, "columnSortPropertyDrawCustomUser", getString("logics.forms.property.sort.user"), IntegerClass.instance, propertyDraw, customUser);
+        columnSortPropertyDraw = addDProp(baseGroup, "columnSortPropertyDraw", getString("logics.forms.property.sort"), IntegerClass.instance, propertyDraw);
+        columnSortOverridePropertyDrawCustomUser = addSUProp(baseGroup, "columnSortOverridePropertyDrawCustomUser", getString("logics.forms.property.sort"), Union.OVERRIDE, addJProp(and1, columnSortPropertyDraw, 1, is(customUser), 2), columnSortPropertyDrawCustomUser);
+        columnAscendingSortPropertyDrawCustomUser = addDProp(baseGroup, "columnAscendingSortPropertyDrawCustomUser", getString("logics.forms.property.ascending.sort.user"), LogicalClass.instance, propertyDraw, customUser);
+        columnAscendingSortPropertyDraw = addDProp(baseGroup, "columnAscendingSortPropertyDraw", getString("logics.forms.property.ascending.sort"), LogicalClass.instance, propertyDraw);
+        columnAscendingSortOverridePropertyDrawCustomUser = addSUProp(baseGroup, "columnAscendingSortOverridePropertyDrawCustomUser", getString("logics.forms.property.ascending.sort"), Union.OVERRIDE, addJProp(and1, columnAscendingSortPropertyDraw, 1, is(customUser), 2), columnAscendingSortPropertyDrawCustomUser);
+
+        hasUserPreferencesGroupObjectCustomUser = addDProp(baseGroup, "hasUserPreferencesGroupObjectCustomUser", getString("logics.group.object.has.user.preferences.user"), LogicalClass.instance, groupObject, customUser);
+        hasUserPreferencesGroupObject = addDProp(baseGroup, "hasUserPreferencesGroupObject", getString("logics.group.object.has.user.preferences"), LogicalClass.instance, groupObject);
+        hasUserPreferencesOverrideGroupObjectCustomUser = addSUProp(baseGroup, "hasUserPreferencesOverrideGroupObjectCustomUser", getString("logics.group.object.has.user.preferences"), Union.OVERRIDE, addJProp(and1, hasUserPreferencesGroupObject, 1, is(customUser), 2), hasUserPreferencesGroupObjectCustomUser);
+
+        groupObjectSID = addDProp(baseGroup, "groupObjectSID", getString("logics.group.object.sid"), propertySIDValueClass, groupObject);
+        navigatorElementGroupObject = addDProp(baseGroup, "navigatorElementGroupObject", getString("logics.navigator.element"), navigatorElement, groupObject);
+        sidNavigatorElementGroupObject = addJProp(baseGroup, "sidNavigatorElementGroupObject", navigatorElementSID, navigatorElementGroupObject, 1);
+        SIDNavigatorElementSIDGroupObjectToGroupObject = addAGProp(baseGroup, "SIDToGroupObject", getString("logics.group.object"), groupObjectSID, sidNavigatorElementGroupObject);
 
         messageException = addDProp(baseGroup, "messageException", getString("logics.exception.message"), propertyCaptionValueClass, exception);
         dateException = addDProp(baseGroup, "dateException", getString("logics.exception.date"), DateTimeClass.instance, exception);
@@ -2289,6 +2323,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         ObjectEntity objTreeForm;
         TreeGroupEntity treeFormObject;
         ObjectEntity objUser;
+        ObjectEntity objGroupObject;
         ObjectEntity objPropertyDraw;
         protected FormsFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, getString("logics.tables.forms"));
@@ -2299,19 +2334,34 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             treeFormObject = addTreeGroupObject(objTreeForm.groupTo);
             addPropertyDraw(new LP[]{navigatorElementSID, navigatorElementCaption, parentNavigatorElement}, objTreeForm);
             objUser = addSingleGroupObject(customUser, getString("logics.user"), userFirstName, userLastName, userLogin);
+            objGroupObject = addSingleGroupObject(groupObject, getString("logics.group.object"), groupObjectSID, hasUserPreferencesGroupObject);
             objPropertyDraw = addSingleGroupObject(propertyDraw, getString("logics.property.draw"), propertyDrawSID, captionPropertyDraw);
 
+            addPropertyDraw(hasUserPreferencesGroupObjectCustomUser, objGroupObject, objUser);
+            
             addPropertyDraw(nameShowPropertyDraw, objPropertyDraw);
             addPropertyDraw(nameShowPropertyDrawCustomUser, objPropertyDraw, objUser);
             addPropertyDraw(columnWidthPropertyDraw, objPropertyDraw);
             addPropertyDraw(columnWidthPropertyDrawCustomUser, objPropertyDraw, objUser);
             addPropertyDraw(columnOrderPropertyDraw, objPropertyDraw);
             addPropertyDraw(columnOrderPropertyDrawCustomUser, objPropertyDraw, objUser);
+            addPropertyDraw(columnSortPropertyDraw, objPropertyDraw);
+            addPropertyDraw(columnAscendingSortPropertyDraw, objPropertyDraw);
+            addPropertyDraw(columnSortPropertyDrawCustomUser, objPropertyDraw, objUser);
+            addPropertyDraw(columnAscendingSortPropertyDrawCustomUser, objPropertyDraw, objUser);
 
             objUser.groupTo.initClassView = ClassViewType.PANEL;
 
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(navigatorElementGroupObject, objGroupObject), Compare.EQUALS, objTreeForm));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(formPropertyDraw, objPropertyDraw), Compare.EQUALS, objTreeForm));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(currentUser), Compare.EQUALS, objUser));
+
+            RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
+            filterGroup.addFilter(new RegularFilterEntity(genID(),
+                    new CompareFilterEntity(addPropertyObject(groupObjectPropertyDraw, objPropertyDraw), Compare.EQUALS, objGroupObject),
+                    getString("logics.group.object.only.current"),
+                    KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0)));
+            addRegularFilterGroup(filterGroup);
 
             setEditType(PropertyEditType.READONLY);
             setEditType(nameShowPropertyDraw, PropertyEditType.EDITABLE);

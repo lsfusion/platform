@@ -25,6 +25,8 @@ public interface GroupObjectLogicsSupplier extends LogicsSupplier {
 
     void changeOrder(ClientPropertyDraw property, Order modiType) throws IOException;
 
+    void clearOrders() throws IOException;
+
     ClientGroupObject getSelectedGroupObject();
 
     void updateToolbar();

@@ -109,6 +109,11 @@ public class GridTable extends ClientPropertyTable {
             }
 
             @Override
+            protected void ordersCleared(ClientGroupObject groupObject) {
+                GridTable.this.ordersCleared(groupObject);
+            }
+
+            @Override
             protected Pair<ClientPropertyDraw, ClientGroupObjectValue> getColumnKey(int column) {
                 return new Pair<ClientPropertyDraw, ClientGroupObjectValue>(model.getColumnProperty(column), model.getColumnKey(column));
             }
@@ -254,6 +259,17 @@ public class GridTable extends ClientPropertyTable {
     private void orderChanged(Pair<ClientPropertyDraw, ClientGroupObjectValue> columnKey, Order modiType) {
         try {
             form.changePropertyOrder(columnKey.first, modiType, columnKey.second);
+            tableHeader.resizeAndRepaint();
+        } catch (IOException e) {
+            throw new RuntimeException(getString("errors.error.changing.sorting"), e);
+        }
+
+        tableHeader.repaint();
+    }
+
+    private void ordersCleared(ClientGroupObject groupObject) {
+        try {
+            form.clearPropertyOrders(groupObject);
             tableHeader.resizeAndRepaint();
         } catch (IOException e) {
             throw new RuntimeException(getString("errors.error.changing.sorting"), e);
@@ -924,6 +940,10 @@ public class GridTable extends ClientPropertyTable {
         sortableHeaderManager.changeOrder(new Pair<ClientPropertyDraw, ClientGroupObjectValue>(property, ind == -1 ? ClientGroupObjectValue.EMPTY : model.getColumnKey(ind)), modiType);
     }
 
+    public void clearGridOrders(ClientGroupObject groupObject) throws IOException {
+        sortableHeaderManager.clearOrders(groupObject);
+    }
+
     public int getMinPropertyIndex(ClientPropertyDraw property) {
         return model.getPropertyIndex(property, null);
     }
@@ -1152,5 +1172,13 @@ public class GridTable extends ClientPropertyTable {
         public Dimension getPreferredSize() {
             return new Dimension(columnModel.getTotalColumnWidth(), 34);
         }
+    }
+
+    public Map<String, Boolean> getSortDirections() {
+        Map<String, Boolean> sortDirections = new HashMap<String, Boolean>();
+        for (Map.Entry<Pair<ClientPropertyDraw, ClientGroupObjectValue>, Boolean> orderDirection : sortableHeaderManager.getOrderDirections().entrySet()) {
+            sortDirections.put(orderDirection.getKey().first.getSID(), orderDirection.getValue());
+        }
+        return sortDirections;
     }
 }

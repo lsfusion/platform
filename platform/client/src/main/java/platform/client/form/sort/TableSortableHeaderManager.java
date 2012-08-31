@@ -1,5 +1,6 @@
 package platform.client.form.sort;
 
+import platform.client.logics.ClientGroupObject;
 import platform.interop.Order;
 
 import javax.swing.*;
@@ -52,6 +53,10 @@ public abstract class TableSortableHeaderManager<T> extends MouseAdapter {
 
     private final Map<T, Boolean> orderDirections = new HashMap<T, Boolean>();
 
+    public Map<T, Boolean> getOrderDirections(){
+        return orderDirections;
+    }
+
     public final Boolean getSortDirection(int column) {
         if (column < 0 || column >= table.getColumnCount()) {
             return null;
@@ -83,8 +88,15 @@ public abstract class TableSortableHeaderManager<T> extends MouseAdapter {
 
         orderChanged(columnKey, modiType);
     }
+    
+    public final void clearOrders(ClientGroupObject groupObject) {
+        orderDirections.clear();        
+        ordersCleared(groupObject);
+    }
 
     protected abstract void orderChanged(T columnKey, Order modiType);
+    
+    protected abstract void ordersCleared(ClientGroupObject groupObject);
 
     protected abstract T getColumnKey(int column);
 }

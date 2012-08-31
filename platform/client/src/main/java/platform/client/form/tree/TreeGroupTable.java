@@ -94,6 +94,11 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
             }
 
             @Override
+            protected void ordersCleared(ClientGroupObject groupObject) {
+                TreeGroupTable.this.ordersCleared(groupObject);
+            }
+
+            @Override
             protected ClientPropertyDraw getColumnKey(int column) {
                 return model.getColumnProperty(column);
             }
@@ -221,6 +226,17 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
     private void orderChanged(ClientPropertyDraw columnKey, Order modiType) {
         try {
             form.changePropertyOrder(columnKey, modiType, ClientGroupObjectValue.EMPTY);
+            tableHeader.resizeAndRepaint();
+        } catch (IOException e) {
+            throw new RuntimeException(ClientResourceBundle.getString("errors.error.changing.sorting"), e);
+        }
+
+        tableHeader.resizeAndRepaint();
+    }
+
+    private void ordersCleared(ClientGroupObject groupObject) {
+        try {
+            form.clearPropertyOrders(groupObject);
             tableHeader.resizeAndRepaint();
         } catch (IOException e) {
             throw new RuntimeException(ClientResourceBundle.getString("errors.error.changing.sorting"), e);
@@ -708,6 +724,10 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
             //меняем напрямую для верхних groupObjects
             form.changePropertyOrder(property, modiType, ClientGroupObjectValue.EMPTY);
         }
+    }
+
+    public void clearOrders(ClientGroupObject groupObject) throws IOException {
+            sortableHeaderManager.clearOrders(groupObject);
     }
 
     @Override

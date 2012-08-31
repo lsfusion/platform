@@ -249,11 +249,17 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
         if (modiType == Order.REMOVE) {
             userOrders.remove(property);
         } else if (modiType == Order.DIR) {
-            userOrders.put(property, !userOrders.get(property));
+            userOrders.put(property, !(userOrders.containsKey(property)? userOrders.get(property) : false));
         } else {
             userOrders.put(property, false);
         }
 
+        setOrders = null;
+        updated |= UPDATED_ORDER;
+    }
+
+    public void clearOrders() {
+        userOrders.clear();
         setOrders = null;
         updated |= UPDATED_ORDER;
     }

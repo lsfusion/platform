@@ -5,8 +5,9 @@ import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.design.*;
 import net.sf.jasperreports.engine.type.*;
-import platform.interop.form.FormColumnUserPreferences;
 import platform.interop.form.FormUserPreferences;
+import platform.interop.form.ColumnUserPreferences;
+import platform.interop.form.GroupObjectUserPreferences;
 import platform.interop.form.ReportConstants;
 import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.entity.GroupObjectHierarchy;
@@ -117,9 +118,11 @@ public class ReportDesignGenerator {
             GroupObjectEntity applyGroup = property.entity.propertyObject.getApplyObject(formView.entity.groups);
             GroupObjectEntity drawGroup = property.entity.getToDraw(formView.entity);
 
-            FormColumnUserPreferences columnUserPreferences = null;
+            ColumnUserPreferences columnUserPreferences = null;
             if (userPreferences != null)
-                columnUserPreferences = userPreferences.getFormColumnUserPreferences().get(property.getSID());
+                for (GroupObjectUserPreferences groupObjectPreferences : userPreferences.getGroupObjectUserPreferencesList())
+                    if (groupObjectPreferences.getColumnUserPreferences().containsKey(property.getSID()))
+                        columnUserPreferences = groupObjectPreferences.getColumnUserPreferences().get(property.getSID());
             boolean hidden = columnUserPreferences != null && columnUserPreferences.isNeedToHide();
 
             if (group.equals(drawGroup) && (applyGroup == null || applyGroup == drawGroup) && !hidden) {

@@ -1,16 +1,17 @@
 package platform.interop.form;
 
+import java.util.List;
 import java.util.Map;
 import java.io.Serializable;
 
 public class FormUserPreferences implements Serializable {
-    private Map<String, FormColumnUserPreferences> formColumnUserPreferences;
-
-    public FormUserPreferences(Map<String, FormColumnUserPreferences> formColumnUserPreferences) {
-        this.formColumnUserPreferences = formColumnUserPreferences;
+    private List<GroupObjectUserPreferences> groupObjectUserPreferencesList;
+    
+    public FormUserPreferences(List<GroupObjectUserPreferences> groupObjectUserPreferencesList) {
+       this.groupObjectUserPreferencesList = groupObjectUserPreferencesList;
     }
 
-    public Map<String, FormColumnUserPreferences> getFormColumnUserPreferences() {
-        return formColumnUserPreferences;
+    public List<GroupObjectUserPreferences> getGroupObjectUserPreferencesList() {
+        return groupObjectUserPreferencesList;
     }
 }

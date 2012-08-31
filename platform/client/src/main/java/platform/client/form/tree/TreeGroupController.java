@@ -172,6 +172,11 @@ public class TreeGroupController extends AbstractGroupObjectController {
     }
 
     @Override
+    public void clearOrders() throws IOException {
+        tree.clearOrders(getGroupObject());
+    }
+
+    @Override
     public List<ClientPropertyDraw> getPropertyDraws() {
         return form.getPropertyDraws();
     }

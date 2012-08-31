@@ -344,6 +344,15 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         });
     }
 
+    public ServerResponse clearPropertyOrders(long requestIndex, final int groupObjectID) throws RemoteException {
+        return processPausableRMIRequest(requestIndex, new ERunnable() {
+            @Override
+            public void run() throws Exception {
+                form.getFormInstance().getGroupObjectInstance(groupObjectID).clearOrders();
+            }
+        });
+    }
+
     public int countRecords(long requestIndex, final int groupObjectID) {
         return processRMIRequest(requestIndex, new Callable<Integer>() {
             @Override

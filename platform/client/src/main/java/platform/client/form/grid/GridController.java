@@ -7,10 +7,7 @@ import platform.client.form.ClientFormLayout;
 import platform.client.form.GroupObjectController;
 import platform.client.form.classes.ClassContainer;
 import platform.client.form.queries.*;
-import platform.client.logics.ClientGrid;
-import platform.client.logics.ClientGroupObjectValue;
-import platform.client.logics.ClientObject;
-import platform.client.logics.ClientPropertyDraw;
+import platform.client.logics.*;
 import platform.client.logics.classes.ClientIntegralClass;
 import platform.interop.Order;
 import platform.interop.form.screen.ExternalScreenComponent;
@@ -34,7 +31,7 @@ public class GridController {
 
     private final GridView view;
 
-    private final GridTable table;
+    public final GridTable table;
 
     private final ClientFormController form;
 
@@ -231,12 +228,12 @@ public class GridController {
         }
 
         if (clientGrid.showHideSettings) {
-            groupController.addToToolbar(new HideSettingsButton() {
+            groupController.addToToolbar(new UserPreferencesButton(groupController.getGroupObject().hasUserPreferences) {
                 public void addListener() {
                     addActionListener(new ActionListener() {
                         public void actionPerformed(ActionEvent e) {
                             try {
-                                dialog = new HideSettingsButton.HideSettingsDialog(Main.frame, table, form);
+                                dialog = new UserPreferencesButton.HideSettingsDialog(Main.frame, table, form);
                                 dialog.setVisible(true);
                                 form.processRemoteChanges(false);
                             } catch (IOException ex) {
@@ -361,6 +358,10 @@ public class GridController {
 
     public void changeGridOrder(ClientPropertyDraw property, Order modiType) throws IOException {
         table.changeGridOrder(property, modiType);
+    }
+
+    public void clearGridOrders(ClientGroupObject groupObject) throws IOException {
+        table.clearGridOrders(groupObject);
     }
 
     public ClientPropertyDraw getCurrentProperty() {

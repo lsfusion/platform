@@ -10,8 +10,9 @@ import platform.interop.action.ConfirmClientAction;
 import platform.interop.action.EditNotPerformedClientAction;
 import platform.interop.action.HideFormClientAction;
 import platform.interop.action.LogMessageClientAction;
-import platform.interop.form.FormColumnUserPreferences;
 import platform.interop.form.FormUserPreferences;
+import platform.interop.form.ColumnUserPreferences;
+import platform.interop.form.GroupObjectUserPreferences;
 import platform.interop.form.ServerResponse;
 import platform.interop.form.layout.ContainerType;
 import platform.server.Context;
@@ -19,7 +20,6 @@ import platform.server.Message;
 import platform.server.ParamMessage;
 import platform.server.Settings;
 import platform.server.auth.SecurityPolicy;
-import platform.server.caches.IdentityLazy;
 import platform.server.caches.ManualLazy;
 import platform.server.classes.*;
 import platform.server.data.Insert;
@@ -234,13 +234,12 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     }
 
     public FormUserPreferences loadUserPreferences() {
-        Map<String, FormColumnUserPreferences> preferences = new HashMap<String, FormColumnUserPreferences>();
+        List<GroupObjectUserPreferences> preferences = new ArrayList<GroupObjectUserPreferences>();
         try {
 
             ObjectValue formValue = BL.LM.SIDToNavigatorElement.readClasses(session, new DataObject(entity.getSID(), StringClass.get(50)));
             if (formValue.isNull())
                 return null;
-
             DataObject formObject = (DataObject) formValue;
 
             KeyExpr propertyDrawExpr = new KeyExpr("propertyDraw");
@@ -258,6 +257,9 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             query.properties.put("nameShowOverridePropertyDrawCustomUser", BL.LM.nameShowOverridePropertyDrawCustomUser.getExpr(propertyDrawExpr, customUserExpr));
             query.properties.put("columnWidthOverridePropertyDrawCustomUser", BL.LM.columnWidthOverridePropertyDrawCustomUser.getExpr(propertyDrawExpr, customUserExpr));
             query.properties.put("columnOrderOverridePropertyDrawCustomUser", BL.LM.columnOrderOverridePropertyDrawCustomUser.getExpr(propertyDrawExpr, customUserExpr));
+            query.properties.put("columnSortOverridePropertyDrawCustomUser", BL.LM.columnSortOverridePropertyDrawCustomUser.getExpr(propertyDrawExpr, customUserExpr));
+            query.properties.put("columnAscendingSortOverridePropertyDrawCustomUser", BL.LM.columnAscendingSortOverridePropertyDrawCustomUser.getExpr(propertyDrawExpr, customUserExpr));
+            query.properties.put("groupObjectPropertyDraw", BL.LM.groupObjectPropertyDraw.getExpr(propertyDrawExpr));
             query.and(BL.LM.formPropertyDraw.getExpr(propertyDrawExpr).compare(formObject.getExpr(), Compare.EQUALS));
 
             OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(session.sql);
@@ -274,7 +276,28 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 }
                 Integer width = (Integer) values.get("columnWidthOverridePropertyDrawCustomUser");
                 Integer order = (Integer) values.get("columnOrderOverridePropertyDrawCustomUser");
-                preferences.put(propertyDrawSID, new FormColumnUserPreferences(needToHide, width, order));
+                Integer sort = (Integer) values.get("columnSortOverridePropertyDrawCustomUser");
+                Boolean ascendingSort = (Boolean) values.get("columnAscendingSortOverridePropertyDrawCustomUser");
+                Integer groupObjectPropertyDraw = (Integer) values.get("groupObjectPropertyDraw");
+                if (groupObjectPropertyDraw != null) {
+                    String groupObjectSID = (String) BL.LM.groupObjectSID.read(session, new DataObject(groupObjectPropertyDraw, BL.LM.groupObject));
+                    ColumnUserPreferences pref = new ColumnUserPreferences(needToHide, width, order, sort, ascendingSort != null ? ascendingSort : (sort != null ? false : null));
+                    boolean found = false;
+                    Object hasUserPreferences = BL.LM.hasUserPreferencesOverrideGroupObjectCustomUser.read(session, new DataObject(groupObjectPropertyDraw, BL.LM.groupObject), currentUser);
+                    for (GroupObjectUserPreferences groupObjectPreferences : preferences) {
+                        if (groupObjectPreferences.groupObjectSID.equals(groupObjectSID.trim())) {
+                            groupObjectPreferences.getColumnUserPreferences().put(propertyDrawSID, pref);
+                            if (!groupObjectPreferences.hasUserPreferences)
+                                groupObjectPreferences.hasUserPreferences = hasUserPreferences != null;
+                            found = true;
+                        }
+                    }
+                    if (!found) {
+                        Map preferencesMap = new HashMap<String, ColumnUserPreferences>();
+                        preferencesMap.put(propertyDrawSID, pref);
+                        preferences.add(new GroupObjectUserPreferences(preferencesMap, groupObjectSID.trim(), hasUserPreferences != null));
+                    }
+                }
             }
         } catch (SQLException e) {
             Throwables.propagate(e);
@@ -285,23 +308,36 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     public void saveUserPreferences(FormUserPreferences preferences, Boolean forAllUsers) {
         try {
             DataSession dataSession = session.createSession();
-            for (Map.Entry<String, FormColumnUserPreferences> entry : preferences.getFormColumnUserPreferences().entrySet()) {
-                DataObject userObject = dataSession.getDataObject(BL.LM.currentUser.read(dataSession), ObjectType.instance);
-                Integer id = (Integer) BL.LM.SIDNavigatorElementSIDPropertyDrawToPropertyDraw.read(dataSession, new DataObject(entity.getSID(), StringClass.get(50)), new DataObject(entry.getKey(), StringClass.get(50)));
-                DataObject propertyDrawObject = dataSession.getDataObject(id, ObjectType.instance);
-                if (entry.getValue().isNeedToHide() != null) {
-                    int idShow = entry.getValue().isNeedToHide() ? BL.LM.propertyDrawShowStatus.getID("Hide") : BL.LM.propertyDrawShowStatus.getID("Show");
-                    BL.LM.showPropertyDrawCustomUser.change(idShow, dataSession, propertyDrawObject, userObject);
-                    if (forAllUsers)
-                        BL.LM.showPropertyDraw.change(idShow, dataSession, propertyDrawObject, userObject);
+            DataObject userObject = dataSession.getDataObject(BL.LM.currentUser.read(dataSession), ObjectType.instance);
+            for (GroupObjectUserPreferences groupObjectPreferences : preferences.getGroupObjectUserPreferencesList()) {
+                for (Map.Entry<String, ColumnUserPreferences> entry : groupObjectPreferences.getColumnUserPreferences().entrySet()) {
+                    Integer id = (Integer) BL.LM.SIDNavigatorElementSIDPropertyDrawToPropertyDraw.read(dataSession, new DataObject(entity.getSID(), StringClass.get(50)), new DataObject(entry.getKey(), StringClass.get(50)));
+                    DataObject propertyDrawObject = dataSession.getDataObject(id, ObjectType.instance);
+                    if (entry.getValue().isNeedToHide() != null) {
+                        int idShow = entry.getValue().isNeedToHide() ? BL.LM.propertyDrawShowStatus.getID("Hide") : BL.LM.propertyDrawShowStatus.getID("Show");
+                        BL.LM.showPropertyDrawCustomUser.change(idShow, dataSession, propertyDrawObject, userObject);
+                        if (forAllUsers)
+                            BL.LM.showPropertyDraw.change(idShow, dataSession, propertyDrawObject, userObject);
+                    }
+                    BL.LM.columnWidthPropertyDrawCustomUser.change(entry.getValue().getWidthUser(), dataSession, propertyDrawObject, userObject);
+                    BL.LM.columnOrderPropertyDrawCustomUser.change(entry.getValue().getOrderUser(), dataSession, propertyDrawObject, userObject);
+                    if (entry.getValue().getAscendingSortUser() != null) {
+                        BL.LM.columnSortPropertyDrawCustomUser.change(entry.getValue().getSortUser(), dataSession, propertyDrawObject, userObject);
+                        BL.LM.columnAscendingSortPropertyDrawCustomUser.change(entry.getValue().getAscendingSortUser(), dataSession, propertyDrawObject, userObject);
+                        if (forAllUsers) {
+                            BL.LM.columnSortPropertyDraw.change(entry.getValue().getSortUser(), dataSession, propertyDrawObject, userObject);
+                            BL.LM.columnAscendingSortPropertyDraw.change(entry.getValue().getAscendingSortUser(), dataSession, propertyDrawObject, userObject);
+                        }
+                    }
+                    if (forAllUsers) {
+                        BL.LM.columnWidthPropertyDraw.change(entry.getValue().getWidthUser(), dataSession, propertyDrawObject);
+                        BL.LM.columnOrderPropertyDraw.change(entry.getValue().getOrderUser(), dataSession, propertyDrawObject);
+                    }
                 }
-                BL.LM.columnWidthPropertyDrawCustomUser.change(entry.getValue().getWidthUser(), dataSession, propertyDrawObject, userObject);
-                BL.LM.columnOrderPropertyDrawCustomUser.change(entry.getValue().getOrderUser(), dataSession, propertyDrawObject, userObject);
-                if (forAllUsers) {
-                    BL.LM.columnWidthPropertyDraw.change(entry.getValue().getWidthUser(), dataSession, propertyDrawObject);
-                    BL.LM.columnOrderPropertyDraw.change(entry.getValue().getOrderUser(), dataSession, propertyDrawObject);
-                }
-
+                DataObject groupObjectObject = dataSession.getDataObject(BL.LM.SIDNavigatorElementSIDGroupObjectToGroupObject.read(dataSession, new DataObject(groupObjectPreferences.groupObjectSID, StringClass.get(50)), new DataObject(entity.getSID(), StringClass.get(50))), ObjectType.instance);
+                BL.LM.hasUserPreferencesGroupObjectCustomUser.change(true, dataSession, groupObjectObject, userObject);
+                if (forAllUsers)
+                    BL.LM.hasUserPreferencesGroupObject.change(true, dataSession, groupObjectObject);
             }
             dataSession.apply(BL);
         } catch (SQLException e) {
@@ -324,11 +360,13 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     public final DataSession session;
 
     private final WeakReference<FocusListener<T>> weakFocusListener;
+
     public FocusListener<T> getFocusListener() {
         return weakFocusListener.get();
     }
 
     private final WeakReference<CustomClassListener> weakClassListener;
+
     public CustomClassListener getClassListener() {
         return weakClassListener.get();
     }
@@ -517,6 +555,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 filters.add(filter);
         return filters.equals(groupTo.filters);
     }
+
     private void resolveAdd(CustomObjectInstance object, ConcreteCustomClass cls, DataObject addObject) throws SQLException {
 
         // резолвим все фильтры

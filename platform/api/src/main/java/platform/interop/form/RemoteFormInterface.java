@@ -69,6 +69,8 @@ public interface RemoteFormInterface extends PendingRemote, RemoteContextInterfa
 
     ServerResponse changePropertyOrder(long requestIndex, int propertyID, byte modiType, byte[] columnKeys) throws RemoteException;
 
+    ServerResponse clearPropertyOrders(long requestIndex, int groupObjectID) throws RemoteException;
+    
     ServerResponse setUserFilters(long requestIndex, byte[][] filters) throws RemoteException;
 
     ServerResponse setRegularFilter(long requestIndex, int groupID, int filterID) throws RemoteException;

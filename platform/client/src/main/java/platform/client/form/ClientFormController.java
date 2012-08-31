@@ -15,6 +15,7 @@ import platform.client.form.dispatch.ClientFormActionDispatcher;
 import platform.client.form.dispatch.SimpleChangePropertyDispatcher;
 import platform.client.form.tree.TreeGroupController;
 import platform.client.logics.*;
+import platform.client.logics.classes.ClientActionClass;
 import platform.client.logics.classes.ClientObjectClass;
 import platform.client.logics.filter.ClientPropertyFilter;
 import platform.client.navigator.ClientNavigator;
@@ -359,26 +360,57 @@ public class ClientFormController implements AsyncView {
         if (preferences != null) {
             for (ClientPropertyDraw property : form.getPropertyDraws()) {
                 String propertySID = property.getSID();
-                if (preferences.getFormColumnUserPreferences().containsKey(propertySID)) {
-                    property.hideUser = preferences.getFormColumnUserPreferences().get(propertySID).isNeedToHide();
-                    if (preferences.getFormColumnUserPreferences().get(propertySID).getWidthUser() != null) {
-                        property.widthUser = preferences.getFormColumnUserPreferences().get(propertySID).getWidthUser();
+                for (GroupObjectUserPreferences groupObjectPreferences : preferences.getGroupObjectUserPreferencesList()) {
+                    Map<String, ColumnUserPreferences> columnUserPreferences = groupObjectPreferences.getColumnUserPreferences();
+                    if (columnUserPreferences.containsKey(propertySID)) {
+                        property.hideUser = columnUserPreferences.get(propertySID).isNeedToHide();
+                        if (columnUserPreferences.get(propertySID).getWidthUser() != null) {
+                            property.widthUser = columnUserPreferences.get(propertySID).getWidthUser();
+                        }
+                        if (columnUserPreferences.get(propertySID).getOrderUser() != null) {
+                            property.orderUser = columnUserPreferences.get(propertySID).getOrderUser();
+                        }
+                        if (columnUserPreferences.get(propertySID).getSortUser() != null) {
+                            property.sortUser = columnUserPreferences.get(propertySID).getSortUser();
+                            property.ascendingSortUser = columnUserPreferences.get(propertySID).getAscendingSortUser();
+                        }
                     }
-                    if (preferences.getFormColumnUserPreferences().get(propertySID).getOrderUser() != null) {
-                        property.orderUser = preferences.getFormColumnUserPreferences().get(propertySID).getOrderUser();
-                    }
+                }
+            }
+            for (ClientGroupObject groupObject : form.groupObjects) {
+                for (GroupObjectUserPreferences groupObjectPreferences : preferences.getGroupObjectUserPreferencesList()) {
+                    if (groupObject.getSID().equals(groupObjectPreferences.groupObjectSID))
+                        groupObject.hasUserPreferences = groupObjectPreferences.hasUserPreferences;
                 }
             }
         }
     }
 
     private void initializeDefaultOrders() throws IOException {
-        //сначала получаем изменения, чтобы был первоначальный список свойств в таблице
         processRemoteChanges(false);
         try {
-            // Применяем порядки по умолчанию
+            //применяем все свойства по умолчанию
             applyOrders(form.defaultOrders);
             defaultOrdersInitialized = true;
+
+            //применяем пользовательские свойства
+            OrderedMap<ClientPropertyDraw, Boolean> userOrders = new OrderedMap<ClientPropertyDraw, Boolean>();
+            for (GroupObjectController controller : controllers.values()) {
+                boolean userPreferencesEmpty = true;
+                if (controller.getGroupObject() != null && controller.getGroupObject().hasUserPreferences) {
+                    List<ClientPropertyDraw> clientPropertyDrawList = controller.getPropertyDraws();
+                    Collections.sort(clientPropertyDrawList, COMPARATOR_USERSORT);
+                    for (ClientPropertyDraw property : controller.getPropertyDraws()) {
+                        if (property.sortUser != null && property.ascendingSortUser != null) {
+                            userOrders.put(property, property.ascendingSortUser);
+                            userPreferencesEmpty = false;
+                        }
+                    }
+                }
+                if (userPreferencesEmpty)
+                    controller.clearOrders();
+            }
+            applyOrders(userOrders);
         } catch (IOException e) {
             throw new RuntimeException(getString("form.error.cant.initialize.default.orders"));
         }
@@ -437,6 +469,7 @@ public class ClientFormController implements AsyncView {
             this.value = value;
         }
     }
+
     private final OrderedMap<Long, ModifyObject> lastModifyObjectRequests = new OrderedMap<Long, ModifyObject>();
 
     public void applyFormChanges(byte[] bFormChanges) throws IOException {
@@ -606,7 +639,7 @@ public class ClientFormController implements AsyncView {
                 }
         );
     }
-    
+
     private byte[] getFullCurrentKey(ClientPropertyDraw property, ClientGroupObjectValue columnKey) throws IOException {
         final ClientGroupObjectValue fullCurrentKey = getFullCurrentKey();
         fullCurrentKey.putAll(columnKey);
@@ -658,7 +691,7 @@ public class ClientFormController implements AsyncView {
         assert isAsyncModifyObject(property);
 
         commitOrCancelCurrentEditing();
-        
+
         final ClientObject object = property.addRemove.first;
         final boolean add = property.addRemove.second;
 
@@ -855,6 +888,19 @@ public class ClientFormController implements AsyncView {
         }
     }
 
+    public void clearPropertyOrders(final ClientGroupObject groupObject) throws IOException {
+        if (defaultOrdersInitialized) {
+            commitOrCancelCurrentEditing();
+
+            rmiQueue.syncRequest(new ProcessServerResponseRmiRequest() {
+                @Override
+                protected ServerResponse doRequest(long requestIndex) throws Exception {
+                    return remoteForm.clearPropertyOrders(requestIndex, groupObject.getID());
+                }
+            });
+        }
+    }
+
     @SuppressWarnings({"UnusedDeclaration"})
     public void changeFind(List<ClientPropertyFilter> conditions) {
     }
@@ -988,13 +1034,15 @@ public class ClientFormController implements AsyncView {
     }
 
     public FormUserPreferences getUserPreferences() {
-        Map<String, FormColumnUserPreferences> columnPreferences = new HashMap<String, FormColumnUserPreferences>();
+        List<GroupObjectUserPreferences> groupObjectUserPreferencesList = new ArrayList<GroupObjectUserPreferences>();
         for (GroupObjectController controller : controllers.values()) {
+            Map<String, ColumnUserPreferences> columnPreferences = new HashMap<String, ColumnUserPreferences>();
             for (ClientPropertyDraw property : controller.getPropertyDraws()) {
-                columnPreferences.put(property.getSID(), new FormColumnUserPreferences(needToHideProperty(property), property.widthUser, property.orderUser));
+                columnPreferences.put(property.getSID(), new ColumnUserPreferences(needToHideProperty(property), property.widthUser, property.orderUser, property.sortUser, property.ascendingSortUser));
             }
+            groupObjectUserPreferencesList.add(new GroupObjectUserPreferences(columnPreferences, controller.getGroupObject().getSID(), controller.getGroupObject().hasUserPreferences));
         }
-        return new FormUserPreferences(columnPreferences);
+        return new FormUserPreferences(groupObjectUserPreferencesList);
     }
 
     public void hideForm() {
@@ -1126,4 +1174,12 @@ public class ClientFormController implements AsyncView {
             processServerResponse(result);
         }
     }
+
+    private static Comparator<ClientPropertyDraw> COMPARATOR_USERSORT = new Comparator<ClientPropertyDraw>() {
+        public int compare(ClientPropertyDraw c1, ClientPropertyDraw c2) {
+            if (c1.ascendingSortUser != null && c2.ascendingSortUser != null)
+                return c1.sortUser - c2.sortUser;
+            else return 0;
+        }
+    };
 }

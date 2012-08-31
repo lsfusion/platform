@@ -7,10 +7,12 @@ import platform.client.descriptor.editor.base.TitledPanel;
 import platform.client.form.ClientFormController;
 import platform.client.form.queries.ToolbarGridButton;
 import platform.client.logics.ClientPropertyDraw;
-import platform.interop.form.FormColumnUserPreferences;
+import platform.interop.form.ColumnUserPreferences;
 import platform.interop.form.FormUserPreferences;
+import platform.interop.form.GroupObjectUserPreferences;
 
 import javax.swing.*;
+import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
@@ -19,12 +21,12 @@ import java.util.List;
 
 import static platform.client.ClientResourceBundle.getString;
 
-public abstract class HideSettingsButton extends ToolbarGridButton {
+public abstract class UserPreferencesButton extends ToolbarGridButton {
 
     public HideSettingsDialog dialog;
 
-    public HideSettingsButton() {
-        super("/images/hideSettings.png", getString("form.grid.hidesettings"));
+    public UserPreferencesButton(boolean hasUserPreferences) {
+        super(hasUserPreferences? "/images/userPreferencesSaved.png" :"/images/userPreferences.png", getString("form.grid.user.preferences"));
     }
 
     public abstract void addListener();
@@ -38,7 +40,7 @@ public abstract class HideSettingsButton extends ToolbarGridButton {
 
 
         public HideSettingsDialog(Frame owner, final GridTable initialTable, ClientFormController form) throws IOException {
-            super(owner, getString("form.grid.hidesettings"), true);
+            super(owner, getString("form.grid.user.preferences"), true);
             this.initialTable = initialTable;
             this.form = form;
 
@@ -54,40 +56,6 @@ public abstract class HideSettingsButton extends ToolbarGridButton {
 
             final JPanel allFieldsPanel = new JPanel();
             allFieldsPanel.setLayout(new BoxLayout(allFieldsPanel, BoxLayout.Y_AXIS));
-
-            final JButton applyButton = new JButton(getString("form.grid.hide.apply"));
-            applyButton.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    try {
-                        applyButtonPressed(false);
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
-                    }
-                    if (dialog != null) {
-                        dialog.firePropertyChange("buttonPressed", null, null);
-                    }
-                    initialTable.updateTable();
-                }
-            });
-
-            final JButton applyForAllButton = new JButton(getString("form.grid.hide.apply.for.all"));
-            applyForAllButton.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    try {
-                        Boolean permission = Main.frame.remoteNavigator.getConfiguratorSecurityPolicy();
-                        if ((permission != null) && (permission))
-                            applyButtonPressed(true);
-                        else
-                            JOptionPane.showMessageDialog(null, getString("form.grid.hide.not.enough.rights"), getString("form.grid.hide.error"), JOptionPane.ERROR_MESSAGE);
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
-                    }
-                    if (dialog != null) {
-                        dialog.firePropertyChange("buttonPressed", null, null);
-                    }
-                    initialTable.updateTable();
-                }
-            });
 
             Map<ClientPropertyDraw, Integer> propertyOrderMap = new HashMap<ClientPropertyDraw, Integer>();
             List<ClientPropertyDraw> properties = initialTable.getProperties();
@@ -163,6 +131,40 @@ public abstract class HideSettingsButton extends ToolbarGridButton {
                             invisibleListModel.remove(index);
                         }
                     }
+                }
+            });
+
+            final JButton applyButton = new JButton(getString("form.grid.hide.apply"));
+            applyButton.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    try {
+                        applyButtonPressed(false);
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
+                    if (dialog != null) {
+                        dialog.firePropertyChange("buttonPressed", null, null);
+                    }
+                    initialTable.updateTable();
+                }
+            });
+
+            final JButton applyForAllButton = new JButton(getString("form.grid.hide.apply.for.all"));
+            applyForAllButton.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    try {
+                        Boolean permission = Main.frame.remoteNavigator.getConfiguratorSecurityPolicy();
+                        if ((permission != null) && (permission))
+                            applyButtonPressed(true);
+                        else
+                            JOptionPane.showMessageDialog(null, getString("form.grid.hide.not.enough.rights"), getString("form.grid.hide.error"), JOptionPane.ERROR_MESSAGE);
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
+                    if (dialog != null) {
+                        dialog.firePropertyChange("buttonPressed", null, null);
+                    }
+                    initialTable.updateTable();
                 }
             });
 
@@ -268,24 +270,30 @@ public abstract class HideSettingsButton extends ToolbarGridButton {
         }
 
         private void applyButtonPressed(Boolean forAllUsers) throws IOException {
-
-            Map<String, FormColumnUserPreferences> preferences = new HashMap<String, FormColumnUserPreferences>();
-
+            Map<String, Boolean> sortDirections = initialTable.getSortDirections();
+            Map<String, ColumnUserPreferences> preferences = new HashMap<String, ColumnUserPreferences>();
+            int sortIndex = 0;
             for (int i = 0; i < visibleListModel.getSize(); i++) {
                 int index = orderMap.get(visibleListModel.get(i));
-                preferences.put(initialTable.getProperties().get(index).getSID(),
-                        new FormColumnUserPreferences(false, initialTable.getProperties().get(index).widthUser, i));
+                String propertySID = initialTable.getProperties().get(index).getSID();
+                Boolean sortDirection = sortDirections.containsKey(propertySID) ? sortDirections.get(propertySID) : null;
+                if (sortDirection != null) sortIndex++;
+                preferences.put(propertySID,
+                        new ColumnUserPreferences(false, initialTable.getProperties().get(index).widthUser, i, sortDirection != null ? sortIndex : 0, sortDirection));
                 initialTable.getProperties().get(index).hideUser = false;
             }
 
             for (int i = 0; i < invisibleListModel.getSize(); i++) {
                 int index = orderMap.get(invisibleListModel.get(i));
                 preferences.put(initialTable.getProperties().get(index).getSID(),
-                        new FormColumnUserPreferences(true, initialTable.getProperties().get(index).widthUser, i + visibleListModel.getSize()));
+                        new ColumnUserPreferences(true, initialTable.getProperties().get(index).widthUser, i + visibleListModel.getSize(), 0, null));
                 initialTable.getProperties().get(index).hideUser = true;
             }
-
-            form.saveUserPreferences(new FormUserPreferences(preferences), forAllUsers);
+            if (initialTable.getProperties().size() != 0) {
+                List<GroupObjectUserPreferences> groupObjectUserPreferencesList = new ArrayList<GroupObjectUserPreferences>();
+                groupObjectUserPreferencesList.add(new GroupObjectUserPreferences(preferences, initialTable.getProperties().get(0).groupObject.getSID(), true));
+                form.saveUserPreferences(new FormUserPreferences(groupObjectUserPreferencesList), forAllUsers);
+            }
             JOptionPane.showMessageDialog(this, getString("form.grid.hide.save.settings.successfully.complete"), getString("form.grid.hide.save.complete"), JOptionPane.INFORMATION_MESSAGE);
         }
 

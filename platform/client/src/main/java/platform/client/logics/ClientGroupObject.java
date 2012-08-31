@@ -43,6 +43,8 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
     public RowBackgroundReader rowBackgroundReader = new RowBackgroundReader();
     public RowForegroundReader rowForegroundReader = new RowForegroundReader();
 
+    public boolean hasUserPreferences = false;
+
     public boolean mayHaveChildren() {
         return isRecursive || (parent != null && parent.groups.indexOf(this) != parent.groups.size() - 1);
     }
