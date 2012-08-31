@@ -572,6 +572,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         property.property.setEditAction(actionType, actionImplements.get(0));
     }
 
+    public void setEventId(LP property, String id) {
+        property.property.eventID = id;
+    }
+
     private <T extends LP> void changePropertyName(T lp, String name) {
         removeModuleLP(lp);
         setPropertySID(lp, name, false);

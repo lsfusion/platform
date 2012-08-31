@@ -303,6 +303,8 @@ public class ScriptingFormEntity {
             }
         }
 
+        property.eventID = options.getEventId();
+
         if (options.getNeighbourPropertyDraw() != null) {
             if (options.getNeighbourPropertyDraw().getToDraw(form) != property.getToDraw(form)) {
                 LM.getErrLog().emitNeighbourPropertyError(LM.getParser(), options.getNeighbourPropertyText(), property.getSID());

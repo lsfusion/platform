@@ -2,7 +2,10 @@ package platform.server.logics.scripted;
 
 import platform.interop.ClassViewType;
 import platform.interop.PropertyEditType;
-import platform.server.form.entity.*;
+import platform.server.form.entity.ActionPropertyObjectEntity;
+import platform.server.form.entity.CalcPropertyObjectEntity;
+import platform.server.form.entity.GroupObjectEntity;
+import platform.server.form.entity.PropertyDrawEntity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +27,7 @@ public class FormPropertyOptions {
     private GroupObjectEntity toDraw;
     private List<String> eventTypes;
     private List<ActionPropertyObjectEntity> events;
+    private String eventId;
     private PropertyDrawEntity neighbourPropertyDraw;
     private String neighbourPropertyText;
     private Boolean isRightNeighbour;
@@ -170,6 +174,14 @@ public class FormPropertyOptions {
         this.isRightNeighbour = isRightNeighbour;
     }
 
+    public String getEventId() {
+        return eventId;
+    }
+
+    public void setEventId(String eventId) {
+        this.eventId = eventId;
+    }
+
     public FormPropertyOptions overrideWith(FormPropertyOptions overrides) {
         FormPropertyOptions merged = new FormPropertyOptions();
 
@@ -187,6 +199,7 @@ public class FormPropertyOptions {
         merged.setToDraw(nvl(overrides.getToDraw(), toDraw));
         merged.setEvents(nvl(overrides.getEvents(), events));
         merged.setEventTypes(nvl(overrides.getEventTypes(), eventTypes));
+        merged.setEventId(nvl(overrides.getEventId(), eventId));
         merged.setNeighbourPropertyDraw(nvl(overrides.getNeighbourPropertyDraw(), neighbourPropertyDraw), nvl(overrides.getNeighbourPropertyText(), neighbourPropertyText));
         merged.setNeighbourType(nvl(overrides.isRightNeighbour(), isRightNeighbour));
         return merged;

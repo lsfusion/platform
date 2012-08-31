@@ -516,6 +516,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'BEFORE' pdraw=formPropertyDraw { $options.setNeighbourPropertyDraw($pdraw.property, $pdraw.text); $options.setNeighbourType(false); }
 		|	'AFTER'  pdraw=formPropertyDraw { $options.setNeighbourPropertyDraw($pdraw.property, $pdraw.text); $options.setNeighbourType(true); }
 		|	event = formPropertyEvent { $options.addEvent($event.type, $event.action); }
+		|	'EVENTID' id=stringLiteral { $options.setEventId($id.val); }
 		)*
 	;
 
@@ -1319,6 +1320,7 @@ commonPropertySettings[LP property, String propertyName, String caption, List<St
 		|	aggPropSetting [property]
 		|	s=notNullSetting { notNullResolve = $s.toResolve; notNullSession = $s.inSession; }
 		|	eventSetting [property, namedParams]
+		|	eventIdSetting [property]
 		)*
 	;
 
@@ -1482,6 +1484,15 @@ eventSetting [LP property, List<String> context]
 }
 	:	'ON' ('CHANGE' { type = ServerResponse.CHANGE; } | 'CHANGEWYS' { type = ServerResponse.CHANGE_WYS; })
 		action=actionPropertyDefinitionBody[context, false]
+	;
+
+eventIdSetting [LP property]
+@after {
+	if (inPropParseState()) {
+		self.setEventId(property, $id.val);
+	}
+}
+	:	'EVENTID' id=stringLiteral
 	;
 
 ////////////////////////////////////////////////////////////////////////////////
