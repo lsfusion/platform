@@ -125,10 +125,15 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
         // к сожалению, в JTabbedPane нету функционала, чтобы прятать определенные Tab'ы
         // поэтому приходится их просто remove'ать из JTabbedPane, что делается в методе ClientFormTabbedPane.hide
         // при этом Component который hide'ится сразу же выпадает из иерархии контейнеров и getParent возвращает null
-        // по этой причине перед выполнением механизма определения компонентов, которые надо располагать, нужно сначала показывать все спрятанные Tab'ы
+        // по этой причине перед выполнением механизма определения компонентов и их Parent'ов, нужно использовать абсолютно свой механизм определения Parent для ClientFormTabbedPane
+
+        Map<Component, ClientFormTabbedPane> tabs = new HashMap<Component, ClientFormTabbedPane>();
         for (Component component : allComponents) {
-            if (component instanceof ClientFormTabbedPane)
-                ((ClientFormTabbedPane) component).showAllComponents();
+            if (component instanceof ClientFormTabbedPane) {
+                Set<Component> children = ((ClientFormTabbedPane)component).getAddedComponents();
+                for (Component child : children)
+                    tabs.put(child, (ClientFormTabbedPane)component);
+            }
         }
 
         Set<Component> visibleComponents = new LinkedHashSet<Component>();
@@ -140,21 +145,23 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
 
             boolean shouldBeVisible = hasChild;
 
-            Container parent = component.getParent();
+            Container parent = tabs.containsKey(component) ? tabs.get(component) : component.getParent();
 
             // предполагается, что всеми потомками JTabbedPane мы управляем сами - пряча и показывая их при необходимости
             if (parent instanceof JTabbedPane) {
                 JTabbedPane tabbedPane = (JTabbedPane) parent;
                 Component selectedComponent = tabbedPane.getSelectedComponent();
-                if (parent instanceof ClientFormTabbedPane && !hasChild) {
-                    ((ClientFormTabbedPane) tabbedPane).hide(component);
-                    shouldBeVisible = false;
-                    //todo : здесь нужно удостовериться, что следующий компонент не спрятан, иначе может получиться, что ни один объект не виден
-                } else {
-                    if (selectedComponent != component)
-                        shouldBeVisible = false;
-                    component.setVisible(shouldBeVisible);
+                if (parent instanceof ClientFormTabbedPane && hasChild) {
+                    if (tabbedPane.indexOfComponent(component) == -1)
+                        ((ClientFormTabbedPane) tabbedPane).show(component);
                 }
+                if (parent instanceof ClientFormTabbedPane && !hasChild) {
+                    if (tabbedPane.indexOfComponent(component) != -1)
+                        ((ClientFormTabbedPane) tabbedPane).hide(component);
+                }
+                if (selectedComponent != component)
+                    shouldBeVisible = false;
+                component.setVisible(shouldBeVisible);
             } else {
                 // также мы управляем всеми контейнерами, реализующими интерфейс AutoHideableContainer
                 if (component instanceof AutoHideableContainer)
@@ -208,7 +215,11 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
         if (!(component instanceof AutoHideableContainer))
             return component.getParent() instanceof JTabbedPane || component.isVisible();
 
-        for (Component child : ((Container) component).getComponents())
+        // для ClientFormTabbedPane иерархия контейнеров не несет смысла, поскольку при помощи исключения из нее делается setVisible(false)
+        Set<Component> children = component instanceof ClientFormTabbedPane ?
+                                        ((ClientFormTabbedPane) component).getAddedComponents() :
+                                        new HashSet<Component>(Arrays.asList(((Container) component).getComponents()));
+        for (Component child : children)
             // Divider - один оз child'ов ClientFormSplitPane'a
             if (hasNotAutoHideableContainerChild(child) && !(child instanceof BasicSplitPaneDivider))
                 return true;

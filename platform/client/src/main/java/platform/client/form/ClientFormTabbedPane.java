@@ -9,8 +9,9 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.io.IOException;
-import java.rmi.RemoteException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 import static platform.client.ClientResourceBundle.getString;
 
@@ -52,7 +53,7 @@ public class ClientFormTabbedPane extends JTabbedPane implements AutoHideableCon
                 int selected = getSelectedIndex();
                 int visible = 0;
                 for(ClientComponent child : key.children)
-                    if(addedComponents.containsValue(child)) {
+                    if(clientComponents.containsKey(child) && indexOfComponent(clientComponents.get(child)) != -1) {
                         if(visible++==selected) {
                             if(child!=selectedTab) { // вообще changeListener может вызваться при инициализации, но это проверка в том числе позволяет suppres'ить этот случай
                                 try {
@@ -70,6 +71,11 @@ public class ClientFormTabbedPane extends JTabbedPane implements AutoHideableCon
     }
 
     private Map<Component, Object> addedComponents = new HashMap<Component, Object>();
+    private Map<Object, Component> clientComponents = new HashMap<Object, Component>();
+
+    public Set<Component> getAddedComponents() {
+        return addedComponents.keySet();
+    }
 
     @Override
     public void add(Component component, Object constraints) {
@@ -77,13 +83,15 @@ public class ClientFormTabbedPane extends JTabbedPane implements AutoHideableCon
 
         layout.addLayoutComponent(component, constraints);
         addedComponents.put(component, constraints); // важно чтобы до, так как listener'у нужно найти компоненту чтобы послать notification на сервер
-        addTab(component, constraints);
+        clientComponents.put(constraints, component);
+        show(component, constraints);
 
         adjustMinimumSize();
     }
 
     @Override
     public void remove(Component component) {
+        clientComponents.remove(addedComponents.get(component));
         addedComponents.remove(component);
         super.remove(component);
         layout.removeLayoutComponent(component);
@@ -102,13 +110,11 @@ public class ClientFormTabbedPane extends JTabbedPane implements AutoHideableCon
         setMinimumSize(minimumSize);
     }
 
-    public void showAllComponents() {
-        for (Map.Entry<Component,Object> comp : addedComponents.entrySet())
-            if (indexOfComponent(comp.getKey()) == -1)
-                addTab(comp.getKey(), comp.getValue());
+    public void show(Component comp) {
+        show(comp, addedComponents.get(comp));
     }
 
-    private void addTab(Component comp, Object constraints) {
+    public void show(Component comp, Object constraints) {
 
         // вставляем Tab в то место, в котором он идет в container.children
         if (constraints instanceof ClientComponent && ((ClientComponent)constraints).container != null) {
