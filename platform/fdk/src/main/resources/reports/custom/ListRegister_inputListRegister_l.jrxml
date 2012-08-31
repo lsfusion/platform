@@ -190,7 +190,7 @@
 				</textField>
 			</band>
 			<band height="16">
-				<printWhenExpression><![CDATA[$F{showWare} && $F{wareSumListRegisterDetailListRegister}!=null]]></printWhenExpression>
+				<printWhenExpression><![CDATA[$F{showWare} && $F{wareSumListRegisterDetailListRegister}>0]]></printWhenExpression>
 				<textField pattern="#,##0" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" x="525" y="0" width="90" height="16" backcolor="#FFFFFF"/>
 					<box>
@@ -519,7 +519,7 @@
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="525" y="18" width="90" height="18" isRemoveLineWhenBlank="true" backcolor="#FFFFFF">
-					<printWhenExpression><![CDATA[$F{showWare} && $F{wareSumListRegisterDetailListRegister}!=null]]></printWhenExpression>
+					<printWhenExpression><![CDATA[$F{showWare} && $F{wareSumListRegisterDetailListRegister}>0]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.25" lineStyle="Dashed"/>
@@ -534,7 +534,7 @@
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="260" y="18" width="85" height="18" isRemoveLineWhenBlank="true" backcolor="#FFFFFF">
-					<printWhenExpression><![CDATA[$F{showWare} && $F{wareSumListRegisterDetailListRegister}!=null]]></printWhenExpression>
+					<printWhenExpression><![CDATA[$F{showWare} && $F{wareSumListRegisterDetailListRegister}>0]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.25" lineStyle="Dashed"/>
@@ -549,7 +549,7 @@
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="30" y="18" width="180" height="18" isRemoveLineWhenBlank="true" backcolor="#FFFFFF">
-					<printWhenExpression><![CDATA[$F{showWare} && $F{wareSumListRegisterDetailListRegister}!=null]]></printWhenExpression>
+					<printWhenExpression><![CDATA[$F{showWare} && $F{wareSumListRegisterDetailListRegister}>0]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.25" lineStyle="Dashed"/>
@@ -564,7 +564,7 @@
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="345" y="18" width="90" height="18" isRemoveLineWhenBlank="true" backcolor="#FFFFFF">
-					<printWhenExpression><![CDATA[$F{showWare} && $F{wareSumListRegisterDetailListRegister}!=null]]></printWhenExpression>
+					<printWhenExpression><![CDATA[$F{showWare} && $F{wareSumListRegisterDetailListRegister}>0]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.25" lineStyle="Dashed"/>
@@ -579,7 +579,7 @@
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="DefaultStyle" x="435" y="18" width="90" height="18" backcolor="#FFFFFF">
-					<printWhenExpression><![CDATA[$F{showWare} && $F{wareSumListRegisterDetailListRegister}!=null]]></printWhenExpression>
+					<printWhenExpression><![CDATA[$F{showWare} && $F{wareSumListRegisterDetailListRegister}>0]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.25" lineStyle="Dashed"/>
@@ -594,7 +594,7 @@
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="DefaultStyle" x="615" y="18" width="90" height="18" backcolor="#FFFFFF">
-					<printWhenExpression><![CDATA[$F{showWare} && $F{wareSumListRegisterDetailListRegister}!=null]]></printWhenExpression>
+					<printWhenExpression><![CDATA[$F{showWare} && $F{wareSumListRegisterDetailListRegister}>0]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.25" lineStyle="Dashed"/>
@@ -609,7 +609,7 @@
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="DefaultStyle" x="705" y="18" width="90" height="18" backcolor="#FFFFFF">
-					<printWhenExpression><![CDATA[$F{showWare} && $F{wareSumListRegisterDetailListRegister}!=null]]></printWhenExpression>
+					<printWhenExpression><![CDATA[$F{showWare} && $F{wareSumListRegisterDetailListRegister}>0]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.25" lineStyle="Dashed"/>
@@ -624,7 +624,7 @@
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="DefaultStyle" x="0" y="18" width="30" height="18" backcolor="#FFFFFF">
-					<printWhenExpression><![CDATA[$F{showWare} && $F{wareSumListRegisterDetailListRegister}!=null]]></printWhenExpression>
+					<printWhenExpression><![CDATA[$F{showWare} && $F{wareSumListRegisterDetailListRegister}>0]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.25" lineStyle="Dashed"/>
@@ -639,7 +639,7 @@
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="DefaultStyle" x="230" y="18" width="30" height="18" isRemoveLineWhenBlank="true" backcolor="#FFFFFF">
-					<printWhenExpression><![CDATA[$F{showWare} && $F{wareSumListRegisterDetailListRegister}!=null]]></printWhenExpression>
+					<printWhenExpression><![CDATA[$F{showWare} && $F{wareSumListRegisterDetailListRegister}>0]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.25" lineStyle="Dashed"/>
@@ -654,7 +654,7 @@
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="DefaultStyle" x="210" y="18" width="20" height="18" backcolor="#FFFFFF">
-					<printWhenExpression><![CDATA[$F{showWare} && $F{wareSumListRegisterDetailListRegister}!=null]]></printWhenExpression>
+					<printWhenExpression><![CDATA[$F{showWare} && $F{wareSumListRegisterDetailListRegister}>0]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.25" lineStyle="Dashed"/>
@@ -855,7 +855,7 @@
 			</textField>
 		</band>
 		<band height="22">
-			<printWhenExpression><![CDATA[$F{warePriceListRegisterDetail}!=null && $F{showWare}]]></printWhenExpression>
+			<printWhenExpression><![CDATA[$F{warePriceListRegisterDetail}>0 && $F{showWare}]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" x="705" y="0" width="90" height="22" backcolor="#FFFFFF"/>
 				<box>
@@ -883,7 +883,7 @@
 				<textFieldExpression><![CDATA[$F{wareSumListRegisterDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle0_1" positionType="Float" isPrintRepeatedValues="false" mode="Transparent" x="30" y="0" width="180" height="22" backcolor="#FFFFFF"/>
+				<reportElement style="GroupCellStyle0_1" positionType="Float" mode="Transparent" x="30" y="0" width="180" height="22" backcolor="#FFFFFF"/>
 				<box>
 					<topPen lineWidth="0.25" lineStyle="Dashed"/>
 					<leftPen lineWidth="0.5"/>

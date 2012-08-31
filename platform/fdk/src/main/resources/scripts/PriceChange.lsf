@@ -42,6 +42,8 @@ quantityPriceChangeDocumentDetail 'Остаток' (priceChangeDocumentDetail) =
 curWarePriceChangeDocumentDetail (priceChangeDocumentDetail) = ABSTRACT ware (priceChangeDocumentDetail) PERSISTENT;
 warePriceChangeDocumentDetail (priceChangeDocumentDetail) = ABSTRACT ware (priceChangeDocumentDetail) PERSISTENT;
 
+nameWarePriceChangeDocumentDetail 'Посуда' (priceChangeDocumentDetail) = name(warePriceChangeDocumentDetail(priceChangeDocumentDetail)) MINCHARWIDTH 20 PREFCHARWIDTH 30;
+
 @defineDocumentDetailWareRange(priceChangeDocument);
 @defineDocumentDetailWareRangePrefix(priceChangeDocument, cur, ' (тек.)');
 
@@ -154,6 +156,8 @@ FORM priceChangePrint 'Акт переоценки' PRINT
                              diffSupplierISumPriceChangeDocumentDetailPriceChangeDocument, diffMarkupSumPriceChangeDocumentDetailPriceChangeDocument, diffRetailVATISumPriceChangeDocumentDetailPriceChangeDocument,
                              diffWareSumPriceChangeDocumentDetailPriceChangeDocument, diffWareVATSumPriceChangeDocumentDetailPriceChangeDocument, diffRetailSumPriceChangeDocumentDetailPriceChangeDocument
 
+    PROPERTIES()    showWare TODRAW pc
+
     OBJECTS pcd=priceChangeDocumentDetail
     PROPERTIES(pcd) READONLY indexPriceChangeDocumentDetail, nameSkuPriceChangeDocumentDetail, shortNameUOMSkuPriceChangeDocumentDetail,
                              quantityPriceChangeDocumentDetail,
@@ -165,7 +169,8 @@ FORM priceChangePrint 'Акт переоценки' PRINT
                              wareVATSumPriceChangeDocumentDetail, retailPricePriceChangeDocumentDetail, retailSumPriceChangeDocumentDetail,
                              diffSupplierISumPriceChangeDocumentDetail, diffMarkupSumPriceChangeDocumentDetail,
                              diffRetailVATISumPriceChangeDocumentDetail, diffWareSumPriceChangeDocumentDetail,
-                             diffWareVATSumPriceChangeDocumentDetail, diffRetailSumPriceChangeDocumentDetail
+                             diffWareVATSumPriceChangeDocumentDetail, diffRetailSumPriceChangeDocumentDetail,
+                             nameWarePriceChangeDocumentDetail
 
     OBJECTS e=employee
     PROPERTIES(e) READONLY   commonName, namePositionEmployee
@@ -190,7 +195,7 @@ FORM priceChangeDocuments 'Акты переоценки'
                              curImporterPricePriceChangeDocumentDetail, importerPricePriceChangeDocumentDetail,
                              curSupplierPricePriceChangeDocumentDetail, supplierPricePriceChangeDocumentDetail,
                              curValueRetailVATPriceChangeDocumentDetail, valueRetailVATPriceChangeDocumentDetail,
-                             curRetailPricePriceChangeDocumentDetail, retailPricePriceChangeDocumentDetail,
+                             curRetailPricePriceChangeDocumentDetail, retailPricePriceChangeDocumentDetail, nameWarePriceChangeDocumentDetail SHOWIF showWare(),
                              curWarePricePriceChangeDocumentDetail SHOWIF showWare(), warePricePriceChangeDocumentDetail SHOWIF showWare()
 
     PROPERTIES(pc) FORCE PANEL printPriceChange
