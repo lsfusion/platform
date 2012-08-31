@@ -31,7 +31,7 @@ FORM priceIntervals 'Округления розничных цен'
 
     OBJECTS c=currency FIXED PANEL
     PROPERTIES (c)  SELECTOR name
-    PROPERTIES (c)  symbolCurrency, shortNameCurrency, denominatorPriceCurrency, minPriceCurrency, priceRoundCurrency
+    PROPERTIES (c)  denominatorPriceCurrency, minPriceCurrency, priceRoundCurrency
 
     OBJECTS p=priceInterval
     PROPERTIES(p) fromPriceInterval, toPriceInterval, modifierPriceInterval
@@ -53,12 +53,12 @@ DESIGN priceIntervals FROM DEFAULT {
         ADD c.box {
             childConstraints = TO THE BOTTOM;
             NEW row1 {
-                childConstraints = TO THE RIGHT;
                 ADD PROPERTY (name(c)) {
                     preferredCharWidth = 30;
+                    panelLabelAbove = TRUE;
+                    font = 'Tahoma bold 24';
                 }
-                ADD PROPERTY (symbolCurrency(c));
-                ADD PROPERTY (shortNameCurrency(c));
+
             }
             NEW row2 {
                 childConstraints = TO THE RIGHT;
@@ -66,7 +66,7 @@ DESIGN priceIntervals FROM DEFAULT {
                 ADD PROPERTY (minPriceCurrency(c))  { panelLabelAbove = TRUE; font = 'Tahoma bold 24'; }
                 ADD PROPERTY (priceRoundCurrency(c))  { panelLabelAbove = TRUE; font = 'Tahoma bold 24'; }
             }
-        };
+        }
         ADD p.box;
 
         ADD nu.box {

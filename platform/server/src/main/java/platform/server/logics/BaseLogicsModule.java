@@ -789,7 +789,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         subtractIntegerIncl = addSFProp("subtractIntegerIncl", "((prm1)-(prm2)+1)", IntegerClass.instance, 2);
 
         divide = addSFProp("divide", "((prm1)/(prm2))", 2);
-        divideInteger = addSFProp("divideInteger", "CAST(CAST((prm1) AS integer)/CAST((prm2) as integer) as integer)", IntegerClass.instance, 2);
+        divideInteger = addSFProp("divideInteger", "CAST(CAST(trunc(prm1) AS integer)/CAST(trunc(prm2) as integer) as integer)", IntegerClass.instance, 2);
         divideIntegerNeg = addSFProp("divideIntegerNeg", "CASE WHEN CAST((prm1) AS integer)<0 THEN -CAST(((-CAST((prm1) as integer)-1)/CAST((prm2) as integer)) as integer) ELSE CAST(CAST((prm1) as integer)/CAST((prm2) as integer) as integer) END", IntegerClass.instance, 2);
         divideIntegerRnd = addSFProp("divideIntegerRnd", "CAST(round((prm1)/(prm2),0) as integer)", IntegerClass.instance, 2);
 
