@@ -69,7 +69,7 @@ END
 
 //--------------------------------------------- Логика приходов и расходов ------------------------------------------------------//
 
-META defineInOutContractLedgerPrefix(caption, prefix)
+META defineOutContractLedgerInContractLedgerPrefix(caption, prefix)
 
     CLASS ABSTRACT prefix##ContractLedger caption;
     TABLE prefix##ContractLedger(prefix##ContractLedger);
@@ -80,14 +80,64 @@ META defineInOutContractLedgerPrefix(caption, prefix)
 
     contract###prefix##ContractLedger 'Договор' (prefix##ContractLedger) = ABSTRACT contract (prefix##ContractLedger);
 
+    description###prefix##ContractLedger 'Название документа' (prefix##ContractLedger) = ABSTRACT STRING[200] (prefix##ContractLedger);
+    sum###prefix##ContractLedger 'Сумма' = ABSTRACT NUMERIC[16,2] (prefix##ContractLedger);
+
 END
 
-@defineInOutContractLedgerPrefix('Приход', in);
-@defineInOutContractLedgerPrefix('Расход', out);
+@defineOutContractLedgerInContractLedgerPrefix('Приход', in);
+@defineOutContractLedgerInContractLedgerPrefix('Расход', out);
 
-costInOutContractLedger 'Оплачено из документу' (inContractLedger, outContractLedger) = ABSTRACT NUMERIC[14,3] (inContractLedger, outContractLedger);
+costOutContractLedgerInContractLedger 'Оплачено из документу' (outContractLedger, inContractLedger) = DATA NUMERIC[16,2] (outContractLedger, inContractLedger);
+costedOutContractLedgerInContractLedger 'Оплачено по документу' (inContractLedger) =
+    GROUP SUM costOutContractLedgerInContractLedger(outContractLedger, inContractLedger) BY inContractLedger;
+costedInContractLedgerOutContractLedger 'Расписано из документа' (outContractLedger) =
+    GROUP SUM costOutContractLedgerInContractLedger(outContractLedger, inContractLedger) BY outContractLedger;
 
-costedInOutContractLedger 'Оплачено по документу' (inContractLedger) = GROUP SUM costInOutContractLedger(inContractLedger, outContractLedger) BY inContractLedger;
+debtInContractLedger 'Долг по документу' (inContractLedger) =
+    UNION OVERRIDE 0.0 AND inContractLedger IS inContractLedger,
+                   sumInContractLedger(inContractLedger) (-) costedOutContractLedgerInContractLedger(inContractLedger);
+
+CONSTRAINT costedInContractLedgerOutContractLedger(outContractLedger) > sumOutContractLedger(outContractLedger)
+    MESSAGE 'Расписанная сумма должна быть равна сумме платежа';
+
+orderInContractLedger(inContractLedger) = LIST(dateTimeInContractLedger(inContractLedger), inContractLedger);
+
+sumInFIFOOutContractLedgerInContractLedger (outContractLedger, inContractLedger) =
+    PARTITION UNGROUP sumOutContractLedger
+              LIMIT debtInContractLedger(inContractLedger) AND (outContractLedger IS outContractLedger) AND
+                    contractOutContractLedger(outContractLedger) == contractInContractLedger(inContractLedger) AND
+                    dateTimeInContractLedger(inContractLedger) <= dateTimeOutContractLedger(outContractLedger)
+              BY outContractLedger
+              ORDER orderInContractLedger(inContractLedger);
+
+sumInLIFOOutContractLedgerInContractLedger (outContractLedger, inContractLedger) =
+    PARTITION UNGROUP sumOutContractLedger
+              LIMIT debtInContractLedger(inContractLedger) AND (outContractLedger IS outContractLedger) AND
+                    contractOutContractLedger(outContractLedger) == contractInContractLedger(inContractLedger) AND
+                    dateTimeInContractLedger(inContractLedger) <= dateTimeOutContractLedger(outContractLedger)
+              BY outContractLedger
+              ORDER DESC orderInContractLedger(inContractLedger);
+
+writeOutContractLedgerFIFO 'Расписать по FIFO' = ACTION (outContractLedger) {
+
+    SET costOutContractLedgerInContractLedger(outContractLedger, inContractLedger) <- NULL;
+    SET costOutContractLedgerInContractLedger(outContractLedger, inContractLedger) <- sumInFIFOOutContractLedgerInContractLedger(outContractLedger, inContractLedger);
+}
+
+writeOutContractLedgerLIFO 'Расписать по LIFO' = ACTION (outContractLedger) {
+
+    SET costOutContractLedgerInContractLedger(outContractLedger, inContractLedger) <- NULL;
+    SET costOutContractLedgerInContractLedger(outContractLedger, inContractLedger) <- sumInLIFOOutContractLedgerInContractLedger(outContractLedger, inContractLedger);
+}
+
+META implementOutContractLedgerInContractLedgerPrefix(prefix, object)
+
+    dateTime###prefix##ContractLedger(prefix##ContractLedger) += dateTime###object(prefix##ContractLedger);
+    contract###prefix##ContractLedger(prefix##ContractLedger) += contract###object(prefix##ContractLedger);
+    description###prefix##ContractLedger(prefix##ContractLedger) += description###object(prefix##ContractLedger);
+
+END
 
 //-------------------------------------------- Логика платежей ----------------------------------------------------------------//
 
@@ -138,6 +188,9 @@ sumContractLedger(contractLedger) += -sumRateExchangePayment(contractLedger);
 @implementContractLedger(a ,payment);
 sumContractALedger(contractALedger) += -sumRateExchangePayment(contractALedger);
 
+@implementOutContractLedgerInContractLedgerPrefix(out, payment);
+sumOutContractLedger(outContractLedger) += sumRateExchangePayment(outContractLedger);
+
 FORM payment 'Платеж'
 
     OBJECTS p = payment FIXED PANEL
@@ -145,7 +198,15 @@ FORM payment 'Платеж'
     PROPERTIES(p) READONLY namePayerPayment, nameBeneficiaryPayment
     PROPERTIES(p) nameCurrencyPayment, nameTypeExchangePayment SHOWIF isNotSameCurrencyPayment(p), sumPayment,
                   rateExchangePayment SHOWIF isNotSameCurrencyPayment(p),
-                  sumRateExchangePayment SHOWIF isNotSameCurrencyPayment(p)
+                  sumRateExchangePayment SHOWIF isNotSameCurrencyPayment(p),
+                  writeOutContractLedgerFIFO, writeOutContractLedgerLIFO
+
+    OBJECTS i = inContractLedger
+    PROPERTIES(i) READONLY descriptionInContractLedger, debtInContractLedger
+    PROPERTIES(p, i) costOutContractLedgerInContractLedger
+
+    FILTERS contractPayment(p) == contractInContractLedger(i),
+            dateTimeInContractLedger(i) <= dateTimePayment(p)
 
     EDIT payment OBJECT p
 ;
@@ -169,6 +230,11 @@ DESIGN payment FROM DEFAULT{
     ADD PROPERTY(sumPayment);
     ADD PROPERTY(rateExchangePayment);
     ADD PROPERTY(sumRateExchangePayment);
+    ADD PROPERTY(writeOutContractLedgerFIFO);
+    ADD PROPERTY(writeOutContractLedgerLIFO);
+    POSITION PROPERTY(writeOutContractLedgerLIFO) TO THE RIGHT PROPERTY(writeOutContractLedgerFIFO);
+
+    ADD i.box;
 
     ADD functions.box;
 }
@@ -273,36 +339,76 @@ DESIGN paymentRequest FROM DEFAULT{
 
 //-------------------------------------------- Кредитная нота --------------------------------------------------------//
 
-CLASS creditNote 'Кредитная нота' : numeratedObject, contractLedger, contractALedger, inContractLedger, outContractLedger;
+CLASS ABSTRACT creditNote 'Кредитная нота' : numeratedObject;
 
-@defineNumeratedObject(creditNote, 'Нумератор для кредитных нот', 'КН');
+META defineCreditNotePrefix(prefix, caption)
 
-dateTimeCreditNote 'Дата время' (creditNote) = DATA DATETIME (creditNote);
-dateTimeCreditNote(creditNote) <- currentDateTime() WHEN ASSIGNED(creditNote IS creditNote);
+    CLASS creditNote###prefix caption : creditNote, contractLedger, contractALedger, prefix##ContractLedger;
+
+    @defineNumeratedObject(creditNote###prefix, 'Нумератор для кредитных нот', 'КН');
+
+    dateTimeCreditNote###prefix 'Дата время' (creditNote###prefix) = DATA DATETIME (creditNote###prefix);
+    dateTimeCreditNote###prefix(creditNote###prefix) <- currentDateTime() WHEN ASSIGNED(creditNote###prefix IS creditNote###prefix);
+    dateCreditNote###prefix 'Дата' (creditNote###prefix) = dateInTime(dateTimeCreditNote###prefix(creditNote###prefix));
+    timeCreditNote###prefix 'Время' (creditNote###prefix) = timeInDateTime(dateTimeCreditNote###prefix(creditNote###prefix));
+
+    contractCreditNote###prefix 'Контракт' (creditNote###prefix) = DATA contract (creditNote###prefix) AUTOSET;
+    numberContractCreditNote###prefix 'Номер контракта' (creditNote###prefix) = numberContract(contractCreditNote###prefix(creditNote###prefix));
+
+    partyBCreditNote###prefix(creditNote###prefix) = DATA legalEntity (creditNote###prefix);
+    partyBCreditNote###prefix(creditNote###prefix) <- partyBContract(contractCreditNote###prefix(creditNote###prefix))
+        WHEN ASSIGNED (contractCreditNote###prefix(creditNote###prefix));
+    namePartyBCreditNote###prefix 'Сторона Б' (creditNote###prefix) = name(partyBCreditNote###prefix(creditNote###prefix));
+    partyACreditNote###prefix(creditNote###prefix) = DATA legalEntity (creditNote###prefix);
+    partyACreditNote###prefix(creditNote###prefix) <- partyAContract(contractCreditNote###prefix(creditNote###prefix))
+        WHEN ASSIGNED (contractCreditNote###prefix(creditNote###prefix));
+    namePartyACreditNote###prefix 'Сторона А' (creditNote###prefix) = name(partyACreditNote###prefix(creditNote###prefix));
+
+    sumCreditNote###prefix 'Сумма' (creditNote###prefix) = DATA NUMERIC[16,2] (creditNote###prefix);
+
+    descriptionCreditNote###prefix 'Название документа' =
+        [FORMULA STRING[200] '\''###caption###' \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)'](
+        seriesNumberObject(creditNote###prefix), dateCreditNote###prefix(creditNote###prefix), namePartyACreditNote###prefix(creditNote###prefix));
+
+END
+
+META defineCreditNoteUnion (prop, caption)
+
+    prop##CreditNote caption (creditNote) = UNION EXCLUSIVE prop##CreditNoteIn(creditNote), prop##CreditNoteOut(creditNote);
+
+END
+
+@defineCreditNotePrefix(in, 'Кредитная нота');
+@defineCreditNotePrefix(out, 'Дебетная нота');
+
+@defineCreditNoteUnion(dateTime, 'Дата время');
 dateCreditNote 'Дата' (creditNote) = dateInTime(dateTimeCreditNote(creditNote));
 timeCreditNote 'Время' (creditNote) = timeInDateTime(dateTimeCreditNote(creditNote));
-
-contractCreditNote 'Контракт' (creditNote) = DATA contract (creditNote) AUTOSET;
+@defineCreditNoteUnion(contract, 'Контракт');
 numberContractCreditNote 'Номер контракта' (creditNote) = numberContract(contractCreditNote(creditNote));
-
-partyBCreditNote(creditNote) = DATA legalEntity (creditNote);
-partyBCreditNote(creditNote) <- partyBContract(contractCreditNote(creditNote)) WHEN ASSIGNED (contractCreditNote(creditNote));
+@defineCreditNoteUnion(partyB, );
 namePartyBCreditNote 'Сторона Б' (creditNote) = name(partyBCreditNote(creditNote));
-partyACreditNote(creditNote) = DATA legalEntity (creditNote);
-partyACreditNote(creditNote) <- partyAContract(contractCreditNote(creditNote)) WHEN ASSIGNED (contractCreditNote(creditNote));
+@defineCreditNoteUnion(partyA, );
 namePartyACreditNote 'Сторона А' (creditNote) = name(partyACreditNote(creditNote));
+@defineCreditNoteUnion(sum, 'Сумма');
+@defineCreditNoteUnion(description, 'Название документа');
 
-sumCreditNote 'Сумма' (creditNote) = DATA NUMERIC[16,2] (creditNote);
+@implementContractLedger( ,creditNoteIn);
+sumContractLedger(contractLedger) += sumCreditNoteIn(contractLedger);
 
-descriptionCreditNote 'Название документа' =
-    [FORMULA STRING[200] '\'Кредитная нота \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)'](
-    seriesNumberObject(creditNote), dateCreditNote(creditNote), namePartyACreditNote(creditNote));
+@implementContractLedger(a ,creditNoteIn);
+sumContractALedger(contractALedger) += sumCreditNoteIn(contractALedger);
 
-@implementContractLedger( ,creditNote);
-sumContractLedger(contractLedger) += sumCreditNote(contractLedger);
+@implementOutContractLedgerInContractLedgerPrefix(in, creditNoteIn);
+sumInContractLedger(inContractLedger) += sumCreditNoteIn(inContractLedger);
 
-@implementContractLedger(a ,creditNote);
-sumContractALedger(contractALedger) += sumCreditNote(contractALedger);
+@implementContractLedger( ,creditNoteOut);
+sumContractLedger(contractLedger) += -sumCreditNoteOut(contractLedger);
+
+@implementContractLedger(a ,creditNoteOut);
+sumContractALedger(contractALedger) += -sumCreditNoteOut(contractALedger);
+
+@implementOutContractLedgerInContractLedgerPrefix(out, creditNoteOut);
 
 FORM creditNote 'Кредитная нота'
 
@@ -365,21 +471,31 @@ FORM contractLedger 'Задолженности и платежи по дого�
     PROPERTIES(pr) ADDFORM, EDITFORM, delete
 
     OBJECTS cn = creditNote
-    PROPERTIES(cn) READONLY dateTimeCreditNote, seriesNumberObject, sumCreditNote
+    PROPERTIES(cn) READONLY objectClassName, dateTimeCreditNote, seriesNumberObject, sumCreditNote
     PROPERTIES(cn) ADDFORM, EDITFORM, delete
+
+    OBJECTS ic = inContractLedger
+    PROPERTIES(ic) READONLY descriptionInContractLedger, sumInContractLedger, debtInContractLedger
+
+    OBJECTS oc = outContractLedger
+    PROPERTIES(oc) READONLY descriptionOutContractLedger, sumOutContractLedger, costedInContractLedgerOutContractLedger
 
     FILTERS contractContractLedger(cl) == c,
             contractContractALedger(cal) == c,
             contractPayment(pm) == c,
             contractPaymentRequest(pr) == c,
             contractCreditNote(cn) == c,
+            contractInContractLedger(ic) == c,
+            contractOutContractLedger(oc) == c,
             partyBContract(c) == partyB() OR (c IS contract AND NOT partyB()),
             partyAContract(c) == partyA() OR (c IS contract AND NOT partyA()),
             dateContractLedger(cl) <= d,
             dateContractALedger(cal) <= d,
             datePayment(pm) <= d,
             datePaymentRequest(pr) <= d,
-            dateCreditNote(cn) <= d
+            dateCreditNote(cn) <= d,
+            dateInContractLedger(ic) <=d,
+            dateOutContractLedger(oc) <=d
 
 ;
 
@@ -415,6 +531,12 @@ DESIGN contractLedger FROM DEFAULT{
                     ADD pm.box;
                     ADD pr.box;
                     ADD cn.box;
+                    ADD ic.box{
+                        caption = 'Долг по документу';
+                    }
+                    ADD oc.box{
+                        caption = 'Расписано по документу';
+                    }
                 }
             }
         }

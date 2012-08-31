@@ -169,3 +169,6 @@ sumContractALedger(contractALedger) += sumCommercialInvoice(contractALedger);
 
 @implementContractPrepaymentLedger(commercialInvoice, sumCommercialInvoice);
 //sumContractLedger(commercialInvoiceContractLedger) += sumCommercialInvoice(commercialInvoiceCommercialInvoiceContractLedger(commercialInvoiceContractLedger));
+
+@implementOutContractLedgerInContractLedgerPrefix(in, commercialInvoice);
+sumInContractLedger(inContractLedger) += sumCommercialInvoice(inContractLedger);
