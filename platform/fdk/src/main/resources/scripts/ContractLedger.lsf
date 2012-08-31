@@ -88,7 +88,7 @@ END
 @defineOutContractLedgerInContractLedgerPrefix('Приход', in);
 @defineOutContractLedgerInContractLedgerPrefix('Расход', out);
 
-costOutContractLedgerInContractLedger 'Оплачено из документу' (outContractLedger, inContractLedger) = DATA NUMERIC[16,2] (outContractLedger, inContractLedger);
+costOutContractLedgerInContractLedger 'Оплачено из документа' (outContractLedger, inContractLedger) = DATA NUMERIC[16,2] (outContractLedger, inContractLedger);
 costedOutContractLedgerInContractLedger 'Оплачено по документу' (inContractLedger) =
     GROUP SUM costOutContractLedgerInContractLedger(outContractLedger, inContractLedger) BY inContractLedger;
 costedInContractLedgerOutContractLedger 'Расписано из документа' (outContractLedger) =
@@ -105,17 +105,15 @@ orderInContractLedger(inContractLedger) = LIST(dateTimeInContractLedger(inContra
 
 sumInFIFOOutContractLedgerInContractLedger (outContractLedger, inContractLedger) =
     PARTITION UNGROUP sumOutContractLedger
-              LIMIT debtInContractLedger(inContractLedger) AND (outContractLedger IS outContractLedger) AND
-                    contractOutContractLedger(outContractLedger) == contractInContractLedger(inContractLedger) AND
-                    dateTimeInContractLedger(inContractLedger) <= dateTimeOutContractLedger(outContractLedger)
+              LIMIT debtInContractLedger(inContractLedger) AND
+                    contractOutContractLedger(outContractLedger) == contractInContractLedger(inContractLedger)
               BY outContractLedger
               ORDER orderInContractLedger(inContractLedger);
 
 sumInLIFOOutContractLedgerInContractLedger (outContractLedger, inContractLedger) =
     PARTITION UNGROUP sumOutContractLedger
               LIMIT debtInContractLedger(inContractLedger) AND (outContractLedger IS outContractLedger) AND
-                    contractOutContractLedger(outContractLedger) == contractInContractLedger(inContractLedger) AND
-                    dateTimeInContractLedger(inContractLedger) <= dateTimeOutContractLedger(outContractLedger)
+                    contractOutContractLedger(outContractLedger) == contractInContractLedger(inContractLedger)
               BY outContractLedger
               ORDER DESC orderInContractLedger(inContractLedger);
 
@@ -193,20 +191,20 @@ sumOutContractLedger(outContractLedger) += sumRateExchangePayment(outContractLed
 
 FORM payment 'Платеж'
 
-    OBJECTS p = payment FIXED PANEL
+    OBJECTS p = payment FIXED PANEL, i = inContractLedger
     PROPERTIES(p) nameNumeratorObject, numberObject, seriesObject, dateTimePayment, numberContractPayment
     PROPERTIES(p) READONLY namePayerPayment, nameBeneficiaryPayment
     PROPERTIES(p) nameCurrencyPayment, nameTypeExchangePayment SHOWIF isNotSameCurrencyPayment(p), sumPayment,
                   rateExchangePayment SHOWIF isNotSameCurrencyPayment(p),
                   sumRateExchangePayment SHOWIF isNotSameCurrencyPayment(p),
-                  writeOutContractLedgerFIFO, writeOutContractLedgerLIFO
+                  costedInContractLedgerOutContractLedger,
+                  writeOutContractLedgerFIFO TODRAW i FORCE PANEL,
+                  writeOutContractLedgerLIFO TODRAW i FORCE PANEL
 
-    OBJECTS i = inContractLedger
     PROPERTIES(i) READONLY descriptionInContractLedger, debtInContractLedger
     PROPERTIES(p, i) costOutContractLedgerInContractLedger
 
-    FILTERS contractPayment(p) == contractInContractLedger(i),
-            dateTimeInContractLedger(i) <= dateTimePayment(p)
+    FILTERS contractPayment(p) == contractInContractLedger(i)
 
     EDIT payment OBJECT p
 ;
@@ -230,8 +228,7 @@ DESIGN payment FROM DEFAULT{
     ADD PROPERTY(sumPayment);
     ADD PROPERTY(rateExchangePayment);
     ADD PROPERTY(sumRateExchangePayment);
-    ADD PROPERTY(writeOutContractLedgerFIFO);
-    ADD PROPERTY(writeOutContractLedgerLIFO);
+    ADD PROPERTY(costedInContractLedgerOutContractLedger);
     POSITION PROPERTY(writeOutContractLedgerLIFO) TO THE RIGHT PROPERTY(writeOutContractLedgerFIFO);
 
     ADD i.box;
@@ -393,6 +390,8 @@ namePartyACreditNote 'Сторона А' (creditNote) = name(partyACreditNote(cr
 @defineCreditNoteUnion(sum, 'Сумма');
 @defineCreditNoteUnion(description, 'Название документа');
 
+isCreditNoteOut(creditNote) = creditNote IS creditNoteOut;
+
 @implementContractLedger( ,creditNoteIn);
 sumContractLedger(contractLedger) += sumCreditNoteIn(contractLedger);
 
@@ -409,13 +408,23 @@ sumContractLedger(contractLedger) += -sumCreditNoteOut(contractLedger);
 sumContractALedger(contractALedger) += -sumCreditNoteOut(contractALedger);
 
 @implementOutContractLedgerInContractLedgerPrefix(out, creditNoteOut);
+sumOutContractLedger(outContractLedger) += sumCreditNoteOut(outContractLedger);
 
 FORM creditNote 'Кредитная нота'
 
-    OBJECTS c = creditNote FIXED PANEL
+    OBJECTS c = creditNote FIXED PANEL, i = inContractLedger
     PROPERTIES(c) nameNumeratorObject, numberObject, seriesObject, dateTimeCreditNote, numberContractCreditNote
     PROPERTIES(c) READONLY namePartyBCreditNote, namePartyACreditNote
-    PROPERTIES(c) sumCreditNote
+    PROPERTIES(c) sumCreditNote,
+                  costedInContractLedgerOutContractLedger SHOWIF isCreditNoteOut(c),
+                  writeOutContractLedgerFIFO TODRAW i FORCE PANEL SHOWIF isCreditNoteOut(c),
+                  writeOutContractLedgerLIFO TODRAW i FORCE PANEL SHOWIF isCreditNoteOut(c)
+
+    PROPERTIES(i) READONLY descriptionInContractLedger SHOWIF isCreditNoteOut(c), debtInContractLedger SHOWIF isCreditNoteOut(c)
+    PROPERTIES(c, i) costOutContractLedgerInContractLedger SHOWIF isCreditNoteOut(c)
+
+    FILTERS contractCreditNote(c) == contractInContractLedger(i)
+
 
     EDIT creditNote OBJECT c
 ;
@@ -435,6 +444,10 @@ DESIGN creditNote FROM DEFAULT{
     ADD PROPERTY(namePartyBCreditNote);
     ADD PROPERTY(namePartyACreditNote);
     ADD PROPERTY(sumCreditNote);
+    ADD PROPERTY(costedInContractLedgerOutContractLedger);
+    POSITION PROPERTY(writeOutContractLedgerLIFO) TO THE RIGHT PROPERTY(writeOutContractLedgerFIFO);
+
+    ADD i.box;
 
     ADD functions.box;
 }
@@ -463,7 +476,9 @@ FORM contractLedger 'Задолженности и платежи по дого�
     PROPERTIES(pm) READONLY dateTimePayment, seriesNumberObject, namePayerPayment, nameBeneficiaryPayment, nameCurrencyPayment,
                             nameTypeExchangePayment SHOWIF isNotSameCurrencyPayment(pm), sumPayment,
                             rateExchangePayment SHOWIF isNotSameCurrencyPayment(pm),
-                            sumRateExchangePayment SHOWIF isNotSameCurrencyPayment(pm)
+                            sumRateExchangePayment SHOWIF isNotSameCurrencyPayment(pm),
+                            costedInContractLedgerOutContractLedger
+    PROPERTIES(pm) FORCE PANEL writeOutContractLedgerFIFO, writeOutContractLedgerLIFO
     PROPERTIES(pm) ADDFORM, EDITFORM, delete
 
     OBJECTS pr = paymentRequest
@@ -472,13 +487,26 @@ FORM contractLedger 'Задолженности и платежи по дого�
 
     OBJECTS cn = creditNote
     PROPERTIES(cn) READONLY objectClassName, dateTimeCreditNote, seriesNumberObject, sumCreditNote
+    PROPERTIES(cn) FORCE GRID READONLY costedInContractLedgerOutContractLedger SHOWIF isCreditNoteOut(cn)
+    PROPERTIES(cn) FORCE PANEL writeOutContractLedgerFIFO SHOWIF isCreditNoteOut(cn),
+                               writeOutContractLedgerLIFO SHOWIF isCreditNoteOut(cn)
     PROPERTIES(cn) ADDFORM, EDITFORM, delete
 
     OBJECTS ic = inContractLedger
     PROPERTIES(ic) READONLY descriptionInContractLedger, sumInContractLedger, debtInContractLedger
 
+    OBJECTS icoc = outContractLedger
+    PROPERTIES(icoc) READONLY descriptionOutContractLedger, sumOutContractLedger, costedInContractLedgerOutContractLedger
+    PROPERTIES READONLY costOutContractLedgerInContractLedger(icoc, ic)
+
     OBJECTS oc = outContractLedger
     PROPERTIES(oc) READONLY descriptionOutContractLedger, sumOutContractLedger, costedInContractLedgerOutContractLedger
+    PROPERTIES(oc) FORCE PANEL writeOutContractLedgerFIFO SHOWIF isCreditNoteOut(oc),
+                               writeOutContractLedgerLIFO SHOWIF isCreditNoteOut(oc)
+
+    OBJECTS ocic = inContractLedger
+    PROPERTIES(ocic) READONLY descriptionInContractLedger, sumInContractLedger, debtInContractLedger
+    PROPERTIES READONLY costOutContractLedgerInContractLedger(oc, ocic)
 
     FILTERS contractContractLedger(cl) == c,
             contractContractALedger(cal) == c,
@@ -495,7 +523,9 @@ FORM contractLedger 'Задолженности и платежи по дого�
             datePaymentRequest(pr) <= d,
             dateCreditNote(cn) <= d,
             dateInContractLedger(ic) <=d,
-            dateOutContractLedger(oc) <=d
+            dateOutContractLedger(oc) <=d,
+            costOutContractLedgerInContractLedger(icoc, ic) > 0,
+            costOutContractLedgerInContractLedger(oc, ocic) > 0
 
 ;
 
@@ -528,14 +558,31 @@ DESIGN contractLedger FROM DEFAULT{
                 NEW secondContainer {
 
                     type = TABBED;
-                    ADD pm.box;
-                    ADD pr.box;
-                    ADD cn.box;
-                    ADD ic.box{
-                        caption = 'Долг по документу';
+                    ADD pm.box{
+                         PROPERTY (writeOutContractLedgerFIFO(pm)){panelLocation = TOOLBAR;}
+                         PROPERTY (writeOutContractLedgerLIFO(pm)){panelLocation = TOOLBAR;}
                     }
-                    ADD oc.box{
+                    ADD pr.box;
+                    ADD cn.box{
+                        PROPERTY (writeOutContractLedgerFIFO(cn)){panelLocation = TOOLBAR;}
+                        PROPERTY (writeOutContractLedgerLIFO(cn)){panelLocation = TOOLBAR;}
+                    }
+                    NEW dept.box{
+
+                        childConstraints = TO THE RIGHT;
+                        caption = 'Долг по документу';
+                        ADD ic.box;
+                        ADD icoc.box;
+                    }
+                    NEW cost.box{
+
+                        childConstraints = TO THE RIGHT;
                         caption = 'Расписано по документу';
+                        ADD oc.box{
+                            PROPERTY (writeOutContractLedgerFIFO(oc)){panelLocation = TOOLBAR;}
+                            PROPERTY (writeOutContractLedgerLIFO(oc)){panelLocation = TOOLBAR;}
+                        }
+                        ADD ocic.box;
                     }
                 }
             }
