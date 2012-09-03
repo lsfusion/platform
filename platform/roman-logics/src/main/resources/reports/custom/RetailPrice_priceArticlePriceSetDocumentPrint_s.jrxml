@@ -38,33 +38,33 @@
 	<field name="p" class="java.lang.Integer"/>
 	<field name="a" class="java.lang.Integer"/>
 	<field name="sidArticle" class="java.lang.String"/>
-	<field name="printPriceBasePriceSetDocumentArticle" class="java.lang.Double"/>
-	<field name="printPriceDiscountPriceSetDocumentArticle" class="java.lang.Double"/>
+	<field name="priceBBasePriceSetDocumentArticle" class="java.lang.Double"/>
+	<field name="priceBDiscountPriceSetDocumentArticle" class="java.lang.Double"/>
 	<field name="countStorePriceSetDocumentArticle" class="java.lang.Double"/>
 	<detail>
 		<band height="24">
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="0" y="12" width="80" height="12">
-					<printWhenExpression><![CDATA[$F{printPriceDiscountPriceSetDocumentArticle}!=null]]></printWhenExpression>
+					<printWhenExpression><![CDATA[$F{priceBDiscountPriceSetDocumentArticle}!=null]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right" verticalAlignment="Top">
 					<font isStrikeThrough="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{printPriceBasePriceSetDocumentArticle}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{priceBBasePriceSetDocumentArticle}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="80" height="12">
-					<printWhenExpression><![CDATA[$F{printPriceDiscountPriceSetDocumentArticle}!=null]]></printWhenExpression>
+					<printWhenExpression><![CDATA[$F{priceBDiscountPriceSetDocumentArticle}!=null]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right" verticalAlignment="Top"/>
-				<textFieldExpression><![CDATA[$F{printPriceDiscountPriceSetDocumentArticle}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{priceBDiscountPriceSetDocumentArticle}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="80" height="12">
-					<printWhenExpression><![CDATA[$F{printPriceDiscountPriceSetDocumentArticle}==null]]></printWhenExpression>
+					<printWhenExpression><![CDATA[$F{priceBDiscountPriceSetDocumentArticle}==null]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right" verticalAlignment="Top"/>
-				<textFieldExpression><![CDATA[$F{printPriceBasePriceSetDocumentArticle}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{priceBBasePriceSetDocumentArticle}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

@@ -987,7 +987,7 @@ DESIGN POS FROM DEFAULT {
                 ADD r.receiptSaleActionGroup {
                     childConstraints = TO THE BOTTOM;
                     PROPERTY(searchSkuSaleReceipt) { focusable = FALSE; font = 'Tahoma bold 24'; }
-                    ADD PROPERTY(barcodeSale) { caption = 'Ввести штрих-код'; panelLabelAbove = TRUE; focusable = FALSE; font = 'Tahoma bold 24'; editKey = 'F4'; }
+                    ADD PROPERTY(barcodeSale) { caption = 'Ввести штрих-код'; panelLabelAbove = TRUE; focusable = FALSE; font = 'Tahoma bold 24'; editKey = 'F4'; showEditKey = TRUE; }
                 }
                 ADD r.receiptReturnActionGroup {
                     childConstraints = TO THE BOTTOM;

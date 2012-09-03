@@ -203,7 +203,7 @@ DESIGN userPriceChange FROM DEFAULT {
 FORM userPriceChanges 'Переоценки товаров'
 
     OBJECTS u=userPriceChange
-    PROPERTIES (u) READONLY objectClassName, numberObject, seriesObject, dateUserPriceChange, timeUserPriceChange, nameDepartmentStoreUserPriceChange,
+    PROPERTIES (u) READONLY objectClassName, numberObject, seriesObject, dateUserPriceChange, timeUserPriceChange, nameDepartmentStoreUserPriceChange, noteUserPriceChange,
                    diffSupplierISumPriceChangeDocumentDetailPriceChangeDocument, diffMarkupSumPriceChangeDocumentDetailPriceChangeDocument, diffRetailVATISumPriceChangeDocumentDetailPriceChangeDocument,
                    diffWareSumPriceChangeDocumentDetailPriceChangeDocument SHOWIF showWare(), diffWareVATSumPriceChangeDocumentDetailPriceChangeDocument SHOWIF showWare(), diffRetailSumPriceChangeDocumentDetailPriceChangeDocument
 
