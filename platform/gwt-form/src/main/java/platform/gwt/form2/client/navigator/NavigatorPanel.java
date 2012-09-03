@@ -6,16 +6,15 @@ import com.google.gwt.user.client.EventListener;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.Tree;
 import com.google.gwt.user.client.ui.TreeItem;
-import net.customware.gwt.dispatch.client.DefaultExceptionHandler;
 import platform.gwt.base.client.ErrorAsyncCallback;
-import platform.gwt.form2.client.dispatch.FormDispatchAsync;
+import platform.gwt.form2.client.dispatch.NavigatorDispatchAsync;
 import platform.gwt.form2.client.events.OpenFormEvent;
 import platform.gwt.form2.shared.actions.navigator.GetNavigatorElements;
 import platform.gwt.form2.shared.actions.navigator.GetNavigatorElementsResult;
 import platform.gwt.form2.shared.view.GNavigatorElement;
 
 public class NavigatorPanel extends ScrollPanel {
-    private final FormDispatchAsync dispatcher = new FormDispatchAsync(new DefaultExceptionHandler());
+    private final NavigatorDispatchAsync dispatcher = new NavigatorDispatchAsync();
 
     private Tree tree;
 
@@ -47,6 +46,7 @@ public class NavigatorPanel extends ScrollPanel {
                         if (element.isForm) {
                             OpenFormEvent.fireEvent(element.sid, element.caption);
                             event.stopPropagation();
+                            event.preventDefault();
                         }
                     }
                 });

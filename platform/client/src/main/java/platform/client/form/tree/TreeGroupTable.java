@@ -677,11 +677,6 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         TableCellEditor editor = getCellEditor();
         if (editor != null) {
             Object value = editor.getCellEditorValue();
-
-            if (getProperty(editRow, editCol).changeType != null) {
-                updateEditValue(value);
-            }
-
             internalRemoveEditor();
             commitValue(value);
         }

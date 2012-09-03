@@ -74,5 +74,5 @@
         <aop:scoped-proxy proxy-target-class="false"/>
     </b:bean>
 
-    <b:bean scope="session" id="formManaer" class="platform.gwt.base.server.FormSessionManager"></b:bean>
+    <b:bean scope="session" id="formManager" class="platform.gwt.form2.server.FormSessionManager"></b:bean>
 </b:beans>

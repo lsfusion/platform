@@ -143,6 +143,13 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
         propertyDraw.baseType = typeConverter.convertOrCast(clientPropertyDraw.baseType);
         propertyDraw.changeType = typeConverter.convertOrCast(clientPropertyDraw.changeType);
+        if (clientPropertyDraw.addRemove != null) {
+            GObject addRemoveObject = convertOrCast(clientPropertyDraw.addRemove.first);
+            propertyDraw.addRemove = new GPropertyDraw.AddRemove(addRemoveObject, clientPropertyDraw.addRemove.second);
+        }
+
+        propertyDraw.askConfirm = clientPropertyDraw.askConfirm;
+        propertyDraw.askConfirmMessage = clientPropertyDraw.askConfirmMessage;
 
         propertyDraw.iconPath = clientPropertyDraw.design.iconPath;
 
@@ -242,6 +249,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         GObject object = new GObject();
         object.ID = clientObject.ID;
         object.sID = clientObject.getSID();
+        object.groupObject = convertOrCast(clientObject.groupObject);
         object.caption = clientObject.getCaption();
         return object;
     }

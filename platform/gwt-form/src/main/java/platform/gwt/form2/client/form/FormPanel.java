@@ -1,5 +1,6 @@
 package platform.gwt.form2.client.form;
 
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -29,6 +30,16 @@ public class FormPanel extends SimpleLayoutPanel {
                 FormPanel.this.openForm(openFormEvent.getFormSID(), openFormEvent.getCaption());
             }
         });
+
+        Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+            @Override
+            public void execute() {
+                String formSID = getParameters().get("formSID");
+                if (formSID != null) {
+                    OpenFormEvent.fireEvent(formSID, formSID);
+                }
+            }
+        });
     }
 
     public void openForm(String formSID, String caption) {
@@ -37,7 +48,6 @@ public class FormPanel extends SimpleLayoutPanel {
         formTabsPanel.selectTab(formController);
     }
 
-    //todo: quick open form from request
     public Map<String, String> getParameters() {
         Map<String, String> params = new HashMap<String, String>();
         try {

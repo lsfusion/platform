@@ -10,7 +10,7 @@ import platform.gwt.form2.shared.view.reader.GForegroundReader;
 import java.util.Map;
 
 public interface GGroupObjectLogicsSupplier {
-    void updatePropertyDrawValues(GPropertyDraw reader, Map<GGroupObjectValue, Object> values);
+    void updatePropertyDrawValues(GPropertyDraw reader, Map<GGroupObjectValue, Object> values, boolean updateKeys);
     void updateBackgroundValues(GBackgroundReader reader, Map<GGroupObjectValue, Object> values);
     void updateForegroundValues(GForegroundReader reader, Map<GGroupObjectValue, Object> values);
     void updateCaptionValues(GCaptionReader reader, Map<GGroupObjectValue, Object> values);

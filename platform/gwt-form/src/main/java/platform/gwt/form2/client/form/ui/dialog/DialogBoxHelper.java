@@ -36,23 +36,23 @@ public class DialogBoxHelper {
     }
 
     public static void showMessageBox(boolean isError, String caption, String message, final CloseCallback closeCallback) {
-        new MessageBox(caption, message, closeCallback, OptionType.CLOSE).showCenter();
+        new MessageBox(caption, message, closeCallback, OptionType.CLOSE, OptionType.CLOSE).showCenter();
     }
 
     public static void showConfirmBox(String caption, String message, final CloseCallback closeCallback) {
-        new MessageBox(caption, message, closeCallback, OptionType.YES, OptionType.NO).showCenter();
+        new MessageBox(caption, message, closeCallback, OptionType.YES, OptionType.YES, OptionType.NO).showCenter();
     }
 
     private static final class MessageBox extends DialogBox {
         private HTML messageLabel;
         private FlowPanel buttonPane;
-        private Button lastButton;
+        private Button activeButton;
 
-        private MessageBox(String caption, String message, final CloseCallback closeCallback, OptionType... options) {
+        private MessageBox(String caption, String message, final CloseCallback closeCallback, OptionType activeOption, OptionType... options) {
 
             createMessagePanel(message);
 
-            createButtonsPanel(options, closeCallback);
+            createButtonsPanel(activeOption, options, closeCallback);
 
             final VerticalPanel mainPane = new VerticalPanel();
             mainPane.add(messageLabel);
@@ -69,11 +69,14 @@ public class DialogBoxHelper {
             messageLabel.addStyleName("messageBox-message");
         }
 
-        private void createButtonsPanel(OptionType[] options, CloseCallback closeCallback) {
+        private void createButtonsPanel(OptionType activeOption, OptionType[] options, CloseCallback closeCallback) {
             buttonPane = new FlowPanel();
             for (OptionType option : options) {
-                lastButton = createOptionButton(option, closeCallback);
-                buttonPane.add(lastButton);
+                Button optionButton = createOptionButton(option, closeCallback);
+                if (option == activeOption) {
+                    activeButton = optionButton;
+                }
+                buttonPane.add(optionButton);
             }
         }
 
@@ -94,7 +97,7 @@ public class DialogBoxHelper {
 
         public void showCenter() {
             super.center();
-            lastButton.getElement().focus();
+            activeButton.getElement().focus();
         }
     }
 }

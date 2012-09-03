@@ -2,7 +2,6 @@ package platform.gwt.form2.server.form.handlers;
 
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
-import platform.client.logics.ClientGroupObjectValue;
 import platform.gwt.base.server.FormSessionObject;
 import platform.gwt.form2.server.RemoteServiceImpl;
 import platform.gwt.form2.server.convert.GwtToClientConverter;
@@ -14,6 +13,9 @@ import java.io.IOException;
 import static platform.base.BaseUtils.serializeObject;
 
 public class ChangePropertyHandler extends ServerResponseActionHandler<ChangeProperty> {
+
+    private static GwtToClientConverter gwtConverter = GwtToClientConverter.getInstance();
+
     public ChangePropertyHandler(RemoteServiceImpl servlet) {
         super(servlet);
     }
@@ -21,15 +23,16 @@ public class ChangePropertyHandler extends ServerResponseActionHandler<ChangePro
     @Override
     public ServerResponseResult executeEx(ChangeProperty action, ExecutionContext context) throws DispatchException, IOException {
         FormSessionObject form = getFormSessionObject(action.formSessionID);
-        Object value = GwtToClientConverter.getInstance().convertOrCast(action.value);
+        Object value = gwtConverter.convertOrCast(action.value);
+        byte[] fullKey = gwtConverter.convertOrCast(action.fullKey);
         return getServerResponseResult(
                 form,
                 form.remoteForm.changeProperty(
                         action.requestIndex,
                         action.propertyId,
-                        new ClientGroupObjectValue().serialize(),
+                        fullKey,
                         serializeObject(value),
-                        null
+                        action.addedObjectId
                 )
         );
     }

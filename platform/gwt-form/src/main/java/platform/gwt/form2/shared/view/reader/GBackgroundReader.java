@@ -16,7 +16,7 @@ public class GBackgroundReader implements GPropertyReader {
         this.groupObjectID = groupObjectID;
     }
 
-    public void update(GGroupObjectLogicsSupplier controller, Map<GGroupObjectValue, Object> keys) {
+    public void update(GGroupObjectLogicsSupplier controller, Map<GGroupObjectValue, Object> keys, boolean updateKeys) {
         controller.updateBackgroundValues(this, keys);
     }
 

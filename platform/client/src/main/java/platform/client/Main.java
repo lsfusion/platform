@@ -10,6 +10,7 @@ import platform.client.form.ClientExternalScreen;
 import platform.client.form.SimplexLayout;
 import platform.client.logics.classes.ClientObjectClass;
 import platform.client.logics.classes.ClientTypeSerializer;
+import platform.client.navigator.ClientNavigatorElement;
 import platform.client.navigator.ClientNavigatorWindow;
 import platform.client.remote.ImmutableProxyMethodsAspect;
 import platform.client.remote.proxy.RemoteFormProxy;
@@ -476,6 +477,7 @@ public class Main {
         RemoteFormProxy.dropCaches();
         ClientExternalScreen.dropCaches();
         ClientNavigatorWindow.dropCaches();
+        ClientNavigatorElement.dropCaches();
 
         eventBus.invalidate();
 

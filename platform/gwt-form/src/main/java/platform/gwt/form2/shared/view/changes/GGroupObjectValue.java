@@ -16,6 +16,10 @@ public class GGroupObjectValue extends HashMap<GObject, Object> implements Seria
         }
     }
 
+    public GGroupObjectValue(GObject object, int value) {
+        put(object, value);
+    }
+
     @Override
     public String toString() {
         String caption = "[";

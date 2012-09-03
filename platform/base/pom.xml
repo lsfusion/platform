@@ -21,7 +21,7 @@
         <commons.logging.version>1.1</commons.logging.version>
         <commons.daemon.version>1.0.5</commons.daemon.version>
         <commons.exec.version>1.1</commons.exec.version>
-        <google.guava.version>11.0.2</google.guava.version>
+        <google.guava.version>13.0.1</google.guava.version>
         <jdom.version>1.1</jdom.version>
         <netty.version>3.2.1.Final</netty.version>
         <postgresql.version>9.0-801.jdbc4</postgresql.version>
@@ -56,8 +56,8 @@
         <jcaptcha.version>1.0</jcaptcha.version>
         <validation.api.version>1.0.0.GA</validation.api.version>
 
-        <gwt.version>2.4.0</gwt.version>
-        <gwt.plugin.version>2.4.0</gwt.plugin.version>
+        <gwt.version>2.5.0-rc1</gwt.version>
+        <gwt.plugin.version>2.5.0-rc1</gwt.plugin.version>
         <smartgwt.version>3.0p</smartgwt.version>
         <gwt.log.version>3.1.8</gwt.log.version>
         <gin.version>1.5.0</gin.version>
@@ -216,7 +216,6 @@
             </snapshots>
             <releases>
                 <enabled>true</enabled>
-                <!-- Workaround for MNG-2974, see note below -->
             </releases>
         </pluginRepository>
     </pluginRepositories>

@@ -5,12 +5,12 @@ import net.customware.gwt.dispatch.shared.DispatchException;
 import platform.gwt.base.server.FormSessionObject;
 import platform.gwt.form2.server.convert.GwtToClientConverter;
 import platform.gwt.form2.server.RemoteServiceImpl;
-import platform.gwt.form2.shared.actions.form.ContinueInvocationAction;
+import platform.gwt.form2.shared.actions.form.ContinueInvocation;
 import platform.gwt.form2.shared.actions.form.ServerResponseResult;
 
 import java.io.IOException;
 
-public class ContinueInvocationHandler extends ServerResponseActionHandler<ContinueInvocationAction> {
+public class ContinueInvocationHandler extends ServerResponseActionHandler<ContinueInvocation> {
     private final GwtToClientConverter gwtConverter = GwtToClientConverter.getInstance();
 
     public ContinueInvocationHandler(RemoteServiceImpl servlet) {
@@ -18,7 +18,7 @@ public class ContinueInvocationHandler extends ServerResponseActionHandler<Conti
     }
 
     @Override
-    public ServerResponseResult executeEx(ContinueInvocationAction action, ExecutionContext context) throws DispatchException, IOException {
+    public ServerResponseResult executeEx(ContinueInvocation action, ExecutionContext context) throws DispatchException, IOException {
         FormSessionObject form = getFormSessionObject(action.formSessionID);
 
         Object actionResults[] = new Object[action.actionResults.length];

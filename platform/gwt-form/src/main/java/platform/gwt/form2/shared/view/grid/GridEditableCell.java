@@ -5,6 +5,7 @@ import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.ValueUpdater;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import platform.gwt.form2.shared.view.GridDataRecord;
 import platform.gwt.form2.shared.view.grid.editor.GridCellEditor;
@@ -20,7 +21,7 @@ public class GridEditableCell extends AbstractCell<Object> {
     private GridDataRecord editRecord = null;
 
     public GridEditableCell(EditManager editManager, GridCellRenderer cellRenderer) {
-        super("click", "dblclick", "keyup", "keydown", "blur");
+        super("dblclick", "keyup", "keydown", "keypress", "blur");
         this.editManager = editManager;
         this.cellRenderer = cellRenderer;
     }
@@ -35,24 +36,26 @@ public class GridEditableCell extends AbstractCell<Object> {
                                NativeEvent event, ValueUpdater<Object> valueUpdater) {
         if (isEditingCell(context)) {
             cellEditor.onBrowserEvent(context, parent, value, event, valueUpdater);
-        } else if (!editManager.isCurrentlyEditing()) {
-            //пока редактирование только по дабл-клику
-            if ("dblclick".equals(event.getType())) {
-                event.preventDefault();
+        } else if (editManager.canStartNewEdit()) {
+            String eventType = event.getType();
+            int keyCode = event.getKeyCode();
+            boolean editKeyPress = "keypress".equals(eventType) && keyCode != KeyCodes.KEY_ENTER;
+            if ("dblclick".equals(eventType) || editKeyPress) {
                 event.stopPropagation();
-                editManager.executePropertyEditAction(this, context, parent);
+                event.preventDefault();
+                editManager.executePropertyEditAction(this, event, context, parent);
             }
         }
     }
 
-    public void startEditing(final Cell.Context context, Element parent, GridCellEditor cellEditor) {
+    public void startEditing(NativeEvent editEvent, final Context context, Element parent, GridCellEditor cellEditor) {
         this.editRecord = (GridDataRecord) context.getKey();
         this.cellEditor = cellEditor;
 
         //рендерим эдитор
         setValue(context, parent, null);
 
-        cellEditor.startEditing(context, parent);
+        cellEditor.startEditing(editEvent, context, parent);
     }
 
     public void finishEditing(Context context, Element parent, Object newValue) {

@@ -16,7 +16,7 @@ public class GFooterReader implements GPropertyReader {
         this.groupobjectID = groupObjectID;
     }
 
-    public void update(GGroupObjectLogicsSupplier controller, Map<GGroupObjectValue, Object> values) {
+    public void update(GGroupObjectLogicsSupplier controller, Map<GGroupObjectValue, Object> values, boolean updateKeys) {
         controller.updateFooterValues(this, values);
     }
 

@@ -39,8 +39,15 @@ public abstract class TextFieldGridEditor implements GridCellEditor {
     protected String currentText;
 
     @Override
-    public void startEditing(Cell.Context context, Element parent) {
-        getInputElement(parent).focus();
+    public void startEditing(NativeEvent editEvent, Cell.Context context, Element parent) {
+        InputElement inputElement = getInputElement(parent);
+        if (editEvent != null) {
+            boolean charEvent = "keypress".equals(editEvent.getType());
+            if (charEvent) {
+                inputElement.setValue(String.valueOf((char)editEvent.getCharCode()));
+            }
+        }
+        inputElement.focus();
     }
 
     @Override
@@ -48,9 +55,10 @@ public abstract class TextFieldGridEditor implements GridCellEditor {
         String type = event.getType();
         boolean keyUp = "keyup".equals(type);
         boolean keyDown = "keydown".equals(type);
-        if (keyUp || keyDown) {
+        boolean keyPress = "keypress".equals(type);
+        if (keyUp || keyDown || keyPress) {
             int keyCode = event.getKeyCode();
-            if (keyUp && keyCode == KeyCodes.KEY_ENTER) {
+            if (keyPress && keyCode == KeyCodes.KEY_ENTER) {
                 validateAndCommit(parent);
             } else if (keyUp && keyCode == KeyCodes.KEY_ESCAPE) {
                 editManager.cancelEditing();

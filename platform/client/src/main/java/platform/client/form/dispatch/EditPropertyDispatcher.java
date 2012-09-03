@@ -54,8 +54,8 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
 
             if (actionSID.equals(ServerResponse.CHANGE)) { // асинхронные обработки
                 boolean asyncModifyObject = form.isAsyncModifyObject(property);
-                if(asyncModifyObject || property.changeType != null) {
-                    if(property.askConfirm) {
+                if (asyncModifyObject || property.changeType != null) {
+                    if (property.askConfirm) {
                         String msg = property.askConfirmMessage;
 
                         int result = SwingUtils.showConfirmDialog(getDialogParentContainer(), msg, "LS Fusion", JOptionPane.QUESTION_MESSAGE);
@@ -64,12 +64,11 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
                         }
                     }
 
-                    if(asyncModifyObject) {
+                    if (asyncModifyObject) {
                         form.modifyObject(property, columnKey);
                         return true;
-                    }
-
-                    if (property.changeType != null) {
+                    } else {
+//                      т.е. property.changeType != null
                         editColumnKey = columnKey;
                         simpleChangeProperty = property;
                         oldValue = currentValue;
@@ -114,7 +113,7 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
         if (simpleChangeProperty != null) {
             if (!inputResult.isCanceled()) {
                 try {
-                    getFormController().changeProperty(simpleChangeProperty, editColumnKey, inputResult.getValue(), oldValue);
+                    getFormController().changeProperty(handler, simpleChangeProperty, editColumnKey, inputResult.getValue(), oldValue);
                 } catch (IOException e) {
                     throw Throwables.propagate(e);
                 }

@@ -525,18 +525,23 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         }
     }
 
-    public ServerResponse changeProperty(long requestIndex, final int propertyID, final byte[] fullKey, final byte[] pushChange, final byte[] pushAdd) throws RemoteException {
+    public ServerResponse changeProperty(long requestIndex, final int propertyID, final byte[] fullKey, final byte[] pushChange, final Integer pushAdd) throws RemoteException {
         return processPausableRMIRequest(requestIndex, new ERunnable() {
             @Override
             public void run() throws Exception {
                 PropertyDrawInstance propertyDraw = form.getPropertyDraw(propertyID);
                 Map<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, fullKey);
+
                 ObjectValue pushChangeObject = null;
-                if(pushChange!=null)
+                if (pushChange != null) {
                     pushChangeObject = DataObject.getValue(deserializeObject(pushChange), (ConcreteClass) propertyDraw.getEntity().getChangeType(form.entity));
+                }
+
                 DataObject pushAddObject = null;
-                if(pushAdd!=null)
-                    pushAddObject = new DataObject(deserializeObject(pushAdd), form.session.baseClass.unknown);
+                if (pushAdd != null) {
+                    pushAddObject = new DataObject(pushAdd, form.session.baseClass.unknown);
+                }
+
                 form.executeEditAction(propertyDraw, ServerResponse.CHANGE, keys, pushChangeObject, pushAddObject, true);
             }
         });

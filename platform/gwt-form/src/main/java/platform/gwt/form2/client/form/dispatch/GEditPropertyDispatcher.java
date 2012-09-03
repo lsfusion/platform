@@ -3,6 +3,7 @@ package platform.gwt.form2.client.form.dispatch;
 import com.allen_sauer.gwt.log.client.Log;
 import platform.gwt.base.client.ErrorAsyncCallback;
 import platform.gwt.form2.client.form.ui.GFormController;
+import platform.gwt.form2.client.form.ui.dialog.DialogBoxHelper;
 import platform.gwt.form2.shared.actions.form.ServerResponseResult;
 import platform.gwt.form2.shared.view.GPropertyDraw;
 import platform.gwt.form2.shared.view.GUserInputResult;
@@ -27,28 +28,50 @@ public class GEditPropertyDispatcher extends GFormActionDispatcher {
         super(form);
     }
 
-    public void executePropertyEditAction(final GEditPropertyHandler ieditHandler, GPropertyDraw editProperty, Object oldValue, GGroupObjectValue columnKey) {
+    public void executePropertyEditAction(final GEditPropertyHandler ieditHandler, final GPropertyDraw editProperty, final Object currentValue, final GGroupObjectValue columnKey) {
         editHandler = ieditHandler;
 
         valueRequested = false;
         simpleChangeProperty = null;
         readType = null;
         editColumnKey = null;
+        oldValue = null;
 
-        if (editProperty.changeType != null) {
+        final boolean asyncModifyObject = form.isAsyncModifyObject(editProperty);
+        if (asyncModifyObject || editProperty.changeType != null) {
+            if (editProperty.askConfirm) {
+                form.blockingConfirm("LS Fusion", editProperty.askConfirmMessage, new DialogBoxHelper.CloseCallback() {
+                    @Override
+                    public void closed(DialogBoxHelper.OptionType chosenOption) {
+                        if (chosenOption == DialogBoxHelper.OptionType.YES) {
+                            executeSimpleChangeProperty(asyncModifyObject, editProperty, columnKey, currentValue);
+                        }
+                    }
+                });
+            } else {
+                executeSimpleChangeProperty(asyncModifyObject, editProperty, columnKey, currentValue);
+            }
+        } else {
+            form.executeEditAction(editProperty, columnKey, "change", new ErrorAsyncCallback<ServerResponseResult>() {
+                @Override
+                public void success(ServerResponseResult response) {
+                    Log.debug("Execute edit action response recieved...");
+                    dispatchResponse(response);
+                }
+            });
+        }
+    }
+
+    private void executeSimpleChangeProperty(boolean asyncModifyObject, GPropertyDraw editProperty, GGroupObjectValue columnKey, Object currentValue) {
+        if (asyncModifyObject) {
+            form.modifyObject(editProperty, columnKey);
+        } else {
+//          т.е. property.changeType != null
             editColumnKey = columnKey;
             simpleChangeProperty = editProperty;
-            requestValue(simpleChangeProperty.changeType, oldValue);
-            return;
+            oldValue = currentValue;
+            requestValue(simpleChangeProperty.changeType);
         }
-
-        form.executeEditAction(editProperty, columnKey, "change", new ErrorAsyncCallback<ServerResponseResult>() {
-            @Override
-            public void success(ServerResponseResult response) {
-                Log.debug("Execute edit action response recieved...");
-                dispatchResponse(response);
-            }
-        });
     }
 
     @Override
@@ -58,11 +81,17 @@ public class GEditPropertyDispatcher extends GFormActionDispatcher {
         if (readType != null) {
             GType editType = readType;
             readType = null;
-            requestValue(editType, oldValue);
+            requestValue(editType);
         }
     }
 
-    public void requestValue(GType type, Object oldValue) {
+    @Override
+    protected void postDispatchResponse(ServerResponseResult response) {
+        super.postDispatchResponse(response);
+        editHandler.postDispatchResponse(response);
+    }
+
+    private void requestValue(GType type) {
         Log.debug("Edit started.");
         valueRequested = true;
         editHandler.requestValue(type, oldValue);
@@ -85,7 +114,7 @@ public class GEditPropertyDispatcher extends GFormActionDispatcher {
 
         if (simpleChangeProperty != null) {
             if (!inputResult.isCanceled()) {
-                form.changeProperty(simpleChangeProperty, inputResult.getValue());
+                form.changeProperty(editHandler, simpleChangeProperty, inputResult.getValue(), oldValue);
             }
             return;
         }

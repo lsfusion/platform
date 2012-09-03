@@ -14,7 +14,7 @@ public class ActionGridRenderer implements GridCellRenderer {
         @Template("<div><center><div style=\"border: 1px solid blue; width: 48px; height: 16px;\"><center><img src=\"{0}\"/><center></div></center></div>")
         SafeHtml img(SafeUri url);
 
-        @Template("<div style=\"border: 1px solid blue; width: 48px; height: 16px;\"><center>{0}<center></div>")
+        @Template("<center><div style=\"border: 1px solid blue; width: 48px; height: 16px;\"><center>{0}<center></div><center>")
         SafeHtml div(String text);
     }
 

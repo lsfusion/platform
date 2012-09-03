@@ -4,7 +4,10 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Table;
-import platform.base.*;
+import platform.base.BaseUtils;
+import platform.base.EProvider;
+import platform.base.OrderedMap;
+import platform.base.Pair;
 import platform.base.identity.DefaultIDGenerator;
 import platform.base.identity.IDGenerator;
 import platform.client.Log;
@@ -15,7 +18,6 @@ import platform.client.form.dispatch.ClientFormActionDispatcher;
 import platform.client.form.dispatch.SimpleChangePropertyDispatcher;
 import platform.client.form.tree.TreeGroupController;
 import platform.client.logics.*;
-import platform.client.logics.classes.ClientActionClass;
 import platform.client.logics.classes.ClientObjectClass;
 import platform.client.logics.filter.ClientPropertyFilter;
 import platform.client.navigator.ClientNavigator;
@@ -454,10 +456,6 @@ public class ClientFormController implements AsyncView {
         });
     }
 
-    private final Map<ClientGroupObject, Long> lastChangeCurrentObjectsRequestIndices = Maps.newHashMap();
-    private final Table<ClientPropertyDraw, ClientGroupObjectValue, Long> lastChangePropertyRequestIndices = HashBasedTable.create();
-    private final Table<ClientPropertyDraw, ClientGroupObjectValue, Pair<Object, Object>> lastChangePropertyRequestValues = HashBasedTable.create();
-
     private static class ModifyObject {
         public final ClientObject object;
         public final boolean add;
@@ -471,6 +469,9 @@ public class ClientFormController implements AsyncView {
     }
 
     private final OrderedMap<Long, ModifyObject> lastModifyObjectRequests = new OrderedMap<Long, ModifyObject>();
+    private final Map<ClientGroupObject, Long> lastChangeCurrentObjectsRequestIndices = Maps.newHashMap();
+    private final Table<ClientPropertyDraw, ClientGroupObjectValue, Long> lastChangePropertyRequestIndices = HashBasedTable.create();
+    private final Table<ClientPropertyDraw, ClientGroupObjectValue, Pair<Object, Object>> lastChangePropertyRequestValues = HashBasedTable.create();
 
     public void applyFormChanges(byte[] bFormChanges) throws IOException {
         if (bFormChanges == null) {
@@ -520,10 +521,10 @@ public class ClientFormController implements AsyncView {
         for (Iterator<Map.Entry<ClientGroupObject, Long>> iterator = lastChangeCurrentObjectsRequestIndices.entrySet().iterator(); iterator.hasNext(); ) {
             Map.Entry<ClientGroupObject, Long> entry = iterator.next();
 
-            if (entry.getValue() > currentDispatchingRequestIndex) {
-                formChanges.objects.remove(entry.getKey());
-            } else {
+            if (entry.getValue() <= currentDispatchingRequestIndex) {
                 iterator.remove();
+            } else {
+                formChanges.objects.remove(entry.getKey());
             }
         }
     }
@@ -541,7 +542,7 @@ public class ClientFormController implements AsyncView {
                 Pair<Object, Object> change = lastChangePropertyRequestValues.remove(propertyDraw, keys);
 
                 Map<ClientGroupObjectValue, Object> propertyValues = formChanges.properties.get(propertyDraw);
-                if(propertyValues==null) { // включаем изменение на старое значение, если ответ с сервера пришел, а новое значение нет
+                if (propertyValues == null) { // включаем изменение на старое значение, если ответ с сервера пришел, а новое значение нет
                     propertyValues = new HashMap<ClientGroupObjectValue, Object>();
                     formChanges.properties.put(propertyDraw, propertyValues);
                     formChanges.updateProperties.add(propertyDraw);
@@ -640,31 +641,33 @@ public class ClientFormController implements AsyncView {
         );
     }
 
-    private byte[] getFullCurrentKey(ClientPropertyDraw property, ClientGroupObjectValue columnKey) throws IOException {
+    private byte[] getFullCurrentKey(ClientGroupObjectValue columnKey) throws IOException {
         final ClientGroupObjectValue fullCurrentKey = getFullCurrentKey();
         fullCurrentKey.putAll(columnKey);
 
         return fullCurrentKey.serialize();
     }
 
-    public void changeProperty(final ClientPropertyDraw property, final ClientGroupObjectValue columnKey, final Object value, final Object oldValue) throws IOException {
+    public void changeProperty(final EditPropertyHandler handler,
+                               final ClientPropertyDraw property, final ClientGroupObjectValue columnKey, final Object value, final Object oldValue) throws IOException {
         assert !isEditing();
 
         commitOrCancelCurrentEditing();
 
-        final byte[] fullCurrentKey = getFullCurrentKey(property, columnKey); // чтобы не изменился
+        final byte[] fullCurrentKey = getFullCurrentKey(columnKey); // чтобы не изменился
 
-        rmiQueue.syncRequestWithTimeOut(0, new RmiRequest<ServerResponse>() {
-            ClientGroupObjectValue propertyKey = null;
-
+        rmiQueue.asyncRequest(new RmiRequest<ServerResponse>() {
             @Override
             protected void onAsyncRequest(long requestIndex) {
 //                System.out.println("!!Async changing property with req#: " + requestIndex);
 //                ExceptionUtils.dumpStack();
 //                System.out.println("------------------------");
+                handler.updateEditValue(value);
                 GroupObjectController controller = controllers.get(property.groupObject);
 
-                propertyKey = controller != null && !controller.panelProperties.contains(property) ? new ClientGroupObjectValue(controller.getCurrentObject(), columnKey) : columnKey;
+                ClientGroupObjectValue propertyKey = controller != null && !controller.panelProperties.contains(property)
+                                                     ? new ClientGroupObjectValue(controller.getCurrentObject(), columnKey)
+                                                     : columnKey;
 
                 lastChangePropertyRequestIndices.put(property, propertyKey, requestIndex);
                 lastChangePropertyRequestValues.put(property, propertyKey, new Pair<Object, Object>(value, oldValue));
@@ -707,7 +710,7 @@ public class ClientFormController implements AsyncView {
             ID = (Integer) BaseUtils.singleValue(value);
         }
 
-        final byte[] fullCurrentKey = getFullCurrentKey(property, columnKey); // чтобы не изменился
+        final byte[] fullCurrentKey = getFullCurrentKey(columnKey); // чтобы не изменился
 
         rmiQueue.syncRequestWithTimeOut(Main.asyncTimeOut, new RmiRequest<ServerResponse>() {
             @Override
@@ -720,7 +723,7 @@ public class ClientFormController implements AsyncView {
 
             @Override
             protected ServerResponse doRequest(long requestIndex) throws Exception {
-                return remoteForm.changeProperty(requestIndex, property.getID(), fullCurrentKey, null, add ? serializeObject(ID) : null);
+                return remoteForm.changeProperty(requestIndex, property.getID(), fullCurrentKey, null, add ? ID : null);
             }
 
             @Override

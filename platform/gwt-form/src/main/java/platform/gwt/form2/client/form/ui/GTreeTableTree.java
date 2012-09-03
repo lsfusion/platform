@@ -172,9 +172,9 @@ public class GTreeTableTree {
         return nodes;
     }
 
-    public void setValues(GPropertyDraw property, Map<GGroupObjectValue, Object> propValues) {
+    public void setPropertyValues(GPropertyDraw property, Map<GGroupObjectValue, Object> propValues, boolean updateKeys) {
         if (propValues != null) {
-            values.put(property, propValues);
+            GwtSharedUtils.putUpdate(values, property, propValues, updateKeys);
         }
     }
 

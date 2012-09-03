@@ -1,6 +1,5 @@
 package platform.client.remote.proxy;
 
-import platform.client.logics.ClientGroupObject;
 import platform.interop.ClassViewType;
 import platform.interop.form.FormUserPreferences;
 import platform.interop.form.RemoteFormInterface;
@@ -221,7 +220,7 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         return result;
     }
 
-    public ServerResponse changeProperty(long requestIndex, int propertyID, byte[] fullKey, byte[] pushChange, byte[] pushAdd) throws RemoteException {
+    public ServerResponse changeProperty(long requestIndex, int propertyID, byte[] fullKey, byte[] pushChange, Integer pushAdd) throws RemoteException {
         logRemoteMethodStartCall("executeEditAction");
         ServerResponse result = target.changeProperty(requestIndex, propertyID, fullKey, pushChange, pushAdd);
         logRemoteMethodEndCall("executeEditAction", result);

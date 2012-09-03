@@ -11,59 +11,74 @@
     <artifactId>fullclient</artifactId>
     <packaging>jar</packaging>
     <name>FullClient</name>
+
+    <profiles>
+        <profile>
+            <id>production</id>
+            <activation>
+                <property>
+                    <name>!dev</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-assembly-plugin</artifactId>
+                        <configuration>
+                            <finalName>fullclient</finalName>
+                            <archive>
+                                <manifest>
+                                    <mainClass>platform.fullclient.FullMain</mainClass>
+                                </manifest>
+                                <manifestEntries>
+                                    <SplashScreen-Image>platform/images/lsfusion.jpg</SplashScreen-Image>
+                                    <SCM-Version>${platform.revision}</SCM-Version>
+                                </manifestEntries>
+                            </archive>
+                            <descriptors>
+                                <descriptor>src/assemble/distribution.xml</descriptor>
+                            </descriptors>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>single</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <phase>install</phase>
+                                <configuration>
+                                    <tasks>
+                                        <signjar jar="${project.build.directory}/fullclient-prod.jar"
+                                                 keystore="${project.basedir}/src/assemble/keystore" storepass="qwerty"
+                                                 alias="lsf"/>
+                                    </tasks>
+                                </configuration>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
     <build>
         <plugins>
-            <plugin>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <configuration>
-                    <finalName>fullclient</finalName>
-                    <archive>
-                        <manifest>
-                            <mainClass>platform.fullclient.FullMain</mainClass>
-                        </manifest>
-                        <manifestEntries>
-                            <SplashScreen-Image>platform/images/lsfusion.jpg</SplashScreen-Image>
-                            <SCM-Version>${platform.revision}</SCM-Version>
-                        </manifestEntries>
-                    </archive>
-                    <descriptors>
-                        <descriptor>src/assemble/distribution.xml</descriptor>
-                    </descriptors>
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>install</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <phase>install</phase>
-                        <configuration>
-                            <tasks>
-                                <signjar jar="${project.build.directory}/fullclient-prod.jar"
-                                         keystore="${project.basedir}/src/assemble/keystore" storepass="qwerty"
-                                         alias="lsf"/>
-                            </tasks>
-                        </configuration>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>aspectj-maven-plugin</artifactId>
             </plugin>
         </plugins>
     </build>
-
 
     <dependencies>
         <dependency>

@@ -10,6 +10,7 @@ import platform.gwt.form2.shared.view.logics.GGroupObjectLogicsSupplier;
 import platform.gwt.form2.shared.view.panel.PanelRenderer;
 import platform.gwt.form2.shared.view.reader.*;
 
+import java.io.Serializable;
 import java.util.Map;
 
 public class GPropertyDraw extends GComponent implements GPropertyReader {
@@ -20,7 +21,12 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
     public String sID;
     public String caption;
     public GType baseType;
+
     public GType changeType;
+    public AddRemove addRemove;
+    public boolean askConfirm;
+    public String askConfirmMessage;
+
     public String iconPath;
     public Boolean focusable;
     public boolean checkEquals;
@@ -31,10 +37,22 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
     public GBackgroundReader backgroundReader;
     public GForegroundReader foregroundReader;
 
+    public static class AddRemove implements Serializable {
+        public GObject object;
+        public boolean add;
+
+        public AddRemove() {}
+
+        public AddRemove(GObject object, boolean add) {
+            this.object = object;
+            this.add = add;
+        }
+    }
+
     public GPropertyDraw(){}
 
-    public void update(GGroupObjectLogicsSupplier controller, Map<GGroupObjectValue, Object> values) {
-        controller.updatePropertyDrawValues(this, values);
+    public void update(GGroupObjectLogicsSupplier controller, Map<GGroupObjectValue, Object> values, boolean updateKeys) {
+        controller.updatePropertyDrawValues(this, values, updateKeys);
     }
 
     public Column<GridDataRecord, Object> createGridColumn(EditManager editManager, FormLogicsProvider form) {

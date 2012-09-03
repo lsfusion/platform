@@ -14,7 +14,7 @@ public class GRowForegroundReader implements GPropertyReader {
         this.readerID = readerID;
     }
 
-    public void update(GGroupObjectLogicsSupplier controller, Map<GGroupObjectValue, Object> values) {
+    public void update(GGroupObjectLogicsSupplier controller, Map<GGroupObjectValue, Object> values, boolean updateKeys) {
         controller.updateRowForegroundValues(values);
     }
 

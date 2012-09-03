@@ -17,7 +17,7 @@ public class LogicalGridEditor implements GridCellEditor {
     protected Boolean currentValue;
 
     @Override
-    public void startEditing(Cell.Context context, Element parent) {
+    public void startEditing(NativeEvent editEvent, Cell.Context context, Element parent) {
         editManager.commitEditing(currentValue == null || !currentValue ? true : null);
     }
 

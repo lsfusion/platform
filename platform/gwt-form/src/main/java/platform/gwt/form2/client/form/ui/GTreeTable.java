@@ -75,10 +75,10 @@ public class GTreeTable extends CellTree {
         dataUpdated = true;
     }
 
-    public void setValues(GPropertyDraw property, Map<GGroupObjectValue, Object> propValues) {
+    public void setPropertyValues(GPropertyDraw property, Map<GGroupObjectValue, Object> propValues, boolean updateKeys) {
         if (propValues != null) {
-            tree.setValues(property, propValues);
             dataUpdated = true;
+            tree.setPropertyValues(property, propValues, updateKeys);
         }
     }
 

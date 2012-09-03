@@ -11,7 +11,6 @@ import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
-import net.customware.gwt.dispatch.client.DefaultExceptionHandler;
 import net.customware.gwt.dispatch.shared.Action;
 import net.customware.gwt.dispatch.shared.Result;
 import platform.gwt.base.client.ErrorAsyncCallback;
@@ -19,6 +18,8 @@ import platform.gwt.base.client.WrapperAsyncCallbackEx;
 import platform.gwt.base.shared.GClassViewType;
 import platform.gwt.form2.client.LoadingBlocker;
 import platform.gwt.form2.client.dispatch.FormDispatchAsync;
+import platform.gwt.form2.client.dispatch.NavigatorDispatchAsync;
+import platform.gwt.form2.client.form.dispatch.GEditPropertyHandler;
 import platform.gwt.form2.client.form.dispatch.GFormActionDispatcher;
 import platform.gwt.form2.client.form.ui.classes.ClassChosenHandler;
 import platform.gwt.form2.client.form.ui.classes.GClassDialog;
@@ -29,6 +30,8 @@ import platform.gwt.form2.client.form.ui.dialog.WindowHiddenHandler;
 import platform.gwt.form2.shared.actions.GetForm;
 import platform.gwt.form2.shared.actions.GetFormResult;
 import platform.gwt.form2.shared.actions.form.*;
+import platform.gwt.form2.shared.actions.navigator.GenerateID;
+import platform.gwt.form2.shared.actions.navigator.GenerateIDResult;
 import platform.gwt.form2.shared.view.*;
 import platform.gwt.form2.shared.view.changes.GFormChanges;
 import platform.gwt.form2.shared.view.changes.GGroupObjectValue;
@@ -38,20 +41,11 @@ import platform.gwt.form2.shared.view.classes.GObjectClass;
 import platform.gwt.form2.shared.view.logics.FormLogicsProvider;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class GFormController extends SimplePanel implements FormLogicsProvider {
-    @Override
-    public boolean isEditingEnabled() {
-        // пока отключаем редактирование в production
-//        return !GWT.isScript();
-        return true;
-    }
 
-    private final FormDispatchAsync dispatcher = new FormDispatchAsync(new DefaultExceptionHandler());
+    private FormDispatchAsync dispatcher;
 
     private final GFormActionDispatcher actionDispatcher = new GFormActionDispatcher(this);
 
@@ -61,10 +55,6 @@ public class GFormController extends SimplePanel implements FormLogicsProvider {
 
     private Map<GGroupObject, GGroupObjectController> controllers = new LinkedHashMap<GGroupObject, GGroupObjectController>();
     private Map<GTreeGroup, GTreeGroupController> treeControllers = new LinkedHashMap<GTreeGroup, GTreeGroupController>();
-
-    public GFormController(Map<String, String> params) {
-        this(params.remove("formSID"), params);
-    }
 
     public GFormController(String formSID) {
         this(formSID, null);
@@ -77,7 +67,7 @@ public class GFormController extends SimplePanel implements FormLogicsProvider {
     public GFormController(Action<GetFormResult> getFormAction, final boolean dialogMode) {
         this.dialogMode = dialogMode;
 
-        dispatcher.execute(getFormAction, new ErrorAsyncCallback<GetFormResult>() {
+        NavigatorDispatchAsync.Instance.get().execute(getFormAction, new ErrorAsyncCallback<GetFormResult>() {
             @Override
             public void success(GetFormResult result) {
                 initialize(result.form);
@@ -93,7 +83,7 @@ public class GFormController extends SimplePanel implements FormLogicsProvider {
     private void initialize(GForm form) {
         this.form = form;
 
-        dispatcher.setForm(form);
+        dispatcher = new FormDispatchAsync(this);
 
         formLayout = new GFormLayout(this, form.mainContainer) {
             public boolean isShowTypeViewInPanel(GGroupObject groupObject) {
@@ -208,15 +198,137 @@ public class GFormController extends SimplePanel implements FormLogicsProvider {
         dispatcher.execute(new GetRemoteChanges(), new ServerResponseCallback());
     }
 
+    private static class ModifyObject {
+        public final GObject object;
+        public final boolean add;
+        public final GGroupObjectValue value;
+
+        private ModifyObject(GObject object, boolean add, GGroupObjectValue value) {
+            this.object = object;
+            this.add = add;
+            this.value = value;
+        }
+    }
+
+    private final LinkedHashMap<Long, ModifyObject> lastModifyObjectRequests = new LinkedHashMap<Long, ModifyObject>();
+    private final HashMap<GGroupObject, Long> lastChangeCurrentObjectsRequestIndices = new HashMap<GGroupObject, Long>();
+    private final HashMap<GPropertyDraw, HashMap<GGroupObjectValue, Long>> lastChangePropertyRequestIndices = new HashMap<GPropertyDraw, HashMap<GGroupObjectValue, Long>>();
+    private final HashMap<GPropertyDraw, HashMap<GGroupObjectValue, Change>> lastChangePropertyRequestValues = new HashMap<GPropertyDraw, HashMap<GGroupObjectValue, Change>>();
+
     public void applyRemoteChanges(GFormChangesDTO changesDTO) {
         GFormChanges fc = GFormChanges.remap(form, changesDTO);
+
+        modifyFormChangesWithModifyObjectAsyncs(fc);
+
+        modifyFormChangesWithChangeCurrentObjectAsyncs(fc);
+
+        modifyFormChangesWithChangePropertyAsyncs(fc);
+
         for (GGroupObjectController controller : controllers.values()) {
             controller.processFormChanges(fc);
         }
+
         for (GTreeGroupController treeController : treeControllers.values()) {
             treeController.processFormChanges(fc);
         }
+
         formLayout.hideEmptyContainerViews();
+    }
+
+    private void modifyFormChangesWithModifyObjectAsyncs(GFormChanges fc) {
+        long currentDispatchingRequestIndex = dispatcher.getCurrentDispatchingRequestIndex();
+
+        for (Iterator<Map.Entry<Long, ModifyObject>> iterator = lastModifyObjectRequests.entrySet().iterator(); iterator.hasNext(); ) {
+            Map.Entry<Long, ModifyObject> cell = iterator.next();
+            if (cell.getKey() <= currentDispatchingRequestIndex) {
+                iterator.remove();
+            }
+        }
+
+        for (Map.Entry<Long, ModifyObject> e : lastModifyObjectRequests.entrySet()) {
+            ArrayList<GGroupObjectValue> gridObjects = fc.gridObjects.get(e.getValue().object.groupObject);
+            if (gridObjects != null) {
+                if (e.getValue().add) {
+                    gridObjects.add(e.getValue().value);
+                } else {
+                    gridObjects.remove(e.getValue().value);
+                }
+            }
+        }
+    }
+
+    private void modifyFormChangesWithChangeCurrentObjectAsyncs(GFormChanges fc) {
+        long currentDispatchingRequestIndex = dispatcher.getCurrentDispatchingRequestIndex();
+
+        for (Iterator<Map.Entry<GGroupObject,Long>> iterator = lastChangeCurrentObjectsRequestIndices.entrySet().iterator(); iterator.hasNext(); ) {
+            Map.Entry<GGroupObject, Long> entry = iterator.next();
+
+            if (entry.getValue() <= currentDispatchingRequestIndex) {
+                iterator.remove();
+            } else {
+                fc.objects.remove(entry.getKey());
+            }
+        }
+    }
+
+    private void modifyFormChangesWithChangePropertyAsyncs(GFormChanges fc) {
+        long currentDispatchingRequestIndex = dispatcher.getCurrentDispatchingRequestIndex();
+
+        for (Map.Entry<GPropertyDraw, HashMap<GGroupObjectValue, Long>> entry : lastChangePropertyRequestIndices.entrySet()) {
+            GPropertyDraw property = entry.getKey();
+            for (Map.Entry<GGroupObjectValue, Long> e : entry.getValue().entrySet()) {
+                long requestIndex = e.getValue();
+                if (requestIndex <= currentDispatchingRequestIndex) {
+                    GGroupObjectValue keys = e.getKey();
+
+                    removeFromDoubleMap(lastChangePropertyRequestIndices, property, keys);
+                    Change change = removeFromDoubleMap(lastChangePropertyRequestValues, property, keys);
+
+                    HashMap<GGroupObjectValue, Object> propertyValues = fc.properties.get(property);
+                    if (propertyValues == null) {
+                        // включаем изменение на старое значение, если ответ с сервера пришел, а новое значение нет
+                        propertyValues = new HashMap<GGroupObjectValue, Object>();
+                        fc.properties.put(property, propertyValues);
+                        fc.updateProperties.add(property);
+                    }
+
+                    if (fc.updateProperties.contains(property) && !propertyValues.containsKey(keys)) {
+                        propertyValues.put(keys, change.oldValue);
+                    }
+                }
+            }
+        }
+
+        for (Map.Entry<GPropertyDraw, HashMap<GGroupObjectValue, Change>> e : lastChangePropertyRequestValues.entrySet()) {
+            HashMap<GGroupObjectValue, Object> propertyValues = fc.properties.get(e.getKey());
+            if (propertyValues != null) {
+                for (Map.Entry<GGroupObjectValue, Change> keyValue : e.getValue().entrySet()) {
+                    propertyValues.put(keyValue.getKey(), keyValue.getValue().newValue);
+                }
+            }
+        }
+    }
+
+    public <R, C, V> void putToDoubleMap(HashMap<R, HashMap<C, V>> doubleMap, R row, C column, V value) {
+        HashMap<C, V> rowMap = doubleMap.get(row);
+        if (rowMap == null) {
+            doubleMap.put(row, rowMap = new HashMap<C, V>());
+        }
+        rowMap.put(column, value);
+    }
+
+    public <R, C, V> V getFromDoubleMap(HashMap<R, HashMap<C, V>> doubleMap, R row, C column) {
+        HashMap<C, V> rowMap = doubleMap.get(row);
+        return rowMap == null ? null : rowMap.get(column);
+    }
+
+    public <R, C, V> V removeFromDoubleMap(HashMap<R, HashMap<C, V>> doubleMap, R row, C column) {
+        V result = null;
+        HashMap<C, V> rowMap = doubleMap.get(row);
+        if (rowMap != null) {
+            result = rowMap.remove(column);
+        }
+        return result;
     }
 
     public void showModalDialog(GForm form, final WindowHiddenHandler handler) {
@@ -232,14 +344,12 @@ public class GFormController extends SimplePanel implements FormLogicsProvider {
     }
 
     public void changeGroupObject(GGroupObject group, GGroupObjectValue key) {
-        dispatcher.execute(new ChangeGroupObject(group.ID, key.getValueDTO()), new ServerResponseCallback());
+        long requestIndex = dispatcher.execute(new ChangeGroupObject(group.ID, key.getValueDTO()), new ServerResponseCallback());
+        lastChangeCurrentObjectsRequestIndices.put(group, requestIndex);
     }
 
     public void executeEditAction(GPropertyDraw property, String actionSID) {
         GGroupObjectValue key = controllers.get(property.groupObject).getCurrentKey();
-        if (key == null) {
-            key = new GGroupObjectValue();
-        }
         executeEditAction(property, key, actionSID);
     }
 
@@ -248,22 +358,20 @@ public class GFormController extends SimplePanel implements FormLogicsProvider {
     }
 
     public void executeEditAction(GPropertyDraw property, GGroupObjectValue key, String actionSID, AsyncCallback<ServerResponseResult> callback) {
-        if (isEditingEnabled()) {
-            //todo: columnKeys
-            syncDispatch(new ExecuteEditAction(property.ID, new GGroupObjectValueDTO(), actionSID), callback);
-//            syncDispatch(new ExecuteEditAction(property.ID, key.getValueDTO(), actionSID), callback);
-        }
+        //todo: columnKeys
+        syncDispatch(new ExecuteEditAction(property.ID, new GGroupObjectValueDTO(), actionSID), callback);
+//        syncDispatch(new ExecuteEditAction(property.ID, key.getValueDTO(), actionSID), callback);
     }
 
-    public void contiueServerInvocation(Object[] actionResults, AsyncCallback<ServerResponseResult> callback) {
-        syncDispatch(new ContinueInvocationAction(actionResults), callback);
+    public void continueServerInvocation(Object[] actionResults, AsyncCallback<ServerResponseResult> callback) {
+        syncDispatch(new ContinueInvocation(actionResults), callback);
     }
 
     public void throwInServerInvocation(Exception exception) {
-        syncDispatch(new ThrowInInvocationAction(exception), new ErrorAsyncCallback<ServerResponseResult>());
+        syncDispatch(new ThrowInInvocation(exception), new ErrorAsyncCallback<ServerResponseResult>());
     }
 
-    public <T extends Result> void syncDispatch(Action<T> action, AsyncCallback<T> callback) {
+    public <T extends Result> void syncDispatch(FormBoundAction<T> action, AsyncCallback<T> callback) {
         //todo: возможно понадобится сделать чтото более сложное как в
         //todo: http://stackoverflow.com/questions/2061699/disable-user-interaction-in-a-gwt-container
         LoadingBlocker.getInstance().start();
@@ -275,8 +383,80 @@ public class GFormController extends SimplePanel implements FormLogicsProvider {
         });
     }
 
-    public void changeProperty(GPropertyDraw property, Serializable value) {
-        dispatcher.execute(new ChangeProperty(property.ID, value), new ServerResponseCallback());
+    public GGroupObjectValue getFullCurrentKey() {
+        GGroupObjectValue fullKey = new GGroupObjectValue();
+
+        for (GGroupObjectController group : controllers.values()) {
+            fullKey.putAll(group.getCurrentKey());
+        }
+
+        for (GTreeGroupController tree : treeControllers.values()) {
+            GGroupObjectValue currentPath = tree.getCurrentPath();
+            if (currentPath != null) {
+                fullKey.putAll(currentPath);
+            }
+        }
+
+        return fullKey;
+    }
+
+    public GGroupObjectValue getFullCurrentKey(GGroupObjectValue columnKey) {
+        GGroupObjectValue fullKey = getFullCurrentKey();
+        if (columnKey != null) {
+            fullKey.putAll(columnKey);
+        }
+        return fullKey;
+    }
+
+    public void changeProperty(GEditPropertyHandler editHandler, GPropertyDraw property, Serializable value, Object oldValue) {
+        editHandler.updateEditValue(value);
+
+        long requestIndex = dispatcher.execute(new ChangeProperty(property.ID, getFullCurrentKey().getValueDTO(), value, null), new ServerResponseCallback());
+
+        GGroupObjectController controller = controllers.get(property.groupObject);
+
+        //todo: column key
+        GGroupObjectValue columnKey = new GGroupObjectValue();
+        GGroupObjectValue propertyKey = controller != null && !controller.hasPanelProperty(property)
+                                        ? new GGroupObjectValue(controller.getCurrentKey(), columnKey)
+                                        : columnKey;
+
+        putToDoubleMap(lastChangePropertyRequestIndices, property, propertyKey, requestIndex);
+        putToDoubleMap(lastChangePropertyRequestValues, property, propertyKey, new Change(value, oldValue));
+    }
+
+    public boolean isAsyncModifyObject(GPropertyDraw property) {
+        return property.addRemove!=null && controllers.get(property.addRemove.object.groupObject).isInGridClassView();
+    }
+
+    public void modifyObject(final GPropertyDraw property, final GGroupObjectValue columnKey) {
+        assert isAsyncModifyObject(property);
+
+        final GObject object = property.addRemove.object;
+        final boolean add = property.addRemove.add;
+
+        if(add) {
+            NavigatorDispatchAsync.Instance.get().execute(new GenerateID(), new ErrorAsyncCallback<GenerateIDResult>() {
+                @Override
+                public void success(GenerateIDResult result) {
+                    executeModifyObject(property, columnKey, object, add, result.ID, new GGroupObjectValue(object, result.ID));
+                }
+            });
+        } else {
+            final GGroupObjectValue value = controllers.get(object.groupObject).getCurrentKey();
+            final int ID = (Integer)value.values().iterator().next();
+            executeModifyObject(property, columnKey, object, add, ID, value);
+        }
+    }
+
+    private void executeModifyObject(GPropertyDraw property, GGroupObjectValue columnKey, GObject object, boolean add, int ID, GGroupObjectValue value) {
+        final GGroupObjectValue fullCurrentKey = getFullCurrentKey(columnKey); // чтобы не изменился
+
+        controllers.get(object.groupObject).modifyGroupObject(value, add);
+
+        long requestIndex = dispatcher.execute(new ChangeProperty(property.ID, fullCurrentKey.getValueDTO(), null, add ? ID : null), new ServerResponseCallback());
+        lastChangeCurrentObjectsRequestIndices.put(object.groupObject, requestIndex);
+        lastModifyObjectRequests.put(requestIndex, new ModifyObject(object, add, value));
     }
 
     public void changeClassView(GGroupObject groupObject, GClassViewType newClassView) {
@@ -338,6 +518,32 @@ public class GFormController extends SimplePanel implements FormLogicsProvider {
 
     public int getPreferredHeight() {
         return formLayout.getMainKey().prefferedHeight;
+    }
+
+    private GPropertyTable editingTable;
+    public void setCurrentEditingTable(GPropertyTable table) {
+        editingTable = table;
+        if (table == null) {
+            dispatcher.flushCompletedRequests();
+        }
+    }
+
+    public boolean isEditing() {
+        return editingTable != null;
+    }
+
+    public GForm getForm() {
+        return form;
+    }
+
+    private static final class Change {
+        public Object newValue;
+        public Object oldValue;
+
+        private Change(Object newValue, Object oldValue) {
+            this.newValue = newValue;
+            this.oldValue = oldValue;
+        }
     }
 
     private class ServerResponseCallback extends ErrorAsyncCallback<ServerResponseResult> {

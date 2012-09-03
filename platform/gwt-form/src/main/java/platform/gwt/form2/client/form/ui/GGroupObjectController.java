@@ -11,6 +11,8 @@ import platform.gwt.form2.shared.view.logics.GGroupObjectLogicsSupplier;
 import platform.gwt.form2.shared.view.reader.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 public class GGroupObjectController implements GGroupObjectLogicsSupplier {
@@ -25,6 +27,8 @@ public class GGroupObjectController implements GGroupObjectLogicsSupplier {
     private GShowTypeView showTypeView;
 
     private GClassViewType classViewType = GClassViewType.HIDE;
+
+    private HashSet<GPropertyDraw> panelProperties = new HashSet<GPropertyDraw>();
 
     public GGroupObjectController(GFormController iformController, GGroupObject igroupObject, GFormLayout iformLayout) {
         groupObject = igroupObject;
@@ -77,7 +81,7 @@ public class GGroupObjectController implements GGroupObjectLogicsSupplier {
         for (GPropertyReader propertyReader : fc.properties.keySet()) {
             if (propertyReader instanceof GPropertyDraw) {
                 GPropertyDraw property = (GPropertyDraw) propertyReader;
-                if (property.groupObject == groupObject) {
+                if (property.groupObject == groupObject && !fc.updateProperties.contains(property)) {
                     if (fc.panelProperties.contains(property)) {
                         addPanelProperty(property);
                     } else {
@@ -97,9 +101,10 @@ public class GGroupObjectController implements GGroupObjectLogicsSupplier {
             grid.getTable().setCurrentKey(currentKey);
         }
 
-        for (GPropertyReader propertyReader : fc.properties.keySet()) {
+        for (Map.Entry<GPropertyReader, HashMap<GGroupObjectValue, Object>> readProperty : fc.properties.entrySet()) {
+            GPropertyReader propertyReader = readProperty.getKey();
             if (formController.getGroupObject(propertyReader.getGroupObjectID()) == groupObject) {
-                propertyReader.update(this, fc.properties.get(propertyReader));
+                propertyReader.update(this, readProperty.getValue(), fc.updateProperties.contains(propertyReader));
             }
         }
 
@@ -107,12 +112,12 @@ public class GGroupObjectController implements GGroupObjectLogicsSupplier {
     }
 
     @Override
-    public void updatePropertyDrawValues(GPropertyDraw reader, Map<GGroupObjectValue, Object> values) {
+    public void updatePropertyDrawValues(GPropertyDraw reader, Map<GGroupObjectValue, Object> values, boolean updateKeys) {
         GPropertyDraw property = formController.getProperty(reader.ID);
         if (panel.containsProperty(property)) {
-            panel.setValue(property, values);
+            panel.setPropertyValues(property, values, updateKeys);
         } else {
-            grid.getTable().setValues(property, values);
+            grid.getTable().setPropertyValues(property, values, updateKeys);
         }
     }
 
@@ -239,6 +244,7 @@ public class GGroupObjectController implements GGroupObjectLogicsSupplier {
         if (grid != null) {
             grid.getTable().removeProperty(property);
         }
+        panelProperties.remove(property);
     }
 
     private void addGridProperty(GPropertyDraw property) {
@@ -246,6 +252,7 @@ public class GGroupObjectController implements GGroupObjectLogicsSupplier {
             grid.getTable().addProperty(property);
         }
         panel.removeProperty(property);
+        panelProperties.remove(property);
     }
 
     private void addPanelProperty(GPropertyDraw property) {
@@ -253,6 +260,11 @@ public class GGroupObjectController implements GGroupObjectLogicsSupplier {
             grid.getTable().removeProperty(property);
         }
         panel.addProperty(property);
+        panelProperties.add(property);
+    }
+
+    public boolean hasPanelProperty(GPropertyDraw property) {
+        return panelProperties.contains(property);
     }
 
     public void addFilterComponent(Widget filterWidget) {
@@ -278,6 +290,16 @@ public class GGroupObjectController implements GGroupObjectLogicsSupplier {
     }
 
     public GGroupObjectValue getCurrentKey() {
-        return grid != null ? grid.getTable().getCurrentKey() : null;
+        GGroupObjectValue result = null;
+        if (grid != null) {
+            result = grid.getTable().getCurrentKey();
+        }
+        return result == null ? new GGroupObjectValue() : result;
+    }
+
+    public void modifyGroupObject(GGroupObjectValue key, boolean add) {
+        assert classViewType == GClassViewType.GRID;
+
+        grid.modifyGridObject(key, add);
     }
 }

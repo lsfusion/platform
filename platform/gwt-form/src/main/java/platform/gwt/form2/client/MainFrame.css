@@ -33,6 +33,10 @@
     overflow: auto !important;
 }
 
+.modalFormContent {
+    overflow: auto !important;
+}
+
 .gwt-TabLayoutPanel .gwt-TabLayoutPanelTab {
     padding: 0px 3px 0px 5px;
 }
@@ -68,7 +72,6 @@
 }
 
 .captionPanelLegend {
-    /*z-index: 1;*/
     left: 0.5em;
     top: -0.6em;
     position: absolute;
@@ -102,36 +105,4 @@
 
 /*.showType {*/
     /*border: 2px solid blue;*/
-/*}*/
-
-/*.gwtVertical {*/
-    /*border: 2px solid black;*/
-/*}*/
-
-/*.gwtHorizontal {*/
-    /*border: 2px solid orange;*/
-/*}*/
-
-/*.blueb {*/
-    /*border: 2px solid blue;*/
-/*}*/
-
-/*.redb {*/
-    /*border: 2px solid red;*/
-/*}*/
-
-/*.greenb {*/
-    /*border: 2px solid green;*/
-/*}*/
-
-/*.grayb {*/
-    /*border: 2px solid gray;*/
-/*}*/
-
-/*.cyanb {*/
-    /*border: 2px solid cyan;*/
-/*}*/
-
-/*.orangeb {*/
-    /*border: 2px solid orange;*/
 /*}*/

@@ -16,7 +16,7 @@ public class GCaptionReader implements GPropertyReader {
         this.groupObjectID = groupObjectID;
     }
 
-    public void update(GGroupObjectLogicsSupplier controller, Map<GGroupObjectValue, Object> values) {
+    public void update(GGroupObjectLogicsSupplier controller, Map<GGroupObjectValue, Object> values, boolean updateKeys) {
         controller.updateCaptionValues(this, values);
     }
 

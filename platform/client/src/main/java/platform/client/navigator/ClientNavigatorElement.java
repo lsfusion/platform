@@ -15,6 +15,11 @@ public class ClientNavigatorElement {
 
     private static Map<String, HashSet<ClientNavigatorElement>> parents = new HashMap<String, HashSet<ClientNavigatorElement>>();
 
+    public static void dropCaches() {
+        root = null;
+        parents.clear();
+    }
+
     public int ID;
     public String caption;
     public String sID;

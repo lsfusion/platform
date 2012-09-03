@@ -6,6 +6,7 @@ import com.google.gwt.user.client.ui.Widget;
 import platform.gwt.form2.client.form.dispatch.GEditPropertyDispatcher;
 import platform.gwt.form2.client.form.dispatch.GEditPropertyHandler;
 import platform.gwt.form2.client.form.ui.GFormController;
+import platform.gwt.form2.shared.actions.form.ServerResponseResult;
 import platform.gwt.form2.shared.view.GPropertyDraw;
 import platform.gwt.form2.shared.view.classes.GType;
 import platform.gwt.form2.shared.view.grid.EditManager;
@@ -48,6 +49,10 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
 
     @Override
     public void updateEditValue(Object value) {
+    }
+
+    @Override
+    public void postDispatchResponse(ServerResponseResult response) {
     }
 
     @Override

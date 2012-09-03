@@ -299,11 +299,11 @@ public class GroupObjectController extends AbstractGroupObjectController {
         }
     }
 
-    public void updateDrawPropertyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values, boolean update) {
+    public void updateDrawPropertyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values, boolean updateKeys) {
         if (panelProperties.contains(property)) {
-            panel.updatePropertyValues(property, values, update);
+            panel.updatePropertyValues(property, values, updateKeys);
         } else {
-            grid.updatePropertyValues(property, values, update);
+            grid.updatePropertyValues(property, values, updateKeys);
         }
     }
 

@@ -7,6 +7,6 @@ import java.io.Serializable;
 import java.util.Map;
 
 public interface GPropertyReader extends Serializable {
-    void update(GGroupObjectLogicsSupplier controller, Map<GGroupObjectValue, Object> values);
+    void update(GGroupObjectLogicsSupplier controller, Map<GGroupObjectValue, Object> values, boolean updateKeys);
     int getGroupObjectID();
 }

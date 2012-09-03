@@ -352,14 +352,10 @@ public class GridTable extends ClientPropertyTable {
         return o instanceof GridTable && ((GridTable) o).getID() == this.getID();
     }
 
-    public void updateTableRows() {
-        model.updateRows(rowKeys, values, rowBackground, rowForeground, cellBackgroundValues, cellForegroundValues);
-    }
-
     public void updateTable() {
         model.updateColumns(properties, columnKeys, captions);
 
-        updateTableRows();
+        model.updateRows(rowKeys, values, rowBackground, rowForeground, cellBackgroundValues, cellForegroundValues);
 
         refreshColumnModel();
 

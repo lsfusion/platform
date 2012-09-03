@@ -61,7 +61,7 @@ public interface RemoteFormInterface extends PendingRemote, RemoteContextInterfa
 
     // асинхронные вызовы
 
-    ServerResponse changeProperty(long requestIndex, int propertyID, byte[] fullKey, byte[] pushChange, byte[] pushAdd) throws RemoteException;
+    ServerResponse changeProperty(long requestIndex, int propertyID, byte[] fullKey, byte[] pushChange, Integer pushAdd) throws RemoteException;
 
     // фильтры / порядки
 

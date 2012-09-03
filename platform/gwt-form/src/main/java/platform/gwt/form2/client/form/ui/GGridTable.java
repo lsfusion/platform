@@ -1,35 +1,28 @@
 package platform.gwt.form2.client.form.ui;
 
-import com.google.gwt.cell.client.Cell;
+import com.allen_sauer.gwt.log.client.Log;
 import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.user.cellview.client.Column;
-import com.google.gwt.user.cellview.client.DataGrid;
 import com.google.gwt.user.cellview.client.Header;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HeaderPanel;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.view.client.DefaultSelectionEventManager;
 import com.google.gwt.view.client.SelectionChangeEvent;
-import platform.gwt.form2.client.form.dispatch.GEditPropertyDispatcher;
-import platform.gwt.form2.client.form.dispatch.GEditPropertyHandler;
-import platform.gwt.utils.GwtSharedUtils;
 import platform.gwt.form2.shared.view.GGroupObject;
 import platform.gwt.form2.shared.view.GPropertyDraw;
 import platform.gwt.form2.shared.view.GridDataRecord;
 import platform.gwt.form2.shared.view.changes.GGroupObjectValue;
-import platform.gwt.form2.shared.view.classes.GType;
-import platform.gwt.form2.shared.view.grid.EditManager;
-import platform.gwt.form2.shared.view.grid.GridEditableCell;
-import platform.gwt.form2.shared.view.grid.editor.GridCellEditor;
+import platform.gwt.utils.GwtSharedUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-public class GGridTable extends DataGrid implements EditManager, GEditPropertyHandler {
+public class GGridTable extends GPropertyTable {
 
     /**
      * Default style's overrides
@@ -43,9 +36,7 @@ public class GGridTable extends DataGrid implements EditManager, GEditPropertyHa
 
     public static final GGridTableResource GGRID_RESOURCES = GWT.create(GGridTableResource.class);
 
-    private final GFormController form;
     private final GGroupObjectController groupController;
-    private final GEditPropertyDispatcher editDispatcher;
 
     private final GGridTableSelectionModel selectionModel;
 
@@ -60,22 +51,17 @@ public class GGridTable extends DataGrid implements EditManager, GEditPropertyHa
     private Map<GGroupObjectValue, Object> rowBackgroundValues = new HashMap<GGroupObjectValue, Object>();
     private Map<GGroupObjectValue, Object> rowForegroundValues = new HashMap<GGroupObjectValue, Object>();
 
+    private ArrayList<GridDataRecord> currentRecords;
+    private boolean dataUpdated = false;
+
     private GGroupObjectValue currentKey;
     private GGroupObject groupObject;
-    private int currentInd = -1;
-
-    private GridEditableCell editCell;
-    private Cell.Context editContext;
-    private Element editCellParent;
-    private GType editType;
 
     public GGridTable(GFormController iform, GGroupObjectController igroupController) {
-        super(50, GGRID_RESOURCES);
+        super(iform, GGRID_RESOURCES);
 
-        this.form = iform;
         this.groupController = igroupController;
         this.groupObject = groupController.groupObject;
-        this.editDispatcher = new GEditPropertyDispatcher(form);
 
         setEmptyTableWidget(new HTML("The table is empty"));
 
@@ -88,63 +74,18 @@ public class GGridTable extends DataGrid implements EditManager, GEditPropertyHa
             public void onSelectionChange(SelectionChangeEvent event) {
                 GridDataRecord selectedRecord = selectionModel.getSelectedRecord();
                 if (selectedRecord != null && !selectedRecord.key.equals(currentKey)) {
-                    storeScrolling(selectedRecord);
+                    setCurrentKey(selectedRecord.key);
                     form.changeGroupObject(groupObject, selectedRecord.key);
                 }
             }
         });
 
-        setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
-//        setKeyboardSelectionPolicy(KeyboardSelectionPolicy.ENABLED);
-//        addDomHandler(new KeyDownHandler() {
-//            @Override
-//            public void onKeyDown(KeyDownEvent event) {
-//                if (selectionModel.getSelectedRecord() != null) {
-//                    int pos;
-//                    GridDataRecord object;
-//                    int key = event.getNativeEvent().getKeyCode();
-//                    switch (key) {
-//                        case KeyCodes.KEY_UP:
-//                            pos = currentInd;
-//                            if (pos > 0) {
-//                                object = getVisibleItems().get(pos - 1);
-//                                selectionModel.setSelected(object, true);
-//                                event.stopPropagation();
-//                                event.preventDefault();
-//                            }
-//                            break;
-//                        case KeyCodes.KEY_DOWN:
-//                            pos = currentInd;
-//                            if (pos != -1 && pos != getVisibleItems().size() - 1) {
-//                                object = getVisibleItems().get(pos + 1);
-//                                selectionModel.setSelected(object, true);
-//                                event.stopPropagation();
-//                                event.preventDefault();
-//                            }
-//                            break;
-//                    }
-//                }
-//            }
-//        }, KeyDownEvent.getType());
-//        sinkEvents(Event.ONKEYDOWN);
+        setKeyboardSelectionPolicy(KeyboardSelectionPolicy.BOUND_TO_SELECTION);
     }
 
     public ScrollPanel getScrollPanel() {
         HeaderPanel header = (HeaderPanel) getWidget();
         return (ScrollPanel) header.getContentWidget();
-    }
-
-    private void storeScrolling(GridDataRecord selectedRecord) {
-        setCurrentKey(selectedRecord.key);
-        currentInd = keys.indexOf(currentKey);
-    }
-
-    //
-    private void restoreScrolling() {
-        if (currentInd == -1) {
-            return;
-        }
-//        scrollRecordIntoView(currentInd);
     }
 
     public void removeProperty(GPropertyDraw property) {
@@ -184,6 +125,7 @@ public class GGridTable extends DataGrid implements EditManager, GEditPropertyHa
     }
 
     public void setCurrentKey(GGroupObjectValue currentKey) {
+        Log.debug("Setting current object to: " + currentKey);
         this.currentKey = currentKey;
     }
 
@@ -192,44 +134,43 @@ public class GGridTable extends DataGrid implements EditManager, GEditPropertyHa
         this.keys = keys;
     }
 
-    public void setValues(GPropertyDraw property, Map<GGroupObjectValue, Object> propValues) {
+    public void setPropertyValues(GPropertyDraw property, Map<GGroupObjectValue, Object> propValues, boolean updateKeys) {
         if (propValues != null) {
             dataUpdated = true;
-            values.put(property, propValues);
+            GwtSharedUtils.putUpdate(values, property, propValues, updateKeys);
         }
     }
 
-    private boolean dataUpdated = false;
-
-    ArrayList<GridDataRecord> records;
-
     public void update() {
-        if (currentKey == null) {
-            GridDataRecord selected = selectionModel.getSelectedRecord();
-            if (selected != null) {
-                currentKey = selected.key;
+        GridDataRecord selectedRecord = selectionModel.getSelectedRecord();
+
+        int oldKeyScrollTop = 0;
+        GGroupObjectValue oldKey = null;
+        if (selectedRecord != null) {
+            int oldKeyInd = currentRecords.indexOf(selectedRecord);
+
+            if (oldKeyInd != -1) {
+                oldKey = selectedRecord.key;
+                TableRowElement rowElement = getRowElement(oldKeyInd);
+                oldKeyScrollTop = rowElement.getAbsoluteTop() - getScrollPanel().getAbsoluteTop();
             }
         }
 
-        int rowScrollTop = 0;
-        if (currentInd != -1) {
-            TableRowElement rowElement = getRowElement(currentInd);
-            rowScrollTop = rowElement.getAbsoluteTop() - getScrollPanel().getAbsoluteTop();
-        }
-
-        currentInd = currentKey == null ? -1 : keys.indexOf(currentKey);
-
         if (dataUpdated) {
-            records = GridDataRecord.createRecords(keys, values);
-            setRowData(records);
+            currentRecords = GridDataRecord.createRecords(keys, values);
+            setRowData(currentRecords);
             dataUpdated = false;
         }
 
-        restoreScrolling();
-
+        int currentInd = currentKey == null ? -1 : keys.indexOf(currentKey);
         if (currentInd != -1) {
-            scrollRowToVerticalPosition(currentInd, rowScrollTop);
-            selectionModel.setSelected(records.get(currentInd), true);
+            if (currentKey.equals(oldKey)) {
+                scrollRowToVerticalPosition(currentInd, oldKeyScrollTop);
+            } else {
+                getRowElement(currentInd).scrollIntoView();
+            }
+            selectionModel.setSelected(currentRecords.get(currentInd), true);
+            setKeyboardSelectedRow(currentInd, false);
         }
 
         updatePropertyReaders();
@@ -310,71 +251,47 @@ public class GGridTable extends DataGrid implements EditManager, GEditPropertyHa
         rowForegroundValues = values;
     }
 
+    public GPropertyDraw getProperty(int colNum) {
+        return properties.get(colNum);
+    }
+
     public Object getValueAt(int row, int column) {
         //todo: optimize maybe
         return values.get(getProperty(column)).get(keys.get(row));
     }
 
-    public GPropertyDraw getProperty(int colNum) {
-        return properties.get(colNum);
+    public void setValueAt(int row, int column, Object value) {
+        GPropertyDraw columnProperty = getProperty(column);
+        values.get(columnProperty).put(keys.get(row), value);
+
+        GridDataRecord rowRecord = currentRecords.get(row);
+        rowRecord.setAttribute(columnProperty, value);
+
+        setRowData(row, Arrays.asList(rowRecord));
     }
 
-    @Override
-    public void requestValue(GType valueType, Object oldValue) {
-        editType = valueType;
-
-        GridCellEditor cellEditor = valueType.createGridCellEditor(this, getProperty(editContext.getColumn()), oldValue);
-        if (cellEditor != null) {
-            editCell.startEditing(editContext, editCellParent, cellEditor);
+    public void modifyGroupObject(GGroupObjectValue rowKey, boolean add) {
+        if (add) {
+            keys.add(rowKey);
+            setCurrentKey(rowKey);
         } else {
-            cancelEditing();
+            if (currentKey.equals(rowKey) && keys.size() > 0) {
+                if (keys.size() == 1) {
+                    setCurrentKey(null);
+                } else {
+                    int index = keys.indexOf(rowKey);
+                    index = index == keys.size() - 1 ? index - 1 : index + 1;
+                    setCurrentKey(keys.get(index));
+                }
+            }
+            keys.remove(rowKey);
         }
-    }
+        dataUpdated = true;
 
-    @Override
-    public void updateEditValue(Object value) {
-        //todo:
+        update();
 
-    }
-
-    @Override
-    public boolean isCurrentlyEditing() {
-        //todo: возвращать true, если любая таблица редактируется, чтобы избежать двойного редактирования...
-        return editType != null;
-    }
-
-    @Override
-    public void executePropertyEditAction(GridEditableCell editCell, Cell.Context editContext, Element parent) {
-        this.editCell = editCell;
-        this.editContext = editContext;
-        this.editCellParent = parent;
-        GGroupObjectValue columnKey = ((GridDataRecord) editContext.getKey()).key;
-        editDispatcher.executePropertyEditAction(this, getProperty(editContext.getColumn()), getEditCellCurrentValue(), columnKey);
-    }
-
-    private Object getEditCellCurrentValue() {
-        return getValueAt(editContext.getIndex(), editContext.getColumn());
-    }
-
-    @Override
-    public void commitEditing(Object value) {
-        clearEditState();
-        editDispatcher.commitValue(value);
-    }
-
-    @Override
-    public void cancelEditing() {
-        clearEditState();
-        editDispatcher.cancelEdit();
-    }
-
-    private void clearEditState() {
-        editCell.finishEditing(editContext, editCellParent, getEditCellCurrentValue());
-
-        editCell = null;
-        editContext = null;
-        editCellParent = null;
-        editType = null;
+        //todo: без перерисовки возникает странныйй баг при удалении строки, когда всего осталось 2 строки - после удаления 2я строка всё ещё рисуется...
+        redraw();
     }
 
     private class GridHeader extends Header<String> {

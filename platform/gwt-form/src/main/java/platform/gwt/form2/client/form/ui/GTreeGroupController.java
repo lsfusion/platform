@@ -11,6 +11,7 @@ import platform.gwt.form2.shared.view.changes.GGroupObjectValue;
 import platform.gwt.form2.shared.view.logics.GGroupObjectLogicsSupplier;
 import platform.gwt.form2.shared.view.reader.*;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class GTreeGroupController implements GGroupObjectLogicsSupplier {
@@ -55,7 +56,7 @@ public class GTreeGroupController implements GGroupObjectLogicsSupplier {
             for (GPropertyReader propertyReader : fc.properties.keySet()) {
                 if (propertyReader instanceof GPropertyDraw) {
                     GPropertyDraw property = (GPropertyDraw) propertyReader;
-                    if (property.groupObject == group) {
+                    if (property.groupObject == group && !fc.updateProperties.contains(property)) {
                         if (fc.panelProperties.contains(property)) {
                             addPanelProperty(group, property);
                         } else {
@@ -71,9 +72,10 @@ public class GTreeGroupController implements GGroupObjectLogicsSupplier {
                 }
             }
 
-            for (GPropertyReader propertyReader : fc.properties.keySet()) {
+            for (Map.Entry<GPropertyReader, HashMap<GGroupObjectValue, Object>> readProperty : fc.properties.entrySet()) {
+                GPropertyReader propertyReader = readProperty.getKey();
                 if (formController.getGroupObject(propertyReader.getGroupObjectID()) == group) {
-                    propertyReader.update(this, fc.properties.get(propertyReader));
+                    propertyReader.update(this, readProperty.getValue(), fc.updateProperties.contains(propertyReader));
                 }
             }
         }
@@ -108,12 +110,12 @@ public class GTreeGroupController implements GGroupObjectLogicsSupplier {
     }
 
     @Override
-    public void updatePropertyDrawValues(GPropertyDraw reader, Map<GGroupObjectValue, Object> values) {
+    public void updatePropertyDrawValues(GPropertyDraw reader, Map<GGroupObjectValue, Object> values, boolean updateKeys) {
         GPropertyDraw property = formController.getProperty(reader.ID);
         if (panel.containsProperty(property)) {
-            panel.setValue(property, values);
+            panel.setPropertyValues(property, values, updateKeys);
         } else {
-            tree.setValues(property, values);
+            tree.setPropertyValues(property, values, updateKeys);
         }
     }
 
@@ -163,5 +165,10 @@ public class GTreeGroupController implements GGroupObjectLogicsSupplier {
         tree.updateRowForegroundValues(values);
         if (values != null && !values.isEmpty())
             panel.updateRowForegroundValue(values.values().iterator().next());
+    }
+
+    public GGroupObjectValue getCurrentPath() {
+        //todo:
+        return null;
     }
 }

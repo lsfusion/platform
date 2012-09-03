@@ -48,7 +48,8 @@ public class GPanelController {
         }
     }
 
-    public void setValue(GPropertyDraw property, Map<GGroupObjectValue, Object> valueMap) {
+    public void setPropertyValues(GPropertyDraw property, Map<GGroupObjectValue, Object> valueMap, boolean updateKeys) {
+        //todo: use updateKeys for columnKeys logic
         if (valueMap != null && !valueMap.isEmpty()) {
             values.put(property, valueMap.values().iterator().next());
         }

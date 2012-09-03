@@ -29,12 +29,28 @@ public class GridDataRecord {
         }
     }
 
+    public void setAttribute(GPropertyDraw property, Object value) {
+        values.put(property.sID, value);
+    }
+
     public void setAttribute(String name, Object value) {
         values.put(name, value);
     }
 
     public Object getAttribute(String name) {
         return values.get(name);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof GridDataRecord && key.equals(((GridDataRecord) obj).key);
+    }
+
+    @Override
+    public String toString() {
+        return "GridDataRecord{" +
+                "values=" + values +
+                '}';
     }
 
     public static ArrayList<GridDataRecord> createRecords(ArrayList<GGroupObjectValue> gridKeys, Map<GPropertyDraw, Map<GGroupObjectValue, Object>> gridProps) {
@@ -62,12 +78,5 @@ public class GridDataRecord {
         }
 
         return result;
-    }
-
-    @Override
-    public String toString() {
-        return "GridDataRecord{" +
-                "values=" + values +
-                '}';
     }
 }

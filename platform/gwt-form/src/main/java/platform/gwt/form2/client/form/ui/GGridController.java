@@ -68,4 +68,8 @@ public class GGridController {
     public void updateRowForegroundValues(Map<GGroupObjectValue, Object> values) {
         table.updateRowForegroundValues(values);
     }
+
+    public void modifyGridObject(GGroupObjectValue key, boolean add) {
+        table.modifyGroupObject(key, add);
+    }
 }

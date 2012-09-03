@@ -3,6 +3,7 @@ package platform.gwt.form2.client.dispatch;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import net.customware.gwt.dispatch.shared.Action;
 import net.customware.gwt.dispatch.shared.Result;
+import platform.gwt.form2.shared.actions.form.FormRequestIndexCountingAction;
 
 public class QueuedAction<R extends Result> {
     public Action<R> action;
@@ -38,5 +39,9 @@ public class QueuedAction<R extends Result> {
         } else {
             callback.onFailure(throwable);
         }
+    }
+
+    public long getRequestIndex() {
+        return action instanceof FormRequestIndexCountingAction ? ((FormRequestIndexCountingAction) action).requestIndex : -1;
     }
 }

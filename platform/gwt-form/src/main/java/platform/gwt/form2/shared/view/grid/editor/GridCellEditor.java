@@ -12,7 +12,7 @@ public interface GridCellEditor {
 
     void onBrowserEvent(Cell.Context context, Element parent, Object value, NativeEvent event, ValueUpdater<Object> valueUpdater);
 
-    void startEditing(Cell.Context context, Element parent);
+    void startEditing(NativeEvent editEvent, Cell.Context context, Element parent);
 
     boolean resetFocus(Cell.Context context, Element parent, Object value);
 }
