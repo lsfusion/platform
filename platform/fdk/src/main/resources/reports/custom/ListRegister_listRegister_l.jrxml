@@ -85,6 +85,7 @@
 	<field name="numberContractListRegister" class="java.lang.String"/>
 	<field name="dataFromContractListRegister" class="java.util.Date"/>
 	<field name="showWare" class="java.lang.Boolean"/>
+	<field name="isCustomStoreListRegister" class="java.lang.Boolean"/>
 	<group name="captionGroup1">
 		<groupExpression><![CDATA[String.valueOf($F{l})]]></groupExpression>
 	</group>
@@ -406,7 +407,7 @@
 					<rightPen lineWidth="0.0"/>
 				</box>
 				<textElement/>
-				<textFieldExpression><![CDATA["Вид операции: Приход товара от поставщика"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{isCustomStoreListRegister}!=null?"Вид операции: Приход от СВХ":"Вид операции: Приход товара от поставщика")]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="210" y="10" width="585" height="13"/>

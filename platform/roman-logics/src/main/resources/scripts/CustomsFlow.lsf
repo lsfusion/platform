@@ -12,7 +12,7 @@ REQUIRE System,
         RomanStock,
         RomanLogicsModule;
 
-PRIORITY RomanLogicsModule, Utils, Stock, Store;
+PRIORITY Stock, RomanLogicsModule, Utils, Store;
 
 CLASS CStoWH 'Расход с СВХ' : historyObject, numberedObject, consignment;
 CLASS CStoWHDetail 'Строка расхода с СВХ' : outFIFOSkuLedger, consignmentDetail;
@@ -21,7 +21,8 @@ CLASS CStoWHPosted 'Закрытый расход с СВХ' : CStoWH, postedObj
 @defineDocument(CStoWH);
 
 @defineDocumentStock(CStoWH, customStore, 'СВХ');
-@defineDocumentStock(CStoWH, warehouse, 'Оптовый склад');
+@defineDocumentStockPrefix(CStoWH, stock, 'Склад-получатель', destination);
+//@defineDocumentStock(CStoWH, stock, 'Склад');
 
 @defineDocumentPosted(CStoWH);
 @defineDocumentDescription (CStoWH, 'Расход с СВХ');
@@ -96,7 +97,7 @@ isAvailableDeclarationCStoWH 'Декларация доступна для ра�
     currentBalanceDeclaration (declaration)>0 AND
     dateTimeCStoWH(CStoWH) >= dateTimeDeclaration(declaration) AND
     customStoreCStoWH(CStoWH)==customStoreDeclaration(declaration) AND
-    companyWarehouse(warehouseCStoWH(CStoWH))==importerDeclaration(declaration);
+    companyStock(destinationStockCStoWH(CStoWH))==importerDeclaration(declaration);
 
 isCustomsDeclarationCStoWH 'Отгрузка с СВХ декларации' (declaration, CStoWH) =
     customStoreDeclaration (declaration) == customStoreCStoWH (CStoWH);
@@ -208,7 +209,7 @@ inputDeclarationDetailCStoWH 'Подбор строк декларации' = AC
 
 FORM CStoWH 'Расход с СВХ'
     OBJECTS c = CStoWH FIXED PANEL
-    PROPERTIES (c) objectClassName, numberObject, seriesObject, dateCStoWH, timeCStoWH, nameCustomStoreCStoWH, nameWarehouseCStoWH,
+    PROPERTIES (c) objectClassName, numberObject, seriesObject, dateCStoWH, timeCStoWH, nameCustomStoreCStoWH, nameDestinationStockCStoWH,
                    quantityCStoWHDetailCStoWH, sumCStoWHDetailCStoWH,
                    inputDeclarationDetailCStoWH, shortNameCurrencyCStoWH
     PROPERTIES (c) READONLY declarationsCStoWH, innerInvoicesCStoWH
@@ -239,7 +240,7 @@ DESIGN CStoWH FROM DEFAULT {
                     childConstraints = TO THE RIGHT;
                     ADD PROPERTY (objectClassName);
                     ADD PROPERTY (nameCustomStoreCStoWH);
-                    ADD PROPERTY (nameWarehouseCStoWH);
+                    ADD PROPERTY (nameDestinationStockCStoWH);
                     ADD PROPERTY (numberObject);
                     ADD PROPERTY (seriesObject);
                     ADD PROPERTY (dateCStoWH);
@@ -274,7 +275,7 @@ DESIGN CStoWH FROM DEFAULT {
 FORM CStoWHs 'Расходы с СВХ'
     OBJECTS c = CStoWH
     PROPERTIES (c) READONLY objectClassName, numberObject, seriesObject, dateCStoWH, timeCStoWH, nameCustomStoreCStoWH,
-                            nameWarehouseCStoWH, declarationsCStoWH, innerInvoicesCStoWH, quantityCStoWHDetailCStoWH, sumCStoWHDetailCStoWH
+                            nameDestinationStockCStoWH, declarationsCStoWH, innerInvoicesCStoWH, quantityCStoWHDetailCStoWH, sumCStoWHDetailCStoWH
 
     PROPERTIES (c) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
@@ -361,11 +362,13 @@ DESIGN CStoWHs FROM DEFAULT {
     ADD functions.box;
 }
 
+@defineDocumentTransferRetail (CStoWH);
+
 @defineConsignment(CStoWH);
 @implementConsignmentHeader(CStoWH, customStore);
 
 senderConsignment (consignment) += customStoreCStoWH(consignment);
-recipientConsignment (consignment) += companyWarehouse(warehouseCStoWH(consignment));
+recipientConsignment (consignment) += companyStock(destinationStockCStoWH(consignment));
 
 consignmentConsignmentDetail (consignmentDetail) += CStoWHCStoWHDetail (consignmentDetail);
 skuConsignmentDetail (consignmentDetail) += skuCStoWHDetail (consignmentDetail);

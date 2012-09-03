@@ -106,7 +106,8 @@ consigneeListRegister 'Грузополучатель' (inputListRegister) =
     nameStoreDepartmentStore(departmentStoreListRegister(inputListRegister)),
     nameDepartmentStoreListRegister(inputListRegister));
 
-senderListRegister (inputListRegister) = ABSTRACT legalEntity (inputListRegister);
+senderListRegister (inputListRegister) = ABSTRACT legalEntity (inputListRegister);  // отправитель
+isCustomStoreListRegister 'Отправитель СВХ' (inputListRegister)=  ABSTRACT BOOLEAN (inputListRegister);
 
 shipperListRegister 'Грузоотправитель' (inputListRegister) = ABSTRACT STRING[200] (inputListRegister);
 
@@ -125,6 +126,8 @@ retailVATSumListRegisterDetailListRegister 'Сумма НДС' (inputListRegiste
 retailSumListRegisterDetailListRegister 'Розничная сумма' (inputListRegister) = ABSTRACT NUMERIC[14,2] (inputListRegister);
 
 notPassToBookkeepingListRegister 'Не передавать в бухгалтерию' (inputListRegister) = ABSTRACT BOOLEAN (inputListRegister);
+
+passToBookkeepingListRegister 'Передавать в бухгалтерию' (inputListRegister) = inputListRegister IS inputListRegister AND NOT notPassToBookkeepingListRegister(inputListRegister);
 
 registerCommitteeListRegister  (inputListRegister) = ABSTRACT registerCommittee (inputListRegister);
 nameRegisterCommitteeListRegister 'Комиссия для реестра цен' (inputListRegister) = name(registerCommitteeListRegister(inputListRegister));
@@ -151,7 +154,7 @@ importerPriceListRegisterDetail 'Цена изготовителя/импорт�
 
 supplierSumListRegisterDetail 'Сумма поставщика без НДС' (inputListRegisterDetail) = ABSTRACT NUMERIC[14,2] (inputListRegisterDetail);
 
-supplierMarkupListRegisterDetail 'Оптовая надбавка/торговая скидка, %' (inputListRegisterDetail) = ABSTRACT NUMERIC[6,2] (inputListRegisterDetail);
+supplierMarkupListRegisterDetail 'Оптовая надбавка/торговая скидка, %' (inputListRegisterDetail) = ABSTRACT NUMERIC[14,2] (inputListRegisterDetail);
 
 wareSumListRegisterDetail 'Сумма посуды с НДС' (inputListRegisterDetail) = ABSTRACT NUMERIC[14,2] (inputListRegisterDetail);
 
@@ -163,7 +166,7 @@ wareVATSumListRegisterDetail 'Сумма НДС по посуде' (inputListReg
 
 valueWareRangeListRegisterDetail 'НДС посуды, %' (inputListRegisterDetail) = ABSTRACT NUMERIC[6,2] (inputListRegisterDetail);
 
-importerMarkupListRegisterDetail '% надбавки с уч. оптовой' (inputListRegisterDetail) = ABSTRACT NUMERIC[6,2] (inputListRegisterDetail);
+importerMarkupListRegisterDetail '% надбавки с уч. оптовой' (inputListRegisterDetail) = ABSTRACT NUMERIC[14,2] (inputListRegisterDetail);
 
 markupSumListRegisterDetail 'Сумма надбавки' (inputListRegisterDetail) = ABSTRACT NUMERIC[14,2] (inputListRegisterDetail);
 
@@ -202,7 +205,7 @@ FORM listRegister 'Реестр цен (поставка)' PRINT
                     wareSumListRegisterDetailListRegister, wareVATSumListRegisterDetailListRegister, invoiceSumListRegisterDetailListRegister, markupSumListRegisterDetailListRegister,
                     retailVATSumListRegisterDetailListRegister, retailSumListRegisterDetailListRegister, nameRegisterCommitteeListRegister,
                     nameFormedManListRegister, nameCheckedManListRegister, nameLabeledManListRegister, nameAccountantManListRegister,
-                    nameHeadManListRegister, notPassToBookkeepingListRegister
+                    nameHeadManListRegister, notPassToBookkeepingListRegister, isCustomStoreListRegister
     PROPERTIES()    showWare TODRAW l
 
     OBJECTS d=listRegisterDetail
@@ -223,7 +226,7 @@ FORM inputListRegister 'Реестр цен (внутр. приход)' PRINT
                     wareSumListRegisterDetailListRegister, wareVATSumListRegisterDetailListRegister,  markupSumListRegisterDetailListRegister,
                     retailVATSumListRegisterDetailListRegister, retailSumListRegisterDetailListRegister, nameRegisterCommitteeListRegister,
                     nameFormedManListRegister, nameCheckedManListRegister, nameLabeledManListRegister, nameAccountantManListRegister,
-                    nameHeadManListRegister, notPassToBookkeepingListRegister
+                    nameHeadManListRegister, notPassToBookkeepingListRegister, isCustomStoreListRegister
     PROPERTIES()    showWare TODRAW l
 
     OBJECTS d=inputListRegisterDetail
@@ -265,10 +268,13 @@ FORM inputListRegisters 'Реестры цен' // форма в частнос�
                     valueSupplierVATListRegisterDetail FORCE GRID,
                     nameWareListRegisterDetail SHOWIF showWare(), wareSumListRegisterDetail SHOWIF showWare(), warePriceListRegisterDetail SHOWIF showWare(),
                     wareVATSumListRegisterDetail SHOWIF showWare(), valueWareRangeListRegisterDetail SHOWIF showWare(),
-                    invoiceSumListRegisterDetail, importerMarkupListRegisterDetail, markupSumListRegisterDetail, valueRetailVATListRegisterDetail,
+                    invoiceSumListRegisterDetail FORCE GRID, importerMarkupListRegisterDetail, markupSumListRegisterDetail, valueRetailVATListRegisterDetail,
                     retailVATSumListRegisterDetail, retailPriceListRegisterDetail, retailSumListRegisterDetail
 
     FILTERS listRegisterListRegisterDetail(d) == l
+
+    FILTERGROUP notPassToBookkeeping
+        FILTER 'Передаваемые в бухгалтерию' 'F9' passToBookkeepingListRegister(l) DEFAULT
 ;
 
 DESIGN inputListRegisters FROM DEFAULT {
