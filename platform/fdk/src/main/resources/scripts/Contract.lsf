@@ -124,8 +124,11 @@ datePaymentConditionContractDate 'Дата' (contract, date) =
     GROUP MAX datePaymentCondition(paymentCondition) AND datePaymentCondition(paymentCondition) <= (date AS DATE)
     BY contractPaymentCondition(paymentCondition), date;
 
-paymentConditionContractDate 'Условия оплаты для контракта на дату' (contract, date) =
+paymentConditionContractDate 'Условия оплаты по договору на дату' (contract, date) =
     dataPaymentConditionContractDate(contract, datePaymentConditionContractDate(contract, date));
+
+currentPaymentConditionContract 'Текущие условия оплаты по договору' (contract) =
+    dataPaymentConditionContractDate(contract, datePaymentConditionContractDate(contract, currentDate()));
 
 typePaymentCondition = DATA contractSkuType (paymentCondition);
 nameTypePaymentCondition 'Тип договора' (paymentCondition) = name(typePaymentCondition(paymentCondition));
@@ -148,15 +151,19 @@ nameFormContractSku 'Условия оплаты' (contract) = name(formContract
 
 CLASS paymentPeriod 'Период рассрочки';
 
-countDaysPaymentPeriod 'Кол-во дней' = DATA NUMERIC[8,3] (paymentPeriod);
+countDaysPaymentPeriod 'Кол-во дней' = DATA INTEGER (paymentPeriod);
 percentPaymentPeriod 'Процент' = DATA NUMERIC[8,3] (paymentPeriod);
 paymentConditionPaymentPeriod 'Условия оплаты периода рассрочки' = DATA paymentCondition (paymentPeriod);
 
 CLASS bonusPeriod 'Период бонуса';
 
-countDaysBonusPeriod 'Кол-во дней' = DATA NUMERIC[8,3] (bonusPeriod);
+countDaysBonusPeriod 'Кол-во дней' = DATA INTEGER (bonusPeriod);
 percentBonusPeriod 'Процент' = DATA NUMERIC[8,3] (bonusPeriod);
 paymentConditionBonusPeriod 'Условия оплаты периода бонуса' = DATA paymentCondition (bonusPeriod);
+
+bonusPeriodPaymentConditionDays(paymentCondition, days) = GROUP UNIQUE bonusPeriod BY paymentConditionBonusPeriod(bonusPeriod),
+                                                                                      countDaysBonusPeriod(bonusPeriod)
+                                                                                   WHERE bonusPeriod IS bonusPeriod;
 
 sumPercentPaymentCondition(paymentCondition) = GROUP SUM percentPaymentPeriod(paymentPeriod) BY paymentConditionPaymentPeriod(paymentPeriod);
 CONSTRAINT sumPercentPaymentCondition(paymentCondition) != 100.0 CHECKED BY sumPercentPaymentCondition
