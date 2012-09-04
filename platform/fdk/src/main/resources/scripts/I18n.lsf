@@ -32,7 +32,6 @@ NAVIGATOR {
 
 // ---------------------------------------------- Мультиязычный объект -------------------------------- //
 
-CLASS multiLanguageNamed 'Мультиязычный объект';
 
 TABLE multiLanguageNamedLanguage(multiLanguageNamed, language);
 languageName 'Название (иностр.)' = DATA ISTRING[110] (multiLanguageNamed, language);

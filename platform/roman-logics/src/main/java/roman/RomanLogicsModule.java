@@ -104,6 +104,8 @@ public class RomanLogicsModule extends LogicsModule {
     private LCP RRPFreightSku;
     private LCP companyInvoice;
     private LCP nameCompanyInvoice;
+    private LCP languageInvoice;
+    private LCP nameLanguageInvoice;
 
 
     public RomanLogicsModule(BaseLogicsModule<RomanBusinessLogics> baseLM, RomanBusinessLogics BL) {
@@ -321,7 +323,10 @@ public class RomanLogicsModule extends LogicsModule {
     LCP originalNameArticle;
     LCP translateNameArticle;
     LCP translateNameArticleSku;
+    LCP translateNameSkuLanguage;
     LAP translationNameSku;
+    LAP translationNameSkuInvoice;
+    LAP translationNameSkuLanguage;
     private LCP nameArticle;
     private LCP netWeightArticleSku;
     LCP netWeightDataSku;
@@ -335,6 +340,8 @@ public class RomanLogicsModule extends LogicsModule {
     private LCP additionalCompositionOriginDataSku;
     private LCP mainCompositionOriginSku;
     private LCP additionalCompositionOriginSku;
+    private LCP mainCompositionOriginSkuLanguage;
+    private LCP additionalCompositionOriginSkuLanguage;
     AbstractCustomClass secondNameClass;
     private LCP nameOrigin;
     private ConcreteCustomClass category;
@@ -346,6 +353,8 @@ public class RomanLogicsModule extends LogicsModule {
     ConcreteCustomClass subCategory;
     ConcreteCustomClass typeDuty;
     ConcreteCustomClass customStore;
+    ConcreteCustomClass customZone;
+    private LCP customZoneCustomCategory;
 
     private LCP typeInvoiceCategory;
     private LCP nameTypeInvoiceCategory;
@@ -362,6 +371,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LCP nameCategoryArticle;
     private LCP categoryArticleSku;
     public LCP nameCategoryArticleSku;
+    public LCP nameCategoryArticleSkuLanguage;
     private LCP nameOriginCategoryArticleSku;
     private LCP typeInvoiceCategoryArticle;
     private LCP typeInvoiceCategoryArticleSku;
@@ -439,6 +449,8 @@ public class RomanLogicsModule extends LogicsModule {
     private LCP additionalCompositionOriginArticleColorSku;
     private LCP mainCompositionSku;
     private LCP additionalCompositionSku;
+    public LCP mainCompositionSkuLanguage;
+    public LCP additionalCompositionSkuLanguage;
     LCP countrySupplierOfOriginArticle;
     private LCP countryOfOriginArticle;
     private LCP nameCountryOfOriginArticle;
@@ -595,6 +607,7 @@ public class RomanLogicsModule extends LogicsModule {
     private ConcreteCustomClass typeFabric;
     public LCP sidArticleSku;
     public LCP originalNameArticleSku;
+    public LCP originalNameArticleSkuLanguage;
     public LCP coefficientArticle;
     public LCP coefficientArticleSku;
     private LCP inSupplierBoxShipment;
@@ -1059,10 +1072,13 @@ public class RomanLogicsModule extends LogicsModule {
     private LCP nameDictionaryName;
     private LAP translationMainCompositionSku;
     private LAP translationAdditionalCompositionSku;
+    private LAP translationMainCompositionSkuLanguage;
+    private LAP translationAdditionalCompositionSkuLanguage;
     private LAP translationAllMainComposition;
     private LAP translationInvoiceMainComposition;
     private LAP translationInvoiceAdditionalComposition;
     private LAP translationInvoiceName;
+    private LAP translationInvoiceLanguageName;
     private LAP translationMainCompositionFreightSku;
     private LAP translationAdditionalCompositionFreightSku;
     private LCP sidShipmentShipmentDetail;
@@ -1423,10 +1439,8 @@ public class RomanLogicsModule extends LogicsModule {
 
         pallet = addConcreteClass("pallet", "Паллета", baseLM.barcodeObject);
 
-        category = addConcreteClass("category", "Номенклатурная группа", secondNameClass,
-                                                                         baseClass.named,
-                                                                         (CustomClass) BL.Stock.getClassByName("skuGroup"),
-                                                                         (CustomClass) BL.I18n.getClassByName("multiLanguageNamed"));
+        category = addConcreteClass("category", "Номенклатурная группа", secondNameClass, baseClass.named, baseLM.multiLanguageNamed,
+                                                                         (CustomClass) BL.Stock.getClassByName("skuGroup"));
 
         customCategory = addAbstractClass("customCategory", "Уровень ТН ВЭД", baseClass);
 
@@ -1443,6 +1457,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         customStore = addConcreteClass("customStore", "Склад временного хранения", baseClass.named, (CustomClass) BL.Stock.getClassByName("stock"), (CustomClass) BL.LegalEntity.getClassByName("legalEntity"));
 
+        customZone = addConcreteClass("customZone", "Таможенная зона", baseClass);
 
         creationSku = addConcreteClass("creationSku", "Операция создания товаров", baseLM.transaction);
         creationFreightBox = addConcreteClass("creationFreightBox", "Операция создания коробов", baseLM.transaction);
@@ -1710,6 +1725,8 @@ public class RomanLogicsModule extends LogicsModule {
         sidImporter = addDProp(baseGroup, "sidImporter", "Номер клиента", StringClass.get(50), importer);
 
         // CustomCategory
+        customZoneCustomCategory = addDProp(idGroup, "customZoneCustomCategory", "Зона категории (ИД)", customZone, customCategory);
+
         sidCustomCategory4 = addDProp(baseGroup, "sidCustomCategory4", "Код(4)", StringClass.get(4), customCategory4);
         sidCustomCategory4.setFixedCharWidth(4);
 
@@ -1939,6 +1956,9 @@ public class RomanLogicsModule extends LogicsModule {
         nameCompanyInvoice = addJProp("nameCompanyInvoice", "Компания", baseLM.name, companyInvoice, 1);
         nameCompanyInvoice.property.preferredCharWidth = 50;
 
+        languageInvoice = addJProp("languageInvoice", "Язык инвойса (ИД)", BL.Store.getLCPByName("languageStore"), destinationDestinationDocument, 1);
+        nameLanguageInvoice = addJProp("nameLanguageInvoice", "Язык инвойса", baseLM.name, languageInvoice, 1);
+
         //contractInvoice = addDProp(idGroup, "contractInvoice", "Договор (ИД)", contract, invoice);
         //sidContractInvoice = addJProp(baseGroup, "sidContractInvoice", "Договор", sidContract, contractInvoice, 1);
 
@@ -1982,7 +2002,13 @@ public class RomanLogicsModule extends LogicsModule {
         translateNameArticle = addDProp(supplierAttributeGroup, "translateNameArticle", "Наименование", InsensitiveStringClass.get(50), article);
         translateNameArticleSku = addJProp(supplierAttributeGroup, true, "translateNameArticleSku", "Наименование", translateNameArticle, articleSku, 1);
 
-        translationNameSku = addJoinAProp(actionGroup, "translationNameSku", "Перевод состава", addTAProp(originalNameArticleSku, translateNameArticleSku), dictionaryName, 1);
+        originalNameArticleSkuLanguage = addJProp(baseLM.and1, originalNameArticleSku, 1, is((CustomClass) BL.I18n.getClassByName("language")), 2);
+        translateNameSkuLanguage = addDProp(supplierAttributeGroup, "translateNameSkuLanguage", "Наименование", InsensitiveStringClass.get(50), sku, (CustomClass) BL.I18n.getClassByName("language"));
+
+        translationNameSku = addJoinAProp(actionGroup, "translationNameSku", "Перевод наименования", addTAProp(originalNameArticleSku, translateNameArticleSku), dictionaryName, 1);
+        translationNameSkuInvoice = addJoinAProp(actionGroup, "translationNameSkuInvoice", "Перевод наименования", addTAProp(originalNameArticleSkuLanguage, translateNameSkuLanguage), dictionaryName, 1, languageInvoice, 2);
+
+        //translationNameSkuInvoice = addJProp("translationNameSkuInvoice", "Перевод", translationNameSkuLanguage, 1, languageInvoice, 2);
 
         coefficientArticle = addDProp(intraAttributeGroup, "coefficientArticle", "Кол-во в комплекте", IntegerClass.instance, article);
         coefficientArticleSku = addJProp(intraAttributeGroup, true, "coefficientArticleSku", "Кол-во в комплекте", coefficientArticle, articleSku, 1);
@@ -2004,6 +2030,8 @@ public class RomanLogicsModule extends LogicsModule {
         nameCategoryArticleSku.property.preferredCharWidth = 50;
         nameCategoryArticleSku.property.minimumCharWidth = 15;
         nameOriginCategoryArticleSku = addJProp(intraAttributeGroup, "nameOriginCategoryArticleSku", "Номенклатурная группа товара", nameOrigin, categoryArticleSku, 1);
+
+        nameCategoryArticleSkuLanguage = addJProp("nameCategoryArticleSkuLanguage", "Номенклатурная группа", BL.I18n.getLCPByName("languageName"), categoryArticleSku, 1, 2);
 
         warrantyCategoryArticleSku = addJProp("warrantyCategoryArticleSku", "Гарантийный срок", warrantyCategory, categoryArticleSku, 1);
         warrantyDataSku = addDProp("warrantyDataSku", "Гарантийный срок", NumericClass.get(14, 3), sku);
@@ -2304,6 +2332,16 @@ public class RomanLogicsModule extends LogicsModule {
         additionalCompositionSku = addDProp(intraAttributeGroup, "additionalCompositionSku", "Доп. состав (перевод)", COMPOSITION_CLASS, sku);
         additionalCompositionSku.property.preferredCharWidth = 40;
         additionalCompositionSku.property.minimumCharWidth = 20;
+
+        mainCompositionSkuLanguage = addDProp("mainCompositionSkuLanguage", "Состав (перевод)", COMPOSITION_CLASS, sku, (CustomClass) BL.I18n.getClassByName("language"));
+        additionalCompositionSkuLanguage = addDProp ("additionalCompositionSkuLanguage" , "Доп. состав (перевод)", COMPOSITION_CLASS, sku, (CustomClass) BL.I18n.getClassByName("language"));
+
+        mainCompositionOriginSkuLanguage = addJProp(baseLM.and1, mainCompositionOriginSku, 1, is((CustomClass) BL.I18n.getClassByName("language")), 2);
+        additionalCompositionOriginSkuLanguage = addJProp(baseLM.and1, additionalCompositionOriginSku, 1, is((CustomClass) BL.I18n.getClassByName("language")), 2);
+
+        translationMainCompositionSkuLanguage = addJoinAProp(actionGroup, "translationMainCompositionSkuLanguage", "Перевод состава", addTAProp(mainCompositionOriginSkuLanguage, mainCompositionSkuLanguage), dictionaryComposition, 1, 2);
+        translationAdditionalCompositionSkuLanguage = addJoinAProp(actionGroup, "translationAdditionalCompositionSkuLanguage", "Перевод доп. состава", addTAProp(additionalCompositionOriginSkuLanguage, additionalCompositionSkuLanguage), dictionaryComposition, 1, 2);
+
 
         // CustomCategory
         customCategoryOriginArticle = addDProp(idGroup, "customCategoryOriginArticle", "ТН ВЭД (ориг.) (ИД)", customCategoryOrigin, article);
@@ -3121,6 +3159,7 @@ public class RomanLogicsModule extends LogicsModule {
         quantityFreightArticle = addSGProp(baseGroup, "quantityFreightArticle", true, true, "Кол-во отгруженное с STX", quantityImporterFreightSku, 2, articleSku, 3);
         quantityFreightBrandSupplier = addSGProp(baseGroup, "quantityFreightBrandSupplier", true, true, "Кол-во отгруженное с STX", quantityImporterFreightSku, 2, brandSupplierArticleSku, 3);
         //quantityFreightSupplier = addSGProp(baseGroup, "quantityFreightSupplier", true, "Кол-во", quantityFreightBrandSupplier, 1, supplierBrandSupplier, 2);
+
 
         quantityFreightSku = addSGProp(baseGroup, "quantityFreightSku", true, true, "Кол-во", quantityImporterFreightSku, 2, 3);
         quantityDirectFreightSku = addSGProp(baseGroup, "quantityDirectFreightSku", true, true, "Кол-во (напрямую)", quantityDirectImporterFreightSku, 2, 3);
@@ -4585,10 +4624,10 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(inOrderInvoice, objOrder, objInvoice);
             addPropertyDraw(objOrder, baseLM.date, sidDocument, nameCurrencyDocument, sumDocument, sidDestinationDestinationDocument, nameDestinationDestinationDocument);
 
-            objSku = addSingleGroupObject(sku, "SKU");
+            objSku = addSingleGroupObject("sku", sku, "SKU");
             addPropertyDraw(new LP[]{baseLM.barcode, sidArticleSku, sidSeasonSupplierArticleSku, sidGenderSupplierArticleSku,
                     nameThemeSupplierArticleSku, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem,
-                    nameBrandSupplierArticleSku, originalNameArticleSku, translateNameArticleSku,
+                    nameBrandSupplierArticleSku, originalNameArticleSku, translationNameSku, translateNameArticleSku,
                     nameCountrySupplierOfOriginArticleSku, nameCountryOfOriginSku, netWeightSku,
                     mainCompositionOriginSku, translationMainCompositionSku, mainCompositionSku, additionalCompositionOriginSku,
                     translationAdditionalCompositionSku, additionalCompositionSku, baseLM.delete}, objSku);
@@ -4596,11 +4635,15 @@ public class RomanLogicsModule extends LogicsModule {
             setEditType(PropertyEditType.READONLY, objSku.groupTo);
             setEditType(translationMainCompositionSku, PropertyEditType.EDITABLE, objSku.groupTo);
             setEditType(translationAdditionalCompositionSku, PropertyEditType.EDITABLE, objSku.groupTo);
+            setEditType(translationNameSku, PropertyEditType.EDITABLE, objSku.groupTo);
+
+            addPropertyDraw(translationNameSkuInvoice, objSku, objInvoice);
 
             if (box) {
                 addPropertyDraw(addGCAProp(actionGroup, "translationInvoiceMainComposition", "Перевод составов", objSku.groupTo, translationMainCompositionSku), objSku).forceViewType = ClassViewType.PANEL;
                 addPropertyDraw(addGCAProp(actionGroup, "translationInvoiceAdditionalComposition", "Перевод доп. составов", objSku.groupTo, translationAdditionalCompositionSku), objSku).forceViewType = ClassViewType.PANEL;
                 addPropertyDraw(addGCAProp(actionGroup, "translationInvoiceName", "Перевод наименований", objSku.groupTo, translationNameSku), objSku).forceViewType = ClassViewType.PANEL;
+                addPropertyDraw(addGCAProp(actionGroup, "translationInvoiceLanguageName", "Перевод наименований", objSku.groupTo, translationNameSkuInvoice), objSku, objInvoice).forceViewType = ClassViewType.PANEL;
             }
 
             addPropertyDraw(priceDocumentSku, objInvoice, objSku);
@@ -6359,7 +6402,7 @@ public class RomanLogicsModule extends LogicsModule {
         private FreightChangeFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
 
-            objFreight = addSingleGroupObject(freightComplete, "Фрахт", baseLM.date, baseLM.objectClassName, nameRouteFreight, nameExporterFreight, nameFreightTypeFreight, grossWeightFreight, nameCurrencyFreight, sumFreightFreight);
+            objFreight = addSingleGroupObject("freight", freightComplete, "Фрахт", baseLM.date, baseLM.objectClassName, nameRouteFreight, nameExporterFreight, nameFreightTypeFreight, grossWeightFreight, nameCurrencyFreight, sumFreightFreight);
             objFreight.groupTo.setSingleClassView(ClassViewType.PANEL);
             setEditType(objFreight, PropertyEditType.READONLY);
 
@@ -6418,7 +6461,7 @@ public class RomanLogicsModule extends LogicsModule {
             setEditType(mainCompositionSku, PropertyEditType.EDITABLE, objSku.groupTo);
             setEditType(additionalCompositionSku, PropertyEditType.EDITABLE, objSku.groupTo);
 
-            objSkuFreight = addSingleGroupObject(sku, "Позиции фрахта", baseLM.selection, baseLM.barcode, sidArticleSku, sidColorSupplierItem, nameColorSupplierItem,
+            objSkuFreight = addSingleGroupObject("skuFreight", sku, "Позиции фрахта", baseLM.selection, baseLM.barcode, sidArticleSku, sidColorSupplierItem, nameColorSupplierItem,
                     sidSizeSupplierItem, nameBrandSupplierArticleSku, nameArticleSku);
 
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSkuFreight.groupTo);

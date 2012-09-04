@@ -57,6 +57,9 @@ freightInnerInvoice 'Фрахт инвойса (ИД)' (innerInvoice) = UNION EX
 
 dateFreightInnerInvoice 'Дата прихода' (innerInvoice) = dateArrivalFreight(freightInnerInvoice(innerInvoice)) IN baseGroup;
 
+languageInnerInvoice 'Язык инвойса (ИД)' (innerInvoice) = languageFreight(freightInnerInvoice(innerInvoice)) IN idGroup;
+nameLanguageInnerInvoice 'Язык инвойса' (innerInvoice) = name(languageInnerInvoice(innerInvoice));
+
 currencyFormedInvoice 'Валюта инвойса (ИД)' (formedInvoice) = currencyFreight(freightInnerInvoice(formedInvoice)) IN idGroup;
 currencyInnerInvoice 'Валюта инвойса (ИД)' (innerInvoice) = UNION EXCLUSIVE currencyDocument(innerInvoice), currencyFormedInvoice(innerInvoice) IN idGroup;
 nameCurrencyInnerInvoice 'Валюта инвойса' (innerInvoice) = name(currencyInnerInvoice(innerInvoice)) IN baseGroup;
@@ -163,6 +166,10 @@ exportDeclaration 'Экспортировать декларацию' = ACTION C
 importerDeclaration 'Импортер (ИД)' = DATA importer (declaration) IN idGroup;
 nameImporterDeclaration 'Импортёр' = name(importerDeclaration(declaration)) IN docGroup;
 
+languageDeclaration 'Язык декларации (ИД)' (declaration) = languageLegalEntity(importerDeclaration(declaration)) IN idGroup;
+nameLanguageDeclaration 'Язык декларации' (declaration) = name(languageDeclaration(declaration)) IN docGroup;
+
+
 currencyDeclaration 'Валюта декларации (ИД)' = DATA currency(declaration) IN idGroup;
 nameCurrencyDeclaration 'Валюта декларации' = name(currencyDeclaration(declaration)) IN exchangeGroup;
 
@@ -187,6 +194,11 @@ CONSTRAINT currencyDeclaration(declarationInnerInvoice(innerInvoice)) != currenc
     MESSAGE 'Инвойс с другой валютой';
 
 currencyDeclarationInnerInvoice (declaration, innerInvoice) = currencyDeclaration(declaration) == currencyInnerInvoice(innerInvoice);
+
+CONSTRAINT languageDeclaration(declarationInnerInvoice(innerInvoice)) != languageInnerInvoice(innerInvoice) CHECKED
+    MESSAGE 'Инвойс с другим языком';
+
+languageDeclarationInnerInvoice (declaration, innerInvoice) = languageDeclaration(declaration) == languageInnerInvoice(innerInvoice);
 
 innerInvoiceDeclarationSku 'Инвойс для декларации' (declaration, sku) = GROUP MAX innerInvoice IF quantityInnerInvoiceSku(innerInvoice, sku)
                                                                                BY declarationInnerInvoice(innerInvoice), sku PERSISTENT;
@@ -253,6 +265,9 @@ sumGrossWeightDeclarationDetail 'Суммарный вес брутто' (declar
 mainCompositionDeclarationDetail 'Состав товара' (declarationDetail) = mainCompositionFreightSku(freightDeclarationDetail(declarationDetail),
                                                                                                  skuDeclarationDetail(declarationDetail)) MINCHARWIDTH 20;
 
+mainCompositionLanguageDeclarationDetail 'Состав товара' (declarationDetail) = mainCompositionLanguageFreightSku(freightDeclarationDetail(declarationDetail),
+                                                                                                                 skuDeclarationDetail(declarationDetail)) MINCHARWIDTH 20;
+
 userNumberDeclarationDetail 'Пользовательский номер' (declarationDetail) = userNumberFreightSku(freightDeclarationDetail(declarationDetail),
                                                                                                  skuDeclarationDetail(declarationDetail)) MINCHARWIDTH 20;
 
@@ -260,6 +275,8 @@ countryDeclarationDetail 'Страна товара (ИД)' (declarationDetail) 
                                                                                               skuDeclarationDetail(declarationDetail)) IN idGroup;
 
 nameCountryDeclarationDetail 'Страна товара' (declarationDetail) = name(countryDeclarationDetail(declarationDetail)) MINCHARWIDTH 15;
+
+nameCountryLanguageDeclarationDetail 'Страна товара' (declarationDetail) = languageName(countryDeclarationDetail(declarationDetail), languageDeclaration(declarationDeclarationDetail(declarationDetail))) MINCHARWIDTH 15;
 
 customCategory10InvoicedDeclarationDetail 'ТН ВЭД товара (ИД)' (declarationDetail) = customCategory10FreightSku(freightDeclarationDetail(declarationDetail),
                                                                                                                 skuDeclarationDetail(declarationDetail)) IN idGroup;
@@ -831,13 +848,16 @@ canonicalBrandDeclaration 'Бренды' (declaration) = castToString255(
 
 FORM declarationInvoices 'Присоединение инвойсов'
     OBJECTS d=declaration FIXED PANEL
-    PROPERTIES(d) objectClassName, sidDeclaration, nameCustomStoreDeclaration, nameImporterDeclaration, nameCurrencyDeclaration,
-                  dateTimeDeclaration, beginTimeDeclaration, endTimeDeclaration
+    PROPERTIES(d) objectClassName, sidDeclaration, nameCustomStoreDeclaration, nameImporterDeclaration, nameLanguageDeclaration,
+                  nameCurrencyDeclaration, dateTimeDeclaration, beginTimeDeclaration, endTimeDeclaration
 
     OBJECTS ii=innerInvoice
     PROPERTIES (ii) sidInnerInvoice, dateInnerInvoice, nameImporterInnerInvoice, dateFreightInnerInvoice
     PROPERTIES (d, ii) inDeclarationInnerInvoice
     FILTERS freightArrivedInnerInvoice(ii), forDeclaration(d, ii)
+
+    FILTERGROUP filtersLanguage
+        FILTER 'Только с валютой декларации' 'F9' languageDeclarationInnerInvoice(d, ii) DEFAULT
 
     FILTERGROUP filtersCurrency
         FILTER 'Только с валютой декларации' 'F10' currencyDeclarationInnerInvoice(d, ii) DEFAULT
@@ -852,8 +872,8 @@ showFormDeclarationInvoices 'Присоединить инвойсы' = ACTION (
 
 FORM declaration 'Декларация'
     OBJECTS d=declaration FIXED PANEL
-    PROPERTIES(d) objectClassName, sidDeclaration, nameCustomStoreDeclaration, nameImporterDeclaration, nameCurrencyDeclaration,
-                  innerInvoicesDeclaration, dateDeclaration, timeDeclaration, beginTimeDeclaration, endTimeDeclaration,
+    PROPERTIES(d) objectClassName, sidDeclaration, nameCustomStoreDeclaration, nameImporterDeclaration, nameLanguageDeclaration,
+                  nameCurrencyDeclaration, innerInvoicesDeclaration, dateDeclaration, timeDeclaration, beginTimeDeclaration, endTimeDeclaration,
                   nameTypeExchangeCustomDeclaration, rateExchangeCustomDataDeclaration, nameTypeExchangeManagerialDeclaration,
                   rateExchangeManagerialDataDeclaration, sumRegistrationUnionDeclaration, dutyReverseDeclaration, VATReverseDeclaration, totalCustomSum,
                   expenseCertificateDeclaration, sumConsultationDeclaration
@@ -865,7 +885,7 @@ FORM declaration 'Декларация'
     OBJECTS dd=declarationDetail
     PROPERTIES (dd) READONLY numberDeclarationDetail, barcodeDeclarationDetail, nameInvoiceDeclarationDetail, nameBrandDeclarationDetail,
                     sidArticleDeclarationDetail, sidSizeDeclarationDetail, sidColorDeclarationDetail, nameColorDeclarationDetail,
-                    sidGenderGroupDeclaration, nameTypeFabricGroupDeclaration, mainCompositionDeclarationDetail, nameCountryDeclarationDetail
+                    sidGenderGroupDeclaration, nameTypeFabricGroupDeclaration, mainCompositionDeclarationDetail, nameCountryDeclarationDetail, nameCountryLanguageDeclarationDetail
     PROPERTIES (dd) sidCustomCategory10DeclarationDetail
     PROPERTIES (dd) READONLY netWeightDeclarationDetail, sumNetWeightDeclarationDetail,
                     sumGrossWeightDeclarationDetail, quantityDeclarationDetail, shortNameUOMDeclarationDetail, priceContractDeclarationDetail,
@@ -915,7 +935,8 @@ FORM declaration 'Декларация'
     PROPERTIES (gd2, dd2) inGroupDeclarationDeclarationDetail, percentGroupDeclarationDeclarationDetail
     PROPERTIES (dd2) READONLY numberDeclarationDetail, barcodeDeclarationDetail, nameInvoiceDeclarationDetail, nameBrandDeclarationDetail,
                     sidArticleDeclarationDetail, sidSizeDeclarationDetail, sidColorDeclarationDetail, nameColorDeclarationDetail,
-                    sidGenderGroupDeclaration, nameTypeFabricGroupDeclaration, mainCompositionDeclarationDetail, nameCountryDeclarationDetail
+                    sidGenderGroupDeclaration, nameTypeFabricGroupDeclaration, mainCompositionDeclarationDetail, mainCompositionLanguageDeclarationDetail,
+                    nameCountryDeclarationDetail, nameCountryLanguageDeclarationDetail
     PROPERTIES (dd2) sidCustomCategory10DeclarationDetail
     PROPERTIES (dd2) READONLY netWeightDeclarationDetail, sumNetWeightDeclarationDetail,
                     sumGrossWeightDeclarationDetail, quantityDeclarationDetail, shortNameUOMDeclarationDetail, priceContractDeclarationDetail,
@@ -1100,8 +1121,8 @@ FORM declarations 'Декларации'
     OBJECTS dd=declarationDetail
     PROPERTIES(dd) READONLY numberDeclarationDetail, barcodeDeclarationDetail, nameInvoiceDeclarationDetail, nameBrandDeclarationDetail,
                    sidArticleDeclarationDetail, sidSizeDeclarationDetail, sidColorDeclarationDetail, nameColorDeclarationDetail,
-                   sidGenderGroupDeclaration, nameTypeFabricGroupDeclaration, mainCompositionDeclarationDetail,
-                   nameCountryDeclarationDetail, sidCustomCategory10DeclarationDetail,
+                   sidGenderGroupDeclaration, nameTypeFabricGroupDeclaration, mainCompositionDeclarationDetail, mainCompositionLanguageDeclarationDetail,
+                   nameCountryDeclarationDetail, nameCountryLanguageDeclarationDetail, sidCustomCategory10DeclarationDetail,
                    netWeightDeclarationDetail, sumNetWeightDeclarationDetail, sumGrossWeightDeclarationDetail,
                    quantityDeclarationDetail, shortNameUOMDeclarationDetail, priceContractDeclarationDetail, declarationPriceDeclarationDetail,
                    priceRateDeclarationDetail, declarationSumRateDeclarationDetail,
@@ -1186,10 +1207,10 @@ DESIGN declarations FROM DEFAULT {
 
 FORM innerInvoices 'Инвойсы РБ'
     OBJECTS i=innerInvoice
-    PROPERTIES(i) READONLY sidInnerInvoice, nameImporterInnerInvoice, dateInnerInvoice, nameCurrencyInnerInvoice, rateExchangeExpensesDirectInvoice
+    PROPERTIES(i) READONLY sidInnerInvoice, nameImporterInnerInvoice, dateInnerInvoice, nameLanguageInnerInvoice,
+                  nameCurrencyInnerInvoice, rateExchangeExpensesDirectInvoice
     PROPERTIES(i) sidDeclarationInnerInvoice, delete
     FILTERS freightArrivedInnerInvoice(i)
-
 
     OBJECTS s=sku
     PROPERTIES(s) READONLY barcode, sidArticleSku

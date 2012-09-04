@@ -73,6 +73,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public ConcreteCustomClass policy;
     public ConcreteCustomClass session;
     public ConcreteCustomClass userRole;
+    public ConcreteCustomClass multiLanguageNamed;
     public ConcreteCustomClass country;
     public ConcreteCustomClass navigatorElement;
     public ConcreteCustomClass form;
@@ -607,7 +608,10 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
                 new String[]{"connectedConnection", "disconnectedConnection"},
                 new String[]{getString("logics.connection.connected"), getString("logics.connection.disconnected")});
         launch = addConcreteClass("launch", getString("logics.launch"), baseClass);
-        country = addConcreteClass("country", getString("logics.country"), baseClass.named);
+
+        multiLanguageNamed = addConcreteClass("multiLanguageNamed", "Мультиязычный объект", baseClass);
+
+        country = addConcreteClass("country", getString("logics.country"), baseClass.named, multiLanguageNamed);
 
         navigatorElement = addConcreteClass("navigatorElement", getString("logics.navigator.element"), baseClass);
         form = addConcreteClass("form", getString("logics.forms.form"), navigatorElement);

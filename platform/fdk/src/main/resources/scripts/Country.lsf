@@ -14,6 +14,9 @@ FORM country 'Страна'
     PROPERTIES(c) name, nameOriginCountry, sidCountry, sidOrigin2Country, sidOrigin3Country,
                   residentCountry, nameCurrencyCountry, nameLanguageCountry
 
+    OBJECTS l = language
+    PROPERTIES name(l) READONLY, languageName(c, l)
+
     EDIT country OBJECT c
 ;
 

@@ -99,6 +99,24 @@ FORM categories 'Товарные группы'
 
     DIALOG category OBJECT c
 ;
+
+//FORM country 'Страна'
+//    OBJECTS c = country FIXED PANEL
+//    PROPERTIES(c) name, nameOrigin
+//
+//    OBJECTS l = language
+//    PROPERTIES name(l) READONLY, languageName(c, l)
+//
+//    EDIT country OBJECT c
+//;
+//
+//FORM countries 'Страны'
+//    OBJECTS c = country
+//    PROPERTIES(c) name, nameOriginCountry, sidCountry, sidOrigin2Country, sidOrigin3Country, sid3Country
+//    DIALOG country OBJECT c
+//;
+
+
 // ---------------------------------- Формы для выбора атрибутов ------------------------------------ //
 
 FORM genders 'Пол'
@@ -119,11 +137,6 @@ FORM unitOfMeasures 'Единицы измерений'
     DIALOG unitOfMeasure OBJECT u
 ;
 
-//FORM countries 'Страны'
-//    OBJECTS c = country
-//    PROPERTIES(c) name, nameOriginCountry, sidCountry, sidOrigin2Country, sidOrigin3Country, sid3Country
-//    DIALOG country OBJECT c
-//;
 
 //----------------------Определения себестоимости при создании оптового прайса  ----------------------//
 
@@ -272,6 +285,55 @@ nameImporterSku 'Наименование' (importer, sku) = name(importer) AND 
 addressImporterSku 'Адрес' (importer, sku) = addressLegalEntity(importer) AND importer IS company AND sku IS sku;
 
 //---------------------
+
+mainCompositionSkuInvoice 'Состав (перевод)' (sku, invoice) = mainCompositionSkuLanguage(sku, languageInvoice(invoice));
+additionalCompositionSkuInvoice 'Доп. состав (перевод)' (sku, invoice) = additionalCompositionSkuLanguage(sku, languageInvoice(invoice));
+translateNameSkuInvoice 'Наименование (перевод)' (sku, invoice) = translateNameSkuLanguage(sku, languageInvoice(invoice));
+
+translationMainCompositionSkuInvoice 'Перевод' (sku, invoice) = translationMainCompositionSkuLanguage(sku, languageInvoice(invoice));
+translationAdditionalCompositionSkuInvoice 'Перевод' (sku, invoice) = translationAdditionalCompositionSkuLanguage(sku, languageInvoice(invoice));
+//translationNameSkuInvoice 'Перевод' (sku, invoice) = translationNameSkuLanguage(sku, languageInvoice(invoice));
+
+EXTEND FORM boxInvoiceForm
+    PROPERTIES (invoice) READONLY nameLanguageInvoice AFTER nameDestinationDestinationDocument
+    PROPERTIES (sku, invoice) translateNameSkuInvoice, translationMainCompositionSkuInvoice,
+                              mainCompositionSkuInvoice, translationAdditionalCompositionSkuInvoice, additionalCompositionSkuInvoice
+;
+
+importerFreight 'Импортёр фрахта (ИД)' = DATA importer(freight) IN idGroup;
+nameImporterFreight 'Импортёр фрахта' (freight) = name(importerFreight(freight));
+
+countryFreight 'Страна назначения (ИД)' = DATA country(freight) IN idGroup;
+nameCountryFreight 'Страна назначения' (freight) = name(countryFreight(freight));
+
+languageFreight 'Язык фрахта (ИД)' (freight) = languageCountry(countryFreight(freight)) IN idGroup;
+nameLanguageFreight 'Язык фрахта' (freight) = name(languageFreight(freight));
+
+mainCompositionLanguageFreightSku 'Состав' = DATA STRING[200] (freight, sku);
+mainCompositionLanguageFreightSku (freight, sku) <- mainCompositionSkuLanguage(sku, languageFreight(freight)) WHEN ASSIGNED (freight IS freightChanged);
+
+additionalCompositionLanguageFreightSku 'Доп. состав' = DATA STRING[200] (freight, sku);
+additionalCompositionLanguageFreightSku (freight, sku) <- additionalCompositionSkuLanguage(sku, languageFreight(freight)) WHEN ASSIGNED (freight IS freightChanged);
+
+nameCountryLanguageFreightSku 'Страна' (freight, sku) = languageName(countryOfOriginFreightSku(freight, sku), languageFreight(freight));
+
+nameCategoryFreightLanguageSku 'Номенклатурная группа' (freight, sku) = nameCategoryArticleSkuLanguage(sku, languageFreight(freight));
+
+EXTEND FORM freightListForm
+    PROPERTIES (freight) READONLY nameCountryFreight BEFORE nameRouteFreight(freight), nameLanguageFreight BEFORE nameRouteFreight(freight)
+;
+
+EXTEND FORM freightCreateForm
+    PROPERTIES (freight) nameCountryFreight BEFORE nameRouteFreight(freight), nameLanguageFreight BEFORE nameRouteFreight(freight)
+
+;
+
+EXTEND FORM freightChangeForm
+    PROPERTIES (freight, skuFreight) nameCategoryFreightLanguageSku, mainCompositionLanguageFreightSku, additionalCompositionLanguageFreightSku,
+               nameCountryLanguageFreightSku AFTER nameCountryOfOriginFreightSku(freight, skuFreight)
+;
+
+//mainCompositionSkuInvoice = addJProp("", "", mainCompositionSkuLanguage, 1, )
 
 //@implementSkuLedger(userPriceChange, sku, departmentStore);
 //quantityInLIFOSkuLedger (ledger) += quantityUserPriceChangeDetail(ledger) (-) quantityUserPriceChangeDetail(ledger);
