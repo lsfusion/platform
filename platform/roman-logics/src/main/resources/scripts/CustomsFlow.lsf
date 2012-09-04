@@ -365,7 +365,7 @@ DESIGN CStoWHs FROM DEFAULT {
     ADD functions.box;
 }
 
-@defineDocumentTransferRetail (CStoWH);
+@defineDocumentRetailPrice (CStoWH, d);
 
 @defineConsignment(CStoWH);
 @implementConsignmentHeader(CStoWH, customStore);

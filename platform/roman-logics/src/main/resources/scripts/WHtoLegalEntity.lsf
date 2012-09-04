@@ -172,8 +172,7 @@ DESIGN invoiceWHOuts FROM DEFAULT {
 @extendDocumentFormDetailSkuArticle(invoiceWHOut, d, invoiceWHOut);
 @extendDocumentFormDetailSkuArticleReadonly(invoiceWHOuts, d, invoiceWHOut);
 
-
-@defineDocumentTransferRetail(invoiceWHOut);
+@defineDocumentRetailPrice(invoiceWHOut, d);
 
 // Проводим по регистру
 @implementSkuLedger(invoiceWHOut, sku, warehouse);

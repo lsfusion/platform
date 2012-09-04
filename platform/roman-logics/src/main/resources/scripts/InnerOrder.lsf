@@ -188,13 +188,8 @@ destinationCompanyOrderPicking(orderPicking) = companyStock(destinationStockOrde
 @defineDocumentHeaderQuantity(orderPicking);
 @defineDocumentHeaderSkuQuantity(orderPicking, sku);
 
-retailPriceOrderPickingDetail 'Цена розничная' = DATA NUMERIC[14,2] (orderPickingDetail);
-retailSumOrderPickingDetail 'Сумма розничная' (detail) = quantityOrderPickingDetail(detail) * retailPriceOrderPickingDetail(detail);
-
-retailPriceOrderPickingDetail(orderPickingDetail) <- pricePriceSetDocumentSkuCurrencyDateTime(skuOrderPickingDetail(orderPickingDetail), currencyStock(stockOrderPickingDetail(orderPickingDetail)), dateTimeOrderPickingDetail(orderPickingDetail))
-                                                        WHEN CHANGED(dateTimeOrderPickingDetail(orderPickingDetail)) OR
-                                                             CHANGED(stockOrderPickingDetail(orderPickingDetail)) OR
-                                                             CHANGED(skuOrderPickingDetail(orderPickingDetail));
+@defineDocumentCurrency(orderPicking);
+@deriveDocumentCurrency(orderPicking, stock);
 
 // Кнопки подбора
 @defineAddDetailDialogSkuStock(orderPicking, sku, stock, dialogSku);
@@ -213,7 +208,7 @@ FORM orderPicking 'Подбор товара'
     OBJECTS p = orderPicking FIXED PANEL
 
     PROPERTIES (p) objectClassName, nameNumeratorObject, numberObject, seriesObject, dateOrderPicking, timeOrderPicking,
-        nameStockOrderPicking, nameDestinationStockOrderPicking, noteOrderPicking,
+        nameStockOrderPicking, nameDestinationStockOrderPicking, nameCurrencyOrderPicking, noteOrderPicking,
         countOrderPickingDetailOrderPicking, quantityOrderPickingDetailOrderPicking, messageOrderPicking READONLY
 
 
@@ -242,10 +237,6 @@ FORM orderPicking 'Подбор товара'
 ;
 
 @extendDocumentFormDetailSkuArticle(orderPicking, d, orderPicking);
-
-EXTEND FORM orderPicking
-    PROPERTIES(d) retailPriceOrderPickingDetail
-;
 
 DESIGN orderPicking FROM DEFAULT {
     main {
@@ -985,3 +976,5 @@ EXTEND FORM innerOrders
     PROPERTIES(p)  FORCE PANEL printOrderPicking
     PROPERTIES (id) printConsignment FORCE GRID
 ;
+
+@defineDocumentRetailPrice(orderPicking, p);

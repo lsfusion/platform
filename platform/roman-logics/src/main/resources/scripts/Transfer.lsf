@@ -65,7 +65,7 @@ commissionContractSkuTransferOutDetail (detail) = commissionContractSkuTransferO
 
 @extendDocumentFormDetailSkuArticleReadonly(transferOuts, o, transferOutBatch);
 
-@defineDocumentTransferRetail(transferOut);
+@defineDocumentRetailPrice(transferOut, d);
 
 useRetailPriceTransferOutDetail(detail) = stockTransferOutDetail(detail) IS departmentStore OR commissionContractSkuTransferOutDetail(detail) IS contractSku;
 @defineDocumentTransferAccount(transferOut, useRetailPriceTransferOutDetail);

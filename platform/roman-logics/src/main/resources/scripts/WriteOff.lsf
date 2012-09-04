@@ -193,7 +193,7 @@ DESIGN writeOffs FROM DEFAULT {
 }
 
 
-@defineDocumentTransferRetail(writeOff);
+@defineDocumentRetailPrice(writeOff, d);
 
 useRetailPriceWriteOffDetail(detail) = stockWriteOffDetail(detail) IS departmentStore;
 accountPriceWriteOffBatchDetail 'Учетная цена' (detail) = IF useRetailPriceWriteOffDetail(writeOffDetailWriteOffBatchDetail(detail))

@@ -70,7 +70,7 @@ EXTEND FORM saleOuts
     PROPERTIES(d) READONLY supplierPriceSaleOutDetail
 ;
 
-@defineDocumentTransferRetail(saleOut);
+@defineDocumentRetailPrice(saleOut, d);
 
 isCommissionSaleOutDetail(detail) = isCommissionSaleOut(saleOutSaleOutDetail(detail));
 

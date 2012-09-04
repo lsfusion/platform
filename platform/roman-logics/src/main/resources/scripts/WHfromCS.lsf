@@ -355,7 +355,7 @@ FORM printMarksWHfromCSR 'Печать маркировок товара' PRINT
                            mainCompositionSku, nameCountryBrandSupplierSku, nameBrandSupplierArticleSku, barcode, nameCountrySku,
                            sidColorSupplierItem, nameColorSupplierItem, nameSupplierArticleSku, addressSupplierArticleSku, warrantySku, countSku
 
-    PROPERTIES(s, c, dt)   priceBasePriceSetDocumentSkuCurrencyDateTime, priceDiscountPriceSetDocumentSkuCurrencyDateTime
+    PROPERTIES(s, c, dt)   priceABasePriceSetDocumentSkuCurrencyDateTime, priceADiscountPriceSetDocumentSkuCurrencyDateTime
     PROPERTIES(imp, s)     nameImporterSku, addressImporterSku
 
     FILTERS shouldBePrintWHfromCSR(s)

@@ -316,6 +316,6 @@ EXTEND FORM surplusOuts
     PROPERTIES(d) READONLY priceSurplusOutDetail
 ;
 
-@defineDocumentTransferRetail(surplusOut);
+@defineDocumentRetailPrice(surplusOut, d);
 
 

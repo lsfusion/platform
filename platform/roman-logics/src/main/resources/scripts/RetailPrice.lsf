@@ -276,39 +276,60 @@ META definePriceSetDocumentAggregations(document, caption)
     order###document = LIST(dateTimePriceSetDocument(document), document) PERSISTENT;
 
     // ---------------------------------------- Артикулы ---------------------------------------- //
-    concat###document##ArticleCurrencyDateTime (article, currency, dateTime) = GROUP MAX order###document(document) AND
+    concatB###document##ArticleCurrencyDateTime (article, currency, dateTime) = GROUP MAX order###document(document) AND
                                                                                          price###document##Article(document, article) AND
                                                                                          dateTimePriceSetDocument(document) < (dateTime AS DATETIME) AND
                                                                                          dateTimeToPriceSetDocument(document) > (dateTime AS DATETIME) AND
                                                                                          isPostedPriceSetDocument(document)
                                                                                          BY article, currencyPriceSetDocument(document), dateTime;
-    document##ArticleCurrencyDateTime (article, currency, dateTime) = concat###document##ArticleCurrencyDateTime(article, currency, dateTime)[2];
+    document##BArticleCurrencyDateTime (article, currency, dateTime) = concatB###document##ArticleCurrencyDateTime(article, currency, dateTime)[2];
+
+    concatA###document##ArticleCurrencyDateTime (article, currency, dateTime) = GROUP MAX order###document(document) AND
+                                                                                         price###document##Article(document, article) AND
+                                                                                         dateTimePriceSetDocument(document) <= (dateTime AS DATETIME) AND
+                                                                                         dateTimeToPriceSetDocument(document) > (dateTime AS DATETIME) AND
+                                                                                         isPostedPriceSetDocument(document)
+                                                                                         BY article, currencyPriceSetDocument(document), dateTime;
+    document##AArticleCurrencyDateTime (article, currency, dateTime) = concatA###document##ArticleCurrencyDateTime(article, currency, dateTime)[2];
 
     // Цены на дату
-    price###document##ArticleCurrencyDateTime(article, currency, dateTime) = price###document##Article(document##ArticleCurrencyDateTime(article, currency, dateTime), article);
-    prevPrice###document##ArticleCurrencyDateTime(article, currency, dateTime) = PREV(price###document##Article(document##ArticleCurrencyDateTime(article, currency, dateTime), article));
+    priceB###document##ArticleCurrencyDateTime(article, currency, dateTime) = price###document##Article(document##BArticleCurrencyDateTime(article, currency, dateTime), article);
+    prevPriceB###document##ArticleCurrencyDateTime(article, currency, dateTime) = PREV(price###document##Article(document##BArticleCurrencyDateTime(article, currency, dateTime), article));
+
+    priceA###document##ArticleCurrencyDateTime(article, currency, dateTime) = price###document##Article(document##AArticleCurrencyDateTime(article, currency, dateTime), article);
 
     // Предыдущие цены
-    priceB###document##Article caption###' (предыдущая)' (document, article) = price###document##ArticleCurrencyDateTime(article, currencyPriceSetDocument(document), dateTimePriceSetDocument(document)) MINCHARWIDTH 15;
-    prevPriceB###document##Article caption###' (предыдущая)' (document, article) = prevPrice###document##ArticleCurrencyDateTime(article, currencyPriceSetDocument(document), dateTimePriceSetDocument(document)) MINCHARWIDTH 15;
+    priceB###document##Article caption###' (предыдущая)' (document, article) = priceB###document##ArticleCurrencyDateTime(article, currencyPriceSetDocument(document), dateTimePriceSetDocument(document)) MINCHARWIDTH 15;
+    prevPriceB###document##Article caption###' (предыдущая)' (document, article) = prevPriceB###document##ArticleCurrencyDateTime(article, currencyPriceSetDocument(document), dateTimePriceSetDocument(document)) MINCHARWIDTH 15;
 
     // ---------------------------------------- Sku ---------------------------------------- //
-    concat###document##SkuCurrencyDateTime (sku, currency, dateTime) = GROUP MAX order###document(document) AND
-                                                                                 overPrice###document##Sku (document, sku) AND
-                                                                                 dateTimePriceSetDocument(document) < (dateTime AS DATETIME) AND
-                                                                                 dateTimeToPriceSetDocument(document) > (dateTime AS DATETIME) AND
-                                                                                 isPostedPriceSetDocument(document)
-                                                                             BY sku, currencyPriceSetDocument(document), dateTime;
+    concatB###document##SkuCurrencyDateTime (sku, currency, dateTime) = GROUP MAX order###document(document) AND
+                                                                                  overPrice###document##Sku (document, sku) AND
+                                                                                  dateTimePriceSetDocument(document) < (dateTime AS DATETIME) AND
+                                                                                  dateTimeToPriceSetDocument(document) > (dateTime AS DATETIME) AND
+                                                                                  isPostedPriceSetDocument(document)
+                                                                              BY sku, currencyPriceSetDocument(document), dateTime;
 
-    document##SkuCurrencyDateTime (sku, currency, dateTime) = concat###document##SkuCurrencyDateTime(sku, currency, dateTime)[2];
+    document##BSkuCurrencyDateTime (sku, currency, dateTime) = concatB###document##SkuCurrencyDateTime(sku, currency, dateTime)[2];
+
+    concatA###document##SkuCurrencyDateTime (sku, currency, dateTime) = GROUP MAX order###document(document) AND
+                                                                                  overPrice###document##Sku (document, sku) AND
+                                                                                  dateTimePriceSetDocument(document) <= (dateTime AS DATETIME) AND
+                                                                                  dateTimeToPriceSetDocument(document) > (dateTime AS DATETIME) AND
+                                                                                  isPostedPriceSetDocument(document)
+                                                                              BY sku, currencyPriceSetDocument(document), dateTime;
+
+    document##ASkuCurrencyDateTime (sku, currency, dateTime) = concatA###document##SkuCurrencyDateTime(sku, currency, dateTime)[2];
 
     // Цены на дату
-    price###document##SkuCurrencyDateTime(sku, currency, dateTime) = overPrice###document##Sku(document##SkuCurrencyDateTime(sku, currency, dateTime), sku);
-    prevPrice###document##SkuCurrencyDateTime(sku, currency, dateTime) = PREV(overPrice###document##Sku(document##SkuCurrencyDateTime(sku, currency, dateTime), sku));
+    priceB###document##SkuCurrencyDateTime(sku, currency, dateTime) = overPrice###document##Sku(document##BSkuCurrencyDateTime(sku, currency, dateTime), sku);
+    prevPriceB###document##SkuCurrencyDateTime(sku, currency, dateTime) = PREV(overPrice###document##Sku(document##BSkuCurrencyDateTime(sku, currency, dateTime), sku));
+
+    priceA###document##SkuCurrencyDateTime(sku, currency, dateTime) = overPrice###document##Sku(document##ASkuCurrencyDateTime(sku, currency, dateTime), sku);
 
     // Предыдущие цены
-    priceB###document##Sku caption###' (предыдущая)' (document, sku) = price###document##SkuCurrencyDateTime(sku, currencyPriceSetDocument(document), dateTimePriceSetDocument(document)) MINCHARWIDTH 15;
-    prevPriceB###document##Sku caption###' (предыдущая)' (document, sku) = prevPrice###document##SkuCurrencyDateTime(sku, currencyPriceSetDocument(document), dateTimePriceSetDocument(document)) MINCHARWIDTH 15;
+    priceB###document##Sku caption###' (предыдущая)' (document, sku) = priceB###document##SkuCurrencyDateTime(sku, currencyPriceSetDocument(document), dateTimePriceSetDocument(document)) MINCHARWIDTH 15;
+    prevPriceB###document##Sku caption###' (предыдущая)' (document, sku) = prevPriceB###document##SkuCurrencyDateTime(sku, currencyPriceSetDocument(document), dateTimePriceSetDocument(document)) MINCHARWIDTH 15;
 
 END
 
@@ -320,86 +341,86 @@ END
 // ----------------------------------------------- Артикулы --------------------------------- //
 
 // Цены на дату
-priceInBasePriceSetDocumentArticleCurrencyDateTime(article, currency, dateTime) = priceInBasePriceSetDocumentArticle(basePriceSetDocumentArticleCurrencyDateTime(article, currency, dateTime), article);
-prevPriceInBasePriceSetDocumentArticleCurrencyDateTime(article, currency, dateTime) = PREV(priceInBasePriceSetDocumentArticle(basePriceSetDocumentArticleCurrencyDateTime(article, currency, dateTime), article));
+priceInBBasePriceSetDocumentArticleCurrencyDateTime(article, currency, dateTime) = priceInBasePriceSetDocumentArticle(basePriceSetDocumentBArticleCurrencyDateTime(article, currency, dateTime), article);
+prevPriceInBBasePriceSetDocumentArticleCurrencyDateTime(article, currency, dateTime) = PREV(priceInBasePriceSetDocumentArticle(basePriceSetDocumentBArticleCurrencyDateTime(article, currency, dateTime), article));
 
-RRPBasePriceSetDocumentArticleCurrencyDateTime(article, currency, dateTime) = RRPBasePriceSetDocumentArticle(basePriceSetDocumentArticleCurrencyDateTime(article, currency, dateTime), article);
-prevRRPBasePriceSetDocumentArticleCurrencyDateTime(article, currency, dateTime) = PREV(RRPBasePriceSetDocumentArticle(basePriceSetDocumentArticleCurrencyDateTime(article, currency, dateTime), article));
+RRPBBasePriceSetDocumentArticleCurrencyDateTime(article, currency, dateTime) = RRPBasePriceSetDocumentArticle(basePriceSetDocumentBArticleCurrencyDateTime(article, currency, dateTime), article);
+prevRRPBBasePriceSetDocumentArticleCurrencyDateTime(article, currency, dateTime) = PREV(RRPBasePriceSetDocumentArticle(basePriceSetDocumentBArticleCurrencyDateTime(article, currency, dateTime), article));
 
-prevCurrencyBasePriceSetDocumentArticleCurrencyDateTime(article, currency, dateTime) = PREV(currencyBasePriceSetDocumentArticle(basePriceSetDocumentArticleCurrencyDateTime(article, currency, dateTime), article));
-prevTypeExchangeBasePriceSetDocumentArticleCurrencyDateTime(article, currency, dateTime) = PREV(typeExchangeBasePriceSetDocumentArticle(basePriceSetDocumentArticleCurrencyDateTime(article, currency, dateTime), article));
+prevCurrencyBBasePriceSetDocumentArticleCurrencyDateTime(article, currency, dateTime) = PREV(currencyBasePriceSetDocumentArticle(basePriceSetDocumentBArticleCurrencyDateTime(article, currency, dateTime), article));
+prevTypeExchangeBBasePriceSetDocumentArticleCurrencyDateTime(article, currency, dateTime) = PREV(typeExchangeBasePriceSetDocumentArticle(basePriceSetDocumentBArticleCurrencyDateTime(article, currency, dateTime), article));
 
-prevMarkupBasePriceSetDocumentArticleCurrencyDateTime(article, currency, dateTime) = PREV(markupBasePriceSetDocumentArticle(basePriceSetDocumentArticleCurrencyDateTime(article, currency, dateTime), article));
+prevMarkupBBasePriceSetDocumentArticleCurrencyDateTime(article, currency, dateTime) = PREV(markupBasePriceSetDocumentArticle(basePriceSetDocumentBArticleCurrencyDateTime(article, currency, dateTime), article));
 
-prevMethodBasePriceSetDocumentArticleCurrencyDateTime(article, currency, dateTime) = PREV(methodBasePriceSetDocumentArticle(basePriceSetDocumentArticleCurrencyDateTime(article, currency, dateTime), article));
+prevMethodBBasePriceSetDocumentArticleCurrencyDateTime(article, currency, dateTime) = PREV(methodBasePriceSetDocumentArticle(basePriceSetDocumentBArticleCurrencyDateTime(article, currency, dateTime), article));
 
 // Предыдущие цены
-priceInBPriceSetDocumentArticle 'Цена поставщика (предыдущая)' (document, article) = priceInBasePriceSetDocumentArticleCurrencyDateTime(article, currencyPriceSetDocument(document), dateTimePriceSetDocument(document));
-prevPriceInBPriceSetDocumentArticle 'Цена поставщика (предыдущая)' (document, article) = prevPriceInBasePriceSetDocumentArticleCurrencyDateTime(article, currencyPriceSetDocument(document), dateTimePriceSetDocument(document));
+priceInBPriceSetDocumentArticle 'Цена поставщика (предыдущая)' (document, article) = priceInBBasePriceSetDocumentArticleCurrencyDateTime(article, currencyPriceSetDocument(document), dateTimePriceSetDocument(document));
+prevPriceInBPriceSetDocumentArticle 'Цена поставщика (предыдущая)' (document, article) = prevPriceInBBasePriceSetDocumentArticleCurrencyDateTime(article, currencyPriceSetDocument(document), dateTimePriceSetDocument(document));
 
 priceInRateBBasePriceSetDocumentArticle 'Цена поставщика (руб.)' (document, article) = priceInBPriceSetDocumentArticle(document, article) *
                                                                                        rateBasePriceSetDocumentArticle (document, article);
 
-RRPBPriceSetDocumentArticle 'Рекомендуемая цена (предыдущая)' (document, article) = RRPBasePriceSetDocumentArticleCurrencyDateTime(article, currencyPriceSetDocument(document), dateTimePriceSetDocument(document));
-prevRRPBPriceSetDocumentArticle 'Рекомендуемая цена (предыдущая)' (document, article) = prevRRPBasePriceSetDocumentArticleCurrencyDateTime(article, currencyPriceSetDocument(document), dateTimePriceSetDocument(document));
+RRPBPriceSetDocumentArticle 'Рекомендуемая цена (предыдущая)' (document, article) = RRPBBasePriceSetDocumentArticleCurrencyDateTime(article, currencyPriceSetDocument(document), dateTimePriceSetDocument(document));
+prevRRPBPriceSetDocumentArticle 'Рекомендуемая цена (предыдущая)' (document, article) = prevRRPBBasePriceSetDocumentArticleCurrencyDateTime(article, currencyPriceSetDocument(document), dateTimePriceSetDocument(document));
 
-prevCurrencyBPriceSetDocumentArticle 'Метод расчёта (предыдущий)' (document, article) = prevCurrencyBasePriceSetDocumentArticleCurrencyDateTime(article, currencyPriceSetDocument(document), dateTimePriceSetDocument(document));
-prevTypeExchangeBPriceSetDocumentArticle 'Метод расчёта (предыдущий)' (document, article) = prevTypeExchangeBasePriceSetDocumentArticleCurrencyDateTime(article, currencyPriceSetDocument(document), dateTimePriceSetDocument(document));
+prevCurrencyBPriceSetDocumentArticle 'Метод расчёта (предыдущий)' (document, article) = prevCurrencyBBasePriceSetDocumentArticleCurrencyDateTime(article, currencyPriceSetDocument(document), dateTimePriceSetDocument(document));
+prevTypeExchangeBPriceSetDocumentArticle 'Метод расчёта (предыдущий)' (document, article) = prevTypeExchangeBBasePriceSetDocumentArticleCurrencyDateTime(article, currencyPriceSetDocument(document), dateTimePriceSetDocument(document));
 
-prevMarkupBPriceSetDocumentArticle 'Наценка (предыдущая)' (document, article) = prevMarkupBasePriceSetDocumentArticleCurrencyDateTime(article, currencyPriceSetDocument(document), dateTimePriceSetDocument(document));
+prevMarkupBPriceSetDocumentArticle 'Наценка (предыдущая)' (document, article) = prevMarkupBBasePriceSetDocumentArticleCurrencyDateTime(article, currencyPriceSetDocument(document), dateTimePriceSetDocument(document));
 
-prevMethodBPriceSetDocumentArticle 'Метод расчёта (предыдущий)' (document, article) = prevMethodBasePriceSetDocumentArticleCurrencyDateTime(article, currencyPriceSetDocument(document), dateTimePriceSetDocument(document));
+prevMethodBPriceSetDocumentArticle 'Метод расчёта (предыдущий)' (document, article) = prevMethodBBasePriceSetDocumentArticleCurrencyDateTime(article, currencyPriceSetDocument(document), dateTimePriceSetDocument(document));
 
 // ----------------------------------------------- Sku --------------------------------- //
 
 // Цены на дату
-priceInBasePriceSetDocumentSkuCurrencyDateTime(sku, currency, dateTime) = overPriceInBasePriceSetDocumentSku(basePriceSetDocumentSkuCurrencyDateTime(sku, currency, dateTime), sku);
-prevPriceInBasePriceSetDocumentSkuCurrencyDateTime(sku, currency, dateTime) = PREV(overPriceInBasePriceSetDocumentSku(basePriceSetDocumentSkuCurrencyDateTime(sku, currency, dateTime), sku));
+priceInBBasePriceSetDocumentSkuCurrencyDateTime(sku, currency, dateTime) = overPriceInBasePriceSetDocumentSku(basePriceSetDocumentBSkuCurrencyDateTime(sku, currency, dateTime), sku);
+prevPriceInBBasePriceSetDocumentSkuCurrencyDateTime(sku, currency, dateTime) = PREV(overPriceInBasePriceSetDocumentSku(basePriceSetDocumentBSkuCurrencyDateTime(sku, currency, dateTime), sku));
 
-RRPBasePriceSetDocumentSkuCurrencyDateTime(sku, currency, dateTime) = overRRPBasePriceSetDocumentSku(basePriceSetDocumentSkuCurrencyDateTime(sku, currency, dateTime), sku);
-prevRRPBasePriceSetDocumentSkuCurrencyDateTime(sku, currency, dateTime) = PREV(overRRPBasePriceSetDocumentSku(basePriceSetDocumentSkuCurrencyDateTime(sku, currency, dateTime), sku));
+RRPBBasePriceSetDocumentSkuCurrencyDateTime(sku, currency, dateTime) = overRRPBasePriceSetDocumentSku(basePriceSetDocumentBSkuCurrencyDateTime(sku, currency, dateTime), sku);
+prevRRPBBasePriceSetDocumentSkuCurrencyDateTime(sku, currency, dateTime) = PREV(overRRPBasePriceSetDocumentSku(basePriceSetDocumentBSkuCurrencyDateTime(sku, currency, dateTime), sku));
 
-prevCurrencyBasePriceSetDocumentSkuCurrencyDateTime(sku, currency, dateTime) = PREV(overCurrencyBasePriceSetDocumentSku(basePriceSetDocumentSkuCurrencyDateTime(sku, currency, dateTime), sku));
-prevTypeExchangeBasePriceSetDocumentSkuCurrencyDateTime(sku, currency, dateTime) = PREV(overTypeExchangeBasePriceSetDocumentSku(basePriceSetDocumentSkuCurrencyDateTime(sku, currency, dateTime), sku));
+prevCurrencyBBasePriceSetDocumentSkuCurrencyDateTime(sku, currency, dateTime) = PREV(overCurrencyBasePriceSetDocumentSku(basePriceSetDocumentBSkuCurrencyDateTime(sku, currency, dateTime), sku));
+prevTypeExchangeBBasePriceSetDocumentSkuCurrencyDateTime(sku, currency, dateTime) = PREV(overTypeExchangeBasePriceSetDocumentSku(basePriceSetDocumentBSkuCurrencyDateTime(sku, currency, dateTime), sku));
 
-prevMarkupBasePriceSetDocumentSkuCurrencyDateTime(sku, currency, dateTime) = PREV(overMarkupBasePriceSetDocumentSku(basePriceSetDocumentSkuCurrencyDateTime(sku, currency, dateTime), sku));
+prevMarkupBBasePriceSetDocumentSkuCurrencyDateTime(sku, currency, dateTime) = PREV(overMarkupBasePriceSetDocumentSku(basePriceSetDocumentBSkuCurrencyDateTime(sku, currency, dateTime), sku));
 
-prevMethodBasePriceSetDocumentSkuCurrencyDateTime(sku, currency, dateTime) = PREV(overMethodBasePriceSetDocumentSku(basePriceSetDocumentSkuCurrencyDateTime(sku, currency, dateTime), sku));
+prevMethodBBasePriceSetDocumentSkuCurrencyDateTime(sku, currency, dateTime) = PREV(overMethodBasePriceSetDocumentSku(basePriceSetDocumentBSkuCurrencyDateTime(sku, currency, dateTime), sku));
 
 // Предыдущие цены
-priceInBPriceSetDocumentSku 'Цена поставщика (предыдущая)' (document, sku) = priceInBasePriceSetDocumentSkuCurrencyDateTime(sku, currencyPriceSetDocument(document), dateTimePriceSetDocument(document));
-prevPriceInBPriceSetDocumentSku 'Цена поставщика (предыдущая)' (document, sku) = prevPriceInBasePriceSetDocumentSkuCurrencyDateTime(sku, currencyPriceSetDocument(document), dateTimePriceSetDocument(document));
+priceInBPriceSetDocumentSku 'Цена поставщика (предыдущая)' (document, sku) = priceInBBasePriceSetDocumentSkuCurrencyDateTime(sku, currencyPriceSetDocument(document), dateTimePriceSetDocument(document));
+prevPriceInBPriceSetDocumentSku 'Цена поставщика (предыдущая)' (document, sku) = prevPriceInBBasePriceSetDocumentSkuCurrencyDateTime(sku, currencyPriceSetDocument(document), dateTimePriceSetDocument(document));
 
 priceInRateBPriceSetDocumentSku 'Цена поставщика (руб.)' (document, sku) = priceInBPriceSetDocumentSku(document, sku) *
                                                                                rateBasePriceSetDocumentSku(document, sku);
 
-RRPBPriceSetDocumentSku 'Рекомендуемая цена (предыдущая)' (document, sku) = RRPBasePriceSetDocumentSkuCurrencyDateTime(sku, currencyPriceSetDocument(document), dateTimePriceSetDocument(document));
-prevRRPBPriceSetDocumentSku 'Рекомендуемая цена (предыдущая)' (document, sku) = prevRRPBasePriceSetDocumentSkuCurrencyDateTime(sku, currencyPriceSetDocument(document), dateTimePriceSetDocument(document));
+RRPBPriceSetDocumentSku 'Рекомендуемая цена (предыдущая)' (document, sku) = RRPBBasePriceSetDocumentSkuCurrencyDateTime(sku, currencyPriceSetDocument(document), dateTimePriceSetDocument(document));
+prevRRPBPriceSetDocumentSku 'Рекомендуемая цена (предыдущая)' (document, sku) = prevRRPBBasePriceSetDocumentSkuCurrencyDateTime(sku, currencyPriceSetDocument(document), dateTimePriceSetDocument(document));
 
-prevCurrencyBPriceSetDocumentSku 'Метод расчёта (предыдущий)' (document, sku) = prevCurrencyBasePriceSetDocumentSkuCurrencyDateTime(sku, currencyPriceSetDocument(document), dateTimePriceSetDocument(document));
-prevTypeExchangeBPriceSetDocumentSku 'Метод расчёта (предыдущий)' (document, sku) = prevTypeExchangeBasePriceSetDocumentSkuCurrencyDateTime(sku, currencyPriceSetDocument(document), dateTimePriceSetDocument(document));
+prevCurrencyBPriceSetDocumentSku 'Метод расчёта (предыдущий)' (document, sku) = prevCurrencyBBasePriceSetDocumentSkuCurrencyDateTime(sku, currencyPriceSetDocument(document), dateTimePriceSetDocument(document));
+prevTypeExchangeBPriceSetDocumentSku 'Метод расчёта (предыдущий)' (document, sku) = prevTypeExchangeBBasePriceSetDocumentSkuCurrencyDateTime(sku, currencyPriceSetDocument(document), dateTimePriceSetDocument(document));
 
-prevMarkupBPriceSetDocumentSku 'Наценка (предыдущая)' (document, sku) = prevMarkupBasePriceSetDocumentSkuCurrencyDateTime(sku, currencyPriceSetDocument(document), dateTimePriceSetDocument(document));
+prevMarkupBPriceSetDocumentSku 'Наценка (предыдущая)' (document, sku) = prevMarkupBBasePriceSetDocumentSkuCurrencyDateTime(sku, currencyPriceSetDocument(document), dateTimePriceSetDocument(document));
 
-prevMethodBPriceSetDocumentSku 'Метод расчёта (предыдущий)' (document, sku) = prevMethodBasePriceSetDocumentSkuCurrencyDateTime(sku, currencyPriceSetDocument(document), dateTimePriceSetDocument(document));
+prevMethodBPriceSetDocumentSku 'Метод расчёта (предыдущий)' (document, sku) = prevMethodBBasePriceSetDocumentSkuCurrencyDateTime(sku, currencyPriceSetDocument(document), dateTimePriceSetDocument(document));
 
 // ----------------------------------------------- Последние параметры для цен с уценкой --------------------------------- //
 
 // ----------------------------------------------- Артикулы --------------------------------- //
 
 // Цены на дату
-prevPercentDiscountPriceSetDocumentArticleCurrencyDateTime(article, currency, dateTime) = PREV(percentDiscountPriceSetDocumentArticle(discountPriceSetDocumentArticleCurrencyDateTime(article, currency, dateTime), article));
+prevPercentBDiscountPriceSetDocumentArticleCurrencyDateTime(article, currency, dateTime) = PREV(percentDiscountPriceSetDocumentArticle(discountPriceSetDocumentBArticleCurrencyDateTime(article, currency, dateTime), article));
 
 // Предыдущие цены
-prevPercentBPriceSetDocumentArticle 'Процент скидки (предыдущий)' (document, article) = prevPercentDiscountPriceSetDocumentArticleCurrencyDateTime(article, currencyPriceSetDocument(document), dateTimePriceSetDocument(document));
+prevPercentBPriceSetDocumentArticle 'Процент скидки (предыдущий)' (document, article) = prevPercentBDiscountPriceSetDocumentArticleCurrencyDateTime(article, currencyPriceSetDocument(document), dateTimePriceSetDocument(document));
 
 // ----------------------------------------------- Sku --------------------------------- //
 
 // Цены на дату
-prevPercentDiscountPriceSetDocumentSkuCurrencyDateTime(sku, currency, dateTime) = PREV(overPercentDiscountPriceSetDocumentSku(discountPriceSetDocumentSkuCurrencyDateTime(sku, currency, dateTime), sku));
+prevPercentBDiscountPriceSetDocumentSkuCurrencyDateTime(sku, currency, dateTime) = PREV(overPercentDiscountPriceSetDocumentSku(discountPriceSetDocumentBSkuCurrencyDateTime(sku, currency, dateTime), sku));
 
 // Предыдущие цены
-prevPercentBPriceSetDocumentSku 'Процент скидки (предыдущий)' (document, sku) = prevPercentDiscountPriceSetDocumentSkuCurrencyDateTime(sku, currencyPriceSetDocument(document), dateTimePriceSetDocument(document));
+prevPercentBPriceSetDocumentSku 'Процент скидки (предыдущий)' (document, sku) = prevPercentBDiscountPriceSetDocumentSkuCurrencyDateTime(sku, currencyPriceSetDocument(document), dateTimePriceSetDocument(document));
 
 // -------------------------------------- Записываем значения по умолчанию ------------------------------------- //
 
@@ -513,36 +534,17 @@ canonicalBrandPriceSetDocument 'Бренды' (priceSetDocument) = castToString2
 // ------------------------------------------------- Значения для использования в операциях -------------------------------- //
 
 // Артикул
-pricePriceSetDocumentArticleCurrencyDateTime(article, currency, dateTime) = priceBasePriceSetDocumentArticleCurrencyDateTime(article, currency, dateTime) OR priceDiscountPriceSetDocumentArticleCurrencyDateTime(article, currency, dateTime);
+priceBPriceSetDocumentArticleCurrencyDateTime(article, currency, dateTime) = priceBBasePriceSetDocumentArticleCurrencyDateTime(article, currency, dateTime) OR priceBDiscountPriceSetDocumentArticleCurrencyDateTime(article, currency, dateTime);
+
+priceAPriceSetDocumentArticleCurrencyDateTime(article, currency, dateTime) = priceABasePriceSetDocumentArticleCurrencyDateTime(article, currency, dateTime) OR priceADiscountPriceSetDocumentArticleCurrencyDateTime(article, currency, dateTime);
 
 // Sku
-pricePriceSetDocumentSkuCurrencyDateTime(sku, currency, dateTime) = priceBasePriceSetDocumentSkuCurrencyDateTime(sku, currency, dateTime) OR priceDiscountPriceSetDocumentSkuCurrencyDateTime(sku, currency, dateTime);
+priceBPriceSetDocumentSkuCurrencyDateTime(sku, currency, dateTime) = priceBBasePriceSetDocumentSkuCurrencyDateTime(sku, currency, dateTime) OR priceBDiscountPriceSetDocumentSkuCurrencyDateTime(sku, currency, dateTime);
 
-FORM TestForm 'Test Form'
-    OBJECTS s = sku
-    PROPERTIES(s) nameSku
-
-    OBJECTS c = currency
-    PROPERTIES(c) name
-
-    OBJECTS d = DATETIME FIXED PANEL
-    PROPERTIES(d) OBJVALUE
-
-    PROPERTIES(s, c, d) basePriceSetDocumentSkuCurrencyDateTime, priceBasePriceSetDocumentSkuCurrencyDateTime, priceDiscountPriceSetDocumentSkuCurrencyDateTime, pricePriceSetDocumentSkuCurrencyDateTime
-
-    OBJECTS p = priceSetDocument
-    PROPERTIES(p) numberObject, seriesObject, dateTimePriceSetDocument
-    PROPERTIES(p, s) overPriceBasePriceSetDocumentSku, overPriceDiscountPriceSetDocumentSku, priceBasePriceSetDocumentSku, priceDiscountPriceSetDocumentSku
-;
-
-NAVIGATOR {
-    baseElement {
-        ADD TestForm;
-    }
-}
+priceAPriceSetDocumentSkuCurrencyDateTime(sku, currency, dateTime) = priceABasePriceSetDocumentSkuCurrencyDateTime(sku, currency, dateTime) OR priceADiscountPriceSetDocumentSkuCurrencyDateTime(sku, currency, dateTime);
 
 // Цена на кассе
-POSPriceSkuDepartmentStoreDateTime(sku, departmentStore, dateTime) += pricePriceSetDocumentSkuCurrencyDateTime(sku, currencyStock(departmentStore), dateTime) IF departmentStore IS departmentStore;
+POSPriceSkuDepartmentStoreDateTime(sku, departmentStore, dateTime) += priceBPriceSetDocumentSkuCurrencyDateTime(sku, currencyStock(departmentStore), dateTime) IF departmentStore IS departmentStore;
 
 // -------------------------------------------------- Форма истории изменения цен ------------------------------------- //
 
@@ -756,7 +758,7 @@ createUserPriceChangeDepartmentStorePriceSetDocument 'Создать докум�
                                       objectClassName(priceSetDocument), seriesNumberObject(priceSetDocument), datePriceSetDocument(priceSetDocument));
 
         FOR balanceBASkuStockDateTime(sku, departmentStore, priceDateTime()) !=0 AND overInPriceSetDocumentSku(priceSetDocument, sku)
-            AND pricePriceSetDocumentSkuCurrencyDateTime(sku, currencyStock(departmentStore), priceDateTime()) != retailPriceBLedgerDateTime(sku, departmentStore, priceDateTime())
+            AND priceAPriceSetDocumentSkuCurrencyDateTime(sku, currencyStock(departmentStore), priceDateTime()) != retailPriceBLedgerDateTime(sku, departmentStore, priceDateTime())
             AND isPostedPriceSetDocument(priceSetDocument) DO {
             ADDOBJ userPriceChangeDetail;
             FOR  d == addedObject() DO {
@@ -776,7 +778,7 @@ createUserPriceChangeDepartmentStorePriceSetDocument 'Создать докум�
                 SET retailVATUserPriceChangeDetail(d) <- retailVATBLedgerDateTime(sku, departmentStore, priceDateTime());
                 SET wareUserPriceChangeDetail(d) <- wareBLedgerDateTime(sku, departmentStore, priceDateTime());
                 SET warePriceUserPriceChangeDetail(d) <- warePriceBLedgerDateTime(sku, departmentStore, priceDateTime());
-                SET retailPriceUserPriceChangeDetail(d) <- pricePriceSetDocumentSkuCurrencyDateTime(sku, currencyStock(departmentStore), priceDateTime());
+                SET retailPriceUserPriceChangeDetail(d) <- priceAPriceSetDocumentSkuCurrencyDateTime(sku, currencyStock(departmentStore), priceDateTime());
 
             }
         }

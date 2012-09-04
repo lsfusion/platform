@@ -107,21 +107,21 @@ END
 
 // ---------------------------------------------------- Трансферы -------------------------------------------- //
 
-META defineDocumentTransferRetail (concrete)
+META defineDocumentRetailPrice (concrete, object)
 
     retailPrice###concrete##Detail 'Цена розничная' = DATA NUMERIC[14,2] (concrete##Detail);
     retailSum###concrete##Detail 'Сумма розничная' (detail) = quantity###concrete##Detail(detail) * retailPrice###concrete##Detail(detail);
 
-    retailPrice###concrete##Detail(concrete##Detail) <- pricePriceSetDocumentSkuCurrencyDateTime(sku###concrete##Detail(concrete##Detail), currency###concrete##Detail(concrete##Detail), dateTime###concrete##Detail(concrete##Detail))
+    retailPrice###concrete##Detail(concrete##Detail) <- priceAPriceSetDocumentSkuCurrencyDateTime(sku###concrete##Detail(concrete##Detail), currency###concrete##Detail(concrete##Detail), dateTime###concrete##Detail(concrete##Detail))
                                                             WHEN CHANGED(dateTime###concrete##Detail(concrete##Detail))
                                                                  OR CHANGED(sku###concrete##Detail(concrete##Detail));
 
     EXTEND FORM concrete##s
-        PROPERTIES (d) READONLY retailPrice###concrete##Detail
+        PROPERTIES (object) READONLY retailPrice###concrete##Detail
     ;
 
     EXTEND FORM concrete
-        PROPERTIES (d) retailPrice###concrete##Detail
+        PROPERTIES (object) retailPrice###concrete##Detail
     ;
 
 END

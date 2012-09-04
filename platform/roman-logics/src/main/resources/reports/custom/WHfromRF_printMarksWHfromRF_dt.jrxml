@@ -44,8 +44,8 @@
 	<field name="nameCountrySku" class="java.lang.String"/>
 	<field name="nameColorSupplierItem" class="java.lang.String"/>
 	<field name="nameSupplierArticleSku" class="java.lang.String"/>
-	<field name="priceBasePriceSetDocumentSkuCurrencyDateTime" class="java.lang.Double"/>
-	<field name="priceDiscountPriceSetDocumentSkuCurrencyDateTime" class="java.lang.Double"/>
+	<field name="priceABasePriceSetDocumentSkuCurrencyDateTime" class="java.lang.Double"/>
+	<field name="priceADiscountPriceSetDocumentSkuCurrencyDateTime" class="java.lang.Double"/>
 	<field name="dt" class="java.util.Date"/>
 	<field name="objectValueProperty_DateTimeClass" class="java.util.Date"/>
 	<field name="countSku" class="java.lang.Integer"/>
@@ -89,21 +89,21 @@
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0_1" positionType="Float" stretchType="RelativeToBandHeight" x="39" y="161" width="75" height="12">
-					<printWhenExpression><![CDATA[$F{priceDiscountPriceSetDocumentSkuCurrencyDateTime}!=null]]></printWhenExpression>
+					<printWhenExpression><![CDATA[$F{priceADiscountPriceSetDocumentSkuCurrencyDateTime}!=null]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font size="6" isBold="true" isStrikeThrough="true"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{priceBasePriceSetDocumentSkuCurrencyDateTime}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{priceABasePriceSetDocumentSkuCurrencyDateTime}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="false">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="39" y="149" width="75" height="12">
-					<printWhenExpression><![CDATA[$F{priceDiscountPriceSetDocumentSkuCurrencyDateTime}!=null]]></printWhenExpression>
+					<printWhenExpression><![CDATA[$F{priceADiscountPriceSetDocumentSkuCurrencyDateTime}!=null]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font size="6" isBold="true"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{priceDiscountPriceSetDocumentSkuCurrencyDateTime}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{priceADiscountPriceSetDocumentSkuCurrencyDateTime}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="0" y="17" width="39" height="8"/>
@@ -176,12 +176,12 @@
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="39" y="149" width="75" height="12">
-					<printWhenExpression><![CDATA[$F{priceDiscountPriceSetDocumentSkuCurrencyDateTime}==null]]></printWhenExpression>
+					<printWhenExpression><![CDATA[$F{priceADiscountPriceSetDocumentSkuCurrencyDateTime}==null]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font size="6" isBold="true"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{priceBasePriceSetDocumentSkuCurrencyDateTime}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{priceABasePriceSetDocumentSkuCurrencyDateTime}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="114" y="149" width="17" height="12"/>
@@ -198,7 +198,7 @@
 			</textField>
 			<textField>
 				<reportElement x="114" y="161" width="17" height="12">
-					<printWhenExpression><![CDATA[$F{priceDiscountPriceSetDocumentSkuCurrencyDateTime}!=null]]></printWhenExpression>
+					<printWhenExpression><![CDATA[$F{priceADiscountPriceSetDocumentSkuCurrencyDateTime}!=null]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0"/>

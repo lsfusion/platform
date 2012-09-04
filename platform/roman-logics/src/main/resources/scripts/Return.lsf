@@ -90,7 +90,7 @@ EXTEND FORM returnOuts
     PROPERTIES(d) READONLY descriptionBatchReturnOutDetail
 ;
 
-@defineDocumentTransferRetail(returnOut);
+@defineDocumentRetailPrice(returnOut, d);
 
 isCommissionReturnOutDetail(detail) = isCommissionReturnOut(returnOutReturnOutDetail(detail));
 
