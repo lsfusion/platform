@@ -24,7 +24,7 @@ public class LogicalGridRenderer implements GridCellRenderer {
 
     @Override
     public void render(Cell.Context context, Object value, SafeHtmlBuilder sb) {
-        boolean checked = value == null || !(Boolean) value;
+        boolean checked = value != null && (Boolean) value;
         String cbImagePath = GWT.getModuleBaseURL() + "images/checkbox_" + (checked ? "checked" : "unchecked") + ".png";
         sb.append(template.checkbox(UriUtils.fromString(cbImagePath)));
     }
