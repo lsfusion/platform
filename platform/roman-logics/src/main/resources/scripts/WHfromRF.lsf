@@ -15,7 +15,7 @@ REQUIRE System,
         MasterData,
         RomanLogicsModule;
 
-PRIORITY RomanLogicsModule, Stock;
+PRIORITY Stock, RomanLogicsModule;
 
 CLASS WHfromRF 'Приход из РФ' : historyObject, numeratedObject;
 CLASS WHfromRFPosted 'Закрытый приход из РФ' : WHfromRF, postedObject;
@@ -74,12 +74,12 @@ nameCompanyWHfromRF 'Импортёр' = name(companyWHfromRF(WHfromRF)) IN base
 @defineDocumentTime(WHfromRF);
 @defineDocumentHeaderNote(WHfromRF);
 @defineDocumentDetailActions(WHfromRF);
-@defineDocumentStock(WHfromRF, warehouse, 'Оптовый склад');
+@defineDocumentStock(WHfromRF, stock, 'Склад');
 @defineDocumentDetailSku(WHfromRF, sku);
 @defineDocumentDetailQuantity(WHfromRF);
 @defineDocumentDescription(WHfromRF, 'Поступление товара из РФ');
 
-@defineAddDetailDialogSkuStock(WHfromRF, sku, warehouse, dialogSku);
+@defineAddDetailDialogSkuStock(WHfromRF, sku, stock, dialogSku);
 @defineAddDetailDialogBarcode(WHfromRF, sku);
 
 @defineDocumentHeaderQuantity(WHfromRF);
@@ -315,7 +315,7 @@ printMarksSkuFreightUnit 'Печать маркировок товаров' (WHf
     SET countSku(sku) <- NULL;
     SET shouldBePrintWHfromRF(sku) <- TRUE IF quantitySkuFreightUnitWHfromRF(sku, currentFreightUnit(WHfromRF), WHfromRF);
     SET countSku(sku) <- castToInteger(quantitySkuFreightUnitWHfromRF(sku, currentFreightUnit(WHfromRF), WHfromRF));
-    FORM printMarksWHfromRF OBJECTS dt = dateTimeWHfromRF(WHfromRF), imp = companyWHfromRF(WHfromRF), c = currencyStock(warehouseWHfromRF(WHfromRF)) MODAL;
+    FORM printMarksWHfromRF OBJECTS dt = dateTimeWHfromRF(WHfromRF), imp = companyWHfromRF(WHfromRF), c = currencyStock(stockWHfromRF(WHfromRF)) MODAL;
 
 } CONFIRM;
 
@@ -325,7 +325,7 @@ printMarksSkuWHfromRF 'Печать маркировок товаров' (WHfrom
     SET countSku(sku) <- NULL;
     SET shouldBePrintWHfromRF(sku) <- TRUE IF quantitySkuInWHfromRF(WHfromRF, sku);
     SET countSku(sku) <- castToInteger(quantitySkuInWHfromRF(WHfromRF, sku));
-    FORM printMarksWHfromRF OBJECTS dt = dateTimeWHfromRF(WHfromRF), imp = companyWHfromRF(WHfromRF), c = currencyStock(warehouseWHfromRF(WHfromRF)) MODAL;
+    FORM printMarksWHfromRF OBJECTS dt = dateTimeWHfromRF(WHfromRF), imp = companyWHfromRF(WHfromRF), c = currencyStock(stockWHfromRF(WHfromRF)) MODAL;
 
 } CONFIRM TOOLBAR;
 
@@ -434,14 +434,14 @@ backgroundArticleColorWHfromRFDetail 'Цвет' (WHfromRFDetail) = RGB(255, 128,
 
 costWHfromRFDetail(WHfromRFDetail) =
     priceInFreightSku(freightWHfromRF(WHfromRFWHfromRFDetail(WHfromRFDetail)), skuWHfromRFDetail(WHfromRFDetail));
-@implementBatch(WHfromRF, sku, warehouse, cost);
+@implementBatch(WHfromRF, sku, stock, cost);
 quantityBatch (batch) += quantityWHfromRFDetail(batch);
 skipASkuLedger (ledger) += ledger IS WHfromRFDetail;
 
 FORM WHfromRF 'Приход товара из РФ'
 
     OBJECTS w = WHfromRF FIXED PANEL, d = WHfromRFDetail
-    PROPERTIES(w) objectClassName, nameNumeratorObject, numberObject, seriesObject, dateWHfromRF, timeWHfromRF, nameCompanyWHfromRF, nameFreightWHfromRF, nameWarehouseWHfromRF, barcodeCurrentFreightUnit,
+    PROPERTIES(w) objectClassName, nameNumeratorObject, numberObject, seriesObject, dateWHfromRF, timeWHfromRF, nameCompanyWHfromRF, nameFreightWHfromRF, nameStockWHfromRF, barcodeCurrentFreightUnit,
                   fillWHfromRFDetailsSkuFreightUnit, printMarksSkuFreightUnit, printMarksSkuWHfromRF TODRAW d FORCE PANEL
     PROPERTIES(w) READONLY quantityRemainedPositionSkuWHfromRF SHOWIF barcodeCurrentFreightUnit(w),
                            quantityRemainedSkuWHfromRF SHOWIF barcodeCurrentFreightUnit(w)
@@ -501,7 +501,7 @@ DESIGN WHfromRF FROM DEFAULT {
                     ADD PROPERTY(dateWHfromRF);
                     ADD PROPERTY(timeWHfromRF);
                     ADD PROPERTY(nameFreightWHfromRF);
-                    ADD PROPERTY(nameWarehouseWHfromRF);
+                    ADD PROPERTY(nameStockWHfromRF);
                 }
 
                 NEW freightUnit{
@@ -554,7 +554,7 @@ FORM WHfromRFs 'Приход товара из РФ'
 
     OBJECTS w = WHfromRF
 
-    PROPERTIES(w) READONLY objectClassName, numberObject, seriesObject, dateWHfromRF, timeWHfromRF, nameFreightWHfromRF, nameWarehouseWHfromRF,
+    PROPERTIES(w) READONLY objectClassName, numberObject, seriesObject, dateWHfromRF, timeWHfromRF, nameFreightWHfromRF, nameStockWHfromRF,
                            countWHfromRFDetailWHfromRF, quantityWHfromRFDetailWHfromRF, statusRecWHfromRF,
                            descriptionFreightWHfromRF, nameCompanyWHfromRF
 
