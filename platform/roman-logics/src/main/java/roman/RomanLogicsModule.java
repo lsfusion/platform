@@ -2006,9 +2006,11 @@ public class RomanLogicsModule extends LogicsModule {
         translateNameSkuLanguage = addDProp(supplierAttributeGroup, "translateNameSkuLanguage", "Наименование", InsensitiveStringClass.get(50), sku, (CustomClass) BL.I18n.getClassByName("language"));
 
         translationNameSku = addJoinAProp(actionGroup, "translationNameSku", "Перевод наименования", addTAProp(originalNameArticleSku, translateNameArticleSku), dictionaryName, 1);
-        translationNameSkuInvoice = addJoinAProp(actionGroup, "translationNameSkuInvoice", "Перевод наименования", addTAProp(originalNameArticleSkuLanguage, translateNameSkuLanguage), dictionaryName, 1, languageInvoice, 2);
 
-        //translationNameSkuInvoice = addJProp("translationNameSkuInvoice", "Перевод", translationNameSkuLanguage, 1, languageInvoice, 2);
+        translationNameSkuLanguage = addJoinAProp(actionGroup, "translationNameSkuLanguage", "Перевод наименования", addTAProp(originalNameArticleSkuLanguage, translateNameSkuLanguage), dictionaryName, 1, 2);
+        //translationNameSkuInvoice = addJoinAProp(actionGroup, "translationNameSkuInvoice", "Перевод наименования", addTAProp(originalNameArticleSkuLanguage, translateNameSkuLanguage), dictionaryName, 1, languageInvoice, 2);
+
+        translationNameSkuInvoice = addJoinAProp("translationNameSkuInvoice", "Перевод", translationNameSkuLanguage, 1, languageInvoice, 2);
 
         coefficientArticle = addDProp(intraAttributeGroup, "coefficientArticle", "Кол-во в комплекте", IntegerClass.instance, article);
         coefficientArticleSku = addJProp(intraAttributeGroup, true, "coefficientArticleSku", "Кол-во в комплекте", coefficientArticle, articleSku, 1);

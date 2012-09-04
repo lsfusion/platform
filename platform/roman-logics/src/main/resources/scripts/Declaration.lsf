@@ -169,7 +169,6 @@ nameImporterDeclaration 'Импортёр' = name(importerDeclaration(declaratio
 languageDeclaration 'Язык декларации (ИД)' (declaration) = languageLegalEntity(importerDeclaration(declaration)) IN idGroup;
 nameLanguageDeclaration 'Язык декларации' (declaration) = name(languageDeclaration(declaration)) IN docGroup;
 
-
 currencyDeclaration 'Валюта декларации (ИД)' = DATA currency(declaration) IN idGroup;
 nameCurrencyDeclaration 'Валюта декларации' = name(currencyDeclaration(declaration)) IN exchangeGroup;
 
@@ -885,7 +884,8 @@ FORM declaration 'Декларация'
     OBJECTS dd=declarationDetail
     PROPERTIES (dd) READONLY numberDeclarationDetail, barcodeDeclarationDetail, nameInvoiceDeclarationDetail, nameBrandDeclarationDetail,
                     sidArticleDeclarationDetail, sidSizeDeclarationDetail, sidColorDeclarationDetail, nameColorDeclarationDetail,
-                    sidGenderGroupDeclaration, nameTypeFabricGroupDeclaration, mainCompositionDeclarationDetail, nameCountryDeclarationDetail, nameCountryLanguageDeclarationDetail
+                    sidGenderGroupDeclaration, nameTypeFabricGroupDeclaration, mainCompositionDeclarationDetail, mainCompositionLanguageDeclarationDetail SHOWIF languageDeclaration(d),
+                    nameCountryDeclarationDetail, nameCountryLanguageDeclarationDetail SHOWIF languageDeclaration(d)
     PROPERTIES (dd) sidCustomCategory10DeclarationDetail
     PROPERTIES (dd) READONLY netWeightDeclarationDetail, sumNetWeightDeclarationDetail,
                     sumGrossWeightDeclarationDetail, quantityDeclarationDetail, shortNameUOMDeclarationDetail, priceContractDeclarationDetail,
@@ -935,8 +935,8 @@ FORM declaration 'Декларация'
     PROPERTIES (gd2, dd2) inGroupDeclarationDeclarationDetail, percentGroupDeclarationDeclarationDetail
     PROPERTIES (dd2) READONLY numberDeclarationDetail, barcodeDeclarationDetail, nameInvoiceDeclarationDetail, nameBrandDeclarationDetail,
                     sidArticleDeclarationDetail, sidSizeDeclarationDetail, sidColorDeclarationDetail, nameColorDeclarationDetail,
-                    sidGenderGroupDeclaration, nameTypeFabricGroupDeclaration, mainCompositionDeclarationDetail, mainCompositionLanguageDeclarationDetail,
-                    nameCountryDeclarationDetail, nameCountryLanguageDeclarationDetail
+                    sidGenderGroupDeclaration, nameTypeFabricGroupDeclaration, mainCompositionDeclarationDetail, mainCompositionLanguageDeclarationDetail SHOWIF languageDeclaration(d),
+                    nameCountryDeclarationDetail, nameCountryLanguageDeclarationDetail SHOWIF languageDeclaration(d)
     PROPERTIES (dd2) sidCustomCategory10DeclarationDetail
     PROPERTIES (dd2) READONLY netWeightDeclarationDetail, sumNetWeightDeclarationDetail,
                     sumGrossWeightDeclarationDetail, quantityDeclarationDetail, shortNameUOMDeclarationDetail, priceContractDeclarationDetail,
@@ -997,6 +997,7 @@ DESIGN declaration FROM DEFAULT{
                             ADD PROPERTY(sidDeclaration);
                             ADD PROPERTY(nameCustomStoreDeclaration);
                             ADD PROPERTY(nameImporterDeclaration);
+                            ADD PROPERTY(nameLanguageDeclaration);
                             ADD PROPERTY(innerInvoicesDeclaration);
                             ADD PROPERTY(showFormDeclarationInvoices);
                         }
@@ -1111,7 +1112,7 @@ DESIGN declaration FROM DEFAULT{
 
 FORM declarations 'Декларации'
     OBJECTS d=declaration
-    PROPERTIES(d) READONLY sidDeclaration, objectClassName, nameCustomStoreDeclaration, nameImporterDeclaration,
+    PROPERTIES(d) READONLY sidDeclaration, objectClassName, nameCustomStoreDeclaration, nameImporterDeclaration, nameLanguageDeclaration,
                            dateDeclaration, timeDeclaration, nameCurrencyDeclaration,
                            rateExchangeCustomDataDeclaration, rateExchangeManagerialDataDeclaration, sumRegistrationUnionDeclaration,
                            dutyReverseDeclaration, VATReverseDeclaration, totalCustomSum,
@@ -1121,8 +1122,8 @@ FORM declarations 'Декларации'
     OBJECTS dd=declarationDetail
     PROPERTIES(dd) READONLY numberDeclarationDetail, barcodeDeclarationDetail, nameInvoiceDeclarationDetail, nameBrandDeclarationDetail,
                    sidArticleDeclarationDetail, sidSizeDeclarationDetail, sidColorDeclarationDetail, nameColorDeclarationDetail,
-                   sidGenderGroupDeclaration, nameTypeFabricGroupDeclaration, mainCompositionDeclarationDetail, mainCompositionLanguageDeclarationDetail,
-                   nameCountryDeclarationDetail, nameCountryLanguageDeclarationDetail, sidCustomCategory10DeclarationDetail,
+                   sidGenderGroupDeclaration, nameTypeFabricGroupDeclaration, mainCompositionDeclarationDetail, mainCompositionLanguageDeclarationDetail SHOWIF languageDeclaration(d),
+                   nameCountryDeclarationDetail, nameCountryLanguageDeclarationDetail SHOWIF languageDeclaration(d), sidCustomCategory10DeclarationDetail,
                    netWeightDeclarationDetail, sumNetWeightDeclarationDetail, sumGrossWeightDeclarationDetail,
                    quantityDeclarationDetail, shortNameUOMDeclarationDetail, priceContractDeclarationDetail, declarationPriceDeclarationDetail,
                    priceRateDeclarationDetail, declarationSumRateDeclarationDetail,

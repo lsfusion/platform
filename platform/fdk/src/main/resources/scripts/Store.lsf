@@ -47,6 +47,8 @@ TABLE store (store);
 companyStore = DATA company (store);
 nameCompanyStore 'Компания' (store) = name(companyStore(store)) IN baseGroup;
 
+languageStore (store) = languageLegalEntity(companyStore(store));
+
 regionStore = DATA region (store);
 nameRegionStore 'Регион' (store) = name(regionStore(store));
 

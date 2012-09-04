@@ -297,7 +297,13 @@ translationAdditionalCompositionSkuInvoice 'Перевод' (sku, invoice) = tra
 EXTEND FORM boxInvoiceForm
     PROPERTIES (invoice) READONLY nameLanguageInvoice AFTER nameDestinationDestinationDocument
     PROPERTIES (sku, invoice) translateNameSkuInvoice, translationMainCompositionSkuInvoice,
-                              mainCompositionSkuInvoice, translationAdditionalCompositionSkuInvoice, additionalCompositionSkuInvoice
+               mainCompositionSkuInvoice, translationAdditionalCompositionSkuInvoice, additionalCompositionSkuInvoice
+;
+
+EXTEND FORM simpleInvoiceForm
+    PROPERTIES (invoice) READONLY nameLanguageInvoice AFTER nameDestinationDestinationDocument
+    PROPERTIES (sku, invoice) translateNameSkuInvoice, translationMainCompositionSkuInvoice,
+               mainCompositionSkuInvoice, translationAdditionalCompositionSkuInvoice, additionalCompositionSkuInvoice
 ;
 
 importerFreight 'Импортёр фрахта (ИД)' = DATA importer(freight) IN idGroup;
@@ -329,8 +335,9 @@ EXTEND FORM freightCreateForm
 ;
 
 EXTEND FORM freightChangeForm
-    PROPERTIES (freight, skuFreight) nameCategoryFreightLanguageSku, mainCompositionLanguageFreightSku, additionalCompositionLanguageFreightSku,
-               nameCountryLanguageFreightSku AFTER nameCountryOfOriginFreightSku(freight, skuFreight)
+    PROPERTIES (freight, skuFreight) nameCategoryFreightLanguageSku SHOWIF languageFreight(freight),
+               mainCompositionLanguageFreightSku SHOWIF languageFreight(freight), additionalCompositionLanguageFreightSku SHOWIF languageFreight(freight),
+               nameCountryLanguageFreightSku AFTER nameCountryOfOriginFreightSku(freight, skuFreight) SHOWIF languageFreight(freight)
 ;
 
 //mainCompositionSkuInvoice = addJProp("", "", mainCompositionSkuLanguage, 1, )
