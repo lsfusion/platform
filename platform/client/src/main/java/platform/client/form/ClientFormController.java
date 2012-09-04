@@ -399,7 +399,8 @@ public class ClientFormController implements AsyncView {
             OrderedMap<ClientPropertyDraw, Boolean> userOrders = new OrderedMap<ClientPropertyDraw, Boolean>();
             for (GroupObjectController controller : controllers.values()) {
                 boolean userPreferencesEmpty = true;
-                if (controller.getGroupObject() != null && controller.getGroupObject().hasUserPreferences) {
+                boolean hasUserPreferences = controller.getGroupObject() != null && controller.getGroupObject().hasUserPreferences;
+                if (hasUserPreferences) {
                     List<ClientPropertyDraw> clientPropertyDrawList = controller.getPropertyDraws();
                     Collections.sort(clientPropertyDrawList, COMPARATOR_USERSORT);
                     for (ClientPropertyDraw property : controller.getPropertyDraws()) {
@@ -409,7 +410,7 @@ public class ClientFormController implements AsyncView {
                         }
                     }
                 }
-                if (userPreferencesEmpty)
+                if (userPreferencesEmpty && hasUserPreferences)
                     controller.clearOrders();
             }
             applyOrders(userOrders);
