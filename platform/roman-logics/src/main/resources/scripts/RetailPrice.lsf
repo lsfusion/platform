@@ -212,6 +212,9 @@ rateBasePriceSetDocumentSku(basePriceSetDocument, sku) <- rateTypeExchangeCurren
                                                                CHANGED(datePriceSetDocument(basePriceSetDocument) AND inPriceSetDocumentSku(basePriceSetDocument, sku));
 rateBasePriceSetDocumentSku(document, sku) => inPriceSetDocumentSku(document, sku) RESOLVE FALSE;
 
+priceSetDocumentSeriesNumberShortNameCurrency (series, number, currency) = GROUP UNIQUE priceSetDocument BY seriesObject(priceSetDocument), numberObject(priceSetDocument), shortNameCurrency(currencyPriceSetDocument(priceSetDocument))
+                                                                                        WHERE priceSetDocument IS priceSetDocument;
+
 markupBasePriceSetDocumentSku 'Наценка' = DATA NUMERIC[14,2] (basePriceSetDocument, article);
 markupBasePriceSetDocumentSku (basePriceSetDocument, sku) <- markupCoefficientRetail(
                                                                     coefficientRetailBrandSupplierDate(brandSupplierArticleSku(sku),
@@ -833,6 +836,8 @@ printAllPricePriceSetDocumentArticle 'Печать цен для маркиро�
     FORM priceArticlePriceSetDocumentPrint OBJECTS s = stock, p = priceSetDocument MODAL;
 } TOOLBAR;
 
+importPriceList 'Импорт (TEDDY)'= ACTION CUSTOM 'roman.actions.ImportPriceListActionProperty' TOOLBAR;
+
 // ------------------------------------------- Печать маркировки sku -------------------------------------- //
 
 quantityStockPriceSetDocumentSku 'Кол-во' (stock, priceSetDocument, sku) =
@@ -871,6 +876,7 @@ FORM priceSetDocuments 'Розничные прайсы'
     OBJECTS p=priceSetDocument
     PROPERTIES(p) READONLY statusPriceSetDocument, objectClassName, numberObject, seriesObject, datePriceSetDocument,
                            timePriceSetDocument, dateTimeToPriceSetDocument, nameCurrencyPriceSetDocument, canonicalBrandPriceSetDocument, reasonPriceSetDocument
+    PROPERTIES() importPriceList FORCE PANEL TODRAW p
     PROPERTIES(p) ADDFORM, EDITFORM, delete FORCE PANEL
 
     TREE stockTree sg = stockGroup PARENT parentStockGroup

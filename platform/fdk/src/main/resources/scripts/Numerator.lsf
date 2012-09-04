@@ -107,7 +107,10 @@ setValueNumeratedObject 'Сгенерировать номер' = ACTION (numera
     EXEC incrementValueNumerator(numeratorObject(numeratedObject));
 } IN numberedGroup SHORTCUT numberObject;
 
-WHEN CHANGED(numeratorObject(numeratedObject)) DO EXEC setValueNumeratedObject(numeratedObject) ;
+WHEN CHANGED(numeratorObject(numeratedObject)) AND
+     NOT CHANGED(numberObject(numeratedObject)) AND
+     NOT CHANGED(seriesObject(numeratedObject))
+     DO EXEC setValueNumeratedObject(numeratedObject) ;
 
 // --------------------------------------------- Макрос по объявлению нумерируемого объекта ---------------------------- //
 

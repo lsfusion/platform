@@ -300,6 +300,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     public LCP symbolCurrency;
     public LCP shortNameCurrency;
+    public LCP shortNameToCurrency;
 
     public LCP launchComputer;
     public LCP computerNameLaunch;
@@ -751,6 +752,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         symbolCurrency = addDProp(baseGroup, "symbolCurrency", getString("logics.currency.symbol.currency"), StringClass.get(5), currency);
         shortNameCurrency = addDProp(baseGroup, "shortNameCurrency", getString("logics.currency.short.name.currency"), StringClass.get(3), currency);
+        shortNameToCurrency = addAGProp(baseGroup, "shortNameToCurrency", getString("logics.currency.short.name.currency"), shortNameCurrency);
         documentNameCurrency = addDProp(baseGroup, "documentNameCurrency", getString("logics.currency.document.name.currency"), StringClass.get(10), currency);
 
         // математические св-ва
