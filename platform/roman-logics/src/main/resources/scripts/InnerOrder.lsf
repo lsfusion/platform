@@ -170,6 +170,8 @@ inInnerOrderOrderPicking (innerOrder, orderPicking) = innerOrderOrderPicking(ord
 @defineDocumentAggregationHeaderStockPrefix(innerOrder, orderPicking, stock, 'Склад-получатель', destination, destination);
 @defineDocumentAggregationHeaderStockPrefix(innerOrder, orderPicking, stock, 'Склад-отправитель', , );
 
+@defineDocumentDetailStock(orderPicking, stock, 'Склад-отправитель');
+
 companyOrderPicking(orderPicking) = companyStock(stockOrderPicking(orderPicking));
 destinationCompanyOrderPicking(orderPicking) = companyStock(destinationStockOrderPicking(orderPicking));
 
@@ -189,9 +191,10 @@ destinationCompanyOrderPicking(orderPicking) = companyStock(destinationStockOrde
 retailPriceOrderPickingDetail 'Цена розничная' = DATA NUMERIC[14,2] (orderPickingDetail);
 retailSumOrderPickingDetail 'Сумма розничная' (detail) = quantityOrderPickingDetail(detail) * retailPriceOrderPickingDetail(detail);
 
-retailPriceOrderPickingDetail(orderPickingDetail) <- pricePriceSetDocumentSkuDateTime(skuOrderPickingDetail(orderPickingDetail), dateTimeOrderPickingDetail(orderPickingDetail))
-                                                        WHEN CHANGED(dateTimeOrderPickingDetail(orderPickingDetail))
-                                                             OR CHANGED(skuOrderPickingDetail(orderPickingDetail));
+retailPriceOrderPickingDetail(orderPickingDetail) <- pricePriceSetDocumentSkuCurrencyDateTime(skuOrderPickingDetail(orderPickingDetail), currencyStock(stockOrderPickingDetail(orderPickingDetail)), dateTimeOrderPickingDetail(orderPickingDetail))
+                                                        WHEN CHANGED(dateTimeOrderPickingDetail(orderPickingDetail)) OR
+                                                             CHANGED(stockOrderPickingDetail(orderPickingDetail)) OR
+                                                             CHANGED(skuOrderPickingDetail(orderPickingDetail));
 
 // Кнопки подбора
 @defineAddDetailDialogSkuStock(orderPicking, sku, stock, dialogSku);

@@ -25,7 +25,9 @@ CLASS transferOutBatchDetail 'Строка перемещения товаров
 
 @defineDocumentTransferOut(transfer, 'Перемещение товаров по накладным', sku, stock);
 @defineDocumentFormTransferOut(transfer, 'Перемещение товаров по накладным');
-@defineDocumentAndDeriveCurrency(transferOut, stock);
+
+@defineDocumentCurrency(transferOut);
+@deriveDocumentCurrency(transferOut, stock);
 
 companyTransferOut (transferOut) = companyStock(stockTransferOut(transferOut));
 

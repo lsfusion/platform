@@ -255,11 +255,6 @@ fillWHfromRFDetailsSkuFreightUnit 'Заполнить строки из коро
 shouldBePrintWHfromRF = SESSION DATA BOOLEAN (sku);
 countSku = SESSION DATA INTEGER (sku);
 
-///UNION SUM priceInFullFreightSku()
-// todo убрать промежуточные свойства
-priceBaseWHfromRFDateTimeSku 'Цена' (sku, dateTime) = priceBasePriceSetDocumentSkuDateTime(sku, dateTime) AND sku IS sku;
-priceDiscountWHfromRFDateTimeSku 'Цена скидочная' (sku, dateTime) = priceDiscountPriceSetDocumentSkuDateTime(sku, dateTime) AND sku IS sku;
-
 quantitySkuFreightUnitWHfromRF (sku, freightUnit, WHfromRF) = quantitySkuFreightUnitFreight(sku, freightUnit, freightWHfromRF(WHfromRF));
 quantityPositionsSkuInWHfromRFFreightUnit 'Кол-во позиций в коробе' (WHfromRF, freightUnit) =
     GROUP SUM 1 IF quantitySkuFreightUnitWHfromRF(sku, freightUnit, WHfromRF) BY WHfromRF, freightUnit;
@@ -300,12 +295,15 @@ FORM printMarksWHfromRF 'Печать маркировок товара' PRINT
     OBJECTS imp = company FIXED PANEL
     PROPERTIES(imp) OBJVALUE, name, addressLegalEntity
 
+    OBJECTS c = currency FIXED PANEL
+    PROPERTIES(c) name
+
     OBJECTS s = sku
     PROPERTIES(s) READONLY sidArticleSku, sidSizeSupplierItem, nameCommonSizeSku, sidGenderArticleSku, nameCategoryArticleSku,
                            mainCompositionSku, nameCountryBrandSupplierSku, nameBrandSupplierArticleSku, barcode, nameCountrySku,
                            sidColorSupplierItem, nameColorSupplierItem, nameSupplierArticleSku, addressSupplierArticleSku, warrantySku, countSku
 
-    PROPERTIES(s, dt)      priceBaseWHfromRFDateTimeSku, priceDiscountWHfromRFDateTimeSku
+    PROPERTIES(s, c, dt)      priceBasePriceSetDocumentSkuCurrencyDateTime, priceDiscountPriceSetDocumentSkuCurrencyDateTime
     PROPERTIES(imp, s)     nameImporterSku, addressImporterSku
 
     FILTERS shouldBePrintWHfromRF(s)
@@ -317,7 +315,7 @@ printMarksSkuFreightUnit 'Печать маркировок товаров' (WHf
     SET countSku(sku) <- NULL;
     SET shouldBePrintWHfromRF(sku) <- TRUE IF quantitySkuFreightUnitWHfromRF(sku, currentFreightUnit(WHfromRF), WHfromRF);
     SET countSku(sku) <- castToInteger(quantitySkuFreightUnitWHfromRF(sku, currentFreightUnit(WHfromRF), WHfromRF));
-    FORM printMarksWHfromRF OBJECTS dt = dateTimeWHfromRF(WHfromRF), imp = companyWHfromRF(WHfromRF) MODAL;
+    FORM printMarksWHfromRF OBJECTS dt = dateTimeWHfromRF(WHfromRF), imp = companyWHfromRF(WHfromRF), c = currencyStock(warehouseWHfromRF(WHfromRF)) MODAL;
 
 } CONFIRM;
 
@@ -327,7 +325,7 @@ printMarksSkuWHfromRF 'Печать маркировок товаров' (WHfrom
     SET countSku(sku) <- NULL;
     SET shouldBePrintWHfromRF(sku) <- TRUE IF quantitySkuInWHfromRF(WHfromRF, sku);
     SET countSku(sku) <- castToInteger(quantitySkuInWHfromRF(WHfromRF, sku));
-    FORM printMarksWHfromRF OBJECTS dt = dateTimeWHfromRF(WHfromRF), imp = companyWHfromRF(WHfromRF) MODAL;
+    FORM printMarksWHfromRF OBJECTS dt = dateTimeWHfromRF(WHfromRF), imp = companyWHfromRF(WHfromRF), c = currencyStock(warehouseWHfromRF(WHfromRF)) MODAL;
 
 } CONFIRM TOOLBAR;
 

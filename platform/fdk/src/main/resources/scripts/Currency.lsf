@@ -1,6 +1,6 @@
 MODULE Currency;
 
-REQUIRE System, RomanLogicsModule;
+REQUIRE System;
 
 dateTypeExchangeCurrencyDate (typeExchange, currency, date)  =
     GROUP MAX dateIn IF rateExchange(typeExchange, currency, dateIn) AND dateIn < date AND date IS DATE
@@ -15,6 +15,8 @@ dateTypeExchangeCurrencyDateEx (typeExchange, currency, date)  =
 
 curRateTypeExchangeCurrency 'Текущий курс обмена' (typeExchange, currency) =
     rateExchange(typeExchange, currency, dateTypeExchangeCurrencyDateEx(typeExchange, currency, currentDate()));
+
+// --------------------------------------------- Формы для ввода курсов валют --------------------------------------- //
 
 FORM dialogTypeExchangeCurrency 'Курс обмена на дату'
     OBJECTS t=typeExchange FIXED PANEL
@@ -102,3 +104,27 @@ DESIGN typeExchangeCurrencyDate FROM DEFAULT{
     }
 }
 
+// --------------------------------------------------- Макросы по добавлению валюты в документы ------------------------------------ //
+META defineDocumentHeaderCurrency (object)
+    currency###object 'Валюта ИД' (object) = DATA currency (object);
+    nameCurrency###object 'Валюта' (object)= name(currency###object(object)) IN documentPrmGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
+END
+
+META defineDocumentDetailCurrencyCustom (object, detail)
+    currency###detail 'Валюта ИД' (idetail) = currency###object(object###detail(idetail));
+    nameCurrency###detail 'Валюта' (idetail) = nameCurrency###object(object###detail(idetail));
+END
+
+META defineDocumentCurrencyCustom (object, detail)
+    @defineDocumentHeaderCurrency(object);
+    @defineDocumentDetailCurrencyCustom(object, detail);
+END
+
+META defineDocumentCurrency (object)
+    @defineDocumentHeaderCurrency(object);
+    @defineDocumentDetailCurrencyCustom(object, object##Detail);
+END
+
+META deriveDocumentCurrency (object, stockProp)
+    currency###object (object) <- currencyStock(stockProp###object(object)) WHEN ASSIGNED(object AS object);
+END

@@ -32,6 +32,9 @@ CLASS surplusOutDetail 'Строка реализации излишков' : ou
 
 @defineDocumentPosted(surplusOut);
 
+@defineDocumentCurrency(surplusOut);
+@deriveDocumentCurrency(surplusOut, stock);
+
 @defineDocumentDescription (surplusOut, 'Реализация излишков');
 
 @defineDocumentDetailNumbered(surplusOut);
@@ -169,7 +172,7 @@ FORM surplusOut 'Реализация излишков'
     OBJECTS t = surplusOut FIXED PANEL
 
     PROPERTIES (t) numberObject, seriesObject, dateSurplusOut, timeSurplusOut,
-                   nameStockSurplusOut, nameDestinationStockSurplusOut, nameDestinationCustomerSurplusOut, noteSurplusOut,
+                   nameStockSurplusOut, nameDestinationStockSurplusOut, nameDestinationCustomerSurplusOut, nameCurrencySurplusOut, noteSurplusOut,
                    countSurplusOutDetailSurplusOut, quantitySurplusOutDetailSurplusOut,
                    createDetailSurplusOut
 

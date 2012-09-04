@@ -10,7 +10,7 @@ TABLE language(language);
 localeLanguage 'Locale' = DATA STRING[5] (language);
 
 FORM language 'Язык'
-    OBJECTS l = language
+    OBJECTS l = language FIXED PANEL
     PROPERTIES(l) name, localeLanguage
 
     EDIT language OBJECT l

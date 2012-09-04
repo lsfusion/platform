@@ -23,7 +23,8 @@ CLASS moveOutDetail 'Строка перемещения товаров' : outFI
 @defineDocumentTransferOut(move, 'Перемещение товаров', sku, stock);
 @defineDocumentFormTransferOut(move, 'Перемещение товаров');
 
-@defineDocumentAndDeriveCurrency(moveOut, stock);
+@defineDocumentCurrency(moveOut);
+@deriveDocumentCurrency(moveOut, stock);
 
 @defineDocumentDetailSkuArticle(moveOut);
 @extendDocumentFormDetailSkuArticle(moveOut, d, moveOut);

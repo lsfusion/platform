@@ -28,7 +28,8 @@ CONSTRAINT companyStock(stockReturnOut(returnOut)) == companyStock(destinationSt
 @extendDocumentFormDetailSkuArticle(returnOut, d, returnOut);
 @extendDocumentFormDetailSkuArticleReadonly(returnOuts, d, returnOut);
 
-@defineDocumentAndDeriveCurrency(returnOut, stock);
+@defineDocumentCurrency(returnOut);
+@deriveDocumentCurrency(returnOut, stock);
 
 companyReturnOut (returnOut) = companyStock(stockReturnOut(returnOut));
 destinationCompanyReturnOut(returnOut) = companyStock(destinationStockReturnOut(returnOut));

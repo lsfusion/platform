@@ -46,7 +46,8 @@ CLASS invoiceWHOutDetail 'Строка реализации товара по б
 @defineDocumentHeaderQuantity(invoiceWHOut);
 @defineDocumentHeaderSkuQuantity(invoiceWHOut, sku);
 
-@defineDocumentAndDeriveCurrency(invoiceWHOut, warehouse);
+@defineDocumentCurrency(invoiceWHOut);
+@deriveDocumentCurrency(invoiceWHOut, warehouse);
 
 // Кнопки подбора
 @defineAddDetailDialogSkuStock(invoiceWHOut, sku, warehouse, dialogSku);

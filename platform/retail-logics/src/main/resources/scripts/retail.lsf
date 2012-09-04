@@ -2738,7 +2738,8 @@ CLASS shipmentPosted 'Закрытая поставка' : shipment, postedObjec
 @defineDocumentHeaderListRegister(shipment);
 @defineDocumentHeaderPriceChange(shipment);
 
-@defineDocumentAndDeriveCurrency (shipment, departmentStore);
+@defineDocumentCurrency(shipment);
+@deriveDocumentCurrency(shipment, departmentStore);
 
 sidShipmentDetail 'Уникальный номер накладной' (shipmentDetail) = DATA STRING[50] (shipmentDetail) IN documentHeaderGroup;
 

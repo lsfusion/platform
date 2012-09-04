@@ -38,6 +38,9 @@ CLASS writeOffBatchDetail 'Строка списания товара (по па
 @defineDocumentPosted(writeOff);
 @defineDocumentDescription (writeOff, 'Списание товара');
 
+@defineDocumentCurrency(writeOff);
+@deriveDocumentCurrency(writeOff, stock);
+
 companyWriteOff (writeOff) = companyStock(stockWriteOff(writeOff));
 nameCompanyWriteOff 'Компания' (writeOff)= name(companyWriteOff(writeOff));
 addressLegalEntityWriteOff 'Адрес' (writeOff) = addressLegalEntityDate(companyWriteOff(writeOff), dateWriteOff(writeOff));
@@ -82,7 +85,7 @@ FORM writeOff 'Списание товара'
     OBJECTS t = writeOff FIXED PANEL
 
     PROPERTIES (t) objectClassName, nameNumeratorObject, numberObject, seriesObject, dateWriteOff, timeWriteOff,
-                   nameStockWriteOff, noteWriteOff,
+                   nameStockWriteOff, nameCurrencyWriteOff, noteWriteOff,
                    countWriteOffDetailWriteOff, quantityWriteOffDetailWriteOff, nameReasonOffWriteOff, skipSkuLedgerWriteOff
 
     OBJECTS d = writeOffDetail

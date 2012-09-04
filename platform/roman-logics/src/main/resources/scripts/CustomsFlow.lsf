@@ -149,9 +149,12 @@ inCStoWHInnerInvoice (CStoWH, innerInvoice) = GROUP SUM inDeclarationDetailInner
 innerInvoicesCStoWH 'Инвойсы' (CStoWH) = GROUP CONCAT stringInnerInvoice(innerInvoice)
     IF inCStoWHInnerInvoice (CStoWH, innerInvoice), ', ' BY CStoWH IN documentPrmGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
 
-currencyCStoWHDetail 'Валюта (ИД)' (CStoWHDetail) = currencyDeclaration(declarationCStoWHDetail(CStoWHDetail));
-currencyCStoWH (CStoWH) = GROUP EQUAL currencyCStoWHDetail(CStoWHDetail) BY CStoWHCStoWHDetail(CStoWHDetail);
-shortNameCurrencyCStoWH 'Валюта документа' (CStoWH) = shortNameCurrency(currencyCStoWH(CStoWH)) IN documentPrmGroup;
+declarationCurrencyCStoWHDetail 'Валюта (ИД)' (CStoWHDetail) = currencyDeclaration(declarationCStoWHDetail(CStoWHDetail));
+declarationCurrencyCStoWH (CStoWH) = GROUP EQUAL declarationCurrencyCStoWHDetail(CStoWHDetail) BY CStoWHCStoWHDetail(CStoWHDetail);
+shortNameDeclarationCurrencyCStoWH 'Валюта документа' (CStoWH) = shortNameCurrency(declarationCurrencyCStoWH(CStoWH)) IN documentPrmGroup;
+
+@defineDocumentCurrency(CStoWH);
+@deriveDocumentCurrency(CStoWH, destinationStock);
 
 // кол-во отгруженного товара по коробам и sku
 quantityCStoWHFreightUnitSku(CStoWH, freightUnit, sku) = GROUP SUM quantityCStoWHDetail(CStoWHDetail)
@@ -211,7 +214,7 @@ FORM CStoWH 'Расход с СВХ'
     OBJECTS c = CStoWH FIXED PANEL
     PROPERTIES (c) objectClassName, numberObject, seriesObject, dateCStoWH, timeCStoWH, nameCustomStoreCStoWH, nameDestinationStockCStoWH,
                    quantityCStoWHDetailCStoWH, sumCStoWHDetailCStoWH,
-                   inputDeclarationDetailCStoWH, shortNameCurrencyCStoWH
+                   inputDeclarationDetailCStoWH, shortNameDeclarationCurrencyCStoWH, nameCurrencyCStoWH
     PROPERTIES (c) READONLY declarationsCStoWH, innerInvoicesCStoWH
 
     OBJECTS d = CStoWHDetail
@@ -378,7 +381,7 @@ sumInvoiceConsignmentDetail (consignmentDetail) += sumCStoWHDetail (consignmentD
 sumConsignmentDetail (consignmentDetail) += sumCStoWHDetail (consignmentDetail);
 grossWeightConsignmentDetail (consignmentDetail) += sumGrossWeightCStoWHDetail (consignmentDetail);
 
-currencyConsignment(consignment) += currencyCStoWH(consignment);
+currencyConsignment(consignment) += declarationCurrencyCStoWH(consignment);
 isCustomsFlowConsignment (consignment) += consignment IS CStoWH;
 noteConsignment(consignment) += innerInvoicesCStoWH(consignment);
 

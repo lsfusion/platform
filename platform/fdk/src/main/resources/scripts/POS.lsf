@@ -3,6 +3,7 @@ MODULE POS;
 REQUIRE System,
         Utils,
         Document,
+        Currency,
         Store,
         Stock,
         CashRegister,
@@ -70,11 +71,11 @@ numberZReportReceipt 'Номер Z-отчета' (receipt) = numberZReport(zRepo
 @defineDocumentDetailDepartmentStoreCustom(zReport, receipt);
 @defineDocumentDetailPostedCustom(zReport, receipt);
 
-@defineDocumentHeaderCurrency (receipt);
-@deriveDocumentCurrency (receipt, departmentStore);
-
 @defineDocumentRelationCustom(receipt, receiptSaleDetail);
 @defineDocumentRelationCustom(receipt, receiptReturnDetail);
+
+@defineDocumentHeaderCurrency (receipt);
+@deriveDocumentCurrency (receipt, departmentStore);
 
 @defineDocumentDetailCurrencyCustom (receipt, receiptSaleDetail);
 @defineDocumentDetailCurrencyCustom (receipt, receiptReturnDetail);

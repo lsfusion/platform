@@ -28,7 +28,8 @@ CLASS saleOutBatchDetail 'Строка продажи товаров по нак
 @defineDocumentTransferOutBatch(sale, sku);
 @defineDocumentFormTransferOutBatch(sale);
 
-@defineDocumentAndDeriveCurrency(saleOut, stock);
+@defineDocumentCurrency(saleOut);
+@deriveDocumentCurrency(saleOut, stock);
 
 @extendDocumentFormDetailSkuArticleReadonly(saleOuts, o, saleOutBatch);
 
