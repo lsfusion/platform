@@ -256,4 +256,9 @@ NAVIGATOR {
         ADD writeOffPrint;
         ADD orderPickingPrint;
     }
+
+    classifierCurrency {
+        ADD typeExchangeCurrencyDate;
+    }
+
 }

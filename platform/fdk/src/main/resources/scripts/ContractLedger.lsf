@@ -5,6 +5,8 @@ REQUIRE Contract,
         Numerator,
         Currency;
 
+PRIORITY Contract;
+
 META defineContractLedgerPrefix (caption, prefix)
 
     CLASS ABSTRACT contract###prefix##Ledger caption;

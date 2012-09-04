@@ -1,6 +1,6 @@
 MODULE Currency;
 
-REQUIRE System;
+REQUIRE System, RomanLogicsModule;
 
 dateTypeExchangeCurrencyDate (typeExchange, currency, date)  =
     GROUP MAX dateIn IF rateExchange(typeExchange, currency, dateIn) AND dateIn < date AND date IS DATE
@@ -8,3 +8,97 @@ dateTypeExchangeCurrencyDate (typeExchange, currency, date)  =
 
 rateTypeExchangeCurrencyDate 'Курс обмена' (typeExchange, currency, date) =
     rateExchange(typeExchange, currency, dateTypeExchangeCurrencyDate(typeExchange, currency, date));
+
+dateTypeExchangeCurrencyDateEx (typeExchange, currency, date)  =
+    GROUP MAX dateIn IF rateExchange(typeExchange, currency, dateIn) AND dateIn <= date AND date IS DATE
+    BY typeExchange, currency, date;
+
+curRateTypeExchangeCurrency 'Текущий курс обмена' (typeExchange, currency) =
+    rateExchange(typeExchange, currency, dateTypeExchangeCurrencyDateEx(typeExchange, currency, currentDate()));
+
+FORM dialogTypeExchangeCurrency 'Курс обмена на дату'
+    OBJECTS t=typeExchange FIXED PANEL
+    OBJECTS c=currency FIXED PANEL
+    OBJECTS d=DATE FIXED PANEL
+    PROPERTIES READONLY name(t),  nameCurrencyTypeExchange(t), name(c)
+    PROPERTIES val=OBJVALUE(d), rateExchange(t,c,d)
+
+;
+DESIGN dialogTypeExchangeCurrency FROM DEFAULT {
+    main {
+        childConstraints = TO THE BOTTOM;
+        ADD t.box {
+            ADD PROPERTY(name(t)) { focusable = FALSE; preferredCharWidth = 40;}
+        }
+        ADD c.box{
+            childConstraints = TO THE BOTTOM;
+            ADD d.box {
+                childConstraints = TO THE RIGHT;
+
+                ADD PROPERTY(rateExchange(t,c,d));
+            };
+            NEW row {
+                title = 'Валюты обмена';
+                childConstraints = TO THE RIGHT;
+                ADD PROPERTY(nameCurrencyTypeExchange(t)) { caption = 'Валюта (из)'; preferredCharWidth = 20;}
+                ADD PROPERTY(name(c)) { caption = 'Валюта (в)'; preferredCharWidth = 20;}
+            }
+        }
+    }
+    ADD functions.box;
+}
+
+dialogTypeExchangeCurrency 'Добавить' (typeExchange, currency) = ACTION FORM dialogTypeExchangeCurrency OBJECTS t, c MODAL TOOLBAR;
+
+
+deleteTypeExchangeCurrencyDate 'Удалить' = ACTION (typeExchange, currency, date) {
+
+    SET rateExchange(typeExchange, currency, date) <- NULL;
+
+} IMAGE 'delete.png';
+
+FORM currencyForm 'Валюта'
+    OBJECTS c=currency FIXED PANEL
+    PROPERTIES (c)  name, shortNameCurrency, symbolCurrency, documentNameCurrency
+
+    EDIT currency OBJECT c
+;
+
+
+FORM typeExchangeCurrencyDate 'Тип обмена / Курсы валют'
+
+    OBJECTS t = typeExchange
+    PROPERTIES(t) READONLY name, nameCurrencyTypeExchange
+    PROPERTIES(t) ADDFORM, EDITFORM, delete
+
+    OBJECTS c = currency
+    PROPERTIES(c) READONLY name
+    PROPERTIES(c) ADDFORM, EDITFORM, delete
+    PROPERTIES(t, c) READONLY curRateTypeExchangeCurrency
+
+    OBJECTS d = DATE
+    PROPERTIES(d) READONLY OBJVALUE
+
+    PROPERTIES(t, c, d) rateExchange
+    PROPERTIES(t, c) dialogTypeExchangeCurrency TODRAW d FORCE PANEL
+    PROPERTIES(t, c, d) deleteTypeExchangeCurrencyDate
+
+    FILTERS rateExchange(t, c, d)
+
+;
+
+DESIGN typeExchangeCurrencyDate FROM DEFAULT{
+    main {
+        childConstraints = TO THE BOTTOM;
+        ADD t.box;
+
+        NEW topContainer{
+            childConstraints = TO THE RIGHT;
+            ADD c.box;
+            ADD d.box;
+
+        }
+        ADD functions.box;
+    }
+}
+

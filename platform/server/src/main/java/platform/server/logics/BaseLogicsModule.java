@@ -1563,8 +1563,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         NavigatorElement classifierCurrency = addNavigatorElement(catalogElement, "classifierCurrency", "Валюты и курсы");
         addFormEntity(new CurrenciesFormEntity(classifierCurrency, "currencies"));
-        classifierCurrency.add(baseLM.typeExchange.getListForm(baseLM).form);
-        addFormEntity(new RateCurrencyFormEntity(classifierCurrency, "rateCurrencyForm", "Курсы валют"));
 
         addFormEntity(new DaysOffFormEntity(catalogElement, "daysOffForm"));
         dictionaryForm = addFormEntity(new DictionariesFormEntity(catalogElement, "dictionariesForm"));
@@ -2593,45 +2591,4 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
 
     }
-
-    private class RateCurrencyFormEntity extends FormEntity<T> {
-
-        private ObjectEntity objTypeExchange;
-        private ObjectEntity objCurrency;
-        private ObjectEntity objDate;
-        private ObjectEntity objDateRate;
-
-        private RateCurrencyFormEntity(NavigatorElement parent, String sID, String caption) {
-            super(parent, sID, caption);
-
-            objTypeExchange = addSingleGroupObject(baseLM.typeExchange, "Тип обмена", baseLM.objectValue, baseLM.name, baseLM.nameCurrencyTypeExchange);
-            objTypeExchange.groupTo.initClassView = ClassViewType.PANEL;
-
-            objCurrency = addSingleGroupObject(baseLM.currency, "Валюта", baseLM.name);
-            objCurrency.groupTo.initClassView = ClassViewType.GRID;
-
-            objDate = addSingleGroupObject(DateClass.instance, "Дата", baseLM.objectValue);
-            objDate.groupTo.setSingleClassView(ClassViewType.PANEL);
-
-            addPropertyDraw(baseLM.rateExchange, objTypeExchange, objCurrency, objDate);
-
-            objDateRate = addSingleGroupObject(DateClass.instance, "Дата", baseLM.objectValue);
-
-            addPropertyDraw(baseLM.rateExchange, objTypeExchange, objCurrency, objDateRate);
-            setEditType(baseLM.rateExchange, PropertyEditType.READONLY, objDateRate.groupTo);
-            addFixedFilter(new NotNullFilterEntity(addPropertyObject(baseLM.rateExchange, objTypeExchange, objCurrency, objDateRate)));
-        }
-
-        @Override
-        public FormView createDefaultRichDesign() {
-            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
-
-            design.get(objCurrency.groupTo).grid.constraints.fillVertical = 1;
-            design.get(objDateRate.groupTo).grid.constraints.fillVertical = 3;
-
-            return design;
-        }
-    }
-
-
 }
