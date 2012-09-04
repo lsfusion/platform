@@ -9,7 +9,7 @@ REQUIRE System,
         Currency,
         RomanLogicsModule;
 
-PRIORITY MasterData, RomanLogicsModule;
+PRIORITY MasterData, Stock, RomanLogicsModule;
 
 // -------------------------------------- Надбавки --------------------------------------- //
 
@@ -302,6 +302,8 @@ META definePriceSetDocumentAggregations(document, caption)
     priceB###document##Article caption###' (предыдущая)' (document, article) = priceB###document##ArticleCurrencyDateTime(article, currencyPriceSetDocument(document), dateTimePriceSetDocument(document)) MINCHARWIDTH 15;
     prevPriceB###document##Article caption###' (предыдущая)' (document, article) = prevPriceB###document##ArticleCurrencyDateTime(article, currencyPriceSetDocument(document), dateTimePriceSetDocument(document)) MINCHARWIDTH 15;
 
+    priceA###document##Article caption###' (предыдущая)' (document, article) = priceA###document##ArticleCurrencyDateTime(article, currencyPriceSetDocument(document), dateTimePriceSetDocument(document)) MINCHARWIDTH 15;
+
     // ---------------------------------------- Sku ---------------------------------------- //
     concatB###document##SkuCurrencyDateTime (sku, currency, dateTime) = GROUP MAX order###document(document) AND
                                                                                   overPrice###document##Sku (document, sku) AND
@@ -330,6 +332,8 @@ META definePriceSetDocumentAggregations(document, caption)
     // Предыдущие цены
     priceB###document##Sku caption###' (предыдущая)' (document, sku) = priceB###document##SkuCurrencyDateTime(sku, currencyPriceSetDocument(document), dateTimePriceSetDocument(document)) MINCHARWIDTH 15;
     prevPriceB###document##Sku caption###' (предыдущая)' (document, sku) = prevPriceB###document##SkuCurrencyDateTime(sku, currencyPriceSetDocument(document), dateTimePriceSetDocument(document)) MINCHARWIDTH 15;
+
+    priceA###document##Sku caption###' (предыдущая)' (document, sku) = priceA###document##SkuCurrencyDateTime(sku, currencyPriceSetDocument(document), dateTimePriceSetDocument(document)) MINCHARWIDTH 15;
 
 END
 
@@ -739,96 +743,128 @@ DESIGN priceSetDocument FROM DEFAULT {
 
 // ------------------------------------------------ Формирование документов переоценки ----------------------------------- //
 
-TABLE departmentStorePriceSetDocument(departmentStore, priceSetDocument);
-userPriceChangeDepartmentStorePriceSetDocument (departmentStore, priceSetDocument) = DATA userPriceChange (departmentStore, priceSetDocument);
-nameUserPriceChangeDepartmentStorePriceSetDocument 'Документ переоценки' (departmentStore, priceSetDocument) = descriptionUserPriceChange(
-    userPriceChangeDepartmentStorePriceSetDocument (departmentStore, priceSetDocument)) MINCHARWIDTH 30 MAXCHARWIDTH 30 PREFCHARWIDTH 30;
+TABLE stockPriceSetDocument(stock, priceSetDocument);
 
-createUserPriceChangeDepartmentStorePriceSetDocument 'Создать документ переоценки' =  [ACTION (departmentStore, priceSetDocument) NEWSESSION {
+userPriceChangeStockPriceSetDocument (stock, priceSetDocument) = DATA userPriceChange (stock, priceSetDocument);
+nameUserPriceChangeStockPriceSetDocument 'Документ переоценки' (stock, priceSetDocument) = descriptionUserPriceChange(
+    userPriceChangeStockPriceSetDocument (stock, priceSetDocument)) MINCHARWIDTH 30 MAXCHARWIDTH 30 PREFCHARWIDTH 30;
+
+createUserPriceChangeStockPriceSetDocument 'Создать документ переоценки' =  [ACTION (stock, priceSetDocument) NEWSESSION {
     LOCAL priceDateTime = DATETIME ();
     SET priceDateTime() <- dateTimePriceSetDocument(priceSetDocument);
 
     ADDOBJ userPriceChangePosted;
     FOR p == addedObject() DO {
-        SET userPriceChangeDepartmentStorePriceSetDocument(departmentStore, priceSetDocument) <- p AS userPriceChange;
-        SET departmentStoreUserPriceChange(p) <- departmentStore AS departmentStore;
+        SET userPriceChangeStockPriceSetDocument(stock, priceSetDocument) <- p AS userPriceChange;
+        SET departmentStoreUserPriceChange(p) <- stock;
         SET dateUserPriceChange(p) <- datePriceSetDocument(priceSetDocument);
         SET timeUserPriceChange(p) <- timePriceSetDocument(priceSetDocument);
         SET noteUserPriceChange(p) <- [FORMULA STRING[200] 'CAST($1 AS TEXT) || \' \' || CAST($2 AS TEXT) ||  \' от \' || CAST($3 AS TEXT)'](
                                       objectClassName(priceSetDocument), seriesNumberObject(priceSetDocument), datePriceSetDocument(priceSetDocument));
 
-        FOR balanceBASkuStockDateTime(sku, departmentStore, priceDateTime()) !=0 AND overInPriceSetDocumentSku(priceSetDocument, sku)
-            AND priceAPriceSetDocumentSkuCurrencyDateTime(sku, currencyStock(departmentStore), priceDateTime()) != retailPriceBLedgerDateTime(sku, departmentStore, priceDateTime())
+        FOR balanceBASkuStockDateTime(sku, stock, priceDateTime()) !=0 AND overInPriceSetDocumentSku(priceSetDocument, sku)
+            AND priceAPriceSetDocumentSkuCurrencyDateTime(sku, currencyStock(stock), priceDateTime()) != retailPriceBLedgerDateTime(sku, stock, priceDateTime())
             AND isPostedPriceSetDocument(priceSetDocument) DO {
             ADDOBJ userPriceChangeDetail;
             FOR  d == addedObject() DO {
                 SET userPriceChangeUserPriceChangeDetail(d) <- p AS userPriceChange;
                 SET skuUserPriceChangeDetail(d) <- sku AS sku;
-                SET quantityUserPriceChangeDetail(d) <- balanceBASkuStockDateTime(sku, departmentStore, priceDateTime());
+                SET quantityUserPriceChangeDetail(d) <- balanceBASkuStockDateTime(sku, stock, priceDateTime());
 
-                SET curImporterPriceUserPriceChangeDetail(d) <- importerPriceBLedgerDateTime(sku, departmentStore, priceDateTime());
-                SET curSupplierPriceUserPriceChangeDetail(d) <- supplierPriceBLedgerDateTime(sku, departmentStore, priceDateTime());
-                SET curRetailVATUserPriceChangeDetail(d) <- retailVATBLedgerDateTime(sku, departmentStore, priceDateTime());
-                SET curWareUserPriceChangeDetail(d) <- wareBLedgerDateTime(sku, departmentStore, priceDateTime());
-                SET curWarePriceUserPriceChangeDetail(d) <- warePriceBLedgerDateTime(sku, departmentStore, priceDateTime());
-                SET curRetailPriceUserPriceChangeDetail(d) <- retailPriceBLedgerDateTime(sku, departmentStore, priceDateTime());
+                SET curImporterPriceUserPriceChangeDetail(d) <- importerPriceBLedgerDateTime(sku, stock, priceDateTime());
+                SET curSupplierPriceUserPriceChangeDetail(d) <- supplierPriceBLedgerDateTime(sku, stock, priceDateTime());
+                SET curRetailVATUserPriceChangeDetail(d) <- retailVATBLedgerDateTime(sku, stock, priceDateTime());
+                SET curWareUserPriceChangeDetail(d) <- wareBLedgerDateTime(sku, stock, priceDateTime());
+                SET curWarePriceUserPriceChangeDetail(d) <- warePriceBLedgerDateTime(sku, stock, priceDateTime());
+                SET curRetailPriceUserPriceChangeDetail(d) <- retailPriceBLedgerDateTime(sku, stock, priceDateTime());
 
-                SET importerPriceUserPriceChangeDetail(d) <- importerPriceBLedgerDateTime(sku, departmentStore, priceDateTime());
-                SET supplierPriceUserPriceChangeDetail(d) <- supplierPriceBLedgerDateTime(sku, departmentStore, priceDateTime());
-                SET retailVATUserPriceChangeDetail(d) <- retailVATBLedgerDateTime(sku, departmentStore, priceDateTime());
-                SET wareUserPriceChangeDetail(d) <- wareBLedgerDateTime(sku, departmentStore, priceDateTime());
-                SET warePriceUserPriceChangeDetail(d) <- warePriceBLedgerDateTime(sku, departmentStore, priceDateTime());
-                SET retailPriceUserPriceChangeDetail(d) <- priceAPriceSetDocumentSkuCurrencyDateTime(sku, currencyStock(departmentStore), priceDateTime());
+                SET importerPriceUserPriceChangeDetail(d) <- importerPriceBLedgerDateTime(sku, stock, priceDateTime());
+                SET supplierPriceUserPriceChangeDetail(d) <- supplierPriceBLedgerDateTime(sku, stock, priceDateTime());
+                SET retailVATUserPriceChangeDetail(d) <- retailVATBLedgerDateTime(sku, stock, priceDateTime());
+                SET wareUserPriceChangeDetail(d) <- wareBLedgerDateTime(sku, stock, priceDateTime());
+                SET warePriceUserPriceChangeDetail(d) <- warePriceBLedgerDateTime(sku, stock, priceDateTime());
+                SET retailPriceUserPriceChangeDetail(d) <- priceAPriceSetDocumentSkuCurrencyDateTime(sku, currencyStock(stock), priceDateTime());
 
             }
         }
     }
-    FORM userPriceChange OBJECTS u = userPriceChangeDepartmentStorePriceSetDocument (departmentStore, priceSetDocument) MODAL;
+    FORM userPriceChange OBJECTS u = userPriceChangeStockPriceSetDocument (stock, priceSetDocument) MODAL;
     IF formResult() == formResult.ok THEN {
         EXEC apply();
     }
 
-}] (departmentStore, priceSetDocument) AND NOT userPriceChangeDepartmentStorePriceSetDocument(departmentStore, priceSetDocument) AND isPostedPriceSetDocument(priceSetDocument) CONFIRM;
+}] (stock, priceSetDocument) AND NOT userPriceChangeStockPriceSetDocument(stock, priceSetDocument) AND isPostedPriceSetDocument(priceSetDocument) AND stock IS departmentStore CONFIRM;
 
-// ------------------------------------------------------- Печать маркировки -------------------------------------- //
+// ------------------------------------------- Печать маркировки article -------------------------------------- //
 
-quantityStorePriceSetDocumentArticle 'Кол-во' (store, priceSetDocument, article) =
-    GROUP SUM balanceBSkuStockDateTime(sku, departmentStore, dateTimePriceSetDocument(priceSetDocument))
-    BY storeDepartmentStore(departmentStore), priceSetDocument, articleSku(sku);
+quantityStockPriceSetDocumentArticle 'Кол-во' (stock, priceSetDocument, article) =
+    GROUP SUM balanceBSkuStockDateTime(sku, stock, dateTimePriceSetDocument(priceSetDocument))
+    BY stock, priceSetDocument, articleSku(sku);
 
-quantityDepartmentStorePriceSetDocument (departmentStore, priceSetDocument) =
-    GROUP SUM balanceBSkuStockDateTime(sku, departmentStore, dateTimePriceSetDocument(priceSetDocument))
+
+quantityStockPriceSetDocument (stock, priceSetDocument) =
+    GROUP SUM balanceBSkuStockDateTime(sku, stock, dateTimePriceSetDocument(priceSetDocument))
     IF overInPriceSetDocumentSku(priceSetDocument, sku)
-    BY departmentStore, priceSetDocument;
-quantityStorePriceSetDocument (store, priceSetDocument) = GROUP SUM balanceBSkuStockDateTime(sku, departmentStore, dateTimePriceSetDocument(priceSetDocument))
-    IF overInPriceSetDocumentSku(priceSetDocument, sku)
-    BY storeDepartmentStore(departmentStore), priceSetDocument;
-
-countStorePriceSetDocumentArticle(store, priceSetDocument, article) = castToInteger(quantityStorePriceSetDocumentArticle(store, priceSetDocument, article));
+    BY stock, priceSetDocument;
+    
+countStockPriceSetDocumentArticle(stock, priceSetDocument, article) = castToInteger(quantityStockPriceSetDocumentArticle(stock, priceSetDocument, article));
 
 shouldBePrintArticle(article) = SESSION DATA BOOLEAN (article);
 
 FORM priceArticlePriceSetDocumentPrint 'Цены для маркировки' PRINT
 
-    OBJECTS s = store FIXED PANEL, p = priceSetDocument FIXED PANEL, a = article
-    PROPERTIES(p, a) READONLY priceBBasePriceSetDocumentArticle, priceBDiscountPriceSetDocumentArticle
-    PROPERTIES(s, p, a) READONLY countStorePriceSetDocumentArticle
+    OBJECTS s = stock FIXED PANEL, p = priceSetDocument FIXED PANEL, a = article
+    PROPERTIES(p, a) READONLY priceABasePriceSetDocumentArticle, priceADiscountPriceSetDocumentArticle
+    PROPERTIES(s, p, a) READONLY countStockPriceSetDocumentArticle
 
     FILTERS shouldBePrintArticle(a)
 ;
 
-printPricePriceSetDocumentArticle 'Печать цен для маркировки' = [ACTION (store, priceSetDocument, article) {
+printPricePriceSetDocumentArticle 'Печать цен для маркировки' = [ACTION (stock, priceSetDocument, article) {
     SET shouldBePrintArticle(a) <- NULL;
     SET shouldBePrintArticle(a) <- TRUE IF (a == (article AS article));
-    FORM priceArticlePriceSetDocumentPrint OBJECTS s = store, p = priceSetDocument MODAL;
-}](store, priceSetDocument, article) AND isPostedPriceSetDocument(priceSetDocument);
+    FORM priceArticlePriceSetDocumentPrint OBJECTS s = stock, p = priceSetDocument MODAL;
+}](stock, priceSetDocument, article) AND isPostedPriceSetDocument(priceSetDocument);
 
-printAllPricePriceSetDocumentArticle 'Печать цен для маркировки' = ACTION (store, priceSetDocument) {
+printAllPricePriceSetDocumentArticle 'Печать цен для маркировки' = ACTION (stock, priceSetDocument) {
     SET shouldBePrintArticle(article) <- NULL;
-    SET shouldBePrintArticle(article) <- TRUE IF (quantityStorePriceSetDocumentArticle(store, priceSetDocument, article) AND
+    SET shouldBePrintArticle(article) <- TRUE IF (quantityStockPriceSetDocumentArticle(stock, priceSetDocument, article) AND
                                                   inPriceSetDocumentArticle(priceSetDocument, article));
-    FORM priceArticlePriceSetDocumentPrint OBJECTS s = store, p = priceSetDocument MODAL;
+    FORM priceArticlePriceSetDocumentPrint OBJECTS s = stock, p = priceSetDocument MODAL;
 } TOOLBAR;
+
+// ------------------------------------------- Печать маркировки sku -------------------------------------- //
+
+quantityStockPriceSetDocumentSku 'Кол-во' (stock, priceSetDocument, sku) =
+    GROUP SUM balanceBSkuStockDateTime(sku, stock, dateTimePriceSetDocument(priceSetDocument))
+    BY stock, priceSetDocument, sku;
+
+countStockPriceSetDocumentSku(stock, priceSetDocument, sku) = castToInteger(quantityStockPriceSetDocumentSku(stock, priceSetDocument, sku));
+
+shouldBePrintSku(sku) = SESSION DATA BOOLEAN (sku);
+
+FORM priceSkuPriceSetDocumentPrint 'Цены для маркировки' PRINT
+
+    OBJECTS s = stock FIXED PANEL, p = priceSetDocument FIXED PANEL, sk = sku
+    PROPERTIES(p, sk) READONLY priceABasePriceSetDocumentSku, priceADiscountPriceSetDocumentSku
+    PROPERTIES(s, p, sk) READONLY countStockPriceSetDocumentSku
+
+    FILTERS shouldBePrintSku(sk)
+;
+
+printPricePriceSetDocumentSku 'Печать цен для маркировки' = [ACTION (stock, priceSetDocument, sku) {
+    SET shouldBePrintSku(sk) <- NULL;
+    SET shouldBePrintSku(sk) <- TRUE IF (sk == (sku AS sku));
+    FORM priceSkuPriceSetDocumentPrint OBJECTS s = stock, p = priceSetDocument MODAL;
+}](stock, priceSetDocument, sku) AND isPostedPriceSetDocument(priceSetDocument);
+
+printAllPricePriceSetDocumentSku 'Печать цен для маркировки' = ACTION (stock, priceSetDocument) {
+    SET shouldBePrintSku(sku) <- NULL;
+    SET shouldBePrintSku(sku) <- TRUE IF (quantityStockPriceSetDocumentSku(stock, priceSetDocument, sku) AND
+                                                  inPriceSetDocumentSku(priceSetDocument, sku));
+    FORM priceSkuPriceSetDocumentPrint OBJECTS s = stock, p = priceSetDocument MODAL;
+} TOOLBAR;
+
 
 FORM priceSetDocuments 'Розничные прайсы'
 
@@ -837,8 +873,13 @@ FORM priceSetDocuments 'Розничные прайсы'
                            timePriceSetDocument, dateTimeToPriceSetDocument, nameCurrencyPriceSetDocument, canonicalBrandPriceSetDocument, reasonPriceSetDocument
     PROPERTIES(p) ADDFORM, EDITFORM, delete FORCE PANEL
 
-    OBJECTS s = RomanLogicsModule.store
-    PROPERTIES(s) READONLY name
+    TREE stockTree sg = stockGroup PARENT parentStockGroup
+    PROPERTIES READONLY sgTreeName = name(sg)
+
+    OBJECTS ts = Stock.stock
+    PROPERTIES    READONLY tsTreeName = name(ts)
+
+    FILTERS isParentStockGroupStock(sg, ts)
 
     OBJECTS a=article
     PROPERTIES(a) READONLY sidArticle, nameCategoryArticle, nameBrandSupplierArticle
@@ -849,22 +890,18 @@ FORM priceSetDocuments 'Розничные прайсы'
                                priceBasePriceSetDocumentArticle, priceInRateBBasePriceSetDocumentArticle, percentDiscountPriceSetDocumentArticle,
                                priceBDiscountPriceSetDocumentArticle, priceDiscountPriceSetDocumentArticle
 
-    OBJECTS d=departmentStore
-    PROPERTIES(d) READONLY name
-    PROPERTIES(d, p) createUserPriceChangeDepartmentStorePriceSetDocument
-    PROPERTIES(d, p) READONLY nameUserPriceChangeDepartmentStorePriceSetDocument
+    PROPERTIES(ts, p) createUserPriceChangeStockPriceSetDocument FORCE GRID
+    PROPERTIES(ts, p) READONLY nameUserPriceChangeStockPriceSetDocument
 
-    PROPERTIES(s, p, a) READONLY quantityStorePriceSetDocumentArticle
+    PROPERTIES(ts, p, a) READONLY quantityStockPriceSetDocumentArticle
 
-    PROPERTIES(s, p, a) printPricePriceSetDocumentArticle
+    PROPERTIES(ts, p, a) printPricePriceSetDocumentArticle
 
-    PROPERTIES(s, p) printAllPricePriceSetDocumentArticle TODRAW a FORCE PANEL
+    PROPERTIES(ts, p) printAllPricePriceSetDocumentArticle TODRAW a FORCE PANEL
 
     FILTERS inPriceSetDocumentArticle(p, a)
     FILTERGROUP filters1
-        FILTER 'Магазины с остатками' 'F10' quantityStorePriceSetDocument(s, p) DEFAULT
-    FILTERGROUP filters2
-        FILTER 'Отделы с остатками' 'F9' quantityDepartmentStorePriceSetDocument(d, p) DEFAULT
+        FILTER 'Склады с остатками' 'F10' quantityStockPriceSetDocument(ts, p) DEFAULT
 
     OBJECTS sk=sku
     PROPERTIES(sk) READONLY FORCE GRID barcode, sidArticleSku, nameCategoryArticleSku, nameBrandSupplierArticleSku, sidSizeSupplierItem, sidColorSupplierItem
@@ -873,6 +910,9 @@ FORM priceSetDocuments 'Розничные прайсы'
                        nameMethodBasePriceSetDocumentSku, priceBasePriceSetDocumentSku,
                        priceInRateBPriceSetDocumentSku, percentDiscountPriceSetDocumentSku, priceBDiscountPriceSetDocumentSku,
                        priceDiscountPriceSetDocumentSku
+    PROPERTIES(ts, p, sk) READONLY quantityStockPriceSetDocumentSku
+    PROPERTIES(ts, p, sk) printPricePriceSetDocumentSku
+    PROPERTIES(ts, p) printAllPricePriceSetDocumentSku TODRAW sk FORCE PANEL
 
     FILTERS inPriceSetDocumentSku(p, sk)
 ;
@@ -887,9 +927,9 @@ DESIGN priceSetDocuments FROM DEFAULT {
             type = SPLITV;
             NEW secondContainer{
                 type = SPLITH;
-                ADD s.box;
-                ADD d.box;
-                POSITION d.box TO THE RIGHT s.box;
+                childConstraints = TO THE RIGHT;
+                ADD stockTree.tree.box {title = 'Склады';};
+                ADD ts.box {title = 'Склад';};
                 fillVertical = 1;
             }
 

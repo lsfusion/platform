@@ -253,6 +253,7 @@ NAVIGATOR {
         ADD consignmentSimpleAttach;
         ADD consignment;
         ADD priceArticlePriceSetDocumentPrint;
+        ADD priceSkuPriceSetDocumentPrint;
         ADD writeOffPrint;
         ADD orderPickingPrint;
     }
