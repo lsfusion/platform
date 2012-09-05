@@ -49,15 +49,16 @@ grammar LsfLogics;
 @lexer::header { 
 	package platform.server; 
 	import platform.server.logics.scripted.ScriptingLogicsModule;
+	import platform.server.logics.scripted.ScriptParser;
 }
 
 @lexer::members {
 	public ScriptingLogicsModule self;
-	public ScriptingLogicsModule.State parseState;
+	public ScriptParser.State parseState;
 	
 	@Override
 	public void emitErrorMessage(String msg) {
-		if (parseState == ScriptingLogicsModule.State.GROUP) { 
+		if (parseState == ScriptParser.State.GROUP) { 
 			self.getErrLog().write(msg + "\n");
 		}
 	}
@@ -69,42 +70,42 @@ grammar LsfLogics;
 	
 	@Override
 	public void displayRecognitionError(String[] tokenNames, RecognitionException e) {
-		self.getErrLog().displayRecognitionError(this, "error", tokenNames, e);
+		self.getErrLog().displayRecognitionError(this, self.getParser(), "error", tokenNames, e);
 	}
 }
 
 @members {
 	public ScriptingLogicsModule self;
-	public ScriptingLogicsModule.State parseState;
+	public ScriptParser.State parseState;
 	
 	private boolean insideRecursion = false;
 	
-	public boolean inParseState(ScriptingLogicsModule.State parseState) {
+	public boolean inParseState(ScriptParser.State parseState) {
 		return this.parseState == parseState;
 	}
 
 	public boolean inInitParseState() {
-		return inParseState(ScriptingLogicsModule.State.INIT); 
+		return inParseState(ScriptParser.State.INIT); 
 	}
 
 	public boolean inGroupParseState() {
-		return inParseState(ScriptingLogicsModule.State.GROUP);
+		return inParseState(ScriptParser.State.GROUP);
 	}
 
 	public boolean inClassParseState() {
-		return inParseState(ScriptingLogicsModule.State.CLASS);
+		return inParseState(ScriptParser.State.CLASS);
 	}
 
 	public boolean inPropParseState() {
-		return inParseState(ScriptingLogicsModule.State.PROP);
+		return inParseState(ScriptParser.State.PROP);
 	}
 
 	public boolean inTableParseState() {
-		return inParseState(ScriptingLogicsModule.State.TABLE);
+		return inParseState(ScriptParser.State.TABLE);
 	}
 
 	public boolean inIndexParseState() {
-		return inParseState(ScriptingLogicsModule.State.INDEX);
+		return inParseState(ScriptParser.State.INDEX);
 	}
 
 	public void setObjectProperty(Object propertyReceiver, String propertyName, Object propertyValue) throws ScriptingErrorLog.SemanticErrorException {
@@ -129,7 +130,7 @@ grammar LsfLogics;
 
 	@Override
 	public void emitErrorMessage(String msg) {
-		if (parseState == ScriptingLogicsModule.State.GROUP) { 
+		if (parseState == ScriptParser.State.GROUP) { 
 			self.getErrLog().write(msg + "\n");
 		}
 	}
@@ -141,7 +142,7 @@ grammar LsfLogics;
 
 	@Override
 	public void displayRecognitionError(String[] tokenNames, RecognitionException e) {
-		self.getErrLog().displayRecognitionError(this, "error", tokenNames, e);
+		self.getErrLog().displayRecognitionError(this, self.getParser(), "error", tokenNames, e);
 	}
 }
 
@@ -782,7 +783,7 @@ propertyStatement
 		self.setPropertyScriptInfo(property, $text, lineNumber);
 	}
 }
-	:	{ lineNumber = self.getCurrentParserLineNumber(); }
+	:	{ lineNumber = self.getParser().getCurrentParserLineNumber(); }
 		declaration=propertyDeclaration { if ($declaration.paramNames != null) { context = $declaration.paramNames; dynamic = false; } }
 		'=' 
 		(	def=expressionUnfriendlyPD[context, dynamic, false] { property = $def.property; }
@@ -2422,7 +2423,7 @@ metaCodeDeclarationStatement
 	}
 }
 	
-	:	{ lineNumber = self.getCurrentParserLineNumber(); }
+	:	{ lineNumber = self.getParser().getCurrentParserLineNumber(); }
 		'META' id=ID '(' list=idList ')'  
 		{
 			tokens = self.grabMetaCode($id.text);
@@ -2438,7 +2439,7 @@ metaCodeStatement
 @after {
 	self.runMetaCode($id.sid, $list.ids, lineNumber);
 }
-	:	{ lineNumber = self.getCurrentParserLineNumber(); }
+	:	{ lineNumber = self.getParser().getCurrentParserLineNumber(); }
 		'@' id=compoundID '(' list=metaCodeIdList ')' ';'	
 	;
 

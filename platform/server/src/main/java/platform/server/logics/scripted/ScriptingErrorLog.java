@@ -3,7 +3,6 @@ package platform.server.logics.scripted;
 import org.antlr.runtime.BaseRecognizer;
 import org.antlr.runtime.IntStream;
 import org.antlr.runtime.RecognitionException;
-import platform.server.LsfLogicsParser;
 import platform.server.logics.LogicsModule;
 import platform.server.logics.linear.LP;
 
@@ -57,18 +56,19 @@ public class ScriptingErrorLog {
         return /*BaseRecognizer.getRuleInvocationStack(e, parser.getClass().getName()) + " " + */ oldMsg;
     }
 
-    public String getRecognitionErrorText(String errorType, String msg, RecognitionException e) {
-        String hdr = moduleName + ":" + e.line + ":" + e.charPositionInLine;
+    public String getRecognitionErrorText(ScriptParser parser, String errorType, String msg, RecognitionException e) {
+        String path = parser.getCurrentScriptPath(moduleName, e.line, "\n\t\t\t");
+        String hdr = path + ":" + (e.charPositionInLine + 1);
         return "[" + errorType + "]:\t" + hdr + " " + msg;
     }
 
-    public String getSemanticRecognitionErrorText(String msg, LsfLogicsParser parser, RecognitionException e) {
-        return "\n" + getRecognitionErrorText("error", getErrorMessage(parser, msg, e), e) + "Subsequent errors (if any) could not be found.";
+    public String getSemanticRecognitionErrorText(String msg, ScriptParser parser, RecognitionException e) {
+        return "\n" + getRecognitionErrorText(parser, "error", getErrorMessage(parser.getCurrentParser(), msg, e), e) + "Subsequent errors (if any) could not be found.";
     }
 
-    public void displayRecognitionError(BaseRecognizer parser, String errorType, String[] tokenNames, RecognitionException e) {
+    public void displayRecognitionError(BaseRecognizer parser, ScriptParser scriptParser, String errorType, String[] tokenNames, RecognitionException e) {
         String msg = parser.getErrorMessage(e, tokenNames);
-        parser.emitErrorMessage(getRecognitionErrorText(errorType, msg, e));
+        parser.emitErrorMessage(getRecognitionErrorText(scriptParser,  errorType, msg, e));
     }
 
     public void emitSemanticError(String msg, SemanticErrorException e) throws SemanticErrorException {
@@ -76,116 +76,116 @@ public class ScriptingErrorLog {
         throw e;
     }
 
-    public void emitNotFoundError(LsfLogicsParser parser, String objectName, String name) throws SemanticErrorException {
+    public void emitNotFoundError(ScriptParser parser, String objectName, String name) throws SemanticErrorException {
         emitSimpleError(parser, format("%s '%s' not found", objectName, name));
     }
 
-    public void emitClassNotFoundError(LsfLogicsParser parser, String name) throws SemanticErrorException {
+    public void emitClassNotFoundError(ScriptParser parser, String name) throws SemanticErrorException {
         emitNotFoundError(parser, "class", name);
     }
 
-    public void emitGroupNotFoundError(LsfLogicsParser parser, String name) throws SemanticErrorException {
+    public void emitGroupNotFoundError(ScriptParser parser, String name) throws SemanticErrorException {
         emitNotFoundError(parser, "group", name);
     }
 
-    public void emitPropertyNotFoundError(LsfLogicsParser parser, String name) throws SemanticErrorException {
+    public void emitPropertyNotFoundError(ScriptParser parser, String name) throws SemanticErrorException {
         emitNotFoundError(parser, "property", name);
     }
 
-    public void emitModuleNotFoundError(LsfLogicsParser parser, String name) throws SemanticErrorException {
+    public void emitModuleNotFoundError(ScriptParser parser, String name) throws SemanticErrorException {
         emitNotFoundError(parser, "module", name);
     }
 
-    public void emitParamNotFoundError(LsfLogicsParser parser, String name) throws SemanticErrorException {
+    public void emitParamNotFoundError(ScriptParser parser, String name) throws SemanticErrorException {
         emitNotFoundError(parser, "parameter", name);
     }
 
-    public void emitFormNotFoundError(LsfLogicsParser parser, String name) throws SemanticErrorException {
+    public void emitFormNotFoundError(ScriptParser parser, String name) throws SemanticErrorException {
         emitNotFoundError(parser, "form", name);
     }
 
-    public void emitMetaCodeFragmentNotFoundError(LsfLogicsParser parser, String name) throws SemanticErrorException {
+    public void emitMetaCodeFragmentNotFoundError(ScriptParser parser, String name) throws SemanticErrorException {
         emitNotFoundError(parser, "meta code", name);
     }
 
-    public void emitObjectNotFoundError(LsfLogicsParser parser, String name) throws SemanticErrorException {
+    public void emitObjectNotFoundError(ScriptParser parser, String name) throws SemanticErrorException {
         emitNotFoundError(parser, "object", name);
     }
 
-    public void emitComponentNotFoundError(LsfLogicsParser parser, String name) throws SemanticErrorException {
+    public void emitComponentNotFoundError(ScriptParser parser, String name) throws SemanticErrorException {
         emitNotFoundError(parser, "component", name);
     }
 
-    public void emitNavigatorElementNotFoundError(LsfLogicsParser parser, String name) throws SemanticErrorException {
+    public void emitNavigatorElementNotFoundError(ScriptParser parser, String name) throws SemanticErrorException {
         emitNotFoundError(parser, "navigator element", name);
     }
 
-    public void emitTableNotFoundError(LsfLogicsParser parser, String name) throws SemanticErrorException {
+    public void emitTableNotFoundError(ScriptParser parser, String name) throws SemanticErrorException {
         emitNotFoundError(parser, "table", name);
     }
 
-    public void emitWindowNotFoundError(LsfLogicsParser parser, String name) throws SemanticErrorException {
+    public void emitWindowNotFoundError(ScriptParser parser, String name) throws SemanticErrorException {
         emitNotFoundError(parser, "window", name);
     }
 
-    public void emitIllegalInsertBeforeAfterNavigatorElement(LsfLogicsParser parser, String element) throws SemanticErrorException {
+    public void emitIllegalInsertBeforeAfterNavigatorElement(ScriptParser parser, String element) throws SemanticErrorException {
         emitSimpleError(parser, "can't insert component after or before '" + element + "'");
     }
 
-    public void emitIllegalMoveNavigatorToSubnavigator(LsfLogicsParser parser, String movingElement, String movedToElement) throws SemanticErrorException {
+    public void emitIllegalMoveNavigatorToSubnavigator(ScriptParser parser, String movingElement, String movedToElement) throws SemanticErrorException {
         emitSimpleError(parser, format("can't move navigator element '%s' to it's subelement '%s'", movingElement, movedToElement));
     }
 
-    public void emitComponentIsNullError(LsfLogicsParser parser, String mainMsg) throws SemanticErrorException {
+    public void emitComponentIsNullError(ScriptParser parser, String mainMsg) throws SemanticErrorException {
         emitSimpleError(parser, mainMsg + " component is null");
     }
 
-    public void emitComponentMustBeAContainerError(LsfLogicsParser parser) throws SemanticErrorException {
+    public void emitComponentMustBeAContainerError(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "component must be a container");
     }
 
-    public void emitInsertBeforeAfterMainContainerError(LsfLogicsParser parser) throws SemanticErrorException {
+    public void emitInsertBeforeAfterMainContainerError(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "can't insert before or after main container");
     }
 
-    public void emitIllegalMoveComponentToSubcomponent(LsfLogicsParser parser, String movingComponent, String movedToComponent) throws SemanticErrorException {
+    public void emitIllegalMoveComponentToSubcomponent(ScriptParser parser, String movingComponent, String movedToComponent) throws SemanticErrorException {
         emitSimpleError(parser, format("can't move component '%s' to it's subcomponent '%s'", movingComponent, movedToComponent));
     }
 
-    public void emitRemoveMainContainerError(LsfLogicsParser parser) throws SemanticErrorException {
+    public void emitRemoveMainContainerError(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "can't remove main container");
     }
 
-    public void emitIntersectionInDifferentContainersError(LsfLogicsParser parser) throws SemanticErrorException {
+    public void emitIntersectionInDifferentContainersError(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "forbidden to create the intersection of objects in different containers");
     }
 
-    public void emitUnableToSetPropertyError(LsfLogicsParser parser, String propertyName, String cause) throws SemanticErrorException {
+    public void emitUnableToSetPropertyError(ScriptParser parser, String propertyName, String cause) throws SemanticErrorException {
         emitSimpleError(parser, "unable to set property '" + propertyName + "'. Cause: " + cause);
     }
 
-    public void emitWrongKeyStrokeFormat(LsfLogicsParser parser, String ksLiteral) throws SemanticErrorException {
+    public void emitWrongKeyStrokeFormat(ScriptParser parser, String ksLiteral) throws SemanticErrorException {
         emitSimpleError(parser, "can't create keystroke from string '" + ksLiteral + "'");
     }
 
-    public void emitWindowOrientationNotSpecified(LsfLogicsParser parser, String sid) throws SemanticErrorException {
+    public void emitWindowOrientationNotSpecified(ScriptParser parser, String sid) throws SemanticErrorException {
         emitSimpleError(parser, "orientation (VERTICAL or HORIZONTAL) isn't specified for window '" + sid + "'");
     }
 
-    public void emitWindowPositionNotSpecified(LsfLogicsParser parser, String sid) throws SemanticErrorException {
+    public void emitWindowPositionNotSpecified(ScriptParser parser, String sid) throws SemanticErrorException {
         emitSimpleError(parser, "position ( POSITION(x, y, width, height) ) isn't specified for window '" + sid + "'");
     }
 
-    public void emitWindowPositionConflict(LsfLogicsParser parser, String sid) throws SemanticErrorException {
+    public void emitWindowPositionConflict(ScriptParser parser, String sid) throws SemanticErrorException {
         emitSimpleError(parser, "both border position (LEFT, RIGHT, TOP or BOTTOM) and dock position (POSITION(x, y, widht, height)) are specified for window '" + sid + "', " +
                                 "only one of those should be used");
     }
 
-    public void emitAddToSystemWindowError(LsfLogicsParser parser, String sid) throws SemanticErrorException {
+    public void emitAddToSystemWindowError(ScriptParser parser, String sid) throws SemanticErrorException {
         emitSimpleError(parser, "it's illegal to add navigator element to system window '" + sid + "'");
     }
 
-    public void emitParamIndexError(LsfLogicsParser parser, int paramIndex, int paramCount) throws SemanticErrorException {
+    public void emitParamIndexError(ScriptParser parser, int paramIndex, int paramCount) throws SemanticErrorException {
         String errText = "wrong parameter index $" + String.valueOf(paramIndex);
         if (paramIndex < 1) {
             errText += ", first parameter is $1";
@@ -195,156 +195,156 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, errText);
     }
 
-    public void emitBuiltInClassAsParentError(LsfLogicsParser parser, String className) throws SemanticErrorException {
+    public void emitBuiltInClassAsParentError(ScriptParser parser, String className) throws SemanticErrorException {
         emitSimpleError(parser, format("built-in class '%s' cannot be inherited", className));
     }
 
-    public void emitStaticClassAsParentError(LsfLogicsParser parser, String className) throws SemanticErrorException {
+    public void emitStaticClassAsParentError(ScriptParser parser, String className) throws SemanticErrorException {
         emitSimpleError(parser, format("static class '%s' cannot be inherited", className));
     }
 
-    public void emitBuiltInClassFormSetupError(LsfLogicsParser parser, String className) throws SemanticErrorException {
+    public void emitBuiltInClassFormSetupError(ScriptParser parser, String className) throws SemanticErrorException {
         emitSimpleError(parser, "can't set custom form for built-in class '" + className + "'");
     }
 
-    public void emitAbstractStaticClassError(LsfLogicsParser parser) throws SemanticErrorException {
+    public void emitAbstractStaticClassError(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "static сlass cannot be abstract");
     }
 
-    public void emitNonStaticHasInstancesError(LsfLogicsParser parser, String className) throws SemanticErrorException {
+    public void emitNonStaticHasInstancesError(ScriptParser parser, String className) throws SemanticErrorException {
         emitSimpleError(parser, format("сlass '%s' must be static to have instances", className));
     }
 
-    public void emitStaticHasNoInstancesError(LsfLogicsParser parser, String className) throws SemanticErrorException {
+    public void emitStaticHasNoInstancesError(ScriptParser parser, String className) throws SemanticErrorException {
         emitSimpleError(parser, format("static сlass '%s' should have instances", className));
     }
 
-    public void emitParamCountError(LsfLogicsParser parser, LP property, int paramCount) throws SemanticErrorException {
+    public void emitParamCountError(ScriptParser parser, LP property, int paramCount) throws SemanticErrorException {
         int interfacesCount = property.property.interfaces.size();
         emitParamCountError(parser, interfacesCount, paramCount);
     }
 
-    public void emitParamCountError(LsfLogicsParser parser, int interfacesCount, int paramCount) throws SemanticErrorException {
+    public void emitParamCountError(ScriptParser parser, int interfacesCount, int paramCount) throws SemanticErrorException {
         emitSimpleError(parser, format("%d parameter(s) expected, %d provided", interfacesCount, paramCount));
     }
 
-    public void emitConstraintPropertyAlwaysNullError(LsfLogicsParser parser) throws SemanticErrorException {
+    public void emitConstraintPropertyAlwaysNullError(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "constrained property is always NULL");
     }
 
-    public void emitLeftSideMustBeAProperty(LsfLogicsParser parser) throws SemanticErrorException {
+    public void emitLeftSideMustBeAProperty(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "left side of SET action must be a property");
     }
 
-    public void emitMustBeAnActionCall(LsfLogicsParser parser) throws SemanticErrorException {
+    public void emitMustBeAnActionCall(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "can't use parameter here, must be an action call");
     }
 
-    public void emitPropertyAlwaysNullError(LsfLogicsParser parser, String propertyName) throws SemanticErrorException {
+    public void emitPropertyAlwaysNullError(ScriptParser parser, String propertyName) throws SemanticErrorException {
         emitSimpleError(parser, format("property '%s' is always NULL", propertyName));
     }
 
-    public void emitAlreadyDefinedError(LsfLogicsParser parser, String type, String name) throws SemanticErrorException {
+    public void emitAlreadyDefinedError(ScriptParser parser, String type, String name) throws SemanticErrorException {
         emitSimpleError(parser, format("%s '%s' was already defined", type, name));
     }
 
-    public void emitNamedParamsError(LsfLogicsParser parser) throws SemanticErrorException {
+    public void emitNamedParamsError(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "number of named parameters should be equal to actual number of parameters");
     }
 
-    public void emitUnionArgumentsEqualParamsCountError(LsfLogicsParser parser, String errMsgPropType) throws SemanticErrorException {
+    public void emitUnionArgumentsEqualParamsCountError(ScriptParser parser, String errMsgPropType) throws SemanticErrorException {
         emitSimpleError(parser, format("arguments of %s property should all have same number of parameters that equals to the number of parameters of the result property", errMsgPropType));
     }
 
-    public void emitCasePropWhenParamMissingInThenParams(LsfLogicsParser parser) throws SemanticErrorException {
+    public void emitCasePropWhenParamMissingInThenParams(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "WHEN expressions should only have parameters used in THEN expressions");
     }
 
-    public void emitCasePropDiffThenParamsCountError(LsfLogicsParser parser) throws SemanticErrorException {
+    public void emitCasePropDiffThenParamsCountError(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "all THEN expressions in case property should have same number of arguments");
     }
 
-    public void emitFormulaReturnClassError(LsfLogicsParser parser) throws SemanticErrorException {
+    public void emitFormulaReturnClassError(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "formula return class must be a built-in class");
     }
 
-    public void emitFormDataClassError(LsfLogicsParser parser) throws SemanticErrorException {
+    public void emitFormDataClassError(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "form class must be a built-in class");
     }
 
-    public void emitCaptionNotSpecifiedError(LsfLogicsParser parser, String name) throws SemanticErrorException {
+    public void emitCaptionNotSpecifiedError(ScriptParser parser, String name) throws SemanticErrorException {
         emitSimpleError(parser, format("caption wasn't specified for '%s' element", name));
     }
 
-    public void emitMetaCodeNotEndedError(LsfLogicsParser parser, String name) throws SemanticErrorException {
+    public void emitMetaCodeNotEndedError(ScriptParser parser, String name) throws SemanticErrorException {
         emitSimpleError(parser, format("meta code '%s' does not end with END keyword", name));
     }
 
-    public void emitDistinctParamNamesError(LsfLogicsParser parser) throws SemanticErrorException {
+    public void emitDistinctParamNamesError(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "names of parameters should be distinct");
     }
 
-    public void emitRedundantOrderGPropError(LsfLogicsParser parser, ScriptingLogicsModule.GroupingType groupType) throws SemanticErrorException {
+    public void emitRedundantOrderGPropError(ScriptParser parser, ScriptingLogicsModule.GroupingType groupType) throws SemanticErrorException {
         emitSimpleError(parser, format("ORDER properties are forbidden with '%s' grouping type", groupType));
     }
 
-    public void emitMultipleAggrGPropError(LsfLogicsParser parser, ScriptingLogicsModule.GroupingType groupType) throws SemanticErrorException {
+    public void emitMultipleAggrGPropError(ScriptParser parser, ScriptingLogicsModule.GroupingType groupType) throws SemanticErrorException {
         emitSimpleError(parser, format("multiple aggregate properties are forbidden with '%s' grouping type", groupType));
     }
 
-    public void emitConcatAggrGPropError(LsfLogicsParser parser) throws SemanticErrorException {
+    public void emitConcatAggrGPropError(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "GROUP CONCAT property should have two aggregate properties exactly (second is a separator)");
     }
 
-    public void emitNonObjectAggrUniqueGPropError(LsfLogicsParser parser) throws SemanticErrorException {
+    public void emitNonObjectAggrUniqueGPropError(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "GROUP UNIQUE should have simple parameter as aggregate function");
     }
 
-    public void emitDifferentObjsNPropsQuantity(LsfLogicsParser parser) throws SemanticErrorException {
+    public void emitDifferentObjsNPropsQuantity(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "number of properties specified after PARENT should be equal to number of objects");
     }
 
-    public void emitCreatingClassInstanceError(LsfLogicsParser parser, String className) throws SemanticErrorException {
+    public void emitCreatingClassInstanceError(ScriptParser parser, String className) throws SemanticErrorException {
         emitSimpleError(parser, "error occurred during creation of " + className + " instance");
     }
 
-    public void emitNotActionPropertyError(LsfLogicsParser parser) throws SemanticErrorException {
+    public void emitNotActionPropertyError(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "property should be an action");
     }
 
-    public void emitNotCalculationPropertyError(LsfLogicsParser parser) throws SemanticErrorException {
+    public void emitNotCalculationPropertyError(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "property cannot be an action");
     }
 
-    public void emitExtendActionContextError(LsfLogicsParser parser) throws SemanticErrorException {
+    public void emitExtendActionContextError(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "action parameters must be defined explicitly");
     }
 
-    public void emitForActionSameContextError(LsfLogicsParser parser) throws SemanticErrorException {
+    public void emitForActionSameContextError(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "FOR action statement must introduce new parameters, use IF or WHILE instead");
     }
 
-    public void emitNestedRecursionError(LsfLogicsParser parser) throws SemanticErrorException {
+    public void emitNestedRecursionError(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "RECURSION property inside another recursive step is forbidden");
     }
 
-    public void emitRecursiveParamsOutideRecursionError(LsfLogicsParser parser, String paramName) throws SemanticErrorException {
+    public void emitRecursiveParamsOutideRecursionError(ScriptParser parser, String paramName) throws SemanticErrorException {
         emitSimpleError(parser, format("recursive parameter '%s' outside recursive step is forbidden", paramName));
     }
 
-    public void emitParameterNotUsedInRecursionError(LsfLogicsParser parser, String paramName) throws SemanticErrorException {
+    public void emitParameterNotUsedInRecursionError(ScriptParser parser, String paramName) throws SemanticErrorException {
         emitSimpleError(parser, format("there is no '%s' inside RECURSION", paramName));
     }
 
-    public void emitAddObjClassError(LsfLogicsParser parser) throws SemanticErrorException {
+    public void emitAddObjClassError(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "built-in class cannot be used in ADDOBJ action");
     }
 
-    public void emitNecessaryPropertyError(LsfLogicsParser parser) throws SemanticErrorException {
+    public void emitNecessaryPropertyError(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "single parameter is forbidden in this context");
     }
 
-    public void emitDeconcatIndexError(LsfLogicsParser parser, int index, int size) throws SemanticErrorException {
+    public void emitDeconcatIndexError(ScriptParser parser, int index, int size) throws SemanticErrorException {
         if (index == 0) {
             emitSimpleError(parser, "indices are one-based");
         } else if (index > size) {
@@ -352,55 +352,55 @@ public class ScriptingErrorLog {
         }
     }
 
-    public void emitDeconcatError(LsfLogicsParser parser) throws SemanticErrorException {
+    public void emitDeconcatError(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "expression is not a list");
     }
 
-    public void emitIllegalWindowPartitionError(LsfLogicsParser parser) throws SemanticErrorException {
+    public void emitIllegalWindowPartitionError(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "WINDOW allowed only in SUM and PREV types of PARTITION");
     }
 
-    public void emitUngroupParamsCntPartitionError(LsfLogicsParser parser, int groupPropCnt) throws SemanticErrorException {
+    public void emitUngroupParamsCntPartitionError(ScriptParser parser, int groupPropCnt) throws SemanticErrorException {
         emitSimpleError(parser, format("UNGROUP property should have %d parameter(s)", groupPropCnt));
     }
 
-    public void emitFormActionObjectsMappingError(LsfLogicsParser parser) throws SemanticErrorException {
+    public void emitFormActionObjectsMappingError(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "all objects should have mapping");
     }
 
-    public void emitChangeClassActionClassError(LsfLogicsParser parser) throws SemanticErrorException {
+    public void emitChangeClassActionClassError(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "class cannot be built-in or abstract");
     }
 
-    public void emitWrongClassesForTable(LsfLogicsParser parser, String property, String table) throws SemanticErrorException {
+    public void emitWrongClassesForTable(ScriptParser parser, String property, String table) throws SemanticErrorException {
         emitSimpleError(parser, format("property '%s' can't be included into '%s' table: wrong classes", property, table));
     }
 
-    public void emitNotAbstractPropertyError(LsfLogicsParser parser, String propName) throws SemanticErrorException {
+    public void emitNotAbstractPropertyError(ScriptParser parser, String propName) throws SemanticErrorException {
         emitSimpleError(parser, format("property '%s' is not ABSTRACT", propName));
     }
 
-    public void emitRequestUserInputDataTypeError(LsfLogicsParser parser, String typeName) throws SemanticErrorException {
+    public void emitRequestUserInputDataTypeError(ScriptParser parser, String typeName) throws SemanticErrorException {
         emitSimpleError(parser, format("type '%s' cannot be used with INPUT option", typeName));
     }
 
-    public void emitOwnNamespacePriorityError(LsfLogicsParser parser, String namespaceName) throws SemanticErrorException {
+    public void emitOwnNamespacePriorityError(ScriptParser parser, String namespaceName) throws SemanticErrorException {
         emitSimpleError(parser, format("namespace '%s' has maximum priority level and should be deleted from the PRIORITY list", namespaceName));
     }
 
-    public void emitNamespaceNotFoundError(LsfLogicsParser parser, String namespaceName) throws SemanticErrorException {
+    public void emitNamespaceNotFoundError(ScriptParser parser, String namespaceName) throws SemanticErrorException {
         emitSimpleError(parser, format("namespace '%s' was not found in required modules", namespaceName));
     }
 
-    public void emitNonUniquePriorityListError(LsfLogicsParser parser, String namespaceName) throws SemanticErrorException {
+    public void emitNonUniquePriorityListError(ScriptParser parser, String namespaceName) throws SemanticErrorException {
         emitSimpleError(parser, format("priority list contains namespace '%s' more than once", namespaceName));
     }
 
-    public void emitEventNoParametersError(LsfLogicsParser parser) throws SemanticErrorException {
+    public void emitEventNoParametersError(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "event should have no parameters");
     }
 
-    public void emitAmbiguousNameError(LsfLogicsParser parser, List<LogicsModule> modules, String name) throws SemanticErrorException {
+    public void emitAmbiguousNameError(ScriptParser parser, List<LogicsModule> modules, String name) throws SemanticErrorException {
         String msg = String.format("ambiguous name '%s', list of modules:", name);
         for (int i = 0; i < modules.size(); i++) {
             if (i > 0) {
@@ -411,12 +411,16 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, msg);
     }
 
-    public void emitNeighbourPropertyError(LsfLogicsParser parser, String name1, String name2) throws SemanticErrorException {
+    public void emitNeighbourPropertyError(ScriptParser parser, String name1, String name2) throws SemanticErrorException {
         emitSimpleError(parser, format("properties '%s' and '%s' should be in on group", name1, name2));
     }
 
-    private void emitSimpleError(LsfLogicsParser parser, String message) throws SemanticErrorException {
-        SemanticErrorException e = new SemanticErrorException(parser.input);
+    public void emitMetacodeInsideMetacodeError(ScriptParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "metacode cannot be defined inside another metacode");
+    }
+
+    private void emitSimpleError(ScriptParser parser, String message) throws SemanticErrorException {
+        SemanticErrorException e = new SemanticErrorException(parser.getCurrentParser().input);
         String msg = getSemanticRecognitionErrorText(message + "\n", parser, e);
         emitSemanticError(msg, e);
     }

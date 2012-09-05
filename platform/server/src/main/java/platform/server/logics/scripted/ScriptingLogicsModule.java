@@ -5,8 +5,6 @@ import org.apache.log4j.Logger;
 import platform.base.BaseUtils;
 import platform.base.IOUtils;
 import platform.base.OrderedMap;
-import platform.server.LsfLogicsLexer;
-import platform.server.LsfLogicsParser;
 import platform.server.classes.*;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.classes.sets.OrObjectClassSet;
@@ -82,8 +80,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     private final BusinessLogics<?> BL;
     private List<String> namespacePriority;
     private final ScriptingErrorLog errLog;
-    private LsfLogicsParser parser;
-    private Stack<ParserInfo> parsers = new Stack<ParserInfo>();
+    private ScriptParser parser;
     private List<String> warningList = new ArrayList<String>();
 
     private Map<String, LP<?, ?>> currentLocalProperties = new HashMap<String, LP<?, ?>>();
@@ -94,13 +91,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         return BL;
     }
 
-    public enum State {INIT, GROUP, CLASS, PROP, TABLE, INDEX}
     public enum ConstType { INT, REAL, STRING, LOGICAL, ENUM, LONG, DATE, DATETIME, COLOR, NULL }
     public enum InsertPosition {IN, BEFORE, AFTER}
     public enum WindowType {MENU, PANEL, TOOLBAR, TREE}
     public enum GroupingType {SUM, MAX, MIN, CONCAT, UNIQUE, EQUAL}
-
-    private State currentState = null;
 
     private Map<String, DataClass> primitiveTypeAliases = BaseUtils.buildMap(
             asList("INTEGER", "DOUBLE", "LONG", "DATE", "BOOLEAN", "DATETIME", "TEXT", "TIME", "WORDFILE", "IMAGEFILE", "PDFFILE", "CUSTOMFILE", "EXCELFILE", "COLOR"),
@@ -113,6 +107,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         setBaseLogicsModule(baseModule);
         this.BL = BL;
         errLog = new ScriptingErrorLog("");
+        parser = new ScriptParser(errLog);
     }
 
     public ScriptingLogicsModule(String filename, BaseLogicsModule<?> baseModule, BusinessLogics<?> BL) {
@@ -142,7 +137,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return errLog;
     }
 
-    public LsfLogicsParser getParser() {
+    public ScriptParser getParser() {
         return parser;
     }
 
@@ -196,7 +191,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     public ObjectEntity getObjectEntityByName(FormEntity form, String name) throws ScriptingErrorLog.SemanticErrorException {
         ObjectEntity obj = form.getObject(name);
         if (obj == null) {
-            getErrLog().emitObjectNotFoundError(getParser(), name);
+            getErrLog().emitObjectNotFoundError(parser, name);
         }
         return obj;
     }
@@ -204,7 +199,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     public MappedProperty getPropertyWithMapping(FormEntity form, String name, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
         LP<?, ?> property = findLPByCompoundName(name);
         if (property.property.interfaces.size() != mapping.size()) {
-            getErrLog().emitParamCountError(getParser(), property, mapping.size());
+            getErrLog().emitParamCountError(parser, property, mapping.size());
         }
         return new MappedProperty(property, getMappingObjectsArray(form, mapping));
     }
@@ -1316,18 +1311,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         String code = metaCode.getCode(params);
         try {
-            LsfLogicsLexer lexer = new LsfLogicsLexer(new ANTLRStringStream(code));
-            LsfLogicsParser subParser = new LsfLogicsParser(new CommonTokenStream(lexer));
-
-            lexer.self = this;
-            lexer.parseState = currentState;
-
-            subParser.self = this;
-            subParser.parseState = currentState;
-
-            parsers.push(new ParserInfo(subParser, metaCode, metaCodeCallString(name, metaCode, params), lineNumber));
-            subParser.metaCodeParsingStatement();
-            parsers.pop();
+            parser.runMetaCode(this, code, metaCode, metaCodeCallString(name, metaCode, params), lineNumber);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -1351,15 +1335,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public List<String> grabMetaCode(String metaCodeName) throws ScriptingErrorLog.SemanticErrorException {
-        List<String> code = new ArrayList<String>();
-        while (!parser.input.LT(1).getText().equals("END")) {
-            if (parser.input.LT(1).getType() == LsfLogicsParser.EOF) {
-                errLog.emitMetaCodeNotEndedError(parser, metaCodeName);
-            }
-            code.add(parser.input.LT(1).getText());
-            parser.input.consume();
-        }
-        return code;
+        return parser.grabMetaCode(metaCodeName);
     }
 
     private LCP addStaticClassConst(String name) throws ScriptingErrorLog.SemanticErrorException {
@@ -2105,85 +2081,20 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public boolean semicolonNeeded() {
-        return !("}".equals(parsers.peek().getParser().input.LT(-1).getText()));
+        return parser.semicolonNeeded();
     }
 
     public void setPropertyScriptInfo(LP property, String script, int lineNumber) {
         property.setCreationScript(script);
-        property.setCreationPath(getCurrentScriptPath(lineNumber));
+        property.setCreationPath(parser.getCurrentScriptPath(getName(), lineNumber, "\n"));
     }
 
-    private String getCurrentScriptPath(int lineNumber) {
-        StringBuilder path = new StringBuilder();
-
-        for (int i = 0; i < parsers.size(); i++) {
-            path.append((i == 0 ? getName() : parsers.get(i).getMetacodeDefinitionModuleName()));
-            path.append(":");
-
-            int curLineNumber = lineNumber;
-            if (i+1 < parsers.size()) {
-                curLineNumber = parsers.get(i+1).getLineNumber();
-            }
-            if (i > 0) {
-                curLineNumber += parsers.get(i).getMetacodeDefinitionLineNumber() - 1;
-            }
-
-            path.append(curLineNumber);
-            if (i+1 < parsers.size()) {
-                path.append(":");
-                path.append("\t");
-                path.append(parsers.get(i+1).getMetacodeCallStr());
-            }
-            path.append("\n");
-        }
-        return path.toString();
-    }
-
-    private void parseStep(State state) {
+    private void parseStep(ScriptParser.State state) {
         try {
-            LsfLogicsLexer lexer = new LsfLogicsLexer(createStream());
-            parser = new LsfLogicsParser(new CommonTokenStream(lexer));
-
-            parser.self = this;
-            parser.parseState = state;
-
-            lexer.self = this;
-            lexer.parseState = state;
-
-            currentState = state;
-            parsers.push(new ParserInfo(parser, null, null, 0));
-            if (state == State.INIT) {
-                parser.moduleHeader();
-            } else {
-                parser.script();
-            }
-            parsers.pop();
-            currentState = null;
+            parser.initParseStep(this, createStream(), state);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-    }
-
-    public int getCurrentParserLineNumber() {
-        return getLineNumber(parsers.lastElement().getParser());
-    }
-
-    private int getLineNumber(Parser parser) {
-        Token token = getToken(parser);
-        return token.getLine();
-    }
-
-    private int getPositionInLine(Parser parser) {
-        Token token = getToken(parser);
-        return token.getCharPositionInLine();
-    }
-
-    private Token getToken(Parser parser) {
-        Token token = parser.input.LT(1);
-        if (token.getType() == Token.EOF) {
-            token = parser.input.LT(-1);
-        }
-        return token;
     }
 
     private void initNamespacesToModules(LogicsModule module, Set<LogicsModule> visitedModules) {
@@ -2206,36 +2117,36 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     @Override
     public void initModule() {
-        parseStep(State.INIT);
+        parseStep(ScriptParser.State.INIT);
     }
 
     @Override
     public void initClasses() {
         initBaseClassAliases();
-        parseStep(State.CLASS);
+        parseStep(ScriptParser.State.CLASS);
     }
 
     @Override
     public void initTables() {
-        parseStep(State.TABLE);
+        parseStep(ScriptParser.State.TABLE);
     }
 
     @Override
     public void initGroups() {
         initBaseGroupAliases();
-        parseStep(State.GROUP);
+        parseStep(ScriptParser.State.GROUP);
     }
 
     @Override
     public void initProperties()  {
         warningList.clear();
-        parseStep(State.PROP);
+        parseStep(ScriptParser.State.PROP);
     }
 
     @Override
     public void initIndexes() {
-        parseStep(State.INDEX);
-        if (parsers.size() < 2) {
+        parseStep(ScriptParser.State.INDEX);
+        if (!parser.isInsideMetacode()) {
             showWarnings();
         }
     }

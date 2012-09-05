@@ -1,7 +1,6 @@
 package platform.server.logics.scripted;
 
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
-import platform.server.LsfLogicsParser;
 import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.view.*;
@@ -19,7 +18,7 @@ public class ScriptingFormView {
     private FormView view;
     private final ScriptingLogicsModule LM;
     private final ScriptingErrorLog errLog;
-    private final LsfLogicsParser parser;
+    private final ScriptParser parser;
 
     public ScriptingFormView(FormView view, ScriptingLogicsModule iLM) {
         this.LM = iLM;
