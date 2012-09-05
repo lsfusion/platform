@@ -104,6 +104,13 @@ DESIGN typeExchangeCurrencyDate FROM DEFAULT{
     }
 }
 
+NAVIGATOR {
+    classifierCurrency {
+        ADD typeExchangeCurrencyDate;
+    }
+}
+
+
 // --------------------------------------------------- Макросы по добавлению валюты в документы ------------------------------------ //
 META defineDocumentHeaderCurrency (object)
     currency###object 'Валюта ИД' (object) = DATA currency (object);
