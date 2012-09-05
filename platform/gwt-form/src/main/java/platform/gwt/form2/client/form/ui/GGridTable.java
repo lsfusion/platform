@@ -164,13 +164,14 @@ public class GGridTable extends GPropertyTable {
 
         int currentInd = currentKey == null ? -1 : keys.indexOf(currentKey);
         if (currentInd != -1) {
+            //сразу ресолвим, чтобы избежать бага в DataGrid с неперерисовкой строк... (т.о. убираем рекурсивный resolvePendingState())
+            selectionModel.setSelectedAndResolve(currentRecords.get(currentInd), true);
+            setKeyboardSelectedRow(currentInd, false);
             if (currentKey.equals(oldKey)) {
                 scrollRowToVerticalPosition(currentInd, oldKeyScrollTop);
             } else {
                 getRowElement(currentInd).scrollIntoView();
             }
-            selectionModel.setSelected(currentRecords.get(currentInd), true);
-            setKeyboardSelectedRow(currentInd, false);
         }
 
         updatePropertyReaders();
@@ -289,9 +290,6 @@ public class GGridTable extends GPropertyTable {
         dataUpdated = true;
 
         update();
-
-        //todo: без перерисовки возникает странныйй баг при удалении строки, когда всего осталось 2 строки - после удаления 2я строка всё ещё рисуется...
-        redraw();
     }
 
     private class GridHeader extends Header<String> {

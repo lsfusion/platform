@@ -1,12 +1,15 @@
 package platform.gwt.form2.shared.view.grid.editor;
 
+import com.google.gwt.cell.client.Cell;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.user.client.ui.*;
 import net.auroris.ColorPicker.client.ColorPicker;
 import platform.gwt.form2.client.MainFrameMessages;
 import platform.gwt.form2.shared.view.changes.dto.ColorDTO;
 import platform.gwt.form2.shared.view.grid.EditManager;
+import platform.gwt.form2.shared.view.grid.renderer.ColorGridRenderer;
 
 public class ColorGridEditor extends PopupBasedGridEditor {
     private static final MainFrameMessages messages = MainFrameMessages.Instance.get();
@@ -55,5 +58,10 @@ public class ColorGridEditor extends PopupBasedGridEditor {
         mainPane.setCellHorizontalAlignment(bottomPane, HasAlignment.ALIGN_RIGHT);
 
         return mainPane;
+    }
+
+    @Override
+    public void render(Cell.Context context, Object value, SafeHtmlBuilder sb) {
+        sb.append(ColorGridRenderer.Template.Instance.colorbox(value));
     }
 }

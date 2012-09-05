@@ -48,12 +48,12 @@ public class GridEditableCell extends AbstractCell<Object> {
         }
     }
 
-    public void startEditing(NativeEvent editEvent, final Context context, Element parent, GridCellEditor cellEditor) {
+    public void startEditing(NativeEvent editEvent, final Context context, Element parent, GridCellEditor cellEditor, Object oldValue) {
         this.editRecord = (GridDataRecord) context.getKey();
         this.cellEditor = cellEditor;
 
         //рендерим эдитор
-        setValue(context, parent, null);
+        setValue(context, parent, oldValue);
 
         cellEditor.startEditing(editEvent, context, parent);
     }

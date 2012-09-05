@@ -32,6 +32,9 @@
 }
 
 .dataGridCell {
+    /*работает как min-height*/
+    height: 20px;
+
     border: 1px solid #CCCCCC;
 
     padding: 2px 5px;

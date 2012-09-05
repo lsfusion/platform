@@ -4,6 +4,9 @@ import com.google.gwt.view.client.SelectionChangeEvent;
 import com.google.gwt.view.client.SelectionModel;
 import platform.gwt.form2.shared.view.GridDataRecord;
 
+/**
+ * c/p from com.google.gwt.view.client.SingleSelectionModel
+ */
 public class GGridTableSelectionModel extends SelectionModel.AbstractSelectionModel<GridDataRecord> {
 
     private Object curKey;
@@ -35,19 +38,32 @@ public class GGridTableSelectionModel extends SelectionModel.AbstractSelectionMo
         return curKey.equals(getKey(object));
     }
 
+    public void setSelectedAndResolve(GridDataRecord object, boolean selected) {
+        if (setSelectedInternal(object, selected)) {
+            resolveChanges();
+        }
+    }
+
     public void setSelected(GridDataRecord object, boolean selected) {
+        // If we are deselecting a value that isn't actually selected, ignore it.
+        if (setSelectedInternal(object, selected)) {
+            scheduleSelectionChangeEvent();
+        }
+    }
+
+    private boolean setSelectedInternal(GridDataRecord object, boolean selected) {
         // If we are deselecting a value that isn't actually selected, ignore it.
         if (!selected) {
             Object oldKey = newSelectedPending ? getKey(newSelectedObject) : curKey;
             Object newKey = getKey(object);
             if (!equalsOrBothNull(oldKey, newKey)) {
-                return;
+                return false;
             }
         }
         newSelectedObject = object;
         newSelected = selected;
         newSelectedPending = true;
-        scheduleSelectionChangeEvent();
+        return true;
     }
 
     @Override

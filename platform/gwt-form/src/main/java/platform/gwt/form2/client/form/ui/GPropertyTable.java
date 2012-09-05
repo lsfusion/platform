@@ -43,7 +43,7 @@ public abstract class GPropertyTable extends DataGrid implements EditManager, GE
             NativeEvent event = editEvent;
             editEvent = null;
             form.setCurrentEditingTable(this);
-            editCell.startEditing(event, editContext, editCellParent, cellEditor);
+            editCell.startEditing(event, editContext, editCellParent, cellEditor, oldValue);
         } else {
             cancelEditing();
         }

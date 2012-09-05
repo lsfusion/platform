@@ -16,7 +16,7 @@ import platform.gwt.form2.shared.view.grid.EditManager;
 public abstract class TextFieldGridEditor implements GridCellEditor {
     interface Template extends SafeHtmlTemplates {
         @Template("<input style=\"border: 0px; margin: 0px; width: 100%; \" type=\"text\" value=\"{0}\" tabindex=\"-1\"></input>")
-        SafeHtml render(String value);
+        SafeHtml input(String value);
     }
 
     protected final class ParseException extends Exception {
@@ -80,7 +80,7 @@ public abstract class TextFieldGridEditor implements GridCellEditor {
 
     @Override
     public void render(Cell.Context context, Object value, SafeHtmlBuilder sb) {
-        sb.append(template.render(currentText));
+        sb.append(template.input(currentText));
     }
 
     @Override

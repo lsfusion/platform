@@ -70,7 +70,7 @@ public abstract class PopupBasedGridEditor implements GridCellEditor {
     }
 
     @Override
-    public final void render(Cell.Context context, Object value, SafeHtmlBuilder sb) {
+    public void render(Cell.Context context, Object value, SafeHtmlBuilder sb) {
         if (value != null) {
             sb.append(renderer.render(formatValue(value)));
         }
