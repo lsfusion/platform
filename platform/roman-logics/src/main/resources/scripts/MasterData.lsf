@@ -290,6 +290,9 @@ mainCompositionSkuInvoice 'Состав (перевод)' (sku, invoice) = mainC
 additionalCompositionSkuInvoice 'Доп. состав (перевод)' (sku, invoice) = additionalCompositionSkuLanguage(sku, languageInvoice(invoice));
 translateNameSkuInvoice 'Наименование (перевод)' (sku, invoice) = translateNameSkuLanguage(sku, languageInvoice(invoice));
 
+mainCompositionSkuFreight 'Состав (перевод)' (sku, freight) = mainCompositionSkuLanguage(sku, languageFreight(freight));
+additionalCompositionSkuFreight 'Доп. состав (перевод)' (sku, freight) = additionalCompositionSkuLanguage(sku, languageFreight(freight));
+
 translationMainCompositionSkuInvoice 'Перевод' (sku, invoice) = translationMainCompositionSkuLanguage(sku, languageInvoice(invoice));
 translationAdditionalCompositionSkuInvoice 'Перевод' (sku, invoice) = translationAdditionalCompositionSkuLanguage(sku, languageInvoice(invoice));
 //translationNameSkuInvoice 'Перевод' (sku, invoice) = translationNameSkuLanguage(sku, languageInvoice(invoice));
@@ -306,20 +309,14 @@ EXTEND FORM simpleInvoiceForm
                mainCompositionSkuInvoice, translationAdditionalCompositionSkuInvoice, additionalCompositionSkuInvoice
 ;
 
-importerFreight 'Импортёр фрахта (ИД)' = DATA importer(freight) IN idGroup;
-nameImporterFreight 'Импортёр фрахта' (freight) = name(importerFreight(freight));
-
-countryFreight 'Страна назначения (ИД)' = DATA country(freight) IN idGroup;
-nameCountryFreight 'Страна назначения' (freight) = name(countryFreight(freight));
-
-languageFreight 'Язык фрахта (ИД)' (freight) = languageCountry(countryFreight(freight)) IN idGroup;
-nameLanguageFreight 'Язык фрахта' (freight) = name(languageFreight(freight));
+//importerFreight 'Импортёр фрахта (ИД)' = DATA importer(freight) IN idGroup;
+//nameImporterFreight 'Импортёр фрахта' (freight) = name(importerFreight(freight));
 
 mainCompositionLanguageFreightSku 'Состав' = DATA STRING[200] (freight, sku);
-mainCompositionLanguageFreightSku (freight, sku) <- mainCompositionSkuLanguage(sku, languageFreight(freight)) WHEN ASSIGNED (freight IS freightChanged);
+mainCompositionLanguageFreightSku (freight, sku) <- mainCompositionSkuFreight(sku, freight) WHEN ASSIGNED (freight IS freightChanged);
 
 additionalCompositionLanguageFreightSku 'Доп. состав' = DATA STRING[200] (freight, sku);
-additionalCompositionLanguageFreightSku (freight, sku) <- additionalCompositionSkuLanguage(sku, languageFreight(freight)) WHEN ASSIGNED (freight IS freightChanged);
+additionalCompositionLanguageFreightSku (freight, sku) <- additionalCompositionSkuFreight(sku, freight) WHEN ASSIGNED (freight IS freightChanged);
 
 nameCountryLanguageFreightSku 'Страна' (freight, sku) = languageName(countryOfOriginFreightSku(freight, sku), languageFreight(freight));
 
@@ -335,12 +332,16 @@ EXTEND FORM freightCreateForm
 ;
 
 EXTEND FORM freightChangeForm
-    PROPERTIES (freight, skuFreight) nameCategoryFreightLanguageSku SHOWIF languageFreight(freight),
-               mainCompositionLanguageFreightSku SHOWIF languageFreight(freight), additionalCompositionLanguageFreightSku SHOWIF languageFreight(freight),
-               nameCountryLanguageFreightSku AFTER nameCountryOfOriginFreightSku(freight, skuFreight) SHOWIF languageFreight(freight)
+    PROPERTIES (freight, sku) nameCategoryFreightLanguageSku AFTER nameCategoryArticleSku(sku) SHOWIF languageFreight(freight),
+                              nameCountryLanguageFreightSku AFTER nameCountrySku(sku) SHOWIF languageFreight(freight),
+                              translationMainCompositionLanguageFreightSku SHOWIF languageFreight(freight)
+    PROPERTIES (sku, freight) mainCompositionSkuFreight SHOWIF languageFreight(freight)
+    PROPERTIES (freight, sku) translationAdditionalCompositionLanguageFreightSku SHOWIF languageFreight(freight)
+    PROPERTIES (sku, freight) additionalCompositionSkuFreight SHOWIF languageFreight(freight)
+    PROPERTIES (freight, skuFreight) mainCompositionLanguageFreightSku SHOWIF languageFreight(freight),
+                                     additionalCompositionLanguageFreightSku SHOWIF languageFreight(freight),
+                                     nameCountryLanguageFreightSku AFTER nameCountryOfOriginFreightSku(freight, skuFreight) SHOWIF languageFreight(freight)
 ;
-
-//mainCompositionSkuInvoice = addJProp("", "", mainCompositionSkuLanguage, 1, )
 
 //@implementSkuLedger(userPriceChange, sku, departmentStore);
 //quantityInLIFOSkuLedger (ledger) += quantityUserPriceChangeDetail(ledger) (-) quantityUserPriceChangeDetail(ledger);

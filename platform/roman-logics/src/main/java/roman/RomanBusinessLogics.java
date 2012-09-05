@@ -31,6 +31,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     public ScriptingLogicsModule ContractLedger;
     public ScriptingLogicsModule Supplier;
     public ScriptingLogicsModule I18n;
+    public ScriptingLogicsModule Country;
     EquipmentServer equipmentServer;
 
     public RomanBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
@@ -51,6 +52,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         ContractLedger = addModuleFromResource("/scripts/ContractLedger.lsf");
         Supplier = addModuleFromResource("/scripts/Supplier.lsf");
         I18n = addModuleFromResource("/scripts/I18n.lsf");
+        Country = addModuleFromResource("/scripts/Country.lsf");
 
         addModulesFromResource(
             "/scripts/Utils.lsf",
@@ -100,8 +102,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             "/scripts/Inventory.lsf",
             "/scripts/RomanContractLedger.lsf",
             "/scripts/Warehouse.lsf",
-            "/scripts/PriceChangeDiscount.lsf",
-            "/scripts/Country.lsf"
+            "/scripts/PriceChangeDiscount.lsf"
+           // "/scripts/Country.lsf"
         );
         RomanLM = addModule(new RomanLogicsModule(LM, this));
         RomanLM.setRequiredModules(Arrays.asList("System", "Utils", "Hierarchy", "Historizable", "Numerator", "Stock", "Document"));
