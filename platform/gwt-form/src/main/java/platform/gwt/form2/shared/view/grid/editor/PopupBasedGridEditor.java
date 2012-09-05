@@ -37,7 +37,7 @@ public abstract class PopupBasedGridEditor implements GridCellEditor {
     }
 
     @Override
-    public final void startEditing(NativeEvent editEvent, Cell.Context context, final Element parent) {
+    public void startEditing(NativeEvent editEvent, Cell.Context context, final Element parent, Object oldValue) {
         showPopup(parent);
     }
 

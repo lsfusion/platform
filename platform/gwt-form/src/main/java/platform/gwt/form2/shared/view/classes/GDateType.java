@@ -11,8 +11,8 @@ public class GDateType extends GDataType {
     public static GDateType instance = new GDateType();
 
     @Override
-    public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty, Object oldValue) {
-        return new DateGridEditor(editManager, oldValue);
+    public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
+        return new DateGridEditor(editManager);
     }
 
     @Override

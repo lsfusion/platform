@@ -14,7 +14,7 @@ public class GDoubleType extends GIntegralType {
     }
 
     @Override
-    public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty, Object oldValue) {
-        return new DoubleGridEditor(editManager, oldValue);
+    public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
+        return new DoubleGridEditor(editManager);
     }
 }

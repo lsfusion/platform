@@ -1,11 +1,11 @@
 package platform.gwt.form2.shared.view;
 
-import com.google.gwt.user.cellview.client.Column;
 import platform.gwt.form2.client.form.ui.GFormController;
 import platform.gwt.form2.shared.view.changes.GGroupObjectValue;
 import platform.gwt.form2.shared.view.classes.GType;
 import platform.gwt.form2.shared.view.grid.EditManager;
-import platform.gwt.form2.shared.view.logics.FormLogicsProvider;
+import platform.gwt.form2.shared.view.grid.editor.GridCellEditor;
+import platform.gwt.form2.shared.view.grid.renderer.GridCellRenderer;
 import platform.gwt.form2.shared.view.logics.GGroupObjectLogicsSupplier;
 import platform.gwt.form2.shared.view.panel.PanelRenderer;
 import platform.gwt.form2.shared.view.reader.*;
@@ -37,6 +37,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
     public GBackgroundReader backgroundReader;
     public GForegroundReader foregroundReader;
 
+    private transient GridCellRenderer cellRenderer;
+
     public static class AddRemove implements Serializable {
         public GObject object;
         public boolean add;
@@ -55,12 +57,19 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
         controller.updatePropertyDrawValues(this, values, updateKeys);
     }
 
-    public Column<GridDataRecord, Object> createGridColumn(EditManager editManager, FormLogicsProvider form) {
-        return baseType.createGridColumn(editManager, form, this);
-    }
-
     public PanelRenderer createPanelRenderer(GFormController form) {
         return baseType.createPanelRenderer(form, this);
+    }
+
+    public GridCellRenderer getGridCellRenderer() {
+        if (cellRenderer == null) {
+            cellRenderer = baseType.createGridCellRenderer(this);
+        }
+        return cellRenderer;
+    }
+
+    public GridCellEditor createGridCellEditor(EditManager editManager) {
+        return baseType.createGridCellEditor(editManager, this);
     }
 
     @Override

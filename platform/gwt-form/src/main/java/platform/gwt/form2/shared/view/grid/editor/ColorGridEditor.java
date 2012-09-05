@@ -1,6 +1,8 @@
 package platform.gwt.form2.shared.view.grid.editor;
 
 import com.google.gwt.cell.client.Cell;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
@@ -16,16 +18,8 @@ public class ColorGridEditor extends PopupBasedGridEditor {
 
     private ColorPicker colorPicker;
 
-    public ColorGridEditor(EditManager editManager, Object oldValue) {
+    public ColorGridEditor(EditManager editManager) {
         super(editManager);
-
-        if (oldValue != null) {
-            try {
-                colorPicker.setHex(((ColorDTO)oldValue).value);
-            } catch (Exception e) {
-                throw new IllegalStateException("can't convert string value to color");
-            }
-        }
     }
 
     @Override
@@ -58,6 +52,19 @@ public class ColorGridEditor extends PopupBasedGridEditor {
         mainPane.setCellHorizontalAlignment(bottomPane, HasAlignment.ALIGN_RIGHT);
 
         return mainPane;
+    }
+
+    @Override
+    public void startEditing(NativeEvent editEvent, Cell.Context context, Element parent, Object oldValue) {
+        if (oldValue != null) {
+            try {
+                colorPicker.setHex(((ColorDTO)oldValue).value);
+            } catch (Exception e) {
+                throw new IllegalStateException("can't convert string value to color");
+            }
+        }
+
+        super.startEditing(editEvent, context, parent, oldValue);
     }
 
     @Override

@@ -15,6 +15,7 @@ import platform.gwt.form2.shared.view.GGroupObject;
 import platform.gwt.form2.shared.view.GPropertyDraw;
 import platform.gwt.form2.shared.view.GridDataRecord;
 import platform.gwt.form2.shared.view.changes.GGroupObjectValue;
+import platform.gwt.form2.shared.view.grid.GridEditableCell;
 import platform.gwt.utils.GwtSharedUtils;
 
 import java.util.ArrayList;
@@ -107,17 +108,26 @@ public class GGridTable extends GPropertyTable {
             return;
         }
 
-        int ins = GwtSharedUtils.relativePosition(property, form.getPropertyDraws(), properties);
-        properties.add(ins, property);
+        int newColumnIndex = GwtSharedUtils.relativePosition(property, form.getPropertyDraws(), properties);
+        properties.add(newColumnIndex, property);
 
         GridHeader header = new GridHeader(property.getCaptionOrEmpty());
-        headers.add(ins, header);
+        headers.add(newColumnIndex, header);
 
-        Column<GridDataRecord, Object> gridColumn = property.createGridColumn(this, form);
-        insertColumn(ins, gridColumn, header);
+        Column<GridDataRecord, Object> gridColumn = createGridColumn(property);
+        insertColumn(newColumnIndex, gridColumn, header);
         setColumnWidth(gridColumn, "150px");
 
         dataUpdated = true;
+    }
+
+    private Column<GridDataRecord, Object> createGridColumn(final GPropertyDraw property) {
+        return new Column<GridDataRecord, Object>(new GridEditableCell(this)) {
+            @Override
+            public Object getValue(GridDataRecord record) {
+                return record.getAttribute(property);
+            }
+        };
     }
 
     public GGroupObjectValue getCurrentKey() {
@@ -252,17 +262,21 @@ public class GGridTable extends GPropertyTable {
         rowForegroundValues = values;
     }
 
-    public GPropertyDraw getProperty(int colNum) {
-        return properties.get(colNum);
+    public GPropertyDraw getProperty(int row, int column) {
+        return properties.get(column);
+    }
+
+    @Override
+    public GGroupObjectValue getColumnKey(int row, int column) {
+        return keys.get(row);
     }
 
     public Object getValueAt(int row, int column) {
-        //todo: optimize maybe
-        return values.get(getProperty(column)).get(keys.get(row));
+        return currentRecords.get(row).getAttribute(getProperty(row, column));
     }
 
     public void setValueAt(int row, int column, Object value) {
-        GPropertyDraw columnProperty = getProperty(column);
+        GPropertyDraw columnProperty = getProperty(row, column);
         values.get(columnProperty).put(keys.get(row), value);
 
         GridDataRecord rowRecord = currentRecords.get(row);

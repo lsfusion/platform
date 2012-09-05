@@ -39,7 +39,7 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
 
     @Override
     public void requestValue(GType valueType, Object oldValue) {
-        GridCellEditor editor = valueType.createGridCellEditor(editManager, property, oldValue);
+        GridCellEditor editor = valueType.createGridCellEditor(editManager, property);
         if (editor instanceof PopupBasedGridEditor) {
             ((PopupBasedGridEditor) editor).showPopup(null);
         } else {
@@ -83,6 +83,11 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
     }
 
     private class ActionEditManager extends EditManagerAdapter {
+        @Override
+        public GPropertyDraw getProperty(int row, int column) {
+            return property;
+        }
+
         @Override
         public void commitEditing(Object value) {
             editDispatcher.commitValue(value);

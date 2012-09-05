@@ -15,7 +15,7 @@ public class GStringType extends GDataType {
     }
 
     @Override
-    public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty, Object oldValue) {
-        return new StringGridEditor(editManager, oldValue);
+    public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
+        return new StringGridEditor(editManager);
     }
 }

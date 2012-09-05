@@ -8,7 +8,6 @@ import platform.gwt.form2.client.form.dispatch.GEditPropertyDispatcher;
 import platform.gwt.form2.client.form.dispatch.GEditPropertyHandler;
 import platform.gwt.form2.shared.actions.form.ServerResponseResult;
 import platform.gwt.form2.shared.view.GPropertyDraw;
-import platform.gwt.form2.shared.view.GridDataRecord;
 import platform.gwt.form2.shared.view.changes.GGroupObjectValue;
 import platform.gwt.form2.shared.view.classes.GType;
 import platform.gwt.form2.shared.view.grid.EditManager;
@@ -38,7 +37,7 @@ public abstract class GPropertyTable extends DataGrid implements EditManager, GE
     public void requestValue(GType valueType, Object oldValue) {
         editType = valueType;
 
-        GridCellEditor cellEditor = valueType.createGridCellEditor(this, getProperty(editContext.getColumn()), oldValue);
+        GridCellEditor cellEditor = valueType.createGridCellEditor(this, getProperty(editContext.getIndex(), editContext.getColumn()));
         if (cellEditor != null) {
             NativeEvent event = editEvent;
             editEvent = null;
@@ -54,9 +53,8 @@ public abstract class GPropertyTable extends DataGrid implements EditManager, GE
         setValueAt(editContext.getIndex(), editContext.getColumn(), value);
     }
 
-    public abstract GPropertyDraw getProperty(int column);
-    public abstract void setValueAt(int index, int column, Object value);
-    public abstract Object getValueAt(int index, int column);
+    public abstract void setValueAt(int row, int column, Object value);
+    public abstract Object getValueAt(int row, int column);
 
     @Override
     public void postDispatchResponse(ServerResponseResult response) {
@@ -74,10 +72,13 @@ public abstract class GPropertyTable extends DataGrid implements EditManager, GE
         this.editEvent = editEvent;
         this.editContext = editContext;
         this.editCellParent = parent;
-        GGroupObjectValue columnKey = ((GridDataRecord) editContext.getKey()).key;
-        editDispatcher.executePropertyEditAction(this, getProperty(editContext.getColumn()), getValueAt(editContext.getIndex(), editContext.getColumn()), columnKey);
-    }
 
+        GPropertyDraw property = getProperty(editContext.getIndex(), editContext.getColumn());
+        GGroupObjectValue columnKey = getColumnKey(editContext.getIndex(), editContext.getColumn());
+        Object oldValue = getValueAt(editContext.getIndex(), editContext.getColumn());
+
+        editDispatcher.executePropertyEditAction(this, property, oldValue, columnKey);
+    }
 
     @Override
     public void commitEditing(Object value) {

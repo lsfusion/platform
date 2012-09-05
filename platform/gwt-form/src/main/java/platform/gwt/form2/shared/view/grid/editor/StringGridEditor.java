@@ -3,8 +3,8 @@ package platform.gwt.form2.shared.view.grid.editor;
 import platform.gwt.form2.shared.view.grid.EditManager;
 
 public class StringGridEditor extends TextFieldGridEditor {
-    public StringGridEditor(EditManager editManager, Object oldValue) {
-        super(editManager, oldValue);
+    public StringGridEditor(EditManager editManager) {
+        super(editManager);
     }
 
     @Override

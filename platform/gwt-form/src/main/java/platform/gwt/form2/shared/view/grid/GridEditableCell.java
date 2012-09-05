@@ -7,23 +7,19 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
-import platform.gwt.form2.shared.view.GridDataRecord;
 import platform.gwt.form2.shared.view.grid.editor.GridCellEditor;
 import platform.gwt.form2.shared.view.grid.renderer.GridCellRenderer;
 
 public class GridEditableCell extends AbstractCell<Object> {
 
-    private final GridCellRenderer cellRenderer;
-
     private final EditManager editManager;
 
     private GridCellEditor cellEditor = null;
-    private GridDataRecord editRecord = null;
+    private Object editKey = null;
 
-    public GridEditableCell(EditManager editManager, GridCellRenderer cellRenderer) {
+    public GridEditableCell(EditManager editManager) {
         super("dblclick", "keyup", "keydown", "keypress", "blur");
         this.editManager = editManager;
-        this.cellRenderer = cellRenderer;
     }
 
     @Override
@@ -49,17 +45,17 @@ public class GridEditableCell extends AbstractCell<Object> {
     }
 
     public void startEditing(NativeEvent editEvent, final Context context, Element parent, GridCellEditor cellEditor, Object oldValue) {
-        this.editRecord = (GridDataRecord) context.getKey();
+        this.editKey = context.getKey();
         this.cellEditor = cellEditor;
 
         //рендерим эдитор
         setValue(context, parent, oldValue);
 
-        cellEditor.startEditing(editEvent, context, parent);
+        cellEditor.startEditing(editEvent, context, parent, oldValue);
     }
 
     public void finishEditing(Context context, Element parent, Object newValue) {
-        this.editRecord = null;
+        this.editKey = null;
         this.cellEditor = null;
 
         setValue(context, parent, newValue);
@@ -70,6 +66,7 @@ public class GridEditableCell extends AbstractCell<Object> {
         if (isEditingCell(context)) {
             cellEditor.render(context, value, sb);
         } else {
+            GridCellRenderer cellRenderer = editManager.getProperty(context.getIndex(), context.getColumn()).getGridCellRenderer();
             cellRenderer.render(context, value, sb);
         }
     }
@@ -80,7 +77,7 @@ public class GridEditableCell extends AbstractCell<Object> {
     }
 
     private boolean isEditingCell(Cell.Context context) {
-        if (context.getKey() == editRecord) {
+        if (context.getKey() == editKey) {
             assert cellEditor != null;
             return true;
         }

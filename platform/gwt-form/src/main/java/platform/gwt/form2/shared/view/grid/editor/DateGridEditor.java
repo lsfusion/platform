@@ -1,5 +1,8 @@
 package platform.gwt.form2.shared.view.grid.editor;
 
+import com.google.gwt.cell.client.Cell;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
@@ -15,11 +18,11 @@ public class DateGridEditor extends PopupBasedGridEditor {
     private final DateTimeFormat format;
     private DatePicker datePicker;
 
-    public DateGridEditor(EditManager editManager, Object oldValue) {
-        this(GwtSharedUtils.getDefaultDateFormat(), editManager, oldValue);
+    public DateGridEditor(EditManager editManager) {
+        this(GwtSharedUtils.getDefaultDateFormat(), editManager);
     }
 
-    public DateGridEditor(DateTimeFormat format, EditManager editManager, Object oldValue) {
+    public DateGridEditor(DateTimeFormat format, EditManager editManager) {
         super(editManager);
         this.format = format;
 
@@ -29,17 +32,21 @@ public class DateGridEditor extends PopupBasedGridEditor {
                 commitEditing(event.getValue());
             }
         });
-
-        if (oldValue != null) {
-            datePicker.setValue((Date) oldValue);
-            datePicker.setCurrentMonth((Date) oldValue);
-        }
     }
 
 
     @Override
     protected Widget createPopupComponent() {
         return datePicker = new DatePicker();
+    }
+
+    @Override
+    public void startEditing(NativeEvent editEvent, Cell.Context context, Element parent, Object oldValue) {
+        if (oldValue != null) {
+            datePicker.setValue((Date) oldValue);
+            datePicker.setCurrentMonth((Date) oldValue);
+        }
+        super.startEditing(editEvent, context, parent, oldValue);
     }
 
     @Override

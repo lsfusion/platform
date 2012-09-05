@@ -29,17 +29,17 @@ public abstract class TextFieldGridEditor implements GridCellEditor {
         }
     }
 
-    public TextFieldGridEditor(EditManager editManager, Object oldValue) {
+    public TextFieldGridEditor(EditManager editManager) {
         initTemplateIfNeeded();
         this.editManager = editManager;
-        currentText = oldValue == null ? "" : oldValue.toString();
     }
 
     protected EditManager editManager;
-    protected String currentText;
+    protected String currentText = "";
 
     @Override
-    public void startEditing(NativeEvent editEvent, Cell.Context context, Element parent) {
+    public void startEditing(NativeEvent editEvent, Cell.Context context, Element parent, Object oldValue) {
+        currentText = oldValue == null ? "" : oldValue.toString();
         InputElement inputElement = getInputElement(parent);
         if (editEvent != null) {
             boolean charEvent = "keypress".equals(editEvent.getType());

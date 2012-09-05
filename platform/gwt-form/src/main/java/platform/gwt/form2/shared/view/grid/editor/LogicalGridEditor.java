@@ -8,16 +8,15 @@ import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import platform.gwt.form2.shared.view.grid.EditManager;
 
 public class LogicalGridEditor implements GridCellEditor {
-    public LogicalGridEditor(EditManager editManager, Object oldValue) {
+    public LogicalGridEditor(EditManager editManager) {
         this.editManager = editManager;
-        currentValue = (Boolean) oldValue;
     }
 
     protected EditManager editManager;
-    protected Boolean currentValue;
 
     @Override
-    public void startEditing(NativeEvent editEvent, Cell.Context context, Element parent) {
+    public void startEditing(NativeEvent editEvent, Cell.Context context, Element parent, Object oldValue) {
+        Boolean currentValue = (Boolean) oldValue;
         editManager.commitEditing(currentValue == null || !currentValue ? true : null);
     }
 

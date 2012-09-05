@@ -11,8 +11,8 @@ public class GColorType extends GDataType {
     public static GColorType instance = new GColorType();
 
     @Override
-    public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty, Object oldValue) {
-        return new ColorGridEditor(editManager, oldValue);
+    public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
+        return new ColorGridEditor(editManager);
     }
 
     @Override

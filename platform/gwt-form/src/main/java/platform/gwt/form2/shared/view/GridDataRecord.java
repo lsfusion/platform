@@ -30,7 +30,11 @@ public class GridDataRecord {
     }
 
     public void setAttribute(GPropertyDraw property, Object value) {
-        values.put(property.sID, value);
+        setAttribute(property.sID, value);
+    }
+
+    public Object getAttribute(GPropertyDraw property) {
+        return getAttribute(property.sID);
     }
 
     public void setAttribute(String name, Object value) {
