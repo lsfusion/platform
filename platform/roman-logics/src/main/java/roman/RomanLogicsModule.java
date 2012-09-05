@@ -480,6 +480,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LCP sidGenderArticle;
     private LCP genderArticleSku;
     public LCP sidGenderArticleSku;
+    public LCP sidGenderArticleSkuLanguage;
     private LCP quantitySizeSupplierGenderCategory;
     private LCP commonSizeSku;
     public LCP nameCommonSizeSku;
@@ -1430,7 +1431,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         colorSupplier = addConcreteClass("colorSupplier", "Цвет поставщика", baseClass.named);
         sizeSupplier = addConcreteClass("sizeSupplier", "Размер поставщика", baseClass);
-        gender = addConcreteClass("gender", "Пол", baseClass);
+        gender = addConcreteClass("gender", "Пол", baseClass, baseLM.multiLanguageNamed);
         genderSupplier = addConcreteClass("genderSupplier", "Пол поставщика", baseClass);
         sizeGroupSupplier = addConcreteClass("sizeGroupSupplier", "Размерная сетка", baseClass.named);
 
@@ -2261,6 +2262,7 @@ public class RomanLogicsModule extends LogicsModule {
         sidGenderArticle = addJProp(baseGroup, "sidGenderArticle", "Пол", sidGender, genderArticle, 1);
         genderArticleSku = addJProp(idGroup, true, "genderArticleSku", true, "Пол (ИД)", genderArticle, articleSku, 1);
         sidGenderArticleSku = addJProp(baseGroup, "sidGenderArticleSku", "Пол", sidGender, genderArticleSku, 1);
+        sidGenderArticleSkuLanguage = addJProp("sidGenderArticleSkuLanguage", "Пол", BL.I18n.getLCPByName("languageName"), genderArticleSku, 1, 2);
 
         commonSizeSku = addJProp(idGroup, "commonSizeSku", "Унифицированный размер (ИД)", commonSizeSizeSupplierGenderCategory, sizeSupplierItem, 1, genderArticleSku, 1, categoryArticleSku, 1);
         nameCommonSizeSku = addJProp(baseGroup, "nameCommonSizeSku", "Унифицированный размер", baseLM.name, commonSizeSku, 1);

@@ -119,9 +119,21 @@ FORM categories 'Товарные группы'
 
 // ---------------------------------- Формы для выбора атрибутов ------------------------------------ //
 
-FORM genders 'Пол'
+FORM gender 'Пол'
+    OBJECTS g = gender FIXED PANEL
+    PROPERTIES(g) sidGender
+
+    OBJECTS l= language
+    PROPERTIES(l) READONLY name
+    PROPERTIES(g, l) languageName
+
+    EDIT gender OBJECT g;
+;
+
+FORM gendersDialog 'Пол'
     OBJECTS g = gender
     PROPERTIES(g) READONLY sidGender
+    PROPERTIES(g) ADDFORM, EDITFORM, delete
     DIALOG gender OBJECT g;
 ;
 
@@ -283,6 +295,13 @@ FORM skuDialog 'SKU'
 
 nameImporterSku 'Наименование' (importer, sku) = name(importer) AND importer IS company AND sku IS sku;
 addressImporterSku 'Адрес' (importer, sku) = addressLegalEntity(importer) AND importer IS company AND sku IS sku;
+
+localeLanguageCompany (company) = localeLanguage(languageLegalEntity(company));
+mainCompositionSkuCompany 'Состав (перевод)' (sku, company) = mainCompositionSkuLanguage(sku, languageLegalEntity(company));
+nameCategoryArticleSkuCompany 'Номенклатурная группа' (sku, company)= nameCategoryArticleSkuLanguage(sku, languageLegalEntity(company));
+sidGenderArticleSkuCompany 'Пол' (sku, company) = sidGenderArticleSkuLanguage(sku, languageLegalEntity(company));
+nameCountrySkuCompany 'Страна (сделано в)' (sku, company) = nameCountrySkuLanguage(sku, languageLegalEntity(company));
+nameCountryBrandSupplierSkuCompany 'Страна поставки' (sku, company) =nameCountryBrandSupplierSkuLanguage(sku, languageLegalEntity(company));
 
 //---------------------
 

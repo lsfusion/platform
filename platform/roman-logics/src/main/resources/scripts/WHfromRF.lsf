@@ -293,15 +293,18 @@ FORM printMarksWHfromRF 'Печать маркировок товара' PRINT
     PROPERTIES(dt) OBJVALUE
 
     OBJECTS imp = company FIXED PANEL
-    PROPERTIES(imp) OBJVALUE, name, addressLegalEntity
+    PROPERTIES(imp) OBJVALUE, name, addressLegalEntity, languageLegalEntity, localeLanguageCompany
 
     OBJECTS c = currency FIXED PANEL
-    PROPERTIES(c) name
+    PROPERTIES(c) name, shortNameCurrency
 
     OBJECTS s = sku
     PROPERTIES(s) READONLY sidArticleSku, sidSizeSupplierItem, nameCommonSizeSku, sidGenderArticleSku, nameCategoryArticleSku,
                            mainCompositionSku, nameCountryBrandSupplierSku, nameBrandSupplierArticleSku, barcode, nameCountrySku,
                            sidColorSupplierItem, nameColorSupplierItem, nameSupplierArticleSku, addressSupplierArticleSku, warrantySku, countSku
+
+    PROPERTIES(s, imp)     READONLY mainCompositionSkuCompany, nameCategoryArticleSkuCompany, sidGenderArticleSkuCompany,
+                           nameCountrySkuCompany, nameCountryBrandSupplierSkuCompany
 
     PROPERTIES(s, c, dt)   priceABasePriceSetDocumentSkuCurrencyDateTime, priceADiscountPriceSetDocumentSkuCurrencyDateTime
     PROPERTIES(imp, s)     nameImporterSku, addressImporterSku
@@ -341,7 +344,7 @@ mainCompositionOriginArticleSkuWHfromRFDetail 'Состав(ориг.)' (WHfromR
 
 sidGenderArticleSkuWHfromRFDetail 'Пол товара' (WHfromRFDetail) = sidGenderArticleSku(skuWHfromRFDetail(WHfromRFDetail));
 changeGenderArticleSkuWHfromRFDetail = ACTION (WHfromRFDetail) {
-    REQUEST OBJECT g FORM genders MODAL;
+    REQUEST OBJECT g FORM gendersDialog MODAL;
     IF formResult() == formResult.ok THEN {
         SET genderArticle(article) IF article == articleSku(skuWHfromRFDetail(WHfromRFDetail)) <- chosenObject('g');
     }

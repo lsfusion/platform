@@ -204,6 +204,7 @@ NAVIGATOR {
     }
 
     retailClassifier {
+        ADD gendersDialog;
         ADD stores;
         ADD groupsCashRegister;
     }
