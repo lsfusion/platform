@@ -90,9 +90,9 @@ public class ImportPriceListActionProperty extends ScriptingActionProperty {
                             DataObject skuDataObject = (DataObject) skuObject;
                             Boolean isDelete = status.equals("D") ? null : true;
                             LM.findLCPByCompoundName("inPriceSetDocumentSku").change(isDelete, session, priceSetDocumentObject, skuDataObject);
-                            LM.findLCPByCompoundName("priceBasePriceSetDocumentArticle").change(price, session, priceSetDocumentObject, skuDataObject);
-                            //LM.findLCPByCompoundName("userDateTimePriceSetDocumentSku").change(startDate, session, priceSetDocumentObject, skuDataObject);
-                            //LM.findLCPByCompoundName("userDateTimeToPriceSetDocumentSku").change(endDate, session, priceSetDocumentObject, skuDataObject);
+                            LM.findLCPByCompoundName("priceBasePriceSetDocumentSku").change(price, session, priceSetDocumentObject, skuDataObject);
+                            LM.findLCPByCompoundName("userDateTimePriceSetDocumentSku").change(startDate, session, priceSetDocumentObject, skuDataObject);
+                            LM.findLCPByCompoundName("userDateTimeToPriceSetDocumentSku").change(endDate, session, priceSetDocumentObject, skuDataObject);
                         } else {
                             barcodeCount++;
                             if (barcodeCount < maxBarcodeCount) {
