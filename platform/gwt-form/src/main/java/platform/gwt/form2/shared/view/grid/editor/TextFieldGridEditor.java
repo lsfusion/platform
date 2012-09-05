@@ -44,9 +44,10 @@ public abstract class TextFieldGridEditor implements GridCellEditor {
         if (editEvent != null) {
             boolean charEvent = "keypress".equals(editEvent.getType());
             if (charEvent) {
-                inputElement.setValue(String.valueOf((char)editEvent.getCharCode()));
+                currentText = String.valueOf((char)editEvent.getCharCode());
             }
         }
+        inputElement.setValue(currentText);
         inputElement.focus();
     }
 

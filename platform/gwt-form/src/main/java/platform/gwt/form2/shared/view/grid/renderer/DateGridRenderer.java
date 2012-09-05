@@ -1,17 +1,23 @@
 package platform.gwt.form2.shared.view.grid.renderer;
 
-import com.google.gwt.cell.client.DateCell;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import platform.gwt.utils.GwtSharedUtils;
 
 import java.util.Date;
 
-public class DateGridRenderer extends CellAdapterGridRenderer<Date> {
+public class DateGridRenderer extends SafeHtmlGridRenderer<Date> {
+    private final DateTimeFormat format;
+
     public DateGridRenderer() {
         this(GwtSharedUtils.getDefaultDateFormat());
     }
 
     public DateGridRenderer(DateTimeFormat format) {
-        super(new DateCell(format));
+        this.format = format;
+    }
+
+    @Override
+    protected String renderToString(Date value) {
+        return format.format(value, null);
     }
 }
