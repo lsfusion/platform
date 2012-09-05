@@ -776,15 +776,14 @@ propertyStatement
 	LP property = null;
 	List<String> context = new ArrayList<String>();
 	boolean dynamic = true;
-	int lineNumber;
+	int lineNumber = self.getParser().getCurrentParserLineNumber(); 
 }
 @after {
 	if (inPropParseState()) {
 		self.setPropertyScriptInfo(property, $text, lineNumber);
 	}
 }
-	:	{ lineNumber = self.getParser().getCurrentParserLineNumber(); }
-		declaration=propertyDeclaration { if ($declaration.paramNames != null) { context = $declaration.paramNames; dynamic = false; } }
+	:	declaration=propertyDeclaration { if ($declaration.paramNames != null) { context = $declaration.paramNames; dynamic = false; } }
 		'=' 
 		(	def=expressionUnfriendlyPD[context, dynamic, false] { property = $def.property; }
 		|	expr=propertyExpression[context, dynamic] { if (inPropParseState()) { self.checkNecessaryProperty($expr.property); property = $expr.property.property; } }
@@ -2415,7 +2414,7 @@ metaCodeDeclarationStatement
 @init {
 	String code;
 	List<String> tokens;
-	int lineNumber;
+	int lineNumber = self.getParser().getCurrentParserLineNumber(); 
 }
 @after {
 	if (inGroupParseState()) {
@@ -2423,8 +2422,7 @@ metaCodeDeclarationStatement
 	}
 }
 	
-	:	{ lineNumber = self.getParser().getCurrentParserLineNumber(); }
-		'META' id=ID '(' list=idList ')'  
+	:	'META' id=ID '(' list=idList ')'  
 		{
 			tokens = self.grabMetaCode($id.text);
 		}
@@ -2434,13 +2432,12 @@ metaCodeDeclarationStatement
 
 metaCodeStatement
 @init {
-	int lineNumber;
+	int lineNumber = self.getParser().getCurrentParserLineNumber();
 }
 @after {
 	self.runMetaCode($id.sid, $list.ids, lineNumber);
 }
-	:	{ lineNumber = self.getParser().getCurrentParserLineNumber(); }
-		'@' id=compoundID '(' list=metaCodeIdList ')' ';'	
+	:	'@' id=compoundID '(' list=metaCodeIdList ')' ';'	
 	;
 
 
