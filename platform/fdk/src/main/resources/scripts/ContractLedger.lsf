@@ -57,7 +57,8 @@ META implementContractPrepaymentLedger(object, sumProp)
     //TABLE object##ContractLedger(object##ContractLedger);
 
     needToCreate###object##ContractLedger (object, paymentPeriod) =
-        isSaleTypePrepaymentFormPaymentCondition(paymentConditionContractDate(contract###object(object), date###object(object))) AND paymentPeriod IS paymentPeriod;
+        isSaleTypePrepaymentFormPaymentCondition(paymentConditionContractDate(contract###object(object), date###object(object))) AND
+        contract###object(object) == contractPaymentCondition(paymentConditionPaymentPeriod(paymentPeriod));
 
     @defineAggregationDouble(object, paymentPeriod, object##ContractLedger, needToCreate###object##ContractLedger);
 
