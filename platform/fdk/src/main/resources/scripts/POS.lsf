@@ -92,6 +92,7 @@ typeReceiptDetail 'Тип' (receiptDetail) = UNION EXCLUSIVE 'Продажа' AN
 
 @defineDocumentDetailTimeCustom(receipt, receiptSaleDetail);
 @defineDocumentDetailTimeCustom(receipt, receiptReturnDetail);
+dateReceiptDetail 'Дата' (receiptDetail) = UNION EXCLUSIVE dateReceiptReturnDetail(receiptDetail), dateReceiptSaleDetail(receiptDetail) PERSISTENT;
 dateTimeReceiptDetail 'Дата/время' (receiptDetail) = UNION EXCLUSIVE dateTimeReceiptReturnDetail(receiptDetail), dateTimeReceiptSaleDetail(receiptDetail) PERSISTENT;
 
 @defineDocumentDetailPostedCustom(receipt, receiptSaleDetail);
@@ -200,6 +201,11 @@ discountSumReceipt 'Сумма скидки по чеку' (receipt) = discountS
 @defineDocumentHeaderSkuQuantity(receipt, sku);
 @defineDocumentHeaderSkuQuantityCustom(receipt, receiptSaleDetail, sku);
 
+// -------------------------------------------------- НДС ------------------------------------------------ //
+
+VATRetailSkuDepartmentStoreDateTime = ABSTRACT range (sku, departmentStore, DATETIME);
+currentVATRetailSkuDepartmentStore (sku, departmentStore) = VATRetailSkuDepartmentStoreDateTime(sku, departmentStore, currentDateTime());
+
 VATReceiptSaleDetail = DATA range (receiptSaleDetail);
 CONSTRAINT taxRange(VATReceiptSaleDetail(detail)) != tax.taxVAT OR
            countryRange(VATReceiptSaleDetail(detail)) != countryStock(departmentStoreReceiptSaleDetail(detail))
@@ -213,7 +219,8 @@ CONSTRAINT taxRange(VATReceiptReturnDetail(detail)) != tax.taxVAT OR
            MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС и стране магазина';
 
 VATReceiptDetail (receiptDetail) = UNION EXCLUSIVE VATReceiptReturnDetail(receiptDetail), VATReceiptSaleDetail(receiptDetail) PERSISTENT;
-numberVATReceiptDetail 'Номер НДС' (receiptDetail) = numberRange(VATReceiptDetail(receiptDetail));
+numberVATReceiptDetail 'НДС, номер' (receiptDetail) = numberRange(VATReceiptDetail(receiptDetail));
+valueVATReceiptDetail 'НДС, %' (receiptDetail) = valueRateRangeDate(VATReceiptDetail(receiptDetail), dateReceiptDetail(receiptDetail));
 
 // используется только для приема реализации из внешних касс
 numberReceiptDetail 'Номер позиции чека' = DATA INTEGER (receiptDetail);
@@ -604,6 +611,7 @@ createReceiptSaleDetail 'Добавить строку продажи' = ACTION 
         SET skuReceiptSaleDetail(d) <- sku;
         SET quantityReceiptSaleDetail(d) <- 1.0;
         SET priceReceiptSaleDetail(d) <- POSPriceSkuDepartmentStoreDateTime(sku, departmentStoreReceipt(receipt), currentDateTime());
+        SET VATReceiptSaleDetail(d) <- VATRetailSkuDepartmentStoreDateTime(sku, departmentStoreReceipt(receipt), currentDateTime());
     }
 }
 
@@ -675,6 +683,7 @@ createReceiptReturnDetail 'Добавить строку возврата' = ACT
         SET skuReceiptReturnDetail(d) <- skuReceiptSaleDetail(receiptSaleDetail);
         SET quantityReceiptReturnDetail(d) <- 1.0;
         SET priceReceiptReturnDetail(d) <- priceReceiptSaleDetail(receiptSaleDetail);
+        SET VATReceiptReturnDetail(d) <- VATReceiptSaleDetail(receiptSaleDetail);
     }
 }
 
@@ -942,7 +951,8 @@ FORM POS
 
     OBJECTS d = receiptDetail FIXED GRID
     PROPERTIES(d) SHOWIF currentZReport() READONLY indexReceiptDetail, typeReceiptDetail, idBarcodeReceiptDetail, nameSkuReceiptDetail, prevCurrentBalanceReceiptDetail
-    PROPERTIES(d) SHOWIF currentZReport()          quantityReceiptDetail, priceReceiptDetail, sumReceiptDetail, discountPercentReceiptSaleDetail FORCE GRID, discountSumReceiptDetail, delete
+    PROPERTIES(d) SHOWIF currentZReport()          quantityReceiptDetail, priceReceiptDetail, sumReceiptDetail, discountPercentReceiptSaleDetail FORCE GRID, discountSumReceiptDetail,
+                                                   numberVATReceiptDetail, valueVATReceiptDetail, delete
     FILTERS receiptReceiptDetail(d) == r
 
     OBJECTS bs = STRING[14] FIXED PANEL
@@ -972,17 +982,17 @@ DESIGN POS FROM DEFAULT {
                 childConstraints = TO THE BOTTOM;
                 ADD d.box {
                     fillVertical = 3;
-                    PROPERTY(indexReceiptDetail) { focusable = FALSE; font = 'Tahoma 16'; }
-                    PROPERTY(typeReceiptDetail) { focusable = FALSE; font = 'Tahoma 16'; }
-                    PROPERTY(idBarcodeReceiptDetail) { focusable = FALSE; font = 'Tahoma 16'; }
-                    PROPERTY(nameSkuReceiptDetail) { focusable = FALSE; font = 'Tahoma 16'; }
-                    PROPERTY(prevCurrentBalanceReceiptDetail) { focusable = FALSE; font = 'Tahoma 16'; }
-                    PROPERTY(quantityReceiptDetail) { font = 'Tahoma 16'; }
-                    PROPERTY(priceReceiptDetail) { font = 'Tahoma 16'; }
-                    PROPERTY(sumReceiptDetail) { font = 'Tahoma 16'; }
-                    PROPERTY(discountPercentReceiptSaleDetail) { font = 'Tahoma 16'; }
-                    PROPERTY(discountSumReceiptDetail) { font = 'Tahoma 16'; }
-                    PROPERTY(delete) { font = 'Tahoma 16'; }
+                    PROPERTY(indexReceiptDetail) { focusable = FALSE; font = 'Tahoma 14'; }
+                    PROPERTY(typeReceiptDetail) { focusable = FALSE; font = 'Tahoma 14'; }
+                    PROPERTY(idBarcodeReceiptDetail) { focusable = FALSE; font = 'Tahoma 14'; }
+                    PROPERTY(nameSkuReceiptDetail) { focusable = FALSE; font = 'Tahoma 14'; }
+                    PROPERTY(prevCurrentBalanceReceiptDetail) { focusable = FALSE; font = 'Tahoma 14'; }
+                    PROPERTY(quantityReceiptDetail) { font = 'Tahoma 14'; }
+                    PROPERTY(priceReceiptDetail) { font = 'Tahoma 14'; }
+                    PROPERTY(sumReceiptDetail) { font = 'Tahoma 14'; }
+                    PROPERTY(discountPercentReceiptSaleDetail) { font = 'Tahoma 14'; }
+                    PROPERTY(discountSumReceiptDetail) { font = 'Tahoma 14'; }
+                    PROPERTY(delete) { font = 'Tahoma 14'; }
                 }
                 ADD pc.box {
                     fillVertical = 0.3;

@@ -12,6 +12,7 @@ REQUIRE System,
         UserPriceChange,
         Contract,
         Supplier,
+        POS,
         Warehouse,
         RomanLogicsModule;
 
@@ -303,7 +304,9 @@ sidGenderArticleSkuCompany 'Пол' (sku, company) = sidGenderArticleSkuLanguage
 nameCountrySkuCompany 'Страна (сделано в)' (sku, company) = nameCountrySkuLanguage(sku, languageLegalEntity(company));
 nameCountryBrandSupplierSkuCompany 'Страна поставки' (sku, company) =nameCountryBrandSupplierSkuLanguage(sku, languageLegalEntity(company));
 
-//---------------------
+//-------------------------------- НДС на кассе ------------------------- //
+
+VATRetailSkuDepartmentStoreDateTime(sku, departmentStore, dateTime) += retailVATBLedgerDateTime(sku, departmentStore, dateTime);
 
 //@implementSkuLedger(userPriceChange, sku, departmentStore);
 //quantityInLIFOSkuLedger (ledger) += quantityUserPriceChangeDetail(ledger) (-) quantityUserPriceChangeDetail(ledger);
