@@ -36,6 +36,7 @@ import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LAP;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
+import platform.server.logics.panellocation.ToolbarPanelLocation;
 import platform.server.logics.property.*;
 import platform.server.logics.property.actions.CustomActionProperty;
 import platform.server.logics.property.actions.FormActionProperty;
@@ -3832,8 +3833,6 @@ public class RomanLogicsModule extends LogicsModule {
 
         NavigatorElement shipmentClassifier = addNavigatorElement(shipment, "shipmentClassifier", "Справочники");
         shipmentClassifier.add(freightType.getListForm(baseLM).form);
-        shipmentClassifier.add(baseLM.dictionaryForm);
-
 
         NavigatorElement shipmentDocument = addNavigatorElement(shipment, "shipmentDocument", "Документы");
 
@@ -7920,6 +7919,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             freightCreateFA = addMFAProp(actionGroup, "Создать фрахт", this, new ObjectEntity[] {},
                     new ActionPropertyObjectEntity[] {addPropertyObject(addPushAProp(addCProp(baseClass.objectClass, "freight"), getAddObjectAction(freight)))}, true);
+            freightCreateFA.setPanelLocation(new ToolbarPanelLocation());
             ((FormActionProperty)freightCreateFA.property).seekOnOk.add(objFreight);
             freightEditFA = addMFAProp(actionGroup, "Редактировать фрахт", this, new ObjectEntity[] {objFreight}, true);
             freightEditFA.setImage("edit.png");
@@ -7961,6 +7961,7 @@ public class RomanLogicsModule extends LogicsModule {
             setEditType(formLogFreight, PropertyEditType.EDITABLE);
 
             createFreight = addPropertyDraw(freightCreateFA, objFreight);
+            createFreight.toDraw = objFreight.groupTo;
             createFreight.forceViewType = ClassViewType.PANEL;
 
             addPropertyDraw(freightEditFA, objFreight).forceViewType = ClassViewType.GRID;

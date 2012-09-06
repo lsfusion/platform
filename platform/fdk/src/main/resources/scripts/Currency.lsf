@@ -18,6 +18,24 @@ curRateTypeExchangeCurrency 'Текущий курс обмена' (typeExchange
 
 // --------------------------------------------- Формы для ввода курсов валют --------------------------------------- //
 
+FORM currency 'Валюта'
+    OBJECTS c = currency FIXED PANEL
+    PROPERTIES (c)  name, shortNameCurrency, symbolCurrency, documentNameCurrency
+
+    EDIT currency OBJECT c
+;
+
+FORM currencies 'Валюты'
+    OBJECTS c = currency
+    PROPERTIES(c) READONLY name, shortNameCurrency, symbolCurrency, documentNameCurrency
+
+    PROPERTIES(c) ADDFORM, EDITFORM, delete
+
+    DIALOG currency OBJECT c
+;
+
+// -------------------------------------------- Курсы валют --------------------------------- //
+
 FORM dialogTypeExchangeCurrency 'Курс обмена на дату'
     OBJECTS t=typeExchange FIXED PANEL
     OBJECTS c=currency FIXED PANEL
@@ -51,21 +69,7 @@ DESIGN dialogTypeExchangeCurrency FROM DEFAULT {
 }
 
 dialogTypeExchangeCurrency 'Добавить' (typeExchange, currency) = ACTION FORM dialogTypeExchangeCurrency OBJECTS t, c MODAL TOOLBAR;
-
-
-deleteTypeExchangeCurrencyDate 'Удалить' = ACTION (typeExchange, currency, date) {
-
-    SET rateExchange(typeExchange, currency, date) <- NULL;
-
-} IMAGE 'delete.png';
-
-FORM currencyForm 'Валюта'
-    OBJECTS c=currency FIXED PANEL
-    PROPERTIES (c)  name, shortNameCurrency, symbolCurrency, documentNameCurrency
-
-    EDIT currency OBJECT c
-;
-
+deleteTypeExchangeCurrencyDate 'Удалить' (typeExchange, currency, date) = ACTION SET rateExchange(typeExchange, currency, date) <- NULL IMAGE 'delete.png';
 
 FORM typeExchangeCurrencyDate 'Тип обмена / Курсы валют'
 
@@ -105,11 +109,13 @@ DESIGN typeExchangeCurrencyDate FROM DEFAULT{
 }
 
 NAVIGATOR {
-    classifierCurrency {
-        ADD typeExchangeCurrencyDate;
+    catalogElement {
+        NEW currencyElement 'Валюты и курсы' {
+            ADD currencies;
+            ADD typeExchangeCurrencyDate;
+        }
     }
 }
-
 
 // --------------------------------------------------- Макросы по добавлению валюты в документы ------------------------------------ //
 META defineDocumentHeaderCurrency (object)

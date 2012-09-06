@@ -383,4 +383,5 @@ fillCurrencyDefaultValues 'Заполнить значения валют по �
     EXEC addCurrencyString('CHF', 'Швейцарский франк', ' ');
     EXEC addCurrencyString('JPY', 'Иена', ' ');
     EXEC addCurrencyString('IRR', 'Иранский риал', ' ');
+    EXEC addCurrencyString('BLR', 'Белорусский рубль', ' ');
 }

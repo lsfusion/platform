@@ -198,7 +198,8 @@ currencyDeclarationInnerInvoice (declaration, innerInvoice) = currencyDeclaratio
 CONSTRAINT languageDeclaration(declarationInnerInvoice(innerInvoice)) != languageInnerInvoice(innerInvoice) CHECKED
     MESSAGE 'Инвойс с другим языком';
 
-languageDeclarationInnerInvoice (declaration, innerInvoice) = languageDeclaration(declaration) == languageInnerInvoice(innerInvoice);
+languageDeclarationInnerInvoice (declaration, innerInvoice) = languageDeclaration(declaration) == languageInnerInvoice(innerInvoice) OR
+                                                              (declaration IS declaration AND innerInvoice IS innerInvoice AND NOT languageDeclaration(declaration) AND NOT languageInnerInvoice(innerInvoice));
 
 innerInvoiceDeclarationSku 'Инвойс для декларации' (declaration, sku) = GROUP MAX innerInvoice IF quantityInnerInvoiceSku(innerInvoice, sku)
                                                                                BY declarationInnerInvoice(innerInvoice), sku PERSISTENT;
@@ -857,7 +858,7 @@ FORM declarationInvoices 'Присоединение инвойсов'
     FILTERS freightArrivedInnerInvoice(ii), forDeclaration(d, ii)
 
     FILTERGROUP filtersLanguage
-        FILTER 'Только с валютой декларации' 'F9' languageDeclarationInnerInvoice(d, ii) DEFAULT
+        FILTER 'Только с языком декларации' 'F9' languageDeclarationInnerInvoice(d, ii) DEFAULT
 
     FILTERGROUP filtersCurrency
         FILTER 'Только с валютой декларации' 'F10' currencyDeclarationInnerInvoice(d, ii) DEFAULT

@@ -524,7 +524,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public NavigatorElement<T> configElement;
     public NavigatorElement<T> catalogElement;
 
-    public FormEntity<T> dictionaryForm;
     public FormEntity<T> objectForm;
 
     public NavigatorWindow navigatorWindow;
@@ -1034,7 +1033,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         recalculateFollowsAction = addProperty(null, new LAP(new RecalculateFollowsActionProperty(genSID(), getString("logics.recalculate.follows"))));
         packAction = addProperty(null, new LAP(new PackActionProperty(genSID(), getString("logics.tables.pack"))));
 
-        currentUserName = addJProp(getString("logics.user.current.user.name"), name, currentUser);
+        currentUserName = addJProp("currentUserName", getString("logics.user.current.user.name"), name, currentUser);
 
         reverseBarcode = addSDProp("reverseBarcode", getString("logics.barcode.reverse"), LogicalClass.instance);
 
@@ -1567,11 +1566,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         catalogElement = addNavigatorElement(adminElement, "catalogElement", getString("logics.administration.catalogs"));
 
-        NavigatorElement classifierCurrency = addNavigatorElement(catalogElement, "classifierCurrency", "Валюты и курсы");
-        addFormEntity(new CurrenciesFormEntity(classifierCurrency, "currencies"));
-
         addFormEntity(new DaysOffFormEntity(catalogElement, "daysOffForm"));
-        dictionaryForm = addFormEntity(new DictionariesFormEntity(catalogElement, "dictionariesForm"));
 
         addFormEntity(new AdminFormEntity(adminElement, "adminForm"));
         addFormEntity(new RemindUserPassFormEntity(null, "remindPasswordLetter"));
@@ -2516,40 +2511,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             FormView design = super.createDefaultRichDesign();
             design.getGroupObject(objDays.groupTo).grid.constraints.fillVertical = 3;
             return design;
-        }
-    }
-
-
-    private class CurrenciesFormEntity extends FormEntity {
-        ObjectEntity objCurrency;
-
-        public CurrenciesFormEntity(NavigatorElement parent, String sID) {
-            super(parent, sID, getString("logics.currency.currencies"));
-
-            ObjectEntity objCurrency = addSingleGroupObject(currency, getString("logics.currency"));
-            addPropertyDraw(objCurrency, baseLM.name, shortNameCurrency, symbolCurrency, documentNameCurrency);
-            setEditType(PropertyEditType.READONLY);
-
-            addFormActions(this, objCurrency);
-        }
-
-    }
-
-    private class DictionariesFormEntity extends FormEntity {
-
-        public DictionariesFormEntity(NavigatorElement parent, String sID) {
-            super(parent, sID, getString("logics.dictionary.dictionaries"));
-
-            ObjectEntity objDict = addSingleGroupObject("dict", dictionary, getString("logics.dictionary"));
-            objDict.groupTo.initClassView = ClassViewType.PANEL;
-            ObjectEntity objDictEntry = addSingleGroupObject("dictEntry", dictionaryEntry, getString("logics.dictionary.entries"));
-
-            addPropertyDraw(objDict, baseGroup);
-            addPropertyDraw(objDictEntry, baseGroup);
-
-            addObjectActions(this, objDict);
-            addObjectActions(this, objDictEntry, objDict);
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(entryDictionary, objDictEntry), Compare.EQUALS, objDict));
         }
     }
 

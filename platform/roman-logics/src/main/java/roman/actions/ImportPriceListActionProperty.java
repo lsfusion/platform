@@ -102,7 +102,7 @@ public class ImportPriceListActionProperty extends ScriptingActionProperty {
                             }
                         }
                     }
-                    session.apply(LM.getBL());
+//                    session.apply(LM.getBL());
                     for (Map.Entry<String, DataObject> entry : priceSetDocumentMap.entrySet()) {
                         pricesCount++;
                         pricesChanged += entry.getKey() + ", ";

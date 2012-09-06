@@ -38,3 +38,31 @@ NAVIGATOR {
 
 TABLE multiLanguageNamedLanguage(multiLanguageNamed, language);
 languageName 'Название (иностр.)' = DATA ISTRING[110] (multiLanguageNamed, language);
+
+// ---------------------------------------------- Словари --------------------------------------------- //
+
+FORM dictionary 'Словарь'
+    OBJECTS d = dictionary FIXED PANEL
+    PROPERTIES(d) name
+
+    OBJECTS e = dictionaryEntry
+    PROPERTIES(e) termDictionary, translationDictionary, ADDOBJ, delete
+    FILTERS       entryDictionary(e) == d
+
+    EDIT dictionary OBJECT d
+;
+
+FORM dictionaries 'Словари'
+    OBJECTS d = dictionary
+    PROPERTIES(d) READONLY name
+
+    PROPERTIES(d) ADDFORM, EDITFORM, delete
+
+    DIALOG dictionary OBJECT d
+;
+
+NAVIGATOR {
+    catalogElement {
+        ADD dictionaries;
+    }
+}

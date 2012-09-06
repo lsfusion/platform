@@ -26,7 +26,7 @@ FORM cashRegistersModels 'Модели касс'
 ;
 
 // Кассы
-CLASS cashRegister 'Касса' : machinery, computer;
+CLASS cashRegister 'Касса' : machinery;
 isGroupCashRegister (machinery) = machinery IS groupCashRegister;
 
 groupCashRegisterCashRegister = DATA groupCashRegister (cashRegister);

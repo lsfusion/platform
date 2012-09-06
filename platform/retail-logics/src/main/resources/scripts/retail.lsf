@@ -5269,7 +5269,7 @@ printPriceChangeShipment 'Акт переоценки' (shipment) = printPriceCh
 FORM shipment 'Поставка'
     OBJECTS s=shipment FIXED PANEL
     PROPERTIES (s) objectClassName, nameDepartmentStoreShipment, numberObject, seriesObject, dateShipment, timeShipment,
-                   nameSupplierShipment, UNPSupplierShipment, numberContractShipment, ordersShipment, toFillShipmentDetailsShipment,
+                   nameCurrencyShipment, nameSupplierShipment, UNPSupplierShipment, numberContractShipment, ordersShipment, toFillShipmentDetailsShipment,
                    percentOrderedShipmentDetailsShipment, dialogOrdersShipment,
                    carryingChargesShipment, quantityShipmentDetailShipment, invoiceVATSumShipmentDetailShipment, invoiceSumShipmentDetailShipment, retailSumShipmentDetailShipment,
                    noteShipment, toShowPriceImporterShipment, toShowWareShipment, toShowPapersShipment, nameRegisterCommitteeShipment, numberDisposalShipment SHOWIF needToPriceChangeShipment(s),
@@ -7950,8 +7950,6 @@ NAVIGATOR {
             ADD itemGroups;
             ADD statisticGroups;
             ADD UOMs;
-            ADD countries;
-            ADD currencies;
             ADD naturalLossItem;
             ADD papers;
         }
