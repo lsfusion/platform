@@ -66,6 +66,10 @@ TABLE receiptReturnDetail (receiptReturnDetail);
 numberCashRegisterReceipt 'Номер кассы' (receipt) = numberCashRegisterZReport(zReportReceipt(receipt)) IN recognizeGroup;
 numberZReportReceipt 'Номер Z-отчета' (receipt) = numberZReport(zReportReceipt(receipt)) IN recognizeGroup;
 
+userReceipt = DATA customUser(receipt);
+nameUserReceipt 'Кассир' (receipt) = commonName(userReceipt(receipt));
+userReceipt(receipt) <- currentUser() WHEN ASSIGNED(receipt IS receipt);
+
 @defineDocumentHeaderTime(receipt);
 
 @defineDocumentDetailDepartmentStoreCustom(zReport, receipt);
@@ -209,6 +213,7 @@ CONSTRAINT taxRange(VATReceiptReturnDetail(detail)) != tax.taxVAT OR
            MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС и стране магазина';
 
 VATReceiptDetail (receiptDetail) = UNION EXCLUSIVE VATReceiptReturnDetail(receiptDetail), VATReceiptSaleDetail(receiptDetail) PERSISTENT;
+numberVATReceiptDetail 'Номер НДС' (receiptDetail) = numberRange(VATReceiptDetail(receiptDetail));
 
 // используется только для приема реализации из внешних касс
 numberReceiptDetail 'Номер позиции чека' = DATA INTEGER (receiptDetail);
@@ -340,7 +345,7 @@ FORM zReport 'Z-отчет'
                    discountSumReceiptDetailZReport
 
     OBJECTS b=receipt, d=receiptDetail
-    PROPERTIES(b) numberReceipt, dateReceipt, timeReceipt,
+    PROPERTIES(b) numberReceipt, dateReceipt, timeReceipt, nameUserReceipt,
                   numberDiscountCardReceipt, nameClientDiscountCardReceipt, sumReceiptDetailReceipt, discountSumReceiptDetailReceipt,
                   discountSumReceipt, countReceiptDetailReceipt, quantityReceiptDetailReceipt, ADDOBJ, delete
     FILTERS zReportReceipt(b)==z
@@ -401,7 +406,7 @@ FORM zReports 'Z-отчеты'
                             postZReport SHOWIF isDraftZReport(z), unpostZReport SHOWIF isPostedZReport(z)
 
     OBJECTS b=receipt
-    PROPERTIES(b) READONLY  numberReceipt, dateReceipt, timeReceipt,
+    PROPERTIES(b) READONLY  numberReceipt, dateReceipt, timeReceipt, nameUserReceipt,
                             numberDiscountCardReceipt, nameClientDiscountCardReceipt, sumReceiptDetailReceipt, discountSumReceiptDetailReceipt,
                             discountSumReceipt, countReceiptDetailReceipt, quantityReceiptDetailReceipt
 
@@ -925,7 +930,7 @@ prevCurrentBalanceReceiptDetail 'Тек. остаток' (receiptDetail) = prevC
 
 
 FORM POS
-    PROPERTIES() READONLY hostnameCurrentComputer, numberCurrentZReport, currentDateTime
+    PROPERTIES() READONLY hostnameCurrentComputer, numberCurrentZReport, currentDateTime, currentUserName
 
     OBJECTS r = receipt FIXED PANEL
     PROPERTIES(r) SHOWIF currentZReport() discountSumReceiptDetailReceipt, sumReceiptDetailReceipt,
@@ -1033,6 +1038,9 @@ DESIGN POS FROM DEFAULT {
                     focusable = FALSE;
                 }
                 ADD PROPERTY(currentDateTime) {
+                    focusable = FALSE;
+                }
+                ADD PROPERTY(currentUserName) {
                     focusable = FALSE;
                 }
             }
