@@ -35,11 +35,15 @@ public class GFormSplitPane extends GAbstractFormContainer {
         return splitPane.hasChild(childView);
     }
 
-    public void setWidgetSize(Widget widget, String size, boolean width) {
-        splitPane.setWidgetSize(widget, size, width);
-    }
-
     public void update() {
         splitPane.update();
+    }
+
+    @Override
+    public void setChildSize(GComponent child, String width, String height) {
+        Widget childView = childrenViews.get(child);
+        if (childView != null) {
+            splitPane.setWidgetSize(childView, width, height);
+        }
     }
 }

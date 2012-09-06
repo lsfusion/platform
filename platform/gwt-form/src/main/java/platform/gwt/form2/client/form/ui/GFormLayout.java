@@ -1,16 +1,14 @@
 package platform.gwt.form2.client.form.ui;
 
-import com.google.gwt.user.client.ui.*;
+import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.Panel;
+import com.google.gwt.user.client.ui.Widget;
 import platform.gwt.form2.client.form.ui.container.GAbstractFormContainer;
 import platform.gwt.form2.client.form.ui.container.GFormContainer;
 import platform.gwt.form2.client.form.ui.container.GFormSplitPane;
 import platform.gwt.form2.client.form.ui.container.GFormTabbedPane;
-import platform.gwt.form2.shared.view.GComponent;
-import platform.gwt.form2.shared.view.GContainer;
-import platform.gwt.form2.shared.view.GGroupObject;
-import platform.gwt.form2.shared.view.GShowType;
+import platform.gwt.form2.shared.view.*;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,15 +17,12 @@ public abstract class GFormLayout extends FlowPanel {
     private Panel mainContainer;
     private GContainer mainKey;
     private Map<GContainer, GAbstractFormContainer> containerViews = new HashMap<GContainer, GAbstractFormContainer>();
-    private List<GFormSplitPane> splitPanels = new ArrayList<GFormSplitPane>();
 
     public GFormLayout(GFormController formController, GContainer mainContainer) {
 
         addStyleName("formLayout");
 
         createContainerViews(formController, mainContainer);
-        adjustFills(mainContainer);
-        adjustContainerSizes(mainContainer);
 
         setSize("100%", "100%");
 
@@ -38,7 +33,6 @@ public abstract class GFormLayout extends FlowPanel {
         GAbstractFormContainer formContainer;
         if (container.type.isSplit()) {
             formContainer = new GFormSplitPane(container);
-            splitPanels.add((GFormSplitPane) formContainer);
         } else if (container.type.isTabbed()) {
             formContainer = new GFormTabbedPane(formController, container);
         } else {
@@ -123,7 +117,6 @@ public abstract class GFormLayout extends FlowPanel {
 
     public boolean hasVisibleChildren(GContainer container) {
         for (GComponent child : container.children) {
-//            if (child instanceof GShowType) {
             if (child instanceof GShowType && isShowTypeViewInPanel(((GShowType) child).groupObject)) {
                 return true;
             } else if (child instanceof GContainer) {
@@ -139,7 +132,12 @@ public abstract class GFormLayout extends FlowPanel {
 
     public abstract boolean isShowTypeViewInPanel(GGroupObject groupObject);
 
-    private void adjustFills(GContainer container) {
+    public void totalResize() {
+        adjustFills(mainKey);
+        adjustContainerSizes(mainKey);
+    }
+
+    public void adjustFills(GContainer container) {
         for (GComponent child : container.children) {
             if (child instanceof GContainer) {
                 adjustFills((GContainer) child);
@@ -147,20 +145,16 @@ public abstract class GFormLayout extends FlowPanel {
         }
 
         if (container.absoluteWidth == -1) {
-            if (container.fillHorizontal < 0) {
-                double childFill = getChildFill(container, false);
-                if (childFill > 0) {
-                    container.fillHorizontal = childFill;
-                }
+            double childFill = getChildFill(container, false);
+            if (container.fillHorizontal < 0 && childFill > 0) {
+                container.calculatedFillHorizontal = childFill;
             }
         }
 
         if (container.absoluteHeight == -1) {
-            if (container.fillVertical < 0) {
-                double childFill = getChildFill(container, true);
-                if (childFill > 0) {
-                    container.fillVertical = childFill;
-                }
+            double childFill = getChildFill(container, true);
+            if (container.fillVertical < 0 && childFill > 0) {
+                container.calculatedFillVertical = childFill;
             }
         }
     }
@@ -168,31 +162,45 @@ public abstract class GFormLayout extends FlowPanel {
     private double getChildFill(GContainer container, boolean vertical) {
         double fill = 0;
         for (GComponent child : container.children) {
-            if ((vertical && child.fillVertical > 0) || (!vertical && child.fillHorizontal > 0)) {
-                fill += vertical ? child.fillVertical : child.fillHorizontal;
+            if (vertical) {
+                if (child.fillVertical > 0) {
+                    fill += child.fillVertical;
+                    child.calculatedFillVertical = child.fillVertical;
+                } else if (child.calculatedFillVertical > 0) {
+                    fill += child.calculatedFillVertical;
+                }
+            } else {
+                if (child.fillHorizontal > 0) {
+                    fill += child.fillHorizontal;
+                    child.calculatedFillHorizontal = child.fillHorizontal;
+                } else if (child.calculatedFillHorizontal > 0) {
+                    fill += child.calculatedFillHorizontal;
+                }
             }
         }
         return fill;
     }
 
-    private void adjustContainerSizes(GContainer container) {
+    public void adjustContainerSizes(GContainer container) {
         String width;
         String height;
         Widget view = getFormContainerView(container);
 
-        if (!container.resizable) {
+        if (!container.resizable || container.hasSingleGridInTree()) {
             view.setSize("auto", "auto");
             return;
         } else {
             for (GComponent child : container.children) {
                 if (child instanceof GContainer) {
                     adjustContainerSizes((GContainer) child);
+                } else {
+                    adjustComponentSize(child);
                 }
             }
 
             if (container.container != null && container.container.type.isTabbed()) {
-                width = "100%";
-                height = "100%";
+                view.setSize("100%", "100%");
+                return;
             } else {
                 width = calculateSize(container, true);
                 height = calculateSize(container, false);
@@ -200,66 +208,99 @@ public abstract class GFormLayout extends FlowPanel {
         }
 
         GAbstractFormContainer parentView = getComponentParentFormContainer(container);
-        if (parentView != null && parentView.isSplit()) {
-            if (width != null) {
-                ((GFormSplitPane) parentView).setWidgetSize(view, width, true);
-            }
-            if (height != null) {
-                ((GFormSplitPane) parentView).setWidgetSize(view, height, false);
+        if (parentView != null) {
+            if (parentView.isSplit()) {
+                parentView.setChildSize(container, width, height);
+            } else {
+                parentView.setTableCellSize(view, width, true);
+                parentView.setTableCellSize(view, height, false);
             }
         } else {
-            if (parentView != null && parentView.getContainerView() instanceof CellPanel) {
-                if (width != null) {
-                    ((CellPanel) parentView.getContainerView()).setCellWidth(view, width);
-                }
-                if (height != null) {
-                    ((CellPanel) parentView.getContainerView()).setCellHeight(view, height);
-                }
-            } else {
-                if (width != null) {
-                    view.setWidth(width);
-                }
-                if (height != null) {
-                    view.setHeight(height);
-                }
-            }
+            view.setSize(width, height);
         }
     }
 
-    private String calculateSize(GContainer container, boolean width) {
-        if (container.container == null) {
-            return "100%";
+    private String calculateSize(GComponent component, boolean width) {
+        GContainer container = component.container;
+        if (container == null) {
+            return shouldBeCollapsed(component, width) ? "auto" : "100%";
         }
 
-        if ((width && container.absoluteWidth != -1) || (!width && container.absoluteHeight != -1)) {
-            return (width ? container.absoluteWidth : container.absoluteHeight) + "px";
+        if ((width && component.absoluteWidth != -1) || (!width && component.absoluteHeight != -1)) {
+            return (width ? component.absoluteWidth : component.absoluteHeight) + "px";
         }
 
-        if ((width && container.fillHorizontal <= 0) || (!width && container.fillVertical <= 0)) {
-            return null;
+        if (shouldBeCollapsed(component, width)) {
+            return "auto";
         }
 
         double sum = 0;
-        for (GComponent child : container.container.children) {
+        for (GComponent child : container.children) {
             if (width) {
-                if (!container.container.isVertical) {
-                    if (child.fillHorizontal > 0) {
-                        sum += child.fillHorizontal;
+                if (!container.isVertical) {
+                    if (child.calculatedFillHorizontal > 0 && !shouldBeCollapsed(child, width)) {
+                        sum += child.calculatedFillHorizontal;
                     }
                 } else {
                     return "100%";
                 }
             } else {
-                if (container.container.isVertical) {
-                    if (child.fillVertical > 0) {
-                        sum += child.fillVertical;
+                if (container.isVertical) {
+                    if (child.calculatedFillVertical > 0 && !shouldBeCollapsed(child, width)) {
+                        sum += child.calculatedFillVertical;
                     }
                 } else {
                     return "100%";
                 }
             }
         }
-        return (width ? container.fillHorizontal : container.fillVertical) / sum * 100 + "%";
+        return (width ? component.calculatedFillHorizontal : component.calculatedFillVertical) / sum * 100 + "%";
+    }
+
+    private boolean shouldBeCollapsed(GComponent component, boolean width) {
+        if ((width && component.calculatedFillHorizontal <= 0) || (!width && component.calculatedFillVertical <= 0)) {
+            return true;
+        }
+
+        GAbstractFormContainer parentContainer = getComponentParentFormContainer(component);
+        if (parentContainer != null && !parentContainer.isChildVisible(component)) {
+            return true;
+        }
+
+        if (component instanceof GContainer) {
+            if (((GContainer) component).hasSingleGridInTree()) {
+                return true;
+            }
+            if ((width && component.fillHorizontal < 0) || (!width && component.fillVertical < 0)) {
+                List<GGrid> grids = ((GContainer) component).getAllGrids();
+                for (GGrid grid : grids) {
+                    GAbstractFormContainer gridContainer = getFormContainer(grid.container);
+                    if (gridContainer.isChildVisible(grid)) {
+                        return false;
+                    }
+                }
+                if (!((GContainer) component).containsTreeGroup()){
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private void adjustComponentSize(GComponent component) {
+        String width;
+        String height;
+        if (component.container != null && component.container.type.isTabbed()) {
+            width = "100%";
+            height = "100%";
+        } else {
+            width = calculateSize(component, true);
+            height = calculateSize(component, false);
+        }
+        GAbstractFormContainer parentView = getComponentParentFormContainer(component);
+        if (parentView != null) {
+            parentView.setChildSize(component, width, height);
+        }
     }
 
     public GContainer getMainKey() {

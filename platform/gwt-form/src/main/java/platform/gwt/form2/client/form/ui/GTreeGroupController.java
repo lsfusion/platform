@@ -1,6 +1,7 @@
 package platform.gwt.form2.client.form.ui;
 
-import com.google.gwt.user.client.ui.Panel;
+import com.google.gwt.user.client.ui.CellPanel;
+import com.google.gwt.user.client.ui.ResizeLayoutPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import platform.gwt.form2.shared.view.GForm;
 import platform.gwt.form2.shared.view.GGroupObject;
@@ -17,7 +18,6 @@ import java.util.Map;
 public class GTreeGroupController implements GGroupObjectLogicsSupplier {
     private GFormController formController;
     private GTreeGroup treeGroup;
-    private Panel treeTableView;
 
     private GTreeTable tree;
     private GToolbarPanel treeToolbar;
@@ -38,9 +38,17 @@ public class GTreeGroupController implements GGroupObjectLogicsSupplier {
         panel = new GPanelController(iFormController, iFormLayout);
         panelToolbar = new GToolbarPanel();
 
-        treeTableView = new VerticalPanel();
+        CellPanel treeTableView = new VerticalPanel();
+        treeTableView.setSize("100%", "100%");
 
-        treeTableView.add(tree);
+        ResizeLayoutPanel panel = new ResizeLayoutPanel();
+        panel.setStyleName("gridResizePanel");
+        panel.setSize("100%", "100%");
+        panel.setWidget(tree);
+
+        treeTableView.add(panel);
+        treeTableView.setCellHeight(panel, "100%");
+        treeTableView.setCellWidth(panel, "100%");
         treeTableView.add(treeToolbar);
         treeTableView.add(panelToolbar);
 
@@ -167,8 +175,17 @@ public class GTreeGroupController implements GGroupObjectLogicsSupplier {
             panel.updateRowForegroundValue(values.values().iterator().next());
     }
 
+    @Override
+    public boolean hasPanelProperty(GPropertyDraw property) {
+        return panel.containsProperty(property);
+    }
+
+    @Override
+    public GGroupObjectValue getCurrentKey() {
+        return tree.getCurrentKey();
+    }
+
     public GGroupObjectValue getCurrentPath() {
-        //todo:
-        return null;
+        return tree.getCurrentKey();
     }
 }

@@ -51,10 +51,32 @@ public class GFormContainer extends GAbstractFormContainer {
 
     @Override
     public void setTableCellSize(Widget child, String size, boolean width) {
-        if (width) {
-            panel.setCellWidth(child, size);
-        } else {
-            panel.setCellHeight(child, size);
+        if (size != null) {
+            if (width) {
+                panel.setCellWidth(child, size);
+            } else {
+                panel.setCellHeight(child, size);
+            }
         }
+    }
+
+    @Override
+    public void setChildSize(GComponent child, String width, String height) {
+        Widget childView = childrenViews.get(child);
+        if (childView != null) {
+            if (width != null) {
+                setTableCellSize(childView, width, true);
+                childView.setWidth(width);
+            }
+            if (height != null) {
+                setTableCellSize(childView, height, false);
+                childView.setHeight(height);
+            }
+        }
+    }
+
+    @Override
+    public void addDirectly(Widget child) {
+        panel.add(child);
     }
 }

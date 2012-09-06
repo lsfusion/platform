@@ -27,6 +27,10 @@ public class GSplitPane {
         firstWidget.setHeight("100%");
         secondWidget.setHeight("100%");
 
+
+        firstWidget.setStyleName(vertical ? "vSplitPanelContents" : "hSplitPanelContents");
+        secondWidget.setStyleName(vertical ? "vSplitPanelContents" : "hSplitPanelContents");
+
         if (vertical) {
             container.setCellWidth(splitter, "100%");
             container.setCellWidth(firstWidget, "100%");
@@ -87,18 +91,18 @@ public class GSplitPane {
         resize((firstSize / getOffsetSize()) * 100 + "%");
     }
 
-    public void setWidgetSize(Widget widget, String size, boolean width) {
+    public void setWidgetSize(Widget widget, String width, String height) {
         if (widget.equals(firstWidget.getWidget())) {
-            if (width) {
-                container.setCellWidth(firstWidget, size);
-            } else {
-                container.setCellHeight(firstWidget, size);
+            if (vertical && height != null) {
+                container.setCellHeight(firstWidget, height);
+            } else if (!vertical && width != null) {
+                container.setCellWidth(firstWidget, width);
             }
         } else if (widget.equals(secondWidget.getWidget())) {
-            if (width) {
-                container.setCellWidth(secondWidget, size);
-            } else {
-                container.setCellHeight(secondWidget, size);
+            if (vertical && height != null) {
+                container.setCellHeight(secondWidget, height);
+            } else if (!vertical && width != null) {
+                container.setCellWidth(secondWidget, width);
             }
         }
     }

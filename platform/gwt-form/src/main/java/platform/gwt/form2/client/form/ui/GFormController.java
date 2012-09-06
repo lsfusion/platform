@@ -39,6 +39,7 @@ import platform.gwt.form2.shared.view.changes.dto.GFormChangesDTO;
 import platform.gwt.form2.shared.view.changes.dto.GGroupObjectValueDTO;
 import platform.gwt.form2.shared.view.classes.GObjectClass;
 import platform.gwt.form2.shared.view.logics.FormLogicsProvider;
+import platform.gwt.form2.shared.view.logics.GGroupObjectLogicsSupplier;
 
 import java.io.Serializable;
 import java.util.*;
@@ -99,6 +100,8 @@ public class GFormController extends SimplePanel implements FormLogicsProvider {
         initializeControllers();
 
         initializeRegularFilters();
+
+        formLayout.totalResize();
 
         processRemoteChanges();
     }
@@ -408,12 +411,23 @@ public class GFormController extends SimplePanel implements FormLogicsProvider {
         return fullKey;
     }
 
+    private GGroupObjectLogicsSupplier getGroupObjectLogicsSupplier(GGroupObject group) {
+        GGroupObjectController groupObjectController = controllers.get(group);
+        if (groupObjectController != null) {
+            return groupObjectController;
+        }
+
+        return group.parent != null
+                ? treeControllers.get(group.parent)
+                : null;
+    }
+
     public void changeProperty(GEditPropertyHandler editHandler, GPropertyDraw property, Serializable value, Object oldValue) {
         editHandler.updateEditValue(value);
 
         long requestIndex = dispatcher.execute(new ChangeProperty(property.ID, getFullCurrentKey().getValueDTO(), value, null), new ServerResponseCallback());
 
-        GGroupObjectController controller = controllers.get(property.groupObject);
+        GGroupObjectLogicsSupplier controller = getGroupObjectLogicsSupplier(property.groupObject);
 
         //todo: column key
         GGroupObjectValue columnKey = new GGroupObjectValue();

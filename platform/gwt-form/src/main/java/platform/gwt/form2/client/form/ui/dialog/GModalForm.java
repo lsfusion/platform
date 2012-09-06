@@ -23,7 +23,6 @@ public class GModalForm extends GModalWindow {
         int height = Math.min(Window.getClientHeight() - 100, editorForm.getPreferredHeight() == -1 ? 600 : editorForm.getPreferredHeight());
 
         mainPane = new ResizeLayoutPanel();
-        mainPane.addStyleName("modalFormContent");
         mainPane.setPixelSize(width, height);
         mainPane.setWidget(editorForm);
 

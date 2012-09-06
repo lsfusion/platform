@@ -30,15 +30,15 @@
 
 .gwt-TabLayoutPanel .gwt-TabLayoutPanelContent {
     padding: 1px;
-    overflow: auto !important;
-}
-
-.modalFormContent {
-    overflow: auto !important;
 }
 
 .gwt-TabLayoutPanel .gwt-TabLayoutPanelTab {
     padding: 0px 3px 0px 5px;
+}
+
+.gwt-TabPanelBottom {
+    padding-top: 0;
+    padding-bottom: 0;
 }
 
 .gwt-DecoratorPanel .middleCenter {
@@ -79,9 +79,17 @@
     background-color: white;
 }
 
-/*.formController {*/
-    /*border: 2px solid black;*/
-/*}*/
+.hSplitPanelContents {
+     /*overflow-x: auto;*/
+ }
+
+.vSplitPanelContents {
+    /*overflow-y: auto;*/
+}
+
+.formController {
+    overflow: auto !important;
+}
 
 /*.formLayout {*/
     /*border: 2px solid red;*/

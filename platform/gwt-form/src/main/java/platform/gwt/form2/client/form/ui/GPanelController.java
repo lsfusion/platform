@@ -1,9 +1,9 @@
 package platform.gwt.form2.client.form.ui;
 
-import platform.gwt.utils.GwtSharedUtils;
 import platform.gwt.form2.shared.view.GPropertyDraw;
 import platform.gwt.form2.shared.view.changes.GGroupObjectValue;
 import platform.gwt.form2.shared.view.panel.PanelRenderer;
+import platform.gwt.utils.GwtSharedUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -97,17 +97,13 @@ public class GPanelController {
                 if (background == null && cellBackgroundValues.get(property) != null) {
                     background = cellBackgroundValues.get(property).values().iterator().next();
                 }
-                if (background != null) {
-                    renderer.updateCellBackgroundValue(background);
-                }
+                renderer.updateCellBackgroundValue(background);
 
                 Object foreground = rowForeground != null ? rowForeground : null;
                 if (foreground == null && cellForegroundValues.get(property) != null) {
                     foreground = cellForegroundValues.get(property).values().iterator().next();
                 }
-                if (foreground != null) {
-                    renderer.updateCellForegroundValue(foreground);
-                }
+                renderer.updateCellForegroundValue(foreground);
             }
         }
     }

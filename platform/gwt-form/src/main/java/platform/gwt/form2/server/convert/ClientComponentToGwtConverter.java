@@ -128,7 +128,9 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
     @Cached
     @Converter(from = ClientGrid.class)
     public GGrid convertGrid(ClientGrid clientGrid) {
-        return initGwtComponent(clientGrid, new GGrid());
+        GGrid grid = initGwtComponent(clientGrid, new GGrid());
+        grid.groupObject = convertOrCast(clientGrid.groupObject);
+        return grid;
     }
 
     @Cached

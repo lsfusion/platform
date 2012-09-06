@@ -1,15 +1,8 @@
 package platform.gwt.form2.client.form.ui;
 
 import com.allen_sauer.gwt.log.client.Log;
-import com.google.gwt.cell.client.TextCell;
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.user.cellview.client.Column;
-import com.google.gwt.user.cellview.client.Header;
-import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.HeaderPanel;
-import com.google.gwt.user.client.ui.ScrollPanel;
-import com.google.gwt.view.client.DefaultSelectionEventManager;
 import com.google.gwt.view.client.SelectionChangeEvent;
 import platform.gwt.form2.shared.view.GGroupObject;
 import platform.gwt.form2.shared.view.GPropertyDraw;
@@ -19,57 +12,25 @@ import platform.gwt.form2.shared.view.grid.GridEditableCell;
 import platform.gwt.utils.GwtSharedUtils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-public class GGridTable extends GPropertyTable {
-
-    /**
-     * Default style's overrides
-     */
-    public interface GGridTableResource extends Resources {
-        @Source("GGridTable.css")
-        GGridTableStyle dataGridStyle();
-    }
-
-    public interface GGridTableStyle extends Style {}
-
-    public static final GGridTableResource GGRID_RESOURCES = GWT.create(GGridTableResource.class);
-
-    private final GGroupObjectController groupController;
-
-    private final GGridTableSelectionModel selectionModel;
+public class GGridTable extends GGridPropertyTable {
 
     public ArrayList<GPropertyDraw> properties = new ArrayList<GPropertyDraw>();
-    public ArrayList<GridHeader> headers = new ArrayList<GridHeader>();
 
     public ArrayList<GGroupObjectValue> keys = new ArrayList<GGroupObjectValue>();
     public HashMap<GPropertyDraw, Map<GGroupObjectValue, Object>> values = new HashMap<GPropertyDraw, Map<GGroupObjectValue, Object>>();
-    private Map<GPropertyDraw, Map<GGroupObjectValue, Object>> cellBackgroundValues = new HashMap<GPropertyDraw, Map<GGroupObjectValue, Object>>();
-    private Map<GPropertyDraw, Map<GGroupObjectValue, Object>> cellForegroundValues = new HashMap<GPropertyDraw, Map<GGroupObjectValue, Object>>();
-    private Map<GPropertyDraw, Map<GGroupObjectValue, Object>> propertyCaptions = new HashMap<GPropertyDraw, Map<GGroupObjectValue, Object>>();
-    private Map<GGroupObjectValue, Object> rowBackgroundValues = new HashMap<GGroupObjectValue, Object>();
-    private Map<GGroupObjectValue, Object> rowForegroundValues = new HashMap<GGroupObjectValue, Object>();
-
-    private ArrayList<GridDataRecord> currentRecords;
-    private boolean dataUpdated = false;
 
     private GGroupObjectValue currentKey;
     private GGroupObject groupObject;
 
     public GGridTable(GFormController iform, GGroupObjectController igroupController) {
-        super(iform, GGRID_RESOURCES);
+        super(iform);
 
-        this.groupController = igroupController;
-        this.groupObject = groupController.groupObject;
+        this.groupObject = igroupController.groupObject;
 
-        setEmptyTableWidget(new HTML("The table is empty"));
-
-        addStyleName("gridTable");
-
-        selectionModel = new GGridTableSelectionModel();
-        setSelectionModel(selectionModel, DefaultSelectionEventManager.<GridDataRecord>createDefaultManager());
         selectionModel.addSelectionChangeHandler(new SelectionChangeEvent.Handler() {
             @Override
             public void onSelectionChange(SelectionChangeEvent event) {
@@ -80,13 +41,6 @@ public class GGridTable extends GPropertyTable {
                 }
             }
         });
-
-        setKeyboardSelectionPolicy(KeyboardSelectionPolicy.BOUND_TO_SELECTION);
-    }
-
-    public ScrollPanel getScrollPanel() {
-        HeaderPanel header = (HeaderPanel) getWidget();
-        return (ScrollPanel) header.getContentWidget();
     }
 
     public void removeProperty(GPropertyDraw property) {
@@ -189,77 +143,8 @@ public class GGridTable extends GPropertyTable {
         updateHeader();
     }
 
-    private void scrollRowToVerticalPosition(int rowIndex, int rowScrollTop) {
-        if (rowScrollTop != -1 && rowIndex >= 0 && rowIndex < getRowCount()) {
-            int rowOffsetTop = getRowElement(rowIndex).getOffsetTop();
-            getScrollPanel().setVerticalScrollPosition(rowOffsetTop - rowScrollTop);
-        }
-    }
-
-    private void updatePropertyReaders() {
-        for (int i = 0; i < keys.size(); i++) {
-            GGroupObjectValue key = keys.get(i);
-
-            Object rowBackground = rowBackgroundValues.get(key);
-            Object rowForeground = rowForegroundValues.get(key);
-
-            for (GPropertyDraw property : properties) {
-                Object cellBackground = rowBackground;
-                if (cellBackground == null && cellBackgroundValues.get(property) != null) {
-                    cellBackground = cellBackgroundValues.get(property).get(key);
-                }
-                if (cellBackground != null) {
-                    getRowElement(i).getCells().getItem(properties.indexOf(property)).getStyle().setBackgroundColor(cellBackground.toString());
-                }
-
-                Object cellForeground = rowForeground;
-                if (cellForeground == null && cellForegroundValues.get(property) != null) {
-                    cellForeground = cellForegroundValues.get(property).get(key);
-                }
-                if (cellForeground != null) {
-                    getRowElement(i).getCells().getItem(properties.indexOf(property)).getStyle().setColor(cellForeground.toString());
-                }
-            }
-        }
-    }
-
-    private void updateHeader() {
-        boolean needsHeaderRefresh = false;
-        for (GPropertyDraw property : properties) {
-            Map<GGroupObjectValue, Object> captions = propertyCaptions.get(property);
-            if (captions != null) {
-                Object value = captions.values().iterator().next();
-                headers.get(properties.indexOf(property)).setCaption(value == null ? "" : value.toString().trim());
-                needsHeaderRefresh = true;
-            }
-        }
-        if (needsHeaderRefresh) {
-            redrawHeaders();
-        }
-    }
-
     public boolean isEmpty() {
         return values.isEmpty() || properties.isEmpty();
-    }
-
-    public void updateCellBackgroundValues(GPropertyDraw propertyDraw, Map<GGroupObjectValue, Object> values) {
-        cellBackgroundValues.put(propertyDraw, values);
-    }
-
-    public void updateCellForegroundValues(GPropertyDraw propertyDraw, Map<GGroupObjectValue, Object> values) {
-        cellForegroundValues.put(propertyDraw, values);
-    }
-
-    public void updatePropertyCaptions(GPropertyDraw propertyDraw, Map<GGroupObjectValue, Object> values) {
-        propertyCaptions.put(propertyDraw, values);
-    }
-
-    public void updateRowBackgroundValues(Map<GGroupObjectValue, Object> values) {
-        rowBackgroundValues = values;
-    }
-
-    public void updateRowForegroundValues(Map<GGroupObjectValue, Object> values) {
-        rowForegroundValues = values;
     }
 
     public GPropertyDraw getProperty(int row, int column) {
@@ -273,16 +158,6 @@ public class GGridTable extends GPropertyTable {
 
     public Object getValueAt(int row, int column) {
         return currentRecords.get(row).getAttribute(getProperty(row, column));
-    }
-
-    public void setValueAt(int row, int column, Object value) {
-        GPropertyDraw columnProperty = getProperty(row, column);
-        values.get(columnProperty).put(keys.get(row), value);
-
-        GridDataRecord rowRecord = currentRecords.get(row);
-        rowRecord.setAttribute(columnProperty, value);
-
-        setRowData(row, Arrays.asList(rowRecord));
     }
 
     public void modifyGroupObject(GGroupObjectValue rowKey, boolean add) {
@@ -306,21 +181,13 @@ public class GGridTable extends GPropertyTable {
         update();
     }
 
-    private class GridHeader extends Header<String> {
-        private String caption;
+    @Override
+    public List<GPropertyDraw> getColumnProperties() {
+        return properties;
+    }
 
-        public GridHeader(String caption) {
-            super(new TextCell());
-            this.caption = caption;
-        }
-
-        public void setCaption(String caption) {
-            this.caption = caption;
-        }
-
-        @Override
-        public String getValue() {
-            return caption;
-        }
+    @Override
+    public void putValue(int row, int column, Object value) {
+        values.get(getProperty(row, column)).put(getColumnKey(row, column), value);
     }
 }

@@ -1,6 +1,6 @@
 package platform.gwt.form2.client.form.ui.container;
 
-import com.google.gwt.user.client.ui.*;
+import com.google.gwt.user.client.ui.Widget;
 import platform.gwt.form2.client.form.ui.GCaptionPanel;
 import platform.gwt.form2.shared.view.GComponent;
 import platform.gwt.form2.shared.view.GContainer;
@@ -69,4 +69,6 @@ public abstract class GAbstractFormContainer {
     protected abstract void addToContainer(GComponent childKey, Widget childView, int position);
     protected abstract void removeFromContainer(GComponent childKey, Widget childView);
     public void setTableCellSize(Widget child, String size, boolean width) {}
+    public void setChildSize(GComponent child, String width, String height) {}
+    public void addDirectly(Widget child) {}
 }

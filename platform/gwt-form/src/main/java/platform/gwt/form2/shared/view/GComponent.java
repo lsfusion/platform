@@ -16,6 +16,9 @@ public class GComponent implements Serializable {
     public int absoluteHeight = -1;
     public Alignment hAlign;
 
+    public double calculatedFillHorizontal = -1;
+    public double calculatedFillVertical = -1;
+
     public enum Alignment {
         LEFT, RIGHT, CENTER
     }

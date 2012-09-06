@@ -51,7 +51,7 @@ public class GGroupObjectController implements GGroupObjectLogicsSupplier {
             formLayout.setTableCellSize(gridContainer.container, gridContainer, "100%", true);
             formLayout.setTableCellSize(gridContainer.container, gridContainer, "100%", false);
 
-            formLayout.add(gridContainer, panelToolbar);
+            formLayout.getFormContainer(gridContainer.container).addDirectly(panelToolbar);
 
             showTypeView = new GShowTypeView(formController, groupObject) {
                 protected void needToBeShown() {
@@ -187,7 +187,8 @@ public class GGroupObjectController implements GGroupObjectLogicsSupplier {
 
             if (showTypeView != null && showTypeView.setClassView(newClassView)) {
                 updateToolbar();
-//                formLayout.adjustSizes();
+                formLayout.hideEmptyContainerViews();
+                formLayout.totalResize();
             }
         }
     }
