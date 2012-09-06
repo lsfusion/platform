@@ -30,10 +30,7 @@ changeAdditionalCompositionSkuLanguage = ACTION (sku, freight) {
     SET additionalCompositionSkuLanguage(sku, language) IF language == languageFreight(freight) <- requestedString();
 }
 
-mainCompositionLanguageFreightSku 'Состав (иностр.)' = DATA STRING[200] (freight, sku);
 mainCompositionLanguageFreightSku (freight, sku) <- mainCompositionSkuFreight(sku, freight) WHEN ASSIGNED (freight IS freightChanged);
-
-additionalCompositionLanguageFreightSku 'Доп. состав (иностр.)' = DATA STRING[200] (freight, sku);
 additionalCompositionLanguageFreightSku (freight, sku) <- additionalCompositionSkuFreight(sku, freight) WHEN ASSIGNED (freight IS freightChanged);
 
 nameCountryLanguageFreightSku 'Страна (иностр.)' (freight, sku) = nameCountrySkuLanguage(sku, languageFreight(freight));
@@ -50,15 +47,25 @@ EXTEND FORM freightCreateForm
 ;
 
 EXTEND FORM freightChangeForm
+
     PROPERTIES (freight, sku) nameCategoryFreightLanguageSku AFTER nameCategoryArticleSku(sku) SHOWIF languageFreight(freight),
-                              nameCountryLanguageFreightSku  AFTER nameCountrySku(sku) SHOWIF languageFreight(freight),
-                              translationMainCompositionLanguageFreightSku SHOWIF languageFreight(freight)
+                              nameCountryLanguageFreightSku  AFTER nameCountrySku(sku) SHOWIF languageFreight(freight)
+
+    PROPERTIES (sku) mainCompositionOriginSku, translationMainCompositionSku, mainCompositionSku
+    PROPERTIES (sku, freight) translationMainCompositionSkuFreight SHOWIF languageFreight(freight)
     PROPERTIES (sku, freight) mainCompositionSkuFreight ON CHANGE EXEC changeMainCompositionSkuLanguage(sku, freight) SHOWIF languageFreight(freight)
-    PROPERTIES (freight, sku) translationAdditionalCompositionLanguageFreightSku SHOWIF languageFreight(freight)
+
+    PROPERTIES (sku) additionalCompositionOriginSku, translationAdditionalCompositionSku, additionalCompositionSku
+    PROPERTIES (sku, freight) translationAdditionalCompositionSkuFreight SHOWIF languageFreight(freight)
     PROPERTIES (sku, freight) additionalCompositionSkuFreight ON CHANGE EXEC changeAdditionalCompositionSkuLanguage(sku, freight) SHOWIF languageFreight(freight)
-    PROPERTIES (freight, skuFreight) translationMainCompositionLanguageFreightSku SHOWIF languageFreight(freight),
+
+    PROPERTIES (freight, skuFreight) mainCompositionOriginFreightSku, translationMainCompositionFreightSku, mainCompositionFreightSku,
+                                     translationMainCompositionLanguageFreightSku SHOWIF languageFreight(freight),
                                      mainCompositionLanguageFreightSku SHOWIF languageFreight(freight),
+
+                                     additionalCompositionOriginFreightSku, translationAdditionalCompositionFreightSku, additionalCompositionFreightSku,
                                      translationAdditionalCompositionLanguageFreightSku SHOWIF languageFreight(freight),
                                      additionalCompositionLanguageFreightSku SHOWIF languageFreight(freight),
+
                                      nameCountryOfOriginLanguageFreightSku AFTER nameCountryOfOriginFreightSku(freight, skuFreight) SHOWIF languageFreight(freight)
 ;
