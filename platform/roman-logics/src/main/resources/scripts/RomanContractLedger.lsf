@@ -41,6 +41,8 @@ EXTEND FORM simpleInvoiceForm
 
 CLASS commercialInvoice 'Коммерческий инвойс' : numeratedObject, contractLedger, contractALedger, inContractLedger;
 
+isPostedCommercialInvoice(commercialInvoice) = commercialInvoice IS commercialInvoice;
+
 dateCommercialInvoice 'Дата' = DATA DATE (commercialInvoice);
 currencyCommercialInvoice = DATA currency (commercialInvoice);
 nameCurrencyCommercialInvoice 'Валюта'(commercialInvoice) = name(currencyCommercialInvoice(commercialInvoice));
@@ -137,13 +139,41 @@ DESIGN commercialInvoice FROM DEFAULT{
 
 FORM commercialInvoices 'Коммерческие инвойсы'
 
+    OBJECTS d = DATE FIXED PANEL
+    PROPERTIES(d) date = OBJVALUE
+
+    PROPERTIES() namePartyA, namePartyB
+
     OBJECTS c = commercialInvoice
-    PROPERTIES(c) READONLY numberObject, seriesObject, dateCommercialInvoice, numberContractCommercialInvoice,
-                           nameSupplierCommercialInvoice, nameCompanyCommercialInvoice, nameCurrencyCommercialInvoice,
-                           sumCommercialInvoice, descriptionInvoiceCommercialInvoice
+    PROPERTIES(c) READONLY numberObject BACKGROUND backgroundInContractLedgerDate(c, d),
+                           seriesObject BACKGROUND backgroundInContractLedgerDate(c, d),
+                           dateCommercialInvoice BACKGROUND backgroundInContractLedgerDate(c, d),
+                           numberContractCommercialInvoice BACKGROUND backgroundInContractLedgerDate(c, d),
+                           nameSupplierCommercialInvoice BACKGROUND backgroundInContractLedgerDate(c, d),
+                           nameCompanyCommercialInvoice BACKGROUND backgroundInContractLedgerDate(c, d),
+                           nameCurrencyCommercialInvoice BACKGROUND backgroundInContractLedgerDate(c, d),
+                           sumCommercialInvoice BACKGROUND backgroundInContractLedgerDate(c, d),
+                           descriptionInvoiceCommercialInvoice BACKGROUND backgroundInContractLedgerDate(c, d)
 
     PROPERTIES(c) ADDFORM, EDITFORM, delete
+
+    FILTERS companyCommercialInvoice(c) == partyB() OR (c IS commercialInvoice AND NOT partyB()),
+            supplierCommercialInvoice(c) == partyA() OR (c IS commercialInvoice AND NOT partyA())
 ;
+
+DESIGN commercialInvoices FROM DEFAULT {
+
+    NEW headerContainer {
+        childConstraints = TO THE RIGHT;
+        caption = 'Шапка';
+        ADD PROPERTY(date);
+        ADD PROPERTY(namePartyA);
+        ADD PROPERTY(namePartyB);
+    }
+
+    ADD c.box;
+    ADD functions.box;
+}
 
 EXTEND FORM boxInvoiceForm
 
@@ -165,10 +195,10 @@ descriptionCommercialInvoice 'Название документа' (commercialIn
     seriesNumberObject(commercialInvoice), dateCommercialInvoice(commercialInvoice),
     nameSupplierCommercialInvoice(commercialInvoice)) AND commercialInvoice IS commercialInvoice;
 @implementContractLedger(a, commercialInvoice);
-sumContractALedger(contractALedger) += sumCommercialInvoice(contractALedger);
+sumContractALedger(contractALedger) += sumCommercialInvoice(contractALedger) IF isPostedCommercialInvoice(contractALedger);;
 
 @implementContractPrepaymentLedger(commercialInvoice, sumCommercialInvoice);
 //sumContractLedger(commercialInvoiceContractLedger) += sumCommercialInvoice(commercialInvoiceCommercialInvoiceContractLedger(commercialInvoiceContractLedger));
 
 @implementOutContractLedgerInContractLedgerPrefix(in, commercialInvoice);
-sumInContractLedger(inContractLedger) += sumCommercialInvoice(inContractLedger);
+sumInContractLedger(inContractLedger) += sumCommercialInvoice(inContractLedger) IF isPostedCommercialInvoice(inContractLedger);;

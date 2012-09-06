@@ -117,6 +117,7 @@ NAVIGATOR {
             ADD contractLedger;
             ADD payments;
             ADD commercialInvoices;
+            ADD writeOutContractLedger;
         }
 
     }

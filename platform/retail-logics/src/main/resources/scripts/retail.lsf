@@ -2697,7 +2697,7 @@ noteConsignmentDetail (consignmentDetail) += noteStatementDetail (consignmentDet
 GROUP shipmentOrderGroup 'Заказ' : documentPrmGroup;
 GROUP additionalInfo 'Дополнительно' : baseGroup;
 
-CLASS shipment 'Поставка' : incAccountDocumentLedger, historyObject, numberedObject, priceTransactionDocument, listRegister, contractALedger, inContractLedger;
+CLASS shipment 'Поставка' : incAccountDocumentLedger, historyObject, numberedObject, priceTransactionDocument, listRegister, contractLedger, contractALedger, inContractLedger;
 CLASS shipmentDetail 'Строка поставки' : batch, importerPriceLedger, supplierPriceLedger, retailVATLedger, retailPriceLedger, warePriceLedger, listRegisterDetail;
 CLASS shipmentPosted 'Закрытая поставка' : shipment, postedObject;
 
@@ -2791,10 +2791,13 @@ descriptionPriceTransactionDocument (document) += descriptionShipment(document);
 //--------------------------------------- Расчет с поставщиками -------------------------------------------------------//
 
 @implementContractLedger(a, shipment);
-sumContractALedger(contractALedger) += invoiceSumShipmentDetailShipment(contractALedger);
+sumContractALedger(contractALedger) += invoiceSumShipmentDetailShipment(contractALedger) IF isPostedShipment(contractALedger);
 
 @implementContractPrepaymentLedger(shipment, invoiceSumShipmentDetailShipment);
 //sumContractLedger(shipmentContractLedger) += invoiceSumShipmentDetailShipment(shipmentShipmentContractLedger(shipmentContractLedger));
+
+@implementOutContractLedgerInContractLedgerPrefix(in, shipment);
+sumInContractLedger(inContractLedger) += invoiceSumShipmentDetailShipment(inContractLedger) IF isPostedShipment(inContractLedger);
 
 //----------------------------------Для реестра цен----------------------------//
 
@@ -3320,7 +3323,7 @@ nameSenderDepartmentPriceChangeInnerArrival 'Отдел-отправитель' 
 
 //----------------------------- Возврат поставщику ---------------------------------------------------------------//
 
-CLASS returnSupplier 'Возврат поставщику' : outAccountDocumentLedger, historyObject, numberedObject, consignment, contractLedger, contractALedger, inContractLedger;
+CLASS returnSupplier 'Возврат поставщику' : outAccountDocumentLedger, historyObject, numberedObject, consignment, contractLedger, contractALedger, outContractLedger;
 CLASS returnSupplierDetail 'Строка возврата поставщику' : outFIFOSkuLedger, consignmentDetail;
 CLASS returnSupplierPosted 'Закрытый возврат поставщику' : returnSupplier, postedObject;
 
@@ -3436,10 +3439,13 @@ sumContainerOutAccountDocumentLedger (ledger) += retailSumContainerReturnSupplie
 //--------------------------------------- Расчет с поставщиками -------------------------------------------------------//
 
 @implementContractLedger(, returnSupplier);
-sumContractLedger(contractLedger) += -invoiceSumReturnSupplierDetailReturnSupplier(contractLedger);
+sumContractLedger(contractLedger) += -invoiceSumReturnSupplierDetailReturnSupplier(contractLedger) IF isPostedReturnSupplier(contractLedger);
 
 @implementContractLedger(a, returnSupplier);
-sumContractALedger(contractALedger) += -invoiceSumReturnSupplierDetailReturnSupplier(contractALedger);
+sumContractALedger(contractALedger) += -invoiceSumReturnSupplierDetailReturnSupplier(contractALedger) IF isPostedReturnSupplier(contractALedger);
+
+@implementOutContractLedgerInContractLedgerPrefix(out, returnSupplier);
+sumOutContractLedger(outContractLedger) += invoiceSumReturnSupplierDetailReturnSupplier(outContractLedger) IF isPostedReturnSupplier(outContractLedger);
 
 // для возвратной накладной (шапка и хвост)
 
@@ -8055,13 +8061,18 @@ NAVIGATOR {
             ADD labelTransactions;
             ADD terminalDocuments;
         }
+        NEW accounting 'Взаиморасчеты'{
+            ADD contractSkus;
+            ADD contractLedger;
+            ADD payments;
+            ADD writeOutContractLedger;
+        }
     }
     NEW accountInfo 'Сводная информация' TO formsToolbar{
         ADD sumAccountDocumentLedger;
         ADD priceChangeDocuments;
         ADD stockCost;
         ADD stockBalance;
-        ADD contractLedger;
         NEW sales 'Продажи' {
             ADD salesLedger;
             ADD salesSkuStock;
