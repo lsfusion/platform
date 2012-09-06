@@ -67,5 +67,6 @@ EXTEND FORM freightChangeForm
                                      translationAdditionalCompositionLanguageFreightSku SHOWIF languageFreight(freight),
                                      additionalCompositionLanguageFreightSku SHOWIF languageFreight(freight),
 
-                                     nameCountryOfOriginLanguageFreightSku AFTER nameCountryOfOriginFreightSku(freight, skuFreight) SHOWIF languageFreight(freight)
+                                     nameCountryOfOriginLanguageFreightSku AFTER nameCountryOfOriginFreightSku(freight, skuFreight) SHOWIF languageFreight(freight),
+                                     sidCustomCategoryOriginFreightSku BEFORE sidCustomCategory10FreightSku
 ;

@@ -266,7 +266,7 @@ sumGrossWeightDeclarationDetail 'Суммарный вес брутто' (declar
 mainCompositionDeclarationDetail 'Состав товара' (declarationDetail) = mainCompositionFreightSku(freightDeclarationDetail(declarationDetail),
                                                                                                  skuDeclarationDetail(declarationDetail)) MINCHARWIDTH 20;
 
-mainCompositionLanguageDeclarationDetail 'Состав товара' (declarationDetail) = mainCompositionLanguageFreightSku(freightDeclarationDetail(declarationDetail),
+mainCompositionLanguageDeclarationDetail 'Состав товара (иностр.)' (declarationDetail) = mainCompositionLanguageFreightSku(freightDeclarationDetail(declarationDetail),
                                                                                                                  skuDeclarationDetail(declarationDetail)) MINCHARWIDTH 20;
 
 userNumberDeclarationDetail 'Пользовательский номер' (declarationDetail) = userNumberFreightSku(freightDeclarationDetail(declarationDetail),
@@ -277,7 +277,7 @@ countryDeclarationDetail 'Страна товара (ИД)' (declarationDetail) 
 
 nameCountryDeclarationDetail 'Страна товара' (declarationDetail) = name(countryDeclarationDetail(declarationDetail)) MINCHARWIDTH 15;
 
-nameCountryLanguageDeclarationDetail 'Страна товара' (declarationDetail) = languageName(countryDeclarationDetail(declarationDetail), languageDeclaration(declarationDeclarationDetail(declarationDetail))) MINCHARWIDTH 15;
+nameCountryLanguageDeclarationDetail 'Страна товара (иностр.)' (declarationDetail) = languageName(countryDeclarationDetail(declarationDetail), languageDeclaration(declarationDeclarationDetail(declarationDetail))) MINCHARWIDTH 15;
 
 customCategory10InvoicedDeclarationDetail 'ТН ВЭД товара (ИД)' (declarationDetail) = customCategory10FreightSku(freightDeclarationDetail(declarationDetail),
                                                                                                                 skuDeclarationDetail(declarationDetail)) IN idGroup;
@@ -288,6 +288,16 @@ customCategory10DeclarationDetail 'ТН ВЭД товара (ИД)' (declaration
                                                                                             customCategory10DataDeclarationDetail(declarationDetail) IN idGroup PERSISTENT;
 
 sidCustomCategory10DeclarationDetail 'ТН ВЭД товара' (declarationDetail) = sidCustomCategory10(customCategory10DeclarationDetail(declarationDetail));
+
+customCategoryOriginInvoicedDeclarationDetail 'ТН ВЭД товара (ИД)' (declarationDetail) = customCategoryOriginFreightSku(freightDeclarationDetail(declarationDetail),
+                                                                                                                        skuDeclarationDetail(declarationDetail)) IN idGroup;
+
+customCategoryOriginDataDeclarationDetail 'ТН ВЭД товара (ИД)' = DATA customCategoryOrigin(declarationDetail) IN idGroup;
+
+customCategoryOriginDeclarationDetail 'ТН ВЭД товара (ИД)' (declarationDetail) = UNION OVERRIDE customCategoryOriginInvoicedDeclarationDetail(declarationDetail),
+                                                                                                customCategoryOriginDataDeclarationDetail(declarationDetail) IN idGroup PERSISTENT;
+
+sidCustomCategoryOriginDeclarationDetail 'ТН ВЭД товара (иностр.)' (declarationDetail) = sidCustomCategoryOrigin(customCategoryOriginDeclarationDetail(declarationDetail));
 
 //--------------------------------- Сертификаты и сертификация -------------------------------------------------------//
 CLASS ABSTRACT certificate 'Сертификат';
@@ -888,7 +898,7 @@ FORM declaration 'Декларация'
                     sidArticleDeclarationDetail, sidSizeDeclarationDetail, sidColorDeclarationDetail, nameColorDeclarationDetail,
                     sidGenderGroupDeclaration, nameTypeFabricGroupDeclaration, mainCompositionDeclarationDetail, mainCompositionLanguageDeclarationDetail SHOWIF languageDeclaration(d),
                     nameCountryDeclarationDetail, nameCountryLanguageDeclarationDetail SHOWIF languageDeclaration(d)
-    PROPERTIES (dd) sidCustomCategory10DeclarationDetail
+    PROPERTIES (dd) sidCustomCategoryOriginDeclarationDetail SHOWIF languageDeclaration(d), sidCustomCategory10DeclarationDetail
     PROPERTIES (dd) READONLY netWeightDeclarationDetail, sumNetWeightDeclarationDetail,
                     sumGrossWeightDeclarationDetail, quantityDeclarationDetail, shortNameUOMDeclarationDetail, priceContractDeclarationDetail,
                     declarationPriceDeclarationDetail, priceRateDeclarationDetail, declarationSumRateDeclarationDetail,
@@ -939,7 +949,7 @@ FORM declaration 'Декларация'
                     sidArticleDeclarationDetail, sidSizeDeclarationDetail, sidColorDeclarationDetail, nameColorDeclarationDetail,
                     sidGenderGroupDeclaration, nameTypeFabricGroupDeclaration, mainCompositionDeclarationDetail, mainCompositionLanguageDeclarationDetail SHOWIF languageDeclaration(d),
                     nameCountryDeclarationDetail, nameCountryLanguageDeclarationDetail SHOWIF languageDeclaration(d)
-    PROPERTIES (dd2) sidCustomCategory10DeclarationDetail
+    PROPERTIES (dd2) sidCustomCategoryOriginDeclarationDetail SHOWIF languageDeclaration(d), sidCustomCategory10DeclarationDetail
     PROPERTIES (dd2) READONLY netWeightDeclarationDetail, sumNetWeightDeclarationDetail,
                     sumGrossWeightDeclarationDetail, quantityDeclarationDetail, shortNameUOMDeclarationDetail, priceContractDeclarationDetail,
                     declarationPriceDeclarationDetail, priceRateDeclarationDetail, declarationSumRateDeclarationDetail,
@@ -1125,7 +1135,8 @@ FORM declarations 'Декларации'
     PROPERTIES(dd) READONLY numberDeclarationDetail, barcodeDeclarationDetail, nameInvoiceDeclarationDetail, nameBrandDeclarationDetail,
                    sidArticleDeclarationDetail, sidSizeDeclarationDetail, sidColorDeclarationDetail, nameColorDeclarationDetail,
                    sidGenderGroupDeclaration, nameTypeFabricGroupDeclaration, mainCompositionDeclarationDetail, mainCompositionLanguageDeclarationDetail SHOWIF languageDeclaration(d),
-                   nameCountryDeclarationDetail, nameCountryLanguageDeclarationDetail SHOWIF languageDeclaration(d), sidCustomCategory10DeclarationDetail,
+                   nameCountryDeclarationDetail, nameCountryLanguageDeclarationDetail SHOWIF languageDeclaration(d),
+                   sidCustomCategoryOriginDeclarationDetail SHOWIF languageDeclaration(d), sidCustomCategory10DeclarationDetail,
                    netWeightDeclarationDetail, sumNetWeightDeclarationDetail, sumGrossWeightDeclarationDetail,
                    quantityDeclarationDetail, shortNameUOMDeclarationDetail, priceContractDeclarationDetail, declarationPriceDeclarationDetail,
                    priceRateDeclarationDetail, declarationSumRateDeclarationDetail,
