@@ -1,0 +1,64 @@
+MODULE Freight;
+
+REQUIRE System,
+        Stock,
+        Store,
+        I18n,
+        LegalEntity,
+        Barcode,
+        RetailCRM,
+        AccountDocument,
+        Employee,
+        UserPriceChange,
+        Contract,
+        Supplier,
+        Warehouse,
+        RomanLogicsModule;
+
+PRIORITY Stock, LegalEntity, Store, RomanLogicsModule;
+
+mainCompositionSkuFreight 'Состав (иностр.)' (sku, freight) = mainCompositionSkuLanguage(sku, languageFreight(freight));
+additionalCompositionSkuFreight 'Доп. состав (иностр.)' (sku, freight) = additionalCompositionSkuLanguage(sku, languageFreight(freight));
+
+changeMainCompositionSkuLanguage = ACTION (sku, freight) {
+    REQUEST STRING[200] INPUT;
+    SET mainCompositionSkuLanguage(sku, language) IF language == languageFreight(freight) <- requestedString();
+}
+
+changeAdditionalCompositionSkuLanguage = ACTION (sku, freight) {
+    REQUEST STRING[200] INPUT;
+    SET additionalCompositionSkuLanguage(sku, language) IF language == languageFreight(freight) <- requestedString();
+}
+
+mainCompositionLanguageFreightSku 'Состав (иностр.)' = DATA STRING[200] (freight, sku);
+mainCompositionLanguageFreightSku (freight, sku) <- mainCompositionSkuFreight(sku, freight) WHEN ASSIGNED (freight IS freightChanged);
+
+additionalCompositionLanguageFreightSku 'Доп. состав (иностр.)' = DATA STRING[200] (freight, sku);
+additionalCompositionLanguageFreightSku (freight, sku) <- additionalCompositionSkuFreight(sku, freight) WHEN ASSIGNED (freight IS freightChanged);
+
+nameCountryLanguageFreightSku 'Страна (иностр.)' (freight, sku) = nameCountrySkuLanguage(sku, languageFreight(freight));
+nameCountryOfOriginLanguageFreightSku 'Страна (иностр.)' (freight, sku) = languageName(countryOfOriginFreightSku(freight, sku), languageFreight(freight));
+
+nameCategoryFreightLanguageSku 'Номенклатурная группа (иностр.)' (freight, sku) = nameCategoryArticleSkuLanguage(sku, languageFreight(freight));
+
+EXTEND FORM freightListForm
+    PROPERTIES (freight) READONLY nameCountryFreight BEFORE nameRouteFreight(freight), nameLanguageFreight BEFORE nameRouteFreight(freight)
+;
+
+EXTEND FORM freightCreateForm
+    PROPERTIES (freight) nameCountryFreight BEFORE nameRouteFreight(freight), nameLanguageFreight BEFORE nameRouteFreight(freight)
+;
+
+EXTEND FORM freightChangeForm
+    PROPERTIES (freight, sku) nameCategoryFreightLanguageSku AFTER nameCategoryArticleSku(sku) SHOWIF languageFreight(freight),
+                              nameCountryLanguageFreightSku  AFTER nameCountrySku(sku) SHOWIF languageFreight(freight),
+                              translationMainCompositionLanguageFreightSku SHOWIF languageFreight(freight)
+    PROPERTIES (sku, freight) mainCompositionSkuFreight ON CHANGE EXEC changeMainCompositionSkuLanguage(sku, freight) SHOWIF languageFreight(freight)
+    PROPERTIES (freight, sku) translationAdditionalCompositionLanguageFreightSku SHOWIF languageFreight(freight)
+    PROPERTIES (sku, freight) additionalCompositionSkuFreight ON CHANGE EXEC changeAdditionalCompositionSkuLanguage(sku, freight) SHOWIF languageFreight(freight)
+    PROPERTIES (freight, skuFreight) translationMainCompositionLanguageFreightSku SHOWIF languageFreight(freight),
+                                     mainCompositionLanguageFreightSku SHOWIF languageFreight(freight),
+                                     translationAdditionalCompositionLanguageFreightSku SHOWIF languageFreight(freight),
+                                     additionalCompositionLanguageFreightSku SHOWIF languageFreight(freight),
+                                     nameCountryOfOriginLanguageFreightSku AFTER nameCountryOfOriginFreightSku(freight, skuFreight) SHOWIF languageFreight(freight)
+;

@@ -305,63 +305,6 @@ nameCountryBrandSupplierSkuCompany 'Страна поставки' (sku, company
 
 //---------------------
 
-mainCompositionSkuInvoice 'Состав (перевод)' (sku, invoice) = mainCompositionSkuLanguage(sku, languageInvoice(invoice));
-additionalCompositionSkuInvoice 'Доп. состав (перевод)' (sku, invoice) = additionalCompositionSkuLanguage(sku, languageInvoice(invoice));
-translateNameSkuInvoice 'Наименование (перевод)' (sku, invoice) = translateNameSkuLanguage(sku, languageInvoice(invoice));
-
-mainCompositionSkuFreight 'Состав (перевод)' (sku, freight) = mainCompositionSkuLanguage(sku, languageFreight(freight));
-additionalCompositionSkuFreight 'Доп. состав (перевод)' (sku, freight) = additionalCompositionSkuLanguage(sku, languageFreight(freight));
-
-translationMainCompositionSkuInvoice 'Перевод' (sku, invoice) = translationMainCompositionSkuLanguage(sku, languageInvoice(invoice));
-translationAdditionalCompositionSkuInvoice 'Перевод' (sku, invoice) = translationAdditionalCompositionSkuLanguage(sku, languageInvoice(invoice));
-//translationNameSkuInvoice 'Перевод' (sku, invoice) = translationNameSkuLanguage(sku, languageInvoice(invoice));
-
-EXTEND FORM boxInvoiceForm
-    PROPERTIES (invoice) READONLY nameLanguageInvoice AFTER nameDestinationDestinationDocument
-    PROPERTIES (sku, invoice) translateNameSkuInvoice, translationMainCompositionSkuInvoice,
-               mainCompositionSkuInvoice, translationAdditionalCompositionSkuInvoice, additionalCompositionSkuInvoice
-;
-
-EXTEND FORM simpleInvoiceForm
-    PROPERTIES (invoice) READONLY nameLanguageInvoice AFTER nameDestinationDestinationDocument
-    PROPERTIES (sku, invoice) translateNameSkuInvoice, translationMainCompositionSkuInvoice,
-               mainCompositionSkuInvoice, translationAdditionalCompositionSkuInvoice, additionalCompositionSkuInvoice
-;
-
-//importerFreight 'Импортёр фрахта (ИД)' = DATA importer(freight) IN idGroup;
-//nameImporterFreight 'Импортёр фрахта' (freight) = name(importerFreight(freight));
-
-mainCompositionLanguageFreightSku 'Состав' = DATA STRING[200] (freight, sku);
-mainCompositionLanguageFreightSku (freight, sku) <- mainCompositionSkuFreight(sku, freight) WHEN ASSIGNED (freight IS freightChanged);
-
-additionalCompositionLanguageFreightSku 'Доп. состав' = DATA STRING[200] (freight, sku);
-additionalCompositionLanguageFreightSku (freight, sku) <- additionalCompositionSkuFreight(sku, freight) WHEN ASSIGNED (freight IS freightChanged);
-
-nameCountryLanguageFreightSku 'Страна' (freight, sku) = languageName(countryOfOriginFreightSku(freight, sku), languageFreight(freight));
-
-nameCategoryFreightLanguageSku 'Номенклатурная группа' (freight, sku) = nameCategoryArticleSkuLanguage(sku, languageFreight(freight));
-
-EXTEND FORM freightListForm
-    PROPERTIES (freight) READONLY nameCountryFreight BEFORE nameRouteFreight(freight), nameLanguageFreight BEFORE nameRouteFreight(freight)
-;
-
-EXTEND FORM freightCreateForm
-    PROPERTIES (freight) nameCountryFreight BEFORE nameRouteFreight(freight), nameLanguageFreight BEFORE nameRouteFreight(freight)
-
-;
-
-EXTEND FORM freightChangeForm
-    PROPERTIES (freight, sku) nameCategoryFreightLanguageSku AFTER nameCategoryArticleSku(sku) SHOWIF languageFreight(freight),
-                              nameCountryLanguageFreightSku AFTER nameCountrySku(sku) SHOWIF languageFreight(freight),
-                              translationMainCompositionLanguageFreightSku SHOWIF languageFreight(freight)
-    PROPERTIES (sku, freight) mainCompositionSkuFreight SHOWIF languageFreight(freight)
-    PROPERTIES (freight, sku) translationAdditionalCompositionLanguageFreightSku SHOWIF languageFreight(freight)
-    PROPERTIES (sku, freight) additionalCompositionSkuFreight SHOWIF languageFreight(freight)
-    PROPERTIES (freight, skuFreight) mainCompositionLanguageFreightSku SHOWIF languageFreight(freight),
-                                     additionalCompositionLanguageFreightSku SHOWIF languageFreight(freight),
-                                     nameCountryLanguageFreightSku AFTER nameCountryOfOriginFreightSku(freight, skuFreight) SHOWIF languageFreight(freight)
-;
-
 //@implementSkuLedger(userPriceChange, sku, departmentStore);
 //quantityInLIFOSkuLedger (ledger) += quantityUserPriceChangeDetail(ledger) (-) quantityUserPriceChangeDetail(ledger);
 //limitInLIFOSkuLedgerBatch (ledger, batch) +=  (quantityUserPriceChangeDetail(ledger) (-) quantityUserPriceChangeDetail(ledger)) AND  batch IS batch;

@@ -9,16 +9,19 @@ TABLE language(language);
 
 localeLanguage 'Locale' = DATA STRING[5] (language);
 
+dictionaryLanguage = DATA dictionary(language);
+nameDictionaryLanguage 'Словарь' = name(dictionaryLanguage(language)) IN baseGroup;
+
 FORM language 'Язык'
     OBJECTS l = language FIXED PANEL
-    PROPERTIES(l) name, localeLanguage
+    PROPERTIES(l) name, localeLanguage, nameDictionaryLanguage
 
     EDIT language OBJECT l
 ;
 
 FORM languages 'Языки'
     OBJECTS l = language
-    PROPERTIES(l) READONLY name, localeLanguage
+    PROPERTIES(l) READONLY name, localeLanguage, nameDictionaryLanguage
     PROPERTIES(l)          ADDFORM, EDITFORM, delete
 
     DIALOG language OBJECT l

@@ -1,0 +1,54 @@
+MODULE Invoice;
+
+REQUIRE System,
+        Stock,
+        Store,
+        I18n,
+        LegalEntity,
+        Barcode,
+        RetailCRM,
+        AccountDocument,
+        Employee,
+        UserPriceChange,
+        Contract,
+        Supplier,
+        Warehouse,
+        RomanLogicsModule;
+
+PRIORITY Stock, LegalEntity, Store, RomanLogicsModule;
+
+mainCompositionSkuInvoice 'Состав (иностр.)' (sku, invoice) = mainCompositionSkuLanguage(sku, languageInvoice(invoice));
+additionalCompositionSkuInvoice 'Доп. состав (иностр.)' (sku, invoice) = additionalCompositionSkuLanguage(sku, languageInvoice(invoice));
+translateNameSkuInvoice 'Наименование (иностр.)' (sku, invoice) = translateNameSkuLanguage(sku, languageInvoice(invoice));
+
+changeNameSkuLanguageInvoice = ACTION (sku, invoice) {
+    REQUEST STRING[50] INPUT;
+    SET translateNameSkuLanguage(sku, language) IF language == languageInvoice(invoice) <- requestedString();
+}
+
+changeMainCompositionSkuLanguageInvoice = ACTION (sku, invoice) {
+    REQUEST STRING[200] INPUT;
+    SET mainCompositionSkuLanguage(sku, language) IF language == languageInvoice(invoice) <- requestedString();
+}
+
+changeAdditionalCompositionSkuLanguageInvoice = ACTION (sku, invoice) {
+    REQUEST STRING[200] INPUT;
+    SET additionalCompositionSkuLanguage(sku, language) IF language == languageInvoice(invoice) <- requestedString();
+}
+
+EXTEND FORM boxInvoiceForm
+    PROPERTIES (invoice) READONLY nameLanguageInvoice AFTER nameDestinationDestinationDocument
+    PROPERTIES (sku, invoice) translationNameSkuInvoice SHOWIF languageInvoice(invoice),
+                              translateNameSkuInvoice SHOWIF languageInvoice(invoice),
+                              translationMainCompositionSkuInvoice SHOWIF languageInvoice(invoice),
+                              mainCompositionSkuInvoice ON CHANGE EXEC changeMainCompositionSkuLanguageInvoice(sku, invoice) SHOWIF languageInvoice(invoice),
+                              translationAdditionalCompositionSkuInvoice SHOWIF languageInvoice(invoice),
+                              additionalCompositionSkuInvoice ON CHANGE EXEC changeAdditionalCompositionSkuLanguageInvoice(sku, invoice) SHOWIF languageInvoice(invoice)
+;
+
+EXTEND FORM simpleInvoiceForm
+    PROPERTIES (invoice) READONLY nameLanguageInvoice AFTER nameDestinationDestinationDocument
+    PROPERTIES (sku, invoice) translateNameSkuInvoice, translationMainCompositionSkuInvoice,
+               mainCompositionSkuInvoice,
+               translationAdditionalCompositionSkuInvoice, additionalCompositionSkuInvoice
+;
