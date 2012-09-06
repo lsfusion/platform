@@ -24,8 +24,6 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.Format;
 import java.text.SimpleDateFormat;
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.Map;
 
 import static platform.server.logics.ServerResourceBundle.getString;
@@ -239,15 +237,12 @@ public class PropertyDrawView extends ComponentView {
                         ((CalcProperty<?>)entity.propertyObject.property).mapTable : null;
         pool.writeString(outStream, mapTable != null ? mapTable.table.name : null);
 
-        Iterator<ValueClass> classesIt = entity.propertyObject.property.getInterfaceClasses(true).values().iterator();
-        Collection<PropertyObjectInterfaceEntity> interfacesEntities = entity.propertyObject.mapping.values();
-        outStream.writeInt(interfacesEntities.size());
-        for (PropertyObjectInterfaceEntity interfaceEntity : interfacesEntities) {
-            assert classesIt.hasNext();
-            ValueClass valueClass = classesIt.next();
-
-            pool.writeString(outStream, interfaceEntity.toString());
-            valueClass.serialize(outStream);
+        Map<? extends PropertyInterface, ValueClass> interfaceClasses = entity.propertyObject.property.getInterfaceClasses(true);
+        Map<? extends PropertyInterface, PropertyObjectInterfaceEntity> interfaceEntities = entity.propertyObject.mapping;
+        outStream.writeInt(entity.propertyObject.property.interfaces.size());
+        for (PropertyInterface iFace : entity.propertyObject.property.interfaces) {
+            pool.writeString(outStream, interfaceEntities.get(iFace).toString());
+            interfaceClasses.get(iFace).serialize(outStream);
         }
 
         entity.propertyObject.property.getValueClass().serialize(outStream);

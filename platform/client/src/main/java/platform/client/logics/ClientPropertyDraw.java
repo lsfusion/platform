@@ -44,7 +44,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     // символьный идентификатор, нужен для обращению к свойствам в печатных формах
     public ClientType baseType;
-    public ClientClass[] interfacesTypes;
     public ClientClass returnClass;
 
     // асинхронные интерфейсы
@@ -52,8 +51,9 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public Pair<ClientObject, Boolean> addRemove;
     public boolean askConfirm;
     public String askConfirmMessage;
-    
+
     public String[] interfacesCaptions;
+    public ClientClass[] interfacesTypes;
 
     public String caption;
     public String regexp;
