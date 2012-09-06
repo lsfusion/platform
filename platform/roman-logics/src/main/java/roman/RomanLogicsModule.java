@@ -355,8 +355,13 @@ public class RomanLogicsModule extends LogicsModule {
     ConcreteCustomClass subCategory;
     ConcreteCustomClass typeDuty;
     ConcreteCustomClass customStore;
-    ConcreteCustomClass customZone;
-    private LCP customZoneCustomCategory;
+    ConcreteCustomClass customsZone;
+    LCP customsZoneCustomCategory9;
+    LCP nameCustomsZoneCustomCategory9;
+    LCP customsZoneCustomCategory10;
+    LCP nameCustomsZoneCustomCategory10;
+    LCP customsZoneCountry;
+    LCP nameCustomsZoneCountry;
 
     private LCP typeInvoiceCategory;
     private LCP nameTypeInvoiceCategory;
@@ -414,11 +419,17 @@ public class RomanLogicsModule extends LogicsModule {
     LCP minPriceCustomCategory10SubCategoryCountry;
     public LCP dutyPercentCustomCategory10TypeDuty;
     public LCP dutySumCustomCategory10TypeDuty;
+    LCP customsZoneTypeDuty;
+    LCP nameCustomsZoneTypeDuty;
+    LCP customsZoneSubCategory;
+    LCP nameCustomsZoneSubCategory;
     private LCP sidCustomCategory4CustomCategory6;
     private LCP sidCustomCategory6CustomCategory9;
     private LCP sidCustomCategory9CustomCategory10;
     public LCP sidCustomCategory6CustomCategoryOrigin;
     private LCP nameCustomCategory4CustomCategory6;
+    LCP sidCustomCategory6CustomCategory10;
+    LCP sidCustomCategory4CustomCategory10;
     private LCP nameCustomCategory6CustomCategory9;
     private LCP nameCustomCategory9CustomCategory10;
     private LCP nameCustomCategory6CustomCategory10;
@@ -1476,7 +1487,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         customStore = addConcreteClass("customStore", "Склад временного хранения", baseClass.named, (CustomClass) BL.Stock.getClassByName("stock"), (CustomClass) BL.LegalEntity.getClassByName("legalEntity"));
 
-        customZone = addConcreteClass("customZone", "Таможенная зона", baseClass);
+        customsZone = addConcreteClass("customsZone", "Таможенная зона", baseClass.named);
 
         creationSku = addConcreteClass("creationSku", "Операция создания товаров", baseLM.transaction);
         creationFreightBox = addConcreteClass("creationFreightBox", "Операция создания коробов", baseLM.transaction);
@@ -1744,7 +1755,16 @@ public class RomanLogicsModule extends LogicsModule {
         sidImporter = addDProp(baseGroup, "sidImporter", "Номер клиента", StringClass.get(50), importer);
 
         // CustomCategory
-        customZoneCustomCategory = addDProp(idGroup, "customZoneCustomCategory", "Зона категории (ИД)", customZone, customCategory);
+        customsZoneCustomCategory9 = addDProp(idGroup, "customsZoneCustomCategory9", "Зона категории (ИД)", customsZone, customCategory9);
+        nameCustomsZoneCustomCategory9 = addJProp(baseGroup, "nameCustomsZoneCustomCategory9", "Таможенная зона 9", baseLM.name, customsZoneCustomCategory9, 1);
+
+        customsZoneCustomCategory10 = addDProp(idGroup, "customsZoneCustomCategory10", "Зона категории (ИД)", customsZone, customCategory10);
+        customsZoneCustomCategory10.setAutoset(true);
+        nameCustomsZoneCustomCategory10 = addJProp(baseGroup, "nameCustomsZoneCustomCategory10", "Таможенная зона", baseLM.name, customsZoneCustomCategory10, 1);
+
+        customsZoneCountry = addDProp(idGroup, "customsZoneCountry", "Зона Страны (ИД)", customsZone, baseLM.country);
+        customsZoneCountry.setAutoset(true);
+        nameCustomsZoneCountry= addJProp(baseGroup, "nameCustomsZoneCountry", "Таможенная зона", baseLM.name, customsZoneCountry, 1);
 
         sidCustomCategory4 = addDProp(baseGroup, "sidCustomCategory4", "Код(4)", StringClass.get(4), customCategory4);
         sidCustomCategory4.setFixedCharWidth(4);
@@ -1801,8 +1821,14 @@ public class RomanLogicsModule extends LogicsModule {
         dieselImportOrder = addAProp(importOrderActionGroup, new DieselImportOrderActionProperty(this));
 
         customCategory4CustomCategory6 = addDProp(idGroup, "customCategory4CustomCategory6", "Код(4)", customCategory4, customCategory6);
+        customCategory4CustomCategory6.setAutoset(true);
+
         customCategory6CustomCategory9 = addDProp(idGroup, "customCategory6CustomCategory9", "Код(6)", customCategory6, customCategory9);
+        customCategory6CustomCategory9.setAutoset(true);
+
         customCategory9CustomCategory10 = addDProp(idGroup, "customCategory9CustomCategory10", "Код(9)", customCategory9, customCategory10);
+        customCategory9CustomCategory10.setAutoset(true);
+
         customCategory6CustomCategory10 = addJProp(idGroup, "customCategory6CustomCategory10", "Код(6)", customCategory6CustomCategory9, customCategory9CustomCategory10, 1);
         customCategory4CustomCategory10 = addJProp(idGroup, "customCategory4CustomCategory10", "Код(4)", customCategory4CustomCategory6, customCategory6CustomCategory10, 1);
 
@@ -1813,6 +1839,10 @@ public class RomanLogicsModule extends LogicsModule {
 
         relationCustomCategory10SubCategory = addDProp(baseGroup, "relationCustomCategory10SubCategory", "Связь ТН ВЭД", LogicalClass.instance, customCategory10, subCategory);
 
+        customsZoneSubCategory = addDProp(idGroup, "customsZoneSubCategory", "Зона ИД", customsZone, subCategory);
+        customsZoneSubCategory.setAutoset(true);
+        nameCustomsZoneSubCategory = addJProp(baseGroup, "nameCustomsZoneSubCategory", "Таможенная зона", baseLM.name, customsZoneSubCategory, 1);
+
         subCategoryCustomCategory10 = addMGProp(baseGroup, "subCategoryCustomCategory10", "По умолчанию", addJProp(baseLM.and1, 2, relationCustomCategory10SubCategory, 1, 2), 1);
 
         countRelationCustomCategory10 = addSGProp("countRelationCustomCategory10", true, "Кол-во групп", addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), relationCustomCategory10SubCategory, 1, 2), 1);
@@ -1821,6 +1851,10 @@ public class RomanLogicsModule extends LogicsModule {
         minPriceCustomCategory10SubCategoryCountry = addDProp("minPriceCustomCategory10SubCategoryCountry", "Минимальная цена для страны ($)", NumericClass.get(14, 2), customCategory10, subCategory, baseLM.country);
         dutyPercentCustomCategory10TypeDuty = addDProp("dutyPercentCustomCategory10TypeDuty", "в %", NumericClass.get(14, 2), customCategory10, typeDuty);
         dutySumCustomCategory10TypeDuty = addDProp("dutySumCustomCategory10TypeDuty", "в евро", NumericClass.get(14, 2), customCategory10, typeDuty);
+
+        customsZoneTypeDuty = addDProp(idGroup, "customsZoneTypeDuty", "Зона ИД", customsZone, typeDuty);
+        customsZoneTypeDuty.setAutoset(true);
+        nameCustomsZoneTypeDuty = addJProp(baseGroup, "nameCustomsZoneTypeDuty", "Таможенная зона", baseLM.name, customsZoneTypeDuty, 1);
 
         customCategory6CustomCategoryOrigin = addDProp(idGroup, "customCategory6CustomCategoryOrigin", "Код(6)", customCategory6, customCategoryOrigin);
         customCategory4CustomCategoryOrigin = addJProp(idGroup, "customCategory4CustomCategoryOrigin", "Код(4)", customCategory4CustomCategory6, customCategory6CustomCategoryOrigin, 1);
@@ -1834,6 +1868,9 @@ public class RomanLogicsModule extends LogicsModule {
         sidCustomCategory6CustomCategory9 = addJProp(baseGroup, "sidCustomCategory6CustomCategory9", "Код(6)", sidCustomCategory6, customCategory6CustomCategory9, 1);
         sidCustomCategory9CustomCategory10 = addJProp(idGroup, "sidCustomCategory9CustomCategory10", "Код(9)", sidCustomCategory9, customCategory9CustomCategory10, 1);
         sidCustomCategory6CustomCategoryOrigin = addJProp(idGroup, "sidCustomCategory6CustomCategoryOrigin", "Код(6)", sidCustomCategory6, customCategory6CustomCategoryOrigin, 1);
+
+        sidCustomCategory6CustomCategory10 = addJProp("sidCustomCategory6CustomCategory10", "Код(6)", sidCustomCategory6, customCategory6CustomCategory10, 1);
+        sidCustomCategory4CustomCategory10 = addJProp(baseGroup, "sidCustomCategory4CustomCategory10", "Код(4)", sidCustomCategory4, customCategory4CustomCategory10, 1);
 
         nameCustomCategory4CustomCategory6 = addJProp(baseGroup, "nameCustomCategory4CustomCategory6", "Наименование(4)", nameCustomCategory, customCategory4CustomCategory6, 1);
         nameCustomCategory6CustomCategory9 = addJProp(baseGroup, "nameCustomCategory6CustomCategory9", "Наименование(6)", nameCustomCategory, customCategory6CustomCategory9, 1);

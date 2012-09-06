@@ -34,6 +34,7 @@ REQUIRE System,
         DisparityBatch,
         RomanContractLedger,
         PriceChangeDiscount,
+        CustomCategory,
         RomanLogicsModule;
 
 PRIORITY RomanLogicsModule, Utils, Stock, Store;
@@ -126,6 +127,7 @@ NAVIGATOR {
         customClassifier {
             ADD customStores;
             ADD certificates;
+            ADD customOrigins;
         }
 
         NEW customDocument 'Документы' TO leftToolbar {

@@ -304,6 +304,14 @@ nameCountryBrandSupplierSkuCompany 'Страна поставки' (sku, company
 
 VATRetailSkuDepartmentStoreDateTime(sku, departmentStore, dateTime) += retailVATBLedgerDateTime(sku, departmentStore, dateTime);
 
+
+EXTEND FORM country
+    PROPERTIES(c) nameCustomsZoneCountry
+;
+EXTEND FORM countries
+    PROPERTIES(c) READONLY nameCustomsZoneCountry
+;
+
 //@implementSkuLedger(userPriceChange, sku, departmentStore);
 //quantityInLIFOSkuLedger (ledger) += quantityUserPriceChangeDetail(ledger) (-) quantityUserPriceChangeDetail(ledger);
 //limitInLIFOSkuLedgerBatch (ledger, batch) +=  (quantityUserPriceChangeDetail(ledger) (-) quantityUserPriceChangeDetail(ledger)) AND  batch IS batch;
