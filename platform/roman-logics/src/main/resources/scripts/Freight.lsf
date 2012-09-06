@@ -38,13 +38,73 @@ nameCountryOfOriginLanguageFreightSku 'Страна (иностр.)' (freight, s
 
 nameCategoryFreightLanguageSku 'Номенклатурная группа (иностр.)' (freight, sku) = nameCategoryArticleSkuLanguage(sku, languageFreight(freight));
 
-EXTEND FORM freightListForm
-    PROPERTIES (freight) READONLY nameCountryFreight BEFORE nameRouteFreight(freight), nameLanguageFreight BEFORE nameRouteFreight(freight)
+FORM freight 'Фрахт'
+
+    OBJECTS f = freight FIXED PANEL
+    PROPERTIES(f) objectClassName, nameNumeratorObject, numberObject, seriesObject, date, dateArrivalFreight,
+                  nameCountryFreight, nameLanguageFreight, nameRouteFreight, nameExporterFreight,
+                  descriptionFreight, tonnageDataFreight, volumeDataFreight, palletCountDataFreight,
+                  nameCurrencyFreight, sumFreightFreight
+
+    EDIT freight OBJECT f
 ;
 
-EXTEND FORM freightCreateForm
-    PROPERTIES (freight) nameCountryFreight BEFORE nameRouteFreight(freight), nameLanguageFreight BEFORE nameRouteFreight(freight)
+DESIGN freight FROM DEFAULT {
+
+    main{
+
+        NEW headerContainer{
+
+            caption = 'Шапка документа';
+            childConstraints = TO THE RIGHT;
+            ADD PROPERTY(objectClassName);
+            ADD PROPERTY(nameNumeratorObject);
+            ADD PROPERTY(numberObject);
+            ADD PROPERTY(seriesObject);
+            ADD PROPERTY(date);
+            ADD PROPERTY(dateArrivalFreight);
+        }
+
+        NEW paramContainer {
+
+            caption = 'Параметры документа';
+            ADD PROPERTY(nameCountryFreight);
+            ADD PROPERTY(nameLanguageFreight);
+            ADD PROPERTY(nameRouteFreight);
+            ADD PROPERTY(nameExporterFreight);
+            ADD PROPERTY(descriptionFreight);
+        }
+
+        NEW sumContainer{
+
+            caption = 'Суммы документа';
+            childConstraints = TO THE BOTTOM;
+            ADD PROPERTY(tonnageDataFreight);
+            ADD PROPERTY(volumeDataFreight);
+            ADD PROPERTY(palletCountDataFreight);
+            ADD PROPERTY(nameCurrencyFreight);
+            ADD PROPERTY(sumFreightFreight);
+        }
+        POSITION sumContainer TO THE RIGHT headerContainer;
+        POSITION sumContainer TO THE RIGHT paramContainer;
+    }
+
+    ADD functions.box;
+}
+
+EXTEND FORM freightListForm
+    PROPERTIES (freight) READONLY nameCountryFreight BEFORE nameRouteFreight(freight), nameLanguageFreight BEFORE nameRouteFreight(freight)
+
+    PROPERTIES (freight) ADDFORM, EDITFORM, delete FORCE PANEL
 ;
+
+EXTEND DESIGN freightListForm{
+
+    PROPERTY(delete(freight)){
+        panelLocation = TOOLBAR;
+        askConfirm=TRUE;
+    }
+}
 
 EXTEND FORM freightChangeForm
 

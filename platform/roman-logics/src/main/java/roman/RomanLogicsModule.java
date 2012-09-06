@@ -70,8 +70,6 @@ public class RomanLogicsModule extends LogicsModule {
     private LAP orderEditFA;
     private LAP boxInvoiceEditFA;
     private LAP simpleInvoiceEditFA;
-    private LAP freightCreateFA;
-    private LAP freightEditFA;
     private LAP freightCompleteFA;
     private LAP addNEColorSupplierSIDSupplier;
     private LAP addNEColorSupplierSIDInvoice;
@@ -3861,7 +3859,6 @@ public class RomanLogicsModule extends LogicsModule {
         formLogFreight.setImage("history.png");
 
         //NavigatorElement actionFreight = addNavigatorElement(shipmentDocument, "actionFreight", "Действия");
-        addFormEntity(new FreightCreateFormEntity(null, "freightCreateForm", "Редактирование фрахта"));
         addFormEntity(new FreightShipmentFormEntity(null, "freightShipmentForm", "Комплектация фрахта"));
         addFormEntity(new FreightChangeFormEntity(null, "freightChangeForm", "Обработка фрахта"));
         addFormEntity(new FreightInvoiceFormEntity(null, "freightInvoiceForm", "Расценка фрахта"));
@@ -7916,36 +7913,6 @@ public class RomanLogicsModule extends LogicsModule {
         }
     }
 
-    private class FreightCreateFormEntity extends FormEntity<RomanBusinessLogics> {
-
-        private ObjectEntity objFreight;
-
-        private FreightCreateFormEntity(NavigatorElement<RomanBusinessLogics> parent, String sID, String caption) {
-            super(parent, sID, caption);
-
-            objFreight = addSingleGroupObject("freight", freight, "Фрахт", baseLM.date, baseLM.objectClassName, dateArrivalFreight, nameRouteFreight, nameExporterFreight, descriptionFreight, tonnageDataFreight, volumeDataFreight, palletCountDataFreight, nameCurrencyFreight, sumFreightFreight);
-//            addObjectActions(this, objFreight);
-            objFreight.groupTo.setSingleClassView(ClassViewType.PANEL);
-
-            freightCreateFA = addMFAProp(actionGroup, "Создать фрахт", this, new ObjectEntity[] {},
-                    new ActionPropertyObjectEntity[] {addPropertyObject(addPushAProp(addCProp(baseClass.objectClass, "freight"), getAddObjectAction(freight)))}, true);
-            freightCreateFA.setPanelLocation(new ToolbarPanelLocation());
-            ((FormActionProperty)freightCreateFA.property).seekOnOk.add(objFreight);
-            freightEditFA = addMFAProp(actionGroup, "Редактировать фрахт", this, new ObjectEntity[] {objFreight}, true);
-            freightEditFA.setImage("edit.png");
-        }
-
-        @Override
-        public FormView createDefaultRichDesign() {
-            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
-
-            design.get(getPropertyDraw(baseLM.date, objFreight)).caption = "Дата отгрузки";
-            design.get(getPropertyDraw(baseLM.objectClassName, objFreight)).caption = "Статус фрахта";
-
-            return design;
-        }
-    }
-
     private class FreightListFormEntity extends FormEntity<RomanBusinessLogics> {
 
         private ObjectEntity objFreight;
@@ -7958,8 +7925,6 @@ public class RomanLogicsModule extends LogicsModule {
         private ObjectEntity objArticle;
         private ObjectEntity objFreightUnit;
 
-        private PropertyDrawEntity createFreight;
-
         private FreightListFormEntity(NavigatorElement<RomanBusinessLogics> parent, String sID, String caption) {
             super(parent, sID, caption);
 
@@ -7969,19 +7934,12 @@ public class RomanLogicsModule extends LogicsModule {
             objFreight.groupTo.setSingleClassView(ClassViewType.GRID);
             setEditType(objFreight, PropertyEditType.READONLY);
             setEditType(formLogFreight, PropertyEditType.EDITABLE);
-
-            createFreight = addPropertyDraw(freightCreateFA, objFreight);
-            createFreight.toDraw = objFreight.groupTo;
-            createFreight.forceViewType = ClassViewType.PANEL;
-
-            addPropertyDraw(freightEditFA, objFreight).forceViewType = ClassViewType.GRID;
             addPropertyDraw(freightCompleteFA, objFreight).forceViewType = ClassViewType.GRID;
             addPropertyDraw(freightChangedFA, objFreight).forceViewType = ClassViewType.GRID;
 
             addPropertyDraw(executeChangeFreightChangedClass, objFreight).forceViewType = ClassViewType.GRID;
             addPropertyDraw(freightPricedFA, objFreight).forceViewType = ClassViewType.GRID;
             addPropertyDraw(executeChangeFreightShippedClass, objFreight).forceViewType = ClassViewType.GRID;
-            addPropertyDraw(baseLM.delete, objFreight).forceViewType = ClassViewType.GRID;
 
 //            GroupObjectEntity gobjDates = new GroupObjectEntity(genID());
 //            objDateFrom = new ObjectEntity(genID(), DateClass.instance, "Дата (с)");
@@ -8076,8 +8034,6 @@ public class RomanLogicsModule extends LogicsModule {
         @Override
         public FormView createDefaultRichDesign() {
             DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
-
-            design.getMainContainer().addBefore(design.get(createFreight), design.getGroupObjectContainer(objFreight.groupTo));
 
             design.get(getPropertyDraw(baseLM.date, objFreight)).caption = "Дата отгрузки";
             design.get(getPropertyDraw(baseLM.objectClassName, objFreight)).caption = "Статус фрахта";
