@@ -3,7 +3,7 @@ MODULE Currency;
 REQUIRE System;
 
 dateTypeExchangeCurrencyDate (typeExchange, currency, date)  =
-    GROUP MAX dateIn IF rateExchange(typeExchange, currency, dateIn) AND dateIn < date AND date IS DATE
+    GROUP MAX dateIn IF rateExchange(typeExchange, currency, dateIn) AND dateIn <= date AND date IS DATE
     BY typeExchange, currency, date;
 
 rateTypeExchangeCurrencyDate 'Курс обмена' (typeExchange, currency, date) =

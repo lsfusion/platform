@@ -491,7 +491,7 @@ methodBasePriceSetDocumentArticle (basePriceSetDocument, article) <- prevMethodB
 priceBasePriceSetDocumentArticle(basePriceSetDocument, article) <-
                             IF methodBasePriceSetDocumentArticle(basePriceSetDocument, article) == methodPrice.coefficient THEN roundPriceCurrency(priceOutRateBasePriceSetDocumentArticle(basePriceSetDocument, article), currencyPriceSetDocument(basePriceSetDocument)) ELSE
                                IF methodBasePriceSetDocumentArticle(basePriceSetDocument, article) == methodPrice.RRP THEN roundPriceCurrency(RRPRateBasePriceSetDocumentArticle(basePriceSetDocument, article), currencyPriceSetDocument(basePriceSetDocument)) ELSE
-                                  PREV(priceBBasePriceSetDocumentArticle(basePriceSetDocument, article)) IF methodBasePriceSetDocumentArticle(basePriceSetDocument, article) == methodPrice.previous
+                                  prevPriceBBasePriceSetDocumentArticle(basePriceSetDocument, article) IF methodBasePriceSetDocumentArticle(basePriceSetDocument, article) == methodPrice.previous
                             WHEN CHANGED (methodBasePriceSetDocumentArticle(basePriceSetDocument, article)) OR
                                  CHANGED (priceOutRateBasePriceSetDocumentArticle(basePriceSetDocument, article)) OR
                                  CHANGED (RRPRateBasePriceSetDocumentArticle(basePriceSetDocument, article));
@@ -536,7 +536,7 @@ methodBasePriceSetDocumentSku (basePriceSetDocument, sku) <- prevMethodBPriceSet
 priceBasePriceSetDocumentSku(basePriceSetDocument, sku) <-
                             IF methodBasePriceSetDocumentSku(basePriceSetDocument, sku) == methodPrice.coefficient THEN roundPriceCurrency(priceOutRateBasePriceSetDocumentSku(basePriceSetDocument, sku), currencyPriceSetDocument(basePriceSetDocument)) ELSE
                                 IF methodBasePriceSetDocumentSku(basePriceSetDocument, sku) == methodPrice.RRP THEN roundPriceCurrency(RRPRateBasePriceSetDocumentSku(basePriceSetDocument, sku), currencyPriceSetDocument(basePriceSetDocument)) ELSE
-                                   PREV(priceBBasePriceSetDocumentSku(basePriceSetDocument, sku)) IF methodBasePriceSetDocumentSku(basePriceSetDocument, sku) == methodPrice.previous
+                                   prevPriceBBasePriceSetDocumentSku(basePriceSetDocument, sku) IF methodBasePriceSetDocumentSku(basePriceSetDocument, sku) == methodPrice.previous
                             WHEN CHANGED (methodBasePriceSetDocumentSku(basePriceSetDocument, sku)) OR
                                  CHANGED (priceOutRateBasePriceSetDocumentSku(basePriceSetDocument, sku)) OR
                                  CHANGED (RRPRateBasePriceSetDocumentSku(basePriceSetDocument, sku));
@@ -645,10 +645,10 @@ FORM priceSetDocument 'Розничный прайс'
                       RRPBasePriceSetDocumentArticle, markupBasePriceSetDocumentArticle, priceOutBasePriceSetDocumentArticle,
                       nameCurrencyBasePriceSetDocumentArticle, nameTypeExchangeBasePriceSetDocumentArticle,
                       rateBasePriceSetDocumentArticle, RRPRateBasePriceSetDocumentArticle, priceOutRateBasePriceSetDocumentArticle,
-                      priceBBasePriceSetDocumentArticle, nameMethodBasePriceSetDocumentArticle,
+                      prevPriceBBasePriceSetDocumentArticle, nameMethodBasePriceSetDocumentArticle,
                       priceBasePriceSetDocumentArticle
 
-    PROPERTIES (p, a) percentDiscountPriceSetDocumentArticle, calcPriceDiscountPriceSetDocumentArticle, priceBDiscountPriceSetDocumentArticle,
+    PROPERTIES (p, a) percentDiscountPriceSetDocumentArticle, calcPriceDiscountPriceSetDocumentArticle, prevPriceBDiscountPriceSetDocumentArticle,
                       priceDiscountPriceSetDocumentArticle
 
     FILTERS inPriceSetDocumentArticle(p, a), inSupplierBrandArticle(s, b, a), inArticleCategory(c, a)
@@ -677,10 +677,10 @@ FORM priceSetDocument 'Розничный прайс'
     PROPERTIES(sk) READONLY FORCE GRID barcode, sidArticleSku, nameCategoryArticleSku, nameBrandSupplierArticleSku, sidSizeSupplierItem, sidColorSupplierItem
     PROPERTIES (p, sk) priceInBasePriceSetDocumentSku, overRRPBasePriceSetDocumentSku, markupBasePriceSetDocumentSku, priceOutBasePriceSetDocumentSku,
                        nameCurrencyBasePriceSetDocumentSku, nameTypeExchangeBasePriceSetDocumentSku, rateBasePriceSetDocumentSku, RRPRateBasePriceSetDocumentSku,
-                       priceOutRateBasePriceSetDocumentSku, priceBBasePriceSetDocumentSku, nameMethodBasePriceSetDocumentSku,
+                       priceOutRateBasePriceSetDocumentSku, prevPriceBBasePriceSetDocumentSku, nameMethodBasePriceSetDocumentSku,
                        priceBasePriceSetDocumentSku
 
-    PROPERTIES (p, sk) overPercentDiscountPriceSetDocumentSku, calcPriceDiscountPriceSetDocumentSku, priceBDiscountPriceSetDocumentSku,
+    PROPERTIES (p, sk) overPercentDiscountPriceSetDocumentSku, calcPriceDiscountPriceSetDocumentSku, prevPriceBDiscountPriceSetDocumentSku,
                       priceDiscountPriceSetDocumentSku
 
     FILTERS inPriceSetDocumentSku(p, sk)

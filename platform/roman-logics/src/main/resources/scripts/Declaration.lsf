@@ -428,10 +428,10 @@ priceManagerialRateDeclarationDetail 'Цена товара (конверт.)' (
 declarationSumDeclarationDetail 'Стоимость товара' (declarationDetail) = declarationPriceDeclarationDetail(declarationDetail) *
                                                                          quantityDeclarationDetail(declarationDetail);
 
-declarationSumRateDeclarationDetail 'Стоимость товара (расч.)' (declarationDetail) = declarationSumDeclarationDetail(declarationDetail) *
-                                                                                     rateExchangeCustomDeclarationDetail(declarationDetail);
+declarationSumRateDeclarationDetail 'Стоимость товара (расч.)' (declarationDetail) = round2(declarationSumDeclarationDetail(declarationDetail) *
+                                                                                            rateExchangeCustomDeclarationDetail(declarationDetail));
 
-priceRateDeclarationDetail 'Цена товара (конверт.)' (declarationDetail) = round0(declarationSumRateDeclarationDetail(declarationDetail)/
+priceRateDeclarationDetail 'Цена товара (конверт.)' (declarationDetail) = round2(declarationSumRateDeclarationDetail(declarationDetail)/
                                                                                  quantityDeclarationDetail(declarationDetail)) IN baseGroup PERSISTENT;
 
 isPostedDeclarationDetail (declarationDetail) = TRUE IF declarationDetail IS declarationDetail;
@@ -741,18 +741,18 @@ sumRegistrationDeclarationDetail 'Таможенный сбор' (declarationDet
 sumRegistrationDeclaration 'Таможенный сбор (расч.)' (declaration) = GROUP MAX sumRegistrationDeclarationDetail(declarationDetail)
                                                                             BY declarationDeclarationDetail(declarationDetail) IN baseGroup PERSISTENT;
 
-rateSumRegistrationDeclaration 'Сумма таможенного сбора' (declaration) = round0(sumRegistrationDeclaration(declaration) *
+rateSumRegistrationDeclaration 'Сумма таможенного сбора' (declaration) = round2(sumRegistrationDeclaration(declaration) *
                                                                                 coeffRateDeclaration(declaration)) IN sumGroup PERSISTENT MINCHARWIDTH 12;
 
 sumRegistrationDataDeclaration 'Таможенный сбор' = DATA NUMERIC[14,2](declaration);
 sumRegistrationUnionDeclaration 'Таможенный сбор' = UNION OVERRIDE rateSumRegistrationDeclaration(declaration), sumRegistrationDataDeclaration(declaration) IN sumGroup;
 sumRegistrationDataDeclaration(declaration) <- rateSumRegistrationDeclaration(declaration) WHEN ASSIGNED (declaration IS preparedDeclaration);
 
-totalCustomSum 'Сумма платежей' (declaration) = round0(UNION SUM dutyReverseDeclaration(declaration), VATReverseDeclaration(declaration), sumRegistrationDataDeclaration(declaration)) IN sumGroup MINCHARWIDTH 17;
+totalCustomSum 'Сумма платежей' (declaration) = round2(UNION SUM dutyReverseDeclaration(declaration), VATReverseDeclaration(declaration), sumRegistrationDataDeclaration(declaration)) IN sumGroup MINCHARWIDTH 17;
 
 coeffDeclarationDetailDeclaration 'Удельный вес' (declarationDetail) = declarationSumRateDeclarationDetail(declarationDetail)/sumDeclaration(declarationDeclarationDetail(declarationDetail));
 
-registrationSumDeclarationDetail 'Таможенный сбор' (declarationDetail) = round0(rateSumRegistrationDeclaration(declarationDeclarationDetail(declarationDetail)) *
+registrationSumDeclarationDetail 'Таможенный сбор' (declarationDetail) = round2(rateSumRegistrationDeclaration(declarationDeclarationDetail(declarationDetail)) *
                                                                                 coeffDeclarationDetailDeclaration(declarationDetail));
 
 registrationSumDataDeclarationDetail 'Таможенный сбор' = DATA NUMERIC[14,2](declarationDetail);
@@ -761,7 +761,7 @@ registrationSumDataDeclarationDetail(declarationDetail) <- registrationSumDeclar
 registrationSumUnionDeclarationDetail 'Таможенный сбор' = UNION OVERRIDE registrationSumDeclarationDetail(declarationDetail),
                                                                          registrationSumDataDeclarationDetail(declarationDetail);
 
-registrationDeclarationDetail 'Таможенный сбор (ед.)' (declarationDetail) = round0(registrationSumUnionDeclarationDetail(declarationDetail)/quantityDeclarationDetail(declarationDetail)) PERSISTENT;
+registrationDeclarationDetail 'Таможенный сбор (ед.)' (declarationDetail) = round2(registrationSumUnionDeclarationDetail(declarationDetail)/quantityDeclarationDetail(declarationDetail)) PERSISTENT;
 
 registrationRateDeclarationDetail 'Таможенный сбор (в валюте)' (declarationDetail) = round2(registrationDeclarationDetail(declarationDetail)/rateExchangeManagerialDeclarationDetail(declarationDetail));
 
@@ -806,8 +806,8 @@ sumConsultationDeclarationDetail 'За консультацию' (declarationDet
 sumConsultationRateDeclarationDetail 'За консультацию (в валюте)' = sumConsultationDeclarationDetail(declarationDetail)/rateExchangeManagerialDeclarationDetail(declarationDetail);
 
 // для себестоимости
-dutyFinDeclarationDetail 'Пошлина' = round0(dutyReverseDeclarationDetail(declarationDetail)/quantityDeclarationDetail(declarationDetail));
-VATFinDeclarationDetail 'НДС' = round0(VATReverseDeclarationDetail(declarationDetail)/quantityDeclarationDetail(declarationDetail));
+dutyFinDeclarationDetail 'Пошлина' = round2(dutyReverseDeclarationDetail(declarationDetail)/quantityDeclarationDetail(declarationDetail));
+VATFinDeclarationDetail 'НДС' = round2(VATReverseDeclarationDetail(declarationDetail)/quantityDeclarationDetail(declarationDetail));
 
 dutyRateDeclarationDetail 'Пошлина (в валюте)' (declarationDetail) = round2(dutyFinDeclarationDetail(declarationDetail)/rateExchangeManagerialDeclarationDetail(declarationDetail));
 VATRateDeclarationDetail 'НДС (в валюте)' (declarationDetail) = round2(VATFinDeclarationDetail(declarationDetail)/rateExchangeManagerialDeclarationDetail(declarationDetail));

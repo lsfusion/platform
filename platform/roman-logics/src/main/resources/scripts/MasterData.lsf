@@ -48,7 +48,7 @@ inSupplierBrandSku(supplier, brand, sku) = UNION OVERRIDE brandSupplierArticleSk
 // подбор курса обмена валют
 META defineNearestRateExchangeObject(object, typeEx, typeCur, propDate, group)
 
-    nearestPredDate###typeEx###typeCur###object(object) = GROUP MAX date IF rateExchange(typeExchange###typeEx###object(object), currency###typeCur###object(object), date) AND date < propDate(object) AND date IS DATE BY object;
+    nearestPredDate###typeEx###typeCur###object(object) = GROUP MAX date IF rateExchange(typeExchange###typeEx###object(object), currency###typeCur###object(object), date) AND date <= propDate(object) AND date IS DATE BY object;
 
     rateExchange###typeEx###typeCur###object 'Курс обмена' (object) = rateExchange(typeExchange###typeEx###object(object), currency###typeCur###object(object), nearestPredDate###typeEx###typeCur###object(object)) IF object IS object IN group;
 

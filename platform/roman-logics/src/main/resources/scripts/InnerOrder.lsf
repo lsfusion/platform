@@ -208,7 +208,7 @@ FORM orderPicking 'Подбор товара'
     OBJECTS p = orderPicking FIXED PANEL
 
     PROPERTIES (p) objectClassName, nameNumeratorObject, numberObject, seriesObject, dateOrderPicking, timeOrderPicking,
-        nameStockOrderPicking, nameDestinationStockOrderPicking, nameCurrencyOrderPicking, noteOrderPicking,
+        nameStockOrderPicking, nameDestinationStockOrderPicking, nameCurrencyOrderPicking,
         countOrderPickingDetailOrderPicking, quantityOrderPickingDetailOrderPicking, messageOrderPicking READONLY
 
 
@@ -619,7 +619,7 @@ EXTEND FORM innerOrders
     OBJECTS p = orderPicking
 
     PROPERTIES (p) READONLY isPostedOrderPicking FORCE GRID, numberObject, seriesObject, dateOrderPicking, timeOrderPicking,
-        nameStockOrderPicking, nameDestinationStockOrderPicking, noteOrderPicking,
+        nameStockOrderPicking, nameDestinationStockOrderPicking,
         countOrderPickingDetailOrderPicking, quantityOrderPickingDetailOrderPicking, quantityInnerDocumentOrderPicking,
         quantityPostedInnerDocumentOrderPicking, quantityDraftInnerDocumentOrderPicking, statusOrderPicking
 
@@ -910,7 +910,7 @@ FORM orderPickings 'Подборки товара'
     OBJECTS p = orderPicking
 
     PROPERTIES (p) READONLY isPostedOrderPicking FORCE GRID, descriptionInnerOrderOrderPicking, numberObject, seriesObject, dateOrderPicking, timeOrderPicking,
-        nameStockOrderPicking, nameDestinationStockOrderPicking, noteOrderPicking,
+        nameStockOrderPicking, nameDestinationStockOrderPicking,
         countOrderPickingDetailOrderPicking, quantityOrderPickingDetailOrderPicking, statusOrderPicking,
         quantityInnerDocumentOrderPicking, quantityPostedInnerDocumentOrderPicking, quantityDraftInnerDocumentOrderPicking
     ORDER BY descriptionInnerOrderOrderPicking
@@ -939,7 +939,7 @@ FORM innerOrderRecs 'Приемка по внутр. заказам'
     OBJECTS p = orderPicking
 
     PROPERTIES (p) READONLY isPostedOrderPicking FORCE GRID, descriptionInnerOrderOrderPicking, numberObject, seriesObject, dateOrderPicking, timeOrderPicking,
-        nameStockOrderPicking, nameDestinationStockOrderPicking, noteOrderPicking,
+        nameStockOrderPicking, nameDestinationStockOrderPicking,
         countOrderPickingDetailOrderPicking, quantityOrderPickingDetailOrderPicking, statusRecOrderPicking,
 //        quantityInnerDocumentOrderPicking, quantityPostedInnerDocumentOrderPicking, quantityDraftInnerDocumentOrderPicking,
         quantityInnerOrderRecDetailOrderPicking
@@ -960,7 +960,7 @@ FORM orderPickingPrint 'Подборочный лист' PRINT
     OBJECTS p = orderPicking FIXED PANEL
 
     PROPERTIES (p) numberObject, seriesObject, dateOrderPicking, timeOrderPicking,
-        nameStockOrderPicking, nameDestinationStockOrderPicking, noteOrderPicking,
+        nameStockOrderPicking, nameDestinationStockOrderPicking,
         countOrderPickingDetailOrderPicking, quantityOrderPickingDetailOrderPicking,
         descriptionInnerOrderOrderPicking
 
