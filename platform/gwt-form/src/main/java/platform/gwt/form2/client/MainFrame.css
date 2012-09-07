@@ -80,11 +80,13 @@
 }
 
 .hSplitPanelContents {
-     /*overflow-x: auto;*/
+    overflow-x: auto;
+    overflow-y: hidden;
  }
 
 .vSplitPanelContents {
-    /*overflow-y: auto;*/
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .formController {
