@@ -65,8 +65,8 @@ FORM customCategory10 'Четвертый уровень'
     PROPERTIES(g) sidCustomCategory10, nameCustomCategory, nameCustomsZoneCustomCategory10,
                   sidCustomCategory9CustomCategory10, sidCustomCategory6CustomCategory10, sidCustomCategory4CustomCategory10,
                   nameCustomCategory9CustomCategory10, nameCustomCategory6CustomCategory10, nameCustomCategory4CustomCategory10,
-                  certificatedCustomCategory10, subCategoryCustomCategory10, numberRangeSupplierVATCustomCategory10
-
+                  certificatedCustomCategory10, subCategoryCustomCategory10, numberRangeSupplierVATCustomCategory10,
+                  dialogSupplierVATCustomCategory10, valueCurrentRateSupplierVATCustomCategory10
     OBJECTS s = subCategory
     PROPERTIES(s) READONLY nameSubCategory
 
@@ -117,12 +117,18 @@ DESIGN customCategory10 FROM DEFAULT {
                         ADD PROPERTY(nameCustomCategory9CustomCategory10);
                     }
                 }
+                NEW row23 {
+                    title = 'НДС';
+                    childConstraints = TO THE BOTTOM;
+                    ADD PROPERTY(numberRangeSupplierVATCustomCategory10);
+                    ADD PROPERTY(valueCurrentRateSupplierVATCustomCategory10);
+
+                }
                 NEW row22 {
                     title = 'Информация';
                     childConstraints = TO THE BOTTOM;
                     ADD PROPERTY(certificatedCustomCategory10);
                     ADD PROPERTY(subCategoryCustomCategory10);
-                    ADD PROPERTY(numberRangeSupplierVATCustomCategory10);
                 }
             }
 
@@ -148,6 +154,28 @@ addCategory10Category9CustomsZone 'Добавить' = ACTION (customCategory9, 
             EXEC apply();
     };
 } TOOLBAR IMAGE 'add.png';
+
+
+createCustomsZone 'Задать таможенную зону и связать ее с ТН ВЭД' = ACTION ()  {
+
+    ADDOBJ customsZone;
+    FOR g == addedObject() DO {
+        SET name(g) <- 'Европейский Союз';
+
+        SET customsZoneCustomCategory10(customCategory10) <- g;
+        SET customsZoneCustomCategory9(customCategory9) <- g;
+        SET customsZoneSubCategory(subCategory) <- g;
+        SET customsZoneTypeDuty(typeDuty) <- g;
+
+        FOR customCategory10CustomCategoryOrigin(customCategoryOrigin) DO {
+            SET customCategory10CustomCategoryOriginCustomsZone(customCategoryOrigin, xxx) IF xxx == g <- customCategory10CustomCategoryOrigin(customCategoryOrigin);
+        }
+    }
+} CONFIRM;
+
+EXTEND FORM globalParamForm
+    PROPERTIES() createCustomsZone
+;
 
 FORM customCategoryZones 'ТН ВЭД (зональный)'
 
@@ -177,7 +205,7 @@ FORM customCategoryZones 'ТН ВЭД (зональный)'
 
     OBJECTS cd = customCategory10
 
-    PROPERTIES(cd) READONLY sidCustomCategory10, nameCustomCategory, certificatedCustomCategory10
+    PROPERTIES(cd) READONLY sidCustomCategory10, nameCustomCategory, certificatedCustomCategory10, valueCurrentRateSupplierVATCustomCategory10
     PROPERTIES(cd) EDITFORM, delete
     PROPERTIES(cc,cz) addCategory10Category9CustomsZone TODRAW cd
 
@@ -279,7 +307,9 @@ CONSTRAINT customCategory10CustomCategoryOriginCustomsZone(customCategoryOrigin,
 FORM customCategoryOrigin 'ЕС уровень'
 
     OBJECTS g = customCategoryOrigin FIXED PANEL
-    PROPERTIES(g) sidCustomCategoryOrigin, nameCustomCategory
+    PROPERTIES(g) sidCustomCategoryOrigin, nameCustomCategory, sidCustomCategory4CustomCategoryOrigin, sidCustomCategory6CustomCategoryOrigin,
+                  nameCustomCategory4CustomCategoryOrigin, nameCustomCategory6CustomCategoryOrigin
+
 
     OBJECTS cz = customsZone
     PROPERTIES(cz) READONLY name
@@ -292,7 +322,31 @@ FORM customCategoryOrigin 'ЕС уровень'
 DESIGN customCategoryOrigin FROM DEFAULT {
     main {
         preferredSize = (1024, 768);
+        ADD g.box {
+            childConstraints = TO THE BOTTOM;
+            NEW row1{
+                childConstraints = TO THE RIGHT;
+                ADD PROPERTY (sidCustomCategoryOrigin);
+                ADD PROPERTY (nameCustomCategory);
+            }
+            NEW row2 {
+                title = 'Иерархия';
+                childConstraints = TO THE RIGHT;
+                NEW row211 {
+                    childConstraints = TO THE BOTTOM;
+                    ADD PROPERTY(sidCustomCategory4CustomCategoryOrigin);
+                    ADD PROPERTY(sidCustomCategory6CustomCategoryOrigin);
+                }
+                NEW row212 {
+                    childConstraints = TO THE BOTTOM;
+                    ADD PROPERTY(nameCustomCategory4CustomCategoryOrigin);
+                    ADD PROPERTY(nameCustomCategory6CustomCategoryOrigin);
+                }
+            }
+        }
+        ADD cz.box;
     }
+    ADD functions.box;
 }
 
 inCategory4Category6Origin (category4, category6, origin) =
@@ -350,3 +404,35 @@ DESIGN customCategoryOrigins FROM DEFAULT {
     }
     ADD functions.box;
 }
+
+
+//FORM Test 'Тест'
+//
+//    OBJECTS c = customCategory10
+//    PROPERTIES(c) READONLY nameCustomCategory, sidCustomCategory10
+//
+//    OBJECTS cz = customsZone
+//    PROPERTIES(cz) READONLY name
+//
+//    OBJECTS s = customCategoryOrigin
+//    PROPERTIES(s) READONLY nameCustomCategory, sidCustomCategoryOrigin
+//
+//    FILTERS customCategory10CustomCategoryOriginCustomsZone(s, cz) == c
+//;
+//
+//
+//DESIGN Test FROM DEFAULT {
+//
+//    main{
+//        ADD c.box;
+//        NEW topContainer {
+//            childConstraints = TO THE RIGHT;
+//
+//
+//            ADD cz.box;
+//            ADD s.box;
+//
+//        }
+//    }
+//    ADD functions.box;
+//}
