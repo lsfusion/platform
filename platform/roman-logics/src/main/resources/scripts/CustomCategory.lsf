@@ -300,9 +300,14 @@ addCategory10CustomCategoryOriginCustomsZone 'Четвертый уровень'
     }
 };
 
+CONSTRAINT customCategory9CustomCategory10(customCategory10) AND NOT
+    customsZoneCustomCategory9(customCategory9CustomCategory10(customCategory10)) == customsZoneCustomCategory10(customCategory10)
+        CHECKED BY customCategory9CustomCategory10 MESSAGE 'Не совпадают таможенные зоны у четветрого и третьего уровня';
+
 CONSTRAINT customCategory10CustomCategoryOriginCustomsZone(customCategoryOrigin, customsZone) AND NOT
     customsZoneCustomCategory10(customCategory10CustomCategoryOriginCustomsZone(customCategoryOrigin, customsZone)) == customsZone
-        CHECKED BY customCategory10CustomCategoryOriginCustomsZone MESSAGE 'Не совпадают таможенные зоны';
+        CHECKED BY customCategory10CustomCategoryOriginCustomsZone MESSAGE 'У четвернтого уровня и  уровня ЕС не совпадают таможенные зоны';
+
 
 FORM customCategoryOrigin 'ЕС уровень'
 

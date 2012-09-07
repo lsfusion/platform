@@ -16,18 +16,21 @@ dateTypeExchangeCurrencyDateEx (typeExchange, currency, date)  =
 curRateTypeExchangeCurrency 'Текущий курс обмена' (typeExchange, currency) =
     rateExchange(typeExchange, currency, dateTypeExchangeCurrencyDateEx(typeExchange, currency, currentDate()));
 
+typeExchangeRetailCurrency 'Тип обмена для розницы ИД' =  DATA typeExchange(currency);
+nameTypeExchangeRetailCurrency 'Тип обмена для розницы' (currency) = name(typeExchangeRetailCurrency(currency));
+
 // --------------------------------------------- Формы для ввода курсов валют --------------------------------------- //
 
 FORM currency 'Валюта'
     OBJECTS c = currency FIXED PANEL
-    PROPERTIES (c)  name, shortNameCurrency, symbolCurrency, documentNameCurrency
+    PROPERTIES (c)  name, shortNameCurrency, symbolCurrency, documentNameCurrency, nameTypeExchangeRetailCurrency
 
     EDIT currency OBJECT c
 ;
 
 FORM currencies 'Валюты'
     OBJECTS c = currency
-    PROPERTIES(c) READONLY name, shortNameCurrency, symbolCurrency, documentNameCurrency
+    PROPERTIES(c) READONLY name, shortNameCurrency, symbolCurrency, documentNameCurrency, nameTypeExchangeRetailCurrency
 
     PROPERTIES(c) ADDFORM, EDITFORM, delete
 

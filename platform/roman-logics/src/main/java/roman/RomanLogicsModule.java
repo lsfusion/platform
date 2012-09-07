@@ -259,8 +259,8 @@ public class RomanLogicsModule extends LogicsModule {
     public LCP typeExchangePayManagerial;
     public LCP nameTypeExchangePayManagerial;
 
-    public LCP typeExchangeRetail;
-    public LCP nameTypeExchangeRetail;
+//    public LCP typeExchangeRetail;
+//    public LCP nameTypeExchangeRetail;
     private LCP currencyPayFreights;
     private LCP nameCurrencyPayFreights;
     private LCP currencyCustom;
@@ -1667,8 +1667,8 @@ public class RomanLogicsModule extends LogicsModule {
         nameCurrencyCustom = addJProp(baseGroup, "nameCurrencyCustom", "Валюта мин.цен", baseLM.name, currencyCustom);
         currencyPayCustom = addDProp(idGroup, "currencyPayCustom", "Валюта для платежей (ИД)", baseLM.currency);
         //nameCurrencyPayCustom = addJProp(baseGroup, "nameCurrencyPayCustom", "Валюта для платежей", baseLM.name, currencyPayCustom);
-        typeExchangeRetail = addDProp(idGroup, "typeExchangeRetail", "Тип обмена для розницы", baseLM.typeExchange);
-        nameTypeExchangeRetail = addJProp(baseGroup, "nameTypeExchangeRetail", "Тип обмена для розницы", baseLM.name, typeExchangeRetail);
+//        typeExchangeRetail = addDProp(idGroup, "typeExchangeRetail", "Тип обмена для розницы", baseLM.typeExchange);
+//        nameTypeExchangeRetail = addJProp(baseGroup, "nameTypeExchangeRetail", "Тип обмена для розницы", baseLM.name, typeExchangeRetail);
 
         NDSPercentCustom = addDProp(baseGroup, "NDSPercentCustom", "НДС", NumericClass.get(14, 2));
         percentCostFreights = addDProp(baseGroup, "percentCostFreights", "Процент расходов за оформление", NumericClass.get(14, 2));
@@ -1899,7 +1899,7 @@ public class RomanLogicsModule extends LogicsModule {
         nameCustomCategory6CustomCategoryOrigin = addJProp(baseGroup, "nameCustomCategory6CustomCategoryOrigin", "Наименование(6)", nameCustomCategory, customCategory6CustomCategoryOrigin, 1);
         nameCustomCategory4CustomCategoryOrigin = addJProp(baseGroup, "nameCustomCategory4CustomCategoryOrigin", "Наименование(4)", nameCustomCategory, customCategory4CustomCategoryOrigin, 1);
 
-        relationCustomCategory10CustomCategoryOrigin = addDProp(baseGroup, "relationCustomCategory10CustomCategoryOrigin", "Связь ТН ВЭД", LogicalClass.instance, customCategory10, customCategoryOrigin);
+//        relationCustomCategory10CustomCategoryOrigin = addDProp(baseGroup, "relationCustomCategory10CustomCategoryOrigin", "Связь ТН ВЭД", LogicalClass.instance, customCategory10, customCategoryOrigin);
 
 //         addConstraint(addJProp("По умолчанию должен быть среди связанных", and(true, false),
 //                addCProp(LogicalClass.instance, true, customCategoryOrigin), 1,
@@ -4176,7 +4176,7 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(nameTypeExchangeCustom);
             addPropertyDraw(nameTypeExchangePayCustom);
             addPropertyDraw(nameTypeExchangePayManagerial);
-            addPropertyDraw(nameTypeExchangeRetail);
+//            addPropertyDraw(nameTypeExchangeRetail);
             addPropertyDraw(nameCurrencyPayFreights);
             addPropertyDraw(nameCurrencyCustom);
             addPropertyDraw(NDSPercentCustom);

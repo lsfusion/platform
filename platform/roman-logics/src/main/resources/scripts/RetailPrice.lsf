@@ -237,7 +237,7 @@ rateBasePriceSetDocumentSku(document, sku) => inPriceSetDocumentSku(document, sk
 priceSetDocumentSeriesNumberShortNameCurrency (series, number, currency) = GROUP UNIQUE priceSetDocument BY seriesObject(priceSetDocument), numberObject(priceSetDocument), shortNameCurrency(currencyPriceSetDocument(priceSetDocument))
                                                                                         WHERE priceSetDocument IS priceSetDocument;
 
-markupBasePriceSetDocumentSku 'Наценка' = DATA NUMERIC[14,2] (basePriceSetDocument, article);
+markupBasePriceSetDocumentSku 'Наценка' = DATA NUMERIC[14,2] (basePriceSetDocument, sku);
 markupBasePriceSetDocumentSku (basePriceSetDocument, sku) <- markupCoefficientRetail(
                                                                     coefficientRetailBrandSupplierDate(brandSupplierArticleSku(sku),
                                                                                                        datePriceSetDocument(basePriceSetDocument)))
@@ -675,13 +675,13 @@ FORM priceSetDocument 'Розничный прайс'
     PROPERTIES (p, sk) inPriceSetDocumentSku,
                        dateTimePriceSetDocumentSku, dateTimeToPriceSetDocumentSku
     PROPERTIES(sk) READONLY FORCE GRID barcode, sidArticleSku, nameCategoryArticleSku, nameBrandSupplierArticleSku, sidSizeSupplierItem, sidColorSupplierItem
-    PROPERTIES (p, sk) priceInBasePriceSetDocumentSku, overRRPBasePriceSetDocumentSku, markupBasePriceSetDocumentSku, priceOutBasePriceSetDocumentSku,
+    PROPERTIES (p, sk) priceInBasePriceSetDocumentSku, RRPBasePriceSetDocumentSku, markupBasePriceSetDocumentSku, priceOutBasePriceSetDocumentSku,
                        nameCurrencyBasePriceSetDocumentSku, nameTypeExchangeBasePriceSetDocumentSku, rateBasePriceSetDocumentSku, RRPRateBasePriceSetDocumentSku,
                        priceOutRateBasePriceSetDocumentSku, prevPriceBBasePriceSetDocumentSku, nameMethodBasePriceSetDocumentSku,
                        priceBasePriceSetDocumentSku
 
-    PROPERTIES (p, sk) overPercentDiscountPriceSetDocumentSku, calcPriceDiscountPriceSetDocumentSku, prevPriceBDiscountPriceSetDocumentSku,
-                      priceDiscountPriceSetDocumentSku
+    PROPERTIES (p, sk) percentDiscountPriceSetDocumentSku, calcPriceDiscountPriceSetDocumentSku, prevPriceBDiscountPriceSetDocumentSku,
+                       priceDiscountPriceSetDocumentSku
 
     FILTERS inPriceSetDocumentSku(p, sk)
 
@@ -927,12 +927,14 @@ FORM priceSetDocuments 'Розничные прайсы'
 
     OBJECTS a=article
     PROPERTIES(a) READONLY sidArticle, nameCategoryArticle, nameBrandSupplierArticle
+
     PROPERTIES (p, a) READONLY priceInBasePriceSetDocumentArticle,
-                               RRPBasePriceSetDocumentArticle, markupBasePriceSetDocumentArticle, priceOutBasePriceSetDocumentArticle,
-                               nameCurrencyBasePriceSetDocumentArticle, nameTypeExchangeBasePriceSetDocumentArticle,
-                               rateBasePriceSetDocumentArticle, priceBBasePriceSetDocumentArticle,
-                               priceBasePriceSetDocumentArticle, priceInRateBBasePriceSetDocumentArticle, percentDiscountPriceSetDocumentArticle,
-                               priceBDiscountPriceSetDocumentArticle, priceDiscountPriceSetDocumentArticle
+                      RRPBasePriceSetDocumentArticle, markupBasePriceSetDocumentArticle, priceOutBasePriceSetDocumentArticle,
+                      nameCurrencyBasePriceSetDocumentArticle, nameTypeExchangeBasePriceSetDocumentArticle,
+                      rateBasePriceSetDocumentArticle, RRPRateBasePriceSetDocumentArticle, priceOutRateBasePriceSetDocumentArticle,
+                      prevPriceBBasePriceSetDocumentArticle, nameMethodBasePriceSetDocumentArticle,
+                      priceBasePriceSetDocumentArticle, percentDiscountPriceSetDocumentArticle, calcPriceDiscountPriceSetDocumentArticle,
+                      prevPriceBDiscountPriceSetDocumentArticle, priceDiscountPriceSetDocumentArticle
 
     PROPERTIES(ts, p) createUserPriceChangeStockPriceSetDocument FORCE GRID
     PROPERTIES(ts, p) READONLY nameUserPriceChangeStockPriceSetDocument
@@ -949,11 +951,12 @@ FORM priceSetDocuments 'Розничные прайсы'
 
     OBJECTS sk=sku
     PROPERTIES(sk) READONLY FORCE GRID barcode, sidArticleSku, nameCategoryArticleSku, nameBrandSupplierArticleSku, sidSizeSupplierItem, sidColorSupplierItem
-    PROPERTIES (p, sk) READONLY priceInBasePriceSetDocumentSku, overRRPBasePriceSetDocumentSku, markupBasePriceSetDocumentSku, priceOutBasePriceSetDocumentSku,
-                       rateBasePriceSetDocumentSku, RRPRateBasePriceSetDocumentSku, priceOutRateBasePriceSetDocumentSku, priceBBasePriceSetDocumentSku,
-                       nameMethodBasePriceSetDocumentSku, priceBasePriceSetDocumentSku,
-                       priceInRateBPriceSetDocumentSku, percentDiscountPriceSetDocumentSku, priceBDiscountPriceSetDocumentSku,
-                       priceDiscountPriceSetDocumentSku
+    PROPERTIES (p, sk) READONLY priceInBasePriceSetDocumentSku, RRPBasePriceSetDocumentSku, markupBasePriceSetDocumentSku, priceOutBasePriceSetDocumentSku,
+                       nameCurrencyBasePriceSetDocumentSku, nameTypeExchangeBasePriceSetDocumentSku, rateBasePriceSetDocumentSku, RRPRateBasePriceSetDocumentSku,
+                       priceOutRateBasePriceSetDocumentSku, prevPriceBBasePriceSetDocumentSku, nameMethodBasePriceSetDocumentSku,
+                       priceBasePriceSetDocumentSku, percentDiscountPriceSetDocumentSku, calcPriceDiscountPriceSetDocumentSku,
+                       prevPriceBDiscountPriceSetDocumentSku, priceDiscountPriceSetDocumentSku
+
     PROPERTIES(ts, p, sk) READONLY quantityStockPriceSetDocumentSku
     PROPERTIES(ts, p, sk) printPricePriceSetDocumentSku
     PROPERTIES(ts, p) printAllPricePriceSetDocumentSku TODRAW sk FORCE PANEL
@@ -1020,7 +1023,7 @@ createPriceSetDocument 'Расценить по артикулам' =  ACTION (f
         SET inPriceSetDocumentArticle(p, article) <- TRUE IF quantityFreightArticle(freight, article);
         SET priceInBasePriceSetDocumentArticle(p, article) <- priceInFreightArticle(freight, article);
         SET currencyBasePriceSetDocumentArticle(p, article) <- currencyFreight(freight) WHERE inPriceSetDocumentArticle(p, article);
-        SET typeExchangeBasePriceSetDocumentArticle(p, article) <- typeExchangeRetail() WHERE inPriceSetDocumentArticle(p, article);
+        SET typeExchangeBasePriceSetDocumentArticle(p, article) <- typeExchangeRetailCurrency(currencyFreight(freight)) WHERE inPriceSetDocumentArticle(p, article);
         SET RRPBasePriceSetDocumentArticle(p, article) <- RRPFreightArticle(freight, article);
 
         FORM priceSetDocument OBJECTS p=addedObject() MODAL;
@@ -1039,7 +1042,7 @@ createPriceSetDocumentSku 'Расценить по товарам' =  ACTION (fr
         SET inPriceSetDocumentSku(p, sku) <- TRUE IF quantityFreightSku(freight, sku);
         SET priceInBasePriceSetDocumentSku(p, sku) <- priceInFreightSku(freight, sku);
         SET currencyBasePriceSetDocumentSku(p, sku) <- currencyFreight(freight) WHERE inPriceSetDocumentSku(p, sku);
-        SET typeExchangeBasePriceSetDocumentSku(p, sku) <- typeExchangeRetail() WHERE inPriceSetDocumentSku(p, sku);
+        SET typeExchangeBasePriceSetDocumentSku(p, sku) <- typeExchangeRetailCurrency(currencyFreight(freight)) WHERE inPriceSetDocumentSku(p, sku);
         SET RRPBasePriceSetDocumentSku(p, sku) <- RRPFreightSku(freight, sku);
 
         FORM priceSetDocument OBJECTS p=addedObject() MODAL;

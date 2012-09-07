@@ -178,7 +178,7 @@ public class TNVEDClassifierImporter extends TNVEDImporter {
             properties.add(new ImportProperty(cat10NameField, LM.nameCustomCategory.getMapping(categoryOriginKey)));
             properties.add(new ImportProperty(cat6IdField, LM.customCategory6CustomCategoryOrigin.getMapping(categoryOriginKey), LM.object(LM.customCategory6).getMapping(category6Key)));
             properties.add(new ImportProperty(cat10IdField, LM.customCategory10CustomCategoryOrigin.getMapping(categoryOriginKey), LM.object(LM.customCategory10).getMapping(category10Key)));
-            properties.add(new ImportProperty(cat10OriginRelationField, LM.relationCustomCategory10CustomCategoryOrigin.getMapping(category10Key, categoryOriginKey)));
+//            properties.add(new ImportProperty(cat10OriginRelationField, LM.relationCustomCategory10CustomCategoryOrigin.getMapping(category10Key, categoryOriginKey)));
             properties.add(new ImportProperty(numberIdField, LM.numberIdCustomCategoryOrigin.getMapping(categoryOriginKey)));
 
             ImportKey<?>[] keysArray = {category6Key, category10Key, categoryOriginKey};
