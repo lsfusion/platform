@@ -447,6 +447,9 @@ public class RomanLogicsModule extends LogicsModule {
     private LCP subCategorySku;
     private LCP nameSubCategorySku;
     private LCP nameSubCategoryDataSku;
+    LCP customCategory10CustomCategoryOriginCustomsZone;
+    LCP sidCustomCategory10CustomCategoryOriginCustomsZone;
+    LCP nameCustomCategory10CustomCategoryOriginCustomsZone;
 
     private LCP customCategory10CustomCategoryOriginArticle;
     private LCP customCategory10CustomCategoryOriginArticleSku;
@@ -1860,6 +1863,14 @@ public class RomanLogicsModule extends LogicsModule {
         customCategory4CustomCategoryOrigin = addJProp(idGroup, "customCategory4CustomCategoryOrigin", "Код(4)", customCategory4CustomCategory6, customCategory6CustomCategoryOrigin, 1);
 
         customCategory10CustomCategoryOrigin = addDProp(idGroup, "customCategory10CustomCategoryOrigin", "Код по умолчанию(ИД)", customCategory10, customCategoryOrigin);
+        customCategory10CustomCategoryOriginCustomsZone = addDProp(idGroup, "customCategory10CustomCategoryOriginCustomsZone", "Четвертый уровень(ИД)", customCategory10, customCategoryOrigin, customsZone);
+        sidCustomCategory10CustomCategoryOriginCustomsZone = addJProp(baseGroup, "sidCustomCategory10CustomCategoryOriginCustomsZone", "Четвертый уровень (код)", sidCustomCategory10, customCategory10CustomCategoryOriginCustomsZone, 1, 2);
+        sidCustomCategory10CustomCategoryOriginCustomsZone.property.preferredCharWidth = 30;
+        sidCustomCategory10CustomCategoryOriginCustomsZone.property.minimumCharWidth = 30;
+        nameCustomCategory10CustomCategoryOriginCustomsZone = addJProp(baseGroup, "nameCustomCategory10CustomCategoryOriginCustomsZone", "Четвертый уровень (наименование)", nameCustomCategory, customCategory10CustomCategoryOriginCustomsZone, 1, 2);
+        nameCustomCategory10CustomCategoryOriginCustomsZone.property.preferredCharWidth = 50;
+        nameCustomCategory10CustomCategoryOriginCustomsZone.property.minimumCharWidth = 30;
+
         sidCustomCategory10CustomCategoryOrigin = addJProp(baseGroup, "sidCustomCategory10CustomCategoryOrigin", "Код по умолчанию", sidCustomCategory10, customCategory10CustomCategoryOrigin, 1);
         sidCustomCategory10CustomCategoryOrigin.property.preferredCharWidth = 10;
         sidCustomCategory10CustomCategoryOrigin.property.minimumCharWidth = 10;

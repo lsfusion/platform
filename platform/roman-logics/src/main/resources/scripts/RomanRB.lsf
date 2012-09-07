@@ -127,7 +127,9 @@ NAVIGATOR {
         customClassifier {
             ADD customStores;
             ADD certificates;
-            ADD customOrigins;
+            ADD customsZones;
+            ADD customCategoryZones;
+            ADD customCategoryOrigins;
         }
 
         NEW customDocument 'Документы' TO leftToolbar {
