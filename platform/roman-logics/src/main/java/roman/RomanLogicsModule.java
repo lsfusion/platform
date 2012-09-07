@@ -1467,7 +1467,7 @@ public class RomanLogicsModule extends LogicsModule {
         freightChanged = addConcreteClass("freightChanged", "Обработанный фрахт", freightComplete);
         freightPriced = addConcreteClass("freightPriced", "Расцененный фрахт", freightChanged);
         freightShipped = addConcreteClass("freightShipped", "Отгруженный фрахт", freightPriced);
-        freightArrived = addConcreteClass("freightArrived", "Прибывший в РБ фрахт", freightShipped);
+        freightArrived = addConcreteClass("freightArrived", "Прибывший фрахт", freightShipped);
 
         freightType = addConcreteClass("freightType", "Тип машины", baseClass.named);
 
