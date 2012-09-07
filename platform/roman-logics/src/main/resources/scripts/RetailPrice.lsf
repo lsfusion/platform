@@ -333,6 +333,7 @@ META definePriceSetDocumentAggregations(document, caption)
     prevPriceB###document##Article caption###' (предыдущая)' (document, article) = prevPriceB###document##ArticleCurrencyDateTime(article, currencyPriceSetDocument(document), dateTimePriceSetDocumentArticle(document, article)) MINCHARWIDTH 15;
 
     priceDocumentB###document##Article caption###' (предыдущая)' (document, article) = priceB###document##ArticleCurrencyDateTime(article, currencyPriceSetDocument(document), dateTimePriceSetDocument(document)) MINCHARWIDTH 15;
+    prevPriceDocumentB###document##Article caption###' (предыдущая)' (document, article) = prevPriceB###document##ArticleCurrencyDateTime(article, currencyPriceSetDocument(document), dateTimePriceSetDocument(document)) MINCHARWIDTH 15;
 
     priceA###document##Article caption###' (предыдущая)' (document, article) = priceA###document##ArticleCurrencyDateTime(article, currencyPriceSetDocument(document), dateTimePriceSetDocument(document)) MINCHARWIDTH 15;
 
@@ -368,6 +369,7 @@ META definePriceSetDocumentAggregations(document, caption)
     prevPriceB###document##Sku caption###' (предыдущая)' (document, sku) = prevPriceB###document##SkuCurrencyDateTime(sku, currencyPriceSetDocument(document), dateTimePriceSetDocumentSku(document, sku)) MINCHARWIDTH 15;
 
     priceDocumentB###document##Sku caption###' (предыдущая)' (document, sku) = priceB###document##SkuCurrencyDateTime(sku, currencyPriceSetDocument(document), dateTimePriceSetDocument(document)) MINCHARWIDTH 15;
+    prevPriceDocumentB###document##Sku caption###' (предыдущая)' (document, sku) = prevPriceB###document##SkuCurrencyDateTime(sku, currencyPriceSetDocument(document), dateTimePriceSetDocument(document)) MINCHARWIDTH 15;
 
     priceA###document##Sku caption###' (предыдущая)' (document, sku) = priceA###document##SkuCurrencyDateTime(sku, currencyPriceSetDocument(document), dateTimePriceSetDocument(document)) MINCHARWIDTH 15;
 
@@ -618,15 +620,16 @@ FORM priceSetDocument 'Розничный прайс'
 
     OBJECTS aa=article
     PROPERTIES (aa)    READONLY sidArticle, nameCategoryArticle, nameBrandSupplierArticle, currentBalanceArticle
-    PROPERTIES (p, aa) READONLY priceDocumentBBasePriceSetDocumentArticle, priceDocumentBDiscountPriceSetDocumentArticle
+    PROPERTIES (p, aa) READONLY prevPriceDocumentBBasePriceSetDocumentArticle, prevPriceDocumentBDiscountPriceSetDocumentArticle
     PROPERTIES (p, aa) inPriceSetDocumentArticle
 
     FILTERS stringEqualsAll(v), inBrandSupplier(s, b), inSupplierBrandArticle(s, b, aa), stringEqualsAll(vv),
             inArticleCategory(c, aa)
 
     OBJECTS ss=sku
-    PROPERTIES (ss) READONLY FORCE GRID sidArticleSku, nameCategoryArticleSku, nameBrandSupplierArticleSku, sidSizeSupplierItem, sidColorSupplierItem, currentBalanceSku
-    PROPERTIES (p, ss) priceDocumentBBasePriceSetDocumentSku, priceDocumentBDiscountPriceSetDocumentSku, inPriceSetDocumentSku
+    PROPERTIES (ss)    READONLY FORCE GRID sidArticleSku, nameCategoryArticleSku, nameBrandSupplierArticleSku, sidSizeSupplierItem, sidColorSupplierItem, currentBalanceSku
+    PROPERTIES (p, ss) READONLY prevPriceDocumentBBasePriceSetDocumentSku, prevPriceDocumentBDiscountPriceSetDocumentSku
+    PROPERTIES (p, ss) inPriceSetDocumentSku
 
     FILTERS stringEqualsAll(v), inBrandSupplier(s, b), inSupplierBrandSku(s, b, ss), stringEqualsAll(vv),
             inSkuCategory(c, ss)
@@ -635,9 +638,9 @@ FORM priceSetDocument 'Розничный прайс'
         FILTER 'Текущего артикула' 'F6' inArticleSku(aa, ss) DEFAULT
 
     OBJECTS a=article
-    PROPERTIES (p, a) inPriceSetDocumentArticle
+    PROPERTIES (p, a) inPriceSetDocumentArticle,
+                      dateTimePriceSetDocumentArticle, dateTimeToPriceSetDocumentArticle
     PROPERTIES(a) READONLY sidArticle, nameCategoryArticle, nameBrandSupplierArticle
-    PROPERTIES (p, a) dateTimePriceSetDocumentArticle, dateTimeToPriceSetDocumentArticle
     PROPERTIES (p, a) priceInBasePriceSetDocumentArticle,
                       RRPBasePriceSetDocumentArticle, markupBasePriceSetDocumentArticle, priceOutBasePriceSetDocumentArticle,
                       nameCurrencyBasePriceSetDocumentArticle, nameTypeExchangeBasePriceSetDocumentArticle,
@@ -669,9 +672,9 @@ FORM priceSetDocument 'Розничный прайс'
         FILTER 'Ненулевые остатки' 'F5' currentBalanceSku(ss) DEFAULT
 
     OBJECTS sk=sku
-    PROPERTIES (p, sk) inPriceSetDocumentSku
+    PROPERTIES (p, sk) inPriceSetDocumentSku,
+                       dateTimePriceSetDocumentSku, dateTimeToPriceSetDocumentSku
     PROPERTIES(sk) READONLY FORCE GRID barcode, sidArticleSku, nameCategoryArticleSku, nameBrandSupplierArticleSku, sidSizeSupplierItem, sidColorSupplierItem
-    PROPERTIES (p, sk) dateTimePriceSetDocumentSku, dateTimeToPriceSetDocumentSku
     PROPERTIES (p, sk) priceInBasePriceSetDocumentSku, overRRPBasePriceSetDocumentSku, markupBasePriceSetDocumentSku, priceOutBasePriceSetDocumentSku,
                        nameCurrencyBasePriceSetDocumentSku, nameTypeExchangeBasePriceSetDocumentSku, rateBasePriceSetDocumentSku, RRPRateBasePriceSetDocumentSku,
                        priceOutRateBasePriceSetDocumentSku, priceBBasePriceSetDocumentSku, nameMethodBasePriceSetDocumentSku,
@@ -690,7 +693,7 @@ FORM priceSetDocument 'Розничный прайс'
 
 DESIGN priceSetDocument FROM DEFAULT {
     main {
-        preferredSize = (1024, 768);
+        preferredSize = (1600, 1200);
         NEW headerContainer {
             childConstraints = TO THE BOTTOM;
             NEW headerRow1 {
@@ -727,12 +730,8 @@ DESIGN priceSetDocument FROM DEFAULT {
                     fillVertical = 1;
                 }
 
-                //NEW treeContainer {
-                //    childConstraints = TO THE BOTTOM;
-                //    type = SPLITV;
-                //}
-
                 NEW checkContainer {
+                    childConstraints = TO THE RIGHT;
                     type = SPLITH;
 
                     ADD aa.box {
@@ -759,12 +758,12 @@ DESIGN priceSetDocument FROM DEFAULT {
 
                     type = TABBED;
                     ADD a.box {
-                        fillHorizontal = 5;
+                        fillHorizontal = 4;
                         fillVertical = 2;
                     }
 
                     ADD sk.box {
-                        fillHorizontal = 5;
+                        fillHorizontal = 4;
                         fillVertical = 2;
                     }
                 }
@@ -776,6 +775,10 @@ DESIGN priceSetDocument FROM DEFAULT {
 
     PROPERTY(formOkAction) {
         caption = 'Провести';
+    }
+
+    PROPERTY(formCloseAction) {
+        askConfirm = TRUE;
     }
 }
 
@@ -1012,7 +1015,8 @@ backgroundPriceSetDocument 'Цвет' (freight) = RGB(212,255,212) IF hasPriceSe
 createPriceSetDocument 'Расценить по артикулам' =  ACTION (freight) NEWSESSION {
     ADDOBJ basePriceSetDocument;
     FOR p == addedObject() DO {
-        SET freightBasePriceSetDocument(p) <- freight AS freight;
+        SET freightBasePriceSetDocument(p) <- freight;
+        SET currencyPriceSetDocument(p) <- currencyCountryFreight(freight);
         SET inPriceSetDocumentArticle(p, article) <- TRUE IF quantityFreightArticle(freight, article);
         SET priceInBasePriceSetDocumentArticle(p, article) <- priceInFreightArticle(freight, article);
         SET currencyBasePriceSetDocumentArticle(p, article) <- currencyFreight(freight) WHERE inPriceSetDocumentArticle(p, article);
@@ -1031,6 +1035,7 @@ createPriceSetDocumentSku 'Расценить по товарам' =  ACTION (fr
     ADDOBJ basePriceSetDocument;
     FOR p == addedObject() DO {
         SET freightBasePriceSetDocument(p) <- freight AS freight;
+        SET currencyPriceSetDocument(p) <- currencyCountryFreight(freight);
         SET inPriceSetDocumentSku(p, sku) <- TRUE IF quantityFreightSku(freight, sku);
         SET priceInBasePriceSetDocumentSku(p, sku) <- priceInFreightSku(freight, sku);
         SET currencyBasePriceSetDocumentSku(p, sku) <- currencyFreight(freight) WHERE inPriceSetDocumentSku(p, sku);

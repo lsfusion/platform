@@ -36,7 +36,6 @@ import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LAP;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
-import platform.server.logics.panellocation.ToolbarPanelLocation;
 import platform.server.logics.property.*;
 import platform.server.logics.property.actions.CustomActionProperty;
 import platform.server.logics.property.actions.FormActionProperty;
@@ -607,6 +606,8 @@ public class RomanLogicsModule extends LogicsModule {
     private LCP nameCountryFreight;
     private LCP languageFreight;
     private LCP nameLanguageFreight;
+    private LCP currencyCountryFreight;
+    private LCP nameCurrencyCountryFreight;
     LCP dictionaryFreight;
     LCP nameOriginExporterFreight;
     LCP nameExporterFreight;
@@ -3157,6 +3158,9 @@ public class RomanLogicsModule extends LogicsModule {
 
         languageFreight = addJProp("languageFreight", "Язык фрахта (ИД)", BL.Country.getLCPByName("languageCountry"), countryFreight, 1);
         nameLanguageFreight = addJProp("nameLanguageFreight", "Язык фрахта", baseLM.name, languageFreight, 1);
+
+        currencyCountryFreight = addJProp("currencyCountryFreight", "Валюта страны назначения (ИД)", baseLM.currencyCountry, countryFreight, 1);
+        nameCurrencyCountryFreight = addJProp("nameCurrencyCountryFreight", "Валюта страны назначения", baseLM.name, languageFreight, 1);
 
         mainCompositionLanguageFreightSku  = addDProp("mainCompositionLanguageFreightSku", "Состав (иностр.)", StringClass.get(200), freight, sku);
         additionalCompositionLanguageFreightSku = addDProp("additionalCompositionLanguageFreightSku", "Доп. состав (иностр.)", StringClass.get(200), freight, sku);
