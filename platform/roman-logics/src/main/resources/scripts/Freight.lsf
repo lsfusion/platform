@@ -38,18 +38,45 @@ nameCountryOfOriginLanguageFreightSku 'Страна (иностр.)' (freight, s
 
 nameCategoryFreightLanguageSku 'Номенклатурная группа (иностр.)' (freight, sku) = nameCategoryArticleSkuLanguage(sku, languageFreight(freight));
 
-toArrivedFreight 'Пометить как отгруженный' = [ACTION (freight) {
+META dateFreight (object, caption)
 
-    CHANGECLASS freight TO freightArrived;
-    EXEC apply();
+    FORM date###object caption
+        OBJECTS d = DATE FIXED PANEL
+        PROPERTIES(d) OBJVALUE
+    ;
 
-}](freight) IF freight IS freight AND NOT freight IS freightArrived CONFIRM;
+END
+
+@dateFreight(freightShipped, 'Дата отгрузки');
+@dateFreight(freightArrived, 'Дата прибытия');
+
+toShipFreight 'Пометить как отгруженный' =  [ACTION (freight) {
+
+    FORM dateFreightShipped MODAL;
+        IF formResult() == formResult.ok THEN {
+            SET dateShipmentFreight(freight) <- chosenDate('d');
+            CHANGECLASS freight TO freightShipped;
+            EXEC apply();
+        }
+
+}](freight) IF freight IS freight AND NOT freight IS freightShipped IMAGE 'sign_tick.png';
+
+toArrivedFreight 'Пометить как прибывший' = [ACTION (freight) {
+
+    FORM dateFreightArrived MODAL;
+        IF formResult() == formResult.ok THEN {
+            SET dateArrivalFreight(freight) <- chosenDate('d');
+            CHANGECLASS freight TO freightArrived;
+            EXEC apply();
+        }
+
+}](freight) IF freight IS freight AND NOT freight IS freightArrived;
 
 FORM freight 'Фрахт'
 
     OBJECTS f = freight FIXED PANEL
-    PROPERTIES(f) objectClassName, nameNumeratorObject, numberObject, seriesObject, date, dateArrivalFreight,
-                  nameCountryFreight, nameLanguageFreight, nameRouteFreight, nameExporterFreight,
+    PROPERTIES(f) objectClassName, nameNumeratorObject, numberObject, seriesObject, date, dateShipmentFreight,
+                  dateArrivalFreight, nameCountryFreight, nameLanguageFreight, nameRouteFreight, nameExporterFreight,
                   descriptionFreight, tonnageDataFreight, volumeDataFreight, palletCountDataFreight,
                   nameCurrencyFreight, sumFreightFreight
 
@@ -63,13 +90,20 @@ DESIGN freight FROM DEFAULT {
         NEW headerContainer{
 
             caption = 'Шапка документа';
-            childConstraints = TO THE RIGHT;
-            ADD PROPERTY(objectClassName);
-            ADD PROPERTY(nameNumeratorObject);
-            ADD PROPERTY(numberObject);
-            ADD PROPERTY(seriesObject);
-            ADD PROPERTY(date);
-            ADD PROPERTY(dateArrivalFreight);
+            childConstraints = TO THE BOTTOM;
+            NEW firstContainer{
+                childConstraints = TO THE RIGHT;
+                ADD PROPERTY(objectClassName);
+                ADD PROPERTY(nameNumeratorObject);
+                ADD PROPERTY(numberObject);
+                ADD PROPERTY(seriesObject);
+            }
+            NEW dateContainer{
+                childConstraints = TO THE RIGHT;
+                ADD PROPERTY(date);
+                ADD PROPERTY(dateShipmentFreight);
+                ADD PROPERTY(dateArrivalFreight);
+            }
         }
 
         NEW paramContainer {
@@ -101,7 +135,7 @@ DESIGN freight FROM DEFAULT {
 
 EXTEND FORM freightListForm
     PROPERTIES (freight) READONLY nameCountryFreight BEFORE nameRouteFreight(freight), nameLanguageFreight BEFORE nameRouteFreight(freight)
-    PROPERTIES (freight) FORCE GRID toArrivedFreight
+    PROPERTIES (freight) FORCE GRID toShipFreight, toArrivedFreight
 
     PROPERTIES (freight) ADDFORM, EDITFORM, delete FORCE PANEL
 ;
