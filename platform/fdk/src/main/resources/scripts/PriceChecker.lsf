@@ -93,11 +93,7 @@ loadDefaultPriceCheckerModels 'Загрузить стандартные мод�
     EXEC loadDefaultPriceCheckerModel('Прайс-чекеры EasyCSV', 'equ.clt.handler.easy.EasyCSVHandler');
 } IN loadDefaultGroup;
 
-loadDefaultData () += loadDefaultPriceCheckerModels();
-
-EXTEND FORM defaultData
-    PROPERTIES() loadDefaultPriceCheckerModels
-;
+@implementLoadDefaultData(loadDefaultPriceCheckerModels);
 
 // --------------------------------------- Генерация групп прайс-чекеров -------------------------------- //
 loadDefaultGroupPriceChecker 'Сгенерировать группу прайс-чекеров' = ACTION(equipmentServer, stock, model, num) {

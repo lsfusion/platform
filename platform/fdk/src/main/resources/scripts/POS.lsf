@@ -1060,7 +1060,4 @@ loadDefaultPaymentTypes 'Загрузить стандартные типы оп
     EXEC loadDefaultPaymentType('Mastercard', paymentMeans.paymentMeansCard);
 } IN loadDefaultGroup;
 
-loadDefaultData () += loadDefaultPaymentTypes();
-EXTEND FORM defaultData
-    PROPERTIES() loadDefaultPaymentTypes
-;
+@implementLoadDefaultData(loadDefaultPaymentTypes);

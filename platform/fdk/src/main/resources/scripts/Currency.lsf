@@ -187,8 +187,4 @@ loadDefaultCurrencies 'Загрузить стандартные валюты' =
     EXEC loadDefaultCurrency('BLR', 'Белорусский рубль', ' ');
 } IN loadDefaultGroup;
 
-loadDefaultData () += loadDefaultCurrencies();
-
-EXTEND FORM defaultData
-    PROPERTIES() loadDefaultCurrencies
-;
+@implementLoadDefaultData(loadDefaultCurrencies);

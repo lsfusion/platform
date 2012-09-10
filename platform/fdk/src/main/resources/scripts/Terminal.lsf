@@ -321,11 +321,7 @@ loadDefaultTerminalModels 'Загрузить стандартные модел�
     EXEC loadDefaultTerminalModel('ТСД EasyCSV', 'equ.clt.handler.easy.EasyCSVHandler');
 } IN loadDefaultGroup;
 
-loadDefaultData () += loadDefaultTerminalModels();
-
-EXTEND FORM defaultData
-    PROPERTIES() loadDefaultTerminalModels
-;
+@implementLoadDefaultData(loadDefaultTerminalModels);
 
 // Виды справочников терминалов сбора данных
 loadDefaultTerminalHandbookType 'Добавить вид справочника ТСД' = ACTION (handbookTypeName, idString) {
@@ -337,11 +333,7 @@ loadDefaultTerminalHandbookTypes 'Загрузить стандартные ви
     EXEC loadDefaultTerminalHandbookType(terminalHandbookType.terminalHandbookTypeCustomer, '02');
 } IN loadDefaultGroup;
 
-loadDefaultData () += loadDefaultTerminalHandbookTypes();
-
-EXTEND FORM defaultData
-    PROPERTIES() loadDefaultTerminalHandbookTypes
-;
+@implementLoadDefaultData(loadDefaultTerminalHandbookTypes);
 
 // Типы документов терминалов сбора данных
 loadDefaultTerminalDocumentType 'Добавить тип документа ТСД' = ACTION (nameString, gtdt, idTypeString, handbook1String, handbook2String) {
@@ -365,11 +357,7 @@ loadDefaultTerminalDocumentTypes 'Загрузить стандартные ти
     }
 } IN loadDefaultGroup;
 
-loadDefaultData () += loadDefaultTerminalDocumentTypes();
-
-EXTEND FORM defaultData
-    PROPERTIES() loadDefaultTerminalDocumentTypes
-;
+@implementLoadDefaultData(loadDefaultTerminalDocumentTypes);
 
 // ------------------------------------------ Генерация групп терминалов сбора данных ------------------------------ //
 loadDefaultGroupTerminal 'Сгенерировать группу терминалов' = ACTION(equipmentServer, stock, model, gtdt, num) {

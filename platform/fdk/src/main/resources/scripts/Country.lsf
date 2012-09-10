@@ -306,8 +306,4 @@ loadDefaultCountries 'Загрузить стандартные страны' = 
     EXEC loadDefaultCountry('СЕН-МАРТЕН',' ',' ','MF',' ');
 } IN loadDefaultGroup;
 
-loadDefaultData () += loadDefaultCountries();
-
-EXTEND FORM defaultData
-    PROPERTIES() loadDefaultCountries
-;
+@implementLoadDefaultData(loadDefaultCountries);

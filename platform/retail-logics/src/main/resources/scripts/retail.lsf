@@ -7494,10 +7494,7 @@ loadDefaultStatisticGroups 'Загрузить стандартные стати
     EXEC loadDefaultStatisticGroup('5', 'Подержанные товары', '52.50.1', groupStatic.thing, 1);
 } IN loadDefaultGroup;
 
-loadDefaultData () += loadDefaultStatisticGroups();
-EXTEND FORM defaultData
-    PROPERTIES() loadDefaultStatisticGroups
-;
+@implementLoadDefaultData(loadDefaultStatisticGroups);
 
 //------------------- Справочник норм естественной убыли----------------------------//
 
@@ -7710,10 +7707,7 @@ loadDefaultNaturalLossItemGroups 'Загрузить стандартные гр
     EXEC loadDefaultSubNaturalLossItemGroup('ХЛЕБОБУЛОЧНЫЕ ТОВАРЫ','прочие весовые хлебобул.товары','066',0.3);
 } IN loadDefaultGroup;
 
-loadDefaultData () += loadDefaultNaturalLossItemGroups();
-EXTEND FORM defaultData
-    PROPERTIES() loadDefaultNaturalLossItemGroups
-;
+@implementLoadDefaultData(loadDefaultNaturalLossItemGroups);
 
 //---------------------------------------------- Генерация Z-отчета -------------------------------------------------//
 
@@ -7731,9 +7725,9 @@ EXTEND FORM defaultData
 ;
 
 EXTEND DESIGN defaultData {
-    main{
-        NEW ZReport BEFORE functions.box {
-            title = 'Сгенерировать Z-отчёт';
+    pane {
+        NEW ZReport {
+            title = 'Z-отчёт';
             childConstraints = TO THE BOTTOM;
             ADD PROPERTY(averageZReportCountGenerateZReport());
             ADD PROPERTY(averageReceiptCountGenerateZReport());

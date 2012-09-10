@@ -1201,8 +1201,4 @@ loadDefaultUOMs 'Загрузить стандартные единицы изм
     EXEC loadDefaultUOM('Ампула', 'ампул', 1);
 } IN loadDefaultGroup;
 
-loadDefaultData () += loadDefaultUOMs();
-
-EXTEND FORM defaultData
-    PROPERTIES() loadDefaultUOMs
-;
+@implementLoadDefaultData(loadDefaultUOMs);

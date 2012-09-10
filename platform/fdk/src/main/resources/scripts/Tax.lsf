@@ -234,8 +234,4 @@ loadDefaultVATs 'Загрузить стандартные НДС' = ACTION () {
     EXEC loadDefaultVAT(804, 2, 20);
 } IN loadDefaultGroup;
 
-loadDefaultData () += loadDefaultVATs();
-
-EXTEND FORM defaultData
-    PROPERTIES() loadDefaultVATs
-;
+@implementLoadDefaultData(loadDefaultVATs);

@@ -364,18 +364,17 @@ EXTEND FORM defaultData
 ;
 
 EXTEND DESIGN defaultData {
-    PROPERTY(name(es)) {
-        caption = 'Сервер оборудования';
-    }
-    PROPERTY(name(s)) {
-        caption = 'Склад';
-    }
+    pane {
+        NEW machinery {
+            title = 'Оборудование';
+            childConstraints = TO THE BOTTOM;
 
-    NEW machinery BEFORE functions.box{
-        title = 'Оборудование';
-        childConstraints = TO THE BOTTOM;
-
-        ADD PROPERTY(name(es));
-        ADD PROPERTY(name(s));
+            ADD PROPERTY(name(es)) {
+                caption = 'Сервер оборудования';
+            }
+            ADD PROPERTY(name(s)) {
+                caption = 'Склад';
+            }
+        }
     }
 }

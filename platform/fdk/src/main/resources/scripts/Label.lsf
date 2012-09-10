@@ -181,7 +181,4 @@ loadDefaultLabelTypes 'Загрузить стандартные ценники'
     EXEC loadDefaultLabelType('Ценник 595x480', 595, 480, printOrientation.portrait, 'Label_printLabelTransaction_l_a4.jrxml', 0);
 } IN loadDefaultGroup;
 
-loadDefaultData () += loadDefaultLabelTypes();
-EXTEND FORM defaultData
-    PROPERTIES() loadDefaultLabelTypes
-;
+@implementLoadDefaultData(loadDefaultLabelTypes);

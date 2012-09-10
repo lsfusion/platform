@@ -125,11 +125,7 @@ loadDefaultCashRegisterModels 'Загрузить стандартные мод�
     EXEC loadDefaultCashRegisterModel('Кассы UKM4', 'equ.clt.handler.ukm4.UKM4Handler');
 } IN loadDefaultGroup;
 
-loadDefaultData () += loadDefaultCashRegisterModels();
-
-EXTEND FORM defaultData
-    PROPERTIES() loadDefaultCashRegisterModels
-;
+@implementLoadDefaultData(loadDefaultCashRegisterModels);
 
 // --------------------------------------- Генерация групп касс -------------------------------- //
 loadDefaultGroupCashRegister 'Сгенерировать группу касс' = ACTION(equipmentServer, stock, model, num) {

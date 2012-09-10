@@ -10,6 +10,18 @@ FORM defaultData 'Стандартные данные'
     PROPERTIES() loadDefaultData
 ;
 DESIGN defaultData FROM DEFAULT {
+    NEW pane BEFORE functions.box {
+        type = TABBED;
+
+        fillVertical = 1.0;
+        fillHorizontal = 1.0;
+
+        NEW commons {
+            title = 'Общие';
+
+            ADD PROPERTY(loadDefaultData);
+        }
+    }
 }
 
 NAVIGATOR {
@@ -17,3 +29,15 @@ NAVIGATOR {
         ADD defaultData;
     }
 }
+
+META implementLoadDefaultData (property)
+    loadDefaultData () += property();
+    EXTEND FORM defaultData
+        PROPERTIES() property
+    ;
+    EXTEND DESIGN defaultData {
+        commons {
+            ADD PROPERTY(property);
+        }
+    }
+END

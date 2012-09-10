@@ -173,11 +173,7 @@ loadDefaultScalesModels 'Загрузить стандартные модели 
     EXEC loadDefaultScalesModel('Весы Штрих-Принт', 'equ.clt.handler.shtrihPrint.ShtrihPrintHandler');
 } IN loadDefaultGroup;
 
-loadDefaultData () += loadDefaultScalesModels();
-
-EXTEND FORM defaultData
-    PROPERTIES() loadDefaultScalesModels
-;
+@implementLoadDefaultData(loadDefaultScalesModels);
 
 // --------------------------------------- Генерация групп весов -------------------------------- //
 loadDefaultGroupScales 'Сгенерировать группу весов' = ACTION(equipmentServer, stock, model, num) {
