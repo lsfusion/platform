@@ -131,15 +131,29 @@ FORM gender 'Пол'
 ;
 
 FORM gendersDialog 'Пол'
+
     OBJECTS g = gender
     PROPERTIES(g) READONLY sidGender
     PROPERTIES(g) ADDFORM, EDITFORM, delete
     DIALOG gender OBJECT g;
 ;
 
+FORM typeFabric 'Тип одежды'
+
+    OBJECTS t = typeFabric FIXED PANEL
+    PROPERTIES(t) name
+
+    OBJECTS l= language
+    PROPERTIES(l) READONLY name
+    PROPERTIES(t, l) languageName
+
+    EDIT typeFabric OBJECT t;
+;
+
 FORM typeFabrics 'Типы одежды'
     OBJECTS t = typeFabric
     PROPERTIES(t) READONLY name
+    PROPERTIES(t) ADDFORM, EDITFORM, delete
     DIALOG typeFabric OBJECT t
 ;
 

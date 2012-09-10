@@ -253,5 +253,6 @@ NAVIGATOR {
         ADD priceSkuPriceSetDocumentPrint;
         ADD writeOffPrint;
         ADD orderPickingPrint;
+        ADD declarationPrint;
     }
 }

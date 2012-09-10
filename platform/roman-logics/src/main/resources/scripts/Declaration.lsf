@@ -323,7 +323,7 @@ customCategoryOriginDeclarationDetail 'ТН ВЭД товара (ИД)' (declara
 
 sidCustomCategoryOriginDeclarationDetail 'ТН ВЭД товара (иностр.)' (declarationDetail) = sidCustomCategoryOrigin(customCategoryOriginDeclarationDetail(declarationDetail));
 
-nameSupplierDeclarationDetail 'Поставщик' (declarationDetail) = nameSupplierArticleSku(skuDeclarationDetail(declarationDetail));
+//nameSupplierDeclarationDetail 'Поставщик' (declarationDetail) = nameSupplierArticleSku(skuDeclarationDetail(declarationDetail));
 
 //--------------------------------- Сертификаты и сертификация -------------------------------------------------------//
 CLASS ABSTRACT certificate 'Сертификат';
@@ -521,6 +521,7 @@ TABLE groupstring (object, object, object, object, STRING[200]);
 //                                                      customCategory10GroupDeclaration(group),
 //                                                      mainCompositionGroupDeclaration(group),
 //                                                      countryGroupDeclaration(group)) RESOLVE FALSE;
+
 
 // свойства от артикула
 nameBrandGroupDeclaration 'Бренд' (groupDeclaration) = nameBrandSupplierArticle(articleGroupDeclaration(groupDeclaration));
@@ -907,19 +908,62 @@ showFormDeclarationInvoices 'Присоединить инвойсы' = ACTION (
     FORM declarationInvoices OBJECTS d=declaration MODAL;
 } IN docGroup TOOLBAR;
 
+//-------------------------------------------- Печатная форма украинской декларации -----------------------------------//
+
+supplierDeclarationDetail(declarationDetail) = supplierArticle(articleDeclarationDetail(declarationDetail));
+nameSupplierDeclarationDetail 'Поставщик' (declarationDetail) = name(supplierDeclarationDetail(declarationDetail));
+typeFabricDeclarationDetail(declarationDetail) = typeFabricArticle(articleDeclarationDetail(declarationDetail));
+nameTypeFabricDeclarationDetail 'Тип одежды' (declarationDetail) = name(typeFabricDeclarationDetail(declarationDetail));
+nameTypeFabricLanguageDeclarationDetail 'Тип одежды(иностр.)' (declarationDetail) =
+    nameTypeFabricArticleSkuLanguage(skuDeclarationDetail(declarationDetail), languageDeclaration(declarationDeclarationDetail(declarationDetail)));
+sidGenderDeclarationDetail 'Пол' (declarationDetail) = sidGenderArticle(articleDeclarationDetail(declarationDetail));
+sidGenderLanguageDeclarationDetail 'Пол' (declarationDetail) =
+    sidGenderArticleSkuLanguage(skuDeclarationDetail(declarationDetail), languageDeclaration(declarationDeclarationDetail(declarationDetail)));;
+
+castToStringFourObject255 = FORMULA STRING[255] 'CAST($1 AS TEXT)||\' \'||CAST($2 AS TEXT)||\' \'||CAST($3 AS TEXT)||\' \'||CAST($4 AS TEXT)';
+nameArticleDeclarationDetail 'Наименование' (declarationDetail) =
+    castToStringFourObject255(nameBrandDeclarationDetail(declarationDetail), nameInvoiceDeclarationDetail(declarationDetail),
+                              nameTypeFabricDeclarationDetail(declarationDetail), sidGenderDeclarationDetail(declarationDetail));
+
+nameArticleLanguageDeclarationDetail 'Наименование(иностр.)' (declarationDetail) =
+    castToStringFourObject255(nameBrandDeclarationDetail(declarationDetail), nameInvoiceDeclarationDetail(declarationDetail),
+                              nameTypeFabricLanguageDeclarationDetail(declarationDetail), sidGenderLanguageDeclarationDetail(declarationDetail));
+
+FORM declarationPrint 'Выгрузка деклараций' PRINT
+
+    OBJECTS d = declaration FIXED PANEL
+    PROPERTIES(d) SELECTOR sidDeclaration
+    PROPERTIES(d) nameImporterDeclaration, nameLanguageDeclaration, dateDeclaration, nameCurrencyDeclaration
+
+    OBJECTS dd = declarationDetail
+    PROPERTIES(dd) numberDeclarationDetail, sidArticleDeclarationDetail, nameBrandDeclarationDetail,
+                   nameSupplierDeclarationDetail, nameArticleDeclarationDetail, nameArticleLanguageDeclarationDetail,
+                   mainCompositionDeclarationDetail, mainCompositionLanguageDeclarationDetail,
+                   nameTypeFabricDeclarationDetail, nameTypeFabricLanguageDeclarationDetail,
+                   sidCustomCategoryOriginDeclarationDetail, nameCountryDeclarationDetail, quantityDeclarationDetail,
+                   declarationPriceDeclarationDetail, declarationSumDeclarationDetail
+
+    FILTERS declarationDeclarationDetail(dd) == d
+;
+
+exportDeclarationToEXELLanguageDeclaration 'Выгрузить декларацию в EXEL(иностр.)' = ACTION (declaration) {
+
+    FORM declarationPrint OBJECTS d = declaration;
+} CONFIRM TOOLBAR;
+
 FORM declaration 'Декларация'
-    OBJECTS d=declaration FIXED PANEL
+    OBJECTS d=declaration FIXED PANEL, dd=declarationDetail
     PROPERTIES(d) objectClassName, sidDeclaration, nameCustomStoreDeclaration, nameImporterDeclaration, nameLanguageDeclaration,
                   nameCurrencyDeclaration, innerInvoicesDeclaration, dateDeclaration, timeDeclaration, beginTimeDeclaration, endTimeDeclaration,
                   nameTypeExchangeCustomDeclaration, rateExchangeCustomDataDeclaration, nameTypeExchangeManagerialDeclaration,
                   rateExchangeManagerialDataDeclaration, sumRegistrationUnionDeclaration, dutyReverseDeclaration, VATReverseDeclaration, totalCustomSum,
                   expenseCertificateDeclaration, sumConsultationDeclaration
+    PROPERTIES(d) exportDeclarationToEXELLanguageDeclaration TODRAW dd FORCE PANEL SHOWIF allowImportFromXLSDeclaration(d)
 
     OBJECTS c=correction
     PROPERTIES(c) date, dateTimePayCorrection, ADDOBJ, delete
     FILTERS inDeclarationCorrection(d, c)
 
-    OBJECTS dd=declarationDetail
     PROPERTIES (dd) READONLY nameCustomsZoneDeclarationDetail, nameCustomsZoneCategoryDeclarationDetail, numberDeclarationDetail, barcodeDeclarationDetail, nameInvoiceDeclarationDetail, nameInvoiceDeclarationDetailLanguage SHOWIF languageDeclaration(d),
                     nameBrandDeclarationDetail, sidArticleDeclarationDetail, sidSizeDeclarationDetail, sidColorDeclarationDetail, nameColorDeclarationDetail,
                     sidGenderGroupDeclaration, nameTypeFabricGroupDeclaration, mainCompositionDeclarationDetail,
@@ -1146,7 +1190,6 @@ DESIGN declaration FROM DEFAULT{
     PROPERTY(VATReverseDeclarationDetail) { background = #AAFFFF; }
     PROPERTY(registrationSumUnionDeclarationDetail) { background = #AAFFFF; }
 
-
     ADD functions.box;
 };
 
@@ -1260,4 +1303,5 @@ FORM innerInvoices 'Инвойсы РБ'
     PROPERTIES (i, s) quantityInnerInvoiceSku, priceInnerInvoiceSku, expensesDirectInvoiceSku
     FILTERS quantityInnerInvoiceSku(i, s)
 ;
+
 

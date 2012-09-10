@@ -507,6 +507,7 @@ public class RomanLogicsModule extends LogicsModule {
     public LCP typeFabricArticleSku;
     public LCP nameTypeFabricArticle;
     public LCP nameTypeFabricArticleSku;
+    public LCP nameTypeFabricArticleSkuLanguage;
     LCP articleSIDSupplier;
     private LAP seekArticleSIDSupplier;
     private LAP seekArticleSIDInvoice;
@@ -605,6 +606,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LCP insuranceFreightBrandSupplierSku;
     private LCP routeFreight;
     private LCP nameRouteFreight;
+    private LCP dateShipmentFreight;
     private LCP dateArrivalFreight;
     private LCP exporterFreight;
     private LCP countryFreight;
@@ -1165,7 +1167,6 @@ public class RomanLogicsModule extends LogicsModule {
     private LAP executeChangeFreightClass;
     private LAP executeChangeFreightClassApply;
     private LAP executeChangeFreightChangedClass;
-    private LAP executeChangeFreightShippedClass;
     private CreateItemFormEntity createItemForm;
     private EditItemFormEntity editItemForm;
     private FindItemFormEntity findItemFormBox, findItemFormBoxBarcode;
@@ -1468,7 +1469,7 @@ public class RomanLogicsModule extends LogicsModule {
         genderSupplier = addConcreteClass("genderSupplier", "Пол поставщика", baseClass);
         sizeGroupSupplier = addConcreteClass("sizeGroupSupplier", "Размерная сетка", baseClass.named);
 
-        typeFabric = addConcreteClass("typeFabric", "Тип одежды", baseClass.named);
+        typeFabric = addConcreteClass("typeFabric", "Тип одежды", baseClass.named, baseLM.multiLanguageNamed);
 
         freightBox = addConcreteClass("freightBox", "Короб для транспортировки", stock, freightUnit);
 
@@ -2254,11 +2255,6 @@ public class RomanLogicsModule extends LogicsModule {
         executeChangeFreightChangedClass.property.askConfirm = true;
         executeChangeFreightChangedClass.setImage("sign_tick.png");
 
-        executeChangeFreightShippedClass = addIfAProp("Пометить как отгруженный", addJProp(baseLM.andNot1, is(freightPriced), 1, is(freightShipped), 1), 1,
-                                                addJoinAProp(executeChangeFreightClassApply, 1, addCProp(baseClass.objectClass, "freightShipped")), 1);
-        executeChangeFreightShippedClass.property.askConfirm = true;
-        executeChangeFreightShippedClass.setImage("sign_tick.png");
-
         addressSupplier = BL.LegalEntity.getLCPByName("addressLegalEntity");
 
         supplierArticleSku = addJProp(idGroup, "supplierArticleSku", "Поставщик (ИД)", supplierArticle, articleSku, 1);
@@ -2345,6 +2341,7 @@ public class RomanLogicsModule extends LogicsModule {
         nameTypeFabricArticleSku = addJProp(baseGroup, "nameTypeFabricArticleSku", "Тип одежды", baseLM.name, typeFabricArticleSku, 1);
         nameTypeFabricArticleSku.property.preferredCharWidth = 10;
         nameTypeFabricArticleSku.property.minimumCharWidth = 5;
+        nameTypeFabricArticleSkuLanguage = addJProp(baseGroup, "nameTypeFabricArticleSkuLanguage", "Тип одежды", BL.I18n.getLCPByName("languageName"), typeFabricArticleSku, 1, 2);
 
         // Country
         countrySupplierOfOriginArticle = addDProp(idGroup, "countrySupplierOfOriginArticle", "Страна происхождения (ИД)", countrySupplier, article);
@@ -3171,6 +3168,7 @@ public class RomanLogicsModule extends LogicsModule {
         inInvoiceFreight = addDProp(baseGroup, "inInvoiceFreight", "Вкл.", LogicalClass.instance, invoice, freight);
         netWeightInvoicedFreight = addSGProp(baseGroup, "netWeightInvoicedFreight", "Вес инвойсов", addJProp(baseLM.and1, netWeightDocument, 1, inInvoiceFreight, 1, 2), 2);
 
+        dateShipmentFreight = addDProp(baseGroup, "dateShipmentFreight", "Дата отгрузки", DateClass.instance, freight);
         dateArrivalFreight = addDProp(baseGroup, "dateArrivalFreight", "Дата поступления на склад", DateClass.instance, freight);
 
         countryFreight = addDProp("countryFreight", "Страна назначения (ИД)", baseLM.country, freight);
@@ -7785,7 +7783,6 @@ public class RomanLogicsModule extends LogicsModule {
 
             addPropertyDraw(executeChangeFreightChangedClass, objFreight).forceViewType = ClassViewType.GRID;
             addPropertyDraw(freightPricedFA, objFreight).forceViewType = ClassViewType.GRID;
-            addPropertyDraw(executeChangeFreightShippedClass, objFreight).forceViewType = ClassViewType.GRID;
 
 //            GroupObjectEntity gobjDates = new GroupObjectEntity(genID());
 //            objDateFrom = new ObjectEntity(genID(), DateClass.instance, "Дата (с)");
