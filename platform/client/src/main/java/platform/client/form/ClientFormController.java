@@ -1040,11 +1040,13 @@ public class ClientFormController implements AsyncView {
     public FormUserPreferences getUserPreferences() {
         List<GroupObjectUserPreferences> groupObjectUserPreferencesList = new ArrayList<GroupObjectUserPreferences>();
         for (GroupObjectController controller : controllers.values()) {
-            Map<String, ColumnUserPreferences> columnPreferences = new HashMap<String, ColumnUserPreferences>();
-            for (ClientPropertyDraw property : controller.getPropertyDraws()) {
-                columnPreferences.put(property.getSID(), new ColumnUserPreferences(needToHideProperty(property), property.widthUser, property.orderUser, property.sortUser, property.ascendingSortUser));
+            if (controller.getGroupObject() != null) {
+                Map<String, ColumnUserPreferences> columnPreferences = new HashMap<String, ColumnUserPreferences>();
+                for (ClientPropertyDraw property : controller.getPropertyDraws()) {
+                    columnPreferences.put(property.getSID(), new ColumnUserPreferences(needToHideProperty(property), property.widthUser, property.orderUser, property.sortUser, property.ascendingSortUser));
+                }
+                groupObjectUserPreferencesList.add(new GroupObjectUserPreferences(columnPreferences, controller.getGroupObject().getSID(), controller.getGroupObject().hasUserPreferences));
             }
-            groupObjectUserPreferencesList.add(new GroupObjectUserPreferences(columnPreferences, controller.getGroupObject().getSID(), controller.getGroupObject().hasUserPreferences));
         }
         return new FormUserPreferences(groupObjectUserPreferencesList);
     }
