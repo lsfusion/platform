@@ -94,22 +94,6 @@ valueCurrentVATCountryValue 'Шкала НДС по значению' (country, 
 // вообще очень странное свойство и имеет мало смысла без страны - пока оставлено для обратной совместимости
 valueCurrentRangeValue 'Шкала по значению' (doubleValue) = GROUP MAX range BY valueCurrentRateRange (range);
 
-addVATNumberValue 'Добавить значение НДС' = ACTION (idCountry, number, value) {
-    ADDOBJ range;
-    FOR rn == addedObject() DO {
-       SET rangeTypeRange(rn) <- rangeType.common;
-       SET taxRange(rn) <- tax.taxVAT;
-       SET countryRange(rn) <- countrySID(idCountry);
-       SET numberRange(rn) <- number AS INTEGER;
-       ADDOBJ rate;
-       FOR ra == addedObject() DO {
-          SET rangeRate(ra) <- rn AS range;
-          SET valueRate(ra) <- value AS NUMERIC[10,5];
-          SET dateFromRate(ra) <- 2001_01_01;
-       };
-    };
-};
-
 // --------------------------------------- Формы ------------------------------------- //
 
 FORM tax 'Налог'
@@ -219,3 +203,39 @@ DESIGN taxes FROM DEFAULT {
     }
     ADD functions.box;
 }
+
+// ------------------------------------------------------- Стандартные данные ----------------------------------- //
+
+loadDefaultVAT 'Добавить значение НДС' = ACTION (idCountry, number, value) {
+    ADDOBJ range;
+    FOR rn == addedObject() DO {
+       SET rangeTypeRange(rn) <- rangeType.common;
+       SET taxRange(rn) <- tax.taxVAT;
+       SET countryRange(rn) <- countrySID(idCountry);
+       SET numberRange(rn) <- number AS INTEGER;
+       ADDOBJ rate;
+       FOR ra == addedObject() DO {
+          SET rangeRate(ra) <- rn AS range;
+          SET valueRate(ra) <- value AS NUMERIC[10,5];
+          SET dateFromRate(ra) <- 2001_01_01;
+       };
+    };
+};
+
+loadDefaultVATs 'Загрузить стандартные НДС' = ACTION () {
+    EXEC loadDefaultVAT(112, 1, 0);
+    EXEC loadDefaultVAT(112, 2, 9.09);
+    EXEC loadDefaultVAT(112, 3, 16.67);
+    EXEC loadDefaultVAT(112, 4, 10);
+    EXEC loadDefaultVAT(112, 5, 20);
+    EXEC loadDefaultVAT(112, 6, 24);
+
+    EXEC loadDefaultVAT(804, 1, 0);
+    EXEC loadDefaultVAT(804, 2, 20);
+} IN loadDefaultGroup;
+
+loadDefaultData () += loadDefaultVATs();
+
+EXTEND FORM defaultData
+    PROPERTIES() loadDefaultVATs
+;

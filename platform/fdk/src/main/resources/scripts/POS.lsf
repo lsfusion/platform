@@ -271,20 +271,6 @@ TABLE paymentType (paymentType);
 paymentMeansPaymentType (paymentType) = DATA paymentMeans (paymentType);
 namePaymentMeansPaymentType 'Форма оплаты' (paymentType) = name(paymentMeansPaymentType(paymentType)) IN baseGroup;
 
-addPaymentType 'Добавить тип оплаты' = ACTION(string, paymentMeans) {
-    ADDOBJ paymentType;
-    FOR p == addedObject() DO {
-        SET name(p) <- string AS STRING[110];
-        SET paymentMeansPaymentType(p) <- paymentMeans AS paymentMeans;
-    }
-}
-
-fillPaymentTypeDefaultValues 'Заполнить значения типов платежей по умолчанию' = ACTION(){
-    EXEC addPaymentType('Наличные', paymentMeans.paymentMeansCash);
-    EXEC addPaymentType('Visa', paymentMeans.paymentMeansCard);
-    EXEC addPaymentType('Mastercard', paymentMeans.paymentMeansCard);
-}
-
 sidPaymentType 'Идентификатор' = DATA STRING[10] (paymentType) IN baseGroup;
 sidToTypePayment (tp) = GROUP UNIQUE paymentType BY sidPaymentType(paymentType) WHERE paymentType IS paymentType;
 
@@ -1058,3 +1044,23 @@ DESIGN POS FROM DEFAULT {
     }
 }
 
+// ----------------------------------------------- Стандартные значения ------------------------------------- //
+
+loadDefaultPaymentType 'Добавить тип оплаты' = ACTION(string, paymentMeans) {
+    ADDOBJ paymentType;
+    FOR p == addedObject() DO {
+        SET name(p) <- string AS STRING[110];
+        SET paymentMeansPaymentType(p) <- paymentMeans AS paymentMeans;
+    }
+}
+
+loadDefaultPaymentTypes 'Загрузить стандартные типы оплаты' = ACTION(){
+    EXEC loadDefaultPaymentType('Наличные', paymentMeans.paymentMeansCash);
+    EXEC loadDefaultPaymentType('Visa', paymentMeans.paymentMeansCard);
+    EXEC loadDefaultPaymentType('Mastercard', paymentMeans.paymentMeansCard);
+} IN loadDefaultGroup;
+
+loadDefaultData () += loadDefaultPaymentTypes();
+EXTEND FORM defaultData
+    PROPERTIES() loadDefaultPaymentTypes
+;

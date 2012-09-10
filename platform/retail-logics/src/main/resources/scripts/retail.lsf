@@ -40,7 +40,8 @@ REQUIRE System,
         CashOperation,
         POS,
         ContractLedger,
-        Inventory;
+        Inventory,
+        DefaultData;
 
 GROUP emailGroup 'E-mail' : baseGroup;
 
@@ -3495,15 +3496,7 @@ nameSupplierPriceChangeReturnSupplier 'Поставщик' (priceChangeReturnSup
 @implementPriceChangeDocument(priceChangeReturnSupplier, item);
 @implementPriceChangeDocumentDetailAllPrice(priceChangeReturnSupplier);
 
-//------------------------------------------------- Z-отчем ---------------------------------------------------------------------//
-
-generateZReport 'Сгенерировать Z-отчёт' = ACTION CUSTOM 'equ.srv.actions.GenerateZReport';
-averageZReportCountGenerateZReport 'Среднее число Z-отчётов' = DATA INTEGER ();
-averageReceiptCountGenerateZReport 'Среднее число чеков' = DATA INTEGER ();
-averageReceiptDetailCountGenerateZReport 'Среднее число строк в чеке' = DATA INTEGER ();
-dateFromGenerateZReport 'Дата (с)' = DATA DATETIME ();
-dateToGenerateZReport 'Дата (по)' = DATA DATETIME ();
-
+//------------------------------------------------- Z-отчет ---------------------------------------------------------------------//
 @derivePriceLedgerOnSkuChangePrefix(retailVAT, receipt, VAT, sku);
 
 // документ скидок для товарного отчета
@@ -7379,7 +7372,7 @@ DESIGN isSupplierItemDepartmentStore FROM DEFAULT {
 
 //------------------- Статистические группы----------------------------//
 
-addStatisticGroupString 'Добавить стат. группы' = ACTION (parentStat, nameStat, sidStat, groupStatic, value)  {
+loadDefaultStatisticGroup 'Добавить стат. группы' = ACTION (parentStat, nameStat, sidStat, groupStatic, value)  {
     ADDOBJ statisticGroup;
     FOR g == addedObject() DO {
         SET parentStatisticGroup(g) <- sidToStatisticGroup(parentStat AS STRING[12]);
@@ -7390,127 +7383,132 @@ addStatisticGroupString 'Добавить стат. группы' = ACTION (pare
     }
 }
 
-fillStatisticGroupDefaultValues 'Заполнить значения стат групп по умолчанию' = ACTION () {
-    EXEC addStatisticGroupString(' ', 'ВСЕ', 'ВСЕ', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('ВСЕ', 'Пищевые продукты, напитки и табачные изделия', '52.2', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('52.2', 'Фрукты', '52.21.10.100', groupStatic.pounds, 1000);
-    EXEC addStatisticGroupString('52.2', 'Овощи', '52.21.10.200', groupStatic.pounds, 1000);
-    EXEC addStatisticGroupString('52.21.10.200', 'Картофель', '52.21.10.210', groupStatic.pounds, 1000);
-    EXEC addStatisticGroupString('52.2', 'Мясо, в том числе мясо домашней птицы и мясные продукты', '52.22.10', groupStatic.pounds, 1000);
-    EXEC addStatisticGroupString('52.22.10', 'Продукты из мяса', '52.22.10.410', groupStatic.pounds, 1000);
-    EXEC addStatisticGroupString('52.22.10', 'Консервы из мяса', '52.22.10.420', groupStatic.pounds, 1000);
-    EXEC addStatisticGroupString('52.2', 'Рыба, ракообразные и моллюски', '52.23.10', groupStatic.pounds, 1000);
-    EXEC addStatisticGroupString('52.23.10', 'Консервы и пресервы из рыбы и  морепродуктов', '52.23.10.420', groupStatic.pounds, 1000);
-    EXEC addStatisticGroupString('52.2', 'Хлеб, пирожные и хлебобулочные изделия', '52.24.11', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('52.2', 'Кондитерские изделия из сахара', '52.24.12', groupStatic.pounds, 1000);
-    EXEC addStatisticGroupString('52.2', 'Напитки, включая алкогольные', '52.25.10', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('52.25.10', 'Вино', '52.25.10.100', groupStatic.liter, 10);
-    EXEC addStatisticGroupString('52.25.10.100', 'Вина виноградные', '52.25.10.110', groupStatic.liter, 10);
-    EXEC addStatisticGroupString('52.25.10.100', 'Вина плодовые', '52.25.10.120', groupStatic.liter, 10);
-    EXEC addStatisticGroupString('52.25.10.100', 'Вина игристые, включая шампанское', '52.25.10.130', groupStatic.liter, 10);
-    EXEC addStatisticGroupString('52.2', 'Водка', '52.25.10.200', groupStatic.liter, 10);
-    EXEC addStatisticGroupString('52.2', 'Коньяк, коньячные напитки и бренди', '52.25.10.300', groupStatic.liter, 10);
-    EXEC addStatisticGroupString('52.2', 'Пиво', '52.25.10.400', groupStatic.liter, 10);
-    EXEC addStatisticGroupString('52.2', 'Прочие алкогольные напитки', '52.25.10.500', groupStatic.liter, 10);
-    EXEC addStatisticGroupString('52.25.10.500', 'Напитки слабоалкогольные', '52.25.10.510', groupStatic.liter, 10);
-    EXEC addStatisticGroupString('52.25.10.500', 'Прочие алкогольные напитки, не включенные в другие группировки', '52.25.10.590', groupStatic.liter, 10);
-    EXEC addStatisticGroupString('52.2', 'Безалкогольные напитки', '52.25.21', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('52.25.21', 'Фруктовые и овощные соки', '52.25.21.100', groupStatic.pounds, 1000);
-    EXEC addStatisticGroupString('52.25.21', 'Минеральная вода', '52.25.21.200', groupStatic.liter, 10);
-    EXEC addStatisticGroupString('52.25.21', 'Безалкогольные напитки прочие', '52.25.21.300', groupStatic.liter, 10);
-    EXEC addStatisticGroupString('52.2', 'Табачные изделия', '52.26.10', groupStatic.thing, 1000);
-    EXEC addStatisticGroupString('52.2', 'Молочные продукты', '52.27.11.100', groupStatic.thing, 0);
-    EXEC addStatisticGroupString('52.27.11.100', 'Сыр', '52.27.11.110', groupStatic.pounds, 1000);
-    EXEC addStatisticGroupString('52.27.11.100', 'Масло сливочное', '52.27.11.120', groupStatic.pounds, 1000);
-    EXEC addStatisticGroupString('52.2', 'Яйца', '52.27.11.200', groupStatic.thing, 1000);
-    EXEC addStatisticGroupString('52.2', 'Сушеные и консервированные орехи, офощи и фрукты', '52.27.12.100', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('52.2', 'Чай, кофе, какао, специи', '52.27.12.200', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('52.2', 'Пищевые масла и жиры', '52.27.12.300', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('52.27.12.300', 'Масла растительные', '52.27.12.310', groupStatic.pounds, 1000);
-    EXEC addStatisticGroupString('52.2', 'Мука', '52.27.12.400', groupStatic.pounds, 100);
-    EXEC addStatisticGroupString('52.2', 'Соль', '52.27.12.500', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('52.2', 'Сахар', '52.27.12.600', groupStatic.pounds, 1000);
-    EXEC addStatisticGroupString('52.2', 'Рис и прочие крупы', '52.27.12.700', groupStatic.pounds, 100);
-    EXEC addStatisticGroupString('52.2', 'Рис', '52.27.12.710', groupStatic.pounds, 100);
-    EXEC addStatisticGroupString('52.2', 'Овсяная крупа', '52.27.12.720', groupStatic.pounds, 100);
-    EXEC addStatisticGroupString('52.2', 'Гречневая крупа', '52.27.12.730', groupStatic.pounds, 100);
-    EXEC addStatisticGroupString('52.2', 'Лапша и прочие макаронные изделия', '52.27.12.800', groupStatic.pounds, 100);
-    EXEC addStatisticGroupString('52.2', 'Прочие пищевые продукты', '52.27.12.900', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('52.27.12.900', 'Детское питание', '52.27.12.910', groupStatic.pounds, 1000);
-    EXEC addStatisticGroupString('ВСЕ', 'Непродовольственные товары', '5', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('5', 'Автомобили', '50.10.2', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('5', 'Детали и принадлежности для автомобилей', '50.30.2', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('5', 'Мотоциклы и относящиеся к ним детали и принадлежности', '50.40.20', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('5', 'Моторное топливо', '50.50.10', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('50.50.10', 'Моторное топливо', '50.50.10.100', groupStatic.ruble, 1000000);
-    EXEC addStatisticGroupString('5', 'Фармацевтические товары', '52.31.10', groupStatic.ruble, 1000000);
-    EXEC addStatisticGroupString('5', 'Медицинские и ортопедические товары', '52.32.10', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('5', 'Парфюмерные и косметические товары и туалетные принадлежности', '52.33.10', groupStatic.ruble, 1000000);
-    EXEC addStatisticGroupString('5', 'Текстильные товары', '52.41.11', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('5', 'Галантерейные товары', '52.41.12', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('5', 'Меховая и кожаная одежда', '52.42.10.100', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('5', 'Верхняя одежда', '52.42.10.200', groupStatic.ruble, 1000000);
-    EXEC addStatisticGroupString('5', 'Нижнее белье', '52.42.10.300', groupStatic.ruble, 1000000);
-    EXEC addStatisticGroupString('5', 'Спортивная одежда', '52.42.10.400', groupStatic.ruble, 1000000);
-    EXEC addStatisticGroupString('5', 'Трикотажные изделия', '52.42.10.510', groupStatic.ruble, 1000000);
-    EXEC addStatisticGroupString('5', 'Чулочно-носочные изделия', '52.42.10.520', groupStatic.ruble, 1000000);
-    EXEC addStatisticGroupString('5', 'Головные уборы', '52.42.10.600', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('5', 'Аксессуары для одежды', '52.42.10.700', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('5', 'Обувь', '52.43.11', groupStatic.ruble, 1000000);
-    EXEC addStatisticGroupString('5', 'Изделия из кожи и дорожные принадлежности', '52.43.12', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('5', 'Бытовая мебель', '52.44.11', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('5', 'Домашняя утварь, ножевые изделия, фаянсовая посуда, изделия из стекла, фарфора и керамики', '52.44.12', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('5', 'Осветительные приборы', '52.44.13', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('5', 'Портьеры, сетчатые занавеси и различные предметы домашнего обихода из текстильных материалов', '52.44.14', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('5', 'Изделия из дерева, пробки и плетеные изделия', '52.44.15', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('5', 'Бытовые неэлектрические приборы, изделия и оборудование, не включенные в другие группировки', '52.44.16', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('5', 'Бытовые электрические приборы', '52.45.10', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('52.45.10', 'Холодильники и морозильники', '52.45.10.001', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('52.45.10', 'Стиральные машины', '52.45.10.002', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('5', 'Аудио- и видеоаппаратура', '52.45.21', groupStatic.thing, 0);
-    EXEC addStatisticGroupString('52.45.21', 'Телевизоры', '52.45.21.210', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('5', 'Аудио- и видеопленка с записями или без, кассеты и компакт-диски, цифровые видеодиски, грампластинки', '52.45.22', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('5', 'Музыкальные инструменты и партитуры', '52.45.23', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('5', 'Строительные материалы', '52.46', groupStatic.ruble, 1000000);
-    EXEC addStatisticGroupString('52.46', 'Скобяные товары', '52.46.11', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('52.46', 'Краски, лаки и эмали, лакокрасочные материалы', '52.46.12', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('52.46', 'Стекло', '52.46.13', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('52.46', 'Материалы и оборудование для изготовления поделок в домашних условиях (для "умелых рук")', '52.46.14', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('52.46', 'Санитарно-техническое оборудование', '52.46.15', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('52.46', 'Строительные материалы, не включенные в другие группировки', '52.46.16', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('5', 'Книги', '52.47.11', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('5', 'Газеты и журналы', '52.47.12', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('5', 'Канцелярские товары', '52.47.13', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('5', 'Офисная мебель', '52.48.11', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('5', 'Офисные машины и оборудование', '52.48.12', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('5', 'Компьютеры и программное обеспечение, не приспособленное к индивидуальным требованиям заказчика', '52.48.13', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('5', 'Фотоаппаратура, оптические и точные приборы и оборудование', '52.48.14', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('5', 'Оборудование электросвязи', '52.48.15', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('5', 'Часы и ювелирные изделия', '52.48.21', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('5', 'Спортивные товары, включая велосипеды', '52.48.22', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('5', 'Игры и игрушки', '52.48.23', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('5', 'Чистящие средства, обои и напольные покрытия', '52.48.31', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('52.48.31', 'Синтетические моющие средства', '52.48.31.110', groupStatic.pounds, 1000);
-    EXEC addStatisticGroupString('5', 'Цветы, растения, семена и удобрения', '52.48.32', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('5', 'Домашние животные и корма для них', '52.48.33', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('5', 'Сувениры, изделия кустарного промысла и предметы культового и религиозного назначения', '52.48.34', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('5', 'Жидкое бытовое топливо, газ в баллонах, уголь, древесное топливо', '52.48.35', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('5', 'Почтовые марки и монеты', '52.48.36', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('5', 'Произведения искусства', '52.48.37', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('5', 'Непродовольственные товары, не включенные в другие группировки', '52.48.38', groupStatic.thing, 1);
-    EXEC addStatisticGroupString('5', 'Подержанные товары', '52.50.1', groupStatic.thing, 1);
-}
+loadDefaultStatisticGroups 'Загрузить стандартные статистические группы' = ACTION () {
+    EXEC loadDefaultStatisticGroup(' ', 'ВСЕ', 'ВСЕ', groupStatic.thing, 1);
+    EXEC loadDefaultStatisticGroup('ВСЕ', 'Пищевые продукты, напитки и табачные изделия', '52.2', groupStatic.thing, 1);
+    EXEC loadDefaultStatisticGroup('52.2', 'Фрукты', '52.21.10.100', groupStatic.pounds, 1000);
+    EXEC loadDefaultStatisticGroup('52.2', 'Овощи', '52.21.10.200', groupStatic.pounds, 1000);
+    EXEC loadDefaultStatisticGroup('52.21.10.200', 'Картофель', '52.21.10.210', groupStatic.pounds, 1000);
+    EXEC loadDefaultStatisticGroup('52.2', 'Мясо, в том числе мясо домашней птицы и мясные продукты', '52.22.10', groupStatic.pounds, 1000);
+    EXEC loadDefaultStatisticGroup('52.22.10', 'Продукты из мяса', '52.22.10.410', groupStatic.pounds, 1000);
+    EXEC loadDefaultStatisticGroup('52.22.10', 'Консервы из мяса', '52.22.10.420', groupStatic.pounds, 1000);
+    EXEC loadDefaultStatisticGroup('52.2', 'Рыба, ракообразные и моллюски', '52.23.10', groupStatic.pounds, 1000);
+    EXEC loadDefaultStatisticGroup('52.23.10', 'Консервы и пресервы из рыбы и  морепродуктов', '52.23.10.420', groupStatic.pounds, 1000);
+    EXEC loadDefaultStatisticGroup('52.2', 'Хлеб, пирожные и хлебобулочные изделия', '52.24.11', groupStatic.thing, 1);
+    EXEC loadDefaultStatisticGroup('52.2', 'Кондитерские изделия из сахара', '52.24.12', groupStatic.pounds, 1000);
+    EXEC loadDefaultStatisticGroup('52.2', 'Напитки, включая алкогольные', '52.25.10', groupStatic.thing, 1);
+    EXEC loadDefaultStatisticGroup('52.25.10', 'Вино', '52.25.10.100', groupStatic.liter, 10);
+    EXEC loadDefaultStatisticGroup('52.25.10.100', 'Вина виноградные', '52.25.10.110', groupStatic.liter, 10);
+    EXEC loadDefaultStatisticGroup('52.25.10.100', 'Вина плодовые', '52.25.10.120', groupStatic.liter, 10);
+    EXEC loadDefaultStatisticGroup('52.25.10.100', 'Вина игристые, включая шампанское', '52.25.10.130', groupStatic.liter, 10);
+    EXEC loadDefaultStatisticGroup('52.2', 'Водка', '52.25.10.200', groupStatic.liter, 10);
+    EXEC loadDefaultStatisticGroup('52.2', 'Коньяк, коньячные напитки и бренди', '52.25.10.300', groupStatic.liter, 10);
+    EXEC loadDefaultStatisticGroup('52.2', 'Пиво', '52.25.10.400', groupStatic.liter, 10);
+    EXEC loadDefaultStatisticGroup('52.2', 'Прочие алкогольные напитки', '52.25.10.500', groupStatic.liter, 10);
+    EXEC loadDefaultStatisticGroup('52.25.10.500', 'Напитки слабоалкогольные', '52.25.10.510', groupStatic.liter, 10);
+    EXEC loadDefaultStatisticGroup('52.25.10.500', 'Прочие алкогольные напитки, не включенные в другие группировки', '52.25.10.590', groupStatic.liter, 10);
+    EXEC loadDefaultStatisticGroup('52.2', 'Безалкогольные напитки', '52.25.21', groupStatic.thing, 1);
+    EXEC loadDefaultStatisticGroup('52.25.21', 'Фруктовые и овощные соки', '52.25.21.100', groupStatic.pounds, 1000);
+    EXEC loadDefaultStatisticGroup('52.25.21', 'Минеральная вода', '52.25.21.200', groupStatic.liter, 10);
+    EXEC loadDefaultStatisticGroup('52.25.21', 'Безалкогольные напитки прочие', '52.25.21.300', groupStatic.liter, 10);
+    EXEC loadDefaultStatisticGroup('52.2', 'Табачные изделия', '52.26.10', groupStatic.thing, 1000);
+    EXEC loadDefaultStatisticGroup('52.2', 'Молочные продукты', '52.27.11.100', groupStatic.thing, 0);
+    EXEC loadDefaultStatisticGroup('52.27.11.100', 'Сыр', '52.27.11.110', groupStatic.pounds, 1000);
+    EXEC loadDefaultStatisticGroup('52.27.11.100', 'Масло сливочное', '52.27.11.120', groupStatic.pounds, 1000);
+    EXEC loadDefaultStatisticGroup('52.2', 'Яйца', '52.27.11.200', groupStatic.thing, 1000);
+    EXEC loadDefaultStatisticGroup('52.2', 'Сушеные и консервированные орехи, офощи и фрукты', '52.27.12.100', groupStatic.thing, 1);
+    EXEC loadDefaultStatisticGroup('52.2', 'Чай, кофе, какао, специи', '52.27.12.200', groupStatic.thing, 1);
+    EXEC loadDefaultStatisticGroup('52.2', 'Пищевые масла и жиры', '52.27.12.300', groupStatic.thing, 1);
+    EXEC loadDefaultStatisticGroup('52.27.12.300', 'Масла растительные', '52.27.12.310', groupStatic.pounds, 1000);
+    EXEC loadDefaultStatisticGroup('52.2', 'Мука', '52.27.12.400', groupStatic.pounds, 100);
+    EXEC loadDefaultStatisticGroup('52.2', 'Соль', '52.27.12.500', groupStatic.thing, 1);
+    EXEC loadDefaultStatisticGroup('52.2', 'Сахар', '52.27.12.600', groupStatic.pounds, 1000);
+    EXEC loadDefaultStatisticGroup('52.2', 'Рис и прочие крупы', '52.27.12.700', groupStatic.pounds, 100);
+    EXEC loadDefaultStatisticGroup('52.2', 'Рис', '52.27.12.710', groupStatic.pounds, 100);
+    EXEC loadDefaultStatisticGroup('52.2', 'Овсяная крупа', '52.27.12.720', groupStatic.pounds, 100);
+    EXEC loadDefaultStatisticGroup('52.2', 'Гречневая крупа', '52.27.12.730', groupStatic.pounds, 100);
+    EXEC loadDefaultStatisticGroup('52.2', 'Лапша и прочие макаронные изделия', '52.27.12.800', groupStatic.pounds, 100);
+    EXEC loadDefaultStatisticGroup('52.2', 'Прочие пищевые продукты', '52.27.12.900', groupStatic.thing, 1);
+    EXEC loadDefaultStatisticGroup('52.27.12.900', 'Детское питание', '52.27.12.910', groupStatic.pounds, 1000);
+    EXEC loadDefaultStatisticGroup('ВСЕ', 'Непродовольственные товары', '5', groupStatic.thing, 1);
+    EXEC loadDefaultStatisticGroup('5', 'Автомобили', '50.10.2', groupStatic.thing, 1);
+    EXEC loadDefaultStatisticGroup('5', 'Детали и принадлежности для автомобилей', '50.30.2', groupStatic.thing, 1);
+    EXEC loadDefaultStatisticGroup('5', 'Мотоциклы и относящиеся к ним детали и принадлежности', '50.40.20', groupStatic.thing, 1);
+    EXEC loadDefaultStatisticGroup('5', 'Моторное топливо', '50.50.10', groupStatic.thing, 1);
+    EXEC loadDefaultStatisticGroup('50.50.10', 'Моторное топливо', '50.50.10.100', groupStatic.ruble, 1000000);
+    EXEC loadDefaultStatisticGroup('5', 'Фармацевтические товары', '52.31.10', groupStatic.ruble, 1000000);
+    EXEC loadDefaultStatisticGroup('5', 'Медицинские и ортопедические товары', '52.32.10', groupStatic.thing, 1);
+    EXEC loadDefaultStatisticGroup('5', 'Парфюмерные и косметические товары и туалетные принадлежности', '52.33.10', groupStatic.ruble, 1000000);
+    EXEC loadDefaultStatisticGroup('5', 'Текстильные товары', '52.41.11', groupStatic.thing, 1);
+    EXEC loadDefaultStatisticGroup('5', 'Галантерейные товары', '52.41.12', groupStatic.thing, 1);
+    EXEC loadDefaultStatisticGroup('5', 'Меховая и кожаная одежда', '52.42.10.100', groupStatic.thing, 1);
+    EXEC loadDefaultStatisticGroup('5', 'Верхняя одежда', '52.42.10.200', groupStatic.ruble, 1000000);
+    EXEC loadDefaultStatisticGroup('5', 'Нижнее белье', '52.42.10.300', groupStatic.ruble, 1000000);
+    EXEC loadDefaultStatisticGroup('5', 'Спортивная одежда', '52.42.10.400', groupStatic.ruble, 1000000);
+    EXEC loadDefaultStatisticGroup('5', 'Трикотажные изделия', '52.42.10.510', groupStatic.ruble, 1000000);
+    EXEC loadDefaultStatisticGroup('5', 'Чулочно-носочные изделия', '52.42.10.520', groupStatic.ruble, 1000000);
+    EXEC loadDefaultStatisticGroup('5', 'Головные уборы', '52.42.10.600', groupStatic.thing, 1);
+    EXEC loadDefaultStatisticGroup('5', 'Аксессуары для одежды', '52.42.10.700', groupStatic.thing, 1);
+    EXEC loadDefaultStatisticGroup('5', 'Обувь', '52.43.11', groupStatic.ruble, 1000000);
+    EXEC loadDefaultStatisticGroup('5', 'Изделия из кожи и дорожные принадлежности', '52.43.12', groupStatic.thing, 1);
+    EXEC loadDefaultStatisticGroup('5', 'Бытовая мебель', '52.44.11', groupStatic.thing, 1);
+    EXEC loadDefaultStatisticGroup('5', 'Домашняя утварь, ножевые изделия, фаянсовая посуда, изделия из стекла, фарфора и керамики', '52.44.12', groupStatic.thing, 1);
+    EXEC loadDefaultStatisticGroup('5', 'Осветительные приборы', '52.44.13', groupStatic.thing, 1);
+    EXEC loadDefaultStatisticGroup('5', 'Портьеры, сетчатые занавеси и различные предметы домашнего обихода из текстильных материалов', '52.44.14', groupStatic.thing, 1);
+    EXEC loadDefaultStatisticGroup('5', 'Изделия из дерева, пробки и плетеные изделия', '52.44.15', groupStatic.thing, 1);
+    EXEC loadDefaultStatisticGroup('5', 'Бытовые неэлектрические приборы, изделия и оборудование, не включенные в другие группировки', '52.44.16', groupStatic.thing, 1);
+    EXEC loadDefaultStatisticGroup('5', 'Бытовые электрические приборы', '52.45.10', groupStatic.thing, 1);
+    EXEC loadDefaultStatisticGroup('52.45.10', 'Холодильники и морозильники', '52.45.10.001', groupStatic.thing, 1);
+    EXEC loadDefaultStatisticGroup('52.45.10', 'Стиральные машины', '52.45.10.002', groupStatic.thing, 1);
+    EXEC loadDefaultStatisticGroup('5', 'Аудио- и видеоаппаратура', '52.45.21', groupStatic.thing, 0);
+    EXEC loadDefaultStatisticGroup('52.45.21', 'Телевизоры', '52.45.21.210', groupStatic.thing, 1);
+    EXEC loadDefaultStatisticGroup('5', 'Аудио- и видеопленка с записями или без, кассеты и компакт-диски, цифровые видеодиски, грампластинки', '52.45.22', groupStatic.thing, 1);
+    EXEC loadDefaultStatisticGroup('5', 'Музыкальные инструменты и партитуры', '52.45.23', groupStatic.thing, 1);
+    EXEC loadDefaultStatisticGroup('5', 'Строительные материалы', '52.46', groupStatic.ruble, 1000000);
+    EXEC loadDefaultStatisticGroup('52.46', 'Скобяные товары', '52.46.11', groupStatic.thing, 1);
+    EXEC loadDefaultStatisticGroup('52.46', 'Краски, лаки и эмали, лакокрасочные материалы', '52.46.12', groupStatic.thing, 1);
+    EXEC loadDefaultStatisticGroup('52.46', 'Стекло', '52.46.13', groupStatic.thing, 1);
+    EXEC loadDefaultStatisticGroup('52.46', 'Материалы и оборудование для изготовления поделок в домашних условиях (для "умелых рук")', '52.46.14', groupStatic.thing, 1);
+    EXEC loadDefaultStatisticGroup('52.46', 'Санитарно-техническое оборудование', '52.46.15', groupStatic.thing, 1);
+    EXEC loadDefaultStatisticGroup('52.46', 'Строительные материалы, не включенные в другие группировки', '52.46.16', groupStatic.thing, 1);
+    EXEC loadDefaultStatisticGroup('5', 'Книги', '52.47.11', groupStatic.thing, 1);
+    EXEC loadDefaultStatisticGroup('5', 'Газеты и журналы', '52.47.12', groupStatic.thing, 1);
+    EXEC loadDefaultStatisticGroup('5', 'Канцелярские товары', '52.47.13', groupStatic.thing, 1);
+    EXEC loadDefaultStatisticGroup('5', 'Офисная мебель', '52.48.11', groupStatic.thing, 1);
+    EXEC loadDefaultStatisticGroup('5', 'Офисные машины и оборудование', '52.48.12', groupStatic.thing, 1);
+    EXEC loadDefaultStatisticGroup('5', 'Компьютеры и программное обеспечение, не приспособленное к индивидуальным требованиям заказчика', '52.48.13', groupStatic.thing, 1);
+    EXEC loadDefaultStatisticGroup('5', 'Фотоаппаратура, оптические и точные приборы и оборудование', '52.48.14', groupStatic.thing, 1);
+    EXEC loadDefaultStatisticGroup('5', 'Оборудование электросвязи', '52.48.15', groupStatic.thing, 1);
+    EXEC loadDefaultStatisticGroup('5', 'Часы и ювелирные изделия', '52.48.21', groupStatic.thing, 1);
+    EXEC loadDefaultStatisticGroup('5', 'Спортивные товары, включая велосипеды', '52.48.22', groupStatic.thing, 1);
+    EXEC loadDefaultStatisticGroup('5', 'Игры и игрушки', '52.48.23', groupStatic.thing, 1);
+    EXEC loadDefaultStatisticGroup('5', 'Чистящие средства, обои и напольные покрытия', '52.48.31', groupStatic.thing, 1);
+    EXEC loadDefaultStatisticGroup('52.48.31', 'Синтетические моющие средства', '52.48.31.110', groupStatic.pounds, 1000);
+    EXEC loadDefaultStatisticGroup('5', 'Цветы, растения, семена и удобрения', '52.48.32', groupStatic.thing, 1);
+    EXEC loadDefaultStatisticGroup('5', 'Домашние животные и корма для них', '52.48.33', groupStatic.thing, 1);
+    EXEC loadDefaultStatisticGroup('5', 'Сувениры, изделия кустарного промысла и предметы культового и религиозного назначения', '52.48.34', groupStatic.thing, 1);
+    EXEC loadDefaultStatisticGroup('5', 'Жидкое бытовое топливо, газ в баллонах, уголь, древесное топливо', '52.48.35', groupStatic.thing, 1);
+    EXEC loadDefaultStatisticGroup('5', 'Почтовые марки и монеты', '52.48.36', groupStatic.thing, 1);
+    EXEC loadDefaultStatisticGroup('5', 'Произведения искусства', '52.48.37', groupStatic.thing, 1);
+    EXEC loadDefaultStatisticGroup('5', 'Непродовольственные товары, не включенные в другие группировки', '52.48.38', groupStatic.thing, 1);
+    EXEC loadDefaultStatisticGroup('5', 'Подержанные товары', '52.50.1', groupStatic.thing, 1);
+} IN loadDefaultGroup;
+
+loadDefaultData () += loadDefaultStatisticGroups();
+EXTEND FORM defaultData
+    PROPERTIES() loadDefaultStatisticGroups
+;
 
 //------------------- Справочник норм естественной убыли----------------------------//
 
-addNaturalLossItemGroupString 'Добавить нормы естественной убыли' = ACTION (string)  {
+loadDefaultNaturalLossItemGroup 'Добавить нормы естественной убыли' = ACTION (string)  {
     ADDOBJ naturalLossItemGroup;
     FOR cg == addedObject() DO {
          SET name(cg) <- string AS STRING[110];
     }
 }
 
-addSubNaturalLossItemGroupString 'Добавить нормы естественной убыли' = ACTION (string, stringOne, stringTwo, numeric)  {
+loadDefaultSubNaturalLossItemGroup 'Добавить нормы естественной убыли' = ACTION (string, stringOne, stringTwo, numeric)  {
     ADDOBJ subNaturalLossItemGroup;
     FOR g == addedObject() DO {
         SET parentNaturalLossItemGroup(g) <- nameToNaturalLossItemGroup(string AS STRING[110]);
@@ -7529,370 +7527,220 @@ addSubNaturalLossItemGroupString 'Добавить нормы естествен
     }
 }
 
-fillLossItemGroupDefaultValues 'Заполнить группы естественной убыли по умолчанию' = ACTION () {
-    EXEC addNaturalLossItemGroupString('молоко разливное');
-    EXEC addNaturalLossItemGroupString('молоко,сливки сух.,яич.порошок');
-    EXEC addNaturalLossItemGroupString('мороженое вес. и проч.вес.мол.');
-    EXEC addNaturalLossItemGroupString('КАРТОФЕЛЬ РАННИЙ');
-    EXEC addNaturalLossItemGroupString('КАПУСТА БЕЛОКОЧАННАЯ СРЕДНЯЯ И ПОЗДНЯЯ, КРАСНОКОЧАННАЯ, САВОЙСКАЯ, КОЛЬРАБИ');
-    EXEC addNaturalLossItemGroupString('КАПУСТА БЕЛОКОЧАННАЯ РАННЯЯ, ЦВЕТНАЯ, БРЮССЕЛЬСКАЯ');
-    EXEC addNaturalLossItemGroupString('КОРНЕПЛОДЫ ОБРЕЗНЫЕ (СВЕКЛА, МОРКОВЬ, РЕДЬКА, ПЕТРУШКА, СЕЛЬДЕРЕЙ, ПАСТЕРНАК, ХРЕН И ДР.)');
-    EXEC addNaturalLossItemGroupString('КОРНЕПЛОДЫ С ЗЕЛЕНЬЮ МОЛОДЫЕ');
-    EXEC addNaturalLossItemGroupString('РЕДИС');
-    EXEC addNaturalLossItemGroupString('ЗЕЛЕНЬ СВЕЖАЯ (САЛАТ, УКРОП, ШПИНАТ, И ДР.) БОБОВЫЕ (ГОРОХ-ЛАПАТОЧКИ, ФАСОЛЬ-СТРУЧКИ) И ПР ОВОЩИ');
-    EXEC addNaturalLossItemGroupString('ЛУК ЗЕЛЕНЫЙ, ЛУК-ПОРЕЙ, ЧЕСНОК ЗЕЛЕНЫЙ');
-    EXEC addNaturalLossItemGroupString('ЛУК РЕПЧАТЫЙ');
-    EXEC addNaturalLossItemGroupString('ЧЕСНОК');
-    EXEC addNaturalLossItemGroupString('КУКУРУЗА В ПОЧАТКАХ МОЛОЧНО-ВОСКОВОЙ СПЕЛОСТИ');
-    EXEC addNaturalLossItemGroupString('ТОМАТЫ (КРАСНЫЕ, РОЗОВЫЕ, БУРЫЕ, МОЛОЧНЫЕ)');
-    EXEC addNaturalLossItemGroupString('БАКЛАЖАНЫ, КАБАЧКИ, ПЕРЕЦ СЛАДКИЙ И ГОРЬКИЙ СТРУЧКОВЫЙ, ПАТИССОНЫ');
-    EXEC addNaturalLossItemGroupString('БАХЧЕВЫЕ (АРБУЗЫ, ДЫНИ, ТЫКВА)');
-    EXEC addNaturalLossItemGroupString('СЕМЕЧКОВЫЕ ПЛОДЫ (ЯБЛОКИ, ГРУШИ, АЙВА И ДР)');
-    EXEC addNaturalLossItemGroupString('КОСТОЧКОВЫЕ ПЛОДЫ (ЧЕРЕШНИ, ВИШНИ, СЛИВЫ, АБРИКОСЫ, ПЕРСИКИ И ДР)');
-    EXEC addNaturalLossItemGroupString('ГРАНАТЫ');
-    EXEC addNaturalLossItemGroupString('МАЛИНА, ЗЕМЛЯНИКА И КЛУБНИКА');
-    EXEC addNaturalLossItemGroupString('ВИНОГРАД, СМОРОДИНА, КРЫЖОВНИК');
-    EXEC addNaturalLossItemGroupString('ДИКОРАСТУЩИЕ (КЛЮКВА, БРУСНИКА, ОБЛЕПИХА И ДР.) ЯГОДЫ');
-    EXEC addNaturalLossItemGroupString('ГРИБЫ СВЕЖИЕ ВСЕХ ВИДОВ');
-    EXEC addNaturalLossItemGroupString('МАНДАРИНЫ');
-    EXEC addNaturalLossItemGroupString('АПЕЛЬСИНЫ');
-    EXEC addNaturalLossItemGroupString('АНАНАСЫ');
-    EXEC addNaturalLossItemGroupString('БАНАНЫ');
-    EXEC addNaturalLossItemGroupString('ЛИМОНЫ');
-    EXEC addNaturalLossItemGroupString('ГРЕЙПФРУТЫ');
-    EXEC addNaturalLossItemGroupString('ПЛОДЫ, ОВОЩИ И ГРИБЫ ПЕРЕАБОТАННЫЕ. ФРУКТЫ СУШЕННЫЕ');
-    EXEC addNaturalLossItemGroupString('ФРУКТЫ И ОВОЩИ ЗАМОРОЖЕННЫЕ');
-    EXEC addNaturalLossItemGroupString('ОРЕХИ ВСЯКИЕ');
-    EXEC addNaturalLossItemGroupString('ОВОЩИ ЗЕЛЕНЬ СУШЕНЫЕ');
-    EXEC addNaturalLossItemGroupString('ОВОЩИ СОЛЕНЫЕ И КВАШЕНЫЕ');
-    EXEC addNaturalLossItemGroupString('ГРИБЫ СУШЕННЫЕ');
-    EXEC addNaturalLossItemGroupString('ГРИБЫ СОЛЕНЫЕ И МАРИНОВАННЫЕ');
-    EXEC addNaturalLossItemGroupString('ТОМАТ-ПАСТА И ТОМАТ-ПЮРЕ');
-    EXEC addNaturalLossItemGroupString('КАРТОФЕЛЬ ПОЗДНИЙ');
-    EXEC addNaturalLossItemGroupString('ОГУРЦЫ ОТКРЫТОГО И ЗАКРЫТОГО ГРУНТА');
-    EXEC addNaturalLossItemGroupString('ОВЕС И ЯЧМЕНЬ');
-    EXEC addNaturalLossItemGroupString('ЖМЫХ И КОМБИКОРМ');
-    EXEC addNaturalLossItemGroupString('ОТРУБИ И ДР.');
-    EXEC addNaturalLossItemGroupString('КЕРОСИН ПРИ ПРОДАЖЕ ВЕСОВ');
-    EXEC addNaturalLossItemGroupString('БАКАЛЕЙНЫЕ ТОВАРЫ');
-    EXEC addNaturalLossItemGroupString('КОНДИТЕРСКИЕ ТОВАРЫ');
-    EXEC addNaturalLossItemGroupString('МОЛОЧНЫЕ И ЖИРОВЫЕ ТОВАРЫ');
-    EXEC addNaturalLossItemGroupString('МЯСО МОРОЖЕНОЕ');
-    EXEC addNaturalLossItemGroupString('МЯСО ОХЛАЖДЕННОЕ');
-    EXEC addNaturalLossItemGroupString('МЯСО ОХОЛЖДЕННОЕ');
-    EXEC addNaturalLossItemGroupString('РЫБА И РЫБНЫЕ ТОВАРЫ');
-    EXEC addNaturalLossItemGroupString('СУБПРОДУКТЫ');
-    EXEC addNaturalLossItemGroupString('СЫРЫ');
-    EXEC addNaturalLossItemGroupString('ХЛЕБОБУЛОЧНЫЕ ТОВАРЫ');
-    EXEC addSubNaturalLossItemGroupString('молоко разливное','молоко разливное','05А',0.05);
-    EXEC addSubNaturalLossItemGroupString('молоко,сливки сух.,яич.порошок','молоко,сливки сух.,яич.порошок','05Б',0.25);
-    EXEC addSubNaturalLossItemGroupString('мороженое вес. и проч.вес.мол.','мороженое вес. и проч.вес.мол.','05В',0.3);
-    EXEC addSubNaturalLossItemGroupString('КАРТОФЕЛЬ РАННИЙ','КАРТОФЕЛЬ РАННИЙ','101',0.68);
-    EXEC addSubNaturalLossItemGroupString('КАПУСТА БЕЛОКОЧАННАЯ СРЕДНЯЯ И ПОЗДНЯЯ, КРАСНОКОЧАННАЯ, САВОЙСКАЯ, КОЛЬРАБИ','КАПУСТА БЕЛОКОЧАННАЯ СРЕДНЯЯ И ПОЗДНЯЯ, КРАСНОКОЧАННАЯ, САВОЙСКАЯ, КОЛЬРАБИ','102',0.63);
-    EXEC addSubNaturalLossItemGroupString('КАПУСТА БЕЛОКОЧАННАЯ РАННЯЯ, ЦВЕТНАЯ, БРЮССЕЛЬСКАЯ','КАПУСТА БЕЛОКОЧАННАЯ РАННЯЯ, ЦВЕТНАЯ, БРЮССЕЛЬСКАЯ','103',0.82);
-    EXEC addSubNaturalLossItemGroupString('КОРНЕПЛОДЫ ОБРЕЗНЫЕ (СВЕКЛА, МОРКОВЬ, РЕДЬКА, ПЕТРУШКА, СЕЛЬДЕРЕЙ, ПАСТЕРНАК, ХРЕН И ДР.)','КОРНЕПЛОДЫ ОБРЕЗНЫЕ (СВЕКЛА, МОРКОВЬ, РЕДЬКА, ПЕТРУШКА, СЕЛЬДЕРЕЙ, ПАСТЕРНАК, ХРЕН И ДР.)','104',0.69);
-    EXEC addSubNaturalLossItemGroupString('КОРНЕПЛОДЫ С ЗЕЛЕНЬЮ МОЛОДЫЕ','КОРНЕПЛОДЫ С ЗЕЛЕНЬЮ МОЛОДЫЕ','105',1.03);
-    EXEC addSubNaturalLossItemGroupString('РЕДИС','РЕДИС','106',0.81);
-    EXEC addSubNaturalLossItemGroupString('ЗЕЛЕНЬ СВЕЖАЯ (САЛАТ, УКРОП, ШПИНАТ, И ДР.) БОБОВЫЕ (ГОРОХ-ЛАПАТОЧКИ, ФАСОЛЬ-СТРУЧКИ) И ПР ОВОЩИ','ЗЕЛЕНЬ СВЕЖАЯ (САЛАТ, УКРОП, ШПИНАТ, И ДР.) БОБОВЫЕ (ГОРОХ-ЛАПАТОЧКИ, ФАСОЛЬ-СТРУЧКИ) И ПР ОВОЩИ','107',1.41);
-    EXEC addSubNaturalLossItemGroupString('ЛУК ЗЕЛЕНЫЙ, ЛУК-ПОРЕЙ, ЧЕСНОК ЗЕЛЕНЫЙ','ЛУК ЗЕЛЕНЫЙ, ЛУК-ПОРЕЙ, ЧЕСНОК ЗЕЛЕНЫЙ','108',0.99);
-    EXEC addSubNaturalLossItemGroupString('ЛУК РЕПЧАТЫЙ','ЛУК РЕПЧАТЫЙ','109',0.46);
-    EXEC addSubNaturalLossItemGroupString('ЧЕСНОК','ЧЕСНОК','110',0.49);
-    EXEC addSubNaturalLossItemGroupString('КУКУРУЗА В ПОЧАТКАХ МОЛОЧНО-ВОСКОВОЙ СПЕЛОСТИ','КУКУРУЗА В ПОЧАТКАХ МОЛОЧНО-ВОСКОВОЙ СПЕЛОСТИ','111',0.67);
-    EXEC addSubNaturalLossItemGroupString('ТОМАТЫ (КРАСНЫЕ, РОЗОВЫЕ, БУРЫЕ, МОЛОЧНЫЕ)','ТОМАТЫ (КРАСНЫЕ, РОЗОВЫЕ, БУРЫЕ, МОЛОЧНЫЕ)','113',0.64);
-    EXEC addSubNaturalLossItemGroupString('БАКЛАЖАНЫ, КАБАЧКИ, ПЕРЕЦ СЛАДКИЙ И ГОРЬКИЙ СТРУЧКОВЫЙ, ПАТИССОНЫ','БАКЛАЖАНЫ, КАБАЧКИ, ПЕРЕЦ СЛАДКИЙ И ГОРЬКИЙ СТРУЧКОВЫЙ, ПАТИССОНЫ','114',0.75);
-    EXEC addSubNaturalLossItemGroupString('БАХЧЕВЫЕ (АРБУЗЫ, ДЫНИ, ТЫКВА)','БАХЧЕВЫЕ (АРБУЗЫ, ДЫНИ, ТЫКВА)','115',0.42);
-    EXEC addSubNaturalLossItemGroupString('СЕМЕЧКОВЫЕ ПЛОДЫ (ЯБЛОКИ, ГРУШИ, АЙВА И ДР)','СЕМЕЧКОВЫЕ ПЛОДЫ (ЯБЛОКИ, ГРУШИ, АЙВА И ДР)','116',0.43);
-    EXEC addSubNaturalLossItemGroupString('КОСТОЧКОВЫЕ ПЛОДЫ (ЧЕРЕШНИ, ВИШНИ, СЛИВЫ, АБРИКОСЫ, ПЕРСИКИ И ДР)','КОСТОЧКОВЫЕ ПЛОДЫ (ЧЕРЕШНИ, ВИШНИ, СЛИВЫ, АБРИКОСЫ, ПЕРСИКИ И ДР)','117',0.67);
-    EXEC addSubNaturalLossItemGroupString('ГРАНАТЫ','ГРАНАТЫ','118',0.6);
-    EXEC addSubNaturalLossItemGroupString('МАЛИНА, ЗЕМЛЯНИКА И КЛУБНИКА','МАЛИНА, ЗЕМЛЯНИКА И КЛУБНИКА','119',1.05);
-    EXEC addSubNaturalLossItemGroupString('ВИНОГРАД, СМОРОДИНА, КРЫЖОВНИК','ВИНОГРАД, СМОРОДИНА, КРЫЖОВНИК','120',0.66);
-    EXEC addSubNaturalLossItemGroupString('ДИКОРАСТУЩИЕ (КЛЮКВА, БРУСНИКА, ОБЛЕПИХА И ДР.) ЯГОДЫ','ДИКОРАСТУЩИЕ (КЛЮКВА, БРУСНИКА, ОБЛЕПИХА И ДР.) ЯГОДЫ','121',0.48);
-    EXEC addSubNaturalLossItemGroupString('ГРИБЫ СВЕЖИЕ ВСЕХ ВИДОВ','ГРИБЫ СВЕЖИЕ ВСЕХ ВИДОВ','122',1.26);
-    EXEC addSubNaturalLossItemGroupString('МАНДАРИНЫ','МАНДАРИНЫ','123',0.13);
-    EXEC addSubNaturalLossItemGroupString('АПЕЛЬСИНЫ','АПЕЛЬСИНЫ','124',0.21);
-    EXEC addSubNaturalLossItemGroupString('АНАНАСЫ','АНАНАСЫ','125',0.38);
-    EXEC addSubNaturalLossItemGroupString('БАНАНЫ','БАНАНЫ','126',0.48);
-    EXEC addSubNaturalLossItemGroupString('ЛИМОНЫ','ЛИМОНЫ','127',0.21);
-    EXEC addSubNaturalLossItemGroupString('ГРЕЙПФРУТЫ','ГРЕЙПФРУТЫ','128',0.25);
-    EXEC addSubNaturalLossItemGroupString('ПЛОДЫ, ОВОЩИ И ГРИБЫ ПЕРЕАБОТАННЫЕ. ФРУКТЫ СУШЕННЫЕ','ПЛОДЫ, ОВОЩИ И ГРИБЫ ПЕРЕАБОТАННЫЕ. ФРУКТЫ СУШЕННЫЕ','129',0.02);
-    EXEC addSubNaturalLossItemGroupString('ФРУКТЫ И ОВОЩИ ЗАМОРОЖЕННЫЕ','ФРУКТЫ И ОВОЩИ ЗАМОРОЖЕННЫЕ','130',0.15);
-    EXEC addSubNaturalLossItemGroupString('ОРЕХИ ВСЯКИЕ','ОРЕХИ ВСЯКИЕ','131',0.08);
-    EXEC addSubNaturalLossItemGroupString('ОВОЩИ ЗЕЛЕНЬ СУШЕНЫЕ','ОВОЩИ ЗЕЛЕНЬ СУШЕНЫЕ','132',0.01);
-    EXEC addSubNaturalLossItemGroupString('ОВОЩИ СОЛЕНЫЕ И КВАШЕНЫЕ','ОВОЩИ СОЛЕНЫЕ И КВАШЕНЫЕ','133',0.04);
-    EXEC addSubNaturalLossItemGroupString('ГРИБЫ СУШЕННЫЕ','ГРИБЫ СУШЕННЫЕ','134',0.07);
-    EXEC addSubNaturalLossItemGroupString('ГРИБЫ СОЛЕНЫЕ И МАРИНОВАННЫЕ','ГРИБЫ СОЛЕНЫЕ И МАРИНОВАННЫЕ','135',0.1);
-    EXEC addSubNaturalLossItemGroupString('ТОМАТ-ПАСТА И ТОМАТ-ПЮРЕ','ТОМАТ-ПАСТА И ТОМАТ-ПЮРЕ','136',0.05);
-    EXEC addSubNaturalLossItemGroupString('КАРТОФЕЛЬ ПОЗДНИЙ','КАРТОФЕЛЬ ПОЗДНИЙ','100',0.33);
-    EXEC addSubNaturalLossItemGroupString('ОГУРЦЫ ОТКРЫТОГО И ЗАКРЫТОГО ГРУНТА','ОГУРЦЫ ОТКРЫТОГО И ЗАКРЫТОГО ГРУНТА','112',0.9);
-    EXEC addSubNaturalLossItemGroupString('ОВЕС И ЯЧМЕНЬ','ОВЕС И ЯЧМЕНЬ','137',0.1);
-    EXEC addSubNaturalLossItemGroupString('ЖМЫХ И КОМБИКОРМ','ЖМЫХ И КОМБИКОРМ','138',0.08);
-    EXEC addSubNaturalLossItemGroupString('ОТРУБИ И ДР.','ОТРУБИ И ДР.','139',0.12);
-    EXEC addSubNaturalLossItemGroupString('КЕРОСИН ПРИ ПРОДАЖЕ ВЕСОВ','КЕРОСИН ПРИ ПРОДАЖЕ ВЕСОВ','140',0.08);
-    EXEC addSubNaturalLossItemGroupString('БАКАЛЕЙНЫЕ ТОВАРЫ','крупа,включая зернобоб.и саго','080',0.14);
-    EXEC addSubNaturalLossItemGroupString('БАКАЛЕЙНЫЕ ТОВАРЫ','макаронные изделия','081',0.21);
-    EXEC addSubNaturalLossItemGroupString('БАКАЛЕЙНЫЕ ТОВАРЫ','мука и крахмал','082',0.14);
-    EXEC addSubNaturalLossItemGroupString('БАКАЛЕЙНЫЕ ТОВАРЫ','сахар-песок','083',0.08);
-    EXEC addSubNaturalLossItemGroupString('БАКАЛЕЙНЫЕ ТОВАРЫ','сахар рафинад','084',0.13);
-    EXEC addSubNaturalLossItemGroupString('БАКАЛЕЙНЫЕ ТОВАРЫ','сахарная пудра','085',0.21);
-    EXEC addSubNaturalLossItemGroupString('БАКАЛЕЙНЫЕ ТОВАРЫ','кофе в зернах','086',0.1);
-    EXEC addSubNaturalLossItemGroupString('БАКАЛЕЙНЫЕ ТОВАРЫ','соль поваренная','087',0.32);
-    EXEC addSubNaturalLossItemGroupString('БАКАЛЕЙНЫЕ ТОВАРЫ','дрожжи пресованные','088',0.39);
-    EXEC addSubNaturalLossItemGroupString('БАКАЛЕЙНЫЕ ТОВАРЫ','прочие весовые бакалейные т-ры','089',0.11);
-    EXEC addSubNaturalLossItemGroupString('БАКАЛЕЙНЫЕ ТОВАРЫ','соки и безалк.напитки в розлив','08А',0.04);
-    EXEC addSubNaturalLossItemGroupString('КОНДИТЕРСКИЕ ТОВАРЫ','Карамель,ирис и драже','070',0.1);
-    EXEC addSubNaturalLossItemGroupString('КОНДИТЕРСКИЕ ТОВАРЫ','конфеты глазированные','071',0.15);
-    EXEC addSubNaturalLossItemGroupString('КОНДИТЕРСКИЕ ТОВАРЫ','конфеты неглазированные','072',0.26);
-    EXEC addSubNaturalLossItemGroupString('КОНДИТЕРСКИЕ ТОВАРЫ','мармелад и пат','073',0.33);
-    EXEC addSubNaturalLossItemGroupString('КОНДИТЕРСКИЕ ТОВАРЫ','пастила и зефир','074',0.46);
-    EXEC addSubNaturalLossItemGroupString('КОНДИТЕРСКИЕ ТОВАРЫ','халва','075',0.55);
-    EXEC addSubNaturalLossItemGroupString('КОНДИТЕРСКИЕ ТОВАРЫ','мед и повидло','076',0.45);
-    EXEC addSubNaturalLossItemGroupString('КОНДИТЕРСКИЕ ТОВАРЫ','печенье,галеты и вафли','077',0.22);
-    EXEC addSubNaturalLossItemGroupString('КОНДИТЕРСКИЕ ТОВАРЫ','пряники и коврижки','078',0.34);
-    EXEC addSubNaturalLossItemGroupString('КОНДИТЕРСКИЕ ТОВАРЫ','прочие весовые кондитер. т-ры','079',0.15);
-    EXEC addSubNaturalLossItemGroupString('МОЛОЧНЫЕ И ЖИРОВЫЕ ТОВАРЫ','масло коровье(слив.,топленое)','050',0.15);
-    EXEC addSubNaturalLossItemGroupString('МОЛОЧНЫЕ И ЖИРОВЫЕ ТОВАРЫ','маргарин,жиры топл.и кулинар.','051',0.15);
-    EXEC addSubNaturalLossItemGroupString('МОЛОЧНЫЕ И ЖИРОВЫЕ ТОВАРЫ','масло растител.(ручная продажа','052',0.25);
-    EXEC addSubNaturalLossItemGroupString('МОЛОЧНЫЕ И ЖИРОВЫЕ ТОВАРЫ','сметана,творог,творож.масса','053',0.46);
-    EXEC addSubNaturalLossItemGroupString('МЯСО МОРОЖЕНОЕ','говядина,телятина,баранина','010',0.33);
-    EXEC addSubNaturalLossItemGroupString('МЯСО МОРОЖЕНОЕ','свинина','012',0.3);
-    EXEC addSubNaturalLossItemGroupString('МЯСО МОРОЖЕНОЕ','куры,кролики(кр/полим.пленки)','013',0.19);
-    EXEC addSubNaturalLossItemGroupString('МЯСО МОРОЖЕНОЕ','гуси,утки,индейки и др.','014',0.3);
-    EXEC addSubNaturalLossItemGroupString('МЯСО МОРОЖЕНОЕ','мясо птицы в полимер.пленке','015',0.05);
-    EXEC addSubNaturalLossItemGroupString('МЯСО МОРОЖЕНОЕ','мясо диких животных (кабана, медведя, лося, сайгака и др.)','016',0.47);
-    EXEC addSubNaturalLossItemGroupString('МЯСО ОХЛАЖДЕННОЕ','говядина,телятина,баранина','020',0.58);
-    EXEC addSubNaturalLossItemGroupString('МЯСО ОХЛАЖДЕННОЕ','свинина','021',0.51);
-    EXEC addSubNaturalLossItemGroupString('МЯСО ОХЛАЖДЕННОЕ','куры,цыплята-бройлеры,кролики','022',0.37);
-    EXEC addSubNaturalLossItemGroupString('МЯСО ОХЛАЖДЕННОЕ','гуси,утки,индейки','023',0.47);
-    EXEC addSubNaturalLossItemGroupString('МЯСО ОХЛАЖДЕННОЕ','мясо птицы в полимерной пленке','024',0.2);
-    EXEC addSubNaturalLossItemGroupString('МЯСО ОХОЛЖДЕННОЕ','мясо диких животных (кабана, медведя, лося, сайгака и др.)','025',0.64);
-    EXEC addSubNaturalLossItemGroupString('РЫБА И РЫБНЫЕ ТОВАРЫ','рыба живая','040',0.1);
-    EXEC addSubNaturalLossItemGroupString('РЫБА И РЫБНЫЕ ТОВАРЫ','рыба любая и мидии охлажд.','041',0.6);
-    EXEC addSubNaturalLossItemGroupString('РЫБА И РЫБНЫЕ ТОВАРЫ','рыба,рыбн.товары морож.неглазир','042',0.27);
-    EXEC addSubNaturalLossItemGroupString('РЫБА И РЫБНЫЕ ТОВАРЫ','рыба соленая в сухотарн.бочках','044',0.4);
-    EXEC addSubNaturalLossItemGroupString('РЫБА И РЫБНЫЕ ТОВАРЫ','рыба лососев.,прод-мая нарезной','045',0.3);
-    EXEC addSubNaturalLossItemGroupString('РЫБА И РЫБНЫЕ ТОВАРЫ','рыба(кроме осетр.) горяч.копчен','046',0.37);
-    EXEC addSubNaturalLossItemGroupString('РЫБА И РЫБНЫЕ ТОВАРЫ','рыба и рыб.т-ры осетр.гор.копч.','047',0.3);
-    EXEC addSubNaturalLossItemGroupString('РЫБА И РЫБНЫЕ ТОВАРЫ','рыба и рыбн.т-ры холод.копч.','048',0.35);
-    EXEC addSubNaturalLossItemGroupString('РЫБА И РЫБНЫЕ ТОВАРЫ','балыч.изд.холод.копч.(б/нарезки','049',0.33);
-    EXEC addSubNaturalLossItemGroupString('РЫБА И РЫБНЫЕ ТОВАРЫ','балыч.изд.холод.копч.(внарезку)','04А',0.28);
-    EXEC addSubNaturalLossItemGroupString('РЫБА И РЫБНЫЕ ТОВАРЫ','рыбные т-ры сол.-суш.и вяленые','04Б',0.2);
-    EXEC addSubNaturalLossItemGroupString('РЫБА И РЫБНЫЕ ТОВАРЫ','икра осетровых,лососевых,прочих','04В',0.18);
-    EXEC addSubNaturalLossItemGroupString('РЫБА И РЫБНЫЕ ТОВАРЫ','кулинария(рыбная)','04Г',0.36);
-    EXEC addSubNaturalLossItemGroupString('РЫБА И РЫБНЫЕ ТОВАРЫ','проч.вес.т-ры из морепродуктов','04Д',0.28);
-    EXEC addSubNaturalLossItemGroupString('СУБПРОДУКТЫ','ноги','030',0.35);
-    EXEC addSubNaturalLossItemGroupString('СУБПРОДУКТЫ','головы мороженые','031',0.35);
-    EXEC addSubNaturalLossItemGroupString('СУБПРОДУКТЫ','головы охлажденные','032',0.54);
-    EXEC addSubNaturalLossItemGroupString('СУБПРОДУКТЫ','прочие субпродукты мороженые','033',0.4);
-    EXEC addSubNaturalLossItemGroupString('СУБПРОДУКТЫ','прочие субпродукты охлажденные','034',1.62);
-    EXEC addSubNaturalLossItemGroupString('СУБПРОДУКТЫ','полуфабрикаты весовые','035',0.4);
-    EXEC addSubNaturalLossItemGroupString('СУБПРОДУКТЫ','жир-сырец мороженый','036',0.16);
-    EXEC addSubNaturalLossItemGroupString('СУБПРОДУКТЫ','кул-рия вес.(студни,пашт.мясо)','037',0.3);
-    EXEC addSubNaturalLossItemGroupString('СУБПРОДУКТЫ','жир-сырец охлажденный','038',0.32);
-    EXEC addSubNaturalLossItemGroupString('СУБПРОДУКТЫ','колбасы вареные','039',0.53);
-    EXEC addSubNaturalLossItemGroupString('СУБПРОДУКТЫ','сосиски и сардельки','03А',0.75);
-    EXEC addSubNaturalLossItemGroupString('СУБПРОДУКТЫ','колбасы полукопченые','03Б',0.32);
-    EXEC addSubNaturalLossItemGroupString('СУБПРОДУКТЫ','колбасы варено-копченые','03В',0.36);
-    EXEC addSubNaturalLossItemGroupString('СУБПРОДУКТЫ','колбасы сырокопченые','03Г',0.06);
-    EXEC addSubNaturalLossItemGroupString('СУБПРОДУКТЫ','мясокопчености сырокопченые','03Д',0.25);
-    EXEC addSubNaturalLossItemGroupString('СУБПРОДУКТЫ','мясокопчен.копч.-варен.копч.-за','03Е',0.48);
-    EXEC addSubNaturalLossItemGroupString('СУБПРОДУКТЫ','мясокопч.вареные,запеченые,жарен','03Ж',0.59);
-    EXEC addSubNaturalLossItemGroupString('СУБПРОДУКТЫ','шпик свиной и товары из шпика','03З',0.26);
-    EXEC addSubNaturalLossItemGroupString('СУБПРОДУКТЫ','прочие весовые мясные товары','03И',0.3);
-    EXEC addSubNaturalLossItemGroupString('СЫРЫ','в парафиновом покрытии','054',0.3);
-    EXEC addSubNaturalLossItemGroupString('СЫРЫ','колбасный копченый плавленый','055',0.4);
-    EXEC addSubNaturalLossItemGroupString('СЫРЫ','в полимерной пленке','056',0.4);
-    EXEC addSubNaturalLossItemGroupString('СЫРЫ','в фольге или пергаменте','057',0.55);
-    EXEC addSubNaturalLossItemGroupString('СЫРЫ','без покрытия(без рассола)','058',0.3);
-    EXEC addSubNaturalLossItemGroupString('СЫРЫ','в рассоле(брынза и др.)','059',0.25);
-    EXEC addSubNaturalLossItemGroupString('ХЛЕБОБУЛОЧНЫЕ ТОВАРЫ','хлеб печеный','060',0.5);
-    EXEC addSubNaturalLossItemGroupString('ХЛЕБОБУЛОЧНЫЕ ТОВАРЫ','бараночные изделия','061',0.35);
-    EXEC addSubNaturalLossItemGroupString('ХЛЕБОБУЛОЧНЫЕ ТОВАРЫ','сухари','062',0.3);
-    EXEC addSubNaturalLossItemGroupString('ХЛЕБОБУЛОЧНЫЕ ТОВАРЫ','пироги и кулебяки','064',0.45);
-    EXEC addSubNaturalLossItemGroupString('ХЛЕБОБУЛОЧНЫЕ ТОВАРЫ','лаваш и чурек','065',0.35);
-    EXEC addSubNaturalLossItemGroupString('ХЛЕБОБУЛОЧНЫЕ ТОВАРЫ','прочие весовые хлебобул.товары','066',0.3);
+loadDefaultNaturalLossItemGroups 'Загрузить стандартные группы естественной убыли' = ACTION () {
+    EXEC loadDefaultNaturalLossItemGroup('молоко разливное');
+    EXEC loadDefaultNaturalLossItemGroup('молоко,сливки сух.,яич.порошок');
+    EXEC loadDefaultNaturalLossItemGroup('мороженое вес. и проч.вес.мол.');
+    EXEC loadDefaultNaturalLossItemGroup('КАРТОФЕЛЬ РАННИЙ');
+    EXEC loadDefaultNaturalLossItemGroup('КАПУСТА БЕЛОКОЧАННАЯ СРЕДНЯЯ И ПОЗДНЯЯ, КРАСНОКОЧАННАЯ, САВОЙСКАЯ, КОЛЬРАБИ');
+    EXEC loadDefaultNaturalLossItemGroup('КАПУСТА БЕЛОКОЧАННАЯ РАННЯЯ, ЦВЕТНАЯ, БРЮССЕЛЬСКАЯ');
+    EXEC loadDefaultNaturalLossItemGroup('КОРНЕПЛОДЫ ОБРЕЗНЫЕ (СВЕКЛА, МОРКОВЬ, РЕДЬКА, ПЕТРУШКА, СЕЛЬДЕРЕЙ, ПАСТЕРНАК, ХРЕН И ДР.)');
+    EXEC loadDefaultNaturalLossItemGroup('КОРНЕПЛОДЫ С ЗЕЛЕНЬЮ МОЛОДЫЕ');
+    EXEC loadDefaultNaturalLossItemGroup('РЕДИС');
+    EXEC loadDefaultNaturalLossItemGroup('ЗЕЛЕНЬ СВЕЖАЯ (САЛАТ, УКРОП, ШПИНАТ, И ДР.) БОБОВЫЕ (ГОРОХ-ЛАПАТОЧКИ, ФАСОЛЬ-СТРУЧКИ) И ПР ОВОЩИ');
+    EXEC loadDefaultNaturalLossItemGroup('ЛУК ЗЕЛЕНЫЙ, ЛУК-ПОРЕЙ, ЧЕСНОК ЗЕЛЕНЫЙ');
+    EXEC loadDefaultNaturalLossItemGroup('ЛУК РЕПЧАТЫЙ');
+    EXEC loadDefaultNaturalLossItemGroup('ЧЕСНОК');
+    EXEC loadDefaultNaturalLossItemGroup('КУКУРУЗА В ПОЧАТКАХ МОЛОЧНО-ВОСКОВОЙ СПЕЛОСТИ');
+    EXEC loadDefaultNaturalLossItemGroup('ТОМАТЫ (КРАСНЫЕ, РОЗОВЫЕ, БУРЫЕ, МОЛОЧНЫЕ)');
+    EXEC loadDefaultNaturalLossItemGroup('БАКЛАЖАНЫ, КАБАЧКИ, ПЕРЕЦ СЛАДКИЙ И ГОРЬКИЙ СТРУЧКОВЫЙ, ПАТИССОНЫ');
+    EXEC loadDefaultNaturalLossItemGroup('БАХЧЕВЫЕ (АРБУЗЫ, ДЫНИ, ТЫКВА)');
+    EXEC loadDefaultNaturalLossItemGroup('СЕМЕЧКОВЫЕ ПЛОДЫ (ЯБЛОКИ, ГРУШИ, АЙВА И ДР)');
+    EXEC loadDefaultNaturalLossItemGroup('КОСТОЧКОВЫЕ ПЛОДЫ (ЧЕРЕШНИ, ВИШНИ, СЛИВЫ, АБРИКОСЫ, ПЕРСИКИ И ДР)');
+    EXEC loadDefaultNaturalLossItemGroup('ГРАНАТЫ');
+    EXEC loadDefaultNaturalLossItemGroup('МАЛИНА, ЗЕМЛЯНИКА И КЛУБНИКА');
+    EXEC loadDefaultNaturalLossItemGroup('ВИНОГРАД, СМОРОДИНА, КРЫЖОВНИК');
+    EXEC loadDefaultNaturalLossItemGroup('ДИКОРАСТУЩИЕ (КЛЮКВА, БРУСНИКА, ОБЛЕПИХА И ДР.) ЯГОДЫ');
+    EXEC loadDefaultNaturalLossItemGroup('ГРИБЫ СВЕЖИЕ ВСЕХ ВИДОВ');
+    EXEC loadDefaultNaturalLossItemGroup('МАНДАРИНЫ');
+    EXEC loadDefaultNaturalLossItemGroup('АПЕЛЬСИНЫ');
+    EXEC loadDefaultNaturalLossItemGroup('АНАНАСЫ');
+    EXEC loadDefaultNaturalLossItemGroup('БАНАНЫ');
+    EXEC loadDefaultNaturalLossItemGroup('ЛИМОНЫ');
+    EXEC loadDefaultNaturalLossItemGroup('ГРЕЙПФРУТЫ');
+    EXEC loadDefaultNaturalLossItemGroup('ПЛОДЫ, ОВОЩИ И ГРИБЫ ПЕРЕАБОТАННЫЕ. ФРУКТЫ СУШЕННЫЕ');
+    EXEC loadDefaultNaturalLossItemGroup('ФРУКТЫ И ОВОЩИ ЗАМОРОЖЕННЫЕ');
+    EXEC loadDefaultNaturalLossItemGroup('ОРЕХИ ВСЯКИЕ');
+    EXEC loadDefaultNaturalLossItemGroup('ОВОЩИ ЗЕЛЕНЬ СУШЕНЫЕ');
+    EXEC loadDefaultNaturalLossItemGroup('ОВОЩИ СОЛЕНЫЕ И КВАШЕНЫЕ');
+    EXEC loadDefaultNaturalLossItemGroup('ГРИБЫ СУШЕННЫЕ');
+    EXEC loadDefaultNaturalLossItemGroup('ГРИБЫ СОЛЕНЫЕ И МАРИНОВАННЫЕ');
+    EXEC loadDefaultNaturalLossItemGroup('ТОМАТ-ПАСТА И ТОМАТ-ПЮРЕ');
+    EXEC loadDefaultNaturalLossItemGroup('КАРТОФЕЛЬ ПОЗДНИЙ');
+    EXEC loadDefaultNaturalLossItemGroup('ОГУРЦЫ ОТКРЫТОГО И ЗАКРЫТОГО ГРУНТА');
+    EXEC loadDefaultNaturalLossItemGroup('ОВЕС И ЯЧМЕНЬ');
+    EXEC loadDefaultNaturalLossItemGroup('ЖМЫХ И КОМБИКОРМ');
+    EXEC loadDefaultNaturalLossItemGroup('ОТРУБИ И ДР.');
+    EXEC loadDefaultNaturalLossItemGroup('КЕРОСИН ПРИ ПРОДАЖЕ ВЕСОВ');
+    EXEC loadDefaultNaturalLossItemGroup('БАКАЛЕЙНЫЕ ТОВАРЫ');
+    EXEC loadDefaultNaturalLossItemGroup('КОНДИТЕРСКИЕ ТОВАРЫ');
+    EXEC loadDefaultNaturalLossItemGroup('МОЛОЧНЫЕ И ЖИРОВЫЕ ТОВАРЫ');
+    EXEC loadDefaultNaturalLossItemGroup('МЯСО МОРОЖЕНОЕ');
+    EXEC loadDefaultNaturalLossItemGroup('МЯСО ОХЛАЖДЕННОЕ');
+    EXEC loadDefaultNaturalLossItemGroup('МЯСО ОХОЛЖДЕННОЕ');
+    EXEC loadDefaultNaturalLossItemGroup('РЫБА И РЫБНЫЕ ТОВАРЫ');
+    EXEC loadDefaultNaturalLossItemGroup('СУБПРОДУКТЫ');
+    EXEC loadDefaultNaturalLossItemGroup('СЫРЫ');
+    EXEC loadDefaultNaturalLossItemGroup('ХЛЕБОБУЛОЧНЫЕ ТОВАРЫ');
+    EXEC loadDefaultSubNaturalLossItemGroup('молоко разливное','молоко разливное','05А',0.05);
+    EXEC loadDefaultSubNaturalLossItemGroup('молоко,сливки сух.,яич.порошок','молоко,сливки сух.,яич.порошок','05Б',0.25);
+    EXEC loadDefaultSubNaturalLossItemGroup('мороженое вес. и проч.вес.мол.','мороженое вес. и проч.вес.мол.','05В',0.3);
+    EXEC loadDefaultSubNaturalLossItemGroup('КАРТОФЕЛЬ РАННИЙ','КАРТОФЕЛЬ РАННИЙ','101',0.68);
+    EXEC loadDefaultSubNaturalLossItemGroup('КАПУСТА БЕЛОКОЧАННАЯ СРЕДНЯЯ И ПОЗДНЯЯ, КРАСНОКОЧАННАЯ, САВОЙСКАЯ, КОЛЬРАБИ','КАПУСТА БЕЛОКОЧАННАЯ СРЕДНЯЯ И ПОЗДНЯЯ, КРАСНОКОЧАННАЯ, САВОЙСКАЯ, КОЛЬРАБИ','102',0.63);
+    EXEC loadDefaultSubNaturalLossItemGroup('КАПУСТА БЕЛОКОЧАННАЯ РАННЯЯ, ЦВЕТНАЯ, БРЮССЕЛЬСКАЯ','КАПУСТА БЕЛОКОЧАННАЯ РАННЯЯ, ЦВЕТНАЯ, БРЮССЕЛЬСКАЯ','103',0.82);
+    EXEC loadDefaultSubNaturalLossItemGroup('КОРНЕПЛОДЫ ОБРЕЗНЫЕ (СВЕКЛА, МОРКОВЬ, РЕДЬКА, ПЕТРУШКА, СЕЛЬДЕРЕЙ, ПАСТЕРНАК, ХРЕН И ДР.)','КОРНЕПЛОДЫ ОБРЕЗНЫЕ (СВЕКЛА, МОРКОВЬ, РЕДЬКА, ПЕТРУШКА, СЕЛЬДЕРЕЙ, ПАСТЕРНАК, ХРЕН И ДР.)','104',0.69);
+    EXEC loadDefaultSubNaturalLossItemGroup('КОРНЕПЛОДЫ С ЗЕЛЕНЬЮ МОЛОДЫЕ','КОРНЕПЛОДЫ С ЗЕЛЕНЬЮ МОЛОДЫЕ','105',1.03);
+    EXEC loadDefaultSubNaturalLossItemGroup('РЕДИС','РЕДИС','106',0.81);
+    EXEC loadDefaultSubNaturalLossItemGroup('ЗЕЛЕНЬ СВЕЖАЯ (САЛАТ, УКРОП, ШПИНАТ, И ДР.) БОБОВЫЕ (ГОРОХ-ЛАПАТОЧКИ, ФАСОЛЬ-СТРУЧКИ) И ПР ОВОЩИ','ЗЕЛЕНЬ СВЕЖАЯ (САЛАТ, УКРОП, ШПИНАТ, И ДР.) БОБОВЫЕ (ГОРОХ-ЛАПАТОЧКИ, ФАСОЛЬ-СТРУЧКИ) И ПР ОВОЩИ','107',1.41);
+    EXEC loadDefaultSubNaturalLossItemGroup('ЛУК ЗЕЛЕНЫЙ, ЛУК-ПОРЕЙ, ЧЕСНОК ЗЕЛЕНЫЙ','ЛУК ЗЕЛЕНЫЙ, ЛУК-ПОРЕЙ, ЧЕСНОК ЗЕЛЕНЫЙ','108',0.99);
+    EXEC loadDefaultSubNaturalLossItemGroup('ЛУК РЕПЧАТЫЙ','ЛУК РЕПЧАТЫЙ','109',0.46);
+    EXEC loadDefaultSubNaturalLossItemGroup('ЧЕСНОК','ЧЕСНОК','110',0.49);
+    EXEC loadDefaultSubNaturalLossItemGroup('КУКУРУЗА В ПОЧАТКАХ МОЛОЧНО-ВОСКОВОЙ СПЕЛОСТИ','КУКУРУЗА В ПОЧАТКАХ МОЛОЧНО-ВОСКОВОЙ СПЕЛОСТИ','111',0.67);
+    EXEC loadDefaultSubNaturalLossItemGroup('ТОМАТЫ (КРАСНЫЕ, РОЗОВЫЕ, БУРЫЕ, МОЛОЧНЫЕ)','ТОМАТЫ (КРАСНЫЕ, РОЗОВЫЕ, БУРЫЕ, МОЛОЧНЫЕ)','113',0.64);
+    EXEC loadDefaultSubNaturalLossItemGroup('БАКЛАЖАНЫ, КАБАЧКИ, ПЕРЕЦ СЛАДКИЙ И ГОРЬКИЙ СТРУЧКОВЫЙ, ПАТИССОНЫ','БАКЛАЖАНЫ, КАБАЧКИ, ПЕРЕЦ СЛАДКИЙ И ГОРЬКИЙ СТРУЧКОВЫЙ, ПАТИССОНЫ','114',0.75);
+    EXEC loadDefaultSubNaturalLossItemGroup('БАХЧЕВЫЕ (АРБУЗЫ, ДЫНИ, ТЫКВА)','БАХЧЕВЫЕ (АРБУЗЫ, ДЫНИ, ТЫКВА)','115',0.42);
+    EXEC loadDefaultSubNaturalLossItemGroup('СЕМЕЧКОВЫЕ ПЛОДЫ (ЯБЛОКИ, ГРУШИ, АЙВА И ДР)','СЕМЕЧКОВЫЕ ПЛОДЫ (ЯБЛОКИ, ГРУШИ, АЙВА И ДР)','116',0.43);
+    EXEC loadDefaultSubNaturalLossItemGroup('КОСТОЧКОВЫЕ ПЛОДЫ (ЧЕРЕШНИ, ВИШНИ, СЛИВЫ, АБРИКОСЫ, ПЕРСИКИ И ДР)','КОСТОЧКОВЫЕ ПЛОДЫ (ЧЕРЕШНИ, ВИШНИ, СЛИВЫ, АБРИКОСЫ, ПЕРСИКИ И ДР)','117',0.67);
+    EXEC loadDefaultSubNaturalLossItemGroup('ГРАНАТЫ','ГРАНАТЫ','118',0.6);
+    EXEC loadDefaultSubNaturalLossItemGroup('МАЛИНА, ЗЕМЛЯНИКА И КЛУБНИКА','МАЛИНА, ЗЕМЛЯНИКА И КЛУБНИКА','119',1.05);
+    EXEC loadDefaultSubNaturalLossItemGroup('ВИНОГРАД, СМОРОДИНА, КРЫЖОВНИК','ВИНОГРАД, СМОРОДИНА, КРЫЖОВНИК','120',0.66);
+    EXEC loadDefaultSubNaturalLossItemGroup('ДИКОРАСТУЩИЕ (КЛЮКВА, БРУСНИКА, ОБЛЕПИХА И ДР.) ЯГОДЫ','ДИКОРАСТУЩИЕ (КЛЮКВА, БРУСНИКА, ОБЛЕПИХА И ДР.) ЯГОДЫ','121',0.48);
+    EXEC loadDefaultSubNaturalLossItemGroup('ГРИБЫ СВЕЖИЕ ВСЕХ ВИДОВ','ГРИБЫ СВЕЖИЕ ВСЕХ ВИДОВ','122',1.26);
+    EXEC loadDefaultSubNaturalLossItemGroup('МАНДАРИНЫ','МАНДАРИНЫ','123',0.13);
+    EXEC loadDefaultSubNaturalLossItemGroup('АПЕЛЬСИНЫ','АПЕЛЬСИНЫ','124',0.21);
+    EXEC loadDefaultSubNaturalLossItemGroup('АНАНАСЫ','АНАНАСЫ','125',0.38);
+    EXEC loadDefaultSubNaturalLossItemGroup('БАНАНЫ','БАНАНЫ','126',0.48);
+    EXEC loadDefaultSubNaturalLossItemGroup('ЛИМОНЫ','ЛИМОНЫ','127',0.21);
+    EXEC loadDefaultSubNaturalLossItemGroup('ГРЕЙПФРУТЫ','ГРЕЙПФРУТЫ','128',0.25);
+    EXEC loadDefaultSubNaturalLossItemGroup('ПЛОДЫ, ОВОЩИ И ГРИБЫ ПЕРЕАБОТАННЫЕ. ФРУКТЫ СУШЕННЫЕ','ПЛОДЫ, ОВОЩИ И ГРИБЫ ПЕРЕАБОТАННЫЕ. ФРУКТЫ СУШЕННЫЕ','129',0.02);
+    EXEC loadDefaultSubNaturalLossItemGroup('ФРУКТЫ И ОВОЩИ ЗАМОРОЖЕННЫЕ','ФРУКТЫ И ОВОЩИ ЗАМОРОЖЕННЫЕ','130',0.15);
+    EXEC loadDefaultSubNaturalLossItemGroup('ОРЕХИ ВСЯКИЕ','ОРЕХИ ВСЯКИЕ','131',0.08);
+    EXEC loadDefaultSubNaturalLossItemGroup('ОВОЩИ ЗЕЛЕНЬ СУШЕНЫЕ','ОВОЩИ ЗЕЛЕНЬ СУШЕНЫЕ','132',0.01);
+    EXEC loadDefaultSubNaturalLossItemGroup('ОВОЩИ СОЛЕНЫЕ И КВАШЕНЫЕ','ОВОЩИ СОЛЕНЫЕ И КВАШЕНЫЕ','133',0.04);
+    EXEC loadDefaultSubNaturalLossItemGroup('ГРИБЫ СУШЕННЫЕ','ГРИБЫ СУШЕННЫЕ','134',0.07);
+    EXEC loadDefaultSubNaturalLossItemGroup('ГРИБЫ СОЛЕНЫЕ И МАРИНОВАННЫЕ','ГРИБЫ СОЛЕНЫЕ И МАРИНОВАННЫЕ','135',0.1);
+    EXEC loadDefaultSubNaturalLossItemGroup('ТОМАТ-ПАСТА И ТОМАТ-ПЮРЕ','ТОМАТ-ПАСТА И ТОМАТ-ПЮРЕ','136',0.05);
+    EXEC loadDefaultSubNaturalLossItemGroup('КАРТОФЕЛЬ ПОЗДНИЙ','КАРТОФЕЛЬ ПОЗДНИЙ','100',0.33);
+    EXEC loadDefaultSubNaturalLossItemGroup('ОГУРЦЫ ОТКРЫТОГО И ЗАКРЫТОГО ГРУНТА','ОГУРЦЫ ОТКРЫТОГО И ЗАКРЫТОГО ГРУНТА','112',0.9);
+    EXEC loadDefaultSubNaturalLossItemGroup('ОВЕС И ЯЧМЕНЬ','ОВЕС И ЯЧМЕНЬ','137',0.1);
+    EXEC loadDefaultSubNaturalLossItemGroup('ЖМЫХ И КОМБИКОРМ','ЖМЫХ И КОМБИКОРМ','138',0.08);
+    EXEC loadDefaultSubNaturalLossItemGroup('ОТРУБИ И ДР.','ОТРУБИ И ДР.','139',0.12);
+    EXEC loadDefaultSubNaturalLossItemGroup('КЕРОСИН ПРИ ПРОДАЖЕ ВЕСОВ','КЕРОСИН ПРИ ПРОДАЖЕ ВЕСОВ','140',0.08);
+    EXEC loadDefaultSubNaturalLossItemGroup('БАКАЛЕЙНЫЕ ТОВАРЫ','крупа,включая зернобоб.и саго','080',0.14);
+    EXEC loadDefaultSubNaturalLossItemGroup('БАКАЛЕЙНЫЕ ТОВАРЫ','макаронные изделия','081',0.21);
+    EXEC loadDefaultSubNaturalLossItemGroup('БАКАЛЕЙНЫЕ ТОВАРЫ','мука и крахмал','082',0.14);
+    EXEC loadDefaultSubNaturalLossItemGroup('БАКАЛЕЙНЫЕ ТОВАРЫ','сахар-песок','083',0.08);
+    EXEC loadDefaultSubNaturalLossItemGroup('БАКАЛЕЙНЫЕ ТОВАРЫ','сахар рафинад','084',0.13);
+    EXEC loadDefaultSubNaturalLossItemGroup('БАКАЛЕЙНЫЕ ТОВАРЫ','сахарная пудра','085',0.21);
+    EXEC loadDefaultSubNaturalLossItemGroup('БАКАЛЕЙНЫЕ ТОВАРЫ','кофе в зернах','086',0.1);
+    EXEC loadDefaultSubNaturalLossItemGroup('БАКАЛЕЙНЫЕ ТОВАРЫ','соль поваренная','087',0.32);
+    EXEC loadDefaultSubNaturalLossItemGroup('БАКАЛЕЙНЫЕ ТОВАРЫ','дрожжи пресованные','088',0.39);
+    EXEC loadDefaultSubNaturalLossItemGroup('БАКАЛЕЙНЫЕ ТОВАРЫ','прочие весовые бакалейные т-ры','089',0.11);
+    EXEC loadDefaultSubNaturalLossItemGroup('БАКАЛЕЙНЫЕ ТОВАРЫ','соки и безалк.напитки в розлив','08А',0.04);
+    EXEC loadDefaultSubNaturalLossItemGroup('КОНДИТЕРСКИЕ ТОВАРЫ','Карамель,ирис и драже','070',0.1);
+    EXEC loadDefaultSubNaturalLossItemGroup('КОНДИТЕРСКИЕ ТОВАРЫ','конфеты глазированные','071',0.15);
+    EXEC loadDefaultSubNaturalLossItemGroup('КОНДИТЕРСКИЕ ТОВАРЫ','конфеты неглазированные','072',0.26);
+    EXEC loadDefaultSubNaturalLossItemGroup('КОНДИТЕРСКИЕ ТОВАРЫ','мармелад и пат','073',0.33);
+    EXEC loadDefaultSubNaturalLossItemGroup('КОНДИТЕРСКИЕ ТОВАРЫ','пастила и зефир','074',0.46);
+    EXEC loadDefaultSubNaturalLossItemGroup('КОНДИТЕРСКИЕ ТОВАРЫ','халва','075',0.55);
+    EXEC loadDefaultSubNaturalLossItemGroup('КОНДИТЕРСКИЕ ТОВАРЫ','мед и повидло','076',0.45);
+    EXEC loadDefaultSubNaturalLossItemGroup('КОНДИТЕРСКИЕ ТОВАРЫ','печенье,галеты и вафли','077',0.22);
+    EXEC loadDefaultSubNaturalLossItemGroup('КОНДИТЕРСКИЕ ТОВАРЫ','пряники и коврижки','078',0.34);
+    EXEC loadDefaultSubNaturalLossItemGroup('КОНДИТЕРСКИЕ ТОВАРЫ','прочие весовые кондитер. т-ры','079',0.15);
+    EXEC loadDefaultSubNaturalLossItemGroup('МОЛОЧНЫЕ И ЖИРОВЫЕ ТОВАРЫ','масло коровье(слив.,топленое)','050',0.15);
+    EXEC loadDefaultSubNaturalLossItemGroup('МОЛОЧНЫЕ И ЖИРОВЫЕ ТОВАРЫ','маргарин,жиры топл.и кулинар.','051',0.15);
+    EXEC loadDefaultSubNaturalLossItemGroup('МОЛОЧНЫЕ И ЖИРОВЫЕ ТОВАРЫ','масло растител.(ручная продажа','052',0.25);
+    EXEC loadDefaultSubNaturalLossItemGroup('МОЛОЧНЫЕ И ЖИРОВЫЕ ТОВАРЫ','сметана,творог,творож.масса','053',0.46);
+    EXEC loadDefaultSubNaturalLossItemGroup('МЯСО МОРОЖЕНОЕ','говядина,телятина,баранина','010',0.33);
+    EXEC loadDefaultSubNaturalLossItemGroup('МЯСО МОРОЖЕНОЕ','свинина','012',0.3);
+    EXEC loadDefaultSubNaturalLossItemGroup('МЯСО МОРОЖЕНОЕ','куры,кролики(кр/полим.пленки)','013',0.19);
+    EXEC loadDefaultSubNaturalLossItemGroup('МЯСО МОРОЖЕНОЕ','гуси,утки,индейки и др.','014',0.3);
+    EXEC loadDefaultSubNaturalLossItemGroup('МЯСО МОРОЖЕНОЕ','мясо птицы в полимер.пленке','015',0.05);
+    EXEC loadDefaultSubNaturalLossItemGroup('МЯСО МОРОЖЕНОЕ','мясо диких животных (кабана, медведя, лося, сайгака и др.)','016',0.47);
+    EXEC loadDefaultSubNaturalLossItemGroup('МЯСО ОХЛАЖДЕННОЕ','говядина,телятина,баранина','020',0.58);
+    EXEC loadDefaultSubNaturalLossItemGroup('МЯСО ОХЛАЖДЕННОЕ','свинина','021',0.51);
+    EXEC loadDefaultSubNaturalLossItemGroup('МЯСО ОХЛАЖДЕННОЕ','куры,цыплята-бройлеры,кролики','022',0.37);
+    EXEC loadDefaultSubNaturalLossItemGroup('МЯСО ОХЛАЖДЕННОЕ','гуси,утки,индейки','023',0.47);
+    EXEC loadDefaultSubNaturalLossItemGroup('МЯСО ОХЛАЖДЕННОЕ','мясо птицы в полимерной пленке','024',0.2);
+    EXEC loadDefaultSubNaturalLossItemGroup('МЯСО ОХОЛЖДЕННОЕ','мясо диких животных (кабана, медведя, лося, сайгака и др.)','025',0.64);
+    EXEC loadDefaultSubNaturalLossItemGroup('РЫБА И РЫБНЫЕ ТОВАРЫ','рыба живая','040',0.1);
+    EXEC loadDefaultSubNaturalLossItemGroup('РЫБА И РЫБНЫЕ ТОВАРЫ','рыба любая и мидии охлажд.','041',0.6);
+    EXEC loadDefaultSubNaturalLossItemGroup('РЫБА И РЫБНЫЕ ТОВАРЫ','рыба,рыбн.товары морож.неглазир','042',0.27);
+    EXEC loadDefaultSubNaturalLossItemGroup('РЫБА И РЫБНЫЕ ТОВАРЫ','рыба соленая в сухотарн.бочках','044',0.4);
+    EXEC loadDefaultSubNaturalLossItemGroup('РЫБА И РЫБНЫЕ ТОВАРЫ','рыба лососев.,прод-мая нарезной','045',0.3);
+    EXEC loadDefaultSubNaturalLossItemGroup('РЫБА И РЫБНЫЕ ТОВАРЫ','рыба(кроме осетр.) горяч.копчен','046',0.37);
+    EXEC loadDefaultSubNaturalLossItemGroup('РЫБА И РЫБНЫЕ ТОВАРЫ','рыба и рыб.т-ры осетр.гор.копч.','047',0.3);
+    EXEC loadDefaultSubNaturalLossItemGroup('РЫБА И РЫБНЫЕ ТОВАРЫ','рыба и рыбн.т-ры холод.копч.','048',0.35);
+    EXEC loadDefaultSubNaturalLossItemGroup('РЫБА И РЫБНЫЕ ТОВАРЫ','балыч.изд.холод.копч.(б/нарезки','049',0.33);
+    EXEC loadDefaultSubNaturalLossItemGroup('РЫБА И РЫБНЫЕ ТОВАРЫ','балыч.изд.холод.копч.(внарезку)','04А',0.28);
+    EXEC loadDefaultSubNaturalLossItemGroup('РЫБА И РЫБНЫЕ ТОВАРЫ','рыбные т-ры сол.-суш.и вяленые','04Б',0.2);
+    EXEC loadDefaultSubNaturalLossItemGroup('РЫБА И РЫБНЫЕ ТОВАРЫ','икра осетровых,лососевых,прочих','04В',0.18);
+    EXEC loadDefaultSubNaturalLossItemGroup('РЫБА И РЫБНЫЕ ТОВАРЫ','кулинария(рыбная)','04Г',0.36);
+    EXEC loadDefaultSubNaturalLossItemGroup('РЫБА И РЫБНЫЕ ТОВАРЫ','проч.вес.т-ры из морепродуктов','04Д',0.28);
+    EXEC loadDefaultSubNaturalLossItemGroup('СУБПРОДУКТЫ','ноги','030',0.35);
+    EXEC loadDefaultSubNaturalLossItemGroup('СУБПРОДУКТЫ','головы мороженые','031',0.35);
+    EXEC loadDefaultSubNaturalLossItemGroup('СУБПРОДУКТЫ','головы охлажденные','032',0.54);
+    EXEC loadDefaultSubNaturalLossItemGroup('СУБПРОДУКТЫ','прочие субпродукты мороженые','033',0.4);
+    EXEC loadDefaultSubNaturalLossItemGroup('СУБПРОДУКТЫ','прочие субпродукты охлажденные','034',1.62);
+    EXEC loadDefaultSubNaturalLossItemGroup('СУБПРОДУКТЫ','полуфабрикаты весовые','035',0.4);
+    EXEC loadDefaultSubNaturalLossItemGroup('СУБПРОДУКТЫ','жир-сырец мороженый','036',0.16);
+    EXEC loadDefaultSubNaturalLossItemGroup('СУБПРОДУКТЫ','кул-рия вес.(студни,пашт.мясо)','037',0.3);
+    EXEC loadDefaultSubNaturalLossItemGroup('СУБПРОДУКТЫ','жир-сырец охлажденный','038',0.32);
+    EXEC loadDefaultSubNaturalLossItemGroup('СУБПРОДУКТЫ','колбасы вареные','039',0.53);
+    EXEC loadDefaultSubNaturalLossItemGroup('СУБПРОДУКТЫ','сосиски и сардельки','03А',0.75);
+    EXEC loadDefaultSubNaturalLossItemGroup('СУБПРОДУКТЫ','колбасы полукопченые','03Б',0.32);
+    EXEC loadDefaultSubNaturalLossItemGroup('СУБПРОДУКТЫ','колбасы варено-копченые','03В',0.36);
+    EXEC loadDefaultSubNaturalLossItemGroup('СУБПРОДУКТЫ','колбасы сырокопченые','03Г',0.06);
+    EXEC loadDefaultSubNaturalLossItemGroup('СУБПРОДУКТЫ','мясокопчености сырокопченые','03Д',0.25);
+    EXEC loadDefaultSubNaturalLossItemGroup('СУБПРОДУКТЫ','мясокопчен.копч.-варен.копч.-за','03Е',0.48);
+    EXEC loadDefaultSubNaturalLossItemGroup('СУБПРОДУКТЫ','мясокопч.вареные,запеченые,жарен','03Ж',0.59);
+    EXEC loadDefaultSubNaturalLossItemGroup('СУБПРОДУКТЫ','шпик свиной и товары из шпика','03З',0.26);
+    EXEC loadDefaultSubNaturalLossItemGroup('СУБПРОДУКТЫ','прочие весовые мясные товары','03И',0.3);
+    EXEC loadDefaultSubNaturalLossItemGroup('СЫРЫ','в парафиновом покрытии','054',0.3);
+    EXEC loadDefaultSubNaturalLossItemGroup('СЫРЫ','колбасный копченый плавленый','055',0.4);
+    EXEC loadDefaultSubNaturalLossItemGroup('СЫРЫ','в полимерной пленке','056',0.4);
+    EXEC loadDefaultSubNaturalLossItemGroup('СЫРЫ','в фольге или пергаменте','057',0.55);
+    EXEC loadDefaultSubNaturalLossItemGroup('СЫРЫ','без покрытия(без рассола)','058',0.3);
+    EXEC loadDefaultSubNaturalLossItemGroup('СЫРЫ','в рассоле(брынза и др.)','059',0.25);
+    EXEC loadDefaultSubNaturalLossItemGroup('ХЛЕБОБУЛОЧНЫЕ ТОВАРЫ','хлеб печеный','060',0.5);
+    EXEC loadDefaultSubNaturalLossItemGroup('ХЛЕБОБУЛОЧНЫЕ ТОВАРЫ','бараночные изделия','061',0.35);
+    EXEC loadDefaultSubNaturalLossItemGroup('ХЛЕБОБУЛОЧНЫЕ ТОВАРЫ','сухари','062',0.3);
+    EXEC loadDefaultSubNaturalLossItemGroup('ХЛЕБОБУЛОЧНЫЕ ТОВАРЫ','пироги и кулебяки','064',0.45);
+    EXEC loadDefaultSubNaturalLossItemGroup('ХЛЕБОБУЛОЧНЫЕ ТОВАРЫ','лаваш и чурек','065',0.35);
+    EXEC loadDefaultSubNaturalLossItemGroup('ХЛЕБОБУЛОЧНЫЕ ТОВАРЫ','прочие весовые хлебобул.товары','066',0.3);
+} IN loadDefaultGroup;
 
-}
-// todo: переделать ньюмерик на что-нибудь другое, т.к. не записывает.
-
-fillMachineryModelDefaultValues 'Заполнить значения моделей оборудования по умолчанию' = ACTION () {
-    EXEC fillCashRegisterModelDefaultValues();
-    EXEC fillScalesModelDefaultValues();
-    EXEC fillPriceCheckerModelDefaultValues();
-    EXEC fillTerminalModelDefaultValues();
-}
-
-addedNumerator = SESSION DATA numerator();
-
-addNumerator 'Добавить нумератор' = ACTION(string1, string2, long1, long2, int) {
-    ADDOBJ numerator;
-    FOR n == addedObject() DO {
-        SET name(n) <- string1 AS STRING[110];
-        SET seriesNumerator(n) <- string2 AS STRING[2];
-        SET minValueNumerator(n) <-long1 AS LONG;
-        SET maxValueNumerator(n) <-long2 AS LONG;
-        SET stringLengthNumerator(n) <-int AS INTEGER;
-        SET addedNumerator() <- n AS numerator;
-    }
-}
-
-fillDatabaseDefaultValues 'Заполнить базу значениями по умолчанию' = ACTION() {
-    EXEC fillCountryDefaultValues();
-    EXEC fillVATDefaultValues();
-    EXEC fillUOMDefaultValues();
-    EXEC fillCurrencyDefaultValues();
-    EXEC fillStatisticGroupDefaultValues();
-    EXEC fillLossItemGroupDefaultValues();
-    EXEC fillMachineryModelDefaultValues();
-    EXEC fillDocumentTypeDefaultValues();
-    EXEC fillLabelTypeDefaultValues();
-    EXEC fillPaymentTypeDefaultValues();
-}
-
-//---------------------------------------------- Параметры -----------------------------------------------------//
-
-FORM parameters 'Параметры'
-    PROPERTIES()    skuStockAverageInterval, calcCurrentQuantitySoldInterval, showWare
+loadDefaultData () += loadDefaultNaturalLossItemGroups();
+EXTEND FORM defaultData
+    PROPERTIES() loadDefaultNaturalLossItemGroups
 ;
 
-//---------------------------------------------- Заполнение БД -------------------------------------------------//
+//---------------------------------------------- Генерация Z-отчета -------------------------------------------------//
 
-FORM fillDataBase 'Заполнение БД'
+generateZReport 'Сгенерировать Z-отчёт' = ACTION CUSTOM 'equ.srv.actions.GenerateZReport';
+averageZReportCountGenerateZReport 'Среднее число Z-отчётов' = DATA INTEGER ();
+averageReceiptCountGenerateZReport 'Среднее число чеков' = DATA INTEGER ();
+averageReceiptDetailCountGenerateZReport 'Среднее число строк в чеке' = DATA INTEGER ();
+dateFromGenerateZReport 'Дата (с)' = DATA DATETIME ();
+dateToGenerateZReport 'Дата (по)' = DATA DATETIME ();
 
-    PROPERTIES()    fillVATDefaultValues, fillCountryDefaultValues, fillUOMDefaultValues, fillCurrencyDefaultValues,
-                    fillStatisticGroupDefaultValues, fillLossItemGroupDefaultValues, fillMachineryModelDefaultValues,
-                    fillDocumentTypeDefaultValues, fillLabelTypeDefaultValues, fillPaymentTypeDefaultValues,
-                    fillDatabaseDefaultValues
-
-    OBJECTS         es=equipmentServer FIXED PANEL
-    PROPERTIES(es)  SELECTOR name
-
-    OBJECTS         s=stock FIXED PANEL
-    PROPERTIES(s)   SELECTOR name
-
-    OBJECTS         gtdt=groupTerminalDocumentType FIXED PANEL
-    PROPERTIES(gtdt)   SELECTOR nameGroupTerminalDocumentType
-
-    OBJECTS         crm=cashRegisterModel FIXED PANEL
-    PROPERTIES(crm) SELECTOR name
-
-    OBJECTS         sm=scalesModel FIXED PANEL
-    PROPERTIES(sm)  SELECTOR name
-
-    OBJECTS         tm=terminalModel FIXED PANEL
-    PROPERTIES(tm)  SELECTOR name
-
-    OBJECTS         cCashReg=INTEGER FIXED PANEL
-    PROPERTIES(cCashReg)   intValueCashRegister = OBJVALUE
-
-    OBJECTS         cScales=INTEGER FIXED PANEL
-    PROPERTIES(cScales)   intValueScales = OBJVALUE
-
-    OBJECTS         cPriceChecker=INTEGER FIXED PANEL
-    PROPERTIES(cPriceChecker)   intValuePriceChecker = OBJVALUE
-
-    OBJECTS         cTerminal=INTEGER FIXED PANEL
-    PROPERTIES(cTerminal)   intValueTerminal = OBJVALUE
-
-    PROPERTIES (es, s, crm, cCashReg) fillCashRegisterDefaultValues
-    PROPERTIES (es, s, sm, cScales)  fillScalesDefaultValues
-    PROPERTIES (es, s, cPriceChecker)  fillPriceCheckerDefaultValues
-    PROPERTIES (es, s, tm, gtdt, cTerminal)  fillTerminalDefaultValues
-
+EXTEND FORM defaultData
     PROPERTIES()    generateZReport, averageZReportCountGenerateZReport, averageReceiptCountGenerateZReport, averageReceiptDetailCountGenerateZReport,
                     dateFromGenerateZReport, dateToGenerateZReport
+
 ;
 
-DESIGN fillDataBase FROM DEFAULT {
+EXTEND DESIGN defaultData {
     main{
-        PROPERTY(intValueCashRegister) {
-            caption = 'Количество касс';
-        }
-        PROPERTY(intValueScales) {
-            caption = 'Количество весов';
-        }
-        PROPERTY(intValuePriceChecker) {
-            caption = 'Количество прайс-чекеров';
-        }
-        PROPERTY(intValueTerminal) {
-            caption = 'Количество ТСД';
-        }
-        PROPERTY(name(es)) {
-            caption = 'Сервер оборудования';
-        }
-        PROPERTY(name(s)) {
-            caption = 'Склад';
-        }
-        PROPERTY(name(crm)) {
-            caption = 'Модель касс';
-        }
-        PROPERTY(name(sm)) {
-            caption = 'Модель весов';
-        }
-        PROPERTY(name(tm)) {
-            caption = 'Модель ТСД';
-        }
-        PROPERTY(nameGroupTerminalDocumentType(gtdt)) {
-            caption = 'Группа типов документов';
-        }
-
-        NEW mainContainer BEFORE functions.box {
-            title = 'Заполнение БД';
+        NEW ZReport BEFORE functions.box {
+            title = 'Сгенерировать Z-отчёт';
             childConstraints = TO THE BOTTOM;
-            ADD PROPERTY(fillVATDefaultValues());
-            ADD PROPERTY(fillCountryDefaultValues());
-            ADD PROPERTY(fillUOMDefaultValues());
-            ADD PROPERTY(fillCurrencyDefaultValues());
-            ADD PROPERTY(fillStatisticGroupDefaultValues());
-            ADD PROPERTY(fillLossItemGroupDefaultValues());
-            ADD PROPERTY(fillLabelTypeDefaultValues());
-            ADD PROPERTY(fillPaymentTypeDefaultValues());
-            ADD PROPERTY(fillDatabaseDefaultValues());
-
-            NEW containerFillMachinery {
-                title = 'Заполнение оборудования по умолчанию';
-                childConstraints = TO THE BOTTOM;
-                ADD PROPERTY(fillMachineryModelDefaultValues());
-                ADD PROPERTY(name(es));
-                ADD PROPERTY(name(s));
-
-                NEW containerCashRegister {
-                    title = 'Кассы';
-                    ADD PROPERTY(name(crm));
-                    ADD PROPERTY(intValueCashRegister);
-                    ADD PROPERTY(fillCashRegisterDefaultValues);
-                }
-                NEW containerScales {
-                    title = 'Весы';
-                    ADD PROPERTY(name(sm));
-                    ADD PROPERTY(intValueScales);
-                    ADD PROPERTY(fillScalesDefaultValues);
-                }
-                NEW containerPriceChecker {
-                    childConstraints = TO THE BOTTOM;
-                    title = 'Прайс-чекеры';
-                    ADD PROPERTY(intValuePriceChecker);
-                    ADD PROPERTY(fillPriceCheckerDefaultValues);
-                }
-                NEW containerTerminal {
-                    title = 'ТСД';
-                    ADD PROPERTY(fillDocumentTypeDefaultValues);
-                    ADD PROPERTY(nameGroupTerminalDocumentType(gtdt));
-                    ADD PROPERTY(name(tm));
-                    ADD PROPERTY(intValueTerminal);
-                    ADD PROPERTY(fillTerminalDefaultValues);
-                }
-            }
-
-            NEW containerZReport {
-                title = 'Сгенерировать Z-отчёт';
-                childConstraints = TO THE BOTTOM;
-                ADD PROPERTY(averageZReportCountGenerateZReport());
-                ADD PROPERTY(averageReceiptCountGenerateZReport());
-                ADD PROPERTY(averageReceiptDetailCountGenerateZReport());
-                ADD PROPERTY(dateFromGenerateZReport());
-                ADD PROPERTY(dateToGenerateZReport());
-                ADD PROPERTY(generateZReport());
-            }
+            ADD PROPERTY(averageZReportCountGenerateZReport());
+            ADD PROPERTY(averageReceiptCountGenerateZReport());
+            ADD PROPERTY(averageReceiptDetailCountGenerateZReport());
+            ADD PROPERTY(dateFromGenerateZReport());
+            ADD PROPERTY(dateToGenerateZReport());
+            ADD PROPERTY(generateZReport());
         }
     }
 }
@@ -7925,7 +7773,8 @@ importStores 'Импортировать магазины' = DATA BOOLEAN ();
 importDepartmentStores 'Импортировать отделы магазина' = DATA BOOLEAN();
 importBanks 'Импортировать банки' = DATA BOOLEAN();
 importRateWastes 'Импортировать нормы отходов' = DATA BOOLEAN();
-FORM importData 'Импорт данных'
+
+EXTEND FORM integration
     PROPERTIES() importDataAction, importUrl, importLogin, importPassword
     PROPERTIES() importLSTDataAction, importLSTDirectory, importInactive, importGroupItems, importWares, importItems,
     importNumberItems, importNumberItemsAtATime, importPrices, importAssortment, importShipment,
@@ -8107,10 +7956,6 @@ NAVIGATOR {
         ADD outcomeCashOrderPrint;
     }
 
-    ADD adminElement TO formsTree {
-        ADD parameters;
-        ADD fillDataBase;
-        ADD importData;
-    }
+    ADD adminElement TO formsTree;
 }
 

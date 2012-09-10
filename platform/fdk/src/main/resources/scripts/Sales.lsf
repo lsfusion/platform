@@ -64,6 +64,10 @@ calcCurrentQuantitySoldInterval 'Пересчитать однодневные �
     EXEC calcQuantitySoldInterval(subtractDate(currentDate(), skuStockAverageInterval()), subtractDate(currentDate(), 1));
 }
 
+EXTEND FORM options
+    PROPERTIES() skuStockAverageInterval, calcCurrentQuantitySoldInterval
+;
+
 //---------------------------------------------- Формы продаж -------------------------------------//
 
 FORM salesLedger 'Продажи по позициям'

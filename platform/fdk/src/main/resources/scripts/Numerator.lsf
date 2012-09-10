@@ -136,8 +136,8 @@ META defineNumeratedObject (object, caption, series)
         FOR n == addedObject() DO {
             SET name(n) <- caption;
             SET seriesNumerator(n) <- series;
-            SET minValueNumerator(n) <- 1;
-            SET maxValueNumerator(n) <- 99999;
+            SET minValueNumerator(n) <- 1L;
+            SET maxValueNumerator(n) <- 99999L;
             SET stringLengthNumerator(n) <- 5;
 
             SET defaultNumerator###object() <- n;

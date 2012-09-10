@@ -1,6 +1,6 @@
 MODULE Currency;
 
-REQUIRE System;
+REQUIRE System, DefaultData;
 
 dateTypeExchangeCurrencyDate (typeExchange, currency, date)  =
     GROUP MAX dateIn IF rateExchange(typeExchange, currency, dateIn) AND dateIn <= date AND date IS DATE
@@ -144,3 +144,51 @@ END
 META deriveDocumentCurrency (object, stockProp)
     currency###object (object) <- currencyStock(stockProp###object(object)) WHEN ASSIGNED(object AS object);
 END
+
+// --------------------------------------------------- Стандартные значения ------------------------------------ //
+
+loadDefaultCurrency 'Добавить валюты' = ACTION (stringOne, stringTwo, stringThree) {
+    ADDOBJ currency;
+    FOR c == addedObject() DO {
+       SET shortNameCurrency(c) <-  stringOne AS STRING[3];
+       SET name(c) <-  stringTwo AS STRING[110];
+       SET symbolCurrency(c) <- stringThree AS STRING[5];
+    }
+}
+
+loadDefaultCurrencies 'Загрузить стандартные валюты' = ACTION () {
+    EXEC loadDefaultCurrency('AUD', 'Австралийский доллар', ' ');
+    EXEC loadDefaultCurrency('BGN', 'Болгарский лев', ' ');
+    EXEC loadDefaultCurrency('UAH', 'Гривна', ' ');
+    EXEC loadDefaultCurrency('DKK', 'Датская крона', ' ');
+    EXEC loadDefaultCurrency('USD', 'Доллар США', '$');
+    EXEC loadDefaultCurrency('EUR', 'Евро', '€');
+    EXEC loadDefaultCurrency('PLN', 'Злотый', ' ');
+    EXEC loadDefaultCurrency('ISK', 'Исландская крона', ' ');
+    EXEC loadDefaultCurrency('CAD', 'Канадский доллар', ' ');
+    EXEC loadDefaultCurrency('CNY', 'Китайский юань', ' ');
+    EXEC loadDefaultCurrency('KWD', 'Кувейтский динар', ' ');
+    EXEC loadDefaultCurrency('LVL', 'Латвийский лат', ' ');
+    EXEC loadDefaultCurrency('LTL', 'Литовский лит', ' ');
+    EXEC loadDefaultCurrency('MDL', 'Молдавский лей', ' ');
+    EXEC loadDefaultCurrency('NOK', 'Норвежская крона', ' ');
+    EXEC loadDefaultCurrency('RUB', 'Российский рубль', ' ');
+    EXEC loadDefaultCurrency('XDR', 'СДР', ' ');
+    EXEC loadDefaultCurrency('SGD', 'Сингапурский доллар', ' ');
+    EXEC loadDefaultCurrency('KGS', 'Сом', ' ');
+    EXEC loadDefaultCurrency('KZT', 'Тенге', ' ');
+    EXEC loadDefaultCurrency('TRY', 'Турецкая лира', ' ');
+    EXEC loadDefaultCurrency('GBP', 'Фунт стерлингов', ' ');
+    EXEC loadDefaultCurrency('CZK', 'Чешская крона', ' ');
+    EXEC loadDefaultCurrency('SEK', 'Шведская крона', ' ');
+    EXEC loadDefaultCurrency('CHF', 'Швейцарский франк', ' ');
+    EXEC loadDefaultCurrency('JPY', 'Иена', ' ');
+    EXEC loadDefaultCurrency('IRR', 'Иранский риал', ' ');
+    EXEC loadDefaultCurrency('BLR', 'Белорусский рубль', ' ');
+} IN loadDefaultGroup;
+
+loadDefaultData () += loadDefaultCurrencies();
+
+EXTEND FORM defaultData
+    PROPERTIES() loadDefaultCurrencies
+;

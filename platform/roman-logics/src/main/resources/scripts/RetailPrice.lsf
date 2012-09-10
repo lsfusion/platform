@@ -82,7 +82,7 @@ TABLE discountPriceSetDocument (discountPriceSetDocument);
 dateTimeToDataPriceSetDocument 'Дата/время окончания' = DATA DATETIME(priceSetDocument) IN documentPrmGroup;
 
 maxDateTime 'Максимальная дата' = DATA DATETIME();
-EXTEND FORM globalParamForm
+EXTEND FORM options
      PROPERTIES() maxDateTime
 ;
 dateTimeToPriceSetDocument 'Дата/время окончания' (priceSetDocument) = UNION OVERRIDE maxDateTime() IF priceSetDocument IS priceSetDocument,

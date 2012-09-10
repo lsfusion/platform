@@ -157,7 +157,9 @@ EXTEND FORM groupMachineryInput
     PROPERTIES(m) READONLY FORCE GRID SHOWIF isGroupScales(g)       numberScales, nameModelMachinery
 ;
 
-addScalesModel 'Добавить модель весов' = ACTION (stringOne, stringTwo)  {
+// ------------------------------------------------ Стандартные значения ------------------------------------ //
+
+loadDefaultScalesModel 'Добавить модель весов' = ACTION (stringOne, stringTwo)  {
     ADDOBJ scalesModel;
     FOR sm == addedObject() DO {
          SET name(sm) <- stringOne AS STRING[110];
@@ -165,13 +167,20 @@ addScalesModel 'Добавить модель весов' = ACTION (stringOne, s
     }
 }
 
-fillScalesModelDefaultValues 'Заполнить значения моделей весов по умолчанию' = ACTION () {
-    EXEC addScalesModel('Весы Digi', 'equ.clt.handler.digi.DigiHandler');
-    EXEC addScalesModel('Весы EasyCSV', 'equ.clt.handler.easy.EasyCSVHandler');
-    EXEC addScalesModel('Весы Штрих-Принт', 'equ.clt.handler.shtrihPrint.ShtrihPrintHandler');
-}
+loadDefaultScalesModels 'Загрузить стандартные модели весов' = ACTION () {
+    EXEC loadDefaultScalesModel('Весы Digi', 'equ.clt.handler.digi.DigiHandler');
+    EXEC loadDefaultScalesModel('Весы EasyCSV', 'equ.clt.handler.easy.EasyCSVHandler');
+    EXEC loadDefaultScalesModel('Весы Штрих-Принт', 'equ.clt.handler.shtrihPrint.ShtrihPrintHandler');
+} IN loadDefaultGroup;
 
-fillScalesDefaultValues 'Заполнить значения весов по умолчанию' = ACTION(equipmentServer, stock, model, num) {
+loadDefaultData () += loadDefaultScalesModels();
+
+EXTEND FORM defaultData
+    PROPERTIES() loadDefaultScalesModels
+;
+
+// --------------------------------------- Генерация групп весов -------------------------------- //
+loadDefaultGroupScales 'Сгенерировать группу весов' = ACTION(equipmentServer, stock, model, num) {
     ADDOBJ groupScales;
     FOR g == addedObject() DO {
         SET stockGroupScales(g) <- stock AS stock;
@@ -188,6 +197,33 @@ fillScalesDefaultValues 'Заполнить значения весов по у�
                 SET nppMachinery(s) <- numScales();
                 SET scalesModelScales(s) <- model AS scalesModel;
             }
+        }
+    }
+};
+
+EXTEND FORM defaultData
+    OBJECTS         sm=scalesModel FIXED PANEL
+    PROPERTIES(sm)  SELECTOR name
+
+    OBJECTS         cScales=INTEGER FIXED PANEL
+    PROPERTIES(cScales)   intValueScales = OBJVALUE
+    PROPERTIES(es, s, sm, cScales)  loadDefaultGroupScales
+;
+
+EXTEND DESIGN defaultData {
+    PROPERTY(name(sm)) {
+        caption = 'Модель весов';
+    }
+    PROPERTY(intValueScales) {
+        caption = 'Количество весов';
+    }
+    machinery {
+        NEW scales {
+            title = 'Весы';
+            ADD PROPERTY(loadDefaultScalesModels);
+            ADD PROPERTY(name(sm));
+            ADD PROPERTY(intValueScales);
+            ADD PROPERTY(loadDefaultGroupScales);
         }
     }
 }

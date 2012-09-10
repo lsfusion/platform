@@ -239,7 +239,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP<PropertyInterface> barcodeToObject;
     public LCP barcodeObjectName;
     public LCP equalsObjectBarcode;
-    public LCP barcodePrefix;
     public LAP seekBarcodeAction;
     public LAP barcodeNotFoundMessage;
     public LCP extSID, extSIDToObject;
@@ -519,6 +518,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public NavigatorElement<T> objectElement;
     public NavigatorElement<T> adminElement;
 
+    public NavigatorElement<T> applicationElement;
     public NavigatorElement<T> accessElement;
     public NavigatorElement<T> eventsElement;
     public NavigatorElement<T> configElement;
@@ -1003,8 +1003,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         barcodeObjectName = addJProp(baseGroup, "barcodeObjectName", getString("logics.object"), name, barcodeToObject, 1);
 
         equalsObjectBarcode = addJProp(equals2, barcode, 1, 2);
-
-        barcodePrefix = addDProp(baseGroup, "barcodePrefix", getString("logics.barcode.prefix"), StringClass.get(13));
 
         seekBarcodeAction = addJoinAProp(getString("logics.barcode.search"), addSAProp(null), barcodeToObject, 1);
         barcodeNotFoundMessage = addIfAProp(addJProp(baseLM.andNot1, is(StringClass.get(13)), 1, barcodeToObject, 1), 1, addMAProp(getString("logics.barcode.not.found"), getString("logics.error")));
@@ -1545,6 +1543,14 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         objectElement = addNavigatorElement(adminElement, "objectElement", getString("logics.object"));
         adminElement.add(objectElement);
 
+        applicationElement = addNavigatorElement(adminElement, "applicationElement", getString("logics.administration.application"));
+        addFormEntity(new OptionsFormEntity(applicationElement, "options"));
+        addFormEntity(new IntegrationFormEntity(applicationElement, "integration"));
+        addFormEntity(new MigrationFormEntity(applicationElement, "migration"));
+
+        catalogElement = addNavigatorElement(adminElement, "catalogElement", getString("logics.administration.catalogs"));
+        addFormEntity(new DaysOffFormEntity(catalogElement, "daysOffForm"));
+
         accessElement = addNavigatorElement(adminElement, "accessElement", getString("logics.administration.access"));
 
         UserEditFormEntity userEditForm = addFormEntity(new UserEditFormEntity(null, "userEditForm"));
@@ -1553,22 +1559,18 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         addFormEntity(new UserPolicyFormEntity(accessElement, "userPolicyForm"));
         addFormEntity(new SecurityPolicyFormEntity(accessElement, "securityPolicyForm"));
 
-        eventsElement = addNavigatorElement(adminElement, "eventsElement", getString("logics.administration.events"));
-        addFormEntity(new LaunchesFormEntity(eventsElement, "launchesForm"));
-        addFormEntity(new ConnectionsFormEntity(eventsElement, "connectionsForm"));
-        addFormEntity(new ExceptionsFormEntity(eventsElement, "exceptionsForm"));
-
         configElement = addNavigatorElement(adminElement, "configElement", getString("logics.administration.config"));
+        addFormEntity(new AdminFormEntity(configElement, "adminForm"));
         addFormEntity(new PropertiesFormEntity(configElement, "propertiesForm"));
         addFormEntity(new PhysicalModelFormEntity(configElement, "physicalModelForm"));
         addFormEntity(new FormsFormEntity(configElement, "formsForm"));
         addFormEntity(new NotificationFormEntity(configElement, "notification"));
 
-        catalogElement = addNavigatorElement(adminElement, "catalogElement", getString("logics.administration.catalogs"));
+        eventsElement = addNavigatorElement(adminElement, "eventsElement", getString("logics.administration.events"));
+        addFormEntity(new LaunchesFormEntity(eventsElement, "launchesForm"));
+        addFormEntity(new ConnectionsFormEntity(eventsElement, "connectionsForm"));
+        addFormEntity(new ExceptionsFormEntity(eventsElement, "exceptionsForm"));
 
-        addFormEntity(new DaysOffFormEntity(catalogElement, "daysOffForm"));
-
-        addFormEntity(new AdminFormEntity(adminElement, "adminForm"));
         addFormEntity(new RemindUserPassFormEntity(null, "remindPasswordLetter"));
     }
 
@@ -2270,6 +2272,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         public NotificationFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, getString("logics.notification.notifications"));
 
+            addPropertyDraw(new LP[]{smtpHost, smtpPort, nameEncryptedConnectionType, fromAddress, emailAccount, emailPassword,
+                    emailBlindCarbonCopy, disableEmail});
+
             objNotification = addSingleGroupObject(notification, getString("logics.notification"));
             objProperty = addSingleGroupObject(property, getString("logics.property.properties"));
 
@@ -2473,12 +2478,29 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
     }
 
+    private class OptionsFormEntity extends FormEntity {
+        private OptionsFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, getString("logics.application.options"));
+        }
+    }
+
+    private class IntegrationFormEntity extends FormEntity {
+        private IntegrationFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, getString("logics.application.integration"));
+        }
+    }
+
+    private class MigrationFormEntity extends FormEntity {
+        private MigrationFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, getString("logics.application.migration"));
+        }
+    }
+
     private class AdminFormEntity extends FormEntity {
         private AdminFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, getString("logics.global.parameters"));
 
-            addPropertyDraw(new LP[]{smtpHost, smtpPort, nameEncryptedConnectionType, fromAddress, emailAccount, emailPassword,
-                    emailBlindCarbonCopy, disableEmail, webHost, nameDefaultCountry, barcodePrefix, defaultBackgroundColor,
+            addPropertyDraw(new LP[]{webHost, defaultBackgroundColor,
                     defaultForegroundColor, restartServerAction, cancelRestartServerAction, checkAggregationsAction, recalculateAction,
                     recalculateFollowsAction, packAction, runGarbageCollector});
         }

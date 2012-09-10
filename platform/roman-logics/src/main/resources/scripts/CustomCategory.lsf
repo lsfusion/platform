@@ -176,8 +176,8 @@ createCustomsZone 'Задать таможенную зону и связать 
     }
 } CONFIRM;
 
-EXTEND FORM globalParamForm
-    PROPERTIES() createCustomsZone
+EXTEND FORM migration
+    PROPERTIES() toSetRangeCustomCategories10, createCustomsZone
 ;
 
 FORM customCategoryZones 'ТН ВЭД (зональный)'
@@ -413,6 +413,12 @@ DESIGN customCategoryOrigins FROM DEFAULT {
     ADD functions.box;
 }
 
+EXTEND FORM country
+    PROPERTIES(c) nameCustomsZoneCountry
+;
+EXTEND FORM countries
+    PROPERTIES(c) READONLY nameCustomsZoneCountry
+;
 
 //FORM Test 'Тест'
 //

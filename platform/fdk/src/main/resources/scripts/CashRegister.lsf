@@ -108,7 +108,9 @@ EXTEND FORM groupMachineryInput
                                                                     nameModelMachinery, dateCashRegister
 ;
 
-addCashRegisterModel 'Добавить модель касс' = ACTION (stringOne, stringTwo)  {
+// ------------------------------------------------ Стандартные значения ------------------------------------ //
+
+loadDefaultCashRegisterModel 'Добавить модель касс' = ACTION (stringOne, stringTwo)  {
     ADDOBJ cashRegisterModel;
     FOR crm == addedObject() DO {
          SET name(crm) <- stringOne AS STRING[110];
@@ -116,14 +118,21 @@ addCashRegisterModel 'Добавить модель касс' = ACTION (stringOn
     }
 }
 
-fillCashRegisterModelDefaultValues 'Заполнить значения моделей касс по умолчанию' = ACTION () {
-    EXEC addCashRegisterModel('Кассы EasyCSV', 'equ.clt.handler.easy.EasyCSVHandler');
-    EXEC addCashRegisterModel('Кассы Kristal', 'equ.clt.handler.kristal.KristalHandler');
-    EXEC addCashRegisterModel('Кассы Maxishop', 'equ.clt.handler.maxishop.MaxishopHandler');
-    EXEC addCashRegisterModel('Кассы UKM4', 'equ.clt.handler.ukm4.UKM4Handler');
-}
+loadDefaultCashRegisterModels 'Загрузить стандартные модели касс' = ACTION () {
+    EXEC loadDefaultCashRegisterModel('Кассы EasyCSV', 'equ.clt.handler.easy.EasyCSVHandler');
+    EXEC loadDefaultCashRegisterModel('Кассы Kristal', 'equ.clt.handler.kristal.KristalHandler');
+    EXEC loadDefaultCashRegisterModel('Кассы Maxishop', 'equ.clt.handler.maxishop.MaxishopHandler');
+    EXEC loadDefaultCashRegisterModel('Кассы UKM4', 'equ.clt.handler.ukm4.UKM4Handler');
+} IN loadDefaultGroup;
 
-fillCashRegisterDefaultValues 'Заполнить значения касс по умолчанию' = ACTION(equipmentServer, stock, model, num) {
+loadDefaultData () += loadDefaultCashRegisterModels();
+
+EXTEND FORM defaultData
+    PROPERTIES() loadDefaultCashRegisterModels
+;
+
+// --------------------------------------- Генерация групп касс -------------------------------- //
+loadDefaultGroupCashRegister 'Сгенерировать группу касс' = ACTION(equipmentServer, stock, model, num) {
     ADDOBJ groupCashRegister;
     FOR g == addedObject() DO {
         SET departmentStoreGroupCashRegister(g) <- stock AS stock;
@@ -140,6 +149,33 @@ fillCashRegisterDefaultValues 'Заполнить значения касс по
                 SET nppMachinery(c) <- numCashRegister();
                 SET cashRegisterModelCashRegister(c) <- model AS cashRegisterModel;
             }
+        }
+    }
+}
+
+EXTEND FORM defaultData
+    OBJECTS         crm=cashRegisterModel FIXED PANEL
+    PROPERTIES(crm) SELECTOR name
+
+    OBJECTS         cCashReg=INTEGER FIXED PANEL
+    PROPERTIES(cCashReg)   intValueCashRegister = OBJVALUE
+    PROPERTIES (es, s, crm, cCashReg) loadDefaultGroupCashRegister
+;
+
+EXTEND DESIGN defaultData {
+    PROPERTY(name(crm)) {
+        caption = 'Модель касс';
+    }
+    PROPERTY(intValueCashRegister) {
+        caption = 'Количество касс';
+    }
+    machinery {
+        NEW cashRegister {
+            title = 'Кассы';
+            ADD PROPERTY(loadDefaultCashRegisterModels);
+            ADD PROPERTY(name(crm));
+            ADD PROPERTY(intValueCashRegister);
+            ADD PROPERTY(loadDefaultGroupCashRegister);
         }
     }
 }

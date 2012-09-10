@@ -2,6 +2,13 @@ MODULE Ware;
 
 REQUIRE System, Historizable, Tax;
 
+// ------------------------------------------ Глобальные настройки --------------------------------- //
+showWare 'Показывать стеклопосуду' = DATA BOOLEAN ();
+EXTEND FORM options
+    PROPERTIES() showWare
+;
+
+// ------------------------------------------ Посуда ----------------------------------------------- //
 CLASS ware 'Посуда' : named, externalObject;
 TABLE ware(ware);
 TABLE wareDate(ware, DATE);

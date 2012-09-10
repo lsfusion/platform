@@ -1,0 +1,19 @@
+MODULE DefaultData;
+
+REQUIRE System;
+
+GROUP loadDefaultGroup 'Загрузка отдельных объектов' : publicGroup;
+
+loadDefaultData 'Загрузить стандартные данные' = ABSTRACT ACTION ();
+
+FORM defaultData 'Стандартные данные'
+    PROPERTIES() loadDefaultData
+;
+DESIGN defaultData FROM DEFAULT {
+}
+
+NAVIGATOR {
+    applicationElement {
+        ADD defaultData;
+    }
+}

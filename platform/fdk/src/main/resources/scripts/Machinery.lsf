@@ -1,6 +1,6 @@
 MODULE Machinery;
 
-REQUIRE System, Stock, Barcode;
+REQUIRE System, Stock, Barcode, DefaultData;
 
 //---------------------------- Сервера управления оборудования ----------------------------//
 
@@ -350,5 +350,32 @@ DESIGN machineryPriceTransactions FROM DEFAULT {
             }
         }
         ADD functions.box;
+    }
+}
+
+// ------------------------------------------------ Стандартные значения ------------------------------------ //
+
+EXTEND FORM defaultData
+    OBJECTS         es=equipmentServer FIXED PANEL
+    PROPERTIES(es)  SELECTOR name
+
+    OBJECTS         s=stock FIXED PANEL
+    PROPERTIES(s)   SELECTOR name
+;
+
+EXTEND DESIGN defaultData {
+    PROPERTY(name(es)) {
+        caption = 'Сервер оборудования';
+    }
+    PROPERTY(name(s)) {
+        caption = 'Склад';
+    }
+
+    NEW machinery BEFORE functions.box{
+        title = 'Оборудование';
+        childConstraints = TO THE BOTTOM;
+
+        ADD PROPERTY(name(es));
+        ADD PROPERTY(name(s));
     }
 }

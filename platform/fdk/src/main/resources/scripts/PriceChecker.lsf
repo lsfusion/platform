@@ -30,6 +30,9 @@ isGroupPriceChecker (machinery) = machinery IS groupPriceChecker;
 groupPriceCheckerPriceChecker = DATA groupPriceChecker (priceChecker);
 groupMachineryMachinery(machinery) += groupPriceCheckerPriceChecker(machinery);
 
+priceCheckerModelPriceChecker = DATA priceCheckerModel (priceChecker);
+modelMachinery(machinery) += priceCheckerModelPriceChecker(machinery);
+
 FORM priceChecker 'Прайс чекер'
     OBJECTS ch=priceChecker FIXED PANEL
     PROPERTIES(ch) nameGroupMachineryMachinery, nppMachinery, descriptionMachinery, portMachinery
@@ -76,7 +79,9 @@ CLASS priceCheckerPriceTransaction 'Загрузка прайса в прайс 
 groupPriceCheckerPriceCheckerPriceTransaction 'Группа прайс чекеров' = DATA groupPriceChecker (priceCheckerPriceTransaction);
 groupMachineryMachineryPriceTransaction (transaction) += groupPriceCheckerPriceCheckerPriceTransaction(transaction);
 
-addPriceCheckerModel 'Добавить модель прайс-чекера' = ACTION (stringOne, stringTwo)  {
+// ------------------------------------------------ Стандартные значения ------------------------------------ //
+
+loadDefaultPriceCheckerModel 'Добавить модель прайс-чекера' = ACTION (stringOne, stringTwo)  {
     ADDOBJ priceCheckerModel;
     FOR pcm == addedObject() DO {
          SET name(pcm) <- stringOne AS STRING[110];
@@ -84,12 +89,18 @@ addPriceCheckerModel 'Добавить модель прайс-чекера' = A
     }
 }
 
-fillPriceCheckerModelDefaultValues 'Заполнить значения моделей прайс-чекеров по умолчанию' = ACTION () {
-    EXEC addPriceCheckerModel('Прайс-чекеры EasyCSV', 'equ.clt.handler.easy.EasyCSVHandler');
-}
+loadDefaultPriceCheckerModels 'Загрузить стандартные модели прайс-чекеров' = ACTION () {
+    EXEC loadDefaultPriceCheckerModel('Прайс-чекеры EasyCSV', 'equ.clt.handler.easy.EasyCSVHandler');
+} IN loadDefaultGroup;
 
-fillPriceCheckerDefaultValues 'Заполнить значения прайс-чекеров по умолчанию' = ACTION(equipmentServer, stock, num) {
+loadDefaultData () += loadDefaultPriceCheckerModels();
 
+EXTEND FORM defaultData
+    PROPERTIES() loadDefaultPriceCheckerModels
+;
+
+// --------------------------------------- Генерация групп прайс-чекеров -------------------------------- //
+loadDefaultGroupPriceChecker 'Сгенерировать группу прайс-чекеров' = ACTION(equipmentServer, stock, model, num) {
     ADDOBJ groupPriceChecker;
     FOR g == addedObject() DO {
         SET stockGroupPriceChecker(g) <- stock AS stock;
@@ -104,7 +115,35 @@ fillPriceCheckerDefaultValues 'Заполнить значения прайс-ч
                 SET groupPriceCheckerPriceChecker(pc) <- g AS groupPriceChecker;
                 SET numPriceChecker() <- numPriceChecker() + 1;
                 SET nppMachinery(pc) <- numPriceChecker();
+                SET priceCheckerModelPriceChecker(pc) <- model AS priceCheckerModel;
             }
+        }
+    }
+} IN loadDefaultGroup;
+
+EXTEND FORM defaultData
+    OBJECTS         pm=priceCheckerModel FIXED PANEL
+    PROPERTIES(pm)  SELECTOR name
+
+    OBJECTS         cPriceChecker=INTEGER FIXED PANEL
+    PROPERTIES(cPriceChecker)   intValuePriceChecker = OBJVALUE
+    PROPERTIES (es, s, pm, cPriceChecker)  loadDefaultGroupPriceChecker
+;
+
+EXTEND DESIGN defaultData {
+    PROPERTY(name(pm)) {
+        caption = 'Модель прайс-чекеров';
+    }
+    PROPERTY(intValuePriceChecker) {
+        caption = 'Количество прайс-чекеров';
+    }
+    machinery {
+        NEW priceChecker {
+            title = 'Прайс-чекеры';
+            ADD PROPERTY(loadDefaultPriceCheckerModels);
+            ADD PROPERTY(name(pm));
+            ADD PROPERTY(intValuePriceChecker);
+            ADD PROPERTY(loadDefaultGroupPriceChecker);
         }
     }
 }

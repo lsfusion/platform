@@ -842,6 +842,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LCP userShipmentDetail;
     private LCP nameUserShipmentDetail;
     private LCP timeShipmentDetail;
+    private LCP barcodePrefix;
     private LAP createSku;
     private LAP createFreightBox;
     private LAP createPallet;
@@ -3721,9 +3722,11 @@ public class RomanLogicsModule extends LogicsModule {
         quantitySimpleShipmentRouteSku = addJProp(baseGroup, true, "quantitySimpleShipmentRouteSku", "Кол-во оприход.",
                 quantitySimpleShipmentStockSku, 1, currentFreightBoxRoute, 2, 3);
 
-        createSku = addJoinAProp("Сгенерировать товары", addAAProp(sku, baseLM.barcode, baseLM.barcodePrefix, true), quantityCreationSku, 1);
-        createFreightBox = addJoinAProp("Сгенерировать короба", addAAProp(freightBox, baseLM.barcode, baseLM.barcodePrefix, true), quantityCreationFreightBox, 1);
-        createPallet = addJoinAProp("Сгенерировать паллеты", addAAProp(pallet, baseLM.barcode, baseLM.barcodePrefix, true), quantityCreationPallet, 1);
+        barcodePrefix = addDProp(baseGroup, "barcodePrefix", "Префикс штрих-кодов", StringClass.get(13));
+
+        createSku = addJoinAProp("Сгенерировать товары", addAAProp(sku, baseLM.barcode, barcodePrefix, true), quantityCreationSku, 1);
+        createFreightBox = addJoinAProp("Сгенерировать короба", addAAProp(freightBox, baseLM.barcode, barcodePrefix, true), quantityCreationFreightBox, 1);
+        createPallet = addJoinAProp("Сгенерировать паллеты", addAAProp(pallet, baseLM.barcode, barcodePrefix, true), quantityCreationPallet, 1);
         createStamp = addAProp(actionGroup, new CreateStampActionProperty());
 
         LCP isSkuBarcode = addJProp(is(sku), baseLM.barcodeToObject, 1);
@@ -3899,16 +3902,16 @@ public class RomanLogicsModule extends LogicsModule {
 
         NavigatorElement preparation = addNavigatorElement(distributionDocument, "preparation", "Подготовка к приемке");
 
-        NavigatorElement generation = addNavigatorElement(preparation, "generation", "Генерация");
-        generation.window = generateToolbar;
+        NavigatorElement generationSintitex = addNavigatorElement(preparation, "generationSintitex", "Генерация");
+        generationSintitex.window = generateToolbar;
 
-        FormEntity createPalletFormCreate = addFormEntity(new CreatePalletFormEntity(generation, "createPalletFormAdd", "Сгенерировать паллеты", FormType.ADD));
+        FormEntity createPalletFormCreate = addFormEntity(new CreatePalletFormEntity(generationSintitex, "createPalletFormAdd", "Сгенерировать паллеты", FormType.ADD));
         createPalletFormCreate.showType = FormShowType.MODAL;
-        FormEntity createFreightBoxFormAdd = addFormEntity(new CreateFreightBoxFormEntity(generation, "createFreightBoxFormAdd", "Сгенерировать короба", FormType.ADD));
+        FormEntity createFreightBoxFormAdd = addFormEntity(new CreateFreightBoxFormEntity(generationSintitex, "createFreightBoxFormAdd", "Сгенерировать короба", FormType.ADD));
         createFreightBoxFormAdd.showType = FormShowType.MODAL;
-        FormEntity createSkuFormAdd = addFormEntity(new CreateSkuFormEntity(generation, "createSkuFormAdd", "Сгенерировать товары", FormType.ADD));
+        FormEntity createSkuFormAdd = addFormEntity(new CreateSkuFormEntity(generationSintitex, "createSkuFormAdd", "Сгенерировать товары", FormType.ADD));
         createSkuFormAdd.showType = FormShowType.MODAL;
-        FormEntity createStampFormAdd = addFormEntity(new CreateStampFormEntity(generation, "createStampFormAdd", "Сгенерировать марки", FormType.ADD));
+        FormEntity createStampFormAdd = addFormEntity(new CreateStampFormEntity(generationSintitex, "createStampFormAdd", "Сгенерировать марки", FormType.ADD));
         createStampFormAdd.showType = FormShowType.MODAL;
 
         addFormEntity(new CreatePalletFormEntity(preparation, "createPalletFormList", "Паллеты", FormType.LIST));
@@ -3982,14 +3985,6 @@ public class RomanLogicsModule extends LogicsModule {
         retailClassifier.add(commonSize.getListForm(baseLM).form);
         addFormEntity(new CommonSizeEditFormEntity(retailClassifier, "commonEditSizeForm", "Белорусские размеры"));
         addFormEntity(new CommonSizeImportFormEntity(retailClassifier, "commonImportSizeForm", "Белорусские размеры (таблицей)"));
-
-        NavigatorElement settings = addNavigatorElement(baseLM.baseElement, "settings", "Настройки");
-        settings.window = leftToolbar;
-        addFormEntity(new GlobalParamFormEntity(settings, "globalParamForm", "Общие параметры"));
-
-
-        // пока не поддерживается из-за того, что пока нет расчета себестоимости для внутреннего перемещения
-//        addFormEntity(new StockTransferFormEntity(distribution, "stockTransferForm", "Внутреннее перемещение"));
 
         baseLM.baseElement.add(printForms);
         baseLM.baseElement.add(baseLM.adminElement);
@@ -4187,39 +4182,6 @@ public class RomanLogicsModule extends LogicsModule {
             objCommonSize.groupTo.initClassView = ClassViewType.GRID;
 
             addDefaultOrder(baseLM.name, true);
-        }
-    }
-
-    private class GlobalParamFormEntity extends FormEntity<RomanBusinessLogics> {
-
-        private GlobalParamFormEntity(NavigatorElement parent, String sID, String caption) {
-            super(parent, sID, caption);
-
-            addPropertyDraw(nameDictionaryComposition);
-            addPropertyDraw(nameDictionaryName);
-            addPropertyDraw(nameTypeExchangeSTX);
-            addPropertyDraw(nameTypeExchangeCustom);
-            addPropertyDraw(nameTypeExchangePayCustom);
-            addPropertyDraw(nameTypeExchangePayManagerial);
-//            addPropertyDraw(nameTypeExchangeRetail);
-            addPropertyDraw(nameCurrencyPayFreights);
-            addPropertyDraw(nameCurrencyCustom);
-            addPropertyDraw(NDSPercentCustom);
-            addPropertyDraw(percentCostFreights);
-            addPropertyDraw(tariffVolumeFreights);
-            addPropertyDraw(sidTypeDutyDuty);
-            addPropertyDraw(nameTypeDutyDuty);
-            addPropertyDraw(sidTypeDutyNDS);
-            addPropertyDraw(nameTypeDutyNDS);
-            addPropertyDraw(sidTypeDutyRegistration);
-            addPropertyDraw(nameTypeDutyRegistration);
-        }
-
-        @Override
-        public FormView createDefaultRichDesign() {
-            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
-
-            return design;
         }
     }
 

@@ -156,7 +156,9 @@ DESIGN labelTransactions FROM DEFAULT {
     ADD functions.box;
 }
 
-addLabelType 'Добавить тип ценника' = ACTION(name, width, height, orientation, file, byDefault) {
+// ---------------------------------------------------------- Стандартные значения --------------------------------- //
+
+loadDefaultLabelType 'Добавить тип ценника' = ACTION(name, width, height, orientation, file, byDefault) {
     ADDOBJ labelType;
     FOR lt ==  addedObject() DO {
         SET name(lt) <- name AS STRING[110];
@@ -174,7 +176,12 @@ addLabelType 'Добавить тип ценника' = ACTION(name, width, heig
     }
 }
 
-fillLabelTypeDefaultValues 'Заполнить типы ценников по умолчанию' = ACTION() {
-    EXEC addLabelType('Ценник 200x130', 200, 130, printOrientation.portrait, 'Label_printLabelTransaction_l.jrxml', TRUE);
-    EXEC addLabelType('Ценник 595x480', 595, 480, printOrientation.portrait, 'Label_printLabelTransaction_l_a4.jrxml', 0);
-}
+loadDefaultLabelTypes 'Загрузить стандартные ценники' = ACTION() {
+    EXEC loadDefaultLabelType('Ценник 200x130', 200, 130, printOrientation.portrait, 'Label_printLabelTransaction_l.jrxml', TRUE);
+    EXEC loadDefaultLabelType('Ценник 595x480', 595, 480, printOrientation.portrait, 'Label_printLabelTransaction_l_a4.jrxml', 0);
+} IN loadDefaultGroup;
+
+loadDefaultData () += loadDefaultLabelTypes();
+EXTEND FORM defaultData
+    PROPERTIES() loadDefaultLabelTypes
+;

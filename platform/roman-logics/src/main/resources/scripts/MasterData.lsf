@@ -72,8 +72,7 @@ syncBarcodeSku 'Синхронизировать штрих-код' (sku) = ACTI
 
 WHEN CHANGED(barcode(sku) AND sku IS RomanLogicsModule.sku) DO EXEC syncBarcodeSku(sku);
 
-FORM syncBarcodeSkuForm 'Синхронизация шрих-кодов'
-
+EXTEND FORM migration
     OBJECTS s = sku
     PROPERTIES(s) READONLY nameSku
     PROPERTIES(s) syncBarcodeSku
@@ -314,15 +313,20 @@ END
 
 VATRetailSkuDepartmentStoreDateTime(sku, departmentStore, dateTime) += retailVATBLedgerDateTime(sku, departmentStore, dateTime);
 
-
-EXTEND FORM country
-    PROPERTIES(c) nameCustomsZoneCountry
-;
-EXTEND FORM countries
-    PROPERTIES(c) READONLY nameCustomsZoneCountry
-;
-
 //@implementSkuLedger(userPriceChange, sku, departmentStore);
 //quantityInLIFOSkuLedger (ledger) += quantityUserPriceChangeDetail(ledger) (-) quantityUserPriceChangeDetail(ledger);
 //limitInLIFOSkuLedgerBatch (ledger, batch) +=  (quantityUserPriceChangeDetail(ledger) (-) quantityUserPriceChangeDetail(ledger)) AND  batch IS batch;
 //sumInSkuLedger(ledger) += (retailPriceUserPriceChangeDetail(ledger) (-) curRetailPriceUserPriceChangeDetail(ledger))*quantityUserPriceChangeDetail(ledger);
+
+// ------------------------------------------------------------ Глобальные параметры --------------------------------- //
+
+EXTEND FORM options
+    PROPERTIES() barcodePrefix,
+                 nameDictionaryComposition, nameDictionaryName,
+                 nameTypeExchangeSTX, nameTypeExchangeCustom, nameTypeExchangePayCustom, nameTypeExchangePayManagerial,
+                 nameCurrencyPayFreights, nameCurrencyCustom,
+                 NDSPercentCustom, percentCostFreights, tariffVolumeFreights,
+                 sidTypeDutyDuty, nameTypeDutyDuty,
+                 sidTypeDutyNDS, nameTypeDutyNDS,
+                 sidTypeDutyRegistration, nameTypeDutyRegistration
+;

@@ -1,6 +1,6 @@
 MODULE ListRegister;
 
-REQUIRE System, LegalEntity, Stock, Barcode, Employee, Utils, Store;
+REQUIRE System, LegalEntity, Stock, Barcode, Employee, Utils, Store, Ware;
 
 // ----------------------------------- Комиссия ------------------------------------------ //
 

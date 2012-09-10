@@ -91,11 +91,6 @@ DESIGN store FROM DEFAULT {
     }
 }
 
-EXTEND FORM globalParamForm
-    PROPERTIES toSetRangeCustomCategories10(), showWare()
-;
-
-
 NAVIGATOR {
     itemClassifier {
         ADD categories;
@@ -242,10 +237,6 @@ NAVIGATOR {
         NEW tradeDocument 'Отгрузки' TO leftToolbar {
             ADD invoiceWHOuts;
         }
-    }
-
-    settings {
-        ADD syncBarcodeSkuForm;
     }
 
     printForms{
