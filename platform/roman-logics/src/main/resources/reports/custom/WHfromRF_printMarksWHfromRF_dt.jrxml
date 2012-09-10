@@ -2,7 +2,7 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="dt" pageWidth="141" pageHeight="198" orientation="Landscape" columnWidth="141" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
 	<property name="ireport.zoom" value="3.4522712143931096"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="647"/>
+	<property name="ireport.y" value="192"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
 		<box>
 			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
@@ -37,6 +37,7 @@
 	<field name="nameCommonSizeSku" class="java.lang.String"/>
 	<field name="sidGenderArticleSku" class="java.lang.String"/>
 	<field name="nameCategoryArticleSku" class="java.lang.String"/>
+	<field name="additionalCompositionSku" class="java.lang.String"/>
 	<field name="mainCompositionSku" class="java.lang.String"/>
 	<field name="nameCountryBrandSupplierSku" class="java.lang.String"/>
 	<field name="nameBrandSupplierArticleSku" class="java.lang.String"/>
@@ -57,6 +58,7 @@
 	<field name="sidColorSupplierItem" class="java.lang.String"/>
 	<field name="warrantySku" class="java.lang.Double"/>
 	<field name="mainCompositionSkuCompany" class="java.lang.String"/>
+	<field name="additionalCompositionSkuCompany" class="java.lang.String"/>
 	<field name="nameCategoryArticleSkuCompany" class="java.lang.String"/>
 	<field name="sidGenderArticleSkuCompany" class="java.lang.String"/>
 	<field name="nameCountrySkuCompany" class="java.lang.String"/>
@@ -70,8 +72,8 @@
 	<detail>
 		<band height="198">
 			<printWhenExpression><![CDATA[$F{languageLegalEntity}==null]]></printWhenExpression>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle0_1" positionType="Float" stretchType="RelativeToBandHeight" x="0" y="25" width="131" height="8"/>
+			<textField isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="0" y="17" width="131" height="8"/>
 				<box>
 					<topPen lineWidth="0.0"/>
 					<leftPen lineWidth="0.0"/>
@@ -83,8 +85,8 @@
 				</textElement>
 				<textFieldExpression><![CDATA["Пол: " + ($F{sidGenderArticleSku}!=null?$F{sidGenderArticleSku}:"")]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="15" y="0" width="100" height="8"/>
+			<textField isBlankWhenNull="true">
+				<reportElement stretchType="RelativeToBandHeight" x="15" y="0" width="116" height="8"/>
 				<box>
 					<topPen lineWidth="0.0"/>
 					<leftPen lineWidth="0.0"/>
@@ -94,7 +96,7 @@
 				<textElement textAlignment="Center">
 					<font size="6" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA["     "+$F{nameCategoryArticleSku}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["     "+($F{nameCategoryArticleSku}!=null?$F{nameCategoryArticleSku}:"")]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0_1" positionType="Float" stretchType="RelativeToBandHeight" x="39" y="161" width="75" height="12">
@@ -105,54 +107,54 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{priceABasePriceSetDocumentSkuCurrencyDateTime}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="0" y="17" width="39" height="8"/>
+			<textField>
+				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="0" y="9" width="39" height="8"/>
 				<textElement textAlignment="Left">
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Артикул: "]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="0" y="41" width="131" height="16"/>
+			<textField>
+				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="0" y="33" width="131" height="16"/>
 				<textElement textAlignment="Left" verticalAlignment="Top">
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Размер: " + ($F{nameCommonSizeSku}!=null?$F{nameCommonSizeSku}:"")]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="0" y="114" width="131" height="8"/>
+			<textField>
+				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="0" y="106" width="131" height="8"/>
 				<textElement textAlignment="Left">
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Торговая марка: " + ($F{nameBrandSupplierArticleSku}!=null?$F{nameBrandSupplierArticleSku}:"")]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="0" y="65" width="131" height="24"/>
+			<textField>
+				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="0" y="57" width="131" height="24"/>
 				<textElement textAlignment="Left">
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Изготовитель: " + ($F{nameSupplierArticleSku}!=null?$F{nameSupplierArticleSku}:"") + " " + ($F{addressSupplierArticleSku}!=null?$F{addressSupplierArticleSku}:"") + " " + ($F{nameCountryBrandSupplierSku}!=null?$F{nameCountryBrandSupplierSku}:"")]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="0" y="105" width="131" height="8"/>
+			<textField>
+				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="0" y="97" width="131" height="9"/>
 				<textElement textAlignment="Left">
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Сделано: " + ($F{nameCountrySku}!=null?$F{nameCountrySku}:"")]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="0" y="57" width="19" height="8"/>
+				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="0" y="49" width="19" height="8"/>
 				<textElement textAlignment="Left">
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression><![CDATA[($F{sidColorSupplierItem}!=null?$F{sidColorSupplierItem}:"")]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="0" y="122" width="131" height="8"/>
+			<textField>
+				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="0" y="114" width="131" height="16"/>
 				<textElement textAlignment="Left">
 					<font size="6"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Состав сырья: " + ($F{mainCompositionSku}!=null?$F{mainCompositionSku}:"")]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Состав сырья: " + ($F{mainCompositionSku}!=null?$F{mainCompositionSku}:"")+($F{additionalCompositionSku}!=null?(","+" "+$F{additionalCompositionSku}):"")]]></textFieldExpression>
 			</textField>
 			<componentElement>
 				<reportElement style="GroupCellStyle0" x="33" y="172" width="67" height="25"/>
@@ -216,35 +218,35 @@
 				<textFieldExpression><![CDATA[" руб."]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0_1" x="0" y="33" width="131" height="8"/>
+				<reportElement style="GroupCellStyle0_1" x="0" y="25" width="131" height="8"/>
 				<textElement>
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Размерный код: " + ($F{sidSizeSupplierItem}!=null?$F{sidSizeSupplierItem}:"")]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0_1" x="0" y="89" width="131" height="16"/>
+				<reportElement style="GroupCellStyle0_1" x="0" y="81" width="131" height="16"/>
 				<textElement>
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Импортёр: " + ($F{nameImporterSku}!=null?$F{nameImporterSku}:"") +($F{addressImporterSku}!=null?$F{addressImporterSku}:"")]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0_1" x="19" y="57" width="45" height="8"/>
+				<reportElement style="GroupCellStyle0_1" x="19" y="49" width="45" height="8"/>
 				<textElement>
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Дата поставки: "]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0_1" x="64" y="57" width="67" height="8"/>
+				<reportElement style="GroupCellStyle0_1" x="64" y="49" width="67" height="8"/>
 				<textElement>
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression><![CDATA[($F{dt}!=null?(($F{dt}.getYear()+ 1900)+" год"):"")]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0_1" x="61" y="17" width="70" height="8"/>
+				<reportElement style="GroupCellStyle0_1" x="61" y="9" width="70" height="8"/>
 				<textElement textAlignment="Right">
 					<font size="6"/>
 				</textElement>
@@ -262,8 +264,8 @@
 		</band>
 		<band height="198">
 			<printWhenExpression><![CDATA["uk_UA".equals( $F{localeLanguageCompany})]]></printWhenExpression>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle0_1" positionType="Float" stretchType="RelativeToBandHeight" x="0" y="25" width="131" height="8"/>
+			<textField isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="0" y="17" width="131" height="8"/>
 				<box>
 					<topPen lineWidth="0.0"/>
 					<leftPen lineWidth="0.0"/>
@@ -275,8 +277,8 @@
 				</textElement>
 				<textFieldExpression><![CDATA["Стать: " + ($F{sidGenderArticleSkuCompany}!=null?$F{sidGenderArticleSkuCompany}:"")]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="15" y="0" width="112" height="8"/>
+			<textField isBlankWhenNull="true">
+				<reportElement stretchType="RelativeToBandHeight" x="15" y="0" width="116" height="8"/>
 				<box>
 					<topPen lineWidth="0.0"/>
 					<leftPen lineWidth="0.0"/>
@@ -286,7 +288,7 @@
 				<textElement textAlignment="Center">
 					<font size="6" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA["   "+$F{nameCategoryArticleSkuCompany}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["   "+($F{nameCategoryArticleSkuCompany}!=null?$F{nameCategoryArticleSkuCompany}:"")]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0_1" positionType="Float" stretchType="RelativeToBandHeight" x="39" y="161" width="75" height="12">
@@ -297,54 +299,54 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{priceABasePriceSetDocumentSkuCurrencyDateTime}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="0" y="17" width="39" height="8"/>
+			<textField>
+				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="0" y="9" width="39" height="8"/>
 				<textElement textAlignment="Left">
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Артикул: "]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="0" y="41" width="131" height="16"/>
+			<textField>
+				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="0" y="33" width="131" height="16"/>
 				<textElement textAlignment="Left" verticalAlignment="Top">
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Розмір: " + ($F{nameCommonSizeSku}!=null?$F{nameCommonSizeSku}:"")]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="0" y="114" width="131" height="8"/>
+			<textField>
+				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="0" y="106" width="131" height="8"/>
 				<textElement textAlignment="Left">
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Торгова марка: " + ($F{nameBrandSupplierArticleSku}!=null?$F{nameBrandSupplierArticleSku}:"")]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="0" y="65" width="131" height="24"/>
+			<textField>
+				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="0" y="57" width="131" height="24"/>
 				<textElement textAlignment="Left" verticalAlignment="Top">
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Виготівник: " + ($F{nameSupplierArticleSku}!=null?$F{nameSupplierArticleSku}:"") + " " + ($F{addressSupplierArticleSku}!=null?$F{addressSupplierArticleSku}:"") + " " + ($F{nameCountryBrandSupplierSkuCompany}!=null?$F{nameCountryBrandSupplierSkuCompany}:"")]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="0" y="105" width="131" height="8"/>
+			<textField>
+				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="0" y="97" width="131" height="8"/>
 				<textElement textAlignment="Left">
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Зроблено: " + ($F{nameCountrySkuCompany}!=null?$F{nameCountrySkuCompany}:"")]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="0" y="57" width="19" height="8"/>
+				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="0" y="49" width="19" height="8"/>
 				<textElement textAlignment="Left">
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression><![CDATA[($F{sidColorSupplierItem}!=null?($F{sidColorSupplierItem}+";"):"")]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="0" y="122" width="131" height="8"/>
+			<textField>
+				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="0" y="114" width="131" height="16"/>
 				<textElement textAlignment="Left">
 					<font size="6"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Склад сировини: " + ($F{mainCompositionSkuCompany}!=null?$F{mainCompositionSkuCompany}:"")]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Склад сировини: " + ($F{mainCompositionSkuCompany}!=null?$F{mainCompositionSkuCompany}:"")+($F{additionalCompositionSkuCompany}!=null?(","+" "+$F{additionalCompositionSkuCompany}):"")]]></textFieldExpression>
 			</textField>
 			<componentElement>
 				<reportElement style="GroupCellStyle0" x="33" y="172" width="67" height="25"/>
@@ -388,28 +390,28 @@
 				<textFieldExpression><![CDATA[$F{shortNameCurrency}+"."]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0_1" x="0" y="33" width="131" height="8"/>
+				<reportElement style="GroupCellStyle0_1" x="0" y="25" width="131" height="8"/>
 				<textElement>
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Розмірний код: " + ($F{sidSizeSupplierItem}!=null?$F{sidSizeSupplierItem}:"")]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0_1" x="64" y="57" width="67" height="8"/>
+				<reportElement style="GroupCellStyle0_1" x="64" y="49" width="67" height="8"/>
 				<textElement>
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression><![CDATA[($F{dt}!=null?(($F{dt}.getYear()+ 1900)+" рiк"):"")]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0_1" x="61" y="17" width="70" height="8"/>
+				<reportElement style="GroupCellStyle0_1" x="61" y="9" width="70" height="8"/>
 				<textElement textAlignment="Right">
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression><![CDATA[($F{sidArticleSku}!=null?$F{sidArticleSku}:"")]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="0" y="89" width="131" height="16"/>
+				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="0" y="81" width="131" height="16"/>
 				<textElement>
 					<font size="6"/>
 				</textElement>
@@ -423,14 +425,14 @@
 				<textFieldExpression><![CDATA[($F{priceADiscountPriceSetDocumentSkuCurrencyDateTime}==null?$F{priceABasePriceSetDocumentSkuCurrencyDateTime}:$F{priceADiscountPriceSetDocumentSkuCurrencyDateTime})]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0_1" x="19" y="57" width="45" height="8"/>
+				<reportElement style="GroupCellStyle0_1" x="19" y="49" width="45" height="8"/>
 				<textElement>
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Дата поставки: "]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0_1" x="0" y="130" width="100" height="8"/>
+				<reportElement style="GroupCellStyle0_1" x="0" y="130" width="131" height="8"/>
 				<textElement>
 					<font size="6"/>
 				</textElement>

@@ -59,12 +59,12 @@ EXTEND FORM freightInvoiceForm
 //@defineAggregation(freight, WHfromRF, isWHfromRFFreight);
 
 freightWHfromRF (WHfromRF) = DATA freightArrived (WHfromRF);
-nameFreightWHfromRF 'Фрахт' (WHfromRF) =  name(freightWHfromRF(WHfromRF));
+nameFreightWHfromRF 'Фрахт' (WHfromRF) =  name(freightWHfromRF(WHfromRF)) IN documentPrmGroup;
 castFreightWHfromRF = FORMULA STRING[100] '\'Фрахт от \' || CAST($1 AS TEXT) || \' (\' || CAST($2 AS TEXT) || \')\'';
 descriptionFreightWHfromRF 'Фрахт' (WHfromRF) = castFreightWHfromRF(dateArrivalFreight(freightWHfromRF(WHfromRF)), nameExporterFreight(freightWHfromRF(WHfromRF)));
 
 companyWHfromRF 'Импортёр (ИД)' = DATA company(WHfromRF) IN idGroup;
-nameCompanyWHfromRF 'Импортёр' = name(companyWHfromRF(WHfromRF)) IN baseGroup;
+nameCompanyWHfromRF 'Импортёр' = name(companyWHfromRF(WHfromRF)) IN documentPrmGroup;
 
 //@defineDocumentAggregationHeaderStock(freight, WHfromRF, warehouse, 'Оптовый склад');
 
@@ -300,10 +300,10 @@ FORM printMarksWHfromRF 'Печать маркировок товара' PRINT
 
     OBJECTS s = sku
     PROPERTIES(s) READONLY sidArticleSku, sidSizeSupplierItem, nameCommonSizeSku, sidGenderArticleSku, nameCategoryArticleSku,
-                           mainCompositionSku, nameCountryBrandSupplierSku, nameBrandSupplierArticleSku, barcode, nameCountrySku,
+                           mainCompositionSku, additionalCompositionSku, nameCountryBrandSupplierSku, nameBrandSupplierArticleSku, barcode, nameCountrySku,
                            sidColorSupplierItem, nameColorSupplierItem, nameSupplierArticleSku, addressSupplierArticleSku, warrantySku, countSku
 
-    PROPERTIES(s, imp)     READONLY mainCompositionSkuCompany, nameCategoryArticleSkuCompany, sidGenderArticleSkuCompany,
+    PROPERTIES(s, imp)     READONLY mainCompositionSkuCompany, additionalCompositionSkuCompany, nameCategoryArticleSkuCompany, sidGenderArticleSkuCompany,
                            nameCountrySkuCompany, nameCountryBrandSupplierSkuCompany
 
     PROPERTIES(s, c, dt)   priceABasePriceSetDocumentSkuCurrencyDateTime, priceADiscountPriceSetDocumentSkuCurrencyDateTime
@@ -334,15 +334,20 @@ printMarksSkuWHfromRF 'Печать маркировок товаров' (WHfrom
 
 // Атрибуты поставщика
 
-originalNameArticleSkuWHfromRFDetail 'Наименование(ориг.)' (WHfromRFDetail) = originalNameArticleSku(skuWHfromRFDetail(WHfromRFDetail));
-nameCountryOfOriginArticleSkuWHfromRFDetail 'Страна происхождения' (WHfromRFDetail) = nameCountryOfOriginArticleSku(skuWHfromRFDetail(WHfromRFDetail));
-nameBrandSupplierArticleSkuWHfromRFDetail 'Бренд' (WHfromRFDetail) = nameBrandSupplierArticleSku(skuWHfromRFDetail(WHfromRFDetail));
+originalNameArticleSkuWHfromRFDetail 'Наименование(ориг.)' (WHfromRFDetail) = originalNameArticleSku(skuWHfromRFDetail(WHfromRFDetail)) PREFCHARWIDTH 30 MINCHARWIDTH 20;
+nameCountryOfOriginArticleSkuWHfromRFDetail 'Страна происхождения' (WHfromRFDetail) = nameCountryOfOriginArticleSku(skuWHfromRFDetail(WHfromRFDetail)) PREFCHARWIDTH 30 MINCHARWIDTH 20;
+nameBrandSupplierArticleSkuWHfromRFDetail 'Бренд' (WHfromRFDetail) = nameBrandSupplierArticleSku(skuWHfromRFDetail(WHfromRFDetail)) PREFCHARWIDTH 30 MINCHARWIDTH 20;
 netWeightArticleSkuWHfromRFDetail 'Весс нетто(ориг.)' (WHfromRFDetail) = netWeightArticleSku(skuWHfromRFDetail(WHfromRFDetail));
-mainCompositionOriginArticleSkuWHfromRFDetail 'Состав(ориг.)' (WHfromRFDetail) = mainCompositionOriginArticleSku(skuWHfromRFDetail(WHfromRFDetail));
+mainCompositionOriginArticleSkuWHfromRFDetail 'Состав(ориг.)' (WHfromRFDetail) = mainCompositionOriginArticleSku(skuWHfromRFDetail(WHfromRFDetail)) PREFCHARWIDTH 30 MINCHARWIDTH 20;
 
 // Внутренние атрибуты
 
-sidGenderArticleSkuWHfromRFDetail 'Пол товара' (WHfromRFDetail) = sidGenderArticleSku(skuWHfromRFDetail(WHfromRFDetail));
+languageWHfromRF (WHfromRF) = languageStock(stockWHfromRF(WHfromRF));
+//stockWHfromRFDetail (WHfromRFDetail) = stockWHfromRF(WHfromRFWHfromRFDetail(WHfromRFDetail));
+languageWHfromRFDetail (WHfromRFDetail) = languageWHfromRF(WHfromRFWHfromRFDetail(WHfromRFDetail));
+@defineCompositionSkuLanguageDetailCustom (WHfromRFDetail, stock);
+
+sidGenderArticleSkuWHfromRFDetail 'Пол товара' (WHfromRFDetail) = sidGenderArticleSku(skuWHfromRFDetail(WHfromRFDetail)) PREFCHARWIDTH 30 MINCHARWIDTH 20;
 changeGenderArticleSkuWHfromRFDetail = ACTION (WHfromRFDetail) {
     REQUEST OBJECT g FORM gendersDialog MODAL;
     IF formResult() == formResult.ok THEN {
@@ -350,7 +355,7 @@ changeGenderArticleSkuWHfromRFDetail = ACTION (WHfromRFDetail) {
     }
 }
 
-nameCategoryArticleSkuWHfromRFDetail 'Номенклатурная группа' (WHfromRFDetail) = nameCategoryArticleSku(skuWHfromRFDetail(WHfromRFDetail));
+nameCategoryArticleSkuWHfromRFDetail 'Номенклатурная группа' (WHfromRFDetail) = nameCategoryArticleSku(skuWHfromRFDetail(WHfromRFDetail)) PREFCHARWIDTH 30 MINCHARWIDTH 20;
 changeCategoryArticleSkuWHfromRFDetail = ACTION (WHfromRFDetail) {
     REQUEST OBJECT c FORM categories MODAL;
     IF formResult() == formResult.ok THEN {
@@ -358,7 +363,7 @@ changeCategoryArticleSkuWHfromRFDetail = ACTION (WHfromRFDetail) {
     }
 }
 
-nameTypeFabricArticleSkuWHfromRFDetail 'Тип одежды' (WHfromRFDetail) = nameTypeFabricArticleSku(skuWHfromRFDetail(WHfromRFDetail));
+nameTypeFabricArticleSkuWHfromRFDetail 'Тип одежды' (WHfromRFDetail) = nameTypeFabricArticleSku(skuWHfromRFDetail(WHfromRFDetail)) PREFCHARWIDTH 30 MINCHARWIDTH 20;
 changeTypeFabricArticleSkuWHfromRFDetail = ACTION (WHfromRFDetail) {
     REQUEST OBJECT t FORM typeFabrics MODAL;
     IF formResult() == formResult.ok THEN {
@@ -366,7 +371,7 @@ changeTypeFabricArticleSkuWHfromRFDetail = ACTION (WHfromRFDetail) {
     }
 }
 
-nameUnitOfMeasureArticleSkuWHfromRFDetail 'Ед. измерения товара' (WHfromRFDetail) = nameUnitOfMeasureArticleSku(skuWHfromRFDetail(WHfromRFDetail));
+nameUnitOfMeasureArticleSkuWHfromRFDetail 'Ед. измерения товара' (WHfromRFDetail) = nameUnitOfMeasureArticleSku(skuWHfromRFDetail(WHfromRFDetail)) PREFCHARWIDTH 15 MINCHARWIDTH 10;
 changeUnitOfMeasureArticleSkuWHfromRFDetail = ACTION (WHfromRFDetail) {
     REQUEST OBJECT u FORM unitOfMeasures MODAL;
     IF formResult() == formResult.ok THEN {
@@ -380,7 +385,7 @@ changeNetWeightSkuWHfromRFDetail = ACTION (WHfromRFDetail) {
     SET netWeightSku(sku) IF sku == skuWHfromRFDetail(WHfromRFDetail) <- requestedNumeric();
 }
 
-nameCountryOfOriginSkuWHfromRFDetail 'Страна происхождения' (WHfromRFDetail) = nameCountryOfOriginSku(skuWHfromRFDetail(WHfromRFDetail));
+nameCountryOfOriginSkuWHfromRFDetail 'Страна происхождения' (WHfromRFDetail) = nameCountryOfOriginSku(skuWHfromRFDetail(WHfromRFDetail)) PREFCHARWIDTH 30 MINCHARWIDTH 20;
 changeCountryOfOriginSkuWHfromRFDetail = ACTION (WHfromRFDetail) {
     REQUEST OBJECT c FORM countries MODAL;
     IF formResult() == formResult.ok THEN {
@@ -388,23 +393,39 @@ changeCountryOfOriginSkuWHfromRFDetail = ACTION (WHfromRFDetail) {
     }
 }
 
-mainCompositionOriginSkuWHfromRFDetail 'Состав' (WHfromRFDetail) = mainCompositionOriginSku(skuWHfromRFDetail(WHfromRFDetail));
+mainCompositionOriginSkuWHfromRFDetail 'Состав (ориг.)' (WHfromRFDetail) = mainCompositionOriginSku(skuWHfromRFDetail(WHfromRFDetail)) PREFCHARWIDTH 30 MINCHARWIDTH 20;
 changeMainCompositionOriginSkuWHfromRFDetail = ACTION (WHfromRFDetail) {
     REQUEST STRING[200] INPUT;
     SET mainCompositionOriginSku(sku) IF sku == skuWHfromRFDetail(WHfromRFDetail) <- requestedString();
+    EXEC translationMainCompositionSkuLanguage(skuWHfromRFDetail(WHfromRFDetail), languageWHfromRFDetail(WHfromRFDetail));
+    EXEC translationMainCompositionSku(skuWHfromRFDetail(WHfromRFDetail));
 }
 
 
-additionalCompositionOriginSkuWHfromRFDetail 'Дополнительный состав' (WHfromRFDetail) = additionalCompositionOriginSku(skuWHfromRFDetail(WHfromRFDetail));
+additionalCompositionOriginSkuWHfromRFDetail 'Дополнительный состав (ориг.)' (WHfromRFDetail) = additionalCompositionOriginSku(skuWHfromRFDetail(WHfromRFDetail)) PREFCHARWIDTH 30 MINCHARWIDTH 20;
 changeAdditionalCompositionOriginSkuWHfromRFDetail = ACTION (WHfromRFDetail) {
     REQUEST STRING[200] INPUT;
     SET additionalCompositionOriginSku(sku) IF sku == skuWHfromRFDetail(WHfromRFDetail) <- requestedString();
+    EXEC translationAdditionalCompositionSkuLanguage(skuWHfromRFDetail(WHfromRFDetail), languageWHfromRFDetail(WHfromRFDetail));
+    EXEC translationAdditionalCompositionSku(skuWHfromRFDetail(WHfromRFDetail));
 }
 
 coefficientArticleSkuWHfromRFDetail 'Кол-во в комплекте' (WHfromRFDetail) = coefficientArticleSku(skuWHfromRFDetail(WHfromRFDetail));
 changeCoefficientArticleSkuWHfromRFDetail = ACTION (WHfromRFDetail) {
     REQUEST INTEGER INPUT;
     SET coefficientArticle(article) IF article == articleSku(skuWHfromRFDetail(WHfromRFDetail)) <- requestedInteger();
+}
+
+mainCompositionSkuWHfromRFDetail 'Состав (по умолчанию)' (WHfromRFDetail) = mainCompositionSku(skuWHfromRFDetail(WHfromRFDetail)) PREFCHARWIDTH 30 MINCHARWIDTH 20;
+changeMainCompositionSkuWHfromRFDetail = ACTION (WHfromRFDetail) {
+    REQUEST STRING[200] INPUT;
+    SET mainCompositionSku(sku) IF sku == skuWHfromRFDetail(WHfromRFDetail) <- requestedString();
+}
+
+additionalCompositionSkuWHfromRFDetail 'Дополнительный состав (по умолчанию)' (WHfromRFDetail) = additionalCompositionSku(skuWHfromRFDetail(WHfromRFDetail)) PREFCHARWIDTH 30 MINCHARWIDTH 20;
+changeAdditionalCompositionSkuWHfromRFDetail = ACTION (WHfromRFDetail) {
+    REQUEST STRING[200] INPUT;
+    SET additionalCompositionSku(sku) IF sku == skuWHfromRFDetail(WHfromRFDetail) <- requestedString();
 }
 
 quantityArticleWHfromRF (article, WHfromRF) = GROUP SUM quantityWHfromRFDetail(WHfromRFDetail)
@@ -472,8 +493,13 @@ FORM WHfromRF 'Приход товара из РФ'
                               netWeightSkuWHfromRFDetail BACKGROUND backgroundArticleSizeWHfromRFDetail(d) ON CHANGE EXEC changeNetWeightSkuWHfromRFDetail(d),
                               nameCountryOfOriginSkuWHfromRFDetail BACKGROUND backgroundArticleColorWHfromRFDetail(d) ON CHANGE EXEC changeCountryOfOriginSkuWHfromRFDetail(d),
                               mainCompositionOriginSkuWHfromRFDetail BACKGROUND backgroundArticleColorWHfromRFDetail(d) ON CHANGE EXEC changeMainCompositionOriginSkuWHfromRFDetail(d),
+                              mainCompositionSkuWHfromRFDetail ON CHANGE EXEC changeMainCompositionSkuWHfromRFDetail(d),
                               additionalCompositionOriginSkuWHfromRFDetail BACKGROUND backgroundArticleColorWHfromRFDetail(d) ON CHANGE EXEC changeAdditionalCompositionOriginSkuWHfromRFDetail(d),
+                              additionalCompositionSkuWHfromRFDetail ON CHANGE EXEC changeAdditionalCompositionSkuWHfromRFDetail(d),
                               coefficientArticleSkuWHfromRFDetail BACKGROUND backgroundArticleWHfromRFDetail(d) ON CHANGE EXEC changeCoefficientArticleSkuWHfromRFDetail(d)
+
+    PROPERTIES(d) FORCE PANEL SHOWIF languageWHfromRF(w) mainCompositionWHfromRFDetail, additionalCompositionWHfromRFDetail
+
 
     FILTERS inWHfromRFWHfromRFDetail(w, d)
 
@@ -498,15 +524,18 @@ DESIGN WHfromRF FROM DEFAULT {
                     caption = 'Шапка документа';
                     childConstraints = TO THE RIGHT;
                     ADD PROPERTY(objectClassName);
+                    ADD PROPERTY(nameStockWHfromRF);
                     ADD PROPERTY(nameNumeratorObject);
                     ADD PROPERTY(numberObject);
                     ADD PROPERTY(seriesObject);
                     ADD PROPERTY(dateWHfromRF);
                     ADD PROPERTY(timeWHfromRF);
-                    ADD PROPERTY(nameFreightWHfromRF);
-                    ADD PROPERTY(nameStockWHfromRF);
                 }
-
+                ADD w.documentPrmGroup {
+                    childConstraints = TO THE RIGHT;
+//                    ADD PROPERTY(nameCompanyWHfromRF);
+//                    ADD PROPERTY(nameFreightWHfromRF);
+                }
                 NEW freightUnit{
                     caption = 'Короб';
                     childConstraints = TO THE RIGHT;
@@ -529,19 +558,34 @@ DESIGN WHfromRF FROM DEFAULT {
             ADD PROPERTY(mainCompositionOriginArticleSkuWHfromRFDetail);
         }
 
-        NEW secondCase {
-            caption = 'Внутренние атрибуты';
-            ADD PROPERTY(sidGenderArticleSkuWHfromRFDetail);
-            ADD PROPERTY(c);
-            ADD PROPERTY(nameTypeFabricArticleSkuWHfromRFDetail);
-            ADD PROPERTY(u);
-            ADD PROPERTY(netWeightSkuWHfromRFDetail);
-            ADD PROPERTY(nameCountryOfOriginSkuWHfromRFDetail);
-            ADD PROPERTY(mainCompositionOriginSkuWHfromRFDetail);
-            ADD PROPERTY(additionalCompositionOriginSkuWHfromRFDetail);
-            ADD PROPERTY(coefficientArticleSkuWHfromRFDetail);
-        }
+        NEW row {
+            title = 'Внутренние атрибуты';
+            childConstraints =  TO THE BOTTOM;
+            NEW row1 {
+                caption = 'Общие';
+                childConstraints =  TO THE RIGHT;
+                ADD PROPERTY(sidGenderArticleSkuWHfromRFDetail);
+                ADD PROPERTY(c);
+                ADD PROPERTY(nameTypeFabricArticleSkuWHfromRFDetail);
+                ADD PROPERTY(u);
+                ADD PROPERTY(netWeightSkuWHfromRFDetail);
+                ADD PROPERTY(nameCountryOfOriginSkuWHfromRFDetail);
+                ADD PROPERTY(coefficientArticleSkuWHfromRFDetail);
+            }
+            NEW row2 {
+                caption = 'Состав';
+                ADD PROPERTY(mainCompositionOriginSkuWHfromRFDetail);
+                ADD PROPERTY(mainCompositionSkuWHfromRFDetail);
+                ADD PROPERTY(mainCompositionWHfromRFDetail);
+            }
+            NEW row3 {
+                caption = 'Доп. состав';
+                ADD PROPERTY(additionalCompositionOriginSkuWHfromRFDetail);
+                ADD PROPERTY(additionalCompositionSkuWHfromRFDetail);
+                ADD PROPERTY(additionalCompositionWHfromRFDetail);
+            }
 
+        }
         ADD functions.box;
 
         PROPERTY(formOkAction) {
