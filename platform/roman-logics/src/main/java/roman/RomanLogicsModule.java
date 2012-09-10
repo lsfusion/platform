@@ -442,6 +442,10 @@ public class RomanLogicsModule extends LogicsModule {
     private LCP customCategory9Sku;
     private LCP customCategory6FreightSku;
     private LCP sidCustomCategory10Sku;
+    private LCP customCategory10DataSkuCustomsZone;
+    private LCP customCategory10SkuCustomsZone;
+    private LCP customCategory10SkuFreight;
+    private LCP sidCustomCategory10SkuFreight;
     private LCP subCategoryDataSku;
     private LCP subCategoryCustomCategory10Sku;
     private LCP subCategorySku;
@@ -609,6 +613,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LCP nameLanguageFreight;
     private LCP currencyCountryFreight;
     private LCP nameCurrencyCountryFreight;
+    LCP customsZoneFreight;
     LCP dictionaryFreight;
     LCP nameOriginExporterFreight;
     LCP nameExporterFreight;
@@ -1073,6 +1078,9 @@ public class RomanLogicsModule extends LogicsModule {
 
     private LCP quantityFreightCategoryGenderCompositionTypeFabric;
     private LCP customCategory10CategoryGenderCompositionTypeFabric;
+    public LCP customCategory10CategoryGenderCompositionTypeFabricCustomsZone;
+    private LCP sidCustomCategory10CategoryGenderCompositionTypeFabricCustomsZone;
+    private LCP customCategory10CategoryGenderCompositionTypeFabricSkuCustomsZone;
     private LCP sidCustomCategory10CategoryGenderCompositionTypeFabric;
     private LCP customCategory10CategoryGenderCompositionTypeFabricSku;
 
@@ -1800,7 +1808,7 @@ public class RomanLogicsModule extends LogicsModule {
         sidToCustomCategory4 = addAGProp("sidToCustomCategory4", "Код(4)", sidCustomCategory4);
         sidToCustomCategory6 = addAGProp("sidToCustomCategory6", "Код(6)", sidCustomCategory6);
         sidToCustomCategory9 = addAGProp("sidToCustomCategory9", "Код(9)", sidCustomCategory9);
-        sidToCustomCategory10 = addAGProp("sidToCustomCategory10", "Код(10)", sidCustomCategory10);
+        sidToCustomCategory10 = addAGProp("sidToCustomCategory10", "Код(10)", sidCustomCategory10, customsZoneCustomCategory10);
         sidToCustomCategoryOrigin = addAGProp("sidToCustomCategoryOrigin", "Код ЕС (10)", sidCustomCategoryOrigin);
 
         importBelTnved = addAProp(new TNVEDImportActionProperty(genSID(), "Импортировать (РБ)", this, TNVEDImportActionProperty.CLASSIFIER_IMPORT, "belarusian"));
@@ -2440,6 +2448,11 @@ public class RomanLogicsModule extends LogicsModule {
 
         customCategory10CategoryGenderCompositionTypeFabricSku = addJProp(idGroup, "customCategory10CategoryGenderCompositionTypeFabricSku", "ТН ВЭД (ИД)", customCategory10CategoryGenderCompositionTypeFabric,
                                 categoryArticleSku, 1, genderArticleSku, 1, mainCompositionOriginSku, 1, typeFabricArticleSku, 1);
+
+        customCategory10CategoryGenderCompositionTypeFabricCustomsZone = addDProp(idGroup, "customCategory10CategoryGenderCompositionTypeFabricCustomsZone", "ТН ВЭД (ИД)", customCategory10, category, gender, COMPOSITION_CLASS, typeFabric, customsZone);
+        sidCustomCategory10CategoryGenderCompositionTypeFabricCustomsZone = addJProp(baseGroup, "sidCustomCategory10CategoryGenderCompositionTypeFabricCustomsZone", "ТН ВЭД", sidCustomCategory10, customCategory10CategoryGenderCompositionTypeFabricCustomsZone, 1, 2, 3, 4, 5);
+        customCategory10CategoryGenderCompositionTypeFabricSkuCustomsZone = addJProp(idGroup, "customCategory10CategoryGenderCompositionTypeFabricSkuCustomsZone", "ТН ВЭД (ИД)", customCategory10CategoryGenderCompositionTypeFabricCustomsZone,
+                                categoryArticleSku, 1, genderArticleSku, 1, mainCompositionOriginSku, 1, typeFabricArticleSku, 1, 2);
 
         customCategory10DataSku = addDProp(idGroup, "customCategory10DataSku", "ТН ВЭД (ИД)", customCategory10, sku);
         customCategory10CustomCategoryOriginArticle = addJProp(idGroup, "customCategory10CustomCategoryOriginArticle", "ТН ВЭД (ИД)", customCategory10CustomCategoryOrigin, customCategoryOriginArticle, 1);
@@ -3168,6 +3181,8 @@ public class RomanLogicsModule extends LogicsModule {
         currencyCountryFreight = addJProp("currencyCountryFreight", "Валюта страны назначения (ИД)", baseLM.currencyCountry, countryFreight, 1);
         nameCurrencyCountryFreight = addJProp("nameCurrencyCountryFreight", "Валюта страны назначения", baseLM.name, languageFreight, 1);
 
+        customsZoneFreight = addJProp("customsZoneFreight", "", customsZoneCountry, countryFreight, 1);
+
         mainCompositionLanguageFreightSku  = addDProp("mainCompositionLanguageFreightSku", "Состав (иностр.)", StringClass.get(200), freight, sku);
         additionalCompositionLanguageFreightSku = addDProp("additionalCompositionLanguageFreightSku", "Доп. состав (иностр.)", StringClass.get(200), freight, sku);
 
@@ -3294,6 +3309,16 @@ public class RomanLogicsModule extends LogicsModule {
         customCategoryOriginFreightSku = addDProp(idGroup, "customCategoryOriginFreightSku", "ТН ВЭД (ИД)", customCategoryOrigin, freight, sku);
         customCategoryOriginFreightSku.setEventChangeNewSet(addJProp(baseLM.and1, customCategoryOriginArticleSku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
         sidCustomCategoryOriginFreightSku = addJProp(baseGroup, "sidCustomCategoryOriginFreightSku", "ТН ВЭД (ориг.)", sidCustomCategoryOrigin, customCategoryOriginFreightSku, 1, 2);
+        addConstraint(addJProp("Зона ТН ВЭД должна совпадать с зоной фрахта", baseLM.diff2,
+                customsZoneFreight, 1, addJProp(customsZoneCustomCategory10, customCategory10FreightSku, 1, 2), 1, 2), true);
+
+        customCategory10DataSkuCustomsZone = addDProp("customCategory10DataSkuCustomsZone", "ТН ВЭД (ИД)", customCategory10, sku, customsZone);
+        customCategory10SkuCustomsZone = addSUProp("customCategory10SkuCustomsZone", "ТН ВЭД (ИД)", Union.OVERRIDE, customCategory10CategoryGenderCompositionTypeFabricSkuCustomsZone, customCategory10DataSkuCustomsZone);
+
+        customCategory10SkuFreight = addJProp(true, "customCategory10SkuFreight", "ТН ВЭД (ИД)", customCategory10SkuCustomsZone, 1, customsZoneFreight, 2);
+        sidCustomCategory10SkuFreight = addJProp("sidCustomCategory10SkuFreight", "ТН ВЭД", sidCustomCategory10, customCategory10SkuFreight, 1, 2);
+        addConstraint(addJProp("Зона ТН ВЭД должна совпадать с зоной фрахта", baseLM.diff2,
+                customsZoneFreight, 1, addJProp(customsZoneCustomCategory10, customCategory10SkuFreight, 2, 1), 1, 2), true);
 
         quantityProxyImporterFreightCustomCategory6Category = addSGProp(baseGroup, "quantityProxyImporterFreightCustomCategory6Category", "Кол-во", quantityProxyImporterFreightSku, 1, 2, customCategory6FreightSku, 2, 3, categoryArticleSku, 3);
         quantityProxyImporterFreightCustomCategory6 = addSGProp(baseGroup, "quantityProxyImporterFreightCustomCategory6", "Кол-во", quantityProxyImporterFreightSku, 1, 2, customCategory6FreightSku, 2, 3);
@@ -6339,7 +6364,10 @@ public class RomanLogicsModule extends LogicsModule {
 
             objSku = addSingleGroupObject("sku", sku, "SKU", baseLM.selection, baseLM.barcode, sidArticleSku,
                      nameBrandSupplierArticleSku, nameCategoryArticleSku, sidGenderArticleSku, nameTypeFabricArticleSku,
-                     sidCustomCategoryOriginArticleSku, sidCustomCategory10Sku, nameSubCategoryDataSku, nameCountrySku, netWeightSku);
+                     sidCustomCategoryOriginArticleSku, sidCustomCategory10Sku, nameSubCategoryDataSku);
+
+            addPropertyDraw(sidCustomCategory10SkuFreight, objSku, objFreight);
+            addPropertyDraw(objSku, nameCountrySku, netWeightSku);
 
             CalcPropertyObjectEntity diffCountRelationCustomCategory10SkuProperty = addPropertyObject(addJProp(baseLM.and1, addCProp(ColorClass.instance, new Color(128, 255, 255)), diffCountRelationCustomCategory10Sku, 1), objSku);
             getPropertyDraw(nameSubCategoryDataSku).setPropertyBackground(diffCountRelationCustomCategory10SkuProperty);

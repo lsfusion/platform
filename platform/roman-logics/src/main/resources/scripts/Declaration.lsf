@@ -40,6 +40,15 @@ toSetRangeCustomCategories10 'Взять шкалы' = ACTION () NEWSESSION AUTO
     SET dataSupplierVATCustomCategory10Date(c, d) <- valueCurrentVATCountryValue(countrySID(112), NDSPercentCustom()) WHERE d == 2011_01_01 AND NOT dutyPercentCustomCategory10TypeDuty(c, typeDutyNDS());
 };
 
+//customsZoneSystem = DATA customsZone();
+//nameCustomsZoneSystem 'Таможенная зона по-умолчанию' () = name(customsZoneSystem());
+
+//toSetCustomCategories10SkuCustomsZone 'Установить ТН ВЭД для товаров' = ACTION () NEWSESSION AUTOAPPLY {
+//    SET customCategory10SkuCustomsZone(s, z) <- customCategory10DataSku(s) WHERE z==customsZoneSystem();
+//};
+
+
+
 //--------------------------------- Инвойсы -------------------------------------------------------------------------//
 CLASS formedInvoice 'Инвойс от STX' : innerInvoice;
 
@@ -166,6 +175,8 @@ nameImporterDeclaration 'Импортёр' = name(importerDeclaration(declaratio
 languageDeclaration 'Язык декларации (ИД)' (declaration) = languageLegalEntity(importerDeclaration(declaration)) IN idGroup;
 nameLanguageDeclaration 'Язык декларации' (declaration) = name(languageDeclaration(declaration)) IN docGroup;
 
+customsZoneDeclaration (declaration) = customsZoneCountry(countryLegalEntity(importerDeclaration(declaration)));
+
 currencyDeclaration 'Валюта декларации (ИД)' = DATA currency(declaration) IN idGroup;
 nameCurrencyDeclaration 'Валюта декларации' = name(currencyDeclaration(declaration)) IN exchangeGroup;
 
@@ -241,10 +252,20 @@ freightDeclarationDetail 'Фрахт позиции (ИД)' (declarationDetail) 
 importerDeclarationDetail 'Импортёр позиции (ИД)' (declarationDetail) = importerDeclaration(declarationDeclarationDetail(declarationDetail)) IN idGroup;
 
 //--------------------------------------- Свойства товаров ---------------------------------------------------------//
+languageDeclarationDetail (declarationDetail) = languageDeclaration(declarationDeclarationDetail(declarationDetail));
+
 translateNameDeclarationDetail 'Наименование' (declarationDetail) = translateNameArticle(articleDeclarationDetail(declarationDetail));
+translateNameDeclarationDetailLanguage 'Наименование' (declarationDetail) = translateNameSkuLanguage(skuDeclarationDetail(declarationDetail),
+                                                                                            languageDeclarationDetail(declarationDetail));
 
 nameInvoiceDeclarationDetail 'Наименование' (declarationDetail) = UNION OVERRIDE translateNameDeclarationDetail(declarationDetail),
                                                                                  nameCategoryDeclarationDetail(declarationDetail);
+
+nameCategoryDeclarationDetailLanguage 'Наименование' (declarationDetail) = languageName(categoryDeclarationDetail(declarationDetail),
+                                                                                        languageDeclarationDetail(declarationDetail));
+
+nameInvoiceDeclarationDetailLanguage 'Наименование'(declarationDetail) = UNION OVERRIDE translateNameDeclarationDetailLanguage(declarationDetail),
+                                                                                        nameCategoryDeclarationDetailLanguage(declarationDetail);
 
 
 netWeightDeclarationDetail 'Вес нетто товара' (declarationDetail) = netWeightFreightSku(freightDeclarationDetail(declarationDetail),
@@ -283,6 +304,13 @@ customCategory10DataDeclarationDetail 'ТН ВЭД товара (ИД)' = DATA c
 customCategory10DeclarationDetail 'ТН ВЭД товара (ИД)' (declarationDetail) = UNION OVERRIDE customCategory10InvoicedDeclarationDetail(declarationDetail),
                                                                                             customCategory10DataDeclarationDetail(declarationDetail) IN idGroup PERSISTENT;
 
+nameCustomsZoneDeclarationDetail 'Зона' (declarationDetail) = name(customsZoneDeclaration(declarationDeclarationDetail(declarationDetail)));
+nameCustomsZoneCategoryDeclarationDetail 'Зона' (declarationDetail) = name(customsZoneCustomCategory10(customCategory10DeclarationDetail(declarationDetail)));
+
+CONSTRAINT customsZoneCustomCategory10(customCategory10DataDeclarationDetail(declarationDetail)) != customsZoneDeclaration(declarationDeclarationDetail(declarationDetail))
+    CHECKED BY customCategory10DataDeclarationDetail
+    MESSAGE 'ТН ВЭД для другой таможенной зоны';
+
 sidCustomCategory10DeclarationDetail 'ТН ВЭД товара' (declarationDetail) = sidCustomCategory10(customCategory10DeclarationDetail(declarationDetail));
 
 customCategoryOriginInvoicedDeclarationDetail 'ТН ВЭД товара (ИД)' (declarationDetail) = customCategoryOriginFreightSku(freightDeclarationDetail(declarationDetail),
@@ -294,6 +322,8 @@ customCategoryOriginDeclarationDetail 'ТН ВЭД товара (ИД)' (declara
                                                                                                 customCategoryOriginDataDeclarationDetail(declarationDetail) IN idGroup PERSISTENT;
 
 sidCustomCategoryOriginDeclarationDetail 'ТН ВЭД товара (иностр.)' (declarationDetail) = sidCustomCategoryOrigin(customCategoryOriginDeclarationDetail(declarationDetail));
+
+nameSupplierDeclarationDetail 'Поставщик' (declarationDetail) = nameSupplierArticleSku(skuDeclarationDetail(declarationDetail));
 
 //--------------------------------- Сертификаты и сертификация -------------------------------------------------------//
 CLASS ABSTRACT certificate 'Сертификат';
@@ -890,9 +920,10 @@ FORM declaration 'Декларация'
     FILTERS inDeclarationCorrection(d, c)
 
     OBJECTS dd=declarationDetail
-    PROPERTIES (dd) READONLY numberDeclarationDetail, barcodeDeclarationDetail, nameInvoiceDeclarationDetail, nameBrandDeclarationDetail,
-                    sidArticleDeclarationDetail, sidSizeDeclarationDetail, sidColorDeclarationDetail, nameColorDeclarationDetail,
-                    sidGenderGroupDeclaration, nameTypeFabricGroupDeclaration, mainCompositionDeclarationDetail, mainCompositionLanguageDeclarationDetail SHOWIF languageDeclaration(d),
+    PROPERTIES (dd) READONLY nameCustomsZoneDeclarationDetail, nameCustomsZoneCategoryDeclarationDetail, numberDeclarationDetail, barcodeDeclarationDetail, nameInvoiceDeclarationDetail, nameInvoiceDeclarationDetailLanguage SHOWIF languageDeclaration(d),
+                    nameBrandDeclarationDetail, sidArticleDeclarationDetail, sidSizeDeclarationDetail, sidColorDeclarationDetail, nameColorDeclarationDetail,
+                    sidGenderGroupDeclaration, nameTypeFabricGroupDeclaration, mainCompositionDeclarationDetail,
+                    mainCompositionLanguageDeclarationDetail SHOWIF languageDeclaration(d),
                     nameCountryDeclarationDetail, nameCountryLanguageDeclarationDetail SHOWIF languageDeclaration(d)
     PROPERTIES (dd) sidCustomCategoryOriginDeclarationDetail SHOWIF languageDeclaration(d), sidCustomCategory10DeclarationDetail
     PROPERTIES (dd) READONLY netWeightDeclarationDetail, sumNetWeightDeclarationDetail,
@@ -941,7 +972,8 @@ FORM declaration 'Декларация'
 
     OBJECTS dd2=declarationDetail
     PROPERTIES (gd2, dd2) inGroupDeclarationDeclarationDetail, percentGroupDeclarationDeclarationDetail
-    PROPERTIES (dd2) READONLY numberDeclarationDetail, barcodeDeclarationDetail, nameInvoiceDeclarationDetail, nameBrandDeclarationDetail,
+    PROPERTIES (dd2) READONLY numberDeclarationDetail, barcodeDeclarationDetail, nameInvoiceDeclarationDetail,
+                    nameInvoiceDeclarationDetailLanguage SHOWIF languageDeclaration(d), nameBrandDeclarationDetail,
                     sidArticleDeclarationDetail, sidSizeDeclarationDetail, sidColorDeclarationDetail, nameColorDeclarationDetail,
                     sidGenderGroupDeclaration, nameTypeFabricGroupDeclaration, mainCompositionDeclarationDetail, mainCompositionLanguageDeclarationDetail SHOWIF languageDeclaration(d),
                     nameCountryDeclarationDetail, nameCountryLanguageDeclarationDetail SHOWIF languageDeclaration(d)
@@ -1128,7 +1160,8 @@ FORM declarations 'Декларации'
     PROPERTIES(d) FORCE PANEL exportDeclaration, ADDFORM, EDITFORM, delete
 
     OBJECTS dd=declarationDetail
-    PROPERTIES(dd) READONLY numberDeclarationDetail, barcodeDeclarationDetail, nameInvoiceDeclarationDetail, nameBrandDeclarationDetail,
+    PROPERTIES(dd) READONLY numberDeclarationDetail, barcodeDeclarationDetail, nameInvoiceDeclarationDetail,
+                   nameInvoiceDeclarationDetailLanguage SHOWIF languageDeclaration(d), nameBrandDeclarationDetail,
                    sidArticleDeclarationDetail, sidSizeDeclarationDetail, sidColorDeclarationDetail, nameColorDeclarationDetail,
                    sidGenderGroupDeclaration, nameTypeFabricGroupDeclaration, mainCompositionDeclarationDetail, mainCompositionLanguageDeclarationDetail SHOWIF languageDeclaration(d),
                    nameCountryDeclarationDetail, nameCountryLanguageDeclarationDetail SHOWIF languageDeclaration(d),

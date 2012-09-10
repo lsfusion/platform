@@ -160,12 +160,15 @@ createCustomsZone 'Задать таможенную зону и связать 
 
     ADDOBJ customsZone;
     FOR g == addedObject() DO {
-        SET name(g) <- 'Европейский Союз';
+        SET name(g) <- 'Европейский Союз' WHERE g==addedObject();
 
-        SET customsZoneCustomCategory10(customCategory10) <- g;
-        SET customsZoneCustomCategory9(customCategory9) <- g;
-        SET customsZoneSubCategory(subCategory) <- g;
-        SET customsZoneTypeDuty(typeDuty) <- g;
+        SET customsZoneCustomCategory10(customCategory10) <- g WHERE g==addedObject();
+        SET customsZoneCustomCategory9(customCategory9) <- g WHERE g==addedObject();
+        SET customsZoneSubCategory(subCategory) <- g WHERE g==addedObject();
+        SET customsZoneTypeDuty(typeDuty) <- g WHERE g==addedObject();
+
+        SET customCategory10DataSkuCustomsZone(s, g) <- customCategory10DataSku(s) WHERE g==addedObject();
+        SET customCategory10CategoryGenderCompositionTypeFabricCustomsZone(a, b, c, d, g) <- customCategory10FreightCategoryGenderCompositionTypeFabric(a, b, c, d) WHERE g==addedObject();
 
         FOR customCategory10CustomCategoryOrigin(customCategoryOrigin) DO {
             SET customCategory10CustomCategoryOriginCustomsZone(customCategoryOrigin, xxx) IF xxx == g <- customCategory10CustomCategoryOrigin(customCategoryOrigin);
