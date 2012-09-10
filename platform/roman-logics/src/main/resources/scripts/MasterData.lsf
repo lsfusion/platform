@@ -294,16 +294,16 @@ nameImporterSku 'Наименование' (importer, sku) = name(importer) AND 
 addressImporterSku 'Адрес' (importer, sku) = addressLegalEntity(importer) AND importer IS company AND sku IS sku;
 
 localeLanguageCompany (company) = localeLanguage(languageLegalEntity(company));
-mainCompositionSkuCompany 'Состав (перевод)' (sku, company) = mainCompositionSkuLanguage(sku, languageLegalEntity(company)) MINCHARWIDTH 20 MAXCHARWIDTH 50 PREFCHARWIDTH 50;
-additionalCompositionSkuCompany 'Доп. состав (перевод)' (sku, company) = additionalCompositionSkuLanguage(sku, languageLegalEntity(company)) MINCHARWIDTH 20 MAXCHARWIDTH 50 PREFCHARWIDTH 50;
+mainCompositionSkuCompany 'Состав (иностр.)' (sku, company) = mainCompositionSkuLanguage(sku, languageLegalEntity(company)) MINCHARWIDTH 20 MAXCHARWIDTH 50 PREFCHARWIDTH 50;
+additionalCompositionSkuCompany 'Доп. состав (иностр.)' (sku, company) = additionalCompositionSkuLanguage(sku, languageLegalEntity(company)) MINCHARWIDTH 20 MAXCHARWIDTH 50 PREFCHARWIDTH 50;
 nameCategoryArticleSkuCompany 'Номенклатурная группа' (sku, company)= nameCategoryArticleSkuLanguage(sku, languageLegalEntity(company)) MINCHARWIDTH 20 MAXCHARWIDTH 50 PREFCHARWIDTH 50;
 sidGenderArticleSkuCompany 'Пол' (sku, company) = sidGenderArticleSkuLanguage(sku, languageLegalEntity(company)) MINCHARWIDTH 10 MAXCHARWIDTH 30 PREFCHARWIDTH 30;
 nameCountrySkuCompany 'Страна (сделано в)' (sku, company) = nameCountrySkuLanguage(sku, languageLegalEntity(company)) MINCHARWIDTH 20 MAXCHARWIDTH 50 PREFCHARWIDTH 50;
 nameCountryBrandSupplierSkuCompany 'Страна поставки' (sku, company) =nameCountryBrandSupplierSkuLanguage(sku, languageLegalEntity(company)) MINCHARWIDTH 20 MAXCHARWIDTH 50 PREFCHARWIDTH 50;
 
 META defineCompositionSkuLanguageDetailCustom (detail, stockProp)
-    mainComposition###detail 'Состав (перевод)' (detail) = mainCompositionSkuLanguage(sku###detail(detail), languageStock(stockProp###detail(detail))) MINCHARWIDTH 20 MAXCHARWIDTH 50 PREFCHARWIDTH 50;
-    additionalComposition###detail 'Доп. состав (перевод)' (detail) = additionalCompositionSkuLanguage(sku###detail(detail), languageStock(stockProp###detail(detail))) MINCHARWIDTH 20 MAXCHARWIDTH 50 PREFCHARWIDTH 50;
+    mainComposition###detail 'Состав (иностр.)' (detail) = mainCompositionSkuLanguage(sku###detail(detail), languageStock(stockProp###detail(detail))) MINCHARWIDTH 20 MAXCHARWIDTH 50 PREFCHARWIDTH 50;
+    additionalComposition###detail 'Доп. состав (иностр.)' (detail) = additionalCompositionSkuLanguage(sku###detail(detail), languageStock(stockProp###detail(detail))) MINCHARWIDTH 20 MAXCHARWIDTH 50 PREFCHARWIDTH 50;
     nameCategoryArticle###detail 'Номенклатурная группа' (detail)= nameCategoryArticleSkuLanguage(sku###detail(detail), languageStock(stockProp###detail(detail))) MINCHARWIDTH 20 MAXCHARWIDTH 50 PREFCHARWIDTH 50;
     sidGenderArticle###detail 'Пол' (detail) = sidGenderArticleSkuLanguage(sku###detail(detail), languageStock(stockProp###detail(detail))) MINCHARWIDTH 10 MAXCHARWIDTH 30 PREFCHARWIDTH 30;
     nameCountry###detail 'Страна (сделано в)' (detail) = nameCountrySkuLanguage(sku###detail(detail), languageStock(stockProp###detail(detail))) MINCHARWIDTH 20 MAXCHARWIDTH 50 PREFCHARWIDTH 50;

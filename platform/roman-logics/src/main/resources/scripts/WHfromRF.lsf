@@ -416,13 +416,13 @@ changeCoefficientArticleSkuWHfromRFDetail = ACTION (WHfromRFDetail) {
     SET coefficientArticle(article) IF article == articleSku(skuWHfromRFDetail(WHfromRFDetail)) <- requestedInteger();
 }
 
-mainCompositionSkuWHfromRFDetail 'Состав (по умолчанию)' (WHfromRFDetail) = mainCompositionSku(skuWHfromRFDetail(WHfromRFDetail)) PREFCHARWIDTH 30 MINCHARWIDTH 20;
+mainCompositionSkuWHfromRFDetail 'Состав' (WHfromRFDetail) = mainCompositionSku(skuWHfromRFDetail(WHfromRFDetail)) PREFCHARWIDTH 30 MINCHARWIDTH 20;
 changeMainCompositionSkuWHfromRFDetail = ACTION (WHfromRFDetail) {
     REQUEST STRING[200] INPUT;
     SET mainCompositionSku(sku) IF sku == skuWHfromRFDetail(WHfromRFDetail) <- requestedString();
 }
 
-additionalCompositionSkuWHfromRFDetail 'Дополнительный состав (по умолчанию)' (WHfromRFDetail) = additionalCompositionSku(skuWHfromRFDetail(WHfromRFDetail)) PREFCHARWIDTH 30 MINCHARWIDTH 20;
+additionalCompositionSkuWHfromRFDetail 'Дополнительный состав' (WHfromRFDetail) = additionalCompositionSku(skuWHfromRFDetail(WHfromRFDetail)) PREFCHARWIDTH 30 MINCHARWIDTH 20;
 changeAdditionalCompositionSkuWHfromRFDetail = ACTION (WHfromRFDetail) {
     REQUEST STRING[200] INPUT;
     SET additionalCompositionSku(sku) IF sku == skuWHfromRFDetail(WHfromRFDetail) <- requestedString();
@@ -493,12 +493,12 @@ FORM WHfromRF 'Приход товара из РФ'
                               netWeightSkuWHfromRFDetail BACKGROUND backgroundArticleSizeWHfromRFDetail(d) ON CHANGE EXEC changeNetWeightSkuWHfromRFDetail(d),
                               nameCountryOfOriginSkuWHfromRFDetail BACKGROUND backgroundArticleColorWHfromRFDetail(d) ON CHANGE EXEC changeCountryOfOriginSkuWHfromRFDetail(d),
                               mainCompositionOriginSkuWHfromRFDetail BACKGROUND backgroundArticleColorWHfromRFDetail(d) ON CHANGE EXEC changeMainCompositionOriginSkuWHfromRFDetail(d),
-                              mainCompositionSkuWHfromRFDetail ON CHANGE EXEC changeMainCompositionSkuWHfromRFDetail(d),
+                              mainCompositionSkuWHfromRFDetail BACKGROUND backgroundArticleColorWHfromRFDetail(d) ON CHANGE EXEC changeMainCompositionSkuWHfromRFDetail(d),
                               additionalCompositionOriginSkuWHfromRFDetail BACKGROUND backgroundArticleColorWHfromRFDetail(d) ON CHANGE EXEC changeAdditionalCompositionOriginSkuWHfromRFDetail(d),
-                              additionalCompositionSkuWHfromRFDetail ON CHANGE EXEC changeAdditionalCompositionSkuWHfromRFDetail(d),
+                              additionalCompositionSkuWHfromRFDetail BACKGROUND backgroundArticleColorWHfromRFDetail(d) ON CHANGE EXEC changeAdditionalCompositionSkuWHfromRFDetail(d),
                               coefficientArticleSkuWHfromRFDetail BACKGROUND backgroundArticleWHfromRFDetail(d) ON CHANGE EXEC changeCoefficientArticleSkuWHfromRFDetail(d)
 
-    PROPERTIES(d) FORCE PANEL SHOWIF languageWHfromRF(w) mainCompositionWHfromRFDetail, additionalCompositionWHfromRFDetail
+    PROPERTIES(d) FORCE PANEL SHOWIF languageWHfromRF(w) BACKGROUND backgroundArticleColorWHfromRFDetail(d) mainCompositionWHfromRFDetail, additionalCompositionWHfromRFDetail
 
 
     FILTERS inWHfromRFWHfromRFDetail(w, d)

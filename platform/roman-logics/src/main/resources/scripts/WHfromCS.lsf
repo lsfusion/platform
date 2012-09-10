@@ -467,13 +467,13 @@ changeCoefficientArticleSkuWHfromCSRDetail = ACTION (WHfromCSRDetail) {
     SET coefficientArticle(article) IF article == articleSku(skuWHfromCSRDetail(WHfromCSRDetail)) <- requestedInteger();
 }
 
-mainCompositionSkuWHfromCSRDetail 'Состав (по умолчанию)' (WHfromCSRDetail) = mainCompositionSku(skuWHfromCSRDetail(WHfromCSRDetail))  PREFCHARWIDTH 30 MINCHARWIDTH 20;
+mainCompositionSkuWHfromCSRDetail 'Состав' (WHfromCSRDetail) = mainCompositionSku(skuWHfromCSRDetail(WHfromCSRDetail))  PREFCHARWIDTH 30 MINCHARWIDTH 20;
 changeMainCompositionSkuWHfromCSRDetail = ACTION (WHfromCSRDetail) {
     REQUEST STRING[200] INPUT;
     SET mainCompositionSku(sku) IF sku == skuWHfromCSRDetail(WHfromCSRDetail) <- requestedString();
 }
 
-additionalCompositionSkuWHfromCSRDetail 'Дополнительный состав (по умолчанию)' (WHfromCSRDetail) = additionalCompositionSku(skuWHfromCSRDetail(WHfromCSRDetail)) PREFCHARWIDTH 30 MINCHARWIDTH 20;
+additionalCompositionSkuWHfromCSRDetail 'Дополнительный состав' (WHfromCSRDetail) = additionalCompositionSku(skuWHfromCSRDetail(WHfromCSRDetail)) PREFCHARWIDTH 30 MINCHARWIDTH 20;
 changeAdditionalCompositionSkuWHfromCSRDetail = ACTION (WHfromCSRDetail) {
     REQUEST STRING[200] INPUT;
     SET additionalCompositionSku(sku) IF sku == skuWHfromCSRDetail(WHfromCSRDetail) <- requestedString();
@@ -543,12 +543,12 @@ FORM WHfromCSR 'Приемка на оптовый склад'
                               netWeightSkuWHfromCSRDetail BACKGROUND backgroundArticleSizeWHfromCSRDetail(d) ON CHANGE EXEC changeNetWeightSkuWHfromCSRDetail(d),
                               nameCountryOfOriginSkuWHfromCSRDetail BACKGROUND backgroundArticleColorWHfromCSRDetail(d) ON CHANGE EXEC changeCountryOfOriginSkuWHfromCSRDetail(d),
                               mainCompositionOriginSkuWHfromCSRDetail BACKGROUND backgroundArticleColorWHfromCSRDetail(d) ON CHANGE EXEC changeMainCompositionOriginSkuWHfromCSRDetail(d),
-                              mainCompositionSkuWHfromCSRDetail ON CHANGE EXEC changeMainCompositionSkuWHfromCSRDetail(d),
+                              mainCompositionSkuWHfromCSRDetail BACKGROUND backgroundArticleColorWHfromCSRDetail(d) ON CHANGE EXEC changeMainCompositionSkuWHfromCSRDetail(d),
                               additionalCompositionOriginSkuWHfromCSRDetail BACKGROUND backgroundArticleColorWHfromCSRDetail(d) ON CHANGE EXEC changeAdditionalCompositionOriginSkuWHfromCSRDetail(d),
-                              additionalCompositionSkuWHfromCSRDetail ON CHANGE EXEC changeAdditionalCompositionSkuWHfromCSRDetail(d),
+                              additionalCompositionSkuWHfromCSRDetail BACKGROUND backgroundArticleColorWHfromCSRDetail(d) ON CHANGE EXEC changeAdditionalCompositionSkuWHfromCSRDetail(d),
                               coefficientArticleSkuWHfromCSRDetail BACKGROUND backgroundArticleWHfromCSRDetail(d) ON CHANGE EXEC changeCoefficientArticleSkuWHfromCSRDetail(d)
 
-    PROPERTIES(d) FORCE PANEL SHOWIF languageWHfromCSR(w) mainCompositionWHfromCSRDetail, additionalCompositionWHfromCSRDetail
+    PROPERTIES(d) FORCE PANEL SHOWIF languageWHfromCSR(w) BACKGROUND backgroundArticleColorWHfromCSRDetail(d) mainCompositionWHfromCSRDetail, additionalCompositionWHfromCSRDetail
 
     FILTERS inWHfromCSRWHfromCSRDetail(w, d)
 
