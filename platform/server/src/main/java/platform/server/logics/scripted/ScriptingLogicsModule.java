@@ -1760,43 +1760,44 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     private void checkDuplicateClass(String className) throws ScriptingErrorLog.SemanticErrorException {
-        if (getClassByName(className) != null) {
+        if (classResolver.findInNamespace(getNamespace(), className) != null) {
             errLog.emitAlreadyDefinedError(parser, "class", className);
         }
     }
 
     private void checkDuplicateGroup(String groupName) throws ScriptingErrorLog.SemanticErrorException {
-        if (getGroupByName(groupName) != null) {
+        if (groupResolver.findInNamespace(getNamespace(), groupName) != null) {
             errLog.emitAlreadyDefinedError(parser, "group", groupName);
         }
     }
 
     private void checkDuplicateProperty(String propName) throws ScriptingErrorLog.SemanticErrorException {
-        if (getLPByName(propName) != null) {
+        if (lpResolver.findInNamespace(getNamespace(), propName) != null) {
             errLog.emitAlreadyDefinedError(parser, "property", propName);
         }
     }
 
     private void checkDuplicateWindow(String name) throws ScriptingErrorLog.SemanticErrorException {
-        if (getWindowByName(name) != null) {
+        if (windowResolver.findInNamespace(getNamespace(), name) != null) {
             errLog.emitAlreadyDefinedError(parser, "window", name);
         }
     }
 
     private void checkDuplicateNavigatorElement(String name) throws ScriptingErrorLog.SemanticErrorException {
-        if (getNavigatorElementByName(name) != null) {
+        if (navigatorResolver.findInNamespace(getNamespace(), name) != null) {
             errLog.emitAlreadyDefinedError(parser, "form or navigator", name);
         }
     }
 
     private void checkDuplicateMetaCodeFragment(String name, int paramCnt) throws ScriptingErrorLog.SemanticErrorException {
-        if (getMetaCodeFragmentByName(name, paramCnt) != null) {
+        metaCodeFragmentResolver.setParamCnt(paramCnt);
+        if (metaCodeFragmentResolver.findInNamespace(getNamespace(), name) != null) {
             errLog.emitAlreadyDefinedError(parser, "meta code", name);
         }
     }
 
     private void checkDuplicateTable(String name) throws ScriptingErrorLog.SemanticErrorException {
-        if (getTableByName(name) != null) {
+        if (tableResolver.findInNamespace(getNamespace(), name) != null) {
             errLog.emitAlreadyDefinedError(parser, "table", name);
         }
     }
@@ -2175,7 +2176,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public abstract class CompoundNameResolver<T> {
-        private T findInNamespace(String namespaceName, String name) {
+        public T findInNamespace(String namespaceName, String name) {
             T result = null;
             for (LogicsModule module : namespaceToModules.get(namespaceName)) {
                 if ((result = resolveInModule(module, name)) != null) {
