@@ -597,11 +597,11 @@ PROPERTIES name(ss), sizeCode(ss)
 PROPERTIES name(s), scolor(s), storeSizeCode(s), storeSizeString(s, ss) COLUMNS (ss) HEADER sizeCode(ss) BACKGROUND colorizeMatchingStoreSize(s, ss) HEADER storeSizeHeader(s, ss);
 
 FORM TestTree 'Тест дерева (формы)'
-TREE formsTree e=navigatorElement PARENT parentNavigatorElement
+TREE forms e=navigatorElement PARENT parentNavigatorElement
 PROPERTIES(e) navigatorElementCaption, navigatorElementSID, numberNavigatorElement, permitForm, forbidForm;
 
 DESIGN TestTree FROM DEFAULT {
-    formsTree.box {
+    forms.tree.box {
         fillHorizontal = 1;
         fillVertical = 1;
     }
