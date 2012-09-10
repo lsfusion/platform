@@ -80,7 +80,6 @@ nameCompanyWHfromRF 'Импортёр' = name(companyWHfromRF(WHfromRF)) IN docu
 @defineDocumentDescription(WHfromRF, 'Поступление товара из РФ');
 
 @defineAddDetailDialogSkuStock(WHfromRF, sku, stock, dialogSku);
-@defineAddDetailDialogBarcode(WHfromRF, sku);
 
 @defineDocumentHeaderQuantity(WHfromRF);
 @defineDocumentHeaderSkuQuantity(WHfromRF, sku);
@@ -185,60 +184,60 @@ createSkuWHfromRF = ACTION (barcode) NEWSESSION {
 detailWHfromRFFreightUnitSku (WHfromRF, freightUnit, sku) = GROUP MAX WHfromRFDetail BY WHfromRFWHfromRFDetail(WHfromRFDetail), freightUnitWHfromRFDetail(WHfromRFDetail), skuWHfromRFDetail(WHfromRFDetail);
 
 
-addDialogSkuFreightUnitBarcode 'Ввод штрих-кода' (WHfromRF) = ACTION (WHfromRF) {
+addDialogSkuFreightUnitWHfromRFBarcode 'Ввод штрих-кода' = ACTION (WHfromRF, barcode) {
 
-    LOCAL selectedBarcode = STRING[14] ();
     LOCAL dialogBarcodeSku = sku();
     LOCAL dialogBarcodeDetail = WHfromRFDetail();
 
-    FORM barcodeInput MODAL;
 
-    IF formResult() == formResult.ok THEN {
+    IF barcodeToObject(barcode) IS freightUnit THEN {
+        SET currentFreightUnit (WHfromRF) <- barcodeToObject(barcode);
+    } ELSE {
 
-        SET selectedBarcode() <- chosenString('barcode');
+        SET dialogBarcodeSku() <- skuBarcodeIdDate(barcode, dateWHfromRF (WHfromRF));
+        SET dialogBarcodeDetail() <- detailWHfromRFFreightUnitSku(WHfromRF, currentFreightUnit(WHfromRF), dialogBarcodeSku());
 
-        IF barcodeToObject(selectedBarcode()) IS freightUnit THEN {
-            SET currentFreightUnit (WHfromRF) <- barcodeToObject(selectedBarcode());
-        } ELSE {
+        IF barcode IS STRING[14] AND NOT dialogBarcodeSku() IS sku THEN {
 
-            SET dialogBarcodeSku() <- skuBarcodeIdDate(selectedBarcode(), dateWHfromRF (WHfromRF));
-            SET dialogBarcodeDetail() <- detailWHfromRFFreightUnitSku(WHfromRF, currentFreightUnit(WHfromRF), dialogBarcodeSku());
-
-            IF selectedBarcode() IS STRING[14] AND NOT dialogBarcodeSku() IS sku THEN {
-
-                IF currentFreightUnit(WHfromRF) THEN {
-                    FORM addBarcodeWHfromRFFreightUnitSku OBJECTS f = currentFreightUnit(WHfromRF), w = WHfromRF MODAL;
-                } ELSE {
-                    FORM addBarcodeWHfromRFSku OBJECTS w = WHfromRF MODAL;
-                }
-                IF formResult() == formResult.ok THEN {
-                    SET barcode(sku) IF sku == chosenObject('s') <- selectedBarcode();
-                    SET dialogBarcodeSku() <- chosenObject('s');
-                } ELSE {
-                    EXEC createSkuWHfromRF(selectedBarcode());
-                    SET dialogBarcodeSku() <- skuBarcodeIdDate(selectedBarcode(), dateWHfromRF (WHfromRF));
-                }
+            IF currentFreightUnit(WHfromRF) THEN {
+                FORM addBarcodeWHfromRFFreightUnitSku OBJECTS f = currentFreightUnit(WHfromRF), w = WHfromRF MODAL;
+            } ELSE {
+                FORM addBarcodeWHfromRFSku OBJECTS w = WHfromRF MODAL;
             }
-
-            IF dialogBarcodeSku() IS sku THEN {
-
-                IF dialogBarcodeDetail() IS WHfromRFDetail THEN {
-                    SET quantityWHfromRFDetail(detail) IF detail == dialogBarcodeDetail() <-
-                        quantityWHfromRFDetail(detail) (+) (1.0 IF detail IS WHfromRFDetail);
-                    } ELSE {
-
-                        ADDOBJ WHfromRFDetail;
-                        FOR w == addedObject() DO {
-                            SET WHfromRFWHfromRFDetail(w) <- WHfromRF AS WHfromRF;
-                            SET skuWHfromRFDetail(w) <- dialogBarcodeSku();
-                            SET freightUnitWHfromRFDetail(w) <- currentFreightUnit(WHfromRF);
-                            SET quantityWHfromRFDetail(w) <- 1.0;
-                        }
-                    }
+            IF formResult() == formResult.ok THEN {
+                SET barcode(sku) IF sku == chosenObject('s') <- barcode;
+                SET dialogBarcodeSku() <- chosenObject('s');
+            } ELSE {
+                EXEC createSkuWHfromRF(barcode);
+                SET dialogBarcodeSku() <- skuBarcodeIdDate(barcode, dateWHfromRF (WHfromRF));
             }
         }
+
+        IF dialogBarcodeSku() IS sku THEN {
+
+            IF dialogBarcodeDetail() IS WHfromRFDetail THEN {
+                SET quantityWHfromRFDetail(detail) IF detail == dialogBarcodeDetail() <-
+                    quantityWHfromRFDetail(detail) (+) (1.0 IF detail IS WHfromRFDetail);
+                } ELSE {
+
+                    ADDOBJ WHfromRFDetail;
+                    FOR w == addedObject() DO {
+                        SET WHfromRFWHfromRFDetail(w) <- WHfromRF AS WHfromRF;
+                        SET skuWHfromRFDetail(w) <- dialogBarcodeSku();
+                        SET freightUnitWHfromRFDetail(w) <- currentFreightUnit(WHfromRF);
+                        SET quantityWHfromRFDetail(w) <- 1.0;
+                    }
+                }
+        }
     }
-} TOOLBAR EDITKEY 'F4';
+};
+
+changeAddDetailInputBarcodeWHfromRFDetailWHfromRF = ACTION (WHfromRF) {
+    REQUEST STRING[14] INPUT;
+    EXEC addDialogSkuFreightUnitWHfromRFBarcode(WHfromRF, requestedString());
+};
+addDetailInputBarcodeWHfromRFDetailWHfromRF 'Ввод штрих-кода :' (WHfromRF) = SESSION DATA STRING[14] (WHfromRF) TOOLBAR EDITKEY 'F4'
+                                                                        ON CHANGE EXEC changeAddDetailInputBarcodeWHfromRFDetailWHfromRF(WHfromRF);
 
 fillWHfromRFDetailsSkuFreightUnit 'Заполнить строки из короба' (WHfromRF) = ACTION (WHfromRF) {
     FOR isNotShippedSkuFreightUnitWHfromRF (sku AS sku, currentFreightUnit(WHfromRF), WHfromRF AS WHfromRF) DO {
@@ -480,7 +479,7 @@ FORM WHfromRF 'Приход товара из РФ'
 
     PROPERTIES(d) delete
 
-    PROPERTIES(w) TODRAW d addDialogSkuFreightUnitBarcode, deleteWHfromRFDetailWHfromRF
+    PROPERTIES(w) TODRAW d addDetailInputBarcodeWHfromRFDetailWHfromRF, deleteWHfromRFDetailWHfromRF
 
     PROPERTIES(d) READONLY FORCE PANEL originalNameArticleSkuWHfromRFDetail, nameCountryOfOriginArticleSkuWHfromRFDetail,
                                        nameBrandSupplierArticleSkuWHfromRFDetail, netWeightArticleSkuWHfromRFDetail,

@@ -1772,7 +1772,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     private void checkDuplicateProperty(String propName) throws ScriptingErrorLog.SemanticErrorException {
-        if (getLCPByName(propName) != null) {
+        if (getLPByName(propName) != null) {
             errLog.emitAlreadyDefinedError(parser, "property", propName);
         }
     }

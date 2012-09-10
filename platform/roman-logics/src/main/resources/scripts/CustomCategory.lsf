@@ -160,7 +160,7 @@ createCustomsZone 'Задать таможенную зону и связать 
 
     ADDOBJ customsZone;
     FOR g == addedObject() DO {
-        SET name(g) <- 'Европейский Союз' WHERE g==addedObject();
+        SET name(g) <- 'Таможенный Союз' WHERE g==addedObject();
 
         SET customsZoneCustomCategory10(customCategory10) <- g WHERE g==addedObject();
         SET customsZoneCustomCategory9(customCategory9) <- g WHERE g==addedObject();
