@@ -16,6 +16,6 @@
         <constructor-arg index="0" value="scriptedLogics"/>
         <constructor-arg index="1" ref="dataAdapter"/>
         <constructor-arg index="2" value="7652"/>
-        <constructor-arg index="3" value="src\main\java\platform\server\FeaturesScript.lsf;scripts/"/>
+        <constructor-arg index="3" value="src/main/resources/scripts/I18n.lsf;src\main\resources\samples\FeaturesScript.lsf"/>
     </bean>
 </beans>

@@ -7,7 +7,7 @@
 
 MODULE Features;
 
-REQUIRE System;
+REQUIRE System, I18n;
 
 /////////// GROUP STATEMENT ////////////
 
@@ -138,13 +138,14 @@ documentTypeString 'Тип документа' (doc) = IF (doc IS incomeDocument
 //      WHEN whenPropertyExpressionN THEN thenPropertyExpressionN
 //      DEFAULT defaultPropertyExpression
 // END
-storeSizeCode 'Размер склада (код)' (s) = CASE
-                                              WHEN storeSize(s) == storeSize.huge THEN ('HUGE' IF s IS store)
-                                              WHEN storeSize(s) == storeSize.big THEN ('BIG' IF s IS store)
-                                              WHEN storeSize(s) == storeSize.medium THEN ('MEDIUM' IF s IS store)
-                                              WHEN storeSize(s) == storeSize.small THEN ('SMALL' IF s IS store)
-                                              DEFAULT 'UNKNOWN' IF s IS store
-                                          END;
+sizeCode 'Размер склада (код)' (ss) = CASE
+                                          WHEN ss == storeSize.huge THEN ('HUGE' IF ss IS storeSize)
+                                          WHEN ss == storeSize.big THEN ('BIG' IF ss IS storeSize)
+                                          WHEN ss == storeSize.medium THEN ('MEDIUM' IF ss IS storeSize)
+                                          WHEN ss == storeSize.small THEN ('SMALL' IF ss IS storeSize)
+                                          DEFAULT 'UNKNOWN' IF ss IS store
+                                      END;
+storeSizeCode 'Размер склада (код)' (s) = sizeCode(storeSize(s));
 
 // Partition property
 // SUM, PREV partition property
@@ -528,7 +529,7 @@ scustom 'Custom file' (store) = DATA CUSTOMFILE (store) IN base;
 sexcel 'Excel' (store) = DATA EXCELFILE (store) IN base;
 scolor 'Color' (store) = DATA COLOR (store) IN base;
 
-testRequestInput 'Тестование REQUEST input' = ACTION(s) {
+testRequestInput 'Тестирование REQUEST input' = ACTION(s) {
     CONFIRM 'Быть или не быть?' LENGTH 100;
 
     IF (confirmed()) THEN {
@@ -549,20 +550,23 @@ OBJECTS s=store '-Склад-', a=article
 PROPERTIES ssel=SELECTION(s), sname=name(s), obja=OBJVALUE(a), aname=name(a)
 PROPERTIES TODRAW s FORCE PANEL copyStoreNameToArticles(s), copyStoreNameToArticle(s, a), copyStoreNameToArticleError(s, a), createNewStore(), showDocumentArticleModalForm(), showTestModalForm(), testRequestInput(s)
 PROPERTIES(s, a) SHOWIF storeIsHuge(s) incomeQuantity2, outcomeQuantity2
-PROPERTIES(s) storeSizeName, ssc1=storeSizeCode, storeIsHuge, stime, sdate, sdatetime, ssi=Features.simage, spdf, scustom, sexcel, testAbstractAction
+PROPERTIES(s) storeSizeName, ssc1=storeSizeCode, storeIsHuge, stime, sdate, sdatetime,
+//    ssi=Features.simage, spdf, scustom, sexcel,
+    scolor,
+    testAbstractAction
 PROPERTIES(s, a) incomeQuantity, outcomeQuantity, foo, foo2 SHOWIF storeIsHuge(s), bar, foobar HEADER name(a), bar2, baz, baz2, balanceQuantity, testUnion HEADER name(s), testPartition, testFormula
 FILTERGROUP filters1
     FILTER 'Показывать только огромные склады' 'F10' storeIsHuge(s)
 ORDER BY name(s) DESC, foo, ssel
 ;
 
-EXTEND FORM storeArticle
-PROPERTIES(s) ssw=sword AFTER ssi
-;
-
-EXTEND FORM storeArticle
-PROPERTIES(s) scolor AFTER ssw
-;
+//EXTEND FORM storeArticle
+//PROPERTIES(s) ssw=sword AFTER ssi
+//;
+//
+//EXTEND FORM storeArticle
+//PROPERTIES(s) scolor AFTER ssw
+//;
 
 FORM editStore 'Редактирование склада'
 OBJECTS s=store FIXED PANEL
@@ -582,6 +586,26 @@ OBJECTS store
 PROPERTIES(store) dateProp, variableDateTime
 //PROPERTIES dateTimeProp()
 ;
+
+colorizeMatchingStoreSize (s, ss) = scolor(s) IF storeSize(s) == ss;
+storeSizeString (s, ss) = DATA STRING[10] (store, storeSize);
+storeSizeHeader (s, ss) = UNION OVERRIDE name(ss) IF s IS store AND ss IS storeSize AND ss!=storeSize.small, storeSizeString(s, ss);
+
+FORM TestColumnGroupObjects 'Тест групп в колонках'
+OBJECTS ss=storeSize, s=store
+PROPERTIES name(ss), sizeCode(ss)
+PROPERTIES name(s), scolor(s), storeSizeCode(s), storeSizeString(s, ss) COLUMNS (ss) HEADER sizeCode(ss) BACKGROUND colorizeMatchingStoreSize(s, ss) HEADER storeSizeHeader(s, ss);
+
+FORM TestTree 'Тест дерева (формы)'
+TREE formsTree e=navigatorElement PARENT parentNavigatorElement
+PROPERTIES(e) navigatorElementCaption, navigatorElementSID, numberNavigatorElement, permitForm, forbidForm;
+
+DESIGN TestTree FROM DEFAULT {
+    formsTree.box {
+        fillHorizontal = 1;
+        fillVertical = 1;
+    }
+}
 
 //////////////// INDEX STATEMENT //////////////////
 // Syntax:
@@ -629,7 +653,7 @@ NAVIGATOR {
     ADD storeArticle IN element2;
 
     NEW outer 'Outer element' IN element1 {
-        ADD dictionariesForm 'Dictionaries' {
+        ADD dictionaries 'Dictionaries' {
             NEW underForm 'under form element';
         }
 
@@ -658,10 +682,12 @@ NAVIGATOR {
     adminElement TO leftToolbar;
     objectElement TO objectsWindow;
 
-    ADD dictionariesForm 'Словари' AFTER daysOffForm;
+    ADD dictionaries 'Словари' AFTER daysOffForm;
     ADD storeArticle;
     ADD documentArticle;
     ADD TestDataPropForm;
+    ADD TestColumnGroupObjects;
+    ADD TestTree;
 }
 
 //////////////// DESIGN STATEMENT /////////////////

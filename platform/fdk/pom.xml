@@ -14,4 +14,10 @@
     <packaging>jar</packaging>
     <name>FDK</name>
 
+    <dependencies>
+        <dependency>
+            <groupId>by.luxsoft.platform</groupId>
+            <artifactId>server</artifactId>
+        </dependency>
+    </dependencies>
 </project>
