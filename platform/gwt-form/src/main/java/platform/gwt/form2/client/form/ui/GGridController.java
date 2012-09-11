@@ -5,6 +5,7 @@ import platform.gwt.form2.shared.view.GGrid;
 import platform.gwt.form2.shared.view.GPropertyDraw;
 import platform.gwt.form2.shared.view.changes.GGroupObjectValue;
 
+import java.util.List;
 import java.util.Map;
 
 public class GGridController {
@@ -71,5 +72,9 @@ public class GGridController {
 
     public void modifyGridObject(GGroupObjectValue key, boolean add) {
         table.modifyGroupObject(key, add);
+    }
+
+    public void updateColumnKeys(GPropertyDraw property, List<GGroupObjectValue> columnKeys) {
+        table.updateColumnKeys(property, columnKeys);
     }
 }

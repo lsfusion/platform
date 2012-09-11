@@ -9,11 +9,9 @@ import platform.gwt.form2.shared.view.changes.GFormChanges;
 import platform.gwt.form2.shared.view.changes.GGroupObjectValue;
 import platform.gwt.form2.shared.view.logics.GGroupObjectLogicsSupplier;
 import platform.gwt.form2.shared.view.reader.*;
+import platform.gwt.utils.GwtSharedUtils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.*;
 
 public class GGroupObjectController implements GGroupObjectLogicsSupplier {
     public GGroupObject groupObject;
@@ -66,26 +64,34 @@ public class GGroupObjectController implements GGroupObjectLogicsSupplier {
         }
     }
 
-    public void processFormChanges(GFormChanges fc) {
+    public void processFormChanges(GFormChanges fc, HashMap<GGroupObject, List<GGroupObjectValue>> currentGridObjects, HashSet<GGroupObject> changedGroups) {
         for (GPropertyDraw property : fc.dropProperties) {
             if (property.groupObject == groupObject) {
                 removeProperty(property);
             }
         }
 
-        String classViewValue = fc.classViews.get(groupObject);
+        GClassViewType classViewValue = fc.classViews.get(groupObject);
         if (classViewValue != null) {
-            setClassView(GClassViewType.valueOf(classViewValue));
+            setClassView(classViewValue);
         }
 
         for (GPropertyReader propertyReader : fc.properties.keySet()) {
             if (propertyReader instanceof GPropertyDraw) {
                 GPropertyDraw property = (GPropertyDraw) propertyReader;
                 if (property.groupObject == groupObject && !fc.updateProperties.contains(property)) {
-                    if (fc.panelProperties.contains(property)) {
-                        addPanelProperty(property);
-                    } else {
-                        addGridProperty(property);
+                    addProperty(property, fc.panelProperties.contains(property));
+
+                    if (property.columnGroupObjects != null && GwtSharedUtils.containsAny(changedGroups, property.columnGroupObjects)) {
+                        LinkedHashMap<GGroupObject, List<GGroupObjectValue>> groupColumnKeys = new LinkedHashMap<GGroupObject, List<GGroupObjectValue>>();
+                        for (GGroupObject columnGroupObject : property.columnGroupObjects) {
+                            List<GGroupObjectValue> columnGroupKeys = currentGridObjects.get(columnGroupObject);
+                            if (columnGroupKeys != null) {
+                                groupColumnKeys.put(columnGroupObject, columnGroupKeys);
+                            }
+                        }
+
+                        updateDrawColumnKeys(property, GGroupObject.mergeGroupValues(groupColumnKeys));
                     }
                 }
             }
@@ -111,13 +117,21 @@ public class GGroupObjectController implements GGroupObjectLogicsSupplier {
         update();
     }
 
+    private void updateDrawColumnKeys(GPropertyDraw property, List<GGroupObjectValue> columnKeys) {
+        if (panel.containsProperty(property)) {
+            panel.updateColumnKeys(property, columnKeys);
+        } else {
+            grid.updateColumnKeys(property, columnKeys);
+        }
+    }
+
     @Override
     public void updatePropertyDrawValues(GPropertyDraw reader, Map<GGroupObjectValue, Object> values, boolean updateKeys) {
         GPropertyDraw property = formController.getProperty(reader.ID);
         if (panel.containsProperty(property)) {
             panel.setPropertyValues(property, values, updateKeys);
         } else {
-            grid.getTable().setPropertyValues(property, values, updateKeys);
+            grid.getTable().updatePropertyValues(property, values, updateKeys);
         }
     }
 
@@ -246,6 +260,14 @@ public class GGroupObjectController implements GGroupObjectLogicsSupplier {
             grid.getTable().removeProperty(property);
         }
         panelProperties.remove(property);
+    }
+
+    private void addProperty(GPropertyDraw property, boolean toPanel) {
+        if (toPanel) {
+            addPanelProperty(property);
+        } else {
+            addGridProperty(property);
+        }
     }
 
     private void addGridProperty(GPropertyDraw property) {

@@ -11,16 +11,19 @@ import platform.gwt.form2.shared.view.panel.PanelRenderer;
 import platform.gwt.form2.shared.view.reader.*;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Map;
 
 public class GPropertyDraw extends GComponent implements GPropertyReader {
     public static final String CAPTION_ORIGINAL = "CAPTION_ORIGINAL";
 
     public int ID;
-    public GGroupObject groupObject;
     public String sID;
     public String caption;
     public GType baseType;
+
+    public GGroupObject groupObject;
+    public ArrayList<GGroupObject> columnGroupObjects;
 
     public GType changeType;
     public AddRemove addRemove;
@@ -81,8 +84,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
         return caption == null ? "" : caption;
     }
 
-    public String getDynamicCaption(String caption) {
-        return CAPTION_ORIGINAL.equals(caption) ? this.caption : caption;
+    public String getDynamicCaption(Object caption) {
+        return CAPTION_ORIGINAL.equals(caption)
+               ? getCaptionOrEmpty()
+               : (caption == null ? "" : caption.toString().trim());
     }
 
     public String getIconPath(boolean enabled) {

@@ -184,8 +184,4 @@ public class GTreeGroupController implements GGroupObjectLogicsSupplier {
     public GGroupObjectValue getCurrentKey() {
         return tree.getCurrentKey();
     }
-
-    public GGroupObjectValue getCurrentPath() {
-        return tree.getCurrentKey();
-    }
 }

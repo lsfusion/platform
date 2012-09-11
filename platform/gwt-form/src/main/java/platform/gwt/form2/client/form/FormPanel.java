@@ -1,5 +1,6 @@
 package platform.gwt.form2.client.form;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -36,13 +37,17 @@ public class FormPanel extends SimpleLayoutPanel {
             public void execute() {
                 String formSID = getParameters().get("formSID");
                 if (formSID != null) {
-                    OpenFormEvent.fireEvent(formSID, formSID);
+                    OpenFormEvent.fireEvent(formSID, null);
                 }
             }
         });
     }
 
     public void openForm(String formSID, String caption) {
+        if (!GWT.isScript() || caption == null) {
+            caption = (caption == null ? "" : caption) + "(" + formSID + ")";
+        }
+
         GFormController formController = new GFormController(formSID);
         formTabsPanel.add(formController, new TabWidget(caption));
         formTabsPanel.selectTab(formController);

@@ -114,7 +114,7 @@ public class GEditPropertyDispatcher extends GFormActionDispatcher {
 
         if (simpleChangeProperty != null) {
             if (!inputResult.isCanceled()) {
-                form.changeProperty(editHandler, simpleChangeProperty, inputResult.getValue(), oldValue);
+                form.changeProperty(editHandler, simpleChangeProperty, editColumnKey, inputResult.getValue(), oldValue);
             }
             return;
         }

@@ -43,7 +43,9 @@ import static platform.base.BaseUtils.serializeObject;
 import static platform.client.ClientResourceBundle.getString;
 import static platform.interop.Order.*;
 
-public class ClientFormController implements AsyncView {
+public class ClientFormController implements AsyncListener {
+
+    private static final ImageIcon loadingIcon = new ImageIcon(Main.class.getResource("/images/loading.gif"));
 
     private final TableManager tableManager = new TableManager(this);
 
@@ -83,34 +85,16 @@ public class ClientFormController implements AsyncView {
 
     private final Map<ClientGroupObject, List<ClientPropertyFilter>> currentFilters = new HashMap<ClientGroupObject, List<ClientPropertyFilter>>();
 
-    public final Map<ClientGroupObject, List<ClientGroupObjectValue>> currentGridObjects = new HashMap<ClientGroupObject, List<ClientGroupObjectValue>>();
+    private final Map<ClientGroupObject, List<ClientGroupObjectValue>> currentGridObjects = new HashMap<ClientGroupObject, List<ClientGroupObjectValue>>();
 
-    private static final ImageIcon loadingIcon = new ImageIcon(Main.class.getResource("/images/loading.gif"));
+    private final OrderedMap<Long, ModifyObject> lastModifyObjectRequests = new OrderedMap<Long, ModifyObject>();
+    private final Map<ClientGroupObject, Long> lastChangeCurrentObjectsRequestIndices = Maps.newHashMap();
+    private final Table<ClientPropertyDraw, ClientGroupObjectValue, Long> lastChangePropertyRequestIndices = HashBasedTable.create();
+    private final Table<ClientPropertyDraw, ClientGroupObjectValue, Pair<Object, Object>> lastChangePropertyRequestValues = HashBasedTable.create();
 
-    public PanelView drawAsync;
-    private Timer timer;
-    private Icon prevIcon;
-    public void onAsyncStarted() {
-        if(drawAsync!=null) {
-            timer = new Timer(Main.asyncTimeOut, new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    prevIcon = drawAsync.getIcon();
-                    drawAsync.setIcon(loadingIcon);
-                    timer = null;
-                }
-            });
-            timer.setRepeats(false);
-            timer.start();
-        }
-    }
-    public void onAsyncFinished() {
-        if(drawAsync!=null) {
-            if(timer!=null)
-                timer.stop();
-            else
-                drawAsync.setIcon(prevIcon);
-        }
-    }
+    private Timer asyncTimer;
+    private PanelView asyncView;
+    private Icon asyncPrevIcon;
 
     public ClientFormController(RemoteFormInterface remoteForm, ClientNavigator clientNavigator) {
         this(remoteForm, clientNavigator, false);
@@ -456,23 +440,6 @@ public class ClientFormController implements AsyncView {
             }
         });
     }
-
-    private static class ModifyObject {
-        public final ClientObject object;
-        public final boolean add;
-        public final ClientGroupObjectValue value;
-
-        private ModifyObject(ClientObject object, boolean add, ClientGroupObjectValue value) {
-            this.object = object;
-            this.add = add;
-            this.value = value;
-        }
-    }
-
-    private final OrderedMap<Long, ModifyObject> lastModifyObjectRequests = new OrderedMap<Long, ModifyObject>();
-    private final Map<ClientGroupObject, Long> lastChangeCurrentObjectsRequestIndices = Maps.newHashMap();
-    private final Table<ClientPropertyDraw, ClientGroupObjectValue, Long> lastChangePropertyRequestIndices = HashBasedTable.create();
-    private final Table<ClientPropertyDraw, ClientGroupObjectValue, Pair<Object, Object>> lastChangePropertyRequestValues = HashBasedTable.create();
 
     public void applyFormChanges(byte[] bFormChanges) throws IOException {
         if (bFormChanges == null) {
@@ -1174,6 +1141,34 @@ public class ClientFormController implements AsyncView {
         });
     }
 
+    public void setAsyncView(PanelView asyncView) {
+        this.asyncView = asyncView;
+    }
+
+    public void onAsyncStarted() {
+        if (asyncView != null) {
+            asyncTimer = new Timer(Main.asyncTimeOut, new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    asyncPrevIcon = asyncView.getIcon();
+                    asyncView.setIcon(loadingIcon);
+                    asyncTimer = null;
+                }
+            });
+            asyncTimer.setRepeats(false);
+            asyncTimer.start();
+        }
+    }
+
+    public void onAsyncFinished() {
+        if (asyncView != null) {
+            if (asyncTimer != null) {
+                asyncTimer.stop();
+            } else {
+                asyncView.setIcon(asyncPrevIcon);
+            }
+        }
+    }
+
     private abstract class ProcessServerResponseRmiRequest extends RmiRequest<ServerResponse> {
         @Override
         protected void onResponse(long requestIndex, ServerResponse result) throws Exception {
@@ -1183,9 +1178,23 @@ public class ClientFormController implements AsyncView {
 
     private static Comparator<ClientPropertyDraw> COMPARATOR_USERSORT = new Comparator<ClientPropertyDraw>() {
         public int compare(ClientPropertyDraw c1, ClientPropertyDraw c2) {
-            if (c1.ascendingSortUser != null && c2.ascendingSortUser != null)
+            if (c1.ascendingSortUser != null && c2.ascendingSortUser != null) {
                 return c1.sortUser - c2.sortUser;
-            else return 0;
+            } else {
+                return 0;
+            }
         }
     };
+
+    private static class ModifyObject {
+        public final ClientObject object;
+        public final boolean add;
+        public final ClientGroupObjectValue value;
+
+        private ModifyObject(ClientObject object, boolean add, ClientGroupObjectValue value) {
+            this.object = object;
+            this.add = add;
+            this.value = value;
+        }
+    }
 }

@@ -192,12 +192,14 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     private Map<ObjectInstance, Object> deserializeKeysValues(byte[] keysArray) throws IOException {
-        DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(keysArray));
-
         Map<ObjectInstance, Object> mapValues = new HashMap<ObjectInstance, Object>();
-        int cnt = inStream.readInt();
-        for (int i = 0 ; i < cnt; ++i) {
-            mapValues.put(form.getObjectInstance(inStream.readInt()), deserializeObject(inStream));
+        if (keysArray != null) {
+            DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(keysArray));
+
+            int cnt = inStream.readInt();
+            for (int i = 0 ; i < cnt; ++i) {
+                mapValues.put(form.getObjectInstance(inStream.readInt()), deserializeObject(inStream));
+            }
         }
 
         return mapValues;

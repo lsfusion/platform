@@ -596,9 +596,11 @@ OBJECTS ss=storeSize, s=store
 PROPERTIES name(ss), sizeCode(ss)
 PROPERTIES name(s), scolor(s), storeSizeCode(s), storeSizeString(s, ss) COLUMNS (ss) HEADER sizeCode(ss) BACKGROUND colorizeMatchingStoreSize(s, ss) HEADER storeSizeHeader(s, ss);
 
+colorizeElementWithNumberGreaterFour(element) = #5555ff IF numberNavigatorElement(element) > 4;
+
 FORM TestTree 'Тест дерева (формы)'
 TREE forms e=navigatorElement PARENT parentNavigatorElement
-PROPERTIES(e) navigatorElementCaption, navigatorElementSID, numberNavigatorElement, permitForm, forbidForm;
+PROPERTIES(e) navigatorElementCaption, navigatorElementSID, numberNavigatorElement BACKGROUND colorizeElementWithNumberGreaterFour(e), permitForm, forbidForm;
 
 DESIGN TestTree FROM DEFAULT {
     forms.tree.box {
@@ -606,6 +608,16 @@ DESIGN TestTree FROM DEFAULT {
         fillVertical = 1;
     }
 }
+
+FORM TestHeaders 'Тест заголовков'
+OBJECTS s=store, a=article
+PROPERTIES(s) name, storeSizeCode
+PROPERTIES(a) OBJVALUE, name
+PROPERTIES(s, a) SHOWIF storeIsHuge(s) incomeQuantity2, outcomeQuantity2
+PROPERTIES(s, a) incomeQuantity, outcomeQuantity, foobar HEADER name(a), testUnion HEADER name(s)
+FILTERGROUP filters1
+    FILTER 'Показывать только огромные склады' 'F10' storeIsHuge(s)
+;
 
 //////////////// INDEX STATEMENT //////////////////
 // Syntax:
@@ -688,6 +700,7 @@ NAVIGATOR {
     ADD TestDataPropForm;
     ADD TestColumnGroupObjects;
     ADD TestTree;
+    ADD TestHeaders;
 }
 
 //////////////// DESIGN STATEMENT /////////////////

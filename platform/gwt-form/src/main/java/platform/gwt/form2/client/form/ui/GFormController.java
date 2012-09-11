@@ -36,15 +36,13 @@ import platform.gwt.form2.shared.view.*;
 import platform.gwt.form2.shared.view.changes.GFormChanges;
 import platform.gwt.form2.shared.view.changes.GGroupObjectValue;
 import platform.gwt.form2.shared.view.changes.dto.GFormChangesDTO;
-import platform.gwt.form2.shared.view.changes.dto.GGroupObjectValueDTO;
 import platform.gwt.form2.shared.view.classes.GObjectClass;
-import platform.gwt.form2.shared.view.logics.FormLogicsProvider;
 import platform.gwt.form2.shared.view.logics.GGroupObjectLogicsSupplier;
 
 import java.io.Serializable;
 import java.util.*;
 
-public class GFormController extends SimplePanel implements FormLogicsProvider {
+public class GFormController extends SimplePanel {
 
     private FormDispatchAsync dispatcher;
 
@@ -54,8 +52,15 @@ public class GFormController extends SimplePanel implements FormLogicsProvider {
     private GFormLayout formLayout;
     private final boolean dialogMode;
 
-    private Map<GGroupObject, GGroupObjectController> controllers = new LinkedHashMap<GGroupObject, GGroupObjectController>();
-    private Map<GTreeGroup, GTreeGroupController> treeControllers = new LinkedHashMap<GTreeGroup, GTreeGroupController>();
+    private boolean hasColumnGroupObjects;
+    private final HashMap<GGroupObject, List<GGroupObjectValue>> currentGridObjects = new HashMap<GGroupObject, List<GGroupObjectValue>>();
+
+    private final Map<GGroupObject, GGroupObjectController> controllers = new LinkedHashMap<GGroupObject, GGroupObjectController>();
+    private final Map<GTreeGroup, GTreeGroupController> treeControllers = new LinkedHashMap<GTreeGroup, GTreeGroupController>();
+    private final LinkedHashMap<Long, ModifyObject> lastModifyObjectRequests = new LinkedHashMap<Long, ModifyObject>();
+    private final HashMap<GGroupObject, Long> lastChangeCurrentObjectsRequestIndices = new HashMap<GGroupObject, Long>();
+    private final HashMap<GPropertyDraw, HashMap<GGroupObjectValue, Long>> lastChangePropertyRequestIndices = new HashMap<GPropertyDraw, HashMap<GGroupObjectValue, Long>>();
+    private final HashMap<GPropertyDraw, HashMap<GGroupObjectValue, Change>> lastChangePropertyRequestValues = new HashMap<GPropertyDraw, HashMap<GGroupObjectValue, Change>>();
 
     public GFormController(String formSID) {
         this(formSID, null);
@@ -162,9 +167,9 @@ public class GFormController extends SimplePanel implements FormLogicsProvider {
     }
 
     private void addFilterComponent(GRegularFilterGroup filterGroup, Widget filterWidget) {
-        if (filterGroup.drawToToolbar)
+        if (filterGroup.drawToToolbar) {
             controllers.get(filterGroup.groupObject).addFilterComponent(filterWidget);
-        else {
+        } else {
             controllers.get(filterGroup.groupObject).addPanelFilterComponent(filterWidget);
         }
     }
@@ -182,7 +187,11 @@ public class GFormController extends SimplePanel implements FormLogicsProvider {
             }
         }
 
+        hasColumnGroupObjects = false;
         for (GPropertyDraw property : form.propertyDraws) {
+            if (property.columnGroupObjects != null && !property.columnGroupObjects.isEmpty()) {
+                hasColumnGroupObjects = true;
+            }
             if (property.groupObject == null) {
                 controllers.put(null, new GGroupObjectController(this, null, formLayout));
             }
@@ -201,25 +210,23 @@ public class GFormController extends SimplePanel implements FormLogicsProvider {
         dispatcher.execute(new GetRemoteChanges(), new ServerResponseCallback());
     }
 
-    private static class ModifyObject {
-        public final GObject object;
-        public final boolean add;
-        public final GGroupObjectValue value;
-
-        private ModifyObject(GObject object, boolean add, GGroupObjectValue value) {
-            this.object = object;
-            this.add = add;
-            this.value = value;
-        }
-    }
-
-    private final LinkedHashMap<Long, ModifyObject> lastModifyObjectRequests = new LinkedHashMap<Long, ModifyObject>();
-    private final HashMap<GGroupObject, Long> lastChangeCurrentObjectsRequestIndices = new HashMap<GGroupObject, Long>();
-    private final HashMap<GPropertyDraw, HashMap<GGroupObjectValue, Long>> lastChangePropertyRequestIndices = new HashMap<GPropertyDraw, HashMap<GGroupObjectValue, Long>>();
-    private final HashMap<GPropertyDraw, HashMap<GGroupObjectValue, Change>> lastChangePropertyRequestValues = new HashMap<GPropertyDraw, HashMap<GGroupObjectValue, Change>>();
-
     public void applyRemoteChanges(GFormChangesDTO changesDTO) {
         GFormChanges fc = GFormChanges.remap(form, changesDTO);
+
+        //оптимизация, т.к. на большинстве форм нет групп в колонках
+        HashSet<GGroupObject> changedGroups = null;
+        if (hasColumnGroupObjects) {
+            changedGroups = new HashSet<GGroupObject>();
+            for (Map.Entry<GGroupObject, GClassViewType> entry : fc.classViews.entrySet()) {
+                GClassViewType classView = entry.getValue();
+                if (classView != GClassViewType.GRID) {
+                    changedGroups.add(entry.getKey());
+                    currentGridObjects.remove(entry.getKey());
+                }
+            }
+            currentGridObjects.putAll(fc.gridObjects);
+            changedGroups.addAll(fc.gridObjects.keySet());
+        }
 
         modifyFormChangesWithModifyObjectAsyncs(fc);
 
@@ -228,7 +235,7 @@ public class GFormController extends SimplePanel implements FormLogicsProvider {
         modifyFormChangesWithChangePropertyAsyncs(fc);
 
         for (GGroupObjectController controller : controllers.values()) {
-            controller.processFormChanges(fc);
+            controller.processFormChanges(fc, currentGridObjects, changedGroups);
         }
 
         for (GTreeGroupController treeController : treeControllers.values()) {
@@ -263,7 +270,7 @@ public class GFormController extends SimplePanel implements FormLogicsProvider {
     private void modifyFormChangesWithChangeCurrentObjectAsyncs(GFormChanges fc) {
         long currentDispatchingRequestIndex = dispatcher.getCurrentDispatchingRequestIndex();
 
-        for (Iterator<Map.Entry<GGroupObject,Long>> iterator = lastChangeCurrentObjectsRequestIndices.entrySet().iterator(); iterator.hasNext(); ) {
+        for (Iterator<Map.Entry<GGroupObject, Long>> iterator = lastChangeCurrentObjectsRequestIndices.entrySet().iterator(); iterator.hasNext(); ) {
             Map.Entry<GGroupObject, Long> entry = iterator.next();
 
             if (entry.getValue() <= currentDispatchingRequestIndex) {
@@ -360,10 +367,8 @@ public class GFormController extends SimplePanel implements FormLogicsProvider {
         executeEditAction(property, key, actionSID, new ServerResponseCallback());
     }
 
-    public void executeEditAction(GPropertyDraw property, GGroupObjectValue key, String actionSID, AsyncCallback<ServerResponseResult> callback) {
-        //todo: columnKeys
-        syncDispatch(new ExecuteEditAction(property.ID, new GGroupObjectValueDTO(), actionSID), callback);
-//        syncDispatch(new ExecuteEditAction(property.ID, key.getValueDTO(), actionSID), callback);
+    public void executeEditAction(GPropertyDraw property, GGroupObjectValue columnKey, String actionSID, AsyncCallback<ServerResponseResult> callback) {
+        syncDispatch(new ExecuteEditAction(property.ID, columnKey == null ? null : columnKey.getValueDTO(), actionSID), callback);
     }
 
     public void continueServerInvocation(Object[] actionResults, AsyncCallback<ServerResponseResult> callback) {
@@ -394,7 +399,7 @@ public class GFormController extends SimplePanel implements FormLogicsProvider {
         }
 
         for (GTreeGroupController tree : treeControllers.values()) {
-            GGroupObjectValue currentPath = tree.getCurrentPath();
+            GGroupObjectValue currentPath = tree.getCurrentKey();
             if (currentPath != null) {
                 fullKey.putAll(currentPath);
             }
@@ -422,17 +427,15 @@ public class GFormController extends SimplePanel implements FormLogicsProvider {
                 : null;
     }
 
-    public void changeProperty(GEditPropertyHandler editHandler, GPropertyDraw property, Serializable value, Object oldValue) {
+    public void changeProperty(GEditPropertyHandler editHandler, GPropertyDraw property, GGroupObjectValue columnKey, Serializable value, Object oldValue) {
         editHandler.updateEditValue(value);
 
-        long requestIndex = dispatcher.execute(new ChangeProperty(property.ID, getFullCurrentKey().getValueDTO(), value, null), new ServerResponseCallback());
+        long requestIndex = dispatcher.execute(new ChangeProperty(property.ID, getFullCurrentKey(columnKey).getValueDTO(), value, null), new ServerResponseCallback());
 
         GGroupObjectLogicsSupplier controller = getGroupObjectLogicsSupplier(property.groupObject);
 
-        //todo: column key
-        GGroupObjectValue columnKey = new GGroupObjectValue();
         GGroupObjectValue propertyKey = controller != null && !controller.hasPanelProperty(property)
-                                        ? new GGroupObjectValue(controller.getCurrentKey(), columnKey)
+                                        ? columnKey != null ? new GGroupObjectValue(controller.getCurrentKey(), columnKey) : controller.getCurrentKey()
                                         : columnKey;
 
         putToDoubleMap(lastChangePropertyRequestIndices, property, propertyKey, requestIndex);
@@ -440,7 +443,7 @@ public class GFormController extends SimplePanel implements FormLogicsProvider {
     }
 
     public boolean isAsyncModifyObject(GPropertyDraw property) {
-        return property.addRemove!=null && controllers.get(property.addRemove.object.groupObject).isInGridClassView();
+        return property.addRemove != null && controllers.get(property.addRemove.object.groupObject).isInGridClassView();
     }
 
     public void modifyObject(final GPropertyDraw property, final GGroupObjectValue columnKey) {
@@ -449,7 +452,7 @@ public class GFormController extends SimplePanel implements FormLogicsProvider {
         final GObject object = property.addRemove.object;
         final boolean add = property.addRemove.add;
 
-        if(add) {
+        if (add) {
             NavigatorDispatchAsync.Instance.get().execute(new GenerateID(), new ErrorAsyncCallback<GenerateIDResult>() {
                 @Override
                 public void success(GenerateIDResult result) {
@@ -458,7 +461,7 @@ public class GFormController extends SimplePanel implements FormLogicsProvider {
             });
         } else {
             final GGroupObjectValue value = controllers.get(object.groupObject).getCurrentKey();
-            final int ID = (Integer)value.values().iterator().next();
+            final int ID = (Integer) value.values().iterator().next();
             executeModifyObject(property, columnKey, object, add, ID, value);
         }
     }
@@ -535,6 +538,7 @@ public class GFormController extends SimplePanel implements FormLogicsProvider {
     }
 
     private GPropertyTable editingTable;
+
     public void setCurrentEditingTable(GPropertyTable table) {
         editingTable = table;
         if (table == null) {
@@ -557,6 +561,18 @@ public class GFormController extends SimplePanel implements FormLogicsProvider {
         private Change(Object newValue, Object oldValue) {
             this.newValue = newValue;
             this.oldValue = oldValue;
+        }
+    }
+
+    private static class ModifyObject {
+        public final GObject object;
+        public final boolean add;
+        public final GGroupObjectValue value;
+
+        private ModifyObject(GObject object, boolean add, GGroupObjectValue value) {
+            this.object = object;
+            this.add = add;
+            this.value = value;
         }
     }
 

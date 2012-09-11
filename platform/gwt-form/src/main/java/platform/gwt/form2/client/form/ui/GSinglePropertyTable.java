@@ -1,5 +1,6 @@
 package platform.gwt.form2.client.form.ui;
 
+import com.google.gwt.cell.client.Cell;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.cellview.client.Column;
 import platform.gwt.form2.shared.view.GPropertyDraw;
@@ -62,14 +63,14 @@ public class GSinglePropertyTable extends GPropertyTable {
     }
 
     @Override
-    public void setValueAt(int row, int column, Object value) {
-        assert row == 0 && column == 0;
+    public void setValueAt(Cell.Context context, Object value) {
+        assert context.getIndex() == 0 && context.getColumn() == 0;
         setValue(value);
     }
 
     @Override
-    public Object getValueAt(int row, int column) {
-        assert row == 0 && column == 0;
+    public Object getValueAt(Cell.Context context) {
+        assert context.getIndex() == 0 && context.getColumn() == 0;
         return value;
     }
 }

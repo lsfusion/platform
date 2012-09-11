@@ -1,5 +1,6 @@
 package platform.base;
 
+import com.google.common.base.Throwables;
 import org.apache.commons.codec.binary.Base64;
 
 import java.awt.*;
@@ -2111,6 +2112,14 @@ public class BaseUtils {
         if(nearObject!=null)
             return nearObject.get(findKey);
         return null;
+    }
+
+    public static void sleep(long millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException e) {
+            Throwables.propagate(e);
+        }
     }
 
     private static final char[] randomsymbols = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();

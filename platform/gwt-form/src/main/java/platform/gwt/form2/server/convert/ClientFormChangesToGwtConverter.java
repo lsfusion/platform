@@ -1,6 +1,7 @@
 package platform.gwt.form2.server.convert;
 
 import platform.client.logics.*;
+import platform.gwt.base.shared.GClassViewType;
 import platform.gwt.form2.shared.view.changes.dto.ColorDTO;
 import platform.gwt.utils.GwtSharedUtils;
 import platform.gwt.form2.shared.view.changes.dto.GFormChangesDTO;
@@ -32,7 +33,7 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
         GFormChangesDTO changesDTO = new GFormChangesDTO();
 
         for (Map.Entry<ClientGroupObject, ClassViewType> entry : changes.classViews.entrySet()) {
-            changesDTO.classViews.put(entry.getKey().getID(), entry.getValue().name());
+            changesDTO.classViews.put(entry.getKey().getID(), GClassViewType.valueOf(entry.getValue().name()));
         }
 
         for (Map.Entry<ClientGroupObject, ClientGroupObjectValue> e : changes.objects.entrySet()) {

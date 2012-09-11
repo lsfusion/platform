@@ -1,5 +1,6 @@
 package platform.gwt.form2.shared.view.changes;
 
+import platform.gwt.base.shared.GClassViewType;
 import platform.gwt.form2.shared.view.GForm;
 import platform.gwt.form2.shared.view.GGroupObject;
 import platform.gwt.form2.shared.view.GPropertyDraw;
@@ -14,7 +15,7 @@ import java.util.HashSet;
 import java.util.Map;
 
 public class GFormChanges {
-    public final HashMap<GGroupObject, String> classViews = new HashMap<GGroupObject, String>();
+    public final HashMap<GGroupObject, GClassViewType> classViews = new HashMap<GGroupObject, GClassViewType>();
     public final HashMap<GGroupObject, GGroupObjectValue> objects = new HashMap<GGroupObject, GGroupObjectValue>();
     public final HashMap<GGroupObject, ArrayList<GGroupObjectValue>> gridObjects = new HashMap<GGroupObject, ArrayList<GGroupObjectValue>>();
     public final HashMap<GGroupObject, ArrayList<GGroupObjectValue>> parentObjects = new HashMap<GGroupObject, ArrayList<GGroupObjectValue>>();
@@ -26,7 +27,7 @@ public class GFormChanges {
     public static GFormChanges remap(GForm form, GFormChangesDTO dto) {
         GFormChanges remapped = new GFormChanges();
         
-        for (Map.Entry<Integer, String> e : dto.classViews.entrySet()) {
+        for (Map.Entry<Integer, GClassViewType> e : dto.classViews.entrySet()) {
             remapped.classViews.put(form.getGroupObject(e.getKey()), e.getValue());
         }
         

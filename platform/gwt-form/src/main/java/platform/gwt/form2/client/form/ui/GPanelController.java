@@ -60,7 +60,8 @@ public class GPanelController {
         for (GPropertyDraw property : orderedProperties) {
             if (property.container != null) {
                 PanelRenderer renderer = null;
-                if (!(propertyCaptions.get(property) != null && propertyCaptions.get(property).values().iterator().next() == null)) {
+                //если propertyCaption == null, то элемент должен быть скрыт
+                if (propertyCaptions.get(property) == null || propertyCaptions.get(property).values().iterator().next() != null) {
                     renderer = properties.get(property);
                     if (renderer == null) {
                         renderer = property.createPanelRenderer(form);
@@ -89,7 +90,7 @@ public class GPanelController {
             if (renderer != null) {
                 Map<GGroupObjectValue, Object> caption = propertyCaptions.get(property);
                 if (caption != null) {
-                    String dynamicCaption = property.getDynamicCaption(caption.values().iterator().next().toString());
+                    String dynamicCaption = property.getDynamicCaption(caption.values().iterator().next());
                     renderer.setCaption(dynamicCaption);
                 }
 
@@ -146,5 +147,10 @@ public class GPanelController {
 
     public void updateRowForegroundValue(Object color) {
         rowForeground = color;
+    }
+
+    public void updateColumnKeys(GPropertyDraw property, List<GGroupObjectValue> columnKeys) {
+        //todo:
+
     }
 }

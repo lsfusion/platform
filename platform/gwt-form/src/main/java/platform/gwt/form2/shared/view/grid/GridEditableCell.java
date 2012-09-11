@@ -33,15 +33,32 @@ public class GridEditableCell extends AbstractCell<Object> {
         if (isEditingCell(context)) {
             cellEditor.onBrowserEvent(context, parent, value, event, valueUpdater);
         } else if (editManager.canStartNewEdit()) {
-            String eventType = event.getType();
-            int keyCode = event.getKeyCode();
-            boolean editKeyPress = "keypress".equals(eventType) && keyCode != KeyCodes.KEY_ENTER;
-            if ("dblclick".equals(eventType) || editKeyPress) {
+            if ("dblclick".equals(event.getType()) || isEditKeyEvent(event)) {
                 event.stopPropagation();
                 event.preventDefault();
                 editManager.executePropertyEditAction(this, event, context, parent);
             }
         }
+    }
+
+    private boolean isEditKeyEvent(NativeEvent event) {
+        int keyCode = event.getKeyCode();
+        return "keypress".equals(event.getType())
+                && !event.getCtrlKey()
+                && !event.getAltKey()
+                && !event.getMetaKey()
+                && keyCode != KeyCodes.KEY_ENTER
+                && keyCode != KeyCodes.KEY_ESCAPE
+                && keyCode != KeyCodes.KEY_TAB
+                && keyCode != KeyCodes.KEY_HOME
+                && keyCode != KeyCodes.KEY_END
+                && keyCode != KeyCodes.KEY_PAGEUP
+                && keyCode != KeyCodes.KEY_PAGEDOWN
+                && keyCode != KeyCodes.KEY_LEFT
+                && keyCode != KeyCodes.KEY_RIGHT
+                && keyCode != KeyCodes.KEY_UP
+                && keyCode != KeyCodes.KEY_DOWN
+                ;
     }
 
     public void startEditing(NativeEvent editEvent, final Context context, Element parent, GridCellEditor cellEditor, Object oldValue) {

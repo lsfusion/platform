@@ -11,6 +11,7 @@ import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.safehtml.client.SafeHtmlTemplates;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
+import com.google.gwt.user.client.ui.impl.TextBoxImpl;
 import platform.gwt.form2.shared.view.grid.EditManager;
 
 public abstract class TextFieldGridEditor implements GridCellEditor {
@@ -37,6 +38,8 @@ public abstract class TextFieldGridEditor implements GridCellEditor {
     protected EditManager editManager;
     protected String currentText = "";
 
+    private static TextBoxImpl textBoxImpl = GWT.create(TextBoxImpl.class);
+
     @Override
     public void startEditing(NativeEvent editEvent, Cell.Context context, Element parent, Object oldValue) {
         currentText = oldValue == null ? "" : oldValue.toString();
@@ -48,6 +51,8 @@ public abstract class TextFieldGridEditor implements GridCellEditor {
             }
         }
         inputElement.setValue(currentText);
+        //перемещаем курсор в конец текста
+        textBoxImpl.setSelectionRange((com.google.gwt.user.client.Element) (Element) inputElement, currentText.length() - 1, 1);
         inputElement.focus();
     }
 

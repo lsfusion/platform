@@ -1,11 +1,11 @@
 package platform.gwt.form2.shared.view;
 
+import platform.gwt.form2.shared.view.changes.GGroupObjectValue;
 import platform.gwt.form2.shared.view.reader.GRowBackgroundReader;
 import platform.gwt.form2.shared.view.reader.GRowForegroundReader;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class GGroupObject implements Serializable {
     public List<GObject> objects = new ArrayList<GObject>();
@@ -60,5 +60,29 @@ public class GGroupObject implements Serializable {
         if (parent.groups.size() > 0)
             last = parent.groups.get(parent.groups.size() - 1) == this;
         return parent != null && last;
+    }
+
+    public static List<GGroupObjectValue> mergeGroupValues(LinkedHashMap<GGroupObject, List<GGroupObjectValue>> groupColumnKeys) {
+        if (groupColumnKeys.isEmpty()) {
+            return Arrays.asList(new GGroupObjectValue());
+        } else if (groupColumnKeys.size() == 1) {
+            return groupColumnKeys.values().iterator().next();
+        }
+
+        //находим декартово произведение ключей колонок
+        ArrayList<GGroupObjectValue> propColumnKeys = new ArrayList<GGroupObjectValue>();
+        propColumnKeys.add(new GGroupObjectValue());
+        for (Map.Entry<GGroupObject, List<GGroupObjectValue>> entry : groupColumnKeys.entrySet()) {
+            List<GGroupObjectValue> groupObjectKeys = entry.getValue();
+
+            ArrayList<GGroupObjectValue> newPropColumnKeys = new ArrayList<GGroupObjectValue>();
+            for (GGroupObjectValue propColumnKey : propColumnKeys) {
+                for (GGroupObjectValue groupObjectKey : groupObjectKeys) {
+                    newPropColumnKeys.add(new GGroupObjectValue(propColumnKey, groupObjectKey));
+                }
+            }
+            propColumnKeys = newPropColumnKeys;
+        }
+        return propColumnKeys;
     }
 }

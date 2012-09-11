@@ -56,7 +56,9 @@
         <jcaptcha.version>1.0</jcaptcha.version>
         <validation.api.version>1.0.0.GA</validation.api.version>
 
-        <gwt.version>2.5.0-rc1</gwt.version>
+        <!-- note: gwt jar-ки пропатчены, поэтому нельзя просто поменять эту версию на более новую, нужно сначала перенакатить патч... см. описание в jar-ках  -->
+        <gwt.version>2.5.0-rc1-patched</gwt.version>
+
         <gwt.plugin.version>2.5.0-rc1</gwt.plugin.version>
         <smartgwt.version>3.0p</smartgwt.version>
         <gwt.log.version>3.1.8</gwt.log.version>

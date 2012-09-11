@@ -50,11 +50,11 @@ public abstract class GPropertyTable extends DataGrid implements EditManager, GE
 
     @Override
     public void updateEditValue(Object value) {
-        setValueAt(editContext.getIndex(), editContext.getColumn(), value);
+        setValueAt(editContext, value);
     }
 
-    public abstract void setValueAt(int row, int column, Object value);
-    public abstract Object getValueAt(int row, int column);
+    public abstract void setValueAt(Cell.Context context, Object value);
+    public abstract Object getValueAt(Cell.Context context);
 
     @Override
     public void postDispatchResponse(ServerResponseResult response) {
@@ -75,7 +75,7 @@ public abstract class GPropertyTable extends DataGrid implements EditManager, GE
 
         GPropertyDraw property = getProperty(editContext.getIndex(), editContext.getColumn());
         GGroupObjectValue columnKey = getColumnKey(editContext.getIndex(), editContext.getColumn());
-        Object oldValue = getValueAt(editContext.getIndex(), editContext.getColumn());
+        Object oldValue = getValueAt(editContext);
 
         editDispatcher.executePropertyEditAction(this, property, oldValue, columnKey);
     }
@@ -99,7 +99,7 @@ public abstract class GPropertyTable extends DataGrid implements EditManager, GE
     }
 
     private void clearEditState() {
-        editCell.finishEditing(editContext, editCellParent, getValueAt(editContext.getIndex(), editContext.getColumn()));
+        editCell.finishEditing(editContext, editCellParent, getValueAt(editContext));
 
         editCell = null;
         editContext = null;

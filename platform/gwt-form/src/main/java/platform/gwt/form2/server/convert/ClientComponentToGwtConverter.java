@@ -141,10 +141,19 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.ID = clientPropertyDraw.ID;
         propertyDraw.sID = clientPropertyDraw.getSID();
         propertyDraw.caption = clientPropertyDraw.caption;
+
         propertyDraw.groupObject = convertOrCast(clientPropertyDraw.groupObject);
+        if (!clientPropertyDraw.columnGroupObjects.isEmpty()) {
+            propertyDraw.columnGroupObjects = new ArrayList<GGroupObject>();
+            for (ClientGroupObject clientColumnGroup : clientPropertyDraw.columnGroupObjects) {
+                GGroupObject columnGroup = convertOrCast(clientColumnGroup);
+                propertyDraw.columnGroupObjects.add(columnGroup);
+            }
+        }
 
         propertyDraw.baseType = typeConverter.convertOrCast(clientPropertyDraw.baseType);
         propertyDraw.changeType = typeConverter.convertOrCast(clientPropertyDraw.changeType);
+
         if (clientPropertyDraw.addRemove != null) {
             GObject addRemoveObject = convertOrCast(clientPropertyDraw.addRemove.first);
             propertyDraw.addRemove = new GPropertyDraw.AddRemove(addRemoveObject, clientPropertyDraw.addRemove.second);

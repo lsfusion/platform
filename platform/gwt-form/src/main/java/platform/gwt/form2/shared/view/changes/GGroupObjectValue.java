@@ -4,11 +4,28 @@ import platform.gwt.form2.shared.view.GObject;
 import platform.gwt.form2.shared.view.changes.dto.GGroupObjectValueDTO;
 
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class GGroupObjectValue extends HashMap<GObject, Object> implements Serializable {
+    public static final GGroupObjectValue EMPTY = new GGroupObjectValue() {
+        @Override
+        public void putAll(Map<? extends GObject, ?> m) {
+            throw new UnsupportedOperationException("not supported");
+        }
+
+        @Override
+        public Object put(GObject key, Object value) {
+            throw new UnsupportedOperationException("not supported");
+        }
+
+        @Override
+        public Object remove(Object key) {
+            throw new UnsupportedOperationException("not supported");
+        }
+    };
+
+    public static final List<GGroupObjectValue> SINGLE_EMPTY_KEY_LIST = Arrays.asList(EMPTY);
+
     public GGroupObjectValue(GGroupObjectValue... clones) {
         super();
         for (GGroupObjectValue clone : clones) {

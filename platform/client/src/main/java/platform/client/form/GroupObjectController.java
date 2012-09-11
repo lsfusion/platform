@@ -87,7 +87,7 @@ public class GroupObjectController extends AbstractGroupObjectController {
         {
             if (read instanceof ClientPropertyDraw) {
                 ClientPropertyDraw property = (ClientPropertyDraw) read;
-                if (!fc.updateProperties.contains(property) && property.groupObject == groupObject && property.shouldBeDrawn(form)) {
+                if (property.groupObject == groupObject && property.shouldBeDrawn(form) && !fc.updateProperties.contains(property)) {
                     addDrawProperty(property, fc.panelProperties.contains(property));
 
                     OrderedMap<ClientGroupObject, List<ClientGroupObjectValue>> groupColumnKeys = new OrderedMap<ClientGroupObject, List<ClientGroupObjectValue>>();

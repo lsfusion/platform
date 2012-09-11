@@ -1,6 +1,6 @@
 package platform.client.form;
 
-public interface AsyncView {
+public interface AsyncListener {
 
     void onAsyncStarted();
     void onAsyncFinished();

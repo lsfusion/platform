@@ -1,12 +1,12 @@
 package platform.gwt.form2.client.form.ui;
 
+import com.google.gwt.cell.client.Cell;
 import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.view.client.SelectionChangeEvent;
 import platform.gwt.form2.shared.view.GForm;
 import platform.gwt.form2.shared.view.GGroupObject;
 import platform.gwt.form2.shared.view.GPropertyDraw;
-import platform.gwt.form2.shared.view.GTreeGridRecord;
 import platform.gwt.form2.shared.view.changes.GGroupObjectValue;
 import platform.gwt.form2.shared.view.grid.GridEditableCell;
 
@@ -83,9 +83,8 @@ public class GTreeTable extends GGridPropertyTable {
         return new Column<GTreeGridRecord, Object>(new GridEditableCell(this)) {
             @Override
             public Object getValue(GTreeGridRecord record) {
-                int row = currentRecords.indexOf(record);
                 int column = tree.columnProperties.indexOf(property);
-                return tree.getValue(getRowGroup(row), column, record.key);
+                return tree.getValue(record.getGroup(), column, record.key);
             }
         };
     }
@@ -121,6 +120,7 @@ public class GTreeTable extends GGridPropertyTable {
             restoreVisualState();
 
             currentRecords = tree.getUpdatedRecords();
+            updatePropertyReaders();
             setRowData(currentRecords);
 
             dataUpdated = false;
@@ -137,9 +137,59 @@ public class GTreeTable extends GGridPropertyTable {
             setKeyboardSelectedRow(currentInd, false);
         }
 
-        updatePropertyReaders();
-
         updateHeader();
+    }
+
+    protected void updatePropertyReaders() {
+        if (currentRecords != null &&
+                //раскраска в дереве - редкое явление, поэтому сразу проверяем есть ли она
+                (rowBackgroundValues.size() != 0 || rowForegroundValues.size() != 0 || cellBackgroundValues.size() != 0 || cellForegroundValues.size() != 0)) {
+            for (GridDataRecord record : currentRecords) {
+                GGroupObjectValue key = record.key;
+
+                Object rBackground = rowBackgroundValues.get(key);
+                Object rForeground = rowForegroundValues.get(key);
+
+                List<GPropertyDraw> columnProperties = getColumnProperties();
+                for (int j = 0; j < columnProperties.size(); j++) {
+                    GPropertyDraw property = columnProperties.get(j);
+
+                    Object background = rBackground;
+                    if (background == null) {
+                        Map<GGroupObjectValue, Object> propBackgrounds = cellBackgroundValues.get(property);
+                        if (propBackgrounds != null) {
+                            background = propBackgrounds.get(key);
+                        }
+                    }
+
+                    Object foreground = rForeground;
+                    if (foreground == null) {
+                        Map<GGroupObjectValue, Object> propForegrounds = cellForegroundValues.get(property);
+                        if (propForegrounds != null) {
+                            foreground = propForegrounds.get(key);
+                        }
+                    }
+
+                    record.setBackground(j + 1, background);
+                    record.setForeground(j + 1, foreground);
+                }
+            }
+        }
+    }
+
+    protected void updateHeader() {
+        boolean needsHeaderRefresh = false;
+        for (GPropertyDraw property : getColumnProperties()) {
+            Map<GGroupObjectValue, Object> captions = propertyCaptions.get(property);
+            if (captions != null) {
+                Object value = captions.values().iterator().next();
+                headers.get(getColumnIndex(property)).setCaption(value == null ? "" : value.toString().trim());
+                needsHeaderRefresh = true;
+            }
+        }
+        if (needsHeaderRefresh) {
+            redrawHeaders();
+        }
     }
 
     public void fireExpandNode(GTreeGridRecord record) {
@@ -202,18 +252,27 @@ public class GTreeTable extends GGridPropertyTable {
     }
 
     @Override
+    public void setValueAt(Cell.Context context, Object value) {
+        int row = context.getIndex();
+        int column = context.getColumn();
+
+        GridDataRecord rowRecord = (GridDataRecord) context.getKey();
+
+        GPropertyDraw property = getProperty(row, column);
+        rowRecord.setAttribute(property.sID, value);
+
+        tree.putValue(property, rowRecord.key, value);
+
+
+        setRowData(row, Arrays.asList(rowRecord));
+    }
+
     public List<GPropertyDraw> getColumnProperties() {
         return tree.columnProperties;
     }
 
-    @Override
-    public void putValue(int row, int column, Object value) {
-        tree.putValue(getProperty(row, column), getColumnKey(row, column), value);
-    }
-
-    @Override
     public int getColumnIndex(GPropertyDraw property) {
-        return super.getColumnIndex(property) + 1;
+        return getColumnProperties().indexOf(property) + 1;
     }
 
     private GGroupObject getRowGroup(int row) {
@@ -221,8 +280,9 @@ public class GTreeTable extends GGridPropertyTable {
     }
 
     @Override
-    public Object getValueAt(int row, int column) {
-        return tree.getValue(getRowGroup(row), column - 1, getColumnKey(row, column));
+    public Object getValueAt(Cell.Context context) {
+        GTreeGridRecord record = (GTreeGridRecord) context.getKey();
+        return tree.getValue(record.getGroup(), context.getColumn() - 1, record.key);
     }
 
     @Override

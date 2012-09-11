@@ -46,4 +46,14 @@ public class GwtSharedUtils {
             keyValues.put(key, values);
         }
     }
+
+    public static <T> boolean containsAny(Collection<T> collection, Collection<T> contained) {
+        for (T obj : contained) {
+            if (collection.contains(obj)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

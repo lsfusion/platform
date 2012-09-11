@@ -2,7 +2,6 @@ package platform.gwt.form2.client.form.ui;
 
 import com.google.gwt.view.client.SelectionChangeEvent;
 import com.google.gwt.view.client.SelectionModel;
-import platform.gwt.form2.shared.view.GridDataRecord;
 
 /**
  * c/p from com.google.gwt.view.client.SingleSelectionModel

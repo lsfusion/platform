@@ -11,7 +11,6 @@ import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.safehtml.shared.SafeUri;
 import com.google.gwt.safehtml.shared.UriUtils;
 import com.google.gwt.user.client.DOM;
-import platform.gwt.form2.shared.view.GTreeGridRecord;
 
 public class GTreeGridControlCell extends AbstractCell<Object> {
     private GTreeTable treeTable;

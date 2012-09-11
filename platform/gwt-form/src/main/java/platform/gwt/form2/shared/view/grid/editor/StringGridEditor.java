@@ -9,6 +9,6 @@ public class StringGridEditor extends TextFieldGridEditor {
 
     @Override
     protected Object tryParseInputText(String inputText) {
-        return inputText;
+        return inputText.isEmpty() ? null : inputText;
     }
 }

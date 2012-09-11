@@ -25,15 +25,15 @@ public class RmiQueue {
 
     private final TableManager tableManager;
     private final Provider<String> serverMessageProvider;
-    private final AsyncView asyncView;
+    private final AsyncListener asyncListener;
     private boolean asyncStarted = false;
 
     private long nextRmiRequestIndex = 0;
 
-    public RmiQueue(TableManager tableManager, Provider<String> serverMessageProvider, AsyncView asyncView) {
+    public RmiQueue(TableManager tableManager, Provider<String> serverMessageProvider, AsyncListener asyncListener) {
         this.serverMessageProvider = serverMessageProvider;
         this.tableManager = tableManager;
-        this.asyncView = asyncView;
+        this.asyncListener = asyncListener;
     }
 
     public <T> void asyncRequest(RmiRequest<T> request) {
@@ -77,7 +77,7 @@ public class RmiQueue {
 
             if(!asyncStarted) {
                 asyncStarted = true;
-                asyncView.onAsyncStarted();
+                asyncListener.onAsyncStarted();
             }
         } else {
             forceProcessAllRequests();
@@ -170,7 +170,7 @@ public class RmiQueue {
 
         if(rmiFutures.isEmpty() && asyncStarted) {
             asyncStarted = false;
-            asyncView.onAsyncFinished();
+            asyncListener.onAsyncFinished();
         }
     }
 

@@ -1,28 +1,33 @@
 package platform.gwt.form2.client.form.ui;
 
 import com.allen_sauer.gwt.log.client.Log;
+import com.google.gwt.cell.client.Cell;
 import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.view.client.SelectionChangeEvent;
 import platform.gwt.form2.shared.view.GGroupObject;
 import platform.gwt.form2.shared.view.GPropertyDraw;
-import platform.gwt.form2.shared.view.GridDataRecord;
 import platform.gwt.form2.shared.view.changes.GGroupObjectValue;
 import platform.gwt.form2.shared.view.grid.GridEditableCell;
 import platform.gwt.utils.GwtSharedUtils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class GGridTable extends GGridPropertyTable {
 
-    public ArrayList<GPropertyDraw> properties = new ArrayList<GPropertyDraw>();
+    private ArrayList<GPropertyDraw> columnProperties = new ArrayList<GPropertyDraw>();
+    private ArrayList<GGroupObjectValue> columnKeysList = new ArrayList<GGroupObjectValue>();
 
-    public ArrayList<GGroupObjectValue> keys = new ArrayList<GGroupObjectValue>();
-    public HashMap<GPropertyDraw, Map<GGroupObjectValue, Object>> values = new HashMap<GPropertyDraw, Map<GGroupObjectValue, Object>>();
+    private ArrayList<GPropertyDraw> properties = new ArrayList<GPropertyDraw>();
 
+    private ArrayList<GGroupObjectValue> rowKeys = new ArrayList<GGroupObjectValue>();
+
+    private Map<GPropertyDraw, Map<GGroupObjectValue, Object>> values = new HashMap<GPropertyDraw, Map<GGroupObjectValue, Object>>();
+    private Map<GPropertyDraw, List<GGroupObjectValue>> columnKeys = new HashMap<GPropertyDraw, List<GGroupObjectValue>>();
+
+    private boolean columnsUpdated = false;
+
+    private ArrayList<GridDataRecord> currentRecords;
     private GGroupObjectValue currentKey;
     private GGroupObject groupObject;
 
@@ -41,6 +46,8 @@ public class GGridTable extends GGridPropertyTable {
                 }
             }
         });
+
+        setKeyboardSelectionPolicy(KeyboardSelectionPolicy.BOUND_TO_SELECTION);
     }
 
     public void removeProperty(GPropertyDraw property) {
@@ -48,13 +55,10 @@ public class GGridTable extends GGridPropertyTable {
             return;
         }
 
-        int removeIndex = properties.indexOf(property);
-
-        dataUpdated = true;
         values.remove(property);
-        properties.remove(removeIndex);
+        properties.remove(property);
 
-        removeColumn(removeIndex);
+        columnsUpdated = true;
     }
 
     public void addProperty(final GPropertyDraw property) {
@@ -65,23 +69,104 @@ public class GGridTable extends GGridPropertyTable {
         int newColumnIndex = GwtSharedUtils.relativePosition(property, form.getPropertyDraws(), properties);
         properties.add(newColumnIndex, property);
 
-        GridHeader header = new GridHeader(property.getCaptionOrEmpty());
-        headers.add(newColumnIndex, header);
-
-        Column<GridDataRecord, Object> gridColumn = createGridColumn(property);
-        insertColumn(newColumnIndex, gridColumn, header);
-        setColumnWidth(gridColumn, "150px");
-
-        dataUpdated = true;
+        columnsUpdated = true;
     }
 
-    private Column<GridDataRecord, Object> createGridColumn(final GPropertyDraw property) {
-        return new Column<GridDataRecord, Object>(new GridEditableCell(this)) {
-            @Override
-            public Object getValue(GridDataRecord record) {
-                return record.getAttribute(property);
+    public void update() {
+        GridDataRecord selectedRecord = selectionModel.getSelectedRecord();
+
+        int oldKeyScrollTop = 0;
+        GGroupObjectValue oldKey = null;
+        if (selectedRecord != null) {
+            oldKey = selectedRecord.key;
+            TableRowElement rowElement = getRowElement(selectedRecord.rowIndex);
+            oldKeyScrollTop = rowElement.getAbsoluteTop() - getScrollPanel().getAbsoluteTop();
+        }
+
+        updatedColumnsIfNeeded();
+
+        if (dataUpdated) {
+            currentRecords = GridDataRecord.createRecords(columnProperties, rowKeys, columnKeysList, values, rowBackgroundValues, rowForegroundValues, cellBackgroundValues, cellForegroundValues);
+            setRowData(currentRecords);
+            dataUpdated = false;
+        }
+
+        int currentInd = currentKey == null ? -1 : rowKeys.indexOf(currentKey);
+        if (currentInd != -1) {
+            //сразу ресолвим, чтобы избежать бага в DataGrid с неперерисовкой строк... (т.о. убираем рекурсивный resolvePendingState())
+            selectionModel.setSelectedAndResolve(currentRecords.get(currentInd), true);
+            setKeyboardSelectedRow(currentInd, false);
+            if (currentKey.equals(oldKey)) {
+                scrollRowToVerticalPosition(currentInd, oldKeyScrollTop);
+            } else {
+                getRowElement(currentInd).scrollIntoView();
             }
-        };
+        }
+    }
+
+    private void updatedColumnsIfNeeded() {
+        if (columnsUpdated) {
+            columnProperties.clear();
+            columnKeysList.clear();
+
+            List<String> columnCaptions = new ArrayList<String>();
+
+            for (GPropertyDraw property : properties) {
+                List<GGroupObjectValue> propertyColumnKeys = columnKeys.get(property);
+                if (propertyColumnKeys == null) {
+                    propertyColumnKeys = GGroupObjectValue.SINGLE_EMPTY_KEY_LIST;
+                }
+
+                Map<GGroupObjectValue, Object> propCaptions = propertyCaptions.get(property);
+
+                for (GGroupObjectValue columnKey : propertyColumnKeys) {
+                    Object propCaption = null;
+                    if (propCaptions == null || (propCaption = propCaptions.get(columnKey)) != null) {
+                        columnProperties.add(property);
+                        columnKeysList.add(columnKey);
+                        if (propCaptions != null) {
+                            columnCaptions.add(property.getDynamicCaption(propCaption));
+                        } else {
+                            columnCaptions.add(property.getCaptionOrEmpty());
+                        }
+                    }
+                }
+            }
+
+            int columnDiff = getColumnCount() - columnProperties.size();
+
+            for (int i = 0; i < Math.abs(columnDiff); ++i) {
+                if (columnDiff < 0) {
+                    GridHeader header = new GridHeader();
+                    headers.add(getColumnCount(), header);
+
+                    GridColumn gridColumn = new GridColumn(getColumnCount());
+                    addColumn(gridColumn, header);
+                    setColumnWidth(gridColumn, "150px");
+                } else {
+                    headers.remove(getColumnCount() - 1);
+                    removeColumn(getColumnCount() - 1);
+                }
+            }
+
+            if (columnDiff > 0) {
+                refreshColumnWidths();
+            }
+
+            for (int i = 0; i < columnProperties.size(); ++i) {
+                GridHeader header = headers.get(i);
+                header.setCaption(columnCaptions.get(i));
+            }
+
+            redraw();
+
+            columnsUpdated = false;
+            dataUpdated = true;
+        }
+    }
+
+    public boolean isEmpty() {
+        return values.isEmpty() || properties.isEmpty();
     }
 
     public GGroupObjectValue getCurrentKey() {
@@ -94,87 +179,49 @@ public class GGridTable extends GGridPropertyTable {
     }
 
     public void setKeys(ArrayList<GGroupObjectValue> keys) {
+        this.rowKeys = keys;
         dataUpdated = true;
-        this.keys = keys;
     }
 
-    public void setPropertyValues(GPropertyDraw property, Map<GGroupObjectValue, Object> propValues, boolean updateKeys) {
+    public void updatePropertyValues(GPropertyDraw property, Map<GGroupObjectValue, Object> propValues, boolean updateKeys) {
         if (propValues != null) {
-            dataUpdated = true;
             GwtSharedUtils.putUpdate(values, property, propValues, updateKeys);
+            dataUpdated = true;
         }
     }
 
-    public void update() {
-        GridDataRecord selectedRecord = selectionModel.getSelectedRecord();
-
-        int oldKeyScrollTop = 0;
-        GGroupObjectValue oldKey = null;
-        if (selectedRecord != null) {
-            int oldKeyInd = currentRecords.indexOf(selectedRecord);
-
-            if (oldKeyInd != -1) {
-                oldKey = selectedRecord.key;
-                TableRowElement rowElement = getRowElement(oldKeyInd);
-                oldKeyScrollTop = rowElement.getAbsoluteTop() - getScrollPanel().getAbsoluteTop();
-            }
+    public void updateColumnKeys(GPropertyDraw property, List<GGroupObjectValue> columnKeys) {
+        if (columnKeys != null) {
+            this.columnKeys.put(property, columnKeys);
+            columnsUpdated = true;
         }
-
-        if (dataUpdated) {
-            currentRecords = GridDataRecord.createRecords(keys, values);
-            setRowData(currentRecords);
-            dataUpdated = false;
-        }
-
-        int currentInd = currentKey == null ? -1 : keys.indexOf(currentKey);
-        if (currentInd != -1) {
-            //сразу ресолвим, чтобы избежать бага в DataGrid с неперерисовкой строк... (т.о. убираем рекурсивный resolvePendingState())
-            selectionModel.setSelectedAndResolve(currentRecords.get(currentInd), true);
-            setKeyboardSelectedRow(currentInd, false);
-            if (currentKey.equals(oldKey)) {
-                scrollRowToVerticalPosition(currentInd, oldKeyScrollTop);
-            } else {
-                getRowElement(currentInd).scrollIntoView();
-            }
-        }
-
-        updatePropertyReaders();
-
-        updateHeader();
-    }
-
-    public boolean isEmpty() {
-        return values.isEmpty() || properties.isEmpty();
-    }
-
-    public GPropertyDraw getProperty(int row, int column) {
-        return properties.get(column);
     }
 
     @Override
-    public GGroupObjectValue getColumnKey(int row, int column) {
-        return keys.get(row);
+    public void updatePropertyCaptions(GPropertyDraw propertyDraw, Map<GGroupObjectValue, Object> values) {
+        super.updatePropertyCaptions(propertyDraw, values);
+        columnsUpdated = true;
     }
 
-    public Object getValueAt(int row, int column) {
-        return currentRecords.get(row).getAttribute(getProperty(row, column));
+    public GPropertyDraw getProperty(int row, int column) {
+        return columnProperties.get(column);
     }
 
     public void modifyGroupObject(GGroupObjectValue rowKey, boolean add) {
         if (add) {
-            keys.add(rowKey);
+            rowKeys.add(rowKey);
             setCurrentKey(rowKey);
         } else {
-            if (currentKey.equals(rowKey) && keys.size() > 0) {
-                if (keys.size() == 1) {
+            if (currentKey.equals(rowKey) && rowKeys.size() > 0) {
+                if (rowKeys.size() == 1) {
                     setCurrentKey(null);
                 } else {
-                    int index = keys.indexOf(rowKey);
-                    index = index == keys.size() - 1 ? index - 1 : index + 1;
-                    setCurrentKey(keys.get(index));
+                    int index = rowKeys.indexOf(rowKey);
+                    index = index == rowKeys.size() - 1 ? index - 1 : index + 1;
+                    setCurrentKey(rowKeys.get(index));
                 }
             }
-            keys.remove(rowKey);
+            rowKeys.remove(rowKey);
         }
         dataUpdated = true;
 
@@ -182,12 +229,33 @@ public class GGridTable extends GGridPropertyTable {
     }
 
     @Override
-    public List<GPropertyDraw> getColumnProperties() {
-        return properties;
+    public GGroupObjectValue getColumnKey(int row, int column) {
+        return columnKeysList.get(column);
     }
 
-    @Override
-    public void putValue(int row, int column, Object value) {
-        values.get(getProperty(row, column)).put(getColumnKey(row, column), value);
+    public Object getValueAt(Cell.Context context) {
+        GridDataRecord record = (GridDataRecord) context.getKey();
+        return record.getValue(context.getColumn());
+    }
+
+    public void setValueAt(Cell.Context context, Object value) {
+        GridDataRecord rowRecord = (GridDataRecord) context.getKey();
+        rowRecord.setValue(context.getColumn(), value);
+
+        setRowData(context.getIndex(), Arrays.asList(rowRecord));
+    }
+
+    private class GridColumn extends Column<GridDataRecord, Object> {
+        private final int column;
+
+        public GridColumn(int column) {
+            super(new GridEditableCell(GGridTable.this));
+            this.column = column;
+        }
+
+        @Override
+        public Object getValue(GridDataRecord record) {
+            return record.getValue(column);
+        }
     }
 }

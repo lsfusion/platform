@@ -50,7 +50,7 @@ public class PropertyController {
         }
 
         if(key.drawAsync)
-            form.drawAsync = view;
+            form.setAsyncView(view);
 
         if (key.editKey != null) {
             form.getComponent().addKeyBinding(key.editKey, key.groupObject, new KeyAdapter() {
