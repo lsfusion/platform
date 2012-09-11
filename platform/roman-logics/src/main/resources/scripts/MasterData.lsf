@@ -72,11 +72,16 @@ syncBarcodeSku 'Синхронизировать штрих-код' (sku) = ACTI
 
 WHEN CHANGED(barcode(sku) AND sku IS RomanLogicsModule.sku) DO EXEC syncBarcodeSku(sku);
 
-EXTEND FORM migration
+EXTEND FORM migrationData
     OBJECTS s = sku
     PROPERTIES(s) READONLY nameSku
     PROPERTIES(s) syncBarcodeSku
 ;
+EXTEND DESIGN migrationData {
+    pane {
+        ADD s.box;
+    }
+}
 
 // ---------------------------------- Формы изменения атрибутов ------------------------------------- //
 @defineHierarchy(category);
@@ -417,3 +422,25 @@ EXTEND FORM options
                  sidTypeDutyNDS, nameTypeDutyNDS,
                  sidTypeDutyRegistration, nameTypeDutyRegistration
 ;
+EXTEND DESIGN options {
+    commons {
+        ADD PROPERTY(barcodePrefix);
+        ADD PROPERTY(nameDictionaryComposition);
+        ADD PROPERTY(nameDictionaryName);
+        ADD PROPERTY(nameTypeExchangeSTX);
+        ADD PROPERTY(nameTypeExchangeCustom);
+        ADD PROPERTY(nameTypeExchangePayCustom);
+        ADD PROPERTY(nameTypeExchangePayManagerial);
+        ADD PROPERTY(nameCurrencyPayFreights);
+        ADD PROPERTY(nameCurrencyCustom);
+        ADD PROPERTY(NDSPercentCustom);
+        ADD PROPERTY(percentCostFreights);
+        ADD PROPERTY(tariffVolumeFreights);
+        ADD PROPERTY(sidTypeDutyDuty);
+        ADD PROPERTY(nameTypeDutyDuty);
+        ADD PROPERTY(sidTypeDutyNDS);
+        ADD PROPERTY(nameTypeDutyNDS);
+        ADD PROPERTY(sidTypeDutyRegistration);
+        ADD PROPERTY(nameTypeDutyRegistration);
+    }
+}

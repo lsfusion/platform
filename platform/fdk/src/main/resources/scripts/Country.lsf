@@ -8,6 +8,11 @@ REQUIRE System, DefaultData, I18n;
 EXTEND FORM options
     PROPERTIES() nameDefaultCountry
 ;
+EXTEND DESIGN options {
+    commons {
+        ADD PROPERTY(nameDefaultCountry);
+    }
+}
 
 languageCountry = DATA language (country);
 nameLanguageCountry 'Язык' (country) = name(languageCountry(country)) MINCHARWIDTH 5 PREFCHARWIDTH 10 MAXCHARWIDTH 15;

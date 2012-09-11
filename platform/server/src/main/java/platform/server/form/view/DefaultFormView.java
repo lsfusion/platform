@@ -51,7 +51,7 @@ public class DefaultFormView extends FormView {
     public ContainerView getGroupObjectContainer(GroupObjectView groupObject) { return groupContainers.get(groupObject); }
     public ContainerView getGroupObjectContainer(GroupObjectEntity groupObject) { return getGroupObjectContainer(get(groupObject)); }
 
-    protected ContainerView formButtonContainer;
+    public ContainerView formButtonContainer;
 
     private ContainerFactory<ContainerView> containerFactory = new ContainerFactory<ContainerView>() {
         public ContainerView createContainer() {

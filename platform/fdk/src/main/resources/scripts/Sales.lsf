@@ -67,6 +67,12 @@ calcCurrentQuantitySoldInterval 'Пересчитать однодневные �
 EXTEND FORM options
     PROPERTIES() skuStockAverageInterval, calcCurrentQuantitySoldInterval
 ;
+EXTEND DESIGN options {
+    commons {
+        ADD PROPERTY(skuStockAverageInterval);
+        ADD PROPERTY(calcCurrentQuantitySoldInterval);
+    }
+}
 
 //---------------------------------------------- Формы продаж -------------------------------------//
 

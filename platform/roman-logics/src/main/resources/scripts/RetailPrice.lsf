@@ -85,6 +85,11 @@ maxDateTime 'Максимальная дата' = DATA DATETIME();
 EXTEND FORM options
      PROPERTIES() maxDateTime
 ;
+EXTEND DESIGN options {
+    commons {
+        ADD PROPERTY(maxDateTime);
+    }
+}
 dateTimeToPriceSetDocument 'Дата/время окончания' (priceSetDocument) = UNION OVERRIDE maxDateTime() IF priceSetDocument IS priceSetDocument,
                                                                                             dateTimeToDataPriceSetDocument(priceSetDocument) IN baseGroup PERSISTENT;
 

@@ -176,9 +176,15 @@ createCustomsZone 'Задать таможенную зону и связать 
     }
 } CONFIRM;
 
-EXTEND FORM migration
+EXTEND FORM migrationData
     PROPERTIES() toSetRangeCustomCategories10, createCustomsZone
 ;
+EXTEND DESIGN migrationData {
+    commons {
+        ADD PROPERTY(toSetRangeCustomCategories10);
+        ADD PROPERTY(createCustomsZone);
+    }
+}
 
 FORM customCategoryZones 'ТН ВЭД (зональный)'
 

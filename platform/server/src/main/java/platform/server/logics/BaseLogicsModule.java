@@ -1545,8 +1545,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         applicationElement = addNavigatorElement(adminElement, "applicationElement", getString("logics.administration.application"));
         addFormEntity(new OptionsFormEntity(applicationElement, "options"));
-        addFormEntity(new IntegrationFormEntity(applicationElement, "integration"));
-        addFormEntity(new MigrationFormEntity(applicationElement, "migration"));
+        addFormEntity(new IntegrationDataFormEntity(applicationElement, "integrationData"));
+        addFormEntity(new MigrationDataFormEntity(applicationElement, "migrationData"));
 
         catalogElement = addNavigatorElement(adminElement, "catalogElement", getString("logics.administration.catalogs"));
         addFormEntity(new DaysOffFormEntity(catalogElement, "daysOffForm"));
@@ -2478,21 +2478,44 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
     }
 
-    private class OptionsFormEntity extends FormEntity {
+    private class ApplicationFormEntity extends FormEntity {
+        public ApplicationFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
+        }
+
+        @Override
+        public FormView createDefaultRichDesign() {
+            DefaultFormView design = (DefaultFormView)super.createDefaultRichDesign();
+
+            ContainerView pane = design.createContainer(null, null, "pane");
+            pane.setType(ContainerType.TABBED_PANE);
+
+            pane.constraints.fillVertical = 1.0;
+            pane.constraints.fillHorizontal = 1.0;
+
+            design.mainContainer.addBefore(pane, design.formButtonContainer);
+
+            pane.add(design.createContainer(getString("logics.application.commons"), null, "commons"));
+
+            return design;
+        }
+    }
+
+    private class OptionsFormEntity extends ApplicationFormEntity {
         private OptionsFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, getString("logics.application.options"));
         }
     }
 
-    private class IntegrationFormEntity extends FormEntity {
-        private IntegrationFormEntity(NavigatorElement parent, String sID) {
-            super(parent, sID, getString("logics.application.integration"));
+    private class IntegrationDataFormEntity extends ApplicationFormEntity {
+        private IntegrationDataFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, getString("logics.application.integrationData"));
         }
     }
 
-    private class MigrationFormEntity extends FormEntity {
-        private MigrationFormEntity(NavigatorElement parent, String sID) {
-            super(parent, sID, getString("logics.application.migration"));
+    private class MigrationDataFormEntity extends ApplicationFormEntity {
+        private MigrationDataFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, getString("logics.application.migrationData"));
         }
     }
 
