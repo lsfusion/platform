@@ -38,6 +38,23 @@ nameCountryOfOriginLanguageFreightSku 'Страна (иностр.)' (freight, s
 
 nameCategoryFreightLanguageSku 'Номенклатурная группа (иностр.)' (freight, sku) = nameCategoryArticleSkuLanguage(sku, languageFreight(freight));
 
+CONSTRAINT customsZoneFreight(freight) != customsZoneCustomCategory10(customCategory10SkuFreight(sku, freight))
+    CHECKED BY customCategory10SkuFreight
+    MESSAGE 'ТН ВЭД для другой таможенной зоны';
+
+customCategory10LanguageFreightSku = DATA customCategory10(freight, sku);
+sidCustomCategory10LanguageFreightSku 'ТН ВЭД (иностр.)' (freight, sku) = sidCustomCategory10(customCategory10LanguageFreightSku(freight, sku));
+
+customCategory10LanguageFreightSku(freight, sku) <- customCategory10SkuFreight(sku, freight) WHEN ASSIGNED (freight IS freightChanged);
+
+CONSTRAINT customsZoneFreight(freight) != customsZoneCustomCategory10(customCategory10LanguageFreightSku(freight, sku))
+    CHECKED BY customCategory10LanguageFreightSku
+    MESSAGE 'ТН ВЭД для другой таможенной зоны';
+
+CONSTRAINT customsZoneFreight(freight) != customsZoneCustomCategory10(customCategory10CategoryGenderCompositionTypeFabricFreight(category, gender, composition, typeFabric, freight))
+    CHECKED BY customCategory10CategoryGenderCompositionTypeFabricFreight
+    MESSAGE 'ТН ВЭД для другой таможенной зоны';
+
 META dateFreight (object, caption)
 
     FORM date###object caption
@@ -154,14 +171,16 @@ EXTEND FORM freightChangeForm
                               nameCountryLanguageFreightSku  AFTER nameCountrySku(sku) SHOWIF languageFreight(freight)
 
     PROPERTIES (sku) mainCompositionOriginSku, translationMainCompositionSku, mainCompositionSku
-    PROPERTIES (sku, freight) translationMainCompositionSkuFreight SHOWIF languageFreight(freight)
+    PROPERTIES (sku, freight) sidCustomCategory10SkuFreight BEFORE nameCountrySku(sku) SHOWIF languageFreight(freight),
+                              translationMainCompositionSkuFreight SHOWIF languageFreight(freight)
     PROPERTIES (sku, freight) mainCompositionSkuFreight ON CHANGE EXEC changeMainCompositionSkuLanguage(sku, freight) SHOWIF languageFreight(freight)
 
     PROPERTIES (sku) additionalCompositionOriginSku, translationAdditionalCompositionSku, additionalCompositionSku
     PROPERTIES (sku, freight) translationAdditionalCompositionSkuFreight SHOWIF languageFreight(freight)
     PROPERTIES (sku, freight) additionalCompositionSkuFreight ON CHANGE EXEC changeAdditionalCompositionSkuLanguage(sku, freight) SHOWIF languageFreight(freight)
 
-    PROPERTIES (freight, skuFreight) mainCompositionOriginFreightSku, translationMainCompositionFreightSku, mainCompositionFreightSku,
+    PROPERTIES (freight, skuFreight) sidCustomCategory10LanguageFreightSku BEFORE nameCountryOfOriginFreightSku SHOWIF languageFreight(freight),
+                                     mainCompositionOriginFreightSku, translationMainCompositionFreightSku, mainCompositionFreightSku,
                                      translationMainCompositionLanguageFreightSku SHOWIF languageFreight(freight),
                                      mainCompositionLanguageFreightSku SHOWIF languageFreight(freight),
 

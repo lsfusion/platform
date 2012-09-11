@@ -1083,6 +1083,8 @@ public class RomanLogicsModule extends LogicsModule {
     private LCP customCategory10CategoryGenderCompositionTypeFabric;
     public LCP customCategory10CategoryGenderCompositionTypeFabricCustomsZone;
     private LCP sidCustomCategory10CategoryGenderCompositionTypeFabricCustomsZone;
+    private LCP customCategory10CategoryGenderCompositionTypeFabricFreight;
+    private LCP sidCustomCategory10CategoryGenderCompositionTypeFabricFreight;
     private LCP customCategory10CategoryGenderCompositionTypeFabricSkuCustomsZone;
     private LCP sidCustomCategory10CategoryGenderCompositionTypeFabric;
     private LCP customCategory10CategoryGenderCompositionTypeFabricSku;
@@ -3188,6 +3190,9 @@ public class RomanLogicsModule extends LogicsModule {
         translationMainCompositionSkuFreight = addJoinAProp("translationMainCompositionSkuFreight", "Перевод", translationMainCompositionSkuLanguage, 1, languageFreight, 2);
         translationAdditionalCompositionSkuFreight = addJoinAProp("translationAdditionalCompositionSkuFreight", "Перевод", translationAdditionalCompositionSkuLanguage, 1, languageFreight, 2);
 
+        customCategory10CategoryGenderCompositionTypeFabricFreight = addJProp(true, "customCategory10CategoryGenderCompositionTypeFabricFreight", "ТН ВЭД (ИД)", customCategory10CategoryGenderCompositionTypeFabricCustomsZone, 1, 2, 3, 4, customsZoneFreight, 5);
+        sidCustomCategory10CategoryGenderCompositionTypeFabricFreight = addJProp("sidCustomCategory10CategoryGenderCompositionTypeFabricFreight", "ТН ВЭД (иностр.)", sidCustomCategory10, customCategory10CategoryGenderCompositionTypeFabricFreight, 1, 2, 3, 4, 5);
+
         dictionaryFreight = addJProp("dictionaryFreight", "Словарь", BL.I18n.getLCPByName("dictionaryCompositionLanguage"), languageFreight, 1);
 
         dateImporterFreightTypeInvoice = addDProp(baseGroup, "dateImporterFreightTypeInvoice", "Дата инвойса", DateClass.instance, importer, freight, typeInvoice);
@@ -3308,16 +3313,16 @@ public class RomanLogicsModule extends LogicsModule {
         customCategoryOriginFreightSku = addDProp(idGroup, "customCategoryOriginFreightSku", "ТН ВЭД (ИД)", customCategoryOrigin, freight, sku);
         customCategoryOriginFreightSku.setEventChangeNewSet(addJProp(baseLM.and1, customCategoryOriginArticleSku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
         sidCustomCategoryOriginFreightSku = addJProp(baseGroup, "sidCustomCategoryOriginFreightSku", "ТН ВЭД (ориг.)", sidCustomCategoryOrigin, customCategoryOriginFreightSku, 1, 2);
-        addConstraint(addJProp("Зона ТН ВЭД должна совпадать с зоной фрахта", baseLM.diff2,
-                customsZoneFreight, 1, addJProp(customsZoneCustomCategory10, customCategory10FreightSku, 1, 2), 1, 2), true);
+        //addConstraint(addJProp("Зона ТН ВЭД должна совпадать с зоной фрахта", baseLM.diff2,
+        //        customsZoneFreight, 1, addJProp(customsZoneCustomCategory10, customCategory10FreightSku, 1, 2), 1, 2), true);
 
         customCategory10DataSkuCustomsZone = addDProp("customCategory10DataSkuCustomsZone", "ТН ВЭД (ИД)", customCategory10, sku, customsZone);
         customCategory10SkuCustomsZone = addSUProp("customCategory10SkuCustomsZone", "ТН ВЭД (ИД)", Union.OVERRIDE, customCategory10CategoryGenderCompositionTypeFabricSkuCustomsZone, customCategory10DataSkuCustomsZone);
 
         customCategory10SkuFreight = addJProp(true, "customCategory10SkuFreight", "ТН ВЭД (ИД)", customCategory10SkuCustomsZone, 1, customsZoneFreight, 2);
-        sidCustomCategory10SkuFreight = addJProp("sidCustomCategory10SkuFreight", "ТН ВЭД", sidCustomCategory10, customCategory10SkuFreight, 1, 2);
-        addConstraint(addJProp("Зона ТН ВЭД должна совпадать с зоной фрахта", baseLM.diff2,
-                customsZoneFreight, 1, addJProp(customsZoneCustomCategory10, customCategory10SkuFreight, 2, 1), 1, 2), true);
+        sidCustomCategory10SkuFreight = addJProp("sidCustomCategory10SkuFreight", "ТН ВЭД (иностр.)", sidCustomCategory10, customCategory10SkuFreight, 1, 2);
+        //addConstraint(addJProp("Зона ТН ВЭД должна совпадать с зоной фрахта", baseLM.diff2,
+        //        customsZoneFreight, 1, addJProp(customsZoneCustomCategory10, customCategory10SkuFreight, 2, 1), 1, 2), true);
 
         quantityProxyImporterFreightCustomCategory6Category = addSGProp(baseGroup, "quantityProxyImporterFreightCustomCategory6Category", "Кол-во", quantityProxyImporterFreightSku, 1, 2, customCategory6FreightSku, 2, 3, categoryArticleSku, 3);
         quantityProxyImporterFreightCustomCategory6 = addSGProp(baseGroup, "quantityProxyImporterFreightCustomCategory6", "Кол-во", quantityProxyImporterFreightSku, 1, 2, customCategory6FreightSku, 2, 3);
@@ -6318,16 +6323,14 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(objComposition, baseLM.objectValue);
             addPropertyDraw(objTypeFabric, baseLM.name);
             addPropertyDraw(sidCustomCategory10CategoryGenderCompositionTypeFabric, objCategory2, objGender, objComposition, objTypeFabric);
+            addPropertyDraw(sidCustomCategory10CategoryGenderCompositionTypeFabricFreight, objCategory2, objGender, objComposition, objTypeFabric, objFreight);
             addPropertyDraw(quantityFreightCategoryGenderCompositionTypeFabric, objFreight, objCategory2, objGender, objComposition, objTypeFabric);
 
             objCategory = addSingleGroupObject(category, "Номенклатурная группа", baseLM.name);
 
             objSku = addSingleGroupObject("sku", sku, "SKU", baseLM.selection, baseLM.barcode, sidArticleSku,
                      nameBrandSupplierArticleSku, nameCategoryArticleSku, sidGenderArticleSku, nameTypeFabricArticleSku,
-                     sidCustomCategoryOriginArticleSku, sidCustomCategory10Sku, nameSubCategoryDataSku);
-
-            addPropertyDraw(sidCustomCategory10SkuFreight, objSku, objFreight);
-            addPropertyDraw(objSku, nameCountrySku, netWeightSku);
+                     sidCustomCategoryOriginArticleSku, sidCustomCategory10Sku, nameSubCategoryDataSku, nameCountrySku, netWeightSku);
 
             CalcPropertyObjectEntity diffCountRelationCustomCategory10SkuProperty = addPropertyObject(addJProp(baseLM.and1, addCProp(ColorClass.instance, new Color(128, 255, 255)), diffCountRelationCustomCategory10Sku, 1), objSku);
             getPropertyDraw(nameSubCategoryDataSku).setPropertyBackground(diffCountRelationCustomCategory10SkuProperty);
