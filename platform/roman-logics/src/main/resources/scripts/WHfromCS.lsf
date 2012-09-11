@@ -312,6 +312,17 @@ countSku = SESSION DATA INTEGER (sku);
 
 quantityWHfromCSRFreightUnitSku (WHfromCSR, freightUnit, sku) = quantityCStoWHFreightUnitSku(CStoWHWHfromCSI(WHfromCSIWHfromCSR(WHfromCSR)), freightUnit, sku);
 
+quantityOriginWHfromCSRSku 'Ожидаемое к-во (тек. короб)' (WHfromCSR, sku) = quantityWHfromCSRFreightUnitSku(WHfromCSR, currentFreightUnit(WHfromCSR), sku);
+quantityWHfromCSRSku 'Принятое к-во (тек. короб)' (WHfromCSR, sku)=
+    [GROUP SUM quantityWHfromCSRDetail(WHfromCSRDetail) BY freightUnitWHfromCSRDetail(WHfromCSRDetail), WHfromCSRWHfromCSRDetail(WHfromCSRDetail), skuWHfromCSRDetail(WHfromCSRDetail)]
+        (currentFreightUnit(WHfromCSR), WHfromCSR, sku);
+
+diffQuantityWHfromCSRSku 'Расхождение (тек. короб)' (WHfromCSR, sku)= quantityWHfromCSRSku(WHfromCSR, sku) (-) quantityOriginWHfromCSRSku(WHfromCSR, sku);
+
+quantityOriginWHfromCSRDetail 'Ожидаемое к-во (тек. короб)' (WHfromCSRDetail) = quantityOriginWHfromCSRSku(WHfromCSRWHfromCSRDetail(WHfromCSRDetail), skuWHfromCSRDetail(WHfromCSRDetail));
+
+backgroundSkuWHfromCSRDetail 'Цвет' (WHfromCSRDetail) = RGB(255, 255, 0) IF quantityWHfromCSRDetail(WHfromCSRDetail) > quantityOriginWHfromCSRDetail(WHfromCSRDetail);
+
 quantityPositionsSkuInWHFromCSRFreightUnit 'Кол-во позиций в коробе' (WHfromCSR, freightUnit) =
     GROUP SUM 1 IF quantityWHfromCSRFreightUnitSku(WHfromCSR, freightUnit, sku) BY WHfromCSR, freightUnit;
 quantityPositionsSkuInFreightUnitWHfromCSR 'Кол-во позиций в коробе' (WHfromCSR) = quantityPositionsSkuInWHFromCSRFreightUnit(WHfromCSR, currentFreightUnit(WHfromCSR));
@@ -526,7 +537,7 @@ FORM WHfromCSR 'Приемка на оптовый склад'
                            sidColorWHfromCSRDetail, nameColorWHfromCSRDetail, barcodeFreightUnitWHfromCSRDetail,
                            nameDestinationWHfromCSRDetail
 
-    PROPERTIES(d) quantityWHfromCSRDetail
+    PROPERTIES(d) quantityWHfromCSRDetail BACKGROUND backgroundSkuWHfromCSRDetail(d)
 
     PROPERTIES(d) READONLY nameUnitOfMeasureArticleSkuWHfromCSRDetail
 
@@ -552,6 +563,15 @@ FORM WHfromCSR 'Приемка на оптовый склад'
 
     PROPERTIES(d) FORCE PANEL SHOWIF languageWHfromCSR(w) BACKGROUND backgroundArticleColorWHfromCSRDetail(d) mainCompositionWHfromCSRDetail, additionalCompositionWHfromCSRDetail
 
+    OBJECTS s = sku
+    PROPERTIES(s) READONLY barcode, nameCategoryArticleSku, nameBrandSupplierArticleSku, sidArticleSku,
+                           sidSizeSupplierItem FORCE GRID, sidColorSupplierItem FORCE GRID, nameColorSupplierItem FORCE GRID, shortNameUOMSku
+    PROPERTIES(w, s) quantityWHfromCSRSku, quantityOriginWHfromCSRSku, diffQuantityWHfromCSRSku
+
+    FILTERGROUP filtersQuantityOrigin
+        FILTER 'Показывать с расхождением' 'F8' diffQuantityWHfromCSRSku(w, s) DEFAULT
+        FILTER 'Показывать ожидаемые/принятые' 'F7' quantityOriginWHfromCSRSku(w, s) OR quantityWHfromCSRSku(w, s)
+
     FILTERS inWHfromCSRWHfromCSRDetail(w, d)
 
     FILTERGROUP filtersQuantity
@@ -566,7 +586,7 @@ FORM WHfromCSR 'Приемка на оптовый склад'
 DESIGN WHfromCSR FROM DEFAULT {
 
     main {
-
+        preferredSize = (1024, 768);
         NEW top {
             childConstraints =  TO THE BOTTOM;
 
@@ -593,43 +613,47 @@ DESIGN WHfromCSR FROM DEFAULT {
                 }
             }
         }
+        NEW wor {
+            type = TABBED;
+            ADD d.box {
+                NEW firstCase {
+                    caption = 'Атрибуты поставщика';
+                    ADD PROPERTY(originalNameArticleSkuWHfromCSRDetail);
+                    ADD PROPERTY(nameCountryOfOriginArticleSkuWHfromCSRDetail);
+                    ADD PROPERTY(nameBrandSupplierArticleSkuWHfromCSRDetail);
+                    ADD PROPERTY(netWeightArticleSkuWHfromCSRDetail);
+                    ADD PROPERTY(mainCompositionOriginArticleSkuWHfromCSRDetail);
+                }
 
-        preferredSize = (1024, 768);
-        NEW firstCase {
-            caption = 'Атрибуты поставщика';
-            ADD PROPERTY(originalNameArticleSkuWHfromCSRDetail);
-            ADD PROPERTY(nameCountryOfOriginArticleSkuWHfromCSRDetail);
-            ADD PROPERTY(nameBrandSupplierArticleSkuWHfromCSRDetail);
-            ADD PROPERTY(netWeightArticleSkuWHfromCSRDetail);
-            ADD PROPERTY(mainCompositionOriginArticleSkuWHfromCSRDetail);
-        }
-
-        NEW row {
-            title = 'Внутренние атрибуты';
-            childConstraints =  TO THE BOTTOM;
-            NEW row1 {
-                caption = 'Общие';
-                childConstraints =  TO THE RIGHT;
-                ADD PROPERTY(sidGenderArticleSkuWHfromCSRDetail);
-                ADD PROPERTY(c);
-                ADD PROPERTY(nameTypeFabricArticleSkuWHfromCSRDetail);
-                ADD PROPERTY(u);
-                ADD PROPERTY(netWeightSkuWHfromCSRDetail);
-                ADD PROPERTY(nameCountryOfOriginSkuWHfromCSRDetail);
-                ADD PROPERTY(coefficientArticleSkuWHfromCSRDetail);
+                NEW row {
+                    title = 'Внутренние атрибуты';
+                    childConstraints =  TO THE BOTTOM;
+                    NEW row1 {
+                        caption = 'Общие';
+                        childConstraints =  TO THE RIGHT;
+                        ADD PROPERTY(sidGenderArticleSkuWHfromCSRDetail);
+                        ADD PROPERTY(c);
+                        ADD PROPERTY(nameTypeFabricArticleSkuWHfromCSRDetail);
+                        ADD PROPERTY(u);
+                        ADD PROPERTY(netWeightSkuWHfromCSRDetail);
+                        ADD PROPERTY(nameCountryOfOriginSkuWHfromCSRDetail);
+                        ADD PROPERTY(coefficientArticleSkuWHfromCSRDetail);
+                    }
+                    NEW row2 {
+                        caption = 'Состав';
+                        ADD PROPERTY(mainCompositionOriginSkuWHfromCSRDetail);
+                        ADD PROPERTY(mainCompositionSkuWHfromCSRDetail);
+                        ADD PROPERTY(mainCompositionWHfromCSRDetail);
+                    }
+                    NEW row3 {
+                        caption = 'Доп. состав';
+                        ADD PROPERTY(additionalCompositionOriginSkuWHfromCSRDetail);
+                        ADD PROPERTY(additionalCompositionSkuWHfromCSRDetail);
+                        ADD PROPERTY(additionalCompositionWHfromCSRDetail);
+                    }
+                }
             }
-            NEW row2 {
-                caption = 'Состав';
-                ADD PROPERTY(mainCompositionOriginSkuWHfromCSRDetail);
-                ADD PROPERTY(mainCompositionSkuWHfromCSRDetail);
-                ADD PROPERTY(mainCompositionWHfromCSRDetail);
-            }
-            NEW row3 {
-                caption = 'Доп. состав';
-                ADD PROPERTY(additionalCompositionOriginSkuWHfromCSRDetail);
-                ADD PROPERTY(additionalCompositionSkuWHfromCSRDetail);
-                ADD PROPERTY(additionalCompositionWHfromCSRDetail);
-            }
+            ADD s.box {title = 'Содержимое короба';}
         }
         ADD functions.box;
     }

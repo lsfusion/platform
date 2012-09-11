@@ -108,6 +108,18 @@ barcodeCurrentFreightUnit 'Тек. короб (штрих-код)' (WHfromRF) = 
 
 withOutBarcodeSku (sku) = sku IS RomanLogicsModule.item AND NOT barcode(sku);
 
+quantityOriginWHfromRFSku 'Ожидаемое к-во (тек. короб)' (WHfromRF, sku) = quantitySkuFreightUnitFreight(sku, currentFreightUnit(WHfromRF), freightWHfromRF(WHfromRF));
+quantityWHfromRFSku 'Принятое к-во (тек. короб)' (WHfromRF, sku)=  quantityWHfromRFDetailsSkuFreightUnit(sku, currentFreightUnit(WHfromRF), WHfromRF);
+
+
+diffQuantityWHfromRFSku 'Расхождение (тек. короб)' (WHfromRF, sku)= quantityWHfromRFSku(WHfromRF, sku) (-) quantityOriginWHfromRFSku(WHfromRF, sku);
+
+quantityOriginWHfromRFDetail 'Ожидаемое к-во (тек. короб)' (WHfromRFDetail) = quantityOriginWHfromRFSku(WHfromRFWHfromRFDetail(WHfromRFDetail), skuWHfromRFDetail(WHfromRFDetail));
+
+backgroundSkuWHfromRFDetail 'Цвет' (WHfromRFDetail) = RGB(255, 255, 0) IF quantityWHfromRFDetail(WHfromRFDetail) > quantityOriginWHfromRFDetail(WHfromRFDetail);
+
+
+
 FORM addBarcodeWHfromRFFreightUnitSku 'Поиск товара(с коробами и выбором шрих-кода)'
 
     OBJECTS w = WHfromRF
@@ -473,7 +485,7 @@ FORM WHfromRF 'Приход товара из РФ'
                            nameBrandWHfromRFDetail, sidArticleWHfromRFDetail, sidSizeWHfromRFDetail,
                            sidColorWHfromRFDetail, nameColorWHfromRFDetail, barcodeFreightUnitWHfromRFDetail
 
-    PROPERTIES(d) quantityWHfromRFDetail
+    PROPERTIES(d) quantityWHfromRFDetail BACKGROUND backgroundSkuWHfromRFDetail(d)
 
     PROPERTIES(d) READONLY nameUnitOfMeasureArticleSkuWHfromRFDetail
 
@@ -499,6 +511,15 @@ FORM WHfromRF 'Приход товара из РФ'
 
     PROPERTIES(d) FORCE PANEL SHOWIF languageWHfromRF(w) BACKGROUND backgroundArticleColorWHfromRFDetail(d) mainCompositionWHfromRFDetail, additionalCompositionWHfromRFDetail
 
+    OBJECTS s = sku
+    PROPERTIES(s) READONLY barcode, nameCategoryArticleSku, nameBrandSupplierArticleSku, sidArticleSku,
+                           sidSizeSupplierItem FORCE GRID, sidColorSupplierItem FORCE GRID, nameColorSupplierItem FORCE GRID, shortNameUOMSku
+    PROPERTIES(w, s) quantityWHfromRFSku, quantityOriginWHfromRFSku, diffQuantityWHfromRFSku
+
+    FILTERGROUP filtersQuantityOrigin
+        FILTER 'Показывать с расхождением' 'F8' diffQuantityWHfromRFSku(w, s) DEFAULT
+        FILTER 'Показывать ожидаемые/принятые' 'F7' quantityOriginWHfromRFSku(w, s) OR quantityWHfromRFSku(w, s)
+
 
     FILTERS inWHfromRFWHfromRFDetail(w, d)
 
@@ -514,7 +535,7 @@ FORM WHfromRF 'Приход товара из РФ'
 DESIGN WHfromRF FROM DEFAULT {
 
     main {
-
+        preferredSize = (1024, 768);
         NEW top {
             childConstraints =  TO THE BOTTOM;
 
@@ -532,8 +553,6 @@ DESIGN WHfromRF FROM DEFAULT {
                 }
                 ADD w.documentPrmGroup {
                     childConstraints = TO THE RIGHT;
-//                    ADD PROPERTY(nameCompanyWHfromRF);
-//                    ADD PROPERTY(nameFreightWHfromRF);
                 }
                 NEW freightUnit{
                     caption = 'Короб';
@@ -547,49 +566,54 @@ DESIGN WHfromRF FROM DEFAULT {
             }
         }
 
-        preferredSize = (1024, 768);
-        NEW firstCase {
-            caption = 'Атрибуты поставщика';
-            ADD PROPERTY(originalNameArticleSkuWHfromRFDetail);
-            ADD PROPERTY(nameCountryOfOriginArticleSkuWHfromRFDetail);
-            ADD PROPERTY(nameBrandSupplierArticleSkuWHfromRFDetail);
-            ADD PROPERTY(netWeightArticleSkuWHfromRFDetail);
-            ADD PROPERTY(mainCompositionOriginArticleSkuWHfromRFDetail);
-        }
+        NEW wor {
+            type = TABBED;
+            ADD d.box {
+                NEW firstCase {
+                    caption = 'Атрибуты поставщика';
+                    ADD PROPERTY(originalNameArticleSkuWHfromRFDetail);
+                    ADD PROPERTY(nameCountryOfOriginArticleSkuWHfromRFDetail);
+                    ADD PROPERTY(nameBrandSupplierArticleSkuWHfromRFDetail);
+                    ADD PROPERTY(netWeightArticleSkuWHfromRFDetail);
+                    ADD PROPERTY(mainCompositionOriginArticleSkuWHfromRFDetail);
+                }
 
-        NEW row {
-            title = 'Внутренние атрибуты';
-            childConstraints =  TO THE BOTTOM;
-            NEW row1 {
-                caption = 'Общие';
-                childConstraints =  TO THE RIGHT;
-                ADD PROPERTY(sidGenderArticleSkuWHfromRFDetail);
-                ADD PROPERTY(c);
-                ADD PROPERTY(nameTypeFabricArticleSkuWHfromRFDetail);
-                ADD PROPERTY(u);
-                ADD PROPERTY(netWeightSkuWHfromRFDetail);
-                ADD PROPERTY(nameCountryOfOriginSkuWHfromRFDetail);
-                ADD PROPERTY(coefficientArticleSkuWHfromRFDetail);
-            }
-            NEW row2 {
-                caption = 'Состав';
-                ADD PROPERTY(mainCompositionOriginSkuWHfromRFDetail);
-                ADD PROPERTY(mainCompositionSkuWHfromRFDetail);
-                ADD PROPERTY(mainCompositionWHfromRFDetail);
-            }
-            NEW row3 {
-                caption = 'Доп. состав';
-                ADD PROPERTY(additionalCompositionOriginSkuWHfromRFDetail);
-                ADD PROPERTY(additionalCompositionSkuWHfromRFDetail);
-                ADD PROPERTY(additionalCompositionWHfromRFDetail);
-            }
+                NEW row {
+                    title = 'Внутренние атрибуты';
+                    childConstraints =  TO THE BOTTOM;
+                    NEW row1 {
+                        caption = 'Общие';
+                        childConstraints =  TO THE RIGHT;
+                        ADD PROPERTY(sidGenderArticleSkuWHfromRFDetail);
+                        ADD PROPERTY(c);
+                        ADD PROPERTY(nameTypeFabricArticleSkuWHfromRFDetail);
+                        ADD PROPERTY(u);
+                        ADD PROPERTY(netWeightSkuWHfromRFDetail);
+                        ADD PROPERTY(nameCountryOfOriginSkuWHfromRFDetail);
+                        ADD PROPERTY(coefficientArticleSkuWHfromRFDetail);
+                    }
+                    NEW row2 {
+                        caption = 'Состав';
+                        ADD PROPERTY(mainCompositionOriginSkuWHfromRFDetail);
+                        ADD PROPERTY(mainCompositionSkuWHfromRFDetail);
+                        ADD PROPERTY(mainCompositionWHfromRFDetail);
+                    }
+                    NEW row3 {
+                        caption = 'Доп. состав';
+                        ADD PROPERTY(additionalCompositionOriginSkuWHfromRFDetail);
+                        ADD PROPERTY(additionalCompositionSkuWHfromRFDetail);
+                        ADD PROPERTY(additionalCompositionWHfromRFDetail);
+                    }
 
+                }
+            }
+            ADD s.box {title = 'Содержимое короба';}
         }
-        ADD functions.box;
 
         PROPERTY(formOkAction) {
             caption = 'Провести';
         }
+        ADD functions.box;
     }
 }
 
