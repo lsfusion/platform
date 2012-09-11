@@ -67,7 +67,7 @@ END
 @dateFreight(freightShipped, 'Дата отгрузки');
 @dateFreight(freightArrived, 'Дата прибытия');
 
-toShipFreight 'Пометить как отгруженный' =  [ACTION (freight) {
+toShipFreight 'Отгрузить' =  [ACTION (freight) {
 
     FORM dateFreightShipped MODAL;
         IF formResult() == formResult.ok THEN {
@@ -76,9 +76,9 @@ toShipFreight 'Пометить как отгруженный' =  [ACTION (freig
             EXEC apply();
         }
 
-}](freight) IF freight IS freight AND NOT freight IS freightShipped IMAGE 'sign_tick.png';
+}](freight) IF freight IS freightPriced AND NOT freight IS freightShipped IMAGE 'sign_tick.png';
 
-toArrivedFreight 'Пометить как прибывший' = [ACTION (freight) {
+toArrivedFreight 'Прибыл' = [ACTION (freight) {
 
     FORM dateFreightArrived MODAL;
         IF formResult() == formResult.ok THEN {
@@ -87,7 +87,7 @@ toArrivedFreight 'Пометить как прибывший' = [ACTION (freight
             EXEC apply();
         }
 
-}](freight) IF freight IS freight AND NOT freight IS freightArrived;
+}](freight) IF freight IS freightShipped AND NOT freight IS freightArrived;
 
 FORM freight 'Фрахт'
 

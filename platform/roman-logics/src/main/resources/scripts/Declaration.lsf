@@ -948,7 +948,7 @@ FORM declarationPrint 'Выгрузка деклараций' PRINT
 
 exportDeclarationToEXELLanguageDeclaration 'Выгрузить декларацию в EXEL(иностр.)' = ACTION (declaration) {
 
-    FORM declarationPrint OBJECTS d = declaration;
+    FORM declarationPrint OBJECTS d = declaration MODAL;
 } CONFIRM TOOLBAR;
 
 FORM declaration 'Декларация'
