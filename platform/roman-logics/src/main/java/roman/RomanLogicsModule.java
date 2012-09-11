@@ -451,6 +451,14 @@ public class RomanLogicsModule extends LogicsModule {
     private LCP subCategorySku;
     private LCP nameSubCategorySku;
     private LCP nameSubCategoryDataSku;
+
+    private LCP subCategoryDataSkuCustomsZone;
+    private LCP subCategoryCustomCategory10SkuCustomsZone;
+    private LCP subCategorySkuCustomsZone;
+    private LCP nameSubCategorySkuCustomsZone;
+    private LCP subCategorySkuFreight;
+    private LCP nameSubCategorySkuFreight;
+
     LCP customCategory10CustomCategoryOriginCustomsZone;
     LCP sidCustomCategory10CustomCategoryOriginCustomsZone;
     LCP nameCustomCategory10CustomCategoryOriginCustomsZone;
@@ -3191,7 +3199,7 @@ public class RomanLogicsModule extends LogicsModule {
         translationAdditionalCompositionSkuFreight = addJoinAProp("translationAdditionalCompositionSkuFreight", "Перевод", translationAdditionalCompositionSkuLanguage, 1, languageFreight, 2);
 
         customCategory10CategoryGenderCompositionTypeFabricFreight = addJProp(true, "customCategory10CategoryGenderCompositionTypeFabricFreight", "ТН ВЭД (ИД)", customCategory10CategoryGenderCompositionTypeFabricCustomsZone, 1, 2, 3, 4, customsZoneFreight, 5);
-        sidCustomCategory10CategoryGenderCompositionTypeFabricFreight = addJProp("sidCustomCategory10CategoryGenderCompositionTypeFabricFreight", "ТН ВЭД (иностр.)", sidCustomCategory10, customCategory10CategoryGenderCompositionTypeFabricFreight, 1, 2, 3, 4, 5);
+        sidCustomCategory10CategoryGenderCompositionTypeFabricFreight = addJProp("sidCustomCategory10CategoryGenderCompositionTypeFabricFreight", "ТН ВЭД", sidCustomCategory10, customCategory10CategoryGenderCompositionTypeFabricFreight, 1, 2, 3, 4, 5);
 
         dictionaryFreight = addJProp("dictionaryFreight", "Словарь", BL.I18n.getLCPByName("dictionaryCompositionLanguage"), languageFreight, 1);
 
@@ -3298,13 +3306,26 @@ public class RomanLogicsModule extends LogicsModule {
 
         quantityFreightCategoryGenderCompositionTypeFabric = addSGProp(baseGroup, "quantityFreightCategoryGenderCompositionTypeFabric", "Кол-во", quantityFreightSku, 1, categoryArticleSku, 2, genderArticleSku, 2, mainCompositionOriginSku, 2, typeFabricArticleSku, 2);
 
+        customCategory10DataSkuCustomsZone = addDProp("customCategory10DataSkuCustomsZone", "ТН ВЭД (ИД)", customCategory10, sku, customsZone);
+        customCategory10SkuCustomsZone = addSUProp("customCategory10SkuCustomsZone", "ТН ВЭД (ИД)", Union.OVERRIDE, customCategory10CategoryGenderCompositionTypeFabricSkuCustomsZone, customCategory10DataSkuCustomsZone);
+
+        customCategory10SkuFreight = addJProp(true, "customCategory10SkuFreight", "ТН ВЭД (ИД)", customCategory10SkuCustomsZone, 1, customsZoneFreight, 2);
+        sidCustomCategory10SkuFreight = addJProp("sidCustomCategory10SkuFreight", "ТН ВЭД", sidCustomCategory10, customCategory10SkuFreight, 1, 2);
+
+        subCategoryDataSkuCustomsZone = addDProp("subCategoryDataSkuCustomsZone", "Дополнительное деление (ИД)", subCategory, sku, customsZone);
+        subCategoryCustomCategory10SkuCustomsZone = addJProp(idGroup, "subCategoryCustomCategory10SkuCustomsZone", "Дополнительное деление (ИД)", subCategoryCustomCategory10, customCategory10SkuCustomsZone, 1, 2);
+        subCategorySkuCustomsZone = addSUProp(Union.OVERRIDE, subCategoryCustomCategory10SkuCustomsZone, subCategoryDataSkuCustomsZone);
+
+        subCategorySkuFreight = addJProp(true, "subCategorySkuFreight", "Дополнительное деление (ИД)", subCategoryDataSkuCustomsZone, 1, customsZoneFreight, 2);
+        nameSubCategorySkuFreight = addJProp("nameSubCategorySkuFreight", "Дополнительное деление", nameSubCategory, subCategorySkuFreight, 1, 2);
+
         customCategory10FreightSku = addDProp(idGroup, "customCategory10FreightSku", "ТН ВЭД (ИД)", customCategory10, freight, sku);
-        customCategory10FreightSku.setEventChangeNewSet(addJProp(baseLM.and1, customCategory10Sku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
+        customCategory10FreightSku.setEventChangeNewSet(addJProp(baseLM.and1, customCategory10SkuFreight, 2, 1, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
         sidCustomCategory10FreightSku = addJProp(baseGroup, "sidCustomCategory10FreightSku", "ТН ВЭД", sidCustomCategory10, customCategory10FreightSku, 1, 2);
         addConstraint(addJProp("Для SKU должен быть задан ТН ВЭД", and(true, false), is(freightChanged), 1, customCategory10FreightSku, 1, 2, quantityFreightSku, 1, 2), false);
 
         subCategoryFreightSku = addDProp(idGroup, "subCategoryFreightSku", "Дополнительное деление (ИД)", subCategory, freight, sku);
-        subCategoryFreightSku.setEventChangeNewSet(addJProp(baseLM.and1, subCategorySku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
+        subCategoryFreightSku.setEventChangeNewSet(addJProp(baseLM.and1, subCategorySkuFreight, 2, 1, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
         nameSubCategoryFreightSku = addJProp(baseGroup, "nameSubCategoryFreightSku", "Дополнительное деление", nameSubCategory, subCategoryFreightSku, 1, 2);
         addConstraint(addJProp("Для SKU должно быть задано дополнительное деление", and(true, false, false), is(freightChanged), 1, subCategoryFreightSku, 1, 2, diffCountRelationCustomCategory10FreightSku, 1, 2, quantityFreightSku, 1, 2), false);
 
@@ -3316,11 +3337,7 @@ public class RomanLogicsModule extends LogicsModule {
         //addConstraint(addJProp("Зона ТН ВЭД должна совпадать с зоной фрахта", baseLM.diff2,
         //        customsZoneFreight, 1, addJProp(customsZoneCustomCategory10, customCategory10FreightSku, 1, 2), 1, 2), true);
 
-        customCategory10DataSkuCustomsZone = addDProp("customCategory10DataSkuCustomsZone", "ТН ВЭД (ИД)", customCategory10, sku, customsZone);
-        customCategory10SkuCustomsZone = addSUProp("customCategory10SkuCustomsZone", "ТН ВЭД (ИД)", Union.OVERRIDE, customCategory10CategoryGenderCompositionTypeFabricSkuCustomsZone, customCategory10DataSkuCustomsZone);
 
-        customCategory10SkuFreight = addJProp(true, "customCategory10SkuFreight", "ТН ВЭД (ИД)", customCategory10SkuCustomsZone, 1, customsZoneFreight, 2);
-        sidCustomCategory10SkuFreight = addJProp("sidCustomCategory10SkuFreight", "ТН ВЭД (иностр.)", sidCustomCategory10, customCategory10SkuFreight, 1, 2);
         //addConstraint(addJProp("Зона ТН ВЭД должна совпадать с зоной фрахта", baseLM.diff2,
         //        customsZoneFreight, 1, addJProp(customsZoneCustomCategory10, customCategory10SkuFreight, 2, 1), 1, 2), true);
 
@@ -6322,7 +6339,7 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(objGender, sidGender);
             addPropertyDraw(objComposition, baseLM.objectValue);
             addPropertyDraw(objTypeFabric, baseLM.name);
-            addPropertyDraw(sidCustomCategory10CategoryGenderCompositionTypeFabric, objCategory2, objGender, objComposition, objTypeFabric);
+            //addPropertyDraw(sidCustomCategory10CategoryGenderCompositionTypeFabric, objCategory2, objGender, objComposition, objTypeFabric);
             addPropertyDraw(sidCustomCategory10CategoryGenderCompositionTypeFabricFreight, objCategory2, objGender, objComposition, objTypeFabric, objFreight);
             addPropertyDraw(quantityFreightCategoryGenderCompositionTypeFabric, objFreight, objCategory2, objGender, objComposition, objTypeFabric);
 
@@ -6330,10 +6347,10 @@ public class RomanLogicsModule extends LogicsModule {
 
             objSku = addSingleGroupObject("sku", sku, "SKU", baseLM.selection, baseLM.barcode, sidArticleSku,
                      nameBrandSupplierArticleSku, nameCategoryArticleSku, sidGenderArticleSku, nameTypeFabricArticleSku,
-                     sidCustomCategoryOriginArticleSku, sidCustomCategory10Sku, nameSubCategoryDataSku, nameCountrySku, netWeightSku);
+                     sidCustomCategoryOriginArticleSku, nameCountrySku, netWeightSku);
 
             CalcPropertyObjectEntity diffCountRelationCustomCategory10SkuProperty = addPropertyObject(addJProp(baseLM.and1, addCProp(ColorClass.instance, new Color(128, 255, 255)), diffCountRelationCustomCategory10Sku, 1), objSku);
-            getPropertyDraw(nameSubCategoryDataSku).setPropertyBackground(diffCountRelationCustomCategory10SkuProperty);
+            //getPropertyDraw(nameSubCategorySku).setPropertyBackground(diffCountRelationCustomCategory10SkuProperty);
 
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku.groupTo);
             addPropertyDraw(addGCAProp(actionGroup, "translationAllMainComposition", "Перевод составов", objSku.groupTo, translationMainCompositionSku), objSku).forceViewType = ClassViewType.PANEL;
@@ -6345,8 +6362,8 @@ public class RomanLogicsModule extends LogicsModule {
             setEditType(publicGroup, PropertyEditType.READONLY, objSku.groupTo);
             setEditType(sidGenderArticleSku, PropertyEditType.EDITABLE, objSku.groupTo);
             setEditType(nameTypeFabricArticleSku, PropertyEditType.EDITABLE, objSku.groupTo);
-            setEditType(sidCustomCategory10Sku, PropertyEditType.EDITABLE, objSku.groupTo);
-            setEditType(nameSubCategoryDataSku, PropertyEditType.EDITABLE, objSku.groupTo);
+            //setEditType(sidCustomCategory10Sku, PropertyEditType.EDITABLE, objSku.groupTo);
+            //setEditType(nameSubCategorySku, PropertyEditType.EDITABLE, objSku.groupTo);
             setEditType(nameCountrySku, PropertyEditType.EDITABLE, objSku.groupTo);
             setEditType(netWeightSku, PropertyEditType.EDITABLE, objSku.groupTo);
             setEditType(mainCompositionOriginSku, PropertyEditType.EDITABLE, objSku.groupTo);
@@ -6361,6 +6378,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             addPropertyDraw(quantityFreightSku, objFreight, objSku);
             addPropertyDraw(quantityDirectFreightSku, objFreight, objSku);
+            addPropertyDraw(sidCustomCategoryOriginFreightSku, objFreight, objSkuFreight);
             addPropertyDraw(sidCustomCategory10FreightSku, objFreight, objSkuFreight);
             addPropertyDraw(nameSubCategoryFreightSku, objFreight, objSkuFreight);
             addPropertyDraw(nameCountryOfOriginFreightSku, objFreight, objSkuFreight);

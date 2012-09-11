@@ -168,6 +168,7 @@ createCustomsZone 'Задать таможенную зону и связать 
         SET customsZoneTypeDuty(typeDuty) <- g WHERE g==addedObject();
 
         SET customCategory10DataSkuCustomsZone(s, g) <- customCategory10DataSku(s) WHERE g==addedObject();
+        SET subCategoryDataSkuCustomsZone(sku, customsZone) <- subCategoryDataSku(sku);
         SET customCategory10CategoryGenderCompositionTypeFabricCustomsZone(a, b, c, d, g) <- customCategory10FreightCategoryGenderCompositionTypeFabric(a, b, c, d) WHERE g==addedObject();
 
         FOR customCategory10CustomCategoryOrigin(customCategoryOrigin) DO {

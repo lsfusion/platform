@@ -42,13 +42,18 @@ CONSTRAINT customsZoneFreight(freight) != customsZoneCustomCategory10(customCate
     CHECKED BY customCategory10SkuFreight
     MESSAGE 'ТН ВЭД для другой таможенной зоны';
 
-customCategory10LanguageFreightSku = DATA customCategory10(freight, sku);
-sidCustomCategory10LanguageFreightSku 'ТН ВЭД (иностр.)' (freight, sku) = sidCustomCategory10(customCategory10LanguageFreightSku(freight, sku));
+CONSTRAINT customsZoneFreight(freight) != customsZoneSubCategory(subCategorySkuFreight(sku, freight))
+    CHECKED BY subCategorySkuFreight
+    MESSAGE 'ТН ВЭД для другой таможенной зоны';
 
-customCategory10LanguageFreightSku(freight, sku) <- customCategory10SkuFreight(sku, freight) WHEN ASSIGNED (freight IS freightChanged);
+//customCategory10LanguageFreightSku(freight, sku) <- customCategory10SkuFreight(sku, freight) WHEN ASSIGNED (freight IS freightChanged);
 
-CONSTRAINT customsZoneFreight(freight) != customsZoneCustomCategory10(customCategory10LanguageFreightSku(freight, sku))
-    CHECKED BY customCategory10LanguageFreightSku
+CONSTRAINT customsZoneFreight(freight) != customsZoneCustomCategory10(customCategory10FreightSku(freight, sku))
+    CHECKED BY customCategory10FreightSku
+    MESSAGE 'ТН ВЭД для другой таможенной зоны';
+
+CONSTRAINT customsZoneFreight(freight) != customsZoneSubCategory(subCategoryFreightSku(freight, sku))
+    CHECKED BY subCategoryFreightSku
     MESSAGE 'ТН ВЭД для другой таможенной зоны';
 
 CONSTRAINT customsZoneFreight(freight) != customsZoneCustomCategory10(customCategory10CategoryGenderCompositionTypeFabricFreight(category, gender, composition, typeFabric, freight))
@@ -171,7 +176,8 @@ EXTEND FORM freightChangeForm
                               nameCountryLanguageFreightSku  AFTER nameCountrySku(sku) SHOWIF languageFreight(freight)
 
     PROPERTIES (sku) mainCompositionOriginSku, translationMainCompositionSku, mainCompositionSku
-    PROPERTIES (sku, freight) sidCustomCategory10SkuFreight BEFORE nameCountrySku(sku) SHOWIF languageFreight(freight),
+    PROPERTIES (sku, freight) sidCustomCategory10SkuFreight BEFORE nameCountrySku(sku),
+                              nameSubCategorySkuFreight BEFORE nameCountrySku(sku),
                               translationMainCompositionSkuFreight SHOWIF languageFreight(freight)
     PROPERTIES (sku, freight) mainCompositionSkuFreight ON CHANGE EXEC changeMainCompositionSkuLanguage(sku, freight) SHOWIF languageFreight(freight)
 
@@ -179,8 +185,7 @@ EXTEND FORM freightChangeForm
     PROPERTIES (sku, freight) translationAdditionalCompositionSkuFreight SHOWIF languageFreight(freight)
     PROPERTIES (sku, freight) additionalCompositionSkuFreight ON CHANGE EXEC changeAdditionalCompositionSkuLanguage(sku, freight) SHOWIF languageFreight(freight)
 
-    PROPERTIES (freight, skuFreight) sidCustomCategory10LanguageFreightSku BEFORE nameCountryOfOriginFreightSku SHOWIF languageFreight(freight),
-                                     mainCompositionOriginFreightSku, translationMainCompositionFreightSku, mainCompositionFreightSku,
+    PROPERTIES (freight, skuFreight) mainCompositionOriginFreightSku, translationMainCompositionFreightSku, mainCompositionFreightSku,
                                      translationMainCompositionLanguageFreightSku SHOWIF languageFreight(freight),
                                      mainCompositionLanguageFreightSku SHOWIF languageFreight(freight),
 
@@ -188,6 +193,5 @@ EXTEND FORM freightChangeForm
                                      translationAdditionalCompositionLanguageFreightSku SHOWIF languageFreight(freight),
                                      additionalCompositionLanguageFreightSku SHOWIF languageFreight(freight),
 
-                                     nameCountryOfOriginLanguageFreightSku AFTER nameCountryOfOriginFreightSku(freight, skuFreight) SHOWIF languageFreight(freight),
-                                     sidCustomCategoryOriginFreightSku BEFORE sidCustomCategory10FreightSku
+                                     nameCountryOfOriginLanguageFreightSku AFTER nameCountryOfOriginFreightSku(freight, skuFreight) SHOWIF languageFreight(freight)
 ;
