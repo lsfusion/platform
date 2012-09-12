@@ -11,6 +11,9 @@ import platform.gwt.form2.shared.view.grid.GridEditableCell;
 import java.util.Arrays;
 
 public class GSinglePropertyTable extends GPropertyTable {
+    private String background;
+    private String foreground;
+
     /**
      * Default style's overrides
      */
@@ -23,12 +26,16 @@ public class GSinglePropertyTable extends GPropertyTable {
     public static final GSinglePropertyTableResource GSINGLE_PROPERTY_TABLE_RESOURCE = GWT.create(GSinglePropertyTableResource.class);
 
     private final GPropertyDraw property;
+    private GGroupObjectValue columnKey;
     private Object value;
 
-    public GSinglePropertyTable(GFormController iform, GPropertyDraw iproperty) {
+    public GSinglePropertyTable(GFormController iform, GPropertyDraw iproperty, GGroupObjectValue columnKey) {
         super(iform, GSINGLE_PROPERTY_TABLE_RESOURCE);
 
         this.property = iproperty;
+        this.columnKey = columnKey;
+
+        setTableBuilder(new GSinglePropertyTableCellBuilder(this));
 
         addColumn(new Column<Object, Object>(new GridEditableCell(this)) {
             @Override
@@ -44,12 +51,22 @@ public class GSinglePropertyTable extends GPropertyTable {
         redraw();
     }
 
-    public void setBackgroundColor(ColorDTO color) {
-        //todo:
+    public void setBackground(ColorDTO background) {
+        this.background = background == null ? null : background.toString();
+        redraw();
     }
 
-    public void setForegroundColor(ColorDTO color) {
-        //todo:
+    public void setForeground(ColorDTO foreground) {
+        this.foreground = foreground == null ? null : foreground.toString();
+        redraw();
+    }
+
+    public String getBackground() {
+        return background;
+    }
+
+    public String getForeground() {
+        return foreground;
     }
 
     public GPropertyDraw getProperty(int row, int column) {
@@ -59,7 +76,7 @@ public class GSinglePropertyTable extends GPropertyTable {
 
     @Override
     public GGroupObjectValue getColumnKey(int row, int column) {
-        return null;
+        return columnKey;
     }
 
     @Override

@@ -28,19 +28,19 @@ public abstract class GGridPropertyTable extends GPropertyTable {
 
     protected boolean dataUpdated;
 
-    public interface GGridTableResource extends Resources {
-        @Source("GGridTable.css")
-        GGridTableStyle dataGridStyle();
+    public interface GGridPropertyTableResource extends Resources {
+        @Source("GGridPropertyTable.css")
+        GGridPropertyTableStyle dataGridStyle();
     }
 
-    public interface GGridTableStyle extends Style {}
+    public interface GGridPropertyTableStyle extends Style {}
 
-    public static final GGridTableResource GGRID_RESOURCES = GWT.create(GGridTableResource.class);
+    public static final GGridPropertyTableResource GGRID_RESOURCES = GWT.create(GGridPropertyTableResource.class);
 
     public GGridPropertyTable(GFormController iform) {
         super(iform, GGRID_RESOURCES);
 
-        setTableBuilder(new GGridCellTableBuilder(this));
+        setTableBuilder(new GGridPropertyTableCellBuilder(this));
 
         addStyleName("gridTable");
 

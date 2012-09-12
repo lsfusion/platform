@@ -82,7 +82,8 @@ public class GGroupObjectController implements GGroupObjectLogicsSupplier {
                 if (property.groupObject == groupObject && !fc.updateProperties.contains(property)) {
                     addProperty(property, fc.panelProperties.contains(property));
 
-                    if (property.columnGroupObjects != null && GwtSharedUtils.containsAny(changedGroups, property.columnGroupObjects)) {
+                    if (property.columnGroupObjects != null &&
+                            (fc.classViews.containsKey(groupObject) || GwtSharedUtils.containsAny(changedGroups, property.columnGroupObjects))) {
                         LinkedHashMap<GGroupObject, List<GGroupObjectValue>> groupColumnKeys = new LinkedHashMap<GGroupObject, List<GGroupObjectValue>>();
                         for (GGroupObject columnGroupObject : property.columnGroupObjects) {
                             List<GGroupObjectValue> columnGroupKeys = currentGridObjects.get(columnGroupObject);
@@ -129,7 +130,7 @@ public class GGroupObjectController implements GGroupObjectLogicsSupplier {
     public void updatePropertyDrawValues(GPropertyDraw reader, Map<GGroupObjectValue, Object> values, boolean updateKeys) {
         GPropertyDraw property = formController.getProperty(reader.ID);
         if (panel.containsProperty(property)) {
-            panel.setPropertyValues(property, values, updateKeys);
+            panel.updatePropertyValues(property, values, updateKeys);
         } else {
             grid.getTable().updatePropertyValues(property, values, updateKeys);
         }

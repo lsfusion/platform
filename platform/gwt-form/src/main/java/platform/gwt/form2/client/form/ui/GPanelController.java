@@ -1,5 +1,7 @@
 package platform.gwt.form2.client.form.ui;
 
+import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.Widget;
 import platform.gwt.form2.shared.view.GPropertyDraw;
 import platform.gwt.form2.shared.view.changes.GGroupObjectValue;
 import platform.gwt.form2.shared.view.panel.PanelRenderer;
@@ -11,134 +13,60 @@ import java.util.List;
 import java.util.Map;
 
 public class GPanelController {
+    private final GFormLayout formLayout;
     private final GFormController form;
-    private GFormLayout formLayout;
 
-    private List<GPropertyDraw> orderedProperties = new ArrayList<GPropertyDraw>();
-    private Map<GPropertyDraw, PanelRenderer> properties = new HashMap<GPropertyDraw, PanelRenderer>();
-    private HashMap<GPropertyDraw, Object> values = new HashMap<GPropertyDraw, Object>();
+    private final List<GPropertyDraw> properties = new ArrayList<GPropertyDraw>();
+    private final Map<GPropertyDraw, GPropertyController> propertyControllers = new HashMap<GPropertyDraw, GPropertyController>();
 
-    private Map<GPropertyDraw, Map<GGroupObjectValue, Object>> cellBackgroundValues = new HashMap<GPropertyDraw, Map<GGroupObjectValue, Object>>();
-    private Map<GPropertyDraw, Map<GGroupObjectValue, Object>> cellForegroundValues = new HashMap<GPropertyDraw, Map<GGroupObjectValue, Object>>();
     private Object rowBackground;
     private Object rowForeground;
-    private Map<GPropertyDraw, Map<GGroupObjectValue, Object>> propertyCaptions = new HashMap<GPropertyDraw, Map<GGroupObjectValue, Object>>();
 
     public GPanelController(GFormController iform, GFormLayout formLayout) {
-        form = iform;
+        this.form = iform;
         this.formLayout = formLayout;
     }
 
     public void addProperty(GPropertyDraw property) {
-        if (!containsProperty(property)) {
-            int ins = GwtSharedUtils.relativePosition(property, form.getPropertyDraws(), orderedProperties);
-            orderedProperties.add(ins, property);
+        if (property.container != null && !containsProperty(property)) {
+            int ins = GwtSharedUtils.relativePosition(property, form.getPropertyDraws(), properties);
+            properties.add(ins, property);
+            propertyControllers.put(property, new GPropertyController(property));
         }
     }
 
     public void removeProperty(GPropertyDraw property) {
         if (containsProperty(property)) {
             formLayout.remove(property);
-            orderedProperties.remove(property);
             properties.remove(property);
-            values.remove(property);
-            propertyCaptions.remove(property);
-            cellBackgroundValues.remove(property);
-            cellForegroundValues.remove(property);
-        }
-    }
-
-    public void setPropertyValues(GPropertyDraw property, Map<GGroupObjectValue, Object> valueMap, boolean updateKeys) {
-        //todo: use updateKeys for columnKeys logic
-        if (valueMap != null && !valueMap.isEmpty()) {
-            values.put(property, valueMap.values().iterator().next());
+            propertyControllers.remove(property);
         }
     }
 
     public void update() {
-        List<GPropertyDraw> toDraw = new ArrayList<GPropertyDraw>();
-        for (GPropertyDraw property : orderedProperties) {
-            if (property.container != null) {
-                PanelRenderer renderer = null;
-                //если propertyCaption == null, то элемент должен быть скрыт
-                if (propertyCaptions.get(property) == null || propertyCaptions.get(property).values().iterator().next() != null) {
-                    renderer = properties.get(property);
-                    if (renderer == null) {
-                        renderer = property.createPanelRenderer(form);
-                        properties.put(property, renderer);
-                        formLayout.add(property, renderer.getComponent(), property.container.children.indexOf(property));
-                    }
-                    toDraw.add(property);
-                }
-
-                Object propValue = values.get(property);
-                if (renderer != null) {
-                    renderer.setValue(propValue);
-                }
-            }
-        }
-
-        for (GPropertyDraw property : orderedProperties) {
-            if (!toDraw.contains(property)) {
-                formLayout.remove(property);
-            }
-        }
-
-        for (GPropertyDraw property : orderedProperties) {
-            PanelRenderer renderer = properties.get(property);
-
-            if (renderer != null) {
-                Map<GGroupObjectValue, Object> caption = propertyCaptions.get(property);
-                if (caption != null) {
-                    String dynamicCaption = property.getDynamicCaption(caption.values().iterator().next());
-                    renderer.setCaption(dynamicCaption);
-                }
-
-                Object background = rowBackground != null ? rowBackground : null;
-                if (background == null && cellBackgroundValues.get(property) != null) {
-                    background = cellBackgroundValues.get(property).values().iterator().next();
-                }
-                renderer.updateCellBackgroundValue(background);
-
-                Object foreground = rowForeground != null ? rowForeground : null;
-                if (foreground == null && cellForegroundValues.get(property) != null) {
-                    foreground = cellForegroundValues.get(property).values().iterator().next();
-                }
-                renderer.updateCellForegroundValue(foreground);
-            }
+        for (GPropertyDraw property : properties) {
+            propertyControllers.get(property).update();
         }
     }
 
     public boolean isEmpty() {
-        return orderedProperties.size() == 0;
+        return properties.size() == 0;
     }
 
     public void hide() {
-        for (Map.Entry<GPropertyDraw, PanelRenderer> e : properties.entrySet()) {
-            e.getValue().getComponent().setVisible(false);
+        for (GPropertyController propertyController : propertyControllers.values()) {
+            propertyController.getView().setVisible(false);
         }
     }
 
     public void show() {
-        for (Map.Entry<GPropertyDraw, PanelRenderer> e : properties.entrySet()) {
-            e.getValue().getComponent().setVisible(true);
+        for (GPropertyController propertyController : propertyControllers.values()) {
+            propertyController.getView().setVisible(true);
         }
     }
 
     public boolean containsProperty(GPropertyDraw property) {
-        return orderedProperties.contains(property);
-    }
-
-    public void updateCellBackgroundValues(GPropertyDraw propertyDraw, Map<GGroupObjectValue, Object> values) {
-        cellBackgroundValues.put(propertyDraw, values);
-    }
-
-    public void updateCellForegroundValues(GPropertyDraw propertyDraw, Map<GGroupObjectValue, Object> values) {
-        cellForegroundValues.put(propertyDraw, values);
-    }
-
-    public void updatePropertyCaptions(GPropertyDraw propertyDraw, Map<GGroupObjectValue, Object> values) {
-        propertyCaptions.put(propertyDraw, values);
+        return properties.contains(property);
     }
 
     public void updateRowBackgroundValue(Object color) {
@@ -149,8 +77,151 @@ public class GPanelController {
         rowForeground = color;
     }
 
-    public void updateColumnKeys(GPropertyDraw property, List<GGroupObjectValue> columnKeys) {
-        //todo:
+    public void updateCellBackgroundValues(GPropertyDraw property, Map<GGroupObjectValue, Object> cellBackgroundValues) {
+        propertyControllers.get(property).setCellBackgroundValues(cellBackgroundValues);
+    }
 
+    public void updateCellForegroundValues(GPropertyDraw property, Map<GGroupObjectValue, Object> cellForegroundValues) {
+        propertyControllers.get(property).setCellForegroundValues(cellForegroundValues);
+    }
+
+    public void updatePropertyValues(GPropertyDraw property, Map<GGroupObjectValue, Object> valueMap, boolean updateKeys) {
+        propertyControllers.get(property).setPropertyValues(valueMap, updateKeys);
+    }
+
+    public void updatePropertyCaptions(GPropertyDraw property, Map<GGroupObjectValue, Object> propertyCaptions) {
+        propertyControllers.get(property).setPropertyCaptions(propertyCaptions);
+    }
+
+    public void updateColumnKeys(GPropertyDraw property, List<GGroupObjectValue> columnKeys) {
+        propertyControllers.get(property).setColumnKeys(columnKeys);
+    }
+
+    private class GPropertyController {
+        private boolean addedToLayout = false;
+        private boolean columnsUpdated = true;
+
+        private GPropertyDraw property;
+
+        private List<GGroupObjectValue> columnKeys;
+        private Map<GGroupObjectValue, PanelRenderer> renderers;
+
+        private Map<GGroupObjectValue, Object> values;
+
+        private Map<GGroupObjectValue, Object> propertyCaptions;
+        private Map<GGroupObjectValue, Object> cellBackgroundValues;
+
+        private Map<GGroupObjectValue, Object> cellForegroundValues;
+        private HorizontalPanel renderersPanel;
+
+        public GPropertyController(GPropertyDraw property) {
+            this.property = property;
+        }
+
+        public Widget getView() {
+            return renderersPanel;
+        }
+
+        public void update() {
+            if (columnsUpdated) {
+                if (renderers == null) {
+                    renderers = new HashMap<GGroupObjectValue, PanelRenderer>();
+                }
+                if (renderersPanel == null) {
+                    renderersPanel = new HorizontalPanel();
+                }
+
+                List<GGroupObjectValue> columnKeys = this.columnKeys != null ? this.columnKeys : GGroupObjectValue.SINGLE_EMPTY_KEY_LIST;
+                for (GGroupObjectValue columnKey : columnKeys) {
+                    if (propertyCaptions == null || propertyCaptions.get(columnKey) != null) {
+                        PanelRenderer renderer = renderers.get(columnKey);
+                        if (renderer == null) {
+                            renderer = property.createPanelRenderer(form, columnKey);
+                            renderers.put(columnKey, renderer);
+                        }
+                    } else {
+                        renderers.remove(columnKey);
+                    }
+                }
+
+                renderersPanel.clear();
+
+                for (GGroupObjectValue columnKey : columnKeys) {
+                    PanelRenderer renderer = renderers.get(columnKey);
+                    if (renderer != null) {
+                        renderersPanel.add(renderer.getComponent());
+                    }
+                }
+
+                if (isViewVisible()) {
+                    if (!addedToLayout) {
+                        formLayout.add(property, getView(), property.container.children.indexOf(property));
+                        addedToLayout = true;
+                    }
+                } else {
+                    if (addedToLayout) {
+                        formLayout.remove(property);
+                        addedToLayout = false;
+                    }
+                }
+                columnsUpdated = false;
+            }
+
+            for (Map.Entry<GGroupObjectValue, PanelRenderer> e : renderers.entrySet()) {
+                updateRenderer(e.getKey(), e.getValue());
+            }
+        }
+
+        private void updateRenderer(GGroupObjectValue columnKey, PanelRenderer renderer) {
+            renderer.setValue(values.get(columnKey));
+
+            Object background = rowBackground;
+            if (background == null && cellBackgroundValues != null) {
+                background = cellBackgroundValues.get(columnKey);
+            }
+            renderer.updateCellBackgroundValue(background);
+
+            Object foreground = rowForeground;
+            if (foreground == null && cellForegroundValues != null) {
+                foreground = cellForegroundValues.get(columnKey);
+            }
+            renderer.updateCellForegroundValue(foreground);
+
+            if (propertyCaptions != null) {
+                renderer.setCaption(property.getDynamicCaption(propertyCaptions.get(columnKey)));
+            } else {
+                renderer.setCaption(property.getCaptionOrEmpty());
+            }
+        }
+
+        public boolean isViewVisible() {
+            return renderersPanel.iterator().hasNext();
+        }
+
+        public void setPropertyValues(Map<GGroupObjectValue, Object> valueMap, boolean updateKeys) {
+            if (updateKeys) {
+                values.putAll(valueMap);
+            } else {
+                values = valueMap;
+            }
+        }
+
+        public void setPropertyCaptions(Map<GGroupObjectValue,Object> propertyCaptions) {
+            this.propertyCaptions = propertyCaptions;
+            columnsUpdated = true;
+        }
+
+        public void setColumnKeys(List<GGroupObjectValue> columnKeys) {
+            this.columnKeys = columnKeys;
+            columnsUpdated = true;
+        }
+
+        public void setCellBackgroundValues(Map<GGroupObjectValue, Object> cellBackgroundValues) {
+            this.cellBackgroundValues = cellBackgroundValues;
+        }
+
+        public void setCellForegroundValues(Map<GGroupObjectValue, Object> cellForegroundValues) {
+            this.cellForegroundValues = cellForegroundValues;
+        }
     }
 }

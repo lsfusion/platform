@@ -20,6 +20,17 @@ public class PanelController {
 
     private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, PropertyController>> properties = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, PropertyController>>();
 
+    private Map<ClientPropertyDraw, List<ClientGroupObjectValue>> columnKeys = new HashMap<ClientPropertyDraw, List<ClientGroupObjectValue>>();
+    private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> values = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
+
+    private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> captions = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
+
+    private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> cellBackgroundValues = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
+    private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> cellForegroundValues = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
+    private Color rowBackground;
+    private Color rowForeground;
+
+
     public PanelController(GroupObjectLogicsSupplier ilogicsSupplier, ClientFormController iform, ClientFormLayout iformLayout) {
         logicsSupplier = ilogicsSupplier;
         form = iform;
@@ -211,26 +222,20 @@ public class PanelController {
         }
     }
 
-    protected Map<ClientPropertyDraw, List<ClientGroupObjectValue>> columnKeys = new HashMap<ClientPropertyDraw, List<ClientGroupObjectValue>>();
 
     public void updateColumnKeys(ClientPropertyDraw property, List<ClientGroupObjectValue> groupColumnKeys) {
         columnKeys.put(property, groupColumnKeys);
     }
 
-    private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> values = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
-
     public void updatePropertyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> pvalues, boolean update) {
         BaseUtils.putUpdate(values, property, pvalues, update);
     }
 
-    protected Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> captions = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
 
     public void updatePropertyCaptions(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> captions) {
         this.captions.put(property, captions);
     }
 
-    protected Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> cellBackgroundValues = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
-    protected Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> cellForegroundValues = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
 
     public void updateCellBackgroundValue(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> cellBackgroundValues) {
         this.cellBackgroundValues.put(property, cellBackgroundValues);
@@ -239,9 +244,6 @@ public class PanelController {
     public void updateCellForegroundValue(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> cellForegroundValues) {
         this.cellForegroundValues.put(property, cellForegroundValues);
     }
-
-    private Color rowBackground;
-    private Color rowForeground;
 
     public void updateRowBackgroundValue(Color rowBackground) {
         this.rowBackground = rowBackground;

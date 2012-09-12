@@ -14,13 +14,6 @@ import static platform.interop.form.layout.ContainerType.*;
 
 @SuppressWarnings("UnusedDeclaration")
 public class ClientComponentToGwtConverter extends CachedObjectConverter {
-    private static final class InstanceHolder {
-        private static final ClientComponentToGwtConverter instance = new ClientComponentToGwtConverter();
-    }
-
-    public static ClientComponentToGwtConverter getInstance() {
-        return InstanceHolder.instance;
-    }
 
     private final ClientTypeToGwtConverter typeConverter = ClientTypeToGwtConverter.getInstance();
 

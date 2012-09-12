@@ -2,6 +2,7 @@ package platform.gwt.base.server.spring;
 
 import org.apache.log4j.Logger;
 import platform.base.ClassUtils;
+import platform.client.navigator.ClientNavigatorElement;
 import platform.interop.RemoteLoaderInterface;
 import platform.interop.RemoteLogicsInterface;
 
@@ -68,6 +69,7 @@ public class BusinessLogicsProviderImpl<T extends RemoteLogicsInterface> impleme
     public void invalidate() {
         synchronized (remoteLock) {
             logics = null;
+            ClientNavigatorElement.dropCaches();
         }
     }
 }

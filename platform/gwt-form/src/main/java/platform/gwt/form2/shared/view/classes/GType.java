@@ -2,6 +2,7 @@ package platform.gwt.form2.shared.view.classes;
 
 import platform.gwt.form2.client.form.ui.GFormController;
 import platform.gwt.form2.shared.view.GPropertyDraw;
+import platform.gwt.form2.shared.view.changes.GGroupObjectValue;
 import platform.gwt.form2.shared.view.grid.EditManager;
 import platform.gwt.form2.shared.view.grid.editor.GridCellEditor;
 import platform.gwt.form2.shared.view.grid.renderer.GridCellRenderer;
@@ -16,8 +17,8 @@ public abstract class GType implements Serializable {
         return strValue;
     }
 
-    public PanelRenderer createPanelRenderer(GFormController form, GPropertyDraw property) {
-        return new DataPanelRenderer(form, property);
+    public PanelRenderer createPanelRenderer(GFormController form, GPropertyDraw property, GGroupObjectValue columnKey) {
+        return new DataPanelRenderer(form, property, columnKey);
     }
 
     public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {

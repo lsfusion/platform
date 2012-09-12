@@ -594,7 +594,8 @@ storeSizeHeader (s, ss) = UNION OVERRIDE name(ss) IF s IS store AND ss IS storeS
 FORM TestColumnGroupObjects 'Тест групп в колонках'
 OBJECTS ss=storeSize, s=store
 PROPERTIES name(ss), sizeCode(ss)
-PROPERTIES name(s), scolor(s), storeSizeCode(s), storeSizeString(s, ss) COLUMNS (ss) HEADER sizeCode(ss) BACKGROUND colorizeMatchingStoreSize(s, ss) HEADER storeSizeHeader(s, ss);
+PROPERTIES OBJVALUE(s), name(s), scolor(s), storeSizeCode(s)
+PROPERTIES storeSizeString(s, ss) COLUMNS (ss) HEADER sizeCode(ss) BACKGROUND colorizeMatchingStoreSize(s, ss) HEADER storeSizeHeader(s, ss);
 
 colorizeElementWithNumberGreaterFour(element) = #5555ff IF numberNavigatorElement(element) > 4;
 

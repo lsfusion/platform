@@ -65,10 +65,11 @@ public class GTreeGroupController implements GGroupObjectLogicsSupplier {
                 if (propertyReader instanceof GPropertyDraw) {
                     GPropertyDraw property = (GPropertyDraw) propertyReader;
                     if (property.groupObject == group && !fc.updateProperties.contains(property)) {
-                        if (fc.panelProperties.contains(property)) {
-                            addPanelProperty(group, property);
-                        } else {
-                            addGridProperty(group, property);
+                        addProperty(group, property, fc.panelProperties.contains(property));
+
+                        //пока не поддерживаем группы в колонках в дереве, поэтому делаем
+                        if (panel.containsProperty(property)) {
+                            panel.updateColumnKeys(property, GGroupObjectValue.SINGLE_EMPTY_KEY_LIST);
                         }
                     }
                 }
@@ -93,6 +94,14 @@ public class GTreeGroupController implements GGroupObjectLogicsSupplier {
     private void removeProperty(GGroupObject group, GPropertyDraw property) {
         panel.removeProperty(property);
         tree.removeProperty(group, property);
+    }
+
+    private void addProperty(GGroupObject group, GPropertyDraw property, boolean toPanel) {
+        if (toPanel) {
+            addPanelProperty(group, property);
+        } else {
+            addGridProperty(group, property);
+        }
     }
 
     private void addPanelProperty(GGroupObject group, GPropertyDraw property) {
@@ -121,9 +130,9 @@ public class GTreeGroupController implements GGroupObjectLogicsSupplier {
     public void updatePropertyDrawValues(GPropertyDraw reader, Map<GGroupObjectValue, Object> values, boolean updateKeys) {
         GPropertyDraw property = formController.getProperty(reader.ID);
         if (panel.containsProperty(property)) {
-            panel.setPropertyValues(property, values, updateKeys);
+            panel.updatePropertyValues(property, values, updateKeys);
         } else {
-            tree.setPropertyValues(property, values, updateKeys);
+            tree.updatePropertyValues(property, values, updateKeys);
         }
     }
 

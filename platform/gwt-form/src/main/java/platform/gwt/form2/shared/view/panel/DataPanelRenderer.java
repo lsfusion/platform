@@ -5,6 +5,7 @@ import com.google.gwt.user.client.ui.*;
 import platform.gwt.form2.client.form.ui.GFormController;
 import platform.gwt.form2.client.form.ui.GSinglePropertyTable;
 import platform.gwt.form2.shared.view.GPropertyDraw;
+import platform.gwt.form2.shared.view.changes.GGroupObjectValue;
 import platform.gwt.form2.shared.view.changes.dto.ColorDTO;
 
 public class DataPanelRenderer implements PanelRenderer {
@@ -13,10 +14,10 @@ public class DataPanelRenderer implements PanelRenderer {
     protected final GSinglePropertyTable valueTable;
     protected final HorizontalPanel panel;
 
-    public DataPanelRenderer(GFormController form, GPropertyDraw property) {
+    public DataPanelRenderer(GFormController form, GPropertyDraw property, GGroupObjectValue columnKey) {
         label = new Label(property.getCaptionOrEmpty() + ": ");
 
-        valueTable = new GSinglePropertyTable(form, property);
+        valueTable = new GSinglePropertyTable(form, property, columnKey);
 
         valueTable.setTableWidth(250, Style.Unit.PX);
         valueTable.setWidth("100%");
@@ -50,11 +51,11 @@ public class DataPanelRenderer implements PanelRenderer {
 
     @Override
     public void updateCellBackgroundValue(Object value) {
-        valueTable.setBackgroundColor((ColorDTO) value);
+        valueTable.setBackground((ColorDTO) value);
     }
 
     @Override
     public void updateCellForegroundValue(Object value) {
-        valueTable.setForegroundColor((ColorDTO) value);
+        valueTable.setForeground((ColorDTO) value);
     }
 }

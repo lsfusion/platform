@@ -8,6 +8,7 @@ import platform.gwt.form2.client.form.dispatch.GEditPropertyHandler;
 import platform.gwt.form2.client.form.ui.GFormController;
 import platform.gwt.form2.shared.actions.form.ServerResponseResult;
 import platform.gwt.form2.shared.view.GPropertyDraw;
+import platform.gwt.form2.shared.view.changes.GGroupObjectValue;
 import platform.gwt.form2.shared.view.classes.GType;
 import platform.gwt.form2.shared.view.grid.EditManager;
 import platform.gwt.form2.shared.view.grid.EditManagerAdapter;
@@ -20,19 +21,21 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
     private final GEditPropertyDispatcher editDispatcher;
     private final EditManager editManager = new ActionEditManager();
     private final GPropertyDraw property;
+    private final GGroupObjectValue columnKey;
 
     private final ImageButton button;
 
-    public ActionPanelRenderer(final GFormController iform, final GPropertyDraw iproperty) {
+    public ActionPanelRenderer(final GFormController iform, final GPropertyDraw iproperty, GGroupObjectValue icolumnKey) {
         this.form = iform;
         this.property = iproperty;
+        this.columnKey = icolumnKey;
         this.editDispatcher = new GEditPropertyDispatcher(form);
 
         button = new ImageButton(property.caption, property.iconPath);
         button.addClickHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
-                editDispatcher.executePropertyEditAction(ActionPanelRenderer.this, property, null, null);
+                editDispatcher.executePropertyEditAction(ActionPanelRenderer.this, property, null, columnKey);
             }
         });
     }

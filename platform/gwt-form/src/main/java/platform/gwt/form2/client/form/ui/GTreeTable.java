@@ -94,7 +94,7 @@ public class GTreeTable extends GGridPropertyTable {
         dataUpdated = true;
     }
 
-    public void setPropertyValues(GPropertyDraw property, Map<GGroupObjectValue, Object> propValues, boolean updateKeys) {
+    public void updatePropertyValues(GPropertyDraw property, Map<GGroupObjectValue, Object> propValues, boolean updateKeys) {
         if (propValues != null) {
             dataUpdated = true;
             tree.setPropertyValues(property, propValues, updateKeys);

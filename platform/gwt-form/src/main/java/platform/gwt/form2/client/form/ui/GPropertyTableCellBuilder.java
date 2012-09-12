@@ -11,13 +11,12 @@ import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.RowStyles;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
+import com.google.gwt.view.client.SelectionModel;
 
 /**
  * Based on com.google.gwt.user.cellview.client.DefaultCellTableBuilder
  */
-public class GGridCellTableBuilder extends AbstractCellTableBuilder<GridDataRecord> {
-    private final GGridPropertyTable table;
-
+public abstract class GPropertyTableCellBuilder<T> extends AbstractCellTableBuilder<T> {
     private final String evenRowStyle;
     private final String oddRowStyle;
     private final String selectedRowStyle;
@@ -28,10 +27,8 @@ public class GGridCellTableBuilder extends AbstractCellTableBuilder<GridDataReco
     private final String lastColumnStyle;
     private final String selectedCellStyle;
 
-    public GGridCellTableBuilder(GGridPropertyTable table) {
+    public GPropertyTableCellBuilder(GPropertyTable table) {
         super(table);
-
-        this.table = table;
 
         // Cache styles for faster access.
         AbstractCellTable.Style style = table.getResources().style();
@@ -47,10 +44,10 @@ public class GGridCellTableBuilder extends AbstractCellTableBuilder<GridDataReco
     }
 
     @Override
-    public void buildRowImpl(GridDataRecord rowValue, int rowIndex) {
+    public void buildRowImpl(T rowValue, int rowIndex) {
 
         // Calculate the row styles.
-        GGridTableSelectionModel selectionModel = table.getSelectionModel();
+        SelectionModel selectionModel = cellTable.getSelectionModel();
         boolean isSelected = selectionModel != null && rowValue != null && selectionModel.isSelected(rowValue);
 
         boolean isEven = rowIndex % 2 == 0;
@@ -61,7 +58,7 @@ public class GGridCellTableBuilder extends AbstractCellTableBuilder<GridDataReco
         }
 
         // Add custom row styles.
-        RowStyles<GridDataRecord> rowStyles = cellTable.getRowStyles();
+        RowStyles<T> rowStyles = cellTable.getRowStyles();
         if (rowStyles != null) {
             String extraRowStyles = rowStyles.getStyleNames(rowValue, rowIndex);
             if (extraRowStyles != null) {
@@ -76,7 +73,7 @@ public class GGridCellTableBuilder extends AbstractCellTableBuilder<GridDataReco
         // Build the columns.
         int columnCount = cellTable.getColumnCount();
         for (int columnIndex = 0; columnIndex < columnCount; columnIndex++) {
-            Column<GridDataRecord, ?> column = cellTable.getColumn(columnIndex);
+            Column<T, ?> column = cellTable.getColumn(columnIndex);
             // Create the cell styles.
             StringBuilder tdClasses = new StringBuilder(cellStyle);
             tdClasses.append(isEven ? evenCellStyle : oddCellStyle);
@@ -110,12 +107,12 @@ public class GGridCellTableBuilder extends AbstractCellTableBuilder<GridDataReco
                 td.vAlign(vAlign.getVerticalAlignString());
             }
 
-            String backgroundColor = rowValue.getBackground(columnIndex);
+            String backgroundColor = getBackground(rowValue, rowIndex, columnIndex);
             if (backgroundColor != null) {
                 td.style().trustedBackgroundColor(backgroundColor);
             }
 
-            String foregroundColor = rowValue.getForeground(columnIndex);
+            String foregroundColor = getForeground(rowValue, rowIndex, columnIndex);
             if (foregroundColor != null) {
                 td.style().trustedColor(foregroundColor);
             }
@@ -135,5 +132,8 @@ public class GGridCellTableBuilder extends AbstractCellTableBuilder<GridDataReco
         // End the row.
         tr.endTR();
     }
+
+    public abstract String getBackground(T rowValue, int row, int column);
+    public abstract String getForeground(T rowValue, int row, int column);
 }
 

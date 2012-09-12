@@ -60,8 +60,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
         controller.updatePropertyDrawValues(this, values, updateKeys);
     }
 
-    public PanelRenderer createPanelRenderer(GFormController form) {
-        return baseType.createPanelRenderer(form, this);
+    public PanelRenderer createPanelRenderer(GFormController form, GGroupObjectValue columnKey) {
+        return baseType.createPanelRenderer(form, this, columnKey);
     }
 
     public GridCellRenderer getGridCellRenderer() {

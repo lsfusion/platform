@@ -2,6 +2,7 @@ package platform.gwt.form2.shared.view.classes;
 
 import platform.gwt.form2.client.form.ui.GFormController;
 import platform.gwt.form2.shared.view.GPropertyDraw;
+import platform.gwt.form2.shared.view.changes.GGroupObjectValue;
 import platform.gwt.form2.shared.view.panel.ActionPanelRenderer;
 import platform.gwt.form2.shared.view.panel.PanelRenderer;
 import platform.gwt.form2.shared.view.grid.renderer.GridCellRenderer;
@@ -11,8 +12,8 @@ public class GActionType extends GDataType {
     public static GActionType instance = new GActionType();
 
     @Override
-    public PanelRenderer createPanelRenderer(GFormController form, GPropertyDraw property) {
-        return new ActionPanelRenderer(form, property);
+    public PanelRenderer createPanelRenderer(GFormController form, GPropertyDraw property, GGroupObjectValue columnKey) {
+        return new ActionPanelRenderer(form, property, columnKey);
     }
 
     @Override
