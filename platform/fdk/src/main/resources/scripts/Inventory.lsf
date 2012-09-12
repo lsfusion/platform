@@ -1402,3 +1402,10 @@ DESIGN inventories FROM DEFAULT {
         ADD functions.box;
     }
 }
+
+NAVIGATOR {
+    NEW inventoryNavigator 'Инвентаризация' {
+        ADD inventories;
+        ADD inventoryCommittees;
+    }
+}

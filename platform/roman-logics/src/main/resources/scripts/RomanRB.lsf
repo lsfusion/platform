@@ -99,7 +99,6 @@ NAVIGATOR {
 
     contragentClassifier {
         ADD companies;
-        ADD employees;
         ADD banks;
     }
 
@@ -107,15 +106,10 @@ NAVIGATOR {
         ADD taxes;
     }
 
-    purchase{
-        NEW accounting 'Взаиморасчеты'{
-            ADD contractSkus;
-            ADD contractLedger;
-            ADD payments;
+    purchase {
+        ADD contractNavigator {
             ADD commercialInvoices;
-            ADD writeOutContractLedger;
         }
-
     }
 
     customs {
@@ -158,10 +152,7 @@ NAVIGATOR {
         stockClassifier {
             ADD warehouses;
         }
-        NEW inventory 'Инвентаризация' {
-            ADD inventories;
-            ADD inventoryCommittees;
-        }
+        ADD inventoryNavigator;
         NEW writeOff 'Списание' {
             ADD writeOffs;
             ADD writeOffCommittees;
@@ -171,10 +162,8 @@ NAVIGATOR {
             ADD disparityBatchAs;
             ADD surplusOuts;
         }
-        NEW logisticsAggregations 'Сводная информация' {
-            ADD stockCost;
-            ADD stockBalance;
-        }
+        ADD stockCost;
+        ADD stockBalance;
     }
 
     logistics {
@@ -205,26 +194,16 @@ NAVIGATOR {
     retailClassifier {
         ADD gendersDialog;
         ADD stores;
-        ADD groupsCashRegister;
     }
 
     retail {
         NEW retailPriceDocument 'Документы расценки' {
-            ADD inputListRegisters;
             ADD userPriceChanges;
+            ADD inputListRegisters;
             ADD priceChangeDocuments;
         }
-        NEW POSSales 'Розничные продажи' {
-            ADD zReports;
-            ADD operationCashRegister;
-            ADD POS;
-        }
-        NEW retailCRM 'CRM' {
-            ADD clients;
-            ADD discountCards;
-            ADD promotionGroups;
-            ADD promotions;
-        }
+        ADD POSNavigator;
+        ADD retailCRMNavigator;
         NEW retailAggregations 'Сводная информация' {
             ADD sumAccountDocumentLedger;
         }
@@ -236,6 +215,12 @@ NAVIGATOR {
         NEW tradeDocument 'Отгрузки' TO leftToolbar {
             ADD invoiceWHOuts;
         }
+    }
+
+    ADD machineryNavigator AFTER wholesaleTrade TO leftToolbar;
+
+    NEW hr 'Кадры' AFTER machineryNavigator TO leftToolbar {
+        ADD employees;
     }
 
     printForms{

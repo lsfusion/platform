@@ -378,3 +378,14 @@ EXTEND DESIGN defaultData {
         }
     }
 }
+
+NAVIGATOR {
+    NEW machineryNavigator 'Оборудование' {
+        NEW machineryExport 'Загрузка в оборудование' {
+            ADD machineryPriceTransactions;
+        }
+        NEW machineryCatalog 'Справочники' {
+            ADD equipmentServer;
+        }
+    }
+}

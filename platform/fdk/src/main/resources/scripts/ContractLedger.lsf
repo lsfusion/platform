@@ -733,7 +733,7 @@ DESIGN payments FROM DEFAULT{
 
 isCostedOutContractLedger 'Расписан' (outContractLedger) = sumOutContractLedger(outContractLedger) (-) costedInContractLedgerOutContractLedger(outContractLedger);
 
-FORM writeOutContractLedger 'Разнесение документов'
+FORM costContractLedger 'Разнесение документов'
 
     OBJECTS d = DATE FIXED PANEL
     PROPERTIES(d) date = OBJVALUE
@@ -767,7 +767,7 @@ FORM writeOutContractLedger 'Разнесение документов'
 
 ;
 
-DESIGN writeOutContractLedger FROM DEFAULT {
+DESIGN costContractLedger FROM DEFAULT {
 
     NEW topContainer {
 
@@ -975,4 +975,12 @@ DESIGN contractLedger FROM DEFAULT{
     }
 
     ADD functions.box;
+}
+
+NAVIGATOR {
+    contractNavigator {
+        ADD contractLedger;
+        ADD payments;
+        ADD costContractLedger;
+    }
 }

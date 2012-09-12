@@ -182,3 +182,12 @@ loadDefaultLabelTypes 'Загрузить стандартные ценники'
 } IN loadDefaultGroup;
 
 @implementLoadDefaultData(loadDefaultLabelTypes);
+
+NAVIGATOR {
+    machineryNavigator {
+        NEW labelNavigator 'Ценники' {
+            ADD labelTransactions;
+            ADD labelTypes;
+        }
+    }
+}

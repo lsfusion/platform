@@ -7839,23 +7839,15 @@ NAVIGATOR {
             ADD wastages;
             ADD wastageCommitteeDialog;
         }
-        NEW contracts 'Взаиморасчеты' {
-            ADD contractLedger;
-            ADD payments;
-            ADD writeOutContractLedger;
-            ADD contractSkus;
-        }
+        ADD contractNavigator;
         NEW purchaseCatalog 'Справочники' {
             ADD suppliers;
-            ADD contractsSkuSupplier;
         }
     }
 
     NEW warehouse 'Управление складом' TO formsToolbar {
-        NEW inventoryDocuments 'Инвентаризация' {
-            ADD inventories;
+        ADD inventoryNavigator {
             ADD naturalLosses;
-            ADD inventoryCommittees;
         }
         NEW writeOffDocuments 'Списания' {
             ADD writeOffs;
@@ -7863,10 +7855,8 @@ NAVIGATOR {
         NEW disparityDocuments 'Пересортица' {
             ADD disparities;
         }
-        NEW warehouseReport 'Сводная информация' {
-            ADD stockCost;
-            ADD stockBalance;
-        }
+        ADD stockCost;
+        ADD stockBalance;
     }
 
     NEW logistics 'Логистика' TO formsToolbar {
@@ -7877,13 +7867,7 @@ NAVIGATOR {
     }
 
     NEW retail 'Розничная торговля' TO formsToolbar {
-        NEW retailPOS 'Касса' {
-            ADD POS;
-            ADD zReports;
-            ADD operationCashRegister;
-            ADD groupsCashRegister;
-            ADD cashRegistersModels;
-        }
+        ADD POSNavigator;
         NEW retailStatement 'Безналичный расчет' {
             ADD specifications;
             ADD statements;
@@ -7895,11 +7879,7 @@ NAVIGATOR {
             ADD registerCommitteeDialog;
             ADD priceChangeCommitteeDialog;
         }
-        NEW retailCRM 'CRM' {
-            ADD promotions;
-            ADD discountCards;
-            ADD clients;
-        }
+        ADD retailCRMNavigator;
         NEW retailCatalog 'Справочники' {
             ADD stores;
         }
@@ -7916,35 +7896,8 @@ NAVIGATOR {
         }
     }
 
-    NEW equipmentElement 'Оборудование' TO formsToolbar {
-        NEW equipmentExport 'Загрузка в оборудование' {
-            ADD machineryPriceTransactions;
-        }
-        NEW equipmentScales 'Весы'{
-            ADD groupsScales;
-            ADD scalesModels;
-            ADD labelFormats;
-            ADD cellScales;
-        }
-        NEW equipmentChecks 'Прайс чекеры'{
-            ADD groupsPriceChecker;
-            ADD priceCheckerModels;
-        }
-        NEW equipmentTerminals 'Терминалы сбора данных' {
-            ADD terminalDocuments;
-            ADD groupsTerminal;
-            ADD terminalModels;
-            ADD groupsTerminalDocumentType;
-            ADD handbooksTerminalDocumentType;
-        }
-        NEW equipmentLabels 'Ценники' {
-            ADD labelTransactions;
-            ADD labelTypes;
-        }
-        NEW equipmentCatalog 'Справочники' {
-            ADD equipmentServer;
-        }
-    }
+    ADD machineryNavigator TO formsToolbar;
+
     NEW manufactory 'Производство' TO formsToolbar {
         ADD actOfStudies;
         ADD components;

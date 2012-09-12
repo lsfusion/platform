@@ -291,3 +291,9 @@ EXTEND DESIGN company {
         }
     }
 }
+
+NAVIGATOR {
+    NEW contractNavigator 'Договора' {
+        ADD contractSkus;
+    }
+}

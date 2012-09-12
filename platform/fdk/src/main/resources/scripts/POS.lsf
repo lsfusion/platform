@@ -1046,6 +1046,16 @@ DESIGN POS FROM DEFAULT {
     }
 }
 
+NAVIGATOR {
+    NEW POSNavigator 'Касса' {
+        ADD POS;
+        ADD zReports;
+        ADD operationCashRegister;
+        ADD groupsCashRegister;
+        ADD cashRegistersModels;
+    }
+}
+
 // ----------------------------------------------- Стандартные значения ------------------------------------- //
 
 EXTEND FORM operationCashRegister

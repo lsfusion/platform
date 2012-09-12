@@ -143,3 +143,12 @@ EXTEND DESIGN defaultData {
         }
     }
 }
+
+NAVIGATOR {
+    machineryNavigator {
+        NEW priceCheckerNavigator 'Прайс-чекеры' {
+            ADD groupsPriceChecker;
+            ADD priceCheckerModels;
+        }
+    }
+}

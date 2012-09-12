@@ -417,3 +417,15 @@ EXTEND DESIGN defaultData {
         }
     }
 }
+
+NAVIGATOR {
+    machineryNavigator {
+        NEW terminalNavigator 'Терминалы сбора данных' {
+            ADD terminalDocuments;
+            ADD groupsTerminal;
+            ADD terminalModels;
+            ADD groupsTerminalDocumentType;
+            ADD handbooksTerminalDocumentType;
+        }
+    }
+}

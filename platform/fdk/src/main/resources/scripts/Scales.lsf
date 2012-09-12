@@ -223,3 +223,14 @@ EXTEND DESIGN defaultData {
         }
     }
 }
+
+NAVIGATOR {
+    machineryNavigator {
+        NEW scalesNavigator 'Весы'{
+            ADD groupsScales;
+            ADD scalesModels;
+            ADD labelFormats;
+            ADD cellScales;
+        }
+    }
+}

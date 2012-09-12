@@ -448,3 +448,12 @@ EXTEND FORM discountCard
 EXTEND DESIGN discountCard {
     ADD p.box BEFORE functions.box;
 }
+
+NAVIGATOR {
+    NEW retailCRMNavigator 'CRM' {
+        ADD promotions;
+        ADD promotionGroups;
+        ADD discountCards;
+        ADD clients;
+    }
+}
