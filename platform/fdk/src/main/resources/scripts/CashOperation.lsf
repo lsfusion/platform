@@ -69,6 +69,15 @@ curSumCashCashRegister 'Текущая сумма наличных в кассе
 sumCashCashRegisterDateTime 'Сумма наличных в кассе на дату/время' (cashRegister, date) =
     sumIncomeCashOrderDateTime(cashRegister, date) (-) sumOutcomeCashOrderDateTime(cashRegister, date);
 
+//---------------------------- Операции с фискальным регистратором ---------------------------------------//
+
+fiscalUpdateData 'Загрузить информацию' = ABSTRACT ACTION();
+fiscalXReport 'X-отчёт' = ABSTRACT ACTION();
+fiscalZReport 'Закрыть Z-отчёт' = ABSTRACT ACTION() CONFIRM;
+fiscalPrintZReport 'Напечатать отчёт' = ABSTRACT ACTION();
+fiscalAdvancePaper 'Прогон ленты' = ABSTRACT ACTION();
+fiscalCutReceipt 'Отрезать чек' = ABSTRACT ACTION();
+
 //---------------------------- Инкассация ----------------------------------------------------------------//
 
 CLASS collection 'Инкассация' : outcomeCashOrder, historyObject, numeratedObject;
@@ -297,8 +306,8 @@ FORM operationCashRegister 'Кассовые операции'
     PROPERTIES printAllIncomeCashOrder(dFrom, dTo) TODRAW i
 
     FILTERS departmentStoreCashDocument(i) == d,
-            dateCashDocument(i) >= dFrom,
-            dateCashDocument(i) <= dTo
+            dateCashDocument(i) >= (dFrom AS DATE),
+            dateCashDocument(i) <= (dTo AS DATE)
 
     OBJECTS o = outcomeCashOrder
     PROPERTIES(o) READONLY numberCashDocument, dateCashDocument, timeCashDocument, nameDepartmentStoreCashDocument,
@@ -307,6 +316,7 @@ FORM operationCashRegister 'Кассовые операции'
     PROPERTIES printAllOutcomeCashOrder(dFrom, dTo) TODRAW o
     PROPERTIES(o) delete
     PROPERTIES addCollectionForm(d) TODRAW o, editCollectionForm(o)
+    PROPERTIES() fiscalUpdateData, fiscalXReport
 
     FILTERS departmentStoreCashDocument(o) == d,
             dateCashDocument(o) >= dFrom,
@@ -317,6 +327,13 @@ FORM operationCashRegister 'Кассовые операции'
 DESIGN operationCashRegister FROM DEFAULT {
 
     NEW topContainer{
+
+       NEW actions {
+            caption = 'Действия с кассой';
+            childConstraints = TO THE RIGHT;
+            ADD PROPERTY(fiscalUpdateData);
+            ADD PROPERTY(fiscalXReport);
+       }
 
         ADD interval.box{
             caption = 'Период';

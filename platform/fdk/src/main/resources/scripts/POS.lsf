@@ -212,11 +212,15 @@ CONSTRAINT taxRange(VATReceiptSaleDetail(detail)) != tax.taxVAT OR
            CHECKED BY VATReceiptSaleDetail
            MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС и стране магазина';
 
+VATSumSaleReceipt 'Сумма налогов по продажам' (receipt) = DATA DOUBLE (receipt);
+
 VATReceiptReturnDetail = DATA range (receiptReturnDetail);
 CONSTRAINT taxRange(VATReceiptReturnDetail(detail)) != tax.taxVAT OR
            countryRange(VATReceiptReturnDetail(detail)) != countryStock(departmentStoreReceiptReturnDetail(detail))
            CHECKED BY VATReceiptReturnDetail
            MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС и стране магазина';
+
+VATSumReturnReceipt 'Сумма налогов по возвратам' (receipt) = DATA DOUBLE (receipt);
 
 VATReceiptDetail (receiptDetail) = UNION EXCLUSIVE VATReceiptReturnDetail(receiptDetail), VATReceiptSaleDetail(receiptDetail) PERSISTENT;
 numberVATReceiptDetail 'НДС, номер' (receiptDetail) = numberRange(VATReceiptDetail(receiptDetail));
@@ -347,7 +351,7 @@ FORM zReport 'Z-отчет'
                            // todo : добавить операции возврата по штрих-коду
 
     PROPERTIES(d) typeReceiptDetail, idBarcodeReceiptDetail, nameSkuReceiptDetail, quantityReceiptDetail, quantityReturnedReceiptSaleDetail FORCE GRID, priceReceiptDetail,
-                  sumReceiptDetail, discountPercentReceiptSaleDetail FORCE GRID, discountSumReceiptDetail, descriptionSaleReceiptReturnDetail, ADDOBJ, delete
+                  sumReceiptDetail, discountPercentReceiptSaleDetail FORCE GRID, discountSumReceiptDetail, descriptionSaleReceiptReturnDetail, numberVATReceiptDetail, ADDOBJ, delete
 
     FILTERS receiptReceiptDetail(d)==b
 
@@ -489,9 +493,12 @@ GROUP receiptActionGroup 'Оплата' : publicGroup;
 
 // Проведение чека
 
+postPrintReceipt 'Напечатать фискальный чек' = ABSTRACT ACTION (receipt);
+
 FORM postReceiptPayment 'Оплата по чеку'
     OBJECTS r = receipt FIXED PANEL
     PROPERTIES(r) READONLY changePaymentReceipt
+    PROPERTIES(r) postPrintReceipt
 
     OBJECTS p = payment FIXED GRID
     PROPERTIES(p) sumPayment, namePaymentTypePayment, ADDOBJ, delete
@@ -532,9 +539,7 @@ postReceipt 'Смешанный платеж' = ACTION (receipt) {
         }
         FORM postReceiptPayment OBJECTS r = receipt MODAL CHECK;
         IF formResult() == formResult.ok THEN {
-            EXEC apply();
-
-            EXEC createCurrentReceipt();
+            EXEC postPrintReceipt(receipt);
         } ELSE {
             FOR receiptPayment(p) == receipt DO {
                 EXEC delete(p);
@@ -551,9 +556,7 @@ postCardReceipt 'Карточкой' = ACTION (receipt) {
             SET paymentTypePayment(p) <- minCardPaymentType();
             SET sumPayment(p) <- sumReceiptDetailReceipt(receipt);
         }
-        EXEC apply();
-        // todo : здесь нужно как-то проверить, что все применилось
-        EXEC createCurrentReceipt();
+        EXEC postPrintReceipt(receipt);
     }
 } EDITKEY 'F10' CONFIRM IN receiptActionGroup;
 
@@ -567,9 +570,7 @@ postCashReceipt 'Наличными' = ACTION (receipt) {
         }
         FORM postReceiptPayment OBJECTS r = receipt MODAL CHECK;
         IF formResult() == formResult.ok THEN {
-            EXEC apply();
-
-            EXEC createCurrentReceipt();
+            EXEC postPrintReceipt(receipt);
         } ELSE {
             FOR receiptPayment(p) == receipt DO {
                 EXEC delete(p);
@@ -785,8 +786,6 @@ openCurrentZReport 'Открыть Z-отчет' = ACTION () {
         SET zReportCashRegister(cashRegister) IF cashRegister == currentCashRegister() <- z AS zReport;
         EXEC apply();
     }
-
-    EXEC createCurrentReceipt();
 } CONFIRM IN receiptZReportGroup;
 
 closeCurrentZReport 'Закрыть Z-отчет' = ACTION () {
@@ -925,7 +924,7 @@ prevCurrentBalanceReceiptDetail 'Тек. остаток' (receiptDetail) = prevC
 
 
 FORM POS
-    PROPERTIES() READONLY hostnameCurrentComputer, numberCurrentZReport, currentDateTime, currentUserName
+    PROPERTIES() READONLY hostnameCurrentComputer, currentDateTime, currentUserName
 
     OBJECTS r = receipt FIXED PANEL
     PROPERTIES(r) SHOWIF currentZReport() discountSumReceiptDetailReceipt, sumReceiptDetailReceipt,
@@ -949,7 +948,7 @@ FORM POS
     PROPERTIES(d, pc) SHOWIF currentZReport()       quantityReceiptSaleDetailPromotionCondition, promotionSumReceiptSaleDetailPromotionCondition
     FILTERS quantityReceiptSaleDetailPromotionCondition(d, pc)
 
-    PROPERTIES() openCurrentZReport SHOWIF closedCurrentZReport(), closeCurrentZReport SHOWIF currentZReport()
+    PROPERTIES() fiscalAdvancePaper, fiscalCutReceipt
 
     EVENTS
         ON INIT EXEC createCurrentReceipt()
@@ -1024,9 +1023,6 @@ DESIGN POS FROM DEFAULT {
 
         NEW southContainer {
             childConstraints = TO THE RIGHT;
-            ADD NOGROUP.receiptZReportGroup {
-                childConstraints = TO THE RIGHT;
-            }
             NEW currentContainer {
                 title = 'Текущие значения';
                 childConstraints = TO THE RIGHT;
@@ -1040,11 +1036,33 @@ DESIGN POS FROM DEFAULT {
                     focusable = FALSE;
                 }
             }
+            NEW actionsContainer {
+            title = 'Действия с кассой';
+            childConstraints = TO THE RIGHT;
+            ADD PROPERTY(fiscalAdvancePaper);
+            ADD PROPERTY(fiscalCutReceipt);
+            }
         }
     }
 }
 
 // ----------------------------------------------- Стандартные значения ------------------------------------- //
+
+EXTEND FORM operationCashRegister
+    PROPERTIES() READONLY numberCurrentZReport
+    PROPERTIES() fiscalZReport  SHOWIF currentZReport()
+    PROPERTIES() openCurrentZReport SHOWIF closedCurrentZReport()
+;
+
+EXTEND DESIGN operationCashRegister{
+
+    actions {
+            ADD PROPERTY(fiscalZReport);
+            ADD PROPERTY(openCurrentZReport);
+            ADD PROPERTY(numberCurrentZReport);
+    }
+}
+
 
 loadDefaultPaymentType 'Добавить тип оплаты' = ACTION(string, paymentMeans) {
     ADDOBJ paymentType;
@@ -1061,3 +1079,4 @@ loadDefaultPaymentTypes 'Загрузить стандартные типы оп
 } IN loadDefaultGroup;
 
 @implementLoadDefaultData(loadDefaultPaymentTypes);
+

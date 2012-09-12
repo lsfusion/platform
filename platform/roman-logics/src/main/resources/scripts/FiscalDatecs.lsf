@@ -1,0 +1,25 @@
+MODULE FiscalDatecs;
+
+REQUIRE System,
+        POS;
+
+fiscalDatecsPrintReceipt 'Напечатать фискальный чек' = ACTION CUSTOM 'roman.actions.FiscalDatecsPrintReceiptActionProperty';
+postPrintReceipt(receipt) += fiscalDatecsPrintReceipt(receipt);
+
+fiscalDatecsAdvancePaper 'Прогон ленты' = ACTION CUSTOM 'roman.actions.FiscalDatecsAdvancePaperActionProperty';
+fiscalAdvancePaper() += fiscalDatecsAdvancePaper();
+
+fiscalDatecsCutReceipt 'Отрезать чек' = ACTION CUSTOM 'roman.actions.FiscalDatecsCutReceiptActionProperty';
+fiscalCutReceipt() += fiscalDatecsCutReceipt();
+
+fiscalDatecsPrintZReport 'Напечатать отчёт' = ACTION CUSTOM 'roman.actions.FiscalDatecsPrintZReportActionProperty';
+fiscalPrintZReport() += fiscalDatecsPrintZReport();
+
+fiscalDatecsXReport 'X-отчёт' = ACTION CUSTOM 'roman.actions.FiscalDatecsXReportActionProperty' TOOLBAR;
+fiscalXReport() += fiscalDatecsXReport();
+
+fiscalDatecsZReport 'Z-отчёт' = ACTION CUSTOM 'roman.actions.FiscalDatecsZReportActionProperty' TOOLBAR;
+fiscalZReport() += fiscalDatecsZReport();
+
+fiscalDatecsUpdateData 'Загрузить информацию' = ACTION CUSTOM 'roman.actions.FiscalDatecsUpdateDataActionProperty' TOOLBAR;
+fiscalUpdateData() += fiscalDatecsUpdateData();

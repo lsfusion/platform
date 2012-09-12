@@ -31,5 +31,9 @@
             <groupId>net.sf.sevenzipjbinding</groupId>
             <artifactId>SevenZipNativeInitializationException</artifactId>
         </dependency>
+        <dependency>
+            <groupId>net.sf.jacob-project</groupId>
+            <artifactId>jacob</artifactId>
+        </dependency>
     </dependencies>
 </project>

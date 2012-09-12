@@ -7,6 +7,7 @@ CLASS groupCashRegister 'Группы касс' : groupMachinery;
 
 departmentStoreGroupCashRegister = DATA departmentStore (groupCashRegister);
 stockGroupMachinery (groupMachinery) += departmentStoreGroupCashRegister(groupMachinery);
+operatorNumberGroupCashRegisterCustomUser 'Номер в группе касс' = DATA INTEGER (groupCashRegister, customUser);
 
 // Модели
 CLASS cashRegisterModel 'Модель касс' : model;
@@ -46,14 +47,24 @@ dateCashRegister 'Дата фискализации кассового аппа�
 
 directoryCashRegister 'Директория обмена с кассой' = DATA STRING[100] (cashRegister) IN baseGroup;
 
+comPortCashRegister 'Порт кассы' = DATA INTEGER (cashRegister) IN baseGroup;
+baudRateCashRegister 'Скорость кассы' = DATA INTEGER (cashRegister) IN baseGroup;
+countryCashRegister 'Страна кассы' (cashRegister) = countryStock(stockGroupMachinery(groupCashRegisterCashRegister(cashRegister)));
+
 computerCashRegister = DATA computer (cashRegister);
 hostnameComputerCashRegister 'Компьютер' (cashRegister) = hostname(computerCashRegister(cashRegister)) IN baseGroup;
 
 cashRegisterComputer (computer) = GROUP UNIQUE cashRegister BY computerCashRegister(cashRegister) WHERE cashRegister IS cashRegister PERSISTENT;
+currentCashRegister 'Текущая касса' = cashRegisterComputer(currentComputer());
+comPortCurrentCashRegister 'Порт' = comPortCashRegister(currentCashRegister());
+baudRateCurrentCashRegister 'Скорость весов' = baudRateCashRegister(currentCashRegister());
+nppMachineryCurrentCashRegister 'Номер кассового места' = nppMachinery(currentCashRegister());
+operatorNumberCurrentCashRegister (user) = operatorNumberGroupCashRegisterCustomUser(groupCashRegisterCashRegister(currentCashRegister()), user);
+countryCurrentCashRegister 'Страна кассы' = countryCashRegister(currentCashRegister());
 
 FORM cashRegister 'Касса'
     OBJECTS c=cashRegister FIXED PANEL
-    PROPERTIES(c) nameGroupMachineryMachinery, nppMachinery, descriptionMachinery, portMachinery, numberCashRegister, directoryCashRegister, nameModelMachinery,
+    PROPERTIES(c) nameGroupMachineryMachinery, nppMachinery, descriptionMachinery, portMachinery, numberCashRegister, directoryCashRegister, comPortCashRegister, baudRateCashRegister, nameModelMachinery,
                   dateCashRegister, hostnameComputerCashRegister
     EDIT cashRegister OBJECT c
 ;
@@ -65,8 +76,12 @@ FORM groupCashRegister 'Группа касс'
                     filterSkuGroupMachinery, showFilterSkuGroupMachinery SHOWIF filterSkuGroupMachinery(grc)
 
     OBJECTS c=cashRegister
-    PROPERTIES(c)   nameGroupMachineryMachinery, nppMachinery, descriptionMachinery, portMachinery, numberCashRegister, directoryCashRegister, nameModelMachinery,
+    PROPERTIES(c)   nameGroupMachineryMachinery, nppMachinery, descriptionMachinery, portMachinery, numberCashRegister, directoryCashRegister, comPortCashRegister, baudRateCashRegister, nameModelMachinery,
                     dateCashRegister, hostnameComputerCashRegister, ADDOBJ, delete
+
+    OBJECTS cu=customUser
+    PROPERTIES(cu) userLogin, userFirstName, userLastName, customUserSIDMainRole
+    PROPERTIES(grc, cu) operatorNumberGroupCashRegisterCustomUser
 
     FILTERGROUP filters2
         FILTER 'Показывать только для данной группы' 'F10' groupCashRegisterCashRegister(c) == grc DEFAULT
@@ -81,7 +96,7 @@ FORM groupsCashRegister 'Группы касс'
     PROPERTIES(grc)  ADDFORM, EDITFORM, delete
 
     PROPERTIES(c) READONLY nppMachinery, descriptionMachinery, portMachinery,
-                           numberCashRegister, directoryCashRegister, nameModelMachinery,
+                           numberCashRegister, directoryCashRegister, comPortCashRegister, baudRateCashRegister, nameModelMachinery,
                            dateCashRegister
     FILTERS groupCashRegisterCashRegister(c) == grc
 ;
@@ -104,7 +119,7 @@ groupCashRegisterCashRegisterPriceTransaction 'Группа касс' = DATA gro
 groupMachineryMachineryPriceTransaction (transaction) += groupCashRegisterCashRegisterPriceTransaction(transaction);
 
 EXTEND FORM groupMachineryInput
-    PROPERTIES(m) READONLY FORCE GRID SHOWIF isGroupCashRegister(g) numberCashRegister, directoryCashRegister,
+    PROPERTIES(m) READONLY FORCE GRID SHOWIF isGroupCashRegister(g) numberCashRegister, directoryCashRegister, comPortCashRegister, baudRateCashRegister,
                                                                     nameModelMachinery, dateCashRegister
 ;
 
