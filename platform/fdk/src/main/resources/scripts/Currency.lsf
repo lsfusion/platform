@@ -19,18 +19,21 @@ curRateTypeExchangeCurrency 'Текущий курс обмена' (typeExchange
 typeExchangeRetailCurrency 'Тип обмена для розницы ИД' =  DATA typeExchange(currency);
 nameTypeExchangeRetailCurrency 'Тип обмена для розницы' (currency) = name(typeExchangeRetailCurrency(currency));
 
+accuracyCurrency 'Число знаков' = DATA INTEGER(currency);
+roundCurrency (number, currency) = round(number, accuracyCurrency(currency));
+
 // --------------------------------------------- Формы для ввода курсов валют --------------------------------------- //
 
 FORM currency 'Валюта'
     OBJECTS c = currency FIXED PANEL
-    PROPERTIES (c)  name, shortNameCurrency, symbolCurrency, documentNameCurrency, nameTypeExchangeRetailCurrency
+    PROPERTIES (c)  name, shortNameCurrency, symbolCurrency, documentNameCurrency, nameTypeExchangeRetailCurrency, accuracyCurrency
 
     EDIT currency OBJECT c
 ;
 
 FORM currencies 'Валюты'
     OBJECTS c = currency
-    PROPERTIES(c) READONLY name, shortNameCurrency, symbolCurrency, documentNameCurrency, nameTypeExchangeRetailCurrency
+    PROPERTIES(c) READONLY name, shortNameCurrency, symbolCurrency, documentNameCurrency, nameTypeExchangeRetailCurrency, accuracyCurrency
 
     PROPERTIES(c) ADDFORM, EDITFORM, delete
 
