@@ -444,3 +444,28 @@ EXTEND DESIGN options {
         ADD PROPERTY(nameTypeDutyRegistration);
     }
 }
+
+EXTEND FORM migrationData
+
+    OBJECTS l = language FIXED PANEL
+    PROPERTIES(l) SELECTOR name
+
+    OBJECTS m = multiLanguageNamed
+    PROPERTIES(m) name TODRAW m FORCE GRID
+    PROPERTIES(m, l) languageName
+
+;
+
+EXTEND DESIGN migrationData {
+    pane {
+        NEW lm {
+            caption = 'Перевод';
+            ADD l.box{
+                caption = 'Язык перевода(иностр.)';
+            }
+            ADD m.box{
+                caption = 'Наименования';
+            }
+        }
+    }
+}
