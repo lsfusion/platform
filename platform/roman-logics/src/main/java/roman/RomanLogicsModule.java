@@ -1553,6 +1553,8 @@ public class RomanLogicsModule extends LogicsModule {
         addTable("customCategory10STypeDuty", customCategory10, typeDuty);
         addTable("customCategory10SubCategory", customCategory10, subCategory);
         addTable("customCategory10SubCategoryCountry", customCategory10, subCategory, baseLM.country);
+        addTable("customCategoryOriginCustomsZone", customCategoryOrigin, customsZone);
+        addTable("skuCustomsZone", sku, customsZone);
 
         addTable("colorSupplier", colorSupplier);
         addTable("sizeSupplier", sizeSupplier);
@@ -1615,6 +1617,7 @@ public class RomanLogicsModule extends LogicsModule {
         addTable("barcodeObject", baseLM.barcodeObject);
 
         addTable("categoryGenderCompositionTypeFabric", category, gender, COMPOSITION_CLASS, typeFabric);
+        addTable("categoryGenderCompositionTypeFabricCustomsZone", category, gender, COMPOSITION_CLASS, typeFabric, customsZone);
         addTable("freightCategoryGenderCompositionTypeFabric", freight, category, gender, COMPOSITION_CLASS, typeFabric);
 
         addTable("sizeSupplierGenderCategory", sizeSupplier, gender, category);

@@ -512,6 +512,7 @@ uniqueGroupDeclaration = GROUP UNIQUE groupDeclaration BY userNumberGroupDeclara
                                                           WHERE groupDeclaration IS groupDeclaration;
 inDeclarationGroupDeclaration (declaration, groupDeclaration) = declarationGroupDeclaration(groupDeclaration)==declaration;
 
+// todo надо будет удалить таблицу
 TABLE groupstring (object, object, object, object, STRING[200]);
 
 //quantityDeclarationGroup(declaration, article, customCategory10, STRING, country) => uniqueGroupDeclaration(declaration, article, customCategory10, STRING, country) RESOLVE TRUE;
