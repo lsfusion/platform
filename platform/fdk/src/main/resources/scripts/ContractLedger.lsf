@@ -795,7 +795,7 @@ ADD functions.box;
 
 //-------------------------------------------- Сводная форма ---------------------------------------------------------//
 
-FORM contractLedger 'Задолженности и платежи по договору'
+FORM contractLedger 'Управление задолженностями'
 
     OBJECTS d = DATE FIXED PANEL
     PROPERTIES(d) date = OBJVALUE

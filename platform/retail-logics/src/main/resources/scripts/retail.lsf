@@ -7796,87 +7796,37 @@ EXTEND DESIGN integrationData {
 
 //---------------------------- Настройка навигатора ----------------------------------------//
 
-WINDOW TOOLBAR topToolbar 'Папки' VERTICAL HIDETITLE HIDESCROLLBARS POSITION(0, 0, 20, 5);
-WINDOW TOOLBAR formsToolbar 'Формы' VERTICAL HIDETITLE POSITION (0, 5, 20, 65);
-WINDOW TREE formsTree 'Формы' HIDETITLE POSITION (0, 5, 20, 65);
+WINDOW TOOLBAR mainToolbar 'Навигатор' HORIZONTAL HIDETITLE HIDESCROLLBARS POSITION(0, 0, 100, 6);
+WINDOW TOOLBAR formsToolbar 'Формы' VERTICAL HIDETITLE POSITION (0, 6, 20, 64);
+WINDOW TREE formsTree 'Формы' HIDETITLE POSITION (0, 6, 20, 64);
 
 HIDE WINDOW System.relevantForms;
 HIDE WINDOW System.relevantClassForms;
 
 NAVIGATOR {
 
-    baseElement TO topToolbar;
+    baseElement TO mainToolbar;
 
-    NEW lists 'Справочники' TO formsToolbar {
-//
-//        NEW testInput 'Тест ввода товара' ACTION testDialogSku;
-//
-        NEW goods 'Товары' {
+    NEW catalogs 'Справочники' TO formsToolbar {
+        NEW itemCatalog 'Товары' {
             ADD items;
-            ADD wares;
-            ADD components;
             ADD itemGroups;
-            ADD statisticGroups;
             ADD UOMs;
+            ADD wares;
+            ADD statisticGroups;
             ADD naturalLossItem;
             ADD papers;
         }
-        NEW shopStructure 'Подразделения' {
+        NEW contragents 'Контрагенты' {
             ADD companies;
-//            ADD qualifier;
-            ADD stores;
-        }
-        NEW employeeRelations 'Сотрудники' {
-            ADD employees;
-            NEW committeeRelations 'Комиссии' {
-                ADD registerCommitteeDialog;
-                ADD priceChangeCommitteeDialog;
-                ADD inventoryCommittees;
-                ADD wastageCommitteeDialog;
-            }
-        }
-        NEW contragents 'Контрагенты'{
-            ADD suppliers;
-            ADD contractsSkuSupplier;
-            ADD customers;
-            ADD discountCards;
-            ADD clients;
             ADD banks;
         }
-        NEW equipment 'Оборудование' {
-            ADD equipmentServer;
-            NEW equipmentCashRegisters 'Кассы'{
-                ADD groupsCashRegister;
-                ADD cashRegistersModels;
-            }
-            NEW equipmentScales 'Весы'{
-                ADD groupsScales;
-                ADD scalesModels;
-                ADD labelFormats;
-                ADD cellScales;
-            }
-            NEW equipmentChecks 'Прайс чекеры'{
-                ADD groupsPriceChecker;
-                ADD priceCheckerModels;
-            }
-            NEW equipmentTerminals 'ТСД' {
-                ADD groupsTerminal;
-                ADD terminalModels;
-                ADD groupsTerminalDocumentType;
-                ADD handbooksTerminalDocumentType;
-            }
-            ADD labelTypes;
-        }
-        NEW producing 'Производство'{
-            ADD cuttings;
-            ADD recipes;
-        }
-        NEW pricing 'Ценообразование'{
+        NEW tax 'Налоги' {
             ADD taxes;
         }
     }
 
-    NEW processes 'Бизнес-процессы' TO formsToolbar {
+    NEW purchase 'Управление закупками' TO formsToolbar {
         NEW orders 'Заказы' {
             ADD isSupplierItemDepartmentStore;
             ADD timeTableDate;
@@ -7885,65 +7835,124 @@ NAVIGATOR {
         }
         NEW incomeShipments 'Поставки' {
             ADD shipments;
-            ADD wastages;
             ADD returnSuppliers;
+            ADD wastages;
+            ADD wastageCommitteeDialog;
         }
-        NEW carryingInventories 'Инвентаризация' {
+        NEW contracts 'Взаиморасчеты' {
+            ADD contractLedger;
+            ADD payments;
+            ADD writeOutContractLedger;
+            ADD contractSkus;
+        }
+        NEW purchaseCatalog 'Справочники' {
+            ADD suppliers;
+            ADD contractsSkuSupplier;
+        }
+    }
+
+    NEW warehouse 'Управление складом' TO formsToolbar {
+        NEW inventoryDocuments 'Инвентаризация' {
             ADD inventories;
             ADD naturalLosses;
+            ADD inventoryCommittees;
         }
-        NEW itemWriteOffs 'Списания' {
+        NEW writeOffDocuments 'Списания' {
             ADD writeOffs;
         }
+        NEW disparityDocuments 'Пересортица' {
+            ADD disparities;
+        }
+        NEW warehouseReport 'Сводная информация' {
+            ADD stockCost;
+            ADD stockBalance;
+        }
+    }
+
+    NEW logistics 'Логистика' TO formsToolbar {
         NEW itemInnerFlows 'Внутренние перемещения' {
             ADD innerFlows;
             ADD innerArrivals;
         }
-        NEW itemSpecifications 'Отпуск из розницы' {
-            ADD specifications;
-            ADD statements;
-        }
-        NEW retailSale 'Розничные продажи'{
+    }
+
+    NEW retail 'Розничная торговля' TO formsToolbar {
+        NEW retailPOS 'Касса' {
+            ADD POS;
             ADD zReports;
             ADD operationCashRegister;
+            ADD groupsCashRegister;
+            ADD cashRegistersModels;
+        }
+        NEW retailStatement 'Безналичный расчет' {
+            ADD specifications;
+            ADD statements;
+            ADD customers;
         }
         NEW priceManagement 'Управление ценами' {
-            ADD priceIntervals;
             ADD userPriceChanges;
+            ADD priceIntervals;
+            ADD registerCommitteeDialog;
+            ADD priceChangeCommitteeDialog;
+        }
+        NEW retailCRM 'CRM' {
             ADD promotions;
+            ADD discountCards;
+            ADD clients;
         }
-        NEW mixturePatterns 'Пересортица' {
-            ADD disparities;
+        NEW retailCatalog 'Справочники' {
+            ADD stores;
         }
-        NEW production 'Производство'{
-            ADD actOfStudies;
-        }
-        NEW frontOffice 'Фронт-офис' {
-            ADD machineryPriceTransactions;
-            ADD labelTransactions;
-            ADD terminalDocuments;
-        }
-        NEW accounting 'Взаиморасчеты'{
-            ADD contractSkus;
-            ADD contractLedger;
-            ADD payments;
-            ADD writeOutContractLedger;
-        }
-    }
-    NEW accountInfo 'Сводная информация' TO formsToolbar{
-        ADD sumAccountDocumentLedger;
-        ADD priceChangeDocuments;
-        ADD stockCost;
-        ADD stockBalance;
-        NEW sales 'Продажи' {
-            ADD salesLedger;
-            ADD salesSkuStock;
-        }
-        NEW report 'Отчеты' {
+        NEW retailReports 'Сводная информация' {
+            NEW sales 'Продажи' {
+                ADD salesLedger;
+                ADD salesSkuStock;
+            }
+            ADD sumAccountDocumentLedger;
+            ADD priceChangeDocuments;
             ADD statisticalReport;
             ADD torgSales;
             ADD sumMotionContainerDepartmentPrint;
         }
+    }
+
+    NEW equipmentElement 'Оборудование' TO formsToolbar {
+        NEW equipmentExport 'Загрузка в оборудование' {
+            ADD machineryPriceTransactions;
+        }
+        NEW equipmentScales 'Весы'{
+            ADD groupsScales;
+            ADD scalesModels;
+            ADD labelFormats;
+            ADD cellScales;
+        }
+        NEW equipmentChecks 'Прайс чекеры'{
+            ADD groupsPriceChecker;
+            ADD priceCheckerModels;
+        }
+        NEW equipmentTerminals 'Терминалы сбора данных' {
+            ADD terminalDocuments;
+            ADD groupsTerminal;
+            ADD terminalModels;
+            ADD groupsTerminalDocumentType;
+            ADD handbooksTerminalDocumentType;
+        }
+        NEW equipmentLabels 'Ценники' {
+            ADD labelTransactions;
+            ADD labelTypes;
+        }
+        NEW equipmentCatalog 'Справочники' {
+            ADD equipmentServer;
+        }
+    }
+    NEW manufactory 'Производство' TO formsToolbar {
+        ADD actOfStudies;
+        ADD components;
+        ADD cuttings;
+        ADD recipes;
+    }
+    NEW hr 'Кадры' TO formsToolbar {
+        ADD employees;
     }
     NEW printedForms 'Печатные формы' TO formsToolbar{
         ADD listRegister;

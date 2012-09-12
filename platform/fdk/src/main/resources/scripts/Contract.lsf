@@ -208,7 +208,7 @@ FORM contractSku 'Договор на поставку товаров'
     EDIT contract OBJECT c
 ;
 
-FORM contractSkus 'Договора на поставку товаров'
+FORM contractSkus 'Договора на поставку'
     OBJECTS c=contract
     PROPERTIES(c) READONLY namePartyAContract, namePartyBContract, numberContract, dateFromContract, dateToContract,
                            nameCurrencyContract, noteContract, nameTypeContractSku,

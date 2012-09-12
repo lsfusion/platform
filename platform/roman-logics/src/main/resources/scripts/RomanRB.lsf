@@ -162,9 +162,18 @@ NAVIGATOR {
             ADD inventories;
             ADD inventoryCommittees;
         }
-        NEW retirement 'Списание' {
+        NEW writeOff 'Списание' {
             ADD writeOffs;
             ADD writeOffCommittees;
+        }
+        NEW disparityDocument 'Пересорт' {
+            ADD disparityBatches;
+            ADD disparityBatchAs;
+            ADD surplusOuts;
+        }
+        NEW logisticsAggregations 'Сводная информация' {
+            ADD stockCost;
+            ADD stockBalance;
         }
     }
 
@@ -190,16 +199,6 @@ NAVIGATOR {
             ADD returnOuts;
             ADD moveOuts;
             ADD invoiceWHOuts;
-        }
-
-        NEW logisticsAggregations 'Сводная информация' {
-            ADD stockCost;
-            ADD stockBalance;
-            NEW disparityDocument 'Пересорт' {
-                ADD disparityBatches;
-                ADD disparityBatchAs;
-                ADD surplusOuts;
-            }
         }
     }
 
