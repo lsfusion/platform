@@ -109,6 +109,13 @@ FORM salesSkuStock 'Продажи по SKU'
     PROPERTIES        balanceBSkuStockDate(s, st, dFrom),
                       quantitySoldSkuStockDateFromTo(s, st, dFrom, dTo),
                       balanceASkuStockDate(s, st, dTo)
+
+    FILTERGROUP filtersSold
+        FILTER 'Показывать проданные за интервал' 'F11' quantitySoldSkuStockDateFromTo(s, st, dFrom, dTo)
+
+    FILTERGROUP filtersSold
+        FILTER 'Показывать с остатками' 'F10' balanceASkuStockDate(s, st, dTo)
+
 ;
 
 DESIGN salesSkuStock FROM DEFAULT {

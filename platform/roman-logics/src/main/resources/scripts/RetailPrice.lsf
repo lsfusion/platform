@@ -1068,3 +1068,9 @@ FORM freights 'Расценка фрахтов'
     FILTERGROUP filtersDocument
         FILTER 'Показывать нерасценённые фрахты' 'F11' hasPriceSetDocumentFreight(f) DEFAULT
 ;
+
+
+EXTEND FORM salesSkuStock
+    PROPERTIES FORCE GRID nameCategoryArticleSku(s) BEFORE name(st), nameBrandSupplierArticleSku(s) BEFORE name(st), sidColorSupplierItem(s) BEFORE name(st), sidSizeSupplierItem(s) BEFORE name(st)
+
+;
