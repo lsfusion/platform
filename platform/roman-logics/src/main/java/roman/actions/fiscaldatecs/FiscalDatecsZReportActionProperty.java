@@ -1,4 +1,4 @@
-package roman.actions;
+package roman.actions.fiscaldatecs;
 
 import platform.server.classes.ValueClass;
 import platform.server.logics.DataObject;
@@ -11,7 +11,6 @@ import platform.server.logics.scripted.ScriptingLogicsModule;
 import platform.server.session.DataSession;
 
 import java.sql.SQLException;
-import java.util.Iterator;
 
 public class FiscalDatecsZReportActionProperty extends ScriptingActionProperty {
 

@@ -3,23 +3,23 @@ MODULE FiscalDatecs;
 REQUIRE System,
         POS;
 
-fiscalDatecsPrintReceipt 'Напечатать фискальный чек' = ACTION CUSTOM 'roman.actions.FiscalDatecsPrintReceiptActionProperty';
+fiscalDatecsPrintReceipt 'Напечатать фискальный чек' = ACTION CUSTOM 'roman.actions.fiscaldatecs.FiscalDatecsPrintReceiptActionProperty';
 postPrintReceipt(receipt) += fiscalDatecsPrintReceipt(receipt);
 
-fiscalDatecsAdvancePaper 'Прогон ленты' = ACTION CUSTOM 'roman.actions.FiscalDatecsAdvancePaperActionProperty';
+fiscalDatecsAdvancePaper 'Прогон ленты' = ACTION CUSTOM 'roman.actions.fiscaldatecs.FiscalDatecsAdvancePaperActionProperty';
 fiscalAdvancePaper() += fiscalDatecsAdvancePaper();
 
-fiscalDatecsCutReceipt 'Отрезать чек' = ACTION CUSTOM 'roman.actions.FiscalDatecsCutReceiptActionProperty';
+fiscalDatecsCutReceipt 'Отрезать чек' = ACTION CUSTOM 'roman.actions.fiscaldatecs.FiscalDatecsCutReceiptActionProperty';
 fiscalCutReceipt() += fiscalDatecsCutReceipt();
 
-fiscalDatecsPrintZReport 'Напечатать отчёт' = ACTION CUSTOM 'roman.actions.FiscalDatecsPrintZReportActionProperty';
+fiscalDatecsPrintZReport 'Напечатать отчёт' = ACTION CUSTOM 'roman.actions.fiscaldatecs.FiscalDatecsPrintZReportActionProperty';
 fiscalPrintZReport() += fiscalDatecsPrintZReport();
 
-fiscalDatecsXReport 'X-отчёт' = ACTION CUSTOM 'roman.actions.FiscalDatecsXReportActionProperty' TOOLBAR;
+fiscalDatecsXReport 'X-отчёт' = ACTION CUSTOM 'roman.actions.fiscaldatecs.FiscalDatecsXReportActionProperty' TOOLBAR;
 fiscalXReport() += fiscalDatecsXReport();
 
-fiscalDatecsZReport 'Z-отчёт' = ACTION CUSTOM 'roman.actions.FiscalDatecsZReportActionProperty' TOOLBAR;
+fiscalDatecsZReport 'Z-отчёт' = ACTION CUSTOM 'roman.actions.fiscaldatecs.FiscalDatecsZReportActionProperty' TOOLBAR;
 fiscalZReport() += fiscalDatecsZReport();
 
-fiscalDatecsUpdateData 'Загрузить информацию' = ACTION CUSTOM 'roman.actions.FiscalDatecsUpdateDataActionProperty' TOOLBAR;
+fiscalDatecsUpdateData 'Загрузить информацию' = ACTION CUSTOM 'roman.actions.fiscaldatecs.FiscalDatecsUpdateDataActionProperty' TOOLBAR;
 fiscalUpdateData() += fiscalDatecsUpdateData();

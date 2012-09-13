@@ -1,7 +1,6 @@
-package roman.actions;
+package roman.actions.fiscaldatecs;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 
 public class ReceiptInstance implements Serializable {

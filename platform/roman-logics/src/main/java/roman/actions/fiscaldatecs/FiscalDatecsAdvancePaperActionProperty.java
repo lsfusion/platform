@@ -1,4 +1,4 @@
-package roman.actions;
+package roman.actions.fiscaldatecs;
 
 import platform.server.classes.ValueClass;
 import platform.server.logics.property.ClassPropertyInterface;
@@ -16,9 +16,8 @@ public class FiscalDatecsAdvancePaperActionProperty extends ScriptingActionPrope
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) {
         try {
-            if (context.checkApply(LM.getBL()))
-                if(context.requestUserInteraction(new FiscalDatecsCustomOperationClientAction(3))==null)
-                    context.apply(LM.getBL());
+            if (context.requestUserInteraction(new FiscalDatecsCustomOperationClientAction(3)) == null)
+                context.apply(LM.getBL());
 
         } catch (SQLException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
