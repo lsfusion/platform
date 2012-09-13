@@ -7884,10 +7884,7 @@ NAVIGATOR {
             ADD stores;
         }
         NEW retailReports 'Сводная информация' {
-            NEW sales 'Продажи' {
-                ADD salesLedger;
-                ADD salesSkuStock;
-            }
+            ADD salesNavigator;
             ADD sumAccountDocumentLedger;
             ADD priceChangeDocuments;
             ADD statisticalReport;

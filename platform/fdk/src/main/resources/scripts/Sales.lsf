@@ -139,6 +139,13 @@ DESIGN salesSkuStock FROM DEFAULT {
     }
 }
 
+NAVIGATOR {
+    NEW salesNavigator 'Продажи' {
+        ADD salesLedger;
+        ADD salesSkuStock;
+    }
+}
+
 //---------------------------------------------- Макросы для имплементаций -------------------------------------//
 
 META implementSalesLedger(concrete, skuProp, stockProp)

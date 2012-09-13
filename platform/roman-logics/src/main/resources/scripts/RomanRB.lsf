@@ -205,6 +205,7 @@ NAVIGATOR {
         ADD POSNavigator;
         ADD retailCRMNavigator;
         NEW retailAggregations 'Сводная информация' {
+            ADD salesNavigator;
             ADD sumAccountDocumentLedger;
         }
     }
