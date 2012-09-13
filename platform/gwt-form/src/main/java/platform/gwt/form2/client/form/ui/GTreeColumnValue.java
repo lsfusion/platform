@@ -6,12 +6,12 @@ import java.util.Map;
 public class GTreeColumnValue {
     private int level;
     private Boolean open;
-    private int index;
+    private String sID;
     private Map<Integer, Boolean> lastInLevelMap = new HashMap<Integer, Boolean>();
 
-    public GTreeColumnValue(int level, int index) {
+    public GTreeColumnValue(int level, String sID) {
         this.level = level;
-        this.index = index;
+        this.sID = sID;
     }
 
     public int getLevel() {
@@ -30,12 +30,12 @@ public class GTreeColumnValue {
         this.open = open;
     }
 
-    public int getIndex() {
-        return index;
+    public String getSID() {
+        return sID;
     }
 
-    public void setIndex(int index) {
-        this.index = index;
+    public void setSID(String sID) {
+        this.sID = sID;
     }
 
     public Map<Integer, Boolean> getLastInLevelMap() {

@@ -202,8 +202,6 @@ public class GGroupObjectController implements GGroupObjectLogicsSupplier {
 
             if (showTypeView != null && showTypeView.setClassView(newClassView)) {
                 updateToolbar();
-                formLayout.hideEmptyContainerViews();
-                formLayout.totalResize();
             }
         }
     }
@@ -307,6 +305,10 @@ public class GGroupObjectController implements GGroupObjectLogicsSupplier {
 
         gridToolbar.setVisible(!gridToolbar.isEmpty());
         panelToolbar.setVisible(!panelToolbar.isEmpty());
+    }
+
+    public void redrawGrid() {
+        grid.redrawGrid();
     }
 
     public boolean isInGridClassView() {

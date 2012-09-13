@@ -69,8 +69,13 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         }
 
         SimplexConstraints<ClientComponent> constraints = clientContainer.getConstraints();
-        container.isVertical = clientContainer.isSplitPane() ? containerType == SPLIT_PANE_VERTICAL : !constraints.childConstraints.equals(SingleSimplexConstraint.TOTHE_RIGHT);
-
+        if (clientContainer.isSplitPane()) {
+            container.vertical = clientContainer.getType() == SPLIT_PANE_VERTICAL;
+        } else if (constraints.childConstraints.equals(SingleSimplexConstraint.TOTHE_RIGHT)) {
+            container.vertical = false;
+        } else if (constraints.childConstraints.equals(SingleSimplexConstraint.TOTHE_BOTTOM)) {
+            container.vertical = true;
+        }
         for (ClientComponent child : clientContainer.children) {
             GComponent childComponent = convertOrCast(child);
             container.children.add(childComponent);

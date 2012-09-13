@@ -118,24 +118,24 @@ public class DefaultFormView extends FormView {
         setupFormButton(nullFunction, new SimplexComponentDirections(0, 0.01, 0.01, 0), KeyStrokes.getNullKeyStroke(), null);
 
         PropertyDrawView refreshFunction = get(entity.refreshActionPropertyDraw);
-        setupFormButton(refreshFunction, new SimplexComponentDirections(0, 0, 0.01, 0.01), KeyStrokes.getRefreshKeyStroke(), "refresh.png");
+        setupFormButton(refreshFunction, new SimplexComponentDirections(0, 0, 0.01, 0), KeyStrokes.getRefreshKeyStroke(), "refresh.png");
         refreshFunction.drawAsync = true;
 
         PropertyDrawView applyFunction = get(entity.applyActionPropertyDraw);
         applyFunction.getConstraints().insetsSibling = new Insets(0, 8, 0, 0);
-        setupFormButton(applyFunction, new SimplexComponentDirections(0, 0, 0.01, 0.01), KeyStrokes.getApplyKeyStroke(), null);
+        setupFormButton(applyFunction, new SimplexComponentDirections(0, 0, 0.01, 0), KeyStrokes.getApplyKeyStroke(), null);
 
         PropertyDrawView cancelFunction = get(entity.cancelActionPropertyDraw);
         // KeyStrokes.getEscape(!isModal),
-        setupFormButton(cancelFunction, new SimplexComponentDirections(0, 0, 0.01, 0.01), KeyStrokes.getCancelKeyStroke(), null);
+        setupFormButton(cancelFunction, new SimplexComponentDirections(0, 0, 0.01, 0), KeyStrokes.getCancelKeyStroke(), null);
 
         PropertyDrawView okFunction = get(entity.okActionPropertyDraw);
         okFunction.getConstraints().insetsSibling = new Insets(0, 8, 0, 0);
         // KeyStrokes.getEnter(isDialog() ? 0 : InputEvent.CTRL_DOWN_MASK),
-        setupFormButton(okFunction, new SimplexComponentDirections(0, 0, 0.01, 0.01), KeyStrokes.getOkKeyStroke(), null);
+        setupFormButton(okFunction, new SimplexComponentDirections(0, 0, 0.01, 0), KeyStrokes.getOkKeyStroke(), null);
 
         PropertyDrawView closeFunction = get(entity.closeActionPropertyDraw);
-        setupFormButton(closeFunction, new SimplexComponentDirections(0, 0, 0.01, 0.01), KeyStrokes.getCloseKeyStroke(), null);
+        setupFormButton(closeFunction, new SimplexComponentDirections(0, 0, 0.01, 0), KeyStrokes.getCloseKeyStroke(), null);
 
         ContainerView leftControlsContainer = createContainer(null, null, "leftControls");
         leftControlsContainer.getConstraints().childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;

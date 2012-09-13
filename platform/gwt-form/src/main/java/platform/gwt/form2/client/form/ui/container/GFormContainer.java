@@ -11,7 +11,7 @@ public class GFormContainer extends GAbstractFormContainer {
     public GFormContainer(GContainer key) {
         this.key = key;
 
-        if (key.isVertical) {
+        if (key.drawVertical()) {
             panel = new VerticalPanel();
             panel.addStyleName("gwtVertical");
         } else {
@@ -66,11 +66,9 @@ public class GFormContainer extends GAbstractFormContainer {
         if (childView != null) {
             if (width != null) {
                 setTableCellSize(childView, width, true);
-                childView.setWidth(width);
             }
             if (height != null) {
                 setTableCellSize(childView, height, false);
-                childView.setHeight(height);
             }
         }
     }

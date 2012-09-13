@@ -7,6 +7,7 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
+import platform.gwt.form2.shared.view.GPropertyDraw;
 import platform.gwt.form2.shared.view.grid.editor.GridCellEditor;
 import platform.gwt.form2.shared.view.grid.renderer.GridCellRenderer;
 
@@ -83,8 +84,11 @@ public class GridEditableCell extends AbstractCell<Object> {
         if (isEditingCell(context)) {
             cellEditor.render(context, value, sb);
         } else {
-            GridCellRenderer cellRenderer = editManager.getProperty(context.getIndex(), context.getColumn()).getGridCellRenderer();
-            cellRenderer.render(context, value, sb);
+            GPropertyDraw property = editManager.getProperty(context.getIndex(), context.getColumn());
+            if (property != null) {
+                GridCellRenderer cellRenderer = property.getGridCellRenderer();
+                cellRenderer.render(context, value, sb);
+            }
         }
     }
 

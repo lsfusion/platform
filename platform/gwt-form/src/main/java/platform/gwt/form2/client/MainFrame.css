@@ -28,12 +28,20 @@
     margin: 2px;
 }
 
+.dataPanelRendererPanel {
+    margin: 1px 2px 7px 2px;
+}
+
 .gwt-TabLayoutPanel .gwt-TabLayoutPanelContent {
     padding: 1px;
 }
 
 .gwt-TabLayoutPanel .gwt-TabLayoutPanelTab {
     padding: 0px 3px 0px 5px;
+}
+
+.gwt-TabPanel {
+    border: solid 1px white;
 }
 
 .gwt-TabPanelBottom {
@@ -87,6 +95,14 @@
 .vSplitPanelContents {
     overflow-y: auto;
     overflow-x: hidden;
+}
+
+.flowPanelChildLeftAlign {
+    float: left;
+}
+
+.flowPanelChildRightAlign {
+    float: right;
 }
 
 .formController {

@@ -2,7 +2,8 @@ package platform.gwt.form2.client.form.ui.container;
 
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
-import com.google.gwt.user.client.ui.*;
+import com.google.gwt.user.client.ui.TabPanel;
+import com.google.gwt.user.client.ui.Widget;
 import platform.gwt.form2.client.form.ui.GFormController;
 import platform.gwt.form2.shared.view.GComponent;
 import platform.gwt.form2.shared.view.GContainer;
@@ -55,5 +56,18 @@ public class GFormTabbedPane extends GAbstractFormContainer {
     @Override
     protected boolean containerHasChild(Widget childView) {
         return tabsPanel.getWidgetIndex(childView) != -1;
+    }
+
+    @Override
+    public void setChildSize(GComponent child, String width, String height) {
+        Widget childView = childrenViews.get(child);
+        if (childView != null) {
+            if (width != null) {
+                childView.setWidth(width);
+            }
+            if (height != null) {
+                childView.setHeight(height);
+            }
+        }
     }
 }

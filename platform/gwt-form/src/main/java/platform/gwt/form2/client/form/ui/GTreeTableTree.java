@@ -1,6 +1,9 @@
 package platform.gwt.form2.client.form.ui;
 
-import platform.gwt.form2.shared.view.*;
+import platform.gwt.form2.shared.view.GForm;
+import platform.gwt.form2.shared.view.GGroupObject;
+import platform.gwt.form2.shared.view.GObject;
+import platform.gwt.form2.shared.view.GPropertyDraw;
 import platform.gwt.form2.shared.view.changes.GGroupObjectValue;
 import platform.gwt.utils.GwtSharedUtils;
 
@@ -219,7 +222,7 @@ public class GTreeTableTree {
     }
 
     private GTreeColumnValue generateTreeCellValue(GTreeTableNode node, GTreeColumnValue parentValue, int level) {
-        GTreeColumnValue value = new GTreeColumnValue(level, nodeCounter);
+        GTreeColumnValue value = new GTreeColumnValue(level, objectsToString(node.getGroup()) + nodeCounter);
         if (node.isOpen()) {
             value.setOpen(true);
         } else {
@@ -232,9 +235,17 @@ public class GTreeTableTree {
         return value;
     }
 
+    private String objectsToString(GGroupObject groupObject) {
+        String result = "";
+        for (GObject object : groupObject.objects) {
+            result += object.sID;
+        }
+        return result;
+    }
+
     public GPropertyDraw getProperty(GGroupObject group, int column) {
         List<GPropertyDraw> groupProperties = groupPropsMap.get(group);
-        if (groupProperties == null || column > groupProperties.size()) {
+        if (groupProperties == null || column >= groupProperties.size()) {
             return null;
         }
 
@@ -242,7 +253,11 @@ public class GTreeTableTree {
     }
 
     public Object getValue(GGroupObject group, int column, GGroupObjectValue key) {
-        return values.get(getProperty(group, column)).get(key);
+        GPropertyDraw property = getProperty(group, column);
+        if (property == null) {
+            return null;
+        }
+        return values.get(property).get(key);
     }
 
     public void putValue(GPropertyDraw property, GGroupObjectValue key, Object value) {

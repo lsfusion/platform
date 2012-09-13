@@ -40,7 +40,7 @@ public class GTreeGridControlCell extends AbstractCell<Object> {
         if ("dblclick".equals(event.getType())) {
             changeTreeState(context, value, event);
         } else if ("click".equals(event.getType())) {
-            if (event.getEventTarget().equals(DOM.getElementById("treeButton" + ((GTreeColumnValue) value).getIndex()))) {
+            if (event.getEventTarget().equals(DOM.getElementById("treeButton" + ((GTreeColumnValue) value).getSID()))) {
                 changeTreeState(context, value, event);
             }
         } else {
@@ -83,7 +83,7 @@ public class GTreeGridControlCell extends AbstractCell<Object> {
                 sb.append(template.dots(getImageURI("tree_dots_end.png")));
             }
         }
-        sb.append(template.node("treeButton" + treeValue.getIndex(), getImageURI(iconName)));
+        sb.append(template.node("treeButton" + treeValue.getSID(), getImageURI(iconName)));
     }
 
     private SafeUri getImageURI(String imageName) {

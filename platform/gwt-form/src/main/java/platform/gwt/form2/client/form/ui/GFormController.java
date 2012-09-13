@@ -106,6 +106,7 @@ public class GFormController extends SimplePanel {
 
         initializeRegularFilters();
 
+        formLayout.hideEmptyContainerViews();
         formLayout.totalResize();
 
         processRemoteChanges();
@@ -243,6 +244,9 @@ public class GFormController extends SimplePanel {
         }
 
         formLayout.hideEmptyContainerViews();
+        if (!fc.classViews.isEmpty()) {
+            formLayout.totalResize();
+        }
     }
 
     private void modifyFormChangesWithModifyObjectAsyncs(GFormChanges fc) {
@@ -490,6 +494,36 @@ public class GFormController extends SimplePanel {
 
     public void setTabVisible(GContainer tabbedPane, GComponent visibleComponent) {
         syncDispatch(new SetTabVisible(tabbedPane.ID, visibleComponent.ID), new ServerResponseCallback());
+        if (formLayout != null && visibleComponent instanceof GContainer) {
+            formLayout.adjustContainerSizes((GContainer) visibleComponent);
+        }
+        redrawGrids(visibleComponent);
+    }
+
+    // судя по документации, TabPanel криво работает в StandardsMode. в данном случае неправильно отображает
+    // таблицы, кроме тех, что в первой вкладке. поэтому вынуждены сами вызывать redraw() для таблиц
+    private void redrawGrids(GComponent component) {
+        if (controllers.isEmpty() && treeControllers.isEmpty()) {
+            return;
+        }
+        List<GGrid> grids = new ArrayList<GGrid>();
+        List<GTreeGroup> treeGrids = new ArrayList<GTreeGroup>();
+        if (component instanceof GGrid) {
+            grids.add((GGrid) component);
+        } else if (component instanceof GTreeGroup) {
+            treeGrids.add((GTreeGroup) component);
+        } else if (component instanceof GContainer) {
+            grids.addAll(((GContainer) component).getAllGrids());
+            treeGrids.addAll(((GContainer) component).getAllTreeGrids());
+        }
+        for (GGrid grid : grids) {
+            if (controllers.get(grid.groupObject) != null)
+            controllers.get(grid.groupObject).redrawGrid();
+        }
+        for (GTreeGroup treeGroup : treeGrids) {
+            if (treeControllers.get(treeGroup) != null)
+            treeControllers.get(treeGroup).redrawGrid();
+        }
     }
 
     private void setRemoteRegularFilter(GRegularFilterGroup filterGroup, GRegularFilter filter) {

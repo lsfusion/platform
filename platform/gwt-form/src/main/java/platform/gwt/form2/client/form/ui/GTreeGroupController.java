@@ -126,6 +126,10 @@ public class GTreeGroupController implements GGroupObjectLogicsSupplier {
         panelToolbar.setVisible(!panelToolbar.isEmpty());
     }
 
+    public void redrawGrid() {
+        tree.redraw();
+    }
+
     @Override
     public void updatePropertyDrawValues(GPropertyDraw reader, Map<GGroupObjectValue, Object> values, boolean updateKeys) {
         GPropertyDraw property = formController.getProperty(reader.ID);

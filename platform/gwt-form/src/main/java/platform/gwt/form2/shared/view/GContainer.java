@@ -7,7 +7,7 @@ public class GContainer extends GComponent {
     public String title;
     public String description;
     public GContainerType type;
-    public boolean isVertical;
+    public Boolean vertical;
     public boolean resizable;
 
     public enum GwtContainer {
@@ -21,7 +21,7 @@ public class GContainer extends GComponent {
                 "[" + sID + "]" +
                 "[" + type + "]{" +
                 "title='" + title + '\'' +
-                ", isVertical=" + isVertical +
+                ", vertical=" + vertical +
                 ", hAlign=" + hAlign +
                 ", resizable=" + resizable +
                 '}';
@@ -31,9 +31,47 @@ public class GContainer extends GComponent {
         return new String[]{"CONTAINER", "TABBED PANE", "SPLIT PANE VERTICAL", "SPLIT PANE HORIZONTAL"};
     }
 
+    public void calculateFills() {
+        for (GComponent child : children) {
+            if (child instanceof GContainer) {
+                ((GContainer) child).calculateFills();
+            }
+        }
+
+        if (absoluteWidth == -1 && fillHorizontal < 0) {
+            double childFill = getChildFill(false);
+            if (childFill > 0) {
+                fillHorizontal = childFill;
+            }
+        }
+
+        if (absoluteHeight == -1 && fillVertical < 0) {
+            double childFill = getChildFill(true);
+            if (childFill > 0) {
+                fillVertical = childFill;
+            }
+        }
+    }
+
+    private double getChildFill(boolean vertical) {
+        double fill = 0;
+        for (GComponent child : children) {
+            if (vertical) {
+                if (child.fillVertical > 0) {
+                    fill += child.fillVertical;
+                }
+            } else {
+                if (child.fillHorizontal > 0) {
+                    fill += child.fillHorizontal;
+                }
+            }
+        }
+        return fill;
+    }
+
     public boolean hasSingleGridInTree() {
         List<GGrid> grids = getAllGrids();
-        return grids.size() == 1 && (grids.get(0).groupObject.isRecursive || grids.get(0).groupObject.parent != null);
+        return grids.size() == 1 && (grids.get(0).groupObject.isRecursive || grids.get(0).groupObject.parent != null) && !containsTreeGroup();
     }
 
     public List<GGrid> getAllGrids() {
@@ -48,15 +86,40 @@ public class GContainer extends GComponent {
         return grids;
     }
 
-    public boolean containsTreeGroup() {
+    public List<GTreeGroup> getAllTreeGrids() {
+        List<GTreeGroup> grids = new ArrayList<GTreeGroup>();
         for (GComponent child : children) {
             if (child instanceof GTreeGroup) {
-                return true;
+                grids.add((GTreeGroup) child);
             } else if (child instanceof GContainer) {
-                boolean result = ((GContainer) child).containsTreeGroup();
-                if (result) {
-                    return result;
+                grids.addAll(((GContainer) child).getAllTreeGrids());
+            }
+        }
+        return grids;
+    }
+
+    public boolean containsTreeGroup() {
+        return !getAllTreeGrids().isEmpty();
+    }
+
+    public boolean drawVertical() {
+        return vertical == null || vertical;
+    }
+
+    public boolean toFlow() {
+        if (container != null) {
+            if (vertical == null) {
+                if (fillVertical <= 0) {
+                    if (container.vertical != null) {
+                        if (container.vertical) {
+                            return container.fillVertical > 0 || container.toFlow();
+                        }
+                    } else {
+                        return container.toFlow();
+                    }
                 }
+            } else {
+                return !vertical && fillVertical <= 0;
             }
         }
         return false;

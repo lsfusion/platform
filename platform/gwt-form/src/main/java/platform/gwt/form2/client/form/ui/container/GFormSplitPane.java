@@ -8,6 +8,7 @@ import platform.gwt.form2.shared.view.GContainerType;
 
 public class GFormSplitPane extends GAbstractFormContainer {
     private GSplitPane splitPane;
+    private boolean initialSizeSet = false;
 
     public GFormSplitPane(GContainer key) {
         this.key = key;
@@ -42,8 +43,9 @@ public class GFormSplitPane extends GAbstractFormContainer {
     @Override
     public void setChildSize(GComponent child, String width, String height) {
         Widget childView = childrenViews.get(child);
-        if (childView != null) {
+        if (childView != null && !initialSizeSet) {
             splitPane.setWidgetSize(childView, width, height);
+            initialSizeSet = true;
         }
     }
 }

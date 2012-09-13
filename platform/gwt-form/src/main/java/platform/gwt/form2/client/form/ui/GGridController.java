@@ -1,6 +1,8 @@
 package platform.gwt.form2.client.form.ui;
 
-import com.google.gwt.user.client.ui.*;
+import com.google.gwt.user.client.ui.CellPanel;
+import com.google.gwt.user.client.ui.ResizeLayoutPanel;
+import com.google.gwt.user.client.ui.VerticalPanel;
 import platform.gwt.form2.shared.view.GGrid;
 import platform.gwt.form2.shared.view.GPropertyDraw;
 import platform.gwt.form2.shared.view.changes.GGroupObjectValue;
@@ -48,6 +50,10 @@ public class GGridController {
 
     public void show() {
         gridView.setVisible(true);
+    }
+
+    public void redrawGrid() {
+        table.redraw();
     }
 
     public void updateCellBackgroundValues(GPropertyDraw propertyDraw, Map<GGroupObjectValue, Object> values) {
