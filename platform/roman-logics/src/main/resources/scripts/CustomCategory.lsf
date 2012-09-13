@@ -160,20 +160,24 @@ createCustomsZone 'Задать таможенную зону и связать 
 
     ADDOBJ customsZone;
     FOR g == addedObject() DO {
-        SET name(g) <- 'Таможенный Союз' WHERE g==addedObject();
-
-        SET customsZoneCustomCategory10(customCategory10) <- g WHERE g==addedObject();
-        SET customsZoneCustomCategory9(customCategory9) <- g WHERE g==addedObject();
-        SET customsZoneSubCategory(subCategory) <- g WHERE g==addedObject();
-        SET customsZoneTypeDuty(typeDuty) <- g WHERE g==addedObject();
-
-        SET customCategory10DataSkuCustomsZone(s, g) <- customCategory10DataSku(s) WHERE g==addedObject();
+        SET name(g) <- 'Таможенный Союз';
+        EXEC apply();
+        SET customsZoneCustomCategory10(customCategory10) <- g;
+        EXEC apply();
+        SET customsZoneCustomCategory9(customCategory9) <- g;
+        EXEC apply();
+        SET customsZoneSubCategory(subCategory) <- g;
+        EXEC apply();
+        SET customsZoneTypeDuty(typeDuty) <- g;
+        EXEC apply();
+        SET customCategory10DataSkuCustomsZone(s, g) <- customCategory10DataSku(s);
+        EXEC apply();
         SET subCategoryDataSkuCustomsZone(sku, customsZone) <- subCategoryDataSku(sku);
-        SET customCategory10CategoryGenderCompositionTypeFabricCustomsZone(a, b, c, d, g) <- customCategory10FreightCategoryGenderCompositionTypeFabric(a, b, c, d) WHERE g==addedObject();
-
-        FOR customCategory10CustomCategoryOrigin(customCategoryOrigin) DO {
-            SET customCategory10CustomCategoryOriginCustomsZone(customCategoryOrigin, xxx) IF xxx == g <- customCategory10CustomCategoryOrigin(customCategoryOrigin);
-        }
+        EXEC apply();
+        SET customCategory10CategoryGenderCompositionTypeFabricCustomsZone(a, b, c, d, g) <- customCategory10FreightCategoryGenderCompositionTypeFabric(a, b, c, d);
+        EXEC apply();
+        SET customCategory10CustomCategoryOriginCustomsZone(customCategoryOrigin, xxx) IF xxx == g <- customCategory10CustomCategoryOrigin(customCategoryOrigin);
+        EXEC apply();
     }
 } CONFIRM;
 
