@@ -34,6 +34,7 @@ REQUIRE System,
         DisparityBatch,
         RomanContractLedger,
         PriceChangeDiscount,
+        Defect,
         CustomCategory,
         RomanLogicsModule;
 
@@ -156,6 +157,19 @@ NAVIGATOR {
         NEW writeOff 'Списание' {
             ADD writeOffs;
             ADD writeOffCommittees;
+        }
+        NEW defectDocuments 'Брак' {
+            ADD defectStocks;
+            NEW repair  'Ремонт'{
+                ADD repairShops;
+                ADD repairs;
+                ADD returnRepairs;
+            }
+            NEW dry  'Химчистка'{
+                ADD cleaningStocks;
+                ADD dryCleanings;
+                ADD returnDryCleanings;
+            }
         }
         NEW disparityDocument 'Пересорт' {
             ADD disparityBatches;

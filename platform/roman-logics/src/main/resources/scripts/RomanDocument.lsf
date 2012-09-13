@@ -19,6 +19,7 @@ META defineDocumentDetailSkuArticle (object)
     sidSize###object##Detail 'Размер' (object##Detail) = sidSizeSupplierItem(sku###object##Detail(object##Detail));
     sidColor###object##Detail 'Цвет (код)' (object##Detail) = sidColorSupplierItem(sku###object##Detail(object##Detail));
     nameColor###object##Detail 'Цвет' (object##Detail) = nameColorSupplierItem(sku###object##Detail(object##Detail));
+//    nameSku###object##Detail 'Наименование' (object##Detail) = nameSku(sku###object##Detail(object##Detail));
 
     article###object##Detail 'Артикул (ИД)' (object##Detail) = articleSku(sku###object##Detail(object##Detail)) IN idGroup;
     sidArticle###object##Detail 'Артикул' (object##Detail) = sidArticle(article###object##Detail(object##Detail));

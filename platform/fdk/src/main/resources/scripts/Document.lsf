@@ -211,7 +211,7 @@ END
 META defineDocumentHeaderDescriptionCustom(object, numberProp, caption)
     description###object 'Название документа' (object) =
         [FORMULA STRING[200]  ' CAST($1 AS TEXT) || \' № \' || CAST($2 AS TEXT) || \' от \' || CAST($3 AS TEXT)'](
-        caption, numberProp(object), date###object(object));
+        caption, numberProp(object), date###object(object)) MINCHARWIDTH 30 PREFCHARWIDTH 50;
 END
 
 META defineDocumentDescriptionHeader(object, caption)
@@ -219,7 +219,7 @@ META defineDocumentDescriptionHeader(object, caption)
 END
 
 META defineDocumentDetailDescriptionCustom(object, detail)
-    description###detail 'Название документа' (detail) = description###object(object###detail(detail));
+    description###detail 'Название документа' (detail) = description###object(object###detail(detail)) MINCHARWIDTH 30 PREFCHARWIDTH 50;
 END
 
 META defineDocumentDescriptionCustom(object, detail, numberProp, caption)

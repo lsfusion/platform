@@ -106,6 +106,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             "/scripts/CustomCategory.lsf",    
             "/scripts/Freight.lsf",
             "/scripts/Invoice.lsf",
+            "/scripts/Defect.lsf",
             "/scripts/DefaultData.lsf",
             "/scripts/FiscalDatecs.lsf"
         );
