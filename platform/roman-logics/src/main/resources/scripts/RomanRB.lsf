@@ -28,6 +28,7 @@ REQUIRE System,
         InnerOrder,
         PriceInterval,
         WriteOff,
+        RomanWriteOff,
         Customer,
         Inventory,
         Surplus,
@@ -154,10 +155,7 @@ NAVIGATOR {
             ADD warehouses;
         }
         ADD inventoryNavigator;
-        NEW writeOff 'Списание' {
-            ADD writeOffs;
-            ADD writeOffCommittees;
-        }
+        ADD writeOffNavigator;
         NEW defectDocuments 'Брак' {
             ADD defectStocks;
             NEW repair  'Ремонт'{

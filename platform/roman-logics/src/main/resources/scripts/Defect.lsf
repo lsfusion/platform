@@ -7,6 +7,7 @@ REQUIRE System,
         RomanStock,
         DocumentTransfer,
         RetailPrice,
+        WriteOff,
         StorePriceTransfer,
         WholesalePrice,
         Consignment;
@@ -40,7 +41,7 @@ employeeDivisionGroupEmployeeDivision (employeeDivision) += groupDefectStockDefe
 // -------------------------------------------------- Формы ----------------------------------------- //
 FORM defectStock 'Склад брака'
     OBJECTS           d=defectStock FIXED PANEL
-    PROPERTIES(d)     name, nameGroupDefectStockDefectStock, addressDefectStock, nameCompanyDefectStock
+    PROPERTIES(d)     name, nameGroupDefectStockDefectStock, addressDefectStock, nameCompanyDefectStock, nameWriteOffCommitteeStock
 
     ORDER BY          name
     EDIT defectStock OBJECT d
@@ -358,8 +359,6 @@ usefulRepair 'Был товар в отгрузке' (repair) = GROUP SUM 1 IF s
     destinationRepairShopRepairDetail(idetail) == destinationRepairShopReturnRepairDetail(detail) AND
     diffQuantityRepairDetail(idetail) >0
         BY repairRepairDetail(idetail) PERSISTENT;
-
-
 
 FORM repairDetailReturnRepairDetail 'Передачи в ремонт'
 

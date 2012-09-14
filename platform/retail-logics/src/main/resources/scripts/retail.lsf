@@ -32,6 +32,7 @@ REQUIRE System,
         CashRegister,
         Scales,
         PriceChecker,
+        WriteOff,
         Terminal,
         Label,
         Default,
@@ -115,18 +116,6 @@ META defineDocumentHeaderItemRetailSumPrefix (object, prefix, caption)
 END
 META defineDocumentHeaderItemRetailSum (object)
     @defineDocumentHeaderItemRetailSumCustomPrefix(object, object##Detail, , );
-END
-
-META defineDocumentHeaderItemSumCustom (object, detail)
-    sumItem###detail###object 'Сумма, товар' (idetail) =
-        GROUP SUM sum###detail(idetail) AND NOT isContainerItem(item###detail(idetail))
-            BY object###detail(idetail) IN documentSumGroup;
-    sumContainer###detail###object 'Сумма, тара' (idetail) =
-        GROUP SUM sum###detail(idetail) IF isContainerItem(item###detail(idetail))
-            BY object###detail(idetail) IN documentSumGroup;
-END
-META defineDocumentHeaderItemSum (object)
-    @defineDocumentHeaderItemSumCustom(object, object##Detail);
 END
 
 // ----------------------------- количество упаковок и вес товаров ----------------------- //
@@ -2999,64 +2988,27 @@ commonNameEmployee 'Имя' (employee) = commonName(employee) AND employee IS em
 namePositionEmployeeEmployee 'Должность' (employee) = namePositionEmployee(employee) AND employee IS employee;
 
 //----------------------------------------------- Списание товара ---------------------------------------------------//
-CLASS reasonOff 'Причина списания' : named;
-TABLE reasonOff (reasonOff);
 
-FORM reasonOff 'Причина списания'
-    OBJECTS r=reasonOff  FIXED PANEL
-    PROPERTIES(r) name
+
+EXTEND FORM writeOffs
+    PROPERTIES     FORCE PANEL toPrintWriteOff(w)
 ;
 
-CLASS writeOff 'Списание' : outAccountDocumentLedger, historyObject, numeratedDocument;
-CLASS writeOffDetail 'Строка списания' : outFIFOSkuLedger;
-CLASS writeOffPosted 'Закрытое списание' : writeOff, postedObject;
+EXTEND DESIGN writeOffs {
+    printContainer {
+        ADD PROPERTY (toPrintWriteOff);
+    }
+}
+// Проводим по регистру
 
-@defineDocument(writeOff);
-@defineDocumentDepartmentStore(writeOff);
-@defineDocumentPosted(writeOff);
+limitOutFIFOSkuLedgerBatch(ledger, batch) += IF batchWriteOffDetail(ledger) THEN
+                                                quantityWriteOffDetail(ledger) AND batch == batchWriteOffDetail(ledger)
+                                             ELSE
+                                                currentBalanceBatchStock(batch, stockWriteOffDetail(ledger));
 
-@defineDocumentDetailSkuItem(writeOff);
+changedDataSkuLedger(ledger) += CHANGED(batchWriteOffDetail(ledger));
 
-@defineDocumentDetailQuantity(writeOff);
-
-@defineDocumentDetailBasePrice(writeOff, departmentStore);
-@deriveBasePriceLedgerOnSkuChange(writeOff, item);
-
-@defineDocumentDetailBaseSum(writeOff);
-
-@defineDocumentDetailPrice(writeOff);
-@derivePriceOnSkuChange(writeOff, item, departmentStore);
-
-@defineDocumentDetailSum(writeOff);
-
-@defineAddDetailDialogSkuStock(writeOff, item, departmentStore, dialogSku);
-@defineAddDetailDialogBarcode(writeOff, item);
-@defineAddDetailDialogTerminal(writeOff, item);
-
-@defineDocumentHeaderQuantity(writeOff);
-
-@defineDocumentHeaderSum(writeOff);
-@defineDocumentHeaderItemSum(writeOff);
-
-reasonOffWriteOff 'Причина списания (ИД)' = DATA reasonOff (writeOff) IN idGroup;
-nameReasonOffWriteOff 'Причина списания' (writeOff) = name(reasonOffWriteOff (writeOff)) IN documentPrmGroup;
-
-balanceDepartmentStoreItemWriteOff 'Текущий остаток' (writeOffDetail) =
-    currentBalanceSkuStock(itemWriteOffDetail(writeOffDetail), departmentStoreWriteOffDetail(writeOffDetail)) PERSISTENT;
-
-descriptionWriteOff 'Название документа' (writeOff) =
-    [FORMULA STRING[200] '\'Списание \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)'](
-    seriesNumberObject(writeOff), dateWriteOff(writeOff));
-
-descriptionWriteOffDetail 'Название документа' (writeOffDetail) = descriptionWriteOff(writeOffWriteOffDetail(writeOffDetail));
-
-@implementSkuLedger(writeOff, item, departmentStore);
-quantityOutFIFOSkuLedger (ledger) += quantityWriteOffDetail(ledger);
-@implementSkuLedgerOutFIFOBalance(writeOff, item, departmentStore);
-sumOutSkuLedger (ledger) += sumWriteOffDetail(ledger);
-
-@implementAccountDocumentLedger(writeOff, departmentStore);
-sumOutAccountDocumentLedger (ledger) += sumWriteOffDetailWriteOff(ledger);
+// Товарный отчет
 sumItemOutAccountDocumentLedger (ledger) += sumItemWriteOffDetailWriteOff(ledger);
 sumContainerOutAccountDocumentLedger (ledger) += sumContainerWriteOffDetailWriteOff(ledger);
 
@@ -4903,153 +4855,7 @@ quantityWareDetailsShipment 'Количество строк с посудой' 
 
 quantityWareDetailsShipment(shipment) => toShowWareShipment(shipment) RESOLVE FALSE;
 
-// --------------------------- Формы списания ---------------------------------
-companyWriteOff (writeOff) = companyDepartmentStore(departmentStoreWriteOff(writeOff));
-nameCompanyWriteOff 'Компания' (writeOff) = name(companyWriteOff(writeOff));
-nameStoreWriteOff 'Магазин' (writeOff) = nameStoreDepartmentStore(departmentStoreWriteOff(writeOff));
-addressLegalEntityWriteOff 'Адрес' (writeOff) = addressLegalEntityDate(companyWriteOff(writeOff), dateWriteOff(writeOff));
-UNPLegalEntityWriteOff 'УНП' (writeOff) = UNPLegalEntity(companyWriteOff(writeOff));
-
-wastageCommitteeWriteOff (writeOff) = DATA wastageCommittee (writeOff) IN idGroup;
-nameWastageCommitteeWriteOff 'Комиссия для списания' (writeOff) = name(wastageCommitteeWriteOff(writeOff)) IN documentPrmGroup;
-wastageCommitteeWriteOff(writeOff) <- wastageCommitteeDepartmentStore(departmentStoreWriteOff(writeOff))
-    WHEN ASSIGNED(writeOff IS writeOff);
-
-inWriteOffEmployee (writeOff, employee) = inCommitteeEmployee(wastageCommitteeWriteOff(writeOff), employee);
-namePositionEmployeeWriteOff 'Члены комиссии' (writeOff) = namePositionEmployeeCommittee(wastageCommitteeWriteOff(writeOff)) MINCHARWIDTH 50 PREFCHARWIDTH 50;
-
-FORM writeOffPrint 'Списание' PRINT
-    OBJECTS w=writeOff FIXED PANEL
-    PROPERTIES (w)  SELECTOR numberObject, seriesObject, nameDepartmentStoreWriteOff,
-                   dateWriteOff, timeWriteOff, nameReasonOffWriteOff, noteWriteOff, quantityWriteOffDetailWriteOff, sumWriteOffDetailWriteOff,
-                   nameCompanyWriteOff, nameStoreWriteOff, addressLegalEntityWriteOff, UNPLegalEntityWriteOff, nameWastageCommitteeWriteOff,
-                   namePositionEmployeeWriteOff, wastageCommitteeWriteOff
-
-    OBJECTS d=writeOffDetail
-    PROPERTIES (d) READONLY indexWriteOffDetail, idBarcodeSkuWriteOffDetail, nameAttributeItemWriteOffDetail, shortNameUOMItemWriteOffDetail,
-                   quantityWriteOffDetail, priceWriteOffDetail, sumWriteOffDetail, ADDOBJ, delete
-
-    PROPERTIES FORCE PANEL READONLY articleItemWriteOffDetail(d), nameCountryItemWriteOffDetail(d), retailPriceWriteOffDetail(d),
-                                    balanceDepartmentStoreItemWriteOff(d)
-
-    OBJECTS e=employee
-
-    PROPERTIES(e) SELECTOR   commonName, namePositionEmployee
-
-    FILTERS inWriteOffWriteOffDetail(w, d),
-            inWriteOffEmployee(w, e)
-
-    EDIT writeOff OBJECT w
-;
-
-toPrintWriteOff 'Списание' (writeOff) = ACTION FORM writeOffPrint OBJECTS w IMAGE 'print.png' IN printGroup;
-
-FORM writeOff 'Списание'
-    OBJECTS w=writeOff FIXED PANEL
-    PROPERTIES (w) objectClassName, nameNumeratorObject, numberObject, seriesObject, setValueNumeratedObject, nameDepartmentStoreWriteOff,
-                   dateWriteOff, timeWriteOff, nameReasonOffWriteOff, noteWriteOff, quantityWriteOffDetailWriteOff,
-                   sumWriteOffDetailWriteOff, nameWastageCommitteeWriteOff
-
-    OBJECTS d=writeOffDetail
-    PROPERTIES (d) indexWriteOffDetail, idBarcodeSkuWriteOffDetail, nameAttributeItemWriteOffDetail, quantityWriteOffDetail,
-                   priceWriteOffDetail, sumWriteOffDetail, ADDOBJ, delete
-
-    PROPERTIES FORCE PANEL READONLY articleItemWriteOffDetail(d), nameCountryItemWriteOffDetail(d), retailPriceWriteOffDetail(d),
-                                    balanceDepartmentStoreItemWriteOff(d)
-
-    PROPERTIES(w) TODRAW d addDetailDialogSkuStockWriteOffDetailWriteOff, addDetailDialogTerminalWriteOffDetailWriteOff,
-                           addDetailInputBarcodeWriteOffDetailWriteOff, deleteWriteOffDetailWriteOff
-    FILTERS inWriteOffWriteOffDetail(w, d)
-
-    EVENTS
-        ON OK EXEC prePostWriteOff(w)
-
-    EDIT writeOff OBJECT w
-;
-
-DESIGN writeOff FROM DEFAULT{
-
-    main {
-        preferredSize = (1024, 768);
-
-        NEW header.box BEFORE d.box {
-            childConstraints = TO THE RIGHT;
-
-            NEW headerRow1 {
-                childConstraints = TO THE BOTTOM;
-
-                ADD w.documentHeaderGroup {
-                    childConstraints = TO THE RIGHT;
-                    ADD PROPERTY(objectClassName);
-                    ADD PROPERTY(nameDepartmentStoreWriteOff);
-                    ADD PROPERTY(nameNumeratorObject);
-                    ADD PROPERTY(numberObject);
-                    ADD PROPERTY(seriesObject);
-                    ADD PROPERTY(dateWriteOff);
-                    ADD PROPERTY(timeWriteOff);
-                }
-
-                ADD w.documentPrmGroup {
-                    childConstraints = TO THE RIGHT;
-                }
-            }
-
-            ADD w.documentSumGroup {
-                childConstraints = TO THE BOTTOM;
-            }
-        }
-
-        d.panel{
-            childConstraints = TO THE BOTTOM;
-        }
-        PROPERTY(formOkAction) {
-            caption = 'Провести';
-        }
-    }
-}
-
-FORM writeOffs 'Списания'
-    OBJECTS w=writeOff
-    PROPERTIES (w) READONLY objectClassName, numberObject, seriesObject, dateWriteOff, timeWriteOff, nameDepartmentStoreWriteOff,
-                            nameReasonOffWriteOff, noteWriteOff, quantityWriteOffDetailWriteOff, countWriteOffDetailWriteOff,
-                            sumWriteOffDetailWriteOff, nameWastageCommitteeWriteOff
-
-    PROPERTIES (w) ADDFORM, EDITFORM, delete FORCE PANEL
-
-    OBJECTS d=writeOffDetail
-    PROPERTIES (d) READONLY indexWriteOffDetail, idBarcodeSkuWriteOffDetail, nameAttributeItemWriteOffDetail, quantityWriteOffDetail,
-                   priceWriteOffDetail, sumWriteOffDetail
-
-    PROPERTIES(w) FORCE PANEL toPrintWriteOff
-
-    FILTERS inWriteOffWriteOffDetail(w, d)
-;
-
-DESIGN writeOffs FROM DEFAULT {
-
-    NEW topContainer{
-
-        type = SPLITV;
-        childConstraints = TO THE BOTTOM;
-
-        ADD w.box{
-
-            PROPERTY(objectClassName) {
-                preferredCharWidth = 15;
-            }
-
-            PROPERTY (delete(w)) {
-                panelLocation = TOOLBAR;
-                askConfirm = TRUE;
-            }
-        }
-        ADD d.box;
-    }
-
-    ADD w.printGroup;
-    ADD functions.box;
-}
-
+// --------------------------- Печатная форма с/ф ---------------------------------
 
 FORM specificationPrint 'Счет-фактура' PRINT
     OBJECTS sp=specification FIXED PANEL
@@ -7849,9 +7655,8 @@ NAVIGATOR {
         ADD inventoryNavigator {
             ADD naturalLosses;
         }
-        NEW writeOffDocuments 'Списания' {
-            ADD writeOffs;
-        }
+        ADD writeOffNavigator;
+
         NEW disparityDocuments 'Пересортица' {
             ADD disparities;
         }

@@ -1,0 +1,323 @@
+MODULE WriteOff;
+
+REQUIRE System,
+        Stock,
+//        Store,
+        Currency,
+        Numerator,
+        Terminal,
+        Barcode,
+        Document,
+        Employee,
+        AccountDocument,
+        Utils;
+
+PRIORITY Stock;
+
+//----------------------------------------------- Списание товара ---------------------------------------------------//
+CLASS reasonOff 'Причина списания' : named;
+TABLE reasonOff (reasonOff);
+
+FORM reasonOff 'Причина списания'
+    OBJECTS r=reasonOff  FIXED PANEL
+    PROPERTIES(r) name
+;
+
+CLASS writeOff 'Списание' : outAccountDocumentLedger, historyObject, numeratedDocument;
+CLASS writeOffDetail 'Строка списания' : outFIFOSkuLedger;
+CLASS writeOffPosted 'Закрытое списание' : writeOff, postedObject;
+
+@defineDocument(writeOff);
+@defineDocumentStock(writeOff, stock, 'Склад');
+@defineDocumentPosted(writeOff);
+@defineDocumentDescription (writeOff, 'Списание товара');
+
+@defineDocumentCurrency(writeOff);
+@deriveDocumentCurrency(writeOff, stock);
+
+companyWriteOff (writeOff) = companyStock(stockWriteOff(writeOff));
+nameCompanyWriteOff 'Компания' (writeOff)= name(companyWriteOff(writeOff));
+addressLegalEntityWriteOff 'Адрес' (writeOff) = addressLegalEntityDate(companyWriteOff(writeOff), dateWriteOff(writeOff));
+UNPLegalEntityWriteOff 'УНП' (writeOff) = UNPLegalEntity(companyWriteOff(writeOff));
+
+@defineDocumentDetailNumbered(writeOff);
+@defineDocumentDetailSku(writeOff, sku);
+
+// Для инвентаризации по партиям
+@defineDocumentDetailBatchCustom(writeOffDetail, batch);
+@defineDocumentDetailQuantity(writeOff);
+@defineDocumentDetailPrice(writeOff);
+@defineDocumentDetailSum(writeOff);
+
+priceWriteOffDetail (detail)  <- IF batchWriteOffDetail(detail)
+                THEN priceBatchStockDateTime(batchWriteOffDetail(detail), stockWriteOffDetail(detail), dateTimeWriteOffDetail(detail))
+                ELSE priceSkuStockDateTime(skuWriteOffDetail(detail), stockWriteOffDetail(detail), dateTimeWriteOffDetail(detail))
+                WHEN CHANGED(skuWriteOffDetail(detail)) OR CHANGED(batchWriteOffDetail(detail)) OR CHANGED(stockWriteOffDetail(detail)) OR CHANGED (dateTimeWriteOffDetail(detail));
+
+skuWriteOffDetail (detail)  <- skuBatch( batchWriteOffDetail(detail)) AND batchWriteOffDetail(detail)
+                               WHEN CHANGED(batchWriteOffDetail(detail));
+
+
+
+@defineDocumentDetailSkuBatchBalance(writeOff, sku, stock);
+@defineDocumentHeaderQuantity(writeOff);
+@defineDocumentHeaderSkuQuantity(writeOff, sku);
+
+@defineDocumentHeaderSum(writeOff);
+@defineDocumentHeaderItemSum(writeOff);
+
+@defineAddDetailDialogSkuStock(writeOff, sku, stock, dialogSku);
+@defineAddDetailDialogBarcode(writeOff, sku);
+@defineAddDetailDialogTerminal(writeOff, sku);
+
+
+reasonOffWriteOff 'Причина списания (ИД)' = DATA reasonOff (writeOff) IN idGroup;
+nameReasonOffWriteOff 'Причина списания' (writeOff) = name(reasonOffWriteOff (writeOff)) IN documentPrmGroup;
+
+// Проводим по регистру
+
+@implementSkuLedger(writeOff, sku, stock);
+quantityOutFIFOSkuLedger (ledger) += quantityWriteOffDetail(ledger);
+sumOutSkuLedger (ledger) += sumWriteOffDetail(ledger);
+
+// Товарный отчет
+
+@implementAccountDocumentLedger(writeOff, stock);
+sumOutAccountDocumentLedger (ledger) += sumWriteOffDetailWriteOff(ledger);
+
+// Обязательно имплементить для каждого конкретно проекта.....    todo:
+//limitOutFIFOSkuLedgerBatch(ledger, batch) +=
+//sumItemOutAccountDocumentLedger (ledger) +=
+//sumContainerOutAccountDocumentLedger (ledger) +=
+//skipASkuLedger (ledger) +=                         - если необходимо
+
+//--------------------------------Комиссия для списания----------------------------------//
+CLASS writeOffCommittee 'Комиссия для списания товаров' : committee;
+
+writeOffCommitteeWriteOff (writeOff) = DATA writeOffCommittee (writeOff) IN idGroup;
+nameWriteOffCommitteeWriteOff 'Комиссия для списания товаров' (writeOff) = name(writeOffCommitteeWriteOff(writeOff)) IN documentPrmGroup;
+
+
+inWriteOffEmployee (writeOff, employee) = inCommitteeEmployee(writeOffCommitteeWriteOff(writeOff), employee);
+namePositionEmployeeWriteOff 'Члены комиссии' (writeOff) = namePositionEmployeeCommittee(writeOffCommitteeWriteOff(writeOff)) MINCHARWIDTH 50 PREFCHARWIDTH 50;
+
+writeOffCommitteeStock 'Комиссия для списания товаров (ИД)' = DATA writeOffCommittee (stock);
+nameWriteOffCommitteeStock 'Комиссия для списания товаров' (stock) = name(writeOffCommitteeStock(stock));
+isWriteOffCommitteeStock 'По умолчанию' (writeOffCommittee, stock) = writeOffCommitteeStock(stock) == writeOffCommittee;
+CONSTRAINT writeOffCommitteeStock(stock) AND NOT inCommitteeEmployeeDivision(writeOffCommitteeStock(stock), stock)
+    CHECKED BY writeOffCommitteeStock MESSAGE 'Для отдела выбрана комиссия, которая для него не действует';
+
+writeOffCommitteeWriteOff(writeOff) <- writeOffCommitteeStock(stockWriteOff(writeOff))
+    WHEN ASSIGNED(writeOff IS writeOff);
+
+FORM writeOffCommittee 'Комиссия для списания товаров'
+    OBJECTS c=writeOffCommittee FIXED PANEL
+    PROPERTIES(c)      name
+
+    TREE stockTree sg = stockGroup PARENT parentStockGroup
+    PROPERTIES READONLY sgTreeName = name(sg)
+
+    OBJECTS ts=stock
+    PROPERTIES    READONLY tsTreeName = name(ts)
+    PROPERTIES(c, ts) inCommitteeEmployeeDivision FORCE GRID, isWriteOffCommitteeStock
+
+    FILTERS isParentStockGroupStock(sg, ts)
+    ORDER BY tsTreeName
+
+
+    OBJECTS e=employee
+    PROPERTIES(e)      READONLY name, userFirstName, userLastName, namePositionEmployee
+    PROPERTIES(e)      ADDSESSIONFORM, EDITSESSIONFORM, delete
+
+    PROPERTIES(c, e)   inCommitteeEmployee
+    FILTERS            countDivisionEmployeeCommittee (e, c)
+    FILTERGROUP filters6
+        FILTER 'Показывать только членов комиссии' 'F10' inCommitteeEmployee(c, e)
+
+    FILTERGROUP filters5
+        FILTER 'Показывать отделы только для данной комиссии' 'F9' inCommitteeEmployeeDivision(c, ts)
+
+    EDIT writeOffCommittee OBJECT c
+;
+
+DESIGN writeOffCommittee FROM DEFAULT {
+    main {
+        preferredSize = (1024, 768);
+
+        NEW caseOne BEFORE e.box {
+            childConstraints = TO THE RIGHT;
+            title = 'Отделы, для которых действуют комиссии';
+
+            ADD stockTree.tree {
+                fillHorizontal = 1;
+            }
+
+            ADD ts.box {
+                fillHorizontal = 2;
+            }
+        };
+    }
+}
+
+FORM writeOffCommittees 'Комиссии для списания товаров'
+    OBJECTS w=writeOffCommittee
+    PROPERTIES(w)      READONLY name, nameEmployeeDivisionCommittee, nameEmployeeCommittee
+    PROPERTIES(w)      ADDFORM, EDITFORM
+
+    DIALOG writeOffCommittee OBJECT w
+;
+
+// --------------------------- Печатная форма ---------------------------------
+
+
+FORM writeOffPrint 'Акт списания' PRINT
+    OBJECTS w=writeOff FIXED PANEL
+    PROPERTIES (w)  SELECTOR numberObject, seriesObject, nameStockWriteOff,
+                   dateWriteOff, timeWriteOff, nameReasonOffWriteOff, noteWriteOff, countWriteOffDetailWriteOff, quantityWriteOffDetailWriteOff,
+                   sumWriteOffDetailWriteOff,
+                   nameCompanyWriteOff, addressLegalEntityWriteOff, UNPLegalEntityWriteOff, nameWriteOffCommitteeWriteOff,
+                   namePositionEmployeeWriteOff, writeOffCommitteeWriteOff
+
+    OBJECTS d=writeOffDetail
+    PROPERTIES (d) READONLY indexWriteOffDetail, idBarcodeSkuWriteOffDetail, nameSkuWriteOffDetail, shortNameUOMSkuWriteOffDetail, descriptionBatchWriteOffDetail,
+                   quantityWriteOffDetail, priceWriteOffDetail, sumWriteOffDetail
+
+
+    OBJECTS e=employee
+
+    PROPERTIES(e) SELECTOR   commonName, namePositionEmployee
+
+    FILTERS inWriteOffWriteOffDetail(w, d),
+            inWriteOffEmployee(w, e)
+
+    EDIT writeOff OBJECT w
+;
+
+toPrintWriteOff 'Акт списания' (writeOff) = ACTION FORM writeOffPrint OBJECTS w IMAGE 'print.png' IN printGroup;
+
+// --------------------------- Формы списания ---------------------------------
+
+FORM writeOff 'Списание'
+    OBJECTS w=writeOff FIXED PANEL
+    PROPERTIES (w) objectClassName, nameNumeratorObject, numberObject, seriesObject, dateWriteOff, timeWriteOff,
+                   nameStockWriteOff, nameCurrencyWriteOff, noteWriteOff, sumWriteOffDetailWriteOff,
+                   countWriteOffDetailWriteOff, quantityWriteOffDetailWriteOff, nameReasonOffWriteOff,
+                   nameWriteOffCommitteeWriteOff
+
+    OBJECTS d=writeOffDetail
+    PROPERTIES (d) indexWriteOffDetail, idBarcodeSkuWriteOffDetail, nameSkuWriteOffDetail, shortNameUOMSkuWriteOffDetail,
+                   descriptionBatchWriteOffDetail, quantityWriteOffDetail,
+                   priceWriteOffDetail, sumWriteOffDetail, ADDOBJ, delete
+
+    PROPERTIES FORCE PANEL READONLY balanceBSkuBatchWriteOffDetail (d)
+
+    PROPERTIES(w) TODRAW d addDetailDialogSkuStockWriteOffDetailWriteOff, addDetailDialogTerminalWriteOffDetailWriteOff,
+                           addDetailInputBarcodeWriteOffDetailWriteOff, deleteWriteOffDetailWriteOff
+    FILTERS inWriteOffWriteOffDetail(w, d)
+
+    EVENTS
+        ON OK EXEC prePostWriteOff(w)
+
+    EDIT writeOff OBJECT w
+;
+
+DESIGN writeOff FROM DEFAULT{
+
+    main {
+        preferredSize = (1024, 768);
+
+        NEW header.box BEFORE d.box {
+            childConstraints = TO THE RIGHT;
+
+            NEW headerRow1 {
+                childConstraints = TO THE BOTTOM;
+
+                ADD w.documentHeaderGroup {
+                    childConstraints = TO THE RIGHT;
+                    ADD PROPERTY(objectClassName);
+                    ADD PROPERTY(nameStockWriteOff);
+                    ADD PROPERTY(nameNumeratorObject);
+                    ADD PROPERTY(numberObject);
+                    ADD PROPERTY(seriesObject);
+                    ADD PROPERTY(dateWriteOff);
+                    ADD PROPERTY(timeWriteOff);
+                }
+
+                ADD w.documentPrmGroup {
+                    childConstraints = TO THE RIGHT;
+                }
+            }
+
+            ADD w.documentSumGroup {
+                childConstraints = TO THE BOTTOM;
+            }
+        }
+
+        d.panel{
+            childConstraints = TO THE BOTTOM;
+        }
+        PROPERTY(formOkAction) {
+            caption = 'Провести';
+        }
+    }
+}
+
+FORM writeOffs 'Списания'
+    OBJECTS w=writeOff
+    PROPERTIES (w) READONLY isPostedWriteOff FORCE GRID, numberObject, seriesObject, dateWriteOff, timeWriteOff, nameStockWriteOff,
+                            nameReasonOffWriteOff, noteWriteOff, quantityWriteOffDetailWriteOff, countWriteOffDetailWriteOff,
+                            sumWriteOffDetailWriteOff, nameWriteOffCommitteeWriteOff
+
+    PROPERTIES (w) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
+
+    PROPERTIES (w) ADDFORM, EDITFORM, delete FORCE PANEL
+
+    OBJECTS d=writeOffDetail
+    PROPERTIES (d) READONLY indexWriteOffDetail, idBarcodeSkuWriteOffDetail, nameSkuWriteOffDetail, shortNameUOMSkuWriteOffDetail, descriptionBatchWriteOffDetail,
+                   quantityWriteOffDetail, priceWriteOffDetail, sumWriteOffDetail
+
+    FILTERS inWriteOffWriteOffDetail(w, d)
+;
+
+DESIGN writeOffs FROM DEFAULT {
+    PROPERTY (delete(w)) {
+        panelLocation = TOOLBAR;
+        askConfirm = TRUE;
+    }
+
+    NEW documentContainer BEFORE functions.box {
+        type = SPLITV;
+        childConstraints = TO THE BOTTOM;
+
+        ADD w.box;
+
+        NEW documentDetail {
+            type = TABBED;
+
+            ADD d.box {
+                title = 'Спецификация';
+            }
+            NEW documentHistory {
+                title = 'История';
+
+                ADD w.historyGroup;
+                ADD w.postedGroup;
+            }
+            NEW printTab {
+                title = 'Печатные формы';
+                NEW printContainer {
+                    title = 'Печать';
+                    childConstraints = TO THE BOTTOM;
+                    fillVertical = 1.0; // todo : иначе кнопка не всегда показывается, нужно будет пофиксить как-нибудь
+                }
+            }
+        }
+    }
+}
+
+NAVIGATOR {
+    NEW writeOffNavigator 'Списания' {
+        ADD writeOffs;
+        ADD writeOffCommittees;
+    }
+}

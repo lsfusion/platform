@@ -1,0 +1,56 @@
+MODULE RomanWriteOff;
+
+REQUIRE System,
+        Document,
+        RomanDocument,
+        Stock,
+        RomanStock,
+        RetailPrice,
+        Employee,
+        StorePriceTransfer,
+        Consignment,
+        WholesalePrice,
+        WriteOff,
+        AccountDocument,
+        MasterData,
+        RomanLogicsModule;
+
+PRIORITY Stock, RomanLogicsModule;
+
+//----------------------------------------------- Списание товара ---------------------------------------------------//
+
+@defineDocumentSkipSkuLedgerCustom(writeOff, writeOffDetail);
+@extendDocumentFormSkipSkuLedgerCustom(writeOff, w, writeOff);
+@extendDocumentFormSkipSkuLedgerCustomReadonly(writeOffs, w, writeOff);
+
+isPostedSkipSkuLedgerWriteOff (writeOff) = isPostedWriteOff(writeOff) AND NOT skipSkuLedgerWriteOff(writeOff);
+
+
+EXTEND FORM writeOffs
+    PROPERTIES     FORCE PANEL toPrintWriteOff(w) SHOWIF isPostedSkipSkuLedgerWriteOff(w)
+;
+
+EXTEND DESIGN writeOffs {
+    printContainer {
+        ADD PROPERTY (toPrintWriteOff);
+    }
+}
+
+
+// Проводим по регистру
+
+limitOutFIFOSkuLedgerBatch(ledger, batch) += IF batchWriteOffDetail(ledger) THEN
+                                                quantityWriteOffDetail(ledger) AND batch == batchWriteOffDetail(ledger)
+                                             ELSE
+                                                IF skipSkuLedgerWriteOffDetail(ledger) THEN
+                                                    currentBalanceBatchStock(batch, stockWriteOffDetail(ledger)) AND batch IS batchB
+                                                ELSE
+                                                    currentBalanceABatchStock(batch, stockWriteOffDetail(ledger)) AND batch IS batchA ;
+
+changedDataSkuLedger(ledger) += CHANGED(batchWriteOffDetail(ledger));
+skipASkuLedger (ledger) += skipSkuLedgerWriteOffDetail(ledger);
+
+//---------------------------------------- Товарный отчет ------------------------- //
+
+sumItemOutAccountDocumentLedger (ledger) += sumWriteOffDetailWriteOff(ledger);
+sumContainerOutAccountDocumentLedger (ledger) += 0.0 IF ledger IS writeOff;

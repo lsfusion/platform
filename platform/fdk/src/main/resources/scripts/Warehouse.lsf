@@ -4,6 +4,7 @@ REQUIRE System,
         Stock,
         Employee,
         Hierarchy,
+        WriteOff,
         LegalEntity;
 
 // ----------------------------------------- Группы складов ------------------------------ //
@@ -32,7 +33,7 @@ employeeDivisionGroupEmployeeDivision (warehouse) += groupWarehouseWarehouse(war
 // -------------------------------------------------- Формы ----------------------------------------- //
 FORM warehouse 'Склад'
     OBJECTS           w=warehouse FIXED PANEL
-    PROPERTIES(w)     name, nameGroupWarehouseWarehouse, addressWarehouse, nameCompanyWarehouse
+    PROPERTIES(w)     name, nameGroupWarehouseWarehouse, addressWarehouse, nameCompanyWarehouse, nameWriteOffCommitteeStock
 
     ORDER BY          name
     EDIT warehouse OBJECT w

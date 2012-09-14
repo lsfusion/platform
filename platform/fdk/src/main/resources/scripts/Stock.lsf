@@ -518,6 +518,7 @@ META defineDocumentDetailSkuPrefix (object, skuClass, prefix, caption)
     prefix###skuClass###object##Detail (detail) = DATA skuClass (object###Detail);
     prefix###nameSku###object##Detail 'SKU'###caption (detail) = nameSku(prefix###skuClass###object##Detail(detail)) IN recognizeGroup;
     prefix###idBarcodeSku###object##Detail 'Штрих-код'###caption (detail) = idBarcodeSku(prefix###skuClass###object##Detail(detail)) IN recognizeGroup;
+    prefix###shortNameUOMSku###object##Detail 'Ед. изм.'###caption (detail) = shortNameUOMSku(prefix###skuClass###object##Detail(detail)) IN recognizeGroup;
 END
 META defineDocumentDetailSku (object, skuClass)
     @defineDocumentDetailSkuPrefix(object, skuClass, ,);
@@ -605,6 +606,19 @@ META derivePriceOnBatchChange(concrete, batchProp, stockProp)
                     WHEN CHANGED(batchProp###concrete##Detail(detail)) OR CHANGED (dateTime###concrete##Detail(detail));
 END
 
+
+META defineDocumentHeaderItemSumCustom (object, detail)
+    sumItem###detail###object 'Сумма, товар' (idetail) =
+        GROUP SUM sum###detail(idetail) AND NOT isContainerSku(sku###detail(idetail))
+            BY object###detail(idetail) IN documentSumGroup;
+    sumContainer###detail###object 'Сумма, тара' (idetail) =
+        GROUP SUM sum###detail(idetail) IF isContainerSku(sku###detail(idetail))
+            BY object###detail(idetail) IN documentSumGroup;
+END
+META defineDocumentHeaderItemSum (object)
+    @defineDocumentHeaderItemSumCustom(object, object##Detail);
+END
+
 //--------------------------------------------------Партия для Detail--------------------------------------//
 META defineDocumentDetailBatchCustom(idetail, batchProp)
 
@@ -613,6 +627,9 @@ META defineDocumentDetailBatchCustom(idetail, batchProp)
 
     CONSTRAINT skuBatch(batch###idetail(detail)) != sku###idetail(detail) CHECKED BY batch###idetail
         MESSAGE 'Товар партии строки должен соответствовать SKU строки';
+
+    CONSTRAINT batch###idetail(detail) AND NOT sku###idetail(detail) CHECKED BY batch###idetail
+        MESSAGE 'Для строки задана парктия, но не задан товар';
 END
 
 // ------------------------------------------------ Кол-во в документе ------------------------------------ //
@@ -635,8 +652,17 @@ END
 // ---------------------------------------------- Остатки -------------------------------------------- //
 
 META defineDocumentDetailSkuBalance (object, skuProp, stockProp)
-    balanceBSku###object##Detail 'Остаток до' (object##Detail) = balanceBSkuStockDateTime(
+    balanceBSku###object##Detail 'Текущий остаток' (object##Detail) = balanceBSkuStockDateTime(
         skuProp###object##Detail(object##Detail), stockProp###object##Detail(object##Detail), dateTime###object##Detail(object##Detail));
+END
+
+// ---------------------------------------------- Остатки или партия или товар -------------------------------------------- //
+
+META defineDocumentDetailSkuBatchBalance (object, skuProp, stockProp)
+    balanceBSkuBatch###object##Detail 'Текущий остаток' (object##Detail) =
+        IF batch###object##Detail(object##Detail) IS batch
+        THEN balanceBBatchStockDateTime(batch###object##Detail(object##Detail), stockProp###object##Detail(object##Detail), dateTime###object##Detail(object##Detail))
+            ELSE balanceBSkuStockDateTime(skuProp###object##Detail(object##Detail), stockProp###object##Detail(object##Detail), dateTime###object##Detail(object##Detail));
 END
 
 // ----------------------------------------------- Формы --------------------------------------------------- //

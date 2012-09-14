@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="d" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
 	<property name="ireport.zoom" value="3.0"/>
-	<property name="ireport.x" value="107"/>
+	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
 		<box>
@@ -16,13 +16,14 @@
 		<paragraph leftIndent="2" rightIndent="2"/>
 	</style>
 	<field name="d" class="java.lang.Integer"/>
-	<field name="indexWriteOffBatchDetail" class="java.lang.Integer"/>
-	<field name="barcodeWriteOffBatchDetail" class="java.lang.String"/>
-	<field name="nameSkuWriteOffBatchDetail" class="java.lang.String"/>
-	<field name="quantityWriteOffBatchDetail" class="java.lang.Double"/>
-	<field name="accountPriceWriteOffBatchDetail" class="java.lang.Double"/>
-	<field name="accountSumWriteOffBatchDetail" class="java.lang.Double"/>
-	<field name="shortNameUOMWriteOffBatchDetail" class="java.lang.String"/>
+	<field name="indexWriteOffDetail" class="java.lang.Integer"/>
+	<field name="idBarcodeSkuWriteOffDetail" class="java.lang.String"/>
+	<field name="nameSkuWriteOffDetail" class="java.lang.String"/>
+	<field name="quantityWriteOffDetail" class="java.lang.Double"/>
+	<field name="priceWriteOffDetail" class="java.lang.Double"/>
+	<field name="sumWriteOffDetail" class="java.lang.Double"/>
+	<field name="shortNameUOMSkuWriteOffDetail" class="java.lang.String"/>
+	<field name="descriptionBatchWriteOffDetail" class="java.lang.String"/>
 	<detail>
 		<band height="12">
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
@@ -30,49 +31,49 @@
 				<textElement textAlignment="Center">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{nameSkuWriteOffBatchDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{nameSkuWriteOffDetail}+($F{descriptionBatchWriteOffDetail}!=null?(" / Партия: "+$F{descriptionBatchWriteOffDetail}):"")]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="373" y="0" width="82" height="12" backcolor="#FFFFFF"/>
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{accountPriceWriteOffBatchDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{priceWriteOffDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="321" y="0" width="52" height="12" backcolor="#FFFFFF"/>
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{quantityWriteOffBatchDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{quantityWriteOffDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="296" y="0" width="25" height="12" backcolor="#FFFFFF"/>
 				<textElement textAlignment="Center">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{shortNameUOMWriteOffBatchDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{shortNameUOMSkuWriteOffDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="214" y="0" width="82" height="12" backcolor="#FFFFFF"/>
 				<textElement textAlignment="Center">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{barcodeWriteOffBatchDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{idBarcodeSkuWriteOffDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="25" height="12" backcolor="#FFFFFF"/>
 				<textElement textAlignment="Center">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{indexWriteOffBatchDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{indexWriteOffDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="455" y="0" width="82" height="12" backcolor="#FFFFFF"/>
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{accountSumWriteOffBatchDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{sumWriteOffDetail}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

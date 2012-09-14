@@ -1,6 +1,6 @@
 MODULE Store;
 
-REQUIRE System, Utils, Historizable, Stock, Employee, Tax, LegalEntity;
+REQUIRE System, Utils, Historizable, Stock, Employee, Tax, WriteOff, LegalEntity;
 
 // -------------------------------------- Торговая сеть ------------------------------- //
 
@@ -119,7 +119,7 @@ inChainStoresStoreTypeStoreDepartment (chainStores, storeType, store, department
 
 FORM departmentStore 'Отдел магазина'
     OBJECTS d=departmentStore FIXED PANEL
-    PROPERTIES(d)   name, nameStoreDepartmentStore, tradingSquareDepartmentStore, dialogTradingSquareDepartmentStore
+    PROPERTIES(d)   name, nameStoreDepartmentStore, tradingSquareDepartmentStore, dialogTradingSquareDepartmentStore, nameWriteOffCommitteeStock
 
     OBJECTS e=employee
     PROPERTIES(e) READONLY userFirstName, userLastName
