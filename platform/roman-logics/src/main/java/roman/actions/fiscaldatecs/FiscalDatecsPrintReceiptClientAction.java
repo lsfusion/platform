@@ -53,6 +53,8 @@ public class FiscalDatecsPrintReceiptClientAction implements ClientAction {
                 if (receipt.receiptReturnList.size() != 0)
                     printReceipt(receipt.receiptReturnList, false);
 
+                FiscalDatecs.closePort();
+
                 FiscalDatecs.closeWriter();
 
             } catch (RuntimeException e) {

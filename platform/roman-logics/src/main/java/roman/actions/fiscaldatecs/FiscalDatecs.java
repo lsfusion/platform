@@ -51,6 +51,7 @@ public class FiscalDatecs {
         String lastErrorText = "Some error";
         zzz.println("cashDispatch.call(cashDispatch, \"lastError)\")" + " " + lastError);
         zzz.println("cashDispatch.call(cashDispatch, \"lastErrorText)\")" + " " + lastErrorText);
+        closePort();
         closeWriter();
         return lastErrorText;
     }
@@ -139,6 +140,11 @@ public class FiscalDatecs {
     public static void cutReceipt() {
         //Dispatch.call(cashDispatch, "CutReceipt");
         zzz.println("Dispatch.call(cashDispatch, \"CutReceipt\")");
+    }
+
+    public static void inOut(Double sum){
+        //Dispatch.call(cashDispatch, "InOut", sum);
+        zzz.println("Dispatch.call(cashDispatch, \"InOut\")" + " " + sum);
     }
 
     public static void printTaxReport() {

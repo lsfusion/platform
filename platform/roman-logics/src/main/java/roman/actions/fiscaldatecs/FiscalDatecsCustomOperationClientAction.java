@@ -9,9 +9,13 @@ import java.io.IOException;
 public class FiscalDatecsCustomOperationClientAction implements ClientAction {
 
     int type;
+    int baudRate;
+    int comPort;
 
-    public FiscalDatecsCustomOperationClientAction(int type) {
+    public FiscalDatecsCustomOperationClientAction(int type, Integer baudRate, Integer comPort) {
         this.type = type;
+        this.baudRate = baudRate == null ? 0 : baudRate;
+        this.comPort = comPort == null ? 0 : comPort;
     }
 
 
@@ -19,6 +23,7 @@ public class FiscalDatecsCustomOperationClientAction implements ClientAction {
 
         try {
             FiscalDatecs.init();
+            FiscalDatecs.openPort(comPort, baudRate);
             switch (type) {
                 case 1:
                     FiscalDatecs.xReport();
@@ -27,6 +32,7 @@ public class FiscalDatecsCustomOperationClientAction implements ClientAction {
                     Double VATSumSaleReceipt = FiscalDatecs.getCurrentSums(2);
                     Double VATSumReturnReceipt = FiscalDatecs.getCurrentSums(3);
                     FiscalDatecs.zReport();
+                    FiscalDatecs.closePort();
                     FiscalDatecs.closeWriter();
                     return new Double[]{VATSumSaleReceipt, VATSumReturnReceipt};
                 case 3:
@@ -41,6 +47,7 @@ public class FiscalDatecsCustomOperationClientAction implements ClientAction {
                 default:
                     break;
             }
+            FiscalDatecs.closePort();
             FiscalDatecs.closeWriter();
         } catch (RuntimeException e) {
             return FiscalDatecs.getError();

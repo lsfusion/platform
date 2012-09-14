@@ -21,8 +21,12 @@ public class FiscalDatecsZReportActionProperty extends ScriptingActionProperty {
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) {
         try {
             DataSession session = context.getSession();
+
+            Integer comPort = (Integer) LM.findLCPByCompoundName("comPortCurrentCashRegister").read(context.getSession());
+            Integer baudRate = (Integer) LM.findLCPByCompoundName("baudRateCurrentCashRegister").read(context.getSession());
+
             if (context.checkApply(LM.getBL())) {
-                Object VATSumReceipt = context.requestUserInteraction(new FiscalDatecsCustomOperationClientAction(2));
+                Object VATSumReceipt = context.requestUserInteraction(new FiscalDatecsCustomOperationClientAction(2, baudRate, comPort));
                 if (VATSumReceipt instanceof Double[]) {
                     ObjectValue receiptObject = LM.findLCPByCompoundName("currentZReport").readClasses(session);
                     if (!receiptObject.isNull()) {

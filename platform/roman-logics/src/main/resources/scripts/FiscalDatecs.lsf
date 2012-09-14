@@ -15,11 +15,14 @@ fiscalCutReceipt() += fiscalDatecsCutReceipt();
 fiscalDatecsPrintZReport 'Напечатать отчёт' = ACTION CUSTOM 'roman.actions.fiscaldatecs.FiscalDatecsPrintZReportActionProperty';
 fiscalPrintZReport() += fiscalDatecsPrintZReport();
 
-fiscalDatecsXReport 'X-отчёт' = ACTION CUSTOM 'roman.actions.fiscaldatecs.FiscalDatecsXReportActionProperty' TOOLBAR;
+fiscalDatecsXReport 'X-отчёт' = ACTION CUSTOM 'roman.actions.fiscaldatecs.FiscalDatecsXReportActionProperty';
 fiscalXReport() += fiscalDatecsXReport();
 
-fiscalDatecsZReport 'Z-отчёт' = ACTION CUSTOM 'roman.actions.fiscaldatecs.FiscalDatecsZReportActionProperty' TOOLBAR;
+fiscalDatecsZReport 'Z-отчёт' = ACTION CUSTOM 'roman.actions.fiscaldatecs.FiscalDatecsZReportActionProperty';
 fiscalZReport() += fiscalDatecsZReport();
 
-fiscalDatecsUpdateData 'Загрузить информацию' = ACTION CUSTOM 'roman.actions.fiscaldatecs.FiscalDatecsUpdateDataActionProperty' TOOLBAR;
+fiscalDatecsUpdateData 'Загрузить информацию' = ACTION CUSTOM 'roman.actions.fiscaldatecs.FiscalDatecsUpdateDataActionProperty';
 fiscalUpdateData() += fiscalDatecsUpdateData();
+
+fiscalDatecsServiceCashOperation 'Перемещение денег' = ACTION CUSTOM 'roman.actions.fiscaldatecs.FiscalDatecsServiceInOutActionProperty';
+fiscalServiceCashOperation(cashOperation) += fiscalDatecsServiceCashOperation(cashOperation);
