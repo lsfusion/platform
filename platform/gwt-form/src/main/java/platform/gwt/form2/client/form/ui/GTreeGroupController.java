@@ -3,6 +3,7 @@ package platform.gwt.form2.client.form.ui;
 import com.google.gwt.user.client.ui.CellPanel;
 import com.google.gwt.user.client.ui.ResizeLayoutPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import platform.gwt.base.shared.GOrder;
 import platform.gwt.form2.shared.view.GForm;
 import platform.gwt.form2.shared.view.GGroupObject;
 import platform.gwt.form2.shared.view.GPropertyDraw;
@@ -196,5 +197,10 @@ public class GTreeGroupController implements GGroupObjectLogicsSupplier {
     @Override
     public GGroupObjectValue getCurrentKey() {
         return tree.getCurrentKey();
+    }
+
+    @Override
+    public void changeOrder(GPropertyDraw property, GOrder modiType) {
+        tree.changeOrder(property, modiType);
     }
 }

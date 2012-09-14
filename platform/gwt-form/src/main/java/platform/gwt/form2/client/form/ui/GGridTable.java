@@ -5,6 +5,7 @@ import com.google.gwt.cell.client.Cell;
 import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.view.client.SelectionChangeEvent;
+import platform.gwt.base.shared.GOrder;
 import platform.gwt.form2.shared.view.GGroupObject;
 import platform.gwt.form2.shared.view.GPropertyDraw;
 import platform.gwt.form2.shared.view.changes.GGroupObjectValue;
@@ -48,6 +49,20 @@ public class GGridTable extends GGridPropertyTable {
         });
 
         setKeyboardSelectionPolicy(KeyboardSelectionPolicy.BOUND_TO_SELECTION);
+
+        sortableHeaderManager = new GGridSortableHeaderManager<Map<GPropertyDraw, GGroupObjectValue>>(this, false) {
+            @Override
+            protected void orderChanged(Map<GPropertyDraw, GGroupObjectValue> columnKey, GOrder modiType) {
+                form.changePropertyOrder(columnKey.keySet().iterator().next(), columnKey.values().iterator().next(), modiType);
+            }
+
+            @Override
+            protected Map<GPropertyDraw, GGroupObjectValue> getColumnKey(int column) {
+                HashMap<GPropertyDraw, GGroupObjectValue> key = new HashMap<GPropertyDraw, GGroupObjectValue>();
+                key.put(columnProperties.get(column), columnKeysList.get(column));
+                return key;
+            }
+        };
     }
 
     public void removeProperty(GPropertyDraw property) {
@@ -207,6 +222,15 @@ public class GGridTable extends GGridPropertyTable {
         return columnProperties.get(column);
     }
 
+    private int getMinPropertyIndex(GPropertyDraw property) {
+        for (int i = 0; i < columnProperties.size(); ++i) {
+            if (property == columnProperties.get(i)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
     public void modifyGroupObject(GGroupObjectValue rowKey, boolean add) {
         if (add) {
             rowKeys.add(rowKey);
@@ -226,6 +250,13 @@ public class GGridTable extends GGridPropertyTable {
         dataUpdated = true;
 
         update();
+    }
+
+    public void changeOrder(GPropertyDraw property, GOrder modiType) {
+        int ind = getMinPropertyIndex(property);
+        HashMap<GPropertyDraw, GGroupObjectValue> key = new HashMap<GPropertyDraw, GGroupObjectValue>();
+        key.put(property, ind == -1 ? GGroupObjectValue.EMPTY : columnKeys.get(property).get(ind));
+        sortableHeaderManager.changeOrder(key, modiType);
     }
 
     @Override

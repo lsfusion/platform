@@ -252,6 +252,10 @@ public class GTreeTableTree {
         return groupProperties.get(column);
     }
 
+    public GPropertyDraw getColumnProperty(int column) {
+        return column != 0 ? columnProperties.get(column - 1) : null;
+    }
+
     public Object getValue(GGroupObject group, int column, GGroupObjectValue key) {
         GPropertyDraw property = getProperty(group, column);
         if (property == null) {
@@ -275,6 +279,10 @@ public class GTreeTableTree {
             }
         }
         return null;
+    }
+
+    public int getPropertyColumnIndex(GPropertyDraw property) {
+        return columnProperties.indexOf(property) + 1;
     }
 
     private class ExpandingTreeTableNode extends GTreeTableNode {

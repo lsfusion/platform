@@ -16,6 +16,7 @@ import net.customware.gwt.dispatch.shared.Result;
 import platform.gwt.base.client.ErrorAsyncCallback;
 import platform.gwt.base.client.WrapperAsyncCallbackEx;
 import platform.gwt.base.shared.GClassViewType;
+import platform.gwt.base.shared.GOrder;
 import platform.gwt.form2.client.LoadingBlocker;
 import platform.gwt.form2.client.dispatch.FormDispatchAsync;
 import platform.gwt.form2.client.dispatch.NavigatorDispatchAsync;
@@ -51,6 +52,8 @@ public class GFormController extends SimplePanel {
     private GForm form;
     private GFormLayout formLayout;
     private final boolean dialogMode;
+
+    private boolean defaultOrdersInitialized = false;
 
     private boolean hasColumnGroupObjects;
     private final HashMap<GGroupObject, List<GGroupObjectValue>> currentGridObjects = new HashMap<GGroupObject, List<GGroupObjectValue>>();
@@ -105,6 +108,8 @@ public class GFormController extends SimplePanel {
         initializeControllers();
 
         initializeRegularFilters();
+
+        initializeDefaultOrders();
 
         formLayout.hideEmptyContainerViews();
         formLayout.totalResize();
@@ -195,6 +200,27 @@ public class GFormController extends SimplePanel {
             }
             if (property.groupObject == null) {
                 controllers.put(null, new GGroupObjectController(this, null, formLayout));
+            }
+        }
+    }
+
+    private void initializeDefaultOrders() {
+        applyOrders(form.defaultOrders);
+        defaultOrdersInitialized = true;
+    }
+
+    private void applyOrders(LinkedHashMap<GPropertyDraw, Boolean> orders) {
+        Set<GGroupObject> wasOrder = new HashSet<GGroupObject>();
+        for (Map.Entry<GPropertyDraw, Boolean> entry : orders.entrySet()) {
+            GPropertyDraw property = entry.getKey();
+            GGroupObject groupObject = property.groupObject;
+            GGroupObjectLogicsSupplier groupObjectLogicsSupplier = getGroupObjectLogicsSupplier(groupObject);
+            if (groupObjectLogicsSupplier != null) {
+                groupObjectLogicsSupplier.changeOrder(property, !wasOrder.contains(groupObject) ? GOrder.REPLACE : GOrder.ADD);
+                wasOrder.add(groupObject);
+                if (!entry.getValue()) {
+                    groupObjectLogicsSupplier.changeOrder(property, GOrder.DIR);
+                }
             }
         }
     }
@@ -482,6 +508,12 @@ public class GFormController extends SimplePanel {
 
     public void changeClassView(GGroupObject groupObject, GClassViewType newClassView) {
         syncDispatch(new ChangeClassView(groupObject.ID, newClassView), new ServerResponseCallback());
+    }
+
+    public void changePropertyOrder(GPropertyDraw property, GGroupObjectValue columnKey, GOrder modiType) {
+        if (defaultOrdersInitialized) {
+            syncDispatch(new ChangePropertyOrder(property.ID, columnKey.getValueDTO(), modiType), new ServerResponseCallback());
+        }
     }
 
     public void expandGroupObject(GGroupObject group, GGroupObjectValue value) {

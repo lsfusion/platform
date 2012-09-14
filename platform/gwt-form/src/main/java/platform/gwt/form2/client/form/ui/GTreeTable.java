@@ -4,6 +4,7 @@ import com.google.gwt.cell.client.Cell;
 import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.view.client.SelectionChangeEvent;
+import platform.gwt.base.shared.GOrder;
 import platform.gwt.form2.shared.view.GForm;
 import platform.gwt.form2.shared.view.GGroupObject;
 import platform.gwt.form2.shared.view.GPropertyDraw;
@@ -47,6 +48,18 @@ public class GTreeTable extends GGridPropertyTable {
                 }
             }
         });
+
+        sortableHeaderManager = new GGridSortableHeaderManager<GPropertyDraw>(this, true) {
+            @Override
+            protected void orderChanged(GPropertyDraw columnKey, GOrder modiType) {
+                form.changePropertyOrder(columnKey, GGroupObjectValue.EMPTY, modiType);
+            }
+
+            @Override
+            protected GPropertyDraw getColumnKey(int column) {
+                return tree.getColumnProperty(column);
+            }
+        };
     }
 
     public void removeProperty(GGroupObject group, GPropertyDraw property) {
@@ -293,5 +306,15 @@ public class GTreeTable extends GGridPropertyTable {
     @Override
     public GGroupObjectValue getColumnKey(int row, int column) {
         return currentRecords.get(row).key;
+    }
+
+    public void changeOrder(GPropertyDraw property, GOrder modiType) {
+        int propertyIndex = tree.getPropertyColumnIndex(property);
+        if (propertyIndex > 0) {
+            sortableHeaderManager.changeOrder(property, modiType);
+        } else {
+            //меняем напрямую для верхних groupObjects
+            form.changePropertyOrder(property, GGroupObjectValue.EMPTY, modiType);
+        }
     }
 }

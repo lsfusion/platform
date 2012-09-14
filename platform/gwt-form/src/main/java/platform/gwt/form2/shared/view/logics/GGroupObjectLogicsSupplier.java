@@ -1,5 +1,6 @@
 package platform.gwt.form2.shared.view.logics;
 
+import platform.gwt.base.shared.GOrder;
 import platform.gwt.form2.shared.view.GPropertyDraw;
 import platform.gwt.form2.shared.view.changes.GGroupObjectValue;
 import platform.gwt.form2.shared.view.reader.GBackgroundReader;
@@ -19,4 +20,5 @@ public interface GGroupObjectLogicsSupplier {
     void updateRowForegroundValues(Map<GGroupObjectValue, Object> values);
     boolean hasPanelProperty(GPropertyDraw property);
     GGroupObjectValue getCurrentKey();
+    void changeOrder(GPropertyDraw property, GOrder modiType);
 }

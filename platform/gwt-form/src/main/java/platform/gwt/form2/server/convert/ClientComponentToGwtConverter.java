@@ -291,6 +291,10 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
             form.regularFilterGroups.add(filterGroup);
         }
 
+        for (ClientPropertyDraw property : clientForm.defaultOrders.keyList()) {
+            form.defaultOrders.put((GPropertyDraw) convertOrCast(property), clientForm.defaultOrders.get(property));
+        }
+
         return form;
     }
 }

@@ -3,6 +3,7 @@ package platform.gwt.form2.shared.view;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 public class GForm implements Serializable {
     public String sessionID;
@@ -14,6 +15,7 @@ public class GForm implements Serializable {
     public ArrayList<GGroupObject> groupObjects = new ArrayList<GGroupObject>();
     public ArrayList<GPropertyDraw> propertyDraws = new ArrayList<GPropertyDraw>();
     public ArrayList<GRegularFilterGroup> regularFilterGroups = new ArrayList<GRegularFilterGroup>();
+    public LinkedHashMap<GPropertyDraw, Boolean> defaultOrders = new LinkedHashMap<GPropertyDraw, Boolean>();
 
     public GObject getObject(int id) {
         for (GGroupObject groupObject : groupObjects) {

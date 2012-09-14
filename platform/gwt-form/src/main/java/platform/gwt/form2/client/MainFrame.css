@@ -1,6 +1,7 @@
 .gwt-Button {
     margin: 2px;
     height: 32px;
+    white-space: nowrap;
 }
 
 .gwt-TextBox {

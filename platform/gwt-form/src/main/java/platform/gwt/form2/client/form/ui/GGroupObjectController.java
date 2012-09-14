@@ -2,6 +2,7 @@ package platform.gwt.form2.client.form.ui;
 
 import com.google.gwt.user.client.ui.Widget;
 import platform.gwt.base.shared.GClassViewType;
+import platform.gwt.base.shared.GOrder;
 import platform.gwt.form2.shared.view.GContainer;
 import platform.gwt.form2.shared.view.GGroupObject;
 import platform.gwt.form2.shared.view.GPropertyDraw;
@@ -321,6 +322,11 @@ public class GGroupObjectController implements GGroupObjectLogicsSupplier {
             result = grid.getTable().getCurrentKey();
         }
         return result == null ? new GGroupObjectValue() : result;
+    }
+
+    @Override
+    public void changeOrder(GPropertyDraw property, GOrder modiType) {
+        grid.changeOrder(property, modiType);
     }
 
     public void modifyGroupObject(GGroupObjectValue key, boolean add) {

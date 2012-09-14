@@ -1,6 +1,5 @@
 package platform.gwt.form2.client.form.ui;
 
-import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.cellview.client.Header;
 import com.google.gwt.user.client.ui.HTML;
@@ -10,7 +9,9 @@ import com.google.gwt.view.client.DefaultSelectionEventManager;
 import platform.gwt.form2.shared.view.GPropertyDraw;
 import platform.gwt.form2.shared.view.changes.GGroupObjectValue;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public abstract class GGridPropertyTable extends GPropertyTable {
     protected Map<GPropertyDraw, Map<GGroupObjectValue, Object>> propertyCaptions = new HashMap<GPropertyDraw, Map<GGroupObjectValue, Object>>();
@@ -27,6 +28,8 @@ public abstract class GGridPropertyTable extends GPropertyTable {
     public ArrayList<GridHeader> headers = new ArrayList<GridHeader>();
 
     protected boolean dataUpdated;
+
+    public GGridSortableHeaderManager sortableHeaderManager;
 
     public interface GGridPropertyTableResource extends Resources {
         @Source("GGridPropertyTable.css")
@@ -94,7 +97,15 @@ public abstract class GGridPropertyTable extends GPropertyTable {
         propertyCaptions.put(propertyDraw, values);
     }
 
-    protected static class GridHeader extends Header<String> {
+    public void headerClicked(Header header, boolean withCtrl) {
+        sortableHeaderManager.headerClicked(headers.indexOf(header), withCtrl);
+    }
+
+    public Boolean getSortDirection(Header header) {
+        return sortableHeaderManager.getSortDirection(headers.indexOf(header));
+    }
+
+    protected class GridHeader extends Header<String> {
         private String caption;
 
         public GridHeader() {
@@ -102,8 +113,10 @@ public abstract class GGridPropertyTable extends GPropertyTable {
         }
 
         public GridHeader(String caption) {
-            super(new TextCell());
+            super(new GGridHeaderCell());
             this.caption = caption;
+            ((GGridHeaderCell) getCell()).setHeader(this);
+            ((GGridHeaderCell) getCell()).setTable(GGridPropertyTable.this);
         }
 
         public void setCaption(String caption) {
