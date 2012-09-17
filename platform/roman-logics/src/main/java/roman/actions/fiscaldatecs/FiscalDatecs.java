@@ -142,7 +142,7 @@ public class FiscalDatecs {
         zzz.println("Dispatch.call(cashDispatch, \"CutReceipt\")");
     }
 
-    public static void inOut(Double sum){
+    public static void inOut(Double sum) {
         //Dispatch.call(cashDispatch, "InOut", sum);
         zzz.println("Dispatch.call(cashDispatch, \"InOut\")" + " " + sum);
     }
@@ -153,6 +153,29 @@ public class FiscalDatecs {
         String dateTo = fillZeros(date.getDate()) + fillZeros(date.getMonth()) + fillZeros(date.getYear());
         //Dispatch.call(cashDispatch, "PrintTaxReport", password, dateFrom, dateTo);
         zzz.println("Dispatch.call(cashDispatch, \"PrintTaxReport\")" + " " + password + " " + dateFrom + " " + dateTo);
+    }
+
+    public static void displayText(ReceiptItem item) {
+
+        String firstLine = " " + toStr(item.quantity) + "x" + toStr(item.price);
+        firstLine = item.name.substring(0, 20 - firstLine.length()) + firstLine;
+        String secondLine = toStr(item.sumPos);
+        while (secondLine.length() < 14)
+            secondLine = " " + secondLine;
+        secondLine = "ИТОГО:" + secondLine;
+        //Dispatch.call(cashDispatch, "DisplayTextUL", firstLine);
+        zzz.println("Dispatch.call(cashDispatch, \"DisplayTextUL\")" + " " + firstLine);
+        //Dispatch.call(cashDispatch, "DisplayTextLL", secondLine);
+        zzz.println("Dispatch.call(cashDispatch, \"DisplayTextLL\")" + " " + secondLine);
+    }
+
+    private static String toStr(Double value) {
+        if (value == null)
+            return "0";
+        else {
+            boolean isInt = (value - value.intValue()) == 0;
+            return isInt ? String.valueOf(value.intValue()) : String.valueOf(value);
+        }
     }
 
     public static void dispose(String reason) {

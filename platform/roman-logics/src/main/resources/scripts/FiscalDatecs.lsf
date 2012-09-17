@@ -26,3 +26,6 @@ fiscalUpdateData() += fiscalDatecsUpdateData();
 
 fiscalDatecsServiceCashOperation 'Перемещение денег' = ACTION CUSTOM 'roman.actions.fiscaldatecs.FiscalDatecsServiceInOutActionProperty';
 fiscalServiceCashOperation(cashOperation) += fiscalDatecsServiceCashOperation(cashOperation);
+
+fiscalDatecsDisplayText 'Вывести текст на дисплей' = ACTION CUSTOM 'roman.actions.fiscaldatecs.FiscalDatecsDisplayTextActionProperty';
+fiscalDisplayTextReceiptDetail (receiptDetail) += fiscalDatecsDisplayText(receiptDetail);
