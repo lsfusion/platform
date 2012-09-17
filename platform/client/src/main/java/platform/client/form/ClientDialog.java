@@ -1,6 +1,7 @@
 package platform.client.form;
 
 import com.google.common.base.Throwables;
+import platform.interop.KeyStrokes;
 import platform.interop.form.RemoteDialogInterface;
 
 import javax.swing.*;
@@ -64,7 +65,8 @@ public class ClientDialog extends ClientModalForm {
             form.selectProperty(initialFilterPropertyDrawID);
         }
 
-        if (initFilterKeyEvent != null && initialFilterPropertyDrawID > 0) {
+        if (initFilterKeyEvent != null && initialFilterPropertyDrawID > 0 &&
+                KeyStrokes.isSuitableStartFilteringEvent(initFilterKeyEvent)) {
             form.quickEditFilter(initFilterKeyEvent, initialFilterPropertyDrawID);
         } else {
             KeyboardFocusManager.getCurrentKeyboardFocusManager().focusNextComponent(form.getComponent());
