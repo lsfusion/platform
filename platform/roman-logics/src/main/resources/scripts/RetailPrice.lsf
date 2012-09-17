@@ -223,6 +223,8 @@ currencyBasePriceSetDocumentSku = DATA currency (basePriceSetDocument, sku);
 nameCurrencyBasePriceSetDocumentSku 'Валюта' (basePriceSetDocument, sku) = name(currencyBasePriceSetDocumentSku(basePriceSetDocument, sku));
 currencyBasePriceSetDocumentSku(document, sku) => inPriceSetDocumentSku(document, sku) RESOLVE FALSE;
 
+roundCurrencyBasePriceSetDocumentSku '' (number, basePriceSetDocument, sku) = roundCurrency(number, currencyBasePriceSetDocumentSku(basePriceSetDocument, sku));
+
 typeExchangeBasePriceSetDocumentSku = DATA typeExchange (basePriceSetDocument, sku);
 nameTypeExchangeBasePriceSetDocumentSku 'Тип обмена' (basePriceSetDocument, sku) = name(typeExchangeBasePriceSetDocumentSku(basePriceSetDocument, sku));
 CONSTRAINT currencyTypeExchange(typeExchangeBasePriceSetDocumentSku(basePriceSetDocument, sku)) != currencyPriceSetDocument(basePriceSetDocument)
@@ -250,14 +252,14 @@ markupBasePriceSetDocumentSku (basePriceSetDocument, sku) <- markupCoefficientRe
                                                                   CHANGED(datePriceSetDocument(basePriceSetDocument) AND inPriceSetDocumentSku(basePriceSetDocument, sku));
 markupBasePriceSetDocumentSku(document, sku) => inPriceSetDocumentSku(document, sku) RESOLVE FALSE;
 
-priceOutBasePriceSetDocumentSku 'Цена с надбавкой' (basePriceSetDocument, sku) = round2(priceInBasePriceSetDocumentSku(basePriceSetDocument, sku) *
-                                                                                        markupBasePriceSetDocumentSku(basePriceSetDocument, sku));
+priceOutBasePriceSetDocumentSku 'Цена с надбавкой' (basePriceSetDocument, sku) = roundCurrencyBasePriceSetDocumentSku(priceInBasePriceSetDocumentSku(basePriceSetDocument, sku) *
+                                                                                        markupBasePriceSetDocumentSku(basePriceSetDocument, sku), basePriceSetDocument, sku);
 
-priceOutRateBasePriceSetDocumentSku 'Цена с надбавкой (руб.)' (basePriceSetDocument, sku) = round2(priceOutBasePriceSetDocumentSku(basePriceSetDocument, sku) *
-                                                                                                   rateBasePriceSetDocumentSku(basePriceSetDocument, sku));
+priceOutRateBasePriceSetDocumentSku 'Цена с надбавкой (руб.)' (basePriceSetDocument, sku) = roundCurrencyBasePriceSetDocumentSku(priceOutBasePriceSetDocumentSku(basePriceSetDocument, sku) *
+                                                                                                   rateBasePriceSetDocumentSku(basePriceSetDocument, sku), basePriceSetDocument, sku);
 
-RRPRateBasePriceSetDocumentSku 'Рекомендуемая (руб.)' (basePriceSetDocument, sku) = round2(RRPBasePriceSetDocumentSku(basePriceSetDocument, sku) *
-                                                                                           rateBasePriceSetDocumentSku(basePriceSetDocument, sku));
+RRPRateBasePriceSetDocumentSku 'Рекомендуемая (руб.)' (basePriceSetDocument, sku) = roundCurrencyBasePriceSetDocumentSku(RRPBasePriceSetDocumentSku(basePriceSetDocument, sku) *
+                                                                                           rateBasePriceSetDocumentSku(basePriceSetDocument, sku), basePriceSetDocument, sku);
 
 methodBasePriceSetDocumentSku = DATA methodPrice(basePriceSetDocument, sku);
 nameMethodBasePriceSetDocumentSku 'Метод расчёта' (basePriceSetDocument, sku) = name(methodBasePriceSetDocumentSku(basePriceSetDocument, sku)) MAXCHARWIDTH 20;
@@ -623,13 +625,18 @@ FORM priceSetDocument 'Розничный прайс'
     PROPERTIES READONLY OBJVALUE(vv), categoryName = name(c)
     ORDER BY categoryName
 
+    TREE treeCategorySubCategory vvv=STRING[3], cs=categorySupplier, sc=subCategorySupplier
+    PROPERTIES READONLY OBJVALUE(vvv), name(cs), name(sc)
+
     OBJECTS aa=article
-    PROPERTIES (aa)    READONLY sidArticle, nameCategoryArticle, nameBrandSupplierArticle, currentBalanceArticle
+    PROPERTIES (aa)    READONLY sidArticle, nameCategoryArticle, nameBrandSupplierArticle, nameSubCategorySupplierArticle, currentBalanceArticle
     PROPERTIES (p, aa) READONLY prevPriceDocumentBBasePriceSetDocumentArticle, prevPriceDocumentBDiscountPriceSetDocumentArticle
     PROPERTIES (p, aa) inPriceSetDocumentArticle
 
     FILTERS stringEqualsAll(v), inBrandSupplier(s, b), inSupplierBrandArticle(s, b, aa), stringEqualsAll(vv),
             inArticleCategory(c, aa)
+
+    FILTERS stringEqualsAll(vvv), inCategorySupplierSupplier(s, cs), inSubCategorySupplierCategorySupplier(cs, sc), inCategorySupplierSubCategorySupplierArticle(cs, sc, aa)//, inArticleSubCategorySupplier(sc, aa)
 
     OBJECTS ss=sku
     PROPERTIES (ss)    READONLY FORCE GRID sidArticleSku, nameCategoryArticleSku, nameBrandSupplierArticleSku, sidSizeSupplierItem, sidColorSupplierItem, currentBalanceSku
@@ -754,9 +761,17 @@ DESIGN priceSetDocument FROM DEFAULT {
             NEW bottomContainer {
                 childConstraints = TO THE RIGHT;
 
-                ADD treeCategory.tree.box {
-                    fillHorizontal = 1;
-                    fillVertical = 2;
+                NEW categorySupplierContainer {
+                    childConstraints = TO THE BOTTOM;
+                    ADD treeCategory.tree.box {
+                        fillHorizontal = 1;
+                        fillVertical = 1;
+                    }
+
+                    ADD treeCategorySubCategory.tree.box {
+                        fillHorizontal = 1;
+                        fillVertical = 1;
+                    }
                 }
 
                 NEW articleSkuContainer {

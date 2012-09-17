@@ -30,6 +30,12 @@ inBrandSupplier (supplier, brandSupplier) = supplierBrandSupplier(brandSupplier)
 inArticleBrand (brandSupplier, article) = brandSupplierArticle(article) == brandSupplier;
 inSkuBrand(brandSupplier, sku) = brandSupplierArticleSku(sku) == brandSupplier;
 
+inCategorySupplierSupplier (supplier, categorySupplier) = supplierCategorySupplier(categorySupplier) == supplier;
+
+inSubCategorySupplierCategorySupplier (categorySupplier, subCategorySupplier) = categorySupplierSubCategorySupplier(subCategorySupplier) == categorySupplier;
+inArticleSubCategorySupplier (subCategorySupplier, article) = subCategorySupplierArticle(article) == subCategorySupplier;
+inArticleCategorySupplier (categorySupplier, article) = categorySupplierArticle(article) == categorySupplier;
+
 inArticleCategory (category, article) = UNION OVERRIDE categoryArticle(article) == category,
                                                        article == article AND NOT category;
 
@@ -44,6 +50,11 @@ inSupplierBrandArticle(supplier, brand, article) = UNION OVERRIDE brandSupplierA
 inSupplierBrandSku(supplier, brand, sku) = UNION OVERRIDE brandSupplierArticleSku(sku) == brand AND supplier IS supplier,
                                                           supplierArticleSku(sku) == supplier AND NOT brand,
                                                           sku == sku AND NOT supplier AND NOT brand;
+
+inCategorySupplierSubCategorySupplierArticle(categorySupplier, subCategorySupplier, article) = UNION OVERRIDE subCategorySupplierArticle(article) == subCategorySupplier AND categorySupplier IS categorySupplier,
+                                                                                                              categorySupplierArticle(article) == categorySupplier AND NOT subCategorySupplier,
+                                                                                                              article == article AND NOT categorySupplier AND NOT subCategorySupplier;
+
 
 // подбор курса обмена валют
 META defineNearestRateExchangeObject(object, typeEx, typeCur, propDate, group)
@@ -233,6 +244,29 @@ FORM typeFabrics 'Типы одежды'
     PROPERTIES(t) READONLY name
     PROPERTIES(t) ADDFORM, EDITFORM, delete
     DIALOG typeFabric OBJECT t
+;
+
+FORM seasonYear 'Сезон'
+
+    OBJECTS s = seasonYear FIXED PANEL
+    PROPERTIES(s) nameSeasonSeasonYear, yearSeasonYear, nameSeasonYear
+
+    EDIT seasonYear OBJECT s;
+;
+
+FORM seasonYears 'Сезоны'
+    OBJECTS ss = season
+    PROPERTIES(ss) READONLY name
+    OBJECTS s = seasonYear
+    PROPERTIES(s) READONLY nameSeasonSeasonYear, yearSeasonYear, nameSeasonYear
+    PROPERTIES(s) ADDFORM, EDITFORM, delete
+    //DIALOG seasonYear OBJECT s;
+;
+
+FORM dialogSeasonYear 'Сезон'
+    OBJECTS s = seasonYear
+    PROPERTIES(s) READONLY nameSeasonSeasonYear, yearSeasonYear, nameSeasonYear
+    DIALOG seasonYear OBJECT s;
 ;
 
 FORM unitOfMeasures 'Единицы измерений'

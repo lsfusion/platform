@@ -96,6 +96,8 @@ DESIGN store FROM DEFAULT {
 NAVIGATOR {
     itemClassifier {
         ADD categories;
+        ADD seasonYears;
+        //ADD countries;
         ADD UOMs;
     }
 
