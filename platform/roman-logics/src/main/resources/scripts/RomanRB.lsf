@@ -30,6 +30,8 @@ REQUIRE System,
         WriteOff,
         RomanWriteOff,
         Customer,
+        SaleOrder,
+        SaleInvoice,
         Inventory,
         Surplus,
         DisparityBatch,
@@ -224,6 +226,7 @@ NAVIGATOR {
         }
     }
     wholesaleTrade {
+        ADD saleNavigator;
         NEW tradeClassifier  'Справочники' TO leftToolbar {
             ADD customers;
         }

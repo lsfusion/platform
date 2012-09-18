@@ -623,7 +623,7 @@ END
 META defineDocumentDetailBatchCustom(idetail, batchProp)
 
     batch###idetail = DATA batchProp (idetail);
-    descriptionBatch###idetail 'Партия' (detail) = descriptionBatch(batch###idetail(detail));
+    descriptionBatch###idetail 'Партия' (detail) = descriptionBatch(batch###idetail(detail)) MINCHARWIDTH 30 PREFCHARWIDTH 40;
 
     CONSTRAINT skuBatch(batch###idetail(detail)) != sku###idetail(detail) CHECKED BY batch###idetail
         MESSAGE 'Товар партии строки должен соответствовать SKU строки';

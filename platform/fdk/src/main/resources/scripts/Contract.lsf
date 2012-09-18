@@ -64,19 +64,19 @@ END
 
 META defineDocumentContract (concrete, contractType, singleContractProp, partyAProp, partyBProp, partyAMessage, partyBMessage)
     contractType###concrete = DATA contractType (concrete);
-    number###contractType###concrete 'Номер договора' (object) = numberContract(contractType###concrete(object)) IN documentPrmGroup;
-    isCommission###concrete 'Продажа на комиссию' = DATA BOOLEAN (object);
-    isCommission###concrete(object) <- typeContractSkuDate(contractType###concrete(object), date###concrete(object)) == contractSkuType.commission
-        WHEN CHANGED(contractType###concrete(object)) OR
-             CHANGED(date###concrete(object));
+    number###contractType###concrete 'Номер договора' (concrete) = numberContract(contractType###concrete(concrete)) IN documentPrmGroup;
+    isCommission###concrete 'Продажа на комиссию' = DATA BOOLEAN (concrete);
+    isCommission###concrete(concrete) <- typeContractSkuDate(contractType###concrete(concrete), date###concrete(concrete)) == contractSkuType.commission
+        WHEN CHANGED(contractType###concrete(concrete)) OR
+             CHANGED(date###concrete(concrete));
 
-    contractType###concrete(object) <- singleContractProp(partyAProp(object), partyBProp(object))
-                                          WHEN CHANGED(partyAProp(object)) OR CHANGED(partyBProp(object));
+    contractType###concrete(concrete) <- singleContractProp(partyAProp(concrete), partyBProp(concrete))
+                                          WHEN CHANGED(partyAProp(concrete)) OR CHANGED(partyBProp(concrete));
 
-    CONSTRAINT contractType###concrete(saleOut) AND NOT partyAProp(saleOut) == companyAContractSkuCompany(contractType###concrete(saleOut))
+    CONSTRAINT contractType###concrete(concrete) AND NOT partyAProp(concrete) == partyAContract(contractType###concrete(concrete))
         CHECKED BY contractType###concrete MESSAGE partyAMessage;
 
-    CONSTRAINT contractType###concrete(saleOut) AND NOT partyBProp(saleOut) == companyBContractSkuCompany(contractType###concrete(saleOut))
+    CONSTRAINT contractType###concrete(concrete) AND NOT partyBProp(concrete) == partyBContract(contractType###concrete(concrete))
         CHECKED BY contractType###concrete MESSAGE partyBMessage;
 
 END

@@ -19,6 +19,9 @@ REQUIRE System,
         Ware,
         Country,
         LegalEntity,
+        Customer,
+        SaleOrder,
+        SaleInvoice,
         Employee,
         Store,
         ListRegister,
@@ -1636,35 +1639,35 @@ FORM wastageCommitteeDialog 'Комиссии для списания отход
     DIALOG wastageCommittee OBJECT wc
 ;
 
-// ----------------------------------- Договор ------------------------------------------ //
-
-FORM customer 'Покупатель'
-    OBJECTS cu=customer FIXED PANEL
-    PROPERTIES(cu)     name, fullNameLegalEntity, nameOwnershipLegalEntity, shortNameOwnershipLegalEntity, addressLegalEntity, dialogAddressLegalEntity,
-                       postAddressLegalEntity, dialogPostAddressLegalEntity, managerLegalEntity, dialogManagerLegalEntity,
-                       accountantLegalEntity, dialogAccountantLegalEntity, phoneLegalEntity, dialogPhoneLegalEntity,
-                       UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity, emailLegalEntity, siteLegalEntity
-    OBJECTS a=account
-    PROPERTIES(a)      numberAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount,
-                       MFOBankAccount, noteAccount, ADDOBJ, delete
-
-    PROPERTIES(cu, a) equalsLegalEntityAccount
-
-    FILTERS legalEntityAccount(a) == cu
-
-    EDIT customer OBJECT cu
-
-;
-
-CLASS customer 'Покупатель' : legalEntity;
-TABLE customer (customer);
-
-FORM customers 'Покупатели'
-    OBJECTS cu=customer
-    PROPERTIES(cu)   READONLY name, fullNameLegalEntity, UNPLegalEntity, nameOwnershipLegalEntity, shortNameOwnershipLegalEntity,
-                              addressLegalEntity
-    PROPERTIES(cu)   ADDFORM, EDITFORM, delete
-;
+//// ----------------------------------- Договор ------------------------------------------ //
+//
+//FORM customer 'Покупатель'
+//    OBJECTS cu=customer FIXED PANEL
+//    PROPERTIES(cu)     name, fullNameLegalEntity, nameOwnershipLegalEntity, shortNameOwnershipLegalEntity, addressLegalEntity, dialogAddressLegalEntity,
+//                       postAddressLegalEntity, dialogPostAddressLegalEntity, managerLegalEntity, dialogManagerLegalEntity,
+//                       accountantLegalEntity, dialogAccountantLegalEntity, phoneLegalEntity, dialogPhoneLegalEntity,
+//                       UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity, emailLegalEntity, siteLegalEntity
+//    OBJECTS a=account
+//    PROPERTIES(a)      numberAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount,
+//                       MFOBankAccount, noteAccount, ADDOBJ, delete
+//
+//    PROPERTIES(cu, a) equalsLegalEntityAccount
+//
+//    FILTERS legalEntityAccount(a) == cu
+//
+//    EDIT customer OBJECT cu
+//
+//;
+//
+//CLASS customer 'Покупатель' : legalEntity;
+//TABLE customer (customer);
+//
+//FORM customers 'Покупатели'
+//    OBJECTS cu=customer
+//    PROPERTIES(cu)   READONLY name, fullNameLegalEntity, UNPLegalEntity, nameOwnershipLegalEntity, shortNameOwnershipLegalEntity,
+//                              addressLegalEntity
+//    PROPERTIES(cu)   ADDFORM, EDITFORM, delete
+//;
 
 //---------------------------- Рецепты блюд ----------------------------------------//
 CLASS recipe 'Рецепт' : named;
@@ -7696,6 +7699,9 @@ NAVIGATOR {
             ADD torgSales;
             ADD sumMotionContainerDepartmentPrint;
         }
+    }
+    NEW wholeSale 'Оптовая торговля' TO formsToolbar {
+        ADD saleNavigator;
     }
 
     ADD machineryNavigator TO formsToolbar;

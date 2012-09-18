@@ -1,0 +1,275 @@
+MODULE SaleOrder;
+
+REQUIRE System,
+        Utils,
+        Historizable,
+        Stock,
+        Numerator,
+        Document,
+        Currency,
+        Customer,
+        Barcode,
+        Historizable;
+
+
+PRIORITY Utils, Stock;
+
+NAMESPACE Sale;
+
+
+//----------------------------------------------- Заказ ---------------------------------------------------//
+
+CLASS ABSTRACT order 'Заказ аггр.' : historyObject, numeratedDocument;
+CLASS ABSTRACT orderDetail 'Строка заказа аггр.' : named;
+//CLASS ABSTRACT orderPosted 'Закрытый заказ' : order, postedObject;
+
+CLASS userOrder 'Заказ' : order;
+CLASS userOrderDetail 'Строка заказа' : orderDetail;
+CLASS userOrderPosted 'Закрытый заказ' : userOrder, postedObject;
+
+@defineDocumentTables(order);
+@defineDocumentTables(userOrder);
+//--
+orderOrderDetail = ABSTRACT order (orderDetail) IN idGroup NOT NULL DELETE;
+inOrderDetailOrderDetail(order, orderDetail) = orderOrderDetail(orderDetail) == order;
+countOrderDetailOrder 'Количество строк в документе'(order) =
+    GROUP SUM 1 IF inOrderDetailOrderDetail(order, orderDetail) BY orderOrderDetail(orderDetail) PERSISTENT IN documentSumGroup;
+indexOrderDetail 'Номер строки' (orderDetail) =
+    PARTITION SUM 1 IF orderDetail IS orderDetail BY orderOrderDetail(orderDetail)
+    ORDER orderDetail IN recognizeGroup MINCHARWIDTH 4 PREFCHARWIDTH 4 IN recognizeGroup;
+
+userOrderUserOrderDetail = DATA userOrder (userOrderDetail) IN idGroup NOT NULL DELETE;
+@defineDocumentDetailActions (order);
+
+orderOrderDetail(detail) += userOrderUserOrderDetail(detail);
+//--
+dateOrder 'Дата документа' = ABSTRACT DATE (order) IN documentHeaderGroup;
+timeOrder 'Время документа' = ABSTRACT TIME (order) IN documentHeaderGroup;
+
+dateTimeOrder 'Дата/время документа' (order) = toDateTime(dateOrder(order), timeOrder(order)) PERSISTENT;
+
+@defineDocumentDetailTimeCustom (order, orderDetail);
+
+dateUserOrder 'Дата документа' = DATA DATE (userOrder) IN documentHeaderGroup;
+    dateUserOrder (userOrder) <- currentDate() WHEN ASSIGNED(userOrder AS userOrder);
+timeUserOrder 'Время документа' = DATA TIME (userOrder) IN documentHeaderGroup;
+    timeUserOrder (userOrder) <- currentTime() WHEN ASSIGNED(userOrder AS userOrder);
+
+dateOrder(order) += dateUserOrder(order);
+timeOrder(order) += timeUserOrder(order);
+//--
+numberOrder 'Номер' = ABSTRACT STRING[18] (order) IN numberedGroup MINCHARWIDTH 7;
+seriesOrder 'Серия' = ABSTRACT STRING[2] (order) IN numberedGroup FIXEDCHARWIDTH 3;
+seriesNumberOrder 'Серия/Номер' (order) = ustring2(seriesOrder(order), numberOrder(order)) MINCHARWIDTH 7 PREFCHARWIDTH 10 MAXCHARWIDTH 20 PERSISTENT;
+
+numberOrder(order) += numberObject(order) IF order IS userOrder;
+seriesOrder(order) += seriesObject(order) IF order IS userOrder;
+
+//--
+noteOrder 'Примечание' = ABSTRACT STRING[100] (order) IN additionalInfo MINCHARWIDTH 30 PREFCHARWIDTH 80 IN documentPrmGroup;
+@defineDocumentHeaderNote (userOrder);
+noteOrder(order) += noteUserOrder(order);
+//--
+noteOrderDetail 'Примечание' = ABSTRACT STRING[100] (orderDetail) MINCHARWIDTH 30 PREFCHARWIDTH 80;
+@defineDocumentDetailNote (userOrder);
+noteOrderDetail(orderDetail) += noteUserOrderDetail(orderDetail);
+
+@defineDocumentDetailActions(userOrder);
+//--
+stockOrder = ABSTRACT stock(order) AUTOSET;
+nameStockOrder 'Склад' (order) = name(stockOrder(order)) IN documentHeaderGroup
+    MINCHARWIDTH 20 PREFCHARWIDTH 40;
+stockUserOrder = DATA stock(userOrder) AUTOSET;
+stockOrder(order) += stockUserOrder(order);
+
+stockOrderDetail = ABSTRACT stock(orderDetail) AUTOSET;
+nameStockOrderDetail 'Склад' (orderDetail) = name(stockOrderDetail(orderDetail)) IN documentHeaderGroup
+    MINCHARWIDTH 20 PREFCHARWIDTH 40;
+dataStockUserOrderDetail = DATA stock(userOrderDetail) AUTOSET;
+
+stockUserOrderDetail (userOrderDetail) = UNION OVERRIDE stockUserOrder(userOrderUserOrderDetail(userOrderDetail)),
+                                                                 dataStockUserOrderDetail (userOrderDetail);
+stockOrderDetail(orderDetail) += stockUserOrderDetail(orderDetail);
+
+companyOrder (order) = companyStock(stockOrder(order));
+nameCompanyOrder 'Компания' (order)= name(companyOrder(order));
+//--
+isPostedOrder 'Проведен' (order) = ABSTRACT BOOLEAN (order) PERSISTENT;
+@defineDocumentPosted(userOrder);
+isPostedOrder(order) += isPostedUserOrder(order);
+//--
+customerOrder = ABSTRACT customer(order) AUTOSET;
+nameCustomerOrder 'Покупатель' (order) = name(customerOrder(order)) IN documentHeaderGroup
+    MINCHARWIDTH 20 PREFCHARWIDTH 40;
+nameCustomerOrderDetail 'Покупатель' (orderDetail) = nameCustomerOrder(orderOrderDetail(orderDetail));
+customerUserOrder = DATA customer(userOrder) AUTOSET;
+customerOrder(order) += customerUserOrder(order);
+//--
+descriptionOrder 'Название документа' = ABSTRACT STRING[200] (order) PERSISTENT IN recognizeGroup MINCHARWIDTH 30 PREFCHARWIDTH 60;
+descriptionOrderDetail 'Название документа' (orderDetail) = descriptionOrder(orderOrderDetail(orderDetail)) MINCHARWIDTH 30 PREFCHARWIDTH 50;
+@defineDocumentHeaderDescriptionCustom(userOrder, seriesNumberObject, 'Заказ');
+descriptionOrder (order) += descriptionUserOrder(order);
+//--
+currencyOrder = ABSTRACT currency (order);
+nameCurrencyOrder 'Валюта' (order)= name(currencyOrder(order)) IN documentPrmGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
+@defineDocumentHeaderCurrency (userOrder);
+@deriveDocumentCurrency (userOrder, stock);
+currencyOrder(order)+= currencyUserOrder(order);
+
+currencyOrderDetail = ABSTRACT currency (orderDetail);
+nameCurrencyOrderDetail 'Валюта' (orderDetail) = name(currencyOrderDetail(orderDetail));
+dataCurrencyUserOrderDetail = DATA currency(userOrderDetail) AUTOSET;
+    dataCurrencyUserOrderDetail (userOrderDetail) <- currencyStock(stockUserOrderDetail(userOrderDetail)) WHEN CHANGED(stockUserOrderDetail(userOrderDetail));
+currencyUserOrderDetail (userOrderDetail) = UNION OVERRIDE currencyUserOrder(userOrderUserOrderDetail(userOrderDetail)),
+                                                                 dataCurrencyUserOrderDetail (userOrderDetail);
+currencyOrderDetail (orderDetail) +=  currencyUserOrderDetail (orderDetail);
+//--
+//@defineDocumentDetailNumbered(writeOff);
+skuOrderDetail = ABSTRACT sku (orderDetail);
+nameSkuOrderDetail 'SKU' (orderDetail) = nameSku(skuOrderDetail(orderDetail)) IN recognizeGroup;
+idBarcodeSkuOrderDetail 'Штрих-код' (orderDetail) = idBarcodeSku(skuOrderDetail(orderDetail)) IN recognizeGroup;
+shortNameUOMSkuOrderDetail 'Ед. изм.' (orderDetail) = shortNameUOMSku(skuOrderDetail(orderDetail)) IN recognizeGroup;
+@defineDocumentDetailSku (userOrder, sku);
+skuOrderDetail(orderDetail) +=  skuUserOrderDetail(orderDetail);
+//--
+quantityOrderDetail 'Кол-во' = ABSTRACT NUMERIC[14,3] (orderDetail);
+@defineDocumentDetailQuantity(userOrder);
+quantityOrderDetail(orderDetail) += quantityUserOrderDetail(orderDetail);
+//--
+priceOrderDetail 'Цена' = ABSTRACT NUMERIC[14,2] (orderDetail) IN baseGroup;
+@defineDocumentDetailPrice(userOrder);
+priceOrderDetail (orderDetail) += priceUserOrderDetail(orderDetail);
+@defineDocumentDetailSum(order);
+@defineDocumentHeaderQuantity(order);
+@defineDocumentHeaderSkuQuantity(order, sku);
+@defineDocumentHeaderSum(order);
+
+
+@defineAddDetailDialogSkuStock(userOrder, sku, stock, dialogSku);
+@defineAddDetailDialogBarcode(userOrder, sku);
+//@defineAddDetailDialogTerminal(writeOff, sku);
+
+// --------------------------- Формы Заказа ---------------------------------
+
+FORM userOrder 'Заказ'
+    OBJECTS s = userOrder FIXED PANEL
+    PROPERTIES (s) objectClassName, numberOrder, seriesOrder, dateOrder, timeOrder, nameNumeratorObject,
+                   nameStockOrder, nameCustomerOrder, nameCurrencyOrder, noteOrder, sumOrderDetailOrder,
+                   countOrderDetailOrder, quantityOrderDetailOrder
+
+
+    OBJECTS d = userOrderDetail
+    PROPERTIES (d) indexOrderDetail, idBarcodeSkuOrderDetail, nameSkuOrderDetail, shortNameUOMSkuOrderDetail,
+                   quantityOrderDetail, priceOrderDetail, sumOrderDetail, nameStockOrderDetail, ADDOBJ, delete
+
+    PROPERTIES(s) TODRAW d addDetailDialogSkuStockUserOrderDetailUserOrder, //addDetailDialogTerminalWriteOffDetailWriteOff,
+                           addDetailInputBarcodeUserOrderDetailUserOrder, deleteOrderDetailOrder
+    FILTERS inOrderDetailOrderDetail(s, d)
+
+    EVENTS
+        ON OK EXEC prePostUserOrder(s)
+
+    EDIT userOrder OBJECT s
+;
+
+DESIGN userOrder FROM DEFAULT{
+
+    main {
+        preferredSize = (1024, 768);
+
+        NEW header.box BEFORE d.box {
+            childConstraints = TO THE RIGHT;
+
+            NEW headerRow1 {
+                childConstraints = TO THE BOTTOM;
+
+                ADD s.documentHeaderGroup {
+                    childConstraints = TO THE RIGHT;
+                    ADD PROPERTY(objectClassName);
+                    ADD PROPERTY(nameStockOrder);
+                    ADD PROPERTY(nameCustomerOrder);
+                    ADD PROPERTY(nameNumeratorObject);
+                    ADD PROPERTY(numberOrder);
+                    ADD PROPERTY(seriesOrder);
+                    ADD PROPERTY(dateOrder);
+                    ADD PROPERTY(timeOrder);
+                }
+
+                ADD s.documentPrmGroup {
+                    childConstraints = TO THE RIGHT;
+                }
+            }
+
+            ADD s.documentSumGroup {
+                childConstraints = TO THE BOTTOM;
+            }
+        }
+
+        d.panel{
+            childConstraints = TO THE BOTTOM;
+        }
+        PROPERTY(formOkAction) {
+            caption = 'Провести';
+        }
+    }
+}
+
+FORM userOrders 'Заказы'
+    OBJECTS s = userOrder
+    PROPERTIES (s) READONLY isPostedOrder FORCE GRID, objectClassName, numberOrder, seriesOrder, dateOrder, timeOrder,
+                   nameStockOrder, nameCustomerOrder, nameCurrencyOrder, noteOrder, sumOrderDetailOrder,
+                   countOrderDetailOrder, quantityOrderDetailOrder
+
+    PROPERTIES (s) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
+
+    PROPERTIES (s) ADDFORM, EDITFORM, delete FORCE PANEL
+
+    OBJECTS d=userOrderDetail
+    PROPERTIES (d) READONLY indexOrderDetail, idBarcodeSkuOrderDetail, nameSkuOrderDetail, shortNameUOMSkuOrderDetail,
+                   quantityOrderDetail, priceOrderDetail, sumOrderDetail, nameStockOrderDetail
+
+    FILTERS inOrderDetailOrderDetail(s, d)
+;
+
+DESIGN userOrders FROM DEFAULT {
+    PROPERTY (delete(s)) {
+        panelLocation = TOOLBAR;
+        askConfirm = TRUE;
+    }
+
+    NEW documentContainer BEFORE functions.box {
+        type = SPLITV;
+        childConstraints = TO THE BOTTOM;
+
+        ADD s.box;
+
+        NEW documentDetail {
+            type = TABBED;
+
+            ADD d.box {
+                title = 'Спецификация';
+            }
+            NEW documentHistory {
+                title = 'История';
+
+                ADD s.historyGroup;
+                ADD s.postedGroup;
+            }
+            NEW printTab {
+                title = 'Печатные формы';
+                NEW printContainer {
+                    title = 'Печать';
+                    childConstraints = TO THE BOTTOM;
+                    fillVertical = 1.0; // todo : иначе кнопка не всегда показывается, нужно будет пофиксить как-нибудь
+                }
+            }
+        }
+    }
+}
+
+NAVIGATOR {
+    NEW saleNavigator 'Управление заказами' {
+        ADD userOrders;
+    }
+}
+
