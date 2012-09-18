@@ -65,7 +65,8 @@ END
 META defineDocumentContract (concrete, contractType, singleContractProp, partyAProp, partyBProp, partyAMessage, partyBMessage)
     contractType###concrete = DATA contractType (concrete);
     number###contractType###concrete 'Номер договора' (concrete) = numberContract(contractType###concrete(concrete)) IN documentPrmGroup;
-    isCommission###concrete 'Продажа на комиссию' = DATA BOOLEAN (concrete);
+    
+    isCommission###concrete 'Продажа на комиссию' = DATA BOOLEAN (concrete) IN documentPrmGroup;
     isCommission###concrete(concrete) <- typeContractSkuDate(contractType###concrete(concrete), date###concrete(concrete)) == contractSkuType.commission
         WHEN CHANGED(contractType###concrete(concrete)) OR
              CHANGED(date###concrete(concrete));
