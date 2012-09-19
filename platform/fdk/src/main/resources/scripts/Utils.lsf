@@ -74,6 +74,19 @@ DESIGN dialogDate FROM DEFAULT {
     }
 }
 
+FORM dialogNumeric 'Выбор числа'
+    OBJECTS n = NUMERIC[20,7] FIXED PANEL
+    PROPERTIES(n) objValue = OBJVALUE
+;
+
+DESIGN dialogNumeric FROM DEFAULT {
+    PROPERTY (objValue) {
+        caption = 'Введите число';
+        font = 'Tahoma bold 64';
+        panelLabelAbove = TRUE;
+    }
+}
+
 // --------------------------- Агрегации --------------------------------- //
 
 META defineAggregationCustom (primProperty, primObject, aggrObject, aggrProperty)

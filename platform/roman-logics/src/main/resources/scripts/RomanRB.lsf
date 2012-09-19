@@ -234,28 +234,11 @@ NAVIGATOR {
 
     ADD machineryNavigator AFTER wholesaleTrade TO leftToolbar;
 
-    ADD contractNavigator AFTER machineryNavigator TO leftToolbar {
-        ADD commercialInvoices;
+    NEW finance 'Финансы' AFTER machineryNavigator TO leftToolbar {
+        ADD contractNavigator;
     }
 
     NEW hr 'Кадры' AFTER machineryNavigator TO leftToolbar {
         ADD employees;
-    }
-
-    printForms{
-        ADD consignmentVerticalA;
-        ADD consignmentHorizontalA;
-        ADD consignmentVerticalB;
-        ADD consignmentHorizontalB;
-        ADD consignmentAttach;
-        ADD consignmentSimpleHorizontal;
-        ADD consignmentSimpleVertical;
-        ADD consignmentSimpleAttach;
-        ADD consignment;
-        ADD priceArticlePriceSetDocumentPrint;
-        ADD priceSkuPriceSetDocumentPrint;
-        ADD writeOffPrint;
-        ADD orderPickingPrint;
-        ADD declarationPrint;
     }
 }

@@ -21,6 +21,27 @@ sumAccountReceiptDetailZReport 'Сумма учетная' (zReport) = sumReceip
 
 @implementAccountZReportLedger (sumAccountReceiptDetailZReport);
 
+selectSkipAReceiptDetailZReport 'Подобрать строки' = ACTION (zReport, sumSelect) {
+    LOCAL sumLeft = NUMERIC[16,2] ();
+    SET sumLeft() <- sumSelect;
+
+    SET skipAReceiptSaleDetail(receiptDetail) <- NULL WHERE zReportReceiptDetail(receiptDetail) == zReport;
+    FOR zReportReceiptDetail(receiptDetail) == zReport ORDER DESC sumReceiptSaleDetail(receiptDetail) DO {
+        IF sumReceiptSaleDetail(receiptDetail) <= sumLeft() THEN {
+            SET skipAReceiptSaleDetail(receiptDetail) <- TRUE;
+            SET sumLeft() <- sumLeft() - sumReceiptSaleDetail(receiptDetail);
+        }
+    }
+}
+
+selectDialogSkipAReceiptDetailZReport 'Подобрать строки' = ACTION (zReport) NEWSESSION {
+    FORM dialogNumeric MODAL;
+    IF formResult() == formResult.ok THEN {
+        EXEC selectSkipAReceiptDetailZReport(zReport, chosenNumeric('n'));
+        EXEC apply();
+    }
+} TOOLBAR;
+
 EXTEND FORM zReport
     PROPERTIES (z) sumSkipAReceiptSaleDetailZReport, sumAccountReceiptDetailZReport
     PROPERTIES (d) skipAReceiptSaleDetail
@@ -28,5 +49,5 @@ EXTEND FORM zReport
 
 EXTEND FORM zReports
     PROPERTIES (z) READONLY sumSkipAReceiptSaleDetailZReport, sumAccountReceiptDetailZReport
-    PROPERTIES (d) READONLY skipAReceiptSaleDetail
+    PROPERTIES (d) READONLY FORCE GRID skipAReceiptSaleDetail
 ;

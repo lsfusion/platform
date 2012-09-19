@@ -3941,28 +3941,26 @@ public class RomanLogicsModule extends LogicsModule {
         findItemFormBoxBarcode = addFormEntity(new FindItemFormEntity(null, "findItemFormBoxBarcode", "Поиск товара (с коробами и выбором штрих-кода)", true, true));
         findItemFormSimpleBarcode = addFormEntity(new FindItemFormEntity(null, "findItemFormSimpleBarcode", "Поиск товара (с выбором штрих-кода)", false, true));
 
-        NavigatorElement printForms = addNavigatorElement(baseLM.baseElement, "printForms", "Печатные формы");
-        printForms.window = leftToolbar;
-        addFormEntity(new AnnexInvoiceFormEntity(printForms, "annexInvoiceForm", "Приложение к инвойсу", false));
-        invoiceFromFormEntity = addFormEntity(new AnnexInvoiceFormEntity(printForms, "annexInvoiceForm2", "Приложение к инвойсу (перевод)", true));
-        addFormEntity(new InvoiceFromFormEntity(printForms, "invoiceFromForm", "Исходящие инвойсы", false));
-        addFormEntity(new InvoiceFromFormEntity(printForms, "invoiceFromForm2", "Исходящие инвойсы (перевод)", true));
-        addFormEntity(new DeclarantFormEntity(printForms, "declarantForm", "Экспорт в деларант"));
-        addFormEntity(new ProformInvoiceFormEntity(printForms, "proformInvoiceForm", "Исходящие инвойсы-проформы", false));
-        addFormEntity(new ProformInvoiceFormEntity(printForms, "proformInvoiceForm2", "Исходящие инвойсы-проформы (перевод)", true));
-        addFormEntity(new SbivkaFormEntity(printForms, "sbivkaForm", "Сбивка товаров"));
-        addFormEntity(new SbivkaSupplierFormEntity(printForms, "sbivkaSupplierForm", "Сбивка товаров поставщика"));
-        addFormEntity(new PackingListFormEntity(printForms, "packingListForm", "Исходящие упаковочные листы", false));
-        addFormEntity(new PackingListFormEntity(printForms, "packingListForm2", "Исходящие упаковочные листы (перевод)", true));
-        addFormEntity(new PackingListBoxFormEntity(printForms, "packingListBoxForm", "Упаковочные листы коробов"));
-        addFormEntity(new ListFreightUnitFreightFormEntity(printForms, "listFreightUnitFreightForm", "Список коробов"));
-        addFormEntity(new PrintSkuFormEntity(printForms, "printSkuForm", "Товар"));
+        addFormEntity(new AnnexInvoiceFormEntity(null, "annexInvoiceForm", "Приложение к инвойсу", false));
+        invoiceFromFormEntity = addFormEntity(new AnnexInvoiceFormEntity(null, "annexInvoiceForm2", "Приложение к инвойсу (перевод)", true));
+        addFormEntity(new InvoiceFromFormEntity(null, "invoiceFromForm", "Исходящие инвойсы", false));
+        addFormEntity(new InvoiceFromFormEntity(null, "invoiceFromForm2", "Исходящие инвойсы (перевод)", true));
+        addFormEntity(new DeclarantFormEntity(null, "declarantForm", "Экспорт в деларант"));
+        addFormEntity(new ProformInvoiceFormEntity(null, "proformInvoiceForm", "Исходящие инвойсы-проформы", false));
+        addFormEntity(new ProformInvoiceFormEntity(null, "proformInvoiceForm2", "Исходящие инвойсы-проформы (перевод)", true));
+        addFormEntity(new SbivkaFormEntity(null, "sbivkaForm", "Сбивка товаров"));
+        addFormEntity(new SbivkaSupplierFormEntity(null, "sbivkaSupplierForm", "Сбивка товаров поставщика"));
+        addFormEntity(new PackingListFormEntity(null, "packingListForm", "Исходящие упаковочные листы", false));
+        addFormEntity(new PackingListFormEntity(null, "packingListForm2", "Исходящие упаковочные листы (перевод)", true));
+        addFormEntity(new PackingListBoxFormEntity(null, "packingListBoxForm", "Упаковочные листы коробов"));
+        addFormEntity(new ListFreightUnitFreightFormEntity(null, "listFreightUnitFreightForm", "Список коробов"));
+        addFormEntity(new PrintSkuFormEntity(null, "printSkuForm", "Товар"));
 
-        FormEntity createSkuForm = addFormEntity(new CreateSkuFormEntity(printForms, "createSkuForm", "Штрих-коды товаров", FormType.PRINT));
-        FormEntity createPalletForm = addFormEntity(new CreatePalletFormEntity(printForms, "createPalletForm", "Штрих-коды паллет", FormType.PRINT));
-        FormEntity createFreightBoxForm = addFormEntity(new CreateFreightBoxFormEntity(printForms, "createFreightBoxForm", "Штрих-коды коробов", FormType.PRINT));
+        FormEntity createSkuForm = addFormEntity(new CreateSkuFormEntity(null, "createSkuForm", "Штрих-коды товаров", FormType.PRINT));
+        FormEntity createPalletForm = addFormEntity(new CreatePalletFormEntity(null, "createPalletForm", "Штрих-коды паллет", FormType.PRINT));
+        FormEntity createFreightBoxForm = addFormEntity(new CreateFreightBoxFormEntity(null, "createFreightBoxForm", "Штрих-коды коробов", FormType.PRINT));
 
-        invoiceExportForm = addFormEntity(new InvoiceExportFormEntity(printForms, "invoiceExportForm", "Экспорт инвойсов"));
+        invoiceExportForm = addFormEntity(new InvoiceExportFormEntity(null, "invoiceExportForm", "Экспорт инвойсов"));
 
         NavigatorElement purchase = addNavigatorElement(baseLM.baseElement, "purchase", "Управление закупками");
         purchase.window = leftToolbar;
@@ -4094,7 +4092,6 @@ public class RomanLogicsModule extends LogicsModule {
         addFormEntity(new CommonSizeEditFormEntity(retailClassifier, "commonEditSizeForm", "Белорусские размеры"));
         addFormEntity(new CommonSizeImportFormEntity(retailClassifier, "commonImportSizeForm", "Белорусские размеры (таблицей)"));
 
-        baseLM.baseElement.add(printForms);
         baseLM.baseElement.add(baseLM.adminElement);
     }
 

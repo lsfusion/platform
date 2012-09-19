@@ -91,6 +91,7 @@ userReceipt(receipt) <- currentUser() WHEN ASSIGNED(receipt IS receipt);
 
 receiptReceiptDetail (receiptDetail) = UNION EXCLUSIVE receiptReceiptReturnDetail(receiptDetail), receiptReceiptSaleDetail(receiptDetail) PERSISTENT;
 
+zReportReceiptDetail (receiptDetail) = zReportReceipt(receiptReceiptDetail(receiptDetail));
 sidCashRegisterModelReceiptDetail 'Код модели' (receiptDetail) = sidCashRegisterModelReceipt(receiptReceiptDetail(receiptDetail));
 
 typeReceiptDetail 'Тип' (receiptDetail) = UNION EXCLUSIVE 'Продажа' AND receiptDetail IS receiptSaleDetail, 'Возврат' AND receiptDetail IS receiptReturnDetail FIXEDCHARWIDTH 8;
@@ -129,8 +130,6 @@ numberDiscountCardReceipt 'Номер дисконтной карты' (receipt)
 nameClientDiscountCardReceipt 'Держатель дисконтной карты' (receipt) = nameClientDiscountCard(discountCardReceipt(receipt)) IN receiptDiscountGroup;
 numberDiscountCardReceiptDetail 'Номер дисконтной карты' (receiptDetail) = numberDiscountCardReceipt(receiptReceiptDetail(receiptDetail));
 nameClientDiscountCardReceiptDetail 'Держатель дисконтной карты' (receiptDetail) = nameClientDiscountCardReceipt(receiptReceiptDetail(receiptDetail));
-
-zReportReceiptDetail (receiptDetail) = zReportReceipt(receiptReceiptDetail(receiptDetail));
 
 idBarcodeReceiptDetail 'Штрих-код' (receiptDetail) = DATA STRING[14] (receiptDetail) FIXEDCHARWIDTH 14 INDEXED;
 
