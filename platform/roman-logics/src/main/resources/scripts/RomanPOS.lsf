@@ -4,12 +4,12 @@ REQUIRE POS, RomanStock;
 
 NAMESPACE POS;
 
-userSkipAReceiptSaleDetail (receiptSaleDetail) = DATA BOOLEAN (receiptSaleDetail);
+userSkipAReceiptDetail (receiptDetail) = DATA BOOLEAN (receiptDetail);
 
 diffCompanyReceipt (receipt) = companyCashRegister (cashRegisterZReport(zReportReceipt(receipt)))!= companyDepartmentStore (departmentStoreReceipt (receipt));
 
-skipAReceiptSaleDetail (receiptSaleDetail) = UNION OVERRIDE diffCompanyReceipt (receiptReceiptSaleDetail (receiptSaleDetail)),
-                                                            userSkipAReceiptSaleDetail (receiptSaleDetail);
+skipAReceiptSaleDetail 'Не бухг.' (receiptDetail) = UNION OVERRIDE diffCompanyReceipt (receiptReceiptDetail (receiptDetail)),
+                                                            userSkipAReceiptDetail (receiptDetail);
 
 skipASkuLedger (ledger) += skipAReceiptSaleDetail (ledger);
 
