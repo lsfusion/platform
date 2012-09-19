@@ -16,14 +16,15 @@ dateToCashRegisterModel 'Дата, до которой модель внесен
 
 FORM cashRegisterModel 'Модель касс'
     OBJECTS c=cashRegisterModel FIXED PANEL
-    PROPERTIES(c) name, noteModel, handlerModel, dateToCashRegisterModel
+    PROPERTIES(c) name, sidModel, noteModel, handlerModel, dateToCashRegisterModel
     EDIT cashRegisterModel OBJECT c
 ;
 
 FORM cashRegistersModels 'Модели касс'
-    OBJECTS m=cashRegisterModel
-    PROPERTIES(m) READONLY objectClassName, name, maxProductModel, noteModel, handlerModel
-    PROPERTIES(m) ADDFORM, EDITFORM, delete
+    OBJECTS c=cashRegisterModel
+    PROPERTIES(c) READONLY objectClassName, name, sidModel, maxProductModel, noteModel, handlerModel
+    PROPERTIES(c) ADDFORM, EDITFORM, delete
+    DIALOG cashRegisterModel OBJECT c
 ;
 
 // Кассы
@@ -61,7 +62,10 @@ computerCashRegister = DATA computer (cashRegister);
 hostnameComputerCashRegister 'Компьютер' (cashRegister) = hostname(computerCashRegister(cashRegister)) IN baseGroup;
 
 cashRegisterComputer (computer) = GROUP UNIQUE cashRegister BY computerCashRegister(cashRegister) WHERE cashRegister IS cashRegister PERSISTENT;
+
 currentCashRegister 'Текущая касса' = cashRegisterComputer(currentComputer());
+
+sidModelCurrentCashRegister 'Код модели' = sidModelMachinery(currentCashRegister());
 comPortCurrentCashRegister 'Порт' = comPortCashRegister(currentCashRegister());
 baudRateCurrentCashRegister 'Скорость весов' = baudRateCashRegister(currentCashRegister());
 nppMachineryCurrentCashRegister 'Номер кассового места' = nppMachinery(currentCashRegister());
@@ -132,19 +136,21 @@ EXTEND FORM groupMachineryInput
 
 // ------------------------------------------------ Стандартные значения ------------------------------------ //
 
-loadDefaultCashRegisterModel 'Добавить модель касс' = ACTION (stringOne, stringTwo)  {
+loadDefaultCashRegisterModel 'Добавить модель касс' = ACTION (iname, isid, ihandler)  {
     ADDOBJ cashRegisterModel;
     FOR crm == addedObject() DO {
-         SET name(crm) <- stringOne AS STRING[110];
-         SET handlerModel(crm) <- stringTwo AS STRING[200];
+         SET name(crm) <- iname;
+         SET sidModel(crm) <- isid;
+         SET handlerModel(crm) <- ihandler;
     }
 }
 
 loadDefaultCashRegisterModels 'Загрузить стандартные модели касс' = ACTION () {
-    EXEC loadDefaultCashRegisterModel('Кассы EasyCSV', 'equ.clt.handler.easy.EasyCSVHandler');
-    EXEC loadDefaultCashRegisterModel('Кассы Kristal', 'equ.clt.handler.kristal.KristalHandler');
-    EXEC loadDefaultCashRegisterModel('Кассы Maxishop', 'equ.clt.handler.maxishop.MaxishopHandler');
-    EXEC loadDefaultCashRegisterModel('Кассы UKM4', 'equ.clt.handler.ukm4.UKM4Handler');
+    EXEC loadDefaultCashRegisterModel('Кассы EasyCSV', 'EasyCSV', 'equ.clt.handler.easy.EasyCSVHandler');
+    EXEC loadDefaultCashRegisterModel('Кассы Kristal', 'Kristal', 'equ.clt.handler.kristal.KristalHandler');
+    EXEC loadDefaultCashRegisterModel('Кассы Maxishop', 'Maxishop', 'equ.clt.handler.maxishop.MaxishopHandler');
+    EXEC loadDefaultCashRegisterModel('Кассы UKM4', 'Ukm4', 'equ.clt.handler.ukm4.UKM4Handler');
+    EXEC loadDefaultCashRegisterModel('Фискальный регистратор DateCS', 'DateCS', '');
 } IN loadDefaultGroup;
 
 @implementLoadDefaultData(loadDefaultCashRegisterModels);

@@ -131,6 +131,8 @@ showFilterSkuGroupMachinery 'Выбрать группы' (groupMachinery) = ACT
 CLASS ABSTRACT model 'Модель' : named;
 TABLE model (model);
 
+sidModel 'Код' = DATA STRING[20] (model) IN baseGroup;
+
 noteModel 'Примечание' = DATA STRING[200] (model) IN baseGroup;
 handlerModel 'Обработчик' = DATA STRING[200] (model) IN baseGroup;
 
@@ -144,6 +146,7 @@ groupMachineryMachinery = ABSTRACT groupMachinery (machinery) PERSISTENT;
 nameGroupMachineryMachinery 'Группа' (machinery) = nameGroupMachinery(groupMachineryMachinery(machinery));
 
 modelMachinery = ABSTRACT model (machinery);
+sidModelMachinery 'Код' (machinery) = sidModel(modelMachinery(machinery)) IN baseGroup;
 nameModelMachinery 'Модель' (machinery) = name(modelMachinery(machinery)) IN baseGroup;
 handlerModelMachinery 'Обработчик' (machinery) = handlerModel(modelMachinery(machinery)) IN baseGroup;
 

@@ -1208,8 +1208,6 @@ FORM papers 'Документы качества'
 // ------------------------------------------- Загрузка в ВУ --------------------------------------------- //
 
 POSPriceSkuDepartmentStoreDateTime(sku, departmentStore, dateTime) += retailPriceBLedgerDateTime(sku, departmentStore, dateTime);
-postPrintReceipt(receipt) += noFiscalPostPrintReceipt(receipt);
-fiscalZReport() += closeCurrentZReport();
 
 ledgerPriceBarcodeGroupMachinery 'Текущая цена по учету' (barcode, groupMachinery) = currentRetailPriceBarcodeDepartmentStore(barcode, stockGroupMachinery(groupMachinery));
 

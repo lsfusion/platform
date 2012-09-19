@@ -4,28 +4,28 @@ REQUIRE System,
         POS;
 
 fiscalDatecsPrintReceipt 'Напечатать фискальный чек' = ACTION CUSTOM 'roman.actions.fiscaldatecs.FiscalDatecsPrintReceiptActionProperty';
-postPrintReceipt(receipt) += fiscalDatecsPrintReceipt(receipt);
+postPrintReceipt(receipt) += fiscalDatecsPrintReceipt(receipt) IF sidCashRegisterModelReceipt(receipt) == 'DateCS';
 
 fiscalDatecsAdvancePaper 'Прогон ленты' = ACTION CUSTOM 'roman.actions.fiscaldatecs.FiscalDatecsAdvancePaperActionProperty';
-fiscalAdvancePaper() += fiscalDatecsAdvancePaper();
+fiscalAdvancePaper() += fiscalDatecsAdvancePaper() IF sidModelCurrentCashRegister() == 'DateCS';
 
 fiscalDatecsCutReceipt 'Отрезать чек' = ACTION CUSTOM 'roman.actions.fiscaldatecs.FiscalDatecsCutReceiptActionProperty';
-fiscalCutReceipt() += fiscalDatecsCutReceipt();
+fiscalCutReceipt() += fiscalDatecsCutReceipt() IF sidModelCurrentCashRegister() == 'DateCS';
 
 fiscalDatecsPrintZReport 'Напечатать отчёт' = ACTION CUSTOM 'roman.actions.fiscaldatecs.FiscalDatecsPrintZReportActionProperty';
-fiscalPrintZReport() += fiscalDatecsPrintZReport();
+fiscalPrintZReport() += fiscalDatecsPrintZReport() IF sidModelCurrentCashRegister() == 'DateCS';
 
 fiscalDatecsXReport 'X-отчёт' = ACTION CUSTOM 'roman.actions.fiscaldatecs.FiscalDatecsXReportActionProperty';
-fiscalXReport() += fiscalDatecsXReport();
+fiscalXReport() += fiscalDatecsXReport() IF sidModelCurrentCashRegister() == 'DateCS';
 
 fiscalDatecsZReport 'Z-отчёт' = ACTION CUSTOM 'roman.actions.fiscaldatecs.FiscalDatecsZReportActionProperty';
-fiscalZReport() += fiscalDatecsZReport();
+fiscalZReport() += fiscalDatecsZReport() IF sidModelCurrentCashRegister() == 'DateCS';
 
 fiscalDatecsUpdateData 'Загрузить информацию' = ACTION CUSTOM 'roman.actions.fiscaldatecs.FiscalDatecsUpdateDataActionProperty';
-fiscalUpdateData() += fiscalDatecsUpdateData();
+fiscalUpdateData() += fiscalDatecsUpdateData() IF sidModelCurrentCashRegister() == 'DateCS';
 
 fiscalDatecsServiceCashOperation 'Перемещение денег' = ACTION CUSTOM 'roman.actions.fiscaldatecs.FiscalDatecsServiceInOutActionProperty';
-fiscalServiceCashOperation(cashOperation) += fiscalDatecsServiceCashOperation(cashOperation);
+fiscalServiceCashOperation(cashOperation) += fiscalDatecsServiceCashOperation(cashOperation) IF sidCashRegisterModelCashOperation(cashOperation) == 'DateCS';
 
-fiscalDatecsDisplayText 'Вывести текст на дисплей' = ACTION CUSTOM 'roman.actions.fiscaldatecs.FiscalDatecsDisplayTextActionProperty';
-fiscalDisplayTextReceiptDetail (receiptDetail) += fiscalDatecsDisplayText(receiptDetail);
+fiscalDatecsDisplayTextReceiptDetail 'Вывести текст на дисплей' = ACTION CUSTOM 'roman.actions.fiscaldatecs.FiscalDatecsDisplayTextActionProperty';
+fiscalDisplayTextReceiptDetail (receiptDetail) += fiscalDatecsDisplayTextReceiptDetail(receiptDetail) IF sidCashRegisterModelReceiptDetail(receiptDetail) == 'DateCS';

@@ -73,7 +73,6 @@ sumCashCashRegisterDateTime 'Сумма наличных в кассе на да
 
 fiscalUpdateData 'Загрузить информацию' = ABSTRACT ACTION();
 fiscalXReport 'X-отчёт' = ABSTRACT ACTION();
-fiscalZReport 'Закрыть Z-отчёт' = ABSTRACT ACTION() CONFIRM;
 fiscalPrintZReport 'Напечатать отчёт' = ABSTRACT ACTION();
 fiscalAdvancePaper 'Прогон ленты' = ABSTRACT ACTION();
 fiscalCutReceipt 'Отрезать чек' = ABSTRACT ACTION();
@@ -82,6 +81,8 @@ fiscalCutReceipt 'Отрезать чек' = ABSTRACT ACTION();
 
 CLASS cashOperation 'Операция с наличными';
 cashRegisterCashOperation = ABSTRACT cashRegister(cashOperation);
+cashRegisterModelCashOperation (cashOperation) = cashRegisterModelCashRegister(cashRegisterCashOperation(cashOperation));
+sidCashRegisterModelCashOperation 'Код модели' (cashOperation) = sidModel(cashRegisterModelCashOperation (cashOperation));
 
 fiscalServiceCashOperation 'Движение денег в фискальном регистраторе' (cashOperation) = ABSTRACT ACTION(cashOperation) CONFIRM;
 fiscalServiceCashRegisterCashOperation 'Движение денег в фискальном регистраторе' (cashOperation) = fiscalServiceCashOperation(cashOperation) AND cashRegisterCashOperation(cashOperation) == currentCashRegister();

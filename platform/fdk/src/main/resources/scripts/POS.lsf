@@ -63,7 +63,12 @@ TABLE receiptSaleDetail (receiptSaleDetail);
 TABLE receiptReturnDetail (receiptReturnDetail);
 
 @defineDocumentRelationCustom(zReport, receipt);
-numberCashRegisterReceipt 'Номер кассы' (receipt) = numberCashRegisterZReport(zReportReceipt(receipt)) IN recognizeGroup;
+cashRegisterReceipt (receipt) = cashRegisterZReport(zReportReceipt(receipt));
+numberCashRegisterReceipt 'Номер кассы' (receipt) = numberCashRegister(cashRegisterReceipt(receipt)) IN recognizeGroup;
+
+cashRegisterModelReceipt (receipt) = cashRegisterModelCashRegister(cashRegisterReceipt(receipt));
+sidCashRegisterModelReceipt 'Код модели' (receipt) = sidModel(cashRegisterModelReceipt(receipt));
+
 numberZReportReceipt 'Номер Z-отчета' (receipt) = numberZReport(zReportReceipt(receipt)) IN recognizeGroup;
 
 userReceipt = DATA customUser(receipt);
@@ -85,6 +90,8 @@ userReceipt(receipt) <- currentUser() WHEN ASSIGNED(receipt IS receipt);
 @defineDocumentDetailCurrencyCustom (receipt, receiptReturnDetail);
 
 receiptReceiptDetail (receiptDetail) = UNION EXCLUSIVE receiptReceiptReturnDetail(receiptDetail), receiptReceiptSaleDetail(receiptDetail) PERSISTENT;
+
+sidCashRegisterModelReceiptDetail 'Код модели' (receiptDetail) = sidCashRegisterModelReceipt(receiptReceiptDetail(receiptDetail));
 
 typeReceiptDetail 'Тип' (receiptDetail) = UNION EXCLUSIVE 'Продажа' AND receiptDetail IS receiptSaleDetail, 'Возврат' AND receiptDetail IS receiptReturnDetail FIXEDCHARWIDTH 8;
 
@@ -505,6 +512,7 @@ noFiscalPostPrintReceipt 'Создать чек (без фискального �
         EXEC createCurrentReceipt();
     }
 }
+postPrintReceipt(receipt) += noFiscalPostPrintReceipt(receipt) IF NOT sidCashRegisterModelReceipt(receipt);
 
 FORM postReceiptPayment 'Оплата по чеку'
     OBJECTS r = receipt FIXED PANEL
@@ -1067,7 +1075,9 @@ NAVIGATOR {
     }
 }
 
-// ----------------------------------------------- Стандартные значения ------------------------------------- //
+// ----------------------------------------- Кассовые операции ---------------------------------------------- //
+fiscalZReport 'Закрыть Z-отчёт' = ABSTRACT ACTION() CONFIRM;
+fiscalZReport() += closeCurrentZReport() IF NOT sidModelCurrentCashRegister();
 
 EXTEND FORM operationCashRegister
     PROPERTIES() READONLY numberCurrentZReport
@@ -1084,6 +1094,7 @@ EXTEND DESIGN operationCashRegister{
     }
 }
 
+// ----------------------------------------------- Стандартные значения ------------------------------------- //
 
 loadDefaultPaymentType 'Добавить тип оплаты' = ACTION(string, paymentMeans) {
     ADDOBJ paymentType;
