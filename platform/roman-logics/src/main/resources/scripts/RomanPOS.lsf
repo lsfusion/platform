@@ -4,7 +4,6 @@ REQUIRE POS, RomanStock;
 
 NAMESPACE POS;
 
-
 userSkipAReceiptSaleDetail (receiptSaleDetail) = DATA BOOLEAN (receiptSaleDetail);
 
 diffCompanyReceipt (receipt) = companyCashRegister (cashRegisterZReport(zReportReceipt(receipt)))!= companyDepartmentStore (departmentStoreReceipt (receipt));
@@ -14,11 +13,20 @@ skipAReceiptSaleDetail (receiptSaleDetail) = UNION OVERRIDE diffCompanyReceipt (
 
 skipASkuLedger (ledger) += skipAReceiptSaleDetail (ledger);
 
-sumSkipAReceiptSaleDetailZReport (zReport) = GROUP SUM  sumReceiptSaleDetail (receiptSaleDetail)
+sumSkipAReceiptSaleDetailZReport 'Сумма (не бухг.)' (zReport) = GROUP SUM sumReceiptSaleDetail (receiptSaleDetail)
                                                    IF skipAReceiptSaleDetail (receiptSaleDetail)
                                                    BY zReportReceiptDetail (receiptSaleDetail);
 
-sumAccountReceiptDetailZReport (zReport) = sumReceiptDetailZReport (zReport) - sumSkipAReceiptSaleDetailZReport (zReport);
+sumAccountReceiptDetailZReport 'Сумма учетная' (zReport) = sumReceiptDetailZReport (zReport) - sumSkipAReceiptSaleDetailZReport (zReport);
 
 @implementAccountZReportLedger (sumAccountReceiptDetailZReport);
 
+EXTEND FORM zReport
+    PROPERTIES (z) sumSkipAReceiptSaleDetailZReport, sumAccountReceiptDetailZReport
+    PROPERTIES (d) skipAReceiptSaleDetail
+;
+
+EXTEND FORM zReports
+    PROPERTIES (z) READONLY sumSkipAReceiptSaleDetailZReport, sumAccountReceiptDetailZReport
+    PROPERTIES (d) READONLY skipAReceiptSaleDetail
+;

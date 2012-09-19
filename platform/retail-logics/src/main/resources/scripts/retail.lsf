@@ -7024,6 +7024,9 @@ EXTEND DESIGN integrationData {
     }
 }
 
+// имплемент суммы Z-отчета в товарном отчете
+@implementAccountZReportLedger (sumReceiptDetailZReport);
+
 //---------------------------- Настройка навигатора ----------------------------------------//
 
 WINDOW TOOLBAR mainToolbar 'Навигатор' HORIZONTAL HIDETITLE HIDESCROLLBARS POSITION(0, 0, 100, 6);
