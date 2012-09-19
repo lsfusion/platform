@@ -1,0 +1,17 @@
+MODULE RomanPOS;
+
+NAMESPACE POS;
+
+userSkipAReceiptSaleDetail (receiptSaleDetail) = DATA BOOLEAN (receiptSaleDetail);
+
+diffCompanyReceipt (receipt) = companyCashRegister (cashRegisterReceipt (receipt))!= companyDepartmentStore (departmentStoreReceipt (receipt));
+
+skipAReceiptSaleDetail (receiptSaleDetail) = UNION OVERRIDE diffCompanyReceipt (receiptReceiptSaleDetail (receiptSaleDetail)),
+                                                            userSkipAReceiptSaleDetail (receiptSaleDetail);
+
+skipALedger (ledger) += skipAReceiptSaleDetail (ledger);
+
+sumSkipAReceiptSaleDetailZReport (zReport) = GROUP SUM  sumReceiptSaleDetail (receiptSaleDetail)
+                                                   WHEN skipAReceiptSaleDetail (receiptSaleDetail)
+                                                   BY zReportReceiptSaleDetail (receiptSaleDetail);
+
