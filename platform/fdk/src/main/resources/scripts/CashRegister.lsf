@@ -52,11 +52,11 @@ comPortCashRegister 'Порт кассы' = DATA INTEGER (cashRegister) IN baseG
 baudRateCashRegister 'Скорость кассы' = DATA INTEGER (cashRegister) IN baseGroup;
 countryCashRegister 'Страна кассы' (cashRegister) = countryStock(stockGroupMachinery(groupCashRegisterCashRegister(cashRegister)));
 
-userCompanyCashRegister 'Владелец кассы' (cashRegister) = DATA company (cashRegister);
-companyCashRegister 'Владелец кассы (ИД)' (cashRegister) = UNION OVERRIDE companyDepartmentStore(departmentStoreCashRegister(cashRegister)),
-                                                                     userCompanyCashRegister(cashRegister);
+userCompanyCashRegister (cashRegister) = DATA company (cashRegister);
+companyCashRegister (cashRegister) = UNION OVERRIDE companyDepartmentStore(departmentStoreCashRegister(cashRegister)),
+                                                    userCompanyCashRegister(cashRegister);
 
-nameCompanyCashRegister 'Владелец кассы' (cashRegister) = name (companyCashRegister (cashRegister));
+nameCompanyCashRegister 'Владелец кассы' (cashRegister) = name(companyCashRegister(cashRegister));
 
 computerCashRegister = DATA computer (cashRegister);
 hostnameComputerCashRegister 'Компьютер' (cashRegister) = hostname(computerCashRegister(cashRegister)) IN baseGroup;

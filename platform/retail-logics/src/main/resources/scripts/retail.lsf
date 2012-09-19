@@ -1205,9 +1205,13 @@ FORM papers 'Документы качества'
     ORDER BY objectClassName
 ;
 
-// ------------------------------------------- Загрузка в ВУ --------------------------------------------- //
-
+// -------------------------------------------- Подключение модуля POS -------------------------------------- //
 POSPriceSkuDepartmentStoreDateTime(sku, departmentStore, dateTime) += retailPriceBLedgerDateTime(sku, departmentStore, dateTime);
+
+@implementSkuLedgerReceiptDetail();
+@implementAccountDocumentLedgerZReport();
+
+// ------------------------------------------- Загрузка в ВУ --------------------------------------------- //
 
 ledgerPriceBarcodeGroupMachinery 'Текущая цена по учету' (barcode, groupMachinery) = currentRetailPriceBarcodeDepartmentStore(barcode, stockGroupMachinery(groupMachinery));
 
@@ -7023,9 +7027,6 @@ EXTEND DESIGN integrationData {
         }
     }
 }
-
-// имплемент суммы Z-отчета в товарном отчете
-@implementAccountZReportLedger (sumReceiptDetailZReport);
 
 //---------------------------- Настройка навигатора ----------------------------------------//
 
