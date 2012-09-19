@@ -19,24 +19,21 @@ NAMESPACE Sale;
 
 //----------------------------------------------- Заказ ---------------------------------------------------//
 
-CLASS ABSTRACT order 'Заказ аггр.' : historyObject, numeratedDocument;
-CLASS ABSTRACT orderDetail 'Строка заказа аггр.' : named;
+CLASS ABSTRACT order 'Заказ ' : historyObject, numeratedDocument;
+CLASS ABSTRACT orderDetail 'Строка заказа ' : named;
 //CLASS ABSTRACT orderPosted 'Закрытый заказ' : order, postedObject;
 
-CLASS userOrder 'Заказ' : order;
-CLASS userOrderDetail 'Строка заказа' : orderDetail;
-CLASS userOrderPosted 'Закрытый заказ' : userOrder, postedObject;
+CLASS userOrder 'Заказ (польз.)' : order;
+CLASS userOrderDetail 'Строка заказа (польз.)' : orderDetail;
+CLASS userOrderPosted 'Закрытый заказ (польз.)' : userOrder, postedObject;
 
 @defineDocumentTables(order);
 @defineDocumentTables(userOrder);
 //--
 orderOrderDetail = ABSTRACT order (orderDetail) IN idGroup NOT NULL DELETE;
 inOrderDetailOrderDetail(order, orderDetail) = orderOrderDetail(orderDetail) == order;
-countOrderDetailOrder 'Количество строк в документе'(order) =
-    GROUP SUM 1 IF inOrderDetailOrderDetail(order, orderDetail) BY orderOrderDetail(orderDetail) PERSISTENT IN documentSumGroup;
-indexOrderDetail 'Номер строки' (orderDetail) =
-    PARTITION SUM 1 IF orderDetail IS orderDetail BY orderOrderDetail(orderDetail)
-    ORDER orderDetail IN recognizeGroup MINCHARWIDTH 4 PREFCHARWIDTH 4 IN recognizeGroup;
+@defineDocumentHeaderCountCustomCaption (order, orderDetail, );
+@defineDocumentDetailIndexCustom(order, orderDetail);
 
 userOrderUserOrderDetail = DATA userOrder (userOrderDetail) IN idGroup NOT NULL DELETE;
 @defineDocumentDetailActions (order);
@@ -47,13 +44,9 @@ dateOrder 'Дата документа' = ABSTRACT DATE (order) IN documentHeade
 timeOrder 'Время документа' = ABSTRACT TIME (order) IN documentHeaderGroup;
 
 dateTimeOrder 'Дата/время документа' (order) = toDateTime(dateOrder(order), timeOrder(order)) PERSISTENT;
-
 @defineDocumentDetailTimeCustom (order, orderDetail);
 
-dateUserOrder 'Дата документа' = DATA DATE (userOrder) IN documentHeaderGroup;
-    dateUserOrder (userOrder) <- currentDate() WHEN ASSIGNED(userOrder AS userOrder);
-timeUserOrder 'Время документа' = DATA TIME (userOrder) IN documentHeaderGroup;
-    timeUserOrder (userOrder) <- currentTime() WHEN ASSIGNED(userOrder AS userOrder);
+@defineDocumentTime(userOrder);
 
 dateOrder(order) += dateUserOrder(order);
 timeOrder(order) += timeUserOrder(order);
@@ -151,7 +144,7 @@ priceOrderDetail (orderDetail) += priceUserOrderDetail(orderDetail);
 
 // --------------------------- Формы Заказа ---------------------------------
 
-FORM userOrder 'Заказ'
+FORM userOrder 'Заказ (польз.)'
     OBJECTS s = userOrder FIXED PANEL
     PROPERTIES (s) objectClassName, numberOrder, seriesOrder, dateOrder, timeOrder, nameNumeratorObject,
                    nameStockOrder, nameCustomerOrder, nameCurrencyOrder, noteOrder, sumOrderDetailOrder,
@@ -214,7 +207,7 @@ DESIGN userOrder FROM DEFAULT{
     }
 }
 
-FORM userOrders 'Заказы'
+FORM userOrders 'Заказы (польз.)'
     OBJECTS s = userOrder
     PROPERTIES (s) READONLY isPostedOrder FORCE GRID, objectClassName, numberOrder, seriesOrder, dateOrder, timeOrder,
                    nameStockOrder, nameCustomerOrder, nameCurrencyOrder, noteOrder, sumOrderDetailOrder,

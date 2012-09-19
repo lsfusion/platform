@@ -560,6 +560,11 @@ META defineDocumentAggregationDetailSku (primObject, aggrObject, skuProp)
     @defineDocumentAggregationDetailSkuPrefix(primObject, aggrObject, skuProp, );
 END
 
+// Batch
+META defineDocumentAggregationDetailBatch (primObject, aggrObject)
+    batch###aggrObject##Detail 'Партия' (detail) = batch###primObject##Detail(primObject##Detail###aggrObject##Detail(detail)) PERSISTENT;
+END
+
 // ---------------------------------------------- Учетные суммы -------------------------------------------- //
 
 META defineDocumentDetailPrice (object)

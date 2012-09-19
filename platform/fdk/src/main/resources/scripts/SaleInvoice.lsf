@@ -13,6 +13,7 @@ REQUIRE System,
         AccountDocument,
         Barcode,
         SaleOrder,
+        StorePrice,
         Historizable;
 
 
@@ -25,23 +26,20 @@ NAMESPACE Sale;
 
 GROUP orderGroup 'Информация о заказе' : baseGroup;
 
-CLASS ABSTRACT invoice 'Накладная аггр.' : outAccountDocumentLedger, consignment, historyObject, numeratedDocument;
-CLASS ABSTRACT invoiceDetail 'Строка накладной аггр.' : outFIFOSkuLedger, consignmentDetail;
+CLASS ABSTRACT invoice 'Накладная ' : historyObject, numeratedDocument;  //consignment
+CLASS ABSTRACT invoiceDetail 'Строка накладной ';         //consignmentDetail
 
-CLASS userInvoice 'Накладная ' : invoice;
-CLASS userInvoiceDetail 'Строка накладной' : invoiceDetail;
-CLASS userInvoicePosted 'Закрытая накладная' : userInvoice, postedObject;
+CLASS userInvoice 'Накладная (польз.)' : invoice;
+CLASS userInvoiceDetail 'Строка накладной (польз.)' : invoiceDetail;
+CLASS userInvoicePosted 'Закрытая накладная (польз.)' : userInvoice, postedObject;
 
 @defineDocumentTables(invoice);
 @defineDocumentTables(userInvoice);
 //--
 invoiceInvoiceDetail = ABSTRACT invoice (invoiceDetail) IN idGroup NOT NULL DELETE;
 inInvoiceDetailInvoiceDetail(invoice, invoiceDetail) = invoiceInvoiceDetail(invoiceDetail) == invoice;
-countInvoiceDetailInvoice 'Количество строк в документе'(invoice) =
-    GROUP SUM 1 IF inInvoiceDetailInvoiceDetail(invoice, invoiceDetail) BY invoiceInvoiceDetail(invoiceDetail) PERSISTENT IN documentSumGroup;
-indexInvoiceDetail 'Номер строки' (invoiceDetail) =
-    PARTITION SUM 1 IF invoiceDetail IS invoiceDetail BY invoiceInvoiceDetail(invoiceDetail)
-    ORDER invoiceDetail IN recognizeGroup MINCHARWIDTH 4 PREFCHARWIDTH 4 IN recognizeGroup;
+@defineDocumentHeaderCountCustomCaption (invoice, invoiceDetail, );
+@defineDocumentDetailIndexCustom(invoice, invoiceDetail);
 
 userInvoiceUserInvoiceDetail = DATA userInvoice (userInvoiceDetail) IN idGroup NOT NULL DELETE;
 @defineDocumentDetailActions (invoice);
@@ -58,13 +56,9 @@ dateInvoice 'Дата документа' = ABSTRACT DATE (invoice) IN documentH
 timeInvoice 'Время документа' = ABSTRACT TIME (invoice) IN documentHeaderGroup;
 
 dateTimeInvoice 'Дата/время документа' (invoice) = toDateTime(dateInvoice(invoice), timeInvoice(invoice)) PERSISTENT;
-
 @defineDocumentDetailTimeCustom (invoice, invoiceDetail);
 
-dateUserInvoice 'Дата документа' = DATA DATE (userInvoice) IN documentHeaderGroup;
-    dateUserInvoice (userInvoice) <- currentDate() WHEN ASSIGNED(userInvoice AS userInvoice);
-timeUserInvoice 'Время документа' = DATA TIME (userInvoice) IN documentHeaderGroup;
-    timeUserInvoice (userInvoice) <- currentTime() WHEN ASSIGNED(userInvoice AS userInvoice);
+@defineDocumentTime(userInvoice);
 
 dateInvoice(invoice) += dateUserInvoice(invoice);
 timeInvoice(invoice) += timeUserInvoice(invoice);
@@ -108,6 +102,8 @@ nameCompanyInvoice 'Компания' (invoice)= name(companyInvoice(invoice));
 isPostedInvoice 'Проведен' (invoice) = ABSTRACT BOOLEAN (invoice) PERSISTENT;
 @defineDocumentPosted(userInvoice);
 isPostedInvoice(invoice) += isPostedUserInvoice(invoice);
+
+isPostedInvoiceDetail(invoiceDetail) = isPostedInvoice(invoiceInvoiceDetail(invoiceDetail));
 //--
 customerInvoice = ABSTRACT customer(invoice) AUTOSET;
 nameCustomerInvoice 'Покупатель' (invoice) = name(customerInvoice(invoice)) IN documentHeaderGroup
@@ -115,6 +111,8 @@ nameCustomerInvoice 'Покупатель' (invoice) = name(customerInvoice(invo
 nameCustomerInvoiceDetail 'Покупатель' (invoiceDetail) = nameCustomerInvoice(invoiceInvoiceDetail(invoiceDetail));
 customerUserInvoice = DATA customer(userInvoice) AUTOSET;
 customerInvoice(invoice) += customerUserInvoice(invoice);
+
+customerInvoiceDetail(invoiceDetail) = customerInvoice(invoiceInvoiceDetail(invoiceDetail));
 //--
 CONSTRAINT orderInvoice(invoice) AND NOT (customerInvoice(invoice) == customerOrder(orderInvoice(invoice)) OR companyInvoice(invoice) == companyOrder(orderInvoice(invoice)))
     CHECKED BY orderInvoice
@@ -123,7 +121,7 @@ CONSTRAINT orderInvoice(invoice) AND NOT (customerInvoice(invoice) == customerOr
 //--
 descriptionInvoice 'Название документа' = ABSTRACT STRING[200] (invoice) PERSISTENT IN recognizeGroup MINCHARWIDTH 30 PREFCHARWIDTH 60;
 descriptionInvoiceDetail 'Название документа' (invoiceDetail) = descriptionInvoice(invoiceInvoiceDetail(invoiceDetail)) MINCHARWIDTH 30 PREFCHARWIDTH 50;
-@defineDocumentHeaderDescriptionCustom(userInvoice, seriesNumberObject, 'Накладная');
+@defineDocumentHeaderDescriptionCustom(userInvoice, seriesNumberObject, 'Накладная (польз.)');
 descriptionInvoice (invoice) += descriptionUserInvoice(invoice);
 //--
 currencyInvoice = ABSTRACT currency (invoice);
@@ -150,6 +148,12 @@ isCommissionInvoice 'Продажа на комиссию' = ABSTRACT BOOLEAN (i
 
 contractSkuCustomerInvoice (invoice) +=  contractSkuCustomerUserInvoice (invoice);
 isCommissionInvoice(invoice)+= isCommissionUserInvoice(invoice);
+//--
+createShipmentInvoice 'Создавать поставку' = ABSTRACT BOOLEAN (invoice) IN documentPrmGroup;
+createShipmentUserInvoice 'Создавать поставку' = DATA BOOLEAN (userInvoice);
+createShipmentInvoice (invoice) += createShipmentUserInvoice(invoice);
+
+createShipmentInvoiceDetail 'Создавать поставку' (invoiceDetail) = createShipmentInvoice(invoiceInvoiceDetail(invoiceDetail));
 //--
 //@defineDocumentDetailNumbered(writeOff);
 skuInvoiceDetail = ABSTRACT sku (invoiceDetail);
@@ -200,6 +204,26 @@ toFillOrderUserInvoice 'Заполнить накладную на основа�
     };
 } CONFIRM IN orderGroup;
 
+//-- Учетная цена
+accountPriceInvoiceDetail 'Цена учетная' = ABSTRACT NUMERIC[14,2] (invoiceDetail);
+
+accountPriceUserInvoiceDetail 'Цена учетная' = DATA NUMERIC[14,2] (userInvoiceDetail);
+accountPriceUserInvoiceDetail (detail)  <- IF batchInvoiceDetail(detail)
+                THEN priceBatchStockDateTime(batchInvoiceDetail(detail), stockInvoiceDetail(detail), dateTimeInvoiceDetail(detail))
+                ELSE priceSkuStockDateTime(skuInvoiceDetail(detail), stockInvoiceDetail(detail), dateTimeInvoiceDetail(detail))
+                WHEN CHANGED(skuInvoiceDetail(detail)) OR CHANGED(batchInvoiceDetail(detail)) OR CHANGED(stockInvoiceDetail(detail)) OR CHANGED (dateTimeInvoiceDetail(detail));
+
+accountPriceInvoiceDetail(invoiceDetail) += accountPriceUserInvoiceDetail (invoiceDetail);
+//--  НДС
+supplierVATInvoiceDetail(invoiceDetail) = ABSTRACT range (invoiceDetail);
+numberSupplierVATInvoiceDetail 'НДС поставщика, номер' (invoiceDetail) = numberRange(supplierVATInvoiceDetail(invoiceDetail)) IN priceDetailGroup;
+valueSupplierVATInvoiceDetail 'НДС поставщика,%' (invoiceDetail) = valueRateRangeDate
+    (supplierVATInvoiceDetail(invoiceDetail), dateInvoiceDetail(invoiceDetail)) IN priceDetailGroup;
+
+@defineDocumentDetailInvoicePrice (userInvoice, stock);
+supplierVATInvoiceDetail(invoiceDetail) += supplierVATUserInvoiceDetail(invoiceDetail);
+
+
 // --------------------------- Формы Накладная ---------------------------------
 
 FORM orderDialogForm 'Заказ'
@@ -232,17 +256,18 @@ dialogOrderUserInvoice 'Заказ' (userInvoice) = ACTION (userInvoice) {
     }
 }
 
-FORM userInvoice 'Накладная'
+FORM userInvoice 'Накладная (польз.)'
     OBJECTS s = userInvoice FIXED PANEL
     PROPERTIES (s) objectClassName, numberInvoice, seriesInvoice, dateInvoice, timeInvoice, nameNumeratorObject,
                    nameStockInvoice, nameCustomerInvoice, nameCurrencyInvoice, noteInvoice, sumInvoiceDetailInvoice,
-                   countInvoiceDetailInvoice, quantityInvoiceDetailInvoice, numberContractSkuCustomerInvoice,
+                   countInvoiceDetailInvoice, quantityInvoiceDetailInvoice, numberContractSkuCustomerInvoice, createShipmentInvoice,
                    descriptionOrderInvoice ON CHANGE EXEC dialogOrderUserInvoice(s), toFillOrderUserInvoice
 
 
     OBJECTS d = userInvoiceDetail
     PROPERTIES (d) indexInvoiceDetail, idBarcodeSkuInvoiceDetail, nameSkuInvoiceDetail, shortNameUOMSkuInvoiceDetail,
                    quantityInvoiceDetail, priceInvoiceDetail, sumInvoiceDetail, descriptionBatchInvoiceDetail, nameStockInvoiceDetail, ADDOBJ, delete
+    PROPERTIES (d) SHOWIF createShipmentInvoice(s) accountPriceUserInvoiceDetail , numberSupplierVATInvoiceDetail, valueSupplierVATInvoiceDetail
 
     PROPERTIES(s) TODRAW d addDetailDialogSkuStockUserInvoiceDetailUserInvoice, //addDetailDialogTerminalWriteOffDetailWriteOff,
                            addDetailInputBarcodeUserInvoiceDetailUserInvoice, deleteInvoiceDetailInvoice
@@ -302,11 +327,11 @@ DESIGN userInvoice FROM DEFAULT{
     }
 }
 
-FORM userInvoices 'Накладные'
+FORM userInvoices 'Накладные (польз.)'
     OBJECTS s = userInvoice
     PROPERTIES (s) READONLY isPostedInvoice FORCE GRID, objectClassName, numberInvoice, seriesInvoice, dateInvoice, timeInvoice,
                    nameStockInvoice, nameCustomerInvoice, nameCurrencyInvoice, noteInvoice, sumInvoiceDetailInvoice,
-                   countInvoiceDetailInvoice, quantityInvoiceDetailInvoice, numberContractSkuCustomerInvoice, isCommissionInvoice
+                   countInvoiceDetailInvoice, quantityInvoiceDetailInvoice, numberContractSkuCustomerInvoice, isCommissionInvoice, createShipmentInvoice
 
     PROPERTIES (s) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
@@ -315,6 +340,7 @@ FORM userInvoices 'Накладные'
     OBJECTS d=userInvoiceDetail
     PROPERTIES (d) READONLY indexInvoiceDetail, idBarcodeSkuInvoiceDetail, nameSkuInvoiceDetail, shortNameUOMSkuInvoiceDetail,
                    quantityInvoiceDetail, priceInvoiceDetail, sumInvoiceDetail, descriptionBatchInvoiceDetail, nameStockInvoiceDetail
+    PROPERTIES (d) READONLY SHOWIF createShipmentInvoice(s) accountPriceUserInvoiceDetail , numberSupplierVATInvoiceDetail, valueSupplierVATInvoiceDetail
 
     FILTERS inInvoiceDetailInvoiceDetail(s, d)
 ;
