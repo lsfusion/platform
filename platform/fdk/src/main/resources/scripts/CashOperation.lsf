@@ -102,7 +102,7 @@ TABLE incomeCashOperation (incomeCashOperation);
 @defineDocumentHeaderDepartmentStore(incomeCashOperation);
 
 cashRegisterIncomeCashOperation (incomeCashOperation) = DATA cashRegister (incomeCashOperation);
-numberCashRegisterIncomeCashOperation 'Касса внесения денег' (incomeCashOperation) = numberCashRegister(cashRegisterIncomeCashOperation(incomeCashOperation)) IN documentPrmGroup;
+numberCashRegisterIncomeCashOperation 'Касса внесения денег' (incomeCashOperation) = numberCashRegister(cashRegisterIncomeCashOperation(incomeCashOperation)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
 sumCashIncomeCashOperation 'Сумма инкассации' = DATA NUMERIC[16,2] (incomeCashOperation) IN documentSumGroup;
 castBasisIncomeCashOperation =
     FORMULA STRING[100] '\'Внесение денег №\' || CAST($1 AS TEXT) || \' с кассы \' || CAST($2 AS TEXT) || \' от \' || CAST($3 AS TEXT)';
@@ -131,7 +131,7 @@ TABLE collection (collection);
 @defineDocumentHeaderDepartmentStore(collection);
 
 cashRegisterCollection (collection) = DATA cashRegister (collection);
-numberCashRegisterCollection 'Касса инкассации' (collection) = numberCashRegister(cashRegisterCollection(collection)) IN documentPrmGroup;
+numberCashRegisterCollection 'Касса инкассации' (collection) = numberCashRegister(cashRegisterCollection(collection)) IN documentPrmGroup  MINCHARWIDTH 20 PREFCHARWIDTH 40;
 sumCashCollection 'Сумма инкассации' = DATA NUMERIC[16,2] (collection) IN documentSumGroup;
 castBasisCollection =
     FORMULA STRING[100] '\'Инкассация №\' || CAST($1 AS TEXT) || \' с кассы \' || CAST($2 AS TEXT) || \' от \' || CAST($3 AS TEXT)';
@@ -246,7 +246,7 @@ DESIGN addCollection FROM DEFAULT {
 FORM editCollection 'Инкассация'
 
     OBJECTS c= collection FIXED PANEL
-    PROPERTIES(c) seriesNumberObject, dateCollection, timeCollection, nameDepartmentStoreCollection,
+    PROPERTIES(c) numberObject, seriesObject, dateCollection, timeCollection, nameDepartmentStoreCollection,
                   numberCashRegisterCollection, sumCashCollection, basisCollection
 
 ;
@@ -255,27 +255,34 @@ DESIGN editCollection FROM DEFAULT {
 
     NEW topContainer{
 
-        childConstraints = TO THE BOTTOM;
+        childConstraints = TO THE RIGHTBOTTOM;
         NEW firstCase{
 
             childConstraints = TO THE RIGHT;
-            NEW firstCaseOne{
-
-                childConstraints = TO THE BOTTOM;
-                ADD PROPERTY(seriesNumberObject);
-                ADD PROPERTY(dateCollection);
-                ADD PROPERTY(timeCollection);
-            }
-
-            NEW firstCaseTwo{
-
-                childConstraints = TO THE BOTTOM;
-                ADD PROPERTY(nameDepartmentStoreCollection);
-                ADD PROPERTY(numberCashRegisterCollection);
-                ADD PROPERTY(sumCashCollection);
-            }
+            caption = 'Шапка документа';
+            ADD PROPERTY(numberCashRegisterCollection);
+            ADD PROPERTY(numberObject);
+            ADD PROPERTY(seriesObject);
+            ADD PROPERTY(dateCollection);
+            ADD PROPERTY(timeCollection);
         }
-        ADD PROPERTY(basisCollection);
+
+        NEW secondCase{
+
+            caption = 'Параметры документа';
+            ADD PROPERTY(nameDepartmentStoreCollection);
+            ADD PROPERTY(basisCollection);
+        }
+
+        NEW thirdCase{
+
+            caption = 'Суммы';
+            ADD PROPERTY(sumCashCollection);
+        }
+
+        POSITION secondCase TO THE BOTTOM firstCase;
+        POSITION thirdCase TO THE RIGHT firstCase;
+        POSITION thirdCase TO THE RIGHT secondCase;
     }
 
     ADD functions.box;
@@ -354,7 +361,7 @@ DESIGN addIncomeCashOperation FROM DEFAULT {
 FORM editIncomeCashOperation 'Внесение денег'
 
     OBJECTS c= incomeCashOperation FIXED PANEL
-    PROPERTIES(c) seriesNumberObject, dateIncomeCashOperation, timeIncomeCashOperation, nameDepartmentStoreIncomeCashOperation,
+    PROPERTIES(c) numberObject, seriesObject,dateIncomeCashOperation, timeIncomeCashOperation, nameDepartmentStoreIncomeCashOperation,
                   numberCashRegisterIncomeCashOperation, sumCashIncomeCashOperation, basisIncomeCashOperation
 
 ;
@@ -363,27 +370,34 @@ DESIGN editIncomeCashOperation FROM DEFAULT {
 
     NEW topContainer{
 
-        childConstraints = TO THE BOTTOM;
+        childConstraints = TO THE RIGHTBOTTOM;
         NEW firstCase{
 
             childConstraints = TO THE RIGHT;
-            NEW firstCaseOne{
-
-                childConstraints = TO THE BOTTOM;
-                ADD PROPERTY(seriesNumberObject);
-                ADD PROPERTY(dateIncomeCashOperation);
-                ADD PROPERTY(timeIncomeCashOperation);
-            }
-
-            NEW firstCaseTwo{
-
-                childConstraints = TO THE BOTTOM;
-                ADD PROPERTY(nameDepartmentStoreIncomeCashOperation);
-                ADD PROPERTY(numberCashRegisterIncomeCashOperation);
-                ADD PROPERTY(sumCashIncomeCashOperation);
-            }
+            caption = 'Шапка документа';
+            ADD PROPERTY(numberCashRegisterIncomeCashOperation);
+            ADD PROPERTY(numberObject);
+            ADD PROPERTY(seriesObject);
+            ADD PROPERTY(dateIncomeCashOperation);
+            ADD PROPERTY(timeIncomeCashOperation);
         }
-        ADD PROPERTY(basisIncomeCashOperation);
+
+        NEW secondCase{
+
+            caption = 'Параметры документа';
+            ADD PROPERTY(nameDepartmentStoreIncomeCashOperation);
+            ADD PROPERTY(basisIncomeCashOperation);
+        }
+
+        NEW thirdCase{
+
+            caption = 'Суммы';
+            ADD PROPERTY(sumCashIncomeCashOperation);
+        }
+
+        POSITION secondCase TO THE BOTTOM firstCase;
+        POSITION thirdCase TO THE RIGHT firstCase;
+        POSITION thirdCase TO THE RIGHT secondCase;
     }
 
     ADD functions.box;
