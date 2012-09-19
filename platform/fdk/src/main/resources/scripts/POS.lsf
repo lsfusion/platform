@@ -332,10 +332,12 @@ sumSaleDepartmentStoreDateFromTo 'Продано по кассе' (departmentSto
         BY departmentStoreReceipt(receipt), dateFrom, dateTo;
 
 @implementAccountDocumentLedger(zReport, departmentStore);
-sumOutAccountDocumentLedger (ledger) += sumReceiptDetailZReport(ledger);
-sumItemOutAccountDocumentLedger (ledger) += sumReceiptDetailZReport(ledger);
 sumContainerOutAccountDocumentLedger (ledger) += 0.0 IF ledger IS zReport;
 
+META implementAccountZReportLedger (prop)
+    sumOutAccountDocumentLedger (ledger) += prop (ledger);
+    sumItemOutAccountDocumentLedger (ledger) += prop (ledger);
+END
 //----------------------------------- Формы -------------------------------------------------//
 
 FORM zReport 'Z-отчет'

@@ -1,0 +1,35 @@
+MODULE RomanCashOperation;
+
+REQUIRE System, CashOperation;
+
+NAMESPACE CashOperation;
+
+CLASS accountCollection 'Изъятие (упр.)' : outcomeCashOrder, historyObject, numeratedObject, cashOperation;
+TABLE accountCollection (accountCollection);
+
+@defineNumeratedObject(accountCollection, 'Нумератор для изъятий', 'ИЗ');
+
+@defineDocumentHeaderTime(accountCollection);
+@defineDocumentHeaderDepartmentStore(accountCollection);
+
+cashRegisterAccountCollection (accountCollection) = DATA cashRegister (accountCollection);
+numberCashRegisterAccountCollection 'Касса инкассации' (accountCollection) =
+    numberCashRegister(cashRegisterAccountCollection(accountCollection)) IN documentPrmGroup;
+
+sumCashAccountCollection 'Сумма изъятия' = DATA NUMERIC[16,2] (accountCollection) IN documentSumGroup;
+
+castBasisAccountCollection =
+    FORMULA STRING[100] '\'Изъятие №\' || CAST($1 AS TEXT) || \' с кассы \' || CAST($2 AS TEXT) || \' от \' || CAST($3 AS TEXT)';
+basisAccountCollection 'Основание' (accountCollection) =
+    castBasisCollection(seriesNumberObject(accountCollection), numberCashRegisterAccountCollection(accountCollection), dateAccountCollection(accountCollection)) IN documentPrmGroup;
+
+dateCashDocument(accountCollection) += dateAccountCollection(accountCollection);
+timeCashDocument(accountCollection) += timeAccountCollection(accountCollection);
+dateTimeCashDocument(accountCollection) += dateTimeAccountCollection(accountCollection);
+numberCashDocument(accountCollection) += seriesNumberObject(accountCollection) AND accountCollection IS accountCollection;
+departmentStoreCashDocument(accountCollection) += departmentStoreAccountCollection(accountCollection);
+cashRegisterCashDocument(accountCollection) += cashRegisterAccountCollection(accountCollection);
+sumCashOutcomeCashOrder(accountCollection) += sumCashAccountCollection(accountCollection);
+basisCashDocument(accountCollection) += basisAccountCollection(accountCollection);
+sumCashOperation(accountCollection) += -sumCashAccountCollection(accountCollection);
+cashRegisterCashOperation(accountCollection) += cashRegisterAccountCollection(accountCollection);

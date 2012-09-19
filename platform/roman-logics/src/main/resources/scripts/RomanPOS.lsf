@@ -1,17 +1,24 @@
 MODULE RomanPOS;
 
+REQUIRE POS, RomanStock;
+
 NAMESPACE POS;
+
 
 userSkipAReceiptSaleDetail (receiptSaleDetail) = DATA BOOLEAN (receiptSaleDetail);
 
-diffCompanyReceipt (receipt) = companyCashRegister (cashRegisterReceipt (receipt))!= companyDepartmentStore (departmentStoreReceipt (receipt));
+diffCompanyReceipt (receipt) = companyCashRegister (cashRegisterZReport(zReportReceipt(receipt)))!= companyDepartmentStore (departmentStoreReceipt (receipt));
 
 skipAReceiptSaleDetail (receiptSaleDetail) = UNION OVERRIDE diffCompanyReceipt (receiptReceiptSaleDetail (receiptSaleDetail)),
                                                             userSkipAReceiptSaleDetail (receiptSaleDetail);
 
-skipALedger (ledger) += skipAReceiptSaleDetail (ledger);
+skipASkuLedger (ledger) += skipAReceiptSaleDetail (ledger);
 
 sumSkipAReceiptSaleDetailZReport (zReport) = GROUP SUM  sumReceiptSaleDetail (receiptSaleDetail)
-                                                   WHEN skipAReceiptSaleDetail (receiptSaleDetail)
-                                                   BY zReportReceiptSaleDetail (receiptSaleDetail);
+                                                   IF skipAReceiptSaleDetail (receiptSaleDetail)
+                                                   BY zReportReceiptDetail (receiptSaleDetail);
+
+sumAccountReceiptDetailZReport (zReport) = sumReceiptDetailZReport (zReport) - sumSkipAReceiptSaleDetailZReport (zReport);
+
+@implementAccountZReportLedger (sumAccountReceiptDetailZReport);
 

@@ -40,6 +40,8 @@ REQUIRE System,
         PriceChangeDiscount,
         Defect,
         CustomCategory,
+        RomanPOS,
+        RomanCashOperation,
         RomanLogicsModule;
 
 PRIORITY RomanLogicsModule, Utils, Stock, Store;
