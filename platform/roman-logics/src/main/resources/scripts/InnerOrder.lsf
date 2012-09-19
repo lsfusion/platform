@@ -75,7 +75,7 @@ DESIGN innerOrder FROM DEFAULT {
             NEW columnHeaderPrm {
                 childConstraints = TO THE BOTTOM;
                 ADD o.documentHeaderGroup {
-                    childConstraints = TO THE RIGHT;
+                    childConstraints = TO THE RIGHTBOTTOM;
                     ADD PROPERTY (nameStockInnerOrder);
                     ADD PROPERTY (nameDestinationStockInnerOrder);
                     ADD PROPERTY (nameNumeratorObject);

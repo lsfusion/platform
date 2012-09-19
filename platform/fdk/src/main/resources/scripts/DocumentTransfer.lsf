@@ -62,8 +62,8 @@ META defineDocumentFormTransferOut(object, formCaption)
                 NEW columnHeaderPrm {
                     childConstraints = TO THE BOTTOM;
                     ADD t.documentHeaderGroup {
-                        childConstraints = TO THE RIGHT;
-                        ADD PROPERTY (objectClassName);
+                        childConstraints = TO THE RIGHTBOTTOM;
+                        ADD PROPERTY (objectClassName){preferredCharWidth = 15;}
                         ADD PROPERTY (nameStock###object##Out);
                         ADD PROPERTY (nameDestinationStock###object##Out);
                         ADD PROPERTY (numberObject);

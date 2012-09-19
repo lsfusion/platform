@@ -59,12 +59,13 @@ EXTEND FORM freightInvoiceForm
 //@defineAggregation(freight, WHfromRF, isWHfromRFFreight);
 
 freightWHfromRF (WHfromRF) = DATA freightArrived (WHfromRF);
-nameFreightWHfromRF 'Фрахт' (WHfromRF) =  name(freightWHfromRF(WHfromRF)) IN documentPrmGroup;
+nameFreightWHfromRF 'Фрахт' (WHfromRF) =  name(freightWHfromRF(WHfromRF)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
 castFreightWHfromRF = FORMULA STRING[100] '\'Фрахт от \' || CAST($1 AS TEXT) || \' (\' || CAST($2 AS TEXT) || \')\'';
 descriptionFreightWHfromRF 'Фрахт' (WHfromRF) = castFreightWHfromRF(dateArrivalFreight(freightWHfromRF(WHfromRF)), nameExporterFreight(freightWHfromRF(WHfromRF)));
 
 companyWHfromRF 'Импортёр (ИД)' = DATA company(WHfromRF) IN idGroup;
-nameCompanyWHfromRF 'Импортёр' = name(companyWHfromRF(WHfromRF)) IN documentPrmGroup;
+nameCompanyWHfromRF 'Импортёр' = name(companyWHfromRF(WHfromRF)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
+
 
 //@defineDocumentAggregationHeaderStock(freight, WHfromRF, warehouse, 'Оптовый склад');
 
@@ -542,8 +543,8 @@ DESIGN WHfromRF FROM DEFAULT {
             w.box{
                 NEW head{
                     caption = 'Шапка документа';
-                    childConstraints = TO THE RIGHT;
-                    ADD PROPERTY(objectClassName);
+                    childConstraints = TO THE RIGHTBOTTOM;
+                    ADD PROPERTY(objectClassName){preferredCharWidth = 15;}
                     ADD PROPERTY(nameStockWHfromRF);
                     ADD PROPERTY(nameNumeratorObject);
                     ADD PROPERTY(numberObject);
@@ -552,7 +553,7 @@ DESIGN WHfromRF FROM DEFAULT {
                     ADD PROPERTY(timeWHfromRF);
                 }
                 ADD w.documentPrmGroup {
-                    childConstraints = TO THE RIGHT;
+                    childConstraints = TO THE RIGHTBOTTOM;
                 }
                 NEW freightUnit{
                     caption = 'Короб';
@@ -571,6 +572,7 @@ DESIGN WHfromRF FROM DEFAULT {
             ADD d.box {
                 NEW firstCase {
                     caption = 'Атрибуты поставщика';
+                    childConstraints = TO THE RIGHTBOTTOM;
                     ADD PROPERTY(originalNameArticleSkuWHfromRFDetail);
                     ADD PROPERTY(nameCountryOfOriginArticleSkuWHfromRFDetail);
                     ADD PROPERTY(nameBrandSupplierArticleSkuWHfromRFDetail);
@@ -583,7 +585,7 @@ DESIGN WHfromRF FROM DEFAULT {
                     childConstraints =  TO THE BOTTOM;
                     NEW row1 {
                         caption = 'Общие';
-                        childConstraints =  TO THE RIGHT;
+                        childConstraints =  TO THE RIGHTBOTTOM;
                         ADD PROPERTY(sidGenderArticleSkuWHfromRFDetail);
                         ADD PROPERTY(c);
                         ADD PROPERTY(nameTypeFabricArticleSkuWHfromRFDetail);
@@ -594,12 +596,14 @@ DESIGN WHfromRF FROM DEFAULT {
                     }
                     NEW row2 {
                         caption = 'Состав';
+                        childConstraints =  TO THE RIGHTBOTTOM;
                         ADD PROPERTY(mainCompositionOriginSkuWHfromRFDetail);
                         ADD PROPERTY(mainCompositionSkuWHfromRFDetail);
                         ADD PROPERTY(mainCompositionWHfromRFDetail);
                     }
                     NEW row3 {
                         caption = 'Доп. состав';
+                        childConstraints =  TO THE RIGHTBOTTOM;
                         ADD PROPERTY(additionalCompositionOriginSkuWHfromRFDetail);
                         ADD PROPERTY(additionalCompositionSkuWHfromRFDetail);
                         ADD PROPERTY(additionalCompositionWHfromRFDetail);

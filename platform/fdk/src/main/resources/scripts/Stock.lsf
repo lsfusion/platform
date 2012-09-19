@@ -529,7 +529,7 @@ END
 // Склады
 META defineDocumentAggregationHeaderStockPrefix (primObject, aggrObject, stockProp, stockCaption, prefixP, prefixA)
     prefixA###stockProp###aggrObject (object) = prefixP###stockProp###primObject(primObject###aggrObject(object)) PERSISTENT;
-    name###prefixA###stockProp###aggrObject stockCaption (object) = name(prefixA###stockProp###aggrObject(object));
+    name###prefixA###stockProp###aggrObject stockCaption (object) = name(prefixA###stockProp###aggrObject(object)) MINCHARWIDTH 20 PREFCHARWIDTH 40;
 END
 META defineDocumentAggregationHeaderStock (primObject, aggrObject, stockProp, stockCaption)
     @defineDocumentAggregationHeaderStockPrefix (primObject, aggrObject, stockProp, stockCaption, , );

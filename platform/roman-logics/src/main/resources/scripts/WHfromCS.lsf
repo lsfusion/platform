@@ -593,8 +593,8 @@ DESIGN WHfromCSR FROM DEFAULT {
             w.box{
                 NEW head{
                     caption = 'Шапка документа';
-                    childConstraints = TO THE RIGHT;
-                    ADD PROPERTY(objectClassName);
+                    childConstraints = TO THE RIGHTBOTTOM;
+                    ADD PROPERTY(objectClassName){preferredCharWidth = 15;}
                     ADD PROPERTY(nameStockWHfromCSR);
                     ADD PROPERTY(numberObject);
                     ADD PROPERTY(seriesObject);
@@ -604,7 +604,7 @@ DESIGN WHfromCSR FROM DEFAULT {
 
                 NEW freightUnit{
                     caption = 'Короб';
-                    childConstraints = TO THE RIGHT;
+                    childConstraints = TO THE RIGHTBOTTOM;
                     ADD PROPERTY(quantityRemainedPositionSkuWHfromCSR);
                     ADD PROPERTY(quantityRemainedSkuWHfromCSR);
                     ADD PROPERTY(barcodeCurrentFreightUnit);
@@ -618,6 +618,7 @@ DESIGN WHfromCSR FROM DEFAULT {
             ADD d.box {
                 NEW firstCase {
                     caption = 'Атрибуты поставщика';
+                    childConstraints = TO THE RIGHTBOTTOM;
                     ADD PROPERTY(originalNameArticleSkuWHfromCSRDetail);
                     ADD PROPERTY(nameCountryOfOriginArticleSkuWHfromCSRDetail);
                     ADD PROPERTY(nameBrandSupplierArticleSkuWHfromCSRDetail);
@@ -630,7 +631,7 @@ DESIGN WHfromCSR FROM DEFAULT {
                     childConstraints =  TO THE BOTTOM;
                     NEW row1 {
                         caption = 'Общие';
-                        childConstraints =  TO THE RIGHT;
+                        childConstraints = TO THE RIGHTBOTTOM;
                         ADD PROPERTY(sidGenderArticleSkuWHfromCSRDetail);
                         ADD PROPERTY(c);
                         ADD PROPERTY(nameTypeFabricArticleSkuWHfromCSRDetail);
@@ -641,12 +642,14 @@ DESIGN WHfromCSR FROM DEFAULT {
                     }
                     NEW row2 {
                         caption = 'Состав';
+                        childConstraints = TO THE RIGHTBOTTOM;
                         ADD PROPERTY(mainCompositionOriginSkuWHfromCSRDetail);
                         ADD PROPERTY(mainCompositionSkuWHfromCSRDetail);
                         ADD PROPERTY(mainCompositionWHfromCSRDetail);
                     }
                     NEW row3 {
                         caption = 'Доп. состав';
+                        childConstraints = TO THE RIGHTBOTTOM;
                         ADD PROPERTY(additionalCompositionOriginSkuWHfromCSRDetail);
                         ADD PROPERTY(additionalCompositionSkuWHfromCSRDetail);
                         ADD PROPERTY(additionalCompositionWHfromCSRDetail);
