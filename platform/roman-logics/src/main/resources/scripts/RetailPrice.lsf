@@ -16,6 +16,12 @@ PRIORITY MasterData, Stock, RomanLogicsModule;
 CLASS coefficientRetail 'Надбавка';
 TABLE coefficientRetail (coefficientRetail);
 
+CLASS coefficientCategorySupplier 'Надбавка';
+TABLE coefficientCategorySupplier(coefficientCategorySupplier);
+
+markupSeasonYearBrand 'Множитель' = DATA NUMERIC[14,3](seasonYear, brandSupplier);
+markupSeasonYearBrandArticle 'Множитель' (article) = markupSeasonYearBrand(seasonYearArticle(article), brandSupplierArticle(article));
+
 dateCoefficientRetail 'Дата введения' = DATA DATE(coefficientRetail) IN baseGroup;
 markupCoefficientRetail 'Множитель' = DATA NUMERIC[14,3](coefficientRetail) IN baseGroup;
 
@@ -33,6 +39,25 @@ coefficientRetailBrandSupplierDate (brandSupplier, date) = uniqueCoefficientReta
                                                                          brandSupplierCoefficientRetail(coefficientRetail) == brandSupplier
                                                                      BY brandSupplier, date] (brandSupplier, date));
 
+categoryCoefficientCategorySupplier = DATA categorySupplier(coefficientCategorySupplier);
+nameCategoryCoefficientCategorySupplier 'Группа' (coefficientCategorySupplier) = name(categoryCoefficientCategorySupplier(coefficientCategorySupplier));
+
+dateCoefficientCategorySupplier 'Дата введения' = DATA DATE (coefficientCategorySupplier) IN baseGroup;
+markupCoefficientCategorySupplier 'Множитель' = DATA NUMERIC[14,3](coefficientCategorySupplier) IN baseGroup;
+
+uniqueCoefficientCategorySupplierDate (categorySupplier, date) = GROUP UNIQUE coefficientCategorySupplier
+                                                                           BY categoryCoefficientCategorySupplier(coefficientCategorySupplier),
+                                                                              dateCoefficientCategorySupplier(coefficientCategorySupplier)
+                                                                        WHERE coefficientCategorySupplier IS coefficientCategorySupplier;
+
+coefficientCategorySupplierDate (categorySupplier, date) = uniqueCoefficientCategorySupplierDate(
+                                                              categorySupplier,
+                                                              [GROUP MAX dateCoefficientCategorySupplier(coefficientCategorySupplier)
+                                                                         IF dateCoefficientCategorySupplier(coefficientCategorySupplier) <= date AND date IS DATE AND
+                                                                         categoryCoefficientCategorySupplier(coefficientCategorySupplier) == categorySupplier
+                                                                     BY categorySupplier, date] (categorySupplier, date));
+
+
 FORM coefficientRetail 'Надбавка'
 
     OBJECTS c=coefficientRetail FIXED PANEL
@@ -41,19 +66,78 @@ FORM coefficientRetail 'Надбавка'
     EDIT coefficientRetail OBJECT c
 ;
 
+FORM coefficientCategorySupplier 'Надбавка'
+
+    OBJECTS cc=coefficientCategorySupplier FIXED PANEL
+    PROPERTIES(cc) nameCategoryCoefficientCategorySupplier, dateCoefficientCategorySupplier, markupCoefficientCategorySupplier
+
+    EDIT coefficientCategorySupplier OBJECT cc
+;
+
 FORM coefficientRetails 'Надбавки'
 
+    OBJECTS s=supplier
+    PROPERTIES (s) READONLY name
+
     OBJECTS b=brandSupplier
-    PROPERTIES(b) READONLY name, nameSupplierBrandSupplier
-    ORDER BY nameSupplierBrandSupplier
+    PROPERTIES(b) READONLY name
+
+    OBJECTS sy=seasonYear
+    PROPERTIES (sy) READONLY nameSeasonYear
+    PROPERTIES (sy, b) markupSeasonYearBrand
+    ORDER BY nameSeasonYear
 
     OBJECTS c=coefficientRetail
     PROPERTIES(c) READONLY dateCoefficientRetail, markupCoefficientRetail
     PROPERTIES(c) ADDFORM, EDITFORM, delete
     ORDER BY dateCoefficientRetail
 
-    FILTERS brandSupplierCoefficientRetail(c) == b
+    FILTERS supplierBrandSupplier(b) == s, brandSupplierCoefficientRetail(c) == b
+
+    OBJECTS cs = categorySupplier
+    PROPERTIES(cs) READONLY name
+
+    OBJECTS cc=coefficientCategorySupplier
+    PROPERTIES(cc) READONLY dateCoefficientCategorySupplier, markupCoefficientCategorySupplier
+    PROPERTIES(cc) ADDFORM, EDITFORM, delete
+    ORDER BY dateCoefficientCategorySupplier
+
+    FILTERS categoryCoefficientCategorySupplier(cc) == cs, supplierCategorySupplier(cs) == s
 ;
+
+DESIGN coefficientRetails FROM DEFAULT {
+    main {
+
+        NEW bottomContainer {
+
+            childConstraints = TO THE RIGHT;
+            fillVertical = 3;
+
+            NEW leftContainer {
+                childConstraints = TO THE BOTTOM;
+
+                ADD b.box;
+                ADD c.box;
+                ADD sy.box;
+            }
+
+            NEW rightContainer {
+                childConstraints = TO THE BOTTOM;
+                type = SPLITV;
+
+                ADD cs.box{
+                    fillVertical = 2;
+                };
+
+                ADD cc.box{
+                    fillVertical = 1;
+                };
+            }
+        }
+
+        ADD functions.box;
+    }
+}
 
 // ------------------------------------------------ Прайсы -------------------------------- //
 
@@ -117,6 +201,8 @@ reasonPriceSetDocument 'Основание прайса' (priceSetDocument) = UN
 currencyPriceSetDocument = DATA currency (priceSetDocument);
 nameCurrencyPriceSetDocument 'Валюта' (priceSetDocument) = name(currencyPriceSetDocument(priceSetDocument)) MINCHARWIDTH 3 PREFCHARWIDTH 8;
 
+roundCurrencyPriceSetDocument (number, priceSetDocument) = roundCurrency(number, currencyPriceSetDocument(priceSetDocument));
+
 // ----------------------------------------------- Спецификация --------------------------------------- //
 
 // По артикулам
@@ -143,6 +229,8 @@ currencyBasePriceSetDocumentArticle = DATA currency (basePriceSetDocument, artic
 nameCurrencyBasePriceSetDocumentArticle 'Валюта' (basePriceSetDocument, article) = name(currencyBasePriceSetDocumentArticle(basePriceSetDocument, article));
 currencyBasePriceSetDocumentArticle(document, article) => inPriceSetDocumentArticle(document, article) RESOLVE FALSE;
 
+roundCurrencyBasePriceSetDocumentArticle '' (number, basePriceSetDocument, article) = roundCurrency(number, currencyBasePriceSetDocumentArticle(basePriceSetDocument, article));
+
 RRPBasePriceSetDocumentArticle 'Рекомендуемая цена' = DATA NUMERIC[14,2](basePriceSetDocument, article);
 hasNotRRPBasePriceSetDocumentArticle 'Нет рекомендуемой цены' (basePriceSetDocument, article) =
     basePriceSetDocument IS basePriceSetDocument AND article IS article AND NOT RRPBasePriceSetDocumentArticle(basePriceSetDocument, article);
@@ -165,22 +253,27 @@ rateBasePriceSetDocumentArticle(basePriceSetDocument, article) <- rateTypeExchan
                                                                CHANGED(datePriceSetDocument(basePriceSetDocument) AND inPriceSetDocumentArticle(basePriceSetDocument, article));
 rateBasePriceSetDocumentArticle(document, article) => inPriceSetDocumentArticle(document, article) RESOLVE FALSE;
 
+markupArticleDate 'Множитель' (article, date) = UNION OVERRIDE markupSeasonYearBrandArticle(article) AND date IS DATE,
+                                                               markupCoefficientRetail(coefficientRetailBrandSupplierDate(brandSupplierArticle(article), date)),
+                                                               markupCoefficientCategorySupplier(coefficientCategorySupplierDate(categorySupplierArticle(article), date));
+
 markupBasePriceSetDocumentArticle 'Наценка' = DATA NUMERIC[14,2] (basePriceSetDocument, article);
-markupBasePriceSetDocumentArticle (basePriceSetDocument, article) <- markupCoefficientRetail(
-                                                                        coefficientRetailBrandSupplierDate(brandSupplierArticle(article),
-                                                                                                           datePriceSetDocument(basePriceSetDocument)))
+markupBasePriceSetDocumentArticle (basePriceSetDocument, article) <- markupArticleDate(article, datePriceSetDocument(basePriceSetDocument))
                                                                      WHEN ASSIGNED(inPriceSetDocumentArticle(basePriceSetDocument, article)) OR
                                                                         CHANGED(datePriceSetDocument(basePriceSetDocument) AND inPriceSetDocumentArticle(basePriceSetDocument, article));
 markupBasePriceSetDocumentArticle(document, article) => inPriceSetDocumentArticle(document, article) RESOLVE FALSE;
 
-priceOutBasePriceSetDocumentArticle 'Цена с надбавкой' (basePriceSetDocument, article) = round2(priceInBasePriceSetDocumentArticle(basePriceSetDocument, article) *
-                                                                                                markupBasePriceSetDocumentArticle(basePriceSetDocument, article));
+priceOutBasePriceSetDocumentArticle 'Цена с надбавкой' (basePriceSetDocument, article) = roundCurrencyBasePriceSetDocumentArticle(
+                                                                                                    priceInBasePriceSetDocumentArticle(basePriceSetDocument, article) *
+                                                                                                    markupBasePriceSetDocumentArticle(basePriceSetDocument, article), basePriceSetDocument, article);
 
-priceOutRateBasePriceSetDocumentArticle 'Цена с надбавкой (руб.)' (basePriceSetDocument, article) = round2(priceOutBasePriceSetDocumentArticle(basePriceSetDocument, article) *
-                                                                                                           rateBasePriceSetDocumentArticle(basePriceSetDocument, article));
+priceOutRateBasePriceSetDocumentArticle 'Цена с надбавкой (руб.)' (basePriceSetDocument, article) = roundCurrencyPriceSetDocument(
+                                                                                                         priceOutBasePriceSetDocumentArticle(basePriceSetDocument, article) *
+                                                                                                         rateBasePriceSetDocumentArticle(basePriceSetDocument, article), basePriceSetDocument);
 
-RRPRateBasePriceSetDocumentArticle 'Рекомендуемая (руб.)' (basePriceSetDocument, article) = round2(RRPBasePriceSetDocumentArticle(basePriceSetDocument, article) *
-                                                                                                   rateBasePriceSetDocumentArticle(basePriceSetDocument, article));
+RRPRateBasePriceSetDocumentArticle 'Рекомендуемая (руб.)' (basePriceSetDocument, article) = roundCurrencyPriceSetDocument(
+                                                                                                 RRPBasePriceSetDocumentArticle(basePriceSetDocument, article) *
+                                                                                                 rateBasePriceSetDocumentArticle(basePriceSetDocument, article), basePriceSetDocument);
 
 methodBasePriceSetDocumentArticle = DATA methodPrice(basePriceSetDocument, article);
 nameMethodBasePriceSetDocumentArticle 'Метод расчёта' (basePriceSetDocument, article) = name(methodBasePriceSetDocumentArticle(basePriceSetDocument, article)) MAXCHARWIDTH 20;
@@ -255,11 +348,11 @@ markupBasePriceSetDocumentSku(document, sku) => inPriceSetDocumentSku(document, 
 priceOutBasePriceSetDocumentSku 'Цена с надбавкой' (basePriceSetDocument, sku) = roundCurrencyBasePriceSetDocumentSku(priceInBasePriceSetDocumentSku(basePriceSetDocument, sku) *
                                                                                         markupBasePriceSetDocumentSku(basePriceSetDocument, sku), basePriceSetDocument, sku);
 
-priceOutRateBasePriceSetDocumentSku 'Цена с надбавкой (руб.)' (basePriceSetDocument, sku) = roundCurrencyBasePriceSetDocumentSku(priceOutBasePriceSetDocumentSku(basePriceSetDocument, sku) *
-                                                                                                   rateBasePriceSetDocumentSku(basePriceSetDocument, sku), basePriceSetDocument, sku);
+priceOutRateBasePriceSetDocumentSku 'Цена с надбавкой (руб.)' (basePriceSetDocument, sku) = roundCurrencyPriceSetDocument(priceOutBasePriceSetDocumentSku(basePriceSetDocument, sku) *
+                                                                                                   rateBasePriceSetDocumentSku(basePriceSetDocument, sku), basePriceSetDocument);
 
-RRPRateBasePriceSetDocumentSku 'Рекомендуемая (руб.)' (basePriceSetDocument, sku) = roundCurrencyBasePriceSetDocumentSku(RRPBasePriceSetDocumentSku(basePriceSetDocument, sku) *
-                                                                                           rateBasePriceSetDocumentSku(basePriceSetDocument, sku), basePriceSetDocument, sku);
+RRPRateBasePriceSetDocumentSku 'Рекомендуемая (руб.)' (basePriceSetDocument, sku) = roundCurrencyPriceSetDocument(RRPBasePriceSetDocumentSku(basePriceSetDocument, sku) *
+                                                                                           rateBasePriceSetDocumentSku(basePriceSetDocument, sku), basePriceSetDocument);
 
 methodBasePriceSetDocumentSku = DATA methodPrice(basePriceSetDocument, sku);
 nameMethodBasePriceSetDocumentSku 'Метод расчёта' (basePriceSetDocument, sku) = name(methodBasePriceSetDocumentSku(basePriceSetDocument, sku)) MAXCHARWIDTH 20;

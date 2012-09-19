@@ -6049,6 +6049,7 @@ public class RomanLogicsModule extends LogicsModule {
         private ObjectEntity objCategory;
         private ObjectEntity objSizeSupplier;
         private ObjectEntity objGender;
+        private ObjectEntity objTypeFabric;
         private ObjectEntity objCommonSize;
 
         private GroupObjectEntity gobjGenderSizeSupplier;
@@ -6071,6 +6072,9 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(objSizeSupplier, sidSizeSupplier, nameSupplierSizeSupplier);
             addPropertyDraw(objSizeSupplier, objGender, objCategory, nameCommonSizeSizeSupplierGenderCategory);
 
+            objTypeFabric = addSingleGroupObject(typeFabric, "Номенклатурная группа", baseLM.name);
+            addPropertyDraw(objSizeSupplier, objGender, objCategory, objTypeFabric, nameCommonSizeSizeSupplierGenderCategoryTypeFabric);
+
             objCommonSize = addSingleGroupObject(commonSize, "Унифицированный размер", baseLM.name);
             addObjectActions(this, objCommonSize);
 
@@ -6092,12 +6096,19 @@ public class RomanLogicsModule extends LogicsModule {
             design.get(getPropertyDraw(sidSizeSupplier, objSizeSupplier)).caption = "Размер";
 
             design.get(gobjGenderSizeSupplier).grid.constraints.fillVertical = 2;
+            design.get(gobjGenderSizeSupplier).grid.constraints.fillHorizontal = 4;
+            design.get(objTypeFabric.groupTo).grid.constraints.fillHorizontal = 3;
+            design.get(objCommonSize.groupTo).grid.constraints.fillHorizontal = 3;
 
             design.addIntersection(design.getGroupObjectContainer(objCategory.groupTo),
                     design.getGroupObjectContainer(objSupplier.groupTo),
                     DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
             design.addIntersection(design.getGroupObjectContainer(gobjGenderSizeSupplier),
+                    design.getGroupObjectContainer(objTypeFabric.groupTo),
+                    DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+
+            design.addIntersection(design.getGroupObjectContainer(objTypeFabric.groupTo),
                     design.getGroupObjectContainer(objCommonSize.groupTo),
                     DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
