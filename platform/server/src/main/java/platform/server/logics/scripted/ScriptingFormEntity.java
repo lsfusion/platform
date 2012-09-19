@@ -123,9 +123,7 @@ public class ScriptingFormEntity {
                     groupObj.setIsParents(propertyObjects.toArray(new CalcPropertyObjectEntity[propertyObjects.size()]));
             }
         }
-        TreeGroupEntity tree = form.addTreeGroupObject(groups.toArray(new GroupObjectEntity[groups.size()]));
-        if (treeSID != null)
-            tree.setSID(treeSID);
+        form.addTreeGroupObject(treeSID, groups.toArray(new GroupObjectEntity[groups.size()]));
     }
 
     private void addGroupObjectEntity(String groupName, GroupObjectEntity group) throws ScriptingErrorLog.SemanticErrorException {

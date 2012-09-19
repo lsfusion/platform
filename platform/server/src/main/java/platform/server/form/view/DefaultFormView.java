@@ -76,13 +76,7 @@ public class DefaultFormView extends FormView {
         }
 
         for (TreeGroupView treeGroupView : treeGroups) {
-            TreeGroupContainerSet<ContainerView, ComponentView> treeSet = TreeGroupContainerSet.create(treeGroupView, containerFactory);
-            setComponentSID(treeSet.getContainer(), treeSet.getContainer().getSID());
-
-            //вставляем перед первым groupObject в данной treeGroup
-            mainContainer.addBefore(treeSet.getContainer(), groupContainers.get(mgroupObjects.get(treeGroupView.entity.groups.get(0))));
-
-            treeContainers.put(treeGroupView, treeSet.getContainer());
+            addTreeGroupView(treeGroupView);
         }
 
         for (PropertyDrawView propertyDraw : properties) {
@@ -209,6 +203,16 @@ public class DefaultFormView extends FormView {
         }
     }
 
+    private void addTreeGroupView(TreeGroupView treeGroup) {
+        TreeGroupContainerSet<ContainerView, ComponentView> treeSet = TreeGroupContainerSet.create(treeGroup, containerFactory);
+        setComponentSID(treeSet.getContainer(), treeSet.getContainer().getSID());
+
+        //вставляем перед первым groupObject в данной treeGroup
+        mainContainer.addBefore(treeSet.getContainer(), groupContainers.get(mgroupObjects.get(treeGroup.entity.groups.get(0))));
+
+        treeContainers.put(treeGroup, treeSet.getContainer());
+    }
+
     private void addPropertyDrawView(PropertyDrawView propertyDraw) {
         PropertyDrawEntity control = propertyDraw.entity;
 
@@ -222,6 +226,13 @@ public class DefaultFormView extends FormView {
     public GroupObjectView addGroupObject(GroupObjectEntity groupObject) {
         GroupObjectView view = super.addGroupObject(groupObject);
         addGroupObjectView(view);
+        return view;
+    }
+
+    @Override
+    public TreeGroupView addTreeGroup(TreeGroupEntity treeGroup) {
+        TreeGroupView view = super.addTreeGroup(treeGroup);
+        addTreeGroupView(view);
         return view;
     }
 

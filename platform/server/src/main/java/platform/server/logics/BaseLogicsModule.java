@@ -159,7 +159,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     public LCP string2SP, istring2SP;
     public LCP string2, istring2;
-    public LCP ustring2SP, ustring2, ustring5CM;
+    public LCP ustring2SP, ustring2, ustring3, ustring5CM;
 
     protected LCP concat2;
     public LCP percent;
@@ -299,7 +299,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     public LCP symbolCurrency;
     public LCP shortNameCurrency;
-    public LCP shortNameToCurrency;
+    public LCP currencyShortName;
 
     public LCP launchComputer;
     public LCP computerNameLaunch;
@@ -751,7 +751,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         symbolCurrency = addDProp(baseGroup, "symbolCurrency", getString("logics.currency.symbol.currency"), StringClass.get(5), currency);
         shortNameCurrency = addDProp(baseGroup, "shortNameCurrency", getString("logics.currency.short.name.currency"), StringClass.get(3), currency);
-        shortNameToCurrency = addAGProp(baseGroup, "shortNameToCurrency", getString("logics.currency.short.name.currency"), shortNameCurrency);
+        currencyShortName = addAGProp(baseGroup, "currencyShortName", getString("logics.currency.short.name.currency"), shortNameCurrency);
         documentNameCurrency = addDProp(baseGroup, "documentNameCurrency", getString("logics.currency.document.name.currency"), StringClass.get(10), currency);
 
         // математические св-ва
@@ -777,6 +777,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         ustring2SP = addSFUProp("ustring2SP", " ", 2);
         ustring2 = addSFUProp("ustring2", "", 2);
+        ustring3 = addSFUProp("ustring3", "", 3);
 
         ustring5CM = addSFUProp("ustring5CM", ",", 5);
 

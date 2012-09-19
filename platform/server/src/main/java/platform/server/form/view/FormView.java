@@ -105,7 +105,7 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
         }
 
         for (TreeGroupEntity treeGroup : entity.treeGroups) {
-            addTreeGroup(treeGroup);
+            addTreeGroupBase(treeGroup);
         }
 
         for (PropertyDrawEntity property : entity.propertyDraws) {
@@ -176,12 +176,16 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
         return addGroupObjectBase(groupObject);
     }
 
+    public TreeGroupView addTreeGroup(TreeGroupEntity treeGroup) {
+        return addTreeGroupBase(treeGroup);
+    }
+
     private void addTreeGroupView(TreeGroupView treeGroupView) {
         mtreeGroups.put(treeGroupView.entity, treeGroupView);
         setComponentSID(treeGroupView, getTreeSID(treeGroupView.entity));
     }
 
-    private TreeGroupView addTreeGroup(TreeGroupEntity treeGroup) {
+    private TreeGroupView addTreeGroupBase(TreeGroupEntity treeGroup) {
         TreeGroupView treeGroupView = new TreeGroupView(this, treeGroup);
         treeGroups.add(treeGroupView);
         addTreeGroupView(treeGroupView);

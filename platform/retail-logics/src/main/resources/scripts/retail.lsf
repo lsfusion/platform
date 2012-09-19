@@ -46,18 +46,10 @@ REQUIRE System,
         POS,
         ContractLedger,
         Inventory,
-        DefaultData;
+        DefaultData,
+        Item;
 
 GROUP emailGroup 'E-mail' : baseGroup;
-
-// ----------------------------------- Отображение атрибутов товаров по свойству товарной группы ------------------------------------------ //
-META metaCodeShowItemAttribute (attribute, caption, group)
-
-    show###attribute##ItemGroup caption (itemGroup) = DATA BOOLEAN (itemGroup) IN group;
-    toShow###attribute caption (item) = show###attribute##ItemGroup(itemGroupItem(item));
-    show###attribute##ItemGroup(itemGroup) <- TRUE WHEN ASSIGNED(itemGroup IS itemGroup);
-
-END
 
 // ----------------------------------- Свойства изменения объектов в Posted ------------------------------------------ //
 
@@ -143,11 +135,6 @@ META defineDocumentHeaderSupplierContractDepartmentStore(object)
 END
 
 // ----------------------------------- Товарный классификатор ------------------------------------------ //
-CLASS itemGroup 'Товарная группа' : named, externalObject, skuGroup, discountSkuGroup;
-
-@defineHierarchy(itemGroup);
-
-parentSkuGroup (itemGroup) += parentItemGroup(itemGroup);
 
 pieceNumeratorItemGroup = DATA numerator (itemGroup);
 namePieceNumeratorItemGroup 'Нумератор штрих-кодов (для штучного товара)' (itemGroup) = name(pieceNumeratorItemGroup(itemGroup));
@@ -155,6 +142,13 @@ namePieceNumeratorItemGroup 'Нумератор штрих-кодов (для ш
 weightNumeratorItemGroup = DATA numerator (itemGroup);
 nameWeightNumeratorItemGroup 'Нумератор штрих-кодов (для весового товара)' (itemGroup) = name(weightNumeratorItemGroup(itemGroup));
 
+EXTEND FORM itemGroup
+    PROPERTIES(g) namePieceNumeratorItemGroup, nameWeightNumeratorItemGroup
+;
+
+EXTEND FORM itemGroups
+    PROPERTIES(g) BEFORE delete namePieceNumeratorItemGroup, nameWeightNumeratorItemGroup
+;
 // формы за формами товара
 
 // ----------------------------------- Статистический классификатор ------------------------------------------ //
@@ -268,65 +262,6 @@ FORM statisticGroupDialog 'Статистические группы'
     DIALOG statisticGroup OBJECT g
 ;
 
-// ------------------------------------ Цвета ------------------------------------------------ //
-CLASS color 'Цвет' : named;
-TABLE color (color);
-
-FORM color 'Цвет'
-OBJECTS c=color FIXED PANEL
-PROPERTIES(c) name;
-
-// ------------------------------------ Вкусы ------------------------------------------------------ //
-CLASS taste 'Вкус' : named;
-TABLE taste(taste);
-
-FORM taste 'Вкус'
-OBJECTS t=taste FIXED PANEL
-PROPERTIES(t) name;
-
-// ----------------------------------- Производители ---------------------------------- //
-//CLASS manufacturer 'Производитель' : named;
-
-//------------------------------------ Сорта-категории --------------------------------- //
-CLASS sort 'Сорт/Категория' : named;
-TABLE sort(sort);
-
-FORM sort 'Сорт/Категория'
-OBJECTS s=sort FIXED PANEL
-PROPERTIES(s) name;
-
-//------------------------------------ Упаковки ----------------------------------------//
-CLASS pack 'Упаковка' : doubleNamed;
-TABLE pack(pack);
-
-FORM pack 'Упаковка'
-OBJECTS p=pack FIXED PANEL
-PROPERTIES(p) name, shortName;
-
-//------------------------------------ Особенности изготовления ------------------------//
-CLASS specialty 'Особенность' : doubleNamed;
-TABLE specialty(specialty);
-
-FORM specialty 'Особенность'
-OBJECTS s=specialty FIXED PANEL
-PROPERTIES(s) name, shortName;
-
-//------------------------------------ Размеры/Калибры/Габариты ------------------------//
-CLASS size 'Размер/калибр' : doubleNamed;
-TABLE size(size);
-
-FORM size 'Размер/калибр'
-OBJECTS s=size FIXED PANEL
-PROPERTIES(s) name, shortName;
-
-//------------------------------------ Степень охлаждения ------------------------//
-CLASS coolingDegree 'Степень охлаждения' : doubleNamed;
-TABLE coolingDegree(coolingDegree);
-
-FORM coolingDegree 'Степень охлаждения'
-OBJECTS c=coolingDegree FIXED PANEL
-PROPERTIES(c) name, shortName;
-
 //------------------------------- Строки 1-торг ------------------------------------//
 CLASS rowTorg1 'Строка формы 1-торг' : named;
 TABLE rowTorg1(rowTorg1);
@@ -334,29 +269,6 @@ TABLE rowTorg1(rowTorg1);
 FORM rowTorg1 'Строка формы 1-торг'
 OBJECTS r=rowTorg1 FIXED PANEL
 PROPERTIES(r) name;
-
-//------------------------------- Виды ------------------------------------//
-CLASS typeItem 'Вид' : named;
-TABLE typeItem(typeItem);
-
-FORM typeItem 'Вид'
-OBJECTS t=typeItem FIXED PANEL
-PROPERTIES(t) name;
-
-//--------------------------------- Форма товара (особенности нарезки/разделки)  --------------------------//
-CLASS formItem 'Форма товара' : named;
-TABLE formItem(formItem);
-
-FORM formItem 'Форма товара'
-OBJECTS f=formItem FIXED PANEL
-PROPERTIES(f) name;
-
-//--------------------------------- Кол-во в упаковке --------------------------//
-//CLASS numberInPack 'Кол-во в упаковке' : named;
-//
-//FORM numberInPack 'Кол-во в упаковке'
-//OBJECTS n=numberInPack FIXED PANEL
-//PROPERTIES(n) name;
 
 //---------------------------------- Норма отходов ------------------------------------//
 CLASS rateWaste 'Норма отходов' : named, externalObject;
@@ -381,15 +293,11 @@ CONSTRAINT wastageCommitteeDepartmentStore(departmentStore) AND NOT inCommitteeE
 EXTEND FORM departmentStore PROPERTIES nameWastageCommitteeDepartmentStore(d);
 
 // ----------------------------------- Товар ------------------------------------------ //
-GROUP descriptionGroup 'Наименование' : publicGroup;
 GROUP rateGroup 'Нормы' : publicGroup;
-GROUP headGroup 'Базовые свойства' : baseGroup;
-GROUP sizeGroup 'Ячеистое хранение' : publicGroup;
 GROUP retailGroup 'Ценообразование' : publicGroup;
 GROUP discountGroup 'Скидки' : retailGroup;
 GROUP expiryGroup 'Контроль сроков годности' : publicGroup;
 GROUP equipmentGroup 'Внешние устройства' : publicGroup;
-GROUP substanceGroup 'Пищевые характеристики' : publicGroup;
 GROUP labelGroup 'Ценник' : publicGroup;
 
 GROUP manufactoryGroup 'Производство' : publicGroup;
@@ -397,15 +305,6 @@ GROUP orderGroup 'Заказ' : publicGroup;
 GROUP barGroup 'Бар' : publicGroup;
 GROUP activeGroup 'Активность товара' : publicGroup;
 GROUP documentGroup 'Для документов' : publicGroup;
-GROUP displayGroup 'Свойства для отображения' : baseGroup;
-
-CLASS item 'Товар' : sku, externalObject;
-TABLE item(item);
-
-TABLE itemDate (item, DATE);
-
-CLASS brand 'Бренд' : named, externalObject;
-TABLE brand(brand);
 
 CLASS STATIC groupProduct 'Группа изделий для печати заборного листа'
 {
@@ -415,91 +314,14 @@ CLASS STATIC groupProduct 'Группа изделий для печати за�
 
 tmpSku() = SESSION DATA sku ();
 
-//baseGroup
-itemGroupItem = DATA itemGroup(item) IN idGroup AUTOSET;
-skuGroupSku(item) += itemGroupItem(item);
-
-nameItemGroupItem 'Группа товара' (item) = name(itemGroupItem(item));
-canonicalNameItemGroupItem 'Группа товара' (item) = canonicalNameItemGroup(itemGroupItem(item)) IN baseGroup;
-
-TABLE itemGroupItem (itemGroup, item);
-
-isParentItemGroupItem (itemGroup, item) = isParentItemGroupItemGroup(itemGroupItem(item), itemGroup) PERSISTENT;
-
 //-----------------------------------------------------------------------------------------------//
-
-//descriptionGroup
-captionItem 'Название' = DATA STRING[100](item) IN descriptionGroup;
-@metaCodeShowItemAttribute(caption, 'Показывать наименование', displayGroup);
-
-brandItem = DATA brand(item);
-nameBrandItem 'Бренд' (item) = name(brandItem(item)) IN descriptionGroup;
-@metaCodeShowItemAttribute(brand, 'Показывать бренд', displayGroup);
-
-typeItemItem = DATA typeItem(item) IN idGroup;
-nameTypeItemItem 'Вид' = name(typeItemItem(item)) IN descriptionGroup;
-@metaCodeShowItemAttribute(type, 'Показывать тип', displayGroup);
-
-UOMItem = DATA UOM (item) IN idGroup;
-shortNameUOMItem 'Единица измерения' (item) = shortName(UOMItem(item)) IN headGroup;
-@metaCodeShowItemAttribute(UOM, 'Показывать ед.измерения', displayGroup);
-
-sortItem = DATA sort(item) IN idGroup;
-nameSortItem 'Сорт/категория товара' = name(sortItem(item)) IN descriptionGroup;
-@metaCodeShowItemAttribute(sort, 'Показывать сорт', displayGroup);
-
-packItem = DATA pack(item) IN idGroup;
-shortNamePackItem 'Упаковка' = shortName(packItem(item)) IN descriptionGroup;
-@metaCodeShowItemAttribute(pack, 'Показывать упаковку', displayGroup);
-
-specialtyItem = DATA specialty(item) IN idGroup;
-shortNameSpecialtyItem 'Особенности' = shortName(specialtyItem(item)) IN descriptionGroup;
-@metaCodeShowItemAttribute(specialty, 'Показывать особенности', displayGroup);
-
-sizeItem = DATA size(item) IN idGroup;
-shortNameSizeItem 'Размер/калибр' = shortName(sizeItem(item)) IN descriptionGroup;
-@metaCodeShowItemAttribute(size, 'Показывать размер', displayGroup);
-
-colorItem = DATA color (item) IN idGroup;
-nameColorItem 'Цвет' = name(colorItem(item)) IN descriptionGroup;
-@metaCodeShowItemAttribute(color, 'Показывать цвет', displayGroup);
-
-tasteItem = DATA taste (item) IN idGroup;
-nameTasteItem 'Вкус' = name(tasteItem(item)) IN descriptionGroup;
-@metaCodeShowItemAttribute(taste, 'Показывать вкус', displayGroup);
-
-hallmarkItem 'Отличительный признак (особенности)' = DATA STRING[100] (item) IN descriptionGroup;
-@metaCodeShowItemAttribute(hallmark, 'Показывать отличительный признак', displayGroup);
-
-articleItem 'Артикул поставщика/производителя' = DATA STRING[100] (item) IN descriptionGroup;
-@metaCodeShowItemAttribute(article, 'Показывать артикул', displayGroup);
-
-coolingDegreeItem 'Степень охлаждения (ИД)' = DATA coolingDegree (item) IN idGroup;
-nameCoolingDegreeItem 'Степень охлаждения' = name(coolingDegreeItem(item)) IN descriptionGroup;
-@metaCodeShowItemAttribute(coolingDegree, 'Показывать степень охлаждения', displayGroup);
-
-countryItem = DATA country (item) IN idGroup;
-nameCountryItem 'Страна' = name(countryItem(item)) IN headGroup;
-@metaCodeShowItemAttribute(country, 'Показывать страну', displayGroup);
-residentItem 'Отечественное производство' (item) = residentCountry(countryItem(item)) IN headGroup;
-
-countryNameCountry(string) = GROUP UNIQUE country BY name(country) AND country IS country WHERE country IS country;
-
-isManufacturedItem 'Товар производится' = DATA BOOLEAN (item) IN manufactoryGroup;
-hintItem 'Подсказка по товару' = DATA STRING[200] (item) IN documentGroup;
-
-formItemItem = DATA formItem (item) IN idGroup;
-nameFormItemItem 'Форма товара (особенности нарезки/разделки)' = name(formItemItem(item)) IN descriptionGroup;
-@metaCodeShowItemAttribute(formItem, 'Показывать форму', displayGroup);
-
-//numberInPackItem = DATA numberInPack (item) IN idGroup;
-numberInPackItem 'Кол-во в упаковке' = DATA NUMERIC[14,3] (item) IN orderGroup;
-//@metaCodeShowItemAttribute(numberInPack, 'Показывать кол-во в упаковке', displayGroup);
 
 rateWasteItem = DATA rateWaste(item) IN idGroup;
 nameRateWasteItem 'Норма отходов' = name(rateWasteItem(item)) IN rateGroup;
 percentRateWasteItem 'Норма отходов,%' = percentRateWaste(rateWasteItem(item)) IN rateGroup;
-@metaCodeShowItemAttribute(rateWaste, 'Показывать норму отходов', displayGroup);
+
+isManufacturedItem 'Товар производится' = DATA BOOLEAN (item) IN manufactoryGroup;
+hintItem 'Подсказка по товару' = DATA STRING[200] (item) IN documentGroup;
 
 statisticGroupSku = DATA statisticGroup(sku) IN idGroup AUTOSET;
 nameStatisticGroupSku 'Статистическая группа' (sku) = name(statisticGroupSku(sku)) IN rateGroup;
@@ -508,23 +330,12 @@ TABLE statisticGroupSku (statisticGroup, sku);
 
 hasParentStatisticGroupSku (statisticGroup, sku) = hasParentStatisticGroup(statisticGroupSku(sku), statisticGroup) PERSISTENT;
 
-wareItem = DATA ware (item) IN idGroup;
-nameWareItem 'Посуда' = name(wareItem(item)) IN retailGroup;
-
-inWareItem 'Товар в посуде' (item) = item IS item AND wareItem(item);
-
-@metaCodeShowItemAttribute(ware, 'Показывать посуду', displayGroup);
-
-isContainerItem 'Тара' = DATA BOOLEAN (item) IN headGroup;
+isContainerItem 'Тара' = DATA BOOLEAN (item) IN itemBaseGroup;
 isContainerSku (sku) += isContainerItem(sku);
-//@metaCodeShowItemAttribute(Container, 'Показывать явл-ся ли тарой', displayGroup);
-
-manufacturerItem 'Производитель (ИД)' = DATA legalEntity (item) IN idGroup;
-nameManufacturerItem 'Производитель' (item) = name(manufacturerItem(item)) IN headGroup;
-@metaCodeShowItemAttribute(manufacturer, 'Показывать производителя', displayGroup);
+//@defineItemAttribute(Container, 'Показывать явл-ся ли тарой', displayGroup);
 
 //equipmentGroup
-isWeightItem 'Весовой товар' = DATA BOOLEAN (item) IN headGroup;
+isWeightItem 'Весовой товар' = DATA BOOLEAN (item) IN itemBaseGroup;
 compositionScalesItem 'Состав товара (ингредиенты) для весов' = DATA TEXT (item) IN equipmentGroup;
 isMarkItem 'Маркировать товар' = DATA BOOLEAN (item) IN equipmentGroup;
 isLoafCutItem 'Буханка разрезается' = DATA BOOLEAN (item) IN equipmentGroup;
@@ -534,8 +345,7 @@ labelFormatPackItem = DATA labelFormat(item);
 idLabelFormatPackItem 'Код формата этикетки' (item) = idLabelFormat(labelFormatPackItem(item)) IN equipmentGroup;
 
 //substanceGroup
-percentFatItem '% жирности' =  DATA DOUBLE (item) IN substanceGroup;
-percentAlcoholItem '% алкоголя' =  DATA DOUBLE (item) IN substanceGroup;
+GROUP substanceGroup 'Энергетическая ценность' : publicGroup;
 nutritionalValueItem 'Энергетическая и пищевая ценность' = DATA STRING[400] (item) IN substanceGroup MINCHARWIDTH 50;
 energyItem 'Энергетическая ценность на 100г, ккал' = DATA DOUBLE (item) IN substanceGroup;
 fatsItem 'Жиры на 100г, г' = DATA DOUBLE (item) IN substanceGroup;
@@ -544,16 +354,10 @@ proteinsItem 'Белки на 100г, г' = DATA DOUBLE (item) IN substanceGroup;
 isContainGMOItem 'Содержит ГМО' = DATA BOOLEAN (item) IN substanceGroup;
 
 //sizeGroup
-lengthItem 'Длина товара' = DATA NUMERIC[8,2] (item) IN sizeGroup;
-widthItem 'Ширина товара' = DATA NUMERIC[8,2] (item) IN sizeGroup;
-heightItem 'Высота товара' = DATA NUMERIC[8,2] (item) IN sizeGroup;
-grossWeightItem 'Вес брутто (кг)' = DATA NUMERIC[9,3] (item) IN orderGroup;
 lengthPackItem 'Длина упаковки' = DATA NUMERIC[8,2] (item) IN sizeGroup;
 widthPackItem 'Ширина упаковки' = DATA NUMERIC[8,2] (item) IN sizeGroup;
 heightPackItem 'Высота упаковки' = DATA NUMERIC[8,2] (item) IN sizeGroup;
 grossWeightPackItem 'Вес брутто упаковки' = DATA NUMERIC[9,3] (item) IN manufactoryGroup;
-volumeItem 'Объём (л)' = DATA NUMERIC[9,3] (item) IN sizeGroup;
-netWeightItem 'Вес нетто (кг)' = DATA NUMERIC[9,3] (item) IN orderGroup;
 quantityPackItem 'Количество в грузовом месте' = DATA NUMERIC[9,3] (item) IN orderGroup;
 
 //retailGroup
@@ -596,203 +400,9 @@ daysExpiryPackItem 'Срок годности в днях с момента фа
 hoursExpiryPackItem 'Срок годности в часах с момента фасовки' = DATA INTEGER (item) IN expiryGroup;
 //rowTorg1Item 'Строка формы 1-торг (ИД)' = DATA rowTorg1(item) IN idGroup;
 
-imageItem 'Изображение' = DATA IMAGEFILE (item);
-loadImageItem 'Загрузить изображение' (item) = ACTION LOADFILE imageItem(item);
-
-//FORM country 'Страна'
-//    OBJECTS c=country FIXED PANEL
-//    PROPERTIES(c)      name, sidCountry, residentCountry
-//
-//    EDIT country OBJECT c
-//;
-//FORM countries 'Страны'
-//    OBJECTS c=country
-//    PROPERTIES(c) READONLY name, sidCountry, residentCountry
-//    PROPERTIES(c) ADDFORM, EDITFORM, delete
-//;
-
-
-// ----------------------------------- Атрибуты ------------------------------------------ //
-
-CLASS ABSTRACT itemAttribute 'Атрибут товара' : named;
-TABLE itemAttribute(itemAttribute);
-
-TABLE itemItemAttribute(item, itemAttribute);
-
-CLASS STATIC stringItemAttribute 'Строковый атрибут' {
-    captionItem 'Название',
-    article 'Артикул',
-    hallmark 'Отличительный признак'
-} : itemAttribute;
-
-valueCaptionItemAttribute(item, attribute) = castToString255(captionItem(item)) AND attribute == stringItemAttribute.captionItem;
-valueArticleItemAttribute(item, attribute) = castToString255(articleItem(item)) AND attribute == stringItemAttribute.article;
-valueHallmarkItemAttribute(item, attribute) = castToString255(hallmarkItem(item)) AND attribute == stringItemAttribute.hallmark;
-
-valueStringItemAttribute(item, attribute) = UNION EXCLUSIVE  valueCaptionItemAttribute(item, attribute),
-                                                             valueArticleItemAttribute(item, attribute),
-                                                             valueHallmarkItemAttribute(item, attribute);
-
-CLASS STATIC integerItemAttribute 'Целочисленный атрибут' {
-    length 'Длина',
-    width 'Ширина',
-    height 'Высота',
-    numberInPack 'Количество в грузовом месте'
-} : itemAttribute;
-
-valueLengthItemAttribute(item, attribute) = lengthItem(item) AND attribute == integerItemAttribute.length;
-valueWidthItemAttribute(item, attribute) = widthItem(item) AND attribute == integerItemAttribute.width;
-valueHeightItemAttribute(item, attribute) = heightItem(item) AND attribute == integerItemAttribute.height;
-valueNumberInPackItemAttribute(item, attribute) = numberInPackItem(item) AND attribute == integerItemAttribute.numberInPack;
-
-valueIntegerItemAttribute(item, attribute) = UNION EXCLUSIVE valueLengthItemAttribute(item, attribute),
-                                                             valueWidthItemAttribute(item, attribute),
-                                                             valueHeightItemAttribute(item, attribute),
-                                                             valueNumberInPackItemAttribute(item, attribute);
-stringIntegerItemAttribute(item, attribute) = castToString255(valueIntegerItemAttribute(item, attribute));
-
-CLASS STATIC doubleItemAttribute 'Дробный атрибут' {
-    netWeight 'Вес нетто',
-    grossWeight 'Вес брутто',
-    volume 'Объём',
-    percentFat '% жирности',
-    percentAlcohol '% алкоголя'
-} : itemAttribute;
-
-valueNetWeightItemAttribute(item, attribute) = netWeightItem(item) AND attribute == doubleItemAttribute.netWeight;
-valueGrossWeightItemAttribute(item, attribute) = grossWeightItem(item) AND attribute == doubleItemAttribute.grossWeight;
-valueVolumeItemAttribute(item, attribute) = volumeItem(item) AND attribute == doubleItemAttribute.volume;
-valuePercentFatItemAttribute(item, attribute) = percentFatItem(item) AND attribute == doubleItemAttribute.percentFat;
-valuePercentAlcoholItemAttribute(item, attribute) = percentAlcoholItem(item) AND attribute == doubleItemAttribute.percentAlcohol;
-
-valueDoubleItemAttribute(item, attribute) = UNION EXCLUSIVE valueNetWeightItemAttribute(item, attribute),
-                                                            valueGrossWeightItemAttribute(item, attribute),
-                                                            valueVolumeItemAttribute(item, attribute),
-                                                            valuePercentFatItemAttribute(item, attribute),
-                                                            valuePercentAlcoholItemAttribute(item, attribute);
-
-stringDoubleItemAttribute(item, attribute) = castToString255(valueDoubleItemAttribute(item, attribute));
-
-CLASS STATIC booleanItemAttribute 'Логический атрибут' {
-    fixPrice 'Товар с фиксированной ценой',
-    manufactured 'Товар производится'
-} : itemAttribute;
-
-valueFixPriceWeightItemAttribute(item, attribute) = isFixPriceItem(item) AND attribute == booleanItemAttribute.fixPrice;
-valueManufacturedItemAttribute(item, attribute) = isManufacturedItem(item) AND attribute == booleanItemAttribute.manufactured;
-
-valueBooleanItemAttribute(item, attribute) = UNION EXCLUSIVE valueFixPriceWeightItemAttribute(item, attribute),
-                                                             valueManufacturedItemAttribute(item, attribute);
-stringBooleanItemAttribute(item, attribute) = castToString255(valueBooleanItemAttribute(item, attribute));
-
-CLASS STATIC objectItemAttribute 'Объектный атрибут' {
-    itemGroup 'Группа',
-    UOM 'Единица измерения',
-    brand 'Брэнд',
-    typeItem 'Вид',
-    formItem 'Форма',
-    sort 'Сорт/категория',
-    pack 'Упаковка',
-    specialty 'Особенность',
-    size 'Размер/калибр',
-    coolingDegree 'Степень охлаждения',
-    color 'Цвет',
-    taste 'Вкус',
-    countryOrigin 'Страна происхождения/производства'
-
-} : itemAttribute;
-
-valueItemGroupItemAttribute(item, attribute) = itemGroupItem(item) AND item IS item AND attribute == objectItemAttribute.itemGroup;
-valueUOMItemAttribute(item, attribute) = UOMItem(item) AND attribute == objectItemAttribute.UOM;
-valueBrandItemAttribute(item, attribute) = brandItem(item) AND attribute == objectItemAttribute.brand;
-valueTypeItemAttribute(item, attribute) = typeItemItem(item) AND attribute == objectItemAttribute.typeItem;
-valueFormItemAttribute(item, attribute) = formItemItem(item) AND attribute == objectItemAttribute.formItem;
-valueSortItemAttribute(item, attribute) = sortItem(item) AND attribute == objectItemAttribute.sort;
-valuePackItemAttribute(item, attribute) = packItem(item) AND attribute == objectItemAttribute.pack;
-//valueNumberInPackItemAttribute(item, attribute) = numberInPackItem(item) AND attribute == objectItemAttribute.numberInPack;
-valueSpecialtyItemAttribute(item, attribute) = specialtyItem(item) AND attribute == objectItemAttribute.specialty;
-valueSizeItemAttribute(item, attribute) = sizeItem(item) AND attribute == objectItemAttribute.size;
-valueCoolingDegreeItemAttribute(item, attribute) = coolingDegreeItem(item) AND attribute == objectItemAttribute.coolingDegree;
-valueColorItemAttribute(item, attribute) = colorItem(item) AND attribute == objectItemAttribute.color;
-valueTasteItemAttribute(item, attribute) = tasteItem(item) AND attribute == objectItemAttribute.taste;
-valueCountryItemAttribute(item, attribute) = countryItem(item) AND attribute == objectItemAttribute.countryOrigin;
-
-valueObjectItemAttribute(item, attribute) = UNION EXCLUSIVE valueItemGroupItemAttribute(item, attribute),
-                                                            valueUOMItemAttribute(item, attribute),
-                                                            valueBrandItemAttribute(item, attribute),
-                                                            valueTypeItemAttribute(item, attribute),
-                                                            valueFormItemAttribute(item, attribute),
-                                                            valueSortItemAttribute(item, attribute),
-                                                            valuePackItemAttribute(item, attribute),
-                                                           // valueNumberInPackItemAttribute(item, attribute),
-                                                            valueSpecialtyItemAttribute(item, attribute),
-                                                            valueSizeItemAttribute(item, attribute),
-                                                            valueCoolingDegreeItemAttribute(item, attribute),
-                                                            valueColorItemAttribute(item, attribute),
-                                                            valueTasteItemAttribute(item, attribute),
-                                                            valueCountryItemAttribute(item, attribute) PERSISTENT;
-nameObjectItemAttribute(item, attribute) = name(valueObjectItemAttribute(item, attribute));
-
-CLASS STATIC objectItemShortAttribute 'Объектный краткий атрибут' {
-    shortUOM 'Единица измерения (сокр.)',
-    shortPack 'Упаковка (сокр.)',
-    shortSpecialty 'Особенность (сокр.)',
-    shortSize 'Размер/калибр (сокр.)',
-    shortCoolingDegree 'Степень охлаждения (сокр.)'
-
-} : itemAttribute;
-
-valueUOMItemShortAttribute(item, attribute) = UOMItem(item) AND attribute == objectItemShortAttribute.shortUOM;
-valuePackItemShortAttribute(item, attribute) = packItem(item) AND attribute == objectItemShortAttribute.shortPack;
-valueSpecialtyItemShortAttribute(item, attribute) = specialtyItem(item) AND attribute == objectItemShortAttribute.shortSpecialty;
-valueSizeItemShortAttribute(item, attribute) = sizeItem(item) AND attribute == objectItemShortAttribute.shortSize;
-valueCoolingDegreeItemShortAttribute(item, attribute) = coolingDegreeItem(item) AND attribute == objectItemShortAttribute.shortCoolingDegree;
-
-valueObjectItemShortAttribute(item, attribute) = UNION EXCLUSIVE valueUOMItemShortAttribute(item, attribute),
-                                                            valuePackItemShortAttribute(item, attribute),
-                                                            valueSpecialtyItemShortAttribute(item, attribute),
-                                                            valueSizeItemShortAttribute(item, attribute),
-                                                            valueCoolingDegreeItemShortAttribute(item, attribute) PERSISTENT;
-
-shortNameObjectItemAttribute(item, attribute) = shortName(valueObjectItemShortAttribute(item, attribute));
-
-valueItemAttribute(item, attribute) = UNION EXCLUSIVE valueStringItemAttribute(item, attribute),
-                                                      stringIntegerItemAttribute(item, attribute),
-                                                      stringDoubleItemAttribute(item, attribute),
-                                                      stringBooleanItemAttribute(item, attribute),
-                                                      nameObjectItemAttribute(item, attribute),
-                                                      shortNameObjectItemAttribute(item, attribute) PERSISTENT;
-
-numberInNameItemAttribute 'Порядковый номер в наименовании' = DATA INTEGER (itemAttribute) IN baseGroup;
-numberInNameCashItemAttribute 'Порядковый номер в наименовании для касс' = DATA INTEGER (itemAttribute) IN baseGroup;
-numberInNameScalesItemAttribute 'Порядковый номер в наименовании для весов' = DATA INTEGER (itemAttribute) IN baseGroup;
-
-nameAttributeItem 'Наименование' (item) = castToString255(
-                [GROUP CONCAT valueItemAttribute(item, attribute) AND numberInNameItemAttribute(attribute), ' ' BY item ORDER numberInNameItemAttribute(attribute)](item))
-                IN recognizeGroup PERSISTENT MINCHARWIDTH 20 PREFCHARWIDTH 80 INDEXED AGGPROP;
-nameSku(item) += nameAttributeItem(item);
-UOMSku(item) += UOMItem(item);
-
-nameCashAttributeItem 'Наименование для касс' (item) = castToString255(
-                [GROUP CONCAT valueItemAttribute(item, attribute) AND numberInNameCashItemAttribute(attribute), ' ' BY item ORDER numberInNameCashItemAttribute(attribute)](item))
-                PERSISTENT MINCHARWIDTH 20 PREFCHARWIDTH 80;
-nameScalesAttributeItem 'Наименование для весов' (item) = castToString255(
-                [GROUP CONCAT valueItemAttribute(item, attribute) AND numberInNameScalesItemAttribute(attribute), ' ' BY item ORDER numberInNameScalesItemAttribute(attribute)](item))
-                PERSISTENT MINCHARWIDTH 20 PREFCHARWIDTH 80;
-
-nameAttributeItemGroupItem 'Наименование' (itemGroup, item) = nameAttributeItem(item) AND isParentItemGroupItem(itemGroup, item) PERSISTENT INDEXED;
-
-nameAttributeStatisticGroupItem 'Наименование' (statisticGroup, item) = nameAttributeItem(item) AND hasParentStatisticGroupSku(statisticGroup, item) PERSISTENT INDEXED;
-
 // ----------------------------------- Штрих код ------------------------------------------ //
 
 hasParentItemGroupBarcode (itemGroup, barcode) = isParentItemGroupItem(itemGroup, skuBarcode(barcode));
-
-titleOriginScalesBarcode 'Наименование для весов' = DATA STRING[100] (barcode);
-titleOriginCashBarcode 'Наименование для касс' = DATA STRING[100] (barcode);
-
-titleScalesSkuBarcode 'Наименование для весов' = nameScalesAttributeItem(skuBarcode(barcode));
-titleCashSkuBarcode 'Наименование для касс' = nameCashAttributeItem(skuBarcode(barcode));
 
 daysExpiryBarcode 'Срок годности в днях' = daysExpiryPackItem(skuBarcode(barcode));
 hoursExpiryBarcode 'Срок годности в часах' = hoursExpiryPackItem(skuBarcode(barcode));
@@ -802,26 +412,10 @@ isWeightBarcode 'Весовой' = isWeightItem(skuBarcode(barcode));
 itemGroupBarcode 'Группа товара' = itemGroupItem(skuBarcode(barcode));
 expiryDateBarcodeStock 'Крайний срок годности' (barcode, stock) = expiryDateSkuStock(skuBarcode(barcode), stock);
 
-titleScalesBarcode 'Наименование для весов' = UNION OVERRIDE titleScalesSkuBarcode(barcode), titleOriginScalesBarcode(barcode) MINCHARWIDTH 30 PREFCHARWIDTH 30;
-titleCashBarcode 'Наименование для касс' = UNION OVERRIDE titleCashSkuBarcode(barcode), titleOriginCashBarcode(barcode) MINCHARWIDTH 30 PREFCHARWIDTH 30;
-
 pieceNumeratorItem (item) = pieceNumeratorItemGroup(itemGroupItem(item));
 weightNumeratorItem (item) = weightNumeratorItemGroup(itemGroupItem(item));
 
-generateBarcodeItem 'Сгенерировать штрих-код' = ACTION (item) {
-    ADDOBJ barcode;
-    FOR b == addedObject() DO {
-        SET skuBarcode(b) <- item AS item;
-        LOCAL tmpNum = numerator();
-        IF isWeightItem(item) THEN
-            SET tmpNum() <- weightNumeratorItem(item)
-        ELSE
-            SET tmpNum() <- pieceNumeratorItem(item);
-        SET idBarcode(b) <- completeBarcode(curStringValueNumerator(tmpNum()));
-        EXEC incrementValueNumerator(tmpNum());
-    };
-} TOOLBAR CONFIRM;
-
+barcodeNumeratorSku(item) += IF isWeightItem(item) THEN weightNumeratorItem(item) ELSE pieceNumeratorItem(item);
 
 // ----------------------------------- Компоненты ------------------------------------------ //
 CLASS component 'Компонент' : sku, named;
@@ -897,6 +491,10 @@ GROUP historyGroup 'Изменяемые характеристики' : baseGro
 
 @defineHistorizableCustom(inactiveItem, 'Неактивный товар', yesNo, name, item, nameAttributeItem, activeGroup);
 isActiveItem (item) = item IS item AND NOT inactiveItem(item) == yesNo.yes PERSISTENT;
+EXTEND FORM items
+    FILTERGROUP filters
+        FILTER 'Отображать только активные товары' 'F10' isActiveItem(i) DEFAULT
+;
 
 @defineHistorizableCustom(isPortionBarItem, 'Порционный товар для бара', yesNo, name, item, nameAttributeItem, barGroup);
 
@@ -1166,21 +764,9 @@ TABLE supplierItemDepartmentStoreDate (supplier, item, departmentStore, DATE);
 
 @defineHistorizableTripleYesNo(banSupplierItemDepartment, 'Запретить закупку', supplier, name, item, nameAttributeItem, departmentStore, name, orderGroup);
 
-FORM item 'Товар'
+EXTEND FORM item
 
-    OBJECTS i=item FIXED PANEL
-
-    PROPERTIES(i) nameAttributeItem, nameCashAttributeItem, nameScalesAttributeItem, canonicalNameItemGroupItem, idBarcodeSku READONLY,
-
-                  // Основные данные
-                  captionItem SHOWIF toShowCaption(i), nameBrandItem SHOWIF toShowBrand(i), nameTypeItemItem SHOWIF toShowType(i),
-                  nameSortItem SHOWIF toShowSort(i), shortNamePackItem SHOWIF toShowPack(i), shortNameSizeItem SHOWIF toShowSize(i),
-                  shortNameSpecialtyItem SHOWIF toShowSpecialty(i), nameColorItem SHOWIF toShowColor(i),
-                  nameTasteItem SHOWIF toShowTaste(i), hallmarkItem SHOWIF toShowHallmark(i), articleItem SHOWIF toShowArticle(i),
-                  nameCoolingDegreeItem SHOWIF toShowCoolingDegree(i), nameFormItemItem SHOWIF toShowFormItem(i),
-
-                  shortNameUOMItem SHOWIF toShowUOM(i), nameCountryItem SHOWIF toShowCountry(i),
-                  nameManufacturerItem SHOWIF toShowManufacturer(i), isContainerItem,
+    PROPERTIES(i) isContainerItem,
                   isWeightItem, isManufacturedItem,
                   compositionMenuItem SHOWIF isManufacturedItem(i),
                   grossWeightPackItem SHOWIF isManufacturedItem(i), isCrudeItem SHOWIF isManufacturedItem(i),
@@ -1190,7 +776,7 @@ FORM item 'Товар'
 
                   nameRateWasteItem, percentRateWasteItem, nameGroupNaturalLossItem, rateGroupNaturalLossItem, nameStatisticGroupSku,
 
-                  volumeItem, lengthItem, widthItem, heightItem, lengthPackItem, widthPackItem, heightPackItem,
+                  lengthPackItem, widthPackItem, heightPackItem,
 
                   nameIsPortionBarItem, dialogIsPortionBarItem, nameInactiveItem, dialogInactiveItem,
 
@@ -1202,27 +788,20 @@ FORM item 'Товар'
                   numberRangeSupplierVATItem, valueCurrentRateSupplierVATItem, dialogSupplierVATItem,
                   numberRangeRetailVATItem, valueCurrentRateRetailVATItem, dialogRetailVATItem,
                   percentWholesaleMarkItem, minTradeAllowanceItem, dialogMinTradeAllowanceItem, maxTradeAllowanceItem, dialogMaxTradeAllowanceItem,
-                  minAllowedRetailPriceItem, isFixPriceItem, banMarkdownItem, nameWareItem SHOWIF toShowWare(i),
+                  minAllowedRetailPriceItem, isFixPriceItem, banMarkdownItem,
 
                   quantityDiscountItem, fixPriceItem, nameBanDiscountItem, dialogBanDiscountItem,
 
-                  percentFatItem, percentAlcoholItem, nutritionalValueItem, energyItem,
+                  nutritionalValueItem, energyItem,
                   fatsItem, carbohydratesItem, proteinsItem, isContainGMOItem,
 
                   controlExpiryItem, daysExpiryItem, daysExpiryPackItem, hoursExpiryPackItem,
 
-                  netWeightItem, grossWeightItem, quantityPackItem, minQuantityOrderItem, minReserveItem, numberInPackItem,
+                  quantityPackItem, minQuantityOrderItem, minReserveItem,
 
-                  bonusReturnItem, nameReturnItem, hintItem, bonusItem,
+                  bonusReturnItem, nameReturnItem, hintItem, bonusItem
 
-                  imageItem, loadImageItem
-
-    OBJECTS b=barcode
-    PROPERTIES(b)       idBarcode, dateBarcode, titleScalesBarcode, titleCashBarcode, shortNameUOMBarcode,
-                        amountBarcode, activeBarcode, primaryBarcode
-    PROPERTIES(i)       generateBarcodeItem TODRAW b FORCE PANEL
-    PROPERTIES(b)       ADDOBJ, delete
-    FILTERS skuBarcode(b) == i
+    PROPERTIES(b) BEFORE delete titleScalesBarcode, titleCashRegisterBarcode
 
     // Управленческие параметры
     TREE treeStore a=STRING[3], t=chainStores, st=storeType, s=store
@@ -1253,64 +832,26 @@ FORM item 'Товар'
     EDIT item OBJECT i
 ;
 
-DESIGN item FROM DEFAULT {
+EXTEND DESIGN item {
     main {
-        i.panel {
-            NEW itemPanelColumn1 {
-                childConstraints = TO THE BOTTOM;
-                ADD PROPERTY(nameAttributeItem);
-                ADD PROPERTY(nameCashAttributeItem);
-                ADD PROPERTY(nameScalesAttributeItem);
-            }
-            NEW itemPanelColumn2 {
-                childConstraints = TO THE BOTTOM;
-                ADD PROPERTY(canonicalNameItemGroupItem);
-                ADD PROPERTY(idBarcodeSku);
-            }
-        }
-        NEW item.box BEFORE b.box {
-            type = TABBED;
-            NEW primary.box {
-                title = 'Основные данные';
-                fillVertical = 1.0;
-                fillHorizontal = 1.0;
-                NEW containerLeft {
-                    childConstraints = TO THE BOTTOM;
-                    ADD i.descriptionGroup {
-                        fillVertical = 0.4;
-                        NEW small.box {
-                            ADD PROPERTY(shortNamePackItem(i));
-                            ADD PROPERTY(shortNameSizeItem(i));
-                            ADD PROPERTY(shortNameSpecialtyItem(i));
-                            POSITION PROPERTY(shortNamePackItem(i)) TO THE LEFT PROPERTY(shortNameSizeItem(i));
-                            POSITION PROPERTY(shortNameSizeItem(i)) TO THE LEFT PROPERTY(shortNameSpecialtyItem(i));
-                        };
-                    }
+        itemDetail {
+            itemPrimary {
+                itemPrimaryColumn1 {
                     ADD i.manufactoryGroup {
                         childConstraints = TO THE BOTTOM;
                     };
                 }
 
-                NEW containerRight {
-                    childConstraints = TO THE BOTTOM;
-                    ADD i.headGroup {
-                        childConstraints = TO THE BOTTOM;
-                    };
+                itemPrimaryColumn2 {
                     ADD i.rateGroup {
                         childConstraints = TO THE BOTTOM;
-                    };
-                    ADD i.sizeGroup {
-                        childConstraints = TO THE BOTTOM;
-                    };
+                    }
                     ADD i.barGroup;
                     ADD i.activeGroup;
                 }
-                POSITION containerLeft TO THE LEFT containerRight;
-                ADD b.box;
             }
 
-            NEW additional.box {
-
+            NEW itemAdditional AFTER itemPrimary {
                 title = 'Дополнительные';
                 fillVertical = 1.0;
                 fillHorizontal = 1.0;
@@ -1344,8 +885,7 @@ DESIGN item FROM DEFAULT {
                 POSITION containerALeft TO THE LEFT containerARight;
             }
 
-            ADD d.box {
-
+            ADD d.box AFTER itemAdditional {
                 title = 'Управленческие параметры';
 
                 fillVertical = 1.0;
@@ -1360,60 +900,9 @@ DESIGN item FROM DEFAULT {
                     fillHorizontal = 3;
                 };
             }
-
-            NEW itemImage {
-                title = 'Изображение';
-                ADD PROPERTY(imageItem);
-                PROPERTY(imageItem) {
-                    caption = '';
-                    fillVertical = 1.0;
-                    fillHorizontal = 1.0;
-                }
-
-                ADD PROPERTY(loadImageItem);
-            }
        }
     }
 }
-
-editItem 'Ред-ть товар' (item) = ACTION FORM item OBJECTS i MODAL TOOLBAR;
-
-FORM items 'Товары'
-    TREE treeGroup g=itemGroup PARENT parentItemGroup
-    PROPERTIES READONLY name(g)
-    ORDER BY name
-
-    OBJECTS i=item
-    PROPERTIES idBarcodeSku(i) READONLY, nameAttributeItemGroupItem(g, i) READONLY, shortNameUOMItem(i) READONLY
-    PROPERTIES(i) ADDFORM, EDITFORM, delete
-    FILTERS nameAttributeItemGroupItem(g, i)
-    ORDER BY nameAttributeItemGroupItem
-
-    FILTERGROUP filters
-        FILTER 'Отображать только активные товары' 'F10' isActiveItem(i) DEFAULT
-
-    DIALOG item OBJECT i
-;
-
-DESIGN items FROM DEFAULT {
-
-    NEW topContainer {
-            type = SPLITH;
-            childConstraints = TO THE RIGHT;
-
-            ADD treeGroup.tree {
-                fillHorizontal = 0.4;
-            }
-
-            ADD i.grid {
-                defaultComponent = TRUE;
-            }
-    }
-
-    ADD functions.box;
-}
-
-
 
 FORM barcodeForm 'Товары по Ш-К'
     TREE treeGroup g=itemGroup PARENT parentItemGroup
@@ -1440,77 +929,6 @@ DESIGN barcodeForm FROM DEFAULT {
         defaultComponent = TRUE;
     }
 }
-
-
-FORM itemGroup 'Товарная группа'
-    OBJECTS g=itemGroup FIXED PANEL
-    PROPERTIES(g)  name, nameParentItemGroup, namePieceNumeratorItemGroup, nameWeightNumeratorItemGroup,
-                   showCaptionItemGroup, showBrandItemGroup, showTypeItemGroup, showUOMItemGroup, showSortItemGroup, showPackItemGroup,
-                   showSpecialtyItemGroup, showSizeItemGroup, showColorItemGroup, showTasteItemGroup, showHallmarkItemGroup,
-                   showArticleItemGroup, showCoolingDegreeItemGroup, showCountryItemGroup, showFormItemItemGroup,
-                   showRateWasteItemGroup, showWareItemGroup, showManufacturerItemGroup
-    EDIT itemGroup OBJECT g
-;
-
-addItemGroup 'Добавить' = ACTION (itemGroup) NEWSESSION {
-    ADDOBJ itemGroup;
-    FOR g == addedObject() DO {
-        SET parentItemGroup(g) <- itemGroup AS itemGroup;
-        FORM itemGroup OBJECTS g=addedObject() MODAL;
-        IF formResult() == formResult.ok THEN
-            EXEC apply();
-    };
-} TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
-
-FORM itemGroups 'Товарные группы'
-    TREE treeGroups g=itemGroup PARENT parentItemGroup
-    PROPERTIES READONLY name(g), extSID(g)
-    PROPERTIES(g)       addItemGroup, EDITFORM
-    ORDER BY name
-
-    OBJECTS cg=itemGroup
-    PROPERTIES(cg)   canonicalNameItemGroup, namePieceNumeratorItemGroup, nameWeightNumeratorItemGroup,
-                     showCaptionItemGroup, showBrandItemGroup, showTypeItemGroup, showUOMItemGroup, showSortItemGroup, showPackItemGroup,
-                     showSpecialtyItemGroup, showSizeItemGroup, showColorItemGroup, showTasteItemGroup, showHallmarkItemGroup,
-                     showCoolingDegreeItemGroup, showCountryItemGroup, showFormItemItemGroup,
-                     showRateWasteItemGroup, showWareItemGroup, showManufacturerItemGroup, delete
-
-    ORDER BY canonicalNameItemGroup
-
-    FILTERGROUP filters
-        FILTER 'Все листья' 'F10' isParentLeafItemGroupItemGroup(cg, g) DEFAULT
-        FILTER 'Всех потомков' 'F9' isParentItemGroupItemGroup(cg, g)
-        FILTER 'Только непосредственных потомков' 'F8' parentItemGroup(cg) == g
-;
-
-DESIGN itemGroups FROM DEFAULT {
-
-    NEW topContainer {
-        childConstraints = TO THE RIGHT;
-        type = SPLITH;
-
-        ADD treeGroups.tree.box ;
-
-        ADD cg.box{
-            fillHorizontal = 4;
-        }
-    }
-
-    PROPERTY(extSID) {
-        maximumCharWidth = 7;
-    }
-
-    ADD functions.box;
-}
-
-FORM itemGroupDialog 'Товарные группы'
-    TREE treeGroups g=itemGroup PARENT parentItemGroup
-    PROPERTIES(g) READONLY name, extSID
-    PROPERTIES(g) addItemGroup, EDITFORM
-    ORDER BY name
-
-    DIALOG itemGroup OBJECT g
-;
 
 // ----------------------------------- Комиссии ---------------------------------------------------------- //
 
@@ -1789,6 +1207,10 @@ FORM papers 'Документы качества'
 
 // ------------------------------------------- Загрузка в ВУ --------------------------------------------- //
 
+POSPriceSkuDepartmentStoreDateTime(sku, departmentStore, dateTime) += retailPriceBLedgerDateTime(sku, departmentStore, dateTime);
+postPrintReceipt(receipt) += noFiscalPostPrintReceipt(receipt);
+fiscalZReport() += closeCurrentZReport();
+
 ledgerPriceBarcodeGroupMachinery 'Текущая цена по учету' (barcode, groupMachinery) = currentRetailPriceBarcodeDepartmentStore(barcode, stockGroupMachinery(groupMachinery));
 
 // Дополнительные параметры
@@ -1933,7 +1355,7 @@ createMachineryPriceTransaction 'Создать транзакцию' = ACTION (
                 IF groupMachinery IS groupScales THEN
                     SET nameMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- titleScalesBarcode(barcode)
                 ELSE
-                    SET nameMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- titleCashBarcode(barcode);
+                    SET nameMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- titleCashRegisterBarcode(barcode);
                 SET daysExpiryMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- daysExpiryBarcode(barcode);
                 SET hoursExpiryMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- hoursExpiryBarcode(barcode);
                 SET labelFormatMachineryPriceTransactionBarcode(t, barcode) AND inMachineryPriceTransactionBarcode(t, barcode) <- labelFormatBarcode(barcode);
@@ -4781,8 +4203,8 @@ createLabelTransactionFillParams 'Заполнить параметры' = ACTIO
     SET nameLabelTransactionBarcode(labelTransaction, barcode) AND inLabelTransactionBarcode(labelTransaction, barcode) <- nameSkuBarcode(barcode);
     SET priceLabelTransactionBarcode(labelTransaction, barcode) AND inLabelTransactionBarcode(labelTransaction, barcode) <- currentRetailPriceBarcodeDepartmentStore(barcode, departmentStore);
     SET shortNameUOMLabelTransactionBarcode(labelTransaction, barcode) AND inLabelTransactionBarcode(labelTransaction, barcode) <- shortNameUOMItem(skuBarcode(barcode));
-    SET countryLabelTransactionBarcode(labelTransaction, barcode) AND inLabelTransactionBarcode(labelTransaction, barcode) <- countryItem(skuBarcode(barcode));
-    SET manufacturerLabelTransactionBarcode(labelTransaction, barcode) AND inLabelTransactionBarcode(labelTransaction, barcode) <- manufacturerItem(skuBarcode(barcode));
+    SET countryLabelTransactionBarcode(labelTransaction, barcode) AND inLabelTransactionBarcode(labelTransaction, barcode) <- name(countryItem(skuBarcode(barcode)));
+    SET manufacturerLabelTransactionBarcode(labelTransaction, barcode) AND inLabelTransactionBarcode(labelTransaction, barcode) <- name(manufacturerItem(skuBarcode(barcode)));
 }
 
 createLabelTransaction 'Распечатать ценники' = ACTION (departmentStore, date) {
@@ -6837,8 +6259,8 @@ FORM statisticalReport '12-Торг (продажи) справочно'
     ORDER BY gname
 
     OBJECTS           dsi=(dep=departmentStore, i=item)
-    PROPERTIES        READONLY nameIt=nameAttributeStatisticGroupItem(g, i), nameDep=name(dep)
-    FILTERS           nameAttributeStatisticGroupItem (g, i),
+    PROPERTIES        READONLY nameIt=nameAttributeItem(i), nameDep=name(dep)
+    FILTERS           nameAttributeItem (i),
                       inChainStoresStoreTypeStoreDepartmentDepartment(tn, st, s, dep, ds)
     ORDER BY          nameIt
 
@@ -7130,7 +6552,7 @@ FORM isSupplierItemDepartmentStore 'Ассортимент поставщико�
 
     OBJECTS           dsi=(dep=departmentStore, i=item)
     PROPERTIES        READONLY nameDep=name(dep), nameIt=nameAttributeItem(i), idBarcodeSku(i)
-    PROPERTIES        editItem(i)
+    PROPERTIES        EDITFORM(i)
     ORDER BY          nameDep
     PROPERTIES        overNameIsSupplierItemDepartmentDate(sp, i, dep, t) BACKGROUND dataIsSupplierItemDepartmentDate(sp, i, dep, t), overDialogIsSupplierItemDepartmentDate(sp, i, dep),
                       overPriceSupplierItemDepartmentDate(sp, i, dep, t) BACKGROUND dataPriceSupplierItemDepartmentDate(sp, i, dep, t), overDialogPriceSupplierItemDepartmentDate(sp, i, dep)
@@ -7649,7 +7071,6 @@ NAVIGATOR {
             ADD wastages;
             ADD wastageCommitteeDialog;
         }
-        ADD contractNavigator;
         NEW purchaseCatalog 'Справочники' {
             ADD suppliers;
         }
@@ -7706,6 +7127,10 @@ NAVIGATOR {
     }
 
     ADD machineryNavigator TO formsToolbar;
+
+    NEW finance 'Финансы' TO formsToolbar {
+        ADD contractNavigator;
+    }
 
     NEW manufactory 'Производство' TO formsToolbar {
         ADD actOfStudies;

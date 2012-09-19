@@ -88,7 +88,7 @@ fiscalServiceCashRegisterCashOperation 'Движение денег в фиск�
 
 sumCashOperation(cashOperation) = ABSTRACT NUMERIC[16,2] (cashOperation);
 
-isCompleteCashOperation 'Выполнено' = DATA BOOLEAN (cashOperation);
+isCompleteCashOperation 'Фискализировано' = DATA BOOLEAN (cashOperation);
 
 //---------------------------- Внесение денег ----------------------------------------------------------------//
 

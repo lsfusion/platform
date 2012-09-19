@@ -497,11 +497,16 @@ GROUP receiptActionGroup 'Оплата' : publicGroup;
 // Проведение чека
 
 postPrintReceipt 'Напечатать фискальный чек' = ABSTRACT ACTION (receipt);
+noFiscalPostPrintReceipt 'Создать чек (без фискального регистратора)' = ACTION (receipt) {
+    IF receipt IS receipt THEN {
+        EXEC apply();
+        EXEC createCurrentReceipt();
+    }
+}
 
 FORM postReceiptPayment 'Оплата по чеку'
     OBJECTS r = receipt FIXED PANEL
     PROPERTIES(r) READONLY changePaymentReceipt
-    PROPERTIES(r) postPrintReceipt
 
     OBJECTS p = payment FIXED GRID
     PROPERTIES(p) sumPayment, namePaymentTypePayment, ADDOBJ, delete
@@ -786,6 +791,7 @@ openCurrentZReport 'Открыть Z-отчет' = ACTION () {
     FOR z == addedObject() DO {
         SET numberZReport(z) <- castToString255(z);
         SET cashRegisterZReport(z) <- currentCashRegister();
+        SET departmentStoreZReport(z) <- departmentStoreCashRegister(currentCashRegister()); // todo : приходится ставить из-за того, что на ADDOBJ срабатывает resolveAdd
         SET zReportCashRegister(cashRegister) IF cashRegister == currentCashRegister() <- z AS zReport;
         EXEC apply();
     }

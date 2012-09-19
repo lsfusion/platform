@@ -74,7 +74,7 @@ public class ImportPriceListActionProperty extends ScriptingActionProperty {
                                 priceSetDocumentObject = context.addObject((ConcreteCustomClass) LM.findClassByCompoundName("basePriceSetDocument"));
                                 LM.findLCPByCompoundName("seriesObject").change(series, session, priceSetDocumentObject);
                                 LM.findLCPByCompoundName("numberObject").change(number, session, priceSetDocumentObject);
-                                LM.findLCPByCompoundName("currencyPriceSetDocument").change(LM.findLCPByCompoundName("shortNameToCurrency").read(session, new DataObject(currency, StringClass.get(5))), session, (DataObject) priceSetDocumentObject);
+                                LM.findLCPByCompoundName("currencyPriceSetDocument").change(LM.findLCPByCompoundName("currencyShortName").read(session, new DataObject(currency, StringClass.get(5))), session, (DataObject) priceSetDocumentObject);
                                 LM.findLCPByCompoundName("datePriceSetDocument").change(new java.sql.Date(startDate.getTime()), session, priceSetDocumentObject);
                                 LM.findLCPByCompoundName("timePriceSetDocument").change(new Time(startDate.getTime()), session, priceSetDocumentObject);
                                 if (!row[5].startsWith("9999"))

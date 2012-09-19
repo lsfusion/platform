@@ -1,7 +1,7 @@
 MODULE Hierarchy;
 
 META defineHierarchy (object)
-    parent###object = DATA object (object);
+    parent###object = DATA object (object) AUTOSET;
     @defineHierarchyCustom(object);
 END
 

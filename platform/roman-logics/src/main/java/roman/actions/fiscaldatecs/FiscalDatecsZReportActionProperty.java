@@ -36,6 +36,9 @@ public class FiscalDatecsZReportActionProperty extends ScriptingActionProperty {
                     LM.findLAPByCompoundName("fiscalPrintZReport").execute(session);
                     LM.findLAPByCompoundName("closeCurrentZReport").execute(session);
                 }
+                LM.findLAPByCompoundName("fiscalPrintZReport").execute(session);
+                LM.findLAPByCompoundName("closeCurrentZReport").execute(session);
+                context.apply(LM.getBL());
             }
         } catch (SQLException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.

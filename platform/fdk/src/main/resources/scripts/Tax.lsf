@@ -91,8 +91,7 @@ CONSTRAINT rangeRate(rt1) == rangeRate(rt2) AND NOT (dateFromRate(rt2) <= dateFr
 // для импорта
 valueCurrentVATCountryValue 'Шкала НДС по значению' (country, doubleValue) = GROUP UNIQUE range BY countryRange(range), valueCurrentRateRange (range);
 
-// вообще очень странное свойство и имеет мало смысла без страны - пока оставлено для обратной совместимости
-valueCurrentRangeValue 'Шкала по значению' (doubleValue) = GROUP MAX range BY valueCurrentRateRange (range);
+valueCurrentVATDefaultValue 'Шкала по значению' (doubleValue) = valueCurrentVATCountryValue(defaultCountry(), doubleValue);
 
 // --------------------------------------- Формы ------------------------------------- //
 

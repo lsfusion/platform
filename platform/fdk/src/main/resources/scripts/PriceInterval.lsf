@@ -1,6 +1,6 @@
 MODULE PriceInterval;
 
-REQUIRE System, Utils;
+REQUIRE System, Utils, DefaultData;
 
 CLASS priceInterval 'Диапазон цен';
 TABLE priceInterval (priceInterval);
@@ -86,3 +86,13 @@ DESIGN priceIntervals FROM DEFAULT {
         ADD functions.box;
     }
 }
+
+// --------------------------------------------------- Стандартные значения ------------------------------------ //
+
+loadDefaultPriceIntervals 'Загрузить стандартные округления розничных цен' = ACTION () {
+    SET priceRoundCurrency(c)  <- -2 WHERE shortNameCurrency(c) == 'BLR';
+    SET priceRoundCurrency(c)  <- 2 WHERE shortNameCurrency(c) == 'RUB';
+    SET priceRoundCurrency(c)  <- 2 WHERE shortNameCurrency(c) == 'UAH';
+} IN loadDefaultGroup;
+
+@implementLoadDefaultData(loadDefaultPriceIntervals);

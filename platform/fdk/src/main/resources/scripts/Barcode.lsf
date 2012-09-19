@@ -1,6 +1,6 @@
 MODULE Barcode;
 
-REQUIRE System, Stock, Utils;
+REQUIRE System, Stock, Utils, Numerator;
 
 CLASS barcode 'Штрих код';
 TABLE barcode (barcode);
@@ -43,6 +43,20 @@ idBarcodeSkuSkuLedger 'Штрих-код' (skuLedger) = idBarcodeSku(skuSkuLedge
 dataUOMBarcode = DATA UOM (barcode);
 UOMBarcode = UOMSku(skuBarcode(barcode)) OR dataUOMBarcode(barcode);
 shortNameUOMBarcode 'Единица измерения' (barcode) = shortName(UOMBarcode(barcode));
+
+// Генерация штрих-кодов
+
+barcodeNumeratorSku = ABSTRACT numerator (sku);
+
+generateBarcodeSku 'Сгенерировать штрих-код' = ACTION (sku) {
+    ADDOBJ barcode;
+    FOR b == addedObject() DO {
+        SET skuBarcode(b) <- sku;
+        SET idBarcode(b) <- completeBarcode(curStringValueNumerator(barcodeNumeratorSku(sku)));
+        EXEC incrementValueNumerator(barcodeNumeratorSku(sku));
+    };
+} TOOLBAR CONFIRM;
+
 
 // ----------------------------------- Форма по вводу штрих-кода ---------------------------- //
 

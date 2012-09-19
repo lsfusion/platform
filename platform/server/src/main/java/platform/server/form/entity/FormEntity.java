@@ -305,7 +305,13 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     }
 
     public TreeGroupEntity addTreeGroupObject(GroupObjectEntity... tGroups) {
+        return addTreeGroupObject((String)null, tGroups);
+    }
+
+    public TreeGroupEntity addTreeGroupObject(String sID, GroupObjectEntity... tGroups) {
         TreeGroupEntity treeGroup = new TreeGroupEntity(genID());
+        if (sID != null)
+            treeGroup.setSID(sID);
         for (GroupObjectEntity group : tGroups) {
             if (!groups.contains(group)) {
                 groups.add(group);
@@ -314,6 +320,10 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         }
 
         treeGroups.add(treeGroup);
+
+        if (richDesign != null)
+            richDesign.addTreeGroup(treeGroup);
+
         return treeGroup;
     }
 

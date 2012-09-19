@@ -15,11 +15,11 @@ nameCategoryArticleSkuLanguage 'Наименование (иностр.)' (sku, 
 // implement абстрактных свойств
 descriptionItem 'Наименование' (item) =
         [FORMULA STRING[200] ' CAST($1 AS TEXT) || \'/\' || CAST($2 AS TEXT) || \'/\' || CAST($3 AS TEXT) || \' (\' || CAST($4 AS TEXT) || \', \' || CAST($5 AS TEXT) || \')\''](
-        sidArticleSku(item), sidSizeSupplierItem(item), sidColorSupplierItem(item), nameCategoryArticleSku(item), nameBrandSupplierArticleSku(item));
+        sidArticleSku(item), sidColorSupplierItem(item), sidSizeSupplierItem(item), nameCategoryArticleSku(item), nameBrandSupplierArticleSku(item));
 
 descriptionItemLanguage 'Наименование (иностр.)' (item, language) =
         [FORMULA STRING[200] ' CAST($1 AS TEXT) || \'/\' || CAST($2 AS TEXT) || \'/\' || CAST($3 AS TEXT) || \' (\' || CAST($4 AS TEXT) || \', \' || CAST($5 AS TEXT) || \')\''](
-        sidArticleSku(item), sidSizeSupplierItem(item), sidColorSupplierItem(item), nameCategoryArticleSkuLanguage(item, language), nameBrandSupplierArticleSku(item));
+        sidArticleSku(item), sidColorSupplierItem(item), sidSizeSupplierItem(item) , nameCategoryArticleSkuLanguage(item, language), nameBrandSupplierArticleSku(item));
 
 nameSku(sku) += descriptionItem (sku);
 nameSkuLanguage(sku, language) += descriptionItemLanguage(sku, language);

@@ -223,7 +223,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
         ImportField nameCountryField = new ImportField(getLCP("name"));
         ImportField barcodeField = new ImportField(getLCP("idBarcode"));
         ImportField dateField = new ImportField(getLCP("date"));
-        ImportField importerPriceField = new ImportField(getLCP("importerPriceItemDate"));
+        ImportField importerPriceField = new ImportField(getLCP("dataImporterPriceItemDate"));
         ImportField percentWholesaleMarkItemField = new ImportField(getLCP("percentWholesaleMarkItem"));
         ImportField isFixPriceItemField = new ImportField(getLCP("isFixPriceItem"));
         ImportField isLoafCutItemField = new ImportField(getLCP("isLoafCutItem"));
@@ -233,7 +233,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
         ImportField valueRetailVATItemField = new ImportField(getLCP("valueRate"));
         ImportField quantityPackItemField = new ImportField(getLCP("quantityPackItem"));
         ImportField wareIDField = new ImportField(getLCP("extSID"));
-        ImportField priceWareField = new ImportField(getLCP("warePriceDate"));
+        ImportField priceWareField = new ImportField(getLCP("dataWarePriceDate"));
         ImportField ndsWareField = new ImportField(getLCP("valueRate"));
         ImportField rateWasteIDField = new ImportField(getLCP("extSID"));
 
@@ -250,22 +250,22 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                 getLCP("extSIDToObject").getMapping(brandIDField));
 
         ImportKey<?> countryKey = new ImportKey((ConcreteCustomClass) getClass("country"),
-                getLCP("countryNameCountry").getMapping(nameCountryField));
+                getLCP("countryName").getMapping(nameCountryField));
 
         ImportKey<?> barcodeKey = new ImportKey((ConcreteCustomClass) getClass("barcode"),
                 getLCP("barcodeIdDate").getMapping(barcodeField, dateField));
 
         ImportKey<?> supplierVATKey = new ImportKey((ConcreteCustomClass) getClass("range"),
-                getLCP("valueCurrentRangeValue").getMapping(dataSuppliersRangeItemField));
+                getLCP("valueCurrentVATDefaultValue").getMapping(dataSuppliersRangeItemField));
 
         ImportKey<?> retailVATKey = new ImportKey((ConcreteCustomClass) getClass("range"),
-                getLCP("valueCurrentRangeValue").getMapping(valueRetailVATItemField));
+                getLCP("valueCurrentVATDefaultValue").getMapping(valueRetailVATItemField));
 
         ImportKey<?> wareKey = new ImportKey((ConcreteCustomClass) getClass("ware"),
                 getLCP("extSIDToObject").getMapping(wareIDField));
 
         ImportKey<?> rangeKey = new ImportKey((ConcreteCustomClass) getClass("range"),
-                getLCP("valueCurrentRangeValue").getMapping(ndsWareField));
+                getLCP("valueCurrentVATDefaultValue").getMapping(ndsWareField));
 
         ImportKey<?> rateWasteKey = new ImportKey((ConcreteCustomClass) getClass("rateWaste"),
                 getLCP("extSIDToObject").getMapping(rateWasteIDField));
@@ -299,15 +299,15 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
         props.add(new ImportProperty(itemIDField, getLCP("skuBarcode").getMapping(barcodeKey),
                 LM.object(getClass("item")).getMapping(itemKey)));
 
-        props.add(new ImportProperty(importerPriceField, getLCP("importerPriceItemDate").getMapping(itemKey, dateField)));
+        props.add(new ImportProperty(importerPriceField, getLCP("dataImporterPriceItemDate").getMapping(itemKey, dateField)));
         props.add(new ImportProperty(percentWholesaleMarkItemField, getLCP("percentWholesaleMarkItem").getMapping(itemKey)));
         props.add(new ImportProperty(isFixPriceItemField, getLCP("isFixPriceItem").getMapping(itemKey)));
         props.add(new ImportProperty(isLoafCutItemField, getLCP("isLoafCutItem").getMapping(itemKey)));
         props.add(new ImportProperty(isWeightItemField, getLCP("isWeightItem").getMapping(itemKey)));
         props.add(new ImportProperty(compositionField, getLCP("compositionScalesItem").getMapping(itemKey)));
-        props.add(new ImportProperty(dataSuppliersRangeItemField, getLCP("supplierVATItemDate").getMapping(itemKey, dateField, supplierVATKey),
+        props.add(new ImportProperty(dataSuppliersRangeItemField, getLCP("dataSupplierVATItemDate").getMapping(itemKey, dateField, supplierVATKey),
                 LM.object(getClass("range")).getMapping(supplierVATKey)));
-        props.add(new ImportProperty(valueRetailVATItemField, getLCP("retailVATItemDate").getMapping(itemKey, dateField, retailVATKey),
+        props.add(new ImportProperty(valueRetailVATItemField, getLCP("dataRetailVATItemDate").getMapping(itemKey, dateField, retailVATKey),
                 LM.object(getClass("range")).getMapping(retailVATKey)));
         props.add(new ImportProperty(quantityPackItemField, getLCP("quantityPackItem").getMapping(itemKey)));
 
@@ -315,8 +315,8 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                 LM.object(getClass("ware")).getMapping(wareKey)));
 
 //        props.add(new ImportProperty(wareIDField, getLCP("extSID").getMapping(wareKey))); // нельзя включать, потому то будут проблемы, если ссылается на товар, который не lgrmsec
-        props.add(new ImportProperty(priceWareField, getLCP("warePriceDate").getMapping(wareKey, dateField)));
-        props.add(new ImportProperty(ndsWareField, getLCP("rangeWareDate").getMapping(wareKey, dateField, rangeKey),
+        props.add(new ImportProperty(priceWareField, getLCP("dataWarePriceDate").getMapping(wareKey, dateField)));
+        props.add(new ImportProperty(ndsWareField, getLCP("dataRangeWareDate").getMapping(wareKey, dateField, rangeKey),
                 LM.object(getClass("range")).getMapping(rangeKey)));
 
         props.add(new ImportProperty(rateWasteIDField, getLCP("rateWasteItem").getMapping(itemKey),
@@ -425,10 +425,10 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                         getLCP("extSIDToObject").getMapping(itemIDField));
 
                 ImportKey<?> supplierVATKey = new ImportKey((ConcreteCustomClass) getClass("range"),
-                        getLCP("valueCurrentRangeValue").getMapping(dataSuppliersRangeField));
+                        getLCP("valueCurrentVATDefaultValue").getMapping(dataSuppliersRangeField));
 
                 ImportKey<?> retailVATKey = new ImportKey((ConcreteCustomClass) getClass("range"),
-                        getLCP("valueCurrentRangeValue").getMapping(valueRetailVATField));
+                        getLCP("valueCurrentVATDefaultValue").getMapping(valueRetailVATField));
 
 
                 List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
@@ -552,7 +552,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             ImportField legalAddressField = new ImportField(getLCP("name"));
             ImportField unpField = new ImportField(getLCP("UNPLegalEntity"));
             ImportField okpoField = new ImportField(getLCP("OKPOLegalEntity"));
-            ImportField phoneField = new ImportField(getLCP("phoneLegalEntityDate"));
+            ImportField phoneField = new ImportField(getLCP("dataPhoneLegalEntityDate"));
             ImportField emailField = new ImportField(getLCP("name"));
             ImportField nameOwnershipField = new ImportField(getLCP("name"));
             ImportField shortNameOwnershipField = new ImportField(getLCP("shortNameOwnership"));
@@ -580,10 +580,10 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             props.add(new ImportProperty(companyIDField, getLCP("extSID").getMapping(companyKey)));
             props.add(new ImportProperty(nameLegalEntityField, getLCP("name").getMapping(companyKey)));
             props.add(new ImportProperty(nameLegalEntityField, getLCP("fullNameLegalEntity").getMapping(companyKey)));
-            props.add(new ImportProperty(legalAddressField, getLCP("addressLegalEntityDate").getMapping(companyKey, defaultDate)));
+            props.add(new ImportProperty(legalAddressField, getLCP("dataAddressLegalEntityDate").getMapping(companyKey, defaultDate)));
             props.add(new ImportProperty(unpField, getLCP("UNPLegalEntity").getMapping(companyKey)));
             props.add(new ImportProperty(okpoField, getLCP("OKPOLegalEntity").getMapping(companyKey)));
-            props.add(new ImportProperty(phoneField, getLCP("phoneLegalEntityDate").getMapping(companyKey, defaultDate)));
+            props.add(new ImportProperty(phoneField, getLCP("dataPhoneLegalEntityDate").getMapping(companyKey, defaultDate)));
             props.add(new ImportProperty(emailField, getLCP("emailLegalEntity").getMapping(companyKey)));
 
             props.add(new ImportProperty(nameOwnershipField, getLCP("name").getMapping(ownershipKey)));
@@ -627,7 +627,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             ImportField legalAddressField = new ImportField(getLCP("name"));
             ImportField unpField = new ImportField(getLCP("UNPLegalEntity"));
             ImportField okpoField = new ImportField(getLCP("OKPOLegalEntity"));
-            ImportField phoneField = new ImportField(getLCP("phoneLegalEntityDate"));
+            ImportField phoneField = new ImportField(getLCP("dataPhoneLegalEntityDate"));
             ImportField emailField = new ImportField(getLCP("name"));
             ImportField nameOwnershipField = new ImportField(getLCP("name"));
             ImportField shortNameOwnershipField = new ImportField(getLCP("shortNameOwnership"));
@@ -653,10 +653,10 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             props.add(new ImportProperty(supplierIDField, getLCP("extSID").getMapping(supplierKey)));
             props.add(new ImportProperty(nameLegalEntityField, getLCP("name").getMapping(supplierKey)));
             props.add(new ImportProperty(nameLegalEntityField, getLCP("fullNameLegalEntity").getMapping(supplierKey)));
-            props.add(new ImportProperty(legalAddressField, getLCP("addressLegalEntityDate").getMapping(supplierKey, defaultDate)));
+            props.add(new ImportProperty(legalAddressField, getLCP("dataAddressLegalEntityDate").getMapping(supplierKey, defaultDate)));
             props.add(new ImportProperty(unpField, getLCP("UNPLegalEntity").getMapping(supplierKey)));
             props.add(new ImportProperty(okpoField, getLCP("OKPOLegalEntity").getMapping(supplierKey)));
-            props.add(new ImportProperty(phoneField, getLCP("phoneLegalEntityDate").getMapping(supplierKey, defaultDate)));
+            props.add(new ImportProperty(phoneField, getLCP("dataPhoneLegalEntityDate").getMapping(supplierKey, defaultDate)));
             props.add(new ImportProperty(emailField, getLCP("emailLegalEntity").getMapping(supplierKey)));
 
             props.add(new ImportProperty(nameOwnershipField, getLCP("name").getMapping(ownershipKey)));
@@ -699,7 +699,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             ImportField legalAddressField = new ImportField(getLCP("name"));
             ImportField unpField = new ImportField(getLCP("UNPLegalEntity"));
             ImportField okpoField = new ImportField(getLCP("OKPOLegalEntity"));
-            ImportField phoneField = new ImportField(getLCP("phoneLegalEntityDate"));
+            ImportField phoneField = new ImportField(getLCP("dataPhoneLegalEntityDate"));
             ImportField emailField = new ImportField(getLCP("name"));
             ImportField nameOwnershipField = new ImportField(getLCP("name"));
             ImportField shortNameOwnershipField = new ImportField(getLCP("shortNameOwnership"));
@@ -725,10 +725,10 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             props.add(new ImportProperty(customerIDField, getLCP("extSID").getMapping(customerKey)));
             props.add(new ImportProperty(nameLegalEntityField, getLCP("name").getMapping(customerKey)));
             props.add(new ImportProperty(nameLegalEntityField, getLCP("fullNameLegalEntity").getMapping(customerKey)));
-            props.add(new ImportProperty(legalAddressField, getLCP("addressLegalEntityDate").getMapping(customerKey, defaultDate)));
+            props.add(new ImportProperty(legalAddressField, getLCP("dataAddressLegalEntityDate").getMapping(customerKey, defaultDate)));
             props.add(new ImportProperty(unpField, getLCP("UNPLegalEntity").getMapping(customerKey)));
             props.add(new ImportProperty(okpoField, getLCP("OKPOLegalEntity").getMapping(customerKey)));
-            props.add(new ImportProperty(phoneField, getLCP("phoneLegalEntityDate").getMapping(customerKey, defaultDate)));
+            props.add(new ImportProperty(phoneField, getLCP("dataPhoneLegalEntityDate").getMapping(customerKey, defaultDate)));
             props.add(new ImportProperty(emailField, getLCP("emailLegalEntity").getMapping(customerKey)));
 
             props.add(new ImportProperty(nameOwnershipField, getLCP("name").getMapping(ownershipKey)));
@@ -877,7 +877,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
 
             props.add(new ImportProperty(bankIDField, getLCP("extSID").getMapping(bankKey)));
             props.add(new ImportProperty(nameBankField, getLCP("name").getMapping(bankKey)));
-            props.add(new ImportProperty(addressBankField, getLCP("addressBankDate").getMapping(bankKey, defaultDate)));
+            props.add(new ImportProperty(addressBankField, getLCP("dataAddressBankDate").getMapping(bankKey, defaultDate)));
             props.add(new ImportProperty(departmentBankField, getLCP("departmentBank").getMapping(bankKey)));
             props.add(new ImportProperty(mfoBankField, getLCP("MFOBank").getMapping(bankKey)));
             props.add(new ImportProperty(cbuBankField, getLCP("CBUBank").getMapping(bankKey)));

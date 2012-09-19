@@ -1,6 +1,6 @@
 MODULE Numerator;
 
-REQUIRE System;
+REQUIRE System, DefaultData;
 
 // ------------------------------------------- Нумераторы ----------------------------------------------- //
 
@@ -30,8 +30,6 @@ incrementValueNumerator 'Увеличить значение' = ACTION (numerato
     };
 };
 
-generateDefaultNumerators 'Сгенерировать нумераторы по умолчанию' = ABSTRACT ACTION();
-
 FORM numerator 'Нумератор'
     OBJECTS n = numerator FIXED PANEL
     PROPERTIES(n) name, seriesNumerator, minValueNumerator, maxValueNumerator, stringLengthNumerator, curValueNumerator, curStringValueNumerator
@@ -51,16 +49,12 @@ FORM defaultNumerators 'Нумераторы'
     OBJECTS n = numerator
     PROPERTIES(n) READONLY name, seriesNumerator, minValueNumerator, maxValueNumerator, stringLengthNumerator, curValueNumerator, curStringValueNumerator
     PROPERTIES(n)          ADDFORM, EDITFORM, delete
-
-    PROPERTIES() generateDefaultNumerators
 ;
 
 DESIGN defaultNumerators FROM DEFAULT {
     main {
         NEW defaultContainer AFTER n.box {
             title = 'Нумераторы по умолчанию';
-
-            ADD PROPERTY(generateDefaultNumerators);
         }
     }
 }
@@ -112,6 +106,11 @@ WHEN CHANGED(numeratorObject(numeratedObject)) AND
      NOT CHANGED(seriesObject(numeratedObject))
      DO EXEC setValueNumeratedObject(numeratedObject) ;
 
+// --------------------------------------------- Стандартные значения ---------------------------- //
+
+loadDefaultNumerators 'Загрузить стандартные нумераторы' = ABSTRACT ACTION();
+@implementLoadDefaultData(loadDefaultNumerators);
+
 // --------------------------------------------- Макрос по объявлению нумерируемого объекта ---------------------------- //
 
 META defineNumeratedObject (object, caption, series)
@@ -131,7 +130,7 @@ META defineNumeratedObject (object, caption, series)
         }
     }
 
-    generateDefaultNumerators() += ACTION () {
+    loadDefaultNumerators() += ACTION () {
         ADDOBJ numerator;
         FOR n == addedObject() DO {
             SET name(n) <- caption;

@@ -113,12 +113,6 @@ NAVIGATOR {
         ADD taxes;
     }
 
-    purchase {
-        ADD contractNavigator {
-            ADD commercialInvoices;
-        }
-    }
-
     customs {
         customClassifier {
             ADD customStores;
@@ -237,6 +231,10 @@ NAVIGATOR {
     }
 
     ADD machineryNavigator AFTER wholesaleTrade TO leftToolbar;
+
+    ADD contractNavigator AFTER machineryNavigator TO leftToolbar {
+        ADD commercialInvoices;
+    }
 
     NEW hr 'Кадры' AFTER machineryNavigator TO leftToolbar {
         ADD employees;

@@ -479,8 +479,8 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
             ImportField discountSumReturnReceiptField = new ImportField(LM.findLCPByCompoundName("discountSumReturnReceipt"));
 
             ImportField sidTypePaymentField = new ImportField(LM.findLCPByCompoundName("sidPaymentType"));
-            ImportField sumPaymentField = new ImportField(LM.findLCPByCompoundName("sumPayment"));
-            ImportField numberPaymentField = new ImportField(LM.findLCPByCompoundName("numberPayment"));
+            ImportField sumPaymentField = new ImportField(LM.findLCPByCompoundName("POS.sumPayment"));
+            ImportField numberPaymentField = new ImportField(LM.findLCPByCompoundName("POS.numberPayment"));
 
             ImportField seriesNumberDiscountCardField = new ImportField(LM.findLCPByCompoundName("seriesNumberObject"));
 
@@ -591,9 +591,9 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
             new IntegrationService(session, new ImportTable(returnImportFields, dataReturn), Arrays.asList(zReportKey, cashRegisterKey, receiptKey, receiptReturnDetailKey, itemKey, discountCardKey),
                     returnProperties).synchronize(true);
 
-            ImportKey<?> paymentKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("payment"), LM.findLCPByCompoundName("zReportReceiptPaymentToPayment").getMapping(zReportNumberField, numberReceiptField, numberPaymentField, cashRegisterField));
+            ImportKey<?> paymentKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("POS.payment"), LM.findLCPByCompoundName("zReportReceiptPaymentToPayment").getMapping(zReportNumberField, numberReceiptField, numberPaymentField, cashRegisterField));
             ImportKey<?> paymentTypeKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("paymentType"), LM.findLCPByCompoundName("sidToTypePayment").getMapping(sidTypePaymentField));
-            paymentProperties.add(new ImportProperty(sumPaymentField, LM.findLCPByCompoundName("sumPayment").getMapping(paymentKey)));
+            paymentProperties.add(new ImportProperty(sumPaymentField, LM.findLCPByCompoundName("POS.sumPayment").getMapping(paymentKey)));
             paymentProperties.add(new ImportProperty(numberPaymentField, LM.findLCPByCompoundName("numberPayment").getMapping(paymentKey)));
             paymentProperties.add(new ImportProperty(sidTypePaymentField, LM.findLCPByCompoundName("paymentTypePayment").getMapping(paymentKey),
                     LM.baseLM.object(LM.findClassByCompoundName("paymentType")).getMapping(paymentTypeKey)));
