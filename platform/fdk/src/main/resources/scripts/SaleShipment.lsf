@@ -85,7 +85,7 @@ userShipmentUserShipmentDetail = DATA userShipment (userShipmentDetail) IN idGro
 shipmentShipmentDetail(detail) += userShipmentUserShipmentDetail(detail);
 //--  Взаимосвязь накладной и поставки
 invoiceShipment = ABSTRACT invoice (shipment);
-descriptionInvoiceShipment 'Накладная' (shipment) = descriptionInvoice(invoiceShipment(shipment)) IN invoiceGroup;
+//descriptionInvoiceShipment 'Накладная' (shipment) = descriptionInvoice(invoiceShipment(shipment)) IN invoiceGroup;
 
 invoiceUserShipment = DATA invoice (userShipment);
 invoiceShipment(shipment) += invoiceUserShipment(shipment);
@@ -251,9 +251,9 @@ numberSupplierVATShipmentDetail 'НДС поставщика, номер' (shipm
 valueSupplierVATShipmentDetail 'НДС поставщика,%' (shipmentDetail) = valueRateRangeDate
     (supplierVATShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail)) IN priceDetailGroup;
 
-@defineDocumentDetailInvoicePrice (userInvoice, stock);
-supplierVATShipmentDetail(shipmentDetail) += supplierVATUserShipmentDetail(shipmentDetail);
-supplierVATShipmentDetail(shipmentDetail) += supplierVATInvoiceShipmentDetail(shipmentDetail);
+//@defineDocumentDetailInvoicePrice (userInvoice, stock);
+//supplierVATShipmentDetail(shipmentDetail) += supplierVATUserShipmentDetail(shipmentDetail);
+//supplierVATShipmentDetail(shipmentDetail) += supplierVATInvoiceShipmentDetail(shipmentDetail);
 
 //--
 @defineDocumentDetailSum(shipment);
@@ -287,7 +287,7 @@ FORM invoiceDialogForm 'Накладная'
 
     OBJECTS u = userShipment FIXED PANEL
     OBJECTS i = invoice
-    PROPERTIES (o) READONLY isPostedInvoice FORCE GRID, objectClassName, numberInvoice, seriesInvoice, dateInvoice, timeInvoice,
+    PROPERTIES (u) READONLY isPostedInvoice FORCE GRID, objectClassName, numberInvoice, seriesInvoice, dateInvoice, timeInvoice,
                    nameStockInvoice, nameCustomerInvoice, sumInvoiceDetailInvoice, countInvoiceDetailInvoice, quantityInvoiceDetailInvoice, noteInvoice
 
     OBJECTS d=userInvoiceDetail
