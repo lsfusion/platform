@@ -1,20 +1,24 @@
 MODULE RomanCashOperation;
 
-REQUIRE System, CashOperation;
+REQUIRE System, CashOperation, RomanPOS;
 
 NAMESPACE CashOperation;
 
-CLASS accountCollection 'Изъятие (упр.)' : outcomeCashOrder, historyObject, numeratedObject, cashOperation;
+CLASS accountCollection 'Изъятие (упр.)' : outcomeCashOrder, historyObject, numeratedObject;
 TABLE accountCollection (accountCollection);
 
 @defineNumeratedObject(accountCollection, 'Нумератор для изъятий', 'ИЗ');
 
 @defineDocumentHeaderTime(accountCollection);
-@defineDocumentHeaderDepartmentStore(accountCollection);
 
-cashRegisterAccountCollection (accountCollection) = DATA cashRegister (accountCollection);
+zReportAccountCollection 'Z-отчет (ИД)' (accountCollection) = DATA zReport (accountCollection);
+
+cashRegisterAccountCollection (accountCollection) = cashRegisterZReport(zReportAccountCollection(accountCollection));
 numberCashRegisterAccountCollection 'Касса инкассации' (accountCollection) =
     numberCashRegister(cashRegisterAccountCollection(accountCollection)) IN documentPrmGroup;
+
+departmentStoreAccountCollection 'Отдел (ИД)' (accountCollection) = departmentStoreZReport(zReportAccountCollection(accountCollection));
+nameDepartmentStoreAccountCollection 'Отдел' (accountCollection) = name(departmentStoreAccountCollection (accountCollection));
 
 sumCashAccountCollection 'Сумма изъятия' = DATA NUMERIC[16,2] (accountCollection) IN documentSumGroup;
 
@@ -31,5 +35,19 @@ departmentStoreCashDocument(accountCollection) += departmentStoreAccountCollecti
 cashRegisterCashDocument(accountCollection) += cashRegisterAccountCollection(accountCollection);
 sumCashOutcomeCashOrder(accountCollection) += sumCashAccountCollection(accountCollection);
 basisCashDocument(accountCollection) += basisAccountCollection(accountCollection);
-sumCashOperation(accountCollection) += -sumCashAccountCollection(accountCollection);
-cashRegisterCashOperation(accountCollection) += cashRegisterAccountCollection(accountCollection);
+
+createAccountCollectionZReport 'Изъять сумму' (zReport) = ACTION (zReport) {
+    EXEC selectDialogSkipAReceiptDetailZReport (zReport);
+    ADDOBJ accountCollection;
+    FOR a == addedObject() DO {
+        SET zReportAccountCollection (a) <- zReport;
+        SET dateCashDocument (a) <- currentDate();
+        SET timeCashDocument (a) <- currentTime();
+        SET sumCashAccountCollection (a) <- selectSkipAReceiptDetailZReportSumSelected ();
+    }
+} TOOLBAR;
+
+EXTEND FORM operationCashRegister PROPERTIES (i) createAccountCollectionZReport;
+
+
+
