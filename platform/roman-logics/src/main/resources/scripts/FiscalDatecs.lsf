@@ -12,9 +12,6 @@ fiscalAdvancePaper() += fiscalDatecsAdvancePaper() IF sidModelCurrentCashRegiste
 fiscalDatecsCutReceipt 'Отрезать чек' = ACTION CUSTOM 'roman.actions.fiscaldatecs.FiscalDatecsCutReceiptActionProperty';
 fiscalCutReceipt() += fiscalDatecsCutReceipt() IF sidModelCurrentCashRegister() == 'DateCS';
 
-fiscalDatecsPrintZReport 'Напечатать отчёт' = ACTION CUSTOM 'roman.actions.fiscaldatecs.FiscalDatecsPrintZReportActionProperty';
-fiscalPrintZReport() += fiscalDatecsPrintZReport() IF sidModelCurrentCashRegister() == 'DateCS';
-
 fiscalDatecsXReport 'X-отчёт' = ACTION CUSTOM 'roman.actions.fiscaldatecs.FiscalDatecsXReportActionProperty';
 fiscalXReport() += fiscalDatecsXReport() IF sidModelCurrentCashRegister() == 'DateCS';
 

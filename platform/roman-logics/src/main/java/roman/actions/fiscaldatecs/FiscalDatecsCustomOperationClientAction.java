@@ -31,6 +31,7 @@ public class FiscalDatecsCustomOperationClientAction implements ClientAction {
                 case 2:
                     Double VATSumSaleReceipt = FiscalDatecs.getCurrentSums(2);
                     Double VATSumReturnReceipt = FiscalDatecs.getCurrentSums(3);
+                    FiscalDatecs.printTaxReport();
                     FiscalDatecs.zReport();
                     FiscalDatecs.closePort();
                     FiscalDatecs.closeWriter();
@@ -40,9 +41,6 @@ public class FiscalDatecsCustomOperationClientAction implements ClientAction {
                     break;
                 case 4:
                     FiscalDatecs.cutReceipt();
-                    break;
-                case 5:
-                    FiscalDatecs.printTaxReport();
                     break;
                 default:
                     break;

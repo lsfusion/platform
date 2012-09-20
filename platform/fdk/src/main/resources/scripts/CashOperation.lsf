@@ -73,7 +73,6 @@ sumCashCashRegisterDateTime 'Сумма наличных в кассе на да
 
 fiscalUpdateData 'Загрузить информацию' = ABSTRACT ACTION();
 fiscalXReport 'X-отчёт' = ABSTRACT ACTION();
-fiscalPrintZReport 'Напечатать отчёт' = ABSTRACT ACTION();
 fiscalAdvancePaper 'Прогон ленты' = ABSTRACT ACTION();
 fiscalCutReceipt 'Отрезать чек' = ABSTRACT ACTION();
 

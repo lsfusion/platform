@@ -33,12 +33,9 @@ public class FiscalDatecsZReportActionProperty extends ScriptingActionProperty {
                         LM.findLCPByCompoundName("VATSumSaleReceipt").change(((Object[]) VATSumReceipt)[0], session, (DataObject) receiptObject);
                         LM.findLCPByCompoundName("VATSumReturnReceipt").change(((Object[]) VATSumReceipt)[1], session, (DataObject) receiptObject);
                     }
-                    LM.findLAPByCompoundName("fiscalPrintZReport").execute(session);
                     LM.findLAPByCompoundName("closeCurrentZReport").execute(session);
+                    context.apply(LM.getBL());
                 }
-                LM.findLAPByCompoundName("fiscalPrintZReport").execute(session);
-                LM.findLAPByCompoundName("closeCurrentZReport").execute(session);
-                context.apply(LM.getBL());
             }
         } catch (SQLException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
