@@ -30,10 +30,11 @@ public class DieselImportInvoiceActionProperty extends ImportBoxInvoiceActionPro
 
 
     protected SingleSheetImporter createImporter(ImportInputTable inputTable) {
-        return new DieselInvoiceImporter(inputTable, new Object[]{invoiceSIDField, dateInvoiceField, numberSkuField, seasonField, null,
+        return new DieselInvoiceImporter(inputTable, new Object[]{invoiceSIDField, dateInvoiceField, numberSkuField, new ImportField[]{themeCodeField, themeNameField}, null,
                 null, null, null, null, null, null, null, null, null, null, null, countryField, originalNameField, null, null,
                 colorCodeField, null, genderField, null, null, new ImportField[]{customCodeField, customCode6Field},
-                compositionField, null, new ImportField[]{unitPriceField, RRPField}, null, null, new ImportField[]{boxNumberField, sidField}, null, colorNameField, unitNetWeightField, themeCodeField, themeNameField, null, sizeField, unitQuantityField});
+                compositionField, null, new ImportField[]{unitPriceField, RRPField}, null, null, new ImportField[]{boxNumberField, sidField}, null, colorNameField, unitNetWeightField, null, sizeField, unitQuantityField,
+                subCategoryCodeField, subCategoryNameField, collectionCodeField, collectionNameField});
     }
 
 }

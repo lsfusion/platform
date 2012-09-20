@@ -13,7 +13,7 @@ import java.text.ParseException;
  */
 
 public class TallyWeijlInvoiceImporter extends SingleSheetImporter {
-    private static final int INVOICENUMBER = C, BOXNUMBER = K, LAST_COLUMN = AF;
+    private static final int INVOICENUMBER = C, COLLECTIONNUMBER = E, BOXNUMBER = K, LAST_COLUMN = AF;
 
     public TallyWeijlInvoiceImporter(ImportInputTable inputTable, Object... fields) {
         super(inputTable, fields);
@@ -28,8 +28,14 @@ public class TallyWeijlInvoiceImporter extends SingleSheetImporter {
     protected String getCellString(ImportField field, int row, int column) throws ParseException {
         if (column <= LAST_COLUMN) {
             String cellValue = super.getCellString(field, row, column);
-            if (column == BOXNUMBER)
-                if ("#".equals(cellValue)) return super.getCellString(field, row, INVOICENUMBER);
+            if (column == BOXNUMBER) {
+                if ("#".equals(cellValue))
+                    return super.getCellString(field, row, INVOICENUMBER);
+            } else if (column == COLLECTIONNUMBER) {
+                int index = cellValue.indexOf('/');
+                if (index != -1 && cellValue.length() >= (index + 5))
+                    return cellValue.substring(index + 1, index + 5);
+            }
             return cellValue;
         } else if (column == LAST_COLUMN + 1) {
             return String.valueOf(currentRow + 1);

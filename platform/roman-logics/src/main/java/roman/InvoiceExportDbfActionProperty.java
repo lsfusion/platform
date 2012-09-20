@@ -129,7 +129,7 @@ public class InvoiceExportDbfActionProperty extends CustomActionProperty {
             map.put(brand, formInstance.getPropertyDraw(BL.RomanLM.nameBrandSupplierArticleSku));
             map.put(gender, formInstance.getPropertyDraw(BL.RomanLM.sidGenderArticleSku));
             map.put(theme, formInstance.getPropertyDraw(BL.RomanLM.nameThemeSupplierArticleSku));
-            map.put(season, formInstance.getPropertyDraw(BL.RomanLM.sidSeasonSupplierArticleSku));
+            //map.put(season, formInstance.getPropertyDraw(BL.RomanLM.sidSeasonSupplierArticleSku));
             map.put(categ, formInstance.getPropertyDraw(BL.RomanLM.nameCategoryArticleSku));
             map.put(quant, formInstance.getPropertyDraw(BL.RomanLM.quantityImporterStockSku));
             map.put(price, formInstance.getPropertyDraw(BL.RomanLM.priceInvoiceImporterFreightSku));

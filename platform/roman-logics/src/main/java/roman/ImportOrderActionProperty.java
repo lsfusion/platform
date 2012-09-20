@@ -22,7 +22,8 @@ public abstract class ImportOrderActionProperty extends BaseImportActionProperty
 
     protected ImportField orderSIDField, dateOrderField, barCodeField, dateFromOrderField, dateToOrderField,
             dateFromOrderArticleField, dateToOrderArticleField, colorCodeField, sidField, colorNameField, sizeField,
-            themeCodeField, themeNameField, seasonField, genderField, compositionField, countryField, customCodeField,
+            themeCodeField, themeNameField, collectionCodeField, collectionNameField, subCategoryCodeField, subCategoryNameField,
+            genderField, compositionField, countryField, customCodeField,
             customCode6Field, unitPriceField, unitQuantityField, unitNetWeightField, originalNameField, numberSkuField, RRPField;
 
     public ImportOrderActionProperty(RomanLogicsModule RomanLM, ValueClass supplierClass) {
@@ -53,7 +54,10 @@ public abstract class ImportOrderActionProperty extends BaseImportActionProperty
         sizeField = new ImportField(LM.sidSizeSupplier);
         themeCodeField = new ImportField(LM.sidThemeSupplier);
         themeNameField = new ImportField(LM.nameThemeSupplierArticle);
-        seasonField = new ImportField(LM.nameSeasonSupplierArticle);
+        collectionCodeField = new ImportField(LM.sidCollectionSupplier);
+        collectionNameField = new ImportField(LM.nameCollectionSupplierArticle);
+        subCategoryCodeField = new ImportField(LM.sidSubCategorySupplier);
+        subCategoryNameField = new ImportField(LM.nameSubCategorySupplierArticle);
         genderField = new ImportField(LM.sidGenderSupplier);
         compositionField = new ImportField(LM.mainCompositionOriginArticle);
         countryField = new ImportField(LM.baseLM.name);
@@ -139,10 +143,17 @@ public abstract class ImportOrderActionProperty extends BaseImportActionProperty
         properties.add(new ImportProperty(themeNameField, LM.baseLM.name.getMapping(themeKey)));
         properties.add(new ImportProperty(themeCodeField, LM.themeSupplierArticle.getMapping(articleKey), LM.object(LM.themeSupplier).getMapping(themeKey)));
 
-        ImportKey<?> seasonKey = new ImportKey(LM.seasonSupplier, LM.seasonSIDSupplier.getMapping(seasonField, supplier));
-        properties.add(new ImportProperty(seasonField, LM.sidSeasonSupplier.getMapping(seasonKey)));
-        properties.add(new ImportProperty(supplier, LM.supplierSeasonSupplier.getMapping(seasonKey)));
-        properties.add(new ImportProperty(seasonField, LM.seasonSupplierArticle.getMapping(articleKey), LM.object(LM.seasonSupplier).getMapping(seasonKey)));
+        ImportKey<?> collectionKey = new ImportKey(LM.collectionSupplier, LM.collectionSIDSupplier.getMapping(collectionCodeField, supplier));
+        properties.add(new ImportProperty(collectionCodeField, LM.sidCollectionSupplier.getMapping(collectionKey)));
+        properties.add(new ImportProperty(supplier, LM.supplierCollectionSupplier.getMapping(collectionKey)));
+        properties.add(new ImportProperty(collectionNameField, LM.baseLM.name.getMapping(collectionKey)));
+        properties.add(new ImportProperty(collectionCodeField, LM.collectionSupplierArticle.getMapping(articleKey), LM.object(LM.collectionSupplier).getMapping(themeKey)));
+
+        ImportKey<?> subCategoryKey = new ImportKey(LM.subCategorySupplier, LM.subCategorySIDSupplier.getMapping(subCategoryCodeField, supplier));
+        properties.add(new ImportProperty(subCategoryCodeField, LM.sidSubCategorySupplier.getMapping(subCategoryKey)));
+        properties.add(new ImportProperty(supplier, LM.supplierCategorySupplier.getMapping(subCategoryKey)));
+        properties.add(new ImportProperty(subCategoryNameField, LM.baseLM.name.getMapping(subCategoryKey)));
+        properties.add(new ImportProperty(subCategoryCodeField, LM.subCategorySupplierArticle.getMapping(articleKey), LM.object(LM.subCategorySupplier).getMapping(subCategoryKey)));
 
         ImportKey<?> genderKey = new ImportKey(LM.genderSupplier, LM.genderSIDSupplier.getMapping(genderField, supplier));
         properties.add(new ImportProperty(genderField, LM.sidGenderSupplier.getMapping(genderKey)));
@@ -230,7 +241,7 @@ public abstract class ImportOrderActionProperty extends BaseImportActionProperty
                         editingRow.set(dateToIndex, dateToMax.get(orderSID));
                 }
             }
-            ImportKey<?>[] keysArray = new ImportKey<?>[]{orderKey, articleKey, itemKey, colorKey, sizeKey, countryKey, customCategoryKey, customCategory6Key, themeKey, seasonKey, genderKey};
+            ImportKey<?>[] keysArray = new ImportKey<?>[]{orderKey, articleKey, itemKey, colorKey, sizeKey, countryKey, customCategoryKey, customCategory6Key, themeKey, collectionKey, subCategoryKey, genderKey};
 
             new IntegrationService(context.getSession(), table, Arrays.asList(keysArray), properties).synchronize(true, false);
         }

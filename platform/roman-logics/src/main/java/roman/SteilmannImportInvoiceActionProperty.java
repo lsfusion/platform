@@ -36,7 +36,9 @@ public class SteilmannImportInvoiceActionProperty extends ImportBoxInvoiceAction
         return new SteilmannInvoiceImporter(inputTable, new Object[] {null, null, null, invoiceSIDField, dateInvoiceField,
                 null, null, null, null, sidField, originalNameField, colorCodeField, compositionField, null, null,
                 new ImportField[] {customCodeField, customCode6Field}, null, countryField, sizeField, unitQuantityField,
-                null, null, null, null, new ImportField[] {RRPField, unitPriceField}, null, barCodeField, unitNetWeightField, boxNumberField, null, null, null, numberSkuField, colorNameField, seasonField, themeCodeField, themeNameField, genderField, sidDestinationDataSupplierBoxField});
+                null, null, null, null, new ImportField[] {RRPField, unitPriceField}, null, barCodeField, unitNetWeightField,
+                boxNumberField, null, null, null, numberSkuField, colorNameField, themeCodeField, themeNameField, genderField,
+                sidDestinationDataSupplierBoxField, subCategoryCodeField, subCategoryNameField, collectionCodeField, collectionNameField});
 
 
 

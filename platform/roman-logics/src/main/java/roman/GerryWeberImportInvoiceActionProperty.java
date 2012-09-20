@@ -39,6 +39,7 @@ public class GerryWeberImportInvoiceActionProperty extends ImportBoxInvoiceActio
     protected SingleSheetImporter createImporter(ImportInputTable inputTable) {
         return new GerryWeberInvoiceImporter(inputTable, barCodeField, sidField, invoiceSIDField, boxNumberField,  colorCodeField,
                 colorNameField, sizeField, originalNameField, countryField, unitNetWeightField, compositionField, unitPriceField, dateInvoiceField,
-                RRPField, unitQuantityField, numberSkuField, customCodeField, customCode6Field, null, seasonField, genderField, themeCodeField, themeNameField);
+                RRPField, unitQuantityField, numberSkuField, customCodeField, customCode6Field, null, genderField, themeCodeField, themeNameField,
+                subCategoryCodeField, subCategoryNameField, collectionCodeField, collectionNameField);
     }
 }

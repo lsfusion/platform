@@ -28,14 +28,14 @@ public class DieselImportOrderActionProperty extends ImportOrderActionProperty {
 
     @Override
     protected SingleSheetImporter createImporter(ImportInputTable inputTable) {
-        return new DieselOrderImporter(inputTable, new Object[]{seasonField, genderField, orderSIDField, dateOrderField,
+        return new DieselOrderImporter(inputTable, new Object[]{new ImportField[]{themeCodeField, themeNameField}, genderField, orderSIDField, dateOrderField,
                 new ImportField[]{customCodeField, customCode6Field}, compositionField, sidField, originalNameField,
                 colorCodeField, countryField, unitPriceField, new ImportField[]{dateFromOrderField, dateFromOrderArticleField},
                 new ImportField[]{dateToOrderField, dateToOrderArticleField},
                 sizeField, unitQuantityField,
 
                 numberSkuField, colorNameField, RRPField,
-                unitNetWeightField, themeCodeField, themeNameField
+                unitNetWeightField, subCategoryCodeField, subCategoryNameField, collectionCodeField, collectionNameField
         });
     }
 }

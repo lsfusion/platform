@@ -26,8 +26,10 @@ import java.util.*;
 public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionProperty {
 
     protected ImportField invoiceSIDField, dateInvoiceField, boxNumberField, barCodeField, itemSupplierArticleColorSizeField,
-            colorCodeField, sidField, colorNameField, sizeField, themeCodeField, themeNameField, seasonField, genderField, compositionField, countryField, customCodeField,
-            customCode6Field, unitPriceField, unitQuantityField, unitNetWeightField, originalNameField, numberSkuField, RRPField, sidDestinationDataSupplierBoxField;
+            colorCodeField, sidField, colorNameField, sizeField, themeCodeField, themeNameField,
+            collectionCodeField, collectionNameField, subCategoryCodeField, subCategoryNameField,
+            genderField, compositionField, countryField, customCodeField, customCode6Field, unitPriceField,
+            unitQuantityField, unitNetWeightField, originalNameField, numberSkuField, RRPField, sidDestinationDataSupplierBoxField;
 
     public ImportBoxInvoiceActionProperty(RomanLogicsModule RomanLM, ValueClass supplierClass) {
         super(RomanLM, "Импортировать инвойс", supplierClass);
@@ -55,7 +57,10 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
         sizeField = new ImportField(LM.sidSizeSupplier);
         themeCodeField = new ImportField(LM.sidThemeSupplier);
         themeNameField = new ImportField(LM.nameThemeSupplierArticle);
-        seasonField = new ImportField(LM.nameSeasonSupplierArticle);
+        collectionCodeField = new ImportField(LM.sidCollectionSupplier);
+        collectionNameField = new ImportField(LM.nameCollectionSupplierArticle);
+        subCategoryCodeField = new ImportField(LM.sidSubCategorySupplier);
+        subCategoryNameField = new ImportField(LM.nameSubCategorySupplierArticle);
         genderField = new ImportField(LM.sidGenderSupplier);
         compositionField = new ImportField(LM.mainCompositionOriginArticle);
         countryField = new ImportField(LM.baseLM.name);
@@ -147,8 +152,6 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
 
         ImportKey<?> customCategory6Key = new ImportKey(LM.customCategory6, LM.sidToCustomCategory6.getMapping(customCode6Field));
         properties.add(new ImportProperty(customCode6Field, LM.sidCustomCategory6.getMapping(customCategory6Key)));
-        //properties.add(new ImportProperty(customCode6Field, LM.customCategory6Article.getMapping(articleKey),
-        //        LM.object(LM.customCategory6).getMapping(customCategory6Key)));
 
         ImportKey<?> colorKey = new ImportKey(LM.colorSupplier, LM.colorSIDSupplier.getMapping(colorCodeField, supplier));
         properties.add(new ImportProperty(colorCodeField, LM.sidColorSupplier.getMapping(colorKey)));
@@ -167,10 +170,17 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
         properties.add(new ImportProperty(themeNameField, LM.baseLM.name.getMapping(themeKey)));
         properties.add(new ImportProperty(themeCodeField, LM.themeSupplierArticle.getMapping(articleKey), LM.object(LM.themeSupplier).getMapping(themeKey)));
 
-        ImportKey<?> seasonKey = new ImportKey(LM.seasonSupplier, LM.seasonSIDSupplier.getMapping(seasonField, supplier));
-        properties.add(new ImportProperty(seasonField, LM.sidSeasonSupplier.getMapping(seasonKey)));
-        properties.add(new ImportProperty(supplier, LM.supplierSeasonSupplier.getMapping(seasonKey)));
-        properties.add(new ImportProperty(seasonField, LM.seasonSupplierArticle.getMapping(articleKey), LM.object(LM.seasonSupplier).getMapping(seasonKey)));
+        ImportKey<?> collectionKey = new ImportKey(LM.collectionSupplier, LM.collectionSIDSupplier.getMapping(collectionCodeField, supplier));
+        properties.add(new ImportProperty(collectionCodeField, LM.sidCollectionSupplier.getMapping(collectionKey)));
+        properties.add(new ImportProperty(supplier, LM.supplierCollectionSupplier.getMapping(collectionKey)));
+        properties.add(new ImportProperty(collectionNameField, LM.baseLM.name.getMapping(collectionKey)));
+        properties.add(new ImportProperty(collectionCodeField, LM.collectionSupplierArticle.getMapping(articleKey), LM.object(LM.collectionSupplier).getMapping(collectionKey)));
+
+        ImportKey<?> subCategoryKey = new ImportKey(LM.subCategorySupplier, LM.subCategorySIDSupplier.getMapping(subCategoryCodeField, supplier));
+        properties.add(new ImportProperty(subCategoryCodeField, LM.sidSubCategorySupplier.getMapping(subCategoryKey)));
+        properties.add(new ImportProperty(supplier, LM.supplierCategorySupplier.getMapping(subCategoryKey)));
+        properties.add(new ImportProperty(subCategoryNameField, LM.baseLM.name.getMapping(subCategoryKey)));
+        properties.add(new ImportProperty(subCategoryCodeField, LM.subCategorySupplierArticle.getMapping(articleKey), LM.object(LM.subCategorySupplier).getMapping(subCategoryKey)));
 
         ImportKey<?> genderKey = new ImportKey(LM.genderSupplier, LM.genderSIDSupplier.getMapping(genderField, supplier));
         properties.add(new ImportProperty(genderField, LM.sidGenderSupplier.getMapping(genderKey)));
@@ -220,9 +230,9 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
 
             ImportKey<?>[] keysArray;
             if (!isSimpleInvoice()) {
-                keysArray = new ImportKey<?>[]{invoiceKey, boxKey, destinationKey, articleKey, itemKey, colorKey, sizeKey, countryKey, customCategoryKey, customCategory6Key, themeKey, seasonKey, genderKey};
+                keysArray = new ImportKey<?>[]{invoiceKey, boxKey, destinationKey, articleKey, itemKey, colorKey, sizeKey, countryKey, customCategoryKey, customCategory6Key, themeKey, collectionKey, subCategoryKey, genderKey};
             } else {
-                keysArray = new ImportKey<?>[]{invoiceKey, articleKey, itemKey, colorKey, sizeKey, countryKey, customCategoryKey, customCategory6Key, themeKey, seasonKey, genderKey};
+                keysArray = new ImportKey<?>[]{invoiceKey, articleKey, itemKey, colorKey, sizeKey, countryKey, customCategoryKey, customCategory6Key, themeKey, collectionKey, subCategoryKey, genderKey};
             }
             new IntegrationService(context.getSession(), table, Arrays.asList(keysArray), properties).synchronize(false, false);
         }

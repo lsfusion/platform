@@ -31,8 +31,9 @@ public class MexxImportInvoiceActionProperty extends ImportBoxInvoiceActionPrope
         return new MexxInvoiceImporter(inputTable, new Object[] {null, invoiceSIDField, null, null, boxNumberField, null, null,
                 sidField, colorCodeField, null, sizeField, barCodeField, unitQuantityField, null, null,
                 null, sidDestinationDataSupplierBoxField, null, unitNetWeightField, null, numberSkuField, new ImportField[] {
-                compositionField, countryField, customCodeField, customCode6Field, seasonField,
-                originalNameField, colorNameField, unitPriceField, RRPField}, dateInvoiceField,  themeCodeField, themeNameField, genderField});
+                compositionField, countryField, customCodeField, customCode6Field,
+                originalNameField, colorNameField, unitPriceField, RRPField}, dateInvoiceField,  themeCodeField, themeNameField, genderField,
+                subCategoryCodeField, subCategoryNameField, collectionCodeField, collectionNameField});
     }
 
 }

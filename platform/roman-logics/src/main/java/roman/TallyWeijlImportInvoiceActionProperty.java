@@ -19,10 +19,11 @@ public class TallyWeijlImportInvoiceActionProperty extends ImportBoxInvoiceActio
     @Override
     protected SingleSheetImporter createImporter(ImportInputTable inputTable) {
         return new TallyWeijlInvoiceImporter(inputTable, new Object[] {null, null, invoiceSIDField,
-                dateInvoiceField, null, null, null, null,
+                dateInvoiceField, new ImportField[]{collectionCodeField, collectionNameField},
+                new ImportField[]{subCategoryCodeField, subCategoryNameField}, null, null,
                 compositionField, countryField, boxNumberField, new ImportField[] {customCodeField, customCode6Field},
                 barCodeField, null, sizeField, null, sidField, new ImportField[] {originalNameField, colorNameField},
-                null, colorCodeField, seasonField, null, RRPField, null, unitNetWeightField, null, null, null, null, null,
-                unitPriceField, unitQuantityField, numberSkuField, themeCodeField, themeNameField, genderField, sidDestinationDataSupplierBoxField});
+                null, colorCodeField, new ImportField[]{themeCodeField, themeNameField}, null, RRPField, null, unitNetWeightField, null, null, null, null, null,
+                unitPriceField, unitQuantityField, numberSkuField, genderField, sidDestinationDataSupplierBoxField});
     }
 }

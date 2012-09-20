@@ -30,7 +30,8 @@ public class MexxImportArticleInfoInvoiceActionProperty extends BaseImportAction
         ImportField countryField = new ImportField(LM.baseLM.name);
         ImportField compositionField = new ImportField(LM.mainCompositionOriginArticle);
         ImportField originalNameField = new ImportField(LM.originalNameArticle);
-        ImportField seasonField = new ImportField(LM.sidSeasonSupplier);
+        //ImportField seasonField = new ImportField(LM.sidSeasonSupplier);
+        ImportField themeField = new ImportField(LM.sidThemeSupplier);
 
         DataObject supplier = context.getKeyValue(supplierInterface);
 
@@ -44,10 +45,16 @@ public class MexxImportArticleInfoInvoiceActionProperty extends BaseImportAction
         properties.add(new ImportProperty(supplier, LM.supplierCountrySupplier.getMapping(countryKey)));
         properties.add(new ImportProperty(countryField, LM.countrySupplierOfOriginArticle.getMapping(articleKey), LM.object(LM.countrySupplier).getMapping(countryKey)));
 
-        ImportKey<?> seasonKey = new ImportKey(LM.seasonSupplier, LM.seasonSIDSupplier.getMapping(seasonField, supplier));
-        properties.add(new ImportProperty(seasonField, LM.sidSeasonSupplier.getMapping(seasonKey)));
-        properties.add(new ImportProperty(supplier, LM.supplierSeasonSupplier.getMapping(seasonKey)));
-        properties.add(new ImportProperty(seasonField, LM.seasonSupplierArticle.getMapping(articleKey), LM.object(LM.seasonSupplier).getMapping(seasonKey)));
+        //ImportKey<?> seasonKey = new ImportKey(LM.seasonSupplier, LM.seasonSIDSupplier.getMapping(seasonField, supplier));
+        //properties.add(new ImportProperty(seasonField, LM.sidSeasonSupplier.getMapping(seasonKey)));
+        //properties.add(new ImportProperty(supplier, LM.supplierSeasonSupplier.getMapping(seasonKey)));
+        //properties.add(new ImportProperty(seasonField, LM.seasonSupplierArticle.getMapping(articleKey), LM.object(LM.seasonSupplier).getMapping(seasonKey)));
+
+        ImportKey<?> themeKey = new ImportKey(LM.themeSupplier, LM.themeSIDSupplier.getMapping(themeField, supplier));
+        properties.add(new ImportProperty(themeField, LM.sidThemeSupplier.getMapping(themeKey)));
+        properties.add(new ImportProperty(supplier, LM.supplierThemeSupplier.getMapping(themeKey)));
+        properties.add(new ImportProperty(themeField, LM.themeSupplierArticle.getMapping(articleKey), LM.object(LM.themeSupplier).getMapping(themeKey)));
+
 
         properties.add(new ImportProperty(compositionField, LM.mainCompositionOriginArticle.getMapping(articleKey)));
         properties.add(new ImportProperty(originalNameField, LM.originalNameArticle.getMapping(articleKey)));
@@ -57,10 +64,10 @@ public class MexxImportArticleInfoInvoiceActionProperty extends BaseImportAction
             // Заголовки тоже читаем, чтобы определить нужный ли файл импортируется
             ImportInputTable inputTable = new CSVInputTable(new InputStreamReader(inFile), 0, '|');
 
-            ImportTable table = new MexxArticleInfoInvoiceImporter(inputTable, null, sidField, originalNameField, seasonField,
+            ImportTable table = new MexxArticleInfoInvoiceImporter(inputTable, null, sidField, originalNameField, themeField,
                     10, countryField, compositionField).getTable();
 
-            ImportKey<?>[] keysArray = {articleKey, countryKey, seasonKey};
+            ImportKey<?>[] keysArray = {articleKey, countryKey, themeKey};
             new IntegrationService(context.getSession(), table, Arrays.asList(keysArray), properties).synchronize();
 
             context.delayUserInterfaction(new MessageClientAction("Данные были успешно приняты", "Импорт"));

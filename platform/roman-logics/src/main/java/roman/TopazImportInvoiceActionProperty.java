@@ -44,7 +44,8 @@ public class TopazImportInvoiceActionProperty extends ImportBoxInvoiceActionProp
                 barCodeField, sidField, invoiceSIDField, boxNumberField, colorCodeField, colorNameField,
                 sizeField, originalNameField, countryField, unitNetWeightField, compositionField,
                 unitPriceField, dateInvoiceField, RRPField, unitQuantityField, numberSkuField, customCodeField, customCode6Field,
-                genderField, seasonField, themeCodeField, themeNameField, sidDestinationDataSupplierBoxField
+                genderField, themeCodeField, themeNameField, sidDestinationDataSupplierBoxField,
+                subCategoryCodeField, subCategoryNameField, collectionCodeField, collectionNameField
         );
 
     }
