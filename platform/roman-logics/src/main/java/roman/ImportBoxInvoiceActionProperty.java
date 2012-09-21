@@ -206,7 +206,8 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
             ImportTable table;
             try {
                 ByteArrayInputStream inFile = new ByteArrayInputStream(file);
-                table = createImporter(createTable(inFile)).getTable();
+                ImportInputTable t = createTable(inFile);
+                table = createImporter(t).getTable();
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

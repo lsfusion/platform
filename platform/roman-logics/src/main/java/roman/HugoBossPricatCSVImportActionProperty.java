@@ -38,6 +38,8 @@ public class HugoBossPricatCSVImportActionProperty extends CustomReadValueAction
         ImportField priceField = new ImportField(LM.pricePricat);
         ImportField compositionField = new ImportField(LM.compositionPricat);
         ImportField customCategoryOriginalField = new ImportField(LM.customCategoryOriginalPricat);
+        ImportField subCategoryCodeField = new ImportField(LM.subCategoryCodePricat);
+        ImportField subCategoryNameField = new ImportField(LM.subCategoryNamePricat);
         ImportField colorField = new ImportField(LM.colorNamePricat);
         ImportField netWeightField = new ImportField(LM.netWeightPricat);
         ImportField genderField = new ImportField(LM.genderPricat);
@@ -53,6 +55,8 @@ public class HugoBossPricatCSVImportActionProperty extends CustomReadValueAction
         properties.add(new ImportProperty(priceField, LM.pricePricat.getMapping(pricatKey)));
         properties.add(new ImportProperty(compositionField, LM.compositionPricat.getMapping(pricatKey)));
         properties.add(new ImportProperty(customCategoryOriginalField, LM.customCategoryOriginalPricat.getMapping(pricatKey)));
+        properties.add(new ImportProperty(subCategoryCodeField, LM.subCategoryCodePricat.getMapping(pricatKey)));
+        properties.add(new ImportProperty(subCategoryNameField, LM.subCategoryNamePricat.getMapping(pricatKey)));
         properties.add(new ImportProperty(colorField, LM.colorNamePricat.getMapping(pricatKey)));
         properties.add(new ImportProperty(netWeightField, LM.netWeightPricat.getMapping(pricatKey)));
         properties.add(new ImportProperty(genderField, LM.genderPricat.getMapping(pricatKey)));
@@ -64,7 +68,8 @@ public class HugoBossPricatCSVImportActionProperty extends CustomReadValueAction
             try {
                 CSVInputTable inputTable = new CSVInputTable(new InputStreamReader(new ByteArrayInputStream(file)), 2, ';');
                 ImportTable table = new HugoBossPricatCSVImporter(inputTable, new Object[] {null, articleField, null, colorCodeField,
-                        5, barcodeField, sizeField, priceField, 15, compositionField, 21, customCategoryOriginalField, 28, colorField,
+                        5, barcodeField, sizeField, priceField, 15, compositionField, 21, customCategoryOriginalField,
+                        24, subCategoryCodeField, 24, subCategoryNameField, 28, colorField,
                         32, netWeightField, 34, genderField, 49, seasonField}).getTable();
                 new IntegrationService(context.getSession(), table, Arrays.asList(keysArray), properties).synchronize();
             } catch (Exception e) {

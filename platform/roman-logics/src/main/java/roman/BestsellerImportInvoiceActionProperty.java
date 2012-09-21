@@ -20,7 +20,7 @@ public class BestsellerImportInvoiceActionProperty extends ImportBoxInvoiceActio
     protected ImportInputTable createTable(ByteArrayInputStream inFile) throws BiffException, IOException {
         BestsellerInvoiceEDIInputTable invoiceTable = new BestsellerInvoiceEDIInputTable(inFile);
         return new InvoicePricatMergeInputTable(BL, invoiceTable, ResultField.BARCODE, ResultField.QUANTITY, ResultField.NUMBERSKU,
-                ResultField.INVOICE, ResultField.BOXNUMBER, ResultField.COUNTRY, ResultField.ARTICLE, /*ResultField.COLOR, ResultField.COLORCODE,*/
+                ResultField.INVOICE, ResultField.BOXNUMBER, ResultField.COUNTRY, ResultField.ARTICLE,
                 ResultField.SIZE, ResultField.ORIGINALNAME, ResultField.NETWEIGHT, ResultField.PRICE, ResultField.DATE);
     }
 
@@ -29,6 +29,6 @@ public class BestsellerImportInvoiceActionProperty extends ImportBoxInvoiceActio
         return new EDIInvoiceImporter(inputTable, barCodeField, sidField, invoiceSIDField, boxNumberField, colorCodeField,
                 colorNameField, sizeField, originalNameField, countryField, unitNetWeightField, compositionField, unitPriceField, dateInvoiceField,
                 RRPField, unitQuantityField, numberSkuField, customCodeField, customCode6Field, genderField, themeCodeField, themeNameField, sidDestinationDataSupplierBoxField,
-                subCategoryCodeField, subCategoryNameField, collectionCodeField, collectionNameField);
+                new ImportField[]{subCategoryCodeField, subCategoryNameField, collectionCodeField, collectionNameField});
     }
 }

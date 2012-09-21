@@ -14,7 +14,7 @@ import java.text.ParseException;
  */
 
 public class JennyferInvoiceImporter extends SingleSheetImporter {
-    private static final int LAST_COLUMN = R;
+    private static final int LAST_COLUMN = Q;
 
     public JennyferInvoiceImporter(ImportInputTable inputTable, Object... fields) {
         super(inputTable, fields);

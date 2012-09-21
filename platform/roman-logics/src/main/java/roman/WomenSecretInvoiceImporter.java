@@ -44,20 +44,26 @@ public class WomenSecretInvoiceImporter extends SingleSheetImporter {
         switch (column) {
             case E:
                 switch (part) {
-                    case 0: return value.substring(0, Math.min(10, value.length())); // customs code
-                    case 1: return value.substring(0, Math.min(6, value.length())); // customs code 6
+                    case 0:
+                        return value.substring(0, Math.min(10, value.length())); // customs code
+                    case 1:
+                        return value.substring(0, Math.min(6, value.length())); // customs code 6
                 }
 
-            case G: return value.replace(',', '.');
+            case G:
+                return value.replace(',', '.');
 
             case J:
-                value = value.replace(',', '.');
-                return String.valueOf(Double.parseDouble(value) / 1000);
+                if (!"".equals(value)) {
+                    value = value.replace(',', '.');
+                    return String.valueOf(Double.parseDouble(value) / 1000);
+                }
 
 //            case WomenSecretInputTable.lastInvoiceColumn + 3 + D:  // D column of PL table
 //                return value.substring(value.lastIndexOf(' ') + 1);
 
-            default: return value;
+            default:
+                return value;
         }
     }
 

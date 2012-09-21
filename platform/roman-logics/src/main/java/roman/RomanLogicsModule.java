@@ -1363,6 +1363,8 @@ public class RomanLogicsModule extends LogicsModule {
     LCP themeNamePricat;
     LCP colorCodePricat;
     LCP colorNamePricat;
+    LCP subCategoryCodePricat;
+    LCP subCategoryNamePricat;
     LCP sizePricat;
     LCP seasonPricat;
     LCP genderPricat;
@@ -2649,6 +2651,8 @@ public class RomanLogicsModule extends LogicsModule {
         colorNamePricat = addDProp(baseGroup, "colorNamePricat", "Цвет", StringClass.get(50), pricat);
         themeCodePricat = addDProp(baseGroup, "themeCodePricat", "Код темы", StringClass.get(20), pricat);
         themeNamePricat = addDProp(baseGroup, "themeNamePricat", "Тема", StringClass.get(50), pricat);
+        subCategoryCodePricat = addDProp(baseGroup, "subCategoryCodePricat", "Код подгруппы", StringClass.get(20), pricat);
+        subCategoryNamePricat = addDProp(baseGroup, "subCategoryNamePricat", "Подгруппа", StringClass.get(50), pricat);
         sizePricat = addDProp(baseGroup, "sizePricat", "Размер", StringClass.get(5), pricat);
         seasonPricat = addDProp(baseGroup, "seasonPricat", "Сезон", StringClass.get(10), pricat);
         genderPricat = addDProp(baseGroup, "genderPricat", "Пол", StringClass.get(10), pricat);
