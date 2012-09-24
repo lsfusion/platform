@@ -22,6 +22,7 @@ import java.sql.SQLException;
 import java.util.*;
 
 import static platform.base.BaseUtils.*;
+import static platform.base.BaseUtils.filterKeys;
 
 public class SessionDataTable extends SessionData<SessionDataTable> {
     private SessionTable table;
@@ -93,21 +94,42 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
         return keys.equals(((SessionDataTable) obj).keys) && table.equals(((SessionDataTable) obj).table) && keyValues.equals(((SessionDataTable) obj).keyValues);
     }
 
-    public SessionDataTable insertRecord(SQLSession session, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields, Insert type, Object owner) throws SQLException {
-        
-        Map<KeyField, DataObject> fixedKeyValues = BaseUtils.mergeEquals(keyFields, keyValues);
-        Map<PropertyField, ObjectValue> fixedPropValues = BaseUtils.mergeEquals(propFields, propertyValues);
+    public SessionDataTable modifyRecord(SQLSession session, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields, Modify type, Object owner) throws SQLException {
 
-        return new SessionDataTable(table.addFields(session, BaseUtils.filterNotList(keys, fixedKeyValues.keySet()), BaseUtils.filterNotKeys(keyValues, fixedKeyValues.keySet()), BaseUtils.filterNotKeys(propertyValues, fixedPropValues.keySet()), owner).
-              insertRecord(session, BaseUtils.filterNotKeys(keyFields, fixedKeyValues.keySet()), BaseUtils.filterNotKeys(propFields, fixedPropValues.keySet()), type, owner),
+        Map<KeyField, DataObject> fixedKeyValues;
+        Map<PropertyField, ObjectValue> fixedPropValues;
+        SessionTable fixedTable;
+
+        if(type == Modify.DELETE) {
+            if(!BaseUtils.filterKeys(keyFields, keyValues.keySet()).equals(keyValues)) //если константная часть ключа не равна, то нечего удалять
+                return this;
+            fixedKeyValues = keyValues;
+            fixedPropValues = propertyValues;
+            fixedTable = table;
+        } else {
+            fixedKeyValues = BaseUtils.mergeEquals(keyFields, keyValues);
+            fixedPropValues = BaseUtils.mergeEquals(propFields, propertyValues);
+            fixedTable = table.addFields(session, BaseUtils.filterNotList(keys, fixedKeyValues.keySet()), BaseUtils.filterNotKeys(keyValues, fixedKeyValues.keySet()), BaseUtils.filterNotKeys(propertyValues, fixedPropValues.keySet()), owner);
+        }
+        return new SessionDataTable(fixedTable.modifyRecord(session, BaseUtils.filterNotKeys(keyFields, fixedKeyValues.keySet()), BaseUtils.filterNotKeys(propFields, fixedPropValues.keySet()), type, owner),
                 keys, fixedKeyValues, fixedPropValues);
     }
 
     @Override
-    public SessionData addRows(SQLSession session, Query<KeyField, PropertyField> query, BaseClass baseClass, Insert type, QueryEnvironment env, Object owner) throws SQLException {
-        if(keyValues.isEmpty() && propertyValues.isEmpty() && (type==Insert.LEFT || type==Insert.ADD)) // если и так все различны, то не зачем проверять разновидности, добавлять поля и т.п.
-            return new SessionDataTable(table.addRows(session, query, type, env, owner), keys, keyValues, propertyValues);
-        return super.addRows(session, query, baseClass, type, env, owner);
+    public SessionData modifyRows(SQLSession session, Query<KeyField, PropertyField> query, BaseClass baseClass, Modify type, QueryEnvironment env, Object owner) throws SQLException {
+        if(keyValues.isEmpty() && propertyValues.isEmpty() && (type== Modify.LEFT || type== Modify.ADD || type==Modify.DELETE)) // если и так все различны, то не зачем проверять разновидности, добавлять поля и т.п.
+            return new SessionDataTable(table.modifyRows(session, query, type, env, owner), keys, keyValues, propertyValues);
+        return super.modifyRows(session, query, baseClass, type, env, owner);
+    }
+
+    @Override
+    public SessionData updateAdded(SQLSession session, BaseClass baseClass, PropertyField property, int count) throws SQLException {
+        if(propertyValues.containsKey(property))
+            return new SessionDataTable(table, keys, keyValues, SessionRows.updateAdded(propertyValues, property, count));
+        else {
+            table.updateAdded(session, baseClass, property, count);
+            return this;
+        }
     }
 
     // для оптимизации групповых добавлений (batch processing'а)
@@ -142,32 +164,6 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
 
     public boolean used(Query<?, ?> query) {
         return query.getInnerValues().contains(table);
-    }
-
-    public SessionData deleteRecords(SQLSession session, Map<KeyField, DataObject> deleteKeys) throws SQLException {
-        if(BaseUtils.filterKeys(deleteKeys, keyValues.keySet()).equals(keyValues)) //если константная часть ключа не равна, то нечего удалять
-            table.deleteRecords(session, filterKeys(deleteKeys, table.keys));
-        return this;
-    }
-
-    public SessionData deleteKey(SQLSession session, KeyField mapField, DataObject object) throws SQLException {
-        DataObject keyValue = keyValues.get(mapField);
-        if (keyValue!=null) {
-            if (keyValue.equals(object)) //удаляем всё
-                return new SessionRows(keys, getProperties());
-        } else
-            table.deleteKey(session, mapField, object);
-        return this;
-    }
-
-    public SessionData deleteProperty(SQLSession session, PropertyField property, DataObject object) throws SQLException {
-        ObjectValue propValue = propertyValues.get(property);
-        if (propValue!=null) {
-            if (propValue.equals(object)) //удаляем всё
-                return new SessionRows(keys, getProperties());
-        } else
-            table.deleteProperty(session, property, object);
-        return this;
     }
 
     @Override
@@ -208,5 +204,9 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
 
     public boolean isEmpty() {
         return false;
+    }
+
+    public int getCount() {
+        return table.count;
     }
 }

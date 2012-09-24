@@ -8,33 +8,15 @@ import platform.server.data.expr.Expr;
 import platform.server.data.query.Query;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.type.Type;
+import platform.server.data.where.Where;
 import platform.server.logics.property.*;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 public enum GroupType implements AggrType {
-    SUM, MAX, MIN, ANY, STRING_AGG, AGGAR_SETADD;
-
-    public String getString() {
-        switch (this) {
-            case MAX:
-                return "MAX";
-            case MIN:
-                return "MIN";
-            case ANY:
-                return "ANYVALUE";
-            case SUM:
-                return "SUM";
-            case STRING_AGG:
-                return "STRING_AGG";
-            case AGGAR_SETADD:
-                return "AGGAR_SETADD";
-        }
-        throw new RuntimeException("can not be");
-    }
+    SUM, MAX, MIN, ANY, STRING_AGG, AGGAR_SETADD, LAST;
 
     public <T extends PropertyInterface> GroupProperty<T> createProperty(String sID, String caption, Collection<T> innerInterfaces, CalcPropertyInterfaceImplement<T> property, Collection<? extends CalcPropertyInterfaceImplement<T>> interfaces) {
         switch (this) {
@@ -63,15 +45,44 @@ public enum GroupType implements AggrType {
     }
 
     public boolean isSelect() {
-        return this==MAX || this==MIN || this==ANY;
+        return this==MAX || this==MIN || this==ANY || this==LAST;
     }
 
     public boolean canBeNull() {
         return false;
     }
 
+    public boolean isSelectNotInWhere() { // в общем то оптимизационная вещь потом можно убрать
+//        assert isSelect();
+        return this == LAST;
+    }
+    public Where getWhere(List<Expr> exprs) {
+        if(this==LAST) {
+            assert exprs.size()==2;
+            return exprs.get(0).getWhere();
+        }
+        return Expr.getWhere(exprs);
+    }
+
+    public Expr getMainExpr(List<Expr> exprs) {
+        return getSingleExpr(exprs, null);
+    }
+
+    public Expr getSingleExpr(List<Expr> exprs, OrderedMap<Expr, Boolean> orders) {
+        if(this==LAST) {
+            assert exprs.size()==2;
+            return exprs.get(1);
+        }
+        return exprs.get(0);
+    }
+
     public boolean hasAdd() {
-        return this!=STRING_AGG && this!=AGGAR_SETADD;
+        return this!=STRING_AGG && this!=AGGAR_SETADD && this!=LAST;
+    }
+
+    // если не комутативен и не инвариантен к появляению в выборке null'а
+    public boolean nullsNotAllowed() {
+        return this == LAST;
     }
 
     public boolean splitExprCases() {
@@ -95,18 +106,37 @@ public enum GroupType implements AggrType {
     }
 
     public String getSource(List<String> exprs, OrderedMap<String, Boolean> orders, Set<String> ordersNotNull, Type type, SQLSyntax syntax) {
-        String result = getString() + "(" + BaseUtils.toString(exprs, ",") + BaseUtils.clause("ORDER BY", Query.stringOrder(orders, ordersNotNull, syntax)) + ")";
-        if(this==SUM)
-            result = "notZero(" + result + ")";
-        return result;
-    }
+        String orderClause = BaseUtils.clause("ORDER BY", Query.stringOrder(orders, ordersNotNull, syntax));
 
-    public Expr getSingleExpr(List<Expr> exprs, OrderedMap<Expr, Boolean> orders) {
-        return exprs.iterator().next();
+        switch (this) {
+            case MAX:
+                assert exprs.size()==1 && orders.size()==0;
+                return "MAX(" + exprs.get(0) + ")";
+            case MIN:
+                assert exprs.size()==1 && orders.size()==0;
+                return "MIN(" + exprs.get(0) + ")";
+            case ANY:
+                assert exprs.size()==1 && orders.size()==0;
+                return "ANYVALUE(" + exprs.get(0) + ")";
+            case SUM:
+                assert exprs.size()==1 && orders.size()==0;
+                return "notZero(SUM(" + exprs.get(0) + "))";
+            case STRING_AGG:
+                assert exprs.size()==2;
+                return "STRING_AGG(" + exprs.get(0) + "," + exprs.get(1) + orderClause + ")";
+            case AGGAR_SETADD:
+                assert exprs.size()==1;
+                return "AGGAR_SETADD(" + exprs.get(0) + orderClause + ")";
+            case LAST:
+                assert exprs.size()==2;
+                return "LAST(" + exprs.get(1) + orderClause + ")";
+            default:
+                throw new RuntimeException("can not be");
+        }
     }
 
     public int numExprs() {
-        if(this==STRING_AGG)
+        if(this==STRING_AGG || this==LAST)
             return 2;
         else
             return 1;

@@ -127,11 +127,11 @@ public abstract class QueryJoin<K extends Expr,I extends OuterContext<I>, T exte
 
     // множественное наследование
     public static InnerExpr getInnerExpr(InnerJoin<?, ?> join, WhereJoin whereJoin) {
-        NotNullExprSet set = whereJoin.getExprFollows(true);
+        QuickSet<InnerExpr> set = whereJoin.getExprFollows(true).getInnerExprs();
         for(int i=0;i<set.size;i++) {
-            NotNullExpr expr = set.get(i);
-            if(expr instanceof InnerExpr && BaseUtils.hashEquals(join,((InnerExpr)expr).getInnerJoin()))
-                return (InnerExpr)expr;
+            InnerExpr expr = set.get(i);
+            if(BaseUtils.hashEquals(join,expr.getInnerJoin()))
+                return expr;
         }
         return null;
     }

@@ -67,17 +67,13 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
             return "GROUP(" + exprs + "," + orders + "," + type + ")";
         }
 
-        public Query and(Where where) {
+        public Query and(Where where) { // вот тут надо быть аккуратнее, предполагается что первое выражение попадет в getWhere, см. AggrType.getWhere
             List<Expr> andExprs = new ArrayList<Expr>();
             Iterator<Expr> it = exprs.iterator();
             andExprs.add(it.next().and(where));
             while(it.hasNext())
                 andExprs.add(it.next());
             return new Query(andExprs, orders, ordersNotNull, type);
-        }
-
-        public Collection<Expr> getAggrExprs() {
-            return exprs;
         }
 
         public String getSource(Map<Expr, String> fromPropertySelect, SQLSyntax syntax, Type resultType) {
@@ -219,7 +215,9 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
                 statKeys = statKeys.or(join.stats);
         } else
             statKeys = query.getWhere().getStatExprs(new QuickSet<Expr>(group.keySet()));
-        return new GroupJoin(getInner().getInnerKeyTypes(), getInner().getInnerValues(), query.type.hasAdd() && query.type.splitExprCases()?BaseUtils.single(query.exprs).getBaseWhere():Where.TRUE,
+        return new GroupJoin(getInner().getInnerKeyTypes(), getInner().getInnerValues(),
+                query.type.nullsNotAllowed() ? query.getWhere() :
+                (query.type.hasAdd() && query.type.splitExprCases()?BaseUtils.single(query.exprs).getBaseWhere():Where.TRUE),
                 statKeys, group);
     }
 

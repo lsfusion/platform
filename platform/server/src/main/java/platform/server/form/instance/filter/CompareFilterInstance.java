@@ -105,7 +105,7 @@ public class CompareFilterInstance<P extends PropertyInterface> extends Property
 
         Map<P, KeyExpr> mapKeys = property.property.getMapKeys();
         Map<PropertyObjectInterfaceInstance, KeyExpr> mapObjects = BaseUtils.crossJoin(property.mapping, mapKeys);
-        env.change((CalcProperty<P>) property.property, new PropertyChange<P>(mapKeys,
+        env.change(property.property, new PropertyChange<P>(mapKeys,
                 value.getExpr(BaseUtils.filterKeys(mapObjects, object.groupTo.objects), env.getModifier()),
                 getChangedWhere(object, mapObjects, addObject)));
     }

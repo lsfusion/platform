@@ -216,6 +216,9 @@ public class LCP<T extends PropertyInterface> extends LP<T, CalcProperty<T>> {
     public <U> CalcPropertyImplement<T, U> getMapping(U... mapping) {
         return new CalcPropertyImplement<T, U>(property, getMap(mapping));
     }
+    public <U extends PropertyInterface> CalcPropertyMapImplement<T, U> getImplement(U... mapping) {
+        return new CalcPropertyMapImplement<T, U>(property, getMap(mapping));
+    }
 
     public PropertyChange<T> getChange(Expr expr, Where where, KeyExpr... keys) {
         Map<T, KeyExpr> mapKeys = new HashMap<T, KeyExpr>();
@@ -240,5 +243,8 @@ public class LCP<T extends PropertyInterface> extends LP<T, CalcProperty<T>> {
     public <A extends PropertyInterface> void setEditAction(String editActionSID, LAP<A> editAction) {
         property.setEditAction(editActionSID, new ActionPropertyMapImplement<A, T>(editAction.property, editAction.getMap(listInterfaces)));
     }
-
+    
+    public LCP<T> getOld() {
+        return new LCP<T>(property.getOld(), listInterfaces);
+    }
 }

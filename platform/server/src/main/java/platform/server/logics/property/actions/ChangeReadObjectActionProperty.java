@@ -10,13 +10,18 @@ import platform.server.logics.property.CalcProperty;
 
 import java.sql.SQLException;
 
-public class ChangeReadObjectActionProperty extends CustomActionProperty {
+public class ChangeReadObjectActionProperty extends SystemActionProperty {
 
     private final CalcProperty filterProperty;
 
     public ChangeReadObjectActionProperty(CalcProperty filterProperty, ValueClass baseClass) {
         super("CO_"+filterProperty, baseClass);
         this.filterProperty = filterProperty;
+    }
+
+    @Override
+    protected boolean isVolatile() {
+        return true;
     }
 
     @Override

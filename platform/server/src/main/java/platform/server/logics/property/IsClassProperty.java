@@ -1,6 +1,7 @@
 package platform.server.logics.property;
 
 import platform.base.BaseUtils;
+import platform.base.Pair;
 import platform.base.QuickSet;
 import platform.server.caches.ManualLazy;
 import platform.server.classes.*;
@@ -8,12 +9,13 @@ import platform.server.data.expr.Expr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
-import platform.server.logics.DataObject;
 import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.session.*;
 
-import java.sql.SQLException;
 import java.util.*;
+
+import static platform.base.BaseUtils.immutableCast;
+import static platform.base.BaseUtils.single;
 
 public class IsClassProperty extends AggregateProperty<ClassPropertyInterface> {
 
@@ -30,6 +32,7 @@ public class IsClassProperty extends AggregateProperty<ClassPropertyInterface> {
         return result;
     }
 
+    // по аналогии с SessionDataProperty
     public final static Map<Map<ValueClass, Integer>, CalcPropertyImplement<?, ValueClass>> cacheClasses = new HashMap<Map<ValueClass, Integer>, CalcPropertyImplement<?, ValueClass>>();
     @ManualLazy
     public static <T, P extends PropertyInterface> CalcPropertyImplement<?, T> getProperty(Map<T, ValueClass> classes) {
@@ -49,7 +52,7 @@ public class IsClassProperty extends AggregateProperty<ClassPropertyInterface> {
 
     public static <T> CalcPropertyImplement<?, T> getProperty(ValueClass valueClass, T map) {
         IsClassProperty classProperty = valueClass.getProperty();
-        return new CalcPropertyImplement<ClassPropertyInterface, T>(classProperty, Collections.singletonMap(BaseUtils.single(classProperty.interfaces), map));
+        return new CalcPropertyImplement<ClassPropertyInterface, T>(classProperty, Collections.singletonMap(single(classProperty.interfaces), map));
     }
 
     public static CalcPropertyMapImplement<?, ClassPropertyInterface> getProperty(Collection<ClassPropertyInterface> interfaces) {
@@ -95,61 +98,40 @@ public class IsClassProperty extends AggregateProperty<ClassPropertyInterface> {
         return QuickSet.EMPTY();
     }
 
+    @Override
+    protected Collection<Pair<Property<?>, LinkType>> calculateLinks() {
+        assert actionChangeProps.isEmpty();
+        assert getDepends().isEmpty();
+
+        Collection<Pair<Property<?>, LinkType>> result = new ArrayList<Pair<Property<?>, LinkType>>();
+        result.add(new Pair<Property<?>, LinkType>(getChanged(IncrementType.DROP), LinkType.DEPEND));
+        result.add(new Pair<Property<?>, LinkType>(getChanged(IncrementType.SET), LinkType.DEPEND));
+
+        return result;
+    }
+
     protected boolean useSimpleIncrement() {
         return true;
     }
 
     public ValueClass getInterfaceClass() {
-        return BaseUtils.single(interfaces).interfaceClass;
+        return single(interfaces).interfaceClass;
     }
     public Expr calculateExpr(Map<ClassPropertyInterface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
         return ValueExpr.get(BaseUtils.singleValue(joinImplement).isClass(getInterfaceClass().getUpSet()));
     }
 
     @Override
-    protected void proceedNotNull(PropertySet<ClassPropertyInterface> set, ExecutionEnvironment env, boolean notNull) throws SQLException {
+    public ActionPropertyMapImplement<?, ClassPropertyInterface> getSetNotNullAction(boolean notNull) {
         ValueClass valueClass = getInterfaceClass();
-        if(valueClass instanceof ConcreteObjectClass) {
-            for (Iterator<Map<ClassPropertyInterface, DataObject>> iterator = set.executeClasses(env).iterator(); iterator.hasNext(); )
-                env.changeClass(null, BaseUtils.singleValue(iterator.next()), notNull ? (ConcreteObjectClass) valueClass : env.getSession().baseClass.unknown);
+        if(valueClass instanceof ConcreteCustomClass) {
+            ActionProperty<PropertyInterface> changeClassAction = (notNull ? (ConcreteCustomClass) valueClass : ((ConcreteCustomClass) valueClass).getBaseClass().unknown).getChangeClassAction();
+            return new ActionPropertyMapImplement<PropertyInterface, ClassPropertyInterface>(changeClassAction, Collections.singletonMap(single(changeClassAction.interfaces), single(interfaces)));
         }
-    }
-
-    public static Set<CalcProperty> getParentProps(CustomClass customClass) {
-        Set<CalcProperty> result = new HashSet<CalcProperty>();
-        Collection<CustomClass> parents = new HashSet<CustomClass>();
-        customClass.fillParents(parents);
-        for(CustomClass parent : parents)
-            result.add(parent.getProperty());
-        return result;
-    }
-
-    public static Set<CalcProperty> getParentProps(ValueClass valueClass) {
-        if(valueClass instanceof CustomClass)
-            return getParentProps((CustomClass)valueClass);
-        else
-            return Collections.<CalcProperty>singleton(valueClass.getProperty());
-    }
-
-    @Override
-    public Set<CalcProperty> getSetChangeProps(boolean notNull, boolean add) {
-        // предыдущий класс может быть любым кроме child's
-        CustomClass customClass = ((CustomClass) getInterfaceClass());
-        Set<CalcProperty> childProps = customClass.getChildProps();
-        if(add) {
-            assert notNull;
-            return getParentProps(customClass);
-        }
-
-        if(notNull)
-            return BaseUtils.removeSet(customClass.getBaseClass().getChildProps(), childProps);
-        else
-            return BaseUtils.mergeSet(getParentProps(customClass), childProps);
+        return null;
     }
 
     public Where getRemoveWhere(Expr joinExpr, PropertyChanges newChanges) {
-        WhereBuilder changedWhere = new WhereBuilder();
-        getIncrementExpr(Collections.singletonMap(BaseUtils.single(interfaces), joinExpr), changedWhere, false, newChanges, IncrementType.DROP);
-        return changedWhere.toWhere();
+        return getChanged(IncrementType.DROP).getExpr(Collections.singletonMap(single(interfaces), joinExpr), newChanges).getWhere();
     }
 }

@@ -77,12 +77,8 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K> {
         return table.join(BaseUtils.join(mapKeys, mapExprs)).getWhere();
     }
 
-    public void insertRecord(SQLSession session, Map<K, DataObject> keyObjects, Map<V, ObjectValue> propertyObjects, Insert type) throws SQLException {
-        table = table.insertRecord(session, BaseUtils.join(mapKeys, keyObjects), BaseUtils.join(mapProps, propertyObjects), type, this);
-    }
-
-    public void deleteRecords(SQLSession session, Map<K, DataObject> keyObjects) throws SQLException {
-        table = table.deleteRecords(session, BaseUtils.join(mapKeys, keyObjects));
+    public void modifyRecord(SQLSession session, Map<K, DataObject> keyObjects, Map<V, ObjectValue> propertyObjects, Modify type) throws SQLException {
+        table = table.modifyRecord(session, BaseUtils.join(mapKeys, keyObjects), BaseUtils.join(mapProps, propertyObjects), type, this);
     }
 
     public void writeKeys(SQLSession session,Collection<Map<K,DataObject>> writeRows) throws SQLException {
@@ -101,25 +97,29 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K> {
     }
 
     // добавляет ряды которых не было в таблице, или modify'ит
-    public void addRows(SQLSession session, Query<K, V> query, BaseClass baseClass, Insert type, QueryEnvironment env) throws SQLException {
-        table = table.addRows(session, new Query<KeyField, PropertyField>(query, mapKeys, mapProps), baseClass, type, env, this);
+    public void modifyRows(SQLSession session, Query<K, V> query, BaseClass baseClass, Modify type, QueryEnvironment env) throws SQLException {
+        table = table.modifyRows(session, new Query<KeyField, PropertyField>(query, mapKeys, type == Modify.DELETE ? new HashMap<PropertyField, V>() : mapProps), baseClass, type, env, this);
+    }
+    // оптимизационная штука
+    public void updateAdded(SQLSession session, BaseClass baseClass, V property, int count) throws SQLException {
+        table = table.updateAdded(session, baseClass, getField(property), count);
     }
 
     private PropertyField getField(V property) {
         return BaseUtils.reverse(mapProps).get(property);
     }
 
-    public void deleteKey(SQLSession session, K key, DataObject object) throws SQLException {
-        table = table.deleteKey(session, BaseUtils.reverse(mapKeys).get(key), object);
-    }
-
-    public void deleteProperty(SQLSession session, V property, DataObject object) throws SQLException {
+    /*    public void deleteProperty(SQLSession session, V property, DataObject object) throws SQLException {
         table = table.deleteProperty(session, getField(property), object);
-    }
+    }*/
 
     public void drop(SQLSession session) throws SQLException {
         table.drop(session, this);
         table = null;
+    }
+
+    public Collection<Map<V, Object>> read(DataSession session, Map<K, DataObject> mapValues) throws SQLException {
+        return read(mapValues, session.sql, session.env, new OrderedMap<V, Boolean>()).values();
     }
 
     public OrderedMap<Map<K, Object>, Map<V, Object>> read(DataSession session) throws SQLException {
@@ -131,8 +131,12 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K> {
     }
 
     public OrderedMap<Map<K, Object>, Map<V, Object>> read(SQLSession session, QueryEnvironment env, OrderedMap<V, Boolean> orders) throws SQLException {
-        Query<K, V> query = new Query<K,V>(mapKeys.values());
-        Join<V> tableJoin = join(query.mapKeys);
+        return read(new HashMap<K, DataObject>(), session, env, orders);
+    }
+
+    public OrderedMap<Map<K, Object>, Map<V, Object>> read(Map<K, DataObject> mapValues, SQLSession session, QueryEnvironment env, OrderedMap<V, Boolean> orders) throws SQLException {
+        Query<K, V> query = new Query<K,V>(mapKeys.values(), mapValues);
+        Join<V> tableJoin = join(query.getMapExprs());
         query.properties.putAll(tableJoin.getExprs());
         query.and(tableJoin.getWhere());
         return query.execute(session, orders, 0, env);
@@ -180,4 +184,7 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K> {
         return result;
     }
 
+    public int getCount() {
+        return table.getCount();
+    }
 }

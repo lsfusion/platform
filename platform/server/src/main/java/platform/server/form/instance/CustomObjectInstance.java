@@ -20,7 +20,7 @@ import java.util.Set;
 public class CustomObjectInstance extends ObjectInstance {
 
     public CustomClass baseClass;
-    CustomClass gridClass;
+    public CustomClass gridClass;
 
     public ConcreteCustomClass currentClass;
 

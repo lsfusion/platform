@@ -2,9 +2,11 @@ package platform.server.data.expr.query;
 
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
+import platform.server.data.expr.Expr;
 import platform.server.data.expr.order.PartitionCalc;
 import platform.server.data.expr.order.PartitionParam;
 import platform.server.data.expr.order.PartitionToken;
+import platform.server.data.where.Where;
 
 import java.util.*;
 
@@ -62,5 +64,17 @@ public enum PartitionType implements AggrType {
 
     public boolean canBeNull() { // может возвращать null если само выражение не null
         return this==PREVIOUS || this==DISTR_RESTRICT || this==DISTR_RESTRICT_OVER;
+    }
+
+    public boolean isSelectNotInWhere() { // в общем то оптимизационная вещь потом можно убрать
+//        assert isSelect();
+        return false;
+    }
+    public Where getWhere(List<Expr> exprs) {
+        return Expr.getWhere(exprs);
+    }
+
+    public Expr getMainExpr(List<Expr> exprs) {
+        return exprs.get(0);
     }
 }

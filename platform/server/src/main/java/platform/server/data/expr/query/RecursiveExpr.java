@@ -123,6 +123,9 @@ public class RecursiveExpr extends QueryExpr<KeyExpr, RecursiveExpr.Query, Recur
         protected boolean isSelect() {
             throw new RuntimeException("should not be");
         }
+        protected boolean isSelectNotInWhere() {
+            throw new RuntimeException("should not be");
+        }
     }
     protected QueryInnerContext createInnerContext() {
         return new QueryInnerContext(this);

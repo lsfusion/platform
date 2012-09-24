@@ -39,6 +39,7 @@ public interface CalcPropertyInterfaceImplement<P extends PropertyInterface> ext
     DataChanges mapDataChanges(PropertyChange<P> change, WhereBuilder changedWhere, PropertyChanges propChanges);
 
     void fill(Set<P> interfaces, Set<CalcPropertyMapImplement<?,P>> properties);
+    Collection<P> getInterfaces();
 
     Map<P, ValueClass> mapInterfaceCommonClasses(ValueClass commonValue);
 }

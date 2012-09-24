@@ -488,4 +488,12 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return result;
     }
 
+    // не сильно структурно поэтому вынесено в метод
+    public <V> Map<T, V> getMapInterfaces(List<V> list) {
+        int i=0;
+        Map<T, V> result = new HashMap<T, V>();
+        for(T propertyInterface : interfaces)
+            result.put(propertyInterface, list.get(i++));
+        return result;
+    }
 }

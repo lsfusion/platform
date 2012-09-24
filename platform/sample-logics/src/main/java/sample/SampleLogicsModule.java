@@ -22,6 +22,7 @@ import platform.server.logics.linear.LCP;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.actions.CustomActionProperty;
+import platform.server.logics.property.actions.UserActionProperty;
 
 import javax.swing.*;
 import java.awt.event.InputEvent;
@@ -132,7 +133,7 @@ public class SampleLogicsModule extends LogicsModule {
         initNavigators();
     }
 
-    private class AnnoyingChangeArticleDescriptionAction extends CustomActionProperty {
+    private class AnnoyingChangeArticleDescriptionAction extends UserActionProperty {
         protected AnnoyingChangeArticleDescriptionAction(String sID) {
             super(sID, descriptedArticle);
         }

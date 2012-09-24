@@ -1806,26 +1806,38 @@ ifActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns [L
 		('ELSE' elsePDB=actionPropertyDefinitionBody[context, dynamic])?
 	;
 
+forAddObjClause[List<String> context] returns [Integer paramNum, String className]
+@init {
+	String varName = "added";
+}
+	:
+		'ADDOBJ'
+		(varID=ID '=' {varName = $varID.text;})?
+		addClass=classId {$className = $addClass.sid; $paramNum=context.size(); context.add(varName);}
+	;
+
 forActionPropertyDefinitionBody[List<String> context] returns [LPWithParams property]
 @init {
 	boolean recursive = false;
 	boolean descending = false;
 	List<String> newContext = new ArrayList<String>(context);
 	List<LPWithParams> orders = new ArrayList<LPWithParams>();
+	
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedForAProp(context, $expr.property, orders, $actPDB.property, $elsePDB.property, recursive, descending);
+		$property = self.addScriptedForAProp(context, $expr.property, orders, $actPDB.property, $elsePDB.property, $addObj.paramNum, $addObj.className, recursive, descending);
 	}	
 }
 	:	(	'FOR' 
 		| 	'WHILE' { recursive = true; }
 		)
-		expr=propertyExpression[newContext, true]
+		(expr=propertyExpression[newContext, true]
 		('ORDER' 
 			('DESC' { descending = true; } )? 
 			ordExprs=nonEmptyPropertyExpressionList[newContext, false] { orders = $ordExprs.props; }
-		)?	
+		)?)?
+		(addObj=forAddObjClause[newContext])?
 		'DO' actPDB=actionPropertyDefinitionBody[newContext, false]
 		( {!recursive}?=> 'ELSE' elsePDB=actionPropertyDefinitionBody[context, false])?
 	;
@@ -1992,12 +2004,13 @@ globalEventStatement
 }
 @after {
 	if (inPropParseState()) {
-		self.addScriptedGlobalEvent($action.property, !onApply, single);
+		self.addScriptedGlobalEvent($action.property, !onApply, single, $property.text);
 	}
 }
 	:	'ON' 
 		('APPLY' | 'SESSION' { onApply = false; })
 		('SINGLE' { single = true; })?
+		('SHOWDEP' property=ID)?
 		action=actionPropertyDefinitionBody[new ArrayList<String>(), false]
 	;
 

@@ -45,8 +45,7 @@ import static java.util.Arrays.asList;
 import static java.util.Arrays.copyOfRange;
 import static platform.base.BaseUtils.*;
 import static platform.server.logics.PropertyUtils.*;
-import static platform.server.logics.property.derived.DerivedProperty.createAnd;
-import static platform.server.logics.property.derived.DerivedProperty.createStatic;
+import static platform.server.logics.property.derived.DerivedProperty.*;
 
 /**
  * User: DAle
@@ -521,7 +520,7 @@ public abstract class LogicsModule {
     }
 
     protected LAP addFAProp(String caption, FormEntity form, ObjectEntity... params) {
-        return addFAProp(null, caption, form, params, new ActionPropertyObjectEntity[0], false, false);
+        return addFAProp(null, caption, form, params, null, false, false);
     }
 
     protected LAP addFAProp(AbstractGroup group, FormEntity form, ObjectEntity... params) {
@@ -529,51 +528,35 @@ public abstract class LogicsModule {
     }
 
     protected LAP addFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity... params) {
-        return addFAProp(group, caption, form, params, new ActionPropertyObjectEntity[0], false, false);
+        return addFAProp(group, caption, form, params, null, false, false);
     }
 
     public LAP addMFAProp(String caption, FormEntity form, ObjectEntity... params) {
-        return addMFAProp(null, caption, form, params);
+        return addMFAProp(null, caption, form, params, false);
     }
 
-    protected LAP addMFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity... startProperties) {
-        return addMFAProp(group, caption, form, objectsToSet, false, startProperties);
+    protected LAP addMFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, boolean newSession) {
+        return addMFAProp(group, genSID(), caption, form, objectsToSet, newSession);
     }
 
-    protected LAP addMFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, boolean newSession, ActionPropertyObjectEntity... startProperties) {
-        return addMFAProp(group, genSID(), caption, form, objectsToSet, newSession, startProperties);
+    protected LAP addMFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, boolean newSession, ActionPropertyObjectEntity startProperties) {
+        return addMFAProp(group, genSID(), caption, form, objectsToSet, startProperties, newSession);
     }
 
-    protected LAP addMFAProp(AbstractGroup group, String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, boolean newSession, ActionPropertyObjectEntity... setProperties) {
-        return addMFAProp(group, sID, caption, form, objectsToSet, setProperties, newSession);
+    protected LAP addMFAProp(AbstractGroup group, String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, boolean newSession) {
+        return addMFAProp(group, sID, caption, form, objectsToSet, null, newSession);
     }
 
-    protected LAP addMFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity[] setProperties, boolean newSession) {
-        return addMFAProp(group, genSID(), caption, form, objectsToSet, setProperties, newSession);
+    protected LAP addMFAProp(AbstractGroup group, String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity startProperties, boolean newSession) {
+        return addFAProp(group, sID, caption, form, objectsToSet, startProperties, newSession, true, false);
     }
 
-    protected LAP addMFAProp(AbstractGroup group, String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity[] startProperties, boolean newSession) {
-        return addMFAProp(group, sID, caption, form, objectsToSet, startProperties, null, newSession);
+    protected LAP addFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity startProperties, boolean newSession, boolean isModal) {
+        return addFAProp(group, genSID(), caption, form, objectsToSet, startProperties, newSession, isModal, false);
     }
 
-    protected LAP addMFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity[] startProperties, DataClass valueClass, boolean newSession) {
-        return addMFAProp(group, genSID(), caption, form, objectsToSet, startProperties, valueClass, newSession);
-    }
-
-    protected LAP addMFAProp(AbstractGroup group, String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity[] startProperties, DataClass valueClass, boolean newSession) {
-        return addFAProp(group, sID, caption, form, objectsToSet, startProperties, valueClass, newSession, true, false);
-    }
-
-    protected LAP addFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity[] startProperties, boolean newSession, boolean isModal) {
-        return addFAProp(group, caption, form, objectsToSet, startProperties, null, newSession, isModal);
-    }
-
-    protected LAP addFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity[] startProperties, DataClass valueClass, boolean newSession, boolean isModal) {
-        return addFAProp(group, genSID(), caption, form, objectsToSet, startProperties, valueClass, newSession, isModal, false);
-    }
-
-    protected LAP addFAProp(AbstractGroup group, String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity[] setProperties, DataClass valueClass, boolean newSession, boolean isModal, boolean checkOnOk) {
-        return addProperty(group, new LAP(new FormActionProperty(sID, caption, form, objectsToSet, setProperties, valueClass, newSession, isModal, checkOnOk, baseLM.formResult, baseLM.getFormResultProperty(), baseLM.getChosenValueProperty())));
+    protected LAP addFAProp(AbstractGroup group, String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity setProperties, boolean newSession, boolean isModal, boolean checkOnOk) {
+        return addProperty(group, new LAP(new FormActionProperty(sID, caption, form, objectsToSet, setProperties, newSession, isModal, checkOnOk, baseLM.formResult, baseLM.getFormResultProperty(), baseLM.getChosenValueProperty())));
     }
 
     protected LAP addSelectFromListAction(AbstractGroup group, String caption, LCP selectionProperty, ValueClass selectionClass, ValueClass... baseClasses) {
@@ -590,24 +573,16 @@ public abstract class LogicsModule {
     }
 
     protected LAP addChangeClassAProp() {
-        return addChangeClassAProp("sys");
+        return addAProp(baseClass.getChangeClassValueAction());
     }
 
-    protected LAP addChangeClassAProp(String caption) {
-        return addAProp(new ChangeClassActionProperty(genSID(), caption, baseClass));
-    }
-
-    protected LAP addChangeClassAProp(String caption, ConcreteCustomClass cls) {
-        return addJoinAProp(new ValueClass[]{baseClass},
-                            addChangeClassAProp(caption), 1, addCProp(baseClass.objectClass, cls.getSID()));
+    @IdentityLazy
+    protected LAP addChangeClassAProp(ConcreteCustomClass cls) {
+        return addAProp(cls.getChangeClassAction());
     }
 
     protected <C extends PropertyInterface, W extends PropertyInterface> LAP addSetPropertyAProp(Object... params) {
         return addSetPropertyAProp("sys", params);
-    }
-
-    protected <C extends PropertyInterface, W extends PropertyInterface> LAP addSetPropertyAProp(boolean useEditAction, Object... params) {
-        return addSetPropertyAProp(null, genSID(), "sys", useEditAction, params);
     }
 
     protected <C extends PropertyInterface, W extends PropertyInterface> LAP addSetPropertyAProp(String caption, Object... params) {
@@ -623,28 +598,19 @@ public abstract class LogicsModule {
     }
 
     protected <C extends PropertyInterface, W extends PropertyInterface> LAP addSetPropertyAProp(AbstractGroup group, String name, String caption, Object... params) {
-        return addSetPropertyAProp(group, name, caption, false, params);
-    }
-
-    protected <C extends PropertyInterface, W extends PropertyInterface> LAP addSetPropertyAProp(AbstractGroup group, String name, String caption, boolean useEditAction, Object... params) {
         int resInterfaces = getIntNum(params);
-        return addSetPropertyAProp(group, name, caption, resInterfaces, false, useEditAction, BaseUtils.add(BaseUtils.consecutiveList(resInterfaces).toArray(), params));
+        return addSetPropertyAProp(group, name, caption, resInterfaces, false, BaseUtils.add(BaseUtils.consecutiveList(resInterfaces).toArray(), params));
     }
 
     protected <C extends PropertyInterface, W extends PropertyInterface> LAP addSetPropertyAProp(AbstractGroup group, String name, String caption, int resInterfaces,
                                                                                                  boolean conditional, Object... params) {
-        return addSetPropertyAProp(group, name, caption, resInterfaces, conditional, false, params);
-    }
-
-    protected <C extends PropertyInterface, W extends PropertyInterface> LAP addSetPropertyAProp(AbstractGroup group, String name, String caption, int resInterfaces,
-                                                                                                 boolean conditional, boolean useEditAction, Object... params) {
         List<PropertyInterface> innerInterfaces = genInterfaces(getIntNum(params));
         List<CalcPropertyInterfaceImplement<PropertyInterface>> readImplements = readCalcImplements(innerInterfaces, params);
         CalcPropertyMapImplement<W, PropertyInterface> conditionalPart = (CalcPropertyMapImplement<W, PropertyInterface>)
                 (conditional ? readImplements.get(resInterfaces + 2) : DerivedProperty.createTrue());
         return addProperty(group, new LAP(new ChangeActionProperty<C, W, PropertyInterface>(name, caption,
                 innerInterfaces, (List) readImplements.subList(0, resInterfaces), conditionalPart,
-                 (CalcPropertyMapImplement<C, PropertyInterface>) readImplements.get(resInterfaces), readImplements.get(resInterfaces + 1), useEditAction)));
+                (CalcPropertyMapImplement<C, PropertyInterface>) readImplements.get(resInterfaces), readImplements.get(resInterfaces + 1))));
     }
 
     protected LAP addListAProp(Object... params) {
@@ -690,8 +656,8 @@ public abstract class LogicsModule {
         List<PropertyInterfaceImplement<PropertyInterface>> readImplements = readImplements(listInterfaces, params);
         assert readImplements.size() >= 2 && readImplements.size() <= 3;
 
-        return addProperty(group, new LAP(new IfActionProperty(name, caption, not, listInterfaces, (CalcPropertyInterfaceImplement<PropertyInterface>)readImplements.get(0),
-                (ActionPropertyMapImplement<?, PropertyInterface>)readImplements.get(1), readImplements.size() == 3 ? (ActionPropertyMapImplement<?, PropertyInterface>)readImplements.get(2) : null, false)));
+        return addProperty(group, new LAP(new IfActionProperty(name, caption, not, listInterfaces, (CalcPropertyMapImplement<?, PropertyInterface>) readImplements.get(0),
+                (ActionPropertyMapImplement<?, PropertyInterface>) readImplements.get(1), readImplements.size() == 3 ? (ActionPropertyMapImplement<?, PropertyInterface>) readImplements.get(2) : null, false)));
     }
 
     protected LAP addPushAProp(Object... params) {
@@ -701,30 +667,44 @@ public abstract class LogicsModule {
         List<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
         List<PropertyInterfaceImplement<PropertyInterface>> readImplements = readImplements(listInterfaces, params);
 
-        return addProperty(group, new LAP(new PushUserInputActionProperty(name, caption, listInterfaces, (CalcPropertyInterfaceImplement<PropertyInterface>)readImplements.get(0),
-                (ActionPropertyMapImplement<?, PropertyInterface>)readImplements.get(1))));
+        return addProperty(group, new LAP(new PushUserInputActionProperty(name, caption, listInterfaces, (CalcPropertyInterfaceImplement<PropertyInterface>) readImplements.get(0),
+                (ActionPropertyMapImplement<?, PropertyInterface>) readImplements.get(1))));
     }
 
-    protected LAP addForAProp(AbstractGroup group, String name, String caption, boolean ascending, boolean ordersNotNull, boolean recursive, boolean hasElse, int resInterfaces, Object... params) {
+    protected LAP addForAProp(boolean hasElse, int resInterfaces, Object... params) {
+        return addForAProp(false, false, false, hasElse, resInterfaces, params);
+    }
+
+    protected LAP addForAProp(boolean ascending, boolean ordersNotNull, boolean recursive, boolean hasElse, int resInterfaces, Object... params) {
+        return addForAProp(null, genSID(), "sys", ascending, ordersNotNull, recursive, hasElse, resInterfaces, null, true, params);
+    }
+
+    protected LAP addForAProp(AbstractGroup group, String name, String caption, boolean ascending, boolean ordersNotNull, boolean recursive, boolean hasElse, int resInterfaces, CustomClass addClass, boolean hasCondition, Object... params) {
         List<PropertyInterface> innerInterfaces = genInterfaces(getIntNum(params));
         List<PropertyInterfaceImplement<PropertyInterface>> readImplements = readImplements(innerInterfaces, params);
 
         int implCnt = readImplements.size();
 
-        CalcPropertyMapImplement<?, PropertyInterface> ifProp = (CalcPropertyMapImplement<?, PropertyInterface>) readImplements.get(resInterfaces);
+        List<PropertyInterface> mapInterfaces = BaseUtils.<List<PropertyInterface>>immutableCast(readImplements.subList(0, resInterfaces));
 
-        ActionPropertyMapImplement<?, PropertyInterface> action =
-                (ActionPropertyMapImplement<?, PropertyInterface>) readImplements.get(implCnt - 1);
+        CalcPropertyMapImplement<?, PropertyInterface> ifProp = hasCondition? (CalcPropertyMapImplement<?, PropertyInterface>) readImplements.get(resInterfaces) : null;
+
+        OrderedMap<CalcPropertyInterfaceImplement<PropertyInterface>, Boolean> orders =
+                toOrderedMap(BaseUtils.<List<CalcPropertyInterfaceImplement<PropertyInterface>>>immutableCast(readImplements.subList(resInterfaces + (hasCondition ? 1 : 0), implCnt - (hasElse ? 2 : 1) - (addClass != null ? 1: 0))), !ascending);
+        
+        PropertyInterface addedInterface = addClass!=null ? (PropertyInterface) readImplements.get(implCnt - (hasElse ? 3 : 2)) : null;
+        
         ActionPropertyMapImplement<?, PropertyInterface> elseAction =
                 !hasElse ? null : (ActionPropertyMapImplement<?, PropertyInterface>) readImplements.get(implCnt - 2);
 
-        OrderedMap<CalcPropertyInterfaceImplement<PropertyInterface>, Boolean> orders =
-                toOrderedMap(BaseUtils.<List<CalcPropertyInterfaceImplement<PropertyInterface>>>immutableCast(readImplements.subList(resInterfaces + 1, implCnt - (hasElse ? 2 : 1))), !ascending);
-
-        List<PropertyInterface> mapInterfaces = BaseUtils.<List<PropertyInterface>>immutableCast(readImplements.subList(0, resInterfaces));
+        ActionPropertyMapImplement<?, PropertyInterface> action =
+                (ActionPropertyMapImplement<?, PropertyInterface>) readImplements.get(implCnt - 1);
+        
+        if(ifProp==null)
+            ifProp = DerivedProperty.createTrue();
 
         return addProperty(group, new LAP<PropertyInterface>(
-                new ForActionProperty<PropertyInterface>(name, caption, innerInterfaces, mapInterfaces, ifProp, orders, ordersNotNull, action, elseAction, recursive))
+                new ForActionProperty<PropertyInterface>(name, caption, innerInterfaces, mapInterfaces, ifProp, orders, ordersNotNull, action, elseAction, addedInterface, addClass, false, recursive))
         );
     }
 
@@ -755,7 +735,7 @@ public abstract class LogicsModule {
     protected LAP addJoinAProp(AbstractGroup group, String name, String caption, ValueClass[] classes, LAP action, Object... params) {
         List<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
         List<CalcPropertyInterfaceImplement<PropertyInterface>> readImplements = readCalcImplements(listInterfaces, params);
-        return addProperty(group, new LAP(new JoinActionProperty(name, caption, listInterfaces, mapActionImplement(action, readImplements), classes)));
+        return addProperty(group, new LAP(new JoinActionProperty(name, caption, listInterfaces, mapActionImplement(action, readImplements))));
     }
 
 
@@ -772,9 +752,9 @@ public abstract class LogicsModule {
 
         return addProperty(group, new LAP(
                 new RequestUserInputActionProperty(name, caption, listInterfaces, actionImplement,
-                                                   requestValueType, chosenKey,
-                                                   baseLM.getRequestCanceledProperty(), baseLM.getRequestedValueProperty(),
-                                                   baseLM.getChosenValueProperty(), baseLM.formResult, baseLM.getFormResultProperty()))
+                        requestValueType, chosenKey,
+                        baseLM.getRequestCanceledProperty(), baseLM.getRequestedValueProperty(),
+                        baseLM.getChosenValueProperty(), baseLM.formResult, baseLM.getFormResultProperty()))
         );
     }
 
@@ -986,7 +966,7 @@ public abstract class LogicsModule {
     }
 
     protected LCP addSFProp(String formula, int paramCount) {
-        return addSFProp(formula, (ConcreteValueClass)null, paramCount);
+        return addSFProp(formula, (ConcreteValueClass) null, paramCount);
     }
 
     protected LCP addSFProp(String formula, ConcreteValueClass value, int paramCount) {
@@ -1223,7 +1203,7 @@ public abstract class LogicsModule {
     private LAP addGCAProp(AbstractGroup group, String name, String caption, GroupObjectEntity groupObject, LAP mainProperty, int[] mainInts, int[] groupInts) {
         return addProperty(group, new LAP(
                 new PrevGroupChangeActionProperty(name, caption, groupObject,
-                                              mainProperty, mainInts, groupInts)));
+                        mainProperty, mainInts, groupInts)));
     }
 
     public void showIf(FormEntity<?> form, LP[] properties, LCP ifProperty, ObjectEntity... objects) {
@@ -1244,6 +1224,10 @@ public abstract class LogicsModule {
 
     private <P extends PropertyInterface, L extends PropertyInterface> LCP mapLProp(AbstractGroup group, boolean persistent, CalcPropertyMapImplement<L, P> implement, List<P> listInterfaces) {
         return addProperty(group, persistent, new LCP<L>(implement.property, BaseUtils.mapList(listInterfaces, BaseUtils.reverse(implement.mapping))));
+    }
+
+    private <P extends PropertyInterface, L extends PropertyInterface> LAP mapLAProp(AbstractGroup group, ActionPropertyMapImplement<L, P> implement, List<P> listInterfaces) {
+        return addProperty(group, new LAP<L>(implement.property, BaseUtils.mapList(listInterfaces, BaseUtils.reverse(implement.mapping))));
     }
 
     private <P extends PropertyInterface, L extends PropertyInterface> LCP mapLProp(AbstractGroup group, boolean persistent, CalcPropertyMapImplement<L, P> implement, LCP<P> property) {
@@ -1370,7 +1354,7 @@ public abstract class LogicsModule {
                 new OrderedMap<CalcPropertyInterfaceImplement<PropertyInterface>, Boolean>(listImplements.subList(partNum + 1, listImplements.size()), !ascending);
 
         return mapLProp(group, persistent, DerivedProperty.createUGProp(name, caption, innerInterfaces,
-                new CalcPropertyImplement<L, CalcPropertyInterfaceImplement<PropertyInterface>>((CalcProperty<L>)ungroup.property, groupImplement), orders, ordersNotNull, restriction, over), innerInterfaces);
+                new CalcPropertyImplement<L, CalcPropertyInterfaceImplement<PropertyInterface>>((CalcProperty<L>) ungroup.property, groupImplement), orders, ordersNotNull, restriction, over), innerInterfaces);
     }
 
     protected <R extends PropertyInterface, L extends PropertyInterface> LCP addPGProp(AbstractGroup group, String name, boolean persistent, int roundlen, boolean roundfirst, String caption, LCP<R> proportion, LCP<L> ungroup, Object... params) {
@@ -1389,7 +1373,7 @@ public abstract class LogicsModule {
                 new OrderedMap<CalcPropertyInterfaceImplement<PropertyInterface>, Boolean>(listImplements.subList(partNum + 1, listImplements.size()), !ascending);
 
         return mapLProp(group, persistent, DerivedProperty.createPGProp(name, caption, roundlen, roundfirst, baseLM.baseClass, innerInterfaces,
-                new CalcPropertyImplement<L, CalcPropertyInterfaceImplement<PropertyInterface>>((CalcProperty<L>)ungroup.property, groupImplement), proportion, orders, ordersNotNull), innerInterfaces);
+                new CalcPropertyImplement<L, CalcPropertyInterfaceImplement<PropertyInterface>>((CalcProperty<L>) ungroup.property, groupImplement), proportion, orders, ordersNotNull), innerInterfaces);
     }
 
     /*
@@ -1520,7 +1504,7 @@ public abstract class LogicsModule {
         return addOGProp(null, name, persist, caption, type, numOrders, descending, groupProp, params);
     }
     public <T extends PropertyInterface> LCP addOGProp(AbstractGroup group, String name, boolean persist, String caption, GroupType type, int numOrders, boolean descending, LCP<T> groupProp, Object... params) {
-        return addOGProp(group, name, persist, caption, type, numOrders, Settings.instance.isDefaultOrdersNotNull(), descending, groupProp.listInterfaces, add(((CalcProperty<T>)groupProp.property).getImplement(), readCalcImplements(groupProp.listInterfaces, params)));
+        return addOGProp(group, name, persist, caption, type, numOrders, Settings.instance.isDefaultOrdersNotNull(), descending, groupProp.listInterfaces, add(((CalcProperty<T>) groupProp.property).getImplement(), readCalcImplements(groupProp.listInterfaces, params)));
     }
     public <T extends PropertyInterface> LCP addOGProp(AbstractGroup group, String name, boolean persist, String caption, GroupType type, int numOrders, boolean ordersNotNull, boolean descending, int interfaces, Object... params) {
         List<PropertyInterface> innerInterfaces = genInterfaces(interfaces);
@@ -2044,16 +2028,9 @@ public abstract class LogicsModule {
         return addProperty(group, new LAP(property));
     }
 
-    protected LAP addBAProp(ConcreteCustomClass customClass, LCP add) {
-        return addAProp(baseLM.new AddBarcodeActionProperty(customClass, ((CalcProperty) add.property), genSID()));
-    }
-
-    protected LAP addSAProp(LCP lp) {
-        return addSAProp(baseLM.privateGroup, "sys", lp);
-    }
-
-    protected LAP addSAProp(AbstractGroup group, String caption, LCP lp) {
-        return addProperty(group, new LAP(new BaseLogicsModule.SeekActionProperty(genSID(), caption, new ValueClass[]{baseLM.baseClass}, lp == null ? null : (CalcProperty) lp.property)));
+    @IdentityLazy
+    protected LAP<?> addSAProp(LCP lp) {
+        return addProperty(null, new LAP(new SeekActionProperty(baseLM.baseClass, lp == null ? null : (CalcProperty) lp.property)));
     }
 
     protected LAP addMAProp(String message, String caption) {
@@ -2102,7 +2079,7 @@ public abstract class LogicsModule {
     }
 
     protected LAP addLFAProp(AbstractGroup group, String caption, LCP lp) {
-        return addProperty(group, new LAP(new BaseLogicsModule.LoadActionProperty(genSID(), caption, lp)));
+        return addProperty(group, new LAP(new LoadActionProperty(genSID(), caption, lp)));
     }
 
     protected LAP addOFAProp(LCP lp) {
@@ -2110,7 +2087,7 @@ public abstract class LogicsModule {
     }
 
     protected LAP addOFAProp(AbstractGroup group, String caption, LCP lp) { // обернем сразу в and
-        return addProperty(group, new LAP(new BaseLogicsModule.OpenActionProperty(genSID(), caption, lp)));
+        return addProperty(group, new LAP(new OpenActionProperty(genSID(), caption, lp)));
     }
 
 
@@ -2121,33 +2098,59 @@ public abstract class LogicsModule {
                 params));
     }
 
-    protected LAP addAAProp(CustomClass customClass, LCP... properties) {
-        return addAAProp(customClass, null, null, false, properties);
+    protected LAP addAAProp(ConcreteCustomClass customClass, LCP... properties) {
+        return addAAProp(null, customClass, null, properties);
     }
 
-    protected LAP addAAProp(String caption, CustomClass customClass, LCP... properties) {
-        return addAAProp(caption, customClass, null, null, false, properties);
+    protected LAP addAAProp(String caption, ConcreteCustomClass customClass, LCP... properties) {
+        return addAAProp(caption, null, customClass, null, properties);
     }
 
-    protected LAP addAAProp(CustomClass customClass, LCP barcode, LCP barcodePrefix, boolean quantity, LCP... properties) {
-        return addAAProp(ServerResourceBundle.getString("logics.add"), customClass, barcode, barcodePrefix, quantity, properties);
+    protected LAP addAAProp(LCP barcode, ConcreteCustomClass customClass, LCP barcodePrefix, LCP... properties) {
+        return addAAProp(ServerResourceBundle.getString("logics.add"), barcode, customClass, barcodePrefix, properties);
     }
 
-    protected LAP addAAProp(String caption, CustomClass customClass, LCP barcode, LCP barcodePrefix, boolean quantity, LCP... properties) {
-        return addAProp(new AddObjectActionProperty(genSID(), caption,
-                                                    (barcode != null) ? (CalcProperty) barcode.property : null, (barcodePrefix != null) ? ((CalcProperty) barcodePrefix.property) : null,
-                                                    quantity, customClass, LCP.toPropertyArray(properties)));
+    protected LAP addAAProp(String caption, LCP<?> barcode, ConcreteCustomClass customClass, LCP<?> barcodePrefix, LCP... properties) {
+        PropertyInterface addedInterface = new PropertyInterface();
+
+        List<ActionPropertyMapImplement<?, PropertyInterface>> list = new ArrayList<ActionPropertyMapImplement<?, PropertyInterface>>();
+
+        // генерация штрихкода
+        if(barcode!=null)
+            list.add(new ChangeBarcodeActionProperty(baseClass, barcode.property, barcodePrefix != null ? barcodePrefix.property : null).getImplement(addedInterface));
+
+        List<CalcPropertyMapImplement<?, PropertyInterface>> checkClasses = new ArrayList<CalcPropertyMapImplement<?, PropertyInterface>>();
+        List<PropertyInterface> innerInterfaces = new ArrayList<PropertyInterface>();
+        for(LCP<?> lp : properties) {
+            PropertyInterface genInterface = new PropertyInterface();
+            Collection<PropertyInterface> setInterfaces = toList(genInterface, addedInterface);
+            list.add(createSetAction(setInterfaces, lp.getImplement(addedInterface), genInterface));
+            innerInterfaces.add(genInterface);
+
+            ValueClass valueClass = lp.property.getValueClass();
+            if(valueClass instanceof CustomClass) {
+                ((CustomClass)valueClass).getProperty().getImplement(toList(genInterface));
+            }
+        }
+        list.add(addSAProp(null).getImplement(addedInterface));
+
+        List<PropertyInterface> addedInnerInterfaces = add(innerInterfaces, addedInterface);
+        ActionPropertyMapImplement<?, PropertyInterface> result = createForAction(addedInnerInterfaces, innerInterfaces, createListAction(addedInnerInterfaces, list), addedInterface, customClass, false);
+        if(checkClasses.size() > 0)
+            result = createIfAction(innerInterfaces, createAnd(checkClasses), result, null, false);
+        return mapLAProp(null, result, innerInterfaces);
     }
 
     @IdentityLazy
-    public LAP getAddObjectAction(CustomClass cls) {
-        //"add" + BaseUtils.capitalize(cls.getSID())
-        return addAProp(new AddObjectActionProperty(genSID(), cls));
+    public LAP getAddObjectAction(CustomClass cls, boolean forceDialog, CalcProperty storeNewObjectProperty) {
+        return addAProp(new AddObjectActionProperty(genSID(), cls, forceDialog, storeNewObjectProperty));
     }
 
     @IdentityLazy
-    public LCP getAddedObjectProperty() {
-        return addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty("addedObject", "Added Object", baseLM.baseClass)));
+    public SessionDataProperty getAddedObjectProperty() {
+        SessionDataProperty addedObject = new SessionDataProperty("addedObject", "Added Object", baseLM.baseClass);
+        addProperty(null, new LCP<ClassPropertyInterface>(addedObject));
+        return addedObject;
     }
 
     @IdentityLazy
@@ -2198,18 +2201,23 @@ public abstract class LogicsModule {
         return addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty("formResult", "Form Result", baseLM.formResult)));
     }
 
-    @IdentityLazy
-    public LAP getSimpleAddObjectAction(CustomClass cls, boolean noDialog) {
-        return addAProp(new SimpleAddObjectActionProperty(genSID(), cls, noDialog, baseLM.getAddedObjectProperty()));
+    public LAP getFormAddObjectAction(ObjectEntity obj) {
+        return getFormAddObjectAction(obj, false);
     }
 
-    public LAP getFormAddObjectAction(ObjectEntity obj, boolean noDialog) {
-        return addAProp(new SimpleAddObjectActionProperty(genSID(), (CustomClass) obj.baseClass, noDialog, baseLM.getAddedObjectProperty()));
+    public LAP getFormAddObjectAction(ObjectEntity obj, boolean forceDialog) {
+        return getFormAddObjectAction(obj, null, forceDialog);
     }
 
-    @IdentityLazy
-    protected LAP getAddObjectActionWithClassCheck(CustomClass baseClass, ValueClass checkClass) {
-        LAP addObjectAction = getAddObjectAction(baseClass);
+    public LAP getFormAddObjectAction(ObjectEntity obj, CustomClass forceClass, boolean forceDialog) { // добавляем и делаем resolveAdd для добавленного объекта
+        return addAProp(new FormAddObjectActionProperty(genSID(), forceClass!=null ? forceClass : (CustomClass)obj.baseClass, forceDialog, obj));
+//        PropertyInterface added = new PropertyInterface();
+//        return addAProp(null, createForAction(Collections.singleton(added), new ArrayList<PropertyInterface>(),
+//                new ResolveAddObjectActionProperty(genSID(), obj).getImplement(added), added, forceClass, forceDialog, false).property);
+    }
+
+    protected LAP getFormAddObjectActionWithClassCheck(ObjectEntity objectEntity, ValueClass checkClass) {
+        LAP addObjectAction = getFormAddObjectAction(objectEntity);
         return addIfAProp(addObjectAction.property.caption, is(checkClass), 1, addObjectAction);
     }
 
@@ -2217,10 +2225,9 @@ public abstract class LogicsModule {
     public LAP getAddFormAction(CustomClass cls, boolean session) {
         ClassFormEntity form = cls.getEditForm(baseLM);
 
-        LAP addObjectAction = getAddObjectAction(cls);
         LAP property = addMFAProp(actionGroup, "add" + (session ? "Session" : "") + "Form" + BaseUtils.capitalize(cls.getSID()), ServerResourceBundle.getString("logics.add"), //+ "(" + cls + ")",
                                 form.form, new ObjectEntity[] {},
-                                new ActionPropertyObjectEntity[] {form.form.addPropertyObject(addObjectAction)}, ActionClass.instance, !session);
+                                form.form.addPropertyObject(getFormAddObjectAction(form.object, cls, false)), !session);
         property.setImage("add.png");
         property.setShouldBeLast(true);
         property.setEditKey(KeyStrokes.getAddActionPropertyKeyStroke());
@@ -2232,7 +2239,7 @@ public abstract class LogicsModule {
         FormActionProperty formAction = (FormActionProperty)property.property;
         formAction.seekOnOk.add(form.object);
         if (session)
-            formAction.closeProperties.add(form.form.addPropertyObject(baseLM.delete, form.object));
+            formAction.closeAction = form.form.addPropertyObject(baseLM.delete, form.object);
 
         return property;
     }
@@ -2398,7 +2405,7 @@ public abstract class LogicsModule {
                 DerivedProperty.createListAction(
                         new ArrayList<ClassPropertyInterface>(),
                         BaseUtils.<ActionPropertyMapImplement<?, ClassPropertyInterface>>toList(
-                                new LogPropertyActionProperty<T>(property).getImplement(),
+                                new LogPropertyActionProperty<T>(property, recognizeGroup).getImplement(),
                                 baseLM.cancel.property.getImplement(new ArrayList<ClassPropertyInterface>())
                         )
                 );
@@ -2458,20 +2465,20 @@ public abstract class LogicsModule {
     public <T extends PropertyInterface, L extends PropertyInterface> void addFollows(CalcProperty<T> property, CalcPropertyMapImplement<L, T> implement, String caption, int options, boolean session) {
 //        PropertyFollows<T, L> propertyFollows = new PropertyFollows<T, L>(this, implement, options);
 
-        if((options & PropertyFollows.RESOLVE_TRUE)!=0 && ((CalcProperty)implement.property).hasSet(true)) { // оптимизационная проверка
+        if((options & PropertyFollows.RESOLVE_TRUE)!=0) { // оптимизационная проверка
             assert property.interfaces.size() == implement.mapping.size(); // assert что количество
-//            ActionPropertyMapImplement<?, L> setAction = DerivedProperty.createSetAction(implement.property, true, true);
-//            setAction.mapEventAction(getChanged(IncrementType.SET).getImplement().map(BaseUtils.reverse(implement.mapping)), session, ActionEvent.RESOLVE);
-            ActionPropertyMapImplement<?, L> setAction = DerivedProperty.createSetAction(implement.property, true, false);
-//            setAction.property.caption = "RESOLVE TRUE : " + property + " => " + implement.property;
-            setAction.mapEventAction(this, DerivedProperty.createAndNot(property.getChanged(IncrementType.SET), implement).map(BaseUtils.reverse(implement.mapping)), session, true);
+            ActionPropertyMapImplement<?, T> setAction = implement.getSetNotNullAction(true);
+            if(setAction!=null) {
+//                setAction.property.caption = "RESOLVE TRUE : " + property + " => " + implement.property;
+                setAction.mapEventAction(this, DerivedProperty.createAndNot(property.getChanged(IncrementType.SET), implement), session, true);
+            }
         }
-        if((options & PropertyFollows.RESOLVE_FALSE)!=0 && property.hasSet(false)) {
-//            ActionPropertyMapImplement<?, T> setAction = DerivedProperty.createSetAction(this, false, true);
-//            setAction.mapEventAction(implement.mapChanged(IncrementType.DROP), session, ActionEvent.RESOLVE);
-            ActionPropertyMapImplement<?, T> setAction = DerivedProperty.createSetAction(property, false, false);
-//            setAction.property.caption = "RESOLVE FALSE : " + property + " => " + implement.property;
-            setAction.mapEventAction(this, DerivedProperty.createAnd(property, implement.mapChanged(IncrementType.DROP)), session, true);
+        if((options & PropertyFollows.RESOLVE_FALSE)!=0) {
+            ActionPropertyMapImplement<?, T> setAction = property.getSetNotNullAction(false);
+            if(setAction!=null) {
+//                setAction.property.caption = "RESOLVE FALSE : " + property + " => " + implement.property;
+                setAction.mapEventAction(this, DerivedProperty.createAnd(property, implement.mapChanged(IncrementType.DROP)), session, true);
+            }
         }
 
         CalcProperty constraint = DerivedProperty.createAndNot(property, implement).property;
@@ -2564,7 +2571,7 @@ public abstract class LogicsModule {
     }
 
     // получает свойство is
-    public LCP is(ValueClass valueClass) {
+    public LCP<?> is(ValueClass valueClass) {
         return baseLM.is(valueClass);
     }
 
@@ -2582,7 +2589,7 @@ public abstract class LogicsModule {
         for (int i = 0; i < interfaces; ++i) {
             params[i] = baseLM.baseClass;
         }
-        return addCProp(privateGroup, "dumb" + interfaces, false, "dumbProperty" + interfaces, StringClass.get(0), "", params);
+        return addCProp(privateGroup, "dumb" + interfaces, false, "dumbProperty" + interfaces, StringClass.get(1), "", params);
     }
 
     protected NavigatorElement addNavigatorElement(String name, String caption) {
@@ -2650,14 +2657,13 @@ public abstract class LogicsModule {
     }
 
     protected void addObjectActions(FormEntity form, ObjectEntity object, boolean actionImport, boolean shouldBeLast, ObjectEntity checkObject, ValueClass checkObjectClass) {
-        CustomClass objectClass = (CustomClass) object.baseClass;
 
         PropertyDrawEntity actionAddPropertyDraw;
         if (checkObject == null) {
-            actionAddPropertyDraw = form.addPropertyDraw(getAddObjectAction(objectClass));
+            actionAddPropertyDraw = form.addPropertyDraw(getFormAddObjectAction(object));
         } else {
             actionAddPropertyDraw = form.addPropertyDraw(
-                    getAddObjectActionWithClassCheck(objectClass, checkObjectClass != null ? checkObjectClass : checkObject.baseClass),
+                    getFormAddObjectActionWithClassCheck(object, checkObjectClass != null ? checkObjectClass : checkObject.baseClass),
                     checkObject);
 
             actionAddPropertyDraw.forceViewType = ClassViewType.PANEL;

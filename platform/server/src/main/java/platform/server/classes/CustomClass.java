@@ -1,6 +1,8 @@
 package platform.server.classes;
 
+import platform.base.BaseUtils;
 import platform.base.ImmutableObject;
+import platform.base.QuickSet;
 import platform.interop.Data;
 import platform.server.auth.SecurityPolicy;
 import platform.server.caches.IdentityLazy;
@@ -18,8 +20,8 @@ import platform.server.form.navigator.NavigatorElement;
 import platform.server.logics.BaseLogicsModule;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.ServerResourceBundle;
-import platform.server.logics.property.CalcProperty;
-import platform.server.logics.property.IsClassProperty;
+import platform.server.logics.property.*;
+import platform.server.logics.property.actions.ChangeClassActionProperty;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -95,7 +97,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     }
 
     public CustomClass findClassID(int idClass) {
-        if(ID == idClass) return this;
+        if(ID!=null && ID == idClass) return this; // проверка чисто для fillIDs
 
         for(CustomClass child : children) {
             CustomClass findClass = child.findClassID(idClass);
@@ -414,11 +416,58 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         return result;
     }
 
-    @IdentityLazy
-    public Set<CalcProperty> getChildProps() {
-        Set<CalcProperty> result = new HashSet<CalcProperty>();
-        for(CustomClass customClass : getChilds())
-            result.add(customClass.getProperty());
+    public QuickSet<CalcProperty> getChildProps() {
+        QuickSet<CalcProperty> result = new QuickSet<CalcProperty>();
+        for(CustomClass customClass : getChilds()) {
+            result.add(customClass.getProperty().getChanged(IncrementType.SET));
+            result.add(customClass.getProperty().getChanged(IncrementType.DROP));
+        }
         return result;
+    }
+
+    public QuickSet<CalcProperty> getChildDropProps(ConcreteObjectClass toClass) {
+        QuickSet<CalcProperty> result = new QuickSet<CalcProperty>();
+        for(CustomClass customClass : getChilds())
+            if(!(toClass instanceof CustomClass && ((CustomClass)toClass).isChild(customClass)))
+                result.add(customClass.getProperty().getChanged(IncrementType.DROP));
+        return result;
+    }
+
+    public QuickSet<CalcProperty> getParentSetProps() {
+        QuickSet<CalcProperty> result = new QuickSet<CalcProperty>();
+        Collection<CustomClass> parents = new HashSet<CustomClass>();
+        fillParents(parents);
+        for(CustomClass parent : parents)
+            result.add(parent.getProperty().getChanged(IncrementType.SET));
+        return result;
+    }
+
+    public static Set<ChangedProperty> getChangeProperties(Set<CustomClass> addClasses, Set<CustomClass> removeClasses) {
+        Set<ChangedProperty> result = new HashSet<ChangedProperty>();
+        for(CustomClass addClass : addClasses)
+            result.add(addClass.getProperty().getChanged(IncrementType.SET));
+        for(CustomClass removeClass : removeClasses)
+            result.add(removeClass.getProperty().getChanged(IncrementType.DROP));
+        return result;
+    }
+
+    public static Set<IsClassProperty> getProperties(Set<CustomClass> addClasses, Set<CustomClass> removeClasses) {
+        return getProperties(BaseUtils.mergeSet(addClasses, removeClasses));
+    }
+
+    public void fillChangeProps(ConcreteObjectClass cls, QuickSet<CalcProperty> fill) {
+        Set<CustomClass> addClasses = new HashSet<CustomClass>();
+        Set<CustomClass> removeClasses = new HashSet<CustomClass>();
+        getDiffSet(cls, addClasses, removeClasses);
+        fill.addAll(getChangeProperties(addClasses, removeClasses));
+    }
+
+    public static ActionProperty getChangeClassAction(ObjectClass cls) {
+        return ChangeClassActionProperty.create(cls, false, cls.getBaseClass());
+    }
+
+    @IdentityLazy
+    public ActionProperty getChangeClassAction() {
+        return getChangeClassAction(this);
     }
 }

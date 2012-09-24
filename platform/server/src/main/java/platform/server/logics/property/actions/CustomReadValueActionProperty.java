@@ -9,7 +9,7 @@ import platform.server.logics.property.ExecutionContext;
 
 import java.sql.SQLException;
 
-public abstract class CustomReadValueActionProperty extends CustomActionProperty {
+public abstract class CustomReadValueActionProperty extends UserActionProperty {
 
     protected CustomReadValueActionProperty(String sID, String caption, ValueClass[] classes) {
         super(sID, caption, classes);

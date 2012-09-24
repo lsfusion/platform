@@ -717,12 +717,9 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
         }
         for (int i = 0; i < quantity; i++) {
             Map<ObjectInstance, DataObject> objectKeys = new OrderedMap<ObjectInstance, DataObject>();
-            for (ObjectInstance objectInstance : objects) {
-                if (objectInstance.getBaseClass() instanceof ConcreteCustomClass) {
-                    DataObject object = form.addObject((ConcreteCustomClass) objectInstance.getBaseClass());
-                    objectKeys.put(objectInstance, object);
-                }
-            }
+            for (ObjectInstance objectInstance : objects)
+                if (objectInstance.getBaseClass() instanceof ConcreteCustomClass)
+                    objectKeys.put(objectInstance, form.addFormObject((CustomObjectInstance)objectInstance, (ConcreteCustomClass) objectInstance.getBaseClass(), null));
             resultMap.add(objectKeys);
         }
         return resultMap;

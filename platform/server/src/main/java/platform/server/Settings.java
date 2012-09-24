@@ -27,7 +27,7 @@ public class Settings {
         this.packOnCacheComplexity = packOnCacheComplexity;
     }
 
-    private int mapInnerMaxIterations = 4;
+    private int mapInnerMaxIterations = 24;
 
     public int getMapInnerMaxIterations() {
         return mapInnerMaxIterations;
@@ -481,7 +481,7 @@ public class Settings {
         this.applyNoIncrement = applyNoIncrement;
     }
 
-    public boolean applyVolatileStats = true;
+    public boolean applyVolatileStats = false;
 
     public boolean isApplyVolatileStats() {
         return applyVolatileStats;

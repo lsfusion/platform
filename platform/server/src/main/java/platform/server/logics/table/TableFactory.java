@@ -84,8 +84,8 @@ public class TableFactory {
         sql.ensureTable(IDTable.instance);
         sql.ensureTable(StructTable.instance);
 
-        for (Integer idType : IDTable.getCounters())
-            sql.ensureRecord(IDTable.instance, Collections.singletonMap(IDTable.instance.key,new DataObject(idType, SystemClass.instance)), Collections.singletonMap(IDTable.instance.value,(ObjectValue)new DataObject(0, SystemClass.instance)));
+        for (Map.Entry<Integer, Integer> idType : IDTable.getCounters().entrySet())
+            sql.ensureRecord(IDTable.instance, Collections.singletonMap(IDTable.instance.key,new DataObject(idType.getKey(), SystemClass.instance)), Collections.singletonMap(IDTable.instance.value,(ObjectValue)new DataObject(idType.getValue(), SystemClass.instance)));
 
         // создадим dumb
         sql.ensureTable(DumbTable.instance);
@@ -97,24 +97,14 @@ public class TableFactory {
     }
     
     @IdentityLazy
-    public List<ImplementTable> getImplementTables(CustomClass cls) {
+    public List<ImplementTable> getImplementTables(Set<CustomClass> cls) {
         List<ImplementTable> result = new ArrayList<ImplementTable>();
         for (ImplementTable table : getImplementTables()) {
-            if (table.mapFields.containsValue(cls)) {
+            if (!Collections.disjoint(table.mapFields.values(), cls)) {
                 result.add(table);
             }
         }
         return result;
     }
 
-    public void removeKeys(DataSession session, CustomClass cls, SingleKeyNoPropertyUsage keyTable) throws SQLException {
-        for (ImplementTable table : getImplementTables(cls))
-            for (Map.Entry<KeyField, ValueClass> field : table.mapFields.entrySet())
-                if (field.getValue().equals(cls)) {
-                    // todo : переделать на запрос, а не простое итерирование по таблице
-                    for (Map<String, Object> record : keyTable.read(session).keySet()) {
-                        session.sql.deleteKeyRecords(table, Collections.singletonMap(field.getKey(), BaseUtils.singleValue(record)));
-                    }
-                }
-    }
 }

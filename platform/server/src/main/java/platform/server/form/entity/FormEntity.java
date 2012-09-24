@@ -108,7 +108,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         xlsActionPropertyDraw = addPropertyDraw(baseLM.formXls);
         nullActionPropertyDraw = addPropertyDraw(baseLM.formNull);
         refreshActionPropertyDraw = addPropertyDraw(baseLM.formRefresh);
-        applyActionPropertyDraw = addPropertyDraw(baseLM.apply);
+        applyActionPropertyDraw = addPropertyDraw(baseLM.formApply);
         cancelActionPropertyDraw = addPropertyDraw(baseLM.formCancel);
         okActionPropertyDraw = addPropertyDraw(baseLM.formOk);
         closeActionPropertyDraw = addPropertyDraw(baseLM.formClose);
@@ -954,7 +954,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
                     + getString("form.create.new.object") + " " + entity.getCaption() + " ?";
         }
 
-        addActionsOnEvent(addPropertyObject(lm.getFormAddObjectAction(entity, true)), events);
+        addActionsOnEvent(addPropertyObject(lm.getFormAddObjectAction(entity)), events);
     }
 
     public void addActionsOnObjectChange(ObjectEntity object, ActionPropertyObjectEntity... actions) {

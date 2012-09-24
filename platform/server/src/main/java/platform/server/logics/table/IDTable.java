@@ -42,10 +42,10 @@ public class IDTable extends GlobalTable {
     public final static int OBJECT = 1;
     public final static int FORM = 2;
 
-    static List<Integer> getCounters() {
-        List<Integer> result = new ArrayList<Integer>();
-        result.add(OBJECT);
-        result.add(FORM);
+    static Map<Integer, Integer> getCounters() {
+        Map<Integer, Integer> result = new HashMap<Integer, Integer>();
+        result.put(OBJECT, 10); // потому как есть базовый пул 0,1,2 предопределенных ID'ков
+        result.put(FORM, 0);
         return result;
     }
 
@@ -67,21 +67,31 @@ public class IDTable extends GlobalTable {
             assert !dataSession.isInTransaction();
 
             if(freeID > maxReservedID) { // читаем новый пул
-                dataSession.startTransaction();
-
-                freeID = (Integer) BaseUtils.singleValue(getGenerateQuery(idType).execute(dataSession)).get(value) + 1; // замещаем
-
-                maxReservedID = freeID + Settings.instance.getReserveIDStep();
-                Query<KeyField, PropertyField> updateQuery = new Query<KeyField, PropertyField>(this, Collections.singletonMap(key, new DataObject(idType, SystemClass.instance)));
-                updateQuery.properties.put(value,new ValueExpr(maxReservedID, SystemClass.instance));
-                dataSession.updateRecords(new ModifyQuery(this, updateQuery));
-
-                dataSession.commitTransaction();
+                int reserveIDStep = Settings.instance.getReserveIDStep();
+                freeID = reserveIDs(reserveIDStep, dataSession, idType);
+                maxReservedID = freeID + reserveIDStep - 1;
             }
             result = freeID++;
         }
 
         return result;
+    }
+
+    // возвращает первый, и резервирует себе еще count id'ков
+    public int reserveIDs(int count, SQLSession dataSession, int idType) throws SQLException {
+        int freeID;
+        synchronized (this) {
+            dataSession.startTransaction();
+
+            freeID = (Integer) BaseUtils.singleValue(getGenerateQuery(idType).execute(dataSession)).get(value) + 1; // замещаем
+
+            Query<KeyField, PropertyField> updateQuery = new Query<KeyField, PropertyField>(this, Collections.singletonMap(key, new DataObject(idType, SystemClass.instance)));
+            updateQuery.properties.put(value,new ValueExpr(freeID + count - 1, SystemClass.instance));
+            dataSession.updateRecords(new ModifyQuery(this, updateQuery));
+
+            dataSession.commitTransaction();
+        }
+        return freeID;
     }
 
     public StatKeys<KeyField> getStatKeys() {

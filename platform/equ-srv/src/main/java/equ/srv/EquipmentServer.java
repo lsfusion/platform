@@ -128,7 +128,7 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
 
                 if (transactionObject.objectClass.equals(LM.findClassByCompoundName("cashRegisterPriceTransaction"))) {
                     List<CashRegisterInfo> cashRegisterInfoList = new ArrayList<CashRegisterInfo>();
-                    LCP<PropertyInterface> isCashRegister = LM.is(LM.findClassByCompoundName("cashRegister"));
+                    LCP<PropertyInterface> isCashRegister = (LCP<PropertyInterface>) LM.is(LM.findClassByCompoundName("cashRegister"));
 
                     Map<PropertyInterface, KeyExpr> cashRegisterKeys = isCashRegister.getMapKeys();
                     KeyExpr cashRegisterKey = BaseUtils.singleValue(cashRegisterKeys);
@@ -168,7 +168,7 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
                     String pieceItemCodeGroupScales = (String) LM.findLCPByCompoundName("pieceItemCodeGroupScales").read(session, groupObject);
                     String weightItemCodeGroupScales = (String) LM.findLCPByCompoundName("weightItemCodeGroupScales").read(session, groupObject);
 
-                    LCP<PropertyInterface> isScales = LM.is(LM.findClassByCompoundName("scales"));
+                    LCP<PropertyInterface> isScales = (LCP<PropertyInterface>) LM.is(LM.findClassByCompoundName("scales"));
 
                     Map<PropertyInterface, KeyExpr> scalesKeys = isScales.getMapKeys();
                     KeyExpr scalesKey = BaseUtils.singleValue(scalesKeys);
@@ -199,7 +199,7 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
 
                 } else if (transactionObject.objectClass.equals(LM.findClassByCompoundName("priceCheckerPriceTransaction"))) {
                     List<PriceCheckerInfo> priceCheckerInfoList = new ArrayList<PriceCheckerInfo>();
-                    LCP<PropertyInterface> isCheck = LM.is(LM.findClassByCompoundName("check"));
+                    LCP<PropertyInterface> isCheck = (LCP<PropertyInterface>) LM.is(LM.findClassByCompoundName("check"));
 
                     Map<PropertyInterface, KeyExpr> checkKeys = isCheck.getMapKeys();
                     KeyExpr checkKey = BaseUtils.singleValue(checkKeys);
@@ -231,7 +231,7 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
 
                 } else if (transactionObject.objectClass.equals(LM.findClassByCompoundName("terminalPriceTransaction"))) {
                     List<TerminalInfo> terminalInfoList = new ArrayList<TerminalInfo>();
-                    LCP<PropertyInterface> isTerminal = LM.is(LM.findClassByCompoundName("terminal"));
+                    LCP<PropertyInterface> isTerminal = (LCP<PropertyInterface>) LM.is(LM.findClassByCompoundName("terminal"));
 
                     OrderedMap<PropertyInterface, KeyExpr> terminalKeys = isTerminal.getMapKeys();
                     KeyExpr terminalKey = BaseUtils.singleValue(terminalKeys);
@@ -271,7 +271,7 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
             DataSession session = BL.createSession();
             List<CashRegisterInfo> cashRegisterInfoList = new ArrayList<CashRegisterInfo>();
 
-            LCP<PropertyInterface> isGroupMachinery = LM.is(LM.findClassByCompoundName("groupMachinery"));
+            LCP<PropertyInterface> isGroupMachinery = (LCP<PropertyInterface>) LM.is(LM.findClassByCompoundName("groupMachinery"));
             OrderedMap<PropertyInterface, KeyExpr> keys = isGroupMachinery.getMapKeys();
             KeyExpr key = BaseUtils.singleValue(keys);
             Query<PropertyInterface, Object> query = new Query<PropertyInterface, Object>(keys);
@@ -290,7 +290,7 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
                 DataObject groupMachineryObject = (DataObject) groupMachinery[0];
                 Integer roundSalesGroupCashRegister = (Integer) groupMachinery[1];
 
-                LCP<PropertyInterface> isCashRegister = LM.is(LM.findClassByCompoundName("cashRegister"));
+                LCP<PropertyInterface> isCashRegister = (LCP<PropertyInterface>) LM.is(LM.findClassByCompoundName("cashRegister"));
 
                 OrderedMap<PropertyInterface, KeyExpr> cashRegisterKeys = isCashRegister.getMapKeys();
                 KeyExpr cashRegisterKey = BaseUtils.singleValue(cashRegisterKeys);
@@ -331,7 +331,7 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
             DataSession session = BL.createSession();
             List<TerminalInfo> terminalInfoList = new ArrayList<TerminalInfo>();
 
-            LCP<PropertyInterface> isGroupMachinery = LM.is(LM.findClassByCompoundName("groupMachinery"));
+            LCP<PropertyInterface> isGroupMachinery = (LCP<PropertyInterface>) LM.is(LM.findClassByCompoundName("groupMachinery"));
             OrderedMap<PropertyInterface, KeyExpr> keys = isGroupMachinery.getMapKeys();
             KeyExpr key = BaseUtils.singleValue(keys);
             Query<PropertyInterface, Object> query = new Query<PropertyInterface, Object>(keys);
@@ -347,7 +347,7 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
             for (Object groupMachinery : groupMachineryObjects) {
                 DataObject groupMachineryObject = (DataObject) groupMachinery;
 
-                LCP<PropertyInterface> isTerminal = LM.is(LM.findClassByCompoundName("terminal"));
+                LCP<PropertyInterface> isTerminal = (LCP<PropertyInterface>) LM.is(LM.findClassByCompoundName("terminal"));
 
                 OrderedMap<PropertyInterface, KeyExpr> terminalKeys = isTerminal.getMapKeys();
                 KeyExpr terminalKey = BaseUtils.singleValue(terminalKeys);
@@ -386,7 +386,7 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
             DataSession session = BL.createSession();
 
             List<LegalEntityInfo> legalEntityInfoList = new ArrayList<LegalEntityInfo>();
-            LCP<PropertyInterface> isSupplier = LM.is(LM.findClassByCompoundName("supplier"));
+            LCP<PropertyInterface> isSupplier = (LCP<PropertyInterface>) LM.is(LM.findClassByCompoundName("supplier"));
 
             OrderedMap<PropertyInterface, KeyExpr> supplierKeys = isSupplier.getMapKeys();
             KeyExpr supplierKey = BaseUtils.singleValue(supplierKeys);
@@ -403,7 +403,7 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
                 legalEntityInfoList.add(new LegalEntityInfo(id, name, type));
             }
 
-            LCP<PropertyInterface> isCustomer = LM.is(LM.findClassByCompoundName("customer"));
+            LCP<PropertyInterface> isCustomer = (LCP<PropertyInterface>) LM.is(LM.findClassByCompoundName("customer"));
 
             Map<PropertyInterface, KeyExpr> customerKeys = isCustomer.getMapKeys();
             KeyExpr customerKey = BaseUtils.singleValue(customerKeys);
@@ -421,7 +421,7 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
             }
 
             List<TerminalDocumentTypeInfo> terminalDocumentTypeInfoList = new ArrayList<TerminalDocumentTypeInfo>();
-            LCP<PropertyInterface> isTerminalDocumentType = LM.is(LM.findClassByCompoundName("terminalDocumentType"));
+            LCP<PropertyInterface> isTerminalDocumentType = (LCP<PropertyInterface>) LM.is(LM.findClassByCompoundName("terminalDocumentType"));
 
             Map<PropertyInterface, KeyExpr> terminalDocumentTypeKeys = isTerminalDocumentType.getMapKeys();
             KeyExpr terminalDocumentTypeKey = BaseUtils.singleValue(terminalDocumentTypeKeys);
@@ -760,7 +760,7 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
 
                 DataObject scalesModelObject = new DataObject(LM.findLCPByCompoundName("scalesModelName").read(session, new DataObject(scalesModel)), (ConcreteClass) LM.findClassByCompoundName("scalesModel"));
 
-                LCP<PropertyInterface> isLabelFormat = LM.is(LM.findClassByCompoundName("labelFormat"));
+                LCP<PropertyInterface> isLabelFormat = (LCP<PropertyInterface>) LM.is(LM.findClassByCompoundName("labelFormat"));
 
                 OrderedMap<PropertyInterface, KeyExpr> labelFormatKeys = isLabelFormat.getMapKeys();
                 KeyExpr labelFormatKey = BaseUtils.singleValue(labelFormatKeys);

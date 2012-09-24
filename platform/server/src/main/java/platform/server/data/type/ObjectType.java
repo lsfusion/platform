@@ -2,8 +2,7 @@ package platform.server.data.type;
 
 import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
 import platform.base.BaseUtils;
-import platform.server.classes.BaseClass;
-import platform.server.classes.ConcreteClass;
+import platform.server.classes.*;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.SQLSession;
 import platform.server.data.expr.Expr;
@@ -34,12 +33,13 @@ public class ObjectType extends AbstractType<Integer> {
     }
 
     public static final ObjectType instance = new ObjectType();
+    public static final IntegerClass idClass = IntegerClass.instance;
 
     public String getDB(SQLSyntax syntax) {
-        return syntax.getIntegerType();
+        return idClass.getDB(syntax);
     }
     public int getSQL(SQLSyntax syntax) {
-        return syntax.getIntegerSQL();
+        return idClass.getSQL(syntax);
     }
 
     public Integer read(Object value) {
@@ -48,7 +48,7 @@ public class ObjectType extends AbstractType<Integer> {
     }
 
     public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException {
-        statement.setInt(num, (Integer)value);
+        idClass.writeParam(statement, num, value, syntax);
     }
 
     public boolean isSafeString(Object value) {

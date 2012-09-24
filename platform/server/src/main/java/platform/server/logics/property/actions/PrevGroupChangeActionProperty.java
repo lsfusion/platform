@@ -21,7 +21,7 @@ import java.util.*;
 
 import static platform.base.BaseUtils.*;
 
-public class PrevGroupChangeActionProperty<P extends PropertyInterface> extends CustomActionProperty {
+public class PrevGroupChangeActionProperty<P extends PropertyInterface> extends SystemActionProperty {
 
     private final GroupObjectEntity filterGroupObject;
     private final ActionProperty<P> mainProperty;
@@ -130,7 +130,7 @@ public class PrevGroupChangeActionProperty<P extends PropertyInterface> extends 
     }
 
     private static <P extends PropertyInterface> void executeAction(ExecutionContext<ClassPropertyInterface> context, ActionProperty<P> property, Map<P, KeyExpr> keys, Map<P, PropertyObjectInterfaceInstance> objects, Where where) throws SQLException {
-        context.getEnv().execute(property, new PropertySet<P>(new HashMap<P, DataObject>(), keys, where, new OrderedMap<Expr, Boolean>(), false),
+        context.getEnv().execute(property, new PropertySet<P>(keys, where, new OrderedMap<Expr, Boolean>(), false),
                                     new FormEnvironment<P>(objects, context.getForm().getDrawInstance()));
     }
     
@@ -146,5 +146,10 @@ public class PrevGroupChangeActionProperty<P extends PropertyInterface> extends 
 
         return execMapObjects;
 //        return join(mapMainToThis, mapObjects);
+    }
+
+    @Override
+    protected boolean isVolatile() { // все равно потом уйдет это действие
+        return true;
     }
 }

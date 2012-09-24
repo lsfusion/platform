@@ -7,11 +7,7 @@ import platform.server.caches.AbstractOuterContext;
 import platform.server.caches.OuterContext;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.*;
-import platform.server.data.expr.query.Stat;
-import platform.server.data.query.stat.KeyStat;
-import platform.server.data.query.stat.StatKeys;
 import platform.server.data.query.stat.WhereJoin;
-import platform.server.data.translator.MapTranslate;
 import platform.server.data.where.Where;
 
 import java.util.Collections;
@@ -35,7 +31,7 @@ public abstract class ExprJoin<T extends ExprJoin<T>> extends AbstractOuterConte
     }
 
     public boolean twins(TwinImmutableInterface o) {
-        return baseExpr.equals(((ExprJoin)o).baseExpr);
+        return baseExpr.equals(((ExprJoin) o).baseExpr);
     }
 
     public InnerJoins getJoinFollows(Result<Map<InnerJoin, Where>> upWheres) { // все равно использует getExprFollows
@@ -47,17 +43,14 @@ public abstract class ExprJoin<T extends ExprJoin<T>> extends AbstractOuterConte
     }
 
     public Map<Integer, BaseExpr> getJoins() {
-        return Collections.singletonMap(0, (BaseExpr)baseExpr);
+        return Collections.singletonMap(0, (BaseExpr) baseExpr);
     }
 
     public static InnerJoins getInnerJoins(BaseExpr baseExpr) {
         InnerJoins result = new InnerJoins();
-        NotNullExprSet notNullExprs = baseExpr.getExprFollows(true, false);
-        for(int i=0;i<notNullExprs.size;i++) {
-            NotNullExpr notNullExpr = notNullExprs.get(i);
-            if(notNullExpr instanceof InnerExpr)
-                result = result.and(new InnerJoins(((InnerExpr)notNullExpr).getInnerJoin()));
-        }
+        QuickSet<InnerExpr> innerExprs = baseExpr.getExprFollows(true, false).getInnerExprs();
+        for(int i=0;i<innerExprs.size;i++)
+            result = result.and(new InnerJoins(innerExprs.get(i).getInnerJoin()));
         return result;
     }
 

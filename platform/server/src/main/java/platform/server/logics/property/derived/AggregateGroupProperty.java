@@ -3,11 +3,9 @@ package platform.server.logics.property.derived;
 import platform.base.BaseUtils;
 import platform.server.data.expr.Expr;
 import platform.server.data.where.WhereBuilder;
-import platform.server.logics.DataObject;
 import platform.server.logics.property.*;
 import platform.server.session.*;
 
-import java.sql.SQLException;
 import java.util.*;
 
 // связь один к одному
@@ -51,40 +49,32 @@ public class AggregateGroupProperty<T extends PropertyInterface> extends CycleGr
     }
 
     @Override
-    protected void proceedNotNull(PropertySet<Interface<T>> set, ExecutionEnvironment env, boolean notNull) throws SQLException {
+    public ActionPropertyMapImplement<?, Interface<T>> getSetNotNullAction(boolean notNull) {
         if(notNull) {
+            PropertyInterface addedObject = new PropertyInterface();
             Map<CalcPropertyInterfaceImplement<T>, Interface<T>> aggrInterfaces = BaseUtils.reverse(getMapInterfaces());
 
-            for(Map<Interface<T>, DataObject> row : set.executeClasses(env)) {
-                DataObject aggrObject = env.getSession().addObject();
+            Map<T, PropertyInterface> propValues = BaseUtils.merge(Collections.singletonMap(aggrInterface, addedObject), // aggrInterface = aggrObject, остальные из row'а читаем
+                    BaseUtils.filterKeys(aggrInterfaces, BaseUtils.remove(innerInterfaces, aggrInterface))); // assert что будут все в aggrInterfaces
 
-                Map<CalcPropertyInterfaceImplement<T>, DataObject> interfaceValues = BaseUtils.join(aggrInterfaces, row);
-                Map<T, DataObject> propValues = BaseUtils.merge(Collections.singletonMap(aggrInterface, aggrObject), // aggrInterface = aggrObject, остальные из row'а читаем
-                        BaseUtils.filterKeys(interfaceValues, BaseUtils.remove(innerInterfaces, aggrInterface)));
-
-                if(whereProp instanceof CalcPropertyMapImplement)
-                    ((CalcPropertyMapImplement<?,T>)whereProp).mapNotNull(propValues, env, true, false); // потому как только что добавился объект
-                for(Map.Entry<CalcPropertyInterfaceImplement<T>, DataObject> propertyInterface : BaseUtils.filterKeys(interfaceValues, groupProps).entrySet())
-                    if(propertyInterface.getKey() instanceof CalcPropertyMapImplement)
-                        ((CalcPropertyMapImplement<?,T>)propertyInterface.getKey()).change(propValues, env, propertyInterface.getValue());
-            }
-        } else
-            super.proceedNotNull(set, env, notNull);
-    }
-
-    @Override
-    public Set<CalcProperty> getSetChangeProps(boolean notNull, boolean add) {
-        if(notNull) {
-            Set<CalcProperty> result = new HashSet<CalcProperty>();
+            List<ActionPropertyMapImplement<?, PropertyInterface>> actions = new ArrayList<ActionPropertyMapImplement<?, PropertyInterface>>();
             if(whereProp instanceof CalcPropertyMapImplement)
-                result.addAll(((CalcProperty)((CalcPropertyMapImplement) whereProp).property).getSetChangeProps(true, true));
-            for(CalcPropertyInterfaceImplement<T> groupProp : groupProps)
-                if(groupProp instanceof CalcPropertyMapImplement)
-                    result.addAll(((CalcProperty)(((CalcPropertyMapImplement)groupProp).property)).getChangeProps());
-            return result;
+                actions.add(((CalcPropertyMapImplement<?, T>) whereProp).getSetNotNullAction(true).map(propValues));
+            for(Map.Entry<CalcPropertyInterfaceImplement<T>, Interface<T>> propertyInterface : BaseUtils.filterKeys(aggrInterfaces, groupProps).entrySet())
+                if(propertyInterface.getKey() instanceof CalcPropertyMapImplement) {
+                    CalcPropertyMapImplement<?, PropertyInterface> change = ((CalcPropertyMapImplement<?, T>) propertyInterface.getKey()).map(propValues);
+                    Collection<PropertyInterface> usedInterfaces = BaseUtils.add(change.mapping.values(), propertyInterface.getValue()); // assert что не будет
+                    actions.add(DerivedProperty.createSetAction(usedInterfaces, change, (PropertyInterface)propertyInterface.getValue()));
+                }
+
+
+            Collection<PropertyInterface> setInnerInterfaces = BaseUtils.add(interfaces, addedObject);
+            return BaseUtils.<ActionPropertyMapImplement<?, Interface<T>>>immutableCast(DerivedProperty.createForAction(setInnerInterfaces, new ArrayList<PropertyInterface>(interfaces),
+                    DerivedProperty.createListAction(setInnerInterfaces, actions), addedObject, null, false));
         } else
-            return super.getSetChangeProps(notNull, add);
+            return super.getSetNotNullAction(notNull);
     }
+
 }
 
 

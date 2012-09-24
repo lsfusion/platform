@@ -2,7 +2,7 @@ package roman;
 
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
-import platform.server.data.Insert;
+import platform.server.data.Modify;
 import platform.server.data.SQLSession;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.Query;
@@ -122,7 +122,7 @@ public class InvoicePricatMergeInputTable implements ImportInputTable {
 
         for (int i = 0; i < invoiceTable.rowsCnt(); i++) {
             String barcodeStr = transformBarcode(invoiceTable.getCellString(i, invoiceFields.indexOf(ResultField.BARCODE)));
-            table.insertRecord(sqlSession, new DataObject(barcodeStr), new HashMap<ResultField, ObjectValue>(), Insert.MODIFY);
+            table.modifyRecord(sqlSession, new DataObject(barcodeStr), new HashMap<ResultField, ObjectValue>(), Modify.MODIFY);
         }
 
         Map<PropertyInterface, KeyExpr> mapKeys = (Map<PropertyInterface,KeyExpr>) BL.RomanLM.barcodePricat.getMapKeys();

@@ -1,8 +1,8 @@
 package platform.server.logics.property.actions.flow;
 
+import platform.base.BaseUtils;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.CustomClass;
-import platform.server.classes.ValueClass;
 import platform.server.data.type.Type;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
@@ -18,7 +18,7 @@ public class JoinActionProperty<T extends PropertyInterface> extends KeepContext
 
     public final ActionPropertyImplement<T, CalcPropertyInterfaceImplement<PropertyInterface>> action; // action + mapping на calculate
 
-    public <I extends PropertyInterface> JoinActionProperty(String sID, String caption, List<I> listInterfaces, ActionPropertyImplement<T, CalcPropertyInterfaceImplement<I>> implement, ValueClass[] classes) {
+    public <I extends PropertyInterface> JoinActionProperty(String sID, String caption, List<I> listInterfaces, ActionPropertyImplement<T, CalcPropertyInterfaceImplement<I>> implement) {
         super(sID, caption, listInterfaces.size());
 
         action = DerivedProperty.mapActionImplements(implement, reverse(getMapInterfaces(listInterfaces)));
@@ -59,6 +59,11 @@ public class JoinActionProperty<T extends PropertyInterface> extends KeepContext
         return null;
     }
 
+    @Override
+    public boolean hasFlow(ChangeFlowType type) {
+        return type != ChangeFlowType.RETURN && super.hasFlow(type);
+    }
+
     public Set<ActionProperty> getDependActions() {
         return Collections.singleton((ActionProperty)action.property);
     }
@@ -75,5 +80,19 @@ public class JoinActionProperty<T extends PropertyInterface> extends KeepContext
     @IdentityLazy
     public CalcPropertyMapImplement<?, PropertyInterface> getWhereProperty() {
         return DerivedProperty.createJoin(action.property.getWhereProperty().mapImplement(action.mapping));
+    }
+
+    @Override
+    public List<ActionPropertyMapImplement<?, PropertyInterface>> getList() {
+        // если все интерфейсы однозначны и нет return'ов - inlin'им
+        if(action.property.hasFlow(ChangeFlowType.RETURN))
+            return super.getList();
+        
+        Set<PropertyInterface> checked = new HashSet<PropertyInterface>();
+        for(CalcPropertyInterfaceImplement<PropertyInterface> propImplement : action.mapping.values())
+            if(!(propImplement instanceof PropertyInterface && checked.add((PropertyInterface) propImplement)))
+                return super.getList();
+
+        return DerivedProperty.mapActionImplements(BaseUtils.<Map<T, PropertyInterface>>immutableCast(action.mapping), action.property.getList());
     }
 }

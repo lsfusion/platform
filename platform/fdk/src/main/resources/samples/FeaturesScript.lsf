@@ -7,7 +7,7 @@
 
 MODULE Features;
 
-REQUIRE System, I18n;
+REQUIRE System, I18n, Utils;
 
 /////////// GROUP STATEMENT ////////////
 
@@ -341,6 +341,73 @@ createNewStore 'Добавить большой склад' = ACTION () {
     SET storeSize(k) IF k == sessionObj() <- storeSize.big;
 } TOOLBAR IMAGE 'add.png';
 
+//////////////// TEST PUSHING FOR //////
+
+selCur = SESSION DATA BOOLEAN (document, article);
+selAll = SESSION DATA BOOLEAN (document, article);
+selArt = SESSION DATA BOOLEAN (article);
+
+testExec = ACTION (document, article) {
+    IF quantity(document, article) > 3 THEN
+        SET name(article) <- 'More then 3';
+}
+
+testPush = ACTION(document) {
+
+    FOR selArt(article) DO // to be pushed
+        EXEC testExec(document, article);
+
+    FOR selCur(document, article) ORDER date(document) DO {  // to be pushed
+        SET quantity(document, article) <- 5;
+    }
+
+    LOCAL i = INTEGER ();
+    SET i() <- 0;
+    FOR selArt(article) DO // not to be pushed
+        SET i() <- i() + 1;
+    MESSAGE [FORMULA STRING[20] '$1 || CAST($2 as char(20))']('I= ', i());
+
+    FOR selAll(document2, article) ORDER date(document2) DO { // to be pushed
+        SET name(article) <- [FORMULA STRING[20] '$1 || CAST($2 as char(20))']('Article ', quantity(document2, article));
+    }
+
+    FOR ADDOBJ article DO {
+        MESSAGE name(added);
+    }
+
+}
+
+testPush2 = ACTION(document) {
+
+    FOR quantity(document2, article) ORDER date(document2) DO { // to be pushed
+        SET quantity(document2, article) <- 6;
+        SET name(article) <- 'Changed';
+    }
+
+    LOCAL i = INTEGER ();
+    SET i() <- 0;
+    FOR date(document2) DO
+        FOR quantity(document2, article) > 3 DO {
+            SET i() <- i() + 1;
+        }
+    MESSAGE [FORMULA STRING[20] '$1 || CAST($2 as char(20))']('I= ', i());
+
+    SET date(document) <- NULL;
+}
+
+copy = ACTION(document) {
+    FOR quantity(document, article) ADDOBJ article DO {
+        SET name(added) <- name(article);
+        SET quantity(document, added) <- quantity(document, article);
+    }
+}
+
+CLASS QuantityString;
+@defineAggregationDouble(document, article, QuantityString, quantity);
+dateDocumentQuantityString(s) = date(documentQuantityString(s));
+storeNameDocumentQuantityString(s) = storeName(documentQuantityString(s));
+nameArticleQuantityString(s) = name(articleQuantityString(s));
+
 ///////////////CONSTRAINT STATEMENT//////////////
 // Syntax:
 // CONSTRAINT propertyExpression [CHECKED [BY propertyName1, ..., propertyNameN]] propertyExpression MESSAGE 'message';
@@ -421,9 +488,9 @@ OBJECTS document, article
 //                     [HEADER <mappedProperty>] [FOOTER <mappedProperty>] [READONLYIF <mappedProperty>] [FORCE PANEL | HIDE | GRID] [TODRAW <groupObject>]
 //                     [FOREGROUND <mappedProperty>] [ON (CHANGE | CHANGEWYS) action] [(BEFORE | AFTER) (propertyAlias | <mappedProperty>)] [EVENTID 'id']
 
-PROPERTIES store(document), name(article), storeName(document) ON CHANGE { REQUEST STRING[50] INPUT; SET storeName(document) <- requestedString(); } , documentTypeString(document)
+PROPERTIES store(document), name(article), testPush(document), testPush2(document), copy(document), date(document), storeName(document) ON CHANGE { REQUEST STRING[50] INPUT; SET storeName(document) <- requestedString(); } , documentTypeString(document)
 PROPERTIES quantity(document, article)
-PROPERTIES inQuantity(document, article), outQuantity(document, article), documentBalance(document, article)
+PROPERTIES inQuantity(document, article), outQuantity(document, article), documentBalance(document, article), selCur(document, article), selAll(document, article), selArt(article)
 PROPERTIES ADDOBJ(document), ADDOBJ(article), testAbstractAction(document)
 PROPERTIES globalInt()
 
@@ -610,6 +677,10 @@ DESIGN TestTree FROM DEFAULT {
     }
 }
 
+FORM TestAggr 'Тест агрегаций'
+OBJECTS s=QuantityString
+PROPERTIES dateDocumentQuantityString(s), storeNameDocumentQuantityString(s), nameArticleQuantityString(s), delete(s);
+
 FORM TestHeaders 'Тест заголовков'
 OBJECTS s=store, a=article
 PROPERTIES(s) name, storeSizeCode
@@ -701,6 +772,7 @@ NAVIGATOR {
     ADD TestDataPropForm;
     ADD TestColumnGroupObjects;
     ADD TestTree;
+    ADD TestAggr;
     ADD TestHeaders;
 }
 

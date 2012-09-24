@@ -133,9 +133,12 @@ public class StringClass extends DataClass<String> {
 
     @Override
     public String getCast(String value, SQLSyntax syntax, boolean needLength) {
-        String castString = super.getCast(value, syntax, needLength);
+        String castString = "CAST(" + value + " AS " + (length == 0 ? syntax.getStringType(1) : getDB(syntax)) + ")";
         if(needLength)
             return "lpad(" + castString + "," + length + ")";
+        else
+            if(length==0)
+                return "trim(" + castString + ")";
         return castString;
     }
 }

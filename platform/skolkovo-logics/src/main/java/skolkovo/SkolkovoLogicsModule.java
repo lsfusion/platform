@@ -10,6 +10,7 @@ import net.sf.jasperreports.engine.JRException;
 import platform.base.BaseUtils;
 import platform.base.IOUtils;
 import platform.base.OrderedMap;
+import platform.base.QuickSet;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.FormEventType;
@@ -42,8 +43,8 @@ import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.PropertyInterface;
-import platform.server.logics.property.actions.CustomActionProperty;
 import platform.server.logics.property.actions.CustomReadValueActionProperty;
+import platform.server.logics.property.actions.UserActionProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.mail.AttachmentFormat;
 import platform.server.session.DataSession;
@@ -4726,7 +4727,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectNonRussianSpecialist, objNonRussianSpecialist), Compare.EQUALS, objProject));
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectPatent, objPatent), Compare.EQUALS, objProject));
-            addProject = addMFAProp(actionGroup, "Добавить", this, new ObjectEntity[]{}, true, addPropertyObject(getAddObjectAction(project)));
+            addProject = addMFAProp(actionGroup, "Добавить", this, new ObjectEntity[]{}, true, addPropertyObject(getFormAddObjectAction(objProject)));
 
             if (lng.equals("both")) {
                 editR1Project = addIfAProp((AbstractGroup)null, "editR1Project", "Редактировать проект", isR1Project, 1,
@@ -5447,7 +5448,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         }
     }
 
-    public class FillLangProjectActionProperty extends CustomActionProperty {
+    public class FillLangProjectActionProperty extends UserActionProperty {
 
         private final ClassPropertyInterface projectInterface;
 
@@ -5478,7 +5479,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         }
     }
 
-    public class IncludeProjectClusterForesightActionProperty extends CustomActionProperty {
+    public class IncludeProjectClusterForesightActionProperty extends UserActionProperty {
 
         private final ClassPropertyInterface projectInterface;
         private final ClassPropertyInterface clusterInterface;
@@ -5508,7 +5509,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             if (codeForesightObject != null)
                 codeForesight = codeForesightObject.toString().trim();
 
-            LCP<PropertyInterface> isForesight = is(foresight);
+            LCP<PropertyInterface> isForesight = (LCP<PropertyInterface>) is(foresight);
             Map<PropertyInterface, KeyExpr> keys = isForesight.getMapKeys();
             KeyExpr key = BaseUtils.singleValue(keys);
             Query<PropertyInterface, Object> query = new Query<PropertyInterface, Object>(keys);
@@ -7501,7 +7502,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
          }
     }
 
-    public class GenerateDocumentsActionProperty extends CustomActionProperty {
+    public class GenerateDocumentsActionProperty extends UserActionProperty {
 
         private final ClassPropertyInterface projectInterface;
         private final ClassPropertyInterface documentTemplateInterface;
@@ -7532,7 +7533,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         }
     }
 
-    public class OpenApplicationProjectActionProperty extends CustomActionProperty {
+    public class OpenApplicationProjectActionProperty extends UserActionProperty {
 
         private final ClassPropertyInterface projectInterface;
 
@@ -7576,7 +7577,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         }
     }
 
-    public class AttachProtocolDecisionVoteActionProperty extends CustomActionProperty {
+    public class AttachProtocolDecisionVoteActionProperty extends UserActionProperty {
 
         private final ClassPropertyInterface voteInterface;
 
@@ -7600,7 +7601,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         }
     }
 
-    public class GenerateExpertSIDsActionProperty extends CustomActionProperty {
+    public class GenerateExpertSIDsActionProperty extends UserActionProperty {
 
         private final ClassPropertyInterface expertInterface;
 
@@ -7669,7 +7670,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         return prefix + nextRand;
     }
 
-    public class IncludeDocumentsActionProperty extends CustomActionProperty {
+    public class IncludeDocumentsActionProperty extends UserActionProperty {
 
         private final ClassPropertyInterface projectInterface;
 
@@ -7995,7 +7996,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         return IOUtils.getFileBytes(tempFile);
     }
 
-    public class GenerateVoteActionProperty extends CustomActionProperty {
+    public class GenerateVoteActionProperty extends UserActionProperty {
 
         private final ClassPropertyInterface projectInterface;
 
@@ -8165,12 +8166,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
         }
 
         @Override
-        public Set<CalcProperty> getChangeProps() {
-            return BaseUtils.toSet((CalcProperty)projectVote.property, (CalcProperty)inExpertVote.property);
+        public QuickSet<CalcProperty> aspectChangeExtProps() {
+            return getChangeProps((CalcProperty)projectVote.property, (CalcProperty)inExpertVote.property);
         }
     }
 
-    public class CopyResultsActionProperty extends CustomActionProperty {
+    public class CopyResultsActionProperty extends UserActionProperty {
 
         private final ClassPropertyInterface voteInterface;
 

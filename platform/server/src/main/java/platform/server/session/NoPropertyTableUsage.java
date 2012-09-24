@@ -1,6 +1,6 @@
 package platform.server.session;
 
-import platform.server.data.Insert;
+import platform.server.data.Modify;
 import platform.server.data.type.Type;
 import platform.server.data.SQLSession;
 import platform.server.logics.DataObject;
@@ -19,7 +19,7 @@ public class NoPropertyTableUsage<K> extends SessionTableUsage<K,Object> {
         });
     }
 
-    public void insertRecord(SQLSession session, Map<K, DataObject> keyFields, Insert type) throws SQLException {
-        insertRecord(session, keyFields, new HashMap<Object, ObjectValue>(), type);
+    public void modifyRecord(SQLSession session, Map<K, DataObject> keyFields, Modify type) throws SQLException {
+        modifyRecord(session, keyFields, new HashMap<Object, ObjectValue>(), type);
     }
 }

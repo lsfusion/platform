@@ -13,6 +13,7 @@ import platform.server.logics.linear.LCP;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.actions.CustomActionProperty;
+import platform.server.logics.property.actions.UserActionProperty;
 import platform.server.session.DataSession;
 import skolkovo.SkolkovoLogicsModule;
 
@@ -20,7 +21,7 @@ import java.io.*;
 import java.sql.*;
 import java.util.*;
 
-public class ExportProjectDocumentsActionProperty extends CustomActionProperty {
+public class ExportProjectDocumentsActionProperty extends UserActionProperty {
 
     private SkolkovoLogicsModule LM;
     private DataSession session;

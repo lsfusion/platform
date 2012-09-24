@@ -5,6 +5,7 @@ import platform.server.caches.ManualLazy;
 import platform.server.classes.ValueClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.classes.sets.OrClassSet;
+import platform.server.classes.sets.OrObjectClassSet;
 import platform.server.data.expr.Expr;
 import platform.server.data.where.Where;
 
@@ -485,6 +486,18 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
                 result.put(key,orSet==null ? null : orSet.getCommonClass());
         }
         return result;
+    }
+
+    public OrObjectClassSet getOrSet(K key) {
+        OrObjectClassSet orSet = OrObjectClassSet.FALSE;
+        for(AbstractClassWhere.And<K> and : wheres) {
+            AndClassSet andClass = and.get(key);
+            if(andClass!=null)
+                orSet = orSet.or(andClass.getOr());
+            else
+                return null;
+        }
+        return orSet;
     }
 
     private static <K> Map<K,AndClassSet> initUpClassSets(Map<K, ValueClass> map) {

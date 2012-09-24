@@ -154,6 +154,7 @@ public abstract class QueryExpr<K extends Expr,I extends OuterContext<I>, J exte
         protected abstract Expr getMainExpr();
         protected abstract Where getFullWhere();
         protected abstract boolean isSelect();
+        protected abstract boolean isSelectNotInWhere();
     }
     protected abstract IC createInnerContext();
     private IC inner;
@@ -214,9 +215,14 @@ public abstract class QueryExpr<K extends Expr,I extends OuterContext<I>, J exte
             outerInner = BaseUtils.reverse(group, true);
 
             ClassExprWhere result;
-            if(getInner().isSelect())
-                result = ClassExprWhere.mapBack(BaseUtils.merge(Collections.singletonMap(QueryExpr.this, getInner().getMainExpr()), outerInner), fullWhere);
-            else
+            if(getInner().isSelect()) {
+                Expr mainExpr = getInner().getMainExpr();
+                Map<BaseExpr, Expr> valueMap = Collections.<BaseExpr, Expr>singletonMap(QueryExpr.this, mainExpr);
+                if(getInner().isSelectNotInWhere())
+                    result = ClassExprWhere.mapBack(outerInner, fullWhere).and(ClassExprWhere.mapBack(valueMap, fullWhere.and(mainExpr.getWhere())));
+                else
+                    result = ClassExprWhere.mapBack(BaseUtils.merge(valueMap, outerInner), fullWhere);
+            } else
                 result = ClassExprWhere.mapBack(outerInner, fullWhere).and(new ClassExprWhere(QueryExpr.this,(DataClass) getInner().getType()));
             return result.and(getWhere(group).getClassWhere());
         }

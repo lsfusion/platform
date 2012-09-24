@@ -908,7 +908,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         if (!(cls instanceof CustomClass)) {
             errLog.emitAddObjClassError(parser);
         }
-        return getSimpleAddObjectAction((CustomClass) cls, false);
+        return getAddObjectAction((CustomClass) cls, false, baseLM.getAddedObjectProperty());
     }
 
     public LPWithParams addScriptedConfirmProp(int length, LPWithParams msgProp) throws ScriptingErrorLog.SemanticErrorException {
@@ -925,7 +925,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         scriptLogger.info("addScriptedChangeClassAProp(" + className + ")");
         ValueClass cls = findClassByCompoundName(className);
         checkChangeClassActionClass(cls);
-        LAP<?> res = addChangeClassAProp("", (ConcreteCustomClass) cls);
+        LAP<?> res = addChangeClassAProp((ConcreteCustomClass) cls);
         return new LPWithParams(res,  param.usedParams);
     }
 
@@ -980,14 +980,17 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(result, allParams);
     }
 
-    public LPWithParams addScriptedForAProp(List<String> oldContext, LPWithParams condition, List<LPWithParams> orders, LPWithParams action, LPWithParams elseAction, boolean recursive, boolean descending) throws ScriptingErrorLog.SemanticErrorException {
+    public LPWithParams addScriptedForAProp(List<String> oldContext, LPWithParams condition, List<LPWithParams> orders, LPWithParams action, LPWithParams elseAction, Integer addNum, String addClassName, boolean recursive, boolean descending) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedForAProp(" + oldContext + ", " + condition + ", " + orders + ", " + action + ", " + elseAction + ", " + recursive + ", " + descending + ");");
 
-        boolean ordersNotNull = doesExtendContext(Collections.singletonList(condition), orders);
+        boolean ordersNotNull = (condition !=null ? doesExtendContext(Collections.singletonList(condition), orders) : !orders.isEmpty());
 
         List<LPWithParams> creationParams = new ArrayList<LPWithParams>();
-        creationParams.add(condition);
+        if(condition!=null)
+            creationParams.add(condition);
         creationParams.addAll(orders);
+        if(addNum!=null)
+            creationParams.add(new LPWithParams(null, asList(addNum)));
         if (elseAction != null) {
             creationParams.add(elseAction);
         }
@@ -1009,7 +1012,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
         allCreationParams.addAll(creationParams);
 
-        LP result = addForAProp(null, genSID(), "", !descending, ordersNotNull, recursive, elseAction != null, usedParams.size(), getParamsPlainList(allCreationParams).toArray());
+        LP result = addForAProp(null, genSID(), "", !descending, ordersNotNull, recursive, elseAction != null, usedParams.size(), 
+                addClassName != null ? (CustomClass)findClassByCompoundName(addClassName) : null, condition!=null, getParamsPlainList(allCreationParams).toArray());
         return new LPWithParams(result, usedParams);
     }
 
@@ -1280,7 +1284,9 @@ public class ScriptingLogicsModule extends LogicsModule {
                 propObjects[i] = form.addPropertyObject((LAP<?>) props.get(i).property, params);
             }
         }
-        LPWithParams res = new LPWithParams(addFAProp(null, genSID(), "", form, objects, propObjects, cls, newSession, isModal, checkOnOk), new ArrayList<Integer>());
+        assert propObjects.length<=1;
+        assert cls==null;
+        LPWithParams res = new LPWithParams(addFAProp(null, genSID(), "", form, objects, propObjects.length==0?null:propObjects[0], newSession, isModal, checkOnOk), new ArrayList<Integer>());
         if (mapping.size() > 0) {
             res = addScriptedJoinAProp(res.property, mapping);
         }
@@ -1439,11 +1445,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         ((LAP)event.property).setEventAction(this, session, descending, false, params.toArray());
     }
 
-    public void addScriptedGlobalEvent(LPWithParams event, boolean session, boolean single) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedGlobalEvent(LPWithParams event, boolean session, boolean single, String showDep) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedGlobalEvent(" + event + ", " + session + ");");
         checkActionProperty(event.property);
         checkEventNoParameters(event.property);
-        addBaseEvent((ActionProperty)event.property.property, session, false, single);
+        ActionProperty action = (ActionProperty) event.property.property;
+        if(showDep!=null)
+            action.showDep = findLPByCompoundName(showDep).property;
+        addBaseEvent(action, session, false, single);
     }
 
     public void addScriptedAspect(String mainPropName, List<String> mainPropParams, LPWithParams actionProp, boolean before) throws ScriptingErrorLog.SemanticErrorException {

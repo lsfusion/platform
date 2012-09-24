@@ -43,6 +43,7 @@ import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
 import platform.server.logics.property.actions.*;
+import platform.server.logics.property.actions.flow.ChangeFlowType;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.property.group.AbstractNode;
 import platform.server.logics.scheduler.Scheduler;
@@ -834,6 +835,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
             finishLogInit();
 
+            showDependencies();
+
             LM.initClassForms();
 
             Set idSet = new HashSet<String>();
@@ -890,7 +893,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected void finishActions() { // потому как могут использовать abstract
         for (Property property : getProperties())
             if(property instanceof ActionProperty) {
-                for(CalcProperty<?> calcProperty : ((ActionProperty<?>)property).getChangeProps()) // вообще говоря DataProperty и IsClassProperty
+                for(CalcProperty<?> calcProperty : ((ActionProperty<?>)property).getChangeExtProps()) // вообще говоря DataProperty и IsClassProperty
                     calcProperty.actionChangeProps.add((ActionProperty) property);
             }
     }
@@ -1692,7 +1695,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                         return getRestartController().isPendingRestart();
                     }
                 },
-                LM.baseClass, LM.baseClass.named, LM.session, LM.name, LM.recognizeGroup, LM.transaction, LM.date, LM.currentDate, LM.currentSession, getIDSql(), getSessionEvents());
+                LM.baseClass, LM.session, LM.currentSession, getIDSql(), getSessionEvents());
     }
 
     public List<Property> getProperties() {
@@ -1764,11 +1767,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 assert innerComponent.size > 0;
                 if (innerComponent.size == 1) // если цикла нет все ОК
                     result.add(innerComponent.getSingle());
-                else {
+                else { // нашли цикл
                     boolean was = removedLinks.add(minLink.result);
                     assert !was;
 
-                    if (minLink.result.type.equals(LinkType.DEPEND)) { // нашли цикл
+                    if (minLink.result.type.equals(LinkType.DEPEND)) { // нашли сильный цикл
                         List<Property> cycle = new ArrayList<Property>();
                         buildList(innerComponent, null, removedLinks, cycle);
                         String print = "";
@@ -1784,6 +1787,54 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         return proceeded;
     }
+    
+    private static boolean findDependency(Property<?> property, Property<?> with, QuickSet<Property> proceeded, Stack<Link> path) {
+        if(property.equals(with))
+            return true;
+
+        if(proceeded.add(property))
+            return false;
+
+        for(Link link : property.getLinks()) {
+            path.push(link);
+            if(findDependency(link.to, with, proceeded, path))
+                return true;
+            path.pop();
+        }
+
+        return false;
+    }
+
+    private static String outDependency(String direction, Property property, Stack<Link> path) {
+        String result = direction + " : " + property;
+        for(Link link : path)
+            result += " " + link.type + " " + link.to;
+        return result;
+    }
+    private static String findDependency(Property<?> property1, Property<?> property2) {
+        String result = "";
+
+        Stack<Link> forward = new Stack<Link>();
+        if(findDependency(property1, property2, new QuickSet<Property>(), forward))
+            result += outDependency("FORWARD", property1, forward) + '\n';
+
+        Stack<Link> backward = new Stack<Link>();
+        if(findDependency(property2, property1, new QuickSet<Property>(), backward))
+            result += outDependency("BACKWARD", property2, backward) + '\n';
+
+        if(result.isEmpty())
+            result += "NO DEPENDENCY " + property1 + " " + property2 + '\n';
+
+        return result;
+    }
+    
+    private void showDependencies() {
+        String show = "";
+        for(Property property : getProperties())
+            if(property instanceof ActionProperty && ((ActionProperty)property).showDep != null)
+                show += findDependency(property, ((ActionProperty)property).showDep);
+        System.out.println(show);
+    }
 
     @IdentityLazy
     public List<Property> getPropertyList(boolean onlyCheck) {
@@ -1793,7 +1844,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         QuickSet<Property> cancelActions = new QuickSet<Property>();
         QuickSet<Property> rest = new QuickSet<Property>();
         for (Property property : getProperties())
-            if (property instanceof ActionProperty && ((ActionProperty) property).hasCancel())
+            if(property instanceof ActionProperty && ((ActionProperty) property).hasFlow(ChangeFlowType.CANCEL))
                 cancelActions.add(property);
             else
                 rest.add(property);
@@ -2399,7 +2450,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
     }
 
-    public class RestartActionProperty extends CustomActionProperty {
+    public class RestartActionProperty extends AdminActionProperty {
         private RestartActionProperty(String sID, String caption) {
             super(sID, caption, new ValueClass[]{});
         }
@@ -2410,7 +2461,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
     }
 
-    public class CancelRestartActionProperty extends CustomActionProperty {
+    public class CancelRestartActionProperty extends AdminActionProperty {
         private CancelRestartActionProperty(String sID, String caption) {
             super(sID, caption, new ValueClass[]{});
         }
@@ -2421,7 +2472,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
     }
 
-    public class GarbageCollectorActionProperty extends CustomActionProperty {
+    public class GarbageCollectorActionProperty extends AdminActionProperty {
         private GarbageCollectorActionProperty(String sid, String caption) {
             super(sid, caption, new ValueClass[]{});
         }

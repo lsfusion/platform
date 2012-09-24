@@ -67,8 +67,14 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
             return new Query(Expr.pack(exprs), Expr.pack(orders), ordersNotNull, Expr.pack(partitions), type);
         }
 
-        public Collection<Expr> getAggrExprs() {
-            return BaseUtils.merge(exprs, partitions);
+        @Override
+        protected Where calculateWhere() {
+            return super.calculateWhere().and(Expr.getWhere(partitions));
+        }
+
+        @Override
+        public Set<Expr> getExprs() { // получает все выражения
+            return BaseUtils.mergeSet(super.getExprs(), partitions);
         }
     }
 

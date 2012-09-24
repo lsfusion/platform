@@ -1,22 +1,22 @@
 package platform.server.classes;
 
+import platform.base.ImmutableObject;
+import platform.server.caches.IdentityLazy;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.classes.sets.ObjectClassSet;
 import platform.server.classes.sets.OrObjectClassSet;
-import platform.server.data.SQLSession;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
-import platform.server.logics.DataObject;
 import platform.server.logics.NullValue;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.ServerResourceBundle;
+import platform.server.logics.property.ActionProperty;
+import platform.server.logics.property.actions.ChangeClassActionProperty;
 
-import java.sql.SQLException;
 import java.util.Collection;
-import java.util.Collections;
 
-public class UnknownClass implements ConcreteObjectClass {
+public class UnknownClass extends ImmutableObject implements ConcreteObjectClass {
 
     public String toString() {
         return ServerResourceBundle.getString("classes.unknown");
@@ -31,10 +31,6 @@ public class UnknownClass implements ConcreteObjectClass {
     public void getDiffSet(ConcreteObjectClass diffClass, Collection<CustomClass> addClasses, Collection<CustomClass> removeClasses) {
         if(diffClass instanceof CustomClass) // все удаляются
             ((CustomClass)diffClass).fillParents(removeClasses);
-    }
-
-    public void saveClassChanges(SQLSession session, DataObject value) throws SQLException {
-        session.deleteKeyRecords(baseClass.table,Collections.singletonMap(baseClass.table.key,value.object));
     }
 
     public boolean inSet(AndClassSet set) {
@@ -91,5 +87,10 @@ public class UnknownClass implements ConcreteObjectClass {
 
     public AndClassSet[] getAnd() {
         return new AndClassSet[]{this};
+    }
+
+    @IdentityLazy
+    public ActionProperty getChangeClassAction() {
+        return CustomClass.getChangeClassAction(this);
     }
 }

@@ -27,6 +27,7 @@ import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.actions.CustomActionProperty;
+import platform.server.logics.property.actions.SystemActionProperty;
 
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -50,7 +51,7 @@ import static platform.server.logics.ServerResourceBundle.getString;
  * Time: 11:53
  */
 
-public class EmailActionProperty extends CustomActionProperty {
+public class EmailActionProperty extends SystemActionProperty {
     private final static Logger logger = Logger.getLogger(EmailActionProperty.class);
 
     public static enum FormStorageType {INLINE, ATTACH}
@@ -68,6 +69,11 @@ public class EmailActionProperty extends CustomActionProperty {
     private final List<FormStorageType> storageTypes = new ArrayList<FormStorageType>();
     private final List<Map<ObjectEntity, CalcPropertyInterfaceImplement<ClassPropertyInterface>>> mapObjects = new ArrayList<Map<ObjectEntity, CalcPropertyInterfaceImplement<ClassPropertyInterface>>>();
     private final List<CalcPropertyInterfaceImplement> attachmentProps = new ArrayList<CalcPropertyInterfaceImplement>();
+
+    @Override
+    protected boolean isVolatile() { // формы используются, не определишь getUsedProps
+        return true;
+    }
 
     public EmailActionProperty(String sID, String caption, BusinessLogics<?> BL, ValueClass[] classes) {
         super(sID, caption, classes);

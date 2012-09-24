@@ -31,6 +31,9 @@ public abstract class ExecutionEnvironment {
     public abstract boolean isInTransaction();
 
     public <P extends PropertyInterface> void change(CalcProperty<P> property, PropertyChange<P> change) throws SQLException {
+        if(change.isEmpty()) // оптимизация
+            return;
+        
         DataChanges userDataChanges = null;
         if(property instanceof DataProperty) // оптимизация
             userDataChanges = getSession().getUserDataChanges((DataProperty)property, (PropertyChange<ClassPropertyInterface>) change);
@@ -42,11 +45,6 @@ public abstract class ExecutionEnvironment {
             getSession().changeProperty(change, mapChanges.get(change));
     }
 
-    public <P extends PropertyInterface> void execute(ActionProperty<P> property, PropertyChange<P> set, FormEnvironment<P> formEnv) throws SQLException {
-        for(Map.Entry<Map<P, DataObject>, Map<String, ObjectValue>> row : set.executeClasses(this).entrySet())
-            execute(property, row.getKey(), formEnv, row.getValue().get("value"), null);
-    }
-
     public <P extends PropertyInterface> void execute(ActionProperty<P> property, PropertySet<P> set, FormEnvironment<P> formEnv) throws SQLException {
         for(Map<P, DataObject> row : set.executeClasses(this))
             execute(property, row, formEnv, null, null);
@@ -55,8 +53,6 @@ public abstract class ExecutionEnvironment {
     public <P extends PropertyInterface> FlowResult execute(ActionProperty<P> property, Map<P, DataObject> change, FormEnvironment<P> formEnv, ObjectValue pushUserInput, DataObject pushAddObject) throws SQLException {
         return property.execute(new ExecutionContext<P>(change, pushUserInput, pushAddObject, this, formEnv));
     }
-
-    public abstract DataObject addObject(ConcreteCustomClass cls, DataObject pushed) throws SQLException;
 
     public abstract void changeClass(PropertyObjectInterfaceInstance objectInstance, DataObject dataObject, ConcreteObjectClass cls) throws SQLException;
 

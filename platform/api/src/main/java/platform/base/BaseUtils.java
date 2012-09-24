@@ -217,6 +217,14 @@ public class BaseUtils {
         return result;
     }
 
+    public static <BK,K extends BK> Collection<K> filter(Collection<K> col, Collection<BK> filter) {
+        List<K> result = new ArrayList<K>();
+        for (K element : col)
+            if (filter.contains(element))
+                result.add(element);
+        return result;
+    }
+
     public static <K> List<K> filterList(List<K> list, Collection<K> filter) {
         List<K> result = new ArrayList<K>();
         for (K element : list)
@@ -341,6 +349,18 @@ public class BaseUtils {
 
     public static <KA, KB, V> Map<KA, KB> crossValues(Map<KA, V> map, Map<KB, V> mapTo, boolean ignoreUnique) {
         return join(map, reverse(mapTo, ignoreUnique));
+    }
+
+    public static <K, T, VA, VB> Map<T, VA> splitInnerJoin(Map<T, K> mapTo, Map<K, VA> map1, Map<K, VB> map2, Map<T, VB> res2) {
+        Map<T, VA> res1 = new HashMap<T, VA>();
+        for(Map.Entry<T, K> map : mapTo.entrySet()) {
+            VA value1 = map1.get(map.getValue());
+            if(value1!=null)
+                res1.put(map.getKey(), value1);
+            else
+                res2.put(map.getKey(), map2.get(map.getValue()));
+        }
+        return res1;
     }
 
     public static <KA, KB, V> Map<KA, KB> mapValues(Map<KA, V> map, Map<KB, V> equals) {
@@ -783,6 +803,12 @@ public class BaseUtils {
         return result;
     }
 
+    public static <B, K1 extends B, K2 extends B> Set<B> mergeColSet(Collection<K1> set1, Collection<K2> set2) {
+        Set<B> result = new HashSet<B>(set1);
+        result.addAll(set2);
+        return result;
+    }
+
     public static <B, K1 extends B, K2 extends B> Set<B> mergeItem(Set<K1> set, K2 item) {
         Set<B> result = new HashSet<B>(set);
         result.add(item);
@@ -984,6 +1010,14 @@ public class BaseUtils {
     public static Integer nullParseInt(String s) {
         if (s == null) return null;
         else return Integer.parseInt(s);
+    }
+
+    public static <T> T splitOne(Collection<? extends T> col, Collection<T> rest) {
+        Iterator<? extends T> iterator = col.iterator();
+        T one = iterator.next();
+        while(iterator.hasNext())
+            rest.add(iterator.next());
+        return one;
     }
 
     public static abstract class Group<G, K> {

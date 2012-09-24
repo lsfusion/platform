@@ -53,14 +53,12 @@ public abstract class InnerExpr extends NotNullExpr implements JoinData {
     public static InnerJoins getFollowJoins(WhereJoin<?, ?> join, Result<Map<InnerJoin, Where>> upWheres) { // куда-то надо же положить
         InnerJoins result = new InnerJoins();
         Map<InnerJoin, Where> upResult = new HashMap<InnerJoin, Where>();
-        NotNullExprSet notNullExprs = join.getExprFollows(false);
-        for(int i=0;i<notNullExprs.size;i++) {
-            NotNullExpr notNullExpr = notNullExprs.get(i);
-            if(notNullExpr instanceof InnerExpr) {
-                InnerJoin innerJoin = ((InnerExpr)notNullExpr).getInnerJoin();
-                result = result.and(new InnerJoins(innerJoin));
-                upResult = result.andUpWheres(upResult, Collections.singletonMap(innerJoin,  notNullExpr.getWhere()));
-            }
+        QuickSet<InnerExpr> innerExprs = join.getExprFollows(false).getInnerExprs();
+        for(int i=0;i<innerExprs.size;i++) {
+            InnerExpr innerExpr = innerExprs.get(i);
+            InnerJoin innerJoin = innerExpr.getInnerJoin();
+            result = result.and(new InnerJoins(innerJoin));
+            upResult = result.andUpWheres(upResult, Collections.singletonMap(innerJoin,  innerExpr.getWhere()));
         }
         upWheres.set(upResult);
         return result;

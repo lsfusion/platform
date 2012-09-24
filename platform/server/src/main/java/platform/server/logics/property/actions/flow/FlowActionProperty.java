@@ -15,7 +15,7 @@ import static platform.base.BaseUtils.*;
 
 public abstract class FlowActionProperty extends ActionProperty<PropertyInterface> {
 
-    private static List<PropertyInterface> genInterfaces(int size) {
+    public static List<PropertyInterface> genInterfaces(int size) {
         List<PropertyInterface> result = new ArrayList<PropertyInterface>();
         for(int i=0;i<size;i++)
             result.add(new PropertyInterface(i));

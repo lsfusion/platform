@@ -1,5 +1,7 @@
 package platform.server.logics.property.actions.flow;
 
+import platform.base.BaseUtils;
+import platform.base.OrderedMap;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.CustomClass;
 import platform.server.data.type.Type;
@@ -9,23 +11,21 @@ import platform.server.logics.property.*;
 import platform.server.logics.property.derived.DerivedProperty;
 
 import java.sql.SQLException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static platform.base.BaseUtils.reverse;
+import static platform.server.logics.property.derived.DerivedProperty.createForAction;
 
 public class IfActionProperty extends KeepContextActionProperty {
 
-    private final CalcPropertyInterfaceImplement<PropertyInterface> ifProp;
+    private final CalcPropertyMapImplement<?, PropertyInterface> ifProp;
     private final ActionPropertyMapImplement<?, PropertyInterface> trueAction;
     private final ActionPropertyMapImplement<?, PropertyInterface> falseAction;
 
     private final boolean ifClasses; // костыль из-за невозможности работы с ClassWhere на уровне свойств, используется в UnionProperty для генерации editActions
 
     // так, а не как в Join'е, потому как нужны ClassPropertyInterface'ы а там нужны классы
-    public <I extends PropertyInterface> IfActionProperty(String sID, String caption, boolean not, List<I> innerInterfaces, CalcPropertyInterfaceImplement<I> ifProp, ActionPropertyMapImplement<?, I> trueAction, ActionPropertyMapImplement<?, I> falseAction, boolean ifClasses) {
+    public <I extends PropertyInterface> IfActionProperty(String sID, String caption, boolean not, List<I> innerInterfaces, CalcPropertyMapImplement<?, I> ifProp, ActionPropertyMapImplement<?, I> trueAction, ActionPropertyMapImplement<?, I> falseAction, boolean ifClasses) {
         super(sID, caption, innerInterfaces.size());
 
         Map<I, PropertyInterface> mapInterfaces = reverse(getMapInterfaces(innerInterfaces));
@@ -114,4 +114,25 @@ public class IfActionProperty extends KeepContextActionProperty {
             return ifProp.read(context, context.getKeys()) != null;
         }
     }
+
+    @Override
+    public <T extends PropertyInterface, PW extends PropertyInterface> boolean hasPushFor(Map<PropertyInterface, T> mapping, Collection<T> context, boolean ordersNotNull) {
+        return falseAction == null; // нужно разбивать на if true и if false, потом реализуем
+    }
+    @Override
+    public <T extends PropertyInterface, PW extends PropertyInterface> CalcProperty getPushWhere(Map<PropertyInterface, T> mapping, Collection<T> context, boolean ordersNotNull) {
+        assert hasPushFor(mapping, context, ordersNotNull);
+        return ifProp.property;
+    }
+    @Override
+    public <T extends PropertyInterface, PW extends PropertyInterface> ActionPropertyMapImplement<?, T> pushFor(Map<PropertyInterface, T> mapping, Collection<T> context, CalcPropertyMapImplement<PW, T> push, OrderedMap<CalcPropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull) {
+        assert hasPushFor(mapping, context, ordersNotNull);
+
+        return ForActionProperty.pushFor(interfaces, ifProp, BaseUtils.toMap(interfaces), mapping, context, push, orders, ordersNotNull, new ForActionProperty.PushFor<PropertyInterface, PropertyInterface>() {
+            public ActionPropertyMapImplement<?, PropertyInterface> push(Collection<PropertyInterface> context, CalcPropertyMapImplement<?, PropertyInterface> where, OrderedMap<CalcPropertyInterfaceImplement<PropertyInterface>, Boolean> orders, boolean ordersNotNull, Map<PropertyInterface, PropertyInterface> mapInnerInterfaces) {
+                return createForAction(context, where, orders, ordersNotNull, trueAction.map(mapInnerInterfaces), null, false);
+            }
+        });
+    }
+
 }

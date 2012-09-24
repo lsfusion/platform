@@ -28,7 +28,6 @@ import platform.server.data.where.WhereBuilder;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.form.instance.FormInstance;
 import platform.server.logics.DataObject;
-import platform.server.logics.NullValue;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.linear.LCP;
@@ -74,18 +73,23 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return property.getRecDepends().intersect(check);
     }
 
-    public static Set<CalcProperty> depends(Iterable<CalcProperty> properties, QuickSet<CalcProperty> check) {
-        Set<CalcProperty> result = new HashSet<CalcProperty>();
+    public static boolean depends(Iterable<CalcProperty> properties, QuickSet<CalcProperty> check) {
         for(CalcProperty property : properties)
             if(depends(property, check))
-                result.add(property);
-        return result;
+                return true;
+        return false;
     }
 
-    public static boolean depends(Collection<CalcProperty> properties, CalcProperty check) {
-        Set<CalcProperty> result = new HashSet<CalcProperty>();
+    public static boolean depends(Iterable<CalcProperty> properties, CalcProperty check) {
         for(CalcProperty property : properties)
             if(depends(property, check))
+                return true;
+        return false;
+    }
+
+    public static <T extends PropertyInterface> boolean dependsImplement(Iterable<CalcPropertyInterfaceImplement<T>> properties, QuickSet<CalcProperty> check) {
+        for(CalcPropertyInterfaceImplement<T> property : properties)
+            if(property instanceof CalcPropertyMapImplement && depends(((CalcPropertyMapImplement)property).property, check))
                 return true;
         return false;
     }
@@ -128,14 +132,6 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
 
     public void change(Map<T, DataObject> keys, ExecutionEnvironment env, Object value) throws SQLException {
         getImplement().change(keys, env, value);
-    }
-
-    public boolean hasSet(boolean notNull) {
-        return !getSetChangeProps(notNull, false).isEmpty();
-    }
-
-    public Set<CalcProperty> getSetChangeProps(boolean notNull, boolean add) {
-        return new HashSet<CalcProperty>(getChangeProps()); // !notNull
     }
 
     public Pair<SinglePropertyTableUsage<T>, SinglePropertyTableUsage<T>> splitFitClasses(SinglePropertyTableUsage<T> changeTable, SQLSession sql, BaseClass baseClass, QueryEnvironment env) throws SQLException {
@@ -352,10 +348,10 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
 
     protected Collection<Pair<Property<?>, LinkType>> calculateLinks() {
         Collection<Pair<Property<?>, LinkType>> result = new ArrayList<Pair<Property<?>, LinkType>>();
+
         for(CalcProperty depend : getDepends())
             result.add(new Pair<Property<?>, LinkType>(depend, LinkType.DEPEND));
-        for(ActionProperty depend : actionChangeProps) // только у Data и IsClassProperty
-            result.add(new Pair<Property<?>, LinkType>(depend, LinkType.DEPEND));
+
         return result;
     }
 
@@ -637,25 +633,15 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     }
 
     public void setNotNull(Map<T, DataObject> values, ExecutionEnvironment env, boolean notNull, boolean check) throws SQLException {
-        setNotNull(values, new HashMap<T, KeyExpr>(), Where.TRUE, env, notNull, check);
+        if(!check || (read(env.getSession().sql, values, env.getModifier(), env.getQueryEnv())!=null) != notNull) {
+            ActionPropertyMapImplement<?, T> action = getSetNotNullAction(notNull);
+            if(action!=null)
+                action.execute(new ExecutionContext<T>(values , null, null, env, null));
+        }
     }
     public void setNotNull(Map<T, KeyExpr> mapKeys, Where where, ExecutionEnvironment env, boolean notNull) throws SQLException {
-        setNotNull(new HashMap<T, DataObject>(), mapKeys, where, env, notNull);
-    }
-    public void setNotNull(Map<T, DataObject> mapValues, Map<T, KeyExpr> mapKeys, Where where, ExecutionEnvironment env, boolean notNull) throws SQLException {
-        setNotNull(mapValues, mapKeys, where, env, notNull, true);
-    }
-    public void setNotNull(Map<T, DataObject> mapValues, Map<T, KeyExpr> mapKeys, Where where, ExecutionEnvironment env, boolean notNull, boolean check) throws SQLException {
-        setNotNull(new PropertySet<T>(mapValues, mapKeys, where, new OrderedMap<Expr, Boolean>(), false), env, notNull, check);
-    }
-    public void setNotNull(PropertySet<T> set, ExecutionEnvironment env, boolean notNull, boolean check) throws SQLException {
-        if(check) {
-            Where where = getExpr(set.getMapExprs(), env.getModifier()).getWhere();
-            if(notNull)
-                where = where.not();
-            set = set.and(where);
-        }
-        proceedNotNull(set, env, notNull);
+        for(Map<T, DataObject> row : new Query<T, Object>(mapKeys, where).executeClasses(env).keySet())
+            setNotNull(row, env, notNull, true);
     }
 
     protected DataObject getDefaultObjectValue() {
@@ -666,14 +652,14 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
             return null;
     }
 
-    // assert что where содержит getWhere().not
-    protected void proceedNotNull(PropertySet<T> set, ExecutionEnvironment env, boolean notNull) throws SQLException {
+    public ActionPropertyMapImplement<?, T> getSetNotNullAction(boolean notNull) {
         if(notNull) {
-            ObjectValue defaultValue = getDefaultObjectValue();
+            DataObject defaultValue = getDefaultObjectValue();
             if(defaultValue!=null)
-                env.change(this, new PropertyChange<T>(set, defaultValue));
+                return DerivedProperty.createSetAction(interfaces, getImplement(), DerivedProperty.<T>createStatic(defaultValue.object, (DataClass)defaultValue.objectClass));
+            return null;
         } else
-            env.change(this, new PropertyChange<T>(set, NullValue.instance));
+            return DerivedProperty.createSetAction(interfaces, getImplement(), DerivedProperty.<T>createNull());
     }
 
     public QuickSet<CalcProperty> getUsedEventChange(StructChanges propChanges, boolean cascade) {
@@ -687,6 +673,15 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     public CalcPropertyMapImplement<T, T> getImplement() {
         return new CalcPropertyMapImplement<T, T>(this, getIdentityInterfaces());
     }
+
+    public <V extends PropertyInterface> CalcPropertyMapImplement<T, V> getImplement(List<V> list) {
+        return new CalcPropertyMapImplement<T, V>(this, getMapInterfaces(list));
+    }
+
+    public <V extends PropertyInterface> CalcPropertyMapImplement<T, V> getImplement(V... list) {
+        return getImplement(BaseUtils.toList(list));
+    }
+
 
     @IdentityLazy
     public ActionPropertyMapImplement<?, T> getDefaultEditAction(String editActionSID, CalcProperty filterProperty) {

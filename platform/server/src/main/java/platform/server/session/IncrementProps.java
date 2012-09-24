@@ -6,14 +6,12 @@ import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.OverrideSessionModifier;
 import platform.server.logics.property.PropertyInterface;
 
-import java.util.Collection;
-
 public abstract class IncrementProps {
 
     private WeakIdentityHashSet<OverrideSessionModifier> modifiers = new WeakIdentityHashSet<OverrideSessionModifier>();
     public void registerView(OverrideSessionModifier modifier) {
         modifiers.add(modifier);
-        modifier.eventChanges(getProperties());
+        modifier.eventDataChanges(getProperties());
     }
     public void unregisterView(OverrideSessionModifier modifier) {
         modifiers.remove(modifier);

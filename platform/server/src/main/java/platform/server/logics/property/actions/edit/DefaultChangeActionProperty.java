@@ -2,6 +2,7 @@ package platform.server.logics.property.actions.edit;
 
 import com.google.common.base.Throwables;
 import platform.base.BaseUtils;
+import platform.base.QuickSet;
 import platform.interop.action.AsyncResultClientAction;
 import platform.interop.action.EditNotPerformedClientAction;
 import platform.interop.form.ServerResponse;
@@ -16,6 +17,7 @@ import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.property.*;
 import platform.server.logics.property.actions.CustomActionProperty;
+import platform.server.logics.property.actions.SystemActionProperty;
 import platform.server.session.Modifier;
 
 import java.io.IOException;
@@ -26,7 +28,7 @@ import java.util.Map;
 
 import static platform.base.BaseUtils.reverse;
 
-public class DefaultChangeActionProperty<P extends PropertyInterface> extends CustomActionProperty {
+public class DefaultChangeActionProperty<P extends PropertyInterface> extends SystemActionProperty {
 
     private final CalcPropertyMapImplement<P, ClassPropertyInterface> implement;
     private final String editActionSID;
@@ -53,6 +55,11 @@ public class DefaultChangeActionProperty<P extends PropertyInterface> extends Cu
 
     private Type getImplementType() {
         return implement.property.getType();
+    }
+
+    @Override
+    protected boolean isVolatile() {
+        return true;
     }
 
     @Override

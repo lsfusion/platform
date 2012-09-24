@@ -9,12 +9,13 @@ import platform.server.logics.DataObject;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.actions.CustomActionProperty;
+import platform.server.logics.property.actions.UserActionProperty;
 import tmc.VEDBusinessLogics;
 
 import java.io.IOException;
 import java.sql.SQLException;
 
-public class CustomerCheckRetailImportActionProperty extends CustomActionProperty {
+public class CustomerCheckRetailImportActionProperty extends UserActionProperty {
 
     VEDBusinessLogics BL;
 

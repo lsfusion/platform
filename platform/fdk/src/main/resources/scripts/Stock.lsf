@@ -231,12 +231,12 @@ iterate(i, from, to) = RECURSION i==from AND from IS INTEGER AND to IS INTEGER S
 //WHEN ASSIGNED(isPostedDataSkuLedger(ledger)) DO EXEC resetCostDataSkuLedger (ledger) ORDER orderDataSkuLedger(ledger);
 ON APPLY SINGLE {
     LOCAL changedLedger = BOOLEAN (dataSkuLedger);
-    SET changedLedger(ledger) <- (ASSIGNED(isPostedDataSkuLedger(ledger))
-                                  OR CHANGED(quantityDataSkuLedger(ledger))
+    SET changedLedger(ledger) <- ASSIGNED(isPostedDataSkuLedger(ledger)) OR ((
+                                  CHANGED(quantityDataSkuLedger(ledger))
                                   OR CHANGED(skuDataSkuLedger(ledger))
                                   OR CHANGED(stockDataSkuLedger(ledger))
                                   OR CHANGED(changedDataSkuLedger(ledger)))
-                                 AND isPostedDataSkuLedger(ledger);
+                                 AND isPostedDataSkuLedger(ledger));
     SET costDataSkuLedgerBatch(ledger, batch) <- NULL WHERE changedLedger(ledger);
 
     LOCAL orderedLedger = INTEGER (dataSkuLedger);

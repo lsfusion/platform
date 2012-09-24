@@ -194,15 +194,12 @@ DESIGN declarationDetailCStoWHInput FROM DEFAULT {
 inputDeclarationDetailCStoWH 'Подбор строк декларации' = ACTION (CStoWH) {
     FORM declarationDetailCStoWHInput MODAL;
         IF formResult() == formResult.ok THEN {
-            FOR qty == quantityInputFreightUnitDeclarationDetail (freightUnit, declarationDetail) DO {
-                ADDOBJ CStoWHDetail;
-                FOR cd == addedObject() DO {
+            FOR qty == quantityInputFreightUnitDeclarationDetail (freightUnit, declarationDetail) ADDOBJ cd=CStoWHDetail DO {
                 SET CStoWHCStoWHDetail(cd) <- CStoWH;
                 SET declarationDetailCStoWHDetail(cd) <- declarationDetail;
                 SET quantityCStoWHDetail(cd) <- qty;
                 SET freightUnitCStoWHDetail(cd) <- freightUnit;
                 }
-               }
             }
         SET quantityInputFreightUnitDeclarationDetail(freightUnit, declarationDetail) <- NULL;
 } TOOLBAR;

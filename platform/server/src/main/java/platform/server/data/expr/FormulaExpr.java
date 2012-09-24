@@ -6,6 +6,7 @@ import platform.server.caches.IdentityLazy;
 import platform.server.caches.ManualLazy;
 import platform.server.caches.ParamLazy;
 import platform.server.caches.hash.HashContext;
+import platform.server.classes.ConcreteClass;
 import platform.server.classes.ConcreteValueClass;
 import platform.server.classes.DataClass;
 import platform.server.classes.IntegralClass;
@@ -32,17 +33,17 @@ public class FormulaExpr extends StaticClassExpr {
     public final static String MULT2 = "(prm1*prm2)";
 
     private final String formula;
-    private final ConcreteValueClass valueClass;
+    private final ConcreteClass valueClass;
     private final Map<String, BaseExpr> params;
 
     // этот конструктор напрямую можно использовать только заведомо зная что getClassWhere не null или через оболочку create 
-    private FormulaExpr(String formula,Map<String, BaseExpr> params, ConcreteValueClass valueClass) {
+    private FormulaExpr(String formula,Map<String, BaseExpr> params, ConcreteClass valueClass) {
         this.formula = formula;
         this.params = params;
         this.valueClass = valueClass;
     }
 
-    public static Expr create(String formula, Map<String, BaseExpr> params, ConcreteValueClass value) {
+    public static Expr create(String formula, Map<String, BaseExpr> params, ConcreteClass value) {
         if(formula.equals(MIN2)) {
             Iterator<BaseExpr> i = params.values().iterator();
             BaseExpr operator1 = i.next(); BaseExpr operator2 = i.next();
@@ -55,17 +56,17 @@ public class FormulaExpr extends StaticClassExpr {
         return BaseExpr.create(new FormulaExpr(formula, params, value));
     }
 
-    public static Expr create1(final String formula, final ConcreteValueClass value,Expr prm1) {
+    public static Expr create1(final String formula, final ConcreteClass value,Expr prm1) {
         return create(formula, value, Collections.singletonMap("prm1", prm1));
     }
-    public static Expr create2(final String formula, final ConcreteValueClass value,Expr prm1, Expr prm2) {
+    public static Expr create2(final String formula, final ConcreteClass value,Expr prm1, Expr prm2) {
         Map<String, Expr> params = new HashMap<String, Expr>();
         params.put("prm1", prm1);
         params.put("prm2", prm2);
         return create(formula, value, params);
     }
 
-    public static Expr create(final String formula, final ConcreteValueClass value,Map<String,? extends Expr> params) {
+    public static Expr create(final String formula, final ConcreteClass value,Map<String,? extends Expr> params) {
         return new ExprPullWheres<String>() {
             protected Expr proceedBase(Map<String, BaseExpr> map) {
                 return create(formula, map, value);
@@ -90,7 +91,7 @@ public class FormulaExpr extends StaticClassExpr {
      }
 
     public Type getType(KeyType keyType) {
-        ConcreteValueClass staticClass = getStaticClass();
+        ConcreteClass staticClass = getStaticClass();
         if(staticClass==null)
             return null;
         return staticClass.getType();
@@ -148,7 +149,7 @@ public class FormulaExpr extends StaticClassExpr {
         return (DataClass) getCompatibleType(params.values());
     }
 
-    public ConcreteValueClass getStaticClass() {
+    public ConcreteClass getStaticClass() {
         if(valueClass==null)
             return getCompatibleClass();
         else

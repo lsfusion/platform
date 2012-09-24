@@ -1,6 +1,7 @@
 package platform.server.logics.property;
 
 import platform.base.BaseUtils;
+import platform.base.Pair;
 import platform.server.classes.LogicalClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
@@ -59,6 +60,19 @@ public class ChangedProperty<T extends PropertyInterface> extends SessionCalcPro
                 throw new RuntimeException();
         }
         return new PropertyChange<T>(mapKeys, ValueExpr.get(where), Where.TRUE);
+    }
+
+    @Override
+    protected Collection<Pair<Property<?>, LinkType>> calculateLinks() {
+        if(property instanceof IsClassProperty) {
+            Collection<Pair<Property<?>, LinkType>> result = new ArrayList<Pair<Property<?>, LinkType>>();
+
+            for(ActionProperty depend : actionChangeProps) // только у Data и IsClassProperty
+                result.add(new Pair<Property<?>, LinkType>(depend, LinkType.DEPEND));
+
+            return result;
+        } else
+            return super.calculateLinks();
     }
 
     @Override

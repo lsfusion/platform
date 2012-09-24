@@ -1,14 +1,14 @@
 package platform.server.data;
 
 import platform.base.*;
-import platform.interop.Compare;
 import platform.server.caches.AbstractValuesContext;
 import platform.server.caches.ManualLazy;
 import platform.server.caches.ValuesContext;
 import platform.server.caches.hash.HashContext;
 import platform.server.caches.hash.HashValues;
+import platform.server.classes.BaseClass;
 import platform.server.classes.ConcreteClass;
-import platform.server.data.expr.Expr;
+import platform.server.data.expr.FormulaExpr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.expr.query.GroupType;
@@ -19,6 +19,7 @@ import platform.server.data.query.Query;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.MapValuesTranslate;
+import platform.server.data.type.ObjectType;
 import platform.server.data.type.ParseInterface;
 import platform.server.data.type.StringParseInterface;
 import platform.server.data.where.classes.ClassWhere;
@@ -34,7 +35,7 @@ import static platform.base.BaseUtils.merge;
 
 public class SessionTable extends Table implements ValuesContext<SessionTable>, Value {// в явную хранимые ряды
 
-    public final int count;
+    public final int count; // вообще должен быть точным, или как минимум пессимистичным, чтобы в addObjects учитываться
 
     public StatKeys<KeyField> getStatKeys() {
         return getStatKeys(this, count);
@@ -271,12 +272,17 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
         return new Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>>(keysClassWhere, propertiesClassWheres);
     }
 
-    public SessionTable insertRecord(final SQLSession session, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields, Insert type, final Object owner) throws SQLException {
+    public SessionTable modifyRecord(final SQLSession session, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields, Modify type, final Object owner) throws SQLException {
 
-        boolean update = (type==Insert.UPDATE);
-        if(type==Insert.MODIFY || type==Insert.LEFT) {
+        if(type==Modify.DELETE) { // статистику пока не учитываем
+            return new SessionTable(name, keys, properties, count - deleteRecords(session, keyFields), classes, propertyClasses).
+                    updateStatistics(session, count, owner);
+        }
+
+        boolean update = (type== Modify.UPDATE);
+        if(type== Modify.MODIFY || type== Modify.LEFT) {
             if(session.isRecord(this, keyFields)) {
-                if(type==Insert.MODIFY)
+                if(type== Modify.MODIFY)
                     update = true;
                 else
                     return this;
@@ -293,7 +299,10 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
                             updateStatistics(session, count, owner);
     }
 
-    public SessionTable addRows(SQLSession session, Query<KeyField, PropertyField> query, Insert type, QueryEnvironment env, Object owner) throws SQLException {
+    public SessionTable modifyRows(SQLSession session, Query<KeyField, PropertyField> query, Modify type, QueryEnvironment env, Object owner) throws SQLException {
+
+        if(query.where.isFalse()) // вообще говоря оптимизация, но для DELETE'а exception возникает
+            return this;
 
         ModifyQuery modify = new ModifyQuery(this, query, env);
         int inserted;
@@ -302,7 +311,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
                 inserted = session.modifyRecords(modify);
                 break;
             case LEFT:
-                inserted = session.insertLeftSelect(modify);
+                inserted = session.insertLeftSelect(modify, true);
                 break;
             case ADD:
                 inserted = session.insertSelect(modify);
@@ -311,12 +320,22 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
                 session.updateRecords(modify);
                 inserted = 0;
                 break;
+            case DELETE:
+                return new SessionTable(name, keys, properties, count - session.deleteRecords(modify), classes, propertyClasses).
+                        updateStatistics(session, count, owner);
             default:
                 throw new RuntimeException("should not be");
         }
         return new SessionTable(name, keys, properties, count + inserted,
                         orFieldsClassWheres(classes, propertyClasses, SessionData.getQueryClasses(query))).
                             updateStatistics(session, count, owner);
+    }
+    public void updateAdded(SQLSession session, BaseClass baseClass, PropertyField field, int count) throws SQLException {
+        Query<KeyField, PropertyField> query = new Query<KeyField, PropertyField>(this);
+        platform.server.data.query.Join<PropertyField> join = join(query.mapKeys);
+        query.properties.put(field, FormulaExpr.create2("prm1+prm2", baseClass.unknown, join.getExpr(field), ObjectType.idClass.getStaticExpr(count)));
+        query.and(join.getWhere());
+        session.updateRecords(new ModifyQuery(this, query));
     }
 
     public SessionTable updateStatistics(final SQLSession session, int prevCount, final Object owner) throws SQLException {
@@ -336,25 +355,18 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
         return this;
     }
 
-    public void deleteRecords(SQLSession session, Map<KeyField, DataObject> keys) throws SQLException {
-        session.deleteKeyRecords(this, DataObject.getMapValues(keys));
+    public int deleteRecords(SQLSession session, Map<KeyField, DataObject> keys) throws SQLException {
+        return session.deleteKeyRecords(this, DataObject.getMapValues(keys));
     }
 
-    public void deleteKey(SQLSession session, KeyField mapField, DataObject object) throws SQLException {
-        session.deleteKeyRecords(this, Collections.singletonMap(mapField, object.object));
+    public SessionTable deleteRows(SQLSession session, Query<KeyField, PropertyField> query, QueryEnvironment env, Object owner) throws SQLException {
+        int deleted = session.deleteRecords(new ModifyQuery(this, query, env));
+
+        return new SessionTable(name, keys, properties, count - deleted,
+                orFieldsClassWheres(classes, propertyClasses, SessionData.getQueryClasses(query))).
+                updateStatistics(session, count, owner);
     }
 
-    public void deleteProperty(SQLSession session, PropertyField property, DataObject object) throws SQLException {
-        Query<KeyField, PropertyField> dropValues = new Query<KeyField, PropertyField>(this);
-        platform.server.data.query.Join<PropertyField> dataJoin = joinAnd(dropValues.mapKeys);
-        dropValues.and(dataJoin.getExpr(property).compare(object, Compare.EQUALS));
-        dropValues.properties.put(property, Expr.NULL);
-
-        if(dropValues.isEmpty()) // оптимизация
-            return;
-
-        session.updateRecords(new ModifyQuery(this, dropValues));
-    }
 
     public SessionTable addFields(final SQLSession session, final List<KeyField> keys, final Map<KeyField, DataObject> addKeys, final Map<PropertyField, ObjectValue> addProps, final Object owner) throws SQLException {
         if(addKeys.isEmpty() && addProps.isEmpty())

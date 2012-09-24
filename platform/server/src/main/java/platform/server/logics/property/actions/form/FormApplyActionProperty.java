@@ -8,29 +8,27 @@ import platform.server.logics.BusinessLogics;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
+import platform.server.logics.property.PropertyInterface;
+import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.session.DataSession;
 
 import java.awt.*;
 import java.sql.SQLException;
 
-public class ApplyActionProperty extends FormToolbarActionProperty {
-    private final BusinessLogics BL;
-
-    public ApplyActionProperty(BusinessLogics BL) {
-        super("apply", ApiResourceBundle.getString("form.layout.apply"), DataSession.isDataChanged, FormEntity.isNewSession);
-
-        this.BL = BL;
+public class FormApplyActionProperty extends FormToolbarActionProperty {
+    public FormApplyActionProperty() {
+        super("formApply", ApiResourceBundle.getString("form.layout.apply"), DataSession.isDataChanged, FormEntity.isNewSession);
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-        context.apply(BL);
+        context.getFormInstance().formApply();
     }
 
     @Override
     public void proceedDefaultDraw(PropertyDrawEntity<ClassPropertyInterface> propertyDraw, FormEntity<?> form) {
         super.proceedDefaultDraw(propertyDraw, form);
 
-        propertyDraw.propertyBackground = form.addPropertyObject(
-                BL.LM.addJProp(BL.LM.and1, BL.LM.addCProp(ColorClass.instance, Color.green), new LCP(DataSession.isDataChanged)));
+        propertyDraw.propertyBackground = form.addPropertyObject(new LCP(
+                DerivedProperty.createAnd(DerivedProperty.<ClassPropertyInterface>createStatic(Color.green, ColorClass.instance), DataSession.isDataChanged.getImplement()).property));
     }
 }

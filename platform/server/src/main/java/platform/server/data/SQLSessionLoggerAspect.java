@@ -4,6 +4,7 @@ import org.apache.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import platform.server.session.ExecutionEnvironment;
 
 import java.util.Map;
 
@@ -11,18 +12,13 @@ import java.util.Map;
 public class SQLSessionLoggerAspect {
     private final static Logger logger = Logger.getLogger(SQLSessionLoggerAspect.class);
 
-    @Around("execution(void platform.server.data.SQLSession.execute(java.lang.String)) && args(queryString)")
+    @Around("execution(* platform.server.data.SQLSession.executeDDL(java.lang.String)) && args(queryString)")
     public Object executeSQL(ProceedingJoinPoint thisJoinPoint, String queryString) throws Throwable {
         return executeMethodAndLogTime(thisJoinPoint, queryString);
     }
 
-    @Around("execution(int platform.server.data.SQLSession.executeDML(java.lang.String)) && args(queryString, params)")
+    @Around("execution(* platform.server.data.SQLSession.executeDML(java.lang.String, ..)) && args(queryString, ..)")
     public Object executeDML(ProceedingJoinPoint thisJoinPoint, String queryString) throws Throwable {
-        return executeMethodAndLogTime(thisJoinPoint, queryString);
-    }
-
-    @Around("execution(int platform.server.data.SQLSession.executeDML(java.lang.String, java.util.Map)) && args(queryString, params)")
-    public Object executeDML(ProceedingJoinPoint thisJoinPoint, String queryString, Map params) throws Throwable {
         return executeMethodAndLogTime(thisJoinPoint, queryString);
     }
 

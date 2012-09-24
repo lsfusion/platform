@@ -14,6 +14,7 @@ import platform.server.data.expr.where.extra.EqualsWhere;
 import platform.server.data.expr.where.extra.GreaterWhere;
 import platform.server.data.expr.where.extra.InArrayWhere;
 import platform.server.data.expr.where.extra.LikeWhere;
+import platform.server.data.query.InnerJoins;
 import platform.server.data.query.stat.InnerBaseJoin;
 import platform.server.data.query.stat.KeyStat;
 import platform.server.data.where.MapWhere;
@@ -41,10 +42,13 @@ public abstract class BaseExpr extends Expr {
         return new ExprCaseList(this);
     }
 
+    public NotNullExprSet getExprFollows(boolean includeThis, boolean recursive) {
+        assert includeThis || recursive; // также предполагается что NotNullExpr includeThis отработал
+        return getExprFollows(recursive);
+    }
     private NotNullExprSet exprFollows = null;
     @ManualLazy
-    public NotNullExprSet getExprFollows(boolean includeThis, boolean recursive) {
-        assert includeThis || recursive; // также предполагается что InnerExpr includeThis отработал
+    public NotNullExprSet getExprFollows(boolean recursive) {
         if(exprFollows==null)
             exprFollows = getBaseJoin().getExprFollows(recursive);
         return exprFollows;

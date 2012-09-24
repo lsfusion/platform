@@ -16,12 +16,13 @@ import platform.server.logics.linear.LCP;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.actions.CustomActionProperty;
+import platform.server.logics.property.actions.UserActionProperty;
 import skolkovo.SkolkovoLogicsModule;
 
 import java.sql.*;
 import java.util.*;
 
-public class CopyProjectActionProperty extends CustomActionProperty {
+public class CopyProjectActionProperty extends UserActionProperty {
 
     private SkolkovoLogicsModule LM;
     private final ClassPropertyInterface projectInterface;

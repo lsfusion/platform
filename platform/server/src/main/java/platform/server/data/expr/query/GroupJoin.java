@@ -71,7 +71,7 @@ public class GroupJoin extends QueryJoin<Expr, GroupJoin.Query, GroupJoin, Group
         super(new QuickSet<KeyExpr>(keyTypes.keySet()),values,new Query(where, joins, keyTypes),group);
     }
 
-    public GroupJoin(QuickSet<KeyExpr> keys, QuickSet<Value> values, Query inner, Map<Expr, BaseExpr> group) {
+    private GroupJoin(QuickSet<KeyExpr> keys, QuickSet<Value> values, Query inner, Map<Expr, BaseExpr> group) {
         super(keys, values, inner, group);
     }
 

@@ -1,34 +1,26 @@
 package platform.server.logics.property.actions.flow;
 
-import platform.server.classes.BaseClass;
 import platform.server.logics.property.*;
+import platform.server.logics.property.derived.DerivedProperty;
 
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
 
-public class CancelActionProperty extends KeepContextActionProperty {
+public class CancelActionProperty extends ChangeFlowActionProperty {
 
     public CancelActionProperty() {
-        super("cancel", "cancel", 0);
-    }
-
-    public Set<ActionProperty> getDependActions() {
-        return new HashSet<ActionProperty>();
+        super("cancel", "cancel");
     }
 
     @Override
-    public boolean hasCancel() {
-        return true;
+    public boolean hasFlow(ChangeFlowType type) {
+        return type == ChangeFlowType.CANCEL;
     }
 
     public FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException {
         context.cancel();
         return FlowResult.FINISH;
-    }
-
-    public CalcPropertyMapImplement<?, PropertyInterface> getWhereProperty() {
-        return new CalcPropertyMapImplement<PropertyInterface, PropertyInterface>(NullValueProperty.instance);
     }
 
 }

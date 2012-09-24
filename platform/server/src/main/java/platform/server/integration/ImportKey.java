@@ -1,9 +1,10 @@
 package platform.server.integration;
 
+import platform.base.OrderedMap;
 import platform.server.Message;
 import platform.server.ThisMessage;
 import platform.server.classes.ConcreteCustomClass;
-import platform.server.data.Insert;
+import platform.server.data.Modify;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.query.GroupExpr;
@@ -87,20 +88,12 @@ public class ImportKey <P extends PropertyInterface> implements ImportKeyInterfa
     @Message("message.synchronize.key")
     @ThisMessage
     public SinglePropertyTableUsage<P> synchronize(DataSession session, SingleKeyTableUsage<ImportField> importTable) throws SQLException {
-        SinglePropertyTableUsage<P> propertyTable = new SinglePropertyTableUsage<P>(new ArrayList<P>(implement.property.interfaces), new Type.Getter<P>() { // именно так а не createChangeTable, потому как у property могут быть висячие ключи
-            public Type getType(P key) {
-                return implement.mapping.get(key).getType();
-            }
-        }, implement.property.getType());
 
-        Query<P, Object> noKeysQuery = new Query<P, Object>(implement.property);
-        noKeysQuery.and(GroupExpr.create(getImplementExprs(importTable.join(importTable.getMapKeys()).getExprs()), Where.TRUE, noKeysQuery.mapKeys).getWhere()); // в импортируемой таблице
-        noKeysQuery.and(implement.property.getExpr(noKeysQuery.mapKeys, session.getModifier()).getWhere().not()); // для которых неопределился объект
+        Map<P, KeyExpr> mapKeys = implement.property.getMapKeys();
+        Where where = GroupExpr.create(getImplementExprs(importTable.join(importTable.getMapKeys()).getExprs()), Where.TRUE, mapKeys).getWhere().and( // в импортируемой таблице
+                            implement.property.getExpr(mapKeys, session.getModifier()).getWhere().not()); // для которых не определился объект
 
-        for (Map<P, DataObject> noKeysRow : noKeysQuery.executeClasses(session.sql, session.env, session.baseClass).keySet())
-            propertyTable.insertRecord(session.sql, noKeysRow, session.addObject(keyClass, false), Insert.ADD);
-
-        return propertyTable;
+        return session.addObjects(keyClass, new PropertySet<P>(mapKeys, where, new OrderedMap<Expr, Boolean>(), false));
     }
 
     @Override

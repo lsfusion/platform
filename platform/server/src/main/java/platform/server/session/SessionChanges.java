@@ -27,7 +27,7 @@ public interface SessionChanges {
 
     public void changeProperty(DataProperty property, PropertyChange<ClassPropertyInterface> keys) throws SQLException;
 
-    public ConcreteClass getCurrentClass(DataObject value);
+    public ConcreteClass getCurrentClass(DataObject value) throws SQLException;
 
     public DataObject getDataObject(Object value, Type type) throws SQLException;
     public ObjectValue getObjectValue(Object value, Type type) throws SQLException;

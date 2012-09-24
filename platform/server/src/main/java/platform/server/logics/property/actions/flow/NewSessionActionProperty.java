@@ -34,6 +34,11 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
         return context.override(context.getSession().createSession());
     }
 
+    @Override
+    public boolean hasFlow(ChangeFlowType type) {
+        return !(type == ChangeFlowType.APPLY || type == ChangeFlowType.CANCEL) && super.hasFlow(type);
+    }
+
     protected void afterAspect(FlowResult result, ExecutionContext<PropertyInterface> context, ExecutionContext<PropertyInterface> innerContext) throws SQLException {
         if (doApply) {
             innerContext.apply(BL);

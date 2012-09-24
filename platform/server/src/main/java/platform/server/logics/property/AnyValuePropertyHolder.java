@@ -33,7 +33,7 @@ public class AnyValuePropertyHolder {
                                   LCP pdfFileProperty, LCP customFileProperty, LCP excelFileProperty) {
         assert objectProperty.property.getType() == ObjectType.instance
                 && textProperty.property.getType() == TextClass.instance
-                && stringProperty.property.getType().getCompatible(StringClass.get(0))!=null
+                && stringProperty.property.getType().getCompatible(StringClass.get(1))!=null
                 && intProperty.property.getType() == IntegerClass.instance
                 && longProperty.property.getType() == LongClass.instance
                 && doubleProperty.property.getType() == DoubleClass.instance
@@ -71,123 +71,53 @@ public class AnyValuePropertyHolder {
         this.excelFileProperty = excelFileProperty;
     }
 
-    public void write(Type valueType, Object value, ExecutionContext context, DataObject... keys) throws SQLException {
+    public LCP<?> getLCP(Type valueType) {
         if (valueType instanceof ObjectType) {
-            objectProperty.change(value, context, keys);
-
+            return objectProperty;
         } else if (valueType instanceof TextClass) {
-            textProperty.change(value, context, keys);
-
+            return textProperty;
         } else if (valueType instanceof StringClass) {
-            stringProperty.change(value, context, keys);
-
+            return stringProperty;
         } else if (valueType instanceof IntegerClass) {
-            intProperty.change(value, context, keys);
-
+            return intProperty;
         } else if (valueType instanceof LongClass) {
-            longProperty.change(value, context, keys);
-
+            return longProperty;
         } else if (valueType instanceof DoubleClass) {
-            doubleProperty.change(value, context, keys);
-
+            return doubleProperty;
         } else if (valueType instanceof NumericClass) {
-            numericProperty.change(value, context, keys);
-
+            return numericProperty;
         } else if (valueType instanceof YearClass) {
-            yearProperty.change(value, context, keys);
-
+            return yearProperty;
         } else if (valueType instanceof DateTimeClass) {
-            dateTimeProperty.change(value, context, keys);
-
+            return dateTimeProperty;
         } else if (valueType instanceof LogicalClass) {
-            logicalProperty.change(value, context, keys);
-
+            return logicalProperty;
         } else if (valueType instanceof DateClass) {
-            dateProperty.change(value, context, keys);
-
+            return dateProperty;
         } else if (valueType instanceof TimeClass) {
-            timeProperty.change(value, context, keys);
-
+            return timeProperty;
         } else if (valueType instanceof ColorClass) {
-            colorProperty.change(value, context, keys);
-
+            return colorProperty;
         } else if (valueType instanceof WordClass) {
-            wordFileProperty.change(value, context, keys);
-
+            return wordFileProperty;
         } else if (valueType instanceof ImageClass) {
-            imageFileProperty.change(value, context, keys);
-
+            return imageFileProperty;
         } else if (valueType instanceof PDFClass) {
-            pdfFileProperty.change(value, context, keys);
-
+            return pdfFileProperty;
         } else if (valueType instanceof DynamicFormatFileClass) {
-            customFileProperty.change(value, context, keys);
-
+            return customFileProperty;
         } else if (valueType instanceof ExcelClass) {
-            excelFileProperty.change(value, context, keys);
-
+            return excelFileProperty;
         } else {
             throw new IllegalStateException(valueType + " is not supported by AnyValueProperty");
         }
     }
+        
+    public void write(Type valueType, Object value, ExecutionContext context, DataObject... keys) throws SQLException {
+        getLCP(valueType).change(value, context, keys);
+    }
 
     public Object read(Type valueType, ExecutionContext context, DataObject... keys) throws SQLException {
-        if (valueType instanceof ObjectType) {
-            return objectProperty.read(context, keys);
-
-        } else if (valueType instanceof TextClass) {
-            return textProperty.read(context, keys);
-
-        } else if (valueType instanceof StringClass) {
-            return stringProperty.read(context, keys);
-
-        } else if (valueType instanceof IntegerClass) {
-            return intProperty.read(context, keys);
-
-        } else if (valueType instanceof LongClass) {
-            return longProperty.read(context, keys);
-
-        } else if (valueType instanceof DoubleClass) {
-            return doubleProperty.read(context, keys);
-
-        } else if (valueType instanceof NumericClass) {
-            return numericProperty.read(context, keys);
-
-        } else if (valueType instanceof YearClass) {
-            return yearProperty.read(context, keys);
-
-        } else if (valueType instanceof DateTimeClass) {
-            return dateTimeProperty.read(context, keys);
-
-        } else if (valueType instanceof LogicalClass) {
-            return logicalProperty.read(context, keys);
-
-        } else if (valueType instanceof DateClass) {
-            return dateProperty.read(context, keys);
-
-        } else if (valueType instanceof TimeClass) {
-            return timeProperty.read(context, keys);
-
-        } else if (valueType instanceof ColorClass) {
-            return colorProperty.read(context, keys);
-
-        } else if (valueType instanceof WordClass) {
-            return wordFileProperty.read(context, keys);
-
-        } else if (valueType instanceof ImageClass) {
-            return imageFileProperty.read(context, keys);
-
-        } else if (valueType instanceof PDFClass) {
-            return pdfFileProperty.read(context, keys);
-
-        } else if (valueType instanceof DynamicFormatFileClass) {
-            return customFileProperty.read(context, keys);
-
-        } else if (valueType instanceof ExcelClass) {
-            return excelFileProperty.read(context, keys);
-
-        } else {
-            throw new IllegalStateException(valueType + " is not supported by AnyValueProperty");
-        }
+        return getLCP(valueType).read(context, keys);
     }
 }

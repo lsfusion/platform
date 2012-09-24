@@ -9,6 +9,7 @@ import platform.server.form.view.PropertyDrawView;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.property.*;
 import platform.server.logics.property.actions.CustomActionProperty;
+import platform.server.logics.property.actions.SystemActionProperty;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -16,13 +17,18 @@ import java.util.List;
 
 import static platform.server.logics.property.derived.DerivedProperty.*;
 
-public abstract class FormToolbarActionProperty extends CustomActionProperty {
+public abstract class FormToolbarActionProperty extends SystemActionProperty {
     public final static Dimension BUTTON_SIZE = new Dimension(25, 20);
 
     private final CalcProperty enableIf;
     private final CalcProperty showIfs[];
     private final boolean showIfNots[];
     private final boolean showCaption;
+
+    @Override
+    protected boolean isVolatile() { // проще чем разбираться, что используется
+        return true;
+    }
 
     public FormToolbarActionProperty(String sid, String caption, boolean showCaption) {
         this(sid, caption, showCaption, null, null, null);

@@ -10,7 +10,7 @@ import platform.server.classes.DoubleClass;
 import platform.server.classes.LogicalClass;
 import platform.server.classes.StringClass;
 import platform.server.data.Field;
-import platform.server.data.Insert;
+import platform.server.data.Modify;
 import platform.server.data.KeyField;
 import platform.server.data.PropertyField;
 import platform.server.data.expr.KeyExpr;
@@ -90,7 +90,7 @@ public class SinglePriceImportTask extends FlagSemaphoreTask {
                 properties.put(priceField, new DataObject(price));
                 properties.put(noDiscField, noDisc==null ? NullValue.instance : new DataObject(true, LogicalClass.instance));
 
-                table.insertRecord(session.sql, new DataObject(barcode), properties, Insert.MODIFY);
+                table.modifyRecord(session.sql, new DataObject(barcode), properties, Modify.MODIFY);
             }
 
             Map<PropertyInterface, KeyExpr> mapKeys = (Map<PropertyInterface,KeyExpr>) BL.VEDLM.baseLM.barcodeToObject.property.getMapKeys();

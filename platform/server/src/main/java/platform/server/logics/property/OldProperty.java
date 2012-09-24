@@ -22,10 +22,10 @@ public class OldProperty<T extends PropertyInterface> extends SessionCalcPropert
         super("OLD_" + property.getSID(), property.caption + " (в БД)", property);
     }
 
-    @Override
+/*    @Override
     protected Collection<Pair<Property<?>, LinkType>> calculateLinks() {
         return BaseUtils.add(super.calculateLinks(), new Pair<Property<?>, LinkType>(property, LinkType.EVENTACTION)); // чтобы лексикографику для applied была
-    }
+    }*/
 
     public OldProperty<T> getOldProperty() {
         return this;

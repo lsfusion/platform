@@ -24,9 +24,7 @@ import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.property.actions.FormEnvironment;
-import platform.server.session.DataSession;
-import platform.server.session.ExecutionEnvironment;
-import platform.server.session.Modifier;
+import platform.server.session.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -130,23 +128,32 @@ public class ExecutionContext<P extends PropertyInterface> {
     }
 
     public DataObject addObject(ConcreteCustomClass cls) throws SQLException {
-        return getEnv().addObject(cls, pushedAddObject);
+        return getSession().addObject(cls, pushedAddObject);
+    }
+
+    public <T extends PropertyInterface> SinglePropertyTableUsage<T> addObjects(ConcreteCustomClass cls, PropertySet<T> set) throws SQLException {
+        return getSession().addObjects(cls, set);
+    }
+
+    public DataObject addFormObject(ObjectEntity object, ConcreteCustomClass cls) throws SQLException {
+        FormInstance<?> form = getFormInstance();
+        return form.addFormObject((CustomObjectInstance) form.instanceFactory.getInstance(object), cls, pushedAddObject);
     }
 
     public void changeClass(PropertyObjectInterfaceInstance objectInstance, DataObject object, ConcreteObjectClass changeClass) throws SQLException {
         getEnv().changeClass(objectInstance, object, changeClass);
     }
 
-    public void changeClass(PropertyObjectInterfaceInstance objectInstance, DataObject object, int clsID) throws SQLException {
-        changeClass(objectInstance, object, getSession().baseClass.findConcreteClassID(clsID < 0 ? null : clsID));
+    public void changeClass(ClassChange change) throws SQLException {
+        getSession().changeClass(change);
     }
 
     public boolean checkApply(BusinessLogics BL) throws SQLException {
         return getSession().check(BL);
     }
 
-    public void apply(BusinessLogics BL) throws SQLException {
-        getEnv().apply(BL);
+    public boolean apply(BusinessLogics BL) throws SQLException {
+        return getEnv().apply(BL);
     }
 
     public void cancel() throws SQLException {

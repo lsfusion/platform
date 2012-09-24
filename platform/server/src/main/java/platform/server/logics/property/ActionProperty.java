@@ -1,7 +1,6 @@
 package platform.server.logics.property;
 
-import platform.base.FunctionSet;
-import platform.base.Pair;
+import platform.base.*;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.ActionClass;
 import platform.server.classes.CustomClass;
@@ -12,6 +11,7 @@ import platform.server.logics.DataObject;
 import platform.server.logics.property.actions.BaseEvent;
 import platform.server.logics.property.actions.FormEnvironment;
 import platform.server.logics.property.actions.edit.GroupChangeActionProperty;
+import platform.server.logics.property.actions.flow.ChangeFlowType;
 import platform.server.logics.property.actions.flow.FlowResult;
 import platform.server.session.ExecutionEnvironment;
 
@@ -24,12 +24,34 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         super(sID, caption, interfaces);
     }
 
-    // assert что возвращает только DataProperty и IsClassProperty
+    // assert что возвращает только DataProperty и Set(IsClassProperty), Drop(IsClassProperty), IsClassProperty, для использования в лексикографике (calculateLinks)
+    public QuickSet<CalcProperty> getChangeExtProps() {
+        ActionPropertyMapImplement<?, P> compile = compile();
+        if(compile!=null)
+            return compile.property.getChangeExtProps();
+
+        return aspectChangeExtProps();
+    }
+
+    // убирает Set и Drop, так как с depends будет использоваться
+    public QuickSet<CalcProperty> getChangeProps() {
+        QuickSet<CalcProperty> result = new QuickSet<CalcProperty>();
+        for(CalcProperty property : getChangeExtProps())
+            if(property instanceof ChangedProperty)
+                result.add((IsClassProperty)((ChangedProperty)property).property);
+            else {
+                assert property instanceof DataProperty || property instanceof ObjectClassProperty;
+                result.add(property);
+            }
+
+        return result;
+    }
+    // схема с аспектом сделана из-за того что getChangeProps для ChangeClassAction не инвариантен (меняется после компиляции), тоже самое и For с addObject'ом
     @IdentityLazy
-    public Set<CalcProperty> getChangeProps() {
-        Set<CalcProperty> result = new HashSet<CalcProperty>();
+    protected QuickSet<CalcProperty> aspectChangeExtProps() {
+        QuickSet<CalcProperty> result = new QuickSet<CalcProperty>();
         for(ActionProperty<?> dependAction : getDependActions())
-            result.addAll(dependAction.getChangeProps());
+            result.addAll(dependAction.getChangeExtProps());
         return result;
     }
     @IdentityLazy
@@ -39,10 +61,28 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
             result.addAll(dependAction.getUsedProps());
         return result;
     }
+
+    protected static QuickSet<CalcProperty> getChangeProps(CalcProperty... props) {
+        QuickSet<CalcProperty> result = new QuickSet<CalcProperty>();
+        for(CalcProperty element : props)
+            result.addAll(element.getChangeProps());
+        return result;
+    }
+    protected static <T extends PropertyInterface> Set<CalcProperty> getUsedProps(CalcPropertyInterfaceImplement<T>... props) {
+        return getUsedProps(new ArrayList<CalcPropertyInterfaceImplement<T>>(), props);
+    }
+    protected static <T extends PropertyInterface> Set<CalcProperty> getUsedProps(Collection<? extends CalcPropertyInterfaceImplement<T>> col, CalcPropertyInterfaceImplement<T>... props) {
+        Set<CalcProperty> result = new HashSet<CalcProperty>();
+        for(CalcPropertyInterfaceImplement<T> element : col)
+            element.mapFillDepends(result);
+        for(CalcPropertyInterfaceImplement<T> element : props)
+            element.mapFillDepends(result);
+        return result;
+    }
     
     public final FunctionSet<CalcProperty> usedProps = new FunctionSet<CalcProperty>() {
         public boolean contains(CalcProperty element) {
-            return CalcProperty.depends(getChangeProps(), element) || CalcProperty.depends(getUsedProps(), element);
+            return CalcProperty.depends(getUsedProps(), element);
         }
         public boolean isEmpty() {
             return false;
@@ -53,18 +93,17 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     };
 
     @IdentityLazy
-    public boolean hasCancel() {
-        boolean hasCancel = false;
+    public boolean hasFlow(ChangeFlowType type) {
         for(ActionProperty<?> dependAction : getDependActions())
-            hasCancel = hasCancel || dependAction.hasCancel();
-        return hasCancel;
+            if(dependAction.hasFlow(type))
+                return true;
+        return false;
     }
+
     @IdentityLazy
     public Set<SessionCalcProperty> getSessionCalcDepends() {
         Set<SessionCalcProperty> result = new HashSet<SessionCalcProperty>();
         for(CalcProperty property : getUsedProps())
-            result.addAll(property.getSessionCalcDepends());
-        for(CalcProperty property : getChangeProps())
             result.addAll(property.getSessionCalcDepends());
         return result;
     }
@@ -96,20 +135,16 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     
     public final Set<CalcProperty> strongUsed = new HashSet<CalcProperty>();
 
-    // не сильно структурно поэтому вынесено в метод
-    public <V> Map<P, V> getMapInterfaces(List<V> list) {
-        int i=0;
-        Map<P, V> result = new HashMap<P, V>();
-        for(P propertyInterface : interfaces)
-            result.put(propertyInterface, list.get(i++));
-        return result;
-    }
-    
     public <V extends PropertyInterface> ActionPropertyMapImplement<P, V> getImplement(List<V> list) {
         return new ActionPropertyMapImplement<P, V>(this, getMapInterfaces(list));
     }
 
+    public <V extends PropertyInterface> ActionPropertyMapImplement<P, V> getImplement(V... list) {
+        return getImplement(BaseUtils.toList(list));
+    }
+
     public Set<BaseEvent> events = new HashSet<BaseEvent>();
+    public Property showDep; // assert что не null когда events не isEmpty
     public boolean singleApply = false;
     public boolean resolve = false;
     public Collection<ActionPropertyMapImplement<?, P>> beforeAspects = new ArrayList<ActionPropertyMapImplement<?, P>>();
@@ -122,6 +157,10 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
                 return beforeResult;
         }
 
+        ActionPropertyMapImplement<?, P> compile = compile();
+        if(compile!=null)
+            return compile.execute(context);
+        
         FlowResult result = aspectExecute(context);
 
         for(ActionPropertyMapImplement<?, P> aspect : afterAspects)
@@ -182,5 +221,22 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
 
         GroupChangeActionProperty groupChangeActionProperty = new GroupChangeActionProperty("GCH" + getSID(), "sys", listInterfaces, changeImplement);
         return groupChangeActionProperty.getImplement(listInterfaces);
+    }
+
+    public ActionPropertyMapImplement<?, P> compile() {
+       return null;
+    }
+
+    public List<ActionPropertyMapImplement<?, P>> getList() {
+        return Collections.<ActionPropertyMapImplement<?, P>>singletonList(getImplement());
+    }
+    public <T extends PropertyInterface, PW extends PropertyInterface> boolean hasPushFor(Map<P, T> mapping, Collection<T> context, boolean ordersNotNull) {
+        return false;
+    }
+    public <T extends PropertyInterface, PW extends PropertyInterface> CalcProperty getPushWhere(Map<P, T> mapping, Collection<T> context, boolean ordersNotNull) {
+        throw new RuntimeException("should not be");
+    }
+    public <T extends PropertyInterface, PW extends PropertyInterface> ActionPropertyMapImplement<?,T> pushFor(Map<P, T> mapping, Collection<T> context, CalcPropertyMapImplement<PW, T> where, OrderedMap<CalcPropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull) {
+        throw new RuntimeException("should not be");
     }
 }

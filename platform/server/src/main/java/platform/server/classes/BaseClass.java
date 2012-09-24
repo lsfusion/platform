@@ -23,8 +23,8 @@ import platform.server.logics.NullValue;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.linear.LCP;
-import platform.server.logics.linear.LP;
 import platform.server.logics.property.ObjectClassProperty;
+import platform.server.logics.property.actions.ChangeClassValueActionProperty;
 import platform.server.logics.table.ObjectTable;
 import platform.server.session.DataSession;
 
@@ -211,5 +211,10 @@ public class BaseClass extends AbstractCustomClass {
         for(Map.Entry<K, Object> value : values.entrySet())
             result.put(value.getKey(), getObjectValue(sql, value.getValue(), typeGetter.getType(value.getKey())));
         return result;
+    }
+
+    @IdentityLazy
+    public ChangeClassValueActionProperty getChangeClassValueAction() {
+        return new ChangeClassValueActionProperty("CHANGE_CLASS_VALUE", ServerResourceBundle.getString("logics.property.actions.changeclass"), this);
     }
 }

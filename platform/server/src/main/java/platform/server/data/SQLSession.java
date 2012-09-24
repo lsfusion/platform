@@ -489,14 +489,15 @@ public class SQLSession extends MutableObject {
     }
 
     @Message("message.sql.execute")
-    private void executeDML(@ParamMessage String command) throws SQLException {
+    private int executeDML(@ParamMessage String command) throws SQLException {
         Connection connection = getConnection();
 
         logger.info(command);
 
+        int result = 0;
         Statement statement = connection.createStatement();
         try {
-            statement.executeUpdate(command);
+            result = statement.executeUpdate(command);
         } catch (SQLException e) {
             logger.info(statement.toString());
             throw e;
@@ -505,6 +506,7 @@ public class SQLSession extends MutableObject {
 
             returnConnection(connection);
         }
+        return result;
     }
 
     @Message("message.sql.execute")
@@ -735,12 +737,12 @@ public class SQLSession extends MutableObject {
         executeDML("DELETE FROM " + syntax.getSessionTableName(table));
     }
 
-    public void deleteKeyRecords(Table table, Map<KeyField, ?> keys) throws SQLException {
+    public int deleteKeyRecords(Table table, Map<KeyField, ?> keys) throws SQLException {
         String deleteWhere = "";
         for (Map.Entry<KeyField, ?> deleteKey : keys.entrySet())
             deleteWhere = (deleteWhere.length() == 0 ? "" : deleteWhere + " AND ") + deleteKey.getKey().name + "=" + deleteKey.getValue();
 
-        executeDML("DELETE FROM " + table.getName(syntax) + (deleteWhere.length() == 0 ? "" : " WHERE " + deleteWhere));
+        return executeDML("DELETE FROM " + table.getName(syntax) + (deleteWhere.length() == 0 ? "" : " WHERE " + deleteWhere));
     }
 
     private static int readInt(Object value) {
@@ -806,6 +808,9 @@ public class SQLSession extends MutableObject {
         }
     }
 
+    public int deleteRecords(ModifyQuery modify) throws SQLException {
+        return executeDML(modify.getDelete(syntax));
+    }
 
     public int updateRecords(ModifyQuery modify) throws SQLException {
         return executeDML(modify.getUpdate(syntax));
@@ -818,8 +823,8 @@ public class SQLSession extends MutableObject {
         return executeDML(ModifyQuery.getInsertSelect(syntax.getSessionTableName(name), query, env, syntax));
     }
 
-    public int insertLeftSelect(ModifyQuery modify) throws SQLException {
-        return executeDML(modify.getInsertLeftKeys(syntax));
+    public int insertLeftSelect(ModifyQuery modify, boolean updateProps) throws SQLException {
+        return executeDML(modify.getInsertLeftKeys(syntax, updateProps));
     }
 
     // сначала делает InsertSelect, затем UpdateRecords
@@ -832,7 +837,7 @@ public class SQLSession extends MutableObject {
             if (!isRecord(modify.table, new HashMap<KeyField, DataObject>()))
                 result = insertSelect(modify);
         } else
-            result = insertLeftSelect(modify);
+            result = insertLeftSelect(modify, false);
         updateRecords(modify);
         return result;
     }

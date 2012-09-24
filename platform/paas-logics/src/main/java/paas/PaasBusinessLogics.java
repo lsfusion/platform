@@ -99,7 +99,7 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
     private int generateDatabase() throws SQLException {
         DataSession session = createSession();
         try {
-            DataObject dbOjb = session.addObject(paasLM.database, false);
+            DataObject dbOjb = session.addObject(paasLM.database);
 
             //todo: возможно генерацию имени стоит переделать на что-нибудь более надёжное, типа зачитывания текущих значений и выбора MAX+1
             LM.name.change("paas_generated_" + System.currentTimeMillis(), session, dbOjb);
@@ -162,7 +162,7 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
             try {
                 int userId = getUserId(userLogin);
 
-                DataObject projObj = session.addObject(paasLM.project, false);
+                DataObject projObj = session.addObject(paasLM.project);
 
                 LM.name.change(newProject.name, session, projObj);
                 paasLM.projectDescription.change(newProject.description, session, projObj);
@@ -432,7 +432,7 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
             try {
                 checkProjectPermission(userLogin, projectId);
 
-                DataObject moduleObj = session.addObject(paasLM.module, false);
+                DataObject moduleObj = session.addObject(paasLM.module);
 
                 LM.name.change(newModule.name, session, moduleObj);
 
@@ -484,7 +484,7 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
             try {
                 checkProjectPermission(userLogin, projectId);
 
-                DataObject configObj = session.addObject(paasLM.configuration, false);
+                DataObject configObj = session.addObject(paasLM.configuration);
 
                 int databaseId = generateDatabase();
 

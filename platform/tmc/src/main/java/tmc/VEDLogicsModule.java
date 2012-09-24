@@ -42,6 +42,8 @@ import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.actions.CustomActionProperty;
 import platform.server.logics.property.actions.CustomReadValueActionProperty;
+import platform.server.logics.property.actions.SystemActionProperty;
+import platform.server.logics.property.actions.UserActionProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.session.PropertyChange;
 import tmc.integration.exp.AbstractSaleExportTask;
@@ -57,6 +59,8 @@ import java.io.ByteArrayInputStream;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.*;
+
+import static platform.server.logics.ServerResourceBundle.getString;
 
 /**
  * User: DAle
@@ -2545,7 +2549,7 @@ public class VEDLogicsModule extends LogicsModule {
         }
     }
 
-    private abstract class PrintFiscalAroundApplyActionProperty extends CustomActionProperty {
+    private abstract class PrintFiscalAroundApplyActionProperty extends UserActionProperty {
 
         private PrintFiscalAroundApplyActionProperty(String sID) {
             super(sID, baseLM.apply.property.caption, new ValueClass[]{});
@@ -4145,7 +4149,7 @@ public class VEDLogicsModule extends LogicsModule {
         }
     }*/
 
-    private class PayWithCardActionProperty extends CustomActionProperty {
+    private class PayWithCardActionProperty extends UserActionProperty {
 
         private PayWithCardActionProperty() {
             super(genSID(), "Опл. карт.", new ValueClass[]{orderSaleRetail});
@@ -4172,7 +4176,7 @@ public class VEDLogicsModule extends LogicsModule {
         }
     }
 
-    private class PrintOrderCheckActionProperty extends CustomActionProperty {
+    private class PrintOrderCheckActionProperty extends UserActionProperty {
 
         private PrintOrderCheckActionProperty() {
             super(genSID(), "Печать", new ValueClass[]{orderSaleRetail});
@@ -4196,7 +4200,7 @@ public class VEDLogicsModule extends LogicsModule {
         }
     }
 
-    public class SaleExportActionProperty extends CustomActionProperty {
+    public class SaleExportActionProperty extends UserActionProperty {
 
         private final ClassPropertyInterface shopInterface;
         private final ClassPropertyInterface dateFrom;
@@ -4533,7 +4537,7 @@ public class VEDLogicsModule extends LogicsModule {
         }
     }
 
-    public class DownToZeroActionProperty extends CustomActionProperty {
+    public class DownToZeroActionProperty extends UserActionProperty {
 
         public DownToZeroActionProperty() {
             super(genSID(), "Обнулить остатки", new ValueClass[]{order});
@@ -4552,5 +4556,30 @@ public class VEDLogicsModule extends LogicsModule {
         }
     }
 
+    protected LAP addBAProp(ConcreteCustomClass customClass, LCP add) {
+        return addAProp(new AddBarcodeActionProperty(customClass, ((CalcProperty) add.property), genSID()));
+    }
 
+    class AddBarcodeActionProperty extends UserActionProperty {
+
+        ConcreteCustomClass customClass;
+        CalcProperty<?> addProperty;
+
+        AddBarcodeActionProperty(ConcreteCustomClass customClass, CalcProperty addProperty, String sID) {
+            super(sID, getString("logics.add")+" [" + customClass + "] " + getString("logics.add.by.barcode"), new ValueClass[]{StringClass.get(13)});
+
+            this.customClass = customClass;
+            this.addProperty = addProperty;
+        }
+
+        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
+            if (addProperty.read(context) != null) {
+                String barString = (String) context.getSingleKeyObject();
+                if (barString.trim().length() != 0) {
+                    ((CalcProperty<?>)addProperty).change(context, null);
+                    baseLM.barcode.change(barString, context, context.addObject(customClass));
+                }
+            }
+        }
+    }
 }

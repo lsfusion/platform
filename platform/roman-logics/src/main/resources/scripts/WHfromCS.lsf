@@ -25,7 +25,7 @@ CLASS WHfromCSIDetail 'Строка прихода на склад' : inLIFOSkuL
 
 @defineDocumentTables(WHfromCSI);
 
-@defineDocumentAggregation(CStoWH, WHfromCSI, isPostedCStoWH);
+@defineDocumentAggregation(CStoWH, WHfromCSI, isCStoWH);
 
 @defineDocumentAggregationStock(CStoWH, WHfromCSI, customStore, 'СВХ');
 @defineDocumentAggregationStockPrefix(CStoWH, WHfromCSI, stock, 'Склад-получатель', destination, );

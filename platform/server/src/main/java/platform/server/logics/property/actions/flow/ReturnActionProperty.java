@@ -9,15 +9,16 @@ import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
 
-public class ReturnActionProperty extends KeepContextActionProperty {
+public class ReturnActionProperty extends ChangeFlowActionProperty {
     public ReturnActionProperty() {
-        super("return", "return", 0);
+        super("return", "return");
 
         finalizeInit();
     }
 
-    public Set<ActionProperty> getDependActions() {
-        return new HashSet<ActionProperty>();
+    @Override
+    public boolean hasFlow(ChangeFlowType type) {
+        return type == ChangeFlowType.RETURN;
     }
 
     public FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException {
@@ -25,6 +26,6 @@ public class ReturnActionProperty extends KeepContextActionProperty {
     }
 
     public CalcPropertyMapImplement<?, PropertyInterface> getWhereProperty() {
-        return new CalcPropertyMapImplement<PropertyInterface, PropertyInterface>(NullValueProperty.instance);
+        return DerivedProperty.createNull();
     }
 }

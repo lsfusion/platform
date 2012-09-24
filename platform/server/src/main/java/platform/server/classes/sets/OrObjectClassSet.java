@@ -1,6 +1,7 @@
 package platform.server.classes.sets;
 
 import platform.base.BaseUtils;
+import platform.base.QuickMap;
 import platform.server.classes.*;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.type.ObjectType;

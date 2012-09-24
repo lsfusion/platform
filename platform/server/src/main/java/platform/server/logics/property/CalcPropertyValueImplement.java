@@ -36,7 +36,7 @@ public class CalcPropertyValueImplement<P extends PropertyInterface> extends Cal
         return property.read(form, mapping);
     }
 
-    public CustomClass getDialogClass(DataSession session) {
+    public CustomClass getDialogClass(DataSession session) throws SQLException {
         return property.getDialogClass(mapping, session.getCurrentClasses(mapping));
     }
 

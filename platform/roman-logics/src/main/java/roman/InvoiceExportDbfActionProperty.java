@@ -16,13 +16,14 @@ import platform.server.logics.DataObject;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.actions.CustomActionProperty;
+import platform.server.logics.property.actions.UserActionProperty;
 
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
 
-public class InvoiceExportDbfActionProperty extends CustomActionProperty {
+public class InvoiceExportDbfActionProperty extends UserActionProperty {
     private RomanBusinessLogics BL;
     private DBFExporter.CustomDBF dbfInvoice;
     private File tempDbfInvoice;

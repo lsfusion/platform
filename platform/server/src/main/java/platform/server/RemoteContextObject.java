@@ -109,6 +109,9 @@ public abstract class RemoteContextObject extends RemoteObject implements Contex
 
     public ObjectValue requestUserObject(ExecutionContext.RequestDialog dialog) throws SQLException { // null если canceled
         DialogInstance<?> dialogInstance = dialog.createDialog();
+        if(dialogInstance==null)
+            return null;
+
         RemoteDialog remoteDialog = createRemoteDialog(dialogInstance);
         requestUserInteraction(new DialogClientAction(remoteDialog));
         if(dialogInstance.getFormResult() == FormCloseType.CLOSE)

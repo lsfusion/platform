@@ -40,6 +40,8 @@ public class OrderGroupProperty<I extends PropertyInterface> extends GroupProper
         this.ordersNotNull = ordersNotNull;
 
         finalizeInit();
+        
+        assert !props.contains(null);
     }
 
     protected Expr calculateExpr(Map<Interface<I>, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {

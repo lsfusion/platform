@@ -47,10 +47,14 @@ public class LAP<T extends PropertyInterface> extends LP<T, ActionProperty<T>> {
     }
 
     public <P extends PropertyInterface> void setEventAction(LogicsModule lm, boolean changedSet, boolean session, LCP<P> lp, Integer... mapping) {
+        setEventAction(lm, changedSet ? IncrementType.SET : IncrementType.LEFTCHANGE, session, lp, mapping);
+    }
+
+    public <P extends PropertyInterface> void setEventAction(LogicsModule lm, IncrementType type, boolean session, LCP<P> lp, Integer... mapping) {
         Map<P,T> map = new HashMap<P, T>();
         for(int i=0;i<lp.listInterfaces.size();i++)
             map.put(lp.listInterfaces.get(i), listInterfaces.get(mapping[i]-1));
-        lm.addEventAction(property, new CalcPropertyMapImplement<P, T>(lp.property.getChanged(changedSet ? IncrementType.SET : IncrementType.LEFTCHANGE), map), new OrderedMap<CalcPropertyInterfaceImplement<T>, Boolean>(), false, session, false);
+        lm.addEventAction(property, new CalcPropertyMapImplement<P, T>(lp.property.getChanged(type), map), new OrderedMap<CalcPropertyInterfaceImplement<T>, Boolean>(), false, session, false);
     }
 
     public <P extends PropertyInterface> void setEventAction(LogicsModule lm, boolean session, boolean descending, boolean ordersNotNull, Object... params) {
@@ -61,5 +65,9 @@ public class LAP<T extends PropertyInterface> extends LP<T, ActionProperty<T>> {
 
     public ValueClass[] getInterfaceClasses() {
         return BaseUtils.mapList(listInterfaces, property.getInterfaceClasses()).toArray(new ValueClass[0]);
+    }
+
+    public <U extends PropertyInterface> ActionPropertyMapImplement<T, U> getImplement(U... mapping) {
+        return new ActionPropertyMapImplement<T, U>(property, getMap(mapping));
     }
 }

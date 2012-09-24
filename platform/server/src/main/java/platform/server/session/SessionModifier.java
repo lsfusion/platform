@@ -22,21 +22,21 @@ public abstract class SessionModifier implements Modifier {
     private WeakIdentityHashSet<OverrideSessionModifier> views = new WeakIdentityHashSet<OverrideSessionModifier>();
     public void registerView(OverrideSessionModifier modifier) { // protected
         views.add(modifier);
-        modifier.eventChanges(getPropertyChanges().getProperties());
+        modifier.eventDataChanges(getPropertyChanges().getProperties());
     }
 
     public void unregisterView(OverrideSessionModifier modifier) { // protected
         views.remove(modifier);
     }
 
-    protected void eventChanges(Iterable<? extends CalcProperty> properties) {
+    protected void eventDataChanges(Iterable<? extends CalcProperty> properties) {
         for(CalcProperty property : properties)
-            eventChange(property);
+            eventDataChange(property);
     }
 
     private QuickSet<CalcProperty> changed = new QuickSet<CalcProperty>();
 
-    protected void eventChange(CalcProperty property) {
+    protected void eventDataChange(CalcProperty property) {
         changed.add(property);
 
         // если increment использовал property drop'аем hint
@@ -44,7 +44,7 @@ public abstract class SessionModifier implements Modifier {
             for(CalcProperty<?> incrementProperty : new QuickSet<CalcProperty>(increment.getProperties())) {
                 if(CalcProperty.depends(incrementProperty, property)) {
                     increment.remove(incrementProperty, getSQL());
-                    eventHintIncrement(incrementProperty);
+                    eventSourceChange(incrementProperty);
                 }
             }
             QuickSet<CalcProperty> removedNoUpdate = new QuickSet<CalcProperty>();
@@ -59,26 +59,26 @@ public abstract class SessionModifier implements Modifier {
         }
 
         for(OverrideSessionModifier view : views)
-            view.eventChange(property);
+            view.eventDataChange(property);
     }
 
     protected void eventNoUpdate(CalcProperty property) {
         changed.add(property);
 
         for(OverrideSessionModifier view : views)
-            view.eventChange(property);
+            view.eventDataChange(property);
     }
 
-    protected void eventHintIncrement(CalcProperty property) {
+    protected void eventSourceChange(CalcProperty property) {
         changed.add(property);
 
         for(OverrideSessionModifier view : views)
-            view.eventHintIncrement(property);
+            view.eventSourceChange(property);
     }
 
-    protected void eventHintIncrements(Iterable<? extends CalcProperty> properties) {
+    protected void eventSourceChanges(Iterable<? extends CalcProperty> properties) {
         for(CalcProperty property : properties)
-            eventHintIncrement(property);
+            eventSourceChange(property);
     }
 
 
@@ -112,9 +112,9 @@ public abstract class SessionModifier implements Modifier {
     private TableProps increment = new TableProps();
 
     public void clearHints(SQLSession session) throws SQLException {
-        eventHintIncrements(increment.getProperties());
+        eventSourceChanges(increment.getProperties());
         increment.clear(session);
-        eventChanges(noUpdate);
+        eventDataChanges(noUpdate);
         noUpdate = new QuickSet<CalcProperty>();
     }
 
@@ -147,7 +147,7 @@ public abstract class SessionModifier implements Modifier {
             throw new RuntimeException(e);
         }
 
-        eventHintIncrement(property);
+        eventSourceChange(property);
     }
 
     public boolean allowNoUpdate(CalcProperty property) {

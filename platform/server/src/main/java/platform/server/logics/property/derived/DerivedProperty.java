@@ -9,15 +9,13 @@ import platform.server.classes.*;
 import platform.server.data.expr.query.GroupType;
 import platform.server.data.expr.query.PartitionType;
 import platform.server.logics.property.*;
-import platform.server.logics.property.actions.flow.ForActionProperty;
-import platform.server.logics.property.actions.flow.IfActionProperty;
-import platform.server.logics.property.actions.flow.ListActionProperty;
-import platform.server.logics.property.actions.flow.SetActionProperty;
+import platform.server.logics.property.actions.AddObjectActionProperty;
+import platform.server.logics.property.actions.ChangeClassActionProperty;
+import platform.server.logics.property.actions.flow.*;
 
 import java.util.*;
 
-import static platform.base.BaseUtils.immutableCast;
-import static platform.base.BaseUtils.toList;
+import static platform.base.BaseUtils.*;
 
 public class DerivedProperty {
     public static final String ID_PREFIX_GEN = "GDVID";
@@ -55,6 +53,13 @@ public class DerivedProperty {
         return mapImplement;
     }
 
+    public static <L,T extends PropertyInterface,K extends PropertyInterface> OrderedMap<CalcPropertyInterfaceImplement<K>, Boolean> mapImplements(OrderedMap<? extends CalcPropertyInterfaceImplement<T>, Boolean> interfaceImplements, Map<T,K> map) {
+        OrderedMap<CalcPropertyInterfaceImplement<K>, Boolean> mapImplement = new OrderedMap<CalcPropertyInterfaceImplement<K>, Boolean>();
+        for(Map.Entry<? extends CalcPropertyInterfaceImplement<T>, Boolean> interfaceImplementEntry : interfaceImplements.entrySet())
+            mapImplement.put(interfaceImplementEntry.getKey().map(map), interfaceImplementEntry.getValue());
+        return mapImplement;
+    }
+
     public static <L,T extends PropertyInterface,K extends PropertyInterface, C extends PropertyInterface> List<CalcPropertyInterfaceImplement<K>> mapCalcImplements(Map<T, K> map, List<CalcPropertyInterfaceImplement<T>> propertyImplements) {
         List<CalcPropertyInterfaceImplement<K>> mapImplement = new ArrayList<CalcPropertyInterfaceImplement<K>>();
         for(CalcPropertyInterfaceImplement<T> interfaceImplementEntry : propertyImplements)
@@ -80,18 +85,24 @@ public class DerivedProperty {
         return new ActionPropertyImplement<P, CalcPropertyInterfaceImplement<K>>(implement.property,mapImplements(implement.mapping,map));
     }
 
-    private static <T extends PropertyInterface> Collection<T> getUsedInterfaces(CalcPropertyInterfaceImplement<T> interfaceImplement) {
+    public static <T extends PropertyInterface> Collection<T> getUsedInterfaces(CalcPropertyInterfaceImplement<T> interfaceImplement) {
         if(interfaceImplement instanceof CalcPropertyMapImplement)
             return new HashSet<T>(((CalcPropertyMapImplement<?, T>)interfaceImplement).mapping.values());
         else
             return Collections.singleton((T)interfaceImplement);
     }
+
+    public static <T extends PropertyInterface> Set<T> getUsedInterfaces(Collection<? extends CalcPropertyInterfaceImplement<T>> col) {
+        Set<T> usedInterfaces = new HashSet<T>();
+        for(CalcPropertyInterfaceImplement<T> interfaceImplement : col)
+            usedInterfaces.addAll(getUsedInterfaces(interfaceImplement));
+        return usedInterfaces;
+    }
+
     // фильтрует только используемые интерфейсы и создает Join свойство с mapping'ом на эти интерфейсы
     public static <L extends PropertyInterface, T extends PropertyInterface> CalcPropertyMapImplement<?,T> createJoin(CalcPropertyImplement<L, CalcPropertyInterfaceImplement<T>> implement) {
         // определяем какие интерфейсы использовали
-        Set<T> usedInterfaces = new HashSet<T>();
-        for(CalcPropertyInterfaceImplement<T> interfaceImplement : implement.mapping.values())
-            usedInterfaces.addAll(getUsedInterfaces(interfaceImplement));
+        Set<T> usedInterfaces = getUsedInterfaces(implement.mapping.values());
 
         // создаем свойство - перемаппим интерфейсы
         List<JoinProperty.Interface> listInterfaces = JoinProperty.getInterfaces(usedInterfaces.size());
@@ -99,6 +110,18 @@ public class DerivedProperty {
         JoinProperty<L> joinProperty = new JoinProperty<L>(genID(),"sys", listInterfaces ,false,
                 new CalcPropertyImplement<L, CalcPropertyInterfaceImplement<JoinProperty.Interface>>(implement.property,mapImplements(implement.mapping,joinMap)));
         return new CalcPropertyMapImplement<JoinProperty.Interface,T>(joinProperty,BaseUtils.reverse(joinMap));
+    }
+
+    public static <L extends PropertyInterface, T extends PropertyInterface> ActionPropertyMapImplement<?,T> createJoinAction(ActionPropertyImplement<L, CalcPropertyInterfaceImplement<T>> implement) {
+        // определяем какие интерфейсы использовали
+        Set<T> usedInterfaces = getUsedInterfaces(implement.mapping.values());
+
+        // создаем свойство - перемаппим интерфейсы
+        List<PropertyInterface> listInterfaces = JoinActionProperty.genInterfaces(usedInterfaces.size());
+        Map<T,PropertyInterface> joinMap = BaseUtils.buildMap(usedInterfaces, listInterfaces); // строим карту
+        JoinActionProperty<L> joinProperty = new JoinActionProperty<L>(genID(),"sys", listInterfaces,
+                new ActionPropertyImplement<L, CalcPropertyInterfaceImplement<PropertyInterface>>(implement.property,mapImplements(implement.mapping,joinMap)));
+        return new ActionPropertyMapImplement<PropertyInterface,T>(joinProperty,BaseUtils.reverse(joinMap));
     }
 
     public static <T extends PropertyInterface> CalcPropertyMapImplement<?, T> createCompare(Compare compare, T operator1, T operator2) {
@@ -119,6 +142,9 @@ public class DerivedProperty {
     }
     public static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createCompare(Collection<T> interfaces, CalcPropertyInterfaceImplement<T> distribute, CalcPropertyInterfaceImplement<T> previous, Compare compare) {
         return createCompare("sys", interfaces, distribute, previous, compare);
+    }
+    public static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createCompare(CalcPropertyInterfaceImplement<T> distribute, CalcPropertyInterfaceImplement<T> previous, Compare compare) {
+        return createCompare(getUsedInterfaces(toList(distribute, previous)), distribute, previous, compare);
     }
 
     public static <T extends PropertyInterface> CalcPropertyMapImplement<?, T> createNot(Collection<T> innerInterfaces, CalcPropertyInterfaceImplement<T> implement) {
@@ -157,6 +183,10 @@ public class DerivedProperty {
     public static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createAnd(Collection<T> interfaces, CalcPropertyInterfaceImplement<T> object, Collection<? extends CalcPropertyInterfaceImplement<T>> ands) {
         return createAnd(genID(), "sys", interfaces, object, ands);
     }
+    public static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createAnd(Collection<? extends CalcPropertyInterfaceImplement<T>> ands) {
+        List<CalcPropertyInterfaceImplement<T>> rest = new ArrayList<CalcPropertyInterfaceImplement<T>>();
+        return createAnd(getUsedInterfaces(ands), splitOne(ands, rest), rest);
+    }
     private static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createAnd(String name, String caption, Collection<T> interfaces, CalcPropertyInterfaceImplement<T> object, Collection<? extends CalcPropertyInterfaceImplement<T>> ands) {
         if(ands.size()==0 && object instanceof CalcPropertyMapImplement)
             return (CalcPropertyMapImplement<?,T>)object;
@@ -190,6 +220,33 @@ public class DerivedProperty {
 
     public static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createAnd(Collection<T> interfaces, CalcPropertyInterfaceImplement<T> object, CalcPropertyInterfaceImplement<T> and) {
         return createAnd(interfaces, object, Collections.singleton(and));
+    }
+
+    public static <MP extends PropertyInterface, MT extends PropertyInterface, P extends PropertyInterface, T extends PropertyInterface, C extends PropertyInterface> CalcPropertyMapImplement<?,C> createAnd(CalcPropertyMapImplement<T, C> object, CalcPropertyMapImplement<P, C> and) {
+        return createAnd(getUsedInterfaces(toList(object, and)), object, and);
+    }
+
+    public static <P extends PropertyInterface, T extends PropertyInterface, C extends PropertyInterface> void createCommon(Collection<T> object, Collection<P> and, Map<T,P> map, Map<T, C> mapObject, Map<P, C> mapAnd) {
+        Collection<C> commonInterfaces = new ArrayList<C>();
+        for(P mapInterface : and) {
+            C commonInterface = (C) new PropertyInterface();
+            commonInterfaces.add(commonInterface);
+            mapAnd.put(mapInterface, commonInterface);
+        }
+        for(T mapInterface : object) {
+            C commonInterface = null;
+
+            P mp = map.get(mapInterface);
+            if(mp!=null)
+                commonInterface = mapAnd.get(mp);
+
+            if(commonInterface==null) {
+                commonInterface = (C) new PropertyInterface();
+                commonInterfaces.add(commonInterface);
+            }
+
+            mapObject.put(mapInterface, commonInterface);
+        }
     }
 
     public static <T extends PropertyInterface, C extends PropertyInterface> CalcPropertyMapImplement<?,T> createUnion(Collection<T> interfaces, List<? extends CalcPropertyInterfaceImplement<T>> props) {
@@ -264,13 +321,28 @@ public class DerivedProperty {
         return createStatic(value, StringClass.get(value.length()));
     }
 
-    public static <T extends PropertyInterface> GroupProperty createAnyGProp(CalcProperty<T> property) {
-        return createAnyGProp("ANY_" + property.getSID(), "ANY " + property.caption, property);
+    public static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createNull() {
+        return new CalcPropertyMapImplement<PropertyInterface, T>(NullValueProperty.instance);
     }
-    public static <T extends PropertyInterface> GroupProperty<?> createAnyGProp(String sID, String caption, CalcProperty<T> prop) {
-        if(!prop.getType().equals(LogicalClass.instance)) // делаем Logical
-            return createAnyGProp(sID, caption, DerivedProperty.createNotNull(prop.getImplement()).property);
-        return new MaxGroupProperty<T>(sID, caption, prop.interfaces, new ArrayList<CalcPropertyInterfaceImplement<T>>(), prop.getImplement(), false);
+
+    public static <T extends PropertyInterface> CalcProperty createAnyGProp(CalcProperty<T> property) {
+        return createAnyGProp(property, new ArrayList<T>()).property;
+    }
+    public static <T extends PropertyInterface> CalcPropertyMapImplement<?, T> createAnyGProp(CalcProperty<T> prop, Collection<T> groupInterfaces) {
+        return createAnyGProp("ANY_" + prop.getSID()+"_"+BaseUtils.toString(groupInterfaces, "_"), "ANY " + prop.caption + " (" + BaseUtils.toString(groupInterfaces, ",") + ")", prop, groupInterfaces);
+    }
+    public static <T extends PropertyInterface, N extends PropertyInterface> CalcPropertyMapImplement<?, T> createAnyGProp(String sID, String caption, CalcProperty<T> prop, Collection<T> groupInterfaces) {
+        if(!prop.getType().equals(LogicalClass.instance)) { // делаем Logical
+            CalcPropertyMapImplement<N, T> notNull = (CalcPropertyMapImplement<N, T>) DerivedProperty.createNotNull(prop.getImplement());
+            return DerivedProperty.<N, T>createAnyGProp(sID, caption, notNull.property, BaseUtils.filterValues(notNull.mapping, groupInterfaces).keySet()).map(notNull.mapping);
+        }
+        MaxGroupProperty<T> groupProperty = new MaxGroupProperty<T>(sID, caption, BaseUtils.<Collection<CalcPropertyInterfaceImplement<T>>>immutableCast(groupInterfaces), prop, false);
+        return new CalcPropertyMapImplement<GroupProperty.Interface<T>, T>(groupProperty, BaseUtils.<Map<GroupProperty.Interface<T>, T>>immutableCast(groupProperty.getMapInterfaces()));
+    }
+
+    public static <T extends PropertyInterface> CalcPropertyMapImplement<?, T> createLastGProp(CalcProperty<T> where, CalcPropertyInterfaceImplement<T> last, Collection<T> groupInterfaces, OrderedMap<CalcPropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull) {
+        OrderGroupProperty<T> groupProperty = new OrderGroupProperty<T>(genID(), "sys", where.interfaces, BaseUtils.<Collection<CalcPropertyInterfaceImplement<T>>>immutableCast(groupInterfaces), toList(where.getImplement(), last), GroupType.LAST, orders, ordersNotNull);
+        return new CalcPropertyMapImplement<GroupProperty.Interface<T>, T>(groupProperty, BaseUtils.<Map<GroupProperty.Interface<T>, T>>immutableCast(groupProperty.getMapInterfaces()));
     }
 
     private static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createFormula(Collection<T> interfaces, String formula, ConcreteValueClass valueClass, List<? extends CalcPropertyInterfaceImplement<T>> params) {
@@ -635,26 +707,27 @@ public class DerivedProperty {
     public static <T extends PropertyInterface> CalcPropertyMapImplement<ClassPropertyInterface, T> createDataProp(boolean session, CalcProperty<T> property) {
         Map<T, ValueClass> interfaces = property.getInterfaceClasses();
         ValueClass valueClass = property.getValueClass();
-        ValueClass[] interfaceClasses = new ValueClass[interfaces.size()]; int iv = 0;
+        return createDataProp(session, "pc" + property.getSID(), property.toString(), interfaces, valueClass);
+    }
+
+    public static <T extends PropertyInterface> CalcPropertyMapImplement<ClassPropertyInterface, T> createDataProp(boolean session, Map<T, ValueClass> interfaces, ValueClass valueClass) {
+        return createDataProp(session, genID(), "sys", interfaces, valueClass);
+    }
+
+    public static <T extends PropertyInterface> CalcPropertyMapImplement<ClassPropertyInterface, T> createDataProp(boolean session, String sID, String caption, Map<T, ValueClass> interfaces, ValueClass valueClass) {
+        ValueClass[] interfaceClasses = new ValueClass[interfaces.size()];
+        int iv = 0;
         List<T> listInterfaces = new ArrayList<T>();
         for(Map.Entry<T, ValueClass> entry : interfaces.entrySet()) {
             interfaceClasses[iv++] = entry.getValue();
             listInterfaces.add(entry.getKey());
         }
-        String sID = "pc" + property.getSID(); String caption = property.toString();
         DataProperty dataProperty = (session ? new SessionDataProperty(sID, caption, interfaceClasses, valueClass) :
                         new StoredDataProperty(sID, caption, interfaceClasses, valueClass));
         return dataProperty.getImplement(listInterfaces);
     }
 
-    public static <L extends PropertyInterface> ActionPropertyMapImplement<?, L> createSetAction(CalcProperty<L> property, boolean notNull, boolean check) {
-        List<L> listInterfaces = new ArrayList<L>(property.interfaces);
-        SetActionProperty<L, PropertyInterface, L> actionProperty = new SetActionProperty<L, PropertyInterface, L>(genID(), (notNull ? "Задать" : "Сбросить") + " " + property.caption,
-                property.interfaces, listInterfaces, (CalcPropertyMapImplement<PropertyInterface,L>) DerivedProperty.createTrue(), property.getImplement(), notNull, check);
-        return actionProperty.getImplement(listInterfaces);
-    }
-
-    public static <L extends PropertyInterface> ActionPropertyMapImplement<?, L> createIfAction(Collection<L> innerInterfaces, CalcPropertyInterfaceImplement<L> where, ActionPropertyMapImplement<?, L> action, ActionPropertyMapImplement<?, L> elseAction, boolean ifClasses) {
+    public static <L extends PropertyInterface> ActionPropertyMapImplement<?, L> createIfAction(Collection<L> innerInterfaces, CalcPropertyMapImplement<?, L> where, ActionPropertyMapImplement<?, L> action, ActionPropertyMapImplement<?, L> elseAction, boolean ifClasses) {
         List<L> listInterfaces = new ArrayList<L>(innerInterfaces);
         IfActionProperty actionProperty = new IfActionProperty(genID(), "sys", false, listInterfaces, where, action, elseAction, ifClasses);
         return actionProperty.getImplement(listInterfaces);
@@ -666,9 +739,111 @@ public class DerivedProperty {
         return actionProperty.getImplement(listInterfaces);
     }
 
-    public static <L extends PropertyInterface> ActionPropertyMapImplement<?, L> createForAction(Collection<L> innerInterfaces, List<L> mapInterfaces, CalcPropertyMapImplement<?, L> forProp, OrderedMap<CalcPropertyInterfaceImplement<L>, Boolean> orders, boolean ordersNotNull, ActionPropertyMapImplement<?, L> action, ActionPropertyMapImplement<?, L> elseAction, boolean recursive) {
-        ForActionProperty<L> actionProperty = new ForActionProperty<L>(genID(), "sys", innerInterfaces, mapInterfaces, forProp, orders, ordersNotNull, action, elseAction, recursive);
+    public static <L extends PropertyInterface> ActionPropertyMapImplement<?, L> createForAction(Collection<L> context, CalcPropertyMapImplement<?, L> forProp, OrderedMap<CalcPropertyInterfaceImplement<L>, Boolean> orders, boolean ordersNotNull, ActionPropertyMapImplement<?, L> action, ActionPropertyMapImplement<?, L> elseAction, boolean recursive) {
+        return createForAction(context, forProp, orders, ordersNotNull, action, elseAction, null, null, false, recursive);
+    }
+
+    public static <L extends PropertyInterface> ActionPropertyMapImplement<?, L> createForAction(Collection<L> innerInterfaces, Collection<L> context, CalcPropertyMapImplement<?, L> forProp, OrderedMap<CalcPropertyInterfaceImplement<L>, Boolean> orders, boolean ordersNotNull, ActionPropertyMapImplement<?, L> action, ActionPropertyMapImplement<?, L> elseAction, boolean recursive) {
+        return createForAction(innerInterfaces, context, forProp, orders, ordersNotNull, action, elseAction, null, null, recursive);
+    }
+
+    public static <L extends PropertyInterface> ActionPropertyMapImplement<?, L> createForAction(Collection<L> innerInterfaces, Collection<L> context, ActionPropertyMapImplement<?, L> action, L addObject, ConcreteCustomClass customClass, boolean recursive) {
+        return createForAction(innerInterfaces, context, action, addObject, customClass, false, recursive);
+    }
+
+    public static <L extends PropertyInterface> ActionPropertyMapImplement<?, L> createForAction(Collection<L> innerInterfaces, Collection<L> context, ActionPropertyMapImplement<?, L> action, L addObject, CustomClass customClass, boolean forceDialog, boolean recursive) {
+        return createForAction(innerInterfaces, context, DerivedProperty.<L>createTrue(), new OrderedMap<CalcPropertyInterfaceImplement<L>, Boolean>(), false, action, null, addObject, customClass, forceDialog, recursive);
+    }
+
+    public static <L extends PropertyInterface> ActionPropertyMapImplement<?, L> createForAction(Collection<L> innerInterfaces, Collection<L> context, CalcPropertyMapImplement<?, L> forProp, OrderedMap<CalcPropertyInterfaceImplement<L>, Boolean> orders, boolean ordersNotNull, ActionPropertyMapImplement<?, L> action, ActionPropertyMapImplement<?, L> elseAction, L addObject, ConcreteCustomClass customClass, boolean recursive) {
+        return createForAction(innerInterfaces, context, forProp, orders, ordersNotNull, action, elseAction, addObject, customClass, false, recursive);
+    }
+
+    public static <L extends PropertyInterface> ActionPropertyMapImplement<?, L> createForAction(Collection<L> context, CalcPropertyMapImplement<?, L> forProp, OrderedMap<CalcPropertyInterfaceImplement<L>, Boolean> orders, boolean ordersNotNull, ActionPropertyMapImplement<?, L> action, ActionPropertyMapImplement<?, L> elseAction, L addObject, CustomClass customClass, boolean forceDialog, boolean recursive) {
+        Set<L> innerInterfaces = new HashSet<L>(context);
+        innerInterfaces.addAll(forProp.mapping.values());
+        innerInterfaces.addAll(action.mapping.values());
+        if(elseAction != null)
+            innerInterfaces.addAll(elseAction.mapping.values());
+        if(addObject != null)
+            innerInterfaces.add(addObject);
+        innerInterfaces.addAll(getUsedInterfaces(orders.keySet()));
+
+        return createForAction(innerInterfaces, new ArrayList<L>(context), forProp, orders, ordersNotNull, action, elseAction, addObject, customClass, forceDialog, recursive);
+    }
+
+    public static <L extends PropertyInterface> ActionPropertyMapImplement<?, L> createForAction(Collection<L> innerInterfaces, Collection<L> context, CalcPropertyMapImplement<?, L> forProp, OrderedMap<CalcPropertyInterfaceImplement<L>, Boolean> orders, boolean ordersNotNull, ActionPropertyMapImplement<?, L> action, ActionPropertyMapImplement<?, L> elseAction, L addObject, CustomClass customClass, boolean forceDialog, boolean recursive) {
+        return createForAction(innerInterfaces, new ArrayList<L>(context), forProp, orders, ordersNotNull, action, elseAction, addObject, customClass, forceDialog, recursive);
+    }
+
+    public static <L extends PropertyInterface> ActionPropertyMapImplement<?, L> createForAction(Collection<L> innerInterfaces, List<L> mapInterfaces, CalcPropertyMapImplement<?, L> forProp, OrderedMap<CalcPropertyInterfaceImplement<L>, Boolean> orders, boolean ordersNotNull, ActionPropertyMapImplement<?, L> action, ActionPropertyMapImplement<?, L> elseAction, L addObject, CustomClass customClass, boolean forceDialog, boolean recursive) {
+        ForActionProperty<L> actionProperty = new ForActionProperty<L>(genID(), "sys", innerInterfaces, mapInterfaces, forProp, orders, ordersNotNull, action, elseAction, addObject, customClass, forceDialog, recursive);
         return actionProperty.getMapImplement();
+    }
+
+    public static <L extends PropertyInterface, P extends PropertyInterface, W extends PropertyInterface> ActionPropertyMapImplement<?, L> createSetAction(Collection<L> context, CalcPropertyMapImplement<P, L> writeToProp, CalcPropertyInterfaceImplement<L> writeFrom) {
+        return createSetAction(context, context, null, writeToProp, writeFrom);
+    }
+    public static <L extends PropertyInterface, P extends PropertyInterface, W extends PropertyInterface> ActionPropertyMapImplement<?, L> createSetAction(Collection<L> innerInterfaces, Collection<L> context, CalcPropertyMapImplement<W, L> whereProp, CalcPropertyMapImplement<P, L> writeToProp, CalcPropertyInterfaceImplement<L> writeFrom) {
+        return createSetAction(innerInterfaces, new ArrayList<L>(context), whereProp, writeToProp, writeFrom);
+    }
+    public static <L extends PropertyInterface, P extends PropertyInterface, W extends PropertyInterface> ActionPropertyMapImplement<?, L> createSetAction(Collection<L> innerInterfaces, List<L> mapInterfaces, CalcPropertyMapImplement<W, L> whereProp, CalcPropertyMapImplement<P, L> writeToProp, CalcPropertyInterfaceImplement<L> writeFrom) {
+        ChangeActionProperty<P, W, L> actionProperty = new ChangeActionProperty<P, W, L>(genID(), "sys", innerInterfaces, mapInterfaces, whereProp, writeToProp, writeFrom);
+        return actionProperty.getMapImplement();
+    }
+
+    public static <L extends PropertyInterface, P extends PropertyInterface, W extends PropertyInterface> ActionPropertyMapImplement<?, L> createAddAction(CustomClass cls, boolean forceDialog, Collection<L> innerInterfaces, Collection<L> context, CalcPropertyMapImplement<W, L> whereProp, CalcPropertyMapImplement<P, L> resultProp) {
+        return createAddAction(cls, forceDialog, innerInterfaces, new ArrayList<L>(context), whereProp, resultProp);
+    }
+    public static <L extends PropertyInterface, P extends PropertyInterface, W extends PropertyInterface> ActionPropertyMapImplement<?, L> createAddAction(CustomClass cls, boolean forceDialog, Collection<L> innerInterfaces, List<L> mapInterfaces, CalcPropertyMapImplement<W, L> whereProp, CalcPropertyMapImplement<P, L> resultProp) {
+        AddObjectActionProperty<W, L> actionProperty = new AddObjectActionProperty<W, L>(genID(), cls, forceDialog, innerInterfaces, mapInterfaces, whereProp, resultProp);
+        return actionProperty.getMapImplement();
+    }
+
+    public static <L extends PropertyInterface, P extends PropertyInterface, W extends PropertyInterface> ActionPropertyMapImplement<?, L> createChangeClassAction(ObjectClass cls, boolean forceDialog, Collection<L> innerInterfaces, Collection<L> context, CalcPropertyMapImplement<W, L> whereProp, L changeInterface, BaseClass baseClass) {
+        return createChangeClassAction(cls, forceDialog, innerInterfaces, new ArrayList<L>(context), whereProp, changeInterface, baseClass);
+    }
+    public static <L extends PropertyInterface, P extends PropertyInterface, W extends PropertyInterface> ActionPropertyMapImplement<?, L> createChangeClassAction(ObjectClass cls, boolean forceDialog, Collection<L> innerInterfaces, List<L> mapInterfaces, CalcPropertyMapImplement<W, L> whereProp, L changeInterface, BaseClass baseClass) {
+        ChangeClassActionProperty<W, L> actionProperty = new ChangeClassActionProperty<W, L>(genID(), cls, forceDialog, innerInterfaces, mapInterfaces, changeInterface, whereProp, baseClass);
+        return actionProperty.getMapImplement();
+    }
+
+    // расширенный интерфейс создания SetAction, который умеет группировать, если что
+//        FOR F(a,c,d,x) --- внеш. (e,x) + внутр. [a,c,d]
+//            SET f(a,b) <- g(a,b,c,e)   --- внеш. (a,c,e) + внутр. [b]
+//
+//        SET f(a,b) <- [GROUP LAST F(a,c,d,x), g(a,b,c,e) ORDER O(a,c,d) BY a,b,c,e,x](a,b,c,e,x) WHERE [GROUP ANY F(a,c,d,x) BY a,c,x](a,c,x) --- внеш. (e,x) + внутр. [a,b,c]
+    public static <W extends PropertyInterface, I extends PropertyInterface> ActionPropertyMapImplement<?, I> createSetAction(Collection<I> context, CalcPropertyMapImplement<?, I> writeTo, CalcPropertyInterfaceImplement<I> writeFrom, CalcPropertyMapImplement<W, I> where, OrderedMap<CalcPropertyInterfaceImplement<I>, Boolean> orders, boolean ordersNotNull) {
+        Collection<I> innerInterfaces = mergeColSet(writeTo.mapping.values(), context);
+        Collection<I> whereInterfaces = where.mapping.values();
+        assert merge(innerInterfaces, whereInterfaces).containsAll(getUsedInterfaces(writeFrom));
+
+        if(!innerInterfaces.containsAll(whereInterfaces)) { // оптимизация, если есть допинтерфейсы - надо группировать
+            if(!whereInterfaces.containsAll(getUsedInterfaces(writeFrom))) { // если не все ключи есть, придется докинуть or
+                if(writeFrom instanceof CalcPropertyMapImplement)
+                    where = (CalcPropertyMapImplement<W, I>) ChangeActionProperty.getFullProperty(mergeColSet(innerInterfaces, whereInterfaces), where, writeTo, writeFrom);
+                else // по сути оптимизация, чтобы or не тянуть
+                    where  = (CalcPropertyMapImplement<W, I>) DerivedProperty.createAnd(add(whereInterfaces, (I)writeFrom), where, ChangeActionProperty.getValueClassProperty(writeTo, writeFrom));
+            }
+
+            Map<W, I> mapPushInterfaces = filterValues(where.mapping, innerInterfaces); Map<I, W> mapWhere = reverse(where.mapping);
+            writeFrom = createLastGProp(where.property, writeFrom.map(mapWhere), mapPushInterfaces.keySet(), mapImplements(orders, mapWhere), ordersNotNull).map(mapPushInterfaces);
+            where = (CalcPropertyMapImplement<W, I>) createAnyGProp(where.property, mapPushInterfaces.keySet()).map(mapPushInterfaces);
+        }
+
+        return createSetAction(innerInterfaces, context, where, writeTo, writeFrom);
+    }
+
+    public static <W extends PropertyInterface, I extends PropertyInterface> ActionPropertyMapImplement<?, I> createChangeClassAction(Collection<I> context, I changeInterface, ObjectClass cls, boolean forceDialog, CalcPropertyMapImplement<W, I> where, BaseClass baseClass, OrderedMap<CalcPropertyInterfaceImplement<I>, Boolean> orders, boolean ordersNotNull) {
+        Collection<I> innerInterfaces = add(context, changeInterface);
+        Collection<I> whereInterfaces = where.mapping.values();
+
+        if(!innerInterfaces.containsAll(whereInterfaces)) { // оптимизация, если есть допинтерфейсы - надо группировать
+            Map<W, I> mapPushInterfaces = filterValues(where.mapping, innerInterfaces);
+            where = (CalcPropertyMapImplement<W, I>) createAnyGProp(where.property, mapPushInterfaces.keySet()).map(mapPushInterfaces);
+        }
+
+        return createChangeClassAction(cls, forceDialog, innerInterfaces, context, where, changeInterface, baseClass);
     }
 
 }

@@ -4,6 +4,7 @@ import platform.base.*;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.MapValuesIterable;
 import platform.server.caches.hash.HashValues;
+import platform.server.classes.BaseClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.where.extra.CompareWhere;
@@ -11,6 +12,7 @@ import platform.server.data.expr.where.CaseExprInterface;
 import platform.server.data.query.Join;
 import platform.server.data.query.Query;
 import platform.server.data.translator.MapValuesTranslate;
+import platform.server.data.type.ObjectType;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.logics.DataObject;
@@ -98,15 +100,17 @@ public class SessionRows extends SessionData<SessionRows> {
         return keys.equals(((SessionRows)obj).keys) && properties.equals(((SessionRows)obj).properties) && rows.equals(((SessionRows)obj).rows);
     }
 
-    public SessionData insertRecord(SQLSession session, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields, Insert type, Object owner) throws SQLException {
+    public SessionData modifyRecord(SQLSession session, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields, Modify type, Object owner) throws SQLException {
 
-        if(type==Insert.LEFT)
+        if(type==Modify.DELETE)
+            return new SessionRows(keys, properties, BaseUtils.removeKey(rows, keyFields));
+        if(type== Modify.LEFT)
             if(rows.containsKey(keyFields))
                 return this;
-        if(type==Insert.ADD)
+        if(type== Modify.ADD)
             if(rows.containsKey(keyFields))
                 throw new RuntimeException("should not be");
-        if(type==Insert.UPDATE)
+        if(type== Modify.UPDATE)
             if(!rows.containsKey(keyFields))
                 return this;
 
@@ -122,28 +126,6 @@ public class SessionRows extends SessionData<SessionRows> {
     public void drop(SQLSession session, Object owner) {
     }
     public void rollDrop(SQLSession session, Object owner) throws SQLException {
-    }
-
-    public SessionData deleteRecords(SQLSession session, Map<KeyField,DataObject> keys) throws SQLException {
-        return new SessionRows(this.keys, properties, BaseUtils.removeKey(rows, keys));
-    }
-
-    public SessionData deleteKey(SQLSession session, KeyField mapField, DataObject object) throws SQLException {
-        Map<Map<KeyField,DataObject>,Map<PropertyField,ObjectValue>> removeRows = new HashMap<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>>(rows);
-        Iterator<Map.Entry<Map<KeyField,DataObject>,Map<PropertyField,ObjectValue>>> iterator = removeRows.entrySet().iterator();
-        while(iterator.hasNext())
-            if(iterator.next().getKey().get(mapField).equals(object))
-                iterator.remove();
-        return new SessionRows(keys, properties, removeRows);
-    }
-
-    public SessionData deleteProperty(SQLSession session, PropertyField property, DataObject object) throws SQLException {
-        Map<Map<KeyField,DataObject>,Map<PropertyField,ObjectValue>> removeRows = new HashMap<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>>(rows);
-        Iterator<Map.Entry<Map<KeyField,DataObject>,Map<PropertyField,ObjectValue>>> iterator = removeRows.entrySet().iterator();
-        while(iterator.hasNext())
-            if(iterator.next().getValue().get(property).equals(object))
-                iterator.remove();
-        return new SessionRows(keys, properties, removeRows);
     }
 
     @Override
@@ -185,5 +167,26 @@ public class SessionRows extends SessionData<SessionRows> {
 
     public boolean isEmpty() {
         return rows.size()==0;
+    }
+
+    public int getCount() {
+        return rows.size();
+    }
+
+    // assert что содержит
+    public static Map<PropertyField, ObjectValue> updateAdded(Map<PropertyField, ObjectValue> map, PropertyField property, int count) {
+        Map<PropertyField, ObjectValue> result = new HashMap<PropertyField, ObjectValue>(map);
+
+        DataObject prevValue = (DataObject)result.get(property);
+        result.put(property, new DataObject(ObjectType.idClass.read(prevValue.object) + count, prevValue.objectClass));
+        return result;
+    }
+
+    @Override
+    public SessionData updateAdded(SQLSession session, BaseClass baseClass, PropertyField property, int count) {
+        Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> updatedRows = new HashMap<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>>();
+        for(Map.Entry<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> row : rows.entrySet())
+            updatedRows.put(row.getKey(), updateAdded(row.getValue(), property, count));
+        return new SessionRows(keys, properties, updatedRows);
     }
 }

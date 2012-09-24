@@ -122,4 +122,11 @@ public class ListActionProperty extends KeepContextActionProperty {
         actions.add(action);
     }
 
+    @Override
+    public List<ActionPropertyMapImplement<?, PropertyInterface>> getList() {
+        List<ActionPropertyMapImplement<?, PropertyInterface>> result = new ArrayList<ActionPropertyMapImplement<?, PropertyInterface>>();
+        for(ActionPropertyMapImplement<?, PropertyInterface> action : actions)
+            result.addAll(action.getList());
+        return result;
+    }
 }

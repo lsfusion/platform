@@ -9,7 +9,7 @@ import platform.server.logics.property.ExecutionContext;
 
 import java.sql.SQLException;
 
-public class MessageActionProperty extends CustomActionProperty {
+public class MessageActionProperty extends SystemActionProperty {
     private ClassPropertyInterface msgInterface;
 
     public MessageActionProperty(String sID, String caption, int length) {

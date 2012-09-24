@@ -9,10 +9,12 @@ import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.linear.LCP;
+import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.CalcPropertyMapImplement;
 import platform.server.logics.property.actions.CustomActionProperty;
+import platform.server.logics.property.actions.SystemActionProperty;
 
 import javax.mail.Message;
 import java.sql.SQLException;
@@ -20,7 +22,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class NotificationActionProperty extends CustomActionProperty {
+public class NotificationActionProperty extends SystemActionProperty {
     private final static Logger logger = Logger.getLogger(NotificationActionProperty.class);
 
     private final LinkedHashMap<CalcPropertyMapImplement<?, ClassPropertyInterface>, Message.RecipientType> recipients = new LinkedHashMap<CalcPropertyMapImplement<?, ClassPropertyInterface>, Message.RecipientType>();
@@ -33,6 +35,11 @@ public class NotificationActionProperty extends CustomActionProperty {
     private final String emailToBCNotification;
 
     private final BusinessLogics<?> BL;
+
+    @Override
+    public Set<CalcProperty> getUsedProps() {
+        return getUsedProps(recipients.keySet());
+    }
 
     public NotificationActionProperty(String sID, String caption, LCP targetProperty, String subjectNotification, String textNotification, String emailFromNotification, String emailToNotification, String emailToCCNotification, String emailToBCNotification, BusinessLogics<?> BL) {
         super(sID, caption, getValueClasses(targetProperty));

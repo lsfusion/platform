@@ -10,22 +10,23 @@ import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
 
-public class BreakActionProperty extends KeepContextActionProperty {
+public class BreakActionProperty extends ChangeFlowActionProperty {
     public BreakActionProperty() {
-        super("break", "break", 0);
+        super("break", "break");
 
         finalizeInit();
     }
 
-    public Set<ActionProperty> getDependActions() {
-        return new HashSet<ActionProperty>();
+    public boolean hasFlow(ChangeFlowType type) {
+        return type == ChangeFlowType.BREAK;
     }
 
     public FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException {
         return FlowResult.BREAK;
     }
 
+    @Override
     public CalcPropertyMapImplement<?, PropertyInterface> getWhereProperty() {
-        return new CalcPropertyMapImplement<PropertyInterface, PropertyInterface>(NullValueProperty.instance);
+        return DerivedProperty.createNull();
     }
 }

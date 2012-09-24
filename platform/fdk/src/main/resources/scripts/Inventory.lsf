@@ -458,7 +458,9 @@ priceBalanceCollationSheetSku(collationSheet, sku) <- priceSkuStockDateTime(
 
 // ------------------------------ Определение состава сличительной ведомости (Batch) ------------------------------------ //
 
-includeCollationSheetBatch(collationSheet, batch) = includeCollationSheetSku(collationSheet, skuBatch(batch));
+includeCollationSheetBatch(collationSheet, batch) = DATA BOOLEAN (collationSheet, batch);
+includeCollationSheetBatch(collationSheet, batch) <- includeCollationSheetSku(collationSheet, PREV(skuBatch(batch)))
+                        WHEN [CHANGED(includeCollationSheetSku(collationSheet, sku))](collationSheet, PREV(skuBatch(batch)));
 
 priceBalanceCollationSheetBatch(collationSheet, batch) <- priceBatchStockDateTime(
                 batch, stockCollationSheet(collationSheet), dateTimeInventory(inventoryCollationSheet(collationSheet)))

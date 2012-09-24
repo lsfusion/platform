@@ -2,11 +2,12 @@ package platform.server.integration;
 
 import platform.server.Message;
 import platform.server.classes.IntegerClass;
-import platform.server.data.Insert;
+import platform.server.data.Modify;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.expr.query.GroupType;
+import platform.server.data.expr.where.cases.CaseExpr;
 import platform.server.data.query.Query;
 import platform.server.data.where.Where;
 import platform.server.logics.DataObject;
@@ -56,7 +57,7 @@ public class IntegrationService {
             Map<ImportField, ObjectValue> insertRow = new HashMap<ImportField, ObjectValue>();
             for (ImportField field : table.fields)
                 insertRow.put(field, ObjectValue.getValue(row.getValue(field), field.getFieldClass()));
-            importTable.insertRecord(session.sql, new DataObject(counter++), insertRow, Insert.ADD);
+            importTable.modifyRecord(session.sql, new DataObject(counter++), insertRow, Modify.ADD);
         }
 
         if (deletes != null) {
@@ -82,17 +83,18 @@ public class IntegrationService {
     private <P extends PropertyInterface> void deleteObjects(SingleKeyTableUsage<ImportField> importTable) throws SQLException {
         for (ImportDelete delete : deletes) {
             KeyExpr keyExpr = new KeyExpr("key");
-            Query<String, String> query = new Query(Collections.singletonMap("key", keyExpr));
+
+            Where deleteWhere = Where.TRUE;
 
             // выражения для полей в импортируемой таблице
             Map<ImportField, Expr> importExprs = importTable.join(importTable.getMapKeys()).getExprs();
 
             // фильтруем только те, которых нету в ImportTable
             if (!delete.deleteAll)
-                query.and(GroupExpr.create(Collections.singletonMap("key",
+                deleteWhere = deleteWhere.and(GroupExpr.create(Collections.singletonMap("key",
                                            delete.key.getExpr(importExprs, session.getModifier())),
                                            Where.TRUE,
-                                           query.mapKeys).getWhere().not());
+                                           Collections.singletonMap("key", keyExpr)).getWhere().not());
 
             Map<P, KeyExpr> intraKeyExprs = delete.deleteProperty.property.getMapKeys(); // генерим ключи (использовать будем только те, что не в DataObject
             Map<P, Expr> deleteExprs = new HashMap<P, Expr>();
@@ -107,13 +109,11 @@ public class IntegrationService {
                     deleteExprs.put(propInt, entry.getValue().getDeleteExpr(importTable, intraKeyExpr, session.getModifier()));
             }
 
-            query.and(GroupExpr.create(Collections.singletonMap("key", groupExpr),
+            deleteWhere = deleteWhere.and(GroupExpr.create(Collections.singletonMap("key", groupExpr),
                                        delete.deleteProperty.property.getExpr(deleteExprs, session.getModifier()),
-                                       GroupType.ANY,
-                                       Collections.singletonMap("key", keyExpr)).getWhere());
+                                       GroupType.ANY, Collections.singletonMap("key", keyExpr)).getWhere());
 
-            for (Map<String, DataObject> row : query.executeClasses(session).keySet())
-                session.changeClass(row.get("key"), null);
+            session.changeClass(new ClassChange(keyExpr, deleteWhere, CaseExpr.NULL));
         }
     }
 }

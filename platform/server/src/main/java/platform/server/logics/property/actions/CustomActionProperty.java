@@ -2,6 +2,7 @@ package platform.server.logics.property.actions;
 
 import platform.server.classes.ValueClass;
 import platform.server.logics.property.*;
+import platform.server.logics.property.actions.flow.ChangeFlowType;
 import platform.server.logics.property.actions.flow.FlowResult;
 
 import java.sql.SQLException;
@@ -32,5 +33,14 @@ public abstract class CustomActionProperty extends ActionProperty<ClassPropertyI
 
     public Set<ActionProperty> getDependActions() {
         return new HashSet<ActionProperty>();
+    }
+    
+    protected boolean isVolatile() {
+        return false;
+    }
+
+    @Override
+    public boolean hasFlow(ChangeFlowType type) {
+        return type == ChangeFlowType.VOLATILE && isVolatile();
     }
 }

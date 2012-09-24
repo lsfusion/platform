@@ -3,6 +3,7 @@ package platform.server.logics.property;
 import platform.base.BaseUtils;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
+import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.data.where.classes.ClassWhere;
@@ -15,6 +16,8 @@ import platform.server.session.*;
 import java.sql.SQLException;
 import java.util.*;
 
+import static platform.base.BaseUtils.crossJoin;
+import static platform.base.BaseUtils.reverse;
 import static platform.base.BaseUtils.rightCrossJoin;
 
 public class CalcPropertyMapImplement<P extends PropertyInterface, T extends PropertyInterface> extends CalcPropertyImplement<P, T> implements CalcPropertyInterfaceImplement<T> {
@@ -25,6 +28,8 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
 
     public CalcPropertyMapImplement(CalcProperty<P> property, Map<P, T> mapping) {
         super(property, mapping);
+        
+        assert !mapping.containsValue(null);
     }
 
     public DataChanges mapDataChanges(PropertyChange<T> change, WhereBuilder changedWhere, PropertyChanges propChanges) {
@@ -55,6 +60,10 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
         env.change(property, mapValues(keys).getPropertyChange(objectValue.getExpr()));
     }
 
+    public void change(ExecutionEnvironment env, PropertyChange<T> change) throws SQLException {
+        env.change(property, change.map(mapping));
+    }
+
     public Map<T,ValueClass> mapInterfaceClasses() {
         return mapInterfaceClasses(false);
     }
@@ -81,10 +90,6 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
         return checkInterfaces.size() >= interfaces.size() && property.isFull(checkInterfaces);
     }
 
-    public void mapNotNull(Map<T, DataObject> values, ExecutionEnvironment env, boolean notNull, boolean check) throws SQLException {
-        property.setNotNull(BaseUtils.join(mapping, values), env, notNull, check);
-    }
-
     public Expr mapExpr(Map<T, ? extends Expr> joinImplement, Modifier modifier) {
         return property.getExpr(BaseUtils.join(mapping, joinImplement), modifier);
     }
@@ -98,10 +103,6 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
 
     public void mapFillDepends(Set<CalcProperty> depends) {
         depends.add(property);
-    }
-
-    public Set<SessionCalcProperty> mapSessionCalcDepends() {
-        return property.getSessionCalcDepends();
     }
 
     public Set<OldProperty> mapOldDepends() {
@@ -126,6 +127,10 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
 
     public void fill(Set<T> interfaces, Set<CalcPropertyMapImplement<?, T>> properties) {
         properties.add(this);
+    }
+
+    public Collection<T> getInterfaces() {
+        return mapping.values();
     }
 
     @Override
@@ -158,4 +163,10 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
         return property.intersectFull(implement.property, BaseUtils.rightCrossValues(implement.mapping, mapping));
     }
 
+    public ActionPropertyMapImplement<?, T> getSetNotNullAction(boolean notNull) {
+        ActionPropertyMapImplement<?, P> action = property.getSetNotNullAction(notNull);
+        if(action!=null)
+            return action.map(mapping);
+        return null;
+    }
 }

@@ -2,8 +2,11 @@ package platform.server.logics.property;
 
 import platform.server.data.expr.Expr;
 import platform.server.data.where.WhereBuilder;
+import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.session.PropertyChanges;
 
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 

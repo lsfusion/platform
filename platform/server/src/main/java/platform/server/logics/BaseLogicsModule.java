@@ -1,7 +1,6 @@
 package platform.server.logics;
 
 import org.apache.log4j.Logger;
-import platform.base.BaseUtils;
 import platform.base.identity.DefaultIDGenerator;
 import platform.base.identity.IDGenerator;
 import platform.interop.ClassViewType;
@@ -20,7 +19,6 @@ import platform.server.data.expr.query.PartitionType;
 import platform.server.form.entity.*;
 import platform.server.form.entity.filter.*;
 import platform.server.form.instance.FormInstance;
-import platform.server.form.instance.ObjectInstance;
 import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.view.ContainerView;
 import platform.server.form.view.DefaultFormView;
@@ -34,6 +32,7 @@ import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
 import platform.server.logics.property.actions.*;
+import platform.server.logics.property.actions.flow.ApplyActionProperty;
 import platform.server.logics.property.actions.flow.BreakActionProperty;
 import platform.server.logics.property.actions.flow.CancelActionProperty;
 import platform.server.logics.property.actions.flow.ReturnActionProperty;
@@ -198,6 +197,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP dumb2;
 
     protected LCP castText;
+    protected LCP castString;
 
     public LCP<?> name;
     public LCP<?> date;
@@ -210,6 +210,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LAP formXls;
     public LAP formNull;
     public LAP formRefresh;
+    public LAP formApply;
     public LAP formCancel;
     public LAP formOk;
     public LAP formClose;
@@ -320,6 +321,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LAP dropString;
 
     public LAP<?> apply;
+    public LCP<?> canceled;
 
     public LAP flowBreak;
     public LAP flowReturn;
@@ -445,9 +447,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP perCentNotNullTableColumn;
     public LAP recalculateAggregationTableColumn;
 
-    public LCP sidDropColumn;
+    public LCP<?> sidDropColumn;
     public LCP sidToDropColumn;
-    public LCP sidTableDropColumn;
+    public LCP<?> sidTableDropColumn;
     public LCP timeDropColumn;
     public LCP revisionDropColumn;
     public LAP dropDropColumn;
@@ -662,6 +664,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         recognizeGroup = addAbstractGroup("recognizeGroup", getString("logics.groups.recognizegroup"), baseGroup, false);
         emailGroup = addAbstractGroup("emailGroup", getString("logics.groups.emailgroup"), rootGroup, true);
         historyGroup = addAbstractGroup("historyGroup", getString("logics.groups.historygroup"), rootGroup, true);
+
+        initBaseGroupAliases();
     }
 
     @Override
@@ -730,7 +734,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     @Override
     public void initProperties() {
 
-        apply = addAProp(new ApplyActionProperty(BL));
+        canceled = addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty("canceled", "Canceled", LogicalClass.instance)));
+
+        apply = addAProp(new ApplyActionProperty(BL, canceled.property));
         cancel = addAProp(new CancelActionProperty());
 
         flowBreak = addProperty(null, new LAP(new BreakActionProperty()));
@@ -819,6 +825,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         dumb2 = dumb(2);
 
         castText = addSFProp("CAST((prm1) as text)", TextClass.instance, 1);
+        castString = addSFProp("CAST((prm1) as char(50))", StringClass.get(50), 1);
 
         charLength = addSFProp("char_length(prm1)", IntegerClass.instance, 1);
 
@@ -846,7 +853,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         numberToDOW = addAGProp("numberToDOW", getString("logics.week.day.id"), numberDOW);
         DOWInDate = addJProp("DOWInDate", getString("logics.week.day.id"), numberToDOW, numberDOWInDate, 1);
 
-        delete = addAProp(new DeleteObjectActionProperty(baseClass));
+        delete = addAProp(baseClass.unknown.getChangeClassAction());
         dropString = addAProp(new DropObjectActionProperty(StringClass.get(13)));
 
         date = addDProp(baseGroup, "date", getString("logics.date"), DateClass.instance, transaction);
@@ -854,12 +861,13 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         redColor = addCProp(ColorClass.instance, Color.RED);
         yellowColor = addCProp(ColorClass.instance, Color.YELLOW);
 
+        formApply = addProperty(null, new LAP(new FormApplyActionProperty()));
+        formCancel = addProperty(null, new LAP(new FormCancelActionProperty()));
         formPrint = addProperty(null, new LAP(new PrintActionProperty()));
         formEdit = addProperty(null, new LAP(new EditActionProperty()));
         formXls = addProperty(null, new LAP(new XlsActionProperty()));
         formNull = addProperty(null, new LAP(new NullActionProperty()));
         formRefresh = addProperty(null, new LAP(new RefreshActionProperty()));
-        formCancel = addProperty(null, new LAP(new platform.server.logics.property.actions.form.CancelActionProperty()));
         formOk = addProperty(null, new LAP(new OkActionProperty()));
         formClose = addProperty(null, new LAP(new CloseActionProperty()));
 
@@ -1165,7 +1173,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         selectUserRoles = addSelectFromListAction(null, getString("logics.user.role.edit.roles"), inUserRole, userRole, customUser);
         //selectRoleForms = addSelectFromListAction(null, "Редактировать формы", permissionUserRoleForm, navigatorElement, userRole);
 
-        sidTable = addDProp(baseGroup, "sidTable", getString("logics.tables.name"), StringClass.get(100), table);
+        sidTable = addDProp(recognizeGroup, "sidTable", getString("logics.tables.name"), StringClass.get(100), table);
         sidTableKey = addDProp("sidTableKey", getString("logics.tables.key.sid"), StringClass.get(100), tableKey);
         nameTableKey = addDProp(baseGroup, "nameTableKey", getString("logics.tables.key.name"), StringClass.get(20), tableKey);
         sidTableColumn = addDProp(baseGroup, "sidTableColumn", getString("logics.tables.column.name"), StringClass.get(100), tableColumn);
@@ -1190,8 +1198,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         sidTableDropColumn = addDProp(baseGroup, "sidTableDropColumn", getString("logics.tables.name"), StringClass.get(100), dropColumn);
         timeDropColumn = addDProp(baseGroup, "timeDropColumn", getString("logics.tables.deleted.column.time"), DateTimeClass.instance, dropColumn);
         revisionDropColumn = addDProp(baseGroup, "revisionDropColumn", getString("logics.launch.revision"), StringClass.get(10), dropColumn);
+
         dropDropColumn = addAProp(baseGroup, new DropColumnActionProperty("dropDropColumn", getString("logics.tables.deleted.column.drop"), dropColumn));
-        dropDropColumn.setAskConfirm(true);
+        dropDropColumn.setEventAction(this, IncrementType.DROP, false, is(dropColumn), 1); // event, который при удалении колонки из системы удаляет ее из базы
 
         // заполним сессии
         LCP sessionUser = addDProp("sessionUser", getString("logics.session.user"), user, session);
@@ -1228,6 +1237,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         defaultOverrideBackgroundColor = addSUProp("defaultOverrideBackgroundColor", true, getString("logics.default.background.color"), Union.OVERRIDE, yellowColor, defaultBackgroundColor);
         defaultForegroundColor = addDProp("defaultForegroundColor", getString("logics.default.foreground.color"), ColorClass.instance);
         defaultOverrideForegroundColor = addSUProp("defaultOverrideForegroundColor", true, getString("logics.default.foreground.color"), Union.OVERRIDE, redColor, defaultForegroundColor);
+
+        dataName.setEventChange(addJProp(string2, addJProp(name.getOld(), objectClass, 1), 1, castString, 1), 1, is(baseClass.named), 1);
+        date.setEventChange(currentDate, is(transaction), 1);
 
         entryDictionary = addDProp("entryDictionary", getString("logics.dictionary"), dictionary, dictionaryEntry);
         termDictionary = addDProp(recognizeGroup, "termDictionary", getString("logics.dictionary.termin"), StringClass.get(50), dictionaryEntry);
@@ -1632,102 +1644,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         return BL.addGarbageCollectorActionProp();
     }
 
-    public static class SeekActionProperty extends CustomActionProperty {
-
-        CalcProperty property;
-
-        SeekActionProperty(String sID, String caption, ValueClass[] classes, CalcProperty property) {
-            super(sID, caption, classes);
-            this.property = property;
-        }
-
-        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-            context.emitExceptionIfNotInFormSession();
-
-            FormInstance<?> form = context.getFormInstance();
-            Collection<ObjectInstance> objects;
-            if (property != null)
-                objects = form.instanceFactory.getInstance(form.entity.getPropertyObject(property)).mapping.values();
-            else
-                objects = form.getObjects();
-            for (Map.Entry<ClassPropertyInterface, DataObject> key : context.getKeys().entrySet()) {
-                if (context.getObjectInstance(key.getKey()) == null) {
-                    for (ObjectInstance object : objects) {
-                        ConcreteClass keyClass = context.getSession().getCurrentClass(key.getValue());
-                        if (keyClass instanceof ConcreteValueClass && object.getBaseClass().isCompatibleParent((ValueClass) keyClass)) {
-                            form.seekObject(object, key.getValue());
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    public static class LoadActionProperty extends CustomReadValueActionProperty {
-
-        LCP fileProperty;
-
-        LoadActionProperty(String sID, String caption, LCP fileProperty) {
-            super(sID, caption, fileProperty.getInterfaceClasses());
-
-            this.fileProperty = fileProperty;
-        }
-
-        protected DataClass getReadType() {
-            return (FileClass) fileProperty.property.getType();
-        }
-
-        protected void executeRead(ExecutionContext<ClassPropertyInterface> context, Object userValue) throws SQLException {
-            DataObject[] objects = new DataObject[context.getKeyCount()];
-            int i = 0; // здесь опять учитываем, что порядок тот же
-            for (ClassPropertyInterface classInterface : interfaces)
-                objects[i++] = context.getKeyValue(classInterface);
-            fileProperty.change(userValue, context, objects);
-        }
-
-        @Override
-        public void proceedDefaultDesign(PropertyDrawView propertyView, DefaultFormView view) {
-            super.proceedDefaultDesign(propertyView, view);
-            propertyView.design.setIconPath("load.png");
-        }
-    }
-
-    public static class OpenActionProperty extends CustomActionProperty {
-
-        LCP fileProperty;
-
-        OpenActionProperty(String sID, String caption, LCP fileProperty) {
-            super(sID, caption, fileProperty.getInterfaceClasses());
-
-            this.fileProperty = fileProperty;
-        }
-
-        private FileClass getFileClass() {
-            return (FileClass) fileProperty.property.getType();
-        }
-
-        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-            DataObject[] objects = new DataObject[context.getKeyCount()];
-            int i = 0; // здесь опять учитываем, что порядок тот же
-            for (ClassPropertyInterface classInterface : interfaces)
-                objects[i++] = context.getKeyValue(classInterface);
-            FileClass fileClass = getFileClass();
-            for(byte[] file : fileClass.getFiles(fileProperty.read(context, objects))) {
-                if (fileClass instanceof DynamicFormatFileClass)
-                    context.delayUserInterfaction(new OpenFileClientAction(BaseUtils.getFile(file), BaseUtils.getExtension(file)));
-                else
-                    context.delayUserInterfaction(new OpenFileClientAction(file, BaseUtils.firstWord(((StaticFormatFileClass) fileClass).getOpenExtension(), ",")));
-            }
-        }
-
-        @Override
-        public void proceedDefaultDesign(PropertyDrawView propertyView, DefaultFormView view) {
-            super.proceedDefaultDesign(propertyView, view);
-            propertyView.design.setIconPath("open.png");
-        }
-    }
-
-    public static class IncrementActionProperty extends CustomActionProperty {
+    public static class IncrementActionProperty extends UserActionProperty {
 
         LCP dataProperty;
         LCP maxProperty;
@@ -1765,7 +1682,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
     }
 
-    private static class ChangeUserActionProperty extends CustomActionProperty {
+    private static class ChangeUserActionProperty extends AdminActionProperty {
 
         private ChangeUserActionProperty(String sID, ConcreteValueClass userClass) {
             super(sID, getString("logics.user.change.user"), new ValueClass[]{userClass});
@@ -1784,7 +1701,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
     }
 
-    private class CheckAggregationsActionProperty extends CustomActionProperty {
+    private class CheckAggregationsActionProperty extends AdminActionProperty {
         private CheckAggregationsActionProperty(String sID, String caption) {
             super(sID, caption, new ValueClass[]{});
         }
@@ -1801,7 +1718,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
     }
 
-    private class RecalculateActionProperty extends CustomActionProperty {
+    private class RecalculateActionProperty extends AdminActionProperty {
         private RecalculateActionProperty(String sID, String caption) {
             super(sID, caption, new ValueClass[]{});
         }
@@ -1818,7 +1735,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
     }
 
-    private class RecalculateTableColumnActionProperty extends CustomActionProperty {
+    private class RecalculateTableColumnActionProperty extends AdminActionProperty {
 
         private final ClassPropertyInterface tableColumnInterface;
 
@@ -1843,7 +1760,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
     }
 
-    private class PackActionProperty extends CustomActionProperty {
+    private class PackActionProperty extends AdminActionProperty {
         private PackActionProperty(String sID, String caption) {
             super(sID, caption, new ValueClass[]{});
         }
@@ -1860,7 +1777,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
     }
 
-    private class RecalculateFollowsActionProperty extends CustomActionProperty {
+    private class RecalculateFollowsActionProperty extends AdminActionProperty {
         private RecalculateFollowsActionProperty(String sID, String caption) {
             super(sID, caption, new ValueClass[]{});
         }
@@ -1876,7 +1793,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
     }
 
-    private class RecalculateStatsActionProperty extends CustomActionProperty {
+    private class RecalculateStatsActionProperty extends AdminActionProperty {
         private RecalculateStatsActionProperty(String sID, String caption) {
             super(sID, caption, new ValueClass[]{});
         }
@@ -1887,47 +1804,16 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
     }
 
-    public class DropColumnActionProperty extends CustomActionProperty {
+    public class DropColumnActionProperty extends AdminActionProperty {
         private DropColumnActionProperty(String sID, String caption, ValueClass dropColumn) {
-            super(sID, caption, new ValueClass[] {dropColumn});
+            super(sID, caption, new ValueClass[]{dropColumn});
         }
 
         public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
             DataObject dropColumnObject = context.getSingleKeyValue();
-            String columnName = (String) sidDropColumn.read(context, dropColumnObject);
-            String tableName = (String) sidTableDropColumn.read(context, dropColumnObject);
+            String columnName = (String) sidDropColumn.getOld().read(context, dropColumnObject);
+            String tableName = (String) sidTableDropColumn.getOld().read(context, dropColumnObject);
             BL.dropColumn(tableName, columnName);
-
-            context.changeClass(context.getSingleObjectInstance(), context.getSingleKeyValue(), -1);
-            context.apply(BL);
-        }
-
-        public void proceedDefaultDesign(PropertyDrawView propertyView, DefaultFormView view) {
-            super.proceedDefaultDesign(propertyView, view);
-            propertyView.design.setIconPath("delete.png");
-        }
-    }
-
-    class AddBarcodeActionProperty extends CustomActionProperty {
-
-        ConcreteCustomClass customClass;
-        CalcProperty<?> addProperty;
-
-        AddBarcodeActionProperty(ConcreteCustomClass customClass, CalcProperty addProperty, String sID) {
-            super(sID, getString("logics.add")+" [" + customClass + "] " + getString("logics.add.by.barcode"), new ValueClass[]{StringClass.get(13)});
-
-            this.customClass = customClass;
-            this.addProperty = addProperty;
-        }
-
-        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-            if (addProperty.read(context) != null) {
-                String barString = (String) context.getSingleKeyObject();
-                if (barString.trim().length() != 0) {
-                    ((CalcProperty<?>)addProperty).change(context, null);
-                    barcode.change(barString, context, context.addObject(customClass));
-                }
-            }
         }
     }
 

@@ -24,6 +24,7 @@ import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.actions.CustomActionProperty;
+import platform.server.logics.property.actions.UserActionProperty;
 import platform.server.session.DataSession;
 import platform.server.session.SessionTableUsage;
 import skolkovo.SkolkovoBusinessLogics;
@@ -38,7 +39,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.*;
 
-public class ImportProjectsActionProperty extends CustomActionProperty {
+public class ImportProjectsActionProperty extends UserActionProperty {
 
     private SkolkovoLogicsModule LM;
     private SkolkovoBusinessLogics BL;
@@ -974,7 +975,7 @@ public class ImportProjectsActionProperty extends CustomActionProperty {
             Document document = builder.build(new ByteArrayInputStream(pInfo.responseContents));
             pInfo.responseContents = null;
 
-            LCP<PropertyInterface> isProject = LM.is(LM.project);
+            LCP<PropertyInterface> isProject = (LCP<PropertyInterface>) LM.is(LM.project);
             Map<PropertyInterface, KeyExpr> keys = isProject.getMapKeys();
             Query<PropertyInterface, Object> query = new Query<PropertyInterface, Object>(keys);
             query.properties.put("id", LM.sidProject.getExpr(BaseUtils.singleValue(keys)));
@@ -1316,7 +1317,7 @@ public class ImportProjectsActionProperty extends CustomActionProperty {
                     row.add(node.getChildText("emailProject"));
 
 
-                    LCP<PropertyInterface> isCluster = LM.is(LM.cluster);
+                    LCP<PropertyInterface> isCluster = (LCP<PropertyInterface>) LM.is(LM.cluster);
                     Map<PropertyInterface, KeyExpr> keys = isCluster.getMapKeys();
                     Query<PropertyInterface, Object> query = new Query<PropertyInterface, Object>(keys);
                     query.properties.put("name", LM.nameNative.getExpr(BaseUtils.singleValue(keys)));
@@ -1658,7 +1659,7 @@ public class ImportProjectsActionProperty extends CustomActionProperty {
                     row.add(node.getChildText("emailProject"));
 
 
-                    LCP<PropertyInterface> isCluster = LM.is(LM.cluster);
+                    LCP<PropertyInterface> isCluster = (LCP<PropertyInterface>) LM.is(LM.cluster);
                     Map<PropertyInterface, KeyExpr> keys = isCluster.getMapKeys();
                     Query<PropertyInterface, Object> query = new Query<PropertyInterface, Object>(keys);
                     query.properties.put("name", LM.nameNative.getExpr(BaseUtils.singleValue(keys)));

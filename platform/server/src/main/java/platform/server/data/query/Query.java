@@ -57,6 +57,7 @@ public class Query<K,V> extends IQuery<K,V> {
         this(mapKeys, properties, where.and(CompareWhere.compareValues(filterKeys(mapKeys, mapValues.keySet()), mapValues)));
 
         this.mapValues = mapValues;
+        assert mapKeys.keySet().containsAll(mapValues.keySet());
     }
 
     public Query(Collection<K> keys, Map<K, DataObject> mapValues) {

@@ -14,13 +14,14 @@ import platform.server.logics.DataObject;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.actions.CustomActionProperty;
+import platform.server.logics.property.actions.UserActionProperty;
 
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
 
-public class DeclarationExportActionProperty extends CustomActionProperty {
+public class DeclarationExportActionProperty extends UserActionProperty {
     private RomanBusinessLogics BL;
     private DBFExporter.CustomDBF dbfDecl02, dbfDobl, dbfG313, dbfG44, dbfG47;
     private DBFExporter.CustomDBF dbfG18, dbfG20, dbfG21, dbfG316, dbfG40, dbfGB;

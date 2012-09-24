@@ -8,8 +8,8 @@ import platform.server.session.DataSession;
 
 import java.sql.SQLException;
 
-public class CancelActionProperty extends FormToolbarActionProperty {
-    public CancelActionProperty() {
+public class FormCancelActionProperty extends FormToolbarActionProperty {
+    public FormCancelActionProperty() {
         super("formCancelAction", ApiResourceBundle.getString("form.layout.cancel"), DataSession.isDataChanged, FormEntity.isNewSession);
     }
 

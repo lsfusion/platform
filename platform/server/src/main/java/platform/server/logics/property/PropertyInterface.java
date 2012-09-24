@@ -85,6 +85,10 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
         interfaces.add((P) this);
     }
 
+    public Collection<P> getInterfaces() {
+        return Collections.singleton((P) this);
+    }
+
     public <K extends PropertyInterface> CalcPropertyInterfaceImplement<K> map(Map<P, K> remap) {
         return remap.get((P)this);
     }

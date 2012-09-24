@@ -13,12 +13,13 @@ import platform.server.logics.linear.LCP;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.actions.CustomActionProperty;
+import platform.server.logics.property.actions.UserActionProperty;
 import skolkovo.SkolkovoLogicsModule;
 
 import java.sql.SQLException;
 import java.util.Map;
 
-public class ExportExpertsActionProperty extends CustomActionProperty {
+public class ExportExpertsActionProperty extends UserActionProperty {
 
     boolean escape;
     SkolkovoLogicsModule LM;
@@ -80,7 +81,7 @@ public class ExportExpertsActionProperty extends CustomActionProperty {
                 }
             }
 
-            Map<Object, KeyExpr> clusterKeys = LM.is(LM.cluster).getMapKeys();
+            Map<Object, KeyExpr> clusterKeys = (Map<Object, KeyExpr>) LM.is(LM.cluster).getMapKeys();
             KeyExpr clusterKey = BaseUtils.singleValue(clusterKeys);
             Query<Object, Object> queryCluster = new Query<Object, Object>(clusterKeys);
             queryCluster.properties.put("nameShort", LM.nameNativeShort.getExpr(context.getModifier(), clusterKey));
@@ -91,7 +92,7 @@ public class ExportExpertsActionProperty extends CustomActionProperty {
                 xml += "    <cluster>" + ((String)BaseUtils.singleValue(entryCluster.getValue())).trim() + "</cluster>\n";
             }
 
-            Map<Object, KeyExpr> foresightKeys = LM.is(LM.foresight).getMapKeys();
+            Map<Object, KeyExpr> foresightKeys = (Map<Object, KeyExpr>) LM.is(LM.foresight).getMapKeys();
             KeyExpr foresightKey = BaseUtils.singleValue(foresightKeys);
             Query<Object, Object> queryForesight = new Query<Object, Object>(foresightKeys);
             queryForesight.properties.put("id", LM.sidForesight.getExpr(context.getModifier(), foresightKey));

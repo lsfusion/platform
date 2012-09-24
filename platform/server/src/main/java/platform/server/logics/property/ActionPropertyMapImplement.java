@@ -2,16 +2,17 @@ package platform.server.logics.property;
 
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
+import platform.base.QuickSet;
 import platform.server.form.entity.ActionPropertyObjectEntity;
 import platform.server.form.entity.PropertyObjectInterfaceEntity;
 import platform.server.logics.LogicsModule;
 import platform.server.logics.linear.LAP;
-import platform.server.logics.property.actions.FormEnvironment;
+import platform.server.logics.property.actions.flow.ChangeFlowType;
 import platform.server.logics.property.actions.flow.FlowResult;
-import platform.server.session.ExecutionEnvironment;
-import platform.server.session.PropertyChange;
+import platform.server.logics.property.derived.DerivedProperty;
 
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -46,10 +47,6 @@ public class ActionPropertyMapImplement<P extends PropertyInterface, T extends P
     public LAP<P> createLP(List<T> listInterfaces) {
         return new LAP<P>(property, BaseUtils.mapList(listInterfaces, BaseUtils.reverse(mapping)));
     }
-    
-    public void execute(PropertyChange<T> change, ExecutionEnvironment env, FormEnvironment<T> form) throws SQLException {
-        env.execute(property, change.map(mapping), form==null ? null : form.map(mapping));
-    }
 
     public FlowResult execute(ExecutionContext<T> context) throws SQLException {
         return property.execute(context.map(mapping));
@@ -60,5 +57,27 @@ public class ActionPropertyMapImplement<P extends PropertyInterface, T extends P
         if(simpleDelete!=null)
             return mapping.get(simpleDelete);
         return null;
+    }
+
+    public List<ActionPropertyMapImplement<?, T>> getList() {
+        return DerivedProperty.mapActionImplements(mapping, property.getList());
+    }
+/*    public ActionPropertyMapImplement<?, T> compile() {
+        return property.compile().map(mapping);
+    }*/
+    public boolean hasPushFor(Collection<T> context, boolean ordersNotNull) {
+        return property.hasPushFor(mapping, context, ordersNotNull);
+    }
+    public CalcProperty getPushWhere(Collection<T> context, boolean ordersNotNull) {
+        return property.getPushWhere(mapping, context, ordersNotNull);
+    }
+    public ActionPropertyMapImplement<?, T> pushFor(Collection<T> context, CalcPropertyMapImplement<?, T> where, OrderedMap<CalcPropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull) {
+        return property.pushFor(mapping, context, where, orders, ordersNotNull);
+    }
+    public boolean hasFlow(ChangeFlowType... types) {
+        for(ChangeFlowType type : types)
+            if(property.hasFlow(type))
+                return true;
+        return false;
     }
 }

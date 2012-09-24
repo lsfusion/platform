@@ -39,6 +39,7 @@ import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
 import platform.server.logics.property.actions.CustomActionProperty;
 import platform.server.logics.property.actions.FormActionProperty;
+import platform.server.logics.property.actions.UserActionProperty;
 import platform.server.logics.property.group.AbstractGroup;
 
 import javax.swing.*;
@@ -2149,7 +2150,7 @@ public class RomanLogicsModule extends LogicsModule {
 //        setNotNull(articleSku);
 //        addConstraint(addJProp("Для товара должен быть задан артикул", baseLM.andNot1, is(sku), 1, articleSku, 1), false);
 
-        addItemBarcode = addJoinAProp("Ввод товара по штрих-коду", addAAProp(item, baseLM.barcode), 1);
+        addItemBarcode = addAAProp("Ввод товара по штрих-коду", item, baseLM.barcode);
 
         // Article
         sidArticle = addDProp(baseGroup, "sidArticle", "Артикул", StringClass.get(50), article);
@@ -2332,11 +2333,11 @@ public class RomanLogicsModule extends LogicsModule {
         seekArticleSIDInvoice = addJoinAProp("Поиск артикула", seekArticleSIDSupplier, 1, supplierDocument, 2);
 
         //???
-        addArticleSingleSIDSupplier = addJoinAProp("Ввод простого артикула", addAAProp(articleSingle, sidArticle, supplierArticle), 1, 2);
+        addArticleSingleSIDSupplier = addAAProp("Ввод простого артикула", articleSingle, sidArticle, supplierArticle);
         addNEArticleSingleSIDSupplier = addIfAProp("Ввод простого артикула (НС)", true, articleSIDSupplier, 1, 2, addArticleSingleSIDSupplier, 1, 2);
         addNEArticleSingleSIDInvoice = addJoinAProp("Ввод простого артикула (НС)", addNEArticleSingleSIDSupplier, 1, supplierDocument, 2);
 
-        addArticleCompositeSIDSupplier = addJoinAProp("Ввод составного артикула", addAAProp(articleComposite, sidArticle, supplierArticle), 1, 2);
+        addArticleCompositeSIDSupplier = addAAProp("Ввод составного артикула", articleComposite, sidArticle, supplierArticle);
         addNEArticleCompositeSIDSupplier = addIfAProp("Ввод составного артикула (НС)", true, articleSIDSupplier, 1, 2, addArticleCompositeSIDSupplier, 1, 2);
         addNEArticleCompositeSIDInvoice = addJoinAProp("Ввод составного артикула (НС)", addNEArticleCompositeSIDSupplier, 1, supplierDocument, 2);
 
@@ -3846,9 +3847,9 @@ public class RomanLogicsModule extends LogicsModule {
 
         barcodePrefix = addDProp(baseGroup, "barcodePrefix", "Префикс штрих-кодов", StringClass.get(13));
 
-        createSku = addJoinAProp("Сгенерировать товары", addAAProp(sku, baseLM.barcode, barcodePrefix, true), quantityCreationSku, 1);
-        createFreightBox = addJoinAProp("Сгенерировать короба", addAAProp(freightBox, baseLM.barcode, barcodePrefix, true), quantityCreationFreightBox, 1);
-        createPallet = addJoinAProp("Сгенерировать паллеты", addAAProp(pallet, baseLM.barcode, barcodePrefix, true), quantityCreationPallet, 1);
+        createSku = addGroupGen("Сгенерировать товары", articleSingle, creationSkuSku, quantityCreationSku);
+        createFreightBox = addGroupGen("Сгенерировать короба", freightBox, creationFreightBoxFreightBox, quantityCreationFreightBox);
+        createPallet = addGroupGen("Сгенерировать паллеты", pallet, creationPalletPallet, quantityCreationPallet);
         createStamp = addAProp(actionGroup, new CreateStampActionProperty());
 
         LCP isSkuBarcode = addJProp(is(sku), baseLM.barcodeToObject, 1);
@@ -3874,6 +3875,10 @@ public class RomanLogicsModule extends LogicsModule {
         scannerComPort = addDProp(baseGroup, "scannerComPort", "COM-порт сканера", IntegerClass.instance, baseLM.computer);
 
         initNavigators();
+    }
+    
+    public LAP addGroupGen(String caption, ConcreteCustomClass customClass, LCP setProp, LCP countProp) {
+        return addJoinAProp(caption, addForAProp(false, 2, 2, 3, BL.Utils.getLCPByName("count"), 1, 2, addAAProp(baseLM.barcode, customClass, barcodePrefix, setProp), 3), countProp, 1, 1);
     }
 
     public LAP addDEAProp(String sID) {
@@ -4457,7 +4462,7 @@ public class RomanLogicsModule extends LogicsModule {
         }
     }
 
-    private class ChangeQuantityListArticleCompositeColorSize extends CustomActionProperty {
+    private class ChangeQuantityListArticleCompositeColorSize extends UserActionProperty {
 
         private ChangeQuantityListArticleCompositeColorSize() {
             super("CHANGE_" + quantityListArticleCompositeColorSize.property.getSID(), quantityListArticleCompositeColorSize.getInterfaceClasses());
@@ -5219,7 +5224,7 @@ public class RomanLogicsModule extends LogicsModule {
                 addRegularFilterGroup(filterGroupDiffBox);
             }
 
-            addActionsOnObjectChange(objBarcode, addPropertyObject(baseLM.apply));
+            addActionsOnObjectChange(objBarcode, addPropertyObject(addListAProp(baseLM.apply, addIfAProp(baseLM.canceled, baseLM.flowBreak))));
 
             if (box)
                 addActionsOnObjectChange(objBarcode, addPropertyObject(
@@ -8432,7 +8437,7 @@ public class RomanLogicsModule extends LogicsModule {
         }
     }
 
-    public class AddNewArticleActionProperty extends CustomActionProperty {
+    public class AddNewArticleActionProperty extends UserActionProperty {
 
         ObjectEntity objArticle;
         private final ClassPropertyInterface sidInterface;
@@ -8473,7 +8478,7 @@ public class RomanLogicsModule extends LogicsModule {
         }
     }
 
-    public class CreateStampActionProperty extends CustomActionProperty {
+    public class CreateStampActionProperty extends UserActionProperty {
         private ClassPropertyInterface createStampInterface;
 
         public CreateStampActionProperty() {
@@ -8514,7 +8519,7 @@ public class RomanLogicsModule extends LogicsModule {
         }
     }
 
-    public class CloneItemActionProperty extends CustomActionProperty {
+    public class CloneItemActionProperty extends UserActionProperty {
         private ClassPropertyInterface itemInterface;
 
         public CloneItemActionProperty() {
@@ -8534,7 +8539,7 @@ public class RomanLogicsModule extends LogicsModule {
         }
     }
 
-    public class SeekRouteActionProperty extends CustomActionProperty {
+    public class SeekRouteActionProperty extends UserActionProperty {
 
         private ClassPropertyInterface shipmentInterface;
         private ClassPropertyInterface skuInterface;

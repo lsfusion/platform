@@ -326,6 +326,13 @@ public class QuickSet<T> implements Iterable<T>, FunctionSet<T> {
         return true;
     }
 
+    public boolean disjoint(QuickSet<T> col) {
+        for(int i=0;i<col.size;i++)
+            if(contains(col.get(i)))
+                return false;
+        return true;
+    }
+
     public boolean containsAll(Collection<? extends T> col) {
         for(T element : col)
             if(!contains(element))

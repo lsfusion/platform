@@ -1,6 +1,6 @@
 package platform.server.logics.property.actions;
 
-import platform.base.BaseUtils;
+import platform.base.QuickSet;
 import platform.server.classes.ValueClass;
 import platform.server.logics.DataObject;
 import platform.server.logics.ServerResourceBundle;
@@ -12,7 +12,7 @@ import platform.server.logics.property.ExecutionContext;
 import java.sql.SQLException;
 import java.util.*;
 
-public class GenerateLoginPasswordActionProperty extends CustomActionProperty {
+public class GenerateLoginPasswordActionProperty extends AdminActionProperty {
 
     private LCP email;
     private LCP userLogin;
@@ -55,7 +55,7 @@ public class GenerateLoginPasswordActionProperty extends CustomActionProperty {
     }
 
     @Override
-    public Set<CalcProperty> getChangeProps() {
-        return BaseUtils.toSet((CalcProperty)userLogin.property, (CalcProperty)userPassword.property);
+    public QuickSet<CalcProperty> aspectChangeExtProps() {
+        return getChangeProps((CalcProperty)userLogin.property, (CalcProperty)userPassword.property);
     }
 }

@@ -92,12 +92,12 @@ public class OverrideSessionModifier extends SessionModifier {
 
     // уведомляет что IncrementProps изменился
     public void eventIncrementChange(CalcProperty property) {
-        eventChange(property);
+        eventDataChange(property);
 
         // пробежим по increment'ам modifier, и уведомим что они могли изменится
         for(CalcProperty incrementProperty : modifier.getHintProps())
             if(CalcProperty.depends(incrementProperty, property))
-                eventHintIncrement(incrementProperty);
+                eventSourceChange(incrementProperty);
     }
 
     @Override

@@ -43,6 +43,11 @@ public class SubQueryExpr extends QueryExpr<KeyExpr, Expr, SubQueryJoin, SubQuer
         protected boolean isSelect() {
             return true;
         }
+
+        protected boolean isSelectNotInWhere() {
+//            assert isSelect();
+            return false;
+        }
     }
     protected QueryInnerContext createInnerContext() {
         return new QueryInnerContext(this);

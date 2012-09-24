@@ -29,12 +29,6 @@ public abstract class Event<C extends PropertyInterface, P extends Property<C>> 
         return used;
     }
 
-    public Set<SessionCalcProperty> getSessionCalcDepends() {
-        Set<SessionCalcProperty> result = new HashSet<SessionCalcProperty>();
-        result.addAll(where.mapSessionCalcDepends());
-        return result;
-    }
-
     public Set<OldProperty> getOldDepends() {
         Set<OldProperty> result = new HashSet<OldProperty>();
         result.addAll(where.mapOldDepends());

@@ -99,12 +99,12 @@ public abstract class NotNullExpr extends VariableClassExpr {
         if(recursive) {
             if(includeThis && hasNotNull()) {
                 if(exprThisFollows==null) {
-                    exprThisFollows = new NotNullExprSet(super.getExprFollows(true, true));
+                    exprThisFollows = new NotNullExprSet(getExprFollows(true));
                     exprThisFollows.add(this);
                 }
                 return exprThisFollows;
             } else
-                return super.getExprFollows(false, true);
+                return getExprFollows(true);
         } else // не кэшируем так как редко используется
             return new NotNullExprSet(this);
     }

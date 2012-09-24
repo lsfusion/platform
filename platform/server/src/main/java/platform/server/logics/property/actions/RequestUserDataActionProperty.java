@@ -1,22 +1,28 @@
 package platform.server.logics.property.actions;
 
+import platform.base.QuickSet;
 import platform.server.classes.DataClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.type.Type;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.property.AnyValuePropertyHolder;
+import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 
 import java.sql.SQLException;
 
-public class RequestUserDataActionProperty extends CustomActionProperty {
+public class RequestUserDataActionProperty extends SystemActionProperty {
 
     private final DataClass dataClass;
 
-    private final LCP requestCanceledProperty;
+    private final LCP<?> requestCanceledProperty;
     private final AnyValuePropertyHolder requestedValueProperty;
+
+    public QuickSet<CalcProperty> aspectChangeExtProps() {
+        return getChangeProps(requestCanceledProperty.property, requestedValueProperty.getLCP(dataClass).property);
+    }
 
     public RequestUserDataActionProperty(String sID, String caption, DataClass dataClass, LCP requestCanceledProperty, AnyValuePropertyHolder requestedValueProperty) {
         super(sID, caption, new ValueClass[0]);

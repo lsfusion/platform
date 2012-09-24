@@ -34,6 +34,8 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
     @ThisMessage
     @Message("logics.info.checking.aggregated.property")
     public String checkAggregation(SQLSession session) throws SQLException {
+        session.pushVolatileStats(null);
+
         String message = "";
 
         OrderedMap<Map<T, Object>, Map<String, Object>> checkResult = getRecalculateQuery(true).execute(session);
@@ -42,6 +44,8 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
             for(Map.Entry<Map<T,Object>,Map<String,Object>> row : checkResult.entrySet())
                 message += "Keys : " + row.getKey() + " : " + row.getValue() + '\n';
         }
+
+        session.popVolatileStats(null);
 
         return message;
     }
@@ -72,8 +76,10 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
     @Message("logics.info.recalculation.of.aggregated.property")
     @ThisMessage
     public void recalculateAggregation(SQLSession session) throws SQLException {
+        session.pushVolatileStats(null);
         session.modifyRecords(new ModifyQuery(mapTable.table, getRecalculateQuery(false).map(
                 BaseUtils.reverse(mapTable.mapKeys), singletonMap(field, "calcvalue"), MapValuesTranslator.noTranslate)));
+        session.popVolatileStats(null);
     }
 
     @IdentityLazy

@@ -211,3 +211,29 @@ CREATE OR REPLACE FUNCTION MAX(anyelement, anyelement) RETURNS anyelement AS
 $$
     SELECT CASE WHEN $1 < $2 THEN $2 ELSE $1 END;
 $$ LANGUAGE 'sql' IMMUTABLE;
+
+CREATE OR REPLACE FUNCTION first_agg ( anyelement, anyelement )
+RETURNS anyelement LANGUAGE sql IMMUTABLE AS $$
+        SELECT $1;
+$$;
+
+DROP AGGREGATE IF EXISTS first(anyelement) CASCADE;
+
+CREATE AGGREGATE first (
+        sfunc    = first_agg,
+        basetype = anyelement,
+        stype    = anyelement
+);
+
+CREATE OR REPLACE FUNCTION last_agg ( anyelement, anyelement )
+RETURNS anyelement LANGUAGE sql IMMUTABLE AS $$
+        SELECT $2;
+$$;
+
+DROP AGGREGATE IF EXISTS last(anyelement) CASCADE;
+
+CREATE AGGREGATE last (
+        sfunc    = last_agg,
+        basetype = anyelement,
+        stype    = anyelement
+);

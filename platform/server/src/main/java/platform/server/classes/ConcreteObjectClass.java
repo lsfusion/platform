@@ -14,5 +14,4 @@ public interface ConcreteObjectClass extends ConcreteClass,ObjectClass,ObjectCla
 
     public abstract ObjectValue getClassObject();
 
-    public abstract void saveClassChanges(SQLSession session, DataObject value) throws SQLException;
 }

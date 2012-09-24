@@ -51,13 +51,9 @@ public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> 
         return IsClassProperty.getProperty(value, "value");
     }
 
-    protected Set<CalcProperty> getClassDepends() {
-        return BaseUtils.toSet((CalcProperty) getInterfaceClassProperty().property, (CalcProperty) getValueClassProperty().property);
-    }
-
     @Override
     protected QuickSet<CalcProperty> calculateUsedDataChanges(StructChanges propChanges) {
-        return propChanges.getUsedChanges(getClassDepends());
+        return propChanges.getUsedChanges(BaseUtils.toSet((CalcProperty) getInterfaceClassProperty().property, (CalcProperty) getValueClassProperty().property));
     }
 
     @Override
@@ -130,15 +126,25 @@ public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> 
     public QuickSet<CalcProperty> calculateRecDepends() { // именно в recdepends, потому как в depends "порушиться"
         QuickSet<CalcProperty> result = new QuickSet<CalcProperty>(super.calculateRecDepends());
         for(ClassPropertyInterface remove : interfaces)
-            result.addAll(IsClassProperty.getParentProps(remove.interfaceClass));
+            result.addAll(remove.interfaceClass.getProperty());
         return result;
     }
 
     @Override
     protected Collection<Pair<Property<?>, LinkType>> calculateLinks() {
         Collection<Pair<Property<?>, LinkType>> result = new ArrayList<Pair<Property<?>, LinkType>>();
-        for(CalcProperty property : getClassDepends())
+
+        for(ActionProperty depend : actionChangeProps) // только у Data и IsClassProperty
+            result.add(new Pair<Property<?>, LinkType>(depend, LinkType.DEPEND));
+        Set<ChangedProperty> removeDepends = new HashSet<ChangedProperty>();
+        for(ClassPropertyInterface remove : interfaces)
+            if(remove.interfaceClass instanceof CustomClass)
+                removeDepends.add(((CustomClass)remove.interfaceClass).getProperty().getChanged(IncrementType.DROP));
+        if(value instanceof CustomClass)
+            removeDepends.add(((CustomClass)value).getProperty().getChanged(IncrementType.DROP));
+        for(CalcProperty property : removeDepends)
             result.add(new Pair<Property<?>, LinkType>(property, LinkType.EVENTACTION));
+
         return BaseUtils.merge(super.calculateLinks(), result); // чтобы удаления классов зацеплять
     }
 
@@ -153,5 +159,16 @@ public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> 
 
     public <V extends PropertyInterface> CalcPropertyMapImplement<ClassPropertyInterface, V> getImplement(List<V> list) {
         return new CalcPropertyMapImplement<ClassPropertyInterface, V>(this, getMapInterfaces(list));
+    }
+    
+    public boolean depends(Set<CustomClass> cls) { // оптимизация
+        if(cls.contains(value))
+            return true;
+
+        for(ClassPropertyInterface propertyInterface : interfaces)
+            if(cls.contains(propertyInterface.interfaceClass))
+                return true;
+
+        return false;
     }
 }

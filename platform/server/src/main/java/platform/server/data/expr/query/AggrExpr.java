@@ -5,10 +5,12 @@ import platform.base.QuickSet;
 import platform.base.TwinImmutableInterface;
 import platform.server.caches.AbstractOuterContext;
 import platform.server.caches.IdentityLazy;
+import platform.server.caches.ManualLazy;
 import platform.server.caches.OuterContext;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
+import platform.server.data.expr.KeyExpr;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.Where;
@@ -43,10 +45,6 @@ public abstract class AggrExpr<K extends Expr,G extends AggrType, I extends Aggr
             this.type = type;
         }
 
-        public Expr getMainExpr() {
-            return exprs.get(0);
-        }
-
         public boolean twins(TwinImmutableInterface o) {
             return exprs.equals(((Query)o).exprs) && orders.equals(((Query)o).orders)  && ordersNotNull == ((Query)o).ordersNotNull && type.equals(((Query) o).type);
         }
@@ -69,18 +67,27 @@ public abstract class AggrExpr<K extends Expr,G extends AggrType, I extends Aggr
             this.type = query.type;
         }
 
-        @IdentityLazy
+        private Where where;
+        @ManualLazy
         public Where getWhere() {
-            return Expr.getWhere(getAggrExprs()).and(getOrderWhere(orders, ordersNotNull));
+            if(where==null)
+                where = calculateWhere();
+            return where;
+        }
+        
+        protected Where calculateWhere() { // чтобы с аспектами проще было
+            return type.getWhere(exprs).and(getOrderWhere(orders, ordersNotNull));
+        }
+
+        public Expr getMainExpr() {
+            return type.getMainExpr(exprs);
         }
 
         public Set<Expr> getExprs() { // получает все выражения
-            Set<Expr> result = new HashSet<Expr>(getAggrExprs());
+            Set<Expr> result = new HashSet<Expr>(exprs);
             result.addAll(orders.keySet());
             return result;
         }
-        
-        public abstract Collection<Expr> getAggrExprs();
 
         public QuickSet<OuterContext> calculateOuterDepends() {
             return new QuickSet<OuterContext>(getExprs());
@@ -92,6 +99,14 @@ public abstract class AggrExpr<K extends Expr,G extends AggrType, I extends Aggr
             return Expr.getWhere(orders.keySet());
         else
             return Where.TRUE;
+    }
+
+    public static OrderedMap<Expr, Boolean> fixOrders(OrderedMap<Expr, Boolean> orders, Map<?, KeyExpr> mapKeys) {
+        OrderedMap<Expr, Boolean> result = new OrderedMap<Expr, Boolean>(orders);
+        for(KeyExpr key : mapKeys.values())
+            if(!result.containsKey(key))
+                result.put(key, false);
+        return result;
     }
 
     public abstract static class QueryInnerContext<K extends Expr,G extends AggrType, I extends AggrExpr.Query<G, I>, J extends QueryJoin<?, ?, ?, ?>,
@@ -107,6 +122,10 @@ public abstract class AggrExpr<K extends Expr,G extends AggrType, I extends Aggr
 
         protected boolean isSelect() {
             return thisObj.query.type.isSelect();
+        }
+
+        protected boolean isSelectNotInWhere() {
+            return thisObj.query.type.isSelectNotInWhere();
         }
     }
 

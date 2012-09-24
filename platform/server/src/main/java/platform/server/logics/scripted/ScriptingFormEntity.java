@@ -219,7 +219,7 @@ public class ScriptingFormEntity {
                 }
 
                 ObjectEntity[] obj = getMappingObjectsArray(mapping);
-                LAP<?> addObjAction = LM.getFormAddObjectAction(obj[0], false);
+                LAP<?> addObjAction = LM.getFormAddObjectAction(obj[0]);
                 property = form.addPropertyDraw(addObjAction);
             } else if (propertyName.equals("ADDFORM") || propertyName.equals("ADDSESSIONFORM")) {
                 if (mapping.size() != 1) {

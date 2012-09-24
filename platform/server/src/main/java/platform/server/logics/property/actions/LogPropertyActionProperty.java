@@ -13,19 +13,27 @@ import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.PropertyInterface;
+import platform.server.logics.property.group.AbstractGroup;
 import platform.server.session.DataSession;
 
 import java.sql.SQLException;
 import java.util.*;
 
-public class LogPropertyActionProperty<P extends PropertyInterface> extends CustomActionProperty {
+public class LogPropertyActionProperty<P extends PropertyInterface> extends SystemActionProperty {
 
     private final CalcProperty<P> property;
+    private final AbstractGroup recognizeGroup;
 
-    public LogPropertyActionProperty(CalcProperty<P> property) {
+    public LogPropertyActionProperty(CalcProperty<P> property, AbstractGroup recognizeGroup) {
         super("LogProp" + property.getSID(), property.caption, new ValueClass[]{});
 
         this.property = property;
+        this.recognizeGroup = recognizeGroup;
+    }
+
+    @Override
+    protected boolean isVolatile() { // нужно recognizeGroup читать
+        return true;
     }
 
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
@@ -33,7 +41,7 @@ public class LogPropertyActionProperty<P extends PropertyInterface> extends Cust
         DataSession session = context.getSession();
         
         String result = property.toString() + '\n';
-        for(FormRow formRow : context.createFormInstance(new PropertyFormEntity(property, session.recognizeGroup),
+        for(FormRow formRow : context.createFormInstance(new PropertyFormEntity(property, recognizeGroup),
                                                 new HashMap<ObjectEntity, DataObject>(), session, false, false, false, false).getFormData(30).rows) {
             String rowResult = "";
             for(Map.Entry<Set<ObjectInstance>, Collection<PropertyDrawInstance>> groupObj : BaseUtils.group(new BaseUtils.Group<Set<ObjectInstance>, PropertyDrawInstance>() {

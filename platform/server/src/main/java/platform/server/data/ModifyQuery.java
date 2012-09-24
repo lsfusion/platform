@@ -107,13 +107,30 @@ public class ModifyQuery {
         return new SQLExecute(update,changeCompile.getQueryParams(env), changeCompile.env);
     }
 
-    public SQLExecute getInsertLeftKeys(SQLSyntax syntax) {
-        return (new ModifyQuery(table, getInsertLeftQuery(),env)).getInsertSelect(syntax);
+    public SQLExecute getDelete(SQLSyntax syntax) {
+        // пока реализуем чисто PostgreSQL синтаксис
+        CompiledQuery<KeyField, PropertyField> deleteCompile = change.compile(syntax);
+        String deleteAlias = "ch_dl_sq";
+
+        Collection<String> whereSelect = new ArrayList<String>();
+        for(KeyField key : table.keys)
+            whereSelect.add(table.getName(syntax)+"."+key.name + "=" + deleteAlias + "." + deleteCompile.keyNames.get(key));
+
+        String delete = "DELETE FROM " + table.getName(syntax) + " USING (" + deleteCompile.select + ") " + deleteAlias + " WHERE " + (whereSelect.size()==0? Where.TRUE_STRING:BaseUtils.toString(whereSelect," AND "));
+
+        return new SQLExecute(delete, deleteCompile.getQueryParams(env), deleteCompile.env);
     }
 
-    public Query<KeyField, PropertyField> getInsertLeftQuery() {
+    public SQLExecute getInsertLeftKeys(SQLSyntax syntax, boolean updateProps) {
+        return (new ModifyQuery(table, getInsertLeftQuery(updateProps), env)).getInsertSelect(syntax);
+    }
+
+    public Query<KeyField, PropertyField> getInsertLeftQuery(boolean updateProps) {
         // делаем для этого еще один запрос
         Query<KeyField, PropertyField> leftKeysQuery = new Query<KeyField, PropertyField>(change.getMapKeys());
+        if(updateProps)
+            for(PropertyField property : change.getProperties())
+                leftKeysQuery.properties.put(property, change.getExpr(property));
         leftKeysQuery.and(change.getWhere());
         // исключим ключи которые есть
         leftKeysQuery.and(table.joinAnd(leftKeysQuery.mapKeys).getWhere().not());

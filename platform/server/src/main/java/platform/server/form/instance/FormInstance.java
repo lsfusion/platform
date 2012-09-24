@@ -20,9 +20,10 @@ import platform.server.Message;
 import platform.server.ParamMessage;
 import platform.server.Settings;
 import platform.server.auth.SecurityPolicy;
+import platform.server.caches.IdentityLazy;
 import platform.server.caches.ManualLazy;
 import platform.server.classes.*;
-import platform.server.data.Insert;
+import platform.server.data.Modify;
 import platform.server.data.QueryEnvironment;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
@@ -51,6 +52,7 @@ import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
+import platform.server.logics.property.actions.flow.FlowResult;
 import platform.server.logics.property.derived.MaxChangeProperty;
 import platform.server.logics.property.derived.OnChangeProperty;
 import platform.server.session.*;
@@ -462,13 +464,13 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     public void expandGroupObject(GroupObjectInstance group, Map<ObjectInstance, DataObject> value) throws SQLException {
         if(group.expandTable==null)
             group.expandTable = group.createKeyTable();
-        group.expandTable.insertRecord(session.sql, value, Insert.MODIFY);
+        group.expandTable.modifyRecord(session.sql, value, Modify.MODIFY);
         group.updated |= UPDATED_EXPANDS;
     }
 
     public void collapseGroupObject(GroupObjectInstance group, Map<ObjectInstance, DataObject> value) throws SQLException {
         if(group.expandTable!=null) {
-            group.expandTable.deleteRecords(session.sql, value);
+            group.expandTable.modifyRecord(session.sql, value, Modify.DELETE);
             group.updated |= UPDATED_EXPANDS;
         }
     }
@@ -555,13 +557,14 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 filters.add(filter);
         return filters.equals(groupTo.filters);
     }
-
-    private void resolveAdd(CustomObjectInstance object, ConcreteCustomClass cls, DataObject addObject) throws SQLException {
+    
+    public DataObject addFormObject(CustomObjectInstance object, ConcreteCustomClass cls, DataObject pushed) throws SQLException {
+        DataObject dataObject = session.addObject(cls, pushed);
 
         // резолвим все фильтры
         assert checkFilters(object.groupTo);
         for (FilterInstance filter : object.groupTo.filters)
-            filter.resolveAdd(this, object, addObject);
+            filter.resolveAdd(this, object, dataObject);
 
         for (LP lp : BL.LM.lproperties) {
             if(lp instanceof LCP) {
@@ -570,11 +573,11 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 if (property.autoset) {
                     ValueClass interfaceClass = BaseUtils.singleValue(property.getInterfaceClasses());
                     ValueClass valueClass = property.getValueClass();
-                    if (valueClass instanceof CustomClass && interfaceClass instanceof CustomClass &&
+                    if (valueClass instanceof CustomClass && interfaceClass instanceof CustomClass&&
                             cls.isChild((CustomClass) interfaceClass)) { // в общем то для оптимизации
                         Integer obj = getClassListener().getObject((CustomClass) valueClass);
-                        if (obj != null)
-                            lcp.change(obj, this, addObject);
+                        if(obj!=null)
+                            lcp.change(obj, this, dataObject);
                     }
                 }
             }
@@ -584,35 +587,16 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
         // todo : теоретически надо переделывать
         // нужно менять текущий объект, иначе не будет работать ImportFromExcelActionProperty
-        object.changeValue(session, addObject);
+        object.changeValue(session, dataObject);
 
-        object.groupTo.addSeek(object, addObject, false);
+        object.groupTo.addSeek(object, dataObject, false);
 
         // меняем вид, если при добавлении может получиться, что фильтр не выполнится, нужно как-то проверить в общем случае
 //      changeClassView(object.groupTo, ClassViewType.PANEL);
 
         dataChanged = true;
-    }
 
-    // добавляет во все
-
-    public DataObject addObject(ConcreteCustomClass cls) throws SQLException {
-        return addObject(cls, null);
-    }
-
-    public DataObject addObject(ConcreteCustomClass cls, DataObject pushed) throws SQLException {
-
-        if (!securityPolicy.cls.edit.add.checkPermission(cls)) return null;
-
-        DataObject addObject = session.addObject(cls, pushed);
-
-        for (ObjectInstance object : getObjects()) {
-            if (object instanceof CustomObjectInstance && cls.isChild(((CustomObjectInstance) object).baseClass)) {
-                resolveAdd((CustomObjectInstance) object, cls, addObject);
-            }
-        }
-
-        return addObject;
+        return dataObject;
     }
 
     public void changeClass(PropertyObjectInterfaceInstance objectInstance, DataObject dataObject, ConcreteObjectClass cls) throws SQLException {
@@ -1378,9 +1362,9 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         ClassFormEntity<T> classForm = objectClass.getEditForm(BL.LM);
 
         Object currentObject = propertyValues.read(this);
-        if (currentObject == null && objectClass instanceof ConcreteCustomClass) {
-            currentObject = addObject((ConcreteCustomClass) objectClass).object;
-        }
+/*        if (currentObject == null && objectClass instanceof ConcreteCustomClass) {
+            currentObject = addObject((ConcreteCustomClass)objectClass).object;
+        }*/
 
         return currentObject == null
                 ? null
@@ -1460,8 +1444,11 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         if (actionsOnEvent != null) {
             for (ActionPropertyObjectEntity<?> autoAction : actionsOnEvent) {
                 ActionPropertyObjectInstance<? extends PropertyInterface> autoInstance = instanceFactory.getInstance(autoAction);
-                if (autoInstance.isInInterface(null)) // для проверки null'ов
-                    autoInstance.execute(this);
+                if (autoInstance.isInInterface(null)) { // для проверки null'ов
+                    FlowResult result = autoInstance.execute(this);
+                    if(result != FlowResult.FINISH)
+                        return;
+                }
             }
         }
     }
@@ -1491,6 +1478,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     public boolean isInTransaction() {
         return false;
+    }
+
+    public void formApply() throws SQLException {
+        apply(BL);
     }
 
     public void formCancel() throws SQLException {
