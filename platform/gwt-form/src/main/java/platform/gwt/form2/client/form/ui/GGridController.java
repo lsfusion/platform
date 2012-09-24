@@ -29,7 +29,6 @@ public class GGridController {
         gridView.add(panel);
 
         gridView.setCellHeight(panel, "100%");
-        gridView.add(igroupObject.getGridToolbar());
     }
 
     public GGridTable getTable() {

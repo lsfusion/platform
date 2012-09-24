@@ -15,11 +15,11 @@ public class ClassChooserView extends ComponentView  {
     }
 
     public ObjectView object;
-    public boolean show = true;
+    public boolean visible = true;
     
     public ClassChooserView(int ID, ObjectEntity view, ObjectView object) {
         super(ID);
-        this.show = view.baseClass instanceof CustomClass && !((CustomClass)view.baseClass).children.isEmpty();
+        this.visible = view.baseClass instanceof CustomClass && !((CustomClass)view.baseClass).children.isEmpty();
 
         this.object = object;
     }
@@ -29,7 +29,7 @@ public class ClassChooserView extends ComponentView  {
         super.customSerialize(pool, outStream, serializationType);
 
         pool.serializeObject(outStream, object, serializationType);
-        outStream.writeBoolean(show);
+        outStream.writeBoolean(visible);
     }
 
     @Override
@@ -37,7 +37,7 @@ public class ClassChooserView extends ComponentView  {
         super.customDeserialize(pool, inStream);
 
         object = pool.deserializeObject(inStream);
-        show = inStream.readBoolean();
+        visible = inStream.readBoolean();
     }
 
     @Override

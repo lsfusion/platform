@@ -7,9 +7,10 @@ import javax.swing.border.EtchedBorder;
 import java.awt.*;
 
 public abstract class CountQuantityButton extends ToolbarGridButton {
+    private static final ImageIcon quantityIcon = new ImageIcon(FilterView.class.getResource("/images/quantity.png"));
 
     public CountQuantityButton() {
-        super("/images/quantity.png", ClientResourceBundle.getString("form.queries.number.of.entries"));
+        super(quantityIcon, ClientResourceBundle.getString("form.queries.number.of.entries"));
     }
 
     public abstract void addListener();

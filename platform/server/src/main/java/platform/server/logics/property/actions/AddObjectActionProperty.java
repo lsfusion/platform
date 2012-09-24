@@ -4,7 +4,10 @@ import platform.base.OrderedMap;
 import platform.base.QuickSet;
 import platform.interop.ClassViewType;
 import platform.interop.KeyStrokes;
-import platform.server.classes.*;
+import platform.server.classes.AbstractCustomClass;
+import platform.server.classes.ConcreteCustomClass;
+import platform.server.classes.CustomClass;
+import platform.server.classes.ObjectClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.where.Where;
@@ -12,7 +15,6 @@ import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.PropertyDrawView;
-import platform.server.form.view.panellocation.ToolbarPanelLocationView;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.ServerResourceBundle;
@@ -27,9 +29,7 @@ import platform.server.session.SinglePropertyTableUsage;
 import java.sql.SQLException;
 import java.util.*;
 
-import static platform.base.BaseUtils.filterNotKeys;
 import static platform.base.BaseUtils.merge;
-import static platform.server.logics.property.derived.DerivedProperty.createSetAction;
 
 public class AddObjectActionProperty<T extends PropertyInterface, I extends PropertyInterface> extends ExtendContextActionProperty<I> {
 
@@ -129,6 +129,7 @@ public class AddObjectActionProperty<T extends PropertyInterface, I extends Prop
     @Override
     public void proceedDefaultDraw(PropertyDrawEntity<PropertyInterface> entity, FormEntity<?> form) {
         super.proceedDefaultDraw(entity, form);
+        entity.drawToToolbar = true;
         entity.shouldBeLast = true;
         entity.forceViewType = ClassViewType.PANEL;
 
@@ -141,7 +142,6 @@ public class AddObjectActionProperty<T extends PropertyInterface, I extends Prop
         propertyView.editKey = KeyStrokes.getAddActionPropertyKeyStroke();
         propertyView.design.setIconPath("add.png");
         propertyView.showEditKey = false;
-        propertyView.setPanelLocation(new ToolbarPanelLocationView());
     }
 
     protected CalcPropertyMapImplement<?, I> getGroupWhereProperty() {

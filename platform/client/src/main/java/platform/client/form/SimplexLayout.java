@@ -417,6 +417,8 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
             Dimension min = component.getMinimumSize();
             Dimension max = component.getMaximumSize();
 
+            assert min.height <= max.height && min.width <= max.width;
+
             SimplexComponentInfo info = infos.get(component);
 
             //добавляем везде 1, иначе на округлении она теряется
@@ -429,7 +431,7 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
             solver.addConstraintex(2, new double[]{1, -1}, new int[]{info.R, info.L}, LpSolve.LE, max.width + 1.0);
 
 //            if (constraints.get(component).fillVertical == 0)
-            solver.addConstraintex(2, new double[]{1, -1}, new int[]{info.B, info.T}, LpSolve.LE, max.height);
+            solver.addConstraintex(2, new double[]{1, -1}, new int[]{info.B, info.T}, LpSolve.LE, max.height + 1.0);
         }
 
     }
@@ -647,10 +649,8 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
                 solver.addConstraintex(3, new double[]{1, -1, -1 * constraint.fillVertical}, new int[]{info.B, info.T, colmaxh}, LpSolve.GE, 0);
                 fillmaxh = true;
             } else {
-
                 // Preferred size
                 if (constraint.fillVertical >= 0) {
-
                     double prefHeight = pref.height * (type == SimplexLayout.PREFERRED && constraint.fillVertical > 1E-6 ? constraint.fillVertical : 1.0);
 
                     solver.addColumn(new double[0]);

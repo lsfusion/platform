@@ -35,16 +35,41 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     public PropertyObjectEntity<P, ?> propertyObject;
     
-    public void setPropertyObject(PropertyObjectEntity<P, ?> propertyObject) {
-        this.propertyObject = propertyObject;
-    }
-    
     public GroupObjectEntity toDraw;
 
     public String mouseBinding;
     public Map<KeyStroke, String> keyBindings;
     public OrderedMap<String, String> contextMenuBindings;
     public Map<String, ActionPropertyObjectEntity<?>> editActions = new HashMap<String, ActionPropertyObjectEntity<?>>();
+
+    public boolean drawToToolbar = false;
+
+    public boolean askConfirm;
+    public String askConfirmMessage;
+
+    public boolean shouldBeLast = false;
+    public ClassViewType forceViewType = null;
+    public String eventID = null;
+
+    // предполагается что propertyObject ссылается на все (хотя и не обязательно)
+    public List<GroupObjectEntity> columnGroupObjects = new ArrayList<GroupObjectEntity>();
+
+    // предполагается что propertyCaption ссылается на все из propertyObject но без toDraw (хотя опять таки не обязательно)
+    public CalcPropertyObjectEntity<?> propertyCaption;
+    public CalcPropertyObjectEntity<?> propertyReadOnly;
+    public CalcPropertyObjectEntity<?> propertyFooter;
+    public CalcPropertyObjectEntity<?> propertyBackground;
+    public CalcPropertyObjectEntity<?> propertyForeground;
+
+    public PropertyDrawEntity() {
+    }
+
+    public PropertyDrawEntity(int ID, PropertyObjectEntity<P, ?> propertyObject, GroupObjectEntity toDraw) {
+        super(ID);
+        setSID("propertyDraw" + ID);
+        this.propertyObject = propertyObject;
+        this.toDraw = toDraw;
+    }
 
     public Type getChangeType(FormEntity form) {
         Type type = null;
@@ -96,39 +121,17 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         for (ObjectEntity objectInstance : groupObjects.values()) {
             if (objectInstance.baseClass instanceof CustomClass) {
                 CustomActionProperty dialogAction = objectInstance.getChangeAction(property);
-                return new ActionPropertyObjectEntity<ClassPropertyInterface>(dialogAction,
-                        Collections.singletonMap(BaseUtils.single(dialogAction.interfaces), (PropertyObjectInterfaceEntity) objectInstance));
+                return new ActionPropertyObjectEntity<ClassPropertyInterface>(
+                        dialogAction,
+                        Collections.singletonMap(BaseUtils.single(dialogAction.interfaces), (PropertyObjectInterfaceEntity) objectInstance)
+                );
             }
         }
         return null;
     }
 
-
-    // предполагается что propertyObject ссылается на все (хотя и не обязательно)
-    public List<GroupObjectEntity> columnGroupObjects = new ArrayList<GroupObjectEntity>();
-
-    // предполагается что propertyCaption ссылается на все из propertyObject но без toDraw (хотя опять таки не обязательно)
-    public CalcPropertyObjectEntity<?> propertyCaption;
-    public CalcPropertyObjectEntity<?> propertyReadOnly;
-    public CalcPropertyObjectEntity<?> propertyFooter;
-    public CalcPropertyObjectEntity<?> propertyBackground;
-    public CalcPropertyObjectEntity<?> propertyForeground;
-
-    public boolean askConfirm;
-    public String askConfirmMessage;
-
-    public boolean shouldBeLast = false;
-    public ClassViewType forceViewType = null;
-    public String eventID = null;
-
-    public PropertyDrawEntity() {
-    }
-
-    public PropertyDrawEntity(int ID, PropertyObjectEntity<P, ?> propertyObject, GroupObjectEntity toDraw) {
-        super(ID);
-        setSID("propertyDraw" + ID);
+    public void setPropertyObject(PropertyObjectEntity<P, ?> propertyObject) {
         this.propertyObject = propertyObject;
-        this.toDraw = toDraw;
     }
 
     public PropertyDrawInstance getInstance(InstanceFactory instanceFactory) {

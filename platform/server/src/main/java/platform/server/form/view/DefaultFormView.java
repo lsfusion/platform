@@ -29,13 +29,24 @@ public class DefaultFormView extends FormView {
     public ContainerView getTreeContainer(TreeGroupView treeGroup) { return treeContainers.get(treeGroup); }
     public ContainerView getTreeContainer(TreeGroupEntity treeGroup) { return getTreeContainer(get(treeGroup)); }
 
-    protected final Map<GroupObjectView,ContainerView> filterContainers = new HashMap<GroupObjectView, ContainerView>();
-    public ContainerView getFilterContainer(GroupObjectView treeGroup) { return filterContainers.get(treeGroup); }
+    protected final Map<GroupObjectView,ContainerView> filtersContainers = new HashMap<GroupObjectView, ContainerView>();
+    public ContainerView getFilterContainer(GroupObjectView treeGroup) { return filtersContainers.get(treeGroup); }
     public ContainerView getFilterContainer(GroupObjectEntity groupObject) { return getFilterContainer(get(groupObject)); }
+
+    protected final Map<GroupObjectView,ContainerView> toolbarPropsContainers = new HashMap<GroupObjectView, ContainerView>();
+    public ContainerView getToolbarPropsContainer(GroupObjectView treeGroup) { return toolbarPropsContainers.get(treeGroup); }
+    public ContainerView getToolbarPropsContainer(GroupObjectEntity groupObject) { return getToolbarPropsContainer(get(groupObject)); }
 
     protected transient Map<GroupObjectView, ContainerView> controlsContainers = new HashMap<GroupObjectView, ContainerView>();
     public ContainerView getControlsContainer(GroupObjectView treeGroup) { return controlsContainers.get(treeGroup); }
     public ContainerView getControlsContainer(GroupObjectEntity groupObject) { return getControlsContainer(get(groupObject)); }
+
+    protected transient Map<GroupObjectView, ContainerView> rightControlsContainers = new HashMap<GroupObjectView, ContainerView>();
+    public ContainerView getRightControlsContainer(GroupObjectView treeGroup) { return rightControlsContainers.get(treeGroup); }
+    public ContainerView getRightControlsContainer(GroupObjectEntity groupObject) { return getRightControlsContainer(get(groupObject)); }
+
+    protected transient Map<TreeGroupView, ContainerView> treeControlsContainers = new HashMap<TreeGroupView, ContainerView>();
+    public ContainerView getControlsContainer(TreeGroupView treeGroup) { return treeControlsContainers.get(treeGroup); }
 
     protected transient Map<GroupObjectView, ContainerView> gridContainers = new HashMap<GroupObjectView, ContainerView>();
     public ContainerView getGridContainer(GroupObjectView treeGroup) { return gridContainers.get(treeGroup); }
@@ -60,7 +71,6 @@ public class DefaultFormView extends FormView {
     };
 
     public DefaultFormView() {
-
     }
 
     public DefaultFormView(FormEntity<?> formEntity) {
@@ -75,8 +85,8 @@ public class DefaultFormView extends FormView {
             addGroupObjectView(groupObject);
         }
 
-        for (TreeGroupView treeGroupView : treeGroups) {
-            addTreeGroupView(treeGroupView);
+        for (TreeGroupView treeGroup : treeGroups) {
+            addTreeGroupView(treeGroup);
         }
 
         for (PropertyDrawView propertyDraw : properties) {
@@ -85,13 +95,11 @@ public class DefaultFormView extends FormView {
 
         for (RegularFilterGroupView filterGroupView : regularFilters) {
             GroupObjectView filterGroupObject = mgroupObjects.get(filterGroupView.entity.getToDraw(entity));
-            filterContainers.get(filterGroupObject).add(filterGroupView);
+            filterGroupView.getConstraints().insetsInside = new Insets(0, 2, 0, 2);
+            filterGroupView.getConstraints().directions = new SimplexComponentDirections(0.01, 0.0, 0.0, 0.0);
+            filtersContainers.get(filterGroupObject).add(filterGroupView);
         }
 
-        // передобавляем еще раз, чтобы управляющие кнопки оказались в конце контейнера
-        for (GroupObjectEntity group : entity.groups) {
-            panelContainers.get(mgroupObjects.get(group)).add(controlsContainers.get(mgroupObjects.get(group)));
-        }
         formButtonContainer = formSet.getFormButtonContainer();
         mainContainer.add(formButtonContainer);
 
@@ -180,10 +188,18 @@ public class DefaultFormView extends FormView {
         setComponentSID(groupSet.getPanelContainer(), groupSet.getPanelContainer().getSID());
         controlsContainers.put(groupObject, groupSet.getControlsContainer());
         setComponentSID(groupSet.getControlsContainer(), groupSet.getControlsContainer().getSID());
-        filterContainers.put(groupObject, groupSet.getFilterContainer());
-        setComponentSID(groupSet.getFilterContainer(), groupSet.getFilterContainer().getSID());
+        rightControlsContainers.put(groupObject, groupSet.getRightControlsContainer());
+        setComponentSID(groupSet.getRightControlsContainer(), groupSet.getRightControlsContainer().getSID());
+        filtersContainers.put(groupObject, groupSet.getFiltersContainer());
+        setComponentSID(groupSet.getFiltersContainer(), groupSet.getFiltersContainer().getSID());
+        toolbarPropsContainers.put(groupObject, groupSet.getToolbarPropsContainer());
+        setComponentSID(groupSet.getToolbarPropsContainer(), groupSet.getToolbarPropsContainer().getSID());
         gridContainers.put(groupObject, groupSet.getGridContainer());
         setComponentSID(groupSet.getGridContainer(), groupSet.getGridContainer().getSID());
+
+        setComponentSID(groupSet.getToolbarContainer(), groupSet.getToolbarContainer().getSID());
+        setComponentSID(groupSet.getShowTypeContainer(), groupSet.getShowTypeContainer().getSID());
+        setComponentSID(groupSet.getFilterContainer(), groupSet.getFilterContainer().getSID());
 
         if (groupObject.size() == 1) {
             groupSet.getGridContainer().add(0, groupObject.get(0).classChooser);
@@ -205,21 +221,32 @@ public class DefaultFormView extends FormView {
 
     private void addTreeGroupView(TreeGroupView treeGroup) {
         TreeGroupContainerSet<ContainerView, ComponentView> treeSet = TreeGroupContainerSet.create(treeGroup, containerFactory);
-        setComponentSID(treeSet.getContainer(), treeSet.getContainer().getSID());
+        setComponentSID(treeSet.getTreeContainer(), treeSet.getTreeContainer().getSID());
+
+        treeControlsContainers.put(treeGroup, treeSet.getControlsContainer());
+        setComponentSID(treeSet.getControlsContainer(), treeSet.getControlsContainer().getSID());
 
         //вставляем перед первым groupObject в данной treeGroup
-        mainContainer.addBefore(treeSet.getContainer(), groupContainers.get(mgroupObjects.get(treeGroup.entity.groups.get(0))));
+        mainContainer.addBefore(treeSet.getTreeContainer(), groupContainers.get(mgroupObjects.get(treeGroup.entity.groups.get(0))));
 
-        treeContainers.put(treeGroup, treeSet.getContainer());
+        treeContainers.put(treeGroup, treeSet.getTreeContainer());
     }
 
     private void addPropertyDrawView(PropertyDrawView propertyDraw) {
         PropertyDrawEntity control = propertyDraw.entity;
 
         GroupObjectView groupObject = mgroupObjects.get(control.getToDraw(entity));
-        addComponent(groupObject, propertyDraw, control.propertyObject.property.getParent());
+        addPropertyDrawToLayout(groupObject, propertyDraw, control.propertyObject.property.getParent());
 
         control.proceedDefaultDesign(propertyDraw, this);
+        if (groupObject != null && propertyDraw.entity.drawToToolbar) {
+            if (propertyDraw.preferredSize == null) {
+                propertyDraw.preferredSize = new Dimension(-1, 20);
+            }
+            propertyDraw.getConstraints().insetsInside = new Insets(0, 2, 0, 2);
+            propertyDraw.getConstraints().directions = new SimplexComponentDirections(0.01, 0, 0.0, 0.0);
+            toolbarPropsContainers.get(groupObject).add(propertyDraw);
+        }
     }
 
     @Override
@@ -243,10 +270,11 @@ public class DefaultFormView extends FormView {
         return view;
     }
 
-    private void addComponent(GroupObjectView groupObject, ComponentView childComponent, AbstractGroup groupAbstract) {
+    private void addPropertyDrawToLayout(GroupObjectView groupObject, PropertyDrawView propertyDraw, AbstractGroup groupAbstract) {
         boolean addChild = true;
-        while (groupAbstract != null) {
 
+        ComponentView childComponent = propertyDraw;
+        while (groupAbstract != null) {
             while (groupAbstract != null && !groupAbstract.createContainer) {
                 groupAbstract = groupAbstract.getParent();
             } // пропускаем группы, по которым не нужно создавать контейнер
@@ -289,6 +317,4 @@ public class DefaultFormView extends FormView {
 //        }
         return (group == null ? "NOGROUP" : group.entity.getSID()) + "." + propertyGroupSID; // todo [dale]: разобраться с NOGROUP
     }
-
-
 }

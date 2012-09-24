@@ -8,8 +8,6 @@ import platform.client.descriptor.property.AbstractGroupDescriptor;
 import platform.client.descriptor.property.ActionPropertyDescriptor;
 import platform.client.descriptor.property.CalcPropertyDescriptor;
 import platform.client.descriptor.property.PropertyInterfaceDescriptor;
-import platform.client.form.panel.location.ClientShortcutPanelLocation;
-import platform.client.form.panel.location.ClientToolbarPanelLocation;
 import platform.client.logics.*;
 
 
@@ -61,12 +59,12 @@ public class ClientSerializationPool extends SerializationPool<ClientForm> {
         addMapping(ClientTreeGroup.class);
         addMapping(ClientShowType.class);
         addMapping(ClientGrid.class);
+        addMapping(ClientToolbar.class);
+        addMapping(ClientFilter.class);
         addMapping(ClientClassChooser.class);
         addMapping(ClientObject.class);
         addMapping(ClientPropertyDraw.class);
         addMapping(ClientRegularFilter.class);
         addMapping(ClientRegularFilterGroup.class);
-        addMapping(ClientToolbarPanelLocation.class);
-        addMapping(ClientShortcutPanelLocation.class);
     }
 }

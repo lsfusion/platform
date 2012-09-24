@@ -108,7 +108,7 @@ FORM innerOrders 'Внутренние заказы'
 
     PROPERTIES (o) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
-    PROPERTIES (o) ADDFORM, EDITFORM, delete FORCE PANEL
+    PROPERTIES (o) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
 
     OBJECTS d = innerOrderDetail
 
@@ -117,7 +117,6 @@ FORM innerOrders 'Внутренние заказы'
 
 DESIGN innerOrders FROM DEFAULT {
     PROPERTY (delete(o)) {
-        panelLocation = TOOLBAR;
         askConfirm = TRUE;
     }
 
@@ -623,7 +622,7 @@ EXTEND FORM innerOrders
         countOrderPickingDetailOrderPicking, quantityOrderPickingDetailOrderPicking, quantityInnerDocumentOrderPicking,
         quantityPostedInnerDocumentOrderPicking, quantityDraftInnerDocumentOrderPicking, statusOrderPicking
 
-    PROPERTIES(p) ADDFORM, EDITFORM, delete FORCE PANEL
+    PROPERTIES(p) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
 
     OBJECTS pd=orderPickingDetail
 
@@ -653,7 +652,6 @@ EXTEND DESIGN innerOrders {
             title = 'Подборка';
             ADD p.box {
                 PROPERTY (delete(p)) {
-                    panelLocation = TOOLBAR;
                     askConfirm = TRUE;
                 }
             };

@@ -25,8 +25,8 @@ import static platform.client.ClientResourceBundle.getString;
 
 public class DefaultOrdersEditor extends JPanel implements IncrementView {
 
-    private static final ImageIcon upIcon = new ImageIcon(Main.class.getResource("/images/arrowup.gif"));
-    private static final ImageIcon downIcon = new ImageIcon(Main.class.getResource("/images/arrowdown.gif"));
+    private static final ImageIcon upIcon = new ImageIcon(Main.class.getResource("/images/arrowup.png"));
+    private static final ImageIcon downIcon = new ImageIcon(Main.class.getResource("/images/arrowdown.png"));
 
     private final FormDescriptor form;
     private DataHolder dataHolder;

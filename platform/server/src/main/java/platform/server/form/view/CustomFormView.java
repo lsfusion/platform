@@ -107,8 +107,8 @@ public class CustomFormView extends FormView {
         return container;
     }
 
-    public GroupObjectView createGroupObject(GroupObjectEntity groupObject, ShowTypeView showType, GridView grid) {
-        GroupObjectView container = new GroupObjectView(idGenerator, groupObject, grid, showType);
+    public GroupObjectView createGroupObject(GroupObjectEntity groupObject, ShowTypeView showType, GridView grid, ToolbarView toolbar, FilterView filter) {
+        GroupObjectView container = new GroupObjectView(idGenerator, groupObject, grid, showType, toolbar, filter);
         return container;
     }
 

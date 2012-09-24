@@ -17,6 +17,9 @@ public class TreeGroupView extends ComponentView implements ServerIdentitySerial
 
     public TreeGroupEntity entity;
 
+    public ToolbarView toolbar;
+    public FilterView filter;
+
     public TreeGroupView() {
         
     }
@@ -29,6 +32,19 @@ public class TreeGroupView extends ComponentView implements ServerIdentitySerial
         for (GroupObjectEntity group : entity.groups) {
             groups.add(form.getGroupObject(group));
         }
+
+        toolbar = new ToolbarView(form.idGenerator.idShift());
+        filter = new FilterView(form.idGenerator.idShift());
+    }
+
+    @Override
+    public ComponentView getToolbar() {
+        return toolbar;
+    }
+
+    @Override
+    public ComponentView getFilter() {
+        return filter;
     }
 
     public void add(GroupObjectView group) {
@@ -39,6 +55,8 @@ public class TreeGroupView extends ComponentView implements ServerIdentitySerial
         super.customSerialize(pool, outStream, serializationType);
 
         pool.serializeCollection(outStream, groups, serializationType);
+        pool.serializeObject(outStream, toolbar, serializationType);
+        pool.serializeObject(outStream, filter, serializationType);
 
         outStream.writeBoolean(entity.plainTreeMode);
     }
@@ -47,11 +65,9 @@ public class TreeGroupView extends ComponentView implements ServerIdentitySerial
         super.customDeserialize(pool, inStream);
         
         groups = pool.deserializeList(inStream);
+        toolbar = pool.deserializeObject(inStream);
+        filter = pool.deserializeObject(inStream);
 
         entity = pool.context.entity.getTreeGroup(ID);
-    }
-
-    public ComponentView getComponent() {
-        return this;
     }
 }

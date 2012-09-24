@@ -632,7 +632,7 @@ FORM WHfromRFs 'Приход товара из РФ'
                            countWHfromRFDetailWHfromRF, quantityWHfromRFDetailWHfromRF, statusRecWHfromRF,
                            descriptionFreightWHfromRF, nameCompanyWHfromRF
 
-    PROPERTIES(w) ADDFORM, EDITFORM, delete FORCE PANEL
+    PROPERTIES(w) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
 
     PROPERTIES (w) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed,
                                         hostnameComputerClosed
@@ -673,7 +673,6 @@ DESIGN WHfromRFs FROM DEFAULT{
 
     PROPERTY (delete(w)) {
         caption = 'Удалить';
-        panelLocation = TOOLBAR;
         askConfirm = TRUE;
     }
 }

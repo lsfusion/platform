@@ -2,6 +2,7 @@ package platform.client.form.showtype;
 
 import platform.client.ClientResourceBundle;
 import platform.client.form.ClientFormController;
+import platform.client.form.ClientFormLayout;
 import platform.client.form.GroupObjectLogicsSupplier;
 import platform.client.logics.ClientShowType;
 import platform.interop.ClassViewType;
@@ -11,15 +12,15 @@ import java.util.List;
 
 public abstract class ShowTypeController {
 
-    public ShowTypeView view;
+    public final ClientShowType showType;
+    public final ShowTypeView view;
 
     private ClassViewType classView = ClassViewType.HIDE;
 
     private List<ClassViewType> banClassView;
-    public final ClientShowType clientShowType;
 
-    public ShowTypeController(ClientShowType clientShowType, final GroupObjectLogicsSupplier logicsSupplier, final ClientFormController form) {
-        this.clientShowType = clientShowType;
+    public ShowTypeController(ClientShowType showType, final GroupObjectLogicsSupplier logicsSupplier, final ClientFormController form) {
+        this.showType = showType;
 
         view = new ShowTypeView() {
             protected void setNewClassView(ClassViewType newClassView) {
@@ -45,6 +46,10 @@ public abstract class ShowTypeController {
                 needToBeShown();
             }
         }
+    }
+
+    public void addView(ClientFormLayout layout) {
+        layout.add(showType, view);
     }
 
     protected abstract void needToBeShown();

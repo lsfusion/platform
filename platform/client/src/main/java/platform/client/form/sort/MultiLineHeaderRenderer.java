@@ -8,8 +8,8 @@ import java.awt.*;
 
 public class MultiLineHeaderRenderer implements TableCellRenderer {
 
-    protected final static ImageIcon arrowUpIcon = new ImageIcon(MultiLineHeaderRenderer.class.getResource("/images/arrowup.gif"));
-    protected final static ImageIcon arrowDownIcon = new ImageIcon(MultiLineHeaderRenderer.class.getResource("/images/arrowdown.gif"));
+    protected final static ImageIcon arrowUpIcon = new ImageIcon(MultiLineHeaderRenderer.class.getResource("/images/arrowup.png"));
+    protected final static ImageIcon arrowDownIcon = new ImageIcon(MultiLineHeaderRenderer.class.getResource("/images/arrowdown.png"));
 
     private final TableCellRenderer tableCellRenderer;
     private final TableSortableHeaderManager sortableHeaderManager;

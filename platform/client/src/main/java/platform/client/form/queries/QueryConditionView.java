@@ -1,7 +1,6 @@
 package platform.client.form.queries;
 
 import platform.client.ClientResourceBundle;
-import platform.client.FlatRolloverButton;
 import platform.client.form.GroupObjectLogicsSupplier;
 import platform.client.form.ItemAdapter;
 import platform.client.logics.*;
@@ -27,7 +26,7 @@ public class QueryConditionView extends JPanel implements FilterValueListener {
     public static final int PREFERRED_HEIGHT = 18;
 
     // Icons - загружаем один раз, для экономии
-    private static final ImageIcon deleteIcon = new ImageIcon(QueryConditionView.class.getResource("/images/delete.gif"));
+    private static final ImageIcon deleteIcon = new ImageIcon(QueryConditionView.class.getResource("/images/delete.png"));
 
     private final ClientPropertyFilter filter;
 
@@ -45,6 +44,8 @@ public class QueryConditionView extends JPanel implements FilterValueListener {
     private JComboBox junctionView;
 
     public QueryConditionView(ClientPropertyFilter ifilter, GroupObjectLogicsSupplier logicsSupplier, UIHandlers iuiHandlers) {
+
+        setAlignmentX(LEFT_ALIGNMENT);
 
         filter = ifilter;
         uiHandlers = iuiHandlers;
@@ -121,7 +122,7 @@ public class QueryConditionView extends JPanel implements FilterValueListener {
             }
         });
 
-        junctionView = new JComboBox(new String[] {ClientResourceBundle.getString("form.queries.and"), ClientResourceBundle.getString("form.queries.or")});
+        junctionView = new QueryConditionComboBox(new String[] {ClientResourceBundle.getString("form.queries.and"), ClientResourceBundle.getString("form.queries.or")});
         junctionView.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
                 filter.junction = junctionView.getSelectedIndex() == 0;
@@ -132,9 +133,7 @@ public class QueryConditionView extends JPanel implements FilterValueListener {
 
         add(centerPanel, BorderLayout.CENTER);
 
-        delButton = new FlatRolloverButton(deleteIcon);
-        delButton.setFocusable(false);
-        delButton.setPreferredSize(new Dimension(PREFERRED_HEIGHT, PREFERRED_HEIGHT));
+        delButton = new ToolbarGridButton(deleteIcon, "", new Dimension(PREFERRED_HEIGHT, PREFERRED_HEIGHT));
         delButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 uiHandlers.conditionRemoved(filter);
@@ -142,6 +141,21 @@ public class QueryConditionView extends JPanel implements FilterValueListener {
         });
 
         filterChanged();
+    }
+
+
+    public Dimension getPreferredSize() {
+        return new Dimension(super.getPreferredSize().width, QueryConditionView.PREFERRED_HEIGHT);
+    }
+
+    @Override
+    public Dimension getMaximumSize() {
+        return getPreferredSize();
+    }
+
+    @Override
+    public Dimension getMinimumSize() {
+        return new Dimension(30, super.getPreferredSize().height);
     }
 
     public void setJunctionVisible(boolean visible) {

@@ -94,7 +94,7 @@ META defineDocumentFormTransferOut(object, formCaption)
 
         PROPERTIES (t) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
-        PROPERTIES (t) ADDFORM, EDITFORM, delete FORCE PANEL
+        PROPERTIES (t) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
 
         OBJECTS d = object##OutDetail
 
@@ -103,7 +103,6 @@ META defineDocumentFormTransferOut(object, formCaption)
 
     DESIGN object##Outs FROM DEFAULT {
         PROPERTY (delete(t)) {
-            panelLocation = TOOLBAR;
             askConfirm = TRUE;
         }
 

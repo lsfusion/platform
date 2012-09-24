@@ -9,9 +9,10 @@ import java.awt.*;
 import java.text.NumberFormat;
 
 public abstract class CalculateSumButton extends ToolbarGridButton {
+    private static final ImageIcon sumIcon = new ImageIcon(FilterView.class.getResource("/images/sum.png"));
 
     public CalculateSumButton() {
-        super("/images/sum.png", ClientResourceBundle.getString("form.queries.calculate.sum"));
+        super(sumIcon, ClientResourceBundle.getString("form.queries.calculate.sum"));
     }
 
     public abstract void addListener();

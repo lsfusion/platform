@@ -1023,10 +1023,10 @@ FORM declaration 'Декларация'
                     sumDataGroupDeclaration, dutyDataGroupDeclaration, VATDataGroupDeclaration, numberVATRangeGroupDeclaration, valueVATRangeGroupDeclaration, ADDOBJ, delete
     PROPERTIES (c, gd) sumCorrectionGroupDeclaration
 
-    PROPERTIES (d) showFormDeclarationInvoices TODRAW dd FORCE PANEL
-    PROPERTIES (d) toCreateGroupsDeclaration TODRAW gd FORCE PANEL, setSumGroupDeclaration TODRAW gd FORCE PANEL
-    PROPERTIES (d) importGroupsDeclaration TODRAW gd FORCE PANEL SHOWIF allowImportFromXLSDeclaration(d)
-    PROPERTIES (d) fillInGroupDeclarationDeclarationDetail  TODRAW gd FORCE PANEL SHOWIF allowImportFromXLSDeclaration(d)
+    PROPERTIES (d) showFormDeclarationInvoices TODRAW dd FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES (d) toCreateGroupsDeclaration TODRAW gd FORCE PANEL DRAWTOTOOLBAR, setSumGroupDeclaration TODRAW gd FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES (d) importGroupsDeclaration TODRAW gd FORCE PANEL DRAWTOTOOLBAR SHOWIF allowImportFromXLSDeclaration(d)
+    PROPERTIES (d) fillInGroupDeclarationDeclarationDetail  TODRAW gd FORCE PANEL DRAWTOTOOLBAR SHOWIF allowImportFromXLSDeclaration(d)
 
     FILTERGROUP filterDetail
         FILTER 'Для текущей позиции' 'F11' inGroupDeclarationDeclarationDetail(gd, dd)
@@ -1159,27 +1159,10 @@ DESIGN declaration FROM DEFAULT{
 
                     ADD dd.box {
                         fillVertical = 3.5;
-                        PROPERTY (showFormDeclarationInvoices(d)) {
-                            panelLocation = TOOLBAR;
-                        }
                     };
 
                     ADD gd.box {
                         fillVertical = 1.5;
-                        PROPERTY (toCreateGroupsDeclaration(d)) {
-                            panelLocation = TOOLBAR;
-                        }
-
-                        PROPERTY (importGroupsDeclaration(d)) {
-                            panelLocation = TOOLBAR;
-                        }
-                        PROPERTY (fillInGroupDeclarationDeclarationDetail(d)) {
-                            panelLocation = TOOLBAR;
-                        }
-
-                        PROPERTY (setSumGroupDeclaration(d)) {
-                            panelLocation = TOOLBAR;
-                        }
                     }
                 }
 
@@ -1228,7 +1211,7 @@ FORM declarations 'Декларации'
                            rateExchangeCustomDataDeclaration, rateExchangeManagerialDataDeclaration, sumRegistrationUnionDeclaration,
                            dutyReverseDeclaration, VATReverseDeclaration, totalCustomSum,
                            expenseCertificateDeclaration, canonicalBrandDeclaration
-    PROPERTIES(d) FORCE PANEL exportDeclaration, ADDFORM, EDITFORM, delete
+    PROPERTIES(d) FORCE PANEL exportDeclaration DRAWTOTOOLBAR, ADDFORM, EDITFORM, delete DRAWTOTOOLBAR
 
     OBJECTS dd=declarationDetail
     PROPERTIES(dd) READONLY numberDeclarationDetail, barcodeDeclarationDetail, nameInvoiceDeclarationDetail,
@@ -1277,11 +1260,6 @@ DESIGN declarations FROM DEFAULT {
 
     PROPERTY (delete(d)) {
         caption = 'Удалить';
-        panelLocation = TOOLBAR;
-    }
-
-    PROPERTY (exportDeclaration(d)) {
-        panelLocation = TOOLBAR;
     }
 
     NEW primary.box {

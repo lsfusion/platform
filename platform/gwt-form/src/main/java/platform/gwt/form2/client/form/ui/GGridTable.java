@@ -92,7 +92,7 @@ public class GGridTable extends GGridPropertyTable {
 
         int oldKeyScrollTop = 0;
         GGroupObjectValue oldKey = null;
-        if (selectedRecord != null) {
+        if (selectedRecord != null && selectedRecord.rowIndex < getRowCount()) {
             oldKey = selectedRecord.key;
             TableRowElement rowElement = getRowElement(selectedRecord.rowIndex);
             oldKeyScrollTop = rowElement.getAbsoluteTop() - getScrollPanel().getAbsoluteTop();

@@ -77,6 +77,10 @@ public class GShowTypeView extends HorizontalPanel {
         return banClassViews.size() < 2;
     }
 
+    public void addToLayout(GFormLayout formLayout) {
+        formLayout.add(groupObject.showType, this);
+    }
+
     private class ChangeViewBtnClickHandler implements ClickHandler {
         private final GClassViewType newClassView;
 

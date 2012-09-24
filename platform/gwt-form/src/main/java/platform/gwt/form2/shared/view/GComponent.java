@@ -7,7 +7,6 @@ public class GComponent implements Serializable {
     public String sID;
     public GContainer container;
     public boolean defaultComponent;
-    public boolean drawToToolbar;
     public double fillHorizontal = -1;
     public double fillVertical = -1;
     public int prefferedWidth = -1;
@@ -27,7 +26,6 @@ public class GComponent implements Serializable {
         return className + "{" +
                 "sID='" + sID + '\'' +
                 ", defaultComponent=" + defaultComponent +
-                ", drawToToolbar=" + drawToToolbar +
                 '}';
     }
 }

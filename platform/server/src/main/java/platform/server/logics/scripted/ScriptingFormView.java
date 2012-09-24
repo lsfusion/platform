@@ -4,9 +4,6 @@ import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.view.*;
-import platform.server.form.view.panellocation.PanelLocationView;
-import platform.server.form.view.panellocation.ShortcutPanelLocationView;
-import platform.server.form.view.panellocation.ToolbarPanelLocationView;
 import platform.server.logics.scripted.proxy.ViewProxyUtil;
 
 import java.util.List;
@@ -70,16 +67,6 @@ public class ScriptingFormView {
         }
 
         view.addIntersection(comp2, comp1, cons);
-    }
-
-    public PanelLocationView createPanelLocation(boolean toolbar, PropertyDrawView property, boolean defaultProperty) {
-        PanelLocationView panelLocation;
-        if (toolbar) {
-            panelLocation = new ToolbarPanelLocationView();
-        } else {
-            panelLocation = new ShortcutPanelLocationView(property, defaultProperty);
-        }
-        return panelLocation;
     }
 
     public ContainerView createNewComponent(String sid, ScriptingLogicsModule.InsertPosition pos, ComponentView anchorComponent) throws ScriptingErrorLog.SemanticErrorException {

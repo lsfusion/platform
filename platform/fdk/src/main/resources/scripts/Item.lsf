@@ -155,10 +155,10 @@ DESIGN items FROM DEFAULT {
     NEW rootContainer {
             type = SPLITH;
             childConstraints = TO THE RIGHT;
-            ADD treeGroup.tree {
+            ADD treeGroup.tree.box {
                 fillHorizontal = 0.4;
             }
-            ADD i.grid {
+            ADD i.box {
                 defaultComponent = TRUE;
             }
     }

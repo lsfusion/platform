@@ -263,8 +263,8 @@ FORM payment 'Платеж'
                   rateExchangePayment SHOWIF isNotSameCurrencyPayment(p),
                   sumRateExchangePayment SHOWIF isNotSameCurrencyPayment(p),
                   costedInContractLedgerOutContractLedger,
-                  writeOutContractLedgerFIFO TODRAW i FORCE PANEL,
-                  writeOutContractLedgerLIFO TODRAW i FORCE PANEL
+                  writeOutContractLedgerFIFO TODRAW i FORCE PANEL DRAWTOTOOLBAR,
+                  writeOutContractLedgerLIFO TODRAW i FORCE PANEL DRAWTOTOOLBAR
 
     PROPERTIES(i) READONLY descriptionInContractLedger, debtInContractLedger
     PROPERTIES(p, i) costOutContractLedgerInContractLedger
@@ -319,8 +319,6 @@ DESIGN payment FROM DEFAULT{
         ADD i.box;
     }
 
-    PROPERTY (writeOutContractLedgerFIFO(p)){panelLocation = TOOLBAR;}
-    PROPERTY (writeOutContractLedgerLIFO(p)){panelLocation = TOOLBAR;}
     POSITION PROPERTY(writeOutContractLedgerLIFO) TO THE RIGHT PROPERTY(writeOutContractLedgerFIFO);
 
     PROPERTY(formOkAction) {
@@ -520,8 +518,8 @@ FORM creditMemo 'Кредитная нота'
     PROPERTIES(c) READONLY namePartyBCreditMemo, namePartyACreditMemo
     PROPERTIES(c) sumCreditMemo,
                   costedInContractLedgerOutContractLedger SHOWIF isOutContractLedger(c),
-                  writeOutContractLedgerFIFO TODRAW i FORCE PANEL SHOWIF isOutContractLedger(c),
-                  writeOutContractLedgerLIFO TODRAW i FORCE PANEL SHOWIF isOutContractLedger(c)
+                  writeOutContractLedgerFIFO TODRAW i FORCE PANEL DRAWTOTOOLBAR SHOWIF isOutContractLedger(c),
+                  writeOutContractLedgerLIFO TODRAW i FORCE PANEL DRAWTOTOOLBAR SHOWIF isOutContractLedger(c)
 
     PROPERTIES(i) READONLY descriptionInContractLedger SHOWIF isOutContractLedger(c), debtInContractLedger SHOWIF isOutContractLedger(c)
     PROPERTIES(c, i) costOutContractLedgerInContractLedger SHOWIF isOutContractLedger(c)
@@ -572,8 +570,6 @@ DESIGN creditMemo FROM DEFAULT{
         ADD i.box;
     }
 
-    PROPERTY (writeOutContractLedgerFIFO(c)){panelLocation = TOOLBAR;}
-    PROPERTY (writeOutContractLedgerLIFO(c)){panelLocation = TOOLBAR;}
     POSITION PROPERTY(writeOutContractLedgerLIFO) TO THE RIGHT PROPERTY(writeOutContractLedgerFIFO);
 
     PROPERTY(formOkAction) {
@@ -745,8 +741,8 @@ FORM costContractLedger 'Разнесение документов'
                            descriptionOutContractLedger BACKGROUND backgroundOutContractLedgerDate(o, d),
                            sumOutContractLedger BACKGROUND backgroundOutContractLedgerDate(o, d),
                            costedInContractLedgerOutContractLedger BACKGROUND backgroundOutContractLedgerDate(o, d)
-    PROPERTIES(o) writeOutContractLedgerFIFO TODRAW i FORCE PANEL,
-                  writeOutContractLedgerLIFO TODRAW i FORCE PANEL
+    PROPERTIES(o) writeOutContractLedgerFIFO TODRAW i FORCE PANEL DRAWTOTOOLBAR,
+                  writeOutContractLedgerLIFO TODRAW i FORCE PANEL DRAWTOTOOLBAR
     ORDER BY dateOutContractLedger
 
     PROPERTIES(i) READONLY dateInContractLedger BACKGROUND backgroundInContractLedgerDate(i, d),
@@ -783,10 +779,7 @@ DESIGN costContractLedger FROM DEFAULT {
 
             type = SPLITV;
             ADD o.box;
-            ADD i.box{
-                PROPERTY (writeOutContractLedgerFIFO(o)){panelLocation = TOOLBAR;}
-                PROPERTY (writeOutContractLedgerLIFO(o)){panelLocation = TOOLBAR;}
-            }
+            ADD i.box;
         }
    }
 
@@ -809,7 +802,7 @@ FORM contractLedger 'Управление задолженностями'
                               debtSumContractDate BACKGROUND backgroundBonusSumContract(c),
                               bonusSumContractDate BACKGROUND backgroundBonusSumContract(c),
                               bonusDebtSumContractDate BACKGROUND backgroundBonusSumContract(c)
-    PROPERTIES(c, d) FORCE PANEL payContractDate, payPaymentConditionContractDate
+    PROPERTIES(c, d) FORCE PANEL DRAWTOTOOLBAR payContractDate, payPaymentConditionContractDate
     ORDER BY numberContract
 
     OBJECTS cl = contractLedger
@@ -837,7 +830,7 @@ FORM contractLedger 'Управление задолженностями'
                             sumRateExchangePayment BACKGROUND backgroundOutContractLedgerDate(pm, d) SHOWIF isNotSameCurrencyPayment(pm),
                             costedInContractLedgerOutContractLedger BACKGROUND backgroundOutContractLedgerDate(pm, d),
                             notePayment BACKGROUND backgroundOutContractLedgerDate(pm, d)
-    PROPERTIES(pm) FORCE PANEL writeOutContractLedgerFIFO, writeOutContractLedgerLIFO
+    PROPERTIES(pm) FORCE PANEL DRAWTOTOOLBAR writeOutContractLedgerFIFO, writeOutContractLedgerLIFO
     PROPERTIES(pm) ADDFORM, EDITFORM, delete
     ORDER BY dateTimePayment
 
@@ -857,8 +850,8 @@ FORM contractLedger 'Управление задолженностями'
                             sumCreditMemo BACKGROUND backgroundOutContractLedgerDate(cm, d),
                             noteCreditMemo BACKGROUND backgroundOutContractLedgerDate(cm, d)
     PROPERTIES(cm) FORCE GRID READONLY costedInContractLedgerOutContractLedger BACKGROUND backgroundOutContractLedgerDate(cm, d) SHOWIF isOutContractLedger(cm)
-    PROPERTIES(cm) FORCE PANEL writeOutContractLedgerFIFO SHOWIF isOutContractLedger(cm),
-                               writeOutContractLedgerLIFO SHOWIF isOutContractLedger(cm)
+    PROPERTIES(cm) FORCE PANEL DRAWTOTOOLBAR writeOutContractLedgerFIFO SHOWIF isOutContractLedger(cm),
+                                             writeOutContractLedgerLIFO SHOWIF isOutContractLedger(cm)
     PROPERTIES(cm) ADDFORM, EDITFORM, delete
     ORDER BY dateTimeCreditMemo
 
@@ -868,7 +861,7 @@ FORM contractLedger 'Управление задолженностями'
     PROPERTIES(ic, d) READONLY debtInContractLedgerDate BACKGROUND backgroundBonusSumInContractLedger(ic),
                                bonusSumInContractLedger BACKGROUND backgroundBonusSumInContractLedger(ic),
                                bonusDebtSumInContractLedgerDate BACKGROUND backgroundBonusSumInContractLedger(ic)
-    PROPERTIES(ic, d) FORCE PANEL payPaymentConditionInContractLedgerDate
+    PROPERTIES(ic, d) FORCE PANEL DRAWTOTOOLBAR payPaymentConditionInContractLedgerDate
 
     OBJECTS icoc = outContractLedger
     PROPERTIES(icoc) READONLY descriptionOutContractLedger, sumOutContractLedger
@@ -878,8 +871,8 @@ FORM contractLedger 'Управление задолженностями'
     OBJECTS oc = outContractLedger
     PROPERTIES(oc) READONLY descriptionOutContractLedger, sumOutContractLedger
     PROPERTIES(oc, d) READONLY costedInContractLedgerOutContractLedgerDate
-    PROPERTIES(oc) FORCE PANEL writeOutContractLedgerFIFO SHOWIF isOutContractLedger(oc),
-                               writeOutContractLedgerLIFO SHOWIF isOutContractLedger(oc)
+    PROPERTIES(oc) FORCE PANEL DRAWTOTOOLBAR writeOutContractLedgerFIFO SHOWIF isOutContractLedger(oc),
+                                             writeOutContractLedgerLIFO SHOWIF isOutContractLedger(oc)
 
     OBJECTS ocic = inContractLedger
     PROPERTIES(ocic) READONLY descriptionInContractLedger, sumInContractLedger
@@ -924,10 +917,7 @@ DESIGN contractLedger FROM DEFAULT{
         NEW firstContainer {
 
             type = SPLITV;
-            ADD c.box{
-                PROPERTY (payContractDate(c, d)){panelLocation = TOOLBAR;}
-                PROPERTY (payPaymentConditionContractDate(c, d)){panelLocation = TOOLBAR;}
-            }
+            ADD c.box;
             NEW firstSecondContainer {
 
                 type = SPLITV;
@@ -939,34 +929,23 @@ DESIGN contractLedger FROM DEFAULT{
                     ADD cal.box;
                 }
                 NEW secondContainer {
-
                     type = TABBED;
-                    ADD pm.box{
-                         PROPERTY (writeOutContractLedgerFIFO(pm)){panelLocation = TOOLBAR;}
-                         PROPERTY (writeOutContractLedgerLIFO(pm)){panelLocation = TOOLBAR;}
-                    }
-                    ADD pr.box;
-                    ADD cm.box{
-                        PROPERTY (writeOutContractLedgerFIFO(cm)){panelLocation = TOOLBAR;}
-                        PROPERTY (writeOutContractLedgerLIFO(cm)){panelLocation = TOOLBAR;}
-                    }
-                    NEW debt.box{
 
+                    ADD pm.box;
+                    ADD pr.box;
+                    ADD cm.box;
+
+                    NEW debt.box {
                         childConstraints = TO THE RIGHT;
                         caption = 'Долг по документу';
-                        ADD ic.box{
-                            PROPERTY (payPaymentConditionInContractLedgerDate(ic, d)){panelLocation = TOOLBAR;}
-                        }
+                        ADD ic.box;
                         ADD icoc.box;
                     }
-                    NEW cost.box{
 
+                    NEW cost.box {
                         childConstraints = TO THE RIGHT;
                         caption = 'Расписано по документу';
-                        ADD oc.box{
-                            PROPERTY (writeOutContractLedgerFIFO(oc)){panelLocation = TOOLBAR;}
-                            PROPERTY (writeOutContractLedgerLIFO(oc)){panelLocation = TOOLBAR;}
-                        }
+                        ADD oc.box;
                         ADD ocic.box;
                     }
                 }

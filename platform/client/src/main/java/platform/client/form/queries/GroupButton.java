@@ -30,10 +30,12 @@ import java.util.List;
 
 public abstract class GroupButton extends ToolbarGridButton {
 
+    private static final ImageIcon groupIcon = new ImageIcon(FilterView.class.getResource("/images/group.png"));
+
     public GroupDialog dialog;
 
     public GroupButton() {
-        super("/images/group.png", ClientResourceBundle.getString("form.queries.grouping"));
+        super(groupIcon, ClientResourceBundle.getString("form.queries.grouping"));
     }
 
     public abstract void addListener();

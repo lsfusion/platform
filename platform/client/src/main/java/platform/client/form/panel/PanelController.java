@@ -63,8 +63,6 @@ public class PanelController {
             // так как вызывается в addDrawProperty, без проверки было свойство в панели или нет
 
             for (PropertyController controller : properties.remove(property).values()) {
-                if (property.panelLocation != null)
-                    removePropertyFromPanelLocation(controller);
                 controller.removeView(formLayout);
             }
         }
@@ -112,30 +110,6 @@ public class PanelController {
         }
     }
 
-    private void addPropertyToPanelLocation(PropertyController controller) {
-        GroupObjectLogicsSupplier logicsSupplier = form.getGroupObjectLogicsSupplier(controller.getKey().groupObject);
-        if (logicsSupplier != null) {
-            if (controller.getKey().drawToToolbar()) {
-                logicsSupplier.addPropertyToToolbar(controller);
-                logicsSupplier.updateToolbar();
-            } else {
-                logicsSupplier.addPropertyToShortcut(controller);
-            }
-        }
-    }
-
-    private void removePropertyFromPanelLocation(PropertyController controller) {
-        GroupObjectLogicsSupplier logicsSupplier = form.getGroupObjectLogicsSupplier(controller.getKey().groupObject);
-        if (logicsSupplier != null) {
-            if (controller.getKey().drawToToolbar()) {
-                logicsSupplier.removePropertyFromToolbar(controller);
-                logicsSupplier.updateToolbar();
-            } else {
-                logicsSupplier.removePropertyFromShortcut(controller);
-            }
-        }
-    }
-
     public void update() {
         for (Map.Entry<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> entry : values.entrySet()) {
             ClientPropertyDraw property = entry.getKey();
@@ -152,12 +126,10 @@ public class PanelController {
                     PropertyController propController = propControllers.get(columnKey);
                     if (propController == null) {
                         propController = new PropertyController(property, form, columnKey);
+
                         addGroupObjectActions(propController.getView());
-                        if (property.panelLocation != null && property.groupObject != null) {
-                            addPropertyToPanelLocation(propController);
-                        } else {
-                            propController.addView(formLayout);
-                        }
+
+                        propController.addView(formLayout);
 
                         propControllers.put(columnKey, propController);
                     }
@@ -172,10 +144,7 @@ public class PanelController {
             while (it.hasNext()) { // удаляем те которые есть, но не нужны
                 Map.Entry<ClientGroupObjectValue, PropertyController> propEntry = it.next();
                 if (!drawKeys.contains(propEntry.getKey())) {
-                    if (property.panelLocation != null && property.groupObject != null) {
-                        removePropertyFromPanelLocation(propEntry.getValue());
-                    } else
-                        propEntry.getValue().removeView(formLayout);
+                    propEntry.getValue().removeView(formLayout);
                     it.remove();
                 }
             }

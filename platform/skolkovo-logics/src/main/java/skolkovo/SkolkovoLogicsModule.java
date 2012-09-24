@@ -31,11 +31,16 @@ import platform.server.data.type.ObjectType;
 import platform.server.form.entity.*;
 import platform.server.form.entity.filter.*;
 import platform.server.form.navigator.NavigatorElement;
-import platform.server.form.view.*;
-import platform.server.form.view.panellocation.ToolbarPanelLocationView;
+import platform.server.form.view.ContainerView;
+import platform.server.form.view.DefaultFormView;
+import platform.server.form.view.FormView;
+import platform.server.form.view.PropertyDrawView;
 import platform.server.form.window.ToolBarNavigatorWindow;
 import platform.server.form.window.TreeNavigatorWindow;
-import platform.server.logics.*;
+import platform.server.logics.BaseLogicsModule;
+import platform.server.logics.DataObject;
+import platform.server.logics.LogicsModule;
+import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LAP;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
@@ -5761,6 +5766,14 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addObjectActions(this, objNonRussianSpecialist);
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectNonRussianSpecialist, objNonRussianSpecialist), Compare.EQUALS, objProject));
 
+            getPropertyDraw(importProjectsAction).drawToToolbar = true;
+            getPropertyDraw(copyProjectAction).drawToToolbar = true;
+            //getPropertyDraw(openApplicationProjectAction).drawToToolbar = true;
+            getPropertyDraw(editR1Project).drawToToolbar = true;
+            getPropertyDraw(editR2Project).drawToToolbar = true;
+            getPropertyDraw(editClaimerProject).drawToToolbar = true;
+            getPropertyDraw(nameNativeShortCurrentCluster).drawToToolbar = true;
+
 //            addFixedFilter(new CompareFilterEntity(addPropertyObject(clusterForesight, objForesight), Compare.EQUALS, objCluster));
      //       addFixedFilter(new NotNullFilterEntity(addPropertyObject(isInClusterProjectForesight, objProject, objForesight)));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectVote, objVote), Compare.EQUALS, objProject));
@@ -5823,13 +5836,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
 //                    design.getGroupPropertyContainer(objProject.groupTo, translateActionGroup),
 //                    DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
-            design.get(getPropertyDraw(importProjectsAction)).setPanelLocation(new ToolbarPanelLocationView());
-            design.get(getPropertyDraw(copyProjectAction)).setPanelLocation(new ToolbarPanelLocationView());
-            //design.get(getPropertyDraw(openApplicationProjectAction)).setPanelLocation(new ToolbarPanelLocationView());
-            design.get(getPropertyDraw(editR1Project)).setPanelLocation(new ToolbarPanelLocationView());
-            design.get(getPropertyDraw(editR2Project)).setPanelLocation(new ToolbarPanelLocationView());
-            design.get(getPropertyDraw(editClaimerProject)).setPanelLocation(new ToolbarPanelLocationView());
-            design.get(getPropertyDraw(nameNativeShortCurrentCluster)).setPanelLocation(new ToolbarPanelLocationView());
 //            design.getPanelContainer(objProject.groupTo).add(design.getGroupPropertyContainer((GroupObjectEntity)null, importGroup));
 
             ContainerView specContainer = design.createContainer();
@@ -5956,7 +5962,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             design.get(getPropertyDraw(nameNative, objForesight)).setPreferredCharWidth(500);
 
-            design.get(objVote.groupTo).grid.hideToolbarItems();
+            design.get(objVote.groupTo).toolbar.visible = false;
 
             design.addIntersection(design.get(getPropertyDraw(innovativeCommentExpertVote)), design.get(getPropertyDraw(completeCommentExpertVote)), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
@@ -6462,7 +6468,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             objClaimer.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             editClaimer = addMFAProp(actionGroup, "Редактировать", this, new ObjectEntity[]{objClaimer}, false);
-            editClaimer.setImage("form.gif");
+            editClaimer.setImage("form.png");
             editClaimerProject = addJoinAProp(actionGroup, "Юр.лицо", editClaimer, claimerProject, 1);
         }
     }

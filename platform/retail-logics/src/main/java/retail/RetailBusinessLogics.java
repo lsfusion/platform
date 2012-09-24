@@ -8,10 +8,11 @@ import platform.server.data.sql.DataAdapter;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.scripted.ScriptingLogicsModule;
 
-import java.io.*;
-import java.rmi.RemoteException;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * User: DAle
@@ -93,7 +94,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
     }
 
     @Override
-    public EquipmentServer getEquipmentServer() throws RemoteException {
+    public EquipmentServer getEquipmentServer() {
         return equipmentServer;
     }
 }

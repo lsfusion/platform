@@ -419,7 +419,7 @@ FORM zReports 'Z-отчеты'
     PROPERTIES (z) READONLY objectClassName, numberCashRegisterZReport, nameDepartmentStoreZReport, dateZReport, timeZReport,
                             numberZReport, basisZReport, countReceiptZReport, quantityReceiptDetailZReport, sumCashZReport,
                             sumReceiptDetailZReport, discountSumReceiptDetailZReport
-    PROPERTIES (z) ADDFORM, EDITFORM SHOWIF isDraftZReport(z), delete FORCE PANEL SHOWIF isDraftZReport(z),
+    PROPERTIES (z) ADDFORM, EDITFORM SHOWIF isDraftZReport(z), delete FORCE PANEL DRAWTOTOOLBAR SHOWIF isDraftZReport(z),
                             postZReport SHOWIF isDraftZReport(z), unpostZReport SHOWIF isPostedZReport(z)
 
     OBJECTS b=receipt
@@ -474,7 +474,6 @@ DESIGN zReports FROM DEFAULT{
         preferredCharWidth = 15;
     }
     PROPERTY (delete(z)) {
-        panelLocation = TOOLBAR;
         askConfirm = TRUE;
     }
 

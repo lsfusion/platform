@@ -5,7 +5,6 @@ import platform.base.ListPermutations;
 import platform.base.Pair;
 import platform.base.QuickSet;
 import platform.interop.ClassViewType;
-import platform.interop.PropertyEditType;
 import platform.interop.form.ServerResponse;
 import platform.server.Settings;
 import platform.server.caches.IdentityLazy;
@@ -20,11 +19,13 @@ import platform.server.data.query.MapKeysInterface;
 import platform.server.data.type.Type;
 import platform.server.data.where.classes.AbstractClassWhere;
 import platform.server.data.where.classes.ClassWhere;
-import platform.server.form.entity.*;
+import platform.server.form.entity.ActionPropertyObjectEntity;
+import platform.server.form.entity.FormEntity;
+import platform.server.form.entity.PropertyDrawEntity;
+import platform.server.form.entity.PropertyObjectInterfaceEntity;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.PropertyDrawView;
-import platform.server.form.view.panellocation.PanelLocationView;
-import platform.server.form.view.panellocation.ShortcutPanelLocationView;
+import platform.server.logics.linear.LAP;
 import platform.server.logics.linear.LP;
 import platform.server.logics.panellocation.PanelLocation;
 import platform.server.logics.panellocation.ShortcutPanelLocation;
@@ -55,7 +56,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     public int preferredCharWidth;
 
     public boolean loggable;
-    public LP logFormProperty;
+    public LAP logFormProperty;
 
     public void setFixedCharWidth(int charWidth) {
         minimumCharWidth = charWidth;
@@ -126,7 +127,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return logFormProperty;
     }
 
-    public void setLogFormProperty(LP logFormProperty) {
+    public void setLogFormProperty(LAP logFormProperty) {
         this.logFormProperty = logFormProperty;
     }
 
@@ -295,8 +296,9 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     // assert что entity этого свойства
     public void proceedDefaultDraw(PropertyDrawEntity<T> entity, FormEntity<?> form) {
         if (loggable && logFormProperty != null) {
-            form.addPropertyDraw(logFormProperty, BaseUtils.orderMap(entity.propertyObject.mapping, interfaces).values().toArray(new PropertyObjectInterfaceEntity[0]));
-            form.setForceViewType(logFormProperty, ClassViewType.PANEL);
+            ActionPropertyObjectEntity logFormPropertyObject =
+                    form.addPropertyObject(logFormProperty, BaseUtils.orderMap(entity.propertyObject.mapping, interfaces).values().toArray(new PropertyObjectInterfaceEntity[0]));
+            entity.setContextMenuEditAction(logFormProperty.property.caption, logFormProperty.property.getSID(), logFormPropertyObject);
         }
 
         if (shouldBeLast != null)
@@ -309,17 +311,32 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
             entity.askConfirmMessage = askConfirmMessage;
         if (eventID != null)
             entity.eventID = eventID;
+        if (panelLocation != null && panelLocation.isToolbarLocation())
+            entity.drawToToolbar = true;
 
         //перемещаем свойство в контекстном меню в тот же groupObject, что и свойство, к которому оно привязано
-        if (panelLocation != null && panelLocation.isShortcutLocation() && ((ShortcutPanelLocation) panelLocation).getOnlyProperty() != null) {
-            Property onlyProperty = ((ShortcutPanelLocation) panelLocation).getOnlyProperty();
-            for (PropertyDrawEntity drawEntity : form.getProperties(onlyProperty)) {
-                if (drawEntity.toDraw != null) {
-                    entity.toDraw = drawEntity.toDraw;
-                }
+        if (panelLocation != null && panelLocation.isShortcutLocation()) {
+            //todo: пока просто скрываем это свойство ... в будущем надо сделать, чтобы его вообще не нужно было добавлять в форму...
+            entity.forceViewType = ClassViewType.HIDE;
 
-                //добавляем в контекстное меню...
-                drawEntity.setContextMenuEditAction(caption, getSID(), (ActionPropertyObjectEntity<T>) entity.propertyObject);
+            ShortcutPanelLocation shortcutLocation = (ShortcutPanelLocation) panelLocation;
+
+            Property onlyProperty = shortcutLocation.getOnlyProperty();
+
+            if (onlyProperty != null) {
+                for (PropertyDrawEntity drawEntity : form.getProperties(onlyProperty)) {
+                    if (drawEntity.toDraw != null) {
+                        entity.toDraw = drawEntity.toDraw;
+                    }
+
+                    //добавляем в контекстное меню...
+                    if (shortcutLocation.isDefault()) {
+                        drawEntity.setContextMenuAction(caption, ServerResponse.CHANGE);
+                        drawEntity.setEditAction(ServerResponse.CHANGE, (ActionPropertyObjectEntity<T>) entity.propertyObject);
+                    } else {
+                        drawEntity.setContextMenuEditAction(caption, getSID(), (ActionPropertyObjectEntity<T>) entity.propertyObject);
+                    }
+                }
             }
         }
     }
@@ -341,44 +358,10 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         if (echoSymbols != null)
             propertyView.echoSymbols = echoSymbols;
 
-        if (panelLocation != null) {
-            PanelLocationView panelLocationView = panelLocation.convertToView();
-            if (panelLocationView.isShortcutLocation()) {
-                Property onlyProperty = ((ShortcutPanelLocation) panelLocation).getOnlyProperty();
-                if (onlyProperty != null) {
-                    for (PropertyDrawView prop : view.properties) {
-                        if (prop.entity.propertyObject.property.equals(onlyProperty) &&
-                        (view.getGroupObject(propertyView.entity.toDraw) == null || view.getGroupObject(propertyView.entity.toDraw).equals(view.getGroupObject(prop.entity.toDraw)))) {
-                            ((ShortcutPanelLocationView) panelLocationView).setOnlyProperty(prop);
-                            break;
-                        }
-                    }
-                    if (((ShortcutPanelLocationView) panelLocationView).getOnlyProperty() == null)
-                        panelLocationView = null;
-                }
-            }
-            if (panelLocationView != null) {
-                propertyView.entity.forceViewType = ClassViewType.PANEL;
-                propertyView.setPanelLocation(panelLocationView);
-            }
-        }
-        
         if(propertyView.getType() instanceof LogicalClass)
             propertyView.editOnSingleClick = Settings.instance.getEditLogicalOnSingleClick();
         if(propertyView.getType() instanceof ActionClass)
             propertyView.editOnSingleClick = Settings.instance.getEditActionClassOnSingleClick();
-
-        if (loggable && logFormProperty != null) {
-            PropertyDrawView logPropertyView = view.get(view.entity.getPropertyDraw(logFormProperty));
-            GroupObjectEntity groupObject = propertyView.entity.getToDraw(view.entity);
-            if (groupObject != null) {
-                logPropertyView = BaseUtils.nvl(view.get(view.entity.getPropertyDraw(logFormProperty.property, groupObject)), logPropertyView);
-            }
-            if (logPropertyView != null) {
-                logPropertyView.entity.setEditType(PropertyEditType.EDITABLE); //бывает, что проставляют READONLY для всего groupObject'а
-                logPropertyView.setPanelLocation(new ShortcutPanelLocationView(propertyView));
-            }
-        }
     }
 
     public boolean hasChild(Property prop) {

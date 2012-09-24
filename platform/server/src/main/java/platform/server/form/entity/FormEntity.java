@@ -45,7 +45,7 @@ import static platform.server.logics.ServerResourceBundle.getString;
 
 public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T> implements ServerIdentitySerializable {
     private final static Logger logger = Logger.getLogger(FormEntity.class);
-    private static ImageIcon image = new ImageIcon(NavigatorElement.class.getResource("/images/form.gif"));
+    private static ImageIcon image = new ImageIcon(NavigatorElement.class.getResource("/images/form.png"));
 
     public static final IsFullClientFormulaProperty isFullClient = IsFullClientFormulaProperty.instance;
     public static final IsDebugFormulaProperty isDebug = IsDebugFormulaProperty.instance;
@@ -867,13 +867,15 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         for (Map.Entry<Object, List<ActionPropertyObjectEntity<?>>> entry : eventActions.entrySet()) {
             Object event = entry.getKey();
 
-            //пока предполагаем, что евент либо String, либо CustomSerializable!
-            boolean isStringEvent = event instanceof String;
-            outStream.writeBoolean(isStringEvent);
-            if (isStringEvent) {
+            if (event instanceof String) {
+                outStream.writeByte(0);
                 pool.writeString(outStream, (String) event);
-            } else {
+            } else if (event instanceof CustomSerializable) {
+                outStream.writeByte(1);
                 pool.serializeObject(outStream, (CustomSerializable) event);
+            } else {
+                outStream.writeByte(2);
+                pool.writeObject(outStream, event);
             }
 
             pool.serializeCollection(outStream, entry.getValue());
@@ -911,9 +913,12 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         eventActions = new HashMap<Object, List<ActionPropertyObjectEntity<?>>>();
         int length = inStream.readInt();
         for (int i = 0; i < length; ++i) {
-            Object event = inStream.readBoolean()
-                    ? pool.readString(inStream)
-                    : pool.deserializeObject(inStream);
+            Object event;
+            switch (inStream.readByte()) {
+                case 0 : event = pool.readString(inStream); break;
+                case 1 : event = pool.deserializeObject(inStream); break;
+                default : event = pool.readObject(inStream); break;
+            }
 
             List<ActionPropertyObjectEntity<?>> actions = pool.deserializeList(inStream);
             eventActions.put(event, actions);

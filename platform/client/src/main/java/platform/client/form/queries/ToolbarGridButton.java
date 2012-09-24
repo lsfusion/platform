@@ -11,20 +11,32 @@ import java.awt.*;
  * Time: 19:37
  */
 
-public abstract class ToolbarGridButton extends FlatRolloverButton {
-    public final static Dimension BUTTON_SIZE = new Dimension(20, 20);
+public class ToolbarGridButton extends FlatRolloverButton {
+    public final static Dimension DEFAULT_SIZE = new Dimension(20, 20);
 
     public ToolbarGridButton(String iconPath, String toolTipText) {
+        this(new ImageIcon(ToolbarGridButton.class.getResource(iconPath)), toolTipText);
+    }
+
+    public ToolbarGridButton(Icon icon, String toolTipText) {
+        this(icon, toolTipText, DEFAULT_SIZE);
+
+    }
+    public ToolbarGridButton(Icon icon, String toolTipText, Dimension buttonSize) {
         super();
-        setIcon(new ImageIcon(getClass().getResource(iconPath)));
+        setIcon(icon);
         setAlignmentY(Component.TOP_ALIGNMENT);
-        setMinimumSize(BUTTON_SIZE);
-        setPreferredSize(BUTTON_SIZE);
-        setMaximumSize(BUTTON_SIZE);
+        setMinimumSize(buttonSize);
+        setPreferredSize(buttonSize);
+        setMaximumSize(buttonSize);
         setFocusable(false);
-        setToolTipText(toolTipText);
+        if (toolTipText != null) {
+            setToolTipText(toolTipText);
+        }
         addListener();
     }
 
-    public abstract void addListener();
+    public void addListener() {
+
+    }
 }

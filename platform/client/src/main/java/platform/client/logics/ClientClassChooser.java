@@ -18,7 +18,7 @@ public class ClientClassChooser extends ClientComponent {
     }
 
     public ClientObject object;
-    public boolean show = true;
+    public boolean visible = true;
 
     public ClientClassChooser(int ID, ApplicationContext context) {
         super(ID, context);
@@ -29,7 +29,7 @@ public class ClientClassChooser extends ClientComponent {
         super.customSerialize(pool, outStream, serializationType);
 
         pool.serializeObject(outStream, object);
-        outStream.writeBoolean(show);
+        outStream.writeBoolean(visible);
     }
 
     @Override
@@ -37,17 +37,16 @@ public class ClientClassChooser extends ClientComponent {
         super.customDeserialize(pool, inStream);
 
         object = pool.deserializeObject(inStream);
-        show = inStream.readBoolean();
-
+        visible = inStream.readBoolean();
     }
 
-    public boolean getShow() {
-        return show;
+    public boolean getVisible() {
+        return visible;
     }
 
-    public void setShow(boolean show) {
-        this.show = show;
-        updateDependency(this, "show");
+    public void setVisible(boolean visible) {
+        this.visible = visible;
+        updateDependency(this, "visible");
     }
 
     @Override

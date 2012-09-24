@@ -260,7 +260,7 @@ FORM inputListRegisters 'Реестры цен' // форма в частнос�
                     markupSumListRegisterDetailListRegister,
                     retailVATSumListRegisterDetailListRegister, retailSumListRegisterDetailListRegister, nameRegisterCommitteeListRegister
 
-    PROPERTIES (l)  printRegister FORCE PANEL
+    PROPERTIES (l)  printRegister FORCE PANEL DRAWTOTOOLBAR
 
     OBJECTS d=inputListRegisterDetail
     PROPERTIES (d)  indexListRegisterDetail, idBarcodeSkuListRegisterDetail, nameSkuListRegisterDetail, shortNameUOMSkuListRegisterDetail, quantityListRegisterDetail,
@@ -284,11 +284,7 @@ DESIGN inputListRegisters FROM DEFAULT {
         type = SPLITV;
         childConstraints = TO THE BOTTOM;
 
-        ADD l.box {
-            PROPERTY (printRegister) {
-                panelLocation = TOOLBAR;
-            }
-        };
+        ADD l.box;
         ADD d.box;
     }
 

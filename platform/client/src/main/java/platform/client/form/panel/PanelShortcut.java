@@ -5,7 +5,6 @@ import platform.client.form.ClientFormController;
 import platform.client.form.PropertyRendererComponent;
 import platform.client.form.cell.ActionPanelView;
 import platform.client.form.cell.PropertyController;
-import platform.client.form.panel.location.ClientShortcutPanelLocation;
 import platform.client.logics.ClientPropertyDraw;
 import platform.client.logics.classes.ClientActionClass;
 
@@ -17,6 +16,7 @@ import java.awt.event.ActionListener;
 import java.util.*;
 import java.util.List;
 
+@Deprecated
 public class PanelShortcut extends JPopupMenu {
     private ClientFormController form;
     private PanelController panel;
@@ -96,12 +96,12 @@ public class PanelShortcut extends JPopupMenu {
     private TreeMap<Integer, ClientPropertyDraw> sortProperties() {
         TreeMap<Integer, ClientPropertyDraw> sortedMap = new TreeMap<Integer, ClientPropertyDraw>(); //расставляем свойства в том же порядке, что и в форме
         for (PropertyController property : properties) {
-            if (property.getKey().drawToShortcut()) {
-                ClientPropertyDraw onlyProperty = ((ClientShortcutPanelLocation) property.getKey().panelLocation).getOnlyProperty();
-                if (onlyProperty == null || onlyProperty.equals(currentProperty)) {
-                    sortedMap.put(form.getPropertyDraws().indexOf(property.getKey()), property.getKey());
-                }
-            }
+//            if (property.getKey().drawToShortcut()) {
+//                ClientPropertyDraw onlyProperty = ((ClientShortcutPanelLocation) property.getKey().panelLocation).getOnlyProperty();
+//                if (onlyProperty == null || onlyProperty.equals(currentProperty)) {
+//                    sortedMap.put(form.getPropertyDraws().indexOf(property.getKey()), property.getKey());
+//                }
+//            }
         }
         return sortedMap;
     }
@@ -133,8 +133,8 @@ public class PanelShortcut extends JPopupMenu {
             final ActionPanelView button = (ActionPanelView) controller.getView();
 
             boolean isDefault = false;
-            if (!defaultSet)
-                isDefault = ((ClientShortcutPanelLocation) controller.getKey().panelLocation).isDefault();
+//            if (!defaultSet)
+//                isDefault = ((ClientShortcutPanelLocation) controller.getKey().panelLocation).isDefault();
             defaultSet = defaultSet || isDefault;
 
             addActionMenuItem(button.getText(), button.getIcon(), button.getToolTipText(), new ActionListener() {
@@ -155,32 +155,5 @@ public class PanelShortcut extends JPopupMenu {
         if (getComponentCount() != 0) {
             show(invoker, point.x, point.y);
         }
-    }
-
-    public boolean hasDefaultAction(ClientPropertyDraw currentProperty) {
-        setCurrentProperty(currentProperty);
-        for (ClientPropertyDraw property : sortProperties().values()) {
-            if (((ClientShortcutPanelLocation) property.panelLocation).isDefault() && property.baseType instanceof ClientActionClass) {
-                final PropertyController propertyController = panel.getProperties().get(property).values().iterator().next();
-                if (propertyController != null) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    public boolean invokeDefaultAction(ClientPropertyDraw currentProperty) {
-        setCurrentProperty(currentProperty);
-        for (ClientPropertyDraw property : sortProperties().values()) {
-            if (((ClientShortcutPanelLocation) property.panelLocation).isDefault() && property.baseType instanceof ClientActionClass) {
-                final PropertyController propertyController = panel.getProperties().get(property).values().iterator().next();
-                if (propertyController != null) {
-                    ((ActionPanelView) propertyController.getView()).doClick();
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 }

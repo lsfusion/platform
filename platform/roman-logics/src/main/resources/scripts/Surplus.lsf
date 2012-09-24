@@ -227,7 +227,7 @@ FORM surplusOuts 'Реализации излишков'
 
     PROPERTIES (t) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
-    PROPERTIES (t) ADDFORM, EDITFORM, delete FORCE PANEL
+    PROPERTIES (t) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
 
     OBJECTS d = surplusOutDetail
 
@@ -255,7 +255,6 @@ FORM surplusOuts 'Реализации излишков'
 
 DESIGN surplusOuts FROM DEFAULT {
     PROPERTY (delete(t)) {
-        panelLocation = TOOLBAR;
         askConfirm = TRUE;
     }
 

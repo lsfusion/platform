@@ -270,7 +270,7 @@ FORM writeOffs 'Списания'
 
     PROPERTIES (w) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
-    PROPERTIES (w) ADDFORM, EDITFORM, delete FORCE PANEL
+    PROPERTIES (w) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
 
     OBJECTS d=writeOffDetail
     PROPERTIES (d) READONLY indexWriteOffDetail, idBarcodeSkuWriteOffDetail, nameSkuWriteOffDetail, shortNameUOMSkuWriteOffDetail, descriptionBatchWriteOffDetail,
@@ -281,7 +281,6 @@ FORM writeOffs 'Списания'
 
 DESIGN writeOffs FROM DEFAULT {
     PROPERTY (delete(w)) {
-        panelLocation = TOOLBAR;
         askConfirm = TRUE;
     }
 

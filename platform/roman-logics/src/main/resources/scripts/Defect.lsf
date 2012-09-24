@@ -177,7 +177,7 @@ META defineDocumentFormDefectProcess(object, stockProp1, stockProp2, formCaption
 
         PROPERTIES (t) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
-        PROPERTIES (t) ADDFORM, EDITFORM, delete FORCE PANEL
+        PROPERTIES (t) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
 
         OBJECTS d = object##Detail
 
@@ -186,7 +186,6 @@ META defineDocumentFormDefectProcess(object, stockProp1, stockProp2, formCaption
 
     DESIGN object##s FROM DEFAULT {
         PROPERTY (delete(t)) {
-            panelLocation = TOOLBAR;
             askConfirm = TRUE;
         }
 

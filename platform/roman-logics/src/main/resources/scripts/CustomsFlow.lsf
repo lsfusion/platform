@@ -279,7 +279,7 @@ FORM CStoWHs 'Расходы с СВХ'
 
     PROPERTIES (c) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
-    PROPERTIES (c) ADDFORM, EDITFORM, delete FORCE PANEL
+    PROPERTIES (c) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
 
     PROPERTIES (c)  FORCE PANEL printConsignmentVerticalA, printConsignmentHorizontalA,
                      printConsignmentVerticalB, printConsignmentHorizontalB,
@@ -306,7 +306,6 @@ DESIGN CStoWHs FROM DEFAULT {
 
         ADD c.box{
             PROPERTY (delete(c)) {
-                panelLocation = TOOLBAR;
                 askConfirm = TRUE;
             }
         }

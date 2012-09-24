@@ -18,7 +18,6 @@
         <dependency>
             <groupId>by.luxsoft.platform</groupId>
             <artifactId>equ-srv</artifactId>
-            <version>1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.xBaseJ</groupId>

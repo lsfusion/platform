@@ -335,7 +335,7 @@ FORM userInvoices 'Накладные (польз.)'
 
     PROPERTIES (s) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
-    PROPERTIES (s) ADDFORM, EDITFORM, delete FORCE PANEL
+    PROPERTIES (s) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
 
     OBJECTS d=userInvoiceDetail
     PROPERTIES (d) READONLY indexInvoiceDetail, idBarcodeSkuInvoiceDetail, nameSkuInvoiceDetail, shortNameUOMSkuInvoiceDetail,
@@ -347,7 +347,6 @@ FORM userInvoices 'Накладные (польз.)'
 
 DESIGN userInvoices FROM DEFAULT {
     PROPERTY (delete(s)) {
-        panelLocation = TOOLBAR;
         askConfirm = TRUE;
     }
 

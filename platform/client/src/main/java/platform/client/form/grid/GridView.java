@@ -39,7 +39,6 @@ public class GridView extends JPanel {
         gridTable.configureWheelScrolling(pane);
 
         add(pane, BorderLayout.CENTER);
-        add(igridController.getGroupController().getToolbarView(), BorderLayout.SOUTH);
     }
 
     public GridController getGridController() {

@@ -2,6 +2,7 @@ package platform.server.form.view;
 
 import platform.base.OrderedMap;
 import platform.base.identity.IDGenerator;
+import platform.base.identity.IdentityObject;
 import platform.interop.PropertyEditType;
 import platform.interop.form.layout.AbstractForm;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
@@ -158,6 +159,8 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
         mgroupObjects.put(groupObjectView.entity, groupObjectView);
         setComponentSID(groupObjectView.getGrid(), getGridSID(groupObjectView.entity));
         setComponentSID(groupObjectView.getShowType(), getShowTypeSID(groupObjectView.entity));
+        setComponentSID(groupObjectView.getToolbar(), getToolbarSID(groupObjectView.entity));
+        setComponentSID(groupObjectView.getFilter(), getFilterSID(groupObjectView.entity));
 
         for (ObjectView object : groupObjectView) {
             mobjects.put(object.entity, object);
@@ -183,6 +186,8 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
     private void addTreeGroupView(TreeGroupView treeGroupView) {
         mtreeGroups.put(treeGroupView.entity, treeGroupView);
         setComponentSID(treeGroupView, getTreeSID(treeGroupView.entity));
+        setComponentSID(treeGroupView.getToolbar(), getToolbarSID(treeGroupView.entity));
+        setComponentSID(treeGroupView.getFilter(), getFilterSID(treeGroupView.entity));
     }
 
     private TreeGroupView addTreeGroupBase(TreeGroupEntity treeGroup) {
@@ -807,6 +812,14 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
 
     private static String getGridSID(GroupObjectEntity entity) {
         return entity.getSID() + ".grid";
+    }
+
+    private static String getToolbarSID(IdentityObject entity) {
+        return entity.getSID() + ".toolbar";
+    }
+
+    private static String getFilterSID(IdentityObject entity) {
+        return entity.getSID() + ".filter";
     }
 
     private static String getShowTypeSID(GroupObjectEntity entity) {

@@ -5,16 +5,21 @@ import platform.client.Main;
 import platform.client.form.ClientFormController;
 import platform.client.form.ClientFormLayout;
 import platform.client.form.GroupObjectController;
-import platform.client.form.classes.ClassContainer;
 import platform.client.form.queries.*;
-import platform.client.logics.*;
+import platform.client.logics.ClientGrid;
+import platform.client.logics.ClientGroupObject;
+import platform.client.logics.ClientGroupObjectValue;
+import platform.client.logics.ClientPropertyDraw;
 import platform.client.logics.classes.ClientIntegralClass;
 import platform.interop.Order;
 import platform.interop.form.screen.ExternalScreenComponent;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -25,9 +30,13 @@ import java.util.Map;
 
 public class GridController {
 
-    private final ClientGrid clientGrid;
+    private static final ImageIcon printXlsIcon = new ImageIcon(FilterView.class.getResource("/images/excelbw.png"));
 
-    private final FilterController filterController;
+    private static final ImageIcon printGroupIcon = new ImageIcon(FilterView.class.getResource("/images/reportbw.png"));
+
+    private static final ImageIcon groupChangeIcon = new ImageIcon(FilterView.class.getResource("/images/groupchange.png"));
+
+    private final ClientGrid clientGrid;
 
     private final GridView view;
 
@@ -38,7 +47,6 @@ public class GridController {
     private final GroupObjectController groupController;
 
     public GridController(GroupObjectController igroupController, ClientFormController iform) {
-
         groupController = igroupController;
         clientGrid = groupController.getGroupObject().grid;
         form = iform;
@@ -46,220 +54,151 @@ public class GridController {
         view = new GridView(this, form, clientGrid.tabVertical, clientGrid.groupObject.needVerticalScroll);
         table = view.getTable();
 
-        boolean hasClassChoosers = false;
-        for (final ClientObject object : clientGrid.groupObject.objects) {
-            if (object.classChooser.show) {
-                ToolbarGridButton classButton = new ToolbarGridButton("/images/side_expand.png", ClientResourceBundle.getString("form.tree.show", object.caption)) {
-                    public void addListener() {
-                        addActionListener(new ActionListener() {
-                            public void actionPerformed(ActionEvent e) {
-                                ClassContainer container = groupController.getObjectsMap().get(object).classController.getClassContainer();
-                                if (!container.isExpanded) {
-                                    container.expandTree();
-                                    setIcon(new ImageIcon(getClass().getResource("/images/side_hide.gif")));
-                                    setToolTipText(ClientResourceBundle.getString("form.tree.hide", object.caption));
-                                } else {
-                                    container.collapseTree();
-                                    setIcon(new ImageIcon(getClass().getResource("/images/side_expand.png")));
-                                    setToolTipText(ClientResourceBundle.getString("form.tree.show", object.caption));
-                                }
-                            }
-                        });
-                    }
-                };
-                groupController.addToToolbar(classButton);
-                hasClassChoosers = true;
-            }
-        }
-        if (hasClassChoosers)
-            groupController.addToToolbar(Box.createHorizontalStrut(5));
-
-        if (clientGrid.showFind) {
-            FindController findController = new FindController(groupController) {
-                protected void queryChanged() {
-                    form.changeFind(getConditions());
-                    table.requestFocusInWindow();
-                }
-
-                public void conditionsUpdated() {}
-            };
-            groupController.addToToolbar(findController.getView());
-            findController.getView().addActions(table);
-        }
-
-        if (clientGrid.showFilter) {
-            filterController = new FilterController(groupController) {
-                protected void queryChanged() {
-                    try {
-                        form.changeFilter(groupController.getGroupObject(), getConditions());
-                    } catch (IOException e) {
-                        throw new RuntimeException(ClientResourceBundle.getString("errors.error.applying.filter"), e);
-                    }
-
-                    table.requestFocusInWindow();
-                }
-
-                public void conditionsUpdated() {
-                    groupController.moveComponent(getView(), getDestination());
-                }
-            };
-            groupController.addToToolbar(filterController.getView());
-            filterController.getView().addActions(table);
-
-            groupController.addToToolbar(Box.createHorizontalStrut(5));
-        } else {
-            filterController = null;
-        }
-
-        if (clientGrid.showGroupChange) {
-            groupController.addToToolbar(new ToolbarGridButton("/images/groupchange.gif", ClientResourceBundle.getString("form.grid.group.groupchange") +" (Ctrl+F12)") {
-                @Override
-                public void addListener() {
-                    addActionListener(table.getActionMap().get(GridTable.GROUP_CORRECTION_ACTION));
-                }
-            });
-        }
-
-        if (clientGrid.showCountQuantity) {
-            groupController.addToToolbar(new CountQuantityButton() {
-                public void addListener() {
-                    addActionListener(new ActionListener() {
-                        public void actionPerformed(ActionEvent e) {
-                            try {
-                                showPopupMenu(form.countRecords(groupController.getGroupObject().getID()));
-                            } catch (Exception ex) {
-                                throw new RuntimeException(ex);
-                            }
-                        }
-                    });
-                }
-            });
-        }
-
-        if (clientGrid.showCalculateSum) {
-            groupController.addToToolbar(new CalculateSumButton() {
-                public void addListener() {
-                    addActionListener(new ActionListener() {
-                        public void actionPerformed(ActionEvent e) {
-                            try {
-                                ClientPropertyDraw property = getCurrentProperty();
-                                String caption = property.getCaption();
-                                if (property.baseType instanceof ClientIntegralClass) {
-                                    ClientGroupObjectValue columnKey = table.getTableModel().getColumnKey(table.getSelectedColumn());
-                                    Object sum = form.calculateSum(property.getID(), columnKey.serialize());
-                                    showPopupMenu(caption, sum);
-                                } else {
-                                    showPopupMenu(caption, null);
-                                }
-                            } catch (Exception ex) {
-                                throw new RuntimeException(ex);
-                            }
-                        }
-                    });
-                }
-            });
-        }
-
-        if (clientGrid.showGroup) {
-            groupController.addToToolbar(new GroupButton() {
-                public void addListener() {
-                    addActionListener(new ActionListener() {
-                        public void actionPerformed(ActionEvent e) {
-                            try {
-                                dialog = new GroupButton.GroupDialog(Main.frame, table);
-                            } catch (IOException ex) {
-                                throw new RuntimeException(ex);
-                            }
-                            dialog.addPropertyChangeListener(new PropertyChangeListener() {
-                                public void propertyChange(PropertyChangeEvent evt) {
-                                    try {
-                                        Map<Integer, List<byte[]>> sumMap = dialog.getSelectedSumMap();
-                                        Map<Integer, List<byte[]>> maxMap = dialog.getSelectedMaxMap();
-                                        List<Map<Integer, List<byte[]>>> groupLevels = dialog.getSelectedGroupLevels();
-                                        boolean onlyNotNull = dialog.onlyNotNull();
-
-                                        List<Map<List<Object>, List<Object>>> result = new ArrayList<Map<List<Object>, List<Object>>>();
-
-                                        for (Map<Integer, List<byte[]>> level : groupLevels) {
-                                            if (!level.isEmpty()) {
-                                                result.add(form.groupData(level, sumMap, maxMap, onlyNotNull));
-                                            }
-                                        }
-                                        dialog.update(result);
-                                    } catch (IOException ex) {
-                                        throw new RuntimeException(ex);
-                                    }
-                                }
-                            });
-                            dialog.setVisible(true);
-                        }
-                    });
-                }
-            });
-        }
-
-        groupController.addToToolbar(Box.createHorizontalStrut(5));
-
-        if (clientGrid.showPrintGroupButton && Main.module.isFull()) { // todo [dale]: Можно ли избавиться от if'ов?
-            groupController.addToToolbar(new ToolbarGridButton("/images/reportbw.gif", ClientResourceBundle.getString("form.grid.print.grid")) {
-                @Override
-                public void addListener() {
-                    addActionListener(new ActionListener() {
-                        public void actionPerformed(ActionEvent e) {
-                            form.runSingleGroupReport(groupController);
-                        }
-                    });
-                }
-            });
-        }
-
-        if (clientGrid.showPrintGroupXlsButton && Main.module.isFull()) {
-            groupController.addToToolbar(new ToolbarGridButton("/images/excelbw.jpg", ClientResourceBundle.getString("form.grid.export.to.xls")) {
-                @Override
-                public void addListener() {
-                    addActionListener(new ActionListener() {
-                        public void actionPerformed(ActionEvent e) {
-                            form.runSingleGroupXlsExport(groupController);
-                        }
-                    });
-                }
-            });
-            groupController.addToToolbar(Box.createHorizontalStrut(5));
-        }
-
-        if (clientGrid.showHideSettings) {
-            groupController.addToToolbar(new UserPreferencesButton(groupController.getGroupObject().hasUserPreferences) {
-                public void addListener() {
-                    addActionListener(new ActionListener() {
-                        public void actionPerformed(ActionEvent e) {
-                            try {
-                                dialog = new UserPreferencesButton.HideSettingsDialog(Main.frame, table, form);
-                                dialog.setVisible(true);
-                                form.processRemoteChanges(false);
-                            } catch (IOException ex) {
-                                throw new RuntimeException(ex);
-                            }
-                        }
-                    });
-                }
-            });
-            groupController.addToToolbar(Box.createHorizontalStrut(5));
-
-            table.getTableHeader().addMouseListener(new MouseAdapter() {
-                @Override
-                public void mouseReleased(MouseEvent e) {
-                    for (int i = 0; i < table.getTableModel().getColumnCount(); ++i) {
-                        table.getTableModel().getColumnProperty(i).widthUser = table.getColumnModel().getColumn(i).getWidth();
-                    }
-                }
-            });
-        }
-
         if (clientGrid.minRowCount > 0) { // вообще говоря, так делать неправильно, посколько и HeaderHeight и RowHeight могут изменяться во времени
             Dimension minSize = table.getMinimumSize();
             minSize.height = Math.max(minSize.height, (int) table.getTableHeader().getPreferredSize().getHeight() + clientGrid.minRowCount * table.getRowHeight());
             view.setMinimumSize(minSize);
         }
+    }
+
+    public UserPreferencesButton createHideSettingsButton() {
+        table.getTableHeader().addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                for (int i = 0; i < table.getTableModel().getColumnCount(); ++i) {
+                    table.getTableModel().getColumnProperty(i).widthUser = table.getColumnModel().getColumn(i).getWidth();
+                }
+            }
+        });
+
+        return new UserPreferencesButton(groupController.getGroupObject().hasUserPreferences) {
+                    public void addListener() {
+                        addActionListener(new ActionListener() {
+                            public void actionPerformed(ActionEvent e) {
+                                try {
+                                    dialog = new HideSettingsDialog(Main.frame, table, form);
+                                    dialog.setVisible(true);
+                                    form.processRemoteChanges(false);
+                                } catch (IOException ex) {
+                                    throw new RuntimeException(ex);
+                                }
+                            }
+                        });
+                    }
+                };
+    }
+
+    public ToolbarGridButton createPrintGroupXlsButton() {
+        return new ToolbarGridButton(printXlsIcon, ClientResourceBundle.getString("form.grid.export.to.xls")) {
+                    @Override
+                    public void addListener() {
+                        addActionListener(new ActionListener() {
+                            public void actionPerformed(ActionEvent e) {
+                                form.runSingleGroupXlsExport(groupController);
+                            }
+                        });
+                    }
+                };
+    }
+
+    public ToolbarGridButton createPrintGroupButton() {
+        return new ToolbarGridButton(printGroupIcon, ClientResourceBundle.getString("form.grid.print.grid")) {
+                    @Override
+                    public void addListener() {
+                        addActionListener(new ActionListener() {
+                            public void actionPerformed(ActionEvent e) {
+                                form.runSingleGroupReport(groupController);
+                            }
+                        });
+                    }
+                };
+    }
+
+    public GroupButton createGroupButton() {
+        return new GroupButton() {
+                    public void addListener() {
+                        addActionListener(new ActionListener() {
+                            public void actionPerformed(ActionEvent e) {
+                                try {
+                                    dialog = new GroupDialog(Main.frame, table);
+                                } catch (IOException ex) {
+                                    throw new RuntimeException(ex);
+                                }
+                                dialog.addPropertyChangeListener(new PropertyChangeListener() {
+                                    public void propertyChange(PropertyChangeEvent evt) {
+                                        try {
+                                            Map<Integer, List<byte[]>> sumMap = dialog.getSelectedSumMap();
+                                            Map<Integer, List<byte[]>> maxMap = dialog.getSelectedMaxMap();
+                                            List<Map<Integer, List<byte[]>>> groupLevels = dialog.getSelectedGroupLevels();
+                                            boolean onlyNotNull = dialog.onlyNotNull();
+
+                                            List<Map<List<Object>, List<Object>>> result = new ArrayList<Map<List<Object>, List<Object>>>();
+
+                                            for (Map<Integer, List<byte[]>> level : groupLevels) {
+                                                if (!level.isEmpty()) {
+                                                    result.add(form.groupData(level, sumMap, maxMap, onlyNotNull));
+                                                }
+                                            }
+                                            dialog.update(result);
+                                        } catch (IOException ex) {
+                                            throw new RuntimeException(ex);
+                                        }
+                                    }
+                                });
+                                dialog.setVisible(true);
+                            }
+                        });
+                    }
+                };
+    }
+
+    public CalculateSumButton craeteCalculateSumButton() {
+        return new CalculateSumButton() {
+                    public void addListener() {
+                        addActionListener(new ActionListener() {
+                            public void actionPerformed(ActionEvent e) {
+                                try {
+                                    ClientPropertyDraw property = getCurrentProperty();
+                                    String caption = property.getCaption();
+                                    if (property.baseType instanceof ClientIntegralClass) {
+                                        ClientGroupObjectValue columnKey = table.getTableModel().getColumnKey(table.getSelectedColumn());
+                                        Object sum = form.calculateSum(property.getID(), columnKey.serialize());
+                                        showPopupMenu(caption, sum);
+                                    } else {
+                                        showPopupMenu(caption, null);
+                                    }
+                                } catch (Exception ex) {
+                                    throw new RuntimeException(ex);
+                                }
+                            }
+                        });
+                    }
+                };
+    }
+
+    public CountQuantityButton createCountQuantityButton() {
+        return new CountQuantityButton() {
+                    public void addListener() {
+                        addActionListener(new ActionListener() {
+                            public void actionPerformed(ActionEvent e) {
+                                try {
+                                    showPopupMenu(form.countRecords(groupController.getGroupObject().getID()));
+                                } catch (Exception ex) {
+                                    throw new RuntimeException(ex);
+                                }
+                            }
+                        });
+                    }
+                };
+    }
+
+    public ToolbarGridButton createGroupChangeButton() {
+        return new ToolbarGridButton(groupChangeIcon, ClientResourceBundle.getString("form.grid.group.groupchange") + " (Ctrl+F12)") {
+                    @Override
+                    public void addListener() {
+                        addActionListener(table.getActionMap().get(GridTable.GROUP_CORRECTION_ACTION));
+                    }
+                };
     }
 
     void needToBeShown() {
@@ -375,13 +314,6 @@ public class GridController {
 
     public void selectProperty(ClientPropertyDraw propertyDraw) {
         table.selectProperty(propertyDraw);
-    }
-
-    public void quickEditFilter(KeyEvent initFilterKeyEvent, ClientPropertyDraw propertyDraw) {
-        if (filterController != null) {
-            filterController.quickEditFilter(initFilterKeyEvent, propertyDraw);
-            table.selectProperty(propertyDraw);
-        }
     }
 
     boolean hidden = false;

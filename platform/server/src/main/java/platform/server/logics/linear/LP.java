@@ -117,7 +117,7 @@ public abstract class LP<T extends PropertyInterface, P extends Property<T>> {
         property.loggable = loggable;
     }
 
-    public void setLogFormProperty(LP logFormPropertyProp) {
+    public void setLogFormProperty(LAP logFormPropertyProp) {
         property.setLogFormProperty(logFormPropertyProp);
     }
 

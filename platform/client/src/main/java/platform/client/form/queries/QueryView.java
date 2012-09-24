@@ -1,13 +1,11 @@
 package platform.client.form.queries;
 
-import platform.client.FlatRolloverButton;
 import platform.client.form.GroupObjectLogicsSupplier;
 import platform.client.logics.ClientPropertyDraw;
 import platform.client.logics.filter.ClientPropertyFilter;
 import platform.interop.KeyStrokes;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -18,90 +16,68 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public abstract class QueryView extends JPanel implements QueryConditionView.UIHandlers {
-    // сворачивание/разворачивание отбора
-    private final ImageIcon collapseIcon = new ImageIcon(getClass().getResource("/images/collapse.gif"));
-    private final ImageIcon expandIcon = new ImageIcon(getClass().getResource("/images/expand.gif"));
+    private JButton applyButton;
+    private JButton addCondButton;
 
-    public static final String REMOVE_ALL_ACTION = "removeAll";
-
-    private final static Dimension iconButtonDimension = new Dimension(20, 20);
-
-    private final JPanel condContainer;
-
-    private final JButton applyButton;
-    private final JButton addCondition;
-    private final JButton collapseButton;
-
-    private boolean collapsed = false;
+    private JPanel buttonPanel;
+    private JPanel condContainer;
 
     // при помощи listener идет общение с контроллером
     // выделен в отдельный интерфейс, а не внутренним классом, поскольку от QueryView идет наследование
     private final QueryController controller;
 
+    // используется для того, чтобы удалять условия запросов
+    private final Map<ClientPropertyFilter, QueryConditionView> condViews = new LinkedHashMap<ClientPropertyFilter, QueryConditionView>();
+
     QueryView(QueryController ilistener) {
-        setFocusable(false);
         this.controller = ilistener;
 
-        setAlignmentY(Component.TOP_ALIGNMENT);
+        setLayout(new BorderLayout());
 
-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        initButtons();
 
-        setBorder(new EmptyBorder(0, 0, 0, 0));
+        initLayout();
 
-        JPanel buttons = new JPanel();
-        buttons.setLayout(new BoxLayout(buttons, BoxLayout.X_AXIS));
+        setFocusable(false);
+        setContentVisible(false);
 
-        add(buttons);
+        initUIHandlers();
+    }
 
-        applyButton = new FlatRolloverButton("");
-        applyButton.setFocusable(false);
-        applyButton.setMinimumSize(iconButtonDimension);
-        applyButton.setPreferredSize(iconButtonDimension);
-        applyButton.setMaximumSize(iconButtonDimension);
-        applyButton.setIcon(getApplyIcon());
+    private void initButtons() {
+        applyButton = new ToolbarGridButton(getApplyIcon(), null);
         applyButton.setVisible(false);
         applyButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
                 controller.applyPressed();
             }
         });
-        buttons.add(applyButton);
 
-        Component centerGlue = Box.createHorizontalGlue();
-        buttons.add(centerGlue);
-
-        addCondition = new FlatRolloverButton("");
-        addCondition.setFocusable(false);
-        addCondition.setMinimumSize(iconButtonDimension);
-        addCondition.setPreferredSize(iconButtonDimension);
-        addCondition.setMaximumSize(iconButtonDimension);
-        addCondition.setIcon(getAddConditionIcon());
-        addCondition.addActionListener(new ActionListener() {
+        addCondButton = new ToolbarGridButton(getAddConditionIcon(), null);
+        addCondButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
-                controller.addConditionPressed(false);
+                controller.addConditionPressed();
             }
         });
+    }
 
-        buttons.add(addCondition);
+    private void initLayout() {
+        buttonPanel = new JPanel();
+        buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.X_AXIS));
 
-        collapseButton = new FlatRolloverButton();
-        collapseButton.setFocusable(false);
-        collapseButton.setPreferredSize(iconButtonDimension);
-        collapseButton.setMaximumSize(iconButtonDimension);
-        collapseButton.setMinimumSize(iconButtonDimension);
-        collapseButton.setVisible(false);
-        collapseButton.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent e) {
-                setCollapsed(!collapsed);
-            }
-        });
-
-        buttons.add(collapseButton);
+        buttonPanel.add(applyButton);
+        buttonPanel.add(Box.createHorizontalGlue());
+        buttonPanel.add(addCondButton);
 
         condContainer = new JPanel();
         condContainer.setLayout(new BoxLayout(condContainer, BoxLayout.Y_AXIS));
-        add(condContainer);
+
+        add(buttonPanel, BorderLayout.NORTH);
+        add(condContainer, BorderLayout.CENTER);
+    }
+
+    private void initUIHandlers() {
+        addActionsToInputMap(this);
 
         getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStrokes.getEnter(), "applyQuery");
         getActionMap().put("applyQuery", new AbstractAction() {
@@ -110,45 +86,37 @@ public abstract class QueryView extends JPanel implements QueryConditionView.UIH
             }
         });
 
-        getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStrokes.getRemoveFiltersKeyStroke(), REMOVE_ALL_ACTION);
-
-        addActions(this);
+        getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStrokes.getRemoveFiltersKeyStroke(), "removeAll");
     }
 
     // используется для того, чтобы во внешнем компоненте по нажатии кнопок можно было создать отбор/поиск
-    public void addActions(JComponent comp) {
+    public void addActionsToInputMap(JComponent comp) {
         comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(getKeyStroke(0), "newFilter");
         comp.getActionMap().put("newFilter", new AbstractAction() {
             public void actionPerformed(ActionEvent ae) {
-                controller.addConditionPressed(true);
-                startEditing(null, null);
+                controller.replaceConditionPressed();
             }
         });
 
         comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(getKeyStroke(InputEvent.ALT_DOWN_MASK), "addFilter");
         comp.getActionMap().put("addFilter", new AbstractAction() {
             public void actionPerformed(ActionEvent ae) {
-                controller.addConditionPressed(false);
+                controller.addConditionPressed();
             }
         });
 
-        comp.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStrokes.getRemoveFiltersKeyStroke(), REMOVE_ALL_ACTION);
-        comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(getKeyStroke(InputEvent.SHIFT_DOWN_MASK), REMOVE_ALL_ACTION);
-        comp.getActionMap().put(REMOVE_ALL_ACTION, new AbstractAction() {
+        comp.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStrokes.getRemoveFiltersKeyStroke(), "removeAll");
+        comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(getKeyStroke(InputEvent.SHIFT_DOWN_MASK), "removeAll");
+        comp.getActionMap().put("removeAll", new AbstractAction() {
             @Override
             public boolean isEnabled() {
-                return controller.hasActiveFilter();
+                return controller.hasAnyFilter();
             }
 
             public void actionPerformed(ActionEvent ae) {
-                controller.allConditionsRemoved();
-                controller.applyPressed();
+                controller.allRemovedPressed();
             }
         });
-    }
-
-    public Dimension getMaximumSize() {
-        return getPreferredSize();
     }
 
     public void updateUI() {
@@ -158,61 +126,27 @@ public abstract class QueryView extends JPanel implements QueryConditionView.UIH
         if (applyButton != null)
             applyButton.updateUI();
 
-        if (addCondition != null)
-            addCondition.updateUI();
-
-        if (collapseButton != null)
-            collapseButton.updateUI();
+        if (addCondButton != null)
+            addCondButton.updateUI();
     }
 
     // действия, вызываемые контроллером
-    void queryApplied() {
-        applyButton.setVisible(false);
-        validate();
-    }
-
-    // используется для того, чтобы удалять условия запросов
-    private final Map<ClientPropertyFilter, QueryConditionView> condViews = new LinkedHashMap<ClientPropertyFilter, QueryConditionView>();
-
-    void addConditionView(ClientPropertyFilter condition, GroupObjectLogicsSupplier logicsSupplier) {
+    void addCondition(ClientPropertyFilter condition, GroupObjectLogicsSupplier logicsSupplier) {
         QueryConditionView condView = new QueryConditionView(condition, logicsSupplier, this);
-        condContainer.add(condView);
-
         condViews.put(condition, condView);
 
-        setCollapsed(false);
+        condContainer.add(condView);
+
         conditionChanged();
 
         // сразу становимся на ввод значения
         condView.requestValueFocus();
     }
 
-    @Override
-    public void conditionChanged() {
-        applyButton.setVisible(true);
-
-        collapseButton.setVisible(condViews.size() > 0);
-
-        for (QueryConditionView conditionView : condViews.values()) {
-            conditionView.setJunctionVisible(Arrays.asList(condViews.values().toArray()).indexOf(conditionView) < condViews.size() - 1);
-        }
-
-        getParent().getParent().validate();
-        revalidate();
-    }
-
-    @Override
-    public void conditionRemoved(ClientPropertyFilter condition) {
-        controller.conditionRemoved(condition);
-    }
-
     void removeCondition(ClientPropertyFilter condition) {
         condContainer.remove(condViews.get(condition));
         condViews.remove(condition);
 
-        if (condViews.isEmpty()) {
-           controller.conditionsUpdated();
-        }
         conditionChanged();
     }
 
@@ -220,33 +154,37 @@ public abstract class QueryView extends JPanel implements QueryConditionView.UIH
         condContainer.removeAll();
         condViews.clear();
 
-        controller.conditionsUpdated();
         conditionChanged();
     }
 
-    public int getVisibleConditionsCount() {
-        return condContainer.isVisible() ? condViews.size() : 0;
+    public void setContentVisible(boolean visible) {
+        // ХАК: свинг не хочет нормально проталкивать нажатие клавиши в невидимые компоненты,
+        // поэтому если если компонент фильтра сркыт, то быстрая фильтрация при вводе не работает..
+        // поэтому контейнер фильтра всегда видимый, если включен режим таблицы и скрывается только при переходе в панель...
+        // также SimplexLayout не хочет сразу нормально работать с этой панелью, если все компоненты скрыты, поэтому переопределны getMinimum/Preferred
+        buttonPanel.setVisible(visible);
+        condContainer.setVisible(visible);
     }
 
-    void setCollapsed(boolean collapsed) {
-
-        this.collapsed = collapsed;
-        if (!collapsed) {
-            collapseButton.setIcon(collapseIcon);
-            condContainer.setVisible(true);
-            controller.conditionsUpdated();
+    @Override
+    public Dimension getMinimumSize() {
+        Dimension ms = super.getMinimumSize();
+        if (ms.width < 1 || ms.height < 1) {
+            return new Dimension(Math.max(1, ms.width), Math.max(1, ms.height));
         } else {
-            collapseButton.setIcon(expandIcon);
-            condContainer.setVisible(false);
-            controller.conditionsUpdated();
+            return ms;
         }
     }
 
-    protected abstract Icon getApplyIcon();
-
-    protected abstract Icon getAddConditionIcon();
-
-    protected abstract KeyStroke getKeyStroke(int modifier);
+    @Override
+    public Dimension getPreferredSize() {
+        Dimension ps = super.getPreferredSize();
+        if (ps.width < 1 || ps.height < 1) {
+            return new Dimension(Math.max(1, ps.width), Math.max(1, ps.height));
+        } else {
+            return ps;
+        }
+    }
 
     public void startEditing(KeyEvent initFilterKeyEvent, ClientPropertyDraw propertyDraw) {
         if (condViews.size() > 0) {
@@ -255,4 +193,30 @@ public abstract class QueryView extends JPanel implements QueryConditionView.UIH
             view.startEditing(initFilterKeyEvent);
         }
     }
+
+    void queryApplied() {
+        applyButton.setVisible(false);
+    }
+
+    @Override
+    public void conditionChanged() {
+        applyButton.setVisible(true);
+
+        for (QueryConditionView conditionView : condViews.values()) {
+            conditionView.setJunctionVisible(Arrays.asList(condViews.values().toArray()).indexOf(conditionView) < condViews.size() - 1);
+        }
+
+        controller.dropLayoutCaches();
+    }
+
+    @Override
+    public void conditionRemoved(ClientPropertyFilter condition) {
+        controller.removeConditionPressed(condition);
+    }
+
+    protected abstract Icon getApplyIcon();
+
+    protected abstract Icon getAddConditionIcon();
+
+    protected abstract KeyStroke getKeyStroke(int modifier);
 }

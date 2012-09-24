@@ -32,6 +32,7 @@ import java.util.*;
 import java.util.List;
 
 import static platform.base.BaseUtils.isRedundantString;
+import static platform.base.BaseUtils.max;
 import static platform.base.BaseUtils.nullTrim;
 import static platform.client.ClientResourceBundle.getString;
 
@@ -185,12 +186,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return getPreferredHeight(comp);
     }
 
-
     public Dimension getMinimumSize(JComponent comp) {
-        if (minimumSize != null) {
-            return new Dimension(minimumSize.width != -1 ? minimumSize.width : getMinimumWidth(comp),
-                    minimumSize.height != -1 ? minimumSize.height : getMinimumHeight(comp));
-        }
         return new Dimension(getMinimumWidth(comp), getMinimumHeight(comp));
     }
 
@@ -212,10 +208,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     }
 
     public Dimension getPreferredSize(JComponent comp) {
-        if (preferredSize != null) {
-            return new Dimension(preferredSize.width != -1 ? preferredSize.width : getPreferredWidth(comp),
-                    preferredSize.height != -1 ? preferredSize.height : getPreferredHeight(comp));
-        }
         return new Dimension(getPreferredWidth(comp), getPreferredHeight(comp));
     }
 
@@ -234,11 +226,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     }
 
     public Dimension getMaximumSize(JComponent comp) {
-        if (maximumSize != null) {
-            return new Dimension(maximumSize.width != -1 ? maximumSize.width : getMaximumWidth(comp),
-                    maximumSize.height != -1 ? maximumSize.height : getMaximumHeight(comp));
-        }
-        return new Dimension(getMaximumWidth(comp), getMaximumHeight(comp));
+        return new Dimension(max(getMaximumWidth(comp), getPreferredWidth(comp)), max(getMaximumHeight(comp), getPreferredHeight(comp)));
     }
 
     public Format getFormat() {

@@ -391,7 +391,7 @@ FORM userShipments 'Поставки (польз.)'
 
     PROPERTIES (s) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
-    PROPERTIES (s) ADDFORM, EDITFORM, delete FORCE PANEL
+    PROPERTIES (s) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
 
     OBJECTS d=userShipmentDetail
     PROPERTIES (d) READONLY indexShipmentDetail, idBarcodeSkuShipmentDetail, nameSkuShipmentDetail, shortNameUOMSkuShipmentDetail,
@@ -402,7 +402,6 @@ FORM userShipments 'Поставки (польз.)'
 
 DESIGN userShipments FROM DEFAULT {
     PROPERTY (delete(s)) {
-        panelLocation = TOOLBAR;
         askConfirm = TRUE;
     }
 

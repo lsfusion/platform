@@ -214,11 +214,6 @@ public class ClientFormController implements AsyncListener {
             comboBox.addItem(new ClientRegularFilterWrapper(filter));
         }
 
-        if (filterGroup.drawToToolbar()) {
-            GroupObjectController controller = controllers.get(filterGroup.groupObject);
-            controller.addFilterToToolbar(filterGroup, comboBox);
-        }
-
         if (filterGroup.defaultFilter >= 0) {
             ClientRegularFilter defaultFilter = filterGroup.filters.get(filterGroup.defaultFilter);
             comboBox.setSelectedItem(new ClientRegularFilterWrapper(defaultFilter));
@@ -250,11 +245,6 @@ public class ClientFormController implements AsyncListener {
 
         if (filterGroup.defaultFilter >= 0) {
             checkBox.setSelected(true);
-        }
-
-        if (filterGroup.drawToToolbar()) {
-            GroupObjectController controller = controllers.get(filterGroup.groupObject);
-            controller.addFilterToToolbar(filterGroup, checkBox);
         }
 
         checkBox.addItemListener(new ItemListener() {

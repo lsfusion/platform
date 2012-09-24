@@ -5347,7 +5347,7 @@ public class RomanLogicsModule extends LogicsModule {
             if (box)
                 design.setEditKey(design.get(getPropertyDraw(baseLM.objectValue, objSIDSupplierBox)), KeyStroke.getKeyStroke(KeyEvent.VK_F6, 0));
 
-            design.get(objRoute.groupTo).grid.hideToolbarItems();
+            design.get(objRoute.groupTo).toolbar.visible = false;
             design.get(objRoute.groupTo).setTableRowsCount(0);
 
             if (box)

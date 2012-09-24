@@ -17,12 +17,6 @@ public class GridEditor extends ComponentEditor {
                 new TitledPanel(null, new IncrementCheckBox(ClientResourceBundle.getString("descriptor.editor.autohide"), component, "autoHide"))
         ));
 
-        addTab(ClientResourceBundle.getString("descriptor.editor.toolbar"), new NorthBoxPanel(new TitledPanel(null, new IncrementCheckBox(ClientResourceBundle.getString("descriptor.editor.toolbar.showfind"), component, "showFind")),
-                new TitledPanel(null, new IncrementCheckBox(ClientResourceBundle.getString("descriptor.editor.toolbar.showfilter"), component, "showFilter")),
-                new TitledPanel(null, new IncrementCheckBox(ClientResourceBundle.getString("descriptor.editor.toolbar.showgroupchange"), component, "showGroupChange")),
-                new TitledPanel(null, new IncrementCheckBox(ClientResourceBundle.getString("descriptor.editor.toolbar.showcountquantity"), component, "showCountQuantity")),
-                new TitledPanel(null, new IncrementCheckBox(ClientResourceBundle.getString("descriptor.editor.toolbar.showcalculatesum"), component, "showCalculateSum")),
-                new TitledPanel(null, new IncrementCheckBox(ClientResourceBundle.getString("descriptor.editor.toolbar.showgroup"), component, "showGroup"))));
 
         //todo: minRowCount
     }

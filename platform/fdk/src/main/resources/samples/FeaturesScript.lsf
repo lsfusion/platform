@@ -50,8 +50,11 @@ CLASS STATIC storeSize 'Размер склада'
 
 //////////// PROPERTY STATEMENT///////////
 // Common syntax:
-// name ['caption'] [(namedParam1, ..., namedParamN)] = propertyExpression [IN group] [PERSISTENT] [TABLE <table name>] [TOOLBAR | (SHORTCUT [propertyExpression] [DEFAULT])]
-//                                                                                                 [FIXEDCHARWIDTH <int value>] [MINCHARWIDTH <int value>] [MAXCHARWIDTH <int value>] [PREFCHARWIDTH <int value>]
+// name ['caption'] [(namedParam1, ..., namedParamN)] = propertyExpression [IN group] [PERSISTENT] [TABLE <table name>] [TOOLBAR | (SHORTCUT propertyExpression [DEFAULT])]
+//                                                                                                 [FIXEDCHARWIDTH <int value>]
+//                                                                                                 [MINCHARWIDTH <int value>]
+//                                                                                                 [MAXCHARWIDTH <int value>]
+//                                                                                                 [PREFCHARWIDTH <int value>]
 //                                                                                                 [IMAGE 'name'] [EDITKEY '<key code>' [SHOW | HIDE]] [AUTOSET] [CONFIRM]
 //                                                                                                 [REGEXP '<expression>' ['<regExp message>']] [LOGGABLE] [ECHO] [INDEXED]
 //                                                                                                 [AGGPROP] [NOT NULL [DELETE [SESSION]]] [ON (CHANGE | CHANGEWYS) action]
@@ -615,7 +618,7 @@ testRequestInput 'Тестирование REQUEST input' = ACTION(s) {
 FORM storeArticle 'По складам'
 OBJECTS s=store '-Склад-', a=article
 PROPERTIES ssel=SELECTION(s), sname=name(s), obja=OBJVALUE(a), aname=name(a)
-PROPERTIES TODRAW s FORCE PANEL copyStoreNameToArticles(s), copyStoreNameToArticle(s, a), copyStoreNameToArticleError(s, a), createNewStore(), showDocumentArticleModalForm(), showTestModalForm(), testRequestInput(s)
+PROPERTIES TODRAW s FORCE PANEL copyStoreNameToArticles(s), copyStoreNameToArticle(s, a), copyStoreNameToArticleError(s, a), createNewStore(), showDocumentArticleModalForm(), showTestModalForm() DRAWTOTOOLBAR, testRequestInput(s) DRAWTOTOOLBAR
 PROPERTIES(s, a) SHOWIF storeIsHuge(s) incomeQuantity2, outcomeQuantity2
 PROPERTIES(s) storeSizeName, ssc1=storeSizeCode, storeIsHuge, stime, sdate, sdatetime,
 //    ssi=Features.simage, spdf, scustom, sexcel,
@@ -900,7 +903,7 @@ DESIGN storeArticle FROM DEFAULT {
 
                 // настраивать объекты можно в любой области видимости - это ни на что не повлияет
                 s.box {
-                    fillVertical = 0.3;
+                    fillVertical = 0;
                 }
             }
             REMOVE child1 CASCADE;
@@ -939,13 +942,6 @@ DESIGN storeArticle FROM DEFAULT {
         headerFont = 'Tahoma bold italic 15';
         headerFont = 'Tahoma bold 13';
         headerFont = 'Tahoma 12';
-
-        //toolbar/shortcut. свойство предварительно нужно отправить в панель
-//        panelLocation = TOOLBAR;
-//        panelLocation = SHORTCUT;
-//        panelLocation = SHORTCUT storeSizeName; // единственное свойство, для которого отображается name(a) в shortcut
-//        panelLocation = SHORTCUT DEFAULT;   // DEFAULT используется при помещении в shortcut какого-нибудь actionProperty
-//        panelLocation = SHORTCUT storeSizeName DEFAULT;
     }
 
     NEW setupEx {
@@ -961,6 +957,12 @@ DESIGN storeArticle FROM DEFAULT {
         insetsInside = ( -100, -200, 300, 400);
     }
     REMOVE setupEx;
+
+    s.toolbar {
+//        visible = FALSE;
+        showPrintGroupButton = FALSE;
+        showPrintGroupXlsButton = FALSE;
+    }
 }
 
 //////////////// METACODE STATEMENT /////////////

@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public abstract class GFormLayout extends FlowPanel {
+public class GFormLayout extends FlowPanel {
     private Panel mainContainer;
     private GContainer mainKey;
     private Map<GContainer, GAbstractFormContainer> containerViews = new HashMap<GContainer, GAbstractFormContainer>();
@@ -117,9 +117,7 @@ public abstract class GFormLayout extends FlowPanel {
 
     public boolean hasVisibleChildren(GContainer container) {
         for (GComponent child : container.children) {
-            if (child instanceof GShowType && isShowTypeViewInPanel(((GShowType) child).groupObject)) {
-                return true;
-            } else if (child instanceof GContainer) {
+            if (child instanceof GContainer) {
                 if (hasVisibleChildren((GContainer) child)) {
                     return true;
                 }
@@ -129,8 +127,6 @@ public abstract class GFormLayout extends FlowPanel {
         }
         return false;
     }
-
-    public abstract boolean isShowTypeViewInPanel(GGroupObject groupObject);
 
     public void totalResize() {
         adjustContainerSizes(mainKey);

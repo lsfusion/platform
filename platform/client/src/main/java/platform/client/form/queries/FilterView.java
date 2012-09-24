@@ -6,16 +6,20 @@ import javax.swing.*;
 
 public class FilterView extends QueryView {
 
+    private static final ImageIcon applyIcon = new ImageIcon(FilterView.class.getResource("/images/filt.png"));
+
+    private static final ImageIcon addConditionIcon = new ImageIcon(FilterView.class.getResource("/images/filtadd.png"));
+
     FilterView(QueryController controller) {
         super(controller);
     }
 
     protected Icon getApplyIcon() {
-        return new ImageIcon(getClass().getResource("/images/filt.gif"));
+        return applyIcon;
     }
 
     protected Icon getAddConditionIcon() {
-        return new ImageIcon(getClass().getResource("/images/filtadd.gif"));
+        return addConditionIcon;
     }
 
     protected KeyStroke getKeyStroke(int modifier) {

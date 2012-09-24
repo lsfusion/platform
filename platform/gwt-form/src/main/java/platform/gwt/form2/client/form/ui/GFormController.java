@@ -94,12 +94,7 @@ public class GFormController extends SimplePanel {
 
         dispatcher = new FormDispatchAsync(this);
 
-        formLayout = new GFormLayout(this, form.mainContainer) {
-            public boolean isShowTypeViewInPanel(GGroupObject groupObject) {
-                GGroupObjectController controller = controllers.get(groupObject);
-                return controller != null && !controller.isInGridClassView() && controller.isShowTypeVisible();
-            }
-        };
+        formLayout = new GFormLayout(this, form.mainContainer);
 
         addStyleName("formController");
 
@@ -173,11 +168,7 @@ public class GFormController extends SimplePanel {
     }
 
     private void addFilterComponent(GRegularFilterGroup filterGroup, Widget filterWidget) {
-        if (filterGroup.drawToToolbar) {
-            controllers.get(filterGroup.groupObject).addFilterComponent(filterWidget);
-        } else {
-            controllers.get(filterGroup.groupObject).addPanelFilterComponent(filterWidget);
-        }
+        controllers.get(filterGroup.groupObject).addFilterComponent(filterGroup, filterWidget);
     }
 
     private void initializeControllers() {

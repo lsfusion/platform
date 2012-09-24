@@ -294,6 +294,11 @@ public class ScriptingFormEntity {
             form.addHintsIncrementTable((CalcProperty) property.propertyObject.property);
         }
 
+        Boolean drawToToolbar = options.getDrawToToolbar();
+        if (drawToToolbar != null && drawToToolbar) {
+            property.drawToToolbar = true;
+        }
+
         List<String> eventTypes = options.getEventTypes();
         if (eventTypes != null) {
             for (int i = 0; i < eventTypes.size(); i++) {

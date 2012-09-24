@@ -1,24 +1,23 @@
 package platform.client.form.queries;
 
+import platform.client.form.ClientFormLayout;
 import platform.client.form.GroupObjectLogicsSupplier;
-
-import javax.swing.*;
+import platform.client.logics.ClientFilter;
 
 public abstract class FilterController extends QueryController {
-    
-    public FilterController(GroupObjectLogicsSupplier logicsSupplier) {
+
+    private ClientFilter filter;
+
+    public FilterController(GroupObjectLogicsSupplier logicsSupplier, ClientFilter filter) {
         super(logicsSupplier);
+        this.filter = filter;
     }
 
     protected QueryView createView() {
         return new FilterView(this);
     }
 
-    protected int getDestination() {
-        if (getView().getVisibleConditionsCount() == 0) {
-            return SwingConstants.LEFT;
-        } else {
-            return SwingConstants.BOTTOM;
-        }
+    public void addView(ClientFormLayout layout) {
+        layout.add(filter, getView());
     }
 }

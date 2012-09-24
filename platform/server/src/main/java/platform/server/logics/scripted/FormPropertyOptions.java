@@ -16,6 +16,7 @@ public class FormPropertyOptions {
     private PropertyEditType editType;
     private Boolean hintNoUpdate;
     private Boolean hintTable;
+    private Boolean drawToToolbar;
     private List<GroupObjectEntity> columns;
     private MappedProperty showIf;
     private CalcPropertyObjectEntity readOnlyIf;
@@ -128,6 +129,14 @@ public class FormPropertyOptions {
         this.hintTable = hintTable;
     }
 
+    public Boolean getDrawToToolbar() {
+        return drawToToolbar;
+    }
+
+    public void setDrawToToolbar(Boolean drawToToolbar) {
+        this.drawToToolbar = drawToToolbar;
+    }
+
     public List<String> getEventTypes() {
         return eventTypes;
     }
@@ -188,6 +197,7 @@ public class FormPropertyOptions {
         merged.setEditType(nvl(overrides.getEditType(), editType));
         merged.setHintNoUpdate(nvl(overrides.getHintNoUpdate(), hintNoUpdate));
         merged.setHintTable(nvl(overrides.getHintTable(), hintTable));
+        merged.setDrawToToolbar(nvl(overrides.getDrawToToolbar(), drawToToolbar));
         merged.setColumns(nvl(overrides.getColumns(), columns));
         merged.setShowIf(nvl(overrides.getShowIf(), showIf));
         merged.setReadOnlyIf(nvl(overrides.getReadOnlyIf(), readOnlyIf));

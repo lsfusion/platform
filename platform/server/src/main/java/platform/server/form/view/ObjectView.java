@@ -34,12 +34,6 @@ public class ObjectView implements ServerIdentitySerializable {
         classChooser = new ClassChooserView(idGen.idShift(), this.entity, this);
     }
 
-    public void changeClassChooserLocation(ClassChooserView clChooser) {
-        clChooser.object = classChooser.object;
-        clChooser.show = classChooser.show;
-        classChooser = clChooser;
-    }
-
     public int getID() {
         return entity.ID;
     }

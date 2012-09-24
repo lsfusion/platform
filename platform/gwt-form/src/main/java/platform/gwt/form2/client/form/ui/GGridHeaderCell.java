@@ -65,7 +65,7 @@ public class GGridHeaderCell extends TextCell {
     public void render(Context context, SafeHtml value, SafeHtmlBuilder sb) {
         Boolean sortDir = table.getSortDirection(header);
         if (sortDir != null) {
-            sb.append(template.arrow(value, UriUtils.fromString(GWT.getModuleBaseURL() + "images/" + (sortDir ? "arrowup.gif" : "arrowdown.gif"))));
+            sb.append(template.arrow(value, UriUtils.fromString(GWT.getModuleBaseURL() + "images/" + (sortDir ? "arrowup.png" : "arrowdown.png"))));
         } else {
             super.render(context, value, sb);
         }

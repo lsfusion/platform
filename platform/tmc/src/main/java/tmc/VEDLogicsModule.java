@@ -2530,7 +2530,7 @@ public class VEDLogicsModule extends LogicsModule {
             design.get(objArt.groupTo).grid.defaultComponent = true;
 
             ObjectView objArtView = design.get(objArt);
-            objArtView.classChooser.show = false;
+            objArtView.classChooser.visible = false;
 
             if(isSubjectImpl()) {
                 design.getPanelContainer(design.get(objBarcode.groupTo)).add(design.get(getPropertyDraw(barcodeAddClient)));
@@ -2649,7 +2649,7 @@ public class VEDLogicsModule extends LogicsModule {
             if (toAdd) {
                 design.get(objIssue.groupTo).grid.constraints.fillHorizontal /= 3;
                 design.get(objIssue.groupTo).grid.minRowCount = 2;
-                design.get(objIssue.groupTo).grid.hideToolbarItems();
+                design.get(objIssue.groupTo).toolbar.visible = false;
                 design.get(objIssue.groupTo).grid.autoHide = true;
                 design.addIntersection(design.getGroupObjectContainer(objIssue.groupTo), design.getGroupObjectContainer(objCoupon.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
                 design.addIntersection(design.getGroupObjectContainer(objIssue.groupTo), design.getGroupObjectContainer(objObligation.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
@@ -2662,8 +2662,8 @@ public class VEDLogicsModule extends LogicsModule {
 
             design.get(objCoupon.groupTo).grid.minRowCount = 2;
             design.get(objObligation.groupTo).grid.minRowCount = 2;
-            design.get(objCoupon.groupTo).grid.hideToolbarItems();
-            design.get(objObligation.groupTo).grid.hideToolbarItems();
+            design.get(objCoupon.groupTo).toolbar.visible = false;
+            design.get(objObligation.groupTo).toolbar.visible = false;
             design.get(objCoupon.groupTo).grid.autoHide = true;
             design.addIntersection(design.getGroupObjectContainer(objCoupon.groupTo), design.getGroupObjectContainer(objObligation.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
@@ -2673,10 +2673,10 @@ public class VEDLogicsModule extends LogicsModule {
             }
 
             ObjectView objCouponView = design.get(objCoupon);
-            objCouponView.classChooser.show = false;
+            objCouponView.classChooser.visible = false;
 
             ObjectView objObligationView = design.get(objObligation);
-            objObligationView.classChooser.show = false;
+            objObligationView.classChooser.visible = false;
 
             design.get(getPropertyDraw(baseLM.objectClassName, objObligation)).maximumSize = new Dimension(50, 50);
 

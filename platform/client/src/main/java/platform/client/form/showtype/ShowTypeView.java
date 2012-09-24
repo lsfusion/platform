@@ -1,7 +1,6 @@
 package platform.client.form.showtype;
 
 import platform.client.ClientResourceBundle;
-import platform.client.FlatRolloverButton;
 import platform.client.form.queries.ToolbarGridButton;
 import platform.interop.ClassViewType;
 
@@ -12,31 +11,27 @@ import java.awt.event.ActionListener;
 import java.util.List;
 
 public abstract class ShowTypeView extends JPanel {
+    private final static ImageIcon gridIcon = new ImageIcon(ShowTypeView.class.getResource("/images/table.png"));
+    private final static ImageIcon panelIcon = new ImageIcon(ShowTypeView.class.getResource("/images/list.png"));
+    private final static ImageIcon hideIcon = new ImageIcon(ShowTypeView.class.getResource("/images/close.png"));
 
-    FlatRolloverButton gridButton;
-    FlatRolloverButton panelButton;
-    FlatRolloverButton hideButton;
+    private final JButton gridButton;
+    private final JButton panelButton;
+    private final JButton hideButton;
 
     public ShowTypeView() {
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
 
-        add(gridButton = createShowTypeButton(ClassViewType.GRID, "table.png"));
-        add(panelButton = createShowTypeButton(ClassViewType.PANEL, "list.png"));
-        add(hideButton = createShowTypeButton(ClassViewType.HIDE, "close.png"));
+        add(gridButton = createShowTypeButton(ClassViewType.GRID, gridIcon));
+        add(panelButton = createShowTypeButton(ClassViewType.PANEL, panelIcon));
+        add(hideButton = createShowTypeButton(ClassViewType.HIDE, hideIcon));
 
-        setPreferredSize(new Dimension((ToolbarGridButton.BUTTON_SIZE.width + 1) * 3, ToolbarGridButton.BUTTON_SIZE.height));
+        setPreferredSize(new Dimension((ToolbarGridButton.DEFAULT_SIZE.width + 1) * 3, ToolbarGridButton.DEFAULT_SIZE.height));
     }
 
-    private FlatRolloverButton createShowTypeButton(ClassViewType newClassView, String icon) {
-        FlatRolloverButton showTypeButton = new FlatRolloverButton("");
-
-        showTypeButton.setFocusable(false);
-        showTypeButton.setMinimumSize(ToolbarGridButton.BUTTON_SIZE);
-        showTypeButton.setMaximumSize(ToolbarGridButton.BUTTON_SIZE);
-        showTypeButton.setIcon(new ImageIcon(ShowTypeView.class.getResource("/images/" + icon)));
-        showTypeButton.setToolTipText(ClientResourceBundle.getString("form.showtype." + newClassView.name().toLowerCase()));
+    private JButton createShowTypeButton(ClassViewType newClassView, ImageIcon icon) {
+        JButton showTypeButton = new ToolbarGridButton(icon, ClientResourceBundle.getString("form.showtype." + newClassView.name().toLowerCase()));
         showTypeButton.addActionListener(new ShowTypeClassHandler(newClassView));
-
         return showTypeButton;
     }
 

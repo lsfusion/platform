@@ -6,6 +6,7 @@ import platform.gwt.base.shared.GOrder;
 import platform.gwt.form2.shared.view.GContainer;
 import platform.gwt.form2.shared.view.GGroupObject;
 import platform.gwt.form2.shared.view.GPropertyDraw;
+import platform.gwt.form2.shared.view.GRegularFilterGroup;
 import platform.gwt.form2.shared.view.changes.GFormChanges;
 import platform.gwt.form2.shared.view.changes.GGroupObjectValue;
 import platform.gwt.form2.shared.view.logics.GGroupObjectLogicsSupplier;
@@ -19,10 +20,8 @@ public class GGroupObjectController implements GGroupObjectLogicsSupplier {
     private GFormLayout formLayout;
     private GFormController formController;
 
-    public GGridController grid;
-    public GPanelController panel;
-    public GToolbarPanel panelToolbar;
-    private GToolbarPanel gridToolbar;
+    private GGridController grid;
+    private GPanelController panel;
     private GShowTypeView showTypeView;
 
     private GClassViewType classViewType = GClassViewType.HIDE;
@@ -34,13 +33,7 @@ public class GGroupObjectController implements GGroupObjectLogicsSupplier {
         formLayout = iformLayout;
         formController = iformController;
 
-        gridToolbar = new GToolbarPanel();
-        gridToolbar.addStyleName("gridToolbar");
-
         panel = new GPanelController(formController, formLayout);
-
-        panelToolbar = new GToolbarPanel();
-        panelToolbar.addStyleName("panelToolbar");
 
         if (groupObject != null) {
             grid = new GGridController(groupObject.grid, formController, this);
@@ -49,8 +42,6 @@ public class GGroupObjectController implements GGroupObjectLogicsSupplier {
             GContainer gridContainer = groupObject.grid.container;
             formLayout.setTableCellSize(gridContainer.container, gridContainer, "100%", true);
             formLayout.setTableCellSize(gridContainer.container, gridContainer, "100%", false);
-
-            formLayout.getFormContainer(gridContainer.container).addDirectly(panelToolbar);
 
             showTypeView = new GShowTypeView(formController, groupObject) {
                 protected void needToBeShown() {
@@ -61,6 +52,7 @@ public class GGroupObjectController implements GGroupObjectLogicsSupplier {
                     hideViews();
                 }
             };
+            showTypeView.addToLayout(formLayout);
             showTypeView.setBanClassViews(groupObject.banClassView);
         }
     }
@@ -193,10 +185,6 @@ public class GGroupObjectController implements GGroupObjectLogicsSupplier {
         }
     }
 
-    public boolean isShowTypeVisible() {
-        return showTypeView.needToBeVisible();
-    }
-
     public void setClassView(GClassViewType newClassView) {
         if (newClassView != null && newClassView != classViewType) {
             classViewType = newClassView;
@@ -211,20 +199,10 @@ public class GGroupObjectController implements GGroupObjectLogicsSupplier {
         if (groupObject != null) {
             GContainer gridContainer = groupObject.grid.container;
             if (classViewType == GClassViewType.GRID) {
-                panelToolbar.removeComponent(showTypeView);
-                gridToolbar.addComponent(showTypeView);
                 grid.show();
-                formLayout.setTableCellSize(gridContainer.container, panelToolbar, "auto", false);
                 formLayout.setTableCellSize(gridContainer.container, gridContainer, "100%", false);
             } else {
-//                formLayout.add(groupObject.showType, showTypeView);
-                for (Widget widget : gridToolbar) {
-                    gridToolbar.removeComponent(widget);
-                    panelToolbar.addComponent(widget);
-                }
-                panelToolbar.addComponent(showTypeView);
                 grid.hide();
-                formLayout.setTableCellSize(gridContainer.container, panelToolbar, "100%", false);
                 formLayout.setTableCellSize(gridContainer.container, gridContainer, "auto", false);
             }
         }
@@ -233,25 +211,11 @@ public class GGroupObjectController implements GGroupObjectLogicsSupplier {
     private void hideViews() {
         grid.hide();
         panel.hide();
-        gridToolbar.removeComponent(showTypeView);
-        panelToolbar.addComponent(showTypeView);
-        for (Widget component : panelToolbar) {
-            if (component != showTypeView) {
-                component.setVisible(false);
-            }
-        }
     }
 
     private void showViews() {
         grid.show();
         panel.show();
-        for (Widget component : panelToolbar) {
-            component.setVisible(true);
-        }
-    }
-
-    public GToolbarPanel getGridToolbar() {
-        return gridToolbar;
     }
 
     private void removeProperty(GPropertyDraw property) {
@@ -290,12 +254,8 @@ public class GGroupObjectController implements GGroupObjectLogicsSupplier {
         return panelProperties.contains(property);
     }
 
-    public void addFilterComponent(Widget filterWidget) {
-        gridToolbar.addComponent(filterWidget);
-    }
-
-    public void addPanelFilterComponent(Widget filterWidget) {
-        panelToolbar.addComponent(filterWidget);
+    public void addFilterComponent(GRegularFilterGroup filterGroup, Widget filterWidget) {
+        formLayout.add(filterGroup, filterWidget);
     }
 
     private void update() {
@@ -303,9 +263,6 @@ public class GGroupObjectController implements GGroupObjectLogicsSupplier {
             grid.update();
         }
         panel.update();
-
-        gridToolbar.setVisible(!gridToolbar.isEmpty());
-        panelToolbar.setVisible(!panelToolbar.isEmpty());
     }
 
     public void redrawGrid() {

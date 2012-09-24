@@ -634,14 +634,14 @@ FORM naturalLossItem 'Справочник норм естественной у�
 
     TREE treeNaturalLossItem a=STRING[3], n=naturalLossItemGroup
     PROPERTIES READONLY OBJVALUE(a)
-    PROPERTIES name(n), ADDOBJ(n), delete(n) FORCE PANEL
+    PROPERTIES name(n), ADDOBJ(n), delete(n) FORCE PANEL DRAWTOTOOLBAR
     ORDER BY name
 
     OBJECTS sg=subNaturalLossItemGroup, d=subNaturalLossItemGroupDetail
-    PROPERTIES(sg) name, codeSubNaturalLossItemGroup, ADDOBJ TODRAW sg, delete FORCE PANEL
+    PROPERTIES(sg) name, codeSubNaturalLossItemGroup, ADDOBJ TODRAW sg, delete FORCE PANEL DRAWTOTOOLBAR
     PROPERTIES(d) dayFromNaturalLossItemGroupDetail, nameMonthFromNaturalLossItemGroupDetail,
                    dayToNaturalLossItemGroupDetail, nameMonthToNaturalLossItemGroupDetail,
-                   percentNaturalLossItemGroupDetail, ADDOBJ ,delete
+                   percentNaturalLossItemGroupDetail, ADDOBJ, delete
     FILTERS stringEqualsAll(a), inParentSubNaturalLossItemGroup(n, sg),  inSubNaturalLossItemGroup(sg, d)
     ORDER BY name
 ;
@@ -670,13 +670,11 @@ DESIGN naturalLossItem FROM DEFAULT {
 
     PROPERTY (delete(n)) {
         caption = 'Удалить';
-        panelLocation = TOOLBAR;
         askConfirm = TRUE;
     }
 
     PROPERTY (delete(sg)) {
         caption = 'Удалить';
-        panelLocation = TOOLBAR;
         askConfirm = TRUE;
     }
 }
@@ -3256,7 +3254,7 @@ FORM naturalLosses 'Ведомости естественной убыли'
                            quantityNaturalLossDetailNaturalLoss, invoiceSumNaturalLossDetailNaturalLoss,
                            retailSumNaturalLossDetailNaturalLoss, noteNaturalLoss
     PROPERTIES(s) toPrintNaturalLoss FORCE PANEL
-    PROPERTIES(s) ADDFORM, EDITFORM, delete FORCE PANEL
+    PROPERTIES(s) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
     PROPERTIES(s) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
     OBJECTS d=naturalLossDetail
     PROPERTIES(d) READONLY indexNaturalLossDetail, nameAttributeItemNaturalLossDetail, codeNaturalLossDetail,
@@ -3281,7 +3279,6 @@ DESIGN naturalLosses FROM DEFAULT {
     }
 
     PROPERTY (delete(s)) {
-        panelLocation = TOOLBAR;
         askConfirm = TRUE;
     }
 
@@ -3888,7 +3885,7 @@ FORM orderSupplier 'Заказ поставщику'
                            valueSupplierVATOrderSupplier, sumWareOrderSupplier, retailVATISumItemOrderSupplier,
                            fullSumItemOrderSupplier
 
-    PROPERTIES(o)          fillInOrderSupplier TODRAW i FORCE PANEL
+    PROPERTIES(o)          fillInOrderSupplier TODRAW i FORCE PANEL DRAWTOTOOLBAR
 
     FILTERS isSupplierItemDepartmentOrderSupplier(o, i),
             isBanSupplierItemDepartmentOrderSupplier(o, i)
@@ -3963,7 +3960,6 @@ DESIGN orderSupplier FROM DEFAULT {
     }
 
     PROPERTY (fillInOrderSupplier) {
-        panelLocation = TOOLBAR;
         askConfirm = TRUE;
     }
 }
@@ -4023,7 +4019,7 @@ FORM orderSuppliers 'Заказы поставщику'
                            nameSupplierOrderSupplier, completePercentageOrderSupplier, totalSumOrderSupplier, timeCreated,
                            nameUserCreated, allowablePercentOrderSupplier
 
-    PROPERTIES(o)          ADDFORM, EDITFORM, delete FORCE PANEL
+    PROPERTIES(o)          ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
     PROPERTIES(o) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
     PROPERTIES(o) FORCE PANEL toPrintOrderSupplier, emailPrintOrderSupplier
@@ -4059,7 +4055,6 @@ DESIGN orderSuppliers FROM DEFAULT{
     }
 
     PROPERTY (delete(o)){
-        panelLocation = TOOLBAR;
         askConfirm = TRUE;
     }
     ADD o.historyGroup{
@@ -4103,7 +4098,7 @@ FORM timeTableDate 'График поставок'
     PROPERTIES(p) dialogGenTimeTablePreliminaryOrder
     PROPERTIES(p) READONLY dateOrderPreliminaryOrder, dateSupplyPreliminaryOrder, dataOrderPreliminaryOrder
     PROPERTIES(p) nextDateOrder, createOrderSupplier
-    PROPERTIES(p) ADDFORM, EDITFORM, delete FORCE PANEL
+    PROPERTIES(p) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
     PROPERTIES(s, d, t) READONLY quantityOrderOrderSupplier, quantitySupplyOrderSupplier, quantityOrderPreliminaryOrder, quantitySupplyPreliminaryOrder
 
     FILTERS isSupplierDepartmentStore(d, s, p)
@@ -4138,7 +4133,6 @@ DESIGN timeTableDate FROM DEFAULT {
 
     ADD PROPERTY(createGenTimeTable) IN d.panel;
     PROPERTY (delete(p)) {
-        panelLocation = TOOLBAR;
         askConfirm = TRUE;
     }
 
@@ -4158,7 +4152,7 @@ FORM printTimeTable 'Печать графика поставок по дата�
     PROPERTIES(p) READONLY dateOrderPreliminaryOrder, dateSupplyPreliminaryOrder, dataOrderPreliminaryOrder,
                            nameSupplierPreliminaryOrder, nextDateOrder
     PROPERTIES(p) createOrderSupplier
-    PROPERTIES(p) ADDFORM, EDITFORM, delete FORCE PANEL
+    PROPERTIES(p) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
 
     FILTERS inSupplyIntervalPreliminaryOrder(p, dFrom, dTo)
     FILTERS isDepartmentPreliminaryOrder(p, d)
@@ -4183,7 +4177,6 @@ DESIGN printTimeTable FROM DEFAULT {
     ADD p.box;
 
     PROPERTY (delete(p)) {
-        panelLocation = TOOLBAR;
         askConfirm = TRUE;
     }
     POSITION d.box TO THE BOTTOM interval.box;
@@ -4449,7 +4442,7 @@ FORM disparities 'Пересортицы'
                      createSnapshotDisparityMachineryPriceTransaction FORCE PANEL SHOWIF isPostedDisparity(dis),
                      printPriceChangeDisparity FORCE PANEL SHOWIF needToPriceChangeDisparity(dis),
                      printInputPriceChangeDisparity FORCE PANEL SHOWIF needToInputPriceChangeDisparity(dis),
-                     ADDFORM, EDITFORM, delete FORCE PANEL
+                     ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
 
     OBJECTS d=disparityDetail
     PROPERTIES(d)   READONLY indexDisparityDetail,
@@ -4472,7 +4465,6 @@ DESIGN disparities FROM DEFAULT {
                 preferredCharWidth = 25;
             }
             PROPERTY (delete(dis)) {
-                panelLocation = TOOLBAR;
                 askConfirm = TRUE;
             }
         }
@@ -4639,7 +4631,7 @@ FORM shipments 'Поставки'
                             createShipmentMachineryPriceTransaction FORCE PANEL SHOWIF showCreateMachineryPriceTransactionShipment(s),
                             createSnapshotShipmentMachineryPriceTransaction FORCE PANEL SHOWIF isPostedShipment(s),
                             printPriceChangeShipment FORCE PANEL SHOWIF needToPriceChangeShipment(s), printListRegister FORCE PANEL,
-                            ADDFORM, EDITFORM, delete FORCE PANEL
+                            ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
 
     OBJECTS d=shipmentDetail
     PROPERTIES (d) READONLY  indexShipmentDetail, idBarcodeSkuShipmentDetail, nameAttributeItemShipmentDetail, quantityShipmentDetail,
@@ -4668,7 +4660,6 @@ DESIGN shipments FROM DEFAULT {
     }
 
     PROPERTY (delete(s)) {
-        panelLocation = TOOLBAR;
         askConfirm = TRUE;
     }
 
@@ -4816,7 +4807,7 @@ FORM returnSuppliers 'Возвраты поставщику'
                               printConsignmentSimpleVertical, printConsignmentSimpleAttach, editConsignment,
                               printPriceChangeReturnSupplier SHOWIF needToPriceChangeReturnSupplier(r)
 
-    PROPERTIES(r) ADDFORM, EDITFORM, delete FORCE PANEL
+    PROPERTIES(r) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
 
     OBJECTS d=returnSupplierDetail
     PROPERTIES(d) READONLY indexReturnSupplierDetail, idBarcodeSkuReturnSupplierDetail, nameAttributeItemReturnSupplierDetail,
@@ -4957,7 +4948,6 @@ DESIGN returnSuppliers FROM DEFAULT {
         }
 
         PROPERTY (delete(r)) {
-            panelLocation = TOOLBAR;
             askConfirm = TRUE;
         }
 
@@ -5192,7 +5182,7 @@ FORM innerFlows 'Расходы в другие отделы'
                                printConsignmentAttach, printConsignmentSimpleHorizontal, printConsignmentSimpleVertical,
                                printConsignmentSimpleAttach, editConsignment
 
-    PROPERTIES (f) ADDFORM, EDITFORM, delete FORCE PANEL
+    PROPERTIES (f) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
 
     OBJECTS d=innerFlowDetail
     PROPERTIES (d) READONLY indexInnerFlowDetail, idBarcodeSkuInnerFlowDetail, nameAttributeItemInnerFlowDetail,
@@ -5216,7 +5206,6 @@ DESIGN innerFlows FROM DEFAULT {
                     preferredCharWidth = 15;
                 }
                 PROPERTY (delete(f)) {
-                    panelLocation = TOOLBAR;
                     askConfirm = TRUE;
                 }
             }
@@ -5421,7 +5410,7 @@ FORM innerArrivals 'Приходы из других отделов'
                             createSnapshotInnerArrivalMachineryPriceTransaction FORCE PANEL SHOWIF isPostedInnerArrival(a),
                             printPriceChangeInnerArrival FORCE PANEL SHOWIF needToPriceChangeInnerArrival(a),
                             printInputListRegister FORCE PANEL,
-                            ADDFORM, EDITFORM, delete FORCE PANEL
+                            ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
 
     PROPERTIES(a) FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
@@ -5447,7 +5436,6 @@ DESIGN innerArrivals FROM DEFAULT {
             }
 
             PROPERTY (delete(a)) {
-                panelLocation = TOOLBAR;
                 askConfirm = TRUE;
             }
         }
@@ -5810,7 +5798,7 @@ FORM statements 'Отгрузки из розницы'
                      printConsignmentSimpleVertical, printConsignmentSimpleAttach, printPriceChangeStatement SHOWIF needToPriceChangeStatement(st),
                      nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
-    PROPERTIES (st)  ADDFORM, EDITFORM, delete FORCE PANEL
+    PROPERTIES (st)  ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
 
     OBJECTS d=statementDetail
     PROPERTIES (d)   READONLY indexStatementDetail, idBarcodeSkuStatementDetail, nameAttributeItemStatementDetail, quantityStatementDetail,
@@ -5833,7 +5821,6 @@ DESIGN statements FROM DEFAULT {
                     preferredCharWidth = 15;
                 }
                 PROPERTY (delete(st)) {
-                    panelLocation = TOOLBAR;
                     askConfirm = TRUE;
                 }
             }
@@ -6009,7 +5996,7 @@ FORM actOfStudies 'Акты проработки'
                             createSnapshotActOfStudyLabelTransaction FORCE PANEL SHOWIF isPostedActOfStudy(a),
                             createActOfStudyMachineryPriceTransaction FORCE PANEL SHOWIF showCreateMachineryPriceTransactionActOfStudy(a),
                             createSnapshotActOfStudyMachineryPriceTransaction FORCE PANEL SHOWIF isPostedActOfStudy(a),
-                            ADDFORM, EDITFORM, delete FORCE PANEL
+                            ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
 
     OBJECTS i = item
     PROPERTIES(i)      READONLY nameAttributeItem, shortNameUOMItem
@@ -6039,7 +6026,6 @@ DESIGN actOfStudies FROM DEFAULT {
     }
 
     PROPERTY (delete(a)) {
-        panelLocation = TOOLBAR;
         askConfirm = TRUE;
     }
 

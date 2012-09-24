@@ -16,6 +16,11 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
 
     public GroupObjectEntity entity;
 
+    public GridView grid;
+    public ShowTypeView showType;
+    public ToolbarView toolbar;
+    public FilterView filter;
+
     public Boolean needVerticalScroll = true;
     public Integer tableRowsCount;
 
@@ -39,9 +44,11 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
 
         grid = new GridView(idGen.idShift(), this);
         showType = new ShowTypeView(idGen.idShift(), this);
+        toolbar = new ToolbarView(idGen.idShift());
+        filter = new FilterView(idGen.idShift());
     }
 
-    public GroupObjectView(IDGenerator idGen, GroupObjectEntity entity, GridView grid, ShowTypeView showType) {
+    public GroupObjectView(IDGenerator idGen, GroupObjectEntity entity, GridView grid, ShowTypeView showType, ToolbarView toolbar, FilterView filter) {
         this.entity = entity;
 
         for (ObjectEntity object : this.entity.objects)
@@ -51,11 +58,9 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
         this.grid.groupObject = this;
         this.showType = showType;
         this.showType.groupObject = this;
-
+        this.toolbar = toolbar;
+        this.filter = filter;
     }
-
-    public GridView grid;
-    public ShowTypeView showType;
 
     public String getCaption() {
         return get(0).getCaption();
@@ -71,6 +76,16 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
 
     public ComponentView getShowType() {
         return showType;
+    }
+
+    @Override
+    public ComponentView getToolbar() {
+        return toolbar;
+    }
+
+    @Override
+    public ComponentView getFilter() {
+        return filter;
     }
 
     int ID;
@@ -90,6 +105,9 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
 
         pool.serializeObject(outStream, grid, serializationType);
         pool.serializeObject(outStream, showType, serializationType);
+        pool.serializeObject(outStream, toolbar, serializationType);
+        pool.serializeObject(outStream, filter, serializationType);
+
         pool.serializeObject(outStream, pool.context.view.getProperty(entity.filterProperty));
 
         outStream.writeBoolean(entity.isParent != null);
@@ -113,6 +131,9 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
 
         grid = pool.deserializeObject(inStream);
         showType = pool.deserializeObject(inStream);
+        toolbar = pool.deserializeObject(inStream);
+        filter = pool.deserializeObject(inStream);
+
         needVerticalScroll = inStream.readBoolean();
         tableRowsCount = inStream.readInt();
     }

@@ -2,10 +2,11 @@ package platform.client.form;
 
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
-import platform.client.form.cell.PropertyController;
+import platform.client.ClientResourceBundle;
+import platform.client.Main;
 import platform.client.form.grid.GridController;
 import platform.client.form.panel.PanelController;
-import platform.client.form.panel.PanelShortcut;
+import platform.client.form.queries.FilterController;
 import platform.client.form.showtype.ShowTypeController;
 import platform.client.logics.*;
 import platform.interop.ClassViewType;
@@ -29,13 +30,14 @@ public class GroupObjectController extends AbstractGroupObjectController {
 
     public GridController grid;
     public ShowTypeController showType;
+    public FilterController filter;
 
     private final Map<ClientObject, ObjectController> objects = new HashMap<ClientObject, ObjectController>();
 
     public ClassViewType classView = ClassViewType.HIDE;
 
     public GroupObjectController(ClientGroupObject igroupObject, LogicsSupplier ilogicsSupplier, ClientFormController iform, ClientFormLayout formLayout) throws IOException {
-        super(iform, ilogicsSupplier, formLayout);
+        super(iform, ilogicsSupplier, formLayout, igroupObject == null ? null : igroupObject.toolbar);
         groupObject = igroupObject;
 
         panel = new PanelController(this, form, formLayout) {
@@ -44,24 +46,37 @@ public class GroupObjectController extends AbstractGroupObjectController {
             }
         };
 
-        panelShortcut = new PanelShortcut(form, panel);
-
         if (groupObject != null) {
+            if (groupObject.filter.visible) {
+                filter = new FilterController(this, groupObject.filter) {
+                    protected void remoteApplyQuery() {
+                        try {
+                            form.changeFilter(groupObject, getConditions());
+                        } catch (IOException e) {
+                            throw new RuntimeException(ClientResourceBundle.getString("errors.error.applying.filter"), e);
+                        }
 
-            // GRID идет как единый неделимый JComponent, поэтому смысла передавать туда FormLayout нет
-            grid = new GridController(this, form);
-            addGroupObjectActions(grid.getGridView());
+                        grid.table.requestFocusInWindow();
+                    }
+                };
+
+                filter.addView(formLayout);
+            }
 
             for (ClientObject object : groupObject.objects) {
-
                 objects.put(object, new ObjectController(object, form));
                 objects.get(object).addView(formLayout);
             }
 
+            // GRID идет как единый неделимый JComponent, поэтому смысла передавать туда FormLayout нет
+            grid = new GridController(this, form);
+            addGroupObjectActions(grid.getGridView());
+            if (filter != null) {
+                filter.getView().addActionsToInputMap(grid.table);
+            }
             grid.addView(formLayout);
 
             showType = new ShowTypeController(groupObject.showType, this, form) {
-
                 protected void needToBeShown() {
                     GroupObjectController.this.showViews();
                 }
@@ -70,11 +85,65 @@ public class GroupObjectController extends AbstractGroupObjectController {
                     GroupObjectController.this.hideViews();
                 }
             };
-
+            showType.addView(formLayout);
             showType.setBanClassView(groupObject.banClassView);
+
+            configureToolbar();
 
             setClassView(ClassViewType.GRID);
             grid.update();
+        }
+    }
+
+    private void configureToolbar() {
+        boolean hasClassChoosers = false;
+        for (final ClientObject object : groupObject.grid.groupObject.objects) {
+            if (object.classChooser.visible) {
+                addToToolbar(getObjectController(object).getToolbarButton());
+                hasClassChoosers = true;
+            }
+        }
+        if (hasClassChoosers) {
+            addToToolbar(Box.createHorizontalStrut(5));
+        }
+
+        if (filter != null) {
+            addToToolbar(filter.getToolbarButton());
+            addToToolbar(Box.createHorizontalStrut(5));
+        }
+
+        //todo: убрать или реимплементить
+        //noinspection PointlessBooleanExpression
+        if (groupObject.toolbar.showGroupChange && false) {
+            addToToolbar(grid.createGroupChangeButton());
+        }
+
+        if (groupObject.toolbar.showCountQuantity) {
+            addToToolbar(grid.createCountQuantityButton());
+        }
+
+        if (groupObject.toolbar.showCalculateSum) {
+            addToToolbar(grid.craeteCalculateSumButton());
+        }
+
+        if (groupObject.toolbar.showGroup) {
+            addToToolbar(grid.createGroupButton());
+        }
+
+        addToToolbar(Box.createHorizontalStrut(5));
+
+        if (groupObject.toolbar.showPrintGroupButton && Main.module.isFull()) { // todo [dale]: Можно ли избавиться от if'ов?
+            addToToolbar(grid.createPrintGroupButton());
+        }
+
+        if (groupObject.toolbar.showPrintGroupXlsButton && Main.module.isFull()) {
+            addToToolbar(grid.createPrintGroupXlsButton());
+            addToToolbar(Box.createHorizontalStrut(5));
+        }
+
+        if (groupObject.toolbar.showHideSettings) {
+            addToToolbar(grid.createHideSettingsButton());
+            addToToolbar(Box.createHorizontalStrut(5));
         }
     }
 
@@ -116,13 +185,15 @@ public class GroupObjectController extends AbstractGroupObjectController {
 
         // Затем подгружаем новые данные
 
-        // Сначала новые объекты
-        if (fc.gridObjects.containsKey(groupObject)) {
-            setGridObjects(fc.gridObjects.get(groupObject));
-        }
+        if (classView == ClassViewType.GRID) {
+            // Сначала новые объекты
+            if (fc.gridObjects.containsKey(groupObject)) {
+                setGridObjects(fc.gridObjects.get(groupObject));
+            }
 
-        if (fc.objects.containsKey(groupObject)) {
-            setCurrentObject(fc.objects.get(groupObject));
+            if (fc.objects.containsKey(groupObject)) {
+                setCurrentObject(fc.objects.get(groupObject));
+            }
         }
 
         // Затем их свойства
@@ -367,8 +438,8 @@ public class GroupObjectController extends AbstractGroupObjectController {
         return getGroupObject();
     }
 
-    public Map<ClientObject, ObjectController> getObjectsMap() {
-        return objects;
+    public ObjectController getObjectController(ClientObject object) {
+        return objects.get(object);
     }
 
     public List<ClientPropertyDraw> getGroupObjectProperties() {
@@ -398,48 +469,28 @@ public class GroupObjectController extends AbstractGroupObjectController {
     }
 
     public void quickEditFilter(KeyEvent initFilterKeyEvent, ClientPropertyDraw propertyDraw) {
-        grid.quickEditFilter(initFilterKeyEvent, propertyDraw);
+        if (filter != null) {
+            filter.quickEditFilter(initFilterKeyEvent, propertyDraw);
+            grid.selectProperty(propertyDraw);
+        }
     }
 
     public void selectProperty(ClientPropertyDraw propertyDraw) {
         grid.selectProperty(propertyDraw);
     }
 
-    public void moveComponent(Component component, int destination) {
-        panelToolbar.moveComponent(component, destination);
-    }
-
     public void updateSelectionInfo(int quantity, String sum, String avg) {
-        panelToolbar.updateSelectionInfo(quantity, sum, avg);
-    }
-
-    public JPanel getToolbarView() {
-        return panelToolbar.getView();
+        if (toolbarView.updateSelectionInfo(quantity, sum, avg)) {
+            form.dropLayoutCaches();
+        }
     }
 
     public void updateToolbar() {
         if (groupObject != null) {
-            if (classView == ClassViewType.GRID) {
-                panelToolbar.removeComponent(showType.view);
-                panelToolbar.update(classView);
-                panelToolbar.addComponent(Box.createHorizontalStrut(5), true);
-                panelToolbar.addComponent(showType.view, true);
-            } else {
-                for (Map.Entry<ClientRegularFilterGroup, JComponent> entry : panelToolbar.getFilters()) {
-                    formLayout.add(entry.getKey(), entry.getValue());
-                }
-
-                for (PropertyController control : panelToolbar.getProperties()) {
-                    control.addView(formLayout);
-                    control.getPanelView().changeViewType(classView);
-                }
-
-                formLayout.add(showType.clientShowType, showType.view);
+            toolbarView.setVisible(classView == ClassViewType.GRID);
+            if (filter != null) {
+                filter.setVisible(classView == ClassViewType.GRID);
             }
         }
-    }
-
-    public void addFilterToToolbar(ClientRegularFilterGroup filterGroup, JComponent component) {
-        panelToolbar.addFilter(filterGroup, component);
     }
 }

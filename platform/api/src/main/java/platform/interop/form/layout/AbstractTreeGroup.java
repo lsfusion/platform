@@ -5,5 +5,6 @@ public interface AbstractTreeGroup<C extends AbstractContainer<C, T>, T extends 
     int getID();
     String getSID();
 
-    T getComponent();
+    T getToolbar();
+    T getFilter();
 }

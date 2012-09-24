@@ -7,7 +7,7 @@ public class ClassChooserViewProxy extends ComponentViewProxy<ClassChooserView> 
         super(target);
     }
 
-    public void setShow(boolean show) {
-        target.show = show;
+    public void setVisible(boolean visible) {
+        target.visible = visible;
     }
 }

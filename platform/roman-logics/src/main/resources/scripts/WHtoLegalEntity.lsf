@@ -131,7 +131,7 @@ FORM invoiceWHOuts 'Реализации товара по безналично�
 
     PROPERTIES (t) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
-    PROPERTIES (t) ADDFORM, EDITFORM SHOWIF isDraftInvoiceWHOut(t), delete FORCE PANEL SHOWIF isDraftInvoiceWHOut(t),
+    PROPERTIES (t) ADDFORM, EDITFORM SHOWIF isDraftInvoiceWHOut(t), delete FORCE PANEL DRAWTOTOOLBAR SHOWIF isDraftInvoiceWHOut(t),
                    postInvoiceWHOut SHOWIF isDraftInvoiceWHOut(t), unpostInvoiceWHOut SHOWIF isPostedInvoiceWHOut(t)
 
     OBJECTS d = invoiceWHOutDetail
@@ -141,7 +141,6 @@ FORM invoiceWHOuts 'Реализации товара по безналично�
 
 DESIGN invoiceWHOuts FROM DEFAULT {
     PROPERTY (delete(t)) {
-        panelLocation = TOOLBAR;
         askConfirm = TRUE;
     }
 

@@ -1039,7 +1039,7 @@ FORM inventory 'Инвентаризация'
 
     PROPERTIES(li)   READONLY countPageInventoryDetailListInventory, quantityPageInventoryDetailListInventory, sumPageInventoryDetailListInventory, objectClassName
 
-    PROPERTIES(li)   ADDFORM, editLI = EDITFORM FORCE PANEL SHOWIF isDraftListInventory(li), delete FORCE PANEL SHOWIF isDraftListInventory(li),
+    PROPERTIES(li)   ADDFORM, editLI = EDITFORM FORCE PANEL SHOWIF isDraftListInventory(li), delete FORCE PANEL DRAWTOTOOLBAR SHOWIF isDraftListInventory(li),
                      postListInventory FORCE PANEL SHOWIF isDraftListInventory(li), unpostListInventory FORCE PANEL SHOWIF isPostedListInventory(li)
 
     PROPERTIES(pl)   READONLY countPageInventoryDetailPageInventory, quantityPageInventoryDetailPageInventory, sumPageInventoryDetailPageInventory, dumb1
@@ -1196,7 +1196,6 @@ DESIGN inventory FROM DEFAULT {
                     }
                     PROPERTY (delete(li)) {
                         caption = 'Удалить';
-                        panelLocation = TOOLBAR;
                         askConfirm = TRUE;
                     }
                 }
@@ -1263,7 +1262,7 @@ FORM inventories 'Инвентаризации'
     PROPERTIES(in) READONLY             isBatchInventory, objectClassName, numberObject, seriesObject, dateInventory, timeInventory,
                                         nameStockInventory, nameInventory, noteInventory
     PROPERTIES(in) FORCE PANEL READONLY nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
-    PROPERTIES(in)                      ADDFORM, EDITFORM SHOWIF isDraftInventory(in), delete FORCE PANEL SHOWIF isDraftInventory(in),
+    PROPERTIES(in)                      ADDFORM, EDITFORM SHOWIF isDraftInventory(in), delete FORCE PANEL DRAWTOTOOLBAR SHOWIF isDraftInventory(in),
                                         postInventory SHOWIF isDraftInventory(in), unpostInventory SHOWIF isPostedInventory(in)
 
     OBJECTS il=inventorySkuDetail
@@ -1345,7 +1344,6 @@ DESIGN inventories FROM DEFAULT {
                     preferredCharWidth = 25;
                 }
                 PROPERTY (delete(in)) {
-                    panelLocation = TOOLBAR;
                     askConfirm = TRUE;
                 }
             }

@@ -2,19 +2,21 @@ package platform.client.form.tree;
 
 import platform.base.BaseUtils;
 import platform.client.ClientResourceBundle;
-import platform.client.form.*;
+import platform.client.form.AbstractGroupObjectController;
+import platform.client.form.ClientFormController;
+import platform.client.form.ClientFormLayout;
+import platform.client.form.LogicsSupplier;
 import platform.client.form.panel.PanelController;
-import platform.client.form.panel.PanelShortcut;
 import platform.client.form.queries.FilterController;
 import platform.client.logics.*;
-import platform.interop.ClassViewType;
 import platform.interop.Order;
 
-import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 public class TreeGroupController extends AbstractGroupObjectController {
     public final ClientTreeGroup treeGroup;
@@ -25,25 +27,19 @@ public class TreeGroupController extends AbstractGroupObjectController {
     private final ClientGroupObject lastGroupObject;
 
     public TreeGroupController(ClientTreeGroup itreeGroup, LogicsSupplier ilogicsSupplier, ClientFormController iform, ClientFormLayout formLayout) throws IOException {
-        super(iform, ilogicsSupplier, formLayout);
+        super(iform, ilogicsSupplier, formLayout, itreeGroup.toolbar);
         treeGroup = itreeGroup;
 
         view = new TreeView(this.form, treeGroup);
         tree = view.getTree();
 
         panel = new PanelController(this, form, formLayout);
-        panelShortcut = new PanelShortcut(form, panel);
-
-        JPanel pane = new JPanel(new BorderLayout());
-        pane.add(view, BorderLayout.CENTER);
-        pane.add(panelToolbar.getView(), BorderLayout.SOUTH);
 
         lastGroupObject = BaseUtils.last(treeGroup.groups);
 
         if (!treeGroup.plainTreeMode) {
-            FilterController filterController = new FilterController(this) {
-
-                protected void queryChanged() {
+            FilterController filter = new FilterController(this, treeGroup.filter) {
+                protected void remoteApplyQuery() {
                     try {
                         form.changeFilter(treeGroup, getConditions());
                     } catch (IOException e) {
@@ -52,17 +48,16 @@ public class TreeGroupController extends AbstractGroupObjectController {
 
                     tree.requestFocusInWindow();
                 }
-
-                @Override
-                public void conditionsUpdated() {
-                    panelToolbar.moveComponent(getView(),  getDestination());
-                }
             };
-            addToToolbar(filterController.getView());
-            filterController.getView().addActions(tree);
+
+            filter.addView(formLayout);
+
+            addToToolbar(filter.getToolbarButton());
+
+            filter.getView().addActionsToInputMap(tree);
         }
 
-        formLayout.add(treeGroup, pane);
+        formLayout.add(treeGroup, view);
     }
 
     public void processFormChanges(ClientFormChanges fc,
@@ -191,7 +186,7 @@ public class TreeGroupController extends AbstractGroupObjectController {
 
     @Override
     public void updateToolbar() {
-        panelToolbar.update(ClassViewType.GRID);
+//        panelToolbar.update(ClassViewType.GRID);
     }
 
     public void updateDrawPropertyCaptions(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> captions) {

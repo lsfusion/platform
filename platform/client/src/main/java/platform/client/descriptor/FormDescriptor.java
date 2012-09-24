@@ -253,13 +253,15 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
         for (Map.Entry<Object, List<PropertyObjectDescriptor>> entry : eventActions.entrySet()) {
             Object event = entry.getKey();
 
-            //пока предполагаем, что евент либо String, либо CustomSerializable!
-            boolean isStringEvent = event instanceof String;
-            outStream.writeBoolean(isStringEvent);
-            if (isStringEvent) {
+            if (event instanceof String) {
+                outStream.writeByte(0);
                 pool.writeString(outStream, (String) event);
-            } else {
+            } else if (event instanceof CustomSerializable) {
+                outStream.writeByte(1);
                 pool.serializeObject(outStream, (CustomSerializable) event);
+            } else {
+                outStream.writeByte(2);
+                pool.writeObject(outStream, event);
             }
 
             pool.serializeCollection(outStream, entry.getValue());
@@ -298,10 +300,12 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
         eventActions = new HashMap<Object, List<PropertyObjectDescriptor>>();
         int length = inStream.readInt();
         for (int i = 0; i < length; ++i) {
-            Object event = inStream.readBoolean()
-                           ? pool.readString(inStream)
-                           : pool.deserializeObject(inStream);
-
+            Object event;
+            switch (inStream.readByte()) {
+                case 0 : event = pool.readString(inStream); break;
+                case 1 : event = pool.deserializeObject(inStream); break;
+                default : event = pool.readObject(inStream); break;
+            }
             List<PropertyObjectDescriptor> actions = pool.deserializeList(inStream);
             eventActions.put(event, actions);
         }
@@ -739,7 +743,7 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
 
         TreeGroupContainerSet<ClientContainer, ClientComponent> set = TreeGroupContainerSet.create(treeGroup.client, new FormContainerFactory());
 
-        moveContainerInGroup(treeGroup, set.getContainer(), treeGroups);
+        moveContainerInGroup(treeGroup, set.getTreeContainer(), treeGroups);
     }
 
     private void moveContainerInGroup(ContainerMovable<ClientContainer> concreateObject, ClientContainer parent, List<? extends ContainerMovable<ClientContainer>> objects) {

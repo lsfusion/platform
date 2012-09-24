@@ -11,7 +11,7 @@ import platform.client.tree.ClientTree;
 import javax.swing.*;
 
 public class GroupObjectNode extends DescriptorNode<GroupObjectDescriptor, GroupObjectNode> implements EditableTreeNode {
-    private static final ImageIcon groupObjectIcon = new ImageIcon(Main.class.getResource("/images/groupObject.gif"));
+    private static final ImageIcon groupObjectIcon = new ImageIcon(Main.class.getResource("/images/groupObject.png"));
 
     private FormDescriptor form;
 

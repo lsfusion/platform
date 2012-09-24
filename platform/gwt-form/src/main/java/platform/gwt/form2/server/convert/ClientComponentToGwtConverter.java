@@ -27,7 +27,6 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         component.sID = clientComponent.getSID();
         component.container = convertOrCast(clientComponent.container);
         component.defaultComponent = clientComponent.defaultComponent;
-        component.drawToToolbar = clientComponent.drawToToolbar();
 
         if (clientComponent.preferredSize != null) {
             component.prefferedWidth = clientComponent.preferredSize.width;
@@ -115,6 +114,18 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         GShowType showType = initGwtComponent(clientShowType, new GShowType());
         showType.groupObject = convertOrCast(clientShowType.groupObject);
         return showType;
+    }
+
+    @Cached
+    @Converter(from = ClientToolbar.class)
+    public GToolbar convertToolbar(ClientToolbar clientToolbar) {
+        return initGwtComponent(clientToolbar, new GToolbar());
+    }
+
+    @Cached
+    @Converter(from = ClientFilter.class)
+    public GFilter convertFilter(ClientFilter clientFilter) {
+        return initGwtComponent(clientFilter, new GFilter());
     }
 
     @Cached
@@ -214,6 +225,10 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
     @Converter(from = ClientTreeGroup.class)
     public GTreeGroup convertTreeGroup(ClientTreeGroup clientTreeGroup) {
         GTreeGroup treeGroup = initGwtComponent(clientTreeGroup, new GTreeGroup());
+
+        treeGroup.toolbar = convertOrCast(clientTreeGroup.toolbar);
+        treeGroup.filter = convertOrCast(clientTreeGroup.filter);
+
         for (ClientGroupObject clientGroup : clientTreeGroup.groups) {
             GGroupObject group = convertOrCast(clientGroup);
             treeGroup.groups.add(group);
@@ -233,6 +248,8 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         }
         groupObject.grid = convertOrCast(clientGroupObject.grid);
         groupObject.showType = convertOrCast(clientGroupObject.showType);
+        groupObject.toolbar = convertOrCast(clientGroupObject.toolbar);
+        groupObject.filter = convertOrCast(clientGroupObject.filter);
         groupObject.banClassView = new ArrayList<String>();
         for (ClassViewType banView : clientGroupObject.banClassView) {
             groupObject.banClassView.add(banView.name());

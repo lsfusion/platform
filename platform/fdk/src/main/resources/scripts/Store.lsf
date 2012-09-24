@@ -186,7 +186,7 @@ FORM stores 'Магазины'
 
     OBJECTS s=store
     PROPERTIES(s) READONLY name, addressStore, nameStoreTypeStore, nameCompanyStore, nameRegionStore
-    PROPERTIES(s)          ADDFORM, EDITFORM, delete
+    PROPERTIES(s)          ADDFORM, EDITFORM, delete DRAWTOTOOLBAR
     FILTERS inChainStoresStoreTypeStore(t, st, s)
 
     OBJECTS d=departmentStore
@@ -217,7 +217,6 @@ DESIGN stores FROM DEFAULT {
 
     PROPERTY (delete(t)) {
         caption = 'Удалить';
-        panelLocation = TOOLBAR;
         askConfirm = TRUE;
     }
 

@@ -22,7 +22,6 @@ grammar LsfLogics;
 	import platform.server.form.view.ComponentView;
 	import platform.server.form.view.GroupObjectView;
 	import platform.server.form.view.PropertyDrawView;
-	import platform.server.form.view.panellocation.PanelLocationView;
 	import platform.server.logics.linear.LP;
 	import platform.server.logics.property.PropertyFollows;
 	import platform.server.logics.property.Cycle;
@@ -505,6 +504,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 	:	(	editType = propertyEditTypeLiteral { $options.setEditType($editType.val); }
 		|	'HINTNOUPDATE' { $options.setHintNoUpdate(true); }
 		|	'HINTTABLE' { $options.setHintTable(true); }
+		|   'DRAWTOTOOLBAR' { $options.setDrawToToolbar(true); }
 		|	'COLUMNS' '(' ids=nonEmptyIdList ')' { $options.setColumns(getGroupObjectsList($ids.ids)); }
 		|	'SHOWIF' mappedProp=mappedProperty { $options.setShowIf(getPropertyWithMapping($mappedProp.name, $mappedProp.mapping)); }  // refactor to formPropertyObject? 
 		|	'READONLYIF' propObj=formCalcPropertyObject { $options.setReadOnlyIf($propObj.property); }
@@ -1337,7 +1337,7 @@ panelLocationSetting [LP property]
 	}
 }
 	:	'TOOLBAR' { toolbar = true; }
-	|	'SHORTCUT' { toolbar = false; } (name = compoundID { sid = $name.sid; })? ('DEFAULT' { defaultProperty = true; })?
+	|	'SHORTCUT' { toolbar = false; } name = compoundID { sid = $name.sid; } ('DEFAULT' { defaultProperty = true; })?
 	;
 
 
@@ -2413,7 +2413,6 @@ componentPropertyValue returns [Object value]
 	|	b=booleanLiteral { $value = $b.val; }
 	|	cons=simplexConstraintLiteral { $value = $cons.val; }
 	|	ins=insetsLiteral { $value = $ins.val; }
-	|	panLoc=panelLocationLiteral { $value = $panLoc.val; }
 	|   contType=containerTypeLiteral { $value = $contType.val; }
 	;
 
@@ -2677,21 +2676,6 @@ insertPositionLiteral returns [InsertPosition val]
 	:	'IN' { $val = InsertPosition.IN; }
 	|	'BEFORE' { $val = InsertPosition.BEFORE; }
 	|	'AFTER' { $val = InsertPosition.AFTER; }
-	;
-
-panelLocationLiteral returns [PanelLocationView val]
-@init {
-	boolean toolbar = false;
-	PropertyDrawView property = null;
-	boolean defaultProperty = false;
-} 
-@after {
-	if (inPropParseState()) {
-		$val = $designStatement::design.createPanelLocation(toolbar, property, defaultProperty);
-	}
-}
-	:	'TOOLBAR' { toolbar = true; }
-	|	'SHORTCUT' { toolbar = false; } (onlyProp=propertySelector { property = $onlyProp.propertyView; })? ('DEFAULT' { defaultProperty = true; })?
 	;
 
 containerTypeLiteral returns [byte val]

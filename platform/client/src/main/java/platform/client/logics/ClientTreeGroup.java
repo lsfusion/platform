@@ -13,7 +13,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ClientTreeGroup extends ClientComponent implements ClientIdentitySerializable, AbstractTreeGroup<ClientContainer, ClientComponent> {
+
     public List<ClientGroupObject> groups = new ArrayList<ClientGroupObject>();
+
+    public ClientToolbar toolbar;
+    public ClientFilter filter;
+
     public boolean plainTreeMode;
 
     public ClientTreeGroup() {
@@ -22,16 +27,36 @@ public class ClientTreeGroup extends ClientComponent implements ClientIdentitySe
 
     public ClientTreeGroup(int ID, ApplicationContext context) {
         super(ID, context);
+
+        toolbar = new ClientToolbar(context);
+        filter = new ClientFilter(context);
+    }
+
+    @Override
+    public ClientComponent getToolbar() {
+        return toolbar;
+    }
+
+    @Override
+    public ClientComponent getFilter() {
+        return filter;
     }
 
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         super.customSerialize(pool, outStream, serializationType);
+
         pool.serializeCollection(outStream, groups, serializationType);
+        pool.serializeObject(outStream, toolbar, serializationType);
+        pool.serializeObject(outStream, filter, serializationType);
     }
 
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
         super.customDeserialize(pool, inStream);
+
         groups = pool.deserializeList(inStream);
+        toolbar = pool.deserializeObject(inStream);
+        filter = pool.deserializeObject(inStream);
+
         plainTreeMode = inStream.readBoolean();
 
         List<ClientGroupObject> upGroups = new ArrayList<ClientGroupObject>();
@@ -56,10 +81,6 @@ public class ClientTreeGroup extends ClientComponent implements ClientIdentitySe
             result += group.toString();
         }
         return result + "[sid:" + getSID() + "]";
-    }
-
-    public ClientComponent getComponent() {
-        return this;
     }
 
     public String getCodeClass() {

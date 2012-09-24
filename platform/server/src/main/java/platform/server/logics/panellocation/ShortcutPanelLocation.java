@@ -1,7 +1,5 @@
 package platform.server.logics.panellocation;
 
-import platform.server.form.view.panellocation.PanelLocationView;
-import platform.server.form.view.panellocation.ShortcutPanelLocationView;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.Property;
 
@@ -50,10 +48,5 @@ public class ShortcutPanelLocation extends PanelLocation {
 
     public boolean isDefault() {
         return defaultOne;
-    }
-
-    @Override
-    public PanelLocationView convertToView() {
-        return new ShortcutPanelLocationView(defaultOne);
     }
 }

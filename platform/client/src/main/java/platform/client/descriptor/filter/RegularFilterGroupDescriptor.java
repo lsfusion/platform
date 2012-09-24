@@ -33,7 +33,7 @@ public class RegularFilterGroupDescriptor extends ContextIdentityObject implemen
     public ClientContainer getDestinationContainer(ClientContainer parent, List<GroupObjectDescriptor> groupObjects) {
         GroupObjectDescriptor groupObject = getGroupObject(groupObjects);
         if (groupObject != null) {
-            return parent.findContainerBySID(groupObject.getSID() + GroupObjectContainerSet.FILTER_CONTAINER);
+            return parent.findContainerBySID(groupObject.getSID() + GroupObjectContainerSet.FILTERS_CONTAINER);
         } else
             return null;
     }

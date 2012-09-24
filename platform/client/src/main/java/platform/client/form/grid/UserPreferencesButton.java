@@ -5,6 +5,7 @@ import platform.client.ArrayListTransferHandler;
 import platform.client.Main;
 import platform.client.descriptor.editor.base.TitledPanel;
 import platform.client.form.ClientFormController;
+import platform.client.form.queries.FilterView;
 import platform.client.form.queries.ToolbarGridButton;
 import platform.client.logics.ClientPropertyDraw;
 import platform.interop.form.ColumnUserPreferences;
@@ -12,9 +13,11 @@ import platform.interop.form.FormUserPreferences;
 import platform.interop.form.GroupObjectUserPreferences;
 
 import javax.swing.*;
-import javax.swing.border.LineBorder;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.*;
 import java.util.List;
@@ -22,11 +25,14 @@ import java.util.List;
 import static platform.client.ClientResourceBundle.getString;
 
 public abstract class UserPreferencesButton extends ToolbarGridButton {
+    private static final ImageIcon savedIcon = new ImageIcon(FilterView.class.getResource("/images/userPreferencesSaved.png"));
+
+    private static final ImageIcon unsavedIcon = new ImageIcon(FilterView.class.getResource("/images/userPreferences.png"));
 
     public HideSettingsDialog dialog;
 
     public UserPreferencesButton(boolean hasUserPreferences) {
-        super(hasUserPreferences? "/images/userPreferencesSaved.png" :"/images/userPreferences.png", getString("form.grid.user.preferences"));
+        super(hasUserPreferences ? savedIcon :unsavedIcon, getString("form.grid.user.preferences"));
     }
 
     public abstract void addListener();

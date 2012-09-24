@@ -175,7 +175,7 @@ FORM disparityBatches 'Пересорты м/у партиями'
 
     PROPERTIES (o) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
-    PROPERTIES (o)    ADDFORM, EDITFORM, delete FORCE PANEL
+    PROPERTIES (o)    ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
 
     OBJECTS di = disparityInBatchDetail
     OBJECTS do = disparityOutBatchDetail
@@ -186,7 +186,6 @@ FORM disparityBatches 'Пересорты м/у партиями'
 
 DESIGN disparityBatches FROM DEFAULT {
     PROPERTY (delete(o)) {
-        panelLocation = TOOLBAR;
         askConfirm = TRUE;
     }
 
@@ -523,7 +522,7 @@ FORM disparityBatchAs 'Пересорты м/у партиями (бухг.)'
 
     PROPERTIES (o) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
-    PROPERTIES (o)    ADDFORM, EDITFORM, delete FORCE PANEL
+    PROPERTIES (o)    ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
 
     OBJECTS di = disparityInBatchADetail
     OBJECTS do = disparityOutBatchADetail
@@ -534,7 +533,6 @@ FORM disparityBatchAs 'Пересорты м/у партиями (бухг.)'
 
 DESIGN disparityBatchAs FROM DEFAULT {
     PROPERTY (delete(o)) {
-        panelLocation = TOOLBAR;
         askConfirm = TRUE;
     }
 

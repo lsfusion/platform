@@ -28,17 +28,6 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
     private final ClientGroupObjectValue columnKey;
     private final ClientFormController form;
     public boolean toToolbar;
-    private String caption;
-
-    @Override
-    public int hashCode() {
-        return key.getID() * 31 + columnKey.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        return o instanceof ActionPanelView && ((ActionPanelView) o).key.equals(key) && ((ActionPanelView) o).columnKey.equals(columnKey);
-    }
 
     public ActionPanelView(final ClientPropertyDraw ikey, final ClientGroupObjectValue icolumnKey, final ClientFormController iform) {
         super(ikey.getEditCaption());
@@ -67,6 +56,21 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
         setDefaultSizes();
     }
 
+    @Override
+    public int hashCode() {
+        return key.getID() * 31 + columnKey.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof ActionPanelView && ((ActionPanelView) o).key.equals(key) && ((ActionPanelView) o).columnKey.equals(columnKey);
+    }
+
+    @Override
+    public String toString() {
+        return key.toString();
+    }
+
     public JComponent getComponent() {
         return this;
     }
@@ -82,7 +86,6 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
     }
 
     public void setCaption(String caption) {
-        this.caption = caption;
         setText(key.getEditCaption(caption));
     }
 
@@ -115,7 +118,7 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
     }
 
     private void setDefaultSizes() {
-        int height = toToolbar ? ToolbarGridButton.BUTTON_SIZE.height : key.getPreferredHeight(this);
+        int height = toToolbar ? ToolbarGridButton.DEFAULT_SIZE.height : key.getPreferredHeight(this);
 
         int minimumWidth = key.minimumSize != null ? key.getMinimumWidth(this) : 0;
         int maximumWidth = key.maximumSize != null ? key.getMaximumWidth(this) : 32767;

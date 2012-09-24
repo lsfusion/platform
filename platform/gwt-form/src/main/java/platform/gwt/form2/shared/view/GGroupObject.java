@@ -12,6 +12,8 @@ public class GGroupObject implements Serializable {
 
     public GGrid grid;
     public GShowType showType;
+    public GToolbar toolbar;
+    public GFilter filter;
     public int ID;
     public List<String> banClassView;
 

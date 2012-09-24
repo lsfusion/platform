@@ -7,7 +7,6 @@ import platform.interop.form.layout.ContainerType;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.interop.form.layout.SimplexConstraints;
 import platform.server.caches.IdentityLazy;
-import platform.server.form.view.panellocation.PanelLocationView;
 import platform.server.serialization.ServerIdentitySerializable;
 import platform.server.serialization.ServerSerializationPool;
 
@@ -28,15 +27,22 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     public Dimension maximumSize;
     public Dimension preferredSize;
 
+    public SimplexConstraints<ComponentView> constraints = getDefaultConstraints();
+
+    public boolean defaultComponent = false;
+
+    public ComponentView() {
+    }
+
+    public ComponentView(int ID) {
+        this.ID = ID;
+    }
+
     public void setFixedSize(Dimension size) {
         minimumSize = size;
         maximumSize = size;
         preferredSize = size;
     }
-
-    public SimplexConstraints<ComponentView> constraints = getDefaultConstraints();
-
-    protected PanelLocationView panelLocation;
 
     public SimplexConstraints<ComponentView> getDefaultConstraints() {
         return new SimplexConstraints<ComponentView>();
@@ -44,16 +50,6 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
 
     public SimplexConstraints<ComponentView> getConstraints() {
         return constraints;
-    }
-
-    public boolean defaultComponent = false;
-
-    public ComponentView() {
-
-    }
-
-    public ComponentView(int ID) {
-        this.ID = ID;
     }
 
     public ComponentView findById(int id) {
@@ -84,10 +80,6 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         this.container = container;
     }
 
-    public void setPanelLocation(PanelLocationView panelLocation) {
-        this.panelLocation = panelLocation;
-    }
-
     public boolean removeFromParent() {
         return container != null && container.remove(this);
     }
@@ -109,7 +101,6 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
             pool.writeObject(outStream, intersect.getValue());
         }
         outStream.writeBoolean(defaultComponent);
-        pool.serializeObject(outStream, panelLocation, serializationType);
     }
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
@@ -133,6 +124,5 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         }
 
         defaultComponent = inStream.readBoolean();
-        panelLocation = pool.deserializeObject(inStream);
     }
 }

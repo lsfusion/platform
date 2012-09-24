@@ -215,7 +215,7 @@ FORM userOrders 'Заказы (польз.)'
 
     PROPERTIES (s) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
-    PROPERTIES (s) ADDFORM, EDITFORM, delete FORCE PANEL
+    PROPERTIES (s) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
 
     OBJECTS d=userOrderDetail
     PROPERTIES (d) READONLY indexOrderDetail, idBarcodeSkuOrderDetail, nameSkuOrderDetail, shortNameUOMSkuOrderDetail,
@@ -226,7 +226,6 @@ FORM userOrders 'Заказы (польз.)'
 
 DESIGN userOrders FROM DEFAULT {
     PROPERTY (delete(s)) {
-        panelLocation = TOOLBAR;
         askConfirm = TRUE;
     }
 

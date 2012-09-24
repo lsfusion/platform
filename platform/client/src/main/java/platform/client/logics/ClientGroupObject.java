@@ -37,6 +37,8 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
 
     public ClientGrid grid;
     public ClientShowType showType;
+    public ClientToolbar toolbar;
+    public ClientFilter filter;
 
     public List<ClientObject> objects = new ArrayList<ClientObject>();
 
@@ -58,6 +60,8 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
 
         grid = new ClientGrid(context);
         showType = new ClientShowType(context);
+        toolbar = new ClientToolbar(context);
+        filter = new ClientFilter(context);
 
         grid.groupObject = this;
         showType.groupObject = this;
@@ -102,10 +106,22 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
         return showType;
     }
 
+    @Override
+    public ClientComponent getToolbar() {
+        return toolbar;
+    }
+
+    @Override
+    public ClientComponent getFilter() {
+        return filter;
+    }
+
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         pool.serializeCollection(outStream, objects);
         pool.serializeObject(outStream, grid);
         pool.serializeObject(outStream, showType);
+        pool.serializeObject(outStream, toolbar);
+        pool.serializeObject(outStream, filter);
         outStream.writeBoolean(needVerticalScroll);
         outStream.writeInt(tableRowsCount);
     }
@@ -119,6 +135,8 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
 
         grid = pool.deserializeObject(inStream);
         showType = pool.deserializeObject(inStream);
+        toolbar = pool.deserializeObject(inStream);
+        filter = pool.deserializeObject(inStream);
 
         filterProperty = pool.deserializeObject(inStream);
 

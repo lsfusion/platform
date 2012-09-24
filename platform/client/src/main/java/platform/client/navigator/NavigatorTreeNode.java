@@ -7,8 +7,8 @@ import platform.client.tree.ClientTreeNode;
 import javax.swing.*;
 
 public class NavigatorTreeNode extends ClientTreeNode<ClientNavigatorElement, NavigatorTreeNode> {
-    private static final ImageIcon formIcon = new ImageIcon(Main.class.getResource("/images/form.gif"));
-    private static final ImageIcon reportIcon = new ImageIcon(Main.class.getResource("/images/report.gif"));
+    private static final ImageIcon formIcon = new ImageIcon(Main.class.getResource("/images/form.png"));
+    private static final ImageIcon reportIcon = new ImageIcon(Main.class.getResource("/images/report.png"));
 
     private final NavigatorTree tree;
     public final ClientNavigatorElement navigatorElement;
