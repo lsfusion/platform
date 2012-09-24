@@ -560,6 +560,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
 
             ImportField chainStoresIDField = new ImportField(getLCP("extSID"));
             ImportField nameChainStoresField = new ImportField(getLCP("name"));
+            ImportField nameCountryField = new ImportField(getLCP("name"));
 
             DataObject defaultDate = new DataObject(new java.sql.Date(2001 - 1900, 0, 01), DateClass.instance);
 
@@ -574,6 +575,9 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
 
             ImportKey<?> chainStoresKey = new ImportKey((ConcreteCustomClass) getClass("chainStores"),
                     getLCP("extSIDToObject").getMapping(chainStoresIDField));
+
+            ImportKey<?> countryKey = new ImportKey((ConcreteCustomClass) getClass("country"),
+                    getLCP("countryName").getMapping(nameCountryField));
 
             List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
 
@@ -598,12 +602,16 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             props.add(new ImportProperty(chainStoresIDField, getLCP("extSID").getMapping(chainStoresKey)));
             props.add(new ImportProperty(nameChainStoresField, getLCP("name").getMapping(chainStoresKey)));
 
+            props.add(new ImportProperty(nameCountryField, getLCP("name").getMapping(countryKey)));
+            props.add(new ImportProperty(nameCountryField, getLCP("countryLegalEntity").getMapping(companyKey),
+                    LM.object(getClass("country")).getMapping(countryKey)));
+
             ImportTable table = new ImportTable(Arrays.asList(companyIDField, nameLegalEntityField, legalAddressField,
                     unpField, okpoField, phoneField, emailField, nameOwnershipField, shortNameOwnershipField,
-                    accountField, chainStoresIDField, nameChainStoresField), data);
+                    accountField, chainStoresIDField, nameChainStoresField, nameCountryField), data);
 
             DataSession session = createSession();
-            IntegrationService service = new IntegrationService(session, table, Arrays.asList(companyKey, ownershipKey, accountKey, chainStoresKey), props);
+            IntegrationService service = new IntegrationService(session, table, Arrays.asList(companyKey, ownershipKey, accountKey, chainStoresKey, countryKey), props);
             service.synchronize(true, false);
             applySession(session);
             session.close();
@@ -1229,13 +1237,14 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                 String companyStore = new String(importFile.getField("K_JUR").getBytes(), "Cp1251").trim();
                 String k_bank = new String(importFile.getField("K_BANK").getBytes(), "Cp1251").trim();
                 String[] ownership = getAndTrimOwnershipFromName(name);
+                String nameCountry = "РБ";
 
                 if ("МГ".equals(type))
                     data.add(Arrays.asList((Object) k_ana, ownership[2], address, companyStore, "Магазин", companyStore + "ТС"));
                 else if ("ПС".equals(type))
                     data.add(Arrays.asList((Object) k_ana, ownership[2], address, unp, okpo, phone, email, ownership[1], ownership[0], account, "BANK_" + k_bank));
                 else if ("ЮР".equals(type))
-                    data.add(Arrays.asList((Object) k_ana, ownership[2], address, unp, okpo, phone, email, ownership[1], ownership[0], account, k_ana + "ТС", ownership[2]));
+                    data.add(Arrays.asList((Object) k_ana, ownership[2], address, unp, okpo, phone, email, ownership[1], ownership[0], account, k_ana + "ТС", ownership[2], nameCountry));
                 else if ("ПК".equals(type))
                     data.add(Arrays.asList((Object) k_ana, ownership[2], address, unp, okpo, phone, email, ownership[1], ownership[0], account, "BANK_" + k_bank));
 
