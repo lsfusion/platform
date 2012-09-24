@@ -2129,7 +2129,7 @@ public abstract class LogicsModule {
 
             ValueClass valueClass = lp.property.getValueClass();
             if(valueClass instanceof CustomClass) {
-                ((CustomClass)valueClass).getProperty().getImplement(toList(genInterface));
+                checkClasses.add(((CustomClass)valueClass).getProperty().getImplement(toList(genInterface)));
             }
         }
         list.add(addSAProp(null).getImplement(addedInterface));
