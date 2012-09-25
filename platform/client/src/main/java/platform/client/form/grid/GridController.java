@@ -5,6 +5,7 @@ import platform.client.Main;
 import platform.client.form.ClientFormController;
 import platform.client.form.ClientFormLayout;
 import platform.client.form.GroupObjectController;
+import platform.client.form.InternalEditEvent;
 import platform.client.form.queries.*;
 import platform.client.logics.ClientGrid;
 import platform.client.logics.ClientGroupObject;
@@ -12,14 +13,12 @@ import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
 import platform.client.logics.classes.ClientIntegralClass;
 import platform.interop.Order;
+import platform.interop.form.ServerResponse;
 import platform.interop.form.screen.ExternalScreenComponent;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -196,7 +195,14 @@ public class GridController {
         return new ToolbarGridButton(groupChangeIcon, ClientResourceBundle.getString("form.grid.group.groupchange") + " (Ctrl+F12)") {
                     @Override
                     public void addListener() {
-                        addActionListener(table.getActionMap().get(GridTable.GROUP_CORRECTION_ACTION));
+                        addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                int rowIndex = table.getSelectedRow();
+                                int columnIndex = table.getSelectedColumn();
+                                table.editCellAt(rowIndex, columnIndex, new InternalEditEvent(table, ServerResponse.GROUP_CHANGE));
+                            }
+                        });
                     }
                 };
     }

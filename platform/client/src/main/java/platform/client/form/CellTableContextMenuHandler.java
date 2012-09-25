@@ -87,7 +87,7 @@ public class CellTableContextMenuHandler extends MouseAdapter implements KeyList
                 item.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        jTable.editCellAt(rowIndex, columnIndex, new ContextMenuEvent(jTable, action));
+                        jTable.editCellAt(rowIndex, columnIndex, new InternalEditEvent(jTable, action));
                     }
                 });
                 add(item);

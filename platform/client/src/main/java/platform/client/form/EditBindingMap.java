@@ -13,7 +13,7 @@ import java.util.Map;
 
 public class EditBindingMap {
     private Map<KeyStroke, String> keyBindingMap = new HashMap<KeyStroke, String>();
-    private LinkedHashMap<String, String> contextMenuBindingMap = new LinkedHashMap<String, String>();
+    private LinkedHashMap<String, String> internalEditBindingMap = new LinkedHashMap<String, String>();
 
     //пока одно значение, возможно в будущем расширится до мэпа (типа клик, дабл клик и т. д.)
     private String mouseBinding;
@@ -38,8 +38,8 @@ public class EditBindingMap {
             }
         } else if (editEvent instanceof MouseEvent) {
             return mouseBinding;
-        } else if (editEvent instanceof ContextMenuEvent) {
-            return ((ContextMenuEvent) editEvent).action;
+        } else if (editEvent instanceof InternalEditEvent) {
+            return ((InternalEditEvent) editEvent).action;
         }
 
         return ServerResponse.CHANGE;
@@ -49,12 +49,12 @@ public class EditBindingMap {
         keyBindingMap.put(keyStroke, actionSID);
     }
 
-    public void setContextMenuAction(String actionSID, String caption) {
-        contextMenuBindingMap.put(actionSID, caption);
+    public void setInternalEditAction(String actionSID, String caption) {
+        internalEditBindingMap.put(actionSID, caption);
     }
 
-    public LinkedHashMap<String, String> getContextMenuItems() {
-        return contextMenuBindingMap;
+    public LinkedHashMap<String, String> getInternalEditItems() {
+        return internalEditBindingMap;
     }
 
     public void setMouseAction(String actionSID) {

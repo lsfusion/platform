@@ -114,7 +114,7 @@ public class GroupObjectController extends AbstractGroupObjectController {
 
         //todo: убрать или реимплементить
         //noinspection PointlessBooleanExpression
-        if (groupObject.toolbar.showGroupChange && false) {
+        if (groupObject.toolbar.showGroupChange) {
             addToToolbar(grid.createGroupChangeButton());
         }
 

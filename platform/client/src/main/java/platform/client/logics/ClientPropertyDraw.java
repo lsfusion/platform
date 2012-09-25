@@ -154,7 +154,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     }
 
     public LinkedHashMap<String, String> getContextMenuItems() {
-        return editBindingMap == null ? null : editBindingMap.getContextMenuItems();
+        return editBindingMap == null ? null : editBindingMap.getInternalEditItems();
     }
 
     public PropertyEditorComponent getValueEditorComponent(ClientFormController form, Object value) {
@@ -397,13 +397,13 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             }
         }
 
-        int contextMenuBindingsSize = inStream.readInt();
-        if (contextMenuBindingsSize > 0) {
+        int internalEditBindingsSize = inStream.readInt();
+        if (internalEditBindingsSize > 0) {
             initEditBindingMap();
-            for (int i = 0; i < contextMenuBindingsSize; ++i) {
+            for (int i = 0; i < internalEditBindingsSize; ++i) {
                 String actionSID = pool.readString(inStream);
                 String caption = pool.readString(inStream);
-                editBindingMap.setContextMenuAction(actionSID, caption);
+                editBindingMap.setInternalEditAction(actionSID, caption);
             }
         }
     }
