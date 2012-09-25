@@ -5766,13 +5766,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addObjectActions(this, objNonRussianSpecialist);
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectNonRussianSpecialist, objNonRussianSpecialist), Compare.EQUALS, objProject));
 
-            getPropertyDraw(importProjectsAction).drawToToolbar = true;
-            getPropertyDraw(copyProjectAction).drawToToolbar = true;
+            getPropertyDraw(importProjectsAction).setDrawToToolbar(true);
+            getPropertyDraw(copyProjectAction).setDrawToToolbar(true);
             //getPropertyDraw(openApplicationProjectAction).drawToToolbar = true;
-            getPropertyDraw(editR1Project).drawToToolbar = true;
-            getPropertyDraw(editR2Project).drawToToolbar = true;
-            getPropertyDraw(editClaimerProject).drawToToolbar = true;
-            getPropertyDraw(nameNativeShortCurrentCluster).drawToToolbar = true;
+            getPropertyDraw(editR1Project).setDrawToToolbar(true);
+            getPropertyDraw(editR2Project).setDrawToToolbar(true);
+            getPropertyDraw(editClaimerProject).setDrawToToolbar(true);
+            getPropertyDraw(nameNativeShortCurrentCluster).setDrawToToolbar(true);
 
 //            addFixedFilter(new CompareFilterEntity(addPropertyObject(clusterForesight, objForesight), Compare.EQUALS, objCluster));
      //       addFixedFilter(new NotNullFilterEntity(addPropertyObject(isInClusterProjectForesight, objProject, objForesight)));

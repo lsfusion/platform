@@ -42,7 +42,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public OrderedMap<String, String> contextMenuBindings;
     public Map<String, ActionPropertyObjectEntity<?>> editActions = new HashMap<String, ActionPropertyObjectEntity<?>>();
 
-    public boolean drawToToolbar = false;
+    private boolean drawToToolbar = false;
 
     public boolean askConfirm;
     public String askConfirmMessage;
@@ -279,5 +279,16 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     public GroupObjectEntity getToDraw(FormEntity form) {
         return toDraw==null?form.getApplyObject(propertyObject.getObjectInstances()):toDraw;        
+    }
+
+    public boolean isDrawToToolbar() {
+        return drawToToolbar;
+    }
+
+    public void setDrawToToolbar(boolean drawToToolbar) {
+        this.drawToToolbar = drawToToolbar;
+        if (drawToToolbar) {
+            forceViewType = ClassViewType.PANEL;
+        }
     }
 }

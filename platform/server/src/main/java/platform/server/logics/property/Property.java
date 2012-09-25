@@ -311,8 +311,9 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
             entity.askConfirmMessage = askConfirmMessage;
         if (eventID != null)
             entity.eventID = eventID;
-        if (panelLocation != null && panelLocation.isToolbarLocation())
-            entity.drawToToolbar = true;
+        if (panelLocation != null && panelLocation.isToolbarLocation()) {
+            entity.setDrawToToolbar(true);
+        }
 
         //перемещаем свойство в контекстном меню в тот же groupObject, что и свойство, к которому оно привязано
         if (panelLocation != null && panelLocation.isShortcutLocation()) {

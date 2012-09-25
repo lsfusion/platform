@@ -129,7 +129,7 @@ public class AddObjectActionProperty<T extends PropertyInterface, I extends Prop
     @Override
     public void proceedDefaultDraw(PropertyDrawEntity<PropertyInterface> entity, FormEntity<?> form) {
         super.proceedDefaultDraw(entity, form);
-        entity.drawToToolbar = true;
+        entity.setDrawToToolbar(true);
         entity.shouldBeLast = true;
         entity.forceViewType = ClassViewType.PANEL;
 

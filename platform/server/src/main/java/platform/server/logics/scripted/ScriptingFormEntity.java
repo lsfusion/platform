@@ -296,7 +296,7 @@ public class ScriptingFormEntity {
 
         Boolean drawToToolbar = options.getDrawToToolbar();
         if (drawToToolbar != null && drawToToolbar) {
-            property.drawToToolbar = true;
+            property.setDrawToToolbar(true);
         }
 
         List<String> eventTypes = options.getEventTypes();

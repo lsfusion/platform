@@ -239,7 +239,7 @@ public class DefaultFormView extends FormView {
         addPropertyDrawToLayout(groupObject, propertyDraw, control.propertyObject.property.getParent());
 
         control.proceedDefaultDesign(propertyDraw, this);
-        if (groupObject != null && propertyDraw.entity.drawToToolbar) {
+        if (groupObject != null && propertyDraw.entity.isDrawToToolbar()) {
             if (propertyDraw.preferredSize == null) {
                 propertyDraw.preferredSize = new Dimension(-1, 20);
             }
