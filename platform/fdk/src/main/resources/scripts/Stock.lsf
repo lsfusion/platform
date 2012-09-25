@@ -518,8 +518,8 @@ META defineDocumentDetailStock (object, detail, stockProp, stockCaption)
     stockProp###detail (idetail) = stockProp###object(object###detail(idetail));
     name###stockProp###detail stockCaption (idetail) = name(stockProp###detail(idetail)) MINCHARWIDTH 10 PREFCHARWIDTH 20;
     country###stockProp###detail (idetail) = countryStock(stockProp###detail(idetail));
-    company###detail (idetail) = companyStock(stockProp###detail(idetail));
-    name###company###detail 'Компания ('###stockCaption###')' (idetail) = name(company###detail (idetail));
+    company###stockProp###detail (idetail) = companyStock(stockProp###detail(idetail));
+    name###company###stockProp###detail 'Компания ('###stockCaption###')' (idetail) = name(company###stockProp###detail (idetail));
 END
 META defineDocumentDetailStock (object, stockProp, stockCaption)
     @defineDocumentDetailStock (object, object##Detail, stockProp, stockCaption);
@@ -530,8 +530,8 @@ META defineDocumentDetailDataStock (object, detail, stockClass, stockProp, stock
     stockProp###detail (idetail) = UNION OVERRIDE stockProp###object(object###detail(idetail)), data###stockProp###detail(idetail) PERSISTENT;
     name###stockProp###detail stockCaption (idetail) = name(stockProp###detail(idetail)) MINCHARWIDTH 10 PREFCHARWIDTH 20;
     country###stockProp###detail (idetail) = countryStock(stockProp###detail(idetail));
-    company###detail (idetail) = companyStock(stockProp###detail(idetail));
-    name###company###detail 'Компания ('###stockCaption###')' (idetail) = name(company###detail (idetail));
+    company###stockProp###detail (idetail) = companyStock(stockProp###detail(idetail));
+    name###company###stockProp###detail 'Компания ('###stockCaption###')' (idetail) = name(company###stockProp###detail (idetail));
 END
 META defineDocumentAbstractDetailDataStock (object, detail, stockClass, stockProp, stockCaption)
     data###stockProp###detail = ABSTRACT stockClass(detail) PERSISTENT;
@@ -969,6 +969,81 @@ END
 
 // ----------------------------------------------- Формы --------------------------------------------------- //
 
+// ---------------------------------- Диалоги --------------------------- //
+
+FORM stocks 'Склады'
+
+    TREE stockTree sg = stockGroup PARENT parentStockGroup
+    PROPERTIES READONLY stockGroupName = name(sg)
+
+    OBJECTS s = stock
+    PROPERTIES(s) READONLY skuName = name
+    FILTERS isParentStockGroupStock(sg, s)
+
+    DIALOG stock OBJECT s
+
+;
+
+DESIGN stocks FROM DEFAULT {
+    main{
+        preferredSize = (1024, 768);
+
+        NEW topContainer {
+            type = SPLITH;
+            childConstraints = TO THE RIGHT;
+
+            ADD stockTree.tree.box {
+                title = 'Склады';
+            }
+
+            ADD s.box {
+                s.grid {
+                    defaultComponent = TRUE;
+                }
+            }
+        }
+
+        ADD functions.box;
+    }
+}
+
+FORM skus 'Sku'
+    TREE skuTree sg = skuGroup PARENT parentSkuGroup
+    PROPERTIES READONLY skuGroupName = name(sg)
+
+    OBJECTS s = sku
+    PROPERTIES(s) READONLY nameSku, shortNameUOMSku
+    FILTERS isParentSkuGroupSku(sg, s)
+    ORDER BY nameSku
+
+    DIALOG sku OBJECT s
+;
+
+DESIGN skus FROM DEFAULT {
+    main{
+        preferredSize = (1024, 768);
+
+        NEW topContainer {
+            type = SPLITH;
+            childConstraints = TO THE RIGHT;
+
+            ADD skuTree.tree.box {
+                title = 'Группы SKU';
+            }
+
+            ADD s.box {
+                s.grid {
+                    defaultComponent = TRUE;
+                }
+            }
+        }
+
+        ADD functions.box;
+    }
+}
+
+// ------------------------------------------------- Себестоимость --------------------------- //
+
 FORM costSkuLedger 'Себестоимость (операции)'
     OBJECTS bil = skuLedger
     PROPERTIES(bil) READONLY dateTimeSkuLedger, descriptionSkuLedger, nameSkuSkuLedger, nameStockSkuLedger,
@@ -1121,43 +1196,6 @@ DESIGN currentBalanceSkuStock FROM DEFAULT {
         ADD functions.box;
     }
 }
-
-FORM stockDialog 'Склад'
-
-    TREE stockTree  sg = stockGroup PARENT parentStockGroup
-    PROPERTIES READONLY sgTreeName = name(sg)
-
-    OBJECTS ts = stock
-    PROPERTIES READONLY tsTreeName = name(ts)
-    FILTERS isParentStockGroupStock(sg, ts)
-
-    DIALOG stock OBJECT ts
-
-;
-
-DESIGN stockDialog FROM DEFAULT {
-    main{
-        preferredSize = (1024, 768);
-
-        NEW topContainer {
-            type = SPLITH;
-            childConstraints = TO THE RIGHT;
-
-            ADD stockTree.tree.box {
-                title = 'Склады';
-            }
-
-            ADD ts.box {
-                ts.grid {
-                    defaultComponent = TRUE;
-                }
-            }
-        }
-
-        ADD functions.box;
-    }
-}
-
 
 FORM balanceSkuStock 'Остатки на дату'
 

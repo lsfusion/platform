@@ -74,7 +74,7 @@ orderUserInvoiceDetail = DATA order(userInvoiceDetail);
 orderInvoiceDetail(invoiceDetail) += orderUserInvoiceDetail(invoiceDetail);
 
 CONSTRAINT customerInvoiceDetail(invoiceDetail) != customerOrder(orderUserInvoiceDetail(invoiceDetail)) OR
-           companyUserInvoiceDetail(invoiceDetail) != companyOrder(orderUserInvoiceDetail(invoiceDetail))
+           companyStockUserInvoiceDetail(invoiceDetail) != companyOrder(orderUserInvoiceDetail(invoiceDetail))
     CHECKED BY orderUserInvoiceDetail
         MESSAGE 'Покупатель и компания в заказе и накладной должны соответствовать друг другу';
 
