@@ -225,6 +225,16 @@ public class RomanLogicsModule extends LogicsModule {
     private LCP typeDutyRegistration;
     private LCP sidTypeDutyRegistration;
     private LCP nameTypeDutyRegistration;
+    public LCP typeDutyDutyCustomsZone;
+    private LCP sidTypeDutyDutyCustomsZone;
+    private LCP nameTypeDutyDutyCustomsZone;
+    private LCP typeDutyNDSCustomsZone;
+    private LCP sidTypeDutyNDSCustomsZone;
+    private LCP nameTypeDutyNDSCustomsZone;
+    private LCP typeDutyRegistrationCustomsZone;
+    private LCP sidTypeDutyRegistrationCustomsZone;
+    private LCP nameTypeDutyRegistrationCustomsZone;
+
     private LCP supplierBrandSupplier;
     private LCP nameSupplierBrandSupplier;
     private LCP brandSupplierSupplier;
@@ -1809,6 +1819,20 @@ public class RomanLogicsModule extends LogicsModule {
         sidTypeDutyRegistration = addJProp(baseGroup, "sidTypeDutyRegistration", "Для оформления (код)", sidTypeDuty, typeDutyRegistration);
         nameTypeDutyRegistration = addJProp(baseGroup, "nameTypeDutyRegistration", "Для оформления", nameTypeDuty, typeDutyRegistration);
 
+
+        typeDutyDutyCustomsZone = addDProp(idGroup, "typeDutyDutyCustomsZone", "Для пошлин (ИД)", typeDuty, customsZone);
+        sidTypeDutyDutyCustomsZone = addJProp(baseGroup, "sidTypeDutyDutyCustomsZone", "Для пошлин (код)", sidTypeDuty, typeDutyDutyCustomsZone, 1);
+        nameTypeDutyDutyCustomsZone = addJProp(baseGroup, "nameTypeDutyDutyCustomsZone", "Для пошлин", nameTypeDuty, typeDutyDutyCustomsZone, 1);
+
+        typeDutyNDSCustomsZone = addDProp(idGroup, "typeDutyNDSCustomsZone", "Для НДС (ИД)", typeDuty, customsZone);
+        sidTypeDutyNDSCustomsZone = addJProp(baseGroup, "sidTypeDutyNDSCustomsZone", "Для НДС (код)", sidTypeDuty, typeDutyNDSCustomsZone, 1);
+        nameTypeDutyNDSCustomsZone = addJProp(baseGroup, "nameTypeDutyNDSCustomsZone", "Для НДС", nameTypeDuty, typeDutyNDSCustomsZone, 1);
+
+        typeDutyRegistrationCustomsZone = addDProp(idGroup, "typeDutyRegistrationCustomsZone", "Для оформления (ИД)", typeDuty, customsZone);
+        sidTypeDutyRegistrationCustomsZone = addJProp(baseGroup, "sidTypeDutyRegistrationCustomsZone", "Для оформления (код)", sidTypeDuty, typeDutyRegistrationCustomsZone, 1);
+        nameTypeDutyRegistrationCustomsZone = addJProp(baseGroup, "nameTypeDutyRegistrationCustomsZone", "Для оформления", nameTypeDuty, typeDutyRegistrationCustomsZone, 1);
+
+
         // Contract
         sidContract = addDProp(baseGroup, "sidContract", "Номер договора", StringClass.get(50), contract);
         dateContract = addDProp(baseGroup, "dateContract", "Дата договора", DateClass.instance, contract);
@@ -1985,6 +2009,7 @@ public class RomanLogicsModule extends LogicsModule {
         nameCurrencySupplier = addJProp(baseGroup, "nameCurrencySupplier", "Валюта", baseLM.name, currencySupplier, 1);
 
         sidColorSupplier = addDProp(baseGroup, "sidColorSupplier", "Код", StringClass.get(50), colorSupplier);
+        sidColorSupplier.setMinimumCharWidth(5);
 
         supplierColorSupplier = addDProp(idGroup, "supplierColorSupplier", "Поставщик (ИД)", supplier, colorSupplier);
         nameSupplierColorSupplier = addJProp(baseGroup, "nameSupplierColorSupplier", "Поставщик", baseLM.name, supplierColorSupplier, 1);
@@ -2726,7 +2751,7 @@ public class RomanLogicsModule extends LogicsModule {
                 quantityListSku, 1, articleCompositeItem, 2, colorSupplierItem, 2, sizeSupplierItem, 2,
                 addCProp(NumericClass.get(14, 2), 9999999.0, list, sku), 1, 2,
                 2);
-        quantityListArticleCompositeColorSize.property.setFixedCharWidth(2);
+        quantityListArticleCompositeColorSize.property.setFixedCharWidth(3);
         quantityListArticleCompositeColorSize.setEditAction(ServerResponse.CHANGE, new LAP(new ChangeQuantityListArticleCompositeColorSize()));
 
         itemArticleCompositeColorSize = addAGProp("itemArticleCompositeColorSize", "Item", true, articleCompositeItem, colorSupplierItem, sizeSupplierItem);
@@ -2825,6 +2850,8 @@ public class RomanLogicsModule extends LogicsModule {
 
         grossWeightDirectInvoice = addDProp(baseGroup, "grossWeightDirectInvoice", "Вес брутто", NumericClass.get(14, 3), directInvoice);
         palletNumberDirectInvoice = addDProp(baseGroup, "palletNumberDirectInvoice", "Кол-во паллет", IntegerClass.instance, directInvoice);
+
+        addConstraint(addJProp("Для инвойса должен быть задан вес брутто", baseLM.andNot1, freightDirectInvoice, 1, grossWeightDirectInvoice, 1), false);
 
         freightShippedDirectInvoice = addJProp(baseGroup, "freightShippedDirectInvoice", "Инвойс отгружен", is(freightShipped), freightDirectInvoice, 1);
 
