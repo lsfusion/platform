@@ -656,10 +656,6 @@ dutyGroupDeclaration 'Пошлина (расч.)' (groupDeclaration) = UNION MAX
                                 coeffRateDeclaration(declarationGroupDeclaration(groupDeclaration)) * netWeightGroupDeclaration(groupDeclaration) * dutySumCustomCategory10TypeDuty(customCategory10GroupDeclaration(groupDeclaration), typeDutyDuty()),
                                 sumGroupDeclaration(groupDeclaration) * (dutyPercentCustomCategory10TypeDuty(customCategory10GroupDeclaration(groupDeclaration), typeDutyDuty())/100) PERSISTENT MINCHARWIDTH 15;
 
-VATGroupDeclaration 'НДС (расч.)' (groupDeclaration) = (sumGroupDeclaration(groupDeclaration) + dutyGroupDeclaration(groupDeclaration))*
-                                                       (dataValueSupplierVATCustomCategory10Date(customCategory10GroupDeclaration(groupDeclaration),
-                                                                                                dateDeclaration(declarationGroupDeclaration(groupDeclaration)))/100);
-
 //--------------------------------------- импорт из Декларанта ------------------------------------------------------//
 // стоимости и пошлины
 sumDataGroupDeclaration 'Стоимость' = DATA NUMERIC[14,2](groupDeclaration) MINCHARWIDTH 15;
@@ -720,6 +716,9 @@ VATRangeDataGroupDeclaration(groupDeclaration) <- VATRangeGroupDeclaration(group
 numberVATRangeGroupDeclaration 'Шкала НДС' (groupDeclaration) = numberRange(VATRangeDataGroupDeclaration(groupDeclaration));
 valueVATRangeGroupDeclaration 'НДС (%)' (groupDeclaration) = valueRateRangeDate(VATRangeDataGroupDeclaration(groupDeclaration),
                                                                                 dateDeclaration(declarationGroupDeclaration(groupDeclaration)));
+
+VATGroupDeclaration 'НДС (расч.)' (groupDeclaration) = (sumGroupDeclaration(groupDeclaration) + dutyGroupDeclaration(groupDeclaration))*
+                                                       (valueVATRangeGroupDeclaration (groupDeclaration))/100;
 
 VATRangeDataDeclarationDetail (declarationDetail) = dataSupplierVATCustomCategory10Date(customCategory10DeclarationDetail(declarationDetail),
                                                                                         dateDeclaration(declarationDeclarationDetail(declarationDetail)));
