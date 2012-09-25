@@ -331,7 +331,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
     public static <K> Expr createTypeAdjust(Map<K, ? extends Expr> group, Query query, Map<K, ? extends Expr> implement) {
         assert group.keySet().equals(implement.keySet());
 
-        if(query.type.isSelect() && query.getType(getWhere(group)) instanceof LogicalClass)
+        if(query.type.isSelect() && !query.type.isSelectNotInWhere() && query.getType(getWhere(group)) instanceof LogicalClass)
             query = new Query(query.exprs, query.orders, query.ordersNotNull, GroupType.ANY);
         return createOuterCases(group, query, implement);
     }
