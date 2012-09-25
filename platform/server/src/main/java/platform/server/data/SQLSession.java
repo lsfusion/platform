@@ -809,6 +809,9 @@ public class SQLSession extends MutableObject {
     }
 
     public int deleteRecords(ModifyQuery modify) throws SQLException {
+        if(modify.isEmpty()) // иначе exception кидает
+            return 0;
+
         return executeDML(modify.getDelete(syntax));
     }
 
