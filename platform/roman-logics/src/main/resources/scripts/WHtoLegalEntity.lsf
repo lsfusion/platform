@@ -27,13 +27,15 @@ CLASS invoiceWHOutDetail 'Строка реализации товара по б
 @defineDocument(invoiceWHOut);
 
 @defineDocumentStock(invoiceWHOut, warehouse, 'Склад-отправитель');
-@defineDocumentStockPrefix(invoiceWHOut, customer, 'Покупатель', destination);
+
+customerInvoiceWHOut = DATA customer (invoiceWHOut);
+nameCustomerInvoiceWHOut 'Покупатель' (invoice) = name(customerInvoiceWHOut(invoice));
 
 @defineDocumentPosted(invoiceWHOut);
 
 @defineDocumentDescription (invoiceWHOut, 'Реализация товара по безналичному расчету');
 
-@defineDocumentDetailNumbered(invoiceWHOut);
+@defineDocumentDetailNumber(invoiceWHOut);
 
 @defineDocumentDetailSku(invoiceWHOut, sku);
 
@@ -55,8 +57,7 @@ CLASS invoiceWHOutDetail 'Строка реализации товара по б
 
 //----------------
 
-companyInvoiceWHOut (invoiceWHOut) = companyWarehouse(warehouseInvoiceWHOut(invoiceWHOut));
-@defineDocumentContract(invoiceWHOut, contractSkuCustomer, singleContractSkuCustomerCompanyCustomer, companyInvoiceWHOut, destinationCustomerInvoiceWHOut,
+@defineDocumentContract(invoiceWHOut, contractSkuCustomer, singleContractSkuCustomerCompanyCustomer, companyInvoiceWHOut, customerInvoiceWHOut,
                         'Сторона A договора продажи товаров не соответствуют компании склада-отправителя',
                         'Сторона B договора продажи товаров не соответствуют компании склада-получателя');
 
@@ -83,7 +84,7 @@ FORM invoiceWHOut 'Реализация товара по безналичном
     OBJECTS t = invoiceWHOut FIXED PANEL
 
     PROPERTIES (t) numberObject, seriesObject, dateInvoiceWHOut, timeInvoiceWHOut,
-                   nameWarehouseInvoiceWHOut, nameDestinationCustomerInvoiceWHOut, noteInvoiceWHOut,
+                   nameWarehouseInvoiceWHOut, nameCustomerInvoiceWHOut, noteInvoiceWHOut,
                    countInvoiceWHOutDetailInvoiceWHOut, quantityInvoiceWHOutDetailInvoiceWHOut
 
     OBJECTS d = invoiceWHOutDetail
@@ -106,7 +107,7 @@ DESIGN invoiceWHOut FROM DEFAULT {
                 ADD t.documentHeaderGroup {
                     childConstraints = TO THE RIGHT;
                     ADD PROPERTY (nameWarehouseInvoiceWHOut);
-                    ADD PROPERTY (nameDestinationCustomerInvoiceWHOut);
+                    ADD PROPERTY (nameCustomerInvoiceWHOut);
                     ADD PROPERTY (numberObject);
                     ADD PROPERTY (seriesObject);
                     ADD PROPERTY (dateInvoiceWHOut);
@@ -126,7 +127,7 @@ DESIGN invoiceWHOut FROM DEFAULT {
 FORM invoiceWHOuts 'Реализации товара по безналичному расчету'
     OBJECTS t = invoiceWHOut
     PROPERTIES (t) READONLY isPostedInvoiceWHOut FORCE GRID, numberObject, seriesObject, dateInvoiceWHOut, timeInvoiceWHOut,
-                            nameWarehouseInvoiceWHOut, nameDestinationCustomerInvoiceWHOut, noteInvoiceWHOut,
+                            nameWarehouseInvoiceWHOut, nameCustomerInvoiceWHOut, noteInvoiceWHOut,
                             countInvoiceWHOutDetailInvoiceWHOut, quantityInvoiceWHOutDetailInvoiceWHOut
 
     PROPERTIES (t) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
@@ -198,7 +199,7 @@ sumInvoiceInvoiceWHOutDetail 'Сумма с НДС' (invoiceWHOutDetail) = suppl
 //isCommissionInvoiceWHOutDetail 'Продажа на комиссию' (invoiceWHOutDetail) = isCommissionInvoiceWHOut(invoiceWHOutInvoiceWHOutDetail(invoiceWHOutDetail));
 
 senderConsignment (consignment) += companyWarehouse(warehouseInvoiceWHOut(consignment));
-recipientConsignment (consignment) += destinationCustomerInvoiceWHOut(consignment);
+recipientConsignment (consignment) += customerInvoiceWHOut(consignment);
 consignmentConsignmentDetail (consignmentDetail) += invoiceWHOutInvoiceWHOutDetail(consignmentDetail);
 skuConsignmentDetail (consignmentDetail) += skuInvoiceWHOutDetail (consignmentDetail);
 quantityConsignmentDetail (consignmentDetail) += quantityInvoiceWHOutDetail (consignmentDetail);
@@ -263,7 +264,7 @@ EXTEND FORM invoiceWHOuts
 //-------------------------------Имплементация внутреннего документа----------------------------------//
 
 stockInnerDocument (innerDocument) += warehouseInvoiceWHOut (innerDocument);
-nameDestinationStockInnerDocument (innerDocument) += nameDestinationCustomerInvoiceWHOut (innerDocument);
+nameDestinationStockInnerDocument (innerDocument) += nameCustomerInvoiceWHOut (innerDocument);
 
 dateInnerDocument (innerDocument) += dateInvoiceWHOut (innerDocument);
 

@@ -130,3 +130,46 @@ FORM customers 'Оптовые покупатели'
     PROPERTIES(cu) READONLY name, fullNameLegalEntity, shortNameOwnershipLegalEntity, UNPLegalEntity, numberAccountLegalEntity, addressLegalEntity, phoneLegalEntity
     PROPERTIES(cu) ADDFORM, EDITFORM, delete
 ;
+
+// --------------------------------------------------- Макросы по добавлению покупателя в документы ------------------------------------ //
+META defineDocumentHeaderCustomer (object)
+    customer###object (object) = DATA customer (object);
+    nameCustomer###object 'Покупатель' (object)= name(customer###object(object)) IN documentPrmGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
+END
+META defineDocumentAbstractHeaderCustomer (object)
+    customer###object (object) = ABSTRACT customer (object);
+    nameCustomer###object 'Покупатель' (object)= name(customer###object(object)) IN documentPrmGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
+END
+META defineDocumentInterfaceHeaderCustomer (object)
+    @defineDocumentAbstractHeaderCustomer(object);
+    @defineDocumentHeaderCustomer(user###object);
+    customer###object (object) += customer###user###object(object);
+END
+
+META defineDocumentDetailCustomer (object, detail)
+    customer###detail (idetail) = customer###object(object###detail(idetail));
+    nameCustomer###detail 'Покупатель' (idetail) = nameCustomer###object(object###detail(idetail));
+END
+
+META defineDocumentCustomer (object, detail)
+    @defineDocumentHeaderCustomer(object);
+    @defineDocumentDetailCustomer(object, detail);
+END
+META defineDocumentAbstractCustomer (object, detail)
+    @defineDocumentAbstractHeaderCustomer(object);
+    @defineDocumentDetailCustomer(object, detail);
+END
+META defineDocumentInterfaceCustomer (object, detail)
+    @defineDocumentInterfaceHeaderCustomer(object);
+    @defineDocumentDetailCustomer(object, detail);
+END
+
+META defineDocumentCustomer (object)
+    @defineDocumentCustomer(object, object##Detail);
+END
+META defineDocumentAbstractCustomer (object)
+    @defineDocumentAbstractCustomer(object, object##Detail);
+END
+META defineDocumentInterfaceCustomer (object)
+    @defineDocumentInterfaceCustomer(object, object##Detail);
+END

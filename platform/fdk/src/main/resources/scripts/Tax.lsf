@@ -203,6 +203,55 @@ DESIGN taxes FROM DEFAULT {
     ADD functions.box;
 }
 
+// ----------------------------------------- Макросы по объявлению налогов в документах ---------------------------- //
+
+META defineDocumentDetailVATCustom(detail, countryProp)
+    VAT###detail(detail) = DATA range (detail);
+    numberVAT###detail 'НДС, номер' (detail) = numberRange(VAT###detail(detail));
+    valueVAT###detail 'НДС, %' (detail) = valueRateRangeDate(VAT###detail(detail), date###detail(detail));
+
+    CONSTRAINT taxRange(VAT###detail(detail)) != tax.taxVAT OR
+               countryRange(VAT###detail(detail)) != countryProp###detail(detail)
+               CHECKED BY VAT###detail
+               MESSAGE 'ошибка: Шкала и страна строки должна соответствовать шкале и строке НДС';
+END
+META defineDocumentAbstractDetailVATCustom(detail, countryProp)
+    VAT###detail(detail) = ABSTRACT range (detail) PERSISTENT;
+    numberVAT###detail 'НДС, номер' (detail) = numberRange(VAT###detail(detail));
+    valueVAT###detail 'НДС, %' (detail) = valueRateRangeDate(VAT###detail(detail), date###detail(detail));
+END
+META defineDocumentInterfaceDetailVATCustom(detail, countryProp)
+    @defineDocumentAbstractDetailVATCustom(detail, countryProp);
+    @defineDocumentDetailVATCustom(user###detail, countryProp);
+    VAT###detail(detail) += VAT###user###detail(detail);
+END
+
+META defineDocumentDetailVAT(object, countryProp)
+    @defineDocumentDetailVATCustom(object##Detail, countryProp);
+END
+META defineDocumentAbstractDetailVAT(object, countryProp)
+    @defineDocumentAbstractDetailVATCustom(object##Detail, countryProp);
+END
+META defineDocumentInterfaceDetailVAT(object, countryProp)
+    @defineDocumentInterfaceDetailVATCustom(object##Detail, countryProp);
+END
+
+META defineDocumentDetailVATSumCustom(detail, sumProp, countryProp)
+    VATSum###detail 'Сумма НДС' (detail) = sum###detail(detail) * valueVAT###detail (detail) / 100;
+    sumProp###sum###detail 'Сумма с НДС' (detail) = sum###detail(detail) (+) VATSum###detail(detail);
+END
+META defineDocumentInterfaceDetailVATSumCustom(detail, sumProp, countryProp)
+    @defineDocumentDetailVATSumCustom(detail, sumProp, countryProp);
+    @defineDocumentDetailVATSumCustom(user###detail, sumProp, countryProp);
+END
+
+META defineDocumentDetailVATSum(object, countryProp)
+    @defineDocumentDetailVATSumCustom(object##Detail, object, countryProp);
+END
+META defineDocumentInterfaceDetailVATSum(object, countryProp)
+    @defineDocumentInterfaceDetailVATSumCustom(object##Detail, object, countryProp);
+END
+
 // ------------------------------------------------------- Стандартные данные ----------------------------------- //
 
 loadDefaultVAT 'Добавить значение НДС' = ACTION (idCountry, number, value) {

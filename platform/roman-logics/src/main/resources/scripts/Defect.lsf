@@ -85,8 +85,10 @@ CLASS repairDetail 'Строка передачи в ремонт' : outFIFOSkuL
 @defineDocumentDetailNote(repair);
 
 @defineDocumentStock(repair, stock, 'Склад-отправитель');
-@defineDocumentStockPrefix(repair, repairShop, 'Ремонтная мастерская', destination);
 
+repairShopRepair = DATA repairShop (repair);
+nameRepairShopRepair 'Ремонтная мастерская' (repair) = name(repairShopRepair(repair));
+repairShopRepairDetail (detail) = repairShopRepair(repairRepairDetail(detail));
 
 @defineDocumentPosted(repair);
 
@@ -95,7 +97,7 @@ CLASS repairDetail 'Строка передачи в ремонт' : outFIFOSkuL
 
 @defineDocumentDescription (repair, 'Передача в ремонт');
 
-@defineDocumentDetailNumbered(repair);
+@defineDocumentDetailNumber(repair);
 
 @defineDocumentDetailSku(repair, sku);
 
@@ -119,7 +121,7 @@ META defineDocumentFormDefectProcess(object, stockProp1, stockProp2, formCaption
         OBJECTS t = object FIXED PANEL
 
         PROPERTIES (t) objectClassName, numberObject, seriesObject, date###object, time###object,
-                       name###stockProp1###object, nameDestination###stockProp2###object, note###object,
+                       name###stockProp1###object, name###stockProp2###object, note###object,
                        count###object##Detail###object, quantity###object##Detail###object
 
         OBJECTS d = object##Detail
@@ -146,7 +148,7 @@ META defineDocumentFormDefectProcess(object, stockProp1, stockProp2, formCaption
                         childConstraints = TO THE RIGHT;
                         ADD PROPERTY (objectClassName);
                         ADD PROPERTY (name###stockProp1###object);
-                        ADD PROPERTY (nameDestination###stockProp2###object);
+                        ADD PROPERTY (name###stockProp2###object);
                         ADD PROPERTY (numberObject);
                         ADD PROPERTY (seriesObject);
                         ADD PROPERTY (date###object);
@@ -172,7 +174,7 @@ META defineDocumentFormDefectProcess(object, stockProp1, stockProp2, formCaption
     FORM object##s formsCaption
         OBJECTS t = object
         PROPERTIES (t) READONLY isPosted###object FORCE GRID, numberObject, seriesObject, date###object, time###object,
-                                name###stockProp1###object, nameDestination###stockProp2###object, note###object,
+                                name###stockProp1###object, name###stockProp2###object, note###object,
                                 count###object##Detail###object, quantity###object##Detail###object
 
         PROPERTIES (t) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
@@ -301,8 +303,10 @@ CLASS returnRepairDetail 'Строка возврата из ремонта' : i
 @defineDocumentDetailNote(returnRepair);
 
 @defineDocumentStock(returnRepair, stock, 'Склад-получатель');
-@defineDocumentStockPrefix(returnRepair, repairShop, 'Ремонтная мастерская', destination);
 
+repairShopReturnRepair = DATA repairShop (returnRepair);
+nameRepairShopReturnRepair 'Ремонтная мастерская' (returnRepair) = name(repairShopReturnRepair(returnRepair));
+repairShopReturnRepairDetail (detail) = repairShopReturnRepair(returnRepairReturnRepairDetail(detail));
 
 @defineDocumentPosted(returnRepair);
 
@@ -311,7 +315,7 @@ CLASS returnRepairDetail 'Строка возврата из ремонта' : i
 
 @defineDocumentDescription (returnRepair, 'Возврат из ремонта');
 
-@defineDocumentDetailNumbered(returnRepair);
+@defineDocumentDetailNumber(returnRepair);
 
 @defineDocumentDetailSku(returnRepair, sku);
 
@@ -338,7 +342,7 @@ CONSTRAINT detail IS returnRepairDetail AND NOT repairDetailReturnRepairDetail(d
 CONSTRAINT skuRepairDetail(repairDetailReturnRepairDetail(detail)) != skuReturnRepairDetail(detail) CHECKED BY repairDetailReturnRepairDetail
     MESSAGE 'Товар передачи и возврата из ремонта не соответствуют друд другу';
 
-CONSTRAINT destinationRepairShopRepairDetail(repairDetailReturnRepairDetail(detail)) != destinationRepairShopReturnRepairDetail(detail) CHECKED BY repairDetailReturnRepairDetail
+CONSTRAINT repairShopRepairDetail(repairDetailReturnRepairDetail(detail)) != repairShopReturnRepairDetail(detail) CHECKED BY repairDetailReturnRepairDetail
     MESSAGE 'Ремонтная мастерская передачи и возврата не соответствуют друд другу';
 
 CONSTRAINT stockRepairDetail(repairDetailReturnRepairDetail(detail)) != stockReturnRepairDetail(detail) CHECKED BY repairDetailReturnRepairDetail
@@ -350,12 +354,12 @@ quantityReturnQuantityRepairDetail 'К-во (возврат)' (repairDetail) = G
 
 diffQuantityRepairDetail 'К-во (в ремонте)' (repairDetail) =  quantityRepairDetail(repairDetail) (-) quantityReturnQuantityRepairDetail(repairDetail) AND isPostedRepairDetail(repairDetail);
 quantityOverdueRepairDetail 'К-во (просрочено)' (repairDetail) = diffQuantityRepairDetail(repairDetail) AND diffQuantityRepairDetail(repairDetail) > 0 AND dateToRepairDetail(repairDetail) < currentDate();
-quantityOverdueRepairShopSku 'К-во (просрочено)' (repairShop, sku)= GROUP SUM  quantityOverdueRepairDetail(detail) BY destinationRepairShopRepairDetail(detail), skuRepairDetail(detail) PERSISTENT;
+quantityOverdueRepairShopSku 'К-во (просрочено)' (repairShop, sku)= GROUP SUM  quantityOverdueRepairDetail(detail) BY repairShopRepairDetail(detail), skuRepairDetail(detail) PERSISTENT;
 quantityOverdueRepairShop 'К-во (просрочено)' (repairShop) = GROUP SUM  quantityOverdueRepairShopSku(repairShop, sku) BY repairShop;
 
 usefulRepair 'Был товар в отгрузке' (repair) = GROUP SUM 1 IF skuRepairDetail(idetail) == skuReturnRepairDetail(detail) AND
     stockRepairDetail(idetail) == stockReturnRepairDetail(detail) AND
-    destinationRepairShopRepairDetail(idetail) == destinationRepairShopReturnRepairDetail(detail) AND
+    repairShopRepairDetail(idetail) == repairShopReturnRepairDetail(detail) AND
     diffQuantityRepairDetail(idetail) >0
         BY repairRepairDetail(idetail) PERSISTENT;
 
@@ -365,7 +369,7 @@ FORM repairDetailReturnRepairDetail 'Передачи в ремонт'
 
     OBJECTS dc = repair
     PROPERTIES (dc) READONLY isPostedRepair FORCE GRID, numberObject, seriesObject, dateRepair, timeRepair,
-                            nameStockRepair, nameDestinationRepairShopRepair, noteRepair
+                            nameStockRepair, nameRepairShopRepair, noteRepair
 
 
     OBJECTS dd = repairDetail
@@ -422,10 +426,10 @@ skipASkuLedger (ledger) += skipSkuLedgerReturnRepairDetail(ledger);
 // Подсчет текущего остатка  Рем.мастерская
 
 expenseRepairShopSku 'Расход' (repairShop, sku) = GROUP SUM quantityReturnRepairDetail(detail) IF isPostedReturnRepairDetail(detail)
-    BY destinationRepairShopReturnRepairDetail(detail), skuReturnRepairDetail(detail);
+    BY repairShopReturnRepairDetail(detail), skuReturnRepairDetail(detail);
 
 parishRepairShopSku 'Приход' (repairShop, sku) = GROUP SUM quantityRepairDetail(detail) IF isPostedRepairDetail(detail)
-    BY destinationRepairShopRepairDetail(detail), skuRepairDetail(detail);
+    BY repairShopRepairDetail(detail), skuRepairDetail(detail);
 
 currentBalanceRepairShopSku 'Текущий остаток' (repairShop, sku) =
     parishRepairShopSku(repairShop, sku) (-)
@@ -473,10 +477,10 @@ FORM repairShops 'Ремонтные мастерские'
 
 
     FILTERS  skuRepairDetail(d) == sk,
-             destinationRepairShopRepairDetail(d) == s,
+             repairShopRepairDetail(d) == s,
              isPostedRepairDetail(d),
              skuReturnRepairDetail(dd) == sk,
-             destinationRepairShopReturnRepairDetail(dd)==s,
+             repairShopReturnRepairDetail(dd)==s,
              isPostedReturnRepairDetail(dd)
 
     FILTERGROUP filters
@@ -527,8 +531,10 @@ CLASS dryCleaningDetail 'Строка передачи в химчистку' : 
 @defineDocumentDetailNote(dryCleaning);
 
 @defineDocumentStock(dryCleaning, stock, 'Склад-отправитель');
-@defineDocumentStockPrefix(dryCleaning, cleaningStock, 'Химчистка', destination);
 
+cleaningStockDryCleaning = DATA cleaningStock (dryCleaning);
+nameCleaningStockDryCleaning 'Ремонтная мастерская' (dryCleaning) = name(cleaningStockDryCleaning(dryCleaning));
+cleaningStockDryCleaningDetail (detail) = cleaningStockDryCleaning(dryCleaningDryCleaningDetail(detail));
 
 @defineDocumentPosted(dryCleaning);
 
@@ -537,7 +543,7 @@ CLASS dryCleaningDetail 'Строка передачи в химчистку' : 
 
 @defineDocumentDescription (dryCleaning, 'Передача в химчистку');
 
-@defineDocumentDetailNumbered(dryCleaning);
+@defineDocumentDetailNumber(dryCleaning);
 
 @defineDocumentDetailSku(dryCleaning, sku);
 
@@ -581,8 +587,10 @@ CLASS returnDryCleaningDetail 'Строка возврата из химчист
 @defineDocumentDetailNote(returnDryCleaning);
 
 @defineDocumentStock(returnDryCleaning, stock, 'Склад-получатель');
-@defineDocumentStockPrefix(returnDryCleaning, cleaningStock, 'Химчистка', destination);
 
+cleaningStockReturnDryCleaning = DATA cleaningStock (returnDryCleaning);
+nameCleaningStockReturnDryCleaning 'Ремонтная мастерская' (returnDryCleaning) = name(cleaningStockReturnDryCleaning(returnDryCleaning));
+cleaningStockReturnDryCleaningDetail (detail) = cleaningStockReturnDryCleaning(returnDryCleaningReturnDryCleaningDetail(detail));
 
 @defineDocumentPosted(returnDryCleaning);
 
@@ -591,7 +599,7 @@ CLASS returnDryCleaningDetail 'Строка возврата из химчист
 
 @defineDocumentDescription (returnDryCleaning, 'Возврат из химчистки');
 
-@defineDocumentDetailNumbered(returnDryCleaning);
+@defineDocumentDetailNumber(returnDryCleaning);
 
 @defineDocumentDetailSku(returnDryCleaning, sku);
 
@@ -618,7 +626,7 @@ CONSTRAINT detail IS returnDryCleaningDetail AND NOT dryCleaningDetailReturnDryC
 CONSTRAINT skuDryCleaningDetail(dryCleaningDetailReturnDryCleaningDetail(detail)) != skuReturnDryCleaningDetail(detail) CHECKED BY dryCleaningDetailReturnDryCleaningDetail
     MESSAGE 'Товар передачи и возврата из химчистки не соответствуют друд другу';
 
-CONSTRAINT destinationCleaningStockDryCleaningDetail(dryCleaningDetailReturnDryCleaningDetail(detail)) != destinationCleaningStockReturnDryCleaningDetail(detail) CHECKED BY dryCleaningDetailReturnDryCleaningDetail
+CONSTRAINT cleaningStockDryCleaningDetail(dryCleaningDetailReturnDryCleaningDetail(detail)) != cleaningStockReturnDryCleaningDetail(detail) CHECKED BY dryCleaningDetailReturnDryCleaningDetail
     MESSAGE 'Химчистка передачи и возврата не соответствуют друд другу';
 
 CONSTRAINT stockDryCleaningDetail(dryCleaningDetailReturnDryCleaningDetail(detail)) != stockReturnDryCleaningDetail(detail) CHECKED BY dryCleaningDetailReturnDryCleaningDetail
@@ -630,12 +638,12 @@ quantityReturnQuantityDryCleaningDetail 'К-во (возврат)' (dryCleaningD
 
 diffQuantityDryCleaningDetail 'К-во в химчистке' (dryCleaningDetail) =  quantityDryCleaningDetail(dryCleaningDetail) (-) quantityReturnQuantityDryCleaningDetail(dryCleaningDetail) AND isPostedDryCleaningDetail(dryCleaningDetail);
 quantityOverdueDryCleaningDetail 'К-во (просрочено)' (dryCleaningDetail) = diffQuantityDryCleaningDetail(dryCleaningDetail) AND diffQuantityDryCleaningDetail(dryCleaningDetail) >0 AND dateToDryCleaningDetail(dryCleaningDetail) < currentDate();
-quantityOverdueCleaningStockSku 'К-во (просрочено)' (cleaningStock, sku)= GROUP SUM  quantityOverdueDryCleaningDetail(detail) BY destinationCleaningStockDryCleaningDetail(detail), skuDryCleaningDetail(detail) PERSISTENT;
+quantityOverdueCleaningStockSku 'К-во (просрочено)' (cleaningStock, sku)= GROUP SUM  quantityOverdueDryCleaningDetail(detail) BY cleaningStockDryCleaningDetail(detail), skuDryCleaningDetail(detail) PERSISTENT;
 quantityOverdueCleaningStock 'К-во (просрочено)' (cleaningStock) = GROUP SUM  quantityOverdueCleaningStockSku(cleaningStock, sku) BY cleaningStock;
 
 usefulDryCleaning 'Был товар в отгрузке' (dryCleaning) = GROUP SUM 1 IF skuDryCleaningDetail(idetail) == skuReturnDryCleaningDetail(detail) AND
     stockDryCleaningDetail(idetail) == stockReturnDryCleaningDetail(detail) AND
-    destinationCleaningStockDryCleaningDetail(idetail) == destinationCleaningStockReturnDryCleaningDetail(detail) AND
+    cleaningStockDryCleaningDetail(idetail) == cleaningStockReturnDryCleaningDetail(detail) AND
     diffQuantityDryCleaningDetail(idetail) >0
         BY dryCleaningDryCleaningDetail(idetail) PERSISTENT;
 
@@ -645,7 +653,7 @@ FORM dryCleaningDetailReturnDryCleaningDetail 'Передачи в химчис�
 
     OBJECTS dc = dryCleaning
     PROPERTIES (dc) READONLY isPostedDryCleaning FORCE GRID, numberObject, seriesObject, dateDryCleaning, timeDryCleaning,
-                            nameStockDryCleaning, nameDestinationCleaningStockDryCleaning, noteDryCleaning
+                            nameStockDryCleaning, nameCleaningStockDryCleaning, noteDryCleaning
 
 
     OBJECTS dd = dryCleaningDetail
@@ -700,10 +708,10 @@ skipASkuLedger (ledger) += skipSkuLedgerReturnDryCleaningDetail(ledger);
 // Подсчет текущего остатка  Химчистка
 
 expenseCleaningStockSku 'Расход' (cleaningStock, sku) = GROUP SUM quantityReturnDryCleaningDetail(detail) IF isPostedReturnDryCleaningDetail(detail)
-    BY destinationCleaningStockReturnDryCleaningDetail(detail), skuReturnDryCleaningDetail(detail);
+    BY cleaningStockReturnDryCleaningDetail(detail), skuReturnDryCleaningDetail(detail);
 
 parishCleaningStockSku 'Приход' (cleaningStock, sku) = GROUP SUM quantityDryCleaningDetail(detail) IF isPostedDryCleaningDetail(detail)
-    BY destinationCleaningStockDryCleaningDetail(detail), skuDryCleaningDetail(detail);
+    BY cleaningStockDryCleaningDetail(detail), skuDryCleaningDetail(detail);
 
 currentBalanceCleaningStockSku 'Текущий остаток' (cleaningStock, sku) =
     parishCleaningStockSku(cleaningStock, sku) (-)
@@ -751,10 +759,10 @@ FORM cleaningStocks 'Химчистки'
 
 
     FILTERS  skuDryCleaningDetail(d) == sk,
-             destinationCleaningStockDryCleaningDetail(d) == s,
+             cleaningStockDryCleaningDetail(d) == s,
              isPostedDryCleaningDetail(d),
              skuReturnDryCleaningDetail(dd) == sk,
-             destinationCleaningStockReturnDryCleaningDetail(dd)==s,
+             cleaningStockReturnDryCleaningDetail(dd)==s,
              isPostedReturnDryCleaningDetail(dd)
 
     FILTERGROUP filters

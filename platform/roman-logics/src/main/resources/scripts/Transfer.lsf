@@ -29,9 +29,7 @@ CLASS transferOutBatchDetail 'Строка перемещения товаров
 @defineDocumentCurrency(transferOut);
 @deriveDocumentCurrency(transferOut, stock);
 
-companyTransferOut (transferOut) = companyStock(stockTransferOut(transferOut));
-
-CONSTRAINT companyTransferOut(transferOut) != companyStock(destinationStockTransferOut(transferOut)) CHECKED BY destinationStockTransferOut
+CONSTRAINT companyTransferOut(transferOut) != destinationCompanyTransferOut(transferOut) CHECKED BY destinationStockTransferOut
     MESSAGE 'Перемещение товаров должно идти между складами одной компании';
 
 @defineDocumentDetailSkuArticle(transferOut);

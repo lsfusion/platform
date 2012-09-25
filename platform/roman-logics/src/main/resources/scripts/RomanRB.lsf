@@ -115,6 +115,10 @@ NAVIGATOR {
         ADD taxes;
     }
 
+    purchaseClassifier {
+        ADD contractSkus;
+    }
+
     customs {
         customClassifier {
             ADD customStores;

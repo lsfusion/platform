@@ -25,11 +25,11 @@ CLASS innerOrderDetail 'Строка внутреннего заказа';
 @defineDocument(innerOrder);
 
 @defineDocumentStock(innerOrder, stock, 'Склад-отправитель');
-@defineDocumentStockPrefix(innerOrder, stock, 'Склад-получатель', destination);
+@defineDocumentStock(innerOrder, stock, 'Склад-получатель', destination);
 
 @defineDocumentDescription (innerOrder, 'Внутренний заказ');
 
-@defineDocumentDetailNumbered(innerOrder);
+@defineDocumentDetailNumber(innerOrder);
 
 @defineDocumentDetailSku(innerOrder, sku);
 
@@ -176,7 +176,7 @@ destinationCompanyOrderPicking(orderPicking) = companyStock(destinationStockOrde
 
 @defineDocumentAggregationHeaderNumber(innerOrder, orderPicking);
 
-@defineDocumentDescriptionCustom(orderPicking, orderPickingDetail, seriesNumberObject, 'Подбор товара по заказу');
+@defineDocumentDescription(orderPicking, orderPickingDetail, seriesNumberObject, 'Подбор товара по заказу');
 
 @defineDocumentDetailSku(orderPicking, sku);
 
@@ -842,22 +842,22 @@ innerOrderDiffInnerOrderDiffEDetail (detail) = innerOrderDiffInnerOrderRec(inner
 innerOrderDiffInnerOrderDiffSDetail (detail) = innerOrderDiffInnerOrderRec(innerOrderRecInnerOrderDiffSDetail(detail));
 
 @defineDocumentAggregationHeaderTime(innerOrderRec, innerOrderDiff);
-@defineDocumentDetailTimeCustom(innerOrderDiff, innerOrderDiffEDetail);
-@defineDocumentDetailTimeCustom(innerOrderDiff, innerOrderDiffSDetail);
+@defineDocumentDetailTime(innerOrderDiff, innerOrderDiffEDetail);
+@defineDocumentDetailTime(innerOrderDiff, innerOrderDiffSDetail);
 
 @defineDocumentAggregationHeaderNumberCustom(innerOrderRec, innerOrderDiff, innerOrderRec);
 
-@defineDocumentHeaderDescriptionCustom(innerOrderDiff, seriesNumberInnerOrderDiff, 'Акт расхождений приемки товаров по внутреннему заказу');
-@defineDocumentDetailDescriptionCustom(innerOrderDiff, innerOrderDiffEDetail);
-@defineDocumentDetailDescriptionCustom(innerOrderDiff, innerOrderDiffSDetail);
+@defineDocumentHeaderDescription(innerOrderDiff, seriesNumberInnerOrderDiff, 'Акт расхождений приемки товаров по внутреннему заказу');
+@defineDocumentDetailDescription(innerOrderDiff, innerOrderDiffEDetail);
+@defineDocumentDetailDescription(innerOrderDiff, innerOrderDiffSDetail);
 
 @defineDocumentAggregationHeaderStock(innerOrderRec, innerOrderDiff, stock, 'Склад-получатель');
-@defineDocumentDetailStockCustom(innerOrderDiff, innerOrderDiffEDetail, stock, 'Склад-получатель');
-@defineDocumentDetailStockCustom(innerOrderDiff, innerOrderDiffSDetail, stock, 'Склад-получатель');
+@defineDocumentDetailStock(innerOrderDiff, innerOrderDiffEDetail, stock, 'Склад-получатель');
+@defineDocumentDetailStock(innerOrderDiff, innerOrderDiffSDetail, stock, 'Склад-получатель');
 
 @defineDocumentAggregationHeaderPosted(innerOrderRec, innerOrderDiff);
-@defineDocumentDetailPostedCustom(innerOrderDiff, innerOrderDiffEDetail);
-@defineDocumentDetailPostedCustom(innerOrderDiff, innerOrderDiffSDetail);
+@defineDocumentDetailPosted(innerOrderDiff, innerOrderDiffEDetail);
+@defineDocumentDetailPosted(innerOrderDiff, innerOrderDiffSDetail);
 
 skuInnerOrderDiffDetail (detail) = UNION EXCLUSIVE skuInnerOrderDiffEDetail(detail), skuInnerOrderDiffSDetail(detail) PERSISTENT;
 quantityInnerOrderDiffDetail 'Кол-во' (detail) = UNION EXCLUSIVE quantityInnerOrderDiffEDetail(detail), quantityInnerOrderDiffSDetail(detail) PERSISTENT;

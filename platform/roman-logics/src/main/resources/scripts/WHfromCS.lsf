@@ -34,7 +34,7 @@ CLASS WHfromCSIDetail 'Строка прихода на склад' : inLIFOSkuL
 
 @defineDocumentAggregationHeaderNumber(CStoWH, WHfromCSI);
 
-@defineDocumentDescriptionCustom(WHfromCSI, WHfromCSIDetail, seriesNumberWHfromCSI, 'Поступление товара с СВХ');
+@defineDocumentDescription(WHfromCSI, WHfromCSIDetail, seriesNumberWHfromCSI, 'Поступление товара с СВХ');
 
 @defineDocumentDetailIndex(WHfromCSI);
 
@@ -741,22 +741,22 @@ WHfromCSDWHfromCSDEDetail (WHfromCSDDetail) = WHfromCSDWHfromCSR(WHfromCSRWHfrom
 WHfromCSDWHfromCSDSDetail (WHfromCSDDetail) = WHfromCSDWHfromCSR(WHfromCSRWHfromCSDSDetail(WHfromCSDDetail));
 
 @defineDocumentAggregationHeaderTime(WHfromCSR, WHfromCSD);
-@defineDocumentDetailTimeCustom(WHfromCSD, WHfromCSDEDetail);
-@defineDocumentDetailTimeCustom(WHfromCSD, WHfromCSDSDetail);
+@defineDocumentDetailTime(WHfromCSD, WHfromCSDEDetail);
+@defineDocumentDetailTime(WHfromCSD, WHfromCSDSDetail);
 
 @defineDocumentAggregationHeaderNumberCustom(WHfromCSR, WHfromCSD, WHfromCSR);
 
-@defineDocumentHeaderDescriptionCustom(WHfromCSD, seriesNumberWHfromCSD, 'Акт расхождений на приемке на склад с СВХ');
-@defineDocumentDetailDescriptionCustom(WHfromCSD, WHfromCSDEDetail);
-@defineDocumentDetailDescriptionCustom(WHfromCSD, WHfromCSDSDetail);
+@defineDocumentHeaderDescription(WHfromCSD, seriesNumberWHfromCSD, 'Акт расхождений на приемке на склад с СВХ');
+@defineDocumentDetailDescription(WHfromCSD, WHfromCSDEDetail);
+@defineDocumentDetailDescription(WHfromCSD, WHfromCSDSDetail);
 
 @defineDocumentAggregationHeaderStock(WHfromCSR, WHfromCSD, stock, 'Склад');
-@defineDocumentDetailStockCustom(WHfromCSD, WHfromCSDEDetail, stock, 'Склад');
-@defineDocumentDetailStockCustom(WHfromCSD, WHfromCSDSDetail, stock, 'Склад');
+@defineDocumentDetailStock(WHfromCSD, WHfromCSDEDetail, stock, 'Склад');
+@defineDocumentDetailStock(WHfromCSD, WHfromCSDSDetail, stock, 'Склад');
 
 @defineDocumentAggregationHeaderPosted(WHfromCSR, WHfromCSD);
-@defineDocumentDetailPostedCustom(WHfromCSD, WHfromCSDEDetail);
-@defineDocumentDetailPostedCustom(WHfromCSD, WHfromCSDSDetail);
+@defineDocumentDetailPosted(WHfromCSD, WHfromCSDEDetail);
+@defineDocumentDetailPosted(WHfromCSD, WHfromCSDSDetail);
 
 skuWHfromCSDDetail (WHfromCSDDetail) = UNION EXCLUSIVE skuWHfromCSDEDetail(WHfromCSDDetail), skuWHfromCSDSDetail(WHfromCSDDetail) PERSISTENT;
 quantityWHfromCSDDetail 'Кол-во' (WHfromCSDDetail) = UNION EXCLUSIVE quantityWHfromCSDEDetail(WHfromCSDDetail), quantityWHfromCSDSDetail(WHfromCSDDetail) PERSISTENT;
@@ -816,7 +816,7 @@ transferPriceActWHfromCSITransferPriceActWHfromCSIDetail (transferPriceActWHfrom
 @defineDocumentAggregationHeaderNumber(CStoWH, transferPriceActWHfromCSI);
 @defineDocumentAggregationHeaderNote(CStoWH, transferPriceActWHfromCSI);
 
-@defineDocumentDescriptionCustom(transferPriceActWHfromCSI, transferPriceActWHfromCSIDetail, seriesNumberTransferPriceActWHfromCSI, 'Акт расценки (поставка)');
+@defineDocumentDescription(transferPriceActWHfromCSI, transferPriceActWHfromCSIDetail, seriesNumberTransferPriceActWHfromCSI, 'Акт расценки (поставка)');
 
 @defineDocumentDetailIndex(transferPriceActWHfromCSI);
 

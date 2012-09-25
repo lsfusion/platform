@@ -32,44 +32,74 @@ GROUP documentPrmGroup 'Параметры документа': publicGroup;
 
 // Макросы по созданию документов
 
+// ----- Tables ----- //
+
 META defineDocumentTables (object)
     TABLE object (object);
     TABLE object##Detail (object##Detail);
 END
+META defineDocumentAbstractTables (object)
+    @defineDocumentTables(user###object);
+END
+META defineDocumentInterfaceTables (object)
+    @defineDocumentAbstractTables(object);
+    @defineDocumentTables(object);
+END
 
-META defineDocumentRelationCustom (object, detail)
-    object###detail = DATA object (detail) IN idGroup NOT NULL DELETE;
+// ----- Relation ----- //
+META defineDocumentRelation (object, detail, caption)
+    object###detail = DATA object (detail) NOT NULL DELETE;
     in###object###detail(iobject, idetail) = object###detail(idetail) == iobject;
 
-    @defineDocumentHeaderCountCustom(object, detail);
+    @defineDocumentHeaderCount(object, detail);
+END
+META defineDocumentAbstractRelation(object, detail, caption)
+    object###detail = ABSTRACT object (detail) PERSISTENT;
+    in###object###detail(iobject, idetail) = object###detail(idetail) == iobject;
+
+    @defineDocumentHeaderCount(object, detail);
+END
+META defineDocumentInterfaceRelation(object, detail, caption)
+    @defineDocumentAbstractRelation(object, detail, caption);
+    @defineDocumentRelation(user###object, user###detail, caption);
+    object###detail(idetail) += user###object##User###detail(idetail);
+END
+
+META defineDocumentRelation (object, detail)
+    @defineDocumentRelation(object, detail, );
+END
+META defineDocumentAbstractRelation (object, detail)
+    @defineDocumentAbstractRelation(object, detail, );
+END
+META defineDocumentInterfaceRelation (object, detail)
+    @defineDocumentInterfaceRelation(object, detail, );
 END
 
 META defineDocumentRelation (object)
-    @defineDocumentRelationCustom(object, object##Detail);
+    @defineDocumentRelation(object, object##Detail);
+END
+META defineDocumentAbstractRelation (object)
+    @defineDocumentAbstractRelation(object, object##Detail);
+END
+META defineDocumentInterfaceRelation (object)
+    @defineDocumentInterfaceRelation(object, object##Detail);
 END
 
-META defineDocumentRelationCustomCaption (object, detail, caption)
-    object###detail = DATA object (detail) IN idGroup NOT NULL DELETE;
-    in###object###detail(iobject, idetail) = object###detail(idetail) == iobject;
-
-    @defineDocumentHeaderCountCustomCaption(object, detail, caption);
-END
-
-META defineDocumentHeaderCountCustomCaption (object, detail, caption)
+// Header
+META defineDocumentHeaderCount (object, detail, caption)
     count###detail###object 'Количество строк в документе'###caption (iobject) =
         GROUP SUM 1 IF object###detail(idetail) == iobject BY iobject PERSISTENT IN documentSumGroup;
 END
 
-META defineDocumentHeaderCountCustom (object, detail)
-    count###detail###object 'Количество строк в документе' (iobject) =
-        GROUP SUM 1 IF object###detail(idetail) == iobject BY iobject PERSISTENT IN documentSumGroup;
+META defineDocumentHeaderCount (object, detail)
+    @defineDocumentHeaderCount(object, detail, );
 END
 
 META defineDocumentHeaderCount (object)
-    @defineDocumentHeaderCountCustom(object, object##Detail);
+    @defineDocumentHeaderCount(object, object##Detail);
 END
-// Время
 
+// ----- Time ----- //
 META defineDocumentHeaderTime (object)
     date###object 'Дата документа' = DATA DATE (object) IN documentHeaderGroup;
     date###object (object) <- currentDate() WHEN ASSIGNED(object AS object);
@@ -79,20 +109,46 @@ META defineDocumentHeaderTime (object)
 
     dateTime###object 'Дата/время документа' (object) = toDateTime(date###object(object), time###object(object)) PERSISTENT;
 END
+META defineDocumentAbstractHeaderTime (object)
+    date###object 'Дата документа' = ABSTRACT DATE (object) IN documentHeaderGroup PERSISTENT;
+    time###object 'Время документа' = ABSTRACT TIME (object) IN documentHeaderGroup PERSISTENT;
+    dateTime###object 'Дата/время документа' (object) = toDateTime(date###object(object), time###object(object)) PERSISTENT;
+END
+META defineDocumentInterfaceHeaderTime(object)
+    @defineDocumentAbstractHeaderTime(object);
+    @defineDocumentHeaderTime(user###object);
+    date###object(object) += date##User###object(object);
+    time###object(object) += time##User###object(object);
+END
 
-META defineDocumentDetailTimeCustom (object, detail)
+META defineDocumentDetailTime (object, detail)
     dateTime###detail 'Дата/время документа' (detail) = dateTime###object(object###detail(detail));
     date###detail 'Дата документа' = date###object(object###detail(detail));
     time###detail 'Время документа' = time###object(object###detail(detail));
 END
+META defineDocumentInterfaceDetailTime (object, detail)
+    @defineDocumentDetailTime(object, detail);
+    @defineDocumentDetailTime(user###object, user###detail);
+END
 
 META defineDocumentDetailTime (object)
-    @defineDocumentDetailTimeCustom(object, object##Detail);
+    @defineDocumentDetailTime(object, object##Detail);
+END
+META defineDocumentInterfaceDetailTime (object)
+    @defineDocumentInterfaceDetailTime(object, object##Detail);
 END
 
 META defineDocumentTime (object)
     @defineDocumentHeaderTime(object);
     @defineDocumentDetailTime(object);
+END
+META defineDocumentAbstractTime (object)
+    @defineDocumentAbstractHeaderTime(object);
+    @defineDocumentDetailTime(object);
+END
+META defineDocumentInterfaceTime (object)
+    @defineDocumentInterfaceHeaderTime(object);
+    @defineDocumentInterfaceDetailTime(object);
 END
 
 // Примечание
@@ -100,15 +156,30 @@ END
 META defineDocumentHeaderNote (object)
     note###object 'Примечание' = DATA STRING[100] (object) IN additionalInfo MINCHARWIDTH 30 PREFCHARWIDTH 80 IN documentPrmGroup;
 END
+META defineDocumentAbstractHeaderNote (object)
+    note###object 'Примечание' = ABSTRACT STRING[100] (object) IN additionalInfo MINCHARWIDTH 30 PREFCHARWIDTH 80 IN documentPrmGroup;
+END
+META defineDocumentInterfaceHeaderNote(object)
+    @defineDocumentAbstractHeaderNote(object);
+    @defineDocumentHeaderNote(user###object);
+    note###object(object) += note##User###object(object);
+END
 
 META defineDocumentDetailNote (object)
     note###object##Detail 'Примечание' = DATA STRING[100] (object##Detail) MINCHARWIDTH 30 PREFCHARWIDTH 80;
 END
+META defineDocumentAbstractDetailNote (object)
+    note###object##Detail 'Примечание' = ABSTRACT STRING[100] (object##Detail) MINCHARWIDTH 30 PREFCHARWIDTH 80;
+END
+META defineDocumentInterfaceDetailNote(object)
+    @defineDocumentAbstractDetailNote(object);
+    @defineDocumentDetailNote(user###object);
+    note###object##Detail(object) += note##User###object##Detail(object);
+END
 
-// Проведение
+// Posted
 
 META defineDocumentHeaderPosted (object)
-
     isDraft###object 'Не проведен' (object) = object IS object AND NOT object IS object##Posted PERSISTENT;
     isPosted###object 'Проведен' (object) = object IS object##Posted PERSISTENT;
 
@@ -121,29 +192,55 @@ META defineDocumentHeaderPosted (object)
     unpost###object 'Распровести' (object) = [ACTION (object) NEWSESSION AUTOAPPLY { CHANGECLASS object TO object; } ] (object)
                                       IF object IS object##Posted TOOLBAR CONFIRM;
 END
+META defineDocumentAbstractHeaderPosted (object)
+    isPosted###object 'Проведен' (object) = ABSTRACT BOOLEAN(object) PERSISTENT;
+    isDraft###object 'Не проведен' (object) = object IS object AND isPosted###object(object) PERSISTENT;
+END
+META defineDocumentInterfaceHeaderPosted (object)
+    @defineDocumentAbstractHeaderPosted(object);
+    @defineDocumentHeaderPosted(user###object);
+    isPosted###object(object) += isPosted###user###object(object);
+END
 
-META defineDocumentDetailPostedCustom (object, detail)
+META defineDocumentDetailPosted (object, detail)
     isPosted###detail 'Проведен' (idetail) = isPosted###object(object###detail(idetail));
     isNotPosted###detail 'Не проведен' (idetail) = idetail IS detail AND NOT isPosted###detail(idetail);
 END
 
 META defineDocumentDetailPosted (object)
-    @defineDocumentDetailPostedCustom(object, object##Detail);
+    @defineDocumentDetailPosted(object, object##Detail);
 END
 
 META defineDocumentPosted (object)
     @defineDocumentHeaderPosted(object);
     @defineDocumentDetailPosted(object);
 END
+META defineDocumentAbstractPosted (object)
+    @defineDocumentAbstractHeaderPosted(object);
+    @defineDocumentDetailPosted(object);
+END
+META defineDocumentInterfacePosted (object)
+    @defineDocumentInterfaceHeaderPosted(object);
+    @defineDocumentDetailPosted(object);
+END
 
-META defineDocumentDetailIndexCustom (object, detail)
+// Index
+
+META defineDocumentDetailIndex (object, detail)
     index###detail 'Номер строки' (idetail) =
         PARTITION SUM 1 IF idetail IS detail BY object###detail(idetail)
         ORDER idetail IN recognizeGroup MINCHARWIDTH 4 PREFCHARWIDTH 4 IN recognizeGroup;
 END
+META defineDocumentInterfaceDetailIndex (object, detail)
+    @defineDocumentDetailIndex(object, detail);
+    @defineDocumentDetailIndex(user###object, user###detail);
+END
 
 META defineDocumentDetailIndex (object)
-    @defineDocumentDetailIndexCustom(object, object##Detail);
+    @defineDocumentDetailIndex(object, object##Detail);
+END
+META defineDocumentInterfaceDetailIndex (object)
+    @defineDocumentInterfaceDetailIndex(object, object##Detail);
 END
 
 META defineDocumentDetailActionsCustom (object, idetail)
@@ -162,81 +259,110 @@ META defineDocumentDetailActions (object)
     } IN documentPrmGroup TOOLBAR CONFIRM;
 END
 
-META defineDocumentDetailNumberedCustom (object, idetail)
+// ------- Number ----- //
+
+META defineDocumentAbstractHeaderNumber(object)
+    number###object 'Номер' = ABSTRACT STRING[18] (object) IN numberedGroup MINCHARWIDTH 7;
+    series###object 'Серия' = ABSTRACT STRING[2] (object) IN numberedGroup FIXEDCHARWIDTH 3;
+    seriesNumber###object 'Серия/Номер' (object) = ustring2(series###object(object), number###object(object)) MINCHARWIDTH 7 PREFCHARWIDTH 10 MAXCHARWIDTH 20 PERSISTENT;
+END
+META defineDocumentInterfaceHeaderNumber(object)
+    @defineDocumentAbstractHeaderNumber(object);
+    number###object(object) += numberObject(object) IF object IS user###object;
+    series###object(object) += seriesObject(object) IF object IS user###object;
+END
+
+META defineDocumentDetailNumber (object, idetail)
     number###idetail 'Номер' (detail) = numberObject(object###idetail(detail));
     series###idetail 'Серия' (detail) = seriesObject(object###idetail(detail));
     seriesNumber###idetail 'Серия/номер' (detail) = seriesNumberObject(object###idetail(detail));
 END
 
-
-META defineDocumentDetailNumbered (object)
-    number###object##Detail 'Номер' (detail) = numberObject(object###object##Detail(detail));
-    series###object##Detail 'Серия' (detail) = seriesObject(object###object##Detail(detail));
-    seriesNumber###object##Detail 'Серия/номер' (detail) = seriesNumberObject(object###object##Detail(detail));
+META defineDocumentDetailNumber (object)
+    @defineDocumentDetailNumber(object, object##Detail);
 END
 
-META defineDocumentDetailQuantityCustomPrefix (idetail, prefix, caption)
-    prefix###quantity###idetail 'Кол-во'###caption = DATA NUMERIC[14,3] (idetail);
+META defineDocumentAbstractNumber(object, detail)
+    @defineDocumentAbstractHeaderNumber(object);
+    @defineDocumentDetailNumber(object, detail);
 END
-META defineDocumentDetailQuantityCustom (idetail)
-    @defineDocumentDetailQuantityCustomPrefix(idetail, , );
-END
-
-
-META defineDocumentDetailQuantityPrefix (object, prefix, caption)
-    prefix###quantity###object##Detail 'Кол-во'###caption = DATA NUMERIC[14,3] (object##Detail);
-END
-META defineDocumentDetailQuantity (object)
-    @defineDocumentDetailQuantityPrefix(object, , );
+META defineDocumentInterfaceNumber(object, detail)
+    @defineDocumentInterfaceHeaderNumber(object);
+    @defineDocumentDetailNumber(object, detail);
 END
 
-META defineDocumentHeaderQuantityCustomPrefix (object, detail, prefix, caption)
-    prefix###quantity###detail###object 'Кол-во (всего)'###caption (object) = GROUP SUM prefix###quantity###detail(idetail) BY object###detail(idetail) IN documentSumGroup PERSISTENT;
+META defineDocumentAbstractNumber(object)
+    @defineDocumentAbstractNumber(object, object##Detail);
 END
-META defineDocumentHeaderQuantityCustom (object, detail)
-    @defineDocumentHeaderQuantityCustomPrefix(object, detail, , );
-END
-META defineDocumentHeaderQuantityPrefix (object, prefix, caption)
-    @defineDocumentHeaderQuantityCustomPrefix(object, object##Detail, prefix, caption);
-END
-META defineDocumentHeaderQuantity (object)
-    @defineDocumentHeaderQuantityCustomPrefix(object, object##Detail, , );
+META defineDocumentInterfaceNumber(object)
+    @defineDocumentInterfaceNumber(object, object##Detail);
 END
 
-META defineDocumentQuantity(object)
-    @defineDocumentDetailQuantity(object);
-    @defineDocumentHeaderQuantity(object);
-END
+// ----- Description ----- //
 
-META defineDocumentHeaderDescriptionCustom(object, numberProp, caption)
+META defineDocumentHeaderDescription(object, numberProp, caption)
     description###object 'Название документа' (object) =
         [FORMULA STRING[200]  ' CAST($1 AS TEXT) || \' № \' || CAST($2 AS TEXT) || \' от \' || CAST($3 AS TEXT)'](
         caption, numberProp(object), date###object(object)) MINCHARWIDTH 30 PREFCHARWIDTH 50;
 END
-
-META defineDocumentDescriptionHeader(object, caption)
-    @defineDocumentHeaderDescriptionCustom(object, seriesNumberObject, caption);
+META defineDocumentAbstractHeaderDescription(object)
+    description###object 'Название документа' (object) = ABSTRACT STRING[200] (object) MINCHARWIDTH 30 PREFCHARWIDTH 50 PERSISTENT;
+END
+META defineDocumentInterfaceHeaderDescription(object, numberProp, caption)
+    @defineDocumentAbstractHeaderDescription(object);
+    @defineDocumentHeaderDescription(user###object, numberProp, caption);
+    description###object (object) += description###user###object(object);
 END
 
-META defineDocumentDetailDescriptionCustom(object, detail)
+META defineDocumentHeaderDescription(object, caption)
+    @defineDocumentHeaderDescription(object, seriesNumberObject, caption);
+END
+META defineDocumentInterfaceHeaderDescription(object, caption)
+    @defineDocumentInterfaceHeaderDescription(object, seriesNumberObject, caption);
+END
+
+META defineDocumentDetailDescription(object, detail)
     description###detail 'Название документа' (detail) = description###object(object###detail(detail)) MINCHARWIDTH 30 PREFCHARWIDTH 50;
 END
 
-META defineDocumentDescriptionCustom(object, detail, numberProp, caption)
-    @defineDocumentHeaderDescriptionCustom(object, numberProp, caption);
-    @defineDocumentDetailDescriptionCustom(object, detail);
+META defineDocumentDescription(object, detail, numberProp, caption)
+    @defineDocumentHeaderDescription(object, numberProp, caption);
+    @defineDocumentDetailDescription(object, detail);
+END
+META defineDocumentAbstractDescription(object, detail)
+    @defineDocumentAbstractHeaderDescription(object);
+    @defineDocumentDetailDescription(object, detail);
+END
+META defineDocumentInterfaceDescription(object, detail, numberProp, caption)
+    @defineDocumentInterfaceHeaderDescription(object, numberProp, caption);
+    @defineDocumentDetailDescription(object, detail);
 END
 
 META defineDocumentDescription (object, caption)
-    @defineDocumentDescriptionCustom(object, object##Detail, seriesNumberObject, caption);
+    @defineDocumentDescription(object, object##Detail, seriesNumberObject, caption);
+END
+META defineDocumentAbstractDescription (object)
+    @defineDocumentAbstractDescription(object, object##Detail);
+END
+META defineDocumentInterfaceDescription (object, caption)
+    @defineDocumentInterfaceDescription(object, object##Detail, seriesNumberObject, caption);
 END
 
-META defineDocumentIsCustom(object, detail)
+// ----- Is ----- //
+META defineDocumentIs(object, detail)
     is###object (iobject) = iobject IS object;
     is###detail (idetail) = idetail IS detail;
 END
+META defineDocumentInterfaceIs(object, detail)
+    @defineDocumentIs(object, detail);
+    @defineDocumentIs(user###object, user###detail);
+END
+
 META defineDocumentIs(object)
-    @defineDocumentIsCustom(object, object##Detail);
+    @defineDocumentIs(object, object##Detail);
+END
+META defineDocumentInterfaceIs(object)
+    @defineDocumentInterfaceIs(object, object##Detail);
 END
 
 META defineDocument (object)
@@ -251,6 +377,30 @@ META defineDocument (object)
     @defineDocumentIs(object);
 
     @defineDocumentDetailActions(object);
+END
+META defineDocumentAbstract (object)
+    @defineDocumentAbstractTables(object);
+
+    @defineDocumentAbstractRelation(object);
+    @defineDocumentDetailIndex(object);
+
+    @defineDocumentAbstractTime(object);
+    @defineDocumentAbstractHeaderNote(object);
+
+    @defineDocumentIs(object);
+END
+META defineDocumentInterface (object)
+    @defineDocumentInterfaceTables(object);
+
+    @defineDocumentInterfaceRelation(object);
+    @defineDocumentInterfaceDetailIndex(object);
+
+    @defineDocumentInterfaceTime(object);
+    @defineDocumentInterfaceHeaderNote(object);
+
+    @defineDocumentInterfaceIs(object);
+
+    @defineDocumentDetailActions(user###object);
 END
 
 // ------------------------- Основной - агрегированный документы ---------------------------------- //
@@ -332,9 +482,4 @@ END
 // Description
 META defineDocumentAggregationHeaderDescription (primObject, aggrObject)
     description###aggrObject 'Название документа' (object) = description###primObject(primObject###aggrObject(object));
-END
-
-// Quantity
-META defineDocumentAggregationDetailQuantity (primObject, aggrObject)
-    quantity###aggrObject##Detail 'Кол-во' (detail) = quantity###primObject##Detail(primObject##Detail###aggrObject##Detail(detail)) PERSISTENT;
 END

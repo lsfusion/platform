@@ -24,310 +24,64 @@ NAMESPACE Sale;
 
 //----------------------------------------------- Поставка ---------------------------------------------------//
 
-GROUP invoiceGroup 'Информация о накладной' : baseGroup;
+CLASS ABSTRACT shipment 'Поставка';
+CLASS ABSTRACT shipmentDetail 'Строка поставки' : outFIFOSkuLedger;
 
-CLASS ABSTRACT shipment 'Поставка' : outAccountDocumentLedger, consignment, historyObject, numeratedDocument;
-CLASS ABSTRACT shipmentDetail 'Строка поставки' : outFIFOSkuLedger, consignmentDetail;
-
-CLASS userShipment 'Поставка (польз.)' : shipment;
+CLASS userShipment 'Поставка (польз.)' : shipment, historyObject, numeratedDocument;
 CLASS userShipmentDetail 'Строка поставки (польз.)' : shipmentDetail;
 CLASS userShipmentPosted 'Закрытая поставка (польз.)' : userShipment, postedObject;
 
-CLASS invoiceShipment 'Поставка на основе инвойса' : shipment;
-CLASS invoiceShipmentDetail 'Строка поставки на основе инвойса' : shipmentDetail;
-CLASS invoiceShipmentPosted 'Закрытая поставка на основе инвойса' : invoiceShipment, postedObject;
+@defineDocumentInterface(shipment);
 
+@defineDocumentInterfaceNumber(shipment);
 
-@defineDocumentTables(shipment);
-@defineDocumentTables(userShipment);
-@defineDocumentTables(invoiceShipment);
+@defineDocumentInterfaceDataStock(shipment, stock, 'Склад');
+@defineDocumentInterfacePosted(shipment);
 
+@defineDocumentInterfaceDescription(shipment, 'Поставка');
 
-//-- аггр.объект
-@defineDocumentAggregation(invoice, invoiceShipment, createShipmentInvoice);
-@defineDocumentAggregationStockPrefix(invoice, invoiceShipment, stock, 'Склад', , );
-@defineDocumentAggregationStockPrefix(invoice, invoiceShipment, customer, 'Покупатель', , );
+@defineDocumentInterfaceCurrency(shipment);
+@deriveDocumentCurrency(userShipment, stock);
 
-@defineDocumentAggregationPosted(invoice, invoiceShipment);
-numberInvoiceShipment 'Номер документа' (invoiceShipment) = numberInvoice(invoiceInvoiceShipment(invoiceShipment));
-seriesInvoiceShipment 'Серия документа' (invoiceShipment) = seriesInvoice(invoiceInvoiceShipment(invoiceShipment));
-seriesNumberInvoiceShipment 'Серия/номер документ' (invoiceShipment) = seriesNumberInvoice(invoiceInvoiceShipment(invoiceShipment));
+@defineDocumentInterfaceCustomer(shipment);
+@defineDocumentInterfaceContract(shipment, contractSkuCustomer, singleContractSkuCustomerCompanyCustomer, companyShipment, customerShipment,
+                                 'Сторона A договора поставки не соответствует компании склада-отправителя',
+                                 'Сторона B договора поставки товаров не соответствует покупателю');
 
-noteInvoiceInvoiceShipment 'Примечание' (invoiceShipment) = noteInvoice(invoiceInvoiceShipment(invoiceShipment));
-noteInvoiceInvoiceShipmentDetail 'Примечание' (invoiceShipmentDetail) = noteInvoiceDetail(invoiceDetailInvoiceShipmentDetail(invoiceShipmentDetail));
+@defineDocumentInterfaceDetailSku(shipment, sku);
+@defineDocumentInterfaceDetailBatch(shipment, batch);
 
-currencyInvoiceShipment  (invoiceShipment) = currencyInvoice(invoiceInvoiceShipment(invoiceShipment));
-currencyInvoiceShipmentDetail  (invoiceShipmentDetail) = currencyInvoiceDetail(invoiceDetailInvoiceShipmentDetail(invoiceShipmentDetail));
+@defineDocumentInterfaceDetailQuantity(shipment);
 
-contractSkuCustomerInvoiceShipment  (invoiceShipment) = contractSkuCustomerInvoice(invoiceInvoiceShipment(invoiceShipment));
-isCommissionInvoiceShipment  (invoiceShipment) = isCommissionInvoice(invoiceInvoiceShipment(invoiceShipment));
+@defineDocumentInterfaceDetailPrice(shipment);
+@deriveDocumentDetailPriceBatch(shipment);
 
-accountPriceInvoiceShipmentDetail  (invoiceShipmentDetail) = accountPriceInvoiceDetail(invoiceDetailInvoiceShipmentDetail(invoiceShipmentDetail));
-supplierVATInvoiceShipmentDetail  (invoiceShipmentDetail) = supplierVATInvoiceDetail(invoiceDetailInvoiceShipmentDetail(invoiceShipmentDetail));
+@defineDocumentInterfaceDetailSum(shipment);
 
-@defineDocumentDescriptionCustom(invoiceShipment, invoiceShipmentDetail, seriesNumberInvoiceShipment, 'Поставка на основе инвойса');
-@defineDocumentDetailIndex(invoiceShipment);
-@defineDocumentAggregationDetailSku(invoice, invoiceShipment, sku);
-@defineDocumentAggregationDetailBatch (invoice, invoiceShipment);
-@defineDocumentAggregationDetailQuantity(invoice, invoiceShipment);
-@defineDocumentHeaderQuantity(invoiceShipment);
-@defineDocumentHeaderSkuQuantity(invoiceShipment, sku);
-
-//--
-shipmentShipmentDetail = ABSTRACT shipment (shipmentDetail) IN idGroup NOT NULL DELETE;
-inShipmentDetailShipmentDetail(shipment, shipmentDetail) = shipmentShipmentDetail(shipmentDetail) == shipment;
-@defineDocumentHeaderCountCustomCaption (shipment, shipmentDetail, );
-@defineDocumentDetailIndexCustom(shipment, shipmentDetail);
-
-userShipmentUserShipmentDetail = DATA userShipment (userShipmentDetail) IN idGroup NOT NULL DELETE;
-@defineDocumentDetailActions (shipment);
-
-shipmentShipmentDetail(detail) += userShipmentUserShipmentDetail(detail);
-//--  Взаимосвязь накладной и поставки
-invoiceShipment = ABSTRACT invoice (shipment);
-//descriptionInvoiceShipment 'Накладная' (shipment) = descriptionInvoice(invoiceShipment(shipment)) IN invoiceGroup;
-
-invoiceUserShipment = DATA invoice (userShipment);
-invoiceShipment(shipment) += invoiceUserShipment(shipment);
-invoiceShipment(shipment) += invoiceInvoiceShipment(shipment);
-//--
-dateShipment 'Дата документа' = ABSTRACT DATE (shipment) IN documentHeaderGroup;
-timeShipment 'Время документа' = ABSTRACT TIME (shipment) IN documentHeaderGroup;
-
-dateTimeShipment 'Дата/время документа' (shipment) = toDateTime(dateShipment(shipment), timeShipment(shipment)) PERSISTENT;
-
-@defineDocumentDetailTimeCustom (shipment, shipmentDetail);
-@defineDocumentTime(userShipment);
-
-dateShipment(shipment) += dateUserShipment(shipment);
-dateShipment(shipment) += dateInvoiceShipment(shipment);
-
-timeShipment(shipment) += timeUserShipment(shipment);
-timeShipment(shipment) += timeInvoiceShipment(shipment);
-//--
-numberShipment 'Номер' = ABSTRACT STRING[18] (shipment) IN numberedGroup MINCHARWIDTH 7;
-seriesShipment 'Серия' = ABSTRACT STRING[2] (shipment) IN numberedGroup FIXEDCHARWIDTH 3;
-seriesNumberShipment 'Серия/Номер' (shipment) = ustring2(seriesShipment(shipment), numberShipment(shipment)) MINCHARWIDTH 7 PREFCHARWIDTH 10 MAXCHARWIDTH 20 PERSISTENT;
-
-numberShipment(shipment) += numberObject(shipment) IF shipment IS userShipment;
-numberShipment(shipment) += numberInvoiceShipment(shipment);
-
-seriesShipment(shipment) += seriesObject(shipment) IF shipment IS userShipment;
-seriesShipment(shipment) += seriesInvoiceShipment(shipment);
-
-//--
-noteShipment 'Примечание' = ABSTRACT STRING[100] (shipment) IN additionalInfo MINCHARWIDTH 30 PREFCHARWIDTH 80 IN documentPrmGroup;
-@defineDocumentHeaderNote (userShipment);
-noteShipment(shipment) += noteUserShipment(shipment);
-noteShipment(shipment) += noteInvoiceInvoiceShipment(shipment);
-//--
-noteShipmentDetail 'Примечание' = ABSTRACT STRING[100] (shipmentDetail) MINCHARWIDTH 30 PREFCHARWIDTH 80;
-@defineDocumentDetailNote (userShipment);
-noteShipmentDetail(shipmentDetail) += noteUserShipmentDetail(shipmentDetail);
-noteShipmentDetail(shipmentDetail) += noteInvoiceInvoiceShipmentDetail(shipmentDetail);
-
-@defineDocumentDetailActions(userShipment);
-//--
-stockShipment = ABSTRACT stock(shipment) AUTOSET;
-nameStockShipment 'Склад' (shipment) = name(stockShipment(shipment)) IN documentHeaderGroup
-    MINCHARWIDTH 20 PREFCHARWIDTH 40;
-stockUserShipment = DATA stock(userShipment) AUTOSET;
-stockShipment(shipment) += stockUserShipment(shipment);
-stockShipment(shipment) += stockInvoiceShipment(shipment);
-
-stockShipmentDetail = ABSTRACT stock(shipmentDetail) AUTOSET;
-nameStockShipmentDetail 'Склад' (shipmentDetail) = name(stockShipmentDetail(shipmentDetail)) IN documentHeaderGroup
-    MINCHARWIDTH 20 PREFCHARWIDTH 40;
-dataStockUserShipmentDetail = DATA stock(userShipmentDetail) AUTOSET;
-
-stockUserShipmentDetail (userShipmentDetail) = UNION OVERRIDE stockUserShipment(userShipmentUserShipmentDetail(userShipmentDetail)),
-                                                                 dataStockUserShipmentDetail (userShipmentDetail);
-stockShipmentDetail(shipmentDetail) += stockUserShipmentDetail(shipmentDetail);
-stockShipmentDetail(shipmentDetail) += stockInvoiceShipmentDetail(shipmentDetail);
-
-companyShipment (shipment) = companyStock(stockShipment(shipment));
-nameCompanyShipment 'Компания' (shipment)= name(companyShipment(shipment));
-//--
-isPostedShipment 'Проведен' (shipment) = ABSTRACT BOOLEAN (shipment) PERSISTENT;
-@defineDocumentPosted(userShipment);
-isPostedShipment(shipment) += isPostedUserShipment(shipment);
-isPostedShipment(shipment) += isPostedInvoiceShipment(shipment);
-//--
-customerShipment = ABSTRACT customer(shipment) AUTOSET;
-nameCustomerShipment 'Покупатель' (shipment) = name(customerShipment(shipment)) IN documentHeaderGroup
-    MINCHARWIDTH 20 PREFCHARWIDTH 40;
-nameCustomerShipmentDetail 'Покупатель' (shipmentDetail) = nameCustomerShipment(shipmentShipmentDetail(shipmentDetail));
-customerUserShipment = DATA customer(userShipment) AUTOSET;
-customerShipment(shipment) += customerUserShipment(shipment);
-customerShipment(shipment) += customerInvoiceShipment(shipment);
-//--
-CONSTRAINT invoiceShipment(shipment) AND NOT (customerShipment(shipment) == customerInvoice(invoiceShipment(shipment)) OR companyShipment(shipment) == companyInvoice(invoiceShipment(shipment)))
-    CHECKED BY invoiceShipment
-        MESSAGE 'Покупатель и поставщик в заказе и накладной должны соответствовать друг другу';
-
-//--
-descriptionShipment 'Название документа' = ABSTRACT STRING[200] (shipment) PERSISTENT IN recognizeGroup MINCHARWIDTH 30 PREFCHARWIDTH 60;
-descriptionShipmentDetail 'Название документа' (shipmentDetail) = descriptionShipment(shipmentShipmentDetail(shipmentDetail)) MINCHARWIDTH 30 PREFCHARWIDTH 50;
-@defineDocumentHeaderDescriptionCustom(userShipment, seriesNumberObject, 'Поставка (польз.)');
-descriptionShipment (shipment) += descriptionUserShipment(shipment);
-descriptionShipment (shipment) += descriptionInvoiceShipment(shipment);
-//--
-currencyShipment = ABSTRACT currency (shipment);
-nameCurrencyShipment 'Валюта' (shipment)= name(currencyShipment(shipment)) IN documentPrmGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
-@defineDocumentHeaderCurrency (userShipment);
-@deriveDocumentCurrency (userShipment, stock);
-currencyShipment(shipment)+= currencyUserShipment(shipment);
-currencyShipment(shipment)+= currencyInvoiceShipment(shipment);
-
-currencyShipmentDetail = ABSTRACT currency (shipmentDetail);
-nameCurrencyShipmentDetail 'Валюта' (shipmentDetail) = name(currencyShipmentDetail(shipmentDetail));
-dataCurrencyUserShipmentDetail = DATA currency(userShipmentDetail) AUTOSET;
-    dataCurrencyUserShipmentDetail (userShipmentDetail) <- currencyStock(stockUserShipmentDetail(userShipmentDetail)) WHEN CHANGED(stockUserShipmentDetail(userShipmentDetail));
-currencyUserShipmentDetail (userShipmentDetail) = UNION OVERRIDE currencyUserShipment(userShipmentUserShipmentDetail(userShipmentDetail)),
-                                                                 dataCurrencyUserShipmentDetail (userShipmentDetail);
-currencyShipmentDetail (shipmentDetail) += currencyUserShipmentDetail (shipmentDetail);
-currencyShipmentDetail (shipmentDetail) += currencyInvoiceShipmentDetail(shipmentDetail);
-//--
-contractSkuCustomerShipment = ABSTRACT contractSkuCustomer (shipment);
-numberContractSkuCustomerShipment 'Номер договора' (shipment) = numberContract(contractSkuCustomerShipment(shipment)) IN documentPrmGroup;
-isCommissionShipment 'Продажа на комиссию' = ABSTRACT BOOLEAN (shipment) IN documentPrmGroup;
-
-@defineDocumentContract (userShipment, contractSkuCustomer, singleContractSkuCustomerCompanyCustomer, companyShipment, customerShipment,
-                        'Сторона A договора продажи товаров не соответствует компании склада-отправителя',
-                        'Сторона B договора продажи товаров не соответствует покупателю');
-
-contractSkuCustomerShipment (shipment) += contractSkuCustomerUserShipment (shipment);
-contractSkuCustomerShipment (shipment) += contractSkuCustomerInvoiceShipment(shipment);
-
-isCommissionShipment(shipment)+= isCommissionUserShipment(shipment);
-isCommissionShipment(shipment)+= isCommissionInvoiceShipment(shipment);
-
-//--
-//@defineDocumentDetailNumbered(writeOff);
-skuShipmentDetail = ABSTRACT sku (shipmentDetail);
-nameSkuShipmentDetail 'SKU' (shipmentDetail) = nameSku(skuShipmentDetail(shipmentDetail)) IN recognizeGroup;
-idBarcodeSkuShipmentDetail 'Штрих-код' (shipmentDetail) = idBarcodeSku(skuShipmentDetail(shipmentDetail)) IN recognizeGroup;
-shortNameUOMSkuShipmentDetail 'Ед. изм.' (shipmentDetail) = shortNameUOMSku(skuShipmentDetail(shipmentDetail)) IN recognizeGroup;
-@defineDocumentDetailSku (userShipment, sku);
-skuShipmentDetail(shipmentDetail) +=  skuUserShipmentDetail(shipmentDetail);
-skuShipmentDetail(shipmentDetail) +=  skuInvoiceShipmentDetail(shipmentDetail);
-//--
-batchShipmentDetail = ABSTRACT batch (shipmentDetail);
-descriptionBatchShipmentDetail 'Партия' (shipmentDetail) = descriptionBatch(batchShipmentDetail(shipmentDetail)) MINCHARWIDTH 30 PREFCHARWIDTH 40;
-
-//CONSTRAINT skuBatch(batchShipmentDetail(detail)) != skuShipmentDetail(detail) CHECKED BY batchShipmentDetail
-//    MESSAGE 'Товар партии строки должен соответствовать SKU строки';
-//
-//CONSTRAINT batchShipmentDetail(detail) AND NOT skuShipmentDetail(detail) CHECKED BY batchShipmentDetail
-//    MESSAGE 'Для строки задана парктия, но не задан товар';
-@defineDocumentDetailBatchCustom(userShipmentDetail, batch);
-batchShipmentDetail (shipmentDetail) += batchUserShipmentDetail(shipmentDetail);
-batchShipmentDetail (shipmentDetail) += batchInvoiceShipmentDetail(shipmentDetail);
-//--
-quantityShipmentDetail 'Кол-во' = ABSTRACT NUMERIC[14,3] (shipmentDetail);
-@defineDocumentDetailQuantity(userShipment);
-quantityShipmentDetail(shipmentDetail) += quantityUserShipmentDetail(shipmentDetail);
-quantityShipmentDetail(shipmentDetail) += quantityInvoiceShipmentDetail(shipmentDetail);
-//--
-priceShipmentDetail 'Цена' = ABSTRACT NUMERIC[14,2] (shipmentDetail) IN baseGroup;
-@defineDocumentDetailPrice(userShipment);
-priceShipmentDetail (shipmentDetail) += priceUserShipmentDetail(shipmentDetail);
-//priceShipmentDetail (shipmentDetail) += accountPriceInvoiceShipmentDetail(shipmentDetail);
-//-- Учетная цена
-accountPriceShipmentDetail 'Цена учетная' = ABSTRACT NUMERIC[14,2] (shipmentDetail);
-
-accountPriceUserShipmentDetail 'Цена учетная' = DATA NUMERIC[14,2] (userShipmentDetail);
-
-accountPriceUserShipmentDetail (detail)  <- IF batchShipmentDetail(detail)
-                THEN priceBatchStockDateTime(batchShipmentDetail(detail), stockShipmentDetail(detail), dateTimeShipmentDetail(detail))
-                ELSE priceSkuStockDateTime(skuShipmentDetail(detail), stockShipmentDetail(detail), dateTimeShipmentDetail(detail))
-                WHEN CHANGED(skuShipmentDetail(detail)) OR CHANGED(batchShipmentDetail(detail)) OR CHANGED(stockShipmentDetail(detail)) OR CHANGED (dateTimeShipmentDetail(detail));
-
-accountPriceShipmentDetail(shipmentDetail) += accountPriceUserShipmentDetail (shipmentDetail);
-accountPriceShipmentDetail(shipmentDetail) += accountPriceInvoiceShipmentDetail(shipmentDetail);
-//--  НДС
-supplierVATShipmentDetail(shipmentDetail) = ABSTRACT range (shipmentDetail);
-numberSupplierVATShipmentDetail 'НДС поставщика, номер' (shipmentDetail) = numberRange(supplierVATShipmentDetail(shipmentDetail)) IN priceDetailGroup;
-valueSupplierVATShipmentDetail 'НДС поставщика,%' (shipmentDetail) = valueRateRangeDate
-    (supplierVATShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail)) IN priceDetailGroup;
-
-//@defineDocumentDetailInvoicePrice (userInvoice, stock);
-//supplierVATShipmentDetail(shipmentDetail) += supplierVATUserShipmentDetail(shipmentDetail);
-//supplierVATShipmentDetail(shipmentDetail) += supplierVATInvoiceShipmentDetail(shipmentDetail);
-
-//--
-@defineDocumentDetailSum(shipment);
-@defineDocumentHeaderQuantity(shipment);
+@defineDocumentInterfaceHeaderQuantity(shipment);
 @defineDocumentHeaderSkuQuantity(shipment, sku);
-@defineDocumentHeaderSum(shipment);
-
+@defineDocumentInterfaceHeaderSum(shipment);
 
 @defineAddDetailDialogSkuStock(userShipment, sku, stock, dialogSku);
 @defineAddDetailDialogBarcode(userShipment, sku);
-//@defineAddDetailDialogTerminal(writeOff, sku);
 
-toFillInvoiceUserShipment 'Заполнить поставку на основании накладной' =  ACTION (userShipment) {
-    FOR invoiceInvoiceDetail(invoiceDetail) == invoiceUserShipment(userShipment) DO {
-        ADDOBJ userShipmentDetail;
-        FOR d == addedObject() DO {
-            SET userShipmentUserShipmentDetail(d) <- userShipment;
-            SET skuUserShipmentDetail(d) <-skuInvoiceDetail(invoiceDetail);
-            SET quantityUserShipmentDetail (d) <- quantityInvoiceDetail(invoiceDetail);
-            SET priceUserShipmentDetail (d) <- priceInvoiceDetail(invoiceDetail);
-            SET stockUserShipmentDetail (d) <- stockInvoiceDetail(invoiceDetail);
-            SET batchUserShipmentDetail (d) <- batchInvoiceDetail(invoiceDetail);
-        };
-    };
-} CONFIRM IN invoiceGroup;
+// --------------------------- Формы --------------------------------- //
 
-
-// --------------------------- Формы Поставка ---------------------------------
-
-FORM invoiceDialogForm 'Накладная'
-
-    OBJECTS u = userShipment FIXED PANEL
-    OBJECTS i = invoice
-    PROPERTIES (u) READONLY isPostedInvoice FORCE GRID, objectClassName, numberInvoice, seriesInvoice, dateInvoice, timeInvoice,
-                   nameStockInvoice, nameCustomerInvoice, sumInvoiceDetailInvoice, countInvoiceDetailInvoice, quantityInvoiceDetailInvoice, noteInvoice
-
-    OBJECTS d=userInvoiceDetail
-    PROPERTIES (d) READONLY indexInvoiceDetail, idBarcodeSkuInvoiceDetail, nameSkuInvoiceDetail, shortNameUOMSkuInvoiceDetail,
-                   quantityInvoiceDetail, priceInvoiceDetail, sumInvoiceDetail
-
-
-    FILTERS companyShipment(u) == companyInvoice(i),
-            customerShipment(u) == customerInvoice(i),
-            invoiceInvoiceDetail(d) == i
-;
-
-DESIGN invoiceDialogForm FROM DEFAULT {
-    main{
-        preferredSize = (1024, 768);
-    }
-}
-
-dialogInvoiceUserShipment 'Заказ' (userShipment) = ACTION (userShipment) {
-    FORM invoiceDialogForm OBJECTS u = userShipment MODAL;
-    IF formResult() == formResult.ok THEN {
-        SET invoiceUserShipment(userShipment) <- chosenObject('i');
-    }
-}
-
-FORM userShipment 'Поставка (польз.)'
+FORM userShipment 'Поставка'
     OBJECTS s = userShipment FIXED PANEL
-    PROPERTIES (s) objectClassName, numberShipment, seriesShipment, dateShipment, timeShipment, nameNumeratorObject,
-                   nameStockShipment, nameCustomerShipment, nameCurrencyShipment, noteShipment, sumShipmentDetailShipment,
-                   countShipmentDetailShipment, quantityShipmentDetailShipment, numberContractSkuCustomerShipment,
-                   descriptionInvoiceShipment ON CHANGE EXEC dialogInvoiceUserShipment(s), toFillInvoiceUserShipment
+    PROPERTIES (s) objectClassName, nameStockUserShipment, nameNumeratorObject, numberObject, seriesObject, dateUserShipment, timeUserShipment,
+                   nameCustomerUserShipment, nameCurrencyUserShipment, noteUserShipment,
+                   numberContractSkuCustomerUserShipment, isCommissionUserShipment,
+                   countUserShipmentDetailUserShipment, quantityUserShipmentDetailUserShipment, sumUserShipmentDetailUserShipment
 
     OBJECTS d = userShipmentDetail
-    PROPERTIES (d) indexShipmentDetail, idBarcodeSkuShipmentDetail, nameSkuShipmentDetail, shortNameUOMSkuShipmentDetail,
-                   quantityShipmentDetail, priceShipmentDetail, sumShipmentDetail, descriptionBatchShipmentDetail, nameStockShipmentDetail, ADDOBJ, delete
-    PROPERTIES (d) accountPriceShipmentDetail, numberSupplierVATShipmentDetail, valueSupplierVATShipmentDetail
+    PROPERTIES (d) indexUserShipmentDetail, idBarcodeSkuUserShipmentDetail, nameSkuUserShipmentDetail, shortNameUOMSkuUserShipmentDetail,
+                   descriptionBatchUserShipmentDetail, quantityUserShipmentDetail, priceUserShipmentDetail, sumUserShipmentDetail,
+                   nameStockUserShipmentDetail, ADDOBJ, delete
 
-    PROPERTIES(s) TODRAW d addDetailDialogSkuStockUserShipmentDetailUserShipment, //addDetailDialogTerminalWriteOffDetailWriteOff,
-                           addDetailInputBarcodeUserShipmentDetailUserShipment, deleteShipmentDetailShipment
-    FILTERS inShipmentDetailShipmentDetail(s, d)
+    PROPERTIES(s) TODRAW d addDetailDialogSkuStockUserShipmentDetailUserShipment,
+                           addDetailInputBarcodeUserShipmentDetailUserShipment, deleteUserShipmentDetailUserShipment
+    FILTERS userShipmentUserShipmentDetail(d) == s
 
     EVENTS
         ON OK EXEC prePostUserShipment(s)
@@ -336,7 +90,6 @@ FORM userShipment 'Поставка (польз.)'
 ;
 
 DESIGN userShipment FROM DEFAULT{
-
     main {
         preferredSize = (1024, 768);
 
@@ -348,24 +101,18 @@ DESIGN userShipment FROM DEFAULT{
 
                 ADD s.documentHeaderGroup {
                     childConstraints = TO THE RIGHT;
-                    ADD PROPERTY(objectClassName);
-                    ADD PROPERTY(nameStockShipment);
-                    ADD PROPERTY(nameCustomerShipment);
+                    ADD PROPERTY(objectClassName) { preferredCharWidth = 10; }
+                    ADD PROPERTY(nameStockUserShipment);
                     ADD PROPERTY(nameNumeratorObject);
-                    ADD PROPERTY(numberShipment);
-                    ADD PROPERTY(seriesShipment);
-                    ADD PROPERTY(dateShipment);
-                    ADD PROPERTY(timeShipment);
+                    ADD PROPERTY(numberObject);
+                    ADD PROPERTY(seriesObject);
+                    ADD PROPERTY(dateUserShipment);
+                    ADD PROPERTY(timeUserShipment);
                 }
 
-                NEW headerRow2 {
+                NEW headerColumn2 {
                     childConstraints = TO THE RIGHT;
-                    ADD s.documentPrmGroup {
-                        childConstraints = TO THE RIGHT;
-                    }
-                    ADD s.invoiceGroup {
-                        childConstraints = TO THE BOTTOM;
-                    }
+                    ADD s.documentPrmGroup;
                 }
             }
 
@@ -383,21 +130,24 @@ DESIGN userShipment FROM DEFAULT{
     }
 }
 
-FORM userShipments 'Поставки (польз.)'
+FORM userShipments 'Поставки'
     OBJECTS s = userShipment
-    PROPERTIES (s) READONLY isPostedShipment FORCE GRID, objectClassName, numberShipment, seriesShipment, dateShipment, timeShipment,
-                   nameStockShipment, nameCustomerShipment, nameCurrencyShipment, noteShipment, sumShipmentDetailShipment,
-                   countShipmentDetailShipment, quantityShipmentDetailShipment, numberContractSkuCustomerShipment, isCommissionShipment
+    PROPERTIES (s) READONLY isPostedUserShipment FORCE GRID, objectClassName, numberObject, seriesObject, dateUserShipment, timeUserShipment,
+                            nameStockUserShipment, nameCustomerUserShipment, nameCurrencyUserShipment, noteUserShipment,
+                            numberContractSkuCustomerUserShipment, isCommissionUserShipment,
+                            countUserShipmentDetailUserShipment, quantityUserShipmentDetailUserShipment, sumUserShipmentDetailUserShipment
 
     PROPERTIES (s) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
     PROPERTIES (s) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
 
-    OBJECTS d=userShipmentDetail
-    PROPERTIES (d) READONLY indexShipmentDetail, idBarcodeSkuShipmentDetail, nameSkuShipmentDetail, shortNameUOMSkuShipmentDetail,
-                   quantityShipmentDetail, priceShipmentDetail, sumShipmentDetail, descriptionBatchShipmentDetail, nameStockShipmentDetail
+    OBJECTS d = userShipmentDetail
+    PROPERTIES (d) READONLY indexUserShipmentDetail, idBarcodeSkuUserShipmentDetail, nameSkuUserShipmentDetail, shortNameUOMSkuUserShipmentDetail,
+                            descriptionBatchUserShipmentDetail, quantityUserShipmentDetail, priceUserShipmentDetail, sumUserShipmentDetail,
+                            nameStockUserShipmentDetail
+    FILTERS userShipmentUserShipmentDetail(d) == s
 
-    FILTERS inShipmentDetailShipmentDetail(s, d)
+    DIALOG shipment OBJECT s
 ;
 
 DESIGN userShipments FROM DEFAULT {
@@ -434,6 +184,111 @@ DESIGN userShipments FROM DEFAULT {
         }
     }
 }
+
+//--  Связь накладной и поставки
+invoiceShipment = ABSTRACT invoice (shipment);
+invoiceUserShipment = DATA invoice (userShipment);
+invoiceShipment(shipment) += invoiceUserShipment(shipment);
+
+CONSTRAINT customerUserShipment(shipment) != customerInvoice(invoiceUserShipment(shipment)) OR
+           companyUserShipment(shipment) != companyInvoice(invoiceUserShipment(shipment))
+    CHECKED BY invoiceUserShipment
+        MESSAGE 'Покупатель и компания в накладной и поставке должны соответствовать друг другу';
+
+GROUP invoiceGroup 'Информация о накладной' : baseGroup;
+descriptionInvoiceUserShipment 'Накладная' (userShipment) = descriptionInvoice(invoiceUserShipment(userShipment)) IN invoiceGroup;
+fillInvoiceUserShipment 'Заполнить поставку на основании накладной' =  ACTION (userShipment) {
+    FOR invoiceInvoiceDetail(invoiceDetail) == invoiceUserShipment(userShipment) DO {
+        ADDOBJ userShipmentDetail;
+        FOR d == addedObject() DO {
+            SET userShipmentUserShipmentDetail(d) <- userShipment;
+            SET stockUserShipmentDetail (d) <- stockInvoiceDetail(invoiceDetail);
+            SET skuUserShipmentDetail(d) <- skuInvoiceDetail(invoiceDetail);
+            SET batchUserShipmentDetail (d) <- batchInvoiceDetail(invoiceDetail);
+            SET quantityUserShipmentDetail (d) <- quantityInvoiceDetail(invoiceDetail);
+        };
+    };
+} CONFIRM IN invoiceGroup;
+
+EXTEND FORM userShipment PROPERTIES(s) descriptionInvoiceUserShipment, fillInvoiceUserShipment;
+EXTEND DESIGN userShipment { headerColumn2 { ADD s.invoiceGroup; } }
+EXTEND FORM userShipments PROPERTIES(s) READONLY descriptionInvoiceUserShipment;
+
+//-- аггр.объект
+//--
+createShipmentInvoice 'Создавать поставку' = ABSTRACT BOOLEAN (invoice) IN documentPrmGroup;
+createShipmentUserInvoice 'Создавать поставку' = DATA BOOLEAN (userInvoice);
+createShipmentInvoice (invoice) += createShipmentUserInvoice(invoice);
+
+EXTEND FORM userInvoice
+    PROPERTIES(i) createShipmentInvoice
+    PROPERTIES(d) SHOWIF createShipmentInvoice(i) shipmentPriceUserInvoiceDetail
+;
+EXTEND FORM userInvoices
+    PROPERTIES(i) READONLY createShipmentInvoice
+    PROPERTIES(d) READONLY SHOWIF createShipmentInvoice(i) shipmentPriceUserInvoiceDetail
+;
+
+createShipmentInvoiceDetail 'Создавать поставку' (invoiceDetail) = createShipmentInvoice(invoiceInvoiceDetail(invoiceDetail));
+
+CLASS invoiceShipment 'Поставка на основе инвойса' : shipment;
+CLASS invoiceShipmentPosted 'Закрытая поставка на основе инвойса' : invoiceShipment, postedObject;
+CLASS invoiceShipmentDetail 'Строка поставки на основе инвойса' : shipmentDetail;
+
+@defineDocumentTables(invoiceShipment);
+
+@defineDocumentAggregation(invoice, invoiceShipment, createShipmentInvoice);
+invoiceShipment(shipment) += invoiceInvoiceShipment(shipment);
+dateShipment(shipment) += dateInvoiceShipment(shipment);
+timeShipment(shipment) += timeInvoiceShipment(shipment);
+
+@defineDocumentAggregationStockPrefix(invoice, invoiceShipment, stock, 'Склад', , );
+stockShipment(shipment) += stockInvoiceShipment(shipment);
+dataStockShipmentDetail(shipmentDetail) += dataStockInvoiceDetail(invoiceDetailInvoiceShipmentDetail(shipmentDetail));
+
+@defineDocumentAggregationStockPrefix(invoice, invoiceShipment, customer, 'Покупатель', , );
+
+@defineDocumentAggregationPosted(invoice, invoiceShipment);
+isPostedShipment(shipment) += isPostedInvoiceShipment(shipment);
+
+numberInvoiceShipment 'Номер документа' (invoiceShipment) = numberInvoice(invoiceInvoiceShipment(invoiceShipment));
+numberShipment(shipment) += numberInvoiceShipment(shipment);
+
+seriesInvoiceShipment 'Серия документа' (invoiceShipment) = seriesInvoice(invoiceInvoiceShipment(invoiceShipment));
+seriesShipment(shipment) += seriesInvoiceShipment(shipment);
+
+seriesNumberInvoiceShipment 'Серия/номер документа' (invoiceShipment) = seriesNumberInvoice(invoiceInvoiceShipment(invoiceShipment));
+
+noteInvoiceInvoiceShipment 'Примечание' (invoiceShipment) = noteInvoice(invoiceInvoiceShipment(invoiceShipment));
+noteShipment(shipment) += noteInvoiceInvoiceShipment(shipment);
+
+currencyInvoiceShipment  (invoiceShipment) = currencyInvoice(invoiceInvoiceShipment(invoiceShipment));
+currencyShipment (shipment) += currencyInvoiceShipment(shipment);
+
+contractSkuCustomerInvoiceShipment  (invoiceShipment) = contractSkuCustomerInvoice(invoiceInvoiceShipment(invoiceShipment));
+contractSkuCustomerShipment (shipment) += contractSkuCustomerInvoiceShipment(shipment);
+
+isCommissionInvoiceShipment  (invoiceShipment) = isCommissionInvoice(invoiceInvoiceShipment(invoiceShipment));
+isCommissionShipment(shipment)+= isCommissionInvoiceShipment(shipment);
+
+@defineDocumentDescription(invoiceShipment, invoiceShipmentDetail, seriesNumberInvoiceShipment, 'Поставка на основе инвойса');
+descriptionShipment (shipment) += descriptionInvoiceShipment(shipment);
+
+@defineDocumentDetailIndex(invoiceShipment);
+
+@defineDocumentAggregationDetailSku(invoice, invoiceShipment, sku);
+skuShipmentDetail(shipmentDetail) +=  skuInvoiceShipmentDetail(shipmentDetail);
+
+@defineDocumentAggregationDetailBatch (invoice, invoiceShipment);
+batchShipmentDetail (shipmentDetail) += batchInvoiceShipmentDetail(shipmentDetail);
+
+@defineDocumentAggregationDetailQuantity(invoice, invoiceShipment);
+quantityShipmentDetail(shipmentDetail) += quantityInvoiceShipmentDetail(shipmentDetail);
+
+priceInvoiceShipmentDetail(invoiceShipmentDetail) = shipmentPriceInvoiceDetail(invoiceDetailInvoiceShipmentDetail(invoiceShipmentDetail));
+priceShipmentDetail(shipmentDetail) += priceInvoiceShipmentDetail(shipmentDetail);
+
+// ------------- Навигатор --------- //
 
 NAVIGATOR {
     saleNavigator {

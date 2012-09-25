@@ -21,13 +21,13 @@ CLASS CStoWHPosted 'Закрытый расход с СВХ' : CStoWH, postedObj
 @defineDocument(CStoWH);
 
 @defineDocumentStock(CStoWH, customStore, 'СВХ');
-@defineDocumentStockPrefix(CStoWH, stock, 'Склад-получатель', destination);
+@defineDocumentStock(CStoWH, stock, 'Склад-получатель', destination);
 //@defineDocumentStock(CStoWH, stock, 'Склад');
 
 @defineDocumentPosted(CStoWH);
 @defineDocumentDescription (CStoWH, 'Расход с СВХ');
 
-@defineDocumentDetailNumbered(CStoWH);
+@defineDocumentDetailNumber(CStoWH);
 
 declarationDetailCStoWHDetail = DATA declarationDetail (CStoWHDetail);
 skuCStoWHDetail (CStoWHDetail) = skuDeclarationDetail (declarationDetailCStoWHDetail(CStoWHDetail));
@@ -35,11 +35,12 @@ declarationCStoWHDetail (CStoWHDetail) = declarationDeclarationDetail(declaratio
 
 @defineDocumentDetailSkuArticle (CStoWH);
 
-@defineDocumentQuantity(CStoWH);
+@defineDocumentDetailQuantity(CStoWH);
 
 @defineAddDetailDialogSkuStock(CStoWH, sku, customStore, dialogSku);
 @defineAddDetailDialogBarcode(CStoWH, sku);
 
+@defineDocumentHeaderQuantity(CStoWH);
 @defineDocumentHeaderSkuQuantity(CStoWH, sku);
 
 freightUnitCStoWHDetail (CStoWHDetail) = DATA freightUnit(CStoWHDetail) IN idGroup;

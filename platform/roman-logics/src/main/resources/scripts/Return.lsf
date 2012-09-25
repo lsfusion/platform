@@ -21,7 +21,7 @@ CLASS returnOutDetail 'Строка возврата товаров по нак�
 @defineDocumentTransferOut(return, 'Возврат товаров по накладным', sku, stock);
 @defineDocumentFormTransferOut(return, 'Возврат товаров по накладным');
 
-CONSTRAINT companyStock(stockReturnOut(returnOut)) == companyStock(destinationStockReturnOut(returnOut)) CHECKED BY destinationStockReturnOut
+CONSTRAINT companyReturnOut(returnOut) == destinationCompanyReturnOut(returnOut) CHECKED BY destinationStockReturnOut
     MESSAGE 'Возврат товаров должна идти между складами разных компаний';
 
 @defineDocumentDetailSkuArticle(returnOut);
@@ -30,9 +30,6 @@ CONSTRAINT companyStock(stockReturnOut(returnOut)) == companyStock(destinationSt
 
 @defineDocumentCurrency(returnOut);
 @deriveDocumentCurrency(returnOut, stock);
-
-companyReturnOut (returnOut) = companyStock(stockReturnOut(returnOut));
-destinationCompanyReturnOut(returnOut) = companyStock(destinationStockReturnOut(returnOut));
 
 @defineDocumentContract(returnOut, contractSkuCompany, singleContractSkuCompanyCompanyCompany, destinationCompanyReturnOut, companyReturnOut,
                         'Сторона A договора возврата товаров не соответствуют компании склада-отправителя',
@@ -116,8 +113,8 @@ skipSkuLedger (ledger) += skipSkuLedgerReturnOutDetail(ledger);
 @defineConsignment(returnOut);
 @implementConsignmentHeader(returnOut, stock);
 
-senderConsignment (consignment) += companyStock(stockReturnOut(consignment));
-recipientConsignment (consignment) += companyStock(destinationStockReturnOut(consignment));
+senderConsignment (consignment) += companyReturnOut(consignment);
+recipientConsignment (consignment) += destinationCompanyReturnOut(consignment);
 consignmentConsignmentDetail (consignmentDetail) += returnOutReturnOutDetail (consignmentDetail);
 skuConsignmentDetail (consignmentDetail) += skuReturnOutDetail (consignmentDetail);
 quantityConsignmentDetail (consignmentDetail) += quantityReturnOutDetail (consignmentDetail);

@@ -56,18 +56,10 @@ EXTEND FORM freightInvoiceForm
     PROPERTIES FORCE GRID sumRateRegistrationFreightSku(freight, sku), sumDeliveryFreightSku(freight, sku), priceRFFreightSku(freight, sku)
 ;
 
-//@defineAggregation(freight, WHfromRF, isWHfromRFFreight);
-
 freightWHfromRF (WHfromRF) = DATA freightArrived (WHfromRF);
 nameFreightWHfromRF 'Фрахт' (WHfromRF) =  name(freightWHfromRF(WHfromRF)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
 castFreightWHfromRF = FORMULA STRING[100] '\'Фрахт от \' || CAST($1 AS TEXT) || \' (\' || CAST($2 AS TEXT) || \')\'';
 descriptionFreightWHfromRF 'Фрахт' (WHfromRF) = castFreightWHfromRF(dateArrivalFreight(freightWHfromRF(WHfromRF)), nameExporterFreight(freightWHfromRF(WHfromRF)));
-
-companyWHfromRF 'Импортёр (ИД)' = DATA company(WHfromRF) IN idGroup;
-nameCompanyWHfromRF 'Импортёр' = name(companyWHfromRF(WHfromRF)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
-
-
-//@defineDocumentAggregationHeaderStock(freight, WHfromRF, warehouse, 'Оптовый склад');
 
 @defineDocumentRelation(WHfromRF);
 @defineDocumentPosted(WHfromRF);

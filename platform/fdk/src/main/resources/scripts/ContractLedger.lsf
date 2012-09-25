@@ -957,7 +957,7 @@ DESIGN contractLedger FROM DEFAULT{
 }
 
 NAVIGATOR {
-    contractNavigator {
+    NEW contractNavigator 'Задолженности' {
         ADD contractLedger;
         ADD payments;
         ADD costContractLedger;

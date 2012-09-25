@@ -1645,10 +1645,10 @@ CLASS studyOutputDetail 'Строка проработки (выход)' : batch
 TABLE studyOutputDetail(studyOutputDetail);
 
 // строки расхода
-@defineDocumentRelationCustom(actOfStudy, studyInputDetail);
+@defineDocumentRelation(actOfStudy, studyInputDetail);
 
 @defineDocumentDetailDepartmentStoreCustom(actOfStudy, studyInputDetail);
-@defineDocumentDetailTimeCustom(actOfStudy, studyInputDetail);
+@defineDocumentDetailTime(actOfStudy, studyInputDetail);
 
 @defineDocumentDetailSkuItem(studyInput);
 
@@ -1659,7 +1659,7 @@ TABLE studyOutputDetail(studyOutputDetail);
 
 @defineDocumentDetailBaseSum(studyInput);
 
-@defineDocumentDetailPostedCustom(actOfStudy, studyInputDetail);
+@defineDocumentDetailPosted(actOfStudy, studyInputDetail);
 
 @defineDocumentHeaderQuantityCustom(actOfStudy, studyInputDetail);
 @defineDocumentHeaderSkuQuantityCustom(actOfStudy, studyInputDetail, item);
@@ -1697,7 +1697,7 @@ studyInputDetailStudyOutputDetail = DATA studyInputDetail (studyOutputDetail) IN
 actOfStudyStudyOutputDetail(studyOutputDetail) = actOfStudyStudyInputDetail(studyInputDetailStudyOutputDetail(studyOutputDetail)) PERSISTENT;
 
 @defineDocumentDetailDepartmentStoreCustom(actOfStudy, studyOutputDetail);
-@defineDocumentDetailTimeCustom(actOfStudy, studyOutputDetail);
+@defineDocumentDetailTime(actOfStudy, studyOutputDetail);
 
 @defineDocumentDetailSkuItem(studyOutput);
 
@@ -1721,7 +1721,7 @@ quantityStudyOutputDetail(studyOutputDetail) = UNION OVERRIDE calculatedStudyOut
 @defineDocumentDetailBasePricePrefix(studyOutput, departmentStore, cur, ' (тек.)');
 @deriveBasePriceLedgerOnSkuChangePrefix(studyOutput, cur, item);
 
-@defineDocumentDetailPostedCustom(actOfStudy, studyOutputDetail);
+@defineDocumentDetailPosted(actOfStudy, studyOutputDetail);
 
 @defineDocumentHeaderQuantityCustom(actOfStudy, studyOutputDetail);
 @defineDocumentHeaderSkuQuantityCustom(actOfStudy, studyOutputDetail, item);
@@ -1872,7 +1872,7 @@ CLASS specificationDetail 'Строка счет-фактуры';
 @defineDocument(specification);
 @defineDocumentDepartmentStore(specification);
 
-@defineDocumentDetailNumbered(specification);
+@defineDocumentDetailNumber(specification);
 @defineDocumentDetailSkuItem(specification);
 @defineDocumentDetailQuantity(specification);
 
@@ -1928,7 +1928,6 @@ noOverdueSpecification 'Непросрочена' (specification) = dateToSpecif
 overdueSpecificationDate 'Просрочена' (specification, date) = dateToSpecification(specification) < date AND date AS DATE;
 noOverdueSpecificationDate 'Непросрочена' (specification, date) = dateToSpecification(specification) >= date AND date AS DATE;
 
-companySpecification 'Компания ИД' (specification) = companyDepartmentStore(departmentStoreSpecification(specification));
 UNPCompanySpecification 'УНП компании' (specification) = UNPLegalEntity(companySpecification(specification));
 fullNameCompanySpecification 'Полное наименование компании' (specification) = fullNameLegalEntity(companySpecification(specification));
 addressCompanySpecification 'Юридический адрес компании' (specification) = addressLegalEntityDate(companySpecification(specification), dateSpecification(specification));
@@ -2123,7 +2122,7 @@ CLASS shipmentPosted 'Закрытая поставка' : shipment, postedObjec
 
 @defineDocumentHeaderSupplierContractDepartmentStore(shipment);
 
-@defineDocumentDetailNumbered(shipment);
+@defineDocumentDetailNumber(shipment);
 
 @defineDocumentDetailSkuItem(shipment);
 @defineDocumentDetailSkuItemDepartmentStore(shipment);
@@ -4541,6 +4540,9 @@ FORM shipment 'Поставка'
 
 
 DESIGN shipment FROM DEFAULT{
+    PROPERTY(objectClassName) {
+        preferredCharWidth = 15;
+    }
     main{
         preferredSize = (1024, 768);
         NEW specification.box BEFORE functions.box{
@@ -4824,13 +4826,13 @@ DESIGN returnSupplier FROM DEFAULT {
     NEW specification.box BEFORE functions.box{
         type = TABBED;
 
-        ADD d.box{
+        ADD d.box {
             title = 'Спецификация';
-            ADD d.grid{
+            d.grid {
                 fillVertical = 12;
-            };
-            ADD d.panel{
-            childConstraints = TO THE RIGHT;
+            }
+            d.panel {
+                childConstraints = TO THE RIGHT;
                 NEW curVal {
                     childConstraints = TO THE BOTTOM;
                     title = 'Текущие ценовые параметры';
@@ -5098,9 +5100,9 @@ DESIGN innerFlow FROM DEFAULT{
 
         NEW specification.box BEFORE functions.box{
             type = TABBED;
-            ADD d.box{
+            ADD d.box {
                 title = 'Спецификация';
-                ADD d.grid{
+                d.grid {
                     fillVertical = 12;
                 }
             }
@@ -5491,10 +5493,10 @@ DESIGN specificationForm FROM DEFAULT{
     main {
         preferredSize = (1024, 768);
 
-        NEW case BEFORE functions.box{
+        NEW case BEFORE functions.box {
             title = 'Накладные на отгрузку по данной с/ф';
-            ADD st.grid;
-            ADD d.grid;
+            ADD st.box;
+            ADD d.box;
         }
         NEW header.box BEFORE case {
             title = 'Счет-фактура';
@@ -7061,6 +7063,7 @@ NAVIGATOR {
         }
         NEW purchaseCatalog 'Справочники' {
             ADD suppliers;
+            ADD contractSkus;
         }
     }
 

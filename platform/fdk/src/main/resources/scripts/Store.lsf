@@ -247,7 +247,7 @@ META defineDocumentHeaderDepartmentStore (object)
 END
 
 META defineDocumentDetailDepartmentStoreCustom (object, detail)
-   @defineDocumentDetailStockCustom (object, detail, departmentStore, 'Отдел магазина');
+   @defineDocumentDetailStock (object, detail, departmentStore, 'Отдел магазина');
    store###detail (detail) = storeDepartmentStore(departmentStore###detail(detail));
    nameStore###detail 'Магазин' (detail) = name(store###detail(detail));
 END

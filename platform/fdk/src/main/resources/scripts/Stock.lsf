@@ -478,50 +478,172 @@ END
 // ---------------------------------------------- Макросы для документов ------------------------------------------------- //
 
 // Склады
-META defineDocumentHeaderStockPrefix (object, stockClass, stockCaption, prefix)
+META defineDocumentHeaderStock (object, stockClass, stockCaption, prefix)
     prefix###stockClass###object = DATA stockClass(object) AUTOSET;
     name###prefix###stockClass###object stockCaption (object) = name(prefix###stockClass###object(object)) IN documentHeaderGroup
-            MINCHARWIDTH 20 PREFCHARWIDTH 40;
+            MINCHARWIDTH 10 PREFCHARWIDTH 20;
+
+    prefix###company###object (object) = companyStock(prefix###stockClass###object(object));
+    name###prefix###company###object 'Компания ('###stockCaption###')' (object) = name(prefix###company###object (object));
+
+    prefix###country###object (object) = countryStock(prefix###stockClass###object(object));
 END
-META defineDocumentHeaderStock (object, stockClass, stockCaption)
-    @defineDocumentHeaderStockPrefix(object, stockClass, stockCaption, );
+META defineDocumentAbstractHeaderStock (object, stockClass, stockCaption, prefix)
+    prefix###stockClass###object = ABSTRACT stockClass(object) PERSISTENT;
+    name###prefix###stockClass###object stockCaption (object) = name(prefix###stockClass###object(object)) IN documentHeaderGroup
+            MINCHARWIDTH 10 PREFCHARWIDTH 20;
+
+    prefix###company###object (object) = companyStock(prefix###stockClass###object(object));
+    name###prefix###company###object 'Компания ('###stockCaption###')' (object) = name(prefix###company###object (object));
+
+    prefix###country###object (object) = countryStock(prefix###stockClass###object(object));
+END
+META defineDocumentInterfaceHeaderStock (object, stockClass, stockCaption, prefix)
+    @defineDocumentAbstractHeaderStock (object, stockClass, stockCaption, prefix);
+    @defineDocumentHeaderStock (user###object, stockClass, stockCaption, prefix);
+    prefix###stockClass###object (object) += prefix###stockClass###user###object(object);
 END
 
-META defineDocumentDetailStockCustom (object, detail, stockProp, stockCaption)
+META defineDocumentHeaderStock (object, stockClass, stockCaption)
+    @defineDocumentHeaderStock(object, stockClass, stockCaption, );
+END
+META defineDocumentAbstractHeaderStock (object, stockClass, stockCaption)
+    @defineDocumentAbstractHeaderStock(object, stockClass, stockCaption, );
+END
+META defineDocumentInterfaceHeaderStock (object, stockClass, stockCaption)
+    @defineDocumentInterfaceHeaderStock(object, stockClass, stockCaption, );
+END
+
+META defineDocumentDetailStock (object, detail, stockProp, stockCaption)
     stockProp###detail (idetail) = stockProp###object(object###detail(idetail));
-    name###stockProp###detail stockCaption (idetail) = name(stockProp###detail(idetail)) MINCHARWIDTH 20 PREFCHARWIDTH 20;
+    name###stockProp###detail stockCaption (idetail) = name(stockProp###detail(idetail)) MINCHARWIDTH 10 PREFCHARWIDTH 20;
+    country###stockProp###detail (idetail) = countryStock(stockProp###detail(idetail));
 END
 META defineDocumentDetailStock (object, stockProp, stockCaption)
-    @defineDocumentDetailStockCustom (object, object##Detail, stockProp, stockCaption);
+    @defineDocumentDetailStock (object, object##Detail, stockProp, stockCaption);
 END
 
-META defineDocumentStockPrefix (object, stockClass, stockCaption, prefix)
-    @defineDocumentHeaderStockPrefix(object, stockClass, stockCaption, prefix);
+META defineDocumentDetailDataStock (object, detail, stockClass, stockProp, stockCaption)
+    data###stockProp###detail = DATA stockClass(detail);
+    stockProp###detail (idetail) = UNION OVERRIDE stockProp###object(object###detail(idetail)), data###stockProp###detail(idetail) PERSISTENT;
+    name###stockProp###detail stockCaption (idetail) = name(stockProp###detail(idetail)) MINCHARWIDTH 10 PREFCHARWIDTH 20;
+    country###stockProp###detail (idetail) = countryStock(stockProp###detail(idetail));
+END
+META defineDocumentAbstractDetailDataStock (object, detail, stockClass, stockProp, stockCaption)
+    data###stockProp###detail = ABSTRACT stockClass(detail) PERSISTENT;
+    stockProp###detail (idetail) = UNION OVERRIDE stockProp###object(object###detail(idetail)), data###stockProp###detail(idetail) PERSISTENT;
+    name###stockProp###detail stockCaption (idetail) = name(stockProp###detail(idetail)) MINCHARWIDTH 10 PREFCHARWIDTH 20;
+    country###stockProp###detail (idetail) = countryStock(stockProp###detail(idetail));
+END
+META defineDocumentInterfaceDetailDataStock (object, detail, stockClass, stockProp, stockCaption)
+    @defineDocumentAbstractDetailDataStock(object, detail, stockClass, stockProp, stockCaption);
+    @defineDocumentDetailDataStock(user###object, user###detail, stockClass, stockProp, stockCaption);
+    data###stockProp###detail (detail) += data###stockProp###user###detail (detail);
+END
+
+META defineDocumentDetailDataStock (object, stockClass, stockProp, stockCaption)
+    @defineDocumentDetailDataStock (object, object##Detail, stockClass, stockProp, stockCaption);
+END
+META defineDocumentAbstractDetailDataStock (object, stockClass, stockProp, stockCaption)
+    @defineDocumentAbstractDetailDataStock (object, object##Detail, stockClass, stockProp, stockCaption);
+END
+META defineDocumentInterfaceDetailDataStock (object, stockClass, stockProp, stockCaption)
+    @defineDocumentInterfaceDetailDataStock (object, object##Detail, stockClass, stockProp, stockCaption);
+END
+
+META defineDocumentStock (object, stockClass, stockCaption, prefix)
+    @defineDocumentHeaderStock(object, stockClass, stockCaption, prefix);
+    @defineDocumentDetailStock(object, prefix###stockClass, stockCaption);
+END
+META defineDocumentAbstractStock (object, stockClass, stockCaption, prefix)
+    @defineDocumentAbstractHeaderStock(object, stockClass, stockCaption, prefix);
+    @defineDocumentDetailStock(object, prefix###stockClass, stockCaption);
+END
+META defineDocumentInterfaceStock (object, stockClass, stockCaption, prefix)
+    @defineDocumentInterfaceHeaderStock(object, stockClass, stockCaption, prefix);
     @defineDocumentDetailStock(object, prefix###stockClass, stockCaption);
 END
 
+META defineDocumentDataStock (object, stockClass, stockCaption, prefix)
+    @defineDocumentHeaderStock(object, stockClass, stockCaption, prefix);
+    @defineDocumentDetailDataStock(object, stockClass, prefix###stockClass, stockCaption);
+END
+META defineDocumentAbstractDataStock (object, stockClass, stockCaption, prefix)
+    @defineDocumentAbstractHeaderStock(object, stockClass, stockCaption, prefix);
+    @defineDocumentAbstractDetailDataStock(object, stockClass, prefix###stockClass, stockCaption);
+END
+META defineDocumentInterfaceDataStock (object, stockClass, stockCaption, prefix)
+    @defineDocumentInterfaceHeaderStock(object, stockClass, stockCaption, prefix);
+    @defineDocumentInterfaceDetailDataStock(object, stockClass, prefix###stockClass, stockCaption);
+END
+
 META defineDocumentStock (object, stockClass, stockCaption)
-    @defineDocumentStockPrefix(object, stockClass, stockCaption, );
+    @defineDocumentStock(object, stockClass, stockCaption, );
+END
+META defineDocumentAbstractStock (object, stockClass, stockCaption)
+    @defineDocumentAbstractStock(object, stockClass, stockCaption, );
+END
+META defineDocumentInterfaceStock (object, stockClass, stockCaption)
+    @defineDocumentInterfaceStock(object, stockClass, stockCaption, );
+END
+
+META defineDocumentDataStock (object, stockClass, stockCaption)
+    @defineDocumentDataStock(object, stockClass, stockCaption, );
+END
+META defineDocumentAbstractDataStock (object, stockClass, stockCaption)
+    @defineDocumentAbstractDataStock(object, stockClass, stockCaption, );
+END
+META defineDocumentInterfaceDataStock (object, stockClass, stockCaption)
+    @defineDocumentInterfaceDataStock(object, stockClass, stockCaption, );
 END
 
 // Sku
-META defineDocumentDetailSkuCustomPrefix (idetail, skuClass, prefix, caption)
-    prefix###skuClass###idetail (idetail) = DATA skuClass (idetail);
-    prefix###nameSku###idetail 'SKU'###caption (detail) = nameSku(prefix###skuClass###idetail(detail)) IN recognizeGroup;
-    prefix###idBarcodeSku###idetail 'Штрих-код'###caption (detail) = idBarcodeSku(prefix###skuClass###idetail(detail)) IN recognizeGroup;
+META defineDocumentDetailSkuCustomPrefix (detail, skuClass, prefix, caption)
+    prefix###skuClass###detail = DATA skuClass (detail);
+    prefix###nameSku###detail 'SKU'###caption (detail) = nameSku(prefix###skuClass###detail(detail)) IN recognizeGroup;
+    prefix###shortNameUOMSku###detail 'Ед. изм.'###caption = shortNameUOMSku(prefix###skuClass###detail(detail)) IN recognizeGroup;
+    prefix###idBarcodeSku###detail 'Штрих-код'###caption (detail) = idBarcodeSku(prefix###skuClass###detail(detail)) IN recognizeGroup;
 END
-META defineDocumentDetailSkuCustom (idetail, skuClass)
-    @defineDocumentDetailSkuCustomPrefix(idetail, skuClass, ,);
+META defineDocumentAbstractDetailSkuCustomPrefix (detail, skuClass, prefix, caption)
+    prefix###skuClass###detail = ABSTRACT skuClass (detail);
+    prefix###nameSku###detail 'SKU'###caption (detail) = nameSku(prefix###skuClass###detail(detail)) IN recognizeGroup;
+    prefix###shortNameUOMSku###detail 'Ед. изм.'###caption = shortNameUOMSku(prefix###skuClass###detail(detail)) IN recognizeGroup;
+    prefix###idBarcodeSku###detail 'Штрих-код'###caption (detail) = idBarcodeSku(prefix###skuClass###detail(detail)) IN recognizeGroup;
+END
+META defineDocumentInterfaceDetailSkuCustomPrefix (detail, skuClass, prefix, caption)
+    @defineDocumentAbstractDetailSkuCustomPrefix(detail, skuClass, prefix, caption);
+    @defineDocumentDetailSkuCustomPrefix(user###detail, skuClass, prefix, caption);
+    prefix###skuClass###detail(detail) += prefix###skuClass###user###detail(detail);
+END
+
+META defineDocumentDetailSkuCustom (detail, skuClass)
+    @defineDocumentDetailSkuCustomPrefix(detail, skuClass, ,);
+END
+META defineDocumentAbstractDetailSkuCustom (detail, skuClass)
+    @defineDocumentAbstractDetailSkuCustomPrefix(detail, skuClass, ,);
+END
+META defineDocumentInterfaceDetailSkuCustom (detail, skuClass)
+    @defineDocumentInterfaceDetailSkuCustomPrefix(detail, skuClass, ,);
 END
 
 META defineDocumentDetailSkuPrefix (object, skuClass, prefix, caption)
-    prefix###skuClass###object##Detail (detail) = DATA skuClass (object###Detail);
-    prefix###nameSku###object##Detail 'SKU'###caption (detail) = nameSku(prefix###skuClass###object##Detail(detail)) IN recognizeGroup;
-    prefix###idBarcodeSku###object##Detail 'Штрих-код'###caption (detail) = idBarcodeSku(prefix###skuClass###object##Detail(detail)) IN recognizeGroup;
-    prefix###shortNameUOMSku###object##Detail 'Ед. изм.'###caption (detail) = shortNameUOMSku(prefix###skuClass###object##Detail(detail)) IN recognizeGroup;
+    @defineDocumentDetailSkuCustomPrefix(object##Detail, skuClass, prefix, caption);
 END
+META defineDocumentAbstractDetailSkuPrefix (object, skuClass, prefix, caption)
+    @defineDocumentAbstractDetailSkuCustomPrefix(object###Detail, skuClass, prefix, caption);
+END
+META defineDocumentInterfaceDetailSkuPrefix (object, skuClass, prefix, caption)
+    @defineDocumentInterfaceDetailSkuCustomPrefix(object###Detail, skuClass, prefix, caption);
+END
+
 META defineDocumentDetailSku (object, skuClass)
     @defineDocumentDetailSkuPrefix(object, skuClass, ,);
+END
+META defineDocumentAbstractDetailSku (object, skuClass)
+    @defineDocumentAbstractDetailSkuPrefix(object, skuClass, ,);
+END
+META defineDocumentInterfaceDetailSku (object, skuClass)
+    @defineDocumentInterfaceDetailSkuPrefix(object, skuClass, ,);
 END
 
 // ---------------------------------------------- Агрегированные документы -------------------------------------------- //
@@ -560,43 +682,136 @@ META defineDocumentAggregationDetailSku (primObject, aggrObject, skuProp)
     @defineDocumentAggregationDetailSkuPrefix(primObject, aggrObject, skuProp, );
 END
 
+// Quantity
+META defineDocumentAggregationDetailQuantity (primObject, aggrObject)
+    quantity###aggrObject##Detail 'Кол-во' (detail) = quantity###primObject##Detail(primObject##Detail###aggrObject##Detail(detail)) PERSISTENT;
+END
+
 // Batch
 META defineDocumentAggregationDetailBatch (primObject, aggrObject)
     batch###aggrObject##Detail 'Партия' (detail) = batch###primObject##Detail(primObject##Detail###aggrObject##Detail(detail)) PERSISTENT;
 END
 
+// ---------------------------------------------- Кол-во -------------------------------------------- //
+
+META defineDocumentDetailQuantityCustomPrefix (detail, prefix, caption)
+    prefix###quantity###detail 'Кол-во'###caption = DATA NUMERIC[14,3] (detail);
+END
+META defineDocumentAbstractDetailQuantityCustomPrefix (detail, prefix, caption)
+    prefix###quantity###detail 'Кол-во'###caption = ABSTRACT NUMERIC[14,3] (detail);
+END
+META defineDocumentInterfaceDetailQuantityCustomPrefix (detail, prefix, caption)
+    @defineDocumentAbstractDetailQuantityCustomPrefix(detail, prefix, caption);
+    @defineDocumentDetailQuantityCustomPrefix (user###detail, prefix, caption);
+    prefix###quantity###detail (detail) += prefix###quantity###user###detail(detail);
+END
+
+META defineDocumentDetailQuantityCustom (detail)
+    @defineDocumentDetailQuantityCustomPrefix(detail, , );
+END
+META defineDocumentAbstractDetailQuantityCustom (detail)
+    @defineDocumentAbstractDetailQuantityCustomPrefix(detail, , );
+END
+META defineDocumentInterfaceDetailQuantityCustom (detail)
+    @defineDocumentInterfaceDetailQuantityCustomPrefix(detail, , );
+END
+
+META defineDocumentDetailQuantityPrefix (object, prefix, caption)
+    @defineDocumentDetailQuantityCustomPrefix(object##Detail, prefix, caption);
+END
+META defineDocumentAbstractDetailQuantityPrefix (object, prefix, caption)
+    @defineDocumentAbstractDetailQuantityCustomPrefix(object##Detail, prefix, caption);
+END
+META defineDocumentInterfaceDetailQuantityPrefix (object, prefix, caption)
+    @defineDocumentInterfaceDetailQuantityCustomPrefix(object##Detail, prefix, caption);
+END
+
+META defineDocumentDetailQuantity (object)
+    @defineDocumentDetailQuantityPrefix(object, , );
+END
+META defineDocumentAbstractDetailQuantity (object)
+    @defineDocumentAbstractDetailQuantityPrefix(object, , );
+END
+META defineDocumentInterfaceDetailQuantity (object)
+    @defineDocumentInterfaceDetailQuantityPrefix(object, , );
+END
+
 // ---------------------------------------------- Учетные суммы -------------------------------------------- //
 
-META defineDocumentDetailPrice (object)
-    price###object##Detail 'Цена' = DATA NUMERIC[14,2] (object##Detail) IN baseGroup;
+META defineDocumentDetailPriceCustomPrefix (detail, prefix, caption)
+    prefix###price###detail 'Цена'###caption = DATA NUMERIC[14,2] (detail);
+END
+META defineDocumentAbstractDetailPriceCustomPrefix (detail, prefix, caption)
+    prefix###price###detail 'Цена'###caption = ABSTRACT NUMERIC[14,2] (detail);
+END
+META defineDocumentInterfaceDetailPriceCustomPrefix (detail, prefix, caption)
+    @defineDocumentAbstractDetailPriceCustomPrefix(detail, prefix, caption);
+    @defineDocumentDetailPriceCustomPrefix(user###detail, prefix, caption);
+    prefix###price###detail (detail) += prefix###price###user###detail(detail);
 END
 
-META defineDocumentDetailSumCustom (object, detail)
+META defineDocumentDetailPriceCustom (detail, caption)
+    @defineDocumentDetailPriceCustomPrefix(detail, , caption);
+END
+META defineDocumentDetailAbstractPriceCustom (detail, caption)
+    @defineDocumentAbstractDetailPriceCustomPrefix(detail, , caption);
+END
+META defineDocumentDetailInterfacePriceCustom (detail, caption)
+    @defineDocumentInterfaceDetailPriceCustomPrefix(detail, , caption);
+END
+
+META defineDocumentDetailPricePrefix (object, prefix, caption)
+    @defineDocumentDetailPriceCustomPrefix(object##Detail, prefix, caption);
+END
+META defineDocumentAbstractDetailPricePrefix (object, prefix, caption)
+    @defineDocumentAbstractDetailPriceCustomPrefix(object##Detail, prefix, caption);
+END
+META defineDocumentInterfaceDetailPricePrefix (object, prefix, caption)
+    @defineDocumentInterfaceDetailPriceCustomPrefix(object##Detail, prefix, caption);
+END
+
+META defineDocumentDetailPrice (object)
+    @defineDocumentDetailPricePrefix(object, ,);
+END
+META defineDocumentAbstractDetailPrice (object)
+    @defineDocumentAbstractDetailPricePrefix(object, ,);
+END
+META defineDocumentInterfaceDetailPrice (object)
+    @defineDocumentInterfaceDetailPricePrefix(object, ,);
+END
+
+META deriveDocumentDetailPriceBatchCustomPrefix (detail, prefix)
+    prefix###price###detail (detail)  <- IF batch###detail(detail)
+                THEN priceBatchStockDateTime(batch###detail(detail), stock###detail(detail), dateTime###detail(detail))
+                ELSE priceSkuStockDateTime(sku###detail(detail), stock###detail(detail), dateTime###detail(detail))
+                WHEN CHANGED(sku###detail(detail)) OR CHANGED(batch###detail(detail)) OR CHANGED(stock###detail(detail)) OR CHANGED (dateTime###detail(detail));
+END
+META deriveDocumentDetailPriceBatchPrefix (object, prefix)
+    @deriveDocumentDetailPriceBatchCustomPrefix(object##Detail, prefix);
+END
+META deriveDocumentDetailPriceBatch (object)
+    @deriveDocumentDetailPriceBatchPrefix(object, );
+END
+
+META defineDocumentDetailSumCustom (detail)
     sum###detail 'Сумма' (detail) = quantity###detail(detail) * price###detail(detail);
 END
+META defineDocumentInterfaceDetailSumCustom (detail)
+    @defineDocumentDetailSumCustom(detail);
+    @defineDocumentDetailSumCustom(user###detail);
+END
+
 META defineDocumentDetailSum (object)
-    @defineDocumentDetailSumCustom(object, object##Detail);
+    @defineDocumentDetailSumCustom(object##Detail);
 END
-
-META defineDocumentHeaderSumCustom (object, detail)
-    sum###detail###object 'Сумма' (object) = GROUP SUM sum###detail(idetail) BY object###detail(idetail) IN documentSumGroup;
-END
-META defineDocumentHeaderSum (object)
-    @defineDocumentHeaderSumCustom(object, object##Detail);
-END
-
-META defineDocumentDetailPriceCustom (detail, captionDetail)
-    price###detail 'Цена'###captionDetail = DATA NUMERIC[14,2] (detail) IN baseGroup;
-END
-
-META defineDocumentHeaderSumCustomCaption (object, detail, caption)
-    sum###detail###object 'Сумма'###caption (object) = GROUP SUM sum###detail(idetail) BY object###detail(idetail) IN documentSumGroup;
+META defineDocumentInterfaceDetailSum (object)
+    @defineDocumentInterfaceDetailSumCustom(object##Detail);
 END
 
 META defineDocumentHeaderAndDetailSumCustomCaption (object, detail, caption, captionDetail)
     @defineDocumentDetailPriceCustom(detail, captionDetail);
-    @defineDocumentDetailSumCustom (object, detail);
-    @defineDocumentHeaderSumCustomCaption(object, detail, caption);
+    @defineDocumentDetailSumCustom (detail);
+    @defineDocumentHeaderSumCustom(object, detail, caption);
 END
 
 META derivePriceOnSkuChange(concrete, skuProp, stockProp)
@@ -625,19 +840,69 @@ META defineDocumentHeaderItemSum (object)
 END
 
 //--------------------------------------------------Партия для Detail--------------------------------------//
-META defineDocumentDetailBatchCustom(idetail, batchProp)
+META defineDocumentDetailBatchCustom(detail, batchProp)
+    batch###detail = DATA batchProp (detail);
+    descriptionBatch###detail 'Партия' (detail) = descriptionBatch(batch###detail(detail)) MINCHARWIDTH 20 PREFCHARWIDTH 40;
 
-    batch###idetail = DATA batchProp (idetail);
-    descriptionBatch###idetail 'Партия' (detail) = descriptionBatch(batch###idetail(detail)) MINCHARWIDTH 30 PREFCHARWIDTH 40;
-
-    CONSTRAINT skuBatch(batch###idetail(detail)) != sku###idetail(detail) CHECKED BY batch###idetail
+    CONSTRAINT skuBatch(batch###detail(detail)) != sku###detail(detail) CHECKED BY batch###detail
         MESSAGE 'Товар партии строки должен соответствовать SKU строки';
 
-    CONSTRAINT batch###idetail(detail) AND NOT sku###idetail(detail) CHECKED BY batch###idetail
+    CONSTRAINT batch###detail(detail) AND NOT sku###detail(detail) CHECKED BY batch###detail
         MESSAGE 'Для строки задана парктия, но не задан товар';
 END
+META defineDocumentAbstractDetailBatchCustom(detail, batchProp)
+    batch###detail = ABSTRACT batchProp (detail);
+    descriptionBatch###detail 'Партия' (detail) = descriptionBatch(batch###detail(detail)) MINCHARWIDTH 20 PREFCHARWIDTH 40;
+END
+META defineDocumentInterfaceDetailBatchCustom(detail, batchProp)
+    @defineDocumentAbstractDetailBatchCustom(detail, batchProp);
+    @defineDocumentDetailBatchCustom(user###detail, batchProp);
+    batch###detail(detail) += batch###user###detail(detail);
+END
 
+META defineDocumentDetailBatch(object, batchProp)
+    @defineDocumentDetailBatchCustom(object##Detail, batchProp);
+END
+META defineDocumentAbstractDetailBatch(object, batchProp)
+    @defineDocumentAbstractDetailBatchCustom(object##Detail, batchProp);
+END
+META defineDocumentInterfaceDetailBatch(object, batchProp)
+    @defineDocumentInterfaceDetailBatchCustom(object##Detail, batchProp);
+END
 // ------------------------------------------------ Кол-во в документе ------------------------------------ //
+META defineDocumentHeaderQuantityCustomPrefix (object, detail, prefix, caption)
+    prefix###quantity###detail###object 'Кол-во (всего)'###caption (object) = GROUP SUM prefix###quantity###detail(idetail) BY object###detail(idetail) IN documentSumGroup PERSISTENT;
+END
+META defineDocumentInterfaceHeaderQuantityCustomPrefix (object, detail, prefix, caption)
+    @defineDocumentHeaderQuantityCustomPrefix (object, detail, prefix, caption);
+    @defineDocumentHeaderQuantityCustomPrefix (user###object, user###detail, prefix, caption);
+END
+
+META defineDocumentHeaderQuantityCustom (object, detail)
+    @defineDocumentHeaderQuantityCustomPrefix(object, detail, , );
+END
+META defineDocumentInterfaceHeaderQuantityCustom (object, detail)
+    @defineDocumentHeaderQuantityCustom (object, detail)
+    @defineDocumentHeaderQuantityCustom (user###object, user###detail)
+END
+
+META defineDocumentHeaderQuantityPrefix (object, prefix, caption)
+    @defineDocumentHeaderQuantityCustomPrefix(object, object##Detail, prefix, caption);
+END
+META defineDocumentInterfaceHeaderQuantityPrefix (object, prefix, caption)
+    @defineDocumentHeaderQuantityPrefix (object, prefix, caption)
+    @defineDocumentHeaderQuantityPrefix (user###object, prefix, caption)
+END
+
+META defineDocumentHeaderQuantity (object)
+    @defineDocumentHeaderQuantityCustomPrefix(object, object##Detail, , );
+END
+META defineDocumentInterfaceHeaderQuantity (object)
+    @defineDocumentHeaderQuantity(object);
+    @defineDocumentHeaderQuantity(user###object);
+END
+
+// ------------------------------------------------ Кол-во SKU в документе ------------------------------------ //
 META defineDocumentHeaderSkuQuantityCaptionCustom (object, detail, skuProp, caption)
     quantity###detail###skuProp###object 'Кол-во товара в документе'###caption (sku, object) = GROUP SUM quantity###detail(idetail)
                                                                                            BY  skuProp###detail(idetail),
@@ -652,6 +917,32 @@ END
 
 META defineDocumentHeaderSkuQuantity (object, skuProp)
     @defineDocumentHeaderSkuQuantityCustom(object, object###detail, skuProp);
+END
+
+// ------------------------------------------------ Сумма в документе ------------------------------------ //
+
+META defineDocumentHeaderSumCustom (object, detail, caption)
+    sum###detail###object 'Сумма'###caption (object) = GROUP SUM sum###detail(idetail) BY object###detail(idetail) IN documentSumGroup;
+END
+META defineDocumentInterfaceHeaderSumCustom (object, detail, caption)
+    @defineDocumentHeaderSumCustom (object, detail, caption);
+    @defineDocumentHeaderSumCustom (user###object, user###detail, caption);
+END
+
+META defineDocumentHeaderSumCustom (object, detail)
+    @defineDocumentHeaderSumCustom(object, detail, );
+END
+META defineDocumentInterfaceHeaderSumCustom (object, detail)
+    @defineDocumentHeaderSumCustom(object, detail);
+    @defineDocumentHeaderSumCustom(user###object, user###detail);
+END
+
+META defineDocumentHeaderSum (object)
+    @defineDocumentHeaderSumCustom(object, object##Detail);
+END
+META defineDocumentInterfaceHeaderSum (object)
+    @defineDocumentHeaderSum(object);
+    @defineDocumentHeaderSum(user###object);
 END
 
 // ---------------------------------------------- Остатки -------------------------------------------- //
@@ -850,7 +1141,11 @@ DESIGN stockDialog FROM DEFAULT {
                 title = 'Склады';
             }
 
-            ADD ts.box;
+            ADD ts.box {
+                ts.grid {
+                    defaultComponent = TRUE;
+                }
+            }
         }
 
         ADD functions.box;

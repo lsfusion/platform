@@ -39,15 +39,12 @@ EXTEND FORM saleOuts
     PROPERTIES(o) READONLY importerPriceSaleOutBatchDetail, supplierPriceSaleOutBatchDetail
 ;
 
-CONSTRAINT companyStock(stockSaleOut(saleOut)) == companyStock(destinationStockSaleOut(saleOut)) CHECKED BY destinationStockSaleOut
+CONSTRAINT companySaleOut(saleOut) == destinationCompanySaleOut(saleOut) CHECKED BY destinationStockSaleOut
     MESSAGE 'Продажа товаров должна идти между складами разных компаний';
 
 @defineDocumentDetailSkuArticle(saleOut);
 @extendDocumentFormDetailSkuArticle(saleOut, d, saleOut);
 @extendDocumentFormDetailSkuArticleReadonly(saleOuts, d, saleOut);
-
-companySaleOut (saleOut) = companyStock(stockSaleOut(saleOut));
-destinationCompanySaleOut(saleOut) = companyStock(destinationStockSaleOut(saleOut));
 
 @defineDocumentContract(saleOut, contractSkuCompany, singleContractSkuCompanyCompanyCompany, companySaleOut, destinationCompanySaleOut,
                         'Сторона A договора продажи товаров не соответствуют компании склада-отправителя',
@@ -173,14 +170,14 @@ saleInSaleInBatchDetail (detail) = saleInSaleOut(saleOutSaleInBatchDetail(detail
 skipSkuLedgerSaleIn 'Не проводить по учету' (saleIn) = skipSkuLedgerSaleOut(saleOutSaleIn(saleIn));
 skipSkuLedgerSaleInBatchDetail (detail) = skipSkuLedgerSaleOutDetail(saleOutDetailSaleInBatchDetail(detail));
 
-@defineDocumentDetailIndexCustom(saleIn, saleInBatchDetail);
+@defineDocumentDetailIndex(saleIn, saleInBatchDetail);
 
 @defineDocumentAggregationDetailTime(saleOut, saleInBatch);
 @defineDocumentAggregationDetailStockPrefix(saleOut, saleInBatch, stock, 'Склад-получатель', destination, );
 @defineDocumentAggregationDetailStockPrefix(saleOut, saleInBatch, stock, 'Склад-отправитель', , destination);
 @defineDocumentAggregationDetailPosted(saleOut, saleInBatch);
 @defineDocumentAggregationDetailSku(saleOut, saleInBatch, sku);
-@defineDocumentDetailDescriptionCustom(saleIn, saleInBatchDetail);
+@defineDocumentDetailDescription(saleIn, saleInBatchDetail);
 
 quantitySaleInBatchDetail 'Кол-во' (detail) = costDataSkuLedgerBatch(saleOutDetailSaleInBatchDetail(detail), batchSaleInBatchDetail(detail));
 

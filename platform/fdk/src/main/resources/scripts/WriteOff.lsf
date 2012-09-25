@@ -35,12 +35,10 @@ CLASS writeOffPosted 'Закрытое списание' : writeOff, postedObjec
 @defineDocumentCurrency(writeOff);
 @deriveDocumentCurrency(writeOff, stock);
 
-companyWriteOff (writeOff) = companyStock(stockWriteOff(writeOff));
-nameCompanyWriteOff 'Компания' (writeOff)= name(companyWriteOff(writeOff));
 addressLegalEntityWriteOff 'Адрес' (writeOff) = addressLegalEntityDate(companyWriteOff(writeOff), dateWriteOff(writeOff));
 UNPLegalEntityWriteOff 'УНП' (writeOff) = UNPLegalEntity(companyWriteOff(writeOff));
 
-@defineDocumentDetailNumbered(writeOff);
+@defineDocumentDetailNumber(writeOff);
 @defineDocumentDetailSku(writeOff, sku);
 
 // Для инвентаризации по партиям

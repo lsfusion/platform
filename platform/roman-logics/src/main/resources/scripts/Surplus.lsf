@@ -27,8 +27,10 @@ CLASS surplusOutDetail 'Строка реализации излишков' : ou
 @defineDocument(surplusOut);
 
 @defineDocumentStock(surplusOut, stock, 'Склад-отправитель');
-@defineDocumentStockPrefix(surplusOut, stock, 'Склад-получатель', destination);
-@defineDocumentStockPrefix(surplusOut, customer, 'Покупатель', destination);
+@defineDocumentStock(surplusOut, stock, 'Склад-получатель', destination);
+
+customerSurplusOut = DATA customer (surplusOut);
+nameCustomerSurplusOut 'Покупатель' (surplus) = name(customerSurplusOut(surplus));
 
 @defineDocumentPosted(surplusOut);
 
@@ -37,7 +39,7 @@ CLASS surplusOutDetail 'Строка реализации излишков' : ou
 
 @defineDocumentDescription (surplusOut, 'Реализация излишков');
 
-@defineDocumentDetailNumbered(surplusOut);
+@defineDocumentDetailNumber(surplusOut);
 
 @defineDocumentDetailSku(surplusOut, sku);
 
@@ -150,7 +152,7 @@ createInnerDocumentSurplusOut 'Создать документы' = ACTION (surp
     FOR i == addedObject() DO {
         SET invoiceWHOutSurplusOut(surplusOut) <- i AS invoiceWHOutPosted;
         SET warehouseInvoiceWHOut(i) <- destinationStockSurplusOut(surplusOut);
-        SET destinationCustomerInvoiceWHOut(i) <- destinationCustomerSurplusOut(surplusOut);
+        SET customerInvoiceWHOut(i) <- customerSurplusOut(surplusOut);
         SET skipSkuLedgerInvoiceWHOut(i) <- TRUE;
 
         FOR surplusOutSurplusOutDetail(surplusOutDetail) == surplusOut DO {
@@ -172,7 +174,7 @@ FORM surplusOut 'Реализация излишков'
     OBJECTS t = surplusOut FIXED PANEL
 
     PROPERTIES (t) numberObject, seriesObject, dateSurplusOut, timeSurplusOut,
-                   nameStockSurplusOut, nameDestinationStockSurplusOut, nameDestinationCustomerSurplusOut, nameCurrencySurplusOut, noteSurplusOut,
+                   nameStockSurplusOut, nameDestinationStockSurplusOut, nameCustomerSurplusOut, nameCurrencySurplusOut, noteSurplusOut,
                    countSurplusOutDetailSurplusOut, quantitySurplusOutDetailSurplusOut,
                    createDetailSurplusOut
 
@@ -197,7 +199,7 @@ DESIGN surplusOut FROM DEFAULT {
                     childConstraints = TO THE RIGHT;
                     ADD PROPERTY (nameStockSurplusOut);
                     ADD PROPERTY (nameDestinationStockSurplusOut);
-                    ADD PROPERTY (nameDestinationCustomerSurplusOut);
+                    ADD PROPERTY (nameCustomerSurplusOut);
                     ADD PROPERTY (numberObject);
                     ADD PROPERTY (seriesObject);
                     ADD PROPERTY (dateSurplusOut);
@@ -222,7 +224,7 @@ inInnerDocumentOrderPickingSurplusOut (innerDocument, orderPicking, surplusOut) 
 FORM surplusOuts 'Реализации излишков'
     OBJECTS t = surplusOut
     PROPERTIES (t) READONLY numberObject, seriesObject, dateSurplusOut, timeSurplusOut,
-                            nameStockSurplusOut, nameDestinationStockSurplusOut, nameDestinationCustomerSurplusOut, noteSurplusOut,
+                            nameStockSurplusOut, nameDestinationStockSurplusOut, nameCustomerSurplusOut, noteSurplusOut,
                             countSurplusOutDetailSurplusOut, quantitySurplusOutDetailSurplusOut
 
     PROPERTIES (t) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed

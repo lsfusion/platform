@@ -26,15 +26,15 @@ TABLE disparityOutBatchDetail(disparityOutBatchDetail);
 
 @defineNumeratedObject(disparityBatch, 'Нумератор для пересорта', 'ПР');
 
-@defineDocumentRelationCustomCaption (disparityBatch, disparityInBatchDetail, ' (In)');
-@defineDocumentRelationCustomCaption (disparityBatch, disparityOutBatchDetail, ' (Out)');
+@defineDocumentRelation(disparityBatch, disparityInBatchDetail, ' (In)');
+@defineDocumentRelation(disparityBatch, disparityOutBatchDetail, ' (Out)');
 
-@defineDocumentDetailIndexCustom(disparityBatch, disparityInBatchDetail);
-@defineDocumentDetailIndexCustom(disparityBatch, disparityOutBatchDetail);
+@defineDocumentDetailIndex(disparityBatch, disparityInBatchDetail);
+@defineDocumentDetailIndex(disparityBatch, disparityOutBatchDetail);
 
 @defineDocumentHeaderTime(disparityBatch);
-@defineDocumentDetailTimeCustom(disparityBatch, disparityInBatchDetail);
-@defineDocumentDetailTimeCustom(disparityBatch, disparityOutBatchDetail);
+@defineDocumentDetailTime(disparityBatch, disparityInBatchDetail);
+@defineDocumentDetailTime(disparityBatch, disparityOutBatchDetail);
 
 @defineDocumentHeaderNote(disparityBatch);
 
@@ -42,19 +42,19 @@ TABLE disparityOutBatchDetail(disparityOutBatchDetail);
 @defineDocumentDetailActionsCustom(disparityBatch, disparityOutBatchDetail);
 
 @defineDocumentHeaderStock(disparityBatch, stock, 'Склад');
-@defineDocumentDetailStockCustom (disparityBatch, disparityInBatchDetail, stock, 'Склад');
-@defineDocumentDetailStockCustom (disparityBatch, disparityOutBatchDetail, stock, 'Склад');
+@defineDocumentDetailStock (disparityBatch, disparityInBatchDetail, stock, 'Склад');
+@defineDocumentDetailStock (disparityBatch, disparityOutBatchDetail, stock, 'Склад');
 
 @defineDocumentHeaderPosted (disparityBatch);
-@defineDocumentDetailPostedCustom (disparityBatch, disparityInBatchDetail);
-@defineDocumentDetailPostedCustom (disparityBatch, disparityOutBatchDetail);
+@defineDocumentDetailPosted (disparityBatch, disparityInBatchDetail);
+@defineDocumentDetailPosted (disparityBatch, disparityOutBatchDetail);
 
-@defineDocumentDescriptionHeader(disparityBatch, 'Пересорт м/у партиями');
-@defineDocumentDetailDescriptionCustom(disparityBatch, disparityInBatchDetail);
-@defineDocumentDetailDescriptionCustom(disparityBatch, disparityOutBatchDetail);
+@defineDocumentHeaderDescription(disparityBatch, 'Пересорт м/у партиями');
+@defineDocumentDetailDescription(disparityBatch, disparityInBatchDetail);
+@defineDocumentDetailDescription(disparityBatch, disparityOutBatchDetail);
 
-@defineDocumentDetailNumberedCustom(disparityBatch, disparityInBatchDetail);
-@defineDocumentDetailNumberedCustom(disparityBatch, disparityOutBatchDetail);
+@defineDocumentDetailNumber(disparityBatch, disparityInBatchDetail);
+@defineDocumentDetailNumber(disparityBatch, disparityOutBatchDetail);
 
 @defineDocumentDetailSkuCustom(disparityInBatchDetail, sku);
 @defineDocumentDetailSkuCustom(disparityOutBatchDetail, sku);
@@ -336,15 +336,15 @@ TABLE disparityOutBatchADetail(disparityOutBatchADetail);
 
 @defineNumeratedObject(disparityBatchA, 'Нумератор для пересорта м/у партиями (бухг.)', 'ПБ');
 
-@defineDocumentRelationCustomCaption (disparityBatchA, disparityInBatchADetail, ' (In)');
-@defineDocumentRelationCustomCaption (disparityBatchA, disparityOutBatchADetail, ' (Out)');
+@defineDocumentRelation(disparityBatchA, disparityInBatchADetail, ' (In)');
+@defineDocumentRelation(disparityBatchA, disparityOutBatchADetail, ' (Out)');
 
-@defineDocumentDetailIndexCustom(disparityBatchA, disparityInBatchADetail);
-@defineDocumentDetailIndexCustom(disparityBatchA, disparityOutBatchADetail);
+@defineDocumentDetailIndex(disparityBatchA, disparityInBatchADetail);
+@defineDocumentDetailIndex(disparityBatchA, disparityOutBatchADetail);
 
 @defineDocumentHeaderTime(disparityBatchA);
-@defineDocumentDetailTimeCustom(disparityBatchA, disparityInBatchADetail);
-@defineDocumentDetailTimeCustom(disparityBatchA, disparityOutBatchADetail);
+@defineDocumentDetailTime(disparityBatchA, disparityInBatchADetail);
+@defineDocumentDetailTime(disparityBatchA, disparityOutBatchADetail);
 
 @defineDocumentHeaderNote(disparityBatchA);
 
@@ -352,19 +352,19 @@ TABLE disparityOutBatchADetail(disparityOutBatchADetail);
 @defineDocumentDetailActionsCustom(disparityBatchA, disparityOutBatchADetail);
 
 @defineDocumentHeaderStock(disparityBatchA, stock, 'Склад');
-@defineDocumentDetailStockCustom (disparityBatchA, disparityInBatchADetail, stock, 'Склад');
-@defineDocumentDetailStockCustom (disparityBatchA, disparityOutBatchADetail, stock, 'Склад');
+@defineDocumentDetailStock (disparityBatchA, disparityInBatchADetail, stock, 'Склад');
+@defineDocumentDetailStock (disparityBatchA, disparityOutBatchADetail, stock, 'Склад');
 
 @defineDocumentHeaderPosted (disparityBatchA);
-@defineDocumentDetailPostedCustom (disparityBatchA, disparityInBatchADetail);
-@defineDocumentDetailPostedCustom (disparityBatchA, disparityOutBatchADetail);
+@defineDocumentDetailPosted (disparityBatchA, disparityInBatchADetail);
+@defineDocumentDetailPosted (disparityBatchA, disparityOutBatchADetail);
 
-@defineDocumentDescriptionHeader(disparityBatchA, 'Пересорт м/у партиями (бухг.)');
-@defineDocumentDetailDescriptionCustom(disparityBatchA, disparityInBatchADetail);
-@defineDocumentDetailDescriptionCustom(disparityBatchA, disparityOutBatchADetail);
+@defineDocumentHeaderDescription(disparityBatchA, 'Пересорт м/у партиями (бухг.)');
+@defineDocumentDetailDescription(disparityBatchA, disparityInBatchADetail);
+@defineDocumentDetailDescription(disparityBatchA, disparityOutBatchADetail);
 
-@defineDocumentDetailNumberedCustom(disparityBatchA, disparityInBatchADetail);
-@defineDocumentDetailNumberedCustom(disparityBatchA, disparityOutBatchADetail);
+@defineDocumentDetailNumber(disparityBatchA, disparityInBatchADetail);
+@defineDocumentDetailNumber(disparityBatchA, disparityOutBatchADetail);
 
 @defineDocumentDetailSkuCustom(disparityInBatchADetail, sku);
 @defineDocumentDetailSkuCustom(disparityOutBatchADetail, sku);
