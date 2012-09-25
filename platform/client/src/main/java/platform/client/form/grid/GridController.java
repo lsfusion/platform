@@ -71,140 +71,155 @@ public class GridController {
         });
 
         return new UserPreferencesButton(groupController.getGroupObject().hasUserPreferences) {
-                    public void addListener() {
-                        addActionListener(new ActionListener() {
-                            public void actionPerformed(ActionEvent e) {
-                                try {
-                                    dialog = new HideSettingsDialog(Main.frame, table, form);
-                                    dialog.setVisible(true);
-                                    form.processRemoteChanges(false);
-                                } catch (IOException ex) {
-                                    throw new RuntimeException(ex);
-                                }
-                            }
-                        });
+            public void addListener() {
+                addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        try {
+                            dialog = new HideSettingsDialog(Main.frame, table, form);
+                            dialog.setVisible(true);
+                            form.processRemoteChanges(false);
+                        } catch (IOException ex) {
+                            throw new RuntimeException(ex);
+                        }
                     }
-                };
+                });
+            }
+        };
     }
 
     public ToolbarGridButton createPrintGroupXlsButton() {
         return new ToolbarGridButton(printXlsIcon, ClientResourceBundle.getString("form.grid.export.to.xls")) {
-                    @Override
-                    public void addListener() {
-                        addActionListener(new ActionListener() {
-                            public void actionPerformed(ActionEvent e) {
-                                form.runSingleGroupXlsExport(groupController);
-                            }
-                        });
+            @Override
+            public void addListener() {
+                addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        form.runSingleGroupXlsExport(groupController);
                     }
-                };
+                });
+            }
+        };
     }
 
     public ToolbarGridButton createPrintGroupButton() {
         return new ToolbarGridButton(printGroupIcon, ClientResourceBundle.getString("form.grid.print.grid")) {
-                    @Override
-                    public void addListener() {
-                        addActionListener(new ActionListener() {
-                            public void actionPerformed(ActionEvent e) {
-                                form.runSingleGroupReport(groupController);
-                            }
-                        });
+            @Override
+            public void addListener() {
+                addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        form.runSingleGroupReport(groupController);
                     }
-                };
+                });
+            }
+        };
     }
 
     public GroupButton createGroupButton() {
         return new GroupButton() {
-                    public void addListener() {
-                        addActionListener(new ActionListener() {
-                            public void actionPerformed(ActionEvent e) {
+            public void addListener() {
+                addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        try {
+                            dialog = new GroupDialog(Main.frame, table);
+                        } catch (IOException ex) {
+                            throw new RuntimeException(ex);
+                        }
+                        dialog.addPropertyChangeListener(new PropertyChangeListener() {
+                            public void propertyChange(PropertyChangeEvent evt) {
                                 try {
-                                    dialog = new GroupDialog(Main.frame, table);
+                                    Map<Integer, List<byte[]>> sumMap = dialog.getSelectedSumMap();
+                                    Map<Integer, List<byte[]>> maxMap = dialog.getSelectedMaxMap();
+                                    List<Map<Integer, List<byte[]>>> groupLevels = dialog.getSelectedGroupLevels();
+                                    boolean onlyNotNull = dialog.onlyNotNull();
+
+                                    List<Map<List<Object>, List<Object>>> result = new ArrayList<Map<List<Object>, List<Object>>>();
+
+                                    for (Map<Integer, List<byte[]>> level : groupLevels) {
+                                        if (!level.isEmpty()) {
+                                            result.add(form.groupData(level, sumMap, maxMap, onlyNotNull));
+                                        }
+                                    }
+                                    dialog.update(result);
                                 } catch (IOException ex) {
                                     throw new RuntimeException(ex);
                                 }
-                                dialog.addPropertyChangeListener(new PropertyChangeListener() {
-                                    public void propertyChange(PropertyChangeEvent evt) {
-                                        try {
-                                            Map<Integer, List<byte[]>> sumMap = dialog.getSelectedSumMap();
-                                            Map<Integer, List<byte[]>> maxMap = dialog.getSelectedMaxMap();
-                                            List<Map<Integer, List<byte[]>>> groupLevels = dialog.getSelectedGroupLevels();
-                                            boolean onlyNotNull = dialog.onlyNotNull();
-
-                                            List<Map<List<Object>, List<Object>>> result = new ArrayList<Map<List<Object>, List<Object>>>();
-
-                                            for (Map<Integer, List<byte[]>> level : groupLevels) {
-                                                if (!level.isEmpty()) {
-                                                    result.add(form.groupData(level, sumMap, maxMap, onlyNotNull));
-                                                }
-                                            }
-                                            dialog.update(result);
-                                        } catch (IOException ex) {
-                                            throw new RuntimeException(ex);
-                                        }
-                                    }
-                                });
-                                dialog.setVisible(true);
                             }
                         });
+                        dialog.setVisible(true);
                     }
-                };
+                });
+            }
+        };
     }
 
     public CalculateSumButton craeteCalculateSumButton() {
         return new CalculateSumButton() {
-                    public void addListener() {
-                        addActionListener(new ActionListener() {
-                            public void actionPerformed(ActionEvent e) {
-                                try {
-                                    ClientPropertyDraw property = getCurrentProperty();
-                                    String caption = property.getCaption();
-                                    if (property.baseType instanceof ClientIntegralClass) {
-                                        ClientGroupObjectValue columnKey = table.getTableModel().getColumnKey(table.getSelectedColumn());
-                                        Object sum = form.calculateSum(property.getID(), columnKey.serialize());
-                                        showPopupMenu(caption, sum);
-                                    } else {
-                                        showPopupMenu(caption, null);
-                                    }
-                                } catch (Exception ex) {
-                                    throw new RuntimeException(ex);
-                                }
+            public void addListener() {
+                addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        try {
+                            ClientPropertyDraw property = getCurrentProperty();
+                            String caption = property.getCaption();
+                            if (property.baseType instanceof ClientIntegralClass) {
+                                ClientGroupObjectValue columnKey = table.getTableModel().getColumnKey(table.getSelectedColumn());
+                                Object sum = form.calculateSum(property.getID(), columnKey.serialize());
+                                showPopupMenu(caption, sum);
+                            } else {
+                                showPopupMenu(caption, null);
                             }
-                        });
+                        } catch (Exception ex) {
+                            throw new RuntimeException(ex);
+                        }
                     }
-                };
+                });
+            }
+        };
     }
 
     public CountQuantityButton createCountQuantityButton() {
         return new CountQuantityButton() {
-                    public void addListener() {
-                        addActionListener(new ActionListener() {
-                            public void actionPerformed(ActionEvent e) {
-                                try {
-                                    showPopupMenu(form.countRecords(groupController.getGroupObject().getID()));
-                                } catch (Exception ex) {
-                                    throw new RuntimeException(ex);
-                                }
-                            }
-                        });
+            public void addListener() {
+                addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        try {
+                            showPopupMenu(form.countRecords(groupController.getGroupObject().getID()));
+                        } catch (Exception ex) {
+                            throw new RuntimeException(ex);
+                        }
                     }
-                };
+                });
+            }
+        };
     }
 
     public ToolbarGridButton createGroupChangeButton() {
         return new ToolbarGridButton(groupChangeIcon, ClientResourceBundle.getString("form.grid.group.groupchange") + " (Ctrl+F12)") {
+            @Override
+            public void addListener() {
+                addActionListener(new ActionListener() {
                     @Override
-                    public void addListener() {
-                        addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                int rowIndex = table.getSelectedRow();
-                                int columnIndex = table.getSelectedColumn();
-                                table.editCellAt(rowIndex, columnIndex, new InternalEditEvent(table, ServerResponse.GROUP_CHANGE));
-                            }
-                        });
+                    public void actionPerformed(ActionEvent e) {
+                        int rowIndex = table.getSelectedRow();
+                        int columnIndex = table.getSelectedColumn();
+                        if (rowIndex == -1 || columnIndex == -1)
+                            JOptionPane.showMessageDialog(form.getComponent(), "Не выбрано ни одной колонки", "Сообщение", 0);
+                        else
+                            table.editCellAt(rowIndex, columnIndex, new InternalEditEvent(table, ServerResponse.GROUP_CHANGE));
                     }
-                };
+                });
+
+                table.addFocusListener(new FocusListener() {
+                    @Override
+                    public void focusGained(FocusEvent e) {
+                        setEnabled(true);
+                    }
+
+                    @Override
+                    public void focusLost(FocusEvent e) {
+                        setEnabled(false);
+                    }
+                });
+            }
+        };
     }
 
     void needToBeShown() {

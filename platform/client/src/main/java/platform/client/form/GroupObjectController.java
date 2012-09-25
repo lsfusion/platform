@@ -7,6 +7,7 @@ import platform.client.Main;
 import platform.client.form.grid.GridController;
 import platform.client.form.panel.PanelController;
 import platform.client.form.queries.FilterController;
+import platform.client.form.queries.ToolbarGridButton;
 import platform.client.form.showtype.ShowTypeController;
 import platform.client.logics.*;
 import platform.interop.ClassViewType;
@@ -16,6 +17,8 @@ import platform.interop.Order;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -115,7 +118,9 @@ public class GroupObjectController extends AbstractGroupObjectController {
         //todo: убрать или реимплементить
         //noinspection PointlessBooleanExpression
         if (groupObject.toolbar.showGroupChange) {
-            addToToolbar(grid.createGroupChangeButton());
+            ToolbarGridButton groupChangeButton = grid.createGroupChangeButton();
+            groupChangeButton.setEnabled(false);
+            addToToolbar(groupChangeButton);
         }
 
         if (groupObject.toolbar.showCountQuantity) {
