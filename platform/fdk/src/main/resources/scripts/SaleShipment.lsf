@@ -186,33 +186,76 @@ DESIGN userShipments FROM DEFAULT {
 }
 
 //--  Связь накладной и поставки
-invoiceShipment = ABSTRACT invoice (shipment);
-invoiceUserShipment = DATA invoice (userShipment);
-invoiceShipment(shipment) += invoiceUserShipment(shipment);
+invoiceShipmentDetail = ABSTRACT invoice (shipmentDetail);
+invoiceUserShipmentDetail = DATA invoice (userShipmentDetail);
+invoiceShipmentDetail(shipmentDetail) += invoiceUserShipmentDetail(shipmentDetail);
 
-CONSTRAINT customerUserShipment(shipment) != customerInvoice(invoiceUserShipment(shipment)) OR
-           companyUserShipment(shipment) != companyInvoice(invoiceUserShipment(shipment))
-    CHECKED BY invoiceUserShipment
+CONSTRAINT customerShipmentDetail(shipmentDetail) != customerInvoice(invoiceUserShipmentDetail(shipmentDetail)) OR
+           companyUserShipment(shipmentDetail) != companyInvoice(invoiceUserShipmentDetail(shipmentDetail))
+    CHECKED BY invoiceUserShipmentDetail
         MESSAGE 'Покупатель и компания в накладной и поставке должны соответствовать друг другу';
 
 GROUP invoiceGroup 'Информация о накладной' : baseGroup;
-descriptionInvoiceUserShipment 'Накладная' (userShipment) = descriptionInvoice(invoiceUserShipment(userShipment)) IN invoiceGroup;
+descriptionInvoiceUserShipmentDetail 'Накладная' (userShipmentDetail) = descriptionInvoice(invoiceUserShipmentDetail(userShipmentDetail)) IN invoiceGroup;
+
 fillInvoiceUserShipment 'Заполнить поставку на основании накладной' =  ACTION (userShipment) {
-    FOR invoiceInvoiceDetail(invoiceDetail) == invoiceUserShipment(userShipment) DO {
-        ADDOBJ userShipmentDetail;
-        FOR d == addedObject() DO {
+    LOCAL saleInvoice = invoice();
+
+    FORM invoices MODAL;
+    IF formResult() == formResult.ok THEN {
+        SET saleInvoice() <- chosenObject('i');
+
+        FOR invoiceInvoiceDetail(invoiceDetail) == saleInvoice() ADDOBJ d = userShipmentDetail DO {
+
             SET userShipmentUserShipmentDetail(d) <- userShipment;
+            SET invoiceUserShipmentDetail(d) <- saleInvoice();
             SET stockUserShipmentDetail (d) <- stockInvoiceDetail(invoiceDetail);
             SET skuUserShipmentDetail(d) <- skuInvoiceDetail(invoiceDetail);
             SET batchUserShipmentDetail (d) <- batchInvoiceDetail(invoiceDetail);
             SET quantityUserShipmentDetail (d) <- quantityInvoiceDetail(invoiceDetail);
-        };
-    };
-} CONFIRM IN invoiceGroup;
+        }
+    }
+} IN invoiceGroup;
 
-EXTEND FORM userShipment PROPERTIES(s) descriptionInvoiceUserShipment, fillInvoiceUserShipment;
+inInvoiceShipment (invoice, shipment) = GROUP SUM quantityShipmentDetail(shipmentDetail) BY invoiceShipmentDetail(shipmentDetail), shipmentShipmentDetail(shipmentDetail);
+
+invoicesShipment 'Накладные' (shipment) = GROUP CONCAT castToString255(descriptionInvoice(invoice))
+    IF inInvoiceShipment(invoice, shipment) , ', ' BY shipment IN invoiceGroup MINCHARWIDTH 30 PREFCHARWIDTH 50;
+
+EXTEND FORM userShipment
+    PROPERTIES(s) fillInvoiceUserShipment, invoicesShipment READONLY
+    PROPERTIES(d) descriptionInvoiceUserShipmentDetail
+;
 EXTEND DESIGN userShipment { headerColumn2 { ADD s.invoiceGroup; } }
-EXTEND FORM userShipments PROPERTIES(s) READONLY descriptionInvoiceUserShipment;
+EXTEND FORM userShipments
+    PROPERTIES(s) READONLY invoicesShipment
+    PROPERTIES(d) READONLY descriptionInvoiceUserShipmentDetail
+;
+
+//-- Подсчет к-ва в паставках
+
+shippedInvoiceSku 'К-во в паставках' (invoice, sku) = GROUP SUM quantityShipmentDetail(shipmentDetail) IF isPostedShipmentDetail(shipmentDetail)
+    BY invoiceShipmentDetail(shipmentDetail), skuShipmentDetail(shipmentDetail);
+
+shippedInvoiceDetail 'К-во в паставках' (invoiceDetail) = PARTITION UNGROUP shippedInvoiceSku
+                                                          LIMIT STRICT quantityInvoiceDetail (invoiceDetail)
+                                                          BY invoiceInvoiceDetail(invoiceDetail), skuInvoiceDetail(invoiceDetail)
+                                                          ORDER invoiceDetail;
+
+EXTEND FORM userInvoice
+    PROPERTIES(d) READONLY shippedInvoiceDetail BEFORE nameStockUserInvoiceDetail
+
+;
+
+EXTEND FORM userInvoices
+    PROPERTIES(d) READONLY shippedInvoiceDetail BEFORE nameStockUserInvoiceDetail
+
+;
+
+EXTEND FORM invoices
+    PROPERTIES(d) READONLY shippedInvoiceDetail BEFORE nameStockInvoiceDetail
+
+;
 
 //-- аггр.объект
 //--
@@ -238,7 +281,7 @@ CLASS invoiceShipmentDetail 'Строка поставки на основе и�
 @defineDocumentTables(invoiceShipment);
 
 @defineDocumentAggregation(invoice, invoiceShipment, createShipmentInvoice);
-invoiceShipment(shipment) += invoiceInvoiceShipment(shipment);
+//invoiceShipment(shipment) += invoiceInvoiceShipment(shipment);
 dateShipment(shipment) += dateInvoiceShipment(shipment);
 timeShipment(shipment) += timeInvoiceShipment(shipment);
 

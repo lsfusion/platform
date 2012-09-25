@@ -518,6 +518,8 @@ META defineDocumentDetailStock (object, detail, stockProp, stockCaption)
     stockProp###detail (idetail) = stockProp###object(object###detail(idetail));
     name###stockProp###detail stockCaption (idetail) = name(stockProp###detail(idetail)) MINCHARWIDTH 10 PREFCHARWIDTH 20;
     country###stockProp###detail (idetail) = countryStock(stockProp###detail(idetail));
+    company###detail (idetail) = companyStock(stockProp###detail(idetail));
+    name###company###detail 'Компания ('###stockCaption###')' (idetail) = name(company###detail (idetail));
 END
 META defineDocumentDetailStock (object, stockProp, stockCaption)
     @defineDocumentDetailStock (object, object##Detail, stockProp, stockCaption);
@@ -528,12 +530,16 @@ META defineDocumentDetailDataStock (object, detail, stockClass, stockProp, stock
     stockProp###detail (idetail) = UNION OVERRIDE stockProp###object(object###detail(idetail)), data###stockProp###detail(idetail) PERSISTENT;
     name###stockProp###detail stockCaption (idetail) = name(stockProp###detail(idetail)) MINCHARWIDTH 10 PREFCHARWIDTH 20;
     country###stockProp###detail (idetail) = countryStock(stockProp###detail(idetail));
+    company###detail (idetail) = companyStock(stockProp###detail(idetail));
+    name###company###detail 'Компания ('###stockCaption###')' (idetail) = name(company###detail (idetail));
 END
 META defineDocumentAbstractDetailDataStock (object, detail, stockClass, stockProp, stockCaption)
     data###stockProp###detail = ABSTRACT stockClass(detail) PERSISTENT;
     stockProp###detail (idetail) = UNION OVERRIDE stockProp###object(object###detail(idetail)), data###stockProp###detail(idetail) PERSISTENT;
     name###stockProp###detail stockCaption (idetail) = name(stockProp###detail(idetail)) MINCHARWIDTH 10 PREFCHARWIDTH 20;
     country###stockProp###detail (idetail) = countryStock(stockProp###detail(idetail));
+    company###detail (idetail) = companyStock(stockProp###detail(idetail));
+    name###company###detail 'Компания ('###stockCaption###')' (idetail) = name(company###detail (idetail));
 END
 META defineDocumentInterfaceDetailDataStock (object, detail, stockClass, stockProp, stockCaption)
     @defineDocumentAbstractDetailDataStock(object, detail, stockClass, stockProp, stockCaption);

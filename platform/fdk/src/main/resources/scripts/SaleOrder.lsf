@@ -184,24 +184,27 @@ FORM orders 'Заказы'
 ;
 
 DESIGN orders FROM DEFAULT {
-    NEW documentContainer BEFORE functions.box {
-        type = SPLITV;
-        childConstraints = TO THE BOTTOM;
+    main {
+        preferredSize = (1024, 768);
+        NEW documentContainer BEFORE functions.box {
+            type = SPLITV;
+            childConstraints = TO THE BOTTOM;
 
-        ADD o.box;
+            ADD o.box;
 
-        NEW documentDetail {
-            type = TABBED;
+            NEW documentDetail {
+                type = TABBED;
 
-            ADD d.box {
-                title = 'Спецификация';
-            }
-            NEW printTab {
-                title = 'Печатные формы';
-                NEW printContainer {
-                    title = 'Печать';
-                    childConstraints = TO THE BOTTOM;
-                    fillVertical = 1.0;
+                ADD d.box {
+                    title = 'Спецификация';
+                }
+                NEW printTab {
+                    title = 'Печатные формы';
+                    NEW printContainer {
+                        title = 'Печать';
+                        childConstraints = TO THE BOTTOM;
+                        fillVertical = 1.0;
+                    }
                 }
             }
         }
