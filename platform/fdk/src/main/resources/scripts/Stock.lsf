@@ -820,32 +820,35 @@ META defineDocumentHeaderAndDetailSumCustomCaption (object, detail, caption, cap
     @defineDocumentHeaderSumCustom(object, detail, caption);
 END
 //--
-META defineDocumentDetailSumCustomPrefix (detail, prefix, caption)
+META defineDocumentDetailDataSumCustomPrefix (detail, prefix, caption)
     prefix###sum###detail 'Сумма'###caption = DATA NUMERIC[16,2] (detail);
 END
-META defineDocumentAbstractDetailSumCustomPrefix (detail, prefix, caption)
+META defineDocumentAbstractDetailDataSumCustomPrefix (detail, prefix, caption)
     prefix###sum###detail 'Сумма'###caption = ABSTRACT NUMERIC[16,2] (detail);
 END
 
-META defineDocumentInterfaceDetailSumCustomPrefix (detail, prefix, caption)
-    @defineDocumentAbstractDetailSumCustomPrefix(detail, prefix, caption);
-    @defineDocumentDetailSumCustomPrefix(user###detail, prefix, caption);
+META defineDocumentInterfaceDetailDataSumCustomPrefix (detail, prefix, caption)
+    @defineDocumentAbstractDetailDataSumCustomPrefix(detail, prefix, caption);
+    @defineDocumentDetailDataSumCustomPrefix(user###detail, prefix, caption);
     prefix###sum###detail (detail) += prefix###sum###user###detail(detail);
 END
 
-META defineDocumentInterfaceDetailSumPrefix (object, prefix, caption)
-    @defineDocumentInterfaceDetailSumCustomPrefix(object##Detail, prefix, caption);
+META defineDocumentInterfaceDetailDataSumPrefix (object, prefix, caption)
+    @defineDocumentInterfaceDetailDataSumCustomPrefix(object##Detail, prefix, caption);
 END
 META defineDocumentInterfaceDetailDataSum (object)
-    @defineDocumentInterfaceDetailSumPrefix(object, ,);
+    @defineDocumentInterfaceDetailDataSumPrefix(object, ,);
 END
 
-META deriveSumDetailOnQuantityPriceChangeCustomPrefix(detail, prefix)
+META deriveDocumentDetailSumCustomPrefix(detail, prefix)
     prefix###sum###detail (detail)  <- quantity###detail(detail) * prefix###price###detail(detail)
                     WHEN CHANGED(quantity###detail(detail)) OR CHANGED (prefix###price###detail(detail));
 END
-META deriveSumDetailOnQuantityPriceChangeUser(object)
-    @deriveSumDetailOnQuantityPriceChangeCustomPrefix(user###object##Detail, );
+META deriveDocumentDetailSumPrefix(object, prefix)
+    @deriveDocumentDetailSumCustomPrefix(object##Detail, prefix);
+END
+META deriveDocumentDetailSum(object)
+    @deriveDocumentDetailSumPrefix(object, );
 END
 //-
 

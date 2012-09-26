@@ -53,9 +53,9 @@ CLASS userInvoicePosted 'Закрытая накладная (польз.)' : us
 
 @defineDocumentInterfaceDetailQuantity(invoice);
 @defineDocumentInterfaceDetailPrice(invoice);
-@defineDocumentInterfaceDetailSum(invoice);
-//@defineDocumentInterfaceDetailDataSum(invoice);
-//@deriveSumDetailOnQuantityPriceChangeUser(invoice);
+
+@defineDocumentInterfaceDetailDataSum(invoice);
+@deriveDocumentDetailSum(userInvoice);
 
 @defineDocumentInterfaceDetailVAT(invoice, countryStock);
 @defineDocumentInterfaceDetailVATSum(invoice, countryStock);

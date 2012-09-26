@@ -56,7 +56,8 @@ CLASS userShipmentPosted 'Закрытая поставка (польз.)' : use
 @defineDocumentInterfaceDetailPrice(shipment);
 @deriveDocumentDetailPriceBatch(userShipment);
 
-@defineDocumentInterfaceDetailSum(shipment);
+@defineDocumentInterfaceDetailDataSum(shipment);
+@deriveDocumentDetailSum(userShipment);
 
 @defineDocumentInterfaceHeaderQuantity(shipment);
 @defineDocumentHeaderSkuQuantity(shipment, sku);

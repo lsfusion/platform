@@ -44,9 +44,9 @@ CLASS userOrderPosted 'Закрытый заказ (польз.)' : userOrder, p
 
 @defineDocumentInterfaceDetailQuantity(order);
 @defineDocumentInterfaceDetailPrice(order);
-//@defineDocumentInterfaceDetailSum(order);
+
 @defineDocumentInterfaceDetailDataSum(order);
-@deriveSumDetailOnQuantityPriceChangeUser(order);
+@deriveDocumentDetailSum(userOrder);
 
 @defineDocumentInterfaceHeaderQuantity(order);
 @defineDocumentHeaderSkuQuantity(order, sku);
