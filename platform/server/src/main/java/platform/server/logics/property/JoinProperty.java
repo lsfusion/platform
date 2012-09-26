@@ -46,10 +46,18 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
         return interfaces;
     }
 
+    private static <T extends PropertyInterface> boolean isIdentity(List<Interface> interfaces, CalcPropertyImplement<T, CalcPropertyInterfaceImplement<Interface>> implement) {
+        Set<Interface> rest = new HashSet<Interface>(interfaces);
+        for(CalcPropertyInterfaceImplement<Interface> impl : implement.mapping.values())
+            if(!(impl instanceof Interface && rest.remove((Interface)impl)))
+                return false;
+        return rest.isEmpty();
+    }
+    
     public JoinProperty(String sID, String caption, List<Interface> interfaces, boolean implementChange, CalcPropertyImplement<T, CalcPropertyInterfaceImplement<Interface>> implement) {
         super(sID, caption, interfaces);
         this.implement = implement;
-        this.implementChange = implementChange;
+        this.implementChange = implementChange || isIdentity(interfaces, implement);
 
         finalizeInit();
     }
