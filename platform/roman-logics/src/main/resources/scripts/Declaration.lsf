@@ -931,14 +931,14 @@ stringInnerInvoice (innerInvoice) =
     sidInnerInvoice(innerInvoice), dateInnerInvoice(innerInvoice));
 
 innerInvoicesDeclaration 'Инвойсы' (declaration) = GROUP CONCAT stringInnerInvoice(innerInvoice)
-    IF inDeclarationInnerInvoice (declaration, innerInvoice), ', ' BY declaration IN docGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
+    IF inDeclarationInnerInvoice (declaration, innerInvoice), ', ' BY declaration ORDER innerInvoice IN docGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
 
 
 quantityDeclarationBrandSupplier (declaration, brandSupplier) = GROUP SUM quantityDeclarationDetail(declarationDetail)
     BY declarationDeclarationDetail(declarationDetail), brandDeclarationDetail(declarationDetail);
 
 canonicalBrandDeclaration 'Бренды' (declaration) = castToString255(
-    [GROUP CONCAT commonName(brandSupplier) IF quantityDeclarationBrandSupplier(declaration, brandSupplier), ' , ' BY declaration](declaration))
+    [GROUP CONCAT commonName(brandSupplier) IF quantityDeclarationBrandSupplier(declaration, brandSupplier), ' , ' BY declaration ORDER brandSupplier](declaration))
     MINCHARWIDTH 50 MAXCHARWIDTH 100 PREFCHARWIDTH 100 PERSISTENT;
 
 

@@ -1285,7 +1285,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         for (PropertyDrawInstance<?> property : propertyDraws)
             query.properties.put(property, property.getDrawInstance().getExpr(query.mapKeys, getModifier()));
 
-        OrderedMap<Map<ObjectInstance, Object>, Map<Object, Object>> resultSelect = query.execute(this, queryOrders, 0);
+        OrderedMap<Map<ObjectInstance, Object>, Map<Object, Object>> resultSelect = query.execute(this, queryOrders, orderTop);
         for (Entry<Map<ObjectInstance, Object>, Map<Object, Object>> row : resultSelect.entrySet()) {
             Map<ObjectInstance, Object> groupValue = new HashMap<ObjectInstance, Object>();
             for (GroupObjectInstance group : groups)

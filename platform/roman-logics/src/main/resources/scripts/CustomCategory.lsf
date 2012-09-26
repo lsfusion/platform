@@ -161,23 +161,14 @@ createCustomsZone 'Задать таможенную зону и связать 
     ADDOBJ customsZone;
     FOR g == addedObject() DO {
         SET name(g) <- 'Таможенный Союз';
-        EXEC apply();
-        SET customsZoneCustomCategory10(customCategory10) <- g;
-        EXEC apply();
-        SET customsZoneCustomCategory9(customCategory9) <- g;
-        EXEC apply();
-        SET customsZoneSubCategory(subCategory) <- g;
-        EXEC apply();
-        SET customsZoneTypeDuty(typeDuty) <- g;
-        EXEC apply();
+        SET customsZoneCustomCategory10(customCategory10) <- g WHERE customCategory10 IS customCategory10;
+        SET customsZoneCustomCategory9(customCategory9) <- g WHERE customCategory9 IS customCategory9;
+        SET customsZoneSubCategory(subCategory) <- g WHERE subCategory IS subCategory;
+        SET customsZoneTypeDuty(typeDuty) <- g WHERE typeDuty IS typeDuty;
         SET customCategory10DataSkuCustomsZone(s, g) <- customCategory10DataSku(s);
-        EXEC apply();
-        SET subCategoryDataSkuCustomsZone(sku, customsZone) <- subCategoryDataSku(sku);
-        EXEC apply();
+        SET subCategoryDataSkuCustomsZone(sku, customsZone) <- subCategoryDataSku(sku) WHERE customsZone IS customsZone;
         SET customCategory10CategoryGenderCompositionTypeFabricCustomsZone(a, b, c, d, g) <- customCategory10FreightCategoryGenderCompositionTypeFabric(a, b, c, d);
-        EXEC apply();
-        SET customCategory10CustomCategoryOriginCustomsZone(customCategoryOrigin, xxx) IF xxx == g <- customCategory10CustomCategoryOrigin(customCategoryOrigin);
-        EXEC apply();
+        SET customCategory10CustomCategoryOriginCustomsZone(customCategoryOrigin, g) <- customCategory10CustomCategoryOrigin(customCategoryOrigin);
     }
 } CONFIRM;
 
