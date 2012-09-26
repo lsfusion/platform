@@ -137,6 +137,9 @@ TABLE listInventory (listInventory);
 @defineDocumentHeaderStock(listInventory, stock, 'Склад');
 @defineDocumentHeaderNote(listInventory);
 
+@defineDocumentHeaderCurrency(listInventory);
+@deriveDocumentCurrency(listInventory, stock);
+
 inventoryListInventory = DATA inventory (listInventory) IN idGroup AUTOSET;
 nameInventoryListInventory 'Название инвентаризации' (listInventory) = nameInventory(inventoryListInventory(listInventory));
 
@@ -185,6 +188,9 @@ inventoryPageInventoryDetail(pageInventoryDetail) = inventoryListInventory(listI
 
 @defineDocumentDetailStock(listInventory, pageInventoryDetail, stock, 'Склад');
 @defineDocumentDetailTime(inventory, pageInventoryDetail);
+
+@defineDocumentDetailCurrency(listInventory, pageInventoryDetail);
+
 
 @defineDocumentDetailIndex(pageInventory);
 @defineDocumentDetailSku(pageInventory, sku);

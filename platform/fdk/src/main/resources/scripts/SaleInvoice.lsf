@@ -61,7 +61,8 @@ CLASS userInvoicePosted 'Закрытая накладная (польз.)' : us
 @deriveDocumentDetailSum(userInvoice);
 
 @defineDocumentInterfaceDetailVAT(invoice, countryStock);
-@defineDocumentInterfaceDetailVATSum(invoice, countryStock);
+@defineDocumentInterfaceDetailDataVATSum (invoice);
+@deriveDocumentDetailVATSum(userInvoice);
 
 @defineDocumentInterfaceDetailPricePrefix(invoice, shipment, ' (учетная)');
 @deriveDocumentDetailPriceBatchStockPrefix(userInvoice, shipment);

@@ -355,6 +355,11 @@ TABLE disparityOutBatchADetail(disparityOutBatchADetail);
 @defineDocumentDetailStock (disparityBatchA, disparityInBatchADetail, stock, 'Склад');
 @defineDocumentDetailStock (disparityBatchA, disparityOutBatchADetail, stock, 'Склад');
 
+@defineDocumentHeaderCurrency(disparityBatchA);
+@deriveDocumentCurrency(disparityBatchA, stock);
+@defineDocumentDetailCurrency(disparityBatchA, disparityInBatchADetail);
+@defineDocumentDetailCurrency(disparityBatchA, disparityOutBatchADetail);
+
 @defineDocumentHeaderPosted (disparityBatchA);
 @defineDocumentDetailPosted (disparityBatchA, disparityInBatchADetail);
 @defineDocumentDetailPosted (disparityBatchA, disparityOutBatchADetail);

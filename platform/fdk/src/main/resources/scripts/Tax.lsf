@@ -236,20 +236,57 @@ META defineDocumentInterfaceDetailVAT(object, countryProp)
     @defineDocumentInterfaceDetailVATCustom(object##Detail, countryProp);
 END
 
-META defineDocumentDetailVATSumCustom(detail, sumProp, countryProp)
-    VATSum###detail 'Сумма НДС' (detail) = sum###detail(detail) * valueVAT###detail (detail) / 100;
+META defineDocumentDetailVATSumCustom(detail, sumProp, currencyProp)
+    VATSum###detail 'Сумма НДС' (detail) = roundCurrency((sum###detail(detail) * valueVAT###detail (detail) / 100), currencyProp###detail(detail));
     sumProp###sum###detail 'Сумма с НДС' (detail) = sum###detail(detail) (+) VATSum###detail(detail);
 END
-META defineDocumentInterfaceDetailVATSumCustom(detail, sumProp, countryProp)
-    @defineDocumentDetailVATSumCustom(detail, sumProp, countryProp);
-    @defineDocumentDetailVATSumCustom(user###detail, sumProp, countryProp);
+META defineDocumentInterfaceDetailVATSumCustom(detail, sumProp, currencyProp)
+    @defineDocumentDetailVATSumCustom(detail, sumProp, currencyProp);
+    @defineDocumentDetailVATSumCustom(user###detail, sumProp, currencyProp);
 END
 
-META defineDocumentDetailVATSum(object, countryProp)
-    @defineDocumentDetailVATSumCustom(object##Detail, object, countryProp);
+META defineDocumentDetailVATSum(object, currencyProp)
+    @defineDocumentDetailVATSumCustom(object##Detail, object, currencyProp);
 END
-META defineDocumentInterfaceDetailVATSum(object, countryProp)
-    @defineDocumentInterfaceDetailVATSumCustom(object##Detail, object, countryProp);
+META defineDocumentInterfaceDetailVATSum(object, currencyProp)
+    @defineDocumentInterfaceDetailVATSumCustom(object##Detail, object, currencyProp);
+END
+
+META defineDocumentDetailVATSum(object)
+    @defineDocumentDetailVATSum(object, currency);
+END
+META defineDocumentInterfaceDetailVATSum(object)
+    @defineDocumentInterfaceDetailVATSum(object, currency);
+END
+
+//--
+META defineDocumentDetailDataVATSumCustom (detail, sumProp)
+    VATSum###detail 'Сумма НДС' (detail) = DATA NUMERIC[16,2] (detail);
+    sumProp###sum###detail 'Сумма с НДС' (detail) = sum###detail(detail) (+) VATSum###detail(detail);
+END
+META defineDocumentAbstractDetailDataVATSumCustom (detail, sumProp)
+    VATSum###detail 'Сумма НДС' (detail) = ABSTRACT NUMERIC[16,2] (detail);
+    sumProp###sum###detail 'Сумма с НДС' (detail) = sum###detail(detail) (+) VATSum###detail(detail);
+END
+
+META defineDocumentInterfaceDetailDataVATSumCustom (detail, sumProp)
+    @defineDocumentAbstractDetailDataVATSumCustom(detail, sumProp);
+    @defineDocumentDetailDataVATSumCustom(user###detail, sumProp);
+    VATSum###detail (detail) += VATSum###user###detail(detail);
+END
+META defineDocumentInterfaceDetailDataVATSum (object)
+    @defineDocumentInterfaceDetailDataVATSumCustom(object##Detail, object);
+END
+
+META deriveDocumentDetailVATSumCustom(detail, currencyProp)
+    VATSum###detail (detail)  <- roundCurrency((sum###detail(detail) * valueVAT###detail (detail) / 100), currencyProp###detail(detail))
+                    WHEN CHANGED(sum###detail(detail)) OR CHANGED (valueVAT###detail (detail));
+END
+META deriveDocumentDetailVATSum(object, currencyProp)
+    @deriveDocumentDetailVATSumCustom(object##Detail, currencyProp);
+END
+META deriveDocumentDetailVATSum(object)
+    @deriveDocumentDetailVATSum(object, currency);
 END
 
 // ------------------------------------------------------- Стандартные данные ----------------------------------- //

@@ -799,19 +799,30 @@ META deriveDocumentDetailPriceBatchStock (object)
     @deriveDocumentDetailPriceBatchStockPrefix(object, );
 END
 
-META defineDocumentDetailSumCustom (detail)
-    sum###detail 'Сумма' (detail) = quantity###detail(detail) * price###detail(detail);
+META defineDocumentDetailSumCustom (detail, currencyProp)
+    sum###detail 'Сумма' (detail) = roundCurrency((quantity###detail(detail) * price###detail(detail)), currencyProp###detail(detail));
 END
-META defineDocumentInterfaceDetailSumCustom (detail)
-    @defineDocumentDetailSumCustom(detail);
-    @defineDocumentDetailSumCustom(user###detail);
+META defineDocumentDetailSumCustom (detail)
+    @defineDocumentDetailSumCustom(detail, currency);
+END
+META defineDocumentInterfaceDetailSumCustom (detail, currencyProp)
+    @defineDocumentDetailSumCustom(detail, currencyProp);
+    @defineDocumentDetailSumCustom(user###detail, currencyProp);
 END
 
-META defineDocumentDetailSum (object)
-    @defineDocumentDetailSumCustom(object##Detail);
+META defineDocumentDetailSum (object, currencyProp)
+    @defineDocumentDetailSumCustom(object##Detail, currencyProp);
 END
+META defineDocumentDetailSum (object)
+    @defineDocumentDetailSum(object, currency);
+END
+
+META defineDocumentInterfaceDetailSum (object, currencyProp)
+    @defineDocumentInterfaceDetailSumCustom(object##Detail, currencyProp);
+END
+
 META defineDocumentInterfaceDetailSum (object)
-    @defineDocumentInterfaceDetailSumCustom(object##Detail);
+    @defineDocumentInterfaceDetailSum(object, currency);
 END
 
 META defineDocumentHeaderAndDetailSumCustomCaption (object, detail, caption, captionDetail)
@@ -840,15 +851,18 @@ META defineDocumentInterfaceDetailDataSum (object)
     @defineDocumentInterfaceDetailDataSumPrefix(object, ,);
 END
 
-META deriveDocumentDetailSumCustomPrefix(detail, prefix)
-    prefix###sum###detail (detail)  <- quantity###detail(detail) * prefix###price###detail(detail)
+META deriveDocumentDetailSumCustomPrefix(detail, prefix, currencyProp)
+    prefix###sum###detail (detail)  <- roundCurrency((quantity###detail(detail) * prefix###price###detail(detail)), currencyProp###detail(detail))
                     WHEN CHANGED(quantity###detail(detail)) OR CHANGED (prefix###price###detail(detail));
 END
-META deriveDocumentDetailSumPrefix(object, prefix)
-    @deriveDocumentDetailSumCustomPrefix(object##Detail, prefix);
+META deriveDocumentDetailSumPrefix(object, prefix, currencyProp)
+    @deriveDocumentDetailSumCustomPrefix(object##Detail, prefix, currencyProp);
+END
+META deriveDocumentDetailSum(object, currencyProp)
+    @deriveDocumentDetailSumPrefix(object, ,currencyProp);
 END
 META deriveDocumentDetailSum(object)
-    @deriveDocumentDetailSumPrefix(object, );
+    @deriveDocumentDetailSum(object, currency);
 END
 //-
 
