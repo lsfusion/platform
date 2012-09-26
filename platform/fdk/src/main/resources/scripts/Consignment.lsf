@@ -1,7 +1,7 @@
 MODULE Consignment;
 
 REQUIRE System,
-        LegalEntity,
+        ByLegalEntity,
         Stock,
         Employee,
         Utils,

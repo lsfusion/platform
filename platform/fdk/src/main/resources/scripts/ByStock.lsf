@@ -1,0 +1,7 @@
+MODULE ByStock;
+
+REQUIRE Stock, ByLegalEntity;
+
+NAMESPACE Stock;
+
+UNPStock 'УНП' (stock) = UNPLegalEntity(companyStock(stock));

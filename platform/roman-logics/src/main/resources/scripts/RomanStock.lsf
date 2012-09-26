@@ -1,6 +1,6 @@
 MODULE RomanStock;
 
-REQUIRE Stock, Warehouse, Barcode, RomanLogicsModule, Contract, MasterData, I18n;
+REQUIRE ByStock, Warehouse, Barcode, RomanLogicsModule, Contract, MasterData, I18n;
 
 PRIORITY Stock, RomanLogicsModule;
 

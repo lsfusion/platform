@@ -75,7 +75,7 @@ FORM contractsSkuSupplier 'Договора'
 FORM supplier 'Поставщик'
     OBJECTS s=supplier FIXED PANEL
     PROPERTIES(s) name, fullNameLegalEntity, nameOwnershipLegalEntity, shortNameOwnershipLegalEntity,
-                  UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity, emailLegalEntity, siteLegalEntity,
+                  emailLegalEntity, siteLegalEntity,
                   addressLegalEntity ON CHANGE EXEC dialogAddressLegalEntity(s),
                   postAddressLegalEntity ON CHANGE EXEC dialogPostAddressLegalEntity(s),
                   managerLegalEntity ON CHANGE EXEC dialogManagerLegalEntity(s),
@@ -149,9 +149,6 @@ DESIGN supplier FROM DEFAULT {
                 ADD s.managementGroup {
                     childConstraints = TO THE BOTTOM;
                 }
-                ADD s.docGroup {
-                    childConstraints = TO THE BOTTOM;
-                }
             }
         }
 
@@ -187,7 +184,7 @@ DESIGN supplier FROM DEFAULT {
 
 FORM suppliers 'Поставщики'
     OBJECTS s=supplier
-    PROPERTIES(s) READONLY name, fullNameLegalEntity, shortNameOwnershipLegalEntity, UNPLegalEntity, numberAccountLegalEntity, addressLegalEntity, phoneLegalEntity
+    PROPERTIES(s) READONLY name, fullNameLegalEntity, shortNameOwnershipLegalEntity, numberAccountLegalEntity, addressLegalEntity, phoneLegalEntity
     PROPERTIES(s) ADDFORM, EDITFORM, delete
 
     DIALOG supplier OBJECT s
@@ -230,7 +227,6 @@ EXTEND DESIGN company {
 META defineDocumentHeaderSupplierContract(object)
     supplier###object (object) = DATA supplier (object);
     nameSupplier###object 'Поставщик' (object) = name(supplier###object(object)) IN documentPrmGroup MINCHARWIDTH 30 PREFCHARWIDTH 40;
-    UNPSupplier###object 'УНП поставщика' (object) = UNPLegalEntity(supplier###object(object)) IN documentPrmGroup;
 
     supplier###object##Detail (detail) = supplier###object(object###object##Detail(detail));
 

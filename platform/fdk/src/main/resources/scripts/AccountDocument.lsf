@@ -170,9 +170,8 @@ FORM sumAccountDocumentLedger 'Товарный отчет'
     OBJECTS params = (dtFrom = DATE, dtTo = DATE) FIXED PANEL,
             ds = stock FIXED PANEL
     PROPERTIES objFrom = OBJVALUE(dtFrom), objTo = OBJVALUE(dtTo)
-    PROPERTIES(ds) SELECTOR name, nameCompanyStock, UNPStock,
-    nameMRPStock, namePositionMRPStock, nameBookkeeperStock,
-    namePositionBookkeeperStock, namePersonCheckStock, namePositionPersonCheckStock
+    PROPERTIES(ds) SELECTOR name, nameCompanyStock, nameMRPStock, namePositionMRPStock, nameBookkeeperStock,
+                            namePositionBookkeeperStock, namePersonCheckStock, namePositionPersonCheckStock
 
     PROPERTIES sumAccountBDocumentLedgerDate(ds, dtFrom), sumItemAccountBDocumentLedgerDate(ds, dtFrom), sumContainerAccountBDocumentLedgerDate(ds, dtFrom),
                sumItemAccountADocumentLedgerDate(ds, dtTo), sumContainerAccountADocumentLedgerDate(ds, dtTo), sumAccountADocumentLedgerDate(ds, dtTo)
@@ -270,7 +269,6 @@ DESIGN sumAccountDocumentLedger FROM DEFAULT {
             title = 'Организация';
             childConstraints = TO THE RIGHT;
             ADD PROPERTY (nameCompanyStock(ds));
-            ADD PROPERTY (UNPStock(ds));
          }
     }
 

@@ -4,7 +4,7 @@ REQUIRE System,
         Stock,
         Store,
         I18n,
-        LegalEntity,
+        ByLegalEntity,
         Barcode,
         RetailCRM,
         AccountDocument,
@@ -306,6 +306,8 @@ groupWarehouseCustomStore = DATA groupWarehouse(customStore);
 nameGroupWarehouseCustomStore 'Группа складов' (customStore) = name(groupWarehouseCustomStore(customStore));
 
 stockGroupStock (stock) += groupWarehouseCustomStore(stock);
+
+allowImportFromXLSLegalEntity 'Разрешить импорт из Excel-файлов' = DATA BOOLEAN (legalEntity) IN lawGroup;
 
 FORM customStore 'Склад временного хранения'
 

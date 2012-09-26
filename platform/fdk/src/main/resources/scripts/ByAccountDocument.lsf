@@ -1,0 +1,17 @@
+MODULE ByAccountDocument;
+
+REQUIRE AccountDocument, ByStock;
+
+NAMESPACE AccountDocument;
+
+EXTEND FORM sumAccountDocumentLedger
+
+    PROPERTIES(ds) UNPStock
+;
+
+EXTEND DESIGN sumAccountDocumentLedger{
+
+    container12 {
+        ADD PROPERTY (UNPStock(ds));
+    }
+}

@@ -1,0 +1,22 @@
+MODULE ByCustomer;
+
+REQUIRE Customer, ByLegalEntity;
+
+NAMESPACE Customer;
+
+EXTEND FORM customer
+
+    PROPERTIES(cu) UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity
+;
+
+EXTEND DESIGN customer{
+
+    column2{
+        ADD cu.docGroup;
+    }
+}
+
+EXTEND FORM customers
+
+    PROPERTIES(cu) READONLY UNPLegalEntity
+;

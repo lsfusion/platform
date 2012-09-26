@@ -1,0 +1,30 @@
+MODULE BySupplier;
+
+REQUIRE Supplier, ByLegalEntity;
+
+NAMESPACE Supplier;
+
+META defineDocumentUNPSupplier(object)
+
+    UNPSupplier###object 'УНП поставщика' (object) = UNPLegalEntity(supplier###object(object)) IN documentPrmGroup;
+
+END
+
+EXTEND FORM supplier
+
+    PROPERTIES(s) UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity
+;
+
+EXTEND DESIGN supplier{
+
+    row2{
+        ADD s.docGroup {
+            childConstraints = TO THE BOTTOM;
+        }
+    }
+}
+
+EXTEND FORM suppliers
+
+    PROPERTIES(s) READONLY UNPLegalEntity
+;

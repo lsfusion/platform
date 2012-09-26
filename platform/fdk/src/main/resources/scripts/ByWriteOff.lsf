@@ -1,0 +1,12 @@
+MODULE ByWriteOff;
+
+REQUIRE WriteOff, ByLegalEntity;
+
+NAMESPACE WriteOff;
+
+UNPLegalEntityWriteOff 'УНП' (writeOff) = UNPLegalEntity(companyWriteOff(writeOff));
+
+EXTEND FORM writeOffPrint
+
+    PROPERTIES(w) UNPLegalEntityWriteOff
+;

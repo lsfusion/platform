@@ -80,7 +80,7 @@ dialogBatchReturnOutDetail 'Партия' (returnOutDetail) = ACTION (returnOutD
 
 
 EXTEND FORM returnOut
-    PROPERTIES(d) descriptionBatchReturnOutDetail ON CHANGE EXEC dialogBatchReturnOutDetail(d), currentBalanceReturnOutDetail READONLY
+    PROPERTIES(d) descriptionBatchReturnOutDetail ON CHANGE EXEC dialogBatchReturnOutDetail(d) BEFORE delete, currentBalanceReturnOutDetail READONLY BEFORE delete
 ;
 
 EXTEND FORM returnOuts

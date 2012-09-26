@@ -1,0 +1,8 @@
+MODULE ByStore;
+
+REQUIRE Store, ByLegalEntity;
+
+NAMESPACE Store;
+
+UNPDepartmentStore 'УНП' (departmentStore) = UNPLegalEntity(companyDepartmentStore(departmentStore));
+

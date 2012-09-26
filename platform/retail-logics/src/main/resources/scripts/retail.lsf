@@ -18,7 +18,7 @@ REQUIRE System,
         Tax,
         Ware,
         Country,
-        LegalEntity,
+        ByLegalEntity,
         Customer,
         SaleOrder,
         SaleInvoice,
@@ -26,10 +26,10 @@ REQUIRE System,
         Employee,
         Store,
         ListRegister,
+        BySupplier,
         Consignment,
         AccountDocument,
         StorePrice,
-        Supplier,
         Sales,
         PriceChange,
         Machinery,
@@ -128,6 +128,7 @@ END
 
 META defineDocumentHeaderSupplierContractDepartmentStore(object)
     @defineDocumentHeaderSupplierContract(object);
+    @defineDocumentUNPSupplier(object);
 
     contract###object (object) <- singleContractSkuSupplierSupplierCompany(supplier###object(object), companyDepartmentStore(departmentStore###object(object)))
                                   WHEN CHANGED(supplier###object(object));

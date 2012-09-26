@@ -93,7 +93,6 @@ companyDepartmentStore (departmentStore) = companyStore(storeDepartmentStore(dep
 companyStock (stock) += companyDepartmentStore(stock);
 
 nameCompanyDepartmentStore 'Компания' (departmentStore) = name(companyDepartmentStore(departmentStore));
-UNPDepartmentStore 'УНП' (departmentStore) = UNPLegalEntity(companyDepartmentStore(departmentStore));
 
 primaryDepartmentStoreStore 'Основной отдел' (store) =
     GROUP MIN departmentStore BY storeDepartmentStore(departmentStore);

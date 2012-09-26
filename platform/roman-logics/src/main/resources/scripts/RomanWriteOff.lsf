@@ -27,7 +27,7 @@ isPostedSkipSkuLedgerWriteOff (writeOff) = isPostedWriteOff(writeOff) AND NOT sk
 
 
 EXTEND FORM writeOffs
-    PROPERTIES     FORCE PANEL toPrintWriteOff(w) SHOWIF isPostedSkipSkuLedgerWriteOff(w)
+    PROPERTIES FORCE PANEL toPrintWriteOff(w) SHOWIF isPostedSkipSkuLedgerWriteOff(w)
 ;
 
 EXTEND DESIGN writeOffs {

@@ -1,0 +1,26 @@
+MODULE ByLegalEntity;
+
+REQUIRE LegalEntity;
+
+NAMESPACE LegalEntity;
+
+UNPLegalEntity 'УНП' = DATA STRING[9] (legalEntity) IN docGroup FIXEDCHARWIDTH 9;
+OKPOLegalEntity 'ОКПО' = DATA STRING[20] (legalEntity) IN docGroup MINCHARWIDTH 15 PREFCHARWIDTH 15;
+OKYLPLegalEntity 'ОКЮЛП' = DATA STRING[20] (legalEntity) IN docGroup MINCHARWIDTH 15 PREFCHARWIDTH 15;
+
+EXTEND FORM company
+
+    PROPERTIES(co) UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity
+;
+
+EXTEND DESIGN company{
+
+    column2 {
+        ADD co.docGroup;
+    }
+}
+
+EXTEND FORM companies
+
+    PROPERTIES(co) UNPLegalEntity
+;

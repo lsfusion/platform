@@ -63,7 +63,7 @@ FORM customer 'Оптовый покупатель'
                    managerLegalEntity ON CHANGE EXEC dialogManagerLegalEntity(cu),
                    accountantLegalEntity ON CHANGE EXEC dialogAccountantLegalEntity(cu),
                    phoneLegalEntity ON CHANGE EXEC dialogPhoneLegalEntity(cu),
-                   UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity, emailLegalEntity, siteLegalEntity
+                   emailLegalEntity, siteLegalEntity
 
     OBJECTS a=account
     PROPERTIES(a)  numberAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount, MFOBankAccount, noteAccount, ADDOBJ, delete
@@ -104,7 +104,6 @@ DESIGN customer FROM DEFAULT {
 
                 ADD cu.contactGroup;
                 ADD cu.managementGroup;
-                ADD cu.docGroup;
             }
        }
 
@@ -127,7 +126,7 @@ DESIGN customer FROM DEFAULT {
 
 FORM customers 'Оптовые покупатели'
     OBJECTS cu=customer
-    PROPERTIES(cu) READONLY name, fullNameLegalEntity, shortNameOwnershipLegalEntity, UNPLegalEntity, numberAccountLegalEntity, addressLegalEntity, phoneLegalEntity
+    PROPERTIES(cu) READONLY name, fullNameLegalEntity, shortNameOwnershipLegalEntity, numberAccountLegalEntity, addressLegalEntity, phoneLegalEntity
     PROPERTIES(cu) ADDFORM, EDITFORM, delete
 ;
 
