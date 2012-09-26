@@ -819,6 +819,35 @@ META defineDocumentHeaderAndDetailSumCustomCaption (object, detail, caption, cap
     @defineDocumentDetailSumCustom (detail);
     @defineDocumentHeaderSumCustom(object, detail, caption);
 END
+//--
+META defineDocumentDetailSumCustomPrefix (detail, prefix, caption)
+    prefix###sum###detail 'Сумма'###caption = DATA NUMERIC[16,2] (detail);
+END
+META defineDocumentAbstractDetailSumCustomPrefix (detail, prefix, caption)
+    prefix###sum###detail 'Сумма'###caption = ABSTRACT NUMERIC[16,2] (detail);
+END
+
+META defineDocumentInterfaceDetailSumCustomPrefix (detail, prefix, caption)
+    @defineDocumentAbstractDetailSumCustomPrefix(detail, prefix, caption);
+    @defineDocumentDetailSumCustomPrefix(user###detail, prefix, caption);
+    prefix###sum###detail (detail) += prefix###sum###user###detail(detail);
+END
+
+META defineDocumentInterfaceDetailSumPrefix (object, prefix, caption)
+    @defineDocumentInterfaceDetailSumCustomPrefix(object##Detail, prefix, caption);
+END
+META defineDocumentInterfaceDetailDataSum (object)
+    @defineDocumentInterfaceDetailSumPrefix(object, ,);
+END
+
+META deriveSumDetailOnQuantityPriceChangeCustomPrefix(detail, prefix)
+    prefix###sum###detail (detail)  <- quantity###detail(detail) * prefix###price###detail(detail)
+                    WHEN CHANGED(quantity###detail(detail)) OR CHANGED (prefix###price###detail(detail));
+END
+META deriveSumDetailOnQuantityPriceChangeUser(object)
+    @deriveSumDetailOnQuantityPriceChangeCustomPrefix(user###object##Detail, );
+END
+//-
 
 META derivePriceOnSkuChange(concrete, skuProp, stockProp)
     price###concrete##Detail (detail)  <- priceSkuStockDateTime(

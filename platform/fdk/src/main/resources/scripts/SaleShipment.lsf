@@ -198,6 +198,37 @@ CONSTRAINT customerShipmentDetail(shipmentDetail) != customerInvoice(invoiceUser
 GROUP invoiceGroup 'Информация о накладной' : baseGroup;
 descriptionInvoiceUserShipmentDetail 'Накладная' (userShipmentDetail) = descriptionInvoice(invoiceUserShipmentDetail(userShipmentDetail)) IN invoiceGroup;
 
+inInvoiceShipment (invoice, shipment) = GROUP SUM quantityShipmentDetail(shipmentDetail) BY invoiceShipmentDetail(shipmentDetail), shipmentShipmentDetail(shipmentDetail);
+
+invoicesShipment 'Накладные' (shipment) = GROUP CONCAT castToString255(descriptionInvoice(invoice))
+    IF inInvoiceShipment(invoice, shipment) , ', ' BY shipment IN invoiceGroup MINCHARWIDTH 30 PREFCHARWIDTH 50;
+
+//-- Подсчет к-ва в паставках
+
+shippedInvoiceSku 'К-во в поставках' (invoice, sku) = GROUP SUM quantityShipmentDetail(shipmentDetail) IF isPostedShipmentDetail(shipmentDetail)
+    BY invoiceShipmentDetail(shipmentDetail), skuShipmentDetail(shipmentDetail);
+
+shippedInvoiceDetail 'К-во в поставках' (invoiceDetail) = PARTITION UNGROUP shippedInvoiceSku
+                                                          LIMIT STRICT quantityInvoiceDetail (invoiceDetail)
+                                                          BY invoiceInvoiceDetail(invoiceDetail), skuInvoiceDetail(invoiceDetail)
+                                                          ORDER invoiceDetail;
+
+EXTEND FORM userInvoice
+    PROPERTIES(d) READONLY shippedInvoiceDetail AFTER quantityUserInvoiceDetail
+
+;
+
+EXTEND FORM userInvoices
+    PROPERTIES(d) READONLY shippedInvoiceDetail AFTER quantityUserInvoiceDetail
+
+;
+
+EXTEND FORM invoices
+    PROPERTIES(d) READONLY shippedInvoiceDetail AFTER quantityInvoiceDetail
+
+;
+
+diffShippedInvoiceDetail 'Разница' (invoiceDetail) = quantityInvoiceDetail (invoiceDetail) (-) shippedInvoiceDetail(invoiceDetail);
 fillInvoiceUserShipment 'Заполнить поставку на основании накладной' =  ACTION (userShipment) {
     LOCAL saleInvoice = invoice();
 
@@ -205,22 +236,17 @@ fillInvoiceUserShipment 'Заполнить поставку на основан
     IF formResult() == formResult.ok THEN {
         SET saleInvoice() <- chosenObject('i');
 
-        FOR invoiceInvoiceDetail(invoiceDetail) == saleInvoice() ADDOBJ d = userShipmentDetail DO {
+        FOR invoiceInvoiceDetail(invoiceDetail) == saleInvoice() AND diffShippedInvoiceDetail(invoiceDetail)>0 ADDOBJ d = userShipmentDetail DO {
 
             SET userShipmentUserShipmentDetail(d) <- userShipment;
             SET invoiceUserShipmentDetail(d) <- saleInvoice();
             SET stockUserShipmentDetail (d) <- stockInvoiceDetail(invoiceDetail);
             SET skuUserShipmentDetail(d) <- skuInvoiceDetail(invoiceDetail);
             SET batchUserShipmentDetail (d) <- batchInvoiceDetail(invoiceDetail);
-            SET quantityUserShipmentDetail (d) <- quantityInvoiceDetail(invoiceDetail);
+            SET quantityUserShipmentDetail (d) <- diffShippedInvoiceDetail(invoiceDetail);
         }
     }
 } IN invoiceGroup;
-
-inInvoiceShipment (invoice, shipment) = GROUP SUM quantityShipmentDetail(shipmentDetail) BY invoiceShipmentDetail(shipmentDetail), shipmentShipmentDetail(shipmentDetail);
-
-invoicesShipment 'Накладные' (shipment) = GROUP CONCAT castToString255(descriptionInvoice(invoice))
-    IF inInvoiceShipment(invoice, shipment) , ', ' BY shipment IN invoiceGroup MINCHARWIDTH 30 PREFCHARWIDTH 50;
 
 EXTEND FORM userShipment
     PROPERTIES(s) fillInvoiceUserShipment, invoicesShipment READONLY
@@ -230,31 +256,6 @@ EXTEND DESIGN userShipment { headerColumn2 { ADD s.invoiceGroup; } }
 EXTEND FORM userShipments
     PROPERTIES(s) READONLY invoicesShipment
     PROPERTIES(d) READONLY descriptionInvoiceUserShipmentDetail
-;
-
-//-- Подсчет к-ва в паставках
-
-shippedInvoiceSku 'К-во в паставках' (invoice, sku) = GROUP SUM quantityShipmentDetail(shipmentDetail) IF isPostedShipmentDetail(shipmentDetail)
-    BY invoiceShipmentDetail(shipmentDetail), skuShipmentDetail(shipmentDetail);
-
-shippedInvoiceDetail 'К-во в паставках' (invoiceDetail) = PARTITION UNGROUP shippedInvoiceSku
-                                                          LIMIT STRICT quantityInvoiceDetail (invoiceDetail)
-                                                          BY invoiceInvoiceDetail(invoiceDetail), skuInvoiceDetail(invoiceDetail)
-                                                          ORDER invoiceDetail;
-
-EXTEND FORM userInvoice
-    PROPERTIES(d) READONLY shippedInvoiceDetail BEFORE nameStockUserInvoiceDetail
-
-;
-
-EXTEND FORM userInvoices
-    PROPERTIES(d) READONLY shippedInvoiceDetail BEFORE nameStockUserInvoiceDetail
-
-;
-
-EXTEND FORM invoices
-    PROPERTIES(d) READONLY shippedInvoiceDetail BEFORE nameStockInvoiceDetail
-
 ;
 
 //-- аггр.объект

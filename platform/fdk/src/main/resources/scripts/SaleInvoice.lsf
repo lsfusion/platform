@@ -54,6 +54,8 @@ CLASS userInvoicePosted 'Закрытая накладная (польз.)' : us
 @defineDocumentInterfaceDetailQuantity(invoice);
 @defineDocumentInterfaceDetailPrice(invoice);
 @defineDocumentInterfaceDetailSum(invoice);
+//@defineDocumentInterfaceDetailDataSum(invoice);
+//@deriveSumDetailOnQuantityPriceChangeUser(invoice);
 
 @defineDocumentInterfaceDetailVAT(invoice, countryStock);
 @defineDocumentInterfaceDetailVATSum(invoice, countryStock);
@@ -82,25 +84,6 @@ GROUP orderGroup 'Информация о заказе' : publicGroup;
 descriptionOrderInvoiceDetail 'Заказ' (invoiceDetail) = descriptionOrder(orderInvoiceDetail(invoiceDetail)) IN orderGroup;
 descriptionOrderUserInvoiceDetail 'Заказ' (userInvoiceDetail) = descriptionOrder(orderUserInvoiceDetail(userInvoiceDetail)) IN orderGroup;
 
-
-fillOrderUserInvoice 'Заполнить накладную на основании заказа' =  ACTION (userInvoice) {
-    LOCAL saleOrder = order();
-
-    FORM orders MODAL;
-    IF formResult() == formResult.ok THEN {
-        SET saleOrder() <- chosenObject('o');
-
-        FOR orderOrderDetail(orderDetail) == saleOrder() ADDOBJ d = userInvoiceDetail DO {
-            SET userInvoiceUserInvoiceDetail(d) <- userInvoice;
-            SET orderUserInvoiceDetail(d) <- saleOrder();
-            SET stockUserInvoiceDetail (d) <- stockOrderDetail(orderDetail);
-            SET skuUserInvoiceDetail(d) <- skuOrderDetail(orderDetail);
-            SET quantityUserInvoiceDetail (d) <- quantityOrderDetail(orderDetail);
-            SET priceUserInvoiceDetail (d) <- priceOrderDetail(orderDetail);
-        }
-    }
-} IN orderGroup;
-
 inOrderInvoice (order, invoice) = GROUP SUM quantityInvoiceDetail(invoiceDetail) BY orderInvoiceDetail(invoiceDetail), invoiceInvoiceDetail(invoiceDetail);
 
 ordersInvoice 'Заказы' (invoice) = GROUP CONCAT castToString255(descriptionOrder(order))
@@ -117,19 +100,38 @@ invoicedOrderDetail 'К-во в накладных' (orderDetail) = PARTITION UN
                                                           ORDER orderDetail;
 
 EXTEND FORM userOrder
-    PROPERTIES(d) READONLY invoicedOrderDetail BEFORE nameStockUserOrderDetail
+    PROPERTIES(d) READONLY invoicedOrderDetail AFTER quantityUserOrderDetail
 
 ;
 
 EXTEND FORM userOrders
-    PROPERTIES(d) READONLY invoicedOrderDetail BEFORE nameStockUserOrderDetail
+    PROPERTIES(d) READONLY invoicedOrderDetail AFTER quantityUserOrderDetail
 
 ;
 
 EXTEND FORM orders
-    PROPERTIES(d) READONLY invoicedOrderDetail BEFORE nameStockOrderDetail
+    PROPERTIES(d) READONLY invoicedOrderDetail AFTER quantityOrderDetail
 
 ;
+
+diffInvoicedOrderDetail 'Разница' (orderDetail) = quantityOrderDetail (orderDetail) (-) invoicedOrderDetail(orderDetail);
+fillOrderUserInvoice 'Заполнить накладную на основании заказа' =  ACTION (userInvoice) {
+    LOCAL saleOrder = order();
+
+    FORM orders MODAL;
+    IF formResult() == formResult.ok THEN {
+        SET saleOrder() <- chosenObject('o');
+
+        FOR orderOrderDetail(orderDetail) == saleOrder() AND diffInvoicedOrderDetail(orderDetail) >0  ADDOBJ d = userInvoiceDetail DO {
+            SET userInvoiceUserInvoiceDetail(d) <- userInvoice;
+            SET orderUserInvoiceDetail(d) <- saleOrder();
+            SET stockUserInvoiceDetail (d) <- stockOrderDetail(orderDetail);
+            SET skuUserInvoiceDetail(d) <- skuOrderDetail(orderDetail);
+            SET quantityUserInvoiceDetail (d) <- diffInvoicedOrderDetail(orderDetail);
+            SET priceUserInvoiceDetail (d) <- priceOrderDetail(orderDetail);
+        }
+    }
+} IN orderGroup;
 
 // --------------------------- Формы ---------------------------------- //
 
