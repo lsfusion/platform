@@ -2333,8 +2333,8 @@ public class RomanLogicsModule extends LogicsModule {
         nameThemeSupplierArticleSku.property.minimumCharWidth = 15;
         sidThemeSupplierArticleSku = addJProp(baseGroup, "sidThemeSupplierArticleSku", "Код темы", sidThemeSupplier, themeSupplierArticleSku, 1);
 
-        subCategorySupplierArticleSku = addJProp(idGroup, "subCategorySupplierArticleSku", "Категория (ИД)", subCategorySupplierArticle, articleSku, 1);
-        nameSubCategorySupplierArticleSku = addJProp(supplierAttributeGroup, "nameSubCategorySupplierArticleSku", "Категория", baseLM.name, subCategorySupplierArticleSku, 1);
+        subCategorySupplierArticleSku = addJProp(idGroup, "subCategorySupplierArticleSku", "Группа (ИД)", subCategorySupplierArticle, articleSku, 1);
+        nameSubCategorySupplierArticleSku = addJProp(supplierAttributeGroup, "nameSubCategorySupplierArticleSku", "Группа", baseLM.name, subCategorySupplierArticleSku, 1);
         nameSubCategorySupplierArticleSku.property.preferredCharWidth = 30;
         nameSubCategorySupplierArticleSku.property.minimumCharWidth = 15;
         sidSubCategorySupplierArticleSku = addJProp(baseGroup, "sidSubCategorySupplierArticleSku", "Категория", sidSubCategorySupplier, subCategorySupplierArticleSku, 1);

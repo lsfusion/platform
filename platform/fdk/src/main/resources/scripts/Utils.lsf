@@ -34,7 +34,6 @@ round0 (number) = round(number, 0);
 round1 (number) = round(number, 1);
 round2 (number) = round(number, 2);
 round3 (number) = round(number, 3);
-
 round6 (number) = round(number, 6);
 // --------------------------------------------- Двойное имя --------------------------------- //
 
@@ -138,7 +137,7 @@ META defineAggregationTripleCustom (prim1Property, prim2Property, prim3Property,
     is###aggrObject(aggrObject) => aggrProperty(prim1Property(aggrObject), prim2Property(aggrObject), prim3Property(aggrObject)) RESOLVE FALSE;
 END
 
-META defineAggregationTriple (prim1Object, prim2Object, aggrObject, aggrProperty)
+META defineAggregationTriple (prim1Object, prim2Object, prim3Object, aggrObject, aggrProperty)
     prim1Object###aggrObject = DATA prim1Object (aggrObject);
     prim2Object###aggrObject = DATA prim2Object (aggrObject);
     prim3Object###aggrObject = DATA prim3Object (aggrObject);
