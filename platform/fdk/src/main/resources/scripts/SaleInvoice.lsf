@@ -47,12 +47,15 @@ CLASS userInvoicePosted 'Закрытая накладная (польз.)' : us
 @defineDocumentInterfaceContract(invoice, contractSkuCustomer, singleContractSkuCustomerCompanyCustomer, companyInvoice, customerInvoice,
                                  'Сторона A договора накладной не соответствует компании склада-отправителя',
                                  'Сторона B договора накладной не соответствует покупателю');
+@defineDocumentInterfacePriceListType(invoice);
 
 @defineDocumentInterfaceDetailSku(invoice, sku);
 @defineDocumentInterfaceDetailBatch(invoice, batch);
 
 @defineDocumentInterfaceDetailQuantity(invoice);
+
 @defineDocumentInterfaceDetailPrice(invoice);
+@deriveDocumentDetailPriceBatchPriceListType(userInvoice);
 
 @defineDocumentInterfaceDetailDataSum(invoice);
 @deriveDocumentDetailSum(userInvoice);
@@ -61,7 +64,7 @@ CLASS userInvoicePosted 'Закрытая накладная (польз.)' : us
 @defineDocumentInterfaceDetailVATSum(invoice, countryStock);
 
 @defineDocumentInterfaceDetailPricePrefix(invoice, shipment, ' (учетная)');
-@deriveDocumentDetailPriceBatchPrefix(userInvoice, shipment);
+@deriveDocumentDetailPriceBatchStockPrefix(userInvoice, shipment);
 
 @defineDocumentInterfaceHeaderQuantity(invoice);
 @defineDocumentHeaderSkuQuantity(invoice, sku);
@@ -138,7 +141,7 @@ fillOrderUserInvoice 'Заполнить накладную на основан�
 FORM userInvoice 'Накладная'
     OBJECTS i = userInvoice FIXED PANEL
     PROPERTIES (i) objectClassName, nameStockUserInvoice, nameNumeratorObject, numberObject, seriesObject, dateUserInvoice, timeUserInvoice,
-                   nameCustomerUserInvoice, nameCurrencyUserInvoice, noteUserInvoice,
+                   nameCustomerUserInvoice, nameCurrencyUserInvoice, namePriceListTypeUserInvoice, noteUserInvoice,
                    numberContractSkuCustomerUserInvoice, isCommissionUserInvoice,
                    fillOrderUserInvoice, ordersInvoice READONLY,
                    countUserInvoiceDetailUserInvoice, quantityUserInvoiceDetailUserInvoice, sumUserInvoiceDetailUserInvoice
@@ -204,7 +207,7 @@ DESIGN userInvoice FROM DEFAULT{
 FORM userInvoices 'Накладные'
     OBJECTS i = userInvoice
     PROPERTIES (i) READONLY isPostedUserInvoice FORCE GRID, objectClassName, numberObject, seriesObject, dateUserInvoice, timeUserInvoice,
-                            nameStockUserInvoice, nameCustomerUserInvoice, nameCurrencyUserInvoice, noteUserInvoice,
+                            nameStockUserInvoice, nameCustomerUserInvoice, nameCurrencyUserInvoice, namePriceListTypeUserInvoice, noteUserInvoice,
                             numberContractSkuCustomerUserInvoice, isCommissionUserInvoice,
                             countUserInvoiceDetailUserInvoice, quantityUserInvoiceDetailUserInvoice, sumUserInvoiceDetailUserInvoice , ordersInvoice
 

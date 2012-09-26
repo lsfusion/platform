@@ -80,7 +80,8 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                 "/scripts/I18n.lsf",
                 "/scripts/Country.lsf",
                 "/scripts/DefaultData.lsf",
-                "/scripts/Item.lsf"
+                "/scripts/Item.lsf",
+                "/scripts/PriceList.lsf"
         );
         retailLM = addModuleFromResource("/scripts/retail.lsf");
 

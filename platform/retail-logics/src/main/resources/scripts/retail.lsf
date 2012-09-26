@@ -47,7 +47,8 @@ REQUIRE System,
         ContractLedger,
         Inventory,
         DefaultData,
-        Item;
+        Item,
+        PriceList;
 
 GROUP emailGroup 'E-mail' : baseGroup;
 
@@ -7115,6 +7116,7 @@ NAVIGATOR {
     }
     NEW wholeSale 'Оптовая торговля' TO formsToolbar {
         ADD saleNavigator;
+        ADD priceListNavigator;
     }
 
     ADD machineryNavigator TO formsToolbar;

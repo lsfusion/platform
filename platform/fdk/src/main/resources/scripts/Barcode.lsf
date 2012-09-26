@@ -130,6 +130,10 @@ END
 
 @defineDialogSkuBarcode(dialogSku);
 
+EXTEND FORM skus
+    PROPERTIES(s) READONLY idBarcodeSku AFTER nameSku
+;
+
 EXTEND FORM currentBalanceSkuStock
     PROPERTIES(s) READONLY idBarcodeSku AFTER nameSku
 ;

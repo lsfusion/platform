@@ -786,17 +786,17 @@ META defineDocumentInterfaceDetailPrice (object)
     @defineDocumentInterfaceDetailPricePrefix(object, ,);
 END
 
-META deriveDocumentDetailPriceBatchCustomPrefix (detail, prefix)
+META deriveDocumentDetailPriceBatchStockCustomPrefix (detail, prefix)
     prefix###price###detail (detail)  <- IF batch###detail(detail)
                 THEN priceBatchStockDateTime(batch###detail(detail), stock###detail(detail), dateTime###detail(detail))
                 ELSE priceSkuStockDateTime(sku###detail(detail), stock###detail(detail), dateTime###detail(detail))
                 WHEN CHANGED(sku###detail(detail)) OR CHANGED(batch###detail(detail)) OR CHANGED(stock###detail(detail)) OR CHANGED (dateTime###detail(detail));
 END
-META deriveDocumentDetailPriceBatchPrefix (object, prefix)
-    @deriveDocumentDetailPriceBatchCustomPrefix(object##Detail, prefix);
+META deriveDocumentDetailPriceBatchStockPrefix (object, prefix)
+    @deriveDocumentDetailPriceBatchStockCustomPrefix(object##Detail, prefix);
 END
-META deriveDocumentDetailPriceBatch (object)
-    @deriveDocumentDetailPriceBatchPrefix(object, );
+META deriveDocumentDetailPriceBatchStock (object)
+    @deriveDocumentDetailPriceBatchStockPrefix(object, );
 END
 
 META defineDocumentDetailSumCustom (detail)

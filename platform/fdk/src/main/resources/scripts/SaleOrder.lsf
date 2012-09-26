@@ -9,6 +9,7 @@ REQUIRE System,
         Currency,
         Customer,
         Barcode,
+        PriceList,
         Historizable;
 
 
@@ -39,11 +40,14 @@ CLASS userOrderPosted 'Закрытый заказ (польз.)' : userOrder, p
 @deriveDocumentCurrency(userOrder, stock);
 
 @defineDocumentInterfaceCustomer(order);
+@defineDocumentInterfacePriceListType(order);
 
 @defineDocumentInterfaceDetailSku(order, sku);
 
 @defineDocumentInterfaceDetailQuantity(order);
+
 @defineDocumentInterfaceDetailPrice(order);
+@deriveDocumentDetailPricePriceListType(userOrder);
 
 @defineDocumentInterfaceDetailDataSum(order);
 @deriveDocumentDetailSum(userOrder);
@@ -60,7 +64,7 @@ CLASS userOrderPosted 'Закрытый заказ (польз.)' : userOrder, p
 FORM userOrder 'Заказ'
     OBJECTS o = userOrder FIXED PANEL
     PROPERTIES (o) objectClassName, nameStockUserOrder, nameNumeratorObject, numberObject, seriesObject, dateUserOrder, timeUserOrder,
-                   nameCustomerUserOrder, nameCurrencyUserOrder, noteUserOrder,
+                   nameCustomerUserOrder, nameCurrencyUserOrder, namePriceListTypeUserOrder, noteUserOrder,
                    countUserOrderDetailUserOrder, quantityUserOrderDetailUserOrder, sumUserOrderDetailUserOrder
 
     OBJECTS d = userOrderDetail
@@ -121,7 +125,7 @@ DESIGN userOrder FROM DEFAULT{
 FORM userOrders 'Заказы'
     OBJECTS o = userOrder
     PROPERTIES (o) READONLY isPostedUserOrder FORCE GRID, objectClassName, numberObject, seriesObject, dateUserOrder, timeUserOrder,
-                            nameStockUserOrder, nameCustomerUserOrder, nameCurrencyUserOrder, noteUserOrder,
+                            nameStockUserOrder, nameCustomerUserOrder, nameCurrencyUserOrder, namePriceListTypeUserOrder, noteUserOrder,
                             countUserOrderDetailUserOrder, quantityUserOrderDetailUserOrder, sumUserOrderDetailUserOrder
 
     PROPERTIES (o) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed

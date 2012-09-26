@@ -1,0 +1,223 @@
+MODULE PriceList;
+
+REQUIRE System, Document, Numerator, Stock, Barcode;
+
+// --------------------------- Виды цен ------------------------- //
+
+CLASS ABSTRACT priceListType 'Вид цены' : named;
+
+pricePriceListTypeSkuStockDateTime 'Цена' = ABSTRACT NUMERIC[14,2] (priceListType, sku, stock, DATETIME);
+pricePriceListTypeBatchStockDateTime 'Цена' = ABSTRACT NUMERIC[14,2] (priceListType, batch, stock, DATETIME);
+
+CLASS ABSTRACT basePriceListType 'Базовый вид цены' : priceListType;
+
+// --------------------------- Системные виды цен ------------------------- //
+CLASS STATIC systemPriceListType 'Системный вид цены' {
+    stockPriceListType 'Учетная цена'
+} : basePriceListType;
+
+priceStockPriceListTypeSkuStockDateTime (type, sku, stock, dateTime) =
+    priceSkuStockDateTime(sku, stock, dateTime) AND type == systemPriceListType.stockPriceListType;
+priceStockPriceListTypeBatchStockDateTime (type, batch, stock, dateTime) =
+    priceBatchStockDateTime(batch, stock, dateTime) AND type == systemPriceListType.stockPriceListType;
+
+priceSystemPriceListTypeSkuStockDateTime (type, sku, stock, dateTime) =
+    UNION EXCLUSIVE priceStockPriceListTypeSkuStockDateTime (type, sku, stock, dateTime);
+priceSystemPriceListTypeBatchStockDateTime (type, batch, stock, dateTime) =
+    UNION EXCLUSIVE priceStockPriceListTypeBatchStockDateTime (type, batch, stock, dateTime);
+
+// --------------------------- Пользовательские виды цен ------------------------- //
+
+CLASS dataPriceListType 'Пользовательский вид цены' : basePriceListType;
+
+CLASS ABSTRACT priceList 'Прайс';
+CLASS ABSTRACT priceListDetail 'Строка прайса';
+
+CLASS userPriceList 'Прайс (польз.)' : priceList, historyObject, numeratedObject;
+CLASS userPriceListDetail 'Строка прайса (польз.)' : priceListDetail;
+CLASS userPriceListPosted 'Закрытый прайс (польз.)' : userPriceList, postedObject;
+
+@defineDocumentInterface(priceList);
+
+@defineDocumentInterfaceNumber(priceList);
+
+@defineDocumentInterfaceDataStock(priceList, stock, 'Склад');
+@defineDocumentInterfacePosted(priceList);
+
+@defineDocumentInterfaceDescription(priceList, 'Прайс');
+
+@defineDocumentInterfaceCurrency(priceList);
+@deriveDocumentCurrency(userPriceList, stock);
+
+@defineDocumentInterfaceDetailSku(priceList, sku);
+@defineDocumentInterfaceDetailPrice(priceList);
+
+dataPriceListTypePriceList = ABSTRACT dataPriceListType (priceList) PERSISTENT;
+dataPriceListTypeUserPriceList = DATA dataPriceListType (userPriceList);
+dataPriceListTypePriceList (priceList) += dataPriceListTypeUserPriceList(priceList);
+
+nameDataPriceListTypeUserPriceList 'Вид цены' (priceList) = name(dataPriceListTypeUserPriceList(priceList));
+
+dataPriceListTypePriceListDetail (detail) = dataPriceListTypePriceList(priceListPriceListDetail(detail)) PERSISTENT;
+
+// ------- Расчет действующей цен ----- //
+
+orderPriceListDetail(detail) = LIST(dateTimePriceListDetail(detail), detail) PERSISTENT;
+concatDataPriceListTypeSkuStockDateTime(type, sku, stock, dateTime) =
+    GROUP MAX orderPriceListDetail(detail) IF dateTimePriceListDetail(detail) <= (dateTimeIn AS DATETIME)
+          BY dataPriceListTypePriceListDetail(detail), skuPriceListDetail(detail), stockPriceListDetail(detail), dateTimeIn;
+priceListDetailDataPriceListTypeSkuStockDateTime(type, sku, stock, dateTime) =
+    concatDataPriceListTypeSkuStockDateTime(type, sku, stock, dateTime)[2];
+
+priceDataPriceListTypeSkuStockDateTime(type, sku, stock, dateTime) =
+    pricePriceListDetail(priceListDetailDataPriceListTypeSkuStockDateTime(type, sku, stock, dateTime));
+priceDataPriceListTypeBatchStockDateTime(type, batch, stock, dateTime) =
+    priceDataPriceListTypeSkuStockDateTime(type, skuBatch(batch), stock, dateTime);
+
+priceBasePriceListTypeSkuStockDateTime(type, sku, stock, dateTime) =
+    UNION EXCLUSIVE priceSystemPriceListTypeSkuStockDateTime(type, sku, stock, dateTime),
+                    priceDataPriceListTypeSkuStockDateTime(type, sku, stock, dateTime);
+
+priceBasePriceListTypeBatchStockDateTime(type, batch, stock, dateTime) =
+    UNION EXCLUSIVE priceSystemPriceListTypeBatchStockDateTime(type, batch, stock, dateTime),
+                    priceDataPriceListTypeBatchStockDateTime(type, batch, stock, dateTime);
+
+pricePriceListTypeSkuStockDateTime(type, sku, stock, dateTime) += priceBasePriceListTypeSkuStockDateTime(type, sku, stock, dateTime);
+pricePriceListTypeBatchStockDateTime(type, batch, stock, dateTime) += priceBasePriceListTypeBatchStockDateTime(type, batch, stock, dateTime);
+
+// --------------------------- Расчетные виды цен ------------------------- //
+
+CLASS calcPriceListType 'Расчетный вид цены' : priceListType;
+
+basePriceListTypeCalcPriceListType(type) = DATA basePriceListType (calcPriceListType);
+nameBasePriceListTypeCalcPriceListType 'Базовый вид цены' (type) = name(basePriceListTypeCalcPriceListType(type));
+
+markupCalcPriceListType 'Надбавка, %' = DATA NUMERIC[8,2] (calcPriceListType);
+roundCalcPriceListType 'Округление (кол-во знаков)' = DATA INTEGER (calcPriceListType);
+
+multiplierCalcPriceListType (type) = (100 + markupCalcPriceListType(type)) / 100 PERSISTENT;
+
+priceCalcPriceListTypeSkuStockDateTime(type, sku, stock, dateTime) =
+    round(priceBasePriceListTypeSkuStockDateTime(basePriceListTypeCalcPriceListType(type), sku, stock, dateTime) * multiplierCalcPriceListType (type), roundCalcPriceListType(type));
+priceCalcPriceListTypeBatchStockDateTime(type, batch, stock, dateTime) =
+    round(priceBasePriceListTypeBatchStockDateTime(basePriceListTypeCalcPriceListType(type), batch, stock, dateTime) * multiplierCalcPriceListType (type), roundCalcPriceListType(type));
+
+pricePriceListTypeSkuStockDateTime(type, sku, stock, dateTime) += priceCalcPriceListTypeSkuStockDateTime(type, sku, stock, dateTime);
+pricePriceListTypeBatchStockDateTime(type, batch, stock, dateTime) += priceCalcPriceListTypeBatchStockDateTime(type, batch, stock, dateTime);
+
+// --------------------------- Формы ------------------------- //
+
+FORM dataPriceListType 'Базовый вид цен'
+    OBJECTS p = dataPriceListType FIXED PANEL
+    PROPERTIES(p) name
+
+    EDIT dataPriceListType OBJECT p
+;
+
+FORM calcPriceListType 'Базовый вид цен'
+    OBJECTS p = calcPriceListType FIXED PANEL
+    PROPERTIES(p) name, nameBasePriceListTypeCalcPriceListType, markupCalcPriceListType, roundCalcPriceListType
+
+    EDIT calcPriceListType OBJECT p
+;
+
+FORM priceListTypes 'Типы цен'
+    OBJECTS pd = dataPriceListType
+    PROPERTIES(pd) READONLY name
+    PROPERTIES(pd)          ADDFORM, EDITFORM, delete
+
+    OBJECTS pc = calcPriceListType
+    PROPERTIES(pc) READONLY name
+    PROPERTIES(pc)          ADDFORM, EDITFORM, delete
+;
+
+NAVIGATOR {
+    NEW priceListNavigator 'Управление ценами' {
+        ADD priceListTypes;
+    }
+}
+
+// --------------------------------------------------- Макросы по добавлению видов цен в документы ------------------------------------ //
+
+META defineDocumentHeaderPriceListType (object)
+    priceListType###object (object) = DATA priceListType (object);
+    namePriceListType###object 'Вид цен' (object)= name(priceListType###object(object)) IN documentPrmGroup MINCHARWIDTH 5 PREFCHARWIDTH 10;
+END
+META defineDocumentAbstractHeaderPriceListType (object)
+    priceListType###object (object) = ABSTRACT priceListType (object) PERSISTENT;
+    namePriceListType###object 'Вид цен' (object)= name(priceListType###object(object)) IN documentPrmGroup MINCHARWIDTH 5 PREFCHARWIDTH 10;
+END
+META defineDocumentInterfaceHeaderPriceListType (object)
+    @defineDocumentAbstractHeaderPriceListType(object);
+    @defineDocumentHeaderPriceListType(user###object);
+    priceListType###object (object) += priceListType###user###object(object);
+END
+
+META defineDocumentDetailPriceListType (object, detail)
+    priceListType###detail (idetail) = priceListType###object(object###detail(idetail)) PERSISTENT;
+    namePriceListType###detail 'Вид цен' (idetail) = namePriceListType###object(object###detail(idetail)) IN documentPrmGroup MINCHARWIDTH 5 PREFCHARWIDTH 10;
+END
+META defineDocumentInterfaceDetailPriceListType(object, detail)
+    @defineDocumentDetailPriceListType(object, detail);
+    @defineDocumentDetailPriceListType(user###object, user###detail);
+END
+
+META defineDocumentPriceListType (object, detail)
+    @defineDocumentHeaderPriceListType(object);
+    @defineDocumentDetailPriceListType(object, detail);
+END
+META defineDocumentAbstractPriceListType (object, detail)
+    @defineDocumentAbstractHeaderPriceListType(object);
+    @defineDocumentDetailPriceListType(object, detail);
+END
+META defineDocumentInterfacePriceListType (object, detail)
+    @defineDocumentInterfaceHeaderPriceListType(object);
+    @defineDocumentInterfaceDetailPriceListType(object, detail);
+END
+
+META defineDocumentPriceListType (object)
+    @defineDocumentPriceListType(object, object##Detail);
+END
+META defineDocumentAbstractPriceListType (object)
+    @defineDocumentAbstractPriceListType(object, object##Detail);
+END
+META defineDocumentInterfacePriceListType (object)
+    @defineDocumentInterfacePriceListType(object, object##Detail);
+END
+
+META deriveDocumentDetailPricePriceListTypeCustom (detail)
+    price###detail(detail) <- pricePriceListTypeSkuStockDateTime(priceListType###detail(detail),
+                                                                 sku###detail(detail),
+                                                                 stock###detail(detail),
+                                                                 dateTime###detail(detail))
+                                    WHEN CHANGED(priceListType###detail(detail)) OR
+                                         CHANGED(sku###detail(detail)) OR
+                                         CHANGED(stock###detail(detail)) OR
+                                         CHANGED(dateTime###detail(detail));
+END
+
+META deriveDocumentDetailPricePriceListType (object)
+    @deriveDocumentDetailPricePriceListTypeCustom(object##Detail);
+END
+
+META deriveDocumentDetailPriceBatchPriceListTypeCustom (detail)
+    price###detail(detail) <- IF batch###detail(detail) THEN
+                                    pricePriceListTypeBatchStockDateTime(priceListType###detail(detail),
+                                                                         batch###detail(detail),
+                                                                         stock###detail(detail),
+                                                                         dateTime###detail(detail))
+                              ELSE
+                                    pricePriceListTypeSkuStockDateTime(priceListType###detail(detail),
+                                                                       sku###detail(detail),
+                                                                       stock###detail(detail),
+                                                                       dateTime###detail(detail))
+                                    WHEN CHANGED(batch###detail(detail)) OR
+                                         CHANGED(priceListType###detail(detail)) OR
+                                         CHANGED(sku###detail(detail)) OR
+                                         CHANGED(stock###detail(detail)) OR
+                                         CHANGED(dateTime###detail(detail));
+END
+
+META deriveDocumentDetailPriceBatchPriceListType (object)
+    @deriveDocumentDetailPriceBatchPriceListTypeCustom(object##Detail);
+END

@@ -139,8 +139,12 @@ META defineDocumentInterfaceHeaderCurrency (object)
 END
 
 META defineDocumentDetailCurrency (object, detail)
-    currency###detail (idetail) = currency###object(object###detail(idetail));
+    currency###detail (idetail) = currency###object(object###detail(idetail)) PERSISTENT;
     nameCurrency###detail 'Валюта' (idetail) = nameCurrency###object(object###detail(idetail));
+END
+META defineDocumentInterfaceDetailCurrency (object, detail)
+    @defineDocumentDetailCurrency(object, detail);
+    @defineDocumentDetailCurrency(user###object, user###detail);
 END
 
 META defineDocumentCurrency (object, detail)
@@ -153,7 +157,7 @@ META defineDocumentAbstractCurrency (object, detail)
 END
 META defineDocumentInterfaceCurrency (object, detail)
     @defineDocumentInterfaceHeaderCurrency(object);
-    @defineDocumentDetailCurrency(object, detail);
+    @defineDocumentInterfaceDetailCurrency(object, detail);
 END
 
 META defineDocumentCurrency (object)
@@ -167,7 +171,7 @@ META defineDocumentInterfaceCurrency (object)
 END
 
 META deriveDocumentCurrency (object, stockProp)
-    currency###object (object) <- currencyStock(stockProp###object(object)) WHEN ASSIGNED(object AS object);
+    currency###object (object) <- currencyStock(stockProp###object(object)) WHEN CHANGED(stockProp###object(object));
 END
 
 // --------------------------------------------------- Стандартные значения ------------------------------------ //
