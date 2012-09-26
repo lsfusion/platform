@@ -67,23 +67,27 @@ public class PricatEDIImportActionProperty extends CustomReadValueActionProperty
         properties.add(new ImportProperty(themeNameField, LM.themeNamePricat.getMapping(pricatKey)));
         properties.add(new ImportProperty(supplier, LM.supplierPricat.getMapping(pricatKey)));
 
-
+        ImportTable mergedTable = null;
+        ImportKey<?>[] keysArray = {pricatKey};
 
         for (byte[] file : fileList) {
-
-            ImportKey<?>[] keysArray = {pricatKey};
-
             try {
                 PricatEDIInputTable inputTable = new PricatEDIInputTable(new ByteArrayInputStream(file), supplier);
 
                 ImportTable table = new EDIInvoiceImporter(inputTable, barcodeField, articleField, customCategoryOriginalField, colorCodeField, colorField,
                         sizeField, originalNameField, countryField, netWeightField, compositionField, priceField, rrpField, seasonField, genderField, themeCodeField, themeNameField).getTable();
 
-                new IntegrationService(context.getSession(), table, Arrays.asList(keysArray), properties).synchronize();
+                if(mergedTable==null)
+                    mergedTable = table;
+                else
+                    mergedTable.add(table);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }
+
+        if(mergedTable!=null)
+            new IntegrationService(context.getSession(), mergedTable, Arrays.asList(keysArray), properties).synchronize();
     }
 
     protected DataClass getReadType() {
