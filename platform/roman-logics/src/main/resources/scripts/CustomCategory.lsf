@@ -166,10 +166,10 @@ createCustomsZone 'Задать таможенную зону и связать 
         SET customsZoneCustomCategory9(customCategory9) <- g WHERE customCategory9 IS customCategory9;
         SET customsZoneSubCategory(subCategory) <- g WHERE subCategory IS subCategory;
         SET customsZoneTypeDuty(typeDuty) <- g WHERE typeDuty IS typeDuty;
-        SET customCategory10DataSkuCustomsZone(s, g) <- customCategory10DataSku(s);
+        SET customCategory10DataSkuCustomsZone(s, xxx) IF xxx == g <- customCategory10DataSku(s);
         SET subCategoryDataSkuCustomsZone(sku, customsZone) <- subCategoryDataSku(sku) WHERE customsZone IS customsZone;
-        SET customCategory10CategoryGenderCompositionTypeFabricCustomsZone(a, b, c, d, g) <- customCategory10FreightCategoryGenderCompositionTypeFabric(a, b, c, d);
-        SET customCategory10CustomCategoryOriginCustomsZone(customCategoryOrigin, g) <- customCategory10CustomCategoryOrigin(customCategoryOrigin);
+        SET customCategory10CategoryGenderCompositionTypeFabricCustomsZone(a, b, c, d, xxx) IF xxx == g <- customCategory10FreightCategoryGenderCompositionTypeFabric(a, b, c, d);
+        SET customCategory10CustomCategoryOriginCustomsZone(customCategoryOrigin, xxx) IF xxx == g <- customCategory10CustomCategoryOrigin(customCategoryOrigin);
     }
 } CONFIRM;
 
@@ -309,7 +309,7 @@ addCategory10CustomCategoryOriginCustomsZone 'Четвертый уровень'
 CONSTRAINT customsZoneCustomCategory9(customCategory9CustomCategory10(customCategory10)) != customsZoneCustomCategory10(customCategory10)
         CHECKED BY customCategory9CustomCategory10 MESSAGE 'Не совпадают таможенные зоны у четвертого и третьего уровня';
 
-CONSTRAINT customCategory10CustomCategoryOriginCustomsZone(customCategoryOrigin, customsZone) != customsZoneCustomCategory10(customCategory10CustomCategoryOriginCustomsZone(customCategoryOrigin, customsZone))
+CONSTRAINT customsZoneCustomCategory10(customCategory10CustomCategoryOriginCustomsZone(customCategoryOrigin, customsZone)) != customsZone
         CHECKED BY customCategory10CustomCategoryOriginCustomsZone MESSAGE 'У четвертого уровня и уровня ЕС не совпадают таможенные зоны';
 
 
