@@ -26,6 +26,11 @@ public class PlainDataTable<T> implements Iterable<PlainDataTable.Row> {
         }
     }
 
+    public void add(PlainDataTable<T> table) {
+        assert fieldIndex.equals(table.fieldIndex) && fields.equals(table.fields);
+        data.addAll(table.data);
+    }
+
     public class Row {
         private final int rowNum;
 
