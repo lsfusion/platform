@@ -181,7 +181,7 @@ FORM stores 'Магазины'
     FILTERS stringEqualsAll(a)
     FILTERS inChainStoresStoreType (t, st)
 
-    PROPERTIES(t)          addT=ADDFORM FORCE PANEL, editT=EDITFORM FORCE PANEL, delete FORCE PANEL
+    PROPERTIES(t)          addT=ADDFORM FORCE PANEL, editT=EDITFORM FORCE PANEL, delete FORCE PANEL DRAWTOTOOLBAR
 
     OBJECTS s=store
     PROPERTIES(s) READONLY name, addressStore, nameStoreTypeStore, nameCompanyStore, nameRegionStore

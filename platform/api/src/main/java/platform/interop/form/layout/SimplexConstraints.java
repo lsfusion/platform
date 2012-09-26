@@ -228,6 +228,12 @@ public class SimplexConstraints<T> extends ContextObject implements Serializable
         return constraints;
     }
 
+    public static <T> SimplexConstraints<T> getTreeDefaultConstraints(SimplexConstraints<T> constraints) {
+        constraints.fillVertical = 1;
+        constraints.fillHorizontal = 1;
+        return constraints;
+    }
+
     public static <T> SimplexConstraints<T> getClassChooserDefaultConstraints(SimplexConstraints<T> constraints) {
         constraints.fillVertical = 1;
         constraints.fillHorizontal = 0.2;
@@ -241,11 +247,6 @@ public class SimplexConstraints<T> extends ContextObject implements Serializable
 
     public static <T> SimplexConstraints<T> getRegularFilterGroupDefaultConstraints(SimplexConstraints<T> constraints) {
         constraints.insetsSibling = new Insets(0, 4, 2, 4);
-        return constraints;
-    }
-
-    public static <T> SimplexConstraints<T> getFunctionDefaultConstraints(SimplexConstraints<T> constraints) {
-        constraints.directions = new SimplexComponentDirections(0, 0, 0.01, 0.01);
         return constraints;
     }
 

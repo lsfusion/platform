@@ -5,6 +5,7 @@ import platform.client.ClientResourceBundle;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
 import platform.interop.form.layout.AbstractTreeGroup;
+import platform.interop.form.layout.SimplexConstraints;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -40,6 +41,11 @@ public class ClientTreeGroup extends ClientComponent implements ClientIdentitySe
     @Override
     public ClientComponent getFilter() {
         return filter;
+    }
+
+    @Override
+    public SimplexConstraints<ClientComponent> getDefaultConstraints() {
+        return SimplexConstraints.getTreeDefaultConstraints(super.getDefaultConstraints());
     }
 
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {

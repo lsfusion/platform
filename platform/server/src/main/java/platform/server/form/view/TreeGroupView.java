@@ -1,6 +1,7 @@
 package platform.server.form.view;
 
 import platform.interop.form.layout.AbstractTreeGroup;
+import platform.interop.form.layout.SimplexConstraints;
 import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.entity.TreeGroupEntity;
 import platform.server.serialization.ServerIdentitySerializable;
@@ -45,6 +46,11 @@ public class TreeGroupView extends ComponentView implements ServerIdentitySerial
     @Override
     public ComponentView getFilter() {
         return filter;
+    }
+
+    @Override
+    public SimplexConstraints<ComponentView> getDefaultConstraints() {
+        return SimplexConstraints.getTreeDefaultConstraints(super.getDefaultConstraints());
     }
 
     public void add(GroupObjectView group) {
