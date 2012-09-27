@@ -213,6 +213,10 @@ public class RomanLogicsModule extends LogicsModule {
     private LCP nameSupplierSizeSupplier;
     LCP supplierGenderSupplier;
     private LCP sidBrandSupplier;
+    public LCP customsSIDBrandSupplier;
+    public LCP customsSIDSupplier;
+    public LCP customsSIDArticle;
+    public LCP supplierCustomsSID;
     public LCP sidTypeDuty;
     public LCP nameTypeDuty;
     public LCP sidToTypeDuty;
@@ -560,6 +564,7 @@ public class RomanLogicsModule extends LogicsModule {
     public LCP nameTypeFabricArticleSku;
     public LCP nameTypeFabricArticleSkuLanguage;
     LCP articleSIDSupplier;
+    public LCP articleCustomsSIDSupplier;
     private LAP seekArticleSIDSupplier;
     private LAP seekArticleSIDInvoice;
     LCP numberListArticle;
@@ -2097,6 +2102,10 @@ public class RomanLogicsModule extends LogicsModule {
         countryBrandSupplier = addDProp(idGroup, "countryBrandSupplier", "Страна бренда (ИД)", baseLM.country, brandSupplier);
         nameCountryBrandSupplier = addJProp(baseGroup, "nameCountryBrandSupplier", "Страна бренда", baseLM.name, countryBrandSupplier, 1);
 
+        customsSIDBrandSupplier = addDProp(baseGroup, "customsSIDBrandSupplier", "Таможенный код", StringClass.get(50), brandSupplier);
+        customsSIDSupplier = addJProp(baseGroup, "customsSIDSupplier", "Поставщик (ИД)", customsSIDBrandSupplier, brandSupplierSupplier, 1);
+        supplierCustomsSID  = addAGProp(idGroup, "supplierCustomsSID", "Поставщик (ИД)", customsSIDSupplier);
+
         // Document
         supplierDocument = addDProp(idGroup, "supplierDocument", "Поставщик (ИД)", supplier, document);
         supplierPriceDocument = addJProp(idGroup, "supplierPricedDocument", "Поставщик(ИД)", baseLM.and1, supplierDocument, 1, is(priceDocument), 1);
@@ -2269,6 +2278,7 @@ public class RomanLogicsModule extends LogicsModule {
         setNotNull(supplierArticle);
         nameSupplierArticle = addJProp(baseGroup, "nameSupplierArticle", "Поставщик", baseLM.name, supplierArticle, 1);
 
+        customsSIDArticle = addJProp(baseGroup, "customsSIDArticle", "Артикул (ИД)", customsSIDSupplier, supplierArticle, 1);
         jennyferSupplierArticle = addJProp("jennyferSupplierArticle", "Поставщик Jennyfer (ИД)", baseLM.and1, supplierArticle, 1, addJProp(is(jennyferSupplier), supplierArticle, 1), 1);
         steilmannSupplierArticle = addJProp("steilmannSupplierArticle", "Поставщик Steilmann (ИД)", baseLM.and1, supplierArticle, 1, addJProp(is(steilmannSupplier), supplierArticle, 1), 1);
 
@@ -2353,6 +2363,7 @@ public class RomanLogicsModule extends LogicsModule {
         nameSeasonYearArticleSku = addJProp(baseGroup, "nameSeasonYearArticleSku", "Сезон", nameSeasonYear, seasonYearArticleSku, 1);
 
         articleSIDSupplier = addAGProp(idGroup, "articleSIDSupplier", "Артикул (ИД)", sidArticle, supplierArticle);
+        articleCustomsSIDSupplier = addAGProp(idGroup, "articleCustomsSIDSupplier", "Артикул (ИД)", sidArticle, customsSIDArticle);
 
         seekArticleSIDSupplier = addJoinAProp("Поиск артикула", addSAProp(null), articleSIDSupplier, 1, 2);
         seekArticleSIDInvoice = addJoinAProp("Поиск артикула", seekArticleSIDSupplier, 1, supplierDocument, 2);
@@ -7367,7 +7378,7 @@ public class RomanLogicsModule extends LogicsModule {
             objSupplier = addSingleGroupObject(supplier, "Поставщик", baseLM.name, nameBrandSupplierSupplier, nameCurrencySupplier, BL.LegalEntity.getLPByName("addressLegalEntity"), BL.LegalEntity.getLPByName("dialogAddressLegalEntity"));
             addObjectActions(this, objSupplier);
 
-            objBrand = addSingleGroupObject(brandSupplier, "Бренд", sidBrandSupplier, baseLM.name, nameCountryBrandSupplier, sidGenderBrandSupplier);
+            objBrand = addSingleGroupObject(brandSupplier, "Бренд", sidBrandSupplier, customsSIDBrandSupplier, baseLM.name, nameCountryBrandSupplier, sidGenderBrandSupplier);
             addObjectActions(this, objBrand);
 
             objColor = addSingleGroupObject(colorSupplier, "Цвет", sidColorSupplier, baseLM.name);

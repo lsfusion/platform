@@ -67,7 +67,8 @@ public class IntegrationService {
         // приходится через addKeys, так как synchronize сам не может resolv'ить сессию на добавление
         Map<ImportKey<?>, SinglePropertyTableUsage<?>> addedKeys = new HashMap<ImportKey<?>, SinglePropertyTableUsage<?>>();
         for (ImportKey<?> key : keys)
-            addedKeys.put(key, key.synchronize(session, importTable));
+            if(!key.skipKey)
+                addedKeys.put(key, key.synchronize(session, importTable));
 
         DataChanges propertyChanges = new DataChanges();
         for (ImportProperty<?> property : properties)

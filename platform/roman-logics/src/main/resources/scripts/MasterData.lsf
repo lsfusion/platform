@@ -309,6 +309,7 @@ stockGroupStock (stock) += groupWarehouseCustomStore(stock);
 
 allowImportExportXLSLegalEntityUA 'Разрешить импорт/экспорт из/в Excel(Украина)' = DATA BOOLEAN (legalEntity) IN lawGroup;
 allowImportExportXLSLegalEntityBY 'Разрешить импорт/экспорт из/в Excel(Беларусь)' = DATA BOOLEAN (legalEntity) IN lawGroup;
+allowImportFromXMLLegalEntity 'Разрешить импорт из XML-файлов (Беларусь)' = DATA BOOLEAN (legalEntity) IN lawGroup;
 
 FORM customStore 'Склад временного хранения'
 
@@ -321,7 +322,7 @@ FORM customStore 'Склад временного хранения'
                   managerLegalEntity, dialogManagerLegalEntity,
                   accountantLegalEntity, dialogAccountantLegalEntity,
                   phoneLegalEntity, dialogPhoneLegalEntity,
-                  emailLegalEntity, siteLegalEntity, allowImportExportXLSLegalEntityUA, allowImportExportXLSLegalEntityBY
+                  emailLegalEntity, siteLegalEntity, allowImportExportXLSLegalEntityUA, allowImportExportXLSLegalEntityBY, allowImportFromXMLLegalEntity
 
     EDIT customStore OBJECT c
 ;

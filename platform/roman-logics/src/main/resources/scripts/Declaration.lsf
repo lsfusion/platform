@@ -158,6 +158,7 @@ endTimeDeclaration 'Конец обработки' = DATA DATETIME (declaration)
 
 allowImportExportXLSDeclarationUA(declaration) = allowImportExportXLSLegalEntityUA(customStoreDeclaration(declaration));
 allowImportExportXLSDeclarationBY(declaration) = allowImportExportXLSLegalEntityBY(customStoreDeclaration(declaration));
+allowImportFromXMLDeclaration(declaration) = allowImportFromXMLLegalEntity(customStoreDeclaration(declaration));
 
 exportDeclaration 'Экспортировать декларацию' = ACTION CUSTOM 'roman.actions.ExportDeclarationActionProperty' IN docGroup;
 
@@ -821,7 +822,8 @@ fillInGroupDeclarationDeclarationDetail 'Связать позиции декл�
         WHERE declarationGroupDeclaration(groupDeclaration) == declaration AND declarationDeclarationDetail(declarationDetail) == declaration;
 }
 
-importGroupsDeclaration 'Импортировать строки декларации' = ACTION CUSTOM 'roman.actions.ImportGroupsDeclarationActionProperty' IN docGroup;
+importGroupsXLSDeclaration 'Импортировать строки декларации из XLS (Украина)' = ACTION CUSTOM 'roman.actions.ImportGroupsXLSDeclarationActionProperty' IN docGroup;
+importGroupsXMLDeclaration 'Импортировать строки декларации из XML (Беларусь)' = ACTION CUSTOM 'roman.actions.ImportGroupsXMLDeclarationActionProperty' IN docGroup;
 
 //
 sumDeclaration 'Сумма' (declaration) = GROUP SUM declarationSumRateDeclarationDetail(declarationDetail) BY declarationDeclarationDetail(declarationDetail) IN sumGroup PERSISTENT;
@@ -1082,7 +1084,8 @@ FORM declaration 'Декларация'
 
     PROPERTIES (d) showFormDeclarationInvoices TODRAW dd FORCE PANEL DRAWTOTOOLBAR
     PROPERTIES (d) toCreateGroupsDeclaration TODRAW gd FORCE PANEL DRAWTOTOOLBAR, setSumGroupDeclaration TODRAW gd FORCE PANEL DRAWTOTOOLBAR
-    PROPERTIES (d) importGroupsDeclaration TODRAW gd FORCE PANEL DRAWTOTOOLBAR SHOWIF allowImportExportXLSDeclarationUA(d)
+    PROPERTIES (d) importGroupsXLSDeclaration TODRAW gd FORCE PANEL DRAWTOTOOLBAR SHOWIF allowImportExportXLSDeclarationUA(d)
+    PROPERTIES (d) importGroupsXMLDeclaration TODRAW gd FORCE PANEL DRAWTOTOOLBAR SHOWIF allowImportFromXMLDeclaration(d)        
     PROPERTIES (d) fillInGroupDeclarationDeclarationDetail  TODRAW gd FORCE PANEL DRAWTOTOOLBAR SHOWIF allowImportExportXLSDeclarationUA(d)
 
     FILTERGROUP filterDetail

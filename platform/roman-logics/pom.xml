@@ -35,5 +35,9 @@
             <groupId>net.sf.jacob-project</groupId>
             <artifactId>jacob</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.jdom</groupId>
+            <artifactId>jdom</artifactId>
+        </dependency>
     </dependencies>
 </project>

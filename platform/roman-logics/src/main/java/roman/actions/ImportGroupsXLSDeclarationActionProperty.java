@@ -34,11 +34,11 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class ImportGroupsDeclarationActionProperty extends ScriptingActionProperty {
+public class ImportGroupsXLSDeclarationActionProperty extends ScriptingActionProperty {
     private final ClassPropertyInterface declarationInterface;
     String row;
 
-    public ImportGroupsDeclarationActionProperty(ScriptingLogicsModule LM) {
+    public ImportGroupsXLSDeclarationActionProperty(ScriptingLogicsModule LM) {
         super(LM, new ValueClass[]{LM.getClassByName("declaration")});
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
