@@ -12,6 +12,9 @@
     <!--  Color Picker -->
     <inherits name="net.auroris.ColorPicker.client"/>
 
+    <!-- GWT DnD -->
+    <inherits name='com.allen_sauer.gwt.dnd.gwt-dnd'/>
+
     <!-- GWT theme -->
     <!--<inherits name='com.google.gwt.user.theme.standard.Standard'/>-->
     <!--<inherits name="com.google.gwt.user.theme.chrome.Chrome"/>-->

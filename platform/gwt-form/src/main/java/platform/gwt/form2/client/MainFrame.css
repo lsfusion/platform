@@ -1,3 +1,11 @@
+body, html {
+    /* нужно для правильной работы drag-n-drop */
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+/* ------------ Default gwt overrides ------------ */
 .gwt-Button {
     margin: 2px;
     height: 32px;
@@ -9,30 +17,7 @@
     height: 20px;
 }
 
-.messageBox-button {
-    width: 90px;
-}
-
-.messageBox-message {
-    height: auto;
-    width: 200px;
-    margin-bottom: 10px;
-}
-
-.labelBasedPanelRendererValueLabel {
-    border: 1px solid #0055aa;
-    margin: 2px;
-}
-
-.dataPanelRendererGridPanel {
-    border: 1px solid #0055aa;
-    margin: 2px;
-}
-
-.dataPanelRendererPanel {
-    margin: 1px 2px 7px 2px;
-}
-
+/* ------------ Tab panel ------------ */
 .gwt-TabLayoutPanel .gwt-TabLayoutPanelContent {
     padding: 1px;
 }
@@ -69,6 +54,99 @@
     background: #CCCCCC;
 }
 
+/* ------------ Message box styles ------------ */
+.messageBox-button {
+    width: 90px;
+}
+
+.messageBox-message {
+    height: auto;
+    width: 200px;
+    margin-bottom: 10px;
+}
+
+/* ------------ Resizable window ------------ */
+.dragdrop-boundary {
+    /*background-color: #F8F8F8; *//* light gray */
+    /*border: 1px solid black;*/
+}
+
+.dragdrop-selected, .dragdrop-dragging {
+    filter: none;
+    opacity: 1;
+}
+
+.ResizableWindow {
+    position: absolute;
+    background-color: #FFFFFF; /* prevent transparency */
+}
+
+.ResizableWindow .ResizableWindow-header {
+    background: #F1F1F1;
+    padding: 2px 0px 2px 0px;
+    cursor: default;
+    font-family: Arial Unicode MS, Arial, sans-serif;
+    font-weight: bold;
+    border-bottom: 1px solid #bbbbbb;
+    overflow: hidden;
+}
+
+@sprite .ResizableWindow .resize-edge {
+    gwt-image: "dragger";
+    background-repeat: repeat;
+    line-height: 1px;
+    width: auto;
+    height: auto;
+}
+
+.ResizableWindow .resize-edge-nw .dragdrop-handle {
+    cursor: nw-resize;
+}
+
+.ResizableWindow .resize-edge-n .dragdrop-handle {
+    cursor: n-resize;
+}
+
+.ResizableWindow .resize-edge-ne .dragdrop-handle {
+    cursor: ne-resize;
+}
+
+.ResizableWindow .resize-edge-w .dragdrop-handle {
+    cursor: w-resize;
+}
+
+.ResizableWindow .resize-edge-e .dragdrop-handle {
+    cursor: e-resize;
+}
+
+.ResizableWindow .resize-edge-sw .dragdrop-handle {
+    cursor: sw-resize;
+}
+
+.ResizableWindow .resize-edge-s .dragdrop-handle {
+    cursor: s-resize;
+}
+
+.ResizableWindow .resize-edge-se .dragdrop-handle {
+    cursor: se-resize;
+}
+
+/* ------------ Panel Renderer related styles ------------ */
+.labelBasedPanelRendererValueLabel {
+    border: 1px solid #0055aa;
+    margin: 2px;
+}
+
+.dataPanelRendererGridPanel {
+    border: 1px solid #0055aa;
+    margin: 2px;
+}
+
+.dataPanelRendererPanel {
+    margin: 1px 2px 7px 2px;
+}
+
+/* ------------ Caption panel ------------ */
 .captionPanel {
     padding-top: 0.55em;
 }
@@ -88,6 +166,7 @@
     background-color: white;
 }
 
+/* ------------ Form containers ------------ */
 .hSplitPanelContents {
     overflow-x: auto;
     overflow-y: hidden;
@@ -106,30 +185,12 @@
     float: right;
 }
 
+/* ------------ Other components  ------------ */
 .formController {
     overflow: auto !important;
-}
-
-/*.formLayout {*/
-    /*border: 2px solid red;*/
-/*}*/
-
-.gridTable {
-    border: 1px solid lightGrey;
 }
 
 .gridResizePanel{
     min-height: 130px !important;
 }
 
-/*.gridToolbar {*/
-    /*border: 2px solid green;*/
-/*}*/
-
-/*.panelToolbar {*/
-    /*border: 2px solid cyan;*/
-/*}*/
-
-/*.showType {*/
-    /*border: 2px solid blue;*/
-/*}*/

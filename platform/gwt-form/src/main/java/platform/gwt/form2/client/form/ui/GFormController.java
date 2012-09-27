@@ -23,10 +23,10 @@ import platform.gwt.form2.client.dispatch.NavigatorDispatchAsync;
 import platform.gwt.form2.client.form.dispatch.GEditPropertyHandler;
 import platform.gwt.form2.client.form.dispatch.GFormActionDispatcher;
 import platform.gwt.form2.client.form.ui.classes.ClassChosenHandler;
-import platform.gwt.form2.client.form.ui.classes.GClassDialog;
+import platform.gwt.form2.client.form.ui.classes.GResizableClassDialog;
 import platform.gwt.form2.client.form.ui.dialog.DialogBoxHelper;
-import platform.gwt.form2.client.form.ui.dialog.GModalDialog;
-import platform.gwt.form2.client.form.ui.dialog.GModalForm;
+import platform.gwt.form2.client.form.ui.dialog.GResizableModalDialog;
+import platform.gwt.form2.client.form.ui.dialog.GResizableModalForm;
 import platform.gwt.form2.client.form.ui.dialog.WindowHiddenHandler;
 import platform.gwt.form2.shared.actions.GetForm;
 import platform.gwt.form2.shared.actions.GetFormResult;
@@ -363,29 +363,20 @@ public class GFormController extends SimplePanel {
     }
 
     public void showModalDialog(GForm form, final WindowHiddenHandler handler) {
-        GModalDialog.showDialog(form, handler);
+        GResizableModalDialog.showDialog(form, handler);
     }
 
     public void showModalForm(GForm form, final WindowHiddenHandler handler) {
-        GModalForm.showForm(form, handler);
+        GResizableModalForm.showForm(form, handler);
     }
 
     public void showClassDialog(GObjectClass baseClass, GObjectClass defaultClass, boolean concreate, final ClassChosenHandler classChosenHandler) {
-        GClassDialog.showDialog(baseClass, defaultClass, concreate, classChosenHandler);
+        GResizableClassDialog.showDialog(baseClass, defaultClass, concreate, classChosenHandler);
     }
 
     public void changeGroupObject(GGroupObject group, GGroupObjectValue key) {
         long requestIndex = dispatcher.execute(new ChangeGroupObject(group.ID, key.getValueDTO()), new ServerResponseCallback());
         lastChangeCurrentObjectsRequestIndices.put(group, requestIndex);
-    }
-
-    public void executeEditAction(GPropertyDraw property, String actionSID) {
-        GGroupObjectValue key = controllers.get(property.groupObject).getCurrentKey();
-        executeEditAction(property, key, actionSID);
-    }
-
-    public void executeEditAction(GPropertyDraw property, GGroupObjectValue key, String actionSID) {
-        executeEditAction(property, key, actionSID, new ServerResponseCallback());
     }
 
     public void executeEditAction(GPropertyDraw property, GGroupObjectValue columnKey, String actionSID, AsyncCallback<ServerResponseResult> callback) {

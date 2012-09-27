@@ -192,7 +192,7 @@ public class GridController {
     }
 
     public ToolbarGridButton createGroupChangeButton() {
-        return new ToolbarGridButton(groupChangeIcon, ClientResourceBundle.getString("form.grid.group.groupchange") + " (Ctrl+F12)") {
+        ToolbarGridButton groupChangeButton = new ToolbarGridButton(groupChangeIcon, ClientResourceBundle.getString("form.grid.group.groupchange") + " (Ctrl+F12)") {
             @Override
             public void addListener() {
                 addActionListener(new ActionListener() {
@@ -220,6 +220,8 @@ public class GridController {
                 });
             }
         };
+        groupChangeButton.setEnabled(false);
+        return groupChangeButton;
     }
 
     void needToBeShown() {

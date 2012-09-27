@@ -1,14 +1,15 @@
 package platform.gwt.form2.client.form.ui.classes;
 
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.*;
 import platform.gwt.form2.client.MainFrameMessages;
-import platform.gwt.form2.client.form.ui.dialog.GModalWindow;
+import platform.gwt.form2.client.form.ui.dialog.GResizableModalWindow;
 import platform.gwt.form2.client.form.ui.dialog.WindowHiddenHandler;
 import platform.gwt.form2.shared.view.classes.GObjectClass;
 
-public class GClassDialog extends GModalWindow {
+public class GResizableClassDialog extends GResizableModalWindow {
     private static final MainFrameMessages messages = MainFrameMessages.Instance.get();
 
     private final boolean concreate;
@@ -21,7 +22,7 @@ public class GClassDialog extends GModalWindow {
 
     private GObjectClass chosenClass;
 
-    public GClassDialog(GObjectClass baseClass, GObjectClass defaultClass, boolean concreate, final ClassChosenHandler classChosenHandler) {
+    public GResizableClassDialog(GObjectClass baseClass, GObjectClass defaultClass, boolean concreate, final ClassChosenHandler classChosenHandler) {
         super(messages.choseClass());
 
         this.concreate = concreate;
@@ -34,21 +35,28 @@ public class GClassDialog extends GModalWindow {
 
     private void configureLayout(GObjectClass baseClass, GObjectClass defaultClass) {
         classPanel = new ClassTreePanel(baseClass, defaultClass);
-        classPanel.setPixelSize(500, 500);
 
         btnOk = new Button(messages.ok());
         btnCancel = new Button(messages.cancel());
 
-        FlowPanel bottomPane = new FlowPanel();
-        bottomPane.add(btnOk);
-        bottomPane.add(btnCancel);
+        FlowPanel bottomPanel = new FlowPanel();
+        bottomPanel.add(btnOk);
+        bottomPanel.add(btnCancel);
 
-        VerticalPanel mainPane = new VerticalPanel();
-        mainPane.add(classPanel);
-        mainPane.add(bottomPane);
-        mainPane.setCellHorizontalAlignment(bottomPane, HasAlignment.ALIGN_RIGHT);
+        VerticalPanel bottomAlignedPanel = new VerticalPanel();
+        bottomAlignedPanel.setWidth("100%");
+        bottomAlignedPanel.add(bottomPanel);
+        bottomAlignedPanel.setCellHorizontalAlignment(bottomPanel, HasAlignment.ALIGN_RIGHT);
 
-        setWidget(mainPane);
+        DockLayoutPanel centerPanel = new DockLayoutPanel(Style.Unit.PX);
+        centerPanel.addSouth(bottomAlignedPanel, 36);
+        centerPanel.add(classPanel);
+
+        ResizeLayoutPanel mainPanel = new ResizeLayoutPanel();
+        mainPanel.setPixelSize(500, 500);
+        mainPanel.add(centerPanel);
+
+        setContentWidget(mainPanel);
     }
 
     private void bindUIHandlers() {
@@ -84,8 +92,8 @@ public class GClassDialog extends GModalWindow {
         }
     }
 
-    public static GClassDialog showDialog(GObjectClass baseClass, GObjectClass defaultClass, boolean concreate, ClassChosenHandler classChosenHandler) {
-        GClassDialog classDlg = new GClassDialog(baseClass, defaultClass, concreate, classChosenHandler);
+    public static GResizableClassDialog showDialog(GObjectClass baseClass, GObjectClass defaultClass, boolean concreate, ClassChosenHandler classChosenHandler) {
+        GResizableClassDialog classDlg = new GResizableClassDialog(baseClass, defaultClass, concreate, classChosenHandler);
         classDlg.center();
         return classDlg;
     }

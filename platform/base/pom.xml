@@ -67,6 +67,7 @@
         <gwt.platform.version>0.7</gwt.platform.version>
         <gwt.uload.version>0.6.3-compat</gwt.uload.version>
         <gwt.mosaic.version>0.4.0-rc4</gwt.mosaic.version>
+        <gwt.dnd.version>3.1.2</gwt.dnd.version>
         <color.picker.version>2.1</color.picker.version>
 
         <maven.compiler.source>1.6</maven.compiler.source>
@@ -611,6 +612,11 @@
                 <groupId>net.auroris</groupId>
                 <artifactId>colorpicker</artifactId>
                 <version>${color.picker.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.allen-sauer.gwt.dnd</groupId>
+                <artifactId>gwt-dnd</artifactId>
+                <version>${gwt.dnd.version}</version>
             </dependency>
 
             <!-- Platform modules -->

@@ -3,8 +3,6 @@ package platform.gwt.form2.client.form.ui;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.cellview.client.Header;
 import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.HeaderPanel;
-import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.view.client.DefaultSelectionEventManager;
 import platform.gwt.form2.shared.view.GPropertyDraw;
 import platform.gwt.form2.shared.view.changes.GGroupObjectValue;
@@ -45,19 +43,12 @@ public abstract class GGridPropertyTable extends GPropertyTable {
 
         setTableBuilder(new GGridPropertyTableCellBuilder(this));
 
-        addStyleName("gridTable");
-
         setEmptyTableWidget(new HTML("The table is empty"));
 
         setKeyboardSelectionPolicy(KeyboardSelectionPolicy.BOUND_TO_SELECTION);
 
         selectionModel = new GGridTableSelectionModel();
         setSelectionModel(selectionModel, DefaultSelectionEventManager.<GridDataRecord>createDefaultManager());
-    }
-
-    public ScrollPanel getScrollPanel() {
-        HeaderPanel header = (HeaderPanel) getWidget();
-        return (ScrollPanel) header.getContentWidget();
     }
 
     @Override

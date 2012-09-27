@@ -4,6 +4,8 @@ import com.google.gwt.cell.client.Cell;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.user.cellview.client.DataGrid;
+import com.google.gwt.user.client.ui.CustomScrollPanel;
+import com.google.gwt.user.client.ui.HeaderPanel;
 import platform.gwt.form2.client.form.dispatch.GEditPropertyDispatcher;
 import platform.gwt.form2.client.form.dispatch.GEditPropertyHandler;
 import platform.gwt.form2.shared.actions.form.ServerResponseResult;
@@ -28,9 +30,16 @@ public abstract class GPropertyTable extends DataGrid implements EditManager, GE
     public GPropertyTable(GFormController iform, Resources resources) {
         super(50, resources);
 
+        addStyleName(getResources().style().widget());
+
         this.form = iform;
 
         this.editDispatcher = new GEditPropertyDispatcher(form);
+    }
+
+    public CustomScrollPanel getScrollPanel() {
+        HeaderPanel header = (HeaderPanel) getWidget();
+        return (CustomScrollPanel) header.getContentWidget();
     }
 
     @Override

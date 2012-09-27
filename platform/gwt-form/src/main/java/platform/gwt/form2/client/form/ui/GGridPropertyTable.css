@@ -1,7 +1,7 @@
 /* modified copy com/google/gwt/user/cellview/client/DataGrid.css */
 
 .dataGridWidget {
-
+    border: 1px solid lightGrey;
 }
 
 .dataGridFirstColumn {
