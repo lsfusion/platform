@@ -54,10 +54,39 @@ CLASS userOrderPosted 'Закрытый заказ (польз.)' : userOrder, p
 
 @defineDocumentInterfaceHeaderQuantity(order);
 @defineDocumentHeaderSkuQuantity(order, sku);
+@defineDocumentHeaderSkuQuantity(userOrder, sku);
 @defineDocumentInterfaceHeaderSum(order);
 
 @defineAddDetailDialogSkuStock(userOrder, sku, stock, dialogSku);
 @defineAddDetailDialogBarcode(userOrder, sku);
+
+//-- SKU
+userOrderDetailSkuUserOrderStock (sku, userOrder, stock) =  GROUP MAX userOrderDetail
+    BY skuUserOrderDetail(userOrderDetail), userOrderUserOrderDetail(userOrderDetail), stockUserOrderDetail(userOrderDetail);
+userOrderDetailSkuUserOrder (sku, userOrder) = userOrderDetailSkuUserOrderStock(sku, userOrder, stockUserOrder(userOrder));
+
+currentBalanceSkuUserOrder 'Остаток' (sku, userOrder) = currentBalanceSkuStock(sku, stockUserOrder(userOrder));
+
+changeQuantitySkuUserOrder = ACTION (sku, userOrder) {
+    REQUEST NUMERIC[14,3] INPUT;
+    IF userOrderDetailSkuUserOrder(sku, userOrder) THEN {
+        IF requestedNumeric() THEN {
+            SET quantityUserOrderDetail(detail) <- requestedNumeric() WHERE detail == userOrderDetailSkuUserOrder(sku, userOrder);
+        } ELSE {
+            FOR userOrderUserOrderDetail(userOrderDetail) == userOrder AND stockUserOrderDetail(userOrderDetail) == stockUserOrder(userOrder) AND skuUserOrderDetail(userOrderDetail) == sku DO {
+                EXEC delete(userOrderDetail);
+            }
+        }
+    } ELSE {
+        ADDOBJ userOrderDetail;
+        FOR d == addedObject() DO {
+           SET userOrderUserOrderDetail(d) <- userOrder;
+           SET stockUserOrderDetail (d) <- stockUserOrder(userOrder);
+           SET skuUserOrderDetail(d) <- sku;
+           SET quantityUserOrderDetail (d) <- requestedNumeric();
+        }
+    }
+}
 
 // --------------------------- Формы Заказа ---------------------------------
 
@@ -70,6 +99,18 @@ FORM userOrder 'Заказ'
     OBJECTS d = userOrderDetail
     PROPERTIES (d) indexUserOrderDetail, idBarcodeSkuUserOrderDetail, nameSkuUserOrderDetail, shortNameUOMSkuUserOrderDetail,
                    quantityUserOrderDetail, priceUserOrderDetail, sumUserOrderDetail, nameStockUserOrderDetail, ADDOBJ, delete
+
+    TREE skuTree sk = skuGroup PARENT parentSkuGroup
+    PROPERTIES READONLY skuTreeName = name(sk)
+    ORDER BY skuTreeName
+
+    OBJECTS s=sku
+    PROPERTIES             READONLY    inputName = nameSku(s)
+    PROPERTIES(s)          READONLY idBarcodeSku, shortNameUOMSku
+    PROPERTIES(s, o)       currentBalanceSkuUserOrder READONLY, quantityUserOrderDetailSkuUserOrder ON CHANGE EXEC changeQuantitySkuUserOrder(s, o)
+
+    FILTERS                isParentSkuGroupSku(sk, s)
+    ORDER BY inputName
 
     PROPERTIES(o) TODRAW d addDetailDialogSkuStockUserOrderDetailUserOrder,
                            addDetailInputBarcodeUserOrderDetailUserOrder, deleteUserOrderDetailUserOrder
@@ -84,9 +125,30 @@ FORM userOrder 'Заказ'
 DESIGN userOrder FROM DEFAULT{
 
     main {
-        preferredSize = (1024, 768);
+        preferredSize = (1280, 1024);
+        NEW specification.box BEFORE functions.box{
+            type = TABBED;
+            ADD d.box {
+                d.panel {
+                    childConstraints = TO THE BOTTOM;
+                }
+            }
+            NEW itemBox {
+                childConstraints = TO THE RIGHT;
+                title = 'Товар';
+                type = SPLITH;
 
-        NEW header.box BEFORE d.box {
+                ADD skuTree.tree.box {
+                    title = 'Группы SKU';
+                    fillHorizontal = 1;
+                }
+                ADD s.box {
+                    fillHorizontal = 2;
+                }
+            }
+        }
+
+        NEW header.box BEFORE specification.box {
             childConstraints = TO THE RIGHT;
 
             NEW headerRow1 {
@@ -113,9 +175,7 @@ DESIGN userOrder FROM DEFAULT{
             }
         }
 
-        d.panel {
-            childConstraints = TO THE BOTTOM;
-        }
+
         PROPERTY(formOkAction) {
             caption = 'Провести';
         }
