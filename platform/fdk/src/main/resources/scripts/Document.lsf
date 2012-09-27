@@ -403,6 +403,174 @@ META defineDocumentInterface (object)
     @defineDocumentDetailActions(user###object);
 END
 
+//----------- Изменение кол-ва для строки при изменении кол-ва для товара---------------//
+META defineDocumentChangeQuantitySkuStockCustom(object, detail, skuProp, stockProp)
+    detail###Sku###object###Stock (sku, object, stock) =  GROUP MAX detail
+        BY skuProp###detail(detail), object###detail(detail), stockProp###detail(detail);
+    detail###Sku###object (sku, object) = detail###Sku###object###Stock(sku, object, stockProp###object(object));
+    
+    quantitySku###object###Stock 'Кол-во товара в документе' (sku, object, stock) = GROUP SUM quantity###detail(detail)
+        BY skuProp###detail(detail), object###detail(detail), stockProp###detail(detail);
+    
+    priceSkuStock###object 'Цена учетная' (sku, stock, object) = priceSkuStockDateTime(sku, stock, dateTime###object(object));
+    
+    
+    changeQuantitySku###object###Stock = ACTION (sku, object, stock) {
+        REQUEST NUMERIC[14,3] INPUT;
+        IF detail###Sku###object###Stock(sku, object, stock) THEN {
+            IF requestedNumeric() THEN {
+                SET quantity###detail(detail) <- requestedNumeric() WHERE detail == detail###Sku###object###Stock(sku, object, stock);
+            } ELSE {
+                FOR object###detail(detail) == object AND stockProp###detail(detail) == stock AND skuProp###detail(detail) == sku DO {
+                    EXEC delete(detail);
+                }
+            }
+        } ELSE {
+            ADDOBJ detail;
+            FOR d == addedObject() DO {
+               SET object###detail(d) <- object;
+               SET stockProp###detail (d) <- stock;
+               SET skuProp###detail(d) <- sku;
+               SET quantity###detail (d) <- requestedNumeric();
+            }
+        }
+    }
+END
+META defineDocumentChangeQuantitySkuStock(object, skuProp, stockProp)
+    @defineDocumentChangeQuantitySkuStockCustom(object, object##Detail, skuProp, stockProp);
+END
+META defineDocumentChangeQuantitySkuStock(object)
+    @defineDocumentChangeQuantitySkuStock(object, sku, stock);
+END
+
+META extendDocumentFormChangeQuantitySkuStockCustom(object, form, concrete, stockProp)
+
+    EXTEND FORM form
+
+        TREE skuTree sk = skuGroup PARENT parentSkuGroup
+        PROPERTIES READONLY skuTreeName = name(sk)
+        ORDER BY skuTreeName
+
+        OBJECTS           sts=(st=stock, s=sku)
+        PROPERTIES        READONLY nameSku(s), stockName = name(st), idBarcodeSku(s), shortNameUOMSku(s)
+        FILTERS           isParentSkuGroupSku(sk, s),
+                          stockProp###object(concrete) == st OR
+                          st IS stock AND concrete IS object AND NOT stockProp###object(concrete)
+
+        ORDER BY          nameSku, stockName
+
+        PROPERTIES        currentBalanceSkuStock(s, st) READONLY, priceSkuStock###object(s, st, concrete) READONLY, quantitySku###object###Stock(s, concrete, st) ON CHANGE EXEC changeQuantitySku###object###Stock(s, concrete, st)
+
+        FILTERGROUP filter
+            FILTER 'Товары с остатком ' 'F10' currentBalanceSkuStock(s, st) DEFAULT
+            FILTER 'Товары в заказе ' 'F9' quantitySku###object###Stock(s, concrete, st)
+    ;
+
+    EXTEND DESIGN form {
+        specification.box {
+            type = TABBED;
+            NEW itemBox {
+                childConstraints = TO THE RIGHT;
+                title = 'Товар';
+                type = SPLITH;
+
+                ADD skuTree.tree.box {
+                    title = 'Группы SKU';
+                    fillHorizontal = 1;
+                }
+                ADD sts.box {
+                    fillHorizontal = 2;
+                }
+            }
+        }
+    }
+END
+META extendDocumentFormChangeQuantitySkuStock(object, form, concrete)
+    @extendDocumentFormChangeQuantitySkuStockCustom(object, form, concrete, stock);
+END
+
+//--
+
+META defineDocumentChangeQuantitySkuCustom(object, detail, skuProp, stockProp)
+    detail###Sku###object###Stock (sku, object, stock) =  GROUP MAX detail
+        BY skuProp###detail(detail), object###detail(detail), stockProp###detail(detail);
+    detail###Sku###object (sku, object) = detail###Sku###object###Stock(sku, object, stockProp###object(object));
+
+    currentBalanceSku###object 'Остаток' (sku, object) = currentBalanceSkuStock(sku, stockProp###object(object));
+    priceSku###object 'Цена учетная' (sku, object) = priceSkuStockDateTime(sku, stockProp###object(object), dateTime###object(object));
+
+    changeQuantitySku###object = ACTION (sku, object) {
+        REQUEST NUMERIC[14,3] INPUT;
+        IF detail###Sku###object(sku, object) THEN {
+            IF requestedNumeric() THEN {
+                SET quantity###detail(detail) <- requestedNumeric() WHERE detail == detail###Sku###object(sku, object);
+            } ELSE {
+                FOR object###detail(detail) == object AND stockProp###detail(detail) == stockProp###object(object) AND skuProp###detail(detail) == sku DO {
+                    EXEC delete(detail);
+                }
+            }
+        } ELSE {
+            ADDOBJ detail;
+            FOR d == addedObject() DO {
+               SET object###detail(d) <- object;
+               SET stockProp###detail (d) <- stockProp###object(object);
+               SET skuProp###detail(d) <- sku;
+               SET quantity###detail (d) <- requestedNumeric();
+            }
+        }
+    }
+END
+META defineDocumentChangeQuantitySku(object, skuProp, stockProp)
+    @defineDocumentChangeQuantitySkuCustom(object, object##Detail, skuProp, stockProp);
+END
+META defineDocumentChangeQuantitySku(object)
+    @defineDocumentChangeQuantitySku(object, sku, stock);
+END
+
+META extendDocumentFormChangeQuantitySkuCustom(object, form, concrete, skuProp, detail)
+
+    EXTEND FORM form
+
+        TREE skuTree sk = skuGroup PARENT parentSkuGroup
+        PROPERTIES READONLY skuTreeName = name(sk)
+        ORDER BY skuTreeName
+
+        OBJECTS s=sku
+        PROPERTIES             READONLY    inputName = nameSku(s)
+        PROPERTIES(s)          READONLY idBarcodeSku, shortNameUOMSku
+        PROPERTIES(s, concrete)       currentBalanceSku###object READONLY, priceSku###object READONLY, quantity###detail###skuProp###object ON CHANGE EXEC changeQuantitySku###object(s, concrete)
+
+        FILTERS                isParentSkuGroupSku(sk, s)
+        ORDER BY inputName
+
+        FILTERGROUP filter
+            FILTER 'Товары с остатком ' 'F10' currentBalanceSku###object(s, concrete) DEFAULT
+            FILTER 'Товары в заказе ' 'F9' quantity###detail###skuProp###object(s, concrete)
+    ;
+
+    EXTEND DESIGN form {
+        specification.box {
+            type = TABBED;
+            NEW itemBox {
+                childConstraints = TO THE RIGHT;
+                title = 'Товар';
+                type = SPLITH;
+
+                ADD skuTree.tree.box {
+                    title = 'Группы SKU';
+                    fillHorizontal = 1;
+                }
+                ADD s.box {
+                    fillHorizontal = 2;
+                }
+            }
+        }
+    }
+END
+META extendDocumentFormChangeQuantitySku(object, form, concrete)
+    @extendDocumentFormChangeQuantitySkuCustom(object, form, concrete, sku, object##Detail);
+END
+
 // ------------------------- Основной - агрегированный документы ---------------------------------- //
 
 META defineDocumentAggregationHeader(primObject, aggrObject, aggrProperty)

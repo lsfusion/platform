@@ -60,35 +60,6 @@ CLASS userOrderPosted 'Закрытый заказ (польз.)' : userOrder, p
 @defineAddDetailDialogSkuStock(userOrder, sku, stock, dialogSku);
 @defineAddDetailDialogBarcode(userOrder, sku);
 
-//-- SKU
-userOrderDetailSkuUserOrderStock (sku, userOrder, stock) =  GROUP MAX userOrderDetail
-    BY skuUserOrderDetail(userOrderDetail), userOrderUserOrderDetail(userOrderDetail), stockUserOrderDetail(userOrderDetail);
-userOrderDetailSkuUserOrder (sku, userOrder) = userOrderDetailSkuUserOrderStock(sku, userOrder, stockUserOrder(userOrder));
-
-currentBalanceSkuUserOrder 'Остаток' (sku, userOrder) = currentBalanceSkuStock(sku, stockUserOrder(userOrder));
-priceSkuUserOrder 'Цена учетная' (sku, userOrder) = priceSkuStockDateTime(sku, stockUserOrder(userOrder), dateTimeUserOrder(userOrder));
-
-changeQuantitySkuUserOrder = ACTION (sku, userOrder) {
-    REQUEST NUMERIC[14,3] INPUT;
-    IF userOrderDetailSkuUserOrder(sku, userOrder) THEN {
-        IF requestedNumeric() THEN {
-            SET quantityUserOrderDetail(detail) <- requestedNumeric() WHERE detail == userOrderDetailSkuUserOrder(sku, userOrder);
-        } ELSE {
-            FOR userOrderUserOrderDetail(userOrderDetail) == userOrder AND stockUserOrderDetail(userOrderDetail) == stockUserOrder(userOrder) AND skuUserOrderDetail(userOrderDetail) == sku DO {
-                EXEC delete(userOrderDetail);
-            }
-        }
-    } ELSE {
-        ADDOBJ userOrderDetail;
-        FOR d == addedObject() DO {
-           SET userOrderUserOrderDetail(d) <- userOrder;
-           SET stockUserOrderDetail (d) <- stockUserOrder(userOrder);
-           SET skuUserOrderDetail(d) <- sku;
-           SET quantityUserOrderDetail (d) <- requestedNumeric();
-        }
-    }
-}
-
 // --------------------------- Формы Заказа ---------------------------------
 
 FORM userOrder 'Заказ'
@@ -101,24 +72,9 @@ FORM userOrder 'Заказ'
     PROPERTIES (d) indexUserOrderDetail, idBarcodeSkuUserOrderDetail, nameSkuUserOrderDetail, shortNameUOMSkuUserOrderDetail,
                    quantityUserOrderDetail, priceUserOrderDetail, sumUserOrderDetail, nameStockUserOrderDetail, ADDOBJ, delete
 
-    TREE skuTree sk = skuGroup PARENT parentSkuGroup
-    PROPERTIES READONLY skuTreeName = name(sk)
-    ORDER BY skuTreeName
-
-    OBJECTS s=sku
-    PROPERTIES             READONLY    inputName = nameSku(s)
-    PROPERTIES(s)          READONLY idBarcodeSku, shortNameUOMSku
-    PROPERTIES(s, o)       currentBalanceSkuUserOrder READONLY, priceSkuUserOrder READONLY, quantityUserOrderDetailSkuUserOrder ON CHANGE EXEC changeQuantitySkuUserOrder(s, o)
-
-    FILTERS                isParentSkuGroupSku(sk, s)
-    ORDER BY inputName
-
     PROPERTIES(o) TODRAW d addDetailDialogSkuStockUserOrderDetailUserOrder,
                            addDetailInputBarcodeUserOrderDetailUserOrder, deleteUserOrderDetailUserOrder
     FILTERS userOrderUserOrderDetail(d) == o
-    FILTERGROUP filters
-        FILTER 'Товары с остатком' 'F10' currentBalanceSkuUserOrder(s, o) DEFAULT
-        FILTER 'Товары в заказе' 'F9' quantityUserOrderDetailSkuUserOrder(s, o)
 
     EVENTS
         ON OK EXEC prePostUserOrder(o)
@@ -131,23 +87,9 @@ DESIGN userOrder FROM DEFAULT{
     main {
         preferredSize = (1280, 1024);
         NEW specification.box BEFORE functions.box{
-            type = TABBED;
             ADD d.box {
                 d.panel {
                     childConstraints = TO THE BOTTOM;
-                }
-            }
-            NEW itemBox {
-                childConstraints = TO THE RIGHT;
-                title = 'Товар';
-                type = SPLITH;
-
-                ADD skuTree.tree.box {
-                    title = 'Группы SKU';
-                    fillHorizontal = 1;
-                }
-                ADD s.box {
-                    fillHorizontal = 2;
                 }
             }
         }
@@ -185,6 +127,10 @@ DESIGN userOrder FROM DEFAULT{
         }
     }
 }
+
+//-- SKU
+@defineDocumentChangeQuantitySkuStock(userOrder);
+@extendDocumentFormChangeQuantitySkuStock(userOrder, userOrder, o);
 
 FORM userOrders 'Заказы'
     OBJECTS o = userOrder

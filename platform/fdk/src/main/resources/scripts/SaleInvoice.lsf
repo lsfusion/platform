@@ -72,6 +72,7 @@ CLASS userInvoicePosted 'Закрытая накладная (польз.)' : us
 
 @defineDocumentInterfaceHeaderQuantity(invoice);
 @defineDocumentHeaderSkuQuantity(invoice, sku);
+@defineDocumentHeaderSkuQuantity(userInvoice, sku);
 @defineDocumentInterfaceHeaderSum(invoice);
 @defineDocumentInterfaceHeaderVATSum(invoice);
 
@@ -170,8 +171,15 @@ FORM userInvoice 'Накладная'
 DESIGN userInvoice FROM DEFAULT{
     main {
         preferredSize = (1024, 768);
+        NEW specification.box BEFORE functions.box{
 
-        NEW header.box BEFORE d.box {
+            ADD d.box {
+                d.panel {
+                    childConstraints = TO THE BOTTOM;
+                }
+            }
+        }
+        NEW header.box BEFORE specification.box {
             childConstraints = TO THE RIGHT;
 
             NEW headerRow1 {
@@ -199,15 +207,15 @@ DESIGN userInvoice FROM DEFAULT{
                 childConstraints = TO THE BOTTOM;
             }
         }
-
-        d.panel{
-            childConstraints = TO THE BOTTOM;
-        }
         PROPERTY(formOkAction) {
             caption = 'Провести';
         }
     }
 }
+
+//-- SKU
+@defineDocumentChangeQuantitySku(userInvoice);
+@extendDocumentFormChangeQuantitySku(userInvoice, userInvoice, i);
 
 FORM userInvoices 'Накладные'
     OBJECTS i = userInvoice
