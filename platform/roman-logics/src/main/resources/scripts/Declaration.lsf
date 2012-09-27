@@ -157,8 +157,7 @@ beginTimeDeclaration 'Начало обработки' = DATA DATETIME (declarat
 endTimeDeclaration 'Конец обработки' = DATA DATETIME (declaration) IN datetimeGroup;
 
 allowImportExportXLSDeclarationUA(declaration) = allowImportExportXLSLegalEntityUA(customStoreDeclaration(declaration));
-allowImportExportXLSDeclarationBY(declaration) = allowImportExportXLSLegalEntityBY(customStoreDeclaration(declaration));
-allowImportFromXMLDeclaration(declaration) = allowImportFromXMLLegalEntity(customStoreDeclaration(declaration));
+allowImportExportXMLDeclarationBY(declaration) = allowImportExportXMLLegalEntityBY(customStoreDeclaration(declaration));
 
 exportDeclaration 'Экспортировать декларацию' = ACTION CUSTOM 'roman.actions.ExportDeclarationActionProperty' IN docGroup;
 
@@ -1085,7 +1084,7 @@ FORM declaration 'Декларация'
     PROPERTIES (d) showFormDeclarationInvoices TODRAW dd FORCE PANEL DRAWTOTOOLBAR
     PROPERTIES (d) toCreateGroupsDeclaration TODRAW gd FORCE PANEL DRAWTOTOOLBAR, setSumGroupDeclaration TODRAW gd FORCE PANEL DRAWTOTOOLBAR
     PROPERTIES (d) importGroupsXLSDeclaration TODRAW gd FORCE PANEL DRAWTOTOOLBAR SHOWIF allowImportExportXLSDeclarationUA(d)
-    PROPERTIES (d) importGroupsXMLDeclaration TODRAW gd FORCE PANEL DRAWTOTOOLBAR SHOWIF allowImportFromXMLDeclaration(d)        
+    PROPERTIES (d) importGroupsXMLDeclaration TODRAW gd FORCE PANEL DRAWTOTOOLBAR SHOWIF allowImportExportXMLDeclarationBY(d)
     PROPERTIES (d) fillInGroupDeclarationDeclarationDetail  TODRAW gd FORCE PANEL DRAWTOTOOLBAR SHOWIF allowImportExportXLSDeclarationUA(d)
 
     FILTERGROUP filterDetail
@@ -1101,7 +1100,7 @@ FORM declaration 'Декларация'
                     netWeightGroupDeclaration, grossWeightGroupDeclaration, sumGroupDeclaration, dutyGroupDeclaration, VATGroupDeclaration,
                     sumDataGroupDeclaration, dutyDataGroupDeclaration, VATDataGroupDeclaration, numberVATRangeGroupDeclaration, valueVATRangeGroupDeclaration, delete
     PROPERTIES (c, gd2) sumCorrectionGroupDeclaration
-    PROPERTIES(d) exportDeclarationToEXELDeclaration TODRAW gd2 FORCE PANEL DRAWTOTOOLBAR SHOWIF allowImportExportXLSDeclarationBY(d)
+    PROPERTIES(d) exportDeclarationToEXELDeclaration TODRAW gd2 FORCE PANEL DRAWTOTOOLBAR SHOWIF allowImportExportXMLDeclarationBY(d)
 
     OBJECTS dd2=declarationDetail
     PROPERTIES (gd2, dd2) inGroupDeclarationDeclarationDetail, percentGroupDeclarationDeclarationDetail
