@@ -61,15 +61,19 @@ CLASS userInvoicePosted 'Закрытая накладная (польз.)' : us
 @deriveDocumentDetailSum(userInvoice);
 
 @defineDocumentInterfaceDetailVAT(invoice, countryStock);
-@defineDocumentInterfaceDetailDataVATSum (invoice);
+@defineDocumentInterfaceDetailVATDataSum (invoice);
 @deriveDocumentDetailVATSum(userInvoice);
 
 @defineDocumentInterfaceDetailPricePrefix(invoice, shipment, ' (учетная)');
 @deriveDocumentDetailPriceBatchStockPrefix(userInvoice, shipment);
 
+@defineDocumentInterfaceDetailDataSumPrefix (invoice, shipment, ' (учетная)');
+@deriveDocumentDetailSumPrefix(userInvoice, shipment, currency);
+
 @defineDocumentInterfaceHeaderQuantity(invoice);
 @defineDocumentHeaderSkuQuantity(invoice, sku);
 @defineDocumentInterfaceHeaderSum(invoice);
+@defineDocumentInterfaceHeaderVATSum(invoice);
 
 @defineAddDetailDialogSkuStock(userInvoice, sku, stock, dialogSku);
 @defineAddDetailDialogBarcode(userInvoice, sku);
@@ -145,8 +149,8 @@ FORM userInvoice 'Накладная'
                    nameCustomerUserInvoice, nameCurrencyUserInvoice, namePriceListTypeUserInvoice, noteUserInvoice,
                    numberContractSkuCustomerUserInvoice, isCommissionUserInvoice,
                    fillOrderUserInvoice, ordersInvoice READONLY,
-                   countUserInvoiceDetailUserInvoice, quantityUserInvoiceDetailUserInvoice, sumUserInvoiceDetailUserInvoice
-
+                   countUserInvoiceDetailUserInvoice, quantityUserInvoiceDetailUserInvoice, sumUserInvoiceDetailUserInvoice,
+                   VATSumUserInvoiceDetailUserInvoice, invoiceSumUserInvoiceDetailUserInvoice
     OBJECTS d = userInvoiceDetail
     PROPERTIES (d) indexUserInvoiceDetail, idBarcodeSkuUserInvoiceDetail, nameSkuUserInvoiceDetail, shortNameUOMSkuUserInvoiceDetail,
                    descriptionBatchUserInvoiceDetail, quantityUserInvoiceDetail, priceUserInvoiceDetail, sumUserInvoiceDetail,
@@ -210,7 +214,8 @@ FORM userInvoices 'Накладные'
     PROPERTIES (i) READONLY isPostedUserInvoice FORCE GRID, objectClassName, numberObject, seriesObject, dateUserInvoice, timeUserInvoice,
                             nameStockUserInvoice, nameCustomerUserInvoice, nameCurrencyUserInvoice, namePriceListTypeUserInvoice, noteUserInvoice,
                             numberContractSkuCustomerUserInvoice, isCommissionUserInvoice,
-                            countUserInvoiceDetailUserInvoice, quantityUserInvoiceDetailUserInvoice, sumUserInvoiceDetailUserInvoice , ordersInvoice
+                            countUserInvoiceDetailUserInvoice, quantityUserInvoiceDetailUserInvoice, sumUserInvoiceDetailUserInvoice,
+                            VATSumUserInvoiceDetailUserInvoice, invoiceSumUserInvoiceDetailUserInvoice, ordersInvoice
 
     PROPERTIES (i) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
@@ -267,9 +272,10 @@ FORM invoices 'Накладные'
     PROPERTIES (i) READONLY isPostedInvoice FORCE GRID, objectClassName, numberInvoice, seriesInvoice, dateInvoice, timeInvoice,
                             nameStockInvoice, nameCustomerInvoice, nameCurrencyInvoice, noteInvoice,
                             numberContractSkuCustomerInvoice, isCommissionInvoice,
-                            countInvoiceDetailInvoice, quantityInvoiceDetailInvoice, sumInvoiceDetailInvoice, ordersInvoice
+                            countInvoiceDetailInvoice, quantityInvoiceDetailInvoice, sumInvoiceDetailInvoice,
+                            VATSumInvoiceDetailInvoice, invoiceSumInvoiceDetailInvoice, ordersInvoice
 
-    OBJECTS d = userInvoiceDetail
+    OBJECTS d = invoiceDetail
     PROPERTIES (d) READONLY indexInvoiceDetail, idBarcodeSkuInvoiceDetail, nameSkuInvoiceDetail, shortNameUOMSkuInvoiceDetail,
                    descriptionBatchInvoiceDetail, quantityInvoiceDetail, priceInvoiceDetail, sumInvoiceDetail,
                    numberVATInvoiceDetail, valueVATInvoiceDetail, VATSumInvoiceDetail, invoiceSumInvoiceDetail,

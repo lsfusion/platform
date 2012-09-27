@@ -879,10 +879,10 @@ END
 
 
 META defineDocumentHeaderItemSumCustom (object, detail)
-    sumItem###detail###object 'Сумма, товар' (idetail) =
+    sumItem###detail###object 'Сумма, товар' (object) =
         GROUP SUM sum###detail(idetail) AND NOT isContainerSku(sku###detail(idetail))
             BY object###detail(idetail) IN documentSumGroup;
-    sumContainer###detail###object 'Сумма, тара' (idetail) =
+    sumContainer###detail###object 'Сумма, тара' (object) =
         GROUP SUM sum###detail(idetail) IF isContainerSku(sku###detail(idetail))
             BY object###detail(idetail) IN documentSumGroup;
 END

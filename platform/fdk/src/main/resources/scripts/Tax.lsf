@@ -236,13 +236,13 @@ META defineDocumentInterfaceDetailVAT(object, countryProp)
     @defineDocumentInterfaceDetailVATCustom(object##Detail, countryProp);
 END
 
-META defineDocumentDetailVATSumCustom(detail, sumProp, currencyProp)
+META defineDocumentDetailVATSumCustom(detail, prefix, currencyProp)
     VATSum###detail 'Сумма НДС' (detail) = roundCurrency((sum###detail(detail) * valueVAT###detail (detail) / 100), currencyProp###detail(detail));
-    sumProp###sum###detail 'Сумма с НДС' (detail) = sum###detail(detail) (+) VATSum###detail(detail);
+    prefix###sum###detail 'Сумма с НДС' (detail) = sum###detail(detail) (+) VATSum###detail(detail);
 END
-META defineDocumentInterfaceDetailVATSumCustom(detail, sumProp, currencyProp)
-    @defineDocumentDetailVATSumCustom(detail, sumProp, currencyProp);
-    @defineDocumentDetailVATSumCustom(user###detail, sumProp, currencyProp);
+META defineDocumentInterfaceDetailVATSumCustom(detail, prefix, currencyProp)
+    @defineDocumentDetailVATSumCustom(detail, prefix, currencyProp);
+    @defineDocumentDetailVATSumCustom(user###detail, prefix, currencyProp);
 END
 
 META defineDocumentDetailVATSum(object, currencyProp)
@@ -259,23 +259,23 @@ META defineDocumentInterfaceDetailVATSum(object)
     @defineDocumentInterfaceDetailVATSum(object, currency);
 END
 
-//--
-META defineDocumentDetailDataVATSumCustom (detail, sumProp)
+//-- Сумма НДС в detail
+META defineDocumentDetailVATDataSumCustom (detail, prefix)
     VATSum###detail 'Сумма НДС' (detail) = DATA NUMERIC[16,2] (detail);
-    sumProp###sum###detail 'Сумма с НДС' (detail) = sum###detail(detail) (+) VATSum###detail(detail);
+    prefix###sum###detail 'Сумма с НДС' (detail) = sum###detail(detail) (+) VATSum###detail(detail);
 END
-META defineDocumentAbstractDetailDataVATSumCustom (detail, sumProp)
+META defineDocumentAbstractDetailVATDataSumCustom (detail, prefix)
     VATSum###detail 'Сумма НДС' (detail) = ABSTRACT NUMERIC[16,2] (detail);
-    sumProp###sum###detail 'Сумма с НДС' (detail) = sum###detail(detail) (+) VATSum###detail(detail);
+    prefix###sum###detail 'Сумма с НДС' (detail) = sum###detail(detail) (+) VATSum###detail(detail);
 END
 
-META defineDocumentInterfaceDetailDataVATSumCustom (detail, sumProp)
-    @defineDocumentAbstractDetailDataVATSumCustom(detail, sumProp);
-    @defineDocumentDetailDataVATSumCustom(user###detail, sumProp);
+META defineDocumentInterfaceDetailVATDataSumCustom (detail, prefix)
+    @defineDocumentAbstractDetailVATDataSumCustom(detail, prefix);
+    @defineDocumentDetailVATDataSumCustom(user###detail, prefix);
     VATSum###detail (detail) += VATSum###user###detail(detail);
 END
-META defineDocumentInterfaceDetailDataVATSum (object)
-    @defineDocumentInterfaceDetailDataVATSumCustom(object##Detail, object);
+META defineDocumentInterfaceDetailVATDataSum (object)
+    @defineDocumentInterfaceDetailVATDataSumCustom(object##Detail, object);
 END
 
 META deriveDocumentDetailVATSumCustom(detail, currencyProp)
@@ -287,6 +287,19 @@ META deriveDocumentDetailVATSum(object, currencyProp)
 END
 META deriveDocumentDetailVATSum(object)
     @deriveDocumentDetailVATSum(object, currency);
+END
+
+//-- Сумма НДС в документе
+META defineDocumentHeaderVATSumPrefix (object, detail, prefix)
+    VATSum###detail###object 'Сумма НДС' (object) = GROUP SUM VATSum###detail(idetail) BY object###detail(idetail) IN documentSumGroup;
+    prefix###sum###detail###object 'Сумма с НДС' (object) = GROUP SUM prefix###sum###detail(idetail) BY object###detail(idetail) IN documentSumGroup;
+END
+META defineDocumentInterfaceHeaderVATSumPrefix (object, detail, prefix)
+    @defineDocumentHeaderVATSumPrefix(object, detail, prefix);
+    @defineDocumentHeaderVATSumPrefix(user###object, user###detail, prefix);
+END
+META defineDocumentInterfaceHeaderVATSum(object)
+    @defineDocumentInterfaceHeaderVATSumPrefix(object, object##Detail, object);
 END
 
 // ------------------------------------------------------- Стандартные данные ----------------------------------- //

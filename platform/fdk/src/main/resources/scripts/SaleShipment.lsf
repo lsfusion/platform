@@ -260,18 +260,18 @@ EXTEND FORM userShipments
 ;
 
 //-- аггр.объект
-//--
+
 createShipmentInvoice 'Создавать поставку' = ABSTRACT BOOLEAN (invoice) IN documentPrmGroup;
 createShipmentUserInvoice 'Создавать поставку' = DATA BOOLEAN (userInvoice);
 createShipmentInvoice (invoice) += createShipmentUserInvoice(invoice);
 
 EXTEND FORM userInvoice
     PROPERTIES(i) createShipmentInvoice
-    PROPERTIES(d) SHOWIF createShipmentInvoice(i) shipmentPriceUserInvoiceDetail
+    PROPERTIES(d) SHOWIF createShipmentInvoice(i) shipmentPriceUserInvoiceDetail, shipmentSumUserInvoiceDetail
 ;
 EXTEND FORM userInvoices
     PROPERTIES(i) READONLY createShipmentInvoice
-    PROPERTIES(d) READONLY SHOWIF createShipmentInvoice(i) shipmentPriceUserInvoiceDetail
+    PROPERTIES(d) READONLY SHOWIF createShipmentInvoice(i) shipmentPriceUserInvoiceDetail, shipmentSumUserInvoiceDetail
 ;
 
 createShipmentInvoiceDetail 'Создавать поставку' (invoiceDetail) = createShipmentInvoice(invoiceInvoiceDetail(invoiceDetail));
@@ -283,7 +283,8 @@ CLASS invoiceShipmentDetail 'Строка поставки на основе и�
 @defineDocumentTables(invoiceShipment);
 
 @defineDocumentAggregation(invoice, invoiceShipment, createShipmentInvoice);
-//invoiceShipment(shipment) += invoiceInvoiceShipment(shipment);
+shipmentShipmentDetail(detail) += invoiceShipmentInvoiceShipmentDetail(detail);
+
 dateShipment(shipment) += dateInvoiceShipment(shipment);
 timeShipment(shipment) += timeInvoiceShipment(shipment);
 
@@ -292,6 +293,7 @@ stockShipment(shipment) += stockInvoiceShipment(shipment);
 dataStockShipmentDetail(shipmentDetail) += dataStockInvoiceDetail(invoiceDetailInvoiceShipmentDetail(shipmentDetail));
 
 @defineDocumentAggregationStockPrefix(invoice, invoiceShipment, customer, 'Покупатель', , );
+customerShipment(shipment) += customerInvoiceShipment(shipment);
 
 @defineDocumentAggregationPosted(invoice, invoiceShipment);
 isPostedShipment(shipment) += isPostedInvoiceShipment(shipment);
@@ -333,10 +335,63 @@ quantityShipmentDetail(shipmentDetail) += quantityInvoiceShipmentDetail(shipment
 priceInvoiceShipmentDetail(invoiceShipmentDetail) = shipmentPriceInvoiceDetail(invoiceDetailInvoiceShipmentDetail(invoiceShipmentDetail));
 priceShipmentDetail(shipmentDetail) += priceInvoiceShipmentDetail(shipmentDetail);
 
+sumInvoiceShipmentDetail(invoiceShipmentDetail) = shipmentSumInvoiceDetail(invoiceDetailInvoiceShipmentDetail(invoiceShipmentDetail));
+sumShipmentDetail(shipmentDetail) += sumInvoiceShipmentDetail(shipmentDetail);
+
+
+// Проводим по регистру
+@implementSkuLedger(shipment, sku, stock);
+quantityOutFIFOSkuLedger (ledger) += quantityShipmentDetail (ledger);
+limitOutFIFOSkuLedgerBatch(ledger, batch) += IF batchShipmentDetail(ledger) THEN
+                                                quantityShipmentDetail (ledger) AND batchShipmentDetail(ledger) == batch
+                                                ELSE currentBalanceBatchStock(batch, stockShipmentDetail(ledger)); //AND NOT commissionContractSkuBatchA(batch);
+changedDataSkuLedger(ledger) += CHANGED(batchShipmentDetail(ledger));
+sumOutSkuLedger(ledger) += sumShipmentDetail(ledger);
+
+//skipSkuLedger (ledger) += skipSkuLedgerInvoiceWHOutDetail(ledger);
+@defineConstraintSkuLedgerCosted(shipment, 'Не хватает остатков по партиям для продажи товаров');
+
+FORM dialogShipments 'Поставки (все)'
+    OBJECTS s = shipment
+    PROPERTIES (s) READONLY isPostedShipment FORCE GRID, objectClassName, numberShipment, seriesShipment, dateShipment, timeShipment,
+                            nameStockShipment, nameCustomerShipment, nameCurrencyShipment, noteShipment,
+                            isCommissionShipment,
+                            countShipmentDetailShipment, quantityShipmentDetailShipment, sumShipmentDetailShipment
+
+
+    OBJECTS d = shipmentDetail
+    PROPERTIES (d) READONLY indexShipmentDetail, idBarcodeSkuShipmentDetail, nameSkuShipmentDetail, shortNameUOMSkuShipmentDetail,
+                            descriptionBatchShipmentDetail, quantityShipmentDetail, priceShipmentDetail, sumShipmentDetail,
+                            nameStockShipmentDetail
+    FILTERS shipmentShipmentDetail(d) == s
+
+    DIALOG shipment OBJECT s
+;
+
+DESIGN dialogShipments FROM DEFAULT {
+
+    NEW documentContainer BEFORE functions.box {
+        type = SPLITV;
+        childConstraints = TO THE BOTTOM;
+
+        ADD s.box;
+
+        NEW documentDetail {
+            type = TABBED;
+
+            ADD d.box {
+                title = 'Спецификация';
+            }
+
+        }
+    }
+}
+
 // ------------- Навигатор --------- //
 
 NAVIGATOR {
     saleNavigator {
         ADD userShipments;
+//        ADD dialogShipments;
     }
 }
