@@ -202,41 +202,46 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
         properties.add(new ImportProperty(RRPField, LM.RRPDocumentArticle.getMapping(invoiceKey, articleKey)));
         properties.add(new ImportProperty(unitPriceField, LM.priceDocumentArticle.getMapping(invoiceKey, articleKey)));
 
+        ImportTable table = null;
+
         for (byte[] file : fileList) {
-            ImportTable table;
             try {
                 ByteArrayInputStream inFile = new ByteArrayInputStream(file);
                 ImportInputTable t = createTable(inFile);
-                table = createImporter(t).getTable();
+                if (table == null)
+                    table = createImporter(t).getTable();
+                else
+                    table.add(createImporter(t).getTable());
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
-
-            Integer index = -1;
-            for (int i = 0; i < table.fields.size(); i++) {
-                if (table.fields.get(i).equals(customCodeField))
-                    index = i;
-            }
-            if (index != -1) {
-                for (List<Object> editingRow : table.data) {
-                    String val = null;
-                    if (editingRow.get(index) != null) {
-                        val = editingRow.get(index).toString();
-                        while (val.length() < 10)
-                            val = val + "0";
-                    }
-                    editingRow.set(index, val);
-                }
-            }
-
-            ImportKey<?>[] keysArray;
-            if (!isSimpleInvoice()) {
-                keysArray = new ImportKey<?>[]{invoiceKey, boxKey, destinationKey, articleKey, itemKey, colorKey, sizeKey, countryKey, customCategoryKey, customCategory6Key, themeKey, collectionKey, subCategoryKey, genderKey};
-            } else {
-                keysArray = new ImportKey<?>[]{invoiceKey, articleKey, itemKey, colorKey, sizeKey, countryKey, customCategoryKey, customCategory6Key, themeKey, collectionKey, subCategoryKey, genderKey};
-            }
-            new IntegrationService(context.getSession(), table, Arrays.asList(keysArray), properties).synchronize(false, false);
         }
+
+        Integer index = -1;
+        for (int i = 0; i < table.fields.size(); i++) {
+            if (table.fields.get(i).equals(customCodeField))
+                index = i;
+        }
+        if (index != -1) {
+            for (List<Object> editingRow : table.data) {
+                String val = null;
+                if (editingRow.get(index) != null) {
+                    val = editingRow.get(index).toString();
+                    while (val.length() < 10)
+                        val = val + "0";
+                }
+                editingRow.set(index, val);
+            }
+        }
+
+        ImportKey<?>[] keysArray;
+        if (!isSimpleInvoice()) {
+            keysArray = new ImportKey<?>[]{invoiceKey, boxKey, destinationKey, articleKey, itemKey, colorKey, sizeKey, countryKey, customCategoryKey, customCategory6Key, themeKey, collectionKey, subCategoryKey, genderKey};
+        } else {
+            keysArray = new ImportKey<?>[]{invoiceKey, articleKey, itemKey, colorKey, sizeKey, countryKey, customCategoryKey, customCategory6Key, themeKey, collectionKey, subCategoryKey, genderKey};
+        }
+
+        new IntegrationService(context.getSession(), table, Arrays.asList(keysArray), properties).synchronize(false, false);
 
         context.delayUserInterfaction(new MessageClientAction("Данные были успешно приняты", "Импорт"));
     }
