@@ -156,7 +156,8 @@ sidDeclaration 'Номер' = DATA STRING[10] (declaration) IN docGroup MINCHARW
 beginTimeDeclaration 'Начало обработки' = DATA DATETIME (declaration) IN datetimeGroup;
 endTimeDeclaration 'Конец обработки' = DATA DATETIME (declaration) IN datetimeGroup;
 
-allowImportFromXLSDeclaration(declaration) = allowImportFromXLSLegalEntity(customStoreDeclaration(declaration));
+allowImportExportXLSDeclarationUA(declaration) = allowImportExportXLSLegalEntityUA(customStoreDeclaration(declaration));
+allowImportExportXLSDeclarationBY(declaration) = allowImportExportXLSLegalEntityBY(customStoreDeclaration(declaration));
 
 exportDeclaration 'Экспортировать декларацию' = ACTION CUSTOM 'roman.actions.ExportDeclarationActionProperty' IN docGroup;
 
@@ -987,7 +988,7 @@ nameArticleLanguageDeclarationDetail 'Наименование(иностр.)' (
     castToStringFourObject255(nameBrandDeclarationDetail(declarationDetail), nameInvoiceDeclarationDetail(declarationDetail),
                               nameTypeFabricLanguageDeclarationDetail(declarationDetail), sidGenderLanguageDeclarationDetail(declarationDetail));
 
-FORM declarationPrint 'Выгрузка деклараций' PRINT
+FORM declarationPrint 'Выгрузка деклараций(Укр.)' PRINT
 
     OBJECTS d = declaration FIXED PANEL
     PROPERTIES(d) SELECTOR sidDeclaration
@@ -1009,6 +1010,25 @@ exportDeclarationToEXELLanguageDeclaration 'Выгрузить декларац�
     FORM declarationPrint OBJECTS d = declaration MODAL;
 } CONFIRM TOOLBAR;
 
+FORM declarationRBPrint 'Выгрузка деклараций(РБ)'  PRINT
+
+    OBJECTS d = declaration FIXED PANEL
+    PROPERTIES(d) SELECTOR sidDeclaration
+
+    OBJECTS gd = groupDeclaration
+    PROPERTIES(gd) overNumberGroupDeclaration, sidArticleGroupDeclaration, sidGenderGroupDeclaration, nameInvoiceGroupDeclaration,
+                   nameGroupDeclaration, mainCompositionGroupDeclaration, sidCountryGroupDeclaration, sidOrigin2CountryGroupDeclaration,
+                   sidCustomCategory10GroupDeclaration, nameTypeFabricGroupDeclaration, quantityGroupDeclaration, sumGroupDeclaration,
+                   netWeightGroupDeclaration, grossWeightGroupDeclaration, nameBrandGroupDeclaration
+
+    FILTERS declarationGroupDeclaration(gd) == d
+;
+
+exportDeclarationToEXELDeclaration 'Выгрузить декларацию в EXEL(РБ)' = ACTION (declaration) {
+
+    FORM declarationRBPrint OBJECTS d = declaration MODAL;
+} CONFIRM TOOLBAR;
+
 FORM declaration 'Декларация'
     OBJECTS d=declaration FIXED PANEL, dd=declarationDetail
     PROPERTIES(d) objectClassName, sidDeclaration, nameCustomStoreDeclaration, nameImporterDeclaration, nameLanguageDeclaration,
@@ -1016,7 +1036,7 @@ FORM declaration 'Декларация'
                   nameTypeExchangeCustomDeclaration, rateExchangeCustomDataDeclaration, nameTypeExchangeManagerialDeclaration,
                   rateExchangeManagerialDataDeclaration, sumRegistrationUnionDeclaration, dutyReverseDeclaration, VATReverseDeclaration, totalCustomSum,
                   expenseCertificateDeclaration, sumConsultationDeclaration
-    PROPERTIES(d) exportDeclarationToEXELLanguageDeclaration TODRAW dd FORCE PANEL SHOWIF allowImportFromXLSDeclaration(d)
+    PROPERTIES(d) exportDeclarationToEXELLanguageDeclaration TODRAW dd FORCE PANEL SHOWIF allowImportExportXLSDeclarationUA(d)
 
     OBJECTS c=correction
     PROPERTIES(c) date, dateTimePayCorrection, ADDOBJ, delete
@@ -1055,8 +1075,8 @@ FORM declaration 'Декларация'
 
     PROPERTIES (d) showFormDeclarationInvoices TODRAW dd FORCE PANEL DRAWTOTOOLBAR
     PROPERTIES (d) toCreateGroupsDeclaration TODRAW gd FORCE PANEL DRAWTOTOOLBAR, setSumGroupDeclaration TODRAW gd FORCE PANEL DRAWTOTOOLBAR
-    PROPERTIES (d) importGroupsDeclaration TODRAW gd FORCE PANEL DRAWTOTOOLBAR SHOWIF allowImportFromXLSDeclaration(d)
-    PROPERTIES (d) fillInGroupDeclarationDeclarationDetail  TODRAW gd FORCE PANEL DRAWTOTOOLBAR SHOWIF allowImportFromXLSDeclaration(d)
+    PROPERTIES (d) importGroupsDeclaration TODRAW gd FORCE PANEL DRAWTOTOOLBAR SHOWIF allowImportExportXLSDeclarationUA(d)
+    PROPERTIES (d) fillInGroupDeclarationDeclarationDetail  TODRAW gd FORCE PANEL DRAWTOTOOLBAR SHOWIF allowImportExportXLSDeclarationUA(d)
 
     FILTERGROUP filterDetail
         FILTER 'Для текущей позиции' 'F11' inGroupDeclarationDeclarationDetail(gd, dd)
@@ -1071,6 +1091,7 @@ FORM declaration 'Декларация'
                     netWeightGroupDeclaration, grossWeightGroupDeclaration, sumGroupDeclaration, dutyGroupDeclaration, VATGroupDeclaration,
                     sumDataGroupDeclaration, dutyDataGroupDeclaration, VATDataGroupDeclaration, numberVATRangeGroupDeclaration, valueVATRangeGroupDeclaration, delete
     PROPERTIES (c, gd2) sumCorrectionGroupDeclaration
+    PROPERTIES(d) exportDeclarationToEXELDeclaration TODRAW gd2 FORCE PANEL DRAWTOTOOLBAR SHOWIF allowImportExportXLSDeclarationBY(d)
 
     OBJECTS dd2=declarationDetail
     PROPERTIES (gd2, dd2) inGroupDeclarationDeclarationDetail, percentGroupDeclarationDeclarationDetail
