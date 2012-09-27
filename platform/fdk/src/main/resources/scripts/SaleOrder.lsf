@@ -66,6 +66,7 @@ userOrderDetailSkuUserOrderStock (sku, userOrder, stock) =  GROUP MAX userOrderD
 userOrderDetailSkuUserOrder (sku, userOrder) = userOrderDetailSkuUserOrderStock(sku, userOrder, stockUserOrder(userOrder));
 
 currentBalanceSkuUserOrder 'Остаток' (sku, userOrder) = currentBalanceSkuStock(sku, stockUserOrder(userOrder));
+priceSkuUserOrder 'Цена учетная' (sku, userOrder) = priceSkuStockDateTime(sku, stockUserOrder(userOrder), dateTimeUserOrder(userOrder));
 
 changeQuantitySkuUserOrder = ACTION (sku, userOrder) {
     REQUEST NUMERIC[14,3] INPUT;
@@ -107,7 +108,7 @@ FORM userOrder 'Заказ'
     OBJECTS s=sku
     PROPERTIES             READONLY    inputName = nameSku(s)
     PROPERTIES(s)          READONLY idBarcodeSku, shortNameUOMSku
-    PROPERTIES(s, o)       currentBalanceSkuUserOrder READONLY, quantityUserOrderDetailSkuUserOrder ON CHANGE EXEC changeQuantitySkuUserOrder(s, o)
+    PROPERTIES(s, o)       currentBalanceSkuUserOrder READONLY, priceSkuUserOrder READONLY, quantityUserOrderDetailSkuUserOrder ON CHANGE EXEC changeQuantitySkuUserOrder(s, o)
 
     FILTERS                isParentSkuGroupSku(sk, s)
     ORDER BY inputName
@@ -115,6 +116,9 @@ FORM userOrder 'Заказ'
     PROPERTIES(o) TODRAW d addDetailDialogSkuStockUserOrderDetailUserOrder,
                            addDetailInputBarcodeUserOrderDetailUserOrder, deleteUserOrderDetailUserOrder
     FILTERS userOrderUserOrderDetail(d) == o
+    FILTERGROUP filters
+        FILTER 'Товары с остатком' 'F10' currentBalanceSkuUserOrder(s, o) DEFAULT
+        FILTER 'Товары в заказе' 'F9' quantityUserOrderDetailSkuUserOrder(s, o)
 
     EVENTS
         ON OK EXEC prePostUserOrder(o)
