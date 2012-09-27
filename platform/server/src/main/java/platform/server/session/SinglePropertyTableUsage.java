@@ -1,28 +1,29 @@
 package platform.server.session;
 
+import platform.base.BaseUtils;
 import platform.server.classes.BaseClass;
-import platform.server.data.Modify;
-import platform.server.data.QueryEnvironment;
+import platform.server.classes.ConcreteClass;
+import platform.server.classes.ConcreteObjectClass;
+import platform.server.classes.DataClass;
+import platform.server.data.*;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.query.Join;
 import platform.server.data.query.Query;
+import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
-import platform.server.data.SQLSession;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
+import platform.server.logics.property.ObjectClassProperty;
 import platform.server.logics.property.PropertyInterface;
 
-import java.util.List;
-import java.util.Collections;
-import java.util.Map;
+import java.util.*;
 import java.sql.SQLException;
 
-import static platform.base.BaseUtils.join;
-import static platform.base.BaseUtils.merge;
-import static platform.base.BaseUtils.reverse;
+import static platform.base.BaseUtils.*;
 
 public class SinglePropertyTableUsage<K> extends SessionTableUsage<K, String> {
 
@@ -58,5 +59,9 @@ public class SinglePropertyTableUsage<K> extends SessionTableUsage<K, String> {
 
     public void updateAdded(SQLSession sql, BaseClass baseClass, int count) throws SQLException {
         updateAdded(sql, baseClass, "value", count);
+    }
+
+    public void updateCurrentClasses(DataSession session) throws SQLException {
+        table = table.updateCurrentClasses(session);
     }
 }

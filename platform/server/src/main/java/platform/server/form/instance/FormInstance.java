@@ -896,8 +896,9 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             focusListener.gainedFocus(this);
     }
 
-    void close() throws SQLException {
-
+    private boolean closed = false;
+    public void close() throws SQLException {
+        closed = true;
         session.incrementChanges.remove(this);
         for (GroupObjectInstance group : groups) {
             if(group.keyTable!=null)
@@ -1084,10 +1085,13 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     public FormChanges endApply() throws SQLException {
 
         assert interactive;
+        
+        final FormChanges result = new FormChanges();
+
+        if(closed)
+            return result;
 
         QueryEnvironment queryEnv = getQueryEnv();
-
-        final FormChanges result = new FormChanges();
 
         // если изменились данные, применяем изменения
         FunctionSet<CalcProperty> changedProps;
@@ -1501,12 +1505,14 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
         fireOnClose();
         Context.context.get().delayUserInteraction(new HideFormClientAction());
+        close();
     }
 
     public void formNull() throws SQLException {
         fireOnNull();
 
         Context.context.get().delayUserInteraction(new HideFormClientAction());
+        close();
     }
 
     public void formOk() throws SQLException {
@@ -1523,6 +1529,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         }
 
         Context.context.get().delayUserInteraction(new HideFormClientAction());
+        close();
     }
 
     public void formRefresh() throws SQLException {

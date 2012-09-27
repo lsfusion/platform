@@ -124,10 +124,12 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         if(events.isEmpty()) // вырежем Action'ы без Event'ов, они нигде не используются, а дают много компонент связности
             return new ArrayList<Pair<Property<?>, LinkType>>();
 
+        LinkType linkType = hasFlow(ChangeFlowType.NEWSESSION) ? LinkType.RECUSED : LinkType.USEDACTION;
+
         Collection<Pair<Property<?>, LinkType>> result = new ArrayList<Pair<Property<?>, LinkType>>();
         for(CalcProperty depend : getUsedProps())
-            result.add(new Pair<Property<?>, LinkType>(depend, LinkType.USEDACTION));
-        result.add(new Pair<Property<?>, LinkType>(getWhereProperty().property, LinkType.USEDACTION));
+            result.add(new Pair<Property<?>, LinkType>(depend, linkType));
+        result.add(new Pair<Property<?>, LinkType>(getWhereProperty().property, linkType));
         for(CalcProperty depend : strongUsed)
             result.add(new Pair<Property<?>, LinkType>(depend, LinkType.EVENTACTION));
         return result;

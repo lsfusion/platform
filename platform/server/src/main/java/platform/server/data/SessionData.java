@@ -19,6 +19,7 @@ import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
+import platform.server.session.DataSession;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -44,6 +45,7 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
     public abstract ClassWhere<Field> getClassWhere(PropertyField property);
     
     public abstract SessionData fixKeyClasses(ClassWhere<KeyField> fixClasses);
+    public abstract SessionData updateCurrentClasses(DataSession session) throws SQLException;
 
     public abstract boolean isEmpty();
     

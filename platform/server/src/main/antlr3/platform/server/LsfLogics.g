@@ -1715,6 +1715,34 @@ changeClassActionPropertyDefinitionBody[List<String> context, boolean dynamic] r
 	;  
 
 
+
+listActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns [LPWithParams property]
+@init {
+	List<LPWithParams> props = new ArrayList<LPWithParams>();
+	List<String> localPropNames = new ArrayList<String>();
+	boolean newSession = false;
+	boolean doApply = false;
+	boolean singleApply = false;
+	
+	Set<String> upLocalNames = null;
+	if (inPropParseState())
+		upLocalNames = self.copyCurrentLocalProperties();
+}
+@after {
+	if (inPropParseState()) {
+		$property = self.addScriptedListAProp(newSession, doApply, singleApply, upLocalNames, null, props, localPropNames);
+	}
+}
+	:	('NEWSESSION' { newSession = true; } ('AUTOAPPLY' {doApply = true; } )?
+					('SINGLE' { singleApply = true; })? )?
+		'{'
+			(	(PDB=actionPropertyDefinitionBody[context, dynamic] { props.add($PDB.property); }
+				( {!self.semicolonNeeded()}?=>  | ';'))
+			|	def=localDataPropertyDefinition ';' { localPropNames.add($def.name); }
+			|	emptyStatement
+			)*
+		'}'
+	;
 requestInputActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns [LPWithParams property]
 @after {
 	if (inPropParseState()) {
@@ -1727,27 +1755,6 @@ requestInputActionPropertyDefinitionBody[List<String> context, boolean dynamic] 
 		)
 	;
 
-listActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns [LPWithParams property]
-@init {
-	List<LPWithParams> props = new ArrayList<LPWithParams>();
-	List<String> localPropNames = new ArrayList<String>();
-	boolean newSession = false;
-	boolean doApply = false;
-}
-@after {
-	if (inPropParseState()) {
-		$property = self.addScriptedListAProp(newSession, doApply, props, localPropNames);
-	}
-}
-	:	('NEWSESSION' { newSession = true; } ('AUTOAPPLY' {doApply = true; } )? )?
-		'{'
-			(	(PDB=actionPropertyDefinitionBody[context, dynamic] { props.add($PDB.property); }
-				( {!self.semicolonNeeded()}?=>  | ';'))
-			|	def=localDataPropertyDefinition ';' { localPropNames.add($def.name); }
-			|	emptyStatement
-			)*
-		'}'
-	;
 
 localDataPropertyDefinition returns [String name]
 @after {

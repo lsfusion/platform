@@ -173,17 +173,6 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K> {
         return result;
     }
 
-    // assert что не удаляется
-    public static <T, D extends SessionTableUsage> Map<T, D> rollData(SQLSession sql, Map<T, D> map, Map<T, SessionData> rollback) throws SQLException {
-        Map<T, D> result = new HashMap<T, D>();
-        for(Map.Entry<T, SessionData> entry : rollback.entrySet()) {
-            D table = map.get(entry.getKey());
-            table.rollData(sql, entry.getValue());
-            result.put(entry.getKey(), table);
-        }
-        return result;
-    }
-
     public int getCount() {
         return table.getCount();
     }

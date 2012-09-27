@@ -87,6 +87,14 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return false;
     }
 
+    public static <T extends CalcProperty> Set<T> used(Iterable<T> used, Iterable<CalcProperty> usedIn) {
+        Set<T> result = new HashSet<T>();
+        for(T property : used)
+            if(depends(usedIn, property))
+                result.add(property);
+        return result;
+    }
+
     public static <T extends PropertyInterface> boolean dependsImplement(Iterable<CalcPropertyInterfaceImplement<T>> properties, QuickSet<CalcProperty> check) {
         for(CalcPropertyInterfaceImplement<T> property : properties)
             if(property instanceof CalcPropertyMapImplement && depends(((CalcPropertyMapImplement)property).property, check))
@@ -344,7 +352,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return result;
     }
 
-    public Set<ActionProperty> actionChangeProps = new HashSet<ActionProperty>(); // только у Data и IsClassProperty
+    public List<Pair<Property<?>, LinkType>> actionChangeProps = new ArrayList<Pair<Property<?>, LinkType>>(); // только у Data и IsClassProperty
 
     protected Collection<Pair<Property<?>, LinkType>> calculateLinks() {
         Collection<Pair<Property<?>, LinkType>> result = new ArrayList<Pair<Property<?>, LinkType>>();

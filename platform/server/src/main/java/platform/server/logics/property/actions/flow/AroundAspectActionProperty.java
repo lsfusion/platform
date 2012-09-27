@@ -10,7 +10,7 @@ import java.util.Set;
 import static platform.base.BaseUtils.reverse;
 
 public abstract class AroundAspectActionProperty extends KeepContextActionProperty {
-    private final ActionPropertyMapImplement<?, PropertyInterface> aspectActionImplement;
+    protected final ActionPropertyMapImplement<?, PropertyInterface> aspectActionImplement;
 
     public <P extends PropertyInterface, I extends PropertyInterface> AroundAspectActionProperty(String sID, String caption, List<I> innerInterfaces, ActionPropertyMapImplement<P, I> action) {
         super(sID, caption, innerInterfaces.size());
@@ -28,6 +28,8 @@ public abstract class AroundAspectActionProperty extends KeepContextActionProper
 
     protected FlowResult aroundAspect(ExecutionContext<PropertyInterface> context) throws SQLException {
         ExecutionContext<PropertyInterface> innerContext = beforeAspect(context);
+        if(innerContext==null)
+            return FlowResult.FINISH;
 
         FlowResult result = proceed(innerContext);
 

@@ -64,14 +64,9 @@ public class ChangedProperty<T extends PropertyInterface> extends SessionCalcPro
 
     @Override
     protected Collection<Pair<Property<?>, LinkType>> calculateLinks() {
-        if(property instanceof IsClassProperty) {
-            Collection<Pair<Property<?>, LinkType>> result = new ArrayList<Pair<Property<?>, LinkType>>();
-
-            for(ActionProperty depend : actionChangeProps) // только у Data и IsClassProperty
-                result.add(new Pair<Property<?>, LinkType>(depend, LinkType.DEPEND));
-
-            return result;
-        } else
+        if(property instanceof IsClassProperty)
+            return actionChangeProps; // только у Data и IsClassProperty
+        else
             return super.calculateLinks();
     }
 

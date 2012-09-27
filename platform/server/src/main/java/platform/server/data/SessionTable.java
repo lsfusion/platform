@@ -8,11 +8,15 @@ import platform.server.caches.hash.HashContext;
 import platform.server.caches.hash.HashValues;
 import platform.server.classes.BaseClass;
 import platform.server.classes.ConcreteClass;
+import platform.server.classes.ConcreteObjectClass;
+import platform.server.classes.DataClass;
+import platform.server.data.expr.Expr;
 import platform.server.data.expr.FormulaExpr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.expr.query.GroupType;
 import platform.server.data.expr.query.Stat;
+import platform.server.data.query.Join;
 import platform.server.data.query.stat.StatKeys;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.Query;
@@ -25,6 +29,9 @@ import platform.server.data.type.StringParseInterface;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
+import platform.server.logics.property.ObjectClassProperty;
+import platform.server.session.DataSession;
+import platform.server.session.SessionModifier;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -32,6 +39,7 @@ import java.util.*;
 import static java.util.Collections.singletonMap;
 import static platform.base.BaseUtils.hashEquals;
 import static platform.base.BaseUtils.merge;
+import static platform.base.BaseUtils.singleKey;
 
 public class SessionTable extends Table implements ValuesContext<SessionTable>, Value {// в явную хранимые ряды
 
@@ -301,7 +309,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
 
     public SessionTable modifyRows(SQLSession session, Query<KeyField, PropertyField> query, Modify type, QueryEnvironment env, Object owner) throws SQLException {
 
-        if(query.where.isFalse()) // вообще говоря оптимизация, но для DELETE'а exception возникает
+        if(query.where.isFalse()) // оптимизация
             return this;
 
         ModifyQuery modify = new ModifyQuery(this, query, env);
@@ -336,6 +344,38 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
         query.properties.put(field, FormulaExpr.create2("prm1+prm2", baseClass.unknown, join.getExpr(field), ObjectType.idClass.getStaticExpr(count)));
         query.and(join.getWhere());
         session.updateRecords(new ModifyQuery(this, query));
+    }
+
+    public SessionTable updateCurrentClasses(DataSession session) throws SQLException {
+        Map<KeyField, KeyExpr> mapKeys = getMapKeys();
+        platform.server.data.query.Join<PropertyField> join = join(mapKeys);
+
+        Map<Field, Expr> mapExprs = new HashMap<Field, Expr>();
+        Map<Field, DataClass> mapData = new HashMap<Field, DataClass>();
+        ClassWhere<KeyField> updatedClasses = ClassWhere.STATIC(false);
+        for(KeyField key : keys)
+            if(key.type instanceof ObjectType)
+                mapExprs.put(key, mapKeys.get(key));
+            else
+                mapData.put(key, (DataClass) key.type);
+        Map<PropertyField, ClassWhere<Field>> updatedPropertyClasses = new HashMap<PropertyField, ClassWhere<Field>>();
+        for(PropertyField property : properties) {
+            if(property.type instanceof ObjectType)
+                mapExprs.put(property, join.getExpr(property));
+            else
+                mapData.put(property, (DataClass) property.type);
+            updatedPropertyClasses.put(property, ClassWhere.<Field>STATIC(false));
+        }
+
+        // пока исходим из assertion'а что не null, потом надо будет разные делать
+        for(Map<Field, ConcreteObjectClass> diffClasses : session.readDiffClasses(join.getWhere(), new HashMap<Field, Expr>(), mapExprs)) {
+            Map<Field, ConcreteClass> result = BaseUtils.merge(diffClasses, mapData);
+            updatedClasses = updatedClasses.or(new ClassWhere<KeyField>(BaseUtils.filterKeys(result, mapKeys.keySet())));
+            for(Map.Entry<PropertyField, ClassWhere<Field>> propertyClass : updatedPropertyClasses.entrySet())
+                propertyClass.setValue(propertyClass.getValue().or(new ClassWhere<Field>(
+                        BaseUtils.filterKeys(result, BaseUtils.add(mapKeys.keySet(), propertyClass.getKey())))));
+        }
+        return new SessionTable(name, keys, properties, count, updatedClasses, updatedPropertyClasses);
     }
 
     public SessionTable updateStatistics(final SQLSession session, int prevCount, final Object owner) throws SQLException {

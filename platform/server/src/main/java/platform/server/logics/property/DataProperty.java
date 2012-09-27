@@ -134,8 +134,7 @@ public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> 
     protected Collection<Pair<Property<?>, LinkType>> calculateLinks() {
         Collection<Pair<Property<?>, LinkType>> result = new ArrayList<Pair<Property<?>, LinkType>>();
 
-        for(ActionProperty depend : actionChangeProps) // только у Data и IsClassProperty
-            result.add(new Pair<Property<?>, LinkType>(depend, LinkType.DEPEND));
+        result.addAll(actionChangeProps); // только у Data и IsClassProperty
         Set<ChangedProperty> removeDepends = new HashSet<ChangedProperty>();
         for(ClassPropertyInterface remove : interfaces)
             if(remove.interfaceClass instanceof CustomClass)

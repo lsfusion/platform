@@ -5,6 +5,7 @@ import platform.base.OrderedMap;
 import platform.base.QuickSet;
 import platform.server.form.entity.ActionPropertyObjectEntity;
 import platform.server.form.entity.PropertyObjectInterfaceEntity;
+import platform.server.logics.DataObject;
 import platform.server.logics.LogicsModule;
 import platform.server.logics.linear.LAP;
 import platform.server.logics.property.actions.flow.ChangeFlowType;
@@ -79,5 +80,9 @@ public class ActionPropertyMapImplement<P extends PropertyInterface, T extends P
             if(property.hasFlow(type))
                 return true;
         return false;
+    }
+    
+    public ActionPropertyValueImplement<P> getValueImplement(Map<T, DataObject> mapObjects) {
+        return new ActionPropertyValueImplement<P>(property, BaseUtils.join(mapping, mapObjects));
     }
 }

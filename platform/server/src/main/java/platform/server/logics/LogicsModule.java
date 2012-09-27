@@ -739,11 +739,12 @@ public abstract class LogicsModule {
     }
 
 
-    protected LP addNewSessionAProp(AbstractGroup group, String name, String caption, LAP action, boolean doApply) {
+    protected LP addNewSessionAProp(AbstractGroup group, String name, String caption, LAP action, boolean doApply, boolean singleApply, Set<SessionDataProperty> local, Set<SessionDataProperty> sessionUsed) {
         List<PropertyInterface> listInterfaces = genInterfaces(action.listInterfaces.size());
         ActionPropertyMapImplement<?, PropertyInterface> actionImplement = mapActionListImplement(action, listInterfaces);
 
-        return addProperty(group, new LAP(new NewSessionActionProperty(name, caption, listInterfaces, actionImplement, doApply, baseLM.BL)));
+        return addProperty(group, new LAP(new NewSessionActionProperty(name, caption, listInterfaces, actionImplement, doApply,
+                singleApply, sessionUsed, local, baseLM.BL)));
     }
 
     protected LP addRequestUserInputAProp(AbstractGroup group, String name, String caption, LAP action, Type requestValueType, String chosenKey) {

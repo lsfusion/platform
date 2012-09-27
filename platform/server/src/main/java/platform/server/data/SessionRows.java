@@ -17,6 +17,7 @@ import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
+import platform.server.session.DataSession;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -163,6 +164,13 @@ public class SessionRows extends SessionData<SessionRows> {
 
     public SessionRows fixKeyClasses(ClassWhere<KeyField> fixClasses) {
         return this;
+    }
+
+    public SessionRows updateCurrentClasses(DataSession session) throws SQLException {
+        Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> updatedRows = new HashMap<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>>();
+        for(Map.Entry<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> row : rows.entrySet())
+            updatedRows.put(session.updateCurrentClasses(row.getKey()), session.updateCurrentClasses(row.getValue()));
+        return new SessionRows(keys, properties, updatedRows);
     }
 
     public boolean isEmpty() {

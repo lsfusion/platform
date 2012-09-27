@@ -271,6 +271,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         return property;
     }
 
+    public Set<String> copyCurrentLocalProperties() {
+        return new HashSet<String>(currentLocalProperties.keySet());
+    }
+
     public AbstractWindow findWindowByCompoundName(String name) throws ScriptingErrorLog.SemanticErrorException {
         AbstractWindow window = windowResolver.resolve(name);
         checkWindow(window, name);
@@ -854,8 +858,13 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
 
-    public LPWithParams addScriptedListAProp(boolean newSession, boolean doApply, List<LPWithParams> properties, List<String> localPropNames) throws ScriptingErrorLog.SemanticErrorException {
+    public LPWithParams addScriptedListAProp(boolean newSession, boolean doApply, boolean singleApply, Set<String> upLocalNames, String used, List<LPWithParams> properties, List<String> localPropNames) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedListAProp(" + newSession + ", " + doApply + ", " + properties + ");");
+
+        Set<SessionDataProperty> sessionUsed = used != null ? Collections.singleton((SessionDataProperty) findLPByCompoundName(used).property) : new HashSet<SessionDataProperty>();
+        Set<SessionDataProperty> upLocal = new HashSet<SessionDataProperty>();
+        for(String name : upLocalNames)
+            upLocal.add((SessionDataProperty) findLPByCompoundName(name).property);
 
         List<Object> resultParams = getParamsPlainList(properties);
         List<Integer> usedParams = mergeAllParams(properties);
@@ -867,7 +876,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         return !newSession
                ? new LPWithParams(listLP, usedParams)
-               : new LPWithParams(addNewSessionAProp(null, genSID(), "", listLP, doApply), usedParams);
+               : new LPWithParams(addNewSessionAProp(null, genSID(), "", listLP, doApply, singleApply, upLocal, sessionUsed), usedParams);
     }
 
     public LPWithParams addScriptedRequestUserInputAProp(String typeId, String chosenKey, LPWithParams action) throws ScriptingErrorLog.SemanticErrorException {

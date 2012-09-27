@@ -893,8 +893,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected void finishActions() { // потому как могут использовать abstract
         for (Property property : getProperties())
             if(property instanceof ActionProperty) {
-                for(CalcProperty<?> calcProperty : ((ActionProperty<?>)property).getChangeExtProps()) // вообще говоря DataProperty и IsClassProperty
-                    calcProperty.actionChangeProps.add((ActionProperty) property);
+                ActionProperty<?> action = (ActionProperty<?>) property;
+                boolean isRecursive = action.hasFlow(ChangeFlowType.NEWSESSION);
+                for(CalcProperty<?> calcProperty : action.getChangeExtProps()) // вообще говоря DataProperty и IsClassProperty
+                    calcProperty.actionChangeProps.add(new Pair<Property<?>, LinkType>(property, isRecursive ? LinkType.RECCHANGE : LinkType.DEPEND));
             }
     }
 
@@ -1085,7 +1087,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     @IdentityLazy
     public SQLSession getIDSql() throws SQLException { // подразумевает synchronized использование
         try {
-            return createSQL(Connection.TRANSACTION_READ_COMMITTED);
+            return createSQL(Connection.TRANSACTION_REPEATABLE_READ);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -1885,14 +1887,14 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     @IdentityLazy
-    public List<Property> getAppliedProperties(boolean onlyCheck) {
+    public List<Object> getAppliedProperties(boolean onlyCheck) {
         // здесь нужно вернуть список stored или тех кто
-        List<Property> result = new ArrayList<Property>();
+        List<Object> result = new ArrayList<Object>();
         for (Property property : getPropertyList(onlyCheck)) {
             if (property instanceof CalcProperty && ((CalcProperty) property).isStored())
                 result.add(property);
             if (property instanceof ActionProperty && ((ActionProperty) property).events.contains(SystemEvent.APPLY))
-                result.add(property);
+                result.add(new ActionPropertyValueImplement((ActionProperty) property));
         }
         return result;
     }

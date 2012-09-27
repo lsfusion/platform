@@ -5,6 +5,7 @@ import platform.interop.action.LogMessageClientAction;
 import platform.server.classes.ValueClass;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.entity.PropertyFormEntity;
+import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.FormRow;
 import platform.server.form.instance.ObjectInstance;
 import platform.server.form.instance.PropertyDrawInstance;
@@ -39,10 +40,12 @@ public class LogPropertyActionProperty<P extends PropertyInterface> extends Syst
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
 
         DataSession session = context.getSession();
-        
+
+        FormInstance formInstance = context.createFormInstance(new PropertyFormEntity(property, recognizeGroup),
+                new HashMap<ObjectEntity, DataObject>(), session, false, false, false, false);
+
         String result = property.toString() + '\n';
-        for(FormRow formRow : context.createFormInstance(new PropertyFormEntity(property, recognizeGroup),
-                                                new HashMap<ObjectEntity, DataObject>(), session, false, false, false, false).getFormData(30).rows) {
+        for(FormRow formRow : formInstance.getFormData(30).rows) {
             String rowResult = "";
             for(Map.Entry<Set<ObjectInstance>, Collection<PropertyDrawInstance>> groupObj : BaseUtils.group(new BaseUtils.Group<Set<ObjectInstance>, PropertyDrawInstance>() {
                                                         public Set<ObjectInstance> group(PropertyDrawInstance property) { // группируем по объектам
@@ -61,5 +64,7 @@ public class LogPropertyActionProperty<P extends PropertyInterface> extends Syst
             result += "    " + rowResult + '\n';
         }
         context.delayUserInteraction(new LogMessageClientAction(result, true));
+
+        formInstance.close();
     }
 }

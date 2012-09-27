@@ -228,7 +228,9 @@ iterate(i, from, to) = RECURSION i==from AND from IS INTEGER AND to IS INTEGER S
 
 // мгновенный расчет себестоимости
 //WHEN ASSIGNED(isPostedDataSkuLedger(ledger)) DO EXEC resetCostDataSkuLedger (ledger) ORDER orderDataSkuLedger(ledger);
-ON APPLY SINGLE {
+changedCostDataSkuLedger 'Перерасчитывалась себестоимость' = SESSION DATA BOOLEAN (dataSkuLedger);
+
+ON APPLY {
     LOCAL changedLedger = BOOLEAN (dataSkuLedger);
     SET changedLedger(ledger) <- ASSIGNED(isPostedDataSkuLedger(ledger)) OR ((
                                   CHANGED(quantityDataSkuLedger(ledger))
@@ -236,13 +238,19 @@ ON APPLY SINGLE {
                                   OR CHANGED(stockDataSkuLedger(ledger))
                                   OR CHANGED(changedDataSkuLedger(ledger)))
                                  AND isPostedDataSkuLedger(ledger));
-    SET costDataSkuLedgerBatch(ledger, batch) <- NULL WHERE changedLedger(ledger);
 
-    LOCAL orderedLedger = INTEGER (dataSkuLedger);
-    SET orderedLedger(ledger) <- PARTITION SUM 1 IF changedLedger(ledger) BY skuDataSkuLedger(ledger) ORDER orderDataSkuLedger(ledger);
+    IF [GROUP MAX changedLedger(ledger)]() THEN
+        NEWSESSION SINGLE {
+            SET costDataSkuLedgerBatch(ledger, batch) <- NULL WHERE changedLedger(ledger);
 
-    FOR iterate(i, 1, [GROUP MAX orderedLedger(ledger)]()) DO
-        SET costDataSkuLedgerBatch(ledger, batch) <- quantityDataSkuLedgerBatch(ledger, batch) WHERE orderedLedger(ledger) == i;
+            LOCAL orderedLedger = INTEGER (dataSkuLedger);
+            SET orderedLedger(ledger) <- PARTITION SUM 1 IF changedLedger(ledger) BY skuDataSkuLedger(ledger) ORDER orderDataSkuLedger(ledger);
+
+            FOR iterate(i, 1, [GROUP MAX orderedLedger(ledger)]()) DO {
+                SET changedCostDataSkuLedger(ledger) <- TRUE WHERE orderedLedger(ledger) == i;
+                SET costDataSkuLedgerBatch(ledger, batch) <- quantityDataSkuLedgerBatch(ledger, batch) WHERE orderedLedger(ledger) == i;
+            }
+        }
 }
 
 setDataSkuLedgerBatchCost 'Дорассчитать себестоимость' = ACTION () NEWSESSION {
@@ -470,7 +478,7 @@ META implementBatch(concrete, skuProp, stockProp, costProp)
 END
 
 META defineConstraintSkuLedgerCosted (concrete, caption)
-    CONSTRAINT isPosted###concrete##Detail(detail) AND NOT quantity###concrete##Detail(detail) == costedDataSkuLedger(detail)
+    CONSTRAINT (ASSIGNED(changedCostDataSkuLedger(detail)) OR CHANGED(costedDataSkuLedger(detail))) AND isPosted###concrete##Detail(detail) AND NOT quantity###concrete##Detail(detail) == costedDataSkuLedger(detail)
         MESSAGE caption;
 END
 

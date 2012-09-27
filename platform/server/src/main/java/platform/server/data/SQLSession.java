@@ -361,7 +361,10 @@ public class SQLSession extends MutableObject {
         needPrivate();
 
         synchronized (sessionTablesMap) {
-            assert !sessionTablesMap.containsKey(table.name);
+            // assertion построен на том что между началом транзакции ее rollback'ом, все созданные таблицы в явную drop'ся, соответственно может нарушится если скажем открыта форма и не close'ута, или просто new IntegrationService идет
+            // в принципе он не настолько нужен, но для порядка пусть будет
+            // придется убрать так как чистых использований уже достаточно много, например ClassChange.materialize, DataSession.addObjects, правда что сейчас с assertion'ами делать неясно
+//            assert !sessionTablesMap.containsKey(table.name);
             sessionTablesMap.put(table.name, new WeakReference<Object>(owner));
         }
     }

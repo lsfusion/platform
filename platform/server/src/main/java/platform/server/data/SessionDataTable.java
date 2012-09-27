@@ -17,6 +17,7 @@ import platform.server.data.where.classes.ClassWhere;
 import platform.server.logics.DataObject;
 import platform.server.logics.NullValue;
 import platform.server.logics.ObjectValue;
+import platform.server.session.DataSession;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -200,6 +201,10 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
             return new SessionDataTable(fixTable, keys, keyValues, propertyValues);
         } else
             return this;
+    }
+
+    public SessionData updateCurrentClasses(DataSession session) throws SQLException {
+        return new SessionDataTable(table.updateCurrentClasses(session), keys, session.updateCurrentClasses(keyValues), session.updateCurrentClasses(propertyValues));
     }
 
     public boolean isEmpty() {

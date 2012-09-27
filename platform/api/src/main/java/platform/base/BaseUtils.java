@@ -1020,6 +1020,16 @@ public class BaseUtils {
         return one;
     }
 
+    public static <K, V> void clearNotKeys(Map<K, V> map, Collection<? extends K> keep) {
+        if(keep.isEmpty())
+            map.clear();
+        else {
+            for(Iterator<K> it = map.keySet().iterator();it.hasNext();)
+                if(!keep.contains(it.next()))
+                    it.remove();
+        }
+    }
+
     public static abstract class Group<G, K> {
         public abstract G group(K key);
     }

@@ -35,6 +35,8 @@ import platform.server.logics.table.ObjectTable;
 import java.sql.SQLException;
 import java.util.*;
 
+import static platform.base.BaseUtils.filterKeys;
+import static platform.base.BaseUtils.remove;
 import static platform.base.BaseUtils.removeSet;
 
 public class DataSession extends ExecutionEnvironment implements SessionChanges {
@@ -61,8 +63,11 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         return result;
     }
 
+    public QuickSet<CalcProperty> getChangedProps(Set<CustomClass> add, Set<CustomClass> remove, Set<DataProperty> data) {
+        return new QuickSet<CalcProperty>(BaseUtils.mergeSet(getClassChanges(add, remove), data));
+    }
     public QuickSet<CalcProperty> getChangedProps() {
-        return new QuickSet<CalcProperty>(BaseUtils.mergeSet(getClassChanges(add, remove), data.keySet()));
+        return getChangedProps(add, remove, data.keySet());
     }
 
     private class DataModifier extends SessionModifier {
@@ -132,12 +137,37 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
             else
                 news = null;
         }
+        
+        private void rollData() throws SQLException {
+            Map<DataProperty, SinglePropertyTableUsage<ClassPropertyInterface>> rollData = new HashMap<DataProperty, SinglePropertyTableUsage<ClassPropertyInterface>>();
+            for(Map.Entry<DataProperty, SessionData> entry : data.entrySet()) {
+                SinglePropertyTableUsage<ClassPropertyInterface> table = DataSession.this.data.get(entry.getKey());
+                if(table==null) {
+                    table = entry.getKey().createChangeTable();
+                    table.drop(sql);
+                }
+                table.rollData(sql, entry.getValue());
+                rollData.put(entry.getKey(), table);
+            }
+            DataSession.this.data = rollData;
+        }
+
+        private void rollNews() throws SQLException {
+            if(news!=null) {
+                if(DataSession.this.news==null) {
+                    DataSession.this.news = new SingleKeyPropertyUsage(ObjectType.instance, ObjectType.instance);
+                    DataSession.this.news.drop(sql);
+                }
+                DataSession.this.news.rollData(sql, news);
+            } else
+                DataSession.this.news = null;
+        }
 
         private void rollback() throws SQLException {
             assert sessionEventChangedOld.isEmpty(); // в транзакции никаких сессионных event'ов быть не может
             assert applyModifier.getHintProps().isEmpty(); // равно как и хинт'ов
 
-            dropTables(); // старые вернем, таблицу удалятся (но если нужны будут, rollback откатит эти изменения)
+            dropTables(new HashSet<SessionDataProperty>()); // старые вернем, таблицу удалятся (но если нужны будут, rollback откатит эти изменения)
 
             // assert что новые включают старые
             DataSession.this.add = add;
@@ -147,11 +177,10 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
             DataSession.this.singleRemove = singleRemove;
             DataSession.this.newClasses = newClasses;
 
-            DataSession.this.data = SessionTableUsage.rollData(sql, DataSession.this.data, data);
-            if(news!=null)
-                DataSession.this.news.rollData(sql, news);
-            else
-                DataSession.this.news = null;
+            rollData();
+            rollNews();
+            
+            dataModifier.eventDataChanges(getChangedProps(add, remove, data.keySet()));
         }
     }
     private Transaction applyTransaction; // restore point
@@ -336,7 +365,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         return new DataSession(sql, user, computer, isServerRestarting, baseClass, sessionClass, currentSession, idSession, sessionEvents);
     }
 
-    public void restart(boolean cancel) throws SQLException {
+    public void restart(boolean cancel, Set<SessionDataProperty> keep) throws SQLException {
 
         // apply
         //      по кому был restart : добавляем changes -> applied
@@ -354,7 +383,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         incrementChanges = new IdentityHashMap<FormInstance, UpdateChanges>();
         updateChanges = new IdentityHashMap<FormInstance, UpdateChanges>();
 
-        dropTables();
+        dropTables(keep);
         add.clear();
         remove.clear();
         usedNewClasses.clear();
@@ -362,7 +391,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         singleRemove.clear();
         newClasses.clear();
 
-        data.clear();
+        BaseUtils.clearNotKeys(data, keep);
         news = null;
         
         assert dataModifier.getHintProps().isEmpty(); // hint'ы все должны также уйти
@@ -434,6 +463,54 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         changeClass(new ClassChange(change, toClass));
     }
 
+    public <K> void updateCurrentClasses(Collection<SinglePropertyTableUsage<K>> tables) throws SQLException {
+        for(SinglePropertyTableUsage<K> table : tables)
+            table.updateCurrentClasses(this);
+    }
+
+    public <K, T extends ObjectValue> Map<K, T> updateCurrentClasses(Map<K, T> objectValues) throws SQLException {
+        Map<K, T> result = new HashMap<K, T>();
+        for(Map.Entry<K, T> entry : objectValues.entrySet())
+            result.put(entry.getKey(), (T) updateCurrentClass(entry.getValue()));
+        return result;
+    }
+
+    public ObjectValue updateCurrentClass(ObjectValue value) throws SQLException {
+        if(value instanceof NullValue)
+            return value;
+        else {
+            DataObject dataObject = (DataObject)value;
+            return new DataObject(dataObject.object, getCurrentClass(dataObject));
+        }
+    }
+
+    public <K> List<Map<K, ConcreteObjectClass>> readDiffClasses(Where where, Map<K, ? extends Expr> classExprs, Map<K, ? extends Expr> objectExprs) throws SQLException {
+        Map<K, KeyExpr> keys = new HashMap<K, KeyExpr>();
+
+        ValueExpr unknownExpr = new ValueExpr(-1, baseClass.unknown);
+        Map<K, Expr> group = new HashMap<K, Expr>();
+
+        for(Map.Entry<K, ? extends Expr> classExpr : classExprs.entrySet()) {
+            keys.put(classExpr.getKey(), new KeyExpr("key" + keys.size()));
+            group.put(classExpr.getKey(), classExpr.getValue().nvl(unknownExpr));
+        }
+        for(Map.Entry<K, ? extends Expr> classExpr : objectExprs.entrySet()) {
+            keys.put(classExpr.getKey(), new KeyExpr("key" + keys.size()));
+            group.put(classExpr.getKey(), baseClass.getObjectClassProperty().getExpr(classExpr.getValue(), getModifier()).nvl(unknownExpr));
+        }
+
+        List<Map<K, ConcreteObjectClass>> result = new ArrayList<Map<K, ConcreteObjectClass>>();
+        for(Map<K, Object> readClasses : new Query<K, String>(keys, GroupExpr.create(group, where, keys).getWhere()).execute(this).keySet()) {
+            Map<K, ConcreteObjectClass> readObjectClasses = new HashMap<K, ConcreteObjectClass>();
+            for(Map.Entry<K, Object> readClass : readClasses.entrySet()) {
+                Integer id = (Integer) readClass.getValue();
+                readObjectClasses.put(readClass.getKey(), baseClass.findConcreteClassID(id != -1 ? id : null));
+            }
+            result.add(readObjectClasses);
+        }
+        return result;
+    }
+
     public void changeClass(ClassChange change) throws SQLException {
         if(change.isEmpty()) // оптимизация, важна так как во многих event'ах может учавствовать
             return;
@@ -450,20 +527,9 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
             change = change.materialize(sql, baseClass, env); // materialize'им изменение
 
             // читаем варианты изменения классов
-            Map<String, KeyExpr> keys = new HashMap<String, KeyExpr>();
-            keys.put("newcl", new KeyExpr("newcl"));
-            keys.put("prevcl", new KeyExpr("prevcl"));
-
-            ValueExpr unknownExpr = new ValueExpr(-1, baseClass.unknown);
-            Map<String, Expr> props = new HashMap<String, Expr>();
-            props.put("newcl", change.expr.nvl(unknownExpr));
-            props.put("prevcl", baseClass.getObjectClassProperty().getExpr(change.key, getModifier()).nvl(unknownExpr));
-            
-            for(Map<String, Object> diffClasses : new Query<String, String>(keys, GroupExpr.create(props, change.where, keys).getWhere()).execute(this).keySet()) {
-                int newclid = (Integer) diffClasses.get("newcl");
-                int prevclid = (Integer) diffClasses.get("prevcl");
-                ConcreteObjectClass newcl = baseClass.findConcreteClassID(newclid != -1 ? newclid : null);
-                newcl.getDiffSet(baseClass.findConcreteClassID(prevclid != -1 ? prevclid : null), addClasses, removeClasses);
+            for(Map<String, ConcreteObjectClass> diffClasses : readDiffClasses(change.where, Collections.singletonMap("newcl", change.expr), Collections.singletonMap("prevcl", change.key))) {
+                ConcreteObjectClass newcl = diffClasses.get("newcl");
+                newcl.getDiffSet(diffClasses.get("prevcl"), addClasses, removeClasses);
                 usedNewClasses.add(newcl);
             }
         }
@@ -901,6 +967,14 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         return dataModifier;
     }
 
+    public Set<SessionDataProperty> recursiveUsed = new HashSet<SessionDataProperty>();
+    public List<ActionPropertyValueImplement> recursiveActions = new ArrayList<ActionPropertyValueImplement>();
+    public void addRecursion(ActionPropertyValueImplement action, Set<SessionDataProperty> sessionUsed, boolean singleApply) {
+        action.property.singleApply = singleApply; // жестко конечно, но пока так
+        recursiveActions.add(action);
+        recursiveUsed.addAll(sessionUsed);
+    }
+
     public boolean apply(final BusinessLogics<?> BL, boolean onlyCheck) throws SQLException {
         if(!hasChanges())
             return true;
@@ -919,11 +993,15 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
 //        assert !isInTransaction();
         startTransaction();
 
+        return recursiveApply(new ArrayList<ActionPropertyValueImplement>(), BL, onlyCheck);
+    }
+    
+    private boolean recursiveApply(List<ActionPropertyValueImplement> actions, BusinessLogics BL, boolean onlyCheck) throws SQLException {
         // тоже нужен посередине, чтобы он успел dataproperty изменить до того как они обработаны
-        for (Property<?> property : BL.getAppliedProperties(onlyCheck)) {
-            if(property instanceof ActionProperty) {
-                startPendingSingles((ActionProperty) property);
-                ((ActionProperty)property).execute(this);
+        for (Object property : BaseUtils.mergeList(actions, BL.getAppliedProperties(onlyCheck))) {
+            if(property instanceof ActionPropertyValueImplement) {
+                startPendingSingles(((ActionPropertyValueImplement) property).property);
+                ((ActionPropertyValueImplement)property).execute(this);
                 if(!isInTransaction()) // если ушли из транзакции вываливаемся
                     return false;
                 flushPendingSingles(BL);
@@ -941,11 +1019,30 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         packRemoveClasses(BL); // нужно делать до, так как классы должны быть актуальными, иначе спакует свои же изменения
         for (Map.Entry<ImplementTable, Collection<CalcProperty>> groupTable : groupPropertiesByTables().entrySet())
             savePropertyChanges(groupTable.getKey(), readSave(groupTable.getKey(), groupTable.getValue()));
+
+        List<ActionPropertyValueImplement> updatedRecursiveActions = null;
+        if(recursiveActions.size()>0) {
+            recursiveUsed.add((SessionDataProperty) currentSession.property);
+        
+            updateCurrentClasses(filterKeys(data, recursiveUsed).values()); // обновить классы sessionDataProperty, которые остались
+            
+            updatedRecursiveActions = new ArrayList<ActionPropertyValueImplement>();
+            for(ActionPropertyValueImplement recursiveAction : recursiveActions)
+                updatedRecursiveActions.add(recursiveAction.updateCurrentClasses(this));
+        }
+
         saveClassChanges(BL);
 
-        apply.clear(sql);
+        apply.clear(sql); // все сохраненные хинты обнуляем
+
+        restart(false, recursiveUsed); // оставляем usedSessiona
+
+        if(recursiveActions.size() > 0) {
+            recursiveUsed.clear(); recursiveActions.clear();
+            return recursiveApply(updatedRecursiveActions, BL, onlyCheck);
+        }
+
         commitTransaction();
-        restart(false);
 
         return true;
     }
@@ -1114,8 +1211,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         change.modifyRows(dataChange, sql, baseClass, Modify.MODIFY, getQueryEnv());
     }
 
-    public void dropTables() throws SQLException {
-        for(SinglePropertyTableUsage<ClassPropertyInterface> dataTable : data.values())
+    public void dropTables(Set<SessionDataProperty> keep) throws SQLException {
+        for(SinglePropertyTableUsage<ClassPropertyInterface> dataTable : BaseUtils.filterNotKeys(data, keep).values())
             dataTable.drop(sql);
         if(news !=null)
             news.drop(sql);
@@ -1156,7 +1253,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
             return;
         }
 
-        restart(true);
+        restart(true, new HashSet<SessionDataProperty>());
     }
 
     private <P extends PropertyInterface> void updateApplyStart(OldProperty<P> property, SinglePropertyTableUsage<P> tableUsage) throws SQLException { // изврат конечно
