@@ -138,12 +138,10 @@ FORM coefficientRetails 'Надбавки'
     FILTERS supplierBrandSupplier(b) == s
 
     OBJECTS c=coefficientBrandRetail
-    PROPERTIES (c) READONLY nameBrandSupplierCoefficientBrandRetail, nameCategorySupplierCoefficientBrandRetail,
-                    nameSeasonYearCoefficientBrandRetail, dateCoefficientBrandRetail, markupCoefficientBrandRetail
+    PROPERTIES (c) READONLY nameCategorySupplierCoefficientBrandRetail, nameSeasonYearCoefficientBrandRetail, dateCoefficientBrandRetail, markupCoefficientBrandRetail
 
     PROPERTIES(c) ADDFORM, EDITFORM, delete
     FILTERS brandSupplierCoefficientBrandRetail(c) == b
-
 
     //OBJECTS sy=seasonYear
     //PROPERTIES (sy) READONLY nameSeasonYear
@@ -154,11 +152,6 @@ FORM coefficientRetails 'Надбавки'
     //PROPERTIES(c) READONLY dateCoefficientRetail, markupCoefficientRetail
     //PROPERTIES(c) ADDFORM, EDITFORM, delete
     //ORDER BY dateCoefficientRetail
-
-    //FILTERS supplierBrandSupplier(b) == s, brandSupplierCoefficientRetail(c) == b
-
-    //OBJECTS cs = categorySupplier
-    //PROPERTIES(cs) READONLY name
 
     //OBJECTS cc=coefficientCategorySupplier
     //PROPERTIES(cc) READONLY dateCoefficientCategorySupplier, markupCoefficientCategorySupplier
@@ -172,38 +165,15 @@ DESIGN coefficientRetails FROM DEFAULT {
     main {
 
         NEW bottomContainer {
-
             childConstraints = TO THE RIGHT;
-//            fillVertical = 3;
-//
-//            NEW leftContainer {
-//                childConstraints = TO THE BOTTOM;
-//
             ADD s.box;
             ADD b.box;
-//                ADD c.box;
-//                ADD sy.box;
-//            }
-//
-//            NEW rightContainer {
-//                childConstraints = TO THE BOTTOM;
-//                type = SPLITV;
-//
-//                ADD cs.box{
-//                    fillVertical = 2;
-//                };
-//
-//                ADD cc.box{
-//                    fillVertical = 1;
-//                };
-//            }
-//        }
-//
         }
 
         ADD c.box {
             fillVertical = 3;
         };
+
         ADD functions.box;
     }
 }
@@ -1230,7 +1200,7 @@ createPriceSetDocumentSku 'Расценить по товарам' =  ACTION (fr
 
 FORM freights 'Расценка фрахтов'
 
-    OBJECTS f = freightPriced
+    OBJECTS f = freightComplete
     PROPERTIES(f) READONLY isPriceSetFreight BACKGROUND backgroundPriceSetDocument(f), numberObject, seriesObject, date, objectClassName,
                   canonicalBrandFreight, dateArrivalFreight, nameRouteFreight, nameExporterFreight, grossWeightFreight
     PROPERTIES(f) FORCE PANEL createPriceSetDocument SHOWIF hasPriceSetDocumentFreight(f), createPriceSetDocumentSku SHOWIF hasPriceSetDocumentFreight(f)

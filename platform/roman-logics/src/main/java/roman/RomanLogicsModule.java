@@ -2459,8 +2459,10 @@ public class RomanLogicsModule extends LogicsModule {
         sidGenderArticle = addJProp(baseGroup, "sidGenderArticle", "Пол", sidGender, genderArticle, 1);
         genderArticleSku = addJProp(idGroup, true, "genderArticleSku", true, "Пол (ИД)", genderArticle, articleSku, 1);
         sidGenderArticleSku = addJProp(baseGroup, "sidGenderArticleSku", "Пол", sidGender, genderArticleSku, 1);
-        sidGenderArticleSkuLanguage = addJProp("sidGenderArticleSkuLanguage", "Пол", BL.I18n.getLCPByName("languageName"), genderArticleSku, 1, 2);
+        sidGenderArticleSku.property.preferredCharWidth = 5;
+        sidGenderArticleSku.property.minimumCharWidth = 3;
 
+        sidGenderArticleSkuLanguage = addJProp("sidGenderArticleSkuLanguage", "Пол", BL.I18n.getLCPByName("languageName"), genderArticleSku, 1, 2);
 
         // Type fabric
         typeFabricArticle = addDProp(idGroup, "typeFabricArticle", "Тип одежды (ИД)", typeFabric, article);
@@ -6476,7 +6478,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             objCategory = addSingleGroupObject(category, "Номенклатурная группа", baseLM.name);
 
-            objSku = addSingleGroupObject("sku", sku, "SKU", baseLM.selection, baseLM.barcode, sidArticleSku,
+            objSku = addSingleGroupObject("sku", sku, "SKU", baseLM.barcode, sidArticleSku,
                      nameBrandSupplierArticleSku, nameCategoryArticleSku, sidGenderArticleSku, nameTypeFabricArticleSku,
                      sidCustomCategoryOriginArticleSku, nameCountrySku, netWeightSku);
 
@@ -6535,7 +6537,7 @@ public class RomanLogicsModule extends LogicsModule {
             filterGroupCategory = new RegularFilterGroupEntity(genID());
             filterGroupCategory.addFilter(new RegularFilterEntity(genID(),
                     new CompareFilterEntity(addPropertyObject(categoryArticleSku, objSku), Compare.EQUALS, objCategory),
-                    "По номенклатурной группе",
+                    "По ном. группе",
                     KeyStroke.getKeyStroke(KeyEvent.VK_F7, 0)));
             filterGroupCategory.defaultFilter = 0;
             addRegularFilterGroup(filterGroupCategory);
@@ -6578,6 +6580,8 @@ public class RomanLogicsModule extends LogicsModule {
         @Override
         public FormView createDefaultRichDesign() {
             DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
+
+            design.mainContainer.preferredSize = new Dimension(1280, 1024);
 
             design.get(getPropertyDraw(baseLM.date, objFreight)).caption = "Дата отгрузки";
             design.get(getPropertyDraw(baseLM.objectClassName, objFreight)).caption = "Статус фрахта";

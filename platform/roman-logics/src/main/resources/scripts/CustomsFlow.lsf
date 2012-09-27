@@ -140,8 +140,12 @@ toFillQuantityInputDetailDeclarationFreightUnit 'Проставить колич
     }
 }
 
-inCStoWHInnerInvoice (CStoWH, innerInvoice) = GROUP SUM inDeclarationDetailInnerInvoice (declarationDetailCStoWHDetail(CStoWHDetail), innerInvoice)
-    BY CStoWHCStoWHDetail(CStoWHDetail), innerInvoice;
+
+inCStoWHInnerInvoice (CStoWH, innerInvoice) = GROUP SUM quantityDeclarationDetail(declarationDetailCStoWHDetail(CStoWHDetail))
+                                                     BY CStoWHCStoWHDetail(CStoWHDetail), innerInvoiceDeclarationDetail(declarationDetailCStoWHDetail(CStoWHDetail));
+
+//inCStoWHInnerInvoice (CStoWH, innerInvoice) = GROUP SUM inDeclarationDetailInnerInvoice (declarationDetailCStoWHDetail(CStoWHDetail), innerInvoice)
+//    BY CStoWHCStoWHDetail(CStoWHDetail), innerInvoice;
 
 //stringInnerInvoice (innerInvoice) =
 //    [FORMULA STRING[30] 'CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) '] (

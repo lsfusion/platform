@@ -616,11 +616,17 @@ groupDeclarationDeclarationDetail 'Группа строки деклараци�
 numberGroupDeclarationDeclarationDetail 'Группа строки декларации'(declarationDetail) = numberGroupDeclaration(groupDeclarationDeclarationDetail(declarationDetail)) IN baseGroup;
 
 
-inDeclarationDetailInnerInvoice 'Связка' (declarationDetail, innerInvoice) = quantityInnerInvoiceSku(innerInvoice, skuDeclarationDetail(declarationDetail)) IF
-                                                                             declarationDeclarationDetail(declarationDetail) == declarationInnerInvoice(innerInvoice) PERSISTENT;
+//inDeclarationDetailInnerInvoice 'Связка' (declarationDetail, innerInvoice) = quantityInnerInvoiceSku(innerInvoice, skuDeclarationDetail(declarationDetail)) IF
+//                                                                             declarationDeclarationDetail(declarationDetail) == declarationInnerInvoice(innerInvoice) PERSISTENT;
 
-inGroupDeclarationInnerInvoice 'Связка' (groupDeclaration, innerInvoice) = GROUP SUM inDeclarationDetailInnerInvoice(declarationDetail, innerInvoice)
-                                                                                  BY groupDeclarationDeclarationDetail(declarationDetail), innerInvoice PERSISTENT;
+//inGroupDeclarationInnerInvoice 'Связка' (groupDeclaration, innerInvoice) = GROUP SUM inDeclarationDetailInnerInvoice(declarationDetail, innerInvoice)
+//                                                                                  BY groupDeclarationDeclarationDetail(declarationDetail), innerInvoice PERSISTENT;
+
+quantityGroupDeclarationInnerInvoice(groupDeclaration, innerInvoice) = GROUP SUM 1 IF inGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail)
+                                                                               BY groupDeclaration, innerInvoiceDeclarationDetail(declarationDetail);
+
+//inGroupDeclarationInnerInvoice (groupDeclaration, innerInvoice) = IF inGroupDeclarationDeclarationDetail
+
 
 TABLE freightDeclarationSku(freight, declaration, sku);
 TABLE declarationFreightUnitSku(declaration, freightUnit, sku);
@@ -788,9 +794,8 @@ setSumGroupDeclaration 'Расчитать стоимость и пошлину'
 };
 
 toCreateGroupsDeclaration 'Создать строки' = ACTION (declaration) {
-    FOR quantityDeclarationGroup(declaration, article, customCategory10, mainComposition, country, price) DO {
-        ADDOBJ groupDeclaration ;
-        FOR g == addedObject() DO {
+    FOR quantityDeclarationGroup(declaration, article, customCategory10, mainComposition, country, price) ADDOBJ g=groupDeclaration DO {
+
             SET declarationGroupDeclaration(g) <- declaration;
             SET articleGroupDeclaration(g) <- article;
             SET customCategory10GroupDeclaration(g) <- customCategory10;
@@ -803,7 +808,6 @@ toCreateGroupsDeclaration 'Создать строки' = ACTION (declaration) {
                 mainCompositionDeclarationDetail(declarationDetail) == mainComposition AND countryDeclarationDetail(declarationDetail) == country AND
                 declarationPriceDeclarationDetail(declarationDetail) == price;
         };
-    };
 
     EXEC setSumGroupDeclaration(declaration AS declaration);
 
@@ -934,9 +938,12 @@ stringInnerInvoice (innerInvoice) =
 innerInvoicesDeclaration 'Инвойсы' (declaration) = GROUP CONCAT stringInnerInvoice(innerInvoice)
     IF inDeclarationInnerInvoice (declaration, innerInvoice), ', ' BY declaration ORDER innerInvoice IN docGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
 
-
 quantityDeclarationBrandSupplier (declaration, brandSupplier) = GROUP SUM quantityDeclarationDetail(declarationDetail)
     BY declarationDeclarationDetail(declarationDetail), brandDeclarationDetail(declarationDetail);
+
+
+innerInvoicesGroupDeclaration 'Инвойсы' (groupDeclaration) = GROUP CONCAT sidInnerInvoice(innerInvoice)
+    IF quantityGroupDeclarationInnerInvoice(groupDeclaration, innerInvoice), ', ' BY groupDeclaration ORDER innerInvoice;
 
 canonicalBrandDeclaration 'Бренды' (declaration) = castToString255(
     [GROUP CONCAT commonName(brandSupplier) IF quantityDeclarationBrandSupplier(declaration, brandSupplier), ' , ' BY declaration ORDER brandSupplier](declaration))
@@ -1044,7 +1051,7 @@ FORM declaration 'Декларация'
 
     PROPERTIES (dd) READONLY numberDeclarationDetail, sidInnerInvoiceDeclarationDetail, barcodeDeclarationDetail, nameInvoiceDeclarationDetail, nameInvoiceDeclarationDetailLanguage SHOWIF languageDeclaration(d),
                     nameBrandDeclarationDetail, sidArticleDeclarationDetail, sidSizeDeclarationDetail, sidColorDeclarationDetail, nameColorDeclarationDetail,
-                    sidGenderGroupDeclaration, nameTypeFabricGroupDeclaration, mainCompositionDeclarationDetail,
+                    sidGenderDeclarationDetail, nameTypeFabricDeclarationDetail, mainCompositionDeclarationDetail,
                     mainCompositionLanguageDeclarationDetail SHOWIF languageDeclaration(d),
                     nameCountryDeclarationDetail, nameCountryLanguageDeclarationDetail SHOWIF languageDeclaration(d)
     PROPERTIES (dd) sidCustomCategoryOriginDeclarationDetail SHOWIF languageDeclaration(d), sidCustomCategory10DeclarationDetail
@@ -1064,7 +1071,7 @@ FORM declaration 'Декларация'
 
     OBJECTS gd=groupDeclaration
     PROPERTIES (gd, dd) inGroupDeclarationDeclarationDetail, percentGroupDeclarationDeclarationDetail
-    PROPERTIES (gd) READONLY overNumberGroupDeclaration, nameInvoiceGroupDeclaration, nameBrandGroupDeclaration
+    PROPERTIES (gd) READONLY overNumberGroupDeclaration, innerInvoicesGroupDeclaration, nameInvoiceGroupDeclaration, nameBrandGroupDeclaration
     PROPERTIES (gd) sidArticleGroupDeclaration, sidGenderGroupDeclaration, nameTypeFabricGroupDeclaration
     PROPERTIES (gd) mainCompositionGroupDeclaration, nameGroupDeclaration,
                     nameCountryGroupDeclaration, sidCountryGroupDeclaration, sidOrigin2CountryGroupDeclaration, sidCustomCategory10GroupDeclaration,
@@ -1098,7 +1105,7 @@ FORM declaration 'Декларация'
     PROPERTIES (dd2) READONLY numberDeclarationDetail, sidInnerInvoiceDeclarationDetail, barcodeDeclarationDetail, nameInvoiceDeclarationDetail,
                     nameInvoiceDeclarationDetailLanguage SHOWIF languageDeclaration(d), nameBrandDeclarationDetail,
                     sidArticleDeclarationDetail, sidSizeDeclarationDetail, sidColorDeclarationDetail, nameColorDeclarationDetail,
-                    sidGenderGroupDeclaration, nameTypeFabricGroupDeclaration, mainCompositionDeclarationDetail, mainCompositionLanguageDeclarationDetail SHOWIF languageDeclaration(d),
+                    sidGenderDeclarationDetail, nameTypeFabricDeclarationDetail, mainCompositionDeclarationDetail, mainCompositionLanguageDeclarationDetail SHOWIF languageDeclaration(d),
                     nameCountryDeclarationDetail, nameCountryLanguageDeclarationDetail SHOWIF languageDeclaration(d)
     PROPERTIES (dd2) sidCustomCategoryOriginDeclarationDetail SHOWIF languageDeclaration(d), sidCustomCategory10DeclarationDetail
     PROPERTIES (dd2) READONLY netWeightDeclarationDetail, sumNetWeightDeclarationDetail,
@@ -1268,7 +1275,7 @@ FORM declarations 'Декларации'
     PROPERTIES(dd) READONLY numberDeclarationDetail, sidInnerInvoiceDeclarationDetail, barcodeDeclarationDetail, nameInvoiceDeclarationDetail,
                    nameInvoiceDeclarationDetailLanguage SHOWIF languageDeclaration(d), nameBrandDeclarationDetail,
                    sidArticleDeclarationDetail, sidSizeDeclarationDetail, sidColorDeclarationDetail, nameColorDeclarationDetail,
-                   sidGenderGroupDeclaration, nameTypeFabricGroupDeclaration, mainCompositionDeclarationDetail, mainCompositionLanguageDeclarationDetail SHOWIF languageDeclaration(d),
+                   sidGenderDeclarationDetail, nameTypeFabricDeclarationDetail, mainCompositionDeclarationDetail, mainCompositionLanguageDeclarationDetail SHOWIF languageDeclaration(d),
                    nameCountryDeclarationDetail, nameCountryLanguageDeclarationDetail SHOWIF languageDeclaration(d),
                    sidCustomCategoryOriginDeclarationDetail SHOWIF languageDeclaration(d), sidCustomCategory10DeclarationDetail,
                    netWeightDeclarationDetail, sumNetWeightDeclarationDetail, sumGrossWeightDeclarationDetail,
