@@ -52,7 +52,7 @@ public abstract class TextFieldGridEditor implements GridCellEditor {
         }
         inputElement.setValue(currentText);
         //перемещаем курсор в конец текста
-        textBoxImpl.setSelectionRange((com.google.gwt.user.client.Element) (Element) inputElement, currentText.length() - 1, 1);
+        textBoxImpl.setSelectionRange((com.google.gwt.user.client.Element) (Element) inputElement, currentText.length(), 0);
         inputElement.focus();
     }
 
