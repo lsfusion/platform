@@ -34,7 +34,8 @@ FORM customCategory6 'Второй уровень'
 FORM customCategory9 'Третий уровень'
 
     OBJECTS g = customCategory9 FIXED PANEL
-    PROPERTIES(g) sidCustomCategory9, nameCustomCategory, sidCustomCategory6CustomCategory9
+    PROPERTIES(g) sidCustomCategory9, nameCustomCategory, sidCustomCategory6CustomCategory9,
+                  nameCustomsZoneCustomCategory9
 
     EDIT customCategory9 OBJECT g
 ;
@@ -49,10 +50,11 @@ addCategory6Category4 'Добавить 6' = ACTION (customCategory4) NEWSESSION
     };
 } TOOLBAR IMAGE 'add.png';
 
-addCategory9Category6 'Добавить 9' = ACTION (customCategory6) NEWSESSION {
+addCategory9Category6CustomsZone 'Добавить 9' = ACTION (customCategory6, customsZone) NEWSESSION {
     ADDOBJ customCategory9;
     FOR g == addedObject() DO {
         SET customCategory6CustomCategory9(g) <- customCategory6;
+        SET customsZoneCustomCategory9(g) <- customsZone;
         FORM customCategory9 OBJECTS g=addedObject() MODAL;
         IF formResult() == formResult.ok THEN
             EXEC apply();
@@ -206,7 +208,7 @@ FORM customCategoryZones 'ТН ВЭД (зональный)'
             customCategory6CustomCategory9 (cc)==cb
 
     PROPERTIES(ca) addCA = ADDFORM
-    PROPERTIES(cb) addCategory9Category6
+    PROPERTIES(cb, cz) addCategory9Category6CustomsZone
     PROPERTIES(ca) addCategory6Category4
 
     OBJECTS cd = customCategory10
