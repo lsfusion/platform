@@ -111,11 +111,13 @@ public class GGridTable extends GGridPropertyTable {
             //сразу ресолвим, чтобы избежать бага в DataGrid с неперерисовкой строк... (т.о. убираем рекурсивный resolvePendingState())
             selectionModel.setSelectedAndResolve(currentRecords.get(currentInd), true);
             setKeyboardSelectedRow(currentInd, false);
+            int horizontalScrollPosition = getScrollPanel().getHorizontalScrollPosition();
             if (currentKey.equals(oldKey)) {
                 scrollRowToVerticalPosition(currentInd, oldKeyScrollTop);
             } else {
                 getRowElement(currentInd).scrollIntoView();
             }
+            getScrollPanel().setHorizontalScrollPosition(horizontalScrollPosition);
         }
     }
 
