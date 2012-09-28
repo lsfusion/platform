@@ -19,7 +19,7 @@ body, html {
 
 /* ------------ Tab panel ------------ */
 .gwt-TabLayoutPanel .gwt-TabLayoutPanelContent {
-    padding: 1px;
+    padding: 4px;
 }
 
 .gwt-TabLayoutPanel .gwt-TabLayoutPanelTab {
@@ -183,6 +183,31 @@ body, html {
 
 .flowPanelChildRightAlign {
     float: right;
+}
+
+/* ------------ Navigator windows  ------------ */
+
+.verticaToolbar {
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+.horizontalToolbar {
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+.toolbarNavigatorButton {
+    border: 0px;
+    border: solid 1px transparent;
+    background: transparent;
+    text-align: left;
+}
+
+.toolbarNavigatorButton:hover {
+    border: solid 1px #CECECE;
+    background: #D0DFED;
 }
 
 /* ------------ Other components  ------------ */

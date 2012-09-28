@@ -2,6 +2,7 @@ package platform.client.logics;
 
 import platform.client.logics.classes.ClientClass;
 import platform.client.logics.classes.ClientTypeSerializer;
+import platform.client.navigator.ClientAbstractWindow;
 import platform.client.navigator.ClientNavigatorElement;
 
 import java.io.ByteArrayInputStream;
@@ -39,6 +40,15 @@ public class DeSerializer {
         for (int i = 0; i < count; i++)
             listElements.add(ClientNavigatorElement.deserialize(dataStream));
         return listElements;
+    }
+
+    public static List<ClientAbstractWindow> deserializeListClientNavigatorWindow(byte[] state) throws IOException {
+        List<ClientAbstractWindow> windows = new ArrayList<ClientAbstractWindow>();
+        DataInputStream dataStream = new DataInputStream(new ByteArrayInputStream(state));
+        for (int i = 0; i < 5; i++) {
+            windows.add(new ClientAbstractWindow(dataStream));
+        }
+        return windows;
     }
 
     public static List<ClientClass> deserializeListClientClass(byte[] state) throws IOException {

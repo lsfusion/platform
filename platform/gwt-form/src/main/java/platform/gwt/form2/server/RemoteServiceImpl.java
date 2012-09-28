@@ -4,6 +4,7 @@ import net.customware.gwt.dispatch.server.InstanceActionHandlerRegistry;
 import platform.gwt.base.server.LogicsDispatchServlet;
 import platform.gwt.form2.server.form.handlers.*;
 import platform.gwt.form2.server.navigator.handlers.GenerateIDHandler;
+import platform.gwt.form2.server.navigator.handlers.GetCommonWindowsHandler;
 import platform.gwt.form2.server.navigator.handlers.GetNavigatorElementsHandler;
 import platform.interop.RemoteLogicsInterface;
 
@@ -12,6 +13,7 @@ public class RemoteServiceImpl extends LogicsDispatchServlet<RemoteLogicsInterfa
     protected void addHandlers(InstanceActionHandlerRegistry registry) {
         registry.addHandler(new GetNavigatorElementsHandler(this));
         registry.addHandler(new GenerateIDHandler(this));
+        registry.addHandler(new GetCommonWindowsHandler(this));
 
         registry.addHandler(new ChangeClassViewHandler(this));
         registry.addHandler(new ChangePropertyOrderHandler(this));

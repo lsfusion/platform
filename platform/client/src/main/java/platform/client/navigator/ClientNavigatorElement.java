@@ -13,7 +13,7 @@ public class ClientNavigatorElement {
 
     public static ClientNavigatorElement root;
 
-    private static Map<String, HashSet<ClientNavigatorElement>> parents = new HashMap<String, HashSet<ClientNavigatorElement>>();
+    public static Map<String, HashSet<ClientNavigatorElement>> parents = new HashMap<String, HashSet<ClientNavigatorElement>>();
 
     public static void dropCaches() {
         root = null;

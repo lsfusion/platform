@@ -1,15 +1,12 @@
 package platform.gwt.form2.shared.view.panel;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.Image;
-import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.*;
 
 public class ImageButton extends Button {
     private final Image image;
     private final Label label;
-    private final HorizontalPanel panel;
+    private final CellPanel panel;
 
     public ImageButton() {
         this(null, null);
@@ -20,9 +17,19 @@ public class ImageButton extends Button {
     }
 
     public ImageButton(String caption, String imagePath) {
-        panel = new HorizontalPanel();
+        this(caption, imagePath, false);
+    }
+
+    public ImageButton(String caption, String imagePath, boolean directionBottom) {
+        panel = directionBottom ? new VerticalPanel() : new HorizontalPanel();
         panel.add(image = new Image());
         panel.add(label = new Label());
+        panel.setSpacing(2);
+
+        if (directionBottom) {
+            panel.setCellHorizontalAlignment(image, HasHorizontalAlignment.ALIGN_CENTER);
+            panel.setCellHorizontalAlignment(label, HasHorizontalAlignment.ALIGN_CENTER);
+        }
 
         setText(caption);
         setImagePath(imagePath);
