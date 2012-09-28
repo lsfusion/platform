@@ -1,0 +1,379 @@
+MODULE Invoice;
+
+REQUIRE Order;
+
+
+//----------------------------------------------- Накладная ---------------------------------------------------//
+
+META defineInvoice(dumb)
+
+    CLASS ABSTRACT invoice 'Накладная ';  //consignment
+    CLASS ABSTRACT invoiceDetail 'Строка накладной ';         //consignmentDetail
+
+    CLASS userInvoice 'Накладная (польз.)' : invoice, historyObject, numeratedDocument;
+    CLASS userInvoiceDetail 'Строка накладной (польз.)' : invoiceDetail;
+    CLASS userInvoicePosted 'Закрытая накладная (польз.)' : userInvoice, postedObject;
+
+    @defineDocumentInterface(invoice);
+
+    @defineDocumentInterfaceNumber(invoice);
+
+    @defineDocumentInterfaceDataStock(invoice, stock, 'Склад');
+    @defineDocumentInterfacePosted(invoice);
+
+    @defineDocumentInterfaceDescription(invoice, 'Накладная');
+
+    @defineDocumentInterfaceCurrency(invoice);
+    @deriveDocumentCurrency(userInvoice, stock);
+
+    @defineDocumentInterfaceCustomer(invoice);
+    @defineDocumentInterfaceContract(invoice, contractSkuCustomer, singleContractSkuCustomerCompanyCustomer, companyInvoice, customerInvoice,
+                                     'Сторона A договора накладной не соответствует компании склада-отправителя',
+                                     'Сторона B договора накладной не соответствует покупателю');
+    @defineDocumentInterfacePriceListType(invoice);
+
+    @defineDocumentInterfaceDetailSku(invoice, sku);
+    @defineDocumentInterfaceDetailBatch(invoice, batch);
+
+    @defineDocumentInterfaceDetailQuantity(invoice);
+
+    @defineDocumentInterfaceDetailPrice(invoice);
+    @deriveDocumentDetailPriceBatchPriceListType(userInvoice);
+
+    @defineDocumentInterfaceDetailDataSum(invoice);
+    @deriveDocumentDetailSum(userInvoice);
+
+    @defineDocumentInterfaceDetailVAT(invoice, countryStock);
+    @defineDocumentInterfaceDetailVATDataSum (invoice);
+    @deriveDocumentDetailVATSum(userInvoice);
+
+    @defineDocumentInterfaceDetailPricePrefix(invoice, shipment, ' (учетная)');
+    @deriveDocumentDetailPriceBatchStockPrefix(userInvoice, shipment);
+
+    @defineDocumentInterfaceDetailDataSumPrefix (invoice, shipment, ' (учетная)');
+    @deriveDocumentDetailSumPrefix(userInvoice, shipment, currency);
+
+    @defineDocumentInterfaceHeaderQuantity(invoice);
+    @defineDocumentHeaderSkuQuantity(invoice, sku);
+    @defineDocumentHeaderSkuQuantity(userInvoice, sku);
+    @defineDocumentInterfaceHeaderSum(invoice);
+    @defineDocumentInterfaceHeaderVATSum(invoice);
+
+    @defineAddDetailDialogSkuStock(userInvoice, sku, stock, dialogSku);
+    @defineAddDetailDialogBarcode(userInvoice, sku);
+
+//--  Связь с заказом
+    orderInvoiceDetail = ABSTRACT order (invoiceDetail);
+    orderUserInvoiceDetail = DATA order(userInvoiceDetail);
+    orderInvoiceDetail(invoiceDetail) += orderUserInvoiceDetail(invoiceDetail);
+
+    CONSTRAINT customerInvoiceDetail(invoiceDetail) != customerOrder(orderUserInvoiceDetail(invoiceDetail)) OR
+               companyStockUserInvoiceDetail(invoiceDetail) != companyOrder(orderUserInvoiceDetail(invoiceDetail))
+        CHECKED BY orderUserInvoiceDetail
+            MESSAGE 'Покупатель и компания в заказе и накладной должны соответствовать друг другу';
+
+    GROUP orderGroup 'Информация о заказе' : publicGroup;
+    descriptionOrderInvoiceDetail 'Заказ' (invoiceDetail) = descriptionOrder(orderInvoiceDetail(invoiceDetail)) IN orderGroup;
+    descriptionOrderUserInvoiceDetail 'Заказ' (userInvoiceDetail) = descriptionOrder(orderUserInvoiceDetail(userInvoiceDetail)) IN orderGroup;
+
+    inOrderInvoice (order, invoice) = GROUP SUM quantityInvoiceDetail(invoiceDetail) BY orderInvoiceDetail(invoiceDetail), invoiceInvoiceDetail(invoiceDetail);
+
+    ordersInvoice 'Заказы' (invoice) = GROUP CONCAT castToString255(descriptionOrder(order))
+        IF inOrderInvoice(order, invoice) , ', ' BY invoice IN orderGroup MINCHARWIDTH 30 PREFCHARWIDTH 50;
+
+//-- Подсчет к-ва в накладных
+
+    invoicedOrderSku 'К-во в накладных' (order, sku) = GROUP SUM quantityInvoiceDetail(invoiceDetail) IF isPostedInvoiceDetail(invoiceDetail)
+        BY orderInvoiceDetail(invoiceDetail), skuInvoiceDetail(invoiceDetail);
+
+    invoicedOrderDetail 'К-во в накладных' (orderDetail) = PARTITION UNGROUP invoicedOrderSku
+                                                              LIMIT STRICT quantityOrderDetail (orderDetail)
+                                                              BY orderOrderDetail(orderDetail), skuOrderDetail(orderDetail)
+                                                              ORDER orderDetail;
+
+    EXTEND FORM userOrder
+        PROPERTIES(d) READONLY invoicedOrderDetail AFTER quantityUserOrderDetail
+
+    ;
+
+    EXTEND FORM userOrders
+        PROPERTIES(d) READONLY invoicedOrderDetail AFTER quantityUserOrderDetail
+
+    ;
+
+    EXTEND FORM orders
+        PROPERTIES(d) READONLY invoicedOrderDetail AFTER quantityOrderDetail
+
+    ;
+
+    diffInvoicedOrderDetail 'Остаток по заказу' (orderDetail) = quantityOrderDetail (orderDetail) (-) invoicedOrderDetail(orderDetail);
+
+    inQuantityStockOrder 'Связь по кол-ву' (stock, order) = GROUP SUM diffInvoicedOrderDetail(orderDetail) IF stockOrderDetail(orderDetail) == stock AND diffInvoicedOrderDetail(orderDetail) >0
+        BY stock, orderOrderDetail(orderDetail);
+
+    inStockOrder 'Связь' (stock, order) = GROUP SUM 1 IF stockOrderDetail(orderDetail) == stock BY stock, orderOrderDetail(orderDetail);
+
+    FORM stockOrders 'Заказы'
+        OBJECTS s = stock FIXED PANEL
+        PROPERTIES (s) READONLY name
+        OBJECTS c = customer FIXED PANEL
+        PROPERTIES (c) READONLY name
+
+        OBJECTS o = order
+        PROPERTIES (o) READONLY isPostedOrder FORCE GRID, objectClassName, numberOrder, seriesOrder, dateOrder, timeOrder,
+                                nameStockOrder, nameCustomerOrder, nameCurrencyOrder, noteOrder,
+                                countOrderDetailOrder, quantityOrderDetailOrder, sumOrderDetailOrder
+
+        OBJECTS d = orderDetail
+        PROPERTIES (d) READONLY indexOrderDetail, idBarcodeSkuOrderDetail, nameSkuOrderDetail, shortNameUOMSkuOrderDetail,
+                                quantityOrderDetail, invoicedOrderDetail, priceOrderDetail, sumOrderDetail, nameStockOrderDetail,
+                                diffInvoicedOrderDetail
+
+        FILTERS orderOrderDetail(d) == o,
+                customerOrder(o) == c
+
+        FILTERGROUP filter
+            FILTER 'Заказы для данного склада с возможностью выбора' 'F10' inQuantityStockOrder(s,o) DEFAULT
+            FILTER 'Заказы только для данного склад' 'F9' inStockOrder(s,o)
+
+        FILTERGROUP filter
+            FILTER 'Строки для данного склада с возможностью выбора' 'F10' stockOrderDetail(d) ==s AND diffInvoicedOrderDetail(d) >0 DEFAULT
+            FILTER 'Строки только для данного склада' 'F9' stockOrderDetail(d) ==s
+        DIALOG order OBJECT o
+    ;
+
+    DESIGN stockOrders FROM DEFAULT {
+        main {
+            preferredSize = (1024, 768);
+            NEW documentContainer BEFORE functions.box {
+
+                childConstraints = TO THE BOTTOM;
+
+                NEW headerBox {
+                    childConstraints = TO THE RIGHT;
+                    ADD s.box;
+                    ADD c.box;
+                }
+                ADD o.box;
+                NEW documentDetail {
+                    type = TABBED;
+
+                    ADD d.box {
+                        title = 'Спецификация';
+                    }
+                    NEW printTab {
+                        title = 'Печатные формы';
+                        NEW printContainer {
+                            title = 'Печать';
+                            childConstraints = TO THE BOTTOM;
+                            fillVertical = 1.0;
+                        }
+                    }
+                }
+            }
+            PROPERTY(diffInvoicedOrderDetail) { background = #FFFFCC; }
+        }
+    }
+
+    fillOrderUserInvoice 'Заполнить накладную на основании заказа' =  ACTION (userInvoice) {
+        LOCAL saleOrder = order();
+
+        FORM stockOrders OBJECTS s = stockUserInvoice(userInvoice), c = customerUserInvoice(userInvoice) MODAL;
+        IF formResult() == formResult.ok THEN {
+            SET saleOrder() <- chosenObject('o');
+
+            FOR orderOrderDetail(orderDetail) == saleOrder() AND stockOrderDetail(orderDetail) ==stockUserInvoice(userInvoice) AND diffInvoicedOrderDetail(orderDetail) >0  ADDOBJ d = userInvoiceDetail DO {
+                SET userInvoiceUserInvoiceDetail(d) <- userInvoice;
+                SET orderUserInvoiceDetail(d) <- saleOrder();
+    //            SET stockUserInvoiceDetail (d) <- stockOrderDetail(orderDetail);
+                SET skuUserInvoiceDetail(d) <- skuOrderDetail(orderDetail);
+                SET quantityUserInvoiceDetail (d) <- diffInvoicedOrderDetail(orderDetail);
+                SET priceUserInvoiceDetail (d) <- priceOrderDetail(orderDetail);
+            }
+        }
+    } IN orderGroup;
+
+// --------------------------- Формы ---------------------------------- //
+
+    FORM userInvoice 'Накладная'
+        OBJECTS i = userInvoice FIXED PANEL
+        PROPERTIES (i) objectClassName, nameStockUserInvoice, nameNumeratorObject, numberObject, seriesObject, dateUserInvoice, timeUserInvoice,
+                       nameCustomerUserInvoice, nameCurrencyUserInvoice, namePriceListTypeUserInvoice, noteUserInvoice,
+                       numberContractSkuCustomerUserInvoice, isCommissionUserInvoice,
+                       fillOrderUserInvoice, ordersInvoice READONLY,
+                       countUserInvoiceDetailUserInvoice, quantityUserInvoiceDetailUserInvoice, sumUserInvoiceDetailUserInvoice,
+                       VATSumUserInvoiceDetailUserInvoice, invoiceSumUserInvoiceDetailUserInvoice
+        OBJECTS d = userInvoiceDetail
+        PROPERTIES (d) indexUserInvoiceDetail, idBarcodeSkuUserInvoiceDetail, nameSkuUserInvoiceDetail, shortNameUOMSkuUserInvoiceDetail,
+                       descriptionBatchUserInvoiceDetail, quantityUserInvoiceDetail, priceUserInvoiceDetail, sumUserInvoiceDetail,
+                       numberVATUserInvoiceDetail, valueVATUserInvoiceDetail, VATSumUserInvoiceDetail, invoiceSumUserInvoiceDetail,
+                       nameStockUserInvoiceDetail, descriptionOrderUserInvoiceDetail, ADDOBJ, delete
+
+        PROPERTIES(i) TODRAW d addDetailDialogSkuStockUserInvoiceDetailUserInvoice,
+                               addDetailInputBarcodeUserInvoiceDetailUserInvoice, deleteUserInvoiceDetailUserInvoice
+        FILTERS userInvoiceUserInvoiceDetail(d) == i
+
+        EVENTS
+            ON OK EXEC prePostUserInvoice(i)
+
+        EDIT userInvoice OBJECT i
+    ;
+
+    DESIGN userInvoice FROM DEFAULT{
+        main {
+            preferredSize = (1024, 768);
+            NEW specification.box BEFORE functions.box{
+
+                ADD d.box {
+                    title = 'Спецификация';
+                    d.panel {
+                        childConstraints = TO THE BOTTOM;
+                    }
+                }
+            }
+            NEW header.box BEFORE specification.box {
+                childConstraints = TO THE RIGHT;
+
+                NEW headerRow1 {
+                    childConstraints = TO THE BOTTOM;
+
+                    ADD i.documentHeaderGroup {
+                        childConstraints = TO THE RIGHT;
+                        ADD PROPERTY(objectClassName) { preferredCharWidth = 10; }
+                        ADD PROPERTY(nameStockUserInvoice);
+                        ADD PROPERTY(nameNumeratorObject);
+                        ADD PROPERTY(numberObject);
+                        ADD PROPERTY(seriesObject);
+                        ADD PROPERTY(dateUserInvoice);
+                        ADD PROPERTY(timeUserInvoice);
+                    }
+
+                    NEW headerRow2 {
+                        childConstraints = TO THE RIGHT;
+                        ADD i.documentPrmGroup;
+                        ADD i.orderGroup;
+                    }
+                }
+
+                ADD i.documentSumGroup {
+                    childConstraints = TO THE BOTTOM;
+                }
+            }
+            PROPERTY(formOkAction) {
+                caption = 'Провести';
+            }
+        }
+    }
+
+//-- SKU
+    @defineDocumentSku(userInvoice);
+    @extendDocumentFormSku(userInvoice, userInvoice, i);
+
+    FORM userInvoices 'Накладные'
+        OBJECTS i = userInvoice
+        PROPERTIES (i) READONLY isPostedUserInvoice FORCE GRID, objectClassName, numberObject, seriesObject, dateUserInvoice, timeUserInvoice,
+                                nameStockUserInvoice, nameCustomerUserInvoice, nameCurrencyUserInvoice, namePriceListTypeUserInvoice, noteUserInvoice,
+                                numberContractSkuCustomerUserInvoice, isCommissionUserInvoice,
+                                countUserInvoiceDetailUserInvoice, quantityUserInvoiceDetailUserInvoice, sumUserInvoiceDetailUserInvoice,
+                                VATSumUserInvoiceDetailUserInvoice, invoiceSumUserInvoiceDetailUserInvoice, ordersInvoice
+
+        PROPERTIES (i) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
+
+        PROPERTIES (i) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
+
+        OBJECTS d = userInvoiceDetail
+        PROPERTIES (d) READONLY indexUserInvoiceDetail, idBarcodeSkuUserInvoiceDetail, nameSkuUserInvoiceDetail, shortNameUOMSkuUserInvoiceDetail,
+                       descriptionBatchUserInvoiceDetail, quantityUserInvoiceDetail, priceUserInvoiceDetail, sumUserInvoiceDetail,
+                       numberVATUserInvoiceDetail, valueVATUserInvoiceDetail, VATSumUserInvoiceDetail, invoiceSumUserInvoiceDetail,
+                       nameStockUserInvoiceDetail, descriptionOrderUserInvoiceDetail
+
+        FILTERS userInvoiceUserInvoiceDetail(d) == i
+
+        DIALOG userInvoice OBJECT i
+    ;
+
+    DESIGN userInvoices FROM DEFAULT {
+        PROPERTY (delete(i)) {
+            askConfirm = TRUE;
+        }
+
+        NEW documentContainer BEFORE functions.box {
+            type = SPLITV;
+            childConstraints = TO THE BOTTOM;
+
+            ADD i.box;
+
+            NEW documentDetail {
+                type = TABBED;
+
+                ADD d.box {
+                    title = 'Спецификация';
+                }
+                NEW documentHistory {
+                    title = 'История';
+
+                    ADD i.historyGroup;
+                    ADD i.postedGroup;
+                }
+                NEW printTab {
+                    title = 'Печатные формы';
+                    NEW printContainer {
+                        title = 'Печать';
+                        childConstraints = TO THE BOTTOM;
+                        fillVertical = 1.0; // todo : иначе кнопка не всегда показывается, нужно будет пофиксить как-нибудь
+                    }
+                }
+            }
+        }
+    }
+
+    FORM invoices 'Накладные'
+        OBJECTS i = invoice
+        PROPERTIES (i) READONLY isPostedInvoice FORCE GRID, objectClassName, numberInvoice, seriesInvoice, dateInvoice, timeInvoice,
+                                nameStockInvoice, nameCustomerInvoice, nameCurrencyInvoice, noteInvoice,
+                                numberContractSkuCustomerInvoice, isCommissionInvoice,
+                                countInvoiceDetailInvoice, quantityInvoiceDetailInvoice, sumInvoiceDetailInvoice,
+                                VATSumInvoiceDetailInvoice, invoiceSumInvoiceDetailInvoice, ordersInvoice
+
+        OBJECTS d = invoiceDetail
+        PROPERTIES (d) READONLY indexInvoiceDetail, idBarcodeSkuInvoiceDetail, nameSkuInvoiceDetail, shortNameUOMSkuInvoiceDetail,
+                       descriptionBatchInvoiceDetail, quantityInvoiceDetail, priceInvoiceDetail, sumInvoiceDetail,
+                       numberVATInvoiceDetail, valueVATInvoiceDetail, VATSumInvoiceDetail, invoiceSumInvoiceDetail,
+                       nameStockInvoiceDetail, descriptionOrderInvoiceDetail
+
+        FILTERS invoiceInvoiceDetail(d) == i
+
+        DIALOG invoice OBJECT i
+    ;
+
+    DESIGN invoices FROM DEFAULT {
+        main {
+            preferredSize = (1024, 768);
+
+            NEW documentContainer BEFORE functions.box {
+                type = SPLITV;
+                childConstraints = TO THE BOTTOM;
+
+                ADD i.box;
+
+                NEW documentDetail {
+                    type = TABBED;
+
+                    ADD d.box {
+                        title = 'Спецификация';
+                    }
+                    NEW printTab {
+                        title = 'Печатные формы';
+                        NEW printContainer {
+                            title = 'Печать';
+                            childConstraints = TO THE BOTTOM;
+                            fillVertical = 1.0; // todo : иначе кнопка не всегда показывается, нужно будет пофиксить как-нибудь
+                        }
+                    }
+                }
+            }
+        }
+    }
+END
+
+
