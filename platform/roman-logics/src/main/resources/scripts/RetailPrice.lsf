@@ -1157,6 +1157,11 @@ isPriceSetFreight 'Статус' (freight) = IF hasPriceSetDocumentFreight(freig
 
 backgroundPriceSetDocument 'Цвет' (freight) = RGB(212,255,212) IF hasPriceSetDocumentFreight(freight);
 
+typeExchangeRetailCurrency =  DATA typeExchange(currency);
+nameTypeExchangeRetailCurrency 'Тип обмена для розницы' (currency) = name(typeExchangeRetailCurrency(currency));
+EXTEND FORM currency PROPERTIES(c) nameTypeExchangeRetailCurrency;
+EXTEND FORM currencies PROPERTIES(c) READONLY nameTypeExchangeRetailCurrency;
+
 // розничный прайс по фрахту
 createPriceSetDocument 'Расценить по артикулам' =  ACTION (freight) NEWSESSION {
     ADDOBJ basePriceSetDocument;

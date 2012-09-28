@@ -916,7 +916,8 @@ quantityDeclarationBrandSupplier (declaration, brandSupplier) = GROUP SUM quanti
 
 
 innerInvoicesGroupDeclaration 'Инвойсы' (groupDeclaration) = GROUP CONCAT sidInnerInvoice(innerInvoice)
-    IF quantityGroupDeclarationInnerInvoice(groupDeclaration, innerInvoice), ', ' BY groupDeclaration ORDER innerInvoice;
+    IF quantityGroupDeclarationInnerInvoice(groupDeclaration, innerInvoice), ', ' BY groupDeclaration ORDER innerInvoice
+    MINCHARWIDTH 10 MAXCHARWIDTH 30 PREFCHARWIDTH 20 PERSISTENT;
 
 canonicalBrandDeclaration 'Бренды' (declaration) = castToString255(
     [GROUP CONCAT commonName(brandSupplier) IF quantityDeclarationBrandSupplier(declaration, brandSupplier), ' , ' BY declaration ORDER brandSupplier](declaration))

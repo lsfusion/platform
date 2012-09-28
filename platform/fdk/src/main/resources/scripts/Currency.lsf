@@ -16,24 +16,21 @@ dateTypeExchangeCurrencyDateEx (typeExchange, currency, date)  =
 curRateTypeExchangeCurrency 'Текущий курс обмена' (typeExchange, currency) =
     rateExchange(typeExchange, currency, dateTypeExchangeCurrencyDateEx(typeExchange, currency, currentDate()));
 
-typeExchangeRetailCurrency 'Тип обмена для розницы ИД' =  DATA typeExchange(currency);
-nameTypeExchangeRetailCurrency 'Тип обмена для розницы' (currency) = name(typeExchangeRetailCurrency(currency));
-
-precisionCurrency 'Число знаков' = DATA INTEGER(currency);
+precisionCurrency 'Округление (число знаков после запятой)' = DATA INTEGER(currency);
 roundCurrency (number, currency) = round(number, precisionCurrency(currency));
 
 // --------------------------------------------- Формы для ввода курсов валют --------------------------------------- //
 
 FORM currency 'Валюта'
     OBJECTS c = currency FIXED PANEL
-    PROPERTIES (c)  name, shortNameCurrency, symbolCurrency, documentNameCurrency, nameTypeExchangeRetailCurrency, precisionCurrency
+    PROPERTIES (c)  name, shortNameCurrency, symbolCurrency, documentNameCurrency, precisionCurrency
 
     EDIT currency OBJECT c
 ;
 
 FORM currencies 'Валюты'
     OBJECTS c = currency
-    PROPERTIES(c) READONLY name, shortNameCurrency, symbolCurrency, documentNameCurrency, nameTypeExchangeRetailCurrency, precisionCurrency
+    PROPERTIES(c) READONLY name, shortNameCurrency, symbolCurrency, documentNameCurrency, precisionCurrency
 
     PROPERTIES(c) ADDFORM, EDITFORM, delete
 
@@ -176,44 +173,45 @@ END
 
 // --------------------------------------------------- Стандартные значения ------------------------------------ //
 
-loadDefaultCurrency 'Добавить валюты' = ACTION (stringOne, stringTwo, stringThree) {
+loadDefaultCurrency 'Добавить валюты' = ACTION (ishortName, iname, isymbol, iprecision) {
     ADDOBJ currency;
     FOR c == addedObject() DO {
-       SET shortNameCurrency(c) <-  stringOne AS STRING[3];
-       SET name(c) <-  stringTwo AS STRING[110];
-       SET symbolCurrency(c) <- stringThree AS STRING[5];
+       SET shortNameCurrency(c) <- ishortName;
+       SET name(c) <- iname;
+       SET symbolCurrency(c) <- isymbol;
+       SET precisionCurrency(c) <- iprecision;
     }
 }
 
 loadDefaultCurrencies 'Загрузить стандартные валюты' = ACTION () {
-    EXEC loadDefaultCurrency('AUD', 'Австралийский доллар', ' ');
-    EXEC loadDefaultCurrency('BGN', 'Болгарский лев', ' ');
-    EXEC loadDefaultCurrency('UAH', 'Гривна', ' ');
-    EXEC loadDefaultCurrency('DKK', 'Датская крона', ' ');
-    EXEC loadDefaultCurrency('USD', 'Доллар США', '$');
-    EXEC loadDefaultCurrency('EUR', 'Евро', '€');
-    EXEC loadDefaultCurrency('PLN', 'Злотый', ' ');
-    EXEC loadDefaultCurrency('ISK', 'Исландская крона', ' ');
-    EXEC loadDefaultCurrency('CAD', 'Канадский доллар', ' ');
-    EXEC loadDefaultCurrency('CNY', 'Китайский юань', ' ');
-    EXEC loadDefaultCurrency('KWD', 'Кувейтский динар', ' ');
-    EXEC loadDefaultCurrency('LVL', 'Латвийский лат', ' ');
-    EXEC loadDefaultCurrency('LTL', 'Литовский лит', ' ');
-    EXEC loadDefaultCurrency('MDL', 'Молдавский лей', ' ');
-    EXEC loadDefaultCurrency('NOK', 'Норвежская крона', ' ');
-    EXEC loadDefaultCurrency('RUB', 'Российский рубль', ' ');
-    EXEC loadDefaultCurrency('XDR', 'СДР', ' ');
-    EXEC loadDefaultCurrency('SGD', 'Сингапурский доллар', ' ');
-    EXEC loadDefaultCurrency('KGS', 'Сом', ' ');
-    EXEC loadDefaultCurrency('KZT', 'Тенге', ' ');
-    EXEC loadDefaultCurrency('TRY', 'Турецкая лира', ' ');
-    EXEC loadDefaultCurrency('GBP', 'Фунт стерлингов', ' ');
-    EXEC loadDefaultCurrency('CZK', 'Чешская крона', ' ');
-    EXEC loadDefaultCurrency('SEK', 'Шведская крона', ' ');
-    EXEC loadDefaultCurrency('CHF', 'Швейцарский франк', ' ');
-    EXEC loadDefaultCurrency('JPY', 'Иена', ' ');
-    EXEC loadDefaultCurrency('IRR', 'Иранский риал', ' ');
-    EXEC loadDefaultCurrency('BLR', 'Белорусский рубль', ' ');
+    EXEC loadDefaultCurrency('AUD', 'Австралийский доллар', ' ', 2);
+    EXEC loadDefaultCurrency('BGN', 'Болгарский лев', ' ', 2);
+    EXEC loadDefaultCurrency('UAH', 'Гривна', ' ', 2);
+    EXEC loadDefaultCurrency('DKK', 'Датская крона', ' ', 2);
+    EXEC loadDefaultCurrency('USD', 'Доллар США', '$', 2);
+    EXEC loadDefaultCurrency('EUR', 'Евро', '€', 2);
+    EXEC loadDefaultCurrency('PLN', 'Злотый', ' ', 2);
+    EXEC loadDefaultCurrency('ISK', 'Исландская крона', ' ', 2);
+    EXEC loadDefaultCurrency('CAD', 'Канадский доллар', ' ', 2);
+    EXEC loadDefaultCurrency('CNY', 'Китайский юань', ' ', 2);
+    EXEC loadDefaultCurrency('KWD', 'Кувейтский динар', ' ', 2);
+    EXEC loadDefaultCurrency('LVL', 'Латвийский лат', ' ', 2);
+    EXEC loadDefaultCurrency('LTL', 'Литовский лит', ' ', 2);
+    EXEC loadDefaultCurrency('MDL', 'Молдавский лей', ' ', 2);
+    EXEC loadDefaultCurrency('NOK', 'Норвежская крона', ' ', 2);
+    EXEC loadDefaultCurrency('RUB', 'Российский рубль', ' ', 2);
+    EXEC loadDefaultCurrency('XDR', 'СДР', ' ', 2);
+    EXEC loadDefaultCurrency('SGD', 'Сингапурский доллар', ' ', 2);
+    EXEC loadDefaultCurrency('KGS', 'Сом', ' ', 2);
+    EXEC loadDefaultCurrency('KZT', 'Тенге', ' ', 2);
+    EXEC loadDefaultCurrency('TRY', 'Турецкая лира', ' ', 2);
+    EXEC loadDefaultCurrency('GBP', 'Фунт стерлингов', ' ', 2);
+    EXEC loadDefaultCurrency('CZK', 'Чешская крона', ' ', 2);
+    EXEC loadDefaultCurrency('SEK', 'Шведская крона', ' ', 2);
+    EXEC loadDefaultCurrency('CHF', 'Швейцарский франк', ' ', 2);
+    EXEC loadDefaultCurrency('JPY', 'Иена', ' ', 2);
+    EXEC loadDefaultCurrency('IRR', 'Иранский риал', ' ', 2);
+    EXEC loadDefaultCurrency('BLR', 'Белорусский рубль', ' ', 0);
 } IN loadDefaultGroup;
 
 @implementLoadDefaultData(loadDefaultCurrencies);
