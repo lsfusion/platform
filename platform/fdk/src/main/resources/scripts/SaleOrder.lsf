@@ -85,9 +85,10 @@ FORM userOrder 'Заказ'
 DESIGN userOrder FROM DEFAULT{
 
     main {
-        preferredSize = (1280, 1024);
+        preferredSize = (1024, 768);
         NEW specification.box BEFORE functions.box{
             ADD d.box {
+                title = 'Спецификация';
                 d.panel {
                     childConstraints = TO THE BOTTOM;
                 }
@@ -129,8 +130,8 @@ DESIGN userOrder FROM DEFAULT{
 }
 
 //-- SKU
-@defineDocumentChangeQuantitySkuStock(userOrder);
-@extendDocumentFormChangeQuantitySkuStock(userOrder, userOrder, o);
+@defineDocumentSkuStock(userOrder);
+@extendDocumentFormSkuStock(userOrder, userOrder, o);
 
 FORM userOrders 'Заказы'
     OBJECTS o = userOrder

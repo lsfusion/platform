@@ -123,18 +123,86 @@ EXTEND FORM orders
 
 ;
 
-diffInvoicedOrderDetail 'Разница' (orderDetail) = quantityOrderDetail (orderDetail) (-) invoicedOrderDetail(orderDetail);
+diffInvoicedOrderDetail 'Остаток по заказу' (orderDetail) = quantityOrderDetail (orderDetail) (-) invoicedOrderDetail(orderDetail);
+
+inQuantityStockOrder 'Связь по кол-ву' (stock, order) = GROUP SUM diffInvoicedOrderDetail(orderDetail) IF stockOrderDetail(orderDetail) == stock AND diffInvoicedOrderDetail(orderDetail) >0
+    BY stock, orderOrderDetail(orderDetail);
+
+inStockOrder 'Связь' (stock, order) = GROUP SUM 1 IF stockOrderDetail(orderDetail) == stock BY stock, orderOrderDetail(orderDetail);
+
+FORM stockOrders 'Заказы'
+    OBJECTS s = stock FIXED PANEL
+    PROPERTIES (s) READONLY name
+    OBJECTS c = customer FIXED PANEL
+    PROPERTIES (c) READONLY name
+
+    OBJECTS o = order
+    PROPERTIES (o) READONLY isPostedOrder FORCE GRID, objectClassName, numberOrder, seriesOrder, dateOrder, timeOrder,
+                            nameStockOrder, nameCustomerOrder, nameCurrencyOrder, noteOrder,
+                            countOrderDetailOrder, quantityOrderDetailOrder, sumOrderDetailOrder
+
+    OBJECTS d = orderDetail
+    PROPERTIES (d) READONLY indexOrderDetail, idBarcodeSkuOrderDetail, nameSkuOrderDetail, shortNameUOMSkuOrderDetail,
+                            quantityOrderDetail, invoicedOrderDetail, priceOrderDetail, sumOrderDetail, nameStockOrderDetail,
+                            diffInvoicedOrderDetail
+
+    FILTERS orderOrderDetail(d) == o,
+            customerOrder(o) == c
+
+    FILTERGROUP filter
+        FILTER 'Заказы для данного склада с возможностью выбора' 'F10' inQuantityStockOrder(s,o) DEFAULT
+        FILTER 'Заказы только для данного склад' 'F9' inStockOrder(s,o)
+
+    FILTERGROUP filter
+        FILTER 'Строки для данного склада с возможностью выбора' 'F10' stockOrderDetail(d) ==s AND diffInvoicedOrderDetail(d) >0 DEFAULT
+        FILTER 'Строки только для данного склада' 'F9' stockOrderDetail(d) ==s
+    DIALOG order OBJECT o
+;
+
+DESIGN stockOrders FROM DEFAULT {
+    main {
+        preferredSize = (1024, 768);
+        NEW documentContainer BEFORE functions.box {
+
+            childConstraints = TO THE BOTTOM;
+
+            NEW headerBox {
+                childConstraints = TO THE RIGHT;
+                ADD s.box;
+                ADD c.box;
+            }
+            ADD o.box;
+            NEW documentDetail {
+                type = TABBED;
+
+                ADD d.box {
+                    title = 'Спецификация';
+                }
+                NEW printTab {
+                    title = 'Печатные формы';
+                    NEW printContainer {
+                        title = 'Печать';
+                        childConstraints = TO THE BOTTOM;
+                        fillVertical = 1.0;
+                    }
+                }
+            }
+        }
+        PROPERTY(diffInvoicedOrderDetail) { background = #FFFFCC; }
+    }
+}
+
 fillOrderUserInvoice 'Заполнить накладную на основании заказа' =  ACTION (userInvoice) {
     LOCAL saleOrder = order();
 
-    FORM orders MODAL;
+    FORM stockOrders OBJECTS s = stockUserInvoice(userInvoice), c = customerUserInvoice(userInvoice) MODAL;
     IF formResult() == formResult.ok THEN {
         SET saleOrder() <- chosenObject('o');
 
-        FOR orderOrderDetail(orderDetail) == saleOrder() AND diffInvoicedOrderDetail(orderDetail) >0  ADDOBJ d = userInvoiceDetail DO {
+        FOR orderOrderDetail(orderDetail) == saleOrder() AND stockOrderDetail(orderDetail) ==stockUserInvoice(userInvoice) AND diffInvoicedOrderDetail(orderDetail) >0  ADDOBJ d = userInvoiceDetail DO {
             SET userInvoiceUserInvoiceDetail(d) <- userInvoice;
             SET orderUserInvoiceDetail(d) <- saleOrder();
-            SET stockUserInvoiceDetail (d) <- stockOrderDetail(orderDetail);
+//            SET stockUserInvoiceDetail (d) <- stockOrderDetail(orderDetail);
             SET skuUserInvoiceDetail(d) <- skuOrderDetail(orderDetail);
             SET quantityUserInvoiceDetail (d) <- diffInvoicedOrderDetail(orderDetail);
             SET priceUserInvoiceDetail (d) <- priceOrderDetail(orderDetail);
@@ -174,6 +242,7 @@ DESIGN userInvoice FROM DEFAULT{
         NEW specification.box BEFORE functions.box{
 
             ADD d.box {
+                title = 'Спецификация';
                 d.panel {
                     childConstraints = TO THE BOTTOM;
                 }
@@ -214,8 +283,8 @@ DESIGN userInvoice FROM DEFAULT{
 }
 
 //-- SKU
-@defineDocumentChangeQuantitySku(userInvoice);
-@extendDocumentFormChangeQuantitySku(userInvoice, userInvoice, i);
+@defineDocumentSku(userInvoice);
+@extendDocumentFormSku(userInvoice, userInvoice, i);
 
 FORM userInvoices 'Накладные'
     OBJECTS i = userInvoice
@@ -295,24 +364,28 @@ FORM invoices 'Накладные'
 ;
 
 DESIGN invoices FROM DEFAULT {
-    NEW documentContainer BEFORE functions.box {
-        type = SPLITV;
-        childConstraints = TO THE BOTTOM;
+    main {
+        preferredSize = (1024, 768);
 
-        ADD i.box;
+        NEW documentContainer BEFORE functions.box {
+            type = SPLITV;
+            childConstraints = TO THE BOTTOM;
 
-        NEW documentDetail {
-            type = TABBED;
+            ADD i.box;
 
-            ADD d.box {
-                title = 'Спецификация';
-            }
-            NEW printTab {
-                title = 'Печатные формы';
-                NEW printContainer {
-                    title = 'Печать';
-                    childConstraints = TO THE BOTTOM;
-                    fillVertical = 1.0; // todo : иначе кнопка не всегда показывается, нужно будет пофиксить как-нибудь
+            NEW documentDetail {
+                type = TABBED;
+
+                ADD d.box {
+                    title = 'Спецификация';
+                }
+                NEW printTab {
+                    title = 'Печатные формы';
+                    NEW printContainer {
+                        title = 'Печать';
+                        childConstraints = TO THE BOTTOM;
+                        fillVertical = 1.0; // todo : иначе кнопка не всегда показывается, нужно будет пофиксить как-нибудь
+                    }
                 }
             }
         }

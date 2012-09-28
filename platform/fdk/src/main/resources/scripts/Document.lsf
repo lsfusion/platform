@@ -404,7 +404,7 @@ META defineDocumentInterface (object)
 END
 
 //----------- Изменение кол-ва для строки при изменении кол-ва для товара---------------//
-META defineDocumentChangeQuantitySkuStockCustom(object, detail, skuProp, stockProp)
+META defineDocumentSkuStockCustom(object, detail, skuProp, stockProp)
     detail###Sku###object###Stock (sku, object, stock) =  GROUP MAX detail
         BY skuProp###detail(detail), object###detail(detail), stockProp###detail(detail);
     detail###Sku###object (sku, object) = detail###Sku###object###Stock(sku, object, stockProp###object(object));
@@ -436,16 +436,20 @@ META defineDocumentChangeQuantitySkuStockCustom(object, detail, skuProp, stockPr
         }
     }
 END
-META defineDocumentChangeQuantitySkuStock(object, skuProp, stockProp)
-    @defineDocumentChangeQuantitySkuStockCustom(object, object##Detail, skuProp, stockProp);
+META defineDocumentSkuStock(object, skuProp, stockProp)
+    @defineDocumentSkuStockCustom(object, object##Detail, skuProp, stockProp);
 END
-META defineDocumentChangeQuantitySkuStock(object)
-    @defineDocumentChangeQuantitySkuStock(object, sku, stock);
+META defineDocumentSkuStock(object)
+    @defineDocumentSkuStock(object, sku, stock);
 END
 
-META extendDocumentFormChangeQuantitySkuStockCustom(object, form, concrete, stockProp)
+META extendDocumentFormSkuStockCustom(object, form, concrete, stockProp)
 
     EXTEND FORM form
+
+        TREE stockTree sg = stockGroup PARENT parentStockGroup, ts = stock
+        PROPERTIES READONLY sgTreeName = name(sg), tsTreeName = name(ts)
+        FILTERS stockGroupStock(ts) == sg
 
         TREE skuTree sk = skuGroup PARENT parentSkuGroup
         PROPERTIES READONLY skuTreeName = name(sk)
@@ -453,9 +457,11 @@ META extendDocumentFormChangeQuantitySkuStockCustom(object, form, concrete, stoc
 
         OBJECTS           sts=(st=stock, s=sku)
         PROPERTIES        READONLY nameSku(s), stockName = name(st), idBarcodeSku(s), shortNameUOMSku(s)
+
         FILTERS           isParentSkuGroupSku(sk, s),
-                          stockProp###object(concrete) == st OR
-                          st IS stock AND concrete IS object AND NOT stockProp###object(concrete)
+                          st == ts AND sg IS stockGroup AND NOT stock###object(concrete) OR
+                          isParentStockGroupStock(sg, st) AND NOT ts AND NOT stock###object(concrete) OR
+                          st == ts AND sg IS stockGroup AND stock###object(concrete)== st
 
         ORDER BY          nameSku, stockName
 
@@ -474,8 +480,10 @@ META extendDocumentFormChangeQuantitySkuStockCustom(object, form, concrete, stoc
                 title = 'Товар';
                 type = SPLITH;
 
-                ADD skuTree.tree.box {
-                    title = 'Группы SKU';
+                NEW firstBottom {
+                    type = SPLITV;
+                    ADD stockTree.tree.box {title = 'Склады'; fillVertical = 1;};
+                    ADD skuTree.tree.box {title = 'Группы SKU'; fillVertical = 1;};
                     fillHorizontal = 1;
                 }
                 ADD sts.box {
@@ -485,13 +493,13 @@ META extendDocumentFormChangeQuantitySkuStockCustom(object, form, concrete, stoc
         }
     }
 END
-META extendDocumentFormChangeQuantitySkuStock(object, form, concrete)
-    @extendDocumentFormChangeQuantitySkuStockCustom(object, form, concrete, stock);
+META extendDocumentFormSkuStock(object, form, concrete)
+    @extendDocumentFormSkuStockCustom(object, form, concrete, stock);
 END
 
 //--
 
-META defineDocumentChangeQuantitySkuCustom(object, detail, skuProp, stockProp)
+META defineDocumentSkuCustom(object, detail, skuProp, stockProp)
     detail###Sku###object###Stock (sku, object, stock) =  GROUP MAX detail
         BY skuProp###detail(detail), object###detail(detail), stockProp###detail(detail);
     detail###Sku###object (sku, object) = detail###Sku###object###Stock(sku, object, stockProp###object(object));
@@ -520,14 +528,14 @@ META defineDocumentChangeQuantitySkuCustom(object, detail, skuProp, stockProp)
         }
     }
 END
-META defineDocumentChangeQuantitySku(object, skuProp, stockProp)
-    @defineDocumentChangeQuantitySkuCustom(object, object##Detail, skuProp, stockProp);
+META defineDocumentSku(object, skuProp, stockProp)
+    @defineDocumentSkuCustom(object, object##Detail, skuProp, stockProp);
 END
-META defineDocumentChangeQuantitySku(object)
-    @defineDocumentChangeQuantitySku(object, sku, stock);
+META defineDocumentSku(object)
+    @defineDocumentSku(object, sku, stock);
 END
 
-META extendDocumentFormChangeQuantitySkuCustom(object, form, concrete, skuProp, detail)
+META extendDocumentFormSkuCustom(object, form, concrete, skuProp, detail)
 
     EXTEND FORM form
 
@@ -567,8 +575,8 @@ META extendDocumentFormChangeQuantitySkuCustom(object, form, concrete, skuProp, 
         }
     }
 END
-META extendDocumentFormChangeQuantitySku(object, form, concrete)
-    @extendDocumentFormChangeQuantitySkuCustom(object, form, concrete, sku, object##Detail);
+META extendDocumentFormSku(object, form, concrete)
+    @extendDocumentFormSkuCustom(object, form, concrete, sku, object##Detail);
 END
 
 // ------------------------- Основной - агрегированный документы ---------------------------------- //

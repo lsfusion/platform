@@ -241,7 +241,7 @@ fillInvoiceUserShipment 'Заполнить поставку на основан
 
             SET userShipmentUserShipmentDetail(d) <- userShipment;
             SET invoiceUserShipmentDetail(d) <- saleInvoice();
-            SET stockUserShipmentDetail (d) <- stockInvoiceDetail(invoiceDetail);
+//            SET stockUserShipmentDetail (d) <- stockInvoiceDetail(invoiceDetail);
             SET skuUserShipmentDetail(d) <- skuInvoiceDetail(invoiceDetail);
             SET batchUserShipmentDetail (d) <- batchInvoiceDetail(invoiceDetail);
             SET quantityUserShipmentDetail (d) <- diffShippedInvoiceDetail(invoiceDetail);
