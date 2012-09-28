@@ -451,6 +451,9 @@ public class RomanLogicsModule extends LogicsModule {
     LCP customCategory4CustomCategoryOrigin;
     LCP customCategory10CustomCategoryOrigin;
     LCP sidCustomCategory10CustomCategoryOrigin;
+    LCP typeFabricCustomCategory6;
+    LCP nameTypeFabricCustomCategory6;
+    LCP typeFabricCustomCategoryOrigin;
     LCP nameSubCategory;
     LCP nameToSubCategory;
     LCP relationCustomCategory10SubCategory;
@@ -559,6 +562,8 @@ public class RomanLogicsModule extends LogicsModule {
     private LCP commonSizeSku;
     public LCP nameCommonSizeSku;
     public LCP typeFabricArticle;
+    public LCP typeFabricCustomCategoryOriginArticle;
+    public LCP overTypeFabricArticle;
     public LCP typeFabricArticleSku;
     public LCP nameTypeFabricArticle;
     public LCP nameTypeFabricArticleSku;
@@ -1971,6 +1976,10 @@ public class RomanLogicsModule extends LogicsModule {
         customCategory6CustomCategoryOrigin = addDProp(idGroup, "customCategory6CustomCategoryOrigin", "Код(6)", customCategory6, customCategoryOrigin);
         customCategory4CustomCategoryOrigin = addJProp(idGroup, "customCategory4CustomCategoryOrigin", "Код(4)", customCategory4CustomCategory6, customCategory6CustomCategoryOrigin, 1);
 
+        typeFabricCustomCategory6 = addDProp(idGroup, "typeFabricCustomCategory6", "Тип одежды (ИД)", typeFabric, customCategory6);
+        nameTypeFabricCustomCategory6 = addJProp(baseGroup, "nameTypeFabricCustomCategory6", "Тип одежды", baseLM.name, typeFabricCustomCategory6, 1);
+        typeFabricCustomCategoryOrigin = addJProp(idGroup, "typeFabricCustomCategoryOrigin", "Тип одежды (ИД)", typeFabricCustomCategory6, customCategory6CustomCategoryOrigin, 1);
+
         customCategory10CustomCategoryOrigin = addDProp(idGroup, "customCategory10CustomCategoryOrigin", "Код по умолчанию(ИД)", customCategory10, customCategoryOrigin);
         sidCustomCategory10CustomCategoryOrigin = addJProp(baseGroup, "sidCustomCategory10CustomCategoryOrigin", "Код по умолчанию", sidCustomCategory10, customCategory10CustomCategoryOrigin, 1);
         sidCustomCategory10CustomCategoryOrigin.property.preferredCharWidth = 10;
@@ -2468,29 +2477,15 @@ public class RomanLogicsModule extends LogicsModule {
         genderDataArticle = addDProp(idGroup, "genderDataArticle", "Пол (ИД)", gender, article);
         genderArticle = addSUProp(idGroup, "genderArticle", "Пол (ИД)", Union.OVERRIDE, genderBrandSupplierArticle, genderOriginArticle, genderDataArticle);
         sidGenderArticle = addJProp(baseGroup, "sidGenderArticle", "Пол", sidGender, genderArticle, 1);
+        sidGenderArticle.property.preferredCharWidth = 5;
+        sidGenderArticle.property.minimumCharWidth = 3;
+
         genderArticleSku = addJProp(idGroup, true, "genderArticleSku", true, "Пол (ИД)", genderArticle, articleSku, 1);
         sidGenderArticleSku = addJProp(baseGroup, "sidGenderArticleSku", "Пол", sidGender, genderArticleSku, 1);
         sidGenderArticleSku.property.preferredCharWidth = 5;
         sidGenderArticleSku.property.minimumCharWidth = 3;
 
         sidGenderArticleSkuLanguage = addJProp("sidGenderArticleSkuLanguage", "Пол", BL.I18n.getLCPByName("languageName"), genderArticleSku, 1, 2);
-
-        // Type fabric
-        typeFabricArticle = addDProp(idGroup, "typeFabricArticle", "Тип одежды (ИД)", typeFabric, article);
-        nameTypeFabricArticle = addJProp(baseGroup, "nameTypeFabricArticle", "Тип одежды", baseLM.name, typeFabricArticle, 1);
-        typeFabricArticleSku = addJProp(idGroup, true, "typeFabricArticleSku", true, "Тип одежды (ИД)", typeFabricArticle, articleSku, 1);
-        nameTypeFabricArticleSku = addJProp(baseGroup, "nameTypeFabricArticleSku", "Тип одежды", baseLM.name, typeFabricArticleSku, 1);
-        nameTypeFabricArticleSku.property.preferredCharWidth = 10;
-        nameTypeFabricArticleSku.property.minimumCharWidth = 5;
-        nameTypeFabricArticleSkuLanguage = addJProp(baseGroup, "nameTypeFabricArticleSkuLanguage", "Тип одежды", BL.I18n.getLCPByName("languageName"), typeFabricArticleSku, 1, 2);
-
-        // commonSize
-        commonSizeDataSku = addDProp("commonSizeDataSku", "Унифицированный размер (ИД)", commonSize, sku);
-        commonSizeCategorySku = addJProp(idGroup, "commonSizeCategorySku", "Унифицированный размер (ИД)", commonSizeSizeSupplierGenderCategory, sizeSupplierItem, 1, genderArticleSku, 1, categoryArticleSku, 1);
-        commonSizeTypeFabricSku = addJProp(idGroup, "commonSizeTypeFabricSku", "Унифицированный размер (ИД)", commonSizeSizeSupplierGenderCategoryTypeFabric, sizeSupplierItem, 1, genderArticleSku, 1, categoryArticleSku, 1, typeFabricArticleSku, 1);
-
-        commonSizeSku = addSUProp("commonSizeSku", "Унифицированный размер (ИД)", Union.OVERRIDE, commonSizeCategorySku, commonSizeDataSku);
-        nameCommonSizeSku = addJProp(baseGroup, "nameCommonSizeSku", "Унифицированный размер", baseLM.name, commonSizeSku, 1);
 
         // Country
         countrySupplierOfOriginArticle = addDProp(idGroup, "countrySupplierOfOriginArticle", "Страна происхождения (ИД)", countrySupplier, article);
@@ -2535,8 +2530,8 @@ public class RomanLogicsModule extends LogicsModule {
 
         // Composition
         mainCompositionOriginArticle = addDProp(supplierAttributeGroup, "mainCompositionOriginArticle", "Состав", COMPOSITION_CLASS, article);
-        mainCompositionOriginArticle.property.preferredCharWidth = 80;
-        mainCompositionOriginArticle.property.minimumCharWidth = 40;
+        mainCompositionOriginArticle.property.preferredCharWidth = 70;
+        mainCompositionOriginArticle.property.minimumCharWidth = 35;
         additionalCompositionOriginArticle = addDProp(supplierAttributeGroup, "additionalCompositionOriginArticle", "Доп. состав", COMPOSITION_CLASS, article);
         additionalCompositionOriginArticle.property.preferredCharWidth = 40;
         additionalCompositionOriginArticle.property.minimumCharWidth = 20;
@@ -2589,6 +2584,29 @@ public class RomanLogicsModule extends LogicsModule {
         sidCustomCategory6Article = addJProp(supplierAttributeGroup, "sidCustomCategory6Article", "Код ТН ВЭД (6)", sidCustomCategory6, customCategory6Article, 1);
         customCategoryOriginArticleSku = addJProp(idGroup, true, "customCategoryOriginArticleSku", "ТН ВЭД (ориг.) (ИД)", customCategoryOriginArticle, articleSku, 1);
         sidCustomCategoryOriginArticleSku = addJProp(supplierAttributeGroup, "sidCustomCategoryOriginArticleSku", "Код ТН ВЭД (ориг.)", sidCustomCategoryOrigin, customCategoryOriginArticleSku, 1);
+
+        // Type fabric
+        typeFabricArticle = addDProp(idGroup, "typeFabricArticle", "Тип одежды (ИД)", typeFabric, article);
+        typeFabricCustomCategoryOriginArticle = addJProp(idGroup, "typeFabricCustomCategoryOriginArticle", "Тип одежды (ИД)", typeFabricCustomCategoryOrigin, customCategoryOriginArticle, 1);
+        overTypeFabricArticle = addSUProp(Union.OVERRIDE, typeFabricCustomCategoryOriginArticle, typeFabricArticle);
+
+        nameTypeFabricArticle = addJProp(baseGroup, "nameTypeFabricArticle", "Тип одежды", baseLM.name, overTypeFabricArticle, 1);
+        nameTypeFabricArticle.property.preferredCharWidth = 10;
+        nameTypeFabricArticle.property.minimumCharWidth = 5;
+        typeFabricArticleSku = addJProp(idGroup, true, "typeFabricArticleSku", true, "Тип одежды (ИД)", overTypeFabricArticle, articleSku, 1);
+        nameTypeFabricArticleSku = addJProp(baseGroup, "nameTypeFabricArticleSku", "Тип одежды", baseLM.name, typeFabricArticleSku, 1);
+        nameTypeFabricArticleSku.property.preferredCharWidth = 10;
+        nameTypeFabricArticleSku.property.minimumCharWidth = 5;
+        nameTypeFabricArticleSkuLanguage = addJProp(baseGroup, "nameTypeFabricArticleSkuLanguage", "Тип одежды", BL.I18n.getLCPByName("languageName"), typeFabricArticleSku, 1, 2);
+
+        // commonSize
+        commonSizeDataSku = addDProp("commonSizeDataSku", "Унифицированный размер (ИД)", commonSize, sku);
+        commonSizeCategorySku = addJProp(idGroup, "commonSizeCategorySku", "Унифицированный размер (ИД)", commonSizeSizeSupplierGenderCategory, sizeSupplierItem, 1, genderArticleSku, 1, categoryArticleSku, 1);
+        commonSizeTypeFabricSku = addJProp(idGroup, "commonSizeTypeFabricSku", "Унифицированный размер (ИД)", commonSizeSizeSupplierGenderCategoryTypeFabric, sizeSupplierItem, 1, genderArticleSku, 1, categoryArticleSku, 1, typeFabricArticleSku, 1);
+
+        commonSizeSku = addSUProp("commonSizeSku", "Унифицированный размер (ИД)", Union.OVERRIDE, commonSizeCategorySku, commonSizeDataSku);
+        nameCommonSizeSku = addJProp(baseGroup, "nameCommonSizeSku", "Унифицированный размер", baseLM.name, commonSizeSku, 1);
+
 
         customCategory10CategoryGenderCompositionTypeFabric = addDProp(idGroup, "customCategory10FreightCategoryGenderCompositionTypeFabric", "ТН ВЭД (ИД)", customCategory10, category, gender, COMPOSITION_CLASS, typeFabric);
         sidCustomCategory10CategoryGenderCompositionTypeFabric = addJProp(baseGroup, "sidCustomCategory10CategoryGenderCompositionTypeFabric", "ТН ВЭД", sidCustomCategory10, customCategory10CategoryGenderCompositionTypeFabric, 1, 2, 3, 4);
@@ -4399,8 +4417,9 @@ public class RomanLogicsModule extends LogicsModule {
             objArticle.groupTo.setSingleClassView(ClassViewType.GRID);
 
             addPropertyDraw(numberListArticle, objOrder, objArticle);
-            addPropertyDraw(objArticle, nameSizeGroupSupplierArticle, sidArticle, nameSeasonYearArticle, nameBrandSupplierArticle, nameCollectionSupplierArticle, nameSubCategorySupplierArticle, nameThemeSupplierArticle,
-                    nameCategoryArticle, originalNameArticle, sidCustomCategoryOriginArticle,
+            addPropertyDraw(objArticle, nameSizeGroupSupplierArticle, sidArticle, nameSeasonYearArticle, nameBrandSupplierArticle,
+                    nameCollectionSupplierArticle, nameSubCategorySupplierArticle, nameThemeSupplierArticle,
+                    nameCategoryArticle, originalNameArticle, sidCustomCategoryOriginArticle, nameTypeFabricArticle, sidGenderArticle,
                     nameCountrySupplierOfOriginArticle, netWeightArticle, mainCompositionOriginArticle, baseLM.barcode);
             addPropertyDraw(quantityListArticle, objOrder, objArticle);
             addPropertyDraw(dateFromOrderArticle, objOrder, objArticle);
@@ -4659,14 +4678,16 @@ public class RomanLogicsModule extends LogicsModule {
             objArticle.groupTo.setSingleClassView(ClassViewType.GRID);
 
             addPropertyDraw(numberListArticle, (box ? objSupplierBox : objInvoice), objArticle);
-            addPropertyDraw(objArticle, nameSizeGroupSupplierArticle, sidArticle, nameSeasonYearArticle, nameBrandSupplierArticle, nameCollectionSupplierArticle, nameSubCategorySupplierArticle, nameThemeSupplierArticle, nameCategoryArticle, originalNameArticle, sidCustomCategoryOriginArticle,
+            addPropertyDraw(objArticle, nameSizeGroupSupplierArticle, sidArticle, nameSeasonYearArticle, nameBrandSupplierArticle,
+                    nameCollectionSupplierArticle, nameSubCategorySupplierArticle, nameThemeSupplierArticle, nameCategoryArticle,
+                    originalNameArticle, sidCustomCategoryOriginArticle, nameTypeFabricArticle, sidGenderArticle,
                     nameCountrySupplierOfOriginArticle, netWeightArticle, mainCompositionOriginArticle, baseLM.barcode);
             addPropertyDraw(quantityListArticle, (box ? objSupplierBox : objInvoice), objArticle);
-            addPropertyDraw(quantitySimpleInvoiceArticle, objInvoice, objArticle);
+            //addPropertyDraw(quantitySimpleInvoiceArticle, objInvoice, objArticle);
             addPropertyDraw(priceDocumentArticle, objInvoice, objArticle);
             addPropertyDraw(RRPDocumentArticle, objInvoice, objArticle);
             addPropertyDraw(sumDocumentArticle, objInvoice, objArticle);
-            addPropertyDraw(sumSimpleInvoiceArticle, objInvoice, objArticle);
+            //addPropertyDraw(sumSimpleInvoiceArticle, objInvoice, objArticle);
             addPropertyDraw(orderedInvoiceArticle, objInvoice, objArticle);
             addPropertyDraw(priceOrderedInvoiceArticle, objInvoice, objArticle);
 

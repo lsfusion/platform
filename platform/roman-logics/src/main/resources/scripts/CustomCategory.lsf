@@ -26,7 +26,7 @@ inCategory4Category6Category9Category10 (category4, category6, category9, catego
 FORM customCategory6 'Второй уровень'
 
     OBJECTS g = customCategory6 FIXED PANEL
-    PROPERTIES(g) sidCustomCategory6, nameCustomCategory, sidCustomCategory4CustomCategory6
+    PROPERTIES(g) sidCustomCategory6, nameCustomCategory, sidCustomCategory4CustomCategory6, nameTypeFabricCustomCategory6
 
     EDIT customCategory6 OBJECT g
 ;
@@ -387,12 +387,17 @@ FORM customCategoryOrigins 'ТН ВЭД (ориг.)'
 
     PROPERTIES(cd) READONLY sidCustomCategoryOrigin, nameCustomCategory
     PROPERTIES(cd) EDITFORM, delete
+
+    PROPERTIES(ca) editCA = EDITFORM, delete
+    PROPERTIES(cb) editCB = EDITFORM, delete
+
     PROPERTIES(cb) addCategoryOriginCategory6 TODRAW cd
 
     FILTERS  inCategory4Category6Origin(ca, cb, cd)
 
     ORDER BY sidCustomCategory4, sidCustomCategory6, sidCustomCategoryOrigin
 ;
+
 DESIGN customCategoryOrigins FROM DEFAULT {
 
     main{
@@ -406,6 +411,15 @@ DESIGN customCategoryOrigins FROM DEFAULT {
                 PROPERTY (addCA) {
                     caption = 'Добавить 4';
                 }
+
+                PROPERTY (editCA) {
+                    caption = 'Редактировать 4';
+                }
+
+                PROPERTY (editCB) {
+                    caption = 'Редактировать 6';
+                }
+
             }
 
             ADD cd.box{ fillHorizontal = 2;}
