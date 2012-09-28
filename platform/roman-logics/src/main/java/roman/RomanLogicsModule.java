@@ -171,6 +171,7 @@ public class RomanLogicsModule extends LogicsModule {
     public ConcreteCustomClass categorySupplier;
     public ConcreteCustomClass subCategorySupplier;
     public ConcreteCustomClass seasonYear;
+    public ConcreteCustomClass typeLabel;
     ConcreteCustomClass countrySupplier;
     public  LCP yearSeasonYear;
     public  LCP seasonSeasonYear;
@@ -1607,6 +1608,8 @@ public class RomanLogicsModule extends LogicsModule {
 
         transitDocument = addConcreteClass("transitDocument", "Транзитный документ", baseClass);
 
+        typeLabel = addConcreteClass("typeLabel", "Тип этикетки", baseClass.named);
+
     }
 
     @Override
@@ -1829,7 +1832,6 @@ public class RomanLogicsModule extends LogicsModule {
         sidTypeDutyRegistration = addJProp(baseGroup, "sidTypeDutyRegistration", "Для оформления (код)", sidTypeDuty, typeDutyRegistration);
         nameTypeDutyRegistration = addJProp(baseGroup, "nameTypeDutyRegistration", "Для оформления", nameTypeDuty, typeDutyRegistration);
 
-
         typeDutyDutyCustomsZone = addDProp(idGroup, "typeDutyDutyCustomsZone", "Для пошлин (ИД)", typeDuty, customsZone);
         sidTypeDutyDutyCustomsZone = addJProp(baseGroup, "sidTypeDutyDutyCustomsZone", "Для пошлин (код)", sidTypeDuty, typeDutyDutyCustomsZone, 1);
         nameTypeDutyDutyCustomsZone = addJProp(baseGroup, "nameTypeDutyDutyCustomsZone", "Для пошлин", nameTypeDuty, typeDutyDutyCustomsZone, 1);
@@ -1841,7 +1843,6 @@ public class RomanLogicsModule extends LogicsModule {
         typeDutyRegistrationCustomsZone = addDProp(idGroup, "typeDutyRegistrationCustomsZone", "Для оформления (ИД)", typeDuty, customsZone);
         sidTypeDutyRegistrationCustomsZone = addJProp(baseGroup, "sidTypeDutyRegistrationCustomsZone", "Для оформления (код)", sidTypeDuty, typeDutyRegistrationCustomsZone, 1);
         nameTypeDutyRegistrationCustomsZone = addJProp(baseGroup, "nameTypeDutyRegistrationCustomsZone", "Для оформления", nameTypeDuty, typeDutyRegistrationCustomsZone, 1);
-
 
         // Contract
         sidContract = addDProp(baseGroup, "sidContract", "Номер договора", StringClass.get(50), contract);

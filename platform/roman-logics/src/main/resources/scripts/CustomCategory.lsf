@@ -421,10 +421,11 @@ DESIGN customCategoryOrigins FROM DEFAULT {
                 PROPERTY (editCB) {
                     caption = 'Редактировать 6';
                 }
-
             }
 
-            ADD cd.box{ fillHorizontal = 2;}
+            ADD cd.box {
+                fillHorizontal = 2;
+            }
         }
     }
     ADD functions.box;
