@@ -1,6 +1,5 @@
 package roman;
 
-import platform.base.BaseUtils;
 import platform.server.classes.DateClass;
 import platform.server.integration.ImportField;
 import platform.server.integration.ImportInputTable;
@@ -49,11 +48,11 @@ public class TeddyInvoiceImporter extends SingleSheetImporter {
                     return DateClass.format(sDate);
                 }
             case W:
-                return String.valueOf(Integer.valueOf(value) / 100);
+                return String.valueOf(Double.valueOf(value) / 100);
             case X:
-                return String.valueOf(Integer.valueOf(value) / 10000);
+                return String.valueOf(Double.valueOf(value) / 1000000);
             case AA:
-                return String.valueOf(Integer.valueOf(value) / 100);
+                return String.valueOf(Double.valueOf(value) / 100);
             default:
                 return value;
         }
