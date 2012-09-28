@@ -34,7 +34,7 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
     public abstract void drop(SQLSession session, Object owner) throws SQLException;
     public abstract void rollDrop(SQLSession session, Object owner) throws SQLException;
 
-    public abstract boolean used(Query<?, ?> query);
+    public abstract boolean used(IQuery<?, ?> query);
 
     public abstract SessionData modifyRecord(SQLSession session, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields, Modify type, Object owner) throws SQLException;
 
@@ -158,7 +158,7 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
         return new Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>>(classes, propertyClasses);
     }
 
-    public SessionData rewrite(SQLSession session, Query<KeyField, PropertyField> query, BaseClass baseClass, QueryEnvironment env, Object owner) throws SQLException {
+    public SessionData rewrite(SQLSession session, IQuery<KeyField, PropertyField> query, BaseClass baseClass, QueryEnvironment env, Object owner) throws SQLException {
         boolean used = used(query);
         if(!used)
             drop(session, owner);
@@ -170,7 +170,7 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
         return result;
     }
 
-    public SessionData modifyRows(final SQLSession session, Query<KeyField, PropertyField> query, BaseClass baseClass, final Modify type, QueryEnvironment env, final Object owner) throws SQLException {
+    public SessionData modifyRows(final SQLSession session, IQuery<KeyField, PropertyField> query, BaseClass baseClass, final Modify type, QueryEnvironment env, final Object owner) throws SQLException {
         if(!Settings.instance.isDisableReadSingleValues()) {
             SessionData singleResult = readSingleValues(session, baseClass, env, query, new Result<IQuery<KeyField, PropertyField>>(), new HashMap<KeyField, DataObject>(),
                     new HashMap<PropertyField, ObjectValue>(), new ResultSingleValues<SessionData>() {
@@ -186,16 +186,17 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
                 return singleResult;
         }
 
-        Query<KeyField, PropertyField> modifyQuery = new Query<KeyField, PropertyField>(query.mapKeys);
+        Query<KeyField, PropertyField> modifyQuery = new Query<KeyField, PropertyField>(query.getMapKeys());
         Join<PropertyField> prevJoin = join(modifyQuery.mapKeys);
 
         Where prevWhere = prevJoin.getWhere();
-        modifyQuery.and(type==Modify.DELETE ? prevWhere.and(query.where.not()) : (type == Modify.UPDATE ? prevWhere : prevWhere.or(query.where)));
+        Where newWhere = query.getWhere();
+        modifyQuery.and(type==Modify.DELETE ? prevWhere.and(newWhere.not()) : (type == Modify.UPDATE ? prevWhere : prevWhere.or(newWhere)));
         for(PropertyField property : getProperties()) {
-            Expr newExpr = query.properties.get(property);
+            Expr newExpr = query.getExpr(property);
             Expr prevExpr = prevJoin.getExpr(property);
-            modifyQuery.properties.put(property, newExpr == null? prevExpr : (type== Modify.MODIFY || type== Modify.UPDATE ?
-                    newExpr.ifElse(query.where, prevExpr) : prevExpr.ifElse(prevWhere, newExpr)));
+            modifyQuery.properties.put(property, newExpr == null ? prevExpr : (type == Modify.MODIFY || type == Modify.UPDATE ?
+                    newExpr.ifElse(newWhere, prevExpr) : prevExpr.ifElse(prevWhere, newExpr)));
         }
         return rewrite(session, modifyQuery, baseClass, env, owner);
     }

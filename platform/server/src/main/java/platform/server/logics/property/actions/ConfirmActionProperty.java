@@ -1,12 +1,10 @@
 package platform.server.logics.property.actions;
 
 import platform.base.BaseUtils;
-import platform.base.QuickSet;
 import platform.interop.action.ConfirmClientAction;
 import platform.server.classes.StringClass;
 import platform.server.classes.ValueClass;
 import platform.server.logics.linear.LCP;
-import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 
@@ -28,7 +26,7 @@ public class ConfirmActionProperty extends SystemActionProperty {
     }
 
     @Override
-    public QuickSet<CalcProperty> aspectChangeExtProps() {
+    public PropsNewSession aspectChangeExtProps() {
         return getChangeProps(confirmedProperty.property);
     }
 

@@ -447,8 +447,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return new PropertyChange<T>(getMapKeys(), CaseExpr.NULL);
     }
     
-    public void prereadCaches() {
-    }
+    public abstract void prereadCaches();
 
     protected abstract Collection<Pair<Property<?>, LinkType>> calculateLinks();
 

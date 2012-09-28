@@ -1,13 +1,11 @@
 package platform.server.logics;
 
-import platform.base.QuickSet;
 import platform.server.classes.DataClass;
 import platform.server.classes.FileClass;
 import platform.server.data.type.Type;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.PropertyDrawView;
 import platform.server.logics.linear.LCP;
-import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.actions.SystemActionProperty;
@@ -34,7 +32,7 @@ public class LoadActionProperty extends SystemActionProperty {
     }
 
     @Override
-    public QuickSet<CalcProperty> aspectChangeExtProps() {
+    public PropsNewSession aspectChangeExtProps() {
         return getChangeProps(fileProperty.property);
     }
 

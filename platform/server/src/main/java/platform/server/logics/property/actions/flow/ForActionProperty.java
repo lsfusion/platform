@@ -37,6 +37,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
        super(sID, caption, innerInterfaces, mapInterfaces);
 
         assert !recursive || (addObject == null && elseAction == null);
+        assert !(addObject == null && ifProp == null);
 
         this.ifProp = ifProp;
         this.orders = orders;
@@ -50,7 +51,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
         this.forceDialog = forceDialog;
 
         finalizeInit();
-        assert innerInterfaces.containsAll(merge(ifProp.mapping.values(), action.mapping.values()));
+        assert innerInterfaces.containsAll(merge(ifProp !=null ? ifProp.mapping.values() : new HashSet<I>(), action.mapping.values()));
     }
 
     public Set<ActionProperty> getDependActions() {
@@ -61,12 +62,14 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
     }
 
     @Override
-    public Set<CalcProperty> getUsedProps() {
-       Set<CalcProperty> result = new HashSet<CalcProperty>();
-       ifProp.mapFillDepends(result);
+    public PropsNewSession aspectUsedExtProps() {
+       Set<CalcProperty> used = new HashSet<CalcProperty>();
+       if(ifProp!=null)
+           ifProp.mapFillDepends(used);
        for(CalcPropertyInterfaceImplement<I> order : orders.keySet())
-           order.mapFillDepends(result);
-       result.addAll(super.getUsedProps());
+           order.mapFillDepends(used);
+       PropsNewSession result = new PropsNewSession(used);
+       result.addAll(super.aspectUsedExtProps());
        return result;
     }
 
@@ -104,6 +107,8 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
     }
 
     private Collection<Map<I, DataObject>> readRows(ExecutionContext<PropertyInterface> context, Map<I, KeyExpr> innerKeys, Map<I, Expr> innerExprs) throws SQLException {
+        assert ifProp!=null; // так как предполагается компайлится
+
         OrderedMap<Expr, Boolean> orderExprs = new OrderedMap<Expr, Boolean>();
         for (Map.Entry<CalcPropertyInterfaceImplement<I>, Boolean> order : orders.entrySet())
            orderExprs.put(order.getKey().mapExpr(innerExprs, context.getModifier()), order.getValue());
@@ -112,14 +117,16 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
     }
 
     protected CalcPropertyMapImplement<?, I> getGroupWhereProperty() {
-       CalcPropertyMapImplement<?, I> whereProp = ifProp;
+       CalcPropertyMapImplement<?, I> whereProp = ifProp != null ? ifProp : DerivedProperty.<I>createTrue();
        if(ordersNotNull)
-           whereProp = DerivedProperty.createAnd(innerInterfaces, ifProp, orders.keySet());
+           whereProp = DerivedProperty.createAnd(innerInterfaces, whereProp, orders.keySet());
        return DerivedProperty.createIfElseUProp(innerInterfaces, whereProp,
                action.mapWhereProperty(), elseAction != null ? elseAction.mapWhereProperty() : null, false);
     }
 
     private Map<I, ValueClass> getExtendClasses() {
+        if(ifProp==null)
+            return new HashMap<I, ValueClass>();
         return removeKeys(ifProp.mapInterfaceClasses(), mapInterfaces.values());
     }
 
@@ -229,7 +236,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
     @Override
     public <T extends PropertyInterface, PW extends PropertyInterface> CalcProperty getPushWhere(Map<PropertyInterface, T> mapping, Collection<T> context, boolean ordersNotNull) {
         assert hasPushFor(mapping, context, ordersNotNull);
-        return ifProp.property; // тут не null должен возвращаться
+        return ifProp !=null ? ifProp.property : DerivedProperty.createTrue().property; // тут не null должен возвращаться
     }
     @Override
     public <T extends PropertyInterface, PW extends PropertyInterface> ActionPropertyMapImplement<?, T> pushFor(Map<PropertyInterface, T> mapping, Collection<T> context, CalcPropertyMapImplement<PW, T> push, OrderedMap<CalcPropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull) {

@@ -69,11 +69,12 @@ public class JoinActionProperty<T extends PropertyInterface> extends KeepContext
     }
 
     @Override
-    public Set<CalcProperty> getUsedProps() {
-        Set<CalcProperty> result = new HashSet<CalcProperty>();
+    public PropsNewSession aspectUsedExtProps() {
+        Set<CalcProperty> used = new HashSet<CalcProperty>();
         for(CalcPropertyInterfaceImplement<PropertyInterface> value : action.mapping.values())
-            value.mapFillDepends(result);
-        result.addAll(super.getUsedProps());
+            value.mapFillDepends(used);
+        PropsNewSession result = new PropsNewSession(used);
+        result.addAll(super.aspectUsedExtProps());
         return result;
     }
 

@@ -10,7 +10,6 @@ import net.sf.jasperreports.engine.JRException;
 import platform.base.BaseUtils;
 import platform.base.IOUtils;
 import platform.base.OrderedMap;
-import platform.base.QuickSet;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.FormEventType;
@@ -8172,7 +8171,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         }
 
         @Override
-        public QuickSet<CalcProperty> aspectChangeExtProps() {
+        public PropsNewSession aspectChangeExtProps() {
             return getChangeProps((CalcProperty)projectVote.property, (CalcProperty)inExpertVote.property);
         }
     }

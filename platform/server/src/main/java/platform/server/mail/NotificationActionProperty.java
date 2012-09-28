@@ -9,11 +9,9 @@ import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.linear.LCP;
-import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.CalcPropertyMapImplement;
-import platform.server.logics.property.actions.CustomActionProperty;
 import platform.server.logics.property.actions.SystemActionProperty;
 
 import javax.mail.Message;
@@ -37,7 +35,7 @@ public class NotificationActionProperty extends SystemActionProperty {
     private final BusinessLogics<?> BL;
 
     @Override
-    public Set<CalcProperty> getUsedProps() {
+    public PropsNewSession aspectUsedExtProps() {
         return getUsedProps(recipients.keySet());
     }
 

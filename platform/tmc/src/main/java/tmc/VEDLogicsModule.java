@@ -1277,10 +1277,10 @@ public class VEDLogicsModule extends LogicsModule {
         orderComputer = addDCProp("orderComputer", "Компьютер заказа", baseLM.currentComputer, true, is(order), 1);
         orderComputerName = addJProp("Компьютер заказа", baseLM.hostname, orderComputer, 1);
 
-        setNotNull(baseLM.barcode, customerCheckRetail);
-        //setNotNull(addJProp("Штрих-код товара", baseLM.and1, barcode, 1, is(article), 1));
-        setNotNull(baseLM.barcode, obligation);
-        //setNotNull(addJProp(andNot1, baseLM.barcode, 1, is(user), 1));
+//        setNotNull(baseLM.barcode, customerCheckRetail);
+        setNotNull(addJProp("Штрих-код товара", baseLM.and1, baseLM.barcode, 1, is(customerCheckRetail), 1));
+//        setNotNull(baseLM.barcode, obligation);
+        setNotNull(addJProp("Сертификат", baseLM.and1, baseLM.barcode, 1, is(obligation), 1));
 
         checkRetailExported = addDProp("checkRetailExported", "Экспортирован", LogicalClass.instance, orderRetail);
 

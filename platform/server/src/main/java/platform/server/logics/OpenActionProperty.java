@@ -15,7 +15,6 @@ import platform.server.logics.property.actions.SystemActionProperty;
 
 import java.sql.SQLException;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -36,8 +35,8 @@ public class OpenActionProperty extends SystemActionProperty {
     }
 
     @Override
-    public Set<CalcProperty> getUsedProps() {
-        return Collections.<CalcProperty>singleton(fileProperty.property);
+    public PropsNewSession aspectUsedExtProps() {
+        return new PropsNewSession(fileProperty.property);
     }
 
     private FileClass getFileClass() {

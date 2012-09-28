@@ -1,6 +1,5 @@
 package platform.server.logics.property.actions;
 
-import platform.base.QuickSet;
 import platform.server.classes.ValueClass;
 import platform.server.logics.DataObject;
 import platform.server.logics.ServerResourceBundle;
@@ -55,7 +54,7 @@ public class GenerateLoginPasswordActionProperty extends AdminActionProperty {
     }
 
     @Override
-    public QuickSet<CalcProperty> aspectChangeExtProps() {
+    public PropsNewSession aspectChangeExtProps() {
         return getChangeProps((CalcProperty)userLogin.property, (CalcProperty)userPassword.property);
     }
 }

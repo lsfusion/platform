@@ -43,7 +43,7 @@ public abstract class QuickMap<K, V> {
         add(key, value);
     }
 
-    protected QuickMap(Collection<? extends K> keys, V value) {
+    protected QuickMap(Iterable<? extends K> keys, V value) {
         this();
         addAll(keys, value);
     }
@@ -141,7 +141,7 @@ public abstract class QuickMap<K, V> {
         return true;
     }
 
-    public void addAll(Collection<? extends K> keys, V value) {
+    public void addAll(Iterable<? extends K> keys, V value) {
         for(K key : keys)
             add(key, value);
     }
@@ -213,6 +213,13 @@ public abstract class QuickMap<K, V> {
 
     public Collection<K> keys() {
         Collection<K> keys = new ArrayList<K>();
+        for (int i = 0; i < size; i++)
+            keys.add(getKey(i));
+        return keys;
+    }
+
+    public Set<K> keySet() {
+        Set<K> keys = new HashSet<K>();
         for (int i = 0; i < size; i++)
             keys.add(getKey(i));
         return keys;

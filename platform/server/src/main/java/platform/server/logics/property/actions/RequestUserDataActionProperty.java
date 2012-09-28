@@ -1,13 +1,11 @@
 package platform.server.logics.property.actions;
 
-import platform.base.QuickSet;
 import platform.server.classes.DataClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.type.Type;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.property.AnyValuePropertyHolder;
-import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 
@@ -20,7 +18,7 @@ public class RequestUserDataActionProperty extends SystemActionProperty {
     private final LCP<?> requestCanceledProperty;
     private final AnyValuePropertyHolder requestedValueProperty;
 
-    public QuickSet<CalcProperty> aspectChangeExtProps() {
+    public PropsNewSession aspectChangeExtProps() {
         return getChangeProps(requestCanceledProperty.property, requestedValueProperty.getLCP(dataClass).property);
     }
 

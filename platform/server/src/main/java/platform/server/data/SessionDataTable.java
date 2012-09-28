@@ -9,6 +9,7 @@ import platform.server.classes.BaseClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.where.extra.CompareWhere;
+import platform.server.data.query.IQuery;
 import platform.server.data.query.Join;
 import platform.server.data.query.Query;
 import platform.server.data.translator.MapValuesTranslate;
@@ -117,7 +118,7 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
     }
 
     @Override
-    public SessionData modifyRows(SQLSession session, Query<KeyField, PropertyField> query, BaseClass baseClass, Modify type, QueryEnvironment env, Object owner) throws SQLException {
+    public SessionData modifyRows(SQLSession session, IQuery<KeyField, PropertyField> query, BaseClass baseClass, Modify type, QueryEnvironment env, Object owner) throws SQLException {
         if(keyValues.isEmpty() && propertyValues.isEmpty() && (type== Modify.LEFT || type== Modify.ADD || type==Modify.DELETE)) // если и так все различны, то не зачем проверять разновидности, добавлять поля и т.п.
             return new SessionDataTable(table.modifyRows(session, query, type, env, owner), keys, keyValues, propertyValues);
         return super.modifyRows(session, query, baseClass, type, env, owner);
@@ -163,7 +164,7 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
         table.rollDrop(session, owner);
     }
 
-    public boolean used(Query<?, ?> query) {
+    public boolean used(IQuery<?, ?> query) {
         return query.getInnerValues().contains(table);
     }
 

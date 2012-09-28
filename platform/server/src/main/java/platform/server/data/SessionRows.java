@@ -9,8 +9,8 @@ import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.where.extra.CompareWhere;
 import platform.server.data.expr.where.CaseExprInterface;
+import platform.server.data.query.IQuery;
 import platform.server.data.query.Join;
-import platform.server.data.query.Query;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.type.ObjectType;
 import platform.server.data.where.Where;
@@ -134,7 +134,7 @@ public class SessionRows extends SessionData<SessionRows> {
         System.out.println("Rows :" + rows);
     }
 
-    public boolean used(Query<?, ?> query) {
+    public boolean used(IQuery<?, ?> query) {
         return false;
     }
 

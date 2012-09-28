@@ -6,7 +6,6 @@ import platform.server.form.instance.FormInstance;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.property.*;
 import platform.server.session.DataSession;
-import platform.server.session.ExecutionEnvironment;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -31,6 +30,16 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
         this.localUsed = localUsed; // именно так, потому что getDepends (used) нельзя вызывать до завершения инициализации
 
         finalizeInit();
+    }
+
+    @Override
+    protected PropsNewSession aspectChangeExtProps() {
+        return super.aspectChangeExtProps().wrapNewSession();
+    }
+
+    @Override
+    public PropsNewSession aspectUsedExtProps() {
+        return super.aspectChangeExtProps().wrapNewSession();
     }
 
     @Override

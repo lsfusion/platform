@@ -2,7 +2,6 @@ package platform.server.logics.property.actions.flow;
 
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
-import platform.base.QuickSet;
 import platform.server.caches.IdentityLazy;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
@@ -20,17 +19,17 @@ import static platform.base.BaseUtils.reverse;
 import static platform.server.logics.property.derived.DerivedProperty.*;
 import static platform.server.logics.property.derived.DerivedProperty.createSetAction;
 
-public class ChangeActionProperty<P extends PropertyInterface, W extends PropertyInterface, I extends PropertyInterface> extends ExtendContextActionProperty<I> {
+public class SetActionProperty<P extends PropertyInterface, W extends PropertyInterface, I extends PropertyInterface> extends ExtendContextActionProperty<I> {
 
     private CalcPropertyInterfaceImplement<I> writeFrom;
     protected final CalcPropertyMapImplement<P, I> writeTo; // assert что здесь + в mapInterfaces полный набор ключей
     protected final CalcPropertyMapImplement<?, I> where;
 
-    public ChangeActionProperty(String sID,
-                                String caption,
-                                Collection<I> innerInterfaces,
-                                List<I> mapInterfaces, CalcPropertyMapImplement<?, I> where, CalcPropertyMapImplement<P, I> writeTo,
-                                CalcPropertyInterfaceImplement<I> writeFrom) {
+    public SetActionProperty(String sID,
+                             String caption,
+                             Collection<I> innerInterfaces,
+                             List<I> mapInterfaces, CalcPropertyMapImplement<?, I> where, CalcPropertyMapImplement<P, I> writeTo,
+                             CalcPropertyInterfaceImplement<I> writeFrom) {
         super(sID, caption, innerInterfaces, mapInterfaces);
 
         this.writeTo = writeTo;
@@ -47,14 +46,14 @@ public class ChangeActionProperty<P extends PropertyInterface, W extends Propert
     }
 
     @Override
-    public Set<CalcProperty> getUsedProps() {
+    public PropsNewSession aspectUsedExtProps() {
         if(where!=null)
             return getUsedProps(writeFrom, where);
         return getUsedProps(writeFrom);
     }
 
     @Override
-    public QuickSet<CalcProperty> aspectChangeExtProps() {
+    public PropsNewSession aspectChangeExtProps() {
         return getChangeProps(writeTo.property);
     }
 

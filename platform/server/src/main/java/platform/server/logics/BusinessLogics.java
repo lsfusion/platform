@@ -893,10 +893,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected void finishActions() { // потому как могут использовать abstract
         for (Property property : getProperties())
             if(property instanceof ActionProperty) {
-                ActionProperty<?> action = (ActionProperty<?>) property;
-                boolean isRecursive = action.hasFlow(ChangeFlowType.NEWSESSION);
-                for(CalcProperty<?> calcProperty : action.getChangeExtProps()) // вообще говоря DataProperty и IsClassProperty
-                    calcProperty.actionChangeProps.add(new Pair<Property<?>, LinkType>(property, isRecursive ? LinkType.RECCHANGE : LinkType.DEPEND));
+                ActionProperty.PropsNewSession change = ((ActionProperty<?>) property).getChangeExtProps();
+                for(int i=0;i<change.size;i++) // вообще говоря DataProperty и IsClassProperty
+                    change.getKey(i).actionChangeProps.add(new Pair<Property<?>, LinkType>(property, change.getValue(i) ? LinkType.RECCHANGE : LinkType.DEPEND));
             }
     }
 

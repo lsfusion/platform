@@ -1,8 +1,6 @@
 package platform.server.logics.property.actions;
 
-import platform.base.QuickSet;
 import platform.server.classes.*;
-import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 
@@ -23,8 +21,8 @@ public class ChangeClassValueActionProperty extends SystemActionProperty {
     }
 
     @Override
-    public QuickSet<CalcProperty> aspectChangeExtProps() {
-        return getBaseClass().getChildProps();
+    public PropsNewSession aspectChangeExtProps() {
+        return new PropsNewSession(getBaseClass().getChildProps());
     }
 
     private BaseClass getBaseClass() {

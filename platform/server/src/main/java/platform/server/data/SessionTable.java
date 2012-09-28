@@ -16,6 +16,7 @@ import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.expr.query.GroupType;
 import platform.server.data.expr.query.Stat;
+import platform.server.data.query.IQuery;
 import platform.server.data.query.Join;
 import platform.server.data.query.stat.StatKeys;
 import platform.server.data.query.CompileSource;
@@ -307,9 +308,9 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
                             updateStatistics(session, count, owner);
     }
 
-    public SessionTable modifyRows(SQLSession session, Query<KeyField, PropertyField> query, Modify type, QueryEnvironment env, Object owner) throws SQLException {
+    public SessionTable modifyRows(SQLSession session, IQuery<KeyField, PropertyField> query, Modify type, QueryEnvironment env, Object owner) throws SQLException {
 
-        if(query.where.isFalse()) // оптимизация
+        if(query.getWhere().isFalse()) // оптимизация
             return this;
 
         ModifyQuery modify = new ModifyQuery(this, query, env);

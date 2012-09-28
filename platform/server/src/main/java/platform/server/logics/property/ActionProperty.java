@@ -24,8 +24,45 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         super(sID, caption, interfaces);
     }
 
+    public static class PropsNewSession extends QuickMap<CalcProperty, Boolean> {
+
+        public PropsNewSession() {
+        }
+
+        public PropsNewSession(Iterable<? extends CalcProperty> keys, Boolean value) {
+            super(keys, value);
+        }
+
+        public PropsNewSession(Iterable<? extends CalcProperty> keys) {
+            this(keys, false);
+        }
+
+        public PropsNewSession(CalcProperty key) {
+            super(key, false);
+        }
+
+        public void addAll(Iterable<? extends CalcProperty> props) {
+            addAll(props, false);
+        }
+
+        public boolean add(CalcProperty property) {
+            return add(property, false);
+        }
+
+        protected Boolean addValue(CalcProperty key, Boolean prevValue, Boolean newValue) {
+            return prevValue && newValue;
+        }
+
+        protected boolean containsAll(Boolean who, Boolean what) {
+            throw new RuntimeException("not supported");
+        }
+
+        public PropsNewSession wrapNewSession() {
+            return new PropsNewSession(keyIt(), true);
+        }
+    }
     // assert что возвращает только DataProperty и Set(IsClassProperty), Drop(IsClassProperty), IsClassProperty, для использования в лексикографике (calculateLinks)
-    public QuickSet<CalcProperty> getChangeExtProps() {
+    public PropsNewSession getChangeExtProps() {
         ActionPropertyMapImplement<?, P> compile = compile();
         if(compile!=null)
             return compile.property.getChangeExtProps();
@@ -36,7 +73,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     // убирает Set и Drop, так как с depends будет использоваться
     public QuickSet<CalcProperty> getChangeProps() {
         QuickSet<CalcProperty> result = new QuickSet<CalcProperty>();
-        for(CalcProperty property : getChangeExtProps())
+        for(CalcProperty property : getChangeExtProps().keyIt())
             if(property instanceof ChangedProperty)
                 result.add((IsClassProperty)((ChangedProperty)property).property);
             else {
@@ -48,36 +85,49 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     }
     // схема с аспектом сделана из-за того что getChangeProps для ChangeClassAction не инвариантен (меняется после компиляции), тоже самое и For с addObject'ом
     @IdentityLazy
-    protected QuickSet<CalcProperty> aspectChangeExtProps() {
-        QuickSet<CalcProperty> result = new QuickSet<CalcProperty>();
+    protected PropsNewSession aspectChangeExtProps() {
+        PropsNewSession result = new PropsNewSession();
         for(ActionProperty<?> dependAction : getDependActions())
             result.addAll(dependAction.getChangeExtProps());
         return result;
     }
+
+    public PropsNewSession getUsedExtProps() {
+        ActionPropertyMapImplement<?, P> compile = compile();
+        if(compile!=null)
+            return compile.property.getUsedExtProps();
+
+        return aspectUsedExtProps();
+    }
+
     @IdentityLazy
-    public Set<CalcProperty> getUsedProps() {
-        Set<CalcProperty> result = new HashSet<CalcProperty>();
+    protected PropsNewSession aspectUsedExtProps() {
+        PropsNewSession result = new PropsNewSession();
         for(ActionProperty<?> dependAction : getDependActions())
-            result.addAll(dependAction.getUsedProps());
+            result.addAll(dependAction.getUsedExtProps());
         return result;
     }
 
-    protected static QuickSet<CalcProperty> getChangeProps(CalcProperty... props) {
-        QuickSet<CalcProperty> result = new QuickSet<CalcProperty>();
+    public Set<CalcProperty> getUsedProps() {
+        return getUsedExtProps().keySet();
+    }
+
+    protected static PropsNewSession getChangeProps(CalcProperty... props) {
+        PropsNewSession result = new PropsNewSession();
         for(CalcProperty element : props)
             result.addAll(element.getChangeProps());
         return result;
     }
-    protected static <T extends PropertyInterface> Set<CalcProperty> getUsedProps(CalcPropertyInterfaceImplement<T>... props) {
+    protected static <T extends PropertyInterface> PropsNewSession getUsedProps(CalcPropertyInterfaceImplement<T>... props) {
         return getUsedProps(new ArrayList<CalcPropertyInterfaceImplement<T>>(), props);
     }
-    protected static <T extends PropertyInterface> Set<CalcProperty> getUsedProps(Collection<? extends CalcPropertyInterfaceImplement<T>> col, CalcPropertyInterfaceImplement<T>... props) {
+    protected static <T extends PropertyInterface> PropsNewSession getUsedProps(Collection<? extends CalcPropertyInterfaceImplement<T>> col, CalcPropertyInterfaceImplement<T>... props) {
         Set<CalcProperty> result = new HashSet<CalcProperty>();
         for(CalcPropertyInterfaceImplement<T> element : col)
             element.mapFillDepends(result);
         for(CalcPropertyInterfaceImplement<T> element : props)
             element.mapFillDepends(result);
-        return result;
+        return new PropsNewSession(result);
     }
     
     public final FunctionSet<CalcProperty> usedProps = new FunctionSet<CalcProperty>() {
@@ -127,8 +177,9 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         LinkType linkType = hasFlow(ChangeFlowType.NEWSESSION) ? LinkType.RECUSED : LinkType.USEDACTION;
 
         Collection<Pair<Property<?>, LinkType>> result = new ArrayList<Pair<Property<?>, LinkType>>();
-        for(CalcProperty depend : getUsedProps())
-            result.add(new Pair<Property<?>, LinkType>(depend, linkType));
+        PropsNewSession used = getUsedExtProps();
+        for(int i=0;i<used.size;i++)
+            result.add(new Pair<Property<?>, LinkType>(used.getKey(i), used.getValue(i) ? LinkType.RECUSED : LinkType.USEDACTION));
         result.add(new Pair<Property<?>, LinkType>(getWhereProperty().property, linkType));
         for(CalcProperty depend : strongUsed)
             result.add(new Pair<Property<?>, LinkType>(depend, LinkType.EVENTACTION));
@@ -169,6 +220,10 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
             aspect.execute(context);
 
         return result;
+    }
+
+    public void prereadCaches() {
+        compile();
     }
 
     protected abstract FlowResult aspectExecute(ExecutionContext<P> context) throws SQLException;

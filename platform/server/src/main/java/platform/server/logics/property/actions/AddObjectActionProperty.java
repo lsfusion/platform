@@ -1,7 +1,6 @@
 package platform.server.logics.property.actions;
 
 import platform.base.OrderedMap;
-import platform.base.QuickSet;
 import platform.interop.ClassViewType;
 import platform.interop.KeyStrokes;
 import platform.server.classes.AbstractCustomClass;
@@ -66,15 +65,15 @@ public class AddObjectActionProperty<T extends PropertyInterface, I extends Prop
     }
 
     @Override
-    public Set<CalcProperty> getUsedProps() {
+    public PropsNewSession aspectUsedExtProps() {
         if(where==null)
-            return new HashSet<CalcProperty>();
+            return new PropsNewSession();
         return getUsedProps(where);
     }
 
     @Override
-    public QuickSet<CalcProperty> aspectChangeExtProps() {
-        QuickSet<CalcProperty> result = new QuickSet<CalcProperty>();
+    public PropsNewSession aspectChangeExtProps() {
+        PropsNewSession result = new PropsNewSession();
         if(this.result!=null)
             result.addAll(this.result.property.getChangeProps());
         result.addAll(valueClass.getParentSetProps());

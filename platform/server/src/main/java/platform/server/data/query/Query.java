@@ -571,6 +571,10 @@ public class Query<K,V> extends IQuery<K,V> {
         return this;
     }
 
+    public <RMK, RMV> IQuery<RMK, RMV> map(Map<RMK, K> remapKeys, Map<RMV, V> remapProps) {
+        return new MapQuery<RMK, RMV, K, V>(this, remapProps, remapKeys, MapValuesTranslator.noTranslate);
+    }
+
     public <RMK, RMV> IQuery<RMK, RMV> map(Map<RMK, K> remapKeys, Map<RMV, V> remapProps, MapValuesTranslate translate) {
         return new MapQuery<RMK, RMV, K, V>(this, remapProps, remapKeys, translate);
     }

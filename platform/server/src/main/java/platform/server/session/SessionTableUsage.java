@@ -6,10 +6,8 @@ import platform.server.classes.BaseClass;
 import platform.server.data.*;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
-import platform.server.data.query.Join;
-import platform.server.data.query.RemapJoin;
-import platform.server.data.query.MapKeysInterface;
-import platform.server.data.query.Query;
+import platform.server.data.query.*;
+import platform.server.data.translator.MapValuesTranslator;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassWhere;
@@ -93,12 +91,12 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K> {
     }
 
     public void writeRows(SQLSession session, Query<K, V> query, BaseClass baseClass, QueryEnvironment env) throws SQLException {
-        table = table.rewrite(session, new Query<KeyField,PropertyField>(query, mapKeys, mapProps), baseClass, env, this);
+        table = table.rewrite(session, query.map(mapKeys, mapProps, MapValuesTranslator.noTranslate), baseClass, env, this);
     }
 
     // добавляет ряды которых не было в таблице, или modify'ит
     public void modifyRows(SQLSession session, Query<K, V> query, BaseClass baseClass, Modify type, QueryEnvironment env) throws SQLException {
-        table = table.modifyRows(session, new Query<KeyField, PropertyField>(query, mapKeys, type == Modify.DELETE ? new HashMap<PropertyField, V>() : mapProps), baseClass, type, env, this);
+        table = table.modifyRows(session, query.map(mapKeys, type == Modify.DELETE ? new HashMap<PropertyField, V>() : mapProps, MapValuesTranslator.noTranslate), baseClass, type, env, this);
     }
     // оптимизационная штука
     public void updateAdded(SQLSession session, BaseClass baseClass, V property, int count) throws SQLException {

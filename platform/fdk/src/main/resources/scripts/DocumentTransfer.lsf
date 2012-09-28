@@ -294,7 +294,7 @@ META defineDocumentTransferRec(object, caption, skuProp, stockProp)
 
     @defineDocument(object##Rec);
 
-    object##In###object##Rec = DATA object##In (object##Rec);
+    object##In###object##Rec = DATA object##In (object##Rec) NOT NULL DELETE;
     object##Rec###object##In = GROUP UNIQUE object##Rec BY object##In###object##Rec(object##Rec) WHERE object##Rec IS object##Rec;
 
     object##In###object##RecDetail (detail) = object##In###object##Rec(object##Rec###object##RecDetail(detail));

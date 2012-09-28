@@ -608,7 +608,7 @@ public abstract class LogicsModule {
         List<CalcPropertyInterfaceImplement<PropertyInterface>> readImplements = readCalcImplements(innerInterfaces, params);
         CalcPropertyMapImplement<W, PropertyInterface> conditionalPart = (CalcPropertyMapImplement<W, PropertyInterface>)
                 (conditional ? readImplements.get(resInterfaces + 2) : DerivedProperty.createTrue());
-        return addProperty(group, new LAP(new ChangeActionProperty<C, W, PropertyInterface>(name, caption,
+        return addProperty(group, new LAP(new SetActionProperty<C, W, PropertyInterface>(name, caption,
                 innerInterfaces, (List) readImplements.subList(0, resInterfaces), conditionalPart,
                 (CalcPropertyMapImplement<C, PropertyInterface>) readImplements.get(resInterfaces), readImplements.get(resInterfaces + 1))));
     }
@@ -700,9 +700,6 @@ public abstract class LogicsModule {
         ActionPropertyMapImplement<?, PropertyInterface> action =
                 (ActionPropertyMapImplement<?, PropertyInterface>) readImplements.get(implCnt - 1);
         
-        if(ifProp==null)
-            ifProp = DerivedProperty.createTrue();
-
         return addProperty(group, new LAP<PropertyInterface>(
                 new ForActionProperty<PropertyInterface>(name, caption, innerInterfaces, mapInterfaces, ifProp, orders, ordersNotNull, action, elseAction, addedInterface, addClass, false, recursive))
         );
@@ -2459,6 +2456,13 @@ public abstract class LogicsModule {
         addFollows(first.property, new CalcPropertyMapImplement<L, T>(second.property, mapInterfaces), options, session);
     }
 
+    public <T extends PropertyInterface, L extends PropertyInterface> void setNotNull(CalcProperty<T> property, int options, boolean session) {
+        CalcPropertyMapImplement<L, T> mapClasses = (CalcPropertyMapImplement<L, T>) IsClassProperty.getMapProperty(property.getInterfaceClasses());
+        addFollows(mapClasses.property, new CalcPropertyMapImplement<T, L>(property, reverse(mapClasses.mapping)),
+                ServerResourceBundle.getString("logics.property") + " " + property.caption + " [" + property.getSID() + "] " + ServerResourceBundle.getString("logics.property.not.defined"),
+                options, session);
+    }
+
     public <T extends PropertyInterface, L extends PropertyInterface> void addFollows(CalcProperty<T> property, CalcPropertyMapImplement<L, T> implement, int options, boolean session) {
         addFollows(property, implement, ServerResourceBundle.getString("logics.property.violated.consequence.from") + "(" + this + ") => (" + implement.property + ")", options, session);
     }
@@ -2498,27 +2502,16 @@ public abstract class LogicsModule {
         }
     }
 
-    protected void setNotNull(LCP property, ValueClass... classes) {
-        setNotNull(property, PropertyFollows.RESOLVE_TRUE, classes);
+    protected void setNotNull(LCP property) {
+        setNotNull(property, PropertyFollows.RESOLVE_TRUE);
     }
 
-    protected <P extends PropertyInterface, C extends PropertyInterface> void setNotNull(LCP<P> property, int resolve, ValueClass... classes) {
-        setNotNull(property, false, resolve, classes);
+    protected <P extends PropertyInterface, C extends PropertyInterface> void setNotNull(LCP<P> lp, int resolve) {
+        setNotNull(lp, false, resolve);
     }
 
-    protected <P extends PropertyInterface, C extends PropertyInterface> void setNotNull(LCP<P> property, boolean session, int resolve, ValueClass... classes) {
-
-        ValueClass[] values = new ValueClass[property.listInterfaces.size()];
-        System.arraycopy(classes, 0, values, 0, classes.length);
-        ValueClass[] propertyClasses = property.getInterfaceClasses();
-        System.arraycopy(propertyClasses, classes.length, values, classes.length, propertyClasses.length - classes.length);
-
-        LCP<C> checkProp = addCProp(LogicalClass.instance, true, values);
-
-        addFollows(checkProp.property,
-                mapCalcListImplement(property, checkProp.listInterfaces),
-                ServerResourceBundle.getString("logics.property") + " " + property.property.caption + " [" + property.property.getSID() + "] " + ServerResourceBundle.getString("logics.property.not.defined"),
-                resolve, session);
+    protected <P extends PropertyInterface, C extends PropertyInterface> void setNotNull(LCP<P> lp, boolean session, int resolve) {
+        setNotNull(lp.property, resolve, session);
     }
 
     public static <P extends PropertyInterface, T extends PropertyInterface> ActionPropertyMapImplement<P, T> mapActionListImplement(LAP<P> property, List<T> mapList) {

@@ -63,10 +63,12 @@ public class IfActionProperty extends KeepContextActionProperty {
         return result;
     }
 
-    public Set<CalcProperty> getUsedProps() {
-        Set<CalcProperty> result = new HashSet<CalcProperty>();
-        ifProp.mapFillDepends(result);
-        result.addAll(super.getUsedProps());
+    @Override
+    public PropsNewSession aspectUsedExtProps() {
+        Set<CalcProperty> used = new HashSet<CalcProperty>();
+        ifProp.mapFillDepends(used);
+        PropsNewSession result = new PropsNewSession(used);
+        result.addAll(super.aspectUsedExtProps());
         return result;
     }
 

@@ -49,10 +49,10 @@ public class ChangeClassActionProperty<T extends PropertyInterface, I extends Pr
 
     // вот тут пока эвристика вообще надо на внешний контекст смотреть (там может быть веселье с последействием), но пока будет работать достаточно эффективно
      @Override
-     public QuickSet<CalcProperty> aspectChangeExtProps() {
+     public PropsNewSession aspectChangeExtProps() {
          OrObjectClassSet orSet;
          if(needDialog() || where==null || (orSet = where.mapClassWhere().getOrSet(changeInterface))==null)
-             return baseClass.getChildProps();
+             return new PropsNewSession(baseClass.getChildProps());
 
          QuickSet<CalcProperty> result = new QuickSet<CalcProperty>();
          for(CustomClass cls : orSet.up.wheres) {
@@ -61,13 +61,13 @@ public class ChangeClassActionProperty<T extends PropertyInterface, I extends Pr
          }
          for(CustomClass cls : orSet.set)
             cls.fillChangeProps((ConcreteObjectClass)valueClass, result);
-         return result;
+         return new PropsNewSession(result);
      }
 
     @Override
-    public Set<CalcProperty> getUsedProps() {
+    public PropsNewSession aspectUsedExtProps() {
         if(where==null)
-            return new HashSet<CalcProperty>();
+            return new PropsNewSession();
         return getUsedProps(where);
     }
 
