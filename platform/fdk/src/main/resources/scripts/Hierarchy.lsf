@@ -19,6 +19,9 @@ META defineHierarchyCustom (object)
     level###object###object 'Уровень' (child, parent) = RECURSION 1l AND child IS object AND parent == child
                                                                   STEP 2l AND parent == parent###object($parent) PERSISTENT;
 
+    object###object##Level (child, level) = GROUP MAX parent IF level == level###object###object(child, parent)
+                                                  BY child, level;
+
     isParent###object###object 'Является потомком' (child, parent) = TRUE AND level###object###object(child, parent);
 
     childNumber###object 'Кол-во непосредственных потомков' (object) = GROUP SUM 1 BY parent###object(child) PERSISTENT;

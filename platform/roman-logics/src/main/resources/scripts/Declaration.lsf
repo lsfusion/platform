@@ -1013,7 +1013,7 @@ FORM declarationPrint 'Выгрузка деклараций(Укр.)' PRINT
     FILTERS declarationDeclarationDetail(dd) == d
 ;
 
-exportDeclarationToEXELLanguageDeclaration 'Выгрузить декларацию в EXEL(иностр.)' = ACTION (declaration) {
+exportDeclarationToEXELLanguageDeclaration 'Выгрузить декларацию в EXEL(Украина)' = ACTION (declaration) {
 
     FORM declarationPrint OBJECTS d = declaration MODAL;
 } CONFIRM TOOLBAR;

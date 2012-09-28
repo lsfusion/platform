@@ -1,10 +1,10 @@
 MODULE Item;
 
-REQUIRE System, Stock, Hierarchy, RetailCRM, Barcode, Ware;
+REQUIRE System, Stock, Hierarchy, RetailCRM, Barcode, Ware, PriceList;
 
 // ------------------------------------ Классификатор товаров --------------------------- //
 
-CLASS itemGroup 'Товарная группа' : named, externalObject, skuGroup, discountSkuGroup;
+CLASS itemGroup 'Товарная группа' : named, externalObject, skuGroup, discountSkuGroup, priceGroup;
 
 @defineHierarchy(itemGroup);
 
@@ -74,6 +74,11 @@ isParentItemGroupItem (itemGroup, item) = isParentItemGroupItemGroup(itemGroupIt
 // Атрибуты
 imageItem 'Изображение' = DATA IMAGEFILE (item);
 loadImageItem 'Загрузить изображение' (item) = ACTION LOADFILE imageItem(item);
+
+// --------------------------- Ценовые группы -------------------------------------//
+
+parentPriceGroup(priceGroup) += parentItemGroup(priceGroup);
+priceGroupSku(sku) += itemGroupItem(sku);
 
 // ------------------------------------ Формы -------------------------- //
 FORM item 'Товар'

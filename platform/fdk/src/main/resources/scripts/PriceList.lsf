@@ -2,6 +2,14 @@ MODULE PriceList;
 
 REQUIRE System, Document, Numerator, Stock, Barcode;
 
+// --------------------------- Ценовые группы -------------------------------------//
+
+CLASS ABSTRACT priceGroup 'Ценовая группа' : named;
+
+priceGroupSku = ABSTRACT priceGroup (sku);
+
+@defineHierarchyAbstract(priceGroup);
+
 // --------------------------- Виды цен ------------------------- //
 
 CLASS ABSTRACT priceListType 'Вид цены' : named;
@@ -92,18 +100,31 @@ CLASS calcPriceListType 'Расчетный вид цены' : priceListType;
 basePriceListTypeCalcPriceListType(type) = DATA basePriceListType (calcPriceListType);
 nameBasePriceListTypeCalcPriceListType 'Базовый вид цены' (type) = name(basePriceListTypeCalcPriceListType(type));
 
-markupCalcPriceListType 'Надбавка, %' = DATA NUMERIC[8,2] (calcPriceListType);
+TABLE calcPriceListTypePriceGroup (calcPriceListType, priceGroup);
+
+markupCalcPriceListTypePriceGroup 'Надбавка, %' = DATA NUMERIC[8,2] (calcPriceListType, priceGroup);
 roundCalcPriceListType 'Округление (кол-во знаков)' = DATA INTEGER (calcPriceListType);
 
-multiplierCalcPriceListType (type) = (100 + markupCalcPriceListType(type)) / 100 PERSISTENT;
+levelParentMarkupPriceGroup (calcPriceListType, priceGroup) = GROUP MIN levelPriceGroupPriceGroup(priceGroup, parent) IF markupCalcPriceListTypePriceGroup(calcPriceListType, parent)
+                                                              BY calcPriceListType, priceGroup PERSISTENT;
+nearestParentPriceGroup (calcPriceListType, priceGroup) = priceGroupPriceGroupLevel(priceGroup, levelParentMarkupPriceGroup(calcPriceListType, priceGroup));
+nearestMarkupCalcPriceListTypePriceGroup 'Расчетная надбавка, %' (calcPriceListType, priceGroup) =
+    markupCalcPriceListTypePriceGroup(calcPriceListType, nearestParentPriceGroup(calcPriceListType, priceGroup));
+
+markupCalcPriceListTypePriceGroupOver 'Надбавка, %' (calcPriceListType, priceGroup) =
+    UNION OVERRIDE nearestMarkupCalcPriceListTypePriceGroup(calcPriceListType, priceGroup), markupCalcPriceListTypePriceGroup(calcPriceListType, priceGroup);
+
+multiplierCalcPriceListTypePriceGroup (type, priceGroup) = (100 + markupCalcPriceListTypePriceGroupOver(type, priceGroup)) / 100 PERSISTENT;
 
 priceCalcPriceListTypeSkuStockDateTime(type, sku, stock, dateTime) =
-    round(priceBasePriceListTypeSkuStockDateTime(basePriceListTypeCalcPriceListType(type), sku, stock, dateTime) * multiplierCalcPriceListType (type), roundCalcPriceListType(type));
+    round(priceBasePriceListTypeSkuStockDateTime(basePriceListTypeCalcPriceListType(type), sku, stock, dateTime) * multiplierCalcPriceListTypePriceGroup(type, priceGroupSku(sku)), roundCalcPriceListType(type));
 priceCalcPriceListTypeBatchStockDateTime(type, batch, stock, dateTime) =
-    round(priceBasePriceListTypeBatchStockDateTime(basePriceListTypeCalcPriceListType(type), batch, stock, dateTime) * multiplierCalcPriceListType (type), roundCalcPriceListType(type));
+    round(priceBasePriceListTypeBatchStockDateTime(basePriceListTypeCalcPriceListType(type), batch, stock, dateTime) * multiplierCalcPriceListTypePriceGroup(type, priceGroupSku(skuBatch(batch))), roundCalcPriceListType(type));
 
 pricePriceListTypeSkuStockDateTime(type, sku, stock, dateTime) += priceCalcPriceListTypeSkuStockDateTime(type, sku, stock, dateTime);
 pricePriceListTypeBatchStockDateTime(type, batch, stock, dateTime) += priceCalcPriceListTypeBatchStockDateTime(type, batch, stock, dateTime);
+
+backgroundMarkup 'Цвет' (calcPriceListType, priceGroup) = RGB(255,160,160) AND markupCalcPriceListTypePriceGroup(calcPriceListType, priceGroup);
 
 // --------------------------- Формы ------------------------- //
 
@@ -116,7 +137,13 @@ FORM dataPriceListType 'Базовый вид цен'
 
 FORM calcPriceListType 'Базовый вид цен'
     OBJECTS p = calcPriceListType FIXED PANEL
-    PROPERTIES(p) name, nameBasePriceListTypeCalcPriceListType, markupCalcPriceListType, roundCalcPriceListType
+    PROPERTIES(p) name, nameBasePriceListTypeCalcPriceListType, roundCalcPriceListType
+
+    TREE treeGroup g=priceGroup PARENT parentPriceGroup
+    PROPERTIES READONLY name(g)
+    ORDER BY name(g)
+
+    PROPERTIES(p, g) markupCalcPriceListTypePriceGroup , nearestMarkupCalcPriceListTypePriceGroup
 
     EDIT calcPriceListType OBJECT p
 ;
