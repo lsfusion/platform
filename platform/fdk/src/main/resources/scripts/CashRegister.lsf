@@ -65,6 +65,7 @@ cashRegisterComputer (computer) = GROUP UNIQUE cashRegister BY computerCashRegis
 
 currentCashRegister 'Текущая касса' = cashRegisterComputer(currentComputer());
 
+departmentStoreCurrentCashRegister = departmentStoreCashRegister(currentCashRegister());
 sidModelCurrentCashRegister 'Код модели' = sidModelMachinery(currentCashRegister());
 comPortCurrentCashRegister 'Порт' = comPortCashRegister(currentCashRegister());
 baudRateCurrentCashRegister 'Скорость весов' = baudRateCashRegister(currentCashRegister());

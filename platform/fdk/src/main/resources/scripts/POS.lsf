@@ -948,9 +948,12 @@ WHEN CHANGED(quantityReceiptDetailReceipt(receipt)) OR CHANGED(discountCardRecei
 prevCurrentBalanceSkuReceipt (sku, receipt) = [PREV(currentBalanceSkuStock(sku, stock))] (sku, departmentStoreReceipt(receipt));
 prevCurrentBalanceReceiptDetail 'Тек. остаток' (receiptDetail) = prevCurrentBalanceSkuReceipt(skuReceiptDetail(receiptDetail), receiptReceiptDetail(receiptDetail));
 
+closedCurrentZReportMessage '' = 'Не открыт Z-отчет';
 
 FORM POS
     PROPERTIES() READONLY hostnameCurrentComputer, currentDateTime, currentUserName
+
+    PROPERTIES() READONLY SHOWIF closedCurrentZReport() closedCurrentZReportMessage
 
     OBJECTS r = receipt FIXED PANEL
     PROPERTIES(r) SHOWIF currentZReport() discountSumReceiptDetailReceipt, sumReceiptDetailReceipt,
@@ -986,6 +989,13 @@ DESIGN POS FROM DEFAULT {
 
         REMOVE functions.box CASCADE;
 
+        NEW northContainer {
+            ADD PROPERTY(closedCurrentZReportMessage()) {
+                focusable = FALSE;
+                font = 'Tahoma 100';
+                fillVertical = 1.0;
+            }
+        }
         NEW centerContainer {
             childConstraints = TO THE RIGHT;
             NEW receiptContainer {
@@ -1052,21 +1062,16 @@ DESIGN POS FROM DEFAULT {
             NEW currentContainer {
                 title = 'Текущие значения';
                 childConstraints = TO THE RIGHT;
-                ADD PROPERTY(hostnameCurrentComputer) {
-                    focusable = FALSE;
-                }
-                ADD PROPERTY(currentDateTime) {
-                    focusable = FALSE;
-                }
-                ADD PROPERTY(currentUserName) {
-                    focusable = FALSE;
-                }
+                ADD PROPERTY(formRefreshAction) { focusable = FALSE; }
+                ADD PROPERTY(hostnameCurrentComputer) { focusable = FALSE; }
+                ADD PROPERTY(currentDateTime) { focusable = FALSE; }
+                ADD PROPERTY(currentUserName) { focusable = FALSE; }
             }
             NEW actionsContainer {
-            title = 'Действия с кассой';
-            childConstraints = TO THE RIGHT;
-            ADD PROPERTY(fiscalAdvancePaper);
-            ADD PROPERTY(fiscalCutReceipt);
+                title = 'Действия с кассой';
+                childConstraints = TO THE RIGHT;
+                ADD PROPERTY(fiscalAdvancePaper) { focusable = FALSE; }
+                ADD PROPERTY(fiscalCutReceipt) { focusable = FALSE; }
             }
         }
     }

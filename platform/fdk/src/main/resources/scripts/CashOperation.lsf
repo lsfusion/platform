@@ -441,6 +441,8 @@ FORM operationCashRegister 'Кассовые операции'
 
     OBJECTS d = departmentStore FIXED PANEL
     PROPERTIES(d) name SELECTOR
+    FILTERS d == departmentStoreCurrentCashRegister() OR
+            d IS departmentStore AND NOT departmentStoreCurrentCashRegister()
 
     OBJECTS i = incomeCashOrder
     PROPERTIES(i) READONLY objectClassName, numberCashDocument, dateCashDocument, timeCashDocument, nameDepartmentStoreCashDocument,

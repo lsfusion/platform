@@ -75,17 +75,17 @@ syncBarcodeSku 'Синхронизировать штрих-код' (sku) = ACTI
     IF TRUE AND NOT syncBarcode() IS barcode THEN {
         ADDOBJ barcode;
         SET syncBarcode() <- addedObject();
-        SET skuBarcode(barcode) IF barcode == syncBarcode() <- sku AS RomanLogicsModule.sku;
+        SET skuBarcode(barcode) <- sku AS RomanLogicsModule.sku WHERE barcode == syncBarcode();
     }
 
-    SET idBarcode(barcode) IF barcode == syncBarcode() <- barcode(sku AS RomanLogicsModule.sku);
+    SET idBarcode(barcode) <- barcode(sku AS RomanLogicsModule.sku) WHERE barcode == syncBarcode();
 } IN baseGroup;
 
 WHEN CHANGED(barcode(sku) AND sku IS RomanLogicsModule.sku) DO EXEC syncBarcodeSku(sku);
 
 EXTEND FORM migrationData
     OBJECTS s = sku
-    PROPERTIES(s) READONLY nameSku
+    PROPERTIES(s) READONLY nameSku, barcode FORCE GRID, idBarcodeSku
     PROPERTIES(s) syncBarcodeSku
 ;
 EXTEND DESIGN migrationData {

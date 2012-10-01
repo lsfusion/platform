@@ -432,8 +432,10 @@ typeExchangeManagerialDeclaration(declaration) <- typeExchangePayManagerial() WH
 @defineNearestRateExchangeObject(declaration, managerial, , dateDeclaration, baseGroup);
 @defineNearestRateExchangeObject(declaration, duty, , dateDeclaration, baseGroup);
 
-rateExchangeCustomDataDeclaration(declaration) <- rateExchangeCustomDeclaration(declaration) WHEN (CHANGED (dateDeclaration(declaration)) OR CHANGED (currencyDeclaration(declaration)));
-rateExchangeManagerialDataDeclaration(declaration) <- rateExchangeManagerialDeclaration(declaration) WHEN (CHANGED (dateDeclaration(declaration)) OR CHANGED (currencyDeclaration(declaration)));
+rateExchangeCustomDataDeclaration(declaration) <- rateExchangeCustomDeclaration(declaration)
+    WHEN CHANGED (dateDeclaration(declaration)) OR CHANGED (currencyDeclaration(declaration)) OR CHANGED(typeExchangeCustomDeclaration(declaration));
+rateExchangeManagerialDataDeclaration(declaration) <- rateExchangeManagerialDeclaration(declaration)
+    WHEN CHANGED (dateDeclaration(declaration)) OR CHANGED (currencyDeclaration(declaration)) OR CHANGED(typeExchangeManagerialDeclaration(declaration));
 
 rateExchangeCustomDeclarationDetail 'Курс обмена (БУ)' (declarationDetail) = rateExchangeCustomDataDeclaration(declarationDeclarationDetail(declarationDetail)) IN baseGroup;
 rateExchangeManagerialDeclarationDetail 'Курс обмена (УУ)' (declarationDetail) = rateExchangeManagerialDataDeclaration(declarationDeclarationDetail(declarationDetail)) IN baseGroup;
