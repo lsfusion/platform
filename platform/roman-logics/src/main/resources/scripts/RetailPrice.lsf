@@ -799,12 +799,7 @@ FORM priceSetDocument 'Розничный прайс'
     FILTERGROUP filtersMethod
         FILTER 'Показывать без метода' 'F9' TRUE IF NOT methodBasePriceSetDocumentArticle(p, a)
 
-    FILTERGROUP filtersCategory
-        FILTER 'Показывать артикулы ном. группы' 'F10' inArticleCategory(c, a)
-    FILTERGROUP filtersBrand
-        FILTER 'Показывать артикулы бренда' 'F11' inArticleBrand(b, a)
-
-     FILTERGROUP filtersBalanceSku
+    FILTERGROUP filtersBalanceSku
         FILTER 'Ненулевые остатки' 'F5' currentBalanceSku(ss) DEFAULT
 
     OBJECTS sk=sku
