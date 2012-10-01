@@ -52,14 +52,14 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{priceABasePriceSetDocumentArticle}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="80" height="12">
 					<printWhenExpression><![CDATA[$F{priceADiscountPriceSetDocumentArticle}!=null]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right" verticalAlignment="Top"/>
 				<textFieldExpression><![CDATA[$F{priceADiscountPriceSetDocumentArticle}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="false">
 				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="80" height="12">
 					<printWhenExpression><![CDATA[$F{priceADiscountPriceSetDocumentArticle}==null]]></printWhenExpression>
 				</reportElement>
