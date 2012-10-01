@@ -1564,7 +1564,6 @@ customActionPDB[List<String> context, boolean dynamic] returns [LPWithParams pro
 	|   mailPDB=emailActionPropertyDefinitionBody[context, dynamic] { $property = $mailPDB.property; }
 	|	filePDB=fileActionPropertyDefinitionBody[context, dynamic] { $property = $filePDB.property; }
 	|	classPDB=changeClassActionPropertyDefinitionBody[context, dynamic] { $property = $classPDB.property; }
-	|	seekPDB=seekActionPropertyDefinitionBody[context, dynamic] { $property = $seekPDB.property; }
 	;
 
 			
@@ -1726,17 +1725,6 @@ requestInputActionPropertyDefinitionBody[List<String> context, boolean dynamic] 
 		|	(objID=ID)? PDB=actionPropertyDefinitionBody[context, dynamic]
 		)
 	;
-
-
-seekActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns [LPWithParams property]
-@after {
-	if (inPropParseState()) {
-		$property = self.addScriptedSeekActionProp($expr.property);
-	}
-}
-	:	'SEEK' expr=propertyExpression[context, dynamic]
-	;
-
 
 listActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns [LPWithParams property]
 @init {

@@ -1027,12 +1027,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(result, usedParams);
     }
 
-    public LPWithParams addScriptedSeekActionProp(LPWithParams property) throws ScriptingErrorLog.SemanticErrorException {
-        checkCalculationProperty(property.property);
-        LAP<?> seekProperty = addSAProp((LCP) property.property);
-        return new LPWithParams(seekProperty, property.usedParams);
-    }
-
     public LPWithParams wrapWithFlowAction(LPWithParams property) throws ScriptingErrorLog.SemanticErrorException {
         LAP<?> action = (LAP<?>) property.property;
         int intNum = action.listInterfaces.size();
