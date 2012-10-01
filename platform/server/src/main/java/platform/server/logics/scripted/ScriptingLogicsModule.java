@@ -464,7 +464,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         checkDuplicateProperty(name);
         checkDistinctParameters(namedParams);
         checkNamedParams(property, namedParams);
-        changePropertyName(property, name);
+
+        changePropertyName(property, name); // должно идти первым
 
         AbstractGroup group = (groupName == null ? null : findGroupByCompoundName(groupName));
         property.property.caption = (caption == null ? name : caption);
@@ -1024,6 +1025,12 @@ public class ScriptingLogicsModule extends LogicsModule {
         LP result = addForAProp(null, genSID(), "", !descending, ordersNotNull, recursive, elseAction != null, usedParams.size(), 
                 addClassName != null ? (CustomClass)findClassByCompoundName(addClassName) : null, condition!=null, getParamsPlainList(allCreationParams).toArray());
         return new LPWithParams(result, usedParams);
+    }
+
+    public LPWithParams addScriptedSeekActionProp(LPWithParams property) throws ScriptingErrorLog.SemanticErrorException {
+        checkCalculationProperty(property.property);
+        LAP<?> seekProperty = addSAProp((LCP) property.property);
+        return new LPWithParams(seekProperty, property.usedParams);
     }
 
     public LPWithParams wrapWithFlowAction(LPWithParams property) throws ScriptingErrorLog.SemanticErrorException {
