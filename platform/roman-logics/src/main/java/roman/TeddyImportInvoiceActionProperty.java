@@ -31,11 +31,12 @@ public class TeddyImportInvoiceActionProperty extends ImportBoxInvoiceActionProp
     protected SingleSheetImporter createImporter(ImportInputTable inputTable) {
         return new TeddyInvoiceImporter(inputTable, new Object[]{null, null, null, null, null,
                 new ImportField[]{invoiceSIDField, boxNumberField}, dateInvoiceField, null, null, null, null,
-                new ImportField[]{barCodeField, sidField}, compositionField, null, null, null, null, originalNameField,
-                null, sizeField, colorCodeField, colorNameField, unitQuantityField, unitPriceField, null, null,
+                barCodeField, compositionField, null, null, null, null,
+                new ImportField[]{originalNameField,subCategoryCodeField, subCategoryNameField},
+                sidField, sizeField, colorCodeField, colorNameField, unitQuantityField, unitPriceField, null, null,
                 RRPField, null, null, null, null, null, null, null, null, null, numberSkuField,
                 new ImportField[]{sidDestinationDataSupplierBoxField, unitNetWeightField, countryField,
                 customCodeField, customCode6Field, themeCodeField, themeNameField, genderField,
-                subCategoryCodeField, subCategoryNameField, collectionCodeField, collectionNameField}});
+                collectionCodeField, collectionNameField}});
     }
 }

@@ -47,6 +47,17 @@ public class TeddyInvoiceImporter extends SingleSheetImporter {
                     Date sDate = new Date(Integer.parseInt(value.substring(0, 4)) - 1900, Integer.parseInt(value.substring(5, 7)) - 1, Integer.parseInt(value.substring(8, 10)));
                     return DateClass.format(sDate);
                 }
+            case BARCODENUMBER: {
+                if (value.length() == 12) {
+                    int checkSum = 0;
+                    for (int i = 0; i <= 10; i = i + 2) {
+                        checkSum += Integer.valueOf(String.valueOf(value.charAt(i)));
+                        checkSum += Integer.valueOf(String.valueOf(value.charAt(i + 1))) * 3;
+                    }
+                    checkSum = (checkSum + 9) / 10;
+                    return value.concat(String.valueOf(checkSum));
+                }
+            }
             case W:
                 return String.valueOf(Double.valueOf(value) / 100);
             case X:
