@@ -472,6 +472,7 @@ public class SQLSession extends MutableObject {
                 PreparedStatement explainStatement = statement;
                 if(explainNoAnalyze)
                     explainStatement = getStatement("EXPLAIN " + command, paramObjects, connection, syntax);
+                System.out.println(explainStatement.toString());
                 executeExplain(explainStatement);
                 result = 100;
             }

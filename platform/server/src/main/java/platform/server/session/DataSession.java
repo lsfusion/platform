@@ -1305,4 +1305,11 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         return changeTable;
     }
 
+    public void pushVolatileStats() throws SQLException {
+        sql.pushVolatileStats(null);
+    }
+
+    public void popVolatileStats() throws SQLException {
+        sql.popVolatileStats(null);
+    }
 }

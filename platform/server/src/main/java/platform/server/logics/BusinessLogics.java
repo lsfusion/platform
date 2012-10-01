@@ -1136,8 +1136,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         try {
             DataSession session = createSession();
+            session.pushVolatileStats();
+
             IntegrationService service = new IntegrationService(session, table, asList(keyNavigatorElement), propsNavigatorElement, deletes);
             service.synchronize(true, false);
+
+            session.popVolatileStats();
             session.apply(this);
             session.close();
         } catch (Exception e) {
@@ -1160,8 +1164,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         ImportTable table = new ImportTable(asList(sidField, parentSidField, numberField), dataParents);
         try {
             DataSession session = createSession();
+            session.pushVolatileStats();
+
             IntegrationService service = new IntegrationService(session, table, asList(keyElement, keyParent), propsParent);
             service.synchronize(true, false);
+
+            session.popVolatileStats();
             session.apply(this);
             session.close();
         } catch (Exception e) {
@@ -1205,10 +1213,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         try {
             DataSession session = createSession();
+            session.pushVolatileStats();
 
             IntegrationService service = new IntegrationService(session, table, asList(keyForm, keyPropertyDraw, keyGroupObject), propsPropertyDraw, deletes);
             service.synchronize(true, false);
 
+            session.popVolatileStats();
             session.apply(this);
             session.close();
         } catch (Exception e) {
@@ -1246,10 +1256,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         try {
             DataSession session = createSession();
+            session.pushVolatileStats();
 
             IntegrationService service = new IntegrationService(session, table, asList(keyForm, keyGroupObject), propsGroupObject, deletes);
             service.synchronize(true, false);
 
+            session.popVolatileStats();
             session.apply(this);
             session.close();
         } catch (Exception e) {
@@ -1322,9 +1334,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         try {
             DataSession session = createSession();
+            session.pushVolatileStats();
+
             IntegrationService service = new IntegrationService(session, table, asList(keyProperty), properties, deletes);
             service.synchronize(true, false);
 
+            session.popVolatileStats();
             session.apply(this);
             session.close();
         } catch (Exception e) {
@@ -1353,9 +1368,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         try {
             DataSession session = createSession();
+            session.pushVolatileStats();
+
             IntegrationService service = new IntegrationService(session, table, asList(keyProperty, keyParent), properties);
             service.synchronize(true, false);
 
+            session.popVolatileStats();
             session.apply(this);
             session.close();
         } catch (Exception e) {
@@ -1402,12 +1420,15 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         try {
             DataSession session = createSession();
+            session.pushVolatileStats();
+
             IntegrationService service = new IntegrationService(session, table, asList(key), props, deletes);
             service.synchronize(true, false);
 
             service = new IntegrationService(session, table2, asList(key, key2), props2);
             service.synchronize(true, false);
 
+            session.popVolatileStats();
             session.apply(this);
             session.close();
         } catch (Exception e) {
@@ -2284,14 +2305,16 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         try {
             DataSession session = createSession();
+            session.pushVolatileStats();
+
             IntegrationService service = new IntegrationService(session, table, asList(tableKey, tableKeyKey), properties, deletes);
             service.synchronize(true, false);
 
             service = new IntegrationService(session, table2, asList(tableKey, tableColumnKey), properties2, deletes2);
             service.synchronize(true, false);
 
+            session.popVolatileStats();
             session.apply(this);
-
             session.close();
         } catch (Exception e) {
             throw new RuntimeException(e);
