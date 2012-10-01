@@ -17,7 +17,7 @@ public class SeekActionProperty extends SystemActionProperty {
     private final CalcProperty property;
 
     public SeekActionProperty(BaseClass baseClass, CalcProperty property) {
-        super("SEEKOBJECT" + (property!=null ? "_" + property.getSID() : null ),
+        super("seek" + (property!=null ? "_" + property.getSID() : "" ),
                 ServerResourceBundle.getString("logics.property.actions.seekobject") + (property!=null ? "(" + property.getSID() + ")" : null ),
                 new ValueClass[]{baseClass});
         this.property = property;

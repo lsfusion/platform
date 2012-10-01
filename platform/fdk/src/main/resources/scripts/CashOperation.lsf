@@ -459,43 +459,44 @@ FORM operationCashRegister 'Кассовые операции'
     OBJECTS o = outcomeCashOrder
     PROPERTIES(o) READONLY numberCashDocument, dateCashDocument, timeCashDocument, nameDepartmentStoreCashDocument,
                            numberCashRegisterCashDocument, sumCashOutcomeCashOrder, basisCashDocument, isPrintedOutcomeCashOrder
-    PROPERTIES(o) printOutcomeCashOrder, isCompleteCashOperation
+    PROPERTIES(o) printOutcomeCashOrder, isCompleteCashOperation FORCE GRID
     PROPERTIES printAllOutcomeCashOrder(dFrom, dTo) TODRAW o
     PROPERTIES(o) delete
     PROPERTIES addCollectionForm(d) TODRAW o, editCollectionForm(o)
-    PROPERTIES() fiscalUpdateData, fiscalXReport
-
     FILTERS departmentStoreCashDocument(o) == d,
             dateCashDocument(o) >= (dFrom AS DATE),
             dateCashDocument(o) <= (dTo AS DATE)
 
+    PROPERTIES() SHOWIF departmentStoreCurrentCashRegister() fiscalUpdateData, fiscalXReport
 ;
 
 DESIGN operationCashRegister FROM DEFAULT {
 
     NEW topContainer{
-
-       NEW actions {
-            caption = 'Действия с кассой';
+        childConstraints = TO THE BOTTOM;
+        NEW topRow1 {
             childConstraints = TO THE RIGHT;
-            ADD PROPERTY(fiscalUpdateData);
-            ADD PROPERTY(fiscalXReport);
-       }
-
-        ADD interval.box{
-            caption = 'Период';
-            childConstraints = TO THE RIGHT;
-            PROPERTY(objFrom) {
-                caption = 'Дата (с)';
+            ADD interval.box {
+                caption = 'Период';
+                childConstraints = TO THE RIGHT;
+                PROPERTY(objFrom) {
+                    caption = 'Дата (с)';
+                }
+                PROPERTY(objTo) {
+                    caption = 'Дата (по)';
+                }
             }
-            PROPERTY(objTo) {
-                caption = 'Дата (по)';
-            }
+            ADD d.box;
         }
 
-        ADD d.box;
-        NEW firstCase {
+        NEW actions {
+            caption = 'Действия с кассой';
+            childConstraints = TO THE RIGHTBOTTOM;
+            ADD PROPERTY(fiscalUpdateData) { font = 'Tahoma 24'; }
+            ADD PROPERTY(fiscalXReport) { font = 'Tahoma 24'; }
+        }
 
+        NEW firstCase {
             type = SPLITV;
             ADD i.box{
                 caption = 'ПКО';

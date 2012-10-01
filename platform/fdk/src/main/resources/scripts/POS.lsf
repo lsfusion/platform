@@ -500,8 +500,8 @@ closedCurrentZReport () = TRUE AND NOT currentZReport();
 
 createCurrentReceipt 'Создать новый чек' = ACTION () {
     IF currentZReport() THEN {
-        ADDOBJ receipt;
-        FOR r == addedObject() DO {
+        FOR ADDOBJ r = receipt DO {
+            EXEC seek(r);
             SET zReportReceipt(r) <- currentZReport();
             SET numberReceipt(r) <- maxNumberReceiptZReport(currentZReport()) (+) 1;
         }
@@ -607,7 +607,6 @@ postCashReceipt 'Наличными' = ACTION (receipt) {
 cancelReceipt 'Отменить чек' = ACTION (receipt) {
     IF sumReceiptDetailReceipt(receipt) THEN {
         EXEC cancel();
-
         EXEC createCurrentReceipt();
     }
 } EDITKEY 'shift F11' CONFIRM IN receiptActionGroup;
@@ -1091,18 +1090,20 @@ NAVIGATOR {
 fiscalZReport 'Закрыть Z-отчёт' = ABSTRACT ACTION() CONFIRM;
 fiscalZReport() += closeCurrentZReport() IF NOT sidModelCurrentCashRegister();
 
+currentZReportDepartmentStore() = currentZReport() AND departmentStoreCurrentCashRegister();
+closedCurrentZReportDepartmentStore() = closedCurrentZReport() AND departmentStoreCurrentCashRegister();
+
 EXTEND FORM operationCashRegister
-    PROPERTIES() READONLY numberCurrentZReport
-    PROPERTIES() fiscalZReport  SHOWIF currentZReport()
-    PROPERTIES() openCurrentZReport SHOWIF closedCurrentZReport()
+    PROPERTIES() READONLY numberCurrentZReport SHOWIF departmentStoreCurrentCashRegister()
+    PROPERTIES() fiscalZReport SHOWIF currentZReportDepartmentStore()
+    PROPERTIES() openCurrentZReport SHOWIF closedCurrentZReportDepartmentStore()
 ;
 
 EXTEND DESIGN operationCashRegister{
-
     actions {
-            ADD PROPERTY(fiscalZReport);
-            ADD PROPERTY(openCurrentZReport);
-            ADD PROPERTY(numberCurrentZReport);
+        ADD PROPERTY(fiscalZReport) { font = 'Tahoma 24'; }
+        ADD PROPERTY(openCurrentZReport) { font = 'Tahoma 24'; };
+        ADD PROPERTY(numberCurrentZReport) { font = 'Tahoma 24'; };
     }
 }
 
