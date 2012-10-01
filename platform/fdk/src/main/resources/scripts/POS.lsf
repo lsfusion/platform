@@ -551,6 +551,7 @@ DESIGN postReceiptPayment FROM DEFAULT {
 }
 
 postReceipt 'Смешанный платеж' = ACTION (receipt) {
+    SET zReportReceipt(receipt) <- currentZReport();
     IF sumReceiptDetailReceipt(receipt) THEN {
         ADDOBJ payment;
         FOR p == addedObject() DO {
@@ -574,6 +575,7 @@ postReceipt 'Смешанный платеж' = ACTION (receipt) {
 } EDITKEY 'F9' IN receiptActionGroup;
 
 postCardReceipt 'Карточкой' = ACTION (receipt) {
+    SET zReportReceipt(receipt) <- currentZReport();
     IF sumReceiptDetailReceipt(receipt) THEN {
         ADDOBJ payment;
         FOR p == addedObject() DO {
@@ -586,6 +588,7 @@ postCardReceipt 'Карточкой' = ACTION (receipt) {
 } EDITKEY 'F10' CONFIRM IN receiptActionGroup;
 
 postCashReceipt 'Наличными' = ACTION (receipt) {
+    SET zReportReceipt(receipt) <- currentZReport();
     IF sumReceiptDetailReceipt(receipt) THEN {
         ADDOBJ payment;
         FOR p == addedObject() DO {
@@ -677,6 +680,7 @@ DESIGN searchSkuSaleReceipt FROM DEFAULT {
 }
 
 searchSkuSaleReceipt 'Поиск' = ACTION (receipt) {
+    SET zReportReceipt(receipt) <- currentZReport();
     FORM searchSkuSaleReceipt OBJECTS st = departmentStoreReceipt(receipt) MODAL;
     IF formResult() == formResult.ok THEN {
         EXEC createReceiptSaleDetail(receipt, chosenObject('s'), idBarcodeSku(chosenObject('s')));
@@ -725,6 +729,7 @@ DESIGN scanBarcodeReturnReceipt FROM DEFAULT {
 }
 
 scanBarcodeReturnReceipt 'Ввести штрих-код' = ACTION (receipt) {
+    SET zReportReceipt(receipt) <- currentZReport();
     FORM barcodeInput MODAL;
     IF formResult() == formResult.ok THEN {
         LOCAL dialogBarcodeSku = sku();
@@ -758,6 +763,7 @@ FORM searchSkuReturnReceipt 'Поиск строки возврата'
 ;
 
 searchSkuReturnReceipt 'Поиск' = ACTION (receipt) {
+    SET zReportReceipt(receipt) <- currentZReport();
     FORM searchSkuReturnReceipt OBJECTS st = departmentStoreReceipt(receipt) MODAL;
     IF formResult() == formResult.ok THEN {
         EXEC createReceiptReturnDetail(receipt, chosenObject('r'), idBarcodeSku(skuReceiptSaleDetail(chosenObject('r'))));

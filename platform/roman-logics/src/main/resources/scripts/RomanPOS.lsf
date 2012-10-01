@@ -25,7 +25,7 @@ sumSkipAReceiptSaleDetailZReport 'Сумма (не бухг.)' (zReport) = GROUP
                                                    IF skipAReceiptSaleDetail (receiptSaleDetail)
                                                    BY zReportReceiptDetail (receiptSaleDetail);
 
-sumAccountReceiptDetailZReport 'Сумма учетная' (zReport) = sumReceiptDetailZReport (zReport) - sumSkipAReceiptSaleDetailZReport (zReport);
+sumAccountReceiptDetailZReport 'Сумма учетная' (zReport) = sumReceiptDetailZReport (zReport) (-) sumSkipAReceiptSaleDetailZReport (zReport);
 
 EXTEND FORM zReport PROPERTIES (z) sumSkipAReceiptSaleDetailZReport, sumAccountReceiptDetailZReport;
 EXTEND FORM zReports PROPERTIES (z) READONLY sumSkipAReceiptSaleDetailZReport, sumAccountReceiptDetailZReport;
