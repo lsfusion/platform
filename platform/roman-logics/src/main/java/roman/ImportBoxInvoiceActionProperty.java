@@ -3,6 +3,7 @@ package roman;
 import jxl.read.biff.BiffException;
 import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
 import org.xml.sax.SAXException;
+import roman.actions.ImportPreviewClientAction;
 import platform.interop.action.MessageClientAction;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.query.GroupType;
@@ -218,10 +219,21 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
         }
 
         Integer index = -1;
+        Integer invoiceSIDIndex = -1;
+        Integer dateInvoiceIndex = -1;
+        Integer unitQuantityIndex = -1;
+        Map<String, Date> invoiceList = new HashMap<String, Date>();
         for (int i = 0; i < table.fields.size(); i++) {
             if (table.fields.get(i).equals(customCodeField))
                 index = i;
+            else if (table.fields.get(i).equals(invoiceSIDField))
+                invoiceSIDIndex = i;
+            else if (table.fields.get(i).equals(dateInvoiceField))
+                dateInvoiceIndex = i;
+            else if(table.fields.get(i).equals(unitQuantityField))
+                unitQuantityIndex = i;
         }
+        Double quantityDocument = 0.0;
         if (index != -1) {
             for (List<Object> editingRow : table.data) {
                 String val = null;
@@ -231,6 +243,7 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
                         val = val + "0";
                 }
                 editingRow.set(index, val);
+                invoiceList.put((String) editingRow.get(invoiceSIDIndex), (Date) editingRow.get(dateInvoiceIndex));
             }
         }
 
@@ -241,8 +254,22 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
             keysArray = new ImportKey<?>[]{invoiceKey, articleKey, itemKey, colorKey, sizeKey, countryKey, customCategoryKey, customCategory6Key, themeKey, collectionKey, subCategoryKey, genderKey};
         }
 
-        new IntegrationService(context.getSession(), table, Arrays.asList(keysArray), properties).synchronize(false, false);
+        HashSet<String> result = (HashSet<String>) context.requestUserInteraction(new ImportPreviewClientAction(invoiceList));
+        if (result != null) {
+            List<List<Object>> editedData = new ArrayList<List<Object>>();
+            for (List<Object> editingRow : table.data) {
+                if (editingRow.get(invoiceSIDIndex) != null) {
+                    if (result.contains(editingRow.get(invoiceSIDIndex)))
+                        editedData.add(editingRow);
+                }
+            }
+            if (!editedData.isEmpty()) {
+                table.data = editedData;
+                new IntegrationService(context.getSession(), table, Arrays.asList(keysArray), properties).synchronize(false, false);
 
-        context.delayUserInterfaction(new MessageClientAction("Данные были успешно приняты", "Импорт"));
+                context.delayUserInterfaction(new MessageClientAction("Данные были успешно приняты", "Импорт"));
+            }
+        }
+
     }
 }

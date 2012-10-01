@@ -13,7 +13,7 @@ import java.util.Map;
 
 public class PlainDataTable<T> implements Iterable<PlainDataTable.Row> {
     public final List<T> fields; // todo [dale]: отрефакторить, не нужен тут public
-    public final List<List<Object>> data;
+    public List<List<Object>> data;
     protected final Map<T, Integer> fieldIndex;
 
     public PlainDataTable(List<T> fields, List<List<Object>> data) {
