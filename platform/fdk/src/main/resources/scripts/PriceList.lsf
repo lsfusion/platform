@@ -60,6 +60,8 @@ CLASS userPriceListPosted 'Закрытый прайс (польз.)' : userPric
 @defineDocumentInterfaceDetailSku(priceList, sku);
 @defineDocumentInterfaceDetailPrice(priceList);
 
+//@defineAddDetailDialogSkuStock(userPriceList, sku, stock, dialogSku);
+
 dataPriceListTypePriceList = ABSTRACT dataPriceListType (priceList) PERSISTENT;
 dataPriceListTypeUserPriceList = DATA dataPriceListType (userPriceList);
 dataPriceListTypePriceList (priceList) += dataPriceListTypeUserPriceList(priceList);
@@ -67,6 +69,68 @@ dataPriceListTypePriceList (priceList) += dataPriceListTypeUserPriceList(priceLi
 nameDataPriceListTypeUserPriceList 'Вид цены' (priceList) = name(dataPriceListTypeUserPriceList(priceList));
 
 dataPriceListTypePriceListDetail (detail) = dataPriceListTypePriceList(priceListPriceListDetail(detail)) PERSISTENT;
+
+FORM userPriceList 'Прайс'
+
+    OBJECTS p = userPriceList FIXED PANEL, d =userPriceListDetail
+    PROPERTIES(p) objectClassName, nameStockUserPriceList, nameNumeratorObject, numberObject, seriesObject, dateUserPriceList,
+                  timeUserPriceList, nameCurrencyUserPriceList, nameDataPriceListTypeUserPriceList, noteUserPriceList
+    PROPERTIES(p) prePostUserPriceList TODRAW d FORCE PANEL DRAWTOTOOLBAR
+
+    PROPERTIES(d) indexUserPriceListDetail, idBarcodeSkuUserPriceListDetail, nameSkuUserPriceListDetail,
+                  shortNameUOMSkuUserPriceListDetail, priceUserPriceListDetail
+    PROPERTIES(d) ADDOBJ, delete
+
+    FILTERS userPriceListUserPriceListDetail(d) == p
+
+    EDIT userPriceList OBJECT p
+;
+
+DESIGN userPriceList FROM DEFAULT {
+
+    NEW topContainer{
+
+        NEW headContainer {
+
+            caption = 'Шапка документа';
+            childConstraints = TO THE RIGHT;
+            ADD PROPERTY (objectClassName);
+            ADD PROPERTY (nameStockUserPriceList);
+            ADD PROPERTY (nameNumeratorObject);
+            ADD PROPERTY (numberObject);
+            ADD PROPERTY (seriesObject);
+            ADD PROPERTY (dateUserPriceList);
+            ADD PROPERTY (timeUserPriceList);
+        }
+
+        NEW propContainer {
+
+            caption = 'Параметры документа';
+            childConstraints = TO THE RIGHT;
+            ADD PROPERTY(nameCurrencyUserPriceList);
+            ADD PROPERTY(nameDataPriceListTypeUserPriceList);
+            ADD PROPERTY(noteUserPriceList);
+        }
+
+        ADD d.box;
+    }
+
+    ADD functions.box;
+}
+
+FORM userPriceLists 'Прайсы'
+
+    OBJECTS p = userPriceList
+    PROPERTIES(p) READONLY objectClassName, nameStockUserPriceList, nameNumeratorObject, numberObject, seriesObject, dateUserPriceList,
+                           timeUserPriceList, nameCurrencyUserPriceList, nameDataPriceListTypeUserPriceList, noteUserPriceList
+    PROPERTIES(p) ADDFORM, EDITFORM, delete
+
+    OBJECTS d =userPriceListDetail
+    PROPERTIES(d) READONLY indexUserPriceListDetail, idBarcodeSkuUserPriceListDetail, nameSkuUserPriceListDetail,
+                           shortNameUOMSkuUserPriceListDetail, priceUserPriceListDetail
+
+    FILTERS userPriceListUserPriceListDetail(d) == p
+;
 
 // ------- Расчет действующей цен ----- //
 
@@ -161,6 +225,7 @@ FORM priceListTypes 'Типы цен'
 NAVIGATOR {
     NEW priceListNavigator 'Управление ценами' {
         ADD priceListTypes;
+        ADD userPriceLists;
     }
 }
 
