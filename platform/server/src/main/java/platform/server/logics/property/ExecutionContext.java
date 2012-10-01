@@ -182,6 +182,10 @@ public class ExecutionContext<P extends PropertyInterface> {
         return override(keys, form, pushedUserInput);
     }
 
+    public <T extends PropertyInterface> ExecutionContext<T> override(Map<T, DataObject> keys, FormEnvironment<T> form) {
+        return override(keys, form, pushedUserInput);
+    }
+
     public <T extends PropertyInterface> ExecutionContext<T> override(Map<T, DataObject> keys, FormEnvironment<T> form, ObjectValue pushedUserInput) {
         return new ExecutionContext<T>(keys, pushedUserInput, pushedAddObject, env, form);
     }

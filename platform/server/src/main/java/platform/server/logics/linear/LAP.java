@@ -6,6 +6,7 @@ import platform.server.classes.ValueClass;
 import platform.server.logics.DataObject;
 import platform.server.logics.LogicsModule;
 import platform.server.logics.property.*;
+import platform.server.logics.property.actions.FormEnvironment;
 import platform.server.logics.property.actions.flow.FlowResult;
 import platform.server.session.DataSession;
 
@@ -31,7 +32,7 @@ public class LAP<T extends PropertyInterface> extends LP<T, ActionProperty<T>> {
     }
 
     public FlowResult execute(ExecutionContext<?> context, DataObject... objects) throws SQLException {
-        return property.execute(context.override(getMapValues(objects), null, null));
+        return property.execute(context.override(getMapValues(objects), (FormEnvironment<T>) null));
     }
 
     public <P extends PropertyInterface> void setEventAction(LogicsModule lm, LCP<P> lp, Integer... mapping) {
