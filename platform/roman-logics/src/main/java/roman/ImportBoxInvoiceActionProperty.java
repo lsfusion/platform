@@ -221,7 +221,7 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
         Integer index = -1;
         Integer invoiceSIDIndex = -1;
         Integer dateInvoiceIndex = -1;
-        Integer unitQuantityIndex = -1;
+        //Integer unitQuantityIndex = -1;
         Map<String, Date> invoiceList = new HashMap<String, Date>();
         for (int i = 0; i < table.fields.size(); i++) {
             if (table.fields.get(i).equals(customCodeField))
@@ -230,10 +230,10 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
                 invoiceSIDIndex = i;
             else if (table.fields.get(i).equals(dateInvoiceField))
                 dateInvoiceIndex = i;
-            else if(table.fields.get(i).equals(unitQuantityField))
-                unitQuantityIndex = i;
+            //else if(table.fields.get(i).equals(unitQuantityField))
+            //    unitQuantityIndex = i;
         }
-        Double quantityDocument = 0.0;
+        //Double quantityDocument = 0.0;
         if (index != -1) {
             for (List<Object> editingRow : table.data) {
                 String val = null;
