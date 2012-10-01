@@ -61,7 +61,7 @@ public class TeddyInvoiceImporter extends SingleSheetImporter {
             case W:
                 return String.valueOf(Double.valueOf(value) / 100);
             case X:
-                return String.valueOf(Double.valueOf(value) / 1000000);
+                return String.valueOf(Double.valueOf(value) / 100000);
             case AA:
                 return String.valueOf(Double.valueOf(value) / 100);
             default:
