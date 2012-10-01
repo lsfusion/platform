@@ -52,25 +52,25 @@ public abstract class WindowElement {
     public abstract Widget getView();
 
     public void changeInitialSize(int width, int height) {
-        if (width > initialWidth) {
-            initialWidth = width;
+        if (parent == null) {
+            if (width > initialWidth) {
+                initialWidth = width;
+            }
+            if (height > initialHeight) {
+                initialHeight = height;
+            }
+            resize();
         }
-        if (height > initialHeight) {
-            initialHeight = height;
-        }
-        resize();
     }
 
     // пока подгонка размера работает только для тулбарных и панельных навигаторов, лежащих в главном окне
     private void resize() {
-        if (parent == null) {
-            DockLayoutPanel.Direction direction = main.getWidgetDirection(getView());
-            if (direction == DockLayoutPanel.Direction.NORTH || direction == DockLayoutPanel.Direction.SOUTH) {
-                main.setWidgetSize(getView(), initialHeight);
-            }
-            if (direction == DockLayoutPanel.Direction.EAST || direction == DockLayoutPanel.Direction.WEST) {
-                main.setWidgetSize(getView(), initialWidth);
-            }
+        DockLayoutPanel.Direction direction = main.getWidgetDirection(getView());
+        if (direction == DockLayoutPanel.Direction.NORTH || direction == DockLayoutPanel.Direction.SOUTH) {
+            main.setWidgetSize(getView(), initialHeight);
+        }
+        if (direction == DockLayoutPanel.Direction.EAST || direction == DockLayoutPanel.Direction.WEST) {
+            main.setWidgetSize(getView(), initialWidth);
         }
     }
 }

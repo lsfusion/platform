@@ -1,18 +1,15 @@
 package platform.gwt.form2.client.window;
 
-import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.SplitLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 public class SplitWindowElement extends WindowElement {
     private boolean vertical;
 
-    private List<WindowElement> children = new ArrayList<WindowElement>();
+    // with visibility
+    private LinkedHashMap<WindowElement, Boolean> children = new LinkedHashMap<WindowElement, Boolean>();
 
     private SplitLayoutPanel panel = new SplitLayoutPanel();
 
@@ -22,14 +19,21 @@ public class SplitWindowElement extends WindowElement {
     }
 
     public void addElement(WindowElement element) {
-        if (!children.contains(element)) {
-            children.add(element);
+        if (!children.containsKey(element)) {
+            children.put(element, true);
         }
         element.parent = this;
+
+        List<WindowElement> sortedList = new ArrayList<WindowElement>(children.keySet());
+        Collections.sort(sortedList, COORDINATES_COMPARATOR);
+        LinkedHashMap<WindowElement, Boolean> sortedMap = new LinkedHashMap<WindowElement, Boolean>();
+        for (WindowElement window : sortedList) {
+            sortedMap.put(window, children.get(window));
+        }
+        children = sortedMap;
     }
 
     public Widget getView() {
-        Collections.sort(children, COORDINATES_COMPARATOR);
         return panel;
     }
 
@@ -45,37 +49,39 @@ public class SplitWindowElement extends WindowElement {
 
     @Override
     public void setWindowVisible(WindowElement window) {
-        Widget windowView = window.getView();
-        if (panel.getWidgetIndex(windowView) == -1) {
-            if (children.indexOf(window) == children.size() - 1) {
-                panel.add(windowView);
-            } else {
-                for (int i = children.indexOf(window) + 1; i < children.size(); i++) {
-                    Widget beforeWidget = children.get(i).getView();
-                    if (panel.getWidgetIndex(beforeWidget) != -1) {
-                        if (vertical) {
-                            panel.insert(windowView, DockLayoutPanel.Direction.NORTH, window.initialHeight, beforeWidget);
-                        } else {
-                            panel.insert(windowView, DockLayoutPanel.Direction.WEST, window.initialWidth, beforeWidget);
-                        }
-                        if (panel.getWidgetCount() == 1) {
-                            setVisible(true);
-                        }
-                        return;
-                    }
-                }
-            }
+        children.put(window, true);
+        if (panel.getWidgetIndex(window.getView()) == -1) {
+            redraw();
         }
     }
 
     @Override
     public void setWindowInvisible(WindowElement window) {
+        children.put(window, false);
         if (panel.getWidgetIndex(window.getView()) != -1) {
-            panel.remove(window.getView());
-            panel.forceLayout();
-            if (panel.getWidgetCount() == 0) {
-                setVisible(false);
+            redraw();
+        }
+    }
+
+    private void redraw() {
+        panel.clear();
+        ArrayList<WindowElement> visibleWindows = new ArrayList<WindowElement>();
+        for (WindowElement window : children.keySet()) {
+            if (children.get(window)) {
+                visibleWindows.add(window);
             }
         }
+        if (!visibleWindows.isEmpty()) {
+            for (int i = 0; i < visibleWindows.size() - 1; i++) {
+                WindowElement toAdd = visibleWindows.get(i);
+                if (vertical) {
+                    panel.addNorth(toAdd.getView(), toAdd.initialHeight);
+                } else {
+                    panel.addWest(toAdd.getView(), toAdd.initialWidth);
+                }
+            }
+            panel.add(visibleWindows.get(visibleWindows.size() - 1).getView());
+        }
+        setVisible(panel.getWidgetCount() > 0);
     }
 }

@@ -291,14 +291,18 @@ public abstract class WindowContainer extends SplitLayoutPanel {
     private void setDefaultVisible() {
         for (GAbstractWindow window : allWindows.keySet()) {
             WindowElement windowElement = allWindows.get(window);
-            windowElement.setVisible(window.visible);
+            if (windowElement != null) {
+                windowElement.setVisible(window.visible);
+            }
         }
     }
 
     public void updateVisibility(Map<GAbstractWindow, Boolean> windows) {
         for (Map.Entry<GAbstractWindow, Boolean> entry : windows.entrySet()) {
             WindowElement windowElement = allWindows.get(entry.getKey());
-            windowElement.setVisible(entry.getValue());
+            if (windowElement != null) {
+                windowElement.setVisible(entry.getValue());
+            }
         }
     }
 

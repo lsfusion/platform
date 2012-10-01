@@ -63,9 +63,9 @@ public class TabbedWindowElement extends WindowElement {
     public void setWindowInvisible(WindowElement window) {
         if (panel.getWidgetIndex(window.getView()) != -1) {
             panel.remove(window.getView());
-            if (panel.getWidgetCount() == 0) {
-                setVisible(false);
-            }
+        }
+        if (panel.getWidgetCount() == 0) {
+            setVisible(false);
         }
     }
 }
