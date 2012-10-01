@@ -1,17 +1,17 @@
-MODULE SaleInvoice;
+MODULE ReturnInvoice;
 
-REQUIRE SaleOrder, Invoice;
+REQUIRE Invoice, ReturnOrder
+;
 
-NAMESPACE Sale;
+NAMESPACE Return;
 
 
 //----------------------------------------------- Накладная ---------------------------------------------------//
 
-@defineInvoice(' (продажа)');
+@defineInvoice(' (возврат)');
 
 NAVIGATOR {
-    saleNavigator {
+    returnNavigator {
         ADD userInvoices;
     }
 }
-

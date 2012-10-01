@@ -26,6 +26,9 @@ REQUIRE System,
         SaleOrder,
         SaleInvoice,
         SaleShipment,
+        ReturnOrder,
+        ReturnInvoice,
+        ReturnShipment,
         Employee,
         Store,
         ListRegister,
@@ -364,6 +367,7 @@ widthPackItem 'Ширина упаковки' = DATA NUMERIC[8,2] (item) IN size
 heightPackItem 'Высота упаковки' = DATA NUMERIC[8,2] (item) IN sizeGroup;
 grossWeightPackItem 'Вес брутто упаковки' = DATA NUMERIC[9,3] (item) IN manufactoryGroup;
 quantityPackItem 'Количество в грузовом месте' = DATA NUMERIC[9,3] (item) IN orderGroup;
+quantityPackSku(sku) += quantityPackItem(sku);
 
 //retailGroup
 minQuantityOrderItem 'Минимальный заказ' = DATA INTEGER (item) IN orderGroup;
@@ -7106,6 +7110,7 @@ NAVIGATOR {
     }
     NEW wholeSale 'Оптовая торговля' TO formsToolbar {
         ADD saleNavigator;
+        ADD returnNavigator;
         ADD priceListNavigator;
     }
 

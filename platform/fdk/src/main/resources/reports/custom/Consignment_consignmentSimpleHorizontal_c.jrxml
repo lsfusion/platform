@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="c" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
 	<property name="ireport.zoom" value="1.5"/>
-	<property name="ireport.x" value="268"/>
-	<property name="ireport.y" value="116"/>
+	<property name="ireport.x" value="3"/>
+	<property name="ireport.y" value="65"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
 		<box>
 			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
@@ -430,7 +430,7 @@
 					</textElement>
 					<textFieldExpression><![CDATA[" "]]></textFieldExpression>
 				</textField>
-				<textField isStretchWithOverflow="true" pattern="#,##0.##" isBlankWhenNull="true">
+				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="628" y="0" width="82" height="14" backcolor="#FFFFFF"/>
 					<textElement textAlignment="Right">
 						<font size="9"/>
@@ -451,14 +451,14 @@
 					</textElement>
 					<textFieldExpression><![CDATA[" "]]></textFieldExpression>
 				</textField>
-				<textField isStretchWithOverflow="true" pattern="#,##0.##" isBlankWhenNull="true">
+				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="559" y="0" width="69" height="14" backcolor="#FFFFFF"/>
 					<textElement textAlignment="Right">
 						<font size="9"/>
 					</textElement>
 					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{sumVATConsignmentDetailConsignment},0)]]></textFieldExpression>
 				</textField>
-				<textField isStretchWithOverflow="true" pattern="#,##0.##" isBlankWhenNull="true">
+				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="446" y="0" width="71" height="14" backcolor="#FFFFFF"/>
 					<textElement textAlignment="Right">
 						<font size="9"/>
@@ -992,7 +992,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{quantityConsignmentDetail},0.0)]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="390" y="0" width="56" height="12"/>
 				<box>
 					<topPen lineWidth="0.5"/>
@@ -1005,7 +1005,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{priceConsignmentDetail},0)]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="446" y="0" width="71" height="12"/>
 				<box>
 					<topPen lineWidth="0.5"/>
@@ -1031,7 +1031,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{vatConsignmentDetail},0)]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="559" y="0" width="69" height="12"/>
 				<box>
 					<topPen lineWidth="0.5"/>
@@ -1044,7 +1044,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{sumVATConsignmentDetail},0)]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="628" y="0" width="82" height="12"/>
 				<box>
 					<topPen lineWidth="0.5"/>
@@ -1134,7 +1134,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{quantityConsignmentDetail},0.0)]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="390" y="0" width="56" height="12">
 					<printWhenExpression><![CDATA[$F{isWareConsignment} != null && $F{warePriceConsignmentDetail} != null]]></printWhenExpression>
 				</reportElement>
@@ -1147,7 +1147,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{wareSupplierPriceConsignmentDetail},0)]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="446" y="0" width="71" height="12">
 					<printWhenExpression><![CDATA[$F{isWareConsignment} != null && $F{warePriceConsignmentDetail} != null]]></printWhenExpression>
 				</reportElement>
@@ -1173,7 +1173,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{valueWareRangeConsignmentDetail},0)]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="559" y="0" width="69" height="12">
 					<printWhenExpression><![CDATA[$F{isWareConsignment} != null && $F{warePriceConsignmentDetail} != null]]></printWhenExpression>
 				</reportElement>
@@ -1186,7 +1186,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{wareVATSumConsignmentDetail},0)]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="628" y="0" width="82" height="12">
 					<printWhenExpression><![CDATA[$F{isWareConsignment} != null && $F{warePriceConsignmentDetail} != null]]></printWhenExpression>
 				</reportElement>

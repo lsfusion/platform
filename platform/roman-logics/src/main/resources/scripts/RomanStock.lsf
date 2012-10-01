@@ -139,6 +139,8 @@ EXTEND FORM costSkuLedger
 ;
 
 quantityPackSku 'Количество в грузовом месте' = DATA NUMERIC[9,3] (sku);
+Stock.quantityPackSku(sku) += RomanStock.quantityPackSku(sku);
+Stock.netWeightSku(sku) += RomanLogicsModule.netWeightSku(sku);
 
 FORM batchADialogForm 'Партия'
     OBJECTS ba = batchA

@@ -1,0 +1,26 @@
+MODULE ReturnShipment;
+
+REQUIRE Shipment, ReturnInvoice
+;
+
+NAMESPACE Return;
+
+
+//----------------------------------------------- Поставка ---------------------------------------------------//
+
+@defineShipment(inLIFOSkuLedger, ' (возврат)');
+
+// Проводим по регистру
+
+@implementSkuLedger(shipment, sku, stock);
+quantityInLIFOSkuLedger (ledger) += quantityShipmentDetail(ledger);
+@implementSkuLedgerInLIFOBalance(shipment, sku, stock);
+sumInSkuLedger(ledger) += sumShipmentDetail(ledger);
+
+// ------------- Навигатор --------- //
+
+NAVIGATOR {
+    returnNavigator {
+        ADD userShipments;
+    }
+}

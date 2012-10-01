@@ -20,14 +20,14 @@ PRIORITY Utils, Stock;
 
 //----------------------------------------------- Заказ ---------------------------------------------------//
 
-META defineOrder(dumb)
+META defineOrder(sign)
 
-    CLASS ABSTRACT order 'Заказ ';
-    CLASS ABSTRACT orderDetail 'Строка заказа ' : named;
+    CLASS ABSTRACT order 'Заказ'###sign;
+    CLASS ABSTRACT orderDetail 'Строка заказа'###sign : named;
 
-    CLASS userOrder 'Заказ (польз.)' : order, historyObject, numeratedDocument;
-    CLASS userOrderDetail 'Строка заказа (польз.)' : orderDetail;
-    CLASS userOrderPosted 'Закрытый заказ (польз.)' : userOrder, postedObject;
+    CLASS userOrder 'Заказ (польз.)'###sign : order, historyObject, numeratedDocument;
+    CLASS userOrderDetail 'Строка заказа (польз.)'###sign : orderDetail;
+    CLASS userOrderPosted 'Закрытый заказ (польз.)'###sign : userOrder, postedObject;
 
     @defineDocumentInterface(order);
 
@@ -36,7 +36,7 @@ META defineOrder(dumb)
     @defineDocumentInterfaceDataStock(order, stock, 'Склад');
     @defineDocumentInterfacePosted(order);
 
-    @defineDocumentInterfaceDescription(order, 'Заказ');
+    @defineDocumentInterfaceDescription(order, 'Заказ'###sign);
 
     @defineDocumentInterfaceCurrency(order);
     @deriveDocumentCurrency(userOrder, stock);
@@ -64,7 +64,7 @@ META defineOrder(dumb)
 
 // --------------------------- Формы Заказа ---------------------------------
 
-    FORM userOrder 'Заказ'
+    FORM userOrder 'Заказ'###sign
         OBJECTS o = userOrder FIXED PANEL
         PROPERTIES (o) objectClassName, nameStockUserOrder, nameNumeratorObject, numberObject, seriesObject, dateUserOrder, timeUserOrder,
                        nameCustomerUserOrder, nameCurrencyUserOrder, namePriceListTypeUserOrder, noteUserOrder,
@@ -135,7 +135,7 @@ META defineOrder(dumb)
     @defineDocumentSkuStock(userOrder);
     @extendDocumentFormSkuStock(userOrder, userOrder, o);
 
-    FORM userOrders 'Заказы'
+    FORM userOrders 'Заказы'###sign
         OBJECTS o = userOrder
         PROPERTIES (o) READONLY isPostedUserOrder FORCE GRID, objectClassName, numberObject, seriesObject, dateUserOrder, timeUserOrder,
                                 nameStockUserOrder, nameCustomerUserOrder, nameCurrencyUserOrder, namePriceListTypeUserOrder, noteUserOrder,
@@ -187,7 +187,7 @@ META defineOrder(dumb)
         }
     }
 
-    FORM orders 'Заказы'
+    FORM orders 'Заказы'###sign
         OBJECTS o = order
         PROPERTIES (o) READONLY isPostedOrder FORCE GRID, objectClassName, numberOrder, seriesOrder, dateOrder, timeOrder,
                                 nameStockOrder, nameCustomerOrder, nameCurrencyOrder, noteOrder,

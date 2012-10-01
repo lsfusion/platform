@@ -471,6 +471,7 @@ volumeItem 'Объём' = DATA NUMERIC[9,3] (item) IN sizeGroup;
 // Вес нетто
 netWeightItem 'Вес нетто' = DATA NUMERIC[9,3] (item) IN sizeGroup;
 @defineItemAttribute(netWeight, 'Вес нетто', sizeGroup, double);
+netWeightSku(sku) += netWeightItem(sku);
 
 // Вес брутто
 grossWeightItem 'Вес брутто (кг)' = DATA NUMERIC[9,3] (item) IN sizeGroup;

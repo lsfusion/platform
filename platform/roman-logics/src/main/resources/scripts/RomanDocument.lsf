@@ -2,14 +2,14 @@ MODULE RomanDocument;
 
 REQUIRE Document, Stock, Barcode, StorePrice;
 
-// ----------------------------- количество упаковок и вес товаров ----------------------- //
-META defineDocumentDetailPackWeightSku (object)
-    packQuantity###object##Detail 'Количество грузовых мест' (idetail) = round0(quantity###object##Detail(idetail)/
-        UNION OVERRIDE 1 IF idetail IS object##Detail, quantityPackSku(sku###object##Detail(idetail)));
-
-    grossWeight###object##Detail 'Масса груза, т.' (idetail) = round6(
-        netWeightSku(sku###object##Detail(idetail))*quantity###object##Detail(idetail)/1000);
-END
+//// ----------------------------- количество упаковок и вес товаров ----------------------- //
+//META defineDocumentDetailPackWeightSku (object)
+//    packQuantity###object##Detail 'Количество грузовых мест' (idetail) = round0(quantity###object##Detail(idetail)/
+//        UNION OVERRIDE 1 IF idetail IS object##Detail, quantityPackSku(sku###object##Detail(idetail)));
+//
+//    grossWeight###object##Detail 'Масса груза, т.' (idetail) = round6(
+//        netWeightSku(sku###object##Detail(idetail))*quantity###object##Detail(idetail)/1000);
+//END
 
 // для использования метакода должно быть определено свойство sku###object##Detail
 META defineDocumentDetailSkuArticle (object)

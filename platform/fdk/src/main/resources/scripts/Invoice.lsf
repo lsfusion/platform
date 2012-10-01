@@ -1,18 +1,18 @@
 MODULE Invoice;
 
-REQUIRE Order;
+REQUIRE Order, Consignment;
 
 
 //----------------------------------------------- Накладная ---------------------------------------------------//
 
-META defineInvoice(dumb)
+META defineInvoice(sign)
 
-    CLASS ABSTRACT invoice 'Накладная ';  //consignment
-    CLASS ABSTRACT invoiceDetail 'Строка накладной ';         //consignmentDetail
+    CLASS ABSTRACT invoice 'Накладная'###sign:  consignment;
+    CLASS ABSTRACT invoiceDetail 'Строка накладной'###sign: consignmentDetail;
 
-    CLASS userInvoice 'Накладная (польз.)' : invoice, historyObject, numeratedDocument;
-    CLASS userInvoiceDetail 'Строка накладной (польз.)' : invoiceDetail;
-    CLASS userInvoicePosted 'Закрытая накладная (польз.)' : userInvoice, postedObject;
+    CLASS userInvoice 'Накладная (польз.)'###sign : invoice, historyObject, numeratedDocument;
+    CLASS userInvoiceDetail 'Строка накладной (польз.)'###sign : invoiceDetail;
+    CLASS userInvoicePosted 'Закрытая накладная (польз.)'###sign : userInvoice, postedObject;
 
     @defineDocumentInterface(invoice);
 
@@ -21,7 +21,7 @@ META defineInvoice(dumb)
     @defineDocumentInterfaceDataStock(invoice, stock, 'Склад');
     @defineDocumentInterfacePosted(invoice);
 
-    @defineDocumentInterfaceDescription(invoice, 'Накладная');
+    @defineDocumentInterfaceDescription(invoice, 'Накладная'###sign);
 
     @defineDocumentInterfaceCurrency(invoice);
     @deriveDocumentCurrency(userInvoice, stock);
@@ -113,7 +113,7 @@ META defineInvoice(dumb)
 
     inStockOrder 'Связь' (stock, order) = GROUP SUM 1 IF stockOrderDetail(orderDetail) == stock BY stock, orderOrderDetail(orderDetail);
 
-    FORM stockOrders 'Заказы'
+    FORM stockOrders 'Заказы'###sign
         OBJECTS s = stock FIXED PANEL
         PROPERTIES (s) READONLY name
         OBJECTS c = customer FIXED PANEL
@@ -195,7 +195,7 @@ META defineInvoice(dumb)
 
 // --------------------------- Формы ---------------------------------- //
 
-    FORM userInvoice 'Накладная'
+    FORM userInvoice 'Накладная'###sign
         OBJECTS i = userInvoice FIXED PANEL
         PROPERTIES (i) objectClassName, nameStockUserInvoice, nameNumeratorObject, numberObject, seriesObject, dateUserInvoice, timeUserInvoice,
                        nameCustomerUserInvoice, nameCurrencyUserInvoice, namePriceListTypeUserInvoice, noteUserInvoice,
@@ -269,7 +269,7 @@ META defineInvoice(dumb)
     @defineDocumentSku(userInvoice);
     @extendDocumentFormSku(userInvoice, userInvoice, i);
 
-    FORM userInvoices 'Накладные'
+    FORM userInvoices 'Накладные'###sign
         OBJECTS i = userInvoice
         PROPERTIES (i) READONLY isPostedUserInvoice FORCE GRID, objectClassName, numberObject, seriesObject, dateUserInvoice, timeUserInvoice,
                                 nameStockUserInvoice, nameCustomerUserInvoice, nameCurrencyUserInvoice, namePriceListTypeUserInvoice, noteUserInvoice,
@@ -327,7 +327,7 @@ META defineInvoice(dumb)
         }
     }
 
-    FORM invoices 'Накладные'
+    FORM invoices 'Накладные'###sign
         OBJECTS i = invoice
         PROPERTIES (i) READONLY isPostedInvoice FORCE GRID, objectClassName, numberInvoice, seriesInvoice, dateInvoice, timeInvoice,
                                 nameStockInvoice, nameCustomerInvoice, nameCurrencyInvoice, noteInvoice,
@@ -371,6 +371,70 @@ META defineInvoice(dumb)
                         }
                     }
                 }
+            }
+        }
+    }
+
+// Товарные накладные
+
+@defineDocumentDetailPackWeightSku(invoice);
+@defineConsignmentInterface(invoice);
+@implementConsignmentDetailSku(invoice);
+
+senderConsignment (consignment) += companyStock(stockInvoice(consignment));
+recipientConsignment (consignment) += customerInvoice(consignment);
+currencyConsignment (consignment) += currencyInvoice(consignment);
+
+priceConsignmentDetail (consignmentDetail) += priceInvoiceDetail(consignmentDetail);
+
+sumConsignmentDetail (consignmentDetail) += sumInvoiceDetail (consignmentDetail);
+
+vatConsignmentDetail (consignmentDetail) += valueVATInvoiceDetail(consignmentDetail);
+
+sumVATConsignmentDetail (consignmentDetail) +=  VATSumInvoiceDetail(consignmentDetail);
+
+sumInvoiceConsignmentDetail (consignmentDetail) += invoiceSumInvoiceDetail(consignmentDetail);
+
+shortNameUOMConsignmentDetail (consignmentDetail) += shortNameUOMSku(skuInvoiceDetail (consignmentDetail));
+
+//noteInvoiceWHOutDetail (invoiceWHOutDetail) = [FORMULA STRING[30] '\'Цена импортера:\' ||  \' \' || CAST($1 AS TEXT)'](
+//    importerPriceBatchA(batchAInvoiceWHOutDetail(invoiceWHOutDetail)));
+
+//noteConsignmentDetail (consignmentDetail) += noteInvoiceWHOutDetail(consignmentDetail) IF
+//    importerPriceBatchA(batchAInvoiceWHOutDetail(consignmentDetail)) != supplierPriceInvoiceWHOutDetail(consignmentDetail);
+
+    EXTEND FORM  userInvoices
+        PROPERTIES (i)  FORCE PANEL printConsignmentVerticalA, printConsignmentHorizontalA,
+                         printConsignmentVerticalB, printConsignmentHorizontalB,
+                         printConsignmentAttach, printConsignmentSimpleHorizontal, editConsignment,
+                         printConsignmentSimpleVertical, printConsignmentSimpleAttach
+    ;
+
+    EXTEND DESIGN userInvoices {
+        printContainer {
+            NEW case55{
+                childConstraints = TO THE RIGHT;
+
+                NEW contOne {
+                    title = 'Накладная';
+                    ADD PROPERTY(editConsignment);
+                }
+                NEW tn{
+                    childConstraints = TO THE RIGHT;
+                    title = 'ТН-2';
+                    ADD PROPERTY(printConsignmentSimpleVertical);
+                    ADD PROPERTY(printConsignmentSimpleHorizontal);
+                    ADD PROPERTY(printConsignmentSimpleAttach);
+                }
+            }
+            NEW ttn1{
+                childConstraints = TO THE RIGHT;
+                title = 'ТТН-1';
+                ADD PROPERTY(printConsignmentVerticalA);
+                ADD PROPERTY(printConsignmentHorizontalA);
+                ADD PROPERTY(printConsignmentVerticalB);
+                ADD PROPERTY(printConsignmentHorizontalB);
+                ADD PROPERTY(printConsignmentAttach);
             }
         }
     }

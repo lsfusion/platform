@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="c" pageWidth="595" pageHeight="842" columnWidth="575" leftMargin="10" rightMargin="10" topMargin="10" bottomMargin="10">
 	<property name="ireport.zoom" value="3.0"/>
-	<property name="ireport.x" value="890"/>
+	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
 		<box>
@@ -86,6 +86,7 @@
 	<field name="numberObject" class="java.lang.String"/>
 	<field name="wareSumConsignmentDetail" class="java.lang.Double"/>
 	<field name="sumKgGrossWeightConsignment" class="java.lang.Double"/>
+	<field name="isCurrencyConsignment" class="java.lang.Boolean"/>
 	<variable name="npp" class="java.lang.Integer" calculation="Count">
 		<variableExpression><![CDATA[0]]></variableExpression>
 		<initialValueExpression><![CDATA[new Integer(1)]]></initialValueExpression>
@@ -103,13 +104,6 @@
 			<band/>
 			<band/>
 			<band height="68">
-				<staticText>
-					<reportElement style="GroupCellStyle0" positionType="Float" mode="Transparent" x="198" y="15" width="42" height="40"/>
-					<textElement textAlignment="Center">
-						<font size="8"/>
-					</textElement>
-					<text><![CDATA[Цена, руб.]]></text>
-				</staticText>
 				<staticText>
 					<reportElement style="GroupCellStyle0" mode="Transparent" x="369" y="55" width="53" height="13"/>
 					<textElement textAlignment="Center">
@@ -179,13 +173,6 @@
 					<text><![CDATA[Ставка НДС, %]]></text>
 				</staticText>
 				<staticText>
-					<reportElement style="GroupCellStyle0" positionType="Float" mode="Transparent" x="369" y="15" width="53" height="40"/>
-					<textElement textAlignment="Center">
-						<font size="8"/>
-					</textElement>
-					<text><![CDATA[Стоимость  с НДС, руб.]]></text>
-				</staticText>
-				<staticText>
 					<reportElement style="GroupCellStyle0" mode="Transparent" x="460" y="55" width="30" height="13"/>
 					<textElement textAlignment="Center">
 						<font size="8"/>
@@ -228,13 +215,6 @@
 					<text><![CDATA[Примечание]]></text>
 				</staticText>
 				<staticText>
-					<reportElement style="GroupCellStyle0" positionType="Float" mode="Transparent" x="240" y="15" width="47" height="40"/>
-					<textElement textAlignment="Center">
-						<font size="8"/>
-					</textElement>
-					<text><![CDATA[Стоимость, руб.]]></text>
-				</staticText>
-				<staticText>
 					<reportElement style="GroupCellStyle0" positionType="Float" mode="Transparent" x="136" y="15" width="32" height="40"/>
 					<textElement textAlignment="Center">
 						<font size="8"/>
@@ -262,6 +242,42 @@
 					</textElement>
 					<text><![CDATA[Сумма НДС, руб.]]></text>
 				</staticText>
+				<textField pattern="" isBlankWhenNull="false">
+					<reportElement style="GroupCellStyle0" positionType="Float" mode="Transparent" x="198" y="15" width="42" height="40"/>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.5"/>
+						<rightPen lineWidth="0.5"/>
+					</box>
+					<textElement textAlignment="Center">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Цена, руб."]]></textFieldExpression>
+				</textField>
+				<textField pattern="" isBlankWhenNull="false">
+					<reportElement style="GroupCellStyle0" positionType="Float" mode="Transparent" x="240" y="15" width="47" height="40"/>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.5"/>
+						<rightPen lineWidth="0.5"/>
+					</box>
+					<textElement textAlignment="Center">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Стоимость, руб."]]></textFieldExpression>
+				</textField>
+				<textField pattern="" isBlankWhenNull="false">
+					<reportElement style="GroupCellStyle0" positionType="Float" mode="Transparent" x="369" y="15" width="53" height="40"/>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.5"/>
+						<rightPen lineWidth="0.5"/>
+					</box>
+					<textElement textAlignment="Center">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Сумма с НДС, руб."]]></textFieldExpression>
+				</textField>
 			</band>
 		</groupHeader>
 		<groupFooter>
@@ -280,7 +296,7 @@
 					</textElement>
 					<textFieldExpression><![CDATA["ИТОГО "]]></textFieldExpression>
 				</textField>
-				<textField pattern="#,##0" isBlankWhenNull="true">
+				<textField pattern="#,##0.###" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" x="240" y="0" width="47" height="14" backcolor="#FFFFFF"/>
 					<textElement textAlignment="Right">
 						<font size="9"/>
@@ -294,7 +310,7 @@
 					</textElement>
 					<textFieldExpression><![CDATA[" "]]></textFieldExpression>
 				</textField>
-				<textField pattern="#,##0" isBlankWhenNull="true">
+				<textField pattern="#,##0.###" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" x="369" y="0" width="53" height="14" backcolor="#FFFFFF"/>
 					<textElement textAlignment="Right">
 						<font size="9"/>
@@ -329,14 +345,14 @@
 					</textElement>
 					<textFieldExpression><![CDATA[" "]]></textFieldExpression>
 				</textField>
-				<textField pattern="#,##0" isBlankWhenNull="true">
+				<textField pattern="#,##0.###" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" x="329" y="0" width="40" height="14" backcolor="#FFFFFF"/>
 					<textElement textAlignment="Right">
 						<font size="9"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{sumVATConsignmentDetailConsignment}]]></textFieldExpression>
 				</textField>
-				<textField pattern="#,##0" isBlankWhenNull="true">
+				<textField pattern="#,##0.###" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" x="422" y="0" width="38" height="14" backcolor="#FFFFFF"/>
 					<textElement textAlignment="Right">
 						<font size="9"/>
@@ -907,7 +923,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{noteConsignmentDetail}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="369" y="0" width="53" height="12"/>
 				<box>
 					<topPen lineWidth="0.5"/>
@@ -920,7 +936,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{sumInvoiceConsignmentDetail}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="329" y="0" width="40" height="12"/>
 				<box>
 					<topPen lineWidth="0.5"/>
@@ -933,7 +949,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{sumVATConsignmentDetail}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="198" y="0" width="42" height="12"/>
 				<box>
 					<topPen lineWidth="0.5"/>
@@ -956,7 +972,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$V{npp}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="240" y="0" width="47" height="12"/>
 				<box>
 					<topPen lineWidth="0.5"/>
@@ -995,7 +1011,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{vatConsignmentDetail}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="422" y="0" width="38" height="12"/>
 				<box>
 					<topPen lineWidth="0.5"/>
@@ -1061,7 +1077,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[" "]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="329" y="0" width="40" height="12">
 					<printWhenExpression><![CDATA[$F{isWareConsignment} != null && $F{warePriceConsignmentDetail} != null]]></printWhenExpression>
 				</reportElement>
@@ -1074,7 +1090,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{wareVATSumConsignmentDetail}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="240" y="0" width="47" height="12">
 					<printWhenExpression><![CDATA[$F{isWareConsignment} != null && $F{warePriceConsignmentDetail} != null]]></printWhenExpression>
 				</reportElement>
@@ -1100,7 +1116,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[" "]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="369" y="0" width="53" height="12">
 					<printWhenExpression><![CDATA[$F{isWareConsignment} != null && $F{warePriceConsignmentDetail} != null]]></printWhenExpression>
 				</reportElement>
@@ -1113,7 +1129,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{wareSumConsignmentDetail}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="198" y="0" width="42" height="12">
 					<printWhenExpression><![CDATA[$F{isWareConsignment} != null && $F{warePriceConsignmentDetail} != null]]></printWhenExpression>
 				</reportElement>

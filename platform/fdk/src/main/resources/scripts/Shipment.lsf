@@ -5,14 +5,14 @@ REQUIRE Invoice;
 
 //----------------------------------------------- Поставка ---------------------------------------------------//
 
-META defineShipment(dumb)
+META defineShipment(skuLedger, sign)
 
-    CLASS ABSTRACT shipment 'Поставка';
-    CLASS ABSTRACT shipmentDetail 'Строка поставки' : outFIFOSkuLedger;
+    CLASS ABSTRACT shipment 'Поставка'###sign;
+    CLASS ABSTRACT shipmentDetail 'Строка поставки'###sign : skuLedger;
 
-    CLASS userShipment 'Поставка (польз.)' : shipment, historyObject, numeratedDocument;
-    CLASS userShipmentDetail 'Строка поставки (польз.)' : shipmentDetail;
-    CLASS userShipmentPosted 'Закрытая поставка (польз.)' : userShipment, postedObject;
+    CLASS userShipment 'Поставка (польз.)'###sign : shipment, historyObject, numeratedDocument;
+    CLASS userShipmentDetail 'Строка поставки (польз.)'###sign : shipmentDetail;
+    CLASS userShipmentPosted 'Закрытая поставка (польз.)'###sign : userShipment, postedObject;
 
     @defineDocumentInterface(shipment);
 
@@ -21,7 +21,7 @@ META defineShipment(dumb)
     @defineDocumentInterfaceDataStock(shipment, stock, 'Склад');
     @defineDocumentInterfacePosted(shipment);
 
-    @defineDocumentInterfaceDescription(shipment, 'Поставка');
+    @defineDocumentInterfaceDescription(shipment, 'Поставка'###sign);
 
     @defineDocumentInterfaceCurrency(shipment);
     @deriveDocumentCurrency(userShipment, stock);
@@ -51,7 +51,7 @@ META defineShipment(dumb)
 
 // --------------------------- Формы --------------------------------- //
 
-    FORM userShipment 'Поставка'
+    FORM userShipment 'Поставка'###sign
         OBJECTS s = userShipment FIXED PANEL
         PROPERTIES (s) objectClassName, nameStockUserShipment, nameNumeratorObject, numberObject, seriesObject, dateUserShipment, timeUserShipment,
                        nameCustomerUserShipment, nameCurrencyUserShipment, noteUserShipment,
@@ -114,7 +114,7 @@ META defineShipment(dumb)
         }
     }
 
-    FORM userShipments 'Поставки'
+    FORM userShipments 'Поставки'###sign
         OBJECTS s = userShipment
         PROPERTIES (s) READONLY isPostedUserShipment FORCE GRID, objectClassName, numberObject, seriesObject, dateUserShipment, timeUserShipment,
                                 nameStockUserShipment, nameCustomerUserShipment, nameCurrencyUserShipment, noteUserShipment,
@@ -301,7 +301,7 @@ META defineShipment(dumb)
     isCommissionInvoiceShipment  (invoiceShipment) = isCommissionInvoice(invoiceInvoiceShipment(invoiceShipment));
     isCommissionShipment(shipment)+= isCommissionInvoiceShipment(shipment);
 
-    @defineDocumentDescription(invoiceShipment, invoiceShipmentDetail, seriesNumberInvoiceShipment, 'Поставка на основе инвойса');
+    @defineDocumentDescription(invoiceShipment, invoiceShipmentDetail, seriesNumberInvoiceShipment, 'Поставка на основе инвойса'###sign);
     descriptionShipment (shipment) += descriptionInvoiceShipment(shipment);
 
     @defineDocumentDetailIndex(invoiceShipment);
@@ -322,7 +322,7 @@ META defineShipment(dumb)
     sumShipmentDetail(shipmentDetail) += sumInvoiceShipmentDetail(shipmentDetail);
 
 
-    FORM dialogShipments 'Поставки (все)'
+    FORM dialogShipments 'Поставки (все)'###sign
         OBJECTS s = shipment
         PROPERTIES (s) READONLY isPostedShipment FORCE GRID, objectClassName, numberShipment, seriesShipment, dateShipment, timeShipment,
                                 nameStockShipment, nameCustomerShipment, nameCurrencyShipment, noteShipment,

@@ -1,19 +1,18 @@
-MODULE SaleOrder;
+MODULE ReturnOrder;
 
-REQUIRE Order
+REQUIRE Order, SaleShipment
 ;
 
 
-NAMESPACE Sale;
+NAMESPACE Return;
 
 
 //----------------------------------------------- Заказ ---------------------------------------------------//
 
-@defineOrder(' (продажа)');
+@defineOrder(' (возврат)');
 
 NAVIGATOR {
-    NEW saleNavigator 'Управление продажами' {
+    NEW returnNavigator 'Управление возвратами' {
         ADD userOrders;
     }
 }
-

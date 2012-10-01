@@ -2,7 +2,7 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="c" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
 	<property name="ireport.zoom" value="2.0"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="355"/>
+	<property name="ireport.y" value="0"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false"/>
 	<style name="GroupCellStyle0" mode="Opaque" backcolor="#FFFFFF" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false">
 		<box leftPadding="2" rightPadding="2">
@@ -51,6 +51,7 @@
 	<field name="fullNameTransportPayerConsignment" class="java.lang.String"/>
 	<field name="documentNameCurrencyConsignment" class="java.lang.String"/>
 	<field name="isCustomsFlowConsignment" class="java.lang.Boolean"/>
+	<field name="isCurrencyConsignment" class="java.lang.Boolean"/>
 	<field name="noteConsignment" class="java.lang.String"/>
 	<field name="d" class="java.lang.Integer"/>
 	<field name="nameSkuConsignmentDetail" class="java.lang.String"/>
@@ -347,7 +348,7 @@
 			<textField isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" x="341" y="265" width="41" height="12"/>
 				<textElement>
-					<font size="8"/>
+					<font size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{downtimeConsignment}]]></textFieldExpression>
 			</textField>
@@ -1148,7 +1149,7 @@
 			<textField isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" x="250" y="265" width="50" height="12"/>
 				<textElement>
-					<font size="8"/>
+					<font size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{arrivalTimeConsignment}]]></textFieldExpression>
 			</textField>
@@ -1391,7 +1392,7 @@
 			<textField isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" x="300" y="265" width="41" height="12"/>
 				<textElement>
-					<font size="8"/>
+					<font size="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{departureTimeConsignment}]]></textFieldExpression>
 			</textField>

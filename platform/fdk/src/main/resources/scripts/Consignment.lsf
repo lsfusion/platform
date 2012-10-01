@@ -259,7 +259,7 @@ FORM consignment 'Атрибуты накладной'
                    arrivalTimeConsignment, departureTimeConsignment, downtimeConsignment, raceQuantityConsignment,
                    quantityConsignmentDetailConsignment, packQuantityConsignmentDetailConsignment, grossWeightConsignmentDetailConsignment,
                    sumConsignmentDetailConsignment, sumVATConsignmentDetailConsignment, sumInvoiceConsignmentDetailConsignment,
-                   countConsignmentDetailConsignment, noteConsignment, shortNameCurrencyConsignment SHOWIF isCustomsFlowConsignment(c)
+                   countConsignmentDetailConsignment, noteConsignment, shortNameCurrencyConsignment//, SHOWIF isCustomsFlowConsignment(c)
 
 
     OBJECTS d=consignmentDetail
@@ -525,3 +525,119 @@ META implementConsignment (concrete, stockProp)
     @implementConsignmentHeader(concrete, stockProp);
     @implementConsignmentDetail(concrete);
 END
+
+// ------------------------------------- Метакод по объявлению и имплементации накладных (ABSTRACT)------------------ //
+META defineConsignmentAbstract(object)
+
+    car###object 'Автомобиль' (object) = ABSTRACT STRING[30] (object) IN carConsignmentGroup;
+    ownerCar###object 'Владелец автомобиля' (object) = ABSTRACT STRING[100] (object) IN carConsignmentGroup;
+    trailer###object 'Прицеп' (object) = ABSTRACT STRING[10] (object) IN carConsignmentGroup;
+    driverCar###object 'Водитель' (object) = ABSTRACT STRING[40] (object) IN carConsignmentGroup;
+    waybill###object 'Путевой лист' (object) = ABSTRACT STRING[20] (object) IN carConsignmentGroup;
+
+    transportPayer###object 'Заказчик перевозки (ИД)' (object) = ABSTRACT legalEntity (object) IN carConsignmentGroup;
+
+    dataLoadingPlace###object 'Пункт погрузки' (object) = ABSTRACT STRING[50] (object);
+
+    dataUnloadingPlace###object 'Пункт разгрузки' (object) = ABSTRACT STRING[50] (object);
+
+    readdressing###object 'Переадресовка' (object) = ABSTRACT STRING[50] (object) IN carConsignmentGroup;
+
+    shipmentBase###object 'Основание отпуска' (object) = ABSTRACT STRING[30] (object) IN issuanceConsignmentGroup;
+
+    issuanceAllowed###object (object) = ABSTRACT employee(object);
+
+    issuanceExecuted###object (object) = ABSTRACT employee(object);
+
+    forwarder###object 'Товар к перевозке принял (экспедитор), должность, фамилия, инициалы' (object) = ABSTRACT STRING[40] (object) IN issuanceConsignmentGroup;
+
+    warrant###object 'По доверенности (номер, дата)' (object) = ABSTRACT STRING[30] (object) IN issuanceConsignmentGroup;
+    warrantHolder###object 'По доверенности выданной (наименование орг-ии)' (object) = ABSTRACT STRING[100] (object) IN issuanceConsignmentGroup;
+
+    goodsAccepted###object 'Принял грузополучатель' (object) = ABSTRACT STRING[40] (object) IN issuanceConsignmentGroup;
+
+    loadingExecuter###object (object) = ABSTRACT employee(object);
+
+    wayOfLoading###object (object) = ABSTRACT wayOfLoading(object);
+
+    codeLoading###object 'Код ПРР' (object) = ABSTRACT STRING[3] (object) IN loadingConsignmentGroup;
+
+    arrivalTime###object 'Время прибытия' (object) = ABSTRACT DATETIME(object) IN carConsignmentGroup;
+    departureTime###object 'Время убытия' (object) = ABSTRACT DATETIME(object) IN carConsignmentGroup;
+    downtime###object 'Время простоя' (object) = ABSTRACT STRING[10] (object) IN carConsignmentGroup;
+
+    raceQuantity###object 'Количество ездок' (object) = ABSTRACT INTEGER (object) IN carConsignmentGroup;
+END
+
+META implementConsignmentDocumentHeaderCustom (concrete, object, stockProp)
+//    date###concrete (concrete) += date###object(concrete);
+//    stock###concrete (concrete) += stockProp###object(concrete);
+
+    car###concrete (concrete) += car###object (concrete);
+    ownerCar###concrete (concrete) += ownerCar###object (concrete);
+    trailer###concrete (concrete) += trailer###object (concrete);
+    driverCar###concrete (concrete) += driverCar###object (concrete);
+    waybill###concrete (concrete) += waybill###object (concrete);
+
+    transportPayer###concrete (concrete) += transportPayer###object (concrete);
+
+    dataLoadingPlace###concrete (concrete) += dataLoadingPlace###object (concrete);
+
+    dataUnloadingPlace###concrete (concrete) += dataUnloadingPlace###object (concrete);
+
+    readdressing###concrete (concrete) += readdressing###object (concrete);
+
+    shipmentBase###concrete (concrete) += shipmentBase###object (concrete);
+
+    issuanceAllowed###concrete (concrete) += issuanceAllowed###object (concrete);
+
+    issuanceExecuted###concrete (concrete) += issuanceExecuted###object (concrete);
+
+    forwarder###concrete (concrete) += forwarder###object (concrete);
+
+    warrant###concrete (concrete) += warrant###object (concrete);
+    warrantHolder###concrete (concrete) += warrantHolder###object (concrete);
+
+    goodsAccepted###concrete (concrete) += goodsAccepted###object (concrete);
+
+    loadingExecuter###concrete (concrete) += loadingExecuter###object (concrete);
+
+    wayOfLoading###concrete (concrete) += wayOfLoading###object (concrete);
+    codeLoading###concrete (concrete) += codeLoading###object (concrete);
+
+    arrivalTime###concrete (concrete) += arrivalTime###object (concrete);
+    departureTime###concrete (concrete) += departureTime###object (concrete);
+    downtime###concrete (concrete) += downtime###object (concrete);
+
+    raceQuantity###concrete (concrete) += raceQuantity###object (concrete);
+
+
+END
+META implementConsignmentDocumentHeader (concrete, stockProp)
+    @implementConsignmentDocumentHeaderCustom (concrete, user###concrete, stockProp)
+END
+
+
+META defineConsignmentInterface(object, stockProp)
+    @defineConsignmentAbstract (object);
+    @defineConsignment (user###object);
+    @implementConsignmentDocumentHeaderCustom(object, user###object, stockProp);
+    @implementConsignmentHeader (object, stockProp);
+END
+
+META defineConsignmentInterface(object)
+    @defineConsignmentInterface(object, stock);
+END
+
+META implementConsignmentDetailSku (concrete, skuProp)
+    consignmentConsignmentDetail (consignmentDetail) += concrete###concrete##Detail (consignmentDetail);
+    skuConsignmentDetail (consignmentDetail) += skuProp###concrete##Detail (consignmentDetail);
+    quantityConsignmentDetail (consignmentDetail) += quantity###concrete##Detail (consignmentDetail);
+
+    packQuantityConsignmentDetail (consignmentDetail) += packQuantity###concrete##Detail (consignmentDetail);
+    grossWeightConsignmentDetail (consignmentDetail) += grossWeight###concrete##Detail (consignmentDetail);
+END
+META implementConsignmentDetailSku (concrete)
+    @implementConsignmentDetailSku (concrete, sku);
+END
+
