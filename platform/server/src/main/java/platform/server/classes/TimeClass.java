@@ -90,6 +90,7 @@ public class TimeClass extends DataClass<Time> {
         return new Time(System.currentTimeMillis());
     }
 
+    @Override
     public Stat getTypeStat() {
         return new Stat(Long.MAX_VALUE);
     }

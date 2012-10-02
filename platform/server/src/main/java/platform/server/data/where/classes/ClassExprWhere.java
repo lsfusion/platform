@@ -318,8 +318,8 @@ public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr, ClassE
     public QuickSet<platform.server.caches.OuterContext> getOuterDepends() {
         return getOuter().getOuterDepends();
     }
-    public void enumerate(ExprEnumerator enumerator) {
-        getOuter().enumerate(enumerator);
+    public boolean enumerate(ExprEnumerator enumerator) {
+        return getOuter().enumerate(enumerator);
     }
     public long getComplexity(boolean outer) {
         return getOuter().getComplexity(outer);

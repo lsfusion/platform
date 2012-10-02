@@ -73,10 +73,12 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     public Type getChangeType(FormEntity form) {
         Type type = null;
-        ActionPropertyObjectEntity<?> changeAction = getEditAction(ServerResponse.CHANGE, form);
+        if(propertyObject instanceof CalcPropertyObjectEntity) {
+            ActionPropertyObjectEntity<?> changeAction = getEditAction(ServerResponse.CHANGE, form);
 
-        if(changeAction!=null)
-            type = changeAction.property.getSimpleRequestInputType();
+            if(changeAction!=null)
+                type = changeAction.property.getSimpleRequestInputType();
+        }
 
         assert type == null || type instanceof DataClass;
 

@@ -22,5 +22,5 @@ public interface OuterContext<T extends OuterContext> extends PackInterface<T> {
 
     QuickSet<OuterContext> getOuterDepends();
 
-    void enumerate(ExprEnumerator enumerator);
+    boolean enumerate(ExprEnumerator enumerator);
 }

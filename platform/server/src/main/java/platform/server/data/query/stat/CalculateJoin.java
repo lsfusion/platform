@@ -10,17 +10,7 @@ import platform.server.data.expr.query.Stat;
 
 import java.util.Map;
 
-public class CalculateJoin<K> extends TwinImmutableObject implements InnerBaseJoin<K> {
-
-    public final Map<K, BaseExpr> params;
-
-    public CalculateJoin(Map<K, BaseExpr> params) {
-        this.params = params;
-    }
-
-    public Map<K, BaseExpr> getJoins() {
-        return params;
-    }
+public abstract class CalculateJoin<K> extends TwinImmutableObject implements InnerBaseJoin<K> {
 
     public StatKeys<K> getStatKeys(KeyStat keyStat) {
         Stat totalStat = Stat.ONE;
@@ -35,13 +25,5 @@ public class CalculateJoin<K> extends TwinImmutableObject implements InnerBaseJo
 
     public NotNullExprSet getExprFollows(boolean recursive) {
         return InnerExpr.getExprFollows(this, recursive);
-    }
-
-    public boolean twins(TwinImmutableInterface o) {
-        return params.equals(((CalculateJoin)o).params);
-    }
-
-    public int immutableHashCode() {
-        return params.hashCode();
     }
 }

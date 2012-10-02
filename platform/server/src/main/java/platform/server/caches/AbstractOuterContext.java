@@ -1,6 +1,5 @@
 package platform.server.caches;
 
-import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.base.QuickMap;
 import platform.base.QuickSet;
@@ -147,14 +146,17 @@ public abstract class AbstractOuterContext<T extends OuterContext<T>> extends Ab
         return hash;
     }
 
-    public static void enumerate(OuterContext<?> context, ExprEnumerator enumerator) {
-        if(enumerator.enumerate(context))
+    public static Boolean enumerate(OuterContext<?> context, ExprEnumerator enumerator) {
+        Boolean enumResult = enumerator.enumerate(context);
+        if(enumResult!=null && enumResult) // идти внутрь
             for(OuterContext outerDepend : context.getOuterDepends())
-                outerDepend.enumerate(enumerator);
+                if(!outerDepend.enumerate(enumerator)) // выходим
+                    return false;
+        return enumResult!=null;
     }
 
-    public void enumerate(ExprEnumerator enumerator) {
-        enumerate(this, enumerator);
+    public boolean enumerate(ExprEnumerator enumerator) {
+        return enumerate(this, enumerator);
     }
 
     public static long getComplexity(OuterContext<?> context, boolean outer) {

@@ -10,6 +10,7 @@ import platform.server.classes.sets.AndClassSet;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.expr.where.pull.ExprPullWheres;
 import platform.server.data.query.stat.CalculateJoin;
+import platform.server.data.query.stat.FormulaJoin;
 import platform.server.data.query.stat.InnerBaseJoin;
 import platform.server.data.query.stat.KeyStat;
 import platform.server.data.where.DataWhereSet;
@@ -122,6 +123,6 @@ public class DeconcatenateExpr extends SingleClassExpr {
     }
 
     public InnerBaseJoin<?> getBaseJoin() {
-        return new CalculateJoin<Integer>(Collections.singletonMap(0, expr));
+        return new FormulaJoin<Integer>(Collections.singletonMap(0, expr));
     }
 }

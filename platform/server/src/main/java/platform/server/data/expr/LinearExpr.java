@@ -40,7 +40,7 @@ public class LinearExpr extends UnionExpr {
 
     @IdentityLazy
     public Where getCommonWhere() {
-        return getWhere(getCommonExprs());
+        return getWhere(getBaseJoin().getJoins());
     }
     
     public class NotNull extends NotNullExpr.NotNull {

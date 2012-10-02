@@ -84,6 +84,7 @@ public class LongClass extends IntegralClass<Long> {
         return Math.round((double)(Long.MAX_VALUE / 2));
     }
 
+    @Override
     public Stat getTypeStat() {
         return new Stat(Long.MAX_VALUE);
     }

@@ -10,6 +10,7 @@ import platform.server.classes.sets.AndClassSet;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.expr.where.pull.ExprPullWheres;
 import platform.server.data.query.stat.CalculateJoin;
+import platform.server.data.query.stat.FormulaJoin;
 import platform.server.data.query.stat.InnerBaseJoin;
 import platform.server.data.query.stat.KeyStat;
 import platform.server.data.where.DataWhereSet;
@@ -140,6 +141,6 @@ public class ConcatenateExpr extends BaseExpr {
     }
 
     public InnerBaseJoin<?> getBaseJoin() {
-        return new CalculateJoin<Integer>(BaseUtils.toMap(exprs));
+        return new FormulaJoin<Integer>(BaseUtils.toMap(exprs));
     }
 }

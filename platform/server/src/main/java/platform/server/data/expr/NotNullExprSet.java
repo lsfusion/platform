@@ -2,14 +2,9 @@ package platform.server.data.expr;
 
 import platform.base.BaseUtils;
 import platform.base.QuickSet;
-import platform.base.Result;
-import platform.server.caches.ManualLazy;
-import platform.server.data.query.InnerJoin;
-import platform.server.data.query.InnerJoins;
-import platform.server.data.where.Where;
+import platform.server.data.query.stat.UnionJoin;
 
 import java.util.Collection;
-import java.util.Map;
 
 public class NotNullExprSet extends QuickSet<NotNullExpr> {
 
@@ -33,7 +28,7 @@ public class NotNullExprSet extends QuickSet<NotNullExpr> {
             addAll(expr.getExprFollows(true, recursive));
     }
     
-    public QuickSet<InnerExpr> getInnerExprs() {
+    public QuickSet<InnerExpr> getInnerExprs(Collection<UnionJoin> unionJoins) {
         boolean hasNotInner = false;
         for(int i=0;i<size;i++) // оптимизация
             if(!(get(i) instanceof InnerExpr)) {
@@ -48,8 +43,11 @@ public class NotNullExprSet extends QuickSet<NotNullExpr> {
             NotNullExpr expr = get(i);
             if(expr instanceof InnerExpr)
                 result.add((InnerExpr)expr);
-            else
-                result.addAll(expr.getExprFollows(false).getInnerExprs());
+            else {
+                if(unionJoins!=null && !(expr instanceof CurrentEnvironmentExpr))
+                    unionJoins.add(((UnionExpr)expr).getBaseJoin());
+                result.addAll(expr.getExprFollows(false).getInnerExprs(unionJoins));
+            }
         }
         return result;
     }

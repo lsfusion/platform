@@ -78,8 +78,4 @@ public class SystemClass extends DataClass<Integer> {
     public String getSID() {
         return "SystemClass";
     }
-
-    public Stat getTypeStat() {
-        return Stat.ALOT;
-    }
 }

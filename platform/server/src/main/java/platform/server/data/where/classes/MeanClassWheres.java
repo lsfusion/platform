@@ -9,16 +9,11 @@ import platform.server.caches.OuterContext;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.Value;
 import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.VariableClassExpr;
-import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.ExprEnumerator;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.where.CheckWhere;
 import platform.server.data.where.DNFWheres;
-import platform.server.data.where.EqualMap;
 import platform.server.data.where.Where;
-
-import java.util.Map;
 
 
 public class MeanClassWheres extends DNFWheres<MeanClassWhere, CheckWhere, MeanClassWheres> implements OuterContext<MeanClassWheres> {
@@ -113,8 +108,8 @@ public class MeanClassWheres extends DNFWheres<MeanClassWhere, CheckWhere, MeanC
     public QuickSet<platform.server.caches.OuterContext> getOuterDepends() {
         return getOuter().getOuterDepends();
     }
-    public void enumerate(ExprEnumerator enumerator) {
-        getOuter().enumerate(enumerator);
+    public boolean enumerate(ExprEnumerator enumerator) {
+        return getOuter().enumerate(enumerator);
     }
     public long getComplexity(boolean outer) {
         return getOuter().getComplexity(outer);

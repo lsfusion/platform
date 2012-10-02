@@ -1006,7 +1006,7 @@ public class CompiledQuery<K,V> {
             final Set<GroupExpr> groupExprs = new HashSet<GroupExpr>(); final Counter repeats = new Counter();
             for(Expr property : compiledProps.values())
                 property.enumerate(new ExprEnumerator() {
-                    public boolean enumerate(OuterContext join) {
+                    public Boolean enumerate(OuterContext join) {
                         if(join instanceof JoinData) { // если JoinData то что внутри не интересует
                             if(join instanceof GroupExpr && !compile.isInner(((GroupExpr) join).getInnerJoin()) && !groupExprs.add((GroupExpr)join))
                                 repeats.add();

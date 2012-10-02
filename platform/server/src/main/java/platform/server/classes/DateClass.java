@@ -120,6 +120,7 @@ public class DateClass extends DataClass<Date> {
         return DateConverter.dateToSql(new java.util.Date(Long.MAX_VALUE));
     }
 
+    @Override
     public Stat getTypeStat() {
         return new Stat(Long.MAX_VALUE);
     }

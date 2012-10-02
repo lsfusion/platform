@@ -7,6 +7,6 @@ import java.util.Map;
 
 public interface ExprEnumerator {
 
-    boolean enumerate(OuterContext join);
+    Boolean enumerate(OuterContext join);
 
 }

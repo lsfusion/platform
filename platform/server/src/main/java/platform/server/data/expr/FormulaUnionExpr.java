@@ -9,7 +9,9 @@ import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.Where;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class FormulaUnionExpr extends UnionExpr {
 
@@ -27,8 +29,8 @@ public class FormulaUnionExpr extends UnionExpr {
         return dataClass;
     }
 
-    protected Collection<Expr> getParams() {
-        return params.values();
+    protected Set<Expr> getParams() {
+        return new HashSet<Expr>(params.values());
     }
 
     protected VariableClassExpr translate(MapTranslate translator) {

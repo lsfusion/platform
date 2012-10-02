@@ -92,6 +92,7 @@ public class ActionClass extends DataClass<Object> {
         return sid;
     }
 
+    @Override
     public Stat getTypeStat() {
         return Stat.ONE;
     }

@@ -9,11 +9,13 @@ import platform.server.caches.hash.HashContext;
 import platform.server.data.Value;
 import platform.server.data.expr.*;
 import platform.server.data.query.*;
+import platform.server.data.query.stat.UnionJoin;
 import platform.server.data.query.stat.WhereJoin;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.where.Where;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -69,8 +71,8 @@ public abstract class QueryJoin<K extends Expr,I extends OuterContext<I>, T exte
         public InnerJoins getInnerJoins() {
             return InnerExpr.getInnerJoins(thisObj);
         }
-        public InnerJoins getJoinFollows(Result<Map<InnerJoin, Where>> upWheres) {
-            return InnerExpr.getFollowJoins(thisObj, upWheres);
+        public InnerJoins getJoinFollows(Result<Map<InnerJoin, Where>> upWheres, Collection<UnionJoin> unionJoins) {
+            return InnerExpr.getFollowJoins(thisObj, upWheres, unionJoins);
         }
 
         public abstract T translateThis(MapTranslate translate);
@@ -98,8 +100,8 @@ public abstract class QueryJoin<K extends Expr,I extends OuterContext<I>, T exte
     public QuickSet<platform.server.caches.OuterContext> getOuterDepends() {
         return getOuter().getOuterDepends();
     }
-    public void enumerate(ExprEnumerator enumerator) {
-        getOuter().enumerate(enumerator);
+    public boolean enumerate(ExprEnumerator enumerator) {
+        return getOuter().enumerate(enumerator);
     }
     protected long calculateComplexity(boolean outer) {
         return getOuter().getComplexity(outer);
@@ -117,8 +119,8 @@ public abstract class QueryJoin<K extends Expr,I extends OuterContext<I>, T exte
     public InnerJoins getInnerJoins() {
         return getOuter().getInnerJoins();
     }
-    public InnerJoins getJoinFollows(Result<Map<InnerJoin, Where>> upWheres) {
-        return getOuter().getJoinFollows(upWheres);
+    public InnerJoins getJoinFollows(Result<Map<InnerJoin, Where>> upWheres, Collection<UnionJoin> unionJoins) {
+        return getOuter().getJoinFollows(upWheres, unionJoins);
     }
 
     public Map<K, BaseExpr> getJoins() {
@@ -127,7 +129,7 @@ public abstract class QueryJoin<K extends Expr,I extends OuterContext<I>, T exte
 
     // множественное наследование
     public static InnerExpr getInnerExpr(InnerJoin<?, ?> join, WhereJoin whereJoin) {
-        QuickSet<InnerExpr> set = whereJoin.getExprFollows(true).getInnerExprs();
+        QuickSet<InnerExpr> set = whereJoin.getExprFollows(true).getInnerExprs(null);
         for(int i=0;i<set.size;i++) {
             InnerExpr expr = set.get(i);
             if(BaseUtils.hashEquals(join,expr.getInnerJoin()))

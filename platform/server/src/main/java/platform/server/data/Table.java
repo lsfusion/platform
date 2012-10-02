@@ -17,6 +17,7 @@ import platform.server.data.expr.where.cases.JoinCaseList;
 import platform.server.data.expr.where.pull.AddPullWheres;
 import platform.server.data.expr.where.ifs.NullJoin;
 import platform.server.data.expr.where.ifs.IfJoin;
+import platform.server.data.query.stat.UnionJoin;
 import platform.server.data.query.stat.WhereJoin;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.where.MapWhere;
@@ -261,8 +262,8 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
             return InnerExpr.getInnerJoins(this);
         }
 
-        public InnerJoins getJoinFollows(Result<Map<InnerJoin, Where>> upWheres) {
-            return InnerExpr.getFollowJoins(this, upWheres);
+        public InnerJoins getJoinFollows(Result<Map<InnerJoin, Where>> upWheres, Collection<UnionJoin> unionJoins) {
+            return InnerExpr.getFollowJoins(this, upWheres, unionJoins);
         }
 
         @TwinLazy

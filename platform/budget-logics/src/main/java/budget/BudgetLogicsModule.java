@@ -316,7 +316,7 @@ public class BudgetLogicsModule extends LogicsModule {
         LCP incDepSumOut = addSGProp("Приход по отделу внешний", inSum, inCur, 1, opDep, 1);
         LCP decDepSumOut = addSGProp("Расход по отделу внешний", decVal, outCur, 1, opDep, 1);
 
-        LCP incDepSumTr = addSUProp("incDepSum", "Приход по отделу c перемещением", Union.SUM,incDepSumOut, incSumTransfer);
+        LCP incDepSumTr = addSUProp("incDepSumTr", "Приход по отделу c перемещением", Union.SUM,incDepSumOut, incSumTransfer);
         LCP decDepSum = addSUProp(baseGroup, "decDepSum", "Расход по отделу", Union.SUM, decDepSumOut, outSumTransfer);
 
         LCP incDepSum = addSUProp(baseGroup, "incDepSum", "Приход по отделу", Union.SUM,incDepSumTr, sumProfit);

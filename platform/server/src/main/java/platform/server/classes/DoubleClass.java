@@ -76,8 +76,4 @@ public class DoubleClass extends IntegralClass<Double> {
     public Number getInfiniteValue() {
         return Double.POSITIVE_INFINITY;
     }
-
-    public Stat getTypeStat() {
-        return Stat.ALOT;
-    }
 }

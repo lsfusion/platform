@@ -119,6 +119,7 @@ public class StringClass extends DataClass<String> {
         return "StringClass_" + length;
     }
 
+    @Override
     public Stat getTypeStat() {
         return new Stat(100, length);
     }

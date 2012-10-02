@@ -80,10 +80,6 @@ public class ByteArrayClass extends DataClass<byte[]> {
         return "ByteArrayClass";
     }
 
-    public Stat getTypeStat() {
-        return Stat.ALOT;
-    }
-
     @Override
     public boolean calculateStat() {
         return false;

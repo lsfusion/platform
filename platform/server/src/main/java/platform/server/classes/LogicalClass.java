@@ -114,6 +114,7 @@ public class LogicalClass extends DataClass<Boolean> {
         return "LogicalClass";
     }
 
+    @Override
     public Stat getTypeStat() {
         return Stat.ONE;
     }

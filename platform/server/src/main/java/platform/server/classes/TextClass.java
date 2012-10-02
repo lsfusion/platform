@@ -87,8 +87,4 @@ public class TextClass extends DataClass<String> {
     public String getSID() {
         return "TextClass";
     }
-
-    public Stat getTypeStat() {
-        return Stat.ALOT;
-    }
 }

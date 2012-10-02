@@ -491,7 +491,7 @@ quantityDeclarationGroup 'Кол-во' = GROUP SUM quantityDeclarationDetail(dec
                                               customCategory10DeclarationDetail(declarationDetail),
                                               mainCompositionDeclarationDetail(declarationDetail),
                                               countryDeclarationDetail(declarationDetail),
-                                              declarationPriceDeclarationDetail(declarationDetail) IN baseGroup;
+                                              declarationPriceDeclarationDetail(declarationDetail) PERSISTENT IN baseGroup;
 
 CLASS groupDeclaration 'Строка декларации';
 

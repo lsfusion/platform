@@ -57,7 +57,7 @@ public class InnerJoins extends AddSet<InnerJoin, InnerJoins> {
         return WhereJoins.andUpWheres(wheres, up1, up2);
     }
 
-    public WhereJoins removeJoin(WhereJoin removeJoin, Map<WhereJoin, Where> upWheres, Result<Map<WhereJoin, Where>> resultWheres) {
+    public WhereJoins removeJoin(QueryJoin removeJoin, Map<WhereJoin, Where> upWheres, Result<Map<WhereJoin, Where>> resultWheres) {
         return WhereJoins.removeJoin(removeJoin, wheres, upWheres, resultWheres);
     }
 

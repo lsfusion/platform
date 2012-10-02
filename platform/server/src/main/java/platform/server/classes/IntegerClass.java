@@ -81,8 +81,4 @@ public class IntegerClass extends IntegralClass<Integer> {
     public Number getInfiniteValue() {
         return Integer.MAX_VALUE / 2;
     }
-
-    public Stat getTypeStat() {
-        return Stat.ALOT;
-    }
 }

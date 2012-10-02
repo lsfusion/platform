@@ -238,7 +238,7 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
             reduced.remove(it);
 
             Result<Map<InnerJoin, Where>> reduceFollowUpWheres = new Result<Map<InnerJoin, Where>>();
-            for(InnerJoin joinFollow : reduceJoin.getJoinFollows(reduceFollowUpWheres)) { // пытаемся заменить reduceJoin, на его joinFollows
+            for(InnerJoin joinFollow : reduceJoin.getJoinFollows(reduceFollowUpWheres, null)) { // пытаемся заменить reduceJoin, на его joinFollows
                 boolean found = false;
                 for(WhereJoin andJoin : reduced)
                     if(containsAll(andJoin, joinFollow)) {
@@ -260,6 +260,9 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
             } else
                 it++;
         }
+        
+        if(Stat.ALOT.lessEquals(currentStat))
+            return null;
 
         Where result = Where.TRUE;
         for (WhereJoin where : current)
@@ -274,7 +277,7 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
             return getStatKeys(groups, keyStat);
     }
 
-    public static <T extends WhereJoin> WhereJoins removeJoin(WhereJoin removeJoin, WhereJoin[] wheres, Map<WhereJoin, Where> upWheres, Result<Map<WhereJoin, Where>> resultWheres) {
+    public static <T extends WhereJoin> WhereJoins removeJoin(QueryJoin removeJoin, WhereJoin[] wheres, Map<WhereJoin, Where> upWheres, Result<Map<WhereJoin, Where>> resultWheres) {
         WhereJoins result = null;
         Map<WhereJoin, Where> resultUpWheres = null;
         Collection<WhereJoin> keepWheres = new ArrayList<WhereJoin>();
@@ -282,15 +285,26 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
             WhereJoins removeJoins;
             Result<Map<WhereJoin, Where>> removeUpWheres = new Result<Map<WhereJoin, Where>>();
 
-            if(BaseUtils.hashEquals(removeJoin, whereJoin)) {
+            boolean remove = BaseUtils.hashEquals(removeJoin, whereJoin);
+            InnerJoins joinFollows = null; Result<Map<InnerJoin, Where>> joinUpWheres = null;
+            if(!remove) {
+                Set<UnionJoin> unionJoins = new HashSet<UnionJoin>();
+                joinUpWheres = new Result<Map<InnerJoin, Where>>();
+                joinFollows = whereJoin.getJoinFollows(joinUpWheres, unionJoins);
+                for(UnionJoin unionJoin : unionJoins) // без этой проверку может бесконечно проталкивать
+                    if(unionJoin.depends(removeJoin)) {
+                        remove = true;
+                        break;
+                    }
+            }
+
+            if(remove) {
                 removeJoins = new WhereJoins();
                 removeUpWheres.set(new HashMap<WhereJoin, Where>());
-            } else {
-                Result<Map<InnerJoin, Where>> joinUpWheres = new Result<Map<InnerJoin, Where>>();
-                removeJoins = whereJoin.getJoinFollows(joinUpWheres).removeJoin(removeJoin,
+            } else
+                removeJoins = joinFollows.removeJoin(removeJoin,
                         BaseUtils.<Map<WhereJoin,Where>>immutableCast(joinUpWheres.result), removeUpWheres);
-            }
-            
+
             if(removeJoins!=null) { // вырезали, придется выкидывать целиком join, оставлять sibling'ом
                 if(result==null) {
                     result = removeJoins;
@@ -312,15 +326,15 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
     }
 
     // устраняет сам join чтобы при проталкивании не было рекурсии
-    public WhereJoins removeJoin(WhereJoin join, Map<WhereJoin, Where> upWheres, Result<Map<WhereJoin, Where>> resultWheres) {
+    public WhereJoins removeJoin(QueryJoin join, Map<WhereJoin, Where> upWheres, Result<Map<WhereJoin, Where>> resultWheres) {
         return removeJoin(join, wheres, upWheres, resultWheres);
     }
 
     public <K extends Expr> Where getGroupPushWhere(Map<K, BaseExpr> joinMap, Map<WhereJoin, Where> upWheres, QueryJoin<K, ?, ?, ?> skipJoin, KeyStat keyStat, Stat currentStat, Stat currentJoinStat) {
         Where pushWhere = getPushWhere(joinMap, upWheres, skipJoin, keyStat, currentStat, currentJoinStat);
-        if(pushWhere!=null)
+        if(pushWhere!=null) {
             return GroupExpr.create(joinMap, pushWhere, BaseUtils.toMap(joinMap.keySet())).getWhere();
-        else
+        } else
             return null;
     }
 
@@ -418,8 +432,8 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
         return AbstractOuterContext.getOuterValues(this);
     }
 
-    public void enumerate(ExprEnumerator enumerator) {
-        AbstractOuterContext.enumerate(this, enumerator);
+    public boolean enumerate(ExprEnumerator enumerator) {
+        return AbstractOuterContext.enumerate(this, enumerator);
     }
 
     public long getComplexity(boolean outer) {

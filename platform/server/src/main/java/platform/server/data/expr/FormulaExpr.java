@@ -13,6 +13,7 @@ import platform.server.classes.IntegralClass;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.expr.where.pull.ExprPullWheres;
 import platform.server.data.query.stat.CalculateJoin;
+import platform.server.data.query.stat.FormulaJoin;
 import platform.server.data.query.stat.InnerBaseJoin;
 import platform.server.data.query.stat.KeyStat;
 import platform.server.data.translator.*;
@@ -165,7 +166,7 @@ public class FormulaExpr extends StaticClassExpr {
         return getStatValue(this, keyStat);
     }
     public InnerBaseJoin<?> getBaseJoin() {
-        return new CalculateJoin<String>(params);
+        return new FormulaJoin<String>(params);
     }
 }
 

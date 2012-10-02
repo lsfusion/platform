@@ -12,10 +12,12 @@ import platform.server.data.expr.InnerExpr;
 import platform.server.data.expr.NotNullExprSet;
 import platform.server.data.query.stat.KeyStat;
 import platform.server.data.query.stat.StatKeys;
+import platform.server.data.query.stat.UnionJoin;
 import platform.server.data.query.stat.WhereJoin;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.where.Where;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -45,8 +47,8 @@ public class ExprEqualsJoin extends AbstractOuterContext<ExprEqualsJoin> impleme
         return ExprJoin.getInnerJoins(expr1).and(ExprJoin.getInnerJoins(expr2));
     }
 
-    public InnerJoins getJoinFollows(Result<Map<InnerJoin, Where>> upWheres) {
-        return InnerExpr.getFollowJoins(this, upWheres);
+    public InnerJoins getJoinFollows(Result<Map<InnerJoin, Where>> upWheres, Collection<UnionJoin> unionJoins) {
+        return InnerExpr.getFollowJoins(this, upWheres, unionJoins);
     }
 
     public NotNullExprSet getExprFollows(boolean recursive) {

@@ -260,4 +260,8 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
     public AndClassSet[] getAnd() {
         return new AndClassSet[]{this};
     }
+
+    public Stat getTypeStat() {
+        return Stat.ALOT;
+    }
 }

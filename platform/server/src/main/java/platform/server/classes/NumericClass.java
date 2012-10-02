@@ -111,6 +111,7 @@ public class NumericClass extends IntegralClass<Double> {
         return Double.MAX_VALUE / 2;
     }
 
+    @Override
     public Stat getTypeStat() {
         return new Stat(10, length);
     }

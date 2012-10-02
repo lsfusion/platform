@@ -114,6 +114,7 @@ public class DateTimeClass extends DataClass<Timestamp> {
         return "DateTimeClass";
     }
 
+    @Override
     public Stat getTypeStat() {
         return new Stat(Long.MAX_VALUE);
     }

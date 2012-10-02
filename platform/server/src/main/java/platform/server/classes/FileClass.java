@@ -83,10 +83,6 @@ public abstract class FileClass extends DataClass<byte[]> {
         return getFileSID() + (multiple?"_Multiple":"");
     }
 
-    public Stat getTypeStat() {
-        return Stat.ALOT;
-    }
-
     @Override
     public boolean calculateStat() {
         return false;

@@ -88,11 +88,6 @@ public class ColorClass extends DataClass {
     }
 
     @Override
-    public Stat getTypeStat() {
-        return Stat.ALOT;
-    }
-
-    @Override
     public Color read(Object value) {
         if (value instanceof Integer) {
             return new Color((Integer) value);

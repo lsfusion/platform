@@ -70,10 +70,6 @@ public class ArrayClass<T> extends DataClass<T[]> {
         throw new RuntimeException("not supported"); 
     }
 
-    public Stat getTypeStat() {
-        return Stat.ALOT;
-    }
-
     public T[] parseString(String s) throws ParseException {
         throw new RuntimeException("not supported");
     }

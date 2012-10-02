@@ -7,9 +7,11 @@ import platform.server.caches.AbstractOuterContext;
 import platform.server.caches.OuterContext;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.*;
+import platform.server.data.query.stat.UnionJoin;
 import platform.server.data.query.stat.WhereJoin;
 import platform.server.data.where.Where;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 
@@ -34,8 +36,8 @@ public abstract class ExprJoin<T extends ExprJoin<T>> extends AbstractOuterConte
         return baseExpr.equals(((ExprJoin) o).baseExpr);
     }
 
-    public InnerJoins getJoinFollows(Result<Map<InnerJoin, Where>> upWheres) { // все равно использует getExprFollows
-        return InnerExpr.getFollowJoins(this, upWheres);
+    public InnerJoins getJoinFollows(Result<Map<InnerJoin, Where>> upWheres, Collection<UnionJoin> unionJoins) { // все равно использует getExprFollows
+        return InnerExpr.getFollowJoins(this, upWheres, unionJoins);
     }
 
     public NotNullExprSet getExprFollows(boolean recursive) {
@@ -48,7 +50,7 @@ public abstract class ExprJoin<T extends ExprJoin<T>> extends AbstractOuterConte
 
     public static InnerJoins getInnerJoins(BaseExpr baseExpr) {
         InnerJoins result = new InnerJoins();
-        QuickSet<InnerExpr> innerExprs = baseExpr.getExprFollows(true, false).getInnerExprs();
+        QuickSet<InnerExpr> innerExprs = baseExpr.getExprFollows(true, false).getInnerExprs(null);
         for(int i=0;i<innerExprs.size;i++)
             result = result.and(new InnerJoins(innerExprs.get(i).getInnerJoin()));
         return result;
