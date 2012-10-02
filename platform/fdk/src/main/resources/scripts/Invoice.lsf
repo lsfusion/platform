@@ -108,12 +108,12 @@ META defineInvoice(sign)
 
     diffInvoicedOrderDetail 'Остаток по заказу' (orderDetail) = quantityOrderDetail (orderDetail) (-) invoicedOrderDetail(orderDetail);
 
-    inQuantityStockOrder 'Связь по кол-ву' (stock, order) = GROUP SUM diffInvoicedOrderDetail(orderDetail) IF stockOrderDetail(orderDetail) == stock AND diffInvoicedOrderDetail(orderDetail) >0
+    inInvoicedQuantityStockOrder 'Связь по кол-ву' (stock, order) = GROUP SUM diffInvoicedOrderDetail(orderDetail) IF stockOrderDetail(orderDetail) == stock AND diffInvoicedOrderDetail(orderDetail) >0
         BY stock, orderOrderDetail(orderDetail);
 
     inStockOrder 'Связь' (stock, order) = GROUP SUM 1 IF stockOrderDetail(orderDetail) == stock BY stock, orderOrderDetail(orderDetail);
 
-    FORM stockOrders 'Заказы'###sign
+    FORM invoiceOrders 'Заказы'###sign
         OBJECTS s = stock FIXED PANEL
         PROPERTIES (s) READONLY name
         OBJECTS c = customer FIXED PANEL
@@ -133,7 +133,7 @@ META defineInvoice(sign)
                 customerOrder(o) == c
 
         FILTERGROUP filter
-            FILTER 'Заказы для данного склада с возможностью выбора' 'F10' inQuantityStockOrder(s,o) DEFAULT
+            FILTER 'Заказы для данного склада с возможностью выбора' 'F10' inInvoicedQuantityStockOrder(s,o) DEFAULT
             FILTER 'Заказы только для данного склад' 'F9' inStockOrder(s,o)
 
         FILTERGROUP filter
@@ -142,7 +142,7 @@ META defineInvoice(sign)
         DIALOG order OBJECT o
     ;
 
-    DESIGN stockOrders FROM DEFAULT {
+    DESIGN invoiceOrders FROM DEFAULT {
         main {
             preferredSize = (1024, 768);
             NEW documentContainer BEFORE functions.box {
@@ -178,7 +178,7 @@ META defineInvoice(sign)
     fillOrderUserInvoice 'Заполнить накладную на основании заказа' =  ACTION (userInvoice) {
         LOCAL saleOrder = order();
 
-        FORM stockOrders OBJECTS s = stockUserInvoice(userInvoice), c = customerUserInvoice(userInvoice) MODAL;
+        FORM invoiceOrders OBJECTS s = stockUserInvoice(userInvoice), c = customerUserInvoice(userInvoice) MODAL;
         IF formResult() == formResult.ok THEN {
             SET saleOrder() <- chosenObject('o');
 

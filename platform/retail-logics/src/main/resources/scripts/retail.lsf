@@ -121,15 +121,6 @@ META defineDocumentHeaderItemRetailSum (object)
     @defineDocumentHeaderItemRetailSumCustomPrefix(object, object##Detail, , );
 END
 
-// ----------------------------- количество упаковок и вес товаров ----------------------- //
-META defineDocumentDetailPackWeightItem (object)
-    packQuantity###object##Detail 'Количество грузовых мест' (idetail) = round0(quantity###object##Detail(idetail)/
-        UNION OVERRIDE 1 IF idetail IS object##Detail, quantityPackItem(item###object##Detail(idetail)));
-
-    grossWeight###object##Detail 'Масса груза, т.' (idetail) = round3(
-        grossWeightItem(item###object##Detail(idetail))*quantity###object##Detail(idetail)/1000);
-END
-
 // ----------------------------------- Поставщик ------------------------------------------ //
 
 META defineDocumentHeaderSupplierContractDepartmentStore(object)
@@ -2088,7 +2079,7 @@ needToPriceChangeStatementDetail (statementDetail) = curRetailPriceStatementDeta
 
 // для накладной (шапка и хвост)
 
-@defineDocumentDetailPackWeightItem(statement);
+@defineDocumentDetailPackWeightSku(statement, item);
 
 @defineConsignment(statement);
 @implementConsignment(statement, departmentStore);
@@ -2480,7 +2471,7 @@ sumOutAccountDocumentLedger (ledger) += retailSumInnerFlowDetailInnerFlow(ledger
 sumItemOutAccountDocumentLedger (ledger) += retailSumItemInnerFlowDetailInnerFlow(ledger);
 sumContainerOutAccountDocumentLedger (ledger) += retailSumContainerInnerFlowDetailInnerFlow(ledger);
 
-@defineDocumentDetailPackWeightItem(innerFlow);
+@defineDocumentDetailPackWeightSku(innerFlow, item);
 
 @defineConsignment(innerFlow);
 @implementConsignment(innerFlow, departmentStore);
@@ -2822,7 +2813,7 @@ sumOutContractLedger(outContractLedger) += invoiceSumReturnSupplierDetailReturnS
 
 // для возвратной накладной (шапка и хвост)
 
-@defineDocumentDetailPackWeightItem(returnSupplier);
+@defineDocumentDetailPackWeightSku(returnSupplier, item);
 
 @defineConsignment(returnSupplier);
 @implementConsignment(returnSupplier, departmentStore);

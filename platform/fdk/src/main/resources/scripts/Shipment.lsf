@@ -180,12 +180,16 @@ META defineShipment(skuLedger, sign)
             MESSAGE 'Покупатель и компания в накладной и поставке должны соответствовать друг другу';
 
     GROUP invoiceGroup 'Информация о накладной' : baseGroup;
+
+    descriptionInvoiceInvoiceShipmentDetail 'Накладная' (shipmentDetail) = descriptionInvoice(invoiceShipmentDetail(shipmentDetail)) IN orderGroup;
     descriptionInvoiceUserShipmentDetail 'Накладная' (userShipmentDetail) = descriptionInvoice(invoiceUserShipmentDetail(userShipmentDetail)) IN invoiceGroup;
 
     inInvoiceShipment (invoice, shipment) = GROUP SUM quantityShipmentDetail(shipmentDetail) BY invoiceShipmentDetail(shipmentDetail), shipmentShipmentDetail(shipmentDetail);
 
     invoicesShipment 'Накладные' (shipment) = GROUP CONCAT castToString255(descriptionInvoice(invoice))
         IF inInvoiceShipment(invoice, shipment) , ', ' BY shipment IN invoiceGroup MINCHARWIDTH 30 PREFCHARWIDTH 50;
+
+
 
 //-- Подсчет к-ва в паставках
 
@@ -211,19 +215,109 @@ META defineShipment(skuLedger, sign)
         PROPERTIES(d) READONLY shippedInvoiceDetail AFTER quantityInvoiceDetail
 
     ;
+//--  Связь заказа и поставки
+    orderShipmentDetail = ABSTRACT order (shipmentDetail);
+    orderUserShipmentDetail = DATA order (userShipmentDetail);
+    orderShipmentDetail(shipmentDetail) += orderUserShipmentDetail(shipmentDetail);
 
-    diffShippedInvoiceDetail 'Разница' (invoiceDetail) = quantityInvoiceDetail (invoiceDetail) (-) shippedInvoiceDetail(invoiceDetail);
+    CONSTRAINT customerShipmentDetail(shipmentDetail) != customerOrder(orderUserShipmentDetail(shipmentDetail)) OR
+               companyUserShipment(shipmentDetail) != companyOrder(orderUserShipmentDetail(shipmentDetail))
+        CHECKED BY orderUserShipmentDetail
+            MESSAGE 'Покупатель и компания в заказе и поставке должны соответствовать друг другу';
+
+    descriptionOrderShipmentDetail 'Заказ' (shipmentDetail) = descriptionOrder(orderShipmentDetail(shipmentDetail)) IN orderGroup;
+    descriptionOrderUserShipmentDetail 'Заказ' (userShipmentDetail) = descriptionOrder(orderUserShipmentDetail(userShipmentDetail)) IN orderGroup;
+
+    inOrderShipment (order, shipment) = GROUP SUM quantityShipmentDetail(shipmentDetail) BY orderShipmentDetail(shipmentDetail), shipmentShipmentDetail(shipmentDetail);
+
+    ordersShipment 'Заказы' (shipment) = GROUP CONCAT castToString255(descriptionOrder(order))
+        IF inOrderShipment(order, shipment) , ', ' BY shipment IN orderGroup MINCHARWIDTH 30 PREFCHARWIDTH 50;
+
+    diffShippedInvoiceDetail 'Остаток по накладной' (invoiceDetail) = quantityInvoiceDetail (invoiceDetail) (-) shippedInvoiceDetail(invoiceDetail);
+
+    inShippedQuantityStockInvoice 'Связь по кол-ву' (stock, invoice) = GROUP SUM diffShippedInvoiceDetail(invoiceDetail) IF stockInvoiceDetail(invoiceDetail) == stock AND diffShippedInvoiceDetail(invoiceDetail) >0
+        BY stock, invoiceInvoiceDetail(invoiceDetail);
+
+    inStockInvoice 'Связь' (stock, invoice) = GROUP SUM 1 IF stockInvoiceDetail(invoiceDetail) == stock BY stock, invoiceInvoiceDetail(invoiceDetail);
+
+    FORM shipmentInvoices 'Накладные'###sign
+        OBJECTS s = stock FIXED PANEL
+        PROPERTIES (s) READONLY name
+        OBJECTS c = customer FIXED PANEL
+        PROPERTIES (c) READONLY name
+
+        OBJECTS i = invoice
+        PROPERTIES (i) READONLY isPostedInvoice FORCE GRID, objectClassName, numberInvoice, seriesInvoice, dateInvoice, timeInvoice,
+                                nameStockInvoice, nameCustomerInvoice, nameCurrencyInvoice, noteInvoice,
+                                numberContractSkuCustomerInvoice, isCommissionInvoice,
+                                countInvoiceDetailInvoice, quantityInvoiceDetailInvoice, sumInvoiceDetailInvoice,
+                                VATSumInvoiceDetailInvoice, invoiceSumInvoiceDetailInvoice, ordersInvoice
+
+        OBJECTS d = invoiceDetail
+        PROPERTIES (d) READONLY indexInvoiceDetail, idBarcodeSkuInvoiceDetail, nameSkuInvoiceDetail, shortNameUOMSkuInvoiceDetail,
+                       descriptionBatchInvoiceDetail, quantityInvoiceDetail, shippedInvoiceDetail, priceInvoiceDetail, sumInvoiceDetail,
+                       numberVATInvoiceDetail, valueVATInvoiceDetail, VATSumInvoiceDetail, invoiceSumInvoiceDetail,
+                       nameStockInvoiceDetail, descriptionOrderInvoiceDetail, diffShippedInvoiceDetail
+
+        FILTERS invoiceInvoiceDetail(d) == i,
+                customerInvoice(i) == c
+
+        FILTERGROUP filter
+            FILTER 'Накладные для данного склада с возможностью выбора' 'F10' inShippedQuantityStockInvoice(s,i) DEFAULT
+            FILTER 'Накладные только для данного склад' 'F9' inStockInvoice(s,i)
+
+        FILTERGROUP filter
+            FILTER 'Строки для данного склада с возможностью выбора' 'F10' stockInvoiceDetail(d) ==s AND diffShippedInvoiceDetail(d) >0 DEFAULT
+            FILTER 'Строки только для данного склада' 'F9' stockInvoiceDetail(d) ==s
+        DIALOG invoice OBJECT i
+    ;
+
+    DESIGN shipmentInvoices FROM DEFAULT {
+        main {
+            preferredSize = (1024, 768);
+            NEW documentContainer BEFORE functions.box {
+
+                childConstraints = TO THE BOTTOM;
+
+                NEW headerBox {
+                    childConstraints = TO THE RIGHT;
+                    ADD s.box;
+                    ADD c.box;
+                }
+                ADD i.box;
+                NEW documentDetail {
+                    type = TABBED;
+
+                    ADD d.box {
+                        title = 'Спецификация';
+                    }
+                    NEW printTab {
+                        title = 'Печатные формы';
+                        NEW printContainer {
+                            title = 'Печать';
+                            childConstraints = TO THE BOTTOM;
+                            fillVertical = 1.0;
+                        }
+                    }
+                }
+            }
+            PROPERTY(diffShippedInvoiceDetail) { background = #FFFFCC; }
+        }
+    }
+
+
     fillInvoiceUserShipment 'Заполнить поставку на основании накладной' =  ACTION (userShipment) {
         LOCAL saleInvoice = invoice();
 
-        FORM invoices MODAL;
+        FORM shipmentInvoices OBJECTS s = stockUserShipment(userShipment), c = customerUserShipment(userShipment) MODAL;
         IF formResult() == formResult.ok THEN {
             SET saleInvoice() <- chosenObject('i');
 
-            FOR invoiceInvoiceDetail(invoiceDetail) == saleInvoice() AND diffShippedInvoiceDetail(invoiceDetail)>0 ADDOBJ d = userShipmentDetail DO {
+            FOR invoiceInvoiceDetail(invoiceDetail) == saleInvoice() AND stockInvoiceDetail(invoiceDetail) ==stockUserShipment(userShipment) AND diffShippedInvoiceDetail(invoiceDetail)>0 ADDOBJ d = userShipmentDetail DO {
 
                 SET userShipmentUserShipmentDetail(d) <- userShipment;
                 SET invoiceUserShipmentDetail(d) <- saleInvoice();
+                SET orderUserShipmentDetail(d) <- orderInvoiceDetail(invoiceDetail);
     //            SET stockUserShipmentDetail (d) <- stockInvoiceDetail(invoiceDetail);
                 SET skuUserShipmentDetail(d) <- skuInvoiceDetail(invoiceDetail);
                 SET batchUserShipmentDetail (d) <- batchInvoiceDetail(invoiceDetail);
@@ -232,14 +326,128 @@ META defineShipment(skuLedger, sign)
         }
     } IN invoiceGroup;
 
-    EXTEND FORM userShipment
-        PROPERTIES(s) fillInvoiceUserShipment, invoicesShipment READONLY
-        PROPERTIES(d) descriptionInvoiceUserShipmentDetail
+//-- Подсчет поставленного к-ва по заказу
+
+    shippedOrderSku 'К-во в поставках' (order, sku) = GROUP SUM quantityShipmentDetail(shipmentDetail) IF isPostedShipmentDetail(shipmentDetail)
+        BY orderShipmentDetail(shipmentDetail), skuShipmentDetail(shipmentDetail);
+
+    shippedOrderDetail 'К-во в поставках' (orderDetail) = PARTITION UNGROUP shippedOrderSku
+                                                              LIMIT STRICT quantityOrderDetail (orderDetail)
+                                                              BY orderOrderDetail(orderDetail), skuOrderDetail(orderDetail)
+                                                              ORDER orderDetail;
+
+    diffShippedOrderDetail 'Остаток по заказу' (orderDetail) = quantityOrderDetail (orderDetail) (-) shippedOrderDetail(orderDetail);
+
+    inShippedQuantityStockOrder 'Связь по кол-ву' (stock, order) = GROUP SUM diffShippedOrderDetail(orderDetail) IF stockOrderDetail(orderDetail) == stock AND diffShippedOrderDetail(orderDetail) >0
+        BY stock, orderOrderDetail(orderDetail);
+
+
+
+    FORM shipmentOrders 'Заказы'###sign
+        OBJECTS s = stock FIXED PANEL
+        PROPERTIES (s) READONLY name
+        OBJECTS c = customer FIXED PANEL
+        PROPERTIES (c) READONLY name
+
+        OBJECTS o = order
+        PROPERTIES (o) READONLY isPostedOrder FORCE GRID, objectClassName, numberOrder, seriesOrder, dateOrder, timeOrder,
+                                nameStockOrder, nameCustomerOrder, nameCurrencyOrder, noteOrder,
+                                countOrderDetailOrder, quantityOrderDetailOrder, sumOrderDetailOrder
+
+        OBJECTS d = orderDetail
+        PROPERTIES (d) READONLY indexOrderDetail, idBarcodeSkuOrderDetail, nameSkuOrderDetail, shortNameUOMSkuOrderDetail,
+                                quantityOrderDetail, shippedOrderDetail, priceOrderDetail, sumOrderDetail, nameStockOrderDetail,
+                                diffShippedOrderDetail
+
+        FILTERS orderOrderDetail(d) == o,
+                customerOrder(o) == c
+
+        FILTERGROUP filter
+            FILTER 'Заказы для данного склада с возможностью выбора' 'F10' inShippedQuantityStockOrder(s,o) DEFAULT
+            FILTER 'Заказы только для данного склад' 'F9' inStockOrder(s,o)
+
+        FILTERGROUP filter
+            FILTER 'Строки для данного склада с возможностью выбора' 'F10' stockOrderDetail(d) ==s AND diffShippedOrderDetail(d) >0 DEFAULT
+            FILTER 'Строки только для данного склада' 'F9' stockOrderDetail(d) ==s
+        DIALOG order OBJECT o
     ;
-    EXTEND DESIGN userShipment { headerColumn2 { ADD s.invoiceGroup; } }
+
+    DESIGN shipmentOrders FROM DEFAULT {
+        main {
+            preferredSize = (1024, 768);
+            NEW documentContainer BEFORE functions.box {
+
+                childConstraints = TO THE BOTTOM;
+
+                NEW headerBox {
+                    childConstraints = TO THE RIGHT;
+                    ADD s.box;
+                    ADD c.box;
+                }
+                ADD o.box;
+                NEW documentDetail {
+                    type = TABBED;
+
+                    ADD d.box {
+                        title = 'Спецификация';
+                    }
+                    NEW printTab {
+                        title = 'Печатные формы';
+                        NEW printContainer {
+                            title = 'Печать';
+                            childConstraints = TO THE BOTTOM;
+                            fillVertical = 1.0;
+                        }
+                    }
+                }
+            }
+            PROPERTY(diffShippedOrderDetail) { background = #FFFFCC; }
+        }
+    }
+
+
+    EXTEND FORM userOrder
+        PROPERTIES(d) READONLY shippedOrderDetail AFTER invoicedOrderDetail
+
+    ;
+
+    EXTEND FORM userOrders
+        PROPERTIES(d) READONLY shippedOrderDetail AFTER invoicedOrderDetail
+
+    ;
+
+    EXTEND FORM orders
+        PROPERTIES(d) READONLY shippedOrderDetail AFTER invoicedOrderDetail
+
+    ;
+
+    fillOrderUserShipment 'Заполнить поставку на основании заказа' =  ACTION (userShipment) {
+        LOCAL saleOrder = order();
+
+        FORM shipmentOrders OBJECTS s = stockUserShipment(userShipment), c = customerUserShipment(userShipment) MODAL;
+        IF formResult() == formResult.ok THEN {
+            SET saleOrder() <- chosenObject('o');
+
+            FOR orderOrderDetail(orderDetail) == saleOrder() AND stockOrderDetail(orderDetail) ==stockUserShipment(userShipment) AND diffShippedOrderDetail(orderDetail)>0 ADDOBJ d = userShipmentDetail DO {
+
+                SET userShipmentUserShipmentDetail(d) <- userShipment;
+                SET orderUserShipmentDetail(d) <- saleOrder();
+//                SET stockUserShipmentDetail (d) <- stockOrderDetail(orderDetail);
+                SET skuUserShipmentDetail(d) <- skuOrderDetail(orderDetail);
+                SET quantityUserShipmentDetail (d) <- diffShippedOrderDetail(orderDetail);
+                SET priceUserShipmentDetail (d) <- priceOrderDetail(orderDetail);
+            }
+        }
+    } IN orderGroup;
+
+    EXTEND FORM userShipment
+        PROPERTIES(s) fillInvoiceUserShipment, invoicesShipment READONLY, fillOrderUserShipment, ordersShipment READONLY
+        PROPERTIES(d) descriptionInvoiceUserShipmentDetail BEFORE delete(d), descriptionOrderUserShipmentDetail BEFORE delete(d)
+    ;
+    EXTEND DESIGN userShipment { headerColumn2 { ADD s.invoiceGroup; ADD s.orderGroup;} }
     EXTEND FORM userShipments
-        PROPERTIES(s) READONLY invoicesShipment
-        PROPERTIES(d) READONLY descriptionInvoiceUserShipmentDetail
+        PROPERTIES(s) READONLY invoicesShipment, ordersShipment
+        PROPERTIES(d) READONLY descriptionInvoiceUserShipmentDetail, descriptionOrderUserShipmentDetail
     ;
 
 //-- аггр.объект
@@ -304,6 +512,9 @@ META defineShipment(skuLedger, sign)
     @defineDocumentDescription(invoiceShipment, invoiceShipmentDetail, seriesNumberInvoiceShipment, 'Поставка на основе инвойса'###sign);
     descriptionShipment (shipment) += descriptionInvoiceShipment(shipment);
 
+    @defineDocumentAggregationDetailProp (invoice, invoiceShipment, order, 'Заказ');
+    orderShipmentDetail (shipmentDetail) += orderInvoiceShipmentDetail(shipmentDetail);
+
     @defineDocumentDetailIndex(invoiceShipment);
 
     @defineDocumentAggregationDetailSku(invoice, invoiceShipment, sku);
@@ -321,6 +532,8 @@ META defineShipment(skuLedger, sign)
     sumInvoiceShipmentDetail(invoiceShipmentDetail) = shipmentSumInvoiceDetail(invoiceDetailInvoiceShipmentDetail(invoiceShipmentDetail));
     sumShipmentDetail(shipmentDetail) += sumInvoiceShipmentDetail(shipmentDetail);
 
+    invoiceInvoiceShipmentDetail(invoiceShipmentDetail) = invoiceInvoiceDetail(invoiceDetailInvoiceShipmentDetail(invoiceShipmentDetail));
+    invoiceShipmentDetail(shipmentDetail) += invoiceInvoiceShipmentDetail(shipmentDetail);
 
     FORM dialogShipments 'Поставки (все)'###sign
         OBJECTS s = shipment
@@ -333,7 +546,7 @@ META defineShipment(skuLedger, sign)
         OBJECTS d = shipmentDetail
         PROPERTIES (d) READONLY indexShipmentDetail, idBarcodeSkuShipmentDetail, nameSkuShipmentDetail, shortNameUOMSkuShipmentDetail,
                                 descriptionBatchShipmentDetail, quantityShipmentDetail, priceShipmentDetail, sumShipmentDetail,
-                                nameStockShipmentDetail
+                                nameStockShipmentDetail, descriptionInvoiceInvoiceShipmentDetail, descriptionOrderShipmentDetail
         FILTERS shipmentShipmentDetail(d) == s
 
         DIALOG shipment OBJECT s

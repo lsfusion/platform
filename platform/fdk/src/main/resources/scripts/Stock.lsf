@@ -707,6 +707,15 @@ META defineDocumentAggregationDetailBatch (primObject, aggrObject)
     batch###aggrObject##Detail 'Партия' (detail) = batch###primObject##Detail(primObject##Detail###aggrObject##Detail(detail)) PERSISTENT;
 END
 
+// Prop
+META defineDocumentAggregationDetailProp (primObject, aggrObject, propertyPrim, propertyAggr, caption)
+    propertyAggr###aggrObject##Detail caption (detail) = propertyPrim###primObject##Detail(primObject##Detail###aggrObject##Detail(detail)) PERSISTENT;
+END
+META defineDocumentAggregationDetailProp (primObject, aggrObject, property, caption)
+    @defineDocumentAggregationDetailProp (primObject, aggrObject, property, property, caption);
+END
+
+
 // ---------------------------------------------- Кол-во -------------------------------------------- //
 
 META defineDocumentDetailQuantityCustomPrefix (detail, prefix, caption)
