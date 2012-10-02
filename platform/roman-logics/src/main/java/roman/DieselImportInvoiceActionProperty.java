@@ -34,7 +34,7 @@ public class DieselImportInvoiceActionProperty extends ImportBoxInvoiceActionPro
                 null, null, null, null, null, null, null, null, null, null, null, countryField, originalNameField, null, null,
                 colorCodeField, null, genderField, null, null, new ImportField[]{customCodeField, customCode6Field},
                 compositionField, null, new ImportField[]{unitPriceField, RRPField}, null, null, new ImportField[]{boxNumberField, sidField}, null, colorNameField, unitNetWeightField, null, sizeField, unitQuantityField,
-                subCategoryCodeField, subCategoryNameField, collectionCodeField, collectionNameField});
+                subCategoryCodeField, subCategoryNameField, collectionCodeField, collectionNameField, brandCodeField, brandNameField});
     }
 
 }

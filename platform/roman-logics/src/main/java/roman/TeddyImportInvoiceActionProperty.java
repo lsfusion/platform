@@ -34,9 +34,9 @@ public class TeddyImportInvoiceActionProperty extends ImportBoxInvoiceActionProp
                 barCodeField, compositionField, null, null, null, null,
                 new ImportField[]{originalNameField,subCategoryCodeField, subCategoryNameField},
                 sidField, sizeField, colorCodeField, colorNameField, unitQuantityField, unitPriceField, null, null,
-                RRPField, null, null, null, null, null, null, null, null, null, numberSkuField,
+                RRPField, null, null, null, null, null, brandCodeField, null, null, null, numberSkuField,
                 new ImportField[]{sidDestinationDataSupplierBoxField, unitNetWeightField, countryField,
                 customCodeField, customCode6Field, themeCodeField, themeNameField, genderField,
-                collectionCodeField, collectionNameField}});
+                collectionCodeField, collectionNameField, brandNameField}});
     }
 }

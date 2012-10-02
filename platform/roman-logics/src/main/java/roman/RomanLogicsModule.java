@@ -164,7 +164,7 @@ public class RomanLogicsModule extends LogicsModule {
     ConcreteCustomClass sizeSupplier;
     ConcreteCustomClass gender;
     ConcreteCustomClass genderSupplier;
-    private ConcreteCustomClass brandSupplier;
+    public ConcreteCustomClass brandSupplier;
     public ConcreteCustomClass themeSupplier;
     public ConcreteCustomClass collectionSupplier;
     public ConcreteCustomClass categorySupplier;
@@ -212,7 +212,7 @@ public class RomanLogicsModule extends LogicsModule {
     LCP supplierSizeSupplier;
     private LCP nameSupplierSizeSupplier;
     LCP supplierGenderSupplier;
-    private LCP sidBrandSupplier;
+    public LCP sidBrandSupplier;
     public LCP customsSIDBrandSupplier;
     public LCP customsSIDSupplier;
     public LCP customsSIDArticle;
@@ -239,13 +239,13 @@ public class RomanLogicsModule extends LogicsModule {
     private LCP sidTypeDutyRegistrationCustomsZone;
     private LCP nameTypeDutyRegistrationCustomsZone;
 
-    private LCP supplierBrandSupplier;
+    public LCP supplierBrandSupplier;
     private LCP nameSupplierBrandSupplier;
     private LCP brandSupplierSupplier;
     private LCP nameBrandSupplierSupplier;
-    private LCP brandSupplierArticle;
+    public LCP brandSupplierArticle;
     private LCP sidBrandSupplierArticle;
-    private LCP nameBrandSupplierArticle;
+    public LCP nameBrandSupplierArticle;
     private LCP supplierBrandSupplierArticle;
     private LCP countryBrandSupplier;
     private LCP nameCountryBrandSupplier;

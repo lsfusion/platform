@@ -39,7 +39,7 @@ public class SteilmannImportInvoiceActionProperty extends ImportBoxInvoiceAction
                 countryField, sizeField, unitQuantityField, null, null, null, null, new ImportField[] {RRPField, unitPriceField},
                 null, barCodeField, unitNetWeightField, boxNumberField, null, null, null, numberSkuField, colorNameField,
                 themeCodeField, themeNameField, genderField, sidDestinationDataSupplierBoxField,
-                collectionCodeField, collectionNameField});
+                collectionCodeField, collectionNameField, brandCodeField, brandNameField});
 
 
 

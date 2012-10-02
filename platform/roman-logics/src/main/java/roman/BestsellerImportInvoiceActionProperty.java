@@ -29,6 +29,7 @@ public class BestsellerImportInvoiceActionProperty extends ImportBoxInvoiceActio
         return new EDIInvoiceImporter(inputTable, barCodeField, sidField, invoiceSIDField, boxNumberField, colorCodeField,
                 colorNameField, sizeField, originalNameField, countryField, unitNetWeightField, compositionField, unitPriceField, dateInvoiceField,
                 RRPField, unitQuantityField, numberSkuField, customCodeField, customCode6Field, genderField, themeCodeField, themeNameField, sidDestinationDataSupplierBoxField,
-                new ImportField[]{subCategoryCodeField, subCategoryNameField, collectionCodeField, collectionNameField});
+                new ImportField[]{subCategoryCodeField, subCategoryNameField, collectionCodeField, collectionNameField,
+                        brandCodeField, brandNameField});
     }
 }

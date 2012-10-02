@@ -28,7 +28,7 @@ import java.util.*;
 public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionProperty {
 
     protected ImportField invoiceSIDField, dateInvoiceField, boxNumberField, barCodeField, itemSupplierArticleColorSizeField,
-            colorCodeField, sidField, colorNameField, sizeField, themeCodeField, themeNameField,
+            colorCodeField, sidField, colorNameField, sizeField, brandCodeField, brandNameField, themeCodeField, themeNameField,
             collectionCodeField, collectionNameField, subCategoryCodeField, subCategoryNameField,
             genderField, compositionField, countryField, customCodeField, customCode6Field, unitPriceField,
             unitQuantityField, unitNetWeightField, originalNameField, numberSkuField, RRPField, sidDestinationDataSupplierBoxField;
@@ -57,6 +57,8 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
         sidField = new ImportField(LM.sidArticle);
         colorNameField = new ImportField(LM.baseLM.name);
         sizeField = new ImportField(LM.sidSizeSupplier);
+        brandCodeField = new ImportField(LM.sidBrandSupplier);
+        brandNameField = new ImportField(LM.nameBrandSupplierArticle);
         themeCodeField = new ImportField(LM.sidThemeSupplier);
         themeNameField = new ImportField(LM.nameThemeSupplierArticle);
         collectionCodeField = new ImportField(LM.sidCollectionSupplier);
@@ -166,6 +168,12 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
         properties.add(new ImportProperty(supplier, LM.supplierSizeSupplier.getMapping(sizeKey)));
         properties.add(new ImportProperty(sizeField, LM.sizeSupplierItem.getMapping(itemKey), LM.object(LM.sizeSupplier).getMapping(sizeKey)));
 
+        ImportKey<?> brandKey = new ImportKey(LM.brandSupplier, LM.brandSIDSupplier.getMapping(brandCodeField, supplier));
+        properties.add(new ImportProperty(brandCodeField, LM.sidBrandSupplier.getMapping(brandKey)));
+        properties.add(new ImportProperty(supplier, LM.supplierBrandSupplier.getMapping(brandKey)));
+        properties.add(new ImportProperty(brandNameField, LM.baseLM.name.getMapping(brandKey)));
+        properties.add(new ImportProperty(brandCodeField, LM.brandSupplierArticle.getMapping(articleKey), LM.object(LM.brandSupplier).getMapping(brandKey)));
+       
         ImportKey<?> themeKey = new ImportKey(LM.themeSupplier, LM.themeSIDSupplier.getMapping(themeCodeField, supplier));
         properties.add(new ImportProperty(themeCodeField, LM.sidThemeSupplier.getMapping(themeKey)));
         properties.add(new ImportProperty(supplier, LM.supplierThemeSupplier.getMapping(themeKey)));
@@ -256,9 +264,9 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
             for (List<Object> editingRow : table.data) {
                 String invoiceSID = (String) editingRow.get(invoiceSIDIndex);
                 Date dateInvoice = dateInvoiceIndex != -1 ? (Date) editingRow.get(dateInvoiceIndex) : null;
-                Double unitQuantity = unitQuantityIndex != -1 ? (Double) editingRow.get(unitQuantityIndex) : 0.0;
-                Double unitPrice = unitPriceIndex != -1 ? (Double) editingRow.get(unitQuantityIndex) : 0.0;
-                Double unitNetWeight = unitNetWeightIndex != -1 ? (Double) editingRow.get(unitNetWeightIndex) : 0.0; 
+                Double unitQuantity = (unitQuantityIndex != -1 && editingRow.get(unitQuantityIndex)!=null) ? (Double) editingRow.get(unitQuantityIndex) : 0.0;
+                Double unitPrice = (unitPriceIndex != -1 && editingRow.get(unitPriceIndex)!=null)? (Double) editingRow.get(unitPriceIndex) : 0.0;
+                Double unitNetWeight = (unitNetWeightIndex != -1 && editingRow.get(unitNetWeightIndex)!=null)? (Double) editingRow.get(unitNetWeightIndex) : 0.0;
                 Double sumPrice = unitQuantity * unitPrice;
                 Double sumNetWeight = unitQuantity * unitNetWeight;
                 InvoiceProperties invoice = invoiceList.containsKey(invoiceSID) ? invoiceList.get(invoiceSID) : new InvoiceProperties(dateInvoice, 0.0, 0.0, 0.0);
@@ -272,9 +280,9 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
 
         ImportKey<?>[] keysArray;
         if (!isSimpleInvoice()) {
-            keysArray = new ImportKey<?>[]{invoiceKey, boxKey, destinationKey, articleKey, itemKey, colorKey, sizeKey, countryKey, customCategoryKey, customCategory6Key, themeKey, collectionKey, subCategoryKey, genderKey};
+            keysArray = new ImportKey<?>[]{invoiceKey, boxKey, destinationKey, articleKey, itemKey, colorKey, sizeKey, countryKey, customCategoryKey, customCategory6Key, brandKey, themeKey, collectionKey, subCategoryKey, genderKey};
         } else {
-            keysArray = new ImportKey<?>[]{invoiceKey, articleKey, itemKey, colorKey, sizeKey, countryKey, customCategoryKey, customCategory6Key, themeKey, collectionKey, subCategoryKey, genderKey};
+            keysArray = new ImportKey<?>[]{invoiceKey, articleKey, itemKey, colorKey, sizeKey, countryKey, customCategoryKey, customCategory6Key, brandKey, themeKey, collectionKey, subCategoryKey, genderKey};
         }
 
         HashSet<String> result = (HashSet<String>) context.requestUserInteraction(new ImportPreviewClientAction(invoiceList));

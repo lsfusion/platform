@@ -27,7 +27,8 @@ public class AprioriImportInvoiceActionProperty extends ImportBoxInvoiceActionPr
 
                 colorNameField, boxNumberField, originalNameField, RRPField,
                 themeCodeField, themeNameField, genderField, sidDestinationDataSupplierBoxField,
-                subCategoryCodeField, subCategoryNameField, collectionCodeField, collectionNameField
+                subCategoryCodeField, subCategoryNameField, collectionCodeField, collectionNameField,
+                brandCodeField, brandNameField
 
         });
     }

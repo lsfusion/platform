@@ -26,7 +26,8 @@ public class WomenSecretImportInvoiceActionProperty extends ImportBoxInvoiceActi
                 new ImportField[] {customCodeField, customCode6Field}, countryField, unitPriceField, null,
                 null, unitNetWeightField, null, null, invoiceSIDField, dateInvoiceField, boxNumberField, null, colorCodeField, null, sizeField, unitQuantityField,
                 null, originalNameField, barCodeField, numberSkuField, new ImportField[] {colorNameField, RRPField, themeCodeField, themeNameField, genderField, sidDestinationDataSupplierBoxField,
-                subCategoryCodeField, subCategoryNameField, collectionCodeField, collectionNameField}});
+                subCategoryCodeField, subCategoryNameField, collectionCodeField, collectionNameField,
+                brandCodeField, brandNameField}});
     }
 
     @Override
