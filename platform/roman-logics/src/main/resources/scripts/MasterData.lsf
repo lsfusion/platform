@@ -198,7 +198,7 @@ FORM categoryDialog 'Товарные группы'
         FILTER 'Всех потомков' 'F9' isParentCategoryCategory(cg, g)
         FILTER 'Только непосредственных потомков' 'F8' parentCategory(cg) == g
 
-    DIALOG category OBJECT g
+    DIALOG category OBJECT cg
 ;
 
 DESIGN categoryDialog FROM DEFAULT {

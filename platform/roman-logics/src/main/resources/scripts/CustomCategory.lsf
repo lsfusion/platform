@@ -188,7 +188,8 @@ EXTEND DESIGN migrationData {
 FORM customCategoryZones 'ТН ВЭД (зональный)'
 
     OBJECTS cz = customsZone FIXED PANEL
-    PROPERTIES(cz) SELECTOR name, sidTypeDutyDutyCustomsZone, nameTypeDutyDutyCustomsZone, sidTypeDutyNDSCustomsZone, nameTypeDutyNDSCustomsZone, sidTypeDutyRegistrationCustomsZone, nameTypeDutyRegistrationCustomsZone
+    PROPERTIES(cz) SELECTOR name, sidTypeDutyDutyCustomsZone, nameTypeDutyDutyCustomsZone, sidTypeDutyNDSCustomsZone, nameTypeDutyNDSCustomsZone,
+                   sidTypeDutyRegistrationCustomsZone, nameTypeDutyRegistrationCustomsZone, nameTypeExchangePayCustomCustomsZone, nameTypeExchangePayManagerialCustomsZone
 
     OBJECTS s = subCategory
     PROPERTIES(s) READONLY nameSubCategory

@@ -138,6 +138,7 @@ CLASS declarationDetail 'Позиция декларации' : batchA;
 @defineDocumentTables(declaration);
 
 TABLE declarationSku (declaration, sku);
+TABLE declarationInnerInvoiceSku (declaration, innerInvoice, sku);
 TABLE declarationDetailInnerInvoice (declarationDetail, innerInvoice);
 
 CLASS correction 'КТС' : transaction;
@@ -424,9 +425,8 @@ roundCurrencyDeclarationDetail(number, declarationDetail) = roundCurrencyDeclara
 roundTypeExchangeDeclaration '' (number, declaration) = roundCurrency(number, currencyTypeExchange(typeExchangeCustomDeclaration(declaration)));
 roundTypeExchangeDeclarationDetail '' (number, declarationDetail) = roundTypeExchangeDeclaration(number, declarationDeclarationDetail(declarationDetail));
 
-
-typeExchangeCustomDeclaration(declaration) <- typeExchangePayCustom() WHEN CHANGED (dateDeclaration(declaration));
-typeExchangeManagerialDeclaration(declaration) <- typeExchangePayManagerial() WHEN CHANGED (dateDeclaration(declaration));
+typeExchangeCustomDeclaration(declaration) <- typeExchangePayCustomCustomsZone(customsZoneDeclaration(declaration)) WHEN CHANGED (importerDeclaration(declaration));
+typeExchangeManagerialDeclaration(declaration) <- typeExchangePayManagerialCustomsZone(customsZoneDeclaration(declaration)) WHEN CHANGED (importerDeclaration(declaration));
 
 @defineNearestRateExchangeObject(declaration, custom, , dateDeclaration, baseGroup);
 @defineNearestRateExchangeObject(declaration, managerial, , dateDeclaration, baseGroup);

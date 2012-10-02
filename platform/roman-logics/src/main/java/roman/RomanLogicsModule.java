@@ -303,6 +303,10 @@ public class RomanLogicsModule extends LogicsModule {
     public LCP nameTypeExchangePayCustom;
     public LCP typeExchangePayManagerial;
     public LCP nameTypeExchangePayManagerial;
+    public LCP typeExchangePayCustomCustomsZone;
+    public LCP nameTypeExchangePayCustomCustomsZone;
+    public LCP typeExchangePayManagerialCustomsZone;
+    public LCP nameTypeExchangePayManagerialCustomsZone;
 
 //    public LCP typeExchangeRetail;
 //    public LCP nameTypeExchangeRetail;
@@ -671,6 +675,8 @@ public class RomanLogicsModule extends LogicsModule {
     private LCP dateShipmentFreight;
     private LCP dateArrivalFreight;
     private LCP exporterFreight;
+    private LCP supplierFreight;
+    private LCP nameSupplierFreight;
     private LCP countryFreight;
     private LCP nameCountryFreight;
     private LCP languageFreight;
@@ -704,6 +710,8 @@ public class RomanLogicsModule extends LogicsModule {
     public LCP originalNameArticleSkuLanguage;
     public LCP coefficientArticle;
     public LCP coefficientArticleSku;
+    public LCP typeLabelArticle;
+    public LCP nameTypeLabelArticle;
     private LCP inSupplierBoxShipment;
     private LCP quantityArticle;
     private LCP quantityShipSku;
@@ -1534,7 +1542,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         commonSize = addConcreteClass("commonSize", "Размер", baseClass.named);
 
-        colorSupplier = addConcreteClass("colorSupplier", "Цвет поставщика", baseClass.named);
+        colorSupplier = addConcreteClass("colorSupplier", "Цвет поставщика", baseClass.named, secondNameClass, baseLM.multiLanguageNamed);
         sizeSupplier = addConcreteClass("sizeSupplier", "Размер поставщика", baseClass);
         gender = addConcreteClass("gender", "Пол", baseClass, baseLM.multiLanguageNamed);
         genderSupplier = addConcreteClass("genderSupplier", "Пол поставщика", baseClass);
@@ -1757,6 +1765,13 @@ public class RomanLogicsModule extends LogicsModule {
         nameTypeExchangePayCustom = addJProp(baseGroup, "nameTypeExchangePayCustom", "Тип обмена валют для платежей (БУ)", baseLM.name, typeExchangePayCustom);
         typeExchangePayManagerial = addDProp(idGroup, "typeExchangePayManagerial", "Тип обмена валют для платежей (ИД)", baseLM.typeExchange);
         nameTypeExchangePayManagerial = addJProp(baseGroup, "nameTypeExchangePayManagerial", "Тип обмена валют для платежей (УУ)", baseLM.name, typeExchangePayManagerial);
+
+        typeExchangePayCustomCustomsZone = addDProp(idGroup, "typeExchangePayCustomCustomsZone", "Тип обмена для платежей (ИД)", baseLM.typeExchange, customsZone);
+        nameTypeExchangePayCustomCustomsZone = addJProp(baseGroup, "nameTypeExchangePayCustomCustomsZone", "Тип обмена для платежей (БУ)", baseLM.name, typeExchangePayCustomCustomsZone, 1);
+
+        typeExchangePayManagerialCustomsZone = addDProp(idGroup, "typeExchangePayManagerialCustomsZone", "Тип обмена для платежей (ИД)", baseLM.typeExchange, customsZone);
+        nameTypeExchangePayManagerialCustomsZone = addJProp(baseGroup, "nameTypeExchangePayManagerialCustomsZone", "Тип обмена для платежей (УУ)", baseLM.name, typeExchangePayManagerialCustomsZone, 1);
+
 
         currencyPayFreights = addDProp(idGroup, "currencyPayFreights", "Валюта транспорта (ИД)", baseLM.currency);
         nameCurrencyPayFreights = addJProp(baseGroup, "nameCurrencyPayFreights", "Валюта транспорта", baseLM.name, currencyPayFreights);
@@ -2219,6 +2234,9 @@ public class RomanLogicsModule extends LogicsModule {
 
         coefficientArticle = addDProp(intraAttributeGroup, "coefficientArticle", "Кол-во в комплекте", IntegerClass.instance, article);
         coefficientArticleSku = addJProp(intraAttributeGroup, true, "coefficientArticleSku", "Кол-во в комплекте", coefficientArticle, articleSku, 1);
+
+        typeLabelArticle = addDProp(idGroup, "typeLabelArticle", "Тип этикетки (ИД)", typeLabel, article);
+        nameTypeLabelArticle = addJProp("nameTypeLabelArticle", "Тип этикетки", baseLM.name, typeLabelArticle, 1);
 
         //Category
         typeInvoiceCategory = addDProp(idGroup, "typeInvoiceCategory", "Тип инвойса номенклатурной группы (ИД)", typeInvoice, category);
@@ -3337,6 +3355,12 @@ public class RomanLogicsModule extends LogicsModule {
         addressOriginExporterFreight = addJProp(baseGroup, "addressOriginExporterFreight", "Адрес", addressOriginSubject, exporterFreight, 1);
         addressExporterFreight = addJProp(baseGroup, "addressExporterFreight", "Адрес", addressSubject, exporterFreight, 1);
 
+        supplierFreight = addDProp(idGroup, "supplierFreight", "Поставщик (ИД)", supplier, freight);
+        nameSupplierFreight = addJProp("nameSupplierFreight", "Поставщик", baseLM.name, supplierFreight, 1);
+
+        addConstraint(addJProp("Поставщик инвойса должен соответствовать поставщику фрахта", baseLM.diff2,
+                supplierDocument, 1, addJProp(supplierFreight, freightDirectInvoice, 1), 1), true);
+
         inInvoiceFreight = addDProp(baseGroup, "inInvoiceFreight", "Вкл.", LogicalClass.instance, invoice, freight);
         netWeightInvoicedFreight = addSGProp(baseGroup, "netWeightInvoicedFreight", "Вес инвойсов", addJProp(baseLM.and1, netWeightDocument, 1, inInvoiceFreight, 1, 2), 2);
 
@@ -3496,12 +3520,11 @@ public class RomanLogicsModule extends LogicsModule {
         customCategoryOriginFreightSku = addDProp(idGroup, "customCategoryOriginFreightSku", "ТН ВЭД (ИД)", customCategoryOrigin, freight, sku);
         customCategoryOriginFreightSku.setEventChangeNewSet(addJProp(baseLM.and1, customCategoryOriginArticleSku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
         sidCustomCategoryOriginFreightSku = addJProp(baseGroup, "sidCustomCategoryOriginFreightSku", "ТН ВЭД (ориг.)", sidCustomCategoryOrigin, customCategoryOriginFreightSku, 1, 2);
-        //addConstraint(addJProp("Зона ТН ВЭД должна совпадать с зоной фрахта", baseLM.diff2,
-        //        customsZoneFreight, 1, addJProp(customsZoneCustomCategory10, customCategory10FreightSku, 1, 2), 1, 2), true);
+        addConstraint(addJProp("Зона ТН ВЭД должна совпадать с зоной фрахта", baseLM.diff2,
+                customsZoneFreight, 1, addJProp(customsZoneCustomCategory10, customCategory10FreightSku, 1, 2), 1, 2), true);
 
-
-        //addConstraint(addJProp("Зона ТН ВЭД должна совпадать с зоной фрахта", baseLM.diff2,
-        //        customsZoneFreight, 1, addJProp(customsZoneCustomCategory10, customCategory10SkuFreight, 2, 1), 1, 2), true);
+        addConstraint(addJProp("Зона ТН ВЭД должна совпадать с зоной фрахта", baseLM.diff2,
+                customsZoneFreight, 1, addJProp(customsZoneCustomCategory10, customCategory10SkuFreight, 2, 1), 1, 2), true);
 
         quantityProxyImporterFreightCustomCategory6Category = addSGProp(baseGroup, "quantityProxyImporterFreightCustomCategory6Category", "Кол-во", quantityProxyImporterFreightSku, 1, 2, customCategory6FreightSku, 2, 3, categoryArticleSku, 3);
         quantityProxyImporterFreightCustomCategory6 = addSGProp(baseGroup, "quantityProxyImporterFreightCustomCategory6", "Кол-во", quantityProxyImporterFreightSku, 1, 2, customCategory6FreightSku, 2, 3);
@@ -5681,7 +5704,9 @@ public class RomanLogicsModule extends LogicsModule {
         private FreightShipmentFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
 
-            objFreight = addSingleGroupObject(freight, "Фрахт", baseLM.date, baseLM.objectClassName, nameRouteFreight, nameExporterFreight, descriptionFreight, volumeDataFreight, tonnageDataFreight, grossWeightFreight, volumeDataFreight, palletCountDataFreight, palletNumberFreight, freightBoxNumberFreight, nameCurrencyFreight, sumFreightFreight);
+            objFreight = addSingleGroupObject(freight, "Фрахт", baseLM.date, baseLM.objectClassName, nameRouteFreight, nameExporterFreight,
+                    nameSupplierFreight, descriptionFreight, volumeDataFreight, tonnageDataFreight, grossWeightFreight,
+                    volumeDataFreight, palletCountDataFreight, palletNumberFreight, freightBoxNumberFreight, nameCurrencyFreight, sumFreightFreight);
             objFreight.groupTo.setSingleClassView(ClassViewType.PANEL);
             setEditType(objFreight, PropertyEditType.READONLY);
 //            addObjectActions(this, objFreight);
