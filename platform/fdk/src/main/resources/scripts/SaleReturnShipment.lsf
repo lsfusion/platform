@@ -1,6 +1,6 @@
-MODULE ReturnShipment;
+MODULE SaleReturnShipment;
 
-REQUIRE Shipment, ReturnInvoice
+REQUIRE Shipment, SaleReturnInvoice
 ;
 
 NAMESPACE Return;
@@ -19,8 +19,3 @@ sumInSkuLedger(ledger) += sumShipmentDetail(ledger);
 
 // ------------- Навигатор --------- //
 
-NAVIGATOR {
-    returnNavigator {
-        ADD userShipments;
-    }
-}

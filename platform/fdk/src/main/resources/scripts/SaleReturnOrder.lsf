@@ -1,4 +1,4 @@
-MODULE ReturnOrder;
+MODULE SaleReturnOrder;
 
 REQUIRE Order, SaleShipment
 ;
@@ -11,8 +11,3 @@ NAMESPACE Return;
 
 @defineOrder(' (возврат)');
 
-NAVIGATOR {
-    NEW returnNavigator 'Управление возвратами' {
-        ADD userOrders;
-    }
-}

@@ -21,11 +21,3 @@ sumOutSkuLedger(ledger) += sumShipmentDetail(ledger);
 //skipSkuLedger (ledger) += skipSkuLedgerInvoiceWHOutDetail(ledger);
 @defineConstraintSkuLedgerCosted(shipment, 'Не хватает остатков по партиям для продажи товаров');
 
-// ------------- Навигатор --------- //
-
-NAVIGATOR {
-    saleNavigator {
-        ADD userShipments;
-//        ADD dialogShipments;
-    }
-}

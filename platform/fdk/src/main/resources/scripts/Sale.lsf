@@ -1,0 +1,43 @@
+MODULE Sale;
+
+REQUIRE SaleShipment, SaleReturnShipment
+;
+
+//-----------------------------------------------------------------------------------------------------------//
+
+
+currentReserveSaleSkuStock 'Текущий резерв'(sku, stock)  = Sale.currentReserveSkuStock(sku, stock) (-)
+    Return.currentReserveSkuStock(sku, stock);
+
+NAVIGATOR {
+    NEW saleNavigator 'Управление продажами' {
+        ADD Sale.userOrders;
+        ADD Sale.userInvoices;
+        ADD Sale.userShipments;
+//      ADD dialogShipments;
+    }
+}
+
+NAVIGATOR {
+    NEW returnNavigator 'Управление возвратами' {
+        ADD Return.userOrders;
+        ADD Return.userInvoices;
+        ADD Return.userShipments;
+//      ADD dialogShipments;
+    }
+}
+
+META defineDialogSkuReserve (form)
+
+    form###reserve 'Резерв' (sku) = currentReserveSaleSkuStock(sku, form###stock());
+
+    EXTEND FORM form
+        PROPERTIES(s) READONLY  form###reserve AFTER form###balance SHOWIF form###stock()
+    ;
+END
+
+@defineDialogSkuReserve(dialogSku);
+
+
+
+

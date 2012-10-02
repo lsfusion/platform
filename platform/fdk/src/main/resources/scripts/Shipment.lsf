@@ -193,11 +193,11 @@ META defineShipment(skuLedger, sign)
 
 //-- Подсчет к-ва в паставках
 
-    shippedInvoiceSku 'К-во в поставках' (invoice, sku) = GROUP SUM quantityShipmentDetail(shipmentDetail) IF isPostedShipmentDetail(shipmentDetail)
-        BY invoiceShipmentDetail(shipmentDetail), skuShipmentDetail(shipmentDetail);
+    shippedInvoiceSku 'К-во в поставках' (invoice, sku) = [GROUP SUM quantityShipmentDetail(shipmentDetail) IF isPostedShipmentDetail(shipmentDetail)
+        BY invoiceShipmentDetail(shipmentDetail), skuShipmentDetail(shipmentDetail)](invoice, sku) AND isPostedInvoice(invoice);
 
     shippedInvoiceDetail 'К-во в поставках' (invoiceDetail) = PARTITION UNGROUP shippedInvoiceSku
-                                                              LIMIT STRICT quantityInvoiceDetail (invoiceDetail)
+                                                              LIMIT STRICT quantityInvoiceDetail (invoiceDetail) AND isPostedInvoiceDetail(invoiceDetail)
                                                               BY invoiceInvoiceDetail(invoiceDetail), skuInvoiceDetail(invoiceDetail)
                                                               ORDER invoiceDetail;
 
@@ -235,7 +235,8 @@ META defineShipment(skuLedger, sign)
 
     diffShippedInvoiceDetail 'Остаток по накладной' (invoiceDetail) = quantityInvoiceDetail (invoiceDetail) (-) shippedInvoiceDetail(invoiceDetail);
 
-    inShippedQuantityStockInvoice 'Связь по кол-ву' (stock, invoice) = GROUP SUM diffShippedInvoiceDetail(invoiceDetail) IF stockInvoiceDetail(invoiceDetail) == stock AND diffShippedInvoiceDetail(invoiceDetail) >0
+    inShippedQuantityStockInvoice 'Связь по кол-ву' (stock, invoice) = GROUP SUM diffShippedInvoiceDetail(invoiceDetail) IF stockInvoiceDetail(invoiceDetail) == stock
+        AND diffShippedInvoiceDetail(invoiceDetail) >0 AND isPostedInvoiceDetail(invoiceDetail)
         BY stock, invoiceInvoiceDetail(invoiceDetail);
 
     inStockInvoice 'Связь' (stock, invoice) = GROUP SUM 1 IF stockInvoiceDetail(invoiceDetail) == stock BY stock, invoiceInvoiceDetail(invoiceDetail);
@@ -260,14 +261,15 @@ META defineShipment(skuLedger, sign)
                        nameStockInvoiceDetail, descriptionOrderInvoiceDetail, diffShippedInvoiceDetail
 
         FILTERS invoiceInvoiceDetail(d) == i,
-                customerInvoice(i) == c
+                customerInvoice(i) == c,
+                isPostedInvoice(i)
 
         FILTERGROUP filter
             FILTER 'Накладные для данного склада с возможностью выбора' 'F10' inShippedQuantityStockInvoice(s,i) DEFAULT
             FILTER 'Накладные только для данного склад' 'F9' inStockInvoice(s,i)
 
         FILTERGROUP filter
-            FILTER 'Строки для данного склада с возможностью выбора' 'F10' stockInvoiceDetail(d) ==s AND diffShippedInvoiceDetail(d) >0 DEFAULT
+            FILTER 'Строки для данного склада с возможностью выбора' 'F10' stockInvoiceDetail(d) ==s AND diffShippedInvoiceDetail(d) >0 AND isPostedInvoiceDetail(d) DEFAULT
             FILTER 'Строки только для данного склада' 'F9' stockInvoiceDetail(d) ==s
         DIALOG invoice OBJECT i
     ;
@@ -313,7 +315,7 @@ META defineShipment(skuLedger, sign)
         IF formResult() == formResult.ok THEN {
             SET saleInvoice() <- chosenObject('i');
 
-            FOR invoiceInvoiceDetail(invoiceDetail) == saleInvoice() AND stockInvoiceDetail(invoiceDetail) ==stockUserShipment(userShipment) AND diffShippedInvoiceDetail(invoiceDetail)>0 ADDOBJ d = userShipmentDetail DO {
+            FOR invoiceInvoiceDetail(invoiceDetail) == saleInvoice() AND stockInvoiceDetail(invoiceDetail) ==stockUserShipment(userShipment) AND diffShippedInvoiceDetail(invoiceDetail)>0 AND isPostedInvoiceDetail(invoiceDetail) ADDOBJ d = userShipmentDetail DO {
 
                 SET userShipmentUserShipmentDetail(d) <- userShipment;
                 SET invoiceUserShipmentDetail(d) <- saleInvoice();
@@ -328,17 +330,21 @@ META defineShipment(skuLedger, sign)
 
 //-- Подсчет поставленного к-ва по заказу
 
-    shippedOrderSku 'К-во в поставках' (order, sku) = GROUP SUM quantityShipmentDetail(shipmentDetail) IF isPostedShipmentDetail(shipmentDetail)
-        BY orderShipmentDetail(shipmentDetail), skuShipmentDetail(shipmentDetail);
+    shippedOrderSku 'К-во в поставках' (order, sku) = [GROUP SUM quantityShipmentDetail(shipmentDetail) IF isPostedShipmentDetail(shipmentDetail)
+        BY orderShipmentDetail(shipmentDetail), skuShipmentDetail(shipmentDetail)](order, sku) AND isPostedOrder(order);
 
     shippedOrderDetail 'К-во в поставках' (orderDetail) = PARTITION UNGROUP shippedOrderSku
-                                                              LIMIT STRICT quantityOrderDetail (orderDetail)
+                                                              LIMIT STRICT quantityOrderDetail (orderDetail) AND isPostedOrderDetail(orderDetail)
                                                               BY orderOrderDetail(orderDetail), skuOrderDetail(orderDetail)
                                                               ORDER orderDetail;
 
     diffShippedOrderDetail 'Остаток по заказу' (orderDetail) = quantityOrderDetail (orderDetail) (-) shippedOrderDetail(orderDetail);
 
-    inShippedQuantityStockOrder 'Связь по кол-ву' (stock, order) = GROUP SUM diffShippedOrderDetail(orderDetail) IF stockOrderDetail(orderDetail) == stock AND diffShippedOrderDetail(orderDetail) >0
+    currentReserveSkuStock 'Текущий резерв'###sign (sku, stock) = GROUP SUM diffShippedOrderDetail (orderDetail) AND isPostedOrderDetail(orderDetail) AND NOT isClosedOrderDetail(orderDetail)
+                                                              BY skuOrderDetail(orderDetail), stockOrderDetail(orderDetail) PERSISTENT;
+
+    inShippedQuantityStockOrder 'Связь по кол-ву' (stock, order) = GROUP SUM diffShippedOrderDetail(orderDetail) IF stockOrderDetail(orderDetail) == stock
+        AND diffShippedOrderDetail(orderDetail) >0 AND isPostedOrderDetail(orderDetail)
         BY stock, orderOrderDetail(orderDetail);
 
 
@@ -360,14 +366,15 @@ META defineShipment(skuLedger, sign)
                                 diffShippedOrderDetail
 
         FILTERS orderOrderDetail(d) == o,
-                customerOrder(o) == c
+                customerOrder(o) == c,
+                isPostedOrder(o)
 
         FILTERGROUP filter
             FILTER 'Заказы для данного склада с возможностью выбора' 'F10' inShippedQuantityStockOrder(s,o) DEFAULT
             FILTER 'Заказы только для данного склад' 'F9' inStockOrder(s,o)
 
         FILTERGROUP filter
-            FILTER 'Строки для данного склада с возможностью выбора' 'F10' stockOrderDetail(d) ==s AND diffShippedOrderDetail(d) >0 DEFAULT
+            FILTER 'Строки для данного склада с возможностью выбора' 'F10' stockOrderDetail(d) ==s AND diffShippedOrderDetail(d) >0 AND isPostedOrderDetail(d) DEFAULT
             FILTER 'Строки только для данного склада' 'F9' stockOrderDetail(d) ==s
         DIALOG order OBJECT o
     ;
@@ -428,7 +435,7 @@ META defineShipment(skuLedger, sign)
         IF formResult() == formResult.ok THEN {
             SET saleOrder() <- chosenObject('o');
 
-            FOR orderOrderDetail(orderDetail) == saleOrder() AND stockOrderDetail(orderDetail) ==stockUserShipment(userShipment) AND diffShippedOrderDetail(orderDetail)>0 ADDOBJ d = userShipmentDetail DO {
+            FOR orderOrderDetail(orderDetail) == saleOrder() AND stockOrderDetail(orderDetail) ==stockUserShipment(userShipment) AND diffShippedOrderDetail(orderDetail)>0 AND isPostedOrderDetail(orderDetail) ADDOBJ d = userShipmentDetail DO {
 
                 SET userShipmentUserShipmentDetail(d) <- userShipment;
                 SET orderUserShipmentDetail(d) <- saleOrder();

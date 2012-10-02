@@ -11,9 +11,4 @@ NAMESPACE Sale;
 
 @defineOrder(' (продажа)');
 
-NAVIGATOR {
-    NEW saleNavigator 'Управление продажами' {
-        ADD userOrders;
-    }
-}
 

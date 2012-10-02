@@ -27,7 +27,8 @@ META defineOrder(sign)
 
     CLASS userOrder 'Заказ (польз.)'###sign : order, historyObject, numeratedDocument;
     CLASS userOrderDetail 'Строка заказа (польз.)'###sign : orderDetail;
-    CLASS userOrderPosted 'Закрытый заказ (польз.)'###sign : userOrder, postedObject;
+    CLASS userOrderPosted 'Проведенный заказ (польз.)'###sign : userOrder, postedObject;
+    CLASS userOrderClosed 'Закрытый заказ (польз.)'###sign : userOrderPosted;
 
     @defineDocumentInterface(order);
 
@@ -35,6 +36,8 @@ META defineOrder(sign)
 
     @defineDocumentInterfaceDataStock(order, stock, 'Склад');
     @defineDocumentInterfacePosted(order);
+
+    @defineDocumentInterfaceClosed(order);
 
     @defineDocumentInterfaceDescription(order, 'Заказ'###sign);
 

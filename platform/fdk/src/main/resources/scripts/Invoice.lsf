@@ -83,11 +83,11 @@ META defineInvoice(sign)
 
 //-- Подсчет к-ва в накладных
 
-    invoicedOrderSku 'К-во в накладных' (order, sku) = GROUP SUM quantityInvoiceDetail(invoiceDetail) IF isPostedInvoiceDetail(invoiceDetail)
-        BY orderInvoiceDetail(invoiceDetail), skuInvoiceDetail(invoiceDetail);
+    invoicedOrderSku 'К-во в накладных' (order, sku) = [GROUP SUM quantityInvoiceDetail(invoiceDetail) IF isPostedInvoiceDetail(invoiceDetail)
+        BY orderInvoiceDetail(invoiceDetail), skuInvoiceDetail(invoiceDetail)](order, sku) AND isPostedOrder(order);
 
     invoicedOrderDetail 'К-во в накладных' (orderDetail) = PARTITION UNGROUP invoicedOrderSku
-                                                              LIMIT STRICT quantityOrderDetail (orderDetail)
+                                                              LIMIT STRICT quantityOrderDetail (orderDetail) AND isPostedOrderDetail(orderDetail)
                                                               BY orderOrderDetail(orderDetail), skuOrderDetail(orderDetail)
                                                               ORDER orderDetail;
 
@@ -108,7 +108,8 @@ META defineInvoice(sign)
 
     diffInvoicedOrderDetail 'Остаток по заказу' (orderDetail) = quantityOrderDetail (orderDetail) (-) invoicedOrderDetail(orderDetail);
 
-    inInvoicedQuantityStockOrder 'Связь по кол-ву' (stock, order) = GROUP SUM diffInvoicedOrderDetail(orderDetail) IF stockOrderDetail(orderDetail) == stock AND diffInvoicedOrderDetail(orderDetail) >0
+    inInvoicedQuantityStockOrder 'Связь по кол-ву' (stock, order) = GROUP SUM diffInvoicedOrderDetail(orderDetail) IF stockOrderDetail(orderDetail) == stock
+        AND diffInvoicedOrderDetail(orderDetail) >0 AND isPostedOrderDetail(orderDetail)
         BY stock, orderOrderDetail(orderDetail);
 
     inStockOrder 'Связь' (stock, order) = GROUP SUM 1 IF stockOrderDetail(orderDetail) == stock BY stock, orderOrderDetail(orderDetail);
@@ -130,14 +131,15 @@ META defineInvoice(sign)
                                 diffInvoicedOrderDetail
 
         FILTERS orderOrderDetail(d) == o,
-                customerOrder(o) == c
+                customerOrder(o) == c,
+                isPostedOrder(o)
 
         FILTERGROUP filter
             FILTER 'Заказы для данного склада с возможностью выбора' 'F10' inInvoicedQuantityStockOrder(s,o) DEFAULT
             FILTER 'Заказы только для данного склад' 'F9' inStockOrder(s,o)
 
         FILTERGROUP filter
-            FILTER 'Строки для данного склада с возможностью выбора' 'F10' stockOrderDetail(d) ==s AND diffInvoicedOrderDetail(d) >0 DEFAULT
+            FILTER 'Строки для данного склада с возможностью выбора' 'F10' stockOrderDetail(d) ==s AND diffInvoicedOrderDetail(d) >0 AND isPostedOrderDetail(d) DEFAULT
             FILTER 'Строки только для данного склада' 'F9' stockOrderDetail(d) ==s
         DIALOG order OBJECT o
     ;
@@ -182,7 +184,7 @@ META defineInvoice(sign)
         IF formResult() == formResult.ok THEN {
             SET saleOrder() <- chosenObject('o');
 
-            FOR orderOrderDetail(orderDetail) == saleOrder() AND stockOrderDetail(orderDetail) ==stockUserInvoice(userInvoice) AND diffInvoicedOrderDetail(orderDetail) >0  ADDOBJ d = userInvoiceDetail DO {
+            FOR orderOrderDetail(orderDetail) == saleOrder() AND stockOrderDetail(orderDetail) ==stockUserInvoice(userInvoice) AND diffInvoicedOrderDetail(orderDetail) >0 AND isPostedOrderDetail(orderDetail) ADDOBJ d = userInvoiceDetail DO {
                 SET userInvoiceUserInvoiceDetail(d) <- userInvoice;
                 SET orderUserInvoiceDetail(d) <- saleOrder();
     //            SET stockUserInvoiceDetail (d) <- stockOrderDetail(orderDetail);

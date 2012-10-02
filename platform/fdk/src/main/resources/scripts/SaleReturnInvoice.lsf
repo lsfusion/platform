@@ -1,6 +1,6 @@
-MODULE ReturnInvoice;
+MODULE SaleReturnInvoice;
 
-REQUIRE Invoice, ReturnOrder
+REQUIRE Invoice, SaleReturnOrder
 ;
 
 NAMESPACE Return;
@@ -10,8 +10,3 @@ NAMESPACE Return;
 
 @defineInvoice(' (возврат)');
 
-NAVIGATOR {
-    returnNavigator {
-        ADD userInvoices;
-    }
-}

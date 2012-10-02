@@ -9,9 +9,4 @@ NAMESPACE Sale;
 
 @defineInvoice(' (продажа)');
 
-NAVIGATOR {
-    saleNavigator {
-        ADD userInvoices;
-    }
-}
 

@@ -194,7 +194,7 @@ META defineDocumentHeaderPosted (object)
 END
 META defineDocumentAbstractHeaderPosted (object)
     isPosted###object 'Проведен' (object) = ABSTRACT BOOLEAN(object) PERSISTENT;
-    isDraft###object 'Не проведен' (object) = object IS object AND isPosted###object(object) PERSISTENT;
+    isDraft###object 'Не проведен' (object) = object IS object AND NOT isPosted###object(object) PERSISTENT;
 END
 META defineDocumentInterfaceHeaderPosted (object)
     @defineDocumentAbstractHeaderPosted(object);
@@ -223,6 +223,53 @@ META defineDocumentInterfacePosted (object)
     @defineDocumentInterfaceHeaderPosted(object);
     @defineDocumentDetailPosted(object);
 END
+
+// Closed
+META defineDocumentHeaderClosed (object)
+    isOpen###object 'Не закрыт' (object) = object IS object AND NOT object IS object##Closed PERSISTENT;
+    isClosed###object 'Закрыт' (object) = object IS object##Closed PERSISTENT;
+
+    preClose###object 'Закрыть' (object) = [ACTION CHANGECLASS object TO object##Closed ] (object)
+                                    IF object IS object AND NOT object IS object##Closed;
+
+    close###object 'Закрыть' (object) = [ACTION (object) NEWSESSION AUTOAPPLY { CHANGECLASS object TO object##Closed; } ] (object)
+                                    IF object IS object AND NOT object IS object##Closed TOOLBAR CONFIRM;
+
+    unclose###object 'Открыть' (object) = [ACTION (object) NEWSESSION AUTOAPPLY { CHANGECLASS object TO object; } ] (object)
+                                      IF object IS object##Closed TOOLBAR CONFIRM;
+END
+META defineDocumentAbstractHeaderClosed (object)
+    isClosed###object 'Закрыть' (object) = ABSTRACT BOOLEAN(object) PERSISTENT;
+    isOpen###object 'Не закрыт' (object) = object IS object AND NOT isClosed###object(object) PERSISTENT;
+END
+META defineDocumentInterfaceHeaderClosed (object)
+    @defineDocumentAbstractHeaderClosed(object);
+    @defineDocumentHeaderClosed(user###object);
+    isClosed###object(object) += isClosed###user###object(object);
+END
+
+META defineDocumentDetailClosed (object, detail)
+    isClosed###detail 'Проведен' (idetail) = isClosed###object(object###detail(idetail));
+    isOpen###detail 'Не проведен' (idetail) = idetail IS detail AND NOT isClosed###detail(idetail);
+END
+
+META defineDocumentDetailClosed (object)
+    @defineDocumentDetailClosed(object, object##Detail);
+END
+
+META defineDocumentClosed (object)
+    @defineDocumentHeaderClosed(object);
+    @defineDocumentDetailClosed(object);
+END
+META defineDocumentAbstractClosed (object)
+    @defineDocumentAbstractHeaderClosed(object);
+    @defineDocumentDetailClosed(object);
+END
+META defineDocumentInterfaceClosed (object)
+    @defineDocumentInterfaceHeaderClosed(object);
+    @defineDocumentDetailClosed(object);
+END
+
 
 // Index
 
