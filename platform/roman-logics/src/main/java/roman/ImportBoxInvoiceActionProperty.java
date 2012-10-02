@@ -11,6 +11,7 @@ import platform.server.integration.*;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
+import roman.actions.InvoiceProperties;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -221,8 +222,10 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
         Integer index = -1;
         Integer invoiceSIDIndex = -1;
         Integer dateInvoiceIndex = -1;
-        //Integer unitQuantityIndex = -1;
-        Map<String, Date> invoiceList = new HashMap<String, Date>();
+        Integer unitQuantityIndex = -1;
+        Integer unitPriceIndex = -1;
+        Integer unitNetWeightIndex = -1;
+        Map<String, InvoiceProperties> invoiceList = new HashMap<String, InvoiceProperties>();
         for (int i = 0; i < table.fields.size(); i++) {
             if (table.fields.get(i).equals(customCodeField))
                 index = i;
@@ -230,10 +233,14 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
                 invoiceSIDIndex = i;
             else if (table.fields.get(i).equals(dateInvoiceField))
                 dateInvoiceIndex = i;
-            //else if(table.fields.get(i).equals(unitQuantityField))
-            //    unitQuantityIndex = i;
+            else if (table.fields.get(i).equals(unitQuantityField))
+                unitQuantityIndex = i;
+            else if (table.fields.get(i).equals(unitPriceField))
+                unitPriceIndex = i;
+            else if (table.fields.get(i).equals(unitNetWeightField))
+                unitNetWeightIndex = i;
         }
-        //Double quantityDocument = 0.0;
+
         if (index != -1) {
             for (List<Object> editingRow : table.data) {
                 String val = null;
@@ -243,7 +250,23 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
                         val = val + "0";
                 }
                 editingRow.set(index, val);
-                invoiceList.put((String) editingRow.get(invoiceSIDIndex), (Date) editingRow.get(dateInvoiceIndex));
+            }
+        }
+        if (invoiceSIDIndex != -1) {
+            for (List<Object> editingRow : table.data) {
+                String invoiceSID = (String) editingRow.get(invoiceSIDIndex);
+                Date dateInvoice = dateInvoiceIndex != -1 ? (Date) editingRow.get(dateInvoiceIndex) : null;
+                Double unitQuantity = unitQuantityIndex != -1 ? (Double) editingRow.get(unitQuantityIndex) : 0.0;
+                Double unitPrice = unitPriceIndex != -1 ? (Double) editingRow.get(unitQuantityIndex) : 0.0;
+                Double unitNetWeight = unitNetWeightIndex != -1 ? (Double) editingRow.get(unitNetWeightIndex) : 0.0; 
+                Double sumPrice = unitQuantity * unitPrice;
+                Double sumNetWeight = unitQuantity * unitNetWeight;
+                InvoiceProperties invoice = invoiceList.containsKey(invoiceSID) ? invoiceList.get(invoiceSID) : new InvoiceProperties(dateInvoice, 0.0, 0.0, 0.0);
+                invoice.quantityDocument += unitQuantity;
+                invoice.sumDocument += sumPrice;
+                invoice.netWeightDocument +=sumNetWeight;
+
+                invoiceList.put(invoiceSID, invoice);
             }
         }
 

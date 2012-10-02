@@ -10,19 +10,28 @@ import java.util.*;
 public class ImportPreviewDialog extends JDialog {
     final JTableCheck table;
     private HashSet<String> result;
+    private int booleanIndex = 5;
 
-    public ImportPreviewDialog(Map<String, Date> invoiceList, String title) {
+    public ImportPreviewDialog(Map<String, InvoiceProperties> invoiceList, String title) {
         super(null, title, ModalityType.APPLICATION_MODAL);
-        setMinimumSize(new Dimension(500, 250));
-        String[] columns = new String[]{"Номер инвойса", "Дата инвойса", "Импортировать"};
+        setMinimumSize(new Dimension(600, 250));
+        Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
+        int x = (int) ((dimension.getWidth() - getWidth()) / 2);
+        int y = (int) ((dimension.getHeight() - getHeight()) / 2);
+        setLocation(x, y);
+        String[] columns = new String[]{"Номер инвойса", "Дата инвойса", "Сумма документа",
+                "Общее количество в документе", "Общий вес", "Импортировать"};
         int rowCount = invoiceList.size();
-        Object[][] data = new Object[rowCount][3];
+        Object[][] data = new Object[rowCount][6];
 
         int i = 0;
-        for (Map.Entry<String, Date> entry : invoiceList.entrySet()) {
+        for (Map.Entry<String, InvoiceProperties> entry : invoiceList.entrySet()) {
             data[i][0] = entry.getKey() == null ? "" : entry.getKey();
-            data[i][1] = entry.getValue() == null ? new Date() : entry.getValue();
-            data[i][2] = Boolean.TRUE;
+            data[i][1] = entry.getValue().date == null ? new Date() : entry.getValue().date;
+            data[i][2] = entry.getValue().sumDocument ==null ? 0.0 : entry.getValue().sumDocument;
+            data[i][3] = entry.getValue().quantityDocument ==null ? 0.0 : entry.getValue().quantityDocument;
+            data[i][4] = entry.getValue().netWeightDocument ==null ? 0.0 : entry.getValue().netWeightDocument;
+            data[i][booleanIndex] = Boolean.TRUE;
             i++;
         }
 
@@ -70,7 +79,7 @@ public class ImportPreviewDialog extends JDialog {
 
     private void checkAll() {
         for (int i=0; i<table.getCheckTableModel().getRowCount(); i++) {
-            table.getCheckTableModel().setValueAt(true, i, 2);
+            table.getCheckTableModel().setValueAt(true, i, booleanIndex);
         }
         update(getGraphics());
     }
@@ -78,7 +87,7 @@ public class ImportPreviewDialog extends JDialog {
     private void onOk() {
         result = new HashSet<String>();
         for (Object[] row : table.getCheckTableModel().data) {
-            if ((Boolean) row[2])
+            if ((Boolean) row[booleanIndex])
                 result.add((String) row[0]);
         }
         this.dispose();
@@ -105,7 +114,7 @@ class JTableCheck extends JPanel {
 
     private void initializeUI(String[] columns, Object[][] data) {
         setLayout(new BorderLayout());
-        setPreferredSize(new Dimension(450, 150));
+        setPreferredSize(new Dimension(550, 150));
 
         checkTableModel = new CheckTableModel(columns, data);
         JTable table = new JTable(checkTableModel);
@@ -142,7 +151,7 @@ class CheckTableModel extends AbstractTableModel {
 
     @Override
     public boolean isCellEditable(int rowIndex, int columnIndex) {
-        if (columnIndex == 2)
+        if (columnIndex == 5)
             return true;
         else return false;
     }

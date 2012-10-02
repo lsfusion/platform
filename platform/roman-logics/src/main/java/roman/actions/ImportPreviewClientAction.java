@@ -13,10 +13,10 @@ import java.util.Map;
 
 public class ImportPreviewClientAction implements ClientAction {
 
-    private Map<String, Date> invoiceList;
+    private Map<String, InvoiceProperties> invoiceList;
 
 
-    public ImportPreviewClientAction(Map<String, Date> invoiceList) {
+    public ImportPreviewClientAction(Map<String, InvoiceProperties> invoiceList) {
         this.invoiceList = invoiceList;
     }
 

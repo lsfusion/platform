@@ -56,7 +56,7 @@ public class ImportPriceListActionProperty extends ScriptingActionProperty {
                         String series = row[0];
                         String currency = row[1];
                         String number = row[2];
-                        String barcode = row[3];
+                        String barcode = (String) LM.findLCPByCompoundName("completeBarcode").read(session, new DataObject(row[3], StringClass.get(13)));
                         Timestamp startDate = new Timestamp(DateUtils.parseDate(row[4], new String[]{"yyyy-MM-dd"}).getTime());
                         Timestamp endDate = new Timestamp(DateUtils.parseDate(row[5], new String[]{"yyyy-MM-dd"}).getTime() + 3600 * 24 * 1000);
                         Double price = new Double(row[6]);
@@ -116,7 +116,7 @@ public class ImportPriceListActionProperty extends ScriptingActionProperty {
                         message = "Ни одного прайса не было изменено";
                     if (!barcodeChanged.equals(""))
                         message += "следующие штрих-коды не были найдены:\n" + barcodeChanged.substring(0, barcodeChanged.length() - 2);
-                    if(barcodeCount>maxBarcodeCount) message+=" ...";
+                    if (barcodeCount > maxBarcodeCount) message += " ...";
                     context.delayUserInterfaction(new MessageClientAction(message, "Импорт завершён"));
                 }
             }
