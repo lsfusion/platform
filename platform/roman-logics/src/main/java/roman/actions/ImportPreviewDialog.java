@@ -15,10 +15,9 @@ public class ImportPreviewDialog extends JDialog {
     public ImportPreviewDialog(Map<String, InvoiceProperties> invoiceList, String title) {
         super(null, title, ModalityType.APPLICATION_MODAL);
         setMinimumSize(new Dimension(600, 250));
-        Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
-        int x = (int) ((dimension.getWidth() - getWidth()) / 2);
-        int y = (int) ((dimension.getHeight() - getHeight()) / 2);
-        setLocation(x, y);
+
+        setLocationRelativeTo(null);
+
         String[] columns = new String[]{"Номер инвойса", "Дата инвойса", "Сумма документа",
                 "Общее количество в документе", "Общий вес", "Импортировать"};
         int rowCount = invoiceList.size();

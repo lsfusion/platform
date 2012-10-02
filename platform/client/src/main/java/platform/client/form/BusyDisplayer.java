@@ -2,6 +2,7 @@ package platform.client.form;
 
 import platform.base.Provider;
 import platform.client.ClientResourceBundle;
+import platform.client.Main;
 import platform.client.SwingUtils;
 
 import javax.swing.*;
@@ -33,17 +34,20 @@ public class BusyDisplayer extends TimerTask {
 
     public void start() {
         drawingWindow = SwingUtils.getActiveVisibleWindow();
-        if (drawingWindow != null) {
-            drawingWindow.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        if (drawingWindow == null) {
+            drawingWindow = Main.frame;
         }
 
-        executionTimer = new Timer();
-        executionTimer.schedule(this, INITIAL_WAIT_PERIOD, REPAINT_PERIOD);
+        if (drawingWindow != null) {
+            drawingWindow.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            executionTimer = new Timer();
+            executionTimer.schedule(this, INITIAL_WAIT_PERIOD, REPAINT_PERIOD);
+        }
     }
 
     public void stop() {
-        executionTimer.cancel();
         if (drawingWindow != null) {
+            executionTimer.cancel();
             drawingWindow.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             drawingWindow.repaint();
         }

@@ -59,8 +59,7 @@ public class ClientFormController implements AsyncListener {
     private final RmiQueue rmiQueue = new RmiQueue(tableManager, serverMessageProvider, this);
     private final SimpleChangePropertyDispatcher simpleDispatcher = new SimpleChangePropertyDispatcher(this);
 
-//    private RemoteFormInterface remoteForm;
-    public RemoteFormInterface remoteForm;
+    private RemoteFormInterface remoteForm;
 
     private final ClientForm form;
     private final ClientNavigator clientNavigator;
