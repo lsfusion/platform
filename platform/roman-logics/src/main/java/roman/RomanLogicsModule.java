@@ -5705,7 +5705,7 @@ public class RomanLogicsModule extends LogicsModule {
             super(parent, sID, caption);
 
             objFreight = addSingleGroupObject(freight, "Фрахт", baseLM.date, baseLM.objectClassName, nameRouteFreight, nameExporterFreight,
-                    nameSupplierFreight, descriptionFreight, volumeDataFreight, tonnageDataFreight, grossWeightFreight,
+                    descriptionFreight, volumeDataFreight, tonnageDataFreight, grossWeightFreight,
                     volumeDataFreight, palletCountDataFreight, palletNumberFreight, freightBoxNumberFreight, nameCurrencyFreight, sumFreightFreight);
             objFreight.groupTo.setSingleClassView(ClassViewType.PANEL);
             setEditType(objFreight, PropertyEditType.READONLY);
@@ -5731,7 +5731,8 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(quantityPalletSku, objPallet, objSku);
             setEditType(objSku, PropertyEditType.READONLY);
 
-            objDirectInvoice = addSingleGroupObject(directInvoice, "Инвойс напрямую", baseLM.date, sidDocument, nameImporterDirectInvoice, nameDestinationDestinationDocument, grossWeightDirectInvoice, palletNumberDirectInvoice);
+            objDirectInvoice = addSingleGroupObject(directInvoice, "Инвойс напрямую", baseLM.date, sidDocument, nameImporterDirectInvoice,
+                    nameDestinationDestinationDocument, netWeightDocument, grossWeightDirectInvoice, palletNumberDirectInvoice);
             setEditType(objDirectInvoice, PropertyEditType.READONLY);
             setEditType(grossWeightDirectInvoice, PropertyEditType.EDITABLE);
             setEditType(palletNumberDirectInvoice, PropertyEditType.EDITABLE);
@@ -6602,7 +6603,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             filterGroupCustomCategory10 = new RegularFilterGroupEntity(genID());
             filterGroupCustomCategory10.addFilter(new RegularFilterEntity(genID(),
-                    new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(customCategory10Sku, objSku))),
+                    new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(customCategory10SkuFreight, objSku, objFreight))),
                     "Без ТН ВЭД",
                     KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));
             addRegularFilterGroup(filterGroupCustomCategory10);

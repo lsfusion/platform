@@ -45,6 +45,7 @@ toSetRangeCustomCategories10 'Взять шкалы' = ACTION () NEWSESSION AUTO
 CLASS formedInvoice 'Инвойс от STX' : innerInvoice;
 
 TABLE innerInvoice (innerInvoice);
+TABLE innerInvoiceSku (innerInvoice, sku);
 
 includeImporterFreight(importer, freight) = quantityProxyImporterFreight(importer, freight) AND freight IS freightArrived AND routeFreight(freight) == route.rb;
 
@@ -59,7 +60,7 @@ languageInnerInvoice 'Язык инвойса (ИД)' (innerInvoice) = languageF
 nameLanguageInnerInvoice 'Язык инвойса' (innerInvoice) = name(languageInnerInvoice(innerInvoice));
 
 currencyFormedInvoice 'Валюта инвойса (ИД)' (formedInvoice) = currencyFreight(freightInnerInvoice(formedInvoice)) IN idGroup PERSISTENT;
-currencyInnerInvoice 'Валюта инвойса (ИД)' (innerInvoice) = UNION EXCLUSIVE currencyDocument(innerInvoice), currencyFormedInvoice(innerInvoice) IN idGroup PERSISTENT;
+currencyInnerInvoice 'Валюта инвойса (ИД)' (innerInvoice) = UNION EXCLUSIVE currencyDocument(innerInvoice) AND innerInvoice IS directInvoice, currencyFormedInvoice(innerInvoice) IN idGroup PERSISTENT;
 nameCurrencyInnerInvoice 'Валюта инвойса' (innerInvoice) = name(currencyInnerInvoice(innerInvoice)) IN baseGroup;
 
 freightArrivedInnerInvoice 'Прибыл фрахт инвойса' (innerInvoice) = freightInnerInvoice(innerInvoice) IS freightArrived PERSISTENT;
@@ -120,13 +121,13 @@ expensesDirectInvoiceSku 'Расходы' (directInvoice, sku) = priceFreightIns
 priceDirectInvoiceSku 'Цена в инвойсе' (directInvoice, sku) = priceDocumentSku(directInvoice, sku) (+) expensesDirectInvoiceSku(directInvoice, sku);
 
 priceInnerInvoiceSku 'Цена в инвойсе' (innerInvoice, sku) = UNION EXCLUSIVE priceFormedInvoiceSku(innerInvoice, sku),
-                                                                            priceDirectInvoiceSku(innerInvoice, sku) PERSISTENT;
+                                                                            priceDirectInvoiceSku(innerInvoice, sku) AND innerInvoice IS directInvoice PERSISTENT;
 
 priceContractInnerInvoiceSku 'Цена контракта' (innerInvoice, sku) = UNION EXCLUSIVE priceContractFormedInvoiceSku(innerInvoice, sku),
-                                                                                    priceDocumentSku(innerInvoice, sku) PERSISTENT;
+                                                                                    priceDocumentSku(innerInvoice, sku) AND innerInvoice IS directInvoice PERSISTENT;
 
 priceManagerialInnerInvoiceSku 'Цена (УУ)' (innerInvoice, sku) = UNION EXCLUSIVE priceManagerialFormedInvoiceSku(innerInvoice, sku),
-                                                                                 priceDirectInvoiceSku(innerInvoice, sku) PERSISTENT;
+                                                                                 priceDirectInvoiceSku(innerInvoice, sku) AND innerInvoice IS directInvoice PERSISTENT;
 
 //--------------------------------- Декларации ----------------------------------------------------------------------//
 CLASS declaration 'Таможенная декларация';
@@ -140,6 +141,8 @@ CLASS declarationDetail 'Позиция декларации' : batchA;
 TABLE declarationSku (declaration, sku);
 TABLE declarationInnerInvoiceSku (declaration, innerInvoice, sku);
 TABLE declarationDetailInnerInvoice (declarationDetail, innerInvoice);
+
+TABLE declarationArticle (declaration, article);
 
 CLASS correction 'КТС' : transaction;
 TABLE correction (correction);
@@ -208,8 +211,8 @@ formedInvoiceFreightUnit(declaration, freightUnit) = formedInvoiceImporterFreigh
 innerInvoiceFreightUnit(declaration, freightUnit) = UNION EXCLUSIVE formedInvoiceFreightUnit(declaration, freightUnit),
                                                                     directInvoiceFreightUnit(declaration, freightUnit);
 
-innerInvoiceDeclarationSku 'Инвойс для декларации' (declaration, sku) = GROUP MAX innerInvoice IF quantityInnerInvoiceSku(innerInvoice, sku)
-                                                                               BY declarationInnerInvoice(innerInvoice), sku PERSISTENT;
+//innerInvoiceDeclarationSku 'Инвойс для декларации' (declaration, sku) = GROUP MAX innerInvoice IF quantityInnerInvoiceSku(innerInvoice, sku)
+//                                                                               BY declarationInnerInvoice(innerInvoice), sku PERSISTENT;
 
 quantityDeclarationSku 'Кол-во в декларации' (declaration, sku) = GROUP SUM quantityInnerInvoiceSku(innerInvoice, sku)
                                                                          BY declarationInnerInvoice(innerInvoice), sku IN baseGroup PERSISTENT;
@@ -446,10 +449,10 @@ priceContractDeclarationDetail 'Цена контракта' (declarationDetail)
                                                                                                    skuDeclarationDetail(declarationDetail));
 
 priceContractDeclarationArticle 'Цена поставщика' (declaration, article) = GROUP MAX priceContractDeclarationDetail(declarationDetail)
-                                                                                  BY declarationDeclarationDetail(declarationDetail), articleDeclarationDetail(declarationDetail);
+                                                                                  BY declarationDeclarationDetail(declarationDetail), articleDeclarationDetail(declarationDetail) PERSISTENT;
 
 RRPDeclarationArticle 'Рекомендованная цена' (declaration, article) = GROUP MAX RRPFreightArticle(freightDeclarationDetail(declarationDetail), articleDeclarationDetail(declarationDetail))
-                                                                             BY declarationDeclarationDetail(declarationDetail), articleDeclarationDetail(declarationDetail);
+                                                                             BY declarationDeclarationDetail(declarationDetail), articleDeclarationDetail(declarationDetail) PERSISTENT;
 
 priceContractRateDeclarationDetail 'Цена контракта (руб.)' (declarationDetail) = priceContractDeclarationDetail(declarationDetail) *
                                                                                  rateExchangeCustomDeclarationDetail(declarationDetail);
@@ -491,7 +494,7 @@ quantityDeclarationGroup 'Кол-во' = GROUP SUM quantityDeclarationDetail(dec
                                               customCategory10DeclarationDetail(declarationDetail),
                                               mainCompositionDeclarationDetail(declarationDetail),
                                               countryDeclarationDetail(declarationDetail),
-                                              declarationPriceDeclarationDetail(declarationDetail) PERSISTENT IN baseGroup;
+                                              declarationPriceDeclarationDetail(declarationDetail) IN baseGroup PERSISTENT;
 
 CLASS groupDeclaration 'Строка декларации';
 

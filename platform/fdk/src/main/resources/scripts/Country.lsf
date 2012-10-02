@@ -37,6 +37,7 @@ FORM countries 'Страны'
                            residentCountry, nameCurrencyCountry, nameLanguageCountry
 
     PROPERTIES(c) ADDFORM, EDITFORM, delete
+    ORDER BY name
 
     DIALOG country OBJECT c
 ;
