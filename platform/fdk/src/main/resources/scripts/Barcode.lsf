@@ -112,7 +112,7 @@ META defineAddDetailDialogBarcodeCustom(object, idetail, skuProp)
         REQUEST STRING[14] INPUT;
         EXEC addDetailBarcode###idetail###object(object, requestedString());
     };
-    addDetailInputBarcode###idetail###object 'Ввод штрих-кода :' (object) = SESSION DATA STRING[14] (object) TOOLBAR EDITKEY 'F4'
+    addDetailInputBarcode###idetail###object 'Ввод штрих-кода :' (object) = SESSION DATA STRING[14] (object) TOOLBAR EDITKEY 'F4' EVENTID 'SCANNER'
                                                                             ON CHANGE EXEC changeAddDetailInputBarcode###idetail###object(object);
 END
 

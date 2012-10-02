@@ -5,6 +5,7 @@ import platform.base.identity.DefaultIDGenerator;
 import platform.base.identity.IDGenerator;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
+import platform.interop.KeyStrokes;
 import platform.interop.PropertyEditType;
 import platform.interop.action.*;
 import platform.interop.form.layout.ContainerType;
@@ -318,6 +319,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP onlyNotZero;
 
     public LAP delete;
+    public LAP deleteApply;
     public LAP dropString;
 
     public LAP<?> apply;
@@ -854,6 +856,14 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         DOWInDate = addJProp("DOWInDate", getString("logics.week.day.id"), numberToDOW, numberDOWInDate, 1);
 
         delete = addAProp(baseClass.unknown.getChangeClassAction());
+
+        deleteApply = addListAProp("deleteApply", delete.property.caption, delete, 1, apply);
+        deleteApply.setImage("delete.png");
+        deleteApply.setEditKey(KeyStrokes.getDeleteActionPropertyKeyStroke());
+        deleteApply.setShowEditKey(false);
+        deleteApply.setAskConfirm(true);
+        deleteApply.setShouldBeLast(true);
+
         dropString = addAProp(new DropObjectActionProperty(StringClass.get(13)));
 
         date = addDProp(baseGroup, "date", getString("logics.date"), DateClass.instance, transaction);

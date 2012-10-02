@@ -54,7 +54,8 @@ public class TeddyInvoiceImporter extends SingleSheetImporter {
                         checkSum += Integer.valueOf(String.valueOf(value.charAt(i)));
                         checkSum += Integer.valueOf(String.valueOf(value.charAt(i + 1))) * 3;
                     }
-                    checkSum = (checkSum + 9) / 10;
+                    checkSum %= 10;
+                    if (checkSum != 0) checkSum = 10 - checkSum;
                     return value.concat(String.valueOf(checkSum));
                 }
             }

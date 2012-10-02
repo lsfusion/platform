@@ -37,7 +37,6 @@ import platform.server.logics.linear.LAP;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
-import platform.server.logics.property.actions.CustomActionProperty;
 import platform.server.logics.property.actions.FormActionProperty;
 import platform.server.logics.property.actions.UserActionProperty;
 import platform.server.logics.property.group.AbstractGroup;
@@ -1698,7 +1697,7 @@ public class RomanLogicsModule extends LogicsModule {
         addTable("categoryGenderCompositionTypeFabric", category, gender, COMPOSITION_CLASS, typeFabric);
         addTable("categoryGenderCompositionTypeFabricCustomsZone", category, gender, COMPOSITION_CLASS, typeFabric, customsZone);
         addTable("freightCategoryGenderCompositionTypeFabric", freight, category, gender, COMPOSITION_CLASS, typeFabric);
-
+        addTable("importerFreightArticleCompositionCountryCustomCategory10", importer, freight, article, COMPOSITION_CLASS, baseLM.country, customCategory10);
         addTable("sizeSupplierGenderCategory", sizeSupplier, gender, category);
 
         addTable("pricat", pricat);
@@ -3735,7 +3734,8 @@ public class RomanLogicsModule extends LogicsModule {
         priceInOutImporterFreightSku = addDProp(baseGroup, "priceInOutImporterFreightSku", "Цена выходная", NumericClass.get(14, 2), importer, freightPriced, sku);
         priceInOutImporterFreightSku.setEventChangeNew(addJProp(baseLM.and1, priceMarkupInImporterFreightSku, 1, 2, 3, quantityImporterFreightSku, 1, 2, 3), 1, 2, 3, is(freightPriced), 2, markupPercentImporterFreightSku, 1, 2, 3);
 
-        priceImporterFreightArticleCompositionCountryCategory = addMGProp(baseGroup, "priceImporterFreightArticleCompositionCountryCategory", false, "Цена", true, priceInOutImporterFreightSku, 1, 2, articleSku, 3, mainCompositionOriginFreightSku, 2, 3, countryOfOriginFreightSku, 2, 3, customCategory10FreightSku, 2, 3);
+        priceImporterFreightArticleCompositionCountryCategory = addMGProp(baseGroup, "priceImporterFreightArticleCompositionCountryCategory", true, "Цена", true,
+            priceInOutImporterFreightSku, 1, 2, articleSku, 3, mainCompositionOriginFreightSku, 2, 3, countryOfOriginFreightSku, 2, 3, customCategory10FreightSku, 2, 3);
 
         priceInvoiceImporterFreightSku = addJProp(baseGroup, "priceInvoiceImporterFreightSku", true, "Цена в инвойсе",
                 priceImporterFreightArticleCompositionCountryCategory, 1, 2, articleSku, 3, mainCompositionOriginFreightSku, 2, 3, countryOfOriginFreightSku, 2, 3, customCategory10FreightSku, 2, 3);
