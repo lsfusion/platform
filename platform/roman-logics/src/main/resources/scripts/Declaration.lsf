@@ -51,21 +51,21 @@ includeImporterFreight(importer, freight) = quantityProxyImporterFreight(importe
 @defineAggregationDouble(importer, freight, formedInvoice, includeImporterFreight);
 
 freightInnerInvoice 'Фрахт инвойса (ИД)' (innerInvoice) = UNION EXCLUSIVE freightFormedInvoice(innerInvoice),
-                                                                          freightDirectInvoice(innerInvoice) IN idGroup;
+                                                                          freightDirectInvoice(innerInvoice) IN idGroup PERSISTENT;
 
-dateFreightInnerInvoice 'Дата прихода' (innerInvoice) = dateArrivalFreight(freightInnerInvoice(innerInvoice)) IN baseGroup;
+dateFreightInnerInvoice 'Дата прихода' (innerInvoice) = dateArrivalFreight(freightInnerInvoice(innerInvoice)) IN baseGroup PERSISTENT;
 
-languageInnerInvoice 'Язык инвойса (ИД)' (innerInvoice) = languageFreight(freightInnerInvoice(innerInvoice)) IN idGroup;
+languageInnerInvoice 'Язык инвойса (ИД)' (innerInvoice) = languageFreight(freightInnerInvoice(innerInvoice)) IN idGroup PERSISTENT;
 nameLanguageInnerInvoice 'Язык инвойса' (innerInvoice) = name(languageInnerInvoice(innerInvoice));
 
-currencyFormedInvoice 'Валюта инвойса (ИД)' (formedInvoice) = currencyFreight(freightInnerInvoice(formedInvoice)) IN idGroup;
-currencyInnerInvoice 'Валюта инвойса (ИД)' (innerInvoice) = UNION EXCLUSIVE currencyDocument(innerInvoice), currencyFormedInvoice(innerInvoice) IN idGroup;
+currencyFormedInvoice 'Валюта инвойса (ИД)' (formedInvoice) = currencyFreight(freightInnerInvoice(formedInvoice)) IN idGroup PERSISTENT;
+currencyInnerInvoice 'Валюта инвойса (ИД)' (innerInvoice) = UNION EXCLUSIVE currencyDocument(innerInvoice), currencyFormedInvoice(innerInvoice) IN idGroup PERSISTENT;
 nameCurrencyInnerInvoice 'Валюта инвойса' (innerInvoice) = name(currencyInnerInvoice(innerInvoice)) IN baseGroup;
 
-freightArrivedInnerInvoice 'Прибыл фрахт инвойса' (innerInvoice) = freightInnerInvoice(innerInvoice) IS freightArrived;
+freightArrivedInnerInvoice 'Прибыл фрахт инвойса' (innerInvoice) = freightInnerInvoice(innerInvoice) IS freightArrived PERSISTENT;
 
 importerInnerInvoice 'Импортер инвойса (ИД)' (innerInvoice) = UNION EXCLUSIVE importerFormedInvoice(innerInvoice),
-                                                                              importerDirectInvoice(innerInvoice) IN idGroup;
+                                                                              importerDirectInvoice(innerInvoice) IN idGroup PERSISTENT;
 nameImporterInnerInvoice 'Импортер инвойса' (innerInvoice) = name(importerInnerInvoice(innerInvoice)) IN baseGroup;
 
 sidFormedInvoice 'Номер инвойса' (formedInvoice) = sidImporterFreight(importerFormedInvoice(formedInvoice),
@@ -73,26 +73,26 @@ sidFormedInvoice 'Номер инвойса' (formedInvoice) = sidImporterFreigh
 
 sidDirectInvoice = sidDocument(innerInvoice) AND innerInvoice IS directInvoice;
 
-sidInnerInvoice 'Номер инвойса' (innerInvoice) = UNION EXCLUSIVE sidDirectInvoice(innerInvoice), sidFormedInvoice(innerInvoice) IN baseGroup;
+sidInnerInvoice 'Номер инвойса' (innerInvoice) = UNION EXCLUSIVE sidDirectInvoice(innerInvoice), sidFormedInvoice(innerInvoice) IN baseGroup PERSISTENT;
 
 dateFormedInvoice 'Дата инвойса' (formedInvoice) = dateImporterFreight(importerInnerInvoice(formedInvoice),
                                                                        freightInnerInvoice(formedInvoice)) IN baseGroup;
 
 dateDirectInvoice = date(innerInvoice) AND innerInvoice IS directInvoice;
 
-dateInnerInvoice 'Дата инвойса' (innerInvoice) = UNION EXCLUSIVE dateDirectInvoice(innerInvoice), dateFormedInvoice(innerInvoice) IN baseGroup;
+dateInnerInvoice 'Дата инвойса' (innerInvoice) = UNION EXCLUSIVE dateDirectInvoice(innerInvoice), dateFormedInvoice(innerInvoice) IN baseGroup PERSISTENT;
 
 contractFormedInvoice 'Договор инвойса (ИД)' (formedInvoice) = contractImporterFreight(importerFormedInvoice(formedInvoice),
                                                                                        freightFormedInvoice(formedInvoice)) IN idGroup;
 
 quantityFormedInvoiceSku 'Кол-во в инвойсе' (formedInvoice, sku) = quantityProxyImporterFreightSku(importerFormedInvoice(formedInvoice),
                                                                                                    freightFormedInvoice(formedInvoice),
-                                                                                                   sku);
+                                                                                                   sku) PERSISTENT;
 
 quantityDirectInvoiceSku = quantityDocumentSku(innerInvoice, sku) AND innerInvoice IS directInvoice;
 
 quantityInnerInvoiceSku 'Кол-во в инвойсе' (innerInvoice, sku) = UNION EXCLUSIVE quantityDirectInvoiceSku(innerInvoice, sku),
-                                                                                 quantityFormedInvoiceSku(innerInvoice, sku);
+                                                                                 quantityFormedInvoiceSku(innerInvoice, sku) PERSISTENT;
 
 quantityFormedInvoice 'Кол-во в инвойсе' (innerInvoice) = GROUP SUM quantityInnerInvoiceSku(innerInvoice, sku)
                                                                  BY innerInvoice IN baseGroup PERSISTENT;
@@ -103,30 +103,30 @@ currencyDirectInvoice '' (directInvoice) = currencyInnerInvoice(directInvoice) I
 
 priceFormedInvoiceSku 'Цена в инвойсе' (formedInvoice, sku) = priceFullImporterFreightSku(importerFormedInvoice(formedInvoice),
                                                                                           freightFormedInvoice(formedInvoice),
-                                                                                          sku);
+                                                                                          sku) PERSISTENT;
 
 priceContractFormedInvoiceSku 'Цена контракта' (formedInvoice, sku) = priceInvoiceImporterFreightSku(importerFormedInvoice(formedInvoice),
                                                                                                      freightFormedInvoice(formedInvoice),
-                                                                                                     sku);
+                                                                                                     sku) PERSISTENT;
 
 priceManagerialFormedInvoiceSku 'Цена (УУ)' (formedInvoice, sku) = priceInFullImporterFreightSku(importerFormedInvoice(formedInvoice),
                                                                                                  freightFormedInvoice(formedInvoice),
-                                                                                                 sku);
+                                                                                                 sku) PERSISTENT;
 
 expensesDirectInvoiceSku 'Расходы' (directInvoice, sku) = priceFreightInsuranceImporterFreightSku(importerDirectInvoice(directInvoice),
                                                                                                   freightDirectInvoice(directInvoice),
-                                                                                                  sku)/rateExchangeExpensesDirectInvoice(directInvoice);
+                                                                                                  sku)/rateExchangeExpensesDirectInvoice(directInvoice) PERSISTENT;
 
 priceDirectInvoiceSku 'Цена в инвойсе' (directInvoice, sku) = priceDocumentSku(directInvoice, sku) (+) expensesDirectInvoiceSku(directInvoice, sku);
 
 priceInnerInvoiceSku 'Цена в инвойсе' (innerInvoice, sku) = UNION EXCLUSIVE priceFormedInvoiceSku(innerInvoice, sku),
-                                                                            priceDirectInvoiceSku(innerInvoice, sku);
+                                                                            priceDirectInvoiceSku(innerInvoice, sku) PERSISTENT;
 
 priceContractInnerInvoiceSku 'Цена контракта' (innerInvoice, sku) = UNION EXCLUSIVE priceContractFormedInvoiceSku(innerInvoice, sku),
-                                                                                    priceDocumentSku(innerInvoice, sku);
+                                                                                    priceDocumentSku(innerInvoice, sku) PERSISTENT;
 
 priceManagerialInnerInvoiceSku 'Цена (УУ)' (innerInvoice, sku) = UNION EXCLUSIVE priceManagerialFormedInvoiceSku(innerInvoice, sku),
-                                                                                 priceDirectInvoiceSku(innerInvoice, sku);
+                                                                                 priceDirectInvoiceSku(innerInvoice, sku) PERSISTENT;
 
 //--------------------------------- Декларации ----------------------------------------------------------------------//
 CLASS declaration 'Таможенная декларация';
