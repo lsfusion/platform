@@ -133,8 +133,6 @@ nameClientDiscountCardReceiptDetail 'Держатель дисконтной к�
 
 idBarcodeReceiptDetail 'Штрих-код' (receiptDetail) = DATA STRING[14] (receiptDetail) FIXEDCHARWIDTH 14 INDEXED;
 
-fiscalDisplayTextReceiptDetail 'Вывести текст на дисплей'(receiptDetail) = ABSTRACT ACTION(receiptDetail);
-
 // Возвраты
 
 receiptSaleDetailReceiptReturnDetail = DATA receiptSaleDetail (receiptReturnDetail);
@@ -179,7 +177,6 @@ calcDiscountSumReceiptReturnDetail(detail) = round(quantityReceiptReturnDetail(d
 discountSumReceiptReturnDetail (detail) <- calcDiscountSumReceiptReturnDetail(detail) WHEN CHANGED (calcDiscountSumReceiptReturnDetail(detail));
 
 quantityReceiptDetail 'Количество' (receiptDetail) = UNION EXCLUSIVE quantityReceiptReturnDetail(receiptDetail), quantityReceiptSaleDetail(receiptDetail) PERSISTENT;
-WHEN CHANGED (quantityReceiptDetail(receiptDetail)) DO EXEC fiscalDisplayTextReceiptDetail(receiptDetail) SESSION;
 priceReceiptDetail 'Цена' (receiptDetail) = UNION EXCLUSIVE priceReceiptReturnDetail(receiptDetail), priceReceiptSaleDetail(receiptDetail) PERSISTENT;
 sumReceiptDetail 'Сумма' (receiptDetail) = UNION EXCLUSIVE sumReceiptReturnDetail(receiptDetail), sumReceiptSaleDetail(receiptDetail) PERSISTENT;
 discountSumReceiptDetail 'Сумма скидки' (receiptDetail) = UNION EXCLUSIVE discountSumReceiptReturnDetail(receiptDetail), discountSumReceiptSaleDetail(receiptDetail) PERSISTENT;
@@ -508,9 +505,14 @@ createCurrentReceipt 'Создать новый чек' = ACTION () {
     }
 }
 
-GROUP receiptActionGroup 'Оплата' : publicGroup;
+// Вывод на дисплей
+
+fiscalDisplayTextReceiptDetail 'Вывести текст на дисплей'(receiptDetail) = ABSTRACT ACTION (receiptDetail);
+WHEN CHANGED (quantityReceiptDetail(receiptDetail)) OR CHANGED(sumReceiptDetail(receiptDetail)) DO EXEC fiscalDisplayTextReceiptDetail(receiptDetail) SESSION;
 
 // Проведение чека
+
+GROUP receiptActionGroup 'Оплата' : publicGroup;
 
 postPrintReceipt 'Напечатать фискальный чек' = ABSTRACT ACTION (receipt);
 noFiscalPostPrintReceipt 'Создать чек (без фискального регистратора)' = ACTION (receipt) {

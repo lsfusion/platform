@@ -255,7 +255,10 @@ quantityMachineryPriceTransactionErrorMachineryPriceTransaction 'Количес�
 // Загрузка в конкретные устройства
 TABLE machineryPriceTransactionMachinery (machineryPriceTransaction, machinery);
 inMachineryPriceTransactionMachinery 'Вкл' = DATA BOOLEAN (machineryPriceTransaction, machinery);
-nppsMachineryPriceTransaction 'Номера устройств' = GROUP CONCAT castToString3(nppMachinery(machinery)) IF inMachineryPriceTransactionMachinery(transaction, machinery), ',' BY transaction PERSISTENT;
+nppsMachineryPriceTransaction 'Номера устройств' (transaction) =
+    GROUP CONCAT castToString3(nppMachinery(machinery)) IF inMachineryPriceTransactionMachinery(transaction, machinery), ','
+          BY transaction
+          ORDER machinery MINCHARWIDTH 10 PREFCHARWIDTH 20 PERSISTENT;
 
 // перезагрузка прайса целиком
 selectedMachinery 'Вкл' = SESSION DATA BOOLEAN (machinery);

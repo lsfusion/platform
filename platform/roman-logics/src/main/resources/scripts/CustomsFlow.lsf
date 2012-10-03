@@ -29,7 +29,7 @@ CLASS CStoWHPosted 'Закрытый расход с СВХ' : CStoWH, postedObj
 
 @defineDocumentDetailNumber(CStoWH);
 
-declarationDetailCStoWHDetail = DATA declarationDetail (CStoWHDetail);
+declarationDetailCStoWHDetail = DATA declarationDetail (CStoWHDetail) NOT NULL;
 skuCStoWHDetail (CStoWHDetail) = skuDeclarationDetail (declarationDetailCStoWHDetail(CStoWHDetail));
 declarationCStoWHDetail (CStoWHDetail) = declarationDeclarationDetail(declarationDetailCStoWHDetail(CStoWHDetail));
 
@@ -111,9 +111,11 @@ inCStoWHDeclaration (CStoWH, declaration) = GROUP SUM 1
 //declarationsCStoWH 'Декларации' (CStoWH) = GROUP CONCAT castToString255(sidDeclaration(declaration))
 //    IF inCStoWHDeclaration (CStoWH, declaration), ', ' BY CStoWH IN documentPrmGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
 
-declarationsCStoWH 'Декларации' (CStoWH) = GROUP CONCAT castToString255([FORMULA STRING[30] 'CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) ']
-    (sidDeclaration(declaration), dateDeclaration(declaration)))
-    IF inCStoWHDeclaration (CStoWH, declaration), ', ' BY CStoWH IN documentPrmGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
+declarationsCStoWH 'Декларации' (CStoWH) =
+    GROUP CONCAT castToString255([FORMULA STRING[30] 'CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) '] (sidDeclaration(declaration), dateDeclaration(declaration)))
+                 IF inCStoWHDeclaration (CStoWH, declaration), ', '
+          BY CStoWH
+          ORDER declaration IN documentPrmGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
 
 quantityInputFreightUnitDeclarationDetail 'Кол-во подобрано' = SESSION DATA NUMERIC[14,3] (freightUnit, declarationDetail);
 
@@ -151,8 +153,10 @@ inCStoWHInnerInvoice (CStoWH, innerInvoice) = GROUP SUM quantityDeclarationDetai
 //    [FORMULA STRING[30] 'CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) '] (
 //    sidInnerInvoice(innerInvoice), dateInnerInvoice(innerInvoice));
 
-innerInvoicesCStoWH 'Инвойсы' (CStoWH) = GROUP CONCAT stringInnerInvoice(innerInvoice)
-    IF inCStoWHInnerInvoice (CStoWH, innerInvoice), ', ' BY CStoWH IN documentPrmGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
+innerInvoicesCStoWH 'Инвойсы' (CStoWH) =
+    GROUP CONCAT stringInnerInvoice(innerInvoice) IF inCStoWHInnerInvoice (CStoWH, innerInvoice), ', '
+          BY CStoWH
+          ORDER innerInvoice IN documentPrmGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
 
 declarationCurrencyCStoWHDetail 'Валюта (ИД)' (CStoWHDetail) = currencyDeclaration(declarationCStoWHDetail(CStoWHDetail));
 declarationCurrencyCStoWH (CStoWH) = GROUP EQUAL declarationCurrencyCStoWHDetail(CStoWHDetail) BY CStoWHCStoWHDetail(CStoWHDetail);

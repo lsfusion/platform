@@ -111,7 +111,9 @@ nameHeadManInventory  'Зав. складом' (inventory) = commonName(headManI
 TABLE stockInventory (stock, inventory);
 includeStockInventory 'Вкл' = DATA BOOLEAN (stock, inventory);
 nameStockInventory 'Отделы документа' (inventory) =
-    GROUP CONCAT name(stock) IF includeStockInventory(stock, inventory), ', ' BY inventory MINCHARWIDTH 50 PREFCHARWIDTH 150;
+    GROUP CONCAT name(stock) IF includeStockInventory(stock, inventory), ', '
+          BY inventory
+          ORDER stock MINCHARWIDTH 50 PREFCHARWIDTH 150;
 
 // Тип инвентаризации
 typeOfAdditionInventory(inventory) = DATA typeOfAddition (inventory);

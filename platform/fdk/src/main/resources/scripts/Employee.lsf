@@ -142,12 +142,18 @@ CONSTRAINT inCommitteeEmployee(committee, employee) AND NOT countDivisionEmploye
 
 namePositionEmployeeCommittee 'Члены комиссии' (committee) =
      GROUP CONCAT positionNameEmployee(employee) IF inCommitteeEmployee(committee, employee), ', '
-     BY committee MINCHARWIDTH 50 PREFCHARWIDTH 50;
+     BY committee
+     ORDER employee
+     MINCHARWIDTH 50 PREFCHARWIDTH 50;
 
 nameEmployeeCommittee 'Члены комиссии' (committee) =
      GROUP CONCAT commonName(employee) IF inCommitteeEmployee(committee, employee), ', '
-     BY committee MINCHARWIDTH 50 PREFCHARWIDTH 50;
+     BY committee
+     ORDER employee
+     MINCHARWIDTH 50 PREFCHARWIDTH 50;
 
 nameEmployeeDivisionCommittee 'Подразделения' (committee) =
      GROUP CONCAT name(employeeDivision) IF inCommitteeEmployeeDivision(committee, employeeDivision), ', '
-     BY committee MINCHARWIDTH 50 PREFCHARWIDTH 50;
+     BY committee
+     ORDER employeeDivision
+     MINCHARWIDTH 50 PREFCHARWIDTH 50;

@@ -186,8 +186,9 @@ META defineShipment(skuLedger, sign)
 
     inInvoiceShipment (invoice, shipment) = GROUP SUM quantityShipmentDetail(shipmentDetail) BY invoiceShipmentDetail(shipmentDetail), shipmentShipmentDetail(shipmentDetail);
 
-    invoicesShipment 'Накладные' (shipment) = GROUP CONCAT castToString255(descriptionInvoice(invoice))
-        IF inInvoiceShipment(invoice, shipment) , ', ' BY shipment IN invoiceGroup MINCHARWIDTH 30 PREFCHARWIDTH 50;
+    invoicesShipment 'Накладные' (shipment) = GROUP CONCAT castToString255(descriptionInvoice(invoice)) IF inInvoiceShipment(invoice, shipment) , ', '
+                                                    BY shipment
+                                                    ORDER invoice IN invoiceGroup MINCHARWIDTH 30 PREFCHARWIDTH 50;
 
 
 
@@ -230,8 +231,9 @@ META defineShipment(skuLedger, sign)
 
     inOrderShipment (order, shipment) = GROUP SUM quantityShipmentDetail(shipmentDetail) BY orderShipmentDetail(shipmentDetail), shipmentShipmentDetail(shipmentDetail);
 
-    ordersShipment 'Заказы' (shipment) = GROUP CONCAT castToString255(descriptionOrder(order))
-        IF inOrderShipment(order, shipment) , ', ' BY shipment IN orderGroup MINCHARWIDTH 30 PREFCHARWIDTH 50;
+    ordersShipment 'Заказы' (shipment) = GROUP CONCAT castToString255(descriptionOrder(order)) IF inOrderShipment(order, shipment) , ', '
+                                               BY shipment
+                                               ORDER order IN orderGroup MINCHARWIDTH 30 PREFCHARWIDTH 50;
 
     diffShippedInvoiceDetail 'Остаток по накладной' (invoiceDetail) = quantityInvoiceDetail (invoiceDetail) (-) shippedInvoiceDetail(invoiceDetail);
 

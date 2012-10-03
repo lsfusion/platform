@@ -913,19 +913,24 @@ stringInnerInvoice (innerInvoice) =
     [FORMULA STRING[30] 'CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) '] (
     sidInnerInvoice(innerInvoice), dateInnerInvoice(innerInvoice));
 
-innerInvoicesDeclaration 'Инвойсы' (declaration) = GROUP CONCAT stringInnerInvoice(innerInvoice)
-    IF inDeclarationInnerInvoice (declaration, innerInvoice), ', ' BY declaration ORDER innerInvoice IN docGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
+innerInvoicesDeclaration 'Инвойсы' (declaration) =
+    GROUP CONCAT stringInnerInvoice(innerInvoice) IF inDeclarationInnerInvoice (declaration, innerInvoice), ', '
+          BY declaration
+          ORDER innerInvoice IN docGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
 
 quantityDeclarationBrandSupplier (declaration, brandSupplier) = GROUP SUM quantityDeclarationDetail(declarationDetail)
     BY declarationDeclarationDetail(declarationDetail), brandDeclarationDetail(declarationDetail);
 
 
-innerInvoicesGroupDeclaration 'Инвойсы' (groupDeclaration) = GROUP CONCAT sidInnerInvoice(innerInvoice)
-    IF quantityGroupDeclarationInnerInvoice(groupDeclaration, innerInvoice), ', ' BY groupDeclaration ORDER innerInvoice
-    MINCHARWIDTH 10 MAXCHARWIDTH 30 PREFCHARWIDTH 20 PERSISTENT;
+innerInvoicesGroupDeclaration 'Инвойсы' (groupDeclaration) =
+    GROUP CONCAT sidInnerInvoice(innerInvoice) IF quantityGroupDeclarationInnerInvoice(groupDeclaration, innerInvoice), ', '
+    BY groupDeclaration
+    ORDER innerInvoice MINCHARWIDTH 10 MAXCHARWIDTH 30 PREFCHARWIDTH 20 PERSISTENT;
 
 canonicalBrandDeclaration 'Бренды' (declaration) = castToString255(
-    [GROUP CONCAT commonName(brandSupplier) IF quantityDeclarationBrandSupplier(declaration, brandSupplier), ' , ' BY declaration ORDER brandSupplier](declaration))
+    [GROUP CONCAT commonName(brandSupplier) IF quantityDeclarationBrandSupplier(declaration, brandSupplier), ' , '
+           BY declaration
+           ORDER brandSupplier](declaration))
     MINCHARWIDTH 50 MAXCHARWIDTH 100 PREFCHARWIDTH 100 PERSISTENT;
 
 

@@ -78,8 +78,10 @@ META defineInvoice(sign)
 
     inOrderInvoice (order, invoice) = GROUP SUM quantityInvoiceDetail(invoiceDetail) BY orderInvoiceDetail(invoiceDetail), invoiceInvoiceDetail(invoiceDetail);
 
-    ordersInvoice 'Заказы' (invoice) = GROUP CONCAT castToString255(descriptionOrder(order))
-        IF inOrderInvoice(order, invoice) , ', ' BY invoice IN orderGroup MINCHARWIDTH 30 PREFCHARWIDTH 50;
+    ordersInvoice 'Заказы' (invoice) = GROUP CONCAT castToString255(descriptionOrder(order)) IF inOrderInvoice(order, invoice) , ', '
+                                             BY invoice
+                                             ORDER order
+                                             IN orderGroup MINCHARWIDTH 30 PREFCHARWIDTH 50;
 
 //-- Подсчет к-ва в накладных
 

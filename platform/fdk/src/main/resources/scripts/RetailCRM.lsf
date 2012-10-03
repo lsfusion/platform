@@ -170,7 +170,9 @@ skipPromotionDOW 'Исключить' = DATA BOOLEAN (promotion, DOW);
 
 TABLE promotionStore (promotion, store);
 inPromotionStore 'В акции' = DATA BOOLEAN (promotion, store);
-storePromotion 'Магазины' (promotion) = GROUP CONCAT name(store) IF inPromotionStore(promotion, store), ', ' BY promotion PERSISTENT MINCHARWIDTH 20 PREFCHARWIDTH 40;
+storePromotion 'Магазины' (promotion) = GROUP CONCAT name(store) IF inPromotionStore(promotion, store), ', '
+                                              BY promotion
+                                              ORDER store PERSISTENT MINCHARWIDTH 20 PREFCHARWIDTH 40;
 
 minSumBillPromotion 'Сумма чека (от)' (promotion) = DATA NUMERIC[14,2] (promotion);
 maxSumBillPromotion 'Сумма чека (до)' (promotion) = DATA NUMERIC[14,2] (promotion);

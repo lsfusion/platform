@@ -702,7 +702,8 @@ quantityPriceSetDocumentBrandSupplierSku (priceSetDocument, brandSupplier) = GRO
 
 canonicalBrandPriceSetDocument 'Бренды' (priceSetDocument) = castToString255(
     [GROUP CONCAT commonName(brandSupplier) IF (quantityPriceSetDocumentBrandSupplierArticle(priceSetDocument, brandSupplier) OR quantityPriceSetDocumentBrandSupplierSku(priceSetDocument, brandSupplier)), ' , '
-               BY priceSetDocument](priceSetDocument)) MINCHARWIDTH 50 MAXCHARWIDTH 100 PREFCHARWIDTH 100 PERSISTENT;
+           BY priceSetDocument
+           ORDER brandSupplier](priceSetDocument)) MINCHARWIDTH 50 MAXCHARWIDTH 100 PREFCHARWIDTH 100 PERSISTENT;
 
 // ------------------------------------------------- Значения для использования в операциях -------------------------------- //
 

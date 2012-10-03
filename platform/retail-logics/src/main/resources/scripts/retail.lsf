@@ -586,8 +586,9 @@ castIntervalNaturalLoss (subNaturalLossItemGroupDetail) =
 castConcat = FORMULA STRING[15] 'CAST($1 AS TEXT)';
 concatSubNaturalLossItemGroupDetail (subNaturalLossItemGroup) =
     GROUP CONCAT castConcat(percentNaturalLossItemGroupDetail(subNaturalLossItemGroupDetail)), ','
-    BY subNaturalLossItemGroupSubNaturalLossItemGroupDetail(subNaturalLossItemGroupDetail)
-    MINCHARWIDTH 100 PREFCHARWIDTH 150;
+          BY subNaturalLossItemGroupSubNaturalLossItemGroupDetail(subNaturalLossItemGroupDetail)
+          ORDER subNaturalLossItemGroupDetail
+          MINCHARWIDTH 100 PREFCHARWIDTH 150;
 
 inSubNaturalLossItemGroup (subNaturalLossItemGroup, subNaturalLossItemGroupDetail) =
     subNaturalLossItemGroupSubNaturalLossItemGroupDetail(subNaturalLossItemGroupDetail) ==  subNaturalLossItemGroup;
@@ -2001,8 +2002,10 @@ inStatementSpecification 'Включить в накладную' (statement, sp
 
 GROUP specificationGroup 'Счет-фактуры' : publicGroup;
 
-specificationsStatement 'Ввести на основании с/ф' (statement) = GROUP CONCAT castToString255(seriesNumberObject(specification))
-    IF inStatementSpecification(statement, specification), ', ' BY statement IN specificationGroup MINCHARWIDTH 20 PREFCHARWIDTH 20;
+specificationsStatement 'Ввести на основании с/ф' (statement) =
+    GROUP CONCAT castToString255(seriesNumberObject(specification)) IF inStatementSpecification(statement, specification), ', '
+          BY statement
+          ORDER specification IN specificationGroup MINCHARWIDTH 20 PREFCHARWIDTH 20;
 
 countStatementSpecification(specification) = GROUP SUM 1 IF inStatementSpecification(statement, specification) AND isPostedStatement(statement) BY specification;
 noStatementSpecification(specification) = specification IS specification AND NOT countStatementSpecification(specification);
@@ -3541,8 +3544,9 @@ inDateMonthGTT(genTimeTable, month) = inDateMonth(startDateGenTimeTable(genTimeT
 inShipmentOrder 'Поставка по заказу' (shipment, orderSupplier) = DATA BOOLEAN (shipment, orderSupplier)
     IN idGroup MINCHARWIDTH 10 PREFCHARWIDTH 10;
 
-ordersShipment 'Заявка' (shipment) = GROUP CONCAT castToString255(seriesNumberObject(orderSupplier))
-    IF inShipmentOrder(shipment, orderSupplier), ', ' BY shipment IN shipmentOrderGroup MINCHARWIDTH 10 PREFCHARWIDTH 10;
+ordersShipment 'Заявка' (shipment) = GROUP CONCAT castToString255(seriesNumberObject(orderSupplier)) IF inShipmentOrder(shipment, orderSupplier), ', '
+                                           BY shipment
+                                           ORDER orderSupplier IN shipmentOrderGroup MINCHARWIDTH 10 PREFCHARWIDTH 10;
 
 sumOrdersShipment (shipment) = GROUP SUM 1 IF inShipmentOrder(shipment, orderSupplier) BY shipment PERSISTENT;
 
