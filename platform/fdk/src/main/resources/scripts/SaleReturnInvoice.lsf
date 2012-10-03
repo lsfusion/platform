@@ -3,10 +3,11 @@ MODULE SaleReturnInvoice;
 REQUIRE Invoice, SaleReturnOrder
 ;
 
-NAMESPACE Return;
+NAMESPACE SaleReturn;
 
 
 //----------------------------------------------- Накладная ---------------------------------------------------//
 
-@defineInvoice(' (возврат)');
+@defineInvoice(' (продажа-возврат)', customer, company, customer);
+@defineInvoiceBatch();
 

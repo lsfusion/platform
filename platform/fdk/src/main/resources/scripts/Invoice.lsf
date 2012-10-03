@@ -5,7 +5,7 @@ REQUIRE Order, Consignment;
 
 //----------------------------------------------- Накладная ---------------------------------------------------//
 
-META defineInvoice(sign)
+META defineInvoice(sign, contact, partyA, partyB)
 
     CLASS ABSTRACT invoice 'Накладная'###sign:  consignment;
     CLASS ABSTRACT invoiceDetail 'Строка накладной'###sign: consignmentDetail;
@@ -26,19 +26,18 @@ META defineInvoice(sign)
     @defineDocumentInterfaceCurrency(invoice);
     @deriveDocumentCurrency(userInvoice, stock);
 
-    @defineDocumentInterfaceCustomer(invoice);
-    @defineDocumentInterfaceContract(invoice, contractSkuCustomer, singleContractSkuCustomerCompanyCustomer, companyInvoice, customerInvoice,
+    @defineDocumentInterface###contact(invoice);
+    @defineDocumentInterfaceContract(invoice, contractSku###contact, singleContractSku###contact###partyA###partyB, partyA###Invoice, partyB###Invoice,
                                      'Сторона A договора накладной не соответствует компании склада-отправителя',
                                      'Сторона B договора накладной не соответствует покупателю');
     @defineDocumentInterfacePriceListType(invoice);
 
     @defineDocumentInterfaceDetailSku(invoice, sku);
-    @defineDocumentInterfaceDetailBatch(invoice, batch);
 
     @defineDocumentInterfaceDetailQuantity(invoice);
 
     @defineDocumentInterfaceDetailPrice(invoice);
-    @deriveDocumentDetailPriceBatchPriceListType(userInvoice);
+    @deriveDocumentDetailPricePriceListTypeCustom(userInvoiceDetail);
 
     @defineDocumentInterfaceDetailDataSum(invoice);
     @deriveDocumentDetailSum(userInvoice);
@@ -48,7 +47,7 @@ META defineInvoice(sign)
     @deriveDocumentDetailVATSum(userInvoice);
 
     @defineDocumentInterfaceDetailPricePrefix(invoice, shipment, ' (учетная)');
-    @deriveDocumentDetailPriceBatchStockPrefix(userInvoice, shipment);
+    @derivePriceOnSkuChangePrefix(userInvoice, sku, stock, shipment);
 
     @defineDocumentInterfaceDetailDataSumPrefix (invoice, shipment, ' (учетная)');
     @deriveDocumentDetailSumPrefix(userInvoice, shipment, currency);
@@ -67,7 +66,7 @@ META defineInvoice(sign)
     orderUserInvoiceDetail = DATA order(userInvoiceDetail);
     orderInvoiceDetail(invoiceDetail) += orderUserInvoiceDetail(invoiceDetail);
 
-    CONSTRAINT customerInvoiceDetail(invoiceDetail) != customerOrder(orderUserInvoiceDetail(invoiceDetail)) OR
+    CONSTRAINT contact###InvoiceDetail(invoiceDetail) != contact###Order(orderUserInvoiceDetail(invoiceDetail)) OR
                companyStockUserInvoiceDetail(invoiceDetail) != companyOrder(orderUserInvoiceDetail(invoiceDetail))
         CHECKED BY orderUserInvoiceDetail
             MESSAGE 'Покупатель и компания в заказе и накладной должны соответствовать друг другу';
@@ -119,12 +118,12 @@ META defineInvoice(sign)
     FORM invoiceOrders 'Заказы'###sign
         OBJECTS s = stock FIXED PANEL
         PROPERTIES (s) READONLY name
-        OBJECTS c = customer FIXED PANEL
+        OBJECTS c = contact FIXED PANEL
         PROPERTIES (c) READONLY name
 
         OBJECTS o = order
         PROPERTIES (o) READONLY isPostedOrder FORCE GRID, objectClassName, numberOrder, seriesOrder, dateOrder, timeOrder,
-                                nameStockOrder, nameCustomerOrder, nameCurrencyOrder, noteOrder,
+                                nameStockOrder, name###contact###Order, nameCurrencyOrder, noteOrder,
                                 countOrderDetailOrder, quantityOrderDetailOrder, sumOrderDetailOrder
 
         OBJECTS d = orderDetail
@@ -133,7 +132,7 @@ META defineInvoice(sign)
                                 diffInvoicedOrderDetail
 
         FILTERS orderOrderDetail(d) == o,
-                customerOrder(o) == c,
+                contact###Order(o) == c,
                 isPostedOrder(o)
 
         FILTERGROUP filter
@@ -182,7 +181,7 @@ META defineInvoice(sign)
     fillOrderUserInvoice 'Заполнить накладную на основании заказа' =  ACTION (userInvoice) {
         LOCAL saleOrder = order();
 
-        FORM invoiceOrders OBJECTS s = stockUserInvoice(userInvoice), c = customerUserInvoice(userInvoice) MODAL;
+        FORM invoiceOrders OBJECTS s = stockUserInvoice(userInvoice), c = contact###UserInvoice(userInvoice) MODAL;
         IF formResult() == formResult.ok THEN {
             SET saleOrder() <- chosenObject('o');
 
@@ -202,14 +201,14 @@ META defineInvoice(sign)
     FORM userInvoice 'Накладная'###sign
         OBJECTS i = userInvoice FIXED PANEL
         PROPERTIES (i) objectClassName, nameStockUserInvoice, nameNumeratorObject, numberObject, seriesObject, dateUserInvoice, timeUserInvoice,
-                       nameCustomerUserInvoice, nameCurrencyUserInvoice, namePriceListTypeUserInvoice, noteUserInvoice,
-                       numberContractSkuCustomerUserInvoice, isCommissionUserInvoice,
+                       name###contact###UserInvoice, nameCurrencyUserInvoice, namePriceListTypeUserInvoice, noteUserInvoice,
+                       numberContractSku###contact###UserInvoice, isCommissionUserInvoice,
                        fillOrderUserInvoice, ordersInvoice READONLY,
                        countUserInvoiceDetailUserInvoice, quantityUserInvoiceDetailUserInvoice, sumUserInvoiceDetailUserInvoice,
                        VATSumUserInvoiceDetailUserInvoice, invoiceSumUserInvoiceDetailUserInvoice
         OBJECTS d = userInvoiceDetail
         PROPERTIES (d) indexUserInvoiceDetail, idBarcodeSkuUserInvoiceDetail, nameSkuUserInvoiceDetail, shortNameUOMSkuUserInvoiceDetail,
-                       descriptionBatchUserInvoiceDetail, quantityUserInvoiceDetail, priceUserInvoiceDetail, sumUserInvoiceDetail,
+                       quantityUserInvoiceDetail, priceUserInvoiceDetail, sumUserInvoiceDetail,
                        numberVATUserInvoiceDetail, valueVATUserInvoiceDetail, VATSumUserInvoiceDetail, invoiceSumUserInvoiceDetail,
                        nameStockUserInvoiceDetail, descriptionOrderUserInvoiceDetail, ADDOBJ, delete
 
@@ -276,8 +275,8 @@ META defineInvoice(sign)
     FORM userInvoices 'Накладные'###sign
         OBJECTS i = userInvoice
         PROPERTIES (i) READONLY isPostedUserInvoice FORCE GRID, objectClassName, numberObject, seriesObject, dateUserInvoice, timeUserInvoice,
-                                nameStockUserInvoice, nameCustomerUserInvoice, nameCurrencyUserInvoice, namePriceListTypeUserInvoice, noteUserInvoice,
-                                numberContractSkuCustomerUserInvoice, isCommissionUserInvoice,
+                                nameStockUserInvoice, name###contact###UserInvoice, nameCurrencyUserInvoice, namePriceListTypeUserInvoice, noteUserInvoice,
+                                numberContractSku###contact###UserInvoice, isCommissionUserInvoice,
                                 countUserInvoiceDetailUserInvoice, quantityUserInvoiceDetailUserInvoice, sumUserInvoiceDetailUserInvoice,
                                 VATSumUserInvoiceDetailUserInvoice, invoiceSumUserInvoiceDetailUserInvoice, ordersInvoice
 
@@ -287,7 +286,7 @@ META defineInvoice(sign)
 
         OBJECTS d = userInvoiceDetail
         PROPERTIES (d) READONLY indexUserInvoiceDetail, idBarcodeSkuUserInvoiceDetail, nameSkuUserInvoiceDetail, shortNameUOMSkuUserInvoiceDetail,
-                       descriptionBatchUserInvoiceDetail, quantityUserInvoiceDetail, priceUserInvoiceDetail, sumUserInvoiceDetail,
+                       quantityUserInvoiceDetail, priceUserInvoiceDetail, sumUserInvoiceDetail,
                        numberVATUserInvoiceDetail, valueVATUserInvoiceDetail, VATSumUserInvoiceDetail, invoiceSumUserInvoiceDetail,
                        nameStockUserInvoiceDetail, descriptionOrderUserInvoiceDetail
 
@@ -334,14 +333,14 @@ META defineInvoice(sign)
     FORM invoices 'Накладные'###sign
         OBJECTS i = invoice
         PROPERTIES (i) READONLY isPostedInvoice FORCE GRID, objectClassName, numberInvoice, seriesInvoice, dateInvoice, timeInvoice,
-                                nameStockInvoice, nameCustomerInvoice, nameCurrencyInvoice, noteInvoice,
-                                numberContractSkuCustomerInvoice, isCommissionInvoice,
+                                nameStockInvoice, name###contact###Invoice, nameCurrencyInvoice, noteInvoice,
+                                numberContractSku###contact###Invoice, isCommissionInvoice,
                                 countInvoiceDetailInvoice, quantityInvoiceDetailInvoice, sumInvoiceDetailInvoice,
                                 VATSumInvoiceDetailInvoice, invoiceSumInvoiceDetailInvoice, ordersInvoice
 
         OBJECTS d = invoiceDetail
         PROPERTIES (d) READONLY indexInvoiceDetail, idBarcodeSkuInvoiceDetail, nameSkuInvoiceDetail, shortNameUOMSkuInvoiceDetail,
-                       descriptionBatchInvoiceDetail, quantityInvoiceDetail, priceInvoiceDetail, sumInvoiceDetail,
+                       quantityInvoiceDetail, priceInvoiceDetail, sumInvoiceDetail,
                        numberVATInvoiceDetail, valueVATInvoiceDetail, VATSumInvoiceDetail, invoiceSumInvoiceDetail,
                        nameStockInvoiceDetail, descriptionOrderInvoiceDetail
 
@@ -379,14 +378,33 @@ META defineInvoice(sign)
         }
     }
 
+END
+// Партии
+
+META defineInvoiceBatch(dumb)
+    @defineDocumentInterfaceDetailBatch(invoice, batch);
+    @deriveDocumentDetailPriceBatchPriceListType(userInvoice);
+    @deriveDocumentDetailPriceBatchStockPrefix(userInvoice, shipment);
+
+    EXTEND FORM userInvoice
+    PROPERTIES (d) descriptionBatchUserInvoiceDetail AFTER shortNameUOMSkuUserInvoiceDetail
+    ;
+    EXTEND FORM userInvoices
+    PROPERTIES (d) READONLY descriptionBatchUserInvoiceDetail AFTER shortNameUOMSkuUserInvoiceDetail
+    ;
+    EXTEND FORM invoices
+    PROPERTIES (d) READONLY descriptionBatchInvoiceDetail AFTER shortNameUOMSkuInvoiceDetail
+    ;
+END
 // Товарные накладные
+META defineInvoiceConsignment(partyA, partyB)
 
 @defineDocumentDetailPackWeightSku(invoice);
 @defineConsignmentInterface(invoice);
 @implementConsignmentDetailSku(invoice);
 
-senderConsignment (consignment) += companyStock(stockInvoice(consignment));
-recipientConsignment (consignment) += customerInvoice(consignment);
+senderConsignment (consignment) += partyA###Invoice(consignment);
+recipientConsignment (consignment) += partyB###Invoice(consignment);
 currencyConsignment (consignment) += currencyInvoice(consignment);
 
 priceConsignmentDetail (consignmentDetail) += priceInvoiceDetail(consignmentDetail);
@@ -443,5 +461,4 @@ shortNameUOMConsignmentDetail (consignmentDetail) += shortNameUOMSku(skuInvoiceD
         }
     }
 END
-
 

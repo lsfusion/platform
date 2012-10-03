@@ -1,0 +1,12 @@
+MODULE PurchaseReturnOrder;
+
+REQUIRE Order, PurchaseShipment
+;
+
+
+NAMESPACE PurchaseReturn;
+
+
+//----------------------------------------------- Заказ ---------------------------------------------------//
+
+@defineOrder(' (покупка-возврат)', supplier);

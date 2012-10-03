@@ -1,14 +1,12 @@
-MODULE SaleOrder;
+MODULE PurchaseOrder;
 
 REQUIRE Order
 ;
 
 
-NAMESPACE Sale;
+NAMESPACE Purchase;
 
 
 //----------------------------------------------- Заказ ---------------------------------------------------//
 
-@defineOrder(' (продажа)', customer);
-
-
+@defineOrder(' (покупка)', supplier);

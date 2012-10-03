@@ -1,0 +1,18 @@
+MODULE PurchaseReturnShipment;
+
+REQUIRE Shipment, PurchaseReturnInvoice
+;
+
+NAMESPACE PurchaseReturn;
+
+
+//----------------------------------------------- Поставка ---------------------------------------------------//
+
+@defineShipment(outFIFOSkuLedger, ' (покупка-возврат)', supplier, supplier, company);
+@defineShipmentBatch();
+
+// Проводим по регистру
+
+@implementSkuLedger(shipment, sku, stock);
+quantityOutFIFOSkuLedger (ledger) += quantityShipmentDetail(ledger);
+sumOutSkuLedger (ledger) += sumShipmentDetail(ledger);

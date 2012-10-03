@@ -1,0 +1,11 @@
+MODULE PurchaseInvoice;
+
+REQUIRE PurchaseOrder, Invoice;
+
+NAMESPACE Purchase;
+
+
+//----------------------------------------------- Накладная ---------------------------------------------------//
+
+@defineInvoice(' (покупка)', supplier, supplier, company);
+

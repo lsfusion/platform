@@ -5,7 +5,7 @@ REQUIRE Invoice;
 
 //----------------------------------------------- Поставка ---------------------------------------------------//
 
-META defineShipment(skuLedger, sign)
+META defineShipment(skuLedger, sign, contact, partyA, partyB)
 
     CLASS ABSTRACT shipment 'Поставка'###sign;
     CLASS ABSTRACT shipmentDetail 'Строка поставки'###sign : skuLedger;
@@ -26,18 +26,17 @@ META defineShipment(skuLedger, sign)
     @defineDocumentInterfaceCurrency(shipment);
     @deriveDocumentCurrency(userShipment, stock);
 
-    @defineDocumentInterfaceCustomer(shipment);
-    @defineDocumentInterfaceContract(shipment, contractSkuCustomer, singleContractSkuCustomerCompanyCustomer, companyShipment, customerShipment,
+    @defineDocumentInterface###contact(shipment);
+    @defineDocumentInterfaceContract(shipment, contractSku###contact, singleContractSku###contact###partyA###partyB, partyA###Shipment, partyB###Shipment,
                                      'Сторона A договора поставки не соответствует компании склада-отправителя',
                                      'Сторона B договора поставки товаров не соответствует покупателю');
 
     @defineDocumentInterfaceDetailSku(shipment, sku);
-    @defineDocumentInterfaceDetailBatch(shipment, batch);
 
     @defineDocumentInterfaceDetailQuantity(shipment);
 
     @defineDocumentInterfaceDetailPrice(shipment);
-    @deriveDocumentDetailPriceBatchStock(userShipment);
+    @derivePriceOnSkuChange(userShipment);
 
     @defineDocumentInterfaceDetailDataSum(shipment);
     @deriveDocumentDetailSum(userShipment);
@@ -54,13 +53,13 @@ META defineShipment(skuLedger, sign)
     FORM userShipment 'Поставка'###sign
         OBJECTS s = userShipment FIXED PANEL
         PROPERTIES (s) objectClassName, nameStockUserShipment, nameNumeratorObject, numberObject, seriesObject, dateUserShipment, timeUserShipment,
-                       nameCustomerUserShipment, nameCurrencyUserShipment, noteUserShipment,
-                       numberContractSkuCustomerUserShipment, isCommissionUserShipment,
+                       name###contact###UserShipment, nameCurrencyUserShipment, noteUserShipment,
+                       numberContractSku###contact###UserShipment, isCommissionUserShipment,
                        countUserShipmentDetailUserShipment, quantityUserShipmentDetailUserShipment, sumUserShipmentDetailUserShipment
 
         OBJECTS d = userShipmentDetail
         PROPERTIES (d) indexUserShipmentDetail, idBarcodeSkuUserShipmentDetail, nameSkuUserShipmentDetail, shortNameUOMSkuUserShipmentDetail,
-                       descriptionBatchUserShipmentDetail, quantityUserShipmentDetail, priceUserShipmentDetail, sumUserShipmentDetail,
+                       quantityUserShipmentDetail, priceUserShipmentDetail, sumUserShipmentDetail,
                        nameStockUserShipmentDetail, ADDOBJ, delete
 
         PROPERTIES(s) TODRAW d addDetailDialogSkuStockUserShipmentDetailUserShipment,
@@ -117,8 +116,8 @@ META defineShipment(skuLedger, sign)
     FORM userShipments 'Поставки'###sign
         OBJECTS s = userShipment
         PROPERTIES (s) READONLY isPostedUserShipment FORCE GRID, objectClassName, numberObject, seriesObject, dateUserShipment, timeUserShipment,
-                                nameStockUserShipment, nameCustomerUserShipment, nameCurrencyUserShipment, noteUserShipment,
-                                numberContractSkuCustomerUserShipment, isCommissionUserShipment,
+                                nameStockUserShipment, name###contact###UserShipment, nameCurrencyUserShipment, noteUserShipment,
+                                numberContractSku###contact###UserShipment, isCommissionUserShipment,
                                 countUserShipmentDetailUserShipment, quantityUserShipmentDetailUserShipment, sumUserShipmentDetailUserShipment
 
         PROPERTIES (s) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
@@ -127,7 +126,7 @@ META defineShipment(skuLedger, sign)
 
         OBJECTS d = userShipmentDetail
         PROPERTIES (d) READONLY indexUserShipmentDetail, idBarcodeSkuUserShipmentDetail, nameSkuUserShipmentDetail, shortNameUOMSkuUserShipmentDetail,
-                                descriptionBatchUserShipmentDetail, quantityUserShipmentDetail, priceUserShipmentDetail, sumUserShipmentDetail,
+                                quantityUserShipmentDetail, priceUserShipmentDetail, sumUserShipmentDetail,
                                 nameStockUserShipmentDetail
         FILTERS userShipmentUserShipmentDetail(d) == s
 
@@ -174,7 +173,7 @@ META defineShipment(skuLedger, sign)
     invoiceUserShipmentDetail = DATA invoice (userShipmentDetail);
     invoiceShipmentDetail(shipmentDetail) += invoiceUserShipmentDetail(shipmentDetail);
 
-    CONSTRAINT customerShipmentDetail(shipmentDetail) != customerInvoice(invoiceUserShipmentDetail(shipmentDetail)) OR
+    CONSTRAINT contact###ShipmentDetail(shipmentDetail) != contact###Invoice(invoiceUserShipmentDetail(shipmentDetail)) OR
                companyUserShipment(shipmentDetail) != companyInvoice(invoiceUserShipmentDetail(shipmentDetail))
         CHECKED BY invoiceUserShipmentDetail
             MESSAGE 'Покупатель и компания в накладной и поставке должны соответствовать друг другу';
@@ -221,7 +220,7 @@ META defineShipment(skuLedger, sign)
     orderUserShipmentDetail = DATA order (userShipmentDetail);
     orderShipmentDetail(shipmentDetail) += orderUserShipmentDetail(shipmentDetail);
 
-    CONSTRAINT customerShipmentDetail(shipmentDetail) != customerOrder(orderUserShipmentDetail(shipmentDetail)) OR
+    CONSTRAINT contact###ShipmentDetail(shipmentDetail) != contact###Order(orderUserShipmentDetail(shipmentDetail)) OR
                companyUserShipment(shipmentDetail) != companyOrder(orderUserShipmentDetail(shipmentDetail))
         CHECKED BY orderUserShipmentDetail
             MESSAGE 'Покупатель и компания в заказе и поставке должны соответствовать друг другу';
@@ -246,24 +245,24 @@ META defineShipment(skuLedger, sign)
     FORM shipmentInvoices 'Накладные'###sign
         OBJECTS s = stock FIXED PANEL
         PROPERTIES (s) READONLY name
-        OBJECTS c = customer FIXED PANEL
+        OBJECTS c = contact FIXED PANEL
         PROPERTIES (c) READONLY name
 
         OBJECTS i = invoice
         PROPERTIES (i) READONLY isPostedInvoice FORCE GRID, objectClassName, numberInvoice, seriesInvoice, dateInvoice, timeInvoice,
-                                nameStockInvoice, nameCustomerInvoice, nameCurrencyInvoice, noteInvoice,
-                                numberContractSkuCustomerInvoice, isCommissionInvoice,
+                                nameStockInvoice, name###contact###Invoice, nameCurrencyInvoice, noteInvoice,
+                                numberContractSku###contact###Invoice, isCommissionInvoice,
                                 countInvoiceDetailInvoice, quantityInvoiceDetailInvoice, sumInvoiceDetailInvoice,
                                 VATSumInvoiceDetailInvoice, invoiceSumInvoiceDetailInvoice, ordersInvoice
 
         OBJECTS d = invoiceDetail
         PROPERTIES (d) READONLY indexInvoiceDetail, idBarcodeSkuInvoiceDetail, nameSkuInvoiceDetail, shortNameUOMSkuInvoiceDetail,
-                       descriptionBatchInvoiceDetail, quantityInvoiceDetail, shippedInvoiceDetail, priceInvoiceDetail, sumInvoiceDetail,
+                       quantityInvoiceDetail, shippedInvoiceDetail, priceInvoiceDetail, sumInvoiceDetail,
                        numberVATInvoiceDetail, valueVATInvoiceDetail, VATSumInvoiceDetail, invoiceSumInvoiceDetail,
                        nameStockInvoiceDetail, descriptionOrderInvoiceDetail, diffShippedInvoiceDetail
 
         FILTERS invoiceInvoiceDetail(d) == i,
-                customerInvoice(i) == c,
+                contact###Invoice(i) == c,
                 isPostedInvoice(i)
 
         FILTERGROUP filter
@@ -309,23 +308,30 @@ META defineShipment(skuLedger, sign)
         }
     }
 
+    fillBatchUserShipmentDetail = ABSTRACT ACTION (userShipmentDetail, invoiceDetail);
+    fillVATUserShipmentDetail = ABSTRACT ACTION (userShipmentDetail, invoiceDetail);
+    fillVATSumUserShipmentDetail = ABSTRACT ACTION (userShipmentDetail, invoiceDetail);
+    fillInvoiceSumUserShipmentDetail = ABSTRACT ACTION (userShipmentDetail, invoiceDetail);
 
     fillInvoiceUserShipment 'Заполнить поставку на основании накладной' =  ACTION (userShipment) {
         LOCAL saleInvoice = invoice();
 
-        FORM shipmentInvoices OBJECTS s = stockUserShipment(userShipment), c = customerUserShipment(userShipment) MODAL;
+        FORM shipmentInvoices OBJECTS s = stockUserShipment(userShipment), c = contact###UserShipment(userShipment) MODAL;
         IF formResult() == formResult.ok THEN {
             SET saleInvoice() <- chosenObject('i');
 
             FOR invoiceInvoiceDetail(invoiceDetail) == saleInvoice() AND stockInvoiceDetail(invoiceDetail) ==stockUserShipment(userShipment) AND diffShippedInvoiceDetail(invoiceDetail)>0 AND isPostedInvoiceDetail(invoiceDetail) ADDOBJ d = userShipmentDetail DO {
-
                 SET userShipmentUserShipmentDetail(d) <- userShipment;
                 SET invoiceUserShipmentDetail(d) <- saleInvoice();
                 SET orderUserShipmentDetail(d) <- orderInvoiceDetail(invoiceDetail);
     //            SET stockUserShipmentDetail (d) <- stockInvoiceDetail(invoiceDetail);
                 SET skuUserShipmentDetail(d) <- skuInvoiceDetail(invoiceDetail);
-                SET batchUserShipmentDetail (d) <- batchInvoiceDetail(invoiceDetail);
                 SET quantityUserShipmentDetail (d) <- diffShippedInvoiceDetail(invoiceDetail);
+
+                EXEC fillBatchUserShipmentDetail(d, invoiceDetail);
+                EXEC fillVATUserShipmentDetail(d, invoiceDetail);
+                EXEC fillVATSumUserShipmentDetail(d, invoiceDetail);
+                EXEC fillInvoiceSumUserShipmentDetail(d, invoiceDetail);
             }
         }
     } IN invoiceGroup;
@@ -354,12 +360,12 @@ META defineShipment(skuLedger, sign)
     FORM shipmentOrders 'Заказы'###sign
         OBJECTS s = stock FIXED PANEL
         PROPERTIES (s) READONLY name
-        OBJECTS c = customer FIXED PANEL
+        OBJECTS c = contact FIXED PANEL
         PROPERTIES (c) READONLY name
 
         OBJECTS o = order
         PROPERTIES (o) READONLY isPostedOrder FORCE GRID, objectClassName, numberOrder, seriesOrder, dateOrder, timeOrder,
-                                nameStockOrder, nameCustomerOrder, nameCurrencyOrder, noteOrder,
+                                nameStockOrder, name###contact###Order, nameCurrencyOrder, noteOrder,
                                 countOrderDetailOrder, quantityOrderDetailOrder, sumOrderDetailOrder
 
         OBJECTS d = orderDetail
@@ -368,7 +374,7 @@ META defineShipment(skuLedger, sign)
                                 diffShippedOrderDetail
 
         FILTERS orderOrderDetail(d) == o,
-                customerOrder(o) == c,
+                contact###Order(o) == c,
                 isPostedOrder(o)
 
         FILTERGROUP filter
@@ -433,7 +439,7 @@ META defineShipment(skuLedger, sign)
     fillOrderUserShipment 'Заполнить поставку на основании заказа' =  ACTION (userShipment) {
         LOCAL saleOrder = order();
 
-        FORM shipmentOrders OBJECTS s = stockUserShipment(userShipment), c = customerUserShipment(userShipment) MODAL;
+        FORM shipmentOrders OBJECTS s = stockUserShipment(userShipment), c = contact###UserShipment(userShipment) MODAL;
         IF formResult() == formResult.ok THEN {
             SET saleOrder() <- chosenObject('o');
 
@@ -492,8 +498,8 @@ META defineShipment(skuLedger, sign)
     stockShipment(shipment) += stockInvoiceShipment(shipment);
     dataStockShipmentDetail(shipmentDetail) += dataStockInvoiceDetail(invoiceDetailInvoiceShipmentDetail(shipmentDetail));
 
-    @defineDocumentAggregationStockPrefix(invoice, invoiceShipment, customer, 'Покупатель', , );
-    customerShipment(shipment) += customerInvoiceShipment(shipment);
+    @defineDocumentAggregationStockPrefix(invoice, invoiceShipment, contact, 'Покупатель', , );
+    contact###Shipment(shipment) += contact###InvoiceShipment(shipment);
 
     @defineDocumentAggregationPosted(invoice, invoiceShipment);
     isPostedShipment(shipment) += isPostedInvoiceShipment(shipment);
@@ -512,8 +518,8 @@ META defineShipment(skuLedger, sign)
     currencyInvoiceShipment  (invoiceShipment) = currencyInvoice(invoiceInvoiceShipment(invoiceShipment));
     currencyShipment (shipment) += currencyInvoiceShipment(shipment);
 
-    contractSkuCustomerInvoiceShipment  (invoiceShipment) = contractSkuCustomerInvoice(invoiceInvoiceShipment(invoiceShipment));
-    contractSkuCustomerShipment (shipment) += contractSkuCustomerInvoiceShipment(shipment);
+    contractSku###contact###InvoiceShipment  (invoiceShipment) = contractSku###contact###Invoice(invoiceInvoiceShipment(invoiceShipment));
+    contractSku###contact###Shipment (shipment) += contractSku###contact###InvoiceShipment(shipment);
 
     isCommissionInvoiceShipment  (invoiceShipment) = isCommissionInvoice(invoiceInvoiceShipment(invoiceShipment));
     isCommissionShipment(shipment)+= isCommissionInvoiceShipment(shipment);
@@ -528,9 +534,6 @@ META defineShipment(skuLedger, sign)
 
     @defineDocumentAggregationDetailSku(invoice, invoiceShipment, sku);
     skuShipmentDetail(shipmentDetail) +=  skuInvoiceShipmentDetail(shipmentDetail);
-
-    @defineDocumentAggregationDetailBatch (invoice, invoiceShipment);
-    batchShipmentDetail (shipmentDetail) += batchInvoiceShipmentDetail(shipmentDetail);
 
     @defineDocumentAggregationDetailQuantity(invoice, invoiceShipment);
     quantityShipmentDetail(shipmentDetail) += quantityInvoiceShipmentDetail(shipmentDetail);
@@ -547,14 +550,14 @@ META defineShipment(skuLedger, sign)
     FORM dialogShipments 'Поставки (все)'###sign
         OBJECTS s = shipment
         PROPERTIES (s) READONLY isPostedShipment FORCE GRID, objectClassName, numberShipment, seriesShipment, dateShipment, timeShipment,
-                                nameStockShipment, nameCustomerShipment, nameCurrencyShipment, noteShipment,
+                                nameStockShipment, name###contact###Shipment, nameCurrencyShipment, noteShipment,
                                 isCommissionShipment,
                                 countShipmentDetailShipment, quantityShipmentDetailShipment, sumShipmentDetailShipment
 
 
         OBJECTS d = shipmentDetail
         PROPERTIES (d) READONLY indexShipmentDetail, idBarcodeSkuShipmentDetail, nameSkuShipmentDetail, shortNameUOMSkuShipmentDetail,
-                                descriptionBatchShipmentDetail, quantityShipmentDetail, priceShipmentDetail, sumShipmentDetail,
+                                quantityShipmentDetail, priceShipmentDetail, sumShipmentDetail,
                                 nameStockShipmentDetail, descriptionInvoiceInvoiceShipmentDetail, descriptionOrderShipmentDetail
         FILTERS shipmentShipmentDetail(d) == s
 
@@ -579,4 +582,28 @@ META defineShipment(skuLedger, sign)
             }
         }
     }
+END
+
+META defineShipmentBatch(dumb)
+    @defineDocumentInterfaceDetailBatch(shipment, batch);
+    @deriveDocumentDetailPriceBatchStock(userShipment);
+
+    EXTEND FORM userShipment
+    PROPERTIES (d) descriptionBatchUserShipmentDetail AFTER shortNameUOMSkuUserShipmentDetail
+    ;
+    EXTEND FORM userShipments
+    PROPERTIES (d) READONLY descriptionBatchUserShipmentDetail AFTER shortNameUOMSkuUserShipmentDetail
+    ;
+    EXTEND FORM shipmentInvoices
+    PROPERTIES (d) READONLY descriptionBatchInvoiceDetail AFTER shortNameUOMSkuInvoiceDetail
+    ;
+
+    fillBatchUserShipmentDetail (sd, id) += ACTION SET batchUserShipmentDetail (sd) <- batchInvoiceDetail(id);
+
+    @defineDocumentAggregationDetailBatch (invoice, invoiceShipment);
+    batchShipmentDetail (shipmentDetail) += batchInvoiceShipmentDetail(shipmentDetail);
+
+    EXTEND FORM dialogShipments
+    PROPERTIES (d) READONLY descriptionBatchShipmentDetail AFTER shortNameUOMSkuShipmentDetail
+    ;
 END

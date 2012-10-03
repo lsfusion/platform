@@ -4,10 +4,10 @@ REQUIRE Order, SaleShipment
 ;
 
 
-NAMESPACE Return;
+NAMESPACE SaleReturn;
 
 
 //----------------------------------------------- Заказ ---------------------------------------------------//
 
-@defineOrder(' (возврат)');
+@defineOrder(' (продажа-возврат)', customer);
 

@@ -8,6 +8,7 @@ REQUIRE System,
         Document,
         Currency,
         Customer,
+        Supplier,
         Barcode,
         PriceList,
         Historizable;
@@ -15,12 +16,10 @@ REQUIRE System,
 
 PRIORITY Utils, Stock;
 
-//NAMESPACE Sale;
-
 
 //----------------------------------------------- Заказ ---------------------------------------------------//
 
-META defineOrder(sign)
+META defineOrder(sign, contact)
 
     CLASS ABSTRACT order 'Заказ'###sign;
     CLASS ABSTRACT orderDetail 'Строка заказа'###sign : named;
@@ -44,7 +43,7 @@ META defineOrder(sign)
     @defineDocumentInterfaceCurrency(order);
     @deriveDocumentCurrency(userOrder, stock);
 
-    @defineDocumentInterfaceCustomer(order);
+    @defineDocumentInterface###contact(order);
     @defineDocumentInterfacePriceListType(order);
 
     @defineDocumentInterfaceDetailSku(order, sku);
@@ -70,7 +69,7 @@ META defineOrder(sign)
     FORM userOrder 'Заказ'###sign
         OBJECTS o = userOrder FIXED PANEL
         PROPERTIES (o) objectClassName, nameStockUserOrder, nameNumeratorObject, numberObject, seriesObject, dateUserOrder, timeUserOrder,
-                       nameCustomerUserOrder, nameCurrencyUserOrder, namePriceListTypeUserOrder, noteUserOrder,
+                       name###contact###UserOrder, nameCurrencyUserOrder, namePriceListTypeUserOrder, noteUserOrder,
                        countUserOrderDetailUserOrder, quantityUserOrderDetailUserOrder, sumUserOrderDetailUserOrder
 
         OBJECTS d = userOrderDetail
@@ -141,7 +140,7 @@ META defineOrder(sign)
     FORM userOrders 'Заказы'###sign
         OBJECTS o = userOrder
         PROPERTIES (o) READONLY isPostedUserOrder FORCE GRID, objectClassName, numberObject, seriesObject, dateUserOrder, timeUserOrder,
-                                nameStockUserOrder, nameCustomerUserOrder, nameCurrencyUserOrder, namePriceListTypeUserOrder, noteUserOrder,
+                                nameStockUserOrder, name###contact###UserOrder, nameCurrencyUserOrder, namePriceListTypeUserOrder, noteUserOrder,
                                 countUserOrderDetailUserOrder, quantityUserOrderDetailUserOrder, sumUserOrderDetailUserOrder
 
         PROPERTIES (o) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
@@ -193,7 +192,7 @@ META defineOrder(sign)
     FORM orders 'Заказы'###sign
         OBJECTS o = order
         PROPERTIES (o) READONLY isPostedOrder FORCE GRID, objectClassName, numberOrder, seriesOrder, dateOrder, timeOrder,
-                                nameStockOrder, nameCustomerOrder, nameCurrencyOrder, noteOrder,
+                                nameStockOrder, name###contact###Order, nameCurrencyOrder, noteOrder,
                                 countOrderDetailOrder, quantityOrderDetailOrder, sumOrderDetailOrder
 
         OBJECTS d = orderDetail

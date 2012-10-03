@@ -7,7 +7,8 @@ NAMESPACE Sale;
 
 //----------------------------------------------- Поставка ---------------------------------------------------//
 
-@defineShipment(outFIFOSkuLedger, ' (продажа)');
+@defineShipment(outFIFOSkuLedger, ' (продажа)', customer, company, customer);
+@defineShipmentBatch();
 
 // Проводим по регистру
 @implementSkuLedger(shipment, sku, stock);

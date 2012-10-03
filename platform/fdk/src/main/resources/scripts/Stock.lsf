@@ -884,18 +884,29 @@ META deriveDocumentDetailSum(object)
 END
 //-
 
-META derivePriceOnSkuChange(concrete, skuProp, stockProp)
-    price###concrete##Detail (detail)  <- priceSkuStockDateTime(
+META derivePriceOnSkuChangePrefix(concrete, skuProp, stockProp, prefix)
+    prefix###price###concrete##Detail (detail)  <- priceSkuStockDateTime(
                     skuProp###concrete##Detail(detail), stockProp###concrete##Detail(detail), dateTime###concrete##Detail(detail))
-                    WHEN CHANGED(skuProp###concrete##Detail(detail)) OR CHANGED (dateTime###concrete##Detail(detail));
+                    WHEN CHANGED(skuProp###concrete##Detail(detail)) OR CHANGED (dateTime###concrete##Detail(detail)) OR CHANGED (stockProp###concrete##Detail(detail));
+END
+META derivePriceOnSkuChangeCustom (concrete, skuProp, stockProp)
+    @derivePriceOnSkuChangePrefix(concrete, skuProp, stockProp,);
+END
+META derivePriceOnSkuChange (concrete)
+    @derivePriceOnSkuChangePrefix(concrete, sku, stock, );
 END
 
-META derivePriceOnBatchChange(concrete, batchProp, stockProp)
-    price###concrete##Detail (detail)  <- priceBatchStockDateTime(
+META derivePriceOnBatchChangePrefix(concrete, batchProp, stockProp, prefix)
+    prefix###price###concrete##Detail (detail)  <- priceBatchStockDateTime(
                     batchProp###concrete##Detail(detail), stockProp###concrete##Detail(detail), dateTime###concrete##Detail(detail))
-                    WHEN CHANGED(batchProp###concrete##Detail(detail)) OR CHANGED (dateTime###concrete##Detail(detail));
+                    WHEN CHANGED(batchProp###concrete##Detail(detail)) OR CHANGED (dateTime###concrete##Detail(detail)) OR CHANGED (stockProp###concrete##Detail(detail));
 END
-
+META derivePriceOnBatchChangeCustom (concrete, batchProp, stockProp)
+    @derivePriceOnBatchChangePrefix(concrete, batchProp, stockProp, );
+END
+META derivePriceOnBatchChange (concrete)
+    @derivePriceOnBatchChangePrefix(concrete, batch, stock, );
+END
 
 META defineDocumentHeaderItemSumCustom (object, detail)
     sumItem###detail###object 'Сумма, товар' (object) =

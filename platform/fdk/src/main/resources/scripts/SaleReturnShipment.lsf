@@ -3,12 +3,13 @@ MODULE SaleReturnShipment;
 REQUIRE Shipment, SaleReturnInvoice
 ;
 
-NAMESPACE Return;
+NAMESPACE SaleReturn;
 
 
 //----------------------------------------------- Поставка ---------------------------------------------------//
 
-@defineShipment(inLIFOSkuLedger, ' (возврат)');
+@defineShipment(inLIFOSkuLedger, ' (продажа-возврат)', customer, company, customer);
+@defineShipmentBatch();
 
 // Проводим по регистру
 
@@ -17,5 +18,5 @@ quantityInLIFOSkuLedger (ledger) += quantityShipmentDetail(ledger);
 @implementSkuLedgerInLIFOBalance(shipment, sku, stock);
 sumInSkuLedger(ledger) += sumShipmentDetail(ledger);
 
-// ------------- Навигатор --------- //
+
 

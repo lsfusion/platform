@@ -7,25 +7,25 @@ REQUIRE SaleShipment, SaleReturnShipment
 
 
 currentReserveSaleSkuStock 'Текущий резерв'(sku, stock)  = Sale.currentReserveSkuStock(sku, stock) (-)
-    Return.currentReserveSkuStock(sku, stock);
+    SaleReturn.currentReserveSkuStock(sku, stock);
 
 NAVIGATOR {
-    NEW saleNavigator 'Управление продажами' {
-        ADD Sale.userOrders;
-        ADD Sale.userInvoices;
-        ADD Sale.userShipments;
-//      ADD dialogShipments;
+    NEW saleNavigator 'Продажи' {
+        NEW saleSaleNavigator 'Управление продажами' {
+            ADD Sale.userOrders;
+            ADD Sale.userInvoices;
+            ADD Sale.userShipments;
+    //      ADD dialogShipments;
+        }
+        NEW saleReturnNavigator 'Управление возвратами' {
+            ADD SaleReturn.userOrders;
+            ADD SaleReturn.userInvoices;
+            ADD SaleReturn.userShipments;
+    //      ADD dialogShipments;
+        }
     }
 }
 
-NAVIGATOR {
-    NEW returnNavigator 'Управление возвратами' {
-        ADD Return.userOrders;
-        ADD Return.userInvoices;
-        ADD Return.userShipments;
-//      ADD dialogShipments;
-    }
-}
 
 META defineDialogSkuReserve (form)
 

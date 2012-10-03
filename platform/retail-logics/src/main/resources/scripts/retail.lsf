@@ -30,6 +30,13 @@ REQUIRE System,
         SaleReturnInvoice,
         SaleReturnShipment,
         Sale,
+        Purchase,
+        PurchaseOrder,
+        PurchaseInvoice,
+        PurchaseShipment,
+        PurchaseReturnOrder,
+        PurchaseReturnInvoice,
+        PurchaseReturnShipment,
         Employee,
         Store,
         ListRegister,
@@ -7105,8 +7112,8 @@ NAVIGATOR {
         }
     }
     NEW wholeSale 'Оптовая торговля' TO formsToolbar {
+        ADD purchaseNavigator;
         ADD saleNavigator;
-        ADD returnNavigator;
         ADD priceListNavigator;
     }
 
