@@ -34,16 +34,16 @@ VATSumShipmentDetail (shipmentDetail) += VATSumInvoiceShipmentDetail(shipmentDet
 //invoiceSumShipmentDetail (shipmentDetail) += invoiceSumInvoiceShipmentDetail(shipmentDetail);
 
 EXTEND FORM userShipment
-PROPERTIES (d) AFTER sumUserShipmentDetail
-               invoiceSumUserShipmentDetail, VATSumUserShipmentDetail, valueVATUserShipmentDetail, numberVATUserShipmentDetail
+    PROPERTIES (d) AFTER sumUserShipmentDetail
+                   invoiceSumUserShipmentDetail, VATSumUserShipmentDetail, valueVATUserShipmentDetail, numberVATUserShipmentDetail
 ;
 EXTEND FORM userShipments
-PROPERTIES (d) READONLY AFTER sumUserShipmentDetail
-               invoiceSumUserShipmentDetail, VATSumUserShipmentDetail, valueVATUserShipmentDetail, numberVATUserShipmentDetail
+    PROPERTIES (d) READONLY AFTER sumUserShipmentDetail
+                   invoiceSumUserShipmentDetail, VATSumUserShipmentDetail, valueVATUserShipmentDetail, numberVATUserShipmentDetail
 ;
 EXTEND FORM dialogShipments
-PROPERTIES (d) READONLY  AFTER sumShipmentDetail
-               invoiceSumShipmentDetail, VATSumShipmentDetail, valueVATShipmentDetail, numberVATShipmentDetail
+    PROPERTIES (d) READONLY  AFTER sumShipmentDetail
+                   invoiceSumShipmentDetail, VATSumShipmentDetail, valueVATShipmentDetail, numberVATShipmentDetail
 ;
 
 // Проводим по регистру

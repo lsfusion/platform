@@ -10,6 +10,10 @@ NAMESPACE Sale;
 @defineShipment(outFIFOSkuLedger, ' (продажа)', customer, company, customer);
 @defineShipmentBatch();
 
+// Берем учетную цену
+@deriveDocumentDetailPriceBatchStockPrefix(userInvoice, shipment);
+@deriveDocumentDetailPriceBatchStock(userShipment);
+
 // Проводим по регистру
 @implementSkuLedger(shipment, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantityShipmentDetail (ledger);

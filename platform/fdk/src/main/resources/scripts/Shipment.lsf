@@ -466,6 +466,12 @@ META defineShipment(skuLedger, sign, contact, partyA, partyB)
 
 //-- аггр.объект
 
+    @defineDocumentInterfaceDetailPricePrefix(invoice, shipment, ' (учетная)');
+    @derivePriceOnSkuChangePrefix(userInvoice, sku, stock, shipment);
+
+    @defineDocumentInterfaceDetailDataSumPrefix (invoice, shipment, ' (учетная)');
+    @deriveDocumentDetailSumPrefix(userInvoice, shipment, currency);
+
     createShipmentInvoice 'Создавать поставку' = ABSTRACT BOOLEAN (invoice) IN documentPrmGroup;
     createShipmentUserInvoice 'Создавать поставку' = DATA BOOLEAN (userInvoice);
     createShipmentInvoice (invoice) += createShipmentUserInvoice(invoice);
@@ -578,24 +584,15 @@ END
 
 META defineShipmentBatch(dumb)
     @defineDocumentInterfaceDetailBatch(shipment, batch);
-    @deriveDocumentDetailPriceBatchStock(userShipment);
 
-    EXTEND FORM userShipment
-    PROPERTIES (d) descriptionBatchUserShipmentDetail AFTER shortNameUOMSkuUserShipmentDetail
-    ;
-    EXTEND FORM userShipments
-    PROPERTIES (d) READONLY descriptionBatchUserShipmentDetail AFTER shortNameUOMSkuUserShipmentDetail
-    ;
-    EXTEND FORM shipmentInvoices
-    PROPERTIES (d) READONLY descriptionBatchInvoiceDetail AFTER shortNameUOMSkuInvoiceDetail
-    ;
+    EXTEND FORM userShipment PROPERTIES (d) descriptionBatchUserShipmentDetail AFTER shortNameUOMSkuUserShipmentDetail;
+    EXTEND FORM userShipments PROPERTIES (d) READONLY descriptionBatchUserShipmentDetail AFTER shortNameUOMSkuUserShipmentDetail;
+    EXTEND FORM shipmentInvoices PROPERTIES (d) READONLY descriptionBatchInvoiceDetail AFTER shortNameUOMSkuInvoiceDetail;
 
     fillBatchUserShipmentDetail (sd, id) += ACTION SET batchUserShipmentDetail (sd) <- batchInvoiceDetail(id);
 
     @defineDocumentAggregationDetailBatch (invoice, invoiceShipment);
     batchShipmentDetail (shipmentDetail) += batchInvoiceShipmentDetail(shipmentDetail);
 
-    EXTEND FORM dialogShipments
-    PROPERTIES (d) READONLY descriptionBatchShipmentDetail AFTER shortNameUOMSkuShipmentDetail
-    ;
+    EXTEND FORM dialogShipments PROPERTIES (d) READONLY descriptionBatchShipmentDetail AFTER shortNameUOMSkuShipmentDetail;
 END

@@ -46,12 +46,6 @@ META defineInvoice(sign, contact, partyA, partyB)
     @defineDocumentInterfaceDetailVATDataSum (invoice);
     @deriveDocumentDetailVATSum(userInvoice);
 
-    @defineDocumentInterfaceDetailPricePrefix(invoice, shipment, ' (учетная)');
-    @derivePriceOnSkuChangePrefix(userInvoice, sku, stock, shipment);
-
-    @defineDocumentInterfaceDetailDataSumPrefix (invoice, shipment, ' (учетная)');
-    @deriveDocumentDetailSumPrefix(userInvoice, shipment, currency);
-
     @defineDocumentInterfaceHeaderQuantity(invoice);
     @defineDocumentHeaderSkuQuantity(invoice, sku);
     @defineDocumentHeaderSkuQuantity(userInvoice, sku);
@@ -384,7 +378,6 @@ END
 META defineInvoiceBatch(dumb)
     @defineDocumentInterfaceDetailBatch(invoice, batch);
     @deriveDocumentDetailPriceBatchPriceListType(userInvoice);
-    @deriveDocumentDetailPriceBatchStockPrefix(userInvoice, shipment);
 
     EXTEND FORM userInvoice
     PROPERTIES (d) descriptionBatchUserInvoiceDetail AFTER shortNameUOMSkuUserInvoiceDetail

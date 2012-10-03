@@ -11,8 +11,11 @@ NAMESPACE SaleReturn;
 @defineShipment(inLIFOSkuLedger, ' (продажа-возврат)', customer, company, customer);
 @defineShipmentBatch();
 
-// Проводим по регистру
+// Берем учетную цену
+@deriveDocumentDetailPriceBatchStockPrefix(userInvoice, shipment);
+@deriveDocumentDetailPriceBatchStock(userShipment);
 
+// Проводим по регистру
 @implementSkuLedger(shipment, sku, stock);
 quantityInLIFOSkuLedger (ledger) += quantityShipmentDetail(ledger);
 @implementSkuLedgerInLIFOBalance(shipment, sku, stock);
