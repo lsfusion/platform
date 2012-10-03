@@ -3,6 +3,7 @@ package roman;
 import jxl.read.biff.BiffException;
 import platform.server.classes.CustomStaticFormatFileClass;
 import platform.server.classes.DataClass;
+import platform.server.integration.ImportField;
 import platform.server.integration.ImportInputTable;
 import platform.server.integration.SingleSheetImporter;
 import platform.server.logics.property.ExecutionContext;

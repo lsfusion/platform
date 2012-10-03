@@ -33,7 +33,7 @@ public class InvoicePricatMergeInputTable implements ImportInputTable {
 
     public static enum ResultField {BARCODE, ARTICLE, INVOICE, BOXNUMBER, COLORCODE, COLOR, SIZE, ORIGINALNAME,
         COUNTRY, NETWEIGHT, COMPOSITION, PRICE, DATE, RRP, QUANTITY, NUMBERSKU, CUSTOMCODE, CUSTOMCODE6,
-        SEASON,  GENDER, THEMECODE, THEMENAME, SUBCATEGORYCODE, SUBCATEGORYNAME, DESTINATION}
+        SEASON,  GENDER, BRANDCODE, BRANDNAME, THEMECODE, THEMENAME, SUBCATEGORYCODE, SUBCATEGORYNAME, DESTINATION}
 
     public InvoicePricatMergeInputTable(RomanBusinessLogics BL, ImportInputTable invoiceTable, ResultField... invoiceFields) {
         this.BL = BL;

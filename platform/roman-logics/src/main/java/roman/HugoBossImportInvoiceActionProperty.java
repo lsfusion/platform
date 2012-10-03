@@ -3,6 +3,7 @@ package roman;
 import jxl.read.biff.BiffException;
 import platform.base.Result;
 import platform.server.integration.CSVInputTable;
+import platform.server.integration.ImportField;
 import platform.server.integration.ImportInputTable;
 import platform.server.integration.SingleSheetImporter;
 
@@ -44,7 +45,7 @@ public class HugoBossImportInvoiceActionProperty extends ImportBoxInvoiceActionP
     protected SingleSheetImporter createImporter(ImportInputTable inputTable) {
         return new HugoBossInvoiceImporter(inputTable, barCodeField, sidField, invoiceSIDField, boxNumberField,  colorCodeField,
                 colorNameField, sizeField, originalNameField, countryField, unitNetWeightField, compositionField, unitPriceField, dateInvoiceField,
-                RRPField, unitQuantityField, numberSkuField, customCodeField, customCode6Field, genderField, themeCodeField, themeNameField,
-                subCategoryCodeField, subCategoryNameField, collectionCodeField, collectionNameField, brandCodeField, brandNameField);
+                RRPField, unitQuantityField, numberSkuField, customCodeField, customCode6Field, genderField, new ImportField[]{themeCodeField, themeNameField,
+                subCategoryCodeField, subCategoryNameField, collectionCodeField, collectionNameField, brandCodeField, brandNameField});
     }
 }
