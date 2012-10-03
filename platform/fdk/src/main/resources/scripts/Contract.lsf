@@ -90,6 +90,7 @@ META defineDocumentInterfaceContract (object, contractType, singleContractProp, 
     @defineDocumentAbstractContract(object, contractType);
     @defineDocumentContract(user###object, contractType, singleContractProp, partyAProp, partyBProp, partyAMessage, partyBMessage);
     contractType###object(object) += contractType###user###object(object);
+    isCommission###object(object) += isCommission###user###object(object);
 END
 
 // Формы

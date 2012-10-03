@@ -27,16 +27,16 @@ NAVIGATOR {
 }
 
 
-META defineDialogSkuReserve (form)
+META defineDialogSkuSaleReserve (form)
 
-    form###reserve 'Резерв' (sku) = currentReserveSaleSkuStock(sku, form###stock());
+    form###SaleReserve 'Резерв (продажи)' (sku) = currentReserveSaleSkuStock(sku, form###stock());
 
     EXTEND FORM form
-        PROPERTIES(s) READONLY  form###reserve AFTER form###balance SHOWIF form###stock()
+        PROPERTIES(s) READONLY  form###SaleReserve AFTER form###balance SHOWIF form###stock()
     ;
 END
 
-@defineDialogSkuReserve(dialogSku);
+@defineDialogSkuSaleReserve(dialogSku);
 
 
 

@@ -6,8 +6,8 @@ REQUIRE PurchaseShipment, PurchaseReturnShipment
 //-----------------------------------------------------------------------------------------------------------//
 
 
-//currentReservePurchaseSkuStock 'Текущий резерв'(sku, stock)  = Purchase.currentReserveSkuStock(sku, stock) (-)
-//    PurchaseReturn.currentReserveSkuStock(sku, stock);
+currentReservePurchaseSkuStock 'Текущий резерв'(sku, stock)  = Purchase.currentReserveSkuStock(sku, stock) (-)
+    PurchaseReturn.currentReserveSkuStock(sku, stock);
 
 NAVIGATOR {
     NEW purchaseNavigator 'Закупки' {
@@ -15,7 +15,7 @@ NAVIGATOR {
             ADD Purchase.userOrders;
             ADD Purchase.userInvoices;
             ADD Purchase.userShipments;
-            ADD Purchase.dialogShipments;
+//            ADD Purchase.dialogShipments;
         }
         NEW purchaseReturnNavigator 'Управление возвратами' {
             ADD PurchaseReturn.userOrders;
@@ -28,13 +28,13 @@ NAVIGATOR {
 
 
 
-//META defineDialogSkuReserve (form)
-//
-//    form###reserve 'Резерв' (sku) = currentReservePurchaseSkuStock(sku, form###stock());
-//
-//    EXTEND FORM form
-//        PROPERTIES(s) READONLY  form###reserve AFTER form###balance SHOWIF form###stock()
-//    ;
-//END
-//
-//@defineDialogSkuReserve(dialogSku);
+META defineDialogSkuPurchaseReserve (form)
+
+    form###PurchaseReserve 'Резерв (закупки)' (sku) = currentReservePurchaseSkuStock(sku, form###stock());
+
+    EXTEND FORM form
+        PROPERTIES(s) READONLY form###PurchaseReserve AFTER form###balance SHOWIF form###stock()
+    ;
+END
+
+@defineDialogSkuPurchaseReserve(dialogSku);

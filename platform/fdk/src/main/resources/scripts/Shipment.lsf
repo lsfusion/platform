@@ -27,9 +27,6 @@ META defineShipment(skuLedger, sign, contact, partyA, partyB)
     @deriveDocumentCurrency(userShipment, stock);
 
     @defineDocumentInterface###contact(shipment);
-    @defineDocumentInterfaceContract(shipment, contractSku###contact, singleContractSku###contact###partyA###partyB, partyA###Shipment, partyB###Shipment,
-                                     'Сторона A договора поставки не соответствует компании склада-отправителя',
-                                     'Сторона B договора поставки товаров не соответствует покупателю');
 
     @defineDocumentInterfaceDetailSku(shipment, sku);
 
@@ -54,7 +51,6 @@ META defineShipment(skuLedger, sign, contact, partyA, partyB)
         OBJECTS s = userShipment FIXED PANEL
         PROPERTIES (s) objectClassName, nameStockUserShipment, nameNumeratorObject, numberObject, seriesObject, dateUserShipment, timeUserShipment,
                        name###contact###UserShipment, nameCurrencyUserShipment, noteUserShipment,
-                       numberContractSku###contact###UserShipment, isCommissionUserShipment,
                        countUserShipmentDetailUserShipment, quantityUserShipmentDetailUserShipment, sumUserShipmentDetailUserShipment
 
         OBJECTS d = userShipmentDetail
@@ -117,7 +113,6 @@ META defineShipment(skuLedger, sign, contact, partyA, partyB)
         OBJECTS s = userShipment
         PROPERTIES (s) READONLY isPostedUserShipment FORCE GRID, objectClassName, numberObject, seriesObject, dateUserShipment, timeUserShipment,
                                 nameStockUserShipment, name###contact###UserShipment, nameCurrencyUserShipment, noteUserShipment,
-                                numberContractSku###contact###UserShipment, isCommissionUserShipment,
                                 countUserShipmentDetailUserShipment, quantityUserShipmentDetailUserShipment, sumUserShipmentDetailUserShipment
 
         PROPERTIES (s) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
@@ -193,10 +188,10 @@ META defineShipment(skuLedger, sign, contact, partyA, partyB)
 
 //-- Подсчет к-ва в паставках
 
-    shippedInvoiceSku 'К-во в поставках' (invoice, sku) = [GROUP SUM quantityShipmentDetail(shipmentDetail) IF isPostedShipmentDetail(shipmentDetail)
+    shippedInvoiceSku 'Кол-во (поставлено)' (invoice, sku) = [GROUP SUM quantityShipmentDetail(shipmentDetail) IF isPostedShipmentDetail(shipmentDetail)
         BY invoiceShipmentDetail(shipmentDetail), skuShipmentDetail(shipmentDetail)](invoice, sku) AND isPostedInvoice(invoice);
 
-    shippedInvoiceDetail 'К-во в поставках' (invoiceDetail) = PARTITION UNGROUP shippedInvoiceSku
+    shippedInvoiceDetail 'Кол-во (поставлено)' (invoiceDetail) = PARTITION UNGROUP shippedInvoiceSku
                                                               LIMIT STRICT quantityInvoiceDetail (invoiceDetail) AND isPostedInvoiceDetail(invoiceDetail)
                                                               BY invoiceInvoiceDetail(invoiceDetail), skuInvoiceDetail(invoiceDetail)
                                                               ORDER invoiceDetail;
@@ -321,6 +316,7 @@ META defineShipment(skuLedger, sign, contact, partyA, partyB)
             SET saleInvoice() <- chosenObject('i');
 
             FOR invoiceInvoiceDetail(invoiceDetail) == saleInvoice() AND stockInvoiceDetail(invoiceDetail) ==stockUserShipment(userShipment) AND diffShippedInvoiceDetail(invoiceDetail)>0 AND isPostedInvoiceDetail(invoiceDetail) ADDOBJ d = userShipmentDetail DO {
+
                 SET userShipmentUserShipmentDetail(d) <- userShipment;
                 SET invoiceUserShipmentDetail(d) <- saleInvoice();
                 SET orderUserShipmentDetail(d) <- orderInvoiceDetail(invoiceDetail);
@@ -338,10 +334,10 @@ META defineShipment(skuLedger, sign, contact, partyA, partyB)
 
 //-- Подсчет поставленного к-ва по заказу
 
-    shippedOrderSku 'К-во в поставках' (order, sku) = [GROUP SUM quantityShipmentDetail(shipmentDetail) IF isPostedShipmentDetail(shipmentDetail)
+    shippedOrderSku 'Кол-во (поставлено)' (order, sku) = [GROUP SUM quantityShipmentDetail(shipmentDetail) IF isPostedShipmentDetail(shipmentDetail)
         BY orderShipmentDetail(shipmentDetail), skuShipmentDetail(shipmentDetail)](order, sku) AND isPostedOrder(order);
 
-    shippedOrderDetail 'К-во в поставках' (orderDetail) = PARTITION UNGROUP shippedOrderSku
+    shippedOrderDetail 'Кол-во (поставлено)' (orderDetail) = PARTITION UNGROUP shippedOrderSku
                                                               LIMIT STRICT quantityOrderDetail (orderDetail) AND isPostedOrderDetail(orderDetail)
                                                               BY orderOrderDetail(orderDetail), skuOrderDetail(orderDetail)
                                                               ORDER orderDetail;
@@ -355,6 +351,7 @@ META defineShipment(skuLedger, sign, contact, partyA, partyB)
         AND diffShippedOrderDetail(orderDetail) >0 AND isPostedOrderDetail(orderDetail)
         BY stock, orderOrderDetail(orderDetail);
 
+    shippedQuantityOrderDetailOrder 'Кол-во (поставлено)' (order) = GROUP SUM shippedOrderDetail(orderDetail) BY orderOrderDetail(orderDetail) IN documentSumGroup PERSISTENT;
 
 
     FORM shipmentOrders 'Заказы'###sign
@@ -366,7 +363,7 @@ META defineShipment(skuLedger, sign, contact, partyA, partyB)
         OBJECTS o = order
         PROPERTIES (o) READONLY isPostedOrder FORCE GRID, objectClassName, numberOrder, seriesOrder, dateOrder, timeOrder,
                                 nameStockOrder, name###contact###Order, nameCurrencyOrder, noteOrder,
-                                countOrderDetailOrder, quantityOrderDetailOrder, sumOrderDetailOrder
+                                countOrderDetailOrder, quantityOrderDetailOrder, shippedQuantityOrderDetailOrder, sumOrderDetailOrder
 
         OBJECTS d = orderDetail
         PROPERTIES (d) READONLY indexOrderDetail, idBarcodeSkuOrderDetail, nameSkuOrderDetail, shortNameUOMSkuOrderDetail,
@@ -422,19 +419,21 @@ META defineShipment(skuLedger, sign, contact, partyA, partyB)
 
 
     EXTEND FORM userOrder
+        PROPERTIES(o) READONLY shippedQuantityOrderDetailOrder
         PROPERTIES(d) READONLY shippedOrderDetail AFTER invoicedOrderDetail
-
     ;
 
     EXTEND FORM userOrders
+        PROPERTIES(o) READONLY shippedQuantityOrderDetailOrder AFTER quantityUserOrderDetailUserOrder
         PROPERTIES(d) READONLY shippedOrderDetail AFTER invoicedOrderDetail
-
     ;
 
     EXTEND FORM orders
+        PROPERTIES(o) READONLY shippedQuantityOrderDetailOrder AFTER quantityOrderDetailOrder
         PROPERTIES(d) READONLY shippedOrderDetail AFTER invoicedOrderDetail
-
     ;
+
+
 
     fillOrderUserShipment 'Заполнить поставку на основании заказа' =  ACTION (userShipment) {
         LOCAL saleOrder = order();
@@ -518,12 +517,6 @@ META defineShipment(skuLedger, sign, contact, partyA, partyB)
     currencyInvoiceShipment  (invoiceShipment) = currencyInvoice(invoiceInvoiceShipment(invoiceShipment));
     currencyShipment (shipment) += currencyInvoiceShipment(shipment);
 
-    contractSku###contact###InvoiceShipment  (invoiceShipment) = contractSku###contact###Invoice(invoiceInvoiceShipment(invoiceShipment));
-    contractSku###contact###Shipment (shipment) += contractSku###contact###InvoiceShipment(shipment);
-
-    isCommissionInvoiceShipment  (invoiceShipment) = isCommissionInvoice(invoiceInvoiceShipment(invoiceShipment));
-    isCommissionShipment(shipment)+= isCommissionInvoiceShipment(shipment);
-
     @defineDocumentDescription(invoiceShipment, invoiceShipmentDetail, seriesNumberInvoiceShipment, 'Поставка на основе инвойса'###sign);
     descriptionShipment (shipment) += descriptionInvoiceShipment(shipment);
 
@@ -551,7 +544,6 @@ META defineShipment(skuLedger, sign, contact, partyA, partyB)
         OBJECTS s = shipment
         PROPERTIES (s) READONLY isPostedShipment FORCE GRID, objectClassName, numberShipment, seriesShipment, dateShipment, timeShipment,
                                 nameStockShipment, name###contact###Shipment, nameCurrencyShipment, noteShipment,
-                                isCommissionShipment,
                                 countShipmentDetailShipment, quantityShipmentDetailShipment, sumShipmentDetailShipment
 
 
