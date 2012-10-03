@@ -3038,7 +3038,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         addBoxShipmentDetailBoxShipmentSupplierBoxStockSku = addJoinAProp("Добавить строку поставки",
                 addAAProp(boxShipmentDetail, boxShipmentBoxShipmentDetail, supplierBoxShipmentDetail, stockShipmentDetail, skuShipmentDetail, quantityShipmentDetail),
-                1, 2, 3, 4, addCProp(NumericClass.get(14, 2), 1));
+                1, 2, 3, 4, addCProp(NumericClass.get(14, 2), 1.0));
 
         addBoxShipmentDetailBoxShipmentSupplierBoxStockBarcode = addJoinAProp("Добавить строку поставки",
                 addBoxShipmentDetailBoxShipmentSupplierBoxStockSku,
@@ -3046,7 +3046,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         addSimpleShipmentDetailSimpleShipmentStockSku = addJoinAProp("Добавить строку поставки",
                 addAAProp(simpleShipmentDetail, simpleShipmentSimpleShipmentDetail, stockShipmentDetail, skuShipmentDetail, quantityShipmentDetail),
-                1, 2, 3, addCProp(NumericClass.get(14, 2), 1));
+                1, 2, 3, addCProp(NumericClass.get(14, 2), 1.0));
 
         addSimpleShipmentSimpleShipmentDetailStockBarcode = addJoinAProp("Добавить строку поставки",
                 addSimpleShipmentDetailSimpleShipmentStockSku,
@@ -3138,8 +3138,8 @@ public class RomanLogicsModule extends LogicsModule {
 
         quantityShipDimensionShipmentSku = addSGProp(baseGroup, "quantityShipDimensionShipmentSku", "Оприход. (короб)", quantityShipDimensionShipmentStockSku, 1, 2, 4);
 
-        zeroQuantityListSku = addSUProp(baseGroup, "zeroQuantityListSku", "кол-во", Union.OVERRIDE, addCProp(NumericClass.get(14, 2), 0, list, sku), quantityListSku);
-        zeroQuantityShipDimensionShipmentSku = addSUProp(baseGroup, "zeroQuantityShipDimensionShipmentSku", "кол-во", Union.OVERRIDE, addCProp(NumericClass.get(14, 2), 0, shipDimension, shipment, sku), quantityShipDimensionShipmentSku);
+        zeroQuantityListSku = addSUProp(baseGroup, "zeroQuantityListSku", "кол-во", Union.OVERRIDE, addCProp(NumericClass.get(14, 2), 0.0, list, sku), quantityListSku);
+        zeroQuantityShipDimensionShipmentSku = addSUProp(baseGroup, "zeroQuantityShipDimensionShipmentSku", "кол-во", Union.OVERRIDE, addCProp(NumericClass.get(14, 2), 0.0, shipDimension, shipment, sku), quantityShipDimensionShipmentSku);
 
         diffListShipSku = addJProp(baseLM.diff2, zeroQuantityListSku, 1, 3, zeroQuantityShipDimensionShipmentSku, 1, 2, 3);
 
@@ -3167,8 +3167,8 @@ public class RomanLogicsModule extends LogicsModule {
 
         quantityShipment = addSGProp(baseGroup, "quantityShipment", true, "Оприходовано", quantityShipmentSku, 1);
 
-        zeroQuantityShipmentSku = addSUProp(baseGroup, "zeroQuantityShipmentSku", "кол-во", Union.OVERRIDE, addCProp(NumericClass.get(14, 2), 0, shipment, sku), quantityShipmentSku);
-        zeroInvoicedShipmentSku = addSUProp(baseGroup, "zeroInvoicedShipmentSku", "кол-во", Union.OVERRIDE, addCProp(NumericClass.get(14, 2), 0, shipment, sku), invoicedShipmentSku);
+        zeroQuantityShipmentSku = addSUProp(baseGroup, "zeroQuantityShipmentSku", "кол-во", Union.OVERRIDE, addCProp(NumericClass.get(14, 2), 0.0, shipment, sku), quantityShipmentSku);
+        zeroInvoicedShipmentSku = addSUProp(baseGroup, "zeroInvoicedShipmentSku", "кол-во", Union.OVERRIDE, addCProp(NumericClass.get(14, 2), 0.0, shipment, sku), invoicedShipmentSku);
         diffShipmentSku = addJProp(baseLM.diff2, zeroQuantityShipmentSku, 1, 2, zeroInvoicedShipmentSku, 1, 2);
 
         quantityStockSku = addSGProp(baseGroup, "quantityStockSku", true, true, "Оприход. в короб для транспортировки", quantityShipmentStockSku, 2, 3);
@@ -3224,15 +3224,15 @@ public class RomanLogicsModule extends LogicsModule {
         quantityShipmentArticleColorSize = addSGProp(baseGroup, "quantityShipmentArticleColorSize", "Всего оприход. (артикул-цвет-размер)", quantityShipmentSku, 1, articleSku, 2, colorSupplierItem, 2, sizeSupplierItem, 2);
         quantityShipmentSize = addSGProp(baseGroup, "quantityShipmentSize", "Всего оприход. (размер)", quantityShipmentArticleSize, 1, 3);
 
-        oneShipmentArticle = addJProp(baseGroup, "oneShipmentArticle", "Первый артикул", baseLM.equals2, quantityShipmentArticle, 1, 2, addCProp(NumericClass.get(14, 2), 1));
-        oneShipmentArticleColor = addJProp(baseGroup, "oneShipmentArticleColor", "Первый артикул-цвет", baseLM.equals2, quantityShipmentArticleColor, 1, 2, 3, addCProp(NumericClass.get(14, 2), 1));
-        oneShipmentArticleSize = addJProp(baseGroup, "oneShipmentArticleSize", "Первый артикул-размер", baseLM.equals2, quantityShipmentArticleSize, 1, 2, 3, addCProp(NumericClass.get(14, 2), 1));
+        oneShipmentArticle = addJProp(baseGroup, "oneShipmentArticle", "Первый артикул", baseLM.equals2, quantityShipmentArticle, 1, 2, addCProp(NumericClass.get(14, 2), 1.0));
+        oneShipmentArticleColor = addJProp(baseGroup, "oneShipmentArticleColor", "Первый артикул-цвет", baseLM.equals2, quantityShipmentArticleColor, 1, 2, 3, addCProp(NumericClass.get(14, 2), 1.0));
+        oneShipmentArticleSize = addJProp(baseGroup, "oneShipmentArticleSize", "Первый артикул-размер", baseLM.equals2, quantityShipmentArticleSize, 1, 2, 3, addCProp(NumericClass.get(14, 2), 1.0));
 
         oneShipmentArticleSku = addJProp(baseGroup, "oneShipmentArticleSku", "Первый артикул", oneShipmentArticle, 1, articleSku, 2);
         oneShipmentArticleColorSku = addJProp(baseGroup, "oneShipmentArticleColorSku", "Первый артикул-цвет", oneShipmentArticleColor, 1, articleSku, 2, colorSupplierItem, 2);
         oneShipmentArticleSizeSku = addJProp(baseGroup, "oneShipmentArticleSizeSku", "Первый артикул-размер", oneShipmentArticleSize, 1, articleSku, 2, sizeSupplierItem, 2);
 
-        oneShipmentSku = addJProp(baseGroup, "oneShipmentSku", "Первый SKU", baseLM.equals2, quantityShipmentSku, 1, 2, addCProp(NumericClass.get(14, 2), 1));
+        oneShipmentSku = addJProp(baseGroup, "oneShipmentSku", "Первый SKU", baseLM.equals2, quantityShipmentSku, 1, 2, addCProp(NumericClass.get(14, 2), 1.0));
 
         oneArticleSkuShipmentDetail = addJProp(baseGroup, "oneArticleSkuShipmentDetail", "Первый артикул", oneShipmentArticleSku, shipmentShipmentDetail, 1, skuShipmentDetail, 1);
         oneArticleColorShipmentDetail = addJProp(baseGroup, "oneArticleColorShipmentDetail", "Первый артикул-цвет", oneShipmentArticleColorSku, shipmentShipmentDetail, 1, skuShipmentDetail, 1);
@@ -3286,8 +3286,8 @@ public class RomanLogicsModule extends LogicsModule {
                 percentShipmentRouteSku,
                 invoicedShipmentSku, 1, 3);
 
-        zeroQuantityShipmentRouteSku = addSUProp(baseGroup, "zeroQuantityShipmentRouteSku", "кол-во", Union.OVERRIDE, addCProp(NumericClass.get(14, 2), 0, shipment, route, sku), quantityShipmentRouteSku);
-        zeroInvoicedShipmentRouteSku = addSUProp(baseGroup, "zeroInvoicedShipmentRouteSku", "кол-во", Union.OVERRIDE, addCProp(NumericClass.get(14, 2), 0, shipment, route, sku), invoicedShipmentRouteSku);
+        zeroQuantityShipmentRouteSku = addSUProp(baseGroup, "zeroQuantityShipmentRouteSku", "кол-во", Union.OVERRIDE, addCProp(NumericClass.get(14, 2), 0.0, shipment, route, sku), quantityShipmentRouteSku);
+        zeroInvoicedShipmentRouteSku = addSUProp(baseGroup, "zeroInvoicedShipmentRouteSku", "кол-во", Union.OVERRIDE, addCProp(NumericClass.get(14, 2), 0.0, shipment, route, sku), invoicedShipmentRouteSku);
 
         diffShipmentRouteSku = addJProp(baseLM.greater2, zeroQuantityShipmentRouteSku, 1, 2, 3, zeroInvoicedShipmentRouteSku, 1, 2, 3);
 
@@ -7435,7 +7435,7 @@ public class RomanLogicsModule extends LogicsModule {
             objGroupSize = addSingleGroupObject(sizeGroupSupplier, "Размерная сетка", baseLM.name);
             addObjectActions(this, objGroupSize);
 
-            objSize = addSingleGroupObject(sizeSupplier, "Размер", sidSizeSupplier, nameCommonSizeSizeSupplier, nameGroupSizeSupplier, orderSizeSupplier);
+            objSize = addSingleGroupObject(sizeSupplier, "Размер", sidSizeSupplier, nameGroupSizeSupplier, orderSizeSupplier);
             addObjectActions(this, objSize);
 
             addPropertyDraw(equalsGroupSizeSupplier, objSize, objGroupSize);
@@ -7485,7 +7485,7 @@ public class RomanLogicsModule extends LogicsModule {
             filterGroup.addFilter(new RegularFilterEntity(genID(),
                     new CompareFilterEntity(addPropertyObject(groupSizeSupplier, objSize), Compare.EQUALS, objGroupSize),
                     "В размерной сетке",
-                    KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)), true);
+                    KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)), false);
             addRegularFilterGroup(filterGroup);
         }
 

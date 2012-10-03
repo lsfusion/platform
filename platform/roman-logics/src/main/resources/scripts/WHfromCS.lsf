@@ -311,15 +311,17 @@ shouldBePrintWHfromCSR = SESSION DATA BOOLEAN (sku);
 countSku = SESSION DATA INTEGER (sku);
 
 quantityWHfromCSRFreightUnitSku (WHfromCSR, freightUnit, sku) = quantityCStoWHFreightUnitSku(CStoWHWHfromCSI(WHfromCSIWHfromCSR(WHfromCSR)), freightUnit, sku);
+quantityOriginWHfromCSRSku (WHfromCSR, sku) = GROUP SUM quantityWHfromCSRFreightUnitSku(WHfromCSR, freightUnit, sku) BY WHfromCSR, sku;
 
-quantityOriginWHfromCSRSku 'Ожидаемое к-во (тек. короб)' (WHfromCSR, sku) = quantityWHfromCSRFreightUnitSku(WHfromCSR, currentFreightUnit(WHfromCSR), sku);
+quantityOriginCurrentBoxWHfromCSRSku 'Ожидаемое к-во (тек. короб)' (WHfromCSR, sku) = quantityWHfromCSRFreightUnitSku(WHfromCSR, currentFreightUnit(WHfromCSR), sku);
+
 quantityWHfromCSRSku 'Принятое к-во (тек. короб)' (WHfromCSR, sku)=
     [GROUP SUM quantityWHfromCSRDetail(WHfromCSRDetail) BY freightUnitWHfromCSRDetail(WHfromCSRDetail), WHfromCSRWHfromCSRDetail(WHfromCSRDetail), skuWHfromCSRDetail(WHfromCSRDetail)]
         (currentFreightUnit(WHfromCSR), WHfromCSR, sku);
 
-diffQuantityWHfromCSRSku 'Расхождение (тек. короб)' (WHfromCSR, sku)= quantityWHfromCSRSku(WHfromCSR, sku) (-) quantityOriginWHfromCSRSku(WHfromCSR, sku);
+diffQuantityWHfromCSRSku 'Расхождение (тек. короб)' (WHfromCSR, sku)= quantityWHfromCSRSku(WHfromCSR, sku) (-) quantityOriginCurrentBoxWHfromCSRSku(WHfromCSR, sku);
 
-quantityOriginWHfromCSRDetail 'Ожидаемое к-во (тек. короб)' (WHfromCSRDetail) = quantityOriginWHfromCSRSku(WHfromCSRWHfromCSRDetail(WHfromCSRDetail), skuWHfromCSRDetail(WHfromCSRDetail));
+quantityOriginWHfromCSRDetail 'Ожидаемое к-во (тек. короб)' (WHfromCSRDetail) = quantityOriginCurrentBoxWHfromCSRSku(WHfromCSRWHfromCSRDetail(WHfromCSRDetail), skuWHfromCSRDetail(WHfromCSRDetail));
 
 backgroundSkuWHfromCSRDetail 'Цвет' (WHfromCSRDetail) = RGB(255, 255, 0) IF quantityWHfromCSRDetail(WHfromCSRDetail) > quantityOriginWHfromCSRDetail(WHfromCSRDetail);
 
@@ -349,6 +351,10 @@ quantityRemainedSkuWHfromCSR 'Кол-во оставшегося товара в
 
 quantitySkuInWHfromCSR 'Кол-во товара' (WHfromCSR, sku) = GROUP SUM quantityWHfromCSRDetail(WHfromCSRDetail)
     BY WHfromCSRWHfromCSRDetail(WHfromCSRDetail), skuWHfromCSRDetail(WHfromCSRDetail);
+
+quantityOriginSkuWHfromCSRWHfromCSRDetail 'Кол-во ожидаемое' (WHfromCSRDetail) = quantityOriginWHfromCSRSku(WHfromCSRWHfromCSRDetail(WHfromCSRDetail), skuWHfromCSRDetail(WHfromCSRDetail));
+quantitySkuWHfromCSRWHfromCSRDetail 'Кол-во принятое' (WHfromCSRDetail) = quantitySkuInWHfromCSR(WHfromCSRWHfromCSRDetail(WHfromCSRDetail), skuWHfromCSRDetail(WHfromCSRDetail));
+
 
 CONSTRAINT currentFreightUnit(WHfromCSR) IS freightUnit AND NOT quantitySkuInFreightUnitWHfromCSR(WHfromCSR) CHECKED BY currentFreightUnit MESSAGE 'Короб должен быть из текущей поставки';
 
@@ -537,7 +543,7 @@ FORM WHfromCSR 'Приемка на оптовый склад'
                            sidColorWHfromCSRDetail, nameColorWHfromCSRDetail, barcodeFreightUnitWHfromCSRDetail,
                            nameDestinationWHfromCSRDetail
 
-    PROPERTIES(d) quantityWHfromCSRDetail BACKGROUND backgroundSkuWHfromCSRDetail(d)
+    PROPERTIES(d) quantityWHfromCSRDetail BACKGROUND backgroundSkuWHfromCSRDetail(d), quantityOriginSkuWHfromCSRWHfromCSRDetail, quantitySkuWHfromCSRWHfromCSRDetail
 
     PROPERTIES(d) READONLY nameUnitOfMeasureArticleSkuWHfromCSRDetail
 
@@ -566,11 +572,11 @@ FORM WHfromCSR 'Приемка на оптовый склад'
     OBJECTS s = sku
     PROPERTIES(s) READONLY barcode, nameCategoryArticleSku, nameBrandSupplierArticleSku, sidArticleSku,
                            sidSizeSupplierItem FORCE GRID, sidColorSupplierItem FORCE GRID, nameColorSupplierItem FORCE GRID, shortNameUOMSku
-    PROPERTIES(w, s) quantityWHfromCSRSku, quantityOriginWHfromCSRSku, diffQuantityWHfromCSRSku
+    PROPERTIES(w, s) quantityWHfromCSRSku, quantityOriginCurrentBoxWHfromCSRSku, diffQuantityWHfromCSRSku
 
     FILTERGROUP filtersQuantityOrigin
         FILTER 'Показывать с расхождением' 'F8' diffQuantityWHfromCSRSku(w, s) DEFAULT
-        FILTER 'Показывать ожидаемые/принятые' 'F7' quantityOriginWHfromCSRSku(w, s) OR quantityWHfromCSRSku(w, s)
+        FILTER 'Показывать ожидаемые/принятые' 'F7' quantityOriginCurrentBoxWHfromCSRSku(w, s) OR quantityWHfromCSRSku(w, s)
 
     FILTERS inWHfromCSRWHfromCSRDetail(w, d)
 

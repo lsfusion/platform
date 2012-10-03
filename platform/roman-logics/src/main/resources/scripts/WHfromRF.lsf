@@ -95,23 +95,22 @@ isNotShippedSkuFreightUnitWHfromRF (sku, freightUnit, WHfromRF) = quantitySkuFre
     AND NOT quantityWHfromRFDetailsSkuFreightUnit(sku, freightUnit, WHfromRF);
 
 //приемка по коробам
-
 currentFreightUnit 'Тек. короб (ИД)' (WHfromRF) = SESSION DATA freightUnit (WHfromRF);
 barcodeCurrentFreightUnit 'Тек. короб (штрих-код)' (WHfromRF) = barcode(currentFreightUnit(WHfromRF));
 
 withOutBarcodeSku (sku) = sku IS RomanLogicsModule.item AND NOT barcode(sku);
 
-quantityOriginWHfromRFSku 'Ожидаемое к-во (тек. короб)' (WHfromRF, sku) = quantitySkuFreightUnitFreight(sku, currentFreightUnit(WHfromRF), freightWHfromRF(WHfromRF));
-quantityWHfromRFSku 'Принятое к-во (тек. короб)' (WHfromRF, sku)=  quantityWHfromRFDetailsSkuFreightUnit(sku, currentFreightUnit(WHfromRF), WHfromRF);
+quantityOriginCurrentBoxWHfromRFSku 'Ожидаемое к-во (тек. короб)' (WHfromRF, sku) = quantitySkuFreightUnitFreight(sku, currentFreightUnit(WHfromRF), freightWHfromRF(WHfromRF));
+quantityWHfromRFSku 'Принятое к-во (тек. короб)' (WHfromRF, sku) = quantityWHfromRFDetailsSkuFreightUnit(sku, currentFreightUnit(WHfromRF), WHfromRF);
 
+diffQuantityWHfromRFSku 'Расхождение (тек. короб)' (WHfromRF, sku)= quantityWHfromRFSku(WHfromRF, sku) (-) quantityOriginCurrentBoxWHfromRFSku(WHfromRF, sku);
 
-diffQuantityWHfromRFSku 'Расхождение (тек. короб)' (WHfromRF, sku)= quantityWHfromRFSku(WHfromRF, sku) (-) quantityOriginWHfromRFSku(WHfromRF, sku);
-
-quantityOriginWHfromRFDetail 'Ожидаемое к-во (тек. короб)' (WHfromRFDetail) = quantityOriginWHfromRFSku(WHfromRFWHfromRFDetail(WHfromRFDetail), skuWHfromRFDetail(WHfromRFDetail));
+quantityOriginWHfromRFDetail 'Ожидаемое к-во (тек. короб)' (WHfromRFDetail) = quantityOriginCurrentBoxWHfromRFSku(WHfromRFWHfromRFDetail(WHfromRFDetail), skuWHfromRFDetail(WHfromRFDetail));
 
 backgroundSkuWHfromRFDetail 'Цвет' (WHfromRFDetail) = RGB(255, 255, 0) IF quantityWHfromRFDetail(WHfromRFDetail) > quantityOriginWHfromRFDetail(WHfromRFDetail);
 
-
+quantityOriginWHfromRFSku 'Ожидаемое к-во' (WHfromRF, sku) = quantityFreightSku(freightWHfromRF(WHfromRF), sku);
+quantityOriginWHfromRFSkuWHfromRFDetail 'Ожидаемое к-во' (WHfromRFDetail) = quantityOriginWHfromRFSku(WHfromRFWHfromRFDetail(WHfromRFDetail), skuWHfromRFDetail(WHfromRFDetail));
 
 FORM addBarcodeWHfromRFFreightUnitSku 'Поиск товара(с коробами и выбором шрих-кода)'
 
@@ -290,6 +289,8 @@ quantitySkuInWHfromRF 'Кол-во товара' (WHfromRF, sku) = GROUP SUM qua
 CONSTRAINT currentFreightUnit(WHfromRF) IS freightUnit AND NOT quantitySkuInFreightUnitWHfromRF(WHfromRF) CHECKED BY currentFreightUnit MESSAGE 'Короб должен быть из текущей поставки';
 
 CONSTRAINT WHfromRF IS WHfromRF AND NOT isWHfromRFFreight(freightWHfromRF(WHfromRF)) CHECKED BY freightWHfromRF MESSAGE 'Фрахт должен быть прибывшим из РФ';
+
+quantitySkuInWHfromRFWHfromRFDetail 'Кол-во принятое' (WHfromRFDetail) = quantitySkuInWHfromRF(WHfromRFWHfromRFDetail(WHfromRFDetail), skuWHfromRFDetail(WHfromRFDetail));
 
 FORM printMarksWHfromRF 'Печать маркировок товара' PRINT
 
@@ -478,7 +479,7 @@ FORM WHfromRF 'Приход товара из РФ'
                            nameBrandWHfromRFDetail, sidArticleWHfromRFDetail, sidSizeWHfromRFDetail,
                            sidColorWHfromRFDetail, nameColorWHfromRFDetail, barcodeFreightUnitWHfromRFDetail
 
-    PROPERTIES(d) quantityWHfromRFDetail BACKGROUND backgroundSkuWHfromRFDetail(d)
+    PROPERTIES(d) quantityWHfromRFDetail BACKGROUND backgroundSkuWHfromRFDetail(d), quantitySkuInWHfromRFWHfromRFDetail, quantityOriginWHfromRFSkuWHfromRFDetail
 
     PROPERTIES(d) READONLY nameUnitOfMeasureArticleSkuWHfromRFDetail
 
@@ -507,11 +508,11 @@ FORM WHfromRF 'Приход товара из РФ'
     OBJECTS s = sku
     PROPERTIES(s) READONLY barcode, nameCategoryArticleSku, nameBrandSupplierArticleSku, sidArticleSku,
                            sidSizeSupplierItem FORCE GRID, sidColorSupplierItem FORCE GRID, nameColorSupplierItem FORCE GRID, shortNameUOMSku
-    PROPERTIES(w, s) quantityWHfromRFSku, quantityOriginWHfromRFSku, diffQuantityWHfromRFSku
+    PROPERTIES(w, s) quantityWHfromRFSku, quantityOriginCurrentBoxWHfromRFSku, diffQuantityWHfromRFSku
 
     FILTERGROUP filtersQuantityOrigin
         FILTER 'Показывать с расхождением' 'F8' diffQuantityWHfromRFSku(w, s) DEFAULT
-        FILTER 'Показывать ожидаемые/принятые' 'F7' quantityOriginWHfromRFSku(w, s) OR quantityWHfromRFSku(w, s)
+        FILTER 'Показывать ожидаемые/принятые' 'F7' quantityOriginCurrentBoxWHfromRFSku(w, s) OR quantityWHfromRFSku(w, s)
 
 
     FILTERS inWHfromRFWHfromRFDetail(w, d)

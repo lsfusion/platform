@@ -153,8 +153,8 @@ FORM categories 'Товарные группы'
     ORDER BY name
 
     OBJECTS cg=category
-    PROPERTIES(cg) READONLY canonicalNameCategory, name, nameOrigin, nameTypeInvoiceCategory, warrantyCategory, nameUnitOfMeasureCategory, necessaryStampCategory
-    PROPERTIES(cg)          delete
+    PROPERTIES(cg) READONLY name, canonicalNameCategory, nameOrigin, nameTypeInvoiceCategory, warrantyCategory, nameUnitOfMeasureCategory, necessaryStampCategory, nameParentCategory
+    PROPERTIES(cg) delete
 
     ORDER BY canonicalNameCategory
 
@@ -188,7 +188,7 @@ FORM categoryDialog 'Товарные группы'
     ORDER BY name
 
     OBJECTS cg=category
-    PROPERTIES(cg) READONLY canonicalNameCategory, name, nameOrigin, warrantyCategory, nameUnitOfMeasureCategory
+    PROPERTIES(cg) READONLY name, canonicalNameCategory, nameOrigin, warrantyCategory, nameUnitOfMeasureCategory
     PROPERTIES(cg) delete
 
     ORDER BY canonicalNameCategory
@@ -205,7 +205,6 @@ DESIGN categoryDialog FROM DEFAULT {
 
     main {
 
-        preferredSize = (1024, 768);
         NEW topContainer {
             childConstraints = TO THE RIGHT;
             type = SPLITH;
@@ -220,21 +219,6 @@ DESIGN categoryDialog FROM DEFAULT {
         ADD functions.box;
     }
 }
-//FORM country 'Страна'
-//    OBJECTS c = country FIXED PANEL
-//    PROPERTIES(c) name, nameOrigin
-//
-//    OBJECTS l = language
-//    PROPERTIES name(l) READONLY, languageName(c, l)
-//
-//    EDIT country OBJECT c
-//;
-//
-//FORM countries 'Страны'
-//    OBJECTS c = country
-//    PROPERTIES(c) name, nameOriginCountry, sidCountry, sidOrigin2Country, sidOrigin3Country, sid3Country
-//    DIALOG country OBJECT c
-//;
 
 
 // ---------------------------------- Формы для выбора атрибутов ------------------------------------ //
@@ -297,6 +281,7 @@ FORM seasonYears 'Сезоны'
 FORM dialogSeasonYear 'Сезон'
     OBJECTS s = seasonYear
     PROPERTIES(s) READONLY nameSeasonSeasonYear, yearSeasonYear, nameSeasonYear
+    PROPERTIES(s) ADDFORM, EDITFORM, delete
     DIALOG seasonYear OBJECT s;
 ;
 
