@@ -28,4 +28,6 @@ public abstract class GType implements Serializable {
     public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
         return null;
     }
+
+    public abstract String getMinimumWidth(int minimumCharWidth);
 }

@@ -11,4 +11,9 @@ public class GObjectType extends GType {
     public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
         return new NumberGridRenderer();
     }
+
+    @Override
+    public String getMinimumWidth(int minimumCharWidth) {
+        return "7em";
+    }
 }

@@ -24,6 +24,11 @@ public class GwtSharedUtils {
         return string.substring(0, len);
     }
 
+    public static String replicate(char character, int length) {
+        char[] chars = new char[length];
+        Arrays.fill(chars, character);
+        return new String(chars);
+    }
 
     public static DateTimeFormat getDefaultDateFormat() {
         return DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_SHORT);

@@ -28,17 +28,24 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         component.container = convertOrCast(clientComponent.container);
         component.defaultComponent = clientComponent.defaultComponent;
 
-        if (clientComponent.preferredSize != null) {
-            component.prefferedWidth = clientComponent.preferredSize.width;
-            component.prefferedHeight = clientComponent.preferredSize.height;
-        }
-
-        if (clientComponent.preferredSize != null && clientComponent.preferredSize.equals(clientComponent.minimumSize) && clientComponent.preferredSize.equals(clientComponent.maximumSize)) {
-            component.absoluteWidth = clientComponent.preferredSize.width;
-            component.absoluteHeight = clientComponent.preferredSize.height;
-        }
         component.fillHorizontal = clientComponent.constraints.fillHorizontal;
         component.fillVertical = clientComponent.constraints.fillVertical;
+
+        if (clientComponent.minimumSize != null) {
+            component.minimumWidth = clientComponent.minimumSize.width;
+            component.minimumHeight = clientComponent.minimumSize.height;
+        }
+
+        if (clientComponent.maximumSize != null) {
+            component.maximumWidth = clientComponent.maximumSize.width;
+            component.maximumHeight = clientComponent.maximumSize.height;
+        }
+
+        if (clientComponent.preferredSize != null) {
+            component.preferredWidth = clientComponent.preferredSize.width;
+            component.preferredHeight = clientComponent.preferredSize.height;
+        }
+
         component.hAlign = clientComponent.constraints.directions.R > 0 ? GComponent.Alignment.RIGHT : GComponent.Alignment.LEFT;
 
         return component;
@@ -182,6 +189,10 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.footerReader = convertFooterReader(clientPropertyDraw.footerReader);
         propertyDraw.backgroundReader = convertBackgroundReader(clientPropertyDraw.backgroundReader);
         propertyDraw.foregroundReader = convertForegroundReader(clientPropertyDraw.foregroundReader);
+
+        propertyDraw.minimumCharWidth = clientPropertyDraw.minimumCharWidth;
+        propertyDraw.maximumCharWidth = clientPropertyDraw.maximumCharWidth;
+        propertyDraw.preferredCharWidth = clientPropertyDraw.preferredCharWidth;
 
         return propertyDraw;
     }

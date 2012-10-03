@@ -40,6 +40,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
     public GBackgroundReader backgroundReader;
     public GForegroundReader foregroundReader;
 
+    public int minimumCharWidth;
+    public int maximumCharWidth;
+    public int preferredCharWidth;
+
     private transient GridCellRenderer cellRenderer;
 
     public static class AddRemove implements Serializable {
@@ -99,6 +103,42 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
         }
 
         return iconPath;
+    }
+
+    public String getMinimumWidth() {
+        if (minimumWidth != -1) {
+            return minimumWidth + "px";
+        } else {
+            return baseType.getMinimumWidth(minimumCharWidth);
+        }
+    }
+
+    public String getMinimumHeight() {
+        return minimumHeight + "px";
+    }
+
+    public String getMaximumWidth() {
+        if (maximumWidth != -1) {
+            return maximumWidth + "px";
+        } else {
+            return "150px";
+        }
+    }
+
+    public String getMaximumHeight() {
+        return maximumHeight + "px";
+    }
+
+    public String getPreferredWidth() {
+        if (preferredWidth != -1) {
+            return preferredWidth + "px";
+        } else {
+            return "150px";
+        }
+    }
+
+    public String getPreferredHeight() {
+        return preferredHeight + "px";
     }
 
     @Override

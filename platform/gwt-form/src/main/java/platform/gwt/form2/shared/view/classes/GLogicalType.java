@@ -19,4 +19,14 @@ public class GLogicalType extends GDataType {
     public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
         return new LogicalGridEditor(editManager);
     }
+
+    @Override
+    public String getPreferredMask() {
+        return "";
+    }
+
+    @Override
+    public String getMinimumWidth(int minimumCharWidth) {
+        return "30px";
+    }
 }

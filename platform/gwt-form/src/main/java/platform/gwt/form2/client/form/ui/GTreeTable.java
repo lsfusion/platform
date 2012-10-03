@@ -36,7 +36,7 @@ public class GTreeTable extends GGridPropertyTable {
         createdFields.add("treeColumn");
         headers.add(header);
         addColumn(column, header);
-        setColumnWidth(column, "150px");
+        setColumnWidth(column, "80px");
 
         selectionModel.addSelectionChangeHandler(new SelectionChangeEvent.Handler() {
             @Override
@@ -87,7 +87,7 @@ public class GTreeTable extends GGridPropertyTable {
                 insertColumn(index, gridColumn, header);
                 createdFields.add(index, property.sID);
 
-                setColumnWidth(gridColumn, "150px");
+                setColumnWidth(gridColumn, property.getMinimumWidth());
             }
         }
     }

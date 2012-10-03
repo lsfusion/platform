@@ -25,7 +25,7 @@ public abstract class WindowContainer extends SplitLayoutPanel {
         // затем распределяем остальные окна по WindowElement'ам, складывая их в сплиты при необходимости
         findFillingWindows(allWindows);
         windowElements.put(new SimpleWindowElement(this, formsWindow), Direction.CENTER);
-        // заполняем основную панели полученными элементами
+        // заполняем основную панель полученными элементами
         initializeView();
     }
 

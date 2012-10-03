@@ -4,7 +4,9 @@ import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
 import platform.gwt.form2.client.form.ui.container.*;
-import platform.gwt.form2.shared.view.*;
+import platform.gwt.form2.shared.view.GComponent;
+import platform.gwt.form2.shared.view.GContainer;
+import platform.gwt.form2.shared.view.GGrid;
 
 import java.util.HashMap;
 import java.util.List;
@@ -173,8 +175,8 @@ public class GFormLayout extends FlowPanel {
             return shouldBeCollapsed(component, width) ? "auto" : "100%";
         }
 
-        if ((width && component.absoluteWidth != -1) || (!width && component.absoluteHeight != -1)) {
-            return (width ? component.absoluteWidth : component.absoluteHeight) + "px";
+        if ((width && component.getAbsoluteWidth() != -1) || (!width && component.getAbsoluteHeight() != -1)) {
+            return (width ? component.getAbsoluteWidth() : component.getAbsoluteHeight()) + "px";
         }
 
         if (shouldBeCollapsed(component, width)) {

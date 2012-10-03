@@ -19,4 +19,9 @@ public class GColorType extends GDataType {
     public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
         return new ColorGridRenderer();
     }
+
+    @Override
+    public String getPreferredMask() {
+        return "";
+    }
 }

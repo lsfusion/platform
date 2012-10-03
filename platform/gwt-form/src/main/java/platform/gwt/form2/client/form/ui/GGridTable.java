@@ -159,7 +159,10 @@ public class GGridTable extends GGridPropertyTable {
 
                     GridColumn gridColumn = new GridColumn(getColumnCount());
                     addColumn(gridColumn, header);
-                    setColumnWidth(gridColumn, "150px");
+                    GPropertyDraw property = columnProperties.get(i);
+                    if (property != null) {
+                        setColumnWidth(gridColumn, property.getMinimumWidth());
+                    }
                 } else {
                     headers.remove(getColumnCount() - 1);
                     removeColumn(getColumnCount() - 1);

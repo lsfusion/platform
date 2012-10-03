@@ -12,4 +12,9 @@ public class GDateTimeType extends GDataType {
     public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
         return new DateGridRenderer(DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_TIME_MEDIUM));
     }
+
+    @Override
+    public String getPreferredMask() {
+        return "01.01.2001 00:00:00";
+    }
 }

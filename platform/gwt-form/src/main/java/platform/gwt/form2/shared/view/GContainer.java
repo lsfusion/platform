@@ -38,14 +38,14 @@ public class GContainer extends GComponent {
             }
         }
 
-        if (absoluteWidth == -1 && fillHorizontal < 0) {
+        if (getAbsoluteWidth() == -1 && fillHorizontal < 0) {
             double childFill = getChildFill(false);
             if (childFill > 0) {
                 fillHorizontal = childFill;
             }
         }
 
-        if (absoluteHeight == -1 && fillVertical < 0) {
+        if (getAbsoluteHeight() == -1 && fillVertical < 0) {
             double childFill = getChildFill(true);
             if (childFill > 0) {
                 fillVertical = childFill;

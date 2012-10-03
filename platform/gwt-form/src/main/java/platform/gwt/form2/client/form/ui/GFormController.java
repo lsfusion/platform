@@ -578,11 +578,11 @@ public class GFormController extends SimplePanel {
     }
 
     public int getPreferredWidth() {
-        return formLayout.getMainKey().prefferedWidth;
+        return formLayout.getMainKey().preferredWidth;
     }
 
     public int getPreferredHeight() {
-        return formLayout.getMainKey().prefferedHeight;
+        return formLayout.getMainKey().preferredHeight;
     }
 
     private GPropertyTable editingTable;

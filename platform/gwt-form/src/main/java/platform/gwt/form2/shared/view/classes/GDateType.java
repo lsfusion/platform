@@ -19,4 +19,9 @@ public class GDateType extends GDataType {
     public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
         return new DateGridRenderer();
     }
+
+    @Override
+    public String getPreferredMask() {
+        return "01.01.2001";
+    }
 }
