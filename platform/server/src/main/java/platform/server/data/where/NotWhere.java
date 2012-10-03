@@ -8,7 +8,6 @@ import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.where.extra.BinaryWhere;
 import platform.server.data.expr.where.extra.IsClassWhere;
-import platform.server.data.query.ExprJoin;
 import platform.server.data.query.innerjoins.GroupJoinsWheres;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.JoinData;
@@ -82,8 +81,8 @@ public class NotWhere extends ObjectWhere {
         return new GroupJoinsWheres(this, noWhere);
     }
 
-    public MeanClassWheres calculateMeanClassWheres() {
-        if(where instanceof IsClassWhere || where instanceof PackClassWhere)
+    public MeanClassWheres calculateMeanClassWheres(boolean useNots) {
+        if(useNots && (where instanceof IsClassWhere || where instanceof PackClassWhere))
             return new MeanClassWheres(new MeanClassWhere(where.getClassWhere(), true), this);
         return new MeanClassWheres(MeanClassWhere.TRUE,this);
     }

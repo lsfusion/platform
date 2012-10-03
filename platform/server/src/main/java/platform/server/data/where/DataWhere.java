@@ -47,7 +47,7 @@ abstract public class DataWhere extends ObjectWhere {
         return NotWhere.PREFIX + getSource(compile);
     }
 
-    public MeanClassWheres calculateMeanClassWheres() {
+    public MeanClassWheres calculateMeanClassWheres(boolean useNots) {
         return new MeanClassWheres(getMeanClassWhere(),this);
     }
 

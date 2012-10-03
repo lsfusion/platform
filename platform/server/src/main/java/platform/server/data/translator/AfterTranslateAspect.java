@@ -54,7 +54,7 @@ public class AfterTranslateAspect {
         Where from = where.getFrom();
         MapTranslate translator = where.getTranslator();
         if(from!=null && translator!=null)
-            return from.groupMeanClassWheres().translateOuter(translator);
+            return from.groupMeanClassWheres(true).translateOuter(translator);
         else
             return thisJoinPoint.proceed();
     }

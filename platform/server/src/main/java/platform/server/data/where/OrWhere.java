@@ -761,10 +761,10 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
             result.addAll(where.getKeyEquals());
         return result;
     }
-    public MeanClassWheres calculateGroupMeanClassWheres() {
+    public MeanClassWheres calculateGroupMeanClassWheres(boolean useNots) {
         MeanClassWheres result = new MeanClassWheres();
         for(Where where : wheres)
-            result.or(where.groupMeanClassWheres());
+            result.or(where.groupMeanClassWheres(useNots));
         return result;
     }
 

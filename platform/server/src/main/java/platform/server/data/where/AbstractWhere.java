@@ -155,14 +155,21 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
     public abstract ClassExprWhere calculateClassWhere();
 
 
-    public MeanClassWheres meanClassWheres = null;
+    private MeanClassWheres meanClassWheres = null;
+    private MeanClassWheres noNotsMeanClassWheres = null;
     @ManualLazy
-    public MeanClassWheres groupMeanClassWheres() {
-        if(meanClassWheres==null)
-            meanClassWheres = calculateMeanClassWheres();
-        return meanClassWheres;
+    public MeanClassWheres groupMeanClassWheres(boolean useNots) {
+        if(useNots) {
+            if(meanClassWheres==null)
+                meanClassWheres = calculateMeanClassWheres(useNots);
+            return meanClassWheres;
+        } else {
+            if(noNotsMeanClassWheres==null)
+                noNotsMeanClassWheres = calculateMeanClassWheres(useNots);
+            return noNotsMeanClassWheres;
+        }
     }
-    public abstract MeanClassWheres calculateMeanClassWheres();
+    public abstract MeanClassWheres calculateMeanClassWheres(boolean useNots);
 
     private Map<BaseExpr, BaseExpr> getExprValues(boolean and, boolean only) {
         Map<BaseExpr, BaseExpr> result = new HashMap<BaseExpr, BaseExpr>();

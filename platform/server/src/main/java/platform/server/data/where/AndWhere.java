@@ -4,6 +4,7 @@ import platform.base.ArrayInstancer;
 import platform.base.BaseUtils;
 import platform.base.QuickSet;
 import platform.base.TwinImmutableInterface;
+import platform.server.Settings;
 import platform.server.caches.ManualLazy;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
@@ -16,8 +17,6 @@ import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.classes.MeanClassWhere;
 import platform.server.data.where.classes.MeanClassWheres;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 
@@ -103,10 +102,13 @@ public class AndWhere extends FormulaWhere<OrObjectWhere> implements AndObjectWh
             result = result.and(where.getKeyEquals());
         return result;
     }
-    public MeanClassWheres calculateGroupMeanClassWheres() {
+    public MeanClassWheres calculateGroupMeanClassWheres(boolean useNots) {
         MeanClassWheres result = new MeanClassWheres(MeanClassWhere.TRUE, TRUE);
-        for(Where where : wheres)
-            result = result.and(where.groupMeanClassWheres());
+        for(Where where : wheres) {
+            if(useNots && (result.size > Settings.instance.getLimitClassWhereCount() || result.getComplexity(true) > Settings.instance.getLimitClassWhereComplexity()))
+                return groupMeanClassWheres(false);
+            result = result.and(where.groupMeanClassWheres(useNots));
+        }
         return result;
     }
 

@@ -104,7 +104,7 @@ public abstract class FormulaWhere<WhereType extends Where> extends AbstractWher
     }
 
     public ClassExprWhere calculateClassWhere() {
-        return groupMeanClassWheres().getClassWhere();
+        return groupMeanClassWheres(true).getClassWhere();
     }
 
     protected abstract boolean checkFormulaTrue();
@@ -131,10 +131,10 @@ public abstract class FormulaWhere<WhereType extends Where> extends AbstractWher
         return result;
     }
 
-    protected abstract MeanClassWheres calculateGroupMeanClassWheres();
-    public MeanClassWheres calculateMeanClassWheres() {
-        MeanClassWheres result = calculateGroupMeanClassWheres();
-        if(result.size > Settings.instance.getLimitClassWhereCount() || result.getComplexity(true) > Settings.instance.getLimitClassWhereComplexity())
+    protected abstract MeanClassWheres calculateGroupMeanClassWheres(boolean useNots);
+    public MeanClassWheres calculateMeanClassWheres(boolean useNots) {
+        MeanClassWheres result = calculateGroupMeanClassWheres(useNots);
+        if(!useNots && (result.size > Settings.instance.getLimitClassWhereCount() || result.getComplexity(true) > Settings.instance.getLimitClassWhereComplexity()))
             result = new MeanClassWheres(new MeanClassWhere(result.getClassWhere()), this);
         return result;
     }
