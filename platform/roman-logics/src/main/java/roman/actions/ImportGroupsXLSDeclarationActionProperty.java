@@ -4,33 +4,27 @@ import jxl.Sheet;
 import jxl.Workbook;
 import jxl.read.biff.BiffException;
 import platform.base.BaseUtils;
-import platform.base.IOUtils;
-import platform.base.OrderedMap;
-import platform.interop.Compare;
-import platform.interop.action.ExportFileClientAction;
-import platform.server.classes.ConcreteClass;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.CustomStaticFormatFileClass;
 import platform.server.classes.ValueClass;
-import platform.server.data.expr.KeyExpr;
-import platform.server.data.query.Query;
 import platform.server.integration.*;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
-import platform.server.logics.linear.LCP;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.scripted.ScriptingActionProperty;
 import platform.server.logics.scripted.ScriptingErrorLog;
 import platform.server.logics.scripted.ScriptingLogicsModule;
-import roman.RomanLogicsModule;
 
-import java.io.*;
-import java.math.BigDecimal;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.text.NumberFormat;
 import java.text.ParseException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -54,6 +48,7 @@ public class ImportGroupsXLSDeclarationActionProperty extends ScriptingActionPro
             List<byte[]> fileList = valueClass.getFiles(objectValue.getValue());
 
             DataObject declaration = context.getKeyValue(declarationInterface);
+            ObjectValue customsZone = LM.findLCPByCompoundName("customsZoneDeclaration").readClasses(context.getSession(), declaration);
 
             for (byte[] file : fileList) {
 
@@ -91,7 +86,7 @@ public class ImportGroupsXLSDeclarationActionProperty extends ScriptingActionPro
                         LM.findLCPByCompoundName("uniqueGroupDeclaration").getMapping(userNumberGroupDeclarationField, declaration));
 
                 ImportKey<?> customCategory10Key = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("customCategory10"),
-                        getLCP("sidToCustomCategory10").getMapping(customCategory10Field));
+                        getLCP("sidToCustomCategory10").getMapping(customCategory10Field, customsZone));
 
                 //ImportKey<?> declarationDetailKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("declarationDetail"),
                 //        LM.findLCPByCompoundName("uniqueDeclarationDetail").getMapping(userNumberGroupDeclarationField, declarationDetailField));
