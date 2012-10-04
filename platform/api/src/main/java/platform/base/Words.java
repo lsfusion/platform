@@ -235,7 +235,7 @@ public class Words {
     public static String toString(Double numObject, Boolean female) {
         double num = numObject == null ? 0.0 : numObject;
         int numOfDig = 0;
-        while ((num - (int)num) != 0) {
+        while (Math.abs(num - Math.round(num)) > 1E-7) {
             numOfDig++;
             num = num * 10;
         }

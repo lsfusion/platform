@@ -752,7 +752,8 @@ VATDeclarationDetail 'НДС' (declarationDetail) = roundTypeExchangeDeclaration
 
 VATReverseDeclaration 'Сумма НДС' (declaration) = GROUP SUM VATReverseDeclarationDetail(declarationDetail) BY declarationDeclarationDetail(declarationDetail) IN sumGroup PERSISTENT MINCHARWIDTH 15;
 
-supplierPriceDeclarationDetail 'Цена' (declarationDetail) = supplierSumDeclarationDetail(declarationDetail)/quantityDeclarationDetail(declarationDetail);
+supplierPriceDeclarationDetail 'Цена' (declarationDetail) = roundCurrencyDeclarationDetail
+    (supplierSumDeclarationDetail(declarationDetail)/quantityDeclarationDetail(declarationDetail), declarationDetail);
 
 quantityDiffDeclarationDetail 'Кол-во' (declarationDetail) = quantityDeclarationDetail(declarationDetail) (-) quantityCertificatedDeclarationDetail(declarationDetail);
 
