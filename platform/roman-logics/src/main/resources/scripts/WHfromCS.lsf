@@ -555,19 +555,19 @@ FORM WHfromCSR 'Приемка на оптовый склад'
                                        nameBrandSupplierArticleSkuWHfromCSRDetail, netWeightArticleSkuWHfromCSRDetail,
                                        mainCompositionOriginArticleSkuWHfromCSRDetail
 
-    PROPERTIES(d) FORCE PANEL sidGenderArticleSkuWHfromCSRDetail BACKGROUND backgroundArticleWHfromCSRDetail(d) ON CHANGE EXEC changeGenderArticleSkuWHfromCSRDetail(d),
-                              c = nameCategoryArticleSkuWHfromCSRDetail BACKGROUND backgroundArticleWHfromCSRDetail(d) ON CHANGE EXEC changeCategoryArticleSkuWHfromCSRDetail(d),
-                              nameTypeFabricArticleSkuWHfromCSRDetail BACKGROUND backgroundArticleWHfromCSRDetail(d) ON CHANGE EXEC changeTypeFabricArticleSkuWHfromCSRDetail(d),
-                              u = nameUnitOfMeasureArticleSkuWHfromCSRDetail BACKGROUND backgroundArticleWHfromCSRDetail(d) ON CHANGE EXEC changeUnitOfMeasureArticleSkuWHfromCSRDetail(d),
-                              netWeightSkuWHfromCSRDetail BACKGROUND backgroundArticleSizeWHfromCSRDetail(d) ON CHANGE EXEC changeNetWeightSkuWHfromCSRDetail(d),
-                              nameCountryOfOriginSkuWHfromCSRDetail BACKGROUND backgroundArticleColorWHfromCSRDetail(d) ON CHANGE EXEC changeCountryOfOriginSkuWHfromCSRDetail(d),
-                              mainCompositionOriginSkuWHfromCSRDetail BACKGROUND backgroundArticleColorWHfromCSRDetail(d) ON CHANGE EXEC changeMainCompositionOriginSkuWHfromCSRDetail(d),
-                              mainCompositionSkuWHfromCSRDetail BACKGROUND backgroundArticleColorWHfromCSRDetail(d) ON CHANGE EXEC changeMainCompositionSkuWHfromCSRDetail(d),
-                              additionalCompositionOriginSkuWHfromCSRDetail BACKGROUND backgroundArticleColorWHfromCSRDetail(d) ON CHANGE EXEC changeAdditionalCompositionOriginSkuWHfromCSRDetail(d),
-                              additionalCompositionSkuWHfromCSRDetail BACKGROUND backgroundArticleColorWHfromCSRDetail(d) ON CHANGE EXEC changeAdditionalCompositionSkuWHfromCSRDetail(d),
-                              coefficientArticleSkuWHfromCSRDetail BACKGROUND backgroundArticleWHfromCSRDetail(d) ON CHANGE EXEC changeCoefficientArticleSkuWHfromCSRDetail(d)
+    PROPERTIES(d) FORCE PANEL sidGenderArticleSkuWHfromCSRDetail ON CHANGE EXEC changeGenderArticleSkuWHfromCSRDetail(d),
+                              c = nameCategoryArticleSkuWHfromCSRDetail ON CHANGE EXEC changeCategoryArticleSkuWHfromCSRDetail(d),
+                              nameTypeFabricArticleSkuWHfromCSRDetail ON CHANGE EXEC changeTypeFabricArticleSkuWHfromCSRDetail(d),
+                              u = nameUnitOfMeasureArticleSkuWHfromCSRDetail ON CHANGE EXEC changeUnitOfMeasureArticleSkuWHfromCSRDetail(d),
+                              netWeightSkuWHfromCSRDetail ON CHANGE EXEC changeNetWeightSkuWHfromCSRDetail(d),
+                              nameCountryOfOriginSkuWHfromCSRDetail ON CHANGE EXEC changeCountryOfOriginSkuWHfromCSRDetail(d),
+                              mainCompositionOriginSkuWHfromCSRDetail ON CHANGE EXEC changeMainCompositionOriginSkuWHfromCSRDetail(d),
+                              mainCompositionSkuWHfromCSRDetail ON CHANGE EXEC changeMainCompositionSkuWHfromCSRDetail(d),
+                              additionalCompositionOriginSkuWHfromCSRDetail ON CHANGE EXEC changeAdditionalCompositionOriginSkuWHfromCSRDetail(d),
+                              additionalCompositionSkuWHfromCSRDetail ON CHANGE EXEC changeAdditionalCompositionSkuWHfromCSRDetail(d),
+                              coefficientArticleSkuWHfromCSRDetail ON CHANGE EXEC changeCoefficientArticleSkuWHfromCSRDetail(d)
 
-    PROPERTIES(d) FORCE PANEL SHOWIF languageWHfromCSR(w) BACKGROUND backgroundArticleColorWHfromCSRDetail(d) mainCompositionWHfromCSRDetail, additionalCompositionWHfromCSRDetail
+    PROPERTIES(d) FORCE PANEL SHOWIF languageWHfromCSR(w) mainCompositionWHfromCSRDetail, additionalCompositionWHfromCSRDetail
 
     OBJECTS s = sku
     PROPERTIES(s) READONLY barcode, nameCategoryArticleSku, nameBrandSupplierArticleSku, sidArticleSku,

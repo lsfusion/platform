@@ -65,6 +65,10 @@ META defineNearestRateExchangeObject(object, typeEx, typeCur, propDate, group)
 
 END
 
+priceRateDocumentSku(document, sku) <- priceRateOriginDocumentSku(document, sku) WHEN CHANGED(date(document) AND sku IS sku) OR
+                                                                                      CHANGED(currencyDocument(document) AND sku IS sku) OR
+                                                                                      CHANGED(quantityDocumentSku(document, sku)) ;
+
 //------------------------ Приведение штрих-кодов RomanLogicsModule к логике Barcode.lsf -----------------------------//
 
 syncBarcodeSku 'Синхронизировать штрих-код' (sku) = ACTION (sku) {
@@ -232,6 +236,14 @@ FORM gender 'Пол'
     PROPERTIES(g, l) languageName
 
     EDIT gender OBJECT g;
+;
+
+FORM genders 'Пол'
+    OBJECTS g = gender FIXED PANEL
+    PROPERTIES(g) sidGender
+
+    PROPERTIES(g) ADDFORM, EDITFORM, delete
+    DIALOG gender OBJECT g
 ;
 
 FORM gendersDialog 'Пол'

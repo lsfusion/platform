@@ -224,7 +224,7 @@ FORM CStoWH 'Расход с СВХ'
     PROPERTIES (c) READONLY declarationsCStoWH, innerInvoicesCStoWH
 
     OBJECTS d = CStoWHDetail
-    PROPERTIES(d) indexCStoWHDetail, barcodeCStoWHDetail, nameCategoryCStoWHDetail, nameBrandCStoWHDetail, sidArticleCStoWHDetail,
+    PROPERTIES(d) READONLY indexCStoWHDetail, barcodeCStoWHDetail, nameCategoryCStoWHDetail, nameBrandCStoWHDetail, sidArticleCStoWHDetail,
                   sidSizeCStoWHDetail, sidColorCStoWHDetail, nameColorCStoWHDetail, barcodeFreightUnitCStoWHDetail, nameDestinationCStoWHDetail,
                   sumNetWeightCStoWHDetail, sumGrossWeightCStoWHDetail, quantityCStoWHDetail, priceCStoWHDetail, sumCStoWHDetail
     PROPERTIES(d) delete

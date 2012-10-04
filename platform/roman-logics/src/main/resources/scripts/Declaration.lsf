@@ -629,9 +629,10 @@ quantityImporterFreightUnitSku 'Кол-во' (importer, freightUnit, sku) = UNIO
 inFreightUnitDeclarationDetail 'Кол-во' (freightUnit, declarationDetail) = quantityImporterFreightUnitSku(importerDeclarationDetail(declarationDetail),
                                                                                                           freightUnit AS freightUnit,
                                                                                                           skuDeclarationDetail(declarationDetail)) AND
-                                                                                             quantityFreightDeclarationSku(freightFreightUnit(freightUnit),
-                                                                                                                           declarationDeclarationDetail(declarationDetail),
-                                                                                                                           skuDeclarationDetail(declarationDetail));
+                                                                                             innerInvoiceDeclarationDetail(declarationDetail) == innerInvoiceFreightUnit(declarationDeclarationDetail(declarationDetail), freightUnit);
+                                                                                             //quantityFreightDeclarationSku(freightFreightUnit(freightUnit),
+                                                                                             //                              declarationDeclarationDetail(declarationDetail),
+                                                                                             //                              skuDeclarationDetail(declarationDetail));
 
 inFreightUnitDeclaration 'Кол-во' (freightUnit, declaration) = GROUP SUM inFreightUnitDeclarationDetail(freightUnit, declarationDetail)
                                                                       BY freightUnit, declarationDeclarationDetail(declarationDetail);
@@ -978,7 +979,7 @@ nameArticleDeclarationDetail 'Наименование' (declarationDetail) =
                               nameTypeFabricDeclarationDetail(declarationDetail), sidGenderDeclarationDetail(declarationDetail));
 
 nameArticleLanguageDeclarationDetail 'Наименование(иностр.)' (declarationDetail) =
-    castToStringFourObject255(nameBrandDeclarationDetail(declarationDetail), nameInvoiceDeclarationDetail(declarationDetail),
+    castToStringFourObject255(nameBrandDeclarationDetail(declarationDetail), nameInvoiceDeclarationDetailLanguage(declarationDetail),
                               nameTypeFabricLanguageDeclarationDetail(declarationDetail), sidGenderLanguageDeclarationDetail(declarationDetail));
 
 FORM declarationPrint 'Выгрузка деклараций(Укр.)' PRINT

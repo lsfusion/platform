@@ -649,6 +649,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LCP priceImporterFreightSku;
     private LCP priceDocumentSku;
     private LCP priceRateDocumentArticle;
+    private LCP priceRateOriginDocumentSku;
     private LCP priceRateDocumentSku;
     private LCP RRPRateDocumentArticle;
     private LCP sumDocumentSku;
@@ -1543,7 +1544,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         colorSupplier = addConcreteClass("colorSupplier", "Цвет поставщика", baseClass.named, secondNameClass, baseLM.multiLanguageNamed);
         sizeSupplier = addConcreteClass("sizeSupplier", "Размер поставщика", baseClass);
-        gender = addConcreteClass("gender", "Пол", baseClass, baseLM.multiLanguageNamed);
+        gender = addConcreteClass("gender", "Пол", baseClass.named, baseLM.multiLanguageNamed);
         genderSupplier = addConcreteClass("genderSupplier", "Пол поставщика", baseClass);
         sizeGroupSupplier = addConcreteClass("sizeGroupSupplier", "Размерная сетка", baseClass.named);
 
@@ -2498,6 +2499,10 @@ public class RomanLogicsModule extends LogicsModule {
         sidGenderArticle.property.preferredCharWidth = 5;
         sidGenderArticle.property.minimumCharWidth = 3;
 
+        //nameGenderArticle = addJProp(baseGroup, "nameGenderArticle", "Пол", baseLM.name, genderArticle, 1);
+        //nameGenderArticle.property.preferredCharWidth = 5;
+        //nameGenderArticle.property.minimumCharWidth = 3;
+
         genderArticleSku = addJProp(idGroup, true, "genderArticleSku", true, "Пол (ИД)", genderArticle, articleSku, 1);
         sidGenderArticleSku = addJProp(baseGroup, "sidGenderArticleSku", "Пол", sidGender, genderArticleSku, 1);
         sidGenderArticleSku.property.preferredCharWidth = 5;
@@ -2839,7 +2844,9 @@ public class RomanLogicsModule extends LogicsModule {
         priceArticleDocumentSku = addJProp(baseGroup, "priceArticleDocumentItem", "Цена по артикулу", priceDocumentArticle, 1, articleSku, 2);
         priceDocumentSku = addSUProp(baseGroup, "priceDocumentSku", true, "Цена", Union.OVERRIDE, priceArticleDocumentSku, priceDataDocumentItem);
 
-        priceRateDocumentSku = addJProp(baseGroup, "priceRateDocumentSku", true, "Цена (конверт.)", round2, addJProp(multiplyNumeric2, priceDocumentSku, 1, 2, addJProp(baseLM.nearestRateExchange, typeExchangeSTX, currencyDocument, 1, 1), 1), 1, 2);
+        //priceRateDocumentSku = addJProp(baseGroup, "priceRateDocumentSku", true, "Цена (конверт.)", round2, addJProp(multiplyNumeric2, priceDocumentSku, 1, 2, addJProp(baseLM.nearestRateExchange, typeExchangeSTX, currencyDocument, 1, 1), 1), 1, 2);
+        priceRateOriginDocumentSku = addJProp(baseGroup, "priceRateOriginDocumentSku", true, "Цена (конверт.)", round2, addJProp(multiplyNumeric2, priceDocumentSku, 1, 2, addJProp(baseLM.nearestRateExchange, typeExchangeSTX, currencyDocument, 1, 1), 1), 1, 2);
+        priceRateDocumentSku = addDProp("priceRateDocumentSku", "Цена (конверт.)", NumericClass.get(14, 4), priceDocument, sku);
 
         RRPDocumentArticle = addDProp(baseGroup, "RRPDocumentArticle", "Рекомендованная цена", NumericClass.get(14, 4), priceDocument, article);
         RRPRateDocumentArticle = addJProp(baseGroup, "RRPRateDocumentArticle", true, "Рекомендованная цена (конверт.)", round2, addJProp(multiplyNumeric2, RRPDocumentArticle, 1, 2, addJProp(baseLM.nearestRateExchange, typeExchangeSTX, currencyDocument, 1, 1), 1), 1, 2);
@@ -7665,6 +7672,9 @@ public class RomanLogicsModule extends LogicsModule {
             CalcPropertyObjectEntity greaterPriceMinPriceImporterFreightArticleProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, greaterPriceMinPriceImporterFreightArticle, 1, 2, 3), objImporter, objFreight, objArticle);
             getPropertyDraw(minPriceRateImporterFreightArticle).setPropertyBackground(greaterPriceMinPriceImporterFreightArticleProperty);
             getPropertyDraw(priceFullKgImporterFreightArticle).setPropertyBackground(greaterPriceMinPriceImporterFreightArticleProperty);
+
+            setEditType(PropertyEditType.READONLY, objArticle.groupTo);
+            setEditType(markupPercentImporterFreightArticle, PropertyEditType.EDITABLE);
 
             objSku = addSingleGroupObject("sku", sku, "SKU", baseLM.barcode, sidArticleSku, nameBrandSupplierArticleSku, nameCategoryArticleSku);
 
