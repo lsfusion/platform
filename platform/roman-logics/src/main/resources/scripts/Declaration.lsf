@@ -957,6 +957,7 @@ FORM declarationInvoices 'Присоединение инвойсов'
 
 showFormDeclarationInvoices 'Присоединить инвойсы' = ACTION (declaration) {
     FORM declarationInvoices OBJECTS d=declaration MODAL;
+    EXEC apply();
 } IN docGroup TOOLBAR;
 
 //-------------------------------------------- Печатная форма украинской декларации -----------------------------------//

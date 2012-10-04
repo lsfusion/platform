@@ -506,6 +506,7 @@ EXTEND FORM migrationData
     PROPERTIES(l) SELECTOR name
 
     OBJECTS m = multiLanguageNamed
+    PROPERTIES(m) objectClassName TODRAW m FORCE GRID
     PROPERTIES(m) name TODRAW m FORCE GRID
     PROPERTIES(m, l) languageName
 
