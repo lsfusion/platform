@@ -10,20 +10,20 @@ currentReservePurchaseSkuStock 'Текущий резерв'(sku, stock)  = Purc
     PurchaseReturn.currentReserveSkuStock(sku, stock);
 
 NAVIGATOR {
-    NEW purchaseNavigator 'Закупки' {
-        NEW purchasePurchaseNavigator 'Управление закупками' {
+//    NEW purchaseNavigator 'Закупки' {
+        NEW purchasePurchaseNavigator 'Закупки' {
             ADD Purchase.userOrders;
             ADD Purchase.userInvoices;
             ADD Purchase.userShipments;
 //            ADD Purchase.dialogShipments;
         }
-        NEW purchaseReturnNavigator 'Управление возвратами' {
+        NEW purchaseReturnNavigator 'Возвраты' {
             ADD PurchaseReturn.userOrders;
             ADD PurchaseReturn.userInvoices;
             ADD PurchaseReturn.userShipments;
     //      ADD dialogShipments;
         }
-    }
+//    }
 }
 
 

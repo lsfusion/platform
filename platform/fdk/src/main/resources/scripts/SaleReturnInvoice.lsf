@@ -1,6 +1,6 @@
 MODULE SaleReturnInvoice;
 
-REQUIRE Invoice, SaleReturnOrder
+REQUIRE Invoice, SaleReturnOrder, SaleInvoice
 ;
 
 NAMESPACE SaleReturn;
@@ -9,5 +9,79 @@ NAMESPACE SaleReturn;
 //----------------------------------------------- Накладная ---------------------------------------------------//
 
 @defineInvoice(' (продажа-возврат)', customer, company, customer);
-@defineInvoiceBatch();
+
+//--------------------------------------------------Продажа для Detail--------------------------------------//
+
+invoiceDetailInvoiceDetail (invoiceDetail) = ABSTRACT Sale.invoiceDetail (SaleReturn.invoiceDetail);
+descriptionInvoiceDetailInvoiceDetail 'Продажа' (invoiceDetail)= Sale.descriptionInvoiceDetail(invoiceDetailInvoiceDetail(invoiceDetail));
+
+invoiceDetailUserInvoiceDetail (userInvoiceDetail) = DATA Sale.invoiceDetail (SaleReturn.userInvoiceDetail);
+descriptionInvoiceDetailUserInvoiceDetail 'Продажа' (userInvoiceDetail)= Sale.descriptionInvoiceDetail(invoiceDetailUserInvoiceDetail(userInvoiceDetail));
+invoiceDetailInvoiceDetail(detail) += invoiceDetailUserInvoiceDetail(detail);
+
+CONSTRAINT Sale.skuInvoiceDetail(invoiceDetailUserInvoiceDetail(detail)) != SaleReturn.skuUserInvoiceDetail(detail) CHECKED BY invoiceDetailUserInvoiceDetail
+    MESSAGE 'Товар строки продажи должен соответствовать SKU строки возврата';
+
+CONSTRAINT Sale.customerInvoiceDetail(invoiceDetailUserInvoiceDetail(detail)) != SaleReturn.customerUserInvoiceDetail(detail) CHECKED BY invoiceDetailUserInvoiceDetail
+    MESSAGE 'Покупатель строки продажи должен соответствовать Покупателю строки возврата';
+
+CONSTRAINT Sale.companyStockInvoiceDetail(invoiceDetailUserInvoiceDetail(detail)) != SaleReturn.companyStockUserInvoiceDetail(detail) CHECKED BY invoiceDetailUserInvoiceDetail
+    MESSAGE 'Покупатель строки продажи должен соответствовать Покупателю строки возврата';
+
+CONSTRAINT invoiceDetailUserInvoiceDetail(detail) AND NOT
+    Sale.quantityInvoiceDetail(invoiceDetailUserInvoiceDetail(detail)) >= SaleReturn.quantityUserInvoiceDetail(detail) CHECKED BY invoiceDetailUserInvoiceDetail
+        MESSAGE 'Количество возврата больше чем количество продажи';
+
+FORM dialogInvoiceDetail 'Продажа'
+
+    OBJECTS r = SaleReturn.userInvoiceDetail FIXED PANEL
+
+    OBJECTS s = Sale.invoiceDetail
+
+    PROPERTIES(s) READONLY Sale.indexInvoiceDetail, Sale.idBarcodeSkuInvoiceDetail, Sale.nameSkuInvoiceDetail, Sale.shortNameUOMSkuInvoiceDetail,
+                           Sale.descriptionInvoiceDetail,
+                           Sale.quantityInvoiceDetail, Sale.priceInvoiceDetail, Sale.sumInvoiceDetail,
+                           Sale.numberVATInvoiceDetail, Sale.valueVATInvoiceDetail, Sale.VATSumInvoiceDetail, Sale.invoiceSumInvoiceDetail,
+                           Sale.nameStockInvoiceDetail
+
+
+    FILTERS Sale.skuInvoiceDetail(s) == SaleReturn.skuUserInvoiceDetail(r),
+            Sale.customerInvoiceDetail(s) == SaleReturn.customerUserInvoiceDetail(r),
+            Sale.companyStockInvoiceDetail(s) == SaleReturn.companyStockUserInvoiceDetail(r),
+            Sale.isPostedInvoiceDetail(s)
+;
+
+dialogInvoiceDetailUserInvoiceDetail 'Продажа' (userInvoiceDetail) = ACTION (userInvoiceDetail) {
+    LOCAL detail = Sale.invoiceDetail();
+    FORM dialogInvoiceDetail OBJECTS r = userInvoiceDetail MODAL;
+
+    IF formResult() == formResult.ok THEN {
+        SET detail() <- chosenObject('s');
+        SET invoiceDetailUserInvoiceDetail(userInvoiceDetail) <- detail();
+
+        SET SaleReturn.priceUserInvoiceDetail(userInvoiceDetail) <- Sale.priceInvoiceDetail(detail());
+        SET SaleReturn.VATUserInvoiceDetail(userInvoiceDetail) <- Sale.VATInvoiceDetail(detail());
+        SET SaleReturn.VATSumUserInvoiceDetail(userInvoiceDetail) <- Sale.VATSumInvoiceDetail(detail());
+    }
+}
+
+EXTEND FORM userInvoice
+    PROPERTIES (d) descriptionInvoiceDetailUserInvoiceDetail ON CHANGE EXEC dialogInvoiceDetailUserInvoiceDetail(d)
+    AFTER shortNameUOMSkuUserInvoiceDetail
+;
+EXTEND FORM userInvoices
+    PROPERTIES (d) READONLY descriptionInvoiceDetailUserInvoiceDetail AFTER shortNameUOMSkuUserInvoiceDetail
+;
+EXTEND FORM invoices
+    PROPERTIES (d) READONLY descriptionInvoiceDetailInvoiceDetail AFTER shortNameUOMSkuInvoiceDetail
+;
+
+
+
+
+
+
+
+
+
 

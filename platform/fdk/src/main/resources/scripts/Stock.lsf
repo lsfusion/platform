@@ -547,8 +547,8 @@ META defineDocumentAbstractDetailDataStock (object, detail, stockClass, stockPro
     stockProp###detail (idetail) = UNION OVERRIDE stockProp###object(object###detail(idetail)), data###stockProp###detail(idetail) PERSISTENT;
     name###stockProp###detail stockCaption (idetail) = name(stockProp###detail(idetail)) MINCHARWIDTH 10 PREFCHARWIDTH 20;
     country###stockProp###detail (idetail) = countryStock(stockProp###detail(idetail));
-    company###detail (idetail) = companyStock(stockProp###detail(idetail));
-    name###company###detail 'Компания ('###stockCaption###')' (idetail) = name(company###detail (idetail));
+    company###stockProp###detail (idetail) = companyStock(stockProp###detail(idetail));
+    name###company###stockProp###detail 'Компания ('###stockCaption###')' (idetail) = name(company###stockProp###detail (idetail));
 END
 META defineDocumentInterfaceDetailDataStock (object, detail, stockClass, stockProp, stockCaption)
     @defineDocumentAbstractDetailDataStock(object, detail, stockClass, stockProp, stockCaption);
@@ -1116,6 +1116,14 @@ DESIGN skus FROM DEFAULT {
         ADD functions.box;
     }
 }
+
+FORM batchDialog 'Партии'
+
+    OBJECTS bt = batch
+    PROPERTIES (bt) READONLY nameSkuBatch, dateTimeBatch, descriptionBatch,
+                   quantityBatch, costBatch
+    DIALOG batch OBJECT bt
+;
 
 // ------------------------------------------------- Себестоимость --------------------------- //
 

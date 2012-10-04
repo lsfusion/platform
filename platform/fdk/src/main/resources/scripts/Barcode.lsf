@@ -145,3 +145,6 @@ EXTEND FORM currentBalanceBatchStock
 EXTEND FORM costSkuLedger
     PROPERTIES(bil) READONLY idBarcodeSkuSkuLedger AFTER nameSkuSkuLedger
 ;
+EXTEND FORM batchDialog
+    PROPERTIES(bt) READONLY idBarcodeSkuBatch AFTER nameSkuBatch
+;

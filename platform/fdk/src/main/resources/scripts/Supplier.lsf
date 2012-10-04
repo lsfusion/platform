@@ -279,3 +279,7 @@ META defineAddDetailDialogSkuStockSupplierCustom (object, detail, caption, skuPr
 END
 
 @defineDialogSkuSupplier(dialogSku);
+
+EXTEND FORM batchDialog
+    PROPERTIES(bt) READONLY nameSupplierBatch AFTER nameSkuBatch
+;

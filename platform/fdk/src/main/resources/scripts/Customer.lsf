@@ -161,6 +161,7 @@ END
 META defineDocumentInterfaceCustomer (object, detail)
     @defineDocumentInterfaceHeaderCustomer(object);
     @defineDocumentDetailCustomer(object, detail);
+    @defineDocumentDetailCustomer(user###object, user###detail);
 END
 
 META defineDocumentCustomer (object)

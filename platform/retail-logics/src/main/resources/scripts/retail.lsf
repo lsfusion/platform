@@ -7047,7 +7047,8 @@ NAVIGATOR {
     }
 
     NEW purchase 'Управление закупками' TO formsToolbar {
-        ADD purchaseNavigator;
+        ADD purchasePurchaseNavigator;
+        ADD purchaseReturnNavigator;
     }
 
     NEW warehouse 'Управление складом' TO formsToolbar {
@@ -7061,7 +7062,6 @@ NAVIGATOR {
         }
         ADD stockCost;
         ADD stockBalance;
-        ADD saleNavigator;
     }
 
     NEW logistics 'Логистика' TO formsToolbar {
@@ -7114,6 +7114,8 @@ NAVIGATOR {
         }
     }
     NEW wholeSale 'Оптовая торговля' TO formsToolbar {
+        ADD saleSaleNavigator;
+        ADD saleReturnNavigator;
         ADD priceListNavigator;
     }
 
