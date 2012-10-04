@@ -24,6 +24,7 @@ public class GResizableModalForm extends GResizableModalWindow {
                 int formHeight = formLayout.getMainContainerHeight();
                 if (formWidth < mainPane.getOffsetWidth() && formHeight < mainPane.getOffsetHeight()) {
                     setContentSize(formWidth, formHeight);
+                    center();
                 }
                 super.resizeDialog();
             }

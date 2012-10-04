@@ -35,6 +35,9 @@ public class GResizableModalWindow extends ResizableWindow {
 
     @Override
     public void center() {
+        if (modalMask != null) {
+            modalMask.hide();
+        }
         modalMask = new ModalMask();
         modalMask.show();
 
