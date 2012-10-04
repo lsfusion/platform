@@ -1245,7 +1245,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         switch (type) {
             case INT: return addCProp(IntegerClass.instance, value);
             case LONG: return addCProp(LongClass.instance, value);
-            case REAL: return addCProp(DoubleClass.instance, value);
+            case REAL: return addNumericConst((String) value);
             case STRING: return addCProp(StringClass.get(((String)value).length()), value);
             case LOGICAL: return addCProp(LogicalClass.instance, value);
             case DATE: return addCProp(DateClass.instance, value);
@@ -1255,6 +1255,10 @@ public class ScriptingLogicsModule extends LogicsModule {
             case NULL: return baseLM.vnull;
         }
         return null;
+    }
+
+    private LCP addNumericConst(String value) {
+        return addCProp(NumericClass.get(value.length(), value.length() - value.indexOf('.') - 1), Double.parseDouble(value));
     }
 
     public java.sql.Date dateLiteralToDate(String text) {

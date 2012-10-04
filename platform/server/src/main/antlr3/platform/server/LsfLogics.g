@@ -2584,7 +2584,7 @@ literal returns [LP property]
 }
 	: 	vint=uintLiteral	{ cls = ScriptingLogicsModule.ConstType.INT; value = $vint.val; }
 	|	vlong=ulongLiteral	{ cls = ScriptingLogicsModule.ConstType.LONG; value = $vlong.val; }
-	|	vreal=udoubleLiteral	{ cls = ScriptingLogicsModule.ConstType.REAL; value = $vreal.val; }
+	|	vreal=POSITIVE_DOUBLE_LITERAL	{ cls = ScriptingLogicsModule.ConstType.REAL; value = $vreal.text; }
 	|	vstr=stringLiteral	{ cls = ScriptingLogicsModule.ConstType.STRING; value = $vstr.val; }  
 	|	vbool=booleanLiteral	{ cls = ScriptingLogicsModule.ConstType.LOGICAL; value = $vbool.val; }
 	|	vdate=dateLiteral	{ cls = ScriptingLogicsModule.ConstType.DATE; value = $vdate.val; }
