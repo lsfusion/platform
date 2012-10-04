@@ -50,7 +50,7 @@ public class GFormController extends SimplePanel {
     private final GFormActionDispatcher actionDispatcher = new GFormActionDispatcher(this);
 
     private GForm form;
-    private GFormLayout formLayout;
+    protected GFormLayout formLayout;
     private final boolean dialogMode;
 
     private boolean defaultOrdersInitialized = false;
@@ -624,10 +624,19 @@ public class GFormController extends SimplePanel {
         }
     }
 
+    protected boolean dialogSizeSet = false;
+    protected void resizeDialog() {
+        dialogSizeSet = true;
+    }
+
     private class ServerResponseCallback extends ErrorAsyncCallback<ServerResponseResult> {
         @Override
         public void success(ServerResponseResult response) {
             actionDispatcher.dispatchResponse(response);
+
+            if (!dialogSizeSet) {
+                resizeDialog();
+            }
         }
     }
 }

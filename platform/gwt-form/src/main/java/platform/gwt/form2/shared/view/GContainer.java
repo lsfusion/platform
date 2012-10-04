@@ -107,21 +107,25 @@ public class GContainer extends GComponent {
     }
 
     public boolean toFlow() {
+        return (vertical != null && !vertical && fillVertical <= 0)
+                || (vertical == null && containerFlows());
+    }
+
+    private boolean containerFlows() {
         if (container != null) {
-            if (vertical == null) {
-                if (fillVertical <= 0) {
-                    if (container.vertical != null) {
-                        if (container.vertical) {
-                            return container.fillVertical > 0 || container.toFlow();
-                        }
-                    } else {
-                        return container.toFlow();
-                    }
+            if (container.vertical != null) {
+                if (container.vertical) {
+                    return (container.fillVertical > 0 && !container.isGroupObjectWithBannedGrid()) || container.containerFlows();
                 }
             } else {
-                return !vertical && fillVertical <= 0;
+                return container.containerFlows();
             }
         }
         return false;
+    }
+
+    private boolean isGroupObjectWithBannedGrid() {
+        List<GGrid> grids = getAllGrids();
+        return grids.size() == 1 && grids.get(0).groupObject.banClassView.contains("GRID");
     }
 }

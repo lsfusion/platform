@@ -2,6 +2,7 @@
 
 .dataGridWidget {
     border: 1px solid lightGrey;
+    margin: 2px;
 }
 
 .dataGridFirstColumn {

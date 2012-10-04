@@ -17,6 +17,16 @@ public class GResizableModalForm extends GResizableModalWindow {
             public void hideForm() {
                 GResizableModalForm.this.hide();
             }
+
+            @Override
+            protected void resizeDialog() {
+                int formWidth = formLayout.getMainContainerWidth();
+                int formHeight = formLayout.getMainContainerHeight();
+                if (formWidth < mainPane.getOffsetWidth() && formHeight < mainPane.getOffsetHeight()) {
+                    setContentSize(formWidth, formHeight);
+                }
+                super.resizeDialog();
+            }
         };
 
         int wndWidth = Window.getClientWidth();

@@ -13,7 +13,20 @@ public abstract class GAbstractFormContainer {
     public Map<GComponent, Widget> childrenViews = new LinkedHashMap<GComponent, Widget>();
 
     public void add(GComponent childKey, Widget childView, int position) {
-        childrenViews.put(childKey, childView);
+        if (position == -1 || position >= childrenViews.size()) {
+            childrenViews.put(childKey, childView);
+        } else {
+            LinkedHashMap<GComponent, Widget> newChildrenMap = new LinkedHashMap<GComponent, Widget>();
+            int i = 0;
+            for (GComponent child : childrenViews.keySet()) {
+                if (i == position) {
+                    newChildrenMap.put(childKey, childView);
+                }
+                newChildrenMap.put(child, childrenViews.get(child));
+                i++;
+            }
+            childrenViews = newChildrenMap;
+        }
         addToContainer(childKey, childView, position);
     }
 

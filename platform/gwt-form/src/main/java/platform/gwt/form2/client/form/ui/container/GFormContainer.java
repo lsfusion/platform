@@ -27,7 +27,14 @@ public class GFormContainer extends GAbstractFormContainer {
 
     @Override
     protected void addToContainer(GComponent childKey, Widget childView, int position) {
-        panel.add(childView);
+        if (position == -1 || position >= childrenViews.size() - 1) {
+            panel.add(childView);
+        } else {
+            panel.clear();
+            for (Widget childComponent : childrenViews.values()) {
+                panel.add(childComponent);
+            }
+        }
 
         if (childKey.hAlign.equals(GContainer.Alignment.RIGHT)) {
             panel.setCellHorizontalAlignment(childView, HasHorizontalAlignment.HorizontalAlignmentConstant.endOf(HasDirection.Direction.LTR));

@@ -154,11 +154,12 @@ body, html {
 .captionPanelContainer {
     border: 2px groove threedface;
     position: relative;
-    padding: 0.8em 0.1em 0.3em 0.1em;
+    padding: 0.8em 0 0.3em 0;
     border-radius: 5px;
 }
 
 .captionPanelLegend {
+    white-space: nowrap;
     left: 0.5em;
     top: -0.6em;
     position: absolute;

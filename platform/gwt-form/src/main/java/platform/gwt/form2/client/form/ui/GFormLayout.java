@@ -260,4 +260,18 @@ public class GFormLayout extends FlowPanel {
             formContainer.setTableCellSize(child, size, width);
         }
     }
+
+    public int getMainContainerWidth() {
+        if (mainContainer != null) {
+            return mainContainer.getOffsetWidth();
+        }
+        return -1;
+    }
+
+    public int getMainContainerHeight() {
+        if (mainContainer != null) {
+            return mainContainer.getOffsetHeight();
+        }
+        return -1;
+    }
 }
