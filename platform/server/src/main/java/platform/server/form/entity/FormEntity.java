@@ -124,6 +124,8 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
     public void addRegularFilterGroup(RegularFilterGroupEntity group) {
         regularFilterGroups.add(group);
+        if (richDesign != null)
+            richDesign.addRegularFilterGroup(group);
     }
 
     // получает свойства, которые изменяют propChanges и соответственно hint'ить нельзя - временная затычка

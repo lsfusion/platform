@@ -114,7 +114,7 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
         }
 
         for (RegularFilterGroupEntity filterGroup : entity.regularFilterGroups) {
-            addRegularFilterGroup(filterGroup);
+            addRegularFilterGroupBase(filterGroup);
         }
 
         initButtons();
@@ -202,11 +202,15 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
         setComponentSID(filterGroupView, getRegularFilterGroupSID(filterGroupView.entity));
     }
 
-    private RegularFilterGroupView addRegularFilterGroup(RegularFilterGroupEntity filterGroup) {
+    private RegularFilterGroupView addRegularFilterGroupBase(RegularFilterGroupEntity filterGroup) {
         RegularFilterGroupView filterGroupView = new RegularFilterGroupView(filterGroup);
         regularFilters.add(filterGroupView);
         addRegularFilterGroupView(filterGroupView);
         return filterGroupView;
+    }
+
+    public RegularFilterGroupView addRegularFilterGroup(RegularFilterGroupEntity filterGroupEntity) {
+        return addRegularFilterGroupBase(filterGroupEntity);
     }
 
     public void fillComponentMaps() {

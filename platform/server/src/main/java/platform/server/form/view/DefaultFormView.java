@@ -10,6 +10,7 @@ import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.entity.TreeGroupEntity;
+import platform.server.form.entity.filter.RegularFilterGroupEntity;
 import platform.server.logics.property.actions.form.FormToolbarActionProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.serialization.ServerIdentitySerializable;
@@ -91,18 +92,8 @@ public class DefaultFormView extends FormView {
             addPropertyDrawView(propertyDraw);
         }
 
-        for (RegularFilterGroupView filterGroupView : regularFilters) {
-            ContainerView filterContainer = null;
-            GroupObjectEntity groupObject = filterGroupView.entity.getToDraw(entity);
-            if (groupObject.treeGroup != null) {
-                filterContainer = getFilterContainer(mtreeGroups.get(groupObject.treeGroup));
-            } else {
-                filterContainer = getFilterContainer(mgroupObjects.get(groupObject));
-            }
-
-            filterGroupView.getConstraints().insetsInside = new Insets(0, 2, 0, 2);
-            filterGroupView.getConstraints().directions = new SimplexComponentDirections(0.01, 0.0, 0.0, 0.0);
-            filterContainer.add(filterGroupView);
+        for (RegularFilterGroupView filterGroup : regularFilters) {
+            addRegularFilterGroupView(filterGroup);
         }
 
         formButtonContainer = formSet.getFormButtonContainer();
@@ -272,6 +263,20 @@ public class DefaultFormView extends FormView {
         }
     }
 
+    private void addRegularFilterGroupView(RegularFilterGroupView filterGroup) {
+        ContainerView filterContainer = null;
+        GroupObjectEntity groupObject = filterGroup.entity.getToDraw(entity);
+        if (groupObject.treeGroup != null) {
+            filterContainer = getFilterContainer(mtreeGroups.get(groupObject.treeGroup));
+        } else {
+            filterContainer = getFilterContainer(mgroupObjects.get(groupObject));
+        }
+
+        filterGroup.getConstraints().insetsInside = new Insets(0, 2, 0, 2);
+        filterGroup.getConstraints().directions = new SimplexComponentDirections(0.01, 0.0, 0.0, 0.0);
+        filterContainer.add(filterGroup);
+    }
+
     @Override
     public GroupObjectView addGroupObject(GroupObjectEntity groupObject) {
         GroupObjectView view = super.addGroupObject(groupObject);
@@ -290,6 +295,13 @@ public class DefaultFormView extends FormView {
     public PropertyDrawView addPropertyDraw(PropertyDrawEntity propertyDraw) {
         PropertyDrawView view = super.addPropertyDraw(propertyDraw);
         addPropertyDrawView(view);
+        return view;
+    }
+
+    @Override
+    public RegularFilterGroupView addRegularFilterGroup(RegularFilterGroupEntity filterGroup) {
+        RegularFilterGroupView view = super.addRegularFilterGroup(filterGroup);
+        addRegularFilterGroupView(view);
         return view;
     }
 
