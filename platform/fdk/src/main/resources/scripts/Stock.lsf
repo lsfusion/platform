@@ -1285,8 +1285,9 @@ FORM balanceSkuStock 'Остатки на дату'
     OBJECTS t=DATETIME FIXED PANEL
     PROPERTIES(t) OBJVALUE
 
-    TREE stockTree sg = stockGroup PARENT parentStockGroup
-    PROPERTIES READONLY sgTreeName = name(sg)
+    TREE stockTree sg = stockGroup PARENT parentStockGroup, ts = stock
+    PROPERTIES READONLY sgTreeName = name(sg), tsTreeName = name(ts)
+    FILTERS stockGroupStock(ts) == sg
 
     TREE skuTree sk = skuGroup PARENT parentSkuGroup
     PROPERTIES READONLY skuTreeName = name(sk)
@@ -1356,8 +1357,9 @@ DESIGN balanceSkuStock FROM DEFAULT {
 
 FORM currentBalanceBatchStock 'Текущие остатки по партиям'
 
-    TREE stockTree sg = stockGroup PARENT parentStockGroup
-    PROPERTIES READONLY sgTreeName = name(sg)
+    TREE stockTree sg = stockGroup PARENT parentStockGroup, ts = stock
+    PROPERTIES READONLY sgTreeName = name(sg), tsTreeName = name(ts)
+    FILTERS stockGroupStock(ts) == sg
 
     TREE skuTree sk = skuGroup PARENT parentSkuGroup
     PROPERTIES READONLY skuTreeName = name(sk)
@@ -1427,8 +1429,9 @@ FORM balanceBatchStock 'Остатки по партиям на дату'
     OBJECTS t=DATETIME FIXED PANEL
     PROPERTIES(t) OBJVALUE
 
-    TREE stockTree sg = stockGroup PARENT parentStockGroup
-    PROPERTIES READONLY sgTreeName = name(sg)
+    TREE stockTree sg = stockGroup PARENT parentStockGroup, ts = stock
+    PROPERTIES READONLY sgTreeName = name(sg), tsTreeName = name(ts)
+    FILTERS stockGroupStock(ts) == sg
 
     TREE skuTree sk = skuGroup PARENT parentSkuGroup
     PROPERTIES READONLY skuTreeName = name(sk)
