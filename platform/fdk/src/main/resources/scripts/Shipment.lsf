@@ -38,6 +38,8 @@ META defineShipment(skuLedger, sign, contact, partyA, partyB)
     @defineDocumentInterfaceDetailDataSum(shipment);
     @deriveDocumentDetailSum(userShipment);
 
+    @defineDocumentInterfaceDetailVAT(shipment, countryStock);
+
     @defineDocumentInterfaceHeaderQuantity(shipment);
     @defineDocumentHeaderSkuQuantity(shipment, sku);
     @defineDocumentInterfaceHeaderSum(shipment);
@@ -56,6 +58,7 @@ META defineShipment(skuLedger, sign, contact, partyA, partyB)
         OBJECTS d = userShipmentDetail
         PROPERTIES (d) indexUserShipmentDetail, idBarcodeSkuUserShipmentDetail, nameSkuUserShipmentDetail, shortNameUOMSkuUserShipmentDetail,
                        quantityUserShipmentDetail, priceUserShipmentDetail, sumUserShipmentDetail,
+                       sumShipmentDetail, numberVATShipmentDetail, valueVATShipmentDetail,
                        nameStockUserShipmentDetail, ADDOBJ, delete
 
         PROPERTIES(s) TODRAW d addDetailDialogSkuStockUserShipmentDetailUserShipment,
@@ -122,6 +125,7 @@ META defineShipment(skuLedger, sign, contact, partyA, partyB)
         OBJECTS d = userShipmentDetail
         PROPERTIES (d) READONLY indexUserShipmentDetail, idBarcodeSkuUserShipmentDetail, nameSkuUserShipmentDetail, shortNameUOMSkuUserShipmentDetail,
                                 quantityUserShipmentDetail, priceUserShipmentDetail, sumUserShipmentDetail,
+                                sumShipmentDetail, numberVATShipmentDetail, valueVATShipmentDetail,
                                 nameStockUserShipmentDetail
         FILTERS userShipmentUserShipmentDetail(d) == s
 
@@ -164,21 +168,30 @@ META defineShipment(skuLedger, sign, contact, partyA, partyB)
     }
 
 //--  Связь накладной и поставки
-    invoiceShipmentDetail = ABSTRACT invoice (shipmentDetail);
-    invoiceUserShipmentDetail = DATA invoice (userShipmentDetail);
-    invoiceShipmentDetail(shipmentDetail) += invoiceUserShipmentDetail(shipmentDetail);
+    invoiceDetailShipmentDetail = ABSTRACT invoiceDetail (shipmentDetail);
+    invoiceDetailUserShipmentDetail = DATA invoiceDetail (userShipmentDetail);
+    invoiceDetailShipmentDetail(shipmentDetail) += invoiceDetailUserShipmentDetail(shipmentDetail);
 
-    CONSTRAINT contact###ShipmentDetail(shipmentDetail) != contact###Invoice(invoiceUserShipmentDetail(shipmentDetail)) OR
-               companyUserShipment(shipmentDetail) != companyInvoice(invoiceUserShipmentDetail(shipmentDetail))
-        CHECKED BY invoiceUserShipmentDetail
-            MESSAGE 'Покупатель и компания в накладной и поставке должны соответствовать друг другу';
+    CONSTRAINT contact###ShipmentDetail(detail) != contact###InvoiceDetail(invoiceDetailUserShipmentDetail(detail)) OR
+               companyUserShipment(detail) != companyInvoice(invoiceDetailUserShipmentDetail(detail)) OR
+               skuUserShipmentDetail(detail) != skuInvoiceDetail(invoiceDetailUserShipmentDetail(detail))
+        CHECKED BY invoiceDetailUserShipmentDetail
+            MESSAGE 'Покупатель, компания и товар в накладной и поставке должны соответствовать друг другу';
+
 
     GROUP invoiceGroup 'Информация о накладной' : baseGroup;
 
-    descriptionInvoiceInvoiceShipmentDetail 'Накладная' (shipmentDetail) = descriptionInvoice(invoiceShipmentDetail(shipmentDetail)) IN orderGroup;
-    descriptionInvoiceUserShipmentDetail 'Накладная' (userShipmentDetail) = descriptionInvoice(invoiceUserShipmentDetail(userShipmentDetail)) IN invoiceGroup;
+    descriptionInvoiceDetailShipmentDetail 'Накладная' (shipmentDetail) =
+        [FORMULA STRING[200]  ' CAST($1 AS TEXT) || \', позиция \' || \'  \' || CAST($2 AS TEXT)'](
+        descriptionInvoiceDetail(invoiceDetailShipmentDetail(shipmentDetail)), indexInvoiceDetail(invoiceDetailShipmentDetail(shipmentDetail))) MINCHARWIDTH 30 PREFCHARWIDTH 50;
 
-    inInvoiceShipment (invoice, shipment) = GROUP SUM quantityShipmentDetail(shipmentDetail) BY invoiceShipmentDetail(shipmentDetail), shipmentShipmentDetail(shipmentDetail);
+    descriptionInvoiceDetailUserShipmentDetail 'Накладная' (userShipmentDetail) =
+        [FORMULA STRING[200]  ' CAST($1 AS TEXT) || \', позиция \' || \'  \' || CAST($2 AS TEXT)'](
+        descriptionInvoiceDetail(invoiceDetailUserShipmentDetail(userShipmentDetail)), indexInvoiceDetail(invoiceDetailUserShipmentDetail(userShipmentDetail))) MINCHARWIDTH 30 PREFCHARWIDTH 50;
+
+    descriptionInvoiceUserShipmentDetail 'Накладная' (userShipmentDetail) = descriptionInvoiceDetail(invoiceDetailUserShipmentDetail(userShipmentDetail)) IN invoiceGroup;
+
+    inInvoiceShipment (invoice, shipment) = GROUP SUM quantityShipmentDetail(shipmentDetail) BY invoiceInvoiceDetail(invoiceDetailShipmentDetail(shipmentDetail)), shipmentShipmentDetail(shipmentDetail);
 
     invoicesShipment 'Накладные' (shipment) = GROUP CONCAT castToString255(descriptionInvoice(invoice)) IF inInvoiceShipment(invoice, shipment) , ', '
                                                     BY shipment
@@ -188,13 +201,8 @@ META defineShipment(skuLedger, sign, contact, partyA, partyB)
 
 //-- Подсчет к-ва в паставках
 
-    shippedInvoiceSku 'Кол-во (поставлено)' (invoice, sku) = [GROUP SUM quantityShipmentDetail(shipmentDetail) IF isPostedShipmentDetail(shipmentDetail)
-        BY invoiceShipmentDetail(shipmentDetail), skuShipmentDetail(shipmentDetail)](invoice, sku) AND isPostedInvoice(invoice);
-
-    shippedInvoiceDetail 'Кол-во (поставлено)' (invoiceDetail) = PARTITION UNGROUP shippedInvoiceSku
-                                                              LIMIT STRICT quantityInvoiceDetail (invoiceDetail) AND isPostedInvoiceDetail(invoiceDetail)
-                                                              BY invoiceInvoiceDetail(invoiceDetail), skuInvoiceDetail(invoiceDetail)
-                                                              ORDER invoiceDetail;
+    shippedInvoiceDetail 'Кол-во (поставлено)' (invoiceDetail) = [GROUP SUM quantityShipmentDetail(shipmentDetail) IF isPostedShipmentDetail(shipmentDetail)
+                                                                     BY invoiceDetailShipmentDetail(shipmentDetail)](invoiceDetail) AND isPostedInvoiceDetail(invoiceDetail);
 
     EXTEND FORM userInvoice
         PROPERTIES(d) READONLY shippedInvoiceDetail AFTER quantityUserInvoiceDetail
@@ -304,9 +312,6 @@ META defineShipment(skuLedger, sign, contact, partyA, partyB)
     }
 
     fillBatchUserShipmentDetail = ABSTRACT ACTION (userShipmentDetail, invoiceDetail);
-    fillVATUserShipmentDetail = ABSTRACT ACTION (userShipmentDetail, invoiceDetail);
-    fillVATSumUserShipmentDetail = ABSTRACT ACTION (userShipmentDetail, invoiceDetail);
-    fillInvoiceSumUserShipmentDetail = ABSTRACT ACTION (userShipmentDetail, invoiceDetail);
 
     fillInvoiceUserShipment 'Заполнить поставку на основании накладной' =  ACTION (userShipment) {
         LOCAL saleInvoice = invoice();
@@ -317,17 +322,15 @@ META defineShipment(skuLedger, sign, contact, partyA, partyB)
 
             FOR invoiceInvoiceDetail(invoiceDetail) == saleInvoice() AND stockInvoiceDetail(invoiceDetail) ==stockUserShipment(userShipment) AND diffShippedInvoiceDetail(invoiceDetail)>0 AND isPostedInvoiceDetail(invoiceDetail) ADDOBJ d = userShipmentDetail DO {
 
+                SET invoiceDetailUserShipmentDetail(d) <- invoiceDetail;
                 SET userShipmentUserShipmentDetail(d) <- userShipment;
-                SET invoiceUserShipmentDetail(d) <- saleInvoice();
                 SET orderUserShipmentDetail(d) <- orderInvoiceDetail(invoiceDetail);
-    //            SET stockUserShipmentDetail (d) <- stockInvoiceDetail(invoiceDetail);
+
                 SET skuUserShipmentDetail(d) <- skuInvoiceDetail(invoiceDetail);
                 SET quantityUserShipmentDetail (d) <- diffShippedInvoiceDetail(invoiceDetail);
+                SET VATUserShipmentDetail (d) <- VATInvoiceDetail(invoiceDetail);
 
                 EXEC fillBatchUserShipmentDetail(d, invoiceDetail);
-                EXEC fillVATUserShipmentDetail(d, invoiceDetail);
-                EXEC fillVATSumUserShipmentDetail(d, invoiceDetail);
-                EXEC fillInvoiceSumUserShipmentDetail(d, invoiceDetail);
             }
         }
     } IN invoiceGroup;
@@ -461,7 +464,7 @@ META defineShipment(skuLedger, sign, contact, partyA, partyB)
     EXTEND DESIGN userShipment { headerColumn2 { ADD s.invoiceGroup; ADD s.orderGroup;} }
     EXTEND FORM userShipments
         PROPERTIES(s) READONLY invoicesShipment, ordersShipment
-        PROPERTIES(d) READONLY descriptionInvoiceUserShipmentDetail, descriptionOrderUserShipmentDetail
+        PROPERTIES(d) READONLY descriptionInvoiceDetailUserShipmentDetail, descriptionOrderUserShipmentDetail
     ;
 
 //-- аггр.объект
@@ -543,8 +546,11 @@ META defineShipment(skuLedger, sign, contact, partyA, partyB)
     sumInvoiceShipmentDetail(invoiceShipmentDetail) = shipmentSumInvoiceDetail(invoiceDetailInvoiceShipmentDetail(invoiceShipmentDetail));
     sumShipmentDetail(shipmentDetail) += sumInvoiceShipmentDetail(shipmentDetail);
 
-    invoiceInvoiceShipmentDetail(invoiceShipmentDetail) = invoiceInvoiceDetail(invoiceDetailInvoiceShipmentDetail(invoiceShipmentDetail));
-    invoiceShipmentDetail(shipmentDetail) += invoiceInvoiceShipmentDetail(shipmentDetail);
+    invoiceDetailShipmentDetail(shipmentDetail) += invoiceDetailInvoiceShipmentDetail(shipmentDetail);
+
+    @defineDocumentAggregationDetailProp (invoice, invoiceShipment, VAT, 'НДС');
+    VATShipmentDetail (shipmentDetail) += VATInvoiceShipmentDetail(shipmentDetail);
+
 
     FORM dialogShipments 'Поставки (все)'###sign
         OBJECTS s = shipment
@@ -555,8 +561,8 @@ META defineShipment(skuLedger, sign, contact, partyA, partyB)
 
         OBJECTS d = shipmentDetail
         PROPERTIES (d) READONLY indexShipmentDetail, idBarcodeSkuShipmentDetail, nameSkuShipmentDetail, shortNameUOMSkuShipmentDetail,
-                                quantityShipmentDetail, priceShipmentDetail, sumShipmentDetail,
-                                nameStockShipmentDetail, descriptionInvoiceInvoiceShipmentDetail, descriptionOrderShipmentDetail
+                                quantityShipmentDetail, priceShipmentDetail, sumShipmentDetail, numberVATShipmentDetail, valueVATShipmentDetail,
+                                nameStockShipmentDetail, descriptionInvoiceDetailShipmentDetail, descriptionOrderShipmentDetail
         FILTERS shipmentShipmentDetail(d) == s
 
         DIALOG shipment OBJECT s
@@ -580,6 +586,7 @@ META defineShipment(skuLedger, sign, contact, partyA, partyB)
             }
         }
     }
+
 END
 
 META defineShipmentBatch(dumb)

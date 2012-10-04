@@ -9,6 +9,7 @@ NAMESPACE SaleReturn;
 //----------------------------------------------- Поставка ---------------------------------------------------//
 
 @defineShipment(inLIFOSkuLedger, ' (продажа-возврат)', customer, company, customer);
+@defineShipmentBatch();
 
 // Берем учетную цену
 @deriveDocumentDetailPriceBatchStockPrefix(userInvoice, shipment);

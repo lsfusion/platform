@@ -15,7 +15,7 @@ NAVIGATOR {
             ADD Sale.userOrders;
             ADD Sale.userInvoices;
             ADD Sale.userShipments;
-    //      ADD dialogShipments;
+//            ADD Sale.dialogShipments;
         }
         NEW saleReturnNavigator 'Возвраты' {
             ADD SaleReturn.userOrders;

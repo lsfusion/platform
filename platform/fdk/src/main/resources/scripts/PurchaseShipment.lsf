@@ -9,43 +9,6 @@ NAMESPACE Purchase;
 
 @defineShipment(batch, ' (покупка)', supplier, supplier, company);
 
-//-- добавляем НДС и суммы
-
-@defineDocumentInterfaceDetailVAT(shipment, countryStock);
-//@defineDocumentInterfaceDetailVATDataSum (shipment);
-@defineDocumentInterfaceDetailVATDataSumCustom(shipmentDetail, invoice);
-@deriveDocumentDetailVATSum(userShipment);
-@defineDocumentInterfaceHeaderVATSumPrefix(shipment, shipmentDetail, invoice);
-
-fillVATUserShipmentDetail (sd, id) += ACTION SET VATUserShipmentDetail (sd) <- VATInvoiceDetail(id);
-fillVATSumUserShipmentDetail (sd, id) += ACTION SET VATSumUserShipmentDetail (sd) <- VATSumInvoiceDetail(id);
-fillInvoiceSumUserShipmentDetail (sd, id) += ACTION SET invoiceSumUserShipmentDetail (sd) <- invoiceSumInvoiceDetail(id);
-
-
-@defineDocumentAggregationDetailProp (invoice, invoiceShipment, VAT, 'НДС');
-VATShipmentDetail (shipmentDetail) += VATInvoiceShipmentDetail(shipmentDetail);
-numberVATInvoiceShipmentDetail 'НДС, номер' (invoiceShipmentDetail) = numberRange(VATInvoiceShipmentDetail(invoiceShipmentDetail));
-valueVATInvoiceShipmentDetail 'НДС, %' (invoiceShipmentDetail) = valueRateRangeDate(VATInvoiceShipmentDetail(invoiceShipmentDetail), dateInvoiceShipmentDetail(invoiceShipmentDetail));
-
-@defineDocumentAggregationDetailProp (invoice, invoiceShipment, VATSum, 'Сумма НДС');
-VATSumShipmentDetail (shipmentDetail) += VATSumInvoiceShipmentDetail(shipmentDetail);
-
-@defineDocumentAggregationDetailProp (invoice, invoiceShipment, invoiceSum, 'Сумма с НДС');
-//invoiceSumShipmentDetail (shipmentDetail) += invoiceSumInvoiceShipmentDetail(shipmentDetail);
-
-EXTEND FORM userShipment
-    PROPERTIES (d) AFTER sumUserShipmentDetail
-                   invoiceSumUserShipmentDetail, VATSumUserShipmentDetail, valueVATUserShipmentDetail, numberVATUserShipmentDetail
-;
-EXTEND FORM userShipments
-    PROPERTIES (d) READONLY AFTER sumUserShipmentDetail
-                   invoiceSumUserShipmentDetail, VATSumUserShipmentDetail, valueVATUserShipmentDetail, numberVATUserShipmentDetail
-;
-EXTEND FORM dialogShipments
-    PROPERTIES (d) READONLY  AFTER sumShipmentDetail
-                   invoiceSumShipmentDetail, VATSumShipmentDetail, valueVATShipmentDetail, numberVATShipmentDetail
-;
-
 // Проводим по регистру
 
 @implementBatch(shipment, sku, stock, price);
