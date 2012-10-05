@@ -13,6 +13,7 @@ REQUIRE System,
         RetailPrice,
         Barcode,
         MasterData,
+        RetailPrice,
         RomanLogicsModule;
 
 PRIORITY Stock, RomanLogicsModule;
@@ -255,9 +256,6 @@ fillWHfromRFDetailsSkuFreightUnit 'Заполнить строки из коро
     }
 } EDITKEY 'F5' CONFIRM;
 
-shouldBePrintWHfromRF = SESSION DATA BOOLEAN (sku);
-countSku = SESSION DATA INTEGER (sku);
-
 quantitySkuFreightUnitWHfromRF (sku, freightUnit, WHfromRF) = quantitySkuFreightUnitFreight(sku, freightUnit, freightWHfromRF(WHfromRF));
 quantityPositionsSkuInWHfromRFFreightUnit 'Кол-во позиций в коробе' (WHfromRF, freightUnit) =
     GROUP SUM 1 IF quantitySkuFreightUnitWHfromRF(sku, freightUnit, WHfromRF) BY WHfromRF, freightUnit;
@@ -292,48 +290,24 @@ CONSTRAINT WHfromRF IS WHfromRF AND NOT isWHfromRFFreight(freightWHfromRF(WHfrom
 
 quantitySkuInWHfromRFWHfromRFDetail 'Кол-во принятое' (WHfromRFDetail) = quantitySkuInWHfromRF(WHfromRFWHfromRFDetail(WHfromRFDetail), skuWHfromRFDetail(WHfromRFDetail));
 
-FORM printMarksWHfromRF 'Печать маркировок товара' PRINT
-
-    OBJECTS dt = DATETIME FIXED PANEL
-    PROPERTIES(dt) OBJVALUE
-
-    OBJECTS imp = company FIXED PANEL
-    PROPERTIES(imp) OBJVALUE, name, addressLegalEntity, languageLegalEntity, localeLanguageCompany
-
-    OBJECTS c = currency FIXED PANEL
-    PROPERTIES(c) name, shortNameCurrency
-
-    OBJECTS s = sku
-    PROPERTIES(s) READONLY sidArticleSku, sidSizeSupplierItem, nameCommonSizeSku, sidGenderArticleSku, nameCategoryArticleSku,
-                           mainCompositionSku, additionalCompositionSku, nameCountryBrandSupplierSku, nameBrandSupplierArticleSku, barcode, nameCountrySku,
-                           sidColorSupplierItem, nameColorSupplierItem, nameSupplierArticleSku, addressSupplierArticleSku, warrantySku, countSku
-
-    PROPERTIES(s, imp)     READONLY mainCompositionSkuCompany, additionalCompositionSkuCompany, nameCategoryArticleSkuCompany, sidGenderArticleSkuCompany,
-                           nameCountrySkuCompany, nameCountryBrandSupplierSkuCompany
-
-    PROPERTIES(s, c, dt)   priceABasePriceSetDocumentSkuCurrencyDateTime, priceADiscountPriceSetDocumentSkuCurrencyDateTime
-    PROPERTIES(imp, s)     nameImporterSku, addressImporterSku
-
-    FILTERS shouldBePrintWHfromRF(s)
-;
 
 printMarksSkuFreightUnit 'Печать маркировок товаров' (WHfromRF) = ACTION (WHfromRF) {
 
-    SET shouldBePrintWHfromRF(sku) <- NULL;
+    SET shouldBePrintSku(sku) <- NULL;
     SET countSku(sku) <- NULL;
-    SET shouldBePrintWHfromRF(sku) <- TRUE IF quantitySkuFreightUnitWHfromRF(sku, currentFreightUnit(WHfromRF), WHfromRF);
+    SET shouldBePrintSku(sku) <- TRUE IF quantitySkuFreightUnitWHfromRF(sku, currentFreightUnit(WHfromRF), WHfromRF);
     SET countSku(sku) <- castToInteger(quantitySkuFreightUnitWHfromRF(sku, currentFreightUnit(WHfromRF), WHfromRF));
-    FORM printMarksWHfromRF OBJECTS dt = dateTimeWHfromRF(WHfromRF), imp = companyWHfromRF(WHfromRF), c = currencyStock(stockWHfromRF(WHfromRF)) MODAL;
+    FORM printMarksDocument OBJECTS dt = dateTimeWHfromRF(WHfromRF), imp = companyWHfromRF(WHfromRF), c = currencyStock(stockWHfromRF(WHfromRF)) MODAL;
 
 } CONFIRM;
 
 printMarksSkuWHfromRF 'Печать маркировок товаров' (WHfromRF) = ACTION (WHfromRF) {
 
-    SET shouldBePrintWHfromRF(sku) <- NULL;
+    SET shouldBePrintSku(sku) <- NULL;
     SET countSku(sku) <- NULL;
-    SET shouldBePrintWHfromRF(sku) <- TRUE IF quantitySkuInWHfromRF(WHfromRF, sku);
+    SET shouldBePrintSku(sku) <- TRUE IF quantitySkuInWHfromRF(WHfromRF, sku);
     SET countSku(sku) <- castToInteger(quantitySkuInWHfromRF(WHfromRF, sku));
-    FORM printMarksWHfromRF OBJECTS dt = dateTimeWHfromRF(WHfromRF), imp = companyWHfromRF(WHfromRF), c = currencyStock(stockWHfromRF(WHfromRF)) MODAL;
+    FORM printMarksDocument OBJECTS dt = dateTimeWHfromRF(WHfromRF), imp = companyWHfromRF(WHfromRF), c = currencyStock(stockWHfromRF(WHfromRF)) MODAL;
 
 } CONFIRM TOOLBAR;
 

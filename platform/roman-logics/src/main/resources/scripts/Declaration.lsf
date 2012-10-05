@@ -1257,7 +1257,7 @@ FORM declarations 'Декларации'
                            rateExchangeCustomDataDeclaration, rateExchangeManagerialDataDeclaration, sumRegistrationUnionDeclaration,
                            dutyReverseDeclaration, VATReverseDeclaration, totalCustomSum,
                            expenseCertificateDeclaration, canonicalBrandDeclaration
-    PROPERTIES(d) FORCE PANEL exportDeclaration DRAWTOTOOLBAR, ADDFORM, EDITFORM, delete DRAWTOTOOLBAR
+    PROPERTIES(d) FORCE PANEL ADDFORM, EDITFORM, delete DRAWTOTOOLBAR
 
     OBJECTS dd=declarationDetail
     PROPERTIES(dd) READONLY numberDeclarationDetail, sidInnerInvoiceDeclarationDetail, barcodeDeclarationDetail, nameInvoiceDeclarationDetail,

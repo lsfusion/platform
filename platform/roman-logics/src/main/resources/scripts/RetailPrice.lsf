@@ -230,6 +230,7 @@ statusPriceSetDocument 'Статус' (priceSetDocument) = IF isPostedPriceSetDo
 
 // Основание
 freightBasePriceSetDocument = DATA freight(basePriceSetDocument);
+importerBasePriceSetDocument = DATA importer(basePriceSetDocument);
 
 userReasonPriceSetDocument 'Основание прайса' = DATA STRING[100] (priceSetDocument);
 reasonPriceSetDocument 'Основание прайса' (priceSetDocument) = UNION OVERRIDE seriesNumberObject(freightBasePriceSetDocument (priceSetDocument)),
@@ -1144,14 +1145,21 @@ DESIGN priceSetDocuments FROM DEFAULT {
 
 // -------------------------------------------- Расценка фрахтов ------------------------------------------ //
 
-quantityPriceSetDocumentFreight (freight) = GROUP SUM 1 IF freightBasePriceSetDocument(basePriceSetDocument) BY freightBasePriceSetDocument(basePriceSetDocument);
-hasPriceSetDocumentFreight (freight) = TRUE IF NOT quantityPriceSetDocumentFreight(freight) AND freight IS freight;
+quantityPriceSetDocumentFreightImporter (freight, importer) =
+    GROUP SUM 1 IF freightBasePriceSetDocument(basePriceSetDocument) AND importerBasePriceSetDocument(basePriceSetDocument)
+    BY freightBasePriceSetDocument(basePriceSetDocument), importerBasePriceSetDocument(basePriceSetDocument);
 
-isPriceSetFreight 'Статус' (freight) = IF hasPriceSetDocumentFreight(freight)
-                                     THEN 'Не расценен' AND freight IS freight
-                                     ELSE 'Расценен' AND freight IS freight MINCHARWIDTH 11;
+hasPriceSetDocumentFreightImporter (freight, importer) = TRUE IF NOT quantityPriceSetDocumentFreightImporter(freight, importer)
+    AND freight IS freight AND importer IS importer;
 
-backgroundPriceSetDocument 'Цвет' (freight) = RGB(212,255,212) IF hasPriceSetDocumentFreight(freight);
+//quantityPriceSetDocumentFreight (freight) = GROUP SUM 1 IF freightBasePriceSetDocument(basePriceSetDocument) BY freightBasePriceSetDocument(basePriceSetDocument);
+//hasPriceSetDocumentFreight (freight) = TRUE IF NOT quantityPriceSetDocumentFreight(freight) AND freight IS freight;
+
+isPriceSetFreightImporter 'Статус' (freight, importer) = IF hasPriceSetDocumentFreightImporter(freight, importer)
+                                     THEN 'Не расценен' AND freight IS freight AND importer IS importer
+                                     ELSE 'Расценен' AND freight IS freight AND importer IS importer MINCHARWIDTH 11;
+
+backgroundPriceSetDocument 'Цвет' (freight, importer) = RGB(212,255,212) IF hasPriceSetDocumentFreightImporter(freight, importer);
 
 typeExchangeRetailCurrency =  DATA typeExchange(currency);
 nameTypeExchangeRetailCurrency 'Тип обмена для розницы' (currency) = name(typeExchangeRetailCurrency(currency));
@@ -1159,10 +1167,11 @@ EXTEND FORM currency PROPERTIES(c) nameTypeExchangeRetailCurrency;
 EXTEND FORM currencies PROPERTIES(c) READONLY nameTypeExchangeRetailCurrency;
 
 // розничный прайс по фрахту
-createPriceSetDocument 'Расценить по артикулам' =  ACTION (freight) NEWSESSION {
+createPriceSetDocument 'Расценить по артикулам' =  ACTION (freight, importer) NEWSESSION {
     ADDOBJ basePriceSetDocument;
     FOR p == addedObject() DO {
         SET freightBasePriceSetDocument(p) <- freight;
+        SET importerBasePriceSetDocument(p) <- importer;
         SET currencyPriceSetDocument(p) <- currencyCountryFreight(freight);
         SET inPriceSetDocumentArticle(p, article) <- TRUE IF quantityFreightArticle(freight, article);
         SET priceInBasePriceSetDocumentArticle(p, article) <- priceInFreightArticle(freight, article);
@@ -1179,10 +1188,11 @@ createPriceSetDocument 'Расценить по артикулам' =  ACTION (f
 } TOOLBAR;
 
 
-createPriceSetDocumentSku 'Расценить по товарам' =  ACTION (freight) NEWSESSION {
+createPriceSetDocumentSku 'Расценить по товарам' =  ACTION (freight, importer) NEWSESSION {
     ADDOBJ basePriceSetDocument;
     FOR p == addedObject() DO {
         SET freightBasePriceSetDocument(p) <- freight AS freight;
+        SET importerBasePriceSetDocument(p) <- importer;
         SET currencyPriceSetDocument(p) <- currencyCountryFreight(freight);
         SET inPriceSetDocumentSku(p, sku) <- TRUE IF quantityFreightSku(freight, sku);
         SET priceInBasePriceSetDocumentSku(p, sku) <- priceInFreightSku(freight, sku);
@@ -1202,16 +1212,78 @@ createPriceSetDocumentSku 'Расценить по товарам' =  ACTION (fr
 FORM freights 'Расценка фрахтов'
 
     OBJECTS f = freightComplete
-    PROPERTIES(f) READONLY isPriceSetFreight BACKGROUND backgroundPriceSetDocument(f), numberObject, seriesObject, date, objectClassName,
+    PROPERTIES(f) READONLY numberObject, seriesObject, date, objectClassName,
                   canonicalBrandFreight, dateArrivalFreight, nameRouteFreight, nameExporterFreight, grossWeightFreight
-    PROPERTIES(f) FORCE PANEL createPriceSetDocument SHOWIF hasPriceSetDocumentFreight(f), createPriceSetDocumentSku SHOWIF hasPriceSetDocumentFreight(f)
+//    PROPERTIES(f) FORCE PANEL createPriceSetDocument SHOWIF hasPriceSetDocumentFreight(f), createPriceSetDocumentSku SHOWIF hasPriceSetDocumentFreight(f)
 
-    FILTERGROUP filtersDocument
-        FILTER 'Показывать нерасценённые фрахты' 'F11' hasPriceSetDocumentFreight(f) DEFAULT
+//    FILTERGROUP filtersDocument
+//        FILTER 'Показывать нерасценённые фрахты' 'F11' hasPriceSetDocumentFreight(f)
+
+    OBJECTS i = importer
+    PROPERTIES(f, i) READONLY isPriceSetFreightImporter BACKGROUND backgroundPriceSetDocument(f, i)
+    PROPERTIES(i) READONLY name, sidImporter
+    FILTERS quantityImporterFreight (i, f)
 ;
 
 
 EXTEND FORM salesSkuStock
     PROPERTIES FORCE GRID nameCategoryArticleSku(s) BEFORE name(st), nameBrandSupplierArticleSku(s) BEFORE name(st), sidColorSupplierItem(s) BEFORE name(st), sidSizeSupplierItem(s) BEFORE name(st)
 
+;
+
+//Печать марккировки
+countSku = SESSION DATA INTEGER (sku);
+
+FORM printMarksDocument 'Печать маркировок товара' PRINT
+
+    OBJECTS dt = DATETIME FIXED PANEL
+    PROPERTIES(dt) OBJVALUE
+
+    OBJECTS imp = company FIXED PANEL
+    PROPERTIES(imp) OBJVALUE, name, addressLegalEntity, languageLegalEntity, localeLanguageCompany
+
+    OBJECTS c = currency FIXED PANEL
+    PROPERTIES(c) name, shortNameCurrency
+
+    OBJECTS s = sku
+    PROPERTIES(s) READONLY sidArticleSku, sidSizeSupplierItem, nameCommonSizeSku, sidGenderArticleSku, nameCategoryArticleSku,
+                           mainCompositionSku, additionalCompositionSku, nameCountryBrandSupplierSku, nameBrandSupplierArticleSku, barcode, nameCountrySku,
+                           sidColorSupplierItem, nameColorSupplierItem, nameSupplierArticleSku, addressSupplierArticleSku, warrantySku, countSku
+
+    PROPERTIES(s, imp)     READONLY mainCompositionSkuCompany, additionalCompositionSkuCompany, nameCategoryArticleSkuCompany, sidGenderArticleSkuCompany,
+                           nameCountrySkuCompany, nameCountryBrandSupplierSkuCompany
+
+    PROPERTIES(s, c, dt)   priceABasePriceSetDocumentSkuCurrencyDateTime, priceADiscountPriceSetDocumentSkuCurrencyDateTime
+    PROPERTIES(imp, s)     nameImporterSku, addressImporterSku
+
+    FILTERS shouldBePrintSku(s)
+;
+
+printMarksSkuPriceSetDocument 'Печать маркировок товаров' (priceSetDocument) = ACTION (priceSetDocument) {
+
+    SET shouldBePrintSku(sku) <- NULL;
+    SET countSku(sku) <- NULL;
+    SET shouldBePrintSku(sku) <- TRUE IF quantityFreightSku(freightBasePriceSetDocument(priceSetDocument), sku);
+    SET countSku(sku) <- castToInteger(quantityFreightSku(freightBasePriceSetDocument(priceSetDocument), sku));
+    FORM printMarksDocument OBJECTS dt = dateTimePriceSetDocument(priceSetDocument), c = currencyPriceSetDocument(priceSetDocument) MODAL;            //imp = companyStock(stockWHfromCSR(WHfromCSR)),
+
+} CONFIRM;
+
+//EXTEND FORM priceSetDocument
+//    PROPERTIES (p) printMarksSkuPriceSetDocument
+//;
+
+printMarksSkuFreight 'Печать маркировок товаров' (freight, importer) = ACTION (freight, importer) {
+
+    SET shouldBePrintSku(sku) <- NULL;
+    SET countSku(sku) <- NULL;
+    SET shouldBePrintSku(sku) <- TRUE IF quantityImporterFreightSku(importer, freight, sku);
+    SET countSku(sku) <- castToInteger(quantityImporterFreightSku(importer, freight, sku));
+    FORM printMarksDocument OBJECTS dt = currentDateTime(), imp = importer, c = currencyFreight(freight) MODAL;
+
+} CONFIRM;
+
+EXTEND FORM freights
+    PROPERTIES (f, i) printMarksSkuFreight
+    PROPERTIES (f,i) createPriceSetDocument, createPriceSetDocumentSku
 ;

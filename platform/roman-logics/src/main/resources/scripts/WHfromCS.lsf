@@ -14,6 +14,7 @@ REQUIRE System,
         InnerOrder,
         Barcode,
         MasterData,
+        RetailPrice,
         RomanLogicsModule;
 
 PRIORITY RomanLogicsModule, Stock;
@@ -307,9 +308,6 @@ fillWHfromCSRDetailsSkuFreightUnit 'Заполнить строки из кор�
     }
 } EDITKEY 'F5' CONFIRM;
 
-shouldBePrintWHfromCSR = SESSION DATA BOOLEAN (sku);
-countSku = SESSION DATA INTEGER (sku);
-
 quantityWHfromCSRFreightUnitSku (WHfromCSR, freightUnit, sku) = quantityCStoWHFreightUnitSku(CStoWHWHfromCSI(WHfromCSIWHfromCSR(WHfromCSR)), freightUnit, sku);
 quantityOriginWHfromCSRSku (WHfromCSR, sku) = GROUP SUM quantityWHfromCSRFreightUnitSku(WHfromCSR, freightUnit, sku) BY WHfromCSR, sku;
 
@@ -358,48 +356,23 @@ quantitySkuWHfromCSRWHfromCSRDetail 'Кол-во принятое' (WHfromCSRDet
 
 CONSTRAINT currentFreightUnit(WHfromCSR) IS freightUnit AND NOT quantitySkuInFreightUnitWHfromCSR(WHfromCSR) CHECKED BY currentFreightUnit MESSAGE 'Короб должен быть из текущей поставки';
 
-FORM printMarksWHfromCSR 'Печать маркировок товара' PRINT
-
-    OBJECTS dt = DATETIME FIXED PANEL
-    PROPERTIES(dt) OBJVALUE
-
-    OBJECTS imp = company FIXED PANEL
-    PROPERTIES(imp) OBJVALUE, name, addressLegalEntity, languageLegalEntity, localeLanguageCompany
-
-    OBJECTS c = currency FIXED PANEL
-    PROPERTIES(c) name, shortNameCurrency
-
-    OBJECTS s = sku
-    PROPERTIES(s) READONLY sidArticleSku, sidSizeSupplierItem, nameCommonSizeSku, sidGenderArticleSku, nameCategoryArticleSku,
-                           mainCompositionSku, additionalCompositionSku, nameCountryBrandSupplierSku, nameBrandSupplierArticleSku, barcode, nameCountrySku,
-                           sidColorSupplierItem, nameColorSupplierItem, nameSupplierArticleSku, addressSupplierArticleSku, warrantySku, countSku
-
-    PROPERTIES(s, imp)     READONLY mainCompositionSkuCompany, additionalCompositionSkuCompany, nameCategoryArticleSkuCompany, sidGenderArticleSkuCompany,
-                           nameCountrySkuCompany, nameCountryBrandSupplierSkuCompany
-
-    PROPERTIES(s, c, dt)   priceABasePriceSetDocumentSkuCurrencyDateTime, priceADiscountPriceSetDocumentSkuCurrencyDateTime
-    PROPERTIES(imp, s)     nameImporterSku, addressImporterSku
-
-    FILTERS shouldBePrintWHfromCSR(s)
-;
-
 printMarksSkuFreightUnit 'Печать маркировок товаров' (WHfromCSR) = ACTION (WHfromCSR) {
 
-    SET shouldBePrintWHfromCSR(sku) <- NULL;
+    SET shouldBePrintSku(sku) <- NULL;
     SET countSku(sku) <- NULL;
-    SET shouldBePrintWHfromCSR(sku) <- TRUE IF quantitySkuFreightUnitCStoWH(sku, currentFreightUnit(WHfromCSR), CStoWHWHfromCSI(WHfromCSIWHfromCSR(WHfromCSR)));
+    SET shouldBePrintSku(sku) <- TRUE IF quantitySkuFreightUnitCStoWH(sku, currentFreightUnit(WHfromCSR), CStoWHWHfromCSI(WHfromCSIWHfromCSR(WHfromCSR)));
     SET countSku(sku) <- castToInteger(quantitySkuFreightUnitCStoWH(sku, currentFreightUnit(WHfromCSR), CStoWHWHfromCSI(WHfromCSIWHfromCSR(WHfromCSR))));
-    FORM printMarksWHfromCSR OBJECTS dt = dateTimeWHfromCSR(WHfromCSR), imp = companyStock(stockWHfromCSR(WHfromCSR)), c = currencyStock(stockWHfromCSR(WHfromCSR)) MODAL;
+    FORM printMarksDocument OBJECTS dt = dateTimeWHfromCSR(WHfromCSR), imp = companyStock(stockWHfromCSR(WHfromCSR)), c = currencyStock(stockWHfromCSR(WHfromCSR)) MODAL;
 
 } CONFIRM;
 
 printMarksSkuWHfromCSR 'Печать маркировок товаров' (WHfromCSR) = ACTION (WHfromCSR) {
 
-    SET shouldBePrintWHfromCSR(sku) <- NULL;
+    SET shouldBePrintSku(sku) <- NULL;
     SET countSku(sku) <- NULL;
-    SET shouldBePrintWHfromCSR(sku) <- TRUE IF quantitySkuInWHfromCSR(WHfromCSR, sku);
+    SET shouldBePrintSku(sku) <- TRUE IF quantitySkuInWHfromCSR(WHfromCSR, sku);
     SET countSku(sku) <- castToInteger(quantitySkuInWHfromCSR(WHfromCSR, sku));
-    FORM printMarksWHfromCSR OBJECTS dt = dateTimeWHfromCSR(WHfromCSR), imp = companyStock(stockWHfromCSR(WHfromCSR)), c = currencyStock(stockWHfromCSR(WHfromCSR)) MODAL;
+    FORM printMarksDocument OBJECTS dt = dateTimeWHfromCSR(WHfromCSR), imp = companyStock(stockWHfromCSR(WHfromCSR)), c = currencyStock(stockWHfromCSR(WHfromCSR)) MODAL;
 
 } CONFIRM TOOLBAR;
 
