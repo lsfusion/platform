@@ -466,7 +466,7 @@ META definePriceSetDocumentAggregations(document, caption)
     priceDocumentB###document##Article caption###' (предыдущая)' (document, article) = priceB###document##ArticleCurrencyDateTime(article, currencyPriceSetDocument(document), dateTimePriceSetDocument(document)) MINCHARWIDTH 15;
     prevPriceDocumentB###document##Article caption###' (предыдущая)' (document, article) = prevPriceB###document##ArticleCurrencyDateTime(article, currencyPriceSetDocument(document), dateTimePriceSetDocument(document)) MINCHARWIDTH 15;
 
-    priceA###document##Article caption###' (предыдущая)' (document, article) = priceA###document##ArticleCurrencyDateTime(article, currencyPriceSetDocument(document), dateTimePriceSetDocument(document)) MINCHARWIDTH 15;
+    priceA###document##Article caption###' (действующая)' (document, article) = priceA###document##ArticleCurrencyDateTime(article, currencyPriceSetDocument(document), dateTimePriceSetDocumentArticle(document, article)) MINCHARWIDTH 15;
 
     // ---------------------------------------- Sku ---------------------------------------- //
     order###document##Sku = LIST(overDateTimePriceSetDocumentSku(document, sku), document) IF overInPriceSetDocumentSku(document, sku) PERSISTENT;
@@ -502,7 +502,7 @@ META definePriceSetDocumentAggregations(document, caption)
     priceDocumentB###document##Sku caption###' (предыдущая)' (document, sku) = priceB###document##SkuCurrencyDateTime(sku, currencyPriceSetDocument(document), dateTimePriceSetDocument(document)) MINCHARWIDTH 15;
     prevPriceDocumentB###document##Sku caption###' (предыдущая)' (document, sku) = prevPriceB###document##SkuCurrencyDateTime(sku, currencyPriceSetDocument(document), dateTimePriceSetDocument(document)) MINCHARWIDTH 15;
 
-    priceA###document##Sku caption###' (предыдущая)' (document, sku) = priceA###document##SkuCurrencyDateTime(sku, currencyPriceSetDocument(document), dateTimePriceSetDocument(document)) MINCHARWIDTH 15;
+    priceA###document##Sku caption###' (действующая)' (document, sku) = priceA###document##SkuCurrencyDateTime(sku, currencyPriceSetDocument(document), dateTimePriceSetDocumentSku(document, sku)) MINCHARWIDTH 15;
 
 END
 
