@@ -1,6 +1,6 @@
 MODULE Sale;
 
-REQUIRE SaleShipment, SaleReturnShipment
+REQUIRE SaleShipment, SaleReturnShipment, SaleCreditNote, SaleReturnCreditNote
 ;
 
 //-----------------------------------------------------------------------------------------------------------//
@@ -10,20 +10,22 @@ currentReserveSaleSkuStock 'Текущий резерв'(sku, stock)  = Sale.cur
     SaleReturn.currentReserveSkuStock(sku, stock);
 
 NAVIGATOR {
-//    NEW saleNavigator 'Продажи' {
         NEW saleSaleNavigator 'Продажи' {
             ADD Sale.userOrders;
             ADD Sale.userInvoices;
             ADD Sale.userShipments;
-//            ADD Sale.dialogShipments;
+            ADD Sale.dialogShipments;
+            ADD Sale.userCreditNotes;
+//            ADD Sale.dialogCreditNotes;
+
         }
         NEW saleReturnNavigator 'Возвраты' {
             ADD SaleReturn.userOrders;
             ADD SaleReturn.userInvoices;
             ADD SaleReturn.userShipments;
-    //      ADD dialogShipments;
+            ADD SaleReturn.userCreditNotes;
+//            ADD SaleReturn.dialogCreditNotes;
         }
-//    }
 }
 
 

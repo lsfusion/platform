@@ -1,0 +1,377 @@
+MODULE CreditNote;
+
+REQUIRE Invoice, Shipment;
+
+//----------------------------------------------- Акт расхождения ---------------------------------------------------//
+
+META defineCreditNote(sign, contact, contactCaption)
+
+    CLASS ABSTRACT creditNote 'Акт расхождения'###sign ;
+    CLASS ABSTRACT creditNoteDetail 'Строка акта расхождения'###sign ;
+
+    CLASS userCreditNote 'Акт расхождения (польз.)'###sign : creditNote, historyObject, numeratedDocument;
+    CLASS userCreditNoteDetail 'Строка акта расхождения (польз.)'###sign : creditNoteDetail;
+    CLASS userCreditNotePosted 'Закрытый акта расхождения (польз.)'###sign : userCreditNote, postedObject;
+
+    @defineDocumentInterface(creditNote);
+
+    @defineDocumentInterfaceNumber(creditNote);
+
+    @defineDocumentInterfaceDataStock(creditNote, stock, 'Склад');
+    @defineDocumentInterfacePosted(creditNote);
+
+    @defineDocumentInterfaceDescription(creditNote, 'Акт расхождения'###sign);
+
+    @defineDocumentInterfaceCurrency(creditNote);
+    @deriveDocumentCurrency(userCreditNote, stock);
+
+    @defineDocumentInterface###contact(creditNote);
+
+    @defineDocumentInterfaceDetailSku(creditNote, sku);
+
+    @defineDocumentInterfaceDetailQuantity(creditNote);
+
+    @defineDocumentInterfaceDetailPrice(creditNote);
+
+    @defineDocumentInterfaceDetailDataSum(creditNote);
+    @deriveDocumentDetailSum(userCreditNote);
+
+    @defineDocumentInterfaceDetailVAT(creditNote, countryStock);
+    @defineDocumentInterfaceDetailVATDataSumCustom(creditNoteDetail, invoice);
+
+    @defineDocumentInterfaceHeaderQuantity(creditNote);
+    @defineDocumentHeaderSkuQuantity(creditNote, sku);
+    @defineDocumentInterfaceHeaderSum(creditNote);
+    @defineDocumentInterfaceHeaderVATSumPrefix(creditNote, creditNoteDetail, invoice);
+
+    @defineAddDetailDialogSkuStock(userCreditNote, sku, stock, dialogSku);
+    @defineAddDetailDialogBarcode(userCreditNote, sku);
+        
+
+// --------------------------- Формы --------------------------------- //
+
+    FORM userCreditNote 'Акт расхождения'###sign
+        OBJECTS c = userCreditNote FIXED PANEL
+        PROPERTIES (c) objectClassName, nameStockUserCreditNote, nameNumeratorObject, numberObject, seriesObject, dateUserCreditNote, timeUserCreditNote,
+                       name###contact###UserCreditNote, nameCurrencyUserCreditNote, noteUserCreditNote,
+                       countUserCreditNoteDetailUserCreditNote, quantityUserCreditNoteDetailUserCreditNote, sumUserCreditNoteDetailUserCreditNote,
+                       VATSumUserCreditNoteDetailUserCreditNote, invoiceSumUserCreditNoteDetailUserCreditNote
+
+        OBJECTS d = userCreditNoteDetail
+        PROPERTIES (d) indexUserCreditNoteDetail, idBarcodeSkuUserCreditNoteDetail, nameSkuUserCreditNoteDetail, shortNameUOMSkuUserCreditNoteDetail,
+                       quantityUserCreditNoteDetail, priceUserCreditNoteDetail, sumUserCreditNoteDetail,
+                       numberVATUserCreditNoteDetail, valueVATUserCreditNoteDetail, VATSumUserCreditNoteDetail, invoiceSumUserCreditNoteDetail,
+                       nameStockUserCreditNoteDetail, ADDOBJ, delete
+
+        PROPERTIES(c) TODRAW d addDetailDialogSkuStockUserCreditNoteDetailUserCreditNote,
+                               addDetailInputBarcodeUserCreditNoteDetailUserCreditNote, deleteUserCreditNoteDetailUserCreditNote
+        FILTERS userCreditNoteUserCreditNoteDetail(d) == c
+
+        EVENTS
+            ON OK EXEC prePostUserCreditNote(c)
+
+        EDIT userCreditNote OBJECT c
+    ;
+
+    DESIGN userCreditNote FROM DEFAULT{
+        main {
+            preferredSize = (1024, 768);
+
+            NEW header.box BEFORE d.box {
+                childConstraints = TO THE RIGHT;
+
+                NEW headerRow1 {
+                    childConstraints = TO THE BOTTOM;
+
+                    ADD c.documentHeaderGroup {
+                        childConstraints = TO THE RIGHT;
+                        ADD PROPERTY(objectClassName) { preferredCharWidth = 10; }
+                        ADD PROPERTY(nameStockUserCreditNote);
+                        ADD PROPERTY(nameNumeratorObject);
+                        ADD PROPERTY(numberObject);
+                        ADD PROPERTY(seriesObject);
+                        ADD PROPERTY(dateUserCreditNote);
+                        ADD PROPERTY(timeUserCreditNote);
+                    }
+
+                    NEW headerColumn2 {
+                        childConstraints = TO THE RIGHT;
+                        ADD c.documentPrmGroup;
+                    }
+                }
+
+                ADD c.documentSumGroup {
+                    childConstraints = TO THE BOTTOM;
+                }
+            }
+
+            d.panel{
+                childConstraints = TO THE BOTTOM;
+            }
+            PROPERTY(formOkAction) {
+                caption = 'Провести';
+            }
+        }
+    }
+
+    FORM userCreditNotes 'Акты расхождения'###sign
+        OBJECTS c = userCreditNote
+        PROPERTIES (c) READONLY isPostedUserCreditNote FORCE GRID, objectClassName, numberObject, seriesObject, dateUserCreditNote, timeUserCreditNote,
+                                nameStockUserCreditNote, name###contact###UserCreditNote, nameCurrencyUserCreditNote, noteUserCreditNote,
+                                countUserCreditNoteDetailUserCreditNote, quantityUserCreditNoteDetailUserCreditNote, sumUserCreditNoteDetailUserCreditNote,
+                                VATSumUserCreditNoteDetailUserCreditNote, invoiceSumUserCreditNoteDetailUserCreditNote
+
+        PROPERTIES (c) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
+
+        PROPERTIES (c) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
+
+        OBJECTS d = userCreditNoteDetail
+        PROPERTIES (d) READONLY indexUserCreditNoteDetail, idBarcodeSkuUserCreditNoteDetail, nameSkuUserCreditNoteDetail, shortNameUOMSkuUserCreditNoteDetail,
+                                quantityUserCreditNoteDetail, priceUserCreditNoteDetail, sumUserCreditNoteDetail,
+                                numberVATUserCreditNoteDetail, valueVATUserCreditNoteDetail, VATSumUserCreditNoteDetail, invoiceSumUserCreditNoteDetail,
+                                nameStockUserCreditNoteDetail
+        FILTERS userCreditNoteUserCreditNoteDetail(d) == c
+
+        DIALOG creditNote OBJECT c
+    ;
+
+    DESIGN userCreditNotes FROM DEFAULT {
+        PROPERTY (delete(c)) {
+            askConfirm = TRUE;
+        }
+
+        NEW documentContainer BEFORE functions.box {
+            type = SPLITV;
+            childConstraints = TO THE BOTTOM;
+
+            ADD c.box;
+
+            NEW documentDetail {
+                type = TABBED;
+
+                ADD d.box {
+                    title = 'Спецификация';
+                }
+                NEW documentHistory {
+                    title = 'История';
+
+                    ADD c.historyGroup;
+                    ADD c.postedGroup;
+                }
+                NEW printTab {
+                    title = 'Печатные формы';
+                    NEW printContainer {
+                        title = 'Печать';
+                        childConstraints = TO THE BOTTOM;
+                        fillVertical = 1.0; // todo : иначе кнопка не всегда показывается, нужно будет пофиксить как-нибудь
+                    }
+                }
+            }
+        }
+    }
+
+//--  Связь акта и накладной
+    invoiceDetailCreditNoteDetail = ABSTRACT invoiceDetail (creditNoteDetail);
+    invoiceDetailUserCreditNoteDetail = DATA invoiceDetail (userCreditNoteDetail);
+    invoiceDetailCreditNoteDetail(creditNoteDetail) += invoiceDetailUserCreditNoteDetail(creditNoteDetail);
+
+    CONSTRAINT contact###CreditNoteDetail(detail) != contact###InvoiceDetail(invoiceDetailUserCreditNoteDetail(detail)) OR
+               companyUserCreditNote(detail) != companyInvoice(invoiceDetailUserCreditNoteDetail(detail)) OR
+               skuUserCreditNoteDetail(detail) != skuInvoiceDetail(invoiceDetailUserCreditNoteDetail(detail))
+        CHECKED BY invoiceDetailUserCreditNoteDetail
+            MESSAGE contactCaption###', компания и товар в накладной и акте расхождения должны соответствовать друг другу';
+
+    quantityUserCreditNoteDetail (userCreditNoteDetail)  <- diffShippedInvoiceDetail(invoiceDetailUserCreditNoteDetail(userCreditNoteDetail))
+        WHEN CHANGED(invoiceDetailUserCreditNoteDetail(userCreditNoteDetail));
+
+    priceUserCreditNoteDetail (userCreditNoteDetail)  <- priceInvoiceDetail(invoiceDetailUserCreditNoteDetail(userCreditNoteDetail))
+        WHEN CHANGED(invoiceDetailUserCreditNoteDetail(userCreditNoteDetail));
+
+    sumUserCreditNoteDetail (userCreditNoteDetail)  <- roundCurrency((quantityUserCreditNoteDetail(userCreditNoteDetail) *
+        priceUserCreditNoteDetail(userCreditNoteDetail)), currencyInvoiceDetail(invoiceDetailUserCreditNoteDetail(userCreditNoteDetail)))
+        WHEN CHANGED(invoiceDetailUserCreditNoteDetail(userCreditNoteDetail));
+
+    VATUserCreditNoteDetail (userCreditNoteDetail)  <- VATInvoiceDetail(invoiceDetailUserCreditNoteDetail(userCreditNoteDetail))
+        WHEN CHANGED(invoiceDetailUserCreditNoteDetail(userCreditNoteDetail));
+
+    VATSumUserCreditNoteDetail (userCreditNoteDetail) <- roundCurrency((sumUserCreditNoteDetail(userCreditNoteDetail) *
+        valueVATUserCreditNoteDetail (userCreditNoteDetail) / 100), currencyInvoiceDetail(invoiceDetailUserCreditNoteDetail(userCreditNoteDetail)))
+        WHEN CHANGED(invoiceDetailUserCreditNoteDetail(userCreditNoteDetail));
+
+    descriptionIndexInvoiceDetail 'Накладная' (invoiceDetail) =
+        [FORMULA STRING[200]  ' CAST($1 AS TEXT) || \', позиция \' || \'  \' || CAST($2 AS TEXT)'](
+        descriptionInvoiceDetail(invoiceDetail), indexInvoiceDetail(invoiceDetail)) MINCHARWIDTH 30 PREFCHARWIDTH 50;
+    descriptionIndexInvoiceUserCreditNoteDetail 'Накладная' (userCreditNoteDetail) =  descriptionIndexInvoiceDetail(invoiceDetailUserCreditNoteDetail(userCreditNoteDetail));
+    descriptionIndexInvoiceCreditNoteDetail 'Накладная' (creditNoteDetail) =  descriptionIndexInvoiceDetail(invoiceDetailCreditNoteDetail(creditNoteDetail));
+
+
+    inInvoiceCreditNote (invoice, creditNote) = GROUP SUM quantityCreditNoteDetail(creditNoteDetail) BY invoiceInvoiceDetail(invoiceDetailCreditNoteDetail(creditNoteDetail)), creditNoteCreditNoteDetail(creditNoteDetail);
+
+    invoicesCreditNote 'Накладные' (creditNote) = GROUP CONCAT castToString255(descriptionInvoice(invoice)) IF inInvoiceCreditNote(invoice, creditNote) , ', '
+                                                    BY creditNote
+                                                    ORDER invoice IN invoiceGroup MINCHARWIDTH 30 PREFCHARWIDTH 50;
+
+    descriptionOrderCreditNoteDetail 'Заказ' (creditNoteDetail) = descriptionOrderInvoiceDetail(invoiceDetailCreditNoteDetail(creditNoteDetail));
+    descriptionOrderUserCreditNoteDetail 'Заказ' (userCreditNoteDetail) = descriptionOrderInvoiceDetail(invoiceDetailUserCreditNoteDetail(userCreditNoteDetail));
+
+    EXTEND FORM userCreditNote
+        PROPERTIES(c) READONLY invoicesCreditNote
+        PROPERTIES(d) descriptionIndexInvoiceUserCreditNoteDetail  BEFORE delete(d)
+    ;
+    EXTEND DESIGN userCreditNote { headerColumn2 { ADD c.invoiceGroup; } }
+
+    EXTEND FORM userCreditNotes
+        PROPERTIES(c) READONLY invoicesCreditNote
+        PROPERTIES(d) READONLY descriptionIndexInvoiceUserCreditNoteDetail
+    ;
+
+
+//-- аггр.объект
+
+    createCreditNoteInvoice 'Создавать акт расхождения' = ABSTRACT BOOLEAN (invoice) IN documentPrmGroup;
+    createCreditNoteUserInvoice 'Создавать акт расхождения' = DATA BOOLEAN (userInvoice) IN documentPrmGroup;
+    createCreditNoteInvoice (invoice) += createCreditNoteUserInvoice(invoice);
+    createCreditNoteInvoiceDetail 'Создавать акт расхождения' (invoiceDetail) = createCreditNoteInvoice(invoiceInvoiceDetail(invoiceDetail));
+
+    needToCreditNoteInvoiceDetail (invoiceDetail)= createCreditNoteInvoiceDetail(invoiceDetail)  AND
+        diffShippedInvoiceDetail (invoiceDetail) AND isPostedInvoiceDetail(invoiceDetail);
+
+    needToCreditNoteInvoice (invoice) = GROUP SUM 1 IF needToCreditNoteInvoiceDetail(invoiceDetail) BY invoiceInvoiceDetail(invoiceDetail);
+
+    EXTEND FORM userInvoice
+        PROPERTIES(i) createCreditNoteUserInvoice
+    ;
+    EXTEND FORM userInvoices
+        PROPERTIES(i) READONLY createCreditNoteUserInvoice
+    ;
+    EXTEND FORM invoices
+        PROPERTIES(i) createCreditNoteInvoice
+    ;
+
+
+    CLASS invoiceCreditNote 'Акт расхождения на основе инвойса' : creditNote;
+    CLASS invoiceCreditNotePosted 'Закрытый акт расхождения на основе инвойса' : invoiceCreditNote, postedObject;
+    CLASS invoiceCreditNoteDetail 'Строка акта расхождения на основе инвойса' : creditNoteDetail;
+
+    @defineDocumentTables(invoiceCreditNote);
+
+    @defineDocumentAggregation(invoice, invoiceCreditNote, needToCreditNoteInvoice);
+    creditNoteCreditNoteDetail(detail) += invoiceCreditNoteInvoiceCreditNoteDetail(detail);
+
+    dateCreditNote(creditNote) += dateInvoiceCreditNote(creditNote);
+    timeCreditNote(creditNote) += timeInvoiceCreditNote(creditNote);
+
+    @defineDocumentAggregationStockPrefix(invoice, invoiceCreditNote, stock, 'Склад', , );
+    stockCreditNote(creditNote) += stockInvoiceCreditNote(creditNote);
+    dataStockCreditNoteDetail(creditNoteDetail) += dataStockInvoiceDetail(invoiceDetailInvoiceCreditNoteDetail(creditNoteDetail));
+
+    @defineDocumentAggregationStockPrefix(invoice, invoiceCreditNote, contact, contactCaption, , );
+    contact###CreditNote(creditNote) += contact###InvoiceCreditNote(creditNote);
+
+    @defineDocumentAggregationPosted(invoice, invoiceCreditNote);
+    isPostedCreditNote(creditNote) += isPostedInvoiceCreditNote(creditNote);
+
+    numberInvoiceCreditNote 'Номер документа' (invoiceCreditNote) = numberInvoice(invoiceInvoiceCreditNote(invoiceCreditNote));
+    numberCreditNote(creditNote) += numberInvoiceCreditNote(creditNote);
+
+    seriesInvoiceCreditNote 'Серия документа' (invoiceCreditNote) = seriesInvoice(invoiceInvoiceCreditNote(invoiceCreditNote));
+    seriesCreditNote(creditNote) += seriesInvoiceCreditNote(creditNote);
+
+    seriesNumberInvoiceCreditNote 'Серия/номер документа' (invoiceCreditNote) = seriesNumberInvoice(invoiceInvoiceCreditNote(invoiceCreditNote));
+
+    noteInvoiceInvoiceCreditNote 'Примечание' (invoiceCreditNote) = noteInvoice(invoiceInvoiceCreditNote(invoiceCreditNote));
+    noteCreditNote(creditNote) += noteInvoiceInvoiceCreditNote(creditNote);
+
+    currencyInvoiceCreditNote  (invoiceCreditNote) = currencyInvoice(invoiceInvoiceCreditNote(invoiceCreditNote));
+    currencyCreditNote (creditNote) += currencyInvoiceCreditNote(creditNote);
+    currencyInvoiceCreditNoteDetail (invoiceCreditNoteDetail) = currencyInvoiceCreditNote(invoiceCreditNoteInvoiceCreditNoteDetail(invoiceCreditNoteDetail));
+
+    @defineDocumentDescription(invoiceCreditNote, invoiceCreditNoteDetail, seriesNumberInvoiceCreditNote, 'Акт расхождения на основе инвойса'###sign);
+    descriptionCreditNote (creditNote) += descriptionInvoiceCreditNote(creditNote);
+
+    @defineDocumentDetailIndex(invoiceCreditNote);
+
+    @defineDocumentAggregationDetailSku(invoice, invoiceCreditNote, sku);
+    skuCreditNoteDetail(creditNoteDetail) +=  skuInvoiceCreditNoteDetail(creditNoteDetail);
+
+    @defineDocumentAggregationDetailProp (invoice, invoiceCreditNote, diffShipped, 'Кол-во');   //                ????????   может надо сделать через минус
+
+    quantityCreditNoteDetail(creditNoteDetail) += diffShippedInvoiceCreditNoteDetail(creditNoteDetail);
+
+    @defineDocumentAggregationDetailProp (invoice, invoiceCreditNote, price, 'Цена');
+
+    priceCreditNoteDetail(creditNoteDetail) += priceInvoiceCreditNoteDetail(creditNoteDetail);
+
+    sumInvoiceCreditNoteDetail 'Сумма' (invoiceCreditNoteDetail) =  roundCurrency((diffShippedInvoiceCreditNoteDetail(invoiceCreditNoteDetail) *
+        priceInvoiceCreditNoteDetail(invoiceCreditNoteDetail)), currencyInvoiceCreditNoteDetail(invoiceCreditNoteDetail));
+
+    sumCreditNoteDetail(creditNoteDetail) += sumInvoiceCreditNoteDetail(creditNoteDetail);
+
+    invoiceDetailCreditNoteDetail(creditNoteDetail) += invoiceDetailInvoiceCreditNoteDetail(creditNoteDetail);
+
+    @defineDocumentAggregationDetailProp (invoice, invoiceCreditNote, VAT, 'НДС');
+    VATCreditNoteDetail (creditNoteDetail) += VATInvoiceCreditNoteDetail(creditNoteDetail);
+
+    @defineDocumentAggregationDetailProp (invoice, invoiceCreditNote, numberVAT, 'НДС, номер');
+    @defineDocumentAggregationDetailProp (invoice, invoiceCreditNote, valueVAT, 'НДС, %');
+
+    VATSumInvoiceCreditNoteDetail 'Сумма НДС' (invoiceCreditNoteDetail) = roundCurrency((sumInvoiceCreditNoteDetail(invoiceCreditNoteDetail) *
+        valueVATInvoiceCreditNoteDetail (invoiceCreditNoteDetail) / 100), currencyInvoiceCreditNoteDetail(invoiceCreditNoteDetail));
+
+    VATSumCreditNoteDetail (creditNoteDetail) += VATSumInvoiceCreditNoteDetail(creditNoteDetail);
+
+//    @defineDocumentAggregationDetailProp (invoice, invoiceCreditNote, invoiceSum, 'Сумма с НДС');
+   invoiceSumInvoiceCreditNoteDetail 'Сумма с НДС' (invoiceCreditNoteDetail) = sumInvoiceCreditNoteDetail(invoiceCreditNoteDetail) (+) VATSumInvoiceCreditNoteDetail(invoiceCreditNoteDetail);
+
+    FORM dialogCreditNotes 'Акты расхождения (все)'###sign
+        OBJECTS c = creditNote
+        PROPERTIES (c) READONLY isPostedCreditNote FORCE GRID, objectClassName, numberCreditNote, seriesCreditNote, dateCreditNote, timeCreditNote,
+                                nameStockCreditNote, name###contact###CreditNote, nameCurrencyCreditNote, noteCreditNote,
+                                countCreditNoteDetailCreditNote, quantityCreditNoteDetailCreditNote, sumCreditNoteDetailCreditNote,
+                                VATSumCreditNoteDetailCreditNote, invoiceSumCreditNoteDetailCreditNote, invoicesCreditNote
+
+        OBJECTS d = creditNoteDetail
+        PROPERTIES (d) READONLY indexCreditNoteDetail, idBarcodeSkuCreditNoteDetail, nameSkuCreditNoteDetail, shortNameUOMSkuCreditNoteDetail,
+                                quantityCreditNoteDetail, priceCreditNoteDetail, sumCreditNoteDetail, numberVATCreditNoteDetail, valueVATCreditNoteDetail,
+                                 VATSumCreditNoteDetail, invoiceSumCreditNoteDetail, nameStockCreditNoteDetail, descriptionIndexInvoiceCreditNoteDetail
+        FILTERS creditNoteCreditNoteDetail(d) == c
+
+        DIALOG creditNote OBJECT c
+    ;
+
+    DESIGN dialogCreditNotes FROM DEFAULT {
+
+        NEW documentContainer BEFORE functions.box {
+            type = SPLITV;
+            childConstraints = TO THE BOTTOM;
+
+            ADD c.box;
+
+            NEW documentDetail {
+                type = TABBED;
+
+                ADD d.box {
+                    title = 'Спецификация';
+                }
+
+            }
+        }
+    }
+
+END
+
+META defineCreditNoteBatch(dumb)
+    @defineDocumentInterfaceDetailBatch(creditNote, batch);
+
+    EXTEND FORM userCreditNote PROPERTIES (d) descriptionBatchUserCreditNoteDetail AFTER shortNameUOMSkuUserCreditNoteDetail;
+    EXTEND FORM userCreditNotes PROPERTIES (d) READONLY descriptionBatchUserCreditNoteDetail AFTER shortNameUOMSkuUserCreditNoteDetail;
+
+
+    batchUserCreditNoteDetail (userCreditNoteDetail)  <- batchInvoiceDetail(invoiceDetailUserCreditNoteDetail(userCreditNoteDetail))
+        WHEN CHANGED(invoiceDetailUserCreditNoteDetail(userCreditNoteDetail));
+
+    @defineDocumentAggregationDetailBatch (invoice, invoiceCreditNote);
+    batchCreditNoteDetail (creditNoteDetail) += batchInvoiceCreditNoteDetail(creditNoteDetail);
+
+    EXTEND FORM dialogCreditNotes PROPERTIES (d) READONLY descriptionBatchCreditNoteDetail AFTER shortNameUOMSkuCreditNoteDetail;
+END

@@ -1,0 +1,11 @@
+MODULE SaleCreditNote;
+
+REQUIRE CreditNote, SaleShipment;
+
+NAMESPACE Sale;
+
+
+//----------------------------------------------- Акт ---------------------------------------------------//
+
+@defineCreditNote(' (продажа)', customer, 'Покупатель');
+@defineCreditNoteBatch();

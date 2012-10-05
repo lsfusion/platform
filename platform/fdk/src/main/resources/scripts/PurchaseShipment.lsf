@@ -7,7 +7,7 @@ NAMESPACE Purchase;
 
 //----------------------------------------------- Поставка ---------------------------------------------------//
 
-@defineShipment(batch, ' (покупка)', supplier, supplier, company);
+@defineShipment(batch, ' (покупка)', supplier, 'Поставщик', supplier, company);
 
 // Проводим по регистру
 

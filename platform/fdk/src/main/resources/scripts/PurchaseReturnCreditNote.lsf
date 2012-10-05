@@ -1,0 +1,11 @@
+MODULE PurchaseReturnCreditNote;
+
+REQUIRE CreditNote, PurchaseReturnShipment
+;
+
+NAMESPACE PurchaseReturn;
+
+
+//----------------------------------------------- Акт ---------------------------------------------------//
+
+@defineCreditNote(' (покупка-возврат)', supplier, 'Поставщик');

@@ -5,7 +5,7 @@ REQUIRE Invoice;
 
 //----------------------------------------------- Поставка ---------------------------------------------------//
 
-META defineShipment(skuLedger, sign, contact, partyA, partyB)
+META defineShipment(skuLedger, sign, contact, contactCaption, partyA, partyB)
 
     CLASS ABSTRACT shipment 'Поставка'###sign;
     CLASS ABSTRACT shipmentDetail 'Строка поставки'###sign : skuLedger;
@@ -176,7 +176,7 @@ META defineShipment(skuLedger, sign, contact, partyA, partyB)
                companyUserShipment(detail) != companyInvoice(invoiceDetailUserShipmentDetail(detail)) OR
                skuUserShipmentDetail(detail) != skuInvoiceDetail(invoiceDetailUserShipmentDetail(detail))
         CHECKED BY invoiceDetailUserShipmentDetail
-            MESSAGE 'Покупатель, компания и товар в накладной и поставке должны соответствовать друг другу';
+            MESSAGE contactCaption###', компания и товар в накладной и поставке должны соответствовать друг другу';
 
 
     GROUP invoiceGroup 'Информация о накладной' : baseGroup;
@@ -226,7 +226,7 @@ META defineShipment(skuLedger, sign, contact, partyA, partyB)
     CONSTRAINT contact###ShipmentDetail(shipmentDetail) != contact###Order(orderUserShipmentDetail(shipmentDetail)) OR
                companyUserShipment(shipmentDetail) != companyOrder(orderUserShipmentDetail(shipmentDetail))
         CHECKED BY orderUserShipmentDetail
-            MESSAGE 'Покупатель и компания в заказе и поставке должны соответствовать друг другу';
+            MESSAGE contactCaption###' и компания в заказе и поставке должны соответствовать друг другу';
 
     descriptionOrderShipmentDetail 'Заказ' (shipmentDetail) = descriptionOrder(orderShipmentDetail(shipmentDetail)) IN orderGroup;
     descriptionOrderUserShipmentDetail 'Заказ' (userShipmentDetail) = descriptionOrder(orderUserShipmentDetail(userShipmentDetail)) IN orderGroup;
@@ -476,16 +476,19 @@ META defineShipment(skuLedger, sign, contact, partyA, partyB)
     @deriveDocumentDetailSumPrefix(userInvoice, shipment, currency);
 
     createShipmentInvoice 'Создавать поставку' = ABSTRACT BOOLEAN (invoice) IN documentPrmGroup;
-    createShipmentUserInvoice 'Создавать поставку' = DATA BOOLEAN (userInvoice);
+    createShipmentUserInvoice 'Создавать поставку' = DATA BOOLEAN (userInvoice) IN documentPrmGroup;
     createShipmentInvoice (invoice) += createShipmentUserInvoice(invoice);
 
     EXTEND FORM userInvoice
-        PROPERTIES(i) createShipmentInvoice
+        PROPERTIES(i) createShipmentUserInvoice
         PROPERTIES(d) SHOWIF createShipmentInvoice(i) shipmentPriceUserInvoiceDetail, shipmentSumUserInvoiceDetail
     ;
     EXTEND FORM userInvoices
-        PROPERTIES(i) READONLY createShipmentInvoice
+        PROPERTIES(i) READONLY createShipmentUserInvoice
         PROPERTIES(d) READONLY SHOWIF createShipmentInvoice(i) shipmentPriceUserInvoiceDetail, shipmentSumUserInvoiceDetail
+    ;
+    EXTEND FORM invoices
+        PROPERTIES(i) createShipmentInvoice
     ;
 
     createShipmentInvoiceDetail 'Создавать поставку' (invoiceDetail) = createShipmentInvoice(invoiceInvoiceDetail(invoiceDetail));
@@ -506,7 +509,7 @@ META defineShipment(skuLedger, sign, contact, partyA, partyB)
     stockShipment(shipment) += stockInvoiceShipment(shipment);
     dataStockShipmentDetail(shipmentDetail) += dataStockInvoiceDetail(invoiceDetailInvoiceShipmentDetail(shipmentDetail));
 
-    @defineDocumentAggregationStockPrefix(invoice, invoiceShipment, contact, 'Покупатель', , );
+    @defineDocumentAggregationStockPrefix(invoice, invoiceShipment, contact, contactCaption, , );
     contact###Shipment(shipment) += contact###InvoiceShipment(shipment);
 
     @defineDocumentAggregationPosted(invoice, invoiceShipment);
@@ -560,7 +563,7 @@ META defineShipment(skuLedger, sign, contact, partyA, partyB)
 
 
         OBJECTS d = shipmentDetail
-        PROPERTIES (d) READONLY indexShipmentDetail, idBarcodeSkuShipmentDetail, nameSkuShipmentDetail, shortNameUOMSkuShipmentDetail,
+        PROPERTIES (d)  indexShipmentDetail, idBarcodeSkuShipmentDetail, nameSkuShipmentDetail, shortNameUOMSkuShipmentDetail,   //READONLY
                                 quantityShipmentDetail, priceShipmentDetail, sumShipmentDetail, numberVATShipmentDetail, valueVATShipmentDetail,
                                 nameStockShipmentDetail, descriptionInvoiceDetailShipmentDetail, descriptionOrderShipmentDetail
         FILTERS shipmentShipmentDetail(d) == s

@@ -1,0 +1,11 @@
+MODULE SaleReturnCreditNote;
+
+REQUIRE CreditNote, SaleReturnShipment;
+
+NAMESPACE SaleReturn;
+
+
+//----------------------------------------------- Акт ---------------------------------------------------//
+
+@defineCreditNote(' (продажа-возврат)', customer, 'Покупатель');
+@defineCreditNoteBatch();

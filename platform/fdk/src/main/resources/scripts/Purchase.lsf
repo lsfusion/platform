@@ -1,6 +1,6 @@
 MODULE Purchase;
 
-REQUIRE PurchaseShipment, PurchaseReturnShipment
+REQUIRE PurchaseShipment, PurchaseReturnShipment, PurchaseCreditNote, PurchaseReturnCreditNote
 ;
 
 //-----------------------------------------------------------------------------------------------------------//
@@ -10,20 +10,22 @@ currentReservePurchaseSkuStock 'Текущий резерв'(sku, stock)  = Purc
     PurchaseReturn.currentReserveSkuStock(sku, stock);
 
 NAVIGATOR {
-//    NEW purchaseNavigator 'Закупки' {
+
         NEW purchasePurchaseNavigator 'Закупки' {
             ADD Purchase.userOrders;
             ADD Purchase.userInvoices;
             ADD Purchase.userShipments;
-//            ADD Purchase.dialogShipments;
+            ADD Purchase.userCreditNotes;
+//            ADD Purchase.dialogCreditNotes;
         }
         NEW purchaseReturnNavigator 'Возвраты' {
             ADD PurchaseReturn.userOrders;
             ADD PurchaseReturn.userInvoices;
             ADD PurchaseReturn.userShipments;
-    //      ADD dialogShipments;
+            ADD PurchaseReturn.userCreditNotes;
+//            ADD PurchaseReturn.dialogCreditNotes;
         }
-//    }
+
 }
 
 
