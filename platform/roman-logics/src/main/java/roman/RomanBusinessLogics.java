@@ -140,11 +140,13 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         ArrayList<IDaemonTask> daemons = super.getDaemonTasks(compId);
 
         Integer scalesComPort, scalesSpeed, scannerComPort;
+        Boolean scannerSingleRead;
         try {
             DataSession session = createSession();
             scalesComPort = (Integer) RomanLM.scalesComPort.read(session, new DataObject(compId, LM.computer));
             scalesSpeed = (Integer) RomanLM.scalesSpeed.read(session, new DataObject(compId, LM.computer));
             scannerComPort = (Integer) RomanLM.scannerComPort.read(session, new DataObject(compId, LM.computer));
+            scannerSingleRead = (Boolean) RomanLM.scannerSingleRead.read(session, new DataObject(compId, LM.computer));
             session.close();
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -154,7 +156,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             daemons.add(task);
         }
         if (scannerComPort != null) {
-            IDaemonTask task = new ScannerDaemonTask(scannerComPort);
+            IDaemonTask task = new ScannerDaemonTask(scannerComPort, ((Boolean)true).equals(scannerSingleRead));
             daemons.add(task);
         }
         return daemons;

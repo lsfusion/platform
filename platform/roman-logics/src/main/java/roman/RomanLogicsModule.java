@@ -1442,6 +1442,7 @@ public class RomanLogicsModule extends LogicsModule {
     LCP scalesSpeed;
     LCP scalesComPort;
     LCP scannerComPort;
+    LCP scannerSingleRead;
 
     private LAP declarationExport;
     private LAP invoiceExportDbf;
@@ -3962,6 +3963,7 @@ public class RomanLogicsModule extends LogicsModule {
         scalesComPort = addDProp(baseGroup, "scalesComPort", "COM-порт весов", IntegerClass.instance, baseLM.computer);
         scalesSpeed = addDProp(baseGroup, "scalesSpeed", "Скорость весов", IntegerClass.instance, baseLM.computer);
         scannerComPort = addDProp(baseGroup, "scannerComPort", "COM-порт сканера", IntegerClass.instance, baseLM.computer);
+        scannerSingleRead = addDProp(baseGroup, "scannerSingleRead", "Одно событие на весь штрих-код", LogicalClass.instance, baseLM.computer);
 
         initNavigators();
     }

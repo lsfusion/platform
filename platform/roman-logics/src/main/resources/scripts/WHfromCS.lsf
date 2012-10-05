@@ -291,7 +291,7 @@ changeAddDetailInputBarcodeWHfromCSRDetailWHfromCSR = ACTION (WHfromCSR) {
     EXEC addDialogSkuFreightUnitWHfromCSRBarcode(WHfromCSR, requestedString());
 };
 addDetailInputBarcodeWHfromCSRDetailWHfromCSR 'Ввод штрих-кода :' (WHfromCSR) = SESSION DATA STRING[14] (WHfromCSR) TOOLBAR EDITKEY 'F4'
-                                                                        ON CHANGE EXEC changeAddDetailInputBarcodeWHfromCSRDetailWHfromCSR(WHfromCSR) EVENTID 'SCANNER';
+                                                                        ON CHANGEWYS EXEC changeAddDetailInputBarcodeWHfromCSRDetailWHfromCSR(WHfromCSR) EVENTID 'SCANNER';
 
 
 

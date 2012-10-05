@@ -44,7 +44,9 @@ import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.util.*;
 import java.util.List;
-import java.util.Timer;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import static platform.client.ClientResourceBundle.getString;
 import static platform.client.StartupProperties.*;
@@ -79,6 +81,7 @@ public class Main {
 
     private static ClientObjectClass baseClass = null;
     public static EventBus eventBus = new EventBus();
+    private static ScheduledExecutorService executorService;
 
     public static void start(final String[] args, ModuleFactory startModule) {
         bootstrapThreadGroup = Thread.currentThread().getThreadGroup();
@@ -181,10 +184,10 @@ public class Main {
                             frame.setVisible(true);
 
                             ArrayList<IDaemonTask> tasks = remoteNavigator.getDaemonTasks(Main.computerId);
-                            Timer timer = new Timer();
+                            executorService = Executors.newScheduledThreadPool(1);
                             for (IDaemonTask task : tasks) {
                                 task.setEventBus(eventBus);
-                                timer.schedule(new DaemonTask(task), task.getDelay(), task.getPeriod());
+                                executorService.scheduleWithFixedDelay(new DaemonTask(task), task.getDelay(), task.getPeriod(), TimeUnit.MILLISECONDS);
                             }
                             // todo : где-то обязательно надо уведомлять DaemonTask о том, что пора сворачиваться, чтобы они освобождали порты
                         } catch (Exception e) {
@@ -480,6 +483,11 @@ public class Main {
         ClientNavigatorElement.dropCaches();
 
         eventBus.invalidate();
+        executorService.shutdown();
+        try {
+            executorService.awaitTermination(5, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+        }
 
         computerId = -1;
         timeZone = null;

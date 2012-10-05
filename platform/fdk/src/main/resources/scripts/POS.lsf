@@ -620,8 +620,8 @@ cancelReceipt 'Отменить чек' = ACTION (receipt) {
 
 // Продажи
 createReceiptSaleDetail 'Добавить строку продажи' = ACTION (receipt, sku, barcode) {
-    ADDOBJ receiptSaleDetail;
-    FOR d == addedObject() DO {
+    FOR ADDOBJ d = receiptSaleDetail DO {
+        EXEC seek(d);
         SET receiptReceiptSaleDetail(d) <- receipt;
         SET idBarcodeReceiptDetail(d) <- barcode;
         SET skuReceiptSaleDetail(d) <- sku;
@@ -692,8 +692,8 @@ searchSkuSaleReceipt 'Поиск' = ACTION (receipt) {
 // Возвраты
 
 createReceiptReturnDetail 'Добавить строку возврата' = ACTION (receipt, receiptSaleDetail, barcode) {
-    ADDOBJ receiptReturnDetail;
-    FOR d == addedObject() DO {
+    FOR ADDOBJ d = receiptReturnDetail DO {
+        EXEC seek(d);
         SET receiptReceiptReturnDetail(d) <- receipt;
         SET idBarcodeReceiptDetail(d) <- barcode;
         SET receiptSaleDetailReceiptReturnDetail(d) <- receiptSaleDetail;
@@ -735,12 +735,12 @@ scanBarcodeReturnReceipt 'Ввести штрих-код' = ACTION (receipt) {
     FORM barcodeInput MODAL;
     IF formResult() == formResult.ok THEN {
         LOCAL dialogBarcodeSku = sku();
-        SET dialogBarcodeSku() <- skuBarcodeIdDate(chosenString('barcode'), currentDate());
+        SET dialogBarcodeSku() <- skuBarcodeIdDate(barcodeInput(), currentDate());
 
         IF dialogBarcodeSku() IS sku THEN {
             FORM scanBarcodeReturnReceipt OBJECTS d = departmentStoreReceipt(receipt), s = dialogBarcodeSku() MODAL;
             IF formResult() == formResult.ok THEN {
-                EXEC createReceiptReturnDetail(receipt, chosenObject('r'), chosenString('barcode'));
+                EXEC createReceiptReturnDetail(receipt, chosenObject('r'), barcodeInput());
             }
         } ELSE
             MESSAGE 'Не найден штрих-код';
@@ -977,7 +977,7 @@ FORM POS
     FILTERS receiptReceiptDetail(d) == r
 
     OBJECTS bs = STRING[14] FIXED PANEL
-    PROPERTIES(bs) SHOWIF currentZReport() barcodeSale = OBJVALUE ON CHANGE EXEC changeBarcodeSaleReceipt(r)
+    PROPERTIES(bs) SHOWIF currentZReport() barcodeSale = OBJVALUE ON CHANGEWYS EXEC changeBarcodeSaleReceipt(r) EVENTID 'SCANNER'
 
     OBJECTS pc = promotionCondition
     PROPERTIES(pc) SHOWIF currentZReport() READONLY namePromotionPromotionCondition, name, dateFromPromotionCondition, dateToPromotionCondition, percentPromotionCondition

@@ -306,7 +306,9 @@ public class ScriptingFormEntity {
             }
         }
 
-        property.eventID = options.getEventId();
+        String eventID = options.getEventId();
+        if (eventID != null)
+            property.eventID = eventID;
 
         if (options.getNeighbourPropertyDraw() != null) {
             if (options.getNeighbourPropertyDraw().getToDraw(form) != property.getToDraw(form)) {

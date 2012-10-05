@@ -60,17 +60,23 @@ generateBarcodeSku 'Сгенерировать штрих-код' = ACTION (sku)
 
 // ----------------------------------- Форма по вводу штрих-кода ---------------------------- //
 
+barcodeInput 'Штрих-код' = SESSION DATA STRING[13] () EVENTID 'SCANNER';
+changeBarcodeInput = ACTION () {
+    REQUEST STRING[13] INPUT;
+    SET barcodeInput() <- requestedString();
+    EXEC formOkAction();
+}
 FORM barcodeInput 'Ввод штрих-кода'
-    OBJECTS             barcode=STRING[14] FIXED PANEL
-    PROPERTIES(barcode) objValue = OBJVALUE
+    PROPERTIES() barcodeInput ON CHANGEWYS EXEC changeBarcodeInput()
 ;
 
 DESIGN barcodeInput FROM DEFAULT {
-    PROPERTY (objValue) {
+    PROPERTY (barcodeInput) {
         caption = 'Штрих-код';
         font = 'Tahoma bold 64';
         panelLabelAbove = TRUE;
         editKey = 'F4';
+        focusable = TRUE;
     }
 }
 
@@ -105,7 +111,7 @@ META defineAddDetailDialogBarcodeCustom(object, idetail, skuProp)
         FORM barcodeInput MODAL;
 
         IF formResult() == formResult.ok THEN
-            EXEC addDetailBarcode###idetail###object(object, chosenString('barcode'));
+            EXEC addDetailBarcode###idetail###object(object, barcodeInput());
     } TOOLBAR EDITKEY 'F4';
 
     changeAddDetailInputBarcode###idetail###object = ACTION (object) {
@@ -113,7 +119,7 @@ META defineAddDetailDialogBarcodeCustom(object, idetail, skuProp)
         EXEC addDetailBarcode###idetail###object(object, requestedString());
     };
     addDetailInputBarcode###idetail###object 'Ввод штрих-кода :' (object) = SESSION DATA STRING[14] (object) TOOLBAR EDITKEY 'F4' EVENTID 'SCANNER'
-                                                                            ON CHANGE EXEC changeAddDetailInputBarcode###idetail###object(object);
+                                                                            ON CHANGEWYS EXEC changeAddDetailInputBarcode###idetail###object(object);
 END
 
 META defineAddDetailDialogBarcode(object, skuProp)

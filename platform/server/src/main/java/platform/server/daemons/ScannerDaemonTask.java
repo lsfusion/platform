@@ -15,9 +15,11 @@ public class ScannerDaemonTask implements IDaemonTask, Serializable, SerialPortE
     private transient EventBus eventBus;
 
     SerialPort serialPort;
+    boolean singleRead = false;
 
-    public ScannerDaemonTask(int com) {
+    public ScannerDaemonTask(int com, boolean singleRead) {
         serialPort = new SerialPort("COM" + com);
+        this.singleRead = singleRead;
     }
 
     @Override
@@ -54,19 +56,34 @@ public class ScannerDaemonTask implements IDaemonTask, Serializable, SerialPortE
 
     @Override
     public void serialEvent(SerialPortEvent event) {
-        if (event.isRXCHAR() && event.getEventValue() > 0) {
-            try {
-                char ch = (char)serialPort.readBytes(1)[0];
-                if (ch >= '0' && ch <= '9')
-                    barcode += ch;
-                if (event.getEventValue() == 1) {
-                    eventBus.fireValueChanged(SCANNER_SID, barcode);
+        if (event.isRXCHAR()) {
+            if (singleRead) {
+                try {
+                    byte[] portBytes = serialPort.readBytes(event.getEventValue());
                     barcode = "";
+                    for (byte portByte : portBytes) {
+                        barcode += (char) portByte;
+                    }
+                    if (!barcode.isEmpty())
+                        eventBus.fireValueChanged(SCANNER_SID, barcode);
+                } catch (SerialPortException ex) {
+                    throw new RuntimeException(ex);
                 }
-            }
-            catch (SerialPortException ex) {
-                System.out.println(ex);
-            }
+            } else
+                if (event.isRXCHAR() && event.getEventValue() > 0) {
+                    try {
+                        char ch = (char)serialPort.readBytes(1)[0];
+                        if (ch >= '0' && ch <= '9')
+                            barcode += ch;
+                        if (event.getEventValue() == 1) {
+                            eventBus.fireValueChanged(SCANNER_SID, barcode);
+                            barcode = "";
+                        }
+                    }
+                    catch (SerialPortException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                }
         }
     }
 }

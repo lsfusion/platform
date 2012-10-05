@@ -66,6 +66,9 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
             return false;
         }
 
+        if (row >= getRowCount())
+            return false;
+
         quickLog("formTable.editCellAt: " + e);
 
         ClientPropertyDraw property = getProperty(row, column);
