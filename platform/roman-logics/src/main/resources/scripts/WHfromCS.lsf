@@ -54,11 +54,6 @@ sumWHfromCSIDetail 'Сумма' (detail) = sumCStoWHDetail(CStoWHDetailWHfromCSI
 destinationWHfromCSIDetail(WHfromCSIDetail) = destinationCStoWHDetail(CStoWHDetailWHfromCSIDetail(WHfromCSIDetail));
 nameDestinationWHfromCSIDetail 'Пункт назначения' (WHfromCSIDetail) = nameDestinationCStoWHDetail(CStoWHDetailWHfromCSIDetail(WHfromCSIDetail));
 
-@implementSkuLedger(WHfromCSI, sku, stock);
-quantityInLIFOSkuLedger (ledger) += quantityWHfromCSIDetail(ledger);
-limitInLIFOSkuLedgerBatch (ledger, batch) += quantityWHfromCSIDetail(ledger) AND batch == declarationDetailCStoWHDetail(CStoWHDetailWHfromCSIDetail(ledger));
-sumInSkuLedger(ledger) += sumWHfromCSIDetail(ledger);
-
 nameCategoryArticleSkuWHfromCSIDetail 'Номенклатурная группа' (WHfromCSIDetail) = nameCategoryArticleSku(skuWHfromCSIDetail(WHfromCSIDetail));
 nameUnitOfMeasureArticleSkuWHfromCSIDetail 'Ед. измерения товара' (WHfromCSIDetail) = nameUnitOfMeasureArticleSku(skuWHfromCSIDetail(WHfromCSIDetail));
 barcodeFreightUnitWHfromCSIDetail 'Штрих-код короба' (WHfromCSIDetail) = barcode(freightUnitCStoWHDetail(CStoWHDetailWHfromCSIDetail(WHfromCSIDetail)));
@@ -1093,3 +1088,9 @@ retailPriceWHfromCSIDetail 'Цена розничная' (detail) = retailPriceC
 retailSumWHfromCSIDetail 'Сумма розничная' (detail) = quantityWHfromCSIDetail(detail) * retailPriceWHfromCSIDetail(detail);
 useRetailPriceWHfromCSIDetail(WHfromCSIDetail) = stockWHfromCSIDetail(WHfromCSIDetail) IS departmentStore;
 @defineDocumentTransferAccount(WHfromCSI, useRetailPriceWHfromCSIDetail);
+
+//--Проводим по регистру
+@implementSkuLedger(WHfromCSI, sku, stock);
+quantityInLIFOSkuLedger (ledger) += quantityWHfromCSIDetail(ledger);
+limitInLIFOSkuLedgerBatch (ledger, batch) += quantityWHfromCSIDetail(ledger) AND batch == declarationDetailCStoWHDetail(CStoWHDetailWHfromCSIDetail(ledger));
+sumInSkuLedger(ledger) += accountSumWHfromCSIDetail(ledger);

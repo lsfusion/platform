@@ -1,0 +1,172 @@
+MODULE ReturnCertification;
+
+REQUIRE System,
+
+        Utils,
+        Stock,
+        Country,
+        Numerator,
+        Document,
+        RomanDocument,
+        Consignment,
+        RomanStock,
+        RetailPrice,
+        Barcode,
+        MasterData,
+        RomanLogicsModule;
+
+PRIORITY Stock, RomanLogicsModule;
+
+CLASS returnCertification 'Возврат из сертификации' : historyObject, numeratedObject;
+CLASS returnCertificationPosted 'Закрытый возврат из сертификации' : returnCertification, postedObject;
+CLASS returnCertificationDetail 'Строка возврата из сертификации' : batchB;
+
+@defineDocumentTables(returnCertification);
+
+@defineNumeratedObject(returnCertification, 'Нумератор для возвратов из сертификации', 'СЕ');
+
+@defineDocumentRelation(returnCertification);
+@defineDocumentPosted(returnCertification);
+@defineDocumentDetailIndex(returnCertification);
+@defineDocumentTime(returnCertification);
+@defineDocumentHeaderNote(returnCertification);
+@defineDocumentDetailActions(returnCertification);
+@defineDocumentStock(returnCertification, stock, 'Склад');
+@defineDocumentDetailSku(returnCertification, sku);
+@defineDocumentDetailQuantity(returnCertification);
+@defineDocumentDescription(returnCertification, 'Возврат товара из сертификации');
+
+@defineDocumentHeaderQuantity(returnCertification);
+@defineDocumentHeaderSkuQuantity(returnCertification, sku);
+
+@defineDocumentDetailSkuArticle(returnCertification);
+
+@defineAddDetailDialogSkuStock(returnCertification, sku, stock, dialogSku);
+@defineAddDetailDialogBarcode(returnCertification, sku);
+
+// Проводим по регистру
+
+dateTimeBatch (batch) += dateTimeReturnCertificationDetail(batch);
+isPostedBatch (batch) += isPostedReturnCertificationDetail(batch);
+skuBatch (batch) += skuReturnCertificationDetail(batch);
+stockBatch (batch) += stockReturnCertificationDetail(batch);
+descriptionBatch (batch) += descriptionReturnCertificationDetail(batch);
+costBatch (batch) += 0.0 IF batch IS returnCertificationDetail;
+
+quantityBatch (batch) += quantityReturnCertificationDetail(batch);
+sumInSkuLedger(batch) += 0.0 IF batch IS returnCertificationDetail;
+skipASkuLedger (ledger) += ledger IS returnCertificationDetail;
+
+FORM returnCertification 'Возврат из сертификации'
+
+    OBJECTS w = returnCertification FIXED PANEL, d = returnCertificationDetail
+    PROPERTIES(w) objectClassName, nameNumeratorObject, numberObject, seriesObject, dateReturnCertification, timeReturnCertification, //nameCompanyReturnCertification,
+                  nameStockReturnCertification
+
+    PROPERTIES(d) READONLY indexReturnCertificationDetail, barcodeReturnCertificationDetail, nameCategoryReturnCertificationDetail,
+                           nameBrandReturnCertificationDetail, sidArticleReturnCertificationDetail, sidSizeReturnCertificationDetail,
+                           sidColorReturnCertificationDetail, nameColorReturnCertificationDetail,shortNameUOMReturnCertificationDetail
+
+    PROPERTIES(d) quantityReturnCertificationDetail
+
+    PROPERTIES(d) ADDOBJ, delete
+
+    PROPERTIES(w) TODRAW d addDetailDialogSkuStockReturnCertificationDetailReturnCertification, addDetailInputBarcodeReturnCertificationDetailReturnCertification,
+                           deleteReturnCertificationDetailReturnCertification
+
+
+    FILTERS returnCertificationReturnCertificationDetail(d)==w
+
+
+    EVENTS
+        ON OK EXEC prePostReturnCertification(w)
+
+    EDIT returnCertification OBJECT w
+;
+
+DESIGN returnCertification FROM DEFAULT {
+
+    main {
+        preferredSize = (1024, 768);
+        NEW top {
+            childConstraints =  TO THE BOTTOM;
+
+            w.box{
+                NEW head{
+                    caption = 'Шапка документа';
+                    childConstraints = TO THE RIGHTBOTTOM;
+                    ADD PROPERTY(objectClassName){preferredCharWidth = 15;}
+                    ADD PROPERTY(nameStockReturnCertification);
+                    ADD PROPERTY(nameNumeratorObject);
+                    ADD PROPERTY(numberObject);
+                    ADD PROPERTY(seriesObject);
+                    ADD PROPERTY(dateReturnCertification);
+                    ADD PROPERTY(timeReturnCertification);
+                }
+//                ADD w.documentPrmGroup {
+//                    childConstraints = TO THE RIGHTBOTTOM;
+//                }
+            }
+        }
+        ADD d.box;
+
+        PROPERTY(formOkAction) {
+            caption = 'Провести';
+        }
+        ADD functions.box;
+    }
+}
+
+
+FORM returnCertifications 'Возвраты из сертификации'
+
+    OBJECTS w = returnCertification
+
+    PROPERTIES(w) READONLY isPostedReturnCertification FORCE GRID, objectClassName, numberObject, seriesObject, dateReturnCertification, timeReturnCertification, nameStockReturnCertification,
+                           countReturnCertificationDetailReturnCertification, quantityReturnCertificationDetailReturnCertification
+
+    PROPERTIES(w) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
+
+    PROPERTIES (w) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed,
+                                        hostnameComputerClosed
+
+    OBJECTS d = returnCertificationDetail
+    PROPERTIES(d) READONLY indexReturnCertificationDetail, barcodeReturnCertificationDetail, nameCategoryReturnCertificationDetail,
+                           nameBrandReturnCertificationDetail, sidArticleReturnCertificationDetail, sidSizeReturnCertificationDetail,
+                           sidColorReturnCertificationDetail, nameColorReturnCertificationDetail,
+                           quantityReturnCertificationDetail, shortNameUOMReturnCertificationDetail
+
+
+    FILTERS returnCertificationReturnCertificationDetail(d)==w;
+
+DESIGN returnCertifications FROM DEFAULT{
+
+    NEW topContainer {
+
+        type = SPLITV;
+        childConstraints = TO THE BOTTOM;
+
+        ADD w.box;
+        NEW docDetail{
+
+            type = TABBED;
+            ADD d.box{
+                title = 'Спецификация';
+            };
+            NEW documentHistory {
+
+                title = 'История';
+                ADD w.historyGroup;
+                ADD w.postedGroup;
+            }
+
+        }
+    }
+    ADD functions.box;
+
+    PROPERTY (delete(w)) {
+        caption = 'Удалить';
+        askConfirm = TRUE;
+    }
+}
+

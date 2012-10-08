@@ -35,6 +35,7 @@ REQUIRE System,
         DisparityBatch,
         RomanContractLedger,
         PriceChangeDiscount,
+        ReturnCertification,
         Defect,
         CustomCategory,
         RomanPOS,
@@ -194,6 +195,7 @@ NAVIGATOR {
             ADD saleIns;
             ADD returnIns;
             ADD moveIns;
+            ADD returnCertifications;
         }
 
         NEW logisticsOutcome 'Расходы' {
