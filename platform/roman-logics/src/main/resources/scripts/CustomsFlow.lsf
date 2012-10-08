@@ -282,15 +282,15 @@ DESIGN CStoWH FROM DEFAULT {
 }
 
 FORM CStoWHs 'Расходы с СВХ'
-    OBJECTS c = CStoWH
-    PROPERTIES (c) READONLY objectClassName, numberObject, seriesObject, dateCStoWH, timeCStoWH, nameCustomStoreCStoWH,
+    OBJECTS t = CStoWH
+    PROPERTIES (t) READONLY objectClassName, numberObject, seriesObject, dateCStoWH, timeCStoWH, nameCustomStoreCStoWH,
                             nameDestinationStockCStoWH, declarationsCStoWH, innerInvoicesCStoWH, quantityCStoWHDetailCStoWH, sumCStoWHDetailCStoWH
 
-    PROPERTIES (c) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
+    PROPERTIES (t) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
-    PROPERTIES (c) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES (t) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
 
-    PROPERTIES (c)  FORCE PANEL printConsignmentVerticalA, printConsignmentHorizontalA,
+    PROPERTIES (t)  FORCE PANEL printConsignmentVerticalA, printConsignmentHorizontalA,
                      printConsignmentVerticalB, printConsignmentHorizontalB,
                      printConsignmentSimpleHorizontal, editConsignment,
                      printConsignmentSimpleVertical
@@ -300,7 +300,7 @@ FORM CStoWHs 'Расходы с СВХ'
                   sidSizeCStoWHDetail, sidColorCStoWHDetail, nameColorCStoWHDetail, barcodeFreightUnitCStoWHDetail, nameDestinationCStoWHDetail,
                   sumNetWeightCStoWHDetail, sumGrossWeightCStoWHDetail, quantityCStoWHDetail, priceCStoWHDetail, sumCStoWHDetail
 
-    FILTERS inCStoWHCStoWHDetail(c, d)
+    FILTERS inCStoWHCStoWHDetail(t, d)
 ;
 
 DESIGN CStoWHs FROM DEFAULT {
@@ -313,8 +313,8 @@ DESIGN CStoWHs FROM DEFAULT {
                 preferredCharWidth = 15;
         }
 
-        ADD c.box{
-            PROPERTY (delete(c)) {
+        ADD t.box{
+            PROPERTY (delete(t)) {
                 askConfirm = TRUE;
             }
         }
@@ -330,11 +330,11 @@ DESIGN CStoWHs FROM DEFAULT {
 
                 caption = 'История';
                 childConstraints = TO THE BOTTOM;
-                ADD c.historyGroup;
-                ADD c.postedGroup;
+                ADD t.historyGroup;
+                ADD t.postedGroup;
             }
 
-            ADD c.printGroup {
+            ADD t.printGroup {
                 childConstraints = TO THE BOTTOM;
                 NEW case55{
                     childConstraints = TO THE BOTTOM;
@@ -371,6 +371,9 @@ DESIGN CStoWHs FROM DEFAULT {
 }
 
 @defineDocumentRetailPrice (CStoWH, d);
+
+useRetailPriceCStoWHDetail(CStoWHDetail) = destinationStockCStoWHDetail(CStoWHDetail) IS departmentStore;
+@defineDocumentTransferAccount(CStoWH, useRetailPriceCStoWHDetail);
 
 @defineConsignment(CStoWH);
 @implementConsignmentHeader(CStoWH, customStore);

@@ -952,23 +952,23 @@ fullInputListRegister (inputListRegister) +=  inputListRegister IS transferPrice
 printInputListRegisterWHfromCSI 'Реестр цен' (WHfromCSI) = printListRegister(transferPriceActWHfromCSICStoWH(CStoWHWHfromCSI(WHfromCSI))) TOOLBAR;
 
 FORM WHfromCSIs 'Поступления товара с СВХ'
-    OBJECTS w = WHfromCSI
-    PROPERTIES (w) READONLY isPostedWHfromCSI FORCE GRID, numberWHfromCSI, seriesWHfromCSI, dateWHfromCSI, timeWHfromCSI,
+    OBJECTS t = WHfromCSI
+    PROPERTIES (t) READONLY isPostedWHfromCSI FORCE GRID, numberWHfromCSI, seriesWHfromCSI, dateWHfromCSI, timeWHfromCSI,
                             nameStockWHfromCSI, nameCustomStoreWHfromCSI, countWHfromCSIDetailWHfromCSI,
                             quantityWHfromCSIDetailWHfromCSI, quantityWHfromCSRDetailWHfromCSI,
                             statusRecWHfromCSI, countDiffWHfromCSI, quantityDiffWHfromCSI
 
-    PROPERTIES(w) FORCE PANEL receiveWHfromCSI, postRecWHfromCSI SHOWIF isDraftRecWHfromCSI(w)
+    PROPERTIES(t) FORCE PANEL receiveWHfromCSI, postRecWHfromCSI SHOWIF isDraftRecWHfromCSI(t)
 
-    PROPERTIES (w) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
+    PROPERTIES (t) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
-    OBJECTS di = WHfromCSIDetail
-    PROPERTIES(di) READONLY indexWHfromCSIDetail, barcodeWHfromCSIDetail, nameCategoryArticleSkuWHfromCSIDetail,
+    OBJECTS d = WHfromCSIDetail
+    PROPERTIES(d) READONLY indexWHfromCSIDetail, barcodeWHfromCSIDetail, nameCategoryArticleSkuWHfromCSIDetail,
                             nameBrandWHfromCSIDetail, sidArticleWHfromCSIDetail, sidSizeWHfromCSIDetail,
                             sidColorWHfromCSIDetail, nameColorWHfromCSIDetail, barcodeFreightUnitWHfromCSIDetail,
                             nameDestinationWHfromCSIDetail, quantityWHfromCSIDetail, nameUnitOfMeasureArticleSkuWHfromCSIDetail
 
-    FILTERS WHfromCSIWHfromCSIDetail(di) == w
+    FILTERS WHfromCSIWHfromCSIDetail(d) == t
 
     OBJECTS dr = WHfromCSRDetail
     PROPERTIES(dr) READONLY indexWHfromCSRDetail, barcodeWHfromCSRDetail, nameCategoryArticleSkuWHfromCSRDetail,
@@ -976,7 +976,7 @@ FORM WHfromCSIs 'Поступления товара с СВХ'
                             sidColorWHfromCSRDetail, nameColorWHfromCSRDetail, barcodeFreightUnitWHfromCSRDetail,
                             nameDestinationWHfromCSRDetail, quantityWHfromCSRDetail, nameUnitOfMeasureArticleSkuWHfromCSRDetail
 
-    FILTERS WHfromCSIWHfromCSR(WHfromCSRWHfromCSRDetail(dr)) == w
+    FILTERS WHfromCSIWHfromCSR(WHfromCSRWHfromCSRDetail(dr)) == t
 
     OBJECTS df = WHfromCSDDetail
     PROPERTIES (df) READONLY indexWHfromCSDDetail, barcodeWHfromCSDDetail, nameCategoryArticleSkuWHfromCSDDetail,
@@ -984,13 +984,13 @@ FORM WHfromCSIs 'Поступления товара с СВХ'
                              sidColorWHfromCSDDetail, nameColorWHfromCSDDetail, //barcodeFreightUnitWHfromCSDDetail,
                              signedQuantityWHfromCSDDetail, nameUnitOfMeasureArticleSkuWHfromCSDDetail
 
-    FILTERS WHfromCSIWHfromCSDDetail(df)==w
+    FILTERS WHfromCSIWHfromCSDDetail(df)==t
 
     OBJECTS s = RomanLogicsModule.store
     PROPERTIES(s) READONLY name
-    PROPERTIES createInnerOrderStoreWHfromCSI(s, w) READONLYIF innerOrderStoreWHfromCSI(s, w)
+    PROPERTIES createInnerOrderStoreWHfromCSI(s, t) READONLYIF innerOrderStoreWHfromCSI(s, t)
 
-    FILTERS quantitySkuStoreWHfromCSI(s, w) > 0
+    FILTERS quantitySkuStoreWHfromCSI(s, t) > 0
 
     OBJECTS o = innerOrder FIXED PANEL
     PROPERTIES (o) READONLY numberObject, seriesObject, dateInnerOrder, timeInnerOrder,
@@ -998,7 +998,7 @@ FORM WHfromCSIs 'Поступления товара с СВХ'
                             countInnerOrderDetailInnerOrder, quantityInnerOrderDetailInnerOrder, statusInnerOrder
     PROPERTIES (o) editInnerOrder
 
-    FILTERS innerOrderStoreWHfromCSI (s, w) ==o
+    FILTERS innerOrderStoreWHfromCSI (s, t) ==o
 
     OBJECTS pd=transferPriceActWHfromCSIDetail
     PROPERTIES (pd) READONLY indexTransferPriceActWHfromCSIDetail, barcodeTransferPriceActWHfromCSIDetail,
@@ -1011,9 +1011,9 @@ FORM WHfromCSIs 'Поступления товара с СВХ'
                     supplierVATISumTransferPriceActWHfromCSIDetail, numberSupplierVATTransferPriceActWHfromCSIDetail,
                     valueSupplierVATTransferPriceActWHfromCSIDetail, invoiceSumTransferPriceActWHfromCSIDetail
 
-    FILTERS WHfromCSICStoWH(CStoWHCStoWHDetail(CStoWHDetailTransferPriceActWHfromCSIDetail(pd)))==w
+    FILTERS WHfromCSICStoWH(CStoWHCStoWHDetail(CStoWHDetailTransferPriceActWHfromCSIDetail(pd)))==t
 
-    PROPERTIES (w) printInputListRegisterWHfromCSI
+    PROPERTIES (t) printInputListRegisterWHfromCSI
 
 ;
 
@@ -1024,21 +1024,21 @@ DESIGN WHfromCSIs FROM DEFAULT {
         type = SPLITV;
         childConstraints = TO THE BOTTOM;
 
-        ADD w.box {
+        ADD t.box {
             fillVertical = 1;
         }
         NEW docDetail{
             fillVertical = 2;
             type = TABBED;
-            ADD di.box {
+            ADD d.box {
                title = 'Спецификация';
             }
 
             NEW documentHistory {
 
                 title = 'История';
-                ADD w.historyGroup;
-                ADD w.postedGroup;
+                ADD t.historyGroup;
+                ADD t.postedGroup;
             }
 
             ADD dr.box {
@@ -1088,3 +1088,8 @@ DESIGN WHfromCSIs FROM DEFAULT {
 
     ADD functions.box;
 }
+
+retailPriceWHfromCSIDetail 'Цена розничная' (detail) = retailPriceCStoWHDetail(CStoWHDetailWHfromCSIDetail(detail));
+retailSumWHfromCSIDetail 'Сумма розничная' (detail) = quantityWHfromCSIDetail(detail) * retailPriceWHfromCSIDetail(detail);
+useRetailPriceWHfromCSIDetail(WHfromCSIDetail) = stockWHfromCSIDetail(WHfromCSIDetail) IS departmentStore;
+@defineDocumentTransferAccount(WHfromCSI, useRetailPriceWHfromCSIDetail);
