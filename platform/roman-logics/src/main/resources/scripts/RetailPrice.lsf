@@ -232,6 +232,10 @@ statusPriceSetDocument 'Статус' (priceSetDocument) = IF isPostedPriceSetDo
 freightBasePriceSetDocument = DATA freight(basePriceSetDocument);
 importerBasePriceSetDocument = DATA importer(basePriceSetDocument);
 
+basePriceSetDocumentFreightImporter (freight, importer) = GROUP UNIQUE basePriceSetDocument
+    BY freightBasePriceSetDocument(basePriceSetDocument), importerBasePriceSetDocument(basePriceSetDocument)
+    WHERE basePriceSetDocument IS basePriceSetDocument;
+
 userReasonPriceSetDocument 'Основание прайса' = DATA STRING[100] (priceSetDocument);
 reasonPriceSetDocument 'Основание прайса' (priceSetDocument) = UNION OVERRIDE seriesNumberObject(freightBasePriceSetDocument (priceSetDocument)),
                                                                               userReasonPriceSetDocument(priceSetDocument) IN recognizeGroup;
@@ -1145,21 +1149,32 @@ DESIGN priceSetDocuments FROM DEFAULT {
 
 // -------------------------------------------- Расценка фрахтов ------------------------------------------ //
 
-quantityPriceSetDocumentFreightImporter (freight, importer) =
-    GROUP SUM 1 IF freightBasePriceSetDocument(basePriceSetDocument) AND importerBasePriceSetDocument(basePriceSetDocument)
-    BY freightBasePriceSetDocument(basePriceSetDocument), importerBasePriceSetDocument(basePriceSetDocument);
+quantityPriceSetDocumentFreight (freight) = GROUP SUM 1 IF freightBasePriceSetDocument(basePriceSetDocument) BY freightBasePriceSetDocument(basePriceSetDocument);
 
-hasPriceSetDocumentFreightImporter (freight, importer) = TRUE IF NOT quantityPriceSetDocumentFreightImporter(freight, importer)
-    AND freight IS freight AND importer IS importer;
+isPriceSetFreightImporter 'Статус' (freight, importer) = IF basePriceSetDocumentFreightImporter (freight, importer)
+                                     THEN 'Расценен' AND freight IS freight AND importer IS importer
+                                     ELSE 'Не расценен' AND freight IS freight AND importer IS importer MINCHARWIDTH 11;
 
-//quantityPriceSetDocumentFreight (freight) = GROUP SUM 1 IF freightBasePriceSetDocument(basePriceSetDocument) BY freightBasePriceSetDocument(basePriceSetDocument);
-//hasPriceSetDocumentFreight (freight) = TRUE IF NOT quantityPriceSetDocumentFreight(freight) AND freight IS freight;
+quantityImportersFreight (freight) = GROUP SUM 1 IF quantityImporterFreight (importer, freight) BY freight WHERE importer IS importer;
 
-isPriceSetFreightImporter 'Статус' (freight, importer) = IF hasPriceSetDocumentFreightImporter(freight, importer)
-                                     THEN 'Не расценен' AND freight IS freight AND importer IS importer
-                                     ELSE 'Расценен' AND freight IS freight AND importer IS importer MINCHARWIDTH 11;
+quantityNeededPriceSetDocumentFreight (freight) = GROUP SUM 1 IF quantityImporterFreight (importer, freight)
+    AND NOT basePriceSetDocumentFreightImporter(freight, importer) BY freight WHERE importer IS importer;
 
-backgroundPriceSetDocument 'Цвет' (freight, importer) = RGB(212,255,212) IF hasPriceSetDocumentFreightImporter(freight, importer);
+needPriceSetDocumentFreight (freight) = TRUE AND NOT
+    (quantityImportersFreight (freight) (-) quantityNeededPriceSetDocumentFreight(freight)) == quantityImportersFreight (freight);
+
+isPriceSetFreight 'Статус' (freight) = IF needPriceSetDocumentFreight (freight)
+                                        THEN 'Не расценен' AND freight IS freight
+                                        ELSE
+                                            IF  quantityNeededPriceSetDocumentFreight (freight)
+                                            THEN 'Расценен частично' AND freight IS freight
+                                            ELSE 'Расценен' AND freight IS freight MINCHARWIDTH 11;
+
+backgroundPriceSetDocumentFreightImporter 'Цвет' (freight, importer) = RGB(212,255,212)
+    IF freight IS freight AND importer IS importer AND NOT basePriceSetDocumentFreightImporter(freight, importer);
+
+backgroundPriceSetDocumentFreight 'Цвет' (freight) = RGB(212,255,212)
+    IF freight IS freight AND needPriceSetDocumentFreight (freight);
 
 typeExchangeRetailCurrency =  DATA typeExchange(currency);
 nameTypeExchangeRetailCurrency 'Тип обмена для розницы' (currency) = name(typeExchangeRetailCurrency(currency));
@@ -1220,7 +1235,7 @@ FORM freights 'Расценка фрахтов'
 //        FILTER 'Показывать нерасценённые фрахты' 'F11' hasPriceSetDocumentFreight(f)
 
     OBJECTS i = importer
-    PROPERTIES(f, i) READONLY isPriceSetFreightImporter BACKGROUND backgroundPriceSetDocument(f, i)
+    PROPERTIES(f, i) READONLY isPriceSetFreightImporter BACKGROUND backgroundPriceSetDocumentFreightImporter(f, i)
     PROPERTIES(i) READONLY name, sidImporter
     FILTERS quantityImporterFreight (i, f)
 ;
@@ -1279,11 +1294,13 @@ printMarksSkuFreight 'Печать маркировок товаров' (freight
     SET countSku(sku) <- NULL;
     SET shouldBePrintSku(sku) <- TRUE IF quantityImporterFreightSku(importer, freight, sku);
     SET countSku(sku) <- castToInteger(quantityImporterFreightSku(importer, freight, sku));
-    FORM printMarksDocument OBJECTS dt = currentDateTime(), imp = importer, c = currencyFreight(freight) MODAL;
+    FORM printMarksDocument OBJECTS dt = dateTimePriceSetDocument (basePriceSetDocumentFreightImporter(freight, importer)),
+        imp = importer, c = currencyPriceSetDocument(basePriceSetDocumentFreightImporter(freight, importer)) MODAL;
 
 } CONFIRM;
 
 EXTEND FORM freights
+    PROPERTIES (f) isPriceSetFreight BACKGROUND backgroundPriceSetDocumentFreight(f)
     PROPERTIES (f, i) printMarksSkuFreight
     PROPERTIES (f,i) createPriceSetDocument, createPriceSetDocumentSku
 ;
