@@ -91,9 +91,9 @@ public class DataPanelView extends JPanel implements PanelView {
         return o instanceof DataPanelView && ((DataPanelView) o).property.equals(property) && ((DataPanelView) o).columnKey.equals(columnKey);
     }
 
-    protected void forceChangeValue(Object value, boolean aggValue) {
+    protected void forceChangeValue(Object value, boolean isChangeWYS) {
         if (form.commitCurrentEditing()) {
-            simpleDispatcher.changeProperty(value, table.getProperty(), columnKey);
+            simpleDispatcher.changeProperty(value, table.getProperty(), columnKey, isChangeWYS);
         }
     }
 

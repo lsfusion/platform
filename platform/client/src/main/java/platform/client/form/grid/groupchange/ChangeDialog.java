@@ -251,7 +251,7 @@ public class ChangeDialog extends JDialog {
                 super(false, new ClientGroupObjectValue());
             }
 
-            protected void forceChangeValue(Object value, boolean aggValue) {
+            protected void pasteValue(Object value) {
                 selectedValue = value;
 
                 //todo: this is broken

@@ -23,11 +23,11 @@ public class SimpleChangePropertyDispatcher extends ClientFormActionDispatcher {
         return form;
     }
 
-    public boolean changeProperty(Object value, ClientPropertyDraw property, ClientGroupObjectValue columnKey) {
+    public boolean changeProperty(Object value, ClientPropertyDraw property, ClientGroupObjectValue columnKey, boolean isChangeWYS) {
         this.value = value;
 
         try {
-            dispatchResponse(getFormController().executeEditAction(property, columnKey, ServerResponse.CHANGE_WYS));
+            dispatchResponse(getFormController().executeEditAction(property, columnKey, isChangeWYS ? ServerResponse.CHANGE_WYS : ServerResponse.CHANGE));
             return true;
         } catch (IOException ex) {
             throw Throwables.propagate(ex);

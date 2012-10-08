@@ -487,7 +487,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
             if (property != null) {
                 try {
                     Object parsedValue = property.parseString(form, columnKey, table.get(0).get(0), false);
-                    pasteDispatcher.changeProperty(parsedValue, property, columnKey);
+                    pasteDispatcher.changeProperty(parsedValue, property, columnKey, true);
                 } catch (ParseException ignored) {
                 }
             }
@@ -585,6 +585,14 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
             if (selRow == -1 || selRow != row) {
                 return false;
             }
+        }
+
+        if (row < 0 || row >= getRowCount() || column < 0 || column >= getColumnCount()) {
+            return false;
+        }
+
+        if (!isCellEditable(row, column)) {
+            return false;
         }
 
         if (isHierarchical(column)) {

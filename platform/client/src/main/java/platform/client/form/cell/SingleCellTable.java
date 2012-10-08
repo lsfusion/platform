@@ -83,7 +83,7 @@ public abstract class SingleCellTable extends ClientPropertyTable {
             try {
                 Object value = model.getProperty().parseString(getForm(), model.getColumnKey(), table.get(0).get(0), true);
                 if (value != null) {
-                    forceChangeValue(value, false);
+                    pasteValue(value);
                 }
             } catch (ParseException ignored) {
             }
@@ -101,7 +101,7 @@ public abstract class SingleCellTable extends ClientPropertyTable {
         super.setBounds(x, y, width, height);
     }
 
-    protected abstract void forceChangeValue(Object value, boolean aggValue);
+    protected abstract void pasteValue(Object value);
 
     public abstract ClientFormController getForm();
 
