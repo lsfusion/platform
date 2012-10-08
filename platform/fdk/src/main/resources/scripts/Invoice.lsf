@@ -360,6 +360,17 @@ META defineInvoice(sign, contact, partyA, partyB)
         }
     }
 
+    FORM invoiceDetails 'Продажа'
+        OBJECTS d = invoiceDetail
+        PROPERTIES(d) READONLY indexInvoiceDetail, idBarcodeSkuInvoiceDetail, nameSkuInvoiceDetail, shortNameUOMSkuInvoiceDetail,
+                               descriptionInvoiceDetail,
+                               quantityInvoiceDetail, priceInvoiceDetail, sumInvoiceDetail,
+                               numberVATInvoiceDetail, valueVATInvoiceDetail, VATSumInvoiceDetail, invoiceSumInvoiceDetail,
+                               nameStockInvoiceDetail
+
+        DIALOG invoiceDetail OBJECT d
+    ;
+
 END
 
 // Партии
@@ -370,6 +381,57 @@ META defineInvoiceBatch(dumb)
     EXTEND FORM userInvoice PROPERTIES (d) descriptionBatchUserInvoiceDetail AFTER shortNameUOMSkuUserInvoiceDetail;
     EXTEND FORM userInvoices PROPERTIES (d) READONLY descriptionBatchUserInvoiceDetail AFTER shortNameUOMSkuUserInvoiceDetail;
     EXTEND FORM invoices PROPERTIES (d) READONLY descriptionBatchInvoiceDetail AFTER shortNameUOMSkuInvoiceDetail;
+END
+
+META defineInvoiceReturn(NS, NSR, contact)
+    invoiceDetailInvoiceDetail (invoiceDetail) = ABSTRACT NS.invoiceDetail (NSR.invoiceDetail);
+    invoiceDetailUserInvoiceDetail (userInvoiceDetail) = DATA NS.invoiceDetail (NSR.userInvoiceDetail);
+    invoiceDetailInvoiceDetail(detail) += invoiceDetailUserInvoiceDetail(detail);
+
+    CONSTRAINT NS.skuInvoiceDetail(invoiceDetailUserInvoiceDetail(detail)) != NSR.skuUserInvoiceDetail(detail) CHECKED BY invoiceDetailUserInvoiceDetail
+        MESSAGE 'SKU строки основания должен соответствовать SKU строки возврата';
+
+    CONSTRAINT NS.##contact##InvoiceDetail(invoiceDetailUserInvoiceDetail(detail)) != NSR.##contact##UserInvoiceDetail(detail) CHECKED BY invoiceDetailUserInvoiceDetail
+        MESSAGE 'Контрагент строки основания должен соответствовать Контрагент строки возврата';
+
+    CONSTRAINT NS.companyStockInvoiceDetail(invoiceDetailUserInvoiceDetail(detail)) != NSR.companyStockUserInvoiceDetail(detail) CHECKED BY invoiceDetailUserInvoiceDetail
+        MESSAGE 'Компания строки основания должна соответствовать Покупателю строки возврата';
+
+    descriptionInvoiceDetailInvoiceDetail 'Основание' (invoiceDetail) = NS.descriptionInvoiceDetail(invoiceDetailInvoiceDetail(invoiceDetail));
+    descriptionInvoiceDetailUserInvoiceDetail 'Основание' (userInvoiceDetail) = NS.descriptionInvoiceDetail(invoiceDetailUserInvoiceDetail(userInvoiceDetail));
+
+    NSR.priceUserInvoiceDetail(detail) <- IF invoiceDetailUserInvoiceDetail(detail) THEN
+                                                    NS.priceInvoiceDetail(invoiceDetailUserInvoiceDetail(detail))
+                                                 ELSE IF batchUserInvoiceDetail(detail) THEN
+                                                    pricePriceListTypeBatchStockDateTime(NSR.priceListTypeInvoiceDetail(detail),
+                                                                                         NSR.batchInvoiceDetail(detail),
+                                                                                         NSR.stockInvoiceDetail(detail),
+                                                                                         NSR.dateTimeInvoiceDetail(detail))
+                                                 ELSE
+                                                    pricePriceListTypeSkuStockDateTime(NSR.priceListTypeInvoiceDetail(detail),
+                                                                                       NSR.skuInvoiceDetail(detail),
+                                                                                       NSR.stockInvoiceDetail(detail),
+                                                                                       NSR.dateTimeInvoiceDetail(detail))
+                                        WHEN CHANGED(invoiceDetailUserInvoiceDetail(detail)) OR
+                                             CHANGED(NSR.batchInvoiceDetail(detail)) OR
+                                             CHANGED(NSR.priceListTypeInvoiceDetail(detail)) OR
+                                             CHANGED(NSR.skuInvoiceDetail(detail)) OR
+                                             CHANGED(NSR.stockInvoiceDetail(detail)) OR
+                                             CHANGED(NSR.dateTimeInvoiceDetail(detail));
+
+    NSR.VATUserInvoiceDetail(detail) <- NS.VATInvoiceDetail(invoiceDetailUserInvoiceDetail(detail)) WHEN CHANGED(invoiceDetailUserInvoiceDetail(detail));
+
+    EXTEND FORM userInvoice PROPERTIES (d) descriptionInvoiceDetailUserInvoiceDetail AFTER shortNameUOMSkuUserInvoiceDetail;
+    EXTEND FORM userInvoices PROPERTIES (d) READONLY descriptionInvoiceDetailUserInvoiceDetail AFTER shortNameUOMSkuUserInvoiceDetail;
+    EXTEND FORM invoices PROPERTIES (d) READONLY descriptionInvoiceDetailInvoiceDetail AFTER shortNameUOMSkuInvoiceDetail;
+
+    NSR.batchUserInvoiceDetail(detail) <- NS.maxBatchInvoiceDetail(invoiceDetailUserInvoiceDetail(detail))
+        WHEN CHANGED(invoiceDetailUserInvoiceDetail(detail)) AND NS.countBatchInvoiceDetail(invoiceDetailUserInvoiceDetail(detail)) == 1;
+
+    CONSTRAINT batchUserInvoiceDetail(detail) AND invoiceDetailUserInvoiceDetail(detail) AND
+               NOT costInvoiceDetailBatch(invoiceDetailUserInvoiceDetail(detail), batchUserInvoiceDetail(detail))
+               CHECKED BY batchUserInvoiceDetail, invoiceDetailUserInvoiceDetail
+               MESSAGE 'Выбрана партия, которая не была списана в соответствующей строке продажи';
 END
 
 // Товарные накладные
@@ -436,4 +498,3 @@ META defineInvoiceConsignment(partyA, partyB)
         }
     }
 END
-

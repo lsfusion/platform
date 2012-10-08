@@ -67,7 +67,7 @@ changeBarcodeInput = ACTION () {
     EXEC formOkAction();
 }
 FORM barcodeInput 'Ввод штрих-кода'
-    PROPERTIES() barcodeInput ON CHANGEWYS EXEC changeBarcodeInput()
+    PROPERTIES() barcodeInput ON CHANGE EXEC changeBarcodeInput()
 ;
 
 DESIGN barcodeInput FROM DEFAULT {
@@ -96,9 +96,8 @@ META defineAddDetailDialogBarcodeCustom(object, idetail, skuProp)
                 SET quantity###idetail(detail) IF detail == dialogBarcodeDetail() <-
                     quantity###idetail(detail) (+) (1.0 IF detail IS idetail);
             } ELSE {
-                ADDOBJ idetail;
-                FOR w == addedObject() DO {
-                    SET object###idetail(w) <- object AS object;
+                FOR ADDOBJ w = idetail DO {
+                    SET object###idetail(w) <- object;
                     SET skuProp###idetail(w) <- dialogBarcodeSku();
                     SET quantity###idetail(w) <- 1.0;
                 }
@@ -119,7 +118,7 @@ META defineAddDetailDialogBarcodeCustom(object, idetail, skuProp)
         EXEC addDetailBarcode###idetail###object(object, requestedString());
     };
     addDetailInputBarcode###idetail###object 'Ввод штрих-кода :' (object) = SESSION DATA STRING[14] (object) TOOLBAR EDITKEY 'F4' EVENTID 'SCANNER'
-                                                                            ON CHANGEWYS EXEC changeAddDetailInputBarcode###idetail###object(object);
+                                                                            ON CHANGE EXEC changeAddDetailInputBarcode###idetail###object(object);
 END
 
 META defineAddDetailDialogBarcode(object, skuProp)

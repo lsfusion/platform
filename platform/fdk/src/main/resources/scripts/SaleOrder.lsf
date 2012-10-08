@@ -1,14 +1,10 @@
 MODULE SaleOrder;
 
-REQUIRE Order
-;
-
+REQUIRE Order;
 
 NAMESPACE Sale;
 
-
 //----------------------------------------------- Заказ ---------------------------------------------------//
-
 @defineOrder(' (продажа)', customer);
 
 

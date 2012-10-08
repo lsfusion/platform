@@ -1,13 +1,13 @@
 MODULE PurchaseReturnInvoice;
 
-REQUIRE Invoice,PurchaseReturnOrder
-;
+REQUIRE Invoice,PurchaseReturnOrder;
 
 NAMESPACE PurchaseReturn;
-
 
 //----------------------------------------------- Накладная ---------------------------------------------------//
 
 @defineInvoice(' (покупка-возврат)', supplier, supplier, company);
 @defineInvoiceBatch();
+@defineInvoiceReturn(Purchase, PurchaseReturn, supplier);
+
 @defineInvoiceConsignment(company, supplier);

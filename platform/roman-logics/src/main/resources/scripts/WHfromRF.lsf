@@ -261,7 +261,7 @@ changeAddDetailInputBarcodeWHfromRFDetailWHfromRF = ACTION (WHfromRF) {
     EXEC addDialogSkuFreightUnitWHfromRFBarcode(WHfromRF, requestedString());
 };
 addDetailInputBarcodeWHfromRFDetailWHfromRF 'Ввод штрих-кода :' (WHfromRF) = SESSION DATA STRING[14] (WHfromRF) TOOLBAR EDITKEY 'F4'
-                                                                        ON CHANGEWYS EXEC changeAddDetailInputBarcodeWHfromRFDetailWHfromRF(WHfromRF) EVENTID 'SCANNER';
+                                                                        ON CHANGE EXEC changeAddDetailInputBarcodeWHfromRFDetailWHfromRF(WHfromRF) EVENTID 'SCANNER';
 
 fillWHfromRFDetailsSkuFreightUnit 'Заполнить строки из короба' (WHfromRF) = ACTION (WHfromRF) {
     FOR isNotShippedSkuFreightUnitWHfromRF (sku AS sku, currentFreightUnit(WHfromRF), WHfromRF AS WHfromRF) DO {

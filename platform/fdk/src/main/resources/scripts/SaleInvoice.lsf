@@ -4,11 +4,7 @@ REQUIRE SaleOrder, Invoice;
 
 NAMESPACE Sale;
 
-
 //----------------------------------------------- Накладная ---------------------------------------------------//
-
 @defineInvoice(' (продажа)', customer, company, customer);
 @defineInvoiceBatch();
 @defineInvoiceConsignment(company, customer);
-
-

@@ -224,6 +224,49 @@ EXTEND DESIGN company {
 }
 
 // -------------------------------------------- Макросы --------------------------------------------- //
+META defineDocumentHeaderSupplier (object)
+    supplier###object (object) = DATA supplier (object);
+    nameSupplier###object 'Поставщик' (object)= name(supplier###object(object)) IN documentPrmGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
+END
+META defineDocumentAbstractHeaderSupplier (object)
+    supplier###object (object) = ABSTRACT supplier (object);
+    nameSupplier###object 'Поставщик' (object)= name(supplier###object(object)) IN documentPrmGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
+END
+META defineDocumentInterfaceHeaderSupplier (object)
+    @defineDocumentAbstractHeaderSupplier(object);
+    @defineDocumentHeaderSupplier(user###object);
+    supplier###object (object) += supplier###user###object(object);
+END
+
+META defineDocumentDetailSupplier (object, detail)
+    supplier###detail (idetail) = supplier###object(object###detail(idetail));
+    nameSupplier###detail 'Поставщик' (idetail) = nameSupplier###object(object###detail(idetail));
+END
+
+META defineDocumentSupplier (object, detail)
+    @defineDocumentHeaderSupplier(object);
+    @defineDocumentDetailSupplier(object, detail);
+END
+META defineDocumentAbstractSupplier (object, detail)
+    @defineDocumentAbstractHeaderSupplier(object);
+    @defineDocumentDetailSupplier(object, detail);
+END
+META defineDocumentInterfaceSupplier (object, detail)
+    @defineDocumentInterfaceHeaderSupplier(object);
+    @defineDocumentDetailSupplier(object, detail);
+    @defineDocumentDetailSupplier(user###object, user###detail);
+END
+
+META defineDocumentSupplier (object)
+    @defineDocumentSupplier(object, object##Detail);
+END
+META defineDocumentAbstractSupplier (object)
+    @defineDocumentAbstractSupplier(object, object##Detail);
+END
+META defineDocumentInterfaceSupplier (object)
+    @defineDocumentInterfaceSupplier(object, object##Detail);
+END
+
 META defineDocumentHeaderSupplierContract(object)
     supplier###object (object) = DATA supplier (object);
     nameSupplier###object 'Поставщик' (object) = name(supplier###object(object)) IN documentPrmGroup MINCHARWIDTH 30 PREFCHARWIDTH 40;

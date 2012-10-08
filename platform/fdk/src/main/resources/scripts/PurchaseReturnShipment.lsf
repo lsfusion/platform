@@ -1,18 +1,23 @@
 MODULE PurchaseReturnShipment;
 
-REQUIRE Shipment, PurchaseReturnInvoice
-;
+REQUIRE Shipment, PurchaseReturnInvoice;
 
 NAMESPACE PurchaseReturn;
 
-
 //----------------------------------------------- Поставка ---------------------------------------------------//
-
 @defineShipment(outFIFOSkuLedger, ' (покупка-возврат)', supplier, 'Поставщик', supplier, company);
 @defineShipmentBatch();
+
+// Берем учетную цену
+@deriveDocumentDetailPriceBatchStockPrefix(userInvoice, shipment);
+@deriveDocumentDetailPriceBatchStock(userShipment);
 
 // Проводим по регистру
 
 @implementSkuLedger(shipment, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantityShipmentDetail(ledger);
+limitOutFIFOSkuLedgerBatch(ledger, batch) += IF batchShipmentDetail(ledger) THEN
+                                                quantityShipmentDetail (ledger) AND batchShipmentDetail(ledger) == batch
+                                                ELSE currentBalanceBatchStock(batch, stockShipmentDetail(ledger)); //AND NOT commissionContractSkuBatchA(batch);
+changedDataSkuLedger(ledger) += CHANGED(batchShipmentDetail(ledger));
 sumOutSkuLedger (ledger) += sumShipmentDetail(ledger);

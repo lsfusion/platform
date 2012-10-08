@@ -33,7 +33,6 @@ META defineShipment(skuLedger, sign, contact, contactCaption, partyA, partyB)
     @defineDocumentInterfaceDetailQuantity(shipment);
 
     @defineDocumentInterfaceDetailPrice(shipment);
-    @derivePriceOnSkuChange(userShipment);
 
     @defineDocumentInterfaceDetailDataSum(shipment);
     @deriveDocumentDetailSum(userShipment);
@@ -332,6 +331,10 @@ META defineShipment(skuLedger, sign, contact, contactCaption, partyA, partyB)
     shippedInvoiceDetail 'Поставлено' (invoiceDetail) = GROUP SUM quantityShipmentDetail(shipmentDetail) IF isPostedShipmentDetail(shipmentDetail)
                                                                        BY invoiceDetailShipmentDetail(shipmentDetail) PERSISTENT;
 
+    costInvoiceDetailBatch (invoiceDetail, batch) = GROUP SUM costSkuLedgerBatch(shipmentDetail, batch) BY invoiceDetailShipmentDetail(shipmentDetail), batch;
+    countBatchInvoiceDetail 'Кол-во партий' (invoiceDetail) = GROUP SUM 1 IF costInvoiceDetailBatch(invoiceDetail, batch) BY invoiceDetail PERSISTENT;
+    maxBatchInvoiceDetail (invoiceDetail) = GROUP MAX batch IF costInvoiceDetailBatch(invoiceDetail, batch) BY invoiceDetail;
+
     EXTEND FORM userInvoice PROPERTIES(d) READONLY shippedInvoiceDetail AFTER quantityUserInvoiceDetail;
     EXTEND FORM userInvoices PROPERTIES(d) READONLY shippedInvoiceDetail AFTER quantityUserInvoiceDetail;
     EXTEND FORM invoices PROPERTIES(d) READONLY shippedInvoiceDetail AFTER quantityInvoiceDetail;
@@ -446,7 +449,6 @@ META defineShipment(skuLedger, sign, contact, contactCaption, partyA, partyB)
 //-- аггр.объект
 
     @defineDocumentInterfaceDetailPricePrefix(invoice, shipment, ' (учетная)');
-    @derivePriceOnSkuChangePrefix(userInvoice, sku, stock, shipment);
 
     @defineDocumentInterfaceDetailDataSumPrefix (invoice, shipment, ' (учетная)');
     @deriveDocumentDetailSumPrefix(userInvoice, shipment, currency);
@@ -457,7 +459,7 @@ META defineShipment(skuLedger, sign, contact, contactCaption, partyA, partyB)
 
     EXTEND FORM userInvoice
         PROPERTIES(i) createShipmentUserInvoice
-        PROPERTIES(d) SHOWIF createShipmentInvoice(i) shipmentPriceUserInvoiceDetail, shipmentSumUserInvoiceDetail
+        PROPERTIES(d) BEFORE delete(d) SHOWIF createShipmentInvoice(i) shipmentPriceUserInvoiceDetail, shipmentSumUserInvoiceDetail
     ;
     EXTEND FORM userInvoices
         PROPERTIES(i) READONLY createShipmentUserInvoice
@@ -468,6 +470,7 @@ META defineShipment(skuLedger, sign, contact, contactCaption, partyA, partyB)
     ;
 
     createShipmentInvoiceDetail 'Создавать поставку' (invoiceDetail) = createShipmentInvoice(invoiceInvoiceDetail(invoiceDetail));
+    createShipmentUserInvoiceDetail 'Создавать поставку' (invoiceDetail) = createShipmentUserInvoice(userInvoiceUserInvoiceDetail(invoiceDetail));
 
     CLASS invoiceShipment 'Поставка на основе инвойса' : shipment;
     CLASS invoiceShipmentPosted 'Закрытая поставка на основе инвойса' : invoiceShipment, postedObject;

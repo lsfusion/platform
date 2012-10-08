@@ -1,13 +1,8 @@
 MODULE SaleReturnOrder;
 
-REQUIRE Order, SaleShipment
-;
-
+REQUIRE Order, SaleShipment;
 
 NAMESPACE SaleReturn;
 
-
 //----------------------------------------------- Заказ ---------------------------------------------------//
-
 @defineOrder(' (продажа-возврат)', customer);
-
