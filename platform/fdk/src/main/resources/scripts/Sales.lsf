@@ -163,4 +163,4 @@ META implementSalesLedger(concrete, skuProp, stockProp)
     descriptionSalesLedger (ledger) += description###concrete##Detail(ledger);
 END
 
-EXTEND FORM currentBalanceSkuStock PROPERTIES(s, st) averageSoldSkuStock;
+EXTEND FORM currentBalanceSkuStock PROPERTIES(s, st) averageSoldSkuStock READONLY;

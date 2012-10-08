@@ -52,7 +52,7 @@ EXTEND FORM currentBalanceSkuStock
 
 EXTEND FORM currentBalanceBatchStock
     PROPERTIES(bil) READONLY skipASkuLedger AFTER skipSkuLedger
-    PROPERTIES(bt, st) currentBalanceABatchStock AFTER currentBalanceBatchStock
+    PROPERTIES(bt, st) READONLY currentBalanceABatchStock AFTER currentBalanceBatchStock
 ;
 
 TABLE articleStock (article, stock);

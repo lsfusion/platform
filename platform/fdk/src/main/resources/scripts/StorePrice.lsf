@@ -460,28 +460,28 @@ EXTEND FORM currentBalanceSkuStock
                         currentWarePriceLedger SHOWIF showWare()
 
     OBJECTS rpl=retailPriceLedger
-    PROPERTIES (rpl) descriptionRetailPriceLedger, dateTimeRetailPriceLedger, retailPriceRetailPriceLedger
+    PROPERTIES (rpl) READONLY descriptionRetailPriceLedger, dateTimeRetailPriceLedger, retailPriceRetailPriceLedger
     FILTERS isPostedRetailPriceLedger(rpl) AND skuRetailPriceLedger(rpl)==s AND departmentStoreRetailPriceLedger(rpl)==st
     ORDER BY dateTimeRetailPriceLedger DESC
 
 
     OBJECTS ipl=importerPriceLedger
-    PROPERTIES(ipl) descriptionImporterPriceLedger, dateTimeImporterPriceLedger, importerPriceImporterPriceLedger
+    PROPERTIES(ipl) READONLY descriptionImporterPriceLedger, dateTimeImporterPriceLedger, importerPriceImporterPriceLedger
     FILTERS isPostedImporterPriceLedger(ipl) AND skuImporterPriceLedger(ipl)==s AND departmentStoreImporterPriceLedger(ipl)==st
     ORDER BY dateTimeImporterPriceLedger DESC
 
     OBJECTS spl=supplierPriceLedger
-    PROPERTIES(spl) descriptionSupplierPriceLedger, dateTimeSupplierPriceLedger, supplierPriceSupplierPriceLedger
+    PROPERTIES(spl) READONLY descriptionSupplierPriceLedger, dateTimeSupplierPriceLedger, supplierPriceSupplierPriceLedger
     FILTERS isPostedSupplierPriceLedger(spl) AND skuSupplierPriceLedger(spl)==s AND departmentStoreSupplierPriceLedger(spl)==st
     ORDER BY dateTimeSupplierPriceLedger DESC
 
     OBJECTS rvl=retailVATLedger
-    PROPERTIES(rvl) descriptionRetailVATLedger, dateTimeRetailVATLedger, valueRetailVATRetailVATLedger
+    PROPERTIES(rvl) READONLY descriptionRetailVATLedger, dateTimeRetailVATLedger, valueRetailVATRetailVATLedger
     FILTERS isPostedRetailVATLedger(rvl) AND skuRetailVATLedger(rvl)==s AND departmentStoreRetailVATLedger(rvl)==st
     ORDER BY dateTimeRetailVATLedger DESC
 
     OBJECTS wpl=warePriceLedger
-    PROPERTIES(wpl) descriptionWarePriceLedger SHOWIF showWare(), dateTimeWarePriceLedger SHOWIF showWare(), nameWareWarePriceLedger SHOWIF showWare(), warePriceWarePriceLedger SHOWIF showWare()
+    PROPERTIES(wpl) READONLY descriptionWarePriceLedger SHOWIF showWare(), dateTimeWarePriceLedger SHOWIF showWare(), nameWareWarePriceLedger SHOWIF showWare(), warePriceWarePriceLedger SHOWIF showWare()
     FILTERS isPostedWarePriceLedger(wpl) AND skuWarePriceLedger(wpl)==s AND departmentStoreWarePriceLedger(wpl)==st
     ORDER BY dateTimeWarePriceLedger DESC
 ;
@@ -502,27 +502,27 @@ EXTEND FORM balanceSkuStock
                                    retailPriceALedgerDateTime, warePriceALedgerDateTime SHOWIF showWare()
 
     OBJECTS rpl=retailPriceLedger
-    PROPERTIES (rpl) descriptionRetailPriceLedger, dateTimeRetailPriceLedger, retailPriceRetailPriceLedger
+    PROPERTIES (rpl) READONLY descriptionRetailPriceLedger, dateTimeRetailPriceLedger, retailPriceRetailPriceLedger
     FILTERS isPostedRetailPriceLedger(rpl) AND skuRetailPriceLedger(rpl)==s AND departmentStoreRetailPriceLedger(rpl)==st
     ORDER BY dateTimeRetailPriceLedger DESC
 
     OBJECTS ipl=importerPriceLedger
-    PROPERTIES(ipl) descriptionImporterPriceLedger, dateTimeImporterPriceLedger, importerPriceImporterPriceLedger
+    PROPERTIES(ipl) READONLY descriptionImporterPriceLedger, dateTimeImporterPriceLedger, importerPriceImporterPriceLedger
     FILTERS isPostedImporterPriceLedger(ipl) AND skuImporterPriceLedger(ipl)==s AND departmentStoreImporterPriceLedger(ipl)==st
     ORDER BY dateTimeImporterPriceLedger DESC
 
     OBJECTS spl=supplierPriceLedger
-    PROPERTIES(spl) descriptionSupplierPriceLedger, dateTimeSupplierPriceLedger, supplierPriceSupplierPriceLedger
+    PROPERTIES(spl) READONLY descriptionSupplierPriceLedger, dateTimeSupplierPriceLedger, supplierPriceSupplierPriceLedger
     FILTERS isPostedSupplierPriceLedger(spl) AND skuSupplierPriceLedger(spl)==s AND departmentStoreSupplierPriceLedger(spl)==st
     ORDER BY dateTimeSupplierPriceLedger DESC
 
     OBJECTS rvl=retailVATLedger
-    PROPERTIES(rvl) descriptionRetailVATLedger, dateTimeRetailVATLedger, valueRetailVATRetailVATLedger
+    PROPERTIES(rvl) READONLY descriptionRetailVATLedger, dateTimeRetailVATLedger, valueRetailVATRetailVATLedger
     FILTERS isPostedRetailVATLedger(rvl) AND skuRetailVATLedger(rvl)==s AND departmentStoreRetailVATLedger(rvl)==st
     ORDER BY dateTimeRetailVATLedger DESC
 
     OBJECTS wpl= warePriceLedger
-    PROPERTIES(wpl) descriptionWarePriceLedger SHOWIF showWare(), dateTimeWarePriceLedger SHOWIF showWare(), nameWareWarePriceLedger SHOWIF showWare(), warePriceWarePriceLedger SHOWIF showWare()
+    PROPERTIES(wpl) READONLY descriptionWarePriceLedger SHOWIF showWare(), dateTimeWarePriceLedger SHOWIF showWare(), nameWareWarePriceLedger SHOWIF showWare(), warePriceWarePriceLedger SHOWIF showWare()
     FILTERS isPostedWarePriceLedger(wpl) AND skuWarePriceLedger(wpl)==s AND departmentStoreWarePriceLedger(wpl)==st
     ORDER BY dateTimeWarePriceLedger DESC
 ;
