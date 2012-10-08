@@ -64,6 +64,8 @@ META defineOrder(sign, contact)
     @defineAddDetailDialogSkuStock(userOrder, sku, stock, dialogSku);
     @defineAddDetailDialogBarcode(userOrder, sku);
 
+    countOrderDetailStockOrder 'Кол-во строк по складу '(stock, order) = GROUP SUM 1 BY stockOrderDetail(orderDetail), orderOrderDetail(orderDetail);
+
 // --------------------------- Формы Заказа ---------------------------------
 
     FORM userOrder 'Заказ'###sign

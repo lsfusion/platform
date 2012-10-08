@@ -229,6 +229,7 @@ META defineDocumentTransferIn(object, caption, skuProp, stockProp)
     TABLE object##InBatch (object##In, batch);
 
     @defineDocumentAggregation(object##Out, object##In, is###object##Out);
+    @defineDocumentDetailIndex(object##In);
 
     @defineDocumentAggregationStockPrefix(object##Out, object##In, stockProp, 'Склад-получатель', destination, );
     @defineDocumentAggregationStockPrefix(object##Out, object##In, stockProp, 'Склад-отправитель', , source);
@@ -238,8 +239,6 @@ META defineDocumentTransferIn(object, caption, skuProp, stockProp)
     @defineDocumentAggregationHeaderNumber(object##Out, object##In);
 
     @defineDocumentDescription(object##In, object##InDetail, seriesNumber###object##In, caption);
-
-    @defineDocumentDetailIndex(object##In);
 
     @defineDocumentAggregationDetailSku(object##Out, object##In, skuProp);
 
@@ -451,6 +450,10 @@ META defineDocumentTransferDiff(object, caption, skuProp, stockProp)
     object##Diff###object##DiffEDetail (detail) = object##Diff###object##Rec(object##Rec###object##DiffEDetail(detail));
     object##Diff###object##DiffSDetail (detail) = object##Diff###object##Rec(object##Rec###object##DiffSDetail(detail));
 
+    @defineDocumentDetailIndex(object##Diff);
+    @defineDocumentDetailIndex(object##Diff, object##DiffEDetail);
+    @defineDocumentDetailIndex(object##Diff, object##DiffSDetail);
+
     @defineDocumentAggregationHeaderTime(object##Rec, object##Diff);
     @defineDocumentDetailTime(object##Diff, object##DiffEDetail);
     @defineDocumentDetailTime(object##Diff, object##DiffSDetail);
@@ -472,8 +475,6 @@ META defineDocumentTransferDiff(object, caption, skuProp, stockProp)
     skuProp###object##DiffDetail (detail) = UNION EXCLUSIVE skuProp###object##DiffEDetail(detail), skuProp###object##DiffSDetail(detail) PERSISTENT;
     quantity###object##DiffDetail 'Кол-во' (detail) = UNION EXCLUSIVE quantity###object##DiffEDetail(detail), quantity###object##DiffSDetail(detail) PERSISTENT;
     signedQuantity###object##DiffDetail 'Кол-во' (detail) = UNION EXCLUSIVE quantity###object##DiffEDetail(detail), -quantity###object##DiffSDetail(detail) PERSISTENT;
-
-    @defineDocumentDetailIndex(object##Diff);
 
 END
 

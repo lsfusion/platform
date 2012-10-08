@@ -28,6 +28,8 @@ CLASS WHfromCSIDetail 'Строка прихода на склад' : inLIFOSkuL
 
 @defineDocumentAggregation(CStoWH, WHfromCSI, isCStoWH);
 
+@defineDocumentDetailIndex(WHfromCSI);
+
 @defineDocumentAggregationStock(CStoWH, WHfromCSI, customStore, 'СВХ');
 @defineDocumentAggregationStockPrefix(CStoWH, WHfromCSI, stock, 'Склад-получатель', destination, );
 
@@ -36,8 +38,6 @@ CLASS WHfromCSIDetail 'Строка прихода на склад' : inLIFOSkuL
 @defineDocumentAggregationHeaderNumber(CStoWH, WHfromCSI);
 
 @defineDocumentDescription(WHfromCSI, WHfromCSIDetail, seriesNumberWHfromCSI, 'Поступление товара с СВХ');
-
-@defineDocumentDetailIndex(WHfromCSI);
 
 @defineDocumentAggregationDetailSku(CStoWH, WHfromCSI, sku);
 @defineDocumentAggregationDetailQuantity(CStoWH, WHfromCSI);
@@ -719,6 +719,10 @@ WHfromCSIWHfromCSDSDetail (WHfromCSDDetail) = WHfromCSIWHfromCSR(WHfromCSRWHfrom
 WHfromCSDWHfromCSDEDetail (WHfromCSDDetail) = WHfromCSDWHfromCSR(WHfromCSRWHfromCSDEDetail(WHfromCSDDetail));
 WHfromCSDWHfromCSDSDetail (WHfromCSDDetail) = WHfromCSDWHfromCSR(WHfromCSRWHfromCSDSDetail(WHfromCSDDetail));
 
+@defineDocumentDetailIndex(WHfromCSD);
+@defineDocumentDetailIndex(WHfromCSD, WHfromCSDEDetail);
+@defineDocumentDetailIndex(WHfromCSD, WHfromCSDSDetail);
+
 @defineDocumentAggregationHeaderTime(WHfromCSR, WHfromCSD);
 @defineDocumentDetailTime(WHfromCSD, WHfromCSDEDetail);
 @defineDocumentDetailTime(WHfromCSD, WHfromCSDSDetail);
@@ -740,8 +744,6 @@ WHfromCSDWHfromCSDSDetail (WHfromCSDDetail) = WHfromCSDWHfromCSR(WHfromCSRWHfrom
 skuWHfromCSDDetail (WHfromCSDDetail) = UNION EXCLUSIVE skuWHfromCSDEDetail(WHfromCSDDetail), skuWHfromCSDSDetail(WHfromCSDDetail) PERSISTENT;
 quantityWHfromCSDDetail 'Кол-во' (WHfromCSDDetail) = UNION EXCLUSIVE quantityWHfromCSDEDetail(WHfromCSDDetail), quantityWHfromCSDSDetail(WHfromCSDDetail) PERSISTENT;
 signedQuantityWHfromCSDDetail 'Кол-во' (WHfromCSDDetail) = UNION EXCLUSIVE quantityWHfromCSDEDetail(WHfromCSDDetail), -quantityWHfromCSDSDetail(WHfromCSDDetail) PERSISTENT;
-
-@defineDocumentDetailIndex(WHfromCSD);
 
 @defineDocumentDetailSkuArticle(WHfromCSD);
 
@@ -789,6 +791,8 @@ needTransferPriceActDetailCStoWHDetail (CStoWHDetail) = destinationStockCStoWH(C
 transferPriceActWHfromCSITransferPriceActWHfromCSIDetail (transferPriceActWHfromCSIDetail) =
     transferPriceActWHfromCSICStoWH(CStoWHCStoWHDetail(CStoWHDetailTransferPriceActWHfromCSIDetail(transferPriceActWHfromCSIDetail)));
 
+@defineDocumentDetailIndex(transferPriceActWHfromCSI);
+
 @defineDocumentAggregationTime(CStoWH, transferPriceActWHfromCSI);
 @defineDocumentAggregationPosted(CStoWH, transferPriceActWHfromCSI);
 
@@ -796,8 +800,6 @@ transferPriceActWHfromCSITransferPriceActWHfromCSIDetail (transferPriceActWHfrom
 @defineDocumentAggregationHeaderNote(CStoWH, transferPriceActWHfromCSI);
 
 @defineDocumentDescription(transferPriceActWHfromCSI, transferPriceActWHfromCSIDetail, seriesNumberTransferPriceActWHfromCSI, 'Акт расценки (поставка)');
-
-@defineDocumentDetailIndex(transferPriceActWHfromCSI);
 
 @defineDocumentAggregationDetailSku(CStoWH, transferPriceActWHfromCSI, sku);
 

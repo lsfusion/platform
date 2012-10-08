@@ -841,6 +841,10 @@ orderPickingInnerOrderDiffSDetail (detail) = orderPickingInnerOrderRec(innerOrde
 innerOrderDiffInnerOrderDiffEDetail (detail) = innerOrderDiffInnerOrderRec(innerOrderRecInnerOrderDiffEDetail(detail));
 innerOrderDiffInnerOrderDiffSDetail (detail) = innerOrderDiffInnerOrderRec(innerOrderRecInnerOrderDiffSDetail(detail));
 
+@defineDocumentDetailIndex(innerOrderDiff);
+@defineDocumentDetailIndex(innerOrderDiff, innerOrderDiffEDetail);
+@defineDocumentDetailIndex(innerOrderDiff, innerOrderDiffSDetail);
+
 @defineDocumentAggregationHeaderTime(innerOrderRec, innerOrderDiff);
 @defineDocumentDetailTime(innerOrderDiff, innerOrderDiffEDetail);
 @defineDocumentDetailTime(innerOrderDiff, innerOrderDiffSDetail);
@@ -862,8 +866,6 @@ innerOrderDiffInnerOrderDiffSDetail (detail) = innerOrderDiffInnerOrderRec(inner
 skuInnerOrderDiffDetail (detail) = UNION EXCLUSIVE skuInnerOrderDiffEDetail(detail), skuInnerOrderDiffSDetail(detail) PERSISTENT;
 quantityInnerOrderDiffDetail 'Кол-во' (detail) = UNION EXCLUSIVE quantityInnerOrderDiffEDetail(detail), quantityInnerOrderDiffSDetail(detail) PERSISTENT;
 signedQuantityInnerOrderDiffDetail 'Кол-во' (detail) = UNION EXCLUSIVE quantityInnerOrderDiffEDetail(detail), -quantityInnerOrderDiffSDetail(detail) PERSISTENT;
-
-@defineDocumentDetailIndex(innerOrderDiff);
 
 EXTEND FORM innerOrders
     OBJECTS f = innerOrderDiffDetail

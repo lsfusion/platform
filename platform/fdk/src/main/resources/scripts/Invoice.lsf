@@ -55,6 +55,8 @@ META defineInvoice(sign, contact, partyA, partyB)
     @defineAddDetailDialogSkuStock(userInvoice, sku, stock, dialogSku);
     @defineAddDetailDialogBarcode(userInvoice, sku);
 
+    countInvoiceDetailStockInvoice (stock, invoice) = GROUP SUM 1 BY stockInvoiceDetail(invoiceDetail), invoiceInvoiceDetail(invoiceDetail);
+
 //--  Связь с заказом
     orderInvoiceDetail = ABSTRACT order (invoiceDetail);
     orderUserInvoiceDetail = DATA order(userInvoiceDetail);
@@ -66,48 +68,34 @@ META defineInvoice(sign, contact, partyA, partyB)
             MESSAGE 'Покупатель и компания в заказе и накладной должны соответствовать друг другу';
 
     GROUP orderGroup 'Информация о заказе' : publicGroup;
+
     descriptionOrderInvoiceDetail 'Заказ' (invoiceDetail) = descriptionOrder(orderInvoiceDetail(invoiceDetail)) IN orderGroup;
     descriptionOrderUserInvoiceDetail 'Заказ' (userInvoiceDetail) = descriptionOrder(orderUserInvoiceDetail(userInvoiceDetail)) IN orderGroup;
 
-    inOrderInvoice (order, invoice) = GROUP SUM quantityInvoiceDetail(invoiceDetail) BY orderInvoiceDetail(invoiceDetail), invoiceInvoiceDetail(invoiceDetail);
-
-    ordersInvoice 'Заказы' (invoice) = GROUP CONCAT castToString255(descriptionOrder(order)) IF inOrderInvoice(order, invoice) , ', '
+    quantityInvoiceDetailOrderInvoice (order, invoice) = GROUP SUM quantityInvoiceDetail(invoiceDetail) BY orderInvoiceDetail(invoiceDetail), invoiceInvoiceDetail(invoiceDetail);
+    ordersInvoice 'Заказы' (invoice) = GROUP CONCAT castToString255(descriptionOrder(order)) IF quantityInvoiceDetailOrderInvoice(order, invoice) , ', '
                                              BY invoice
                                              ORDER order
-                                             IN orderGroup MINCHARWIDTH 30 PREFCHARWIDTH 50;
+                                             IN orderGroup MINCHARWIDTH 30 PREFCHARWIDTH 50 PERSISTENT;
 
-//-- Подсчет к-ва в накладных
-
-    invoicedOrderSku 'К-во в накладных' (order, sku) = [GROUP SUM quantityInvoiceDetail(invoiceDetail) IF isPostedInvoiceDetail(invoiceDetail)
-        BY orderInvoiceDetail(invoiceDetail), skuInvoiceDetail(invoiceDetail)](order, sku) AND isPostedOrder(order);
-
-    invoicedOrderDetail 'К-во в накладных' (orderDetail) = PARTITION UNGROUP invoicedOrderSku
-                                                              LIMIT STRICT quantityOrderDetail (orderDetail) AND isPostedOrderDetail(orderDetail)
+    invoicedInvoiceDetailOrderSku 'Выписано накладных' (order, sku) = GROUP SUM quantityInvoiceDetail(invoiceDetail) IF isPostedInvoiceDetail(invoiceDetail)
+                                                               BY orderInvoiceDetail(invoiceDetail), skuInvoiceDetail(invoiceDetail);
+    invoicedOrderDetail 'Выписано накладных' (orderDetail) = PARTITION UNGROUP invoicedInvoiceDetailOrderSku
+                                                              LIMIT STRICT quantityOrderDetail (orderDetail)
                                                               BY orderOrderDetail(orderDetail), skuOrderDetail(orderDetail)
                                                               ORDER orderDetail;
 
-    EXTEND FORM userOrder
-        PROPERTIES(d) READONLY invoicedOrderDetail AFTER quantityUserOrderDetail
+    EXTEND FORM userOrder PROPERTIES(d) READONLY invoicedOrderDetail AFTER quantityUserOrderDetail;
+    EXTEND FORM userOrders PROPERTIES(d) READONLY invoicedOrderDetail AFTER quantityUserOrderDetail;
+    EXTEND FORM orders PROPERTIES(d) READONLY invoicedOrderDetail AFTER quantityOrderDetail;
 
-    ;
+    toInvoiceOrderDetail 'Не выписано накладных' (orderDetail) = quantityOrderDetail (orderDetail) (-) invoicedOrderDetail(orderDetail);
 
-    EXTEND FORM userOrders
-        PROPERTIES(d) READONLY invoicedOrderDetail AFTER quantityUserOrderDetail
+    toInvoiceOrderDetailStockOrder 'Не выписано накладных по складу' (stock, order) =
+        GROUP SUM toInvoiceOrderDetail(orderDetail) IF toInvoiceOrderDetail(orderDetail) > 0
+        BY stockOrderDetail(orderDetail), orderOrderDetail(orderDetail);
 
-    ;
-
-    EXTEND FORM orders
-        PROPERTIES(d) READONLY invoicedOrderDetail AFTER quantityOrderDetail
-
-    ;
-
-    diffInvoicedOrderDetail 'Остаток по заказу' (orderDetail) = quantityOrderDetail (orderDetail) (-) invoicedOrderDetail(orderDetail);
-
-    inInvoicedQuantityStockOrder 'Связь по кол-ву' (stock, order) = GROUP SUM diffInvoicedOrderDetail(orderDetail) IF stockOrderDetail(orderDetail) == stock
-        AND diffInvoicedOrderDetail(orderDetail) >0 AND isPostedOrderDetail(orderDetail)
-        BY stock, orderOrderDetail(orderDetail);
-
-    inStockOrder 'Связь' (stock, order) = GROUP SUM 1 IF stockOrderDetail(orderDetail) == stock BY stock, orderOrderDetail(orderDetail);
+    // Создание заказа на основе инвойса //
 
     FORM invoiceOrders 'Заказы'###sign
         OBJECTS s = stock FIXED PANEL
@@ -119,23 +107,21 @@ META defineInvoice(sign, contact, partyA, partyB)
         PROPERTIES (o) READONLY isPostedOrder FORCE GRID, objectClassName, numberOrder, seriesOrder, dateOrder, timeOrder,
                                 nameStockOrder, name###contact###Order, nameCurrencyOrder, noteOrder,
                                 countOrderDetailOrder, quantityOrderDetailOrder, sumOrderDetailOrder
+        FILTERS isPostedOrder(o),
+                contact###Order(o) == c
+        FILTERGROUP order
+            FILTER 'Заказы с невыписанными товарами со склада' 'F10' toInvoiceOrderDetailStockOrder(s, o) DEFAULT
+            FILTER 'Заказы со склада' 'F9' countOrderDetailStockOrder(s, o)
 
         OBJECTS d = orderDetail
         PROPERTIES (d) READONLY indexOrderDetail, idBarcodeSkuOrderDetail, nameSkuOrderDetail, shortNameUOMSkuOrderDetail,
                                 quantityOrderDetail, invoicedOrderDetail, priceOrderDetail, sumOrderDetail, nameStockOrderDetail,
-                                diffInvoicedOrderDetail
+                                toInvoiceOrderDetail
+        FILTERS orderOrderDetail(d) == o
+        FILTERGROUP orderDetail
+            FILTER 'Строки с невыписанными товарами со склада' 'F10' stockOrderDetail(d) == s AND toInvoiceOrderDetail(d) > 0 DEFAULT
+            FILTER 'Строки со склада' 'F9' stockOrderDetail(d) == s
 
-        FILTERS orderOrderDetail(d) == o,
-                contact###Order(o) == c,
-                isPostedOrder(o)
-
-        FILTERGROUP filter
-            FILTER 'Заказы для данного склада с возможностью выбора' 'F10' inInvoicedQuantityStockOrder(s,o) DEFAULT
-            FILTER 'Заказы только для данного склад' 'F9' inStockOrder(s,o)
-
-        FILTERGROUP filter
-            FILTER 'Строки для данного склада с возможностью выбора' 'F10' stockOrderDetail(d) ==s AND diffInvoicedOrderDetail(d) >0 AND isPostedOrderDetail(d) DEFAULT
-            FILTER 'Строки только для данного склада' 'F9' stockOrderDetail(d) ==s
         DIALOG order OBJECT o
     ;
 
@@ -168,24 +154,26 @@ META defineInvoice(sign, contact, partyA, partyB)
                     }
                 }
             }
-            PROPERTY(diffInvoicedOrderDetail) { background = #FFFFCC; }
+            PROPERTY(toInvoiceOrderDetail) { background = #FFFFCC; }
         }
     }
 
-    fillOrderUserInvoice 'Заполнить накладную на основании заказа' =  ACTION (userInvoice) {
-        LOCAL saleOrder = order();
-
+    fillOrderUserInvoice 'Заполнить на основе заказа' =  ACTION (userInvoice) {
         FORM invoiceOrders OBJECTS s = stockUserInvoice(userInvoice), c = contact###UserInvoice(userInvoice) MODAL;
         IF formResult() == formResult.ok THEN {
+            LOCAL saleOrder = order();
             SET saleOrder() <- chosenObject('o');
 
-            FOR orderOrderDetail(orderDetail) == saleOrder() AND stockOrderDetail(orderDetail) ==stockUserInvoice(userInvoice) AND diffInvoicedOrderDetail(orderDetail) >0 AND isPostedOrderDetail(orderDetail) ADDOBJ d = userInvoiceDetail DO {
-                SET userInvoiceUserInvoiceDetail(d) <- userInvoice;
-                SET orderUserInvoiceDetail(d) <- saleOrder();
-    //            SET stockUserInvoiceDetail (d) <- stockOrderDetail(orderDetail);
-                SET skuUserInvoiceDetail(d) <- skuOrderDetail(orderDetail);
-                SET quantityUserInvoiceDetail (d) <- diffInvoicedOrderDetail(orderDetail);
-                SET priceUserInvoiceDetail (d) <- priceOrderDetail(orderDetail);
+            FOR orderOrderDetail(orderDetail) == saleOrder() AND
+                stockOrderDetail(orderDetail) == stockUserInvoice(userInvoice) AND
+                toInvoiceOrderDetail(orderDetail) > 0
+                ADDOBJ d = userInvoiceDetail DO {
+                    SET userInvoiceUserInvoiceDetail(d) <- userInvoice;
+                    SET orderUserInvoiceDetail(d) <- saleOrder();
+                    SET skuUserInvoiceDetail(d) <- skuOrderDetail(orderDetail);
+                    SET quantityUserInvoiceDetail (d) <- toInvoiceOrderDetail(orderDetail);
+                    SET priceUserInvoiceDetail (d) <- priceOrderDetail(orderDetail);
+                    SET sumUserInvoiceDetail (d) <- sumOrderDetail(orderDetail);
             }
         }
     } IN orderGroup;
@@ -373,50 +361,44 @@ META defineInvoice(sign, contact, partyA, partyB)
     }
 
 END
-// Партии
 
+// Партии
 META defineInvoiceBatch(dumb)
     @defineDocumentInterfaceDetailBatch(invoice, batch);
     @deriveDocumentDetailPriceBatchPriceListType(userInvoice);
 
-    EXTEND FORM userInvoice
-    PROPERTIES (d) descriptionBatchUserInvoiceDetail AFTER shortNameUOMSkuUserInvoiceDetail
-    ;
-    EXTEND FORM userInvoices
-    PROPERTIES (d) READONLY descriptionBatchUserInvoiceDetail AFTER shortNameUOMSkuUserInvoiceDetail
-    ;
-    EXTEND FORM invoices
-    PROPERTIES (d) READONLY descriptionBatchInvoiceDetail AFTER shortNameUOMSkuInvoiceDetail
-    ;
+    EXTEND FORM userInvoice PROPERTIES (d) descriptionBatchUserInvoiceDetail AFTER shortNameUOMSkuUserInvoiceDetail;
+    EXTEND FORM userInvoices PROPERTIES (d) READONLY descriptionBatchUserInvoiceDetail AFTER shortNameUOMSkuUserInvoiceDetail;
+    EXTEND FORM invoices PROPERTIES (d) READONLY descriptionBatchInvoiceDetail AFTER shortNameUOMSkuInvoiceDetail;
 END
+
 // Товарные накладные
 META defineInvoiceConsignment(partyA, partyB)
+    @defineDocumentDetailPackWeightSku(invoice);
+    @defineConsignmentInterface(invoice);
+    @implementConsignmentDetailSku(invoice);
 
-@defineDocumentDetailPackWeightSku(invoice);
-@defineConsignmentInterface(invoice);
-@implementConsignmentDetailSku(invoice);
+    senderConsignment (consignment) += partyA###Invoice(consignment);
+    recipientConsignment (consignment) += partyB###Invoice(consignment);
+    currencyConsignment (consignment) += currencyInvoice(consignment);
 
-senderConsignment (consignment) += partyA###Invoice(consignment);
-recipientConsignment (consignment) += partyB###Invoice(consignment);
-currencyConsignment (consignment) += currencyInvoice(consignment);
+    priceConsignmentDetail (consignmentDetail) += priceInvoiceDetail(consignmentDetail);
 
-priceConsignmentDetail (consignmentDetail) += priceInvoiceDetail(consignmentDetail);
+    sumConsignmentDetail (consignmentDetail) += sumInvoiceDetail (consignmentDetail);
 
-sumConsignmentDetail (consignmentDetail) += sumInvoiceDetail (consignmentDetail);
+    vatConsignmentDetail (consignmentDetail) += valueVATInvoiceDetail(consignmentDetail);
 
-vatConsignmentDetail (consignmentDetail) += valueVATInvoiceDetail(consignmentDetail);
+    sumVATConsignmentDetail (consignmentDetail) +=  VATSumInvoiceDetail(consignmentDetail);
 
-sumVATConsignmentDetail (consignmentDetail) +=  VATSumInvoiceDetail(consignmentDetail);
+    sumInvoiceConsignmentDetail (consignmentDetail) += invoiceSumInvoiceDetail(consignmentDetail);
 
-sumInvoiceConsignmentDetail (consignmentDetail) += invoiceSumInvoiceDetail(consignmentDetail);
+    shortNameUOMConsignmentDetail (consignmentDetail) += shortNameUOMSku(skuInvoiceDetail (consignmentDetail));
 
-shortNameUOMConsignmentDetail (consignmentDetail) += shortNameUOMSku(skuInvoiceDetail (consignmentDetail));
+    //noteInvoiceWHOutDetail (invoiceWHOutDetail) = [FORMULA STRING[30] '\'Цена импортера:\' ||  \' \' || CAST($1 AS TEXT)'](
+    //    importerPriceBatchA(batchAInvoiceWHOutDetail(invoiceWHOutDetail)));
 
-//noteInvoiceWHOutDetail (invoiceWHOutDetail) = [FORMULA STRING[30] '\'Цена импортера:\' ||  \' \' || CAST($1 AS TEXT)'](
-//    importerPriceBatchA(batchAInvoiceWHOutDetail(invoiceWHOutDetail)));
-
-//noteConsignmentDetail (consignmentDetail) += noteInvoiceWHOutDetail(consignmentDetail) IF
-//    importerPriceBatchA(batchAInvoiceWHOutDetail(consignmentDetail)) != supplierPriceInvoiceWHOutDetail(consignmentDetail);
+    //noteConsignmentDetail (consignmentDetail) += noteInvoiceWHOutDetail(consignmentDetail) IF
+    //    importerPriceBatchA(batchAInvoiceWHOutDetail(consignmentDetail)) != supplierPriceInvoiceWHOutDetail(consignmentDetail);
 
     EXTEND FORM  userInvoices
         PROPERTIES (i)  FORCE PANEL printConsignmentVerticalA, printConsignmentHorizontalA,
@@ -427,7 +409,7 @@ shortNameUOMConsignmentDetail (consignmentDetail) += shortNameUOMSku(skuInvoiceD
 
     EXTEND DESIGN userInvoices {
         printContainer {
-            NEW case55{
+            NEW consignmentRow1 {
                 childConstraints = TO THE RIGHT;
 
                 NEW contOne {
@@ -442,7 +424,7 @@ shortNameUOMConsignmentDetail (consignmentDetail) += shortNameUOMSku(skuInvoiceD
                     ADD PROPERTY(printConsignmentSimpleAttach);
                 }
             }
-            NEW ttn1{
+            NEW consignmentRow2 {
                 childConstraints = TO THE RIGHT;
                 title = 'ТТН-1';
                 ADD PROPERTY(printConsignmentVerticalA);

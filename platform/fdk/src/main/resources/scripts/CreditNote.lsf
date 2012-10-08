@@ -50,7 +50,7 @@ META defineCreditNote(sign, contact, contactCaption)
 
 // --------------------------- Формы --------------------------------- //
 
-    FORM userCreditNote 'Акт расхождения'###sign
+    FORM userCreditNote 'Акт расхождений'###sign
         OBJECTS c = userCreditNote FIXED PANEL
         PROPERTIES (c) objectClassName, nameStockUserCreditNote, nameNumeratorObject, numberObject, seriesObject, dateUserCreditNote, timeUserCreditNote,
                        name###contact###UserCreditNote, nameCurrencyUserCreditNote, noteUserCreditNote,
@@ -114,7 +114,7 @@ META defineCreditNote(sign, contact, contactCaption)
         }
     }
 
-    FORM userCreditNotes 'Акты расхождения'###sign
+    FORM userCreditNotes 'Акты расхождений'###sign
         OBJECTS c = userCreditNote
         PROPERTIES (c) READONLY isPostedUserCreditNote FORCE GRID, objectClassName, numberObject, seriesObject, dateUserCreditNote, timeUserCreditNote,
                                 nameStockUserCreditNote, name###contact###UserCreditNote, nameCurrencyUserCreditNote, noteUserCreditNote,
@@ -181,42 +181,16 @@ META defineCreditNote(sign, contact, contactCaption)
         CHECKED BY invoiceDetailUserCreditNoteDetail
             MESSAGE contactCaption###', компания и товар в накладной и акте расхождения должны соответствовать друг другу';
 
-    quantityUserCreditNoteDetail (userCreditNoteDetail)  <- diffShippedInvoiceDetail(invoiceDetailUserCreditNoteDetail(userCreditNoteDetail))
-        WHEN CHANGED(invoiceDetailUserCreditNoteDetail(userCreditNoteDetail));
-
-    priceUserCreditNoteDetail (userCreditNoteDetail)  <- priceInvoiceDetail(invoiceDetailUserCreditNoteDetail(userCreditNoteDetail))
-        WHEN CHANGED(invoiceDetailUserCreditNoteDetail(userCreditNoteDetail));
-
-    sumUserCreditNoteDetail (userCreditNoteDetail)  <- roundCurrency((quantityUserCreditNoteDetail(userCreditNoteDetail) *
-        priceUserCreditNoteDetail(userCreditNoteDetail)), currencyInvoiceDetail(invoiceDetailUserCreditNoteDetail(userCreditNoteDetail)))
-        WHEN CHANGED(invoiceDetailUserCreditNoteDetail(userCreditNoteDetail));
-
-    VATUserCreditNoteDetail (userCreditNoteDetail)  <- VATInvoiceDetail(invoiceDetailUserCreditNoteDetail(userCreditNoteDetail))
-        WHEN CHANGED(invoiceDetailUserCreditNoteDetail(userCreditNoteDetail));
-
-    VATSumUserCreditNoteDetail (userCreditNoteDetail) <- roundCurrency((sumUserCreditNoteDetail(userCreditNoteDetail) *
-        valueVATUserCreditNoteDetail (userCreditNoteDetail) / 100), currencyInvoiceDetail(invoiceDetailUserCreditNoteDetail(userCreditNoteDetail)))
-        WHEN CHANGED(invoiceDetailUserCreditNoteDetail(userCreditNoteDetail));
-
-    descriptionIndexInvoiceDetail 'Накладная' (invoiceDetail) =
-        [FORMULA STRING[200]  ' CAST($1 AS TEXT) || \', позиция \' || \'  \' || CAST($2 AS TEXT)'](
-        descriptionInvoiceDetail(invoiceDetail), indexInvoiceDetail(invoiceDetail)) MINCHARWIDTH 30 PREFCHARWIDTH 50;
     descriptionIndexInvoiceUserCreditNoteDetail 'Накладная' (userCreditNoteDetail) =  descriptionIndexInvoiceDetail(invoiceDetailUserCreditNoteDetail(userCreditNoteDetail));
-    descriptionIndexInvoiceCreditNoteDetail 'Накладная' (creditNoteDetail) =  descriptionIndexInvoiceDetail(invoiceDetailCreditNoteDetail(creditNoteDetail));
 
-
-    inInvoiceCreditNote (invoice, creditNote) = GROUP SUM quantityCreditNoteDetail(creditNoteDetail) BY invoiceInvoiceDetail(invoiceDetailCreditNoteDetail(creditNoteDetail)), creditNoteCreditNoteDetail(creditNoteDetail);
-
-    invoicesCreditNote 'Накладные' (creditNote) = GROUP CONCAT castToString255(descriptionInvoice(invoice)) IF inInvoiceCreditNote(invoice, creditNote) , ', '
+    quantityInvoiceCreditNote (invoice, creditNote) = GROUP SUM quantityCreditNoteDetail(creditNoteDetail) BY invoiceInvoiceDetail(invoiceDetailCreditNoteDetail(creditNoteDetail)), creditNoteCreditNoteDetail(creditNoteDetail);
+    invoicesCreditNote 'Накладные' (creditNote) = GROUP CONCAT castToString255(descriptionInvoice(invoice)) IF quantityInvoiceCreditNote(invoice, creditNote) , ', '
                                                     BY creditNote
                                                     ORDER invoice IN invoiceGroup MINCHARWIDTH 30 PREFCHARWIDTH 50;
 
-    descriptionOrderCreditNoteDetail 'Заказ' (creditNoteDetail) = descriptionOrderInvoiceDetail(invoiceDetailCreditNoteDetail(creditNoteDetail));
-    descriptionOrderUserCreditNoteDetail 'Заказ' (userCreditNoteDetail) = descriptionOrderInvoiceDetail(invoiceDetailUserCreditNoteDetail(userCreditNoteDetail));
-
     EXTEND FORM userCreditNote
         PROPERTIES(c) READONLY invoicesCreditNote
-        PROPERTIES(d) descriptionIndexInvoiceUserCreditNoteDetail  BEFORE delete(d)
+        PROPERTIES(d) descriptionIndexInvoiceUserCreditNoteDetail BEFORE delete(d)
     ;
     EXTEND DESIGN userCreditNote { headerColumn2 { ADD c.invoiceGroup; } }
 
@@ -225,6 +199,22 @@ META defineCreditNote(sign, contact, contactCaption)
         PROPERTIES(d) READONLY descriptionIndexInvoiceUserCreditNoteDetail
     ;
 
+    quantityUserCreditNoteDetail (detail)  <- toShipInvoiceDetail(invoiceDetailUserCreditNoteDetail(detail))
+        WHEN CHANGED(invoiceDetailUserCreditNoteDetail(detail));
+
+    priceUserCreditNoteDetail (detail)  <- priceInvoiceDetail(invoiceDetailUserCreditNoteDetail(detail))
+        WHEN CHANGED(invoiceDetailUserCreditNoteDetail(detail));
+
+    sumUserCreditNoteDetail (detail)  <- roundCurrency((quantityUserCreditNoteDetail(detail) *
+        priceUserCreditNoteDetail(detail)), currencyInvoiceDetail(invoiceDetailUserCreditNoteDetail(detail)))
+        WHEN CHANGED(quantityUserCreditNoteDetail(detail)) OR CHANGED(priceUserCreditNoteDetail(detail)) OR CHANGED(currencyInvoiceDetail(detail));
+
+    VATUserCreditNoteDetail (detail)  <- VATInvoiceDetail(invoiceDetailUserCreditNoteDetail(detail))
+        WHEN CHANGED(invoiceDetailUserCreditNoteDetail(detail));
+
+    VATSumUserCreditNoteDetail (detail) <- roundCurrency((sumUserCreditNoteDetail(detail) *
+        valueVATUserCreditNoteDetail (detail) / 100), currencyInvoiceDetail(invoiceDetailUserCreditNoteDetail(detail)))
+        WHEN CHANGED(sumUserCreditNoteDetail(detail)) OR CHANGED(VATUserCreditNoteDetail(detail)) OR CHANGED(currencyInvoiceDetail(detail));
 
 //-- аггр.объект
 
@@ -234,20 +224,13 @@ META defineCreditNote(sign, contact, contactCaption)
     createCreditNoteInvoiceDetail 'Создавать акт расхождения' (invoiceDetail) = createCreditNoteInvoice(invoiceInvoiceDetail(invoiceDetail));
 
     needToCreditNoteInvoiceDetail (invoiceDetail)= createCreditNoteInvoiceDetail(invoiceDetail)  AND
-        diffShippedInvoiceDetail (invoiceDetail) AND isPostedInvoiceDetail(invoiceDetail);
+        toShipInvoiceDetail (invoiceDetail) AND isPostedInvoiceDetail(invoiceDetail);
 
     needToCreditNoteInvoice (invoice) = GROUP SUM 1 IF needToCreditNoteInvoiceDetail(invoiceDetail) BY invoiceInvoiceDetail(invoiceDetail);
 
-    EXTEND FORM userInvoice
-        PROPERTIES(i) createCreditNoteUserInvoice
-    ;
-    EXTEND FORM userInvoices
-        PROPERTIES(i) READONLY createCreditNoteUserInvoice
-    ;
-    EXTEND FORM invoices
-        PROPERTIES(i) createCreditNoteInvoice
-    ;
-
+    EXTEND FORM userInvoice PROPERTIES(i) createCreditNoteUserInvoice;
+    EXTEND FORM userInvoices PROPERTIES(i) READONLY createCreditNoteUserInvoice;
+    EXTEND FORM invoices PROPERTIES(i) createCreditNoteInvoice;
 
     CLASS invoiceCreditNote 'Акт расхождения на основе инвойса' : creditNote;
     CLASS invoiceCreditNotePosted 'Закрытый акт расхождения на основе инвойса' : invoiceCreditNote, postedObject;
@@ -257,6 +240,8 @@ META defineCreditNote(sign, contact, contactCaption)
 
     @defineDocumentAggregation(invoice, invoiceCreditNote, needToCreditNoteInvoice);
     creditNoteCreditNoteDetail(detail) += invoiceCreditNoteInvoiceCreditNoteDetail(detail);
+
+    @defineDocumentDetailIndex(invoiceCreditNote);
 
     dateCreditNote(creditNote) += dateInvoiceCreditNote(creditNote);
     timeCreditNote(creditNote) += timeInvoiceCreditNote(creditNote);
@@ -289,41 +274,36 @@ META defineCreditNote(sign, contact, contactCaption)
     @defineDocumentDescription(invoiceCreditNote, invoiceCreditNoteDetail, seriesNumberInvoiceCreditNote, 'Акт расхождения на основе инвойса'###sign);
     descriptionCreditNote (creditNote) += descriptionInvoiceCreditNote(creditNote);
 
-    @defineDocumentDetailIndex(invoiceCreditNote);
-
     @defineDocumentAggregationDetailSku(invoice, invoiceCreditNote, sku);
     skuCreditNoteDetail(creditNoteDetail) +=  skuInvoiceCreditNoteDetail(creditNoteDetail);
 
-    @defineDocumentAggregationDetailProp (invoice, invoiceCreditNote, diffShipped, 'Кол-во');   //                ????????   может надо сделать через минус
+    @defineDocumentAggregationDetailProperty (invoice, invoiceCreditNote, toShip, 'Кол-во');   //                ????????   может надо сделать через минус
 
-    quantityCreditNoteDetail(creditNoteDetail) += diffShippedInvoiceCreditNoteDetail(creditNoteDetail);
+    quantityCreditNoteDetail(creditNoteDetail) += toShipInvoiceCreditNoteDetail(creditNoteDetail);
 
-    @defineDocumentAggregationDetailProp (invoice, invoiceCreditNote, price, 'Цена');
+    @defineDocumentAggregationDetailProperty (invoice, invoiceCreditNote, price, 'Цена');
 
     priceCreditNoteDetail(creditNoteDetail) += priceInvoiceCreditNoteDetail(creditNoteDetail);
 
-    sumInvoiceCreditNoteDetail 'Сумма' (invoiceCreditNoteDetail) =  roundCurrency((diffShippedInvoiceCreditNoteDetail(invoiceCreditNoteDetail) *
+    sumInvoiceCreditNoteDetail 'Сумма' (invoiceCreditNoteDetail) =  roundCurrency((toShipInvoiceCreditNoteDetail(invoiceCreditNoteDetail) *
         priceInvoiceCreditNoteDetail(invoiceCreditNoteDetail)), currencyInvoiceCreditNoteDetail(invoiceCreditNoteDetail));
 
     sumCreditNoteDetail(creditNoteDetail) += sumInvoiceCreditNoteDetail(creditNoteDetail);
 
     invoiceDetailCreditNoteDetail(creditNoteDetail) += invoiceDetailInvoiceCreditNoteDetail(creditNoteDetail);
 
-    @defineDocumentAggregationDetailProp (invoice, invoiceCreditNote, VAT, 'НДС');
+    @defineDocumentAggregationDetailProperty (invoice, invoiceCreditNote, VAT, 'НДС');
     VATCreditNoteDetail (creditNoteDetail) += VATInvoiceCreditNoteDetail(creditNoteDetail);
 
-    @defineDocumentAggregationDetailProp (invoice, invoiceCreditNote, numberVAT, 'НДС, номер');
-    @defineDocumentAggregationDetailProp (invoice, invoiceCreditNote, valueVAT, 'НДС, %');
+    @defineDocumentAggregationDetailProperty (invoice, invoiceCreditNote, numberVAT, 'НДС, номер');
+    @defineDocumentAggregationDetailProperty (invoice, invoiceCreditNote, valueVAT, 'НДС, %');
 
     VATSumInvoiceCreditNoteDetail 'Сумма НДС' (invoiceCreditNoteDetail) = roundCurrency((sumInvoiceCreditNoteDetail(invoiceCreditNoteDetail) *
         valueVATInvoiceCreditNoteDetail (invoiceCreditNoteDetail) / 100), currencyInvoiceCreditNoteDetail(invoiceCreditNoteDetail));
 
     VATSumCreditNoteDetail (creditNoteDetail) += VATSumInvoiceCreditNoteDetail(creditNoteDetail);
 
-//    @defineDocumentAggregationDetailProp (invoice, invoiceCreditNote, invoiceSum, 'Сумма с НДС');
-   invoiceSumInvoiceCreditNoteDetail 'Сумма с НДС' (invoiceCreditNoteDetail) = sumInvoiceCreditNoteDetail(invoiceCreditNoteDetail) (+) VATSumInvoiceCreditNoteDetail(invoiceCreditNoteDetail);
-
-    FORM dialogCreditNotes 'Акты расхождения (все)'###sign
+    FORM dialogCreditNotes 'Акты расхождений (все)'###sign
         OBJECTS c = creditNote
         PROPERTIES (c) READONLY isPostedCreditNote FORCE GRID, objectClassName, numberCreditNote, seriesCreditNote, dateCreditNote, timeCreditNote,
                                 nameStockCreditNote, name###contact###CreditNote, nameCurrencyCreditNote, noteCreditNote,
@@ -353,7 +333,6 @@ META defineCreditNote(sign, contact, contactCaption)
                 ADD d.box {
                     title = 'Спецификация';
                 }
-
             }
         }
     }
@@ -367,8 +346,8 @@ META defineCreditNoteBatch(dumb)
     EXTEND FORM userCreditNotes PROPERTIES (d) READONLY descriptionBatchUserCreditNoteDetail AFTER shortNameUOMSkuUserCreditNoteDetail;
 
 
-    batchUserCreditNoteDetail (userCreditNoteDetail)  <- batchInvoiceDetail(invoiceDetailUserCreditNoteDetail(userCreditNoteDetail))
-        WHEN CHANGED(invoiceDetailUserCreditNoteDetail(userCreditNoteDetail));
+    batchUserCreditNoteDetail (detail)  <- batchInvoiceDetail(invoiceDetailUserCreditNoteDetail(detail))
+        WHEN CHANGED(invoiceDetailUserCreditNoteDetail(detail));
 
     @defineDocumentAggregationDetailBatch (invoice, invoiceCreditNote);
     batchCreditNoteDetail (creditNoteDetail) += batchInvoiceCreditNoteDetail(creditNoteDetail);

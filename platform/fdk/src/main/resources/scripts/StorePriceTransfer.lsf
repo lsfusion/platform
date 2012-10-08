@@ -36,9 +36,9 @@ META defineDocumentTransferPriceAct (object, caption, captionDetail, skuProp, st
     @defineDocumentAggregationHeaderNumber(object##Out, transferPriceAct###object);
     @defineDocumentAggregationHeaderNote(object##Out, transferPriceAct###object);
 
-    @defineDocumentDescription(transferPriceAct###object, transferPriceAct###object##Detail, seriesNumberTransferPriceAct###object, caption);
-
     @defineDocumentDetailIndex(transferPriceAct###object);
+
+    @defineDocumentDescription(transferPriceAct###object, transferPriceAct###object##Detail, seriesNumberTransferPriceAct###object, caption);
 
     @defineDocumentAggregationDetailSku(object##Out, transferPriceAct###object, skuProp);
 

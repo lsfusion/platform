@@ -708,11 +708,11 @@ META defineDocumentAggregationDetailBatch (primObject, aggrObject)
 END
 
 // Prop
-META defineDocumentAggregationDetailProp (primObject, aggrObject, propertyPrim, propertyAggr, caption)
+META defineDocumentAggregationDetailProperty (primObject, aggrObject, propertyPrim, propertyAggr, caption)
     propertyAggr###aggrObject##Detail caption (detail) = propertyPrim###primObject##Detail(primObject##Detail###aggrObject##Detail(detail)) PERSISTENT;
 END
-META defineDocumentAggregationDetailProp (primObject, aggrObject, property, caption)
-    @defineDocumentAggregationDetailProp (primObject, aggrObject, property, property, caption);
+META defineDocumentAggregationDetailProperty (primObject, aggrObject, property, caption)
+    @defineDocumentAggregationDetailProperty (primObject, aggrObject, property, property, caption);
 END
 
 

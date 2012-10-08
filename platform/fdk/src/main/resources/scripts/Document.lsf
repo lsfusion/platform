@@ -370,6 +370,10 @@ END
 
 META defineDocumentDetailDescription(object, detail)
     description###detail 'Название документа' (detail) = description###object(object###detail(detail)) MINCHARWIDTH 30 PREFCHARWIDTH 50;
+    descriptionIndex###detail 'Название документа' (detail) =
+        [FORMULA STRING[200]  ' CAST($1 AS TEXT) || \', позиция \' || \'  \' || CAST($2 AS TEXT)'](
+            description###detail(detail),
+            index###detail(detail)) MINCHARWIDTH 30 PREFCHARWIDTH 50;
 END
 
 META defineDocumentDescription(object, detail, numberProp, caption)
