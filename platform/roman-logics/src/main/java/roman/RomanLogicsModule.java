@@ -369,6 +369,8 @@ public class RomanLogicsModule extends LogicsModule {
     LCP originalNameArticle;
     LCP translateNameArticle;
     LCP translateNameArticleSku;
+    LCP translateNameColorSupplier;
+    LCP translateNameColorSupplierItem;
     LCP translateNameSkuLanguage;
     LAP translationNameSku;
     LAP translationNameSkuInvoice;
@@ -710,8 +712,12 @@ public class RomanLogicsModule extends LogicsModule {
     public LCP originalNameArticleSkuLanguage;
     public LCP coefficientArticle;
     public LCP coefficientArticleSku;
+    public LCP sidTypeLabel;
     public LCP typeLabelArticle;
     public LCP nameTypeLabelArticle;
+    public LCP typeLabelArticleSku;
+    public LCP sidTypeLabelArticleSku;
+
     private LCP inSupplierBoxShipment;
     private LCP quantityArticle;
     private LCP quantityShipSku;
@@ -2233,11 +2239,18 @@ public class RomanLogicsModule extends LogicsModule {
 
         translationNameSkuInvoice = addJoinAProp("translationNameSkuInvoice", "Перевод", translationNameSkuLanguage, 1, languageInvoice, 2);
 
+        translateNameColorSupplier = addDProp(supplierAttributeGroup, "translateNameColorSupplier", "Наименование", InsensitiveStringClass.get(50), colorSupplier);
+
         coefficientArticle = addDProp(intraAttributeGroup, "coefficientArticle", "Кол-во в комплекте", IntegerClass.instance, article);
         coefficientArticleSku = addJProp(intraAttributeGroup, true, "coefficientArticleSku", "Кол-во в комплекте", coefficientArticle, articleSku, 1);
 
+        sidTypeLabel = addDProp(baseGroup, "sidTypeLabel", "Код", InsensitiveStringClass.get(50), typeLabel);
+
         typeLabelArticle = addDProp(idGroup, "typeLabelArticle", "Тип этикетки (ИД)", typeLabel, article);
         nameTypeLabelArticle = addJProp("nameTypeLabelArticle", "Тип этикетки", baseLM.name, typeLabelArticle, 1);
+
+        typeLabelArticleSku = addJProp("typeLabelArticleSku", "Тип этикетки (ИД)", typeLabelArticle, articleSku, 1);
+        sidTypeLabelArticleSku = addJProp("sidTypeLabelArticleSku", "Код", sidTypeLabel, typeLabelArticleSku, 1);
 
         //Category
         typeInvoiceCategory = addDProp(idGroup, "typeInvoiceCategory", "Тип инвойса номенклатурной группы (ИД)", typeInvoice, category);
@@ -2281,6 +2294,8 @@ public class RomanLogicsModule extends LogicsModule {
         colorSupplierItem = addDProp(idGroup, "colorSupplierItem", "Цвет поставщика (ИД)", colorSupplier, item);
         sidColorSupplierItem = addJProp(itemAttributeGroup, "sidColorSupplierItem", "Код цвета", sidColorSupplier, colorSupplierItem, 1);
         nameColorSupplierItem = addJProp(itemAttributeGroup, "nameColorSupplierItem", "Цвет поставщика", baseLM.name, colorSupplierItem, 1);
+
+        translateNameColorSupplierItem = addJProp("translateNameColorSupplierItem", "Цвет (на этикетке)", translateNameColorSupplier, colorSupplierItem, 1);
 
         inListArticleColorSupplier = addDProp(baseGroup, "inListArticleColorSupplier", "Наличие", LogicalClass.instance, list, article, colorSupplier);
 
@@ -4713,7 +4728,7 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(numberListArticle, (box ? objSupplierBox : objInvoice), objArticle);
             addPropertyDraw(objArticle, nameSizeGroupSupplierArticle, sidArticle, nameSeasonYearArticle, nameBrandSupplierArticle,
                     nameCollectionSupplierArticle, nameSubCategorySupplierArticle, nameThemeSupplierArticle, nameCategoryArticle,
-                    originalNameArticle, sidCustomCategoryOriginArticle, nameTypeFabricArticle, sidGenderArticle,
+                    originalNameArticle, sidCustomCategoryOriginArticle, nameTypeFabricArticle, sidGenderArticle, nameTypeLabelArticle,
                     nameCountrySupplierOfOriginArticle, netWeightArticle, mainCompositionOriginArticle, baseLM.barcode);
             addPropertyDraw(quantityListArticle, (box ? objSupplierBox : objInvoice), objArticle);
             //addPropertyDraw(quantitySimpleInvoiceArticle, objInvoice, objArticle);
@@ -7438,7 +7453,7 @@ public class RomanLogicsModule extends LogicsModule {
             objBrand = addSingleGroupObject(brandSupplier, "Бренд", sidBrandSupplier, customsSIDBrandSupplier, baseLM.name, nameCountryBrandSupplier, sidGenderBrandSupplier);
             addObjectActions(this, objBrand);
 
-            objColor = addSingleGroupObject(colorSupplier, "Цвет", sidColorSupplier, baseLM.name);
+            objColor = addSingleGroupObject(colorSupplier, "Цвет", sidColorSupplier, baseLM.name, translateNameColorSupplier);
             addObjectActions(this, objColor);
 
             objGroupSize = addSingleGroupObject(sizeGroupSupplier, "Размерная сетка", baseLM.name);

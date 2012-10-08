@@ -482,7 +482,7 @@ VATRetailSkuDepartmentStoreDateTime(sku, departmentStore, dateTime) += retailVAT
 EXTEND FORM options
     PROPERTIES() barcodePrefix,
                  nameDictionaryComposition, nameDictionaryName,
-                 nameTypeExchangeSTX, nameTypeExchangeCustom, nameTypeExchangePayCustom, nameTypeExchangePayManagerial,
+                 nameTypeExchangeSTX, nameTypeExchangeCustom, //nameTypeExchangePayCustom, nameTypeExchangePayManagerial,
                  nameCurrencyPayFreights, nameCurrencyCustom,
                  NDSPercentCustom, percentCostFreights, tariffVolumeFreights,
                  sidTypeDutyDuty, nameTypeDutyDuty,
@@ -496,8 +496,8 @@ EXTEND DESIGN options {
         ADD PROPERTY(nameDictionaryName);
         ADD PROPERTY(nameTypeExchangeSTX);
         ADD PROPERTY(nameTypeExchangeCustom);
-        ADD PROPERTY(nameTypeExchangePayCustom);
-        ADD PROPERTY(nameTypeExchangePayManagerial);
+        //ADD PROPERTY(nameTypeExchangePayCustom);
+        //ADD PROPERTY(nameTypeExchangePayManagerial);
         ADD PROPERTY(nameCurrencyPayFreights);
         ADD PROPERTY(nameCurrencyCustom);
         ADD PROPERTY(NDSPercentCustom);
