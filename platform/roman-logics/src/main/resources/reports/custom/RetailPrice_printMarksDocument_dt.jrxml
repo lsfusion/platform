@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="dt" pageWidth="141" pageHeight="198" columnWidth="141" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
-	<property name="ireport.zoom" value="3.452271214393106"/>
+	<property name="ireport.zoom" value="3.138428376721009"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="0"/>
+	<property name="ireport.y" value="137"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
 		<box>
 			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
@@ -75,9 +75,9 @@
 	</group>
 	<detail>
 		<band height="198">
-			<printWhenExpression><![CDATA[$F{languageLegalEntity}==null]]></printWhenExpression>
+			<printWhenExpression><![CDATA[!("uk_UA".equals( $F{localeLanguageCompany}))]]></printWhenExpression>
 			<textField isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="0" y="17" width="131" height="8"/>
+				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="3" y="17" width="131" height="8"/>
 				<box>
 					<topPen lineWidth="0.0"/>
 					<leftPen lineWidth="0.0"/>
@@ -90,57 +90,57 @@
 				<textFieldExpression class="java.lang.String"><![CDATA["Пол: " + ($F{sidGenderArticleSku}!=null?$F{sidGenderArticleSku}:"")]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement stretchType="RelativeToBandHeight" x="15" y="0" width="116" height="8"/>
+				<reportElement x="18" y="1" width="116" height="8"/>
 				<box>
 					<topPen lineWidth="0.0"/>
 					<leftPen lineWidth="0.0"/>
 					<bottomPen lineWidth="0.0"/>
 					<rightPen lineWidth="0.0"/>
 				</box>
-				<textElement textAlignment="Center">
+				<textElement textAlignment="Center" verticalAlignment="Top">
 					<font size="6" isBold="true"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA["     "+($F{nameCategoryArticleSku}!=null?$F{nameCategoryArticleSku}:"")]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle0_1" positionType="Float" stretchType="RelativeToBandHeight" x="39" y="161" width="75" height="12">
+				<reportElement style="GroupCellStyle0_1" positionType="Float" stretchType="RelativeToBandHeight" x="42" y="159" width="75" height="12">
 					<printWhenExpression><![CDATA[$F{priceADiscountPriceSetDocumentSkuCurrencyDateTime}!=null]]></printWhenExpression>
 				</reportElement>
-				<textElement textAlignment="Right" verticalAlignment="Middle">
+				<textElement textAlignment="Right" verticalAlignment="Top">
 					<font size="6" isBold="true" isStrikeThrough="true"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{priceABasePriceSetDocumentSkuCurrencyDateTime}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="0" y="9" width="39" height="8"/>
-				<textElement textAlignment="Left">
+				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="3" y="9" width="39" height="8"/>
+				<textElement textAlignment="Left" verticalAlignment="Top">
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA["Артикул: "]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="0" y="33" width="131" height="16"/>
+				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="3" y="33" width="131" height="16"/>
 				<textElement textAlignment="Left" verticalAlignment="Top">
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA["Размер: " + ($F{nameCommonSizeSku}!=null?$F{nameCommonSizeSku}:"")]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0_1" positionType="Float" stretchType="RelativeToBandHeight" x="0" y="98" width="131" height="8"/>
-				<textElement textAlignment="Left">
+				<reportElement style="GroupCellStyle0_1" positionType="Float" x="3" y="98" width="131" height="8"/>
+				<textElement textAlignment="Left" verticalAlignment="Top">
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA["Торговая марка: " + ($F{nameBrandSupplierArticleSku}!=null?$F{nameBrandSupplierArticleSku}:"")]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="0" y="57" width="131" height="24"/>
-				<textElement textAlignment="Left">
+				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="3" y="57" width="131" height="24"/>
+				<textElement textAlignment="Left" verticalAlignment="Top">
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA["Изготовитель: " + ($F{nameSupplierArticleSku}!=null?$F{nameSupplierArticleSku}:"") + " " + ($F{addressSupplierArticleSku}!=null?$F{addressSupplierArticleSku}:"") + " " + ($F{nameCountryBrandSupplierSku}!=null?$F{nameCountryBrandSupplierSku}:"")]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="0" y="97" width="131" height="0">
+				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="3" y="97" width="131" height="0">
 					<printWhenExpression><![CDATA[!("3".equals($F{sidTypeLabelArticleSku}))]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Left">
@@ -149,67 +149,67 @@
 				<textFieldExpression class="java.lang.String"><![CDATA["Сделано: " + ($F{nameCountrySku}!=null?$F{nameCountrySku}:"")]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="0" y="49" width="55" height="8"/>
-				<textElement textAlignment="Left">
+				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="3" y="49" width="55" height="8"/>
+				<textElement textAlignment="Left" verticalAlignment="Top">
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[("4".equals($F{sidTypeLabelArticleSku}))?($F{translateNameColorSupplierItem}!=null?($F{translateNameColorSupplierItem}+";"):""):($F{sidColorSupplierItem}!=null?($F{sidColorSupplierItem}+";"):"")]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0_1" positionType="Float" stretchType="RelativeToBandHeight" x="0" y="106" width="131" height="16"/>
-				<textElement textAlignment="Left">
+				<reportElement style="GroupCellStyle0_1" positionType="Float" x="3" y="106" width="131" height="16"/>
+				<textElement textAlignment="Left" verticalAlignment="Top">
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[(("1".equals($F{sidTypeLabelArticleSku})||"4".equals($F{sidTypeLabelArticleSku}))?("Состав сырья: " + ($F{mainCompositionSku}!=null?$F{mainCompositionSku}:"")+($F{additionalCompositionSku}!=null?(","+" "+$F{additionalCompositionSku}):"")):("2".equals($F{sidTypeLabelArticleSku})?"Состав сырья смотрите на вшивной ленте":"Состав и страну изготовитель смотрите на вшивной ленте"))]]></textFieldExpression>
 			</textField>
 			<componentElement>
-				<reportElement style="GroupCellStyle0" x="33" y="172" width="67" height="25"/>
+				<reportElement style="GroupCellStyle0" x="36" y="170" width="67" height="25"/>
 				<jr:EAN13 xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" textPosition="bottom">
 					<jr:codeExpression><![CDATA[$F{barcode}]]></jr:codeExpression>
 				</jr:EAN13>
 			</componentElement>
 			<textField>
-				<reportElement style="GroupCellStyle0" x="7" y="149" width="26" height="12"/>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
+				<reportElement style="GroupCellStyle0" x="10" y="147" width="26" height="12"/>
+				<textElement textAlignment="Center" verticalAlignment="Top">
 					<font size="6" isBold="true"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA["Цена:"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0_1" positionType="Float" x="0" y="122" width="131" height="8"/>
-				<textElement>
+				<reportElement style="GroupCellStyle0_1" x="3" y="122" width="131" height="8"/>
+				<textElement verticalAlignment="Top">
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA["Товар сертифицирован в РБ"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle0_1" positionType="Float" stretchType="RelativeToBandHeight" x="39" y="149" width="75" height="12"/>
+				<reportElement style="GroupCellStyle0_1" x="42" y="147" width="75" height="12"/>
 				<box>
 					<topPen lineWidth="0.0"/>
 					<leftPen lineWidth="0.0"/>
 					<bottomPen lineWidth="0.0"/>
 					<rightPen lineWidth="0.0"/>
 				</box>
-				<textElement textAlignment="Right" verticalAlignment="Middle">
+				<textElement textAlignment="Right" verticalAlignment="Top">
 					<font size="6" isBold="true"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[($F{priceADiscountPriceSetDocumentSkuCurrencyDateTime}==null?$F{priceABasePriceSetDocumentSkuCurrencyDateTime}:$F{priceADiscountPriceSetDocumentSkuCurrencyDateTime})]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="114" y="149" width="17" height="12"/>
+				<reportElement x="117" y="147" width="17" height="12"/>
 				<box>
 					<topPen lineWidth="0.0"/>
 					<leftPen lineWidth="0.0"/>
 					<bottomPen lineWidth="0.0"/>
 					<rightPen lineWidth="0.0"/>
 				</box>
-				<textElement verticalAlignment="Middle">
+				<textElement verticalAlignment="Top">
 					<font size="6" isBold="true"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[" руб."]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="114" y="161" width="17" height="12">
+				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="117" y="159" width="17" height="12">
 					<printWhenExpression><![CDATA[$F{priceADiscountPriceSetDocumentSkuCurrencyDateTime}!=null]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -218,51 +218,51 @@
 					<bottomPen lineWidth="0.0"/>
 					<rightPen lineWidth="0.0"/>
 				</box>
-				<textElement verticalAlignment="Middle">
+				<textElement verticalAlignment="Top">
 					<font size="6" isBold="true"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[" руб."]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0_1" x="0" y="25" width="131" height="8"/>
-				<textElement>
+				<reportElement style="GroupCellStyle0_1" x="3" y="25" width="131" height="8"/>
+				<textElement verticalAlignment="Top">
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA["Размерный код: " + ($F{sidSizeSupplierItem}!=null?$F{sidSizeSupplierItem}:"")]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0_1" x="0" y="81" width="131" height="16"/>
-				<textElement>
+				<reportElement style="GroupCellStyle0_1" x="3" y="81" width="131" height="16"/>
+				<textElement verticalAlignment="Top">
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA["Импортёр: " + ($F{nameImporterSku}!=null?$F{nameImporterSku}:"") + " " + ($F{addressImporterSku}!=null?$F{addressImporterSku}:"")]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0_1" x="55" y="49" width="45" height="8"/>
-				<textElement>
+				<reportElement style="GroupCellStyle0_1" x="58" y="49" width="45" height="8"/>
+				<textElement verticalAlignment="Top">
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA["Дата поставки: "]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0_1" x="100" y="49" width="31" height="8"/>
-				<textElement>
+				<reportElement style="GroupCellStyle0_1" x="103" y="49" width="31" height="8"/>
+				<textElement verticalAlignment="Top">
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[($F{dt}!=null?(($F{dt}.getYear()+ 1900)+" год"):"")]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0_1" x="61" y="9" width="70" height="8"/>
-				<textElement textAlignment="Right">
+				<reportElement style="GroupCellStyle0_1" x="64" y="9" width="70" height="8"/>
+				<textElement textAlignment="Right" verticalAlignment="Top">
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[($F{sidArticleSku}!=null?$F{sidArticleSku}:"")]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0_1" positionType="Float" x="0" y="130" width="131" height="8">
+				<reportElement style="GroupCellStyle0_1" x="3" y="130" width="131" height="8">
 					<printWhenExpression><![CDATA[$F{warrantySku}!=null]]></printWhenExpression>
 				</reportElement>
-				<textElement>
+				<textElement verticalAlignment="Top">
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA["Гарантийный срок - " + ($F{warrantySku}!=null?(($F{warrantySku}).intValue() + " дней"):"")]]></textFieldExpression>
@@ -271,7 +271,7 @@
 		<band height="198">
 			<printWhenExpression><![CDATA["uk_UA".equals( $F{localeLanguageCompany})]]></printWhenExpression>
 			<textField isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="0" y="17" width="131" height="8"/>
+				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="3" y="17" width="131" height="8"/>
 				<box>
 					<topPen lineWidth="0.0"/>
 					<leftPen lineWidth="0.0"/>
@@ -284,104 +284,104 @@
 				<textFieldExpression class="java.lang.String"><![CDATA["Стать: " + ($F{sidGenderArticleSkuCompany}!=null?$F{sidGenderArticleSkuCompany}:"")]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement stretchType="RelativeToBandHeight" x="15" y="0" width="116" height="8"/>
+				<reportElement stretchType="RelativeToBandHeight" x="18" y="0" width="116" height="8"/>
 				<box>
 					<topPen lineWidth="0.0"/>
 					<leftPen lineWidth="0.0"/>
 					<bottomPen lineWidth="0.0"/>
 					<rightPen lineWidth="0.0"/>
 				</box>
-				<textElement textAlignment="Center">
+				<textElement textAlignment="Center" verticalAlignment="Top">
 					<font size="6" isBold="true"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA["   "+($F{nameCategoryArticleSkuCompany}!=null?$F{nameCategoryArticleSkuCompany}:"")]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle0_1" positionType="Float" stretchType="RelativeToBandHeight" x="39" y="161" width="75" height="12">
+				<reportElement style="GroupCellStyle0_1" positionType="Float" stretchType="RelativeToBandHeight" x="42" y="161" width="75" height="12">
 					<printWhenExpression><![CDATA[$F{priceADiscountPriceSetDocumentSkuCurrencyDateTime}!=null]]></printWhenExpression>
 				</reportElement>
-				<textElement textAlignment="Right" verticalAlignment="Middle">
+				<textElement textAlignment="Right" verticalAlignment="Top">
 					<font size="6" isBold="true" isStrikeThrough="true"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{priceABasePriceSetDocumentSkuCurrencyDateTime}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="0" y="9" width="39" height="8"/>
-				<textElement textAlignment="Left">
+				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="3" y="9" width="39" height="8"/>
+				<textElement textAlignment="Left" verticalAlignment="Top">
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA["Артикул: "]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="0" y="33" width="131" height="16"/>
+				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="3" y="33" width="131" height="16"/>
 				<textElement textAlignment="Left" verticalAlignment="Top">
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA["Розмір: " + ($F{nameCommonSizeSku}!=null?$F{nameCommonSizeSku}:"")]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="0" y="106" width="131" height="8"/>
-				<textElement textAlignment="Left">
+				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="3" y="106" width="131" height="8"/>
+				<textElement textAlignment="Left" verticalAlignment="Top">
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA["Торгова марка: " + ($F{nameBrandSupplierArticleSku}!=null?$F{nameBrandSupplierArticleSku}:"")]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="0" y="57" width="131" height="24"/>
+				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="3" y="57" width="131" height="24"/>
 				<textElement textAlignment="Left" verticalAlignment="Top">
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA["Виготівник: " + ($F{nameSupplierArticleSku}!=null?$F{nameSupplierArticleSku}:"") + " " + ($F{addressSupplierArticleSku}!=null?$F{addressSupplierArticleSku}:"") + " " + ($F{nameCountryBrandSupplierSkuCompany}!=null?$F{nameCountryBrandSupplierSkuCompany}:"")]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="0" y="97" width="131" height="8"/>
-				<textElement textAlignment="Left">
+				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="3" y="97" width="131" height="8"/>
+				<textElement textAlignment="Left" verticalAlignment="Top">
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA["Зроблено: " + ($F{nameCountrySkuCompany}!=null?$F{nameCountrySkuCompany}:"")]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="0" y="49" width="19" height="8"/>
-				<textElement textAlignment="Left">
+				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="3" y="49" width="19" height="8"/>
+				<textElement textAlignment="Left" verticalAlignment="Top">
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[($F{sidColorSupplierItem}!=null?($F{sidColorSupplierItem}+";"):"")]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="0" y="114" width="131" height="16"/>
-				<textElement textAlignment="Left">
+				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="3" y="114" width="131" height="16"/>
+				<textElement textAlignment="Left" verticalAlignment="Top">
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA["Склад сировини: " + ($F{mainCompositionSkuCompany}!=null?$F{mainCompositionSkuCompany}:"")+($F{additionalCompositionSkuCompany}!=null?(","+" "+$F{additionalCompositionSkuCompany}):"")]]></textFieldExpression>
 			</textField>
 			<componentElement>
-				<reportElement style="GroupCellStyle0" x="33" y="172" width="67" height="25"/>
+				<reportElement style="GroupCellStyle0" x="36" y="172" width="67" height="25"/>
 				<jr:EAN13 xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" textPosition="bottom">
 					<jr:codeExpression><![CDATA[$F{barcode}]]></jr:codeExpression>
 				</jr:EAN13>
 			</componentElement>
 			<textField>
-				<reportElement style="GroupCellStyle0" x="7" y="149" width="26" height="12"/>
-				<textElement textAlignment="Center">
+				<reportElement style="GroupCellStyle0" x="10" y="149" width="26" height="12"/>
+				<textElement textAlignment="Center" verticalAlignment="Top">
 					<font size="6" isBold="true"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA["Цена:"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="114" y="149" width="17" height="12"/>
+				<reportElement x="117" y="149" width="17" height="12"/>
 				<box>
 					<topPen lineWidth="0.0"/>
 					<leftPen lineWidth="0.0"/>
 					<bottomPen lineWidth="0.0"/>
 					<rightPen lineWidth="0.0"/>
 				</box>
-				<textElement verticalAlignment="Middle">
+				<textElement verticalAlignment="Top">
 					<font size="6" isBold="true"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{shortNameCurrency}+"."]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="114" y="161" width="17" height="12">
+				<reportElement x="117" y="161" width="17" height="12">
 					<printWhenExpression><![CDATA[$F{priceADiscountPriceSetDocumentSkuCurrencyDateTime}!=null]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -390,65 +390,65 @@
 					<bottomPen lineWidth="0.0"/>
 					<rightPen lineWidth="0.0"/>
 				</box>
-				<textElement verticalAlignment="Middle">
+				<textElement verticalAlignment="Top">
 					<font size="6" isBold="true"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{shortNameCurrency}+"."]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0_1" x="0" y="25" width="131" height="8"/>
-				<textElement>
+				<reportElement style="GroupCellStyle0_1" x="3" y="25" width="131" height="8"/>
+				<textElement verticalAlignment="Top">
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA["Розмірний код: " + ($F{sidSizeSupplierItem}!=null?$F{sidSizeSupplierItem}:"")]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0_1" x="64" y="49" width="67" height="8"/>
-				<textElement>
+				<reportElement style="GroupCellStyle0_1" x="67" y="49" width="67" height="8"/>
+				<textElement verticalAlignment="Top">
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[($F{dt}!=null?(($F{dt}.getYear()+ 1900)+" рiк"):"")]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0_1" x="61" y="9" width="70" height="8"/>
-				<textElement textAlignment="Right">
+				<reportElement style="GroupCellStyle0_1" x="64" y="9" width="70" height="8"/>
+				<textElement textAlignment="Right" verticalAlignment="Top">
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[($F{sidArticleSku}!=null?$F{sidArticleSku}:"")]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="0" y="81" width="131" height="16"/>
-				<textElement>
+				<reportElement style="GroupCellStyle0_1" stretchType="RelativeToBandHeight" x="3" y="81" width="131" height="16"/>
+				<textElement verticalAlignment="Top">
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA["Імпортер: " + ($F{nameImporterSku}!=null?$F{nameImporterSku}:"") + " " + ($F{addressImporterSku}!=null?$F{addressImporterSku}:"")]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0_1" x="39" y="149" width="75" height="12"/>
-				<textElement textAlignment="Right">
+				<reportElement style="GroupCellStyle0_1" x="42" y="149" width="75" height="12"/>
+				<textElement textAlignment="Right" verticalAlignment="Top">
 					<font size="6" isBold="true"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[($F{priceADiscountPriceSetDocumentSkuCurrencyDateTime}==null?$F{priceABasePriceSetDocumentSkuCurrencyDateTime}:$F{priceADiscountPriceSetDocumentSkuCurrencyDateTime})]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0_1" x="19" y="49" width="45" height="8"/>
-				<textElement>
+				<reportElement style="GroupCellStyle0_1" x="22" y="49" width="45" height="8"/>
+				<textElement verticalAlignment="Top">
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA["Дата поставки: "]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0_1" x="0" y="130" width="131" height="8"/>
-				<textElement>
+				<reportElement style="GroupCellStyle0_1" x="3" y="130" width="131" height="8"/>
+				<textElement verticalAlignment="Top">
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA["Товар сертифікований в Україні"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0_1" x="0" y="139" width="131" height="8">
+				<reportElement style="GroupCellStyle0_1" x="3" y="139" width="131" height="8">
 					<printWhenExpression><![CDATA[$F{warrantySku}!=null]]></printWhenExpression>
 				</reportElement>
-				<textElement>
+				<textElement verticalAlignment="Top">
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA["Гарантійний термін - " + ($F{warrantySku}!=null?(($F{warrantySku}).intValue() + " днів"):"")]]></textFieldExpression>

@@ -36,7 +36,17 @@ additionalCompositionLanguageFreightSku (freight, sku) <- additionalCompositionS
 nameCountryLanguageFreightSku 'Страна (иностр.)' (freight, sku) = nameCountrySkuLanguage(sku, languageFreight(freight));
 nameCountryOfOriginLanguageFreightSku 'Страна (иностр.)' (freight, sku) = languageName(countryOfOriginFreightSku(freight, sku), languageFreight(freight));
 
+nameCountryOfOriginLanguageFreight (country, freight) = languageName(country, languageFreight(freight));
+localeLanguageFreight (freight) = localeLanguage(languageFreight(freight));
+
 nameCategoryFreightLanguageSku 'Номенклатурная группа (иностр.)' (freight, sku) = nameCategoryArticleSkuLanguage(sku, languageFreight(freight));
+nameCategoryFreightLanguageArticle 'Номенклатурная группа (иностр.)' (freight, article) = nameCategoryArticleLanguage(article, languageFreight(freight));
+
+compositionLanguageFreightArticleCompositionCountryCategory (freight, article, STRING, country, customCategory10) = GROUP MAX mainCompositionLanguageFreightSku(freight, sku)
+                                                                                                                           BY freight, articleSku(sku),
+                                                                                                                              mainCompositionOriginFreightSku(freight, sku),
+                                                                                                                              countryOfOriginFreightSku(freight, sku),
+                                                                                                                              customCategory10FreightSku(freight, sku);
 
 CONSTRAINT customsZoneFreight(freight) != customsZoneCustomCategory10(customCategory10SkuFreight(sku, freight))
     CHECKED BY customCategory10SkuFreight
@@ -192,4 +202,12 @@ EXTEND FORM freightChangeForm
                                      additionalCompositionLanguageFreightSku SHOWIF languageFreight(freight),
 
                                      nameCountryOfOriginLanguageFreightSku AFTER nameCountryOfOriginFreightSku(freight, skuFreight) SHOWIF languageFreight(freight)
+;
+
+
+EXTEND FORM invoiceFromForm2
+    PROPERTIES (freight, article) nameCategoryFreightLanguageArticle
+    PROPERTIES (freight) localeLanguageFreight
+    PROPERTIES (country, freight) nameCountryOfOriginLanguageFreight
+    PROPERTIES (freight, article, composition, country, category) compositionLanguageFreightArticleCompositionCountryCategory
 ;
