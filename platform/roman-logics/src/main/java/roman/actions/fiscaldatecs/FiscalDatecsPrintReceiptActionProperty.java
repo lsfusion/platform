@@ -2,6 +2,7 @@ package roman.actions.fiscaldatecs;
 
 import platform.base.OrderedMap;
 import platform.interop.Compare;
+import platform.interop.action.MessageClientAction;
 import platform.server.classes.StaticCustomClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.KeyExpr;
@@ -30,17 +31,16 @@ public class FiscalDatecsPrintReceiptActionProperty extends ScriptingActionPrope
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) {
 
-        DataSession session = context.getSession();
         DataObject receiptObject = context.getKeyValue(receiptInterface);
 
         try {
-            Integer comPort = (Integer) LM.findLCPByCompoundName("comPortCurrentCashRegister").read(session);
-            Integer baudRate = (Integer) LM.findLCPByCompoundName("baudRateCurrentCashRegister").read(session);
-            Integer placeNumber = (Integer) LM.findLCPByCompoundName("nppMachineryCurrentCashRegister").read(session);
-            ObjectValue userObject = LM.findLCPByCompoundName("userReceipt").readClasses(session, receiptObject);
-            Object operatorNumber = userObject.isNull() ? 0 : LM.findLCPByCompoundName("operatorNumberCurrentCashRegister").read(session, (DataObject) userObject);
-            Double sumTotal = (Double) LM.findLCPByCompoundName("sumReceiptDetailReceipt").read(session, receiptObject);
-            Double sumDisc = (Double) LM.findLCPByCompoundName("discountSumReceiptDetailReceipt").read(session, receiptObject);
+            Integer comPort = (Integer) LM.findLCPByCompoundName("comPortCurrentCashRegister").read(context);
+            Integer baudRate = (Integer) LM.findLCPByCompoundName("baudRateCurrentCashRegister").read(context);
+            Integer placeNumber = (Integer) LM.findLCPByCompoundName("nppMachineryCurrentCashRegister").read(context);
+            ObjectValue userObject = LM.findLCPByCompoundName("userReceipt").readClasses(context, receiptObject);
+            Object operatorNumber = userObject.isNull() ? 0 : LM.findLCPByCompoundName("operatorNumberCurrentCashRegister").read(context, (DataObject) userObject);
+            Double sumTotal = (Double) LM.findLCPByCompoundName("sumReceiptDetailReceipt").read(context, receiptObject);
+            Double sumDisc = (Double) LM.findLCPByCompoundName("discountSumReceiptDetailReceipt").read(context, receiptObject);
             Double sumCard = null;
             Double sumCash = null;
 
@@ -54,7 +54,7 @@ public class FiscalDatecsPrintReceiptActionProperty extends ScriptingActionPrope
 
             paymentQuery.and(getLCP("receiptPayment").getExpr(context.getModifier(), paymentQuery.mapKeys.get("payment")).compare(receiptObject.getExpr(), Compare.EQUALS));
 
-            OrderedMap<Map<Object, Object>, Map<Object, Object>> paymentResult = paymentQuery.execute(session.sql);
+            OrderedMap<Map<Object, Object>, Map<Object, Object>> paymentResult = paymentQuery.execute(context.getSession().sql);
             for (Map<Object, Object> paymentValues : paymentResult.values()) {
                 DataObject paymentMeansCashObject = ((StaticCustomClass) LM.findClassByCompoundName("paymentMeans")).getDataObject("paymentMeansCash");
                 DataObject paymentMeansCardObject = ((StaticCustomClass) LM.findClassByCompoundName("paymentMeans")).getDataObject("paymentMeansCard");
@@ -82,7 +82,7 @@ public class FiscalDatecsPrintReceiptActionProperty extends ScriptingActionPrope
 
             receiptDetailQuery.and(getLCP("receiptReceiptDetail").getExpr(context.getModifier(), receiptDetailQuery.mapKeys.get("receiptDetail")).compare(receiptObject.getExpr(), Compare.EQUALS));
 
-            OrderedMap<Map<Object, Object>, Map<Object, Object>> receiptDetailResult = receiptDetailQuery.execute(session.sql);
+            OrderedMap<Map<Object, Object>, Map<Object, Object>> receiptDetailResult = receiptDetailQuery.execute(context.getSession().sql);
             List<ReceiptItem> receiptSaleItemList = new ArrayList<ReceiptItem>();
             List<ReceiptItem> receiptReturnItemList = new ArrayList<ReceiptItem>();
             for (Map<Object, Object> receiptDetailValues : receiptDetailResult.values()) {
@@ -97,18 +97,21 @@ public class FiscalDatecsPrintReceiptActionProperty extends ScriptingActionPrope
                 Integer taxNumber = (Integer) receiptDetailValues.get("numberVATReceiptDetail");
                 if (quantitySale != null)
                     receiptSaleItemList.add(new ReceiptItem(price, quantitySale, barcode, name.trim(), sumReceiptDetail,
-                            discountPercentReceiptSaleDetail, discountSumReceiptDetail, taxNumber, 1));
+                            discountPercentReceiptSaleDetail, discountSumReceiptDetail==null ? null : -discountSumReceiptDetail, taxNumber, 1));
                 if (quantityReturn != null)
                     receiptReturnItemList.add(new ReceiptItem(price, quantityReturn, barcode, name.trim(), sumReceiptDetail,
-                            discountPercentReceiptSaleDetail, discountSumReceiptDetail, taxNumber, 1));
+                            discountPercentReceiptSaleDetail, discountSumReceiptDetail==null ? null : -discountSumReceiptDetail, taxNumber, 1));
             }
 
-            if (context.checkApply(LM.getBL()))
-                if (context.requestUserInteraction(new FiscalDatecsPrintReceiptClientAction(comPort, baudRate, placeNumber, operatorNumber == null ? 0 : (Integer) operatorNumber, new ReceiptInstance(sumDisc, sumCard, sumCash, sumTotal, receiptSaleItemList, receiptReturnItemList))) == null) {
+            if (context.checkApply(LM.getBL())){
+                String result = (String) context.requestUserInteraction(new FiscalDatecsPrintReceiptClientAction(baudRate, comPort, placeNumber, operatorNumber == null ? 1 : (Integer) operatorNumber, new ReceiptInstance(sumDisc, sumCard, sumCash, sumTotal, receiptSaleItemList, receiptReturnItemList)));
+                if (result == null) {
                     context.apply(LM.getBL());
-                    LM.findLAPByCompoundName("createCurrentReceipt").execute(session);
+                    LM.findLAPByCompoundName("createCurrentReceipt").execute(context);
                 }
-
+                else
+                    context.requestUserInteraction(new MessageClientAction(result, "Ошибка"));
+            }
         } catch (SQLException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         } catch (ScriptingErrorLog.SemanticErrorException e) {

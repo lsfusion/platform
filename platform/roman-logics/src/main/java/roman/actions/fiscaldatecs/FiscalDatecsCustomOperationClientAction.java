@@ -31,10 +31,10 @@ public class FiscalDatecsCustomOperationClientAction implements ClientAction {
                 case 2:
                     Double VATSumSaleReceipt = FiscalDatecs.getCurrentSums(2);
                     Double VATSumReturnReceipt = FiscalDatecs.getCurrentSums(3);
-                    FiscalDatecs.printTaxReport();
+                    //FiscalDatecs.printTaxReport();
                     FiscalDatecs.zReport();
+                    FiscalDatecs.delArticle(0);
                     FiscalDatecs.closePort();
-                    FiscalDatecs.closeWriter();
                     return new Double[]{VATSumSaleReceipt, VATSumReturnReceipt};
                 case 3:
                     FiscalDatecs.advancePaper(10);
@@ -42,11 +42,13 @@ public class FiscalDatecsCustomOperationClientAction implements ClientAction {
                 case 4:
                     FiscalDatecs.cutReceipt();
                     break;
+                case 5:
+                    FiscalDatecs.cancelReceipt();
+                    break;
                 default:
                     break;
             }
             FiscalDatecs.closePort();
-            FiscalDatecs.closeWriter();
         } catch (RuntimeException e) {
             return FiscalDatecs.getError();
         }

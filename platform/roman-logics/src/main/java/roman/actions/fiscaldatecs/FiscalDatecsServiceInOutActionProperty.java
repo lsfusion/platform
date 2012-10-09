@@ -1,5 +1,6 @@
 package roman.actions.fiscaldatecs;
 
+import platform.interop.action.MessageClientAction;
 import platform.server.classes.ValueClass;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.ClassPropertyInterface;
@@ -30,11 +31,14 @@ public class FiscalDatecsServiceInOutActionProperty extends ScriptingActionPrope
             Boolean isDone = LM.findLCPByCompoundName("isCompleteCashOperation").read(context.getSession(), cashOperationObject) != null;
             Double sum = (Double)LM.findLCPByCompoundName("sumCashOperation").read(context.getSession(), cashOperationObject);
 
-            if (!isDone)
-                if (context.requestUserInteraction(new FiscalDatecsServiceInOutClientAction(baudRate, comPort, sum)) == null){
+            if (!isDone) {
+                String result = (String) context.requestUserInteraction(new FiscalDatecsServiceInOutClientAction(baudRate, comPort, sum));
+                if (result == null){
                     LM.findLCPByCompoundName("isCompleteCashOperation").change(true, context.getSession(), cashOperationObject);
-                    //context.apply(LM.getBL());
                 }
+                else
+                    context.requestUserInteraction(new MessageClientAction(result, "Ошибка"));
+            }
 
         } catch (SQLException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.

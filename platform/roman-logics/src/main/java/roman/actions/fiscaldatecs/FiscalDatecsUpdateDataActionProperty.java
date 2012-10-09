@@ -2,6 +2,7 @@ package roman.actions.fiscaldatecs;
 
 import platform.base.OrderedMap;
 import platform.interop.Compare;
+import platform.interop.action.MessageClientAction;
 import platform.server.classes.StaticCustomClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.KeyExpr;
@@ -55,7 +56,7 @@ public class FiscalDatecsUpdateDataActionProperty extends ScriptingActionPropert
                 if (number != null)
                     operatorList.add(new UpdateDataOperator(number, userFirstName.trim() + " " + userLastName.trim()));
             }
-            
+
             List<UpdateDataTaxRate> taxRateList = new ArrayList<UpdateDataTaxRate>();
             ObjectValue countryObject = LM.findLCPByCompoundName("countryCurrentCashRegister").readClasses(session);
             DataObject taxVATObject = ((StaticCustomClass) LM.findClassByCompoundName("tax")).getDataObject("taxVAT");
@@ -82,10 +83,13 @@ public class FiscalDatecsUpdateDataActionProperty extends ScriptingActionPropert
                 if (number != null)
                     taxRateList.add(new UpdateDataTaxRate(number, value));
             }
-            if (context.checkApply(LM.getBL()))
-                if(context.requestUserInteraction(new FiscalDatecsUpdateDataClientAction(comPort, baudRate, new UpdateDataInstance(operatorList, taxRateList)))==null)
+            if (context.checkApply(LM.getBL())) {
+                String result = (String) context.requestUserInteraction(new FiscalDatecsUpdateDataClientAction(baudRate, comPort, new UpdateDataInstance(operatorList, taxRateList)));
+                if (result != null)
                     context.apply(LM.getBL());
-
+                else
+                    context.requestUserInteraction(new MessageClientAction(result, "Ошибка"));
+            }
         } catch (SQLException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         } catch (ScriptingErrorLog.SemanticErrorException e) {

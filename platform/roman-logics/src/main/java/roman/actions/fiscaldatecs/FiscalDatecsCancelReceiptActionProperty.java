@@ -10,9 +10,9 @@ import platform.server.logics.scripted.ScriptingLogicsModule;
 
 import java.sql.SQLException;
 
-public class FiscalDatecsXReportActionProperty extends ScriptingActionProperty {
+public class FiscalDatecsCancelReceiptActionProperty extends ScriptingActionProperty {
 
-    public FiscalDatecsXReportActionProperty(ScriptingLogicsModule LM) {
+    public FiscalDatecsCancelReceiptActionProperty(ScriptingLogicsModule LM) {
         super(LM, new ValueClass[]{});
     }
 
@@ -21,12 +21,12 @@ public class FiscalDatecsXReportActionProperty extends ScriptingActionProperty {
             Integer comPort = (Integer) LM.findLCPByCompoundName("comPortCurrentCashRegister").read(context.getSession());
             Integer baudRate = (Integer) LM.findLCPByCompoundName("baudRateCurrentCashRegister").read(context.getSession());
 
-            String result = (String) context.requestUserInteraction(new FiscalDatecsCustomOperationClientAction(1, baudRate, comPort));
-            if (result == null) {
+            String result = (String) context.requestUserInteraction(new FiscalDatecsCustomOperationClientAction(5, baudRate, comPort));
+            if(result==null)
                 context.apply(LM.getBL());
-            }
             else
                 context.requestUserInteraction(new MessageClientAction(result, "Ошибка"));
+
         } catch (SQLException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         } catch (ScriptingErrorLog.SemanticErrorException e) {

@@ -71,10 +71,10 @@ sumCashCashRegisterDateTime 'Сумма наличных в кассе на да
 
 //---------------------------- Операции с фискальным регистратором ---------------------------------------//
 
-fiscalUpdateData 'Загрузить информацию' = ABSTRACT ACTION();
 fiscalXReport 'X-отчёт' = ABSTRACT ACTION();
 fiscalAdvancePaper 'Прогон ленты' = ABSTRACT ACTION();
 fiscalCutReceipt 'Отрезать чек' = ABSTRACT ACTION();
+fiscalCancelReceipt 'Отменить чек' = ABSTRACT ACTION();
 
 //--------------------------------- Операции с наличными -------------------------------------------------//
 
@@ -287,7 +287,7 @@ DESIGN editCollection FROM DEFAULT {
     ADD functions.box;
 }
 
-addCollectionForm 'Инкассация' (departmentStore) = ACTION (departmentStore) {
+addCollectionForm 'Изъятие денег' (departmentStore) = ACTION (departmentStore) {
 
     FORM addCollection OBJECTS d =(departmentStore AS departmentStore) MODAL;
     IF formResult() == formResult.ok THEN {
@@ -467,7 +467,7 @@ FORM operationCashRegister 'Кассовые операции'
             dateCashDocument(o) >= (dFrom AS DATE),
             dateCashDocument(o) <= (dTo AS DATE)
 
-    PROPERTIES() SHOWIF departmentStoreCurrentCashRegister() fiscalUpdateData, fiscalXReport
+    PROPERTIES() SHOWIF departmentStoreCurrentCashRegister() fiscalXReport
 ;
 
 DESIGN operationCashRegister FROM DEFAULT {
@@ -492,7 +492,6 @@ DESIGN operationCashRegister FROM DEFAULT {
         NEW actions {
             caption = 'Действия с кассой';
             childConstraints = TO THE RIGHTBOTTOM;
-            ADD PROPERTY(fiscalUpdateData) { font = 'Tahoma 24'; }
             ADD PROPERTY(fiscalXReport) { font = 'Tahoma 24'; }
         }
 

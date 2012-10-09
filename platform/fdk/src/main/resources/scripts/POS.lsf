@@ -554,6 +554,9 @@ DESIGN postReceiptPayment FROM DEFAULT {
 
 postReceipt 'Смешанный платеж' = ACTION (receipt) {
     SET zReportReceipt(receipt) <- currentZReport();
+    FOR receiptPayment(payment) == receipt DO {
+           EXEC delete(payment);
+    }
     IF sumReceiptDetailReceipt(receipt) THEN {
         ADDOBJ payment;
         FOR p == addedObject() DO {
@@ -578,6 +581,9 @@ postReceipt 'Смешанный платеж' = ACTION (receipt) {
 
 postCardReceipt 'Карточкой' = ACTION (receipt) {
     SET zReportReceipt(receipt) <- currentZReport();
+    FOR receiptPayment(payment) == receipt DO {
+            EXEC delete(payment);
+    }
     IF sumReceiptDetailReceipt(receipt) THEN {
         ADDOBJ payment;
         FOR p == addedObject() DO {
@@ -591,6 +597,9 @@ postCardReceipt 'Карточкой' = ACTION (receipt) {
 
 postCashReceipt 'Наличными' = ACTION (receipt) {
     SET zReportReceipt(receipt) <- currentZReport();
+    FOR receiptPayment(payment) == receipt DO {
+        EXEC delete(payment);
+    }
     IF sumReceiptDetailReceipt(receipt) THEN {
         ADDOBJ payment;
         FOR p == addedObject() DO {
@@ -614,6 +623,7 @@ cancelReceipt 'Отменить чек' = ACTION (receipt) {
         EXEC cancel();
         EXEC createCurrentReceipt();
     }
+    EXEC fiscalCancelReceipt();
 } EDITKEY 'shift F11' CONFIRM IN receiptActionGroup;
 
 // Операции по добавлению строк в чек
@@ -823,6 +833,15 @@ openCurrentZReport 'Открыть Z-отчет' = ACTION () {
 
 closeCurrentZReport 'Закрыть Z-отчет' = ACTION () {
     EXEC cancel();
+    SET timeZReport(z) <- currentTime() WHERE z == currentZReport();
+    SET dateZReport(z) <- currentDate() WHERE z == currentZReport();
+    FOR ADDOBJ c = collection DO {
+        SET cashRegisterCollection(c) <- currentCashRegister();
+        SET dateCollection(c) <- dateZReport(currentZReport());
+        SET timeCollection(c) <- timeZReport(currentZReport());
+        SET sumCashCollection(c) <- sumCashCashRegisterDateTime(currentCashRegister(), dateTimeZReport(currentZReport()));
+        EXEC setValueNumeratedObject(c AS collection);
+    }
     SET zReportCashRegister(cashRegister) IF cashRegister == currentCashRegister() <- NULL;
     EXEC apply();
 } CONFIRM IN receiptZReportGroup;
@@ -1115,6 +1134,19 @@ EXTEND DESIGN operationCashRegister{
     }
 }
 
+// Update data
+fiscalUpdateData 'Загрузить информацию' = ABSTRACT ACTION();
+fiscalUpdateDataShowIf = departmentStoreCurrentCashRegister() AND closedCurrentZReportDepartmentStore();
+
+EXTEND FORM operationCashRegister
+    PROPERTIES() SHOWIF fiscalUpdateDataShowIf() fiscalUpdateData
+;
+
+EXTEND DESIGN operationCashRegister{
+    actions {
+            ADD PROPERTY(fiscalUpdateData) BEFORE PROPERTY(fiscalXReport) { font = 'Tahoma 24'; }
+            }
+}
 // ----------------------------------------------- Стандартные значения ------------------------------------- //
 
 loadDefaultPaymentType 'Добавить тип оплаты' = ACTION(string, paymentMeans) {

@@ -26,3 +26,6 @@ fiscalServiceCashOperation(cashOperation) += fiscalDatecsServiceCashOperation(ca
 
 fiscalDatecsDisplayTextReceiptDetail 'Вывести текст на дисплей' = ACTION CUSTOM 'roman.actions.fiscaldatecs.FiscalDatecsDisplayTextActionProperty';
 fiscalDisplayTextReceiptDetail (receiptDetail) += fiscalDatecsDisplayTextReceiptDetail(receiptDetail) IF sidCashRegisterModelReceiptDetail(receiptDetail) == 'DateCS';
+
+fiscalDatecsCancelReceipt 'Отменить чек' = ACTION CUSTOM 'roman.actions.fiscaldatecs.FiscalDatecsCancelReceiptActionProperty';
+fiscalCancelReceipt() += fiscalDatecsCancelReceipt() IF sidModelCurrentCashRegister() == 'DateCS';

@@ -34,6 +34,7 @@ public class FiscalDatecsDisplayTextActionProperty extends ScriptingActionProper
         DataObject receiptDetailObject = context.getKeyValue(receiptDetailInterface);
 
         try {
+            ObjectValue receiptObject = LM.findLCPByCompoundName("receiptReceiptDetail").readClasses(session, receiptDetailObject);
             Integer comPort = (Integer) LM.findLCPByCompoundName("comPortCurrentCashRegister").read(session);
             Integer baudRate = (Integer) LM.findLCPByCompoundName("baudRateCurrentCashRegister").read(session);
 
@@ -41,12 +42,12 @@ public class FiscalDatecsDisplayTextActionProperty extends ScriptingActionProper
             String barcode = (String) LM.findLCPByCompoundName("idBarcodeReceiptDetail").read(session, receiptDetailObject);
             Double quantity = (Double) LM.findLCPByCompoundName("quantityReceiptDetail").read(session, receiptDetailObject);
             Double price = (Double) LM.findLCPByCompoundName("priceReceiptDetail").read(session, receiptDetailObject);
-            Double sum = (Double) LM.findLCPByCompoundName("sumReceiptDetail").read(session, receiptDetailObject);
+            Double sum = (Double) LM.findLCPByCompoundName("sumReceiptDetailReceipt").read(session, (DataObject)receiptObject);
             Double articleDisc = (Double) LM.findLCPByCompoundName("discountPercentReceiptSaleDetail").read(session, receiptDetailObject);
             Double articleDiscSum = (Double) LM.findLCPByCompoundName("discountSumReceiptDetail").read(session, receiptDetailObject);
 
 
-            context.requestUserInteraction(new FiscalDatecsDisplayTextClientAction(comPort, baudRate, new ReceiptItem(price, quantity, barcode, name, sum, articleDisc, articleDiscSum, 0, 0)));
+            context.requestUserInteraction(new FiscalDatecsDisplayTextClientAction(baudRate, comPort, new ReceiptItem(price, quantity, barcode, name, sum, articleDisc, articleDiscSum, 0, 0)));
 
         } catch (SQLException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.

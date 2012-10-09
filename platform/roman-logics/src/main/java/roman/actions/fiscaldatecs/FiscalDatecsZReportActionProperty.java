@@ -1,5 +1,6 @@
 package roman.actions.fiscaldatecs;
 
+import platform.interop.action.MessageClientAction;
 import platform.server.classes.ValueClass;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
@@ -35,7 +36,8 @@ public class FiscalDatecsZReportActionProperty extends ScriptingActionProperty {
                     }
                     LM.findLAPByCompoundName("closeCurrentZReport").execute(session);
                     context.apply(LM.getBL());
-                }
+                } else if (VATSumReceipt != null)
+                    context.requestUserInteraction(new MessageClientAction((String) VATSumReceipt, "Ошибка"));
             }
         } catch (SQLException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.

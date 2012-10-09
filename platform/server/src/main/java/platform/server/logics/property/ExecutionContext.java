@@ -115,7 +115,8 @@ public class ExecutionContext<P extends PropertyInterface> {
     }
 
     public PropertyObjectInterfaceInstance getObjectInstance(P cls) {
-        return getObjectInstances().get(cls);
+        Map<P, PropertyObjectInterfaceInstance> objectInstances = getObjectInstances();
+        return objectInstances != null ? objectInstances.get(cls) : null;
     }
 
     public PropertyObjectInterfaceInstance getSingleObjectInstance() {

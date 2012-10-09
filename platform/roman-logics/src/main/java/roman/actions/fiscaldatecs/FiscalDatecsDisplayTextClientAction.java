@@ -29,7 +29,6 @@ public class FiscalDatecsDisplayTextClientAction implements ClientAction {
             FiscalDatecs.displayText(receiptItem);
 
             FiscalDatecs.closePort();
-            FiscalDatecs.closeWriter();
 
         } catch (RuntimeException e) {
             return FiscalDatecs.getError();

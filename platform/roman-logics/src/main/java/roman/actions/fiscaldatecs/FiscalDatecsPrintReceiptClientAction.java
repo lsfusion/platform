@@ -16,7 +16,7 @@ public class FiscalDatecsPrintReceiptClientAction implements ClientAction {
     int placeNumber;
     int operatorNumber;
 
-    public FiscalDatecsPrintReceiptClientAction(Integer comPort, Integer baudRate, Integer placeNumber,
+    public FiscalDatecsPrintReceiptClientAction(Integer baudRate, Integer comPort, Integer placeNumber,
                                                 Integer operatorNumber, ReceiptInstance receipt) {
         this.receipt = receipt;
         this.baudRate = baudRate == null ? 0 : baudRate;
@@ -36,7 +36,9 @@ public class FiscalDatecsPrintReceiptClientAction implements ClientAction {
 
                 FiscalDatecs.openPort(comPort, baudRate);
 
-                int iCode = 1;
+                int iCode = FiscalDatecs.getArticlesInfo() + 1;
+                if(iCode==0)
+                    return "Превышено максимально возможное количество артикулов";
                 for (ReceiptItem item : receipt.receiptSaleList) {
                     FiscalDatecs.setArticle(iCode, item);
                     item.artNumber = iCode;
@@ -49,35 +51,39 @@ public class FiscalDatecsPrintReceiptClientAction implements ClientAction {
                 }
 
                 if (receipt.receiptSaleList.size() != 0)
-                    printReceipt(receipt.receiptSaleList, true);
+                    if (!printReceipt(receipt.receiptSaleList, true))
+                        return FiscalDatecs.getError();
                 if (receipt.receiptReturnList.size() != 0)
-                    printReceipt(receipt.receiptReturnList, false);
+                    if (!printReceipt(receipt.receiptReturnList, false))
+                        return FiscalDatecs.getError();
 
                 FiscalDatecs.closePort();
 
-                FiscalDatecs.closeWriter();
-
             } catch (RuntimeException e) {
+                FiscalDatecs.cancelReceipt();
                 return FiscalDatecs.getError();
             }
         }
         return null;
     }
 
-    private void printReceipt(List<ReceiptItem> receiptList, boolean sale) {
+    private boolean printReceipt(List<ReceiptItem> receiptList, boolean sale) {
 
-        FiscalDatecs.openReceipt(operatorNumber, placeNumber, sale);
+        if(FiscalDatecs.getFiscalClosureStatus()==1)
+            if(FiscalDatecs.cancelReceipt()!=0)
+            return false;
+        if(FiscalDatecs.openReceipt(operatorNumber, placeNumber, sale)!=0)
+            return false;
 
         for (ReceiptItem item : receiptList) {
-            FiscalDatecs.registerItem(item);
-            if (item.articleDiscSum != null && item.articleDiscSum > 0) {
-                String msg = "Скидка " + item.articleDisc + "%, всего " + item.articleDiscSum;
-                FiscalDatecs.printFiscalText(msg);
-            }
+            if(FiscalDatecs.registerItem(item)!=0)
+                return false;
+
         }
-        FiscalDatecs.totalCard(receipt.sumCard);
-        FiscalDatecs.totalCash(receipt.sumCash);
-        FiscalDatecs.closeReceipt(operatorNumber, placeNumber, sale);
-        FiscalDatecs.closePort();
+        if (FiscalDatecs.totalCard(receipt.sumCard, sale) != 0)
+            return false;
+        if (FiscalDatecs.totalCash(receipt.sumCash, sale) != 0)
+            return false;
+        return FiscalDatecs.closeReceipt() == 0;
     }
 }

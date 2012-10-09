@@ -26,12 +26,15 @@ public class FiscalDatecsUpdateDataClientAction implements ClientAction {
 
             FiscalDatecs.openPort(comPort, baudRate);
 
+            if(updateData.operatorList.isEmpty())
+                updateData.operatorList.add(new UpdateDataOperator(1, "Кассир по умолчанию"));
             for (UpdateDataOperator operator : updateData.operatorList) {
                 FiscalDatecs.setOperatorName(operator);
             }
 
             Double[] rates = new Double[4];
             for (UpdateDataTaxRate rate : updateData.taxRateList) {
+                if(rate.taxRateNumber<=4)
                 rates[rate.taxRateNumber - 1] = rate.taxRateValue;
             }
             String code = "";
@@ -41,7 +44,6 @@ public class FiscalDatecsUpdateDataClientAction implements ClientAction {
 
             FiscalDatecs.setMulDecCurRF(code, rates);
             FiscalDatecs.closePort();
-            FiscalDatecs.closeWriter();
 
         } catch (RuntimeException e) {
             return FiscalDatecs.getError();

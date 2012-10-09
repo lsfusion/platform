@@ -28,11 +28,11 @@ public class FiscalDatecsServiceInOutClientAction implements ClientAction {
 
             FiscalDatecs.openPort(comPort, baudRate);
 
-            FiscalDatecs.inOut(sum);
-
-            FiscalDatecs.closePort();
-
-            FiscalDatecs.closeWriter();
+            if (!FiscalDatecs.inOut(sum))
+                return "Недостаточно наличных в кассе";
+            else {
+                FiscalDatecs.closePort();
+            }
 
         } catch (RuntimeException e) {
             return FiscalDatecs.getError();
