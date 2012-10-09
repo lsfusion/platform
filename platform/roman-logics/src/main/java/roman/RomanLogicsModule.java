@@ -36,6 +36,7 @@ import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LAP;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
+import platform.server.logics.panellocation.ShortcutPanelLocation;
 import platform.server.logics.property.*;
 import platform.server.logics.property.actions.FormActionProperty;
 import platform.server.logics.property.actions.UserActionProperty;
@@ -373,9 +374,12 @@ public class RomanLogicsModule extends LogicsModule {
     LCP translateNameColorSupplierItem;
     LCP translateNameSkuLanguage;
     LAP translationNameSku;
+    LCP translateNameSkuInvoice;
     LAP translationNameSkuInvoice;
     LAP translationNameSkuFreight;
+    LCP mainCompositionSkuInvoice;
     LAP translationMainCompositionSkuInvoice;
+    LCP additionalCompositionSkuInvoice;
     LAP translationAdditionalCompositionSkuInvoice;
     LAP translationNameSkuLanguage;
     private LCP nameArticle;
@@ -1189,7 +1193,9 @@ public class RomanLogicsModule extends LogicsModule {
     private LAP translationAdditionalCompositionSku;
     private LAP translationMainCompositionSkuLanguage;
     private LAP translationAdditionalCompositionSkuLanguage;
+    private LCP mainCompositionSkuFreight;
     private LAP translationMainCompositionSkuFreight;
+    private LCP additionalCompositionSkuFreight;
     private LAP translationAdditionalCompositionSkuFreight;
     private LAP translationAllMainComposition;
     private LAP translationInvoiceMainComposition;
@@ -2233,12 +2239,16 @@ public class RomanLogicsModule extends LogicsModule {
         originalNameArticleSkuLanguage = addJProp(baseLM.and1, originalNameArticleSku, 1, is((CustomClass) BL.I18n.getClassByName("language")), 2);
         translateNameSkuLanguage = addDProp(supplierAttributeGroup, "translateNameSkuLanguage", "Наименование", InsensitiveStringClass.get(50), sku, (CustomClass) BL.I18n.getClassByName("language"));
 
-        translationNameSku = addJoinAProp(actionGroup, "translationNameSku", "Перевод наименования", addTAProp(originalNameArticleSku, translateNameArticleSku), dictionaryName, 1);
+        translationNameSku = addJoinAProp(actionGroup, "translationNameSku", "Перевести", addTAProp(originalNameArticleSku, translateNameArticleSku), dictionaryName, 1);
+        translationNameSku.property.panelLocation = new ShortcutPanelLocation(translateNameArticleSku.property);
 
         translationNameSkuLanguage = addJoinAProp(actionGroup, "translationNameSkuLanguage", "Перевод наименования", addTAProp(originalNameArticleSkuLanguage, translateNameSkuLanguage), BL.I18n.getLCPByName("dictionaryNameLanguage"), 2, 1, 2);
         //translationNameSkuInvoice = addJoinAProp(actionGroup, "translationNameSkuInvoice", "Перевод наименования", addTAProp(originalNameArticleSkuLanguage, translateNameSkuLanguage), dictionaryName, 1, languageInvoice, 2);
 
-        translationNameSkuInvoice = addJoinAProp("translationNameSkuInvoice", "Перевод", translationNameSkuLanguage, 1, languageInvoice, 2);
+        translateNameSkuInvoice = addJProp("translateNameSkuInvoice", "Наименование (иностр.)", translateNameSkuLanguage, 1, languageInvoice, 2);
+
+        translationNameSkuInvoice = addJoinAProp("translationNameSkuInvoice", "Перевести", translationNameSkuLanguage, 1, languageInvoice, 2);
+        translationNameSkuInvoice.property.panelLocation = new ShortcutPanelLocation(translateNameSkuInvoice.property);
 
         translateNameColorSupplier = addDProp(supplierAttributeGroup, "translateNameColorSupplier", "Наименование", InsensitiveStringClass.get(50), colorSupplier);
 
@@ -2600,6 +2610,8 @@ public class RomanLogicsModule extends LogicsModule {
         additionalCompositionArticle = addDProp(intraAttributeGroup, "additionalCompositionArticle", "Доп. состав (перевод)", COMPOSITION_CLASS, article);
 
         mainCompositionSku = addDProp(intraAttributeGroup, "mainCompositionSku", "Состав (перевод)", COMPOSITION_CLASS, sku);
+        mainCompositionOriginSku.setPreferredCharWidth(80);
+
         additionalCompositionSku = addDProp(intraAttributeGroup, "additionalCompositionSku", "Доп. состав (перевод)", COMPOSITION_CLASS, sku);
         additionalCompositionSku.property.preferredCharWidth = 40;
         additionalCompositionSku.property.minimumCharWidth = 20;
@@ -2613,8 +2625,15 @@ public class RomanLogicsModule extends LogicsModule {
         translationMainCompositionSkuLanguage = addJoinAProp(actionGroup, "translationMainCompositionSkuLanguage", "Перевод состава", addTAProp(mainCompositionOriginSkuLanguage, mainCompositionSkuLanguage), BL.I18n.getLCPByName("dictionaryCompositionLanguage"), 2, 1, 2);
         translationAdditionalCompositionSkuLanguage = addJoinAProp(actionGroup, "translationAdditionalCompositionSkuLanguage", "Перевод доп. состава", addTAProp(additionalCompositionOriginSkuLanguage, additionalCompositionSkuLanguage), BL.I18n.getLCPByName("dictionaryCompositionLanguage"), 2, 1, 2);
 
-        translationMainCompositionSkuInvoice = addJoinAProp("translationMainCompositionSkuInvoice", "Перевод", translationMainCompositionSkuLanguage, 1, languageInvoice, 2);
-        translationAdditionalCompositionSkuInvoice = addJoinAProp("translationAdditionalCompositionSkuInvoice", "Перевод", translationAdditionalCompositionSkuLanguage, 1, languageInvoice, 2);
+        mainCompositionSkuInvoice = addJProp("mainCompositionSkuInvoice", "Состав (иностр.)", mainCompositionSkuLanguage, 1, languageInvoice, 2);
+
+        translationMainCompositionSkuInvoice = addJoinAProp("translationMainCompositionSkuInvoice", "Перевести", translationMainCompositionSkuLanguage, 1, languageInvoice, 2);
+        translationMainCompositionSkuInvoice.property.panelLocation = new ShortcutPanelLocation(mainCompositionSkuInvoice.property);
+
+        additionalCompositionSkuInvoice = addJProp("additionalCompositionSkuInvoice", "Доп. состав (иностр.)", additionalCompositionSkuLanguage, 1, languageInvoice, 2);
+
+        translationAdditionalCompositionSkuInvoice = addJoinAProp("translationAdditionalCompositionSkuInvoice", "Перевести", translationAdditionalCompositionSkuLanguage, 1, languageInvoice, 2);
+        translationAdditionalCompositionSkuInvoice .property.panelLocation = new ShortcutPanelLocation(additionalCompositionSkuInvoice.property);
 
         //translationNameSkuFreight = addJoinAProp("translationNameSkuFreight", "Перевод", translationNameSkuLanguage, 1, languageFreight, 2);
 
@@ -3405,8 +3424,15 @@ public class RomanLogicsModule extends LogicsModule {
         mainCompositionLanguageFreightSku  = addDProp("mainCompositionLanguageFreightSku", "Состав (иностр.)", StringClass.get(200), freight, sku);
         additionalCompositionLanguageFreightSku = addDProp("additionalCompositionLanguageFreightSku", "Доп. состав (иностр.)", StringClass.get(200), freight, sku);
 
-        translationMainCompositionSkuFreight = addJoinAProp("translationMainCompositionSkuFreight", "Перевод", translationMainCompositionSkuLanguage, 1, languageFreight, 2);
-        translationAdditionalCompositionSkuFreight = addJoinAProp("translationAdditionalCompositionSkuFreight", "Перевод", translationAdditionalCompositionSkuLanguage, 1, languageFreight, 2);
+        mainCompositionSkuFreight = addJProp("mainCompositionSkuFreight", "Состав (иностр.)", mainCompositionSkuLanguage, 1, languageFreight, 2);
+
+        translationMainCompositionSkuFreight = addJoinAProp("translationMainCompositionSkuFreight", "Перевести", translationMainCompositionSkuLanguage, 1, languageFreight, 2);
+        translationMainCompositionSkuFreight.property.panelLocation = new ShortcutPanelLocation(mainCompositionSkuFreight.property);
+
+        additionalCompositionSkuFreight = addJProp("additionalCompositionSkuFreight", "Доп. состав (иностр.)", additionalCompositionSkuLanguage, 1, languageFreight, 2);
+
+        translationAdditionalCompositionSkuFreight = addJoinAProp("translationAdditionalCompositionSkuFreight", "Перевести", translationAdditionalCompositionSkuLanguage, 1, languageFreight, 2);
+        translationAdditionalCompositionSkuFreight.property.panelLocation = new ShortcutPanelLocation(additionalCompositionSkuFreight.property);
 
         customCategory10CategoryGenderCompositionTypeFabricFreight = addJProp(true, "customCategory10CategoryGenderCompositionTypeFabricFreight", "ТН ВЭД (ИД)", customCategory10CategoryGenderCompositionTypeFabricCustomsZone, 1, 2, 3, 4, customsZoneFreight, 5);
         sidCustomCategory10CategoryGenderCompositionTypeFabricFreight = addJProp("sidCustomCategory10CategoryGenderCompositionTypeFabricFreight", "ТН ВЭД", sidCustomCategory10, customCategory10CategoryGenderCompositionTypeFabricFreight, 1, 2, 3, 4, 5);
@@ -3563,8 +3589,10 @@ public class RomanLogicsModule extends LogicsModule {
         additionalCompositionOriginFreightSku.property.preferredCharWidth = 40;
         additionalCompositionOriginFreightSku.property.minimumCharWidth = 20;
 
-        translationMainCompositionSku = addJoinAProp(actionGroup, "translationMainCompositionSku", "Перевод состава", addTAProp(mainCompositionOriginSku, mainCompositionSku), dictionaryComposition, 1);
-        translationAdditionalCompositionSku = addJoinAProp(actionGroup, "translationAdditionalCompositionSku", "Перевод доп. состава", addTAProp(additionalCompositionOriginSku, additionalCompositionSku), dictionaryComposition, 1);
+        translationMainCompositionSku = addJoinAProp(actionGroup, "translationMainCompositionSku", "Перевести", addTAProp(mainCompositionOriginSku, mainCompositionSku), dictionaryComposition, 1);
+        translationMainCompositionSku.property.panelLocation = new ShortcutPanelLocation(mainCompositionSku.property);
+        translationAdditionalCompositionSku = addJoinAProp(actionGroup, "translationAdditionalCompositionSku", "Перевести", addTAProp(additionalCompositionOriginSku, additionalCompositionSku), dictionaryComposition, 1);
+        translationAdditionalCompositionSku.property.panelLocation = new ShortcutPanelLocation(additionalCompositionSku.property);
 
         mainCompositionFreightSku = addDProp(baseGroup, "mainCompositionFreightSku", "Состав (перевод)", COMPOSITION_CLASS, freight, sku);
         mainCompositionFreightSku.setEventChangeNewSet(addJProp(baseLM.and1, mainCompositionSku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
@@ -3578,11 +3606,17 @@ public class RomanLogicsModule extends LogicsModule {
         additionalCompositionFreightSku.property.preferredCharWidth = 40;
         additionalCompositionFreightSku.property.minimumCharWidth = 20;
 
-        translationMainCompositionFreightSku = addJoinAProp(actionGroup, "translationMainCompositionFreightSku", "Перевод состава", addTAProp(mainCompositionOriginFreightSku, mainCompositionFreightSku), dictionaryComposition, 1, 2);
-        translationAdditionalCompositionFreightSku = addJoinAProp(actionGroup, "translationAdditionalCompositionFreightSku", "Перевод доп. состава", addTAProp(additionalCompositionOriginFreightSku, additionalCompositionFreightSku), dictionaryComposition, 1, 2);
+        translationMainCompositionFreightSku = addJoinAProp(actionGroup, "translationMainCompositionFreightSku", "Перевести", addTAProp(mainCompositionOriginFreightSku, mainCompositionFreightSku), dictionaryComposition, 1, 2);
+        translationMainCompositionFreightSku.property.panelLocation = new ShortcutPanelLocation(mainCompositionFreightSku.property);
 
-        translationMainCompositionLanguageFreightSku = addJoinAProp(actionGroup, "translationMainCompositionLanguageFreightSku", "Перевод состава (иностр.)", addTAProp(mainCompositionOriginFreightSku, mainCompositionLanguageFreightSku), dictionaryFreight, 1, 1, 2);
-        translationAdditionalCompositionLanguageFreightSku = addJoinAProp(actionGroup, "translationAdditionalCompositionLanguageFreightSku", "Перевод доп. состава (иностр.)", addTAProp(additionalCompositionOriginFreightSku, additionalCompositionLanguageFreightSku), dictionaryFreight, 1, 1, 2);
+        translationAdditionalCompositionFreightSku = addJoinAProp(actionGroup, "translationAdditionalCompositionFreightSku", "Перевести", addTAProp(additionalCompositionOriginFreightSku, additionalCompositionFreightSku), dictionaryComposition, 1, 2);
+        translationAdditionalCompositionFreightSku.property.panelLocation = new ShortcutPanelLocation(additionalCompositionFreightSku.property);
+
+        translationMainCompositionLanguageFreightSku = addJoinAProp(actionGroup, "translationMainCompositionLanguageFreightSku", "Перевести", addTAProp(mainCompositionOriginFreightSku, mainCompositionLanguageFreightSku), dictionaryFreight, 1, 1, 2);
+        translationMainCompositionLanguageFreightSku.property.panelLocation = new ShortcutPanelLocation(mainCompositionLanguageFreightSku.property);
+
+        translationAdditionalCompositionLanguageFreightSku = addJoinAProp(actionGroup, "translationAdditionalCompositionLanguageFreightSku", "Перевести", addTAProp(additionalCompositionOriginFreightSku, additionalCompositionLanguageFreightSku), dictionaryFreight, 1, 1, 2);
+        translationAdditionalCompositionLanguageFreightSku.property.panelLocation = new ShortcutPanelLocation(additionalCompositionLanguageFreightSku.property);
 
         countryOfOriginFreightSku = addDProp(idGroup, "countryOfOriginFreightSku", "Страна (ИД)", baseLM.country, freight, sku);
         countryOfOriginFreightSku.setEventChangeNewSet(addJProp(baseLM.and1, countryOfOriginSku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
@@ -4921,19 +4955,14 @@ public class RomanLogicsModule extends LogicsModule {
                     nameBrandSupplierArticleSku, nameCountrySupplierOfOriginArticleSku, nameCountryOfOriginSku, netWeightSku}, objSku);
 
             setEditType(PropertyEditType.READONLY, objSku.groupTo);
-            setEditType(translationMainCompositionSku, PropertyEditType.EDITABLE, objSku.groupTo);
-            setEditType(translationAdditionalCompositionSku, PropertyEditType.EDITABLE, objSku.groupTo);
-            setEditType(translationNameSku, PropertyEditType.EDITABLE, objSku.groupTo);
-
-            //addPropertyDraw(translationNameSkuInvoice, objSku, objInvoice);
 
             if (box) {
-                addPropertyDraw(addGCAProp(actionGroup, "translationInvoiceMainComposition", "Перевод составов", objSku.groupTo, translationMainCompositionSku), objSku).forceViewType = ClassViewType.PANEL;
-                addPropertyDraw(addGCAProp(actionGroup, "translationInvoiceAdditionalComposition", "Перевод доп. составов", objSku.groupTo, translationAdditionalCompositionSku), objSku).forceViewType = ClassViewType.PANEL;
-                addPropertyDraw(addGCAProp(actionGroup, "translationInvoiceName", "Перевод наименований", objSku.groupTo, translationNameSku), objSku).forceViewType = ClassViewType.PANEL;
-                addPropertyDraw(addGCAProp(actionGroup, "translationInvoiceLanguageName", "Перевод наименований (иностр.)", objSku.groupTo, translationNameSkuInvoice, 1, 2, 1), objSku, objInvoice).forceViewType = ClassViewType.PANEL;
-                addPropertyDraw(addGCAProp(actionGroup, "translationInvoiceLanguageMainComposition", "Перевод составов (иностр.)", objSku.groupTo, translationMainCompositionSkuInvoice, 1, 2, 1), objSku, objInvoice).forceViewType = ClassViewType.PANEL;
-                addPropertyDraw(addGCAProp(actionGroup, "translationInvoiceLanguageAdditionalComposition", "Перевод доп. составов (иностр.)", objSku.groupTo, translationAdditionalCompositionSkuInvoice, 1, 2, 1), objSku, objInvoice).forceViewType = ClassViewType.PANEL;
+                addGCAProp(actionGroup, "translationInvoiceMainComposition", "Перевести все", objSku.groupTo, translationMainCompositionSku).property.panelLocation = new ShortcutPanelLocation(mainCompositionSku.property);
+                addGCAProp(actionGroup, "translationInvoiceAdditionalComposition", "Перевести все", objSku.groupTo, translationAdditionalCompositionSku).property.panelLocation = new ShortcutPanelLocation(additionalCompositionSku.property);
+                addGCAProp(actionGroup, "translationInvoiceName", "Перевести все", objSku.groupTo, translationNameSku).property.panelLocation = new ShortcutPanelLocation(translateNameArticleSku.property);
+                addGCAProp(actionGroup, "translationInvoiceLanguageMainComposition", "Перевести все", objSku.groupTo, translationMainCompositionSkuInvoice, 1, 2, 1).property.panelLocation = new ShortcutPanelLocation(mainCompositionSkuInvoice.property);
+                addGCAProp(actionGroup, "translationInvoiceLanguageAdditionalComposition", "Перевести все", objSku.groupTo, translationAdditionalCompositionSkuInvoice, 1, 2, 1).property.panelLocation = new ShortcutPanelLocation(additionalCompositionSkuInvoice.property);
+                addGCAProp(actionGroup, "translationInvoiceLanguageName", "Перевести все", objSku.groupTo, translationNameSkuInvoice, 1, 2, 1).property.panelLocation = new ShortcutPanelLocation(translateNameSkuInvoice.property);
             }
 
             addPropertyDraw(priceDocumentSku, objInvoice, objSku);
@@ -6573,10 +6602,11 @@ public class RomanLogicsModule extends LogicsModule {
             //getPropertyDraw(nameSubCategorySku).setPropertyBackground(diffCountRelationCustomCategory10SkuProperty);
 
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku.groupTo);
-            addPropertyDraw(addGCAProp(actionGroup, "translationAllMainComposition", "Перевод составов", objSku.groupTo, translationMainCompositionSku), objSku).forceViewType = ClassViewType.PANEL;
-            addPropertyDraw(addGCAProp(actionGroup, "translationAllAdditionalComposition", "Перевод доп. составов", objSku.groupTo, translationAdditionalCompositionSku), objSku).forceViewType = ClassViewType.PANEL;
-            addPropertyDraw(addGCAProp(actionGroup, "translationAllMainCompositionLanguage", "Перевод составов (иностр.)", objSku.groupTo, translationMainCompositionSkuFreight, 2, 1, 2), objFreight, objSku).forceViewType = ClassViewType.PANEL;
-            addPropertyDraw(addGCAProp(actionGroup, "translationAllAdditionalCompositionLanguage", "Перевод доп. составов (иностр.)", objSku.groupTo, translationAdditionalCompositionSkuFreight, 2, 1, 2), objFreight, objSku).forceViewType = ClassViewType.PANEL;
+
+            addGCAProp(actionGroup, "translationAllMainComposition", "Перевести все", objSku.groupTo, translationMainCompositionSku).property.panelLocation = new ShortcutPanelLocation(mainCompositionSku.property);
+            addGCAProp(actionGroup, "translationAllAdditionalComposition", "Перевести все", objSku.groupTo, translationAdditionalCompositionSku).property.panelLocation = new ShortcutPanelLocation(additionalCompositionSku.property);
+            addGCAProp(actionGroup, "translationAllMainCompositionLanguage", "Перевести все", objSku.groupTo, translationMainCompositionSkuFreight, 1, 2, 1).property.panelLocation = new ShortcutPanelLocation(mainCompositionSkuFreight.property);
+            addGCAProp(actionGroup, "translationAllAdditionalCompositionLanguage", "Перевести все", objSku.groupTo, translationAdditionalCompositionSkuFreight, 1, 2, 1).property.panelLocation = new ShortcutPanelLocation(additionalCompositionSkuFreight.property);
 
             setEditType(baseGroup, PropertyEditType.READONLY, objSku.groupTo);
             setEditType(publicGroup, PropertyEditType.READONLY, objSku.groupTo);
@@ -6608,10 +6638,10 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(quantityProxyImporterFreightSku, objImporter, objFreight, objSkuFreight);
             addPropertyDraw(quantityDirectImporterFreightSku, objImporter, objFreight, objSkuFreight);
 
-            addPropertyDraw(addGCAProp(actionGroup, "translationAllFreightMainComposition", "Перевод составов (для фрахта)", objSkuFreight.groupTo, translationMainCompositionFreightSku, 1, 2, 2), objFreight, objSkuFreight).forceViewType = ClassViewType.PANEL;
-            addPropertyDraw(addGCAProp(actionGroup, "translationAllFreightAdditionalComposition", "Перевод доп. составов (для фрахта)", objSkuFreight.groupTo, translationAdditionalCompositionFreightSku, 1, 2, 2), objFreight, objSkuFreight).forceViewType = ClassViewType.PANEL;
-            addPropertyDraw(addGCAProp(actionGroup, "translationAllLanguageMainComposition", "Перевод составов (иностр.)", objSkuFreight.groupTo, translationMainCompositionLanguageFreightSku, 1, 2, 2), objFreight, objSkuFreight).forceViewType = ClassViewType.PANEL;
-            addPropertyDraw(addGCAProp(actionGroup, "translationAllLanguageAdditionalComposition", "Перевод доп. составов (иностр.)", objSkuFreight.groupTo, translationAdditionalCompositionLanguageFreightSku, 1, 2, 2), objFreight, objSkuFreight).forceViewType = ClassViewType.PANEL;
+            addGCAProp(actionGroup, "translationAllFreightMainComposition", "Перевести все", objSkuFreight.groupTo, translationMainCompositionFreightSku, 1, 2, 2).property.panelLocation = new ShortcutPanelLocation(mainCompositionFreightSku.property);
+            addGCAProp(actionGroup, "translationAllFreightAdditionalComposition", "Перевести все", objSkuFreight.groupTo, translationAdditionalCompositionFreightSku, 1, 2, 2).property.panelLocation = new ShortcutPanelLocation(additionalCompositionFreightSku.property);
+            addGCAProp(actionGroup, "translationAllLanguageMainComposition", "Перевести все", objSkuFreight.groupTo, translationMainCompositionLanguageFreightSku, 1, 2, 2).property.panelLocation = new ShortcutPanelLocation(mainCompositionLanguageFreightSku.property);
+            addGCAProp(actionGroup, "translationAllLanguageAdditionalComposition", "Перевести все", objSkuFreight.groupTo, translationAdditionalCompositionLanguageFreightSku, 1, 2, 2).property.panelLocation = new ShortcutPanelLocation(additionalCompositionLanguageFreightSku.property);
             
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityFreightCategoryGenderCompositionTypeFabric, objFreight, objCategory2, objGender, objComposition, objTypeFabric)));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityFreightCategory, objFreight, objCategory)));
