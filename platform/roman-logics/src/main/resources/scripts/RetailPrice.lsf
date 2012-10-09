@@ -1265,6 +1265,8 @@ FORM printMarksDocument 'Печать маркировок товара' PRINT
                            mainCompositionSku, additionalCompositionSku, nameCountryBrandSupplierSku, nameBrandSupplierArticleSku, barcode, nameCountrySku,
                            sidColorSupplierItem, nameColorSupplierItem, translateNameColorSupplierItem, nameSupplierArticleSku, addressSupplierArticleSku, warrantySku, countSku
 
+    ORDER BY sidArticleSku, sidColorSupplierItem, sidSizeSupplierItem
+
     PROPERTIES(s, imp)     READONLY mainCompositionSkuCompany, additionalCompositionSkuCompany, nameCategoryArticleSkuCompany, sidGenderArticleSkuCompany,
                            nameCountrySkuCompany, nameCountryBrandSupplierSkuCompany
 
