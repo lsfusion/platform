@@ -172,6 +172,15 @@ public class Words {
         }
     }
 
+    public static String getWord(String value, int index){
+        if((value==null)||(index<0))
+            return "";
+        String[] splitValue = value.split(",");
+        if(splitValue.length<=index)
+            return "";
+        else return splitValue[index];
+    }
+    
     //для лонга с типом
     public static String toString(Long number, String type) {
         if (decimalPostfix.containsKey(type))
