@@ -12,7 +12,7 @@ public class ImportPreviewDialog extends JDialog {
     private HashSet<String> result;
     private int booleanIndex = 5;
 
-    public ImportPreviewDialog(Map<String, InvoiceProperties> invoiceList, String title) {
+    public ImportPreviewDialog(ArrayList<InvoiceProperties> invoiceList, String title) {
         super(null, title, ModalityType.APPLICATION_MODAL);
         setMinimumSize(new Dimension(600, 250));
 
@@ -24,13 +24,14 @@ public class ImportPreviewDialog extends JDialog {
         Object[][] data = new Object[rowCount][6];
 
         int i = 0;
-        for (Map.Entry<String, InvoiceProperties> entry : invoiceList.entrySet()) {
-            data[i][0] = entry.getKey() == null ? "" : entry.getKey();
-            data[i][1] = entry.getValue().date == null ? new Date() : entry.getValue().date;
-            data[i][2] = entry.getValue().sumDocument ==null ? 0.0 : entry.getValue().sumDocument;
-            data[i][3] = entry.getValue().quantityDocument ==null ? 0.0 : entry.getValue().quantityDocument;
-            data[i][4] = entry.getValue().netWeightDocument ==null ? 0.0 : entry.getValue().netWeightDocument;
-            data[i][booleanIndex] = Boolean.TRUE;
+        Collections.sort(invoiceList, COMPARATOR);
+        for (InvoiceProperties entry : invoiceList) {
+            data[i][0] = entry.sid == null ? "" : entry.sid;
+            data[i][1] = entry.date == null ? new Date() : entry.date;
+            data[i][2] = entry.sumDocument == null ? 0.0 : entry.sumDocument;
+            data[i][3] = entry.quantityDocument == null ? 0.0 : entry.quantityDocument;
+            data[i][4] = entry.netWeightDocument == null ? 0.0 : entry.netWeightDocument;
+            data[i][booleanIndex] = Boolean.FALSE;
             i++;
         }
 
@@ -76,8 +77,22 @@ public class ImportPreviewDialog extends JDialog {
 
     }
 
+    private static Comparator<InvoiceProperties> COMPARATOR = new Comparator<InvoiceProperties>() {
+        public int compare(InvoiceProperties i1, InvoiceProperties i2) {
+            if (i1.date == null || i2.date == null)
+                return 0;
+            else {
+                if (i1.date.getTime() > i2.date.getTime()) {
+                    return 1;
+                } else if (i1.date.getTime() < i2.date.getTime()) {
+                    return -1;
+                } else return 0;
+            }
+        }
+    };
+
     private void checkAll() {
-        for (int i=0; i<table.getCheckTableModel().getRowCount(); i++) {
+        for (int i = 0; i < table.getCheckTableModel().getRowCount(); i++) {
             table.getCheckTableModel().setValueAt(true, i, booleanIndex);
         }
         update(getGraphics());

@@ -173,7 +173,7 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
         properties.add(new ImportProperty(supplier, LM.supplierBrandSupplier.getMapping(brandKey)));
         properties.add(new ImportProperty(brandNameField, LM.baseLM.name.getMapping(brandKey)));
         properties.add(new ImportProperty(brandCodeField, LM.brandSupplierArticle.getMapping(articleKey), LM.object(LM.brandSupplier).getMapping(brandKey)));
-       
+
         ImportKey<?> themeKey = new ImportKey(LM.themeSupplier, LM.themeSIDSupplier.getMapping(themeCodeField, supplier));
         properties.add(new ImportProperty(themeCodeField, LM.sidThemeSupplier.getMapping(themeKey)));
         properties.add(new ImportProperty(supplier, LM.supplierThemeSupplier.getMapping(themeKey)));
@@ -233,7 +233,7 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
         Integer unitQuantityIndex = -1;
         Integer unitPriceIndex = -1;
         Integer unitNetWeightIndex = -1;
-        Map<String, InvoiceProperties> invoiceList = new HashMap<String, InvoiceProperties>();
+        Map<String, InvoiceProperties> invoiceMap = new HashMap<String, InvoiceProperties>();
         for (int i = 0; i < table.fields.size(); i++) {
             if (table.fields.get(i).equals(customCodeField))
                 index = i;
@@ -264,17 +264,17 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
             for (List<Object> editingRow : table.data) {
                 String invoiceSID = (String) editingRow.get(invoiceSIDIndex);
                 Date dateInvoice = dateInvoiceIndex != -1 ? (Date) editingRow.get(dateInvoiceIndex) : null;
-                Double unitQuantity = (unitQuantityIndex != -1 && editingRow.get(unitQuantityIndex)!=null) ? (Double) editingRow.get(unitQuantityIndex) : 0.0;
-                Double unitPrice = (unitPriceIndex != -1 && editingRow.get(unitPriceIndex)!=null)? (Double) editingRow.get(unitPriceIndex) : 0.0;
-                Double unitNetWeight = (unitNetWeightIndex != -1 && editingRow.get(unitNetWeightIndex)!=null)? (Double) editingRow.get(unitNetWeightIndex) : 0.0;
+                Double unitQuantity = (unitQuantityIndex != -1 && editingRow.get(unitQuantityIndex) != null) ? (Double) editingRow.get(unitQuantityIndex) : 0.0;
+                Double unitPrice = (unitPriceIndex != -1 && editingRow.get(unitPriceIndex) != null) ? (Double) editingRow.get(unitPriceIndex) : 0.0;
+                Double unitNetWeight = (unitNetWeightIndex != -1 && editingRow.get(unitNetWeightIndex) != null) ? (Double) editingRow.get(unitNetWeightIndex) : 0.0;
                 Double sumPrice = unitQuantity * unitPrice;
                 Double sumNetWeight = unitQuantity * unitNetWeight;
-                InvoiceProperties invoice = invoiceList.containsKey(invoiceSID) ? invoiceList.get(invoiceSID) : new InvoiceProperties(dateInvoice, 0.0, 0.0, 0.0);
+                InvoiceProperties invoice = invoiceMap.containsKey(invoiceSID) ? invoiceMap.get(invoiceSID) : new InvoiceProperties(invoiceSID, dateInvoice, 0.0, 0.0, 0.0);
                 invoice.quantityDocument += unitQuantity;
                 invoice.sumDocument += sumPrice;
-                invoice.netWeightDocument +=sumNetWeight;
+                invoice.netWeightDocument += sumNetWeight;
 
-                invoiceList.put(invoiceSID, invoice);
+                invoiceMap.put(invoiceSID, invoice);
             }
         }
 
@@ -285,7 +285,11 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
             keysArray = new ImportKey<?>[]{invoiceKey, articleKey, itemKey, colorKey, sizeKey, countryKey, customCategoryKey, customCategory6Key, brandKey, themeKey, collectionKey, subCategoryKey, genderKey};
         }
 
-        HashSet<String> result = (HashSet<String>) context.requestUserInteraction(new ImportPreviewClientAction(invoiceList));
+        ArrayList<InvoiceProperties> invoicePropertiesList = new ArrayList<InvoiceProperties>();
+        for (InvoiceProperties ip : invoiceMap.values()) {
+            invoicePropertiesList.add(ip);
+        }
+        HashSet<String> result = (HashSet<String>) context.requestUserInteraction(new ImportPreviewClientAction(invoicePropertiesList));
         if (result != null) {
             List<List<Object>> editedData = new ArrayList<List<Object>>();
             for (List<Object> editingRow : table.data) {
