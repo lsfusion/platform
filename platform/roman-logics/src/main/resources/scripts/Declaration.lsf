@@ -1010,10 +1010,11 @@ FORM declarationRBPrint 'Выгрузка деклараций(РБ)'  PRINT
     PROPERTIES(d) SELECTOR sidDeclaration
 
     OBJECTS gd = groupDeclaration
-    PROPERTIES(gd) overNumberGroupDeclaration, sidArticleGroupDeclaration, sidGenderGroupDeclaration, nameInvoiceGroupDeclaration,
-                   nameGroupDeclaration, mainCompositionGroupDeclaration, sidCountryGroupDeclaration, sidOrigin2CountryGroupDeclaration,
-                   sidCustomCategory10GroupDeclaration, nameTypeFabricGroupDeclaration, quantityGroupDeclaration, sumGroupDeclaration,
-                   netWeightGroupDeclaration, grossWeightGroupDeclaration, nameBrandGroupDeclaration
+    PROPERTIES(gd) overNumberGroupDeclaration, innerInvoicesGroupDeclaration, sidArticleGroupDeclaration, sidGenderGroupDeclaration,
+                   nameInvoiceGroupDeclaration, nameGroupDeclaration, mainCompositionGroupDeclaration, nameCountryGroupDeclaration,
+                   sidCountryGroupDeclaration, sidOrigin2CountryGroupDeclaration, sidCustomCategory10GroupDeclaration,
+                   nameTypeFabricGroupDeclaration, quantityGroupDeclaration, sumGroupDeclaration, netWeightGroupDeclaration,
+                   grossWeightGroupDeclaration, nameBrandGroupDeclaration
 
     FILTERS declarationGroupDeclaration(gd) == d
 ;
