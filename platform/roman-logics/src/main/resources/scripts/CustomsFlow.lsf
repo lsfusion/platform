@@ -219,7 +219,7 @@ inputDeclarationDetailCStoWH 'Подбор строк декларации' = AC
 FORM CStoWH 'Расход с СВХ'
     OBJECTS c = CStoWH FIXED PANEL
     PROPERTIES (c) objectClassName, numberObject, seriesObject, dateCStoWH, timeCStoWH, nameCustomStoreCStoWH, nameDestinationStockCStoWH,
-                   inputDeclarationDetailCStoWH, shortNameDeclarationCurrencyCStoWH, nameDeclarationCurrencyCStoWH, nameCurrencyCStoWH
+                   inputDeclarationDetailCStoWH, shortNameDeclarationCurrencyCStoWH, nameCurrencyCStoWH
 
     PROPERTIES (c) READONLY declarationsCStoWH, innerInvoicesCStoWH, quantityCStoWHDetailCStoWH, sumCStoWHDetailCStoWH
 
