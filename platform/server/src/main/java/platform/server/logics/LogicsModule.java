@@ -2169,9 +2169,8 @@ public abstract class LogicsModule {
         return mapLAProp(null, result, innerInterfaces);
     }
 
-    @IdentityLazy
     public LAP getAddObjectAction(CustomClass cls, boolean forceDialog, CalcProperty storeNewObjectProperty) {
-        return addAProp(new AddObjectActionProperty(genSID(), cls, forceDialog, storeNewObjectProperty));
+        return addAProp(null, new AddObjectActionProperty(genSID(), cls, forceDialog, storeNewObjectProperty));
     }
 
     @IdentityLazy
@@ -2249,6 +2248,16 @@ public abstract class LogicsModule {
         return addIfAProp(addObjectAction.property.caption, is(checkClass), 1, addObjectAction);
     }
 
+    public LAP getScriptAddFormAction(CustomClass cls, boolean session) {
+        ClassFormEntity form = cls.getEditForm(baseLM);
+
+        LAP property = addDMFAProp(null, genSID(), ServerResourceBundle.getString("logics.add"),
+                form.form, new ObjectEntity[] {},
+                form.form.addPropertyObject(getFormAddObjectAction(form.object, cls, false)), !session);
+        setAddFormActionProperties(property, form, session);
+        return property;
+    }
+
     @IdentityLazy
     public LAP getAddFormAction(CustomClass cls, boolean oldSession) {
         ClassFormEntity form = cls.getEditForm(baseLM);
@@ -2256,6 +2265,11 @@ public abstract class LogicsModule {
         LAP property = addDMFAProp(actionGroup, "add" + (oldSession ? "Session" : "") + "Form" + BaseUtils.capitalize(cls.getSID()), ServerResourceBundle.getString("logics.add"), //+ "(" + cls + ")",
                                 form.form, new ObjectEntity[] {},
                                 form.form.addPropertyObject(getFormAddObjectAction(form.object, cls, false)), !oldSession);
+        setAddFormActionProperties(property, form, oldSession);
+        return property;
+    }
+
+    private void setAddFormActionProperties(LAP property, ClassFormEntity form, boolean oldSession) {
         property.setImage("add.png");
         property.setShouldBeLast(true);
         property.setEditKey(KeyStrokes.getAddActionPropertyKeyStroke());
@@ -2266,9 +2280,15 @@ public abstract class LogicsModule {
         // todo : так не очень правильно делать - получается, что мы добавляем к Immutable объекту FormActionProperty ссылки на ObjectEntity
         FormActionProperty formAction = (FormActionProperty)property.property;
         formAction.seekOnOk.add(form.object);
-        if (oldSession)
+        if (oldSession) {
             formAction.closeAction = form.form.addPropertyObject(baseLM.delete, form.object);
+        }
+    }
 
+    public LAP getScriptEditFormAction(CustomClass cls, boolean oldSession) {
+        ClassFormEntity form = cls.getEditForm(baseLM);
+        LAP property = addDMFAProp(null, genSID(), ServerResourceBundle.getString("logics.edit"), form.form, new ObjectEntity[]{form.object}, !oldSession);
+        setEditFormActionProperties(property);
         return property;
     }
 
@@ -2277,13 +2297,17 @@ public abstract class LogicsModule {
         ClassFormEntity form = cls.getEditForm(baseLM);
         LAP property = addDMFAProp(actionGroup, "edit" + (oldSession ? "Session" : "") + "Form" + BaseUtils.capitalize(cls.getSID()), ServerResourceBundle.getString("logics.edit"), // + "(" + cls + ")",
                 form.form, new ObjectEntity[]{form.object}, !oldSession);
+        setEditFormActionProperties(property);
+        return property;
+    }
+
+    private void setEditFormActionProperties(LAP property) {
         property.setImage("edit.png");
         property.setShouldBeLast(true);
         property.setEditKey(KeyStrokes.getEditActionPropertyKeyStroke());
         property.setShowEditKey(false);
         property.setPanelLocation(new ToolbarPanelLocation());
         property.setForceViewType(ClassViewType.PANEL);
-        return property;
     }
 
 

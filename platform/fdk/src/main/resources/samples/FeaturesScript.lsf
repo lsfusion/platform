@@ -284,6 +284,13 @@ documentBalance(document, article) = balanceQuantity(store(document), article);
 // Add object action
 // statement syntax:
 // ADDOBJ className
+addObjectActionTest() = ACTION ADDOBJ store;
+
+// Add/Edit form action
+// statement syntax:
+// (ADDFORM | EDITFORM) [SESSION] className
+addActionTest() = ACTION ADDFORM store;
+editActionTest(obj) = ACTION EDITFORM store;
 
 // Custom action
 // statement syntax:
@@ -622,23 +629,20 @@ OBJECTS s=store '-Склад-', a=article
 PROPERTIES ssel=SELECTION(s), sname=name(s), obja=OBJVALUE(a), aname=name(a)
 PROPERTIES TODRAW s FORCE PANEL copyStoreNameToArticles(s), copyStoreNameToArticle(s, a), copyStoreNameToArticleError(s, a), createNewStore(), showDocumentArticleModalForm(), showTestModalForm() DRAWTOTOOLBAR, testRequestInput(s) DRAWTOTOOLBAR
 PROPERTIES(s, a) SHOWIF storeIsHuge(s) incomeQuantity2, outcomeQuantity2
-PROPERTIES(s) storeSizeName, ssc1=storeSizeCode, storeIsHuge, stime, sdate, sdatetime,
-//    ssi=Features.simage, spdf, scustom, sexcel,
-    scolor,
-    testAbstractAction
+PROPERTIES(s) storeSizeName, ssc1=storeSizeCode, storeIsHuge, stime, sdate, sdatetime, ssi=Features.simage, spdf, scustom, sexcel, testAbstractAction, editActionTest
 PROPERTIES(s, a) incomeQuantity, outcomeQuantity, foo, foo2 SHOWIF storeIsHuge(s), bar, foobar HEADER name(a), bar2, baz, baz2, balanceQuantity, testUnion HEADER name(s), testPartition, testFormula
 FILTERGROUP filters1
     FILTER 'Показывать только огромные склады' 'F10' storeIsHuge(s)
 ORDER BY name(s) DESC, foo, ssel
 ;
 
-//EXTEND FORM storeArticle
-//PROPERTIES(s) ssw=sword AFTER ssi
-//;
-//
-//EXTEND FORM storeArticle
-//PROPERTIES(s) scolor AFTER ssw
-//;
+EXTEND FORM storeArticle
+PROPERTIES(s) ssw=sword AFTER ssi
+;
+
+EXTEND FORM storeArticle
+PROPERTIES(s) scolor AFTER ssw
+;
 
 FORM editStore 'Редактирование склада'
 OBJECTS s=store FIXED PANEL
@@ -994,5 +998,5 @@ END
 //////////////// TABLE STATEMENT ////////////////
 // Syntax:
 // TABLE name(className1, ..., classNameN);
-TABLE articleStore(article, store);
+TABLE documentArticle(document, article);
 

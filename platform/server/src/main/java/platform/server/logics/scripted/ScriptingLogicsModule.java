@@ -893,7 +893,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                 errLog.emitRequestUserInputDataTypeError(parser, typeId);
             }
 
-            prop = wrapWithFlowAction(new LPWithParams(addRequestUserDataAProp(null, genSID(), "", (DataClass) requestValueType), new ArrayList<Integer>()));
+            prop = new LPWithParams(addRequestUserDataAProp(null, genSID(), "", (DataClass) requestValueType), new ArrayList<Integer>());
         } else {
             prop = new LPWithParams(addRequestUserInputAProp(null, genSID(), "", (LAP<?>) action.property, requestValueType, chosenKey), newArrayList(action.usedParams));
         }
@@ -919,10 +919,22 @@ public class ScriptingLogicsModule extends LogicsModule {
     public LP addScriptedAddObjProp(String className) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedAddObjProp(" + className + ");");
         ValueClass cls = findClassByCompoundName(className);
-        if (!(cls instanceof CustomClass)) {
-            errLog.emitAddObjClassError(parser);
-        }
+        checkAddActionsClass(cls);
         return getAddObjectAction((CustomClass) cls, false, baseLM.getAddedObjectProperty());
+    }
+
+    public LP addScriptedAddFormAction(String className, boolean session) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedAddFormAction(" + className + ", " + session + ");");
+        ValueClass cls = findClassByCompoundName(className);
+        checkAddActionsClass(cls);
+        return getScriptAddFormAction((CustomClass) cls, session);
+    }
+
+    public LP addScriptedEditFormAction(String className, boolean session) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedEditFormAction(" + className + ", " + session + ");");
+        ValueClass cls = findClassByCompoundName(className);
+        checkAddActionsClass(cls);
+        return getScriptEditFormAction((CustomClass) cls, session);
     }
 
     public LPWithParams addScriptedConfirmProp(int length, LPWithParams msgProp) throws ScriptingErrorLog.SemanticErrorException {
@@ -1029,13 +1041,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         LP result = addForAProp(null, genSID(), "", !descending, ordersNotNull, recursive, elseAction != null, usedParams.size(), 
                 addClassName != null ? (CustomClass)findClassByCompoundName(addClassName) : null, condition!=null, getParamsPlainList(allCreationParams).toArray());
         return new LPWithParams(result, usedParams);
-    }
-
-    public LPWithParams wrapWithFlowAction(LPWithParams property) throws ScriptingErrorLog.SemanticErrorException {
-        LAP<?> action = (LAP<?>) property.property;
-        int intNum = action.listInterfaces.size();
-        LP joinProp = addJoinAProp(null, genSID(), "", action.getInterfaceClasses(), action, consecutiveList(intNum).toArray());
-        return new LPWithParams(joinProp, property.usedParams);
     }
 
     public LPWithParams getTerminalFlowActionProperty(boolean isBreak) {
@@ -1970,6 +1975,12 @@ public class ScriptingLogicsModule extends LogicsModule {
     public void checkActionProperty(LP property) throws ScriptingErrorLog.SemanticErrorException {
         if (!(property instanceof LAP<?>)) {
             errLog.emitNotActionPropertyError(parser);
+        }
+    }
+
+    public void checkAddActionsClass(ValueClass cls) throws ScriptingErrorLog.SemanticErrorException {
+        if (!(cls instanceof CustomClass)) {
+            errLog.emitAddActionsClassError(parser);
         }
     }
 

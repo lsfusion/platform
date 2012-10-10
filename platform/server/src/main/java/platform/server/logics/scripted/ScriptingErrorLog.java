@@ -336,8 +336,8 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, format("there is no '%s' inside RECURSION", paramName));
     }
 
-    public void emitAddObjClassError(ScriptParser parser) throws SemanticErrorException {
-        emitSimpleError(parser, "built-in class cannot be used in ADDOBJ action");
+    public void emitAddActionsClassError(ScriptParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "built-in class cannot be used in ADDOBJ/ADDFORM/EDITFORM actions");
     }
 
     public void emitNecessaryPropertyError(ScriptParser parser) throws SemanticErrorException {
