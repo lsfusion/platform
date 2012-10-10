@@ -10,7 +10,8 @@ grammar LsfLogics;
 	import platform.interop.form.layout.ContainerType;
 	import platform.interop.form.ServerResponse;
 	import platform.interop.FormEventType;
-	import platform.interop.navigator.FormShowType;
+	import platform.interop.ModalityType;
+	import platform.server.form.instance.FormSessionScope;
 	import platform.server.data.Union;
 	import platform.server.data.expr.query.PartitionType;
 	import platform.server.form.entity.GroupObjectEntity;
@@ -334,19 +335,19 @@ listFormDeclaration
 formDeclaration returns [ScriptingFormEntity form]
 @init {
 	boolean isPrint = false;
-	FormShowType showType = null;
+	ModalityType modalityType = null;
 }
 @after {
 	if (inPropParseState()) {
 		$form = self.createScriptedForm($formNameCaption.name, $formNameCaption.caption);
 		$form.setIsPrintForm(isPrint);
-		$form.setShowType(showType);
+		$form.setModalityType(modalityType);
 	}
 }
 	:	'FORM' 
 		formNameCaption=simpleNameWithCaption
 		('PRINT' { isPrint = true; })?
-		(type = formShowTypeSetting { showType = $type.value; })?
+		(modality = modalityTypeLiteral { modalityType = $modality.val; })?
 	;
 
 extendingFormDeclaration returns [ScriptingFormEntity form]
@@ -358,13 +359,7 @@ extendingFormDeclaration returns [ScriptingFormEntity form]
 	:	'EXTEND' 'FORM' formName=compoundID
 	;
 
-formShowTypeSetting returns [FormShowType value = null]
-	:	'DOCKING' { $value = FormShowType.DOCKING; }
-	|	'MODAL' { $value = FormShowType.MODAL; }
-	|	'FULLSCREEN' { $value = FormShowType.MODAL_FULLSCREEN; }
-	;
-
-formGroupObjectsList 
+formGroupObjectsList
 @init {
 	List<ScriptingGroupObject> groups = new ArrayList<ScriptingGroupObject>();
 }
@@ -1566,23 +1561,23 @@ customActionPDB[List<String> context, boolean dynamic] returns [LPWithParams pro
 			
 formActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns [LPWithParams property]
 @init {
-	boolean newSession = false;
-	boolean isModal = false;
+	FormSessionScope sessionScope = FormSessionScope.OLDSESSION;
+	ModalityType modalityType = ModalityType.DOCKED;
 	boolean checkOnOk = false;
 	List<String> objects = new ArrayList<String>();
 	List<LPWithParams> mapping = new ArrayList<LPWithParams>();
 	}
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedFAProp($formName.sid, objects, mapping, $exprList.props, $className.sid, newSession, isModal, checkOnOk);	
+		$property = self.addScriptedFAProp($formName.sid, objects, mapping, $exprList.props, $className.sid, modalityType, sessionScope, checkOnOk);
 	}
 }
 	:	'FORM' formName=compoundID 
 		('OBJECTS' list=formActionObjectList[context, dynamic] { objects = $list.objects; mapping = $list.exprs; })? 
 		('INIT' exprList=nonEmptyPropertyExpressionList[objects, false])?
 		('CLASS' className=classId)?
-		('NEWSESSION' { newSession = true; })?
-		('MODAL' { isModal = true; })?
+		(sessScope = formSessionScopeLiteral { sessionScope = $sessScope.val; })?
+		(modality = modalityTypeLiteral { modalityType = $modality.val; })?
 		('CHECK' { checkOnOk = true; })?
 	;
 
@@ -2714,6 +2709,19 @@ propertyEditTypeLiteral returns [PropertyEditType val]
 	:	'EDITABLE' { $val = PropertyEditType.EDITABLE; }
 	|	'READONLY' { $val = PropertyEditType.READONLY; }
 	|	'SELECTOR' { $val = PropertyEditType.SELECTOR; }
+	;
+
+modalityTypeLiteral returns [ModalityType val]
+	:	'DOCKED' { $val = ModalityType.DOCKED; }
+	|	'MODAL' { $val = ModalityType.MODAL; }
+	|	'DOCKED_MODAL' { $val = ModalityType.DOCKED_MODAL; }
+	|	'FULLSCREEN' { $val = ModalityType.FULLSCREEN_MODAL; }
+	;
+
+formSessionScopeLiteral returns [FormSessionScope val]
+	:	'OLDSESSION' { $val = FormSessionScope.OLDSESSION; }
+	|	'NEWSESSION' { $val = FormSessionScope.NEWSESSION; }
+	|	'MANAGESESSION' { $val = FormSessionScope.MANAGESESSION; }
 	;
 
 emailRecipientTypeLiteral returns [Message.RecipientType val]
