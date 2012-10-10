@@ -86,7 +86,7 @@ syncBarcodeSku 'Синхронизировать штрих-код' (sku) = ACTI
     SET idBarcode(barcode) <- barcode(sku AS RomanLogicsModule.sku) WHERE barcode == syncBarcode();
 } IN baseGroup;
 
-WHEN CHANGED(barcode(sku) AND sku IS RomanLogicsModule.sku) DO EXEC syncBarcodeSku(sku);
+WHEN CHANGED(barcode(sku)) AND sku IS RomanLogicsModule.sku DO EXEC syncBarcodeSku(sku);
 
 EXTEND FORM migrationData
     OBJECTS s = sku

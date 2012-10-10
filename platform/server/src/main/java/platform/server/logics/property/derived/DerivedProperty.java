@@ -823,11 +823,18 @@ public class DerivedProperty {
 
         if(!innerInterfaces.containsAll(whereInterfaces)) { // оптимизация, если есть допинтерфейсы - надо группировать
             if(!whereInterfaces.containsAll(getUsedInterfaces(writeFrom))) { // если не все ключи есть, придется докинуть or
-                if(writeFrom instanceof CalcPropertyMapImplement)
-                    where = (CalcPropertyMapImplement<W, I>) SetActionProperty.getFullProperty(mergeColSet(innerInterfaces, whereInterfaces), where, writeTo, writeFrom);
-                else // по сути оптимизация, чтобы or не тянуть
-                    where  = (CalcPropertyMapImplement<W, I>) DerivedProperty.createAnd(add(whereInterfaces, (I)writeFrom), where, SetActionProperty.getValueClassProperty(writeTo, writeFrom));
+                if(writeFrom instanceof CalcPropertyMapImplement) {
+                    whereInterfaces = mergeColSet(innerInterfaces, whereInterfaces);
+                    where = (CalcPropertyMapImplement<W, I>) SetActionProperty.getFullProperty(whereInterfaces, where, writeTo, writeFrom);
+                } else { // по сути оптимизация, чтобы or не тянуть
+                    whereInterfaces = add(whereInterfaces, (I) writeFrom);
+                    where  = (CalcPropertyMapImplement<W, I>) createAnd(whereInterfaces, where, SetActionProperty.getValueClassProperty(writeTo, writeFrom));
+                }
             }
+
+            Collection<I> checkContext = BaseUtils.filter(whereInterfaces, context);
+            if(!where.mapIsFull(checkContext)) // может быть избыточно для 2-го случая сверху, но для where в принципе надо
+                where = (CalcPropertyMapImplement<W, I>) createAnd(whereInterfaces, where, IsClassProperty.getMapProperty(filterKeys(where.mapInterfaceClasses(true), checkContext)));
 
             Map<W, I> mapPushInterfaces = filterValues(where.mapping, innerInterfaces); Map<I, W> mapWhere = reverse(where.mapping);
             writeFrom = createLastGProp(where.property, writeFrom.map(mapWhere), mapPushInterfaces.keySet(), mapImplements(orders, mapWhere), ordersNotNull).map(mapPushInterfaces);

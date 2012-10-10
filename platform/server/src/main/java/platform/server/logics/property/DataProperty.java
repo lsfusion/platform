@@ -16,6 +16,7 @@ import platform.server.session.*;
 import java.util.*;
 
 import static platform.base.BaseUtils.add;
+import static platform.base.BaseUtils.remove;
 
 public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> {
 
@@ -127,6 +128,7 @@ public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> 
         QuickSet<CalcProperty> result = new QuickSet<CalcProperty>(super.calculateRecDepends());
         for(ClassPropertyInterface remove : interfaces)
             result.addAll(remove.interfaceClass.getProperty());
+        result.add(value.getProperty());
         return result;
     }
 

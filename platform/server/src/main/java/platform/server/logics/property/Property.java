@@ -173,7 +173,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return !getClassWhere(true).andCompatible(new ClassWhere<T>(interfaceClasses)).isFalse();
     }
 
-    public boolean isFull(Collection<T> checkInterfaces) {
+    public boolean  isFull(Collection<T> checkInterfaces) {
         ClassWhere<T> classWhere = getClassWhere();
         if(classWhere.isFalse())
             return false;

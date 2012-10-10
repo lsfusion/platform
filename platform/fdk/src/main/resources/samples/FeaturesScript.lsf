@@ -382,6 +382,10 @@ testPush = ACTION(document) {
 
 testPush2 = ACTION(document) {
 
+    FOR date(document2) DO { // to be pushed
+        SET name(article) <- 'NEW' IF article IS article IF document IS incomeDocument;
+    }
+
     FOR quantity(document2, article) ORDER date(document2) DO { // to be pushed
         SET quantity(document2, article) <- 6;
         SET name(article) <- 'Changed';
