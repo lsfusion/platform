@@ -185,7 +185,7 @@ FORM declarationDetailCStoWHInput 'Подбор строк декларации'
     PROPERTIES (dd) READONLY barcodeDeclarationDetail, nameBrandDeclarationDetail, sidArticleDeclarationDetail,
                              sidColorDeclarationDetail, nameCategoryDeclarationDetail, mainCompositionDeclarationDetail,
                              nameCountryDeclarationDetail, sidCustomCategory10DeclarationDetail
-    PROPERTIES (f, dd) currentBalanceFreightUnitDeclarationDetail, quantityInputFreightUnitDeclarationDetail
+    PROPERTIES (f, dd) currentBalanceFreightUnitDeclarationDetail READONLY, quantityInputFreightUnitDeclarationDetail
 
     FILTERS isAvailableDeclarationCStoWH (d, c),
             currentBalanceDeclarationFreightUnit(d, f),
@@ -219,9 +219,9 @@ inputDeclarationDetailCStoWH 'Подбор строк декларации' = AC
 FORM CStoWH 'Расход с СВХ'
     OBJECTS c = CStoWH FIXED PANEL
     PROPERTIES (c) objectClassName, numberObject, seriesObject, dateCStoWH, timeCStoWH, nameCustomStoreCStoWH, nameDestinationStockCStoWH,
-                   quantityCStoWHDetailCStoWH, sumCStoWHDetailCStoWH,
-                   inputDeclarationDetailCStoWH, shortNameDeclarationCurrencyCStoWH, nameCurrencyCStoWH
-    PROPERTIES (c) READONLY declarationsCStoWH, innerInvoicesCStoWH
+                   inputDeclarationDetailCStoWH, shortNameDeclarationCurrencyCStoWH, nameDeclarationCurrencyCStoWH, nameCurrencyCStoWH
+
+    PROPERTIES (c) READONLY declarationsCStoWH, innerInvoicesCStoWH, quantityCStoWHDetailCStoWH, sumCStoWHDetailCStoWH
 
     OBJECTS d = CStoWHDetail
     PROPERTIES(d) READONLY indexCStoWHDetail, barcodeCStoWHDetail, nameCategoryCStoWHDetail, nameBrandCStoWHDetail, sidArticleCStoWHDetail,
