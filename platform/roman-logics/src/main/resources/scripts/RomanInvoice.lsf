@@ -33,11 +33,11 @@ changeAdditionalCompositionSkuLanguageInvoice = ACTION (sku, invoice) {
 }
 
 EXTEND FORM boxInvoiceForm
+
     PROPERTIES (invoice) READONLY nameLanguageInvoice AFTER nameDestinationDestinationDocument
     PROPERTIES (sku) originalNameArticleSku, translateNameArticleSku, translationNameSku, translationInvoiceName
     PROPERTIES (sku, invoice) translateNameSkuInvoice ON CHANGE EXEC changeNameSkuLanguageInvoice(sku, invoice) SHOWIF languageInvoice(invoice),
                               translationNameSkuInvoice SHOWIF languageInvoice(invoice), translationInvoiceLanguageName SHOWIF languageInvoice(invoice)
-
 
     PROPERTIES (sku) mainCompositionOriginSku, mainCompositionSku, translationMainCompositionSku, translationInvoiceMainComposition
     PROPERTIES (sku, invoice) mainCompositionSkuInvoice ON CHANGE EXEC changeMainCompositionSkuLanguageInvoice(sku, invoice) SHOWIF languageInvoice(invoice),
@@ -48,6 +48,21 @@ EXTEND FORM boxInvoiceForm
     PROPERTIES (sku, invoice) additionalCompositionSkuInvoice ON CHANGE EXEC changeAdditionalCompositionSkuLanguageInvoice(sku, invoice) SHOWIF languageInvoice(invoice),
                               translationAdditionalCompositionSkuInvoice SHOWIF languageInvoice(invoice), translationInvoiceLanguageAdditionalComposition SHOWIF languageInvoice(invoice)
 ;
+
+EXTEND DESIGN boxInvoiceForm {
+    PROPERTY(objectClassName) { background = #FFEEEE; }
+    PROPERTY(nameCompanyInvoice) { background = #FFEEEE; }
+    PROPERTY(nameCurrencyDocument) { background = #FFEEEE; }
+    PROPERTY(nameDestinationDestinationDocument) { background = #FFEEEE; }
+    PROPERTY(numberContractInvoice) { background = #FFEEEE; }
+
+    PROPERTY(translateNameArticleSku) { background = #FFEEEE; }
+    PROPERTY(mainCompositionSku) { background = #FFEEEE; }
+    PROPERTY(additionalCompositionSku) { background = #FFEEEE; }
+    PROPERTY(translateNameSkuInvoice) { background = #FFEEEE; }
+    PROPERTY(mainCompositionSkuInvoice) { background = #FFEEEE; }
+    PROPERTY(additionalCompositionSkuInvoice) { background = #FFEEEE; }
+}
 
 EXTEND FORM simpleInvoiceForm
     PROPERTIES (invoice) READONLY nameLanguageInvoice AFTER nameDestinationDestinationDocument

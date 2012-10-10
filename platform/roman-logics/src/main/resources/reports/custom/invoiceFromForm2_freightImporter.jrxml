@@ -398,7 +398,7 @@
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{symbolCurrencyFreight}]]></textFieldExpression>
 			</textField>
 		</band>
-		<band height="50">
+		<band height="16">
 			<printWhenExpression><![CDATA["uk_UA".equals($F{localeLanguageFreight})]]></printWhenExpression>
 			<textField>
 				<reportElement style="GroupCellStyle1" x="0" y="0" width="81" height="16"/>

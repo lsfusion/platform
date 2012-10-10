@@ -59,7 +59,7 @@ dateFreightInnerInvoice 'Дата прихода' (innerInvoice) = dateArrivalFr
 languageInnerInvoice 'Язык инвойса (ИД)' (innerInvoice) = languageFreight(freightInnerInvoice(innerInvoice)) IN idGroup PERSISTENT;
 nameLanguageInnerInvoice 'Язык инвойса' (innerInvoice) = name(languageInnerInvoice(innerInvoice));
 
-currencyFormedInvoice 'Валюта инвойса (ИД)' (formedInvoice) = currencyFreight(freightInnerInvoice(formedInvoice)) IN idGroup PERSISTENT;
+currencyFormedInvoice 'Валюта инвойса (ИД)' (formedInvoice) = currencyFreight(freightInnerInvoice(formedInvoice)) AND formedInvoice IS formedInvoice IN idGroup PERSISTENT;
 currencyInnerInvoice 'Валюта инвойса (ИД)' (innerInvoice) = UNION EXCLUSIVE currencyDocument(innerInvoice) AND innerInvoice IS directInvoice, currencyFormedInvoice(innerInvoice) IN idGroup PERSISTENT;
 nameCurrencyInnerInvoice 'Валюта инвойса' (innerInvoice) = name(currencyInnerInvoice(innerInvoice)) IN baseGroup;
 
@@ -1029,8 +1029,8 @@ FORM declaration 'Декларация'
     PROPERTIES(d) objectClassName, sidDeclaration, nameCustomStoreDeclaration, nameImporterDeclaration, nameLanguageDeclaration,
                   nameCurrencyDeclaration, innerInvoicesDeclaration, dateDeclaration, timeDeclaration, beginTimeDeclaration, endTimeDeclaration,
                   nameTypeExchangeCustomDeclaration, rateExchangeCustomDataDeclaration, nameTypeExchangeManagerialDeclaration,
-                  rateExchangeManagerialDataDeclaration, sumRegistrationUnionDeclaration, dutyReverseDeclaration, VATReverseDeclaration, totalCustomSum,
-                  expenseCertificateDeclaration, sumConsultationDeclaration
+                  rateExchangeManagerialDataDeclaration, sumRegistrationUnionDeclaration, sumConsultationDeclaration
+    PROPERTIES(d) READONLY dutyReverseDeclaration, VATReverseDeclaration, totalCustomSum, expenseCertificateDeclaration
     PROPERTIES(d) exportDeclarationToEXELLanguageDeclaration TODRAW dd FORCE PANEL SHOWIF allowImportExportXLSDeclarationUA(d)
 
     OBJECTS c=correction
