@@ -17,7 +17,7 @@ public class PricatEDIInputTable extends EDIInputTable {
 
     protected void init() {
         handler = new ScanningHandler(PRICAT, "barcode", "article", "customCode", "colorCode", "color", "size", "originalName",
-                "country", "netWeight", "composition", "price", "rrp", "season", "gender", "themeCode", "themeName") {
+                "country", "netWeight", "composition", "price", "rrp", "season", "gender", "brandName", "brandCode", "themeCode", "themeName") {
             String imd1 = "";
             String imd2 = "";
             String ftx1 = "";
@@ -86,6 +86,9 @@ public class PricatEDIInputTable extends EDIInputTable {
                                    row.put("composition", comp.get(3));
                                 } else if(imd2.equals(("XX6"))) {
                                    row.put("season", comp.get(3));
+                                } else if(imd2.equals("BRN")){
+                                    row.put("brandName", comp.get(3));
+                                    row.put("brandCode", comp.get(3));
                                 }
                             }
                             } else if (segmentID.equals("ALI01")) {

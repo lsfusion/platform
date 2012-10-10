@@ -1400,6 +1400,7 @@ public class RomanLogicsModule extends LogicsModule {
     LCP customCategoryOriginalPricat;
     LCP themeCodePricat;
     LCP themeNamePricat;
+    LCP brandNamePricat;
     LCP colorCodePricat;
     LCP colorNamePricat;
     LCP subCategoryCodePricat;
@@ -2101,7 +2102,8 @@ public class RomanLogicsModule extends LogicsModule {
         categorySupplierSubCategorySupplier = addDProp(idGroup, "categorySupplierSubCategorySupplier", "Группа (ИД)", categorySupplier, subCategorySupplier);
         nameCategorySupplierSubCategorySupplier = addJProp(baseGroup, "nameCategorySupplierSubCategorySupplier", "Группа", baseLM.name, categorySupplierSubCategorySupplier, 1);
 
-        supplierSubCategorySupplier = addJProp("supplierSubCategorySupplier", "Поставщик (ИД)", supplierCategorySupplier, categorySupplierSubCategorySupplier, 1);
+        //supplierSubCategorySupplier = addJProp("supplierSubCategorySupplier", "Поставщик (ИД)", supplierCategorySupplier, categorySupplierSubCategorySupplier, 1);
+        supplierSubCategorySupplier = addDProp(idGroup, "supplierSubCategorySupplier", "Поставщик (ИД)", supplier, subCategorySupplier);
         nameSupplierSubCategorySupplier = addJProp(baseGroup, "nameSupplierSubCategorySupplier", "Поставщик", baseLM.name, supplierSubCategorySupplier, 1);
 
         sizeSIDSupplier = addAGProp(idGroup, "sizeSIDSupplier", "Размер поставщика (ИД)", sidSizeSupplier, supplierSizeSupplier);
@@ -2768,6 +2770,7 @@ public class RomanLogicsModule extends LogicsModule {
         sizePricat = addDProp(baseGroup, "sizePricat", "Размер", StringClass.get(5), pricat);
         seasonPricat = addDProp(baseGroup, "seasonPricat", "Сезон", StringClass.get(10), pricat);
         genderPricat = addDProp(baseGroup, "genderPricat", "Пол", StringClass.get(10), pricat);
+        brandNamePricat = addDProp(baseGroup, "brandNamePricat", "Бренд", StringClass.get(50), pricat);
         originalNamePricat = addDProp(baseGroup, "originalNamePricat", "Наименование (ориг.)", StringClass.get(50), pricat);
         countryPricat = addDProp(baseGroup, "countryPricat", "Страна происхождения", StringClass.get(20), pricat);
         netWeightPricat = addDProp(baseGroup, "netWeightPricat", "Вес нетто", NumericClass.get(14, 3), pricat);
@@ -7538,7 +7541,7 @@ public class RomanLogicsModule extends LogicsModule {
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierCollectionSupplier, objCollection), Compare.EQUALS, objSupplier));
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierCategorySupplier, objCategory), Compare.EQUALS, objSupplier));
-            //addFixedFilter(new CompareFilterEntity(addPropertyObject(categorySupplierSubCategorySupplier, objSubCategory), Compare.EQUALS, objCategory));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierSubCategorySupplier, objSubCategory), Compare.EQUALS, objSupplier));
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierCountrySupplier, objCountry), Compare.EQUALS, objSupplier));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierSizeGroup, objGroupSize), Compare.EQUALS, objSupplier));

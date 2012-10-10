@@ -44,6 +44,8 @@ public class PricatEDIImportActionProperty extends CustomReadValueActionProperty
         ImportField rrpField = new ImportField(LM.rrpPricat);
         ImportField seasonField = new ImportField(LM.seasonPricat);
         ImportField genderField = new ImportField(LM.genderPricat);
+        ImportField brandNameField = new ImportField(LM.brandNamePricat);
+        ImportField brandCodeField = new ImportField(LM.brandNamePricat);
         ImportField themeCodeField = new ImportField(LM.themeCodePricat);
         ImportField themeNameField = new ImportField(LM.themeNamePricat);
 
@@ -63,6 +65,8 @@ public class PricatEDIImportActionProperty extends CustomReadValueActionProperty
         properties.add(new ImportProperty(rrpField, LM.rrpPricat.getMapping(pricatKey)));
         properties.add(new ImportProperty(seasonField, LM.seasonPricat.getMapping(pricatKey)));
         properties.add(new ImportProperty(genderField, LM.genderPricat.getMapping(pricatKey)));
+        properties.add(new ImportProperty(brandNameField, LM.brandNamePricat.getMapping(pricatKey)));
+        properties.add(new ImportProperty(brandCodeField, LM.brandNamePricat.getMapping(pricatKey)));
         properties.add(new ImportProperty(themeCodeField, LM.themeCodePricat.getMapping(pricatKey)));
         properties.add(new ImportProperty(themeNameField, LM.themeNamePricat.getMapping(pricatKey)));
         properties.add(new ImportProperty(supplier, LM.supplierPricat.getMapping(pricatKey)));
@@ -75,7 +79,8 @@ public class PricatEDIImportActionProperty extends CustomReadValueActionProperty
                 PricatEDIInputTable inputTable = new PricatEDIInputTable(new ByteArrayInputStream(file), supplier);
 
                 ImportTable table = new EDIInvoiceImporter(inputTable, barcodeField, articleField, customCategoryOriginalField, colorCodeField, colorField,
-                        sizeField, originalNameField, countryField, netWeightField, compositionField, priceField, rrpField, seasonField, genderField, themeCodeField, themeNameField).getTable();
+                        sizeField, originalNameField, countryField, netWeightField, compositionField, priceField, rrpField,
+                         seasonField, genderField, brandNameField, brandCodeField, themeCodeField, themeNameField).getTable();
 
                 if(mergedTable==null)
                     mergedTable = table;

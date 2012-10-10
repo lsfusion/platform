@@ -33,7 +33,7 @@ public class InvoicePricatMergeInputTable implements ImportInputTable {
 
     public static enum ResultField {BARCODE, ARTICLE, INVOICE, BOXNUMBER, COLORCODE, COLOR, SIZE, ORIGINALNAME,
         COUNTRY, NETWEIGHT, COMPOSITION, PRICE, DATE, RRP, QUANTITY, NUMBERSKU, CUSTOMCODE, CUSTOMCODE6,
-        SEASON,  GENDER, BRANDCODE, BRANDNAME, THEMECODE, THEMENAME, SUBCATEGORYCODE, SUBCATEGORYNAME, DESTINATION}
+        /*SEASON, */GENDER, BRANDCODE, BRANDNAME, THEMECODE, THEMENAME, SUBCATEGORYCODE, SUBCATEGORYNAME, DESTINATION}
 
     public InvoicePricatMergeInputTable(RomanBusinessLogics BL, ImportInputTable invoiceTable, ResultField... invoiceFields) {
         this.BL = BL;
@@ -93,8 +93,10 @@ public class InvoicePricatMergeInputTable implements ImportInputTable {
         propertyMap.put(ResultField.COMPOSITION, BL.RomanLM.compositionPricat);
         propertyMap.put(ResultField.PRICE, BL.RomanLM.pricePricat);
         propertyMap.put(ResultField.RRP, BL.RomanLM.rrpPricat);
-        propertyMap.put(ResultField.SEASON, BL.RomanLM.seasonPricat);
+        //propertyMap.put(ResultField.SEASON, BL.RomanLM.seasonPricat);
         propertyMap.put(ResultField.GENDER, BL.RomanLM.genderPricat);
+        propertyMap.put(ResultField.BRANDNAME, BL.RomanLM.brandNamePricat);
+        propertyMap.put(ResultField.BRANDCODE, BL.RomanLM.brandNamePricat);
         propertyMap.put(ResultField.THEMECODE, BL.RomanLM.themeCodePricat);
         propertyMap.put(ResultField.THEMENAME, BL.RomanLM.themeNamePricat);
         propertyMap.put(ResultField.SUBCATEGORYCODE, BL.RomanLM.subCategoryCodePricat);

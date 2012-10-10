@@ -188,7 +188,7 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
 
         ImportKey<?> subCategoryKey = new ImportKey(LM.subCategorySupplier, LM.subCategorySIDSupplier.getMapping(subCategoryCodeField, supplier));
         properties.add(new ImportProperty(subCategoryCodeField, LM.sidSubCategorySupplier.getMapping(subCategoryKey)));
-        properties.add(new ImportProperty(supplier, LM.supplierCategorySupplier.getMapping(subCategoryKey)));
+        properties.add(new ImportProperty(supplier, LM.supplierSubCategorySupplier.getMapping(subCategoryKey)));
         properties.add(new ImportProperty(subCategoryNameField, LM.baseLM.name.getMapping(subCategoryKey)));
         properties.add(new ImportProperty(subCategoryCodeField, LM.subCategorySupplierArticle.getMapping(articleKey), LM.object(LM.subCategorySupplier).getMapping(subCategoryKey)));
 
