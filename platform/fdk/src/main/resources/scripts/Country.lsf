@@ -4,7 +4,7 @@ REQUIRE System, DefaultData, I18n, Currency;
 
 // ---------------------------------------------- Страна -------------------------------- //
 // пока основной код лежит в BaseLogicsModule
-countryName(name) = GROUP UNIQUE country BY name(country) AND country IS country WHERE country IS country;
+countryName(name) = GROUP UNIQUE country BY name(country) WHERE country IS country;
 
 EXTEND FORM options
     PROPERTIES() nameDefaultCountry

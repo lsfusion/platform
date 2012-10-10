@@ -63,6 +63,7 @@ TABLE itemDate (item, DATE);
 // Связь с группой товаров
 itemGroupItem = DATA itemGroup(item) IN idGroup AUTOSET;
 skuGroupSku(item) += itemGroupItem(item);
+//roundSkuGroupSkuSku(item) += itemGroupItem(item);
 
 nameItemGroupItem 'Группа товара' (item) = name(itemGroupItem(item));
 canonicalNameItemGroupItem 'Группа товара' (item) = canonicalNameItemGroup(itemGroupItem(item)) IN baseGroup;

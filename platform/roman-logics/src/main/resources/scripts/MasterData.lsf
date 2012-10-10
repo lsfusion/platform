@@ -21,6 +21,7 @@ PRIORITY Stock, LegalEntity, Store, RomanLogicsModule;
 //--------------------------------- Дисконтные группы -------------------------------------------//
 
 inDiscountSkuGroupSku (discountSkuGroup, sku) += brandSupplierArticleSku(sku) == discountSkuGroup;
+roundGroupSku(sku) += brandSupplierArticleSku(sku);
 
 // для фильтров
 

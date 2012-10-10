@@ -1,56 +1,98 @@
 MODULE PriceInterval;
 
-REQUIRE System, Utils, DefaultData;
+REQUIRE System, Utils, DefaultData, Stock;
+
+
+//--  По группам
+CLASS roundCondition 'Условие округления' : named;
+
+TABLE roundCondition (roundCondition);
+
+currencyRoundCondition = DATA currency(roundCondition);
+
+denominatorPriceRoundCondition 'Делитель (округление цен)' =  DATA NUMERIC[14,3](roundCondition);
+minPriceRoundCondition 'Нижний порог (округление цен)' =  DATA NUMERIC[14,3](roundCondition);
+priceRoundRoundCondition 'До скольки знаков округлять розничную цену' (roundCondition)=  DATA INTEGER (roundCondition);
+
+defaultRoundConditionCurrency = DATA roundCondition(currency);
+isDefaultRoundConditionCurrency 'По умолчанию' (roundCondition, currency) = defaultRoundConditionCurrency(currency) == roundCondition;
+
+priceRoundCurrency 'Округление по умолчанию для розницы' (currency) = priceRoundRoundCondition(defaultRoundConditionCurrency(currency));
 
 CLASS priceInterval 'Диапазон цен';
 TABLE priceInterval (priceInterval);
 
-currencyPriceInterval = DATA currency(priceInterval);
+roundConditionPriceInterval = DATA roundCondition(priceInterval);
 
 fromPriceInterval 'от' = DATA NUMERIC[14,3](priceInterval) IN baseGroup;
 toPriceInterval 'до' = DATA NUMERIC[14,3](priceInterval) IN baseGroup;
 modifierPriceInterval 'Округлённая цена интервала' = DATA NUMERIC[14,3](priceInterval) IN baseGroup;
 
-denominatorPriceCurrency 'Делитель (округление цен)' =  DATA NUMERIC[14,3](currency);
-minPriceCurrency 'Нижний порог (округление цен)' =  DATA NUMERIC[14,3](currency);
-priceRoundCurrency 'До скольки знаков округлять розничную цену' =  DATA INTEGER (currency);
+integerPriceRoundCondition 'Целое' (price, roundCondition) = divideInteger((price AS NUMERIC[14,3]), denominatorPriceRoundCondition(roundCondition));
 
-integerPriceCurrency 'Целое' (price, currency) = divideInteger((price AS NUMERIC[14,3]), denominatorPriceCurrency(currency));
-fractionPriceCurrency 'Дробное' (price, currency) = (price AS NUMERIC[14,3]) - integerPriceCurrency(price, currency)* denominatorPriceCurrency(currency);
+fractionPriceRoundCondition 'Дробное' (price, roundCondition) = (price AS NUMERIC[14,3]) -
+    integerPriceRoundCondition(price, roundCondition)* denominatorPriceRoundCondition(roundCondition);
 
-inIntervalPriceCurrency(priceInterval, price, currency) = fractionPriceCurrency(price, currency) >= fromPriceInterval(priceInterval)
-    AND fractionPriceCurrency(price, currency) <= toPriceInterval(priceInterval);
+inPriceIntervalPrice(priceInterval, price) = fractionPriceRoundCondition(price, roundConditionPriceInterval(priceInterval)) >= fromPriceInterval(priceInterval)
+    AND fractionPriceRoundCondition(price, roundConditionPriceInterval(priceInterval)) <= toPriceInterval(priceInterval);
 
-priceIntervalPriceCurrency (price, currency) = GROUP MAX priceInterval IF inIntervalPriceCurrency(priceInterval, price, currency) BY price AS NUMERIC[14,3], currency;
+priceIntervalPriceRoundCondition (price, roundCondition) = GROUP MAX priceInterval IF inPriceIntervalPrice(priceInterval, price)
+    BY price AS NUMERIC[14,3], roundConditionPriceInterval(priceInterval);
 
-roundPriceCurrency 'Розничная цена с округлением' (price, currency) = IF (price AS NUMERIC[14,3]) > minPriceCurrency(currency) AND priceIntervalPriceCurrency (price, currency)
-    THEN integerPriceCurrency(price, currency)*denominatorPriceCurrency(currency) + modifierPriceInterval(priceIntervalPriceCurrency(price, currency))
-    ELSE round(price AS NUMERIC[14,3], priceRoundCurrency(currency));
+
+roundPriceRoundCondition (price, roundCondition) = IF (price AS NUMERIC[14,3]) > minPriceRoundCondition(roundCondition) AND priceIntervalPriceRoundCondition (price, roundCondition)
+    THEN integerPriceRoundCondition(price, roundCondition)*denominatorPriceRoundCondition(roundCondition)
+        + modifierPriceInterval(priceIntervalPriceRoundCondition (price, roundCondition))
+    ELSE round(price AS NUMERIC[14,3], priceRoundRoundCondition(roundCondition));
+
+// -------------------- Группы для округления --------------- //
+
+CLASS ABSTRACT roundGroup 'Группа округлений' : named;
+
+inRoundConditionRoundGroup 'Вкл' = DATA BOOLEAN (roundCondition, roundGroup);
+
+roundConditionUniqueCurrencyRoundGroup(currency, roundGroup) = GROUP UNIQUE roundCondition
+                                                                     BY currencyRoundCondition(roundCondition), roundGroup
+                                                                     WHERE inRoundConditionRoundGroup(roundCondition, roundGroup);
+
+roundConditionCurrencyRoundGroup (currency, roundGroup) = (defaultRoundConditionCurrency(currency) AND roundGroup IS roundGroup) OR roundConditionUniqueCurrencyRoundGroup(currency, roundGroup);
+
+roundPriceCurrencyRoundGroup(price, currency, roundGroup) = roundPriceRoundCondition(price, roundConditionCurrencyRoundGroup(currency, roundGroup));
+roundPriceCurrency(price, currency) = roundPriceRoundCondition(price, defaultRoundConditionCurrency(currency));
 
 FORM priceIntervals 'Округления розничных цен'
 
     OBJECTS c=currency FIXED PANEL
     PROPERTIES (c)  SELECTOR name
-    PROPERTIES (c)  denominatorPriceCurrency, minPriceCurrency, priceRoundCurrency
 
+    OBJECTS rc=roundCondition
+    PROPERTIES(rc) name, denominatorPriceRoundCondition, minPriceRoundCondition, priceRoundRoundCondition, ADDOBJ, delete
+    PROPERTIES(rc, c) isDefaultRoundConditionCurrency
     OBJECTS p=priceInterval
-    PROPERTIES(p) fromPriceInterval, toPriceInterval, modifierPriceInterval
+    PROPERTIES(p) fromPriceInterval, toPriceInterval, modifierPriceInterval, ADDOBJ, delete
 
-    PROPERTIES(p) ADDOBJ, delete
+    OBJECTS rg=roundGroup
+    PROPERTIES(rg) READONLY name
+    PROPERTIES(rc, rg) inRoundConditionRoundGroup
 
     OBJECTS nu=NUMERIC[14,3] FIXED PANEL
     PROPERTIES val = OBJVALUE(nu)
 
-    PROPERTIES(nu, c) READONLY roundPriceCurrency
+    PROPERTIES(nu, c, rg) READONLY roundPriceCurrencyRoundGroup
 
-    FILTERS currencyPriceInterval(p)==c
+    FILTERGROUP filterGroup
+        FILTER 'Только отмеченные' 'F10' inRoundConditionRoundGroup(rc, rg) DEFAULT
 
+
+    FILTERS currencyRoundCondition(rc) == c,
+            roundConditionPriceInterval(p) == rc
 ;
 
 DESIGN priceIntervals FROM DEFAULT {
     main {
         childConstraints = TO THE BOTTOM;
         ADD c.box {
+            fillHorizontal = 2;
             childConstraints = TO THE BOTTOM;
             NEW row1 {
                 ADD PROPERTY (name(c)) {
@@ -60,27 +102,32 @@ DESIGN priceIntervals FROM DEFAULT {
                 }
 
             }
-            NEW row2 {
-                childConstraints = TO THE RIGHT;
-                ADD PROPERTY (denominatorPriceCurrency(c)) { panelLabelAbove = TRUE; font = 'Tahoma bold 24'; }
-                ADD PROPERTY (minPriceCurrency(c))  { panelLabelAbove = TRUE; font = 'Tahoma bold 24'; }
-                ADD PROPERTY (priceRoundCurrency(c))  { panelLabelAbove = TRUE; font = 'Tahoma bold 24'; }
-            }
-        }
-        ADD p.box;
 
-        ADD nu.box {
-            title = 'Тестовая форма';
-            childConstraints = TO THE RIGHT;
-            ADD PROPERTY (val) {
-                caption = 'Введите число для примера';
-                panelLabelAbove = TRUE;
-                font = 'Tahoma bold 36';
-            }
-            ADD PROPERTY (roundPriceCurrency(nu, c)) {
-                caption = 'Результат';
-                panelLabelAbove = TRUE;
-                font = 'Tahoma bold 36';
+        }
+        NEW specification {
+
+            ADD rc.box {fillHorizontal = 2;};
+            ADD p.box {fillHorizontal = 2;};
+            NEW wor21 {
+                fillHorizontal = 2;
+                childConstraints = TO THE RIGHT;
+                type = SPLITH;
+                ADD rg.box {fillHorizontal = 1;};
+                ADD nu.box {
+                    fillHorizontal = 1;
+                    title = 'Тестовая форма';
+                    childConstraints = TO THE RIGHT;
+                    ADD PROPERTY (val) {
+                        caption = 'Введите число для примера';
+                        panelLabelAbove = TRUE;
+                        font = 'Tahoma bold 36';
+                    }
+                    ADD PROPERTY (roundPriceCurrencyRoundGroup(nu, c, rg)) {
+                        caption = 'Результат';
+                        panelLabelAbove = TRUE;
+                        font = 'Tahoma bold 36';
+                    }
+                }
             }
         }
         ADD functions.box;
@@ -89,10 +136,27 @@ DESIGN priceIntervals FROM DEFAULT {
 
 // --------------------------------------------------- Стандартные значения ------------------------------------ //
 
-loadDefaultPriceIntervals 'Загрузить стандартные округления розничных цен' = ACTION () {
-    SET priceRoundCurrency(c)  <- -2 WHERE shortNameCurrency(c) == 'BLR';
-    SET priceRoundCurrency(c)  <- 2 WHERE shortNameCurrency(c) == 'RUB';
-    SET priceRoundCurrency(c)  <- 2 WHERE shortNameCurrency(c) == 'UAH';
+loadDefaultPriceInterval  = ACTION (value, shortName) {
+    LOCAL currency = currency();
+    SET currency() <- currencyShortName(shortName);
+    FOR ADDOBJ p = roundCondition DO {
+        SET currencyRoundCondition(p) <- currency();
+        SET priceRoundRoundCondition(p)  <- value;
+        SET defaultRoundConditionCurrency(c) <- p WHERE c == currency();
+    }
+}
+
+loadDefaultPriceIntervals 'Загрузить стандартные округления розничных цен'  = ACTION () {
+    EXEC loadDefaultPriceInterval( -2, 'BLR');
+    EXEC loadDefaultPriceInterval( 2, 'RUB');
+    EXEC loadDefaultPriceInterval( 2, 'UAH');
 } IN loadDefaultGroup;
 
 @implementLoadDefaultData(loadDefaultPriceIntervals);
+
+// --------------------------------------------------- Для SKU ------------------------------------ //
+
+roundGroupSku = ABSTRACT roundGroup (sku);
+TABLE roundGroupSku(roundGroup, sku);
+
+roundPriceCurrencySku 'Округление для товара' (price, currency, sku)= roundPriceCurrencyRoundGroup(price, currency, roundGroupSku(sku));

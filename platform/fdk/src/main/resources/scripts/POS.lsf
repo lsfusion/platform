@@ -150,7 +150,7 @@ sumReceiptSaleDetail 'Сумма' (receiptDetail) = DATA NUMERIC[16,2] (receiptS
 discountPercentReceiptSaleDetail 'Процент скидки' (receiptDetail) = DATA NUMERIC[6,2] (receiptSaleDetail);
 discountSumReceiptSaleDetail 'Сумма скидки' (receiptDetail) = DATA NUMERIC[16,2] (receiptSaleDetail);
 
-priceSumReceiptSaleDetail 'Сумма без скидки' = quantityReceiptSaleDetail(detail) * priceReceiptSaleDetail(detail);
+priceSumReceiptSaleDetail 'Сумма без скидки' = round(quantityReceiptSaleDetail(detail) * priceReceiptSaleDetail(detail), priceRoundCurrency(currencyReceiptSaleDetail (detail)));
 
 calcDiscountSumReceiptSaleDetail (detail) = priceSumReceiptSaleDetail(detail) * discountPercentReceiptSaleDetail (detail) / 100;
 discountSumReceiptSaleDetail (detail) <- round(calcDiscountSumReceiptSaleDetail (detail), priceRoundCurrency(currencyReceiptSaleDetail (detail)))
