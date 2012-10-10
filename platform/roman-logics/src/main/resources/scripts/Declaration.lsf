@@ -1024,6 +1024,9 @@ exportDeclarationToEXELDeclaration 'Выгрузить декларацию в E
     FORM declarationRBPrint OBJECTS d = declaration MODAL;
 } CONFIRM TOOLBAR;
 
+importExportDeclarationUAAllow(declaration) = allowImportExportXLSDeclarationUA(declaration) AND importerDeclaration(declaration);
+importExportDeclarationBYAllow(declaration) = allowImportExportXMLDeclarationBY(declaration) AND importerDeclaration(declaration);
+
 FORM declaration 'Декларация'
     OBJECTS d=declaration FIXED PANEL, dd=declarationDetail
     PROPERTIES(d) objectClassName, sidDeclaration, nameCustomStoreDeclaration, nameImporterDeclaration, nameLanguageDeclaration,
@@ -1070,8 +1073,8 @@ FORM declaration 'Декларация'
 
     PROPERTIES (d) showFormDeclarationInvoices TODRAW dd FORCE PANEL DRAWTOTOOLBAR
     PROPERTIES (d) toCreateGroupsDeclaration TODRAW gd FORCE PANEL DRAWTOTOOLBAR, setSumGroupDeclaration TODRAW gd FORCE PANEL DRAWTOTOOLBAR
-    PROPERTIES (d) importGroupsXLSDeclaration TODRAW gd FORCE PANEL DRAWTOTOOLBAR SHOWIF allowImportExportXLSDeclarationUA(d)
-    PROPERTIES (d) importGroupsXMLDeclaration TODRAW gd FORCE PANEL DRAWTOTOOLBAR SHOWIF allowImportExportXMLDeclarationBY(d)
+    PROPERTIES (d) importGroupsXLSDeclaration TODRAW gd FORCE PANEL DRAWTOTOOLBAR SHOWIF importExportDeclarationUAAllow(d)
+    PROPERTIES (d) importGroupsXMLDeclaration TODRAW gd FORCE PANEL DRAWTOTOOLBAR SHOWIF importExportDeclarationBYAllow(d)
     PROPERTIES (d) fillInGroupDeclarationDeclarationDetail  TODRAW gd FORCE PANEL DRAWTOTOOLBAR SHOWIF allowImportExportXLSDeclarationUA(d)
 
     FILTERGROUP filterDetail

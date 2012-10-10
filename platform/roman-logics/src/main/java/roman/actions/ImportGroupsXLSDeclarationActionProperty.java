@@ -64,12 +64,14 @@ public class ImportGroupsXLSDeclarationActionProperty extends ScriptingActionPro
                     Pattern pattern = Pattern.compile("арт\\..*-");
                     Matcher matcher = pattern.matcher(nameData);
                     while (matcher.find())
-                        articles.add(matcher.group().substring(4, matcher.group().length()-1));
+                        articles.add(matcher.group().substring(4, matcher.group().length() - 1));
                     row.add(Integer.valueOf(sheet.getCell(0, i).getContents())); //userNumberGroupDeclaration
                     row.add(nameData);   //nameDataGroupDeclaration
                     row.add(parseDouble(sheet.getCell(1, i + 5).getContents())); //sumDataGroupDeclarationField
                     row.add(parseDouble(sheet.getCell(3, i + 5).getContents())); //dutyDataGroupDeclaration
-                    row.add(sheet.getCell(7, i).getContents()); //sidCustomCategory10
+                    String customCategory10 = sheet.getCell(7, i).getContents(); //sidCustomCategory10
+                    row.add(customCategory10); //sidCustomCategory10
+                    row.add((customCategory10 != null && customCategory10.length() > 9) ? customCategory10.substring(0,9) : null); //sidCustomCategory9
                     data.add(row);
                 }
 
@@ -78,6 +80,7 @@ public class ImportGroupsXLSDeclarationActionProperty extends ScriptingActionPro
                 ImportField sumDataGroupDeclarationField = new ImportField(LM.findLCPByCompoundName("sumDataGroupDeclaration"));
                 ImportField dutyDataGroupDeclarationField = new ImportField(LM.findLCPByCompoundName("dutyDataGroupDeclaration"));
                 ImportField customCategory10Field = new ImportField(LM.findLCPByCompoundName("sidCustomCategory10"));
+                ImportField customCategory9Field = new ImportField(LM.findLCPByCompoundName("sidCustomCategory9"));
 
 
                 List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
@@ -87,6 +90,9 @@ public class ImportGroupsXLSDeclarationActionProperty extends ScriptingActionPro
 
                 ImportKey<?> customCategory10Key = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("customCategory10"),
                         getLCP("sidToCustomCategory10").getMapping(customCategory10Field, customsZone));
+
+                ImportKey<?> customCategory9Key = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("customCategory9"),
+                        getLCP("sidToCustomCategory9").getMapping(customCategory9Field, customsZone));
 
                 //ImportKey<?> declarationDetailKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("declarationDetail"),
                 //        LM.findLCPByCompoundName("uniqueDeclarationDetail").getMapping(userNumberGroupDeclarationField, declarationDetailField));
@@ -99,13 +105,17 @@ public class ImportGroupsXLSDeclarationActionProperty extends ScriptingActionPro
                 properties.add(new ImportProperty(declaration, getLCP("declarationGroupDeclaration").getMapping(groupDeclarationKey)));
 
                 properties.add(new ImportProperty(customCategory10Field, getLCP("sidCustomCategory10").getMapping(customCategory10Key)));
+                properties.add(new ImportProperty((DataObject) customsZone, getLCP("customsZoneCustomCategory10").getMapping(customCategory10Key)));
                 properties.add(new ImportProperty(customCategory10Field, getLCP("customCategory10GroupDeclaration").getMapping(groupDeclarationKey),
                         LM.object(getClass("customCategory10")).getMapping(customCategory10Key)));
 
-                List<ImportField> fields = BaseUtils.toList(userNumberGroupDeclarationField, nameDataGroupDeclarationField,
-                        sumDataGroupDeclarationField, dutyDataGroupDeclarationField, customCategory10Field);
+                properties.add(new ImportProperty(customCategory9Field, getLCP("sidCustomCategory9").getMapping(customCategory9Key)));
+                properties.add(new ImportProperty(customCategory9Field, getLCP("sidCustomCategory9CustomCategory10").getMapping(customCategory10Key)));
 
-                ImportKey<?>[] keysArray = new ImportKey<?>[]{groupDeclarationKey, customCategory10Key};
+                List<ImportField> fields = BaseUtils.toList(userNumberGroupDeclarationField, nameDataGroupDeclarationField,
+                        sumDataGroupDeclarationField, dutyDataGroupDeclarationField, customCategory10Field, customCategory9Field);
+
+                ImportKey<?>[] keysArray = new ImportKey<?>[]{groupDeclarationKey, customCategory10Key, customCategory9Key};
 
                 IntegrationService integrationService = new IntegrationService(context.getSession(), new ImportTable(fields, data), Arrays.asList(keysArray), properties);
                 integrationService.synchronize(true, false);
