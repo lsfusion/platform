@@ -278,7 +278,7 @@ documentBalance(document, article) = balanceQuantity(store(document), article);
 // [OBJECTS object1 [=mappingExpr1], ..., objectN [=mappinExprN] ]
 // [INIT propertyExpr1, ..., propertyExprM]
 // [CLASS className]
-// [NEWSESSION] [MODAL] [CHECK]
+// [NEWSESSION | MANAGESESSION | OLDSESSION] [DOCKED | MODAL | FULLSCREEN | DOCKED_MODAL] [CHECK]
 
 
 // Add object action
@@ -461,7 +461,7 @@ BEFORE constraintAction(store, article) DO MESSAGE 'Before Aspect';
 
 //////////////// FORM STATEMENT /////////////////
 // Syntax:
-// FORM name ['caption'] [PRINT] [DOCKING | MODAL | FULLSCREEN] | EXTEND FORM name
+// FORM name ['caption'] [PRINT] [DOCKED | MODAL | FULLSCREEN | DOCKED_MODAL] | EXTEND FORM name
 // [(GroupObjects list | TreeGroupObjects list | Properties list | Filters list | Hints list | OrderBy list | filterGroup | dialog form | edit form | list form)]
 // ...
 // [(GroupObjects list | TreeGroupObjects list | Properties list | Filters list | Hints list | OrderBy list | filterGroup | dialog form | edit form | list form)];
@@ -516,9 +516,7 @@ EVENTS
 // Order list syntax:
 // ORDER BY (propertyAlias1 | <mappedProperty1>), ..., (propertyAliasN | <mappedPropertyN>)
 
-showForm(document) = ACTION FORM documentArticle OBJECTS document NEWSESSION MODAL;
-
-showDocumentArticleModalForm 'Показать форму "По документам"' = ACTION() NEWSESSION {
+showDocumentArticleModalForm 'Показать модальную "По документам"' = ACTION() NEWSESSION {
     ADDOBJ article;
 
     FOR (k == addedObject()) DO {
@@ -561,13 +559,13 @@ testAction 'Показать "По документам" 3 раза' = ACTION() 
     };
 };
 
-FORM testModalForm 'Показать тестовую модальную форму'
+FORM testModalForm 'Тестовая форма'
 OBJECTS article, i=INTEGER 'Новое имя товара ("Товар %N%"):' FIXED PANEL, store, s=STRING[50] 'Новое имя склада:' FIXED PANEL
 PROPERTIES name(article), name(store), OBJVALUE(s), OBJVALUE(i)
 ;
 
-showTestModalForm 'Показать тестовую форму' = ACTION() {
-    FORM testModalForm NEWSESSION MODAL;
+showTestModalForm 'Показать док-модальную форму' = ACTION() {
+    FORM testModalForm NEWSESSION DOCKED_MODAL;
     SET name(k) IF k == chosenObject('store') IF (formResult() == formResult.ok) <- chosenString('s');
     SET name(k) IF k == chosenObject('article') IF (formResult() == formResult.ok) <- [FORMULA STRING[30] '$1 || CAST($2 as char(20))']('Товар ', chosenInteger('i'));
 };

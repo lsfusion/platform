@@ -1,5 +1,6 @@
 package platform.server.logics.property.actions;
 
+import platform.interop.ModalityType;
 import platform.interop.action.FormClientAction;
 import platform.interop.action.MessageClientAction;
 import platform.interop.action.ReportClientAction;
@@ -11,6 +12,7 @@ import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.instance.FormCloseType;
 import platform.server.form.instance.FormInstance;
+import platform.server.form.instance.FormSessionScope;
 import platform.server.form.instance.ObjectInstance;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.logics.DataObject;
@@ -34,8 +36,8 @@ public class FormActionProperty extends SystemActionProperty {
     public ActionPropertyObjectEntity<?> closeAction;
     public Set<ObjectEntity> seekOnOk = new HashSet<ObjectEntity>();
     private final boolean checkOnOk;
-    private final boolean newSession;
-    private final boolean isModal;
+    private final FormSessionScope sessionScope;
+    private final ModalityType modalityType;
 
     private final StaticCustomClass formResultClass;
     private final LCP formResultProperty;
@@ -50,22 +52,20 @@ public class FormActionProperty extends SystemActionProperty {
         return valueClasses;
     }
 
-
-
     //assert objects и startAction из form
     //assert getProperties и startAction одинаковой длины
     //startAction привязаны к созадаваемой форме
     //getProperties привязаны к форме, содержащей свойство...
-    public FormActionProperty(String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity setProperties, boolean newSession, boolean isModal, boolean checkOnOk, StaticCustomClass formResultClass, LCP formResultProperty, AnyValuePropertyHolder chosenValueProperty) {
+    public FormActionProperty(String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity setProperties, FormSessionScope sessionScope, ModalityType modalityType, boolean checkOnOk, StaticCustomClass formResultClass, LCP formResultProperty, AnyValuePropertyHolder chosenValueProperty) {
         super(sID, caption, getValueClasses(objectsToSet));
 
         this.formResultClass = formResultClass;
         this.formResultProperty = formResultProperty;
         this.chosenValueProperty = chosenValueProperty;
 
-        this.isModal = isModal;
+        this.modalityType = modalityType;
         this.checkOnOk = checkOnOk;
-        this.newSession = newSession;
+        this.sessionScope = sessionScope;
         this.startAction = setProperties;
 
         int i = 0; // такой же дебилизм и в SessionDataProperty
@@ -82,7 +82,7 @@ public class FormActionProperty extends SystemActionProperty {
 
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
 
-        final FormInstance newFormInstance = context.createFormInstance(form, join(mapObjects, context.getKeys()), context.getSession(), isModal, newSession, checkOnOk, !form.isPrintForm);
+        final FormInstance newFormInstance = context.createFormInstance(form, join(mapObjects, context.getKeys()), context.getSession(), modalityType.isModal(), sessionScope, checkOnOk, !form.isPrintForm);
 
         if (form.isPrintForm && !newFormInstance.areObjectsFound()) {
             context.requestUserInteraction(
@@ -105,54 +105,60 @@ public class FormActionProperty extends SystemActionProperty {
 
             RemoteForm newRemoteForm = context.createRemoteForm(newFormInstance);
             if (form.isPrintForm) {
-                context.requestUserInteraction(new ReportClientAction(form.getSID(), isModal, newRemoteForm.reportManager.getReportData()));
+                context.requestUserInteraction(new ReportClientAction(form.getSID(), modalityType.isModal(), newRemoteForm.reportManager.getReportData()));
             } else {
-                context.requestUserInteraction(new FormClientAction(isModal, newRemoteForm));
+                context.requestUserInteraction(new FormClientAction(newRemoteForm, modalityType));
             }
 
-            FormCloseType formResult = newFormInstance.getFormResult();
+            if (!modalityType.isModal()) {
+                assert sessionScope.isManageSession();
+            } else {
+                //для немодальных форм следующее бессмысленно, т.к. они ещё открыты...
 
-            if (formResultProperty != null) {
-                formResultProperty.change(formResultClass.getID(formResult.asString()), context);
-            }
+                FormCloseType formResult = newFormInstance.getFormResult();
 
-            if (chosenValueProperty != null) {
-                for (GroupObjectEntity group : form.groups) {
-                    for (ObjectEntity object : group.objects) {
-                        chosenValueProperty.write(
-                                object.baseClass.getType(), newFormInstance.instanceFactory.getInstance(object).getObjectValue().getValue(), context, new DataObject(object.getSID())
-                        );
-                    }
+                if (formResultProperty != null) {
+                    formResultProperty.change(formResultClass.getID(formResult.asString()), context);
                 }
-            }
 
-            if (formResult == FormCloseType.OK) {
-                for (ObjectEntity object : seekOnOk) {
-                    try {
-                        ObjectInstance objectInstance = newFormInstance.instanceFactory.getInstance(object);
-                        // нужна проверка, т.к. в принципе пока FormActionProperty может ссылаться на ObjectEntity из разных FormEntity
-                        if (objectInstance != null) {
-                            thisFormInstance.expandCurrentGroupObject(object.baseClass);
-                            thisFormInstance.forceChangeObject(object.baseClass, objectInstance.getObjectValue());
+                if (chosenValueProperty != null) {
+                    for (GroupObjectEntity group : form.groups) {
+                        for (ObjectEntity object : group.objects) {
+                            chosenValueProperty.write(
+                                    object.baseClass.getType(), newFormInstance.instanceFactory.getInstance(object).getObjectValue().getValue(), context, new DataObject(object.getSID())
+                            );
                         }
-                    } catch (SQLException e) {
-                        throw new RuntimeException(e);
                     }
                 }
-            }
-            if (formResult == FormCloseType.CLOSE) {
-                if(closeAction !=null) {
-                    try {
-                        newFormInstance.instanceFactory.getInstance(closeAction).execute(newFormInstance);
-                    } catch (SQLException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            }
 
-            if (thisFormInstance != null) {
-                //обновляем текущую форму, чтобы подхватить изменения из вызываемой формы
-                thisFormInstance.refreshData();
+                if (formResult == FormCloseType.OK) {
+                    for (ObjectEntity object : seekOnOk) {
+                        try {
+                            ObjectInstance objectInstance = newFormInstance.instanceFactory.getInstance(object);
+                            // нужна проверка, т.к. в принципе пока FormActionProperty может ссылаться на ObjectEntity из разных FormEntity
+                            if (objectInstance != null) {
+                                thisFormInstance.expandCurrentGroupObject(object.baseClass);
+                                thisFormInstance.forceChangeObject(object.baseClass, objectInstance.getObjectValue());
+                            }
+                        } catch (SQLException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                }
+                if (formResult == FormCloseType.CLOSE) {
+                    if(closeAction !=null) {
+                        try {
+                            newFormInstance.instanceFactory.getInstance(closeAction).execute(newFormInstance);
+                        } catch (SQLException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                }
+
+                if (thisFormInstance != null) {
+                    //обновляем текущую форму, чтобы подхватить изменения из вызываемой формы
+                    thisFormInstance.refreshData();
+                }
             }
         }
     }

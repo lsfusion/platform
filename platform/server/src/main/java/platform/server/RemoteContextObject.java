@@ -19,6 +19,7 @@ import platform.server.form.entity.ObjectEntity;
 import platform.server.form.instance.DialogInstance;
 import platform.server.form.instance.FormCloseType;
 import platform.server.form.instance.FormInstance;
+import platform.server.form.instance.FormSessionScope;
 import platform.server.form.instance.remote.RemoteDialog;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.logics.DataObject;
@@ -170,7 +171,7 @@ public abstract class RemoteContextObject extends RemoteObject implements Contex
         throw new UnsupportedOperationException("requestUserInteraction is not supported");
     }
 
-    public FormInstance createFormInstance(FormEntity formEntity, Map<ObjectEntity, DataObject> mapObjects, DataSession session, boolean isModal, boolean newSession, boolean checkOnOk, boolean interactive) throws SQLException {
+    public FormInstance createFormInstance(FormEntity formEntity, Map<ObjectEntity, DataObject> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean interactive) throws SQLException {
         throw new UnsupportedOperationException("createFormInstance is not supported");
     }
 

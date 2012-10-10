@@ -1,55 +1,60 @@
 package platform.fullclient.layout;
 
-import bibliothek.gui.dock.common.MultipleCDockableFactory;
 import net.sf.jasperreports.engine.JRException;
+import platform.client.MainFrame;
 import platform.client.form.ClientFormController;
 import platform.client.navigator.ClientNavigator;
-import platform.interop.form.FormUserPreferences;
 import platform.interop.form.RemoteFormInterface;
 
-import java.awt.*;
 import java.io.IOException;
 
-public class ClientFormDockable extends FormDockable {
+public class ClientFormDockable extends ClientDockable {
 
     private ClientFormController clientForm;
 
-    public ClientFormDockable(String formSID, ClientNavigator inavigator, boolean currentSession, MultipleCDockableFactory<FormDockable, ?> factory) throws IOException, ClassNotFoundException {
-        super(formSID, inavigator, currentSession, factory, true, null);
+    public ClientFormDockable(ClientNavigator navigator, String formSID, DockableManager dockableManager) throws IOException, ClassNotFoundException, JRException {
+        this(navigator, formSID, navigator.remoteNavigator.createForm(formSID, null, false, true), dockableManager, null);
     }
 
-    public ClientFormDockable(ClientNavigator navigator, RemoteFormInterface remoteForm, MultipleCDockableFactory<FormDockable, ?> factory) throws IOException, ClassNotFoundException, JRException {
-        super(navigator, remoteForm, factory, null);
+    public ClientFormDockable(ClientNavigator navigator, RemoteFormInterface remoteForm, DockableManager dockableManager, MainFrame.FormCloseListener closeListener) throws IOException, ClassNotFoundException, JRException {
+        this(navigator, remoteForm.getSID(), remoteForm, dockableManager, closeListener);
     }
 
-    public ClientFormDockable(String formSID, MultipleCDockableFactory<FormDockable, ?> factory, ClientNavigator navigator) throws IOException, ClassNotFoundException, IOException {
-        super(formSID, factory, navigator,null);
-    }
+    private ClientFormDockable(ClientNavigator navigator, String formSID, RemoteFormInterface remoteForm, DockableManager dockableManager, final MainFrame.FormCloseListener closeListener) throws IOException, ClassNotFoundException, JRException {
+        super(formSID, dockableManager);
 
-    private ClientFormController getClientForm(ClientNavigator navigator, RemoteFormInterface remoteForm) {
-        if (clientForm == null) {
-            clientForm = new ClientFormController(remoteForm, navigator);
-        }
-        return clientForm;
+        clientForm = new ClientFormController(remoteForm, navigator) {
+            @Override
+            public void hideForm() {
+                setVisible(false);
+                if (closeListener != null) {
+                    closeListener.formClosed();
+                }
+                super.hideForm();
+            }
+
+            @Override
+            public void block() {
+                ClientFormDockable.this.blockView();
+            }
+
+            @Override
+            public void unblock() {
+                ClientFormDockable.this.unblockView();
+            }
+        };
+
+        setContent(clientForm.getCaption(), clientForm.getComponent());
     }
 
     @Override
-    public boolean pageChanged() {
-        return clientForm.dataChanged;
+    public void onClosing() {
+        clientForm.closePressed();
     }
 
     @Override
-    Component getActiveComponent(ClientNavigator navigator, RemoteFormInterface remoteForm, FormUserPreferences userPreferences) throws IOException, ClassNotFoundException {
-        return getClientForm(navigator, remoteForm).getComponent();
-    }
-
-    protected String getCaption() {
-        return clientForm.getCaption();
-    }
-
-    @Override
-    void closed() {
-        super.closed();
+    public void onClosed() {
+        super.onClosed();
 
         // удаляем ссылку на clientForm, поскольку ClientFormDockable совершенно не собирается быть собранным сборщиком мусора,
         // поскольку на него хранят ссылку внутренние объекты DockingFrames

@@ -60,7 +60,7 @@ public class NavigatorController implements INavigatorController {
         try {
             if (element instanceof ClientNavigatorForm) {
                 ClientNavigatorForm form = (ClientNavigatorForm) element;
-                if (form.showType.isModal()) {
+                if (form.modalityType.isModal()) {
                     mainNavigator.openModalForm(form);
                 } else {
                     mainNavigator.openForm(form);

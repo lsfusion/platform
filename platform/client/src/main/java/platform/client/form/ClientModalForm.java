@@ -42,10 +42,11 @@ public class ClientModalForm extends JDialog {
     }
 
     protected ClientFormController createFormController(boolean isDialog) {
-        return new ClientFormController(remoteForm, null, isDialog) {
+        return new ClientFormController(remoteForm, null, true, isDialog) {
             @Override
             public void hideForm() {
                 hideDialog();
+                super.hideForm();
             }
         };
     }

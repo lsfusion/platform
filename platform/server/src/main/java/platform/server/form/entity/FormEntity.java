@@ -7,8 +7,8 @@ import platform.base.identity.IDGenerator;
 import platform.base.serialization.CustomSerializable;
 import platform.interop.ClassViewType;
 import platform.interop.FormEventType;
+import platform.interop.ModalityType;
 import platform.interop.PropertyEditType;
-import platform.interop.navigator.FormShowType;
 import platform.server.Context;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.LogicalClass;
@@ -28,6 +28,7 @@ import platform.server.logics.linear.LAP;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
+import platform.server.logics.property.actions.flow.NewSessionActionProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.property.group.AbstractNode;
 import platform.server.serialization.ServerContext;
@@ -51,7 +52,8 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     public static final IsDebugFormulaProperty isDebug = IsDebugFormulaProperty.instance;
     public static final SessionDataProperty isDialog = new SessionDataProperty("isDialog", "Is dialog", LogicalClass.instance);
     public static final SessionDataProperty isModal = new SessionDataProperty("isModal", "Is modal", LogicalClass.instance);
-    public static final SessionDataProperty isNewSession = new SessionDataProperty("isNewSession", "Is new session", LogicalClass.instance);
+    public static final SessionDataProperty manageSession = new SessionDataProperty("manageSession", "Manage session", LogicalClass.instance);
+    public static final SessionDataProperty isReadOnly = new SessionDataProperty("isReadOnly", "Is read only form", LogicalClass.instance);
 
     public PropertyDrawEntity printActionPropertyDraw;
     public PropertyDrawEntity editActionPropertyDraw;
@@ -75,7 +77,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     public OrderedMap<OrderEntity<?>, Boolean> fixedOrders = new OrderedMap<OrderEntity<?>, Boolean>();
 
     public boolean isPrintForm;
-    public FormShowType showType = FormShowType.DOCKING;
+    public ModalityType modalityType = ModalityType.DOCKED;
 
     public boolean isSynchronizedApply = false;
 
@@ -272,6 +274,17 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         }
 
         return null;
+    }
+
+    @IdentityLazy
+    public boolean isReadOnly() {
+        for (PropertyDrawEntity property : propertyDraws) {
+            if (!property.isReadOnly() && !(property.propertyObject.property instanceof NewSessionActionProperty)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     protected ObjectEntity addSingleGroupObject(ValueClass baseClass, String caption, Object... groups) {
@@ -841,7 +854,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         pool.writeString(outStream, caption);
         pool.writeString(outStream, sID);
         outStream.writeBoolean(isPrintForm);
-        outStream.writeUTF(showType.name());
+        outStream.writeUTF(modalityType.name());
 
         pool.serializeCollection(outStream, groups);
         pool.serializeCollection(outStream, treeGroups);
@@ -888,7 +901,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         caption = pool.readString(inStream);
         sID = pool.readString(inStream);
         isPrintForm = inStream.readBoolean();
-        showType = FormShowType.valueOf(inStream.readUTF());
+        modalityType = ModalityType.valueOf(inStream.readUTF());
 
         groups = pool.deserializeList(inStream);
         treeGroups = pool.deserializeList(inStream);
@@ -931,7 +944,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     public void serialize(DataOutputStream outStream, Collection<NavigatorElement> elements) throws IOException {
         super.serialize(outStream, elements);
         outStream.writeBoolean(isPrintForm);
-        outStream.writeUTF(showType.name());
+        outStream.writeUTF(modalityType.name());
     }
 
     public void setAddOnTransaction(ObjectEntity entity, LogicsModule lm) {

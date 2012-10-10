@@ -12,20 +12,12 @@ import java.util.EventObject;
 
 public class ClientDialog extends ClientModalForm {
 
-    // todo: удалить все эти поля вмест с ObjectPropertyEditor
-    public final static int NOT_CHOSEN = 0;
-    public final static int VALUE_CHOSEN = 1;
-
-    public int result = NOT_CHOSEN;
-    public Object dialogValue;
-    public Object displayValue;
-
     public KeyEvent initFilterKeyEvent = null;
 
     private RemoteDialogInterface remoteDialog;
 
-    public ClientDialog(Component owner, final RemoteDialogInterface dialog, EventObject initFilterEvent, boolean isDialog) {
-        super(owner, dialog, isDialog);
+    public ClientDialog(Component owner, final RemoteDialogInterface dialog, EventObject initFilterEvent) {
+        super(owner, dialog, true);
 
         remoteDialog = dialog;
 

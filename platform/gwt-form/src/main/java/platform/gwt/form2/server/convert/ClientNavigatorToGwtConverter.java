@@ -61,7 +61,7 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
         form.icon = "form.png";
         form.isForm = true;
         form.isPrintForm = clientForm.isPrintForm;
-        form.showType = GFormShowType.valueOf(clientForm.showType.name());
+        form.modalityType = GModalityType.valueOf(clientForm.modalityType.name());
         return form;
     }
 

@@ -52,7 +52,7 @@ public class ClientFormController implements AsyncListener {
     private final EProvider<String> serverMessageProvider = new EProvider<String>() {
         @Override
         public String getExceptionally() throws Exception {
-            return remoteForm.getRemoteActionMessage();
+            return remoteForm == null ? null : remoteForm.getRemoteActionMessage();
         }
     };
 
@@ -65,9 +65,6 @@ public class ClientFormController implements AsyncListener {
     private final ClientNavigator clientNavigator;
     private final ClientFormActionDispatcher actionDispatcher;
 
-    // здесь хранится список всех GroupObjects плюс при необходимости null
-//    private List<ClientGroupObject> groupObjects;
-
     private static IDGenerator idGenerator = new DefaultIDGenerator();
     private int ID;
 
@@ -76,11 +73,10 @@ public class ClientFormController implements AsyncListener {
     public Map<ClientGroupObject, GroupObjectController> controllers;
     public Map<ClientTreeGroup, TreeGroupController> treeControllers;
 
-    public boolean dataChanged;
-
     private boolean defaultOrdersInitialized = false;
 
-    private boolean isDialog;
+    private final boolean isDialog;
+    private final boolean isModal;
 
     private final Map<ClientGroupObject, List<ClientPropertyFilter>> currentFilters = new HashMap<ClientGroupObject, List<ClientPropertyFilter>>();
 
@@ -96,11 +92,12 @@ public class ClientFormController implements AsyncListener {
     private Icon asyncPrevIcon;
 
     public ClientFormController(RemoteFormInterface remoteForm, ClientNavigator clientNavigator) {
-        this(remoteForm, clientNavigator, false);
+        this(remoteForm, clientNavigator, false, false);
     }
 
-    public ClientFormController(RemoteFormInterface iremoteForm, ClientNavigator iclientNavigator, boolean iisDialog) {
+    public ClientFormController(RemoteFormInterface iremoteForm, ClientNavigator iclientNavigator, boolean iisModal, boolean iisDialog) {
         isDialog = iisDialog;
+        isModal = iisModal;
 
         ID = idGenerator.idShift();
 
@@ -123,6 +120,10 @@ public class ClientFormController implements AsyncListener {
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
+    }
+
+    public boolean isModal() {
+        return isModal;
     }
 
     public boolean isDialog() {
@@ -980,9 +981,6 @@ public class ClientFormController implements AsyncListener {
     }
 
     public void closed() {
-        // здесь мы сбрасываем ссылку на remoteForm для того, чтобы сборщик мусора быстрее собрал удаленные объекты
-        // это нужно, чтобы connection'ы на сервере закрывались как можно быстрее
-        remoteForm = null;
     }
 
     public Dimension calculatePreferredSize() {
@@ -1008,7 +1006,9 @@ public class ClientFormController implements AsyncListener {
     }
 
     public void hideForm() {
-        //do nothing by default
+        // здесь мы сбрасываем ссылку на remoteForm для того, чтобы сборщик мусора быстрее собрал удаленные объекты
+        // это нужно, чтобы connection'ы на сервере закрывались как можно быстрее
+        remoteForm = null;
     }
 
     public void runPrintReport() {
@@ -1120,7 +1120,7 @@ public class ClientFormController implements AsyncListener {
         });
     }
 
-    void closePressed() {
+    public void closePressed() {
         commitOrCancelCurrentEditing();
         rmiQueue.syncRequest(new ProcessServerResponseRmiRequest() {
             @Override
@@ -1156,6 +1156,12 @@ public class ClientFormController implements AsyncListener {
                 asyncView.setIcon(asyncPrevIcon);
             }
         }
+    }
+
+    public void block() {
+    }
+
+    public void unblock() {
     }
 
     private abstract class ProcessServerResponseRmiRequest extends RmiRequest<ServerResponse> {

@@ -3,11 +3,11 @@ package platform.fullclient.layout;
 import bibliothek.gui.dock.common.*;
 import bibliothek.gui.dock.common.intern.CSetting;
 import bibliothek.gui.dock.common.menu.*;
-import bibliothek.gui.dock.common.mode.ExtendedMode;
 import bibliothek.gui.dock.common.theme.ThemeMap;
 import bibliothek.gui.dock.facile.menu.RootMenuPiece;
 import bibliothek.gui.dock.facile.menu.SubmenuPiece;
 import bibliothek.gui.dock.support.menu.SeparatingMenuPiece;
+import com.google.common.base.Throwables;
 import net.sf.jasperreports.engine.JRException;
 import platform.base.ExceptionUtils;
 import platform.client.Log;
@@ -45,7 +45,7 @@ public class DockableMainFrame extends MainFrame {
 
     private final LinkedHashMap<SingleCDockable, ClientAbstractWindow> windowDockables = new LinkedHashMap<SingleCDockable, ClientAbstractWindow>();
     private final CControl mainControl;
-    private final ViewManager viewManager;
+    private final DockableManager dockableManager;
 
     private final NavigatorController navigatorController;
     private final ClientNavigator mainNavigator;
@@ -58,14 +58,14 @@ public class DockableMainFrame extends MainFrame {
         mainNavigator = new ClientNavigator(remoteNavigator) {
             public void openForm(ClientNavigatorForm element) throws IOException, ClassNotFoundException {
                 try {
-                    viewManager.openClient(element.getSID(), this, false);
+                    dockableManager.openForm(this, element.getSID());
                 } catch (JRException e) {
                     throw new RuntimeException(e);
                 }
             }
 
             public void openModalForm(ClientNavigatorForm element) throws IOException, ClassNotFoundException {
-                viewManager.openModalForm(element.getSID(), this, false, element.showType.isFullScreen());
+                dockableManager.openModalForm(element.getSID(), this, element.modalityType.isFullScreen());
             }
 
             @Override
@@ -80,7 +80,7 @@ public class DockableMainFrame extends MainFrame {
 
         mainControl = new CControl(this);
 
-        viewManager = new ViewManager(mainControl, mainNavigator);
+        dockableManager = new DockableManager(mainControl, mainNavigator);
 
         initDockStations();
 
@@ -111,8 +111,9 @@ public class DockableMainFrame extends MainFrame {
                 try {
                     mainControl.save("default");
                     DataOutputStream out = new DataOutputStream(new FileOutputStream(new File(baseDir, "layout.data")));
-                    viewManager.getForms().write(out);
+                    dockableManager.getForms().write(out);
                     mainControl.getResources().writeStream(out);
+                    out.close();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -123,28 +124,16 @@ public class DockableMainFrame extends MainFrame {
     private void focusPageIfNeeded() {
         try {
             ClientFormDockable pageToFocus = null;
-            if (remoteNavigator.showDefaultForms()) {
-                ArrayList<String> ids = remoteNavigator.getDefaultForms();
-                viewManager.getForms().getFormsList().clear();
-                ClientFormDockable page = null;
-                for (String id : ids) {
-                    page = viewManager.openClient(id.trim(), mainNavigator, false);
-                    if (pageToFocus == null) {
-                        pageToFocus = page;
-                    }
-                }
-                if (page != null) {
-                    page.setExtendedMode(ExtendedMode.MAXIMIZED);
-                }
-            } else {
-                ArrayList<String> savedForms = new ArrayList<String>(viewManager.getForms().getFormsList());
-                viewManager.getForms().getFormsList().clear();
-                ClientFormDockable page;
-                for (String id : savedForms) {
-                    page = viewManager.openClient(id, mainNavigator, false);
-                    if (pageToFocus == null) {
-                        pageToFocus = page;
-                    }
+            ArrayList<String> savedForms = remoteNavigator.showDefaultForms()
+                    ? remoteNavigator.getDefaultForms()
+                    : new ArrayList<String>(dockableManager.getForms().getFormsList());
+
+            dockableManager.getForms().getFormsList().clear();
+            ClientFormDockable page;
+            for (String formSID : savedForms) {
+                page = dockableManager.openForm(mainNavigator, formSID);
+                if (pageToFocus == null) {
+                    pageToFocus = page;
                 }
             }
             if (pageToFocus != null) {
@@ -159,22 +148,7 @@ public class DockableMainFrame extends MainFrame {
     private void initDockStations() {
         mainControl.setTheme(ThemeMap.KEY_ECLIPSE_THEME);
 
-        DataInputStream in = null;
-        try {
-            in = new DataInputStream(new FileInputStream(new File(baseDir, "layout.data")));
-            viewManager.getForms().read(in);
-            mainControl.getResources().readStream(in);
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            if (in != null) {
-                try {
-                    in.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
+        loadLayout();
 
         // создаем все окна и их виды
         initWindows();
@@ -220,29 +194,47 @@ public class DockableMainFrame extends MainFrame {
         }
     }
 
+    private void loadLayout() {
+        File layoutFile = new File(baseDir, "layout.data");
+        if (layoutFile.exists()) {
+            DataInputStream in = null;
+            try {
+                in = new DataInputStream(new FileInputStream(layoutFile));
+                dockableManager.getForms().read(in);
+                mainControl.getResources().readStream(in);
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                if (in != null) {
+                    try {
+                        in.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+    }
+
     @Override
     public void runReport(String reportSID, boolean isModal, ReportGenerationData generationData) throws IOException, ClassNotFoundException {
         if (isModal) {
             ReportDialog.showReportDialog(generationData);
         } else {
-            viewManager.openReport(reportSID, generationData);
+            dockableManager.openReport(reportSID, generationData);
         }
     }
 
     @Override
-    public void runForm(RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException {
+    public void runForm(RemoteFormInterface remoteForm, FormCloseListener closeListener) {
         try {
-            viewManager.openClient(mainNavigator, remoteForm);
-        } catch (JRException e) {
-            throw new RuntimeException(e);
+            ClientFormDockable dockable = dockableManager.openForm(mainNavigator, remoteForm, closeListener);
+            if (closeListener != null) {
+                dockable.setFocusMostRecentOnClose(false);
+            }
+        } catch (Exception e) {
+            Throwables.propagate(e);
         }
-    }
-
-    private DefaultSingleCDockable createDockable(ClientAbstractWindow window, JComponent navigator) {
-        DefaultSingleCDockable dockable = new DefaultSingleCDockable(window.getSID(), window.caption, navigator);
-        dockable.setTitleShown(window.titleShown);
-        dockable.setCloseable(true);
-        return dockable;
     }
 
     private void initWindows() {
@@ -271,7 +263,7 @@ public class DockableMainFrame extends MainFrame {
             ClientAbstractWindow window = entry.getKey();
             JComponent component = entry.getValue();
             if (window.position == AbstractWindowType.DOCKING_POSITION) {
-                SingleCDockable dockable = createDockable(window, entry.getValue());
+                ClientWindowDockable dockable = new ClientWindowDockable(window, entry.getValue());
                 navigatorController.recordDockable(component, dockable);
                 windowDockables.put(dockable, window);
             } else {
@@ -279,7 +271,7 @@ public class DockableMainFrame extends MainFrame {
             }
         }
 
-        windowDockables.put(viewManager.getFormArea(), formsWindow);
+        windowDockables.put(dockableManager.getFormArea(), formsWindow);
     }
 
     private void setupMenu() {
@@ -472,7 +464,7 @@ public class DockableMainFrame extends MainFrame {
                 chooser.addChoosableFileFilter(new FileNameExtensionFilter(getString("layout.menu.file.jasperReports.reports"), "jrprint"));
                 if (chooser.showOpenDialog(DockableMainFrame.this) == JFileChooser.APPROVE_OPTION) {
                     try {
-                        viewManager.openReport(chooser.getSelectedFile());
+                        dockableManager.openReport(chooser.getSelectedFile());
                     } catch (JRException e) {
                         throw new RuntimeException(getString("layout.menu.file.error.opening.saved.report"), e);
                     }

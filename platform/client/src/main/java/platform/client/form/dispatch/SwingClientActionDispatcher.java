@@ -4,10 +4,7 @@ import com.google.common.base.Throwables;
 import platform.base.BaseUtils;
 import platform.base.IOUtils;
 import platform.base.OSUtils;
-import platform.client.ClientResourceBundle;
-import platform.client.Log;
-import platform.client.Main;
-import platform.client.SwingUtils;
+import platform.client.*;
 import platform.client.form.ClientDialog;
 import platform.client.form.ClientModalForm;
 import platform.client.form.ClientNavigatorDialog;
@@ -17,9 +14,9 @@ import platform.client.logics.classes.ClientTypeSerializer;
 import platform.client.remote.proxy.RemoteDialogProxy;
 import platform.client.remote.proxy.RemoteFormProxy;
 import platform.interop.KeyStrokes;
+import platform.interop.ModalityType;
 import platform.interop.action.*;
 import platform.interop.exceptions.LoginException;
-import platform.interop.form.FormUserPreferences;
 import platform.interop.form.RemoteDialogInterface;
 import platform.interop.form.ServerResponse;
 
@@ -40,7 +37,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     Object[] currentActionResults = null;
     private int currentActionIndex = -1;
 
-    public final void dispatchResponse(ServerResponse serverResponse) throws IOException {
+    public void dispatchResponse(ServerResponse serverResponse) throws IOException {
         assert serverResponse != null;
 
         try {
@@ -117,30 +114,46 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
         dispatchingPaused = true;
     }
 
-    public void continueDispatching(Object currentActionResult) throws IOException {
+    public void continueDispatching() {
+        continueDispatching(null);
+    }
+
+    public void continueDispatching(Object currentActionResult) {
         currentActionResults[currentActionIndex] = currentActionResult;
-        dispatchResponse(currentServerResponse);
+        try {
+            dispatchResponse(currentServerResponse);
+        } catch (IOException e) {
+            Throwables.propagate(e);
+        }
     }
 
     protected Container getDialogParentContainer() {
         return Main.frame;
     }
 
-    protected FormUserPreferences getFormUserPreferences() {
-        return null;
+    public void execute(FormClientAction action) {
+        RemoteFormProxy remoteForm = new RemoteFormProxy(action.remoteForm);
+        if (action.modalityType == ModalityType.DOCKED_MODAL) {
+            pauseDispatching();
+            beforeShowDockedModalForm();
+            Main.frame.runForm(remoteForm, new MainFrame.FormCloseListener() {
+                @Override
+                public void formClosed() {
+                    afterHideDockedModalForm();
+                    continueDispatching();
+                }
+            });
+        } else if (action.modalityType.isModal()) {
+            new ClientModalForm(Main.frame, remoteForm).showDialog(action.modalityType.isFullScreen());
+        } else {
+            Main.frame.runForm(remoteForm, null);
+        }
     }
 
-    public void execute(FormClientAction action) {
-        try {
-            RemoteFormProxy remoteForm = new RemoteFormProxy(action.remoteForm);
-            if (!action.isModal) {
-                Main.frame.runForm(remoteForm);
-            } else {
-                new ClientModalForm(Main.frame, remoteForm).showDialog(false);
-            }
-        } catch (Exception e) {
-            Throwables.propagate(e);
-        }
+    protected void beforeShowDockedModalForm() {
+    }
+
+    protected void afterHideDockedModalForm() {
     }
 
     public void execute(ReportClientAction action) {
@@ -160,9 +173,9 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
 
         ClientDialog dlg;
         if (KeyStrokes.isSpaceEvent(currentEvent) || KeyStrokes.isObjectEditorDialogEvent(currentEvent)) {
-            dlg = new ClientNavigatorDialog(owner, dialog, true);
+            dlg = new ClientNavigatorDialog(owner, dialog);
         } else {
-            dlg = new ClientDialog(owner, dialog, currentEvent, true);
+            dlg = new ClientDialog(owner, dialog, currentEvent);
         }
 
         dlg.showDialog(false);

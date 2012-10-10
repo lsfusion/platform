@@ -6,8 +6,8 @@ import java.awt.*;
 
 public class ClientNavigatorDialog extends ClientDialog {
 
-    public ClientNavigatorDialog(Component owner, RemoteDialogInterface dialog, boolean isDialog) {
-        super(owner, dialog, null, isDialog);
+    public ClientNavigatorDialog(Component owner, RemoteDialogInterface dialog) {
+        super(owner, dialog, null);
     }
 
     @Override

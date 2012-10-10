@@ -4,11 +4,10 @@ import platform.base.ApiResourceBundle;
 import platform.server.classes.ColorClass;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.PropertyDrawEntity;
-import platform.server.logics.BusinessLogics;
 import platform.server.logics.linear.LCP;
+import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
-import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.session.DataSession;
 
@@ -17,7 +16,8 @@ import java.sql.SQLException;
 
 public class FormApplyActionProperty extends FormToolbarActionProperty {
     public FormApplyActionProperty() {
-        super("formApply", ApiResourceBundle.getString("form.layout.apply"), DataSession.isDataChanged, FormEntity.isNewSession);
+        super("formApply", ApiResourceBundle.getString("form.layout.apply"), DataSession.isDataChanged,
+              new CalcProperty[] {FormEntity.manageSession, FormEntity.isReadOnly}, new boolean[] {false, true});
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {

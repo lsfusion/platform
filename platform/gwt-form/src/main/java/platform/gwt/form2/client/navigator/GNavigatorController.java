@@ -80,7 +80,7 @@ public abstract class GNavigatorController implements GINavigatorController {
     public void openElement(GNavigatorElement element) {
         if (element instanceof GNavigatorForm) {
             GNavigatorForm form = (GNavigatorForm) element;
-            if (form.showType.isModal()) {
+            if (form.modalityType.isModal()) {
                 OpenFormEvent.fireEvent(form.sid, form.caption);
             } else {
                 OpenFormEvent.fireEvent(form.sid, form.caption);

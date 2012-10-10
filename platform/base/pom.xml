@@ -29,7 +29,7 @@
         <apache.poi.version>3.7</apache.poi.version>
         <apache.poi.ooxml.version>3.6-f</apache.poi.ooxml.version>
         <apache.xmlbeans>2.3.0</apache.xmlbeans>
-        <docking.frames.version>1.1.1_p2</docking.frames.version>
+        <docking.frames.version>1.1.1</docking.frames.version>
         <jexcelapi.version>2.6.12</jexcelapi.version>
         <batik.version>1.7</batik.version>
         <barcode4j.version>2.0</barcode4j.version>
@@ -345,11 +345,6 @@
             <dependency>
                 <groupId>bibliothek.gui</groupId>
                 <artifactId>dockingFramesCommon</artifactId>
-                <version>${docking.frames.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>bibliothek.gui</groupId>
-                <artifactId>paint</artifactId>
                 <version>${docking.frames.version}</version>
             </dependency>
             <dependency>

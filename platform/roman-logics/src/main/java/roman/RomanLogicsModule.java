@@ -1,16 +1,12 @@
 package roman;
 
 import platform.base.BaseUtils;
-import platform.interop.ClassViewType;
-import platform.interop.Compare;
-import platform.interop.FormEventType;
-import platform.interop.PropertyEditType;
+import platform.interop.*;
 import platform.interop.action.AudioClientAction;
 import platform.interop.action.MessageClientAction;
 import platform.interop.form.ServerResponse;
 import platform.interop.form.layout.ContainerType;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
-import platform.interop.navigator.FormShowType;
 import platform.server.Settings;
 import platform.server.classes.*;
 import platform.server.daemons.ScannerDaemonTask;
@@ -4134,9 +4130,9 @@ public class RomanLogicsModule extends LogicsModule {
         addFormEntity(new PricatFormEntity(orders, "pricatForm", "Прикаты"));
 
         NavigatorElement purchaseCreate = addNavigatorElement(purchase, "purchaseCreate", "Создать");
-        addFormEntity(new OrderEditFormEntity(purchaseCreate, "orderAddForm", "Заказ", false)).showType = FormShowType.MODAL_FULLSCREEN;
-        addFormEntity(new InvoiceEditFormEntity(purchaseCreate, "boxInvoiceAddForm", "Инвойс по коробам", true, false)).showType = FormShowType.MODAL_FULLSCREEN;
-        addFormEntity(new InvoiceEditFormEntity(purchaseCreate, "simpleInvoiceAddForm", "Инвойс без коробов", false, false)).showType = FormShowType.MODAL_FULLSCREEN;
+        addFormEntity(new OrderEditFormEntity(purchaseCreate, "orderAddForm", "Заказ", false)).modalityType = ModalityType.FULLSCREEN_MODAL;
+        addFormEntity(new InvoiceEditFormEntity(purchaseCreate, "boxInvoiceAddForm", "Инвойс по коробам", true, false)).modalityType = ModalityType.FULLSCREEN_MODAL;
+        addFormEntity(new InvoiceEditFormEntity(purchaseCreate, "simpleInvoiceAddForm", "Инвойс без коробов", false, false)).modalityType = ModalityType.FULLSCREEN_MODAL;
         purchaseCreate.window = generateToolbar;
 
         addFormEntity(new OrderEditFormEntity(null, "orderEditForm", "Редактировать заказ", true));
@@ -4170,13 +4166,13 @@ public class RomanLogicsModule extends LogicsModule {
         generationSintitex.window = generateToolbar;
 
         FormEntity createPalletFormCreate = addFormEntity(new CreatePalletFormEntity(generationSintitex, "createPalletFormAdd", "Сгенерировать паллеты", FormType.ADD));
-        createPalletFormCreate.showType = FormShowType.MODAL;
+        createPalletFormCreate.modalityType = ModalityType.MODAL;
         FormEntity createFreightBoxFormAdd = addFormEntity(new CreateFreightBoxFormEntity(generationSintitex, "createFreightBoxFormAdd", "Сгенерировать короба", FormType.ADD));
-        createFreightBoxFormAdd.showType = FormShowType.MODAL;
+        createFreightBoxFormAdd.modalityType = ModalityType.MODAL;
         FormEntity createSkuFormAdd = addFormEntity(new CreateSkuFormEntity(generationSintitex, "createSkuFormAdd", "Сгенерировать товары", FormType.ADD));
-        createSkuFormAdd.showType = FormShowType.MODAL;
+        createSkuFormAdd.modalityType = ModalityType.MODAL;
         FormEntity createStampFormAdd = addFormEntity(new CreateStampFormEntity(generationSintitex, "createStampFormAdd", "Сгенерировать марки", FormType.ADD));
-        createStampFormAdd.showType = FormShowType.MODAL;
+        createStampFormAdd.modalityType = ModalityType.MODAL;
 
         addFormEntity(new CreatePalletFormEntity(preparation, "createPalletFormList", "Паллеты", FormType.LIST));
         addFormEntity(new CreateFreightBoxFormEntity(preparation, "createFreightBoxFormList", "Короба", FormType.LIST));

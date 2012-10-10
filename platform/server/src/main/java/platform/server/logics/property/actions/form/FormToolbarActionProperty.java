@@ -8,7 +8,6 @@ import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.PropertyDrawView;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.property.*;
-import platform.server.logics.property.actions.CustomActionProperty;
 import platform.server.logics.property.actions.SystemActionProperty;
 
 import java.awt.*;
@@ -38,6 +37,10 @@ public abstract class FormToolbarActionProperty extends SystemActionProperty {
         this(sid, caption, true, enableIf, showIfs, showIfs == null ? null : new boolean[showIfs.length]);
     }
 
+    public FormToolbarActionProperty(String sid, String caption, CalcProperty enableIf, CalcProperty[] showIfs, boolean[] showIfNots) {
+        this(sid, caption, true, enableIf, showIfs, showIfNots);
+
+    }
     public FormToolbarActionProperty(String sid, String caption, boolean showCaption, CalcProperty enableIf, CalcProperty[] showIfs, boolean[] showIfNots) {
         super(sid, caption, new ValueClass[0]);
 

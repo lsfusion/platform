@@ -85,21 +85,29 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
         }
     }
 
+    @Override
+    public void dispatchResponse(ServerResponse response) throws IOException {
+        internalDispatchResponse(response);
+    }
+
     /**
      * @return true, если на сервере вызван action для редактирования
      */
     private boolean internalDispatchResponse(ServerResponse response) throws IOException {
         assert response != null;
 
-        dispatchResponse(response);
+        ClientType editType = null;
+        super.dispatchResponse(response);
         if (readType != null) {
-            if (!internalRequestValue(readType)) {
+            editType = readType;
+            readType = null;
+            if (!internalRequestValue(editType)) {
                 cancelEdit();
             }
             return true;
         }
 
-        return readType != null || response.resumeInvocation || editPerformed;
+        return editType != null || response.resumeInvocation || editPerformed;
     }
 
     private boolean internalRequestValue(ClientType readType) throws IOException {
@@ -121,12 +129,8 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
             return;
         }
 
-        try {
-            valueRequested = false;
-            continueDispatching(inputResult);
-        } catch (IOException e) {
-            throw Throwables.propagate(e);
-        }
+        valueRequested = false;
+        continueDispatching(inputResult);
     }
 
     public void commitValue(Object value) {

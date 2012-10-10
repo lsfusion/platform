@@ -339,6 +339,15 @@ public class SwingUtils {
         if (table instanceof TableTransferHandler.TableInterface) {
             table.setTransferHandler(new TableTransferHandler((TableTransferHandler.TableInterface) table));
         }
+
+        table.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                if (table.getEditorComponent() != null) {
+                    table.getEditorComponent().requestFocusInWindow();
+                }
+            }
+        });
     }
 
     public static void setupSingleCellTable(final JTable table) {

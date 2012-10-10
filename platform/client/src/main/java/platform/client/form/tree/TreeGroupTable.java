@@ -20,7 +20,6 @@ import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
 import platform.client.logics.ClientTreeGroup;
 import platform.client.logics.classes.ClientType;
-import platform.interop.KeyStrokes;
 import platform.interop.Order;
 
 import javax.swing.*;
@@ -203,21 +202,16 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
 
         addKeyListener(new TreeGroupQuickSearchHandler(this));
 
-        addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (form.isDialog() && e.getClickCount() > 1)
-                    form.okPressed();
-            }
-        });
-
-        addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyPressed(KeyEvent e) {
-                if (form.isDialog() && e.getKeyCode() == KeyStrokes.getEnter().getKeyCode())
-                    form.okPressed();
-            }
-        });
+        if (form.isDialog()) {
+            addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    if (e.getClickCount() > 1) {
+                        form.okPressed();
+                    }
+                }
+            });
+        }
 
         initializeActionMap();
         currentTreePath = new TreePath(rootNode);

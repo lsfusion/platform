@@ -13,13 +13,19 @@ import platform.client.descriptor.filter.FilterDescriptor;
 import platform.client.descriptor.filter.RegularFilterGroupDescriptor;
 import platform.client.descriptor.property.PropertyDescriptor;
 import platform.client.descriptor.property.PropertyInterfaceDescriptor;
-import platform.client.logics.*;
+import platform.client.logics.ClientComponent;
+import platform.client.logics.ClientContainer;
+import platform.client.logics.ClientForm;
+import platform.client.logics.ClientPropertyDraw;
 import platform.client.logics.classes.ClientClass;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
 import platform.interop.Constants;
-import platform.interop.form.layout.*;
-import platform.interop.navigator.FormShowType;
+import platform.interop.ModalityType;
+import platform.interop.form.layout.ContainerFactory;
+import platform.interop.form.layout.FormContainerSet;
+import platform.interop.form.layout.GroupObjectContainerSet;
+import platform.interop.form.layout.TreeGroupContainerSet;
 
 import java.io.*;
 import java.util.*;
@@ -30,7 +36,7 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
 
     public String caption;
     public boolean isPrintForm;
-    public FormShowType showType = FormShowType.DOCKING;
+    public ModalityType modalityType = ModalityType.DOCKED;
 
     public List<GroupObjectDescriptor> groupObjects = new ArrayList<GroupObjectDescriptor>();
     public List<TreeGroupDescriptor> treeGroups = new ArrayList<TreeGroupDescriptor>();
@@ -225,7 +231,7 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
         pool.writeString(outStream, caption);
         pool.writeString(outStream, sID);
         outStream.writeBoolean(isPrintForm);
-        outStream.writeUTF(showType.name());
+        outStream.writeUTF(modalityType.name());
 
         pool.serializeCollection(outStream, groupObjects);
         pool.serializeCollection(outStream, treeGroups);
@@ -272,7 +278,7 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
         caption = pool.readString(inStream);
         sID = pool.readString(inStream);
         isPrintForm = inStream.readBoolean();
-        showType = FormShowType.valueOf(inStream.readUTF());
+        modalityType = ModalityType.valueOf(inStream.readUTF());
 
         groupObjects = pool.deserializeList(inStream);
         treeGroups = pool.deserializeList(inStream);

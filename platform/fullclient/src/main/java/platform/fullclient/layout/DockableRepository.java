@@ -7,12 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FormRepository {
-    /**
-     * observers of this repository, will be informed whenever formsList are added or removed
-     */
-    private List<FormRepositoryListener> listeners = new ArrayList<FormRepositoryListener>();
-
+public class DockableRepository {
     /**
      * the formsList in this repository
      */
@@ -54,8 +49,6 @@ public class FormRepository {
 
     public void add(String formID) {
         formsList.add(formID);
-        //for (FormRepositoryListener listener : listeners) {
-        //    listener.pictureAdded(formID);
     }
 
     /**

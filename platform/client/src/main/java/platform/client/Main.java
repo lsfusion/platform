@@ -189,7 +189,6 @@ public class Main {
                                 task.setEventBus(eventBus);
                                 executorService.scheduleWithFixedDelay(new DaemonTask(task), task.getDelay(), task.getPeriod(), TimeUnit.MILLISECONDS);
                             }
-                            // todo : где-то обязательно надо уведомлять DaemonTask о том, что пора сворачиваться, чтобы они освобождали порты
                         } catch (Exception e) {
                             closeSplashScreen();
                             logger.error(getString("client.error.application.initialization"), e);

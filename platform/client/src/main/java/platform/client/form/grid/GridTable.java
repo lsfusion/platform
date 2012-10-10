@@ -330,12 +330,6 @@ public class GridTable extends ClientPropertyTable {
         inputMap.put(KeyStrokes.getCtrlHome(), GOTO_FIRST_ACTION);
         inputMap.put(KeyStrokes.getCtrlEnd(), GOTO_LAST_ACTION);
         inputMap.put(KeyStrokes.getGroupCorrectionDialogKeyStroke(), GROUP_CORRECTION_ACTION);
-
-        if (form.isDialog()) {
-            //вырезаем ввод в диалоге, чтобы закрывал диалог
-            inputMap.put(KeyStrokes.getOkKeyStroke(), "none");
-            getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStrokes.getOkKeyStroke(), "none");
-        }
     }
 
     int getID() {

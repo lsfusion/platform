@@ -6,6 +6,7 @@ import platform.base.Pair;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.KeyStrokes;
+import platform.interop.ModalityType;
 import platform.interop.form.GlobalConstants;
 import platform.server.Settings;
 import platform.server.caches.IdentityLazy;
@@ -19,6 +20,7 @@ import platform.server.data.type.Type;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.form.entity.*;
 import platform.server.form.entity.filter.FilterEntity;
+import platform.server.form.instance.FormSessionScope;
 import platform.server.form.navigator.NavigatorAction;
 import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.window.AbstractWindow;
@@ -551,12 +553,40 @@ public abstract class LogicsModule {
         return addFAProp(group, sID, caption, form, objectsToSet, startProperties, newSession, true, false);
     }
 
+    public LAP addDMFAProp(String caption, FormEntity form, ObjectEntity... params) {
+        return addDMFAProp(null, caption, form, params, false);
+    }
+
+    protected LAP addDMFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, boolean newSession) {
+        return addDMFAProp(group, genSID(), caption, form, objectsToSet, newSession);
+    }
+
+    protected LAP addDMFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, boolean newSession, ActionPropertyObjectEntity startProperties) {
+        return addDMFAProp(group, genSID(), caption, form, objectsToSet, startProperties, newSession);
+    }
+
+    protected LAP addDMFAProp(AbstractGroup group, String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, boolean newSession) {
+        return addDMFAProp(group, sID, caption, form, objectsToSet, null, newSession);
+    }
+
+    protected LAP addDMFAProp(AbstractGroup group, String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity startProperties, boolean newSession) {
+        return addFAProp(group, sID, caption, form, objectsToSet, startProperties,
+                         newSession ? FormSessionScope.NEWSESSION : FormSessionScope.OLDSESSION,
+                         ModalityType.DOCKED_MODAL, false);
+    }
+
     protected LAP addFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity startProperties, boolean newSession, boolean isModal) {
         return addFAProp(group, genSID(), caption, form, objectsToSet, startProperties, newSession, isModal, false);
     }
 
     protected LAP addFAProp(AbstractGroup group, String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity setProperties, boolean newSession, boolean isModal, boolean checkOnOk) {
-        return addProperty(group, new LAP(new FormActionProperty(sID, caption, form, objectsToSet, setProperties, newSession, isModal, checkOnOk, baseLM.formResult, baseLM.getFormResultProperty(), baseLM.getChosenValueProperty())));
+        return addFAProp(group, sID, caption, form, objectsToSet, setProperties,
+                         newSession ? FormSessionScope.NEWSESSION : FormSessionScope.OLDSESSION,
+                         isModal ? ModalityType.MODAL : ModalityType.DOCKED, checkOnOk);
+    }
+
+    protected LAP addFAProp(AbstractGroup group, String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity setProperties, FormSessionScope sessionScope, ModalityType modalityType, boolean checkOnOk) {
+        return addProperty(group, new LAP(new FormActionProperty(sID, caption, form, objectsToSet, setProperties, sessionScope, modalityType, checkOnOk, baseLM.formResult, baseLM.getFormResultProperty(), baseLM.getChosenValueProperty())));
     }
 
     protected LAP addSelectFromListAction(AbstractGroup group, String caption, LCP selectionProperty, ValueClass selectionClass, ValueClass... baseClasses) {
@@ -2220,12 +2250,12 @@ public abstract class LogicsModule {
     }
 
     @IdentityLazy
-    public LAP getAddFormAction(CustomClass cls, boolean session) {
+    public LAP getAddFormAction(CustomClass cls, boolean oldSession) {
         ClassFormEntity form = cls.getEditForm(baseLM);
 
-        LAP property = addMFAProp(actionGroup, "add" + (session ? "Session" : "") + "Form" + BaseUtils.capitalize(cls.getSID()), ServerResourceBundle.getString("logics.add"), //+ "(" + cls + ")",
+        LAP property = addDMFAProp(actionGroup, "add" + (oldSession ? "Session" : "") + "Form" + BaseUtils.capitalize(cls.getSID()), ServerResourceBundle.getString("logics.add"), //+ "(" + cls + ")",
                                 form.form, new ObjectEntity[] {},
-                                form.form.addPropertyObject(getFormAddObjectAction(form.object, cls, false)), !session);
+                                form.form.addPropertyObject(getFormAddObjectAction(form.object, cls, false)), !oldSession);
         property.setImage("add.png");
         property.setShouldBeLast(true);
         property.setEditKey(KeyStrokes.getAddActionPropertyKeyStroke());
@@ -2236,17 +2266,17 @@ public abstract class LogicsModule {
         // todo : так не очень правильно делать - получается, что мы добавляем к Immutable объекту FormActionProperty ссылки на ObjectEntity
         FormActionProperty formAction = (FormActionProperty)property.property;
         formAction.seekOnOk.add(form.object);
-        if (session)
+        if (oldSession)
             formAction.closeAction = form.form.addPropertyObject(baseLM.delete, form.object);
 
         return property;
     }
 
     @IdentityLazy
-    public LAP getEditFormAction(CustomClass cls, boolean session) {
+    public LAP getEditFormAction(CustomClass cls, boolean oldSession) {
         ClassFormEntity form = cls.getEditForm(baseLM);
-        LAP property = addMFAProp(actionGroup, "edit" + (session ? "Session" : "") + "Form" + BaseUtils.capitalize(cls.getSID()), ServerResourceBundle.getString("logics.edit"), // + "(" + cls + ")",
-                form.form, new ObjectEntity[]{form.object}, !session);
+        LAP property = addDMFAProp(actionGroup, "edit" + (oldSession ? "Session" : "") + "Form" + BaseUtils.capitalize(cls.getSID()), ServerResourceBundle.getString("logics.edit"), // + "(" + cls + ")",
+                form.form, new ObjectEntity[]{form.object}, !oldSession);
         property.setImage("edit.png");
         property.setShouldBeLast(true);
         property.setEditKey(KeyStrokes.getEditActionPropertyKeyStroke());

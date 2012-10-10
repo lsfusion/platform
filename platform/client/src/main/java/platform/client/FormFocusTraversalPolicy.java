@@ -32,13 +32,4 @@ public class FormFocusTraversalPolicy extends LayoutFocusTraversalPolicy {
     public void removeDefault(Component c) {
         list.remove(c);
     }
-
-//    @Override
-//    public Component getComponentAfter(Container aContainer, Component aComponent) {
-//        do {
-//            aComponent = super.getComponentAfter(aContainer, aComponent);
-//        } while (aComponent != null && (aComponent instanceof PropertyEditorComponent || !aComponent.isFocusable()));
-//
-//        return aComponent;
-//    }
 }

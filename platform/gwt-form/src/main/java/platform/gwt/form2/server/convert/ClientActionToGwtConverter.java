@@ -71,7 +71,8 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
     @Converter(from = FormClientAction.class)
     public GFormAction convertAction(FormClientAction action, RemoteServiceImpl servlet) throws IOException {
-        return new GFormAction(action.isModal, servlet.getFormSessionManager().createFormAndPutInSession(action.remoteForm));
+        //todo: сделать нормальный modalityType
+        return new GFormAction(action.modalityType.isModal(), servlet.getFormSessionManager().createFormAndPutInSession(action.remoteForm));
     }
 
     @Converter(from = HideFormClientAction.class)
@@ -95,7 +96,6 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
         GFormChangesDTO changesDTO = ClientFormChangesToGwtConverter.getInstance().convertOrCast(changes);
 
-//        return new GProcessFormChangesAction(changes.getGwtFormChangesDTO());
         return new GProcessFormChangesAction(changesDTO);
     }
 
@@ -156,7 +156,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     }
 
     private String generateReportSID(HttpSession session) {
-        String sid = "";
+        String sid;
         do {
             sid = BaseUtils.randomString(20);
         } while (session.getAttribute(sid) != null);

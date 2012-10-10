@@ -24,7 +24,7 @@ public interface RemoteNavigatorInterface extends PendingRemote, RemoteContextIn
 
     ServerResponse throwInNavigatorAction(Exception clientException) throws RemoteException;
 
-    RemoteFormInterface createForm(String formSID, Map<String, String> initialObjects, boolean isModal, boolean currentSession, boolean interactive) throws RemoteException;
+    RemoteFormInterface createForm(String formSID, Map<String, String> initialObjects, boolean isModal, boolean interactive) throws RemoteException;
 
     void clientExceptionLog(String info, String client, String message, String type, String erTrace) throws RemoteException;
 
@@ -62,7 +62,7 @@ public interface RemoteNavigatorInterface extends PendingRemote, RemoteContextIn
 
     // для конфигуратора методы
 
-    RemoteFormInterface createForm(byte[] formState) throws RemoteException;
+    RemoteFormInterface createPreviewForm(byte[] formState) throws RemoteException;
 
     void saveForm(String formSID, byte[] formState) throws RemoteException;
 

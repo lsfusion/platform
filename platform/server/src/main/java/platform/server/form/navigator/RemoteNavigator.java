@@ -32,6 +32,7 @@ import platform.server.data.type.ObjectType;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.instance.FormInstance;
+import platform.server.form.instance.FormSessionScope;
 import platform.server.form.instance.GroupObjectInstance;
 import platform.server.form.instance.ObjectInstance;
 import platform.server.form.instance.listener.CustomClassListener;
@@ -443,8 +444,8 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
         return BL.getForms(formSet);
     }
 
-    public RemoteFormInterface createForm(String formSID, Map<String, String> initialObjects, boolean isModal, boolean currentSession, boolean interactive) {
-        RemoteForm form = (RemoteForm) createForm(getFormEntity(formSID), isModal, currentSession, interactive);
+    public RemoteFormInterface createForm(String formSID, Map<String, String> initialObjects, boolean isModal, boolean interactive) {
+        RemoteForm form = (RemoteForm) createForm(getFormEntity(formSID), isModal, interactive);
         if(initialObjects != null) {
             for (String objectSID : initialObjects.keySet()) {
                 GroupObjectInstance groupObject = null;
@@ -469,20 +470,13 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
     private Map<FormEntity, RemoteForm> openForms = new HashMap<FormEntity, RemoteForm>();
     private Map<FormEntity, RemoteForm> invalidatedForms = new HashMap<FormEntity, RemoteForm>();
 
-    private RemoteFormInterface createForm(FormEntity<T> formEntity, boolean isModal, boolean currentSession, boolean interactive) {
+    private RemoteFormInterface createForm(FormEntity<T> formEntity, boolean isModal, boolean interactive) {
         try {
             RemoteForm remoteForm = invalidatedForms.remove(formEntity);
             if (remoteForm == null) {
-                DataSession session;
-                FormInstance<T> currentForm = getCurrentForm();
-                if (currentSession && currentForm != null) {
-                    session = currentForm.session;
-                } else {
-                    session = createSession();
-                }
 
                 remoteForm = createRemoteForm(
-                        createFormInstance(formEntity, new HashMap<ObjectEntity, DataObject>(), session, isModal, !currentSession, false, interactive)
+                        createFormInstance(formEntity, new HashMap<ObjectEntity, DataObject>(), createSession(), isModal, FormSessionScope.NEWSESSION, false, interactive)
                 );
             }
             openForms.put(formEntity, remoteForm);
@@ -493,9 +487,9 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
         }
     }
 
-    public RemoteFormInterface createForm(byte[] formState) throws RemoteException {
+    public RemoteFormInterface createPreviewForm(byte[] formState) throws RemoteException {
         FormEntity newFormEntity = FormEntity.deserialize(BL, formState);
-        return createForm(newFormEntity, false, false, true);
+        return createForm(newFormEntity, false, true);
     }
 
     public void saveForm(String formSID, byte[] formState) throws RemoteException {
@@ -801,8 +795,11 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
     }
 
     @Override
-    public FormInstance createFormInstance(FormEntity formEntity, Map<ObjectEntity, DataObject> mapObjects, DataSession session, boolean isModal, boolean newSession, boolean checkOnOk, boolean interactive) throws SQLException {
-        return new FormInstance<T>(formEntity, BL, newSession ? session.createSession() : session, securityPolicy, this, this, computer, mapObjects, isModal, newSession, checkOnOk, interactive, null);
+    public FormInstance createFormInstance(FormEntity formEntity, Map<ObjectEntity, DataObject> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean interactive) throws SQLException {
+        return new FormInstance<T>(formEntity, BL,
+                                   sessionScope.isNewSession() ? session.createSession() : session,
+                                   securityPolicy, this, this, computer, mapObjects, isModal, sessionScope.isManageSession(),
+                                   checkOnOk, interactive, null);
     }
 
     @Override

@@ -15,6 +15,11 @@ import java.util.Scanner;
 import static platform.client.ClientResourceBundle.getString;
 
 public abstract class MainFrame extends JFrame {
+
+    public static interface FormCloseListener {
+        public void formClosed();
+    }
+
     protected File baseDir;
     public RemoteNavigatorInterface remoteNavigator;
     public JLabel statusComponent;
@@ -26,29 +31,20 @@ public abstract class MainFrame extends JFrame {
         this.remoteNavigator = remoteNavigator;
 
         setIconImage(Main.getMainIcon().getImage());
-
-        updateUser();
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 
-        try {
-            baseDir = new File(System.getProperty("user.home"), ".fusion\\" + Main.remoteLogics.getName());
-        } catch (RemoteException e) {
-            //по умолчанию
-            baseDir = new File(System.getProperty("user.home"), ".fusion");
-        }
+        updateUser();
 
-        try {
-            Scanner in = new Scanner(new FileReader(new File(baseDir, "dimension.txt")));
-            int wWidth = in.nextInt();
-            int wHeight = in.nextInt();
-            setSize(wWidth, wHeight);
-            in.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-            Dimension size = Toolkit.getDefaultToolkit().getScreenSize().getSize();
-            setSize(size.width, size.height - 30);
-        }
+        statusComponent = new JLabel();
+        status = new JPanel(new BorderLayout());
+        status.add(statusComponent, BorderLayout.LINE_START);
 
+        loadLayout();
+
+        initUIHandlers(remoteNavigator);
+    }
+
+    private void initUIHandlers(final RemoteNavigatorInterface remoteNavigator) {
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent event) {
                 int confirmed = JOptionPane.showConfirmDialog(MainFrame.this,
@@ -72,21 +68,47 @@ public abstract class MainFrame extends JFrame {
             public void windowClosed(WindowEvent e) {
                 //windowClosing не срабатывает, если просто вызван dispose,
                 //поэтому сохраняем лэйаут в windowClosed
-                baseDir.mkdirs();
-
-                try {
-                    FileWriter fileWr = new FileWriter(new File(baseDir, "dimension.txt"));
-                    fileWr.write(getWidth() + " " + getHeight() + '\n');
-
-                    fileWr.close();
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                }
+                saveLayout();
             }
         });
-        status = new JPanel(new BorderLayout());
-        statusComponent = new JLabel();
-        status.add(statusComponent, BorderLayout.LINE_START);
+    }
+
+    private void loadLayout() {
+        try {
+            baseDir = new File(System.getProperty("user.home"), ".fusion\\" + Main.remoteLogics.getName());
+        } catch (RemoteException e) {
+            //по умолчанию
+            baseDir = new File(System.getProperty("user.home"), ".fusion");
+        }
+
+        try {
+            File layoutFile = new File(baseDir, "dimension.txt");
+            if (layoutFile.exists()) {
+                Scanner in = new Scanner(new FileReader(layoutFile));
+                int wWidth = in.nextInt();
+                int wHeight = in.nextInt();
+                setSize(wWidth, wHeight);
+                in.close();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            Dimension size = Toolkit.getDefaultToolkit().getScreenSize().getSize();
+            setSize(size.width, size.height - 30);
+        }
+    }
+
+    private void saveLayout() {
+        baseDir.mkdirs();
+
+        try {
+            FileWriter out = new FileWriter(new File(baseDir, "dimension.txt"));
+
+            out.write(getWidth() + " " + getHeight() + '\n');
+
+            out.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void updateUser() throws IOException, ClassNotFoundException {
@@ -96,5 +118,5 @@ public abstract class MainFrame extends JFrame {
 
     public abstract void runReport(String reportSID, boolean isModal, ReportGenerationData generationData) throws IOException, ClassNotFoundException;
 
-    public abstract void runForm(RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException;
+    public abstract void runForm(RemoteFormInterface remoteForm, FormCloseListener closeListener);
 }

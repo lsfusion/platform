@@ -20,7 +20,6 @@ import platform.server.Message;
 import platform.server.ParamMessage;
 import platform.server.Settings;
 import platform.server.auth.SecurityPolicy;
-import platform.server.caches.IdentityLazy;
 import platform.server.caches.ManualLazy;
 import platform.server.classes.*;
 import platform.server.data.Modify;
@@ -88,6 +87,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     public final SecurityPolicy securityPolicy;
 
+    private Modifier modifier;
+
     private Map<ObjectEntity, ? extends ObjectValue> mapObjects = null;
     public final List<GroupObjectInstance> groups = new ArrayList<GroupObjectInstance>();
     public final List<TreeGroupInstance> treeGroups = new ArrayList<TreeGroupInstance>();
@@ -99,44 +100,19 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     public final boolean checkOnOk;
 
-    public QueryEnvironment getQueryEnv() {
-        return session.env;
-    }
-
     public final boolean isModal;
 
-    public final boolean isNewSession;
+    public final boolean manageSession;
 
     private boolean interactive = true; // важно для assertion'а в endApply
 
     // для импорта конструктор, объекты пустые
     public FormInstance(FormEntity<T> entity, T BL, DataSession session, SecurityPolicy securityPolicy, FocusListener<T> focusListener, CustomClassListener classListener, PropertyObjectInterfaceInstance computer) throws SQLException {
-        this(entity, BL, session, securityPolicy, focusListener, classListener, computer, false);
+        this(entity, BL, session, securityPolicy, focusListener, classListener, computer, new HashMap<ObjectEntity, DataObject>(), false, true, false, false, null);
     }
 
-    public FormInstance(FormEntity<T> entity, T BL, DataSession session, SecurityPolicy securityPolicy, FocusListener<T> focusListener, CustomClassListener classListener, PropertyObjectInterfaceInstance computer, boolean interactive) throws SQLException {
-        this(entity, BL, session, securityPolicy, focusListener, classListener, computer, new HashMap<ObjectEntity, DataObject>(), false, true, false, interactive, null);
-    }
-
-    private static IncrementChangeProps createEnvironmentIncrement(boolean isModal, boolean isDialog, boolean isNewSession) {
-        IncrementChangeProps environment = new IncrementChangeProps();
-        environment.add(FormEntity.isModal, PropertyChange.<ClassPropertyInterface>STATIC(isModal));
-        environment.add(FormEntity.isDialog, PropertyChange.<ClassPropertyInterface>STATIC(isDialog));
-        environment.add(FormEntity.isNewSession, PropertyChange.<ClassPropertyInterface>STATIC(isNewSession));
-        return environment;
-    }
-
-    private Modifier modifier;
-
-    protected FunctionSet<CalcProperty> getNoHints() {
-        if (Settings.instance.isDisableChangeModifierAllHints())
-            return BaseUtils.universal(entity.getChangeModifierProps().isEmpty());
-        else
-            return CalcProperty.getDependsSet(entity.getChangeModifierProps()); // тут какая то проблема есть
-    }
-
-    public FormInstance(FormEntity<T> entity, T BL, DataSession session, SecurityPolicy securityPolicy, FocusListener<T> focusListener, CustomClassListener classListener, PropertyObjectInterfaceInstance computer, Map<ObjectEntity, ? extends ObjectValue> mapObjects, boolean isModal, boolean isNewSession, boolean checkOnOk, boolean interactive, Set<FilterEntity> additionalFixedFilters) throws SQLException {
-        this.isNewSession = isNewSession;
+    public FormInstance(FormEntity<T> entity, T BL, DataSession session, SecurityPolicy securityPolicy, FocusListener<T> focusListener, CustomClassListener classListener, PropertyObjectInterfaceInstance computer, Map<ObjectEntity, ? extends ObjectValue> mapObjects, boolean isModal, boolean manageSession, boolean checkOnOk, boolean interactive, Set<FilterEntity> additionalFixedFilters) throws SQLException {
+        this.manageSession = manageSession;
         this.isModal = isModal;
         this.checkOnOk = checkOnOk;
 
@@ -233,6 +209,15 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         }
 
         this.interactive = interactive; // обязательно в конце чтобы assertion с endApply не рушить
+    }
+
+    private static IncrementChangeProps createEnvironmentIncrement(boolean isModal, boolean isDialog, boolean manageSession, boolean isReadOnly) {
+        IncrementChangeProps environment = new IncrementChangeProps();
+        environment.add(FormEntity.isModal, PropertyChange.<ClassPropertyInterface>STATIC(isModal));
+        environment.add(FormEntity.isDialog, PropertyChange.<ClassPropertyInterface>STATIC(isDialog));
+        environment.add(FormEntity.manageSession, PropertyChange.<ClassPropertyInterface>STATIC(manageSession));
+        environment.add(FormEntity.isReadOnly, PropertyChange.<ClassPropertyInterface>STATIC(isReadOnly));
+        return environment;
     }
 
     public FormUserPreferences loadUserPreferences() {
@@ -355,6 +340,13 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         return true;
     }
 
+    protected FunctionSet<CalcProperty> getNoHints() {
+        if (Settings.instance.isDisableChangeModifierAllHints())
+            return BaseUtils.universal(entity.getChangeModifierProps().isEmpty());
+        else
+            return CalcProperty.getDependsSet(entity.getChangeModifierProps()); // тут какая то проблема есть
+    }
+
     public CustomClass getCustomClass(int classID) {
         return BL.LM.baseClass.findClassID(classID);
     }
@@ -371,6 +363,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     public CustomClassListener getClassListener() {
         return weakClassListener.get();
+    }
+
+    public QueryEnvironment getQueryEnv() {
+        return session.env;
     }
 
     @ManualLazy
@@ -920,8 +916,11 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         return ((CustomObjectInstance) object).currentClass;
     }
 
-    public FormInstance<T> createForm(FormEntity<T> form, Map<ObjectEntity, DataObject> mapObjects, DataSession session, boolean isModal, boolean newSession, boolean checkOnOK, boolean interactive) throws SQLException {
-        return new FormInstance<T>(form, BL, newSession ? session.createSession() : session, securityPolicy, getFocusListener(), getClassListener(), instanceFactory.computer, mapObjects, isModal, newSession, checkOnOK, interactive, null);
+    public FormInstance<T> createForm(FormEntity<T> form, Map<ObjectEntity, DataObject> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOK, boolean interactive) throws SQLException {
+        return new FormInstance<T>(form, BL,
+                                   sessionScope.isNewSession() ? session.createSession() : session,
+                                   securityPolicy, getFocusListener(), getClassListener(), instanceFactory.computer, mapObjects, isModal, sessionScope.isManageSession(),
+                                   checkOnOK, interactive, null);
     }
 
     public void forceChangeObject(ObjectInstance object, ObjectValue value) throws SQLException {
@@ -1471,7 +1470,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     public Modifier getModifier() {
         if (modifier == null) {
             FunctionSet<CalcProperty> noHints = getNoHints();
-            modifier = new OverrideSessionModifier(createEnvironmentIncrement(isModal, this instanceof DialogInstance, isNewSession), noHints, noHints, entity.hintsIncrementTable, entity.hintsNoUpdate, session.getModifier());
+            modifier = new OverrideSessionModifier(createEnvironmentIncrement(isModal, this instanceof DialogInstance, manageSession, entity.isReadOnly()), noHints, noHints, entity.hintsIncrementTable, entity.hintsNoUpdate, session.getModifier());
         }
         return modifier;
     }
@@ -1496,7 +1495,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     }
 
     public void formClose() throws SQLException {
-        if (isNewSession && session.hasStoredChanges()) {
+        if (manageSession && session.hasStoredChanges()) {
             int result = (Integer) Context.context.get().requestUserInteraction(new ConfirmClientAction("LS Fusion", getString("form.do.you.really.want.to.close.form")));
             if (result != JOptionPane.YES_OPTION) {
                 return;
@@ -1524,7 +1523,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
         fireOnOk();
 
-        if (isNewSession && !apply(null)) {
+        if (manageSession && !apply(null)) {
             return;
         }
 

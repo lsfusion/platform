@@ -3,7 +3,7 @@ package platform.server.logics.scripted;
 import platform.base.BaseUtils;
 import platform.interop.ClassViewType;
 import platform.interop.FormEventType;
-import platform.interop.navigator.FormShowType;
+import platform.interop.ModalityType;
 import platform.server.classes.ColorClass;
 import platform.server.classes.CustomClass;
 import platform.server.classes.ValueClass;
@@ -469,9 +469,10 @@ public class ScriptingFormEntity {
         form.isPrintForm = isPrintForm;
     }
 
-    public void setShowType(FormShowType showType) {
-        if (showType != null)
-            form.showType = showType;
+    public void setModalityType(ModalityType modalityType) {
+        if (modalityType != null) {
+            form.modalityType = modalityType;
+        }
     }
 
     private CustomClass findCustomClassForFormSetup(String className) throws ScriptingErrorLog.SemanticErrorException {

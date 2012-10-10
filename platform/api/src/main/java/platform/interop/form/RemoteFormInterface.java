@@ -57,6 +57,7 @@ public interface RemoteFormInterface extends PendingRemote, RemoteContextInterfa
     ServerResponse moveGroupObject(long requestIndex, int parentGroupId, byte[] parentKey, int childGroupId, byte[] childKey, int index) throws RemoteException;
 
     // свойства
+
     ServerResponse executeEditAction(long requestIndex, int propertyID, byte[] columnKey, String actionSID) throws RemoteException;
 
     // асинхронные вызовы
@@ -76,14 +77,6 @@ public interface RemoteFormInterface extends PendingRemote, RemoteContextInterfa
     ServerResponse setRegularFilter(long requestIndex, int groupID, int filterID) throws RemoteException;
 
     // отчеты
-
-//    byte[] getReportHierarchyByteArray() throws RemoteException;
-//    byte[] getSingleGroupReportHierarchyByteArray(int groupId) throws RemoteException;
-//
-//    byte[] getReportDesignsByteArray(boolean toExcel, FormUserPreferences userPreferences) throws RemoteException;
-//    byte[] getSingleGroupReportDesignByteArray(int groupId, boolean toExcel, FormUserPreferences userPreferences) throws RemoteException;
-//    byte[] getReportSourcesByteArray() throws RemoteException;
-//    byte[] getSingleGroupReportSourcesByteArray(int groupId) throws RemoteException;
 
     ReportGenerationData getReportData(long requestIndex, Integer groupId, boolean toExcel, FormUserPreferences userPreferences) throws RemoteException;
 

@@ -14,6 +14,7 @@ import platform.interop.KeyStrokes;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
@@ -66,8 +67,13 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
             return false;
         }
 
-        if (row >= getRowCount())
+        if (row < 0 || row >= getRowCount() || column < 0 || column >= getColumnCount()) {
             return false;
+        }
+
+        if (!isCellEditable(row, column)) {
+            return false;
+        }
 
         quickLog("formTable.editCellAt: " + e);
 
@@ -154,10 +160,8 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
         return component;
     }
 
-    private void commitValue(Object value) {
-        quickLog("formTable.commitValue: " + value);
-        commitingValue = true;
-        editDispatcher.commitValue(value);
+    public void updateEditValue(Object value) {
+        setValueAt(value, editRow, editCol);
     }
 
     @Override
@@ -170,12 +174,15 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
         }
     }
 
-    public void updateEditValue(Object value) {
-        setValueAt(value, editRow, editCol);
+    private void commitValue(Object value) {
+        quickLog("formTable.commitValue: " + value);
+        commitingValue = true;
+        editDispatcher.commitValue(value);
     }
 
     @Override
     public void editingCanceled(ChangeEvent e) {
+        quickLog("formTable.cancelEdit");
         internalRemoveEditor();
         editDispatcher.cancelEdit();
     }
@@ -222,6 +229,16 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
         if (cellEditor != null) {
             cellEditor.cancelCellEditing();
         }
+    }
+
+    @Override
+    public void columnMarginChanged(ChangeEvent e) {
+        //copy/paste from JTable minus removeEditor...
+        TableColumn resizingColumn = (tableHeader == null) ? null : tableHeader.getResizingColumn();
+        if (resizingColumn != null && autoResizeMode == AUTO_RESIZE_OFF) {
+            resizingColumn.setPreferredWidth(resizingColumn.getWidth());
+        }
+        resizeAndRepaint();
     }
 
     protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {

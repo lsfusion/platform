@@ -5,10 +5,7 @@ import platform.interop.action.LogMessageClientAction;
 import platform.server.classes.ValueClass;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.entity.PropertyFormEntity;
-import platform.server.form.instance.FormInstance;
-import platform.server.form.instance.FormRow;
-import platform.server.form.instance.ObjectInstance;
-import platform.server.form.instance.PropertyDrawInstance;
+import platform.server.form.instance.*;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.ClassPropertyInterface;
@@ -42,7 +39,7 @@ public class LogPropertyActionProperty<P extends PropertyInterface> extends Syst
         DataSession session = context.getSession();
 
         FormInstance formInstance = context.createFormInstance(new PropertyFormEntity(property, recognizeGroup),
-                new HashMap<ObjectEntity, DataObject>(), session, false, false, false, false);
+                new HashMap<ObjectEntity, DataObject>(), session, false, FormSessionScope.OLDSESSION, false, false);
 
         String result = property.toString() + '\n';
         for(FormRow formRow : formInstance.getFormData(30).rows) {

@@ -1,10 +1,13 @@
 package platform.server.logics.scripted;
 
-import org.antlr.runtime.*;
+import org.antlr.runtime.ANTLRFileStream;
+import org.antlr.runtime.ANTLRStringStream;
+import org.antlr.runtime.CharStream;
 import org.apache.log4j.Logger;
 import platform.base.BaseUtils;
 import platform.base.IOUtils;
 import platform.base.OrderedMap;
+import platform.interop.ModalityType;
 import platform.server.classes.*;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.classes.sets.OrObjectClassSet;
@@ -21,6 +24,7 @@ import platform.server.form.entity.ActionPropertyObjectEntity;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.entity.PropertyObjectInterfaceEntity;
+import platform.server.form.instance.FormSessionScope;
 import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.FormView;
@@ -1270,8 +1274,8 @@ public class ScriptingLogicsModule extends LogicsModule {
                 Integer.parseInt(text.substring(11, 13)), Integer.parseInt(text.substring(14, 16)), 0, 0);
     }
 
-    public LPWithParams addScriptedFAProp(String formName, List<String> objectNames, List<LPWithParams> mapping, List<LPWithParams> props, String className, boolean newSession, boolean isModal, boolean checkOnOk) throws ScriptingErrorLog.SemanticErrorException {
-        scriptLogger.info("addScriptedFAProp(" + formName + ", " + objectNames + ", " + mapping + ", " + props + ", " + className + ", " + newSession + ", " + isModal + ");");
+    public LPWithParams addScriptedFAProp(String formName, List<String> objectNames, List<LPWithParams> mapping, List<LPWithParams> props, String className, ModalityType modalityType, FormSessionScope sessionScope, boolean checkOnOk) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedFAProp(" + formName + ", " + objectNames + ", " + mapping + ", " + props + ", " + className + ", " + modalityType + ", " + sessionScope + ");");
 
         FormEntity form = findFormByCompoundName(formName);
         checkFormActionObjectsMapping(objectNames, mapping);
@@ -1300,7 +1304,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
         assert propObjects.length<=1;
         assert cls==null;
-        LPWithParams res = new LPWithParams(addFAProp(null, genSID(), "", form, objects, propObjects.length==0?null:propObjects[0], newSession, isModal, checkOnOk), new ArrayList<Integer>());
+        LPWithParams res = new LPWithParams(addFAProp(null, genSID(), "", form, objects, propObjects.length==0?null:propObjects[0], sessionScope, modalityType, checkOnOk), new ArrayList<Integer>());
         if (mapping.size() > 0) {
             res = addScriptedJoinAProp(res.property, mapping);
         }

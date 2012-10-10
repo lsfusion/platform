@@ -211,15 +211,15 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     public boolean isSelector() {
-        return editType.equals(PropertyEditType.SELECTOR);
+        return editType == PropertyEditType.SELECTOR;
     }
 
     public boolean isReadOnly() {
-        return editType.equals(PropertyEditType.READONLY);
+        return editType == PropertyEditType.READONLY;
     }
 
     public boolean isEditable() {
-        return editType.equals(PropertyEditType.EDITABLE);
+        return editType == PropertyEditType.EDITABLE;
     }
 
     public void proceedDefaultDesign(PropertyDrawView propertyView, DefaultFormView defaultView) {

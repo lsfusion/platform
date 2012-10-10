@@ -69,7 +69,8 @@
       <keyword name="DESIGN" />
       <keyword name="DIALOG" />
       <keyword name="DO" />
-      <keyword name="DOCKING" />
+      <keyword name="DOCKED" />
+      <keyword name="DOCKED_MODAL" />
       <keyword name="DOCX" />
       <keyword name="DOUBLE" />
       <keyword name="DRAWROOT" />
@@ -140,6 +141,7 @@
       <keyword name="LOCAL" />
       <keyword name="LOGGABLE" />
       <keyword name="LONG" />
+      <keyword name="MANAGESESSION" />
       <keyword name="MAX" />
       <keyword name="MAXCHARWIDTH" />
       <keyword name="MESSAGE" />
@@ -204,6 +206,7 @@
       <keyword name="SHORTCUT" />
       <keyword name="SHOW" />
       <keyword name="SHOWIF" />
+      <keyword name="SINGLE" />
       <keyword name="SPLITH" />
       <keyword name="SPLITV" />
       <keyword name="STATIC" />

@@ -28,7 +28,7 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface>
     }
 
     @NonPendingRemoteMethod
-    public RemoteFormInterface createForm(String formSID, Map<String, String> initialObjects, boolean isModal, boolean currentSession, boolean interactive) throws RemoteException {
+    public RemoteFormInterface createForm(String formSID, Map<String, String> initialObjects, boolean isModal, boolean interactive) throws RemoteException {
         List<MethodInvocation> invocations = getImmutableMethodInvocations(RemoteFormProxy.class);
 
         boolean hasCachedRichDesignByteArray = false;
@@ -42,7 +42,7 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface>
             }
         }
 
-        RemoteFormProxy proxy = createForm(invocations, MethodInvocation.create(this.getClass(), "createForm", formSID, initialObjects, isModal, currentSession, interactive));
+        RemoteFormProxy proxy = createForm(invocations, MethodInvocation.create(this.getClass(), "createForm", formSID, initialObjects, isModal, interactive));
 
         if (hasCachedRichDesignByteArray) {
             proxy.setProperty("getRichDesignByteArray", RemoteFormProxy.cachedRichDesign.get(formSID));
@@ -54,7 +54,7 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface>
     }
 
     @NonPendingRemoteMethod
-    public RemoteFormInterface createForm(byte[] formState) throws RemoteException {
+    public RemoteFormInterface createPreviewForm(byte[] formState) throws RemoteException {
         return createForm(getImmutableMethodInvocations(RemoteFormProxy.class),
                 MethodInvocation.create(this.getClass(), "createForm", formState));
     }

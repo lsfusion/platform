@@ -23,7 +23,7 @@ public class PreviewDialog extends JDialog {
 
         setLayout(new BorderLayout());
         try {
-            RemoteFormInterface remoteForm = navigator.remoteNavigator.createForm(form.serialize());
+            RemoteFormInterface remoteForm = navigator.remoteNavigator.createPreviewForm(form.serialize());
 
             ClientFormController controller = new ClientFormController(remoteForm, navigator);
             controller.getComponent().setFocusTraversalPolicyProvider(true);

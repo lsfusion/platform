@@ -7,6 +7,7 @@ import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.instance.DialogInstance;
 import platform.server.form.instance.FormInstance;
+import platform.server.form.instance.FormSessionScope;
 import platform.server.form.instance.remote.RemoteDialog;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.logics.BusinessLogics;
@@ -29,7 +30,7 @@ public interface Context {
     void pushActionMessage(String segment);
     String popActionMessage();
 
-    FormInstance createFormInstance(FormEntity formEntity, Map<ObjectEntity, DataObject> mapObjects, DataSession session, boolean isModal, boolean newSession, boolean checkOnOk, boolean interactive)  throws SQLException;
+    FormInstance createFormInstance(FormEntity formEntity, Map<ObjectEntity, DataObject> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean interactive)  throws SQLException;
     RemoteForm createRemoteForm(FormInstance formInstance);
     RemoteDialog createRemoteDialog(DialogInstance dialogInstance);
 

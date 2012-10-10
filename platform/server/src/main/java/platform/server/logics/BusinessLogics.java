@@ -35,6 +35,7 @@ import platform.server.data.type.Type;
 import platform.server.data.type.TypeSerializer;
 import platform.server.form.entity.*;
 import platform.server.form.instance.FormInstance;
+import platform.server.form.instance.FormSessionScope;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.navigator.*;
 import platform.server.integration.*;
@@ -2775,8 +2776,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     @Override
-    public FormInstance createFormInstance(FormEntity formEntity, Map<ObjectEntity, DataObject> mapObjects, DataSession session, boolean isModal, boolean newSession, boolean checkOnOk, boolean interactive) throws SQLException {
-        return new FormInstance(formEntity, this, session, PolicyManager.serverSecurityPolicy, null, null, new DataObject(getServerComputer(), LM.computer), mapObjects, isModal, newSession, checkOnOk, interactive, null);
+    public FormInstance createFormInstance(FormEntity formEntity, Map<ObjectEntity, DataObject> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean interactive) throws SQLException {
+        return new FormInstance(formEntity, this, session, PolicyManager.serverSecurityPolicy, null, null, new DataObject(getServerComputer(), LM.computer), mapObjects, isModal, sessionScope.isManageSession(), checkOnOk, interactive, null);
     }
 
     @Override

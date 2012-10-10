@@ -282,7 +282,8 @@ public class NavigatorDescriptorView extends JPanel {
         boolean hasChanges = !changedForms.isEmpty() || !newForms.isEmpty() || !newElements.isEmpty() || hasChangedNodes;
 
         previewBtn.setEnabled(formView.getForm() != null);
-        saveBtn.setEnabled(hasChanges);
+        //todo: включить кнопку, если когда-нибудь вообще этот механизм будет нужен, т.к. сейчас он фактически не работает...
+//        saveBtn.setEnabled(hasChanges);
         cancelBtn.setEnabled(hasChanges);
 
         updateUI();

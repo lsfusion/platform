@@ -2,8 +2,8 @@ package platform.client.form.dispatch;
 
 import com.google.common.base.Throwables;
 import platform.client.form.ClientFormController;
+import platform.interop.ModalityType;
 import platform.interop.action.*;
-import platform.interop.form.FormUserPreferences;
 import platform.interop.form.ServerResponse;
 
 import java.awt.*;
@@ -34,6 +34,25 @@ public abstract class ClientFormActionDispatcher extends SwingClientActionDispat
     @Override
     public ServerResponse continueServerInvocation(Object[] actionResults) throws RemoteException {
         return getFormController().continueServerInvocation(actionResults);
+    }
+
+
+    @Override
+    public void execute(FormClientAction action) {
+        if (getFormController().isModal() && action.modalityType == ModalityType.DOCKED_MODAL) {
+            action.modalityType = ModalityType.MODAL;
+        }
+        super.execute(action);
+    }
+
+    @Override
+    protected void beforeShowDockedModalForm() {
+        getFormController().block();
+    }
+
+    @Override
+    protected void afterHideDockedModalForm() {
+        getFormController().unblock();
     }
 
     public void execute(RunPrintReportClientAction action) {
