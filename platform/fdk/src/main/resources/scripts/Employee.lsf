@@ -23,6 +23,7 @@ CLASS ABSTRACT employeeDivision 'Подразделение' : named;
 TABLE employeeDivision(employeeDivision);
 
 employeeDivisionGroupEmployeeDivision = ABSTRACT employeeDivisionGroup (employeeDivision) PERSISTENT;
+isParentEmployeeDivisionGroupEmployeeDivision (employeeDivisionGroup, employeeDivision) = isParentEmployeeDivisionGroupEmployeeDivisionGroup(employeeDivisionGroupEmployeeDivision(employeeDivision), employeeDivisionGroup) PERSISTENT;
 
 // ------------------------------------- Сотрудники -------------------------------------- //
 
@@ -42,14 +43,16 @@ FORM employee 'Сотрудник'
     PROPERTIES(e)      userFirstName, userLastName, namePositionEmployee,
                        userLogin, userPassword, email, nameUserMainRole
 
-    TREE treeEmployeeDivision  a=STRING[3], dg = employeeDivisionGroup PARENT parentEmployeeDivisionGroup
-    PROPERTIES READONLY        OBJVALUE(a), name(dg)
-    FILTERS                    stringEqualsAll(a)
+    TREE treeEmployeeDivision dg = employeeDivisionGroup PARENT parentEmployeeDivisionGroup, dd = employeeDivision
+    PROPERTIES READONLY  dgTreeName = name(dg), ddTreeName = name(dd)
+    FILTERS                    employeeDivisionGroupEmployeeDivision(dd) == dg
 
     OBJECTS                    d=employeeDivision
     PROPERTIES(d)              name
     PROPERTIES(d, e)           inEmployeeDivisionEmployee
-    FILTERS                    employeeDivisionGroupEmployeeDivision(d) == dg OR d IS employeeDivision AND NOT dg
+
+    FILTERS           dd == d AND dg IS employeeDivisionGroup OR
+                      isParentEmployeeDivisionGroupEmployeeDivision(dg, d) AND NOT dd
 
     EDIT employee OBJECT e
 ;

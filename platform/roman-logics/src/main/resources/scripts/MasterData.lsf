@@ -420,7 +420,6 @@ EXTEND DESIGN company {
 
 @extendStockFormAccountDocumentLedger(warehouse, w);
 @extendStockFormAccountDocumentLedger(departmentStore, d);
-@extendStockFormAccountDocumentLedger(customStore, c);
 
 //----------------------------Concat для фрахта и декларации--------------------------//
 
