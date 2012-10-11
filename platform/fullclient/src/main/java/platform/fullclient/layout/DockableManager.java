@@ -1,13 +1,10 @@
 package platform.fullclient.layout;
 
-import bibliothek.gui.Dockable;
 import bibliothek.gui.dock.common.CControl;
 import bibliothek.gui.dock.common.CGridArea;
 import bibliothek.gui.dock.common.MultipleCDockableFactory;
 import bibliothek.gui.dock.common.event.CDockableAdapter;
-import bibliothek.gui.dock.common.intern.AbstractCDockable;
 import bibliothek.gui.dock.common.intern.CDockable;
-import bibliothek.gui.dock.common.intern.DefaultCommonDockable;
 import net.sf.jasperreports.engine.JRException;
 import platform.client.Main;
 import platform.client.MainFrame;
@@ -59,7 +56,7 @@ public class DockableManager {
         control.addDockable(page);
         page.setVisible(true);
         page.toFront();
-//        page.requestFocusInWindow();
+        page.requestFocusInWindow();
     }
 
     public ClientFormDockable openForm(ClientNavigator navigator, String formSID) throws IOException, ClassNotFoundException, JRException {
@@ -131,14 +128,6 @@ public class DockableManager {
                 control.removeDockable(dockable) ;
 
                 dockable.onClosed();
-
-                if (dockable.isFocusMostRecentOnClose()) {
-                    Dockable prevDockable = control.getController().getFocusHistory().getNewestOn(formArea.getStation());
-                    if (prevDockable != null) {
-//                        control.getController().setFocusedDockable(prevDockable, null, true, true, true);
-                        ((AbstractCDockable)((DefaultCommonDockable)prevDockable).getDockable()).toFront();
-                    }
-                }
             }
         }
     }

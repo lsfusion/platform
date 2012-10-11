@@ -4,6 +4,8 @@ import bibliothek.extension.gui.dock.theme.eclipse.EclipseTabDockAction;
 import bibliothek.gui.dock.common.CControl;
 import bibliothek.gui.dock.common.DefaultMultipleCDockable;
 import bibliothek.gui.dock.common.action.predefined.CCloseAction;
+import bibliothek.gui.dock.common.event.CDockableAdapter;
+import bibliothek.gui.dock.common.event.CFocusListener;
 import bibliothek.gui.dock.common.intern.CDockable;
 import com.jhlabs.image.PointFilter;
 import org.jdesktop.jxlayer.JXLayer;
@@ -15,14 +17,13 @@ import java.awt.*;
 // уничтожаемые формы
 abstract class ClientDockable extends DefaultMultipleCDockable {
 
-    private boolean focusMostRecentOnClose = true;
-
     private String formSID;
-    private Component contentComponent;
-    private boolean defaultComponentFocused = false;
 
+    private Container contentContainer;
     private LockableUI contentLayerUI;
     private JXLayer contentLayer;
+    private Component defaultComponent;
+
     private final CustomCloseAction closeAction;
 
     protected ClientDockable(String formSID, DockableManager dockableManager) {
@@ -37,31 +38,52 @@ abstract class ClientDockable extends DefaultMultipleCDockable {
         setCloseable(true);
 
         putAction(ACTION_KEY_CLOSE, closeAction = new CustomCloseAction(dockableManager.getControl()));
+
+        addCDockableStateListener(new CDockableAdapter() {
+            @Override
+            public void visibilityChanged(CDockable dockable) {
+                initDefaultComponent();
+                if (defaultComponent != null) {
+                    removeCDockableStateListener(this);
+                }
+            }
+        });
+
+        addFocusListener(new CFocusListener() {
+            @Override
+            public void focusGained(CDockable dockable) {
+                initDefaultComponent();
+                if (defaultComponent != null) {
+                    removeFocusListener(this);
+                }
+            }
+
+            @Override
+            public void focusLost(CDockable dockable) {}
+        });
     }
 
-    @Override
-    public Component getFocusComponent() {
-        return defaultComponentFocused
-               ? null
-               : contentComponent.getFocusCycleRootAncestor().getFocusTraversalPolicy().getDefaultComponent((Container) contentComponent);
+    private void initDefaultComponent() {
+        if (defaultComponent == null) {
+            FocusTraversalPolicy traversalPolicy = contentContainer.getFocusTraversalPolicy();
+            if (traversalPolicy != null) {
+                defaultComponent = traversalPolicy.getDefaultComponent(contentContainer);
+                if (defaultComponent != null) {
+                    defaultComponent.requestFocusInWindow();
+                }
+            }
+        }
     }
 
     public String getFormSID() {
         return formSID;
     }
 
-    public boolean isFocusMostRecentOnClose() {
-        return focusMostRecentOnClose;
-    }
-
-    public void setFocusMostRecentOnClose(boolean focusMostRecentOnClose) {
-        this.focusMostRecentOnClose = focusMostRecentOnClose;
-    }
-
-    protected void setContent(String caption, Component contentComponent) {
-        this.contentComponent = contentComponent;
+    protected void setContent(String caption, Container contentContainer) {
+        this.contentContainer = contentContainer;
         this.contentLayerUI = new ShadowLayerUI();
-        this.contentLayer = new JXLayer(contentComponent, contentLayerUI);
+        this.contentLayer = new JXLayer(contentContainer, contentLayerUI);
+        contentLayer.setFocusable(false);
 
         getContentPane().add(contentLayer);
 
@@ -76,7 +98,8 @@ abstract class ClientDockable extends DefaultMultipleCDockable {
     public void unblockView() {
         closeAction.setEnabled(true);
         contentLayerUI.setLocked(false);
-        toFront();
+
+        getControl().getController().setFocusedDockable(intern(), null, true, true, true);
     }
 
     public void onClosing() {
@@ -86,6 +109,12 @@ abstract class ClientDockable extends DefaultMultipleCDockable {
     // закрываются пользователем
     public void onClosed() {
         getContentPane().removeAll();
+    }
+
+    public void requestFocusInWindow() {
+        if (defaultComponent != null) {
+            defaultComponent.requestFocusInWindow();
+        }
     }
 
     private final static class ShadowLayerUI extends LockableUI {

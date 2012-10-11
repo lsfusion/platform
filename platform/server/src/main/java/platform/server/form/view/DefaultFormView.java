@@ -249,9 +249,9 @@ public class DefaultFormView extends FormView {
         if (groupObjectView != null && propertyDraw.entity.isDrawToToolbar()) {
             ContainerView propertyContainer = null;
             if (groupObject.treeGroup != null) {
-                propertyContainer = getFilterContainer(mtreeGroups.get(groupObject.treeGroup));
+                propertyContainer = getToolbarPropsContainer(mtreeGroups.get(groupObject.treeGroup));
             } else {
-                propertyContainer = getFilterContainer(mgroupObjects.get(groupObject));
+                propertyContainer = getToolbarPropsContainer(mgroupObjects.get(groupObject));
             }
 
             if (propertyDraw.preferredSize == null) {

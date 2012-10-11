@@ -47,6 +47,7 @@ public class PanelController {
             Map<ClientGroupObjectValue, PropertyController> propControllers = properties.get(property);
             if (propControllers != null && !propControllers.isEmpty()) {
                 propControllers.values().iterator().next().getView().requestFocusInWindow();
+                break;
             }
         }
     }

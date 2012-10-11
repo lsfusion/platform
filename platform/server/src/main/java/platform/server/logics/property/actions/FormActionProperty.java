@@ -110,10 +110,8 @@ public class FormActionProperty extends SystemActionProperty {
                 context.requestUserInteraction(new FormClientAction(newRemoteForm, modalityType));
             }
 
-            if (!modalityType.isModal()) {
-                assert sessionScope.isManageSession();
-            } else {
-                //для немодальных форм следующее бессмысленно, т.к. они ещё открыты...
+            if (modalityType.isModal()) {
+                //для немодальных форм следующее бессмысленно, т.к. они остаются открытыми...
 
                 FormCloseType formResult = newFormInstance.getFormResult();
 

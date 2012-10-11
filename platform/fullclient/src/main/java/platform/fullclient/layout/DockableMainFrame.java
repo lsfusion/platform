@@ -228,10 +228,7 @@ public class DockableMainFrame extends MainFrame {
     @Override
     public void runForm(RemoteFormInterface remoteForm, FormCloseListener closeListener) {
         try {
-            ClientFormDockable dockable = dockableManager.openForm(mainNavigator, remoteForm, closeListener);
-            if (closeListener != null) {
-                dockable.setFocusMostRecentOnClose(false);
-            }
+            dockableManager.openForm(mainNavigator, remoteForm, closeListener);
         } catch (Exception e) {
             Throwables.propagate(e);
         }

@@ -37,7 +37,7 @@ public abstract class MainFrame extends JFrame {
 
         statusComponent = new JLabel();
         status = new JPanel(new BorderLayout());
-        status.add(statusComponent, BorderLayout.LINE_START);
+        status.add(statusComponent, BorderLayout.CENTER);
 
         loadLayout();
 
