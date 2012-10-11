@@ -1,9 +1,6 @@
 package platform.base;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.prefs.Preferences;
@@ -36,9 +33,9 @@ public class OSUtils {
 
         String system = System.getProperty("os.name");
         String libExtension =
-           "Linux".equals(system) ? ".so" : ".dll";
+                "Linux".equals(system) ? ".so" : ".dll";
         String libPath =
-           "Linux".equals(system) ? "ux" : "win";
+                "Linux".equals(system) ? "ux" : "win";
         libPath += is64Arch() ? "64" : "32";
 
         return getResourcePath(libName + libExtension, path + libPath + '/', cls, false, false); // будем считать, что в library зашифрована вер
@@ -75,7 +72,7 @@ public class OSUtils {
 
     public static File getUserDir() {
 
-        String userDirPath = System.getProperty("user.home", "") + "/.fusion" ;
+        String userDirPath = System.getProperty("user.home", "") + "/.fusion";
         File userDir = new File(userDirPath);
         if (!userDir.exists()) {
             userDir.mkdirs(); // создаем каталог, на всякий случай, чтобы каждому не приходилось его создавать
@@ -98,16 +95,23 @@ public class OSUtils {
 
     public static String getLocalHostName() {
         String name = null;
+
         try {
-            InetAddress address = InetAddress.getLocalHost();
-            name = address.getCanonicalHostName();
-        } catch (UnknownHostException uhe) {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(Runtime.getRuntime().exec("hostname").getInputStream()));
+            name = reader.readLine();
+        } catch (IOException e) {
         }
-
         if (name == null || name.trim().isEmpty()) {
-            name = "localhost";
-        }
+            try {
+                InetAddress address = InetAddress.getLocalHost();
+                name = address.getCanonicalHostName();
+            } catch (UnknownHostException uhe) {
+            }
 
+            if (name == null || name.trim().isEmpty()) {
+                name = "localhost";
+            }
+        }
         return name;
     }
 }
