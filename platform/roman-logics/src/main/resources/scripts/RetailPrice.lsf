@@ -1206,10 +1206,9 @@ FORM freights 'Расценка фрахтов'
     OBJECTS f = freightComplete
     PROPERTIES(f) READONLY numberObject, seriesObject, date, objectClassName,
                   canonicalBrandFreight, dateArrivalFreight, nameRouteFreight, nameExporterFreight, grossWeightFreight
-//    PROPERTIES(f) FORCE PANEL createPriceSetDocument SHOWIF hasPriceSetDocumentFreight(f), createPriceSetDocumentSku SHOWIF hasPriceSetDocumentFreight(f)
 
-//    FILTERGROUP filtersDocument
-//        FILTER 'Показывать нерасценённые фрахты' 'F11' hasPriceSetDocumentFreight(f)
+   FILTERGROUP filtersDocument
+        FILTER 'Показывать нерасценённые фрахты' 'F11' needPriceSetDocumentFreight(f)
 
     OBJECTS i = importer
     PROPERTIES(f, i) READONLY isPriceSetFreightImporter BACKGROUND backgroundPriceSetDocumentFreightImporter(f, i)
@@ -1263,9 +1262,6 @@ printMarksSkuPriceSetDocument 'Печать маркировок товаров'
 
 } CONFIRM;
 
-//EXTEND FORM priceSetDocument
-//    PROPERTIES (p) printMarksSkuPriceSetDocument
-//;
 
 printMarksSkuFreight 'Печать маркировок товаров' (freight, importer) = ACTION (freight, importer) {
 
@@ -1276,10 +1272,11 @@ printMarksSkuFreight 'Печать маркировок товаров' (freight
     FORM printMarksDocument OBJECTS dt = dateTimePriceSetDocument (basePriceSetDocumentFreightImporter(freight, importer)),
         imp = importer, c = currencyPriceSetDocument(basePriceSetDocumentFreightImporter(freight, importer)) MODAL;
 
-} CONFIRM;
+} CONFIRM TOOLBAR;
 
 EXTEND FORM freights
     PROPERTIES (f) isPriceSetFreight BACKGROUND backgroundPriceSetDocumentFreight(f)
-    PROPERTIES (f, i) printMarksSkuFreight
-    PROPERTIES (f,i) createPriceSetDocument, createPriceSetDocumentSku
+    PROPERTIES (f, i) FORCE PANEL printMarksSkuFreight SHOWIF basePriceSetDocumentFreightImporter (f,i)
+    PROPERTIES (f,i) createPriceSetDocument SHOWIF needPriceSetDocumentFreight(f),
+                     createPriceSetDocumentSku SHOWIF needPriceSetDocumentFreight(f)
 ;

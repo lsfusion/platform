@@ -22,7 +22,7 @@ FORM cashRegisterModel 'Модель касс'
 
 FORM cashRegistersModels 'Модели касс'
     OBJECTS c=cashRegisterModel
-    PROPERTIES(c) READONLY objectClassName, name, sidModel, maxProductModel, noteModel, handlerModel
+    PROPERTIES(c) READONLY objectClassName, name, sidModel, noteModel, handlerModel
     PROPERTIES(c) ADDFORM, EDITFORM, delete
     DIALOG cashRegisterModel OBJECT c
 ;
