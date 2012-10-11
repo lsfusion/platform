@@ -361,12 +361,23 @@ printMarksSkuFreightUnit 'Печать маркировок товаров' (WHf
 
 } CONFIRM;
 
+selectWHfromCSRDetail 'Отметить для маркировки' = DATA BOOLEAN (WHfromCSRDetail);
+selectWHfromCSR (WHfromCSR) = GROUP SUM 1 IF selectWHfromCSRDetail(WHfromCSRDetail) BY WHfromCSRWHfromCSRDetail(WHfromCSRDetail);
+selectQuantitySkuInWHfromCSR (WHfromCSR, sku) = GROUP SUM quantityWHfromCSRDetail(WHfromCSRDetail) AND selectWHfromCSRDetail(WHfromCSRDetail)
+    BY WHfromCSRWHfromCSRDetail(WHfromCSRDetail), skuWHfromCSRDetail(WHfromCSRDetail);
+
 printMarksSkuWHfromCSR 'Печать маркировок товаров' (WHfromCSR) = ACTION (WHfromCSR) {
 
     SET shouldBePrintSku(sku) <- NULL;
     SET countSku(sku) <- NULL;
-    SET shouldBePrintSku(sku) <- TRUE IF quantitySkuInWHfromCSR(WHfromCSR, sku);
-    SET countSku(sku) <- castToInteger(quantitySkuInWHfromCSR(WHfromCSR, sku));
+
+    IF selectWHfromCSR (WHfromCSR) THEN {
+        SET shouldBePrintSku(sku) <- TRUE IF selectQuantitySkuInWHfromCSR(WHfromCSR, sku);
+        SET countSku(sku) <- castToInteger(selectQuantitySkuInWHfromCSR(WHfromCSR, sku));
+    } ELSE {
+        SET shouldBePrintSku(sku) <- TRUE IF quantitySkuInWHfromCSR(WHfromCSR, sku);
+        SET countSku(sku) <- castToInteger(quantitySkuInWHfromCSR(WHfromCSR, sku));
+    }
     FORM printMarksDocument OBJECTS dt = dateTimeWHfromCSR(WHfromCSR), imp = companyStock(stockWHfromCSR(WHfromCSR)), c = currencyStock(stockWHfromCSR(WHfromCSR)) MODAL;
 
 } CONFIRM TOOLBAR;
@@ -513,7 +524,7 @@ FORM WHfromCSR 'Приемка на оптовый склад'
 
     PROPERTIES(d) quantityWHfromCSRDetail BACKGROUND backgroundSkuWHfromCSRDetail(d), quantityOriginSkuWHfromCSRWHfromCSRDetail, quantitySkuWHfromCSRWHfromCSRDetail
 
-    PROPERTIES(d) READONLY nameUnitOfMeasureArticleSkuWHfromCSRDetail
+    PROPERTIES(d) nameUnitOfMeasureArticleSkuWHfromCSRDetail READONLY, selectWHfromCSRDetail
 
     PROPERTIES(d) delete
 
