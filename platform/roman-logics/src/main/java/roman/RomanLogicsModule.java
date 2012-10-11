@@ -140,7 +140,7 @@ public class RomanLogicsModule extends LogicsModule {
     private StaticCustomClass typeTransit;
     private AbstractCustomClass seller;
     //private AbstractCustomClass buyer;
-    private ConcreteCustomClass supplier;
+    private AbstractCustomClass supplier;
     private ConcreteCustomClass contract;
     private AbstractCustomClass document;
     private AbstractCustomClass priceDocument;
@@ -1525,7 +1525,7 @@ public class RomanLogicsModule extends LogicsModule {
         //buyer = addAbstractClass("buyer", "Покупатель", baseClass.named);
 
 
-        supplier = addConcreteClass("supplier", "Поставщик", baseClass.named, seller, (CustomClass) BL.Supplier.getClassByName("supplier"));
+        supplier = addAbstractClass("supplier", "Поставщик", baseClass.named, seller, (CustomClass) BL.Supplier.getClassByName("supplier"));
 
         boxSupplier = addConcreteClass("boxSupplier", "Поставщик по коробам", supplier);
         simpleSupplier = addConcreteClass("simpleSupplier", "Поставщик без коробов", supplier);

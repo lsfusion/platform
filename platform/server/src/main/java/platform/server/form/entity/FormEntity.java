@@ -537,10 +537,13 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         }
         propertyDraws.add(ind + 1, newPropertyDraw);
 
-        if (richDesign != null)
-            richDesign.addPropertyDraw(newPropertyDraw);
-
         return newPropertyDraw;
+    }
+
+    public void addPropertyDrawView(PropertyDrawEntity propertyDraw) {
+        if (richDesign != null) {
+            richDesign.addPropertyDraw(propertyDraw);
+        }
     }
 
     public void movePropertyDrawTo(PropertyDrawEntity property, PropertyDrawEntity newNeighbour, boolean isRightNeighbour) {

@@ -239,7 +239,13 @@ public class ScriptingFormEntity {
                 MappedProperty prop = getPropertyWithMapping(propertyName, mapping);
                 property = form.addPropertyDraw(prop.property, prop.mapping);
             }
-            applyPropertyOptions(property, commonOptions.overrideWith(options.get(i)));
+            FormPropertyOptions propertyOptions = commonOptions.overrideWith(options.get(i));
+            applyPropertyOptions(property, propertyOptions);
+
+            // Добавляем PropertyDrawView в FormView, если он уже был создан
+            form.addPropertyDrawView(property);
+
+            movePropertyDraw(property, propertyOptions);
 
             setPropertyDrawAlias(alias, property);
         }
@@ -309,7 +315,9 @@ public class ScriptingFormEntity {
         String eventID = options.getEventId();
         if (eventID != null)
             property.eventID = eventID;
+    }
 
+    private void movePropertyDraw(PropertyDrawEntity property, FormPropertyOptions options) throws ScriptingErrorLog.SemanticErrorException {
         if (options.getNeighbourPropertyDraw() != null) {
             if (options.getNeighbourPropertyDraw().getToDraw(form) != property.getToDraw(form)) {
                 LM.getErrLog().emitNeighbourPropertyError(LM.getParser(), options.getNeighbourPropertyText(), property.getSID());

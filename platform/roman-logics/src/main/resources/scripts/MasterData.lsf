@@ -478,6 +478,41 @@ VATRetailSkuDepartmentStoreDateTime(sku, departmentStore, dateTime) += retailVAT
 //limitInLIFOSkuLedgerBatch (ledger, batch) +=  (quantityUserPriceChangeDetail(ledger) (-) quantityUserPriceChangeDetail(ledger)) AND  batch IS batch;
 //sumInSkuLedger(ledger) += (retailPriceUserPriceChangeDetail(ledger) (-) curRetailPriceUserPriceChangeDetail(ledger))*quantityUserPriceChangeDetail(ledger);
 
+// ------------------------------- Добавление объектов правильных классов -------------------- //
+
+// Магазины
+addRomanStore 'Добавить' = ACTION () NEWSESSION {
+    FOR ADDOBJ st = RomanLogicsModule.store DO {
+        FORM store OBJECTS s = st MANAGESESSION DOCKED_MODAL;
+    }
+} EDITKEY 'INSERT' IMAGE 'add.png' TOOLBAR;
+
+EXTEND FORM stores
+    PROPERTIES() addRomanStore TODRAW s FORCE PANEL;
+;
+
+EXTEND DESIGN stores {
+    REMOVE PROPERTY(addFormStore_store);
+    s.filters { ADD PROPERTY(addRomanStore) BEFORE PROPERTY(editFormStore_store); }
+}
+
+//Единицы измерения
+
+addRomanUOM 'Добавить' = ACTION () NEWSESSION {
+    FOR ADDOBJ um = RomanLogicsModule.unitOfMeasure DO {
+        FORM UOM OBJECTS u = um MANAGESESSION DOCKED_MODAL;
+    }
+} EDITKEY 'INSERT' IMAGE 'add.png' TOOLBAR;
+
+EXTEND FORM UOMs
+    PROPERTIES() addRomanUOM TODRAW u FORCE PANEL;
+;
+
+EXTEND DESIGN UOMs {
+    REMOVE PROPERTY(addFormStock_UOM);
+}
+
+
 // ------------------------------------------------------------ Глобальные параметры --------------------------------- //
 
 EXTEND FORM options
