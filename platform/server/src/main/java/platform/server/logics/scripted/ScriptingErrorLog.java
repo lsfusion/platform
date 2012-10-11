@@ -419,6 +419,10 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, "metacode cannot be defined inside another metacode");
     }
 
+    public void emitNamespaceNameError(ScriptParser parser, String namespaceName) throws SemanticErrorException {
+        emitSimpleError(parser, String.format("namespace name '%s' contains underscore character", namespaceName));
+    }
+
     private void emitSimpleError(ScriptParser parser, String message) throws SemanticErrorException {
         SemanticErrorException e = new SemanticErrorException(parser.getCurrentParser().input);
         String msg = getSemanticRecognitionErrorText(message + "\n", parser, e);

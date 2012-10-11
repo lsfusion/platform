@@ -2098,6 +2098,10 @@ public class ScriptingLogicsModule extends LogicsModule {
     public void initModulesAndNamespaces(List<String> requiredModules, List<String> namespacePriority) throws ScriptingErrorLog.SemanticErrorException {
         initNamespacesToModules(this, new HashSet<LogicsModule>());
 
+        if (getNamespace().contains("_")) {
+            errLog.emitNamespaceNameError(parser, getNamespace());
+        }
+
         if (namespacePriority.contains(getNamespace())) {
             errLog.emitOwnNamespacePriorityError(parser, getNamespace());
         }
