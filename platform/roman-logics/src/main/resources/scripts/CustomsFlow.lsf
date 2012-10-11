@@ -160,7 +160,9 @@ innerInvoicesCStoWH 'Инвойсы' (CStoWH) =
 
 declarationCurrencyCStoWHDetail 'Валюта (ИД)' (CStoWHDetail) = currencyDeclaration(declarationCStoWHDetail(CStoWHDetail));
 declarationCurrencyCStoWH (CStoWH) = GROUP EQUAL declarationCurrencyCStoWHDetail(CStoWHDetail) BY CStoWHCStoWHDetail(CStoWHDetail);
-shortNameDeclarationCurrencyCStoWH 'Валюта документа' (CStoWH) = shortNameCurrency(declarationCurrencyCStoWH(CStoWH)) IN documentPrmGroup;
+shortNameDeclarationCurrencyCStoWH 'Валюта декларации' (CStoWH) = shortNameCurrency(declarationCurrencyCStoWH(CStoWH)) IN documentPrmGroup;
+
+printSumCStoWHDetail 'Стоимость для печати накладной' (CStoWHDetail)= roundCurrency(sumCStoWHDetail(CStoWHDetail)/rateExchangeCustomDeclarationDetail(declarationDetailCStoWHDetail(CStoWHDetail)), declarationCurrencyCStoWHDetail(CStoWHDetail)) PERSISTENT;
 
 @defineDocumentCurrency(CStoWH);
 @deriveDocumentCurrency(CStoWH, destinationStock);
@@ -385,8 +387,8 @@ consignmentConsignmentDetail (consignmentDetail) += CStoWHCStoWHDetail (consignm
 skuConsignmentDetail (consignmentDetail) += skuCStoWHDetail (consignmentDetail);
 quantityConsignmentDetail (consignmentDetail) += quantityCStoWHDetail (consignmentDetail);
 priceConsignmentDetail (consignmentDetail) += priceCStoWHDetail (consignmentDetail);
-sumInvoiceConsignmentDetail (consignmentDetail) += sumCStoWHDetail (consignmentDetail);
-sumConsignmentDetail (consignmentDetail) += sumCStoWHDetail (consignmentDetail);
+sumInvoiceConsignmentDetail (consignmentDetail) += printSumCStoWHDetail (consignmentDetail);
+sumConsignmentDetail (consignmentDetail) += printSumCStoWHDetail (consignmentDetail);
 grossWeightConsignmentDetail (consignmentDetail) += sumGrossWeightCStoWHDetail (consignmentDetail);
 
 currencyConsignment(consignment) += declarationCurrencyCStoWH(consignment);

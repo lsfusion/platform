@@ -81,7 +81,7 @@ FORM priceIntervals 'Округления розничных цен'
     PROPERTIES(nu, c, rg) READONLY roundPriceCurrencyRoundGroup
 
     FILTERGROUP filterGroup
-        FILTER 'Только отмеченные' 'F10' inRoundConditionRoundGroup(rc, rg) DEFAULT
+        FILTER 'Только отмеченные' 'F10' inRoundConditionRoundGroup(rc, rg)
 
 
     FILTERS currencyRoundCondition(rc) == c,
