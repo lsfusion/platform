@@ -160,6 +160,11 @@ sidDeclaration 'Номер' = DATA STRING[10] (declaration) IN docGroup MINCHARW
 beginTimeDeclaration 'Начало обработки' = DATA DATETIME (declaration) IN datetimeGroup;
 endTimeDeclaration 'Конец обработки' = DATA DATETIME (declaration) IN datetimeGroup;
 
+executerDeclaration 'Исполнитель' = DATA customUser (declaration);
+nameExecuterDeclaration 'Исполнитель' (declaration) = commonName(executerDeclaration(declaration));
+executerDeclaration(declaration) <- currentUser() WHEN ASSIGNED(declaration IS declaration) MINCHARWIDTH 20;
+
+
 allowImportExportXLSDeclarationUA(declaration) = allowImportExportXLSLegalEntityUA(customStoreDeclaration(declaration));
 allowImportExportXMLDeclarationBY(declaration) = allowImportExportXMLLegalEntityBY(customStoreDeclaration(declaration));
 
@@ -1060,7 +1065,7 @@ FORM declaration 'Декларация'
     PROPERTIES(d) objectClassName, sidDeclaration, nameCustomStoreDeclaration, nameImporterDeclaration, nameLanguageDeclaration,
                   nameCurrencyDeclaration, innerInvoicesDeclaration, dateDeclaration, timeDeclaration, beginTimeDeclaration, endTimeDeclaration,
                   nameTypeExchangeCustomDeclaration, rateExchangeCustomDataDeclaration, nameTypeExchangeManagerialDeclaration,
-                  rateExchangeManagerialDataDeclaration, sumRegistrationUnionDeclaration
+                  rateExchangeManagerialDataDeclaration, sumRegistrationUnionDeclaration, nameExecuterDeclaration
     PROPERTIES(d) READONLY dutyReverseDeclaration, VATReverseDeclaration, totalCustomSum, expenseCertificateDeclaration
     PROPERTIES(d) sumConsultationDeclaration, exportDeclarationToEXELLanguageDeclaration TODRAW dd FORCE PANEL SHOWIF allowImportExportXLSDeclarationUA(d)
 
@@ -1162,7 +1167,7 @@ FORM declaration 'Декларация'
 
 DESIGN declaration FROM DEFAULT{
     main {
-          NEW allContainer {
+        NEW allContainer {
             type = SPLITV;
             childConstraints = TO THE BOTTOM;
 
@@ -1192,14 +1197,21 @@ DESIGN declaration FROM DEFAULT{
                             ADD PROPERTY(showFormDeclarationInvoices);
                         }
 
-                        NEW datetimeContainer {
-
-                            caption = 'Даты';
-                            childConstraints = TO THE BOTTOM;
-                            ADD PROPERTY(dateDeclaration);
-                            ADD PROPERTY(timeDeclaration);
-                            ADD PROPERTY(beginTimeDeclaration);
-                            ADD PROPERTY(endTimeDeclaration);
+                        NEW datetimeexecutContainer {
+                            childConstraints = TO THE RIGHT;
+                            NEW datetimeContainer {
+                                caption = 'Даты';
+                                childConstraints = TO THE BOTTOM;
+                                ADD PROPERTY(dateDeclaration);
+                                ADD PROPERTY(timeDeclaration);
+                                ADD PROPERTY(beginTimeDeclaration);
+                                ADD PROPERTY(endTimeDeclaration);
+                            }
+                            NEW executContainer {
+                                caption = 'Обработка';
+                                childConstraints = TO THE BOTTOM;
+                                ADD PROPERTY(nameExecuterDeclaration);
+                            }
                         }
                     }
 
@@ -1264,7 +1276,7 @@ DESIGN declaration FROM DEFAULT{
                     ADD sf.box;
                 }
             }
-          }
+        }
     }
 
     PROPERTY(priceContractDeclarationDetail) { background = #AAFFCC; }
@@ -1288,7 +1300,7 @@ FORM declarations 'Декларации'
                            dateDeclaration, timeDeclaration, nameCurrencyDeclaration,
                            rateExchangeCustomDataDeclaration, rateExchangeManagerialDataDeclaration, sumRegistrationUnionDeclaration,
                            dutyReverseDeclaration, VATReverseDeclaration, totalCustomSum,
-                           expenseCertificateDeclaration, canonicalBrandDeclaration
+                           expenseCertificateDeclaration, canonicalBrandDeclaration, nameExecuterDeclaration
     PROPERTIES(d) FORCE PANEL ADDFORM, EDITFORM, delete DRAWTOTOOLBAR
 
     OBJECTS dd=declarationDetail
