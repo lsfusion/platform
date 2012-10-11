@@ -7054,6 +7054,10 @@ NAVIGATOR {
     NEW purchase 'Управление закупками' TO formsToolbar {
         ADD purchasePurchaseNavigator;
         ADD purchaseReturnNavigator;
+        NEW purchaseCatalog 'Справочники' {
+            ADD suppliers;
+            ADD contractSkus;
+        }
     }
 
     NEW warehouse 'Управление складом' TO formsToolbar {
@@ -7088,10 +7092,6 @@ NAVIGATOR {
             ADD returnSuppliers;
             ADD wastages;
             ADD wastageCommitteeDialog;
-        }
-        NEW purchaseCatalog 'Справочники' {
-            ADD suppliers;
-            ADD contractSkus;
         }
         ADD POSNavigator;
         NEW retailStatement 'Безналичный расчет' {

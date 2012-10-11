@@ -3,6 +3,7 @@ MODULE RetailCRM;
 REQUIRE System,
 
         Stock,
+        Barcode,
         Store,
         Numerator,
         Document;
@@ -80,7 +81,11 @@ generateDiscountCards 'Сгенерировать дисконтные карт�
         WHILE num() < (chosenInteger('quantityCards') AS INTEGER) DO {
             ADDOBJ discountCard;
             FOR d == addedObject() DO {
+                // todo : делается влоб, поскольку numerator сейчас не умеет генерировать сразу несколько объектов
                 SET numeratorObject(d) <- chosenObject('n') AS numerator;
+                SET numberObject(d) <- curStringValueNumerator(numeratorObject(d));
+                SET seriesObject(d) <- seriesNumerator(numeratorObject(d));
+                SET curValueNumerator(numerator) <- curValueNumerator(numerator) + 1 WHERE numerator == numeratorObject(d);
                 SET num() <- num() + 1;
             }
         }
@@ -201,8 +206,10 @@ dateToPromotionCondition 'Действует (до)' (promotionCondition) = date
 countPromotionConditionPromotion 'Кол-во условий' (promotion) = GROUP SUM 1 IF promotionPromotionCondition(promotionCondition) == promotion BY promotion PERSISTENT;
 
 minQuantityPromotionCondition 'Количество (от)' = DATA NUMERIC[14,3] (promotionCondition);
+CONSTRAINT minQuantityPromotionCondition(promotionCondition) <= 0.0 MESSAGE 'Количество в условии акции должно быть строго больше 0';
 
 minSumPromotionCondition 'Сумма (от)' = DATA NUMERIC[16,2] (promotionCondition);
+CONSTRAINT minSumPromotionCondition(promotionCondition) <= 0.0 MESSAGE 'Сумма в условии акции должна быть строго больше 0';
 
 quantityDiscountPromotionCondition 'Кол-во товаров со скидкой' = DATA NUMERIC[14,3] (promotionCondition) NOT NULL;
 percentPromotionCondition 'Процент скидки'  = DATA NUMERIC[8,3] (promotionCondition);
@@ -229,7 +236,8 @@ inPromotionConditionSkuGroup 'В условии' = (TRUE IF inParentPromotionCon
 TABLE promotionConditionSku (promotionCondition, sku);
 inDataPromotionConditionSku 'В условии' = DATA BOOLEAN (promotionCondition, sku);
 
-inPromotionConditionSku 'В условии' (promotionCondition, sku) = UNION OVERRIDE TRUE IF countPromotionConditionSku(promotionCondition, sku) AND inParentPromotionConditionSkuGroup(promotionCondition, skuGroupSku(sku)),
+inPromotionConditionSku 'В условии' (promotionCondition, sku) = UNION OVERRIDE ((TRUE IF countPromotionConditionSku(promotionCondition, sku)) OR (allDiscountSkuGroupPromotionCondition(promotionCondition) AND sku IS sku))
+                                                                                    AND inParentPromotionConditionSkuGroup(promotionCondition, skuGroupSku(sku)),
                                                                                inDataPromotionConditionSku(promotionCondition, sku);
 
 FORM promotion 'Акция'
@@ -266,7 +274,7 @@ FORM promotion 'Акция'
         FILTER 'Только отмеченные' 'F11' inPromotionConditionDiscountSkuGroup(sg, dg)
 
     OBJECTS sk= sku
-    PROPERTIES(sk)    READONLY nameSku
+    PROPERTIES(sk)    READONLY idBarcodeSku, nameSku
     FILTERS           isParentSkuGroupSku(skg, sk)
     PROPERTIES(sg, sk)   inPromotionConditionSku
 

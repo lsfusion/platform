@@ -152,13 +152,19 @@ discountSumReceiptSaleDetail 'Сумма скидки' (receiptDetail) = DATA NU
 
 priceSumReceiptSaleDetail 'Сумма без скидки' = round(quantityReceiptSaleDetail(detail) * priceReceiptSaleDetail(detail), priceRoundCurrency(currencyReceiptSaleDetail (detail)));
 
-calcDiscountSumReceiptSaleDetail (detail) = priceSumReceiptSaleDetail(detail) * discountPercentReceiptSaleDetail (detail) / 100;
-discountSumReceiptSaleDetail (detail) <- round(calcDiscountSumReceiptSaleDetail (detail), priceRoundCurrency(currencyReceiptSaleDetail (detail)))
-    WHEN CHANGED (calcDiscountSumReceiptSaleDetail(detail)) OR CHANGED (currencyReceiptSaleDetail (detail));
+discountSumReceiptSaleDetail (detail) <- round(priceSumReceiptSaleDetail(detail) * discountPercentReceiptSaleDetail (detail) / 100,
+                                               priceRoundCurrency(currencyReceiptSaleDetail (detail)))
+    WHEN CHANGED (quantityReceiptSaleDetail(detail)) OR
+         CHANGED (priceReceiptSaleDetail(detail)) OR
+         CHANGED (discountPercentReceiptSaleDetail(detail)) OR
+         CHANGED (currencyReceiptSaleDetail (detail));
 
 calcSumReceiptSaleDetail (detail) = priceSumReceiptSaleDetail(detail) (-) discountSumReceiptSaleDetail(detail);
 sumReceiptSaleDetail (detail) <- round(calcSumReceiptSaleDetail(detail), priceRoundCurrency(currencyReceiptSaleDetail (detail)))
-    WHEN CHANGED (calcSumReceiptSaleDetail(detail)) OR CHANGED (currencyReceiptSaleDetail (detail));
+    WHEN CHANGED (quantityReceiptSaleDetail(detail)) OR
+         CHANGED (priceReceiptSaleDetail(detail)) OR
+         CHANGED (discountPercentReceiptSaleDetail(detail)) OR
+         CHANGED (currencyReceiptSaleDetail(detail));
 
 quantityReceiptReturnDetail 'Количество' (receiptDetail) = DATA NUMERIC[14,3] (receiptReturnDetail);
 priceReceiptReturnDetail 'Цена' (receiptDetail) = DATA NUMERIC[14,2] (receiptReturnDetail);
@@ -168,13 +174,17 @@ discountSumReceiptReturnDetail 'Сумма скидки' (receiptDetail) = DATA 
 quantityReturnedReceiptSaleDetail 'Возвращено' (saleDetail) = GROUP SUM quantityReceiptReturnDetail(returnDetail) BY receiptSaleDetailReceiptReturnDetail(returnDetail) PERSISTENT;
 CONSTRAINT quantityReturnedReceiptSaleDetail(detail) > quantityReceiptSaleDetail (detail) MESSAGE 'Количество возвратов по строке чека превышает проданное количество';
 
-calcSumReceiptReturnDetail(detail) = round(quantityReceiptReturnDetail(detail) * sumReceiptSaleDetail(receiptSaleDetailReceiptReturnDetail(detail)) / quantityReceiptSaleDetail(receiptSaleDetailReceiptReturnDetail(detail)),
-    priceRoundCurrency(currencyReceiptReturnDetail (detail)));
-sumReceiptReturnDetail (detail) <- calcSumReceiptReturnDetail(detail) WHEN CHANGED (calcSumReceiptReturnDetail(detail));
+sumReceiptReturnDetail (detail) <- round(quantityReceiptReturnDetail(detail) * sumReceiptSaleDetail(receiptSaleDetailReceiptReturnDetail(detail)) / quantityReceiptSaleDetail(receiptSaleDetailReceiptReturnDetail(detail)),
+                                         priceRoundCurrency(currencyReceiptReturnDetail (detail)))
+                                   WHEN CHANGED(quantityReceiptReturnDetail(detail)) OR
+                                        CHANGED(receiptSaleDetailReceiptReturnDetail(detail)) OR
+                                        CHANGED(currencyReceiptReturnDetail(detail));
 
-calcDiscountSumReceiptReturnDetail(detail) = round(quantityReceiptReturnDetail(detail) * discountSumReceiptSaleDetail(receiptSaleDetailReceiptReturnDetail(detail)) / quantityReceiptSaleDetail(receiptSaleDetailReceiptReturnDetail(detail)),
-   priceRoundCurrency(currencyReceiptSaleDetail(receiptSaleDetailReceiptReturnDetail(detail))));
-discountSumReceiptReturnDetail (detail) <- calcDiscountSumReceiptReturnDetail(detail) WHEN CHANGED (calcDiscountSumReceiptReturnDetail(detail));
+discountSumReceiptReturnDetail (detail) <- round(quantityReceiptReturnDetail(detail) * discountSumReceiptSaleDetail(receiptSaleDetailReceiptReturnDetail(detail)) / quantityReceiptSaleDetail(receiptSaleDetailReceiptReturnDetail(detail)),
+                                                 priceRoundCurrency(currencyReceiptSaleDetail(receiptSaleDetailReceiptReturnDetail(detail))))
+                                           WHEN CHANGED(quantityReceiptReturnDetail(detail)) OR
+                                                CHANGED(receiptSaleDetailReceiptReturnDetail(detail)) OR
+                                                CHANGED(currencyReceiptReturnDetail(detail));
 
 quantityReceiptDetail 'Количество' (receiptDetail) = UNION EXCLUSIVE quantityReceiptReturnDetail(receiptDetail), quantityReceiptSaleDetail(receiptDetail) PERSISTENT;
 priceReceiptDetail 'Цена' (receiptDetail) = UNION EXCLUSIVE priceReceiptReturnDetail(receiptDetail), priceReceiptSaleDetail(receiptDetail) PERSISTENT;
@@ -496,12 +506,10 @@ closedCurrentZReport () = TRUE AND NOT currentZReport();
 // Операции с чеками
 
 createCurrentReceipt 'Создать новый чек' = ACTION () {
-    IF currentZReport() THEN {
-        FOR ADDOBJ r = receipt DO {
-            EXEC seek(r);
-            SET zReportReceipt(r) <- currentZReport();
-            SET numberReceipt(r) <- maxNumberReceiptZReport(currentZReport()) (+) 1;
-        }
+    FOR ADDOBJ r = receipt DO {
+        EXEC seek(r);
+        SET zReportReceipt(r) <- currentZReport();
+        SET numberReceipt(r) <- maxNumberReceiptZReport(currentZReport()) (+) 1;
     }
 }
 

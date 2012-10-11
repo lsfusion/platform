@@ -4,7 +4,7 @@ REQUIRE System, Stock, Hierarchy, RetailCRM, Barcode, Ware, PriceList;
 
 // ------------------------------------ Классификатор товаров --------------------------- //
 
-CLASS itemGroup 'Товарная группа' : named, externalObject, skuGroup, discountSkuGroup, priceGroup;
+CLASS itemGroup 'Товарная группа' : named, externalObject, skuGroup, priceGroup;
 
 @defineHierarchy(itemGroup);
 
