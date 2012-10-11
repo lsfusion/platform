@@ -33,6 +33,7 @@ import platform.server.logics.linear.LAP;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
 import platform.server.logics.panellocation.ShortcutPanelLocation;
+import platform.server.logics.panellocation.ToolbarPanelLocation;
 import platform.server.logics.property.*;
 import platform.server.logics.property.actions.FormActionProperty;
 import platform.server.logics.property.actions.UserActionProperty;
@@ -4212,7 +4213,6 @@ public class RomanLogicsModule extends LogicsModule {
         addFormEntity(new FreightInvoiceFormEntity(null, "freightInvoiceForm", "Расценка фрахта"));
 
         addFormEntity(new FreightListFormEntity(shipmentDocument, "freightListForm", "Фрахты"));
-        addFormEntity(new PrintDocumentFormEntity(shipmentDocument, "printDocumentForm", "Печать документов"));
 
         //shipmentDocument.add(actionFreight);
 
@@ -4852,11 +4852,13 @@ public class RomanLogicsModule extends LogicsModule {
 
             if(edit){
                if(box) {
-                  boxInvoiceEditFA = addMFAProp(actionGroup, "Редактировать инвойс", this, new ObjectEntity[] {objInvoice}, true);
+                  boxInvoiceEditFA = addDMFAProp(actionGroup, "Редактировать инвойс", this, new ObjectEntity[] {objInvoice}, true);
+                  boxInvoiceEditFA.setPanelLocation(new ToolbarPanelLocation());
                   boxInvoiceEditFA.setImage("edit.png");
                }
                else {
-                  simpleInvoiceEditFA = addMFAProp(actionGroup, "Редактировать инвойс", this, new ObjectEntity[] {objInvoice}, true);
+                  simpleInvoiceEditFA = addDMFAProp(actionGroup, "Редактировать инвойс", this, new ObjectEntity[] {objInvoice}, true);
+                  simpleInvoiceEditFA.setPanelLocation(new ToolbarPanelLocation());
                   simpleInvoiceEditFA.setImage("edit.png");
                }
             }
@@ -4929,7 +4931,7 @@ public class RomanLogicsModule extends LogicsModule {
             super(parent, sID, caption);
 
             this.box = box;
-            objSupplier = addSingleGroupObject(supplier, "Поставщик", baseLM.name, nameCurrencySupplier, importInvoiceActionGroup, true);
+            objSupplier = addSingleGroupObject(supplier, "Поставщик", baseLM.name, importInvoiceActionGroup, true);
             objSupplier.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             objInvoice = addSingleGroupObject("invoice", (box ? boxInvoice : simpleInvoice), "Инвойс", baseLM.date, baseLM.objectClassName, sidDocument, nameCurrencyDocument, sumDocument,
@@ -4941,12 +4943,16 @@ public class RomanLogicsModule extends LogicsModule {
             setEditType(nameCompanyInvoice, PropertyEditType.EDITABLE, objInvoice.groupTo);
             setEditType(nameDestinationDestinationDocument, PropertyEditType.EDITABLE, objInvoice.groupTo);
 
+            for (PropertyDrawEntity propertyDraw : getProperties(importInvoiceActionGroup)) {
+                propertyDraw.toDraw = objInvoice.groupTo;
+                propertyDraw.setDrawToToolbar(true);
+            }
 
             if (box) {
-                addPropertyDraw(boxInvoiceEditFA, objInvoice).forceViewType = ClassViewType.GRID;
+                addPropertyDraw(boxInvoiceEditFA, objInvoice).forceViewType = ClassViewType.PANEL;
             }
             else {
-                addPropertyDraw(simpleInvoiceEditFA, objInvoice).forceViewType = ClassViewType.GRID;
+                addPropertyDraw(simpleInvoiceEditFA, objInvoice).forceViewType = ClassViewType.PANEL;
             }
 
             objOrder = addSingleGroupObject(order, "Заказ");
@@ -5832,7 +5838,7 @@ public class RomanLogicsModule extends LogicsModule {
             filterGroupInvoice.defaultFilter = 0;
             addRegularFilterGroup(filterGroupInvoice);
 
-            freightCompleteFA = addMFAProp(actionGroup, "Скомплектовать", this, new ObjectEntity[] {objFreight}, true,
+            freightCompleteFA = addDMFAProp(actionGroup, "Скомплектовать", this, new ObjectEntity[] {objFreight}, true,
                     addPropertyObject(addJoinAProp(executeChangeFreightClass, 1, addCProp(baseClass.objectClass, "freightComplete")), objFreight));
             freightCompleteFA.setImage("arrow_right.png");
         }
@@ -6706,7 +6712,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             setPageSize(0);
 
-            freightChangedFA = addMFAProp(actionGroup, "Обработать", this,
+            freightChangedFA = addDMFAProp(actionGroup, "Обработать", this,
                     new ObjectEntity[]{objFreight}, true);
             freightChangedFA.setImage("arrow_right.png");
         }
@@ -7817,7 +7823,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             setPageSize(0);
 
-            freightPricedFA = addMFAProp(actionGroup, "Расценить", this, new ObjectEntity[] {objFreight}, true,
+            freightPricedFA = addDMFAProp(actionGroup, "Расценить", this, new ObjectEntity[] {objFreight}, true,
                     addPropertyObject(addJoinAProp(executeChangeFreightClass, 1, addCProp(baseClass.objectClass, "freightPriced")), objFreight));
             freightPricedFA.setImage("arrow_right.png");
         }
@@ -8291,111 +8297,6 @@ public class RomanLogicsModule extends LogicsModule {
 
             design.get(objArticle.groupTo).grid.constraints.fillHorizontal = 2;
             design.get(objFreightUnit.groupTo).grid.constraints.fillHorizontal = 1;
-
-            return design;
-        }
-    }
-
-
-    private class PrintDocumentFormEntity extends FormEntity<RomanBusinessLogics> {
-
-        private ObjectEntity objFreight;
-        private ObjectEntity objSeller;
-        private ObjectEntity objTransitDocument;
-        private ObjectEntity objImporter;
-        private ObjectEntity objTypeInvoice;
-        private ObjectEntity objSku;
-
-        private PrintDocumentFormEntity(NavigatorElement parent, String sID, String caption) {
-            super(parent, sID, caption);
-
-            objFreight = addSingleGroupObject(freight, "Фрахт", baseLM.date, baseLM.objectClassName, dateArrivalFreight, nameRouteFreight, nameExporterFreight, nameFreightTypeFreight, nameCurrencyFreight, symbolCurrencyFreight, sumFreightFreight, sumInFreight, sumMarkupInFreight, sumInOutFreight);
-            setForceViewType(sumInOutFreight, ClassViewType.GRID);
-
-            objImporter = addSingleGroupObject(importer, "Импортер", baseLM.name, sidImporter);
-
-            objTypeInvoice = addSingleGroupObject(typeInvoice, "Тип инвойса", baseLM.name);
-
-            addPropertyDraw(objImporter, objFreight, sidContractImporterFreight, dateContractImporterFreight, sidImporterFreight, dateImporterFreight); //, conditionShipmentContractImporterFreight, conditionPaymentContractImporterFreight);
-
-            addPropertyDraw(quantityImporterFreight, objImporter, objFreight);
-            addPropertyDraw(sumInImporterFreight, objImporter, objFreight);
-            addPropertyDraw(sumMarkupInImporterFreight, objImporter, objFreight);
-            addPropertyDraw(sumInOutImporterFreight, objImporter, objFreight);
-
-            addPropertyDraw(objImporter, objFreight, objTypeInvoice, sidImporterFreightTypeInvoice, dateImporterFreightTypeInvoice, dateShipmentImporterFreightTypeInvoice);
-
-            objSeller = addSingleGroupObject(seller, "Поставщик", baseLM.name);
-
-            addPropertyDraw(invoiceOriginFormImporterFreight, objImporter, objFreight, objTypeInvoice);
-            addPropertyDraw(invoiceFormImporterFreight, objImporter, objFreight, objTypeInvoice);
-            addPropertyDraw(sbivkaFormImporterFreight, objImporter, objFreight);
-            addPropertyDraw(listFreightUnitFormImporterFreight, objImporter, objFreight);
-            addPropertyDraw(packingListOriginFormImporterFreight, objImporter, objFreight, objTypeInvoice);
-            addPropertyDraw(packingListFormImporterFreight, objImporter, objFreight, objTypeInvoice);
-            addPropertyDraw(sbivkaFormImporterFreightSupplier, objImporter, objFreight, objSeller);
-            addPropertyDraw(invoiceExportFormImporterFreight, objImporter, objFreight, objTypeInvoice);
-            addPropertyDraw(invoiceExportDbf, objImporter, objFreight, objTypeInvoice);
-
-            objTransitDocument = addSingleGroupObject(transitDocument, "Транзитный документ", sidTransitDocument, nameTypeTransitTransitDocument, dateRepaymentTransitDocument, dateClosingTransitDocument);
-            addObjectActions(this, objTransitDocument);
-
-            objSku = addSingleGroupObject(sku, "SKU", baseLM.barcode, sidArticleSku, nameBrandSupplierArticleSku, nameCategoryArticleSku, sidGenderArticleSku, nameUnitOfMeasureArticleSku,
-                      sidSizeSupplierItem, nameCommonSizeSku, sidColorSupplierItem, nameColorSupplierItem);
-
-            setForceViewType(baseGroup, ClassViewType.GRID, objSku.groupTo);
-
-            setEditType(baseGroup, PropertyEditType.READONLY, objSku.groupTo);
-            setEditType(publicGroup, PropertyEditType.READONLY, objSku.groupTo);
-
-            addPropertyDraw(objFreight, objSku, sidCustomCategory10FreightSku, nameCountryOfOriginFreightSku, mainCompositionFreightSku, additionalCompositionFreightSku);
-            addPropertyDraw(objImporter, objFreight, objSku, netWeightImporterFreightSku, grossWeightImporterFreightSku);
-
-            addPropertyDraw(objImporter, objFreight, objSku, quantityImporterFreightSku, priceInOutImporterFreightSku, sumInOutImporterFreightSku);
-
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(freightTransitDocument, objTransitDocument), Compare.EQUALS, objFreight));
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(sellerTransitDocument, objTransitDocument), Compare.EQUALS, objSeller));
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(importerTransitDocument, objTransitDocument), Compare.EQUALS, objImporter));
-
-            addFixedFilter(new OrFilterEntity(new NotNullFilterEntity(addPropertyObject(quantityImporterFreightSupplier, objImporter, objFreight, objSeller)),
-                                              new CompareFilterEntity(addPropertyObject(exporterFreight, objFreight), Compare.EQUALS, objSeller)));
-
-            addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityImporterFreight, objImporter, objFreight)));
-            addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityImporterFreightTypeInvoice, objImporter, objFreight, objTypeInvoice)));
-            addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityImporterFreightSku, objImporter, objFreight, objSku)));
-            //addFixedFilter(new CompareFilterEntity(addPropertyObject(typeInvoiceFreightSku, objFreight, objSku), Compare.EQUALS, objTypeInvoice));
-
-        }
-
-        @Override
-        public FormView createDefaultRichDesign() {
-            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
-
-            design.get(getPropertyDraw(baseLM.date, objFreight)).caption = "Дата отгрузки";
-            design.get(getPropertyDraw(baseLM.objectClassName, objFreight)).caption = "Статус фрахта";
-
-            design.addIntersection(design.getGroupObjectContainer(objFreight.groupTo),
-                                   design.getGroupObjectContainer(objImporter.groupTo),
-                                   DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
-
-            design.addIntersection(design.getGroupObjectContainer(objTypeInvoice.groupTo),
-                                   design.getGroupObjectContainer(objSeller.groupTo),
-                                   DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
-
-            design.addIntersection(design.getGroupObjectContainer(objSeller.groupTo),
-                                   design.getGroupObjectContainer(objTransitDocument.groupTo),
-                                   DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
-
-            //design.get(objSupplier.groupTo).grid.constraints.fillVertical = 3;
-            //design.get(objImporter.groupTo).grid.constraints.fillVertical = 2;
-            //design.get(objTypeInvoice.groupTo).grid.constraints.fillVertical = 2;
-            design.get(objFreight.groupTo).grid.constraints.fillHorizontal = 4;
-            design.get(objImporter.groupTo).grid.constraints.fillHorizontal = 3;
-            design.get(objTypeInvoice.groupTo).grid.constraints.fillHorizontal = 3;
-            design.get(objSeller.groupTo).grid.constraints.fillHorizontal = 1;
-            design.get(objTransitDocument.groupTo).grid.constraints.fillHorizontal = 2;
-            //design.get(objFreight.groupTo).grid.constraints.fillVertical = 3;
-            //design.get(objSku.groupTo).grid.constraints.fillVertical = 2;
 
             return design;
         }

@@ -1168,8 +1168,7 @@ EXTEND FORM currencies PROPERTIES(c) READONLY nameTypeExchangeRetailCurrency;
 
 // розничный прайс по фрахту
 createPriceSetDocument 'Расценить по артикулам' =  ACTION (freight, importer) NEWSESSION {
-    ADDOBJ basePriceSetDocument;
-    FOR p == addedObject() DO {
+    FOR ADDOBJ p = basePriceSetDocument DO {
         SET freightBasePriceSetDocument(p) <- freight;
         SET importerBasePriceSetDocument(p) <- importer;
         SET currencyPriceSetDocument(p) <- currencyCountryFreight(freight);
@@ -1180,17 +1179,13 @@ createPriceSetDocument 'Расценить по артикулам' =  ACTION (f
         SET markupBasePriceSetDocumentArticle(p, article) <- markupCoefficientBrandRetailArticleDate(article, dateArrivalFreight(freight)) WHERE inPriceSetDocumentArticle(p, article);
         SET RRPBasePriceSetDocumentArticle(p, article) <- RRPFreightArticle(freight, article);
 
-        FORM priceSetDocument OBJECTS p=addedObject() MODAL;
-        IF formResult() == formResult.ok THEN {
-            EXEC apply();
-        };
-    };
+        FORM priceSetDocument OBJECTS p = p MANAGESESSION DOCKED_MODAL;
+    }
 } TOOLBAR;
 
 
 createPriceSetDocumentSku 'Расценить по товарам' =  ACTION (freight, importer) NEWSESSION {
-    ADDOBJ basePriceSetDocument;
-    FOR p == addedObject() DO {
+    FOR ADDOBJ p = basePriceSetDocument DO {
         SET freightBasePriceSetDocument(p) <- freight AS freight;
         SET importerBasePriceSetDocument(p) <- importer;
         SET currencyPriceSetDocument(p) <- currencyCountryFreight(freight);
@@ -1201,10 +1196,7 @@ createPriceSetDocumentSku 'Расценить по товарам' =  ACTION (fr
         SET RRPBasePriceSetDocumentSku(p, sku) <- RRPFreightSku(freight, sku);
         SET markupBasePriceSetDocumentSku (p, sku) <- markupCoefficientBrandRetailSkuDate(sku, dateArrivalFreight(freight)) WHERE inPriceSetDocumentSku(p, sku);;
 
-        FORM priceSetDocument OBJECTS p=addedObject() MODAL;
-        IF formResult() == formResult.ok THEN {
-            EXEC apply();
-        };
+        FORM priceSetDocument OBJECTS p = p MANAGESESSION DOCKED_MODAL;
     };
 } TOOLBAR;
 
