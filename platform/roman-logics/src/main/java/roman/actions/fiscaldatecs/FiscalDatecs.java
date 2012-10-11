@@ -29,7 +29,7 @@ public class FiscalDatecs {
 
     public static String getError() {
         String lastErrorText;
-        if (cashRegister.getProperty("lastError").getInt()==30)
+        if (cashRegister.getProperty("lastError").getInt() == 30)
             lastErrorText = "Ошибка выполнения итога чека  (Вычисленная сумма отрицательная. Оплата не совершается)";
         else
             lastErrorText = cashRegister.getProperty("lastErrorText").getString();
@@ -51,7 +51,7 @@ public class FiscalDatecs {
         Dispatch.call(cashDispatch, "GetArticlesInfo");
         checkErrors(true);
         int value = Integer.parseInt(cashRegister.getProperty("s3").getString());
-        if (value>14800)
+        if (value > 14800)
             return -1;
         else return value;
     }
@@ -119,15 +119,9 @@ public class FiscalDatecs {
     public static Double getCurrentSums(int type) throws RuntimeException {
         Dispatch.call(cashDispatch, "getCurrentSums", type);
         checkErrors(true);
-        String s1 = cashRegister.getProperty("s1").getString();
-        String s2 = cashRegister.getProperty("s2").getString();
-        String s3 = cashRegister.getProperty("s3").getString();
-        String s4 = cashRegister.getProperty("s4").getString();
-        String s5 = cashRegister.getProperty("s5").getString();
-
-        return Double.valueOf(s1.substring(0, s1.length() - 1)) + Double.valueOf(s2.substring(0, s2.length() - 1)) +
-                Double.valueOf(s3.substring(0, s3.length() - 1)) + Double.valueOf(s4.substring(0, s4.length() - 1)) +
-                Double.valueOf(s5.substring(0, s5.length() - 1));
+        return (Double.valueOf(cashRegister.getProperty("s1").getString()) + Double.valueOf(cashRegister.getProperty("s2").getString()) +
+                Double.valueOf(cashRegister.getProperty("s3").getString()) + Double.valueOf(cashRegister.getProperty("s4").getString()) +
+                Double.valueOf(cashRegister.getProperty("s5").getString())) / 100;
     }
 
     public static void setOperatorName(UpdateDataOperator operator) throws RuntimeException {
@@ -136,7 +130,13 @@ public class FiscalDatecs {
     }
 
     public static void setMulDecCurRF(String code, Double[] rates) throws RuntimeException {
-        Dispatch.call(cashDispatch, "SetMulDecCurRF", "0000", 2, code, rates[0], rates[1], rates[2], rates[3]);
+        Dispatch.call(cashDispatch, "GetCurrentTaxRates");
+        Double s1 = Double.valueOf(cashRegister.getProperty("s1").getString());
+        Double s2 = Double.valueOf(cashRegister.getProperty("s2").getString());
+        Double s3 = Double.valueOf(cashRegister.getProperty("s3").getString());
+        Double s4 = Double.valueOf(cashRegister.getProperty("s4").getString());
+        if (!(s1.equals(rates[0])) || !(s2.equals(rates[1])) || !(s3.equals(rates[2])) || !(s4.equals(rates[3])))
+            Dispatch.call(cashDispatch, "SetMulDecCurRF", "0000", 2, code, rates[0], rates[1], rates[2], rates[3]);
         checkErrors(true);
     }
 

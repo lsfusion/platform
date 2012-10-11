@@ -2,6 +2,7 @@ package roman.actions.fiscaldatecs;
 
 import platform.base.OrderedMap;
 import platform.interop.Compare;
+import platform.interop.action.MessageClientAction;
 import platform.server.classes.StaticCustomClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.KeyExpr;
@@ -47,8 +48,9 @@ public class FiscalDatecsDisplayTextActionProperty extends ScriptingActionProper
             Double articleDiscSum = (Double) LM.findLCPByCompoundName("discountSumReceiptDetail").read(session, receiptDetailObject);
 
 
-            context.requestUserInteraction(new FiscalDatecsDisplayTextClientAction(baudRate, comPort, new ReceiptItem(price, quantity, barcode, name, sum, articleDisc, articleDiscSum, 0, 0)));
-
+            String result = (String)context.requestUserInteraction(new FiscalDatecsDisplayTextClientAction(baudRate, comPort, new ReceiptItem(price, quantity, barcode, name, sum, articleDisc, articleDiscSum, 0, 0)));
+            if(result!=null)
+                context.requestUserInteraction(new MessageClientAction(result, "Ошибка"));
         } catch (SQLException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         } catch (ScriptingErrorLog.SemanticErrorException e) {

@@ -29,13 +29,13 @@ public class FiscalDatecsCustomOperationClientAction implements ClientAction {
                     FiscalDatecs.xReport();
                     break;
                 case 2:
-                    Double VATSumSaleReceipt = FiscalDatecs.getCurrentSums(2);
-                    Double VATSumReturnReceipt = FiscalDatecs.getCurrentSums(3);
+                    Double VATSumSaleZReport = FiscalDatecs.getCurrentSums(2);
+                    Double VATSumReturnZReport = FiscalDatecs.getCurrentSums(3);
                     //FiscalDatecs.printTaxReport();
                     FiscalDatecs.zReport();
                     FiscalDatecs.delArticle(0);
                     FiscalDatecs.closePort();
-                    return new Double[]{VATSumSaleReceipt, VATSumReturnReceipt};
+                    return new Double[]{VATSumSaleZReport, VATSumReturnZReport};
                 case 3:
                     FiscalDatecs.advancePaper(10);
                     break;

@@ -85,7 +85,7 @@ public class FiscalDatecsUpdateDataActionProperty extends ScriptingActionPropert
             }
             if (context.checkApply(LM.getBL())) {
                 String result = (String) context.requestUserInteraction(new FiscalDatecsUpdateDataClientAction(baudRate, comPort, new UpdateDataInstance(operatorList, taxRateList)));
-                if (result != null)
+                if (result == null)
                     context.apply(LM.getBL());
                 else
                     context.requestUserInteraction(new MessageClientAction(result, "Ошибка"));

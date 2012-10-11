@@ -29,13 +29,13 @@ public class FiscalDatecsZReportActionProperty extends ScriptingActionProperty {
             if (context.checkApply(LM.getBL())) {
                 Object VATSumReceipt = context.requestUserInteraction(new FiscalDatecsCustomOperationClientAction(2, baudRate, comPort));
                 if (VATSumReceipt instanceof Double[]) {
-                    ObjectValue receiptObject = LM.findLCPByCompoundName("currentZReport").readClasses(session);
-                    if (!receiptObject.isNull()) {
-                        LM.findLCPByCompoundName("VATSumSaleReceipt").change(((Object[]) VATSumReceipt)[0], session, (DataObject) receiptObject);
-                        LM.findLCPByCompoundName("VATSumReturnReceipt").change(((Object[]) VATSumReceipt)[1], session, (DataObject) receiptObject);
+                    ObjectValue zReportObject = LM.findLCPByCompoundName("currentZReport").readClasses(session);
+                    if (!zReportObject.isNull()) {
+                        LM.findLCPByCompoundName("VATSumSaleZReport").change(((Object[]) VATSumReceipt)[0], session, (DataObject) zReportObject);
+                        LM.findLCPByCompoundName("VATSumReturnZReport").change(((Object[]) VATSumReceipt)[1], session, (DataObject) zReportObject);
                     }
-                    LM.findLAPByCompoundName("closeCurrentZReport").execute(session);
                     context.apply(LM.getBL());
+                    LM.findLAPByCompoundName("closeCurrentZReport").execute(session);
                 } else if (VATSumReceipt != null)
                     context.requestUserInteraction(new MessageClientAction((String) VATSumReceipt, "Ошибка"));
             }
