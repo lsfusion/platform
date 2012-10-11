@@ -90,7 +90,7 @@ public class BaseClass extends AbstractCustomClass {
         objectClass = new StaticCustomClass("CustomObjectClass", ServerResourceBundle.getString("classes.object.class"), sidClass, sidClasses.toArray(new String[sidClasses.size()]), nameClasses.toArray(new String[nameClasses.size()]));
     }
 
-    public void fillIDs(DataSession session, LCP name, LCP classSID) throws SQLException {
+    public void fillIDs(DataSession session, LCP name, LCP classSID, Map<String, String> sidChanges) throws SQLException {
         Set<CustomClass> allClasses = new HashSet<CustomClass>();
         fillChilds(allClasses);
         allClasses.remove(objectClass);
@@ -114,7 +114,8 @@ public class BaseClass extends AbstractCustomClass {
         usedSIds.put(objectClass.sID, objectClass);
         usedIds.add(objectClass.ID);
 
-        Map<Object, String> modifiedNames = objectClass.fillIDs(session, name, classSID, usedSIds, usedIds);
+        Map<Object, String> modifiedSIDs = new HashMap<Object, String>();
+        Map<Object, String> modifiedNames = objectClass.fillIDs(session, name, classSID, usedSIds, usedIds, sidChanges, modifiedSIDs);
 
         // пробежим по всем классам и заполним их ID
         for(CustomClass customClass : allClasses)
@@ -123,7 +124,7 @@ public class BaseClass extends AbstractCustomClass {
 
         for (CustomClass customClass : allClasses) // заполним все остальные StaticClass
             if (customClass instanceof StaticCustomClass)
-                modifiedNames.putAll(((StaticCustomClass) customClass).fillIDs(session, name, classSID, usedSIds, usedIds));
+                modifiedNames.putAll(((StaticCustomClass) customClass).fillIDs(session, name, classSID, usedSIds, usedIds, sidChanges, modifiedSIDs));
 
         int free = 0;
         for (CustomClass customClass : allClasses)
@@ -132,6 +133,11 @@ public class BaseClass extends AbstractCustomClass {
                     free++;
                 customClass.ID = free++;
             }
+
+        for (Object object : modifiedSIDs.keySet()) {
+            logger.info("changing sid of class with id " + object + " to " + modifiedSIDs.get(object));
+            classSID.change(modifiedSIDs.get(object), session, session.getDataObject(object, ObjectType.instance));
+        }
 
         // применение переименования классов вынесено сюда, поскольку objectClass.fillIDs() вызывается раньше проставления ID'шников - не срабатывает execute()
         for (Object object : modifiedNames.keySet()) {

@@ -199,6 +199,12 @@ public class SQLSession extends MutableObject {
         logger.info(" Done");
     }
 
+    public void renameTable(String oldTableName, String newTableName) throws SQLException {
+        logger.info(ServerResourceBundle.getString("data.table.renaming") + oldTableName + " -> " + newTableName + "... ");
+        executeDDL("ALTER TABLE " + oldTableName + " RENAME TO " + newTableName);
+        logger.info(" Done");
+    }
+
     public void dropTable(String table) throws SQLException {
         logger.info(ServerResourceBundle.getString("data.table.deletion") + " " + table + "... ");
         executeDDL("DROP TABLE " + table);

@@ -43,7 +43,7 @@ import java.sql.SQLException;
 import java.util.*;
 
 public abstract class Table extends AbstractOuterContext<Table> implements MapKeysInterface<KeyField> {
-    public final String name;
+    public String name;
     public final List<KeyField> keys; // List потому как в таком порядке индексы будут строиться
     public final Set<PropertyField> properties;
 

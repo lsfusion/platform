@@ -2,6 +2,8 @@ package platform.server.logics;
 
 import com.google.common.base.Throwables;
 import net.sf.jasperreports.engine.JRException;
+import org.antlr.runtime.ANTLRInputStream;
+import org.antlr.runtime.CommonTokenStream;
 import org.apache.log4j.Logger;
 import org.postgresql.util.PSQLException;
 import org.springframework.beans.factory.InitializingBean;
@@ -14,10 +16,7 @@ import platform.interop.form.screen.ExternalScreen;
 import platform.interop.form.screen.ExternalScreenParameters;
 import platform.interop.navigator.RemoteNavigatorInterface;
 import platform.interop.remote.UserInfo;
-import platform.server.Context;
-import platform.server.ContextAwareThread;
-import platform.server.RemoteContextObject;
-import platform.server.Settings;
+import platform.server.*;
 import platform.server.auth.PolicyManager;
 import platform.server.auth.SecurityPolicy;
 import platform.server.auth.User;
@@ -43,7 +42,9 @@ import platform.server.logics.linear.LAP;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
-import platform.server.logics.property.actions.*;
+import platform.server.logics.property.actions.AdminActionProperty;
+import platform.server.logics.property.actions.FormActionProperty;
+import platform.server.logics.property.actions.SystemEvent;
 import platform.server.logics.property.actions.flow.ChangeFlowType;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.property.group.AbstractNode;
@@ -54,7 +55,8 @@ import platform.server.logics.table.IDTable;
 import platform.server.logics.table.ImplementTable;
 import platform.server.mail.NotificationActionProperty;
 import platform.server.serialization.ServerSerializationPool;
-import platform.server.session.*;
+import platform.server.session.DataSession;
+import platform.server.session.PropertyChange;
 
 import java.io.*;
 import java.rmi.NotBoundException;
@@ -776,9 +778,30 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
     }
 
+    // Формирует .dot файл для построения графа иерархии модулей с помощью graphviz
+    private void outDotFile() {
+        try {
+            FileWriter fstream = new FileWriter("D:/lsf/modules.dot");
+            BufferedWriter out = new BufferedWriter(fstream);
+            out.write("digraph Modules {\n");
+            out.write("\tsize=\"6,4\"; ratio = fill;\n");
+            out.write("\tnode [shape=box, fontsize=60, style=filled];\n");
+            out.write("\tedge [arrowsize=2];\n");
+            for (LogicsModule module : logicModules) {
+                for (String name : module.getRequiredModules()) {
+                    out.write("\t" + name + " -> " + module.getName() + ";\n");
+                }
+            }
+            out.write("}\n");
+            out.close();
+        }
+        catch (Exception e) {}
+    }
+
     private List<LogicsModule> orderModules() {
         fillNameToModules();
         Map<String, List<String>> graph = buildModuleGraph();
+//        outDotFile();
         checkCycles(graph);
 
         Map<String, Integer> degree = new HashMap<String, Integer>();
@@ -2003,10 +2026,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return result;
     }
 
-    public void fillIDs() throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
+    public void fillIDs(Map<String, String> sIDChanges) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
         DataSession session = createSession();
 
-        LM.baseClass.fillIDs(session, LM.name, LM.classSID);
+        LM.baseClass.fillIDs(session, LM.name, LM.classSID, sIDChanges);
 
         session.apply(this);
 
@@ -2015,6 +2038,351 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     public void updateClassStat(SQLSession session) throws SQLException {
         LM.baseClass.updateClassStat(session);
+    }
+
+    public static class SIDChange {
+        public String oldSID;
+        public String newSID;
+
+        public SIDChange(String oldSID, String newSID) {
+            this.oldSID = oldSID;
+            this.newSID = newSID;
+        }
+    }
+
+    public static class DBVersion {
+        private List<Integer> version;
+
+        public DBVersion(String version) {
+            this.version = versionToList(version);
+        }
+
+        public static List<Integer> versionToList(String version) {
+            String[] splittedArr = version.split("\\.");
+            List<Integer> intVersion = new ArrayList<Integer>();
+            for (String part : splittedArr) {
+                intVersion.add(Integer.parseInt(part));
+            }
+            return intVersion;
+        }
+
+        public int compare(DBVersion rhs) {
+            return compareVersions(version, rhs.version);
+        }
+
+        public static int compareVersions(List<Integer> lhs, List<Integer> rhs) {
+            for (int i = 0; i < Math.max(lhs.size(), rhs.size()); i++) {
+                int left = (i < lhs.size() ? lhs.get(i) : 0);
+                int right = (i < rhs.size() ? rhs.get(i) : 0);
+                if (left < right) return -1;
+                if (left > right) return 1;
+            }
+            return 0;
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder buf = new StringBuilder();
+            for (int i = 0; i < version.size(); i++) {
+                if (i > 0) {
+                    buf.append(".");
+                }
+                buf.append(version.get(i));
+            }
+            return buf.toString();
+        }
+    }
+
+    class DBVersionComparator implements Comparator<DBVersion> {
+        @Override
+        public int compare(DBVersion lhs, DBVersion rhs) {
+            return lhs.compare(rhs);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            return true;
+        }
+    }
+
+    private TreeMap<DBVersion, List<SIDChange>> propertySIDChanges = new TreeMap<DBVersion, List<SIDChange>>(new DBVersionComparator());
+    private TreeMap<DBVersion, List<SIDChange>> classSIDChanges = new TreeMap<DBVersion, List<SIDChange>>(new DBVersionComparator());
+    private TreeMap<DBVersion, List<SIDChange>> tableSIDChanges = new TreeMap<DBVersion, List<SIDChange>>(new DBVersionComparator());
+
+    private void addSIDChange(TreeMap<DBVersion, List<SIDChange>> sidChanges, String version, String oldSID, String newSID) {
+        DBVersion dbVersion = new DBVersion(version);
+        if (!sidChanges.containsKey(dbVersion)) {
+            sidChanges.put(dbVersion, new ArrayList<SIDChange>());
+        }
+        sidChanges.get(dbVersion).add(new SIDChange(oldSID, newSID));
+    }
+
+    public void addPropertySIDChange(String version, String oldSID, String newSID) {
+        addSIDChange(propertySIDChanges, version, oldSID, newSID);
+    }
+
+    public void addClassSIDChange(String version, String oldSID, String newSID) {
+        addSIDChange(classSIDChanges, version, oldSID, newSID);
+    }
+
+    public void addTableSIDChange(String version, String oldSID, String newSID) {
+        addSIDChange(tableSIDChanges, version, oldSID, newSID);
+    }
+
+    public Map<String, String> getChangesAfter(DBVersion versionAfter, TreeMap<DBVersion, List<SIDChange>> allChanges) {
+        Map<String, String> resultChanges = new HashMap<String, String>();
+
+        for (Map.Entry<DBVersion, List<SIDChange>> changesEntry : allChanges.entrySet()) {
+            if (changesEntry.getKey().compare(versionAfter) > 0) {
+                List<SIDChange> versionChanges = changesEntry.getValue();
+                Map<String, String> versionChangesMap = new HashMap<String, String>();
+
+                for (SIDChange change : versionChanges) {
+                    if (versionChangesMap.containsKey(change.oldSID)) {
+                        throw new RuntimeException(String.format("Renaming '%s' twice in version %s.", change.oldSID, changesEntry.getKey()));
+                    } else if (resultChanges.containsKey(change.oldSID)) {
+                        throw new RuntimeException(String.format("Renaming '%s' twice.", change.oldSID)); // todo [dale]: временно
+                    }
+                    versionChangesMap.put(change.oldSID, change.newSID);
+                }
+
+                for (Map.Entry<String, String> currentChanges : resultChanges.entrySet()) {
+                    String renameTo = currentChanges.getValue();
+                    if (versionChangesMap.containsKey(renameTo)) {
+                        currentChanges.setValue(versionChangesMap.get(renameTo));
+                        versionChangesMap.remove(renameTo);
+                    }
+                }
+
+                resultChanges.putAll(versionChangesMap);
+
+                Set<String> renameToSIDs = new HashSet<String>();
+                for (String renameTo : resultChanges.values()) {
+                    if (renameToSIDs.contains(renameTo)) {
+                        throw new RuntimeException(String.format("Renaming to '%s' twice.", renameTo));
+                    }
+                    renameToSIDs.add(renameTo);
+                }
+            }
+        }
+        return resultChanges;
+    }
+
+    private void runAlterationScript() {
+        try {
+            ANTLRInputStream stream = new ANTLRInputStream(getClass().getResourceAsStream("/scripts/alterationScript.txt"));
+            AlterationScriptLexer lexer = new AlterationScriptLexer(stream);
+            AlterationScriptParser parser = new AlterationScriptParser(new CommonTokenStream(lexer));
+
+            parser.self = this;
+
+            parser.script();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void alterateDBStructure(DBStructure data, SQLSession sql) throws SQLException {
+        Map<String, String> propertyChanges = getChangesAfter(data.dbVersion, propertySIDChanges);
+        Map<String, String> tableChanges = getChangesAfter(data.dbVersion, tableSIDChanges);
+
+        for (DBStoredProperty oldProperty : data.storedProperties) {
+            if (propertyChanges.containsKey(oldProperty.sID)) {
+                String newSID = propertyChanges.get(oldProperty.sID);
+                sql.renameColumn(oldProperty.tableName, oldProperty.sID, newSID);
+                oldProperty.sID = newSID;
+            }
+
+            if (tableChanges.containsKey(oldProperty.tableName)) {
+                oldProperty.tableName = tableChanges.get(oldProperty.tableName);
+            }
+        }
+
+        for (Table table : data.tables.keySet()) {
+            for (PropertyField field : table.properties) {
+                if (propertyChanges.containsKey(field.name)) {
+                    field.name = propertyChanges.get(field.name);
+                }
+            }
+
+            if (tableChanges.containsKey(table.name)) {
+                String newSID = tableChanges.get(table.name);
+                sql.renameTable(table.name, newSID);
+                table.name = newSID;
+            }
+        }
+    }
+
+    private class DBStoredProperty {
+        public String sID;
+        public Boolean isDataProperty;
+        public String tableName;
+        public Map<Integer, KeyField> mapKeys;
+        public CalcProperty<?> property = null;
+
+        public DBStoredProperty(CalcProperty<?> property) {
+            this.sID = property.getSID();
+            this.isDataProperty = property instanceof DataProperty;
+            this.tableName = property.mapTable.table.name;
+            Map<Integer, KeyField> mapKeys = new HashMap<Integer, KeyField>();
+            for (Map.Entry<? extends PropertyInterface, KeyField> mapKey : property.mapTable.mapKeys.entrySet()) {
+                mapKeys.put(mapKey.getKey().ID, mapKey.getValue());
+            }
+            this.mapKeys = mapKeys;
+            this.property = property;
+        }
+
+        public DBStoredProperty(String sID, Boolean isDataProperty, String tableName, Map<Integer, KeyField> mapKeys) {
+            this.sID = sID;
+            this.isDataProperty = isDataProperty;
+            this.tableName = tableName;
+            this.mapKeys = mapKeys;
+        }
+    }
+
+    private class DBStructure {
+        public int version;
+        public DBVersion dbVersion;
+        public Map<Table, Map<List<String>, Boolean>> tables = new HashMap<Table, Map<List<String>, Boolean>>();
+        public List<DBStoredProperty> storedProperties = new ArrayList<DBStoredProperty>();
+
+        public DBStructure(DBVersion dbVersion) {
+            version = 3;
+            this.dbVersion = dbVersion;
+
+            for (Table table :  LM.tableFactory.getImplementTablesMap().values()) {
+                tables.put(table, new HashMap<List<String>, Boolean>());
+            }
+
+            for (Map.Entry<List<? extends CalcProperty>, Boolean> index : LM.indexes.entrySet()) {
+                Iterator<? extends CalcProperty> i = index.getKey().iterator();
+                if (!i.hasNext())
+                    throw new RuntimeException(getString("logics.policy.forbidden.to.create.empty.indexes"));
+                CalcProperty baseProperty = i.next();
+                if (!baseProperty.isStored())
+                    throw new RuntimeException(getString("logics.policy.forbidden.to.create.indexes.on.non.regular.properties") + " (" + baseProperty + ")");
+
+                ImplementTable indexTable = baseProperty.mapTable.table;
+
+                List<String> tableIndex = new ArrayList<String>();
+                tableIndex.add(baseProperty.field.name);
+
+                while (i.hasNext()) {
+                    CalcProperty property = i.next();
+                    if (!property.isStored())
+                        throw new RuntimeException(getString("logics.policy.forbidden.to.create.indexes.on.non.regular.properties") + " (" + baseProperty + ")");
+                    if (indexTable.findProperty(property.field.name) == null)
+                        throw new RuntimeException(getString("logics.policy.forbidden.to.create.indexes.on.properties.in.different.tables", baseProperty, property));
+                    tableIndex.add(property.field.name);
+                }
+                tables.get(indexTable).put(tableIndex, index.getValue());
+            }
+
+            for (CalcProperty<?> property : getStoredProperties()) {
+                storedProperties.add(new DBStoredProperty(property));
+            }
+        }
+
+        public DBStructure(DataInputStream inputDB) throws IOException {
+            if (inputDB == null) {
+                version = -2;
+            } else {
+                version = inputDB.read() - 'v';
+                if (version < 0) {
+                    inputDB.reset();
+                }
+
+                if (version > 2) {
+                    dbVersion = new DBVersion(inputDB.readUTF());
+                } else {
+                    dbVersion = new DBVersion("0.1");
+                }
+
+                for (int i = inputDB.readInt(); i > 0; i--) {
+                    SerializedTable prevTable = new SerializedTable(inputDB, LM.baseClass, version);
+                    Map<List<String>, Boolean> indices = new HashMap<List<String>, Boolean>();
+                    for (int j = inputDB.readInt(); j > 0; j--) {
+                        List<String> index = new ArrayList<String>();
+                        for (int k = inputDB.readInt(); k > 0; k--) {
+                            index.add(inputDB.readUTF());
+                        }
+                        boolean prevOrdered = version >= 1 && inputDB.readBoolean();
+                        indices.put(index, prevOrdered);
+                    }
+                    tables.put(prevTable, indices);
+                }
+
+                int prevStoredNum = inputDB.readInt();
+                for (int i = 0; i < prevStoredNum; i++) {
+                    String sID = inputDB.readUTF();
+                    boolean isDataProperty = true;
+                    if (version >= 0) {
+                        isDataProperty = inputDB.readBoolean();
+                    }
+                    String tableName = inputDB.readUTF();
+                    Table prevTable = getTable(tableName);
+                    Map<Integer, KeyField> mapKeys = new HashMap<Integer, KeyField>();
+                    for (int j = 0; j < prevTable.keys.size(); j++) {
+                        mapKeys.put(inputDB.readInt(), prevTable.findKey(inputDB.readUTF()));
+                    }
+                    storedProperties.add(new DBStoredProperty(sID, isDataProperty, tableName, mapKeys));
+                }
+            }
+        }
+
+        public Table getTable(String name) {
+            for (Table table : tables.keySet()) {
+                if (table.name.equals(name)) {
+                    return table;
+                }
+            }
+            return null;
+        }
+
+        public void write(DataOutputStream outDB) throws IOException {
+            outDB.write('v' + version);  //для поддержки обратной совместимости
+            if (version > 2) {
+                outDB.writeUTF(dbVersion.toString());
+            }
+
+            outDB.writeInt(tables.size());
+            for (Map.Entry<Table, Map<List<String>, Boolean>> tableIndices : tables.entrySet()) {
+                tableIndices.getKey().serialize(outDB);
+                outDB.writeInt(tableIndices.getValue().size());
+                for (Map.Entry<List<String>, Boolean> index : tableIndices.getValue().entrySet()) {
+                    outDB.writeInt(index.getKey().size());
+                    for (String indexField : index.getKey()) {
+                        outDB.writeUTF(indexField);
+                    }
+                    outDB.writeBoolean(index.getValue());
+                }
+            }
+
+            outDB.writeInt(storedProperties.size());
+            for (DBStoredProperty property : storedProperties) {
+                outDB.writeUTF(property.sID);
+                outDB.writeBoolean(property.isDataProperty);
+                outDB.writeUTF(property.tableName);
+                for (Map.Entry<Integer, KeyField> mapKey : property.mapKeys.entrySet()) {
+                    outDB.writeInt(mapKey.getKey());
+                    outDB.writeUTF(mapKey.getValue().name);
+                }
+            }
+        }
+    }
+
+    private DBVersion getCurrentDBVersion(DBVersion oldVersion) {
+        DBVersion curVersion = oldVersion;
+        if (!propertySIDChanges.isEmpty() && curVersion.compare(propertySIDChanges.lastKey()) < 0) {
+            curVersion = propertySIDChanges.lastKey();
+        }
+        if (!classSIDChanges.isEmpty() && curVersion.compare(classSIDChanges.lastKey()) < 0) {
+            curVersion = classSIDChanges.lastKey();
+        }
+        if (!tableSIDChanges.isEmpty() && curVersion.compare(tableSIDChanges.lastKey()) < 0) {
+            curVersion = tableSIDChanges.lastKey();
+        }
+        return curVersion;
     }
 
     public void synchronizeDB() throws SQLException, IOException, ClassNotFoundException, IllegalAccessException, InstantiationException {
@@ -2030,198 +2398,130 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         if (struct != null)
             inputDB = new DataInputStream(new ByteArrayInputStream(struct));
 
+        DBStructure oldDBStructure = new DBStructure(inputDB);
+
+        runAlterationScript();
+
         sql.startTransaction();
 
         // новое состояние базы
         ByteArrayOutputStream outDBStruct = new ByteArrayOutputStream();
         DataOutputStream outDB = new DataOutputStream(outDBStruct);
 
-        Map<String, ImplementTable> implementTables = LM.tableFactory.getImplementTablesMap();
-
-        Map<ImplementTable, Map<List<String>, Boolean>> mapIndexes = new HashMap<ImplementTable, Map<List<String>, Boolean>>();
-        for (ImplementTable table : implementTables.values())
-            mapIndexes.put(table, new HashMap<List<String>, Boolean>());
-
-        // привяжем индексы
-        for (Map.Entry<List<? extends CalcProperty>, Boolean> index : LM.indexes.entrySet()) {
-            Iterator<? extends CalcProperty> i = index.getKey().iterator();
-            if (!i.hasNext())
-                throw new RuntimeException(getString("logics.policy.forbidden.to.create.empty.indexes"));
-            CalcProperty baseProperty = i.next();
-            if (!baseProperty.isStored())
-                throw new RuntimeException(getString("logics.policy.forbidden.to.create.indexes.on.non.regular.properties") + " (" + baseProperty + ")");
-            ImplementTable indexTable = baseProperty.mapTable.table;
-
-            List<String> tableIndex = new ArrayList<String>();
-            tableIndex.add(baseProperty.field.name);
-
-            while (i.hasNext()) {
-                CalcProperty property = i.next();
-                if (!property.isStored())
-                    throw new RuntimeException(getString("logics.policy.forbidden.to.create.indexes.on.non.regular.properties") + " (" + baseProperty + ")");
-                if (indexTable.findProperty(property.field.name) == null)
-                    throw new RuntimeException(getString("logics.policy.forbidden.to.create.indexes.on.properties.in.different.tables", baseProperty, property));
-                tableIndex.add(property.field.name);
-            }
-            mapIndexes.get(indexTable).put(tableIndex, index.getValue());
-        }
-
+        DBVersion newDBVersion = getCurrentDBVersion(oldDBStructure.dbVersion);
+        DBStructure newDBStructure = new DBStructure(newDBVersion);
         // запишем новое состояние таблиц (чтобы потом изменять можно было бы)
-        outDB.write('v' + 2);  //для поддержки обратной совместимости
+        newDBStructure.write(outDB);
 
-        outDB.writeInt(mapIndexes.size());
-        for (Map.Entry<ImplementTable, Map<List<String>, Boolean>> mapIndex : mapIndexes.entrySet()) {
-            mapIndex.getKey().serialize(outDB);
-            outDB.writeInt(mapIndex.getValue().size());
-            for (Map.Entry<List<String>, Boolean> index : mapIndex.getValue().entrySet()) {
-                outDB.writeInt(index.getKey().size());
-                for (String indexField : index.getKey())
-                    outDB.writeUTF(indexField);
-                outDB.writeBoolean(index.getValue());
-            }
-        }
+        for (Map.Entry<Table, Map<List<String>, Boolean>> oldTableIndices : oldDBStructure.tables.entrySet()) {
+            Table oldTable = oldTableIndices.getKey();
+            Table newTable = newDBStructure.getTable(oldTableIndices.getKey().name);
+            Map<List<String>, Boolean> newTableIndices = newDBStructure.tables.get(newTable);
 
-        List<CalcProperty> storedProperties = new ArrayList<CalcProperty>(getStoredProperties());
-        // запишем новое состояние таблиц (чтобы потом изменять можно было бы)
-        outDB.writeInt(storedProperties.size());
-        for (CalcProperty<?> property : storedProperties) {
-            outDB.writeUTF(property.getSID());
-            outDB.writeBoolean(property instanceof DataProperty);
-            outDB.writeUTF(property.mapTable.table.name);
-            for (Map.Entry<? extends PropertyInterface, KeyField> mapKey : property.mapTable.mapKeys.entrySet()) {
-                outDB.writeInt(mapKey.getKey().ID);
-                outDB.writeUTF(mapKey.getValue().name);
-            }
-        }
-
-        // если не совпали sID или идентификаторы из базы удаляем сразу
-        Map<String, SerializedTable> prevTables = new HashMap<String, SerializedTable>();
-
-        //для поддержки обратной совместимости
-        int version;
-        if (inputDB == null)
-            version = -2;
-        else {
-            version = inputDB.read() - 'v';
-            if (version < 0)
-                inputDB.reset();
-        }
-
-        for (int i = inputDB == null ? 0 : inputDB.readInt(); i > 0; i--) {
-            SerializedTable prevTable = new SerializedTable(inputDB, LM.baseClass, version);
-            prevTables.put(prevTable.name, prevTable);
-
-            ImplementTable implementTable = implementTables.get(prevTable.name);
-            Map<List<String>, Boolean> tableIndexes = null;
-            if (implementTable != null)
-                tableIndexes = mapIndexes.get(implementTable);
-
-            for (int j = inputDB.readInt(); j > 0; j--) {
-                List<String> index = new ArrayList<String>();
-                for (int k = inputDB.readInt(); k > 0; k--)
-                    index.add(inputDB.readUTF());
-                boolean prevOrdered = version >= 1 && inputDB.readBoolean();
-                boolean drop = (implementTable == null); // ушла таблица
+            for (Map.Entry<List<String>, Boolean> oldIndex : oldTableIndices.getValue().entrySet()) {
+                List<String> oldIndexKeys = oldIndex.getKey();
+                boolean oldOrder = oldIndex.getValue();
+                boolean drop = (newTable == null); // ушла таблица
                 if (!drop) {
-                    Boolean newOrdered = tableIndexes.get(index);
-                    if (newOrdered != null && newOrdered.equals(prevOrdered))
-                        tableIndexes.remove(index); // не трогаем индекс
-                    else
+                    Boolean newOrder = newTableIndices.get(oldIndexKeys);
+                    if (newOrder != null && newOrder.equals(oldOrder)) {
+                        newTableIndices.remove(oldIndexKeys); // не трогаем индекс
+                    } else {
                         drop = true;
+                    }
                 }
-                if (drop)
-                    sql.dropIndex(prevTable.name, prevTable.keys, index, prevOrdered);
+                if (drop) {
+                    sql.dropIndex(oldTable.name, oldTable.keys, oldIndexKeys, oldOrder);
+                }
             }
         }
+
+        alterateDBStructure(oldDBStructure, sql);
 
         // добавим таблицы которых не было
-        for (ImplementTable table : implementTables.values()) {
-            if (!prevTables.containsKey(table.name))
+        for (Table table : newDBStructure.tables.keySet()) {
+            if (oldDBStructure.getTable(table.name) == null)
                 sql.createTable(table.name, table.keys);
         }
 
         Set<ImplementTable> packTables = new HashSet<ImplementTable>();
 
         // бежим по свойствам
-        int prevStoredNum = inputDB == null ? 0 : inputDB.readInt();
         Map<String, String> columnsToDrop = new HashMap<String, String>();
-        for (int i = 0; i < prevStoredNum; i++) {
-            String sID = inputDB.readUTF();
-            boolean isDataProperty = true;
-            if (version >= 0)
-                isDataProperty = inputDB.readBoolean();
-            SerializedTable prevTable = prevTables.get(inputDB.readUTF());
-            Map<Integer, KeyField> mapKeys = new HashMap<Integer, KeyField>();
-            for (int j = 0; j < prevTable.keys.size(); j++)
-                mapKeys.put(inputDB.readInt(), prevTable.findKey(inputDB.readUTF()));
+        for (DBStoredProperty oldProperty : oldDBStructure.storedProperties) {
+            Table oldTable = oldDBStructure.getTable(oldProperty.tableName);
 
             boolean keep = false, moved = false;
-            for (Iterator<CalcProperty> is = storedProperties.iterator(); is.hasNext(); ) {
-                CalcProperty<?> property = is.next();
-                if (property.getSID().equals(sID)) {
+            for (Iterator<DBStoredProperty> is = newDBStructure.storedProperties.iterator(); is.hasNext(); ) {
+                DBStoredProperty newProperty = is.next();
+
+                if (newProperty.sID.equals(oldProperty.sID)) {
                     Map<KeyField, PropertyInterface> foundInterfaces = new HashMap<KeyField, PropertyInterface>();
-                    for (PropertyInterface propertyInterface : property.interfaces) {
-                        KeyField mapKeyField = mapKeys.get(propertyInterface.ID);
+                    for (PropertyInterface propertyInterface : newProperty.property.interfaces) {
+                        KeyField mapKeyField = oldProperty.mapKeys.get(propertyInterface.ID);
                         if (mapKeyField != null) foundInterfaces.put(mapKeyField, propertyInterface);
                     }
-                    if (foundInterfaces.size() == mapKeys.size()) { // если все нашли
-                        if (!(keep = property.mapTable.table.name.equals(prevTable.name))) { // если в другой таблице
-                            sql.addColumn(property.mapTable.table.name, property.field);
+
+                    if (foundInterfaces.size() == oldProperty.mapKeys.size()) { // если все нашли
+                        if (!(keep = newProperty.tableName.equals(oldProperty.tableName))) { // если в другой таблице
+                            sql.addColumn(newProperty.tableName, newProperty.property.field);
                             // делаем запрос на перенос
 
-                            logger.info(getString("logics.info.property.is.transferred.from.table.to.table", property.field, property.caption, prevTable.name, property.mapTable.table.name));
-                            property.mapTable.table.moveColumn(sql, property.field, prevTable,
-                                    BaseUtils.join(foundInterfaces, (Map<PropertyInterface, KeyField>) property.mapTable.mapKeys), prevTable.findProperty(sID));
+                            logger.info(getString("logics.info.property.is.transferred.from.table.to.table", newProperty.property.field, newProperty.property.caption, oldProperty.tableName, newProperty.tableName));
+                            newProperty.property.mapTable.table.moveColumn(sql, newProperty.property.field, oldTable,
+                                    BaseUtils.join(foundInterfaces, (Map<PropertyInterface, KeyField>) newProperty.property.mapTable.mapKeys), oldTable.findProperty(oldProperty.sID));
                             logger.info("Done");
                             moved = true;
-                        } else // надо проверить что тип не изменился
-                            if (!prevTable.findProperty(sID).type.equals(property.field.type))
-                                sql.modifyColumn(property.mapTable.table.name, property.field, prevTable.findProperty(sID).type);
+                        } else { // надо проверить что тип не изменился
+                            if (!oldTable.findProperty(oldProperty.sID).type.equals(newProperty.property.field.type))
+                                sql.modifyColumn(newProperty.property.mapTable.table.name, newProperty.property.field, oldTable.findProperty(oldProperty.sID).type);
+                        }
                         is.remove();
                     }
                     break;
                 }
             }
             if (!keep) {
-                if (isDataProperty && !moved) {
-                    String newName = sID + "_deleted";
+                if (oldProperty.isDataProperty && !moved) {
+                    String newName = oldProperty.sID + "_deleted";
                     Savepoint savepoint = sql.getConnection().setSavepoint();
                     try {
                         savepoint = sql.getConnection().setSavepoint();
-                        sql.renameColumn(prevTable.name, sID, newName);
-                        columnsToDrop.put(newName, prevTable.name);
+                        sql.renameColumn(oldProperty.tableName, oldProperty.sID, newName);
+                        columnsToDrop.put(newName, oldProperty.tableName);
                     } catch (PSQLException e) { // колонка с новым именем (с '_deleted') уже существует
                         sql.getConnection().rollback(savepoint);
-                        sql.dropColumn(prevTable.name, sID);
-                        ImplementTable table = implementTables.get(prevTable.name);
+                        sql.dropColumn(oldTable.name, oldProperty.sID);
+                        ImplementTable table = (ImplementTable) newDBStructure.getTable(oldTable.name);
                         if (table != null) packTables.add(table);
                     }
                 } else {
-                    sql.dropColumn(prevTable.name, sID);
-                    ImplementTable table = implementTables.get(prevTable.name); // надо упаковать таблицу если удалили колонку
+                    sql.dropColumn(oldTable.name, oldProperty.sID);
+                    ImplementTable table = (ImplementTable) newDBStructure.getTable(oldTable.name); // надо упаковать таблицу если удалили колонку
                     if (table != null) packTables.add(table);
                 }
             }
         }
 
         List<AggregateProperty> recalculateProperties = new ArrayList<AggregateProperty>();
-        for (CalcProperty property : storedProperties) { // добавляем оставшиеся
-            sql.addColumn(property.mapTable.table.name, property.field);
-            if (struct != null && property instanceof AggregateProperty) // если все свойства "новые" то ничего перерасчитывать не надо
-                recalculateProperties.add((AggregateProperty) property);
+        for (DBStoredProperty property : newDBStructure.storedProperties) { // добавляем оставшиеся
+            sql.addColumn(property.tableName, property.property.field);
+            if (struct != null && property.property instanceof AggregateProperty) // если все свойства "новые" то ничего перерасчитывать не надо
+                recalculateProperties.add((AggregateProperty) property.property);
         }
 
         // удаляем таблицы старые
-        for (String table : prevTables.keySet())
-            if (!implementTables.containsKey(table))
-                sql.dropTable(table);
+        for (Table table : oldDBStructure.tables.keySet())
+            if (newDBStructure.getTable(table.name) == null) {
+                sql.dropTable(table.name);
+            }
 
         packTables(sql, packTables); // упакуем таблицы
 
         updateStats();  // пересчитаем статистику
 
         // создадим индексы в базе
-        for (Map.Entry<ImplementTable, Map<List<String>, Boolean>> mapIndex : mapIndexes.entrySet())
+        for (Map.Entry<Table, Map<List<String>, Boolean>> mapIndex : newDBStructure.tables.entrySet())
             for (Map.Entry<List<String>, Boolean> index : mapIndex.getValue().entrySet())
                 sql.addIndex(mapIndex.getKey().name, mapIndex.getKey().keys, index.getKey(), index.getValue());
 
@@ -2232,7 +2532,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             sql.insertRecord(StructTable.instance, new HashMap<KeyField, DataObject>(), propFields, true);
         }
 
-        fillIDs();
+        fillIDs(getChangesAfter(oldDBStructure.dbVersion, classSIDChanges));
 
         updateClassStat(sql);
 

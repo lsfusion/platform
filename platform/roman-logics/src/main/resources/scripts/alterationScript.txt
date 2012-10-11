@@ -1,0 +1,27 @@
+V0.1 {
+//    CLASS a -> b
+//    TABLE a -> b
+}
+
+V0.11.0.0 {
+    //PROPERTY Features_store -> Features_store2
+    //PROPERTY Features_quantity -> Features_quantity2
+    //TABLE Features_documentArticle2 -> Features_documentArticle
+    //PROPERTY Features_quantityTest -> Features_quantity
+    //CLASS Features_incomeDocumentTest -> Features_incomeDocument
+    //CLASS hugeTest -> huge
+}
+
+V0.11.1 {
+    //PROPERTY Features_store2 -> Features_storeTest
+    //PROPERTY Features_quantity2 -> Features_quantityTest
+}
+
+V0.2.2 {
+    //CLASS a -> b
+}
+
+V0.11.2 {
+    //PROPERTY Features_storeTest -> Features_store
+    //PROPERTY Features_quantityTest -> Features_quantity
+}

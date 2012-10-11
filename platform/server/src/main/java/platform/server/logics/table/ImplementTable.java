@@ -1,6 +1,5 @@
 package platform.server.logics.table;
 
-import org.apache.poi.hssf.record.formula.functions.T;
 import platform.base.BaseUtils;
 import platform.server.classes.ValueClass;
 import platform.server.data.*;
@@ -27,7 +26,7 @@ public class ImplementTable extends DataTable {
         classes = classes.or(new ClassWhere<KeyField>(mapFields,true));
     }
 
-    public void moveColumn(SQLSession sql, PropertyField field, SerializedTable prevTable, Map<KeyField, KeyField> mapFields, PropertyField prevField) throws SQLException {
+    public void moveColumn(SQLSession sql, PropertyField field, Table prevTable, Map<KeyField, KeyField> mapFields, PropertyField prevField) throws SQLException {
         Query<KeyField, PropertyField> moveColumn = new Query<KeyField, PropertyField>(this);
         Expr moveExpr = prevTable.joinAnd(BaseUtils.join(mapFields, moveColumn.mapKeys)).getExpr(prevField);
         moveColumn.properties.put(field, moveExpr);

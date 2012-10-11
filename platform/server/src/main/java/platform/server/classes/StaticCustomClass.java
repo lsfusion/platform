@@ -3,10 +3,9 @@ package platform.server.classes;
 import platform.base.ArrayInstancer;
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
-import platform.interop.Compare;
+import platform.base.Pair;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.StaticValueExpr;
-import platform.server.data.expr.ValueExpr;
 import platform.server.data.query.Query;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.logics.DataObject;
@@ -61,31 +60,50 @@ public class StaticCustomClass extends ConcreteCustomClass implements StaticClas
         throw new RuntimeException("id not found");
     }
 
-    public Map<Object, String> fillIDs(DataSession session, LCP name, LCP classSID, Map<String, StaticCustomClass> usedSIds, Set<Integer> usedIds) throws SQLException {
+    public Map<Object, String> fillIDs(DataSession session, LCP name, LCP classSID, Map<String, StaticCustomClass> usedSIds, Set<Integer> usedIds, Map<String, String> sidChanges, Map<Object, String> modifiedObjects) throws SQLException {
         StaticCustomClass usedClass;
         ids = new Integer[sids.length];
         Map<Object, String> modifiedNames = new HashMap<Object, String>();
-        for(int i = 0;i<sids.length;i++) {
-            String sidObject = sids[i];
-            if ((usedClass = usedSIds.put(sidObject, this)) != null)
-                throw new RuntimeException(ServerResourceBundle.getString("classes.objects.have.the.same.id", sidObject, caption, usedClass.caption));
 
-            // ищем класс с таким sID, если не находим создаем
-            Query<String, Object> findClass = new Query<String, Object>(Collections.singleton("key"));
-            findClass.and(classSID.getExpr(session.getModifier(), BaseUtils.singleValue(findClass.mapKeys)).compare(new ValueExpr(sidObject, StringClass.get(sidObject.length())), Compare.EQUALS));
-            findClass.and(BaseUtils.singleValue(findClass.mapKeys).isClass(this.getUpSet()));
-            findClass.properties.put("name", name.getExpr(session.getModifier(), BaseUtils.singleValue(findClass.mapKeys)));
-            OrderedMap<Map<String, Object>, Map<Object, Object>> result = findClass.execute(session.sql, session.env);
-            if (result.size() == 0) { // не найдено добавляем новый объект и заменяем ему classID и title
+        // Получаем старые sid и name
+        Query<String, Object> allClassesQuery = new Query<String, Object>(Collections.singleton("key"));
+        allClassesQuery.and(classSID.getExpr(session.getModifier(), BaseUtils.singleValue(allClassesQuery.mapKeys)).getWhere());
+        allClassesQuery.and(BaseUtils.singleValue(allClassesQuery.mapKeys).isClass(this));
+        allClassesQuery.properties.put("sid", classSID.getExpr(session.getModifier(), BaseUtils.singleValue(allClassesQuery.mapKeys)));
+        allClassesQuery.properties.put("name", name.getExpr(session.getModifier(), BaseUtils.singleValue(allClassesQuery.mapKeys)));
+        OrderedMap<Map<String, Object>, Map<Object, Object>> qResult = allClassesQuery.execute(session.sql, session.env);
+
+        // Забрасываем результат запроса в map: sid -> <id, name>
+        Map<String, Pair<Integer, String>> oldClasses = new HashMap<String, Pair<Integer, String>>();
+        for (Map.Entry<Map<String, Object>, Map<Object, Object>> entry : qResult.entrySet()) {
+            oldClasses.put(((String) entry.getValue().get("sid")).trim(),
+                            new Pair<Integer, String>((Integer) BaseUtils.singleValue(entry.getKey()), ((String) entry.getValue().get("name")).trim()));
+        }
+
+        // новый sid -> старый sid
+        Map<String, String> reversedChanges = BaseUtils.reverse(sidChanges);
+
+        for(int i = 0; i < sids.length; i++) {
+            String newSID = sids[i];
+            if ((usedClass = usedSIds.put(newSID, this)) != null)
+                throw new RuntimeException(ServerResourceBundle.getString("classes.objects.have.the.same.id", newSID, caption, usedClass.caption));
+
+            String oldSID = newSID;
+            if (reversedChanges.containsKey(newSID)) {
+                oldSID = reversedChanges.get(newSID);
+                modifiedObjects.put(oldClasses.get(oldSID).first, newSID);
+            }
+
+            if (oldClasses.containsKey(oldSID)) {
+                if (names[i] != null && !names[i].equals(oldClasses.get(oldSID).second)) {
+                    modifiedNames.put(oldClasses.get(oldSID).first, names[i]);
+                }
+                ids[i] = oldClasses.get(oldSID).first;
+            } else {
                 DataObject classObject = session.addObject(this);
                 name.change(names[i], session, classObject);
-                classSID.change(sidObject, session, classObject);
+                classSID.change(newSID, session, classObject);
                 ids[i] = (Integer) classObject.object;
-            } else { // assert'ся что класс 1
-                if (names[i] != null && !names[i].equals(((String) BaseUtils.singleValue(result).get("name")).trim())) {
-                    modifiedNames.put(BaseUtils.singleKey(result).get("key"), names[i]);
-                }
-                ids[i] = (Integer) BaseUtils.singleKey(result).get("key");
             }
 
             usedIds.add(ids[i]);
