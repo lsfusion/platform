@@ -161,8 +161,8 @@ beginTimeDeclaration 'Начало обработки' = DATA DATETIME (declarat
 endTimeDeclaration 'Конец обработки' = DATA DATETIME (declaration) IN datetimeGroup;
 
 executerDeclaration 'Исполнитель' = DATA customUser (declaration);
-nameExecuterDeclaration 'Исполнитель' (declaration) = commonName(executerDeclaration(declaration));
-executerDeclaration(declaration) <- currentUser() WHEN ASSIGNED(declaration IS declaration) MINCHARWIDTH 20;
+nameExecuterDeclaration 'Исполнитель' (declaration) = commonName(executerDeclaration(declaration)) MINCHARWIDTH 20;
+executerDeclaration(declaration) <- currentUser() WHEN ASSIGNED(declaration IS declaration);
 
 
 allowImportExportXLSDeclarationUA(declaration) = allowImportExportXLSLegalEntityUA(customStoreDeclaration(declaration));
