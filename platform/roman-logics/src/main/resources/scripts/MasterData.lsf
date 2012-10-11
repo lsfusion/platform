@@ -433,7 +433,7 @@ canonicalBrandFreight 'Бренды' (freight) = castToString255(
 @defineNumeratedObject(freight, 'Нумератор для фрахтов', 'ФР');
 
 EXTEND FORM freightListForm
-    PROPERTIES (freight) READONLY numberObject BEFORE date, seriesObject BEFORE date, canonicalBrandFreight BEFORE dateArrivalFreight
+    PROPERTIES (freight) READONLY numberObject BEFORE date, seriesObject BEFORE date, canonicalBrandFreight BEFORE date
 ;
 
 FORM skuDialog 'SKU'

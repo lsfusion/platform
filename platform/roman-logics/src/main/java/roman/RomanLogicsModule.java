@@ -6582,7 +6582,9 @@ public class RomanLogicsModule extends LogicsModule {
             setEditType(objFreight, PropertyEditType.READONLY);
 
             objImporter = addSingleGroupObject(importer, "Импортёр", baseLM.name, addressSubject);
+            setEditType(objImporter, PropertyEditType.READONLY);
             addPropertyDraw(quantityImporterFreight, objImporter, objFreight);
+            setEditType(quantityImporterFreight, PropertyEditType.READONLY);
 
             objArticle = addSingleGroupObject(article, "Артикул", baseLM.selection, sidArticle, nameBrandSupplierArticle, originalNameArticle, nameCategoryArticle, nameArticle,
                     sidCustomCategoryOriginArticle, nameCountryOfOriginArticle, mainCompositionOriginArticle, additionalCompositionOriginArticle, nameUnitOfMeasureArticle);
@@ -8107,7 +8109,7 @@ public class RomanLogicsModule extends LogicsModule {
         private FreightListFormEntity(NavigatorElement<RomanBusinessLogics> parent, String sID, String caption) {
             super(parent, sID, caption);
 
-            objFreight = addSingleGroupObject("freight", freight, "Фрахт", baseLM.date, baseLM.objectClassName, dateArrivalFreight,
+            objFreight = addSingleGroupObject("freight", freight, "Фрахт", baseLM.date, baseLM.objectClassName,
                                               nameRouteFreight, netWeightInvoicedFreight, grossWeightFreight,
                                               palletNumberFreight, freightBoxNumberFreight, formLogFreight);
             objFreight.groupTo.setSingleClassView(ClassViewType.GRID);

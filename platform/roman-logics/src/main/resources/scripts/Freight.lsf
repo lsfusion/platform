@@ -79,6 +79,9 @@ END
 @dateFreight(freightShipped, 'Дата отгрузки');
 @dateFreight(freightArrived, 'Дата прибытия');
 
+isFreightShipped(freight) = freight IS freightShipped;
+isFreightArrived(freight) = freight IS freightArrived;
+
 toShipFreight 'Отгрузить' =  [ACTION (freight) {
 
     FORM dateFreightShipped MODAL;
@@ -99,14 +102,14 @@ toArrivedFreight 'Прибыл' = [ACTION (freight) {
             EXEC apply();
         }
 
-}](freight) IF freight IS freightShipped AND NOT freight IS freightArrived;
+}](freight) IF freight IS freightShipped AND NOT freight IS freightArrived IMAGE 'sign_tick.png';
 
 FORM freight 'Фрахт'
 
     OBJECTS f = freight FIXED PANEL
-    PROPERTIES(f) objectClassName, nameNumeratorObject, numberObject, seriesObject, date, dateShipmentFreight,
-                  dateArrivalFreight, nameCountryFreight, nameLanguageFreight, nameRouteFreight, nameExporterFreight,
-                  descriptionFreight, tonnageDataFreight, volumeDataFreight, palletCountDataFreight,
+    PROPERTIES(f) objectClassName, nameNumeratorObject, numberObject, seriesObject, date, dateShipmentFreight SHOWIF isFreightShipped(f),
+                  dateArrivalFreight SHOWIF isFreightArrived(f), nameCountryFreight, nameLanguageFreight, nameRouteFreight,
+                  nameExporterFreight, descriptionFreight, tonnageDataFreight, volumeDataFreight, palletCountDataFreight,
                   nameCurrencyFreight, sumFreightFreight
 
     EDIT freight OBJECT f
@@ -163,7 +166,7 @@ DESIGN freight FROM DEFAULT {
 }
 
 EXTEND FORM freightListForm
-    PROPERTIES (freight) READONLY nameCountryFreight BEFORE nameRouteFreight(freight), nameLanguageFreight BEFORE nameRouteFreight(freight)
+    PROPERTIES (freight) READONLY dateArrivalFreight BEFORE nameRouteFreight(freight), nameCountryFreight BEFORE nameRouteFreight(freight), nameLanguageFreight BEFORE nameRouteFreight(freight)
     PROPERTIES (freight) FORCE GRID toShipFreight, toArrivedFreight
 
     PROPERTIES (freight) ADDFORM, EDITFORM, deleteApply FORCE PANEL DRAWTOTOOLBAR
