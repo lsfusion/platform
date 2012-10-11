@@ -2170,13 +2170,16 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     private void runAlterationScript() {
         try {
-            ANTLRInputStream stream = new ANTLRInputStream(getClass().getResourceAsStream("/scripts/alterationScript.txt"));
-            AlterationScriptLexer lexer = new AlterationScriptLexer(stream);
-            AlterationScriptParser parser = new AlterationScriptParser(new CommonTokenStream(lexer));
+            InputStream scriptStream = getClass().getResourceAsStream("/scripts/alterationScript.txt");
+            if (scriptStream != null) {
+                ANTLRInputStream stream = new ANTLRInputStream(scriptStream);
+                AlterationScriptLexer lexer = new AlterationScriptLexer(stream);
+                AlterationScriptParser parser = new AlterationScriptParser(new CommonTokenStream(lexer));
 
-            parser.self = this;
+                parser.self = this;
 
-            parser.script();
+                parser.script();
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
