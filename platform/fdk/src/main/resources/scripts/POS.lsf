@@ -36,11 +36,11 @@ basisZReport 'Основание' (zReport) = castBasisZReport(numberZReport(zRe
 
 dateCashDocument(zReport) += dateZReport(zReport);
 timeCashDocument(zReport) += timeZReport(zReport);
-dateTimeCashDocument(zReport) += dateTimeZReport(zReport);
 numberCashDocument(zReport) += numberZReport(zReport);
 departmentStoreCashDocument(zReport) += departmentStoreZReport(zReport);
 basisCashDocument(zReport) += basisZReport(zReport);
 cashRegisterCashDocument(zReport) += cashRegisterZReport(zReport);
+isPostedCashDocument(zReport) += isPostedZReport(zReport);
 
 departmentStoreZReport(zReport) <- departmentStoreCashRegister(cashRegisterZReport(zReport))
     WHEN CHANGED(cashRegisterZReport(zReport));
@@ -498,10 +498,16 @@ currentCashRegister () = cashRegisterComputer(currentComputer());
 
 GROUP receiptZReportGroup 'Z-отчет' : publicGroup;
 
-currentZReport () = zReportCashRegister(currentCashRegister());
+currentZReport() = zReportCashRegister(currentCashRegister());
 numberCurrentZReport 'Номер текущего Z-отчета' () = numberZReport(currentZReport()) IN receiptZReportGroup;
+sumCashCurrentZReport() = sumCashZReport(currentZReport());
 
-closedCurrentZReport () = TRUE AND NOT currentZReport();
+closedCurrentZReport() = TRUE AND NOT currentZReport();
+
+currentSumCashCurrentCashRegister 'Сумма наличных в кассе' () =
+    curSumIncomeCashOperation(currentCashRegister()) (-) curSumOutcomeCashOperation(currentCashRegister()) (+) sumCashCurrentZReport();
+
+//CONSTRAINT currentSumCashCurrentCashRegister() < 0 AND cashRegister == currentCashRegister() MESSAGE 'Сумма наличных денег в кассе не должна быть отрицательной';
 
 // Операции с чеками
 
@@ -843,13 +849,6 @@ closeCurrentZReport 'Закрыть Z-отчет' = ACTION () {
     EXEC cancel();
     SET timeZReport(z) <- currentTime() WHERE z == currentZReport();
     SET dateZReport(z) <- currentDate() WHERE z == currentZReport();
-    FOR ADDOBJ c = collection DO {
-        SET cashRegisterCollection(c) <- currentCashRegister();
-        SET dateCollection(c) <- dateZReport(currentZReport());
-        SET timeCollection(c) <- timeZReport(currentZReport());
-        SET sumCashCollection(c) <- sumCashCashRegisterDateTime(currentCashRegister(), dateTimeZReport(currentZReport()));
-        EXEC setValueNumeratedObject(c AS collection);
-    }
     SET zReportCashRegister(cashRegister) IF cashRegister == currentCashRegister() <- NULL;
     EXEC apply();
 } CONFIRM IN receiptZReportGroup;
@@ -1115,6 +1114,7 @@ NAVIGATOR {
     NEW POSNavigator 'Касса' {
         ADD POS;
         ADD zReports;
+        ADD centralCashRegister;
         ADD operationCashRegister;
         ADD groupsCashRegister;
         ADD cashRegistersModels;
@@ -1129,6 +1129,7 @@ currentZReportDepartmentStore() = currentZReport() AND departmentStoreCurrentCas
 closedCurrentZReportDepartmentStore() = closedCurrentZReport() AND departmentStoreCurrentCashRegister();
 
 EXTEND FORM operationCashRegister
+    PROPERTIES READONLY currentSumCashCurrentCashRegister() TODRAW interval FORCE PANEL
     PROPERTIES() READONLY numberCurrentZReport SHOWIF departmentStoreCurrentCashRegister()
     PROPERTIES() fiscalZReport SHOWIF currentZReportDepartmentStore()
     PROPERTIES() openCurrentZReport SHOWIF closedCurrentZReportDepartmentStore()
