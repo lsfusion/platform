@@ -3909,7 +3909,7 @@ public class RomanLogicsModule extends LogicsModule {
         sumNDSImporterFreightSku = addJProp(baseGroup, "sumNDSImporterFreightSku", "Сумма НДС", multiplyNumeric2, NDSImporterFreightSku, 1, 2, 3, quantityImporterFreightSku, 1, 2, 3);
         sumNDSImporterFreight = addSGProp(baseGroup, "sumNDSImporterFreight", true, "Сумма НДС", sumNDSImporterFreightSku, 1, 2);
 
-        sumRegistrationFreightSku = addJProp(baseGroup, "sumRegistrationFreightSku", "Таможенный сбор", dutyPercentCustomCategory10TypeDuty, customCategory10FreightSku, 1, 2, typeDutyRegistration);
+        sumRegistrationFreightSku = addJProp(baseGroup, "sumRegistrationFreightSku", "Таможенный сбор", dutySumCustomCategory10TypeDuty, customCategory10FreightSku, 1, 2, typeDutyRegistration);
         sumRegistrationImporterFreightSku = addJProp(baseGroup, "sumRegistrationImporterFreightSku", "Таможенный сбор", baseLM.and1, sumRegistrationFreightSku, 2, 3, quantityImporterFreightSku, 1, 2, 3);
         sumRegistrationImporterFreight = addMGProp(baseGroup, "sumRegistrationImporterFreight", true, "Таможенный сбор", sumRegistrationImporterFreightSku, 1, 2);
 
@@ -4944,6 +4944,7 @@ public class RomanLogicsModule extends LogicsModule {
             setEditType(nameCurrencyDocument, PropertyEditType.EDITABLE, objInvoice.groupTo);
             setEditType(nameCompanyInvoice, PropertyEditType.EDITABLE, objInvoice.groupTo);
             setEditType(nameDestinationDestinationDocument, PropertyEditType.EDITABLE, objInvoice.groupTo);
+            setEditType(baseLM.delete, PropertyEditType.EDITABLE, objInvoice.groupTo);
 
             for (PropertyDrawEntity propertyDraw : getProperties(importInvoiceActionGroup)) {
                 propertyDraw.toDraw = objInvoice.groupTo;
@@ -5658,7 +5659,7 @@ public class RomanLogicsModule extends LogicsModule {
         private FreightShipmentStoreFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
 
-            objFreight = addSingleGroupObject(freight, "Фрахт", baseLM.objectValue, baseLM.date, baseLM.objectClassName, nameRouteFreight, nameExporterFreight, descriptionFreight, tonnageDataFreight, grossWeightFreight, volumeDataFreight, palletCountDataFreight, palletNumberFreight, freightBoxNumberFreight, nameCurrencyFreight, sumFreightFreight);
+            objFreight = addSingleGroupObject(freight, "Фрахт", baseLM.objectValue, baseLM.date, baseLM.objectClassName, nameRouteFreight, nameExporterFreight, descriptionFreight, grossWeightFreight, volumeDataFreight, palletCountDataFreight, palletNumberFreight, freightBoxNumberFreight, nameCurrencyFreight, sumFreightFreight);
             objFreight.groupTo.setSingleClassView(ClassViewType.PANEL);
             setEditType(objFreight, PropertyEditType.SELECTOR);
 
@@ -5775,11 +5776,10 @@ public class RomanLogicsModule extends LogicsModule {
             super(parent, sID, caption);
 
             objFreight = addSingleGroupObject(freight, "Фрахт", baseLM.date, baseLM.objectClassName, nameRouteFreight, nameExporterFreight,
-                    descriptionFreight, volumeDataFreight, tonnageDataFreight, grossWeightFreight,
+                    descriptionFreight, volumeDataFreight, grossWeightFreight,
                     volumeDataFreight, palletCountDataFreight, palletNumberFreight, freightBoxNumberFreight, nameCurrencyFreight, sumFreightFreight);
             objFreight.groupTo.setSingleClassView(ClassViewType.PANEL);
             setEditType(objFreight, PropertyEditType.READONLY);
-//            addObjectActions(this, objFreight);
 
             CalcPropertyObjectEntity diffPalletFreightProperty = addPropertyObject(addJProp(baseLM.and1, addCProp(ColorClass.instance, new Color(128, 255, 128)), diffPalletFreight, 1), objFreight);
             getPropertyDraw(palletCountDataFreight).setPropertyBackground(diffPalletFreightProperty);
@@ -5787,7 +5787,6 @@ public class RomanLogicsModule extends LogicsModule {
 
             objShipment = addSingleGroupObject(shipment, "Поставка", baseLM.date, sidDocument, nameSupplierDocument);
 
-            //addPropertyDraw(objShipment, baseLM.date, sidDocument, nameSupplierDocument);
             addPropertyDraw(objShipment, objFreight, nameImporterShipmentFreight);
 
             objPallet = addSingleGroupObject(pallet, "Паллета", baseLM.barcode, grossWeightPallet, freightBoxNumberPallet, nameRouteCreationPalletPallet);
@@ -6638,10 +6637,7 @@ public class RomanLogicsModule extends LogicsModule {
             addGCAProp(actionGroup, "translationAllMainCompositionLanguage", "Перевести все", objSku.groupTo, translationMainCompositionSkuFreight, 1, 2, 1).property.panelLocation = new ShortcutPanelLocation(mainCompositionSkuFreight.property);
             addGCAProp(actionGroup, "translationAllAdditionalCompositionLanguage", "Перевести все", objSku.groupTo, translationAdditionalCompositionSkuFreight, 1, 2, 1).property.panelLocation = new ShortcutPanelLocation(additionalCompositionSkuFreight.property);
 
-            setEditType(baseGroup, PropertyEditType.READONLY, objSku.groupTo);
-            setEditType(publicGroup, PropertyEditType.READONLY, objSku.groupTo);
-            setEditType(sidGenderArticleSku, PropertyEditType.EDITABLE, objSku.groupTo);
-            setEditType(nameTypeFabricArticleSku, PropertyEditType.EDITABLE, objSku.groupTo);
+            setEditType(PropertyEditType.READONLY, objSku.groupTo);
             //setEditType(sidCustomCategory10Sku, PropertyEditType.EDITABLE, objSku.groupTo);
             //setEditType(nameSubCategorySku, PropertyEditType.EDITABLE, objSku.groupTo);
             setEditType(nameCountrySku, PropertyEditType.EDITABLE, objSku.groupTo);
@@ -6668,11 +6664,6 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(quantityProxyImporterFreightSku, objImporter, objFreight, objSkuFreight);
             addPropertyDraw(quantityDirectImporterFreightSku, objImporter, objFreight, objSkuFreight);
 
-            setEditType(quantityFreightSku, PropertyEditType.READONLY);
-            setEditType(quantityDirectFreightSku, PropertyEditType.READONLY);
-            setEditType(quantityImporterFreightSku, PropertyEditType.READONLY);
-            setEditType(quantityProxyImporterFreightSku, PropertyEditType.READONLY);
-            setEditType(quantityDirectImporterFreightSku, PropertyEditType.READONLY);
 
             addGCAProp(actionGroup, "translationAllFreightMainComposition", "Перевести все", objSkuFreight.groupTo, translationMainCompositionFreightSku, 1, 2, 2).property.panelLocation = new ShortcutPanelLocation(mainCompositionFreightSku.property);
             addGCAProp(actionGroup, "translationAllFreightAdditionalComposition", "Перевести все", objSkuFreight.groupTo, translationAdditionalCompositionFreightSku, 1, 2, 2).property.panelLocation = new ShortcutPanelLocation(additionalCompositionFreightSku.property);
@@ -7727,7 +7718,7 @@ public class RomanLogicsModule extends LogicsModule {
             setEditType(balanceSumCurrentYear, PropertyEditType.READONLY);
 
             objImporter = addSingleGroupObject(importer, "Импортер", baseLM.name);
-            setEditType(PropertyEditType.READONLY, objImporter.groupTo);
+            //setEditType(PropertyEditType.READONLY, objImporter.groupTo);
 
             addPropertyDraw(quantityImporterFreight, objImporter, objFreight);
             addPropertyDraw(sumInImporterFreight, objImporter, objFreight);
@@ -7738,14 +7729,7 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(sumRegistrationImporterFreight, objImporter, objFreight);
             addPropertyDraw(sumCustomImporterFreight, objImporter, objFreight);
 
-            setEditType(quantityImporterFreight, PropertyEditType.READONLY);
-            setEditType(sumInImporterFreight, PropertyEditType.READONLY);
-            setEditType(sumMarkupInImporterFreight, PropertyEditType.READONLY);
-            setEditType(sumInOutImporterFreight, PropertyEditType.READONLY);
-            setEditType(sumDutyImporterFreight, PropertyEditType.READONLY);
-            setEditType(sumNDSImporterFreight, PropertyEditType.READONLY);
-            setEditType(sumRegistrationImporterFreight, PropertyEditType.READONLY);
-            setEditType(sumCustomImporterFreight, PropertyEditType.READONLY);
+            setEditType(PropertyEditType.READONLY, objImporter.groupTo);
 
             objBrandSupplier = addSingleGroupObject(brandSupplier, "Бренд", baseLM.name, nameSupplierBrandSupplier);
             setEditType(PropertyEditType.READONLY, objBrandSupplier.groupTo);
@@ -7799,6 +7783,10 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(NDSPercentFreightSku, objFreight, objSku);
             addPropertyDraw(NDSImporterFreightSku, objImporter, objFreight, objSku);
             addPropertyDraw(sumRegistrationImporterFreightSku, objImporter, objFreight, objSku);
+
+            setEditType(PropertyEditType.READONLY, objSku.groupTo);
+            setEditType(priceInImporterFreightSku, PropertyEditType.READONLY, objSku.groupTo);
+            setEditType(markupPercentImporterFreightSku, PropertyEditType.READONLY, objSku.groupTo);
 
             CalcPropertyObjectEntity greaterPriceMinPriceImporterFreightSkuProperty = addPropertyObject(addJProp(baseLM.and1, highlightColor, greaterPriceMinPriceImporterFreightSku, 1, 2, 3), objImporter, objFreight, objSku);
             getPropertyDraw(minPriceRateFreightSku).setPropertyBackground(greaterPriceMinPriceImporterFreightSkuProperty);
@@ -8163,13 +8151,7 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(sumMarkupInImporterFreight, objImporter, objFreight);
             addPropertyDraw(sumInOutImporterFreight, objImporter, objFreight);
 
-            setEditType(quantityImporterFreight, PropertyEditType.READONLY);
-            setEditType(sumInImporterFreight, PropertyEditType.READONLY);
-            setEditType(sumMarkupInImporterFreight, PropertyEditType.READONLY);
-            setEditType(sumInOutImporterFreight, PropertyEditType.READONLY);
-            setEditType(sidImporterFreight, PropertyEditType.READONLY);
-            setEditType(dateImporterFreight, PropertyEditType.READONLY);
-
+            setEditType(PropertyEditType.READONLY, objImporter.groupTo);
 
             addPropertyDraw(objImporter, objFreight, objTypeInvoice, sidImporterFreightTypeInvoice, dateImporterFreightTypeInvoice, dateShipmentImporterFreightTypeInvoice);
 
@@ -8194,8 +8176,8 @@ public class RomanLogicsModule extends LogicsModule {
 
             setForceViewType(baseGroup, ClassViewType.GRID, objSku.groupTo);
 
-            setEditType(baseGroup, PropertyEditType.READONLY, objSku.groupTo);
-            setEditType(publicGroup, PropertyEditType.READONLY, objSku.groupTo);
+            //setEditType(baseGroup, PropertyEditType.READONLY, objSku.groupTo);
+            //setEditType(publicGroup, PropertyEditType.READONLY, objSku.groupTo);
 
             addPropertyDraw(objFreight, objSku, sidCustomCategory10FreightSku, nameCountryOfOriginFreightSku, mainCompositionFreightSku, additionalCompositionFreightSku);
             addPropertyDraw(objImporter, objFreight, objSku, netWeightImporterFreightSku, grossWeightImporterFreightSku);
@@ -8213,6 +8195,7 @@ public class RomanLogicsModule extends LogicsModule {
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityImporterFreightTypeInvoice, objImporter, objFreight, objTypeInvoice)));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityImporterFreightSku, objImporter, objFreight, objSku)));
 
+            setEditType(publicGroup, PropertyEditType.READONLY, objSku.groupTo);
             // содержимое фрахта
             objBrand = addSingleGroupObject(brandSupplier, "Бренд", baseLM.name);
             setEditType(PropertyEditType.READONLY, objBrand.groupTo);
@@ -8220,11 +8203,7 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(objFreight, objBrand, stockNumberFreightBrandSupplier, quantityShipmentedFreightBrandSupplier, quantityFreightBrandSupplier, sumInFreightBrandSupplier, sumInOutFreightBrandSupplier);
             addFixedFilter(new CompareFilterEntity(addPropertyObject(quantityFreightBrandSupplier, objFreight, objBrand), Compare.GREATER, addPropertyObject(baseLM.vzero)));
 
-            setEditType(stockNumberFreightBrandSupplier, PropertyEditType.READONLY);
-            setEditType(quantityShipmentedFreightBrandSupplier, PropertyEditType.READONLY);
-            setEditType(quantityFreightBrandSupplier, PropertyEditType.READONLY);
-            setEditType(sumInFreightBrandSupplier, PropertyEditType.READONLY);
-            setEditType(sumInOutFreightBrandSupplier, PropertyEditType.READONLY);
+            setEditType(PropertyEditType.READONLY, objBrand.groupTo);
 
             objArticle = addSingleGroupObject(article, "Артикул", sidArticle, nameCategoryArticle);
             setEditType(PropertyEditType.READONLY, objArticle.groupTo);

@@ -51,7 +51,7 @@ sumRateDeliveryFreight 'Затраты на доставку (конверт.)' 
 
 sumDeliveryFreightSku 'Затраты на доставку' (freight, sku) = (sumRateDeliveryFreight(freight) * sumGrossWeightFreightSku(freight, sku))/grossWeightFreight(freight);
 
-priceRFFreightSku 'Себестоимость' (freight, sku) = UNION SUM priceInFullFreightSku(freight, sku), sumRateRegistrationFreightSku(freight, sku), sumDeliveryFreightSku(freight, sku);
+priceRFFreightSku 'Себестоимость' (freight, sku) = UNION SUM priceInFullFreightSku(freight, sku), sumRateRegistrationFreightSku(freight, sku), sumDeliveryFreightSku(freight, sku) IF routeFreight(freight) == route.rf;
 
 EXTEND FORM freightInvoiceForm
     PROPERTIES tariffVolumeFreight(freight), percentCostFreight(freight), rateExchangeDataPayFreight(freight)
@@ -87,7 +87,7 @@ nameCompanyDataWHfromRF 'Импортёр' = name(companyDataWHfromRF(WHfromRF))
 
 overCompanyWHfromRF 'Импортёр (ИД)' (WHfromRF) = UNION OVERRIDE companyWHfromRF(WHfromRF), companyDataWHfromRF(WHfromRF);
 
-priceRFWHfromRFDetail 'Себестоимость' (WHfromRFDetail) = priceRFFreightSku(freightWHfromRF(WHfromRFWHfromRFDetail(WHfromRFDetail)), skuWHfromRFDetail(WHfromRFDetail));
+costWHfromRFDetail 'Себестоимость' (WHfromRFDetail) = priceRFFreightSku(freightWHfromRF(WHfromRFWHfromRFDetail(WHfromRFDetail)), skuWHfromRFDetail(WHfromRFDetail));
 
 currencyWHfromRF (WHfromRF)= currencyStock(stockWHfromRF(WHfromRF));
 
@@ -466,8 +466,8 @@ quantityArticleColorWHfromRFDetail (WHfromRFDetail) =
 backgroundArticleColorWHfromRFDetail 'Цвет' (WHfromRFDetail) = RGB(255, 128, 128) IF quantityArticleColorWHfromRFDetail(WHfromRFDetail) == 1;
 
 currencyWHfromRFDetail  (WHfromRFDetail) = currencyStock(stockWHfromRF(WHfromRFWHfromRFDetail(WHfromRFDetail)));
-costWHfromRFDetail(WHfromRFDetail) =
-    priceInFreightSku(freightWHfromRF(WHfromRFWHfromRFDetail(WHfromRFDetail)), skuWHfromRFDetail(WHfromRFDetail));
+//costWHfromRFDetail(WHfromRFDetail) =
+//    priceInFreightSku(freightWHfromRF(WHfromRFWHfromRFDetail(WHfromRFDetail)), skuWHfromRFDetail(WHfromRFDetail));
 
 retailPriceWHfromRFDetail 'Цена розничная' = DATA NUMERIC[14,2] (WHfromRFDetail);
 retailSumWHfromRFDetail 'Сумма розничная' (WHfromRFDetail) = quantityWHfromRFDetail(WHfromRFDetail) * retailPriceWHfromRFDetail(WHfromRFDetail);
@@ -490,6 +490,7 @@ accountSumWHfromRF 'Сумма учетная' (WHfromRF) = GROUP SUM accountSum
 quantityBatch (batch) += quantityWHfromRFDetail(batch);
 sumInSkuLedger(batch) += accountSumWHfromRFDetail(batch);
 skipASkuLedger (ledger) += ledger IS WHfromRFDetail;
+//costBatch (batch) += priceRFWHfromRFDetail(batch);
 
 FORM WHfromRF 'Приход товара из РФ'
 
