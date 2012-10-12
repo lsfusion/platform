@@ -109,7 +109,7 @@ FORM freight 'Фрахт'
     OBJECTS f = freight FIXED PANEL
     PROPERTIES(f) objectClassName, nameNumeratorObject, numberObject, seriesObject, date, dateShipmentFreight SHOWIF isFreightShipped(f),
                   dateArrivalFreight SHOWIF isFreightArrived(f), nameCountryFreight, nameLanguageFreight, nameRouteFreight,
-                  nameExporterFreight, descriptionFreight, tonnageDataFreight, volumeDataFreight, palletCountDataFreight,
+                  nameExporterFreight, descriptionFreight, volumeDataFreight, palletCountDataFreight,
                   nameCurrencyFreight, sumFreightFreight
 
     EDIT freight OBJECT f
@@ -152,7 +152,6 @@ DESIGN freight FROM DEFAULT {
 
             caption = 'Суммы документа';
             childConstraints = TO THE BOTTOM;
-            ADD PROPERTY(tonnageDataFreight);
             ADD PROPERTY(volumeDataFreight);
             ADD PROPERTY(palletCountDataFreight);
             ADD PROPERTY(nameCurrencyFreight);
@@ -160,6 +159,17 @@ DESIGN freight FROM DEFAULT {
         }
         POSITION sumContainer TO THE RIGHT headerContainer;
         POSITION sumContainer TO THE RIGHT paramContainer;
+
+        PROPERTY(objectClassName) { background = #FFEEEE; }
+        PROPERTY(date) { background = #FFEEEE; }
+        PROPERTY(dateArrivalFreight) { background = #FFEEEE; }
+        PROPERTY(dateShipmentFreight) { background = #FFEEEE; }
+        PROPERTY(nameRouteFreight) { background = #FFEEEE; }
+        PROPERTY(nameExporterFreight) { background = #FFEEEE; }
+        PROPERTY(nameCountryFreight) { background = #FFEEEE; }
+        PROPERTY(nameCurrencyFreight) { background = #FFEEEE; }
+        PROPERTY(sumFreightFreight) { background = #FFEEEE; }
+        PROPERTY(descriptionFreight) { background = #FFEEEE; }
     }
 
     ADD functions.box;
@@ -176,6 +186,12 @@ EXTEND DESIGN freightListForm{
     PROPERTY(deleteApply(freight)){
         askConfirm=TRUE;
     }
+}
+
+EXTEND DESIGN freightShipmentForm {
+
+    PROPERTY(nameImporterShipmentFreight) { background = #FFEEEE; }
+    PROPERTY(grossWeightDirectInvoice) { background = #FFEEEE; }
 }
 
 EXTEND FORM freightChangeForm
@@ -204,6 +220,26 @@ EXTEND FORM freightChangeForm
                                      nameCountryOfOriginLanguageFreightSku AFTER nameCountryOfOriginFreightSku(freight, skuFreight) SHOWIF languageFreight(freight)
 ;
 
+EXTEND DESIGN freightChangeForm {
+
+    PROPERTY(sidCustomCategory10CategoryGenderCompositionTypeFabricFreight) { background = #FFEEEE; }
+    PROPERTY(sidCustomCategory10SkuFreight) { background = #FFEEEE; }
+    PROPERTY(nameCountrySku) { background = #FFEEEE; }
+    PROPERTY(netWeightSku) { background = #FFEEEE; }
+    PROPERTY(mainCompositionSku) { background = #FFEEEE; }
+    PROPERTY(additionalCompositionSku) { background = #FFEEEE; }
+    PROPERTY(mainCompositionSkuFreight) { background = #FFEEEE; }
+    PROPERTY(additionalCompositionSkuFreight) { background = #FFEEEE; }
+
+}
+
+EXTEND DESIGN freightInvoiceForm {
+
+    PROPERTY(markupPercentImporterFreightBrandSupplier) { background = #FFEEEE; }
+    PROPERTY(insuranceFreightBrandSupplier) { background = #FFEEEE; }
+    PROPERTY(markupPercentImporterFreightArticle) { background = #FFEEEE; }
+    PROPERTY(markupPercentImporterFreightSku) { background = #FFEEEE; }
+}
 
 EXTEND FORM invoiceFromForm2
     PROPERTIES (freight, article) nameCategoryFreightLanguageArticle

@@ -210,6 +210,7 @@ NAVIGATOR {
     retailClassifier {
         ADD gendersDialog;
         ADD stores;
+        ADD typeLabels;
     }
 
     retail {

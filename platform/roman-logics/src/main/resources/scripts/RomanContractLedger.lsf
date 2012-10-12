@@ -177,13 +177,13 @@ DESIGN commercialInvoices FROM DEFAULT {
 
 EXTEND FORM boxInvoiceForm
 
-    PROPERTIES(invoice) createCommercialInvoice, descriptionCommercialInvoiceInvoice
+    PROPERTIES(invoice) createCommercialInvoice, descriptionCommercialInvoiceInvoice READONLY
 
 ;
 
 EXTEND FORM simpleInvoiceForm
 
-    PROPERTIES(invoice) createCommercialInvoice, descriptionCommercialInvoiceInvoice
+    PROPERTIES(invoice) createCommercialInvoice, descriptionCommercialInvoiceInvoice READONLY
 
 ;
 

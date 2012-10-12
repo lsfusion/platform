@@ -56,6 +56,7 @@ inCategorySupplierSubCategorySupplierArticle(categorySupplier, subCategorySuppli
                                                                                                               categorySupplierArticle(article) == categorySupplier AND NOT subCategorySupplier,
                                                                                                               article == article AND NOT categorySupplier AND NOT subCategorySupplier;
 
+inSeasonSeasonYear (season, seasonYear) = seasonSeasonYear(seasonYear)==season;
 
 // подбор курса обмена валют
 META defineNearestRateExchangeObject(object, typeEx, typeCur, propDate, group)
@@ -277,6 +278,9 @@ FORM typeFabrics 'Типы одежды'
 
 FORM seasonYear 'Сезон'
 
+    //OBJECTS ss = season FIXED PANEL
+    //PROPERTIES(ss) name
+
     OBJECTS s = seasonYear FIXED PANEL
     PROPERTIES(s) nameSeasonSeasonYear, yearSeasonYear, nameSeasonYear
 
@@ -289,7 +293,6 @@ FORM seasonYears 'Сезоны'
     OBJECTS s = seasonYear
     PROPERTIES(s) READONLY nameSeasonSeasonYear, yearSeasonYear, nameSeasonYear
     PROPERTIES(s) ADDFORM, EDITFORM, delete
-    //DIALOG seasonYear OBJECT s;
 ;
 
 FORM dialogSeasonYear 'Сезон'
@@ -305,6 +308,18 @@ FORM unitOfMeasures 'Единицы измерений'
     DIALOG unitOfMeasure OBJECT u
 ;
 
+FORM typeLabel 'Тип этикетки'
+    OBJECTS tl = typeLabel FIXED PANEL
+    PROPERTIES(tl) name, sidTypeLabel
+    EDIT typeLabel OBJECT tl
+;
+
+FORM typeLabels 'Типы этикеток'
+    OBJECTS tl = typeLabel
+    PROPERTIES(tl) READONLY name, sidTypeLabel
+    PROPERTIES(tl) ADDFORM, EDITFORM, delete
+    DIALOG typeLabel OBJECT tl;
+;
 
 //----------------------Определения себестоимости при создании оптового прайса  ----------------------//
 
