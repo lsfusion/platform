@@ -17,7 +17,7 @@ cashRegisterAccountCollection (accountCollection) = cashRegisterZReport(zReportA
 numberCashRegisterAccountCollection 'Касса инкассации' (accountCollection) =
     numberCashRegister(cashRegisterAccountCollection(accountCollection)) IN documentPrmGroup;
 
-departmentStoreAccountCollection 'Отдел (ИД)' (accountCollection) = departmentStoreZReport(zReportAccountCollection(accountCollection));
+departmentStoreAccountCollection (accountCollection) = departmentStoreZReport(zReportAccountCollection(accountCollection));
 nameDepartmentStoreAccountCollection 'Отдел' (accountCollection) = name(departmentStoreAccountCollection (accountCollection));
 
 sumCashAccountCollection 'Сумма изъятия' = DATA NUMERIC[16,2] (accountCollection) IN documentSumGroup;
@@ -25,11 +25,10 @@ sumCashAccountCollection 'Сумма изъятия' = DATA NUMERIC[16,2] (accou
 castBasisAccountCollection =
     FORMULA STRING[100] '\'Изъятие №\' || CAST($1 AS TEXT) || \' с кассы \' || CAST($2 AS TEXT) || \' от \' || CAST($3 AS TEXT)';
 basisAccountCollection 'Основание' (accountCollection) =
-    castBasisCollection(seriesNumberObject(accountCollection), numberCashRegisterAccountCollection(accountCollection), dateAccountCollection(accountCollection)) IN documentPrmGroup;
+    castBasisCollection(seriesNumberObject(accountCollection), dateAccountCollection(accountCollection)) IN documentPrmGroup;
 
 dateCashDocument(accountCollection) += dateAccountCollection(accountCollection);
 timeCashDocument(accountCollection) += timeAccountCollection(accountCollection);
-dateTimeCashDocument(accountCollection) += dateTimeAccountCollection(accountCollection);
 numberCashDocument(accountCollection) += seriesNumberObject(accountCollection) AND accountCollection IS accountCollection;
 departmentStoreCashDocument(accountCollection) += departmentStoreAccountCollection(accountCollection);
 cashRegisterCashDocument(accountCollection) += cashRegisterAccountCollection(accountCollection);
@@ -47,7 +46,7 @@ createAccountCollectionZReport 'Изъять сумму' (zReport) = ACTION (zRe
     }
 } TOOLBAR;
 
-EXTEND FORM operationCashRegister PROPERTIES (i) createAccountCollectionZReport;
+EXTEND FORM centralCashRegister PROPERTIES (i) createAccountCollectionZReport;
 
 
 

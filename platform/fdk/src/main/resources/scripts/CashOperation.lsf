@@ -203,11 +203,6 @@ dateTimeCashOperation 'Дата/время документа'(cashOperation) = 
 
 numberCashOperation 'Номер' (cashOperation) = ABSTRACT STRING[21] (cashOperation) IN documentPrmGroup;
 
-departmentStoreCashOperation (cashOperation) = ABSTRACT departmentStore (cashOperation);
-nameDepartmentStoreCashOperation 'Подразделение' (cashOperation) =
-    name(departmentStoreCashOperation(cashOperation)) IN documentHeaderGroup;
-nameCompanyCashOperation 'Компания' (cashOperation) = nameCompanyDepartmentStore(departmentStoreCashOperation(cashOperation)) IN documentHeaderGroup;
-
 basisCashOperation 'Основание' = ABSTRACT STRING[100] (cashOperation) IN documentPrmGroup;
 
 cashRegisterCashOperation = ABSTRACT cashRegister(cashOperation);
@@ -266,7 +261,6 @@ isPostedCashDocument(incomeCashOperation) += TRUE AND incomeCashOperation IS inc
 dateCashOperation(incomeCashOperation) += dateIncomeCashOperation(incomeCashOperation);
 timeCashOperation(incomeCashOperation) += timeIncomeCashOperation(incomeCashOperation);
 numberCashOperation(incomeCashOperation) += seriesNumberObject(incomeCashOperation) AND incomeCashOperation IS incomeCashOperation;
-departmentStoreCashOperation(incomeCashOperation) += departmentStoreIncomeCashOperation(incomeCashOperation);
 basisCashOperation(incomeCashOperation) += basisIncomeCashOperation(incomeCashOperation);
 sumCashOperation(incomeCashOperation) += sumCashIncomeCashOperation(incomeCashOperation);
 cashRegisterCashOperation(incomeCashOperation) += cashRegisterIncomeCashOperation(incomeCashOperation);
@@ -315,7 +309,6 @@ isPostedCashDocument(outcomeCashOperation) += TRUE AND outcomeCashOperation IS o
 dateCashOperation(outcomeCashOperation) += dateOutcomeCashOperation(outcomeCashOperation);
 timeCashOperation(outcomeCashOperation) += timeOutcomeCashOperation(outcomeCashOperation);
 numberCashOperation(outcomeCashOperation) += seriesNumberObject(outcomeCashOperation) AND outcomeCashOperation IS outcomeCashOperation;
-departmentStoreCashOperation(outcomeCashOperation) += departmentStoreOutcomeCashOperation(outcomeCashOperation);
 basisCashOperation(outcomeCashOperation) += basisOutcomeCashOperation(outcomeCashOperation);
 sumCashOperation(outcomeCashOperation) += -sumCashOutcomeCashOperation(outcomeCashOperation);
 cashRegisterCashOperation(outcomeCashOperation) += cashRegisterOutcomeCashOperation(outcomeCashOperation);
@@ -595,7 +588,7 @@ FORM operationCashRegister 'Кассовые операции'
     PROPERTIES numberCurrentCashRegister() TODRAW interval FORCE PANEL
 
     OBJECTS c = cashOperation
-    PROPERTIES(c) READONLY objectClassName, numberCashOperation, dateCashOperation, timeCashOperation, nameDepartmentStoreCashOperation,
+    PROPERTIES(c) READONLY objectClassName, numberCashOperation, dateCashOperation, timeCashOperation,
                            numberCashRegisterCashOperation, sumCashOperation, basisCashOperation
     PROPERTIES(c) delete
     PROPERTIES(c) isCompleteCashOperation FORCE GRID

@@ -146,7 +146,7 @@ public class DockableMainFrame extends MainFrame {
 
     // важно, что в случае каких-либо Exception'ов при восстановлении форм нужно все игнорировать и открывать расположение "по умолчанию"
     private void initDockStations() {
-        mainControl.setTheme(ThemeMap.KEY_ECLIPSE_THEME);
+        mainControl.setTheme(ThemeMap.KEY_FLAT_THEME);
 
         loadLayout();
 
