@@ -185,9 +185,9 @@ META defineShipment(skuLedger, sign, contact, contactCaption, partyA, partyB)
 
 //-- Подсчет поставленного к-ва по заказу
 
-    shippedShipmentDetailOrderSku 'Поставлено' (order, sku) = GROUP SUM quantityShipmentDetail(shipmentDetail) IF isPostedShipmentDetail(shipmentDetail)
+    shippedShipmentDetailOrderSku 'Кол-во (поставлено)' (order, sku) = GROUP SUM quantityShipmentDetail(shipmentDetail) IF isPostedShipmentDetail(shipmentDetail)
                                                       BY orderShipmentDetail(shipmentDetail), skuShipmentDetail(shipmentDetail);
-    shippedOrderDetail 'Поставлено' (orderDetail) = PARTITION UNGROUP shippedShipmentDetailOrderSku
+    shippedOrderDetail 'Кол-во (поставлено)' (orderDetail) = PARTITION UNGROUP shippedShipmentDetailOrderSku
                                                               LIMIT STRICT quantityOrderDetail (orderDetail) AND isPostedOrderDetail(orderDetail)
                                                               BY orderOrderDetail(orderDetail), skuOrderDetail(orderDetail)
                                                               ORDER orderDetail PERSISTENT;
@@ -197,7 +197,7 @@ META defineShipment(skuLedger, sign, contact, contactCaption, partyA, partyB)
     toShipOrderDetailStockOrder 'Не поставлено по складу' (stock, order) = GROUP SUM toShipOrderDetail(orderDetail) IF toShipOrderDetail(orderDetail) > 0
                                                                                      BY stockOrderDetail(orderDetail), orderOrderDetail(orderDetail);
 
-    shippedOrderDetailOrder 'Поставлено' (order) = GROUP SUM shippedOrderDetail(orderDetail) BY orderOrderDetail(orderDetail) IN documentSumGroup PERSISTENT;
+    shippedOrderDetailOrder 'Кол-во (поставлено)' (order) = GROUP SUM shippedOrderDetail(orderDetail) BY orderOrderDetail(orderDetail) IN documentSumGroup PERSISTENT;
 
     // Создание поставки на основе заказа //
 
@@ -326,7 +326,7 @@ META defineShipment(skuLedger, sign, contact, contactCaption, partyA, partyB)
                                                     BY shipment
                                                     ORDER invoice IN invoiceGroup MINCHARWIDTH 30 PREFCHARWIDTH 50 PERSISTENT;
 
-    shippedInvoiceDetail 'Поставлено' (invoiceDetail) = GROUP SUM quantityShipmentDetail(shipmentDetail) IF isPostedShipmentDetail(shipmentDetail)
+    shippedInvoiceDetail 'Кол-во (поставлено)' (invoiceDetail) = GROUP SUM quantityShipmentDetail(shipmentDetail) IF isPostedShipmentDetail(shipmentDetail)
                                                                        BY invoiceDetailShipmentDetail(shipmentDetail) PERSISTENT;
 
     costInvoiceDetailBatch (invoiceDetail, batch) = GROUP SUM costSkuLedgerBatch(shipmentDetail, batch) BY invoiceDetailShipmentDetail(shipmentDetail), batch;
@@ -538,5 +538,4 @@ META defineShipmentBatch(dumb)
     @defineDocumentAggregationDetailBatch (invoice, invoiceShipment);
     batchShipmentDetail (shipmentDetail) += batchInvoiceShipmentDetail(shipmentDetail);
 
-    EXTEND FORM shipments PROPERTIES (d) READONLY descriptionBatchShipmentDetail AFTER shortNameUOMSkuShipmentDetail;
 END

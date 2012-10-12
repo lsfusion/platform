@@ -345,6 +345,12 @@ META defineInvoiceReturn(NS, NSR, contact)
     invoiceDetailUserInvoiceDetail (userInvoiceDetail) = DATA NS.invoiceDetail (NSR.userInvoiceDetail);
     invoiceDetailInvoiceDetail(detail) += invoiceDetailUserInvoiceDetail(detail);
 
+    returnQuantityInvoiceDetail 'Кол-во (возвращено)' (invoiceDetail)= GROUP SUM NSR.quantityInvoiceDetail(invoiceDetail) BY invoiceDetailInvoiceDetail(invoiceDetail);
+    returnQuantityInvoiceDetailInvoice 'Кол-во (возвращено)' (invoice) =  GROUP SUM returnQuantityInvoiceDetail(invoiceDetail) BY NS.invoiceInvoiceDetail(invoiceDetail);
+
+    CONSTRAINT returnQuantityInvoiceDetail(detail) > NS.quantityInvoiceDetail(detail)
+        MESSAGE 'Количество строки возврата больше чем количество строки основания';
+
     CONSTRAINT NS.skuInvoiceDetail(invoiceDetailUserInvoiceDetail(detail)) != NSR.skuUserInvoiceDetail(detail) CHECKED BY invoiceDetailUserInvoiceDetail
         MESSAGE 'SKU строки основания должен соответствовать SKU строки возврата';
 
@@ -379,7 +385,10 @@ META defineInvoiceReturn(NS, NSR, contact)
     NSR.VATUserInvoiceDetail(detail) <- NS.VATInvoiceDetail(invoiceDetailUserInvoiceDetail(detail)) WHEN CHANGED(invoiceDetailUserInvoiceDetail(detail));
 
     EXTEND FORM userInvoice PROPERTIES (d) descriptionInvoiceDetailUserInvoiceDetail AFTER shortNameUOMSkuUserInvoiceDetail;
+    EXTEND FORM NS.userInvoice PROPERTIES (d) READONLY returnQuantityInvoiceDetail BEFORE priceUserInvoiceDetail;
+
     EXTEND FORM invoices PROPERTIES (d) READONLY descriptionInvoiceDetailInvoiceDetail AFTER shortNameUOMSkuInvoiceDetail;
+    EXTEND FORM NS.invoices PROPERTIES (d) READONLY returnQuantityInvoiceDetail BEFORE priceInvoiceDetail;
 
     NSR.batchUserInvoiceDetail(detail) <- NS.maxBatchInvoiceDetail(invoiceDetailUserInvoiceDetail(detail))
         WHEN CHANGED(invoiceDetailUserInvoiceDetail(detail)) AND NS.countBatchInvoiceDetail(invoiceDetailUserInvoiceDetail(detail)) == 1;
