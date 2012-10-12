@@ -12,7 +12,7 @@ import java.beans.PropertyChangeListener;
 
 public class ClientFormSplitPane extends JSplitPane implements AutoHideableContainer {
     private LayoutManager2 layout;
-    public int dividerPosition = -1;
+    private boolean skipRelayout = false;
 
     public ClientFormSplitPane(ClientContainer key, LayoutManager2 layout, final ClientFormLayout formLayout) {
         super(key.getType() == ContainerType.SPLIT_PANE_HORIZONTAL ? JSplitPane.HORIZONTAL_SPLIT : JSplitPane.VERTICAL_SPLIT, false);
@@ -22,7 +22,9 @@ public class ClientFormSplitPane extends JSplitPane implements AutoHideableConta
 
         addPropertyChangeListener(JSplitPane.DIVIDER_LOCATION_PROPERTY, new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
-                formLayout.dropCaches();
+                if (!skipRelayout) {
+                    formLayout.dropCaches();
+                }
             }
         });
 
@@ -50,5 +52,11 @@ public class ClientFormSplitPane extends JSplitPane implements AutoHideableConta
 
     public boolean areBothVisible() {
         return leftComponent != null && leftComponent.isVisible() && rightComponent != null && rightComponent.isVisible();
+    }
+
+    public void setDividerLocationSkipRelayout(int dividerLocation) {
+        skipRelayout = true;
+        setDividerLocation(dividerLocation);
+        skipRelayout = false;
     }
 }

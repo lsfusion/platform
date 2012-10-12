@@ -678,9 +678,6 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
             if (component instanceof ClientFormSplitPane && ((ClientFormSplitPane) component).areBothVisible()) {
                 ClientFormSplitPane splitPane = (ClientFormSplitPane) component;
 
-                if (splitPane.getDividerLocation() <= 0 && splitPane.dividerPosition > 0)
-                    splitPane.setDividerLocation(splitPane.dividerPosition);
-
                 if (splitPane.getDividerLocation() > 0) {
                     SimplexComponentInfo leftInfo = infos.get(splitPane.getLeftComponent());
                     SimplexComponentInfo rightInfo = infos.get(splitPane.getRightComponent());
@@ -776,13 +773,8 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
                     }
                 } else if (comp.getParent() instanceof ClientFormSplitPane) {
                     ClientFormSplitPane split = (ClientFormSplitPane) comp.getParent();
-                    if (split.areBothVisible()) {
-                        if (split.getDividerLocation() <= 0) {
-                            int newLocation = split.getOrientation() == JSplitPane.VERTICAL_SPLIT ? height : width;
-                            split.setDividerLocation(newLocation);
-                        }
-                        if (split.getDividerLocation() > 0)
-                            split.dividerPosition = split.getDividerLocation();
+                    if (split.areBothVisible() && comp == split.getLeftComponent()) {
+                        split.setDividerLocationSkipRelayout(split.getOrientation() == JSplitPane.VERTICAL_SPLIT ? height : width);
                     }
                 }
             }
