@@ -2289,6 +2289,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         public DBStructure(DataInputStream inputDB) throws IOException {
             if (inputDB == null) {
                 version = -2;
+                dbVersion = new DBVersion("0.0");
             } else {
                 version = inputDB.read() - 'v';
                 if (version < 0) {
@@ -2298,7 +2299,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 if (version > 2) {
                     dbVersion = new DBVersion(inputDB.readUTF());
                 } else {
-                    dbVersion = new DBVersion("0.1");
+                    dbVersion = new DBVersion("0.0");
                 }
 
                 for (int i = inputDB.readInt(); i > 0; i--) {
