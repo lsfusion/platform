@@ -1762,6 +1762,8 @@ public class RomanLogicsModule extends LogicsModule {
         logFreight = addLProp(nameClassFreight);
 
         seasonSeasonYear = addDProp("seasonSeasonYear", "Сезон (ИД)", season, seasonYear);
+        seasonSeasonYear.setAutoset(true);
+
         nameSeasonSeasonYear = addJProp("nameSeasonSeasonYear", "Сезон", baseLM.name, seasonSeasonYear, 1);
 
         yearSeasonYear = addDProp("yearSeasonYear", "Год", StringClass.get(4), seasonYear);
@@ -5785,7 +5787,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             objShipment = addSingleGroupObject(shipment, "Поставка", baseLM.date, sidDocument, nameSupplierDocument);
 
-            addPropertyDraw(objShipment, baseLM.date, sidDocument, nameSupplierDocument);
+            //addPropertyDraw(objShipment, baseLM.date, sidDocument, nameSupplierDocument);
             addPropertyDraw(objShipment, objFreight, nameImporterShipmentFreight);
 
             objPallet = addSingleGroupObject(pallet, "Паллета", baseLM.barcode, grossWeightPallet, freightBoxNumberPallet, nameRouteCreationPalletPallet);
@@ -6612,10 +6614,15 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(objGender, sidGender);
             addPropertyDraw(objComposition, baseLM.objectValue);
             addPropertyDraw(objTypeFabric, baseLM.name);
+            setEditType(objCategory2, PropertyEditType.READONLY);
+            setEditType(objGender, PropertyEditType.READONLY);
+            setEditType(objTypeFabric, PropertyEditType.READONLY);
+
             addPropertyDraw(sidCustomCategory10CategoryGenderCompositionTypeFabricFreight, objCategory2, objGender, objComposition, objTypeFabric, objFreight);
             addPropertyDraw(quantityFreightCategoryGenderCompositionTypeFabric, objFreight, objCategory2, objGender, objComposition, objTypeFabric);
 
             objCategory = addSingleGroupObject(category, "Номенклатурная группа", baseLM.name);
+            setEditType(objCategory, PropertyEditType.READONLY);
 
             objSku = addSingleGroupObject("sku", sku, "SKU", baseLM.barcode, sidArticleSku,
                      nameBrandSupplierArticleSku, nameCategoryArticleSku, sidGenderArticleSku, nameTypeFabricArticleSku,
@@ -6660,6 +6667,12 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(quantityImporterFreightSku, objImporter, objFreight, objSkuFreight);
             addPropertyDraw(quantityProxyImporterFreightSku, objImporter, objFreight, objSkuFreight);
             addPropertyDraw(quantityDirectImporterFreightSku, objImporter, objFreight, objSkuFreight);
+
+            setEditType(quantityFreightSku, PropertyEditType.READONLY);
+            setEditType(quantityDirectFreightSku, PropertyEditType.READONLY);
+            setEditType(quantityImporterFreightSku, PropertyEditType.READONLY);
+            setEditType(quantityProxyImporterFreightSku, PropertyEditType.READONLY);
+            setEditType(quantityDirectImporterFreightSku, PropertyEditType.READONLY);
 
             addGCAProp(actionGroup, "translationAllFreightMainComposition", "Перевести все", objSkuFreight.groupTo, translationMainCompositionFreightSku, 1, 2, 2).property.panelLocation = new ShortcutPanelLocation(mainCompositionFreightSku.property);
             addGCAProp(actionGroup, "translationAllFreightAdditionalComposition", "Перевести все", objSkuFreight.groupTo, translationAdditionalCompositionFreightSku, 1, 2, 2).property.panelLocation = new ShortcutPanelLocation(additionalCompositionFreightSku.property);
