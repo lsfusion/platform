@@ -401,7 +401,7 @@ sidGenderArticleSkuWHfromCSRDetail 'Пол товара' (WHfromCSRDetail) = sid
 changeGenderArticleSkuWHfromCSRDetail = ACTION (WHfromCSRDetail) {
     REQUEST OBJECT g FORM gendersDialog MODAL;
     IF formResult() == formResult.ok THEN {
-        SET genderArticle(article) IF article == articleSku(skuWHfromCSRDetail(WHfromCSRDetail)) <- chosenObject('g');
+        SET genderArticle(article) <- chosenObject('g') WHERE article == articleSku(skuWHfromCSRDetail(WHfromCSRDetail)) ;
     }
 }
 
@@ -409,7 +409,7 @@ nameCategoryArticleSkuWHfromCSRDetail 'Номенклатурная группа
 changeCategoryArticleSkuWHfromCSRDetail = ACTION (WHfromCSRDetail) {
     REQUEST OBJECT c FORM categories MODAL;
     IF formResult() == formResult.ok THEN {
-        SET categoryArticle(article) IF article == articleSku(skuWHfromCSRDetail(WHfromCSRDetail)) <- chosenObject('c');
+        SET categoryArticle(article) <- chosenObject('c') WHERE article == articleSku(skuWHfromCSRDetail(WHfromCSRDetail));
     }
 }
 
@@ -417,7 +417,7 @@ nameTypeFabricArticleSkuWHfromCSRDetail 'Тип одежды' (WHfromCSRDetail) 
 changeTypeFabricArticleSkuWHfromCSRDetail = ACTION (WHfromCSRDetail) {
     REQUEST OBJECT t FORM typeFabrics MODAL;
     IF formResult() == formResult.ok THEN {
-        SET typeFabricArticle(article) IF article == articleSku(skuWHfromCSRDetail(WHfromCSRDetail)) <- chosenObject('t');
+        SET typeFabricArticle(article) <- chosenObject('t') WHERE article == articleSku(skuWHfromCSRDetail(WHfromCSRDetail));
     }
 }
 
@@ -425,28 +425,28 @@ nameUnitOfMeasureArticleSkuWHfromCSRDetail 'Ед. измерения товар�
 changeUnitOfMeasureArticleSkuWHfromCSRDetail = ACTION (WHfromCSRDetail) {
     REQUEST OBJECT u FORM unitOfMeasures MODAL;
     IF formResult() == formResult.ok THEN {
-        SET unitOfMeasureArticle(article) IF article == articleSku(skuWHfromCSRDetail(WHfromCSRDetail)) <- chosenObject('u');
+        SET unitOfMeasureArticle(article) <- chosenObject('u') WHERE article == articleSku(skuWHfromCSRDetail(WHfromCSRDetail));
     }
 }
 
 netWeightSkuWHfromCSRDetail 'Вес нетто(ед.)' (WHfromCSRDetail) = netWeightSku(skuWHfromCSRDetail(WHfromCSRDetail));
 changeNetWeightSkuWHfromCSRDetail = ACTION (WHfromCSRDetail) {
     REQUEST NUMERIC[14,6] INPUT;
-    SET netWeightSku(sku) IF sku == skuWHfromCSRDetail(WHfromCSRDetail) <- requestedNumeric();
+    SET netWeightSku(sku) <- requestedNumeric() WHERE sku == skuWHfromCSRDetail(WHfromCSRDetail);
 }
 
 nameCountryOfOriginSkuWHfromCSRDetail 'Страна происхождения' (WHfromCSRDetail) = nameCountryOfOriginSku(skuWHfromCSRDetail(WHfromCSRDetail)) PREFCHARWIDTH 30 MINCHARWIDTH 20;
 changeCountryOfOriginSkuWHfromCSRDetail = ACTION (WHfromCSRDetail) {
     REQUEST OBJECT c FORM countries MODAL;
     IF formResult() == formResult.ok THEN {
-        SET countryOfOriginSku(sku) IF sku == skuWHfromCSRDetail(WHfromCSRDetail) <- chosenObject('c');
+        SET countryOfOriginSku(sku) <- chosenObject('c') WHERE sku == skuWHfromCSRDetail(WHfromCSRDetail);
     }
 }
 
 mainCompositionOriginSkuWHfromCSRDetail 'Состав (ориг.)' (WHfromCSRDetail) = mainCompositionOriginSku(skuWHfromCSRDetail(WHfromCSRDetail)) PREFCHARWIDTH 30 MINCHARWIDTH 20;
 changeMainCompositionOriginSkuWHfromCSRDetail = ACTION (WHfromCSRDetail) {
     REQUEST STRING[200] INPUT;
-    SET mainCompositionOriginSku(sku) IF sku == skuWHfromCSRDetail(WHfromCSRDetail) <- requestedString();
+    SET mainCompositionOriginSku(sku) <- requestedString() WHERE sku == skuWHfromCSRDetail(WHfromCSRDetail);
     EXEC translationMainCompositionSkuLanguage(skuWHfromCSRDetail(WHfromCSRDetail), languageWHfromCSRDetail(WHfromCSRDetail));
     EXEC translationMainCompositionSku(skuWHfromCSRDetail(WHfromCSRDetail));
 }
@@ -454,7 +454,7 @@ changeMainCompositionOriginSkuWHfromCSRDetail = ACTION (WHfromCSRDetail) {
 additionalCompositionOriginSkuWHfromCSRDetail 'Дополнительный состав (ориг.)' (WHfromCSRDetail) = additionalCompositionOriginSku(skuWHfromCSRDetail(WHfromCSRDetail)) PREFCHARWIDTH 30 MINCHARWIDTH 20;
 changeAdditionalCompositionOriginSkuWHfromCSRDetail = ACTION (WHfromCSRDetail) {
     REQUEST STRING[200] INPUT;
-    SET additionalCompositionOriginSku(sku) IF sku == skuWHfromCSRDetail(WHfromCSRDetail) <- requestedString();
+    SET additionalCompositionOriginSku(sku) <- requestedString() WHERE sku == skuWHfromCSRDetail(WHfromCSRDetail);
     EXEC translationAdditionalCompositionSkuLanguage(skuWHfromCSRDetail(WHfromCSRDetail), languageWHfromCSRDetail(WHfromCSRDetail));
     EXEC translationAdditionalCompositionSku(skuWHfromCSRDetail(WHfromCSRDetail));
 }
@@ -462,19 +462,19 @@ changeAdditionalCompositionOriginSkuWHfromCSRDetail = ACTION (WHfromCSRDetail) {
 coefficientArticleSkuWHfromCSRDetail 'Кол-во в комплекте' (WHfromCSRDetail) = coefficientArticleSku(skuWHfromCSRDetail(WHfromCSRDetail));
 changeCoefficientArticleSkuWHfromCSRDetail = ACTION (WHfromCSRDetail) {
     REQUEST INTEGER INPUT;
-    SET coefficientArticle(article) IF article == articleSku(skuWHfromCSRDetail(WHfromCSRDetail)) <- requestedInteger();
+    SET coefficientArticle(article) <- requestedInteger() WHERE article == articleSku(skuWHfromCSRDetail(WHfromCSRDetail));
 }
 
 mainCompositionSkuWHfromCSRDetail 'Состав' (WHfromCSRDetail) = mainCompositionSku(skuWHfromCSRDetail(WHfromCSRDetail))  PREFCHARWIDTH 30 MINCHARWIDTH 20;
 changeMainCompositionSkuWHfromCSRDetail = ACTION (WHfromCSRDetail) {
     REQUEST STRING[200] INPUT;
-    SET mainCompositionSku(sku) IF sku == skuWHfromCSRDetail(WHfromCSRDetail) <- requestedString();
+    SET mainCompositionSku(sku) <- requestedString() WHERE sku == skuWHfromCSRDetail(WHfromCSRDetail);
 }
 
 additionalCompositionSkuWHfromCSRDetail 'Дополнительный состав' (WHfromCSRDetail) = additionalCompositionSku(skuWHfromCSRDetail(WHfromCSRDetail)) PREFCHARWIDTH 30 MINCHARWIDTH 20;
 changeAdditionalCompositionSkuWHfromCSRDetail = ACTION (WHfromCSRDetail) {
     REQUEST STRING[200] INPUT;
-    SET additionalCompositionSku(sku) IF sku == skuWHfromCSRDetail(WHfromCSRDetail) <- requestedString();
+    SET additionalCompositionSku(sku) <- requestedString() WHERE sku == skuWHfromCSRDetail(WHfromCSRDetail);
 }
 
 quantityArticleWHfromCSR (article, WHfromCSR) = GROUP SUM quantityWHfromCSRDetail(WHfromCSRDetail)
@@ -655,16 +655,15 @@ receiveWHfromCSI 'Принять' (WHfromCSI) = ACTION (WHfromCSI) NEWSESSION {
             IF r IS WHfromCSRPosted THEN {
                 CHANGECLASS r TO WHfromCSR;
             }
-            FORM WHfromCSR OBJECTS w = r MODAL;
+            FORM WHfromCSR OBJECTS w = r MANAGESESSION DOCKED_MODAL;
         }
     } ELSE {
         ADDOBJ WHfromCSR;
         FOR t == addedObject() DO {
             SET WHfromCSIWHfromCSR (t) <- WHfromCSI AS WHfromCSI;
-            FORM WHfromCSR OBJECTS w = t MODAL;
+            FORM WHfromCSR OBJECTS w = t MANAGESESSION DOCKED_MODAL;
         }
     }
-    IF formResult() == formResult.ok THEN EXEC apply();
 } TOOLBAR;
 
 postRecWHfromCSI 'Пометить как принятое' (WHfromCSI) = postWHfromCSR(WHfromCSRWHfromCSI(WHfromCSI)) TOOLBAR;

@@ -360,7 +360,7 @@ sidGenderArticleSkuWHfromRFDetail 'Пол товара' (WHfromRFDetail) = sidGe
 changeGenderArticleSkuWHfromRFDetail = ACTION (WHfromRFDetail) {
     REQUEST OBJECT g FORM gendersDialog MODAL;
     IF formResult() == formResult.ok THEN {
-        SET genderArticle(article) IF article == articleSku(skuWHfromRFDetail(WHfromRFDetail)) <- chosenObject('g');
+        SET genderArticle(article) <- chosenObject('g') WHERE article == articleSku(skuWHfromRFDetail(WHfromRFDetail));
     }
 }
 
@@ -368,7 +368,7 @@ nameCategoryArticleSkuWHfromRFDetail 'Номенклатурная группа'
 changeCategoryArticleSkuWHfromRFDetail = ACTION (WHfromRFDetail) {
     REQUEST OBJECT c FORM categories MODAL;
     IF formResult() == formResult.ok THEN {
-        SET categoryArticle(article) IF article == articleSku(skuWHfromRFDetail(WHfromRFDetail)) <- chosenObject('c');
+        SET categoryArticle(article) <- chosenObject('c') WHERE article == articleSku(skuWHfromRFDetail(WHfromRFDetail));
     }
 }
 
@@ -376,7 +376,7 @@ nameTypeFabricArticleSkuWHfromRFDetail 'Тип одежды' (WHfromRFDetail) = 
 changeTypeFabricArticleSkuWHfromRFDetail = ACTION (WHfromRFDetail) {
     REQUEST OBJECT t FORM typeFabrics MODAL;
     IF formResult() == formResult.ok THEN {
-        SET typeFabricArticle(article) IF article == articleSku(skuWHfromRFDetail(WHfromRFDetail)) <- chosenObject('t');
+        SET typeFabricArticle(article) <- chosenObject('t') WHERE article == articleSku(skuWHfromRFDetail(WHfromRFDetail));
     }
 }
 
@@ -384,28 +384,28 @@ nameUnitOfMeasureArticleSkuWHfromRFDetail 'Ед. измерения товара
 changeUnitOfMeasureArticleSkuWHfromRFDetail = ACTION (WHfromRFDetail) {
     REQUEST OBJECT u FORM unitOfMeasures MODAL;
     IF formResult() == formResult.ok THEN {
-        SET unitOfMeasureArticle(article) IF article == articleSku(skuWHfromRFDetail(WHfromRFDetail)) <- chosenObject('u');
+        SET unitOfMeasureArticle(article) <- chosenObject('u') WHERE article == articleSku(skuWHfromRFDetail(WHfromRFDetail));
     }
 }
 
 netWeightSkuWHfromRFDetail 'Весс нетто(ед.)' (WHfromRFDetail) = netWeightSku(skuWHfromRFDetail(WHfromRFDetail));
 changeNetWeightSkuWHfromRFDetail = ACTION (WHfromRFDetail) {
     REQUEST NUMERIC[14,6] INPUT;
-    SET netWeightSku(sku) IF sku == skuWHfromRFDetail(WHfromRFDetail) <- requestedNumeric();
+    SET netWeightSku(sku) <- requestedNumeric() WHERE sku == skuWHfromRFDetail(WHfromRFDetail);
 }
 
 nameCountryOfOriginSkuWHfromRFDetail 'Страна происхождения' (WHfromRFDetail) = nameCountryOfOriginSku(skuWHfromRFDetail(WHfromRFDetail)) PREFCHARWIDTH 30 MINCHARWIDTH 20;
 changeCountryOfOriginSkuWHfromRFDetail = ACTION (WHfromRFDetail) {
     REQUEST OBJECT c FORM countries MODAL;
     IF formResult() == formResult.ok THEN {
-        SET countryOfOriginSku(sku) IF sku == skuWHfromRFDetail(WHfromRFDetail) <- chosenObject('c');
+        SET countryOfOriginSku(sku) <- chosenObject('c') WHERE sku == skuWHfromRFDetail(WHfromRFDetail);
     }
 }
 
 mainCompositionOriginSkuWHfromRFDetail 'Состав (ориг.)' (WHfromRFDetail) = mainCompositionOriginSku(skuWHfromRFDetail(WHfromRFDetail)) PREFCHARWIDTH 30 MINCHARWIDTH 20;
 changeMainCompositionOriginSkuWHfromRFDetail = ACTION (WHfromRFDetail) {
     REQUEST STRING[200] INPUT;
-    SET mainCompositionOriginSku(sku) IF sku == skuWHfromRFDetail(WHfromRFDetail) <- requestedString();
+    SET mainCompositionOriginSku(sku) <- requestedString() WHERE sku == skuWHfromRFDetail(WHfromRFDetail);
     EXEC translationMainCompositionSkuLanguage(skuWHfromRFDetail(WHfromRFDetail), languageWHfromRFDetail(WHfromRFDetail));
     EXEC translationMainCompositionSku(skuWHfromRFDetail(WHfromRFDetail));
 }
@@ -414,7 +414,7 @@ changeMainCompositionOriginSkuWHfromRFDetail = ACTION (WHfromRFDetail) {
 additionalCompositionOriginSkuWHfromRFDetail 'Дополнительный состав (ориг.)' (WHfromRFDetail) = additionalCompositionOriginSku(skuWHfromRFDetail(WHfromRFDetail)) PREFCHARWIDTH 30 MINCHARWIDTH 20;
 changeAdditionalCompositionOriginSkuWHfromRFDetail = ACTION (WHfromRFDetail) {
     REQUEST STRING[200] INPUT;
-    SET additionalCompositionOriginSku(sku) IF sku == skuWHfromRFDetail(WHfromRFDetail) <- requestedString();
+    SET additionalCompositionOriginSku(sku) <- requestedString() WHERE sku == skuWHfromRFDetail(WHfromRFDetail);
     EXEC translationAdditionalCompositionSkuLanguage(skuWHfromRFDetail(WHfromRFDetail), languageWHfromRFDetail(WHfromRFDetail));
     EXEC translationAdditionalCompositionSku(skuWHfromRFDetail(WHfromRFDetail));
 }
@@ -422,19 +422,19 @@ changeAdditionalCompositionOriginSkuWHfromRFDetail = ACTION (WHfromRFDetail) {
 coefficientArticleSkuWHfromRFDetail 'Кол-во в комплекте' (WHfromRFDetail) = coefficientArticleSku(skuWHfromRFDetail(WHfromRFDetail));
 changeCoefficientArticleSkuWHfromRFDetail = ACTION (WHfromRFDetail) {
     REQUEST INTEGER INPUT;
-    SET coefficientArticle(article) IF article == articleSku(skuWHfromRFDetail(WHfromRFDetail)) <- requestedInteger();
+    SET coefficientArticle(article) <- requestedInteger() WHERE article == articleSku(skuWHfromRFDetail(WHfromRFDetail));
 }
 
 mainCompositionSkuWHfromRFDetail 'Состав' (WHfromRFDetail) = mainCompositionSku(skuWHfromRFDetail(WHfromRFDetail)) PREFCHARWIDTH 30 MINCHARWIDTH 20;
 changeMainCompositionSkuWHfromRFDetail = ACTION (WHfromRFDetail) {
     REQUEST STRING[200] INPUT;
-    SET mainCompositionSku(sku) IF sku == skuWHfromRFDetail(WHfromRFDetail) <- requestedString();
+    SET mainCompositionSku(sku) <- requestedString() WHERE sku == skuWHfromRFDetail(WHfromRFDetail);
 }
 
 additionalCompositionSkuWHfromRFDetail 'Дополнительный состав' (WHfromRFDetail) = additionalCompositionSku(skuWHfromRFDetail(WHfromRFDetail)) PREFCHARWIDTH 30 MINCHARWIDTH 20;
 changeAdditionalCompositionSkuWHfromRFDetail = ACTION (WHfromRFDetail) {
     REQUEST STRING[200] INPUT;
-    SET additionalCompositionSku(sku) IF sku == skuWHfromRFDetail(WHfromRFDetail) <- requestedString();
+    SET additionalCompositionSku(sku) <- requestedString() WHERE sku == skuWHfromRFDetail(WHfromRFDetail);
 }
 
 quantityArticleWHfromRF (article, WHfromRF) = GROUP SUM quantityWHfromRFDetail(WHfromRFDetail)

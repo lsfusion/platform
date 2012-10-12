@@ -157,16 +157,16 @@ FORM categories 'Товарные группы'
     PROPERTIES(g) addCategory, EDITFORM
     ORDER BY name
 
-    OBJECTS cg=category
-    PROPERTIES(cg) READONLY name, canonicalNameCategory, nameOrigin, nameTypeInvoiceCategory, warrantyCategory, nameUnitOfMeasureCategory, necessaryStampCategory, nameParentCategory
-    PROPERTIES(cg) delete
+    OBJECTS c = category
+    PROPERTIES(c) READONLY name, canonicalNameCategory, nameOrigin, nameTypeInvoiceCategory, warrantyCategory, nameUnitOfMeasureCategory, necessaryStampCategory, nameParentCategory
+    PROPERTIES(c) delete
 
     ORDER BY canonicalNameCategory
 
     FILTERGROUP filters
-        FILTER 'Все листья' 'F10' isParentLeafCategoryCategory(cg, g) DEFAULT
-        FILTER 'Всех потомков' 'F9' isParentCategoryCategory(cg, g)
-        FILTER 'Только непосредственных потомков' 'F8' parentCategory(cg) == g
+        FILTER 'Все листья' 'F10' isParentLeafCategoryCategory(c, g) DEFAULT
+        FILTER 'Всех потомков' 'F9' isParentCategoryCategory(c, g)
+        FILTER 'Только непосредственных потомков' 'F8' parentCategory(c) == g
 ;
 
 DESIGN categories FROM DEFAULT {
@@ -177,8 +177,9 @@ DESIGN categories FROM DEFAULT {
 
         ADD treeGroups.tree.box ;
 
-        ADD cg.box{
+        ADD c.box {
             fillHorizontal = 4;
+            c.grid { defaultComponent = TRUE; }
         }
     }
 
