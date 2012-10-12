@@ -79,22 +79,6 @@ public class PanelController {
         //do nothing by default
     }
 
-    public void hideViews() {
-        for (Map<ClientGroupObjectValue, PropertyController> propControllers : properties.values()) {
-            for (PropertyController controller : propControllers.values()) {
-                controller.hideViews();
-            }
-        }
-    }
-
-    public void showViews() {
-        for (Map<ClientGroupObjectValue, PropertyController> propControllers : properties.values()) {
-            for (PropertyController controller : propControllers.values()) {
-                controller.showViews();
-            }
-        }
-    }
-
     public void setRowBackground(Color value) {
         for (Map<ClientGroupObjectValue, PropertyController> propControllers : properties.values()) {
             for (PropertyController controller : propControllers.values()) {
@@ -164,8 +148,6 @@ public class PanelController {
             }
         }
 
-        logicsSupplier.updateToolbar();
-
         setRowBackground(rowBackground);
         setRowForeground(rowForeground);
 
@@ -192,6 +174,17 @@ public class PanelController {
         }
     }
 
+    private boolean visible = true;
+    public void setVisible(boolean visible) {
+        if (this.visible != visible) {
+            this.visible = visible;
+            for (Map<ClientGroupObjectValue, PropertyController> propControllers : properties.values()) {
+                for (PropertyController controller : propControllers.values()) {
+                    controller.setVisible(visible);
+                }
+            }
+        }
+    }
 
     public void updateColumnKeys(ClientPropertyDraw property, List<ClientGroupObjectValue> groupColumnKeys) {
         columnKeys.put(property, groupColumnKeys);

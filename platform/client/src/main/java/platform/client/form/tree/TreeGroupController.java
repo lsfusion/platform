@@ -184,11 +184,6 @@ public class TreeGroupController extends AbstractGroupObjectController {
                : treeGroup.groups.get(0);
     }
 
-    @Override
-    public void updateToolbar() {
-//        panelToolbar.update(ClassViewType.GRID);
-    }
-
     public void updateDrawPropertyCaptions(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> captions) {
         if (panelProperties.contains(property)) {
             panel.updatePropertyCaptions(property, captions);

@@ -34,7 +34,7 @@ public class GroupObjectController extends AbstractGroupObjectController {
 
     private final Map<ClientObject, ObjectController> objects = new HashMap<ClientObject, ObjectController>();
 
-    public ClassViewType classView = ClassViewType.HIDE;
+    public ClassViewType classView = ClassViewType.GRID;
 
     public GroupObjectController(ClientGroupObject igroupObject, LogicsSupplier ilogicsSupplier, ClientFormController iform, ClientFormLayout formLayout) throws IOException {
         super(iform, ilogicsSupplier, formLayout, igroupObject == null ? null : igroupObject.toolbar);
@@ -76,23 +76,13 @@ public class GroupObjectController extends AbstractGroupObjectController {
             }
             grid.addView(formLayout);
 
-            showType = new ShowTypeController(groupObject.showType, this, form) {
-                protected void needToBeShown() {
-                    GroupObjectController.this.showViews();
-                }
-
-                protected void needToBeHidden() {
-                    GroupObjectController.this.hideViews();
-                }
-            };
+            showType = new ShowTypeController(groupObject, this, form);
             showType.addView(formLayout);
-            showType.setBanClassView(groupObject.banClassView);
 
             configureToolbar();
-
-            setClassView(ClassViewType.GRID);
-            grid.update();
         }
+
+        update();
     }
 
     private void configureToolbar() {
@@ -205,64 +195,8 @@ public class GroupObjectController extends AbstractGroupObjectController {
         update();
     }
 
-    private void update() {
-        if (grid != null) {
-            grid.update();
-        }
-        panel.update();
-    }
-
-    private void hideViews() {
-
-        panel.hideViews();
-
-        if (grid != null) {
-            grid.hideViews();
-        }
-
-        if (groupObject != null) {
-            for (ClientObject object : groupObject.objects) {
-                objects.get(object).hideViews();
-            }
-        }
-
-        if (showType != null) {
-            showType.hideViews();
-        }
-
-        // нет смысла вызывать validate или invalidate, так как setVisible услышит сам SimplexLayout и сделает главному контейнеру invalidate
-    }
-
-    private void showViews() {
-        panel.showViews();
-
-        if (grid != null) {
-            grid.showViews();
-        }
-
-        if (groupObject != null) {
-            for (ClientObject object : groupObject.objects) {
-                objects.get(object).showViews();
-            }
-        }
-
-        if (showType != null) {
-            showType.showViews();
-        }
-    }
-
     public void setClassView(ClassViewType classView) {
-        if (this.classView != classView) {
-            this.classView = classView;
-
-            for (ClientObject object : groupObject.objects) {
-                objects.get(object).changeClassView(classView);
-            }
-
-            if (showType != null) {
-                showType.changeClassView(classView);
-            }
-        }
+        this.classView = classView;
     }
 
     public void requestFocusInWindow() {
@@ -315,7 +249,7 @@ public class GroupObjectController extends AbstractGroupObjectController {
 
         if (groupObject.grid.autoHide) {
             setClassView(gridObjects.size() != 0 ? ClassViewType.GRID : ClassViewType.HIDE);
-            grid.update();
+            update();
         }
     }
 
@@ -483,12 +417,24 @@ public class GroupObjectController extends AbstractGroupObjectController {
         }
     }
 
-    public void updateToolbar() {
+    private void update() {
         if (groupObject != null) {
-            toolbarView.setVisible(classView == ClassViewType.GRID);
+            grid.update();
+
+            toolbarView.setVisible(grid.isVisible());
+
             if (filter != null) {
-                filter.setVisible(classView == ClassViewType.GRID);
+                filter.setVisible(grid.isVisible());
             }
+
+            for (ClientObject object : groupObject.objects) {
+                objects.get(object).setVisible(grid.isVisible());
+            }
+
+            showType.update(classView);
         }
+
+        panel.update();
+        panel.setVisible(classView != ClassViewType.HIDE);
     }
 }

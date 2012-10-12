@@ -6,7 +6,6 @@ import platform.client.form.classes.ClassChooserView;
 import platform.client.form.queries.QueryConditionView;
 import platform.client.form.queries.ToolbarGridButton;
 import platform.client.logics.ClientObject;
-import platform.interop.ClassViewType;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -26,8 +25,6 @@ public class ObjectController {
     public final ClassChooserController classChooserController;
 
     private final JButton toolbarButton;
-
-    private ClassViewType classView = ClassViewType.HIDE;
 
     public ObjectController(ClientObject iobject, ClientFormController iform) throws IOException {
         object = iobject;
@@ -55,33 +52,11 @@ public class ObjectController {
     }
 
     public void addView(ClientFormLayout formLayout) {
-        if (classChooserController.allowedEditObjects()) {
-            classChooserController.addView(formLayout);
-        }
+        classChooserController.addView(formLayout);
     }
 
-    public void changeClassView(ClassViewType classView) {
-        this.classView = classView;
-
-        if (classView.equals(ClassViewType.GRID)) {
-            if (classChooserController != null) {
-                classChooserController.showViews();
-            }
-        } else {
-            if (classChooserController != null) {
-                classChooserController.hideViews();
-            }
-        }
-    }
-
-    public void hideViews() {
-        classChooserController.hideViews();
-    }
-
-    public void showViews() {
-        if (classView.equals(ClassViewType.GRID)) {
-            classChooserController.showViews();
-        }
+    public void setVisible(boolean visible) {
+        classChooserController.setVisible(visible);
     }
 
     public JButton getToolbarButton() {

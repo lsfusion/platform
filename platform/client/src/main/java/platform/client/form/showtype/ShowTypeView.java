@@ -10,16 +10,23 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
 
-public abstract class ShowTypeView extends JPanel {
-    private final static ImageIcon gridIcon = new ImageIcon(ShowTypeView.class.getResource("/images/table.png"));
-    private final static ImageIcon panelIcon = new ImageIcon(ShowTypeView.class.getResource("/images/list.png"));
-    private final static ImageIcon hideIcon = new ImageIcon(ShowTypeView.class.getResource("/images/close.png"));
+public class ShowTypeView extends JPanel {
+    private final static ImageIcon gridIcon = new ImageIcon(ShowTypeView.class.getResource("/images/view_grid.png"));
+    private final static ImageIcon panelIcon = new ImageIcon(ShowTypeView.class.getResource("/images/view_panel.png"));
+    private final static ImageIcon hideIcon = new ImageIcon(ShowTypeView.class.getResource("/images/view_hide.png"));
 
     private final JButton gridButton;
     private final JButton panelButton;
     private final JButton hideButton;
+    private final ShowTypeController controller;
+    private final List<ClassViewType> banClassView;
 
-    public ShowTypeView() {
+    private ClassViewType classView = ClassViewType.HIDE;
+
+    public ShowTypeView(ShowTypeController controller, List<ClassViewType> banClassView) {
+        this.controller = controller;
+        this.banClassView = banClassView;
+
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
 
         add(gridButton = createShowTypeButton(ClassViewType.GRID, gridIcon));
@@ -35,7 +42,9 @@ public abstract class ShowTypeView extends JPanel {
         return showTypeButton;
     }
 
-    public void changeClassView(ClassViewType classView, List<ClassViewType> banClassView) {
+    public void setClassView(ClassViewType iclassView) {
+        classView = iclassView;
+
         panelButton.setBorderPainted(classView != ClassViewType.PANEL);
         gridButton.setBorderPainted(classView != ClassViewType.GRID);
         hideButton.setBorderPainted(classView != ClassViewType.HIDE);
@@ -56,9 +65,9 @@ public abstract class ShowTypeView extends JPanel {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            setNewClassView(newClassView);
+            if (classView != newClassView) {
+                controller.changeClassViewButtonClicked(newClassView);
+            }
         }
     }
-
-    protected abstract void setNewClassView(ClassViewType newClassView);
 }

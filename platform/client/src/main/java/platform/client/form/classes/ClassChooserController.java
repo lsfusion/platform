@@ -28,26 +28,17 @@ public class ClassChooserController {
     }
 
     public void addView(ClientFormLayout formLayout) {
-        classChooserView = new ClassChooserView(form, object);
-        formLayout.add(object.classChooser, classChooserView);
-    }
-
-    public void showViews() {
-        if (object.classChooser.visible) {
-            if (classChooserView != null) {
-                classChooserView.setVisible(true);
-            }
+        // нужно для того, что если объект типа дата, то для него не будет возможностей добавлять объекты
+        if (object.baseClass instanceof ClientObjectClass) {
+            classChooserView = new ClassChooserView(form, object);
+            formLayout.add(object.classChooser, classChooserView);
         }
     }
 
-    public void hideViews() {
+    public void setVisible(boolean visible) {
         if (classChooserView != null) {
-            classChooserView.setVisible(false);
+            classChooserView.setVisible(object.classChooser.visible && visible);
         }
     }
 
-    // нужно для того, что если объект типа дата, то для него не будет возможностей добавлять объекты
-    public boolean allowedEditObjects() {
-        return object.baseClass instanceof ClientObjectClass;
-    }
 }

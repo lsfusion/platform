@@ -27,8 +27,6 @@ public interface GroupObjectLogicsSupplier extends LogicsSupplier {
 
     ClientGroupObject getSelectedGroupObject();
 
-    void updateToolbar();
-
     void updateDrawPropertyCaptions(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> captions);
 
     void updateRowBackgroundValues(Map<ClientGroupObjectValue, Object> rowBackground);

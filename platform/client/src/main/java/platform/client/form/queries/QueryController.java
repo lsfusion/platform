@@ -51,7 +51,7 @@ abstract class QueryController {
         setState(State.REMOVED);
     }
 
-    public void setState(State state) {
+    private void setState(State state) {
         this.state = state;
 
         toolbarButton.setIcon(getStateIcon());

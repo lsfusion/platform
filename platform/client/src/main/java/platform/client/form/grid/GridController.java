@@ -12,6 +12,7 @@ import platform.client.logics.ClientGroupObject;
 import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
 import platform.client.logics.classes.ClientIntegralClass;
+import platform.interop.ClassViewType;
 import platform.interop.Order;
 import platform.interop.form.ServerResponse;
 import platform.interop.form.screen.ExternalScreenComponent;
@@ -44,6 +45,8 @@ public class GridController {
     private final ClientFormController form;
 
     private final GroupObjectController groupController;
+
+    private boolean forceHidden = false;
 
     public GridController(GroupObjectController igroupController, ClientFormController iform) {
         groupController = igroupController;
@@ -224,16 +227,6 @@ public class GridController {
         return groupChangeButton;
     }
 
-    void needToBeShown() {
-        if (!hidden && !view.isVisible()) {
-            view.setVisible(true);
-        }
-    }
-
-    void needToBeHidden() {
-        view.setVisible(false);
-    }
-
     public GridView getGridView() {
         return view;
     }
@@ -339,23 +332,20 @@ public class GridController {
         table.selectProperty(propertyDraw);
     }
 
-    boolean hidden = false;
-
-    public void hideViews() {
-        hidden = true;
-        view.setVisible(false);
-    }
-
-    public void showViews() {
-        hidden = false;
-        view.setVisible(true);
-    }
-
-    public void update() {
-        table.updateTable();
+    public void setForceHidden(boolean forceHidden) {
+        this.forceHidden = forceHidden;
     }
 
     public GroupObjectController getGroupController() {
         return groupController;
+    }
+
+    public boolean isVisible() {
+        return !forceHidden && groupController.classView == ClassViewType.GRID;
+    }
+
+    public void update() {
+        table.updateTable();
+        view.setVisible(isVisible());
     }
 }

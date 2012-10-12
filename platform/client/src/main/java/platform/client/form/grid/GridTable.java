@@ -476,9 +476,9 @@ public class GridTable extends ClientPropertyTable {
         if (model.getColumnCount() != 0) {
             setRowHeight(rowHeight);
             tableHeader.resizeAndRepaint();
-            gridController.needToBeShown();
+            gridController.setForceHidden(false);
         } else {
-            gridController.needToBeHidden();
+            gridController.setForceHidden(true);
         }
     }
 

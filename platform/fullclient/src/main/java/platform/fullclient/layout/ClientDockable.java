@@ -93,6 +93,7 @@ abstract class ClientDockable extends DefaultMultipleCDockable {
     public void blockView() {
         closeAction.setEnabled(false);
         contentLayerUI.setLocked(true);
+        contentLayer.updateUI();
     }
 
     public void unblockView() {

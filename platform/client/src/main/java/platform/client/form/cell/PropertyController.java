@@ -97,12 +97,8 @@ public class PropertyController {
         view.forceEdit();
     }
 
-    public void hideViews() {
-        getView().setVisible(false);
-    }
-
-    public void showViews() {
-        getView().setVisible(true);
+    public void setVisible(boolean visible) {
+        getView().setVisible(visible);
     }
 
     public void setCaption(String caption) {
