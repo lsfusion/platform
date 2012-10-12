@@ -114,28 +114,31 @@ META defineCreditNote(sign, contact, contactCaption)
         }
     }
 
-    FORM userCreditNotes 'Акты расхождений'###sign
-        OBJECTS c = userCreditNote
-        PROPERTIES (c) READONLY isPostedUserCreditNote FORCE GRID, objectClassName, numberObject, seriesObject, dateUserCreditNote, timeUserCreditNote,
-                                nameStockUserCreditNote, name###contact###UserCreditNote, nameCurrencyUserCreditNote, noteUserCreditNote,
-                                countUserCreditNoteDetailUserCreditNote, quantityUserCreditNoteDetailUserCreditNote, sumUserCreditNoteDetailUserCreditNote,
-                                VATSumUserCreditNoteDetailUserCreditNote, invoiceSumUserCreditNoteDetailUserCreditNote
+    addUserCreditNote 'Добавить' = ACTION ADDFORM userCreditNote;
+    editUserCreditNote 'Редактировать' (userCreditNote) = ACTION EDITFORM userCreditNote;
 
+    FORM creditNotes 'Акты расхождений'###sign
+        OBJECTS c = creditNote
+        PROPERTIES (c) READONLY isPostedCreditNote FORCE GRID, objectClassName, numberCreditNote, seriesCreditNote, dateCreditNote, timeCreditNote,
+                                nameStockCreditNote, name###contact###CreditNote, nameCurrencyCreditNote, noteCreditNote,
+                                countCreditNoteDetailCreditNote, quantityCreditNoteDetailCreditNote, sumCreditNoteDetailCreditNote,
+                                VATSumCreditNoteDetailCreditNote, invoiceSumCreditNoteDetailCreditNote
         PROPERTIES (c) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
-        PROPERTIES (c) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
+        PROPERTIES ()  addUserCreditNote TODRAW c
+        PROPERTIES (c) editUserCreditNote
+        PROPERTIES (c) delete FORCE PANEL DRAWTOTOOLBAR
 
-        OBJECTS d = userCreditNoteDetail
-        PROPERTIES (d) READONLY indexUserCreditNoteDetail, idBarcodeSkuUserCreditNoteDetail, nameSkuUserCreditNoteDetail, shortNameUOMSkuUserCreditNoteDetail,
-                                quantityUserCreditNoteDetail, priceUserCreditNoteDetail, sumUserCreditNoteDetail,
-                                numberVATUserCreditNoteDetail, valueVATUserCreditNoteDetail, VATSumUserCreditNoteDetail, invoiceSumUserCreditNoteDetail,
-                                nameStockUserCreditNoteDetail
-        FILTERS userCreditNoteUserCreditNoteDetail(d) == c
+        OBJECTS d = creditNoteDetail
+        PROPERTIES (d) READONLY indexCreditNoteDetail, idBarcodeSkuCreditNoteDetail, nameSkuCreditNoteDetail, shortNameUOMSkuCreditNoteDetail,
+                                quantityCreditNoteDetail, priceCreditNoteDetail, sumCreditNoteDetail, numberVATCreditNoteDetail, valueVATCreditNoteDetail,
+                                 VATSumCreditNoteDetail, invoiceSumCreditNoteDetail, nameStockCreditNoteDetail
+        FILTERS creditNoteCreditNoteDetail(d) == c
 
         DIALOG creditNote OBJECT c
     ;
 
-    DESIGN userCreditNotes FROM DEFAULT {
+    DESIGN creditNotes FROM DEFAULT {
         PROPERTY (delete(c)) {
             askConfirm = TRUE;
         }
@@ -170,6 +173,7 @@ META defineCreditNote(sign, contact, contactCaption)
         }
     }
 
+
 //--  Связь акта и накладной
     invoiceDetailCreditNoteDetail = ABSTRACT invoiceDetail (creditNoteDetail);
     invoiceDetailUserCreditNoteDetail = DATA invoiceDetail (userCreditNoteDetail);
@@ -182,6 +186,7 @@ META defineCreditNote(sign, contact, contactCaption)
             MESSAGE contactCaption###', компания и товар в накладной и акте расхождения должны соответствовать друг другу';
 
     descriptionIndexInvoiceUserCreditNoteDetail 'Накладная' (userCreditNoteDetail) =  descriptionIndexInvoiceDetail(invoiceDetailUserCreditNoteDetail(userCreditNoteDetail));
+    descriptionIndexInvoiceInvoiceCreditNoteDetail 'Накладная' (creditNoteDetail) =  descriptionIndexInvoiceDetail(invoiceDetailCreditNoteDetail(creditNoteDetail));
 
     quantityInvoiceCreditNote (invoice, creditNote) = GROUP SUM quantityCreditNoteDetail(creditNoteDetail) BY invoiceInvoiceDetail(invoiceDetailCreditNoteDetail(creditNoteDetail)), creditNoteCreditNoteDetail(creditNoteDetail);
     invoicesCreditNote 'Накладные' (creditNote) = GROUP CONCAT castToString255(descriptionInvoice(invoice)) IF quantityInvoiceCreditNote(invoice, creditNote) , ', '
@@ -194,9 +199,9 @@ META defineCreditNote(sign, contact, contactCaption)
     ;
     EXTEND DESIGN userCreditNote { headerColumn2 { ADD c.invoiceGroup; } }
 
-    EXTEND FORM userCreditNotes
+    EXTEND FORM creditNotes
         PROPERTIES(c) READONLY invoicesCreditNote
-        PROPERTIES(d) READONLY descriptionIndexInvoiceUserCreditNoteDetail
+        PROPERTIES(d) READONLY descriptionIndexInvoiceInvoiceCreditNoteDetail
     ;
 
     quantityUserCreditNoteDetail (detail)  <- toShipInvoiceDetail(invoiceDetailUserCreditNoteDetail(detail))
@@ -229,8 +234,7 @@ META defineCreditNote(sign, contact, contactCaption)
     needToCreditNoteInvoice (invoice) = GROUP SUM 1 IF needToCreditNoteInvoiceDetail(invoiceDetail) BY invoiceInvoiceDetail(invoiceDetail);
 
     EXTEND FORM userInvoice PROPERTIES(i) createCreditNoteUserInvoice;
-    EXTEND FORM userInvoices PROPERTIES(i) READONLY createCreditNoteUserInvoice;
-    EXTEND FORM invoices PROPERTIES(i) createCreditNoteInvoice;
+    EXTEND FORM invoices PROPERTIES(i) READONLY createCreditNoteInvoice;
 
     CLASS invoiceCreditNote 'Акт расхождения на основе инвойса' : creditNote;
     CLASS invoiceCreditNotePosted 'Закрытый акт расхождения на основе инвойса' : invoiceCreditNote, postedObject;
@@ -303,47 +307,13 @@ META defineCreditNote(sign, contact, contactCaption)
 
     VATSumCreditNoteDetail (creditNoteDetail) += VATSumInvoiceCreditNoteDetail(creditNoteDetail);
 
-    FORM dialogCreditNotes 'Акты расхождений (все)'###sign
-        OBJECTS c = creditNote
-        PROPERTIES (c) READONLY isPostedCreditNote FORCE GRID, objectClassName, numberCreditNote, seriesCreditNote, dateCreditNote, timeCreditNote,
-                                nameStockCreditNote, name###contact###CreditNote, nameCurrencyCreditNote, noteCreditNote,
-                                countCreditNoteDetailCreditNote, quantityCreditNoteDetailCreditNote, sumCreditNoteDetailCreditNote,
-                                VATSumCreditNoteDetailCreditNote, invoiceSumCreditNoteDetailCreditNote, invoicesCreditNote
-
-        OBJECTS d = creditNoteDetail
-        PROPERTIES (d) READONLY indexCreditNoteDetail, idBarcodeSkuCreditNoteDetail, nameSkuCreditNoteDetail, shortNameUOMSkuCreditNoteDetail,
-                                quantityCreditNoteDetail, priceCreditNoteDetail, sumCreditNoteDetail, numberVATCreditNoteDetail, valueVATCreditNoteDetail,
-                                 VATSumCreditNoteDetail, invoiceSumCreditNoteDetail, nameStockCreditNoteDetail, descriptionIndexInvoiceCreditNoteDetail
-        FILTERS creditNoteCreditNoteDetail(d) == c
-
-        DIALOG creditNote OBJECT c
-    ;
-
-    DESIGN dialogCreditNotes FROM DEFAULT {
-
-        NEW documentContainer BEFORE functions.box {
-            type = SPLITV;
-            childConstraints = TO THE BOTTOM;
-
-            ADD c.box;
-
-            NEW documentDetail {
-                type = TABBED;
-
-                ADD d.box {
-                    title = 'Спецификация';
-                }
-            }
-        }
-    }
-
 END
 
 META defineCreditNoteBatch(dumb)
     @defineDocumentInterfaceDetailBatch(creditNote, batch);
 
     EXTEND FORM userCreditNote PROPERTIES (d) descriptionBatchUserCreditNoteDetail AFTER shortNameUOMSkuUserCreditNoteDetail;
-    EXTEND FORM userCreditNotes PROPERTIES (d) READONLY descriptionBatchUserCreditNoteDetail AFTER shortNameUOMSkuUserCreditNoteDetail;
+    EXTEND FORM creditNotes PROPERTIES (d) READONLY descriptionBatchCreditNoteDetail AFTER shortNameUOMSkuCreditNoteDetail;
 
 
     batchUserCreditNoteDetail (detail)  <- batchInvoiceDetail(invoiceDetailUserCreditNoteDetail(detail))
@@ -352,5 +322,4 @@ META defineCreditNoteBatch(dumb)
     @defineDocumentAggregationDetailBatch (invoice, invoiceCreditNote);
     batchCreditNoteDetail (creditNoteDetail) += batchInvoiceCreditNoteDetail(creditNoteDetail);
 
-    EXTEND FORM dialogCreditNotes PROPERTIES (d) READONLY descriptionBatchCreditNoteDetail AFTER shortNameUOMSkuCreditNoteDetail;
 END

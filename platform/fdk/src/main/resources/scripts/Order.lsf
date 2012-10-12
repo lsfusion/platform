@@ -139,24 +139,30 @@ META defineOrder(sign, contact)
     @defineDocumentSkuStock(userOrder);
     @extendDocumentFormSkuStock(userOrder, userOrder, o);
 
-    FORM userOrders 'Заказы'###sign
-        OBJECTS o = userOrder
-        PROPERTIES (o) READONLY isPostedUserOrder FORCE GRID, objectClassName, numberObject, seriesObject, dateUserOrder, timeUserOrder,
-                                nameStockUserOrder, name###contact###UserOrder, nameCurrencyUserOrder, namePriceListTypeUserOrder, noteUserOrder,
-                                countUserOrderDetailUserOrder, quantityUserOrderDetailUserOrder, sumUserOrderDetailUserOrder
+    addUserOrder 'Добавить' = ACTION ADDFORM userOrder;
+    editUserOrder 'Редактировать' (userOrder) = ACTION EDITFORM userOrder;
+
+    FORM orders 'Заказы'###sign
+        OBJECTS o = order
+        PROPERTIES (o) READONLY isPostedOrder FORCE GRID, objectClassName, numberObject, seriesObject, dateOrder, timeOrder,
+                                nameStockOrder, name###contact##Order, nameCurrencyOrder, namePriceListTypeOrder, noteOrder,
+                                countOrderDetailOrder, quantityOrderDetailOrder, sumOrderDetailOrder
 
         PROPERTIES (o) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
-        PROPERTIES (o) closeUserOrder SHOWIF isOpenUserOrder(o), ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
+        PROPERTIES ()  addUserOrder TODRAW o
+        PROPERTIES (o) editUserOrder
+        PROPERTIES (o) closeUserOrder SHOWIF isOpendOrder(o), delete FORCE PANEL DRAWTOTOOLBAR
 
-        OBJECTS d=userOrderDetail
-        PROPERTIES (d) READONLY indexUserOrderDetail, idBarcodeSkuUserOrderDetail, nameSkuUserOrderDetail, shortNameUOMSkuUserOrderDetail,
-                       quantityUserOrderDetail, priceUserOrderDetail, sumUserOrderDetail, nameStockUserOrderDetail
+        OBJECTS d=orderDetail
+        PROPERTIES (d) READONLY indexOrderDetail, idBarcodeSkuOrderDetail, nameSkuOrderDetail, shortNameUOMSkuOrderDetail,
+                       quantityOrderDetail, priceOrderDetail, sumOrderDetail, nameStockOrderDetail
 
-        FILTERS userOrderUserOrderDetail(d) == o
+        FILTERS orderOrderDetail(d) == o
+        DIALOG order OBJECT o
     ;
 
-    DESIGN userOrders FROM DEFAULT {
+    DESIGN orders FROM DEFAULT {
         PROPERTY (delete(o)) {
             askConfirm = TRUE;
         }
@@ -185,49 +191,6 @@ META defineOrder(sign, contact)
                         title = 'Печать';
                         childConstraints = TO THE BOTTOM;
                         fillVertical = 1.0;
-                    }
-                }
-            }
-        }
-    }
-
-    FORM orders 'Заказы'###sign
-        OBJECTS o = order
-        PROPERTIES (o) READONLY isPostedOrder FORCE GRID, objectClassName, numberOrder, seriesOrder, dateOrder, timeOrder,
-                                nameStockOrder, name###contact###Order, nameCurrencyOrder, noteOrder,
-                                countOrderDetailOrder, quantityOrderDetailOrder, sumOrderDetailOrder
-
-        OBJECTS d = orderDetail
-        PROPERTIES (d) READONLY indexOrderDetail, idBarcodeSkuOrderDetail, nameSkuOrderDetail, shortNameUOMSkuOrderDetail,
-                                quantityOrderDetail, priceOrderDetail, sumOrderDetail, nameStockOrderDetail
-
-        FILTERS orderOrderDetail(d) == o
-
-        DIALOG order OBJECT o
-    ;
-
-    DESIGN orders FROM DEFAULT {
-        main {
-            preferredSize = (1024, 768);
-            NEW documentContainer BEFORE functions.box {
-                type = SPLITV;
-                childConstraints = TO THE BOTTOM;
-
-                ADD o.box;
-
-                NEW documentDetail {
-                    type = TABBED;
-
-                    ADD d.box {
-                        title = 'Спецификация';
-                    }
-                    NEW printTab {
-                        title = 'Печатные формы';
-                        NEW printContainer {
-                            title = 'Печать';
-                            childConstraints = TO THE BOTTOM;
-                            fillVertical = 1.0;
-                        }
                     }
                 }
             }

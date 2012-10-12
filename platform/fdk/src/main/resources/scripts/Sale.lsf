@@ -10,22 +10,19 @@ currentReserveSaleSkuStock 'Текущий резерв'(sku, stock)  = Sale.cur
     SaleReturn.currentReserveSkuStock(sku, stock);
 
 NAVIGATOR {
-        NEW saleSaleNavigator 'Продажи' {
-            ADD Sale.userOrders;
-            ADD Sale.userInvoices;
-            ADD Sale.userShipments;
-            ADD Sale.dialogShipments;
-            ADD Sale.userCreditNotes;
-//            ADD Sale.dialogCreditNotes;
 
-        }
-        NEW saleReturnNavigator 'Возвраты' {
-            ADD SaleReturn.userOrders;
-            ADD SaleReturn.userInvoices;
-            ADD SaleReturn.userShipments;
-            ADD SaleReturn.userCreditNotes;
-//            ADD SaleReturn.dialogCreditNotes;
-        }
+    NEW saleSaleNavigator 'Продажи' {
+        ADD Sale.orders;
+        ADD Sale.invoices;
+        ADD Sale.shipments;
+        ADD Sale.creditNotes;
+    }
+    NEW saleReturnNavigator 'Возвраты' {
+        ADD SaleReturn.orders;
+        ADD SaleReturn.invoices;
+        ADD SaleReturn.shipments;
+        ADD SaleReturn.creditNotes;
+    }
 }
 
 

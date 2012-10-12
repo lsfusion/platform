@@ -108,26 +108,29 @@ META defineShipment(skuLedger, sign, contact, contactCaption, partyA, partyB)
         }
     }
 
-    FORM userShipments 'Поставки'###sign
-        OBJECTS s = userShipment
-        PROPERTIES (s) READONLY isPostedUserShipment FORCE GRID, objectClassName, numberObject, seriesObject, dateUserShipment, timeUserShipment,
-                                nameStockUserShipment, name###contact###UserShipment, nameCurrencyUserShipment, noteUserShipment,
-                                countUserShipmentDetailUserShipment, quantityUserShipmentDetailUserShipment, sumUserShipmentDetailUserShipment
+    addUserShipment 'Добавить' = ACTION ADDFORM userShipment;
+    editUserShipment 'Редактировать' (userShipment) = ACTION EDITFORM userShipment;
 
+    FORM shipments 'Поставки'###sign
+        OBJECTS s = shipment
+        PROPERTIES (s) READONLY isPostedShipment FORCE GRID, objectClassName, numberShipment, seriesShipment, dateShipment, timeShipment,
+                                nameStockShipment, name###contact###Shipment, nameCurrencyShipment, noteShipment,
+                                countShipmentDetailShipment, quantityShipmentDetailShipment, sumShipmentDetailShipment
         PROPERTIES (s) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
-        PROPERTIES (s) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
+        PROPERTIES ()  addUserShipment TODRAW s
+        PROPERTIES (s) editUserShipment
+        PROPERTIES (s) delete FORCE PANEL DRAWTOTOOLBAR
 
-        OBJECTS d = userShipmentDetail
-        PROPERTIES (d) READONLY indexUserShipmentDetail, idBarcodeSkuUserShipmentDetail, nameSkuUserShipmentDetail, shortNameUOMSkuUserShipmentDetail,
-                                quantityUserShipmentDetail, priceUserShipmentDetail, sumUserShipmentDetail,
-                                nameStockUserShipmentDetail
-        FILTERS userShipmentUserShipmentDetail(d) == s
+        OBJECTS d = shipmentDetail
+        PROPERTIES (d)  indexShipmentDetail, idBarcodeSkuShipmentDetail, nameSkuShipmentDetail, shortNameUOMSkuShipmentDetail,
+                                quantityShipmentDetail, priceShipmentDetail, sumShipmentDetail,
+                                nameStockShipmentDetail
+        FILTERS shipmentShipmentDetail(d) == s
 
         DIALOG shipment OBJECT s
     ;
-
-    DESIGN userShipments FROM DEFAULT {
+    DESIGN shipments FROM DEFAULT {
         PROPERTY (delete(s)) {
             askConfirm = TRUE;
         }
@@ -282,11 +285,6 @@ META defineShipment(skuLedger, sign, contact, contactCaption, partyA, partyB)
         PROPERTIES(d) READONLY shippedOrderDetail AFTER invoicedOrderDetail
     ;
 
-    EXTEND FORM userOrders
-        PROPERTIES(o) READONLY shippedOrderDetailOrder AFTER quantityUserOrderDetailUserOrder
-        PROPERTIES(d) READONLY shippedOrderDetail AFTER invoicedOrderDetail
-    ;
-
     EXTEND FORM orders
         PROPERTIES(o) READONLY shippedOrderDetailOrder AFTER quantityOrderDetailOrder
         PROPERTIES(d) READONLY shippedOrderDetail AFTER invoicedOrderDetail
@@ -297,9 +295,9 @@ META defineShipment(skuLedger, sign, contact, contactCaption, partyA, partyB)
         PROPERTIES(d) descriptionOrderUserShipmentDetail BEFORE delete(d)
     ;
     EXTEND DESIGN userShipment { headerColumn2 { ADD s.orderGroup; } }
-    EXTEND FORM userShipments
+    EXTEND FORM shipments
         PROPERTIES(s) READONLY ordersShipment
-        PROPERTIES(d) READONLY descriptionOrderUserShipmentDetail
+        PROPERTIES(d) READONLY descriptionOrderShipmentDetail
     ;
 
     // Резервирование
@@ -336,7 +334,6 @@ META defineShipment(skuLedger, sign, contact, contactCaption, partyA, partyB)
     maxBatchInvoiceDetail (invoiceDetail) = GROUP MAX batch IF costInvoiceDetailBatch(invoiceDetail, batch) BY invoiceDetail;
 
     EXTEND FORM userInvoice PROPERTIES(d) READONLY shippedInvoiceDetail AFTER quantityUserInvoiceDetail;
-    EXTEND FORM userInvoices PROPERTIES(d) READONLY shippedInvoiceDetail AFTER quantityUserInvoiceDetail;
     EXTEND FORM invoices PROPERTIES(d) READONLY shippedInvoiceDetail AFTER quantityInvoiceDetail;
 
     toShipInvoiceDetail 'Не поставлено' (invoiceDetail) = quantityInvoiceDetail (invoiceDetail) (-) shippedInvoiceDetail(invoiceDetail);
@@ -441,9 +438,9 @@ META defineShipment(skuLedger, sign, contact, contactCaption, partyA, partyB)
     ;
     EXTEND DESIGN userShipment { headerColumn2 { ADD s.invoiceGroup; } }
 
-    EXTEND FORM userShipments
+    EXTEND FORM shipments
         PROPERTIES(s) READONLY invoicesShipment
-        PROPERTIES(d) READONLY descriptionIndexInvoiceDetailUserShipmentDetail
+        PROPERTIES(d) READONLY descriptionIndexInvoiceDetailShipmentDetail
     ;
 
 //-- аггр.объект
@@ -461,12 +458,9 @@ META defineShipment(skuLedger, sign, contact, contactCaption, partyA, partyB)
         PROPERTIES(i) createShipmentUserInvoice
         PROPERTIES(d) BEFORE delete(d) SHOWIF createShipmentInvoice(i) shipmentPriceUserInvoiceDetail, shipmentSumUserInvoiceDetail
     ;
-    EXTEND FORM userInvoices
-        PROPERTIES(i) READONLY createShipmentUserInvoice
-        PROPERTIES(d) READONLY SHOWIF createShipmentInvoice(i) shipmentPriceUserInvoiceDetail, shipmentSumUserInvoiceDetail
-    ;
     EXTEND FORM invoices
-        PROPERTIES(i) createShipmentInvoice
+        PROPERTIES(i) READONLY createShipmentInvoice
+        PROPERTIES(d) READONLY SHOWIF createShipmentInvoice(i) shipmentPriceInvoiceDetail, shipmentSumInvoiceDetail
     ;
 
     createShipmentInvoiceDetail 'Создавать поставку' (invoiceDetail) = createShipmentInvoice(invoiceInvoiceDetail(invoiceDetail));
@@ -530,48 +524,13 @@ META defineShipment(skuLedger, sign, contact, contactCaption, partyA, partyB)
 
     invoiceDetailShipmentDetail(shipmentDetail) += invoiceDetailInvoiceShipmentDetail(shipmentDetail);
 
-    FORM dialogShipments 'Поставки (все)'###sign
-        OBJECTS s = shipment
-        PROPERTIES (s) READONLY isPostedShipment FORCE GRID, objectClassName, numberShipment, seriesShipment, dateShipment, timeShipment,
-                                nameStockShipment, name###contact###Shipment, nameCurrencyShipment, noteShipment,
-                                countShipmentDetailShipment, quantityShipmentDetailShipment, sumShipmentDetailShipment
-
-
-        OBJECTS d = shipmentDetail
-        PROPERTIES (d)  indexShipmentDetail, idBarcodeSkuShipmentDetail, nameSkuShipmentDetail, shortNameUOMSkuShipmentDetail,   //READONLY
-                                quantityShipmentDetail, priceShipmentDetail, sumShipmentDetail,
-                                nameStockShipmentDetail, descriptionIndexInvoiceDetailShipmentDetail, descriptionOrderShipmentDetail
-        FILTERS shipmentShipmentDetail(d) == s
-
-        DIALOG shipment OBJECT s
-    ;
-
-    DESIGN dialogShipments FROM DEFAULT {
-
-        NEW documentContainer BEFORE functions.box {
-            type = SPLITV;
-            childConstraints = TO THE BOTTOM;
-
-            ADD s.box;
-
-            NEW documentDetail {
-                type = TABBED;
-
-                ADD d.box {
-                    title = 'Спецификация';
-                }
-
-            }
-        }
-    }
-
 END
 
 META defineShipmentBatch(dumb)
     @defineDocumentInterfaceDetailBatch(shipment, batch);
 
     EXTEND FORM userShipment PROPERTIES (d) descriptionBatchUserShipmentDetail AFTER shortNameUOMSkuUserShipmentDetail;
-    EXTEND FORM userShipments PROPERTIES (d) READONLY descriptionBatchUserShipmentDetail AFTER shortNameUOMSkuUserShipmentDetail;
+    EXTEND FORM shipments PROPERTIES (d) READONLY descriptionBatchShipmentDetail AFTER shortNameUOMSkuShipmentDetail;
     EXTEND FORM shipmentInvoices PROPERTIES (d) READONLY descriptionBatchInvoiceDetail AFTER shortNameUOMSkuInvoiceDetail;
 
     fillInvoiceBatchUserShipmentDetail (sd, id) += ACTION SET batchUserShipmentDetail (sd) <- batchInvoiceDetail(id);
@@ -579,5 +538,5 @@ META defineShipmentBatch(dumb)
     @defineDocumentAggregationDetailBatch (invoice, invoiceShipment);
     batchShipmentDetail (shipmentDetail) += batchInvoiceShipmentDetail(shipmentDetail);
 
-    EXTEND FORM dialogShipments PROPERTIES (d) READONLY descriptionBatchShipmentDetail AFTER shortNameUOMSkuShipmentDetail;
+    EXTEND FORM shipments PROPERTIES (d) READONLY descriptionBatchShipmentDetail AFTER shortNameUOMSkuShipmentDetail;
 END

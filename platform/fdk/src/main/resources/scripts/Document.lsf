@@ -226,7 +226,7 @@ END
 
 // Closed
 META defineDocumentHeaderClosed (object)
-    isOpen###object 'Не закрыт' (object) = object IS object AND NOT object IS object##Closed PERSISTENT;
+    isOpend###object 'Не закрыт' (object) = object IS object AND NOT object IS object##Closed PERSISTENT;
     isClosed###object 'Закрыт' (object) = object IS object##Closed PERSISTENT;
 
     preClose###object 'Закрыть' (object) = [ACTION CHANGECLASS object TO object##Closed ] (object)
@@ -239,8 +239,8 @@ META defineDocumentHeaderClosed (object)
                                       IF object IS object##Closed TOOLBAR CONFIRM;
 END
 META defineDocumentAbstractHeaderClosed (object)
-    isClosed###object 'Закрыть' (object) = ABSTRACT BOOLEAN(object) PERSISTENT;
-    isOpen###object 'Не закрыт' (object) = object IS object AND NOT isClosed###object(object) PERSISTENT;
+    isClosed###object 'Закрыт' (object) = ABSTRACT BOOLEAN(object) PERSISTENT;
+    isOpend###object 'Не закрыт' (object) = object IS object AND NOT isClosed###object(object) PERSISTENT;
 END
 META defineDocumentInterfaceHeaderClosed (object)
     @defineDocumentAbstractHeaderClosed(object);
@@ -250,7 +250,7 @@ END
 
 META defineDocumentDetailClosed (object, detail)
     isClosed###detail 'Проведен' (idetail) = isClosed###object(object###detail(idetail));
-    isOpen###detail 'Не проведен' (idetail) = idetail IS detail AND NOT isClosed###detail(idetail);
+    isOpend###detail 'Не проведен' (idetail) = idetail IS detail AND NOT isClosed###detail(idetail);
 END
 
 META defineDocumentDetailClosed (object)
