@@ -432,7 +432,9 @@ nameTypeExchangeManagerialDeclaration 'Тип обмена (УУ)' (declaration)
 roundCurrencyDeclaration '' (number, declaration) = roundCurrency(number, currencyDeclaration(declaration));
 roundCurrencyDeclarationDetail(number, declarationDetail) = roundCurrencyDeclaration(number, declarationDeclarationDetail(declarationDetail));
 
-roundTypeExchangeDeclaration '' (number, declaration) = roundCurrency(number, currencyTypeExchange(typeExchangeCustomDeclaration(declaration)));
+currencyToDeclaration 'Валюта страны назначения' (declaration) = currencyTypeExchange(typeExchangeCustomDeclaration(declaration));
+
+roundTypeExchangeDeclaration '' (number, declaration) = roundCurrency(number, currencyToDeclaration(declaration));
 roundTypeExchangeDeclarationDetail '' (number, declarationDetail) = roundTypeExchangeDeclaration(number, declarationDeclarationDetail(declarationDetail));
 
 typeExchangeCustomDeclaration(declaration) <- typeExchangePayCustomCustomsZone(customsZoneDeclaration(declaration)) WHEN CHANGED (importerDeclaration(declaration));

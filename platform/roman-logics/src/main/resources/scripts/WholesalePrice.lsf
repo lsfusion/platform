@@ -140,34 +140,54 @@ DESIGN wholesalePriceDocument FROM DEFAULT {
             ADD PROPERTY(nameCurrencyWholesalePriceDocument);
         }
 
+//        NEW allContainer {
+//            childConstraints = TO THE BOTTOM;
+//            type = SPLITV;
+//
+//            NEW topContainer {
+//
+//                childConstraints = TO THE RIGHT;
+//                type = SPLITH;
+//
+//                NEW treeContainer {
+//                    childConstraints = TO THE RIGHT;
+//                    type = SPLITH;
+//                    ADD treeSupplierBrand.tree.box;
+//                    ADD treeCategory.tree.box;
+//                }
+//
+//                ADD aa.box {
+//                    fillHorizontal = 3;
+//                }
+//            }
+//
+//            ADD a.box {
+//                fillHorizontal = 5;
+//                fillVertical = 1.5;
+//            }
+//        }
         NEW allContainer {
-            childConstraints = TO THE BOTTOM;
-            type = SPLITV;
-
-            NEW topContainer {
-
-                childConstraints = TO THE RIGHT;
-                type = SPLITH;
-
-                NEW treeContainer {
-                    childConstraints = TO THE RIGHT;
-                    type = SPLITH;
-                    ADD treeSupplierBrand.tree.box;
-                    ADD treeCategory.tree.box;
+            childConstraints = TO THE RIGHT;
+            type = SPLITH;
+            NEW treeContainer {
+                childConstraints = TO THE BOTTOM;
+                fillHorizontal = 1;
+                ADD treeSupplierBrand.tree.box {
+                    fillVertical = 1;
                 }
-
-                ADD aa.box {
-                    fillHorizontal = 3;
+                ADD treeCategory.tree.box {
+                    fillVertical = 1;
                 }
             }
-
-            ADD a.box {
-                fillHorizontal = 5;
-                fillVertical = 1.5;
+            NEW  articleContainer{
+                fillHorizontal = 4;
+                type = TABBED;
+                ADD a.box {title = 'Спецификация'; }
+                ADD aa.box {title = 'Подбор';}
             }
         }
-    }
 
+    }
     ADD functions.box;
 }
 
@@ -194,7 +214,7 @@ toCreateWholesalePriceDocument 'Расценить' =  ACTION (declaration) NEWS
         SET priceCustomWholesalePriceDocumentArticle(w, article) <- priceCustomDeclarationArticle(declaration, article);
         SET priceManagerialWholesalePriceDocumentArticle(w, article) <- priceManagerialDeclarationArticle(declaration, article);
         SET inWholesalePriceDocumentArticle(w, article) <- inDeclarationArticle(declaration, article);
-        SET currencyWholesalePriceDocument(w) <- currencyDeclaration(declaration);
+        SET currencyWholesalePriceDocument(w) <- currencyToDeclaration(declaration);
 
         FORM wholesalePriceDocument OBJECTS w=addedObject() MODAL;
         IF formResult() == formResult.ok THEN {
