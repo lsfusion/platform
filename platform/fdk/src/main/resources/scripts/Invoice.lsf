@@ -267,7 +267,7 @@ META defineInvoice(sign, contact, partyA, partyB)
 
         PROPERTIES ()  addUserInvoice TODRAW i
         PROPERTIES (i) editUserInvoice
-        PROPERTIES (i) delete FORCE PANEL DRAWTOTOOLBAR
+        PROPERTIES (i) delete FORCE PANEL DRAWTOTOOLBAR  SHOWIF isUserInvoice(i)
 
         OBJECTS d = invoiceDetail
         PROPERTIES (d) READONLY indexInvoiceDetail, idBarcodeSkuInvoiceDetail, nameSkuInvoiceDetail, shortNameUOMSkuInvoiceDetail,

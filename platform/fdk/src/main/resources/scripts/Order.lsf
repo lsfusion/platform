@@ -152,7 +152,8 @@ META defineOrder(sign, contact)
 
         PROPERTIES ()  addUserOrder TODRAW o
         PROPERTIES (o) editUserOrder
-        PROPERTIES (o) closeUserOrder SHOWIF isOpendOrder(o), delete FORCE PANEL DRAWTOTOOLBAR
+        PROPERTIES (o) closeUserOrder SHOWIF isOpendOrder(o)
+        PROPERTIES     delete(o) FORCE PANEL DRAWTOTOOLBAR  SHOWIF isUserOrder(o)
 
         OBJECTS d=orderDetail
         PROPERTIES (d) READONLY indexOrderDetail, idBarcodeSkuOrderDetail, nameSkuOrderDetail, shortNameUOMSkuOrderDetail,

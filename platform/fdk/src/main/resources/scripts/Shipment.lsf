@@ -120,7 +120,7 @@ META defineShipment(skuLedger, sign, contact, contactCaption, partyA, partyB)
 
         PROPERTIES ()  addUserShipment TODRAW s
         PROPERTIES (s) editUserShipment
-        PROPERTIES (s) delete FORCE PANEL DRAWTOTOOLBAR
+        PROPERTIES (s) delete FORCE PANEL DRAWTOTOOLBAR SHOWIF isUserShipment(s)
 
         OBJECTS d = shipmentDetail
         PROPERTIES (d)  indexShipmentDetail, idBarcodeSkuShipmentDetail, nameSkuShipmentDetail, shortNameUOMSkuShipmentDetail,
