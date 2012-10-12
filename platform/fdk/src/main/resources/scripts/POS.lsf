@@ -849,6 +849,16 @@ closeCurrentZReport 'Закрыть Z-отчет' = ACTION () {
     EXEC cancel();
     SET timeZReport(z) <- currentTime() WHERE z == currentZReport();
     SET dateZReport(z) <- currentDate() WHERE z == currentZReport();
+    IF curSumCashCashOperation(cashRegisterZReport(currentZReport())) > 0 THEN {
+        FOR ADDOBJ o = outcomeCashOperation DO {
+            SET dateOutcomeCashOperation(o) <- dateZReport(currentZReport());
+            SET timeOutcomeCashOperation(o) <- timeZReport(currentZReport());
+            SET departmentStoreOutcomeCashOperation(o) <- departmentStoreZReport(currentZReport());
+            SET basisOutcomeCashOperation(o) <- basisZReport(currentZReport());
+            SET cashRegisterOutcomeCashOperation(o) <- cashRegisterZReport(currentZReport());
+            SET sumCashOutcomeCashOperation(o) <- curSumCashCashOperation(cashRegisterZReport(currentZReport()));
+        }
+    }
     SET zReportCashRegister(cashRegister) IF cashRegister == currentCashRegister() <- NULL;
     EXEC apply();
 } CONFIRM IN receiptZReportGroup;
@@ -1133,6 +1143,10 @@ EXTEND FORM operationCashRegister
     PROPERTIES() READONLY numberCurrentZReport SHOWIF departmentStoreCurrentCashRegister()
     PROPERTIES() fiscalZReport SHOWIF currentZReportDepartmentStore()
     PROPERTIES() openCurrentZReport SHOWIF closedCurrentZReportDepartmentStore()
+
+    OBJECTS z = zReportPosted
+    PROPERTIES(z) READONLY objectClassName, numberZReport, dateZReport, timeZReport, nameDepartmentStoreZReport,
+                           numberCashRegisterZReport, sumCashZReport, sumReceiptDetailZReport, basisZReport
 ;
 
 EXTEND DESIGN operationCashRegister{
@@ -1141,6 +1155,7 @@ EXTEND DESIGN operationCashRegister{
         ADD PROPERTY(openCurrentZReport) { font = 'Tahoma 24'; };
         ADD PROPERTY(numberCurrentZReport) { font = 'Tahoma 24'; };
     }
+    ADD z.box BEFORE functions.box;
 }
 
 // Update data

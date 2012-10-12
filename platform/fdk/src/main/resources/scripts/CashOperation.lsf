@@ -298,6 +298,12 @@ sumOutcomeCashOperationDateTime 'Сумма изъятых денег на да�
     (curSumOutcomeCashOperation(cashRegister) AND (date AS DATETIME)) (-)
     sumAOutcomeCashOperationDateTime(cashRegister, date);
 
+curSumCashCashOperation 'Текущая сумма наличных в кассе(без Z-отчета)' (cashRegister) =
+    curSumIncomeCashOperation(cashRegister) (-) curSumOutcomeCashOperation(cashRegister);
+
+sumCashCashOperationDateTime 'Сумма наличных в кассе на дату/время(без Z-отчета)' (cashRegister, date) =
+    sumIncomeCashOperationDateTime(cashRegister, date) (-) sumOutcomeCashOperationDateTime(cashRegister, date);
+
 dateCashDocument(outcomeCashOperation) += dateOutcomeCashOperation(outcomeCashOperation);
 timeCashDocument(outcomeCashOperation) += timeOutcomeCashOperation(outcomeCashOperation);
 numberCashDocument(outcomeCashOperation) += seriesNumberObject(outcomeCashOperation) AND outcomeCashOperation IS outcomeCashOperation;
