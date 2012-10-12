@@ -122,6 +122,7 @@ CLASS STATIC contractSkuForm 'Порядок оплаты договора на 
 }
 
 CLASS paymentCondition 'Условия оплаты';
+TABLE paymentCondition(paymentCondition);
 
 datePaymentCondition 'Дата' = DATA DATE (paymentCondition);
 datePaymentCondition (paymentCondition) <- currentDate() WHEN ASSIGNED(paymentCondition IS paymentCondition);
@@ -162,12 +163,14 @@ formContractSku(contract) = formContractSkuDate(contract, currentDate());
 nameFormContractSku 'Условия оплаты' (contract) = name(formContractSku(contract));
 
 CLASS paymentPeriod 'Период рассрочки';
+TABLE paymentPeriod(paymentPeriod);
 
 countDaysPaymentPeriod 'Кол-во дней' = DATA INTEGER (paymentPeriod);
 percentPaymentPeriod 'Процент' = DATA NUMERIC[8,3] (paymentPeriod);
 paymentConditionPaymentPeriod 'Условия оплаты периода рассрочки' = DATA paymentCondition (paymentPeriod);
 
 CLASS bonusPeriod 'Период бонуса';
+TABLE bonusPeriod(bonusPeriod);
 
 countDaysBonusPeriod 'Кол-во дней' = DATA INTEGER (bonusPeriod);
 percentBonusPeriod 'Процент' = DATA NUMERIC[8,3] (bonusPeriod);

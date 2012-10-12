@@ -1034,7 +1034,7 @@ FORM declarationPrint 'Выгрузка деклараций(Укр.)' PRINT
     FILTERS declarationDeclarationDetail(dd) == d
 ;
 
-exportDeclarationToEXELLanguageDeclaration 'Выгрузить декларацию в EXEL(Украина)' = ACTION (declaration) {
+exportDeclarationToEXELLanguageDeclaration 'Выгрузить декларацию в EXCEL(Украина)' = ACTION (declaration) {
 
     FORM declarationPrint OBJECTS d = declaration MODAL;
 } CONFIRM TOOLBAR;
@@ -1054,7 +1054,7 @@ FORM declarationRBPrint 'Выгрузка деклараций(РБ)'  PRINT
     FILTERS declarationGroupDeclaration(gd) == d
 ;
 
-exportDeclarationToEXELDeclaration 'Выгрузить декларацию в EXEL(РБ)' = ACTION (declaration) {
+exportDeclarationToEXELDeclaration 'Выгрузить декларацию в EXCEL(РБ)' = ACTION (declaration) {
 
     FORM declarationRBPrint OBJECTS d = declaration MODAL;
 } CONFIRM TOOLBAR;

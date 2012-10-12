@@ -196,6 +196,7 @@ editCollectionForm 'Редактировать' (collection) = ACTION (collectio
 //--------------------------------- Операции с наличными -------------------------------------------------//
 
 CLASS cashOperation 'Операция с наличными';
+TABLE cashOperation(cashOperation);
 
 dateCashOperation 'Дата документа' = ABSTRACT DATE (cashOperation) IN documentHeaderGroup;
 timeCashOperation 'Время документа' = ABSTRACT TIME (cashOperation) IN documentHeaderGroup;
@@ -675,9 +676,6 @@ FORM centralCashRegister 'Центральная касса'
             dateCashDocument(o) <= (dTo AS DATE),
             isPostedCashDocument(i),
             isPostedCashDocument(o)
-
-    PROPERTIES() SHOWIF departmentStoreCurrentCashRegister() fiscalXReport
-
 ;
 
 DESIGN centralCashRegister FROM DEFAULT {
@@ -697,12 +695,6 @@ DESIGN centralCashRegister FROM DEFAULT {
                 }
             }
             ADD d.box;
-        }
-
-        NEW actions {
-            caption = 'Действия с кассой';
-            childConstraints = TO THE RIGHTBOTTOM;
-            ADD PROPERTY(fiscalXReport) { font = 'Tahoma 24'; }
         }
 
         NEW firstCase {

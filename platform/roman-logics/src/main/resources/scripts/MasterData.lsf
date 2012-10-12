@@ -185,48 +185,7 @@ DESIGN categories FROM DEFAULT {
     }
 
     ADD functions.box;
-
 }
-
-FORM categoryDialog 'Товарные группы'
-    TREE treeGroups g=category PARENT parentCategory
-    PROPERTIES(g) READONLY name
-    PROPERTIES(g) addCategory, EDITFORM
-    ORDER BY name
-
-    OBJECTS cg=category
-    PROPERTIES(cg) READONLY name, canonicalNameCategory, nameOrigin, warrantyCategory, nameUnitOfMeasureCategory
-    PROPERTIES(cg) delete
-
-    ORDER BY canonicalNameCategory
-
-    FILTERGROUP filters
-        FILTER 'Все листья' 'F10' isParentLeafCategoryCategory(cg, g) DEFAULT
-        FILTER 'Всех потомков' 'F9' isParentCategoryCategory(cg, g)
-        FILTER 'Только непосредственных потомков' 'F8' parentCategory(cg) == g
-
-    DIALOG category OBJECT cg
-;
-
-DESIGN categoryDialog FROM DEFAULT {
-
-    main {
-
-        NEW topContainer {
-            childConstraints = TO THE RIGHT;
-            type = SPLITH;
-
-            ADD treeGroups.tree.box ;
-
-            ADD cg.box{
-                fillHorizontal = 4;
-            }
-        }
-
-        ADD functions.box;
-    }
-}
-
 
 // ---------------------------------- Формы для выбора атрибутов ------------------------------------ //
 

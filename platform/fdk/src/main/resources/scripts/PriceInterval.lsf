@@ -48,7 +48,9 @@ roundPriceRoundCondition (price, roundCondition) = IF (price AS NUMERIC[14,3]) >
 // -------------------- Группы для округления --------------- //
 
 CLASS ABSTRACT roundGroup 'Группа округлений' : named;
+TABLE roundGroup(roundGroup);
 
+TABLE roundConditionRoundGroup (roundCondition, roundGroup);
 inRoundConditionRoundGroup 'Вкл' = DATA BOOLEAN (roundCondition, roundGroup);
 
 roundConditionUniqueCurrencyRoundGroup(currency, roundGroup) = GROUP UNIQUE roundCondition

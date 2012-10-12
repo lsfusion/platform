@@ -21,6 +21,8 @@ afterDaysSupplier 'Максимальное число дней до поста�
 periodicitySupply 'Переодичность поставок, дней (при поставках не по графику)' = DATA INTEGER (supplier) IN orderGroup;
 
 returnLossSupplier '% потерь при возврате' (supplier) = DATA NUMERIC[8,3] (supplier) IN orderGroup;
+
+TABLE supplierStock(supplier, stock);
 emailOrderSupplierStock 'e-mail для передачи заказа' = DATA STRING[100] (supplier, stock) IN orderGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
 contactSupplierStock 'Контактная информация' = DATA STRING[500] (supplier, stock) IN orderGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
 
@@ -39,6 +41,7 @@ companyContractSkuSupplier = DATA company (contractSkuSupplier) AUTOSET;
 nameCompanyContractSkuSupplier 'Компания' (contract) = name(companyContractSkuSupplier(contract)) IN recognizeGroup MAXCHARWIDTH 30 PREFCHARWIDTH 30;
 partyBContract (contract) += companyContractSkuSupplier(contract);
 
+TABLE supplierCompany(supplier, company);
 @defineContractDefault(contractSkuSupplier, supplier, company);
 
 // Формы

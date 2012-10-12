@@ -7,6 +7,8 @@ CLASS groupCashRegister 'Группы касс' : groupMachinery;
 
 departmentStoreGroupCashRegister = DATA departmentStore (groupCashRegister);
 stockGroupMachinery (groupMachinery) += departmentStoreGroupCashRegister(groupMachinery);
+
+TABLE groupCashRegisterCustomUser(groupCashRegister, customUser);
 operatorNumberGroupCashRegisterCustomUser 'Номер в группе касс' = DATA INTEGER (groupCashRegister, customUser);
 
 // Модели

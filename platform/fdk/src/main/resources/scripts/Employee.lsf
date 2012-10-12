@@ -22,6 +22,8 @@ CLASS ABSTRACT employeeDivisionGroup 'Группа подразделений' :
 CLASS ABSTRACT employeeDivision 'Подразделение' : named;
 TABLE employeeDivision(employeeDivision);
 
+TABLE employeeDivisionGroupEmployeeDivision(employeeDivisionGroup, employeeDivision);
+
 employeeDivisionGroupEmployeeDivision = ABSTRACT employeeDivisionGroup (employeeDivision) PERSISTENT;
 isParentEmployeeDivisionGroupEmployeeDivision (employeeDivisionGroup, employeeDivision) = isParentEmployeeDivisionGroupEmployeeDivisionGroup(employeeDivisionGroupEmployeeDivision(employeeDivision), employeeDivisionGroup) PERSISTENT;
 

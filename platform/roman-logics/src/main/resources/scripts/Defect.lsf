@@ -354,6 +354,8 @@ quantityReturnQuantityRepairDetail 'К-во (возврат)' (repairDetail) = G
 
 diffQuantityRepairDetail 'К-во (в ремонте)' (repairDetail) =  quantityRepairDetail(repairDetail) (-) quantityReturnQuantityRepairDetail(repairDetail) AND isPostedRepairDetail(repairDetail);
 quantityOverdueRepairDetail 'К-во (просрочено)' (repairDetail) = diffQuantityRepairDetail(repairDetail) AND diffQuantityRepairDetail(repairDetail) > 0 AND dateToRepairDetail(repairDetail) < currentDate();
+
+TABLE repairShopSku(repairShop, sku);
 quantityOverdueRepairShopSku 'К-во (просрочено)' (repairShop, sku)= GROUP SUM  quantityOverdueRepairDetail(detail) BY repairShopRepairDetail(detail), skuRepairDetail(detail) PERSISTENT;
 quantityOverdueRepairShop 'К-во (просрочено)' (repairShop) = GROUP SUM  quantityOverdueRepairShopSku(repairShop, sku) BY repairShop;
 
@@ -638,6 +640,8 @@ quantityReturnQuantityDryCleaningDetail 'К-во (возврат)' (dryCleaningD
 
 diffQuantityDryCleaningDetail 'К-во в химчистке' (dryCleaningDetail) =  quantityDryCleaningDetail(dryCleaningDetail) (-) quantityReturnQuantityDryCleaningDetail(dryCleaningDetail) AND isPostedDryCleaningDetail(dryCleaningDetail);
 quantityOverdueDryCleaningDetail 'К-во (просрочено)' (dryCleaningDetail) = diffQuantityDryCleaningDetail(dryCleaningDetail) AND diffQuantityDryCleaningDetail(dryCleaningDetail) >0 AND dateToDryCleaningDetail(dryCleaningDetail) < currentDate();
+
+TABLE cleaningStockSku(cleaningStock, sku);
 quantityOverdueCleaningStockSku 'К-во (просрочено)' (cleaningStock, sku)= GROUP SUM  quantityOverdueDryCleaningDetail(detail) BY cleaningStockDryCleaningDetail(detail), skuDryCleaningDetail(detail) PERSISTENT;
 quantityOverdueCleaningStock 'К-во (просрочено)' (cleaningStock) = GROUP SUM  quantityOverdueCleaningStockSku(cleaningStock, sku) BY cleaningStock;
 

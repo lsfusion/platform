@@ -22,6 +22,7 @@ TABLE coefficientCategorySupplier(coefficientCategorySupplier);
 CLASS coefficientBrandRetail 'Надбавка';
 TABLE coefficientBrandRetail (coefficientBrandRetail);
 
+TABLE seasonYearBrandSupplier(seasonYear, brandSupplier);
 markupSeasonYearBrand 'Множитель' = DATA NUMERIC[14,3](seasonYear, brandSupplier);
 markupSeasonYearBrandArticle 'Множитель' (article) = markupSeasonYearBrand(seasonYearArticle(article), brandSupplierArticle(article));
 
@@ -83,7 +84,7 @@ inArticleCoefficientBrandRetail(article, coefficientBrandRetail) = (brandSupplie
                                                                    (seasonYearArticle(article) == seasonYearCoefficientBrandRetail(coefficientBrandRetail) OR (article IS article AND coefficientBrandRetail IS coefficientBrandRetail AND NOT seasonYearCoefficientBrandRetail(coefficientBrandRetail)));
 
 dateCoefficientBrandRetailArticle(coefficientBrandRetail, article) = dateCoefficientBrandRetail(coefficientBrandRetail) AND inArticleCoefficientBrandRetail(article, coefficientBrandRetail);
-orderCoefficientBrandRetailArticle = LIST(dateCoefficientBrandRetailArticle(coefficientBrandRetail, article), coefficientBrandRetail) IF inArticleCoefficientBrandRetail(article, coefficientBrandRetail) PERSISTENT;
+orderCoefficientBrandRetailArticle = LIST(dateCoefficientBrandRetailArticle(coefficientBrandRetail, article), coefficientBrandRetail) IF inArticleCoefficientBrandRetail(article, coefficientBrandRetail);
 
 concatCoefficientBrandRetailArticleDate (article, date) = GROUP MAX orderCoefficientBrandRetailArticle(coefficientBrandRetail, article) AND
                                                                     dateCoefficientBrandRetailArticle(coefficientBrandRetail, article) < (date AS DATE)
