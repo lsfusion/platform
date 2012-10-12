@@ -8145,6 +8145,7 @@ public class RomanLogicsModule extends LogicsModule {
             setEditType(PropertyEditType.READONLY, objTypeInvoice.groupTo);
 
             addPropertyDraw(objImporter, objFreight, sidContractImporterFreight, dateContractImporterFreight, sidImporterFreight, dateImporterFreight); //, conditionShipmentContractImporterFreight, conditionPaymentContractImporterFreight);
+            setEditType(sidContractImporterFreight, PropertyEditType.READONLY);
 
             addPropertyDraw(quantityImporterFreight, objImporter, objFreight);
             addPropertyDraw(sumInImporterFreight, objImporter, objFreight);

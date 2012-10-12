@@ -1222,8 +1222,8 @@ FORM currentBalanceSkuStock 'Текущие остатки'
     OBJECTS           sts=(st=stock, s=sku)
     PROPERTIES        READONLY nameSku(s), stockName = name(st)  //  idBarcodeSku
     FILTERS           isParentSkuGroupSku(sk, s),
-                      st == ts AND sg IS stockGroup OR
-                      isParentStockGroupStock(sg, st) AND NOT ts
+                      (st == ts AND sg IS stockGroup) OR (isParentStockGroupStock(sg, st) AND NOT ts)
+
     ORDER BY          nameSku
 
 
@@ -1296,7 +1296,7 @@ FORM balanceSkuStock 'Остатки на дату'
     OBJECTS           sts=(st=stock, s=sku)
     PROPERTIES        READONLY nameSku(s), stockName = name(st)  //  idBarcodeSku
     FILTERS           isParentSkuGroupSku(sk, s),
-                      isParentStockGroupStock(sg, st)
+                      st == ts AND sg IS stockGroup OR isParentStockGroupStock(sg, st) AND NOT ts
 
     PROPERTIES(s, st, t) READONLY balanceASkuStockDateTime
     PROPERTIES(s, st) READONLY dateLastMovedSkuStock
@@ -1370,7 +1370,8 @@ FORM currentBalanceBatchStock 'Текущие остатки по партиям
     PROPERTIES        currentBalanceBatchStock(bt, st)
     PROPERTIES(bt)    READONLY dateTimeBatch, descriptionBatch, quantityBatch, costBatch, expiryDateBatch
     FILTERS           isParentSkuGroupBatch(sk, bt),
-                      isParentStockGroupStock(sg, st)
+                      st == ts AND sg IS stockGroup OR isParentStockGroupStock(sg, st) AND NOT ts
+
     ORDER BY          dateTimeBatch
 
     OBJECTS bil=skuLedger
@@ -1442,7 +1443,7 @@ FORM balanceBatchStock 'Остатки по партиям на дату'
     PROPERTIES        balanceBBatchStockDateTime(bt, st, t)
     PROPERTIES(bt)    READONLY dateTimeBatch, descriptionBatch, quantityBatch, costBatch, expiryDateBatch
     FILTERS           isParentSkuGroupBatch(sk, bt),
-                      isParentStockGroupStock(sg, st)
+                      st == ts AND sg IS stockGroup OR isParentStockGroupStock(sg, st) AND NOT ts
     ORDER BY          dateTimeBatch
 
     FILTERGROUP filterBalance
