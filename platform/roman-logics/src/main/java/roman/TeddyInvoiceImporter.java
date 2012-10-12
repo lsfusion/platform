@@ -15,7 +15,7 @@ import java.text.ParseException;
  */
 
 public class TeddyInvoiceImporter extends SingleSheetImporter {
-    private static final int BARCODENUMBER = L, LAST_COLUMN = AJ;
+    private static final int BARCODENUMBER = C, LAST_COLUMN = M;
 
     public TeddyInvoiceImporter(ImportInputTable inputTable, Object... fields) {
         super(inputTable, fields);
@@ -42,9 +42,9 @@ public class TeddyInvoiceImporter extends SingleSheetImporter {
         value = value.trim();
 
         switch (column) {
-            case G:
+            case B:
                 if (value.length() >= 10) {
-                    Date sDate = new Date(Integer.parseInt(value.substring(0, 4)) - 1900, Integer.parseInt(value.substring(5, 7)) - 1, Integer.parseInt(value.substring(8, 10)));
+                    Date sDate = new Date(Integer.parseInt(value.substring(6, 10)) - 1900, Integer.parseInt(value.substring(3, 5)) - 1, Integer.parseInt(value.substring(0, 2)));
                     return DateClass.format(sDate);
                 }
             case BARCODENUMBER: {
@@ -59,12 +59,6 @@ public class TeddyInvoiceImporter extends SingleSheetImporter {
                     return value.concat(String.valueOf(checkSum));
                 }
             }
-            case W:
-                return String.valueOf(Double.valueOf(value) / 100);
-            case X:
-                return String.valueOf(Double.valueOf(value) / 100000);
-            case AA:
-                return String.valueOf(Double.valueOf(value) / 100);
             default:
                 return value;
         }
