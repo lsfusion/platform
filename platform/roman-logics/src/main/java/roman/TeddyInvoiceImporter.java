@@ -1,5 +1,6 @@
 package roman;
 
+import platform.base.BaseUtils;
 import platform.server.classes.DateClass;
 import platform.server.integration.ImportField;
 import platform.server.integration.ImportInputTable;
@@ -15,7 +16,7 @@ import java.text.ParseException;
  */
 
 public class TeddyInvoiceImporter extends SingleSheetImporter {
-    private static final int BARCODENUMBER = C, LAST_COLUMN = M;
+    private static final int BARCODENUMBER = C, LAST_COLUMN = Q;
 
     public TeddyInvoiceImporter(ImportInputTable inputTable, Object... fields) {
         super(inputTable, fields);
@@ -59,6 +60,16 @@ public class TeddyInvoiceImporter extends SingleSheetImporter {
                     return value.concat(String.valueOf(checkSum));
                 }
             }
+            case P:
+                switch (part) {
+                    case 0:
+                        if (value.length() < 10) {
+                            value = value + BaseUtils.replicate('0', 10 - value.length());
+                        }
+                        return value.substring(0, 10); // customs code
+                    case 1:
+                        return value.substring(0, 6); // customs code 6
+                }
             default:
                 return value;
         }

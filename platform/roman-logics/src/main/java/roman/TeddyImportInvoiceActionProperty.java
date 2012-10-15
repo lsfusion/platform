@@ -18,7 +18,7 @@ import java.io.InputStreamReader;
 public class TeddyImportInvoiceActionProperty extends ImportBoxInvoiceActionProperty {
 
     public TeddyImportInvoiceActionProperty(RomanLogicsModule LM) {
-        super(LM, LM.teddySupplier, "txt");
+        super(LM, LM.teddySupplier, "zip");
     }
 
     @Override
@@ -31,9 +31,9 @@ public class TeddyImportInvoiceActionProperty extends ImportBoxInvoiceActionProp
         return new TeddyInvoiceImporter(inputTable, new Object[]{new ImportField[]{invoiceSIDField, boxNumberField},
                 dateInvoiceField, barCodeField, sidField, brandCodeField,
                 new ImportField[]{originalNameField, subCategoryCodeField, subCategoryNameField},
-                genderField, colorCodeField, colorNameField, sizeField, unitQuantityField, unitPriceField,
-                RRPField, numberSkuField, new ImportField[]{compositionField, sidDestinationDataSupplierBoxField,
-                unitNetWeightField, countryField, customCodeField, customCode6Field, themeCodeField, themeNameField,
-                collectionCodeField, collectionNameField, brandNameField}});
+                genderField, colorCodeField, colorNameField, sizeField, unitQuantityField, unitPriceField, RRPField,
+                compositionField, unitNetWeightField, new ImportField[]{customCodeField, customCode6Field}, countryField,
+                numberSkuField, new ImportField[]{sidDestinationDataSupplierBoxField, themeCodeField, themeNameField, collectionCodeField, collectionNameField,
+                brandNameField}});
     }
 }
