@@ -102,35 +102,60 @@ META defineDocumentHeaderCount (object)
 END
 
 // ----- Time ----- //
+
+META defineDocumentHeaderTimePrefix (object, prefix, caption)
+    prefix###date###object 'Дата'##caption = DATA DATE (object) IN documentHeaderGroup;
+    prefix###date###object (object) <- currentDate() WHEN ASSIGNED(object AS object);
+
+    prefix###time###object 'Время'##caption = DATA TIME (object) IN documentHeaderGroup;
+    prefix###time###object (object) <- currentTime() WHEN ASSIGNED(object AS object);
+
+    prefix###dateTime###object 'Дата/время'##caption (object) = toDateTime(prefix###date###object(object), prefix###time###object(object)) PERSISTENT;
+END
+META defineDocumentAbstractHeaderTimePrefix (object, prefix, caption)
+    prefix###date###object 'Дата'##caption = ABSTRACT DATE (object) IN documentHeaderGroup PERSISTENT;
+    prefix###time###object 'Время'##caption = ABSTRACT TIME (object) IN documentHeaderGroup PERSISTENT;
+    prefix###dateTime###object 'Дата/время'##caption (object) = toDateTime(prefix###date###object(object), prefix###time###object(object)) PERSISTENT;
+END
+META defineDocumentInterfaceHeaderTimePrefix(object, prefix, caption)
+    @defineDocumentAbstractHeaderTimePrefix(object, prefix, caption);
+    @defineDocumentHeaderTimePrefix(user###object, prefix, caption);
+    prefix###date###object(object) += prefix###date##User###object(object);
+    prefix###time###object(object) += prefix###time##User###object(object);
+END
+
 META defineDocumentHeaderTime (object)
-    date###object 'Дата документа' = DATA DATE (object) IN documentHeaderGroup;
-    date###object (object) <- currentDate() WHEN ASSIGNED(object AS object);
-
-    time###object 'Время документа' = DATA TIME (object) IN documentHeaderGroup;
-    time###object (object) <- currentTime() WHEN ASSIGNED(object AS object);
-
-    dateTime###object 'Дата/время документа' (object) = toDateTime(date###object(object), time###object(object)) PERSISTENT;
+    @defineDocumentHeaderTimePrefix(object, ,' документа');
 END
 META defineDocumentAbstractHeaderTime (object)
-    date###object 'Дата документа' = ABSTRACT DATE (object) IN documentHeaderGroup PERSISTENT;
-    time###object 'Время документа' = ABSTRACT TIME (object) IN documentHeaderGroup PERSISTENT;
-    dateTime###object 'Дата/время документа' (object) = toDateTime(date###object(object), time###object(object)) PERSISTENT;
+    @defineDocumentAbstractHeaderTimePrefix(object, ,' документа');
 END
 META defineDocumentInterfaceHeaderTime(object)
-    @defineDocumentAbstractHeaderTime(object);
-    @defineDocumentHeaderTime(user###object);
-    date###object(object) += date##User###object(object);
-    time###object(object) += time##User###object(object);
+    @defineDocumentInterfaceHeaderTimePrefix(object, ,' документа');
+END
+
+META defineDocumentDetailTimePrefix (object, detail, prefix, caption)
+    prefix###dateTime###detail 'Дата/время'##caption (detail) = prefix###dateTime###object(object###detail(detail));
+    prefix###date###detail 'Дата'##caption = prefix###date###object(object###detail(detail));
+    prefix###time###detail 'Время'##caption = prefix###time###object(object###detail(detail));
+END
+META defineDocumentInterfaceDetailTimePrefix (object, detail, prefix, caption)
+    @defineDocumentDetailTimePrefix(object, detail, prefix, caption);
+    @defineDocumentDetailTimePrefix(user###object, user###detail, prefix, caption);
+END
+
+META defineDocumentDetailTimePrefix (object, prefix, caption)
+    @defineDocumentDetailTimePrefix(object, object##Detail, prefix, caption);
+END
+META defineDocumentInterfaceDetailTimePrefix (object, prefix, caption)
+    @defineDocumentInterfaceDetailTimePrefix(object, object##Detail, prefix, caption);
 END
 
 META defineDocumentDetailTime (object, detail)
-    dateTime###detail 'Дата/время документа' (detail) = dateTime###object(object###detail(detail));
-    date###detail 'Дата документа' = date###object(object###detail(detail));
-    time###detail 'Время документа' = time###object(object###detail(detail));
+    @defineDocumentDetailTimePrefix(object, detail, ,' документа');
 END
 META defineDocumentInterfaceDetailTime (object, detail)
-    @defineDocumentDetailTime(object, detail);
-    @defineDocumentDetailTime(user###object, user###detail);
+    @defineDocumentInterfaceDetailTimePrefix(object, detail, ,' документа');
 END
 
 META defineDocumentDetailTime (object)
@@ -138,6 +163,19 @@ META defineDocumentDetailTime (object)
 END
 META defineDocumentInterfaceDetailTime (object)
     @defineDocumentInterfaceDetailTime(object, object##Detail);
+END
+
+META defineDocumentTimePrefix (object, prefix, caption)
+    @defineDocumentHeaderTimePrefix(object, prefix, caption);
+    @defineDocumentDetailTimePrefix(object, prefix, caption);
+END
+META defineDocumentAbstractTimePrefix (object, prefix, caption)
+    @defineDocumentAbstractHeaderTimePrefix(object, prefix, caption);
+    @defineDocumentDetailTimePrefix(object, prefix, caption);
+END
+META defineDocumentInterfaceTimePrefix (object, prefix, caption)
+    @defineDocumentInterfaceHeaderTimePrefix(object, prefix, caption);
+    @defineDocumentInterfaceDetailTimePrefix(object, prefix, caption);
 END
 
 META defineDocumentTime (object)

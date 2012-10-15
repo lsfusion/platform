@@ -37,6 +37,7 @@ priceSystemPriceListTypeBatchStockDateTime (type, batch, stock, dateTime) =
 // --------------------------- Пользовательские виды цен ------------------------- //
 
 CLASS dataPriceListType 'Пользовательский вид цены' : basePriceListType;
+@defineDocumentHeaderCurrency(dataPriceListType);
 
 CLASS ABSTRACT priceList 'Прайс';
 CLASS ABSTRACT priceListDetail 'Строка прайса';
@@ -47,18 +48,24 @@ CLASS userPriceListPosted 'Закрытый прайс (польз.)' : userPric
 
 @defineDocumentInterface(priceList);
 
+@defineDocumentInterfaceTimePrefix(priceList, from, ' c');
+@defineDocumentInterfaceTimePrefix(priceList, to, ' по');
+
 @defineDocumentInterfaceNumber(priceList);
 
-@defineDocumentInterfaceDataStock(priceList, stock, 'Склад');
+//@defineDocumentInterfaceDataStock(priceList, stock, 'Склад');
 @defineDocumentInterfacePosted(priceList);
 
 @defineDocumentInterfaceDescription(priceList, 'Прайс');
 
 @defineDocumentInterfaceCurrency(priceList);
-@deriveDocumentCurrency(userPriceList, stock);
+//@deriveDocumentCurrency(userPriceList, dataPriceListType);
 
 @defineDocumentInterfaceDetailSku(priceList, sku);
 //@defineDocumentInterfaceDetailPrice(priceList);
+
+toDateUserPriceList(userPriceList) <- NULL WHEN ASSIGNED(userPriceList IS userPriceList);
+toTimeUserPriceList(userPriceList) <- NULL WHEN ASSIGNED(userPriceList IS userPriceList);
 
 pricePriceListDetailDataPriceListType 'Цена' = ABSTRACT NUMERIC[14,2] (priceListDetail, dataPriceListType);
 priceUserPriceListDetailDataPriceListType 'Цена' = DATA NUMERIC[14,2] (priceListDetail, dataPriceListType);
@@ -73,48 +80,121 @@ inPriceListPriceListType 'Включен' = ABSTRACT BOOLEAN (priceList, dataPri
 inUserPriceListPriceListType 'Включен' = DATA BOOLEAN (userPriceList, dataPriceListType);
 inPriceListPriceListType (priceList, dataPriceListType) += inUserPriceListPriceListType(priceList, dataPriceListType);
 
-//nameDataPriceListTypeUserPriceList 'Вид цены' (priceList) = name(dataPriceListTypeUserPriceList(priceList));
-
 dataPriceListDetailPriceListType (detail, dataPriceListType) = inPriceListPriceListType(priceListPriceListDetail(detail), dataPriceListType) PERSISTENT;
 
-currentPricePriceListDetailDataPriceListType 'Действующая цена' (priceListDetail, dataPriceListType) =
-    pricePriceListTypeSkuStockDateTime(dataPriceListType, skuPriceListDetail(priceListDetail), stockPriceListDetail(priceListDetail), dateTimePriceListDetail(priceListDetail));
+inPriceList 'Включен' = ABSTRACT BOOLEAN (priceList) PERSISTENT;
+inUserPriceList 'Включен' = DATA BOOLEAN (userPriceList);
+inUserPriceList(userPriceList) <- TRUE WHEN ASSIGNED(userPriceList IS userPriceList);
+inPriceList (priceList) += inUserPriceList(priceList);
+
+inPriceListStockGroup 'Включен' = ABSTRACT BOOLEAN (priceList, stockGroup) PERSISTENT;
+inUserPriceListStockGroup 'Включен' = DATA BOOLEAN (userPriceList, stockGroup);
+inPriceListStockGroup (priceList, stockGroup) += inUserPriceListStockGroup(priceList, stockGroup);
+
+inPriceListStock 'Включен' = ABSTRACT BOOLEAN (priceList, stock) PERSISTENT;
+inUserPriceListStock 'Включен' = DATA BOOLEAN (userPriceList, stock);
+inPriceListStock (priceList, stock) += inUserPriceListStock(priceList, stock);
+
+dataPriceListDetailStock (detail, stock) = inPriceListStock(priceListPriceListDetail(detail), stock) PERSISTENT;
+
+levelParentPriceListStockGroup (priceList, stockGroup) = GROUP MIN levelStockGroupStockGroup(stockGroup, parent) IF inPriceListStockGroup(priceList, parent)
+                                                              BY priceList, stockGroup PERSISTENT;
+nearestParentStockGroup (priceList, stockGroup) = stockGroupStockGroupLevel(stockGroup, levelParentPriceListStockGroup(priceList, stockGroup));
+nearestInPriceListStockGroup (priceList, stockGroup) =
+    inPriceListStockGroup(priceList, nearestParentStockGroup(priceList, stockGroup));
+
+inPriceListStockGroupOver 'Включен' (priceList, stockGroup) =
+    UNION OVERRIDE inPriceList(priceList) AND stockGroup IS stockGroup,
+                   nearestInPriceListStockGroup(priceList, stockGroup),
+                   inPriceListStockGroup(priceList, stockGroup);
+
+inPriceListStockOver 'Включен' (priceList, stock) =
+    UNION OVERRIDE inPriceList(priceList) AND stock IS stock,
+                   nearestInPriceListStockGroup(priceList, stockGroupStock(stock)),
+                   inPriceListStock(priceList, stock);
+
+currentPricePriceListDetailDataPriceListTypeStock 'Действующая цена' (priceListDetail, dataPriceListType, stock) =
+    pricePriceListTypeSkuStockDateTime(dataPriceListType, skuPriceListDetail(priceListDetail), stock, fromDateTimePriceListDetail(priceListDetail));
+
+currentPriceSkuPriceListDataPriceListTypeStock 'Действующая цена' (sku, priceList, dataPriceListType, stock) =
+    pricePriceListTypeSkuStockDateTime(dataPriceListType, sku, stock, fromDateTimePriceList(priceList));
+
+markUpPricePriceListDetailDataPriceListTypeStock 'Надбавка, %' (priceListDetail, dataPriceListType, stock) =
+    pricePriceListDetailDataPriceListType(priceListDetail, dataPriceListType) * 100.0 /
+    currentPricePriceListDetailDataPriceListTypeStock (priceListDetail, dataPriceListType, stock) - 100.0;
 
 extendNameDataPriceListType (dataPriceListType) =
     [FORMULA STRING[50]  ' \'Действующая \' || CAST($1 AS TEXT) || \' цена \''](
-    name(dataPriceListType)) MINCHARWIDTH 30 PREFCHARWIDTH 50;
+    name(dataPriceListType)) MINCHARWIDTH 30 MAXCHARWIDTH 50;
 
-inSku 'Включен' (sku) = SESSION DATA BOOLEAN (sku) MINCHARWIDTH 5 PREFCHARWIDTH 5;
+extendNameMarkUpDataPriceListType (dataPriceListType) =
+    [FORMULA STRING[50]  'CAST($1 AS TEXT) || \' наценка \''](
+    name(dataPriceListType)) MINCHARWIDTH 30 MAXCHARWIDTH 50;
+
+inStockGroupStock (stockGroup, stock) = UNION OVERRIDE stock IS stock AND NOT stockGroup IS stockGroup, isParentStockGroupStock(stockGroup, stock);
+
+inSku 'Включен' (sku) = SESSION DATA BOOLEAN (sku) MINCHARWIDTH 10 MAXCHARWIDTH 10;
 
 FORM userPriceListSku 'Подбор товаров для прайсов'
     TREE skuTree sk = skuGroup PARENT parentSkuGroup
     PROPERTIES READONLY skuTreeName = name(sk)
     ORDER BY skuTreeName
 
+    OBJECTS p = userPriceList FIXED PANEL, t = dataPriceListType
+    FILTERS inPriceListPriceListType(p, t)
+
+    TREE stockTree a=STRING[3], sg = stockGroup PARENT parentStockGroup
+    PROPERTIES READONLY OBJVALUE(a), sgTreeName = name(sg)
+    ORDER BY sgTreeName
+    FILTERS stringEqualsAll(a)
+    PROPERTIES(p) READONLY inPriceList TODRAW a FORCE GRID
+    PROPERTIES(p, sg) READONLY inPriceListStockGroupOver
+
+    OBJECTS ts = stock
+    PROPERTIES(ts) READONLY name
+    PROPERTIES(p, ts) READONLY inPriceListStockOver
+    FILTERS inStockGroupStock(sg, ts)
+
     OBJECTS s=sku
     PROPERTIES(s) inSku
-    PROPERTIES READONLY    inputName = nameSku(s)//, inBarcodeSku(s)
+    PROPERTIES READONLY inputName = nameSku(s), idBarcodeSku(s)
+    PROPERTIES READONLY currentPriceSkuPriceListDataPriceListTypeStock(s, p, t, ts) COLUMNS (t) HEADER extendNameDataPriceListType(t)
 
-    FILTERS                isParentSkuGroupSku(sk, s)
+    FILTERS isParentSkuGroupSku(sk, s)
     ORDER BY inputName
 
     OBJECTS si=sku
-    PROPERTIES READONLY     selectedName = nameSku(si)//, inBarcodeSku(si)
-    FILTERS                 inSku(si)
+    PROPERTIES READONLY selectedName = nameSku(si), idBarcodeSku(si)
+    PROPERTIES READONLY currentPriceSkuPriceListDataPriceListTypeStock(si, p, t, ts) COLUMNS (t) HEADER extendNameDataPriceListType(t)
+    FILTERS inSku(si)
     ORDER BY selectedName
 ;
 
 DESIGN userPriceListSku FROM DEFAULT {
+    REMOVE p.box;
+    REMOVE t.box;
     NEW topContainer{
         childConstraints = TO THE RIGHT;
         type = SPLITH;
         ADD skuTree.tree.box;
-        NEW skuContainer{
+        NEW firstContainer{
             childConstraints = TO THE BOTTOM;
             fillHorizontal = 3.0;
             type = SPLITV;
-            ADD s.box;
-            ADD si.box;
+            NEW skuContainer {
+                childConstraints = TO THE BOTTOM;
+                caption = 'Товары';
+                type = SPLITV;
+                ADD s.box;
+                ADD si.box;
+            }
+            NEW stockContainer {
+                childConstraints = TO THE RIGHT;
+                caption = 'Склады';
+                type = SPLITH;
+                ADD stockTree.tree.box{fillHorizontal = 3.0;}
+                ADD ts.box{fillHorizontal = 2.0;}
+            }
         }
     }
     ADD functions.box;
@@ -125,21 +205,36 @@ addDetailDialogSkuUserPriceListDetailUserPriceList 'Подбор товара' =
     SET inSku(sku) <- NULL;
     FORM userPriceListSku MODAL;
     IF formResult() == formResult.ok THEN {
-        FOR inSku(sku) DO {
-            ADDOBJ userPriceListDetail;
-            FOR u == addedObject() DO {
-                SET userPriceListUserPriceListDetail(u) <- userPriceList AS userPriceList;
-                SET skuUserPriceListDetail(u) <- sku AS sku;
-            }
-       }
+        FOR inSku(sku) ADDOBJ u = userPriceListDetail DO {
+            SET userPriceListUserPriceListDetail(u) <- userPriceList AS userPriceList;
+            SET skuUserPriceListDetail(u) <- sku AS sku;
+        }
     }
     SET inSku(sku) <- NULL;
 } TOOLBAR;
 
+isSelectedPriceListDetail 'Включен' = SESSION DATA BOOLEAN (priceListDetail);
+
+changeMarkUpSkuUserPriceList 'Изменить наценку' = ACTION (userPriceList, dataPriceListType, stock){
+
+    FORM dialogNumeric MODAL;
+    IF formResult() == formResult.ok THEN {
+        FOR isSelectedPriceListDetail(detail) AND userPriceListUserPriceListDetail(detail) == userPriceList DO {
+            SET pricePriceListDetailDataPriceListType(detail, dataPriceListType) <- currentPricePriceListDetailDataPriceListTypeStock(detail, dataPriceListType, stock) * (chosenNumeric('n') + 100.0) / 100.0;
+        }
+    }
+}
+
 FORM userPriceList 'Прайс'
+    TREE skuTree sk = skuGroup PARENT parentSkuGroup
+    PROPERTIES READONLY skuTreeName = name(sk)
+    ORDER BY skuTreeName
+
     OBJECTS p = userPriceList FIXED PANEL
-    PROPERTIES(p) objectClassName, nameStockUserPriceList, nameNumeratorObject, numberObject, seriesObject, dateUserPriceList,
-                  timeUserPriceList, nameCurrencyUserPriceList, noteUserPriceList
+    PROPERTIES(p) objectClassName, nameNumeratorObject, numberObject, seriesObject,
+                  dateUserPriceList, timeUserPriceList,
+                  fromDateUserPriceList, fromTimeUserPriceList, toDateUserPriceList, toTimeUserPriceList,
+                  nameCurrencyUserPriceList, noteUserPriceList
 
     OBJECTS t = dataPriceListType
     PROPERTIES(t) READONLY name
@@ -150,18 +245,39 @@ FORM userPriceList 'Прайс'
     FILTERS inPriceListPriceListType(p, st)
 
     OBJECTS d = userPriceListDetail
-    PROPERTIES(d) indexUserPriceListDetail, idBarcodeSkuUserPriceListDetail, nameSkuUserPriceListDetail,
+    PROPERTIES(d) isSelectedPriceListDetail, indexUserPriceListDetail, idBarcodeSkuUserPriceListDetail, nameSkuUserPriceListDetail,
                   shortNameUOMSkuUserPriceListDetail
 
-    PROPERTIES(d, st) currentPricePriceListDetailDataPriceListType COLUMNS (st) HEADER extendNameDataPriceListType(st)
+    TREE stockTree a=STRING[3], sg = stockGroup PARENT parentStockGroup
+    PROPERTIES READONLY OBJVALUE(a), sgTreeName = name(sg)
+    ORDER BY sgTreeName
+    FILTERS stringEqualsAll(a)
+    PROPERTIES(p) inPriceList TODRAW a FORCE GRID
+    PROPERTIES(p, sg) inPriceListStockGroupOver
 
+    OBJECTS ts = stock
+    PROPERTIES(ts) READONLY name
+    PROPERTIES(p, ts) inPriceListStockOver
+
+    PROPERTIES(p, t, ts) changeMarkUpSkuUserPriceList TODRAW t FORCE GRID
+
+    PROPERTIES(d, st, ts) currentPricePriceListDetailDataPriceListTypeStock COLUMNS (st) HEADER extendNameDataPriceListType(st) TODRAW d FORCE GRID
     PROPERTIES(d, st) pricePriceListDetailDataPriceListType COLUMNS (st) HEADER name(st)
+    PROPERTIES(d, st, ts) markUpPricePriceListDetailDataPriceListTypeStock COLUMNS (st) HEADER extendNameMarkUpDataPriceListType(st) TODRAW d FORCE GRID
+    PROPERTIES(d, st, ts) currentPricePriceListDetailDataPriceListTypeStock COLUMNS (st) HEADER extendNameDataPriceListType(st)
+    PROPERTIES(d, st, ts) markUpPricePriceListDetailDataPriceListTypeStock COLUMNS (st) HEADER extendNameMarkUpDataPriceListType(st)
 
     PROPERTIES(d) ADDOBJ, delete
 
     PROPERTIES(p) addDetailDialogSkuUserPriceListDetailUserPriceList TODRAW d FORCE PANEL
 
-    FILTERS userPriceListUserPriceListDetail(d) == p
+    FILTERS userPriceListUserPriceListDetail(d) == p,
+            isParentSkuGroupSku(sk, skuPriceListDetail(d)),
+            inStockGroupStock(sg, ts),
+            currencyUserPriceList(p) == currencyDataPriceListType(t)
+
+    FILTERGROUP filters
+            FILTER 'Выбранные склады' 'F10' inPriceListStockOver(p, ts) DEFAULT
 
     EVENTS
         ON OK EXEC prePostUserPriceList(p)
@@ -176,12 +292,20 @@ DESIGN userPriceList FROM DEFAULT {
             caption = 'Шапка документа';
             childConstraints = TO THE RIGHT;
             ADD PROPERTY (objectClassName);
-            ADD PROPERTY (nameStockUserPriceList);
             ADD PROPERTY (nameNumeratorObject);
             ADD PROPERTY (numberObject);
             ADD PROPERTY (seriesObject);
             ADD PROPERTY (dateUserPriceList);
             ADD PROPERTY (timeUserPriceList);
+
+        }
+        NEW timeContainer{
+            caption = 'Период действия';
+            childConstraints = TO THE RIGHT;
+            ADD PROPERTY (fromDateUserPriceList);
+            ADD PROPERTY (fromTimeUserPriceList);
+            ADD PROPERTY (toDateUserPriceList);
+            ADD PROPERTY (toTimeUserPriceList);
         }
         NEW propContainer {
             caption = 'Параметры документа';
@@ -192,8 +316,28 @@ DESIGN userPriceList FROM DEFAULT {
         NEW detailContainer{
             childConstraints = TO THE RIGHT;
             type = SPLITH;
-            ADD t.box;
-            ADD d.box{fillHorizontal = 3.0;}
+            NEW firstContainer{
+                childConstraints = TO THE BOTTOM;
+                type = SPLITV;
+                ADD t.box;
+                ADD skuTree.tree.box{
+                    caption = 'Товары';
+                    fillVertical = 3.0;
+                }
+            }
+            NEW secondContainer {
+                childConstraints = TO THE BOTTOM;
+                fillHorizontal = 3.0;
+                type = SPLITV;
+                ADD d.box{fillVertical = 3.0;}
+                NEW stockContainer {
+                    childConstraints = TO THE RIGHT;
+                    caption = 'Склады';
+                    type = SPLITH;
+                    ADD stockTree.tree.box{fillHorizontal = 3.0;}
+                    ADD ts.box{fillHorizontal = 2.0;}
+                }
+            }
         }
         PROPERTY(formOkAction) {
             caption = 'Провести';
@@ -206,8 +350,8 @@ DESIGN userPriceList FROM DEFAULT {
 FORM userPriceLists 'Прайсы'
 
     OBJECTS p = userPriceList
-    PROPERTIES(p) READONLY objectClassName, nameStockUserPriceList, nameNumeratorObject, numberObject, seriesObject, dateUserPriceList,
-                           timeUserPriceList, nameCurrencyUserPriceList, noteUserPriceList
+    PROPERTIES(p) READONLY objectClassName, nameNumeratorObject, numberObject, seriesObject,
+                           fromDateTimeUserPriceList, toDateTimeUserPriceList, nameCurrencyUserPriceList, noteUserPriceList
     PROPERTIES(p) ADDFORM, EDITFORM, delete
 
     OBJECTS t = dataPriceListType
@@ -217,23 +361,52 @@ FORM userPriceLists 'Прайсы'
     OBJECTS d =userPriceListDetail
     PROPERTIES(d) READONLY indexUserPriceListDetail, idBarcodeSkuUserPriceListDetail, nameSkuUserPriceListDetail,
                            shortNameUOMSkuUserPriceListDetail
-    PROPERTIES(d, t) currentPricePriceListDetailDataPriceListType COLUMNS (t) HEADER extendNameDataPriceListType(t)
 
-    PROPERTIES(d, t) pricePriceListDetailDataPriceListType COLUMNS (t) HEADER name(t)
+    TREE stockTree a=STRING[3], sg = stockGroup PARENT parentStockGroup
+    PROPERTIES READONLY OBJVALUE(a), sgTreeName = name(sg)
+    ORDER BY sgTreeName
+    FILTERS stringEqualsAll(a)
+    PROPERTIES(p) READONLY inPriceList TODRAW a FORCE GRID
+    PROPERTIES(p, sg) READONLY inPriceListStockGroupOver
+
+    OBJECTS ts = stock
+    PROPERTIES(ts) READONLY name
+    PROPERTIES(p, ts) READONLY inPriceListStockOver
+
+    PROPERTIES(d, t, ts) READONLY currentPricePriceListDetailDataPriceListTypeStock COLUMNS (t) HEADER extendNameDataPriceListType(t)
+
+    PROPERTIES(d, t) READONLY pricePriceListDetailDataPriceListType COLUMNS (t) HEADER name(t)
 
     FILTERS userPriceListUserPriceListDetail(d) == p,
-            inPriceListPriceListType(p, t)
+            inPriceListPriceListType(p, t),
+            inStockGroupStock(sg, ts),
+            inPriceListStockOver(p, ts),
+            currencyUserPriceList(p) == currencyDataPriceListType(t)
+
 ;
 
 DESIGN userPriceLists FROM DEFAULT{
     NEW topContainer{
         type = SPLITV;
-        ADD p.box;
+        ADD p.box{fillVertical = 2.0;}
         NEW detailContainer{
             childConstraints = TO THE RIGHT;
             type = SPLITH;
+            fillVertical = 3.0;
             ADD t.box;
-            ADD d.box{fillHorizontal = 3.0;}
+            NEW firstContainer{
+                childConstraints = TO THE BOTTOM;
+                fillHorizontal = 3.0;
+                type = SPLITV;
+                ADD d.box{fillVertical = 3.0;}
+                NEW stockContainer {
+                    childConstraints = TO THE RIGHT;
+                    caption = 'Склады';
+                    type = SPLITH;
+                    ADD stockTree.tree.box{fillHorizontal = 3.0;}
+                    ADD ts.box{fillHorizontal = 2.0;}
+                }
+            }
         }
     }
     ADD functions.box;
@@ -241,12 +414,18 @@ DESIGN userPriceLists FROM DEFAULT{
 
 // ------- Расчет действующей цен ----- //
 
-orderPriceListDetail(detail) = LIST(dateTimePriceListDetail(detail), detail) PERSISTENT;
-orderPriceListDetailPriceListType(detail, type) = orderPriceListDetail(detail) IF dataPriceListDetailPriceListType(detail, type) AND pricePriceListDetailDataPriceListType(detail, type) PERSISTENT;
+TABLE priceListDetailDataPriceListTypeStock (priceListDetail, dataPriceListType, stock);
+
+orderPriceListDetail(detail) = LIST(fromDateTimePriceListDetail(detail), detail) PERSISTENT;
+orderPriceListDetailPriceListTypeStock(detail, type, stock) = orderPriceListDetail(detail)
+    IF dataPriceListDetailPriceListType(detail, type) AND
+       pricePriceListDetailDataPriceListType(detail, type) AND
+       inPriceListStockOver(priceListPriceListDetail(detail), stock) PERSISTENT;
 
 concatDataPriceListTypeSkuStockDateTime(type, sku, stock, dateTime) =
-    GROUP MAX orderPriceListDetailPriceListType(detail, type) IF dateTimePriceListDetail(detail) <= (dateTimeIn AS DATETIME)
-          BY type, skuPriceListDetail(detail), stockPriceListDetail(detail), dateTimeIn;
+    GROUP MAX orderPriceListDetailPriceListTypeStock(detail, type, stock)
+              IF fromDateTimePriceListDetail(detail) < (dateTimeIn AS DATETIME) AND NOT toDateTimePriceListDetail(detail) <= (dateTimeIn AS DATETIME)
+          BY type, skuPriceListDetail(detail), stock, dateTimeIn;
 priceListDetailDataPriceListTypeSkuStockDateTime(type, sku, stock, dateTime) =
     concatDataPriceListTypeSkuStockDateTime(type, sku, stock, dateTime)[2];
 
@@ -303,10 +482,18 @@ backgroundMarkup 'Цвет' (calcPriceListType, priceGroup) = RGB(255,160,160) A
 
 FORM dataPriceListType 'Базовый вид цен'
     OBJECTS p = dataPriceListType FIXED PANEL
-    PROPERTIES(p) name
+    PROPERTIES(p) name, nameCurrencyDataPriceListType
 
     EDIT dataPriceListType OBJECT p
 ;
+
+DESIGN dataPriceListType FROM DEFAULT {
+    NEW topContainer{
+        ADD PROPERTY(name);
+        ADD PROPERTY(nameCurrencyDataPriceListType);
+    }
+    ADD functions.box;
+}
 
 FORM calcPriceListType 'Базовый вид цен'
     OBJECTS p = calcPriceListType FIXED PANEL
@@ -323,12 +510,12 @@ FORM calcPriceListType 'Базовый вид цен'
 
 FORM priceListTypes 'Типы цен'
     OBJECTS pd = dataPriceListType
-    PROPERTIES(pd) READONLY name
-    PROPERTIES(pd)          ADDFORM, EDITFORM, delete
+    PROPERTIES(pd) READONLY name, nameCurrencyDataPriceListType
+    PROPERTIES(pd) ADDFORM, EDITFORM, delete
 
     OBJECTS pc = calcPriceListType
     PROPERTIES(pc) READONLY name
-    PROPERTIES(pc)          ADDFORM, EDITFORM, delete
+    PROPERTIES(pc) ADDFORM, EDITFORM, delete
 ;
 
 NAVIGATOR {
