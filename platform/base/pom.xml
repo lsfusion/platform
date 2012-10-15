@@ -111,6 +111,175 @@
         </snapshotRepository>
     </distributionManagement>
 
+    <profiles>
+        <profile>
+            <id>assemble</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.google.code.maven-svn-revision-number-plugin</groupId>
+                        <artifactId>svn-revision-number-maven-plugin</artifactId>
+                        <version>1.12</version>
+                        <executions>
+                            <execution>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>revision</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <entries>
+                                <entry>
+                                    <prefix>platform</prefix>
+                                    <path>${project.basedir}</path>
+                                    <depth>empty</depth>
+                                    <reportUnversioned>false</reportUnversioned>
+                                    <reportIgnored>false</reportIgnored>
+                                    <reportOutOfDate>false</reportOutOfDate>
+                                </entry>
+                            </entries>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-assembly-plugin</artifactId>
+                        <configuration>
+                            <finalName>${assemble.finalName}</finalName>
+                            <archive>
+                                <manifest>
+                                    <mainClass>${assemble.mainClass}</mainClass>
+                                </manifest>
+                                <manifestEntries>
+                                    <SCM-Version>${platform.revision}</SCM-Version>
+                                </manifestEntries>
+                            </archive>
+                            <descriptors>
+                                <descriptor>${assemble.descriptor}</descriptor>
+                            </descriptors>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>single</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <tasks>
+                                        <echo message="Pack200-ing jar ${assemble.jar}"/>
+                                        <exec executable="pack200">
+                                            <arg value="${assemble.jar}.pack.gz"/>
+                                            <arg value="${assemble.jar}"/>
+                                        </exec>
+                                    </tasks>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>assembleSigned</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.google.code.maven-svn-revision-number-plugin</groupId>
+                        <artifactId>svn-revision-number-maven-plugin</artifactId>
+                        <version>1.12</version>
+                        <executions>
+                            <execution>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>revision</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <entries>
+                                <entry>
+                                    <prefix>platform</prefix>
+                                    <path>${project.basedir}</path>
+                                    <depth>empty</depth>
+                                    <reportUnversioned>false</reportUnversioned>
+                                    <reportIgnored>false</reportIgnored>
+                                    <reportOutOfDate>false</reportOutOfDate>
+                                </entry>
+                            </entries>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-assembly-plugin</artifactId>
+                        <configuration>
+                            <finalName>${assemble.finalName}</finalName>
+                            <archive>
+                                <manifest>
+                                    <mainClass>${assemble.mainClass}</mainClass>
+                                </manifest>
+                                <manifestEntries>
+                                    <SplashScreen-Image>platform/images/lsfusion.jpg</SplashScreen-Image>
+                                </manifestEntries>
+                            </archive>
+                            <descriptors>
+                                <descriptor>${assemble.descriptor}</descriptor>
+                            </descriptors>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>single</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <tasks>
+                                        <echo message="Repacking jar ${assemble.jar}"/>
+                                        <exec executable="pack200">
+                                            <arg value="--repack"/>
+                                            <arg value="${assemble.jar}"/>
+                                        </exec>
+
+                                        <signjar
+                                                jar="${assemble.jar}"
+                                                keystore="${keystore.file}"
+                                                alias="${keystore.alias}"
+                                                storepass="${keystore.pass}" />
+
+                                        <echo message="Pack200-ing jar ${assemble.jar}"/>
+                                        <exec executable="pack200">
+                                            <arg value="${assemble.jar}.pack.gz"/>
+                                            <arg value="${assemble.jar}"/>
+                                        </exec>
+                                    </tasks>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
     <build>
         <resources>
             <resource>
@@ -123,33 +292,6 @@
                 </includes>
             </resource>
         </resources>
-        <plugins>
-            <plugin>
-                <groupId>com.google.code.maven-svn-revision-number-plugin</groupId>
-                <artifactId>svn-revision-number-maven-plugin</artifactId>
-                <version>1.12</version>
-                <executions>
-                    <execution>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>revision</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <entries>
-                        <entry>
-                            <prefix>platform</prefix>
-                            <path>${project.basedir}</path>
-                            <depth>empty</depth>
-                            <reportUnversioned>false</reportUnversioned>
-                            <reportIgnored>false</reportIgnored>
-                            <reportOutOfDate>false</reportOutOfDate>
-                        </entry>
-                    </entries>
-                </configuration>
-            </plugin>
-        </plugins>
 
         <pluginManagement>
             <plugins>
