@@ -30,7 +30,7 @@ public class FiscalDatecs {
     public static String getError() {
         String lastErrorText;
         if (cashRegister.getProperty("lastError").getInt() == 30)
-            lastErrorText = "Ошибка выполнения итога чека  (Вычисленная сумма отрицательная. Оплата не совершается)";
+            lastErrorText = "Недостаточно наличности в кассе";
         else
             lastErrorText = cashRegister.getProperty("lastErrorText").getString();
         closePort();
@@ -181,7 +181,7 @@ public class FiscalDatecs {
     public static void displayText(ReceiptItem item) throws RuntimeException {
 
         String firstLine = " " + toStr(item.quantity) + "x" + toStr(item.price);
-        firstLine = item.name.substring(0, 20 - firstLine.length()) + firstLine;
+        firstLine = item.name.substring(0, 20 - Math.min(20, firstLine.length())) + firstLine;
         String secondLine = toStr(item.sumPos);
         while (secondLine.length() < 13)
             secondLine = " " + secondLine;

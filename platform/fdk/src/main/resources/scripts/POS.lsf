@@ -849,7 +849,7 @@ closeCurrentZReport 'Закрыть Z-отчет' = ACTION () {
     EXEC cancel();
     SET timeZReport(z) <- currentTime() WHERE z == currentZReport();
     SET dateZReport(z) <- currentDate() WHERE z == currentZReport();
-    IF curSumCashCashOperation(cashRegisterZReport(currentZReport())) > 0 THEN {
+    IF curSumCashCashOperation(cashRegisterZReport(currentZReport())) THEN {
         FOR ADDOBJ o = outcomeCashOperation DO {
             SET dateOutcomeCashOperation(o) <- dateZReport(currentZReport());
             SET timeOutcomeCashOperation(o) <- timeZReport(currentZReport());

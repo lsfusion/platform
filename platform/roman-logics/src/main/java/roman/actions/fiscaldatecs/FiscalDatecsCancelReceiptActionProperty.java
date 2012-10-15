@@ -22,9 +22,7 @@ public class FiscalDatecsCancelReceiptActionProperty extends ScriptingActionProp
             Integer baudRate = (Integer) LM.findLCPByCompoundName("baudRateCurrentCashRegister").read(context.getSession());
 
             String result = (String) context.requestUserInteraction(new FiscalDatecsCustomOperationClientAction(5, baudRate, comPort));
-            if(result==null)
-                context.apply(LM.getBL());
-            else
+            if (result != null)
                 context.requestUserInteraction(new MessageClientAction(result, "Ошибка"));
 
         } catch (SQLException e) {
