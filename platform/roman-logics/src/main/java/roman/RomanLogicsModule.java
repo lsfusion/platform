@@ -3903,7 +3903,7 @@ public class RomanLogicsModule extends LogicsModule {
         NDSPercentOriginFreightSku = addJProp(baseGroup, "NDSPercentOriginFreightSku", true, "НДС (%)", dutyPercentCustomCategory10TypeDuty, customCategory10FreightSku, 1, 2, typeDutyNDS);
         NDSPercentCustomFreightSku = addJProp(baseGroup, "NDSPercentCustomFreightSku", "НДС (%)", and(false, false), NDSPercentCustom, is(freight), 1, is(sku), 2);
         NDSPercentFreightSku = addSUProp(baseGroup, "NDSPercentFreightSku", "НДС (%)", Union.OVERRIDE, NDSPercentCustomFreightSku, NDSPercentOriginFreightSku);
-        NDSImporterFreightSku = addJProp(baseGroup, "NDSImporterFreightSku", "НДС (евро)", percentNumeric2, priceFullDutyImporterFreightSku, 1, 2, 3, NDSPercentFreightSku, 2, 3);
+        NDSImporterFreightSku = addJProp(baseGroup, "NDSImporterFreightSku", true, "НДС (евро)", percentNumeric2, priceFullDutyImporterFreightSku, 1, 2, 3, NDSPercentFreightSku, 2, 3);
 
         priceFullDutyNDSImporterFreightSku = addSUProp(baseGroup, "priceFullDutyNDSImporterFreightSku", "Цена с расходами", Union.SUM, priceInFullDutyImporterFreightSku, NDSImporterFreightSku);
         priceFullDutyNDSFreightSku = addMGProp(baseGroup, "priceFullDutyNDSFreightSku", true, "Цена с расходами", priceFullDutyNDSImporterFreightSku, 2, 3);
@@ -4936,7 +4936,7 @@ public class RomanLogicsModule extends LogicsModule {
             super(parent, sID, caption);
 
             this.box = box;
-            objSupplier = addSingleGroupObject(supplier, "Поставщик", baseLM.name, importInvoiceActionGroup, true);
+            objSupplier = addSingleGroupObject("supplier", supplier, "Поставщик", baseLM.name, importInvoiceActionGroup, true);
             objSupplier.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             objInvoice = addSingleGroupObject("invoice", (box ? boxInvoice : simpleInvoice), "Инвойс", baseLM.date, baseLM.objectClassName, sidDocument, nameCurrencyDocument, sumDocument,
@@ -5029,7 +5029,7 @@ public class RomanLogicsModule extends LogicsModule {
             design.get(objOrder.groupTo).grid.constraints.fillVertical = 4;
             design.get(objSku.groupTo).grid.constraints.fillVertical = 4;
 
-            ContainerView detContainer = design.createContainer();
+            ContainerView detContainer = design.createContainer(null, null, "invoiceDetail");
             design.getMainContainer().addAfter(detContainer, design.getGroupObjectContainer(objInvoice.groupTo));
             detContainer.add(design.getGroupObjectContainer(objSku.groupTo));
             detContainer.add(design.getGroupObjectContainer(objOrder.groupTo));

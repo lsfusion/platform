@@ -67,3 +67,84 @@ EXTEND DESIGN boxInvoiceForm {
 EXTEND FORM simpleInvoiceForm
     PROPERTIES (invoice) READONLY nameLanguageInvoice AFTER nameDestinationDestinationDocument
 ;
+
+// ----------- Групповое изменение составов ----------------- //
+
+countInvoiceMainComposition 'Кол-во' = GROUP SUM 1 IF quantityDocumentSku(document, sku) AND document IS invoice
+                                             BY document, mainCompositionSku(sku);
+
+countInvoiceAdditionalComposition 'Кол-во' = GROUP SUM 1 IF quantityDocumentSku(document, sku) AND document IS invoice
+                                             BY document, additionalCompositionSku(sku);
+
+countInvoiceMainCompositionLanguage 'Кол-во' = GROUP SUM 1 IF quantityDocumentSku(document, sku) AND document IS invoice
+                                                     BY document, mainCompositionSkuLanguage(sku, languageInvoice(document));
+
+countInvoiceAdditionalCompositionLanguage 'Кол-во' = GROUP SUM 1 IF quantityDocumentSku(document, sku) AND document IS invoice
+                                                           BY document, additionalCompositionSkuLanguage(sku, languageInvoice(document));
+
+changeDocumentMainComposition = ACTION (document, comp) {
+    REQUEST STRING[200] INPUT;
+    SET mainCompositionSku(sku) <- requestedString() WHERE mainCompositionSku(sku) == comp AND quantityDocumentSku(document, sku);
+}
+changeDocumentAdditionalComposition = ACTION (document, comp) {
+    REQUEST STRING[200] INPUT;
+    SET additionalCompositionSku(sku) <- requestedString() WHERE additionalCompositionSku(sku) == comp AND quantityDocumentSku(document, sku);
+}
+
+changeDocumentMainCompositionLanguage = ACTION (document, comp) {
+    REQUEST STRING[200] INPUT;
+    SET mainCompositionSkuLanguage(sku, language) <- requestedString() WHERE mainCompositionSkuLanguage(sku, language) == comp AND quantityDocumentSku(document, sku) AND language == languageInvoice(document);
+}
+
+changeDocumentAdditionalCompositionLanguage = ACTION (document, comp) {
+    REQUEST STRING[200] INPUT;
+    SET additionalCompositionSkuLanguage(sku, language) <- requestedString() WHERE additionalCompositionSkuLanguage(sku, language) == comp AND quantityDocumentSku(document, sku) AND language == languageInvoice(document);
+}
+
+EXTEND FORM boxInvoiceForm
+    OBJECTS mc = STRING[200] FIXED GRID
+    PROPERTIES OBJVALUE(mc) ON CHANGE EXEC changeDocumentMainComposition(invoice, mc), countInvoiceMainComposition(invoice, mc)
+    FILTERS countInvoiceMainComposition(invoice, mc)
+
+    OBJECTS ac = STRING[200] FIXED GRID
+    PROPERTIES OBJVALUE(ac) ON CHANGE EXEC changeDocumentAdditionalComposition(invoice, ac), countInvoiceAdditionalComposition(invoice, ac)
+    FILTERS countInvoiceAdditionalComposition(invoice, ac)
+
+    OBJECTS mcl = STRING[200] FIXED GRID
+    PROPERTIES OBJVALUE(mcl) ON CHANGE EXEC changeDocumentMainCompositionLanguage(invoice, mcl), countInvoiceMainCompositionLanguage(invoice, mcl)
+    FILTERS countInvoiceMainCompositionLanguage(invoice, mcl)
+
+    OBJECTS acl = STRING[200] FIXED GRID
+    PROPERTIES OBJVALUE(acl) ON CHANGE EXEC changeDocumentAdditionalCompositionLanguage(invoice, acl), countInvoiceAdditionalCompositionLanguage(invoice, acl)
+    FILTERS countInvoiceAdditionalCompositionLanguage(invoice, acl)
+;
+
+EXTEND DESIGN boxInvoiceForm {
+    NEW topContainer BEFORE functions.box {
+        childConstraints = TO THE BOTTOM;
+        type = SPLITV;
+        NEW headerContainer {
+            childConstraints = TO THE BOTTOM;
+            ADD supplier.box;
+            ADD invoice.box;
+        }
+        ADD invoiceDetail {
+            NEW compositions {
+                childConstraints = TO THE RIGHT;
+                title = 'Составы';
+                ADD mc.box {
+                    title = 'Основные';
+                }
+                ADD ac.box {
+                    title = 'Дополнительные';
+                }
+                ADD mcl.box {
+                    title = 'Основные (иностр.)';
+                }
+                ADD acl.box {
+                    title = 'Дополнительные (иностр.)';
+                }
+            }
+        }
+    }
+}
