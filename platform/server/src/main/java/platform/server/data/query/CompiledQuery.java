@@ -472,6 +472,9 @@ public class CompiledQuery<K,V> {
 
             public String getSource(ExecuteEnvironment env) {
 
+                if(new Exception().getStackTrace().length > 400)
+                    env = env;
+
                 Set<Expr> queryExprs = new HashSet<Expr>(group.values()); // так как может одновременно и SUM и MAX нужен
                 Where exprWhere = Where.FALSE;
                 for(GroupExpr.Query query : queries.keySet()) {

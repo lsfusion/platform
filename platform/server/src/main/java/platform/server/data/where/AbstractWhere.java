@@ -236,11 +236,11 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
                 if(innerJoin.isComplex())
                     result.add(innerJoin);
                 else { // не будем запускать рекурсию
-                    Where packWhere = innerJoin.where.pack();
-                    if(BaseUtils.hashEquals(innerJoin.where, packWhere))
+                    Where fullWhere = innerJoin.getFullWhere();
+                    Where fullPackWhere = fullWhere.pack();
+                    if(BaseUtils.hashEquals(fullWhere, fullPackWhere))
                         result.add(innerJoin);
                     else {
-                        Where fullPackWhere = innerJoin.keyEqual.getWhere().and(packWhere);
                         if(exclusive)
                             recPacks.add(fullPackWhere); // если не exclusive
                         else
