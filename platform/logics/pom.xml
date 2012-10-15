@@ -13,17 +13,12 @@
     <packaging>pom</packaging>
     <name>Logics</name>
 
-    <profiles>
-        <profile>
-            <id>assemble</id>
-            <properties>
-                <assemble.jar>${project.build.directory}/fusion-prod.jar</assemble.jar>
-                <assemble.mainClass>platform.server.logics.BusinessLogics</assemble.mainClass>
-                <assemble.descriptor>../server/src/assemble/distribution.xml</assemble.descriptor>
-                <assemble.finalName>fusion</assemble.finalName>
-            </properties>
-        </profile>
-    </profiles>
+    <properties>
+        <assemble.jar>${project.build.directory}/fusion-prod.jar</assemble.jar>
+        <assemble.mainClass>platform.server.logics.BusinessLogics</assemble.mainClass>
+        <assemble.descriptor>../server/src/assemble/distribution.xml</assemble.descriptor>
+        <assemble.finalName>fusion</assemble.finalName>
+    </properties>
 
     <dependencies>
         <dependency>

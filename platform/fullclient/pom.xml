@@ -12,21 +12,16 @@
     <packaging>jar</packaging>
     <name>FullClient</name>
 
-    <profiles>
-        <profile>
-            <id>assembleSigned</id>
-            <properties>
-                <assemble.jar>${project.build.directory}/fullclient-prod.jar</assemble.jar>
-                <assemble.mainClass>platform.client.Main</assemble.mainClass>
-                <assemble.descriptor>src/assemble/distribution.xml</assemble.descriptor>
-                <assemble.finalName>client</assemble.finalName>
+    <properties>
+        <assemble.jar>${project.build.directory}/fullclient-prod.jar</assemble.jar>
+        <assemble.mainClass>platform.client.Main</assemble.mainClass>
+        <assemble.descriptor>src/assemble/distribution.xml</assemble.descriptor>
+        <assemble.finalName>client</assemble.finalName>
 
-                <keystore.file>${project.basedir}/src/assemble/keystore</keystore.file>
-                <keystore.alias>lsf</keystore.alias>
-                <keystore.pass>qwerty</keystore.pass>
-            </properties>
-        </profile>
-    </profiles>
+        <keystore.file>${project.basedir}/src/assemble/keystore</keystore.file>
+        <keystore.alias>lsf</keystore.alias>
+        <keystore.pass>qwerty</keystore.pass>
+    </properties>
 
     <build>
         <plugins>

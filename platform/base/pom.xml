@@ -151,6 +151,7 @@
                                 </manifest>
                                 <manifestEntries>
                                     <SCM-Version>${platform.revision}</SCM-Version>
+                                    <SplashScreen-Image>platform/images/lsfusion.jpg</SplashScreen-Image>
                                 </manifestEntries>
                             </archive>
                             <descriptors>
@@ -166,10 +167,19 @@
                             </execution>
                         </executions>
                     </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>pack</id>
+            <build>
+                <plugins>
                     <plugin>
                         <artifactId>maven-antrun-plugin</artifactId>
                         <executions>
                             <execution>
+                                <id>ant-pack</id>
                                 <phase>install</phase>
                                 <goals>
                                     <goal>run</goal>
@@ -189,64 +199,16 @@
                 </plugins>
             </build>
         </profile>
+
         <profile>
-            <id>assembleSigned</id>
+            <id>sign</id>
             <build>
                 <plugins>
-                    <plugin>
-                        <groupId>com.google.code.maven-svn-revision-number-plugin</groupId>
-                        <artifactId>svn-revision-number-maven-plugin</artifactId>
-                        <version>1.12</version>
-                        <executions>
-                            <execution>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>revision</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                        <configuration>
-                            <entries>
-                                <entry>
-                                    <prefix>platform</prefix>
-                                    <path>${project.basedir}</path>
-                                    <depth>empty</depth>
-                                    <reportUnversioned>false</reportUnversioned>
-                                    <reportIgnored>false</reportIgnored>
-                                    <reportOutOfDate>false</reportOutOfDate>
-                                </entry>
-                            </entries>
-                        </configuration>
-                    </plugin>
-                    <plugin>
-                        <artifactId>maven-assembly-plugin</artifactId>
-                        <configuration>
-                            <finalName>${assemble.finalName}</finalName>
-                            <archive>
-                                <manifest>
-                                    <mainClass>${assemble.mainClass}</mainClass>
-                                </manifest>
-                                <manifestEntries>
-                                    <SplashScreen-Image>platform/images/lsfusion.jpg</SplashScreen-Image>
-                                </manifestEntries>
-                            </archive>
-                            <descriptors>
-                                <descriptor>${assemble.descriptor}</descriptor>
-                            </descriptors>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <phase>install</phase>
-                                <goals>
-                                    <goal>single</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
                     <plugin>
                         <artifactId>maven-antrun-plugin</artifactId>
                         <executions>
                             <execution>
+                                <id>ant-sign</id>
                                 <phase>install</phase>
                                 <goals>
                                     <goal>run</goal>
@@ -264,12 +226,6 @@
                                                 keystore="${keystore.file}"
                                                 alias="${keystore.alias}"
                                                 storepass="${keystore.pass}" />
-
-                                        <echo message="Pack200-ing jar ${assemble.jar}"/>
-                                        <exec executable="pack200">
-                                            <arg value="${assemble.jar}.pack.gz"/>
-                                            <arg value="${assemble.jar}"/>
-                                        </exec>
                                     </tasks>
                                 </configuration>
                             </execution>
