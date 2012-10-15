@@ -46,11 +46,10 @@ public abstract class ObjectWhere extends AbstractWhere implements OrObjectWhere
             if(BaseUtils.hashEquals(this,result))
                 return this;
 
-            // если упаковался еще раз на orTrue проверим
-/*            if(OrWhere.checkTrue(result,falseWhere)) {
+            if(OrWhere.checkTrue(this,falseWhere)) { // проверим на checkTrue так как упакованный where уже другой, и соответственно проверка со "старым" where "потеряется", а это может привести к бесконечному проталкиванию и т.п.
                 change.type = FollowType.WIDE;
                 return TRUE;
-            }*/
+            }
             if(OrWhere.checkTrue(result.not(),falseWhere)) {
                 change.type = FollowType.NARROW;
                 return FALSE;
