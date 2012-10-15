@@ -75,7 +75,7 @@ public class DefaultFormView extends FormView {
     public DefaultFormView(FormEntity<?> formEntity) {
         super(formEntity);
 
-        caption = entity.caption;
+        caption = entity.getTitle();
 
         FormContainerSet<ContainerView, ComponentView> formSet = FormContainerSet.fillContainers(this, containerFactory);
         setComponentSID(formSet.getFormButtonContainer(), formSet.getFormButtonContainer().getSID());

@@ -47,7 +47,8 @@ import static platform.server.logics.ServerResourceBundle.getString;
 public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T> implements ServerIdentitySerializable {
     private final static Logger logger = Logger.getLogger(FormEntity.class);
     private static ImageIcon image = new ImageIcon(NavigatorElement.class.getResource("/images/form.png"));
-
+    public String title;
+    
     public static final IsFullClientFormulaProperty isFullClient = IsFullClientFormulaProperty.instance;
     public static final IsDebugFormulaProperty isDebug = IsDebugFormulaProperty.instance;
     public static final SessionDataProperty isDialog = new SessionDataProperty("isDialog", "Is dialog", LogicalClass.instance);
@@ -90,15 +91,24 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     }
 
     FormEntity(String sID, String caption, boolean iisPrintForm) {
-        this(null, sID, caption, iisPrintForm);
+        this(null, sID, caption, null, iisPrintForm);
     }
 
     public FormEntity(NavigatorElement<T> parent, String sID, String caption) {
-        this(parent, sID, caption, false);
+        this(parent, sID, caption, null, false);
     }
 
-    protected FormEntity(NavigatorElement<T> parent, String sID, String caption, boolean iisPrintForm) {
+    public FormEntity(NavigatorElement<T> parent, String sID, String caption, String title) {
+        this(parent, sID, caption, title, false);
+    }
+
+    public FormEntity(NavigatorElement<T> parent, String sID, String caption, boolean iisPrintForm) {
+        this(parent, sID, caption, null, false);
+    }
+
+    protected FormEntity(NavigatorElement<T> parent, String sID, String caption, String title, boolean iisPrintForm) {
         super(parent, sID, caption);
+        this.title = title;
         logger.info("Initializing form " + caption + "...");
 
         isPrintForm = iisPrintForm;
@@ -855,6 +865,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         pool.writeString(outStream, caption);
+        pool.writeString(outStream, title);
         pool.writeString(outStream, sID);
         outStream.writeBoolean(isPrintForm);
         outStream.writeUTF(modalityType.name());
@@ -902,6 +913,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
         caption = pool.readString(inStream);
+        title = pool.readString(inStream);
         sID = pool.readString(inStream);
         isPrintForm = inStream.readBoolean();
         modalityType = ModalityType.valueOf(inStream.readUTF());
@@ -1261,5 +1273,9 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
             for (ObjectEntity object : group.objects)
                 objects.add(object);
         return objects;
+    }
+    
+    public String getTitle(){
+        return title!=null ? title : caption;
     }
 }
