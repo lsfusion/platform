@@ -41,6 +41,7 @@ toSetRangeCustomCategories10 'Взять шкалы' = ACTION () NEWSESSION AUTO
 };
 
 
+
 //--------------------------------- Инвойсы -------------------------------------------------------------------------//
 CLASS formedInvoice 'Инвойс от STX' : innerInvoice;
 
@@ -836,7 +837,7 @@ importGroupsXMLDeclaration 'Импорт декларации из XML (Бела
 sumDeclaration 'Сумма' (declaration) = GROUP SUM declarationSumRateDeclarationDetail(declarationDetail) BY declarationDeclarationDetail(declarationDetail) IN sumGroup PERSISTENT;
 
 // Таможенный сбор
-sumRegistrationDeclarationDetail 'Таможенный сбор' (declarationDetail) = dutyPercentCustomCategory10TypeDuty(customCategory10DeclarationDetail(declarationDetail), typeDutyRegistrationCustomsZone(customsZoneDeclarationDetail(declarationDetail))) IN baseGroup;
+sumRegistrationDeclarationDetail 'Таможенный сбор' (declarationDetail) = dutySumCustomCategory10TypeDuty(customCategory10DeclarationDetail(declarationDetail), typeDutyRegistrationCustomsZone(customsZoneDeclarationDetail(declarationDetail))) IN baseGroup;
 
 sumRegistrationDeclaration 'Таможенный сбор (расч.)' (declaration) = GROUP MAX sumRegistrationDeclarationDetail(declarationDetail)
                                                                             BY declarationDeclarationDetail(declarationDetail) IN baseGroup PERSISTENT;
@@ -861,7 +862,6 @@ registrationSumDeclarationDetail 'Таможенный сбор' (declarationDet
 //                                                                                coeffDeclarationDetailDeclaration(declarationDetail), declarationDetail);
 
 registrationSumDataDeclarationDetail 'Таможенный сбор' = DATA NUMERIC[14,2](declarationDetail);
-//registrationSumDataDeclarationDetail(declarationDetail) <- registrationSumDeclarationDetail(declarationDetail) WHEN ASSIGNED (declarationDeclarationDetail(declarationDetail) IS preparedDeclaration);
 
 registrationSumUnionDeclarationDetail 'Таможенный сбор' = UNION OVERRIDE registrationSumDeclarationDetail(declarationDetail),
                                                                          registrationSumDataDeclarationDetail(declarationDetail);
