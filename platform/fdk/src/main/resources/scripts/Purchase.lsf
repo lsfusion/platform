@@ -6,8 +6,24 @@ REQUIRE PurchaseShipment, PurchaseReturnShipment, PurchaseCreditNote, PurchaseRe
 //-----------------------------------------------------------------------------------------------------------//
 
 
-currentReservePurchaseSkuStock 'Текущий резерв'(sku, stock)  = Purchase.currentReserveSkuStock(sku, stock) (-)
+currentReservePurchaseSkuStock 'Резерв закупка (всего)'(sku, stock)  = Purchase.currentReserveSkuStock(sku, stock) (-)
     PurchaseReturn.currentReserveSkuStock(sku, stock);
+
+// без учета текущей даты/времени
+reservePurchaseBSkuStockDate 'Остаток на начало дня' (sku, stock, date) = Purchase.reserveBSkuStockDate(sku, stock, date) (-)
+    PurchaseReturn.reserveBSkuStockDate(sku, stock, date);
+
+// с учетом текущей даты/времени
+reservePurchaseASkuStockDate 'Остаток на конец дня'(sku, stock, date) = Purchase.reserveASkuStockDate(sku, stock, date) (-)
+    PurchaseReturn.reserveASkuStockDate(sku, stock, date);
+
+// без учета текущей даты/времени
+reservePurchaseBSkuStockDateTime 'Остаток (до)' (sku, stock, dateTime) = Purchase.reserveBSkuStockDateTime(sku, stock, dateTime) (-)
+    PurchaseReturn.reserveBSkuStockDateTime(sku, stock, dateTime);
+
+// с учетом текущей даты/времени
+reservePurchaseASkuStockDateTime 'Остаток (после)'(sku, stock, dateTime) = Purchase.reserveASkuStockDateTime(sku, stock, dateTime) (-)
+    PurchaseReturn.reserveASkuStockDateTime(sku, stock, dateTime);
 
 NAVIGATOR {
 

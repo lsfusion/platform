@@ -299,10 +299,29 @@ META defineShipment(skuLedger, sign, contact, contactCaption, partyA, partyB)
         PROPERTIES(s) READONLY ordersShipment
         PROPERTIES(d) READONLY descriptionOrderShipmentDetail
     ;
-
-    // Резервирование
+//--  Резервирование
     currentReserveSkuStock 'Текущий резерв'###sign (sku, stock) = GROUP SUM toShipOrderDetail (orderDetail) AND isPostedOrderDetail(orderDetail) AND NOT isClosedOrderDetail(orderDetail)
                                                               BY skuOrderDetail(orderDetail), stockOrderDetail(orderDetail) PERSISTENT;
+    // без учета текущей даты/времени
+    reserveBSkuStockDate 'Остаток на начало дня'###sign (sku, stock, date) = (currentReserveSkuStock(sku, stock) AND  date AS DATE) (-)
+        [GROUP SUM toShipOrderDetail (orderDetail) AND isPostedOrderDetail(orderDetail) AND NOT isClosedOrderDetail(orderDetail) AND shipmentDateOrderDetail(orderDetail) >= (date AS DATE)
+            BY skuOrderDetail(orderDetail), stockOrderDetail(orderDetail), date](sku, stock, date);
+
+    // с учетом текущей даты/времени
+    reserveASkuStockDate 'Остаток на конец дня'###sign (sku, stock, date) = (currentReserveSkuStock(sku, stock) AND date AS DATE) (-)
+        [GROUP SUM toShipOrderDetail (orderDetail) AND isPostedOrderDetail(orderDetail) AND NOT isClosedOrderDetail(orderDetail) AND shipmentDateOrderDetail(orderDetail) > (date AS DATE)
+            BY skuOrderDetail(orderDetail), stockOrderDetail(orderDetail), date](sku, stock, date);
+
+    // без учета текущей даты/времени
+    reserveBSkuStockDateTime 'Остаток (до)'###sign (sku, stock, dateTime) = (currentReserveSkuStock(sku, stock) AND dateTime AS DATETIME) (-)
+        [GROUP SUM toShipOrderDetail (orderDetail) AND isPostedOrderDetail(orderDetail) AND NOT isClosedOrderDetail(orderDetail) AND shipmentDateTimeOrderDetail(orderDetail) >= (dateTime AS DATETIME)
+            BY skuOrderDetail(orderDetail), stockOrderDetail(orderDetail), dateTime](sku, stock, dateTime);
+
+    // с учетом текущей даты/времени
+    reserveASkuStockDateTime 'Остаток (после)'###sign (sku, stock, dateTime) = (currentReserveSkuStock(sku, stock) AND dateTime AS DATETIME) (-)
+        [GROUP SUM toShipOrderDetail (orderDetail) AND isPostedOrderDetail(orderDetail) AND NOT isClosedOrderDetail(orderDetail) AND shipmentDateTimeOrderDetail(orderDetail) > (dateTime AS DATETIME)
+            BY skuOrderDetail(orderDetail), stockOrderDetail(orderDetail), dateTime](sku, stock, dateTime);
+
 
 //--  Связь накладной и поставки
     invoiceDetailShipmentDetail = ABSTRACT invoiceDetail (shipmentDetail);

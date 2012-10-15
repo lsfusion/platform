@@ -36,6 +36,8 @@ META defineOrder(sign, contact)
     @defineDocumentInterfaceDataStock(order, stock, 'Склад');
     @defineDocumentInterfacePosted(order);
 
+    @defineDocumentInterfaceTimeShipment(order);
+
     @defineDocumentInterfaceClosed(order);
 
     @defineDocumentInterfaceDescription(order, 'Заказ'###sign);
@@ -72,11 +74,13 @@ META defineOrder(sign, contact)
         OBJECTS o = userOrder FIXED PANEL
         PROPERTIES (o) objectClassName, nameStockUserOrder, nameNumeratorObject, numberObject, seriesObject, dateUserOrder, timeUserOrder,
                        name###contact###UserOrder, nameCurrencyUserOrder, namePriceListTypeUserOrder, noteUserOrder,
-                       countUserOrderDetailUserOrder, quantityUserOrderDetailUserOrder, sumUserOrderDetailUserOrder
+                       countUserOrderDetailUserOrder, quantityUserOrderDetailUserOrder, sumUserOrderDetailUserOrder, shipmentDateUserOrder,
+                       shipmentTimeUserOrder
 
         OBJECTS d = userOrderDetail
         PROPERTIES (d) indexUserOrderDetail, idBarcodeSkuUserOrderDetail, nameSkuUserOrderDetail, shortNameUOMSkuUserOrderDetail,
-                       quantityUserOrderDetail, priceUserOrderDetail, sumUserOrderDetail, nameStockUserOrderDetail, ADDOBJ, delete
+                       quantityUserOrderDetail, priceUserOrderDetail, sumUserOrderDetail, nameStockUserOrderDetail, shipmentDateUserOrderDetail,
+                       shipmentTimeUserOrderDetail, ADDOBJ, delete
 
         PROPERTIES(o) TODRAW d addDetailDialogSkuStockUserOrderDetailUserOrder,
                                addDetailInputBarcodeUserOrderDetailUserOrder, deleteUserOrderDetailUserOrder
@@ -117,7 +121,9 @@ META defineOrder(sign, contact)
                         ADD PROPERTY(dateUserOrder);
                         ADD PROPERTY(timeUserOrder);
                     }
-
+                    ADD o.documentShipmentGroup {
+                        childConstraints = TO THE RIGHT;
+                    }
                     ADD o.documentPrmGroup {
                         childConstraints = TO THE RIGHT;
                     }
@@ -139,6 +145,7 @@ META defineOrder(sign, contact)
     @defineDocumentSkuStock(userOrder);
     @extendDocumentFormSkuStock(userOrder, userOrder, o);
 
+
     addUserOrder 'Добавить' = ACTION ADDFORM userOrder;
     editUserOrder 'Редактировать' (userOrder) = ACTION EDITFORM userOrder;
 
@@ -146,7 +153,7 @@ META defineOrder(sign, contact)
         OBJECTS o = order
         PROPERTIES (o) READONLY isPostedOrder FORCE GRID, objectClassName, numberObject, seriesObject, dateOrder, timeOrder,
                                 nameStockOrder, name###contact##Order, nameCurrencyOrder, namePriceListTypeOrder, noteOrder,
-                                countOrderDetailOrder, quantityOrderDetailOrder, sumOrderDetailOrder
+                                countOrderDetailOrder, quantityOrderDetailOrder, sumOrderDetailOrder, shipmentDateUserOrder, shipmentTimeUserOrder
 
         PROPERTIES (o) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
@@ -157,7 +164,9 @@ META defineOrder(sign, contact)
 
         OBJECTS d=orderDetail
         PROPERTIES (d) READONLY indexOrderDetail, idBarcodeSkuOrderDetail, nameSkuOrderDetail, shortNameUOMSkuOrderDetail,
-                       quantityOrderDetail, priceOrderDetail, sumOrderDetail, nameStockOrderDetail
+                       quantityOrderDetail, priceOrderDetail, sumOrderDetail, nameStockOrderDetail, shipmentDateUserOrderDetail,
+                       shipmentTimeUserOrderDetail
+
 
         FILTERS orderOrderDetail(d) == o
         DIALOG order OBJECT o

@@ -29,6 +29,8 @@ CLASS ABSTRACT numeratedDocument 'Нумерируемый документ' : n
 GROUP documentHeaderGroup 'Шапка документа' : baseGroup;
 GROUP documentSumGroup 'Суммы документа': publicGroup;
 GROUP documentPrmGroup 'Параметры документа': publicGroup;
+GROUP documentShipmentGroup 'Иисполнение' : baseGroup;
+
 
 // Макросы по созданию документов
 
@@ -150,6 +152,60 @@ META defineDocumentInterfaceTime (object)
     @defineDocumentInterfaceHeaderTime(object);
     @defineDocumentInterfaceDetailTime(object);
 END
+
+// ----- Time ----- //
+META defineDocumentHeaderTimeShipment (object)
+    shipmentDate###object 'Дата исполнения' = DATA DATE (object) IN documentShipmentGroup;
+
+    shipmentTime###object 'Время исполнения' = DATA TIME (object) IN documentShipmentGroup;
+
+    shipmentDateTime###object 'Дата/время исполнения' (object) = toDateTime(shipmentDate###object(object), shipmentTime###object(object)) PERSISTENT;
+END
+META defineDocumentAbstractHeaderTimeShipment (object)
+    shipmentDate###object 'Дата исполнения' = ABSTRACT DATE (object) IN documentShipmentGroup PERSISTENT;
+    shipmentTime###object 'Время исполнения' = ABSTRACT TIME (object) IN documentShipmentGroup PERSISTENT;
+    shipmentDateTime###object 'Дата/время исполнения' (object) = toDateTime(shipmentDate###object(object), shipmentTime###object(object)) PERSISTENT;
+END
+META defineDocumentInterfaceHeaderTimeShipment(object)
+    @defineDocumentAbstractHeaderTimeShipment(object);
+    @defineDocumentHeaderTimeShipment(user###object);
+    shipmentDate###object(object) += shipmentDate##User###object(object);
+    shipmentTime###object(object) += shipmentTime##User###object(object);
+END
+
+
+META defineDocumentDetailDataTimeShipment (object, detail)
+    shipmentDataDate###detail =  DATA DATE (detail);
+    shipmentDate###detail 'Дата исполнения' (idetail) = UNION OVERRIDE shipmentDate###object(object###detail(idetail)), shipmentDataDate###detail(idetail) PERSISTENT;
+    shipmentDataTime###detail =  DATA TIME (detail);
+    shipmentTime###detail 'Время исполнения' (idetail) = UNION OVERRIDE shipmentTime###object(object###detail(idetail)), shipmentDataTime###detail(idetail) PERSISTENT;
+    shipmentDateTime###detail 'Дата/время исполнения' (idetail) = toDateTime(shipmentDate###detail(idetail), shipmentTime###detail(idetail)) PERSISTENT;
+END
+
+META defineDocumentAbstractDetailDataTimeShipment (object, detail)
+    shipmentDataDate###detail =  ABSTRACT DATE (detail);
+    shipmentDate###detail 'Дата исполнения' (idetail) = UNION OVERRIDE shipmentDate###object(object###detail(idetail)), shipmentDataDate###detail(idetail) PERSISTENT;
+    shipmentDataTime###detail =  ABSTRACT TIME (detail);
+    shipmentTime###detail 'Время исполнения' (idetail) = UNION OVERRIDE shipmentTime###object(object###detail(idetail)), shipmentDataTime###detail(idetail) PERSISTENT;
+    shipmentDateTime###detail 'Дата/время исполнения' (idetail) = toDateTime(shipmentDate###detail(idetail), shipmentTime###detail(idetail)) PERSISTENT;
+END
+
+META defineDocumentInterfaceDetailDataTimeShipment (object, detail)
+    @defineDocumentAbstractDetailDataTimeShipment(object, detail);
+    @defineDocumentDetailDataTimeShipment(user###object, user###detail);
+    shipmentDataDate###detail (detail) += shipmentDataDate###user###detail (detail);
+    shipmentDataTime###detail (detail) += shipmentDataTime###user###detail (detail);
+END
+
+META defineDocumentInterfaceDetailDataTimeShipment (object)
+    @defineDocumentInterfaceDetailDataTimeShipment(object, object##Detail);
+END
+
+META defineDocumentInterfaceTimeShipment (object)
+    @defineDocumentInterfaceHeaderTimeShipment(object);
+    @defineDocumentInterfaceDetailDataTimeShipment(object);
+END
+
 
 // Примечание
 
@@ -475,8 +531,7 @@ META defineDocumentSkuStockCustom(object, detail, skuProp, stockProp)
         BY skuProp###detail(detail), object###detail(detail), stockProp###detail(detail);
     
     priceSkuStock###object 'Цена учетная' (sku, stock, object) = priceSkuStockDateTime(sku, stock, dateTime###object(object));
-    
-    
+
     changeQuantitySku###object###Stock = ACTION (sku, object, stock) {
         REQUEST NUMERIC[14,3] INPUT;
         IF detail###Sku###object###Stock(sku, object, stock) THEN {
@@ -491,9 +546,11 @@ META defineDocumentSkuStockCustom(object, detail, skuProp, stockProp)
             ADDOBJ detail;
             FOR d == addedObject() DO {
                SET object###detail(d) <- object;
-               SET stockProp###detail (d) <- stock;
+               SET data###stockProp###detail (d) <- stock;
                SET skuProp###detail(d) <- sku;
                SET quantity###detail (d) <- requestedNumeric();
+               SET shipmentDataDate###detail (d) <- shipmentDate###object(object);
+               SET shipmentDataTime###detail (d) <- shipmentTime###object(object);
             }
         }
     }
@@ -527,8 +584,7 @@ META extendDocumentFormSkuStockCustom(object, form, concrete, stockProp)
 
         ORDER BY          nameSku, stockName
 
-        PROPERTIES        currentBalanceSkuStock(s, st) READONLY, priceSkuStock###object(s, st, concrete) READONLY, quantitySku###object###Stock(s, concrete, st) ON CHANGE EXEC changeQuantitySku###object###Stock(s, concrete, st)
-
+        PROPERTIES        currentBalanceSkuStock(s,st) READONLY, priceSkuStock###object(s, st, concrete) READONLY, quantitySku###object###Stock(s, concrete, st) ON CHANGE EXEC changeQuantitySku###object###Stock(s, concrete, st)
         FILTERGROUP filter
             FILTER 'Товары с остатком ' 'F10' currentBalanceSkuStock(s, st) DEFAULT
             FILTER 'Товары в заказе ' 'F9' quantitySku###object###Stock(s, concrete, st)
@@ -553,6 +609,7 @@ META extendDocumentFormSkuStockCustom(object, form, concrete, stockProp)
                 }
             }
         }
+        PROPERTY(currentBalanceSkuStock) { background = #FFEEEE; }
     }
 END
 META extendDocumentFormSkuStock(object, form, concrete)

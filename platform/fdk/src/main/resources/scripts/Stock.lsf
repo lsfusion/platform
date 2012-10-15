@@ -402,12 +402,12 @@ balanceABatchStockDate 'Остаток на конец дня' (batch, stock, da
     BY batch, stockSkuLedger(ledger), date](batch, stock, date);
 
 // без учета текущей даты/времени
- balanceBBatchStockDateTime 'Остаток на начало дня' (batch, stock, dateTime) = (currentBalanceBatchStock(batch, stock) AND dateTime AS DATETIME)
+ balanceBBatchStockDateTime 'Остаток (до)' (batch, stock, dateTime) = (currentBalanceBatchStock(batch, stock) AND dateTime AS DATETIME)
     (-) [GROUP SUM signedCostSkuLedgerBatch (ledger, batch) AND isPostedSkuLedger(ledger) AND dateTimeSkuLedger(ledger) >= (dateTime AS DATETIME)
     BY batch, stockSkuLedger(ledger), dateTime](batch, stock, dateTime);
 
 // с учетом текущей даты/времени
- balanceABatchStockDateTime 'Остаток на конец дня' (batch, stock, dateTime) = (currentBalanceBatchStock(batch, stock) AND dateTime AS DATETIME)
+ balanceABatchStockDateTime 'Остаток (после)' (batch, stock, dateTime) = (currentBalanceBatchStock(batch, stock) AND dateTime AS DATETIME)
     (-) [GROUP SUM signedCostSkuLedgerBatch (ledger, batch) AND isPostedSkuLedger(ledger) AND dateTimeSkuLedger(ledger) > (dateTime AS DATETIME)
     BY batch, stockSkuLedger(ledger), dateTime](batch, stock, dateTime);
 

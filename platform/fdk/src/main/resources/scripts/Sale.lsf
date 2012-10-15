@@ -5,9 +5,26 @@ REQUIRE SaleShipment, SaleReturnShipment, SaleCreditNote, SaleReturnCreditNote
 
 //-----------------------------------------------------------------------------------------------------------//
 
-
-currentReserveSaleSkuStock 'Текущий резерв'(sku, stock)  = Sale.currentReserveSkuStock(sku, stock) (-)
+currentReserveSaleSkuStock 'Резерв продажа (всего)' (sku, stock)  = Sale.currentReserveSkuStock(sku, stock) (-)
     SaleReturn.currentReserveSkuStock(sku, stock);
+
+// без учета текущей даты/времени
+reserveSaleBSkuStockDate 'Остаток на начало дня' (sku, stock, date) = Sale.reserveBSkuStockDate(sku, stock, date) (-)
+    SaleReturn.reserveBSkuStockDate(sku, stock, date);
+
+// с учетом текущей даты/времени
+reserveSaleASkuStockDate 'Остаток на конец дня'(sku, stock, date) = Sale.reserveASkuStockDate(sku, stock, date) (-)
+    SaleReturn.reserveASkuStockDate(sku, stock, date);
+
+// без учета текущей даты/времени
+reserveSaleBSkuStockDateTime 'Остаток (до)' (sku, stock, dateTime) = Sale.reserveBSkuStockDateTime(sku, stock, dateTime) (-)
+    SaleReturn.reserveBSkuStockDateTime(sku, stock, dateTime);
+
+// с учетом текущей даты/времени
+reserveSaleASkuStockDateTime 'Остаток (после)'(sku, stock, dateTime) = Sale.reserveASkuStockDateTime(sku, stock, dateTime) (-)
+    SaleReturn.reserveASkuStockDateTime(sku, stock, dateTime);
+
+
 
 NAVIGATOR {
 
