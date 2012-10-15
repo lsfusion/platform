@@ -9,10 +9,13 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.reflect.Field;
 
 public class ClientFormSplitPane extends JSplitPane implements AutoHideableContainer {
     private LayoutManager2 layout;
     private boolean skipRelayout = false;
+
+    private Field ignoreLocationChangeField;
 
     public ClientFormSplitPane(ClientContainer key, LayoutManager2 layout, final ClientFormLayout formLayout) {
         super(key.getType() == ContainerType.SPLIT_PANE_HORIZONTAL ? JSplitPane.HORIZONTAL_SPLIT : JSplitPane.VERTICAL_SPLIT, false);
@@ -20,9 +23,27 @@ public class ClientFormSplitPane extends JSplitPane implements AutoHideableConta
         key.design.designComponent(this);
         setBorder(null);
 
+        try {
+            ignoreLocationChangeField = BasicSplitPaneUI.class.getDeclaredField("ignoreDividerLocationChange");
+        } catch (NoSuchFieldException e) {
+        }
+
         addPropertyChangeListener(JSplitPane.DIVIDER_LOCATION_PROPERTY, new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
-                if (!skipRelayout) {
+                // Основная проблема метода заключается в том, что setDividerLocation вызывается в paint, то есть после выполнения Layout
+                boolean ignoreLocationChange = false;
+                try {
+                    // Очень хитрый хак, иначе происходит рекурсия при изменении dividerLocation и форма начинает "плыть"
+                    ignoreLocationChange = ignoreLocationChangeField != null && (Boolean)ignoreLocationChangeField.get(ClientFormSplitPane.this);
+                } catch (IllegalAccessException e) {
+                }
+
+                // Не сбрасываем кэши, если очень маленькое изменение (иначе иногда возникает цикл на перерисовке)
+                if (evt.getOldValue() instanceof Integer && evt.getNewValue() instanceof Integer &&
+                    (Math.abs((Integer)evt.getOldValue() - (Integer)evt.getNewValue()) <= 1))
+                    ignoreLocationChange = true;
+
+                if (!skipRelayout && !ignoreLocationChange) {
                     formLayout.dropCaches();
                 }
             }

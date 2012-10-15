@@ -3898,7 +3898,7 @@ public class RomanLogicsModule extends LogicsModule {
         sumDutyImporterFreightSku = addJProp(baseGroup, "sumDutyImporterFreightSku", "Сумма пошлины", multiplyNumeric2, dutyImporterFreightSku, 1, 2, 3, quantityImporterFreightSku, 1, 2, 3);
         sumDutyImporterFreight = addSGProp(baseGroup, "sumDutyImporterFreight", true, "Сумма пошлины", sumDutyImporterFreightSku, 1, 2);
 
-        NDSPercentOriginFreightSku = addJProp(baseGroup, "NDSPercentOriginFreightSku", "НДС (%)", dutyPercentCustomCategory10TypeDuty, customCategory10FreightSku, 1, 2, typeDutyNDS);
+        NDSPercentOriginFreightSku = addJProp(baseGroup, "NDSPercentOriginFreightSku", true, "НДС (%)", dutyPercentCustomCategory10TypeDuty, customCategory10FreightSku, 1, 2, typeDutyNDS);
         NDSPercentCustomFreightSku = addJProp(baseGroup, "NDSPercentCustomFreightSku", "НДС (%)", and(false, false), NDSPercentCustom, is(freight), 1, is(sku), 2);
         NDSPercentFreightSku = addSUProp(baseGroup, "NDSPercentFreightSku", "НДС (%)", Union.OVERRIDE, NDSPercentCustomFreightSku, NDSPercentOriginFreightSku);
         NDSImporterFreightSku = addJProp(baseGroup, "NDSImporterFreightSku", "НДС (евро)", percentNumeric2, priceFullDutyImporterFreightSku, 1, 2, 3, NDSPercentFreightSku, 2, 3);
@@ -4787,6 +4787,7 @@ public class RomanLogicsModule extends LogicsModule {
             addActionsOnObjectChange(objSIDColorSupplier, addPropertyObject(seekColorSIDInvoice, objSIDColorSupplier, objInvoice));
 
             objSizeSupplier = addSingleGroupObject(sizeSupplier, "Размер"); // baseLM.selection, sidSizeSupplier
+            objSizeSupplier.groupTo.setSingleClassView(ClassViewType.GRID);
             addPropertyDraw(orderSizeSupplier, objSizeSupplier).forceViewType = ClassViewType.HIDE;
 
             objColorSupplier = addSingleGroupObject(colorSupplier, "Цвет", baseLM.selection, sidColorSupplier, baseLM.name);
@@ -6136,7 +6137,6 @@ public class RomanLogicsModule extends LogicsModule {
             objArticle = addSingleGroupObject("article", article, "Артикул", sidArticle, nameSupplierArticle, nameSeasonYearArticle,
                             nameBrandSupplierArticle, nameCollectionSupplierArticle, nameSubCategorySupplierArticle,
                             nameThemeSupplierArticle, sidGenderArticle, nameCategoryArticle, nameTypeFabricArticle, nameArticle);
-            addObjectActions(this, objArticle);
 
             setEditType(nameSupplierArticle, PropertyEditType.READONLY);
 
@@ -6146,7 +6146,6 @@ public class RomanLogicsModule extends LogicsModule {
                     nameTypeFabricArticleSku, sidArticleSku, nameArticleSku, sidColorSupplierItem, nameColorSupplierItem,
                     sidSizeSupplierItem, nameCommonSizeSku, nameCountrySku, netWeightSku,
                     mainCompositionSku, additionalCompositionSku, warrantySku);
-            addObjectActions(this, objSku);
 
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku.groupTo);
 
@@ -6159,6 +6158,9 @@ public class RomanLogicsModule extends LogicsModule {
             setEditType(nameCountrySku, PropertyEditType.EDITABLE);
             setEditType(mainCompositionSku, PropertyEditType.EDITABLE);
             setEditType(additionalCompositionSku, PropertyEditType.EDITABLE);
+
+            addObjectActions(this, objArticle);
+            addObjectActions(this, objSku);
 
             RegularFilterGroupEntity filterGroupSupplierSku = new RegularFilterGroupEntity(genID());
             filterGroupSupplierSku.addFilter(new RegularFilterEntity(genID(),

@@ -29,6 +29,7 @@ public class ToolbarView extends JPanel {
             }
         };
         infoLabel.setMinimumSize(new Dimension(1, ToolbarGridButton.DEFAULT_SIZE.height));
+        infoLabel.setPreferredSize(new Dimension(300, ToolbarGridButton.DEFAULT_SIZE.height));
 
         add(mainPanel, BorderLayout.WEST);
         add(infoLabel, BorderLayout.CENTER);
@@ -38,7 +39,7 @@ public class ToolbarView extends JPanel {
         mainPanel.add(component);
     }
 
-    public boolean updateSelectionInfo(int quantity, String sum, String avg) {
+    public void updateSelectionInfo(int quantity, String sum, String avg) {
         String text = "";
         text += avg == null ? "" : ClientResourceBundle.getString("form.grid.selection.average") + (StartupProperties.dotSeparator ? avg.replace(',', '.') : avg) + "  ";
         text += sum == null ? "" : ClientResourceBundle.getString("form.grid.selection.sum") + (StartupProperties.dotSeparator ? sum.replace(',', '.') : sum) + "  ";
@@ -47,8 +48,6 @@ public class ToolbarView extends JPanel {
             infoLabel.setText(text);
             infoLabel.setVisible(!text.isEmpty());
             infoLabel.invalidate();
-            return true;
         }
-        return false;
     }
 }

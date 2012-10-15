@@ -412,9 +412,7 @@ public class GroupObjectController extends AbstractGroupObjectController {
     }
 
     public void updateSelectionInfo(int quantity, String sum, String avg) {
-        if (toolbarView.updateSelectionInfo(quantity, sum, avg)) {
-            form.dropLayoutCaches();
-        }
+        toolbarView.updateSelectionInfo(quantity, sum, avg);
     }
 
     private void update() {
