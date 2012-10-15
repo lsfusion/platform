@@ -30,7 +30,7 @@ META defineInvoice(sign, contact, partyA, partyB)
     @defineDocumentInterfaceContract(invoice, contractSku###contact, singleContractSku###contact###partyA###partyB, partyA###Invoice, partyB###Invoice,
                                      'Сторона A договора накладной не соответствует компании склада-отправителя',
                                      'Сторона B договора накладной не соответствует покупателю');
-    @defineDocumentInterfacePriceListType(invoice);
+    @defineDocumentInterfaceDataPriceListType(invoice);
 
     @defineDocumentInterfaceDetailSku(invoice, sku);
 
@@ -191,7 +191,7 @@ META defineInvoice(sign, contact, partyA, partyB)
         PROPERTIES (d) indexUserInvoiceDetail, idBarcodeSkuUserInvoiceDetail, nameSkuUserInvoiceDetail, shortNameUOMSkuUserInvoiceDetail,
                        quantityUserInvoiceDetail, priceUserInvoiceDetail, sumUserInvoiceDetail,
                        numberVATUserInvoiceDetail, valueVATUserInvoiceDetail, VATSumUserInvoiceDetail, invoiceSumUserInvoiceDetail,
-                       nameStockUserInvoiceDetail, descriptionOrderUserInvoiceDetail, ADDOBJ, delete
+                       nameStockUserInvoiceDetail, namePriceListTypeUserInvoiceDetail, descriptionOrderUserInvoiceDetail, ADDOBJ, delete
 
         PROPERTIES(i) TODRAW d addDetailDialogSkuStockUserInvoiceDetailUserInvoice,
                                addDetailInputBarcodeUserInvoiceDetailUserInvoice, deleteUserInvoiceDetailUserInvoice
@@ -273,7 +273,7 @@ META defineInvoice(sign, contact, partyA, partyB)
         PROPERTIES (d) READONLY indexInvoiceDetail, idBarcodeSkuInvoiceDetail, nameSkuInvoiceDetail, shortNameUOMSkuInvoiceDetail,
                        quantityInvoiceDetail, priceInvoiceDetail, sumInvoiceDetail,
                        numberVATInvoiceDetail, valueVATInvoiceDetail, VATSumInvoiceDetail, invoiceSumInvoiceDetail,
-                       nameStockInvoiceDetail, descriptionOrderInvoiceDetail
+                       nameStockInvoiceDetail, namePriceListTypeInvoiceDetail, descriptionOrderInvoiceDetail
 
         FILTERS invoiceInvoiceDetail(d) == i
 

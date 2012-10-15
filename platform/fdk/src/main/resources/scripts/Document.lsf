@@ -595,7 +595,7 @@ META extendDocumentFormSkuStockCustom(object, form, concrete, stockProp)
             type = TABBED;
             NEW itemBox {
                 childConstraints = TO THE RIGHT;
-                title = 'Товар';
+                title = 'Подбор';
                 type = SPLITH;
 
                 NEW firstBottom {
@@ -680,7 +680,7 @@ META extendDocumentFormSkuCustom(object, form, concrete, skuProp, detail)
             type = TABBED;
             NEW itemBox {
                 childConstraints = TO THE RIGHT;
-                title = 'Товар';
+                title = 'Подбор';
                 type = SPLITH;
 
                 ADD skuTree.tree.box {

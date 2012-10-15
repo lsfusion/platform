@@ -46,7 +46,7 @@ META defineOrder(sign, contact)
     @deriveDocumentCurrency(userOrder, stock);
 
     @defineDocumentInterface###contact(order);
-    @defineDocumentInterfacePriceListType(order);
+    @defineDocumentInterfaceDataPriceListType(order);
 
     @defineDocumentInterfaceDetailSku(order, sku);
 
@@ -79,7 +79,7 @@ META defineOrder(sign, contact)
 
         OBJECTS d = userOrderDetail
         PROPERTIES (d) indexUserOrderDetail, idBarcodeSkuUserOrderDetail, nameSkuUserOrderDetail, shortNameUOMSkuUserOrderDetail,
-                       quantityUserOrderDetail, priceUserOrderDetail, sumUserOrderDetail, nameStockUserOrderDetail, shipmentDateUserOrderDetail,
+                       quantityUserOrderDetail, priceUserOrderDetail, sumUserOrderDetail, nameStockUserOrderDetail, namePriceListTypeUserOrderDetail, shipmentDateUserOrderDetail,
                        shipmentTimeUserOrderDetail, ADDOBJ, delete
 
         PROPERTIES(o) TODRAW d addDetailDialogSkuStockUserOrderDetailUserOrder,
@@ -164,7 +164,7 @@ META defineOrder(sign, contact)
 
         OBJECTS d=orderDetail
         PROPERTIES (d) READONLY indexOrderDetail, idBarcodeSkuOrderDetail, nameSkuOrderDetail, shortNameUOMSkuOrderDetail,
-                       quantityOrderDetail, priceOrderDetail, sumOrderDetail, nameStockOrderDetail, shipmentDateUserOrderDetail,
+                       quantityOrderDetail, priceOrderDetail, sumOrderDetail, nameStockOrderDetail, namePriceListTypeOrderDetail, shipmentDateUserOrderDetail,
                        shipmentTimeUserOrderDetail
 
 
