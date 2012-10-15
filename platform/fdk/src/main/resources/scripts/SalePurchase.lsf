@@ -21,6 +21,8 @@ META extendDocumentFormReserveSkuStock(object, NS, form, concrete)
     ;
     EXTEND DESIGN NS.form {
         PROPERTY(availableQuantity##NS##SkuStock###object) { background = #FFEEEE; }
+        PROPERTY(currentReservePurchaseSkuStock) { background = #CCFFCC; }
+        PROPERTY(reservePurchaseB##NS##SkuStock###object) { background = #CCFFCC; }
     }
 
 END
