@@ -440,7 +440,8 @@ META defineCompositionSkuLanguageDetailCustom (detail, stockProp)
     nameCategoryArticle###detail 'Номенклатурная группа' (detail)= nameCategoryArticleSkuLanguage(sku###detail(detail), languageStock(stockProp###detail(detail))) MINCHARWIDTH 20 MAXCHARWIDTH 50 PREFCHARWIDTH 50;
     sidGenderArticle###detail 'Пол' (detail) = sidGenderArticleSkuLanguage(sku###detail(detail), languageStock(stockProp###detail(detail))) MINCHARWIDTH 10 MAXCHARWIDTH 30 PREFCHARWIDTH 30;
     nameCountry###detail 'Страна (сделано в)' (detail) = nameCountrySkuLanguage(sku###detail(detail), languageStock(stockProp###detail(detail))) MINCHARWIDTH 20 MAXCHARWIDTH 50 PREFCHARWIDTH 50;
-    nameCountryBrandSupplier###detail 'Страна поставки' (detail) =nameCountryBrandSupplierSkuLanguage(sku###detail(detail), languageStock(stockProp###detail(detail))) MINCHARWIDTH 20 MAXCHARWIDTH 50 PREFCHARWIDTH 50;
+    nameCountryBrandSupplier###detail 'Страна поставки' (detail) = nameCountryBrandSupplierSkuLanguage(sku###detail(detail), languageStock(stockProp###detail(detail))) MINCHARWIDTH 20 MAXCHARWIDTH 50 PREFCHARWIDTH 50;
+
 END
 
 //-------------------------------- НДС на кассе ------------------------- //
@@ -469,6 +470,12 @@ EXTEND DESIGN stores {
     REMOVE PROPERTY(addFormStore_store);
     s.filters { ADD PROPERTY(addRomanStore) BEFORE PROPERTY(editFormStore_store); }
 }
+
+FORM destinations 'Магазины'
+    OBJECTS d=destination
+    PROPERTIES(d) name, nameStoreTypeStore, nameCompanyStore, nameRegionStore
+    DIALOG destination OBJECT d
+;
 
 //Единицы измерения
 

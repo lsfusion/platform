@@ -532,6 +532,7 @@ FORM WHfromRF 'Приход товара из РФ'
                               additionalCompositionOriginSkuWHfromRFDetail BACKGROUND backgroundArticleColorWHfromRFDetail(d) ON CHANGE EXEC changeAdditionalCompositionOriginSkuWHfromRFDetail(d),
                               additionalCompositionSkuWHfromRFDetail BACKGROUND backgroundArticleColorWHfromRFDetail(d) ON CHANGE EXEC changeAdditionalCompositionSkuWHfromRFDetail(d),
                               coefficientArticleSkuWHfromRFDetail BACKGROUND backgroundArticleWHfromRFDetail(d) ON CHANGE EXEC changeCoefficientArticleSkuWHfromRFDetail(d)
+    PROPERTIES(d) FORCE GRID  nameTypeLabelWHfromRFDetail ON CHANGE EXEC changeTypeLabelWHfromRFDetail(d)
 
     PROPERTIES(d) FORCE PANEL SHOWIF languageWHfromRF(w) BACKGROUND backgroundArticleColorWHfromRFDetail(d) mainCompositionWHfromRFDetail, additionalCompositionWHfromRFDetail
 

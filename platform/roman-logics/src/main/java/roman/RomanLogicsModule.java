@@ -719,6 +719,7 @@ public class RomanLogicsModule extends LogicsModule {
     public LCP nameTypeLabelArticle;
     public LCP typeLabelArticleSku;
     public LCP sidTypeLabelArticleSku;
+    public LCP nameTypeLabelArticleSku;
 
     private LCP inSupplierBoxShipment;
     private LCP quantityArticle;
@@ -2262,6 +2263,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         typeLabelArticleSku = addJProp("typeLabelArticleSku", "Тип этикетки (ИД)", typeLabelArticle, articleSku, 1);
         sidTypeLabelArticleSku = addJProp("sidTypeLabelArticleSku", "Код", sidTypeLabel, typeLabelArticleSku, 1);
+        nameTypeLabelArticleSku = addJProp("nameTypeLabelArticleSku", "Тип этикетки", baseLM.name, typeLabelArticleSku, 1);
 
         //Category
         typeInvoiceCategory = addDProp(idGroup, "typeInvoiceCategory", "Тип инвойса номенклатурной группы (ИД)", typeInvoice, category);
@@ -7968,6 +7970,8 @@ public class RomanLogicsModule extends LogicsModule {
 
             addPropertyDraw(objImporter, objFreight, sumCustomImporterFreight);
 
+            setEditType(PropertyEditType.READONLY, gobjFreightImporterTypeInvoice);
+
             objDestination = addSingleGroupObject(destination, "Магазин");
             nameDestination = addPropertyDraw(baseLM.name, objDestination);
 
@@ -7982,6 +7986,11 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(objImporter, objFreight, objBrand, averagePercentImporterFreightBrandSupplier);
 
             addPropertyDraw(objFreight, objDestination, quantityFreightDestination);
+
+            setEditType(PropertyEditType.READONLY, objDestination.groupTo);
+            setEditType(PropertyEditType.READONLY, objBrand.groupTo);
+            setEditType(PropertyEditType.READONLY, objTransitDocument.groupTo);
+            setEditType(PropertyEditType.READONLY, objFreightBox.groupTo);
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(sidImporterFreightTypeInvoice, objImporter, objFreight, objTypeInvoice)));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityFreightDestination, objFreight, objDestination)));
@@ -8047,6 +8056,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             objFreightBox = addSingleGroupObject(freightBox, "Короб", baseLM.barcode, netWeightStock, nameDestinationFreightBox);
             objFreightBox.groupTo.setSingleClassView(ClassViewType.GRID);
+            setEditType(PropertyEditType.READONLY, objFreightBox.groupTo);
 
             addActionsOnObjectChange(objBarcode, addPropertyObject(baseLM.seekBarcodeAction, objBarcode));
 
@@ -8073,9 +8083,12 @@ public class RomanLogicsModule extends LogicsModule {
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(freightFreightBox, objFreightBox)));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(freightFreightBox, objFreightBox), Compare.EQUALS, objFreight));
 
+            setEditType(PropertyEditType.READONLY, gobjFreightImporterTypeInvoice);
+
             objArticle = addSingleGroupObject(article, "Артикул", sidArticle, nameCategoryArticle);
 
             addPropertyDraw(objFreightBox, objArticle, quantityStockArticle);
+            setEditType(PropertyEditType.READONLY, objArticle.groupTo);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(quantityStockArticle, objFreightBox, objArticle), Compare.GREATER, addPropertyObject(baseLM.vzero)));
 
@@ -8201,7 +8214,6 @@ public class RomanLogicsModule extends LogicsModule {
             setEditType(publicGroup, PropertyEditType.READONLY, objSku.groupTo);
             // содержимое фрахта
             objBrand = addSingleGroupObject(brandSupplier, "Бренд", baseLM.name);
-            setEditType(PropertyEditType.READONLY, objBrand.groupTo);
 
             addPropertyDraw(objFreight, objBrand, stockNumberFreightBrandSupplier, quantityShipmentedFreightBrandSupplier, quantityFreightBrandSupplier, sumInFreightBrandSupplier, sumInOutFreightBrandSupplier);
             addFixedFilter(new CompareFilterEntity(addPropertyObject(quantityFreightBrandSupplier, objFreight, objBrand), Compare.GREATER, addPropertyObject(baseLM.vzero)));
@@ -8209,9 +8221,9 @@ public class RomanLogicsModule extends LogicsModule {
             setEditType(PropertyEditType.READONLY, objBrand.groupTo);
 
             objArticle = addSingleGroupObject(article, "Артикул", sidArticle, nameCategoryArticle);
-            setEditType(PropertyEditType.READONLY, objArticle.groupTo);
 
             addPropertyDraw(objFreight, objArticle, quantityFreightArticle, sumInFreightArticle, sumInOutFreightArticle);
+            setEditType(PropertyEditType.READONLY, objArticle.groupTo);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(brandSupplierArticle, objArticle), Compare.EQUALS, objBrand));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(quantityFreightArticle, objFreight, objArticle), Compare.GREATER, addPropertyObject(baseLM.vzero)));

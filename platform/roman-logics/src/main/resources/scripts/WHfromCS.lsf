@@ -511,7 +511,7 @@ FORM WHfromCSR 'Приемка на оптовый склад'
 
     OBJECTS w = WHfromCSR FIXED PANEL, d = WHfromCSRDetail
 
-    PROPERTIES(w)          objectClassName, numberObject, seriesObject, dateWHfromCSR, timeWHfromCSR, nameStockWHfromCSR,
+    PROPERTIES(w)          objectClassName, numberObject, seriesObject, dateWHfromCSR, timeWHfromCSR, nameStockWHfromCSR READONLY,
                            barcodeCurrentFreightUnit, fillWHfromCSRDetailsSkuFreightUnit, printMarksSkuFreightUnit,
                            printMarksSkuWHfromCSR TODRAW d FORCE PANEL
     PROPERTIES(w) READONLY quantityRemainedPositionSkuWHfromCSR SHOWIF barcodeCurrentFreightUnit(w),
@@ -545,6 +545,7 @@ FORM WHfromCSR 'Приемка на оптовый склад'
                               additionalCompositionOriginSkuWHfromCSRDetail ON CHANGE EXEC changeAdditionalCompositionOriginSkuWHfromCSRDetail(d),
                               additionalCompositionSkuWHfromCSRDetail ON CHANGE EXEC changeAdditionalCompositionSkuWHfromCSRDetail(d),
                               coefficientArticleSkuWHfromCSRDetail ON CHANGE EXEC changeCoefficientArticleSkuWHfromCSRDetail(d)
+    PROPERTIES(d) FORCE GRID   nameTypeLabelWHfromCSRDetail ON CHANGE EXEC changeTypeLabelWHfromCSRDetail(d)
 
     PROPERTIES(d) FORCE PANEL SHOWIF languageWHfromCSR(w) mainCompositionWHfromCSRDetail, additionalCompositionWHfromCSRDetail
 

@@ -20,6 +20,15 @@ META defineDocumentDetailSkuArticle (object)
     category###object##Detail 'Номенклатурная группа (ИД)' (object##Detail) = categoryArticle(article###object##Detail(object##Detail)) IN idGroup;
     nameCategory###object##Detail 'Номенклатурная группа' (object##Detail) = name(category###object##Detail(object##Detail)) MINCHARWIDTH 15;
 
+    nameTypeLabel###object##Detail 'Тип этикетки' (object##Detail) = nameTypeLabelArticle(article###object##Detail(object##Detail)) MINCHARWIDTH 15;
+
+    changeTypeLabel###object##Detail = ACTION (object##Detail) {
+    REQUEST OBJECT tl FORM typeLabels MODAL;
+        IF formResult() == formResult.ok THEN {
+            SET typeLabelArticle(article) <- chosenObject('tl') WHERE article == article###object##Detail(object##Detail);
+        }
+    };
+
     shortNameUOM###object##Detail 'Единица измерения' (object##Detail) = shortNameUOMSku(sku###object##Detail(object##Detail));
 END
 
