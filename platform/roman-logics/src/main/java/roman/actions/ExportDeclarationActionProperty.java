@@ -39,7 +39,7 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
                     "nameCategoryGroupDeclaration", "sidGenderGroupDeclaration", "nameTypeFabricGroupDeclaration", "nameGroupDeclaration",
                     "sidArticleGroupDeclaration", "sidCustomCategory10GroupDeclaration", "mainCompositionGroupDeclaration",
                     "sidCountryGroupDeclaration", "sidOrigin2CountryGroupDeclaration", "quantityGroupDeclaration", "sidUnitOfMeasureGroupDeclaration",
-                    "nameUnitOfMeasureGroupDeclaration", "sumGroupDeclaration", "netWeightGroupDeclaration",
+                    "nameUnitOfMeasureGroupDeclaration", "sumOriginGroupDeclaration", "netWeightGroupDeclaration",
                     "grossWeightGroupDeclaration");
 
             List<String> exportTitlesTSware = BaseUtils.toList("Порядковый номер декларируемого товара", "Наименование товара", "Вес брутто",
@@ -79,7 +79,7 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
                     "Код таможенного органа", "Код вида представляемого документа",	"Дата начала действия документа",
                     "Дата окончания действия документа", "Дата представления недостающего документа", "Код срока временного ввоза",
                     "Заявляемый срок временного ввоза",	"Код вида платежа (льготы)", "ОПЕРЕЖАЮЩАЯ ПОСТАВКА",
-                    "Запрашиваемый срок переработки	Код страны (сертификат происхождения)",	"Код вида упрощений (реестр УЭО)");
+                    "Запрашиваемый срок переработки", "Код страны (сертификат происхождения)", "Код вида упрощений (реестр УЭО)", "Наименование документа");
 
             DataObject declarationObject = context.getKeyValue(declarationInterface);
 
@@ -147,7 +147,7 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
                 innerInvoiceQuery.properties.put("sidInnerInvoice", getLCP("sidInnerInvoice").getExpr(innerInvoiceExpr));
                 innerInvoiceQuery.properties.put("dateInnerInvoice", getLCP("dateInnerInvoice").getExpr(innerInvoiceExpr));
 
-                innerInvoiceQuery.and(getLCP("inGroupDeclarationInnerInvoice").getExpr(new DataObject(entry.getValue().get("groupDeclarationID")/*result.getKey(0).values().iterator().next()*/, (ConcreteClass)getClass("groupDeclaration")).getExpr(), innerInvoiceExpr).getWhere());
+                innerInvoiceQuery.and(getLCP("quantityGroupDeclarationInnerInvoice").getExpr(new DataObject(entry.getValue().get("groupDeclarationID")/*result.getKey(0).values().iterator().next()*/, (ConcreteClass)getClass("groupDeclaration")).getExpr(), innerInvoiceExpr).getWhere());
 
                 OrderedMap<Map<Object, Object>, Map<Object, Object>> innerInvoiceResult = innerInvoiceQuery.execute(context.getSession().sql);
 
@@ -180,7 +180,7 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
                 addDoubleCellToRow(values.get("grossWeightGroupDeclaration"), ";", 3);
                 addDoubleCellToRow(values.get("netWeightGroupDeclaration"), ";", 3);
                 addDoubleCellToRow(values.get("netWeightGroupDeclaration"), ";", 3); //Вес нетто без упаковки
-                addDoubleCellToRow(values.get("sumGroupDeclaration"), ";", 7);
+                addDoubleCellToRow(values.get("sumOriginGroupDeclaration"), ";", 7);
                 addStringCellToRow(null, ";"); //Таможенная стоимость
                 addStringCellToRow(null, ";"); //Статистическая стоимость
                 addStringCellToRow(values.get("sidCustomCategory10GroupDeclaration"), ";");
@@ -292,9 +292,9 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
             if (prefix != null)
                 row += prefix;
             if (!isDouble)
-                row += cell.toString().trim();
+                row += cell.toString().trim().replace('.',',');
             else {
-                String bigDecimal = new BigDecimal(cell.toString()).setScale(precision, BigDecimal.ROUND_HALF_DOWN).toString();
+                String bigDecimal = new BigDecimal(cell.toString()).setScale(precision, BigDecimal.ROUND_HALF_DOWN).toString().replace('.',',');
                 while (bigDecimal.endsWith("0") && bigDecimal.length() > 1)
                     bigDecimal = bigDecimal.substring(0, bigDecimal.length() - 1);
                 row += bigDecimal;

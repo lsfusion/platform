@@ -476,7 +476,7 @@ EXTEND DESIGN stores {
 
 FORM destinations 'Магазины'
     OBJECTS d=destination
-    PROPERTIES(d) name, nameStoreTypeStore, nameCompanyStore, nameRegionStore
+    PROPERTIES(d) READONLY name, nameStoreTypeStore, nameCompanyStore, nameRegionStore
     DIALOG destination OBJECT d
 ;
 

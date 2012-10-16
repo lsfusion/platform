@@ -169,7 +169,7 @@ executerDeclaration(declaration) <- currentUser() WHEN ASSIGNED(declaration IS d
 allowImportExportXLSDeclarationUA(declaration) = allowImportExportXLSLegalEntityUA(customStoreDeclaration(declaration));
 allowImportExportXMLDeclarationBY(declaration) = allowImportExportXMLLegalEntityBY(customStoreDeclaration(declaration));
 
-exportDeclaration 'Экспортировать декларацию' = ACTION CUSTOM 'roman.actions.ExportDeclarationActionProperty' IN docGroup;
+exportDeclaration 'Выгрузить декларацию (РБ)' = ACTION CUSTOM 'roman.actions.ExportDeclarationActionProperty' IN docGroup;
 
 importerDeclaration 'Импортер (ИД)' = DATA importer (declaration) IN idGroup;
 nameImporterDeclaration 'Импортёр' = name(importerDeclaration(declaration)) IN docGroup;
@@ -583,8 +583,8 @@ nameUnitOfMeasureGroupDeclaration 'Ед. изм.' (groupDeclaration) = name(unit
 stringGroupDeclaration 'Наименование' (groupDeclaration) = ustring5CM(string2(nameInvoiceGroupDeclaration(groupDeclaration), ''),
                                                                       string2(sidGenderGroupDeclaration(groupDeclaration), ''),
                                                                       string2(nameTypeFabricGroupDeclaration(groupDeclaration), ''),
-                                                                      string2('Торговая марка: ', nameBrandGroupDeclaration(groupDeclaration)),
-                                                                      string2('Состав:', mainCompositionGroupDeclaration(groupDeclaration))
+                                                                      string2('Состав:', mainCompositionGroupDeclaration(groupDeclaration)),
+                                                                      string2('Торговая марка: ', nameBrandGroupDeclaration(groupDeclaration))
                                                                       ) PERSISTENT;
 
 
@@ -669,10 +669,17 @@ CONSTRAINT sumPercentDeclarationDetail(declarationDetail) != 100 CHECKED MESSAGE
 
 sumGroupDeclarationDeclarationDetail 'Доля' (groupDeclaration, declarationDetail) = (declarationSumRateDeclarationDetail(declarationDetail) *
                                                                                      percentGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail))/100
-                                                                                 IF inGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail);
+                                                                                  IF inGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail);
+
+sumOriginGroupDeclarationDeclarationDetail 'Доля' (groupDeclaration, declarationDetail) = (declarationSumDeclarationDetail(declarationDetail) *
+                                                                                           percentGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail))/100
+                                                                                        IF inGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail);
 
 sumGroupDeclaration 'Стоимость (расч.)' (groupDeclaration) = GROUP SUM sumGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail)
                                                                     BY groupDeclaration IN baseGroup PERSISTENT MINCHARWIDTH 15;
+
+sumOriginGroupDeclaration 'Стоимость (в валюте)' (groupDeclaration) = GROUP SUM sumOriginGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail)
+                                                                             BY groupDeclaration PERSISTENT MINCHARWIDTH 10; ;
 
 dutyWeightGroupDeclaration (groupDeclaration) = coeffRateDeclaration(declarationGroupDeclaration(groupDeclaration)) *
                                                 netWeightGroupDeclaration(groupDeclaration) *
@@ -1102,7 +1109,7 @@ FORM declaration 'Декларация'
     PROPERTIES (gd) mainCompositionGroupDeclaration, nameGroupDeclaration,
                     nameCountryGroupDeclaration, sidCountryGroupDeclaration, sidOrigin2CountryGroupDeclaration, sidCustomCategory10GroupDeclaration,
                     quantityGroupDeclaration, sidUnitOfMeasureGroupDeclaration, nameUnitOfMeasureGroupDeclaration,
-                    netWeightGroupDeclaration, grossWeightGroupDeclaration, sumGroupDeclaration, dutyGroupDeclaration, VATGroupDeclaration,
+                    netWeightGroupDeclaration, grossWeightGroupDeclaration, sumOriginGroupDeclaration, sumGroupDeclaration, dutyGroupDeclaration, VATGroupDeclaration,
                     sumDataGroupDeclaration, dutyDataGroupDeclaration, VATDataGroupDeclaration, numberVATRangeGroupDeclaration, valueVATRangeGroupDeclaration, ADDOBJ, delete
     PROPERTIES (c, gd) sumCorrectionGroupDeclaration
 
@@ -1111,7 +1118,8 @@ FORM declaration 'Декларация'
     PROPERTIES (d) importGroupsXLSDeclaration TODRAW gd FORCE PANEL DRAWTOTOOLBAR SHOWIF importExportDeclarationUAAllow(d)
     PROPERTIES (d) importGroupsXMLDeclaration TODRAW gd FORCE PANEL DRAWTOTOOLBAR SHOWIF importExportDeclarationBYAllow(d)
     PROPERTIES (d) fillInGroupDeclarationDeclarationDetail  TODRAW gd FORCE PANEL DRAWTOTOOLBAR SHOWIF allowImportExportXLSDeclarationUA(d)
-    PROPERTIES(d) exportDeclarationToEXELDeclaration TODRAW gd FORCE PANEL DRAWTOTOOLBAR SHOWIF allowImportExportXMLDeclarationBY(d)
+    //PROPERTIES(d) exportDeclarationToEXELDeclaration TODRAW gd FORCE PANEL DRAWTOTOOLBAR SHOWIF allowImportExportXMLDeclarationBY(d)
+    PROPERTIES (d) exportDeclaration TODRAW gd FORCE PANEL DRAWTOTOOLBAR SHOWIF allowImportExportXMLDeclarationBY(d)
 
     FILTERGROUP filterDetail
         FILTER 'Для текущей позиции' 'F11' inGroupDeclarationDeclarationDetail(gd, dd)
@@ -1123,7 +1131,7 @@ FORM declaration 'Декларация'
     PROPERTIES (gd2) mainCompositionGroupDeclaration, nameGroupDeclaration,
                     nameCountryGroupDeclaration, sidCountryGroupDeclaration, sidOrigin2CountryGroupDeclaration, sidCustomCategory10GroupDeclaration,
                     quantityGroupDeclaration, sidUnitOfMeasureGroupDeclaration, nameUnitOfMeasureGroupDeclaration,
-                    netWeightGroupDeclaration, grossWeightGroupDeclaration, sumGroupDeclaration, dutyGroupDeclaration, VATGroupDeclaration,
+                    netWeightGroupDeclaration, grossWeightGroupDeclaration, sumOriginGroupDeclaration, sumGroupDeclaration, dutyGroupDeclaration, VATGroupDeclaration,
                     sumDataGroupDeclaration, dutyDataGroupDeclaration, VATDataGroupDeclaration, numberVATRangeGroupDeclaration, valueVATRangeGroupDeclaration, delete
     PROPERTIES (c, gd2) sumCorrectionGroupDeclaration
 
@@ -1280,6 +1288,14 @@ DESIGN declaration FROM DEFAULT{
             }
         }
     }
+
+
+    PROPERTY(sidDeclaration) { background = #FFEEEE; }
+    PROPERTY(dateDeclaration) { background = #FFEEEE; }
+    PROPERTY(nameCurrencyDeclaration) { background = #FFEEEE; }
+    PROPERTY(nameImporterDeclaration) { background = #FFEEEE; }
+    PROPERTY(nameCustomStoreDeclaration) { background = #FFEEEE; }
+    PROPERTY(sumConsultationDeclaration) { background = #FFEEEE; }
 
     PROPERTY(priceContractDeclarationDetail) { background = #AAFFCC; }
     PROPERTY(declarationPriceDeclarationDetail) { background = #AAFFCC; }
