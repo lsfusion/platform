@@ -152,6 +152,7 @@ addCategory 'Добавить' = ACTION (category) NEWSESSION {
     };
 } TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
 
+
 FORM categories 'Товарные группы'
     TREE treeGroups g=category PARENT parentCategory
     PROPERTIES READONLY name(g)
@@ -168,6 +169,8 @@ FORM categories 'Товарные группы'
         FILTER 'Все листья' 'F10' isParentLeafCategoryCategory(c, g) DEFAULT
         FILTER 'Всех потомков' 'F9' isParentCategoryCategory(c, g)
         FILTER 'Только непосредственных потомков' 'F8' parentCategory(c) == g
+
+    DIALOG category OBJECT c
 ;
 
 DESIGN categories FROM DEFAULT {

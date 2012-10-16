@@ -644,6 +644,9 @@ DESIGN WHfromCSR FROM DEFAULT {
             }
             ADD s.box {title = 'Содержимое короба';}
         }
+
+        PROPERTY(barcodeCurrentFreightUnit) { background = #FFEEEE; }
+
         ADD functions.box;
     }
 }

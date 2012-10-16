@@ -521,17 +521,17 @@ FORM WHfromRF 'Приход товара из РФ'
                                        nameBrandSupplierArticleSkuWHfromRFDetail, netWeightArticleSkuWHfromRFDetail,
                                        mainCompositionOriginArticleSkuWHfromRFDetail
 
-    PROPERTIES(d) FORCE PANEL sidGenderArticleSkuWHfromRFDetail BACKGROUND backgroundArticleWHfromRFDetail(d) ON CHANGE EXEC changeGenderArticleSkuWHfromRFDetail(d),
-                              c = nameCategoryArticleSkuWHfromRFDetail BACKGROUND backgroundArticleWHfromRFDetail(d) ON CHANGE EXEC changeCategoryArticleSkuWHfromRFDetail(d),
-                              nameTypeFabricArticleSkuWHfromRFDetail BACKGROUND backgroundArticleWHfromRFDetail(d) ON CHANGE EXEC changeTypeFabricArticleSkuWHfromRFDetail(d),
-                              u = nameUnitOfMeasureArticleSkuWHfromRFDetail BACKGROUND backgroundArticleWHfromRFDetail(d) ON CHANGE EXEC changeUnitOfMeasureArticleSkuWHfromRFDetail(d),
-                              netWeightSkuWHfromRFDetail BACKGROUND backgroundArticleSizeWHfromRFDetail(d) ON CHANGE EXEC changeNetWeightSkuWHfromRFDetail(d),
-                              nameCountryOfOriginSkuWHfromRFDetail BACKGROUND backgroundArticleColorWHfromRFDetail(d) ON CHANGE EXEC changeCountryOfOriginSkuWHfromRFDetail(d),
-                              mainCompositionOriginSkuWHfromRFDetail BACKGROUND backgroundArticleColorWHfromRFDetail(d) ON CHANGE EXEC changeMainCompositionOriginSkuWHfromRFDetail(d),
-                              mainCompositionSkuWHfromRFDetail BACKGROUND backgroundArticleColorWHfromRFDetail(d) ON CHANGE EXEC changeMainCompositionSkuWHfromRFDetail(d),
-                              additionalCompositionOriginSkuWHfromRFDetail BACKGROUND backgroundArticleColorWHfromRFDetail(d) ON CHANGE EXEC changeAdditionalCompositionOriginSkuWHfromRFDetail(d),
-                              additionalCompositionSkuWHfromRFDetail BACKGROUND backgroundArticleColorWHfromRFDetail(d) ON CHANGE EXEC changeAdditionalCompositionSkuWHfromRFDetail(d),
-                              coefficientArticleSkuWHfromRFDetail BACKGROUND backgroundArticleWHfromRFDetail(d) ON CHANGE EXEC changeCoefficientArticleSkuWHfromRFDetail(d)
+    PROPERTIES(d) FORCE PANEL sidGenderArticleSkuWHfromRFDetail ON CHANGE EXEC changeGenderArticleSkuWHfromRFDetail(d),
+                              c = nameCategoryArticleSkuWHfromRFDetail ON CHANGE EXEC changeCategoryArticleSkuWHfromRFDetail(d),
+                              nameTypeFabricArticleSkuWHfromRFDetail ON CHANGE EXEC changeTypeFabricArticleSkuWHfromRFDetail(d),
+                              u = nameUnitOfMeasureArticleSkuWHfromRFDetail ON CHANGE EXEC changeUnitOfMeasureArticleSkuWHfromRFDetail(d),
+                              netWeightSkuWHfromRFDetail ON CHANGE EXEC changeNetWeightSkuWHfromRFDetail(d),
+                              nameCountryOfOriginSkuWHfromRFDetail ON CHANGE EXEC changeCountryOfOriginSkuWHfromRFDetail(d),
+                              mainCompositionOriginSkuWHfromRFDetail ON CHANGE EXEC changeMainCompositionOriginSkuWHfromRFDetail(d),
+                              mainCompositionSkuWHfromRFDetail ON CHANGE EXEC changeMainCompositionSkuWHfromRFDetail(d),
+                              additionalCompositionOriginSkuWHfromRFDetail ON CHANGE EXEC changeAdditionalCompositionOriginSkuWHfromRFDetail(d),
+                              additionalCompositionSkuWHfromRFDetail ON CHANGE EXEC changeAdditionalCompositionSkuWHfromRFDetail(d),
+                              coefficientArticleSkuWHfromRFDetail ON CHANGE EXEC changeCoefficientArticleSkuWHfromRFDetail(d)
     PROPERTIES(d) FORCE GRID  nameTypeLabelWHfromRFDetail ON CHANGE EXEC changeTypeLabelWHfromRFDetail(d)
 
     PROPERTIES(d) FORCE PANEL SHOWIF languageWHfromRF(w) BACKGROUND backgroundArticleColorWHfromRFDetail(d) mainCompositionWHfromRFDetail, additionalCompositionWHfromRFDetail
@@ -644,6 +644,15 @@ DESIGN WHfromRF FROM DEFAULT {
         PROPERTY(formOkAction) {
             caption = 'Провести';
         }
+
+         PROPERTY(nameStockWHfromRF) { background = #FFEEEE; }
+         PROPERTY(nameCompanyDataWHfromRF) { background = #FFEEEE; }
+         PROPERTY(nameFreightWHfromRF) { background = #FFEEEE; }
+         PROPERTY(nameTypeExchangeWHfromRF) { background = #FFEEEE; }
+         PROPERTY(barcodeCurrentFreightUnit) { background = #FFEEEE; }
+
+
+
         ADD functions.box;
     }
 }
@@ -697,6 +706,7 @@ DESIGN WHfromRFs FROM DEFAULT{
 
         }
     }
+
     ADD functions.box;
 
     PROPERTY (delete(w)) {

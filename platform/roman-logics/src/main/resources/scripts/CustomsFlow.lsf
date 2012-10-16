@@ -281,6 +281,9 @@ DESIGN CStoWH FROM DEFAULT {
     PROPERTY(formOkAction) {
         caption = 'Провести';
     }
+
+    PROPERTY(nameCustomStoreCStoWH) { background = #FFEEEE; }
+    PROPERTY(nameDestinationStockCStoWH) { background = #FFEEEE; }
 }
 
 FORM CStoWHs 'Расходы с СВХ'
