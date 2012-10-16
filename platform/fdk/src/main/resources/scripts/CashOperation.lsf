@@ -66,10 +66,10 @@ sumOutcomeCashOrderDateTime 'Сумма РКО на дату/время' (depart
     sumAOutcomeCashOrderDateTime(departmentStore, date);
 
 curSumCashDepartmentStore 'Текущая сумма наличных в центральной кассе' (departmentStore) =
-    curSumIncomeCashOrder(departmentStore) (+) curSumOutcomeCashOrder(departmentStore);
+    curSumIncomeCashOrder(departmentStore) (-) curSumOutcomeCashOrder(departmentStore);
 
 sumCashDepartmentStoreDateTime 'Сумма наличных в центральной кассе на дату/время' (departmentStore, date) =
-    sumIncomeCashOrderDateTime(departmentStore, date) (+) sumOutcomeCashOrderDateTime(departmentStore, date);
+    sumIncomeCashOrderDateTime(departmentStore, date) (-) sumOutcomeCashOrderDateTime(departmentStore, date);
 
 //---------------------------- Операции с фискальным регистратором ---------------------------------------//
 
@@ -100,7 +100,7 @@ dateCashDocument(collection) += dateCollection(collection);
 timeCashDocument(collection) += timeCollection(collection);
 numberCashDocument(collection) += seriesNumberObject(collection) AND collection IS collection;
 departmentStoreCashDocument(collection) += departmentStoreCollection(collection);
-sumCashOutcomeCashOrder(collection) += -sumCashCollection(collection);
+sumCashOutcomeCashOrder(collection) += sumCashCollection(collection);
 basisCashDocument(collection) += basisCollection(collection);
 isPostedCashDocument(collection) += TRUE AND collection IS collection;
 
@@ -257,7 +257,7 @@ numberCashDocument(incomeCashOperation) += seriesNumberObject(incomeCashOperatio
 departmentStoreCashDocument(incomeCashOperation) += departmentStoreIncomeCashOperation(incomeCashOperation);
 basisCashDocument(incomeCashOperation) += basisIncomeCashOperation(incomeCashOperation);
 cashRegisterCashDocument(incomeCashOperation) += cashRegisterIncomeCashOperation(incomeCashOperation);
-sumCashOutcomeCashOrder(incomeCashOperation) += -sumCashIncomeCashOperation(incomeCashOperation);
+sumCashOutcomeCashOrder(incomeCashOperation) += sumCashIncomeCashOperation(incomeCashOperation);
 isPostedCashDocument(incomeCashOperation) += TRUE AND incomeCashOperation IS incomeCashOperation;
 dateCashOperation(incomeCashOperation) += dateIncomeCashOperation(incomeCashOperation);
 timeCashOperation(incomeCashOperation) += timeIncomeCashOperation(incomeCashOperation);
@@ -325,7 +325,7 @@ cashRegisterCashOperation(outcomeCashOperation) += cashRegisterOutcomeCashOperat
 
 FORM incomeCashOrderPrint 'ПКО' PRINT
 
-    OBJECTS i = incomeCashOrder
+    OBJECTS i = incomeCashOrder FIXED PANEL
     PROPERTIES(i) READONLY numberCashDocument, dateCashDocument, timeCashDocument, nameCompanyCashDocument,
                            nameDepartmentStoreCashDocument, sumCashIncomeCashOrder, basisCashDocument
 
@@ -333,7 +333,7 @@ FORM incomeCashOrderPrint 'ПКО' PRINT
 
 FORM outcomeCashOrderPrint 'РКО' PRINT
 
-    OBJECTS o = outcomeCashOrder
+    OBJECTS o = outcomeCashOrder FIXED PANEL
     PROPERTIES(o) READONLY numberCashDocument, dateCashDocument, timeCashDocument, nameCompanyCashDocument,
                            nameDepartmentStoreCashDocument, sumCashOutcomeCashOrder, basisCashDocument
 
@@ -341,7 +341,7 @@ FORM outcomeCashOrderPrint 'РКО' PRINT
 
 printIncomeCashOrder 'Распечатать' (incomeCashOrder) = [ACTION (incomeCashOrder) {
 
-    FORM incomeCashOrderPrint OBJECTS i = (incomeCashOrder AS incomeCashOrder);
+    FORM incomeCashOrderPrint OBJECTS i = incomeCashOrder;
     SET isPrintedIncomeCashOrder(incomeCashOrder) <- TRUE;
 
 }](incomeCashOrder) CONFIRM;
@@ -351,7 +351,7 @@ printAllIncomeCashOrder 'Распечатать все непечатанные'
     FOR isNotPrintedIncomeCashOrder(incomeCashOrder) AND
         dateCashDocument(incomeCashOrder) >= (date1 AS DATE) AND
         dateCashDocument(incomeCashOrder) <= (date2 AS DATE) DO {
-        FORM incomeCashOrderPrint OBJECTS i = (incomeCashOrder AS incomeCashOrder);
+        FORM incomeCashOrderPrint OBJECTS i = incomeCashOrder;
         SET isPrintedIncomeCashOrder(incomeCashOrder) <- TRUE;
     }
 
@@ -359,7 +359,7 @@ printAllIncomeCashOrder 'Распечатать все непечатанные'
 
 printOutcomeCashOrder 'Распечатать' (outcomeCashOrder) = [ACTION (outcomeCashOrder) {
 
-    FORM outcomeCashOrderPrint OBJECTS o = (outcomeCashOrder AS outcomeCashOrder);
+    FORM outcomeCashOrderPrint OBJECTS o = outcomeCashOrder;
     SET isPrintedOutcomeCashOrder(outcomeCashOrder) <- TRUE;
 
 }](outcomeCashOrder) CONFIRM;
@@ -369,7 +369,7 @@ printAllOutcomeCashOrder 'Распечатать все непечатанные
     FOR isNotPrintedOutcomeCashOrder(outcomeCashOrder) AND
         dateCashDocument(outcomeCashOrder) >= (date1 AS DATE) AND
         dateCashDocument(outcomeCashOrder) <= (date2 AS DATE) DO {
-        FORM outcomeCashOrderPrint OBJECTS o = (outcomeCashOrder AS outcomeCashOrder);
+        FORM outcomeCashOrderPrint OBJECTS o = outcomeCashOrder;
         SET isPrintedOutcomeCashOrder(outcomeCashOrder) <- TRUE;
     }
 
