@@ -22,8 +22,8 @@ public class RemoteObjectLoggerAspect {
         Object result = thisJoinPoint.proceed();
         long runTime = System.currentTimeMillis() - startTime;
 
-        if (logger.isInfoEnabled()) {
-            logger.info(
+        if (logger.isDebugEnabled()) {
+            logger.debug(
                     String.format(
                             "Executing remote method (time: %1$d ms.): %2$s(%3$s)",
                             runTime,

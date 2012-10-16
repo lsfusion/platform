@@ -109,7 +109,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     protected FormEntity(NavigatorElement<T> parent, String sID, String caption, String title, boolean iisPrintForm) {
         super(parent, sID, caption);
         this.title = title;
-        logger.info("Initializing form " + caption + "...");
+        logger.debug("Initializing form " + caption + "...");
 
         isPrintForm = iisPrintForm;
 

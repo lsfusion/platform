@@ -90,7 +90,7 @@ public class MapCacheAspect {
                 MapTranslate translator;
                 if((translator = cache.implement.mapInner(joinImplement, true))!=null) {
                     // здесь не все values нужно докинуть их из контекста (ключи по идее все)
-                    logger.info("join cached");
+                    logger.debug("join cached");
                     return new MapJoin<V>(translator,cache.result);
                 }
             }
@@ -239,13 +239,13 @@ public class MapCacheAspect {
             for(CacheResult<DataChangesInterfaceImplement, DataChangesResult> cache : hashCaches) {
                 MapTranslate translator;
                 if((translator=cache.implement.mapInner(implement, true))!=null) {
-                    logger.info("getDataChanges - cached "+property);
+                    logger.debug("getDataChanges - cached "+property);
                     if(changedWheres!=null) changedWheres.add(cache.result.where.translateOuter(translator));
                     return ((DataChangesResult<K>)cache.result).changes.translateValues(translator.mapValues());
                 }
             }
 
-            logger.info("getDataChanges - not cached "+property);
+            logger.debug("getDataChanges - not cached "+property);
             WhereBuilder cacheWheres = CalcProperty.cascadeWhere(changedWheres);
             DataChanges changes = (DataChanges) thisJoinPoint.proceed(new Object[]{property, change, propChanges, cacheWheres});
 
@@ -362,11 +362,11 @@ public class MapCacheAspect {
                 if(!(checkCaches && cacheQuery!=null))
                     cacheNoBig(implement, hashCaches, query);
 
-                logger.info("getExpr - not cached "+property);
+                logger.debug("getExpr - not cached "+property);
             } else {
                 query = cacheQuery;
 
-                logger.info("getExpr - cached "+property);
+                logger.debug("getExpr - cached "+property);
             }
         }
 
@@ -476,7 +476,7 @@ public class MapCacheAspect {
             for(CacheResult<JoinExprInterfaceImplement, ExprResult> cache : hashCaches) {
                 MapTranslate translator;
                 if((translator=cache.implement.mapInner(implement, true))!=null) {
-                    logger.info("getExpr - cached "+property);
+                    logger.debug("getExpr - cached "+property);
                     if(changedWheres!=null) changedWheres.add(cache.result.where.translateOuter(translator));
                     cacheResult = cache.result.expr.translateOuter(translator);
                     if(checkCaches)
@@ -486,7 +486,7 @@ public class MapCacheAspect {
                 }
             }
 
-            logger.info("getExpr - not cached "+property);
+            logger.debug("getExpr - not cached "+property);
             WhereBuilder cacheWheres = CalcProperty.cascadeWhere(changedWheres);
             Expr expr = (Expr) thisJoinPoint.proceed(new Object[]{property, joinExprs, propClasses, propChanges, cacheWheres});
 

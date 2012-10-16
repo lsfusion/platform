@@ -90,7 +90,7 @@ public class SQLSession extends MutableObject {
             statement.execute("SET SESSION synchronous_commit TO " + (ACID ? "DEFAULT" : "OFF"));
             statement.execute("SET SESSION commit_delay TO " + (ACID ? "DEFAULT" : "100000"));
         } catch (SQLException e) {
-            logger.info(statement.toString());
+            logger.error(statement.toString());
             throw e;
         } finally {
             statement.close();
@@ -426,7 +426,7 @@ public class SQLSession extends MutableObject {
     private void executeDDL(String DDL, ExecuteEnvironment env) throws SQLException {
         Connection connection = getConnection();
 
-        logger.info(DDL);
+        logger.debug(DDL);
 
         env.before(this, connection, DDL);
 
@@ -434,7 +434,7 @@ public class SQLSession extends MutableObject {
         try {
             statement.execute(DDL);
         } catch (SQLException e) {
-            logger.info(statement.toString());
+            logger.error(statement.toString());
             throw e;
         } finally {
             statement.close();
@@ -466,7 +466,7 @@ public class SQLSession extends MutableObject {
     private int executeDML(@ParamMessage String command, Map<String, ParseInterface> paramObjects, ExecuteEnvironment env) throws SQLException {
         Connection connection = getConnection();
 
-        logger.info(command);
+        logger.debug(command);
 
         env.before(this, connection, command);
 
@@ -502,14 +502,14 @@ public class SQLSession extends MutableObject {
     private int executeDML(@ParamMessage String command) throws SQLException {
         Connection connection = getConnection();
 
-        logger.info(command);
+        logger.debug(command);
 
         int result = 0;
         Statement statement = connection.createStatement();
         try {
             result = statement.executeUpdate(command);
         } catch (SQLException e) {
-            logger.info(statement.toString());
+            logger.error(statement.toString());
             throw e;
         } finally {
             statement.close();
@@ -523,7 +523,7 @@ public class SQLSession extends MutableObject {
     public <K,V> OrderedMap<Map<K, Object>, Map<V, Object>> executeSelect(@ParamMessage String select, ExecuteEnvironment env, Map<String, ParseInterface> paramObjects, Map<K, String> keyNames, Map<K, ? extends Reader> keyReaders, Map<V, String> propertyNames, Map<V, ? extends Reader> propertyReaders) throws SQLException {
         Connection connection = getConnection();
 
-        logger.info(select);
+        logger.debug(select);
 
         env.before(this, connection, select);
 
@@ -552,7 +552,7 @@ public class SQLSession extends MutableObject {
                 result.close();
             }
         } catch (SQLException e) {
-            logger.info(statement.toString());
+            logger.error(statement.toString());
             throw e;
         } finally {
             statement.close();
@@ -609,7 +609,7 @@ public class SQLSession extends MutableObject {
             }
             statement.executeBatch();
         } catch (SQLException e) {
-            logger.info(statement.toString());
+            logger.error(statement.toString());
             throw e;
         } finally {
             statement.close();
@@ -778,7 +778,7 @@ public class SQLSession extends MutableObject {
 
         Connection connection = getConnection();
 
-        logger.info(select);
+        logger.debug(select);
 
         Statement statement = connection.createStatement();
         try {
@@ -809,7 +809,7 @@ public class SQLSession extends MutableObject {
                 result.close();
             }
         } catch (SQLException e) {
-            logger.info(statement.toString());
+            logger.error(statement.toString());
             throw e;
         } finally {
             statement.close();
@@ -905,7 +905,7 @@ public class SQLSession extends MutableObject {
         }
         parsedString = parsedString + new String(parsed, 0, num);
 
-        logger.info(parsedString);
+        logger.debug(parsedString);
 
         PreparedStatement statement = connection.prepareStatement(parsedString);
         paramNum = 1;

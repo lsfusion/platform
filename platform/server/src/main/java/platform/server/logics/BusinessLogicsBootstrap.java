@@ -58,7 +58,7 @@ public class BusinessLogicsBootstrap {
         try {
             BL = (BusinessLogics) springContext.getBean("businessLogics");
         } catch (BeanCreationException bce) {
-            logger.info("Exception while creating business logic: ", bce);
+            logger.error("Exception while creating business logic: ", bce);
             blCreated = false;
 
             lifecycle.fireError("Error, while creating bl: " + ExceptionUtils.getNonSpringCause(bce).getMessage());

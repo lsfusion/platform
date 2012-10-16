@@ -4,9 +4,6 @@ import org.apache.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import platform.server.session.ExecutionEnvironment;
-
-import java.util.Map;
 
 @Aspect
 public class SQLSessionLoggerAspect {
@@ -28,11 +25,16 @@ public class SQLSessionLoggerAspect {
     }
 
     private Object executeMethodAndLogTime(ProceedingJoinPoint thisJoinPoint, String queryString) throws Throwable {
-        long startTime = System.currentTimeMillis();
-        Object result = thisJoinPoint.proceed();
-        long runTime = System.currentTimeMillis() - startTime;
+        long startTime = 0;
+        if (logger.isDebugEnabled())
+            startTime = System.currentTimeMillis();
 
-        logger.info(String.format("Executed query (time: %1$d ms.): %2$s", runTime, queryString));
+        Object result = thisJoinPoint.proceed();
+
+        if (logger.isDebugEnabled()) {
+            long runTime = System.currentTimeMillis() - startTime;
+            logger.debug(String.format("Executed query (time: %1$d ms.): %2$s", runTime, queryString));
+        }
 
         return result;
     }

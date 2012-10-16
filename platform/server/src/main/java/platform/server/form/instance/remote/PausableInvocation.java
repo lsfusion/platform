@@ -41,7 +41,7 @@ public abstract class PausableInvocation<T, E extends Exception> {
                     Thread.currentThread().interrupt();
                 }
 
-                logger.info("Run invocation: " + sid);
+                logger.debug("Run invocation: " + sid);
 
                 try {
                     runInvocation();

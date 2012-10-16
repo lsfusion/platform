@@ -33,7 +33,7 @@ public class PostgreDataAdapter extends DataAdapter {
             try {
                 connect.createStatement().execute("DROP DATABASE " + dataBase);
             } catch (SQLException e) {
-                logger.info(ServerResourceBundle.getString("data.sql.error.creating.database"), e);
+                logger.error(ServerResourceBundle.getString("data.sql.error.creating.database"), e);
             }
         }
 

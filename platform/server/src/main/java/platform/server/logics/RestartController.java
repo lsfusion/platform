@@ -40,7 +40,7 @@ class RestartController {
                                 try {
                                     remoteNavigator.notifyServerRestart();
                                 } catch (RemoteException e) {
-                                    logger.debug(getString("logics.server.remote.exception.on.questioning.client.for.stopping"), e);
+                                    logger.error(getString("logics.server.remote.exception.on.questioning.client.for.stopping"), e);
                                 }
                             }
                         }
@@ -90,7 +90,7 @@ class RestartController {
                         try {
                             remoteNavigator.notifyServerRestartCanceled();
                         } catch (RemoteException e) {
-                            logger.debug(getString("logics.server.remote.exception.on.questioning.client.for.stopping"), e);
+                            logger.error(getString("logics.server.remote.exception.on.questioning.client.for.stopping"), e);
                         }
                     }
                 }

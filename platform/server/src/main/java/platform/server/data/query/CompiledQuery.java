@@ -38,8 +38,6 @@ import static platform.base.BaseUtils.*;
 // нужен для Map'а ключей / значений
 // Immutable/Thread Safe
 public class CompiledQuery<K,V> {
-    private final static Logger logger = Logger.getLogger(CompiledQuery.class);
-
     final public String from;
     final public Map<K,String> keySelect;
     final public Map<V,String> propertySelect;

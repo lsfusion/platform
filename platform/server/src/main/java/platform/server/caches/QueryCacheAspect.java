@@ -9,12 +9,16 @@ import org.aspectj.lang.reflect.MethodSignature;
 import platform.base.BaseUtils;
 import platform.base.Result;
 import platform.server.data.Value;
-import platform.server.data.query.*;
+import platform.server.data.query.IQuery;
+import platform.server.data.query.MapQuery;
+import platform.server.data.query.Query;
 import platform.server.data.translator.MapTranslate;
-import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.translator.MapValuesTranslator;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 @Aspect
 public class QueryCacheAspect {
@@ -72,13 +76,13 @@ public class QueryCacheAspect {
             for(Query<?,?> cache : hashCaches) {
                 IQuery<K,V> packed = cacheTwinQuery(cache, query);
                 if(packed !=null) {
-                    logger.info("cached");
+                    logger.debug("cached");
 
                     ((QueryCacheInterface)query).setCacheTwin(result);
                     return packed;
                 }
             }
-            logger.info("not cached");
+            logger.debug("not cached");
             Result<Query> cache = new Result<Query>();
             result = cacheNoBigTwin(query, cache);
             ((QueryCacheInterface)cache.result).setCacheTwin(cache.result);

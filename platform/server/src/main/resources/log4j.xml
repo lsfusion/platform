@@ -186,7 +186,7 @@
     </category>
 
     <category name="platform.server.form.instance.remote" additivity="false">
-        <priority value="DEBUG"/>
+        <priority value="INFO"/>
         <appender-ref ref="remotelog"/>
     </category>
 
@@ -198,11 +198,6 @@
     <category name="platform.server.base" additivity="false">
         <priority value="INFO"/>
         <appender-ref ref="hashlog"/>
-    </category>
-
-    <category name="import" additivity="false">
-        <priority value="INFO"/>
-        <appender-ref ref="importlog"/>
     </category>
 
     <category name="message" additivity="false">
