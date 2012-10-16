@@ -608,6 +608,7 @@ FORM operationCashRegister 'Кассовые операции'
             dateCashOperation(c) <= (dTo AS DATE)
 
     PROPERTIES fiscalXReport() SHOWIF currentCashRegister()
+    ORDER BY dateCashOperation, timeCashOperation
 ;
 
 DESIGN operationCashRegister FROM DEFAULT {
@@ -656,6 +657,7 @@ FORM centralCashRegister 'Центральная касса'
     PROPERTIES editOutcomeCashOperationForm(i) SHOWIF isOutcomeCashOperation(i)
     PROPERTIES printAllIncomeCashOrder(dFrom, dTo) TODRAW i
     PROPERTIES(i) delete
+    ORDER BY dateCashDocument, timeCashDocument
 
     FILTERS departmentStoreCashDocument(i) == d,
             dateCashDocument(i) >= (dFrom AS DATE),
@@ -671,6 +673,7 @@ FORM centralCashRegister 'Центральная касса'
     PROPERTIES editCollectionForm(o) SHOWIF isCollection(o)
     PROPERTIES printAllOutcomeCashOrder(dFrom, dTo) TODRAW o
     PROPERTIES(o) delete
+    ORDER BY dateCashDocument(o), timeCashDocument(o)
     FILTERS departmentStoreCashDocument(o) == d,
             dateCashDocument(o) >= (dFrom AS DATE),
             dateCashDocument(o) <= (dTo AS DATE),

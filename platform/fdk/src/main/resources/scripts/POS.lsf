@@ -1147,6 +1147,9 @@ EXTEND FORM operationCashRegister
     OBJECTS z = zReportPosted
     PROPERTIES(z) READONLY objectClassName, numberZReport, dateZReport, timeZReport, nameDepartmentStoreZReport,
                            numberCashRegisterZReport, sumCashZReport, sumReceiptDetailZReport, basisZReport
+    ORDER BY dateZReport(z), timeZReport(z)
+    FILTERS dateZReport(z) >= (dFrom AS DATE),
+            dateZReport(z) <= (dTo AS DATE)
 ;
 
 EXTEND DESIGN operationCashRegister{
