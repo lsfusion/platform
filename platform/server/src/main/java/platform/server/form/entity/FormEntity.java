@@ -103,7 +103,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     }
 
     public FormEntity(NavigatorElement<T> parent, String sID, String caption, boolean iisPrintForm) {
-        this(parent, sID, caption, null, false);
+        this(parent, sID, caption, null, iisPrintForm);
     }
 
     protected FormEntity(NavigatorElement<T> parent, String sID, String caption, String title, boolean iisPrintForm) {
