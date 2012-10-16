@@ -63,7 +63,7 @@ public class TeddyInputTable implements ImportInputTable {
                         detailData.add(row);
                     }
                 }
-            } else if (name.matches("[0-9]+\\.txt")) {
+            } else if (name.matches("[0-9/]+\\.txt")) {
                 Scanner scanner = new Scanner(new ByteArrayInputStream(output.toByteArray()), "unicode");
                 String articleNumber = ""; //articleNumber
                 String composition = "";  //composition

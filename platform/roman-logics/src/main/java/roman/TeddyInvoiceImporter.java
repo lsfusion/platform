@@ -7,6 +7,7 @@ import platform.server.integration.ImportInputTable;
 import platform.server.integration.SingleSheetImporter;
 
 import java.sql.Date;
+import java.text.NumberFormat;
 import java.text.ParseException;
 
 /**
@@ -16,7 +17,7 @@ import java.text.ParseException;
  */
 
 public class TeddyInvoiceImporter extends SingleSheetImporter {
-    private static final int BARCODENUMBER = C, LAST_COLUMN = Q;
+    private static final int BARCODENUMBER = C, NETWEIGHT = O, LAST_COLUMN = Q;
 
     public TeddyInvoiceImporter(ImportInputTable inputTable, Object... fields) {
         super(inputTable, fields);
@@ -60,6 +61,12 @@ public class TeddyInvoiceImporter extends SingleSheetImporter {
                     return value.concat(String.valueOf(checkSum));
                 }
             }
+            case NETWEIGHT:
+                try {
+                    return String.valueOf(NumberFormat.getInstance().parse(value).doubleValue() / 1000);
+                } catch (ParseException e) {
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
             case P:
                 switch (part) {
                     case 0:
