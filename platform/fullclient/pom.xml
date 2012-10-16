@@ -14,7 +14,7 @@
 
     <properties>
         <assemble.jar>${project.build.directory}/fullclient-prod.jar</assemble.jar>
-        <assemble.mainClass>platform.client.FullMain</assemble.mainClass>
+        <assemble.mainClass>platform.fullclient.FullMain</assemble.mainClass>
         <assemble.descriptor>src/assemble/distribution.xml</assemble.descriptor>
         <assemble.finalName>fullclient</assemble.finalName>
 
