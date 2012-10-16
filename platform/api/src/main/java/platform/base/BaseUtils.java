@@ -1657,10 +1657,13 @@ public class BaseUtils {
 
     // в отличии от padright дает нуж
     public static String padr(String string, int length) {
+        if(length == string.length())
+            return string;
+            
         if (length > string.length())
             return string + spaces(length - string.length());
-        else
-            return string.substring(0, length);
+
+        return string.substring(0, length);
     }
 
     public static String padl(String string, int length) {

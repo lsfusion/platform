@@ -230,4 +230,8 @@ public abstract class BaseExpr extends Expr {
     public boolean isTableIndexed() {
         return false;
     }
+    
+    public boolean compatibleEquals(BaseExpr expr) {
+        return BaseUtils.hashEquals(this, expr);
+    }
 }

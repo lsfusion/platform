@@ -1,5 +1,6 @@
 package platform.server.classes;
 
+import platform.base.BaseUtils;
 import platform.interop.Data;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.sql.SQLSyntax;
@@ -80,7 +81,8 @@ public class StringClass extends DataClass<String> {
     }
 
     public String read(Object value) {
-        return (String) value;
+        if(value==null) return null;
+        return BaseUtils.padr((String) value, length);
     }
 
     public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException {

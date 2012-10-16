@@ -51,7 +51,7 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
     
     public DataObject(Object object, ConcreteClass objectClass) {
         if(objectClass instanceof StringClass)
-            object = BaseUtils.padr((String)object, ((StringClass)objectClass).length);
+            object = ((StringClass)objectClass).read(object);
 
         this.object = object;
 

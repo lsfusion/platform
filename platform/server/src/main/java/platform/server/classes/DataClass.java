@@ -45,6 +45,10 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
     }
 
     public abstract DataClass getCompatible(DataClass compClass);
+    public boolean compatibleEquals(Object object, DataClass compareClass, Object compareObject) {
+        DataClass compatible = getCompatible(compareClass);
+        return compatible != null && compatible.read(object).equals(compatible.read(compareObject));
+    }
 
     public DataObject getDefaultObjectValue() {
         return new DataObject(getDefaultValue(), this);

@@ -5,6 +5,7 @@ import platform.base.TwinImmutableInterface;
 import platform.interop.Compare;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.BaseExpr;
+import platform.server.data.expr.StaticExpr;
 import platform.server.data.query.CompileSource;
 import platform.server.data.where.Where;
 
@@ -21,8 +22,8 @@ public class GreaterWhere extends CompareWhere {
     }
 
     public static Where create(BaseExpr operator1, BaseExpr operator2, boolean orEquals) {
-        if(BaseUtils.hashEquals(operator1,operator2))
-            return orEquals ? TRUE : FALSE;
+        if(operator1.compatibleEquals(operator2))
+            return orEquals ? operator1.getWhere() : FALSE;
         return create(operator1, operator2, new GreaterWhere(operator1, operator2, orEquals));
     }
 
