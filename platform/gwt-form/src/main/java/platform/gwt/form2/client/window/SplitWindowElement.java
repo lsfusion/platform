@@ -13,7 +13,7 @@ public class SplitWindowElement extends WindowElement {
 
     private SplitLayoutPanel panel = new SplitLayoutPanel();
 
-    public SplitWindowElement(WindowContainer main, boolean vertical) {
+    public SplitWindowElement(WindowsController main, boolean vertical) {
         super(main);
         this.vertical = vertical;
     }

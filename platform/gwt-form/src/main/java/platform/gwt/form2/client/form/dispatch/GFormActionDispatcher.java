@@ -1,9 +1,8 @@
 package platform.gwt.form2.client.form.dispatch;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import platform.gwt.form2.client.events.OpenFormEvent;
-import platform.gwt.form2.client.form.ui.classes.ClassChosenHandler;
 import platform.gwt.form2.client.form.ui.GFormController;
+import platform.gwt.form2.client.form.ui.classes.ClassChosenHandler;
 import platform.gwt.form2.client.form.ui.dialog.DialogBoxHelper;
 import platform.gwt.form2.client.form.ui.dialog.WindowHiddenHandler;
 import platform.gwt.form2.shared.actions.form.ServerResponseResult;
@@ -40,18 +39,18 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
     }
 
     @Override
-    public void execute(GFormAction action) {
-        if (action.isModal) {
+    public void execute(final GFormAction action) {
+        if (action.modalityType.isModal()) {
             pauseDispatching();
-            form.showModalForm(action.form, new WindowHiddenHandler() {
-                @Override
-                public void onHidden() {
+        }
+        form.openForm(action.form, action.modalityType, new WindowHiddenHandler() {
+            @Override
+            public void onHidden() {
+                if (action.modalityType.isModal()) {
                     continueDispatching();
                 }
-            });
-        } else {
-            OpenFormEvent.fireEvent(action.form);
-        }
+            }
+        });
     }
 
     @Override

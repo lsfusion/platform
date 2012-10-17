@@ -6,7 +6,7 @@ import platform.gwt.form2.shared.view.window.GAbstractWindow;
 public class SimpleWindowElement extends WindowElement {
     public GAbstractWindow window;
 
-    public SimpleWindowElement(WindowContainer main, GAbstractWindow window) {
+    public SimpleWindowElement(WindowsController main, GAbstractWindow window) {
         super(main);
         this.window = window;
     }

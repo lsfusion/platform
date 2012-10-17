@@ -67,16 +67,23 @@ input[type=checkbox] {
     padding: 0 0 4px 0;
     margin-left: 2px;
     border: 0;
-    border-radius: 7px;
+    border-radius: 3px;
+    -moz-border-radius: 3px;
     background: transparent;
-    color: #a9a9a9;
+    color: #000000;
     font-size: 9pt;
     font-weight: bold;
+    cursor: pointer;
+    cursor: hand;
 }
 
 .closeTabButton:hover {
     background: #CCCCCC;
-    color: #000000;
+}
+
+.closeTabButton[disabled] {
+    cursor: default;
+    color: #a9a9a9;
 }
 
 /* ------------ Message box styles ------------ */
@@ -251,6 +258,12 @@ input[type=checkbox] {
 
 .panelNavigatorView {
     display: block;
+}
+
+/* ------------ Form "dockables"  ------------ */
+.dockableBlockingMask {
+    background: black;
+    opacity: 0.3;
 }
 
 /* ------------ Other components  ------------ */

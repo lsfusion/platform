@@ -7,7 +7,7 @@ import platform.gwt.form2.shared.view.window.GAbstractWindow;
 
 import java.util.*;
 
-public abstract class WindowContainer extends SplitLayoutPanel {
+public abstract class WindowsController extends SplitLayoutPanel {
     private Map<GAbstractWindow, TabbedWindowElement> windowsInTabs = new HashMap<GAbstractWindow, TabbedWindowElement>();
 
     // хрнаним направления, чтобы знать, куда вставлять элемент при его видимости

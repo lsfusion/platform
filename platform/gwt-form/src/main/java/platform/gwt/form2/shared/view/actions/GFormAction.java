@@ -1,19 +1,20 @@
 package platform.gwt.form2.shared.view.actions;
 
 import platform.gwt.form2.shared.view.GForm;
+import platform.gwt.form2.shared.view.window.GModalityType;
 
 import java.io.IOException;
 
 public class GFormAction extends GExecuteAction {
-    public boolean isModal;
+    public GModalityType modalityType;
     public GForm form;
 
     //needed for it to be gwt-serializable
     @SuppressWarnings("UnusedDeclaration")
     public GFormAction() {}
 
-    public GFormAction(boolean modal, GForm form) {
-        isModal = modal;
+    public GFormAction(GModalityType modalityType, GForm form) {
+        this.modalityType = modalityType;
         this.form = form;
     }
 

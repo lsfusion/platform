@@ -29,6 +29,7 @@ public class RemoteServiceImpl extends LogicsDispatchServlet<RemoteLogicsInterfa
         registry.addHandler(new ChangePropertyHandler(this));
         registry.addHandler(new ContinueInvocationHandler(this));
         registry.addHandler(new ThrowInInvocationHandler(this));
+        registry.addHandler(new ClosePressedHandler(this));
     }
 
     public FormSessionManager getFormSessionManager() {

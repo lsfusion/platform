@@ -10,4 +10,8 @@ public enum GModalityType {
     public boolean isFullScreen() {
         return this == FULLSCREEN_MODAL;
     }
+
+    public boolean isDialog() {
+        return this == MODAL || this == FULLSCREEN_MODAL;
+    }
 }

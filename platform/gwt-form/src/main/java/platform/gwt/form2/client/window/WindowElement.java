@@ -6,7 +6,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 public abstract class WindowElement {
     public WindowElement parent;
-    protected WindowContainer main;
+    protected WindowsController main;
 
     public int x;
     public int y;
@@ -16,7 +16,7 @@ public abstract class WindowElement {
     public double initialWidth;
     public double initialHeight;
 
-    public WindowElement(WindowContainer main) {
+    public WindowElement(WindowsController main) {
         this.main = main;
     }
 

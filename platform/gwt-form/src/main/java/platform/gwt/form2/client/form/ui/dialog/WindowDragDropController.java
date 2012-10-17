@@ -23,7 +23,7 @@ public final class WindowDragDropController {
         pickupDragController = new PickupDragController(boundaryPanel, true) {
             @Override
             protected BoundaryDropController newBoundaryDropController(AbsolutePanel boundaryPanel, boolean allowDroppingOnBoundaryPanel) {
-                return new MyDropController(boundaryPanel, allowDroppingOnBoundaryPanel);
+                return new WindowDropController(boundaryPanel, allowDroppingOnBoundaryPanel);
             }
         };
         pickupDragController.setBehaviorConstrainedToBoundaryPanel(true);
@@ -46,20 +46,26 @@ public final class WindowDragDropController {
         return resizeDragController;
     }
 
-    public class MyDropController extends BoundaryDropController {
+    public class WindowDropController extends BoundaryDropController {
 
-        public MyDropController(AbsolutePanel dropTarget, boolean allowDroppingOnBoundaryPanel) {
+        public WindowDropController(AbsolutePanel dropTarget, boolean allowDroppingOnBoundaryPanel) {
             super(dropTarget, allowDroppingOnBoundaryPanel);
         }
 
         @Override
         public void onDrop(DragContext context) {
             super.onDrop(context);
-//
-            //передобавляем в конец, иначе по z-order показываются под остальными элементами
-            boundaryPanel.add(context.draggable);
-            boundaryPanel.setWidgetPosition(context.draggable, context.desiredDraggableX, context.desiredDraggableY);
+
+            //передобавляем в конец, иначе по z-order показываются под остальными элементами,
+            //при передобавлении координаты сбрасываются поэтому сначала запоминаем их
+
+            Widget draggable = context.draggable;
+            int draggableLeft = draggable.getAbsoluteLeft();
+            int draggableTop = draggable.getAbsoluteTop();
+            boundaryPanel.add(draggable);
+            boundaryPanel.setWidgetPosition(draggable, draggableLeft, draggableTop);
         }
+
     }
 
     public final class ResizeDragController extends AbstractDragController {

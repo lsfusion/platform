@@ -2,6 +2,7 @@ package platform.gwt.form2.client.form.ui.dialog;
 
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.ResizeLayoutPanel;
+import platform.gwt.form2.client.form.FormsController;
 import platform.gwt.form2.client.form.ui.GFormController;
 import platform.gwt.form2.shared.view.GForm;
 
@@ -9,10 +10,10 @@ public class GResizableModalForm extends GResizableModalWindow {
 
     protected final ResizeLayoutPanel mainPane;
 
-    public GResizableModalForm(GForm form, final WindowHiddenHandler hiddenHandler) {
+    public GResizableModalForm(FormsController formsController, GForm form, final WindowHiddenHandler hiddenHandler) {
         super(form.caption, hiddenHandler);
 
-        GFormController editorForm = new GFormController(form, true) {
+        GFormController editorForm = new GFormController(formsController, form, true) {
             @Override
             public void hideForm() {
                 GResizableModalForm.this.hide();
@@ -43,8 +44,8 @@ public class GResizableModalForm extends GResizableModalWindow {
         setContentWidget(mainPane);
     }
 
-    public static GResizableModalForm showForm(GForm form, final WindowHiddenHandler hiddenHandler) {
-        GResizableModalForm modalForm = new GResizableModalForm(form, hiddenHandler);
+    public static GResizableModalForm showForm(FormsController formsController, GForm form, final WindowHiddenHandler hiddenHandler) {
+        GResizableModalForm modalForm = new GResizableModalForm(formsController, form, hiddenHandler);
         modalForm.center();
         return modalForm;
     }

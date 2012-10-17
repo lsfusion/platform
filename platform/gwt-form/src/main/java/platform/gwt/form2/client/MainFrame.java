@@ -7,9 +7,9 @@ import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
 import platform.gwt.base.client.ErrorAsyncCallback;
 import platform.gwt.form2.client.dispatch.NavigatorDispatchAsync;
-import platform.gwt.form2.client.form.FormPanel;
+import platform.gwt.form2.client.form.DefaultFormsController;
 import platform.gwt.form2.client.navigator.GNavigatorController;
-import platform.gwt.form2.client.window.WindowContainer;
+import platform.gwt.form2.client.window.WindowsController;
 import platform.gwt.form2.shared.actions.navigator.GetCommonWindows;
 import platform.gwt.form2.shared.actions.navigator.GetCommonWindowsResult;
 import platform.gwt.form2.shared.actions.navigator.GetNavigatorElements;
@@ -21,10 +21,11 @@ import java.util.*;
 
 public class MainFrame implements EntryPoint {
     private final NavigatorDispatchAsync dispatcher = new NavigatorDispatchAsync();
-    private WindowContainer mainContainer;
 
     private GNavigatorController navigatorController;
-    private FormPanel formPanel;
+    private WindowsController windowsController;
+    private DefaultFormsController formsController;
+
     public GAbstractWindow formsWindow;
     public Map<GAbstractWindow, Widget> commonWindows = new LinkedHashMap<GAbstractWindow, Widget>();
 
@@ -39,12 +40,14 @@ public class MainFrame implements EntryPoint {
         // inject global styles
         GWT.<MainFrameResources>create(MainFrameResources.class).css().ensureInjected();
 
-        mainContainer = new WindowContainer() {
+        formsController = new DefaultFormsController();
+
+        windowsController = new WindowsController() {
             @Override
             public Widget getWindowView(GAbstractWindow window) {
                 Widget view;
                 if (window.equals(formsWindow)) {
-                    view = formPanel;
+                    view = formsController;
                 } else if (window instanceof GNavigatorWindow) {
                     view = navigatorController.getNavigatorView((GNavigatorWindow) window).getView();
                 } else {
@@ -54,19 +57,22 @@ public class MainFrame implements EntryPoint {
             }
         };
 
-        navigatorController = new GNavigatorController() {
+        navigatorController = new GNavigatorController(formsController) {
             @Override
             public void updateVisibility(Map<GAbstractWindow, Boolean> windows) {
-                mainContainer.updateVisibility(windows);
+                windowsController.updateVisibility(windows);
             }
 
             @Override
             public void setInitialSize(GAbstractWindow window, int width, int height) {
-                mainContainer.setInitialSize(window, width, height);
+                windowsController.setInitialSize(window, width, height);
             }
         };
-        formPanel = new FormPanel();
 
+        initCommonWindows();
+    }
+
+    private void initCommonWindows() {
         dispatcher.execute(new GetCommonWindows(), new ErrorAsyncCallback<GetCommonWindowsResult>() {
             @Override
             public void success(GetCommonWindowsResult result) {
@@ -75,9 +81,13 @@ public class MainFrame implements EntryPoint {
                 commonWindows.put(result.relevantClasses, new Label(result.relevantClasses.caption));
                 commonWindows.put(result.log, new Label(result.log.caption));
                 commonWindows.put(result.status, new Label(result.status.caption));
+
+                initNavigatorElements();
             }
         });
+    }
 
+    private void initNavigatorElements() {
         dispatcher.execute(new GetNavigatorElements(), new ErrorAsyncCallback<GetNavigatorElementsResult>() {
             @Override
             public void success(GetNavigatorElementsResult result) {
@@ -88,8 +98,8 @@ public class MainFrame implements EntryPoint {
                 List<GAbstractWindow> allWindows = new ArrayList<GAbstractWindow>();
                 allWindows.addAll(Arrays.asList(result.navigatorWindows));
                 allWindows.addAll(commonWindows.keySet());
-                mainContainer.initializeWindows(allWindows, formsWindow);
-                RootLayoutPanel.get().add(mainContainer);
+                windowsController.initializeWindows(allWindows, formsWindow);
+                RootLayoutPanel.get().add(windowsController);
 
                 navigatorController.update();
             }

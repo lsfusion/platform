@@ -11,7 +11,6 @@ import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
-import net.customware.gwt.dispatch.shared.Action;
 import net.customware.gwt.dispatch.shared.Result;
 import platform.gwt.base.client.ErrorAsyncCallback;
 import platform.gwt.base.client.WrapperAsyncCallbackEx;
@@ -20,16 +19,14 @@ import platform.gwt.base.shared.GOrder;
 import platform.gwt.form2.client.LoadingBlocker;
 import platform.gwt.form2.client.dispatch.FormDispatchAsync;
 import platform.gwt.form2.client.dispatch.NavigatorDispatchAsync;
+import platform.gwt.form2.client.form.FormsController;
 import platform.gwt.form2.client.form.dispatch.GEditPropertyHandler;
 import platform.gwt.form2.client.form.dispatch.GFormActionDispatcher;
 import platform.gwt.form2.client.form.ui.classes.ClassChosenHandler;
 import platform.gwt.form2.client.form.ui.classes.GResizableClassDialog;
 import platform.gwt.form2.client.form.ui.dialog.DialogBoxHelper;
 import platform.gwt.form2.client.form.ui.dialog.GResizableModalDialog;
-import platform.gwt.form2.client.form.ui.dialog.GResizableModalForm;
 import platform.gwt.form2.client.form.ui.dialog.WindowHiddenHandler;
-import platform.gwt.form2.shared.actions.GetForm;
-import platform.gwt.form2.shared.actions.GetFormResult;
 import platform.gwt.form2.shared.actions.form.*;
 import platform.gwt.form2.shared.actions.navigator.GenerateID;
 import platform.gwt.form2.shared.actions.navigator.GenerateIDResult;
@@ -39,23 +36,23 @@ import platform.gwt.form2.shared.view.changes.GGroupObjectValue;
 import platform.gwt.form2.shared.view.changes.dto.GFormChangesDTO;
 import platform.gwt.form2.shared.view.classes.GObjectClass;
 import platform.gwt.form2.shared.view.logics.GGroupObjectLogicsSupplier;
+import platform.gwt.form2.shared.view.window.GModalityType;
 
 import java.io.Serializable;
 import java.util.*;
 
 public class GFormController extends SimplePanel {
 
-    private FormDispatchAsync dispatcher;
+    private final FormDispatchAsync dispatcher;
 
-    private final GFormActionDispatcher actionDispatcher = new GFormActionDispatcher(this);
+    private final GFormActionDispatcher actionDispatcher;
 
-    private GForm form;
-    protected GFormLayout formLayout;
-    private final boolean dialogMode;
+    private final FormsController formsController;
 
-    private boolean defaultOrdersInitialized = false;
+    private final GForm form;
+    protected final GFormLayout formLayout;
+    private final boolean isDialog;
 
-    private boolean hasColumnGroupObjects;
     private final HashMap<GGroupObject, List<GGroupObjectValue>> currentGridObjects = new HashMap<GGroupObject, List<GGroupObjectValue>>();
 
     private final Map<GGroupObject, GGroupObjectController> controllers = new LinkedHashMap<GGroupObject, GGroupObjectController>();
@@ -65,36 +62,19 @@ public class GFormController extends SimplePanel {
     private final HashMap<GPropertyDraw, HashMap<GGroupObjectValue, Long>> lastChangePropertyRequestIndices = new HashMap<GPropertyDraw, HashMap<GGroupObjectValue, Long>>();
     private final HashMap<GPropertyDraw, HashMap<GGroupObjectValue, Change>> lastChangePropertyRequestValues = new HashMap<GPropertyDraw, HashMap<GGroupObjectValue, Change>>();
 
-    public GFormController(String formSID) {
-        this(formSID, null);
-    }
+    private boolean defaultOrdersInitialized = false;
+    private boolean hasColumnGroupObjects;
 
-    public GFormController(String formSID, Map<String, String> params) {
-        this(new GetForm(formSID, params), false);
-    }
+    public GFormController(FormsController formsController, GForm gForm, final boolean isDialog) {
+        actionDispatcher = new GFormActionDispatcher(this);
 
-    public GFormController(Action<GetFormResult> getFormAction, final boolean dialogMode) {
-        this.dialogMode = dialogMode;
-
-        NavigatorDispatchAsync.Instance.get().execute(getFormAction, new ErrorAsyncCallback<GetFormResult>() {
-            @Override
-            public void success(GetFormResult result) {
-                initialize(result.form);
-            }
-        });
-    }
-
-    public GFormController(GForm gForm, final boolean dialogMode) {
-        this.dialogMode = dialogMode;
-        initialize(gForm);
-    }
-
-    private void initialize(GForm form) {
-        this.form = form;
+        this.formsController = formsController;
+        this.form = gForm;
+        this.isDialog = isDialog;
 
         dispatcher = new FormDispatchAsync(this);
 
-        formLayout = new GFormLayout(this, form.mainContainer);
+        formLayout = new GFormLayout(this, gForm.mainContainer);
 
         addStyleName("formController");
 
@@ -365,12 +345,24 @@ public class GFormController extends SimplePanel {
         return result;
     }
 
-    public void showModalDialog(GForm form, final WindowHiddenHandler handler) {
-        GResizableModalDialog.showDialog(form, handler);
+    public void openForm(GForm form, GModalityType modalityType, final WindowHiddenHandler handler) {
+        if (isDialog && !modalityType.isDialog()) {
+            modalityType = GModalityType.MODAL;
+        } else if (modalityType == GModalityType.DOCKED_MODAL) {
+            block();
+        }
+
+        formsController.openForm(form, modalityType, new WindowHiddenHandler() {
+            @Override
+            public void onHidden() {
+                unblock();
+                handler.onHidden();
+            }
+        });
     }
 
-    public void showModalForm(GForm form, final WindowHiddenHandler handler) {
-        GResizableModalForm.showForm(form, handler);
+    public void showModalDialog(GForm form, final WindowHiddenHandler handler) {
+        GResizableModalDialog.showDialog(formsController, form, handler);
     }
 
     public void showClassDialog(GObjectClass baseClass, GObjectClass defaultClass, boolean concreate, final ClassChosenHandler classChosenHandler) {
@@ -517,6 +509,10 @@ public class GFormController extends SimplePanel {
         redrawGrids(visibleComponent);
     }
 
+    public void closePressed() {
+        syncDispatch(new ClosePressed(), new ServerResponseCallback());
+    }
+
     // судя по документации, TabPanel криво работает в StandardsMode. в данном случае неправильно отображает
     // таблицы, кроме тех, что в первой вкладке. поэтому вынуждены сами вызывать redraw() для таблиц
     private void redrawGrids(GComponent component) {
@@ -549,6 +545,14 @@ public class GFormController extends SimplePanel {
 
     public List<GPropertyDraw> getPropertyDraws() {
         return form.propertyDraws;
+    }
+
+    public void block() {
+        //do nothing by default
+    }
+
+    public void unblock() {
+        //do nothing by default
     }
 
     public void hideForm() {

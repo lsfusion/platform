@@ -15,7 +15,7 @@ public class TabbedWindowElement extends WindowElement {
 
     private TabLayoutPanel panel = new TabLayoutPanel(2, Style.Unit.EM);
 
-    public TabbedWindowElement(WindowContainer main) {
+    public TabbedWindowElement(WindowsController main) {
         super(main);
     }
 

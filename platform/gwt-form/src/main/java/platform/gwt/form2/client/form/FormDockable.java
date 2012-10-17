@@ -1,0 +1,119 @@
+package platform.gwt.form2.client.form;
+
+import com.google.gwt.dom.client.Style;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.ui.*;
+import platform.gwt.form2.client.form.ui.GFormController;
+import platform.gwt.form2.client.form.ui.dialog.WindowHiddenHandler;
+import platform.gwt.form2.shared.view.GForm;
+
+final class FormDockable {
+    private final TabWidget tabWidget;
+    private final ContentWidget contentWidget;
+
+    private final GFormController form;
+
+    private WindowHiddenHandler hiddenHandler;
+
+    public FormDockable(final FormsController formsController, GForm gForm) {
+        tabWidget = new TabWidget(gForm.caption);
+
+        form = new GFormController(formsController, gForm, false) {
+            @Override
+            public void hideForm() {
+                if (hiddenHandler != null) {
+                    hiddenHandler.onHidden();
+                }
+            }
+
+            @Override
+            public void block() {
+                tabWidget.setBlocked(true);
+                contentWidget.setBlocked(true);
+            }
+
+            @Override
+            public void unblock() {
+                tabWidget.setBlocked(false);
+                contentWidget.setBlocked(false);
+                formsController.select(contentWidget);
+            }
+        };
+
+        contentWidget = new ContentWidget(form);
+    }
+
+    public void setHiddenHandler(WindowHiddenHandler hiddenHandler) {
+        this.hiddenHandler = hiddenHandler;
+    }
+
+    private void closePressed() {
+        form.closePressed();
+    }
+
+    public Widget getTabWidget() {
+        return tabWidget;
+    }
+
+    public Widget getContentWidget() {
+        return contentWidget;
+    }
+
+
+    private static class ContentWidget extends LayoutPanel {
+        private final Widget mask;
+
+        private ContentWidget(Widget content) {
+            mask = new SimpleLayoutPanel();
+            mask.setStyleName("dockableBlockingMask");
+
+            addFullSizeChild(content);
+        }
+
+        private void addFullSizeChild(Widget child) {
+            add(child);
+            setWidgetLeftRight(child, 0, Style.Unit.PX, 0, Style.Unit.PX);
+        }
+
+        public void setBlocked(boolean blocked) {
+            if (blocked) {
+                addFullSizeChild(mask);
+            } else {
+                remove(mask);
+            }
+        }
+    }
+
+    private class TabWidget extends HorizontalPanel {
+        public static final String CROSS_SYMBOL_HTML = "&#215;";
+        private Label label;
+
+        private Button closeButton;
+        private String title;
+
+        public TabWidget(String ititle) {
+            title = ititle;
+
+            label = new Label(title);
+            label.addStyleName("customFontPresenter");
+
+            closeButton = new Button(CROSS_SYMBOL_HTML);
+            closeButton.setStyleName("closeTabButton");
+
+            add(label);
+            add(closeButton);
+
+            closeButton.addClickHandler(new ClickHandler() {
+                @Override
+                public void onClick(ClickEvent event) {
+                    closePressed();
+                }
+            });
+        }
+
+        public void setBlocked(boolean blocked) {
+            closeButton.setEnabled(!blocked);
+        }
+    }
+}

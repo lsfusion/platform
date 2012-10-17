@@ -14,6 +14,8 @@ import platform.gwt.form2.shared.view.actions.*;
 import platform.gwt.form2.shared.view.changes.dto.GFormChangesDTO;
 import platform.gwt.form2.shared.view.classes.GObjectClass;
 import platform.gwt.form2.shared.view.classes.GType;
+import platform.gwt.form2.shared.view.window.GModalityType;
+import platform.interop.ModalityType;
 import platform.interop.action.*;
 import platform.interop.form.ReportGenerationData;
 
@@ -71,8 +73,19 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
     @Converter(from = FormClientAction.class)
     public GFormAction convertAction(FormClientAction action, RemoteServiceImpl servlet) throws IOException {
-        //todo: сделать нормальный modalityType
-        return new GFormAction(action.modalityType.isModal(), servlet.getFormSessionManager().createFormAndPutInSession(action.remoteForm));
+        GModalityType modalityType = convertOrCast(action.modalityType);
+        return new GFormAction(modalityType, servlet.getFormSessionManager().createFormAndPutInSession(action.remoteForm));
+    }
+
+    @Converter(from = ModalityType.class)
+    public GModalityType convertModalityType(ModalityType modalityType) {
+        switch (modalityType) {
+            case DOCKED: return GModalityType.DOCKED;
+            case MODAL: return GModalityType.MODAL;
+            case FULLSCREEN_MODAL: return GModalityType.FULLSCREEN_MODAL;
+            case DOCKED_MODAL: return GModalityType.DOCKED_MODAL;
+        }
+        return null;
     }
 
     @Converter(from = HideFormClientAction.class)

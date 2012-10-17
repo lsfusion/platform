@@ -1,6 +1,7 @@
 package platform.gwt.form2.client.navigator;
 
-import platform.gwt.form2.client.events.OpenFormEvent;
+import platform.gwt.form2.client.form.DefaultFormsController;
+import platform.gwt.form2.client.form.FormsController;
 import platform.gwt.form2.shared.view.GNavigatorElement;
 import platform.gwt.form2.shared.view.window.GAbstractWindow;
 import platform.gwt.form2.shared.view.window.GNavigatorWindow;
@@ -11,8 +12,14 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 
 public abstract class GNavigatorController implements GINavigatorController {
+    private final FormsController formsController;
+
+    private GNavigatorElement root;
     private LinkedHashMap<GNavigatorWindow, GNavigatorView> views = new LinkedHashMap<GNavigatorWindow, GNavigatorView>();
-    public GNavigatorElement root;
+
+    public GNavigatorController(DefaultFormsController formsController) {
+        this.formsController = formsController;
+    }
 
     public void initializeNavigatorViews(GNavigatorWindow[] windows) {
         for (GNavigatorWindow window : windows) {
@@ -82,11 +89,8 @@ public abstract class GNavigatorController implements GINavigatorController {
     public void openElement(GNavigatorElement element) {
         if (element instanceof GNavigatorForm) {
             GNavigatorForm form = (GNavigatorForm) element;
-            if (form.modalityType.isModal()) {
-                OpenFormEvent.fireEvent(form.sid, form.caption);
-            } else {
-                OpenFormEvent.fireEvent(form.sid, form.caption);
-            }
+
+            formsController.openForm(form.sid, form.modalityType);
         } else if (element instanceof GNavigatorAction) {
 //            openAction((GNavigatorAction) element);
         }
