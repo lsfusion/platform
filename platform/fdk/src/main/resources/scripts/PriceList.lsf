@@ -76,23 +76,27 @@ pricePriceListDetailDataPriceListType (priceListDetail, dataPriceListType) += pr
 TABLE priceListDataPriceListType (priceList, dataPriceListType);
 TABLE priceListDetailDataPriceListType (priceListDetail, dataPriceListType);
 
-inPriceListPriceListType 'Включен' = ABSTRACT BOOLEAN (priceList, dataPriceListType) PERSISTENT;
-inUserPriceListPriceListType 'Включен' = DATA BOOLEAN (userPriceList, dataPriceListType);
+inPriceListPriceListType 'Отм' = ABSTRACT BOOLEAN (priceList, dataPriceListType) PERSISTENT;
+inUserPriceListPriceListType 'Отм' = DATA BOOLEAN (userPriceList, dataPriceListType);
 inPriceListPriceListType (priceList, dataPriceListType) += inUserPriceListPriceListType(priceList, dataPriceListType);
+
+priceListTypesPriceList 'Цены' (priceList) = GROUP CONCAT name(priceListType) IF inPriceListPriceListType(priceList, priceListType) , ', '
+                                               BY priceList
+                                               ORDER priceListType MINCHARWIDTH 50 PERSISTENT;
 
 dataPriceListDetailPriceListType (detail, dataPriceListType) = inPriceListPriceListType(priceListPriceListDetail(detail), dataPriceListType) PERSISTENT;
 
-inPriceList 'Включен' = ABSTRACT BOOLEAN (priceList) PERSISTENT;
-inUserPriceList 'Включен' = DATA BOOLEAN (userPriceList);
+inPriceList 'Отм' = ABSTRACT BOOLEAN (priceList) PERSISTENT;
+inUserPriceList 'Отм' = DATA BOOLEAN (userPriceList);
 inUserPriceList(userPriceList) <- TRUE WHEN ASSIGNED(userPriceList IS userPriceList);
 inPriceList (priceList) += inUserPriceList(priceList);
 
-inPriceListStockGroup 'Включен' = ABSTRACT BOOLEAN (priceList, stockGroup) PERSISTENT;
-inUserPriceListStockGroup 'Включен' = DATA BOOLEAN (userPriceList, stockGroup);
+inPriceListStockGroup 'Отм' = ABSTRACT BOOLEAN (priceList, stockGroup) PERSISTENT;
+inUserPriceListStockGroup 'Отм' = DATA BOOLEAN (userPriceList, stockGroup);
 inPriceListStockGroup (priceList, stockGroup) += inUserPriceListStockGroup(priceList, stockGroup);
 
-inPriceListStock 'Включен' = ABSTRACT BOOLEAN (priceList, stock) PERSISTENT;
-inUserPriceListStock 'Включен' = DATA BOOLEAN (userPriceList, stock);
+inPriceListStock 'Отм' = ABSTRACT BOOLEAN (priceList, stock) PERSISTENT;
+inUserPriceListStock 'Отм' = DATA BOOLEAN (userPriceList, stock);
 inPriceListStock (priceList, stock) += inUserPriceListStock(priceList, stock);
 
 dataPriceListDetailStock (detail, stock) = inPriceListStock(priceListPriceListDetail(detail), stock) PERSISTENT;
@@ -103,15 +107,19 @@ nearestParentStockGroup (priceList, stockGroup) = stockGroupStockGroupLevel(stoc
 nearestInPriceListStockGroup (priceList, stockGroup) =
     inPriceListStockGroup(priceList, nearestParentStockGroup(priceList, stockGroup));
 
-inPriceListStockGroupOver 'Включен' (priceList, stockGroup) =
+inPriceListStockGroupOver 'Отм' (priceList, stockGroup) =
     UNION OVERRIDE inPriceList(priceList) AND stockGroup IS stockGroup,
                    nearestInPriceListStockGroup(priceList, stockGroup),
                    inPriceListStockGroup(priceList, stockGroup);
 
-inPriceListStockOver 'Включен' (priceList, stock) =
+inPriceListStockOver 'Отм' (priceList, stock) =
     UNION OVERRIDE inPriceList(priceList) AND stock IS stock,
                    nearestInPriceListStockGroup(priceList, stockGroupStock(stock)),
                    inPriceListStock(priceList, stock);
+
+stocksPriceList 'Склады' (priceList) = GROUP CONCAT name(stock) IF inPriceListStockOver(priceList, stock) , ', '
+                                       BY priceList
+                                       ORDER stock MINCHARWIDTH 100 PERSISTENT;
 
 currentPricePriceListDetailDataPriceListTypeStock 'Действующая цена' (priceListDetail, dataPriceListType, stock) =
     pricePriceListTypeSkuStockDateTime(dataPriceListType, skuPriceListDetail(priceListDetail), stock, fromDateTimePriceListDetail(priceListDetail));
@@ -133,7 +141,7 @@ extendNameMarkUpDataPriceListType (dataPriceListType) =
 
 inStockGroupStock (stockGroup, stock) = UNION OVERRIDE stock IS stock AND NOT stockGroup IS stockGroup, isParentStockGroupStock(stockGroup, stock);
 
-inSku 'Включен' (sku) = SESSION DATA BOOLEAN (sku) MINCHARWIDTH 10 MAXCHARWIDTH 10;
+inSku 'Отм' (sku) = SESSION DATA BOOLEAN (sku) MINCHARWIDTH 10 MAXCHARWIDTH 10;
 
 FORM userPriceListSku 'Подбор товаров для прайсов'
     TREE skuTree sk = skuGroup PARENT parentSkuGroup
@@ -143,17 +151,9 @@ FORM userPriceListSku 'Подбор товаров для прайсов'
     OBJECTS p = userPriceList FIXED PANEL, t = dataPriceListType
     FILTERS inPriceListPriceListType(p, t)
 
-    TREE stockTree a=STRING[3], sg = stockGroup PARENT parentStockGroup
-    PROPERTIES READONLY OBJVALUE(a), sgTreeName = name(sg)
-    ORDER BY sgTreeName
-    FILTERS stringEqualsAll(a)
-    PROPERTIES(p) READONLY inPriceList TODRAW a FORCE GRID
-    PROPERTIES(p, sg) READONLY inPriceListStockGroupOver
-
     OBJECTS ts = stock
     PROPERTIES(ts) READONLY name
     PROPERTIES(p, ts) READONLY inPriceListStockOver
-    FILTERS inStockGroupStock(sg, ts)
 
     OBJECTS s=sku
     PROPERTIES(s) inSku
@@ -176,8 +176,13 @@ DESIGN userPriceListSku FROM DEFAULT {
     NEW topContainer{
         childConstraints = TO THE RIGHT;
         type = SPLITH;
-        ADD skuTree.tree.box;
         NEW firstContainer{
+            type = SPLITV;
+            childConstraints = TO THE BOTTOM;
+            ADD skuTree.tree.box{fillVertical = 3.0;}
+            ADD ts.box{fillVertical = 2.0;}
+        }
+        NEW secondContainer{
             childConstraints = TO THE BOTTOM;
             fillHorizontal = 3.0;
             type = SPLITV;
@@ -185,15 +190,8 @@ DESIGN userPriceListSku FROM DEFAULT {
                 childConstraints = TO THE BOTTOM;
                 caption = 'Товары';
                 type = SPLITV;
-                ADD s.box;
-                ADD si.box;
-            }
-            NEW stockContainer {
-                childConstraints = TO THE RIGHT;
-                caption = 'Склады';
-                type = SPLITH;
-                ADD stockTree.tree.box{fillHorizontal = 3.0;}
-                ADD ts.box{fillHorizontal = 2.0;}
+                ADD s.box{fillVertical = 3.0;}
+                ADD si.box{fillVertical = 2.0;}
             }
         }
     }
@@ -213,15 +211,49 @@ addDetailDialogSkuUserPriceListDetailUserPriceList 'Подбор товара' =
     SET inSku(sku) <- NULL;
 } TOOLBAR;
 
-isSelectedPriceListDetail 'Включен' = SESSION DATA BOOLEAN (priceListDetail);
+isSelectedPriceListDetail 'Отм' = SESSION DATA BOOLEAN (priceListDetail);
+
+FORM chooseMarkUpSkuUserPriceList 'Наценка'
+
+    OBJECTS p = userPriceList FIXED PANEL
+
+    OBJECTS t = dataPriceListType FIXED PANEL
+    PROPERTIES(t) SELECTOR name
+
+    OBJECTS n = NUMERIC[20,7] FIXED PANEL
+    PROPERTIES(n) objValue = OBJVALUE
+
+    FILTERS inPriceListPriceListType(p, t)
+;
+
+DESIGN chooseMarkUpSkuUserPriceList FROM DEFAULT {
+
+    REMOVE p.box;
+    NEW topContainer {
+        childConstraints = TO THE RIGHT;
+        ADD PROPERTY(name(t));
+        ADD PROPERTY(objValue);
+        PROPERTY(objValue){caption = 'Наценка, %';}
+    }
+    ADD functions.box;
+}
+
+sessionDataPriceListType 'Тип цены' = SESSION DATA dataPriceListType();
 
 changeMarkUpSkuUserPriceList 'Изменить наценку' = ACTION (userPriceList, dataPriceListType, stock){
 
-    FORM dialogNumeric MODAL;
+//    SET sessionDataPriceListType() <- NULL;
+//    SET sessionDataPriceListType() <- dataPriceListType AS dataPriceListType;
+    FORM chooseMarkUpSkuUserPriceList OBJECTS p = userPriceList, t = dataPriceListType MODAL;
     IF formResult() == formResult.ok THEN {
-        FOR isSelectedPriceListDetail(detail) AND userPriceListUserPriceListDetail(detail) == userPriceList DO {
-            SET pricePriceListDetailDataPriceListType(detail, dataPriceListType) <- currentPricePriceListDetailDataPriceListTypeStock(detail, dataPriceListType, stock) * (chosenNumeric('n') + 100.0) / 100.0;
-        }
+//        SET sessionDataPriceListType() <- chosenObject('t');
+        SET pricePriceListDetailDataPriceListType(detail, t) <-
+                currentPricePriceListDetailDataPriceListTypeStock(detail, t, stock) * (chosenNumeric('n') + 100.0) / 100.0
+                WHERE isSelectedPriceListDetail(detail) AND userPriceListUserPriceListDetail(detail) == userPriceList AND t == chosenObject('t');
+//        FOR isSelectedPriceListDetail(detail) AND userPriceListUserPriceListDetail(detail) == userPriceList DO {
+//            SET pricePriceListDetailDataPriceListType(detail, sessionDataPriceListType()) <- currentPricePriceListDetailDataPriceListTypeStock(detail, sessionDataPriceListType(), stock) * (chosenNumeric('n') + 100.0) / 100.0;
+//        }
+//        SET sessionDataPriceListType() <- NULL;
     }
 }
 
@@ -259,11 +291,11 @@ FORM userPriceList 'Прайс'
     PROPERTIES(ts) READONLY name
     PROPERTIES(p, ts) inPriceListStockOver
 
-    PROPERTIES(p, t, ts) changeMarkUpSkuUserPriceList TODRAW t FORCE GRID
+    PROPERTIES(p, t, ts) changeMarkUpSkuUserPriceList TODRAW d FORCE PANEL DRAWTOTOOLBAR
 
     PROPERTIES(d, st, ts) currentPricePriceListDetailDataPriceListTypeStock COLUMNS (st) HEADER extendNameDataPriceListType(st) TODRAW d FORCE GRID
-    PROPERTIES(d, st) pricePriceListDetailDataPriceListType COLUMNS (st) HEADER name(st)
     PROPERTIES(d, st, ts) markUpPricePriceListDetailDataPriceListTypeStock COLUMNS (st) HEADER extendNameMarkUpDataPriceListType(st) TODRAW d FORCE GRID
+    PROPERTIES(d, st) pricePriceListDetailDataPriceListType COLUMNS (st) HEADER name(st)
     PROPERTIES(d, st, ts) currentPricePriceListDetailDataPriceListTypeStock COLUMNS (st) HEADER extendNameDataPriceListType(st)
     PROPERTIES(d, st, ts) markUpPricePriceListDetailDataPriceListTypeStock COLUMNS (st) HEADER extendNameMarkUpDataPriceListType(st)
 
@@ -307,36 +339,40 @@ DESIGN userPriceList FROM DEFAULT {
             ADD PROPERTY (toDateUserPriceList);
             ADD PROPERTY (toTimeUserPriceList);
         }
-        NEW propContainer {
+        NEW propContainer{
             caption = 'Параметры документа';
             childConstraints = TO THE RIGHT;
             ADD PROPERTY(nameCurrencyUserPriceList);
             ADD PROPERTY(noteUserPriceList);
         }
+        POSITION propContainer TO THE RIGHT timeContainer;
         NEW detailContainer{
             childConstraints = TO THE RIGHT;
-            type = SPLITH;
+            type = SPLITV;
             NEW firstContainer{
                 childConstraints = TO THE BOTTOM;
-                type = SPLITV;
+                type = SPLITH;
                 ADD t.box;
-                ADD skuTree.tree.box{
-                    caption = 'Товары';
-                    fillVertical = 3.0;
+                NEW stockContainer {
+                    childConstraints = TO THE RIGHT;
+                    caption = 'Склады';
+                    type = SPLITH;
+                    ADD stockTree.tree.box{
+                        caption = 'Группы складов';
+                        fillHorizontal = 3.0;
+                    }
+                    ADD ts.box{fillHorizontal = 2.0;}
                 }
             }
             NEW secondContainer {
                 childConstraints = TO THE BOTTOM;
                 fillHorizontal = 3.0;
-                type = SPLITV;
-                ADD d.box{fillVertical = 3.0;}
-                NEW stockContainer {
-                    childConstraints = TO THE RIGHT;
-                    caption = 'Склады';
-                    type = SPLITH;
-                    ADD stockTree.tree.box{fillHorizontal = 3.0;}
-                    ADD ts.box{fillHorizontal = 2.0;}
+                type = SPLITH;
+                ADD skuTree.tree.box{
+                    caption = 'Товары';
+                    fillVertical = 3.0;
                 }
+                ADD d.box{fillVertical = 3.0;}
             }
         }
         PROPERTY(formOkAction) {
@@ -350,62 +386,45 @@ DESIGN userPriceList FROM DEFAULT {
 FORM userPriceLists 'Прайсы'
 
     OBJECTS p = userPriceList
-    PROPERTIES(p) READONLY objectClassName, nameNumeratorObject, numberObject, seriesObject,
-                           fromDateTimeUserPriceList, toDateTimeUserPriceList, nameCurrencyUserPriceList, noteUserPriceList
+    PROPERTIES(p) READONLY objectClassName, numberObject, seriesObject,
+                           fromDateTimeUserPriceList, toDateTimeUserPriceList, nameCurrencyUserPriceList,
+                           noteUserPriceList, priceListTypesPriceList, stocksPriceList
     PROPERTIES(p) ADDFORM, EDITFORM, delete
 
     OBJECTS t = dataPriceListType
-    PROPERTIES(t) READONLY name
-    PROPERTIES(p, t) READONLY inPriceListPriceListType
 
     OBJECTS d =userPriceListDetail
     PROPERTIES(d) READONLY indexUserPriceListDetail, idBarcodeSkuUserPriceListDetail, nameSkuUserPriceListDetail,
                            shortNameUOMSkuUserPriceListDetail
 
-    TREE stockTree a=STRING[3], sg = stockGroup PARENT parentStockGroup
-    PROPERTIES READONLY OBJVALUE(a), sgTreeName = name(sg)
-    ORDER BY sgTreeName
-    FILTERS stringEqualsAll(a)
-    PROPERTIES(p) READONLY inPriceList TODRAW a FORCE GRID
-    PROPERTIES(p, sg) READONLY inPriceListStockGroupOver
-
     OBJECTS ts = stock
     PROPERTIES(ts) READONLY name
     PROPERTIES(p, ts) READONLY inPriceListStockOver
-
-    PROPERTIES(d, t, ts) READONLY currentPricePriceListDetailDataPriceListTypeStock COLUMNS (t) HEADER extendNameDataPriceListType(t)
 
     PROPERTIES(d, t) READONLY pricePriceListDetailDataPriceListType COLUMNS (t) HEADER name(t)
 
     FILTERS userPriceListUserPriceListDetail(d) == p,
             inPriceListPriceListType(p, t),
-            inStockGroupStock(sg, ts),
             inPriceListStockOver(p, ts),
             currencyUserPriceList(p) == currencyDataPriceListType(t)
 
 ;
 
 DESIGN userPriceLists FROM DEFAULT{
+
+    REMOVE t.box;
     NEW topContainer{
         type = SPLITV;
-        ADD p.box{fillVertical = 2.0;}
+        ADD p.box{fillVertical = 3.0;}
         NEW detailContainer{
             childConstraints = TO THE RIGHT;
             type = SPLITH;
-            fillVertical = 3.0;
-            ADD t.box;
+            fillVertical = 2.0;
             NEW firstContainer{
-                childConstraints = TO THE BOTTOM;
-                fillHorizontal = 3.0;
-                type = SPLITV;
-                ADD d.box{fillVertical = 3.0;}
-                NEW stockContainer {
-                    childConstraints = TO THE RIGHT;
-                    caption = 'Склады';
-                    type = SPLITH;
-                    ADD stockTree.tree.box{fillHorizontal = 3.0;}
-                    ADD ts.box{fillHorizontal = 2.0;}
-                }
+                childConstraints = TO THE RIGHT;
+                type = SPLITH;
+                ADD d.box{fillHorizontal = 4.0;}
+                ADD ts.box{fillHorizontal = 1.0;}
             }
         }
     }
