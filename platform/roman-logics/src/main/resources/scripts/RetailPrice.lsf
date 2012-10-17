@@ -307,15 +307,15 @@ markupBasePriceSetDocumentArticle(document, article) => inPriceSetDocumentArticl
 
 priceOutBasePriceSetDocumentArticle 'Цена с надбавкой' (basePriceSetDocument, article) = roundCurrencyBasePriceSetDocumentArticle(
                                                                                                     priceInBasePriceSetDocumentArticle(basePriceSetDocument, article) *
-                                                                                                    markupBasePriceSetDocumentArticle(basePriceSetDocument, article), basePriceSetDocument, article);
+                                                                                                    markupBasePriceSetDocumentArticle(basePriceSetDocument, article), basePriceSetDocument, article) PERSISTENT;
 
 priceOutRateBasePriceSetDocumentArticle 'Цена с надбавкой (руб.)' (basePriceSetDocument, article) = roundCurrencyPriceSetDocument(
                                                                                                          priceOutBasePriceSetDocumentArticle(basePriceSetDocument, article) *
-                                                                                                         rateBasePriceSetDocumentArticle(basePriceSetDocument, article), basePriceSetDocument);
+                                                                                                         rateBasePriceSetDocumentArticle(basePriceSetDocument, article), basePriceSetDocument) PERSISTENT;
 
 RRPRateBasePriceSetDocumentArticle 'Рекомендуемая (руб.)' (basePriceSetDocument, article) = roundCurrencyPriceSetDocument(
                                                                                                  RRPBasePriceSetDocumentArticle(basePriceSetDocument, article) *
-                                                                                                 rateBasePriceSetDocumentArticle(basePriceSetDocument, article), basePriceSetDocument);
+                                                                                                 rateBasePriceSetDocumentArticle(basePriceSetDocument, article), basePriceSetDocument) PERSISTENT;
 
 methodBasePriceSetDocumentArticle = DATA methodPrice(basePriceSetDocument, article);
 nameMethodBasePriceSetDocumentArticle 'Метод расчёта' (basePriceSetDocument, article) = name(methodBasePriceSetDocumentArticle(basePriceSetDocument, article)) MAXCHARWIDTH 20;
@@ -385,13 +385,13 @@ markupBasePriceSetDocumentSku 'Наценка' = DATA NUMERIC[14,2] (basePriceSe
 markupBasePriceSetDocumentSku(document, sku) => inPriceSetDocumentSku(document, sku) RESOLVE FALSE;
 
 priceOutBasePriceSetDocumentSku 'Цена с надбавкой' (basePriceSetDocument, sku) = roundCurrencyBasePriceSetDocumentSku(priceInBasePriceSetDocumentSku(basePriceSetDocument, sku) *
-                                                                                        markupBasePriceSetDocumentSku(basePriceSetDocument, sku), basePriceSetDocument, sku);
+                                                                                        markupBasePriceSetDocumentSku(basePriceSetDocument, sku), basePriceSetDocument, sku) PERSISTENT;
 
 priceOutRateBasePriceSetDocumentSku 'Цена с надбавкой (руб.)' (basePriceSetDocument, sku) = roundCurrencyPriceSetDocument(priceOutBasePriceSetDocumentSku(basePriceSetDocument, sku) *
-                                                                                                   rateBasePriceSetDocumentSku(basePriceSetDocument, sku), basePriceSetDocument);
+                                                                                                   rateBasePriceSetDocumentSku(basePriceSetDocument, sku), basePriceSetDocument) PERSISTENT;
 
 RRPRateBasePriceSetDocumentSku 'Рекомендуемая (руб.)' (basePriceSetDocument, sku) = roundCurrencyPriceSetDocument(RRPBasePriceSetDocumentSku(basePriceSetDocument, sku) *
-                                                                                           rateBasePriceSetDocumentSku(basePriceSetDocument, sku), basePriceSetDocument);
+                                                                                           rateBasePriceSetDocumentSku(basePriceSetDocument, sku), basePriceSetDocument) PERSISTENT;
 
 methodBasePriceSetDocumentSku = DATA methodPrice(basePriceSetDocument, sku);
 nameMethodBasePriceSetDocumentSku 'Метод расчёта' (basePriceSetDocument, sku) = name(methodBasePriceSetDocumentSku(basePriceSetDocument, sku)) MAXCHARWIDTH 20;
@@ -627,9 +627,11 @@ markupBasePriceSetDocumentArticle (basePriceSetDocument, article) <- prevMarkupB
 methodBasePriceSetDocumentArticle (basePriceSetDocument, article) <- prevMethodBPriceSetDocumentArticle (basePriceSetDocument, article)
     WHEN ASSIGNED(inPriceSetDocumentArticle(basePriceSetDocument, article));
 
+coefficientPriceBasePriceSetDocumentArticle (basePriceSetDocument, article) = roundPriceCurrencyArticle(priceOutRateBasePriceSetDocumentArticle(basePriceSetDocument, article), currencyPriceSetDocument(basePriceSetDocument), article) PERSISTENT;
+RRPPriceBasePriceSetDocumentArticle (basePriceSetDocument, article) = roundPriceCurrencyArticle(RRPRateBasePriceSetDocumentArticle(basePriceSetDocument, article), currencyPriceSetDocument(basePriceSetDocument), article) PERSISTENT;
 priceBasePriceSetDocumentArticle(basePriceSetDocument, article) <-
-                            IF methodBasePriceSetDocumentArticle(basePriceSetDocument, article) == methodPrice.coefficient THEN roundPriceCurrencyArticle(priceOutRateBasePriceSetDocumentArticle(basePriceSetDocument, article), currencyPriceSetDocument(basePriceSetDocument), article) ELSE
-                               IF methodBasePriceSetDocumentArticle(basePriceSetDocument, article) == methodPrice.RRP THEN roundPriceCurrencyArticle(RRPRateBasePriceSetDocumentArticle(basePriceSetDocument, article), currencyPriceSetDocument(basePriceSetDocument), article) ELSE
+                            IF methodBasePriceSetDocumentArticle(basePriceSetDocument, article) == methodPrice.coefficient THEN coefficientPriceBasePriceSetDocumentArticle (basePriceSetDocument, article) ELSE
+                               IF methodBasePriceSetDocumentArticle(basePriceSetDocument, article) == methodPrice.RRP THEN RRPPriceBasePriceSetDocumentArticle (basePriceSetDocument, article) ELSE
                                   prevPriceBBasePriceSetDocumentArticle(basePriceSetDocument, article) IF methodBasePriceSetDocumentArticle(basePriceSetDocument, article) == methodPrice.previous
                             WHEN CHANGED (methodBasePriceSetDocumentArticle(basePriceSetDocument, article)) OR
                                  CHANGED (priceOutRateBasePriceSetDocumentArticle(basePriceSetDocument, article)) OR
@@ -650,7 +652,8 @@ calcPriceDiscountPriceSetDocumentArticle 'Цена без процентов' (d
                                                                                                        (priceAllowancePriceSetDocumentArticle(discountPriceSetDocument, article),
                                                                                                        percentDiscountPriceSetDocumentArticle(discountPriceSetDocument, article));
 
-priceDiscountPriceSetDocumentArticle(discountPriceSetDocument, article) <- roundPriceCurrencyArticle(calcPriceDiscountPriceSetDocumentArticle(discountPriceSetDocument, article), currencyPriceSetDocument(discountPriceSetDocument), article)
+defaultPriceDiscountPriceSetDocumentArticle (discountPriceSetDocument, article) = roundPriceCurrencyArticle(calcPriceDiscountPriceSetDocumentArticle(discountPriceSetDocument, article), currencyPriceSetDocument(discountPriceSetDocument), article) PERSISTENT;
+priceDiscountPriceSetDocumentArticle(discountPriceSetDocument, article) <- defaultPriceDiscountPriceSetDocumentArticle (discountPriceSetDocument, article)
                                         WHEN CHANGED(priceBasePriceSetDocumentArticle(discountPriceSetDocument, article)) OR
                                              CHANGED(percentDiscountPriceSetDocumentArticle(discountPriceSetDocument, article)) OR
                                              CHANGED(dateTimePriceSetDocumentArticle(discountPriceSetDocument, article));
@@ -672,9 +675,11 @@ typeExchangeBasePriceSetDocumentSku(basePriceSetDocument, sku) <- prevTypeExchan
 methodBasePriceSetDocumentSku (basePriceSetDocument, sku) <- prevMethodBPriceSetDocumentSku (basePriceSetDocument, sku)
     WHEN ASSIGNED(inPriceSetDocumentSku(basePriceSetDocument, sku));
 
+coefficientPriceBasePriceSetDocumentSku (basePriceSetDocument, sku) = roundPriceCurrencySku(priceOutRateBasePriceSetDocumentSku(basePriceSetDocument, sku), currencyPriceSetDocument(basePriceSetDocument), sku) PERSISTENT;
+RRPPriceBasePriceSetDocumentSku (basePriceSetDocument, sku) = roundPriceCurrencySku(RRPRateBasePriceSetDocumentSku(basePriceSetDocument, sku), currencyPriceSetDocument(basePriceSetDocument), sku) PERSISTENT;
 priceBasePriceSetDocumentSku(basePriceSetDocument, sku) <-
-                            IF methodBasePriceSetDocumentSku(basePriceSetDocument, sku) == methodPrice.coefficient THEN roundPriceCurrencySku(priceOutRateBasePriceSetDocumentSku(basePriceSetDocument, sku), currencyPriceSetDocument(basePriceSetDocument), sku) ELSE
-                                IF methodBasePriceSetDocumentSku(basePriceSetDocument, sku) == methodPrice.RRP THEN roundPriceCurrencySku(RRPRateBasePriceSetDocumentSku(basePriceSetDocument, sku), currencyPriceSetDocument(basePriceSetDocument), sku) ELSE
+                            IF methodBasePriceSetDocumentSku(basePriceSetDocument, sku) == methodPrice.coefficient THEN coefficientPriceBasePriceSetDocumentSku(basePriceSetDocument, sku) ELSE
+                                IF methodBasePriceSetDocumentSku(basePriceSetDocument, sku) == methodPrice.RRP THEN RRPPriceBasePriceSetDocumentSku(basePriceSetDocument, sku) ELSE
                                    prevPriceBBasePriceSetDocumentSku(basePriceSetDocument, sku) IF methodBasePriceSetDocumentSku(basePriceSetDocument, sku) == methodPrice.previous
                             WHEN CHANGED (methodBasePriceSetDocumentSku(basePriceSetDocument, sku)) OR
                                  CHANGED (priceOutRateBasePriceSetDocumentSku(basePriceSetDocument, sku)) OR
@@ -696,7 +701,8 @@ calcPriceDiscountPriceSetDocumentSku 'Цена без процентов' (disco
                                                                                                (priceAllowancePriceSetDocumentSku (discountPriceSetDocument, sku),
                                                                                                overPercentDiscountPriceSetDocumentSku(discountPriceSetDocument, sku));
 
-priceDiscountPriceSetDocumentSku(discountPriceSetDocument, sku) <- roundPriceCurrencySku(calcPriceDiscountPriceSetDocumentSku(discountPriceSetDocument, sku), currencyPriceSetDocument(discountPriceSetDocument), sku)
+defaultPriceDiscountPriceSetDocumentSku(discountPriceSetDocument, sku) = roundPriceCurrencySku(calcPriceDiscountPriceSetDocumentSku(discountPriceSetDocument, sku), currencyPriceSetDocument(discountPriceSetDocument), sku) PERSISTENT;
+priceDiscountPriceSetDocumentSku(discountPriceSetDocument, sku) <- defaultPriceDiscountPriceSetDocumentSku(discountPriceSetDocument, sku)
                                         WHEN CHANGED(priceBasePriceSetDocumentSku(discountPriceSetDocument, sku)) OR
                                              CHANGED(percentDiscountPriceSetDocumentSku(discountPriceSetDocument, sku)) OR
                                              CHANGED(dateTimePriceSetDocumentSku(discountPriceSetDocument, sku));

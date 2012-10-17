@@ -17,7 +17,7 @@ priceRoundRoundCondition 'До скольки знаков округлять р
 defaultRoundConditionCurrency = DATA roundCondition(currency);
 isDefaultRoundConditionCurrency 'По умолчанию' (roundCondition, currency) = defaultRoundConditionCurrency(currency) == roundCondition;
 
-priceRoundCurrency 'Округление по умолчанию для розницы' (currency) = priceRoundRoundCondition(defaultRoundConditionCurrency(currency));
+priceRoundCurrency 'Округление по умолчанию для розницы' (currency) = priceRoundRoundCondition(defaultRoundConditionCurrency(currency)) PERSISTENT;
 
 CLASS priceInterval 'Диапазон цен';
 TABLE priceInterval (priceInterval);
@@ -57,7 +57,8 @@ roundConditionUniqueCurrencyRoundGroup(currency, roundGroup) = GROUP UNIQUE roun
                                                                      BY currencyRoundCondition(roundCondition), roundGroup
                                                                      WHERE inRoundConditionRoundGroup(roundCondition, roundGroup);
 
-roundConditionCurrencyRoundGroup (currency, roundGroup) = (defaultRoundConditionCurrency(currency) AND roundGroup IS roundGroup) OR roundConditionUniqueCurrencyRoundGroup(currency, roundGroup);
+TABLE currencyRoundGroup(currency, roundGroup);
+roundConditionCurrencyRoundGroup (currency, roundGroup) = (defaultRoundConditionCurrency(currency) AND roundGroup IS roundGroup) OR roundConditionUniqueCurrencyRoundGroup(currency, roundGroup) PERSISTENT;
 
 roundPriceCurrencyRoundGroup(price, currency, roundGroup) = roundPriceRoundCondition(price, roundConditionCurrencyRoundGroup(currency, roundGroup));
 roundPriceCurrency(price, currency) = roundPriceRoundCondition(price, defaultRoundConditionCurrency(currency));
@@ -158,7 +159,7 @@ loadDefaultPriceIntervals 'Загрузить стандартные округ�
 
 // --------------------------------------------------- Для SKU ------------------------------------ //
 
-roundGroupSku = ABSTRACT roundGroup (sku);
+roundGroupSku = ABSTRACT roundGroup (sku) PERSISTENT;
 TABLE roundGroupSku(roundGroup, sku);
 
-roundPriceCurrencySku 'Округление для товара' (price, currency, sku)= roundPriceCurrencyRoundGroup(price, currency, roundGroupSku(sku));
+roundPriceCurrencySku 'Округление для товара' (price, currency, sku) = roundPriceCurrencyRoundGroup(price, currency, roundGroupSku(sku));

@@ -22,10 +22,10 @@ PRIORITY Stock, LegalEntity, Store, RomanLogicsModule;
 
 inDiscountSkuGroupSku (discountSkuGroup, sku) += brandSupplierArticleSku(sku) == discountSkuGroup;
 roundGroupSku(sku) += brandSupplierArticleSku(sku);
-roundPriceCurrencyArticle 'Округление для артикула' (price, currency, article)= roundPriceCurrencyRoundGroup(price, currency, brandSupplierArticle(article));
+roundPriceCurrencyArticle 'Округление для артикула' (price, currency, article) = roundPriceCurrencyRoundGroup(price, currency, brandSupplierArticle(article)) PERSISTENT;
 // для фильтров
 
-inArticleSku(article, sku) = articleSku(sku)==article;
+inArticleSku(article, sku) = articleSku(sku) == article;
 
 inBrandSupplier (supplier, brandSupplier) = supplierBrandSupplier(brandSupplier) == supplier;
 inArticleBrand (brandSupplier, article) = brandSupplierArticle(article) == brandSupplier;
