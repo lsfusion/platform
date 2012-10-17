@@ -40,9 +40,7 @@ import platform.server.logics.linear.LP;
 import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
-import platform.server.logics.property.actions.CustomActionProperty;
 import platform.server.logics.property.actions.CustomReadValueActionProperty;
-import platform.server.logics.property.actions.SystemActionProperty;
 import platform.server.logics.property.actions.UserActionProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.session.PropertyChange;
@@ -849,7 +847,7 @@ public class VEDLogicsModule extends LogicsModule {
         brendArticle = addDProp("brendArticle", "Бренд товара (ИД)", brend, article);
         nameBrendArticle = addJProp(artExtraGroup, "Бренд товара", baseLM.name, brendArticle, 1);
 
-        countryArticle = addDProp("countryArticle", "Страна товара", baseLM.country, article);
+        countryArticle = addDProp("countryArticle", "Страна товара", VEDBL.getModule("Country").getClassByName("country"), article);
         nameCountryArticle = addJProp(baseGroup, "Страна товара", baseLM.name, countryArticle, 1);
 
         LCP articleLine = addDProp("articleLine", "Линия товара", line, article);
@@ -4314,7 +4312,7 @@ public class VEDLogicsModule extends LogicsModule {
             addImportField(fields, properties, priceOrderArticle, document, articleKey);
             addImportField(fields, properties, articleOrderQuantity, document, articleKey);
             addImportField(fields, properties, ndsOrderArticle, document, articleKey);
-            addImportObjectNameField(fields, properties, importKeys, articleKey, baseLM.nameToCountry, countryArticle, baseLM.country);
+            addImportObjectNameField(fields, properties, importKeys, articleKey, VEDBL.getModule("Country").getLCPByName("nameToCountry"), countryArticle, (ConcreteCustomClass) VEDBL.getModule("Country").getClassByName("country"));
             addImportObjectNameField(fields, properties, importKeys, articleKey, nameToUnitOfMeasure, unitOfMeasureArticle, unitOfMeasure);
 
             java.util.List<java.util.List<Object>> rows = new ArrayList<java.util.List<Object>>();
@@ -4433,7 +4431,7 @@ public class VEDLogicsModule extends LogicsModule {
             addImportField(fields, properties, articleKey, fullNameArticle);
             addImportObjectNameField(fields, properties, importKeys, articleKey, nameToUnitOfMeasure, unitOfMeasureArticle, unitOfMeasure);
             addImportObjectNameField(fields, properties, importKeys, articleKey, nameToBrend, brendArticle, brend);
-            addImportObjectNameField(fields, properties, importKeys, articleKey, baseLM.nameToCountry, countryArticle, baseLM.country);
+            addImportObjectNameField(fields, properties, importKeys, articleKey, VEDBL.getModule("Country").getLCPByName("nameToCountry"), countryArticle, (ConcreteCustomClass) VEDBL.getModule("Country").getClassByName("country"));
             addImportField(fields, properties, articleKey, gigienaArticle);
             addImportField(fields, properties, articleKey, spirtArticle);
             addImportObjectNameField(fields, properties, importKeys, articleKey, nameToGender, genderArticle, gender);

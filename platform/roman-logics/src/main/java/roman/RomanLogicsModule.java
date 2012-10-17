@@ -1303,9 +1303,6 @@ public class RomanLogicsModule extends LogicsModule {
     private LCP equalsDirectInvoiceFreight;
     private LCP grossWeightDirectInvoice;
     private LCP palletNumberDirectInvoice;
-    private LCP nameOriginCountry;
-    public LCP sidOrigin2Country;
-    private LCP sidOrigin3Country;
     private LCP sid3Country;
     public  LCP sidOrigin2ToCountry;
     private LCP nameCountrySku;
@@ -1635,6 +1632,8 @@ public class RomanLogicsModule extends LogicsModule {
 
     @Override
     public void initTables() {
+        ConcreteCustomClass country = getCountryClass();
+
         addTable("customCategory4", customCategory4);
         addTable("customCategory6", customCategory6);
         addTable("customCategory9", customCategory9);
@@ -1644,13 +1643,13 @@ public class RomanLogicsModule extends LogicsModule {
         addTable("customCategory", customCategory);
         addTable("customCategory10STypeDuty", customCategory10, typeDuty);
         addTable("customCategory10SubCategory", customCategory10, subCategory);
-        addTable("customCategory10SubCategoryCountry", customCategory10, subCategory, baseLM.country);
+        addTable("customCategory10SubCategoryCountry", customCategory10, subCategory, country);
         addTable("customCategoryOriginCustomsZone", customCategoryOrigin, customsZone);
         addTable("skuCustomsZone", sku, customsZone);
 
         addTable("colorSupplier", colorSupplier);
         addTable("sizeSupplier", sizeSupplier);
-        addTable("country", baseLM.country);
+        addTable("country", country);
         addTable("article", article);
         addTable("sku", sku);
         addTable("documentArticle", document, article);
@@ -1711,7 +1710,7 @@ public class RomanLogicsModule extends LogicsModule {
         addTable("categoryGenderCompositionTypeFabric", category, gender, COMPOSITION_CLASS, typeFabric);
         addTable("categoryGenderCompositionTypeFabricCustomsZone", category, gender, COMPOSITION_CLASS, typeFabric, customsZone);
         addTable("freightCategoryGenderCompositionTypeFabric", freight, category, gender, COMPOSITION_CLASS, typeFabric);
-        addTable("importerFreightArticleCompositionCountryCustomCategory10", importer, freight, article, COMPOSITION_CLASS, baseLM.country, customCategory10);
+        addTable("importerFreightArticleCompositionCountryCustomCategory10", importer, freight, article, COMPOSITION_CLASS, country, customCategory10);
         addTable("sizeSupplierGenderCategory", sizeSupplier, gender, category);
 
         addTable("pricat", pricat);
@@ -1741,6 +1740,8 @@ public class RomanLogicsModule extends LogicsModule {
 
     @Override
     public void initProperties() {
+        ConcreteCustomClass country = getCountryClass();
+
         idGroup.add(baseLM.objectValue);
         baseLM.delete.property.askConfirm = true;
 
@@ -1807,9 +1808,9 @@ public class RomanLogicsModule extends LogicsModule {
 //
 //        sidOrigin2Country = addDProp(baseGroup, "sidOrigin2Country", "Код 2 знака (ориг.)", StringClass.get(2), baseLM.country);
 //        sidOrigin3Country = addDProp(baseGroup, "sidOrigin3Country", "Код 3 знака (ориг.)", StringClass.get(3), baseLM.country);
-        sid3Country = addDProp(baseGroup, "sid3Country", "Код 3 знака", StringClass.get(3), baseLM.country);
+        sid3Country = addDProp(baseGroup, "sid3Country", "Код 3 знака", StringClass.get(3), country);
 
-        sidOrigin2ToCountry = addAGProp("sidOrigin2ToCountry", "Страна", baseLM.sidOrigin2Country);
+        sidOrigin2ToCountry = addAGProp("sidOrigin2ToCountry", "Страна", getSidOrigin2Country());
 
         dictionaryComposition = addDProp(idGroup, "dictionaryComposition", "Словарь для составов (ИД)", baseLM.dictionary);
         nameDictionaryComposition = addJProp(baseGroup, "nameDictionaryComposition", "Словарь для составов", baseLM.name, dictionaryComposition);
@@ -1908,7 +1909,7 @@ public class RomanLogicsModule extends LogicsModule {
         nameCustomsZoneCustomCategory10.property.preferredCharWidth = 30;
         nameCustomsZoneCustomCategory10.property.minimumCharWidth = 20;
 
-        customsZoneCountry = addDProp(idGroup, "customsZoneCountry", "Зона Страны (ИД)", customsZone, baseLM.country);
+        customsZoneCountry = addDProp(idGroup, "customsZoneCountry", "Зона Страны (ИД)", customsZone, country);
         customsZoneCountry.setAutoset(true);
         nameCustomsZoneCountry= addJProp(baseGroup, "nameCustomsZoneCountry", "Таможенная зона", baseLM.name, customsZoneCountry, 1);
 
@@ -1995,7 +1996,7 @@ public class RomanLogicsModule extends LogicsModule {
         countRelationCustomCategory10 = addSGProp("countRelationCustomCategory10", true, "Кол-во групп", addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), relationCustomCategory10SubCategory, 1, 2), 1);
 
         minPriceCustomCategory10SubCategory = addDProp(baseGroup, "minPriceCustomCategory10SubCategory", "Минимальная цена ($)", NumericClass.get(14, 2), customCategory10, subCategory);
-        minPriceCustomCategory10SubCategoryCountry = addDProp("minPriceCustomCategory10SubCategoryCountry", "Минимальная цена для страны ($)", NumericClass.get(14, 2), customCategory10, subCategory, baseLM.country);
+        minPriceCustomCategory10SubCategoryCountry = addDProp("minPriceCustomCategory10SubCategoryCountry", "Минимальная цена для страны ($)", NumericClass.get(14, 2), customCategory10, subCategory, country);
         dutyPercentCustomCategory10TypeDuty = addDProp("dutyPercentCustomCategory10TypeDuty", "в %", NumericClass.get(14, 2), customCategory10, typeDuty);
         dutySumCustomCategory10TypeDuty = addDProp("dutySumCustomCategory10TypeDuty", "в евро", NumericClass.get(14, 2), customCategory10, typeDuty);
 
@@ -2123,7 +2124,7 @@ public class RomanLogicsModule extends LogicsModule {
         supplierCountrySupplier = addDProp(idGroup, "supplierCountrySupplier", "Поставщик (ИД)", supplier, countrySupplier);
         nameSupplierCountrySupplier = addJProp(baseGroup, "nameSupplierCountrySupplier", "Поставщик", baseLM.name, supplierCountrySupplier, 1);
 
-        countryCountrySupplier = addDProp(idGroup, "countryCountrySupplier", "Страна (ИД)", baseLM.country, countrySupplier);
+        countryCountrySupplier = addDProp(idGroup, "countryCountrySupplier", "Страна (ИД)", country, countrySupplier);
         nameCountryCountrySupplier = addJProp(baseGroup, "nameCountryCountrySupplier", "Страна", baseLM.name, countryCountrySupplier, 1);
 
         countryNameSupplier = addAGProp(idGroup, "countryNameSupplier", "Страна поставщика", baseLM.name, supplierCountrySupplier);
@@ -2139,7 +2140,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         addConstraint(addJProp("Бренд по умолчанию для поставщика должен соответствовать брендам поставщика", baseLM.diff2, 1, addJProp(supplierBrandSupplier, brandSupplierSupplier, 1), 1), true);
 
-        countryBrandSupplier = addDProp(idGroup, "countryBrandSupplier", "Страна бренда (ИД)", baseLM.country, brandSupplier);
+        countryBrandSupplier = addDProp(idGroup, "countryBrandSupplier", "Страна бренда (ИД)", country, brandSupplier);
         nameCountryBrandSupplier = addJProp(baseGroup, "nameCountryBrandSupplier", "Страна бренда", baseLM.name, countryBrandSupplier, 1);
 
         customsSIDBrandSupplier = addDProp(baseGroup, "customsSIDBrandSupplier", "Таможенный код", StringClass.get(50), brandSupplier);
@@ -2551,22 +2552,24 @@ public class RomanLogicsModule extends LogicsModule {
         nameCountrySupplierOfOriginArticleSku.property.preferredCharWidth = 30;
         nameCountrySupplierOfOriginArticleSku.property.minimumCharWidth = 15;
 
+        LCP nameOriginCountry = BL.getModule("Country").getLCPByName("nameOriginCountry");
+
         countryOfOriginArticle = addJProp(idGroup, "countryOfOriginArticle", "Страна происхождения (ИД)", countryCountrySupplier, countrySupplierOfOriginArticle, 1);
-        nameCountryOfOriginArticle = addJProp(supplierAttributeGroup, "nameCountryOfOriginArticle", "Страна происхождения", baseLM.nameOriginCountry, countryOfOriginArticle, 1);
+        nameCountryOfOriginArticle = addJProp(supplierAttributeGroup, "nameCountryOfOriginArticle", "Страна происхождения", nameOriginCountry, countryOfOriginArticle, 1);
 
         countryOfOriginArticleSku = addJProp(idGroup, "countryOfOriginArticleSku", "Страна происхождения (ИД)", countryOfOriginArticle, articleSku, 1);
-        nameCountryOfOriginArticleSku = addJProp(supplierAttributeGroup, "nameCountryOfOriginArticleSku", "Страна происхождения", baseLM.nameOriginCountry, countryOfOriginArticleSku, 1);
+        nameCountryOfOriginArticleSku = addJProp(supplierAttributeGroup, "nameCountryOfOriginArticleSku", "Страна происхождения", nameOriginCountry, countryOfOriginArticleSku, 1);
 
-        countryOfOriginArticleColor = addDProp(idGroup, "countryOfOriginArticleColor", "Страна происхождения (ИД)", baseLM.country, article, colorSupplier);
+        countryOfOriginArticleColor = addDProp(idGroup, "countryOfOriginArticleColor", "Страна происхождения (ИД)", country, article, colorSupplier);
         countryOfOriginArticleColorSku = addJProp(idGroup, true, "countryOfOriginArticleColorSku", "Страна происхождения (ИД)", countryOfOriginArticleColor, articleSku, 1, colorSupplierItem, 1);
         nameCountryArticleColor = addJProp(baseGroup, "nameCountryArticleColor", "Страна происхождения", baseLM.name, countryOfOriginArticleColor, 1, 2);
         nameCountryArticleColor.property.preferredCharWidth = 50;
         nameCountryArticleColor.property.minimumCharWidth = 15;
 
-        countryOfOriginDataSku = addDProp(idGroup, "countryOfOriginDataSku", "Страна происхождения (ИД) (первичное)", baseLM.country, sku);
+        countryOfOriginDataSku = addDProp(idGroup, "countryOfOriginDataSku", "Страна происхождения (ИД) (первичное)", country, sku);
 
         countryOfOriginSku = addSUProp(idGroup, "countryOfOriginSku", true, "Страна происхождения (ИД)", Union.OVERRIDE, countryOfOriginArticleSku, countryOfOriginArticleColorSku);
-        nameCountryOfOriginSku = addJProp(intraAttributeGroup, "nameCountryOfOriginSku", "Страна происхождения", baseLM.nameOriginCountry, countryOfOriginSku, 1);
+        nameCountryOfOriginSku = addJProp(intraAttributeGroup, "nameCountryOfOriginSku", "Страна происхождения", nameOriginCountry, countryOfOriginSku, 1);
         nameCountrySku = addJProp(intraAttributeGroup, "nameCountrySku", "Страна происхождения", baseLM.name, countryOfOriginSku, 1);
         nameCountrySku.property.preferredCharWidth = 50;
         nameCountrySku.property.minimumCharWidth = 15;
@@ -3043,10 +3046,10 @@ public class RomanLogicsModule extends LogicsModule {
         netWeightSkuShipmentDetail = addJProp(intraAttributeGroup, true, "netWeightSkuShipmentDetail", "Вес нетто (ед.)", netWeightSku, skuShipmentDetail, 1);
 
         countryOfOriginArticleSkuShipmentDetail = addJProp(idGroup, "countryOfOriginArticleSkuShipmentDetail", "Страна происхождения (ориг.) (ИД)", countryOfOriginArticleSku, skuShipmentDetail, 1);
-        nameCountryOfOriginArticleSkuShipmentDetail = addJProp(supplierAttributeGroup, "nameCountryOfOriginArticleSkuShipmentDetail", "Страна происхождения", baseLM.nameOriginCountry, countryOfOriginArticleSkuShipmentDetail, 1);
+        nameCountryOfOriginArticleSkuShipmentDetail = addJProp(supplierAttributeGroup, "nameCountryOfOriginArticleSkuShipmentDetail", "Страна происхождения", nameOriginCountry, countryOfOriginArticleSkuShipmentDetail, 1);
 
         countryOfOriginSkuShipmentDetail = addJProp(idGroup, true, "countryOfOriginSkuShipmentDetail", "Страна происхождения (ИД)", countryOfOriginSku, skuShipmentDetail, 1);
-        nameCountryOfOriginSkuShipmentDetail = addJProp(intraAttributeGroup, "nameCountryOfOriginSkuShipmentDetail", "Страна происхождения", baseLM.nameOriginCountry, countryOfOriginSkuShipmentDetail, 1);
+        nameCountryOfOriginSkuShipmentDetail = addJProp(intraAttributeGroup, "nameCountryOfOriginSkuShipmentDetail", "Страна происхождения", nameOriginCountry, countryOfOriginSkuShipmentDetail, 1);
 
         mainCompositionOriginArticleSkuShipmentDetail = addJProp(supplierAttributeGroup, "mainCompositionOriginArticleSkuShipmentDetail", "Состав", mainCompositionOriginArticleSku, skuShipmentDetail, 1);
         mainCompositionOriginSkuShipmentDetail = addJProp(intraAttributeGroup, true, "mainCompositionOriginSkuShipmentDetail", "Состав", mainCompositionOriginSku, skuShipmentDetail, 1);
@@ -3413,13 +3416,13 @@ public class RomanLogicsModule extends LogicsModule {
         dateShipmentFreight = addDProp(baseGroup, "dateShipmentFreight", "Дата отгрузки", DateClass.instance, freight);
         dateArrivalFreight = addDProp(baseGroup, "dateArrivalFreight", "Дата поступления на склад", DateClass.instance, freight);
 
-        countryFreight = addDProp("countryFreight", "Страна назначения (ИД)", baseLM.country, freight);
+        countryFreight = addDProp("countryFreight", "Страна назначения (ИД)", country, freight);
         nameCountryFreight = addJProp("nameCountryFreight", "Страна назначения", baseLM.name, countryFreight, 1);
 
         languageFreight = addJProp("languageFreight", "Язык фрахта (ИД)", BL.Country.getLCPByName("languageCountry"), countryFreight, 1);
         nameLanguageFreight = addJProp("nameLanguageFreight", "Язык фрахта", baseLM.name, languageFreight, 1);
 
-        currencyCountryFreight = addJProp("currencyCountryFreight", "Валюта страны назначения (ИД)", baseLM.currencyCountry, countryFreight, 1);
+        currencyCountryFreight = addJProp("currencyCountryFreight", "Валюта страны назначения (ИД)", BL.getModule("Country").getLCPByName("currencyCountry"), countryFreight, 1);
         nameCurrencyCountryFreight = addJProp("nameCurrencyCountryFreight", "Валюта страны назначения", baseLM.name, languageFreight, 1);
 
         customsZoneFreight = addJProp("customsZoneFreight", "", customsZoneCountry, countryFreight, 1);
@@ -3621,12 +3624,12 @@ public class RomanLogicsModule extends LogicsModule {
         translationAdditionalCompositionLanguageFreightSku = addJoinAProp(actionGroup, "translationAdditionalCompositionLanguageFreightSku", "Перевести", addTAProp(additionalCompositionOriginFreightSku, additionalCompositionLanguageFreightSku), dictionaryFreight, 1, 1, 2);
         translationAdditionalCompositionLanguageFreightSku.property.panelLocation = new ShortcutPanelLocation(additionalCompositionLanguageFreightSku.property);
 
-        countryOfOriginFreightSku = addDProp(idGroup, "countryOfOriginFreightSku", "Страна (ИД)", baseLM.country, freight, sku);
+        countryOfOriginFreightSku = addDProp(idGroup, "countryOfOriginFreightSku", "Страна (ИД)", country, freight, sku);
         countryOfOriginFreightSku.setEventChangeNewSet(addJProp(baseLM.and1, countryOfOriginSku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
 
         addConstraint(addJProp("Для SKU должна быть задана страна", and(true, false), is(freightChanged), 1, countryOfOriginFreightSku, 1, 2, quantityFreightSku, 1, 2), false);
 
-        sidCountryOfOriginFreightSku = addJProp(baseGroup, "sidCountryOfOriginFreightSku", "Код страны", baseLM.sidCountry, countryOfOriginFreightSku, 1, 2);
+        sidCountryOfOriginFreightSku = addJProp(baseGroup, "sidCountryOfOriginFreightSku", "Код страны", BL.getModule("Country").getLCPByName("sidCountry"), countryOfOriginFreightSku, 1, 2);
         nameCountryOfOriginFreightSku = addJProp(baseGroup, "nameCountryOfOriginFreightSku", "Страна", baseLM.name, countryOfOriginFreightSku, 1, 2);
         nameCountryOfOriginFreightSku.property.preferredCharWidth = 50;
         nameCountryOfOriginFreightSku.property.minimumCharWidth = 15;
@@ -4260,6 +4263,13 @@ public class RomanLogicsModule extends LogicsModule {
         return null;
     }
 
+    public ConcreteCustomClass getCountryClass() {
+        return (ConcreteCustomClass) BL.getModule("Country").getClassByName("country");
+    }
+
+    public LCP getSidOrigin2Country() {
+        return BL.getModule("Country").getLCPByName("sidOrigin2Country");
+    }
 
     private class
             BarcodeFormEntity extends FormEntity<RomanBusinessLogics> {
@@ -6835,7 +6845,7 @@ public class RomanLogicsModule extends LogicsModule {
             gobjArticleCompositionCountryCategory = new GroupObjectEntity(4, "gobjArticleCompositionCountryCategory");
             objArticle = new ObjectEntity(5, "article", article, "Артикул");
             objComposition = new ObjectEntity(6, "composition", COMPOSITION_CLASS, "Состав");
-            objCountry = new ObjectEntity(7, "country", baseLM.country, "Страна");
+            objCountry = new ObjectEntity(7, "country", BL.getModule("Country").getClassByName("country"), "Страна");
             objCategory = new ObjectEntity(8, "category", customCategory10, "ТН ВЭД");
 
             gobjArticleCompositionCountryCategory.add(objArticle);
@@ -6857,9 +6867,9 @@ public class RomanLogicsModule extends LogicsModule {
                 addPropertyDraw(objComposition, baseLM.objectValue);
             }
 
-            addPropertyDraw(objCountry, baseLM.sidCountry);
+            addPropertyDraw(objCountry, BL.getModule("Country").getLCPByName("sidCountry"));
             if (!translate)
-                addPropertyDraw(objCountry, baseLM.nameOriginCountry);
+                addPropertyDraw(objCountry, BL.getModule("Country").getLCPByName("nameOriginCountry"));
 
             if (translate)
                 addPropertyDraw(objCountry, baseLM.name);
@@ -7024,7 +7034,7 @@ public class RomanLogicsModule extends LogicsModule {
             gobjArticleCompositionCountryCategory = new GroupObjectEntity(4, "gobjArticleCompositionCountryCategory");
             objArticle = new ObjectEntity(5, "article", article, "Артикул");
             objComposition = new ObjectEntity(6, "composition", COMPOSITION_CLASS, "Состав");
-            objCountry = new ObjectEntity(7, "country", baseLM.country, "Страна");
+            objCountry = new ObjectEntity(7, "country", BL.getModule("Country").getClassByName("country"), "Страна");
             objCategory = new ObjectEntity(8, "category", customCategory10, "ТН ВЭД");
 
             gobjArticleCompositionCountryCategory.add(objArticle);
@@ -7048,9 +7058,9 @@ public class RomanLogicsModule extends LogicsModule {
 
             addPropertyDraw(objArticle, coefficientArticle);
 
-            addPropertyDraw(objCountry, baseLM.sidCountry);
+            addPropertyDraw(objCountry, BL.getModule("Country").getLPByName("sidCountry"));
             if (!translate)
-                addPropertyDraw(objCountry, baseLM.nameOriginCountry);
+                addPropertyDraw(objCountry, BL.getModule("Country").getLPByName("nameOriginCountry"));
 
             if (translate)
                 addPropertyDraw(objCountry, baseLM.name);
@@ -7122,7 +7132,7 @@ public class RomanLogicsModule extends LogicsModule {
             gobjArticleCompositionCountryCategory = new GroupObjectEntity(4, "gobjArticleCompositionCountryCategory");
             objArticle = new ObjectEntity(5, "article", article, "Артикул");
             objComposition = new ObjectEntity(6, "composition", COMPOSITION_CLASS, "Состав");
-            objCountry = new ObjectEntity(7, "country", baseLM.country, "Страна");
+            objCountry = new ObjectEntity(7, "country", BL.getModule("Country").getClassByName("country"), "Страна");
             objCategory = new ObjectEntity(8, "category", customCategory10, "ТН ВЭД");
 
             gobjArticleCompositionCountryCategory.add(objArticle);
@@ -7208,7 +7218,7 @@ public class RomanLogicsModule extends LogicsModule {
             gobjArticleCompositionCountryCategory = new GroupObjectEntity(4, "gobjArticleCompositionCountryCategory");
             objArticle = new ObjectEntity(5, "article", article, "Артикул");
             objComposition = new ObjectEntity(6, "composition", COMPOSITION_CLASS, "Состав");
-            objCountry = new ObjectEntity(7, "country", baseLM.country, "Страна");
+            objCountry = new ObjectEntity(7, "country", BL.getModule("Country").getClassByName("country"), "Страна");
             objCategory = new ObjectEntity(8, "category", customCategory10, "ТН ВЭД");
 
             gobjArticleCompositionCountryCategory.add(objArticle);
@@ -7230,9 +7240,9 @@ public class RomanLogicsModule extends LogicsModule {
                 addPropertyDraw(objComposition, baseLM.objectValue);
             }
 
-            addPropertyDraw(objCountry, baseLM.sidCountry);
+            addPropertyDraw(objCountry, BL.getModule("Country").getLCPByName("sidCountry"));
             if (!translate)
-                addPropertyDraw(objCountry, baseLM.nameOriginCountry);
+                addPropertyDraw(objCountry, BL.getModule("Country").getLCPByName("nameOriginCountry"));
 
             if (translate)
                 addPropertyDraw(objCountry, baseLM.name);

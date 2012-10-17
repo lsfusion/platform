@@ -7,7 +7,7 @@
 
 MODULE Features;
 
-REQUIRE System, I18n, Utils;
+REQUIRE System, I18n, Utils, Country;
 
 /////////// GROUP STATEMENT ////////////
 

@@ -74,7 +74,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public ConcreteCustomClass session;
     public ConcreteCustomClass userRole;
     public ConcreteCustomClass multiLanguageNamed;
-    public ConcreteCustomClass country;
     public ConcreteCustomClass navigatorElement;
     public ConcreteCustomClass form;
     public ConcreteCustomClass navigatorAction;
@@ -475,28 +474,13 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP emailBlindCarbonCopy;
     public LCP fromAddress;
     public LCP disableEmail;
-    public LCP defaultCountry;
-    public LCP nameDefaultCountry;
 
     public LCP defaultBackgroundColor;
     public LCP defaultOverrideBackgroundColor;
     public LCP defaultForegroundColor;
     public LCP defaultOverrideForegroundColor;
 
-    public LCP nameOriginCountry;
-    public LCP sidOrigin2Country;
-    public LCP sidOrigin3Country;
-
-    public LCP currencyCountry, nameCurrencyCountry;
-
-    public LCP sidCountry;
-    public LCP residentCountry;
-    protected LCP generateDatesCountry;
-    public LCP countrySID;
-    public LCP nameToCountry;
     protected LCP nameToObject;
-    protected LCP isDayOffCountryDate;
-    LCP workingDay, isWorkingDay, workingDaysQuantity, equalsWorkingDaysQuantity;
 
     protected LCP termDictionary;
     protected LCP translationDictionary;
@@ -615,8 +599,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         multiLanguageNamed = addConcreteClass("multiLanguageNamed", "Мультиязычный объект", baseClass);
 
-        country = addConcreteClass("country", getString("logics.country"), baseClass.named, multiLanguageNamed);
-
         navigatorElement = addConcreteClass("navigatorElement", getString("logics.navigator.element"), baseClass);
         form = addConcreteClass("form", getString("logics.forms.form"), navigatorElement);
         navigatorAction = addConcreteClass("navigatorAction", getString("logics.forms.action"), navigatorElement);
@@ -686,9 +668,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         addTable("userRole", userRole);
         addTable("policy", policy);
         addTable("loginSID", StringClass.get(30), StringClass.get(30));
-        addTable("countryDate", country, DateClass.instance);
         addTable("objectObjectDate", baseClass, baseClass, DateClass.instance);
-        addTable("country", country);
         addTable("navigatorElement", navigatorElement);
         addTable("abstractGroup", abstractGroup);
         addTable("property", property);
@@ -952,32 +932,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
                 addJProp(istring2SP, userFirstName, 1, userLastName, 1));
         ((CalcProperty)name.property).aggProp = true;
 
-        nameOriginCountry = addDProp(baseGroup, "nameOriginCountry", getString("logics.country.name.origin.country"), InsensitiveStringClass.get(50), country);
-
-        sidCountry = addDProp(baseGroup, "sidCountry", getString("logics.country.key"), IntegerClass.instance, country);
-        countrySID = addAGProp("countrySID", getString("logics.country"), sidCountry);
-
-        sidOrigin2Country = addDProp(baseGroup, "sidOrigin2Country", getString("logics.country.sid.origin.2.country"), StringClass.get(2), country);
-        sidOrigin2Country.setMinimumCharWidth(15);
-        sidOrigin3Country = addDProp(baseGroup, "sidOrigin3Country", getString("logics.country.sid.origin.3.country"), StringClass.get(3), country);
-        sidOrigin3Country.setMinimumCharWidth(15);
-
-        currencyCountry = addDProp(privateGroup, "currencyCountry", getString("logics.country.currency"), currency, country);
-        nameCurrencyCountry = addJProp(baseGroup, "nameCurrencyCountry", getString("logics.country.currency"), baseLM.name, currencyCountry, 1);
-        nameCurrencyCountry.setPreferredCharWidth(10);
-
-        generateDatesCountry = addDProp(privateGroup, "generateDatesCountry", getString("logics.day.generate.days.off"), LogicalClass.instance, country);
-
-        residentCountry = addDProp(baseGroup, "residentCountry", getString("logics.country.resident.country"), LogicalClass.instance, country);
-        residentCountry.setMinimumCharWidth(15);
-
-        isDayOffCountryDate = addDProp(baseGroup, "isDayOffCD", getString("logics.day.off"), LogicalClass.instance, country, DateClass.instance);
-
-        workingDay = addJProp(baseGroup, "workingDay", getString("logics.day.working"), andNot1, addCProp(IntegerClass.instance, 1, country, DateClass.instance), 1, 2, isDayOffCountryDate, 1, 2);
-        isWorkingDay = addJProp(baseGroup, "isWorkingDay", getString("logics.day.working"), and(false, false), workingDay, 1, 3, groeq2, 3, 2, is(DateClass.instance), 3);
-        workingDaysQuantity = addOProp(baseGroup, "workingDaysQuantity", getString("logics.day.working.days"), PartitionType.SUM, isWorkingDay, true, true, 1, 2, 1, 3);
-        equalsWorkingDaysQuantity = addJProp(baseGroup, "equalsWorkingDaysQuantity", getString("logics.day.equals.quantity.of.working.days"), equals2, object(IntegerClass.instance), 1, workingDaysQuantity, 2, 3, 4);
-
         connectionComputer = addDProp("connectionComputer", getString("logics.computer"), computer, connection);
         addJProp(baseGroup, getString("logics.computer"), hostname, connectionComputer, 1);
         connectionUser = addDProp("connectionUser", getString("logics.user"), customUser, connection);
@@ -1006,8 +960,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         inUserMainRole = addSUProp("inUserMainRole", getString("logics.user.role.in"), Union.OVERRIDE,
                          addJProp(equals2, customUserMainRole, 1, 2), inUserRole);
-
-        nameToCountry = addAGProp("nameToCountry", getString("logics.country"), country, name);
 
         nameToPolicy = addAGProp("nameToPolicy", getString("logics.policy"), policy, name);
         policyDescription = addDProp(baseGroup, "policyDescription", getString("logics.policy.description"), StringClass.get(100), policy);
@@ -1238,10 +1190,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         addEARecipients(emailUserPassUser, email, 1);
 
         disableEmail = addDProp(emailGroup, "disableEmail", getString("logics.email.disable.email.sending"), LogicalClass.instance);
-
-        defaultCountry = addDProp("defaultCountry", getString("logics.country.default.country"), country);
-        nameDefaultCountry = addJProp("nameDefaultCountry", getString("logics.country.default.country"), baseLM.name, defaultCountry);
-        nameDefaultCountry.setPreferredCharWidth(30);
 
         defaultBackgroundColor = addDProp("defaultBackgroundColor", getString("logics.default.background.color"), ColorClass.instance);
         defaultOverrideBackgroundColor = addSUProp("defaultOverrideBackgroundColor", true, getString("logics.default.background.color"), Union.OVERRIDE, yellowColor, defaultBackgroundColor);
@@ -1572,7 +1520,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         addFormEntity(new MigrationDataFormEntity(applicationElement, "migrationData"));
 
         catalogElement = addNavigatorElement(adminElement, "catalogElement", getString("logics.administration.catalogs"));
-        addFormEntity(new DaysOffFormEntity(catalogElement, "daysOffForm"));
 
         accessElement = addNavigatorElement(adminElement, "accessElement", getString("logics.administration.access"));
 
@@ -2423,36 +2370,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             addPropertyDraw(new LP[]{webHost, defaultBackgroundColor,
                     defaultForegroundColor, restartServerAction, cancelRestartServerAction, checkAggregationsAction, recalculateAction,
                     recalculateFollowsAction, packAction, runGarbageCollector});
-        }
-    }
-
-    private class DaysOffFormEntity extends FormEntity {
-        ObjectEntity objDays;
-
-        public DaysOffFormEntity(NavigatorElement parent, String sID) {
-            super(parent, sID, getString("logics.days.off"));
-
-            ObjectEntity objCountry = addSingleGroupObject(country, getString("logics.country"));
-            objCountry.groupTo.initClassView = ClassViewType.PANEL;
-
-            objDays = addSingleGroupObject(DateClass.instance, getString("logics.day"));
-
-            ObjectEntity objNewDate = addSingleGroupObject(DateClass.instance, getString("logics.date"));
-            objNewDate.groupTo.setSingleClassView(ClassViewType.PANEL);
-
-            addPropertyDraw(objCountry, baseGroup);
-            addPropertyDraw(objDays, baseLM.objectValue);
-            addPropertyDraw(isDayOffCountryDate, objCountry, objDays);
-            addPropertyDraw(objNewDate, baseLM.objectValue);
-            addPropertyDraw(isDayOffCountryDate, objCountry, objNewDate);
-
-            addFixedFilter(new NotNullFilterEntity(addPropertyObject(isDayOffCountryDate, objCountry, objDays)));
-        }
-
-        public FormView createDefaultRichDesign() {
-            FormView design = super.createDefaultRichDesign();
-            design.getGroupObject(objDays.groupTo).grid.constraints.fillVertical = 3;
-            return design;
         }
     }
 

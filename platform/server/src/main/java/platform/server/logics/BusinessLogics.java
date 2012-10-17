@@ -1512,7 +1512,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     private void fillDaysOff() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
         DataSession session = createSession();
 
-        LCP<PropertyInterface> generateOrDefaultCountry = LM.addSUProp(Union.OVERRIDE, LM.generateDatesCountry, LM.addJProp(LM.equals2, LM.defaultCountry, 1));
+        LCP<PropertyInterface> generateOrDefaultCountry = LM.addSUProp(Union.OVERRIDE, getModule("Country").getLCPByName("generateDatesCountry"), LM.addJProp(LM.equals2, getModule("Country").getLCPByName("defaultCountry"), 1));
 
         OrderedMap<PropertyInterface, KeyExpr> keys = generateOrDefaultCountry.getMapKeys();
 
@@ -1534,8 +1534,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         Calendar current = Calendar.getInstance();
         int currentYear = current.get(Calendar.YEAR);
         //если проставлен выходной 1 января через 2 года, пропускаем генерацию
-        DataObject countryObject = new DataObject(countryId, LM.country);
-        if (LM.isDayOffCountryDate.read(session, countryObject, new DataObject(new java.sql.Date(new GregorianCalendar(currentYear + 2, 0, 1).getTimeInMillis()), DateClass.instance)) != null) {
+        DataObject countryObject = new DataObject(countryId, (ConcreteClass) getModule("Country").getClassByName("country"));
+        if (getModule("Country").getLCPByName("isDayOffCountryDate").read(session, countryObject, new DataObject(new java.sql.Date(new GregorianCalendar(currentYear + 2, 0, 1).getTimeInMillis()), DateClass.instance)) != null) {
             return;
         }
 
@@ -1562,8 +1562,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     private void addDayOff(DataSession session, int countryId, long timeInMillis) throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
-        DataObject countryObject = new DataObject(countryId, LM.country);
-        LM.isDayOffCountryDate.change(true, session, countryObject, new DataObject(new java.sql.Date(timeInMillis), DateClass.instance));
+        DataObject countryObject = new DataObject(countryId, (ConcreteClass) getModule("Country").getClassByName("country"));
+        getModule("Country").getLCPByName("isDayOffCountryDate").change(true, session, countryObject, new DataObject(new java.sql.Date(timeInMillis), DateClass.instance));
     }
 
     public void mergeNavigatorTree(DataInputStream inStream) throws IOException {

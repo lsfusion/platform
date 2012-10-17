@@ -125,7 +125,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             "/scripts/ByLegalEntity.lsf"
         );
         RomanLM = addModule(new RomanLogicsModule(LM, this));
-        RomanLM.setRequiredModules(Arrays.asList("System", "Utils", "Hierarchy", "Historizable", "Numerator", "Stock", "Document"));
+        RomanLM.setRequiredModules(Arrays.asList("System", "Utils", "Hierarchy", "Historizable", "Numerator", "Stock", "Document", "Country"));
 
         RomanRB = addModuleFromResource("/scripts/RomanRB.lsf");
 

@@ -5,7 +5,6 @@ import org.xBaseJ.xBaseJException;
 import platform.base.BaseUtils;
 import platform.base.IOUtils;
 import platform.server.form.instance.FormInstance;
-import platform.server.form.instance.remote.RemoteForm;
 import platform.server.integration.*;
 import platform.server.logics.ObjectValue;
 
@@ -21,7 +20,7 @@ public class TNVEDMinPricesImporter extends TNVEDImporter {
     private ImportField category10IdField = new ImportField(LM.sidCustomCategory10);
     private ImportField subcategoryNameField = new ImportField(LM.nameSubCategory);
     private ImportField relationField = new ImportField(LM.relationCustomCategory10SubCategory);
-    private ImportField countryIdField = new ImportField(LM.baseLM.sidOrigin2Country);
+    private ImportField countryIdField = new ImportField(LM.getSidOrigin2Country());
     private ImportField countryNameField = new ImportField(LM.baseLM.name);
     private ImportField minPriceField = new ImportField(LM.minPriceCustomCategory10SubCategory);
 
@@ -38,7 +37,7 @@ public class TNVEDMinPricesImporter extends TNVEDImporter {
 
         ImportKey<?> category10Key = new ImportKey(LM.customCategory10, LM.sidToCustomCategory10.getMapping(category10IdField));
         ImportKey<?> subcategoryKey = new ImportKey(LM.subCategory, LM.nameToSubCategory.getMapping(subcategoryNameField));
-        ImportKey<?> countryKey = new ImportKey(LM.baseLM.country, LM.sidOrigin2ToCountry.getMapping(countryIdField));
+        ImportKey<?> countryKey = new ImportKey(LM.getCountryClass(), LM.sidOrigin2ToCountry.getMapping(countryIdField));
 
         properties.add(new ImportProperty(subcategoryNameField, LM.nameSubCategory.getMapping(subcategoryKey)));
         properties.add(new ImportProperty(relationField, LM.relationCustomCategory10SubCategory.getMapping(category10Key, subcategoryKey)));
@@ -47,7 +46,7 @@ public class TNVEDMinPricesImporter extends TNVEDImporter {
         new IntegrationService(session, table, Arrays.asList(keysArray), properties).synchronize();
 
         propertiesCountry.add(new ImportProperty(subcategoryNameField, LM.nameSubCategory.getMapping(subcategoryKey)));
-        propertiesCountry.add(new ImportProperty(countryIdField, LM.baseLM.sidOrigin2Country.getMapping(countryKey)));
+        propertiesCountry.add(new ImportProperty(countryIdField, LM.getSidOrigin2Country().getMapping(countryKey)));
         propertiesCountry.add(new ImportProperty(countryNameField, LM.baseLM.name.getMapping(countryKey)));
         propertiesCountry.add(new ImportProperty(relationField, LM.relationCustomCategory10SubCategory.getMapping(category10Key, subcategoryKey)));
         propertiesCountry.add(new ImportProperty(minPriceField, LM.minPriceCustomCategory10SubCategoryCountry.getMapping(category10Key, subcategoryKey, countryKey)));
