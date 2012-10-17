@@ -250,6 +250,23 @@ META defineDocumentSupplier (object, detail)
     @defineDocumentHeaderSupplier(object);
     @defineDocumentDetailSupplier(object, detail);
 END
+META defineDocumentDetailDataSupplier (object, detail)
+    dataSupplier###detail (detail) = DATA supplier (detail);
+    supplier###detail (idetail) = UNION OVERRIDE supplier###object(object###detail(idetail)), dataSupplier###detail(idetail) PERSISTENT;
+    nameSupplier###detail 'Поставщик' (idetail) = name(supplier###detail(idetail));
+END
+META defineDocumentDataSupplier (object, detail)
+    @defineDocumentHeaderSupplier(object);
+    @defineDocumentDetailDataSupplier(object, detail);
+END
+META defineDocumentDataSupplier (object)
+    @defineDocumentDataSupplier(object, object##Detail);
+END
+META defineDocumentDetailSupplier(detail)
+    supplier###detail (detail) = DATA supplier (detail);
+    nameSupplier###detail 'Поставщик' (detail) = name(supplier###detail (detail));
+END
+
 META defineDocumentAbstractSupplier (object, detail)
     @defineDocumentAbstractHeaderSupplier(object);
     @defineDocumentDetailSupplier(object, detail);

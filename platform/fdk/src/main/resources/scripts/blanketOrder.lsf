@@ -1,0 +1,204 @@
+MODULE BlanketOrder;
+
+REQUIRE Order
+;
+//----------------------------------------------- Множественнвй Заказ ---------------------------------------------------//
+
+META defineBlanketOrder(sign, contact)
+
+    CLASS blanketOrder 'Множественный заказ'###sign : historyObject, numeratedDocument;
+    CLASS blanketOrderDetail 'Строка множественного заказа'###sign : named;
+
+    CLASS blanketOrderPosted 'Проведенный множественный заказ'###sign : blanketOrder, postedObject;
+    CLASS blanketOrderClosed 'Закрытый множественный заказ'###sign : blanketOrderPosted;
+
+
+    @defineDocument(blanketOrder);
+    @defineDocumentHeaderStock(blanketOrder, stock, 'Склад',);
+    @defineDocumentDetailDataStock (blanketOrder, stock, stock, 'Склад');
+
+    @defineDocumentPosted(blanketOrder);
+    @defineDocumentClosed (blanketOrder);
+
+    @defineDocumentTimeShipment (blanketOrder);
+
+    @defineDocumentDescription(blanketOrder, 'Множественный заказ'###sign);
+
+    @defineDocumentCurrency (blanketOrder);
+    @deriveDocumentCurrency(blanketOrder, stock);
+
+    @defineDocumentDetail###contact(blanketOrderDetail);
+//    @defineDocumentDataPriceListType(blanketOrder);
+    @defineDocumentDoubleObjPriceListType(blanketOrder, contact);
+
+    @defineDocumentDetailSku(blanketOrder, sku);
+    @defineDocumentDetailQuantity(blanketOrder);
+
+    @defineDocumentDetailPrice(blanketOrder);
+    @deriveDocumentDetailPricePriceListType(blanketOrder);
+
+    @defineDocumentDetailDataSum (blanketOrder);
+    @deriveDocumentDetailSum(blanketOrder);
+
+    @defineDocumentHeaderQuantityContractor(blanketOrder, contact);
+    @defineDocumentHeaderQuantity(blanketOrder);
+
+    @defineDocumentHeaderSkuQuantityContractor (blanketOrder, sku, contact);
+    @defineDocumentHeaderSkuQuantity(blanketOrder, sku);
+
+    @defineDocumentHeaderSumContractor (blanketOrder, contact);
+    @defineDocumentHeaderSum (blanketOrder);
+    @defineDocumentHeaderCountContractor (blanketOrder, contact);
+
+
+
+    countBlanketOrderDetailStockBlanketOrder 'Кол-во строк по складу '(stock, blanketOrder) = GROUP SUM 1 BY stockBlanketOrderDetail(blanketOrderDetail), blanketOrderBlanketOrderDetail(blanketOrderDetail);
+    inBlanketOrder###contact 'В заказе' (blanketOrder, contact) = DATA BOOLEAN (blanketOrder, contact);
+
+
+
+    CONSTRAINT contact##BlanketOrderDetail(blanketOrderDetail) AND NOT inBlanketOrder###contact(blanketOrderBlanketOrderDetail(blanketOrderDetail), contact##BlanketOrderDetail(blanketOrderDetail))
+        CHECKED BY contact##BlanketOrderDetail
+            MESSAGE 'Для строки множественного заказа выбран контрагент не включенный в заказ';
+
+
+// --------------------------- Формы Заказа ---------------------------------
+
+    FORM blanketOrder 'Множественный заказ'###sign
+        OBJECTS o = blanketOrder FIXED PANEL
+        PROPERTIES (o) objectClassName, nameStockBlanketOrder, nameNumeratorObject, numberObject, seriesObject, dateBlanketOrder, timeBlanketOrder,
+                       nameCurrencyBlanketOrder, noteBlanketOrder,
+                       countBlanketOrderDetailBlanketOrder, quantityBlanketOrderDetailBlanketOrder, sumBlanketOrderDetailBlanketOrder, shipmentDateBlanketOrder,
+                       shipmentTimeBlanketOrder
+
+        OBJECTS d = blanketOrderDetail
+        PROPERTIES (d) indexBlanketOrderDetail, idBarcodeSkuBlanketOrderDetail, nameSkuBlanketOrderDetail, shortNameUOMSkuBlanketOrderDetail,
+                       quantityBlanketOrderDetail, namePriceListTypeBlanketOrderDetail, priceBlanketOrderDetail, sumBlanketOrderDetail, nameStockBlanketOrderDetail, name###contact##BlanketOrderDetail,
+                       shipmentDateBlanketOrderDetail,
+                       shipmentTimeBlanketOrderDetail, ADDOBJ, delete
+        OBJECTS c = contact
+        PROPERTIES     name(c) READONLY, inBlanketOrder###contact(o,c), namePriceListTypeBlanketOrder###contact(o,c)
+        PROPERTIES(o,c) READONLY countBlanketOrderDetailBlanketOrder###contact, quantityBlanketOrderDetailBlanketOrder###contact, sumBlanketOrderDetailBlanketOrder###contact
+
+        PROPERTIES(o) TODRAW d deleteBlanketOrderDetailBlanketOrder
+
+        FILTERS blanketOrderBlanketOrderDetail(d) == o
+        FILTERGROUP filtr1
+            FILTER 'В заказе' 'F11' inBlanketOrder###contact(o,c)
+
+
+        EVENTS
+            ON OK EXEC prePostBlanketOrder(o)
+
+        EDIT blanketOrder OBJECT o
+    ;
+
+    DESIGN blanketOrder FROM DEFAULT{
+
+        main {
+            preferredSize = (1024, 768);
+            NEW specification.box BEFORE functions.box{
+                type = TABBED;
+                ADD c.box {title = 'Контрагент';}
+                ADD d.box {title = 'Спецификация';}
+
+            }
+
+            NEW header.box BEFORE specification.box {
+                childConstraints = TO THE RIGHT;
+
+                NEW headerRow1 {
+                    childConstraints = TO THE BOTTOM;
+
+                    ADD o.documentHeaderGroup {
+                        childConstraints = TO THE RIGHT;
+                        ADD PROPERTY(objectClassName) { preferredCharWidth = 10; }
+                        ADD PROPERTY(nameStockBlanketOrder);
+                        ADD PROPERTY(nameNumeratorObject);
+                        ADD PROPERTY(numberObject);
+                        ADD PROPERTY(seriesObject);
+                        ADD PROPERTY(dateBlanketOrder);
+                        ADD PROPERTY(timeBlanketOrder);
+                    }
+                    ADD o.documentShipmentGroup {
+                        childConstraints = TO THE RIGHT;
+                    }
+                    ADD o.documentPrmGroup {
+                        childConstraints = TO THE RIGHT;
+                    }
+                }
+                ADD o.documentSumGroup {
+                    childConstraints = TO THE BOTTOM;
+                }
+            }
+
+
+            PROPERTY(formOkAction) {
+                caption = 'Провести';
+            }
+        }
+    }
+
+//-- SKU
+    @defineDocumentSkuStockContractor(blanketOrder, contact);
+    @extendDocumentFormSkuStockContractor(blanketOrder, blanketOrder, o, contact);
+
+
+    FORM blanketOrders 'Множественные заказы'###sign
+        OBJECTS o = blanketOrder
+        PROPERTIES (o) READONLY isPostedBlanketOrder FORCE GRID, objectClassName, numberObject, seriesObject, dateBlanketOrder, timeBlanketOrder,
+                                nameStockBlanketOrder, nameCurrencyBlanketOrder, noteBlanketOrder,
+                                countBlanketOrderDetailBlanketOrder, quantityBlanketOrderDetailBlanketOrder, sumBlanketOrderDetailBlanketOrder,
+                                shipmentDateBlanketOrder, shipmentTimeBlanketOrder
+
+        PROPERTIES (o) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
+
+        PROPERTIES (o) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
+        PROPERTIES (o) closeBlanketOrder SHOWIF isOpendBlanketOrder(o)
+
+
+        OBJECTS d=blanketOrderDetail
+        PROPERTIES (d) READONLY indexBlanketOrderDetail, idBarcodeSkuBlanketOrderDetail, nameSkuBlanketOrderDetail, shortNameUOMSkuBlanketOrderDetail,
+                       quantityBlanketOrderDetail, namePriceListTypeBlanketOrderDetail, priceBlanketOrderDetail, sumBlanketOrderDetail, nameStockBlanketOrderDetail, name###contact##BlanketOrderDetail,
+                       shipmentDateBlanketOrderDetail, shipmentTimeBlanketOrderDetail
+
+
+        FILTERS blanketOrderBlanketOrderDetail(d) == o
+        DIALOG blanketOrder OBJECT o
+    ;
+
+    DESIGN blanketOrders FROM DEFAULT {
+        PROPERTY (delete(o)) {
+            askConfirm = TRUE;
+        }
+
+        NEW documentContainer BEFORE functions.box {
+            type = SPLITV;
+            childConstraints = TO THE BOTTOM;
+
+            ADD o.box;
+
+            NEW documentDetail {
+                type = TABBED;
+
+                ADD d.box {
+                    title = 'Спецификация';
+                }
+                NEW documentHistory {
+                    title = 'История';
+
+                    ADD o.historyGroup;
+                    ADD o.postedGroup;
+                }
+                NEW printTab {
+                    title = 'Печатные формы';
+                    NEW printContainer {
+                        title = 'Печать';
+                        childConstraints = TO THE BOTTOM;
+                        fillVertical = 1.0;
+                    }
+                }
+            }
+        }
+    }
+END

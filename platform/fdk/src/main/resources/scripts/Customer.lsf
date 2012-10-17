@@ -154,6 +154,23 @@ META defineDocumentCustomer (object, detail)
     @defineDocumentHeaderCustomer(object);
     @defineDocumentDetailCustomer(object, detail);
 END
+META defineDocumentDetailDataCustomer (object, detail)
+    dataCustomer###detail (detail) = DATA customer (detail);
+    customer###detail (idetail) = UNION OVERRIDE customer###object(object###detail(idetail)), dataCustomer###detail(idetail) PERSISTENT;
+    nameCustomer###detail 'Покупатель' (idetail) = name(customer###detail(idetail));
+END
+META defineDocumentDataCustomer (object, detail)
+    @defineDocumentHeaderCustomer(object);
+    @defineDocumentDetailDataCustomer(object, detail);
+END
+META defineDocumentDataCustomer (object)
+    @defineDocumentDataCustomer(object, object##Detail);
+END
+META defineDocumentDetailCustomer(detail)
+    customer###detail (detail) = DATA customer (detail);
+    nameCustomer###detail 'Покупатель' (detail) = name(customer###detail (detail));
+END
+
 META defineDocumentAbstractCustomer (object, detail)
     @defineDocumentAbstractHeaderCustomer(object);
     @defineDocumentDetailCustomer(object, detail);

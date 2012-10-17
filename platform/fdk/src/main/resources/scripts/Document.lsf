@@ -101,6 +101,20 @@ META defineDocumentHeaderCount (object)
     @defineDocumentHeaderCount(object, object##Detail);
 END
 
+// Header для contact
+META defineDocumentHeaderCountContractor (object, detail, caption, contact)
+    count###detail###object###contact 'Количество строк в документе'###caption (iobject, contact) =
+        GROUP SUM 1 IF object###detail(idetail) == iobject BY iobject, contact###detail(idetail) PERSISTENT IN documentSumGroup;
+END
+
+META defineDocumentHeaderCountContractor (object, detail, contact)
+    @defineDocumentHeaderCountContractor(object, detail, , contact);
+END
+
+META defineDocumentHeaderCountContractor (object, contact)
+    @defineDocumentHeaderCountContractor(object, object##Detail, contact);
+END
+
 // ----- Time ----- //
 
 META defineDocumentHeaderTimePrefix (object, prefix, caption)
@@ -242,6 +256,15 @@ END
 META defineDocumentInterfaceTimeShipment (object)
     @defineDocumentInterfaceHeaderTimeShipment(object);
     @defineDocumentInterfaceDetailDataTimeShipment(object);
+END
+
+META defineDocumentTimeShipment (object, detail)
+    @defineDocumentHeaderTimeShipment(object);
+    @defineDocumentDetailDataTimeShipment (object, detail);
+END
+
+META defineDocumentTimeShipment (object)
+    @defineDocumentTimeShipment (object, object##Detail);
 END
 
 
@@ -559,16 +582,16 @@ END
 META defineDocumentDetailPackWeightSku (object)
     @defineDocumentDetailPackWeightSku (object, sku);
 END
-//----------- Изменение кол-ва для строки при изменении кол-ва для товара---------------//
+//----------- Изменение кол-ва для строки при изменении кол-ва для товара (несколько складов)---------------//
 META defineDocumentSkuStockCustom(object, detail, skuProp, stockProp)
     detail###Sku###object###Stock (sku, object, stock) =  GROUP MAX detail
         BY skuProp###detail(detail), object###detail(detail), stockProp###detail(detail);
-    detail###Sku###object (sku, object) = detail###Sku###object###Stock(sku, object, stockProp###object(object));
-    
+
     quantitySku###object###Stock 'Кол-во товара в документе' (sku, object, stock) = GROUP SUM quantity###detail(detail)
         BY skuProp###detail(detail), object###detail(detail), stockProp###detail(detail);
     
-    priceSkuStock###object 'Цена учетная' (sku, stock, object) = priceSkuStockDateTime(sku, stock, dateTime###object(object));
+    priceSkuStock###object 'Цена' (sku, stock, object) = pricePriceListTypeSkuStockDateTime(priceListType###object(object), sku, stock, dateTime###object(object));
+
 
     changeQuantitySku###object###Stock = ACTION (sku, object, stock) {
         REQUEST NUMERIC[14,3] INPUT;
@@ -643,6 +666,7 @@ META extendDocumentFormSkuStockCustom(object, form, concrete, stockProp)
                     fillHorizontal = 1;
                 }
                 ADD sts.box {
+                    title = 'SKU';
                     fillHorizontal = 2;
                 }
             }
@@ -654,7 +678,7 @@ META extendDocumentFormSkuStock(object, form, concrete)
     @extendDocumentFormSkuStockCustom(object, form, concrete, stock);
 END
 
-//--
+//----------- Изменение кол-ва для строки при изменении кол-ва для товара (один склад)---------------//
 
 META defineDocumentSkuCustom(object, detail, skuProp, stockProp)
     detail###Sku###object###Stock (sku, object, stock) =  GROUP MAX detail
@@ -662,7 +686,7 @@ META defineDocumentSkuCustom(object, detail, skuProp, stockProp)
     detail###Sku###object (sku, object) = detail###Sku###object###Stock(sku, object, stockProp###object(object));
 
     currentBalanceSku###object 'Остаток' (sku, object) = currentBalanceSkuStock(sku, stockProp###object(object));
-    priceSku###object 'Цена учетная' (sku, object) = priceSkuStockDateTime(sku, stockProp###object(object), dateTime###object(object));
+    priceSku###object 'Цена' (sku, object) = pricePriceListTypeSkuStockDateTime(priceListType###object(object), sku, stockProp###object(object), dateTime###object(object));
 
     changeQuantitySku###object = ACTION (sku, object) {
         REQUEST NUMERIC[14,3] INPUT;
@@ -718,7 +742,7 @@ META extendDocumentFormSkuCustom(object, form, concrete, skuProp, detail)
             type = TABBED;
             NEW itemBox {
                 childConstraints = TO THE RIGHT;
-                title = 'Подбор';
+                title = 'SKU';
                 type = SPLITH;
 
                 ADD skuTree.tree.box {
@@ -734,6 +758,117 @@ META extendDocumentFormSkuCustom(object, form, concrete, skuProp, detail)
 END
 META extendDocumentFormSku(object, form, concrete)
     @extendDocumentFormSkuCustom(object, form, concrete, sku, object##Detail);
+END
+
+//----------- Изменение кол-ва для строки при изменении кол-ва для товара (несколько складов и несколько контрагентов(в колонках))---------------//
+META defineDocumentSkuStockContractorCustom(object, detail, skuProp, stockProp, contact)
+    detail###Sku###object###Stock###contact (sku, object, stock, contact) =  GROUP MAX detail
+        BY skuProp###detail(detail), object###detail(detail), stockProp###detail(detail), contact###detail(detail);
+
+    quantitySku###object###Stock###contact 'Кол-во товара в документе' (sku, object, stock, contact) = GROUP SUM quantity###detail(detail)
+        BY skuProp###detail(detail), object###detail(detail), stockProp###detail(detail), contact###detail(detail);
+
+    quantitySku###object###Stock 'Кол-во товара в документе' (sku, object, stock) = GROUP SUM quantity###detail(detail)
+        BY skuProp###detail(detail), object###detail(detail), stockProp###detail(detail);
+
+    priceSkuStock###object###contact 'Цена' (sku, stock, object, contact) = pricePriceListTypeSkuStockDateTime(priceListType###object###contact(object, contact), sku, stock, dateTime###object(object));
+
+    changeQuantitySku###object###Stock###contact = ACTION (sku, object, stock, contact) {
+        REQUEST NUMERIC[14,3] INPUT;
+        IF detail###Sku###object###Stock###contact(sku, object, stock, contact) THEN {
+            IF requestedNumeric() THEN {
+                SET quantity###detail(detail) <- requestedNumeric() WHERE detail == detail###Sku###object###Stock###contact(sku, object, stock, contact);
+            } ELSE {
+                FOR object###detail(detail) == object AND stockProp###detail(detail) == stock AND skuProp###detail(detail) == sku AND contact###detail(detail) == contact DO {
+                    EXEC delete(detail);
+                }
+            }
+        } ELSE {
+            FOR ADDOBJ d = detail DO {
+
+               SET object###detail(d) <- object;
+               SET data###stockProp###detail (d) <- stock;
+               SET skuProp###detail(d) <- sku;
+               SET contact###detail(d) <- contact;
+               SET quantity###detail (d) <- requestedNumeric();
+               SET shipmentDataDate###detail (d) <- shipmentDate###object(object);
+               SET shipmentDataTime###detail (d) <- shipmentTime###object(object);
+            }
+        }
+    }
+END
+META defineDocumentSkuStockContractor(object, skuProp, stockProp, contact)
+    @defineDocumentSkuStockContractorCustom(object, object##Detail, skuProp, stockProp, contact);
+END
+META defineDocumentSkuStockContractor(object, contact)
+    @defineDocumentSkuStockContractor(object, sku, stock, contact);
+END
+
+META extendDocumentFormSkuStockContractorCustom(object, form, concrete, stockProp, contact)
+
+    EXTEND FORM form
+
+        TREE stockTree sg = stockGroup PARENT parentStockGroup, ts = stock
+        PROPERTIES READONLY sgTreeName = name(sg), tsTreeName = name(ts)
+        FILTERS stockGroupStock(ts) == sg
+
+        TREE skuTree sk = skuGroup PARENT parentSkuGroup
+        PROPERTIES READONLY skuTreeName = name(sk)
+        ORDER BY skuTreeName
+
+        OBJECTS cc = contact FIXED GRID
+
+        OBJECTS           sts=(st=stock, s=sku)
+        PROPERTIES        READONLY nameSku(s), stockName = name(st), idBarcodeSku(s), shortNameUOMSku(s)
+        PROPERTIES        READONLY currentBalanceSkuStock(s,st)
+
+        FILTERS           isParentSkuGroupSku(sk, s),
+                          st == ts AND sg IS stockGroup AND NOT stock###object(concrete) OR
+                          isParentStockGroupStock(sg, st) AND NOT ts AND NOT stock###object(concrete) OR
+                          st == ts AND sg IS stockGroup AND stock###object(concrete)== st
+
+        ORDER BY          nameSku, stockName
+
+        PROPERTIES quantitySku###object###Stock###contact(s, concrete, st, cc)  COLUMNS (cc) HEADER name(cc) ON CHANGE EXEC changeQuantitySku###object###Stock###contact(s, concrete, st, cc),
+                   priceSkuStock###object###contact(s, st, concrete, cc) COLUMNS (cc) HEADER name(cc)
+        FILTERS in###object###contact(concrete,cc)
+
+        FILTERGROUP filtr2
+            FILTER 'Товары с остатком ' 'F10' currentBalanceSkuStock(s, st) DEFAULT
+            FILTER 'Товар в заказе' 'F9' quantitySku###object###Stock(s, concrete, st)
+
+    ;
+
+    EXTEND DESIGN form {
+        specification.box {
+            type = TABBED;
+            NEW itemBox {
+                childConstraints = TO THE RIGHT;
+                title = 'Подбор';
+                type = SPLITH;
+
+                NEW firstBottom {
+                    type = SPLITV;
+                    ADD stockTree.tree.box {title = 'Склады'; fillVertical = 1;};
+                    ADD skuTree.tree.box {title = 'Группы SKU'; fillVertical = 1;};
+                    fillHorizontal = 1;
+                }
+                NEW skuCase {
+                    childConstraints = TO THE BOTTOM;
+                    fillHorizontal = 4;
+                    ADD cc.box;
+                    REMOVE cc.box;
+                    ADD sts.box {
+                        title = 'SKU';
+                    }
+                }
+            }
+        }
+        PROPERTY(currentBalanceSkuStock) { background = #FFEEEE; }
+    }
+END
+META extendDocumentFormSkuStockContractor(object, form, concrete, contact)
+    @extendDocumentFormSkuStockContractorCustom(object, form, concrete, stock, contact);
 END
 
 // ------------------------- Основной - агрегированный документы ---------------------------------- //

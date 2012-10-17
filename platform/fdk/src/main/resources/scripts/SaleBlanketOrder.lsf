@@ -1,0 +1,8 @@
+MODULE SaleBlanketOrder;
+
+REQUIRE BlanketOrder;
+
+NAMESPACE Sale;
+
+//----------------------------------------------- Множественный Заказ ---------------------------------------------------//
+@defineBlanketOrder(' (продажа)', customer);

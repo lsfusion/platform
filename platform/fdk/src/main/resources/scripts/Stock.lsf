@@ -869,6 +869,10 @@ META defineDocumentInterfaceDetailDataSum (object)
     @defineDocumentInterfaceDetailDataSumPrefix(object, ,);
 END
 
+META defineDocumentDetailDataSum(object)
+    @defineDocumentDetailDataSumCustomPrefix(object##Detail, , );
+END
+
 META deriveDocumentDetailSumCustomPrefix(detail, prefix, currencyProp)
     prefix###sum###detail (detail)  <- roundCurrency((quantity###detail(detail) * prefix###price###detail(detail)), currencyProp###detail(detail))
                     WHEN CHANGED(quantity###detail(detail)) OR CHANGED (prefix###price###detail(detail));
@@ -983,6 +987,24 @@ META defineDocumentInterfaceHeaderQuantity (object)
     @defineDocumentHeaderQuantity(user###object);
 END
 
+// ------------------------------------------------ Кол-во в документе для contact ------------------------------------ //
+META defineDocumentHeaderQuantityContractorCustomPrefix (object, detail, prefix, caption, contact)
+    prefix###quantity###detail###object###contact 'Кол-во (всего)'###caption (object, contact) = GROUP SUM prefix###quantity###detail(idetail) BY object###detail(idetail), contact###detail(idetail) IN documentSumGroup PERSISTENT;
+END
+
+META defineDocumentHeaderQuantityContractorCustom (object, detail, contact)
+    @defineDocumentHeaderQuantityContractorCustomPrefix(object, detail, , , contact);
+END
+
+META defineDocumentHeaderQuantityContractorPrefix (object, prefix, caption, contact)
+    @defineDocumentHeaderQuantityContractorCustomPrefix(object, object##Detail, prefix, caption, contact);
+END
+
+META defineDocumentHeaderQuantityContractor (object, contact)
+    @defineDocumentHeaderQuantityContractorCustomPrefix(object, object##Detail, , , contact);
+END
+
+
 // ------------------------------------------------ Кол-во SKU в документе ------------------------------------ //
 META defineDocumentHeaderSkuQuantityCaptionCustom (object, detail, skuProp, caption)
     quantity###detail###skuProp###object 'Кол-во товара в документе'###caption (sku, object) = GROUP SUM quantity###detail(idetail)
@@ -998,6 +1020,25 @@ END
 
 META defineDocumentHeaderSkuQuantity (object, skuProp)
     @defineDocumentHeaderSkuQuantityCustom(object, object###detail, skuProp);
+END
+
+// ------------------------------------------------ Кол-во SKU в документе для contact------------------------------------ //
+META defineDocumentHeaderSkuQuantityContractorCaptionCustom (object, detail, skuProp, caption, contact)
+    quantity###detail###skuProp###object###contact 'Кол-во товара в документе'###caption (sku, object, contact) = GROUP SUM quantity###detail(idetail)
+                                                                                           BY  skuProp###detail(idetail),
+                                                                                               object###detail(idetail),
+                                                                                               contact###detail(idetail);
+END
+
+META defineDocumentHeaderSkuQuantityContractorCustom (object, detail, skuProp, contact)
+    quantity###detail###skuProp###object###contact 'Кол-во товара в документе' (sku, object, contact) = GROUP SUM quantity###detail(idetail)
+                                                                                           BY  skuProp###detail(idetail),
+                                                                                               object###detail(idetail),
+                                                                                               contact###detail(idetail);
+END
+
+META defineDocumentHeaderSkuQuantityContractor (object, skuProp, contact)
+    @defineDocumentHeaderSkuQuantityContractorCustom(object, object###detail, skuProp, contact);
 END
 
 // ------------------------------------------------ Сумма в документе ------------------------------------ //
@@ -1026,6 +1067,20 @@ META defineDocumentInterfaceHeaderSum (object)
     @defineDocumentHeaderSum(user###object);
 END
 
+// ------------------------------------------------ Сумма в документе для contact------------------------------------ //
+
+META defineDocumentHeaderSumContractorCustom (object, detail, caption, contact)
+    sum###detail###object###contact 'Сумма'###caption (object, contact) = GROUP SUM sum###detail(idetail) BY object###detail(idetail), contact###detail(idetail)  IN documentSumGroup;
+END
+
+
+META defineDocumentHeaderSumContractorCustom (object, detail, contact)
+    @defineDocumentHeaderSumContractorCustom(object, detail, , contact);
+END
+
+META defineDocumentHeaderSumContractor (object, contact)
+    @defineDocumentHeaderSumContractorCustom(object, object##Detail, , contact);
+END
 // ---------------------------------------------- Остатки -------------------------------------------- //
 
 META defineDocumentDetailSkuBalance (object, skuProp, stockProp)

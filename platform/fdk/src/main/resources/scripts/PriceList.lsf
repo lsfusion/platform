@@ -572,6 +572,21 @@ END
 META defineDocumentInterfacePriceListType (object)
     @defineDocumentInterfacePriceListType(object, object##Detail);
 END
+// ------------------------- Макросы по добавлению видов цен в документы (два объекта) --------------------- //
+META defineDocumentDoubleObjHeaderPriceListType (object, contact)
+    priceListType###object###contact (object, contact) = DATA priceListType (object, contact);
+    namePriceListType###object###contact 'Вид цен' (object, contact)= name(priceListType###object###contact(object, contact)) IN documentPrmGroup MINCHARWIDTH 5 PREFCHARWIDTH 10;
+END
+META defineDocumentDoubleObjDetailDataPriceListType (object, contact, detail)
+    dataPriceListType###detail =  DATA priceListType (detail);
+    priceListType###detail (idetail) = UNION OVERRIDE priceListType###object###contact(object###detail(idetail), contact###detail(idetail)), dataPriceListType###detail(idetail) PERSISTENT;
+    namePriceListType###detail 'Вид цен' (idetail) = name(priceListType###detail(idetail)) MINCHARWIDTH 10 PREFCHARWIDTH 20;
+END
+META defineDocumentDoubleObjPriceListType (object, contact)
+    @defineDocumentDoubleObjHeaderPriceListType(object, contact);
+    @defineDocumentDoubleObjDetailDataPriceListType(object, contact, object##Detail);
+END
+
 //--
 
 META defineDocumentDetailDataPriceListType (object, detail)
@@ -584,6 +599,14 @@ META defineDocumentAbstractDetailDataPriceListType (object, detail)
     dataPriceListType###detail =  ABSTRACT priceListType (detail);
     priceListType###detail (idetail) = UNION OVERRIDE priceListType###object(object###detail(idetail)), dataPriceListType###detail(idetail) PERSISTENT;
     namePriceListType###detail 'Вид цен' (idetail) = name(priceListType###detail(idetail)) MINCHARWIDTH 10 PREFCHARWIDTH 20;
+END
+
+META defineDocumentDataPriceListType (object, detail)
+    @defineDocumentHeaderPriceListType(object);
+    @defineDocumentDetailDataPriceListType(object, detail);
+END
+META defineDocumentDataPriceListType (object)
+    @defineDocumentDataPriceListType(object, object##Detail);
 END
 
 META defineDocumentInterfaceDetailDataPriceListType (object, detail)
