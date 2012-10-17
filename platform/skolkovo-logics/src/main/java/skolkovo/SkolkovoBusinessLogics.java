@@ -46,7 +46,9 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     public void createModules() throws IOException {
         super.createModules();
         SkolkovoLM = addModule(new SkolkovoLogicsModule(LM, this));
-        SkolkovoLM.setRequiredModules(Arrays.asList("System"));
+        SkolkovoLM.setRequiredModules(Arrays.asList("System", "Country"));
+
+        addModulesFromResource("/scripts/Currency.lsf", "/scripts/Utils.lsf", "/scripts/I18n.lsf", "/scripts/Country.lsf", "/scripts/DefaultData.lsf");
     }
 
 

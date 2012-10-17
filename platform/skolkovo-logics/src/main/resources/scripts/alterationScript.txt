@@ -1,0 +1,16 @@
+V0.3 {
+    CLASS country -> Country_country
+
+    TABLE country -> Country_country
+    TABLE countryDate -> Country_countryDate
+
+    PROPERTY nameOriginCountry -> Country_nameOriginCountry
+    PROPERTY sidCountry -> Country_sidCountry
+    PROPERTY sidOrigin2Country -> Country_sidOrigin2Country
+    PROPERTY sidOrigin3Country -> Country_sidOrigin3Country
+    PROPERTY currencyCountry -> Country_currencyCountry
+    PROPERTY generateDatesCountry -> Country_generateDatesCountry
+    PROPERTY residentCountry -> Country_residentCountry
+    PROPERTY isDayOffCD -> Country_isDayOffCountryDate
+    PROPERTY defaultCountry -> Country_defaultCountry
+}
