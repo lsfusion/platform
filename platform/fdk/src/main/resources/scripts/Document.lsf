@@ -768,8 +768,11 @@ META defineDocumentSkuStockContractorCustom(object, detail, skuProp, stockProp, 
     quantitySku###object###Stock###contact 'Кол-во товара в документе' (sku, object, stock, contact) = GROUP SUM quantity###detail(detail)
         BY skuProp###detail(detail), object###detail(detail), stockProp###detail(detail), contact###detail(detail);
 
-    quantitySku###object###Stock 'Кол-во товара в документе' (sku, object, stock) = GROUP SUM quantity###detail(detail)
+    quantitySku###object###Stock 'Итого' (sku, object, stock) = GROUP SUM quantity###detail(detail)
         BY skuProp###detail(detail), object###detail(detail), stockProp###detail(detail);
+
+    backgroundQuantitySku###object###Stock 'Цвет' (sku, object, stock) = RGB(255,51,153)
+        IF quantitySku###object###Stock(sku, object, stock) > (currentBalanceSkuStock(sku, stock) AND object IS object);
 
     priceSkuStock###object###contact 'Цена' (sku, stock, object, contact) = pricePriceListTypeSkuStockDateTime(priceListType###object###contact(object, contact), sku, stock, dateTime###object(object));
 
@@ -806,6 +809,9 @@ END
 
 META extendDocumentFormSkuStockContractorCustom(object, form, concrete, stockProp, contact)
 
+    nameQuantity###contact (contact)= [FORMULA STRING[50] 'CAST($1 AS TEXT) || \' \' || \'(кол-во)\''](name(contact)) MINCHARWIDTH 15 PREFCHARWIDTH 20;
+    namePrice###contact (contact)= [FORMULA STRING[50] 'CAST($1 AS TEXT) || \' \' || \'(цена)\''](name(contact)) MINCHARWIDTH 15 PREFCHARWIDTH 20;
+
     EXTEND FORM form
 
         TREE stockTree sg = stockGroup PARENT parentStockGroup, ts = stock
@@ -829,8 +835,9 @@ META extendDocumentFormSkuStockContractorCustom(object, form, concrete, stockPro
 
         ORDER BY          nameSku, stockName
 
-        PROPERTIES quantitySku###object###Stock###contact(s, concrete, st, cc)  COLUMNS (cc) HEADER name(cc) ON CHANGE EXEC changeQuantitySku###object###Stock###contact(s, concrete, st, cc),
-                   priceSkuStock###object###contact(s, st, concrete, cc) COLUMNS (cc) HEADER name(cc)
+        PROPERTIES quantitySku###object###Stock###contact(s, concrete, st, cc)  COLUMNS (cc) HEADER nameQuantity###contact(cc) ON CHANGE EXEC changeQuantitySku###object###Stock###contact(s, concrete, st, cc)
+        PROPERTIES READONLY  priceSkuStock###object###contact(s, st, concrete, cc)  COLUMNS (cc) HEADER namePrice###contact(cc)
+        PROPERTIES quantitySku###object###Stock(s, concrete, st) READONLY BACKGROUND backgroundQuantitySku###object###Stock(s, concrete, st)
         FILTERS in###object###contact(concrete,cc)
 
         FILTERGROUP filtr2

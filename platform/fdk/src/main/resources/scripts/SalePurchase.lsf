@@ -31,3 +31,4 @@ END
 @extendDocumentFormReserveSkuStock(userOrder, SaleReturn, userOrder, o);
 @extendDocumentFormReserveSkuStock(userOrder, Purchase, userOrder, o);
 @extendDocumentFormReserveSkuStock(userOrder, PurchaseReturn, userOrder, o);
+@extendDocumentFormReserveSkuStock(blanketOrder, Sale, blanketOrder, o);

@@ -61,6 +61,11 @@ META defineBlanketOrder(sign, contact)
         CHECKED BY contact##BlanketOrderDetail
             MESSAGE 'Для строки множественного заказа выбран контрагент не включенный в заказ';
 
+    contact##sBlanketOrder 'Контрагенты' (blanketOrder) =
+        GROUP CONCAT name(contact) IF inBlanketOrder###contact(blanketOrder, contact), ', '
+        BY blanketOrder
+        ORDER contact MINCHARWIDTH 10 MAXCHARWIDTH 30 PREFCHARWIDTH 20 PERSISTENT;
+
 
 // --------------------------- Формы Заказа ---------------------------------
 
@@ -149,7 +154,7 @@ META defineBlanketOrder(sign, contact)
         PROPERTIES (o) READONLY isPostedBlanketOrder FORCE GRID, objectClassName, numberObject, seriesObject, dateBlanketOrder, timeBlanketOrder,
                                 nameStockBlanketOrder, nameCurrencyBlanketOrder, noteBlanketOrder,
                                 countBlanketOrderDetailBlanketOrder, quantityBlanketOrderDetailBlanketOrder, sumBlanketOrderDetailBlanketOrder,
-                                shipmentDateBlanketOrder, shipmentTimeBlanketOrder
+                                shipmentDateBlanketOrder, shipmentTimeBlanketOrder, contact##sBlanketOrder
 
         PROPERTIES (o) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
