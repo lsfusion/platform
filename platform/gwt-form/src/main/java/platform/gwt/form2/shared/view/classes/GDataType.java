@@ -14,6 +14,6 @@ public abstract class GDataType extends GType implements GClass {
 
     @Override
     public String getMinimumWidth(int minimumCharWidth) {
-        return (minimumCharWidth > 0 ? minimumCharWidth : getMinimumMask().length()) + "em";
+        return (minimumCharWidth > 0 ? minimumCharWidth : getMinimumMask().length()) * 7 + "px";
     }
 }

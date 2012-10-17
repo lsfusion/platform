@@ -56,11 +56,14 @@ public class GToolbarNavigatorView extends GNavigatorView {
         });
 
         if (vertical) {
-            button.setWidth("100%");
+            button.setSize("100%", "28px");
         } else {
             button.setHeight("100%");
         }
         button.addStyleName("toolbarNavigatorButton");
+        if (element.equals(selected)) {
+            button.addStyleName("toolbarSelectedNavigatorButton");
+        }
         button.getElement().getStyle().setPaddingLeft(7 + PADDING_STEP * step, Style.Unit.PX);
 
         panel.add(button);

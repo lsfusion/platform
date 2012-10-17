@@ -16,6 +16,7 @@ public class DataPanelRenderer implements PanelRenderer {
 
     public DataPanelRenderer(GFormController form, GPropertyDraw property, GGroupObjectValue columnKey) {
         label = new Label(property.getCaptionOrEmpty() + ": ");
+        label.addStyleName("customFontPresenter");
 
         valueTable = new GSinglePropertyTable(form, property, columnKey);
 
@@ -24,7 +25,7 @@ public class DataPanelRenderer implements PanelRenderer {
         valueTable.setHeight("100%");
 
         ResizeLayoutPanel gridPanel = new ResizeLayoutPanel();
-        gridPanel.setPixelSize(250, 26);
+        gridPanel.setPixelSize(250, 16);
         gridPanel.addStyleName("dataPanelRendererGridPanel");
         gridPanel.add(valueTable);
 

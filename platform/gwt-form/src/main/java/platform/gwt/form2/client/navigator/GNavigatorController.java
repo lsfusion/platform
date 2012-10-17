@@ -49,7 +49,9 @@ public abstract class GNavigatorController implements GINavigatorController {
         updateVisibility(visibleElements);
 
         for (GNavigatorWindow window : views.keySet()) {
-            setInitialSize(window, views.get(window).getWidth(), views.get(window).getHeight());
+            if (!window.initialSizeSet) {
+                setInitialSize(window, views.get(window).getWidth(), views.get(window).getHeight());
+            }
         }
     }
 

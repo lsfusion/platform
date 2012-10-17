@@ -1,6 +1,8 @@
 /* modified copy com/google/gwt/user/cellview/client/DataGrid.css */
 
 @def selectionBorderWidth 0px;
+@def fontSize 8pt;
+
 .dataGridWidget {
 
 }
@@ -15,29 +17,30 @@
 
 .dataGridFooter {
     border-top: 2px solid #6f7277;
-    padding: 3px 15px;
+    padding: 3px 14px;
     text-align: left;
     color: #4b4a4a;
     text-shadow: #ddf 1px 1px 0;
+    font-size: fontSize;
     overflow: hidden;
     white-space: nowrap;
 }
 
 .dataGridHeader {
     border-bottom: 2px solid #6f7277;
-    padding: 3px 15px;
+    padding: 3px 14px;
     text-align: left;
     color: #4b4a4a;
     text-shadow: #ddf 1px 1px 0;
+    font-size: fontSize;
     overflow: hidden;
     white-space: nowrap;
 }
 
 .dataGridCell {
-    height: 26px;
-    padding: 0px 15px;
-    overflow: hidden;
-    white-space: nowrap;
+    height: 16px;
+    font-size: fontSize;
+    padding: 0px 4px;
     overflow: hidden;
     white-space: nowrap;
 }
@@ -107,11 +110,11 @@
 }
 
 .dataGridKeyboardSelectedRow {
-    background: #ffc;
+    background: #F0F0FF;
 }
 
 .dataGridKeyboardSelectedRowCell {
-    border: selectionBorderWidth solid #ffc;
+    border: selectionBorderWidth solid #F0F0FF;
 }
 
 .dataGridSelectedRow {
@@ -129,5 +132,6 @@
     * The keyboard selected cell is visible over selection.
     */
 .dataGridKeyboardSelectedCell {
-    border: selectionBorderWidth solid #d7dde8;
+    outline: 1px solid #6262FF;
+    outline-offset: -1px;
 }

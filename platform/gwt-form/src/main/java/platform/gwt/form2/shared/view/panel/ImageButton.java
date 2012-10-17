@@ -24,12 +24,13 @@ public class ImageButton extends Button {
         panel = directionBottom ? new VerticalPanel() : new HorizontalPanel();
         panel.add(image = new Image());
         panel.add(label = new Label());
-        panel.setSpacing(2);
 
         if (directionBottom) {
             panel.setCellHorizontalAlignment(image, HasHorizontalAlignment.ALIGN_CENTER);
             panel.setCellHorizontalAlignment(label, HasHorizontalAlignment.ALIGN_CENTER);
         }
+
+        label.addStyleName("customFontPresenter");
 
         setText(caption);
         setImagePath(imagePath);

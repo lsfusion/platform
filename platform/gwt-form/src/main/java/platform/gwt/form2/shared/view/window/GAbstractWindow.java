@@ -15,4 +15,6 @@ public class GAbstractWindow implements Serializable {
 
     public boolean titleShown;
     public boolean visible;
+
+    public boolean initialSizeSet = false;
 }

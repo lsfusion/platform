@@ -32,6 +32,10 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
         this.editDispatcher = new GEditPropertyDispatcher(form);
 
         button = new ImageButton(property.caption, property.iconPath);
+        button.addStyleName("panelActionProperty");
+        if (property.preferredHeight > -1) {
+            button.setHeight(property.preferredHeight + "px");
+        }
         button.addClickHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {

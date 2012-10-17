@@ -83,14 +83,12 @@ public class FormPanel extends SimpleLayoutPanel {
 
         public TabWidget(String title) {
             label = new Label(title);
+            label.addStyleName("customFontPresenter");
             closeButton = new Button("&#215;");
             closeButton.setStyleName("closeTabButton");
 
             add(label);
             add(closeButton);
-
-            setCellVerticalAlignment(label, ALIGN_MIDDLE);
-            setCellVerticalAlignment(closeButton, ALIGN_MIDDLE);
 
             closeButton.addClickHandler(new ClickHandler() {
                 @Override

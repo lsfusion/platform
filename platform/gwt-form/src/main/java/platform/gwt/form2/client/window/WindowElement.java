@@ -15,7 +15,6 @@ public abstract class WindowElement {
 
     public double initialWidth;
     public double initialHeight;
-    public boolean initialSizeSet = false;
 
     public WindowElement(WindowContainer main) {
         this.main = main;

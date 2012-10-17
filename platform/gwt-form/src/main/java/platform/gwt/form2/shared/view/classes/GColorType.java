@@ -24,4 +24,9 @@ public class GColorType extends GDataType {
     public String getPreferredMask() {
         return "";
     }
+
+    @Override
+    public String getMinimumWidth(int minimumCharWidth) {
+        return "40px";
+    }
 }

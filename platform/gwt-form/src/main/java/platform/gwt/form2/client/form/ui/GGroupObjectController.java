@@ -1,5 +1,6 @@
 package platform.gwt.form2.client.form.ui;
 
+import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
 import platform.gwt.base.shared.GClassViewType;
 import platform.gwt.base.shared.GOrder;
@@ -28,6 +29,9 @@ public class GGroupObjectController implements GGroupObjectLogicsSupplier {
 
     private HashSet<GPropertyDraw> panelProperties = new HashSet<GPropertyDraw>();
 
+    // пустая панель внизу контейнера группы, которая расширяется при спрятанном гриде, прижимая тулбар и панельный контейнер кверху
+    private SimplePanel blankElement = new SimplePanel();
+
     public GGroupObjectController(GFormController iformController, GGroupObject igroupObject, GFormLayout iformLayout) {
         groupObject = igroupObject;
         formLayout = iformLayout;
@@ -54,6 +58,8 @@ public class GGroupObjectController implements GGroupObjectLogicsSupplier {
             };
             showTypeView.addToLayout(formLayout);
             showTypeView.setBanClassViews(groupObject.banClassView);
+
+            formLayout.getFormContainer(groupObject.grid.container.container).addDirectly(blankElement);
         }
     }
 
@@ -114,7 +120,7 @@ public class GGroupObjectController implements GGroupObjectLogicsSupplier {
     private void updateDrawColumnKeys(GPropertyDraw property, List<GGroupObjectValue> columnKeys) {
         if (panel.containsProperty(property)) {
             panel.updateColumnKeys(property, columnKeys);
-        } else {
+        } else if (grid != null) {
             grid.updateColumnKeys(property, columnKeys);
         }
     }
@@ -124,7 +130,7 @@ public class GGroupObjectController implements GGroupObjectLogicsSupplier {
         GPropertyDraw property = formController.getProperty(reader.ID);
         if (panel.containsProperty(property)) {
             panel.updatePropertyValues(property, values, updateKeys);
-        } else {
+        } else if (grid != null) {
             grid.getTable().updatePropertyValues(property, values, updateKeys);
         }
     }
@@ -134,7 +140,7 @@ public class GGroupObjectController implements GGroupObjectLogicsSupplier {
         GPropertyDraw property = formController.getProperty(reader.readerID);
         if (panel.containsProperty(property)) {
             panel.updateCellBackgroundValues(property, values);
-        } else {
+        } else if (grid != null) {
             grid.updateCellBackgroundValues(property, values);
         }
     }
@@ -144,7 +150,7 @@ public class GGroupObjectController implements GGroupObjectLogicsSupplier {
         GPropertyDraw property = formController.getProperty(reader.readerID);
         if (panel.containsProperty(property)) {
             panel.updateCellForegroundValues(property, values);
-        } else {
+        } else if (grid != null) {
             grid.updateCellForegroundValues(property, values);
         }
     }
@@ -154,7 +160,7 @@ public class GGroupObjectController implements GGroupObjectLogicsSupplier {
         GPropertyDraw property = formController.getProperty(reader.readerID);
         if (panel.containsProperty(property)) {
             panel.updatePropertyCaptions(property, values);
-        } else {
+        } else if (grid != null) {
             grid.updatePropertyCaptions(property, values);
         }
     }
@@ -201,9 +207,11 @@ public class GGroupObjectController implements GGroupObjectLogicsSupplier {
             if (classViewType == GClassViewType.GRID) {
                 grid.show();
                 formLayout.setTableCellSize(gridContainer.container, gridContainer, "100%", false);
+                formLayout.setTableCellSize(gridContainer.container, blankElement, "auto", false);
             } else {
                 grid.hide();
                 formLayout.setTableCellSize(gridContainer.container, gridContainer, "auto", false);
+                formLayout.setTableCellSize(gridContainer.container, blankElement, "100%", false);
             }
         }
     }

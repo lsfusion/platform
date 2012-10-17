@@ -10,7 +10,7 @@ import com.google.gwt.safehtml.shared.UriUtils;
 
 public class LogicalGridRenderer implements GridCellRenderer {
     interface Template extends SafeHtmlTemplates {
-        @Template("<center><img src=\"{0}\"/><center>")
+        @Template("<center><img style=\"vertical-align: bottom;\" src=\"{0}\"/><center>")
         SafeHtml checkbox(SafeUri url);
     }
 

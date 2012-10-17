@@ -1,5 +1,7 @@
 /* modified copy com/google/gwt/user/cellview/client/DataGrid.css */
 
+@def fontSize 8pt;
+
 .dataGridWidget {
     border: 1px solid lightGrey;
     margin: 2px;
@@ -9,6 +11,7 @@
 }
 
 .dataGridLastColumn {
+    border-right: 1px solid #CCCCCC;
 }
 
 .dataGridFooter {
@@ -17,6 +20,8 @@
     text-align: left;
     color: #4b4a4a;
     text-shadow: #ddf 1px 1px 0;
+    font-size: fontSize;
+    font-family: tahoma;
     overflow: hidden;
     white-space: nowrap;
 }
@@ -27,6 +32,7 @@
     text-align: left;
     color: #4b4a4a;
     text-shadow: #ddf 1px 1px 0;
+    font-size: fontSize;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -34,17 +40,21 @@
 
 .dataGridCell {
     /*работает как min-height*/
-    height: 20px;
+    height: 16px;
+    font-size: fontSize;
 
-    border: 1px solid #CCCCCC;
 
-    padding: 2px 5px;
+    border-bottom: 1px solid #CCCCCC;
+    border-left: 1px solid #CCCCCC;
+
+    padding: 0px 4px;
 
     overflow: hidden;
     white-space: nowrap;
 }
 
 .dataGridCell div {
+    height: 16px;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -108,7 +118,7 @@
 }
 
 .dataGridKeyboardSelectedRow {
-    background: #ffc;
+    background: #F0F0FF;
 }
 
 .dataGridKeyboardSelectedRowCell {
@@ -118,7 +128,7 @@
 /* стайлим выделенный ряд, так же как ряд с клавиатурным выделением,
    чтобы спокойно совместить понятия выделенного и текущего ряда */
 .dataGridSelectedRow {
-    background: #ffc;
+    background: #F0F0FF;
     /*background: #628cd5;*/
     /*color: white;*/
     /*height: auto;*/
@@ -134,5 +144,6 @@
 * The keyboard selected cell is visible over selection.
 */
 .dataGridKeyboardSelectedCell {
-    border: 1px solid blue;
+    outline: 1px solid #6262FF;
+    outline-offset: -1px;
 }

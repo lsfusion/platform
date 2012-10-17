@@ -6,6 +6,7 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import platform.gwt.base.shared.GClassViewType;
 import platform.gwt.form2.shared.view.GGroupObject;
+import platform.gwt.form2.shared.view.panel.ImageButton;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,13 +27,14 @@ public class GShowTypeView extends HorizontalPanel {
 
         addStyleName("showType");
 
-        add(gridButton = createShowTypeButton("G", GClassViewType.GRID));
-        add(panelButton = createShowTypeButton("P", GClassViewType.PANEL));
-        add(hideButton = createShowTypeButton("H", GClassViewType.HIDE));
+        add(gridButton = createShowTypeButton("view_grid.png", GClassViewType.GRID));
+        add(panelButton = createShowTypeButton("view_panel.png", GClassViewType.PANEL));
+        add(hideButton = createShowTypeButton("view_hide.png", GClassViewType.HIDE));
     }
 
-    private Button createShowTypeButton(String label, GClassViewType newClassView) {
-        Button showTypeButton = new Button(label);
+    private Button createShowTypeButton(String imagePath, GClassViewType newClassView) {
+        Button showTypeButton = new ImageButton(null, imagePath);
+        showTypeButton.addStyleName("viewTypeButton");
         showTypeButton.addClickHandler(new ChangeViewBtnClickHandler(newClassView));
         return showTypeButton;
     }

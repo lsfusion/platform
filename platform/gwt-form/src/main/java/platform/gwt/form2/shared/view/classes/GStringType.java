@@ -22,7 +22,7 @@ public class GStringType extends GDataType {
 
     @Override
     public String getMinimumMask() {
-        return GwtSharedUtils.replicate('0', length / 5);
+        return GwtSharedUtils.replicate('0', Math.max(length / 5, 1));
     }
 
     public String getPreferredMask() {

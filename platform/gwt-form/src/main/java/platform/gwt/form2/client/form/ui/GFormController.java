@@ -131,6 +131,7 @@ public class GFormController extends SimplePanel {
                 setRegularFilter(filterGroup, e.getValue() != null && e.getValue() ? filter : null);
             }
         });
+        filterCheck.addStyleName("checkBoxFilter");
         addFilterComponent(filterGroup, filterCheck);
 
         if (filterGroup.defaultFilter >= 0) {
@@ -155,6 +156,8 @@ public class GFormController extends SimplePanel {
                 setRegularFilter(filterGroup, ind == -1 ? null : filterGroup.filters.get(ind));
             }
         });
+
+        filterBox.addStyleName("customFontPresenter");
 
         addFilterComponent(filterGroup, filterBox);
         if (filterGroup.defaultFilter >= 0) {

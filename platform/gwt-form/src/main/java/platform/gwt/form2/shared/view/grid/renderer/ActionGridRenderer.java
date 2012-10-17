@@ -11,10 +11,10 @@ import platform.gwt.form2.shared.view.GPropertyDraw;
 
 public class ActionGridRenderer implements GridCellRenderer {
     interface Template extends SafeHtmlTemplates {
-        @Template("<div><center><div style=\"border: 1px solid blue; width: 48px; height: 16px;\"><center><img src=\"{0}\"/><center></div></center></div>")
+        @Template("<div><center><div style=\"background: #F1F1F1; border: 1px solid #BBB; border-bottom: 1px solid #A0A0A0; border-radius: 3px; width: 48px; height: 14px;\"><img style=\"height: 14px; width: 14px;\" src=\"{0}\"/></div></center></div>")
         SafeHtml img(SafeUri url);
 
-        @Template("<center><div style=\"border: 1px solid blue; width: 48px; height: 16px;\"><center>{0}<center></div><center>")
+        @Template("<center><div style=\"background: #F1F1F1; border: 1px solid #BBB; border-bottom: 1px solid #A0A0A0; border-radius: 3px; width: 48px; height: 14px;\"><center>{0}</center></div></center>")
         SafeHtml div(String text);
     }
 

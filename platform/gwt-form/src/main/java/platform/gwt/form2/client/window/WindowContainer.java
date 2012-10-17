@@ -334,10 +334,10 @@ public abstract class WindowContainer extends SplitLayoutPanel {
 
     public void setInitialSize(GAbstractWindow window, int width, int height) {
         WindowElement windowElement = allWindows.get(window);
-        if (!windowElement.initialSizeSet && windowElement.getView().isAttached()) {
+        if (windowElement.getView().isAttached()) {
             if (width != 0 && height != 0) {
                 windowElement.changeInitialSize(width, height);
-                windowElement.initialSizeSet = true;
+                window.initialSizeSet = true;
             }
         }
     }

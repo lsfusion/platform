@@ -26,6 +26,7 @@ public abstract class GGridPropertyTable extends GPropertyTable {
     public ArrayList<GridHeader> headers = new ArrayList<GridHeader>();
 
     protected boolean dataUpdated;
+    protected boolean needToScroll;
 
     public GGridSortableHeaderManager sortableHeaderManager;
 

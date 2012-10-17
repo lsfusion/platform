@@ -1,3 +1,8 @@
+body, html, .gwt-Button, .messageBox-message, .ResizableWindow-header, .captionPanelLegend, .gwt-TreeItem, .gwt-TabBarItem,
+.checkBoxFilter, .customFontPresenter {
+    font-size: 8pt;
+}
+
 body, html {
     /* нужно для правильной работы drag-n-drop */
     width: 100%;
@@ -5,25 +10,42 @@ body, html {
     overflow: hidden;
 }
 
+button::-moz-focus-inner {  /*Remove button padding in FF*/
+    border: 0;
+    padding: 0;
+    margin: 0;
+}
+
 /* ------------ Default gwt overrides ------------ */
 .gwt-Button {
     margin: 2px;
-    height: 32px;
+    height: 30px;
     white-space: nowrap;
 }
 
 .gwt-TextBox {
     margin: 2px;
-    height: 20px;
+    height: 15px;
+}
+
+input[type=checkbox] {
+    vertical-align: middle;
+    position: relative;
+    bottom: 2px;
 }
 
 /* ------------ Tab panel ------------ */
+.gwt-TabLayoutPanel .gwt-TabLayoutPanelTabs {
+    padding-top: 0;
+    top: 0;
+}
+
 .gwt-TabLayoutPanel .gwt-TabLayoutPanelContent {
-    padding: 4px;
+    padding: 2px;
 }
 
 .gwt-TabLayoutPanel .gwt-TabLayoutPanelTab {
-    padding: 0px 3px 0px 5px;
+    padding: 2px 3px 4px 5px;
 }
 
 .gwt-TabPanel {
@@ -31,8 +53,7 @@ body, html {
 }
 
 .gwt-TabPanelBottom {
-    padding-top: 0;
-    padding-bottom: 0;
+    padding: 1px;
 }
 
 .gwt-DecoratorPanel .middleCenter {
@@ -41,17 +62,21 @@ body, html {
 }
 
 .closeTabButton {
-    height: 20px;
-    width: 20px;
-    padding: 0;
-    margin: 1px 0px 1px 2px;
-    border: 0px;
-    border-radius: 5px;
-    background: rgba(0, 0, 0, 0);
+    height: 16px;
+    width: 16px;
+    padding: 0 0 4px 0;
+    margin-left: 2px;
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    color: #a9a9a9;
+    font-size: 9pt;
+    font-weight: bold;
 }
 
 .closeTabButton:hover {
     background: #CCCCCC;
+    color: #000000;
 }
 
 /* ------------ Message box styles ------------ */
@@ -133,17 +158,24 @@ body, html {
 
 /* ------------ Panel Renderer related styles ------------ */
 .labelBasedPanelRendererValueLabel {
-    border: 1px solid #0055aa;
+    border: 1px solid #808080;
     margin: 2px;
 }
 
 .dataPanelRendererGridPanel {
-    border: 1px solid #0055aa;
+    border: 1px solid #808080;
     margin: 2px;
+    min-height: 16px !important;
 }
 
 .dataPanelRendererPanel {
-    margin: 1px 2px 7px 2px;
+    margin: 0 2px;
+}
+
+.panelActionProperty {
+    height: 18px;
+    padding: 1px 5px;
+    display: block; /*убираем лишние пикселы снизу при нахождении в ячейке таблицы*/
 }
 
 /* ------------ Caption panel ------------ */
@@ -154,16 +186,17 @@ body, html {
 .captionPanelContainer {
     border: 2px groove threedface;
     position: relative;
-    padding: 0.8em 0 0.3em 0;
+    padding: 0.5em 0 0.1em 0;
     border-radius: 5px;
+    margin: 0.1em 0;
 }
 
 .captionPanelLegend {
     white-space: nowrap;
     left: 0.5em;
-    top: -0.6em;
+    top: -0.9em;
     position: absolute;
-    padding: 0 0.25em 0 0.25em;
+    padding: 0 0.25em;
     background-color: white;
 }
 
@@ -200,15 +233,24 @@ body, html {
 }
 
 .toolbarNavigatorButton {
-    border: 0px;
     border: solid 1px transparent;
     background: transparent;
     text-align: left;
+    display: block;
+}
+
+.toolbarSelectedNavigatorButton {
+    border-color: #dcdcdc;
+    background-color: #F9F9FF;
 }
 
 .toolbarNavigatorButton:hover {
     border: solid 1px #CECECE;
     background: #D0DFED;
+}
+
+.panelNavigatorView {
+    display: block;
 }
 
 /* ------------ Other components  ------------ */
@@ -220,3 +262,13 @@ body, html {
     min-height: 130px !important;
 }
 
+.viewTypeButton {
+    height: 20px;
+    width: 20px;
+    padding: 1px;
+    display: block;
+}
+
+.checkBoxFilter {
+    margin-top: 5px;
+}

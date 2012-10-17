@@ -16,10 +16,10 @@ public class GTreeGridControlCell extends AbstractCell<Object> {
     private GTreeTable treeTable;
 
     interface Template extends SafeHtmlTemplates {
-        @Template("<div style=\"float: left; height: 18px;\"><img id=\"{0}\" src=\"{1}\"/></div>")
+        @Template("<div style=\"float: left; height: 16px;\"><img id=\"{0}\" src=\"{1}\"/></div>")
         SafeHtml node(String id, SafeUri url);
 
-        @Template("<div style=\"float: left; height: 18px;\"><img src=\"{0}\"/></div>")
+        @Template("<div style=\"float: left; height: 16px;\"><img src=\"{0}\"/></div>")
         SafeHtml dots(SafeUri url);
     }
 

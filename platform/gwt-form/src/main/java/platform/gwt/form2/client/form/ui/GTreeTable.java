@@ -105,6 +105,7 @@ public class GTreeTable extends GGridPropertyTable {
     public void setKeys(GGroupObject group, ArrayList<GGroupObjectValue> keys, ArrayList<GGroupObjectValue> parents) {
         tree.setKeys(group, keys, parents);
         dataUpdated = true;
+        needToScroll = true;
     }
 
     public void updatePropertyValues(GPropertyDraw property, Map<GGroupObjectValue, Object> propValues, boolean updateKeys) {
@@ -122,7 +123,7 @@ public class GTreeTable extends GGridPropertyTable {
         if (selectedRecord != null) {
             int oldKeyInd = currentRecords.indexOf(selectedRecord);
 
-            if (oldKeyInd != -1) {
+            if (needToScroll && oldKeyInd != -1) {
                 oldRecord = selectedRecord;
                 TableRowElement rowElement = getRowElement(oldKeyInd);
                 oldKeyScrollTop = rowElement.getAbsoluteTop() - getScrollPanel().getAbsoluteTop();
@@ -141,10 +142,13 @@ public class GTreeTable extends GGridPropertyTable {
 
         int currentInd = this.selectedRecord == null ? -1 : currentRecords.indexOf(this.selectedRecord);
         if (currentInd != -1) {
-            if (this.selectedRecord.equals(oldRecord)) {
-                scrollRowToVerticalPosition(currentInd, oldKeyScrollTop);
-            } else {
-                getRowElement(currentInd).scrollIntoView();
+            if (needToScroll) {
+                if (this.selectedRecord.equals(oldRecord)) {
+                    scrollRowToVerticalPosition(currentInd, oldKeyScrollTop);
+                } else {
+                    getRowElement(currentInd).scrollIntoView();
+                }
+                needToScroll = false;
             }
             selectionModel.setSelected(currentRecords.get(currentInd), true);
             setKeyboardSelectedRow(currentInd, false);

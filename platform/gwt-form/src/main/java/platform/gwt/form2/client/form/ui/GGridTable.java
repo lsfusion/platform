@@ -92,7 +92,7 @@ public class GGridTable extends GGridPropertyTable {
 
         int oldKeyScrollTop = 0;
         GGroupObjectValue oldKey = null;
-        if (selectedRecord != null && selectedRecord.rowIndex < getRowCount()) {
+        if (needToScroll && selectedRecord != null && selectedRecord.rowIndex < getRowCount()) {
             oldKey = selectedRecord.key;
             TableRowElement rowElement = getRowElement(selectedRecord.rowIndex);
             oldKeyScrollTop = rowElement.getAbsoluteTop() - getScrollPanel().getAbsoluteTop();
@@ -111,13 +111,16 @@ public class GGridTable extends GGridPropertyTable {
             //сразу ресолвим, чтобы избежать бага в DataGrid с неперерисовкой строк... (т.о. убираем рекурсивный resolvePendingState())
             selectionModel.setSelectedAndResolve(currentRecords.get(currentInd), true);
             setKeyboardSelectedRow(currentInd, false);
-            int horizontalScrollPosition = getScrollPanel().getHorizontalScrollPosition();
-            if (currentKey.equals(oldKey)) {
-                scrollRowToVerticalPosition(currentInd, oldKeyScrollTop);
-            } else {
-                getRowElement(currentInd).scrollIntoView();
+            if (needToScroll) {
+                int horizontalScrollPosition = getScrollPanel().getHorizontalScrollPosition();
+                if (currentKey.equals(oldKey)) {
+                    scrollRowToVerticalPosition(currentInd, oldKeyScrollTop);
+                } else {
+                    getRowElement(currentInd).scrollIntoView();
+                }
+                getScrollPanel().setHorizontalScrollPosition(horizontalScrollPosition);
+                needToScroll = false;
             }
-            getScrollPanel().setHorizontalScrollPosition(horizontalScrollPosition);
         }
     }
 
@@ -201,6 +204,7 @@ public class GGridTable extends GGridPropertyTable {
     public void setKeys(ArrayList<GGroupObjectValue> keys) {
         this.rowKeys = keys;
         dataUpdated = true;
+        needToScroll = true;
     }
 
     public void updatePropertyValues(GPropertyDraw property, Map<GGroupObjectValue, Object> propValues, boolean updateKeys) {

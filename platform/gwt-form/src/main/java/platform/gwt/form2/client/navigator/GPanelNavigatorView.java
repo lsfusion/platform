@@ -50,6 +50,7 @@ public class GPanelNavigatorView extends GNavigatorView {
 
     private Button createButton(final GNavigatorElement element) {
         ImageButton button = new ImageButton(element.caption, element.icon);
+        button.addStyleName("panelNavigatorView");
 
         button.addMouseDownHandler(new MouseDownHandler() {
             @Override
