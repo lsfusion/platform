@@ -45,6 +45,7 @@ public class GTreeTable extends GGridPropertyTable {
                 if (selectedRecord != null && !selectedRecord.equals(GTreeTable.this.selectedRecord)) {
                     setCurrentRecord(selectedRecord);
                     form.changeGroupObject(selectedRecord.getGroup(), selectedRecord.key);
+                    setKeyboardSelectedRow(currentRecords.indexOf(selectedRecord));
                 }
             }
         });
@@ -150,8 +151,6 @@ public class GTreeTable extends GGridPropertyTable {
                 }
                 needToScroll = false;
             }
-            selectionModel.setSelected(currentRecords.get(currentInd), true);
-            setKeyboardSelectedRow(currentInd, false);
         }
 
         updateHeader();

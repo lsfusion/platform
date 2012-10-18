@@ -44,6 +44,7 @@ public class GGridTable extends GGridPropertyTable {
                 if (selectedRecord != null && !selectedRecord.key.equals(currentKey)) {
                     setCurrentKey(selectedRecord.key);
                     form.changeGroupObject(groupObject, selectedRecord.key);
+                    setKeyboardSelectedRow(currentRecords.indexOf(selectedRecord));
                 }
             }
         });
@@ -108,9 +109,6 @@ public class GGridTable extends GGridPropertyTable {
 
         int currentInd = currentKey == null ? -1 : rowKeys.indexOf(currentKey);
         if (currentInd != -1) {
-            //сразу ресолвим, чтобы избежать бага в DataGrid с неперерисовкой строк... (т.о. убираем рекурсивный resolvePendingState())
-            selectionModel.setSelectedAndResolve(currentRecords.get(currentInd), true);
-            setKeyboardSelectedRow(currentInd, false);
             if (needToScroll) {
                 int horizontalScrollPosition = getScrollPanel().getHorizontalScrollPosition();
                 if (currentKey.equals(oldKey)) {

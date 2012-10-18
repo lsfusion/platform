@@ -2,9 +2,9 @@ package platform.gwt.form2.client.form.ui;
 
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.client.Element;
-import com.google.gwt.dom.client.Style.Overflow;
 import platform.gwt.form2.shared.view.GPropertyDraw;
 import platform.gwt.form2.shared.view.changes.GGroupObjectValue;
 import platform.gwt.form2.shared.view.changes.dto.ColorDTO;
@@ -53,6 +53,11 @@ public class GSinglePropertyTable extends GPropertyTable {
         //хак, но сейчас api не предоставляет публичного доступа к ScrollPanel.scrollableElement, который нам нужен, поэтому делаем, жёстко полагаясь на реализацию
         Element.as(getScrollPanel().getElement().getChild(1)).
                 getFirstChildElement().getStyle().setOverflow(Overflow.HIDDEN);
+    }
+
+    // перегруженный метод из AbstractCellTable
+    protected boolean isSingleCellTable() {
+        return true;
     }
 
     public void setValue(Object value) {

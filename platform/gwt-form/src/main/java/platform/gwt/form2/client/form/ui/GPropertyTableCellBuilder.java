@@ -54,7 +54,7 @@ public abstract class GPropertyTableCellBuilder<T> extends AbstractCellTableBuil
         StringBuilder trClasses = new StringBuilder(isEven ? evenRowStyle : oddRowStyle);
 
         if (isSelected) {
-            trClasses.append(selectedRowStyle);
+//            trClasses.append(selectedRowStyle);
         }
 
         // Add custom row styles.
