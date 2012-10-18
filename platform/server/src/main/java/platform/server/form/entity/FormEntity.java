@@ -47,8 +47,7 @@ import static platform.server.logics.ServerResourceBundle.getString;
 public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T> implements ServerIdentitySerializable {
     private final static Logger logger = Logger.getLogger(FormEntity.class);
     private static ImageIcon image = new ImageIcon(NavigatorElement.class.getResource("/images/form.png"));
-    public String title;
-    
+
     public static final IsFullClientFormulaProperty isFullClient = IsFullClientFormulaProperty.instance;
     public static final IsDebugFormulaProperty isDebug = IsDebugFormulaProperty.instance;
     public static final SessionDataProperty isDialog = new SessionDataProperty("isDialog", "Is dialog", LogicalClass.instance);
@@ -77,6 +76,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     public OrderedMap<PropertyDrawEntity<?>,Boolean> defaultOrders = new OrderedMap<PropertyDrawEntity<?>, Boolean>();
     public OrderedMap<OrderEntity<?>, Boolean> fixedOrders = new OrderedMap<OrderEntity<?>, Boolean>();
 
+    public String title;
     public boolean isPrintForm;
     public ModalityType modalityType = ModalityType.DOCKED;
 
@@ -106,11 +106,11 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         this(parent, sID, caption, null, iisPrintForm);
     }
 
-    protected FormEntity(NavigatorElement<T> parent, String sID, String caption, String title, boolean iisPrintForm) {
+    protected FormEntity(NavigatorElement<T> parent, String sID, String caption, String ititle, boolean iisPrintForm) {
         super(parent, sID, caption);
-        this.title = title;
         logger.debug("Initializing form " + caption + "...");
 
+        title = ititle;
         isPrintForm = iisPrintForm;
 
         BaseLogicsModule baseLM = Context.context.get().getBL().LM;

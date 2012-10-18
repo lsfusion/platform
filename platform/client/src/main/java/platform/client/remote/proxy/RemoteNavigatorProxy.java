@@ -56,7 +56,7 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface>
     @NonPendingRemoteMethod
     public RemoteFormInterface createPreviewForm(byte[] formState) throws RemoteException {
         return createForm(getImmutableMethodInvocations(RemoteFormProxy.class),
-                MethodInvocation.create(this.getClass(), "createForm", formState));
+                MethodInvocation.create(this.getClass(), "createPreviewForm", formState));
     }
 
     @NonFlushRemoteMethod

@@ -851,7 +851,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         redColor = addCProp(ColorClass.instance, Color.RED);
         yellowColor = addCProp(ColorClass.instance, Color.YELLOW);
 
-        formApply = addProperty(null, new LAP(new FormApplyActionProperty()));
+        formApply = addProperty(null, new LAP(new FormApplyActionProperty(BL)));
         formCancel = addProperty(null, new LAP(new FormCancelActionProperty()));
         formPrint = addProperty(null, new LAP(new PrintActionProperty()));
         formEdit = addProperty(null, new LAP(new EditActionProperty()));
