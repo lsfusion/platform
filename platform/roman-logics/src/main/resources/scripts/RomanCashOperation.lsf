@@ -34,6 +34,9 @@ departmentStoreCashDocument(accountCollection) += departmentStoreAccountCollecti
 cashRegisterCashDocument(accountCollection) += cashRegisterAccountCollection(accountCollection);
 sumCashOutcomeCashOrder(accountCollection) += sumCashAccountCollection(accountCollection);
 basisCashDocument(accountCollection) += basisAccountCollection(accountCollection);
+isPostedCashDocument(accountCollection) += TRUE AND accountCollection IS accountCollection;
+
+//sumCashIncomeCashOrder(zReport) += sumCashZReport(zReport) (-) sumSkipAReceiptSaleDetailZReport(zReport);
 
 createAccountCollectionZReport 'Изъять сумму' (zReport) = ACTION (zReport) {
     EXEC selectDialogSkipAReceiptDetailZReport (zReport);

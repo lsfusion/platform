@@ -645,7 +645,7 @@ priceAllowancePriceSetDocumentArticle (discountPriceSetDocument, article) =
                          IF article IS article AND
                             discountPriceSetDocument IS discountPriceSetDocument AND
                             NOT discountPriceSetDocument IS basePriceSetDocument
-                         THEN prevPriceBBasePriceSetDocumentArticle(discountPriceSetDocument, article)
+                         THEN priceBBasePriceSetDocumentArticle(discountPriceSetDocument, article)
                          ELSE priceBasePriceSetDocumentArticle(discountPriceSetDocument, article);
 
 calcPriceDiscountPriceSetDocumentArticle 'Цена без процентов' (discountPriceSetDocument, article) = [X*(100-Y)/100]
@@ -694,14 +694,14 @@ priceAllowancePriceSetDocumentSku (discountPriceSetDocument, sku) =
                          IF sku IS sku AND
                             discountPriceSetDocument IS discountPriceSetDocument AND
                             NOT discountPriceSetDocument IS basePriceSetDocument
-                         THEN prevPriceBBasePriceSetDocumentSku(discountPriceSetDocument, sku)
+                         THEN priceBBasePriceSetDocumentSku(discountPriceSetDocument, sku)
                          ELSE priceBasePriceSetDocumentSku(discountPriceSetDocument, sku);
 
 calcPriceDiscountPriceSetDocumentSku 'Цена без процентов' (discountPriceSetDocument, sku) = [X*(100-Y)/100]
                                                                                                (priceAllowancePriceSetDocumentSku (discountPriceSetDocument, sku),
                                                                                                overPercentDiscountPriceSetDocumentSku(discountPriceSetDocument, sku));
 
-defaultPriceDiscountPriceSetDocumentSku(discountPriceSetDocument, sku) = roundPriceCurrencySku(calcPriceDiscountPriceSetDocumentSku(discountPriceSetDocument, sku), currencyPriceSetDocument(discountPriceSetDocument), sku) PERSISTENT;
+defaultPriceDiscountPriceSetDocumentSku(discountPriceSetDocument, sku) = roundPriceCurrencySku(calcPriceDiscountPriceSetDocumentSku(discountPriceSetDocument, sku), currencyPriceSetDocument(discountPriceSetDocument), sku);
 priceDiscountPriceSetDocumentSku(discountPriceSetDocument, sku) <- defaultPriceDiscountPriceSetDocumentSku(discountPriceSetDocument, sku)
                                         WHEN CHANGED(priceBasePriceSetDocumentSku(discountPriceSetDocument, sku)) OR
                                              CHANGED(percentDiscountPriceSetDocumentSku(discountPriceSetDocument, sku)) OR

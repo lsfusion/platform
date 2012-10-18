@@ -343,6 +343,7 @@ printIncomeCashOrder 'Распечатать' (incomeCashOrder) = [ACTION (incom
 
     FORM incomeCashOrderPrint OBJECTS i = incomeCashOrder;
     SET isPrintedIncomeCashOrder(incomeCashOrder) <- TRUE;
+    EXEC apply();
 
 }](incomeCashOrder) CONFIRM;
 
@@ -353,6 +354,7 @@ printAllIncomeCashOrder 'Распечатать все непечатанные'
         dateCashDocument(incomeCashOrder) <= (date2 AS DATE) DO {
         FORM incomeCashOrderPrint OBJECTS i = incomeCashOrder;
         SET isPrintedIncomeCashOrder(incomeCashOrder) <- TRUE;
+        EXEC apply();
     }
 
 } CONFIRM TOOLBAR;
@@ -361,6 +363,7 @@ printOutcomeCashOrder 'Распечатать' (outcomeCashOrder) = [ACTION (out
 
     FORM outcomeCashOrderPrint OBJECTS o = outcomeCashOrder;
     SET isPrintedOutcomeCashOrder(outcomeCashOrder) <- TRUE;
+    EXEC apply();
 
 }](outcomeCashOrder) CONFIRM;
 
@@ -371,6 +374,7 @@ printAllOutcomeCashOrder 'Распечатать все непечатанные
         dateCashDocument(outcomeCashOrder) <= (date2 AS DATE) DO {
         FORM outcomeCashOrderPrint OBJECTS o = outcomeCashOrder;
         SET isPrintedOutcomeCashOrder(outcomeCashOrder) <- TRUE;
+        EXEC apply();
     }
 
 } CONFIRM TOOLBAR;
@@ -652,7 +656,7 @@ FORM centralCashRegister 'Центральная касса'
     PROPERTIES(i) READONLY objectClassName, numberCashDocument, dateCashDocument, timeCashDocument, nameDepartmentStoreCashDocument,
                            numberCashRegisterCashDocument, sumCashIncomeCashOrder, basisCashDocument, isPrintedIncomeCashOrder
     PROPERTIES(i) printIncomeCashOrder
-    PROPERTIES(i) isCompleteCashOperation FORCE GRID
+    PROPERTIES(i) READONLY isCompleteCashOperation FORCE GRID
     PROPERTIES addOutcomeCashOperationForm() TODRAW i FORCE PANEL DRAWTOTOOLBAR
     PROPERTIES editOutcomeCashOperationForm(i) SHOWIF isOutcomeCashOperation(i)
     PROPERTIES printAllIncomeCashOrder(dFrom, dTo) TODRAW i
