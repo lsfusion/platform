@@ -207,3 +207,71 @@ META defineBlanketOrder(sign, contact)
         }
     }
 END
+
+META defineOrderBlanketOrder(sign, contact, contactCaption)
+
+    CLASS blanketOrderOrder 'Заказ на основе множественного'###sign : order;
+    CLASS blanketOrderOrderDetail 'Строка заказа на основе множественного'###sign : orderDetail;
+
+    CLASS blanketOrderOrderPosted 'Проведенный заказ на основе множественного'###sign : blanketOrderOrder, postedObject;
+
+    @defineDocumentTables(blanketOrderOrder);
+
+
+    needToOrderBlanketOrderDetail###contact (blanketOrderDetail, contact)= quantityBlanketOrderDetail(blanketOrderDetail)
+        AND isPostedBlanketOrderDetail(blanketOrderDetail) AND contact###blanketOrderDetail(blanketOrderDetail) == contact;
+
+    needToOrderBlanketOrder###contact (blanketOrder, contact)= quantityBlanketOrderDetailBlanketOrder###contact(blanketOrder, contact)
+        AND isPostedBlanketOrder(blanketOrder);
+
+//-- oblect
+    @defineAggregationDouble(blanketOrder, contact, blanketOrderOrder, needToOrderBlanketOrder###contact);
+
+    @defineDocumentAggregationHeaderStock (blanketOrder, blanketOrderOrder, stock, 'Склад');
+    stockOrder(order) += stockBlanketOrderOrder(order);
+
+    shipmentDateBlanketOrderOrder 'Дата исполнения' (blanketOrderOrder)= shipmentDateBlanketOrder(blanketOrderBlanketOrderOrder(blanketOrderOrder));
+    shipmentDateOrder(order) += shipmentDateBlanketOrderOrder(order);
+
+    shipmentTimeOrder(order) += shipmentTimeBlanketOrder(blanketOrderBlanketOrderOrder(order));
+    contact##Order(order) += contact##BlanketOrderOrder(order);
+    currencyOrder(order) += currencyBlanketOrder(blanketOrderBlanketOrderOrder(order));
+    priceListTypeOrder(order) += priceListTypeBlanketOrder###contact(blanketOrderBlanketOrderOrder(order), contact###blanketOrderOrder(order));
+
+    @defineDocumentAggregationHeaderNote (blanketOrder, blanketOrderOrder);
+    noteOrder(order) += noteBlanketOrderOrder(order);
+
+//    @defineDocumentDescription(invoiceShipment, invoiceShipmentDetail, seriesNumberInvoiceShipment, 'Поставка на основе инвойса'###sign);
+//    descriptionShipment (shipment) += descriptionInvoiceShipment(shipment);
+
+//-- detail
+    @defineAggregationDouble(blanketOrderDetail, contact, blanketOrderOrderDetail, needToOrderBlanketOrderDetail###contact);
+
+    blanketOrderOrderBlanketOrderOrderDetail (blanketOrderOrderDetail) = blanketOrderOrderBlanketOrder###contact(blanketOrderBlanketOrderDetail(blanketOrderDetailBlanketOrderOrderDetail(blanketOrderOrderDetail)),
+    contact###blanketOrderDetail(blanketOrderDetailBlanketOrderOrderDetail(blanketOrderOrderDetail)));
+    orderOrderDetail(detail) += blanketOrderOrderBlanketOrderOrderDetail(detail);
+
+    @defineDocumentHeaderCount(blanketOrderOrder);
+    @defineDocumentDetailIndex(blanketOrderOrder);
+
+    @defineDocumentAggregationTime(blanketOrder, blanketOrderOrder);
+    dateOrder(order) += dateBlanketOrderOrder(order);
+    timeOrder(order) += timeBlanketOrderOrder(order);
+
+    @defineDocumentAggregationPosted(blanketOrder, blanketOrderOrder);
+    isPostedOrder(order) += isPostedBlanketOrderOrder(order);
+
+    @defineDocumentAggregationDetailSku (blanketOrder, blanketOrderOrder, sku);
+    skuOrderDetail(detail) +=  skuBlanketOrderOrderDetail(detail);
+
+    @defineDocumentAggregationDetailQuantity (blanketOrder, blanketOrderOrder);
+    quantityOrderDetail(detail) +=  quantityBlanketOrderOrderDetail(detail);
+
+    dataStockOrderDetail(detail) += dataStockBlanketOrderDetail(blanketOrderDetailBlanketOrderOrderDetail(detail));
+    shipmentDataDateOrderDetail(detail) += shipmentDataDateBlanketOrderDetail(blanketOrderDetailBlanketOrderOrderDetail(detail));
+    shipmentDataTimeOrderDetail(detail) += shipmentDataTimeBlanketOrderDetail(blanketOrderDetailBlanketOrderOrderDetail(detail));
+    dataPriceListTypeOrderDetail(detail) += dataPriceListTypeBlanketOrderDetail(blanketOrderDetailBlanketOrderOrderDetail(detail));
+    priceOrderDetail(detail) += priceBlanketOrderDetail(blanketOrderDetailBlanketOrderOrderDetail(detail));
+    sumOrderDetail(detail) += sumBlanketOrderDetail(blanketOrderDetailBlanketOrderOrderDetail(detail));
+END
+

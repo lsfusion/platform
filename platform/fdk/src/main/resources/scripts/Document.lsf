@@ -343,17 +343,14 @@ END
 
 // Closed
 META defineDocumentHeaderClosed (object)
-    isOpend###object 'Не закрыт' (object) = object IS object AND NOT object IS object##Closed PERSISTENT;
-    isClosed###object 'Закрыт' (object) = object IS object##Closed PERSISTENT;
+    isClosed###object 'Закрыт' (object) = DATA BOOLEAN (object) PERSISTENT;
+    isOpend###object 'Не закрыт' (object) = isPosted###object(object) AND NOT isClosed###object(object) PERSISTENT;
 
-    preClose###object 'Закрыть' (object) = [ACTION CHANGECLASS object TO object##Closed ] (object)
-                                    IF object IS object AND NOT object IS object##Closed;
+    close###object 'Закрыть' (object) = [ACTION (object) NEWSESSION AUTOAPPLY { SET isClosed###object(object) <- TRUE WHERE object IS object; } ] (object)
+                                    IF isPosted###object(object) AND NOT isClosed###object(object) TOOLBAR CONFIRM;
 
-    close###object 'Закрыть' (object) = [ACTION (object) NEWSESSION AUTOAPPLY { CHANGECLASS object TO object##Closed; } ] (object)
-                                    IF object IS object AND NOT object IS object##Closed TOOLBAR CONFIRM;
-
-    unclose###object 'Открыть' (object) = [ACTION (object) NEWSESSION AUTOAPPLY { CHANGECLASS object TO object; } ] (object)
-                                      IF object IS object##Closed TOOLBAR CONFIRM;
+    unclose###object 'Открыть' (object) = [ACTION (object) NEWSESSION AUTOAPPLY { SET isClosed###object(object) <- NULL WHERE object IS object; } ] (object)
+                                      IF isClosed###object(object) TOOLBAR CONFIRM;
 END
 META defineDocumentAbstractHeaderClosed (object)
     isClosed###object 'Закрыт' (object) = ABSTRACT BOOLEAN(object) PERSISTENT;
@@ -366,8 +363,8 @@ META defineDocumentInterfaceHeaderClosed (object)
 END
 
 META defineDocumentDetailClosed (object, detail)
-    isClosed###detail 'Проведен' (idetail) = isClosed###object(object###detail(idetail));
-    isOpend###detail 'Не проведен' (idetail) = idetail IS detail AND NOT isClosed###detail(idetail);
+    isClosed###detail 'Закрыт' (idetail) = isClosed###object(object###detail(idetail));
+    isOpend###detail 'Не закрыт' (idetail) = isPosted###detail(idetail) AND NOT isClosed###detail(idetail);
 END
 
 META defineDocumentDetailClosed (object)
@@ -771,7 +768,7 @@ META defineDocumentSkuStockContractorCustom(object, detail, skuProp, stockProp, 
     quantitySku###object###Stock 'Итого' (sku, object, stock) = GROUP SUM quantity###detail(detail)
         BY skuProp###detail(detail), object###detail(detail), stockProp###detail(detail);
 
-    backgroundQuantitySku###object###Stock 'Цвет' (sku, object, stock) = RGB(255,51,153)
+    backgroundQuantitySku###object###Stock 'Цвет' (sku, object, stock) = RGB(255,128,128)
         IF quantitySku###object###Stock(sku, object, stock) > (currentBalanceSkuStock(sku, stock) AND object IS object);
 
     priceSkuStock###object###contact 'Цена' (sku, stock, object, contact) = pricePriceListTypeSkuStockDateTime(priceListType###object###contact(object, contact), sku, stock, dateTime###object(object));

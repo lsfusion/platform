@@ -27,7 +27,6 @@ META defineOrder(sign, contact)
     CLASS userOrder 'Заказ (польз.)'###sign : order, historyObject, numeratedDocument;
     CLASS userOrderDetail 'Строка заказа (польз.)'###sign : orderDetail;
     CLASS userOrderPosted 'Проведенный заказ (польз.)'###sign : userOrder, postedObject;
-    CLASS userOrderClosed 'Закрытый заказ (польз.)'###sign : userOrderPosted;
 
     @defineDocumentInterface(order);
 
@@ -38,7 +37,7 @@ META defineOrder(sign, contact)
 
     @defineDocumentInterfaceTimeShipment(order);
 
-    @defineDocumentInterfaceClosed(order);
+    @defineDocumentClosed (order);
 
     @defineDocumentInterfaceDescription(order, 'Заказ'###sign);
 
@@ -121,11 +120,14 @@ META defineOrder(sign, contact)
                         ADD PROPERTY(dateUserOrder);
                         ADD PROPERTY(timeUserOrder);
                     }
-                    ADD o.documentShipmentGroup {
-                        childConstraints = TO THE RIGHT;
-                    }
-                    ADD o.documentPrmGroup {
-                        childConstraints = TO THE RIGHT;
+                    NEW wor {
+                        childConstraints = TO THE RIGHTBOTTOM;
+                        ADD o.documentPrmGroup {
+                            childConstraints = TO THE RIGHT;
+                        }
+                        ADD o.documentShipmentGroup {
+                            childConstraints = TO THE RIGHT;
+                        }
                     }
                 }
 
@@ -151,21 +153,21 @@ META defineOrder(sign, contact)
 
     FORM orders 'Заказы'###sign
         OBJECTS o = order
-        PROPERTIES (o) READONLY isPostedOrder FORCE GRID, objectClassName, numberObject, seriesObject, dateOrder, timeOrder,
+        PROPERTIES (o) READONLY isPostedOrder FORCE GRID, isClosedOrder, objectClassName, numberObject, seriesObject, dateOrder, timeOrder,
                                 nameStockOrder, name###contact##Order, nameCurrencyOrder, namePriceListTypeOrder, noteOrder,
-                                countOrderDetailOrder, quantityOrderDetailOrder, sumOrderDetailOrder, shipmentDateUserOrder, shipmentTimeUserOrder
+                                countOrderDetailOrder, quantityOrderDetailOrder, sumOrderDetailOrder, shipmentDateOrder, shipmentTimeOrder
 
         PROPERTIES (o) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
         PROPERTIES ()  addUserOrder TODRAW o
         PROPERTIES (o) editUserOrder
-        PROPERTIES (o) closeUserOrder SHOWIF isOpendOrder(o)
+        PROPERTIES (o) closeOrder SHOWIF isOpendOrder(o), uncloseOrder SHOWIF isClosedOrder(o)
         PROPERTIES     delete(o) FORCE PANEL DRAWTOTOOLBAR  SHOWIF isUserOrder(o)
 
         OBJECTS d=orderDetail
         PROPERTIES (d) READONLY indexOrderDetail, idBarcodeSkuOrderDetail, nameSkuOrderDetail, shortNameUOMSkuOrderDetail,
-                       quantityOrderDetail, priceOrderDetail, sumOrderDetail, nameStockOrderDetail, namePriceListTypeOrderDetail, shipmentDateUserOrderDetail,
-                       shipmentTimeUserOrderDetail
+                       quantityOrderDetail, priceOrderDetail, sumOrderDetail, nameStockOrderDetail, namePriceListTypeOrderDetail, shipmentDateOrderDetail,
+                       shipmentTimeOrderDetail
 
 
         FILTERS orderOrderDetail(d) == o

@@ -189,9 +189,9 @@ META defineInvoice(sign, contact, partyA, partyB)
                        VATSumUserInvoiceDetailUserInvoice, invoiceSumUserInvoiceDetailUserInvoice
         OBJECTS d = userInvoiceDetail
         PROPERTIES (d) indexUserInvoiceDetail, idBarcodeSkuUserInvoiceDetail, nameSkuUserInvoiceDetail, shortNameUOMSkuUserInvoiceDetail,
-                       quantityUserInvoiceDetail, priceUserInvoiceDetail, sumUserInvoiceDetail,
+                       quantityUserInvoiceDetail, namePriceListTypeUserInvoiceDetail, priceUserInvoiceDetail, sumUserInvoiceDetail,
                        numberVATUserInvoiceDetail, valueVATUserInvoiceDetail, VATSumUserInvoiceDetail, invoiceSumUserInvoiceDetail,
-                       nameStockUserInvoiceDetail, namePriceListTypeUserInvoiceDetail, descriptionOrderUserInvoiceDetail, ADDOBJ, delete
+                       nameStockUserInvoiceDetail, descriptionOrderUserInvoiceDetail, ADDOBJ, delete
 
         PROPERTIES(i) TODRAW d addDetailDialogSkuStockUserInvoiceDetailUserInvoice,
                                addDetailInputBarcodeUserInvoiceDetailUserInvoice, deleteUserInvoiceDetailUserInvoice
@@ -271,9 +271,9 @@ META defineInvoice(sign, contact, partyA, partyB)
 
         OBJECTS d = invoiceDetail
         PROPERTIES (d) READONLY indexInvoiceDetail, idBarcodeSkuInvoiceDetail, nameSkuInvoiceDetail, shortNameUOMSkuInvoiceDetail,
-                       quantityInvoiceDetail, priceInvoiceDetail, sumInvoiceDetail,
+                       quantityInvoiceDetail, namePriceListTypeInvoiceDetail, priceInvoiceDetail, sumInvoiceDetail,
                        numberVATInvoiceDetail, valueVATInvoiceDetail, VATSumInvoiceDetail, invoiceSumInvoiceDetail,
-                       nameStockInvoiceDetail, namePriceListTypeInvoiceDetail, descriptionOrderInvoiceDetail
+                       nameStockInvoiceDetail, descriptionOrderInvoiceDetail
 
         FILTERS invoiceInvoiceDetail(d) == i
 

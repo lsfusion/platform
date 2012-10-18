@@ -485,9 +485,9 @@ META defineShipment(skuLedger, sign, contact, contactCaption, partyA, partyB)
     createShipmentInvoiceDetail 'Создавать поставку' (invoiceDetail) = createShipmentInvoice(invoiceInvoiceDetail(invoiceDetail));
     createShipmentUserInvoiceDetail 'Создавать поставку' (invoiceDetail) = createShipmentUserInvoice(userInvoiceUserInvoiceDetail(invoiceDetail));
 
-    CLASS invoiceShipment 'Поставка на основе инвойса' : shipment;
-    CLASS invoiceShipmentPosted 'Закрытая поставка на основе инвойса' : invoiceShipment, postedObject;
-    CLASS invoiceShipmentDetail 'Строка поставки на основе инвойса' : shipmentDetail;
+    CLASS invoiceShipment 'Поставка на основе инвойса'###sign : shipment;
+    CLASS invoiceShipmentPosted 'Закрытая поставка на основе инвойса'###sign : invoiceShipment, postedObject;
+    CLASS invoiceShipmentDetail 'Строка поставки на основе инвойса'###sign : shipmentDetail;
 
     @defineDocumentTables(invoiceShipment);
 
