@@ -143,3 +143,59 @@ META defineNumeratedObject (object, caption, series)
         }
     };
 END
+
+//------------------------------------------------------------------------------------------//
+
+META defineNumeratedDoubleObject (object1, object2, Prop)
+
+    number###object1###object2 'Номер' = DATA STRING[18] (object1, object2) IN numberedGroup MINCHARWIDTH 7;
+    series###object1###object2 'Серия' = DATA STRING[2] (object1, object2) IN numberedGroup FIXEDCHARWIDTH 3;
+
+    seriesNumber###object1###object2 'Серия/Номер' (object1, object2) = ustring2(series###object1###object2(object1, object2), number###object1###object2(object1, object2)) MINCHARWIDTH 7 PREFCHARWIDTH 10 MAXCHARWIDTH 20 PERSISTENT;
+
+    numerator###object1###object2 'Нумератор (ИД)' = DATA numerator (object1, object2);
+    nameNumerator###object1###object2 'Нумератор' (object1, object2) = name(numerator###object1###object2(object1, object2)) IN numberedGroup MINCHARWIDTH 7 PREFCHARWIDTH 15;
+
+
+    numerator###object1###object2 (object1, object2) <- defaultNumerator###object1###object2 () AND object1 IS object1 AND object2 IS object2 WHEN ASSIGNED(Prop(object1, object2));
+
+    setValueNumerated###object1###object2 'Сгенерировать номер' = ACTION (object1, object2) {
+        SET number###object1###object2(object1, object2) <- curStringValueNumerator(numerator###object1###object2(object1, object2));
+        SET series###object1###object2(object1, object2) <- seriesNumerator(numerator###object1###object2(object1, object2));
+        EXEC incrementValueNumerator(numerator###object1###object2(object1, object2));
+    } IN numberedGroup SHORTCUT number###object1###object2;
+
+    WHEN CHANGED(numerator###object1###object2(object1, object2)) AND
+         NOT CHANGED(number###object1###object2(object1, object2)) AND
+         NOT CHANGED(series###object1###object2(object1, object2))
+         DO EXEC setValueNumerated###object1###object2(object1, object2) ;
+
+END
+
+META defineDefaultNumeratedDoubleObject (object1, object2, caption, series, Prop)
+
+    defaultNumerator###object1###object2 = DATA numerator ();
+    nameDefaultNumerator###object1###object2 caption = name(defaultNumerator###object1###object2());
+
+    EXTEND FORM defaultNumerators
+        PROPERTIES() nameDefaultNumerator###object1###object2
+    ;
+    EXTEND DESIGN defaultNumerators {
+        defaultContainer {
+            ADD PROPERTY(nameDefaultNumerator###object1###object2);
+        }
+    }
+
+    loadDefaultNumerators() += ACTION () {
+        ADDOBJ numerator;
+        FOR n == addedObject() DO {
+            SET name(n) <- caption;
+            SET seriesNumerator(n) <- series;
+            SET minValueNumerator(n) <- 1L;
+            SET maxValueNumerator(n) <- 99999L;
+            SET stringLengthNumerator(n) <- 5;
+
+            SET defaultNumerator###object1###object2() <- n;
+        }
+    };
+END

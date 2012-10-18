@@ -5,5 +5,5 @@ REQUIRE SaleOrder, BlanketOrder;
 NAMESPACE Sale;
 
 //----------------------------------------------- Множественный Заказ ---------------------------------------------------//
-@defineBlanketOrder(' (продажа)', customer);
+@defineBlanketOrder(' (продажа)', customer, 'Покупатель', 'ЗП');
 @defineOrderBlanketOrder(' (продажа)', customer, 'Покупатель');

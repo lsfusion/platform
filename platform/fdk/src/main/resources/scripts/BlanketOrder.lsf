@@ -4,7 +4,7 @@ REQUIRE Order
 ;
 //----------------------------------------------- Множественнвй Заказ ---------------------------------------------------//
 
-META defineBlanketOrder(sign, contact)
+META defineBlanketOrder(sign, contact, contactCaption, series)
 
     CLASS blanketOrder 'Множественный заказ'###sign : historyObject, numeratedDocument;
     CLASS blanketOrderDetail 'Строка множественного заказа'###sign : named;
@@ -55,8 +55,6 @@ META defineBlanketOrder(sign, contact)
     countBlanketOrderDetailStockBlanketOrder 'Кол-во строк по складу '(stock, blanketOrder) = GROUP SUM 1 BY stockBlanketOrderDetail(blanketOrderDetail), blanketOrderBlanketOrderDetail(blanketOrderDetail);
     inBlanketOrder###contact 'В заказе' (blanketOrder, contact) = DATA BOOLEAN (blanketOrder, contact);
 
-
-
     CONSTRAINT contact##BlanketOrderDetail(blanketOrderDetail) AND NOT inBlanketOrder###contact(blanketOrderBlanketOrderDetail(blanketOrderDetail), contact##BlanketOrderDetail(blanketOrderDetail))
         CHECKED BY contact##BlanketOrderDetail
             MESSAGE 'Для строки множественного заказа выбран контрагент не включенный в заказ';
@@ -66,7 +64,8 @@ META defineBlanketOrder(sign, contact)
         BY blanketOrder
         ORDER contact MINCHARWIDTH 10 MAXCHARWIDTH 30 PREFCHARWIDTH 20 PERSISTENT;
 
-
+    @defineDefaultNumeratedDoubleObject (blanketOrder, contact, 'Нумератор для Заказ/'###contactCaption###sign, series, inBlanketOrder###contact);
+    @defineNumeratedDoubleObject (blanketOrder, contact, inBlanketOrder###contact);
 // --------------------------- Формы Заказа ---------------------------------
 
     FORM blanketOrder 'Множественный заказ'###sign
@@ -82,7 +81,8 @@ META defineBlanketOrder(sign, contact)
                        shipmentDateBlanketOrderDetail,
                        shipmentTimeBlanketOrderDetail, ADDOBJ, delete
         OBJECTS c = contact
-        PROPERTIES     name(c) READONLY, inBlanketOrder###contact(o,c), namePriceListTypeBlanketOrder###contact(o,c)
+        PROPERTIES     name(c) READONLY, inBlanketOrder###contact(o,c)
+        PROPERTIES(o,c) nameNumeratorBlanketOrder###contact, numberBlanketOrder###contact, seriesBlanketOrder###contact, namePriceListTypeBlanketOrder###contact
         PROPERTIES(o,c) READONLY countBlanketOrderDetailBlanketOrder###contact, quantityBlanketOrderDetailBlanketOrder###contact, sumBlanketOrderDetailBlanketOrder###contact
 
         PROPERTIES(o) TODRAW d deleteBlanketOrderDetailBlanketOrder
@@ -241,8 +241,11 @@ META defineOrderBlanketOrder(sign, contact, contactCaption)
     @defineDocumentAggregationHeaderNote (blanketOrder, blanketOrderOrder);
     noteOrder(order) += noteBlanketOrderOrder(order);
 
-//    @defineDocumentDescription(invoiceShipment, invoiceShipmentDetail, seriesNumberInvoiceShipment, 'Поставка на основе инвойса'###sign);
-//    descriptionShipment (shipment) += descriptionInvoiceShipment(shipment);
+    seriesOrder(order) += seriesBlanketOrder###contact(blanketOrderBlanketOrderOrder(order), contact###blanketOrderOrder(order));
+    numberOrder(order) += numberBlanketOrder###contact(blanketOrderBlanketOrderOrder(order), contact###blanketOrderOrder(order));
+    seriesNumberBlanketOrderOrder 'Серия/Номер' (blanketOrderOrder) = ustring2(
+        seriesBlanketOrder###contact(blanketOrderBlanketOrderOrder(blanketOrderOrder), contact###blanketOrderOrder(blanketOrderOrder)),
+        numberBlanketOrder###contact(blanketOrderBlanketOrderOrder(blanketOrderOrder), contact###blanketOrderOrder(blanketOrderOrder)));
 
 //-- detail
     @defineAggregationDouble(blanketOrderDetail, contact, blanketOrderOrderDetail, needToOrderBlanketOrderDetail###contact);
@@ -257,6 +260,9 @@ META defineOrderBlanketOrder(sign, contact, contactCaption)
     @defineDocumentAggregationTime(blanketOrder, blanketOrderOrder);
     dateOrder(order) += dateBlanketOrderOrder(order);
     timeOrder(order) += timeBlanketOrderOrder(order);
+
+    @defineDocumentHeaderDescription(blanketOrderOrder, seriesNumberBlanketOrderOrder, 'Заказ на основе множественного'###sign);
+    descriptionOrder (order) += descriptionBlanketOrderOrder(order);
 
     @defineDocumentAggregationPosted(blanketOrder, blanketOrderOrder);
     isPostedOrder(order) += isPostedBlanketOrderOrder(order);

@@ -78,7 +78,7 @@ META defineOrder(sign, contact)
 
         OBJECTS d = userOrderDetail
         PROPERTIES (d) indexUserOrderDetail, idBarcodeSkuUserOrderDetail, nameSkuUserOrderDetail, shortNameUOMSkuUserOrderDetail,
-                       quantityUserOrderDetail, priceUserOrderDetail, sumUserOrderDetail, nameStockUserOrderDetail, namePriceListTypeUserOrderDetail, shipmentDateUserOrderDetail,
+                       quantityUserOrderDetail, namePriceListTypeUserOrderDetail, priceUserOrderDetail, sumUserOrderDetail, nameStockUserOrderDetail, shipmentDateUserOrderDetail,
                        shipmentTimeUserOrderDetail, ADDOBJ, delete
 
         PROPERTIES(o) TODRAW d addDetailDialogSkuStockUserOrderDetailUserOrder,
@@ -153,7 +153,7 @@ META defineOrder(sign, contact)
 
     FORM orders 'Заказы'###sign
         OBJECTS o = order
-        PROPERTIES (o) READONLY isPostedOrder FORCE GRID, isClosedOrder, objectClassName, numberObject, seriesObject, dateOrder, timeOrder,
+        PROPERTIES (o) READONLY isPostedOrder FORCE GRID, isClosedOrder, objectClassName, numberOrder, seriesOrder, dateOrder, timeOrder,
                                 nameStockOrder, name###contact##Order, nameCurrencyOrder, namePriceListTypeOrder, noteOrder,
                                 countOrderDetailOrder, quantityOrderDetailOrder, sumOrderDetailOrder, shipmentDateOrder, shipmentTimeOrder
 
@@ -166,7 +166,7 @@ META defineOrder(sign, contact)
 
         OBJECTS d=orderDetail
         PROPERTIES (d) READONLY indexOrderDetail, idBarcodeSkuOrderDetail, nameSkuOrderDetail, shortNameUOMSkuOrderDetail,
-                       quantityOrderDetail, priceOrderDetail, sumOrderDetail, nameStockOrderDetail, namePriceListTypeOrderDetail, shipmentDateOrderDetail,
+                       quantityOrderDetail, namePriceListTypeOrderDetail, priceOrderDetail, sumOrderDetail, nameStockOrderDetail, shipmentDateOrderDetail,
                        shipmentTimeOrderDetail
 
 
