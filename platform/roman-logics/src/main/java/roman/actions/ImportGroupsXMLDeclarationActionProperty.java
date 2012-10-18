@@ -103,7 +103,7 @@ public class ImportGroupsXMLDeclarationActionProperty extends ScriptingActionPro
                         data.add(row);
                     }
 
-                    ImportField userNumberGroupDeclarationField = new ImportField(LM.findLCPByCompoundName("userNumberGroupDeclaration"));
+                    ImportField overNumberGroupDeclarationField = new ImportField(LM.findLCPByCompoundName("overNumberGroupDeclaration"));
                     ImportField nameDataGroupDeclarationField = new ImportField(LM.findLCPByCompoundName("nameDataGroupDeclaration"));
                     ImportField sumDataGroupDeclarationField = new ImportField(LM.findLCPByCompoundName("sumDataGroupDeclaration"));
                     ImportField dutyDataGroupDeclarationField = new ImportField(LM.findLCPByCompoundName("dutyDataGroupDeclaration"));
@@ -116,14 +116,14 @@ public class ImportGroupsXMLDeclarationActionProperty extends ScriptingActionPro
                     List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
 
                     ImportKey<?> groupDeclarationKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("groupDeclaration"),
-                            LM.findLCPByCompoundName("uniqueGroupDeclaration").getMapping(userNumberGroupDeclarationField, declaration));
+                            LM.findLCPByCompoundName("uniqueGroupDeclaration").getMapping(overNumberGroupDeclarationField, declaration));
 
                     ImportKey<?> customCategory10Key = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("customCategory10"),
                             getLCP("sidToCustomCategory10").getMapping(customCategory10Field, customsZone));
 
                     ImportKey<?> articleKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("articleComposite"), LM.findLCPByCompoundName("articleCustomsSIDSupplier").getMapping(sidArticleGroupDeclarationField, customsSIDBrandSupplierField));
 
-                    properties.add(new ImportProperty(userNumberGroupDeclarationField, LM.findLCPByCompoundName("userNumberGroupDeclaration").getMapping(groupDeclarationKey)));
+                    properties.add(new ImportProperty(overNumberGroupDeclarationField, LM.findLCPByCompoundName("overNumberGroupDeclaration").getMapping(groupDeclarationKey)));
                     properties.add(new ImportProperty(nameDataGroupDeclarationField, LM.findLCPByCompoundName("nameDataGroupDeclaration").getMapping(groupDeclarationKey)));
                     properties.add(new ImportProperty(sumDataGroupDeclarationField, LM.findLCPByCompoundName("sumDataGroupDeclaration").getMapping(groupDeclarationKey)));
                     properties.add(new ImportProperty(dutyDataGroupDeclarationField, LM.findLCPByCompoundName("dutyDataGroupDeclaration").getMapping(groupDeclarationKey)));
@@ -139,7 +139,7 @@ public class ImportGroupsXMLDeclarationActionProperty extends ScriptingActionPro
                     properties.add(new ImportProperty(sidArticleGroupDeclarationField, getLCP("articleGroupDeclaration").getMapping(groupDeclarationKey),
                             LM.object(getClass("articleComposite")).getMapping(articleKey)));
 
-                    List<ImportField> fields = BaseUtils.toList(userNumberGroupDeclarationField, nameDataGroupDeclarationField,
+                    List<ImportField> fields = BaseUtils.toList(overNumberGroupDeclarationField, nameDataGroupDeclarationField,
                             sumDataGroupDeclarationField, dutyDataGroupDeclarationField, VATDataGroupDeclarationField,
                             customCategory10Field, sidOrigin2CountryGroupDeclarationField,
                             customsSIDBrandSupplierField, sidArticleGroupDeclarationField

@@ -530,11 +530,14 @@ customsZoneGroupDeclaration(groupDeclaration) = customsZoneDeclaration(declarati
 numberGroupDeclaration 'Номер' (groupDeclaration) =
         PARTITION SUM 1 IF groupDeclaration IS groupDeclaration BY declarationGroupDeclaration(groupDeclaration)
         ORDER groupDeclaration;
+
 userNumberGroupDeclaration 'Пользовательский номер' (groupDeclaration) = DATA INTEGER (groupDeclaration) IN idGroup;
 overNumberGroupDeclaration 'Номер' (groupDeclaration) = UNION OVERRIDE numberGroupDeclaration(groupDeclaration), userNumberGroupDeclaration(groupDeclaration);
-uniqueGroupDeclaration = GROUP UNIQUE groupDeclaration BY userNumberGroupDeclaration (groupDeclaration),
+
+uniqueGroupDeclaration = GROUP UNIQUE groupDeclaration BY overNumberGroupDeclaration (groupDeclaration),
                                                           declarationGroupDeclaration (groupDeclaration)
                                                           WHERE groupDeclaration IS groupDeclaration;
+
 inDeclarationGroupDeclaration (declaration, groupDeclaration) = declarationGroupDeclaration(groupDeclaration)==declaration;
 
 // todo надо будет удалить таблицу
