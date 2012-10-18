@@ -30,6 +30,13 @@ sumVATSalesLedger 'Сумма НДС' (ledger) = [X*Y/(100+Y)](
 
 markupSumSalesLedger 'Надбавка' (ledger) = sumSalesLedger(ledger) - sumVATSalesLedger(ledger) - costSumSkuLedger(ledger);
 
+quantitySoldSkuStockWeekDateFromTo 'Продано за неделю (кол-во)' (sku, stock, week, dateFrom, dateTo) = GROUP SUM
+        quantitySalesLedger(ledger) AND dateSalesLedger(ledger) >= (dateFrom AS DATE) AND dateSalesLedger(ledger) <= (dateTo AS DATE)
+        BY skuSalesLedger(ledger), stockSalesLedger(ledger), weekInDate(dateSalesLedger(ledger)), dateFrom, dateTo;
+
+quantitySoldWeekDateFromTo 'Продано за неделю (кол-во)' (week, dateFrom, dateTo) = GROUP SUM
+        quantitySoldSkuStockWeekDateFromTo(sku, stock, week, dateFrom, dateTo) BY  week, dateFrom, dateTo;
+
 quantitySoldSkuStockDateFromTo 'Продано за интервал (кол-во)' (sku, stock, dateFrom, dateTo) = GROUP SUM
         quantitySalesLedger(ledger) AND dateSalesLedger(ledger) >= (dateFrom AS DATE) AND dateSalesLedger(ledger) <= (dateTo AS DATE)
         BY skuSalesLedger(ledger), stockSalesLedger(ledger), dateFrom, dateTo;
@@ -88,25 +95,33 @@ FORM salesLedger 'Продажи по позициям'
     FILTERS dateSalesLedger(s) >= dFrom, dateSalesLedger(s) <= dTo
 ;
 
+nameWeek (integer)= [FORMULA STRING[15] 'CAST($1 AS TEXT) || \' \' || \'неделя \' '](integer) MINCHARWIDTH 15 PREFCHARWIDTH 15;
+
 FORM salesSkuStock 'Продажи по SKU'
 
     OBJECTS dates = (dFrom = DATE, dTo = DATE) FIXED PANEL
     PROPERTIES OBJVALUE(dFrom), OBJVALUE(dTo)
 
-    TREE stockTree sg = stockGroup PARENT parentStockGroup
-    PROPERTIES READONLY sgTreeName = name(sg)
+    OBJECTS w = INTEGER
+    FILTERS quantitySoldWeekDateFromTo(w, dFrom, dTo)
+
+    TREE stockTree sg = stockGroup PARENT parentStockGroup, ts = stock
+    PROPERTIES READONLY sgTreeName = name(sg), tsTreeName = name(ts)
+    FILTERS stockGroupStock(ts) == sg
 
     TREE skuTree sk = skuGroup PARENT parentSkuGroup
     PROPERTIES READONLY skuTreeName = name(sk)
     ORDER BY skuTreeName
 
     OBJECTS           sts=(st=stock, s=sku)
-    PROPERTIES        READONLY nameSku(s), stockName = name(st)  //  idBarcodeSku
+    PROPERTIES        READONLY nameSku(s), stockName = name(st)
+
     FILTERS           isParentSkuGroupSku(sk, s),
-                      isParentStockGroupStock(sg, st)
+                      (st == ts AND sg IS stockGroup) OR (isParentStockGroupStock(sg, st) AND NOT ts)
+
     ORDER BY          nameSku
 
-    PROPERTIES        balanceBSkuStockDate(s, st, dFrom),
+    PROPERTIES        balanceBSkuStockDate(s, st, dFrom), quantitySoldSkuStockWeekDateFromTo(s, st, w, dFrom, dTo)  COLUMNS (w) HEADER nameWeek  (w), //castToString3
                       quantitySoldSkuStockDateFromTo(s, st, dFrom, dTo),
                       balanceASkuStockDate(s, st, dTo)
 
@@ -139,6 +154,7 @@ DESIGN salesSkuStock FROM DEFAULT {
                 childConstraints = TO THE BOTTOM;
 
                 ADD dates.box;
+                REMOVE w.box;
                 ADD sts.box { fillVertical = 2; }
             }
         }
