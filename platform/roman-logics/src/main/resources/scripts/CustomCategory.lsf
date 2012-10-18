@@ -67,7 +67,7 @@ FORM customCategory10 'Четвертый уровень'
     PROPERTIES(g) sidCustomCategory10, nameCustomCategory, nameCustomsZoneCustomCategory10,
                   sidCustomCategory9CustomCategory10, sidCustomCategory6CustomCategory10, sidCustomCategory4CustomCategory10,
                   nameCustomCategory9CustomCategory10, nameCustomCategory6CustomCategory10, nameCustomCategory4CustomCategory10,
-                  certificatedCustomCategory10, subCategoryCustomCategory10, numberRangeSupplierVATCustomCategory10,
+                  certificatedCustomCategory10, nameSpecUnitOfMeasureCustomCategory10, subCategoryCustomCategory10, numberRangeSupplierVATCustomCategory10,
                   dialogSupplierVATCustomCategory10, valueCurrentRateSupplierVATCustomCategory10
     OBJECTS s = subCategory
     PROPERTIES(s) READONLY nameSubCategory
@@ -214,7 +214,7 @@ FORM customCategoryZones 'ТН ВЭД (зональный)'
 
     OBJECTS cd = customCategory10
 
-    PROPERTIES(cd) READONLY sidCustomCategory10, nameCustomCategory, certificatedCustomCategory10, valueCurrentRateSupplierVATCustomCategory10
+    PROPERTIES(cd) READONLY sidCustomCategory10, nameCustomCategory, certificatedCustomCategory10, nameSpecUnitOfMeasureCustomCategory10, valueCurrentRateSupplierVATCustomCategory10
     PROPERTIES(cd) EDITFORM, delete
     PROPERTIES(cc,cz) addCategory10Category9CustomsZone TODRAW cd
 

@@ -438,6 +438,8 @@ public class RomanLogicsModule extends LogicsModule {
     LCP sidCustomCategory9;
     LCP<PropertyInterface> sidCustomCategory10;
     LCP certificatedCustomCategory10;
+    LCP specUnitOfMeasureCustomCategory10;
+    LCP nameSpecUnitOfMeasureCustomCategory10;
     LCP sidCustomCategoryOrigin;
     LCP numberIdCustomCategory10;
     LCP numberIdCustomCategoryOrigin;
@@ -1929,6 +1931,9 @@ public class RomanLogicsModule extends LogicsModule {
         sidCustomCategory10.setFixedCharWidth(10);
 
         certificatedCustomCategory10 = addDProp(baseGroup, "certificatedCustomCategory10", "Необходимость сертификации", LogicalClass.instance, customCategory10);
+
+        specUnitOfMeasureCustomCategory10 = addDProp(idGroup, "specUnitOfMeasureCustomCategory10", "Специальная ед. изм. (ИД)", unitOfMeasure, customCategory10);
+        nameSpecUnitOfMeasureCustomCategory10 = addJProp(baseGroup, "nameSpecUnitOfMeasureCustomCategory10", "Специальная ед. изм.", baseLM.name, specUnitOfMeasureCustomCategory10, 1);
 
         sidCustomCategoryOrigin = addDProp(baseGroup, "sidCustomCategoryOrigin", "Код ЕС(10)", StringClass.get(10), customCategoryOrigin);
         sidCustomCategoryOrigin.setFixedCharWidth(10);
@@ -8178,6 +8183,7 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(sumInOutImporterFreight, objImporter, objFreight);
 
             setEditType(PropertyEditType.READONLY, objImporter.groupTo);
+            setEditType(sidContractImporterFreight, PropertyEditType.EDITABLE);
 
             addPropertyDraw(objImporter, objFreight, objTypeInvoice, sidImporterFreightTypeInvoice, dateImporterFreightTypeInvoice, dateShipmentImporterFreightTypeInvoice);
 

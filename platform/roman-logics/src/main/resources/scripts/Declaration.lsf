@@ -13,9 +13,10 @@ REQUIRE System,
         MasterData,
         Freight,
         RomanStock,
+        RomanContractLedger,
         RomanLogicsModule;
 
-PRIORITY Utils, Stock, RomanLogicsModule;
+PRIORITY Utils, Stock, RomanContractLedger, RomanLogicsModule;
 
 NAMESPACE RB;
 
@@ -86,6 +87,10 @@ dateInnerInvoice 'Дата инвойса' (innerInvoice) = UNION EXCLUSIVE date
 
 contractFormedInvoice 'Договор инвойса (ИД)' (formedInvoice) = contractImporterFreight(importerFormedInvoice(formedInvoice),
                                                                                        freightFormedInvoice(formedInvoice)) IN idGroup;
+
+contractDirectInvoice 'Договор инвойса (ИД)' (directInvoice) = contractDirectInvoice(directInvoice) IF directInvoice IS directInvoice;
+
+contractInnerInvoice 'Договор инвойса (ИД)' (innerInvoice) = UNION EXCLUSIVE contractDirectInvoice(innerInvoice), contractFormedInvoice(innerInvoice) IN baseGroup PERSISTENT;
 
 quantityFormedInvoiceSku 'Кол-во в инвойсе' (formedInvoice, sku) = quantityProxyImporterFreightSku(importerFormedInvoice(formedInvoice),
                                                                                                    freightFormedInvoice(formedInvoice),
@@ -179,6 +184,9 @@ nameLanguageDeclaration 'Язык декларации' (declaration) = name(lan
 
 customsZoneDeclaration (declaration) = customsZoneCountry(countryLegalEntity(importerDeclaration(declaration)));
 
+contractDeclaration = DATA contractSku(declaration);
+numberContractDeclaration 'Договор' (declaration) = numberContract(contractDeclaration(declaration));
+
 currencyDeclaration 'Валюта декларации (ИД)' = DATA currency(declaration) IN idGroup;
 nameCurrencyDeclaration 'Валюта декларации' = name(currencyDeclaration(declaration)) IN exchangeGroup;
 
@@ -193,6 +201,9 @@ CONSTRAINT declarationInnerInvoice(innerInvoice) AND NOT(freightInnerInvoice(inn
     MESSAGE 'Инвойс используется в декларации';
 
 forDeclaration(declaration, innerInvoice) = inDeclarationInnerInvoice(declaration, innerInvoice) OR declaration AS declaration AND NOT declarationInnerInvoice(innerInvoice);
+
+//CONSTRAINT contractDeclaration(declarationInnerInvoice(innerInvoice)) != contractInnerInvoice(innerInvoice) CHECKED
+//    MESSAGE 'Инвойс для другого договора';
 
 CONSTRAINT importerDeclaration(declarationInnerInvoice(innerInvoice)) != importerInnerInvoice(innerInvoice) CHECKED
     MESSAGE 'Инвойс для другого импортёра';
@@ -684,10 +695,16 @@ sumGroupDeclaration 'Стоимость (расч.)' (groupDeclaration) = GROUP 
 sumOriginGroupDeclaration 'Стоимость (в валюте)' (groupDeclaration) = GROUP SUM sumOriginGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail)
                                                                              BY groupDeclaration PERSISTENT MINCHARWIDTH 10; ;
 
+dutyWeightSpecGroupDeclaration (groupDeclaration) = IF specUnitOfMeasureCustomCategory10(customCategory10GroupDeclaration(groupDeclaration))
+                                                      THEN dutySumCustomCategory10TypeDuty(customCategory10GroupDeclaration(groupDeclaration),
+                                                                                           typeDutyDutyCustomsZone(customsZoneGroupDeclaration(groupDeclaration)))
+                                                      ELSE netWeightGroupDeclaration(groupDeclaration) *
+                                                           dutySumCustomCategory10TypeDuty(customCategory10GroupDeclaration(groupDeclaration),
+                                                                                           typeDutyDutyCustomsZone(customsZoneGroupDeclaration(groupDeclaration))) PERSISTENT;
+
+
 dutyWeightGroupDeclaration (groupDeclaration) = coeffRateDeclaration(declarationGroupDeclaration(groupDeclaration)) *
-                                                netWeightGroupDeclaration(groupDeclaration) *
-                                                dutySumCustomCategory10TypeDuty(customCategory10GroupDeclaration(groupDeclaration),
-                                                                                typeDutyDutyCustomsZone(customsZoneGroupDeclaration(groupDeclaration))) PERSISTENT;
+                                                dutyWeightSpecGroupDeclaration (groupDeclaration) PERSISTENT;
 
 dutyPriceGroupDeclaration (groupDeclaration) = sumGroupDeclaration(groupDeclaration) *
                                                (dutyPercentCustomCategory10TypeDuty(customCategory10GroupDeclaration(groupDeclaration),
@@ -1074,7 +1091,7 @@ importExportDeclarationBYAllow(declaration) = allowImportExportXMLDeclarationBY(
 
 FORM declaration 'Декларация'
     OBJECTS d=declaration FIXED PANEL, dd=declarationDetail
-    PROPERTIES(d) objectClassName, sidDeclaration, nameCustomStoreDeclaration, nameImporterDeclaration, nameLanguageDeclaration,
+    PROPERTIES(d) objectClassName, sidDeclaration, nameCustomStoreDeclaration, nameImporterDeclaration, numberContractDeclaration, nameLanguageDeclaration,
                   nameCurrencyDeclaration, innerInvoicesDeclaration, dateDeclaration, timeDeclaration, beginTimeDeclaration, endTimeDeclaration,
                   nameTypeExchangeCustomDeclaration, rateExchangeCustomDataDeclaration, nameTypeExchangeManagerialDeclaration,
                   rateExchangeManagerialDataDeclaration, sumRegistrationUnionDeclaration, nameExecuterDeclaration
@@ -1205,6 +1222,7 @@ DESIGN declaration FROM DEFAULT{
                             ADD PROPERTY(sidDeclaration);
                             ADD PROPERTY(nameCustomStoreDeclaration);
                             ADD PROPERTY(nameImporterDeclaration);
+                            ADD PROPERTY(numberContractDeclaration);
                             ADD PROPERTY(nameLanguageDeclaration);
                             ADD PROPERTY(innerInvoicesDeclaration);
                             ADD PROPERTY(showFormDeclarationInvoices);
@@ -1297,6 +1315,7 @@ DESIGN declaration FROM DEFAULT{
     PROPERTY(dateDeclaration) { background = #FFEEEE; }
     PROPERTY(nameCurrencyDeclaration) { background = #FFEEEE; }
     PROPERTY(nameImporterDeclaration) { background = #FFEEEE; }
+    PROPERTY(numberContractDeclaration) { background = #FFEEEE; }
     PROPERTY(nameCustomStoreDeclaration) { background = #FFEEEE; }
     PROPERTY(sumConsultationDeclaration) { background = #FFEEEE; }
 
@@ -1317,8 +1336,8 @@ DESIGN declaration FROM DEFAULT{
 
 FORM declarations 'Декларации'
     OBJECTS d=declaration
-    PROPERTIES(d) READONLY sidDeclaration, objectClassName, nameCustomStoreDeclaration, nameImporterDeclaration, nameLanguageDeclaration,
-                           dateDeclaration, timeDeclaration, nameCurrencyDeclaration,
+    PROPERTIES(d) READONLY sidDeclaration, objectClassName, nameCustomStoreDeclaration, nameImporterDeclaration, numberContractDeclaration,
+                           nameLanguageDeclaration, dateDeclaration, timeDeclaration, nameCurrencyDeclaration,
                            rateExchangeCustomDataDeclaration, rateExchangeManagerialDataDeclaration, sumRegistrationUnionDeclaration,
                            dutyReverseDeclaration, VATReverseDeclaration, totalCustomSum,
                            expenseCertificateDeclaration, canonicalBrandDeclaration, nameExecuterDeclaration

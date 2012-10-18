@@ -68,6 +68,14 @@ EXTEND FORM simpleInvoiceForm
     PROPERTIES (invoice) READONLY nameLanguageInvoice AFTER nameDestinationDestinationDocument
 ;
 
+EXTEND DESIGN simpleInvoiceForm {
+    PROPERTY(objectClassName) { background = #FFEEEE; }
+    PROPERTY(nameCompanyInvoice) { background = #FFEEEE; }
+    PROPERTY(nameCurrencyDocument) { background = #FFEEEE; }
+    PROPERTY(nameDestinationDestinationDocument) { background = #FFEEEE; }
+    PROPERTY(numberContractInvoice) { background = #FFEEEE; }
+}
+
 // ----------- Групповое изменение составов ----------------- //
 
 countInvoiceMainComposition 'Кол-во' = GROUP SUM 1 IF quantityDocumentSku(document, sku) AND document IS invoice
@@ -102,6 +110,14 @@ changeDocumentAdditionalCompositionLanguage = ACTION (document, comp) {
 }
 
 EXTEND FORM boxInvoiceForm
+
+    OBJECTS a = article
+    PROPERTIES (a) sidArticle, nameSeasonYearArticle, nameBrandSupplierArticle, nameCollectionSupplierArticle, nameSubCategorySupplierArticle,
+                   nameThemeSupplierArticle, nameCategoryArticle, originalNameArticle, sidCustomCategoryOriginArticle, nameTypeFabricArticle,
+                   sidGenderArticle, nameTypeLabelArticle, nameCountrySupplierOfOriginArticle, netWeightArticle, mainCompositionOriginArticle
+
+    FILTERS quantityDocumentArticle(invoice, a)
+
     OBJECTS mc = STRING[200] FIXED GRID
     PROPERTIES OBJVALUE(mc) ON CHANGE EXEC changeDocumentMainComposition(invoice, mc), countInvoiceMainComposition(invoice, mc)
     FILTERS countInvoiceMainComposition(invoice, mc)
@@ -128,7 +144,14 @@ EXTEND DESIGN boxInvoiceForm {
             ADD supplier.box;
             ADD invoice.box;
         }
+
         ADD invoiceDetail {
+
+            NEW articles {
+                title = 'Артикулы';
+                ADD a.box;
+            }
+
             NEW compositions {
                 childConstraints = TO THE RIGHT;
                 title = 'Составы';
