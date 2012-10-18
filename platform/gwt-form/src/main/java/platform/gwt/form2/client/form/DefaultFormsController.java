@@ -41,7 +41,7 @@ public class DefaultFormsController extends SimpleLayoutPanel implements FormsCo
 
     public void openForm(final String formSID, final GModalityType modalityType) {
         //todo: добавить loading-компонент перед вызовом и убрать его перед добавлением формы..
-        NavigatorDispatchAsync.Instance.get().execute(new GetForm(formSID, null), new ErrorAsyncCallback<GetFormResult>() {
+        NavigatorDispatchAsync.Instance.get().execute(new GetForm(formSID, modalityType.isModal(), null), new ErrorAsyncCallback<GetFormResult>() {
             @Override
             public void success(GetFormResult result) {
                 if (!GWT.isScript() && formSID != null) {

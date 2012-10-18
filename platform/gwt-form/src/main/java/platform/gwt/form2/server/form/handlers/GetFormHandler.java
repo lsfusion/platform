@@ -22,7 +22,7 @@ public class GetFormHandler extends FormActionHandler<GetForm, GetFormResult> {
 
         return new GetFormResult(
                 getFormSessionManager().createFormAndPutInSession(
-                        servlet.getNavigator().createForm(action.sid, action.initialObjects, false, true)
+                        servlet.getNavigator().createForm(action.sid, action.initialObjects, action.isModal, true)
                 )
         );
     }
