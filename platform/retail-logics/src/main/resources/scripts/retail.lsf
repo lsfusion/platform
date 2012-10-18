@@ -1525,18 +1525,14 @@ DESIGN cutting FROM DEFAULT {
             NEW caseOneBox {
                 title = 'Подразделение';
 
-                ADD treeStore.tree.box {
-                    fillHorizontal = 1;
-                };
+                ADD treeStore.tree.box;
                 ADD dep.box {
                     fillHorizontal = 2;
                 };
                 POSITION treeStore.tree.box TO THE LEFT dep.box;
             }
             NEW caseTwoBox { title = 'Товар, для которого действует карта';
-                ADD treeGroup.tree.box {
-                    fillHorizontal = 1;
-                };
+                ADD treeGroup.tree.box;
                 ADD i.box {
                     fillHorizontal = 2;
                 };
@@ -6282,8 +6278,8 @@ DESIGN statisticalReport FROM DEFAULT {
                 type = SPLITV;
                 childConstraints = TO THE BOTTOM;
 
-                ADD treeStore.tree.box {title = 'Магазины';};
-                ADD treeGroups.tree.box {title = 'Статистические группы';};
+                ADD treeStore.tree.box { title = 'Магазины'; }
+                ADD treeGroups.tree.box { title = 'Статистические группы'; }
             }
 
             NEW secondCase {
@@ -6576,8 +6572,8 @@ DESIGN isSupplierItemDepartmentStore FROM DEFAULT {
                 NEW firstCaseTwo {
 
                     type = SPLITV;
-                    ADD treeStore.tree.box {title = 'Магазины';};
-                    ADD treeGroups.tree.box {title = 'Товарные группы';};
+                    ADD treeStore.tree.box { title = 'Магазины'; }
+                    ADD treeGroups.tree.box { title = 'Товарные группы'; }
                 }
             }
 

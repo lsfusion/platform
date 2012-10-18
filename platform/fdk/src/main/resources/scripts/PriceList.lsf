@@ -179,8 +179,8 @@ DESIGN userPriceListSku FROM DEFAULT {
         NEW firstContainer{
             type = SPLITV;
             childConstraints = TO THE BOTTOM;
-            ADD skuTree.tree.box{fillVertical = 3.0;}
-            ADD ts.box{fillVertical = 2.0;}
+            ADD skuTree.tree.box { fillVertical = 3.0; }
+            ADD ts.box{ fillVertical = 2.0; }
         }
         NEW secondContainer{
             childConstraints = TO THE BOTTOM;
@@ -368,7 +368,7 @@ DESIGN userPriceList FROM DEFAULT {
                 childConstraints = TO THE BOTTOM;
                 fillHorizontal = 3.0;
                 type = SPLITH;
-                ADD skuTree.tree.box{
+                ADD skuTree.tree.box {
                     caption = 'Товары';
                     fillVertical = 3.0;
                 }

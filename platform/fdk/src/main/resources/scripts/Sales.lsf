@@ -144,8 +144,8 @@ DESIGN salesSkuStock FROM DEFAULT {
                 type = SPLITV;
                 childConstraints = TO THE BOTTOM;
 
-                ADD stockTree.tree.box {title = 'Магазины';};
-                ADD skuTree.tree.box {title = 'Товарные группы';};
+                ADD stockTree.tree.box {title = 'Магазины'; }
+                ADD skuTree.tree.box { title = 'Товарные группы'; }
             }
 
             NEW secondCase {

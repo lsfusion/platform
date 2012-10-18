@@ -172,12 +172,8 @@ DESIGN wholesalePriceDocument FROM DEFAULT {
             NEW treeContainer {
                 childConstraints = TO THE BOTTOM;
                 fillHorizontal = 1;
-                ADD treeSupplierBrand.tree.box {
-                    fillVertical = 1;
-                }
-                ADD treeCategory.tree.box {
-                    fillVertical = 1;
-                }
+                ADD treeSupplierBrand.tree.box;
+                ADD treeCategory.tree.box;
             }
             NEW  articleContainer{
                 fillHorizontal = 4;

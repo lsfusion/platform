@@ -45,7 +45,7 @@ public class RemoteObject extends UnicastRemoteObject implements PendingRemote {
         try {
             createdObject = invoke(this, creator);
         } catch (Exception e) {
-            throw new RemoteException(getString("remote.can.not.create.object.by.calling.method", creator.toString()));
+            throw new RemoteException(getString("remote.can.not.create.object.by.calling.method", creator.toString()), e);
         }
 
         Object[] result = new Object[invocations.length + 1];

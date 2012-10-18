@@ -59,9 +59,7 @@ DESIGN inventoryCommittee FROM DEFAULT {
             childConstraints = TO THE RIGHT;
             title = 'Отделы, для которых действуют комиссии';
 
-            ADD stockTree.tree {
-                fillHorizontal = 1;
-            }
+            ADD stockTree.tree.box;
 
             ADD ts.box {
                 fillHorizontal = 2;
@@ -893,9 +891,7 @@ DESIGN dialogStockInventory FROM DEFAULT {
         ADD in.box;
         NEW stockCase {
             childConstraints = TO THE RIGHT;
-            ADD stockTree.tree {
-                fillHorizontal = 1;
-            }
+            ADD stockTree.tree.box;
             ADD ts.box {
                 fillHorizontal = 2;
             }
@@ -905,7 +901,7 @@ DESIGN dialogStockInventory FROM DEFAULT {
 }
 
 dialogStockInventory 'Выбрать склады для инвентаризации' (inventory) =
-    ACTION FORM dialogStockInventory OBJECTS in MODAL;
+    ACTION FORM dialogStockInventory OBJECTS in DOCKED_MODAL;
 
 //------------------------------------ Выбор SKU для сличительной ведомости ------------------------------------------//
 
@@ -928,8 +924,8 @@ FORM dialogSkuCollationSheet 'Выбор SKU для сличительной в�
 
 DESIGN dialogSkuCollationSheet FROM DEFAULT {
     POSITION treeGroup.tree.box TO THE LEFT i.box;
-        treeGroup.tree.box{ fillHorizontal = 1.5;}
-        i.box{ fillHorizontal = 3.5;}
+        treeGroup.tree.box { fillHorizontal = 1.5; }
+        i.box { fillHorizontal = 3.5; }
 
 }
 
@@ -1219,7 +1215,7 @@ DESIGN inventory FROM DEFAULT {
                 fillVertical = 5;
                 NEW pop1 {
                     childConstraints = TO THE RIGHT;
-                    ADD cs.grid.box  {
+                    ADD cs.box  {
                         fillVertical = 1;
                         fillHorizontal = 4;
                     }

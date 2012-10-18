@@ -658,8 +658,8 @@ META extendDocumentFormSkuStockCustom(object, form, concrete, stockProp)
 
                 NEW firstBottom {
                     type = SPLITV;
-                    ADD stockTree.tree.box {title = 'Склады'; fillVertical = 1;};
-                    ADD skuTree.tree.box {title = 'Группы SKU'; fillVertical = 1;};
+                    ADD stockTree.tree.box { title = 'Склады'; }
+                    ADD skuTree.tree.box { title = 'Группы SKU'; }
                     fillHorizontal = 1;
                 }
                 ADD sts.box {
@@ -744,7 +744,6 @@ META extendDocumentFormSkuCustom(object, form, concrete, skuProp, detail)
 
                 ADD skuTree.tree.box {
                     title = 'Группы SKU';
-                    fillHorizontal = 1;
                 }
                 ADD s.box {
                     fillHorizontal = 2;
@@ -853,8 +852,8 @@ META extendDocumentFormSkuStockContractorCustom(object, form, concrete, stockPro
 
                 NEW firstBottom {
                     type = SPLITV;
-                    ADD stockTree.tree.box {title = 'Склады'; fillVertical = 1;};
-                    ADD skuTree.tree.box {title = 'Группы SKU'; fillVertical = 1;};
+                    ADD stockTree.tree.box { title = 'Склады'; }
+                    ADD skuTree.tree.box { title = 'Группы SKU'; }
                     fillHorizontal = 1;
                 }
                 NEW skuCase {

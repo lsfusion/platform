@@ -13,53 +13,8 @@ PRIORITY MasterData, Stock, RomanLogicsModule;
 
 // -------------------------------------- Надбавки --------------------------------------- //
 
-CLASS coefficientRetail 'Надбавка';
-TABLE coefficientRetail (coefficientRetail);
-
-CLASS coefficientCategorySupplier 'Надбавка';
-TABLE coefficientCategorySupplier(coefficientCategorySupplier);
-
 CLASS coefficientBrandRetail 'Надбавка';
 TABLE coefficientBrandRetail (coefficientBrandRetail);
-
-TABLE seasonYearBrandSupplier(seasonYear, brandSupplier);
-markupSeasonYearBrand 'Множитель' = DATA NUMERIC[14,3](seasonYear, brandSupplier);
-markupSeasonYearBrandArticle 'Множитель' (article) = markupSeasonYearBrand(seasonYearArticle(article), brandSupplierArticle(article));
-
-dateCoefficientRetail 'Дата введения' = DATA DATE(coefficientRetail) IN baseGroup;
-markupCoefficientRetail 'Множитель' = DATA NUMERIC[14,3](coefficientRetail) IN baseGroup;
-
-brandSupplierCoefficientRetail = DATA brandSupplier(coefficientRetail) IN idGroup AUTOSET;
-nameBrandSupplierCoefficientRetail 'Бренд' (coefficientRetail) = name(brandSupplierCoefficientRetail(coefficientRetail)) IN baseGroup;
-
-uniqueCoefficientRetailBrandSupplierDate (brandSupplier, date) = GROUP UNIQUE coefficientRetail
-                                                                       BY brandSupplierCoefficientRetail(coefficientRetail), dateCoefficientRetail(coefficientRetail)
-                                                                       WHERE coefficientRetail IS coefficientRetail;
-
-coefficientRetailBrandSupplierDate (brandSupplier, date) = uniqueCoefficientRetailBrandSupplierDate(
-                                                              brandSupplier,
-                                                              [GROUP MAX dateCoefficientRetail(coefficientRetail)
-                                                                         IF dateCoefficientRetail(coefficientRetail) <= date AND date IS DATE AND
-                                                                         brandSupplierCoefficientRetail(coefficientRetail) == brandSupplier
-                                                                     BY brandSupplier, date] (brandSupplier, date));
-
-categoryCoefficientCategorySupplier = DATA categorySupplier(coefficientCategorySupplier);
-nameCategoryCoefficientCategorySupplier 'Группа' (coefficientCategorySupplier) = name(categoryCoefficientCategorySupplier(coefficientCategorySupplier));
-
-dateCoefficientCategorySupplier 'Дата введения' = DATA DATE (coefficientCategorySupplier) IN baseGroup;
-markupCoefficientCategorySupplier 'Множитель' = DATA NUMERIC[14,3](coefficientCategorySupplier) IN baseGroup;
-
-uniqueCoefficientCategorySupplierDate (categorySupplier, date) = GROUP UNIQUE coefficientCategorySupplier
-                                                                           BY categoryCoefficientCategorySupplier(coefficientCategorySupplier),
-                                                                              dateCoefficientCategorySupplier(coefficientCategorySupplier)
-                                                                        WHERE coefficientCategorySupplier IS coefficientCategorySupplier;
-
-coefficientCategorySupplierDate (categorySupplier, date) = uniqueCoefficientCategorySupplierDate(
-                                                              categorySupplier,
-                                                              [GROUP MAX dateCoefficientCategorySupplier(coefficientCategorySupplier)
-                                                                         IF dateCoefficientCategorySupplier(coefficientCategorySupplier) <= date AND date IS DATE AND
-                                                                         categoryCoefficientCategorySupplier(coefficientCategorySupplier) == categorySupplier
-                                                                     BY categorySupplier, date] (categorySupplier, date));
 
 dateCoefficientBrandRetail 'Дата введения' = DATA DATE(coefficientBrandRetail) IN baseGroup;
 markupCoefficientBrandRetail 'Множитель' = DATA NUMERIC[14,2](coefficientBrandRetail) IN baseGroup;
@@ -79,12 +34,12 @@ nameSeasonYearCoefficientBrandRetail 'Сезон' (coefficientBrandRetail) = nam
 //                                                                                                            dateCoefficientBrandRetail(coefficientBrandRetail)
 //                                                                                                      WHERE coefficientBrandRetail IS coefficientBrandRetail;
 
-inArticleCoefficientBrandRetail(article, coefficientBrandRetail) = (brandSupplierArticle(article) == brandSupplierCoefficientBrandRetail(coefficientBrandRetail) OR (article IS article AND coefficientBrandRetail IS coefficientBrandRetail AND NOT brandSupplierCoefficientBrandRetail(coefficientBrandRetail))) AND
+inArticleCoefficientBrandRetail(coefficientBrandRetail, article) = (brandSupplierArticle(article) == brandSupplierCoefficientBrandRetail(coefficientBrandRetail) OR (article IS article AND coefficientBrandRetail IS coefficientBrandRetail AND NOT brandSupplierCoefficientBrandRetail(coefficientBrandRetail))) AND
                                                                    (categorySupplierArticle(article) == categorySupplierCoefficientBrandRetail(coefficientBrandRetail) OR (article IS article AND coefficientBrandRetail IS coefficientBrandRetail AND NOT categorySupplierCoefficientBrandRetail(coefficientBrandRetail))) AND
                                                                    (seasonYearArticle(article) == seasonYearCoefficientBrandRetail(coefficientBrandRetail) OR (article IS article AND coefficientBrandRetail IS coefficientBrandRetail AND NOT seasonYearCoefficientBrandRetail(coefficientBrandRetail)));
 
-dateCoefficientBrandRetailArticle(coefficientBrandRetail, article) = dateCoefficientBrandRetail(coefficientBrandRetail) AND inArticleCoefficientBrandRetail(article, coefficientBrandRetail);
-orderCoefficientBrandRetailArticle = LIST(dateCoefficientBrandRetailArticle(coefficientBrandRetail, article), coefficientBrandRetail) IF inArticleCoefficientBrandRetail(article, coefficientBrandRetail);
+dateCoefficientBrandRetailArticle(coefficientBrandRetail, article) = dateCoefficientBrandRetail(coefficientBrandRetail) AND inArticleCoefficientBrandRetail(coefficientBrandRetail, article);
+orderCoefficientBrandRetailArticle(coefficientBrandRetail, article) = LIST(dateCoefficientBrandRetailArticle(coefficientBrandRetail, article), coefficientBrandRetail) IF inArticleCoefficientBrandRetail(coefficientBrandRetail, article);
 
 concatCoefficientBrandRetailArticleDate (article, date) = GROUP MAX orderCoefficientBrandRetailArticle(coefficientBrandRetail, article) AND
                                                                     dateCoefficientBrandRetailArticle(coefficientBrandRetail, article) < (date AS DATE)
@@ -93,31 +48,6 @@ concatCoefficientBrandRetailArticleDate (article, date) = GROUP MAX orderCoeffic
 coefficientBrandRetailArticleDate (article, date) = concatCoefficientBrandRetailArticleDate(article, date)[2];
 markupCoefficientBrandRetailArticleDate (article, date) = markupCoefficientBrandRetail(coefficientBrandRetailArticleDate(article, date));
 markupCoefficientBrandRetailSkuDate (sku, date) = markupCoefficientBrandRetailArticleDate(articleSku(sku), date);
-
-//coefficientBrandRetailArticle (article, date) = uniqueCoefficientBrandCategorySeasonDate(
-//                                                              [GROUP MAX dateCoefficientBrandRetail(coefficientBrandRetail)
-//                                                                      IF dateCoefficientBrandRetail(coefficientBrandRetail) <= date AND
-//                                                                         date IS DATE AND
-//                                                                         inArticleCoefficientBrandRetail(article, coefficientBrandRetail)
-//                                                                      BY brandSupplierArticle(coefficientBrandRetail),
-//                                                                         categorySupplierCoefficientBrandRetail(coefficientBrandRetail),
-//                                                                         seasonYearCoefficientBrandRetail(coefficientBrandRetail), date] (brandSupplierArticle(article), categorySupplierArticle(article), seasonYearArticle(article), date));
-//
-//FORM coefficientRetail 'Надбавка'
-//
-//    OBJECTS c=coefficientRetail FIXED PANEL
-//    PROPERTIES(c) nameBrandSupplierCoefficientRetail, dateCoefficientRetail, markupCoefficientRetail
-//
-//    EDIT coefficientRetail OBJECT c
-//;
-//
-//FORM coefficientCategorySupplier 'Надбавка'
-//
-//    OBJECTS cc=coefficientCategorySupplier FIXED PANEL
-//    PROPERTIES(cc) nameCategoryCoefficientCategorySupplier, dateCoefficientCategorySupplier, markupCoefficientCategorySupplier
-//
-//    EDIT coefficientCategorySupplier OBJECT cc
-//;
 
 FORM coefficientBrandRetail 'Надбавка'
 
@@ -144,22 +74,6 @@ FORM coefficientRetails 'Надбавки'
     PROPERTIES(c) ADDFORM, EDITFORM, delete
     FILTERS brandSupplierCoefficientBrandRetail(c) == b
 
-    //OBJECTS sy=seasonYear
-    //PROPERTIES (sy) READONLY nameSeasonYear
-    //PROPERTIES (sy, b) markupSeasonYearBrand
-    //ORDER BY nameSeasonYear
-
-    //OBJECTS c=coefficientRetail
-    //PROPERTIES(c) READONLY dateCoefficientRetail, markupCoefficientRetail
-    //PROPERTIES(c) ADDFORM, EDITFORM, delete
-    //ORDER BY dateCoefficientRetail
-
-    //OBJECTS cc=coefficientCategorySupplier
-    //PROPERTIES(cc) READONLY dateCoefficientCategorySupplier, markupCoefficientCategorySupplier
-    //PROPERTIES(cc) ADDFORM, EDITFORM, delete
-    //ORDER BY dateCoefficientCategorySupplier
-
-    //FILTERS categoryCoefficientCategorySupplier(cc) == cs, supplierCategorySupplier(cs) == s
 ;
 
 DESIGN coefficientRetails FROM DEFAULT {
@@ -297,10 +211,6 @@ rateBasePriceSetDocumentArticle(basePriceSetDocument, article) <- rateTypeExchan
                                                                CHANGED(currencyBasePriceSetDocumentArticle(basePriceSetDocument, article)) OR
                                                                CHANGED(datePriceSetDocument(basePriceSetDocument) AND inPriceSetDocumentArticle(basePriceSetDocument, article));
 rateBasePriceSetDocumentArticle(document, article) => inPriceSetDocumentArticle(document, article) RESOLVE FALSE;
-
-markupArticleDate 'Множитель' (article, date) = UNION OVERRIDE markupSeasonYearBrandArticle(article) AND date IS DATE,
-                                                               markupCoefficientRetail(coefficientRetailBrandSupplierDate(brandSupplierArticle(article), date)),
-                                                               markupCoefficientCategorySupplier(coefficientCategorySupplierDate(categorySupplierArticle(article), date));
 
 markupBasePriceSetDocumentArticle 'Наценка' = DATA NUMERIC[14,2] (basePriceSetDocument, article);
 markupBasePriceSetDocumentArticle(document, article) => inPriceSetDocumentArticle(document, article) RESOLVE FALSE;
@@ -876,16 +786,9 @@ DESIGN priceSetDocument FROM DEFAULT {
             NEW treeContainer {
                 childConstraints = TO THE BOTTOM;
                 fillHorizontal = 1;
-                ADD treeSupplierBrand.tree.box {
-                    fillVertical = 1;
-                }
-                ADD treeCategory.tree.box {
-                    fillVertical = 1;
-                }
-
-                ADD treeCategorySubCategory.tree.box {
-                    fillVertical = 1;
-                }
+                ADD treeSupplierBrand.tree.box;
+                ADD treeCategory.tree.box;
+                ADD treeCategorySubCategory.tree.box;
             }
             NEW specContainer {
                 type = TABBED;
@@ -1112,9 +1015,8 @@ DESIGN priceSetDocuments FROM DEFAULT {
             NEW secondContainer{
                 type = SPLITH;
                 childConstraints = TO THE RIGHT;
-                ADD stockTree.tree.box {title = 'Склады';};
-                ADD ts.box {title = 'Склад';};
-                fillVertical = 1;
+                ADD stockTree.tree.box { title = 'Склады'; }
+                ADD ts.box { title = 'Склад'; }
             }
 
             NEW bottomContainer {
@@ -1183,7 +1085,7 @@ createPriceSetDocument 'Расценить по артикулам' =  ACTION (f
         SET priceInBasePriceSetDocumentArticle(p, article) <- priceInFreightArticle(freight, article);
         SET currencyBasePriceSetDocumentArticle(p, article) <- currencyFreight(freight) WHERE inPriceSetDocumentArticle(p, article);
         SET typeExchangeBasePriceSetDocumentArticle(p, article) <- typeExchangeRetailCurrency(currencyFreight(freight)) WHERE inPriceSetDocumentArticle(p, article);
-        SET markupBasePriceSetDocumentArticle(p, article) <- markupCoefficientBrandRetailArticleDate(article, dateArrivalFreight(freight)) WHERE inPriceSetDocumentArticle(p, article);
+        SET markupBasePriceSetDocumentArticle(p, article) <- markupCoefficientBrandRetailArticleDate(article, date(freight)) WHERE inPriceSetDocumentArticle(p, article);
         SET RRPBasePriceSetDocumentArticle(p, article) <- RRPFreightArticle(freight, article);
 
         FORM priceSetDocument OBJECTS p = p MANAGESESSION DOCKED_MODAL;
@@ -1201,7 +1103,7 @@ createPriceSetDocumentSku 'Расценить по товарам' =  ACTION (fr
         SET currencyBasePriceSetDocumentSku(p, sku) <- currencyFreight(freight) WHERE inPriceSetDocumentSku(p, sku);
         SET typeExchangeBasePriceSetDocumentSku(p, sku) <- typeExchangeRetailCurrency(currencyFreight(freight)) WHERE inPriceSetDocumentSku(p, sku);
         SET RRPBasePriceSetDocumentSku(p, sku) <- RRPFreightSku(freight, sku);
-        SET markupBasePriceSetDocumentSku (p, sku) <- markupCoefficientBrandRetailSkuDate(sku, dateArrivalFreight(freight)) WHERE inPriceSetDocumentSku(p, sku);;
+        SET markupBasePriceSetDocumentSku (p, sku) <- markupCoefficientBrandRetailSkuDate(sku, date(freight)) WHERE inPriceSetDocumentSku(p, sku);;
 
         FORM priceSetDocument OBJECTS p = p MANAGESESSION DOCKED_MODAL;
     };
@@ -1211,8 +1113,8 @@ createPriceSetDocumentSku 'Расценить по товарам' =  ACTION (fr
 FORM freights 'Расценка фрахтов'
 
     OBJECTS f = freightComplete
-    PROPERTIES(f) READONLY numberObject, seriesObject, date, objectClassName,
-                  canonicalBrandFreight, dateArrivalFreight, nameRouteFreight, nameExporterFreight, grossWeightFreight
+    PROPERTIES(f) READONLY numberObject, seriesObject, date, dateArrivalFreight, objectClassName,
+                  canonicalBrandFreight, nameRouteFreight, nameExporterFreight, grossWeightFreight
 
    FILTERGROUP filtersDocument
         FILTER 'Показывать нерасценённые фрахты' 'F11' needPriceSetDocumentFreight(f)

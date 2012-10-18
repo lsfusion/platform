@@ -239,7 +239,6 @@ DESIGN customCategoryZones FROM DEFAULT {
 
                 ADD treeCategory.tree.box {
                     title = 'Дерево классификатора';
-                    fillHorizontal = 1;
                     PROPERTY (addCA) {
                         caption = 'Добавить 4';
                     }
@@ -292,7 +291,6 @@ DESIGN customCategory10Dialog FROM DEFAULT {
             type = SPLITH;
             ADD treeCategory.tree.box {
                 title = 'Дерево классификатора';
-                fillHorizontal = 1;
             }
 
             ADD cd.box{ fillHorizontal = 2;}
@@ -410,7 +408,6 @@ DESIGN customCategoryOrigins FROM DEFAULT {
             type = SPLITH;
             ADD treeCategory.tree.box {
                 title = 'Дерево классификатора';
-                fillHorizontal = 1;
                 PROPERTY (addCA) {
                     caption = 'Добавить 4';
                 }

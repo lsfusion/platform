@@ -370,9 +370,7 @@ DESIGN promotion FROM DEFAULT {
                     NEW skuGroupContainer {
                         type = SPLITV;
                         childConstraints = TO THE BOTTOM;
-                        ADD skuTree.tree.box {
-                            fillHorizontal = 1;
-                        }
+                        ADD skuTree.tree.box;
                         ADD dg.box {
                             childConstraints = TO THE BOTTOM;
                             ADD dg.panel BEFORE dg.grid.box;
@@ -388,9 +386,7 @@ DESIGN promotion FROM DEFAULT {
                 type = SPLITH;
                 title = 'Магазины';
                 childConstraints = TO THE RIGHT;
-                ADD treeStore.tree.box {
-                    fillHorizontal = 1;
-                }
+                ADD treeStore.tree.box;
                 ADD s.box {
                     fillHorizontal = 2;
                 }

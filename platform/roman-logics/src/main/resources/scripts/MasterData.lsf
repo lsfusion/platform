@@ -179,7 +179,7 @@ DESIGN categories FROM DEFAULT {
         childConstraints = TO THE RIGHT;
         type = SPLITH;
 
-        ADD treeGroups.tree.box ;
+        ADD treeGroups.tree.box;
 
         ADD c.box {
             fillHorizontal = 4;
