@@ -39,6 +39,7 @@ REQUIRE System,
         Defect,
         CustomCategory,
         RomanPOS,
+        RomanSales,
         RomanCashOperation,
         RomanLogicsModule;
 

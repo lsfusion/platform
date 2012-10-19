@@ -63,9 +63,9 @@ FORM returnCertification 'Возврат из сертификации'
     PROPERTIES(w) objectClassName, nameNumeratorObject, numberObject, seriesObject, dateReturnCertification, timeReturnCertification, //nameCompanyReturnCertification,
                   nameStockReturnCertification
 
-    PROPERTIES(d) READONLY indexReturnCertificationDetail, barcodeReturnCertificationDetail, nameCategoryReturnCertificationDetail,
-                           nameBrandReturnCertificationDetail, sidArticleReturnCertificationDetail, sidSizeReturnCertificationDetail,
-                           sidColorReturnCertificationDetail, nameColorReturnCertificationDetail,shortNameUOMReturnCertificationDetail
+    PROPERTIES(d) indexReturnCertificationDetail, barcodeReturnCertificationDetail, nameCategoryReturnCertificationDetail,
+                  nameBrandReturnCertificationDetail, sidArticleReturnCertificationDetail, sidSizeReturnCertificationDetail,
+                  sidColorReturnCertificationDetail, nameColorReturnCertificationDetail,shortNameUOMReturnCertificationDetail
 
     PROPERTIES(d) quantityReturnCertificationDetail
 

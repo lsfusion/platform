@@ -22,6 +22,10 @@ quantitySalesLedger 'Кол-во' (ledger) = ABSTRACT NUMERIC[14,3] (salesLedger
 
 sumSalesLedger 'Сумма продажи' (ledger) = ABSTRACT NUMERIC[16,2] (salesLedger) PERSISTENT;
 
+CONSTRAINT quantitySalesLedger(salesLedger) == 0 MESSAGE 'ошибка: Количество продажи не должно быть равно нулю';
+
+averagePriceSalesLedger 'Цена продажи (средняя)' (salesLedger) = sumSalesLedger(salesLedger)/quantitySalesLedger(salesLedger);
+
 VATSalesLedger (ledger) = ABSTRACT range (salesLedger) PERSISTENT;
 valueVATSalesLedger 'НДС, %' (ledger) = valueRateRangeDate(VATSalesLedger(ledger), dateSalesLedger(ledger));
 
@@ -34,8 +38,21 @@ quantitySoldSkuStockWeekDateFromTo 'Продано за неделю (кол-в�
         quantitySalesLedger(ledger) AND dateSalesLedger(ledger) >= (dateFrom AS DATE) AND dateSalesLedger(ledger) <= (dateTo AS DATE)
         BY skuSalesLedger(ledger), stockSalesLedger(ledger), weekInDate(dateSalesLedger(ledger)), dateFrom, dateTo;
 
-quantitySoldWeekDateFromTo 'Продано за неделю (кол-во)' (week, dateFrom, dateTo) = GROUP SUM
+sumSoldSkuStockWeekDateFromTo 'Продано за неделю (сумма)' (sku, stock, week, dateFrom, dateTo) = GROUP SUM
+        sumSalesLedger(ledger) AND dateSalesLedger(ledger) >= (dateFrom AS DATE) AND dateSalesLedger(ledger) <= (dateTo AS DATE)
+        BY skuSalesLedger(ledger), stockSalesLedger(ledger), weekInDate(dateSalesLedger(ledger)), dateFrom, dateTo;
+
+averagePriceSoldSkuStockWeekDateFromTo 'Средняя цена за неделю' (sku, stock, week, dateFrom, dateTo)=  round2(sumSoldSkuStockWeekDateFromTo(sku, stock, week, dateFrom, dateTo) /
+        quantitySoldSkuStockWeekDateFromTo(sku, stock, week, dateFrom, dateTo));
+
+averageSoldSkuStockWeekDateFromTo 'Продано за неделю кол-во/цена' (sku, stock, week, dateFrom, dateTo)= [FORMULA STRING[30] 'CAST($1 AS TEXT) || \'(\' || CAST($2 AS TEXT) || \')\'']
+        (quantitySoldSkuStockWeekDateFromTo(sku, stock, week, dateFrom, dateTo), averagePriceSoldSkuStockWeekDateFromTo(sku, stock, week, dateFrom, dateTo)) MINCHARWIDTH 10 PREFCHARWIDTH 15;
+
+quantitySkuSoldWeekDateFromTo 'Продано за неделю (кол-во)' (week, dateFrom, dateTo) = GROUP SUM
         quantitySoldSkuStockWeekDateFromTo(sku, stock, week, dateFrom, dateTo) BY  week, dateFrom, dateTo;
+
+sumSoldWeekDateFromTo 'Продано за неделю (сумма)' (week, dateFrom, dateTo) = GROUP SUM
+        sumSoldSkuStockWeekDateFromTo(sku, stock, week, dateFrom, dateTo) BY  week, dateFrom, dateTo;
 
 quantitySoldSkuStockDateFromTo 'Продано за интервал (кол-во)' (sku, stock, dateFrom, dateTo) = GROUP SUM
         quantitySalesLedger(ledger) AND dateSalesLedger(ledger) >= (dateFrom AS DATE) AND dateSalesLedger(ledger) <= (dateTo AS DATE)
@@ -90,12 +107,11 @@ FORM salesLedger 'Продажи по позициям'
 
     OBJECTS s = salesLedger
     PROPERTIES(s) READONLY dateSalesLedger, dateTimeSalesLedger, nameStockSalesLedger, nameSkuSalesLedger, descriptionSalesLedger,
-                           quantitySalesLedger, costSumSkuLedger, markupSumSalesLedger, sumVATSalesLedger, sumSalesLedger
+                           quantitySalesLedger, costSumSkuLedger, markupSumSalesLedger, sumVATSalesLedger, sumSalesLedger, averagePriceSalesLedger
     FILTERS isPostedSalesLedger(s)
     FILTERS dateSalesLedger(s) >= dFrom, dateSalesLedger(s) <= dTo
 ;
 
-nameWeek (integer)= [FORMULA STRING[15] 'CAST($1 AS TEXT) || \' \' || \'неделя \' '](integer) MINCHARWIDTH 15 PREFCHARWIDTH 15;
 
 FORM salesSkuStock 'Продажи по SKU'
 
@@ -103,7 +119,7 @@ FORM salesSkuStock 'Продажи по SKU'
     PROPERTIES OBJVALUE(dFrom), OBJVALUE(dTo)
 
     OBJECTS w = INTEGER
-    FILTERS quantitySoldWeekDateFromTo(w, dFrom, dTo)
+    FILTERS quantitySkuSoldWeekDateFromTo(w, dFrom, dTo)
 
     TREE stockTree sg = stockGroup PARENT parentStockGroup, ts = stock
     PROPERTIES READONLY sgTreeName = name(sg), tsTreeName = name(ts)
@@ -121,7 +137,7 @@ FORM salesSkuStock 'Продажи по SKU'
 
     ORDER BY          nameSku
 
-    PROPERTIES        balanceBSkuStockDate(s, st, dFrom), quantitySoldSkuStockWeekDateFromTo(s, st, w, dFrom, dTo)  COLUMNS (w) HEADER nameWeek  (w), //castToString3
+    PROPERTIES        balanceBSkuStockDate(s, st, dFrom), quantitySoldSkuStockWeekDateFromTo(s, st, w, dFrom, dTo)  COLUMNS (w) HEADER castToString4 (w),
                       quantitySoldSkuStockDateFromTo(s, st, dFrom, dTo),
                       balanceASkuStockDate(s, st, dTo)
 
@@ -156,6 +172,7 @@ DESIGN salesSkuStock FROM DEFAULT {
                 ADD dates.box;
                 REMOVE w.box;
                 ADD sts.box { fillVertical = 2; }
+
             }
         }
         ADD functions.box;

@@ -7,6 +7,7 @@ REQUIRE System,
         PriceInterval,
         UserPriceChange,
         Currency,
+        RomanSales,
         RomanLogicsModule;
 
 PRIORITY MasterData, Stock, RomanLogicsModule;
@@ -661,10 +662,25 @@ showFormLogPriceArticle 'История' (article) = ACTION FORM logPriceArticle
 
 // ------------------------------------------------- Форма по редактированию розничных прайсов --------------------------------- //
 
+averagePriceSoldArticleWeekDateFromToDocument 'Средняя цена за неделю' (article, week, dateFrom, dateTo, priceSetDocument)=  roundCurrency((sumSoldArticleWeekDateFromTo(article, week, dateFrom, dateTo) /
+        quantitySoldArticleWeekDateFromTo(article, week, dateFrom, dateTo)), currencyPriceSetDocument(priceSetDocument));
+
+averageSoldArticleWeekDateFromToDocument 'Продано за неделю кол-во/цена' (article, week, dateFrom, dateTo, priceSetDocument)= [FORMULA STRING[30] 'CAST($1 AS TEXT) || \'(\' || CAST($2 AS TEXT) || \')\'']
+        (round0(quantitySoldArticleWeekDateFromTo(article, week, dateFrom, dateTo)), averagePriceSoldArticleWeekDateFromToDocument(article, week, dateFrom, dateTo, priceSetDocument)) MINCHARWIDTH 15 PREFCHARWIDTH 20;
+
+articleSalesLedger (salesLedger) = articleSku(skuSalesLedger(salesLedger));
+
+
 FORM priceSetDocument 'Розничный прайс'
     OBJECTS p=priceSetDocument FIXED PANEL
     PROPERTIES(p) isPostedPriceSetDocument, objectClassName, nameNumeratorObject, numberObject, seriesObject, datePriceSetDocument, timePriceSetDocument,
                   dateTimeToPriceSetDocument, nameCurrencyPriceSetDocument, reasonPriceSetDocument
+
+    OBJECTS dates = (dFrom = DATE, dTo = DATE) FIXED PANEL
+    PROPERTIES OBJVALUE(dFrom), OBJVALUE(dTo)
+
+    OBJECTS w = INTEGER
+    FILTERS quantityArticleSoldWeekDateFromTo(w, dFrom, dTo)
 
     TREE treeSupplierBrand v=STRING[3], s=supplier, b=brandSupplier
     PROPERTIES READONLY OBJVALUE(v), supplierName = name(s), name(b)
@@ -679,8 +695,23 @@ FORM priceSetDocument 'Розничный прайс'
 
     OBJECTS aa=article
     PROPERTIES (aa)    READONLY sidArticle, nameCategoryArticle, nameBrandSupplierArticle, nameSubCategorySupplierArticle, currentBalanceArticle
-    PROPERTIES (p, aa) READONLY prevPriceDocumentBBasePriceSetDocumentArticle, prevPriceDocumentBDiscountPriceSetDocumentArticle
-    PROPERTIES (p, aa) inPriceSetDocumentArticle
+    PROPERTIES (p, aa) READONLY prevPriceDocumentBBasePriceSetDocumentArticle
+
+
+    PROPERTIES        balanceBArticleDate(aa, dFrom), averageSoldArticleWeekDateFromToDocument(aa, w, dFrom, dTo, p)  COLUMNS (w) HEADER castToString4(w),
+                      quantitySoldArticleDateFromTo(aa, dFrom, dTo), balanceAArticleDate(aa, dTo)
+    PROPERTIES (p,aa) prevPriceDocumentBDiscountPriceSetDocumentArticle READONLY, inPriceSetDocumentArticle, percentDiscountPriceSetDocumentArticle
+
+    OBJECTS sl = salesLedger
+    PROPERTIES(sl) READONLY dateSalesLedger, dateTimeSalesLedger, nameStockSalesLedger, nameSkuSalesLedger, descriptionSalesLedger,
+                           quantitySalesLedger, costSumSkuLedger, markupSumSalesLedger, sumVATSalesLedger, sumSalesLedger, averagePriceSalesLedger
+    FILTERS isPostedSalesLedger(sl)
+    FILTERS dateSalesLedger(sl) >= dFrom, dateSalesLedger(sl) <= dTo,
+            articleSalesLedger(sl)== aa
+    ORDER BY dateTimeSalesLedger
+
+    FILTERGROUP filtersSold
+        FILTER 'Показывать проданные за интервал' 'F11' sumSoldArticleDateFromTo(aa, dFrom, dTo)
 
     FILTERS stringEqualsAll(v), inBrandSupplier(s, b), inSupplierBrandArticle(s, b, aa), stringEqualsAll(vv),
             inArticleCategory(c, aa)
@@ -694,9 +725,6 @@ FORM priceSetDocument 'Розничный прайс'
 
     FILTERS stringEqualsAll(v), inBrandSupplier(s, b), inSupplierBrandSku(s, b, ss), stringEqualsAll(vv),
             inSkuCategory(c, ss)
-
-//    FILTERGROUP filtersArticleSku
-//        FILTER 'Текущего артикула' 'F6' inArticleSku(aa, ss)
 
     OBJECTS a=article
     PROPERTIES (p, a) inPriceSetDocumentArticle,
@@ -720,6 +748,7 @@ FORM priceSetDocument 'Розничный прайс'
 
     FILTERGROUP filtersBalanceArticle
         FILTER 'Ненулевые остатки' 'F8' currentBalanceArticle(aa) DEFAULT
+        FILTER 'Показывать отмеченные' 'F3' inPriceSetDocumentArticle(p,aa)
 
     FILTERGROUP filtersMethod
         FILTER 'Показывать без метода' 'F9' TRUE IF NOT methodBasePriceSetDocumentArticle(p, a)
@@ -790,22 +819,40 @@ DESIGN priceSetDocument FROM DEFAULT {
                 ADD treeCategory.tree.box;
                 ADD treeCategorySubCategory.tree.box;
             }
-            NEW specContainer {
-                type = TABBED;
-                fillHorizontal = 4;
-                NEW  articleContainer{
-                    title = 'Артикул';
+            NEW RightContainer {
+                childConstraints = TO THE BOTTOM;
+                ADD dates.box;
+                REMOVE w.box;
+                NEW specContainer{
                     type = TABBED;
-                    ADD a.box {title = 'Спецификация'; }
-                    ADD aa.box {title = 'Подбор';}
-                }
+                    fillHorizontal = 4;
+                    NEW  articleContainer{
+                        title = 'Артикул';
+                        type = TABBED;
+                        ADD a.box {title = 'Спецификация'; }
+                        NEW saleContainer{
+                            title = 'Подбор';
+                            type = SPLITV;
+                            ADD aa.box {
+                                aa.grid {
+                                    fillVertical = 2.5;
+                                }
+                            }
+                            ADD sl.box {
+                                sl.grid {
+                                    fillVertical = 1;
+                                }
+                            }
+                        }
+                    }
 
-                NEW  skuContainer{
-                    title = 'SKU';
-                    type = TABBED;
-                    ADD sk.box {title = 'Спецификация';}
-                    ADD ss.box {title = 'Подбор';}
+                    NEW  skuContainer{
+                        title = 'SKU';
+                        type = TABBED;
+                        ADD sk.box {title = 'Спецификация';}
+                        ADD ss.box {title = 'Подбор';}
 
+                    }
                 }
             }
         }

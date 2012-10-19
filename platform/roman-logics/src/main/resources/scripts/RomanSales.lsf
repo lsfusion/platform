@@ -1,0 +1,41 @@
+MODULE RomanSales;
+
+REQUIRE System,
+        MasterData,
+        RomanStock,
+        Sales
+;
+
+PRIORITY MasterData, Stock, RomanLogicsModule;
+
+
+quantitySoldArticleStockWeekDateFromTo 'Продано за неделю (кол-во)' (article, stock, week, dateFrom, dateTo) = GROUP SUM
+        quantitySoldSkuStockWeekDateFromTo(sku, stock, week, dateFrom, dateTo)
+        BY articleSku(sku), stock, week, dateFrom, dateTo;
+sumSoldArticleStockWeekDateFromTo 'Продано за неделю (сумма)' (article, stock, week, dateFrom, dateTo) = GROUP SUM
+        sumSoldSkuStockWeekDateFromTo(sku, stock, week, dateFrom, dateTo) BY  articleSku(sku), stock, week, dateFrom, dateTo;
+
+quantitySoldArticleWeekDateFromTo 'Продано за неделю (кол-во)' (article, week, dateFrom, dateTo) = GROUP SUM
+        quantitySoldArticleStockWeekDateFromTo(article, stock, week, dateFrom, dateTo) BY article, week, dateFrom, dateTo;
+sumSoldArticleWeekDateFromTo 'Продано за неделю (сумма)' (article, week, dateFrom, dateTo) = GROUP SUM
+        sumSoldArticleStockWeekDateFromTo(article, stock, week, dateFrom, dateTo) BY  article, week, dateFrom, dateTo;
+
+quantityArticleSoldWeekDateFromTo 'Продано за неделю (кол-во)' (week, dateFrom, dateTo) = GROUP SUM
+        quantitySoldArticleStockWeekDateFromTo(article, stock, week, dateFrom, dateTo) BY  week, dateFrom, dateTo;
+sumSoldWeekDateFromTo 'Продано за неделю (сумма)' (week, dateFrom, dateTo) = GROUP SUM
+        sumSoldArticleStockWeekDateFromTo(article, stock, week, dateFrom, dateTo) BY  week, dateFrom, dateTo;
+
+quantitySoldArticleStockDateFromTo 'Продано за интервал (кол-во)' (article, stock, dateFrom, dateTo) = GROUP SUM
+        quantitySoldSkuStockDateFromTo(sku, stock, dateFrom, dateTo) BY articleSku(sku), stock, dateFrom, dateTo;
+sumSoldArticleStockDateFromTo 'Продано за интервал (сумма)' (article, stock, dateFrom, dateTo) = GROUP SUM
+        sumSoldSkuStockDateFromTo(sku, stock, dateFrom, dateTo) BY articleSku(sku), stock, dateFrom, dateTo;
+
+quantitySoldArticleDateFromTo 'Продано за интервал (кол-во)' (article, dateFrom, dateTo) = GROUP SUM
+        quantitySoldSkuStockDateFromTo(sku, stock, dateFrom, dateTo) BY articleSku(sku), dateFrom, dateTo;
+sumSoldArticleDateFromTo 'Продано за интервал (сумма)' (article, dateFrom, dateTo) = GROUP SUM
+        sumSoldSkuStockDateFromTo(sku, stock, dateFrom, dateTo) BY articleSku(sku), dateFrom, dateTo;
+
+
+
+balanceBArticleDate 'Остаток на начало дня' (article, date) = GROUP SUM balanceBSkuStockDate(sku, stock, date) BY articleSku(sku), date;
+balanceAArticleDate 'Остаток на конец дня' (article, date) = GROUP SUM balanceASkuStockDate(sku, stock, date) BY articleSku(sku), date;
