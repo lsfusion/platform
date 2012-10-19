@@ -418,8 +418,8 @@ FORM skuDialog 'SKU'
 
     OBJECTS s=sku
 
-    PROPERTIES(s) READONLY barcode, nameSku, nameCategoryArticleSku, nameBrandSupplierArticleSku, sidArticleSku, shortNameUOMSku,
-                           nameSupplierArticleSku, sidSizeSupplierItem FORCE GRID, sidColorSupplierItem FORCE GRID, nameColorSupplierItem FORCE GRID
+    PROPERTIES(s) FORCE GRID READONLY barcode, nameSku, nameCategoryArticleSku, nameBrandSupplierArticleSku, sidArticleSku, shortNameUOMSku,
+                                      nameSupplierArticleSku, sidSizeSupplierItem, sidColorSupplierItem, nameColorSupplierItem
 
     DIALOG sku OBJECT s
 ;

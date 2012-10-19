@@ -405,8 +405,13 @@ TABLE retailPriceLedger (retailPriceLedger);
 @defineSkuDepartmentStoreLedger(retailPrice, 'Розничная цена', NUMERIC[14,2]);
 currentRetailPriceBarcodeDepartmentStore 'Розничная цена' (barcode, departmentStore) = currentRetailPriceLedger(skuBarcode(barcode), departmentStore);
 
-priceSkuStockDateTime(sku, departmentStore, dateTime) += retailPriceBLedgerDateTime(sku, departmentStore, dateTime);
-priceBatchStockDateTime(batch, departmentStore, dateTime) += retailPriceBLedgerDateTime(skuBatch(batch), departmentStore, dateTime);
+costLedgerDepartmentStore 'Учет по себестоимости' = DATA BOOLEAN (departmentStore);
+EXTEND FORM departmentStore PROPERTIES(d) costLedgerDepartmentStore;
+
+priceSkuStockDateTime(sku, departmentStore, dateTime) += retailPriceBLedgerDateTime(sku, departmentStore, dateTime) AND NOT costLedgerDepartmentStore(departmentStore);
+priceBatchStockDateTime(batch, departmentStore, dateTime) += IF costLedgerDepartmentStore(departmentStore)
+                                                                THEN costBatch(batch) IF departmentStore IS departmentStore AND dateTime IS DATETIME
+                                                                ELSE retailPriceBLedgerDateTime(skuBatch(batch), departmentStore, dateTime);
 
 // ------------------------------------- Заполнение текущих параметров --------------------------------- //
 

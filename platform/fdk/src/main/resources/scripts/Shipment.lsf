@@ -465,6 +465,7 @@ META defineShipment(skuLedger, sign, contact, contactCaption, partyA, partyB)
 //-- аггр.объект
 
     @defineDocumentInterfaceDetailPricePrefix(invoice, shipment, ' (учетная)');
+    overShipmentPriceUserInvoiceDetail (userInvoiceDetail) = ABSTRACT NUMERIC[14,2] (userInvoiceDetail) PERSISTENT;
 
     @defineDocumentInterfaceDetailDataSumPrefix (invoice, shipment, ' (учетная)');
     @deriveDocumentDetailSumPrefix(userInvoice, shipment, currency);
@@ -482,7 +483,8 @@ META defineShipment(skuLedger, sign, contact, contactCaption, partyA, partyB)
         PROPERTIES(d) READONLY SHOWIF createShipmentInvoice(i) shipmentPriceInvoiceDetail, shipmentSumInvoiceDetail
     ;
 
-    createShipmentInvoiceDetail 'Создавать поставку' (invoiceDetail) = createShipmentInvoice(invoiceInvoiceDetail(invoiceDetail));
+    skipCreateShipmentInvoiceDetail = ABSTRACT BOOLEAN (invoiceDetail) PERSISTENT;
+    createShipmentInvoiceDetail 'Создавать поставку' (invoiceDetail) = createShipmentInvoice(invoiceInvoiceDetail(invoiceDetail)) AND NOT skipCreateShipmentInvoiceDetail(invoiceDetail);
     createShipmentUserInvoiceDetail 'Создавать поставку' (invoiceDetail) = createShipmentUserInvoice(userInvoiceUserInvoiceDetail(invoiceDetail));
 
     CLASS invoiceShipment 'Поставка на основе инвойса'###sign : shipment;

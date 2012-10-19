@@ -1,6 +1,6 @@
 MODULE Ware;
 
-REQUIRE System, Historizable, Tax;
+REQUIRE System, Historizable, Tax, Stock;
 
 // ------------------------------------------ Глобальные настройки --------------------------------- //
 showWare 'Показывать стеклопосуду' = DATA BOOLEAN ();
@@ -12,9 +12,23 @@ EXTEND DESIGN options {
         ADD PROPERTY(showWare);
     }
 }
+
+// ----------------------------------------- Группа посуды ----------------------------- //
+CLASS wareGroup 'Группа посуды' : named, externalObject, skuGroup;
+
+@defineHierarchy(wareGroup);
+
+parentSkuGroup (wareGroup) += parentWareGroup(wareGroup);
+
 // ------------------------------------------ Посуда ----------------------------------------------- //
-CLASS ware 'Посуда' : named, externalObject;
+CLASS ware 'Посуда' : named, externalObject, sku;
 TABLE ware(ware);
+
+wareGroupWare = DATA wareGroup(ware) AUTOSET;
+skuGroupSku(ware) += wareGroupWare(ware);
+
+nameSku(ware) += name(ware) IF ware IS ware;
+
 TABLE wareDate(ware, DATE);
 
 @defineHistorizable(warePrice, 'Цена', NUMERIC[14,2], ware, name, baseGroup);

@@ -1,0 +1,7 @@
+MODULE WarePurchaseInvoice;
+
+REQUIRE WareInvoice, PurchaseInvoice, PurchaseShipment;
+
+NAMESPACE Purchase;
+
+@defineInvoiceWare(Purchase);

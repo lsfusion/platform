@@ -1,0 +1,30 @@
+MODULE WareInvoice;
+
+REQUIRE Item, Ware, Invoice, Shipment;
+
+META defineInvoiceWare(NS)
+    wareUserInvoiceDetailUserInvoiceDetail = DATA NS.userInvoiceDetail(NS.userInvoiceDetail);
+    itemWareUserInvoiceDetailUserInvoiceDetail (userInvoiceDetail) =
+        GROUP UNIQUE userInvoiceDetail BY wareUserInvoiceDetailUserInvoiceDetail(userInvoiceDetail) PERSISTENT;
+
+    createWareUserInvoiceDetail = ACTION (userInvoiceDetail) {
+        IF wareUserInvoiceDetailUserInvoiceDetail(userInvoiceDetail) THEN {
+            SET NS.quantityUserInvoiceDetail(d) <- NS.quantityUserInvoiceDetail(userInvoiceDetail) WHERE d == wareUserInvoiceDetailUserInvoiceDetail(userInvoiceDetail);
+        } ELSE
+            FOR ADDOBJ d = userInvoiceDetail DO {
+                SET NS.userInvoiceUserInvoiceDetail(d) <- NS.userInvoiceUserInvoiceDetail(userInvoiceDetail);
+                SET NS.skuUserInvoiceDetail(d) <- wareItem(skuUserInvoiceDetail(userInvoiceDetail));
+                SET NS.quantityUserInvoiceDetail(d) <- NS.quantityUserInvoiceDetail(userInvoiceDetail);
+                SET wareUserInvoiceDetailUserInvoiceDetail(userInvoiceDetail) <- d;
+            }
+    }
+
+    WHEN (CHANGED(NS.skuUserInvoiceDetail(detail)) OR CHANGED(NS.quantityUserInvoiceDetail(detail)))
+         AND wareItem(NS.skuUserInvoiceDetail(detail))
+         DO EXEC createWareUserInvoiceDetail(detail) SESSION;
+
+    NS.overShipmentPriceUserInvoiceDetail(detail) += IF itemWareUserInvoiceDetailUserInvoiceDetail(detail)
+                                                    THEN 0 IF detail IS userInvoiceDetail
+                                                    ELSE NS.priceUserInvoiceDetail(detail) (+) NS.priceUserInvoiceDetail(wareUserInvoiceDetailUserInvoiceDetail(detail));
+    NS.skipCreateShipmentInvoiceDetail(detail) += TRUE IF itemWareUserInvoiceDetailUserInvoiceDetail(detail);
+END

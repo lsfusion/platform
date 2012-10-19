@@ -679,7 +679,7 @@ changeBarcodeSaleReceipt = ACTION (receipt) {
 
 // Поиск подбором
 FORM searchSkuSaleReceipt 'Поиск SKU'
-    OBJECTS st = departmentStore
+    OBJECTS st = departmentStore FIXED PANEL
 
     TREE skuTree sk = skuGroup PARENT parentSkuGroup
     PROPERTIES READONLY skuTreeName = nameSkuGroupStock(sk, st)

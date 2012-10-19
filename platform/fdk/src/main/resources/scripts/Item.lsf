@@ -145,6 +145,8 @@ DESIGN item FROM DEFAULT {
     }
 }
 
+editFormSku(sku) += [ACTION EDITFORM item](sku);
+
 FORM items 'Товары'
     TREE treeGroup g=itemGroup PARENT parentItemGroup
     PROPERTIES READONLY name(g)
@@ -539,7 +541,7 @@ META defineItemAttributeName (prefix, caption, group)
     numberInName###prefix##ItemAttribute 'Порядковый номер в наименовании'##caption = DATA INTEGER (itemAttribute) IN baseGroup;
     EXTEND FORM options PROPERTIES(ia) numberInName###prefix##ItemAttribute, prefixInNameItemAttribute, postfixInNameItemAttribute;
 
-    name###prefix##AttributeItem 'Наименование' (item) = castToString255(
+    name###prefix##AttributeItem 'Наименование'###caption (item) = castToString255(
                     [GROUP CONCAT ustring3(prefixInNameItemAttribute(attribute) AND item IS item, valueItemAttribute(item, attribute), postfixInNameItemAttribute(attribute) AND item IS item)
                                   IF numberInName###prefix##ItemAttribute(attribute) AND valueItemAttribute(item, attribute), ' ' BY item ORDER numberInName###prefix##ItemAttribute(attribute)](item))
                     IN group PERSISTENT MINCHARWIDTH 20 PREFCHARWIDTH 80 INDEXED AGGPROP;

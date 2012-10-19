@@ -1137,12 +1137,15 @@ DESIGN stocks FROM DEFAULT {
     }
 }
 
+editFormSku 'Редактировать' = ABSTRACT ACTION (sku) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' TOOLBAR;
+
 FORM skus 'Sku'
     TREE skuTree sg = skuGroup PARENT parentSkuGroup
     PROPERTIES READONLY skuGroupName = name(sg)
 
     OBJECTS s = sku
     PROPERTIES(s) READONLY nameSku, shortNameUOMSku
+    PROPERTIES(s) editFormSku
     FILTERS isParentSkuGroupSku(sg, s)
     ORDER BY nameSku
 
@@ -1164,6 +1167,7 @@ DESIGN skus FROM DEFAULT {
             ADD s.box {
                 s.grid {
                     defaultComponent = TRUE;
+                    fillHorizontal = 4;
                 }
             }
         }

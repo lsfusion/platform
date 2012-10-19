@@ -1,0 +1,7 @@
+MODULE WareSaleInvoice;
+
+REQUIRE WareInvoice, SaleInvoice, SaleShipment;
+
+NAMESPACE Sale;
+
+@defineInvoiceWare(Sale);
