@@ -55,7 +55,7 @@ public class GSinglePropertyTable extends GPropertyTable {
                 getFirstChildElement().getStyle().setOverflow(Overflow.HIDDEN);
     }
 
-    // перегруженный метод из AbstractCellTable
+    @Override
     protected boolean isSingleCellTable() {
         return true;
     }
