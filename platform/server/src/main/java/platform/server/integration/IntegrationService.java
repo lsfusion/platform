@@ -1,6 +1,7 @@
 package platform.server.integration;
 
 import platform.server.Message;
+import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.IntegerClass;
 import platform.server.data.Modify;
 import platform.server.data.expr.Expr;
@@ -67,7 +68,7 @@ public class IntegrationService {
         // приходится через addKeys, так как synchronize сам не может resolv'ить сессию на добавление
         Map<ImportKey<?>, SinglePropertyTableUsage<?>> addedKeys = new HashMap<ImportKey<?>, SinglePropertyTableUsage<?>>();
         for (ImportKey<?> key : keys)
-            if(!key.skipKey)
+            if(!key.skipKey && key.keyClass instanceof ConcreteCustomClass)
                 addedKeys.put(key, key.synchronize(session, importTable));
 
         DataChanges propertyChanges = new DataChanges();

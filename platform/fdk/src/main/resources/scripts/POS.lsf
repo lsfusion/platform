@@ -30,6 +30,7 @@ castBasisZReport =
 numberZReport 'Номер Z-отчета' (zReport) = DATA STRING[21](zReport) IN documentPrmGroup;
 cashRegisterZReport (zReport) = DATA cashRegister(zReport);
 numberCashRegisterZReport 'Касса Z-отчета' (zReport) = numberCashRegister(cashRegisterZReport(zReport)) IN documentPrmGroup;
+numberNumberCashRegisterToZReport (numberZReport, numberCashRegister) = GROUP UNIQUE zReport BY numberZReport (zReport), numberCashRegisterZReport (zReport) WHERE zReport IS zReport;
 numberNumberCashRegisterToZReportPosted (numberZReport, numberCashRegister) = GROUP UNIQUE zReportPosted BY numberZReport (zReportPosted), numberCashRegisterZReport (zReportPosted) WHERE zReportPosted IS zReportPosted;
 maxNumberZReport(cashRegister) = GROUP MAX numberZReport(zReport)  BY cashRegisterZReport (zReport);
 basisZReport 'Основание' (zReport) = castBasisZReport(numberZReport(zReport), numberCashRegisterZReport(zReport), dateZReport(zReport)) IN documentPrmGroup;
@@ -49,6 +50,8 @@ descriptionZReport (zReport) =
     [FORMULA STRING[200] '\'Продажа по кассе \' || CAST($1 AS TEXT) || \' отдела \' || CAST($2 AS TEXT) ||  \' от \' || CAST($3 AS TEXT)'](
     numberCashRegisterZReport(zReport), nameDepartmentStoreZReport(zReport), dateZReport(zReport));
 
+exportReceiptsZReport 'Экспортировать чеки' = ACTION CUSTOM 'platform.fdk.actions.ExportReceiptsActionProperty';
+importReceiptsZReport 'Импортировать чеки' = ACTION CUSTOM 'platform.fdk.actions.ImportReceiptsActionProperty';
 //----------------------------------------------- Чеки ---------------------------------------------------//
 
 CLASS receipt 'Чек' : historyObject;
@@ -132,6 +135,8 @@ numberDiscountCardReceiptDetail 'Номер дисконтной карты' (re
 nameClientDiscountCardReceiptDetail 'Держатель дисконтной карты' (receiptDetail) = nameClientDiscountCardReceipt(receiptReceiptDetail(receiptDetail));
 
 idBarcodeReceiptDetail 'Штрих-код' (receiptDetail) = DATA STRING[14] (receiptDetail) FIXEDCHARWIDTH 14 INDEXED;
+
+exportReceipt 'Экспортировать' (receipt) = SESSION DATA BOOLEAN (receipt);
 
 // Возвраты
 
@@ -304,6 +309,7 @@ countPaymentReceipt 'Кол-во типов платежей' (receipt) = GROUP 
 
 paymentTypePayment (payment) = DATA paymentType(payment);
 namePaymentTypePayment 'Тип платежа' (payment) = name(paymentTypePayment(payment));
+sidPaymentTypePayment 'ID Типа платежа' (payment) = sidPaymentType(paymentTypePayment(payment));
 
 minCashPaymentType () = GROUP MIN paymentType IF paymentMeansPaymentType(paymentType) == paymentMeans.paymentMeansCash;
 minCardPaymentType () = GROUP MIN paymentType IF paymentMeansPaymentType(paymentType) == paymentMeans.paymentMeansCard;
@@ -371,7 +377,7 @@ FORM zReport 'Z-отчет'
     OBJECTS b=receipt, d=receiptDetail
     PROPERTIES(b) numberReceipt, dateReceipt, timeReceipt, nameUserReceipt,
                   numberDiscountCardReceipt, nameClientDiscountCardReceipt, sumReceiptDetailReceipt, discountSumReceiptDetailReceipt,
-                  discountSumReceipt, countReceiptDetailReceipt, quantityReceiptDetailReceipt, ADDOBJ, delete
+                  discountSumReceipt, countReceiptDetailReceipt, quantityReceiptDetailReceipt, exportReceipt, ADDOBJ, delete
     FILTERS zReportReceipt(b)==z
 
     PROPERTIES(b) TODRAW d addDetailDialogSkuStockReceiptSaleDetailReceipt, addDetailDialogSkuStockReceiptReturnDetailReceipt
@@ -427,12 +433,14 @@ FORM zReports 'Z-отчеты'
                             numberZReport, basisZReport, countReceiptZReport, quantityReceiptDetailZReport, sumCashZReport,
                             sumReceiptDetailZReport, discountSumReceiptDetailZReport, VATSumSaleZReport, VATSumReturnZReport
     PROPERTIES (z) ADDFORM, EDITFORM SHOWIF isDraftZReport(z), delete FORCE PANEL DRAWTOTOOLBAR SHOWIF isDraftZReport(z),
+                            exportReceiptsZReport FORCE PANEL DRAWTOTOOLBAR, importReceiptsZReport FORCE PANEL DRAWTOTOOLBAR,
                             postZReport SHOWIF isDraftZReport(z), unpostZReport SHOWIF isPostedZReport(z)
 
     OBJECTS b=receipt
     PROPERTIES(b) READONLY  numberReceipt, dateReceipt, timeReceipt, nameUserReceipt,
                             numberDiscountCardReceipt, nameClientDiscountCardReceipt, sumReceiptDetailReceipt, discountSumReceiptDetailReceipt,
                             discountSumReceipt, countReceiptDetailReceipt, quantityReceiptDetailReceipt
+    PROPERTIES(b)           exportReceipt
 
     FILTERS zReportReceipt(b)==z
     ORDER BY                numberReceipt

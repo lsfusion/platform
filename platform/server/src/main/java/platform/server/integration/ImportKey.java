@@ -4,6 +4,7 @@ import platform.base.OrderedMap;
 import platform.server.Message;
 import platform.server.ThisMessage;
 import platform.server.classes.ConcreteCustomClass;
+import platform.server.classes.CustomClass;
 import platform.server.data.Modify;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
@@ -27,7 +28,7 @@ import java.util.*;
  */
 
 public class ImportKey<P extends PropertyInterface> implements ImportKeyInterface, ImportDeleteInterface {
-    ConcreteCustomClass keyClass;
+    CustomClass keyClass;
     final CalcPropertyImplement<P, ImportFieldInterface> implement;
 
     public ImportKey(ImportKey key) {
@@ -35,13 +36,9 @@ public class ImportKey<P extends PropertyInterface> implements ImportKeyInterfac
         this.implement = key.implement;
     }
 
-    public ImportKey(ConcreteCustomClass keyClass, CalcPropertyImplement<P, ImportFieldInterface> implement) {
+    public ImportKey(CustomClass keyClass, CalcPropertyImplement<P, ImportFieldInterface> implement) {
         this.keyClass = keyClass;
         this.implement = implement;
-    }
-
-    public ConcreteCustomClass getCustomClass() {
-        return keyClass;
     }
 
     public Map<P, ImportFieldInterface> getMapping() {
@@ -102,7 +99,7 @@ public class ImportKey<P extends PropertyInterface> implements ImportKeyInterfac
         Where where = GroupExpr.create(getImplementExprs(importTable.join(importTable.getMapKeys()).getExprs()), Where.TRUE, mapKeys).getWhere().and( // в импортируемой таблице
                 implement.property.getExpr(mapKeys, session.getModifier()).getWhere().not()); // для которых не определился объект
 
-        return session.addObjects(keyClass, new PropertySet<P>(mapKeys, where, new OrderedMap<Expr, Boolean>(), false));
+        return session.addObjects((ConcreteCustomClass)keyClass, new PropertySet<P>(mapKeys, where, new OrderedMap<Expr, Boolean>(), false));
     }
 
     @Override
