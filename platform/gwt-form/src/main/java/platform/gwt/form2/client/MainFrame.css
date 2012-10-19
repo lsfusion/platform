@@ -48,6 +48,10 @@ input[type=checkbox] {
     padding: 2px 3px 4px 5px;
 }
 
+.gwt-TabPanel {
+    padding-bottom: 0.3em;
+}
+
 .gwt-TabPanelBottom {
     padding: 1px;
 }
@@ -185,6 +189,7 @@ input[type=checkbox] {
 /* ------------ Caption panel ------------ */
 .captionPanel {
     padding-top: 0.55em;
+    padding-bottom: 0.15em;
 }
 
 .captionPanelContainer {
@@ -192,7 +197,6 @@ input[type=checkbox] {
     position: relative;
     padding: 0.5em 0 0.1em 0;
     border-radius: 5px;
-    margin: 0.1em 0;
 }
 
 .captionPanelLegend {
