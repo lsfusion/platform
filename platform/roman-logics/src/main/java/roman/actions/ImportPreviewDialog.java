@@ -2,6 +2,8 @@ package roman.actions;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -135,6 +137,9 @@ class JTableCheck extends JPanel {
         table.setFillsViewportHeight(true);
         JScrollPane pane = new JScrollPane(table);
         add(pane, BorderLayout.CENTER);
+
+        TableRowSorter<TableModel> sorter = new TableRowSorter(checkTableModel);
+        table.setRowSorter(sorter);
     }
 
     public CheckTableModel getCheckTableModel() {
