@@ -698,7 +698,7 @@ FORM priceSetDocument 'Розничный прайс'
     PROPERTIES (p, aa) READONLY prevPriceDocumentBBasePriceSetDocumentArticle
 
 
-    PROPERTIES        balanceBArticleDate(aa, dFrom), averageSoldArticleWeekDateFromToDocument(aa, w, dFrom, dTo, p)  COLUMNS (w) HEADER castToString4(w),
+    PROPERTIES        READONLY balanceBArticleDate(aa, dFrom), averageSoldArticleWeekDateFromToDocument(aa, w, dFrom, dTo, p)  COLUMNS (w) HEADER castToString4(w),
                       quantitySoldArticleDateFromTo(aa, dFrom, dTo), balanceAArticleDate(aa, dTo)
     PROPERTIES (p,aa) prevPriceDocumentBDiscountPriceSetDocumentArticle READONLY, inPriceSetDocumentArticle, percentDiscountPriceSetDocumentArticle
 
@@ -866,6 +866,12 @@ DESIGN priceSetDocument FROM DEFAULT {
 
     PROPERTY(formCloseAction) {
         askConfirm = TRUE;
+    }
+    PROPERTY(balanceBArticleDate) {
+        caption = 'Остаток на начало периода';
+    }
+    PROPERTY(balanceAArticleDate) {
+        caption = 'Остаток на конец периода';
     }
 }
 

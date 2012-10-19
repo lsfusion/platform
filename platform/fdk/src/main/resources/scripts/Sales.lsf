@@ -34,13 +34,19 @@ sumVATSalesLedger 'Сумма НДС' (ledger) = [X*Y/(100+Y)](
 
 markupSumSalesLedger 'Надбавка' (ledger) = sumSalesLedger(ledger) - sumVATSalesLedger(ledger) - costSumSkuLedger(ledger);
 
+quantitySoldSkuStockDate (sku, stock, date) = GROUP SUM quantitySalesLedger(ledger) IF isPostedSalesLedger(ledger)
+    BY skuSalesLedger(ledger), stockSalesLedger(ledger), dateSalesLedger(ledger) PERSISTENT;
+
+sumSoldSkuStockDate (sku, stock, date) = GROUP SUM sumSalesLedger(ledger) IF isPostedSalesLedger(ledger)
+    BY skuSalesLedger(ledger), stockSalesLedger(ledger), dateSalesLedger(ledger) PERSISTENT;
+
 quantitySoldSkuStockWeekDateFromTo 'Продано за неделю (кол-во)' (sku, stock, week, dateFrom, dateTo) = GROUP SUM
-        quantitySalesLedger(ledger) AND dateSalesLedger(ledger) >= (dateFrom AS DATE) AND dateSalesLedger(ledger) <= (dateTo AS DATE)
-        BY skuSalesLedger(ledger), stockSalesLedger(ledger), weekInDate(dateSalesLedger(ledger)), dateFrom, dateTo;
+        quantitySoldSkuStockDate(sku, stock, date) AND date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
+        BY sku, stock, weekInDate(date), dateFrom, dateTo;
 
 sumSoldSkuStockWeekDateFromTo 'Продано за неделю (сумма)' (sku, stock, week, dateFrom, dateTo) = GROUP SUM
-        sumSalesLedger(ledger) AND dateSalesLedger(ledger) >= (dateFrom AS DATE) AND dateSalesLedger(ledger) <= (dateTo AS DATE)
-        BY skuSalesLedger(ledger), stockSalesLedger(ledger), weekInDate(dateSalesLedger(ledger)), dateFrom, dateTo;
+        sumSoldSkuStockDate(sku, stock, date) AND date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
+        BY sku, stock, weekInDate(date), dateFrom, dateTo;
 
 averagePriceSoldSkuStockWeekDateFromTo 'Средняя цена за неделю' (sku, stock, week, dateFrom, dateTo)=  round2(sumSoldSkuStockWeekDateFromTo(sku, stock, week, dateFrom, dateTo) /
         quantitySoldSkuStockWeekDateFromTo(sku, stock, week, dateFrom, dateTo));
@@ -55,12 +61,12 @@ sumSoldWeekDateFromTo 'Продано за неделю (сумма)' (week, dat
         sumSoldSkuStockWeekDateFromTo(sku, stock, week, dateFrom, dateTo) BY  week, dateFrom, dateTo;
 
 quantitySoldSkuStockDateFromTo 'Продано за интервал (кол-во)' (sku, stock, dateFrom, dateTo) = GROUP SUM
-        quantitySalesLedger(ledger) AND dateSalesLedger(ledger) >= (dateFrom AS DATE) AND dateSalesLedger(ledger) <= (dateTo AS DATE)
-        BY skuSalesLedger(ledger), stockSalesLedger(ledger), dateFrom, dateTo;
+        quantitySoldSkuStockDate(sku, stock, date) AND date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
+        BY sku, stock, dateFrom, dateTo;
 
 sumSoldSkuStockDateFromTo 'Продано за интервал (сумма)' (sku, stock, dateFrom, dateTo) = GROUP SUM
-        sumSalesLedger(ledger) AND dateSalesLedger(ledger) >= (dateFrom AS DATE) AND dateSalesLedger(ledger) <= (dateTo AS DATE)
-        BY skuSalesLedger(ledger), stockSalesLedger(ledger), dateFrom, dateTo;
+        sumSoldSkuStockDate(sku, stock, date) AND date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
+        BY sku, stock, dateFrom, dateTo;
 
 skuStockAverageInterval 'Интервал расчета продаж в день' = DATA INTEGER ();
 

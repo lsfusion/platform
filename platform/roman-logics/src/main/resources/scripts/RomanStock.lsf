@@ -56,9 +56,14 @@ EXTEND FORM currentBalanceBatchStock
 ;
 
 TABLE articleStock (article, stock);
+TABLE articleStockDate(article, stock, DATE);
+TABLE articleDate(article, DATE);
 
 currentBalanceArticleStock 'Тек. остаток' = GROUP SUM currentBalanceSkuStock(sku, stock) BY articleSku(sku), stock PERSISTENT;
 currentBalanceArticle 'Тек. остаток' = GROUP SUM currentBalanceArticleStock(article, stock) BY article PERSISTENT;
+
+balanceBArticleDate 'Остаток на начало дня' (article, date) = GROUP SUM balanceBSkuStockDate(sku, stock, date) BY articleSku(sku), date;
+balanceAArticleDate 'Остаток на конец дня' (article, date) = GROUP SUM balanceASkuStockDate(sku, stock, date) BY articleSku(sku), date;
 
 // создаем разные типы партий (бухгалтерские, управленческие)
 //CLASS STATIC batchType {

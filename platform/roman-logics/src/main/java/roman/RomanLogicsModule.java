@@ -288,6 +288,7 @@ public class RomanLogicsModule extends LogicsModule {
     public LCP nameSubCategorySupplierArticleSku;
 
     public LCP categorySupplierArticle;
+    public LCP nameCategorySupplierArticle;
 
     public ConcreteCustomClass store;
     private ConcreteCustomClass unitOfMeasure;
@@ -2385,12 +2386,14 @@ public class RomanLogicsModule extends LogicsModule {
         nameCollectionSupplierArticle.property.preferredCharWidth = 30;
         nameCollectionSupplierArticle.property.minimumCharWidth = 15;
 
-        subCategorySupplierArticle = addDProp(idGroup, "subCategorySupplierArticle", "Группа (ИД)", subCategorySupplier, article);
-        nameSubCategorySupplierArticle = addJProp(supplierAttributeGroup, "nameSubCategorySupplierArticle", "Группа", baseLM.name, subCategorySupplierArticle, 1);
+        subCategorySupplierArticle = addDProp(idGroup, "subCategorySupplierArticle", "Подгруппа (ИД)", subCategorySupplier, article);
+        nameSubCategorySupplierArticle = addJProp(supplierAttributeGroup, "nameSubCategorySupplierArticle", "Подгруппа", baseLM.name, subCategorySupplierArticle, 1);
         nameSubCategorySupplierArticle.property.preferredCharWidth = 30;
         nameSubCategorySupplierArticle.property.minimumCharWidth = 15;
 
         categorySupplierArticle = addJProp("categorySupplierArticle", "Группа (ИД)", categorySupplierSubCategorySupplier, subCategorySupplierArticle, 1);
+        nameCategorySupplierArticle = addJProp(supplierAttributeGroup, "nameCategorySupplierArticle", "Группа", baseLM.name, categorySupplierArticle, 1);
+
 
         addConstraint(addJProp("Поставщик артикула должен соответствовать поставщику темы артикула", baseLM.diff2,
                 supplierArticle, 1, addJProp(supplierThemeSupplier, themeSupplierArticle, 1), 1), true);
@@ -2407,8 +2410,8 @@ public class RomanLogicsModule extends LogicsModule {
         nameThemeSupplierArticleSku.property.minimumCharWidth = 15;
         sidThemeSupplierArticleSku = addJProp(baseGroup, "sidThemeSupplierArticleSku", "Код темы", sidThemeSupplier, themeSupplierArticleSku, 1);
 
-        subCategorySupplierArticleSku = addJProp(idGroup, "subCategorySupplierArticleSku", "Группа (ИД)", subCategorySupplierArticle, articleSku, 1);
-        nameSubCategorySupplierArticleSku = addJProp(supplierAttributeGroup, "nameSubCategorySupplierArticleSku", "Группа", baseLM.name, subCategorySupplierArticleSku, 1);
+        subCategorySupplierArticleSku = addJProp(idGroup, "subCategorySupplierArticleSku", "Подгруппа (ИД)", subCategorySupplierArticle, articleSku, 1);
+        nameSubCategorySupplierArticleSku = addJProp(supplierAttributeGroup, "nameSubCategorySupplierArticleSku", "Подгруппа", baseLM.name, subCategorySupplierArticleSku, 1);
         nameSubCategorySupplierArticleSku.property.preferredCharWidth = 30;
         nameSubCategorySupplierArticleSku.property.minimumCharWidth = 15;
         sidSubCategorySupplierArticleSku = addJProp(baseGroup, "sidSubCategorySupplierArticleSku", "Категория", sidSubCategorySupplier, subCategorySupplierArticleSku, 1);
