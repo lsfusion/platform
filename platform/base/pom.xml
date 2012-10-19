@@ -188,6 +188,7 @@
                                     <tasks>
                                         <echo message="Pack200-ing jar ${assemble.jar}"/>
                                         <exec executable="pack200">
+                                            <arg value="--segment-limit=-1"/>
                                             <arg value="${assemble.jar}.pack.gz"/>
                                             <arg value="${assemble.jar}"/>
                                         </exec>
@@ -218,6 +219,7 @@
                                         <echo message="Repacking jar ${assemble.jar}"/>
                                         <exec executable="pack200">
                                             <arg value="--repack"/>
+                                            <arg value="--segment-limit=-1"/>
                                             <arg value="${assemble.jar}"/>
                                         </exec>
 
