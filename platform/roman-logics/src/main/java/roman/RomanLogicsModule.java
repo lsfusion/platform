@@ -162,6 +162,7 @@ public class RomanLogicsModule extends LogicsModule {
     ConcreteCustomClass sizeSupplier;
     ConcreteCustomClass gender;
     ConcreteCustomClass genderSupplier;
+    ConcreteCustomClass seasonSupplier;
     public ConcreteCustomClass brandSupplier;
     public ConcreteCustomClass themeSupplier;
     public ConcreteCustomClass collectionSupplier;
@@ -258,6 +259,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LCP nameSupplierArticleSku;
     private LCP addressSupplierArticleSku;
     public LCP supplierThemeSupplier;
+    public LCP supplierSeasonSupplier;
     public LCP supplierCollectionSupplier;
     public LCP supplierCategorySupplier;
     public LCP supplierSubCategorySupplier;
@@ -549,6 +551,9 @@ public class RomanLogicsModule extends LogicsModule {
     private LCP sidGenderGenderSupplier;
     private LCP genderSupplierArticleSku;
     private LCP sidGenderSupplierArticleSku;
+    private LCP seasonYearSeasonSupplier;
+    private LCP nameSeasonYearSeasonSupplier;
+
     private LCP countryOfOriginDataSku;
     private LCP countryOfOriginSku;
     private LCP nameCountrySkuLanguage;
@@ -801,6 +806,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LCP freightTypeFreight;
     private LCP nameFreightTypeFreight;
     private LCP palletNumberFreight;
+    private LCP palletNumberProxyFreight;
     private LCP diffPalletFreight;
     private LCP barcodePalletFreightBox;
     private LCP freightBoxNumberPallet;
@@ -1224,6 +1230,7 @@ public class RomanLogicsModule extends LogicsModule {
     LCP sidSubCategorySupplier;
     LCP sidGender;
     LCP sidGenderSupplier;
+    LCP sidSeasonSupplier;
     LCP sizeSIDSupplier;
     LCP themeSIDSupplier;
     LCP collectionSIDSupplier;
@@ -1560,6 +1567,7 @@ public class RomanLogicsModule extends LogicsModule {
         gender = addConcreteClass("gender", "Пол", baseClass.named, baseLM.multiLanguageNamed);
         genderSupplier = addConcreteClass("genderSupplier", "Пол поставщика", baseClass);
         sizeGroupSupplier = addConcreteClass("sizeGroupSupplier", "Размерная сетка", baseClass.named);
+        seasonSupplier = addConcreteClass("seasonSupplier", "Сезон поставщика", baseClass);
 
         typeFabric = addConcreteClass("typeFabric", "Тип одежды", baseClass.named, baseLM.multiLanguageNamed);
 
@@ -2074,6 +2082,7 @@ public class RomanLogicsModule extends LogicsModule {
         sidGender = addDProp(baseGroup, "sidGender", "Код", StringClass.get(50), gender);
         sidGender.setPreferredCharWidth(2);
         sidGenderSupplier = addDProp(baseGroup, "sidGenderSupplier", "Код", StringClass.get(10), genderSupplier);
+        sidSeasonSupplier = addDProp(baseGroup, "sidSeasonSupplier", "Код", StringClass.get(10), seasonSupplier);
 
         commonSizeSizeSupplierGenderCategory = addDProp(idGroup, "commonSizeSizeSupplierGenderCategory", "Унифицированный размер (ИД)", commonSize, sizeSupplier, gender, category);
         nameCommonSizeSizeSupplierGenderCategory = addJProp(baseGroup, "nameCommonSizeSizeSupplierGenderCategory", "Унифицированный размер", baseLM.name, commonSizeSizeSupplierGenderCategory, 1, 2, 3);
@@ -2103,10 +2112,14 @@ public class RomanLogicsModule extends LogicsModule {
                 supplierSizeSupplier, 1,
                 supplierGroupSizeSupplier, 1), true);
 
+        supplierSeasonSupplier = addDProp(idGroup, "supplierSeasonSupplier", "Поставщик (ИД)", supplier, seasonSupplier);
+
         supplierThemeSupplier = addDProp(idGroup, "supplierThemeSupplier", "Поставщик (ИД)", supplier, themeSupplier);
         nameSupplierThemeSupplier = addJProp(baseGroup, "nameSupplierThemeSupplier", "Поставщик", baseLM.name, supplierThemeSupplier, 1);
+
         supplierCollectionSupplier = addDProp(idGroup, "supplierCollectionSupplier", "Поставщик (ИД)", supplier, collectionSupplier);
         nameSupplierCollectionSupplier = addJProp(baseGroup, "nameSupplierCollectionSupplier", "Поставщик", baseLM.name, supplierCollectionSupplier, 1);
+
         sidDestinationSupplier = addDProp(idGroup, "sidDestinationSupplier", "Идентификатор магазина у поставщика", InsensitiveStringClass.get(50),  destination, supplier);
 
         supplierCategorySupplier = addDProp(idGroup, "supplierCategorySupplier", "Поставщик (ИД)", supplier, categorySupplier);
@@ -2485,6 +2498,9 @@ public class RomanLogicsModule extends LogicsModule {
 
         genderOriginArticle = addJProp(itemAttributeGroup, "genderOriginArticle", "Пол (ИД)", genderGenderSupplier, genderSupplierArticle, 1);
 
+        seasonYearSeasonSupplier = addDProp(idGroup, "seasonYearSeasonSupplier", "Сезон (ИД)", seasonYear, seasonSupplier);
+        nameSeasonYearSeasonSupplier = addJProp(baseGroup, "nameSeasonYearSeasonSupplier", "Сезон", nameSeasonYear, seasonYearSeasonSupplier, 1);
+
         LCP supplierColorItem = addJProp(supplierColorSupplier, colorSupplierItem, 1);
         addConstraint(addJProp("Поставщик товара должен соответствовать цвету поставщика", baseLM.diff2,
                 supplierArticleSku, 1,
@@ -2619,18 +2635,18 @@ public class RomanLogicsModule extends LogicsModule {
         additionalCompositionOriginSku.property.preferredCharWidth = 40;
         additionalCompositionOriginSku.property.minimumCharWidth = 20;
 
-        mainCompositionArticle = addDProp(intraAttributeGroup, "mainCompositionArticle", "Состав (перевод)", COMPOSITION_CLASS, article);
-        additionalCompositionArticle = addDProp(intraAttributeGroup, "additionalCompositionArticle", "Доп. состав (перевод)", COMPOSITION_CLASS, article);
+        mainCompositionArticle = addDProp(intraAttributeGroup, "mainCompositionArticle", "Состав (рус.)", COMPOSITION_CLASS, article);
+        additionalCompositionArticle = addDProp(intraAttributeGroup, "additionalCompositionArticle", "Доп. состав (рус.)", COMPOSITION_CLASS, article);
 
-        mainCompositionSku = addDProp(intraAttributeGroup, "mainCompositionSku", "Состав (перевод)", COMPOSITION_CLASS, sku);
+        mainCompositionSku = addDProp(intraAttributeGroup, "mainCompositionSku", "Состав (рус.)", COMPOSITION_CLASS, sku);
         mainCompositionOriginSku.setPreferredCharWidth(80);
 
-        additionalCompositionSku = addDProp(intraAttributeGroup, "additionalCompositionSku", "Доп. состав (перевод)", COMPOSITION_CLASS, sku);
+        additionalCompositionSku = addDProp(intraAttributeGroup, "additionalCompositionSku", "Доп. состав (рус.)", COMPOSITION_CLASS, sku);
         additionalCompositionSku.property.preferredCharWidth = 40;
         additionalCompositionSku.property.minimumCharWidth = 20;
 
-        mainCompositionSkuLanguage = addDProp("mainCompositionSkuLanguage", "Состав (перевод)", COMPOSITION_CLASS, sku, (CustomClass) BL.I18n.getClassByName("language"));
-        additionalCompositionSkuLanguage = addDProp ("additionalCompositionSkuLanguage" , "Доп. состав (перевод)", COMPOSITION_CLASS, sku, (CustomClass) BL.I18n.getClassByName("language"));
+        mainCompositionSkuLanguage = addDProp("mainCompositionSkuLanguage", "Состав (укр.)", COMPOSITION_CLASS, sku, (CustomClass) BL.I18n.getClassByName("language"));
+        additionalCompositionSkuLanguage = addDProp ("additionalCompositionSkuLanguage" , "Доп. состав (укр.)", COMPOSITION_CLASS, sku, (CustomClass) BL.I18n.getClassByName("language"));
 
         mainCompositionOriginSkuLanguage = addJProp(baseLM.and1, mainCompositionOriginSku, 1, is((CustomClass) BL.I18n.getClassByName("language")), 2);
         additionalCompositionOriginSkuLanguage = addJProp(baseLM.and1, additionalCompositionOriginSku, 1, is((CustomClass) BL.I18n.getClassByName("language")), 2);
@@ -2638,12 +2654,12 @@ public class RomanLogicsModule extends LogicsModule {
         translationMainCompositionSkuLanguage = addJoinAProp(actionGroup, "translationMainCompositionSkuLanguage", "Перевод состава", addTAProp(mainCompositionOriginSkuLanguage, mainCompositionSkuLanguage), BL.I18n.getLCPByName("dictionaryCompositionLanguage"), 2, 1, 2);
         translationAdditionalCompositionSkuLanguage = addJoinAProp(actionGroup, "translationAdditionalCompositionSkuLanguage", "Перевод доп. состава", addTAProp(additionalCompositionOriginSkuLanguage, additionalCompositionSkuLanguage), BL.I18n.getLCPByName("dictionaryCompositionLanguage"), 2, 1, 2);
 
-        mainCompositionSkuInvoice = addJProp("mainCompositionSkuInvoice", "Состав (иностр.)", mainCompositionSkuLanguage, 1, languageInvoice, 2);
+        mainCompositionSkuInvoice = addJProp("mainCompositionSkuInvoice", "Состав (укр.)", mainCompositionSkuLanguage, 1, languageInvoice, 2);
 
         translationMainCompositionSkuInvoice = addJoinAProp("translationMainCompositionSkuInvoice", "Перевести", translationMainCompositionSkuLanguage, 1, languageInvoice, 2);
         translationMainCompositionSkuInvoice.property.panelLocation = new ShortcutPanelLocation(mainCompositionSkuInvoice.property);
 
-        additionalCompositionSkuInvoice = addJProp("additionalCompositionSkuInvoice", "Доп. состав (иностр.)", additionalCompositionSkuLanguage, 1, languageInvoice, 2);
+        additionalCompositionSkuInvoice = addJProp("additionalCompositionSkuInvoice", "Доп. состав (укр.)", additionalCompositionSkuLanguage, 1, languageInvoice, 2);
 
         translationAdditionalCompositionSkuInvoice = addJoinAProp("translationAdditionalCompositionSkuInvoice", "Перевести", translationAdditionalCompositionSkuLanguage, 1, languageInvoice, 2);
         translationAdditionalCompositionSkuInvoice .property.panelLocation = new ShortcutPanelLocation(additionalCompositionSkuInvoice.property);
@@ -3435,15 +3451,15 @@ public class RomanLogicsModule extends LogicsModule {
 
         customsZoneFreight = addJProp("customsZoneFreight", "", customsZoneCountry, countryFreight, 1);
 
-        mainCompositionLanguageFreightSku  = addDProp("mainCompositionLanguageFreightSku", "Состав (иностр.)", StringClass.get(200), freight, sku);
-        additionalCompositionLanguageFreightSku = addDProp("additionalCompositionLanguageFreightSku", "Доп. состав (иностр.)", StringClass.get(200), freight, sku);
+        mainCompositionLanguageFreightSku  = addDProp("mainCompositionLanguageFreightSku", "Состав (укр.)", StringClass.get(200), freight, sku);
+        additionalCompositionLanguageFreightSku = addDProp("additionalCompositionLanguageFreightSku", "Доп. состав (укр.)", StringClass.get(200), freight, sku);
 
-        mainCompositionSkuFreight = addJProp("mainCompositionSkuFreight", "Состав (иностр.)", mainCompositionSkuLanguage, 1, languageFreight, 2);
+        mainCompositionSkuFreight = addJProp("mainCompositionSkuFreight", "Состав (укр.)", mainCompositionSkuLanguage, 1, languageFreight, 2);
 
         translationMainCompositionSkuFreight = addJoinAProp("translationMainCompositionSkuFreight", "Перевести", translationMainCompositionSkuLanguage, 1, languageFreight, 2);
         translationMainCompositionSkuFreight.property.panelLocation = new ShortcutPanelLocation(mainCompositionSkuFreight.property);
 
-        additionalCompositionSkuFreight = addJProp("additionalCompositionSkuFreight", "Доп. состав (иностр.)", additionalCompositionSkuLanguage, 1, languageFreight, 2);
+        additionalCompositionSkuFreight = addJProp("additionalCompositionSkuFreight", "Доп. состав (укр.)", additionalCompositionSkuLanguage, 1, languageFreight, 2);
 
         translationAdditionalCompositionSkuFreight = addJoinAProp("translationAdditionalCompositionSkuFreight", "Перевести", translationAdditionalCompositionSkuLanguage, 1, languageFreight, 2);
         translationAdditionalCompositionSkuFreight.property.panelLocation = new ShortcutPanelLocation(additionalCompositionSkuFreight.property);
@@ -3484,8 +3500,10 @@ public class RomanLogicsModule extends LogicsModule {
         //addConstraint(addJProp("Маршрут короба должен совпадать с маршрутом паллеты", baseLM.diff2,
         //        routeCreationFreightBoxFreightBox, 1, addJProp(routeCreationPalletPallet, palletFreightBox, 1), 1), true);
 
+        palletNumberProxyFreight = addSGProp("palletNumberProxyFreight", "Кол-во присоединённых паллет", addCProp(IntegerClass.instance, 1, pallet), freightPallet, 1);
+
         palletNumberFreight = addSUProp(baseGroup, "palletNumberFreight", true, "Кол-во присоединённых паллет", Union.SUM,
-                addSGProp(addCProp(IntegerClass.instance, 1, pallet), freightPallet, 1),
+                palletNumberProxyFreight,
                 addSGProp(palletNumberDirectInvoice, freightDirectInvoice, 1));
 
         freightBoxNumberFreight = addSGProp(baseGroup, "freightBoxNumberFreight", "Кол-во присоединённых коробов", freightBoxNumberPallet, freightPallet, 1);
@@ -3608,14 +3626,14 @@ public class RomanLogicsModule extends LogicsModule {
         translationAdditionalCompositionSku = addJoinAProp(actionGroup, "translationAdditionalCompositionSku", "Перевести", addTAProp(additionalCompositionOriginSku, additionalCompositionSku), dictionaryComposition, 1);
         translationAdditionalCompositionSku.property.panelLocation = new ShortcutPanelLocation(additionalCompositionSku.property);
 
-        mainCompositionFreightSku = addDProp(baseGroup, "mainCompositionFreightSku", "Состав (перевод)", COMPOSITION_CLASS, freight, sku);
+        mainCompositionFreightSku = addDProp(baseGroup, "mainCompositionFreightSku", "Состав (рус.)", COMPOSITION_CLASS, freight, sku);
         mainCompositionFreightSku.setEventChangeNewSet(addJProp(baseLM.and1, mainCompositionSku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
 
         userNumberFreightSku = addDProp(baseGroup, "userNumberFreightSku", "Пользовательский номер", IntegerClass.instance, freight, sku);
 
         addConstraint(addJProp("Для SKU должен быть задан состав", and(true, false), is(freightChanged), 1, mainCompositionFreightSku, 1, 2, quantityFreightSku, 1, 2), false);
 
-        additionalCompositionFreightSku = addDProp(baseGroup, "additionalCompositionFreightSku", "Доп. состав (перевод)", COMPOSITION_CLASS, freight, sku);
+        additionalCompositionFreightSku = addDProp(baseGroup, "additionalCompositionFreightSku", "Доп. состав (рус.)", COMPOSITION_CLASS, freight, sku);
         additionalCompositionFreightSku.setEventChangeNewSet(addJProp(baseLM.and1, additionalCompositionSku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
         additionalCompositionFreightSku.property.preferredCharWidth = 40;
         additionalCompositionFreightSku.property.minimumCharWidth = 20;
@@ -4680,7 +4698,7 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(new LP[]{baseLM.barcode, sidArticleSku, nameSeasonYearArticleSku, sidGenderSupplierArticleSku,
                     nameCollectionSupplierArticle, nameSubCategorySupplierArticle, sidThemeSupplierArticleSku,
                     nameThemeSupplierArticleSku, nameSubCategorySupplierArticleSku, nameCollectionSupplierArticleSku,
-                    sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem,
+                    nameCategoryArticleSku, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem,
                     sidBrandSupplierArticleSku, nameBrandSupplierArticleSku, originalNameArticleSku,
                     nameCountrySupplierOfOriginArticleSku, nameCountryOfOriginSku, netWeightSku,
                     mainCompositionOriginSku, additionalCompositionOriginSku, baseLM.delete}, objSku);
@@ -4696,7 +4714,6 @@ public class RomanLogicsModule extends LogicsModule {
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityDocumentSku, objOrder, objSku)));
 
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku.groupTo);
-            //addFixedFilter(new CompareFilterEntity(addPropertyObject(inOrderInvoice, objOrder, objInvoice), Compare.EQUALS, true));
 
             CompareFilterEntity invoiceSupplierFilter = new CompareFilterEntity(addPropertyObject(supplierDocument, objInvoice), Compare.EQUALS, objSupplier);
             addFixedFilter(invoiceSupplierFilter);
@@ -4986,7 +5003,8 @@ public class RomanLogicsModule extends LogicsModule {
 
             objSku = addSingleGroupObject("sku", sku, "SKU");
             addPropertyDraw(new LP[]{baseLM.barcode, sidArticleSku, nameSeasonYearArticleSku, sidGenderSupplierArticleSku,
-                    nameThemeSupplierArticleSku, nameSubCategorySupplierArticleSku, nameCollectionSupplierArticleSku, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem,
+                    nameThemeSupplierArticleSku, nameSubCategorySupplierArticleSku, nameCollectionSupplierArticleSku, nameCategoryArticleSku,
+                    sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem,
                     nameBrandSupplierArticleSku, nameCountrySupplierOfOriginArticleSku, nameCountryOfOriginSku, netWeightSku}, objSku);
 
             setEditType(PropertyEditType.READONLY, objSku.groupTo);
@@ -7550,8 +7568,8 @@ public class RomanLogicsModule extends LogicsModule {
             objTheme = addSingleGroupObject(themeSupplier, "Тема", baseLM.name);
             addObjectActions(this, objTheme);
 
-            //objSeason = addSingleGroupObject(seasonSupplier, "Сезон", baseLM.name, sidSeasonSupplier);
-            //addObjectActions(this, objSeason);
+            objSeason = addSingleGroupObject(seasonSupplier, "Сезон", baseLM.name, sidSeasonSupplier, nameSeasonYearSeasonSupplier);
+            addObjectActions(this, objSeason);
 
             objCollection = addSingleGroupObject(collectionSupplier, "Коллекция", baseLM.name);
             addObjectActions(this, objCollection);
@@ -7572,6 +7590,7 @@ public class RomanLogicsModule extends LogicsModule {
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierSizeSupplier, objSize), Compare.EQUALS, objSupplier));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierBrandSupplier, objBrand), Compare.EQUALS, objSupplier));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierThemeSupplier, objTheme), Compare.EQUALS, objSupplier));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierSeasonSupplier, objSeason), Compare.EQUALS, objSupplier));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierCollectionSupplier, objCollection), Compare.EQUALS, objSupplier));
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierCategorySupplier, objCategory), Compare.EQUALS, objSupplier));
@@ -7640,7 +7659,7 @@ public class RomanLogicsModule extends LogicsModule {
             specContainer.add(design.getGroupObjectContainer(objCollection.groupTo));
             specContainer.add(groupContainer);
             specContainer.add(design.getGroupObjectContainer(objTheme.groupTo));
-            //specContainer.add(design.getGroupObjectContainer(objSeason.groupTo));
+            specContainer.add(design.getGroupObjectContainer(objSeason.groupTo));
             specContainer.add(design.getGroupObjectContainer(objCountry.groupTo));
             specContainer.add(design.getGroupObjectContainer(objGenderSupplier.groupTo));
             specContainer.type = ContainerType.TABBED_PANE;
