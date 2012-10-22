@@ -16,6 +16,15 @@ PRIORITY MasterData, Stock, RomanLogicsModule;
 GROUP totalGroupSupplier 'Итого (поставщик)' : publicGroup;
 
 
+balanceBSupplierDate 'Остаток на начало дня' (supplier, dateFrom) =  GROUP SUM balanceBArticleDate(article, dateFrom)
+    BY supplierArticle(article), dateFrom;
+balanceBBrandSupplierDate 'Остаток на начало дня' (brandSupplier, dateFrom) =  GROUP SUM balanceBArticleDate(article, dateFrom)
+    BY brandSupplierArticle(article), dateFrom;
+balanceBCategorySupplierDate 'Остаток на начало дня' (categorySupplier, dateFrom) =  GROUP SUM balanceBArticleDate(article, dateFrom)
+    BY categorySupplierArticle(article), dateFrom;
+balanceBSubCategorySupplierDate 'Остаток на начало дня' (subCategorySupplier, dateFrom) =  GROUP SUM balanceBArticleDate(article, dateFrom)
+    BY subCategorySupplierArticle(article), dateFrom;
+
 quantityReceivedArticleDateFromTo 'Поступило за интервал' (article, dateFrom, dateTo) = (balanceAArticleDate(article, dateTo) AND dateFrom AS DATE) (-)
     (balanceBArticleDate(article, dateFrom) AND dateTo AS DATE) (+) quantitySoldArticleDateFromTo(article, dateFrom, dateTo);
 
@@ -64,23 +73,23 @@ percentBalanceReceivedSubCategorySupplierDateFromTo '%, остатка' (subCate
 FORM salesArticle 'Продажи по группам'
 
     OBJECTS dates = (dFrom = DATE, dTo = DATE) FIXED PANEL
-    PROPERTIES OBJVALUE(dFrom), OBJVALUE(dTo)
+    PROPERTIES valFrom = OBJVALUE(dFrom), valTo = OBJVALUE(dTo)
 
     OBJECTS s=supplier FIXED PANEL
-    PROPERTIES     SELECTOR name(s)
-    PROPERTIES     READONLY quantityReceivedSupplierDateFromTo(s,dFrom,dTo), quantitySoldSupplierDateFromTo(s,dFrom,dTo), balanceASupplierDateTo(s,dTo),
+    PROPERTIES     SELECTOR nameSup = name(s)
+    PROPERTIES     READONLY balanceBSupplierDate(s,dFrom), quantityReceivedSupplierDateFromTo(s,dFrom,dTo), quantitySoldSupplierDateFromTo(s,dFrom,dTo), balanceASupplierDateTo(s,dTo),
                    percentBalanceReceivedSupplierDateFromTo(s,dFrom,dTo)
 
     OBJECTS b=brandSupplier
-    PROPERTIES     READONLY name(b), quantityReceivedBrandSupplierDateFromTo(b,dFrom,dTo), quantitySoldBrandSupplierDateFromTo(b,dFrom,dTo), balanceABrandSupplierDateTo(b,dTo),
+    PROPERTIES     READONLY nameBr = name(b), balanceBBrandSupplierDate(b,dFrom), quantityReceivedBrandSupplierDateFromTo(b,dFrom,dTo), quantitySoldBrandSupplierDateFromTo(b,dFrom,dTo), balanceABrandSupplierDateTo(b,dTo),
                    percentBalanceReceivedBrandSupplierDateFromTo(b,dFrom,dTo)
 
     OBJECTS c=categorySupplier
-    PROPERTIES     READONLY name(c), quantityReceivedCategorySupplierDateFromTo(c,dFrom,dTo), quantitySoldCategorySupplierDateFromTo(c,dFrom,dTo), balanceACategorySupplierDateTo(c,dTo),
+    PROPERTIES     READONLY nameCat = name(c), balanceBCategorySupplierDate(c,dFrom), quantityReceivedCategorySupplierDateFromTo(c,dFrom,dTo), quantitySoldCategorySupplierDateFromTo(c,dFrom,dTo), balanceACategorySupplierDateTo(c,dTo),
                    percentBalanceReceivedCategorySupplierDateFromTo(c,dFrom,dTo)
 
     OBJECTS sc=subCategorySupplier
-    PROPERTIES     READONLY name(sc), sidSubCategorySupplier(sc), quantityReceivedSubCategorySupplierDateFromTo(sc,dFrom,dTo), quantitySoldSubCategorySupplierDateFromTo(sc,dFrom,dTo), balanceASubCategorySupplierDateTo(sc,dTo),
+    PROPERTIES     READONLY nameSubCat = name(sc), sidSubCategorySupplier(sc), balanceBSubCategorySupplierDate(sc,dFrom), quantityReceivedSubCategorySupplierDateFromTo(sc,dFrom,dTo), quantitySoldSubCategorySupplierDateFromTo(sc,dFrom,dTo), balanceASubCategorySupplierDateTo(sc,dTo),
                    percentBalanceReceivedSubCategorySupplierDateFromTo(sc,dFrom,dTo)
 
     OBJECTS aa=article
@@ -104,6 +113,8 @@ FORM salesArticle 'Продажи по группам'
 
     FILTERGROUP filtersSoldArticle
         FILTER 'Артикул с движением' 'F11' quantityReceivedArticleDateFromTo(aa, dFrom, dTo) OR quantitySoldArticleDateFromTo(aa, dFrom, dTo) DEFAULT
+        FILTER 'Артикул с продажей' 'F6' quantitySoldArticleDateFromTo(aa, dFrom, dTo)
+        FILTER 'Артикул с поступлением' 'F5' quantityReceivedArticleDateFromTo(aa, dFrom, dTo)
 ;
 
 DESIGN salesArticle FROM DEFAULT {
@@ -119,7 +130,7 @@ DESIGN salesArticle FROM DEFAULT {
                 }
                 ADD s.box {
                     childConstraints = TO THE RIGHT;
-                    PROPERTY (name(s)){preferredCharWidth = 25;}
+                    PROPERTY (nameSup){preferredCharWidth = 25;}
                 }
             }
             NEW row {
