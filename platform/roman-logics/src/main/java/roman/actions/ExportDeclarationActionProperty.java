@@ -49,7 +49,7 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
                     "Цифровой код страны происхождения товара", "Буквенный код страны происхождения товара",
                     "Код метода определения таможенной стоимости", "Название географического пункта",
                     "Код условий поставки по Инкотермс", "Код вида поставки товаров", "Количество мест",
-                    "Вид грузовых мест","Код валюты квоты",	"Остаток квоты в валюте", "Остаток квоты в единице измерения",
+                    "Вид грузовых мест", "Код валюты квоты", "Остаток квоты в валюте", "Остаток квоты в единице измерения",
                     "Код единицы измерения квоты", "Наименование единицы измерения квоты",
                     "Количество товара в специфических единицах измерения", "Количество подакцизного товара",
                     "Код специфических единиц измерения", "Краткое наименование специфических единиц измерения",
@@ -62,12 +62,12 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
                     "Дата документа переработки", "Место проведения операций переработки", "Количество товара переработки",
                     "Код единицы измерения количества товара переработки", "Краткое наименование единицы измерения количества товара переработки",
                     "Почтовый индекс организации осуществлявшей переработку", "Код страны переработки", "Наименование страны переработки",
-                    "Наименование региона переработки",	"Наименование населенного пункта переработки",	"Улица и дом переработки",
-                    "Наименование лица (отправителя) переработки",	"УНП лица (отправителя) переработки",
+                    "Наименование региона переработки", "Наименование населенного пункта переработки", "Улица и дом переработки",
+                    "Наименование лица (отправителя) переработки", "УНП лица (отправителя) переработки",
                     "Почтовый индекс лица (отправителя) переработки", "Наименование региона лица (отправителя) переработки",
                     "Населенный пункт лица (отправителя) переработки", "Улица и дом лица (отправителя) переработки",
                     "Код страны регистрации лица (отправителя) переработки", "Название страны регистрации лица (отправителя) переработки",
-                    "Номер документа, удостоверяющего личность физического лица  переработки",	"Идентификационный номер физического лица переработки",
+                    "Номер документа, удостоверяющего личность физического лица  переработки", "Идентификационный номер физического лица переработки",
                     "Дата выдачи документа, удостоверяющего личность физического лица переработки",
                     "Код документа, удостоверяющего личность физического лица переработки");
 
@@ -77,9 +77,9 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
                     "Краткое наименование единицы измерения", "Код единицы измерения", "Группа товаров");
 
             List<String> exportTitlesTSDocs44 = BaseUtils.toList("Номер товара", "Номер документа", "Дата документа",
-                    "Код таможенного органа", "Код вида представляемого документа",	"Дата начала действия документа",
+                    "Код таможенного органа", "Код вида представляемого документа", "Дата начала действия документа",
                     "Дата окончания действия документа", "Дата представления недостающего документа", "Код срока временного ввоза",
-                    "Заявляемый срок временного ввоза",	"Код вида платежа (льготы)", "ОПЕРЕЖАЮЩАЯ ПОСТАВКА",
+                    "Заявляемый срок временного ввоза", "Код вида платежа (льготы)", "ОПЕРЕЖАЮЩАЯ ПОСТАВКА",
                     "Запрашиваемый срок переработки", "Код страны (сертификат происхождения)", "Код вида упрощений (реестр УЭО)", "Наименование документа");
 
             DataObject declarationObject = context.getKeyValue(declarationInterface);
@@ -112,7 +112,7 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
             for (String title : exportTitlesTSDocs44)
                 addStringCellToRow(title, ";");
             writerTSDocs44.println(row);
-            for(int i = 0; i<10; i++) {
+            for (int i = 0; i < 10; i++) {
                 writerTSDocs44.println("");
             }
 
@@ -137,6 +137,10 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
                 sortedRows.put((Integer) values.get("numberGroupDeclaration"), valuesRow);
             }
 
+            Double containerNumberDeclaration = (Double) LM.findLCPByCompoundName("containerNumberDeclaration").read(context.getSession(), declarationObject);
+            boolean containerNumberFlag = false;
+            String numberContractDeclaration = (String) LM.findLCPByCompoundName("numberContractDeclaration").read(context.getSession(), declarationObject);
+
             for (Map.Entry<Integer, Map<String, Object>> entry : sortedRows.entrySet()) {
 
                 //Creation of TSDocs44.csv
@@ -148,16 +152,16 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
                 innerInvoiceQuery.properties.put("sidInnerInvoice", getLCP("sidInnerInvoice").getExpr(innerInvoiceExpr));
                 innerInvoiceQuery.properties.put("dateInnerInvoice", getLCP("dateInnerInvoice").getExpr(innerInvoiceExpr));
 
-                innerInvoiceQuery.and(getLCP("quantityGroupDeclarationInnerInvoice").getExpr(new DataObject(entry.getValue().get("groupDeclarationID")/*result.getKey(0).values().iterator().next()*/, (ConcreteClass)getClass("groupDeclaration")).getExpr(), innerInvoiceExpr).getWhere());
+                innerInvoiceQuery.and(getLCP("quantityGroupDeclarationInnerInvoice").getExpr(new DataObject(entry.getValue().get("groupDeclarationID")/*result.getKey(0).values().iterator().next()*/, (ConcreteClass) getClass("groupDeclaration")).getExpr(), innerInvoiceExpr).getWhere());
 
                 OrderedMap<Map<Object, Object>, Map<Object, Object>> innerInvoiceResult = innerInvoiceQuery.execute(context.getSession().sql);
 
 
-                
                 for (Map<Object, Object> innerInvoiceValues : innerInvoiceResult.values()) {
                     row = "";
                     addStringCellToRow(entry.getKey(), ";");//numberGroupDeclaration
-                    addStringCellToRow(innerInvoiceValues.get("sidInnerInvoice"), ";");
+                    //addStringCellToRow(innerInvoiceValues.get("sidInnerInvoice"), ";");
+                    addStringCellToRow(numberContractDeclaration, ";");
                     addStringCellToRow(innerInvoiceValues.get("dateInnerInvoice"), ";");
                     addStringCellToRow(null, ";");
                     addConstantStringCellToRow("04021", ";");
@@ -193,7 +197,12 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
                 addStringCellToRow(null, ";"); //Название географического пункта
                 addStringCellToRow(null, ";"); //Код условий поставки по Инкотермс
                 addStringCellToRow(null, ";"); //Код вида поставки товаров
-                addStringCellToRow(null, ";"); //Количество мест
+                if (!containerNumberFlag) {
+                    addStringCellToRow(containerNumberDeclaration, ";"); //Количество мест
+                    containerNumberFlag = true;
+                } else {
+                    addStringCellToRow(0, ";"); //Количество мест
+                }
                 addStringCellToRow(null, ";"); //Вид грузовых мест
                 addStringCellToRow(null, ";"); //Код валюты квоты
                 addStringCellToRow(null, ";"); //Остаток квоты в валюте
@@ -202,8 +211,10 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
                 addStringCellToRow(null, ";"); //Наименование единицы измерения квоты
                 addDoubleCellToRow(values.get("quantitySpecGroupDeclaration"), ";", 3); //Количество товара в специфических единицах измерения
                 addStringCellToRow(null, ";"); //Количество подакцизного товара
-                addConstantStringCellToRow("166", ";");  //Код специфических единиц измерения
-                addConstantStringCellToRow("КГ", ";");  //Краткое наименование специфических единиц измерения
+                String sidSpecUnit = (String) values.get("sidSpecUnitOfMeasureGroupDeclaration");
+                String nameSpecUnit = (String) values.get("nameSpecUnitOfMeasureGroupDeclaration");
+                addConstantStringCellToRow(sidSpecUnit!=null ? sidSpecUnit : "166", ";");  //Код специфических единиц измерения
+                addConstantStringCellToRow(nameSpecUnit!=null ? nameSpecUnit : "КГ", ";");  //Краткое наименование специфических единиц измерения
                 addStringCellToRow(null, ";"); //Код единицы измерения подакцизного товара
                 addStringCellToRow(null, ";"); //Наименование единицы измерения подакцизного товара
                 addDoubleCellToRow(values.get("quantityCoefficientGroupDeclaration"), ";", 0);
@@ -293,9 +304,9 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
             if (prefix != null)
                 row += prefix;
             if (!isDouble)
-                row += cell.toString().trim().replace('.',',');
+                row += cell.toString().trim().replace('.', ',');
             else {
-                String bigDecimal = new BigDecimal(cell.toString()).setScale(precision, BigDecimal.ROUND_HALF_DOWN).toString().replace('.',',');
+                String bigDecimal = new BigDecimal(cell.toString()).setScale(precision, BigDecimal.ROUND_HALF_DOWN).toString().replace('.', ',');
                 while (bigDecimal.endsWith("0") && bigDecimal.length() > 1)
                     bigDecimal = bigDecimal.substring(0, bigDecimal.length() - 1);
                 row += bigDecimal;
@@ -316,9 +327,9 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
     public void addDoubleCellToRow(Object cell, String separator, int precision) {
         addCellToRow(cell, true, precision, null, separator, true);
     }
-    
+
     public void addConstantStringCellToRow(String constant, String separator) {
-        row +=constant + separator;
+        row += constant + separator;
     }
 
 }
