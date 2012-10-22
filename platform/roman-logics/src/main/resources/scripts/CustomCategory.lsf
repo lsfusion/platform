@@ -190,7 +190,7 @@ FORM customCategoryZones 'ТН ВЭД (зональный)'
     OBJECTS cz = customsZone FIXED PANEL
     PROPERTIES(cz) SELECTOR name, sidTypeDutyDutyCustomsZone, nameTypeDutyDutyCustomsZone, sidTypeDutyNDSCustomsZone, nameTypeDutyNDSCustomsZone,
                    sidTypeDutyRegistrationCustomsZone, nameTypeDutyRegistrationCustomsZone, nameTypeExchangePayCustomCustomsZone, nameTypeExchangePayManagerialCustomsZone
-
+    PROPERTIES(cz) importUATnved
     OBJECTS s = subCategory
     PROPERTIES(s) READONLY nameSubCategory
     PROPERTIES(s) ADDFORM, EDITFORM, delete
