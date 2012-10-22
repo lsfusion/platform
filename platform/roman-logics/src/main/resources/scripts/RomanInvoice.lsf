@@ -77,7 +77,23 @@ changeDocumentAdditionalCompositionLanguage = ACTION (document, comp) {
     SET additionalCompositionSkuLanguage(sku, language) <- requestedString() WHERE additionalCompositionSkuLanguage(sku, language) == comp AND quantityDocumentSku(document, sku) AND language == languageInvoice(document);
 }
 
+quantityUnclassifiedCountrySupplierSupplier 'Непривязанных стран' (supplier) =
+    GROUP SUM 1 IF supplierCountrySupplier (countrySupplier) == supplier AND NOT countryCountrySupplier(countrySupplier)
+    BY supplier PERSISTENT;
+
+quantityUnclassifiedSeasonSupplierSupplier 'Непривязанных сезонов' (supplier) =
+    GROUP SUM 1 IF supplierSeasonSupplier (seasonSupplier) == supplier AND NOT seasonYearSeasonSupplier(seasonSupplier)
+    BY supplier PERSISTENT;
+
+quantityUnclassifiedGenderSupplierSupplier 'Непривязанных полов' (supplier) =
+    GROUP SUM 1 IF supplierGenderSupplier (genderSupplier) == supplier AND NOT genderGenderSupplier(genderSupplier)
+    BY supplier PERSISTENT;
+
+
 EXTEND FORM boxInvoiceForm
+    PROPERTIES (supplier) READONLY quantityUnclassifiedCountrySupplierSupplier SHOWIF quantityUnclassifiedCountrySupplierSupplier(supplier),
+                                   quantityUnclassifiedSeasonSupplierSupplier SHOWIF quantityUnclassifiedSeasonSupplierSupplier(supplier),
+                                   quantityUnclassifiedGenderSupplierSupplier SHOWIF quantityUnclassifiedGenderSupplierSupplier(supplier)
 
     PROPERTIES (invoice) READONLY nameLanguageInvoice AFTER nameDestinationDestinationDocument
     PROPERTIES (sku) originalNameArticleSku, translateNameArticleSku, translationNameSku, translationInvoiceName
@@ -166,6 +182,11 @@ EXTEND DESIGN boxInvoiceForm {
             }
         }
     }
+
+    PROPERTY(quantityUnclassifiedCountrySupplierSupplier) { background = #FFEEEE; }
+    PROPERTY(quantityUnclassifiedSeasonSupplierSupplier) { background = #FFEEEE; }
+    PROPERTY(quantityUnclassifiedGenderSupplierSupplier) { background = #FFEEEE; }
+
 
     PROPERTY(objectClassName) { background = #FFEEEE; }
     PROPERTY(nameCompanyInvoice) { background = #FFEEEE; }
