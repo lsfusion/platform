@@ -23,19 +23,35 @@ import java.util.Map;
 public class ExprStatJoin extends ExprJoin<ExprStatJoin> {
 
     private final Stat stat;
+    private final InnerJoins valueJoins;
 
     @Override
     public String toString() {
-        return baseExpr + " - " + stat.toString();
+        return baseExpr + " - " + stat.toString() + " " + valueJoins;
     }
 
     protected Stat getStat() {
         return stat;
     }
 
+    public ExprStatJoin(BaseExpr baseExpr, Stat stat, BaseExpr valueExpr) {
+        this(baseExpr, stat, getInnerJoins(valueExpr));
+        assert valueExpr.isValue();
+    }
+
     public ExprStatJoin(BaseExpr baseExpr, Stat stat) {
+        this(baseExpr, stat, new InnerJoins());
+    }
+    
+    public boolean depends(InnerJoin join) {
+        return valueJoins.means(join);
+    }
+
+    public ExprStatJoin(BaseExpr baseExpr, Stat stat, InnerJoins valueJoins) {
         super(baseExpr);
+
         this.stat = stat;
+        this.valueJoins = valueJoins;
     }
 
     public StatKeys<Integer> getStatKeys(KeyStat keyStat) {
@@ -47,10 +63,10 @@ public class ExprStatJoin extends ExprJoin<ExprStatJoin> {
     }
 
     protected ExprStatJoin translate(MapTranslate translator) {
-        return new ExprStatJoin(baseExpr.translateOuter(translator), stat);
+        return new ExprStatJoin(baseExpr.translateOuter(translator), stat, valueJoins.translate(translator.mapValues()));
     }
 
     public boolean twins(TwinImmutableInterface o) {
-        return super.twins(o) && stat.equals(((ExprStatJoin)o).stat);
+        return super.twins(o) && stat.equals(((ExprStatJoin)o).stat) && valueJoins.equals(((ExprStatJoin)o).valueJoins);
     }
 }

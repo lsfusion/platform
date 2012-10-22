@@ -6,6 +6,8 @@ import platform.base.Result;
 import platform.server.data.expr.query.QueryJoin;
 import platform.server.data.query.stat.WhereJoin;
 import platform.server.data.query.stat.WhereJoins;
+import platform.server.data.translator.MapTranslate;
+import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.where.Where;
 
 import java.util.Collection;
@@ -61,4 +63,12 @@ public class InnerJoins extends AddSet<InnerJoin, InnerJoins> {
         return WhereJoins.removeJoin(removeJoin, wheres, upWheres, resultWheres);
     }
 
+    // транслятор используется только для InnerJoins без ключей
+    public InnerJoins translate(MapValuesTranslate translate) {
+        MapTranslate mapKeys = translate.mapKeys();
+        InnerJoin[] transWheres = new InnerJoin[wheres.length];
+        for(int i=0;i<wheres.length;i++)
+            transWheres[i] = ((InnerJoin<?, ?>)wheres[i]).translateOuter(mapKeys);
+        return new InnerJoins(transWheres);
+    }
 }

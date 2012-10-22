@@ -15,6 +15,7 @@ import platform.server.data.expr.where.extra.GreaterWhere;
 import platform.server.data.expr.where.extra.InArrayWhere;
 import platform.server.data.expr.where.extra.LikeWhere;
 import platform.server.data.query.InnerJoins;
+import platform.server.data.query.stat.BaseJoin;
 import platform.server.data.query.stat.InnerBaseJoin;
 import platform.server.data.query.stat.KeyStat;
 import platform.server.data.where.MapWhere;
@@ -197,11 +198,14 @@ public abstract class BaseExpr extends Expr {
         return orWhere;
     } 
     
-    public Where calculateOrWhere() {
+    public static Where getOrWhere(BaseJoin<?> join){
         Where result = Where.TRUE;
-        for(BaseExpr baseExpr : getUsed())
+        for(BaseExpr baseExpr : join.getJoins().values())
             result = result.and(baseExpr.getOrWhere());
         return result;
+    } 
+    public Where calculateOrWhere() {
+        return getOrWhere(getBaseJoin());
     }
     
     private Where notNullWhere;

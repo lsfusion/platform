@@ -266,7 +266,7 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
 
         Where result = Where.TRUE;
         for (WhereJoin where : current)
-            result = result.and(reducedUpWheres.get(where));
+            result = result.and(reducedUpWheres.get(where)).and(BaseExpr.getOrWhere(where)); // чтобы не потерять or, конкретного единично кейса нет, но с логической точки зрения
         return result;
     }
 
@@ -287,11 +287,13 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
 
             boolean remove = BaseUtils.hashEquals(removeJoin, whereJoin);
             InnerJoins joinFollows = null; Result<Map<InnerJoin, Where>> joinUpWheres = null;
+            if (!remove && whereJoin instanceof ExprStatJoin && ((ExprStatJoin) whereJoin).depends(removeJoin)) // без этой проверки может бесконечно проталкивать
+                remove = true;
             if(!remove) {
                 Set<UnionJoin> unionJoins = new HashSet<UnionJoin>();
                 joinUpWheres = new Result<Map<InnerJoin, Where>>();
                 joinFollows = whereJoin.getJoinFollows(joinUpWheres, unionJoins);
-                for(UnionJoin unionJoin : unionJoins) // без этой проверку может бесконечно проталкивать
+                for(UnionJoin unionJoin : unionJoins) // без этой проверки может бесконечно проталкивать
                     if(unionJoin.depends(removeJoin)) {
                         remove = true;
                         break;

@@ -71,13 +71,13 @@ public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWh
             if(operator2.isTableIndexed() && orderTop.contains(operator2))
                 return new ExprOrderTopJoin(operator2, getCompare().reverse(), operator1, not);
             if(getCompare().equals(Compare.EQUALS) && !not)
-                return new ExprStatJoin(operator2, Stat.ONE);
+                return new ExprStatJoin(operator2, Stat.ONE, operator1);
         }
         if(operator2.isValue()) {
             if(operator1.isTableIndexed() && orderTop.contains(operator1))
                 return new ExprOrderTopJoin(operator1, getCompare(), operator2, not);
             if(getCompare().equals(Compare.EQUALS) && !not)
-                return new ExprStatJoin(operator1, Stat.ONE);
+                return new ExprStatJoin(operator1, Stat.ONE, operator2);
         }
         if(getCompare().equals(Compare.EQUALS) && !not)
             return new ExprEqualsJoin(operator1, operator2);
