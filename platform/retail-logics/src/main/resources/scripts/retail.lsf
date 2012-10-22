@@ -70,7 +70,8 @@ REQUIRE System,
         Inventory,
         DefaultData,
         Item,
-        PriceList;
+        PriceList,
+        Agreement;
 
 GROUP emailGroup 'E-mail' : baseGroup;
 
@@ -7044,6 +7045,7 @@ NAVIGATOR {
         NEW contragents 'Контрагенты' {
             ADD companies;
             ADD banks;
+            ADD agreements;
         }
         NEW tax 'Налоги' {
             ADD taxes;

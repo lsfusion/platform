@@ -1,0 +1,185 @@
+MODULE Agreement;
+
+REQUIRE Currency,
+        Document,
+        LegalEntity,
+        Numerator,
+        PriceList;
+
+CLASS agreement 'Соглашение' : named, numeratedObject;
+
+TABLE agreement (agreement);
+
+@defineNumeratedObject(agreement, 'Нумератор для договоров', 'ТД');
+@defineDocumentHeaderTime(agreement);
+@defineDocumentHeaderTimePrefix(agreement, from, ' с');
+@defineDocumentHeaderTimePrefix(agreement, to, ' по');
+@defineDocumentHeaderNote(agreement);
+@defineDocumentHeaderCurrency(agreement);
+@defineDocumentHeaderDescription(agreement, seriesNumberObject, 'Соглашение');
+
+toDateAgreement(agreement) <- NULL WHEN ASSIGNED(agreement IS agreement);
+toTimeAgreement(agreement) <- NULL WHEN ASSIGNED(agreement IS agreement);
+
+inAgreementLegalEntityAbstract 'Вкл.' (agreement, legalEntity) = ABSTRACT BOOLEAN (agreement, legalEntity);
+inAgreementLegalEntity 'Вкл.' (agreement, legalEntity) = DATA BOOLEAN (agreement, legalEntity);
+inAgreementLegalEntityAbstract(agreement, legalEntity) += inAgreementLegalEntity(agreement, legalEntity);
+
+legalEntityAgreement 'Контрагенты' (agreement) = GROUP CONCAT name(legalEntity) IF inAgreementLegalEntityAbstract(agreement, legalEntity) , ', '
+                                                 BY agreement
+                                                 ORDER legalEntity MINCHARWIDTH 100 PERSISTENT;
+
+//legalEntityAgreement (agreement) = DATA legalEntity (agreement);
+//nameLegalEntityAgreement 'Контрагент' (agreement) = name(legalEntityAgreement(agreement));
+
+companyAgreement (agreement) = DATA company (agreement);
+nameCompanyAgreement 'Компания' (agreement) = name(companyAgreement(agreement));
+
+priceListTypeAgreement (agreement) = DATA priceListType (agreement);
+namePriceListTypeAgreement 'Тип цены' (agreement) = name(priceListTypeAgreement(agreement));
+
+priceListTypeAgreementPriceGroup (agreement, priceGroup) = DATA priceListType (agreement, priceGroup);
+namePriceListTypeAgreementPriceGroup 'Тип цены' (agreement, priceGroup) = name(priceListTypeAgreementPriceGroup(agreement, priceGroup));
+
+priceListTypeAgreementSku (agreement, sku) = DATA priceListType (agreement, sku);
+namePriceListTypeAgreementSku 'Тип цены' (agreement, sku) = name(priceListTypeAgreementSku(agreement, sku));
+
+CONSTRAINT currencyAgreement(agreement) != currencyPriceListType(priceListTypeAgreement(agreement))
+           CHECKED BY priceListTypeAgreement
+           MESSAGE 'Валюта соглашения должна совпадать с валютой типа цены';
+
+CONSTRAINT currencyAgreement(agreement) != currencyPriceListType(priceListTypeAgreementPriceGroup(agreement, priceGroup))
+           CHECKED BY priceListTypeAgreementPriceGroup
+           MESSAGE 'Валюта соглашения должна совпадать с валютой типа цены';
+
+CONSTRAINT currencyAgreement(agreement) != currencyPriceListType(priceListTypeAgreementSku(agreement, sku))
+           CHECKED BY priceListTypeAgreementSku
+           MESSAGE 'Валюта соглашения должна совпадать с валютой типа цены';
+
+priceListTypeAgreementSkuOver (agreement, sku) =
+    UNION OVERRIDE priceListTypeAgreement(agreement) AND sku IS sku,
+                   priceListTypeAgreementPriceGroup(agreement, priceGroupSku(sku)),
+                   priceListTypeAgreementSku(agreement, sku);
+
+namePriceListTypeAgreementSkuOver 'Тип цены' = name(priceListTypeAgreementSkuOver(agreement, sku));
+
+META defineDocumentAbstractHeaderAgreement (object)
+    agreement###object (object) = ABSTRACT agreement (object) PERSISTENT;
+    nameAgreement###object 'Соглашение' (object)= name(agreement###object(object)) IN documentPrmGroup MINCHARWIDTH 5 PREFCHARWIDTH 10;
+END
+META defineDocumentHeaderAgreement (object)
+    agreement###object (object) = DATA agreement (object);
+    nameAgreement###object 'Соглашение' (object)= name(agreement###object(object)) IN documentPrmGroup MINCHARWIDTH 5 PREFCHARWIDTH 10;
+END
+META defineDocumentInterfaceHeaderAgreement (object, company, legalEntity)
+    @defineDocumentAbstractHeaderAgreement(object);
+    @defineDocumentHeaderAgreement(user###object);
+    agreement###object (object) += agreement###user###object(object);
+
+    CONSTRAINT currency###user###object(object) != currencyAgreement(agreement###user###object(object))
+               CHECKED BY agreement###user###object
+               MESSAGE 'Валюта документа должны совпадать с валютой соглашения';
+
+    CONSTRAINT companyAgreement(agreement###user###object(object)) != company(object)
+               CHECKED BY agreement###user###object
+               MESSAGE 'Соглашение должно быть между заданными юр. лицами';
+
+    CONSTRAINT agreement###user###object(object)
+               AND NOT inAgreementLegalEntityAbstract(agreement###user###object(object), legalEntity(object))
+               CHECKED BY agreement###user###object
+               MESSAGE 'Соглашение должно быть между заданными юр. лицами';
+END
+
+
+META deriveDocumentDetailPriceListTypeAgreementCustom (object, detail)
+    priceListType###user###detail(detail) <- IF agreement###user###object(object###detail(detail))
+                                             THEN priceListTypeAgreementSkuOver(agreement###user###object(object###detail(detail)), sku###user###detail(detail))
+                                             ELSE priceListType###user###object(object###detail(detail))
+    WHEN CHANGED(agreement###user###object(object###detail(detail))) OR
+         CHANGED(priceListType###user###object(object###detail(detail)));
+END
+META deriveDocumentDetailPriceListTypeAgreement (object)
+    @deriveDocumentDetailPriceListTypeAgreementCustom(object, object###detail);
+END
+
+FORM agreement 'Соглашение'
+
+    OBJECTS a = agreement FIXED PANEL
+    PROPERTIES(a) name, nameNumeratorObject, numberObject, seriesObject, dateAgreement, timeAgreement,
+                  fromDateAgreement, fromTimeAgreement, toDateAgreement, toTimeAgreement, nameCompanyAgreement,
+                  nameCurrencyAgreement, namePriceListTypeAgreement, noteAgreement
+
+    OBJECTS l = legalEntity
+    PROPERTIES(l) READONLY name
+    PROPERTIES(a, l) inAgreementLegalEntity
+
+    OBJECTS pg = priceGroup
+    PROPERTIES(pg) READONLY name
+    PROPERTIES(a, pg) namePriceListTypeAgreementPriceGroup
+
+    OBJECTS s = sku
+    PROPERTIES(s) READONLY nameSku
+    PROPERTIES(a, s) namePriceListTypeAgreementSku
+
+    EDIT agreement OBJECT a
+;
+
+DESIGN agreement FROM DEFAULT {
+
+    NEW topContainer{
+        childConstraints = TO THE BOTTOM;
+        NEW headContainer {
+            caption = 'Шапка документа';
+            childConstraints = TO THE RIGHT;
+            ADD PROPERTY (name);
+            ADD PROPERTY (nameNumeratorObject);
+            ADD PROPERTY (numberObject);
+            ADD PROPERTY (seriesObject);
+            ADD PROPERTY (dateAgreement);
+            ADD PROPERTY (timeAgreement);
+
+        }
+        NEW firstContainer{
+            childConstraints = TO THE BOTTOM;
+            NEW timeContainer{
+                caption = 'Период действия';
+                childConstraints = TO THE RIGHT;
+                ADD PROPERTY (fromDateAgreement);
+                ADD PROPERTY (fromTimeAgreement);
+                ADD PROPERTY (toDateAgreement);
+                ADD PROPERTY (toTimeAgreement);
+            }
+            NEW propContainer{
+                caption = 'Параметры документа';
+                childConstraints = TO THE RIGHT;
+                ADD PROPERTY(nameCompanyAgreement);
+                ADD PROPERTY(nameCurrencyAgreement);
+                ADD PROPERTY(namePriceListTypeAgreement);
+                ADD PROPERTY(noteAgreement);
+            }
+        }
+            NEW tabContainer{
+                type = TABBED;
+                ADD l.box{
+                    caption = 'Контрагенты';
+                }
+                ADD pg.box{
+                    caption = 'Уточнение цен по ценовым группам';
+                }
+                ADD s.box{
+                    caption = 'Уточнение цен по товарам';
+                }
+            }
+    }
+    ADD functions.box;
+}
+
+FORM agreements 'Соглашения'
+
+    OBJECTS a = agreement
+    PROPERTIES(a) READONLY name, seriesNumberObject, dateTimeAgreement,
+                           fromDateTimeAgreement, toDateTimeAgreement, nameCompanyAgreement,
+                           nameCurrencyAgreement, namePriceListTypeAgreement, legalEntityAgreement, noteAgreement
+
+    PROPERTIES(a) ADDFORM, EDITFORM, delete
+;

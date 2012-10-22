@@ -55,6 +55,9 @@ META defineInvoice(sign, contact, partyA, partyB)
     @defineAddDetailDialogSkuStock(userInvoice, sku, stock, dialogSku);
     @defineAddDetailDialogBarcode(userInvoice, sku);
 
+    @defineDocumentInterfaceHeaderAgreement(invoice, companyUserInvoice, contact###userInvoice);
+    @deriveDocumentDetailPriceListTypeAgreement(invoice);
+
     countInvoiceDetailStockInvoice (stock, invoice) = GROUP SUM 1 BY stockInvoiceDetail(invoiceDetail), invoiceInvoiceDetail(invoiceDetail);
 
 //--  Связь с заказом
@@ -182,7 +185,7 @@ META defineInvoice(sign, contact, partyA, partyB)
     FORM userInvoice 'Накладная'###sign
         OBJECTS i = userInvoice FIXED PANEL
         PROPERTIES (i) objectClassName, nameStockUserInvoice, nameNumeratorObject, numberObject, seriesObject, dateUserInvoice, timeUserInvoice,
-                       name###contact###UserInvoice, nameCurrencyUserInvoice, namePriceListTypeUserInvoice, noteUserInvoice,
+                       name###contact###UserInvoice, nameCurrencyUserInvoice, nameAgreementUserInvoice, namePriceListTypeUserInvoice, noteUserInvoice,
                        numberContractSku###contact###UserInvoice, isCommissionUserInvoice,
                        fillOrderUserInvoice, ordersInvoice READONLY,
                        countUserInvoiceDetailUserInvoice, quantityUserInvoiceDetailUserInvoice, sumUserInvoiceDetailUserInvoice,
@@ -259,7 +262,7 @@ META defineInvoice(sign, contact, partyA, partyB)
     FORM invoices 'Накладные'###sign
         OBJECTS i = invoice
         PROPERTIES (i) READONLY isPostedInvoice FORCE GRID, objectClassName, numberInvoice, seriesInvoice, dateInvoice, timeInvoice,
-                                nameStockInvoice, name###contact###Invoice, nameCurrencyInvoice, noteInvoice,
+                                nameStockInvoice, name###contact###Invoice, nameCurrencyInvoice, nameAgreementInvoice, noteInvoice,
                                 numberContractSku###contact###Invoice, isCommissionInvoice,
                                 countInvoiceDetailInvoice, quantityInvoiceDetailInvoice, sumInvoiceDetailInvoice,
                                 VATSumInvoiceDetailInvoice, invoiceSumInvoiceDetailInvoice, ordersInvoice

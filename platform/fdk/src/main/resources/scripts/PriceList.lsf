@@ -17,6 +17,8 @@ CLASS ABSTRACT priceListType 'Вид цены' : named;
 pricePriceListTypeSkuStockDateTime 'Цена' = ABSTRACT NUMERIC[14,2] (priceListType, sku, stock, DATETIME);
 pricePriceListTypeBatchStockDateTime 'Цена' = ABSTRACT NUMERIC[14,2] (priceListType, batch, stock, DATETIME);
 
+@defineDocumentAbstractHeaderCurrency(priceListType);
+
 CLASS ABSTRACT basePriceListType 'Базовый вид цены' : priceListType;
 
 // --------------------------- Системные виды цен ------------------------- //
@@ -38,6 +40,7 @@ priceSystemPriceListTypeBatchStockDateTime (type, batch, stock, dateTime) =
 
 CLASS dataPriceListType 'Пользовательский вид цены' : basePriceListType;
 @defineDocumentHeaderCurrency(dataPriceListType);
+currencyPriceListType(dataPriceListType) += currencyDataPriceListType(dataPriceListType);
 
 CLASS ABSTRACT priceList 'Прайс';
 CLASS ABSTRACT priceListDetail 'Строка прайса';
@@ -242,18 +245,11 @@ sessionDataPriceListType 'Тип цены' = SESSION DATA dataPriceListType();
 
 changeMarkUpSkuUserPriceList 'Изменить наценку' = ACTION (userPriceList, dataPriceListType, stock){
 
-//    SET sessionDataPriceListType() <- NULL;
-//    SET sessionDataPriceListType() <- dataPriceListType AS dataPriceListType;
     FORM chooseMarkUpSkuUserPriceList OBJECTS p = userPriceList, t = dataPriceListType MODAL;
     IF formResult() == formResult.ok THEN {
-//        SET sessionDataPriceListType() <- chosenObject('t');
         SET pricePriceListDetailDataPriceListType(detail, t) <-
                 currentPricePriceListDetailDataPriceListTypeStock(detail, t, stock) * (chosenNumeric('n') + 100.0) / 100.0
                 WHERE isSelectedPriceListDetail(detail) AND userPriceListUserPriceListDetail(detail) == userPriceList AND t == chosenObject('t');
-//        FOR isSelectedPriceListDetail(detail) AND userPriceListUserPriceListDetail(detail) == userPriceList DO {
-//            SET pricePriceListDetailDataPriceListType(detail, sessionDataPriceListType()) <- currentPricePriceListDetailDataPriceListTypeStock(detail, sessionDataPriceListType(), stock) * (chosenNumeric('n') + 100.0) / 100.0;
-//        }
-//        SET sessionDataPriceListType() <- NULL;
     }
 }
 
@@ -471,6 +467,9 @@ CLASS calcPriceListType 'Расчетный вид цены' : priceListType;
 basePriceListTypeCalcPriceListType(type) = DATA basePriceListType (calcPriceListType);
 nameBasePriceListTypeCalcPriceListType 'Базовый вид цены' (type) = name(basePriceListTypeCalcPriceListType(type));
 
+@defineDocumentHeaderCurrency(calcPriceListType);
+currencyPriceListType(calcPriceListType) += currencyCalcPriceListType(calcPriceListType);
+
 TABLE calcPriceListTypePriceGroup (calcPriceListType, priceGroup);
 
 markupCalcPriceListTypePriceGroup 'Надбавка, %' = DATA NUMERIC[8,2] (calcPriceListType, priceGroup);
@@ -527,13 +526,20 @@ FORM calcPriceListType 'Базовый вид цен'
     EDIT calcPriceListType OBJECT p
 ;
 
+FORM priceListType 'Тип цены'
+    OBJECTS p = priceListType
+    PROPERTIES(p) READONLY name, nameCurrencyPriceListType
+
+    DIALOG priceListType OBJECT p
+;
+
 FORM priceListTypes 'Типы цен'
     OBJECTS pd = dataPriceListType
     PROPERTIES(pd) READONLY name, nameCurrencyDataPriceListType
     PROPERTIES(pd) ADDFORM, EDITFORM, delete
 
     OBJECTS pc = calcPriceListType
-    PROPERTIES(pc) READONLY name
+    PROPERTIES(pc) READONLY name, nameCurrencyCalcPriceListType
     PROPERTIES(pc) ADDFORM, EDITFORM, delete
 ;
 
@@ -641,6 +647,14 @@ END
 META defineDocumentInterfaceDataPriceListType (object, detail)
     @defineDocumentInterfaceHeaderPriceListType(object);
     @defineDocumentInterfaceDetailDataPriceListType(object, detail);
+
+    CONSTRAINT currency###user###object(object) != currencyPriceListType(priceListType###user###object(object))
+               CHECKED BY priceListType###user###object
+               MESSAGE 'Валюта документа должны совпадать с валютой типа цены';
+
+    CONSTRAINT currency###user###object(object) != currencyPriceListType(priceListType###user###detail(detail))
+               CHECKED BY priceListType###user###detail
+               MESSAGE 'Валюта документа должны совпадать с валютой типа цены';
 END
 META defineDocumentInterfaceDataPriceListType (object)
     @defineDocumentInterfaceDataPriceListType(object, object##Detail);
