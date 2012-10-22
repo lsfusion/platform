@@ -38,9 +38,10 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
             List<String> exportProperties = BaseUtils.toList("numberGroupDeclaration", "nameBrandGroupDeclaration",
                     "nameCategoryGroupDeclaration", "sidGenderGroupDeclaration", "nameTypeFabricGroupDeclaration", "nameGroupDeclaration",
                     "sidArticleGroupDeclaration", "sidCustomCategory10GroupDeclaration", "mainCompositionGroupDeclaration",
-                    "sidCountryGroupDeclaration", "sidOrigin2CountryGroupDeclaration", "quantityGroupDeclaration", "sidUnitOfMeasureGroupDeclaration",
-                    "nameUnitOfMeasureGroupDeclaration", "sumOriginGroupDeclaration", "netWeightGroupDeclaration",
-                    "grossWeightGroupDeclaration");
+                    "sidCountryGroupDeclaration", "sidOrigin2CountryGroupDeclaration", "quantityCoefficientGroupDeclaration", "sidUnitOfMeasureGroupDeclaration",
+                    "nameUnitOfMeasureGroupDeclaration", "sumContractGroupDeclaration", "netWeightGroupDeclaration",
+                    "grossWeightGroupDeclaration", "sidSpecUnitOfMeasureGroupDeclaration", "nameSpecUnitOfMeasureGroupDeclaration",
+                    "quantitySpecGroupDeclaration", "sidAdditionalUnitOfMeasureGroupDeclaration", "nameAdditionalUnitOfMeasureGroupDeclaration");
 
             List<String> exportTitlesTSware = BaseUtils.toList("Порядковый номер декларируемого товара", "Наименование товара", "Вес брутто",
                     "Вес нетто", "Вес нетто без упаковки", "Фактурная стоимость товара", "Таможенная стоимость",
@@ -159,7 +160,7 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
                     addStringCellToRow(innerInvoiceValues.get("sidInnerInvoice"), ";");
                     addStringCellToRow(innerInvoiceValues.get("dateInnerInvoice"), ";");
                     addStringCellToRow(null, ";");
-                    addConstantStringCellToRow("0421", ";");
+                    addConstantStringCellToRow("04021", ";");
 
                     writerTSDocs44.println(row);
                 }
@@ -180,7 +181,7 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
                 addDoubleCellToRow(values.get("grossWeightGroupDeclaration"), ";", 3);
                 addDoubleCellToRow(values.get("netWeightGroupDeclaration"), ";", 3);
                 addDoubleCellToRow(values.get("netWeightGroupDeclaration"), ";", 3); //Вес нетто без упаковки
-                addDoubleCellToRow(values.get("sumOriginGroupDeclaration"), ";", 7);
+                addDoubleCellToRow(values.get("sumContractGroupDeclaration"), ";", 7);
                 addStringCellToRow(null, ";"); //Таможенная стоимость
                 addStringCellToRow(null, ";"); //Статистическая стоимость
                 addStringCellToRow(values.get("sidCustomCategory10GroupDeclaration"), ";");
@@ -199,15 +200,15 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
                 addStringCellToRow(null, ";"); //Остаток квоты в единице измерения
                 addStringCellToRow(null, ";"); //Код единицы измерения квоты
                 addStringCellToRow(null, ";"); //Наименование единицы измерения квоты
-                addDoubleCellToRow(values.get("netWeightGroupDeclaration"), ";", 3); //Количество товара в специфических единицах измерения
+                addDoubleCellToRow(values.get("quantitySpecGroupDeclaration"), ";", 3); //Количество товара в специфических единицах измерения
                 addStringCellToRow(null, ";"); //Количество подакцизного товара
                 addConstantStringCellToRow("166", ";");  //Код специфических единиц измерения
                 addConstantStringCellToRow("КГ", ";");  //Краткое наименование специфических единиц измерения
                 addStringCellToRow(null, ";"); //Код единицы измерения подакцизного товара
                 addStringCellToRow(null, ";"); //Наименование единицы измерения подакцизного товара
-                addDoubleCellToRow(values.get("quantityGroupDeclaration"), ";", 0);
-                addStringCellToRow(values.get("sidUnitOfMeasureGroupDeclaration"), ";");
-                addStringCellToRow(values.get("nameUnitOfMeasureGroupDeclaration"), ";");
+                addDoubleCellToRow(values.get("quantityCoefficientGroupDeclaration"), ";", 0);
+                addStringCellToRow(values.get("sidAdditionalUnitOfMeasureGroupDeclaration"), ";");
+                addStringCellToRow(values.get("nameAdditionalUnitOfMeasureGroupDeclaration"), ";");
 
                 addStringCellToRow(null, ";"); //Корректировки таможенной стоимости
                 addStringCellToRow(null, ";"); //Количество акцизных марок
@@ -257,7 +258,7 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
                 addStringCellToRow(null, ";"); //Стандарт (ГОСТ, ОСТ, СПП, СТО, ТУ)
                 addStringCellToRow(null, ";"); //Сорт (группа сортов)
                 addStringCellToRow(null, ";"); //Дата выпуска
-                addDoubleCellToRow(values.get("quantityGroupDeclaration"), ";", 0); //Количество товара
+                addDoubleCellToRow(values.get("quantityCoefficientGroupDeclaration"), ";", 0); //Количество товара
                 addStringCellToRow(values.get("nameUnitOfMeasureGroupDeclaration"), ";"); //Краткое наименование единицы измерения
                 addStringCellToRow(values.get("sidUnitOfMeasureGroupDeclaration"), ";"); //Код единицы измерения
                 addStringCellToRow(values.get("nameCategoryGroupDeclaration"), ";"); //Группа товаров

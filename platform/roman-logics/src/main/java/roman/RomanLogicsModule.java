@@ -443,6 +443,8 @@ public class RomanLogicsModule extends LogicsModule {
     LCP certificatedCustomCategory10;
     LCP specUnitOfMeasureCustomCategory10;
     LCP nameSpecUnitOfMeasureCustomCategory10;
+    LCP additionalUnitOfMeasureCustomCategory10;
+    LCP nameAdditionalUnitOfMeasureCustomCategory10;
     LCP sidCustomCategoryOrigin;
     LCP numberIdCustomCategory10;
     LCP numberIdCustomCategoryOrigin;
@@ -1943,6 +1945,9 @@ public class RomanLogicsModule extends LogicsModule {
 
         specUnitOfMeasureCustomCategory10 = addDProp(idGroup, "specUnitOfMeasureCustomCategory10", "Специальная ед. изм. (ИД)", unitOfMeasure, customCategory10);
         nameSpecUnitOfMeasureCustomCategory10 = addJProp(baseGroup, "nameSpecUnitOfMeasureCustomCategory10", "Специальная ед. изм.", baseLM.name, specUnitOfMeasureCustomCategory10, 1);
+
+        additionalUnitOfMeasureCustomCategory10 = addDProp(idGroup, "additionalUnitOfMeasureCustomCategory10", "Дополнительная ед. изм. (ИД)", unitOfMeasure, customCategory10);
+        nameAdditionalUnitOfMeasureCustomCategory10 = addJProp(baseGroup, "nameAdditionalUnitOfMeasureCustomCategory10", "Дополнительная ед. изм.", baseLM.name, additionalUnitOfMeasureCustomCategory10, 1);
 
         sidCustomCategoryOrigin = addDProp(baseGroup, "sidCustomCategoryOrigin", "Код ЕС(10)", StringClass.get(10), customCategoryOrigin);
         sidCustomCategoryOrigin.setFixedCharWidth(10);
@@ -4996,7 +5001,7 @@ public class RomanLogicsModule extends LogicsModule {
                 addPropertyDraw(simpleInvoiceEditFA, objInvoice).forceViewType = ClassViewType.PANEL;
             }
 
-            objOrder = addSingleGroupObject(order, "Заказ");
+            objOrder = addSingleGroupObject("order", order, "Заказ");
             objOrder.groupTo.setSingleClassView(ClassViewType.GRID);
             addPropertyDraw(inOrderInvoice, objOrder, objInvoice);
             addPropertyDraw(objOrder, baseLM.date, sidDocument, nameCurrencyDocument, sumDocument, sidDestinationDestinationDocument, nameDestinationDestinationDocument);
@@ -5067,8 +5072,8 @@ public class RomanLogicsModule extends LogicsModule {
 
             ContainerView detContainer = design.createContainer(null, null, "invoiceDetail");
             design.getMainContainer().addAfter(detContainer, design.getGroupObjectContainer(objInvoice.groupTo));
-            detContainer.add(design.getGroupObjectContainer(objSku.groupTo));
-            detContainer.add(design.getGroupObjectContainer(objOrder.groupTo));
+            //detContainer.add(design.getGroupObjectContainer(objSku.groupTo));
+            //detContainer.add(design.getGroupObjectContainer(objOrder.groupTo));
             detContainer.type = ContainerType.TABBED_PANE;
 
             return design;

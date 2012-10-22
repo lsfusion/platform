@@ -32,38 +32,6 @@ changeAdditionalCompositionSkuLanguageInvoice = ACTION (sku, invoice) {
     SET additionalCompositionSkuLanguage(sku, language) IF language == languageInvoice(invoice) <- requestedString();
 }
 
-EXTEND FORM boxInvoiceForm
-
-    PROPERTIES (invoice) READONLY nameLanguageInvoice AFTER nameDestinationDestinationDocument
-    PROPERTIES (sku) originalNameArticleSku, translateNameArticleSku, translationNameSku, translationInvoiceName
-    PROPERTIES (sku, invoice) translateNameSkuInvoice ON CHANGE EXEC changeNameSkuLanguageInvoice(sku, invoice) SHOWIF languageInvoice(invoice),
-                              translationNameSkuInvoice SHOWIF languageInvoice(invoice), translationInvoiceLanguageName SHOWIF languageInvoice(invoice)
-
-    PROPERTIES (sku) mainCompositionOriginSku, mainCompositionSku, translationMainCompositionSku, translationInvoiceMainComposition
-    PROPERTIES (sku, invoice) mainCompositionSkuInvoice ON CHANGE EXEC changeMainCompositionSkuLanguageInvoice(sku, invoice) SHOWIF languageInvoice(invoice),
-                              translationMainCompositionSkuInvoice SHOWIF languageInvoice(invoice), translationInvoiceLanguageMainComposition SHOWIF languageInvoice(invoice)
-
-
-    PROPERTIES (sku) additionalCompositionOriginSku, additionalCompositionSku, translationAdditionalCompositionSku, translationInvoiceAdditionalComposition
-    PROPERTIES (sku, invoice) additionalCompositionSkuInvoice ON CHANGE EXEC changeAdditionalCompositionSkuLanguageInvoice(sku, invoice) SHOWIF languageInvoice(invoice),
-                              translationAdditionalCompositionSkuInvoice SHOWIF languageInvoice(invoice), translationInvoiceLanguageAdditionalComposition SHOWIF languageInvoice(invoice)
-;
-
-EXTEND DESIGN boxInvoiceForm {
-    PROPERTY(objectClassName) { background = #FFEEEE; }
-    PROPERTY(nameCompanyInvoice) { background = #FFEEEE; }
-    PROPERTY(nameCurrencyDocument) { background = #FFEEEE; }
-    PROPERTY(nameDestinationDestinationDocument) { background = #FFEEEE; }
-    PROPERTY(numberContractInvoice) { background = #FFEEEE; }
-
-    PROPERTY(translateNameArticleSku) { background = #FFEEEE; }
-    PROPERTY(mainCompositionSku) { background = #FFEEEE; }
-    PROPERTY(additionalCompositionSku) { background = #FFEEEE; }
-    PROPERTY(translateNameSkuInvoice) { background = #FFEEEE; }
-    PROPERTY(mainCompositionSkuInvoice) { background = #FFEEEE; }
-    PROPERTY(additionalCompositionSkuInvoice) { background = #FFEEEE; }
-}
-
 EXTEND FORM simpleInvoiceForm
     PROPERTIES (invoice) READONLY nameLanguageInvoice AFTER nameDestinationDestinationDocument
 ;
@@ -111,8 +79,23 @@ changeDocumentAdditionalCompositionLanguage = ACTION (document, comp) {
 
 EXTEND FORM boxInvoiceForm
 
+    PROPERTIES (invoice) READONLY nameLanguageInvoice AFTER nameDestinationDestinationDocument
+    PROPERTIES (sku) originalNameArticleSku, translateNameArticleSku, translationNameSku, translationInvoiceName
+    PROPERTIES (sku, invoice) translateNameSkuInvoice ON CHANGE EXEC changeNameSkuLanguageInvoice(sku, invoice) SHOWIF languageInvoice(invoice),
+                              translationNameSkuInvoice SHOWIF languageInvoice(invoice), translationInvoiceLanguageName SHOWIF languageInvoice(invoice)
+
+    PROPERTIES (sku) mainCompositionOriginSku, mainCompositionSku, translationMainCompositionSku, translationInvoiceMainComposition
+    PROPERTIES (sku, invoice) mainCompositionSkuInvoice ON CHANGE EXEC changeMainCompositionSkuLanguageInvoice(sku, invoice) SHOWIF languageInvoice(invoice),
+                              translationMainCompositionSkuInvoice SHOWIF languageInvoice(invoice), translationInvoiceLanguageMainComposition SHOWIF languageInvoice(invoice)
+
+
+    PROPERTIES (sku) additionalCompositionOriginSku, additionalCompositionSku, translationAdditionalCompositionSku, translationInvoiceAdditionalComposition
+    PROPERTIES (sku, invoice) additionalCompositionSkuInvoice ON CHANGE EXEC changeAdditionalCompositionSkuLanguageInvoice(sku, invoice) SHOWIF languageInvoice(invoice),
+                              translationAdditionalCompositionSkuInvoice SHOWIF languageInvoice(invoice), translationInvoiceLanguageAdditionalComposition SHOWIF languageInvoice(invoice)
+
     OBJECTS a = article
-    PROPERTIES (a) sidArticle, nameSeasonYearArticle, nameBrandSupplierArticle, nameCollectionSupplierArticle, nameSubCategorySupplierArticle,
+    PROPERTIES (a) READONLY sidArticle
+    PROPERTIES (a) nameSeasonYearArticle, nameBrandSupplierArticle, nameCollectionSupplierArticle, nameSubCategorySupplierArticle,
                    nameThemeSupplierArticle, nameCategoryArticle, originalNameArticle, sidCustomCategoryOriginArticle, nameTypeFabricArticle,
                    sidGenderArticle, nameTypeLabelArticle, nameCountrySupplierOfOriginArticle, netWeightArticle, mainCompositionOriginArticle
 
@@ -141,33 +124,59 @@ EXTEND DESIGN boxInvoiceForm {
         type = SPLITV;
         NEW headerContainer {
             childConstraints = TO THE BOTTOM;
+            fillVertical = 1;
             ADD supplier.box;
             ADD invoice.box;
         }
 
         ADD invoiceDetail {
 
+            fillVertical = 2;
+
             NEW articles {
                 title = 'Артикулы';
                 ADD a.box;
+            }
+
+            NEW sku {
+                title = 'SKU';
+                ADD sku.box;
             }
 
             NEW compositions {
                 childConstraints = TO THE RIGHT;
                 title = 'Составы';
                 ADD mc.box {
-                    title = 'Основные';
+                    title = 'Основные (рус.)';
                 }
                 ADD ac.box {
-                    title = 'Дополнительные';
+                    title = 'Дополнительные (рус.)';
                 }
                 ADD mcl.box {
-                    title = 'Основные (иностр.)';
+                    title = 'Основные (укр.)';
                 }
                 ADD acl.box {
-                    title = 'Дополнительные (иностр.)';
+                    title = 'Дополнительные (укр.)';
                 }
+            }
+
+            NEW order {
+                title = 'Заказы';
+                ADD order.box;
             }
         }
     }
+
+    PROPERTY(objectClassName) { background = #FFEEEE; }
+    PROPERTY(nameCompanyInvoice) { background = #FFEEEE; }
+    PROPERTY(nameCurrencyDocument) { background = #FFEEEE; }
+    PROPERTY(nameDestinationDestinationDocument) { background = #FFEEEE; }
+    PROPERTY(numberContractInvoice) { background = #FFEEEE; }
+
+    PROPERTY(translateNameArticleSku) { background = #FFEEEE; }
+    PROPERTY(mainCompositionSku) { background = #FFEEEE; }
+    PROPERTY(additionalCompositionSku) { background = #FFEEEE; }
+    PROPERTY(translateNameSkuInvoice) { background = #FFEEEE; }
+    PROPERTY(mainCompositionSkuInvoice) { background = #FFEEEE; }
+    PROPERTY(additionalCompositionSkuInvoice) { background = #FFEEEE; }
 }
