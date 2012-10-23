@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="dates" pageWidth="595" pageHeight="842" columnWidth="565" leftMargin="20" rightMargin="10" topMargin="20" bottomMargin="20">
 	<property name="ireport.zoom" value="2.1435888100000016"/>
-	<property name="ireport.x" value="148"/>
+	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
 		<box>
@@ -65,19 +65,19 @@
 	<field name="percentBalanceReceivedBrandSupplierDateFromTo" class="java.lang.Double"/>
 	<field name="c" class="java.lang.Integer"/>
 	<field name="nameCat" class="java.lang.String"/>
-	<field name="balanceBCategorySupplierDate" class="java.lang.Double"/>
-	<field name="quantityReceivedCategorySupplierDateFromTo" class="java.lang.Double"/>
-	<field name="quantitySoldCategorySupplierDateFromTo" class="java.lang.Double"/>
-	<field name="balanceACategorySupplierDate" class="java.lang.Double"/>
-	<field name="percentBalanceReceivedCategorySupplierDateFromTo" class="java.lang.Double"/>
+	<field name="balanceBBrandSupplierCategorySupplierDate" class="java.lang.Double"/>
+	<field name="quantityReceivedBrandSupplierCategorySupplierDateFromTo" class="java.lang.Double"/>
+	<field name="quantitySoldBrandSupplierCategorySupplierDateFromTo" class="java.lang.Double"/>
+	<field name="balanceABrandSupplierCategorySupplierDate" class="java.lang.Double"/>
+	<field name="percentBalanceReceivedBrandSupplierCategorySupplierDateFromTo" class="java.lang.Double"/>
 	<field name="sc" class="java.lang.Integer"/>
 	<field name="nameSubCat" class="java.lang.String"/>
-	<field name="balanceBSubCategorySupplierDate" class="java.lang.Double"/>
+	<field name="balanceBBrandSupplierSubCategorySupplierDate" class="java.lang.Double"/>
 	<field name="sidSubCategorySupplier" class="java.lang.String"/>
-	<field name="quantityReceivedSubCategorySupplierDateFromTo" class="java.lang.Double"/>
-	<field name="quantitySoldSubCategorySupplierDateFromTo" class="java.lang.Double"/>
-	<field name="balanceASubCategorySupplierDate" class="java.lang.Double"/>
-	<field name="percentBalanceReceivedSubCategorySupplierDateFromTo" class="java.lang.Double"/>
+	<field name="quantityReceivedBrandSupplierSubCategorySupplierDateFromTo" class="java.lang.Double"/>
+	<field name="quantitySoldBrandSupplierSubCategorySupplierDateFromTo" class="java.lang.Double"/>
+	<field name="balanceABrandSupplierSubCategorySupplierDate" class="java.lang.Double"/>
+	<field name="percentBalanceReceivedBrandSupplierSubCategorySupplierDateFromTo" class="java.lang.Double"/>
 	<field name="aa" class="java.lang.Integer"/>
 	<field name="sidArticle" class="java.lang.String"/>
 	<field name="nameSupplierArticle" class="java.lang.String"/>
@@ -218,35 +218,35 @@
 					<textElement verticalAlignment="Top">
 						<font size="7"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{quantityReceivedCategorySupplierDateFromTo}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{quantityReceivedBrandSupplierCategorySupplierDateFromTo}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle3" positionType="Float" stretchType="RelativeToBandHeight" x="330" y="0" width="75" height="10" backcolor="#CCFFCC"/>
 					<textElement verticalAlignment="Top">
 						<font size="7"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{quantitySoldCategorySupplierDateFromTo}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{quantitySoldBrandSupplierCategorySupplierDateFromTo}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle3" positionType="Float" stretchType="RelativeToBandHeight" x="405" y="0" width="75" height="10" backcolor="#CCFFCC"/>
 					<textElement verticalAlignment="Top">
 						<font size="7"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{balanceACategorySupplierDate}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{balanceABrandSupplierCategorySupplierDate}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle3" positionType="Float" stretchType="RelativeToBandHeight" x="480" y="0" width="56" height="10" backcolor="#CCFFCC"/>
 					<textElement verticalAlignment="Top">
 						<font size="7"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{percentBalanceReceivedCategorySupplierDateFromTo}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{percentBalanceReceivedBrandSupplierCategorySupplierDateFromTo}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle3" positionType="Float" stretchType="RelativeToBandHeight" x="180" y="0" width="75" height="10" backcolor="#CCFFCC"/>
 					<textElement verticalAlignment="Top">
 						<font size="7"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{balanceBCategorySupplierDate}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{balanceBBrandSupplierCategorySupplierDate}]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>
@@ -270,35 +270,35 @@
 					<textElement verticalAlignment="Top">
 						<font size="7"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{quantityReceivedSubCategorySupplierDateFromTo}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{quantityReceivedBrandSupplierSubCategorySupplierDateFromTo}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle4" positionType="Float" stretchType="RelativeToBandHeight" x="330" y="0" width="75" height="10" backcolor="#CCFFFF"/>
 					<textElement verticalAlignment="Top">
 						<font size="7"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{quantitySoldSubCategorySupplierDateFromTo}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{quantitySoldBrandSupplierSubCategorySupplierDateFromTo}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle4" positionType="Float" stretchType="RelativeToBandHeight" x="405" y="0" width="75" height="10" backcolor="#CCFFFF"/>
 					<textElement verticalAlignment="Top">
 						<font size="7"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{balanceASubCategorySupplierDate}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{balanceABrandSupplierSubCategorySupplierDate}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle4" positionType="Float" stretchType="RelativeToBandHeight" x="480" y="0" width="56" height="10" backcolor="#CCFFFF"/>
 					<textElement verticalAlignment="Top">
 						<font size="7"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{percentBalanceReceivedSubCategorySupplierDateFromTo}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{percentBalanceReceivedBrandSupplierSubCategorySupplierDateFromTo}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle4" positionType="Float" stretchType="RelativeToBandHeight" x="180" y="0" width="75" height="10" backcolor="#CCFFFF"/>
 					<textElement verticalAlignment="Top">
 						<font size="7"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{balanceBSubCategorySupplierDate}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{balanceBBrandSupplierSubCategorySupplierDate}]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>
@@ -406,7 +406,7 @@
 				<textElement verticalAlignment="Top">
 					<font size="7"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{balanceAArticleDate}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{balanceBArticleDate}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

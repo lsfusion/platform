@@ -20,12 +20,12 @@ balanceBSupplierDate 'Остаток на начало' (supplier, dateFrom) =  
     BY supplierArticle(article), dateFrom;
 balanceBBrandSupplierDate 'Остаток на начало' (brandSupplier, dateFrom) =  GROUP SUM balanceBArticleDate(article, dateFrom)
     BY brandSupplierArticle(article), dateFrom;
-balanceBCategorySupplierDate 'Остаток на начало' (categorySupplier, dateFrom) =  GROUP SUM balanceBArticleDate(article, dateFrom)
-    BY categorySupplierArticle(article), dateFrom;
-balanceBSubCategorySupplierDate 'Остаток на начало' (subCategorySupplier, dateFrom) =  GROUP SUM balanceBArticleDate(article, dateFrom)
-    BY subCategorySupplierArticle(article), dateFrom;
-balanceBThemeSupplierDate 'Остаток на начало' (themeSupplier, dateFrom) =  GROUP SUM balanceBArticleDate(article, dateFrom)
-    BY themeSupplierArticle(article), dateFrom;
+balanceBBrandSupplierCategorySupplierDate 'Остаток на начало' (brandSupplier, categorySupplier, dateFrom) =  GROUP SUM balanceBArticleDate(article, dateFrom)
+    BY brandSupplierArticle(article), categorySupplierArticle(article), dateFrom;
+balanceBBrandSupplierSubCategorySupplierDate 'Остаток на начало' (brandSupplier, subCategorySupplier, dateFrom) =  GROUP SUM balanceBArticleDate(article, dateFrom)
+    BY brandSupplierArticle(article), subCategorySupplierArticle(article), dateFrom;
+balanceBBrandSupplierThemeSupplierDate 'Остаток на начало' (brandSupplier, themeSupplier, dateFrom) =  GROUP SUM balanceBArticleDate(article, dateFrom)
+    BY brandSupplierArticle(article), themeSupplierArticle(article), dateFrom;
 
 
 quantityReceivedArticleDateFromTo 'Поступило за интервал' (article, dateFrom, dateTo) = (balanceAArticleDate(article, dateTo) AND dateFrom AS DATE) (-)
@@ -35,47 +35,46 @@ quantityReceivedSupplierDateFromTo 'Поступило' (supplier, dateFrom, dat
     BY supplierArticle(article), dateFrom, dateTo;
 quantityReceivedBrandSupplierDateFromTo 'Поступило' (brandSupplier, dateFrom, dateTo)= GROUP SUM quantityReceivedArticleDateFromTo(article, dateFrom, dateTo)
     BY brandSupplierArticle(article), dateFrom, dateTo;
-quantityReceivedCategorySupplierDateFromTo 'Поступило' (categorySupplier, dateFrom, dateTo)= GROUP SUM quantityReceivedArticleDateFromTo(article, dateFrom, dateTo)
-    BY categorySupplierArticle(article), dateFrom, dateTo;
-quantityReceivedSubCategorySupplierDateFromTo 'Поступило' (subCategorySupplier, dateFrom, dateTo)= GROUP SUM quantityReceivedArticleDateFromTo(article, dateFrom, dateTo)
-    BY subCategorySupplierArticle(article), dateFrom, dateTo;
-quantityReceivedThemeSupplierDateFromTo 'Поступило' (themeSupplier, dateFrom, dateTo)= GROUP SUM quantityReceivedArticleDateFromTo(article, dateFrom, dateTo)
-    BY themeSupplierArticle(article), dateFrom, dateTo;
+quantityReceivedBrandSupplierCategorySupplierDateFromTo 'Поступило' (brandSupplier, categorySupplier, dateFrom, dateTo)= GROUP SUM quantityReceivedArticleDateFromTo(article, dateFrom, dateTo)
+    BY brandSupplierArticle(article), categorySupplierArticle(article), dateFrom, dateTo;
+quantityReceivedBrandSupplierSubCategorySupplierDateFromTo 'Поступило' (brandSupplier, subCategorySupplier, dateFrom, dateTo)= GROUP SUM quantityReceivedArticleDateFromTo(article, dateFrom, dateTo)
+    BY brandSupplierArticle(article), subCategorySupplierArticle(article), dateFrom, dateTo;
+quantityReceivedBrandSupplierThemeSupplierDateFromTo 'Поступило' (brandSupplier, themeSupplier, dateFrom, dateTo)= GROUP SUM quantityReceivedArticleDateFromTo(article, dateFrom, dateTo)
+    BY brandSupplierArticle(article), themeSupplierArticle(article), dateFrom, dateTo;
 
 quantitySoldSupplierDateFromTo 'Продано за интервал (кол-во)' (supplier, dateFrom, dateTo) = GROUP SUM
     quantitySoldArticleDateFromTo(article, dateFrom, dateTo) BY supplierArticle(article), dateFrom, dateTo;
 quantitySoldBrandSupplierDateFromTo 'Продано за интервал (кол-во)' (brandSupplier, dateFrom, dateTo) = GROUP SUM
     quantitySoldArticleDateFromTo(article, dateFrom, dateTo) BY brandSupplierArticle(article), dateFrom, dateTo;
-quantitySoldCategorySupplierDateFromTo 'Продано за интервал (кол-во)' (categorySupplier, dateFrom, dateTo) = GROUP SUM
-    quantitySoldArticleDateFromTo(article, dateFrom, dateTo) BY categorySupplierArticle(article), dateFrom, dateTo;
-quantitySoldSubCategorySupplierDateFromTo 'Продано за интервал (кол-во)' (subCategorySupplier, dateFrom, dateTo) = GROUP SUM
-    quantitySoldArticleDateFromTo(article, dateFrom, dateTo) BY subCategorySupplierArticle(article), dateFrom, dateTo;
-quantitySoldThemeSupplierDateFromTo 'Продано за интервал (кол-во)' (themeSupplier, dateFrom, dateTo) = GROUP SUM
-    quantitySoldArticleDateFromTo(article, dateFrom, dateTo) BY themeSupplierArticle(article), dateFrom, dateTo;
-
+quantitySoldBrandSupplierCategorySupplierDateFromTo 'Продано за интервал (кол-во)' (brandSupplier, categorySupplier, dateFrom, dateTo) = GROUP SUM
+    quantitySoldArticleDateFromTo(article, dateFrom, dateTo) BY brandSupplierArticle(article), categorySupplierArticle(article), dateFrom, dateTo;
+quantitySoldBrandSupplierSubCategorySupplierDateFromTo 'Продано за интервал (кол-во)' (brandSupplier, subCategorySupplier, dateFrom, dateTo) = GROUP SUM
+    quantitySoldArticleDateFromTo(article, dateFrom, dateTo) BY brandSupplierArticle(article), subCategorySupplierArticle(article), dateFrom, dateTo;
+quantitySoldBrandSupplierThemeSupplierDateFromTo 'Продано за интервал (кол-во)' (brandSupplier, themeSupplier, dateFrom, dateTo) = GROUP SUM
+    quantitySoldArticleDateFromTo(article, dateFrom, dateTo) BY brandSupplierArticle(article), themeSupplierArticle(article), dateFrom, dateTo;
 
 
 sumSoldSupplierDateFromTo 'Продано за интервал (сумма)' (supplier, dateFrom, dateTo) = GROUP SUM
     sumSoldArticleDateFromTo(article, dateFrom, dateTo) BY supplierArticle(article), dateFrom, dateTo;
 sumSoldBrandSupplierDateFromTo 'Продано за интервал (сумма)' (brandSupplier, dateFrom, dateTo) = GROUP SUM
     sumSoldArticleDateFromTo(article, dateFrom, dateTo) BY brandSupplierArticle(article), dateFrom, dateTo;
-sumSoldCategorySupplierDateFromTo 'Продано за интервал (сумма)' (categorySupplier, dateFrom, dateTo) = GROUP SUM
-    sumSoldArticleDateFromTo(article, dateFrom, dateTo) BY categorySupplierArticle(article), dateFrom, dateTo;
-sumSoldSubCategorySupplierDateFromTo 'Продано за интервал (сумма)' (subCategorySupplier, dateFrom, dateTo) = GROUP SUM
-    sumSoldArticleDateFromTo(article, dateFrom, dateTo) BY subCategorySupplierArticle(article), dateFrom, dateTo;
-sumSoldThemeSupplierDateFromTo 'Продано за интервал (сумма)' (themeSupplier, dateFrom, dateTo) = GROUP SUM
-    sumSoldArticleDateFromTo(article, dateFrom, dateTo) BY themeSupplierArticle(article), dateFrom, dateTo;
+sumSoldBrandSupplierCategorySupplierDateFromTo 'Продано за интервал (сумма)' (brandSupplier, categorySupplier, dateFrom, dateTo) = GROUP SUM
+    sumSoldArticleDateFromTo(article, dateFrom, dateTo) BY brandSupplierArticle(article), categorySupplierArticle(article), dateFrom, dateTo;
+sumSoldBrandSupplierSubCategorySupplierDateFromTo 'Продано за интервал (сумма)' (brandSupplier, subCategorySupplier, dateFrom, dateTo) = GROUP SUM
+    sumSoldArticleDateFromTo(article, dateFrom, dateTo) BY brandSupplierArticle(article), subCategorySupplierArticle(article), dateFrom, dateTo;
+sumSoldBrandSupplierThemeSupplierDateFromTo 'Продано за интервал (сумма)' (brandSupplier, themeSupplier, dateFrom, dateTo) = GROUP SUM
+    sumSoldArticleDateFromTo(article, dateFrom, dateTo) BY brandSupplierArticle(article), themeSupplierArticle(article), dateFrom, dateTo;
 
 balanceASupplierDate 'Остаток на конец' (supplier, dateTo)= GROUP SUM balanceAArticleDate(article, dateTo)
     BY supplierArticle(article), dateTo;
 balanceABrandSupplierDate 'Остаток на конец' (brandSupplier, dateTo)= GROUP SUM balanceAArticleDate(article, dateTo)
     BY brandSupplierArticle(article), dateTo;
-balanceACategorySupplierDate 'Остаток на конец' (categorySupplier, dateTo)= GROUP SUM balanceAArticleDate(article, dateTo)
-    BY categorySupplierArticle(article), dateTo;
-balanceASubCategorySupplierDate 'Остаток на конец' (subCategorySupplier, dateTo)= GROUP SUM balanceAArticleDate(article, dateTo)
-    BY subCategorySupplierArticle(article), dateTo;
-balanceAThemeSupplierDate 'Остаток на конец' (themeSupplier, dateTo)= GROUP SUM balanceAArticleDate(article, dateTo)
-    BY themeSupplierArticle(article), dateTo;
+balanceABrandSupplierCategorySupplierDate 'Остаток на конец' (brandSupplier, categorySupplier, dateTo)= GROUP SUM balanceAArticleDate(article, dateTo)
+    BY brandSupplierArticle(article), categorySupplierArticle(article), dateTo;
+balanceABrandSupplierSubCategorySupplierDate 'Остаток на конец' (brandSupplier, subCategorySupplier, dateTo)= GROUP SUM balanceAArticleDate(article, dateTo)
+    BY brandSupplierArticle(article), subCategorySupplierArticle(article), dateTo;
+balanceABrandSupplierThemeSupplierDate 'Остаток на конец' (brandSupplier, themeSupplier, dateTo)= GROUP SUM balanceAArticleDate(article, dateTo)
+    BY brandSupplierArticle(article), themeSupplierArticle(article), dateTo;
 
 percentBalanceReceivedArticleDateFromTo '%, остатка' (article, dateFrom, dateTo) = round2([X*100/Y](
     balanceAArticleDate(article, dateTo), quantityReceivedArticleDateFromTo(article, dateFrom, dateTo)));
@@ -84,12 +83,13 @@ percentBalanceReceivedSupplierDateFromTo '%, остатка' (supplier, dateFrom
     balanceASupplierDate(supplier, dateTo), quantityReceivedSupplierDateFromTo(supplier, dateFrom, dateTo)));
 percentBalanceReceivedBrandSupplierDateFromTo '%, остатка' (brandSupplier, dateFrom, dateTo) = round2([X*100/Y](
     balanceABrandSupplierDate(brandSupplier, dateTo), quantityReceivedBrandSupplierDateFromTo(brandSupplier, dateFrom, dateTo)));
-percentBalanceReceivedCategorySupplierDateFromTo '%, остатка' (categorySupplier, dateFrom, dateTo) = round2([X*100/Y](
-    balanceACategorySupplierDate(categorySupplier, dateTo), quantityReceivedCategorySupplierDateFromTo(categorySupplier, dateFrom, dateTo)));
-percentBalanceReceivedSubCategorySupplierDateFromTo '%, остатка' (subCategorySupplier, dateFrom, dateTo) = round2([X*100/Y](
-    balanceASubCategorySupplierDate(subCategorySupplier, dateTo), quantityReceivedSubCategorySupplierDateFromTo(subCategorySupplier, dateFrom, dateTo)));
-percentBalanceReceivedThemeSupplierDateFromTo '%, остатка' (themeSupplier, dateFrom, dateTo) = round2([X*100/Y](
-    balanceAThemeSupplierDate(themeSupplier, dateTo), quantityReceivedThemeSupplierDateFromTo(themeSupplier, dateFrom, dateTo)));
+percentBalanceReceivedBrandSupplierCategorySupplierDateFromTo '%, остатка' (brandSupplier, categorySupplier, dateFrom, dateTo) = round2([X*100/Y](
+    balanceABrandSupplierCategorySupplierDate(brandSupplier, categorySupplier, dateTo), quantityReceivedBrandSupplierCategorySupplierDateFromTo(brandSupplier, categorySupplier, dateFrom, dateTo)));
+percentBalanceReceivedBrandSupplierSubCategorySupplierDateFromTo '%, остатка' (brandSupplier, subCategorySupplier, dateFrom, dateTo) = round2([X*100/Y](
+    balanceABrandSupplierSubCategorySupplierDate(brandSupplier, subCategorySupplier, dateTo), quantityReceivedBrandSupplierSubCategorySupplierDateFromTo(brandSupplier, subCategorySupplier, dateFrom, dateTo)));
+percentBalanceReceivedBrandSupplierThemeSupplierDateFromTo '%, остатка' (brandSupplier, themeSupplier, dateFrom, dateTo) = round2([X*100/Y](
+    balanceABrandSupplierThemeSupplierDate(brandSupplier, themeSupplier, dateTo), quantityReceivedBrandSupplierThemeSupplierDateFromTo(brandSupplier, themeSupplier, dateFrom, dateTo)));
+
 
 FORM salesArticle 'Продажи по группам'
 
@@ -106,12 +106,12 @@ FORM salesArticle 'Продажи по группам'
                    percentBalanceReceivedBrandSupplierDateFromTo(b,dFrom,dTo), sumSoldBrandSupplierDateFromTo(b,dFrom,dTo)
 
     OBJECTS c=categorySupplier
-    PROPERTIES     READONLY nameCat = name(c), balanceBCategorySupplierDate(c,dFrom), quantityReceivedCategorySupplierDateFromTo(c,dFrom,dTo), quantitySoldCategorySupplierDateFromTo(c,dFrom,dTo), balanceACategorySupplierDate(c,dTo),
-                   percentBalanceReceivedCategorySupplierDateFromTo(c,dFrom,dTo), sumSoldCategorySupplierDateFromTo(c,dFrom,dTo)
+    PROPERTIES     READONLY nameCat = name(c), balanceBBrandSupplierCategorySupplierDate(b,c,dFrom), quantityReceivedBrandSupplierCategorySupplierDateFromTo(b,c,dFrom,dTo), quantitySoldBrandSupplierCategorySupplierDateFromTo(b,c,dFrom,dTo), balanceABrandSupplierCategorySupplierDate(b,c,dTo),
+                   percentBalanceReceivedBrandSupplierCategorySupplierDateFromTo(b,c,dFrom,dTo), sumSoldBrandSupplierCategorySupplierDateFromTo(b,c,dFrom,dTo)
 
     OBJECTS sc=subCategorySupplier
-    PROPERTIES     READONLY nameSubCat = name(sc), sidSubCategorySupplier(sc), balanceBSubCategorySupplierDate(sc,dFrom), quantityReceivedSubCategorySupplierDateFromTo(sc,dFrom,dTo), quantitySoldSubCategorySupplierDateFromTo(sc,dFrom,dTo), balanceASubCategorySupplierDate(sc,dTo),
-                   percentBalanceReceivedSubCategorySupplierDateFromTo(sc,dFrom,dTo), sumSoldSubCategorySupplierDateFromTo(sc,dFrom,dTo)
+    PROPERTIES     READONLY nameSubCat = name(sc), sidSubCategorySupplier(sc), balanceBBrandSupplierSubCategorySupplierDate(b,sc,dFrom), quantityReceivedBrandSupplierSubCategorySupplierDateFromTo(b,sc,dFrom,dTo), quantitySoldBrandSupplierSubCategorySupplierDateFromTo(b,sc,dFrom,dTo), balanceABrandSupplierSubCategorySupplierDate(b,sc,dTo),
+                   percentBalanceReceivedBrandSupplierSubCategorySupplierDateFromTo(b,sc,dFrom,dTo), sumSoldBrandSupplierSubCategorySupplierDateFromTo(b,sc,dFrom,dTo)
 
     OBJECTS aa=article
     PROPERTIES (aa)READONLY sidArticle, nameSupplierArticle, nameBrandSupplierArticle, nameCategorySupplierArticle, nameSubCategorySupplierArticle
@@ -197,8 +197,8 @@ FORM salesArticleTheme 'Продажи по темам'
                    percentBalanceReceivedBrandSupplierDateFromTo(b,dFrom,dTo), sumSoldBrandSupplierDateFromTo(b,dFrom,dTo)
 
     OBJECTS t=themeSupplier
-    PROPERTIES     READONLY nameTh = name(t), balanceBThemeSupplierDate(t,dFrom), quantityReceivedThemeSupplierDateFromTo(t,dFrom,dTo), quantitySoldThemeSupplierDateFromTo(t,dFrom,dTo), balanceAThemeSupplierDate(t,dTo),
-                   percentBalanceReceivedThemeSupplierDateFromTo(t,dFrom,dTo), sumSoldThemeSupplierDateFromTo(t,dFrom,dTo)
+    PROPERTIES     READONLY nameTh = name(t), balanceBBrandSupplierThemeSupplierDate(b,t,dFrom), quantityReceivedBrandSupplierThemeSupplierDateFromTo(b,t,dFrom,dTo), quantitySoldBrandSupplierThemeSupplierDateFromTo(b,t,dFrom,dTo), balanceABrandSupplierThemeSupplierDate(b,t,dTo),
+                   percentBalanceReceivedBrandSupplierThemeSupplierDateFromTo(b,t,dFrom,dTo), sumSoldBrandSupplierThemeSupplierDateFromTo(b,t,dFrom,dTo)
 
     OBJECTS aa=article
     PROPERTIES (aa)READONLY sidArticle, nameSupplierArticle, nameBrandSupplierArticle, nameCategorySupplierArticle, nameSubCategorySupplierArticle, nameThemeSupplierArticle
