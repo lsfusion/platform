@@ -112,9 +112,6 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
             for (String title : exportTitlesTSDocs44)
                 addStringCellToRow(title, ";");
             writerTSDocs44.println(row);
-            for (int i = 0; i < 10; i++) {
-                writerTSDocs44.println("");
-            }
 
             LCP isGroupDeclaration = LM.is(getClass("groupDeclaration"));
             Map<Object, KeyExpr> keys = isGroupDeclaration.getMapKeys();
@@ -140,6 +137,17 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
             Double containerNumberDeclaration = (Double) LM.findLCPByCompoundName("containerNumberDeclaration").read(context.getSession(), declarationObject);
             boolean containerNumberFlag = false;
             String numberContractDeclaration = (String) LM.findLCPByCompoundName("numberContractDeclaration").read(context.getSession(), declarationObject);
+            Date dateFromContractDeclaration = (Date) LM.findLCPByCompoundName("dateFromContractDeclaration").read(context.getSession(), declarationObject);
+
+            row = "";
+            addConstantStringCellToRow("1", ";");
+            addStringCellToRow(numberContractDeclaration, ";");
+            if (dateFromContractDeclaration != null)
+                addStringCellToRow(String.valueOf(dateFromContractDeclaration), ";");
+            writerTSDocs44.println(row);
+            for (int i = 0; i < 9; i++) {
+                writerTSDocs44.println("");
+            }
 
             for (Map.Entry<Integer, Map<String, Object>> entry : sortedRows.entrySet()) {
 
@@ -160,8 +168,7 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
                 for (Map<Object, Object> innerInvoiceValues : innerInvoiceResult.values()) {
                     row = "";
                     addStringCellToRow(entry.getKey(), ";");//numberGroupDeclaration
-                    //addStringCellToRow(innerInvoiceValues.get("sidInnerInvoice"), ";");
-                    addStringCellToRow(numberContractDeclaration, ";");
+                    addStringCellToRow(innerInvoiceValues.get("sidInnerInvoice"), ";");
                     addStringCellToRow(innerInvoiceValues.get("dateInnerInvoice"), ";");
                     addStringCellToRow(null, ";");
                     addConstantStringCellToRow("04021", ";");
@@ -213,8 +220,8 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
                 addStringCellToRow(null, ";"); //Количество подакцизного товара
                 String sidSpecUnit = (String) values.get("sidSpecUnitOfMeasureGroupDeclaration");
                 String nameSpecUnit = (String) values.get("nameSpecUnitOfMeasureGroupDeclaration");
-                addConstantStringCellToRow(sidSpecUnit!=null ? sidSpecUnit : "166", ";");  //Код специфических единиц измерения
-                addConstantStringCellToRow(nameSpecUnit!=null ? nameSpecUnit : "КГ", ";");  //Краткое наименование специфических единиц измерения
+                addConstantStringCellToRow(sidSpecUnit != null ? sidSpecUnit : "166", ";");  //Код специфических единиц измерения
+                addConstantStringCellToRow(nameSpecUnit != null ? nameSpecUnit : "КГ", ";");  //Краткое наименование специфических единиц измерения
                 addStringCellToRow(null, ";"); //Код единицы измерения подакцизного товара
                 addStringCellToRow(null, ";"); //Наименование единицы измерения подакцизного товара
                 addDoubleCellToRow(values.get("quantityCoefficientGroupDeclaration"), ";", 0);

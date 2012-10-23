@@ -186,6 +186,7 @@ customsZoneDeclaration (declaration) = customsZoneCountry(countryLegalEntity(imp
 
 contractDeclaration = DATA contractSkuSupplier(declaration);
 numberContractDeclaration 'Договор' (declaration) = numberContract(contractDeclaration(declaration));
+dateFromContractDeclaration 'Дата договора (с)' (declaration) = dateFromContract(contractDeclaration(declaration));
 
 currencyDeclaration 'Валюта декларации (ИД)' = DATA currency(declaration) IN idGroup;
 nameCurrencyDeclaration 'Валюта декларации' = name(currencyDeclaration(declaration)) IN exchangeGroup;
