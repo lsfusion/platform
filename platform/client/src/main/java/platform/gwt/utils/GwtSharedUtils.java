@@ -44,6 +44,13 @@ public class GwtSharedUtils {
         return result;
     }
 
+    public static boolean nullEquals(Object obj1, Object obj2) {
+        if (obj1 == null)
+            return obj2 == null;
+        else
+            return obj1.equals(obj2);
+    }
+
     public static <MK, K, V> void putUpdate(Map<MK, Map<K, V>> keyValues, MK key, Map<K, V> values, boolean update) {
         if (update) {
             keyValues.put(key, override(keyValues.get(key), values));

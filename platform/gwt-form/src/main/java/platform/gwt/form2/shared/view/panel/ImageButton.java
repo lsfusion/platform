@@ -2,11 +2,15 @@ package platform.gwt.form2.shared.view.panel;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.ui.*;
+import platform.gwt.utils.GwtSharedUtils;
 
 public class ImageButton extends Button {
     private final Image image;
     private final Label label;
     private final CellPanel panel;
+
+    private String imagePath;
+    private String text;
 
     public ImageButton() {
         this(null, null);
@@ -41,13 +45,19 @@ public class ImageButton extends Button {
     }
 
     public void setAbsoluteImagePath(String imagePath) {
-        image.setUrl(imagePath == null ? "" : imagePath);
-        refreshHTML();
+        if (!GwtSharedUtils.nullEquals(this.imagePath, imagePath)) {
+            this.imagePath = imagePath;
+            image.setUrl(imagePath == null ? "" : imagePath);
+            refreshHTML();
+        }
     }
 
     public void setText(String text) {
-        label.setText(text);
-        refreshHTML();
+        if (!GwtSharedUtils.nullEquals(this.text, text)) {
+            this.text = text;
+            label.setText(text);
+            refreshHTML();
+        }
     }
 
     private void refreshHTML() {

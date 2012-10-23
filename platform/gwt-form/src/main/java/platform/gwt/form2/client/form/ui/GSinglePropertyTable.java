@@ -2,13 +2,12 @@ package platform.gwt.form2.client.form.ui;
 
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.user.cellview.client.Column;
-import com.google.gwt.user.client.Element;
 import platform.gwt.form2.shared.view.GPropertyDraw;
 import platform.gwt.form2.shared.view.changes.GGroupObjectValue;
 import platform.gwt.form2.shared.view.changes.dto.ColorDTO;
 import platform.gwt.form2.shared.view.grid.GridEditableCell;
+import platform.gwt.utils.GwtSharedUtils;
 
 import java.util.Arrays;
 
@@ -46,13 +45,6 @@ public class GSinglePropertyTable extends GPropertyTable {
             }
         });
         setRowData(Arrays.asList(new Object()));
-
-        //нижеследующее нужно только для работы в zoom-режиме, т.к. из-за погрешностей скроллбары выезжают на область таблицы
-        getScrollPanel().removeHorizontalScrollbar();
-        getScrollPanel().removeVerticalScrollbar();
-        //хак, но сейчас api не предоставляет публичного доступа к ScrollPanel.scrollableElement, который нам нужен, поэтому делаем, жёстко полагаясь на реализацию
-        Element.as(getScrollPanel().getElement().getChild(1)).
-                getFirstChildElement().getStyle().setOverflow(Overflow.HIDDEN);
     }
 
     @Override
@@ -61,18 +53,26 @@ public class GSinglePropertyTable extends GPropertyTable {
     }
 
     public void setValue(Object value) {
-        this.value = value;
-        redraw();
+        if (!GwtSharedUtils.nullEquals(this.value, value)) {
+            this.value = value;
+            redraw();
+        }
     }
 
     public void setBackground(ColorDTO background) {
-        this.background = background == null ? null : background.toString();
-        redraw();
+        String sBackground = background == null ? null : background.toString();
+        if (!GwtSharedUtils.nullEquals(this.background, sBackground)) {
+            this.background = sBackground;
+            redraw();
+        }
     }
 
     public void setForeground(ColorDTO foreground) {
-        this.foreground = foreground == null ? null : foreground.toString();
-        redraw();
+        String sForeground = foreground == null ? null : foreground.toString();
+        if (!GwtSharedUtils.nullEquals(this.foreground, sForeground)) {
+            this.foreground = sForeground;
+            redraw();
+        }
     }
 
     public String getBackground() {

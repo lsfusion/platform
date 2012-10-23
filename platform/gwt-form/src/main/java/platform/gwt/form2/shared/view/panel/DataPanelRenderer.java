@@ -7,6 +7,7 @@ import platform.gwt.form2.client.form.ui.GSinglePropertyTable;
 import platform.gwt.form2.shared.view.GPropertyDraw;
 import platform.gwt.form2.shared.view.changes.GGroupObjectValue;
 import platform.gwt.form2.shared.view.changes.dto.ColorDTO;
+import platform.gwt.utils.GwtSharedUtils;
 
 public class DataPanelRenderer implements PanelRenderer {
 
@@ -14,8 +15,10 @@ public class DataPanelRenderer implements PanelRenderer {
     protected final GSinglePropertyTable valueTable;
     protected final HorizontalPanel panel;
 
+    private String caption;
+
     public DataPanelRenderer(GFormController form, GPropertyDraw property, GGroupObjectValue columnKey) {
-        label = new Label(property.getCaptionOrEmpty() + ": ");
+        label = new Label(caption = property.getCaptionOrEmpty());
         label.addStyleName("customFontPresenter");
 
         valueTable = new GSinglePropertyTable(form, property, columnKey);
@@ -48,7 +51,10 @@ public class DataPanelRenderer implements PanelRenderer {
 
     @Override
     public void setCaption(String caption) {
-        label.setText(caption);
+        if (!GwtSharedUtils.nullEquals(this.caption, caption)) {
+            this.caption = caption;
+            label.setText(caption);
+        }
     }
 
     @Override
