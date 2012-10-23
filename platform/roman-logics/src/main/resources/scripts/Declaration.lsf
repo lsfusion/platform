@@ -202,6 +202,9 @@ palletNumberInnerInvoice (innerInvoice) = UNION EXCLUSIVE palletNumberFormedInvo
 
 palletNumberDeclaration 'Кол-во паллет' (declaration) = GROUP SUM palletNumberInnerInvoice(innerInvoice) BY declarationInnerInvoice(innerInvoice) IN docGroup;
 
+typeContainerDeclaration = DATA typeContainer(declaration);
+nameTypeContainerDeclaration 'Вид грузовых мест'(declaration) = name(typeContainerDeclaration(declaration));
+
 containerNumberDeclaration 'Кол-во грузовых мест' = DATA NUMERIC[14,3](declaration);
 
 inDeclarationInnerInvoice 'Инвойс в декларации' (declaration, innerInvoice) = declarationInnerInvoice(innerInvoice) == declaration;
@@ -231,11 +234,13 @@ languageDeclarationInnerInvoice (declaration, innerInvoice) = languageDeclaratio
                                                               (declaration IS declaration AND innerInvoice IS innerInvoice AND NOT languageDeclaration(declaration) AND NOT languageInnerInvoice(innerInvoice));
 
 // определение инвойса
-directInvoiceFreightUnit(declaration, freightUnit) = boxInvoiceSupplierBox(freightUnit) AND declaration IS declaration;
+directInvoiceFreightUnit(freightUnit) = UNION EXCLUSIVE freightUnit IF freightUnit IS directSimpleInvoice,
+                                                        boxInvoiceSupplierBox(freightUnit);
+
 formedInvoiceFreightUnit(declaration, freightUnit) = formedInvoiceImporterFreight(importerDeclaration(declaration), freightFreightUnit(freightUnit));
 
 innerInvoiceFreightUnit(declaration, freightUnit) = UNION EXCLUSIVE formedInvoiceFreightUnit(declaration, freightUnit),
-                                                                    directInvoiceFreightUnit(declaration, freightUnit);
+                                                                    directInvoiceFreightUnit(freightUnit) AND declaration IS declaration;
 
 //innerInvoiceDeclarationSku 'Инвойс для декларации' (declaration, sku) = GROUP MAX innerInvoice IF quantityInnerInvoiceSku(innerInvoice, sku)
 //                                                                               BY declarationInnerInvoice(innerInvoice), sku PERSISTENT;
@@ -1129,8 +1134,9 @@ importExportDeclarationBYAllow(declaration) = allowImportExportXMLDeclarationBY(
 
 FORM declaration 'Декларация'
     OBJECTS d=declaration FIXED PANEL, dd=declarationDetail
-    PROPERTIES(d) objectClassName, sidDeclaration, nameCustomStoreDeclaration, nameImporterDeclaration, numberContractDeclaration, nameLanguageDeclaration,
-                  nameCurrencyDeclaration, innerInvoicesDeclaration, sumFreightsDeclaration, palletNumberDeclaration, containerNumberDeclaration,
+    PROPERTIES(d) objectClassName, sidDeclaration, nameCustomStoreDeclaration, nameImporterDeclaration, numberContractDeclaration,
+                  nameLanguageDeclaration, nameCurrencyDeclaration, innerInvoicesDeclaration, sumFreightsDeclaration,
+                  palletNumberDeclaration, nameTypeContainerDeclaration, containerNumberDeclaration,
                   dateDeclaration, timeDeclaration, beginTimeDeclaration, endTimeDeclaration,
                   nameTypeExchangeCustomDeclaration, rateExchangeCustomDataDeclaration, nameTypeExchangeManagerialDeclaration,
                   rateExchangeManagerialDataDeclaration, sumRegistrationUnionDeclaration, nameExecuterDeclaration
@@ -1266,6 +1272,7 @@ DESIGN declaration FROM DEFAULT{
                             ADD PROPERTY(innerInvoicesDeclaration);
                             ADD PROPERTY(sumFreightsDeclaration);
                             ADD PROPERTY(palletNumberDeclaration);
+                            ADD PROPERTY(nameTypeContainerDeclaration);
                             ADD PROPERTY(containerNumberDeclaration);
                             ADD PROPERTY(showFormDeclarationInvoices);
                         }

@@ -77,7 +77,13 @@ META dateFreight (object, caption)
 END
 
 @dateFreight(freightShipped, 'Дата отгрузки');
-@dateFreight(freightArrived, 'Дата прибытия');
+//@dateFreight(freightArrived, 'Дата прибытия');
+
+FORM dateFreightArrived
+
+    OBJECTS f = freight FIXED PANEL
+    PROPERTIES(f) dateArrivalFreight, sumFreightFreight
+;
 
 isFreightShipped(freight) = freight IS freightShipped;
 isFreightArrived(freight) = freight IS freightArrived;
@@ -96,13 +102,15 @@ toShipFreight 'Отгрузить' =  [ACTION (freight) {
 toArrivedFreight 'Прибыл' = [ACTION (freight) {
 
     FORM dateFreightArrived MODAL;
+
         IF formResult() == formResult.ok THEN {
-            SET dateArrivalFreight(freight) <- chosenDate('d');
+            //SET dateArrivalFreight(freight) <- chosenDate('d');
+            //SET sumFreightFreight(freight) <- chosenNumeric('n');
             CHANGECLASS freight TO freightArrived;
             EXEC apply();
         }
 
-}](freight) IF freight IS freightShipped AND NOT freight IS freightArrived IMAGE 'sign_tick.png';
+}](freight) IF freight IS freightShipped IMAGE 'sign_tick.png'; //AND NOT freight IS freightArrived
 
 FORM freight 'Фрахт'
 
