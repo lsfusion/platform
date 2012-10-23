@@ -1179,11 +1179,6 @@ FORM freights 'Расценка фрахтов'
 ;
 
 
-EXTEND FORM salesSkuStock
-    PROPERTIES FORCE GRID nameCategoryArticleSku(s) BEFORE name(st), nameBrandSupplierArticleSku(s) BEFORE name(st), sidColorSupplierItem(s) BEFORE name(st), sidSizeSupplierItem(s) BEFORE name(st)
-
-;
-
 //Печать марккировки
 countSku = SESSION DATA INTEGER (sku);
 

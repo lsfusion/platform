@@ -145,7 +145,7 @@ FORM salesSkuStock 'Продажи по SKU'
 
     PROPERTIES        balanceBSkuStockDate(s, st, dFrom), quantitySoldSkuStockWeekDateFromTo(s, st, w, dFrom, dTo)  COLUMNS (w) HEADER castToString4 (w),
                       quantitySoldSkuStockDateFromTo(s, st, dFrom, dTo),
-                      balanceASkuStockDate(s, st, dTo)
+                      balanceASkuStockDate(s, st, dTo), sumSoldSkuStockDateFromTo (s, st, dFrom, dTo)
 
     FILTERGROUP filtersSold
         FILTER 'Показывать проданные за интервал' 'F11' quantitySoldSkuStockDateFromTo(s, st, dFrom, dTo)

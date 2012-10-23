@@ -133,7 +133,7 @@ FORM salesArticle 'Продажи по группам'
         FILTER 'Артикул подгруппы' 'F7' subCategorySupplierArticle(aa) == sc
 
     FILTERGROUP filtersSoldArticle
-        FILTER 'Артикул с движением' 'F11' quantityReceivedArticleDateFromTo(aa, dFrom, dTo) OR quantitySoldArticleDateFromTo(aa, dFrom, dTo) DEFAULT
+        FILTER 'Артикул с движением' 'F11' (balanceAArticleDate(aa, dTo) AND dFrom AS DATE)  OR quantitySoldArticleDateFromTo(aa, dFrom, dTo) DEFAULT
         FILTER 'Артикул с продажей' 'F6' quantitySoldArticleDateFromTo(aa, dFrom, dTo)
         FILTER 'Артикул с поступлением' 'F5' quantityReceivedArticleDateFromTo(aa, dFrom, dTo)
 ;
@@ -218,7 +218,7 @@ FORM salesArticleTheme 'Продажи по темам'
         FILTER 'Артикул темы' 'F8' themeSupplierArticle(aa) == t DEFAULT
 
     FILTERGROUP filtersSoldArticle
-        FILTER 'Артикул с движением' 'F11' quantityReceivedArticleDateFromTo(aa, dFrom, dTo) OR quantitySoldArticleDateFromTo(aa, dFrom, dTo) DEFAULT
+        FILTER 'Артикул с движением' 'F11' (balanceAArticleDate(aa, dTo) AND dFrom AS DATE)  OR quantitySoldArticleDateFromTo(aa, dFrom, dTo) DEFAULT
         FILTER 'Артикул с продажей' 'F6' quantitySoldArticleDateFromTo(aa, dFrom, dTo)
         FILTER 'Артикул с поступлением' 'F5' quantityReceivedArticleDateFromTo(aa, dFrom, dTo)
 ;

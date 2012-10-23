@@ -293,6 +293,9 @@ public class RomanLogicsModule extends LogicsModule {
     public LCP categorySupplierArticle;
     public LCP nameCategorySupplierArticle;
 
+    public LCP categorySupplierArticleSku;
+    public LCP nameCategorySupplierArticleSku;
+
     public ConcreteCustomClass store;
     private ConcreteCustomClass unitOfMeasure;
     public LCP relationStoreSupplier;
@@ -2414,6 +2417,11 @@ public class RomanLogicsModule extends LogicsModule {
 
         categorySupplierArticle = addJProp("categorySupplierArticle", "Группа (ИД)", categorySupplierSubCategorySupplier, subCategorySupplierArticle, 1);
         nameCategorySupplierArticle = addJProp(supplierAttributeGroup, "nameCategorySupplierArticle", "Группа", baseLM.name, categorySupplierArticle, 1);
+
+        categorySupplierArticleSku = addJProp(idGroup, true, "categorySupplierArticleSku", "Группа (ИД)", categorySupplierArticle, articleSku, 1);
+        nameCategorySupplierArticleSku = addJProp(supplierAttributeGroup, "nameCategorySupplierArticleSku", "Группа", baseLM.name, categorySupplierArticleSku, 1);
+        nameCategorySupplierArticleSku.property.preferredCharWidth = 30;
+        nameCategorySupplierArticleSku.property.minimumCharWidth = 15;
 
 
         addConstraint(addJProp("Поставщик артикула должен соответствовать поставщику темы артикула", baseLM.diff2,

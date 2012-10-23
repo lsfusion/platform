@@ -42,5 +42,9 @@ sumSoldArticleDateFromTo 'Продано за интервал (сумма)' (ar
         sumSoldArticleStockDateFromTo(article, stock, dateFrom, dateTo) BY article, dateFrom, dateTo;
 
 
+EXTEND FORM salesSkuStock
+//    PROPERTIES FORCE GRID nameCategoryArticleSku(s) BEFORE name(st), nameBrandSupplierArticleSku(s) BEFORE name(st), sidColorSupplierItem(s) BEFORE name(st), sidSizeSupplierItem(s) BEFORE name(st)
+    PROPERTIES FORCE GRID AFTER nameSku(s) nameThemeSupplierArticleSku(s), nameSubCategorySupplierArticleSku(s), nameCategorySupplierArticleSku(s), nameBrandSupplierArticleSku(s), nameSupplierArticleSku(s), sidArticleSku(s)
+;
 
 
