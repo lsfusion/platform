@@ -22,6 +22,10 @@ quantitySalesLedger 'Кол-во' (ledger) = ABSTRACT NUMERIC[14,3] (salesLedger
 
 sumSalesLedger 'Сумма продажи' (ledger) = ABSTRACT NUMERIC[16,2] (salesLedger) PERSISTENT;
 
+sumSoldTypeExchangeSalesLedger 'Сумма продажи валюта' (typeExchange, salesLedger)= roundCurrency((sumSalesLedger (salesLedger)/
+    rateTypeExchangeCurrencyDate(typeExchange, currencyStock(stockSalesLedger(salesLedger)), dateSalesLedger(salesLedger))), currencyTypeExchange(typeExchange));
+
+
 CONSTRAINT quantitySalesLedger(salesLedger) == 0 MESSAGE 'ошибка: Количество продажи не должно быть равно нулю';
 
 averagePriceSalesLedger 'Цена продажи (средняя)' (salesLedger) = sumSalesLedger(salesLedger)/quantitySalesLedger(salesLedger);
@@ -32,6 +36,7 @@ valueVATSalesLedger 'НДС, %' (ledger) = valueRateRangeDate(VATSalesLedger(led
 sumVATSalesLedger 'Сумма НДС' (ledger) = [X*Y/(100+Y)](
         sumSalesLedger(ledger), valueVATSalesLedger(ledger));
 
+
 markupSumSalesLedger 'Надбавка' (ledger) = sumSalesLedger(ledger) - sumVATSalesLedger(ledger) - costSumSkuLedger(ledger);
 
 quantitySoldSkuStockDate (sku, stock, date) = GROUP SUM quantitySalesLedger(ledger) IF isPostedSalesLedger(ledger)
@@ -39,6 +44,7 @@ quantitySoldSkuStockDate (sku, stock, date) = GROUP SUM quantitySalesLedger(ledg
 
 sumSoldSkuStockDate (sku, stock, date) = GROUP SUM sumSalesLedger(ledger) IF isPostedSalesLedger(ledger)
     BY skuSalesLedger(ledger), stockSalesLedger(ledger), dateSalesLedger(ledger) PERSISTENT;
+
 
 quantitySoldSkuStockWeekDateFromTo 'Продано за неделю (кол-во)' (sku, stock, week, dateFrom, dateTo) = GROUP SUM
         quantitySoldSkuStockDate(sku, stock, date) AND date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
@@ -67,6 +73,18 @@ quantitySoldSkuStockDateFromTo 'Продано за интервал (кол-в�
 sumSoldSkuStockDateFromTo 'Продано за интервал (сумма)' (sku, stock, dateFrom, dateTo) = GROUP SUM
         sumSoldSkuStockDate(sku, stock, date) AND date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
         BY sku, stock, dateFrom, dateTo;
+
+//---------------------------------Тип обмена---------------------------------------//
+
+sumSoldTypeExchangeSkuStockDate (typeExchange, sku, stock, date)= roundCurrency((sumSoldSkuStockDate (sku, stock, date)/ rateTypeExchangeCurrencyDate(typeExchange, currencyStock(stock), date)), currencyTypeExchange(typeExchange));
+
+sumSoldTypeExchangeSkuStockDateFromTo 'Продано за интервал (сумма-валюта)' (typeExchange, sku, stock, dateFrom, dateTo) = GROUP SUM
+        sumSoldTypeExchangeSkuStockDate (typeExchange, sku, stock, date) AND date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
+        BY typeExchange, sku, stock, dateFrom, dateTo;
+
+sumSoldTypeExchangeSkuDateFromTo 'Продано за интервал (сумма-валюта)' (typeExchange, sku, dateFrom, dateTo) = GROUP SUM
+        sumSoldTypeExchangeSkuStockDateFromTo(typeExchange, sku, stock, dateFrom, dateTo) BY typeExchange, sku, dateFrom, dateTo;
+
 
 skuStockAverageInterval 'Интервал расчета продаж в день' = DATA INTEGER ();
 
@@ -108,21 +126,35 @@ EXTEND DESIGN options {
 
 FORM salesLedger 'Продажи по позициям'
 
-    OBJECTS (dFrom = DATE, dTo = DATE) FIXED PANEL
-    PROPERTIES OBJVALUE(dFrom), OBJVALUE(dTo)
+    OBJECTS dates = (dFrom = DATE, dTo = DATE, te=typeExchange) FIXED PANEL
+    PROPERTIES valFrom = OBJVALUE(dFrom), valTo = OBJVALUE(dTo), nameType = name(te) SELECTOR, nameCurrencyTypeExchange(te) READONLY
 
     OBJECTS s = salesLedger
     PROPERTIES(s) READONLY dateSalesLedger, dateTimeSalesLedger, nameStockSalesLedger, nameSkuSalesLedger, descriptionSalesLedger,
                            quantitySalesLedger, costSumSkuLedger, markupSumSalesLedger, sumVATSalesLedger, sumSalesLedger, averagePriceSalesLedger
+    PROPERTIES    READONLY sumSoldTypeExchangeSalesLedger (te, s)
     FILTERS isPostedSalesLedger(s)
     FILTERS dateSalesLedger(s) >= dFrom, dateSalesLedger(s) <= dTo
 ;
-
+DESIGN salesLedger FROM DEFAULT {
+    main {
+        childConstraints = TO THE BOTTOM;
+        ADD dates.box {
+            childConstraints = TO THE RIGHT;
+            PROPERTY(nameCurrencyTypeExchange(te)) { caption = 'Валюта'; preferredCharWidth = 20;}
+            PROPERTY(nameType) { caption = 'Тип обмена'; preferredCharWidth = 20;}
+        }
+        ADD s.box{
+            childConstraints = TO THE BOTTOM;
+        }
+    }
+    ADD functions.box;
+}
 
 FORM salesSkuStock 'Продажи по SKU'
 
-    OBJECTS dates = (dFrom = DATE, dTo = DATE) FIXED PANEL
-    PROPERTIES OBJVALUE(dFrom), OBJVALUE(dTo)
+    OBJECTS dates = (dFrom = DATE, dTo = DATE, te=typeExchange) FIXED PANEL
+    PROPERTIES valFrom = OBJVALUE(dFrom), valTo = OBJVALUE(dTo), nameType = name(te) SELECTOR, nameCurrencyTypeExchange(te) READONLY
 
     OBJECTS w = INTEGER
     FILTERS quantitySkuSoldWeekDateFromTo(w, dFrom, dTo)
@@ -145,7 +177,7 @@ FORM salesSkuStock 'Продажи по SKU'
 
     PROPERTIES        balanceBSkuStockDate(s, st, dFrom), quantitySoldSkuStockWeekDateFromTo(s, st, w, dFrom, dTo)  COLUMNS (w) HEADER castToString4 (w),
                       quantitySoldSkuStockDateFromTo(s, st, dFrom, dTo),
-                      balanceASkuStockDate(s, st, dTo), sumSoldSkuStockDateFromTo (s, st, dFrom, dTo)
+                      balanceASkuStockDate(s, st, dTo), sumSoldSkuStockDateFromTo (s, st, dFrom, dTo),  sumSoldTypeExchangeSkuStockDateFromTo(te,s, st, dFrom, dTo)
 
     FILTERGROUP filtersSold
         FILTER 'Показывать проданные за интервал' 'F11' quantitySoldSkuStockDateFromTo(s, st, dFrom, dTo)
@@ -175,7 +207,11 @@ DESIGN salesSkuStock FROM DEFAULT {
                 fillHorizontal = 2;
                 childConstraints = TO THE BOTTOM;
 
-                ADD dates.box;
+                ADD dates.box {
+                    childConstraints = TO THE RIGHT;
+                    PROPERTY(nameCurrencyTypeExchange(te)) { caption = 'Валюта'; preferredCharWidth = 20;}
+                    PROPERTY(nameType) { caption = 'Тип обмена'; preferredCharWidth = 20;}
+                };
                 REMOVE w.box;
                 ADD sts.box { fillVertical = 2; }
 

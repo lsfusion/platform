@@ -41,10 +41,30 @@ quantitySoldArticleDateFromTo 'Продано за интервал (кол-во
 sumSoldArticleDateFromTo 'Продано за интервал (сумма)' (article, dateFrom, dateTo) = GROUP SUM
         sumSoldArticleStockDateFromTo(article, stock, dateFrom, dateTo) BY article, dateFrom, dateTo;
 
+//---------------------------------Тип обмена---------------------------------------//
+
+sumSoldTypeExchangeArticleStockDate (typeExchange, article, stock, date)= roundCurrency((sumSoldArticleStockDate (article, stock, date)/ rateTypeExchangeCurrencyDate(typeExchange, currencyStock(stock), date)), currencyTypeExchange(typeExchange));
+
+sumSoldTypeExchangeArticleStockDateFromTo 'Продано за интервал (сумма-валюта)' (typeExchange, article, stock, dateFrom, dateTo) = GROUP SUM
+        sumSoldTypeExchangeArticleStockDate (typeExchange, article, stock, date) AND date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
+        BY typeExchange, article, stock, dateFrom, dateTo;
+
+sumSoldTypeExchangeArticleDateFromTo 'Продано за интервал (сумма-валюта)' (typeExchange, article, dateFrom, dateTo) = GROUP SUM
+        sumSoldTypeExchangeArticleStockDateFromTo(typeExchange, article, stock, dateFrom, dateTo) BY typeExchange, article, dateFrom, dateTo;
 
 EXTEND FORM salesSkuStock
 //    PROPERTIES FORCE GRID nameCategoryArticleSku(s) BEFORE name(st), nameBrandSupplierArticleSku(s) BEFORE name(st), sidColorSupplierItem(s) BEFORE name(st), sidSizeSupplierItem(s) BEFORE name(st)
     PROPERTIES FORCE GRID AFTER nameSku(s) nameThemeSupplierArticleSku(s), nameSubCategorySupplierArticleSku(s), nameCategorySupplierArticleSku(s), nameBrandSupplierArticleSku(s), nameSupplierArticleSku(s), sidArticleSku(s)
 ;
 
+nameThemeSupplierSalesLedger 'Тема' (salesLedger) = nameThemeSupplierArticleSku(skuSalesLedger(salesLedger));
+nameSubCategorySupplierSalesLedger 'Подгруппа' (salesLedger) = nameSubCategorySupplierArticleSku(skuSalesLedger(salesLedger));
+nameCategorySupplierSalesLedger 'Группа' (salesLedger) = nameCategorySupplierArticleSku(skuSalesLedger(salesLedger));
+nameBrandSupplierSalesLedger 'Бренд' (salesLedger) = nameBrandSupplierArticleSku(skuSalesLedger(salesLedger));
+nameSupplierSalesLedger 'Поставщик' (salesLedger) = nameSupplierArticleSku(skuSalesLedger(salesLedger));
+sidArticleSalesLedger 'Артикул' (salesLedger) = sidArticleSku(skuSalesLedger(salesLedger));
+
+EXTEND FORM salesLedger
+    PROPERTIES FORCE GRID AFTER nameSkuSalesLedger(s) nameThemeSupplierSalesLedger(s), nameSubCategorySupplierSalesLedger(s), nameCategorySupplierSalesLedger(s), nameBrandSupplierSalesLedger(s), nameSupplierSalesLedger(s), sidArticleSalesLedger(s)
+;
 
