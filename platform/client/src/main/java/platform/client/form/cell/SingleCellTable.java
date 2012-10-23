@@ -20,9 +20,8 @@ public abstract class SingleCellTable extends ClientPropertyTable {
 
     private final SingleCellTableModel model;
 
-    public SingleCellTable(boolean readOnly, ClientGroupObjectValue columnKey) {
-        //todo: удалить readOnly, т.к. сейчас сюда всегда приходит false
-        super(new SingleCellTableModel(readOnly, columnKey));
+    public SingleCellTable(ClientGroupObjectValue columnKey) {
+        super(new SingleCellTableModel(columnKey));
 
         model = (SingleCellTableModel) getModel();
 

@@ -60,4 +60,11 @@ public class EditBindingMap {
     public void setMouseAction(String actionSID) {
         mouseBinding = actionSID;
     }
+
+    public static boolean isEditableAwareEditEvent(String actionSID) {
+        return ServerResponse.CHANGE.equals(actionSID)
+                || ServerResponse.CHANGE_WYS.equals(actionSID)
+                || ServerResponse.EDIT_OBJECT.equals(actionSID)
+                || ServerResponse.GROUP_CHANGE.equals(actionSID);
+    }
 }

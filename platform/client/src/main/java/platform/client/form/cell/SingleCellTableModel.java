@@ -6,15 +6,12 @@ import platform.client.logics.ClientPropertyDraw;
 import javax.swing.table.AbstractTableModel;
 
 final class SingleCellTableModel extends AbstractTableModel {
-    private final boolean readOnly;
-
     private final ClientGroupObjectValue columnKey;
     private ClientPropertyDraw property;
     private Object value;
 
-    public SingleCellTableModel(boolean readOnly, ClientGroupObjectValue columnKey) {
+    public SingleCellTableModel(ClientGroupObjectValue columnKey) {
         this.columnKey = columnKey;
-        this.readOnly = readOnly;
     }
 
     public ClientPropertyDraw getProperty() {
@@ -46,7 +43,7 @@ final class SingleCellTableModel extends AbstractTableModel {
     }
 
     public boolean isCellEditable(int row, int col) {
-        return !readOnly;
+        return true;
     }
 
     public Object getValueAt(int row, int col) {

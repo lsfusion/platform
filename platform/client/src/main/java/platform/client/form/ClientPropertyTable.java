@@ -22,6 +22,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseListener;
 import java.util.EventObject;
 
+import static platform.client.form.EditBindingMap.isEditableAwareEditEvent;
+
 public abstract class ClientPropertyTable extends JTable implements TableTransferHandler.TableInterface, CellTableInterface, EditPropertyHandler {
     private final EditPropertyDispatcher editDispatcher = new EditPropertyDispatcher(this);
     protected final EditBindingMap editBindingMap = new EditBindingMap();
@@ -71,16 +73,17 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
             return false;
         }
 
-        if (!isCellEditable(row, column)) {
+        ClientPropertyDraw property = getProperty(row, column);
+        ClientGroupObjectValue columnKey = getColumnKey(row, column);
+
+        String actionSID = getEditActionSID(e, property);
+
+        if (isEditableAwareEditEvent(actionSID) && !isCellEditable(row, column)) {
             return false;
         }
 
         quickLog("formTable.editCellAt: " + e);
 
-        ClientPropertyDraw property = getProperty(row, column);
-        ClientGroupObjectValue columnKey = getColumnKey(row, column);
-
-        String actionSID = getEditActionSID(e, property);
         if (actionSID != null) {
             editRow = row;
             editCol = column;

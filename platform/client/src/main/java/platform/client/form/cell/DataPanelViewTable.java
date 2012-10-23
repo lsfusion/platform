@@ -14,7 +14,7 @@ public class DataPanelViewTable extends SingleCellTable {
     private Color foregroundColor;
 
     public DataPanelViewTable(ClientFormController form, DataPanelView valueCellView, ClientGroupObjectValue columnKey, ClientPropertyDraw property) {
-        super(false, columnKey);
+        super(columnKey);
 
         this.form = form;
         this.valueCellView = valueCellView;

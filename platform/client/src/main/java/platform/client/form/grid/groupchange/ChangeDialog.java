@@ -248,7 +248,7 @@ public class ChangeDialog extends JDialog {
 
         private class ExactValueTable extends SingleCellTable {
             public ExactValueTable() {
-                super(false, new ClientGroupObjectValue());
+                super(new ClientGroupObjectValue());
             }
 
             protected void pasteValue(Object value) {

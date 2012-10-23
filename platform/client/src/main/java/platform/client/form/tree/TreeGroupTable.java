@@ -36,6 +36,8 @@ import java.text.ParseException;
 import java.util.*;
 import java.util.List;
 
+import static platform.client.form.EditBindingMap.isEditableAwareEditEvent;
+
 public class TreeGroupTable extends ClientFormTreeTable implements CellTableInterface, EditPropertyHandler {
     private final EditPropertyDispatcher editDispatcher = new EditPropertyDispatcher(this);
     private final SimpleChangePropertyDispatcher pasteDispatcher;
@@ -585,14 +587,6 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
             return false;
         }
 
-        if (!isCellEditable(row, column)) {
-            return false;
-        }
-
-        if (isHierarchical(column)) {
-            return false;
-        }
-
         ClientPropertyDraw property = getProperty(row, column);
         if (property == null) {
             return false;
@@ -604,6 +598,14 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         }
 
         String actionSID = getEditActionSID(e, property);
+        if (isEditableAwareEditEvent(actionSID) && !isCellEditable(row, column)) {
+            return false;
+        }
+
+        if (isHierarchical(column)) {
+            return false;
+        }
+
         if (actionSID != null) {
             editRow = row;
             editCol = column;
