@@ -215,7 +215,7 @@ countProcessPriceTransactionDocument 'Кол-во ожидающих транз�
 
 succeededPriceTransactionDocument 'Загружен в оборудование' (document) = sentPriceTransactionDocument (document) AND NOT countProcessPriceTransactionDocument(document);
 
-statusEquipmentPriceTransactionDocument 'Статус загрузки в оборудование' (document) =
+statusMachineryPriceTransactionDocument 'Статус загрузки в оборудование' (document) =
                                                         CASE
                                                             WHEN succeededPriceTransactionDocument(document) THEN 'Успешно загружен' IF document IS priceTransactionDocument
                                                             WHEN sentPriceTransactionDocument(document) THEN 'Принят к загрузке' IF document IS priceTransactionDocument
@@ -358,6 +358,186 @@ DESIGN machineryPriceTransactions FROM DEFAULT {
         ADD functions.box;
     }
 }
+
+// ------------------------------------------------ Действия по загрузке ------------------------------------ //
+
+createMachineryPriceTransactionGroupMachinery = ABSTRACT ACTION (groupMachinery);
+
+overInGroupMachinerySku = ABSTRACT BOOLEAN (groupMachinery, sku);
+inGroupMachinerySku 'Вкл' (groupMachinery, sku) = groupMachinery IS groupMachinery
+                                                    AND sku IS sku
+                                                         AND NOT (filterSkuGroupMachinery(groupMachinery) AND NOT inGroupMachinerySkuGroup(groupMachinery, skuGroupSku(sku)))
+                                                         AND NOT overInGroupMachinerySku(groupMachinery, sku);
+
+// Перезагрузка целиком
+snapshotAttributeMachineryPriceTransactionGroupMachinery = ABSTRACT ACTION (machineryPriceTransaction, groupMachinery);
+
+snapshotGroupMachineryDepartmentStore 'Перезагрузить прайс' = ACTION (stock) NEWSESSION {
+    FORM groupMachineryInput OBJECTS s = (stock AS stock) MODAL;
+    IF formResult() == formResult.ok THEN {
+        LOCAL groupMachinery = groupMachinery ();
+        SET groupMachinery() <- chosenObject('g');
+        EXEC createMachineryPriceTransactionGroupMachinery(groupMachinery());
+        FOR t == addedObject() DO {
+            SET groupMachineryMachineryPriceTransaction(t) <- groupMachinery();
+            SET commentMachineryPriceTransaction(t) <- 'Перезагрузка прайса целиком';
+            SET snapshotMachineryPriceTransaction(t) <- TRUE;
+            SET inMachineryPriceTransactionMachinery(t, machinery) <- selectedMachinery(machinery);
+            SET inMachineryPriceTransactionBarcode(t, barcode) <- TRUE AND lastTransactionBarcodeGroupMachinery(barcode, groupMachinery())
+                                                                       AND inGroupMachinerySku(groupMachinery(), skuBarcode(barcode)) // важно, что товар должен быть активным на текущий момент
+                                                                       AND activeBarcode(barcode);
+            SET nameMachineryPriceTransactionBarcode(t, barcode) <- transactionNameBarcodeGroupMachinery(barcode, groupMachinery());
+            EXEC snapshotAttributeMachineryPriceTransactionGroupMachinery(t, groupMachinery());
+            SET priceMachineryPriceTransactionBarcode(t, barcode) <- transactionPriceBarcodeGroupMachinery(barcode, groupMachinery());
+        }
+        EXEC apply();
+    }
+} CONFIRM IN snapshotMachineryPriceGroup;
+
+// Инкрементная загрузка
+GROUP incrementMachineryPriceGroup 'Инкрементная загрузка' : publicGroup;
+
+priceBarcodeGroupMachinery 'Цена' (barcode, groupMachinery) = ABSTRACT NUMERIC[14,2] (barcode, groupMachinery);
+
+createMachineryPriceTransactionSnapshot = SESSION DATA BOOLEAN ();
+
+createMachineryPriceTransactionSku = SESSION DATA BOOLEAN (sku);
+createMachineryPriceTransactionBarcodeGroupMachinery (barcode, groupMachinery) = createMachineryPriceTransactionSku(skuBarcode(barcode)) // если передали параметром
+                                                                                 AND inGroupMachinerySku(groupMachinery, skuBarcode(barcode)) // если на эту группу оборудования должна закачиваться
+                                                                                 AND activeBarcode(barcode) // если активный штрих-код
+                                                                                 AND priceBarcodeGroupMachinery(barcode, groupMachinery); // если есть цена розничная
+
+createMachineryPriceTransactionDocument = SESSION DATA priceTransactionDocument();
+createMachineryPriceTransactionComment = SESSION DATA STRING[20] ();
+
+createAttributeMachineryPriceTransaction = ABSTRACT ACTION (machineryPriceTransaction);
+createAttributeMachineryPriceTransactionStock = ABSTRACT ACTION (machineryPriceTransaction, stock);
+createAttributeMachineryPriceTransactionGroupMachinery = ABSTRACT ACTION (machineryPriceTransaction, groupMachinery);
+
+createMachineryPriceTransaction 'Создать транзакцию' = ACTION (stock) {
+    LOCAL message = STRING[3000] ();
+    LOCAL sentSomething = BOOLEAN();
+    SET message() <- 'Принято к загрузке в оборудование : \n';
+
+    FOR stockGroupMachinery(groupMachinery) == stock DO {
+        LOCAL inBarcode = BOOLEAN (barcode);
+        IF createMachineryPriceTransactionSnapshot() THEN
+            SET inBarcode(barcode) <- createMachineryPriceTransactionBarcodeGroupMachinery(barcode, groupMachinery)
+        ELSE
+            SET inBarcode(barcode) <- createMachineryPriceTransactionBarcodeGroupMachinery(barcode, groupMachinery)
+                                        AND NOT (priceBarcodeGroupMachinery(barcode, groupMachinery) == transactionPriceBarcodeGroupMachinery(barcode, groupMachinery)); // если цена изменилась
+
+        LOCAL countBarcode = INTEGER();
+        SET countBarcode() <- [GROUP SUM 1 IF inBarcode(barcode)]();
+        IF countBarcode() THEN {
+            EXEC createMachineryPriceTransactionGroupMachinery(groupMachinery);
+            FOR t == addedObject() DO {
+                SET groupMachineryMachineryPriceTransaction(t) <- groupMachinery AS groupMachinery;
+                SET priceTransactionDocumentMachineryPriceTransaction(t) <- createMachineryPriceTransactionDocument();
+                SET commentMachineryPriceTransaction(t) <- createMachineryPriceTransactionComment();
+                SET inMachineryPriceTransactionBarcode(t, barcode) <- inBarcode(barcode);
+                EXEC createAttributeMachineryPriceTransaction(t);
+                EXEC createAttributeMachineryPriceTransactionStock(t, stock);
+                EXEC createAttributeMachineryPriceTransactionGroupMachinery(t, groupMachineryMachineryPriceTransaction(t));
+                SET priceMachineryPriceTransactionBarcode(t, barcode) <- priceBarcodeGroupMachinery(barcode, groupMachinery) WHERE inMachineryPriceTransactionBarcode(t, barcode);
+            }
+            SET message() <- [FORMULA STRING[3000] '$1 || $2 || \' - \' || CAST($3 as text) || \' товаров.\'\n']
+                             (message(), nameGroupMachinery(groupMachinery), countBarcode());
+            SET sentSomething() <- TRUE;
+        }
+    }
+
+    IF sentSomething() THEN
+        MESSAGE message()
+    ELSE
+        MESSAGE 'Загрузка прайса в оборудование не требуется.';
+};
+
+createBalanceMachineryPriceTransaction 'Остатки' = ACTION (stock) NEWSESSION AUTOAPPLY {
+    SET createMachineryPriceTransactionSku(sku) <- TRUE IF currentBalanceSkuStock(sku, stock);
+    SET createMachineryPriceTransactionComment() <- 'Инкрементная загрузка остатков';
+    EXEC createMachineryPriceTransaction(stock AS stock);
+} CONFIRM IN incrementMachineryPriceGroup;
+
+createPriceMachineryPriceTransactionSkuStock = ABSTRACT BOOLEAN (sku, stock);
+createPriceMachineryPriceTransaction 'Все товары' = ACTION (stock) NEWSESSION AUTOAPPLY {
+    SET createMachineryPriceTransactionSku(sku) <- createPriceMachineryPriceTransactionSkuStock(sku, stock);
+    SET createMachineryPriceTransactionComment() <- 'Инкрементная загрузка товаров';
+    EXEC createMachineryPriceTransaction(stock AS stock);
+} CONFIRM IN incrementMachineryPriceGroup;
+
+EXTEND FORM machineryPriceTransactions
+    PROPERTIES(s) createBalanceMachineryPriceTransaction, createPriceMachineryPriceTransaction, snapshotGroupMachineryDepartmentStore
+;
+
+// -------------------- Создание новых атрибутов ----------------- //
+
+META defineMachineryPriceTransactionAttributeBase(object, caption, nameProp)
+    transaction###object##BarcodeGroupMachinery caption###' (тек.)' (barcode, groupMachinery)  =
+        object##MachineryPriceTransactionBarcode(lastTransactionBarcodeGroupMachinery(barcode, groupMachinery), barcode);
+
+    snapshotAttributeMachineryPriceTransactionGroupMachinery(t, groupMachinery) +=
+        ACTION SET object##MachineryPriceTransactionBarcode(t, barcode) <- transaction###object##BarcodeGroupMachinery(barcode, groupMachinery);
+
+    EXTEND FORM machineryPriceTransaction PROPERTIES(t, b) nameProp###object##MachineryPriceTransactionBarcode;
+    EXTEND FORM machineryPriceTransactions PROPERTIES(t, b) READONLY nameProp###object##MachineryPriceTransactionBarcode;
+END
+
+META defineMachineryPriceTransactionAttribute(object, caption)
+    @defineMachineryPriceTransactionAttribute(object, caption, );
+END
+META defineMachineryPriceTransactionAttribute(object, caption, nameProp)
+    @defineMachineryPriceTransactionAttributeBase(object, caption, nameProp);
+    createAttributeMachineryPriceTransaction(t) += ACTION SET object##MachineryPriceTransactionBarcode(t, barcode) <- object##Barcode(barcode)
+                                                          WHERE inMachineryPriceTransactionBarcode(t, barcode);
+END
+
+META defineMachineryPriceTransactionAttributeStock(object, caption)
+    @defineMachineryPriceTransactionAttributeStock(object, caption, );
+END
+META defineMachineryPriceTransactionAttributeStock(object, caption, nameProp)
+    @defineMachineryPriceTransactionAttributeBase(object, caption, nameProp);
+    createAttributeMachineryPriceTransactionStock(t, stock) += ACTION SET object##MachineryPriceTransactionBarcode(t, barcode) <- object##BarcodeStock(barcode, stock)
+                                                                      WHERE inMachineryPriceTransactionBarcode(t, barcode);
+END
+
+// --------------- Атрибуты по умолчанию ------------------ //
+skuGroupMachineryPriceTransactionBarcode = DATA skuGroup (machineryPriceTransaction, barcode);
+canonicalNameSkuGroupMachineryPriceTransactionBarcode 'Группа товара' (transaction, barcode) = canonicalNameSkuGroup(skuGroupMachineryPriceTransactionBarcode(transaction, barcode));
+@defineMachineryPriceTransactionAttribute(skuGroup, 'Группа товара', canonicalName);
+
+
+// Подключение свойств к документу
+META defineDocumentMachineryPriceTransaction (document, skuProp, stockProp)
+    create###document##MachineryPriceTransaction 'Загрузить в оборудование' = ACTION (document) NEWSESSION AUTOAPPLY {
+        SET createMachineryPriceTransactionSku(sku) <- TRUE IF quantity###document##Detail###skuProp###document(sku, document);
+        SET createMachineryPriceTransactionDocument() <- document AS priceTransactionDocument;
+        EXEC createMachineryPriceTransaction(stockProp###document(document));
+        SET sentPriceTransactionDocument(document) <- TRUE;
+    } TOOLBAR CONFIRM;
+
+    createSnapshot###document##MachineryPriceTransaction 'Перегрузить все позиции' = ACTION (document) NEWSESSION AUTOAPPLY {
+        SET createMachineryPriceTransactionSnapshot() <- TRUE;
+        SET createMachineryPriceTransactionSku(sku) <- TRUE IF quantity###document##Detail###skuProp###document(sku, document);
+        SET createMachineryPriceTransactionDocument() <- document AS priceTransactionDocument;
+        EXEC createMachineryPriceTransaction(stockProp###document(document));
+        SET sentPriceTransactionDocument(document) <- TRUE;
+    } SHORTCUT statusMachineryPriceTransactionDocument CONFIRM;
+
+    showCreateMachineryPriceTransaction###document 'Показывать' (document) = isPosted###document(document) AND NOT sentPriceTransactionDocument(document);
+    backgroundCreateMachineryPriceTransaction###document 'Цвет' (document) = IF countProcessPriceTransactionDocument(document) THEN
+                                                                                RGB(255,255,128)
+                                                                             ELSE
+                                                                                RGB(212,255,212) IF showCreateMachineryPriceTransaction###document(document);
+END
+
+META extendFormDocumentMachineryPriceTransaction(form, object, document)
+    EXTEND FORM form
+        PROPERTIES(object) statusMachineryPriceTransactionDocument BACKGROUND backgroundCreateMachineryPriceTransaction###document(object) READONLY,
+                           create###document###MachineryPriceTransaction FORCE PANEL SHOWIF showCreateMachineryPriceTransaction###document(object),
+                           createSnapshot###document###MachineryPriceTransaction SHOWIF isPosted###document(object)
+    ;
+END
 
 // ------------------------------------------------ Стандартные значения ------------------------------------ //
 

@@ -149,7 +149,7 @@ META defineOrder(sign, contact)
 
 //-- SKU
     @defineDocumentSkuStock(userOrder);
-    @extendDocumentFormSkuStock(userOrder, userOrder, o);
+    @extendFormDocumentSkuStock(userOrder, userOrder, o);
 
 
     addUserOrder 'Добавить' = ACTION ADDFORM userOrder;

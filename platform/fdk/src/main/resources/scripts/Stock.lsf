@@ -1129,6 +1129,7 @@ DESIGN stocks FROM DEFAULT {
             ADD s.box {
                 s.grid {
                     defaultComponent = TRUE;
+                    fillHorizontal = 2;
                 }
             }
         }

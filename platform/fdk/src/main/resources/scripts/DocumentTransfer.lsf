@@ -515,14 +515,14 @@ META defineDocumentSkipSkuLedgerCustom(object, detail)
 END
 
 
-META extendDocumentFormSkipSkuLedgerCustom(form, object, concrete)
+META extendFormDocumentSkipSkuLedgerCustom(form, object, concrete)
 
     EXTEND FORM form
         PROPERTIES(object) skipSkuLedger###concrete
 
     ;
 END
-META extendDocumentFormSkipSkuLedgerCustomReadonly(form, object, concrete)
+META extendFormDocumentSkipSkuLedgerCustomReadonly(form, object, concrete)
 
     EXTEND FORM form
         PROPERTIES(object) READONLY skipSkuLedger###concrete

@@ -32,7 +32,7 @@ META defineDocumentDetailSkuArticle (object)
     shortNameUOM###object##Detail 'Единица измерения' (object##Detail) = shortNameUOMSku(sku###object##Detail(object##Detail));
 END
 
-META extendDocumentFormDetailSkuArticleQuantity (form, object, concrete, quantityProp)
+META extendFormDocumentDetailSkuArticleQuantity (form, object, concrete, quantityProp)
     EXTEND FORM form
         PROPERTIES(object) index###concrete##Detail, barcode###concrete##Detail,
                            nameCategory###concrete##Detail, nameBrand###concrete##Detail,
@@ -42,11 +42,11 @@ META extendDocumentFormDetailSkuArticleQuantity (form, object, concrete, quantit
                            ADDOBJ, delete
     ;
 END
-META extendDocumentFormDetailSkuArticle (form, object, concrete)
-    @extendDocumentFormDetailSkuArticleQuantity(form, object, concrete, quantity###concrete##Detail);
+META extendFormDocumentDetailSkuArticle (form, object, concrete)
+    @extendFormDocumentDetailSkuArticleQuantity(form, object, concrete, quantity###concrete##Detail);
 END
 
-META extendDocumentFormDetailSkuArticleReadonlyQuantity (form, object, concrete, quantityProp)
+META extendFormDocumentDetailSkuArticleReadonlyQuantity (form, object, concrete, quantityProp)
     EXTEND FORM form
         PROPERTIES(object) READONLY index###concrete##Detail, barcode###concrete##Detail,
                                     nameCategory###concrete##Detail, nameBrand###concrete##Detail,
@@ -55,8 +55,8 @@ META extendDocumentFormDetailSkuArticleReadonlyQuantity (form, object, concrete,
                                     quantityProp, shortNameUOM###concrete##Detail
     ;
 END
-META extendDocumentFormDetailSkuArticleReadonly (form, object, concrete)
-    @extendDocumentFormDetailSkuArticleReadonlyQuantity(form, object, concrete, quantity###concrete##Detail);
+META extendFormDocumentDetailSkuArticleReadonly (form, object, concrete)
+    @extendFormDocumentDetailSkuArticleReadonlyQuantity(form, object, concrete, quantity###concrete##Detail);
 END
 
 //---------------------------Несколько Detail у документа------------------------------------------------//
@@ -78,7 +78,7 @@ META defineDocumentDetailSkuArticleCustom (idetail)
     shortNameUOM###idetail 'Единица измерения' (idetail) = shortNameUOMSku(sku###idetail(idetail));
 END
 
-META extendDocumentFormDetailSkuArticleQuantityCustom (form, object, idetail, quantityProp)
+META extendFormDocumentDetailSkuArticleQuantityCustom (form, object, idetail, quantityProp)
     EXTEND FORM form
         PROPERTIES(object) index###idetail, barcode###idetail,
                            nameCategory###idetail, nameBrand###idetail,
@@ -88,11 +88,11 @@ META extendDocumentFormDetailSkuArticleQuantityCustom (form, object, idetail, qu
                            ADDOBJ, delete
     ;
 END
-META extendDocumentFormDetailSkuArticleCustom (form, object, idetail)
-    @extendDocumentFormDetailSkuArticleQuantityCustom(form, object, idetail, quantity###idetail);
+META extendFormDocumentDetailSkuArticleCustom (form, object, idetail)
+    @extendFormDocumentDetailSkuArticleQuantityCustom(form, object, idetail, quantity###idetail);
 END
 
-META extendDocumentFormDetailSkuArticleReadonlyQuantityCustom (form, object, idetail, quantityProp)
+META extendFormDocumentDetailSkuArticleReadonlyQuantityCustom (form, object, idetail, quantityProp)
     EXTEND FORM form
         PROPERTIES(object) READONLY index###idetail, barcode###idetail,
                                     nameCategory###idetail, nameBrand###idetail,
@@ -101,8 +101,8 @@ META extendDocumentFormDetailSkuArticleReadonlyQuantityCustom (form, object, ide
                                     quantityProp, shortNameUOM###idetail
     ;
 END
-META extendDocumentFormDetailSkuArticleReadonlyCustom (form, object, idetail)
-    @extendDocumentFormDetailSkuArticleReadonlyQuantityCustom(form, object, idetail, quantity###idetail);
+META extendFormDocumentDetailSkuArticleReadonlyCustom (form, object, idetail)
+    @extendFormDocumentDetailSkuArticleReadonlyQuantityCustom(form, object, idetail, quantity###idetail);
 END
 
 

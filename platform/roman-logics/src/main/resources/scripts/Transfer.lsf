@@ -33,8 +33,8 @@ CONSTRAINT companyTransferOut(transferOut) != destinationCompanyTransferOut(tran
     MESSAGE 'Перемещение товаров должно идти между складами одной компании';
 
 @defineDocumentDetailSkuArticle(transferOut);
-@extendDocumentFormDetailSkuArticle(transferOut, d, transferOut);
-@extendDocumentFormDetailSkuArticleReadonly(transferOuts, d, transferOut);
+@extendFormDocumentDetailSkuArticle(transferOut, d, transferOut);
+@extendFormDocumentDetailSkuArticleReadonly(transferOuts, d, transferOut);
 
 // Перемещение по договорам комиссии
 commissionContractSkuTransferOut = DATA contractSku (transferOut);
@@ -61,7 +61,7 @@ commissionContractSkuTransferOutDetail (detail) = commissionContractSkuTransferO
 @defineDocumentTransferOutBatch(transfer, sku);
 @defineDocumentFormTransferOutBatch(transfer);
 
-@extendDocumentFormDetailSkuArticleReadonly(transferOuts, o, transferOutBatch);
+@extendFormDocumentDetailSkuArticleReadonly(transferOuts, o, transferOutBatch);
 
 @defineDocumentRetailPrice(transferOut, d);
 
@@ -75,8 +75,8 @@ EXTEND FORM transferOuts
 ;
 
 @defineDocumentSkipSkuLedgerCustom(transferOut, transferOutDetail);
-@extendDocumentFormSkipSkuLedgerCustom(transferOut, t, transferOut);
-@extendDocumentFormSkipSkuLedgerCustomReadonly(transferOuts, t, transferOut);
+@extendFormDocumentSkipSkuLedgerCustom(transferOut, t, transferOut);
+@extendFormDocumentSkipSkuLedgerCustomReadonly(transferOuts, t, transferOut);
 
 // Проводим по регистру
 @implementSkuLedger(transferOut, sku, stock);
@@ -163,8 +163,8 @@ skipSkuLedgerTransferInDetail (detail) = skipSkuLedgerTransferOutDetail(transfer
 commissionContractSkuTransferInDetail (detail) = commissionContractSkuTransferOutDetail(transferOutDetailTransferInDetail(detail));
 
 @defineDocumentDetailSkuArticle(transferIn);
-@extendDocumentFormDetailSkuArticleReadonly(transferIns, d, transferIn);
-@extendDocumentFormSkipSkuLedgerCustomReadonly(transferIns, t, transferIn);
+@extendFormDocumentDetailSkuArticleReadonly(transferIns, d, transferIn);
+@extendFormDocumentSkipSkuLedgerCustomReadonly(transferIns, t, transferIn);
 
 useRetailPriceTransferInDetail(detail) = stockTransferInDetail(detail) IS departmentStore OR commissionContractSkuTransferInDetail(detail) IS contractSku;
 @defineDocumentTransferAccount(transferIn, useRetailPriceTransferInDetail);
@@ -188,9 +188,9 @@ CLASS transferRecDetail 'Строка приемки товаров по нак�
 @defineDocumentFormTransferRec(transfer, 'Приемка товаров по накладным (перемещение)');
 
 @defineDocumentDetailSkuArticle(transferRec);
-@extendDocumentFormDetailSkuArticle(transferRec, d, transferRec);
+@extendFormDocumentDetailSkuArticle(transferRec, d, transferRec);
 
-@extendDocumentFormDetailSkuArticleReadonly(transferIns, r, transferRec);
+@extendFormDocumentDetailSkuArticleReadonly(transferIns, r, transferRec);
 
 // ---------------------------------------- Акт расхождений ------------------------------------ //
 CLASS transferDiff 'Акт расхождений приемки товаров по накладной (перемещение)' : historyObject;
@@ -203,7 +203,7 @@ CLASS transferDiffSDetail 'Строка расхождений акта прие
 @defineDocumentFormTransferDiff(transfer);
 
 @defineDocumentDetailSkuArticle(transferDiff);
-@extendDocumentFormDetailSkuArticleReadonlyQuantity(transferIns, f, transferDiff, signedQuantityTransferDiffDetail);
+@extendFormDocumentDetailSkuArticleReadonlyQuantity(transferIns, f, transferDiff, signedQuantityTransferDiffDetail);
 
 costTransferDiffEDetail(detail) = 0.0 IF detail IS transferDiffEDetail;
 @implementBatch(transferDiffE, sku, stock, cost);

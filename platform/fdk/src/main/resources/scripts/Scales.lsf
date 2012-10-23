@@ -9,8 +9,8 @@ stockGroupScales = DATA stock (groupScales);
 stockGroupMachinery (groupMachinery) += stockGroupScales(groupMachinery);
 
 directoryGroupScales 'Каталог обмена' = DATA STRING[200] (groupScales) IN baseGroup;
-pieceItemCodeGroupScales 'Код для штучных товаров' = DATA STRING[2] (groupScales) IN baseGroup;
-weightItemCodeGroupScales 'Код для весовых товаров' = DATA STRING[2] (groupScales) IN baseGroup;
+pieceCodeGroupScales 'Код для штучных товаров' = DATA STRING[2] (groupScales) IN baseGroup;
+weightCodeGroupScales 'Код для весовых товаров' = DATA STRING[2] (groupScales) IN baseGroup;
 
 // Модели
 CLASS scalesModel 'Модель весов' : model;
@@ -57,7 +57,7 @@ FORM groupScales 'Группа весов'
     OBJECTS grs=groupScales FIXED PANEL
     PROPERTIES(grs) nameStockGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery,
                     directoryGroupScales,
-                    pieceItemCodeGroupScales, weightItemCodeGroupScales,
+                    pieceCodeGroupScales, weightCodeGroupScales,
                     filterSkuGroupMachinery, showFilterSkuGroupMachinery SHOWIF filterSkuGroupMachinery(grs)
 
     OBJECTS s=scales
@@ -72,7 +72,7 @@ FORM groupsScales 'Группы весов'
     OBJECTS grs=groupScales
     PROPERTIES(grs) READONLY nameStockGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery,
                          filterSkuGroupMachinery, directoryGroupScales,
-                         pieceItemCodeGroupScales, weightItemCodeGroupScales
+                         pieceCodeGroupScales, weightCodeGroupScales
     PROPERTIES(grs) ADDFORM, EDITFORM, delete
 
     OBJECTS s=scales
@@ -99,14 +99,14 @@ groupScalesCellScales = DATA groupScales (cellScales);
 compositionCellScales 'Ячейка' = DATA TEXT (cellScales);
 numberCellScales 'Номер' = PARTITION SUM 1 IF c IS cellScales BY groupScalesCellScales (c) ORDER c;
 
-groupScalesCompositionToCellScales (groupScales, composition) = GROUP UNIQUE cellScales
+cellScalesGroupScalesComposition (groupScales, composition) = GROUP UNIQUE cellScales
             BY groupScalesCellScales (cellScales), compositionCellScales (cellScales) WHERE cellScales IS cellScales;
 
 FORM cellScales 'Ячейки весов'
     OBJECTS grs=groupScales
         PROPERTIES(grs) READONLY nameStockGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery,
                              filterSkuGroupMachinery, directoryGroupScales,
-                             pieceItemCodeGroupScales, weightItemCodeGroupScales
+                             pieceCodeGroupScales, weightCodeGroupScales
 
     OBJECTS cs=cellScales
     PROPERTIES(cs)  numberCellScales, compositionCellScales, delete
@@ -156,6 +156,11 @@ groupMachineryMachineryPriceTransaction (transaction) += groupScalesScalesPriceT
 EXTEND FORM groupMachineryInput
     PROPERTIES(m) READONLY FORCE GRID SHOWIF isGroupScales(g)       numberScales, nameModelMachinery
 ;
+
+createMachineryPriceTransactionGroupMachinery (groupMachinery) += ACTION (groupMachinery) {
+    IF groupMachinery IS groupScales THEN
+        ADDOBJ scalesPriceTransaction;
+}
 
 // ------------------------------------------------ Стандартные значения ------------------------------------ //
 

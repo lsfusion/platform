@@ -88,7 +88,7 @@ priceTransactionDocumentLabelTransaction = DATA priceTransactionDocument (labelT
 descriptionLabelTransaction 'Основание загрузки' (transaction) =
     descriptionPriceTransactionDocument(priceTransactionDocumentLabelTransaction(transaction));
 
-statusPrintPriceTransactionDocument 'Статус печати ценника' (document) =
+statusLabelPriceTransactionDocument 'Статус печати ценника' (document) =
     IF printedPriceTransactionDocument(document) THEN 'Распечатан' AND document IS priceTransactionDocument
                                                  ELSE 'Не распечатан' AND document IS priceTransactionDocument;
 
@@ -99,9 +99,6 @@ inLabelTransactionBarcode 'Вкл' (labelTransaction, barcode) = DATA BOOLEAN (l
 quantityLabelTransactionBarcode 'Кол-во' (labelTransaction, barcode) = DATA INTEGER (labelTransaction, barcode);
 nameLabelTransactionBarcode 'Наименование' = DATA STRING[255] (labelTransaction, barcode);
 priceLabelTransactionBarcode 'Цена' = DATA NUMERIC[14,2] (labelTransaction, barcode);
-shortNameUOMLabelTransactionBarcode 'Ед. изм.' =  DATA STRING[5] (labelTransaction, barcode);
-countryLabelTransactionBarcode 'Страна'  = DATA STRING[255] (labelTransaction, barcode);
-manufacturerLabelTransactionBarcode 'Производитель'  = DATA STRING[255] (labelTransaction, barcode);
 
 FORM printLabelTransaction 'Печать ценников' PRINT
     OBJECTS l = labelTransaction REPORTFILE fileTemplateLabelTransaction(l) FIXED PANEL
@@ -111,8 +108,7 @@ FORM printLabelTransaction 'Печать ценников' PRINT
     OBJECTS b = barcode
     PROPERTIES(l, b) READONLY inLabelTransactionBarcode
     PROPERTIES(b)    READONLY idBarcode
-    PROPERTIES(l, b) READONLY quantityLabelTransactionBarcode, nameLabelTransactionBarcode, priceLabelTransactionBarcode,
-                     shortNameUOMLabelTransactionBarcode, countryLabelTransactionBarcode, manufacturerLabelTransactionBarcode
+    PROPERTIES(l, b) READONLY quantityLabelTransactionBarcode, nameLabelTransactionBarcode, priceLabelTransactionBarcode
     FILTERS inLabelTransactionBarcode(l, b)
 ;
 
@@ -124,8 +120,7 @@ FORM customLabelTransaction 'Печать ценников'
     OBJECTS b = barcode
     PROPERTIES(l, b)          inLabelTransactionBarcode
     PROPERTIES(b)    READONLY idBarcode
-    PROPERTIES(l, b)          quantityLabelTransactionBarcode, nameLabelTransactionBarcode, priceLabelTransactionBarcode,
-                              shortNameUOMLabelTransactionBarcode, countryLabelTransactionBarcode, manufacturerLabelTransactionBarcode
+    PROPERTIES(l, b)          quantityLabelTransactionBarcode, nameLabelTransactionBarcode, priceLabelTransactionBarcode
     FILTERS inLabelTransactionBarcode(l, b)
 ;
 
@@ -155,6 +150,106 @@ DESIGN labelTransactions FROM DEFAULT {
     }
     ADD functions.box;
 }
+
+// -------------------------------------------- Действия по печати ценников ------------------------------ //
+
+priceLabelBarcodeDepartmentStore = ABSTRACT NUMERIC[14,2] (barcode, departmentStore);
+labelTypeBarcodeDepartmentStoreDate = ABSTRACT labelType (barcode, departmentStore, DATE);
+countLabelBarcodeDepartmentStoreDate = ABSTRACT INTEGER (barcode, departmentStore, DATE);
+
+createLabelTransactionSku = SESSION DATA BOOLEAN (sku);
+createLabelTransactionDocument = SESSION DATA priceTransactionDocument();
+createLabelTransactionSnapshot = SESSION DATA BOOLEAN();
+
+createAttributeLabelTransaction = ABSTRACT ACTION (labelTransaction);
+
+createLabelTransactionFillParams 'Заполнить параметры' = ACTION (labelTransaction, departmentStore) {
+    SET departmentStoreLabelTransaction(labelTransaction) <- departmentStore;
+    SET priceTransactionDocumentLabelTransaction(labelTransaction) <- createLabelTransactionDocument();
+
+    SET nameLabelTransactionBarcode(labelTransaction, barcode) <- nameSkuBarcode(barcode) WHERE inLabelTransactionBarcode(labelTransaction, barcode);
+    SET priceLabelTransactionBarcode(labelTransaction, barcode) <- priceLabelBarcodeDepartmentStore(barcode, departmentStore) WHERE inLabelTransactionBarcode(labelTransaction, barcode);
+
+    EXEC createAttributeLabelTransaction(labelTransaction);
+}
+
+createLabelTransaction 'Распечатать ценники' = ACTION (departmentStore, date) {
+
+    LOCAL inBarcode = BOOLEAN (barcode);
+    SET inBarcode(barcode) <- createLabelTransactionSku(skuBarcode(barcode)) // если передали параметром
+                                                         AND activeBarcode(barcode) // если активный штрих-код
+                                                         AND priceLabelBarcodeDepartmentStore(barcode, departmentStore);
+
+    IF createLabelTransactionSnapshot() THEN {
+        ADDOBJ labelTransaction;
+        FOR t == addedObject() DO {
+            SET inLabelTransactionBarcode(t, barcode) <- inBarcode(barcode);
+            SET quantityLabelTransactionBarcode(t, barcode) AND inLabelTransactionBarcode(t, barcode) <- 1;
+            EXEC createLabelTransactionFillParams(t, departmentStore);
+            FORM customLabelTransaction OBJECTS l = t AS labelTransaction MODAL;
+            IF formResult() == formResult.ok THEN {
+                FORM printLabelTransaction OBJECTS l = t AS labelTransaction;
+            }
+        }
+    } ELSE {
+        // бежим по всем типам ценников из управленческих параметров
+        FOR ([GROUP SUM 1 AND inBarcode(barcode) BY labelTypeBarcodeDepartmentStoreDate(barcode, departmentStore, date), departmentStore, date](l, departmentStore, date)) DO {
+            // для каждого создаем по операции печати ценников
+            ADDOBJ labelTransaction;
+            FOR t == addedObject() DO {
+                SET inLabelTransactionBarcode(t, barcode) <- inBarcode(barcode) AND labelTypeBarcodeDepartmentStoreDate(barcode, departmentStore, date) == l;
+                SET quantityLabelTransactionBarcode(t, barcode) AND inLabelTransactionBarcode(t, barcode) <- countLabelBarcodeDepartmentStoreDate(barcode, departmentStore, date);
+                SET labelTypeLabelTransaction(t) <- l;
+                EXEC createLabelTransactionFillParams(t, departmentStore);
+                // вызываем печатную форму для каждого из них
+                FORM printLabelTransaction OBJECTS l = t AS labelTransaction;
+            }
+        }
+    }
+}
+
+// -------------------------------- Добавление новых атрибутов -------------------------- //
+META defineLabelTransactionAttribute(object, barcodeProp)
+    createAttributeLabelTransaction(labelTransaction) +=
+        ACTION SET object##LabelTransactionBarcode(labelTransaction, barcode) <- barcodeProp##Barcode(barcode) WHERE inLabelTransactionBarcode(labelTransaction, barcode);
+
+    EXTEND FORM printLabelTransaction PROPERTIES(l, b) READONLY object##LabelTransactionBarcode;
+    EXTEND FORM customLabelTransaction PROPERTIES(l, b) object##LabelTransactionBarcode;
+    EXTEND FORM labelTransactions PROPERTIES(l, b) READONLY object##LabelTransactionBarcode;
+END
+
+// ---------- Атрибуты по умолчанию ------ //
+
+shortNameUOMLabelTransactionBarcode 'Ед. изм.' =  DATA STRING[5] (labelTransaction, barcode);
+@defineLabelTransactionAttribute(shortNameUOM, shortNameUOM);
+
+// ------------------------- Подключение печати ценников в документ --------------------- //
+META defineDocumentLabelTransaction (document, skuProp, stockProp)
+    create###document##LabelTransaction 'Печать ценников' = ACTION (document) NEWSESSION AUTOAPPLY {
+        SET createLabelTransactionSku(skuProp) <- TRUE IF quantity###document##Detail###skuProp###document(skuProp, document);
+        SET createLabelTransactionDocument() <- document;
+        EXEC createLabelTransaction(stockProp###document(document), date###document(document));
+        SET printedPriceTransactionDocument(document) <- TRUE;
+    } TOOLBAR CONFIRM;
+
+    createSnapshot###document##LabelTransaction 'Перепечатать ценники' = ACTION (document) NEWSESSION AUTOAPPLY {
+        SET createLabelTransactionSku(skuProp) <- TRUE IF quantity###document##Detail###skuProp###document(skuProp, document);
+        SET createLabelTransactionDocument() <- document AS priceTransactionDocument;
+        SET createLabelTransactionSnapshot() <- TRUE;
+        EXEC createLabelTransaction(stockProp###document(document), date###document(document));
+    } SHORTCUT statusLabelPriceTransactionDocument CONFIRM;
+
+    showPrintLabelTransaction###document 'Показывать' (document) = isPosted###document(document) AND NOT printedPriceTransactionDocument(document);
+    backgroundPrintLabelTransaction###document 'Цвет' (document) = RGB(212,255,212) IF showPrintLabelTransaction###document(document);
+END
+
+META extendFormDocumentLabelTransaction(form, object, document)
+    EXTEND FORM form
+        PROPERTIES(object) statusLabelPriceTransactionDocument BACKGROUND backgroundPrintLabelTransaction###document(object) READONLY,
+                           create###document##LabelTransaction FORCE PANEL SHOWIF showPrintLabelTransaction###document(object),
+                           createSnapshot###document##LabelTransaction SHOWIF isPosted###document(object)
+    ;
+END
 
 // ---------------------------------------------------------- Стандартные значения --------------------------------- //
 

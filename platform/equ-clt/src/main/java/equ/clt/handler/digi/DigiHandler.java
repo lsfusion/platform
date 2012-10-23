@@ -90,8 +90,8 @@ public class DigiHandler extends ScalesHandler {
                 String labelFormat = addZeros(Integer.toHexString(item.labelFormat != null ? item.labelFormat : 0), 2, false);
 
                 String barcodeFormat = "05";
-                String pieceItemCode = entry.getValue().pieceItemCodeGroupScales != null ? entry.getValue().pieceItemCodeGroupScales : "21";
-                String weightItemCode = entry.getValue().weightItemCodeGroupScales != null ? entry.getValue().weightItemCodeGroupScales : "20";
+                String pieceItemCode = entry.getValue().pieceCodeGroupScales != null ? entry.getValue().pieceCodeGroupScales : "21";
+                String weightItemCode = entry.getValue().weightCodeGroupScales != null ? entry.getValue().weightCodeGroupScales : "20";
                 String barcode = (item.isWeightItem ? weightItemCode : pieceItemCode) + item.idBarcode.substring(0, 5) + "000000" + (item.isWeightItem ? "1" : "2");
 
                 String len = addZeros(Integer.toHexString((recordNumber + statusCode + price + labelFormat + barcodeFormat +

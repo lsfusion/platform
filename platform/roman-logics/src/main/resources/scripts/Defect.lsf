@@ -221,8 +221,8 @@ META defineDocumentFormDefectProcess(object, stockProp1, stockProp2, formCaption
     
 
     @defineDocumentDetailSkuArticle(object);
-    @extendDocumentFormDetailSkuArticle(object, d, object);
-    @extendDocumentFormDetailSkuArticleReadonly(object##s, d, object);
+    @extendFormDocumentDetailSkuArticle(object, d, object);
+    @extendFormDocumentDetailSkuArticleReadonly(object##s, d, object);
 
     @defineDocumentRetailPrice(object, d);
     useRetailPrice###object##Detail(detail) = stock###object##Detail(detail) IS departmentStore;
@@ -230,8 +230,8 @@ META defineDocumentFormDefectProcess(object, stockProp1, stockProp2, formCaption
 
 
     @defineDocumentSkipSkuLedgerCustom(object, object##Detail);
-    @extendDocumentFormSkipSkuLedgerCustom(object, t, object);
-    @extendDocumentFormSkipSkuLedgerCustomReadonly(object##s, t, object);
+    @extendFormDocumentSkipSkuLedgerCustom(object, t, object);
+    @extendFormDocumentSkipSkuLedgerCustomReadonly(object##s, t, object);
     
 END
 META extendFormDefectProcessButtonSelection (object)
@@ -393,7 +393,7 @@ DESIGN repairDetailReturnRepairDetail FROM DEFAULT {
     }
 }
 
-@extendDocumentFormDetailSkuArticleReadonly(repairDetailReturnRepairDetail, dd, repair);
+@extendFormDocumentDetailSkuArticleReadonly(repairDetailReturnRepairDetail, dd, repair);
 
 EXTEND FORM repairDetailReturnRepairDetail
     PROPERTIES(dd) READONLY quantityReturnQuantityRepairDetail, diffQuantityRepairDetail
@@ -678,7 +678,7 @@ DESIGN dryCleaningDetailReturnDryCleaningDetail FROM DEFAULT {
     }
 }
 
-@extendDocumentFormDetailSkuArticleReadonly(dryCleaningDetailReturnDryCleaningDetail, dd, dryCleaning);
+@extendFormDocumentDetailSkuArticleReadonly(dryCleaningDetailReturnDryCleaningDetail, dd, dryCleaning);
 
 EXTEND FORM dryCleaningDetailReturnDryCleaningDetail
     PROPERTIES(dd) READONLY quantityReturnQuantityDryCleaningDetail, diffQuantityDryCleaningDetail

@@ -305,6 +305,11 @@ CLASS terminalPriceTransaction 'Загрузка прайса в ТСД' : machi
 groupTerminalTerminalPriceTransaction 'Группа ТСД' = DATA groupTerminal (terminalPriceTransaction);
 groupMachineryMachineryPriceTransaction (transaction) += groupTerminalTerminalPriceTransaction(transaction);
 
+createMachineryPriceTransactionGroupMachinery (groupMachinery) += ACTION (groupMachinery) {
+    IF groupMachinery IS groupTerminal THEN
+        ADDOBJ terminalPriceTransaction;
+}
+
 // ------------------------------------------------ Стандартные значения ------------------------------------ //
 
 // Модели терминалов сбора данных

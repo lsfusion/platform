@@ -169,8 +169,8 @@ DESIGN invoiceWHOuts FROM DEFAULT {
 
 
 @defineDocumentDetailSkuArticle(invoiceWHOut);
-@extendDocumentFormDetailSkuArticle(invoiceWHOut, d, invoiceWHOut);
-@extendDocumentFormDetailSkuArticleReadonly(invoiceWHOuts, d, invoiceWHOut);
+@extendFormDocumentDetailSkuArticle(invoiceWHOut, d, invoiceWHOut);
+@extendFormDocumentDetailSkuArticleReadonly(invoiceWHOuts, d, invoiceWHOut);
 
 @defineDocumentRetailPrice(invoiceWHOut, d);
 

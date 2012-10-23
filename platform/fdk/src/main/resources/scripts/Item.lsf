@@ -537,9 +537,11 @@ valueItemAttribute(item, attribute) = UNION EXCLUSIVE valueStringItemAttribute(i
 prefixInNameItemAttribute 'Префикс' = DATA STRING[20] (itemAttribute);
 postfixInNameItemAttribute 'Постфикс' = DATA STRING[20] (itemAttribute);
 
+EXTEND FORM options PROPERTIES(ia) prefixInNameItemAttribute, postfixInNameItemAttribute;
+
 META defineItemAttributeName (prefix, caption, group)
     numberInName###prefix##ItemAttribute 'Порядковый номер в наименовании'##caption = DATA INTEGER (itemAttribute) IN baseGroup;
-    EXTEND FORM options PROPERTIES(ia) numberInName###prefix##ItemAttribute, prefixInNameItemAttribute, postfixInNameItemAttribute;
+    EXTEND FORM options PROPERTIES(ia) numberInName###prefix##ItemAttribute;
 
     name###prefix##AttributeItem 'Наименование'###caption (item) = castToString255(
                     [GROUP CONCAT ustring3(prefixInNameItemAttribute(attribute) AND item IS item, valueItemAttribute(item, attribute), postfixInNameItemAttribute(attribute) AND item IS item)

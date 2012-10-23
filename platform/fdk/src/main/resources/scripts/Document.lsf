@@ -620,7 +620,7 @@ META defineDocumentSkuStock(object)
     @defineDocumentSkuStock(object, sku, stock);
 END
 
-META extendDocumentFormSkuStockCustom(object, form, concrete, stockProp)
+META extendFormDocumentSkuStockCustom(object, form, concrete, stockProp)
 
     EXTEND FORM form
 
@@ -671,8 +671,8 @@ META extendDocumentFormSkuStockCustom(object, form, concrete, stockProp)
         PROPERTY(currentBalanceSkuStock) { background = #FFEEEE; }
     }
 END
-META extendDocumentFormSkuStock(object, form, concrete)
-    @extendDocumentFormSkuStockCustom(object, form, concrete, stock);
+META extendFormDocumentSkuStock(object, form, concrete)
+    @extendFormDocumentSkuStockCustom(object, form, concrete, stock);
 END
 
 //----------- Изменение кол-ва для строки при изменении кол-ва для товара (один склад)---------------//
@@ -713,7 +713,7 @@ META defineDocumentSku(object)
     @defineDocumentSku(object, sku, stock);
 END
 
-META extendDocumentFormSkuCustom(object, form, concrete, skuProp, detail)
+META extendFormDocumentSkuCustom(object, form, concrete, skuProp, detail)
 
     EXTEND FORM form
 
@@ -752,8 +752,8 @@ META extendDocumentFormSkuCustom(object, form, concrete, skuProp, detail)
         }
     }
 END
-META extendDocumentFormSku(object, form, concrete)
-    @extendDocumentFormSkuCustom(object, form, concrete, sku, object##Detail);
+META extendFormDocumentSku(object, form, concrete)
+    @extendFormDocumentSkuCustom(object, form, concrete, sku, object##Detail);
 END
 
 //----------- Изменение кол-ва для строки при изменении кол-ва для товара (несколько складов и несколько контрагентов(в колонках))---------------//
@@ -803,7 +803,7 @@ META defineDocumentSkuStockContractor(object, contact)
     @defineDocumentSkuStockContractor(object, sku, stock, contact);
 END
 
-META extendDocumentFormSkuStockContractorCustom(object, form, concrete, stockProp, contact)
+META extendFormDocumentSkuStockContractorCustom(object, form, concrete, stockProp, contact)
 
     nameQuantity###contact (contact)= [FORMULA STRING[50] 'CAST($1 AS TEXT) || \' \' || \'(кол-во)\''](name(contact)) MINCHARWIDTH 15 PREFCHARWIDTH 20;
     namePrice###contact (contact)= [FORMULA STRING[50] 'CAST($1 AS TEXT) || \' \' || \'(цена)\''](name(contact)) MINCHARWIDTH 15 PREFCHARWIDTH 20;
@@ -870,8 +870,8 @@ META extendDocumentFormSkuStockContractorCustom(object, form, concrete, stockPro
         PROPERTY(currentBalanceSkuStock) { background = #FFEEEE; }
     }
 END
-META extendDocumentFormSkuStockContractor(object, form, concrete, contact)
-    @extendDocumentFormSkuStockContractorCustom(object, form, concrete, stock, contact);
+META extendFormDocumentSkuStockContractor(object, form, concrete, contact)
+    @extendFormDocumentSkuStockContractorCustom(object, form, concrete, stock, contact);
 END
 
 // ------------------------- Основной - агрегированный документы ---------------------------------- //

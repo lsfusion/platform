@@ -31,7 +31,7 @@ CLASS saleOutBatchDetail 'Строка продажи товаров по нак
 @defineDocumentCurrency(saleOut);
 @deriveDocumentCurrency(saleOut, stock);
 
-@extendDocumentFormDetailSkuArticleReadonly(saleOuts, o, saleOutBatch);
+@extendFormDocumentDetailSkuArticleReadonly(saleOuts, o, saleOutBatch);
 
 importerPriceSaleOutBatchDetail 'Цена импортера' (detail) = importerPriceBatchA(batchSaleOutBatchDetail(detail));
 supplierPriceSaleOutBatchDetail 'Цена поставщика' (detail) = supplierPriceBatchA(batchSaleOutBatchDetail(detail));
@@ -43,8 +43,8 @@ CONSTRAINT companySaleOut(saleOut) == destinationCompanySaleOut(saleOut) CHECKED
     MESSAGE 'Продажа товаров должна идти между складами разных компаний';
 
 @defineDocumentDetailSkuArticle(saleOut);
-@extendDocumentFormDetailSkuArticle(saleOut, d, saleOut);
-@extendDocumentFormDetailSkuArticleReadonly(saleOuts, d, saleOut);
+@extendFormDocumentDetailSkuArticle(saleOut, d, saleOut);
+@extendFormDocumentDetailSkuArticleReadonly(saleOuts, d, saleOut);
 
 @defineDocumentContract(saleOut, contractSkuCompany, singleContractSkuCompanyCompanyCompany, companySaleOut, destinationCompanySaleOut,
                         'Сторона A договора продажи товаров не соответствуют компании склада-отправителя',
@@ -75,8 +75,8 @@ useRetailPriceSaleOutDetail(detail) = stockSaleOutDetail(detail) IS departmentSt
 @defineDocumentTransferAccount(saleOut, useRetailPriceSaleOutDetail);
 
 @defineDocumentSkipSkuLedgerCustom(saleOut, saleOutDetail);
-@extendDocumentFormSkipSkuLedgerCustom(saleOut, t, saleOut);
-@extendDocumentFormSkipSkuLedgerCustomReadonly(saleOuts, t, saleOut);
+@extendFormDocumentSkipSkuLedgerCustom(saleOut, t, saleOut);
+@extendFormDocumentSkipSkuLedgerCustomReadonly(saleOuts, t, saleOut);
 
 // Проводим по регистру
 @implementSkuLedger(saleOut, sku, stock);
@@ -158,7 +158,7 @@ CLASS saleInBatchDetail 'Строка покупки товаров по нак�
 @defineDocumentFormTransferIn(sale, 'Покупка товаров по накладным');
 
 @defineDocumentDetailSkuArticle(saleIn);
-@extendDocumentFormDetailSkuArticleReadonly(saleIns, d, saleIn);
+@extendFormDocumentDetailSkuArticleReadonly(saleIns, d, saleIn);
 
 TABLE saleInBatchDetail(saleInBatchDetail);
 
@@ -220,7 +220,7 @@ EXTEND DESIGN saleIns {
 }
 
 @defineDocumentDetailSkuArticle(saleInBatch);
-@extendDocumentFormDetailSkuArticleReadonly(saleIns, b, saleInBatch);
+@extendFormDocumentDetailSkuArticleReadonly(saleIns, b, saleInBatch);
 
 EXTEND FORM saleIns
     PROPERTIES(b) READONLY descriptionBatch, importerPriceBatchA, supplierPriceBatchA, valueSupplierVATBatchA
@@ -255,9 +255,9 @@ CLASS saleRecDetail 'Строка приемки товаров по накла�
 @defineDocumentFormTransferRec(sale, 'Приемка товаров по накладным (продажа)');
 
 @defineDocumentDetailSkuArticle(saleRec);
-@extendDocumentFormDetailSkuArticle(saleRec, d, saleRec);
+@extendFormDocumentDetailSkuArticle(saleRec, d, saleRec);
 
-@extendDocumentFormDetailSkuArticleReadonly(saleIns, r, saleRec);
+@extendFormDocumentDetailSkuArticleReadonly(saleIns, r, saleRec);
 
 saleRecSaleInBatchDetail (detail) = saleRecSaleIn(saleInSaleInBatchDetail(detail));
 
@@ -272,7 +272,7 @@ CLASS saleDiffSDetail 'Строка расхождений акта приемк
 @defineDocumentFormTransferDiff(sale);
 
 @defineDocumentDetailSkuArticle(saleDiff);
-@extendDocumentFormDetailSkuArticleReadonlyQuantity(saleIns, f, saleDiff, signedQuantitySaleDiffDetail);
+@extendFormDocumentDetailSkuArticleReadonlyQuantity(saleIns, f, saleDiff, signedQuantitySaleDiffDetail);
 
 costSaleDiffEDetail(detail) = 0.0 IF detail IS saleDiffEDetail;
 @implementBatch(saleDiffE, sku, stock, cost);

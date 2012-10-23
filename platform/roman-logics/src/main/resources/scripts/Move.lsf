@@ -27,8 +27,8 @@ CLASS moveOutDetail 'Строка перемещения товаров' : outFI
 @deriveDocumentCurrency(moveOut, stock);
 
 @defineDocumentDetailSkuArticle(moveOut);
-@extendDocumentFormDetailSkuArticle(moveOut, d, moveOut);
-@extendDocumentFormDetailSkuArticleReadonly(moveOuts, d, moveOut);
+@extendFormDocumentDetailSkuArticle(moveOut, d, moveOut);
+@extendFormDocumentDetailSkuArticleReadonly(moveOuts, d, moveOut);
 
 EXTEND FORM moveOut
     PROPERTIES (t) nameNumeratorObject
@@ -62,7 +62,7 @@ CLASS moveInDetail 'Строка поступления товаров' : inLIFO
 @defineDocumentFormTransferIn(move, 'Поступление товаров');
 
 @defineDocumentDetailSkuArticle(moveIn);
-@extendDocumentFormDetailSkuArticleReadonly(moveIns, d, moveIn);
+@extendFormDocumentDetailSkuArticleReadonly(moveIns, d, moveIn);
 
 costMoveInBatch(moveIn, batch) = GROUP SUM costSkuLedgerBatch(ledger, batch) BY moveInMoveInDetail(ledger), batch PERSISTENT;
 
@@ -85,9 +85,9 @@ CLASS moveRecDetail 'Строка приемки товаров (перемещ�
 @defineDocumentFormTransferRec(move, 'Приемка товаров (перемещение)');
 
 @defineDocumentDetailSkuArticle(moveRec);
-@extendDocumentFormDetailSkuArticle(moveRec, d, moveRec);
+@extendFormDocumentDetailSkuArticle(moveRec, d, moveRec);
 
-@extendDocumentFormDetailSkuArticleReadonly(moveIns, r, moveRec);
+@extendFormDocumentDetailSkuArticleReadonly(moveIns, r, moveRec);
 
 // ---------------------------------------- Акт расхождений ------------------------------------ //
 CLASS moveDiff 'Акт расхождений приемки товаров (перемещение)' : historyObject;
@@ -100,7 +100,7 @@ CLASS moveDiffSDetail 'Строка расхождений акта приемк
 @defineDocumentFormTransferDiff(move);
 
 @defineDocumentDetailSkuArticle(moveDiff);
-@extendDocumentFormDetailSkuArticleReadonlyQuantity(moveIns, f, moveDiff, signedQuantityMoveDiffDetail);
+@extendFormDocumentDetailSkuArticleReadonlyQuantity(moveIns, f, moveDiff, signedQuantityMoveDiffDetail);
 
 costMoveDiffEDetail(detail) = 0.0 IF detail IS moveDiffEDetail;
 

@@ -25,8 +25,8 @@ CONSTRAINT companyReturnOut(returnOut) == destinationCompanyReturnOut(returnOut)
     MESSAGE 'Возврат товаров должна идти между складами разных компаний';
 
 @defineDocumentDetailSkuArticle(returnOut);
-@extendDocumentFormDetailSkuArticle(returnOut, d, returnOut);
-@extendDocumentFormDetailSkuArticleReadonly(returnOuts, d, returnOut);
+@extendFormDocumentDetailSkuArticle(returnOut, d, returnOut);
+@extendFormDocumentDetailSkuArticleReadonly(returnOuts, d, returnOut);
 
 @defineDocumentCurrency(returnOut);
 @deriveDocumentCurrency(returnOut, stock);
@@ -95,8 +95,8 @@ useRetailPriceReturnOutDetail(detail) = stockReturnOutDetail(detail) IS departme
 @defineDocumentTransferAccount(returnOut, useRetailPriceReturnOutDetail);
 
 @defineDocumentSkipSkuLedgerCustom(returnOut, returnOutDetail);
-@extendDocumentFormSkipSkuLedgerCustom(returnOut, t, returnOut);
-@extendDocumentFormSkipSkuLedgerCustomReadonly(returnOuts, t, returnOut);
+@extendFormDocumentSkipSkuLedgerCustom(returnOut, t, returnOut);
+@extendFormDocumentSkipSkuLedgerCustomReadonly(returnOuts, t, returnOut);
 
 // Проводим по регистру
 @implementSkuLedger(returnOut, sku, stock);
@@ -165,7 +165,7 @@ CLASS returnInDetail 'Строка получения товаров по нак
 @defineDocumentFormTransferIn(return, 'Получение товаров по накладным');
 
 @defineDocumentDetailSkuArticle(returnIn);
-@extendDocumentFormDetailSkuArticleReadonly(returnIns, d, returnIn);
+@extendFormDocumentDetailSkuArticleReadonly(returnIns, d, returnIn);
 
 batchReturnInDetail (detail) = batchSaleInBatchDetail(saleInBatchDetailReturnOutDetail(returnOutDetailReturnInDetail(detail))) PERSISTENT;
 descriptionBatchReturnInDetail 'Партия' (detail) = descriptionBatch(batchReturnInDetail(detail));
@@ -186,7 +186,7 @@ isCommissionReturnInDetail(detail) = isCommissionReturnOutDetail(returnOutDetail
 
 useRetailPriceReturnInDetail(detail) = stockReturnInDetail(detail) IS departmentStore OR isCommissionReturnInDetail(detail);
 @defineDocumentTransferAccount(returnIn, useRetailPriceReturnInDetail);
-@extendDocumentFormSkipSkuLedgerCustomReadonly(returnIns, t, returnIn);
+@extendFormDocumentSkipSkuLedgerCustomReadonly(returnIns, t, returnIn);
 
 
 @implementSkuLedger(returnIn, sku, stock);
@@ -208,9 +208,9 @@ CLASS returnRecDetail 'Строка приемки товаров по накл�
 @defineDocumentFormTransferRec(return, 'Приемка товаров по накладным (возврат)');
 
 @defineDocumentDetailSkuArticle(returnRec);
-@extendDocumentFormDetailSkuArticle(returnRec, d, returnRec);
+@extendFormDocumentDetailSkuArticle(returnRec, d, returnRec);
 
-@extendDocumentFormDetailSkuArticleReadonly(returnIns, r, returnRec);
+@extendFormDocumentDetailSkuArticleReadonly(returnIns, r, returnRec);
 
 // ---------------------------------------- Акт расхождений ------------------------------------ //
 CLASS returnDiff 'Акт расхождений приемки товаров по накладной (возврат)' : historyObject;
@@ -223,7 +223,7 @@ CLASS returnDiffSDetail 'Строка расхождений акта прием
 @defineDocumentFormTransferDiff(return);
 
 @defineDocumentDetailSkuArticle(returnDiff);
-@extendDocumentFormDetailSkuArticleReadonlyQuantity(returnIns, f, returnDiff, signedQuantityReturnDiffDetail);
+@extendFormDocumentDetailSkuArticleReadonlyQuantity(returnIns, f, returnDiff, signedQuantityReturnDiffDetail);
 
 costReturnDiffEDetail(detail) = 0.0 IF detail IS returnDiffEDetail;
 

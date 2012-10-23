@@ -146,7 +146,7 @@ META defineBlanketOrder(sign, contact, contactCaption, series)
 
 //-- SKU
     @defineDocumentSkuStockContractor(blanketOrder, contact);
-    @extendDocumentFormSkuStockContractor(blanketOrder, blanketOrder, o, contact);
+    @extendFormDocumentSkuStockContractor(blanketOrder, blanketOrder, o, contact);
 
 
     FORM blanketOrders 'Множественные заказы'###sign

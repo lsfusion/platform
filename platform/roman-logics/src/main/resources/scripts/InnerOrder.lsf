@@ -144,8 +144,8 @@ DESIGN innerOrders FROM DEFAULT {
     }
 }
 
-@extendDocumentFormDetailSkuArticle(innerOrder, d, innerOrder);
-@extendDocumentFormDetailSkuArticleReadonly(innerOrders, d, innerOrder);
+@extendFormDocumentDetailSkuArticle(innerOrder, d, innerOrder);
+@extendFormDocumentDetailSkuArticleReadonly(innerOrders, d, innerOrder);
 
 // ---------------------------------------- Подбор товара ------------------------------------ //
 CLASS orderPicking 'Подбор товара по заказу': historyObject, numeratedObject;
@@ -235,7 +235,7 @@ FORM orderPicking 'Подбор товара'
     EDIT orderPicking OBJECT p
 ;
 
-@extendDocumentFormDetailSkuArticle(orderPicking, d, orderPicking);
+@extendFormDocumentDetailSkuArticle(orderPicking, d, orderPicking);
 
 DESIGN orderPicking FROM DEFAULT {
     main {
@@ -644,7 +644,7 @@ EXTEND FORM innerOrders
     FILTERS orderPickingInnerDocument(id)==p
 ;
 
-@extendDocumentFormDetailSkuArticleReadonly(innerOrders, pd, orderPicking);
+@extendFormDocumentDetailSkuArticleReadonly(innerOrders, pd, orderPicking);
 
 EXTEND DESIGN innerOrders {
     documentDetail {
@@ -786,9 +786,9 @@ EXTEND DESIGN innerOrders {
 ///
 
 @defineDocumentDetailSkuArticle(innerOrderRec);
-@extendDocumentFormDetailSkuArticle(innerOrderRec, d, innerOrderRec);
+@extendFormDocumentDetailSkuArticle(innerOrderRec, d, innerOrderRec);
 
-@extendDocumentFormDetailSkuArticleReadonly(innerOrders, r, innerOrderRec);
+@extendFormDocumentDetailSkuArticleReadonly(innerOrders, r, innerOrderRec);
 
 // ---------------------------------------- Акт расхождений ------------------------------------ //
 
@@ -882,7 +882,7 @@ EXTEND DESIGN innerOrders {
 }
 
 @defineDocumentDetailSkuArticle(innerOrderDiff);
-@extendDocumentFormDetailSkuArticleReadonlyQuantity(innerOrders, f, innerOrderDiff, signedQuantityInnerOrderDiffDetail);
+@extendFormDocumentDetailSkuArticleReadonlyQuantity(innerOrders, f, innerOrderDiff, signedQuantityInnerOrderDiffDetail);
 
 costInnerOrderDiffEDetail(detail) = 0.0 IF detail IS innerOrderDiffEDetail;
 @implementBatch(innerOrderDiffE, sku, stock, cost);
@@ -954,7 +954,7 @@ FORM innerOrderRecs 'Приемка по внутр. заказам'
         FILTER 'Только непринятые' 'F10' notDraftOrderPicking(p) DEFAULT
 
 ;
-@extendDocumentFormDetailSkuArticleReadonly(innerOrderRecs, r, innerOrderRec);
+@extendFormDocumentDetailSkuArticleReadonly(innerOrderRecs, r, innerOrderRec);
 
 FORM orderPickingPrint 'Подборочный лист' PRINT
     OBJECTS p = orderPicking FIXED PANEL
@@ -968,7 +968,7 @@ FORM orderPickingPrint 'Подборочный лист' PRINT
     FILTERS orderPickingOrderPickingDetail(d) == p
 ;
 
-@extendDocumentFormDetailSkuArticleReadonly(orderPickingPrint, d, orderPicking);
+@extendFormDocumentDetailSkuArticleReadonly(orderPickingPrint, d, orderPicking);
 
 printOrderPicking 'Подборочный лист' (priceChangeDocument) = ACTION FORM orderPickingPrint OBJECTS p IMAGE 'print.png' IN printGroup TOOLBAR;
 

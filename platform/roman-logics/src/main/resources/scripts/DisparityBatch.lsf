@@ -217,12 +217,12 @@ DESIGN disparityBatches FROM DEFAULT {
 }
 
 @defineDocumentDetailSkuArticleCustom(disparityInBatchDetail);
-@extendDocumentFormDetailSkuArticleCustom(disparityBatch, di, disparityInBatchDetail);
-@extendDocumentFormDetailSkuArticleReadonlyCustom(disparityBatches, di, disparityInBatchDetail);
+@extendFormDocumentDetailSkuArticleCustom(disparityBatch, di, disparityInBatchDetail);
+@extendFormDocumentDetailSkuArticleReadonlyCustom(disparityBatches, di, disparityInBatchDetail);
 
 @defineDocumentDetailSkuArticleCustom(disparityOutBatchDetail);
-@extendDocumentFormDetailSkuArticleCustom(disparityBatch, do, disparityOutBatchDetail);
-@extendDocumentFormDetailSkuArticleReadonlyCustom(disparityBatches, do, disparityOutBatchDetail);
+@extendFormDocumentDetailSkuArticleCustom(disparityBatch, do, disparityOutBatchDetail);
+@extendFormDocumentDetailSkuArticleReadonlyCustom(disparityBatches, do, disparityOutBatchDetail);
 
 createMixDisparityBatch 'Сделать подборку строк пересорта' = ACTION (disparityBatch) {
 
@@ -569,12 +569,12 @@ DESIGN disparityBatchAs FROM DEFAULT {
 }
 
 @defineDocumentDetailSkuArticleCustom(disparityInBatchADetail);
-@extendDocumentFormDetailSkuArticleCustom(disparityBatchA, di, disparityInBatchADetail);
-@extendDocumentFormDetailSkuArticleReadonlyCustom(disparityBatchAs, di, disparityInBatchADetail);
+@extendFormDocumentDetailSkuArticleCustom(disparityBatchA, di, disparityInBatchADetail);
+@extendFormDocumentDetailSkuArticleReadonlyCustom(disparityBatchAs, di, disparityInBatchADetail);
 
 @defineDocumentDetailSkuArticleCustom(disparityOutBatchADetail);
-@extendDocumentFormDetailSkuArticleCustom(disparityBatchA, do, disparityOutBatchADetail);
-@extendDocumentFormDetailSkuArticleReadonlyCustom(disparityBatchAs, do, disparityOutBatchADetail);
+@extendFormDocumentDetailSkuArticleCustom(disparityBatchA, do, disparityOutBatchADetail);
+@extendFormDocumentDetailSkuArticleReadonlyCustom(disparityBatchAs, do, disparityOutBatchADetail);
 
 createMixDisparityBatchA 'Сделать подборку строк пересорта' = ACTION (disparityBatchA) {
 

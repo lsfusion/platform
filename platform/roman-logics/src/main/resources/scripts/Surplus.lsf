@@ -306,8 +306,8 @@ DESIGN surplusOuts FROM DEFAULT {
 
 
 @defineDocumentDetailSkuArticle(surplusOut);
-@extendDocumentFormDetailSkuArticle(surplusOut, d, surplusOut);
-@extendDocumentFormDetailSkuArticleReadonly(surplusOuts, d, surplusOut);
+@extendFormDocumentDetailSkuArticle(surplusOut, d, surplusOut);
+@extendFormDocumentDetailSkuArticleReadonly(surplusOuts, d, surplusOut);
 
 EXTEND FORM surplusOut
     PROPERTIES(d) priceSurplusOutDetail

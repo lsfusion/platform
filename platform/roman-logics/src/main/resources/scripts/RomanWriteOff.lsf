@@ -20,8 +20,8 @@ PRIORITY Stock, RomanLogicsModule;
 //----------------------------------------------- Списание товара ---------------------------------------------------//
 
 @defineDocumentSkipSkuLedgerCustom(writeOff, writeOffDetail);
-@extendDocumentFormSkipSkuLedgerCustom(writeOff, w, writeOff);
-@extendDocumentFormSkipSkuLedgerCustomReadonly(writeOffs, w, writeOff);
+@extendFormDocumentSkipSkuLedgerCustom(writeOff, w, writeOff);
+@extendFormDocumentSkipSkuLedgerCustomReadonly(writeOffs, w, writeOff);
 
 isPostedSkipSkuLedgerWriteOff (writeOff) = isPostedWriteOff(writeOff) AND NOT skipSkuLedgerWriteOff(writeOff);
 

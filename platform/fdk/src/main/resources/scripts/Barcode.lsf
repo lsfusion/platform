@@ -41,8 +41,12 @@ idBarcodeSkuSkuLedger 'Штрих-код' (skuLedger) = idBarcodeSku(skuSkuLedge
 // UOM
 
 dataUOMBarcode = DATA UOM (barcode);
-UOMBarcode = UOMSku(skuBarcode(barcode)) OR dataUOMBarcode(barcode);
+UOMBarcode = UOMSku(skuBarcode(barcode)) OR dataUOMBarcode(barcode) PERSISTENT;
 shortNameUOMBarcode 'Единица измерения' (barcode) = shortName(UOMBarcode(barcode));
+
+// Группа
+
+skuGroupBarcode (barcode) = skuGroupSku(skuBarcode(barcode));
 
 // Генерация штрих-кодов
 

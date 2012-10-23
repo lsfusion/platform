@@ -77,7 +77,7 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
                 transactionObjects.add(new Object[]{groupMachineryMPT, transactionObject, dateTimeCode((Timestamp) dateTimeMPT.getValue()), dateTimeMPT, snapshotMPT});
             }
 
-            List<ItemInfo> itemTransactionList;
+            List<ItemInfo> skuTransactionList;
             for (Object[] transaction : transactionObjects) {
 
                 DataObject groupObject = (DataObject) transaction[0];
@@ -86,28 +86,28 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
                 Date date = new Date(((Timestamp) ((DataObject) transaction[3]).getValue()).getTime());
                 Boolean snapshotTransaction = (Boolean) transaction[4];
 
-                itemTransactionList = new ArrayList<ItemInfo>();
+                skuTransactionList = new ArrayList<ItemInfo>();
                 KeyExpr barcodeExpr = new KeyExpr("barcode");
-                Map<Object, KeyExpr> itemKeys = new HashMap<Object, KeyExpr>();
-                itemKeys.put("barcode", barcodeExpr);
+                Map<Object, KeyExpr> skuKeys = new HashMap<Object, KeyExpr>();
+                skuKeys.put("barcode", barcodeExpr);
 
-                Query<Object, Object> itemQuery = new Query<Object, Object>(itemKeys);
-                itemQuery.properties.put("idBarcode", LM.findLCPByCompoundName("idBarcode").getExpr(barcodeExpr));
-                itemQuery.properties.put("name", LM.findLCPByCompoundName("nameMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
-                itemQuery.properties.put("price", LM.findLCPByCompoundName("priceMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
-                itemQuery.properties.put("daysExpiry", LM.findLCPByCompoundName("daysExpiryMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
-                itemQuery.properties.put("hoursExpiry", LM.findLCPByCompoundName("hoursExpiryMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
-                itemQuery.properties.put("expiryDate", LM.findLCPByCompoundName("expiryDataMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
-                itemQuery.properties.put("labelFormat", LM.findLCPByCompoundName("labelFormatMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
-                itemQuery.properties.put("composition", LM.findLCPByCompoundName("compositionMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
-                itemQuery.properties.put("isWeight", LM.findLCPByCompoundName("isWeightMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
-                itemQuery.properties.put("itemGroup", LM.findLCPByCompoundName("itemGroupMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
+                Query<Object, Object> skuQuery = new Query<Object, Object>(skuKeys);
+                skuQuery.properties.put("idBarcode", LM.findLCPByCompoundName("idBarcode").getExpr(barcodeExpr));
+                skuQuery.properties.put("name", LM.findLCPByCompoundName("nameMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
+                skuQuery.properties.put("price", LM.findLCPByCompoundName("priceMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
+                skuQuery.properties.put("daysExpiry", LM.findLCPByCompoundName("daysExpiryMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
+                skuQuery.properties.put("hoursExpiry", LM.findLCPByCompoundName("hoursExpiryMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
+                skuQuery.properties.put("expiryDate", LM.findLCPByCompoundName("expiryDataMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
+                skuQuery.properties.put("labelFormat", LM.findLCPByCompoundName("labelFormatMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
+                skuQuery.properties.put("composition", LM.findLCPByCompoundName("compositionMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
+                skuQuery.properties.put("isWeight", LM.findLCPByCompoundName("isWeightMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
+                skuQuery.properties.put("skuGroup", LM.findLCPByCompoundName("skuGroupMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
 
-                itemQuery.and(LM.findLCPByCompoundName("inMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr).getWhere());
+                skuQuery.and(LM.findLCPByCompoundName("inMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr).getWhere());
 
-                OrderedMap<Map<Object, Object>, Map<Object, Object>> itemResult = itemQuery.execute(session.sql);
+                OrderedMap<Map<Object, Object>, Map<Object, Object>> skuResult = skuQuery.execute(session.sql);
 
-                for (Map.Entry<Map<Object, Object>, Map<Object, Object>> entry : itemResult.entrySet()) {
+                for (Map.Entry<Map<Object, Object>, Map<Object, Object>> entry : skuResult.entrySet()) {
                     String barcode = (String) entry.getValue().get("idBarcode");
                     String name = (String) entry.getValue().get("name");
                     Double price = (Double) entry.getValue().get("price");
@@ -117,13 +117,13 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
                     Integer labelFormat = (Integer) entry.getValue().get("labelFormat");
                     String composition = (String) entry.getValue().get("composition");
                     Boolean isWeight = entry.getValue().get("isWeight") != null;
-                    Integer numberItemGroup = (Integer) entry.getValue().get("itemGroup");
-                    String canonicalNameItemGroup = numberItemGroup == null ? "" : (String) LM.findLCPByCompoundName("canonicalNameItemGroup").read(session, new DataObject(numberItemGroup, (ConcreteClass) LM.findClassByCompoundName("itemGroup")));
+                    Integer numberSkuGroup = (Integer) entry.getValue().get("skuGroup");
+                    String canonicalNameSkuGroup = numberSkuGroup == null ? "" : (String) LM.findLCPByCompoundName("canonicalNameSkuGroup").read(session, new DataObject(numberSkuGroup, (ConcreteClass) LM.findClassByCompoundName("skuGroup")));
 
-                    Integer cellScalesObject = composition == null ? null : (Integer) LM.findLCPByCompoundName("groupScalesCompositionToCellScales").read(session, groupObject, new DataObject(composition, TextClass.instance));
+                    Integer cellScalesObject = composition == null ? null : (Integer) LM.findLCPByCompoundName("cellScalesGroupScalesComposition").read(session, groupObject, new DataObject(composition, TextClass.instance));
                     Integer compositionNumberCellScales = cellScalesObject == null ? null : (Integer) LM.findLCPByCompoundName("numberCellScales").read(session, new DataObject(cellScalesObject, (ConcreteClass) LM.findClassByCompoundName("cellScales")));
 
-                    itemTransactionList.add(new ItemInfo(barcode.trim(), name.trim(), price, daysExpiry, hoursExpiry, expiryDate, labelFormat, composition, compositionNumberCellScales, isWeight, numberItemGroup == null ? 0 : numberItemGroup, canonicalNameItemGroup.trim()));
+                    skuTransactionList.add(new ItemInfo(barcode.trim(), name.trim(), price, daysExpiry, hoursExpiry, expiryDate, labelFormat, composition, compositionNumberCellScales, isWeight, numberSkuGroup == null ? 0 : numberSkuGroup, canonicalNameSkuGroup.trim()));
                 }
 
                 if (transactionObject.objectClass.equals(LM.findClassByCompoundName("cashRegisterPriceTransaction"))) {
@@ -160,13 +160,13 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
                     }
 
                     transactionList.add(new TransactionCashRegisterInfo((Integer) transactionObject.getValue(),
-                            dateTimeCode, date, itemTransactionList, cashRegisterInfoList));
+                            dateTimeCode, date, skuTransactionList, cashRegisterInfoList));
 
                 } else if (transactionObject.objectClass.equals(LM.findClassByCompoundName("scalesPriceTransaction"))) {
                     List<ScalesInfo> scalesInfoList = new ArrayList<ScalesInfo>();
                     String directory = (String) LM.findLCPByCompoundName("directoryGroupScales").read(session, groupObject);
-                    String pieceItemCodeGroupScales = (String) LM.findLCPByCompoundName("pieceItemCodeGroupScales").read(session, groupObject);
-                    String weightItemCodeGroupScales = (String) LM.findLCPByCompoundName("weightItemCodeGroupScales").read(session, groupObject);
+                    String pieceCodeGroupScales = (String) LM.findLCPByCompoundName("pieceCodeGroupScales").read(session, groupObject);
+                    String weightCodeGroupScales = (String) LM.findLCPByCompoundName("weightCodeGroupScales").read(session, groupObject);
 
                     LCP<PropertyInterface> isScales = (LCP<PropertyInterface>) LM.is(LM.findClassByCompoundName("scales"));
 
@@ -191,11 +191,11 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
                         String nameModel = (String) values.get("nameModelMachinery");
                         String handlerModel = (String) values.get("handlerModelMachinery");
                         scalesInfoList.add(new ScalesInfo(nppMachinery, nameModel, handlerModel, portMachinery, directory,
-                                pieceItemCodeGroupScales, weightItemCodeGroupScales));
+                                pieceCodeGroupScales, weightCodeGroupScales));
                     }
 
                     transactionList.add(new TransactionScalesInfo((Integer) transactionObject.getValue(),
-                            dateTimeCode, itemTransactionList, scalesInfoList, snapshotTransaction));
+                            dateTimeCode, skuTransactionList, scalesInfoList, snapshotTransaction));
 
                 } else if (transactionObject.objectClass.equals(LM.findClassByCompoundName("priceCheckerPriceTransaction"))) {
                     List<PriceCheckerInfo> priceCheckerInfoList = new ArrayList<PriceCheckerInfo>();
@@ -226,7 +226,7 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
                         priceCheckerInfoList.add(new PriceCheckerInfo(nppMachinery, nameModel, handlerModel, portMachinery));
                     }
                     transactionList.add(new TransactionPriceCheckerInfo((Integer) transactionObject.getValue(),
-                            dateTimeCode, itemTransactionList, priceCheckerInfoList));
+                            dateTimeCode, skuTransactionList, priceCheckerInfoList));
 
 
                 } else if (transactionObject.objectClass.equals(LM.findClassByCompoundName("terminalPriceTransaction"))) {
@@ -256,7 +256,7 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
                         terminalInfoList.add(new TerminalInfo(directory, nppMachinery, nameModel, handlerModel, portMachinery));
                     }
                     transactionList.add(new TransactionTerminalInfo((Integer) transactionObject.getValue(),
-                            dateTimeCode, itemTransactionList, terminalInfoList, snapshotTransaction));
+                            dateTimeCode, skuTransactionList, terminalInfoList, snapshotTransaction));
                 }
             }
             return transactionList;
@@ -491,7 +491,7 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
             ImportKey<?> zReportKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("zReportPosted"), LM.findLCPByCompoundName("numberNumberCashRegisterToZReportPosted").getMapping(zReportNumberField, cashRegisterField));
             ImportKey<?> cashRegisterKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("cashRegister"), LM.findLCPByCompoundName("cashRegisterNumber").getMapping(cashRegisterField));
             ImportKey<?> receiptKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("receipt"), LM.findLCPByCompoundName("zReportReceiptToReceipt").getMapping(zReportNumberField, numberReceiptField, cashRegisterField));
-            ImportKey<?> itemKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("item"), LM.findLCPByCompoundName("skuBarcodeIdDate").getMapping(idBarcodeReceiptDetailField, dateField));
+            ImportKey<?> skuKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("sku"), LM.findLCPByCompoundName("skuBarcodeIdDate").getMapping(idBarcodeReceiptDetailField, dateField));
             ImportKey<?> discountCardKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("discountCard"), LM.findLCPByCompoundName("discountCardSeriesNumber").getMapping(seriesNumberDiscountCardField, dateField));
 
             saleProperties.add(new ImportProperty(zReportNumberField, LM.findLCPByCompoundName("numberZReport").getMapping(zReportKey)));
@@ -521,7 +521,7 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
                     LM.baseLM.object(LM.findClassByCompoundName("receipt")).getMapping(receiptKey)));
 
             saleProperties.add(new ImportProperty(idBarcodeReceiptDetailField, LM.findLCPByCompoundName("skuReceiptSaleDetail").getMapping(receiptSaleDetailKey),
-                    LM.baseLM.object(LM.findClassByCompoundName("item")).getMapping(itemKey)));
+                    LM.baseLM.object(LM.findClassByCompoundName("sku")).getMapping(skuKey)));
 
 
             returnProperties.add(new ImportProperty(zReportNumberField, LM.findLCPByCompoundName("numberZReport").getMapping(zReportKey)));
@@ -551,7 +551,7 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
                     LM.baseLM.object(LM.findClassByCompoundName("receipt")).getMapping(receiptKey)));
 
             returnProperties.add(new ImportProperty(idBarcodeReceiptDetailField, LM.findLCPByCompoundName("skuReceiptReturnDetail").getMapping(receiptReturnDetailKey),
-                    LM.baseLM.object(LM.findClassByCompoundName("item")).getMapping(itemKey)));
+                    LM.baseLM.object(LM.findClassByCompoundName("sku")).getMapping(skuKey)));
 
             List<List<Object>> dataSale = new ArrayList<List<Object>>();
             List<List<Object>> dataReturn = new ArrayList<List<Object>>();
@@ -585,10 +585,10 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
                     discountSumReturnReceiptField, seriesNumberDiscountCardField);
 
 
-            new IntegrationService(session, new ImportTable(saleImportFields, dataSale), Arrays.asList(zReportKey, cashRegisterKey, receiptKey, receiptSaleDetailKey, itemKey, discountCardKey),
+            new IntegrationService(session, new ImportTable(saleImportFields, dataSale), Arrays.asList(zReportKey, cashRegisterKey, receiptKey, receiptSaleDetailKey, skuKey, discountCardKey),
                     saleProperties).synchronize(true);
 
-            new IntegrationService(session, new ImportTable(returnImportFields, dataReturn), Arrays.asList(zReportKey, cashRegisterKey, receiptKey, receiptReturnDetailKey, itemKey, discountCardKey),
+            new IntegrationService(session, new ImportTable(returnImportFields, dataReturn), Arrays.asList(zReportKey, cashRegisterKey, receiptKey, receiptReturnDetailKey, skuKey, discountCardKey),
                     returnProperties).synchronize(true);
 
             ImportKey<?> paymentKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("POS.payment"), LM.findLCPByCompoundName("zReportReceiptPaymentToPayment").getMapping(zReportNumberField, numberReceiptField, numberPaymentField, cashRegisterField));

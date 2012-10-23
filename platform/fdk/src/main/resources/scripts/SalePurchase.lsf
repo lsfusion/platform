@@ -7,7 +7,7 @@ REQUIRE Sale, Purchase
 
 availableQuantitySkuStockDateTime 'Доступное количество' (sku, stock, dateTime) = (currentBalanceSkuStock(sku, stock) AND dateTime AS DATETIME) (+) reservePurchaseBSkuStockDateTime(sku, stock, dateTime) (-) reserveSaleBSkuStockDateTime(sku, stock, dateTime);
 
-META extendDocumentFormReserveSkuStock(object, NS, form, concrete)
+META extendFormDocumentReserveSkuStock(object, NS, form, concrete)
 
     availableQuantity##NS##SkuStock###object 'Доступное количество' (sku, stock, object)= availableQuantitySkuStockDateTime(sku, stock, NS.shipmentDateTime###object(object));
 
@@ -27,8 +27,8 @@ META extendDocumentFormReserveSkuStock(object, NS, form, concrete)
 
 END
 
-@extendDocumentFormReserveSkuStock(userOrder, Sale, userOrder, o);
-@extendDocumentFormReserveSkuStock(userOrder, SaleReturn, userOrder, o);
-@extendDocumentFormReserveSkuStock(userOrder, Purchase, userOrder, o);
-@extendDocumentFormReserveSkuStock(userOrder, PurchaseReturn, userOrder, o);
-@extendDocumentFormReserveSkuStock(blanketOrder, Sale, blanketOrder, o);
+@extendFormDocumentReserveSkuStock(userOrder, Sale, userOrder, o);
+@extendFormDocumentReserveSkuStock(userOrder, SaleReturn, userOrder, o);
+@extendFormDocumentReserveSkuStock(userOrder, Purchase, userOrder, o);
+@extendFormDocumentReserveSkuStock(userOrder, PurchaseReturn, userOrder, o);
+@extendFormDocumentReserveSkuStock(blanketOrder, Sale, blanketOrder, o);

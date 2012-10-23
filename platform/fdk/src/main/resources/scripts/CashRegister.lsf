@@ -138,6 +138,11 @@ EXTEND FORM groupMachineryInput
                                                                     nameModelMachinery, dateCashRegister
 ;
 
+createMachineryPriceTransactionGroupMachinery (groupMachinery) += ACTION (groupMachinery) {
+    IF groupMachinery IS groupCashRegister THEN
+        ADDOBJ cashRegisterPriceTransaction;
+}
+
 // ------------------------------------------------ Стандартные значения ------------------------------------ //
 
 loadDefaultCashRegisterModel 'Добавить модель касс' = ACTION (iname, isid, ihandler)  {

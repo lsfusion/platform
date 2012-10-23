@@ -79,6 +79,11 @@ CLASS priceCheckerPriceTransaction 'Загрузка прайса в прайс 
 groupPriceCheckerPriceCheckerPriceTransaction 'Группа прайс чекеров' = DATA groupPriceChecker (priceCheckerPriceTransaction);
 groupMachineryMachineryPriceTransaction (transaction) += groupPriceCheckerPriceCheckerPriceTransaction(transaction);
 
+createMachineryPriceTransactionGroupMachinery (groupMachinery) += ACTION (groupMachinery) {
+    IF groupMachinery IS groupPriceChecker THEN
+        ADDOBJ priceCheckerPriceTransaction;
+}
+
 // ------------------------------------------------ Стандартные значения ------------------------------------ //
 
 loadDefaultPriceCheckerModel 'Добавить модель прайс-чекера' = ACTION (stringOne, stringTwo)  {

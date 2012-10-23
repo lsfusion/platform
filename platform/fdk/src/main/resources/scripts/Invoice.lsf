@@ -254,7 +254,7 @@ META defineInvoice(sign, contact, partyA, partyB)
 
 //-- SKU
     @defineDocumentSku(userInvoice);
-    @extendDocumentFormSku(userInvoice, userInvoice, i);
+    @extendFormDocumentSku(userInvoice, userInvoice, i);
 
     addUserInvoice 'Добавить' = ACTION ADDFORM userInvoice;
     editUserInvoice 'Редактировать' (userInvoice) = ACTION EDITFORM userInvoice;
