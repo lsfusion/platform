@@ -46,7 +46,7 @@ languageName 'Название (иностр.)' = DATA ISTRING[110] (multiLangua
 
 FORM dictionary 'Словарь'
     OBJECTS d = dictionary FIXED PANEL
-    PROPERTIES(d) name
+    PROPERTIES(d) name, insensitiveDictionary
 
     OBJECTS e = dictionaryEntry
     PROPERTIES(e) termDictionary, translationDictionary, ADDOBJ, delete
@@ -57,7 +57,7 @@ FORM dictionary 'Словарь'
 
 FORM dictionaries 'Словари'
     OBJECTS d = dictionary
-    PROPERTIES(d) READONLY name
+    PROPERTIES(d) READONLY name, insensitiveDictionary
 
     PROPERTIES(d) ADDFORM, EDITFORM, delete
 

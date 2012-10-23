@@ -18,11 +18,16 @@ public class TranslateActionProperty extends UserActionProperty {
     private LCP sourceProperty;
     private LCP targetProperty;
     private LCP translationDictionaryTerm;
-
-    public TranslateActionProperty(String sID, String caption, LCP translationDictionaryTerm, LCP sourceProperty, LCP targetProperty, ValueClass dictionary) {
+    private LCP insensitiveTranslationDictionaryTerm;
+    private LCP insensitiveDictionary;
+    
+    public TranslateActionProperty(String sID, String caption, LCP translationDictionaryTerm, LCP insensitiveTranslationDictionaryTerm,
+                                   LCP inSensitiveDictionary, LCP sourceProperty, LCP targetProperty, ValueClass dictionary) {
         super(sID, caption, getValueClasses(sourceProperty, dictionary));
 
         this.translationDictionaryTerm = translationDictionaryTerm;
+        this.insensitiveTranslationDictionaryTerm = insensitiveTranslationDictionaryTerm;
+        this.insensitiveDictionary = inSensitiveDictionary;
         this.sourceProperty = sourceProperty;
         this.targetProperty = targetProperty;
     }
@@ -37,22 +42,24 @@ public class TranslateActionProperty extends UserActionProperty {
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
         List<ClassPropertyInterface> interfacesList = new ArrayList<ClassPropertyInterface>(interfaces);
         DataObject dictionary = context.getKeyValue(interfacesList.remove(0));
+        Boolean insensitive = insensitiveDictionary.read(context.getSession(), dictionary) != null;
         List<DataObject> inputObjects = BaseUtils.mapList(interfacesList, context.getKeys());
 
         String source = (String) sourceProperty.read(context, inputObjects.toArray(new DataObject[inputObjects.size()]));
-
+        if(insensitive)
+            source = source.toUpperCase();
         if (source != null) {
             String delim = ", .:;%#$@/\\|<>=+-_)(*&?^!~{}[]\"1234567890'";
             StringTokenizer st = new StringTokenizer(source, delim, true);
             String result = "";
-            String fullLineTranslation = (String) translationDictionaryTerm.read(context, dictionary, new DataObject(source, StringClass.get(50)));
+            String fullLineTranslation = (String) (insensitive ? insensitiveTranslationDictionaryTerm : translationDictionaryTerm).read(context, dictionary, new DataObject(source, StringClass.get(50)));
             if (fullLineTranslation != null) {
                 result = fullLineTranslation.trim();
             } else {
                 while (st.hasMoreTokens()) {
                     String token = st.nextToken();
                     if (!delim.contains(token.subSequence(0, token.length()))) {
-                        String translation = (String) translationDictionaryTerm.read(context, dictionary, new DataObject(token, StringClass.get(50)));
+                        String translation = (String) (insensitive? insensitiveTranslationDictionaryTerm : translationDictionaryTerm).read(context, dictionary, new DataObject(token, StringClass.get(50)));
                         if (translation != null) {
                             token = translation.trim();
                         }

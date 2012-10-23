@@ -138,6 +138,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP betweenDates;
     public LCP object1, and1, andNot1;
     public LCP equals2, diff2;
+    public LCP upper;
     public LCP sum;
     public LCP subtract;
     protected LCP delta;
@@ -484,9 +485,12 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     protected LCP termDictionary;
     protected LCP translationDictionary;
+    public LCP insensitiveDictionary;
+    public LCP insensitiveTermDictionary;
     protected LCP entryDictionary;
     protected LCP nameEntryDictionary;
     public LCP translationDictionaryTerm;
+    public LCP insensitiveTranslationDictionaryTerm;
 
     private LCP selectRoleForms;
     private LAP selectUserRoles;
@@ -768,6 +772,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         ustring3 = addSFUProp("ustring3", "", 3);
 
         ustring5CM = addSFUProp("ustring5CM", ",", 5);
+
+        upper = addSFProp("upper", "prm1", 1);
 
         sum = addSFProp("sum", "((prm1)+(prm2))", 2);
         sumDate = addSFProp("sumDate", "((prm1)+(prm2))", DateClass.instance, 2);
@@ -1199,12 +1205,16 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         dataName.setEventChange(addJProp(string2, addJProp(name.getOld(), objectClass, 1), 1, castString, 1), 1, is(baseClass.named), 1);
         date.setEventChange(currentDate, is(transaction), 1);
 
+        insensitiveDictionary = addDProp(recognizeGroup, "insensitiveDictionary", getString("logics.dictionary.insensitive"), LogicalClass.instance, dictionary);
         entryDictionary = addDProp("entryDictionary", getString("logics.dictionary"), dictionary, dictionaryEntry);
         termDictionary = addDProp(recognizeGroup, "termDictionary", getString("logics.dictionary.termin"), StringClass.get(50), dictionaryEntry);
+        insensitiveTermDictionary = addJProp(baseGroup, "insensitiveTermDictionary", upper, termDictionary, 1);
         translationDictionary = addDProp(baseGroup, "translationDictionary", getString("logics.dictionary.translation"), StringClass.get(50), dictionaryEntry);
-        translationDictionaryTerm = addCGProp(null, "translationDictionayTerm", getString("logics.dictionary.translation"), translationDictionary, termDictionary, entryDictionary, 1, termDictionary, 1);
+        translationDictionaryTerm = addCGProp(null, "translationDictionaryTerm", getString("logics.dictionary.translation"), translationDictionary, termDictionary, entryDictionary, 1, termDictionary, 1);
         nameEntryDictionary = addJProp(baseGroup, "nameEntryDictionary", getString("logics.dictionary"), name, entryDictionary, 1);
 
+        insensitiveTranslationDictionaryTerm = addMGProp((AbstractGroup)null, "insensitiveTranslationDictionaryTerm", getString("logics.dictionary.translation.insensitive"), translationDictionary, entryDictionary, 1, insensitiveTermDictionary, 1);
+        
         currencyTypeExchange = addDProp(idGroup, "currencyTypeExchange", "Валюта типа обмена (ИД)", currency, typeExchange);
         nameCurrencyTypeExchange = addJProp(baseGroup, "nameCurrencyTypeExchange", "Валюта типа обмена (наим.)", name, currencyTypeExchange, 1);
         rateExchange = addDProp(baseGroup, "rateExchange", "Курс обмена", NumericClass.get(15, 8), typeExchange, baseLM.currency, DateClass.instance);
