@@ -472,11 +472,11 @@ BEFORE constraintAction(store, article) DO MESSAGE 'Before Aspect';
 
 //////////////// FORM STATEMENT /////////////////
 // Syntax:
-// FORM name ['caption'] [PRINT] [DOCKED | MODAL | FULLSCREEN | DOCKED_MODAL] | EXTEND FORM name
+// FORM name ['caption'] [TITLE 'title'] [PRINT] [DOCKED | MODAL | FULLSCREEN | DOCKED_MODAL] | EXTEND FORM name
 // [(GroupObjects list | TreeGroupObjects list | Properties list | Filters list | Hints list | OrderBy list | filterGroup | dialog form | edit form | list form)]
 // ...
 // [(GroupObjects list | TreeGroupObjects list | Properties list | Filters list | Hints list | OrderBy list | filterGroup | dialog form | edit form | list form)];
-FORM documentArticle 'По документам'
+FORM documentArticle 'По документам (caption)' TITLE 'По документам (title)'
 
 // GroupObjects list syntax:
 // OBJECTS [alias=] className ['<caption>'] | [groupAlias=] (object1 definition, ..., objectN definition) [REPORTFILE prop(p1, ..., pK)] [INIT | FIXED] [PANEL | HIDE | GRID] [PAGESIZE <int value>],

@@ -339,13 +339,14 @@ formDeclaration returns [ScriptingFormEntity form]
 }
 @after {
 	if (inPropParseState()) {
-		$form = self.createScriptedForm($formNameCaption.name, $formNameCaption.caption);
+		$form = self.createScriptedForm($formNameCaption.name, $formNameCaption.caption, $title.val);
 		$form.setIsPrintForm(isPrint);
 		$form.setModalityType(modalityType);
 	}
 }
 	:	'FORM' 
 		formNameCaption=simpleNameWithCaption
+		('TITLE' title=stringLiteral)?
 		('PRINT' { isPrint = true; })?
 		(modality = modalityTypeLiteral { modalityType = $modality.val; })?
 	;

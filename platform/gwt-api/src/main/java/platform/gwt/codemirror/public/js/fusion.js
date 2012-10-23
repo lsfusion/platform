@@ -33,7 +33,7 @@ CodeMirror.defineMode("fusion", function(config, parserConfig) {
                            "REPORTFILE REQUEST REQUIRE RESOLVE RETURN RGB RIGHT RIGHTBOTTOM " + 
                            "ROUND RTF SELECTION SELECTOR SESSION SET SHORTCUT SHOW " + 
                            "SHOWIF SINGLE SPLITH SPLITV STATIC STEP STRICT SUBJECT " + 
-                           "SUM TABBED TABLE TEXTHALIGN TEXTVALIGN THE THEN TO TODRAW " + 
+                           "SUM TABBED TABLE TEXTHALIGN TEXTVALIGN THE THEN TITLE TO TODRAW " +
                            "TOOLBAR TOP TREE TRUE UNGROUP UNION UNIQUE UPDATE VALIGN " + 
                            "VERTICAL WHEN WHERE WHILE WINDOW WORDFILE XOR");
 
