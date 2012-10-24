@@ -1,6 +1,6 @@
 MODULE Country;
 
-REQUIRE System, DefaultData, I18n, Currency;
+REQUIRE System, Utils, DefaultData, I18n, Currency;
 
 CLASS country 'Страна' : named, multiLanguageNamed;
 
@@ -30,11 +30,21 @@ nameDefaultCountry 'Страна по умолчанию' () = name(defaultCount
 
 fillDaysOff 'Заполнить выходные дни' = ACTION CUSTOM 'platform.fdk.actions.FillDaysOffActionProperty';
 
+addDayOff 'Добавить выходной день' = ACTION (country) NEWSESSION {
+    FORM dialogDate MODAL;
+    IF formResult() == formResult.ok THEN {
+        FOR d == chosenDate('d') DO {
+            SET isDayOffCountryDate (country, d) <- TRUE;
+            EXEC apply();
+        }
+    }
+}
+
 FORM daysOffForm 'Выходные дни' // logics.days.off
-PROPERTIES () fillDaysOff
-OBJECTS country 'Страна' INIT PANEL, day=DATE 'День', newDate=DATE 'Дата' FIXED PANEL
-PROPERTIES(country) nameOriginCountry, sidCountry, sidOrigin2Country, sidOrigin3Country, nameCurrencyCountry, residentCountry
-PROPERTIES OBJVALUE(day), isDayOffCountryDate(country, day), OBJVALUE(newDate), isDayOffCountryDate(country, newDate)
+OBJECTS country 'Страна', day=DATE 'День'
+PROPERTIES(country) FORCE PANEL fillDaysOff, addDayOff
+PROPERTIES(country) READONLY nameOriginCountry, sidCountry, sidOrigin2Country, sidOrigin3Country, nameCurrencyCountry, residentCountry
+PROPERTIES OBJVALUE(day), isDayOffCountryDate(country, day)
 FILTERS isDayOffCountryDate(country, day)
 ;
 

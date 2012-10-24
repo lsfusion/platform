@@ -36,30 +36,23 @@ import java.sql.Time;
 import java.util.*;
 
 public class FillDaysOffActionProperty extends ScriptingActionProperty {
-    BusinessLogics BL;
+    private final ClassPropertyInterface countryInterface;
+    private BusinessLogics BL;
     public FillDaysOffActionProperty(ScriptingLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
-        super(LM, new ValueClass[]{});
+        super(LM, new ValueClass[]{LM.getClassByName("country")});
         BL = LM.getBL();
+
+        Iterator<ClassPropertyInterface> i = interfaces.iterator();
+        countryInterface = i.next();
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) {
         try {
             DataSession session = createSession();
 
-            LCP<PropertyInterface> generateOrDefaultCountry = LM.addSUProp(Union.OVERRIDE, BL.getModule("Country").getLCPByName("generateDatesCountry"), LM.addJProp(LM.baseLM.equals2, BL.getModule("Country").getLCPByName("defaultCountry"), 1));
+            DataObject countryObject = context.getKeyValue(countryInterface);
+            generateDates(countryObject);
 
-            OrderedMap<PropertyInterface, KeyExpr> keys = generateOrDefaultCountry.getMapKeys();
-
-            Query<PropertyInterface, Object> query = new Query<PropertyInterface, Object>(keys);
-            query.properties.put("id", generateOrDefaultCountry.property.getExpr(keys));
-
-            query.and(generateOrDefaultCountry.property.getExpr(keys).getWhere());
-
-            OrderedMap<Map<PropertyInterface, Object>, Map<Object, Object>> result = query.execute(session.sql);
-            for (Map<PropertyInterface, Object> key : result.keyList()) {
-                Integer id = (Integer) BaseUtils.singleValue(key);
-                generateDates(id);
-            }
             session.close();
         } catch (SQLException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
@@ -72,24 +65,24 @@ public class FillDaysOffActionProperty extends ScriptingActionProperty {
         }
     }
 
-    private void generateDates(int countryId) throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
+    private void generateDates(DataObject countryObject) throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
         DataSession session = createSession();
         Calendar current = Calendar.getInstance();
         int currentYear = current.get(Calendar.YEAR);
         //если проставлен выходной 1 января через 2 года, пропускаем генерацию
-        DataObject countryObject = new DataObject(countryId, (ConcreteClass) BL.getModule("Country").getClassByName("country"));
-        if (BL.getModule("Country").getLCPByName("isDayOffCountryDate").read(session, countryObject, new DataObject(new java.sql.Date(new GregorianCalendar(currentYear + 2, 0, 1).getTimeInMillis()), DateClass.instance)) != null) {
-            return;
-        }
+        //DataObject countryObject = new DataObject(countryId, (ConcreteClass) BL.getModule("Country").getClassByName("country"));
+        //if (BL.getModule("Country").getLCPByName("isDayOffCountryDate").read(session, countryObject, new DataObject(new java.sql.Date(new GregorianCalendar(currentYear + 2, 0, 1).getTimeInMillis()), DateClass.instance)) != null) {
+        //    return;
+        //}
 
-        long wholeYearMillisecs = new GregorianCalendar(currentYear + 3, 0, 1).getTimeInMillis() - current.getTimeInMillis();
+        long wholeYearMillisecs = new GregorianCalendar(currentYear + 3, 0, 1).getTimeInMillis() - new GregorianCalendar(currentYear, 0, 1).getTimeInMillis()/*current.getTimeInMillis()*/;
         long wholeYearDays = wholeYearMillisecs / 1000 / 60 / 60 / 24;
         Calendar cal = new GregorianCalendar(currentYear, 0, 1);
         for (int i = 0; i < wholeYearDays; i++) {
             cal.add(Calendar.DAY_OF_MONTH, 1);
             int day = cal.get(Calendar.DAY_OF_WEEK);
             if (day == 1 || day == 7) {
-                addDayOff(session, countryId, cal.getTimeInMillis());
+                addDayOff(session, countryObject, cal.getTimeInMillis());
             }
         }
 
@@ -97,15 +90,14 @@ public class FillDaysOffActionProperty extends ScriptingActionProperty {
             Calendar calendar = new GregorianCalendar(currentYear + i, 0, 1);
             int day = calendar.get(Calendar.DAY_OF_WEEK);
             if (day != 1 && day != 7)
-                addDayOff(session, countryId, calendar.getTimeInMillis());
+                addDayOff(session, countryObject, calendar.getTimeInMillis());
         }
 
         session.apply(BL);
         session.close();
     }
 
-    private void addDayOff(DataSession session, int countryId, long timeInMillis) throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
-        DataObject countryObject = new DataObject(countryId, (ConcreteClass) BL.getModule("Country").getClassByName("country"));
+    private void addDayOff(DataSession session,DataObject countryObject, long timeInMillis) throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
         BL.getModule("Country").getLCPByName("isDayOffCountryDate").change(true, session, countryObject, new DataObject(new java.sql.Date(timeInMillis), DateClass.instance));
     }
 }
