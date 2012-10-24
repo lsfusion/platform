@@ -645,7 +645,13 @@ public class ClientFormController implements AsyncListener {
     }
 
     public boolean isAsyncModifyObject(ClientPropertyDraw property) {
-        return property.addRemove!=null && controllers.get(property.addRemove.first.groupObject).classView==ClassViewType.GRID;
+        if (property.addRemove != null) {
+            GroupObjectController controller = controllers.get(property.addRemove.first.groupObject);
+            if (controller != null && controller.classView == ClassViewType.GRID) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void modifyObject(final ClientPropertyDraw property, ClientGroupObjectValue columnKey) throws IOException {
