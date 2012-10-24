@@ -155,7 +155,7 @@ META defineOrder(sign, contact)
     addUserOrder 'Добавить' = ACTION ADDFORM userOrder;
     editUserOrder 'Редактировать' (userOrder) = ACTION EDITFORM userOrder;
 
-    FORM orders 'Заказы'###sign
+    FORM orders 'Заказы' TITLE 'Заказы'###sign
         OBJECTS o = order
         PROPERTIES (o) READONLY isPostedOrder FORCE GRID, isClosedOrder, objectClassName, numberOrder, seriesOrder, dateOrder, timeOrder,
                                 nameStockOrder, name###contact##Order, nameCurrencyOrder, nameAgreementOrder, namePriceListTypeOrder, noteOrder,

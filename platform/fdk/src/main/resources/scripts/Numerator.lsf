@@ -30,6 +30,13 @@ incrementValueNumerator 'Увеличить значение' = ACTION (numerato
     };
 };
 
+incrementValueSessionNumerator 'Увеличить значение' = ACTION (numerator) {
+    IF curValueNumerator(numerator) >= maxValueNumerator(numerator) THEN
+        MESSAGE 'Счетчик нумератора достиг максимального значения. Обратитесь к администратору.'
+    ELSE
+        SET curValueNumerator(numerator) <- curValueNumerator(numerator) + 1;
+}
+
 FORM numerator 'Нумератор'
     OBJECTS n = numerator FIXED PANEL
     PROPERTIES(n) name, seriesNumerator, minValueNumerator, maxValueNumerator, stringLengthNumerator, curValueNumerator, curStringValueNumerator
@@ -101,10 +108,16 @@ setValueNumeratedObject 'Сгенерировать номер' = ACTION (numera
     EXEC incrementValueNumerator(numeratorObject(numeratedObject));
 } IN numberedGroup SHORTCUT numberObject;
 
+setValueSessionNumeratedObject 'Сгенерировать номер' = ACTION (numeratedObject) {
+    SET numberObject(numeratedObject) <- curStringValueNumerator(numeratorObject(numeratedObject));
+    SET seriesObject(numeratedObject) <- seriesNumerator(numeratorObject(numeratedObject));
+    EXEC incrementValueSessionNumerator(numeratorObject(numeratedObject));
+} IN numberedGroup SHORTCUT numberObject;
+
 WHEN CHANGED(numeratorObject(numeratedObject)) AND
      NOT CHANGED(numberObject(numeratedObject)) AND
      NOT CHANGED(seriesObject(numeratedObject))
-     DO EXEC setValueNumeratedObject(numeratedObject) ;
+     DO EXEC setValueSessionNumeratedObject(numeratedObject) ;
 
 // --------------------------------------------- Стандартные значения ---------------------------- //
 
@@ -159,16 +172,16 @@ META defineNumeratedDoubleObject (object1, object2, Prop)
 
     numerator###object1###object2 (object1, object2) <- defaultNumerator###object1###object2 () AND object1 IS object1 AND object2 IS object2 WHEN ASSIGNED(Prop(object1, object2));
 
-    setValueNumerated###object1###object2 'Сгенерировать номер' = ACTION (object1, object2) {
+    setValueSessionNumerated###object1###object2 'Сгенерировать номер' = ACTION (object1, object2) {
         SET number###object1###object2(object1, object2) <- curStringValueNumerator(numerator###object1###object2(object1, object2));
         SET series###object1###object2(object1, object2) <- seriesNumerator(numerator###object1###object2(object1, object2));
-        EXEC incrementValueNumerator(numerator###object1###object2(object1, object2));
+        EXEC incrementValueSessionNumerator(numerator###object1###object2(object1, object2));
     } IN numberedGroup SHORTCUT number###object1###object2;
 
     WHEN CHANGED(numerator###object1###object2(object1, object2)) AND
          NOT CHANGED(number###object1###object2(object1, object2)) AND
          NOT CHANGED(series###object1###object2(object1, object2))
-         DO EXEC setValueNumerated###object1###object2(object1, object2) ;
+         DO EXEC setValueSessionNumerated###object1###object2(object1, object2) ;
 
 END
 

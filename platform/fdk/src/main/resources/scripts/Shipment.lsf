@@ -111,7 +111,7 @@ META defineShipment(skuLedger, sign, contact, contactCaption, partyA, partyB)
     addUserShipment 'Добавить' = ACTION ADDFORM userShipment;
     editUserShipment 'Редактировать' (userShipment) = ACTION EDITFORM userShipment;
 
-    FORM shipments 'Поставки'###sign
+    FORM shipments 'Поставки' TITLE 'Поставки'###sign
         OBJECTS s = shipment
         PROPERTIES (s) READONLY isPostedShipment FORCE GRID, objectClassName, numberShipment, seriesShipment, dateShipment, timeShipment,
                                 nameStockShipment, name###contact###Shipment, nameCurrencyShipment, noteShipment,

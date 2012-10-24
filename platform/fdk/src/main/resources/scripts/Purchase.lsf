@@ -7,7 +7,7 @@ REQUIRE PurchaseShipment, PurchaseReturnShipment, PurchaseCreditNote, PurchaseRe
 
 
 currentReservePurchaseSkuStock 'Резерв закупка (всего)'(sku, stock)  = Purchase.currentReserveSkuStock(sku, stock) (-)
-    PurchaseReturn.currentReserveSkuStock(sku, stock);
+    PurchaseReturn.currentReserveSkuStock(sku, stock) PERSISTENT;
 
 // без учета текущей даты/времени
 reservePurchaseBSkuStockDate 'Остаток на начало дня' (sku, stock, date) = Purchase.reserveBSkuStockDate(sku, stock, date) (-)

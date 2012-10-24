@@ -259,7 +259,7 @@ META defineInvoice(sign, contact, partyA, partyB)
     addUserInvoice 'Добавить' = ACTION ADDFORM userInvoice;
     editUserInvoice 'Редактировать' (userInvoice) = ACTION EDITFORM userInvoice;
 
-    FORM invoices 'Накладные'###sign
+    FORM invoices 'Накладные' TITLE 'Накладные'###sign
         OBJECTS i = invoice
         PROPERTIES (i) READONLY isPostedInvoice FORCE GRID, objectClassName, numberInvoice, seriesInvoice, dateInvoice, timeInvoice,
                                 nameStockInvoice, name###contact###Invoice, nameCurrencyInvoice, nameAgreementInvoice, noteInvoice,

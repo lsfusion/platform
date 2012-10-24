@@ -117,7 +117,7 @@ META defineCreditNote(sign, contact, contactCaption)
     addUserCreditNote 'Добавить' = ACTION ADDFORM userCreditNote;
     editUserCreditNote 'Редактировать' (userCreditNote) = ACTION EDITFORM userCreditNote;
 
-    FORM creditNotes 'Акты расхождений'###sign
+    FORM creditNotes 'Акты расхождений' TITLE 'Акты расхождений'###sign
         OBJECTS c = creditNote
         PROPERTIES (c) READONLY isPostedCreditNote FORCE GRID, objectClassName, numberCreditNote, seriesCreditNote, dateCreditNote, timeCreditNote,
                                 nameStockCreditNote, name###contact###CreditNote, nameCurrencyCreditNote, noteCreditNote,

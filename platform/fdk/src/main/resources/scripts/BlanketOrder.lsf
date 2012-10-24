@@ -1,7 +1,7 @@
 MODULE BlanketOrder;
 
-REQUIRE Order
-;
+REQUIRE Order;
+
 //----------------------------------------------- Множественнвй Заказ ---------------------------------------------------//
 
 META defineBlanketOrder(sign, contact, contactCaption, series)
@@ -62,7 +62,7 @@ META defineBlanketOrder(sign, contact, contactCaption, series)
     contact##sBlanketOrder 'Контрагенты' (blanketOrder) =
         GROUP CONCAT name(contact) IF inBlanketOrder###contact(blanketOrder, contact), ', '
         BY blanketOrder
-        ORDER contact MINCHARWIDTH 10 MAXCHARWIDTH 30 PREFCHARWIDTH 20 PERSISTENT;
+        ORDER contact MINCHARWIDTH 20 MAXCHARWIDTH 60 PREFCHARWIDTH 40 PERSISTENT;
 
     @defineDefaultNumeratedDoubleObject (blanketOrder, contact, 'Нумератор для Заказ/'###contactCaption###sign, series, inBlanketOrder###contact);
     @defineNumeratedDoubleObject (blanketOrder, contact, inBlanketOrder###contact);
@@ -149,7 +149,7 @@ META defineBlanketOrder(sign, contact, contactCaption, series)
     @extendFormDocumentSkuStockContractor(blanketOrder, blanketOrder, o, contact);
 
 
-    FORM blanketOrders 'Множественные заказы'###sign
+    FORM blanketOrders 'Множественные заказы' TITLE 'Множественные заказы'###sign
         OBJECTS o = blanketOrder
         PROPERTIES (o) READONLY isPostedBlanketOrder FORCE GRID, objectClassName, numberObject, seriesObject, dateBlanketOrder, timeBlanketOrder,
                                 nameStockBlanketOrder, nameCurrencyBlanketOrder, noteBlanketOrder,
@@ -173,6 +173,9 @@ META defineBlanketOrder(sign, contact, contactCaption, series)
     ;
 
     DESIGN blanketOrders FROM DEFAULT {
+        PROPERTY(objectClassName) {
+            preferredCharWidth = 10;
+        }
         PROPERTY (delete(o)) {
             askConfirm = TRUE;
         }
