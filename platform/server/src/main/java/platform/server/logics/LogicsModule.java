@@ -1979,7 +1979,7 @@ public abstract class LogicsModule {
 
     // объединение пересекающихся свойств
 
-    protected LCP addSUProp(Union unionType, LCP... props) {
+    public LCP addSUProp(Union unionType, LCP... props) {
         return addSUProp(baseLM.privateGroup, "sys", unionType, props);
     }
 

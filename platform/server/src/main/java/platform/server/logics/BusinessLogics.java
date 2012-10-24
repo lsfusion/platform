@@ -1031,8 +1031,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         // запишем текущую дату
         changeCurrentDate();
 
-        fillDaysOff();
-
         Thread thread = new ContextAwareThread(this, new Runnable() {
             long time = 1000;
             boolean first = true;
@@ -1507,63 +1505,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 inStream.close();
             }
         }
-    }
-
-    private void fillDaysOff() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
-        DataSession session = createSession();
-
-        LCP<PropertyInterface> generateOrDefaultCountry = LM.addSUProp(Union.OVERRIDE, getModule("Country").getLCPByName("generateDatesCountry"), LM.addJProp(LM.equals2, getModule("Country").getLCPByName("defaultCountry"), 1));
-
-        OrderedMap<PropertyInterface, KeyExpr> keys = generateOrDefaultCountry.getMapKeys();
-
-        Query<PropertyInterface, Object> query = new Query<PropertyInterface, Object>(keys);
-        query.properties.put("id", generateOrDefaultCountry.property.getExpr(keys));
-
-        query.and(generateOrDefaultCountry.property.getExpr(keys).getWhere());
-
-        OrderedMap<Map<PropertyInterface, Object>, Map<Object, Object>> result = query.execute(session.sql);
-        for (Map<PropertyInterface, Object> key : result.keyList()) {
-            Integer id = (Integer) BaseUtils.singleValue(key);
-            generateDates(id);
-        }
-        session.close();
-    }
-
-    private void generateDates(int countryId) throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
-        DataSession session = createSession();
-        Calendar current = Calendar.getInstance();
-        int currentYear = current.get(Calendar.YEAR);
-        //если проставлен выходной 1 января через 2 года, пропускаем генерацию
-        DataObject countryObject = new DataObject(countryId, (ConcreteClass) getModule("Country").getClassByName("country"));
-        if (getModule("Country").getLCPByName("isDayOffCountryDate").read(session, countryObject, new DataObject(new java.sql.Date(new GregorianCalendar(currentYear + 2, 0, 1).getTimeInMillis()), DateClass.instance)) != null) {
-            return;
-        }
-
-        long wholeYearMillisecs = new GregorianCalendar(currentYear + 3, 0, 1).getTimeInMillis() - current.getTimeInMillis();
-        long wholeYearDays = wholeYearMillisecs / 1000 / 60 / 60 / 24;
-        Calendar cal = new GregorianCalendar(currentYear, 0, 1);
-        for (int i = 0; i < wholeYearDays; i++) {
-            cal.add(Calendar.DAY_OF_MONTH, 1);
-            int day = cal.get(Calendar.DAY_OF_WEEK);
-            if (day == 1 || day == 7) {
-                addDayOff(session, countryId, cal.getTimeInMillis());
-            }
-        }
-
-        for (int i = 0; i < 3; i++) {
-            Calendar calendar = new GregorianCalendar(currentYear + i, 0, 1);
-            int day = calendar.get(Calendar.DAY_OF_WEEK);
-            if (day != 1 && day != 7)
-                addDayOff(session, countryId, calendar.getTimeInMillis());
-        }
-
-        session.apply(this);
-        session.close();
-    }
-
-    private void addDayOff(DataSession session, int countryId, long timeInMillis) throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
-        DataObject countryObject = new DataObject(countryId, (ConcreteClass) getModule("Country").getClassByName("country"));
-        getModule("Country").getLCPByName("isDayOffCountryDate").change(true, session, countryObject, new DataObject(new java.sql.Date(timeInMillis), DateClass.instance));
     }
 
     public void mergeNavigatorTree(DataInputStream inStream) throws IOException {

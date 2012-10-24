@@ -28,7 +28,10 @@ countryName(name) = GROUP UNIQUE country BY name(country) WHERE country IS count
 defaultCountry 'Страна по умолчанию' () = DATA country (); // logics.country.default.country
 nameDefaultCountry 'Страна по умолчанию' () = name(defaultCountry()) PREFCHARWIDTH 30; // logics.country.default.country
 
+fillDaysOff 'Заполнить выходные дни' = ACTION CUSTOM 'platform.fdk.actions.FillDaysOffActionProperty';
+
 FORM daysOffForm 'Выходные дни' // logics.days.off
+PROPERTIES () fillDaysOff
 OBJECTS country 'Страна' INIT PANEL, day=DATE 'День', newDate=DATE 'Дата' FIXED PANEL
 PROPERTIES(country) nameOriginCountry, sidCountry, sidOrigin2Country, sidOrigin3Country, nameCurrencyCountry, residentCountry
 PROPERTIES OBJVALUE(day), isDayOffCountryDate(country, day), OBJVALUE(newDate), isDayOffCountryDate(country, newDate)
