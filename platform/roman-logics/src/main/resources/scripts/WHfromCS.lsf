@@ -711,11 +711,11 @@ hasExcessSkuWHfromCSR(sku, WHfromCSR) = diffSkuWHfromCSR(sku, WHfromCSR) > 0;
 
 @defineAggregation(WHfromCSR, WHfromCSD, countDiffWHfromCSR);
 
-@defineAggregationDouble(sku, WHfromCSR, WHfromCSDEDetail, hasExcessSkuWHfromCSR);
+@defineAggregation(sku, WHfromCSR, WHfromCSDEDetail, hasExcessSkuWHfromCSR);
 quantityWHfromCSDEDetail 'Кол-во' (WHfromCSDDetail) = diffSkuWHfromCSR(skuWHfromCSDEDetail(WHfromCSDDetail),
                                                                        WHfromCSRWHfromCSDEDetail(WHfromCSDDetail)) PERSISTENT;
 
-@defineAggregationDouble(sku, WHfromCSR, WHfromCSDSDetail, hasShortageSkuWHfromCSR);
+@defineAggregation(sku, WHfromCSR, WHfromCSDSDetail, hasShortageSkuWHfromCSR);
 quantityWHfromCSDSDetail 'Кол-во' (WHfromCSDDetail) = -diffSkuWHfromCSR(skuWHfromCSDSDetail(WHfromCSDDetail),
                                                                        WHfromCSRWHfromCSDSDetail(WHfromCSDDetail)) PERSISTENT;
 

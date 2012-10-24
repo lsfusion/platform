@@ -70,7 +70,7 @@ META defineHistorizableCustom(property, caption, type, typeIdentity, object, obj
 END
 
 // ----------------------------------- Свойство объект1-объект2-дата------------------------------------------ //
-META defineHistorizableDouble(property, caption, type, object1, object1Identity, object2, object2Identity, group)
+META defineHistorizable(property, caption, type, object1, object1Identity, object2, object2Identity, group)
     data###property##Date caption = DATA type (object1, object2, DATE) IN group;
 
     date###property##Date (object1, object2, date) = GROUP MAX dateIn AND data###property##Date(object1, object2, dateIn) AND dateIn <= (date AS DATE) BY object1, object2, date;
@@ -106,14 +106,14 @@ META defineHistorizableDouble(property, caption, type, object1, object1Identity,
 END
 // ----------------------------------- Свойство объект1-объект2-дата ------------------------------------------ //
 
-META defineHistorizableDoubleHeader(property, caption, type, typeIdentity, object1, object2, fixedCharWidth, group)
+META defineHistorizableHeader(property, caption, type, typeIdentity, object1, object2, fixedCharWidth, group)
     data###property##Date caption = DATA type (object1, object2, DATE);
     data###typeIdentity###property##Date caption (object1, object2, date) = typeIdentity(data###property##Date(object1, object2, date)) FIXEDCHARWIDTH fixedCharWidth IN group;
 
     date###property##Date (object1, object2, date) = GROUP MAX dateIn AND data###property##Date(object1, object2, dateIn) AND dateIn <= (date AS DATE) BY object1, object2, date;
 END
 
-META defineHistorizableDoubleFooter(property, caption, typeIdentity, object1, object1Identity, object2, object2Identity, fixedCharWidth, group)
+META defineHistorizableFooter(property, caption, typeIdentity, object1, object1Identity, object2, object2Identity, fixedCharWidth, group)
     typeIdentity###property##Date caption (object1, object2, date) = typeIdentity(property##Date(object1, object2, date)) FIXEDCHARWIDTH fixedCharWidth IN group;
 
     over###property##Date caption = UNION OVERRIDE property##Date(object1, object2, date), data###property##Date(object1, object2, date);
@@ -148,20 +148,20 @@ META defineHistorizableDoubleFooter(property, caption, typeIdentity, object1, ob
     overDialog###property##Date caption (object1, object2) = ACTION FORM dialog###property OBJECTS a, b MODAL SHORTCUT over###typeIdentity###property##Date;
 END
 
-META defineHistorizableDoubleCustom(property, caption, type, typeIdentity, object1, object1Identity, object2, object2Identity, fixedCharWidth, group)
-    @defineHistorizableDoubleHeader(property, caption, type, typeIdentity, object1, object2, fixedCharWidth, group);
+META defineHistorizableCustom(property, caption, type, typeIdentity, object1, object1Identity, object2, object2Identity, fixedCharWidth, group)
+    @defineHistorizableHeader(property, caption, type, typeIdentity, object1, object2, fixedCharWidth, group);
     property##Date caption (object1, object2, date) = data###property##Date(object1, object2, date###property##Date(object1, object2, date));
-    @defineHistorizableDoubleFooter(property, caption, typeIdentity, object1, object1Identity, object2, object2Identity, fixedCharWidth, group);
+    @defineHistorizableFooter(property, caption, typeIdentity, object1, object1Identity, object2, object2Identity, fixedCharWidth, group);
 END
 
-META defineHistorizableDoubleDefaultCustom(property, defaultProperty, caption, type, typeIdentity, object1, object1Identity, object2, object2Identity, fixedCharWidth, group)
-    @defineHistorizableDoubleHeader(property, caption, type, typeIdentity, object1, object2, fixedCharWidth, group);
+META defineHistorizableCustomDefault(property, defaultProperty, caption, type, typeIdentity, object1, object1Identity, object2, object2Identity, fixedCharWidth, group)
+    @defineHistorizableHeader(property, caption, type, typeIdentity, object1, object2, fixedCharWidth, group);
     property##Date caption (object1, object2, date) = (defaultProperty(object1, object2) AND date IS DATE) OR data###property##Date(object1, object2, date###property##Date(object1, object2, date));
-    @defineHistorizableDoubleFooter(property, caption, typeIdentity, object1, object1Identity, object2, object2Identity, fixedCharWidth, group);
+    @defineHistorizableFooter(property, caption, typeIdentity, object1, object1Identity, object2, object2Identity, fixedCharWidth, group);
 END
 
 // ----------------------------------- Свойство объект1-объект2-объект3-дата------------------------------------------ //
-META defineHistorizableTriple(property, caption, type, object1, object1Identity, object2, object2Identity, object3, object3Identity, group)
+META defineHistorizable(property, caption, type, object1, object1Identity, object2, object2Identity, object3, object3Identity, group)
     data###property##Date caption = DATA type (object1, object2, object3, DATE) IN group;
 
     date###property##Date (object1, object2, object3, date) = GROUP MAX dateIn AND data###property##Date(object1, object2, object3, dateIn) AND dateIn <= (date AS DATE) BY object1, object2, object3, date;
@@ -199,7 +199,7 @@ META defineHistorizableTriple(property, caption, type, object1, object1Identity,
 END
 // -------------------- Свойство объект1-объект2-объект3-дата ---------------------------- //
 
-META defineHistorizableTripleDefaultCustom(property, defaultProperty, caption, type, typeIdentity, object1, object1Identity, object2, object2Identity, object3, object3Identity, fixedCharWidth, group)
+META defineHistorizableCustomDefault(property, defaultProperty, caption, type, typeIdentity, object1, object1Identity, object2, object2Identity, object3, object3Identity, fixedCharWidth, group)
     data###property##Date caption = DATA type (object1, object2, object3, DATE);
     data###typeIdentity###property##Date caption (object1, object2, object3, date) = typeIdentity(data###property##Date(object1, object2, object3, date)) IN group;
 
@@ -240,7 +240,7 @@ END
 
 // ----------------------------------- Historizable Ledger -------------------------------------- //
 
-META defineHistorizableLedgerDouble(property, caption, type, key0, key1)
+META defineHistorizableLedger(property, caption, type, key0, key1)
     dateTime###property##Ledger 'Дата/время' (ledger) = ABSTRACT DATETIME (property##Ledger) PERSISTENT INDEXED;
     date###property##Ledger 'Дата' (ledger) = dateInTime(dateTime###property##Ledger(ledger)) PERSISTENT;
 
@@ -300,7 +300,7 @@ META defineHistorizableLedgerDouble(property, caption, type, key0, key1)
     current###property##Ledger caption (key0, key1) = property###property##Ledger(currentLedger###property(key0, key1));
 END
 
-META implementHistorizableLedgerDouble(property, key0, key1, concrete, key0Prop, key1Prop, propertyProp)
+META implementHistorizableLedger(property, key0, key1, concrete, key0Prop, key1Prop, propertyProp)
     dateTime###property##Ledger (ledger) += dateTime###concrete##Detail(ledger);
     isPosted###property##Ledger (ledger) += isPosted###concrete##Detail(ledger);
     key0###property##Ledger (ledger) += key0Prop###concrete##Detail(ledger);

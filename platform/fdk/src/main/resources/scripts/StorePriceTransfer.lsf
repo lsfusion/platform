@@ -26,7 +26,7 @@ META defineDocumentTransferPriceAct (object, caption, captionDetail, skuProp, st
     @defineDocumentTables (transferPriceAct###object);
 
     @defineAggregation (object##Out, transferPriceAct###object, isStoreDestinationStock###object##Out);
-    @defineAggregationDouble(object##OutDetail, batch, transferPriceAct###object##Detail, needTransferPriceActDetail###object##OutDetailBatch);
+    @defineAggregation(object##OutDetail, batch, transferPriceAct###object##Detail, needTransferPriceActDetail###object##OutDetailBatch);
     transferPriceAct###object##TransferPriceAct###object##Detail (transferPriceAct###object##Detail) =
         transferPriceAct###object###object##Out(object##Out###object##OutDetail(object##OutDetailTransferPriceAct###object###Detail(transferPriceAct###object##Detail)));
 

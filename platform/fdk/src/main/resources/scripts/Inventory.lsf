@@ -591,19 +591,19 @@ sumContainerOutAccountDocumentLedger (ledger) += sumContainerShortageCollationSh
 includeRegisterStockInventory(stock, inventory) =
     includeStockInventory(stock, inventory) AND typeOfAdditionStockInventory(stock, inventory) == typeOfAddition.register;
 
-@defineAggregationDoubleCustom(stockCollationSheet, inventoryCollationSheet, stock, inventory, registerCollationSheet, includeRegisterStockInventory);
+@defineAggregationCustom(stockCollationSheet, inventoryCollationSheet, stock, inventory, registerCollationSheet, includeRegisterStockInventory);
 
 // автоматическое создание сличительной ведомости (по остаткам) //
 includeRemainsStockInventory(stock, inventory) =
     includeStockInventory(stock, inventory) AND typeOfAdditionStockInventory(stock, inventory) == typeOfAddition.remains;
 
-@defineAggregationDoubleCustom(stockCollationSheet, inventoryCollationSheet, stock, inventory, remainsCollationSheet, includeRemainsStockInventory);
+@defineAggregationCustom(stockCollationSheet, inventoryCollationSheet, stock, inventory, remainsCollationSheet, includeRemainsStockInventory);
 
 // автоматическое создание сличительной ведомости (по множеству товаров) //
 includeManyStockInventory(stock, inventory) =
     includeStockInventory(stock, inventory) AND typeOfAdditionStockInventory(stock, inventory) == typeOfAddition.many;
 
-@defineAggregationDoubleCustom(stockCollationSheet, inventoryCollationSheet, stock, inventory, manyCollationSheet, includeManyStockInventory);
+@defineAggregationCustom(stockCollationSheet, inventoryCollationSheet, stock, inventory, manyCollationSheet, includeManyStockInventory);
 
 //---------------------------- Изменение остатка инвентаризации sku----------------------------//
 
@@ -619,8 +619,8 @@ needToOutLedgerCollationSheetSku (collationSheet, sku) = quantityShortageCollati
 needToInLedgerCollationSheetSku (collationSheet, sku) = quantityShortageCollationSheetSku(collationSheet, sku) < 0
     AND includeCollationSheetSku(collationSheet, sku) AND isPostedCollationSheet(collationSheet) AND NOT isBatchCollationSheet(collationSheet);
 
-@defineAggregationDouble(collationSheet, sku, outInventorySkuDetail, needToOutLedgerCollationSheetSku);
-@defineAggregationDouble(collationSheet, sku, inInventorySkuDetail, needToInLedgerCollationSheetSku);
+@defineAggregation(collationSheet, sku, outInventorySkuDetail, needToOutLedgerCollationSheetSku);
+@defineAggregation(collationSheet, sku, inInventorySkuDetail, needToInLedgerCollationSheetSku);
 
 collationSheetInventorySkuDetail(inventorySkuDetail) = UNION EXCLUSIVE collationSheetOutInventorySkuDetail(inventorySkuDetail),
                                                                        collationSheetInInventorySkuDetail(inventorySkuDetail);
@@ -682,8 +682,8 @@ needToOutLedgerCollationSheetBatch (collationSheet, batch) = quantityShortageCol
 needToInLedgerCollationSheetBatch (collationSheet, batch) = quantityShortageCollationSheetBatch(collationSheet, batch) < 0
     AND includeCollationSheetBatch(collationSheet, batch) AND isPostedCollationSheet(collationSheet) AND isBatchCollationSheet(collationSheet);
 
-@defineAggregationDouble(collationSheet, batch, outInventoryBatchDetail, needToOutLedgerCollationSheetBatch);
-@defineAggregationDouble(collationSheet, batch, inInventoryBatchDetail, needToInLedgerCollationSheetBatch);
+@defineAggregation(collationSheet, batch, outInventoryBatchDetail, needToOutLedgerCollationSheetBatch);
+@defineAggregation(collationSheet, batch, inInventoryBatchDetail, needToInLedgerCollationSheetBatch);
 
 collationSheetInventoryBatchDetail(inventoryBatchDetail) = UNION EXCLUSIVE collationSheetOutInventoryBatchDetail(inventoryBatchDetail),
                                                                            collationSheetInInventoryBatchDetail(inventoryBatchDetail);

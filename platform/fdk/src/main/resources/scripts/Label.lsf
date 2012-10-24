@@ -209,7 +209,7 @@ createLabelTransaction 'Распечатать ценники' = ACTION (departm
 }
 
 // -------------------------------- Добавление новых атрибутов -------------------------- //
-META defineLabelTransactionAttribute(object, barcodeProp)
+META defineLabelTransactionAttributeAction(object, barcodeProp)
     createAttributeLabelTransaction(labelTransaction) +=
         ACTION SET object##LabelTransactionBarcode(labelTransaction, barcode) <- barcodeProp##Barcode(barcode) WHERE inLabelTransactionBarcode(labelTransaction, barcode);
 
@@ -218,10 +218,14 @@ META defineLabelTransactionAttribute(object, barcodeProp)
     EXTEND FORM labelTransactions PROPERTIES(l, b) READONLY object##LabelTransactionBarcode;
 END
 
+META defineLabelTransactionAttribute(object, caption, type, barcodeProp)
+    object##LabelTransactionBarcode caption  = DATA type (labelTransaction, barcode);
+    @defineLabelTransactionAttributeAction(object, barcodeProp);
+END
+
 // ---------- Атрибуты по умолчанию ------ //
 
-shortNameUOMLabelTransactionBarcode 'Ед. изм.' =  DATA STRING[5] (labelTransaction, barcode);
-@defineLabelTransactionAttribute(shortNameUOM, shortNameUOM);
+@defineLabelTransactionAttribute(shortNameUOM, 'Ед. изм.', STRING[5], shortNameUOM);
 
 // ------------------------- Подключение печати ценников в документ --------------------- //
 META defineDocumentLabelTransaction (document, skuProp, stockProp)

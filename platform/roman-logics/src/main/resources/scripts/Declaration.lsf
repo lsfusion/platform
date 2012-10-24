@@ -51,7 +51,7 @@ TABLE innerInvoiceSku (innerInvoice, sku);
 
 includeImporterFreight(importer, freight) = quantityProxyImporterFreight(importer, freight) AND freight IS freightArrived AND routeFreight(freight) == route.rb;
 
-@defineAggregationDouble(importer, freight, formedInvoice, includeImporterFreight);
+@defineAggregation(importer, freight, formedInvoice, includeImporterFreight);
 
 freightInnerInvoice 'Фрахт инвойса (ИД)' (innerInvoice) = UNION EXCLUSIVE freightFormedInvoice(innerInvoice),
                                                                           freightDirectInvoice(innerInvoice) IN idGroup PERSISTENT;
@@ -250,7 +250,7 @@ quantityDeclarationSku 'Кол-во в декларации' (declaration, sku) 
 
 quantityDeclarationInvoiceSku 'Кол-во в декларации' (declaration, innerInvoice, sku) = quantityInnerInvoiceSku(innerInvoice, sku) IF declarationInnerInvoice(innerInvoice) == declaration;
 
-@defineAggregationTriple(declaration, innerInvoice, sku, declarationDetail, quantityDeclarationInvoiceSku);
+@defineAggregation(declaration, innerInvoice, sku, declarationDetail, quantityDeclarationInvoiceSku);
 
 @defineDocumentDetailIndex(declaration);
 @defineDocumentTime(declaration);

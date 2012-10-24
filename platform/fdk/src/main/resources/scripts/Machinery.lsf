@@ -483,29 +483,36 @@ META defineMachineryPriceTransactionAttributeBase(object, caption, nameProp)
     EXTEND FORM machineryPriceTransactions PROPERTIES(t, b) READONLY nameProp###object##MachineryPriceTransactionBarcode;
 END
 
-META defineMachineryPriceTransactionAttribute(object, caption)
-    @defineMachineryPriceTransactionAttribute(object, caption, );
-END
-META defineMachineryPriceTransactionAttribute(object, caption, nameProp)
+META defineMachineryPriceTransactionAttributeAction(object, caption, nameProp)
     @defineMachineryPriceTransactionAttributeBase(object, caption, nameProp);
     createAttributeMachineryPriceTransaction(t) += ACTION SET object##MachineryPriceTransactionBarcode(t, barcode) <- object##Barcode(barcode)
                                                           WHERE inMachineryPriceTransactionBarcode(t, barcode);
 END
 
-META defineMachineryPriceTransactionAttributeStock(object, caption)
-    @defineMachineryPriceTransactionAttributeStock(object, caption, );
+META defineMachineryPriceTransactionAttribute(object, caption, type)
+    object###MachineryPriceTransactionBarcode caption = DATA type (machineryPriceTransaction, barcode);
+    @defineMachineryPriceTransactionAttributeAction(object, caption, );
 END
-META defineMachineryPriceTransactionAttributeStock(object, caption, nameProp)
+
+META defineMachineryPriceTransactionAttribute(object, caption, type, nameProp)
+    object###MachineryPriceTransactionBarcode = DATA type (machineryPriceTransaction, barcode);
+    nameProp###object###MachineryPriceTransactionBarcode caption (transaction, barcode) =
+        nameProp###object(object###MachineryPriceTransactionBarcode(transaction, barcode));
+    @defineMachineryPriceTransactionAttributeAction(object, caption, nameProp);
+END
+
+META defineMachineryPriceTransactionAttributeStockAction(object, caption, nameProp)
     @defineMachineryPriceTransactionAttributeBase(object, caption, nameProp);
     createAttributeMachineryPriceTransactionStock(t, stock) += ACTION SET object##MachineryPriceTransactionBarcode(t, barcode) <- object##BarcodeStock(barcode, stock)
                                                                       WHERE inMachineryPriceTransactionBarcode(t, barcode);
 END
+META defineMachineryPriceTransactionAttributeStock(object, caption, type)
+    object###MachineryPriceTransactionBarcode caption = DATA type (machineryPriceTransaction, barcode);
+    @defineMachineryPriceTransactionAttributeStockAction(object, caption, );
+END
 
 // --------------- Атрибуты по умолчанию ------------------ //
-skuGroupMachineryPriceTransactionBarcode = DATA skuGroup (machineryPriceTransaction, barcode);
-canonicalNameSkuGroupMachineryPriceTransactionBarcode 'Группа товара' (transaction, barcode) = canonicalNameSkuGroup(skuGroupMachineryPriceTransactionBarcode(transaction, barcode));
-@defineMachineryPriceTransactionAttribute(skuGroup, 'Группа товара', canonicalName);
-
+@defineMachineryPriceTransactionAttribute(skuGroup, 'Группа товара', skuGroup, canonicalName);
 
 // Подключение свойств к документу
 META defineDocumentMachineryPriceTransaction (document, skuProp, stockProp)

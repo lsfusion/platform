@@ -417,7 +417,7 @@ copy = ACTION(document) {
 }
 
 CLASS QuantityString;
-@defineAggregationDouble(document, article, QuantityString, quantity);
+@defineAggregation(document, article, QuantityString, quantity);
 dateDocumentQuantityString(s) = date(documentQuantityString(s));
 storeNameDocumentQuantityString(s) = storeName(documentQuantityString(s));
 nameArticleQuantityString(s) = name(articleQuantityString(s));

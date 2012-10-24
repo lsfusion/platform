@@ -139,7 +139,7 @@ META defineDocumentTransferOutBatch(object, skuProp)
     TABLE object##OutBatchDetail(object##OutBatchDetail);
 
     cost###object##OutDetailBatch (ledger, batch) = costDataSkuLedgerBatch(ledger, batch) AND ledger IS object##OutDetail;
-    @defineAggregationDouble(object##OutDetail, batch, object##OutBatchDetail, cost###object##OutDetailBatch);
+    @defineAggregation(object##OutDetail, batch, object##OutBatchDetail, cost###object##OutDetailBatch);
 
     object##Out###object##OutBatchDetail (detail) = object##Out###object##OutDetail(object##OutDetail###object##OutBatchDetail(detail));
     @defineDocumentDetailIndex(object##Out, object##OutBatchDetail);
@@ -433,11 +433,11 @@ META defineDocumentTransferDiff(object, caption, skuProp, stockProp)
 
     @defineAggregation(object##Rec, object##Diff, countDiff###object##Rec);
 
-    @defineAggregationDouble(skuProp, object##Rec, object##DiffEDetail, hasExcessSku###object##Rec);
+    @defineAggregation(skuProp, object##Rec, object##DiffEDetail, hasExcessSku###object##Rec);
     quantity###object##DiffEDetail 'Кол-во' (detail) = diffSku###object##Rec(sku###object##DiffEDetail(detail),
                                                                        object##Rec###object##DiffEDetail(detail)) PERSISTENT;
 
-    @defineAggregationDouble(skuProp, object##Rec, object##DiffSDetail, hasShortageSku###object##Rec);
+    @defineAggregation(skuProp, object##Rec, object##DiffSDetail, hasShortageSku###object##Rec);
     quantity###object##DiffSDetail 'Кол-во' (detail) =-diffSku###object##Rec(sku###object##DiffSDetail(detail),
                                                                        object##Rec###object##DiffSDetail(detail)) PERSISTENT;
 

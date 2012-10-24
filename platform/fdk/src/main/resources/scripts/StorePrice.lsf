@@ -345,14 +345,14 @@ END
 //---------------------------- Ценовые регистры ----------------------------------------//
 
 META defineSkuDepartmentStoreLedger(property, caption, type)
-    @defineHistorizableLedgerDouble(property, caption, type, sku, departmentStore);
+    @defineHistorizableLedger(property, caption, type, sku, departmentStore);
 
     nameSku###property##Ledger 'SKU' (ledger) = nameSku(sku###property##Ledger(ledger));
     nameDepartmentStore###property##Ledger 'Отдел магазина' (ledger) = name(departmentStore###property##Ledger(ledger));
 END
 
 META implementSkuDepartmentStoreLedgerCustom(property, concrete, skuProp, propertyProp)
-    @implementHistorizableLedgerDouble(property, sku, departmentStore, concrete, skuProp, departmentStore, propertyProp);
+    @implementHistorizableLedger(property, sku, departmentStore, concrete, skuProp, departmentStore, propertyProp);
 END
 
 META implementSkuDepartmentStoreLedger(property, concrete, skuProp)

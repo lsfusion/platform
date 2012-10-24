@@ -824,11 +824,11 @@ TABLE innerOrderDiffEDetail (innerOrderDiffEDetail);
 
 @defineAggregation(innerOrderRec, innerOrderDiff, countDiffInnerOrderRec);
 
-@defineAggregationDouble(sku, innerOrderRec, innerOrderDiffEDetail, hasExcessSkuInnerOrderRec);
+@defineAggregation(sku, innerOrderRec, innerOrderDiffEDetail, hasExcessSkuInnerOrderRec);
 quantityInnerOrderDiffEDetail 'Кол-во' (detail) = diffSkuInnerOrderRec(skuInnerOrderDiffEDetail(detail),
                                                                    innerOrderRecInnerOrderDiffEDetail(detail)) PERSISTENT;
 
-@defineAggregationDouble(sku, innerOrderRec, innerOrderDiffSDetail, hasShortageSkuInnerOrderRec);
+@defineAggregation(sku, innerOrderRec, innerOrderDiffSDetail, hasShortageSkuInnerOrderRec);
 quantityInnerOrderDiffSDetail 'Кол-во' (detail) =-diffSkuInnerOrderRec(skuInnerOrderDiffSDetail(detail),
                                                                    innerOrderRecInnerOrderDiffSDetail(detail)) PERSISTENT;
 

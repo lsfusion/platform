@@ -26,8 +26,8 @@ TABLE supplierStock(supplier, stock);
 emailOrderSupplierStock 'e-mail для передачи заказа' = DATA STRING[100] (supplier, stock) IN orderGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
 contactSupplierStock 'Контактная информация' = DATA STRING[500] (supplier, stock) IN orderGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
 
-@defineHistorizableDoubleYesNo(controlSupplierStock, 'Контролировать ассортимент поставщика', supplier, name, stock, name, orderGroup);
-@defineHistorizableDoubleYesNo(sureSupplierStock, 'Обязателен заказ поставщику', supplier, name, stock, name, orderGroup);
+@defineHistorizableYesNo(controlSupplierStock, 'Контролировать ассортимент поставщика', supplier, name, stock, name, orderGroup);
+@defineHistorizableYesNo(sureSupplierStock, 'Обязателен заказ поставщику', supplier, name, stock, name, orderGroup);
 
 // ---------------------------------------- Договора ------------------------------------ //
 

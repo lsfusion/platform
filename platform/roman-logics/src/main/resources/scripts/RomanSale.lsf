@@ -162,7 +162,7 @@ CLASS saleInBatchDetail 'Строка покупки товаров по нак�
 
 TABLE saleInBatchDetail(saleInBatchDetail);
 
-@defineAggregationDouble(saleOutDetail, batch, saleInBatchDetail, costSaleOutDetailBatch);
+@defineAggregation(saleOutDetail, batch, saleInBatchDetail, costSaleOutDetailBatch);
 
 saleOutSaleInBatchDetail (detail) = saleOutSaleOutDetail(saleOutDetailSaleInBatchDetail(detail));
 saleInSaleInBatchDetail (detail) = saleInSaleOut(saleOutSaleInBatchDetail(detail));

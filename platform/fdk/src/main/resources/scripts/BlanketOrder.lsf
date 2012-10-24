@@ -225,7 +225,7 @@ META defineOrderBlanketOrder(sign, contact, contactCaption)
         AND isPostedBlanketOrder(blanketOrder);
 
 //-- oblect
-    @defineAggregationDouble(blanketOrder, contact, blanketOrderOrder, needToOrderBlanketOrder###contact);
+    @defineAggregation(blanketOrder, contact, blanketOrderOrder, needToOrderBlanketOrder###contact);
 
     @defineDocumentAggregationHeaderStock (blanketOrder, blanketOrderOrder, stock, 'Склад');
     stockOrder(order) += stockBlanketOrderOrder(order);
@@ -248,7 +248,7 @@ META defineOrderBlanketOrder(sign, contact, contactCaption)
         numberBlanketOrder###contact(blanketOrderBlanketOrderOrder(blanketOrderOrder), contact###blanketOrderOrder(blanketOrderOrder)));
 
 //-- detail
-    @defineAggregationDouble(blanketOrderDetail, contact, blanketOrderOrderDetail, needToOrderBlanketOrderDetail###contact);
+    @defineAggregation(blanketOrderDetail, contact, blanketOrderOrderDetail, needToOrderBlanketOrderDetail###contact);
 
     blanketOrderOrderBlanketOrderOrderDetail (blanketOrderOrderDetail) = blanketOrderOrderBlanketOrder###contact(blanketOrderBlanketOrderDetail(blanketOrderDetailBlanketOrderOrderDetail(blanketOrderOrderDetail)),
     contact###blanketOrderDetail(blanketOrderDetailBlanketOrderOrderDetail(blanketOrderOrderDetail)));

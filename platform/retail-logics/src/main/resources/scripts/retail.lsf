@@ -742,42 +742,42 @@ DESIGN naturalLossItems FROM DEFAULT {
 TABLE itemDepartmentStore (item, departmentStore);
 TABLE itemDepartmentStoreDate (item, departmentStore, DATE);
 
-@defineHistorizableDouble(maxReserveItemDepartment, 'Максимально допустимый товарный запас в днях', NUMERIC[8,2], item, nameAttributeItem, departmentStore, name, orderGroup);
-@defineHistorizableDouble(minReserveItemDepartment, 'Минимально допустимый товарный запас в днях', NUMERIC[8,2], item, nameAttributeItem, departmentStore, name, orderGroup);
+@defineHistorizable(maxReserveItemDepartment, 'Максимально допустимый товарный запас в днях', NUMERIC[8,2], item, nameAttributeItem, departmentStore, name, orderGroup);
+@defineHistorizable(minReserveItemDepartment, 'Минимально допустимый товарный запас в днях', NUMERIC[8,2], item, nameAttributeItem, departmentStore, name, orderGroup);
 
-@defineHistorizableDoubleYesNo(banPriceChangeItemDepartment, 'Запрет на переоценку', item, nameAttributeItem, departmentStore, name, retailGroup);
+@defineHistorizableYesNo(banPriceChangeItemDepartment, 'Запрет на переоценку', item, nameAttributeItem, departmentStore, name, retailGroup);
 
-@defineHistorizableDoubleYesNo(inActionItemDepartment, 'Товар акции', item, nameAttributeItem, departmentStore, name, discountGroup);
+@defineHistorizableYesNo(inActionItemDepartment, 'Товар акции', item, nameAttributeItem, departmentStore, name, discountGroup);
 
-@defineHistorizableDouble(marginProductionItemDepartment, 'Наценка производства', NUMERIC[8,3], item, nameAttributeItem, departmentStore, name, retailGroup);
+@defineHistorizable(marginProductionItemDepartment, 'Наценка производства', NUMERIC[8,3], item, nameAttributeItem, departmentStore, name, retailGroup);
 
-@defineHistorizableDouble(retailPriceItemDepartment, 'Розничная цена', NUMERIC[14,2], item, nameAttributeItem, departmentStore, name, retailGroup);
+@defineHistorizable(retailPriceItemDepartment, 'Розничная цена', NUMERIC[14,2], item, nameAttributeItem, departmentStore, name, retailGroup);
 
-@defineHistorizableDouble(discountItemDepartment, 'Скидка для товара', STRING[100], item, nameAttributeItem, departmentStore, name, discountGroup);
+@defineHistorizable(discountItemDepartment, 'Скидка для товара', STRING[100], item, nameAttributeItem, departmentStore, name, discountGroup);
 
 defaultLabelTypeItemDepartmentStore(item, departmentStore) = defaultLabelTypeDepartmentStore(departmentStore) AND item IS item;
-@defineHistorizableDoubleDefaultCustom(labelItemDepartmentStore, defaultLabelTypeItemDepartmentStore, 'Ценник', labelType, name, item, nameAttributeItem, departmentStore, name, 10, labelGroup);
+@defineHistorizableCustomDefault(labelItemDepartmentStore, defaultLabelTypeItemDepartmentStore, 'Ценник', labelType, name, item, nameAttributeItem, departmentStore, name, 10, labelGroup);
 labelBarcodeDepartmentStoreDate (barcode, departmentStore, date) = labelItemDepartmentStoreDate(skuBarcode(barcode), departmentStore, date);
 
 CONSTRAINT dataLabelItemDepartmentStoreDate(item, departmentStore, date) AND NOT inLabelTypeDepartmentStore(dataLabelItemDepartmentStoreDate(item, departmentStore, date), departmentStore)
     CHECKED BY dataLabelItemDepartmentStoreDate MESSAGE 'Тип ценника запрещен для выбранного отдела магазина';
 
-@defineHistorizableDouble(multiplierItemDepartmentStore, 'Множитель', INTEGER, item, nameAttributeItem, departmentStore, name, labelGroup);
+@defineHistorizable(multiplierItemDepartmentStore, 'Множитель', INTEGER, item, nameAttributeItem, departmentStore, name, labelGroup);
 valOverMultiplierItemDepartmentStoreDate (item, departmentStore, date) = UNION OVERRIDE 1 IF item IS item AND departmentStore IS departmentStore AND date IS DATE,
                                                                                multiplierItemDepartmentStoreDate(item, departmentStore, date);
 valOverMultiplierBarcodeDepartmentDate (barcode, departmentStore, date) = valOverMultiplierItemDepartmentStoreDate(skuBarcode(barcode), departmentStore, date);
 
-@defineHistorizableDouble(oldPriceItemDepartment, 'Старая цена', NUMERIC[14,2], item, nameAttributeItem, departmentStore, name, labelGroup);
+@defineHistorizable(oldPriceItemDepartment, 'Старая цена', NUMERIC[14,2], item, nameAttributeItem, departmentStore, name, labelGroup);
 
 TABLE supplierItemDepartmentStoreDate (supplier, item, departmentStore, DATE);
 
-@defineHistorizableTripleYesNo(isSupplierItemDepartment, 'Поставляется', supplier, name, item, nameAttributeItem, departmentStore, name, orderGroup);
+@defineHistorizableYesNo(isSupplierItemDepartment, 'Поставляется', supplier, name, item, nameAttributeItem, departmentStore, name, orderGroup);
 
-@defineHistorizableTriple(priceSupplierItemDepartment, 'Цена поставщика', NUMERIC[14,2], supplier, name, item, nameAttributeItem, departmentStore, name, retailGroup);
+@defineHistorizable(priceSupplierItemDepartment, 'Цена поставщика', NUMERIC[14,2], supplier, name, item, nameAttributeItem, departmentStore, name, retailGroup);
 
-@defineHistorizableDouble(markupItemDepartment, 'Торговая надбавка', NUMERIC[8,3], item, nameAttributeItem, departmentStore, name, retailGroup);
+@defineHistorizable(markupItemDepartment, 'Торговая надбавка', NUMERIC[8,3], item, nameAttributeItem, departmentStore, name, retailGroup);
 
-@defineHistorizableTripleYesNo(banSupplierItemDepartment, 'Запретить закупку', supplier, name, item, nameAttributeItem, departmentStore, name, orderGroup);
+@defineHistorizableYesNo(banSupplierItemDepartment, 'Запретить закупку', supplier, name, item, nameAttributeItem, departmentStore, name, orderGroup);
 
 EXTEND FORM item
 
@@ -1201,23 +1201,14 @@ POSPriceSkuDepartmentStoreDateTime(sku, departmentStore, dateTime) += retailPric
 priceBarcodeGroupMachinery (barcode, groupMachinery) += currentRetailPriceBarcodeDepartmentStore(barcode, stockGroupMachinery(groupMachinery));
 createPriceMachineryPriceTransactionSkuStock(sku, stock) += TRUE IF currentRetailPriceLedger(sku, stock);
 
-labelFormatMachineryPriceTransactionBarcode 'Формат этикетки' = DATA INTEGER (machineryPriceTransaction, barcode);
-@defineMachineryPriceTransactionAttribute(labelFormat, 'Формат этикетки');
+@defineMachineryPriceTransactionAttribute(labelFormat, 'Формат этикетки', INTEGER);
 
-daysExpiryMachineryPriceTransactionBarcode 'Срок годности в днях с момента фасовки' = DATA NUMERIC[8,2] (machineryPriceTransaction, barcode);
-@defineMachineryPriceTransactionAttribute(daysExpiry, 'Срок годности в днях с момента фасовки');
+@defineMachineryPriceTransactionAttribute(daysExpiry, 'Срок годности в днях с момента фасовки', NUMERIC[8,2]);
+@defineMachineryPriceTransactionAttribute(hoursExpiry, 'Срок годности в часах с момента фасовки', INTEGER);
+@defineMachineryPriceTransactionAttributeStock(expiryDate, 'Срок годности (дата)', DATE);
 
-hoursExpiryMachineryPriceTransactionBarcode 'Срок годности в часах с момента фасовки' = DATA INTEGER (machineryPriceTransaction, barcode);
-@defineMachineryPriceTransactionAttribute(hoursExpiry, 'Срок годности в часах с момента фасовки');
-
-isWeightMachineryPriceTransactionBarcode 'Весовой товар' = DATA BOOLEAN (machineryPriceTransaction, barcode);
-@defineMachineryPriceTransactionAttribute(isWeight, 'Весовой товар');
-
-expiryDateMachineryPriceTransactionBarcode 'Срок годности (дата)' = DATA DATE (machineryPriceTransaction, barcode);
-@defineMachineryPriceTransactionAttributeStock(expiryDate, 'Срок годности (дата)');
-
-compositionMachineryPriceTransactionBarcode 'Состав товара' = DATA TEXT (machineryPriceTransaction, barcode);
-@defineMachineryPriceTransactionAttribute(composition, 'Состав товара');
+@defineMachineryPriceTransactionAttribute(isWeight, 'Весовой товар', BOOLEAN);
+@defineMachineryPriceTransactionAttribute(composition, 'Состав товара', TEXT);
 
 // Кассы
 createAttributeMachineryPriceTransactionGroupMachinery(transaction, groupMachinery) += ACTION (transaction, groupMachinery) {
@@ -3136,7 +3127,7 @@ genTimeTablePreliminaryOrder 'График поставок'  = DATA genTimeTabl
 
 TABLE supplierDepartmentStoreDate (supplier, departmentStore, DATE);
 
-@defineHistorizableDouble(timeTable, 'Поставка', BOOLEAN, supplier, name, departmentStore, name, baseGroup);
+@defineHistorizable(timeTable, 'Поставка', BOOLEAN, supplier, name, departmentStore, name, baseGroup);
 
 CLASS ABSTRACT order 'Заказ' : historyObject, numeratedObject;
 //TABLE order(order);
@@ -4008,13 +3999,11 @@ priceLabelBarcodeDepartmentStore (barcode, departmentStore) += currentRetailPric
 labelTypeBarcodeDepartmentStoreDate (barcode, departmentStore, date) += labelBarcodeDepartmentStoreDate(barcode, departmentStore, date);
 countLabelBarcodeDepartmentStoreDate (barcode, departmentStore, date) += valOverMultiplierBarcodeDepartmentDate(barcode, departmentStore, date);
 
-countryLabelTransactionBarcode 'Страна'  = DATA STRING[255] (labelTransaction, barcode);
 nameCountryItemBarcode = nameCountryItem(skuBarcode(barcode));
-@defineLabelTransactionAttribute(country, nameCountryItem);
+@defineLabelTransactionAttribute(country, 'Страна', STRING[255], nameCountryItem);
 
-manufacturerLabelTransactionBarcode 'Производитель'  = DATA STRING[255] (labelTransaction, barcode);
 nameManufacturerItemBarcode = nameManufacturerItem(skuBarcode(barcode));
-@defineLabelTransactionAttribute(manufacturer, nameManufacturerItem);
+@defineLabelTransactionAttribute(manufacturer, 'Производитель', STRING[255], nameManufacturerItem);
 
 //----------------------------------- Формы поступления товара -------------------------------------------------------
 toShowPriceImporterShipment 'Есть оптовая надбавка' (shipment) = DATA BOOLEAN (shipment) IN documentPrmGroup;

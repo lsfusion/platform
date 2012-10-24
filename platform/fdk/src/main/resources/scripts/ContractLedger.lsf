@@ -65,7 +65,7 @@ META implementContractPrepaymentLedger(object, sumProp)
         contract###object(object) == contractPaymentCondition(paymentConditionPaymentPeriod(paymentPeriod)) AND
         isPosted###object(object);
 
-    @defineAggregationDouble(object, paymentPeriod, object##ContractLedger, needToCreate###object##ContractLedger);
+    @defineAggregation(object, paymentPeriod, object##ContractLedger, needToCreate###object##ContractLedger);
 
     isPostedContractLedger(object##ContractLedger) += isPosted###object(object###object##ContractLedger(object##ContractLedger));
     dateTimeContractLedger(object##ContractLedger) += sumDateTimeDay(dateTime###object(object###object##ContractLedger(object##ContractLedger)),
