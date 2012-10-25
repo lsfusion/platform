@@ -26,6 +26,35 @@ partyBContract (contract) += customerContractSkuCustomer(contract);
 TABLE companyCustomer(company, customer);
 @defineContractDefault(contractSkuCustomer, company, customer);
 
+// ---------------------------------------- Группы покупателей -------------------------------- //
+
+CLASS customerGroup 'Группа покупателей' : named, legalEntityGroup;
+
+customerGroupCustomer (customer) = DATA customerGroup (customer) AUTOSET NOT NULL;
+nameCustomerGroupCustomer 'Группа покупателей' (customer) = name(customerGroupCustomer(customer));
+
+@defineHierarchy(customerGroup);
+parentLegalEntityGroup(customerGroup) += parentCustomerGroup(customerGroup);
+legalEntityGroupLegalEntity(customer) += customerGroupCustomer(customer);
+
+inCustomerGroupCustomer (customerGroup, customer) =
+    UNION OVERRIDE customer IS customer AND NOT customerGroup IS customerGroup, isParentCustomerGroupCustomerGroup(customerGroupCustomer(customer), customerGroup);
+
+FORM customerGroup 'Группа покупателей'
+    OBJECTS s = customerGroup FIXED PANEL
+    PROPERTIES(s) name, nameParentLegalEntityGroup
+
+    EDIT customerGroup OBJECT s
+;
+
+FORM customerGroups 'Группы покупателей'
+    TREE customerGroupTree sg = customerGroup PARENT parentCustomerGroup
+    PROPERTIES READONLY sgTreeName = name(sg)
+    ORDER BY name(sg)
+
+    DIALOG customerGroup OBJECT sg
+;
+
 // Формы
 FORM contractSkuCustomer 'Договор с опт. покупателем'
     OBJECTS c=contractSkuCustomer FIXED PANEL
@@ -57,7 +86,7 @@ FORM contractsSkuCustomer 'Договора'
 
 FORM customer 'Оптовый покупатель'
     OBJECTS cu=customer FIXED PANEL
-    PROPERTIES(cu) name, nameOwnershipLegalEntity, shortNameOwnershipLegalEntity, fullNameLegalEntity,
+    PROPERTIES(cu) name, nameCustomerGroupCustomer, nameOwnershipLegalEntity, shortNameOwnershipLegalEntity, fullNameLegalEntity,
                    addressLegalEntity ON CHANGE EXEC dialogAddressLegalEntity(cu),
                    postAddressLegalEntity ON CHANGE EXEC dialogPostAddressLegalEntity(cu),
                    managerLegalEntity ON CHANGE EXEC dialogManagerLegalEntity(cu),
@@ -94,14 +123,13 @@ DESIGN customer FROM DEFAULT {
 
             NEW column1 {
                 childConstraints = TO THE BOTTOM;
-
                 ADD PROPERTY(name(cu));
+                ADD PROPERTY(nameCustomerGroupCustomer);
                 ADD cu.lawGroup;
             }
 
             NEW column2 {
                 childConstraints = TO THE BOTTOM;
-
                 ADD cu.contactGroup;
                 ADD cu.managementGroup;
             }
@@ -110,7 +138,7 @@ DESIGN customer FROM DEFAULT {
        NEW extendContainer BEFORE functions.box {
             type = TABBED;
             ADD a.box;
-            NEW supplierContainer {
+            NEW customerContainer {
                 title = 'Договоры с поставщиками';
                 type = SPLITH;
                 childConstraints = TO THE RIGHT;
@@ -125,10 +153,32 @@ DESIGN customer FROM DEFAULT {
 }
 
 FORM customers 'Оптовые покупатели'
+    TREE customerGroupTree cg = customerGroup PARENT parentCustomerGroup
+    PROPERTIES READONLY cgTreeName = name(cg)
+    PROPERTIES(cg) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
+
     OBJECTS cu=customer
-    PROPERTIES(cu) READONLY name, fullNameLegalEntity, shortNameOwnershipLegalEntity, numberAccountLegalEntity, addressLegalEntity, phoneLegalEntity
+    PROPERTIES(cu) READONLY name, fullNameLegalEntity, nameCustomerGroupCustomer, shortNameOwnershipLegalEntity, numberAccountLegalEntity, addressLegalEntity, phoneLegalEntity
     PROPERTIES(cu) ADDFORM, EDITFORM, delete
+
+    FILTERS inCustomerGroupCustomer(cg, cu)
 ;
+
+DESIGN customers FROM DEFAULT{
+    NEW topContainer{
+        childConstraints = TO THE RIGHT;
+        type = SPLITH;
+        ADD customerGroupTree.tree.box{
+            PROPERTY(delete(cg)){
+                askConfirm = TRUE;
+            }
+        }
+        ADD cu.box{
+            fillHorizontal = 2.0;
+        }
+    }
+    ADD functions.box;
+}
 
 // --------------------------------------------------- Макросы по добавлению покупателя в документы ------------------------------------ //
 META defineDocumentHeaderCustomer (object)

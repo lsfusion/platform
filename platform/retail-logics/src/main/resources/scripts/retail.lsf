@@ -6771,7 +6771,6 @@ NAVIGATOR {
         NEW contragents 'Контрагенты' {
             ADD companies;
             ADD banks;
-            ADD agreements;
         }
         NEW tax 'Налоги' {
             ADD taxes;
@@ -6848,7 +6847,9 @@ NAVIGATOR {
     NEW wholeSale 'Оптовая торговля' TO formsToolbar {
         ADD saleSaleNavigator;
         ADD saleReturnNavigator;
-        ADD priceListNavigator;
+        ADD priceListNavigator{
+            ADD agreements;
+        }
     }
 
     ADD machineryNavigator TO formsToolbar;

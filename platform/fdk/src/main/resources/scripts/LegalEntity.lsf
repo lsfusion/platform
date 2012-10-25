@@ -66,6 +66,19 @@ GROUP managementGroup 'Управление' : publicGroup;
 
 GROUP docGroup 'Для договора' : publicGroup;
 
+// ----------------------------------- Группы юридический лиц ---------------------------- //
+
+CLASS ABSTRACT legalEntityGroup 'Группа юр. лиц' : named;
+
+legalEntityGroupLegalEntity (legalEntity) = ABSTRACT legalEntityGroup (legalEntity);
+
+@defineHierarchyAbstract(legalEntityGroup);
+
+inLegalEntityGroupLegalEntity (legalEntityGroup, legalEntity) =
+    UNION OVERRIDE legalEntity IS legalEntity AND NOT legalEntityGroup IS legalEntityGroup,
+                   isParentLegalEntityGroupLegalEntityGroup(legalEntityGroupLegalEntity(legalEntity), legalEntityGroup);
+
+
 // ----------------------------------- Банк ------------------------------------------- //
 
 CLASS bank 'Банк' : named, externalObject;
@@ -210,6 +223,7 @@ DESIGN company FROM DEFAULT {
 FORM companies 'Компании'
 
     OBJECTS co=company
-    PROPERTIES(co) READONLY name, fullNameLegalEntity, shortNameOwnershipLegalEntity, numberAccountLegalEntity, addressLegalEntity, phoneLegalEntity
+    PROPERTIES(co) READONLY name, fullNameLegalEntity, shortNameOwnershipLegalEntity,
+                            numberAccountLegalEntity, addressLegalEntity, phoneLegalEntity
     PROPERTIES(co) ADDFORM, EDITFORM, delete
 ;

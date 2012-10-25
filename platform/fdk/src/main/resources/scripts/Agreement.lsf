@@ -21,21 +21,45 @@ TABLE agreement (agreement);
 toDateAgreement(agreement) <- NULL WHEN ASSIGNED(agreement IS agreement);
 toTimeAgreement(agreement) <- NULL WHEN ASSIGNED(agreement IS agreement);
 
-inAgreementLegalEntityAbstract 'Вкл.' (agreement, legalEntity) = ABSTRACT BOOLEAN (agreement, legalEntity);
-inAgreementLegalEntity 'Вкл.' (agreement, legalEntity) = DATA BOOLEAN (agreement, legalEntity);
+inAgreementAbstract 'Отм' = ABSTRACT BOOLEAN (agreement) PERSISTENT;
+inAgreement 'Отм' = DATA BOOLEAN (agreement);
+inAgreement(agreement) <- TRUE WHEN ASSIGNED(agreement IS agreement);
+inAgreementAbstract(agreement) += inAgreement(agreement);
+
+inAgreementLegalEntityGroupAbstract 'Отм' = ABSTRACT BOOLEAN (agreement, legalEntityGroup) PERSISTENT;
+inAgreementLegalEntityGroup 'Отм' = DATA BOOLEAN (agreement, legalEntityGroup);
+inAgreementLegalEntityGroupAbstract(agreement, legalEntityGroup) += inAgreementLegalEntityGroup(agreement, legalEntityGroup);
+
+inAgreementLegalEntityAbstract 'Отм.' (agreement, legalEntity) = ABSTRACT BOOLEAN (agreement, legalEntity);
+inAgreementLegalEntity 'Отм.' (agreement, legalEntity) = DATA BOOLEAN (agreement, legalEntity);
 inAgreementLegalEntityAbstract(agreement, legalEntity) += inAgreementLegalEntity(agreement, legalEntity);
 
-legalEntityAgreement 'Контрагенты' (agreement) = GROUP CONCAT name(legalEntity) IF inAgreementLegalEntityAbstract(agreement, legalEntity) , ', '
+levelParentAgreementLegalEntityGroup (agreement, legalEntityGroup) =
+    GROUP MIN levelLegalEntityGroupLegalEntityGroup(legalEntityGroup, parent) IF inAgreementLegalEntityGroup(agreement, parent)
+          BY agreement, legalEntityGroup PERSISTENT;
+nearestParentLegalEntityGroup (agreement, legalEntityGroup) =
+    legalEntityGroupLegalEntityGroupLevel(legalEntityGroup, levelParentAgreementLegalEntityGroup(agreement, legalEntityGroup));
+nearestInAgreementLegalEntityGroup (agreement, legalEntityGroup) =
+    inAgreementLegalEntityGroup(agreement, nearestParentLegalEntityGroup(agreement, legalEntityGroup));
+
+inAgreementLegalEntityGroupOver 'Отм' (agreement, legalEntityGroup) =
+    UNION OVERRIDE inAgreement(agreement) AND legalEntityGroup IS legalEntityGroup,
+                   nearestInAgreementLegalEntityGroup(agreement, legalEntityGroup),
+                   inAgreementLegalEntityGroup(agreement, legalEntityGroup);
+
+inAgreementLegalEntityOver 'Отм' (agreement, legalEntity) =
+    UNION OVERRIDE inAgreement(agreement) AND legalEntity IS legalEntity,
+                   nearestInAgreementLegalEntityGroup(agreement, legalEntityGroupLegalEntity(legalEntity)),
+                   inAgreementLegalEntity(agreement, legalEntity);
+
+legalEntityAgreement 'Контрагенты' (agreement) = GROUP CONCAT name(legalEntity) IF inAgreementLegalEntityOver(agreement, legalEntity) , ', '
                                                  BY agreement
                                                  ORDER legalEntity MINCHARWIDTH 100 PERSISTENT;
-
-//legalEntityAgreement (agreement) = DATA legalEntity (agreement);
-//nameLegalEntityAgreement 'Контрагент' (agreement) = name(legalEntityAgreement(agreement));
 
 companyAgreement (agreement) = DATA company (agreement);
 nameCompanyAgreement 'Компания' (agreement) = name(companyAgreement(agreement));
 
-priceListTypeAgreement (agreement) = DATA priceListType (agreement);
+priceListTypeAgreement (agreement) = DATA priceListType (agreement) NOT NULL;
 namePriceListTypeAgreement 'Тип цены' (agreement) = name(priceListTypeAgreement(agreement));
 
 priceListTypeAgreementPriceGroup (agreement, priceGroup) = DATA priceListType (agreement, priceGroup);
@@ -109,9 +133,19 @@ FORM agreement 'Соглашение'
                   fromDateAgreement, fromTimeAgreement, toDateAgreement, toTimeAgreement, nameCompanyAgreement,
                   nameCurrencyAgreement, namePriceListTypeAgreement, noteAgreement
 
+    TREE legalEntityGroupTree b=STRING[3], lg = legalEntityGroup PARENT parentLegalEntityGroup
+    PROPERTIES READONLY OBJVALUE(b), lgTreeName = name(lg)
+    FILTERS stringEqualsAll(b)
+    PROPERTIES(a) inAgreement TODRAW b FORCE GRID
+    PROPERTIES(a, lg) inAgreementLegalEntityGroupOver
+
     OBJECTS l = legalEntity
     PROPERTIES(l) READONLY name
-    PROPERTIES(a, l) inAgreementLegalEntity
+    PROPERTIES(a, l) inAgreementLegalEntityOver
+    FILTERS inLegalEntityGroupLegalEntity(lg, l)
+
+    FILTERGROUP filters
+        FILTER 'Только отмеченные' 'F10' inAgreementLegalEntityOver (a, l)
 
     OBJECTS pg = priceGroup
     PROPERTIES(pg) READONLY name
@@ -160,8 +194,14 @@ DESIGN agreement FROM DEFAULT {
         }
             NEW tabContainer{
                 type = TABBED;
-                ADD l.box{
+                NEW legalEntityBox{
                     caption = 'Контрагенты';
+                    childConstraints = TO THE RIGHT;
+                    type = SPLITH;
+                    ADD legalEntityGroupTree.tree.box;
+                    ADD l.box{
+                        fillHorizontal = 2.0;
+                    }
                 }
                 ADD pg.box{
                     caption = 'Уточнение цен по ценовым группам';

@@ -105,7 +105,7 @@ inPriceListStock (priceList, stock) += inUserPriceListStock(priceList, stock);
 dataPriceListDetailStock (detail, stock) = inPriceListStock(priceListPriceListDetail(detail), stock) PERSISTENT;
 
 levelParentPriceListStockGroup (priceList, stockGroup) = GROUP MIN levelStockGroupStockGroup(stockGroup, parent) IF inPriceListStockGroup(priceList, parent)
-                                                              BY priceList, stockGroup PERSISTENT;
+                                                               BY priceList, stockGroup PERSISTENT;
 nearestParentStockGroup (priceList, stockGroup) = stockGroupStockGroupLevel(stockGroup, levelParentPriceListStockGroup(priceList, stockGroup));
 nearestInPriceListStockGroup (priceList, stockGroup) =
     inPriceListStockGroup(priceList, nearestParentStockGroup(priceList, stockGroup));

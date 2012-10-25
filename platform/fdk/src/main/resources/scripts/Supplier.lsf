@@ -29,6 +29,35 @@ contactSupplierStock 'Контактная информация' = DATA STRING[5
 @defineHistorizableYesNo(controlSupplierStock, 'Контролировать ассортимент поставщика', supplier, name, stock, name, orderGroup);
 @defineHistorizableYesNo(sureSupplierStock, 'Обязателен заказ поставщику', supplier, name, stock, name, orderGroup);
 
+// ---------------------------------------- Группы поставщиков -------------------------------- //
+
+CLASS supplierGroup 'Группа поставщиков' : named, legalEntityGroup;
+
+supplierGroupSupplier (supplier) = DATA supplierGroup (supplier) AUTOSET NOT NULL;
+nameSupplierGroupSupplier 'Группа поставщиков' (supplier) = name(supplierGroupSupplier(supplier));
+
+@defineHierarchy(supplierGroup);
+parentLegalEntityGroup(supplierGroup) += parentSupplierGroup(supplierGroup);
+legalEntityGroupLegalEntity(supplier) += supplierGroupSupplier(supplier);
+
+inSupplierGroupSupplier (supplierGroup, supplier) =
+    UNION OVERRIDE supplier IS supplier AND NOT supplierGroup IS supplierGroup, isParentSupplierGroupSupplierGroup(supplierGroupSupplier(supplier), supplierGroup);
+
+FORM supplierGroup 'Группа поставщиков'
+    OBJECTS s = supplierGroup FIXED PANEL
+    PROPERTIES(s) name, nameParentLegalEntityGroup
+
+    EDIT supplierGroup OBJECT s
+;
+
+FORM supplierGroups 'Группы поставщиков'
+    TREE supplierGroupTree sg = supplierGroup PARENT parentSupplierGroup
+    PROPERTIES READONLY sgTreeName = name(sg)
+    ORDER BY name(sg)
+
+    DIALOG supplierGroup OBJECT sg
+;
+
 // ---------------------------------------- Договора ------------------------------------ //
 
 CLASS contractSkuSupplier 'Договор с поставщиком' : contractSku;
@@ -77,7 +106,7 @@ FORM contractsSkuSupplier 'Договора'
 
 FORM supplier 'Поставщик'
     OBJECTS s=supplier FIXED PANEL
-    PROPERTIES(s) name, fullNameLegalEntity, nameOwnershipLegalEntity, shortNameOwnershipLegalEntity,
+    PROPERTIES(s) name, fullNameLegalEntity, nameSupplierGroupSupplier, nameOwnershipLegalEntity, shortNameOwnershipLegalEntity,
                   emailLegalEntity, siteLegalEntity,
                   addressLegalEntity ON CHANGE EXEC dialogAddressLegalEntity(s),
                   postAddressLegalEntity ON CHANGE EXEC dialogPostAddressLegalEntity(s),
@@ -186,12 +215,35 @@ DESIGN supplier FROM DEFAULT {
 }
 
 FORM suppliers 'Поставщики'
+    TREE supplierGroupTree sg = supplierGroup PARENT parentSupplierGroup
+    PROPERTIES READONLY sgTreeName = name(sg)
+    PROPERTIES(sg) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
+
     OBJECTS s=supplier
-    PROPERTIES(s) READONLY name, fullNameLegalEntity, shortNameOwnershipLegalEntity, numberAccountLegalEntity, addressLegalEntity, phoneLegalEntity
+    PROPERTIES(s) READONLY name, fullNameLegalEntity, nameSupplierGroupSupplier, shortNameOwnershipLegalEntity,
+                           numberAccountLegalEntity, addressLegalEntity, phoneLegalEntity
     PROPERTIES(s) ADDFORM, EDITFORM, delete
+
+    FILTERS inSupplierGroupSupplier(sg, s)
 
     DIALOG supplier OBJECT s
 ;
+
+DESIGN suppliers FROM DEFAULT{
+    NEW topContainer{
+        childConstraints = TO THE RIGHT;
+        type = SPLITH;
+        ADD supplierGroupTree.tree.box{
+            PROPERTY(delete(sg)){
+                askConfirm = TRUE;
+            }
+        }
+        ADD s.box{
+            fillHorizontal = 2.0;
+        }
+    }
+    ADD functions.box;
+}
 
 // ----------------------------- Расширяем форму компаний ------------------------------------------- //
 
