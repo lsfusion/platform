@@ -141,16 +141,11 @@ public class GFormLayout extends FlowPanel {
     public void adjustContainerSizes(GContainer container) {
         Widget view = getFormContainerView(container);
 
-        if (!container.resizable) {
-            view.setSize("auto", "auto");
-            return;
-        } else {
-            for (GComponent child : container.children) {
-                if (child instanceof GContainer) {
-                    adjustContainerSizes((GContainer) child);
-                } else {
-                    adjustComponentSize(child);
-                }
+        for (GComponent child : container.children) {
+            if (child instanceof GContainer) {
+                adjustContainerSizes((GContainer) child);
+            } else {
+                adjustComponentSize(child);
             }
         }
 

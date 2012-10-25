@@ -4,7 +4,12 @@ public class GExcelType extends GFileType {
     public static GExcelType instance = new GExcelType();
 
     @Override
-    public String getMinimumWidth(int minimumCharWidth) {
-        return "15px";
+    public int getMinimumPixelWidth(int minimumCharWidth) {
+        return 15;
+    }
+
+    @Override
+    public int getPreferredPixelWidth(int preferredCharWidth) {
+        return 15;
     }
 }

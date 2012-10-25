@@ -86,7 +86,6 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
             GComponent childComponent = convertOrCast(child);
             container.children.add(childComponent);
         }
-        container.resizable = clientContainer.gwtResizable;
 
         return container;
     }

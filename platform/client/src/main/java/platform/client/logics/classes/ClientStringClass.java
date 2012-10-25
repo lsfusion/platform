@@ -23,6 +23,9 @@ public class ClientStringClass extends ClientDataClass {
 
     public final int length;
 
+    private String minimumMask;
+    private String preferredMask;
+
     protected String sID;
 
     @Override
@@ -40,6 +43,9 @@ public class ClientStringClass extends ClientDataClass {
 
         length = inStream.readInt();
         sID = "StringClass_" + length;
+
+        minimumMask = BaseUtils.replicate('0', length <= 3 ? length : (int) Math.round(Math.pow(length, 0.7)));
+        preferredMask = BaseUtils.replicate('0', length <= 20 ? length : (int) Math.round(Math.pow(length, 0.8)));
     }
 
     public ClientStringClass(int length) {
@@ -77,11 +83,11 @@ public class ClientStringClass extends ClientDataClass {
 
     @Override
     public String getMinimumMask() {
-        return BaseUtils.replicate('0', length / 5);
+        return minimumMask;
     }
 
     public String getPreferredMask() {
-        return BaseUtils.replicate('0', length);
+        return preferredMask;
     }
 
     public Format getDefaultFormat() {

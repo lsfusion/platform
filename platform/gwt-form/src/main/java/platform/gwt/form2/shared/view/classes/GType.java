@@ -29,5 +29,6 @@ public abstract class GType implements Serializable {
         return null;
     }
 
-    public abstract String getMinimumWidth(int minimumCharWidth);
+    public abstract int getMinimumPixelWidth(int minimumCharWidth);
+    public abstract int getPreferredPixelWidth(int preferredCharWidth);
 }

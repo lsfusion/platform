@@ -1,7 +1,6 @@
 package platform.gwt.form2.client.form.ui;
 
 import com.google.gwt.cell.client.Cell;
-import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.view.client.SelectionChangeEvent;
 import platform.gwt.base.shared.GOrder;
@@ -45,7 +44,6 @@ public class GTreeTable extends GGridPropertyTable {
                 if (selectedRecord != null && !selectedRecord.equals(GTreeTable.this.selectedRecord)) {
                     setCurrentRecord(selectedRecord);
                     form.changeGroupObject(selectedRecord.getGroup(), selectedRecord.key);
-                    setKeyboardSelectedRow(currentRecords.indexOf(selectedRecord));
                 }
             }
         });
@@ -116,21 +114,16 @@ public class GTreeTable extends GGridPropertyTable {
         }
     }
 
-    public void update() {
-        GTreeGridRecord selectedRecord = (GTreeGridRecord) selectionModel.getSelectedRecord();
-
-        int oldKeyScrollTop = 0;
-        GTreeGridRecord oldRecord = null;
-        if (selectedRecord != null) {
-            int oldKeyInd = currentRecords.indexOf(selectedRecord);
-
-            if (needToScroll && oldKeyInd != -1) {
-                oldRecord = selectedRecord;
-                TableRowElement rowElement = getRowElement(oldKeyInd);
-                oldKeyScrollTop = rowElement.getAbsoluteTop() - getScrollPanel().getAbsoluteTop();
-            }
+    public void rememberScrollPosition() {
+        GridDataRecord selectedRecord = selectionModel.getSelectedRecord();
+        if (needToScroll && selectedRecord != null && selectedRecord.rowIndex < getRowCount()) {
+            pendingState = new GridState();
+            pendingState.oldRecord = selectedRecord;
+            pendingState.oldKeyScrollTop = getRowElement(currentRecords.indexOf(selectedRecord)).getAbsoluteTop() - getScrollPanel().getAbsoluteTop();
         }
+    }
 
+    public void update() {
         if (dataUpdated) {
             restoreVisualState();
 
@@ -141,19 +134,28 @@ public class GTreeTable extends GGridPropertyTable {
             dataUpdated = false;
         }
 
-        int currentInd = this.selectedRecord == null ? -1 : currentRecords.indexOf(this.selectedRecord);
-        if (currentInd != -1) {
-            if (needToScroll) {
-                if (this.selectedRecord.equals(oldRecord)) {
-                    scrollRowToVerticalPosition(currentInd, oldKeyScrollTop);
-                } else {
-                    getRowElement(currentInd).scrollIntoView();
-                }
-                needToScroll = false;
-            }
-        }
-
         updateHeader();
+    }
+
+    public void preparePendingState() {
+        if (pendingState == null) {
+            pendingState = new GridState();
+        }
+        int currentInd = selectedRecord == null ? -1 : currentRecords.indexOf(this.selectedRecord);
+        rememberOldState(currentInd);
+    }
+
+    public void applyPendingState() {
+        int currentInd = selectedRecord == null ? -1 : currentRecords.indexOf(this.selectedRecord);
+        if (pendingState != null && currentInd != -1 && needToScroll) {
+            if (selectedRecord.equals(pendingState.oldRecord)) {
+                scrollRowToVerticalPosition();
+            } else {
+                scrollToNewKey();
+            }
+            needToScroll = false;
+        }
+        pendingState = null;
     }
 
     protected void updatePropertyReaders() {

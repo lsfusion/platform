@@ -96,6 +96,7 @@ public class GroupObjectContainerSet<C extends AbstractContainer<C, T>, T extend
         set.controlsContainer.setSID(group.getSID() + CONTROLS_CONTAINER);
         set.controlsContainer.getConstraints().insetsInside = new Insets(2, 2, 2, 2);
         set.controlsContainer.getConstraints().childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
+        set.controlsContainer.getConstraints().fillHorizontal = 1.0;
 
         set.toolbarPropsContainer = factory.createContainer(); // контейнер тулбара
         set.toolbarPropsContainer.setDescription(getString("form.layout.toolbar.props.container"));

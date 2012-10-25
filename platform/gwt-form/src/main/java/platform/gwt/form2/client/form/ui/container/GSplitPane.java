@@ -1,4 +1,4 @@
-package platform.gwt.form2.client.form.ui;
+package platform.gwt.form2.client.form.ui.container;
 
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.user.client.Event;

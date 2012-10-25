@@ -1,5 +1,5 @@
 body, html, .gwt-Button, .messageBox-message, .ResizableWindow-header, .captionPanelLegend, .gwt-TreeItem, .gwt-TabBarItem,
-.checkBoxFilter, .customFontPresenter {
+.checkBoxFilter, .comboBoxFilter, .customFontPresenter {
     font-size: 8pt;
 }
 
@@ -8,6 +8,7 @@ body, html {
     width: 100%;
     height: 100%;
     overflow: hidden;
+    overflow: -moz-hidden-unscrollable;
 }
 
 button::-moz-focus-inner {  /*Remove button padding in FF*/
@@ -49,7 +50,7 @@ input[type=checkbox] {
 }
 
 .gwt-TabPanel {
-    padding-bottom: 0.3em;
+    padding-bottom: 0.4em;
 }
 
 .gwt-TabPanelBottom {
@@ -285,4 +286,8 @@ input[type=checkbox] {
 
 .checkBoxFilter {
     margin-top: 5px;
+}
+
+.comboBoxFilter {
+    margin-top: 2px;
 }

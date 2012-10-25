@@ -73,9 +73,15 @@ public class GFormContainer extends GAbstractFormContainer {
         if (childView != null) {
             if (width != null) {
                 setTableCellSize(childView, width, true);
+                if (child.fillHorizontal <= 0) {
+                    childView.setWidth(width);
+                }
             }
             if (height != null) {
                 setTableCellSize(childView, height, false);
+                if (child.fillVertical <= 0) {
+                    childView.setHeight(height);
+                }
             }
         }
     }

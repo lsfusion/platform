@@ -9,10 +9,16 @@ import platform.gwt.utils.GwtSharedUtils;
 public class GStringType extends GDataType {
     protected int length = 50;
 
+    private String minimumMask;
+    private String preferredMask;
+
     public GStringType() {}
 
     public GStringType(int length) {
         this.length = length;
+
+        minimumMask = GwtSharedUtils.replicate('0', length <= 3 ? length : (int) Math.round(Math.pow(length, 0.7)));
+        preferredMask = GwtSharedUtils.replicate('0', length <= 20 ? length : (int) Math.round(Math.pow(length, 0.8)));
     }
 
     @Override
@@ -22,10 +28,10 @@ public class GStringType extends GDataType {
 
     @Override
     public String getMinimumMask() {
-        return GwtSharedUtils.replicate('0', Math.max(length / 5, 1));
+        return minimumMask;
     }
 
     public String getPreferredMask() {
-        return GwtSharedUtils.replicate('0', length);
+        return preferredMask;
     }
 }

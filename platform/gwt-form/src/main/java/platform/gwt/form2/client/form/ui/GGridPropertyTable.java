@@ -1,6 +1,7 @@
 package platform.gwt.form2.client.form.ui;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.user.cellview.client.Header;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.view.client.DefaultSelectionEventManager;
@@ -27,6 +28,8 @@ public abstract class GGridPropertyTable extends GPropertyTable {
 
     protected boolean dataUpdated;
     protected boolean needToScroll;
+
+    protected GridState pendingState;
 
     public GGridSortableHeaderManager sortableHeaderManager;
 
@@ -57,10 +60,31 @@ public abstract class GGridPropertyTable extends GPropertyTable {
         return (GGridTableSelectionModel) super.getSelectionModel();
     }
 
-    protected void scrollRowToVerticalPosition(int rowIndex, int rowScrollTop) {
-        if (rowScrollTop != -1 && rowIndex >= 0 && rowIndex < getRowCount()) {
-            int rowOffsetTop = getRowElement(rowIndex).getOffsetTop();
-            getScrollPanel().setVerticalScrollPosition(rowOffsetTop - rowScrollTop);
+    public void rememberOldState(int currentIndex) {
+        if (currentIndex != -1 && needToScroll) {
+            pendingState.verticalScrollPosition = getScrollPanel().getVerticalScrollPosition();
+            pendingState.scrollPanelHeight = getScrollPanel().getOffsetHeight();
+            TableRowElement currentRow = getRowElement(currentIndex);
+            pendingState.currentRowTop = currentRow.getOffsetTop();
+            pendingState.rowHeight = currentRow.getOffsetHeight();
+        }
+    }
+
+    protected void scrollToNewKey() {
+        if (pendingState.verticalScrollPosition >= pendingState.currentRowTop + pendingState.rowHeight) {
+            getScrollPanel().setVerticalScrollPosition(pendingState.currentRowTop);
+        } else if (pendingState.verticalScrollPosition + pendingState.scrollPanelHeight <= pendingState.currentRowTop + pendingState.rowHeight) {
+            getScrollPanel().setVerticalScrollPosition(pendingState.currentRowTop
+                    + (getScrollPanel().getMaximumHorizontalScrollPosition() == 0 ? pendingState.rowHeight : pendingState.rowHeight * 2)
+                    - pendingState.scrollPanelHeight);
+        } else {
+            scrollRowToVerticalPosition();
+        }
+    }
+
+    protected void scrollRowToVerticalPosition() {
+        if (pendingState.oldKeyScrollTop != -1) {
+            getScrollPanel().setVerticalScrollPosition(pendingState.currentRowTop - pendingState.oldKeyScrollTop);
         }
     }
 
@@ -119,5 +143,15 @@ public abstract class GGridPropertyTable extends GPropertyTable {
         public String getValue() {
             return caption;
         }
+    }
+
+    protected class GridState {
+        public int verticalScrollPosition;
+        public int scrollPanelHeight;
+        public int currentRowTop;
+        public int rowHeight;
+
+        public GridDataRecord oldRecord = null;
+        public int oldKeyScrollTop;
     }
 }

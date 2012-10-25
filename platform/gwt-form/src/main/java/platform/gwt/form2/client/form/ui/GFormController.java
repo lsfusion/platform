@@ -137,7 +137,7 @@ public class GFormController extends SimplePanel {
             }
         });
 
-        filterBox.addStyleName("customFontPresenter");
+        filterBox.addStyleName("comboBoxFilter");
 
         addFilterComponent(filterGroup, filterBox);
         if (filterGroup.defaultFilter >= 0) {
@@ -235,6 +235,10 @@ public class GFormController extends SimplePanel {
 
         modifyFormChangesWithChangePropertyAsyncs(fc);
 
+        // для уменьшения количества вызовов flush() при скроллинге сначала запоминаем текущее положение скролла во всех таблицах
+        rememberScrollPositions();
+
+        // затем одним скопом обновляем данные во всех таблицах
         for (GGroupObjectController controller : controllers.values()) {
             controller.processFormChanges(fc, currentGridObjects, changedGroups);
         }
@@ -246,6 +250,34 @@ public class GFormController extends SimplePanel {
         formLayout.hideEmptyContainerViews();
         if (!fc.classViews.isEmpty()) {
             formLayout.totalResize();
+        }
+
+        // в конце скроллим все таблицы к текущим ключам
+        applyScrollPositions();
+    }
+
+    private void rememberScrollPositions() {
+        for (GGroupObjectController controller : controllers.values()) {
+            controller.rememberScrollPosition();
+        }
+        for (GTreeGroupController treeController : treeControllers.values()) {
+            treeController.rememberScrollPosition();
+        }
+    }
+
+    private void applyScrollPositions() {
+        for (GGroupObjectController controller : controllers.values()) {
+            controller.preparePendingState();
+        }
+        for (GTreeGroupController treeController : treeControllers.values()) {
+            treeController.preparePendingState();
+        }
+
+        for (GGroupObjectController controller : controllers.values()) {
+            controller.applyPendingState();
+        }
+        for (GTreeGroupController treeController : treeControllers.values()) {
+            treeController.applyPendingState();
         }
     }
 

@@ -92,6 +92,18 @@ public class GTreeGroupController implements GGroupObjectLogicsSupplier {
         update();
     }
 
+    public void rememberScrollPosition() {
+        tree.rememberScrollPosition();
+    }
+
+    public void preparePendingState() {
+        tree.preparePendingState();
+    }
+
+    public void applyPendingState() {
+        tree.applyPendingState();
+    }
+
     private void removeProperty(GGroupObject group, GPropertyDraw property) {
         panel.removeProperty(property);
         tree.removeProperty(group, property);

@@ -26,7 +26,12 @@ public class GLogicalType extends GDataType {
     }
 
     @Override
-    public String getMinimumWidth(int minimumCharWidth) {
-        return "30px";
+    public int getMinimumPixelWidth(int minimumCharWidth) {
+        return 30;
+    }
+
+    @Override
+    public int getPreferredPixelWidth(int preferredCharWidth) {
+        return 30;
     }
 }

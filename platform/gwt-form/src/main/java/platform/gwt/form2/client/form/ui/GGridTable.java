@@ -2,7 +2,6 @@ package platform.gwt.form2.client.form.ui;
 
 import com.allen_sauer.gwt.log.client.Log;
 import com.google.gwt.cell.client.Cell;
-import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.view.client.SelectionChangeEvent;
 import platform.gwt.base.shared.GOrder;
@@ -44,7 +43,6 @@ public class GGridTable extends GGridPropertyTable {
                 if (selectedRecord != null && !selectedRecord.key.equals(currentKey)) {
                     setCurrentKey(selectedRecord.key);
                     form.changeGroupObject(groupObject, selectedRecord.key);
-                    setKeyboardSelectedRow(currentRecords.indexOf(selectedRecord));
                 }
             }
         });
@@ -88,17 +86,16 @@ public class GGridTable extends GGridPropertyTable {
         columnsUpdated = true;
     }
 
-    public void update() {
+    public void rememberScrollPosition() {
         GridDataRecord selectedRecord = selectionModel.getSelectedRecord();
-
-        int oldKeyScrollTop = 0;
-        GGroupObjectValue oldKey = null;
         if (needToScroll && selectedRecord != null && selectedRecord.rowIndex < getRowCount()) {
-            oldKey = selectedRecord.key;
-            TableRowElement rowElement = getRowElement(selectedRecord.rowIndex);
-            oldKeyScrollTop = rowElement.getAbsoluteTop() - getScrollPanel().getAbsoluteTop();
+            pendingState = new GridState();
+            pendingState.oldRecord = selectedRecord;
+            pendingState.oldKeyScrollTop = getRowElement(selectedRecord.rowIndex).getAbsoluteTop() - getScrollPanel().getAbsoluteTop();
         }
+    }
 
+    public void update() {
         updatedColumnsIfNeeded();
 
         if (dataUpdated) {
@@ -106,20 +103,27 @@ public class GGridTable extends GGridPropertyTable {
             setRowData(currentRecords);
             dataUpdated = false;
         }
+    }
 
-        int currentInd = currentKey == null ? -1 : rowKeys.indexOf(currentKey);
-        if (currentInd != -1) {
-            if (needToScroll) {
-                int horizontalScrollPosition = getScrollPanel().getHorizontalScrollPosition();
-                if (currentKey.equals(oldKey)) {
-                    scrollRowToVerticalPosition(currentInd, oldKeyScrollTop);
-                } else {
-                    getRowElement(currentInd).scrollIntoView();
-                }
-                getScrollPanel().setHorizontalScrollPosition(horizontalScrollPosition);
-                needToScroll = false;
-            }
+    public void preparePendingState() {
+        if (pendingState == null) {
+            pendingState = new GridState();
         }
+        int currentInd = currentKey == null ? -1 : rowKeys.indexOf(currentKey);
+        rememberOldState(currentInd);
+    }
+
+    public void applyPendingState() {
+        int currentInd = currentKey == null ? -1 : rowKeys.indexOf(currentKey);
+        if (pendingState != null && currentInd != -1 && needToScroll) {
+            if (pendingState.oldRecord != null && currentKey.equals(pendingState.oldRecord.key)) {
+                scrollRowToVerticalPosition();
+            } else {
+                scrollToNewKey();
+            }
+            needToScroll = false;
+        }
+        pendingState = null;
     }
 
     private void updatedColumnsIfNeeded() {

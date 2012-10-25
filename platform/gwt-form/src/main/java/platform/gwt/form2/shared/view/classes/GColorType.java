@@ -26,7 +26,11 @@ public class GColorType extends GDataType {
     }
 
     @Override
-    public String getMinimumWidth(int minimumCharWidth) {
-        return "40px";
+    public int getMinimumPixelWidth(int minimumCharWidth) {
+        return 40;
+    }
+
+    public int getPreferredPixelWidth(int preferredCharWidth) {
+        return 40;
     }
 }

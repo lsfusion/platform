@@ -21,14 +21,16 @@ public class DataPanelRenderer implements PanelRenderer {
         label = new Label(caption = property.getCaptionOrEmpty());
         label.addStyleName("customFontPresenter");
 
+        int propertyPixelWidth = property.getPreferredPixelWidth();
+
         valueTable = new GSinglePropertyTable(form, property, columnKey);
 
-        valueTable.setTableWidth(250, Style.Unit.PX);
+        valueTable.setTableWidth(propertyPixelWidth, Style.Unit.PX);
         valueTable.setWidth("100%");
         valueTable.setHeight("100%");
 
         ResizeLayoutPanel gridPanel = new ResizeLayoutPanel();
-        gridPanel.setPixelSize(250, 16);
+        gridPanel.setPixelSize(propertyPixelWidth, 16);
         gridPanel.addStyleName("dataPanelRendererGridPanel");
         gridPanel.add(valueTable);
 

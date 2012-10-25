@@ -23,7 +23,6 @@ public class GContainer extends GComponent {
                 "title='" + title + '\'' +
                 ", vertical=" + vertical +
                 ", hAlign=" + hAlign +
-                ", resizable=" + resizable +
                 '}';
     }
 
@@ -107,8 +106,7 @@ public class GContainer extends GComponent {
     }
 
     public boolean toFlow() {
-        return (vertical != null && !vertical && fillVertical <= 0)
-                || (vertical == null && containerFlows());
+        return (vertical == null && fillVertical <= 0 && containerFlows());
     }
 
     private boolean containerFlows() {
@@ -116,6 +114,8 @@ public class GContainer extends GComponent {
             if (container.vertical != null) {
                 if (container.vertical) {
                     return (container.fillVertical > 0 && !container.isGroupObjectWithBannedGrid()) || container.containerFlows();
+                } else {
+                    return (container.fillHorizontal > 0 && !container.isGroupObjectWithBannedGrid()) || container.containerFlows();
                 }
             } else {
                 return container.containerFlows();

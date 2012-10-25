@@ -13,7 +13,12 @@ public class GObjectType extends GType {
     }
 
     @Override
-    public String getMinimumWidth(int minimumCharWidth) {
-        return "7em";
+    public int getMinimumPixelWidth(int minimumCharWidth) {
+        return 50;
+    }
+
+    @Override
+    public int getPreferredPixelWidth(int preferredCharWidth) {
+        return 50;
     }
 }

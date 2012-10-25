@@ -106,10 +106,14 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
     }
 
     public String getMinimumWidth() {
+        return getMinimumPixelWidth() + "px";
+    }
+
+    public int getMinimumPixelWidth() {
         if (minimumWidth != -1) {
-            return minimumWidth + "px";
+            return minimumWidth;
         } else {
-            return baseType.getMinimumWidth(minimumCharWidth);
+            return baseType.getMinimumPixelWidth(minimumCharWidth);
         }
     }
 
@@ -130,10 +134,14 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
     }
 
     public String getPreferredWidth() {
+        return getPreferredPixelWidth() + "px";
+    }
+
+    public int getPreferredPixelWidth() {
         if (preferredWidth != -1) {
-            return preferredWidth + "px";
+            return preferredWidth;
         } else {
-            return "150px";
+            return baseType.getPreferredPixelWidth(preferredCharWidth);
         }
     }
 

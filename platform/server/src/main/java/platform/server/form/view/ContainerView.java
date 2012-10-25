@@ -18,8 +18,6 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
 
     public byte type = ContainerType.CONTAINER;
 
-    public boolean gwtResizable = true;
-
     public void setTitle(String title) {
         this.title = title;
     }
@@ -130,7 +128,6 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
         pool.writeString(outStream, description);
 
         outStream.writeByte(type);
-        outStream.writeBoolean(gwtResizable);
     }
 
     @Override
@@ -143,6 +140,5 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
         description = pool.readString(inStream);
 
         type = inStream.readByte();
-        gwtResizable = inStream.readBoolean();
     }
 }

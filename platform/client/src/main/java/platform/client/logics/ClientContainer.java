@@ -30,8 +30,6 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
 
     private byte type = ContainerType.CONTAINER;
 
-    public boolean gwtResizable;
-
     public ClientContainer() {
     }
 
@@ -51,7 +49,6 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
         pool.writeString(outStream, description);
 
         outStream.writeByte(type);
-        outStream.writeBoolean(gwtResizable);
     }
 
     @Override
@@ -64,7 +61,6 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
         description = pool.readString(inStream);
 
         type = inStream.readByte();
-        gwtResizable = inStream.readBoolean();
     }
 
     @Override

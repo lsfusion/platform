@@ -277,6 +277,24 @@ public class GGroupObjectController implements GGroupObjectLogicsSupplier {
         panel.update();
     }
 
+    public void rememberScrollPosition() {
+        if (grid != null) {
+            grid.rememberScrollPosition();
+        }
+    }
+
+    public void preparePendingState() {
+        if (grid != null) {
+            grid.preparePendingState();
+        }
+    }
+
+    public void applyPendingState() {
+        if (grid != null) {
+            grid.applyPendingState();
+        }
+    }
+
     public void redrawGrid() {
         grid.redrawGrid();
     }
