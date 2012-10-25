@@ -860,6 +860,10 @@ DESIGN priceSetDocument FROM DEFAULT {
 
     ADD functions.box;
 
+    PROPERTY(datePriceSetDocument) { background = #FFEEEE; }
+    PROPERTY(timePriceSetDocument) { background = #FFEEEE; }
+    PROPERTY(nameCurrencyPriceSetDocument) { background = #FFEEEE; }
+
     PROPERTY(formOkAction) {
         caption = 'Провести';
     }

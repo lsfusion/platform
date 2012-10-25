@@ -346,7 +346,7 @@ printMarksSkuWHfromRF 'Печать маркировок товаров' (WHfrom
 originalNameArticleSkuWHfromRFDetail 'Наименование(ориг.)' (WHfromRFDetail) = originalNameArticleSku(skuWHfromRFDetail(WHfromRFDetail)) PREFCHARWIDTH 30 MINCHARWIDTH 20;
 nameCountryOfOriginArticleSkuWHfromRFDetail 'Страна происхождения' (WHfromRFDetail) = nameCountryOfOriginArticleSku(skuWHfromRFDetail(WHfromRFDetail)) PREFCHARWIDTH 30 MINCHARWIDTH 20;
 nameBrandSupplierArticleSkuWHfromRFDetail 'Бренд' (WHfromRFDetail) = nameBrandSupplierArticleSku(skuWHfromRFDetail(WHfromRFDetail)) PREFCHARWIDTH 30 MINCHARWIDTH 20;
-netWeightArticleSkuWHfromRFDetail 'Весс нетто(ориг.)' (WHfromRFDetail) = netWeightArticleSku(skuWHfromRFDetail(WHfromRFDetail));
+netWeightArticleSkuWHfromRFDetail 'Вес нетто(ориг.)' (WHfromRFDetail) = netWeightArticleSku(skuWHfromRFDetail(WHfromRFDetail));
 mainCompositionOriginArticleSkuWHfromRFDetail 'Состав(ориг.)' (WHfromRFDetail) = mainCompositionOriginArticleSku(skuWHfromRFDetail(WHfromRFDetail)) PREFCHARWIDTH 30 MINCHARWIDTH 20;
 
 // Внутренние атрибуты
@@ -388,7 +388,7 @@ changeUnitOfMeasureArticleSkuWHfromRFDetail = ACTION (WHfromRFDetail) {
     }
 }
 
-netWeightSkuWHfromRFDetail 'Весс нетто(ед.)' (WHfromRFDetail) = netWeightSku(skuWHfromRFDetail(WHfromRFDetail));
+netWeightSkuWHfromRFDetail 'Вес нетто(ед.)' (WHfromRFDetail) = netWeightSku(skuWHfromRFDetail(WHfromRFDetail));
 changeNetWeightSkuWHfromRFDetail = ACTION (WHfromRFDetail) {
     REQUEST NUMERIC[14,6] INPUT;
     SET netWeightSku(sku) <- requestedNumeric() WHERE sku == skuWHfromRFDetail(WHfromRFDetail);

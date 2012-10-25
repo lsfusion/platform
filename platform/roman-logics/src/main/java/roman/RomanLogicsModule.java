@@ -1656,7 +1656,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         typeLabel = addConcreteClass("typeLabel", "Тип этикетки", baseClass.named);
 
-        typeContainer = addStaticClass("typeContainer", "Вид грузового места", new String[]{"palleta", "box"}, new String[]{"Паллета", "Короб"});
+        typeContainer = addStaticClass("typeContainer", "Вид грузового места", new String[]{"palleta", "box"}, new String[]{"Поддон", "Короб"});
 
     }
 

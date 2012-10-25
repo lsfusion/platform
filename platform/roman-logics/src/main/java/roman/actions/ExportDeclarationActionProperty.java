@@ -39,9 +39,10 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
                     "nameCategoryGroupDeclaration", "sidGenderGroupDeclaration", "nameTypeFabricGroupDeclaration", "nameGroupDeclaration",
                     "sidArticleGroupDeclaration", "sidCustomCategory10GroupDeclaration", "mainCompositionGroupDeclaration",
                     "sidCountryGroupDeclaration", "sidOrigin2CountryGroupDeclaration", "quantityCoefficientGroupDeclaration", "sidUnitOfMeasureGroupDeclaration",
-                    "nameUnitOfMeasureGroupDeclaration", "sumContractGroupDeclaration", "netWeightGroupDeclaration",
-                    "grossWeightGroupDeclaration", "sidSpecUnitOfMeasureGroupDeclaration", "nameSpecUnitOfMeasureGroupDeclaration",
-                    "quantitySpecGroupDeclaration", "sidAdditionalUnitOfMeasureGroupDeclaration", "nameAdditionalUnitOfMeasureGroupDeclaration");
+                    "genitiveNameUnitOfMeasureGroupDeclaration", "sumContractGroupDeclaration", "netWeightGroupDeclaration",
+                    "grossWeightGroupDeclaration", "sidSpecUnitOfMeasureGroupDeclaration", "genitiveNameSpecUnitOfMeasureGroupDeclaration",
+                    "quantitySpecGroupDeclaration", "sidAdditionalUnitOfMeasureGroupDeclaration", "genitiveNameAdditionalUnitOfMeasureGroupDeclaration",
+                    "nameTypeContainerGroupDeclaration", "CRMDeclaration");
 
             List<String> exportTitlesTSware = BaseUtils.toList("Порядковый номер декларируемого товара", "Наименование товара", "Вес брутто",
                     "Вес нетто", "Вес нетто без упаковки", "Фактурная стоимость товара", "Таможенная стоимость",
@@ -137,6 +138,7 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
             Double containerNumberDeclaration = (Double) LM.findLCPByCompoundName("containerNumberDeclaration").read(context.getSession(), declarationObject);
             boolean containerNumberFlag = false;
             String numberContractDeclaration = (String) LM.findLCPByCompoundName("numberContractDeclaration").read(context.getSession(), declarationObject);
+            String CRMDeclaration = (String) LM.findLCPByCompoundName("CRMDeclaration").read(context.getSession(), declarationObject);
             Date dateFromContractDeclaration = (Date) LM.findLCPByCompoundName("dateFromContractDeclaration").read(context.getSession(), declarationObject);
 
             row = "";
@@ -210,7 +212,7 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
                 } else {
                     addStringCellToRow(0, ";"); //Количество мест
                 }
-                addStringCellToRow(null, ";"); //Вид грузовых мест
+                String nameContainer = (String) values.get("nameTypeContainerGroupDeclaration");
                 addStringCellToRow(null, ";"); //Код валюты квоты
                 addStringCellToRow(null, ";"); //Остаток квоты в валюте
                 addStringCellToRow(null, ";"); //Остаток квоты в единице измерения
@@ -219,14 +221,14 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
                 addDoubleCellToRow(values.get("quantitySpecGroupDeclaration"), ";", 3); //Количество товара в специфических единицах измерения
                 addStringCellToRow(null, ";"); //Количество подакцизного товара
                 String sidSpecUnit = (String) values.get("sidSpecUnitOfMeasureGroupDeclaration");
-                String nameSpecUnit = (String) values.get("nameSpecUnitOfMeasureGroupDeclaration");
+                String nameSpecUnit = (String) values.get("genitiveNameSpecUnitOfMeasureGroupDeclaration");
                 addConstantStringCellToRow(sidSpecUnit != null ? sidSpecUnit : "166", ";");  //Код специфических единиц измерения
                 addConstantStringCellToRow(nameSpecUnit != null ? nameSpecUnit : "КГ", ";");  //Краткое наименование специфических единиц измерения
                 addStringCellToRow(null, ";"); //Код единицы измерения подакцизного товара
                 addStringCellToRow(null, ";"); //Наименование единицы измерения подакцизного товара
                 addDoubleCellToRow(values.get("quantityCoefficientGroupDeclaration"), ";", 0);
                 addStringCellToRow(values.get("sidAdditionalUnitOfMeasureGroupDeclaration"), ";");
-                addStringCellToRow(values.get("nameAdditionalUnitOfMeasureGroupDeclaration"), ";");
+                addStringCellToRow(values.get("genitiveNameAdditionalUnitOfMeasureGroupDeclaration"), ";");
 
                 addStringCellToRow(null, ";"); //Корректировки таможенной стоимости
                 addStringCellToRow(null, ";"); //Количество акцизных марок
@@ -277,7 +279,7 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
                 addStringCellToRow(null, ";"); //Сорт (группа сортов)
                 addStringCellToRow(null, ";"); //Дата выпуска
                 addDoubleCellToRow(values.get("quantityCoefficientGroupDeclaration"), ";", 0); //Количество товара
-                addStringCellToRow(values.get("nameUnitOfMeasureGroupDeclaration"), ";"); //Краткое наименование единицы измерения
+                addStringCellToRow(values.get("genitiveNameUnitOfMeasureGroupDeclaration"), ";"); //Краткое наименование единицы измерения
                 addStringCellToRow(values.get("sidUnitOfMeasureGroupDeclaration"), ";"); //Код единицы измерения
                 addStringCellToRow(values.get("nameCategoryGroupDeclaration"), ";"); //Группа товаров
 

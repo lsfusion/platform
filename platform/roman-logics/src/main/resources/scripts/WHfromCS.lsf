@@ -387,7 +387,7 @@ printMarksSkuWHfromCSR 'Печать маркировок товаров' (WHfro
 originalNameArticleSkuWHfromCSRDetail 'Наименование(ориг.)' (WHfromCSRDetail) = originalNameArticleSku(skuWHfromCSRDetail(WHfromCSRDetail)) PREFCHARWIDTH 30 MINCHARWIDTH 20;
 nameCountryOfOriginArticleSkuWHfromCSRDetail 'Страна происхождения' (WHfromCSRDetail) = nameCountryOfOriginArticleSku(skuWHfromCSRDetail(WHfromCSRDetail)) PREFCHARWIDTH 30 MINCHARWIDTH 20;
 nameBrandSupplierArticleSkuWHfromCSRDetail 'Бренд' (WHfromCSRDetail) = nameBrandSupplierArticleSku(skuWHfromCSRDetail(WHfromCSRDetail)) PREFCHARWIDTH 30 MINCHARWIDTH 20;
-netWeightArticleSkuWHfromCSRDetail 'Весс нетто(ориг.)' (WHfromCSRDetail) = netWeightArticleSku(skuWHfromCSRDetail(WHfromCSRDetail));
+netWeightArticleSkuWHfromCSRDetail 'Вес нетто(ориг.)' (WHfromCSRDetail) = netWeightArticleSku(skuWHfromCSRDetail(WHfromCSRDetail));
 mainCompositionOriginArticleSkuWHfromCSRDetail 'Состав(ориг.)' (WHfromCSRDetail) = mainCompositionOriginArticleSku(skuWHfromCSRDetail(WHfromCSRDetail)) PREFCHARWIDTH 30 MINCHARWIDTH 20;
 
 // Внутренние атрибуты

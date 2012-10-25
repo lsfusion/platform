@@ -30,17 +30,18 @@ TABLE UOM (UOM);
 
 baseUOM = DATA UOM(UOM) IN idGroup;
 shortNameBaseUOM 'Базовая ед.изм.' (UOM) = shortName(baseUOM(UOM)) IN baseGroup;
+genitiveNameUOM 'Ед. изм. (родительный)' = DATA STRING[20](UOM) IN baseGroup;
 factorUOM 'Коэффициент пересчета в баз.ед.' = DATA NUMERIC[14,3] (UOM) IN baseGroup;
 
 FORM UOM 'Единица измерения'
     OBJECTS u=UOM FIXED PANEL
-    PROPERTIES(u) name, shortName, shortNameBaseUOM, factorUOM
+    PROPERTIES(u) name, shortName, shortNameBaseUOM, genitiveNameUOM, factorUOM
     EDIT UOM OBJECT u
 ;
 
 FORM UOMs 'Единицы измерений'
     OBJECTS u=UOM
-    PROPERTIES(u) READONLY name, shortName, shortNameBaseUOM, factorUOM
+    PROPERTIES(u) READONLY name, shortName, shortNameBaseUOM, genitiveNameUOM, factorUOM
     PROPERTIES(u) ADDFORM, EDITFORM, delete
 ;
 

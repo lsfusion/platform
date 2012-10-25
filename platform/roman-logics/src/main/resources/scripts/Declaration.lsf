@@ -156,6 +156,7 @@ TABLE correction (correction);
 GROUP sumGroup 'Итого' : publicGroup;
 GROUP corrGroup 'Доплата' : publicGroup;
 GROUP docGroup 'Описание' : publicGroup;
+GROUP freightGroup '' : publicGroup;
 GROUP datetimeGroup 'Даты' : publicGroup;
 GROUP exchangeGroup 'Курсы обмена' : publicGroup;
 
@@ -170,7 +171,6 @@ executerDeclaration 'Исполнитель' = DATA customUser (declaration);
 nameExecuterDeclaration 'Исполнитель' (declaration) = commonName(executerDeclaration(declaration)) MINCHARWIDTH 20;
 executerDeclaration(declaration) <- currentUser() WHEN ASSIGNED(declaration IS declaration);
 
-
 allowImportExportXLSDeclarationUA(declaration) = allowImportExportXLSLegalEntityUA(customStoreDeclaration(declaration));
 allowImportExportXMLDeclarationBY(declaration) = allowImportExportXMLLegalEntityBY(customStoreDeclaration(declaration));
 
@@ -184,10 +184,6 @@ nameLanguageDeclaration 'Язык декларации' (declaration) = name(lan
 
 customsZoneDeclaration (declaration) = customsZoneCountry(countryLegalEntity(importerDeclaration(declaration)));
 
-contractDeclaration = DATA contractSkuSupplier(declaration);
-numberContractDeclaration 'Договор' (declaration) = numberContract(contractDeclaration(declaration));
-dateFromContractDeclaration 'Дата договора (с)' (declaration) = dateFromContract(contractDeclaration(declaration));
-
 currencyDeclaration 'Валюта декларации (ИД)' = DATA currency(declaration) IN idGroup;
 nameCurrencyDeclaration 'Валюта декларации' = name(currencyDeclaration(declaration)) IN exchangeGroup;
 
@@ -196,16 +192,24 @@ dateCorrectionDeclaration 'Дата оплаты КТС' = DATA DATE (declaratio
 declarationInnerInvoice 'Декларация инвойса (ИД)' = DATA declaration(innerInvoice) IN idGroup;
 sidDeclarationInnerInvoice 'Декларация инвойса' (innerInvoice) = sidDeclaration(declarationInnerInvoice(innerInvoice)) IN baseGroup;
 
+contractDeclaration = DATA contractSkuSupplier(declaration);
+contractInvoicesDeclaration = GROUP MAX contractInnerInvoice(innerInvoice) BY declarationInnerInvoice(innerInvoice);
+
+numberContractDeclaration 'Договор' (declaration) = numberContract(contractInvoicesDeclaration(declaration));
+dateFromContractDeclaration 'Дата договора (с)' (declaration) = dateFromContract(contractInvoicesDeclaration(declaration)) IN freightGroup;
+
 palletNumberFormedInvoice (formedInvoice) = palletNumberProxyFreight(freightFormedInvoice(formedInvoice));
 palletNumberInnerInvoice (innerInvoice) = UNION EXCLUSIVE palletNumberFormedInvoice(innerInvoice),
                                                           palletNumberDirectInvoice(innerInvoice) IF innerInvoice IS directInvoice;
 
-palletNumberDeclaration 'Кол-во паллет' (declaration) = GROUP SUM palletNumberInnerInvoice(innerInvoice) BY declarationInnerInvoice(innerInvoice) IN docGroup;
+palletNumberDeclaration 'Кол-во паллет' (declaration) = GROUP SUM palletNumberInnerInvoice(innerInvoice) BY declarationInnerInvoice(innerInvoice) IN freightGroup;
 
 typeContainerDeclaration = DATA typeContainer(declaration);
-nameTypeContainerDeclaration 'Вид грузовых мест'(declaration) = name(typeContainerDeclaration(declaration));
+nameTypeContainerDeclaration 'Вид грузовых мест'(declaration) = name(typeContainerDeclaration(declaration)) IN freightGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
 
-containerNumberDeclaration 'Кол-во грузовых мест' = DATA NUMERIC[14,3](declaration);
+containerNumberDeclaration 'Кол-во грузовых мест' = DATA NUMERIC[14,3](declaration) IN freightGroup;
+
+CRMDeclaration 'Документ по транспорту' = DATA STRING[30](declaration) IN freightGroup;
 
 inDeclarationInnerInvoice 'Инвойс в декларации' (declaration, innerInvoice) = declarationInnerInvoice(innerInvoice) == declaration;
 
@@ -214,8 +218,9 @@ CONSTRAINT declarationInnerInvoice(innerInvoice) AND NOT(freightInnerInvoice(inn
 
 forDeclaration(declaration, innerInvoice) = inDeclarationInnerInvoice(declaration, innerInvoice) OR declaration AS declaration AND NOT declarationInnerInvoice(innerInvoice);
 
-//CONSTRAINT contractDeclaration(declarationInnerInvoice(innerInvoice)) != contractInnerInvoice(innerInvoice) CHECKED
-//    MESSAGE 'Инвойс для другого договора';
+CONSTRAINT declarationInnerInvoice(innerInvoice1) == declarationInnerInvoice(innerInvoice2) AND
+           contractInnerInvoice(innerInvoice1) != contractInnerInvoice(innerInvoice2) CHECKED
+    MESSAGE 'Инвойс для другого договора';
 
 CONSTRAINT importerDeclaration(declarationInnerInvoice(innerInvoice)) != importerInnerInvoice(innerInvoice) CHECKED
     MESSAGE 'Инвойс для другого импортёра';
@@ -538,6 +543,9 @@ CLASS groupDeclaration 'Строка декларации';
 
 declarationGroupDeclaration 'Декларация (ИД)' = DATA declaration(groupDeclaration) IN idGroup NOT NULL DELETE;
 
+typeContainerGroupDeclaration (groupDeclaration) = typeContainerDeclaration(declarationGroupDeclaration(groupDeclaration));
+nameTypeContainerGroupDeclaration 'Вид грузовых мест' (groupDeclaration) = name(typeContainerGroupDeclaration(groupDeclaration));
+
 articleGroupDeclaration 'Артикул (ИД)' = DATA article(groupDeclaration) IN idGroup;
 customCategory10GroupDeclaration 'ТН ВЭД (ИД)' = DATA customCategory10(groupDeclaration) IN idGroup;
 mainCompositionGroupDeclaration 'Состав' = DATA STRING[200](groupDeclaration) IN baseGroup;
@@ -606,15 +614,17 @@ unitOfMeasureGroupDeclaration 'Ед. изм.(ИД)' = UNION OVERRIDE unitOfMeasu
 
 sidUnitOfMeasureGroupDeclaration 'Ед. изм.(код)' (groupDeclaration) = sidUnitOfMeasure(unitOfMeasureGroupDeclaration(groupDeclaration));
 nameUnitOfMeasureGroupDeclaration 'Ед. изм.' (groupDeclaration) = name(unitOfMeasureGroupDeclaration(groupDeclaration)) MINCHARWIDTH 5;
+genitiveNameUnitOfMeasureGroupDeclaration 'Ед. изм.' (groupDeclaration) = genitiveNameUOM(unitOfMeasureGroupDeclaration(groupDeclaration));
 
 specUnitOfMeasureGroupDeclaration 'Ед. изм.(код)' (groupDeclaration) = specUnitOfMeasureCustomCategory10(customCategory10GroupDeclaration(groupDeclaration));
-additionalUnitOfMeasureGroupDeclaration 'Ед. изм.' (groupDeclaration) = additionalUnitOfMeasureCustomCategory10(customCategory10GroupDeclaration(groupDeclaration));
-
 sidSpecUnitOfMeasureGroupDeclaration (groupDeclaration) = sidUnitOfMeasure(specUnitOfMeasureGroupDeclaration(groupDeclaration));
 nameSpecUnitOfMeasureGroupDeclaration 'Ед. изм.' (groupDeclaration) = name(specUnitOfMeasureGroupDeclaration(groupDeclaration));
+genitiveNameSpecUnitOfMeasureGroupDeclaration 'Ед. изм.' (groupDeclaration) = genitiveNameUOM(specUnitOfMeasureGroupDeclaration(groupDeclaration));
 
+additionalUnitOfMeasureGroupDeclaration 'Ед. изм.' (groupDeclaration) = additionalUnitOfMeasureCustomCategory10(customCategory10GroupDeclaration(groupDeclaration));
 sidAdditionalUnitOfMeasureGroupDeclaration (groupDeclaration) = sidUnitOfMeasure(additionalUnitOfMeasureGroupDeclaration(groupDeclaration));
 nameAdditionalUnitOfMeasureGroupDeclaration 'Ед. изм.' (groupDeclaration) = name(additionalUnitOfMeasureGroupDeclaration(groupDeclaration));
+genitiveNameAdditionalUnitOfMeasureGroupDeclaration 'Ед. изм.' (groupDeclaration) = genitiveNameUOM(additionalUnitOfMeasureGroupDeclaration(groupDeclaration));
 
 //sidOverUnitOfMeasureGroupDeclaration (groupDeclaration) = UNION OVERRIDE  IF groupDeclaration IS groupDeclaration ,
 //                                                                         sidSpecUnitOfMeasureGroupDeclaration(groupDeclaration);
@@ -676,7 +686,7 @@ quantityFreightDeclarationSku 'Кол-во' (freight, declaration, sku) = GROUP 
 quantityFreightDeclaration 'Кол-во' (freight, declaration) = GROUP SUM quantityFreightDeclarationSku (freight, declaration, sku) BY freight, declaration;
 
 sumFreightsDeclaration 'Транспортные расходы' (declaration) = GROUP SUM sumFreightFreight(freight) IF quantityFreightDeclaration (freight, declaration)
-                                                                     BY declaration;
+                                                                     BY declaration IN freightGroup;
 
 sidFreightDeclaration 'Номер' (freight, declaration) = sidImporterFreight(importerDeclaration(declaration), freight);
 
@@ -1016,23 +1026,8 @@ priceCustomDeclarationArticle 'Себестоимость (БУ)' (declaration, 
 priceManagerialDeclarationArticle 'Себестоимость (УУ)' (declaration, article) = GROUP MAX priceManagerialDeclarationSku(declaration, innerInvoice, sku)
                                                                                        BY declaration, articleSku(sku);
 
-stringInnerInvoice (innerInvoice) =
-    [FORMULA STRING[30] 'CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) '] (
-    sidInnerInvoice(innerInvoice), dateInnerInvoice(innerInvoice));
-
-innerInvoicesDeclaration 'Инвойсы' (declaration) =
-    GROUP CONCAT stringInnerInvoice(innerInvoice) IF inDeclarationInnerInvoice (declaration, innerInvoice), ', '
-          BY declaration
-          ORDER innerInvoice IN docGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
-
 quantityDeclarationBrandSupplier (declaration, brandSupplier) = GROUP SUM quantityDeclarationDetail(declarationDetail)
     BY declarationDeclarationDetail(declarationDetail), brandDeclarationDetail(declarationDetail);
-
-
-innerInvoicesGroupDeclaration 'Инвойсы' (groupDeclaration) =
-    GROUP CONCAT sidInnerInvoice(innerInvoice) IF quantityGroupDeclarationInnerInvoice(groupDeclaration, innerInvoice), ', '
-    BY groupDeclaration
-    ORDER innerInvoice MINCHARWIDTH 10 MAXCHARWIDTH 30 PREFCHARWIDTH 20 PERSISTENT;
 
 canonicalBrandDeclaration 'Бренды' (declaration) = castToString255(
     [GROUP CONCAT commonName(brandSupplier) IF quantityDeclarationBrandSupplier(declaration, brandSupplier), ' , '
@@ -1040,6 +1035,19 @@ canonicalBrandDeclaration 'Бренды' (declaration) = castToString255(
            ORDER brandSupplier](declaration))
     MINCHARWIDTH 50 MAXCHARWIDTH 100 PREFCHARWIDTH 100 PERSISTENT;
 
+stringInnerInvoice (innerInvoice) =
+    [FORMULA STRING[30] 'CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) '] (
+    sidInnerInvoice(innerInvoice), dateInnerInvoice(innerInvoice));
+
+innerInvoicesDeclaration 'Инвойсы' (declaration) =
+    GROUP CONCAT stringInnerInvoice(innerInvoice) IF inDeclarationInnerInvoice (declaration, innerInvoice), ', '
+          BY declaration
+          ORDER innerInvoice IN docGroup MINCHARWIDTH 20 PREFCHARWIDTH 100;
+
+innerInvoicesGroupDeclaration 'Инвойсы' (groupDeclaration) =
+    GROUP CONCAT sidInnerInvoice(innerInvoice) IF quantityGroupDeclarationInnerInvoice(groupDeclaration, innerInvoice), ', '
+    BY groupDeclaration
+    ORDER innerInvoice MINCHARWIDTH 10 MAXCHARWIDTH 30 PREFCHARWIDTH 20 PERSISTENT;
 
 FORM declarationInvoices 'Присоединение инвойсов'
     OBJECTS d=declaration FIXED PANEL
@@ -1134,13 +1142,13 @@ importExportDeclarationBYAllow(declaration) = allowImportExportXMLDeclarationBY(
 
 FORM declaration 'Декларация'
     OBJECTS d=declaration FIXED PANEL, dd=declarationDetail
-    PROPERTIES(d) objectClassName, sidDeclaration, nameCustomStoreDeclaration, nameImporterDeclaration, numberContractDeclaration,
-                  nameLanguageDeclaration, nameCurrencyDeclaration, innerInvoicesDeclaration, sumFreightsDeclaration,
-                  palletNumberDeclaration, nameTypeContainerDeclaration, containerNumberDeclaration,
+    PROPERTIES(d) objectClassName, sidDeclaration, nameCustomStoreDeclaration, nameImporterDeclaration, nameCurrencyDeclaration,
+                  nameTypeContainerDeclaration, containerNumberDeclaration,
                   dateDeclaration, timeDeclaration, beginTimeDeclaration, endTimeDeclaration,
                   nameTypeExchangeCustomDeclaration, rateExchangeCustomDataDeclaration, nameTypeExchangeManagerialDeclaration,
-                  rateExchangeManagerialDataDeclaration, sumRegistrationUnionDeclaration, nameExecuterDeclaration
-    PROPERTIES(d) READONLY dutyReverseDeclaration, VATReverseDeclaration, totalCustomSum, expenseCertificateDeclaration
+                  rateExchangeManagerialDataDeclaration, sumRegistrationUnionDeclaration, nameExecuterDeclaration, CRMDeclaration
+    PROPERTIES(d) READONLY numberContractDeclaration, nameLanguageDeclaration, innerInvoicesDeclaration, sumFreightsDeclaration,
+                  palletNumberDeclaration, dutyReverseDeclaration, VATReverseDeclaration, totalCustomSum, expenseCertificateDeclaration
     PROPERTIES(d) sumConsultationDeclaration, exportDeclarationToEXELLanguageDeclaration TODRAW dd FORCE PANEL SHOWIF allowImportExportXLSDeclarationUA(d)
 
     OBJECTS c=correction
@@ -1269,28 +1277,39 @@ DESIGN declaration FROM DEFAULT{
                             ADD PROPERTY(nameImporterDeclaration);
                             ADD PROPERTY(numberContractDeclaration);
                             ADD PROPERTY(nameLanguageDeclaration);
-                            ADD PROPERTY(innerInvoicesDeclaration);
-                            ADD PROPERTY(sumFreightsDeclaration);
-                            ADD PROPERTY(palletNumberDeclaration);
-                            ADD PROPERTY(nameTypeContainerDeclaration);
-                            ADD PROPERTY(containerNumberDeclaration);
                             ADD PROPERTY(showFormDeclarationInvoices);
+                            ADD PROPERTY(innerInvoicesDeclaration);
+                            //ADD PROPERTY(sumFreightsDeclaration);
+                            //ADD PROPERTY(CRMDeclaration);
+                            //ADD PROPERTY(palletNumberDeclaration);
+                            //ADD PROPERTY(nameTypeContainerDeclaration);
+                            //ADD PROPERTY(containerNumberDeclaration);
                         }
 
-                        NEW datetimeexecutContainer {
+                        NEW bodyContainer {
+
                             childConstraints = TO THE RIGHT;
-                            NEW datetimeContainer {
-                                caption = 'Даты';
+                            ADD d.freightGroup {
+                                caption = 'Информация по транспорту';
                                 childConstraints = TO THE BOTTOM;
-                                ADD PROPERTY(dateDeclaration);
-                                ADD PROPERTY(timeDeclaration);
-                                ADD PROPERTY(beginTimeDeclaration);
-                                ADD PROPERTY(endTimeDeclaration);
                             }
-                            NEW executContainer {
-                                caption = 'Обработка';
+
+                            NEW datetimeexecutContainer {
                                 childConstraints = TO THE BOTTOM;
-                                ADD PROPERTY(nameExecuterDeclaration);
+                                NEW datetimeContainer {
+                                    caption = 'Даты';
+                                    childConstraints = TO THE BOTTOM;
+                                    ADD PROPERTY(dateDeclaration);
+                                    ADD PROPERTY(timeDeclaration);
+                                    ADD PROPERTY(beginTimeDeclaration);
+                                    ADD PROPERTY(endTimeDeclaration);
+                                }
+
+                                NEW executContainer {
+                                    caption = 'Обработка';
+                                    childConstraints = TO THE BOTTOM;
+                                    ADD PROPERTY(nameExecuterDeclaration);
+                                }
                             }
                         }
                     }
@@ -1367,6 +1386,9 @@ DESIGN declaration FROM DEFAULT{
     PROPERTY(numberContractDeclaration) { background = #FFEEEE; }
     PROPERTY(nameCustomStoreDeclaration) { background = #FFEEEE; }
     PROPERTY(sumConsultationDeclaration) { background = #FFEEEE; }
+    PROPERTY(CRMDeclaration) { background = #FFEEEE; }
+    PROPERTY(nameTypeContainerDeclaration) { background = #FFEEEE; }
+    PROPERTY(containerNumberDeclaration) { background = #FFEEEE; }
 
     PROPERTY(priceContractDeclarationDetail) { background = #AAFFCC; }
     PROPERTY(declarationPriceDeclarationDetail) { background = #AAFFCC; }
