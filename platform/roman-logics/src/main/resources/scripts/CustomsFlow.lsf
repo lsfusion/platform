@@ -377,7 +377,8 @@ DESIGN CStoWHs FROM DEFAULT {
 
 @defineDocumentRetailPrice (CStoWH, d);
 
-useRetailPriceCStoWHDetail(CStoWHDetail) = destinationStockCStoWHDetail(CStoWHDetail) IS departmentStore;
+useRetailPriceCStoWHDetail(CStoWHDetail) = destinationStockCStoWHDetail(CStoWHDetail) IS departmentStore
+    AND NOT costLedgerDepartmentStore(destinationStockCStoWHDetail(CStoWHDetail));
 @defineDocumentTransferAccount(CStoWH, useRetailPriceCStoWHDetail);
 
 @defineConsignment(CStoWH);

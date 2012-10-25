@@ -65,7 +65,9 @@ commissionContractSkuTransferOutDetail (detail) = commissionContractSkuTransferO
 
 @defineDocumentRetailPrice(transferOut, d);
 
-useRetailPriceTransferOutDetail(detail) = stockTransferOutDetail(detail) IS departmentStore OR commissionContractSkuTransferOutDetail(detail) IS contractSku;
+useRetailPriceTransferOutDetail(detail) = [stockTransferOutDetail(detail) IS departmentStore
+    AND NOT costLedgerDepartmentStore(stockTransferOutDetail(detail))](detail)
+    OR commissionContractSkuTransferOutDetail(detail) IS contractSku;
 @defineDocumentTransferAccount(transferOut, useRetailPriceTransferOutDetail);
 
 importerPriceTransferOutBatchDetail 'Цена импортера' (detail) = importerPriceBatchA(batchTransferOutBatchDetail(detail));
@@ -166,7 +168,9 @@ commissionContractSkuTransferInDetail (detail) = commissionContractSkuTransferOu
 @extendFormDocumentDetailSkuArticleReadonly(transferIns, d, transferIn);
 @extendFormDocumentSkipSkuLedgerCustomReadonly(transferIns, t, transferIn);
 
-useRetailPriceTransferInDetail(detail) = stockTransferInDetail(detail) IS departmentStore OR commissionContractSkuTransferInDetail(detail) IS contractSku;
+useRetailPriceTransferInDetail(detail) = [stockTransferInDetail(detail) IS departmentStore
+    AND NOT costLedgerDepartmentStore(stockTransferInDetail(detail))](detail)
+    OR commissionContractSkuTransferInDetail(detail) IS contractSku;
 @defineDocumentTransferAccount(transferIn, useRetailPriceTransferInDetail);
 
 @implementSkuLedger(transferIn, sku, stock);

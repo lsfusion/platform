@@ -225,7 +225,8 @@ META defineDocumentFormDefectProcess(object, stockProp1, stockProp2, formCaption
     @extendFormDocumentDetailSkuArticleReadonly(object##s, d, object);
 
     @defineDocumentRetailPrice(object, d);
-    useRetailPrice###object##Detail(detail) = stock###object##Detail(detail) IS departmentStore;
+    useRetailPrice###object##Detail(detail) = stock###object##Detail(detail) IS departmentStore
+        AND NOT costLedgerDepartmentStore(stock###object##Detail(detail));
     @defineDocumentTransferAccount(object, useRetailPrice###object##Detail);
 
 

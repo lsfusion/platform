@@ -71,7 +71,9 @@ EXTEND FORM saleOuts
 
 isCommissionSaleOutDetail(detail) = isCommissionSaleOut(saleOutSaleOutDetail(detail));
 
-useRetailPriceSaleOutDetail(detail) = stockSaleOutDetail(detail) IS departmentStore OR isCommissionSaleOutDetail(detail);
+useRetailPriceSaleOutDetail(detail) = [stockSaleOutDetail(detail) IS departmentStore
+    AND NOT costLedgerDepartmentStore(stockSaleOutDetail(detail))](detail)
+    OR isCommissionSaleOutDetail(detail);
 @defineDocumentTransferAccount(saleOut, useRetailPriceSaleOutDetail);
 
 @defineDocumentSkipSkuLedgerCustom(saleOut, saleOutDetail);
@@ -229,7 +231,9 @@ EXTEND FORM saleIns
 retailPriceSaleInBatchDetail 'Цена розничная' (detail) = retailPriceSaleOutDetail(saleOutDetailSaleInBatchDetail(detail));
 retailSumSaleInBatchDetail 'Сумма розничная' (detail) = quantitySaleInBatchDetail(detail) * retailPriceSaleInBatchDetail(detail);
 
-useRetailPriceSaleInBatchDetail(detail) = stockSaleInBatchDetail(detail) IS departmentStore OR isCommissionSaleInBatchDetail(detail);
+useRetailPriceSaleInBatchDetail(detail) = [stockSaleInBatchDetail(detail) IS departmentStore
+    AND NOT costLedgerDepartmentStore(stockSaleInBatchDetail(detail))](detail)
+    OR isCommissionSaleInBatchDetail(detail);
 @defineDocumentTransferAccountCustom(saleIn, useRetailPriceSaleInBatchDetail, saleInBatchDetail, b);
 
 @implementBatch(saleInBatch, sku, stock, cost);

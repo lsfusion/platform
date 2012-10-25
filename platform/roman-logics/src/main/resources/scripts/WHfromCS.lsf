@@ -1100,7 +1100,8 @@ DESIGN WHfromCSIs FROM DEFAULT {
 
 retailPriceWHfromCSIDetail 'Цена розничная' (detail) = retailPriceCStoWHDetail(CStoWHDetailWHfromCSIDetail(detail));
 retailSumWHfromCSIDetail 'Сумма розничная' (detail) = quantityWHfromCSIDetail(detail) * retailPriceWHfromCSIDetail(detail);
-useRetailPriceWHfromCSIDetail(WHfromCSIDetail) = stockWHfromCSIDetail(WHfromCSIDetail) IS departmentStore;
+useRetailPriceWHfromCSIDetail(WHfromCSIDetail) = stockWHfromCSIDetail(WHfromCSIDetail)
+    IS departmentStore AND NOT costLedgerDepartmentStore(stockWHfromCSIDetail(WHfromCSIDetail));
 @defineDocumentTransferAccount(WHfromCSI, useRetailPriceWHfromCSIDetail);
 
 //--Проводим по регистру

@@ -91,7 +91,9 @@ EXTEND FORM returnOuts
 
 isCommissionReturnOutDetail(detail) = isCommissionReturnOut(returnOutReturnOutDetail(detail));
 
-useRetailPriceReturnOutDetail(detail) = stockReturnOutDetail(detail) IS departmentStore OR isCommissionReturnOutDetail(detail);
+useRetailPriceReturnOutDetail(detail) = [stockReturnOutDetail(detail) IS departmentStore
+    AND NOT costLedgerDepartmentStore(stockReturnOutDetail(detail))](detail)
+    OR isCommissionReturnOutDetail(detail);
 @defineDocumentTransferAccount(returnOut, useRetailPriceReturnOutDetail);
 
 @defineDocumentSkipSkuLedgerCustom(returnOut, returnOutDetail);
@@ -184,7 +186,9 @@ skipSkuLedgerReturnInDetail (detail) = skipSkuLedgerReturnOutDetail(returnOutDet
 
 isCommissionReturnInDetail(detail) = isCommissionReturnOutDetail(returnOutDetailReturnInDetail(detail));
 
-useRetailPriceReturnInDetail(detail) = stockReturnInDetail(detail) IS departmentStore OR isCommissionReturnInDetail(detail);
+useRetailPriceReturnInDetail(detail) = [stockReturnInDetail(detail) IS departmentStore
+    AND NOT costLedgerDepartmentStore(stockReturnInDetail(detail))](detail)
+    OR isCommissionReturnInDetail(detail);
 @defineDocumentTransferAccount(returnIn, useRetailPriceReturnInDetail);
 @extendFormDocumentSkipSkuLedgerCustomReadonly(returnIns, t, returnIn);
 
