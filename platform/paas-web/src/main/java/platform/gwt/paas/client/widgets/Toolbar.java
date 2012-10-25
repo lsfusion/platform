@@ -1,7 +1,7 @@
 package platform.gwt.paas.client.widgets;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.event.shared.EventBus;
+1import com.google.web.bindery.event.shared.EventBus;
 import com.google.inject.Inject;
 import com.smartgwt.client.util.SC;
 import com.smartgwt.client.widgets.ImgButton;
