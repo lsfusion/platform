@@ -91,7 +91,9 @@ public class StaticCustomClass extends ConcreteCustomClass implements StaticClas
             String oldSID = newSID;
             if (reversedChanges.containsKey(newSID)) {
                 oldSID = reversedChanges.get(newSID);
-                modifiedObjects.put(oldClasses.get(oldSID).first, newSID);
+                if (oldClasses.containsKey(oldSID)) {
+                    modifiedObjects.put(oldClasses.get(oldSID).first, newSID);
+                }
             }
 
             if (oldClasses.containsKey(oldSID)) {
