@@ -11,8 +11,8 @@
     <config:annotation-config />
 
     <http auto-config="true" use-expressions="true" entry-point-ref="loginUrlAuthenticationEntryPoint">
-        <intercept-url pattern="/form.jsp" access="hasAnyRole('admin')"/>
-        <intercept-url pattern="/platform.gwt.form.Form/*" access="hasRole('admin')"/>
+        <intercept-url pattern="/form2.jsp" access="hasAnyRole('admin')"/>
+        <intercept-url pattern="/platform.gwt.form2.Form/*" access="hasRole('admin')"/>
 
         <form-login authentication-failure-url="/loginFailed.txt" default-target-url="/form.jsp"/>
 
