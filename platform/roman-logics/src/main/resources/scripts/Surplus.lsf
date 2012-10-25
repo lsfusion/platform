@@ -61,17 +61,17 @@ nameCustomerSurplusOut 'Покупатель' (surplus) = name(customerSurplusOu
 //----------------
 
 createDetailSurplusOut 'Сделать подборку строк излишков' = [ACTION (surplusOut) {
-
-    FOR diffPositiveBalanceSkuStock(sku, stockSurplusOut(surplusOut)) DO {
-        ADDOBJ surplusOutDetail;
-        FOR d == addedObject() DO {
-            SET surplusOutSurplusOutDetail(d) <- surplusOut;
-            SET skuSurplusOutDetail(d) <- sku;
-            SET quantitySurplusOutDetail(d) <- diffPositiveBalanceSkuStock(sku, stockSurplusOut(surplusOut));
+    IF diffPositiveBalanceStock(stockSurplusOut(surplusOut)) THEN {
+        FOR diffPositiveBalanceSkuStock(sku, stockSurplusOut(surplusOut)) DO {
+            ADDOBJ surplusOutDetail;
+            FOR d == addedObject() DO {
+                SET surplusOutSurplusOutDetail(d) <- surplusOut;
+                SET skuSurplusOutDetail(d) <- sku;
+                SET quantitySurplusOutDetail(d) <- diffPositiveBalanceSkuStock(sku, stockSurplusOut(surplusOut));
+            }
         }
     }
-
-}](surplusOut) AND diffBalanceStock(stockSurplusOut(surplusOut)) IN documentPrmGroup CONFIRM;
+}](surplusOut) IN documentPrmGroup CONFIRM;
 
 
 innerOrderSurplusOut (surplusOut) = DATA innerOrder (surplusOut);

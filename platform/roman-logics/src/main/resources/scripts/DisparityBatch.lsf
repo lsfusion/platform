@@ -90,6 +90,8 @@ diffPositiveBalanceBatchStock 'Положительные' (batch, stock) =  dif
 diffNegativeBalanceSkuStock 'Отрицательные' (sku, stock) =  GROUP SUM  diffNegativeBalanceBatchStock(batch, stock) BY skuBatch(batch), stock;
 diffPositiveBalanceSkuStock 'Положительные' (sku, stock) =  GROUP SUM  diffPositiveBalanceBatchStock(batch, stock) BY skuBatch(batch), stock;
 
+diffPositiveBalanceStock 'Положительные' (stock) =  GROUP SUM  diffPositiveBalanceSkuStock(sku, stock) BY stock;
+
 diffBalanceSkuStock 'Разница' (sku, stock) = min(diffNegativeBalanceSkuStock (sku, stock), diffPositiveBalanceSkuStock (sku, stock));
 
 
