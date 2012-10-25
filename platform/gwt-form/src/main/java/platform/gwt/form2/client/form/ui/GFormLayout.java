@@ -85,11 +85,12 @@ public class GFormLayout extends FlowPanel {
         return containerViews.get(container);
     }
 
-    public Widget getFormContainerView(GContainer component) {
-        return getFormContainer(component).getContainerView();
+    private Widget getFormContainerView(GContainer component) {
+        GAbstractFormContainer formContainer = getFormContainer(component);
+        return formContainer == null ? null : formContainer.getContainerView();
     }
 
-    public GAbstractFormContainer getComponentParentFormContainer(GComponent component) {
+    private GAbstractFormContainer getComponentParentFormContainer(GComponent component) {
         return component == null ? null : getFormContainer(component.container);
     }
 
@@ -98,7 +99,6 @@ public class GFormLayout extends FlowPanel {
     }
 
     private void hideEmptyContainerViews(GContainer container) {
-        Widget containerView = getFormContainerView(container);
 
         for (GComponent child : container.children) {
             if (child instanceof GContainer) {
@@ -107,11 +107,12 @@ public class GFormLayout extends FlowPanel {
         }
 
         //предоставляем TabbedPane'у самому управлять видимостью своих компонентов
-        if (!getFormContainer(container).isInTabbedPane()) {
-            containerView.setVisible(
+        GAbstractFormContainer formContainer = getFormContainer(container);
+        if (formContainer != null && !formContainer.isInTabbedPane()) {
+            formContainer.getContainerView().setVisible(
                     hasVisibleChildren(container)
             );
-            if (getFormContainer(container).isInSplitPane()) {
+            if (formContainer.isInSplitPane()) {
                 ((GFormSplitPane) getFormContainer(container.container)).update();
             }
         }
@@ -123,8 +124,11 @@ public class GFormLayout extends FlowPanel {
                 if (hasVisibleChildren((GContainer) child)) {
                     return true;
                 }
-            } else if (getFormContainer(container).isChildVisible(child)) {
-                return true;
+            } else {
+                GAbstractFormContainer formContainer = getFormContainer(container);
+                if (formContainer != null && formContainer.isChildVisible(child)) {
+                    return true;
+                }
             }
         }
         return false;
@@ -231,7 +235,7 @@ public class GFormLayout extends FlowPanel {
             List<GGrid> grids = ((GContainer) component).getAllGrids();
             for (GGrid grid : grids) {
                 GAbstractFormContainer gridContainer = getFormContainer(grid.container);
-                if (gridContainer.isChildVisible(grid)) {
+                if (gridContainer != null && gridContainer.isChildVisible(grid)) {
                     return false;
                 }
             }

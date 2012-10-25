@@ -4,6 +4,7 @@ import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
 import platform.gwt.base.shared.GClassViewType;
 import platform.gwt.base.shared.GOrder;
+import platform.gwt.form2.client.form.ui.container.GAbstractFormContainer;
 import platform.gwt.form2.shared.view.GContainer;
 import platform.gwt.form2.shared.view.GGroupObject;
 import platform.gwt.form2.shared.view.GPropertyDraw;
@@ -59,7 +60,10 @@ public class GGroupObjectController implements GGroupObjectLogicsSupplier {
             showTypeView.addToLayout(formLayout);
             showTypeView.setBanClassViews(groupObject.banClassView);
 
-            formLayout.getFormContainer(groupObject.grid.container.container).addDirectly(blankElement);
+            GAbstractFormContainer gridParentParent = formLayout.getFormContainer(groupObject.grid.container.container);
+            if (gridParentParent != null) {
+                gridParentParent.addDirectly(blankElement);
+            }
         }
     }
 
