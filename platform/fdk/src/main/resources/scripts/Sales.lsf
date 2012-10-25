@@ -74,6 +74,14 @@ sumSoldSkuStockDateFromTo 'Продано за интервал (сумма)' (s
         sumSoldSkuStockDate(sku, stock, date) AND date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
         BY sku, stock, dateFrom, dateTo;
 
+quantitySoldSkuDateFromTo 'Продано за интервал (кол-во)' (sku, dateFrom, dateTo) = GROUP SUM
+        quantitySoldSkuStockDate(sku, stock, date) AND date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
+        BY sku, dateFrom, dateTo;
+
+sumSoldSkuDateFromTo 'Продано за интервал (сумма)' (sku, dateFrom, dateTo) = GROUP SUM
+        sumSoldSkuStockDate(sku, stock, date) AND date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
+        BY sku, dateFrom, dateTo;
+
 //---------------------------------Тип обмена---------------------------------------//
 
 sumSoldTypeExchangeSkuStockDate (typeExchange, sku, stock, date)= roundCurrency((sumSoldSkuStockDate (sku, stock, date)/ rateTypeExchangeCurrencyDate(typeExchange, currencyStock(stock), date)), currencyTypeExchange(typeExchange));

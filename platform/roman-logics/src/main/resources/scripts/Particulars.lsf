@@ -107,6 +107,31 @@ sumSoldTypeExchangeBrandSupplierSubCategorySupplierDateFromTo 'Продано з
 sumSoldTypeExchangeBrandSupplierThemeSupplierDateFromTo 'Продано за интервал (сумма)' (typeExchange, brandSupplier, themeSupplier, dateFrom, dateTo) = GROUP SUM
     sumSoldTypeExchangeArticleDateFromTo(typeExchange, article, dateFrom, dateTo) BY typeExchange, brandSupplierArticle(article), themeSupplierArticle(article), dateFrom, dateTo;
 
+//---------------------------------Размер---------------------------------------//
+
+quantitySkuSoldSupplierDateFromTo 'Продано за интервал (кол-во)' (supplier, dateFrom, dateTo) = GROUP SUM
+    quantitySoldSkuDateFromTo(sku, dateFrom, dateTo) BY supplierArticleSku(sku), dateFrom, dateTo;
+quantitySkuSoldBrandDateFromTo 'Продано за интервал (кол-во)' (brandSupplier, dateFrom, dateTo) = GROUP SUM
+    quantitySoldSkuDateFromTo(sku, dateFrom, dateTo) BY brandSupplierArticleSku(sku), dateFrom, dateTo;
+
+quantitySoldBrandSizeSkuDateFromTo 'Продано за интервал (кол-во)' (brandSupplier, sizeSupplier, sku, dateFrom, dateTo) = GROUP SUM
+    quantitySoldSkuDateFromTo(sku, dateFrom, dateTo) BY brandSupplierArticleSku(sku), sizeSupplierItem(sku), sku, dateFrom, dateTo;
+
+quantitySoldBrandSizeDateFromTo 'Продано за интервал (кол-во)' (brandSupplier, sizeSupplier, dateFrom, dateTo) = GROUP SUM
+    quantitySoldBrandSizeSkuDateFromTo(brandSupplier, sizeSupplier, sku, dateFrom, dateTo) BY brandSupplier, sizeSupplier, dateFrom, dateTo;
+
+quantitySoldSizeDateFromTo 'Продано за интервал (кол-во)' (sizeSupplier, dateFrom, dateTo) = GROUP SUM
+    quantitySoldSkuDateFromTo(sku, dateFrom, dateTo) BY sizeSupplierItem(sku), dateFrom, dateTo;
+
+
+quantitySoldBrandCategorySizeDateFromTo 'Продано за интервал (кол-во)' (brandSupplier, categorySupplier, sizeSupplier, dateFrom, dateTo) = GROUP SUM
+    quantitySoldSkuDateFromTo(sku, dateFrom, dateTo) BY brandSupplierArticleSku(sku), categorySupplierArticleSku(sku), sizeSupplierItem(sku), dateFrom, dateTo;
+quantitySoldBrandSubCategorySizeDateFromTo 'Продано за интервал (кол-во)' (brandSupplier, subCategorySupplier, sizeSupplier, dateFrom, dateTo) = GROUP SUM
+    quantitySoldSkuDateFromTo(sku, dateFrom, dateTo) BY brandSupplierArticleSku(sku), subCategorySupplierArticleSku(sku), sizeSupplierItem(sku), dateFrom, dateTo;
+
+
+quantitySkuSoldSupplierGroupSizeDateFromTo 'Продано за интервал (кол-во)' (supplier, sizeGroupSupplier, dateFrom, dateTo) = GROUP SUM
+    quantitySoldSkuDateFromTo(sku, dateFrom, dateTo) BY supplierArticleSku(sku), groupSizeSupplier(sizeSupplierItem(sku)), dateFrom, dateTo;
 
 FORM salesArticle 'Продажи по группам'
 
@@ -295,10 +320,106 @@ DESIGN salesArticleTheme FROM DEFAULT {
     }
 }
 
+FORM salesSizeSupplierItem 'Продажи по размерам'
+
+    OBJECTS dates = (dFrom = DATE, dTo = DATE) FIXED PANEL
+    PROPERTIES valFrom = OBJVALUE(dFrom), valTo = OBJVALUE(dTo)
+
+    OBJECTS s=supplier FIXED PANEL
+    PROPERTIES     SELECTOR nameSup = name(s)
+    PROPERTIES     READONLY quantitySkuSoldSupplierDateFromTo(s,dFrom,dTo)
+
+    OBJECTS g=sizeGroupSupplier FIXED PANEL
+    PROPERTIES  nameGr = name(g) SELECTOR, quantitySkuSoldSupplierGroupSizeDateFromTo(s,g,dFrom,dTo)  READONLY
+
+    OBJECTS ss = sizeSupplier
+    PROPERTIES     READONLY sidSizeSupplier(ss), orderSizeSupplier(ss), nameGroupSizeSupplier(ss)
+    ORDER BY       orderSizeSupplier
+
+    OBJECTS b=brandSupplier
+    PROPERTIES     READONLY nameBr = name(b)
+
+
+
+    PROPERTIES     READONLY quantitySoldBrandSizeDateFromTo(b,ss,dFrom,dTo)  COLUMNS (ss) HEADER sidSizeSupplier (ss)
+
+    FILTERGROUP filtersSold
+        FILTER 'Размеры с продажей' 'F10' quantitySoldSizeDateFromTo(ss, dFrom, dTo) DEFAULT
+
+    OBJECTS c=categorySupplier
+    PROPERTIES     READONLY nameCat = name(c)
+    PROPERTIES     READONLY quantitySoldBrandCategorySizeDateFromTo(b,c,ss,dFrom, dTo) COLUMNS (ss) HEADER sidSizeSupplier (ss)
+    FILTERGROUP filtersSold1
+        FILTER 'Группы с продажей' 'F11' quantitySoldBrandSupplierCategorySupplierDateFromTo(b,c,dFrom, dTo) DEFAULT
+
+    OBJECTS sc=subCategorySupplier
+    PROPERTIES     READONLY nameSubCat = name(sc)
+    PROPERTIES     READONLY quantitySoldBrandSubCategorySizeDateFromTo(b,sc,ss,dFrom, dTo) COLUMNS (ss) HEADER sidSizeSupplier (ss)
+
+    FILTERS  supplierBrandSupplier(b) == s,
+             supplierSizeGroup(g) ==s,
+             supplierCategorySupplier(c) == s,
+             categorySupplierSubCategorySupplier(sc) == c
+
+
+    FILTERGROUP filtersSold
+        FILTER 'Размеры поставщика' 'F8' supplierSizeSupplier(ss) == s
+        FILTER 'Размеры размерной сетки' 'F9' groupSizeSupplier(ss) ==g DEFAULT
+
+    FILTERGROUP filtersSold2
+        FILTER 'Подгруппы с продажей' 'F7' quantitySoldBrandSupplierSubCategorySupplierDateFromTo(b,sc,dFrom, dTo) DEFAULT
+
+;
+
+DESIGN salesSizeSupplierItem FROM DEFAULT {
+
+    main {
+        NEW topContainer {
+            childConstraints = TO THE BOTTOM;
+            fillHorizontal = 3.5;
+            type = SPLITV;
+            NEW wor {
+                childConstraints = TO THE RIGHT;
+                fillHorizontal = 3.5;
+                ADD dates.box {
+                    childConstraints = TO THE RIGHT;
+                }
+                ADD s.box {
+                    childConstraints = TO THE RIGHT;
+                    PROPERTY (nameSup){preferredCharWidth = 25;}
+                }
+                ADD g.box {
+                    childConstraints = TO THE RIGHT;
+                    PROPERTY (nameGr){preferredCharWidth = 25;}
+                }
+            }
+
+            NEW row {
+                childConstraints = TO THE RIGHT;
+                type = SPLITH;
+                NEW row1 {
+                    fillHorizontal = 1;
+                    childConstraints = TO THE BOTTOM;
+                    ADD ss.box;
+                }
+                NEW row2 {
+                    childConstraints = TO THE BOTTOM;
+                    fillHorizontal = 2.5;
+                    ADD b.box {fillVertical = 1;};
+                    ADD c.box {fillVertical = 2;};
+                    ADD sc.box {fillVertical = 2;};
+                }
+            }
+        }
+        ADD functions.box;
+    }
+}
+
 
 NAVIGATOR {
     salesNavigator 'Продажи' {
         ADD salesArticle;
         ADD salesArticleTheme;
+        ADD salesSizeSupplierItem;
     }
 }
