@@ -172,36 +172,6 @@
         </profile>
 
         <profile>
-            <id>pack</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>maven-antrun-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>ant-pack</id>
-                                <phase>install</phase>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
-                                <configuration>
-                                    <tasks>
-                                        <echo message="Pack200-ing jar ${assemble.jar}"/>
-                                        <exec executable="pack200">
-                                            <arg value="--segment-limit=-1"/>
-                                            <arg value="${assemble.jar}.pack.gz"/>
-                                            <arg value="${assemble.jar}"/>
-                                        </exec>
-                                    </tasks>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
-        <profile>
             <id>sign</id>
             <build>
                 <plugins>
@@ -228,6 +198,36 @@
                                                 keystore="${keystore.file}"
                                                 alias="${keystore.alias}"
                                                 storepass="${keystore.pass}" />
+                                    </tasks>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>pack</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>ant-pack</id>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <tasks>
+                                        <echo message="Pack200-ing jar ${assemble.jar}"/>
+                                        <exec executable="pack200">
+                                            <arg value="--segment-limit=-1"/>
+                                            <arg value="${assemble.jar}.pack.gz"/>
+                                            <arg value="${assemble.jar}"/>
+                                        </exec>
                                     </tasks>
                                 </configuration>
                             </execution>
