@@ -423,6 +423,10 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, String.format("namespace name '%s' contains underscore character", namespaceName));
     }
 
+    public void emitDuplicateClassParentError(ScriptParser parser, String className) throws SemanticErrorException {
+        emitSimpleError(parser, String.format("class '%s' is a parent already", className));
+    }
+
     private void emitSimpleError(ScriptParser parser, String message) throws SemanticErrorException {
         SemanticErrorException e = new SemanticErrorException(parser.getCurrentParser().input);
         String msg = getSemanticRecognitionErrorText(message + "\n", parser, e);

@@ -60,10 +60,14 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         children = new ArrayList<CustomClass>();
 
         for (CustomClass parent : parents) {
-            this.parents.add(parent);
-            parent.children.add(this);
-            assert parent.childs==null;
+            addParentClass(parent);
         }
+    }
+
+    public final void addParentClass(CustomClass parent) {
+        this.parents.add(parent);
+        parent.children.add(this);
+        assert parent.childs==null;
     }
 
     @Override

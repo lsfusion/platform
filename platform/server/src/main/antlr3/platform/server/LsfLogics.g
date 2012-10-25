@@ -189,6 +189,7 @@ moduleHeader
 
 statement
 	:	(	classStatement
+		|	extendClassStatement
 		|	groupStatement
 		|	propertyStatement
 		|	overrideStatement
@@ -232,21 +233,41 @@ classStatement
 }
 @after {
 	if (inClassParseState()) {
-		self.addScriptedClass($nameCaption.name, $nameCaption.caption, isAbstract, isStatic, instanceNames, instanceCaptions, classParents);
+		self.addScriptedClass($nameCaption.name, $nameCaption.caption, isAbstract, isStatic, $classData.names, $classData.captions, $classData.parents);
 	}
 }
 	:	'CLASS' ('ABSTRACT' {isAbstract = true;} | 'STATIC' {isStatic = true;})?
 		nameCaption=simpleNameWithCaption
-		(
-			'{'
-				firstInstData=simpleNameWithCaption { instanceNames.add($firstInstData.name); instanceCaptions.add($firstInstData.caption); }
-				(',' nextInstData=simpleNameWithCaption { instanceNames.add($nextInstData.name); instanceCaptions.add($nextInstData.caption); })*
-			'}'
-			(parents=classParentsList ';' { classParents = $parents.list; })?	
-		|	
-			(parents=classParentsList { classParents = $parents.list; })? ';'
-		)
+		classData=classInstancesAndParents
 	;	  
+
+extendClassStatement
+@after {
+	if (inClassParseState()) {
+		self.extendClass($className.sid, $classData.names, $classData.captions, $classData.parents);
+	}
+}
+	:	'EXTEND' 'CLASS' 
+		className=compoundID 
+		classData=classInstancesAndParents 
+	;
+
+classInstancesAndParents returns [List<String> names, List<String> captions, List<String> parents] 
+@init {
+	$parents = new ArrayList<String>();
+	$names = new ArrayList<String>();
+	$captions = new ArrayList<String>();
+}
+	:	(
+			'{'
+				firstInstData=simpleNameWithCaption { $names.add($firstInstData.name); $captions.add($firstInstData.caption); }
+				(',' nextInstData=simpleNameWithCaption { $names.add($nextInstData.name); $captions.add($nextInstData.caption); })*
+			'}'
+			(clist=classParentsList ';' { $parents = $clist.list; })? 	
+		|
+			(clist=classParentsList { $parents = $clist.list; })? ';'
+		)
+	; 
 
 classParentsList returns [List<String> list] 
 	:	':' parentList=nonEmptyClassIdList { $list = $parentList.ids; }

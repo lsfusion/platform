@@ -22,8 +22,8 @@ import java.util.Set;
 public class StaticCustomClass extends ConcreteCustomClass implements StaticClass {
 
     private String[] sids;
-    public String[] names;
-    public Integer[] ids;
+    private String[] names;
+    private Integer[] ids;
 
     public StaticCustomClass(String sID, String caption, CustomClass sidClass, String[] sids, String[] names, CustomClass... parents) {
         super(sID, caption, BaseUtils.addElement(parents, sidClass, new ArrayInstancer<CustomClass>() {
@@ -111,6 +111,12 @@ public class StaticCustomClass extends ConcreteCustomClass implements StaticClas
         return modifiedNames;
     }
 
+    public void changeInstances(String[] sids, String[] names) {
+        assert ids == null;
+        this.sids = sids;
+        this.names = names;
+    }
+
     public Expr getStaticExpr(Object value) {
         return new StaticValueExpr(value, this, true);
     }
@@ -124,5 +130,13 @@ public class StaticCustomClass extends ConcreteCustomClass implements StaticClas
 
     public int getCount() {
         return sids.length;
+    }
+
+    public String[] getSids() {
+        return sids;
+    }
+
+    public String[] getNames() {
+        return names;
     }
 }

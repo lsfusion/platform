@@ -251,6 +251,36 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
+    public void extendClass(String className, List<String> instNames, List<String> instCaptions, List<String> parentNames) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("extendClass(" + className + ", " + instNames + ", " + instCaptions + ", " + parentNames + ");");
+        CustomClass cls = (CustomClass) findClassByCompoundName(className);
+        boolean isStatic = cls instanceof StaticCustomClass;
+        if (isStatic) {
+            List<String> tmpNames = new ArrayList<String>(Arrays.asList(((StaticCustomClass) cls).getSids()));
+            List<String> tmpCaptions = new ArrayList<String>(Arrays.asList(((StaticCustomClass) cls).getNames()));
+            tmpNames.addAll(instNames);
+            tmpCaptions.addAll(instCaptions);
+            instNames = tmpNames;
+            instCaptions = tmpCaptions;
+        }
+
+        checkStaticClassConstraints(className, isStatic, false, instNames, instCaptions);
+        checkClassParents(parentNames);
+
+        if (isStatic) {
+            StaticCustomClass staticCls = (StaticCustomClass) cls;
+            staticCls.changeInstances(instNames.toArray(new String[instNames.size()]), instCaptions.toArray(new String[instCaptions.size()]));
+        }
+
+        for (String parentName : parentNames) {
+            CustomClass parentClass = (CustomClass) findClassByCompoundName(parentName);
+            if (cls.parents.contains(parentClass)) {
+                errLog.emitDuplicateClassParentError(parser, parentName);
+            }
+            cls.addParentClass(parentClass);
+        }
+    }
+
     public AbstractGroup findGroupByCompoundName(String name) throws ScriptingErrorLog.SemanticErrorException {
         AbstractGroup group = groupResolver.resolve(name);
         checkGroup(group, name);
@@ -1886,6 +1916,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     private void checkClassParents(List<String> parents) throws ScriptingErrorLog.SemanticErrorException {
+        Set<String> parentsSet = new HashSet<String>();
         for (String parentName : parents) {
             ValueClass valueClass = findClassByCompoundName(parentName);
             if (!(valueClass instanceof CustomClass)) {
@@ -1894,6 +1925,11 @@ public class ScriptingLogicsModule extends LogicsModule {
             if (valueClass instanceof StaticCustomClass) {
                 errLog.emitStaticClassAsParentError(parser, parentName);
             }
+
+            if (parentsSet.contains(parentName)) {
+                errLog.emitDuplicateClassParentError(parser, parentName);
+            }
+            parentsSet.add(parentName);
         }
     }
 

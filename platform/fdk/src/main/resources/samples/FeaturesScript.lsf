@@ -27,7 +27,7 @@ CLASS emptyClass;
 CLASS article 'Товар' : namedClass;
 CLASS store 'Склад' : namedClass;
 CLASS ABSTRACT document 'Документ' : transaction;
-CLASS incomeDocument 'Приход' : document, emptyClass;
+CLASS incomeDocument 'Приход' : document;
 CLASS outcomeDocument 'Расход' : document, emptyClass;
 
 // Static class
@@ -42,7 +42,23 @@ CLASS outcomeDocument 'Расход' : document, emptyClass;
 CLASS STATIC storeSize 'Размер склада'
 {
     huge 'огромный',
-    big 'большой',
+    big 'большой'
+}
+
+// Extending class
+// Syntax:
+// EXTEND CLASS className
+// [{
+//      instanceName1 ['instanceCaption1']
+//      [, instanceName2 ['instanceCaption2']]
+//      ...
+//      [, instanceNameN ['instanceCaptionN']]
+// }]
+// [: nonStaticBaseClass1 [, nonStaticBaseClass2, ..., nonStaticBaseClassN];]
+EXTEND CLASS incomeDocument : emptyClass;
+
+EXTEND CLASS Features.storeSize
+{
     medium 'средний',
     small 'маленький'
 }
