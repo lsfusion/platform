@@ -133,6 +133,23 @@ quantitySoldBrandSubCategorySizeDateFromTo 'Продано за интервал
 quantitySkuSoldSupplierGroupSizeDateFromTo 'Продано за интервал (кол-во)' (supplier, sizeGroupSupplier, dateFrom, dateTo) = GROUP SUM
     quantitySoldSkuDateFromTo(sku, dateFrom, dateTo) BY supplierArticleSku(sku), groupSizeSupplier(sizeSupplierItem(sku)), dateFrom, dateTo;
 
+quantitySoldBrandGroupSizeDateFromTo 'Продано за интервал (кол-во)' (brandSupplier, sizeGroupSupplier, dateFrom, dateTo) = GROUP SUM
+    quantitySoldBrandSizeDateFromTo(brandSupplier, sizeSupplier, dateFrom, dateTo) BY brandSupplier, groupSizeSupplier(sizeSupplier), dateFrom, dateTo;
+
+quantitySoldBrandGroupSizeCategoryDateFromTo 'Продано за интервал (кол-во)' (brandSupplier, sizeGroupSupplier, categorySupplier, dateFrom, dateTo) = GROUP SUM
+    quantitySoldBrandCategorySizeDateFromTo(brandSupplier, categorySupplier, sizeSupplier, dateFrom, dateTo)
+    BY brandSupplier, groupSizeSupplier(sizeSupplier), categorySupplier, dateFrom, dateTo;
+quantitySoldBrandGroupSizeSubCategoryDateFromTo 'Продано за интервал (кол-во)' (brandSupplier, sizeGroupSupplier, subCategorySupplier, dateFrom, dateTo) = GROUP SUM
+    quantitySoldBrandSubCategorySizeDateFromTo(brandSupplier, subCategorySupplier, sizeSupplier, dateFrom, dateTo)
+    BY brandSupplier, groupSizeSupplier(sizeSupplier), subCategorySupplier, dateFrom, dateTo;
+
+//quantitySoldBrandSupplierDateFromTo 'Продано за интервал (кол-во)' (brandSupplier, dateFrom, dateTo) = GROUP SUM
+//    quantitySoldArticleDateFromTo(article, dateFrom, dateTo) BY brandSupplierArticle(article), dateFrom, dateTo;
+//quantitySoldBrandSupplierCategorySupplierDateFromTo 'Продано за интервал (кол-во)' (brandSupplier, categorySupplier, dateFrom, dateTo) = GROUP SUM
+//    quantitySoldArticleDateFromTo(article, dateFrom, dateTo) BY brandSupplierArticle(article), categorySupplierArticle(article), dateFrom, dateTo;
+//quantitySoldBrandSupplierSubCategorySupplierDateFromTo 'Продано за интервал (кол-во)' (brandSupplier, subCategorySupplier, dateFrom, dateTo) = GROUP SUM
+//    quantitySoldArticleDateFromTo(article, dateFrom, dateTo) BY brandSupplierArticle(article), subCategorySupplierArticle(article), dateFrom, dateTo;
+
 FORM salesArticle 'Продажи по группам'
 
     OBJECTS dates = (dFrom = DATE, dTo = DATE, te=typeExchange) FIXED PANEL
@@ -338,6 +355,8 @@ FORM salesSizeSupplierItem 'Продажи по размерам'
 
     OBJECTS b=brandSupplier
     PROPERTIES     READONLY nameBr = name(b)
+    FILTERGROUP filtersSold3
+        FILTER 'Бренд с продажей' 'F11' quantitySoldBrandGroupSizeDateFromTo(b,g,dFrom, dTo) DEFAULT
 
 
 
@@ -350,7 +369,7 @@ FORM salesSizeSupplierItem 'Продажи по размерам'
     PROPERTIES     READONLY nameCat = name(c)
     PROPERTIES     READONLY quantitySoldBrandCategorySizeDateFromTo(b,c,ss,dFrom, dTo) COLUMNS (ss) HEADER sidSizeSupplier (ss)
     FILTERGROUP filtersSold1
-        FILTER 'Группы с продажей' 'F11' quantitySoldBrandSupplierCategorySupplierDateFromTo(b,c,dFrom, dTo) DEFAULT
+        FILTER 'Группы с продажей' 'F11' quantitySoldBrandGroupSizeCategoryDateFromTo(b,g,c,dFrom, dTo) DEFAULT
 
     OBJECTS sc=subCategorySupplier
     PROPERTIES     READONLY nameSubCat = name(sc)
@@ -367,7 +386,7 @@ FORM salesSizeSupplierItem 'Продажи по размерам'
         FILTER 'Размеры размерной сетки' 'F9' groupSizeSupplier(ss) ==g DEFAULT
 
     FILTERGROUP filtersSold2
-        FILTER 'Подгруппы с продажей' 'F7' quantitySoldBrandSupplierSubCategorySupplierDateFromTo(b,sc,dFrom, dTo) DEFAULT
+        FILTER 'Подгруппы с продажей' 'F7' quantitySoldBrandGroupSizeSubCategoryDateFromTo(b,g,sc,dFrom, dTo) DEFAULT
 
 ;
 
@@ -376,11 +395,11 @@ DESIGN salesSizeSupplierItem FROM DEFAULT {
     main {
         NEW topContainer {
             childConstraints = TO THE BOTTOM;
-            fillHorizontal = 3.5;
+
             type = SPLITV;
             NEW wor {
                 childConstraints = TO THE RIGHT;
-                fillHorizontal = 3.5;
+
                 ADD dates.box {
                     childConstraints = TO THE RIGHT;
                 }
@@ -404,7 +423,7 @@ DESIGN salesSizeSupplierItem FROM DEFAULT {
                 }
                 NEW row2 {
                     childConstraints = TO THE BOTTOM;
-                    fillHorizontal = 2.5;
+                    fillHorizontal = 3.5;
                     ADD b.box {fillVertical = 1;};
                     ADD c.box {fillVertical = 2;};
                     ADD sc.box {fillVertical = 2;};
