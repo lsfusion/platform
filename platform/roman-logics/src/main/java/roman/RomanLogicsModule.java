@@ -1511,7 +1511,7 @@ public class RomanLogicsModule extends LogicsModule {
         document = addAbstractClass("document", "Документ", baseLM.transaction);
         list = addAbstractClass("list", "Список", baseClass);
 
-        contract = addConcreteClass("contract", "Договор", baseLM.transaction);
+        contract = addConcreteClass("contract", "Договор", baseLM.transaction, (CustomClass) BL.Contract.getClassByName("contractSku"));
 
         priceDocument = addAbstractClass("priceDocument", "Документ с ценами", document);
         destinationDocument = addAbstractClass("destinationDocument", "Документ в пункт назначения", document);
@@ -6220,7 +6220,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             objArticle = addSingleGroupObject("article", article, "Артикул", sidArticle, nameSupplierArticle, nameSeasonYearArticle,
                             nameBrandSupplierArticle, nameCollectionSupplierArticle, nameSubCategorySupplierArticle,
-                            nameThemeSupplierArticle, sidGenderArticle, nameCategoryArticle, nameTypeFabricArticle, nameArticle);
+                            nameThemeSupplierArticle, sidGenderArticle, nameCategoryArticle, nameTypeFabricArticle, nameTypeLabelArticle, nameArticle);
 
             setEditType(nameSupplierArticle, PropertyEditType.READONLY);
 

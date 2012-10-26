@@ -138,14 +138,14 @@ EXTEND DESIGN boxInvoiceForm {
 
             fillVertical = 3;
 
-            NEW articles {
-                title = 'Артикулы';
-                ADD a.box;
-            }
-
             NEW sku {
                 title = 'SKU';
                 ADD sku.box;
+            }
+
+            NEW articles {
+                title = 'Артикулы';
+                ADD a.box;
             }
 
             NEW compositions {
@@ -250,14 +250,14 @@ EXTEND DESIGN simpleInvoiceForm {
 
             fillVertical = 3;
 
-            NEW articles {
-                title = 'Артикулы';
-                ADD a.box;
-            }
-
             NEW sku {
                 title = 'SKU';
                 ADD sku.box;
+            }
+
+            NEW articles {
+                title = 'Артикулы';
+                ADD a.box;
             }
 
             NEW compositions {

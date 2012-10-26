@@ -17,6 +17,9 @@ REQUIRE System,
 
 PRIORITY Stock, LegalEntity, Store, RomanLogicsModule;
 
+partyAContract(contract) += sellerContract(contract);
+partyBContract(contract) += subjectContract(contract);
+
 changeMainCompositionSkuLanguage = ACTION (sku, freight) {
     REQUEST STRING[200] INPUT;
     SET mainCompositionSkuLanguage(sku, language) IF language == languageFreight(freight) <- requestedString();

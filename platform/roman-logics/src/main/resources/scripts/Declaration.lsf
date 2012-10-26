@@ -91,6 +91,7 @@ contractFormedInvoice 'Договор инвойса (ИД)' (formedInvoice) = c
 contractDirectInvoice 'Договор инвойса (ИД)' (directInvoice) = contractDirectInvoice(directInvoice) IF directInvoice IS directInvoice;
 
 contractInnerInvoice 'Договор инвойса (ИД)' (innerInvoice) = UNION EXCLUSIVE contractDirectInvoice(innerInvoice), contractFormedInvoice(innerInvoice) IN baseGroup PERSISTENT;
+numberContractInnerInvoice 'Договор' (innerInvoice) = numberContract(contractInnerInvoice(innerInvoice));
 
 quantityFormedInvoiceSku 'Кол-во в инвойсе' (formedInvoice, sku) = quantityProxyImporterFreightSku(importerFormedInvoice(formedInvoice),
                                                                                                    freightFormedInvoice(formedInvoice),
@@ -209,6 +210,16 @@ nameTypeContainerDeclaration 'Вид грузовых мест'(declaration) = n
 
 containerNumberDeclaration 'Кол-во грузовых мест' = DATA NUMERIC[14,3](declaration) IN freightGroup;
 
+typeContainerDeclaration(declaration) <- IF partyAContract(contractInvoicesDeclaration(declaration)) IS exporter
+                                            THEN typeContainer.palleta
+                                            ELSE NULL
+                                         WHEN CHANGED(contractInvoicesDeclaration(declaration));
+
+containerNumberDeclaration(declaration) <- IF partyAContract(contractInvoicesDeclaration(declaration)) IS exporter
+                                              THEN palletNumberDeclaration(declaration)
+                                              ELSE NULL
+                                           WHEN CHANGED(contractInvoicesDeclaration(declaration));
+
 CRMDeclaration 'Документ по транспорту' = DATA STRING[30](declaration) IN freightGroup;
 
 inDeclarationInnerInvoice 'Инвойс в декларации' (declaration, innerInvoice) = declarationInnerInvoice(innerInvoice) == declaration;
@@ -246,9 +257,6 @@ formedInvoiceFreightUnit(declaration, freightUnit) = formedInvoiceImporterFreigh
 
 innerInvoiceFreightUnit(declaration, freightUnit) = UNION EXCLUSIVE formedInvoiceFreightUnit(declaration, freightUnit),
                                                                     directInvoiceFreightUnit(freightUnit) AND declaration IS declaration;
-
-//innerInvoiceDeclarationSku 'Инвойс для декларации' (declaration, sku) = GROUP MAX innerInvoice IF quantityInnerInvoiceSku(innerInvoice, sku)
-//                                                                               BY declarationInnerInvoice(innerInvoice), sku PERSISTENT;
 
 quantityDeclarationSku 'Кол-во в декларации' (declaration, sku) = GROUP SUM quantityInnerInvoiceSku(innerInvoice, sku)
                                                                          BY declarationInnerInvoice(innerInvoice), sku IN baseGroup PERSISTENT;
@@ -413,10 +421,6 @@ quantityCertificatedInnerInvoiceSku 'Кол-во для экспертизы' (i
 
 quantityCertificatedFreightUnitDeclarationDetail 'Кол-во для экспертизы' (freightUnit, declarationDetail) = quantityCertificatedDeclarationFreightUnitSku(declarationDeclarationDetail(declarationDetail), freightUnit, skuDeclarationDetail(declarationDetail))
                                                                                                             IF innerInvoiceDeclarationDetail(declarationDetail) == innerInvoiceFreightUnit(declarationDeclarationDetail(declarationDetail), freightUnit);
-
-
-//quantityCertificatedDeclarationDetail 'Кол-во для экспертизы' (declarationDetail) = GROUP SUM quantityCertificatedDeclarationFreightUnitSku(declaration, freightUnit, skuDeclarationDetail(declarationDetail))
-//                                                                                           BY declarationDetail;
 
 quantityCertificatedDeclarationDetail 'Кол-во для экспертизы' (declarationDetail) = quantityCertificatedInnerInvoiceSku(innerInvoiceDeclarationDetail(declarationDetail),
                                                                                                                         skuDeclarationDetail(declarationDetail));
@@ -626,14 +630,6 @@ sidAdditionalUnitOfMeasureGroupDeclaration (groupDeclaration) = sidUnitOfMeasure
 nameAdditionalUnitOfMeasureGroupDeclaration 'Ед. изм.' (groupDeclaration) = name(additionalUnitOfMeasureGroupDeclaration(groupDeclaration));
 genitiveNameAdditionalUnitOfMeasureGroupDeclaration 'Ед. изм.' (groupDeclaration) = genitiveNameUOM(additionalUnitOfMeasureGroupDeclaration(groupDeclaration));
 
-//sidOverUnitOfMeasureGroupDeclaration (groupDeclaration) = UNION OVERRIDE  IF groupDeclaration IS groupDeclaration ,
-//                                                                         sidSpecUnitOfMeasureGroupDeclaration(groupDeclaration);
-
-//stringGroupDeclaration 'Наименование' (groupDeclaration) =
-//    [FORMULA STRING[200] 'CAST($1 AS TEXT) ||  \',\' || CAST($2 AS TEXT) || \',\' || CAST($3 AS TEXT) ||  \',Торговая марка \' || CAST($4 AS TEXT) || \', Состав: \' || CAST($5 AS TEXT)'] (
-//    nameInvoiceGroupDeclaration(groupDeclaration), sidGenderGroupDeclaration(groupDeclaration), nameTypeFabricGroupDeclaration(groupDeclaration),
-//    nameBrandGroupDeclaration(groupDeclaration), mainCompositionGroupDeclaration(groupDeclaration));
-
 stringGroupDeclaration 'Наименование' (groupDeclaration) = ustring5CM(string2(nameInvoiceGroupDeclaration(groupDeclaration), ''),
                                                                       string2(sidGenderGroupDeclaration(groupDeclaration), ''),
                                                                       string2(nameTypeFabricGroupDeclaration(groupDeclaration), ''),
@@ -665,13 +661,6 @@ groupDeclarationDeclarationDetail 'Группа строки деклараци�
                                                                                        IN idGroup;
 
 numberGroupDeclarationDeclarationDetail 'Группа строки декларации'(declarationDetail) = numberGroupDeclaration(groupDeclarationDeclarationDetail(declarationDetail)) IN baseGroup;
-
-
-//inDeclarationDetailInnerInvoice 'Связка' (declarationDetail, innerInvoice) = quantityInnerInvoiceSku(innerInvoice, skuDeclarationDetail(declarationDetail)) IF
-//                                                                             declarationDeclarationDetail(declarationDetail) == declarationInnerInvoice(innerInvoice) PERSISTENT;
-
-//inGroupDeclarationInnerInvoice 'Связка' (groupDeclaration, innerInvoice) = GROUP SUM inDeclarationDetailInnerInvoice(declarationDetail, innerInvoice)
-//                                                                                  BY groupDeclarationDeclarationDetail(declarationDetail), innerInvoice PERSISTENT;
 
 quantityGroupDeclarationInnerInvoice(groupDeclaration, innerInvoice) = GROUP SUM 1 IF inGroupDeclarationDeclarationDetail(groupDeclaration, declarationDetail)
                                                                                BY groupDeclaration, innerInvoiceDeclarationDetail(declarationDetail);
@@ -1055,7 +1044,7 @@ FORM declarationInvoices 'Присоединение инвойсов'
                   nameCurrencyDeclaration, dateTimeDeclaration, beginTimeDeclaration, endTimeDeclaration
 
     OBJECTS ii=innerInvoice
-    PROPERTIES (ii) sidInnerInvoice, dateInnerInvoice, nameImporterInnerInvoice, dateFreightInnerInvoice
+    PROPERTIES (ii) sidInnerInvoice, dateInnerInvoice, nameImporterInnerInvoice, dateFreightInnerInvoice, numberContractInnerInvoice
     PROPERTIES (d, ii) inDeclarationInnerInvoice
     FILTERS freightArrivedInnerInvoice(ii), forDeclaration(d, ii)
 
@@ -1146,7 +1135,7 @@ FORM declaration 'Декларация'
                   nameTypeContainerDeclaration, containerNumberDeclaration,
                   dateDeclaration, timeDeclaration, beginTimeDeclaration, endTimeDeclaration,
                   nameTypeExchangeCustomDeclaration, rateExchangeCustomDataDeclaration, nameTypeExchangeManagerialDeclaration,
-                  rateExchangeManagerialDataDeclaration, sumRegistrationUnionDeclaration, nameExecuterDeclaration, CRMDeclaration
+                  rateExchangeManagerialDataDeclaration, sumRegistrationUnionDeclaration, nameExecuterDeclaration
     PROPERTIES(d) READONLY numberContractDeclaration, nameLanguageDeclaration, innerInvoicesDeclaration, sumFreightsDeclaration,
                   palletNumberDeclaration, dutyReverseDeclaration, VATReverseDeclaration, totalCustomSum, expenseCertificateDeclaration
     PROPERTIES(d) sumConsultationDeclaration, exportDeclarationToEXELLanguageDeclaration TODRAW dd FORCE PANEL SHOWIF allowImportExportXLSDeclarationUA(d)
@@ -1191,7 +1180,6 @@ FORM declaration 'Декларация'
     PROPERTIES (d) importGroupsXLSDeclaration TODRAW gd FORCE PANEL DRAWTOTOOLBAR SHOWIF importExportDeclarationUAAllow(d)
     PROPERTIES (d) importGroupsXMLDeclaration TODRAW gd FORCE PANEL DRAWTOTOOLBAR SHOWIF importExportDeclarationBYAllow(d)
     PROPERTIES (d) fillInGroupDeclarationDeclarationDetail  TODRAW gd FORCE PANEL DRAWTOTOOLBAR SHOWIF allowImportExportXLSDeclarationUA(d)
-    //PROPERTIES(d) exportDeclarationToEXELDeclaration TODRAW gd FORCE PANEL DRAWTOTOOLBAR SHOWIF allowImportExportXMLDeclarationBY(d)
     PROPERTIES (d) exportDeclaration TODRAW gd FORCE PANEL DRAWTOTOOLBAR SHOWIF allowImportExportXMLDeclarationBY(d)
 
     FILTERGROUP filterDetail
@@ -1206,7 +1194,7 @@ FORM declaration 'Декларация'
                     quantityGroupDeclaration, sidUnitOfMeasureGroupDeclaration, nameUnitOfMeasureGroupDeclaration,
                     netWeightGroupDeclaration, grossWeightGroupDeclaration, sumContractGroupDeclaration, sumGroupDeclaration, dutyGroupDeclaration, VATGroupDeclaration,
                     sumDataGroupDeclaration, dutyDataGroupDeclaration, VATDataGroupDeclaration, numberVATRangeGroupDeclaration, valueVATRangeGroupDeclaration, delete
-    PROPERTIES (c, gd2) sumCorrectionGroupDeclaration
+    //PROPERTIES (c, gd2) sumCorrectionGroupDeclaration
 
     OBJECTS dd2=declarationDetail
     PROPERTIES (gd2, dd2) inGroupDeclarationDeclarationDetail, percentGroupDeclarationDeclarationDetail
@@ -1275,15 +1263,10 @@ DESIGN declaration FROM DEFAULT{
                             ADD PROPERTY(sidDeclaration);
                             ADD PROPERTY(nameCustomStoreDeclaration);
                             ADD PROPERTY(nameImporterDeclaration);
-                            ADD PROPERTY(numberContractDeclaration);
                             ADD PROPERTY(nameLanguageDeclaration);
                             ADD PROPERTY(showFormDeclarationInvoices);
                             ADD PROPERTY(innerInvoicesDeclaration);
-                            //ADD PROPERTY(sumFreightsDeclaration);
-                            //ADD PROPERTY(CRMDeclaration);
-                            //ADD PROPERTY(palletNumberDeclaration);
-                            //ADD PROPERTY(nameTypeContainerDeclaration);
-                            //ADD PROPERTY(containerNumberDeclaration);
+                            ADD PROPERTY(numberContractDeclaration);
                         }
 
                         NEW bodyContainer {
@@ -1297,17 +1280,12 @@ DESIGN declaration FROM DEFAULT{
                             NEW datetimeexecutContainer {
                                 childConstraints = TO THE BOTTOM;
                                 NEW datetimeContainer {
-                                    caption = 'Даты';
+                                    caption = 'Даты  и время обработки';
                                     childConstraints = TO THE BOTTOM;
                                     ADD PROPERTY(dateDeclaration);
                                     ADD PROPERTY(timeDeclaration);
                                     ADD PROPERTY(beginTimeDeclaration);
                                     ADD PROPERTY(endTimeDeclaration);
-                                }
-
-                                NEW executContainer {
-                                    caption = 'Обработка';
-                                    childConstraints = TO THE BOTTOM;
                                     ADD PROPERTY(nameExecuterDeclaration);
                                 }
                             }
@@ -1383,10 +1361,8 @@ DESIGN declaration FROM DEFAULT{
     PROPERTY(dateDeclaration) { background = #FFEEEE; }
     PROPERTY(nameCurrencyDeclaration) { background = #FFEEEE; }
     PROPERTY(nameImporterDeclaration) { background = #FFEEEE; }
-    PROPERTY(numberContractDeclaration) { background = #FFEEEE; }
     PROPERTY(nameCustomStoreDeclaration) { background = #FFEEEE; }
     PROPERTY(sumConsultationDeclaration) { background = #FFEEEE; }
-    PROPERTY(CRMDeclaration) { background = #FFEEEE; }
     PROPERTY(nameTypeContainerDeclaration) { background = #FFEEEE; }
     PROPERTY(containerNumberDeclaration) { background = #FFEEEE; }
 
@@ -1500,7 +1476,7 @@ DESIGN declarations FROM DEFAULT {
 
 FORM innerInvoices 'Инвойсы РБ'
     OBJECTS i=innerInvoice
-    PROPERTIES(i) READONLY sidInnerInvoice, nameImporterInnerInvoice, dateInnerInvoice, nameLanguageInnerInvoice,
+    PROPERTIES(i) READONLY sidInnerInvoice, nameImporterInnerInvoice, dateInnerInvoice, numberContractInnerInvoice, nameLanguageInnerInvoice,
                   nameCurrencyInnerInvoice, rateExchangeExpensesDirectInvoice
     PROPERTIES(i) sidDeclarationInnerInvoice, delete
     FILTERS freightArrivedInnerInvoice(i)

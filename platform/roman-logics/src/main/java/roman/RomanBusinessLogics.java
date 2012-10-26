@@ -29,6 +29,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     public ScriptingLogicsModule RetailCRM;
     public ScriptingLogicsModule PriceInterval;
     public ScriptingLogicsModule Currency;
+    public ScriptingLogicsModule Contract;
     public ScriptingLogicsModule ContractLedger;
     public ScriptingLogicsModule Supplier;
     public ScriptingLogicsModule I18n;
@@ -52,6 +53,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         RetailCRM = addModuleFromResource("/scripts/RetailCRM.lsf");
         PriceInterval = addModuleFromResource("/scripts/PriceInterval.lsf");
         Currency = addModuleFromResource("/scripts/Currency.lsf");
+        Contract = addModuleFromResource("/scripts/Contract.lsf");
         ContractLedger = addModuleFromResource("/scripts/ContractLedger.lsf");
         Supplier = addModuleFromResource("/scripts/Supplier.lsf");
         Utils = addModuleFromResource("/scripts/Utils.lsf");
@@ -79,7 +81,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             "/scripts/WHfromRF.lsf",
             "/scripts/MasterData.lsf",
             "/scripts/StorePrice.lsf",
-            "/scripts/Contract.lsf",
+            //"/scripts/Contract.lsf",
             "/scripts/Transfer.lsf",
             "/scripts/RomanSale.lsf",
             "/scripts/Return.lsf",

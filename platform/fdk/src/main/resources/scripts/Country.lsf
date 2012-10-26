@@ -8,7 +8,8 @@ TABLE countryDate(country, DATE);
 TABLE country(country);
 
 nameOriginCountry 'Наименование (ориг.)' (country) = DATA ISTRING[50] (country) IN baseGroup; //logics.country.name.origin.country
-sidCountry 'Код страны' (country) = DATA INTEGER (country) IN baseGroup; // logics.country.key
+sidCountry 'Код страны' (country) = DATA STRING[5] (country) IN baseGroup; // logics.country.key
+//sid3Country 'Код 3 знака' (country) = DATA STRING[3] (country) IN baseGroup MINCHARWIDTH 15;
 countrySID 'Страна' (sid) =  GROUP UNIQUE country BY sidCountry(country);  // logics.country
 
 sidOrigin2Country 'Код 2 знака (ориг.)' (country) = DATA STRING[2] (country) IN baseGroup MINCHARWIDTH 15; // logics.country.sid.origin.2.country

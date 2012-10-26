@@ -274,6 +274,10 @@
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[($F{nameCountryBrandSupplierSku}!=null?$F{nameCountryBrandSupplierSku}:"")]]></textFieldExpression>
 			</textField>
+			<image>
+				<reportElement style="GroupCellStyle0_1" x="0" y="0" width="15" height="10"/>
+				<imageExpression class="java.lang.String"><![CDATA["D:\\Projects\\platform\\roman-logics\\src\\main\\resources\\images\\emb.jpg"]]></imageExpression>
+			</image>
 		</band>
 		<band height="197">
 			<printWhenExpression><![CDATA["uk_UA".equals( $F{localeLanguageCompany})]]></printWhenExpression>
