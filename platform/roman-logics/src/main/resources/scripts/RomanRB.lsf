@@ -102,7 +102,6 @@ NAVIGATOR {
     itemClassifier {
         ADD categories;
         ADD seasonYears;
-        //ADD countries;
         ADD UOMs;
     }
 
@@ -115,6 +114,13 @@ NAVIGATOR {
         ADD taxes;
     }
 
+    classifier {
+        NEW translations 'Переводы'{
+            ADD languages;
+            ADD dictionaries;
+        }
+        ADD currencyElement;
+    }
     purchaseClassifier {
         ADD contractSkus;
     }
