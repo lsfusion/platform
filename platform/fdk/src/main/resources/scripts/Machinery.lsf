@@ -437,7 +437,7 @@ createMachineryPriceTransaction 'Создать транзакцию' = ACTION (
                 SET commentMachineryPriceTransaction(t) <- createMachineryPriceTransactionComment();
                 SET inMachineryPriceTransactionBarcode(t, barcode) <- inBarcode(barcode);
                 EXEC createAttributeMachineryPriceTransaction(t);
-                EXEC createAttributeMachineryPriceTransactionStock(t, stock);
+                EXEC createAttributeMachineryPriceTransactionStock(t, stock AS stock); //добавлен AS stock
                 EXEC createAttributeMachineryPriceTransactionGroupMachinery(t, groupMachineryMachineryPriceTransaction(t));
                 SET priceMachineryPriceTransactionBarcode(t, barcode) <- priceBarcodeGroupMachinery(barcode, groupMachinery) WHERE inMachineryPriceTransactionBarcode(t, barcode);
             }
