@@ -557,3 +557,16 @@ EXTEND DESIGN migrationData {
         }
     }
 }
+
+//------------------------ Для учета рекламных материалов---------------------------------//
+boxInvoiceAddFormInvoice 'Добавить' (supplier) = ACTION (supplier) NEWSESSION {
+    FOR ADDOBJ i = RomanLogicsModule.boxInvoice DO {
+        SET supplierDocument (i) <- supplier AS supplier;
+        FORM boxInvoiceAddForm OBJECTS invoice = i MANAGESESSION DOCKED_MODAL;
+        }
+    } EDITKEY 'INSERT' IMAGE 'add.png' TOOLBAR;
+
+EXTEND FORM boxInvoiceForm
+    PROPERTIES(supplier) boxInvoiceAddFormInvoice TODRAW invoice FORCE PANEL
+
+;

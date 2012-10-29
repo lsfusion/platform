@@ -4813,7 +4813,7 @@ public class RomanLogicsModule extends LogicsModule {
             this.box = box;
             this.edit = edit;
 
-            objInvoice = addSingleGroupObject((box ? boxInvoice : simpleInvoice), "Инвойс");
+            objInvoice = addSingleGroupObject("invoice", (box ? boxInvoice : simpleInvoice), "Инвойс");
             if (!edit) {
                 addPropertyDraw(nameSupplierDocument, objInvoice);
                 setAddOnEvent(objInvoice, RomanLogicsModule.this, FormEventType.INIT);
@@ -4834,12 +4834,12 @@ public class RomanLogicsModule extends LogicsModule {
             objSIDArticleComposite = addSingleGroupObject(StringClass.get(50), "Ввод составного артикула", baseLM.objectValue);
             objSIDArticleComposite.groupTo.setSingleClassView(ClassViewType.PANEL);
 
-            //objSIDArticleSingle = addSingleGroupObject(StringClass.get(50), "Ввод простого артикула", baseLM.objectValue);
-            //objSIDArticleSingle.groupTo.setSingleClassView(ClassViewType.PANEL);
+            objSIDArticleSingle = addSingleGroupObject(StringClass.get(50), "Ввод простого артикула", baseLM.objectValue);
+            objSIDArticleSingle.groupTo.setSingleClassView(ClassViewType.PANEL);
 
-            //addActionsOnObjectChange(objSIDArticleSingle, addPropertyObject(addNEArticleSingleSIDInvoice, objSIDArticleSingle, objInvoice));
-            //addActionsOnObjectChange(objSIDArticleSingle, addPropertyObject(incrementNumberListSID, (box ? objSupplierBox : objInvoice), objSIDArticleSingle));
-            //addActionsOnObjectChange(objSIDArticleSingle, addPropertyObject(seekArticleSIDInvoice, objSIDArticleSingle, objInvoice));
+            addActionsOnObjectChange(objSIDArticleSingle, addPropertyObject(addNEArticleSingleSIDInvoice, objSIDArticleSingle, objInvoice));
+            addActionsOnObjectChange(objSIDArticleSingle, addPropertyObject(incrementNumberListSID, (box ? objSupplierBox : objInvoice), objSIDArticleSingle));
+            addActionsOnObjectChange(objSIDArticleSingle, addPropertyObject(seekArticleSIDInvoice, objSIDArticleSingle, objInvoice));
 
             objArticle = addSingleGroupObject(articleComposite, "Артикул");
             objArticle.groupTo.setSingleClassView(ClassViewType.GRID);
