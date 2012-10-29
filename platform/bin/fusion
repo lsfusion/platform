@@ -16,7 +16,7 @@ cd $FUSION_HOME
 
 case "$1" in
   start)
-    jsvc \
+    /usr/bin/jsvc \
     -home $JAVA_HOME \
     -jvm server \
     -Djava.rmi.server.hostname=$FUSION_IP \
@@ -30,7 +30,7 @@ case "$1" in
     ;;
 
   stop)
-    jsvc \
+    /usr/bin/jsvc \
     -home $JAVA_HOME \
     -stop \
     -pidfile $PID_FILE \

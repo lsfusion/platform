@@ -629,7 +629,8 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
                 // Preferred size
                 if (constraint.fillHorizontal >= 0) {
 
-                    double prefWidth = (pref.width + 1.0) * (type == SimplexLayout.PREFERRED && constraint.fillHorizontal > 1E-6 ? constraint.fillVertical : 1.0);
+                    double prefWidth = (pref.width + 1.0) * (type == SimplexLayout.PREFERRED && constraint.fillHorizontal > 1E-6 ? constraint.fillHorizontal : 1.0);
+                    assert prefWidth >= 0; // по умолчанию, все переменные non-negative, если prefWidth < 0, то 2я переменная сделает систему infeasible
 
                     solver.addColumn(new double[0]);
                     int var = solver.getNcolumns();

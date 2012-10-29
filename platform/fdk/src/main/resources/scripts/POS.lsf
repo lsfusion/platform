@@ -547,7 +547,7 @@ postPrintReceipt(receipt) += noFiscalPostPrintReceipt(receipt) IF NOT sidCashReg
 
 FORM postReceiptPayment 'Оплата по чеку'
     OBJECTS r = receipt FIXED PANEL
-    PROPERTIES(r) READONLY changePaymentReceipt
+    PROPERTIES(r) READONLY sumReceiptDetailReceipt, changePaymentReceipt
 
     OBJECTS p = payment FIXED GRID
     PROPERTIES(p) sumPayment, namePaymentTypePayment, ADDOBJ, delete
@@ -559,17 +559,18 @@ DESIGN postReceiptPayment FROM DEFAULT {
     main {
         preferredSize = (600, 250);
         NEW payContainer {
-            childConstraints = TO THE RIGHT;
+            childConstraints = TO THE BOTTOM;
             ADD p.box {
                 PROPERTY(sumPayment) { font = 'Tahoma bold 36'; }
                 PROPERTY(namePaymentTypePayment) { font = 'Tahoma bold 36'; }
                 PROPERTY(delete) { font = 'Tahoma bold 36'; }
             }
-            NEW rightContainer {
-                childConstraints = TO THE BOTTOM;
+            NEW southContainer {
+                childConstraints = TO THE RIGHT;
+                ADD PROPERTY(sumReceiptDetailReceipt) { panelLabelAbove = TRUE; focusable = FALSE; font = 'Tahoma bold 72'; }
                 ADD PROPERTY(changePaymentReceipt) { panelLabelAbove = TRUE; focusable = FALSE; font = 'Tahoma bold 72'; }
-                ADD functions.box;
             }
+            ADD functions.box;
         }
     }
 }
