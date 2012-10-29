@@ -5744,7 +5744,9 @@ public class RomanLogicsModule extends LogicsModule {
         private FreightShipmentStoreFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
 
-            objFreight = addSingleGroupObject(freight, "Фрахт", baseLM.objectValue, baseLM.date, baseLM.objectClassName, nameRouteFreight, nameExporterFreight, descriptionFreight, grossWeightFreight, volumeDataFreight, palletCountDataFreight, palletNumberFreight, freightBoxNumberFreight, nameCurrencyFreight, sumFreightFreight);
+            objFreight = addSingleGroupObject(freight, "Фрахт", baseLM.objectValue, baseLM.date, baseLM.objectClassName, nameRouteFreight,
+                                    nameExporterFreight, descriptionFreight, grossWeightFreight, volumeDataFreight, palletCountDataFreight,
+                                    palletNumberFreight, freightBoxNumberFreight, nameCurrencyFreight, sumFreightFreight);
             objFreight.groupTo.setSingleClassView(ClassViewType.PANEL);
             setEditType(objFreight, PropertyEditType.SELECTOR);
 
@@ -7725,9 +7727,9 @@ public class RomanLogicsModule extends LogicsModule {
             design.get(objSize.groupTo).grid.constraints.fillVertical = 2;
             design.get(objTheme.groupTo).grid.constraints.fillVertical = 2;
             design.get(objCollection.groupTo).grid.constraints.fillVertical = 2;
-            //design.get(objSeason.groupTo).grid.constraints.fillVertical = 2;
-            design.get(objGroupSize.groupTo).grid.constraints.fillVertical = 2;
-            design.get(objSize.groupTo).grid.constraints.fillVertical = 2;
+            sizeContainer.constraints.fillVertical = 2;
+            groupContainer.constraints.fillVertical = 2;
+            design.get(objSeason.groupTo).grid.constraints.fillVertical = 2;
             design.get(objCountry.groupTo).grid.constraints.fillVertical = 2;
             design.get(objGenderSupplier.groupTo).grid.constraints.fillVertical = 2;
 
