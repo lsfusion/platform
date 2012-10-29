@@ -2490,15 +2490,6 @@ public class RomanLogicsModule extends LogicsModule {
         seekArticleSIDSupplier = addJoinAProp("Поиск артикула", addSAProp(null), articleSIDSupplier, 1, 2);
         seekArticleSIDInvoice = addJoinAProp("Поиск артикула", seekArticleSIDSupplier, 1, supplierDocument, 2);
 
-        //???
-        addArticleSingleSIDSupplier = addAAProp("Ввод простого артикула", articleSingle, sidArticle, supplierArticle);
-        addNEArticleSingleSIDSupplier = addIfAProp("Ввод простого артикула (НС)", true, articleSIDSupplier, 1, 2, addArticleSingleSIDSupplier, 1, 2);
-        addNEArticleSingleSIDInvoice = addJoinAProp("Ввод простого артикула (НС)", addNEArticleSingleSIDSupplier, 1, supplierDocument, 2);
-
-        addArticleCompositeSIDSupplier = addAAProp("Ввод составного артикула", articleComposite, sidArticle, supplierArticle);
-        addNEArticleCompositeSIDSupplier = addIfAProp("Ввод составного артикула (НС)", true, articleSIDSupplier, 1, 2, addArticleCompositeSIDSupplier, 1, 2);
-        addNEArticleCompositeSIDInvoice = addJoinAProp("Ввод составного артикула (НС)", addNEArticleCompositeSIDSupplier, 1, supplierDocument, 2);
-
         addNEColorSupplierSIDSupplier = addIfAProp("Ввод цвета (НС)", true, colorSIDSupplier, 1, 2, addAAProp(colorSupplier, sidColorSupplier, supplierColorSupplier), 1, 2);
         addNEColorSupplierSIDInvoice = addJoinAProp("Ввод цвета (НС)", addNEColorSupplierSIDSupplier, 1, supplierDocument, 2);
 
@@ -4657,7 +4648,7 @@ public class RomanLogicsModule extends LogicsModule {
                orderEditFA.setImage("edit.png");
             }
 
-            addActionsOnObjectChange(objSIDArticleComposite, addPropertyObject(addAProp(new AddNewArticleActionProperty(objArticle)), objSIDArticleComposite, objOrder));
+            addActionsOnObjectChange(objSIDArticleComposite, addPropertyObject(addAProp(new AddNewArticleActionProperty(objArticle, true)), objSIDArticleComposite, objOrder));
             addActionsOnObjectChange(objSIDArticleComposite, addPropertyObject(incrementNumberListSID, objOrder, objSIDArticleComposite));
             addActionsOnObjectChange(objSIDArticleComposite, addPropertyObject(seekArticleSIDInvoice, objSIDArticleComposite, objOrder));
 
@@ -4837,18 +4828,15 @@ public class RomanLogicsModule extends LogicsModule {
             objSIDArticleSingle = addSingleGroupObject(StringClass.get(50), "Ввод простого артикула", baseLM.objectValue);
             objSIDArticleSingle.groupTo.setSingleClassView(ClassViewType.PANEL);
 
-            addActionsOnObjectChange(objSIDArticleSingle, addPropertyObject(addNEArticleSingleSIDInvoice, objSIDArticleSingle, objInvoice));
-            addActionsOnObjectChange(objSIDArticleSingle, addPropertyObject(incrementNumberListSID, (box ? objSupplierBox : objInvoice), objSIDArticleSingle));
-            addActionsOnObjectChange(objSIDArticleSingle, addPropertyObject(seekArticleSIDInvoice, objSIDArticleSingle, objInvoice));
-
-            objArticle = addSingleGroupObject(articleComposite, "Артикул");
+            objArticle = addSingleGroupObject(article, "Артикул");
             objArticle.groupTo.setSingleClassView(ClassViewType.GRID);
 
             addPropertyDraw(numberListArticle, (box ? objSupplierBox : objInvoice), objArticle);
             addPropertyDraw(objArticle, nameSizeGroupSupplierArticle, sidArticle, sidSeasonSupplierArticle, nameSeasonYearArticle, nameBrandSupplierArticle,
                     nameCollectionSupplierArticle, nameSubCategorySupplierArticle, nameThemeSupplierArticle, nameCategoryArticle,
                     originalNameArticle, sidCustomCategoryOriginArticle, nameTypeFabricArticle, sidGenderArticle, nameTypeLabelArticle,
-                    nameCountrySupplierOfOriginArticle, netWeightArticle, mainCompositionOriginArticle, baseLM.barcode);
+                    nameCountrySupplierOfOriginArticle, netWeightArticle, mainCompositionOriginArticle);
+            addPropertyDraw(baseLM.barcode, objArticle).setDrawToToolbar(true);
             addPropertyDraw(quantityListArticle, (box ? objSupplierBox : objInvoice), objArticle);
             addPropertyDraw(priceDocumentArticle, objInvoice, objArticle);
             addPropertyDraw(RRPDocumentArticle, objInvoice, objArticle);
@@ -4950,9 +4938,13 @@ public class RomanLogicsModule extends LogicsModule {
             }
 
 //            addActionsOnObjectChange(objSIDArticleComposite, addPropertyObject(addNEArticleCompositeSIDInvoice, objSIDArticleComposite, objInvoice));
-            addActionsOnObjectChange(objSIDArticleComposite, addPropertyObject(addAProp(new AddNewArticleActionProperty(objArticle)), objSIDArticleComposite, objInvoice));
+            addActionsOnObjectChange(objSIDArticleComposite, addPropertyObject(addAProp(new AddNewArticleActionProperty(objArticle, true)), objSIDArticleComposite, objInvoice));
             addActionsOnObjectChange(objSIDArticleComposite, addPropertyObject(incrementNumberListSID, (box ? objSupplierBox : objInvoice), objSIDArticleComposite));
             addActionsOnObjectChange(objSIDArticleComposite, addPropertyObject(seekArticleSIDInvoice, objSIDArticleComposite, objInvoice));
+
+            addActionsOnObjectChange(objSIDArticleSingle, addPropertyObject(addAProp(new AddNewArticleActionProperty(objArticle, false)), objSIDArticleSingle, objInvoice));
+            addActionsOnObjectChange(objSIDArticleSingle, addPropertyObject(incrementNumberListSID, (box ? objSupplierBox : objInvoice), objSIDArticleSingle));
+            addActionsOnObjectChange(objSIDArticleSingle, addPropertyObject(seekArticleSIDInvoice, objSIDArticleSingle, objInvoice));
 
             addDefaultOrder(numberListArticle, true);
             addDefaultOrder(orderSizeSupplier, true);
@@ -4968,6 +4960,9 @@ public class RomanLogicsModule extends LogicsModule {
 
             design.get(objInvoice.groupTo).grid.constraints.fillVertical = 0.2;
 
+            design.addIntersection(design.getGroupObjectContainer(objSIDArticleComposite.groupTo),
+                    design.getGroupObjectContainer(objSIDArticleSingle.groupTo),
+                    DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
             if (box) {
                 design.addIntersection(design.getGroupObjectContainer(objInvoice.groupTo),
                     design.getGroupObjectContainer(objSupplierBox.groupTo),
@@ -4975,10 +4970,14 @@ public class RomanLogicsModule extends LogicsModule {
                 design.addIntersection(design.getGroupObjectContainer(objSIDArticleComposite.groupTo),
                     design.getGroupObjectContainer(objSupplierBox.groupTo),
                     DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+                design.addIntersection(design.getGroupObjectContainer(objSIDArticleSingle.groupTo),
+                        design.getGroupObjectContainer(objSupplierBox.groupTo),
+                        DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
                 design.get(objSupplierBox.groupTo).grid.constraints.fillVertical= 0.4;
             }
 
             design.get(getPropertyDraw(baseLM.objectValue, objSIDArticleComposite)).editKey = KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0);
+            design.get(getPropertyDraw(baseLM.objectValue, objSIDArticleSingle)).editKey = KeyStroke.getKeyStroke(KeyEvent.VK_F7, 0);
             design.get(getPropertyDraw(baseLM.objectValue, objSIDColorSupplier)).editKey = KeyStroke.getKeyStroke(KeyEvent.VK_INSERT, 0);
             /*design.get(getPropertyDraw(baseLM.objectValue, objSIDArticleSingle)).editKey = KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0);
 
@@ -8626,10 +8625,13 @@ public class RomanLogicsModule extends LogicsModule {
         private final ClassPropertyInterface sidInterface;
         private final ClassPropertyInterface docInterface;
 
-        public AddNewArticleActionProperty(ObjectEntity objArticle) {
+        boolean composite;
+
+        public AddNewArticleActionProperty(ObjectEntity objArticle, boolean composite) {
             super(genSID(), StringClass.get(50), document);
 
             this.objArticle = objArticle;
+            this.composite = composite;
 
             Iterator<ClassPropertyInterface> i = interfaces.iterator();
             sidInterface = i.next();
@@ -8652,10 +8654,10 @@ public class RomanLogicsModule extends LogicsModule {
             ObjectValue articlePrev = articleSIDSupplier.readClasses(context, sID, (DataObject)supplier);
             if (articlePrev.isNull()) {
                 ObjectValue oldArticle = context.getObjectInstance(objArticle).getObjectValue();
-                DataObject article = context.addObject(articleComposite);
+                DataObject article = context.addObject(composite ? articleComposite : articleSingle);
                 sidArticle.change(sID.getValue(), context, article);
                 supplierArticle.change(supplier.getValue(), context, article);
-                if (!oldArticle.isNull())
+                if (composite && !oldArticle.isNull())
                     sizeGroupSupplierArticle.change(sizeGroupSupplierArticle.read(context, (DataObject) oldArticle), context, article);
             }
         }
