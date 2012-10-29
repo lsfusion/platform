@@ -1,0 +1,346 @@
+MODULE RomanTransfer;
+
+REQUIRE System,
+        Document,
+        RomanDocument,
+        Stock,
+        RomanStock,
+        DocumentTransfer,
+        ListRegister,
+        RetailPrice,
+        InnerOrder,
+        Employee,
+        StorePriceTransfer,
+        Consignment,
+        AccountDocument,
+        RomanLogicsModule;
+
+PRIORITY Stock, RomanLogicsModule;
+
+// ---------------------------------------- Трнансфер ------------------------------------ //
+
+CLASS transferTable 'Трансфер' : historyObject, numeratedObject;//, innerDocument, consignment, outAccountDocumentLedger;
+
+GROUP datesGroup 'Период продаж' : publicGroup;
+
+TABLE transferTable (transferTable);
+@defineDocumentHeaderTime(transferTable);
+@defineDocumentHeaderNote(transferTable);
+@defineDocumentHeaderDescription(transferTable, 'Трансфер');
+
+transferTableInnerOrder= DATA transferTable(innerOrder);
+descriptionTransferTableInnerOrder 'Трансфер' (innerOrder) =  descriptionTransferTable(transferTableInnerOrder(innerOrder)) IN documentPrmGroup;
+
+EXTEND FORM innerOrder
+    PROPERTIES(o) descriptionTransferTableInnerOrder
+;
+EXTEND FORM innerOrders
+    PROPERTIES(o) READONLY descriptionTransferTableInnerOrder
+;
+
+inTransferTableStock 'Вкл.' = DATA BOOLEAN (transferTable, stock);
+
+dateFromTransferTable 'С' = DATA DATE (transferTable) IN datesGroup;
+dateToTransferTable 'По' = DATA DATE (transferTable) IN datesGroup;
+
+dateFromTransferTable(transferTable) <- currentDate() WHEN ASSIGNED(transferTable IS transferTable);
+dateToTransferTable(transferTable) <- currentDate() WHEN ASSIGNED(transferTable IS transferTable);
+
+
+quantitySoldSkuStockTransferTable 'Продано за интервал (кол-во)' (sku, stock, transferTable) = GROUP SUM
+        quantitySoldSkuStockDate(sku, stock, date) AND date >= dateFromTransferTable(transferTable) AND date <= dateToTransferTable(transferTable)
+        BY sku, stock, transferTable;
+
+quantitySkuStockTransferTable (sku, stock, transferTable) = DATA NUMERIC[14,3] (sku, stock, transferTable);
+quantitySkuTransferTable 'Итого по SKU' (sku, transferTable) = GROUP SUM quantitySkuStockTransferTable (sku, stock, transferTable) BY sku, transferTable;
+
+quantityPositiveSkuTransferTable 'Итого по SKU' (sku, transferTable) = GROUP SUM quantitySkuStockTransferTable (sku, stock, transferTable)
+    IF quantitySkuStockTransferTable (sku, stock, transferTable) >0 BY sku, transferTable;
+quantityNegativeSkuTransferTable 'Итого по SKU' (sku, transferTable) = GROUP SUM quantitySkuStockTransferTable (sku, stock, transferTable)
+    IF quantitySkuStockTransferTable (sku, stock, transferTable) <0 BY sku, transferTable;
+
+inSkuTransferTable 'В заказе' (sku, transferTable) = GROUP SUM 1 IF quantitySkuStockTransferTable (sku, stock, transferTable) BY sku, transferTable;
+
+backgroundSkuStockTransferTable 'Цвет' (sku, stock, transferTable)=  IF quantitySkuStockTransferTable(sku, stock, transferTable) > 0
+                                                                        THEN RGB(212, 255, 212)
+                                                                        ELSE
+                                                                            RGB(255, 128, 128) IF quantitySkuStockTransferTable(sku, stock, transferTable) < 0;
+backgroundSkuTransferTable  'Цвет' (sku, transferTable)=  IF quantitySkuTransferTable(sku, transferTable) > 0
+                                                            THEN RGB(212, 255, 212)
+                                                            ELSE
+                                                                RGB(255, 128, 128) IF quantitySkuTransferTable(sku, transferTable) < 0;
+
+stringQuantitySoldSkuStockTransferTable (sku, stock, transferTable)= [FORMULA STRING[30] '\'(\' || CAST($1 AS TEXT) || \')\'']
+    (round0(quantitySoldSkuStockTransferTable(sku, stock, transferTable)));
+stringQuantityOrderSkuStockTransferTable (sku, stock, transferTable)= [FORMULA STRING[30] '\' / \' || CAST($1 AS TEXT)']
+    (round0(quantitySkuStockTransferTable(sku, stock, transferTable)));
+
+//stringQuantitySkuStockTransferTable 'Количество' (sku, stock, transferTable)= ustring3(castToString255(round0(currentBalanceSkuStock(sku, stock))),
+//    stringQuantitySoldSkuStockTransferTable(sku, stock, transferTable), stringQuantityOrderSkuStockTransferTable(sku, stock, transferTable)) MINCHARWIDTH 10 PREFCHARWIDTH 20;
+
+
+currentBalanceSkuTransferTable 'Остаток' (sku, transferTable) = GROUP SUM currentBalanceSkuStock(sku, stock) IF inTransferTableStock(transferTable, stock)
+    BY sku, transferTable;
+
+quantitySoldSkuTransferTable 'Продано за интервал (кол-во)' (sku, transferTable) = GROUP SUM
+        quantitySoldSkuStockDate(sku, stock, date) AND date >= dateFromTransferTable(transferTable) AND date <= dateToTransferTable(transferTable) AND inTransferTableStock(transferTable, stock)
+        BY sku, transferTable;
+
+
+changeQuantitySkuStockTransferTable = ACTION (sku, stock, transferTable) {
+    REQUEST STRING[20] INPUT;
+    SET quantitySkuStockTransferTable(sku, stock, transferTable) <- castToNumeric14p2(requestedString());
+}
+
+//--Внутренний заказ
+
+quantityPositiveSkuCompanyTransferTable (sku, company, transferTable)= GROUP SUM quantitySkuStockTransferTable(sku, stock, transferTable)
+    IF quantitySkuStockTransferTable (sku, stock, transferTable) >0 BY sku, companyStock(stock), transferTable;
+
+quantityNegativeSkuCompanyTransferTable (sku, company, transferTable)= GROUP SUM quantitySkuStockTransferTable(sku, stock, transferTable)
+    IF quantitySkuStockTransferTable (sku, stock, transferTable) <0 BY sku, companyStock(stock), transferTable;
+
+
+maxPositiveSkuTransferTable (sku, transferTable)= GROUP MAX quantitySkuStockTransferTable(sku, stock, transferTable)
+    IF quantitySkuStockTransferTable (sku, stock, transferTable) >0 BY sku, transferTable;
+
+maxNegativeSkuTransferTable (sku, transferTable)= GROUP MAX -quantitySkuStockTransferTable(sku, stock, transferTable)
+    IF quantitySkuStockTransferTable (sku, stock, transferTable) <0 BY sku, transferTable;
+
+diffSkuTransferTable (sku, transferTable)= min(maxNegativeSkuTransferTable (sku, transferTable), maxPositiveSkuTransferTable (sku, transferTable));
+
+
+
+
+createInnerOrderTransferTable 'Создать внутренние заказы' = ACTION (transferTable)  {
+
+    IF [GROUP SUM 1 IF quantitySkuTransferTable(sku, transferTable) BY transferTable](transferTable) THEN {
+        MESSAGE 'Не все товары были распределены между складами';
+        BREAK;
+    }
+
+    LOCAL left = NUMERIC[14,3] (sku, stock);
+    SET left(sku, stock) <- quantitySkuStockTransferTable(sku, stock, transferTable);
+
+    WHILE [GROUP SUM 1 IF left(sku, stock)]() DO {
+
+        LOCAL positionCount = INTEGER (stock, stock);
+        SET positionCount(stockFrom, stockTo) <- [GROUP SUM 1 IF left(sku, stockFrom) < 0 AND left(sku, stockTo) > 0 BY stockFrom, stockTo](stockFrom, stockTo);
+
+        LOCAL stockFrom = stock ();
+        SET stockFrom() <- [GROUP MAX LIST(positionCount(stockFrom, stockTo), stockFrom, stockTo)]()[2];
+
+        LOCAL stockTo = stock ();
+        SET stockTo() <- [GROUP MAX LIST(positionCount(stockFrom, stockTo), stockFrom, stockTo)]()[3];
+
+        LOCAL quantityTransfer = NUMERIC[14,3] (sku);
+        SET quantityTransfer(sku) <- min( -left(sku, stockFrom()) IF left(sku, stockFrom()) < 0, left(sku, stockTo()) IF left(sku, stockTo()) > 0);
+        IF TRUE AND NOT [GROUP SUM 1 IF quantityTransfer(sku)]() THEN BREAK;
+
+        FOR ADDOBJ o = innerOrder DO {
+            SET transferTableInnerOrder(o) <- transferTable;
+            SET dateInnerOrder(o) <- dateTransferTable(transferTable);
+            SET timeInnerOrder(o) <- timeTransferTable(transferTable);
+            SET stockInnerOrder(o) <- stockFrom();
+            SET destinationStockInnerOrder(o) <- stockTo();
+
+            FOR quantityTransfer(sku) ADDOBJ d = innerOrderDetail DO {
+                SET innerOrderInnerOrderDetail(d) <- o;
+                SET skuInnerOrderDetail(d) <- sku;
+                SET quantityInnerOrderDetail(d) <- quantityTransfer(sku);
+            }
+        }
+        SET left(sku, stock) <- left(sku, stock) (+) quantityTransfer(sku) WHERE stock == stockFrom() AND quantityTransfer(sku);
+        SET left(sku, stock) <- left(sku, stock) (-) quantityTransfer(sku) WHERE stock == stockTo() AND quantityTransfer(sku);
+    }
+
+}  CONFIRM;
+
+quantityOutOrdersSkuStockTransferTable 'Кол-во в заказе (расход) ' (sku, stock, transferTable) = GROUP SUM quantityInnerOrderDetailSkuInnerOrder(sku, innerOrder) BY sku, stockInnerOrder(innerOrder), transferTableInnerOrder(innerOrder);
+quantityInOrdersDestinationSkuStockTransferTable 'Кол-во в заказе (приход) ' (sku, stock, transferTable)= GROUP SUM quantityInnerOrderDetailSkuInnerOrder(sku, innerOrder) BY sku, destinationStockInnerOrder(innerOrder), transferTableInnerOrder(innerOrder);
+quantityOrdersSkuStockTransferTable (sku, stock, transferTable)= quantityInOrdersDestinationSkuStockTransferTable(sku, stock, transferTable) (-) quantityOutOrdersSkuStockTransferTable(sku, stock, transferTable);
+stringQuantityOrdersSkuStockTransferTable (sku, stock, transferTable)= [FORMULA STRING[30] '\'(\' || CAST($1 AS TEXT) || \')\'']
+    (round0(quantityOrdersSkuStockTransferTable(sku, stock, transferTable)));
+
+stringQuantitySkuStockTransferTable 'Количество' (sku, stock, transferTable)= ustring4(castToString255(round0(currentBalanceSkuStock(sku, stock))),
+    stringQuantitySoldSkuStockTransferTable(sku, stock, transferTable), stringQuantityOrderSkuStockTransferTable(sku, stock, transferTable),
+    stringQuantityOrdersSkuStockTransferTable (sku, stock, transferTable)) MINCHARWIDTH 10 PREFCHARWIDTH 20;
+
+FORM transferTable 'Трансфер'
+    OBJECTS t = transferTable FIXED PANEL
+
+    PROPERTIES (t) objectClassName, nameNumeratorObject, numberObject, seriesObject, dateTransferTable, timeTransferTable,
+                   noteTransferTable, createInnerOrderTransferTable, dateFromTransferTable, dateToTransferTable
+
+
+
+    TREE stockTree sg = stockGroup PARENT parentStockGroup, ts = stock
+    PROPERTIES READONLY sgTreeName = name(sg), tsTreeName = name(ts)
+    FILTERS stockGroupStock(ts) == sg
+
+    PROPERTIES inTransferTableStock(t,ts)
+
+
+    OBJECTS st=stock
+
+    TREE skuTree sk = skuGroup PARENT parentSkuGroup
+    PROPERTIES READONLY skuTreeName = name(sk)
+    ORDER BY skuTreeName
+
+    OBJECTS s=sku
+    PROPERTIES READONLY FORCE GRID inputName = nameSku(s), sidArticleSku(s), idBarcodeSku(s), shortNameUOMSku(s)
+
+    PROPERTIES stringQuantitySkuStockTransferTable(s,st,t) COLUMNS (st) HEADER name (st) ON CHANGE EXEC changeQuantitySkuStockTransferTable(s,st,t) BACKGROUND backgroundSkuStockTransferTable(s,st,t)
+    PROPERTIES READONLY currentBalanceSku(s), quantitySkuTransferTable(s,t) BACKGROUND backgroundSkuTransferTable(s,t)
+    FILTERS    isParentSkuGroupSku(sk, s),
+               inTransferTableStock(t,st)
+
+    FILTERGROUP filtersBalanceSku
+        FILTER 'Ненулевые остатки' 'F11' currentBalanceSkuTransferTable(s,t) DEFAULT
+        FILTER 'С продажей' 'F10' quantitySoldSkuTransferTable(s,t)
+        FILTER 'В трансфере' 'F9' inSkuTransferTable(s,t)
+    ORDER BY inputName
+
+    OBJECTS o = innerOrder
+    PROPERTIES (o) READONLY numberObject, seriesObject, dateInnerOrder, timeInnerOrder,
+        nameStockInnerOrder, nameDestinationStockInnerOrder, countInnerOrderDetailInnerOrder, quantityInnerOrderDetailInnerOrder
+
+    PROPERTIES (o) delete
+
+    OBJECTS d = innerOrderDetail
+    FILTERS    transferTableInnerOrder(o)==t,
+               innerOrderInnerOrderDetail(d) == o
+
+    EDIT transferTable OBJECT t
+;
+
+DESIGN transferTable FROM DEFAULT {
+    main {
+//        preferredSize = (1024, 768);
+        ADD t.box {
+            childConstraints = TO THE RIGHT;
+            NEW columnHeaderPrm {
+                childConstraints = TO THE BOTTOM;
+                NEW wor {
+                    childConstraints = TO THE RIGHT;
+                    ADD t.documentHeaderGroup {
+                        childConstraints = TO THE RIGHT;
+                        ADD PROPERTY (objectClassName);
+                        ADD PROPERTY (nameNumeratorObject);
+                        ADD PROPERTY (numberObject);
+                        ADD PROPERTY (seriesObject);
+                        ADD PROPERTY (dateTransferTable);
+                        ADD PROPERTY (timeTransferTable);
+                    }
+                    ADD t.datesGroup {
+                        childConstraints = TO THE RIGHT;
+                    }
+                }
+                NEW wor1{
+                    childConstraints = TO THE RIGHT;
+                    ADD t.documentPrmGroup;
+                    NEW wor11 {
+                        title = 'Внутренний заказ';
+                        childConstraints = TO THE RIGHT;
+                        ADD PROPERTY (createInnerOrderTransferTable);
+                    }
+
+                }
+            }
+//            NEW columnHeaderSum {
+//                ADD t.documentSumGroup {
+//                    childConstraints = TO THE BOTTOM;
+//                }
+//            }
+        }
+        REMOVE st.box;
+        NEW row {
+            type = TABBED;
+            NEW row1 {
+                title = 'Подбор';
+                childConstraints = TO THE RIGHT;
+                type = SPLITH;
+                NEW row11 {
+                    fillHorizontal = 1;
+                    childConstraints = TO THE BOTTOM;
+                    type = SPLITV;
+                    ADD stockTree.tree.box { title = 'Склады'; }
+                    ADD skuTree.tree.box { title = 'Группы SKU'; }
+                }
+                ADD s.box {title = 'SKU: остаток(продано) / трансфер(заказ)'; fillHorizontal = 3;}
+            }
+            NEW row2{
+                title = 'Заказ';
+                childConstraints = TO THE BOTTOM;
+                type = SPLITV;
+                ADD o.box;
+                ADD d.box;
+            }
+        }
+        ADD functions.box;
+    }
+}
+
+FORM transferTables 'Трансферы'
+    OBJECTS t = transferTable
+    PROPERTIES (t) READONLY numberObject, seriesObject, dateTransferTable, timeTransferTable,
+                            dateFromTransferTable, dateToTransferTable, noteTransferTable
+
+    PROPERTIES (t) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
+
+    PROPERTIES (t) ADDFORM, EDITFORM, delete
+
+    OBJECTS s=sku
+    PROPERTIES READONLY FORCE GRID inputName = nameSku(s), sidArticleSku(s), idBarcodeSku(s), shortNameUOMSku(s), quantitySkuTransferTable(s,t)
+
+    OBJECTS o = innerOrder
+    PROPERTIES (o) READONLY numberObject, seriesObject, dateInnerOrder, timeInnerOrder,
+        nameStockInnerOrder, nameDestinationStockInnerOrder, countInnerOrderDetailInnerOrder, quantityInnerOrderDetailInnerOrder,
+        messageInnerOrder
+
+    OBJECTS d = innerOrderDetail
+
+    FILTERS    transferTableInnerOrder(o)==t,
+               innerOrderInnerOrderDetail(d) == o,
+               inSkuTransferTable(s,t)
+
+
+;
+
+DESIGN transferTables FROM DEFAULT {
+    PROPERTY (delete(t)) {
+        askConfirm = TRUE;
+    }
+
+    NEW documentContainer BEFORE functions.box {
+        type = SPLITV;
+        childConstraints = TO THE BOTTOM;
+
+        ADD t.box;
+
+        NEW documentDetail {
+            type = TABBED;
+
+            ADD s.box {
+                title = 'Спецификация';
+            }
+            NEW orderCase {
+                title = 'Заказ';
+                childConstraints = TO THE BOTTOM;
+                ADD o.box;
+                ADD d.box;
+            }
+            NEW documentHistory {
+                title = 'История';
+
+                ADD t.historyGroup;
+//                ADD t.postedGroup;
+            }
+        }
+    }
+}
+
+@extendFormDocumentDetailSkuArticleReadonly(transferTable, d, innerOrder);
+@extendFormDocumentDetailSkuArticleReadonly(transferTables, d, innerOrder);
+
+
