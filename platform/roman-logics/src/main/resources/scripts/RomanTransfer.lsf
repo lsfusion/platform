@@ -72,12 +72,8 @@ backgroundSkuTransferTable  'Цвет' (sku, transferTable)=  IF quantitySkuTran
 
 stringQuantitySoldSkuStockTransferTable (sku, stock, transferTable)= [FORMULA STRING[30] '\'(\' || CAST($1 AS TEXT) || \')\'']
     (round0(quantitySoldSkuStockTransferTable(sku, stock, transferTable)));
-stringQuantityOrderSkuStockTransferTable (sku, stock, transferTable)= [FORMULA STRING[30] '\' / \' || CAST($1 AS TEXT)']
+stringQuantityTransferSkuStockTransferTable (sku, stock, transferTable)= [FORMULA STRING[30] '\' / \' || CAST($1 AS TEXT)']
     (round0(quantitySkuStockTransferTable(sku, stock, transferTable)));
-
-//stringQuantitySkuStockTransferTable 'Количество' (sku, stock, transferTable)= ustring3(castToString255(round0(currentBalanceSkuStock(sku, stock))),
-//    stringQuantitySoldSkuStockTransferTable(sku, stock, transferTable), stringQuantityOrderSkuStockTransferTable(sku, stock, transferTable)) MINCHARWIDTH 10 PREFCHARWIDTH 20;
-
 
 currentBalanceSkuTransferTable 'Остаток' (sku, transferTable) = GROUP SUM currentBalanceSkuStock(sku, stock) IF inTransferTableStock(transferTable, stock)
     BY sku, transferTable;
@@ -156,21 +152,37 @@ createInnerOrderTransferTable 'Создать внутренние заказы'
 
 }  CONFIRM;
 
+deleteInnerOrderTransferTable 'Удалить внутренние заказы' = ACTION (transferTable) {
+    FOR transferTableInnerOrder (innerOrder) == transferTable DO {
+        EXEC delete(innerOrder AS innerOrder);
+    };
+} CONFIRM;
+
+toShowTransferTable (transferTable)= GROUP SUM 1 BY transferTableInnerOrder(innerOrder);
+
 quantityOutOrdersSkuStockTransferTable 'Кол-во в заказе (расход) ' (sku, stock, transferTable) = GROUP SUM quantityInnerOrderDetailSkuInnerOrder(sku, innerOrder) BY sku, stockInnerOrder(innerOrder), transferTableInnerOrder(innerOrder);
 quantityInOrdersDestinationSkuStockTransferTable 'Кол-во в заказе (приход) ' (sku, stock, transferTable)= GROUP SUM quantityInnerOrderDetailSkuInnerOrder(sku, innerOrder) BY sku, destinationStockInnerOrder(innerOrder), transferTableInnerOrder(innerOrder);
 quantityOrdersSkuStockTransferTable (sku, stock, transferTable)= quantityInOrdersDestinationSkuStockTransferTable(sku, stock, transferTable) (-) quantityOutOrdersSkuStockTransferTable(sku, stock, transferTable);
 stringQuantityOrdersSkuStockTransferTable (sku, stock, transferTable)= [FORMULA STRING[30] '\'(\' || CAST($1 AS TEXT) || \')\'']
     (round0(quantityOrdersSkuStockTransferTable(sku, stock, transferTable)));
 
-stringQuantitySkuStockTransferTable 'Количество' (sku, stock, transferTable)= ustring4(castToString255(round0(currentBalanceSkuStock(sku, stock))),
-    stringQuantitySoldSkuStockTransferTable(sku, stock, transferTable), stringQuantityOrderSkuStockTransferTable(sku, stock, transferTable),
+stringQuantitySkuStockTransferTable 'Количество' (sku, stock, transferTable)= ustring3(castToString255(round0(currentBalanceSkuStock(sku, stock))),
+    stringQuantitySoldSkuStockTransferTable(sku, stock, transferTable), stringQuantityTransferSkuStockTransferTable(sku, stock, transferTable)) MINCHARWIDTH 10 PREFCHARWIDTH 20;
+
+stringTotalQuantitySkuStockTransferTable 'Количество' (sku, stock, transferTable)= ustring2(stringQuantityTransferSkuStockTransferTable(sku, stock, transferTable),
     stringQuantityOrdersSkuStockTransferTable (sku, stock, transferTable)) MINCHARWIDTH 10 PREFCHARWIDTH 20;
+
+backgroundOrdersSkuStockTransferTable  'Цвет' (sku, stock, transferTable)=  RGB(255, 255, 0)
+    IF quantityOrdersSkuStockTransferTable(sku, stock, transferTable) != quantitySkuStockTransferTable(sku, stock, transferTable);
+
+notEqualSkuTransferTable(sku, transferTable) = GROUP SUM 1 IF quantityOrdersSkuStockTransferTable(sku, stock, transferTable) != quantitySkuStockTransferTable(sku, stock, transferTable) BY sku, transferTable;
 
 FORM transferTable 'Трансфер'
     OBJECTS t = transferTable FIXED PANEL
 
     PROPERTIES (t) objectClassName, nameNumeratorObject, numberObject, seriesObject, dateTransferTable, timeTransferTable,
-                   noteTransferTable, createInnerOrderTransferTable, dateFromTransferTable, dateToTransferTable
+                   noteTransferTable, createInnerOrderTransferTable, deleteInnerOrderTransferTable SHOWIF toShowTransferTable(t),
+                   dateFromTransferTable, dateToTransferTable
 
 
 
@@ -192,6 +204,7 @@ FORM transferTable 'Трансфер'
 
     PROPERTIES stringQuantitySkuStockTransferTable(s,st,t) COLUMNS (st) HEADER name (st) ON CHANGE EXEC changeQuantitySkuStockTransferTable(s,st,t) BACKGROUND backgroundSkuStockTransferTable(s,st,t)
     PROPERTIES READONLY currentBalanceSku(s), quantitySkuTransferTable(s,t) BACKGROUND backgroundSkuTransferTable(s,t)
+    PROPERTIES READONLY stringTotalQuantitySkuStockTransferTable(s,st,t) COLUMNS (st) HEADER name (st) BACKGROUND backgroundOrdersSkuStockTransferTable(s,st,t)
     FILTERS    isParentSkuGroupSku(sk, s),
                inTransferTableStock(t,st)
 
@@ -199,11 +212,13 @@ FORM transferTable 'Трансфер'
         FILTER 'Ненулевые остатки' 'F11' currentBalanceSkuTransferTable(s,t) DEFAULT
         FILTER 'С продажей' 'F10' quantitySoldSkuTransferTable(s,t)
         FILTER 'В трансфере' 'F9' inSkuTransferTable(s,t)
+        FILTER 'Отличающиеся' 'F8' notEqualSkuTransferTable(s,t)
     ORDER BY inputName
 
     OBJECTS o = innerOrder
     PROPERTIES (o) READONLY numberObject, seriesObject, dateInnerOrder, timeInnerOrder,
         nameStockInnerOrder, nameDestinationStockInnerOrder, countInnerOrderDetailInnerOrder, quantityInnerOrderDetailInnerOrder
+    PROPERTIES (o) EDITSESSIONFORM
 
     PROPERTIES (o) delete
 
@@ -243,15 +258,11 @@ DESIGN transferTable FROM DEFAULT {
                         title = 'Внутренний заказ';
                         childConstraints = TO THE RIGHT;
                         ADD PROPERTY (createInnerOrderTransferTable);
+                        ADD PROPERTY (deleteInnerOrderTransferTable);
                     }
 
                 }
             }
-//            NEW columnHeaderSum {
-//                ADD t.documentSumGroup {
-//                    childConstraints = TO THE BOTTOM;
-//                }
-//            }
         }
         REMOVE st.box;
         NEW row {
