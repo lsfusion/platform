@@ -260,8 +260,8 @@ classInstancesAndParents returns [List<String> names, List<String> captions, Lis
 }
 	:	(
 			'{'
-				firstInstData=simpleNameWithCaption { $names.add($firstInstData.name); $captions.add($firstInstData.caption); }
-				(',' nextInstData=simpleNameWithCaption { $names.add($nextInstData.name); $captions.add($nextInstData.caption); })*
+				(firstInstData=simpleNameWithCaption { $names.add($firstInstData.name); $captions.add($firstInstData.caption); }
+				(',' nextInstData=simpleNameWithCaption { $names.add($nextInstData.name); $captions.add($nextInstData.caption); })*)?
 			'}'
 			(clist=classParentsList ';' { $parents = $clist.list; })? 	
 		|

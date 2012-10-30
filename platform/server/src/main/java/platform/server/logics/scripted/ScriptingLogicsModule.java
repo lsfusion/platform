@@ -1902,8 +1902,6 @@ public class ScriptingLogicsModule extends LogicsModule {
             errLog.emitAbstractStaticClassError(parser);
         } else if (!isStatic && instNames.size() > 0) {
             errLog.emitNonStaticHasInstancesError(parser, className);
-        } else if (isStatic && instNames.size() == 0) {
-            errLog.emitStaticHasNoInstancesError(parser, className);
         } else if (isStatic) {
             Set<String> names = new HashSet<String>();
             for (String name : instNames) {
