@@ -1,7 +1,10 @@
 package platform.fdk.actions;
 
+import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.sql.DataAdapter;
+import platform.server.logics.DataObject;
+import platform.server.logics.LogicsModule;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.scripted.ScriptingActionProperty;
@@ -10,6 +13,8 @@ import platform.server.logics.scripted.ScriptingLogicsModule;
 import platform.server.session.DataSession;
 
 import java.io.File;
+import java.nio.charset.Charset;
+import java.security.Timestamp;
 import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -18,12 +23,10 @@ import java.util.*;
 
 public class BackupActionProperty extends ScriptingActionProperty {
 
-    private Integer firstDays;
-    private Integer base;
     private String dumpDir;
-    DateFormat dateFormat;
-    Date date;
-    String binPath;
+    private DateFormat dateFormat;
+    private Date date;
+    private String binPath;
 
     public BackupActionProperty(ScriptingLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
         super(LM, new ValueClass[]{});
@@ -34,23 +37,22 @@ public class BackupActionProperty extends ScriptingActionProperty {
 
             DataSession session = createSession();
             DataAdapter adapter = session.sql.adapter;
-            firstDays = (Integer) LM.findLCPByCompoundName("firstDaysBackupTask").read(session);
-            base = (Integer) LM.findLCPByCompoundName("baseBackupTask").read(session);
             dumpDir = (String) LM.findLCPByCompoundName("dumpDirBackupTask").read(session);
+            if(dumpDir!=null)
+                dumpDir = dumpDir.trim();
+            binPath = (String) LM.findLCPByCompoundName("binPathBackupTask").read(session);
+            if(binPath!=null)
+                binPath = binPath.trim();
 
             Calendar calendar = Calendar.getInstance();
 
             date = calendar.getTime();
-            dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+            dateFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
 
-            Date date = new Date();
+            //date = new Date();
             String dateTime = dateFormat.format(date);
             File f = new File(dumpDir);
             f.mkdir();
-            String[] children = f.list();
-            ArrayList<String> fileList = new ArrayList<String>(Arrays.asList(children));
-            ArrayList<String> dateList = new ArrayList<String>();
-            fileList.add(dateTime);
 
             String path = "\"" + ((binPath == null) ? "" : binPath) + "pg_dump.exe" + "\"";
             String server = adapter.server;
@@ -64,25 +66,24 @@ public class BackupActionProperty extends ScriptingActionProperty {
 
             String execute = "cmd SET PGPASSWORD=" + adapter.password + " /c start \"\" /B " + path + " --host " + host + " --port " + port + " --username " +
                     adapter.userID + " --format tar --blobs --verbose --file \"" + dumpDir + dateTime + "\" " +
-                    adapter.dataBase + " 2>> \"" + dumpDir + "log.txt\"";
+                    adapter.dataBase + " 2>> \"" + dumpDir + dateTime + "log.txt\"";
             Runtime rt = Runtime.getRuntime();
             Process p = rt.exec(execute);
             int exitVal = p.waitFor();
-            Collections.sort(fileList);
 
-            for (String s : fileList) {
-                if (getRank(s) != -1) {
-                    dateList.add(s);
-                }
-            }
+            DataObject backupObject = session.addObject((ConcreteCustomClass) LM.findClassByCompoundName("backup"));
+            LM.findLCPByCompoundName("dateBackup").change(new java.sql.Date(date.getTime()), session, backupObject);
+            LM.findLCPByCompoundName("timeBackup").change(new java.sql.Time(date.getTime()), session, backupObject);
+            LM.findLCPByCompoundName("fileBackup").change(dumpDir + dateTime, session, backupObject);
 
-            String prev = "";
-            for (String s : dateList) {
-                if (getRank(s) == getRank(prev)) {
-                    deleteFile(dumpDir + s);
-                }
-                prev = s;
+            String log = "";
+            Scanner scanner = new Scanner(new File(dumpDir + dateTime + "log.txt"), Charset.defaultCharset().name());
+            while (scanner.hasNext()) {
+                log +=scanner.nextLine() + "\r\n";
             }
+            LM.findLCPByCompoundName("logBackup").change(log, session, backupObject);
+            session.apply(LM.getBL());
+            
         } catch (SQLException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         } catch (ScriptingErrorLog.SemanticErrorException e) {
@@ -92,33 +93,4 @@ public class BackupActionProperty extends ScriptingActionProperty {
         }
 
     }
-
-    private int getRank(String s) {
-        Date oldDate = new Date();
-        try {
-            oldDate = dateFormat.parse(s);
-        } catch (ParseException e) {
-            return -1;
-        }
-        int dayDiff = Math.round((date.getTime() - oldDate.getTime()) / 86400000);
-        if (dayDiff < firstDays) {
-            return dayDiff;
-        }
-        dayDiff -= firstDays;
-        int k = 1;
-        while (true) {
-            if (dayDiff < Math.pow(base, k)) {
-                return firstDays + k;
-            }
-            dayDiff -= (int) Math.pow(base, k);
-            k++;
-        }
-    }
-
-    private void deleteFile(String s) {
-        File f = new File(s);
-        f.delete();
-    }
-
-
 }

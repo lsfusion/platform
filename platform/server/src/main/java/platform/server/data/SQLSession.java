@@ -59,7 +59,7 @@ public class SQLSession extends MutableObject {
     private final int isolationLevel;
     public SQLSession(DataAdapter adapter, int isolationLevel) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
         syntax = adapter;
-        adapter = adapter;
+        this.adapter = adapter;
         connectionPool = adapter;
         this.isolationLevel = isolationLevel;
     }
