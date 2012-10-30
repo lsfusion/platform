@@ -29,6 +29,7 @@ public class SQLSession extends MutableObject {
     private final static Logger logger = Logger.getLogger(SQLSession.class);
 
     public SQLSyntax syntax;
+    public DataAdapter adapter;
 
     private ConnectionPool connectionPool;
 
@@ -58,6 +59,7 @@ public class SQLSession extends MutableObject {
     private final int isolationLevel;
     public SQLSession(DataAdapter adapter, int isolationLevel) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
         syntax = adapter;
+        adapter = adapter;
         connectionPool = adapter;
         this.isolationLevel = isolationLevel;
     }

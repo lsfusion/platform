@@ -22,7 +22,7 @@ import platform.server.logics.NullValue;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.PropertyInterface;
-import platform.server.logics.scheduler.FlagSemaphoreTask;
+import tmc.integration.scheduler.FlagSemaphoreTask;
 import platform.server.session.*;
 import tmc.VEDBusinessLogics;
 

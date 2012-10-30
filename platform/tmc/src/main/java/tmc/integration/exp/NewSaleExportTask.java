@@ -13,7 +13,7 @@ import java.util.HashMap;
 
 public class NewSaleExportTask extends AbstractSaleExportTask {
 
-    protected NewSaleExportTask(VEDBusinessLogics BL, String path, Integer store) {
+    public NewSaleExportTask(VEDBusinessLogics BL, String path, Integer store) {
         super(BL, path, store);
     }
 

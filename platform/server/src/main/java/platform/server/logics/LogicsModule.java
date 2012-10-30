@@ -150,6 +150,10 @@ public abstract class LogicsModule {
         return (LCP<?>) getLPByName(name);
     }
 
+    public LAP<?> getLAPByName(String name) {
+        return (LAP<?>) getLPByName(name);
+    }
+
     protected void addModuleLP(LP<?, ?> lp) {
         assert !moduleProperties.containsKey(lp.property.getSID());
         moduleProperties.put(lp.property.getSID(), lp);

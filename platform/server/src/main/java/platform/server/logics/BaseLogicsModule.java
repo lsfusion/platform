@@ -83,6 +83,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public ConcreteCustomClass abstractGroup;
     public ConcreteCustomClass property;
     public ConcreteCustomClass notification;
+    public ConcreteCustomClass scheduledTask;
+    public ConcreteCustomClass scheduledTaskLog;
     public AbstractCustomClass exception;
     public ConcreteCustomClass clientException;
     public ConcreteCustomClass serverException;
@@ -401,6 +403,19 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP textNotification;
     public LCP subjectNotification;
     public LCP inNotificationProperty;
+    public LCP nameScheduledTask;
+    public LCP runAtStartScheduledTask;
+    public LCP startDateScheduledTask;
+    public LCP periodScheduledTask;
+    public LCP activeScheduledTask;
+    public LCP inScheduledTaskProperty;
+    public LCP activeScheduledTaskProperty;
+    public LCP orderScheduledTaskProperty;
+    public LCP propertyScheduledTaskLog;
+    public LCP resultScheduledTaskLog;
+    public LCP dateStartScheduledTaskLog;
+    public LCP dateFinishScheduledTaskLog;
+    public LCP scheduledTaskScheduledTaskLog;
     public LCP permitViewUserRoleProperty;
     public LCP permitViewUserProperty;
     public LCP forbidViewUserRoleProperty;
@@ -614,6 +629,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         abstractGroup = addConcreteClass("abstractGroup", getString("logics.property.group"), baseClass);
         property = addConcreteClass("property", getString("logics.property"), baseClass);
         notification = addConcreteClass("notification", getString("logics.notification"), baseClass);
+        scheduledTask = addConcreteClass("scheduledTask", getString("logics.scheduled.task"), baseClass);
+        scheduledTaskLog = addConcreteClass("scheduledTaskLog", getString("logics.scheduled.task.log"), baseClass);
         exception = addAbstractClass("exception", getString("logics.exception"), baseClass);
         clientException = addConcreteClass("clientException", getString("logics.exception.client"), exception);
         serverException = addConcreteClass("serverException", getString("logics.exception.server"), exception);
@@ -679,6 +696,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         addTable("propertyDraw", propertyDraw);
         addTable("exception", exception);
         addTable("notification", notification);
+        addTable("scheduledTask", scheduledTask);
+        addTable("scheduledTaskLog", scheduledTaskLog);
         addTable("launch", launch);
         addTable("transaction", transaction);
         addTable("named", baseClass.named);
@@ -700,6 +719,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         addTable("userRoleNavigatorElement", userRole, navigatorElement);
         addTable("userRoleProperty", userRole, property);
         addTable("notificationProperty", notification, property);
+        addTable("scheduledTaskProperty", scheduledTask, property);
+        addTable("scheduledTaskScheduledTaskLog", scheduledTask, scheduledTaskLog);
         addTable("propertyDrawCustomUser", propertyDraw, customUser);
         addTable("formPropertyDraw", form, propertyDraw);
 
@@ -1099,6 +1120,21 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         subjectNotification = addDProp(baseGroup, "subjectNotification", getString("logics.notification.topic"), StringClass.get(100), notification);
         inNotificationProperty = addDProp(baseGroup, "inNotificationProperty", getString("logics.notification.enable"), LogicalClass.instance, notification, baseLM.property);
 
+        nameScheduledTask = addDProp(baseGroup, "nameScheduledTask", getString("logics.scheduled.task.name"), StringClass.get(100), scheduledTask);
+        runAtStartScheduledTask = addDProp(baseGroup, "runAtStartScheduledTask", getString("logics.scheduled.task.run.at.start"), LogicalClass.instance, scheduledTask);
+        startDateScheduledTask = addDProp(baseGroup, "startDateScheduledTask", getString("logics.scheduled.task.start.date"), DateTimeClass.instance, scheduledTask);
+        periodScheduledTask = addDProp(baseGroup, "periodScheduledTask", getString("logics.scheduled.task.period"), IntegerClass.instance, scheduledTask);
+        activeScheduledTask = addDProp(baseGroup, "activeScheduledTask", getString("logics.scheduled.task.active"), LogicalClass.instance, scheduledTask);
+        inScheduledTaskProperty = addDProp(baseGroup, "inScheduledTaskProperty", getString("logics.scheduled.task.enable"), LogicalClass.instance, scheduledTask, baseLM.property);
+        activeScheduledTaskProperty = addDProp(baseGroup, "activeScheduledTaskProperty", getString("logics.scheduled.task.active"), LogicalClass.instance, scheduledTask, baseLM.property);
+        orderScheduledTaskProperty = addDProp(baseGroup, "orderScheduledTaskProperty", getString("logics.scheduled.task.order"), IntegerClass.instance, scheduledTask, baseLM.property);
+
+        resultScheduledTaskLog = addDProp(baseGroup, "resultScheduledTaskLog", getString("logics.scheduled.task.result"), StringClass.get(200), scheduledTaskLog);
+        propertyScheduledTaskLog = addDProp(baseGroup, "propertyScheduledTaskLog", getString("logics.scheduled.task.property"), StringClass.get(200), scheduledTaskLog);
+        dateStartScheduledTaskLog = addDProp(baseGroup, "dateStartScheduledTaskLog", getString("logics.scheduled.task.date.start"), DateTimeClass.instance, scheduledTaskLog);
+        dateFinishScheduledTaskLog = addDProp(baseGroup, "dateFinishScheduledTaskLog", getString("logics.scheduled.task.date.finish"), DateTimeClass.instance, scheduledTaskLog);
+        scheduledTaskScheduledTaskLog = addDProp(baseGroup, "scheduledTaskScheduledTaskLog", getString("logics.scheduled.task"), scheduledTask, scheduledTaskLog);
+        
         permitViewUserRoleProperty = addDProp(baseGroup, "permitViewUserRoleProperty", getString("logics.policy.permit.property.view"), LogicalClass.instance, userRole, property);
         permitViewUserProperty = addJProp(baseGroup, "permitViewUserProperty", getString("logics.policy.permit.property.view"), permitViewUserRoleProperty, userMainRole, 1, 2);
         forbidViewUserRoleProperty = addDProp(baseGroup, "forbidViewUserRoleProperty", getString("logics.policy.forbid.property.view"), LogicalClass.instance, userRole, property);
@@ -1546,6 +1582,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         addFormEntity(new PhysicalModelFormEntity(configElement, "physicalModelForm"));
         addFormEntity(new FormsFormEntity(configElement, "formsForm"));
         addFormEntity(new NotificationFormEntity(configElement, "notification"));
+        addFormEntity(new ScheduledTaskFormEntity(configElement, "scheduledTask"));
 
         eventsElement = addNavigatorElement(adminElement, "eventsElement", getString("logics.administration.events"));
         addFormEntity(new LaunchesFormEntity(eventsElement, "launchesForm"));
@@ -2173,6 +2210,59 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             specContainer.type = ContainerType.TABBED_PANE;
 
             addDefaultOrder(getPropertyDraw(SIDProperty, objProperty), true);
+            return design;
+        }
+    }
+
+    public class ScheduledTaskFormEntity extends FormEntity {
+
+        private ObjectEntity objScheduledTask;
+        private ObjectEntity objProperty;
+        private ObjectEntity objScheduledTaskLog;
+
+        public ScheduledTaskFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, getString("logics.scheduled.task.tasks"));
+
+            objScheduledTask = addSingleGroupObject(scheduledTask, getString("logics.scheduled.task"));
+            objProperty = addSingleGroupObject(property, getString("logics.property.properties"));
+            objScheduledTaskLog = addSingleGroupObject(scheduledTaskLog, getString("logics.scheduled.task.log"));
+
+            addPropertyDraw(objScheduledTask, objProperty, inScheduledTaskProperty, activeScheduledTaskProperty, orderScheduledTaskProperty);
+            addPropertyDraw(objScheduledTask, activeScheduledTask, nameScheduledTask, startDateScheduledTask, periodScheduledTask, runAtStartScheduledTask);
+            addObjectActions(this, objScheduledTask);
+            addPropertyDraw(objProperty, captionProperty, SIDProperty, classProperty, returnProperty);
+            addPropertyDraw(objScheduledTaskLog, propertyScheduledTaskLog, resultScheduledTaskLog, dateStartScheduledTaskLog, dateFinishScheduledTaskLog);
+            setEditType(captionProperty, PropertyEditType.READONLY);
+            setEditType(SIDProperty, PropertyEditType.READONLY);
+            setEditType(objScheduledTaskLog, PropertyEditType.READONLY);
+
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(scheduledTaskScheduledTaskLog, objScheduledTaskLog), Compare.EQUALS, objScheduledTask));
+            RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
+            filterGroup.addFilter(
+                    new RegularFilterEntity(genID(),
+                            new NotNullFilterEntity(addPropertyObject(inScheduledTaskProperty, objScheduledTask, objProperty)),
+                            getString("logics.only.checked"),
+                            KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)
+                    ), true);
+            addRegularFilterGroup(filterGroup);
+        }
+
+        @Override
+        public FormView createDefaultRichDesign() {
+            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
+
+            //ContainerView logContainer = design.createContainer(getString("logics.scheduled.task.log"));
+            //textContainer.constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
+            //textContainer.add(design.get(getPropertyDraw(textNotification, objNotification)));
+            //textContainer.constraints.fillHorizontal = 1.0;
+            //textContainer.constraints.fillVertical = 1.0;
+
+            ContainerView specContainer = design.createContainer();
+            design.getMainContainer().addAfter(specContainer, design.getGroupObjectContainer(objScheduledTask.groupTo));
+            specContainer.add(design.getGroupObjectContainer(objProperty.groupTo));
+            specContainer.add(design.getGroupObjectContainer(objScheduledTaskLog.groupTo));
+            specContainer.type = ContainerType.TABBED_PANE;
+
             return design;
         }
     }

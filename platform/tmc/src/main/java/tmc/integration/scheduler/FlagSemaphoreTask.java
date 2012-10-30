@@ -1,4 +1,4 @@
-package platform.server.logics.scheduler;
+package tmc.integration.scheduler;
 
 import platform.server.logics.ServerResourceBundle;
 

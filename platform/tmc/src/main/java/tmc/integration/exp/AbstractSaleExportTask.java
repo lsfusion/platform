@@ -13,7 +13,7 @@ import platform.server.form.instance.*;
 import platform.server.form.instance.filter.NotNullFilterInstance;
 import platform.server.form.instance.filter.CompareFilterInstance;
 import platform.server.logics.DataObject;
-import platform.server.logics.scheduler.FlagSemaphoreTask;
+import tmc.integration.scheduler.FlagSemaphoreTask;
 import platform.server.session.DataSession;
 import platform.server.data.type.ObjectType;
 import platform.interop.Compare;

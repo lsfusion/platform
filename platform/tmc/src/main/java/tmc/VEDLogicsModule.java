@@ -3,6 +3,7 @@ package tmc;
 import jxl.Sheet;
 import jxl.Workbook;
 import org.apache.log4j.Logger;
+import org.apache.poi.hssf.util.HSSFColor;
 import platform.base.BaseUtils;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
@@ -43,10 +44,10 @@ import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.actions.CustomReadValueActionProperty;
 import platform.server.logics.property.actions.UserActionProperty;
 import platform.server.logics.property.group.AbstractGroup;
+import platform.server.session.DataSession;
 import platform.server.session.PropertyChange;
 import tmc.integration.exp.AbstractSaleExportTask;
 import tmc.integration.exp.CashRegController;
-import tmc.integration.exp.SaleExportTask;
 import tmc.integration.imp.CustomerCheckRetailImportActionProperty;
 
 import javax.swing.*;
@@ -167,6 +168,14 @@ public class VEDLogicsModule extends LogicsModule {
     private LCP assortmentDateTo;
     private LCP articleToDocument;
     private LCP contractOrder;
+
+    private LCP pathSaleExportTask;
+    private LCP storeSaleExportTask;
+
+    private LCP pathPriceImportTask;
+    private LCP docIDPriceImportTask;
+    private LCP actionIDPriceImportTask;
+    private LCP returnDocIDPriceImportTask;
 
     private LCP obligationIssued;
     private LCP dateIssued;
@@ -904,6 +913,14 @@ public class VEDLogicsModule extends LogicsModule {
         LCP articleActionBirthDay = addDProp(baseGroup, "articleActionBirthDay", "День рожд.", LogicalClass.instance, articleAction);
         LCP articleActionWithCheck = addDProp(baseGroup, "articleActionWithCheck", "Нак. с тек. чеком", LogicalClass.instance, articleAction);
 
+        pathSaleExportTask = addDProp(baseGroup, "pathSaleExportTask", "pathSaleExportTask", StringClass.get(500));
+        storeSaleExportTask = addDProp(baseGroup, "storeSaleExportTask", "storeSaleExportTask", StringClass.get(500));
+
+        pathPriceImportTask = addDProp(baseGroup, "pathPriceImportTask", "pathPriceImportTask", StringClass.get(500));
+        docIDPriceImportTask = addDProp(baseGroup, "docIDPriceImportTask", "docIDPriceImportTask", StringClass.get(500));
+        actionIDPriceImportTask = addDProp(baseGroup, "actionIDPriceImportTask", "actionIDPriceImportTask", StringClass.get(500));
+        returnDocIDPriceImportTask = addDProp(baseGroup, "returnDocIDPriceImportTask", "returnDocIDPriceImportTask", StringClass.get(500));
+        
         // продажа облигаций
         //**************************************************************************************************************
         // новые свойства для подарочных сертификатов
@@ -4216,7 +4233,7 @@ public class VEDLogicsModule extends LogicsModule {
         public void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException {
             Integer shopID = (Integer) context.getKeyObject(shopInterface);
             try {
-                new AbstractSaleExportTask(VEDBL, ((SaleExportTask) VEDBL.getScheduler().getTask("saleExport")).getPath(shopID), shopID) {
+                new AbstractSaleExportTask(VEDBL, saleExportGetPath(shopID)/*(SaleExportTask) VEDBL.getScheduler().getTask("saleExport")).getPath(shopID)*/, shopID) {
                     protected String getDbfName() {
                         return "datadat.dbf";
                     }
@@ -4239,6 +4256,24 @@ public class VEDLogicsModule extends LogicsModule {
         }
     }
 
+    public String saleExportGetPath(Integer storePath ) {
+        try{
+        DataSession session = VEDBL.createSession();
+        String path = (String) pathSaleExportTask.read(session);
+        String store = (String) storeSaleExportTask.read(session);
+        String[] pathList = path != null ? path.split(",") : null;
+        String[] storeList = store != null ? store.split(",") : null;
+
+        if(storeList!=null)
+        for(int i=0;i<storeList.length;i++)
+            if(storeList[i].equals(storePath))
+                return pathList[i];
+        } catch (SQLException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+        return null;
+    }
+    
     public abstract class ImportActionProperty extends CustomReadValueActionProperty {
 
         protected ImportActionProperty(String sID, String caption) {

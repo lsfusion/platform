@@ -1,0 +1,7 @@
+MODULE Backup;
+
+REQUIRE System;
+
+firstDays = DATA INTEGER ();
+base = DATA INTEGER ();
+dumpDir = DATA STRING[200] ();

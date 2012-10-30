@@ -6,7 +6,6 @@ import platform.server.auth.SecurityPolicy;
 import platform.server.data.sql.DataAdapter;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
-import platform.server.logics.scheduler.Scheduler;
 import platform.server.session.DataSession;
 import tmc.integration.PanelExternalScreen;
 import tmc.integration.PanelExternalScreenParameters;
@@ -35,7 +34,13 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         super.createModules();
         VEDLM = addModule(new VEDLogicsModule(LM, this, logger));
         VEDLM.setRequiredModules(Arrays.asList("System"));
-        addModuleFromResource("/scripts/VEDScript.lsf");
+        addModulesFromResource(
+                "/scripts/VEDScript.lsf",
+                "/scripts/Country.lsf",
+                "/scripts/Utils.lsf",
+                "/scripts/DefaultData.lsf",
+                "/scripts/I18n.lsf",
+                "/scripts/Currency.lsf");
     }
 
     PanelExternalScreen panelScreen;
@@ -92,10 +97,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         //админ игнорит настройки в базе, ему разрешено всё
         policyManager.userPolicies.put(addUser("admin", "fusion").ID, new ArrayList<SecurityPolicy>(Arrays.asList(permitAllPolicy, allowConfiguratorPolicy)));
-    }
-
-    public Scheduler getScheduler() {
-        return scheduler;
     }
 
     @Override

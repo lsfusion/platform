@@ -48,7 +48,6 @@ import platform.server.logics.property.actions.SystemEvent;
 import platform.server.logics.property.actions.flow.ChangeFlowType;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.property.group.AbstractNode;
-import platform.server.logics.scheduler.Scheduler;
 import platform.server.logics.scripted.ScriptingLogicsModule;
 import platform.server.logics.table.DataTable;
 import platform.server.logics.table.IDTable;
@@ -977,6 +976,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
 
         synchronizeTables();
+        new Scheduler(this).runScheduler();
 
         initBaseAuthentication();
         initAuthentication();
@@ -1774,7 +1774,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         return proceeded;
     }
-    
+
     private static boolean findDependency(Property<?> property, Property<?> with, QuickSet<Property> proceeded, Stack<Link> path) {
         if(property.equals(with))
             return true;
@@ -1814,7 +1814,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         return result;
     }
-    
+
     private void showDependencies() {
         String show = "";
         for(Property property : getProperties())
@@ -2613,6 +2613,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return (LCP) LM.getLP(sID);
     }
 
+    protected LAP getLAP(String sID) {
+        return (LAP) LM.getLP(sID);
+    }
+
     private boolean intersect(LCP[] props) {
         for (int i = 0; i < props.length; i++)
             for (int j = i + 1; j < props.length; j++)
@@ -2680,13 +2684,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             session.packTable(table);
             logger.debug("Done");
         }
-    }
-
-    protected Scheduler scheduler;
-
-    public void setScheduler(Scheduler scheduler) {
-        this.scheduler = scheduler;
-        this.scheduler.start();
     }
 
     protected LAP addRestartActionProp() {
