@@ -290,13 +290,12 @@ public class ReportGenerator {
             }
             if (compositeColumnValues.containsKey(dataId)) {
                 toDelete.add(textField);
-                design.removeField(id);
+                JRField removedField = design.removeField(id);
                 int newFieldsCount = compositeColumnValues.get(dataId).size();
                 List<JRDesignTextField> subFields = makeFieldPartition(textField, newFieldsCount);
 
                 for (int i = 0; i < newFieldsCount; i++) {
                     JRDesignExpression subExpr = new JRDesignExpression();
-                    subExpr.setValueClassName(textField.getExpression().getValueClassName());
                     if (exprText.startsWith("\"")) {  // caption без property
                         subExpr.setText(exprText);
                     } else {
@@ -304,7 +303,8 @@ public class ReportGenerator {
                         subExpr.setText("$F{" + fieldName + "}");
                         JRDesignField designField = new JRDesignField();
                         designField.setName(fieldName);
-                        designField.setValueClassName(subExpr.getValueClassName());
+                        designField.setValueClassName(removedField.getValueClassName());
+
                         try {
                             design.addField(designField);
                         } catch (JRException e) {
