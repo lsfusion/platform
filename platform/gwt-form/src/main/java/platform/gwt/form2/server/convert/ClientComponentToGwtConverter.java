@@ -322,6 +322,8 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
             form.defaultOrders.put((GPropertyDraw) convertOrCast(property), clientForm.defaultOrders.get(property));
         }
 
+        form.allowScrollSplits = clientForm.gwtAllowScrollSplits;
+
         return form;
     }
 }

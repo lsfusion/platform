@@ -14,7 +14,7 @@ public class GSplitPane {
 
     private String currentFirstSize;
 
-    public GSplitPane(boolean vertical) {
+    public GSplitPane(boolean vertical, boolean allowScrolls) {
         this.vertical = vertical;
         container = vertical ? new VerticalPanel() : new HorizontalPanel();
         splitter = vertical ? new VSplitter() : new HSplitter();
@@ -28,8 +28,10 @@ public class GSplitPane {
         secondWidget.setHeight("100%");
 
 
-        firstWidget.setStyleName(vertical ? "vSplitPanelContents" : "hSplitPanelContents");
-        secondWidget.setStyleName(vertical ? "vSplitPanelContents" : "hSplitPanelContents");
+        if (allowScrolls) {
+            firstWidget.setStyleName(vertical ? "vSplitPanelContents" : "hSplitPanelContents");
+            secondWidget.setStyleName(vertical ? "vSplitPanelContents" : "hSplitPanelContents");
+        }
 
         if (vertical) {
             container.setCellWidth(splitter, "100%");

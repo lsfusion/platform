@@ -9,10 +9,10 @@ public class GFormSplitPane extends GAbstractFormContainer {
     private GSplitPane splitPane;
     private boolean initialSizeSet = false;
 
-    public GFormSplitPane(GContainer key) {
+    public GFormSplitPane(GContainer key, boolean allowScrolls) {
         this.key = key;
 
-        splitPane = new GSplitPane(key.type == GContainerType.VERTICAL_SPLIT_PANEL);
+        splitPane = new GSplitPane(key.type == GContainerType.VERTICAL_SPLIT_PANEL, allowScrolls);
     }
 
     @Override

@@ -22,12 +22,15 @@ public class GGridHeaderCell extends TextCell {
     private GGridPropertyTable table;
 
     interface Template extends SafeHtmlTemplates {
-        @Template("<div style=\"float: left; height: 18px;\">" +
-                      "<img  src=\"{1}\"/>" +
-                  "</div>" +
-                  "{0}"
+        @Template("<div title=\"{2}\">" +
+                    "<img style=\"float:left; height:15px; width: 15px;\" src=\"{1}\"/>" +
+                    "<span style=\"white-space:normal;\">{0}</span>" +
+                  "</div>"
         )
-        SafeHtml arrow(SafeHtml caption, SafeUri url);
+        SafeHtml arrow(SafeHtml caption, SafeUri url, String title);
+
+        @Template("<div style=\"white-space:normal;\" title=\"{1}\">{0}</div>")
+        SafeHtml textWithTooltip(SafeHtml caption, String title);
     }
 
     private static Template template;
@@ -65,9 +68,9 @@ public class GGridHeaderCell extends TextCell {
     public void render(Context context, SafeHtml value, SafeHtmlBuilder sb) {
         Boolean sortDir = table.getSortDirection(header);
         if (sortDir != null) {
-            sb.append(template.arrow(value, UriUtils.fromString(GWT.getModuleBaseURL() + "images/" + (sortDir ? "arrowup.png" : "arrowdown.png"))));
+            sb.append(template.arrow(value, UriUtils.fromString(GWT.getModuleBaseURL() + "images/" + (sortDir ? "arrowup.png" : "arrowdown.png")), value.asString()));
         } else {
-            super.render(context, value, sb);
+            sb.append(template.textWithTooltip(value, value.asString()));
         }
     }
 }

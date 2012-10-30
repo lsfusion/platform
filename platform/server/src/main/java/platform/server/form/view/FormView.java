@@ -70,6 +70,8 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
     protected PropertyDrawView okButton;
     protected PropertyDrawView closeButton;
 
+    public boolean gwtAllowScrollSplits;
+
     protected transient Map<TreeGroupEntity, TreeGroupView> mtreeGroups = new HashMap<TreeGroupEntity, TreeGroupView>();
     public TreeGroupView get(TreeGroupEntity treeGroup) { return mtreeGroups.get(treeGroup); }
 
@@ -855,6 +857,7 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
         pool.writeString(outStream, caption);
         pool.writeInt(outStream, overridePageWidth);
         pool.writeObject(outStream, blockedScreen);
+        outStream.writeBoolean(gwtAllowScrollSplits);
     }
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
@@ -873,6 +876,7 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
         keyStroke = pool.readObject(inStream);
         caption = pool.readString(inStream);
         overridePageWidth = pool.readInt(inStream);
+        gwtAllowScrollSplits = inStream.readBoolean();
 
         entity = pool.context.entity;
 

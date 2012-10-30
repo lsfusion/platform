@@ -56,9 +56,6 @@ public class GTreeNavigatorView extends GNavigatorView {
                 addNavigatorElement(node, child, newElements);
             }
         }
-        if ("userPolicyForm".equals(element.sid) || "storeArticleForm".equals(element.sid)) {
-            openNode(node);
-        }
 
         if (openElements.contains(element)) {
             openNode(node);

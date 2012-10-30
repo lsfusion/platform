@@ -33,7 +33,7 @@ public class GFormLayout extends FlowPanel {
     private void createContainerViews(GFormController formController, GContainer container) {
         GAbstractFormContainer formContainer;
         if (container.type.isSplit()) {
-            formContainer = new GFormSplitPane(container);
+            formContainer = new GFormSplitPane(container, formController.getForm().allowScrollSplits);
         } else if (container.type.isTabbed()) {
             formContainer = new GFormTabbedPane(formController, container);
         } else if (container.toFlow()) {

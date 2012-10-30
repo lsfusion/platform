@@ -17,6 +17,8 @@ public class GForm implements Serializable {
     public ArrayList<GRegularFilterGroup> regularFilterGroups = new ArrayList<GRegularFilterGroup>();
     public LinkedHashMap<GPropertyDraw, Boolean> defaultOrders = new LinkedHashMap<GPropertyDraw, Boolean>();
 
+    public boolean allowScrollSplits;
+
     public GObject getObject(int id) {
         for (GGroupObject groupObject : groupObjects) {
             for (GObject object : groupObject.objects) {

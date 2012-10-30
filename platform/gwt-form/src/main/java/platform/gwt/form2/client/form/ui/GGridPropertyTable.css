@@ -25,14 +25,14 @@
 
 .dataGridHeader {
     border-bottom: 2px solid #6f7277;
-    padding: 3px 15px;
+    border-left: 1px solid #CCCCCC;
+    padding: 2px;
     text-align: left;
     color: #4b4a4a;
     text-shadow: #ddf 1px 1px 0;
     font-size: fontSize;
     overflow: hidden;
     white-space: nowrap;
-    text-overflow: ellipsis;
 }
 
 .dataGridCell {
@@ -70,7 +70,7 @@
 }
 
 .dataGridLastColumnHeader {
-
+    border-right: 1px solid #CCCCCC;
 }
 
 .dataGridSortableHeader {
