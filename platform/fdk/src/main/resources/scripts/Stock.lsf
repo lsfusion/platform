@@ -875,9 +875,10 @@ META defineDocumentDetailDataSum(object)
 END
 
 META deriveDocumentDetailSumCustomPrefix(detail, prefix, currencyProp)
-    prefix###sum###detail (detail)  <- roundCurrency((quantity###detail(detail) * prefix###price###detail(detail)), currencyProp###detail(detail))
+    prefix###sum###detail (detail)  <- roundCurrency(quantity###detail(detail) * prefix###price###detail(detail), currencyProp###detail(detail))
                     WHEN CHANGED(quantity###detail(detail)) OR CHANGED (prefix###price###detail(detail)) OR CHANGED(currencyProp###detail(detail));
 END
+
 META deriveDocumentDetailSumPrefix(object, prefix, currencyProp)
     @deriveDocumentDetailSumCustomPrefix(object##Detail, prefix, currencyProp);
 END
@@ -886,6 +887,17 @@ META deriveDocumentDetailSum(object, currencyProp)
 END
 META deriveDocumentDetailSum(object)
     @deriveDocumentDetailSum(object, currency);
+END
+META deriveDocumentDetailPriceMarkupCustomPrefix(detail, prefix, currencyProp)
+    prefix###price###detail(detail)  <- roundCurrency([X*(Y+100)*(Z+100)/10000](
+    0.0 IF detail IS detail OR price###detail(detail),
+    0.0 IF detail IS detail OR prefix###markup###detail(detail),
+    value###prefix##VAT###detail(detail)), currencyProp###detail(detail))
+                    WHEN CHANGED(price###detail(detail)) OR CHANGED (prefix###markup###detail(detail)) OR CHANGED(currencyProp###detail(detail));
+END
+
+META deriveDocumentDetailPriceMarkupCustomPrefix(detail, prefix)
+    @deriveDocumentDetailPriceMarkupCustomPrefix(detail, prefix, currency);
 END
 //-
 
@@ -923,6 +935,30 @@ META defineDocumentHeaderItemSumCustom (object, detail)
 END
 META defineDocumentHeaderItemSum (object)
     @defineDocumentHeaderItemSumCustom(object, object##Detail);
+END
+
+// ---------------------------------------------- Надбавка -------------------------------------------- //
+
+META defineDocumentDetailMarkupCustomPrefix (detail, prefix, caption)
+    prefix###markup###detail 'Надбавка,%'###caption = DATA NUMERIC[8,3] (detail);
+END
+META defineDocumentAbstractDetailMarkupCustomPrefix (detail, prefix, caption)
+    prefix###markup###detail 'Надбавка,%'###caption = ABSTRACT NUMERIC[8,3] (detail);
+END
+META defineDocumentInterfaceDetailMarkupCustomPrefix (detail, prefix, caption)
+    @defineDocumentAbstractDetailMarkupCustomPrefix(detail, prefix, caption);
+    @defineDocumentDetailMarkupCustomPrefix(user###detail, prefix, caption);
+    prefix###markup###detail (detail) += prefix###markup###user###detail(detail);
+END
+
+META defineDocumentDetailMarkupPrefix (object, prefix, caption)
+    @defineDocumentDetailMarkupCustomPrefix(object##Detail, prefix, caption);
+END
+META defineDocumentAbstractDetailMarkupPrefix (object, prefix, caption)
+    @defineDocumentAbstractDetailMarkupCustomPrefix(object##Detail, prefix, caption);
+END
+META defineDocumentInterfaceDetailMarkupPrefix (object, prefix, caption)
+    @defineDocumentInterfaceDetailMarkupCustomPrefix(object##Detail, prefix, caption);
 END
 
 //--------------------------------------------------Партия для Detail--------------------------------------//
@@ -1068,6 +1104,22 @@ META defineDocumentInterfaceHeaderSum (object)
     @defineDocumentHeaderSum(user###object);
 END
 
+META defineDocumentHeaderSumCustomPrefix (object, detail, prefix, caption)
+    prefix##Sum###detail###object 'Сумма'###caption (object) = GROUP SUM prefix###sum###detail(idetail) BY object###detail(idetail) IN documentSumGroup;
+END
+META defineDocumentInterfaceHeaderSumCustomPrefix (object, detail, prefix, caption)
+    @defineDocumentHeaderSumCustomPrefix(object, detail, prefix, caption);
+    @defineDocumentHeaderSumCustomPrefix(user###object, user###detail, prefix, caption);
+END
+
+META defineDocumentHeaderSumPrefix (object, prefix, caption)
+    @defineDocumentHeaderSumCustomPrefix(object, object##Detail, prefix, caption);
+END
+META defineDocumentInterfaceHeaderSumPrefix (object, prefix, caption)
+    @defineDocumentHeaderSumPrefix(object, prefix, caption);
+    @defineDocumentHeaderSumPrefix(user###object, prefix, caption);
+END
+
 // ------------------------------------------------ Сумма в документе для contact------------------------------------ //
 
 META defineDocumentHeaderSumContractorCustom (object, detail, caption, contact)
@@ -1155,9 +1207,8 @@ META extendFormDocumentSkuStockCustom(object, form, concrete, stockProp)
         PROPERTIES        READONLY nameSku(s), stockName = name(st), idBarcodeSku(s), shortNameUOMSku(s)
 
         FILTERS           isParentSkuGroupSku(sk, s),
-                          st == ts AND sg IS stockGroup AND NOT stock###object(concrete) OR
-                          isParentStockGroupStock(sg, st) AND NOT ts AND NOT stock###object(concrete) OR
-                          st == ts AND sg IS stockGroup AND stock###object(concrete)== st
+                          (st == ts AND sg IS stockGroup OR isParentStockGroupStock(sg, st) AND NOT ts) AND NOT stock###object(concrete) OR
+                          st == stock###object(concrete) AND sg IS stockGroup AND NOT ts
 
         ORDER BY          nameSku, stockName
 

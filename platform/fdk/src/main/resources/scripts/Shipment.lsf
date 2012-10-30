@@ -329,12 +329,12 @@ META defineShipment(skuLedger, sign, contact, contactCaption, partyA, partyB)
     invoiceDetailShipmentDetail(shipmentDetail) += invoiceDetailUserShipmentDetail(shipmentDetail);
 
     CONSTRAINT contact###ShipmentDetail(detail) != contact###InvoiceDetail(invoiceDetailUserShipmentDetail(detail)) OR
-               companyUserShipment(detail) != companyInvoice(invoiceDetailUserShipmentDetail(detail)) OR
+               companyStockShipmentDetail(detail) != companyInvoice(invoiceDetailUserShipmentDetail(detail)) OR
                skuUserShipmentDetail(detail) != skuInvoiceDetail(invoiceDetailUserShipmentDetail(detail))
         CHECKED BY invoiceDetailUserShipmentDetail
             MESSAGE contactCaption###', компания и товар в накладной и поставке должны соответствовать друг другу';
 
-    GROUP invoiceGroup 'Информация о накладной' : baseGroup;
+//    GROUP invoiceGroup 'Информация о накладной' : baseGroup;
 
     descriptionIndexInvoiceDetailShipmentDetail 'Строка накладной' (detail) = descriptionIndexInvoiceDetail(invoiceDetailShipmentDetail(detail));
     descriptionIndexInvoiceDetailUserShipmentDetail 'Строка накладной' (detail) = descriptionIndexInvoiceDetail(invoiceDetailUserShipmentDetail(detail));

@@ -1,0 +1,10 @@
+MODULE PurchasePricing;
+
+REQUIRE Pricing, PurchaseInvoice;
+
+NAMESPACE Purchase;
+
+
+//----------------------------------------------- Акт расценки ---------------------------------------------------//
+
+@definePricing(' (покупка)', supplier, 'Поставщик');

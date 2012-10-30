@@ -1,0 +1,410 @@
+MODULE Pricing;
+
+REQUIRE Invoice;
+
+
+//----------------------------------------------- Расценка ---------------------------------------------------//
+
+META definePricing(sign, contact, contactCaption)
+
+    CLASS ABSTRACT pricing 'Акт расценки'###sign;
+    CLASS ABSTRACT pricingDetail 'Строка акта расценки'###sign;
+
+    CLASS userPricing 'Акт расценки (польз.)'###sign : pricing, historyObject, numeratedDocument;
+    CLASS userPricingDetail 'Строка акта расценки (польз.)'###sign : pricingDetail;
+    CLASS userPricingPosted 'Закрытый акт расценки (польз.)'###sign : userPricing, postedObject;
+
+    @defineDocumentInterface(pricing);
+
+    @defineDocumentInterfaceNumber(pricing);
+
+    @defineDocumentInterfaceDataStock(pricing, stock, 'Склад');
+    @defineDocumentInterfacePosted(pricing);
+
+    @defineDocumentInterfaceDescription(pricing, 'Акт расценки'###sign);
+
+    @defineDocumentInterfaceCurrency(pricing);
+    @deriveDocumentCurrency(userPricing, stock);
+
+    @defineDocumentInterface###contact(pricing);
+
+    @defineDocumentInterfaceDetailSku(pricing, sku);
+
+    @defineDocumentInterfaceDetailQuantity(pricing);
+
+    @defineDocumentInterfaceDetailPricePrefix(pricing, , ' входная');
+    @defineDocumentInterfaceDetailDataSumPrefix (pricing, , ' входная');
+    @deriveDocumentDetailSum(userPricing);
+
+    @defineDocumentInterfaceHeaderQuantity(pricing);
+    @defineDocumentHeaderSkuQuantity(pricing, sku);
+    @defineDocumentHeaderSkuQuantity(userPricing, sku);
+    @defineDocumentInterfaceHeaderSumCustom (pricing, pricingDetail, ' входная');
+
+
+    @defineDocumentInterfaceDetailPricePrefix(pricing, retail, ' выходная');
+    @defineDocumentInterfaceDetailVATPrefix(pricing, retail, countryStock, );
+    @defineDocumentInterfaceDetailMarkupPrefix (pricing, retail, );
+    @defineDocumentInterfaceDetailDataSumPrefix (pricing, retail, ' выходная');
+
+    @deriveDocumentDetailPriceMarkupCustomPrefix(userPricingDetail, retail);
+    @deriveDocumentDetailSumPrefix(userPricing, retail, currency);
+
+    @defineDocumentInterfaceHeaderSumPrefix (pricing, retail, ' выходная');
+    @defineAddDetailDialogSkuStock(userPricing, sku, stock, dialogSku);
+    @defineAddDetailDialogBarcode(userPricing, sku);
+
+// --------------------------- Формы --------------------------------- //
+
+    FORM userPricing 'Акт расценки'###sign
+        OBJECTS p = userPricing FIXED PANEL
+        PROPERTIES (p) objectClassName, nameStockUserPricing, nameNumeratorObject, numberObject, seriesObject, dateUserPricing, timeUserPricing,
+                       name###contact###UserPricing, nameCurrencyUserPricing, noteUserPricing,
+                       countUserPricingDetailUserPricing, quantityUserPricingDetailUserPricing, sumUserPricingDetailUserPricing,
+                       retailSumUserPricingDetailUserPricing
+
+        OBJECTS d = userPricingDetail
+        PROPERTIES (d) indexUserPricingDetail, idBarcodeSkuUserPricingDetail, nameSkuUserPricingDetail, shortNameUOMSkuUserPricingDetail,
+                       quantityUserPricingDetail, priceUserPricingDetail, sumUserPricingDetail,
+                       retailMarkupUserPricingDetail, numberRetailVATUserPricingDetail, valueRetailVATUserPricingDetail,
+                       retailPriceUserPricingDetail, retailSumUserPricingDetail,
+                       nameStockUserPricingDetail, ADDOBJ, delete
+
+        PROPERTIES(p) TODRAW d addDetailDialogSkuStockUserPricingDetailUserPricing,
+                               addDetailInputBarcodeUserPricingDetailUserPricing, deleteUserPricingDetailUserPricing
+        FILTERS userPricingUserPricingDetail(d) == p
+
+        EVENTS
+            ON OK EXEC prePostUserPricing(p)
+
+        EDIT userPricing OBJECT p
+    ;
+
+    DESIGN userPricing FROM DEFAULT{
+        main {
+            preferredSize = (1024, 768);
+
+            NEW header.box BEFORE d.box {
+                childConstraints = TO THE RIGHT;
+
+                NEW headerRow1 {
+                    childConstraints = TO THE BOTTOM;
+
+                    ADD p.documentHeaderGroup {
+                        childConstraints = TO THE RIGHT;
+                        ADD PROPERTY(objectClassName) { preferredCharWidth = 10; }
+                        ADD PROPERTY(nameStockUserPricing);
+                        ADD PROPERTY(nameNumeratorObject);
+                        ADD PROPERTY(numberObject);
+                        ADD PROPERTY(seriesObject);
+                        ADD PROPERTY(dateUserPricing);
+                        ADD PROPERTY(timeUserPricing);
+                    }
+
+                    NEW headerColumn2 {
+                        childConstraints = TO THE RIGHT;
+                        ADD p.documentPrmGroup;
+                    }
+                }
+
+                ADD p.documentSumGroup {
+                    childConstraints = TO THE BOTTOM;
+                }
+            }
+
+            d.panel{
+                childConstraints = TO THE BOTTOM;
+            }
+            PROPERTY(formOkAction) {
+                caption = 'Провести';
+            }
+        }
+    }
+
+    addUserPricing 'Добавить' = ACTION ADDFORM userPricing;
+    editUserPricing 'Редактировать' (userPricing) = ACTION EDITFORM userPricing;
+
+    FORM pricings 'Акты расценки' TITLE 'Акты расценки'###sign
+        OBJECTS p = pricing
+        PROPERTIES (p) READONLY isPostedPricing FORCE GRID, objectClassName, numberPricing, seriesPricing, datePricing, timePricing,
+                                nameStockPricing, name###contact###Pricing, nameCurrencyPricing, notePricing,
+                                countPricingDetailPricing, quantityPricingDetailPricing, sumPricingDetailPricing,
+                                retailSumPricingDetailPricing
+
+        PROPERTIES (p) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
+
+        PROPERTIES ()  addUserPricing TODRAW p
+        PROPERTIES (p) editUserPricing
+        PROPERTIES (p) delete FORCE PANEL DRAWTOTOOLBAR SHOWIF isUserPricing(p)
+
+        OBJECTS d = pricingDetail
+        PROPERTIES (d) indexPricingDetail, idBarcodeSkuPricingDetail, nameSkuPricingDetail, shortNameUOMSkuPricingDetail,
+                       quantityPricingDetail, pricePricingDetail, sumPricingDetail,
+                       retailMarkupPricingDetail, numberRetailVATPricingDetail, valueRetailVATPricingDetail,
+                       retailPricePricingDetail, retailSumPricingDetail, nameStockPricingDetail
+
+        FILTERS pricingPricingDetail(d) == p
+
+        DIALOG pricing OBJECT p
+    ;
+    DESIGN pricings FROM DEFAULT {
+        PROPERTY (delete(p)) {
+            askConfirm = TRUE;
+        }
+
+        NEW documentContainer BEFORE functions.box {
+            type = SPLITV;
+            childConstraints = TO THE BOTTOM;
+
+            ADD p.box;
+
+            NEW documentDetail {
+                type = TABBED;
+
+                ADD d.box {
+                    title = 'Спецификация';
+                }
+                NEW documentHistory {
+                    title = 'История';
+
+                    ADD p.historyGroup;
+                    ADD p.postedGroup;
+                }
+                NEW printTab {
+                    title = 'Печатные формы';
+                    NEW printContainer {
+                        title = 'Печать';
+                        childConstraints = TO THE BOTTOM;
+                        fillVertical = 1.0; // todo : иначе кнопка не всегда показывается, нужно будет пофиксить как-нибудь
+                    }
+                }
+            }
+        }
+    }
+
+
+//--  Связь накладной и поставки
+    invoiceDetailPricingDetail = ABSTRACT invoiceDetail (pricingDetail);
+    invoiceDetailUserPricingDetail = DATA invoiceDetail (userPricingDetail);
+    invoiceDetailPricingDetail(pricingDetail) += invoiceDetailUserPricingDetail(pricingDetail);
+
+    CONSTRAINT contact###PricingDetail(detail) != contact###InvoiceDetail(invoiceDetailUserPricingDetail(detail)) OR
+               companyStockPricingDetail(detail) != companyInvoice(invoiceDetailUserPricingDetail(detail)) OR
+               skuUserPricingDetail(detail) != skuInvoiceDetail(invoiceDetailUserPricingDetail(detail))
+        CHECKED BY invoiceDetailUserPricingDetail
+            MESSAGE contactCaption###', компания и товар в накладной и акте расценки должны соответствовать друг другу';
+
+    descriptionIndexInvoiceDetailPricingDetail 'Строка накладной' (detail) = descriptionIndexInvoiceDetail(invoiceDetailPricingDetail(detail));
+    descriptionIndexInvoiceDetailUserPricingDetail 'Строка накладной' (detail) = descriptionIndexInvoiceDetail(invoiceDetailUserPricingDetail(detail));
+
+    quantityPricingDetailInvoicePricing (invoice, pricing) = GROUP SUM quantityPricingDetail(pricingDetail) BY invoiceInvoiceDetail(invoiceDetailPricingDetail(pricingDetail)), pricingPricingDetail(pricingDetail);
+
+    invoicesPricing 'Накладные' (pricing) = GROUP CONCAT castToString255(descriptionInvoice(invoice)) IF quantityPricingDetailInvoicePricing(invoice, pricing) , ', '
+                                                    BY pricing
+                                                    ORDER invoice IN invoiceGroup MINCHARWIDTH 30 PREFCHARWIDTH 50 PERSISTENT;
+
+    pricingInvoiceDetail 'Кол-во (расценено)' (invoiceDetail) = GROUP SUM quantityPricingDetail(pricingDetail) IF isPostedPricingDetail(pricingDetail)
+                                                                       BY invoiceDetailPricingDetail(pricingDetail) PERSISTENT;
+
+    EXTEND FORM userInvoice PROPERTIES(d) READONLY pricingInvoiceDetail AFTER quantityUserInvoiceDetail;
+    EXTEND FORM invoices PROPERTIES(d) READONLY pricingInvoiceDetail AFTER quantityInvoiceDetail;
+
+    toPricingInvoiceDetail 'Не расценено' (invoiceDetail) = quantityInvoiceDetail (invoiceDetail) (-) pricingInvoiceDetail(invoiceDetail);
+
+    toPricingInvoiceDetailStockInvoice 'Не расценено по складу' (stock, invoice) =
+        GROUP SUM toPricingInvoiceDetail(invoiceDetail) IF toPricingInvoiceDetail(invoiceDetail) > 0
+              BY stockInvoiceDetail(invoiceDetail), invoiceInvoiceDetail(invoiceDetail);
+
+    // Создание расценки на основе инвойса //
+
+    FORM pricingInvoices 'Накладные'###sign
+        OBJECTS s = stock FIXED PANEL
+        PROPERTIES (s) READONLY name
+        OBJECTS c = contact FIXED PANEL
+        PROPERTIES (c) READONLY name
+
+        OBJECTS i = invoice
+        PROPERTIES (i) READONLY isPostedInvoice FORCE GRID, objectClassName, numberInvoice, seriesInvoice, dateInvoice, timeInvoice,
+                                nameStockInvoice, name###contact###Invoice, nameCurrencyInvoice, noteInvoice,
+                                numberContractSku###contact###Invoice, isCommissionInvoice,
+                                countInvoiceDetailInvoice, quantityInvoiceDetailInvoice, sumInvoiceDetailInvoice,
+                                VATSumInvoiceDetailInvoice, invoiceSumInvoiceDetailInvoice, ordersInvoice
+        FILTERS contact###Invoice(i) == c,
+                isPostedInvoice(i)
+        FILTERGROUP invoice
+            FILTER 'Накладные с нерасцененными товарами' 'F10' toPricingInvoiceDetailStockInvoice(s,i) DEFAULT
+            FILTER 'Накладные со склада' 'F9' countInvoiceDetailStockInvoice(s,i)
+
+        OBJECTS d = invoiceDetail
+        PROPERTIES (d) READONLY indexInvoiceDetail, idBarcodeSkuInvoiceDetail, nameSkuInvoiceDetail, shortNameUOMSkuInvoiceDetail,
+                       quantityInvoiceDetail, pricingInvoiceDetail, priceInvoiceDetail, sumInvoiceDetail,
+                       nameStockInvoiceDetail, descriptionOrderInvoiceDetail, toPricingInvoiceDetail
+        FILTERS invoiceInvoiceDetail(d) == i
+        FILTERGROUP invoiceDetail
+            FILTER 'Строки с нерасцененными товарами' 'F10' stockInvoiceDetail(d) == s AND toPricingInvoiceDetail(d) > 0 DEFAULT
+            FILTER 'Строки со склада' 'F9' stockInvoiceDetail(d) == s
+
+    ;
+
+    DESIGN pricingInvoices FROM DEFAULT {
+        main {
+            preferredSize = (1024, 768);
+            NEW documentContainer BEFORE functions.box {
+
+                childConstraints = TO THE BOTTOM;
+
+                NEW headerBox {
+                    childConstraints = TO THE RIGHT;
+                    ADD s.box;
+                    ADD c.box;
+                }
+                ADD i.box;
+                NEW documentDetail {
+                    type = TABBED;
+
+                    ADD d.box {
+                        title = 'Спецификация';
+                    }
+                    NEW printTab {
+                        title = 'Печатные формы';
+                        NEW printContainer {
+                            title = 'Печать';
+                            childConstraints = TO THE BOTTOM;
+                            fillVertical = 1.0;
+                        }
+                    }
+                }
+            }
+            PROPERTY(toPricingInvoiceDetail) { background = #FFFFCC; }
+        }
+    }
+
+    fillInvoiceUserPricing 'Заполнить на основе накладной' =  ACTION (userPricing) {
+        FORM pricingInvoices OBJECTS s = stockUserPricing(userPricing), c = contact###UserPricing(userPricing) MODAL;
+        IF formResult() == formResult.ok THEN {
+            LOCAL saleInvoice = invoice();
+            SET saleInvoice() <- chosenObject('i');
+
+            FOR invoiceInvoiceDetail(invoiceDetail) == saleInvoice() AND
+                stockInvoiceDetail(invoiceDetail) == stockUserPricing(userPricing) AND
+                toPricingInvoiceDetail(invoiceDetail) > 0
+                ADDOBJ d = userPricingDetail DO {
+                    SET userPricingUserPricingDetail(d) <- userPricing;
+                    SET invoiceDetailUserPricingDetail(d) <- invoiceDetail;
+
+                    SET skuUserPricingDetail(d) <- skuInvoiceDetail(invoiceDetail);
+                    SET quantityUserPricingDetail (d) <- toPricingInvoiceDetail(invoiceDetail);
+                    SET priceUserPricingDetail (d) <- priceInvoiceDetail(invoiceDetail);
+            }
+        }
+    } IN invoiceGroup;
+
+    EXTEND FORM userPricing
+        PROPERTIES(p) fillInvoiceUserPricing, invoicesPricing READONLY
+        PROPERTIES(d) descriptionIndexInvoiceDetailUserPricingDetail BEFORE delete(d)
+    ;
+    EXTEND DESIGN userPricing { headerColumn2 { ADD p.invoiceGroup; } }
+
+    EXTEND FORM pricings
+        PROPERTIES(p) READONLY invoicesPricing
+        PROPERTIES(d) READONLY descriptionIndexInvoiceDetailPricingDetail
+    ;
+
+//-- аггр.объект
+
+    @defineDocumentInterfaceDetailPricePrefix(invoice, retail, ' розничная');
+
+    @defineDocumentInterfaceDetailVATPrefix(invoice, retail, countryStock, ' розничный');
+    @defineDocumentInterfaceDetailMarkupPrefix (invoice, retail, );
+    @defineDocumentInterfaceDetailDataSumPrefix (invoice, retail, ' розничная');
+
+    @deriveDocumentDetailPriceMarkupCustomPrefix(userInvoiceDetail, retail);
+    @deriveDocumentDetailSumPrefix(userInvoice, retail, currency);
+
+    @defineDocumentInterfaceHeaderSumPrefix (invoice, retail, ' розничная');
+
+    createPricingInvoice 'Создавать акт расценки' = ABSTRACT BOOLEAN (invoice) IN documentPrmGroup;
+    createPricingUserInvoice 'Создавать акт расценки' = DATA BOOLEAN (userInvoice) IN documentPrmGroup;
+    createPricingInvoice (invoice) += createPricingUserInvoice(invoice);
+
+    EXTEND FORM userInvoice
+        PROPERTIES(i) createPricingUserInvoice, retailSumUserInvoiceDetailUserInvoice
+        PROPERTIES(d) BEFORE delete(d) SHOWIF createPricingInvoice(i)
+                      retailMarkupUserInvoiceDetail, numberRetailVATUserInvoiceDetail, valueRetailVATUserInvoiceDetail,
+                      retailPriceUserInvoiceDetail, retailSumUserInvoiceDetail
+    ;
+    EXTEND FORM invoices
+        PROPERTIES(i) READONLY createPricingInvoice, retailSumInvoiceDetailInvoice BEFORE ordersInvoice(i)
+        PROPERTIES(d) READONLY BEFORE nameStockInvoiceDetail(d) SHOWIF createPricingInvoice(i)
+                      retailMarkupInvoiceDetail, numberRetailVATInvoiceDetail, valueRetailVATInvoiceDetail,
+                      retailPriceInvoiceDetail, retailSumInvoiceDetail
+    ;
+    EXTEND FORM pricingInvoices
+        PROPERTIES(i) READONLY createPricingInvoice, retailSumInvoiceDetailInvoice BEFORE ordersInvoice(i)
+        PROPERTIES(d) READONLY BEFORE nameStockInvoiceDetail(d) SHOWIF createPricingInvoice(i)
+                      retailMarkupInvoiceDetail, numberRetailVATInvoiceDetail, valueRetailVATInvoiceDetail,
+                      retailPriceInvoiceDetail, retailSumInvoiceDetail
+    ;
+
+
+    createPricingInvoiceDetail 'Создавать акт расценки' (invoiceDetail) = createPricingInvoice(invoiceInvoiceDetail(invoiceDetail));
+    createPricingUserInvoiceDetail 'Создавать акт расценки' (userInvoiceDetail) = createPricingUserInvoice(userInvoiceUserInvoiceDetail(userInvoiceDetail));
+
+    CLASS invoicePricing 'Акт расценки на основе инвойса'###sign : pricing;
+    CLASS invoicePricingPosted 'Закрытый акт расценки на основе инвойса'###sign : invoicePricing, postedObject;
+    CLASS invoicePricingDetail 'Строка акта расценки на основе инвойса'###sign : pricingDetail;
+
+    @defineDocumentTables(invoicePricing);
+
+    @defineDocumentAggregation(invoice, invoicePricing, createPricingInvoice);
+    pricingPricingDetail(detail) += invoicePricingInvoicePricingDetail(detail);
+
+    @defineDocumentDetailIndex(invoicePricing);
+
+    datePricing(pricing) += dateInvoicePricing(pricing);
+    timePricing(pricing) += timeInvoicePricing(pricing);
+
+    @defineDocumentAggregationStockPrefix(invoice, invoicePricing, stock, 'Склад', , );
+    stockPricing(pricing) += stockInvoicePricing(pricing);
+    dataStockPricingDetail(pricingDetail) += dataStockInvoiceDetail(invoiceDetailInvoicePricingDetail(pricingDetail));
+
+    @defineDocumentAggregationStockPrefix(invoice, invoicePricing, contact, contactCaption, , );
+    contact###Pricing(pricing) += contact###InvoicePricing(pricing);
+
+    @defineDocumentAggregationPosted(invoice, invoicePricing);
+    isPostedPricing(pricing) += isPostedInvoicePricing(pricing);
+
+    numberInvoicePricing 'Номер документа' (invoicePricing) = numberInvoice(invoiceInvoicePricing(invoicePricing));
+    numberPricing(pricing) += numberInvoicePricing(pricing);
+
+    seriesInvoicePricing 'Серия документа' (invoicePricing) = seriesInvoice(invoiceInvoicePricing(invoicePricing));
+    seriesPricing(pricing) += seriesInvoicePricing(pricing);
+
+    seriesNumberInvoicePricing 'Серия/номер документа' (invoicePricing) = seriesNumberInvoice(invoiceInvoicePricing(invoicePricing));
+
+    noteInvoiceInvoicePricing 'Примечание' (invoicePricing) = noteInvoice(invoiceInvoicePricing(invoicePricing));
+    notePricing(pricing) += noteInvoiceInvoicePricing(pricing);
+
+    currencyInvoicePricing  (invoicePricing) = currencyInvoice(invoiceInvoicePricing(invoicePricing));
+    currencyPricing (pricing) += currencyInvoicePricing(pricing);
+
+    @defineDocumentDescription(invoicePricing, invoicePricingDetail, seriesNumberInvoicePricing, 'Поставка на основе инвойса'###sign);
+    descriptionPricing (pricing) += descriptionInvoicePricing(pricing);
+
+    @defineDocumentAggregationDetailSku(invoice, invoicePricing, sku);
+    skuPricingDetail(pricingDetail) +=  skuInvoicePricingDetail(pricingDetail);
+
+    @defineDocumentAggregationDetailQuantity(invoice, invoicePricing);
+    quantityPricingDetail(pricingDetail) += quantityInvoicePricingDetail(pricingDetail);
+
+    pricePricingDetail(pricingDetail) += priceInvoiceDetail(invoiceDetailInvoicePricingDetail(pricingDetail));
+    sumPricingDetail(pricingDetail) += sumInvoiceDetail(invoiceDetailInvoicePricingDetail(pricingDetail));
+
+    retailPricePricingDetail(pricingDetail) += retailPriceInvoiceDetail(invoiceDetailInvoicePricingDetail(pricingDetail));
+    retailMarkupPricingDetail(pricingDetail) += retailMarkupInvoiceDetail(invoiceDetailInvoicePricingDetail(pricingDetail));
+    retailVATPricingDetail(pricingDetail) += retailVATInvoiceDetail(invoiceDetailInvoicePricingDetail(pricingDetail));
+    retailSumPricingDetail(pricingDetail) += retailSumInvoiceDetail(invoiceDetailInvoicePricingDetail(pricingDetail));
+
+    invoiceDetailPricingDetail(pricingDetail) += invoiceDetailInvoicePricingDetail(pricingDetail);
+
+END

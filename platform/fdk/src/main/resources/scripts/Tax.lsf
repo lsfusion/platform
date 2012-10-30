@@ -259,6 +259,37 @@ META defineDocumentInterfaceDetailVATSum(object)
     @defineDocumentInterfaceDetailVATSum(object, currency);
 END
 
+META defineDocumentDetailVATPrefixCustom(detail, prefix, countryProp, caption)
+    prefix##VAT###detail(detail) = DATA range (detail);
+    number###prefix##VAT###detail 'НДС, номер'###caption (detail) = numberRange(prefix##VAT###detail(detail));
+    value###prefix##VAT###detail 'НДС, %'###caption (detail) = valueRateRangeDate(prefix##VAT###detail(detail), date###detail(detail));
+
+    CONSTRAINT taxRange(prefix##VAT###detail(detail)) != tax.taxVAT OR
+               countryRange(prefix##VAT###detail(detail)) != countryProp###detail(detail)
+               CHECKED BY prefix##VAT###detail
+               MESSAGE 'ошибка: Шкала и страна строки должна соответствовать шкале и строке НДС';
+END
+META defineDocumentAbstractDetailVATPrefixCustom(detail, prefix, countryProp, caption)
+    prefix##VAT###detail(detail) = ABSTRACT range (detail) PERSISTENT;
+    number###prefix##VAT###detail 'НДС, номер'###caption (detail) = numberRange(prefix##VAT###detail(detail));
+    value###prefix##VAT###detail 'НДС, %'###caption (detail) = valueRateRangeDate(prefix##VAT###detail(detail), date###detail(detail));
+END
+META defineDocumentInterfaceDetailVATPrefixCustom(detail, prefix, countryProp, caption)
+    @defineDocumentAbstractDetailVATPrefixCustom(detail, prefix, countryProp, caption);
+    @defineDocumentDetailVATPrefixCustom(user###detail, prefix, countryProp, caption);
+    prefix##VAT###detail(detail) += prefix##VAT###user###detail(detail);
+END
+
+META defineDocumentDetailVATPrefix(object, prefix, countryProp, caption)
+    @defineDocumentDetailVATPrefixCustom(object##Detail, prefix, countryProp, caption);
+END
+META defineDocumentAbstractDetailVATPrefix(object, prefix, countryProp, caption)
+    @defineDocumentAbstractDetailVATPrefixCustom(object##Detail, prefix, countryProp, caption);
+END
+META defineDocumentInterfaceDetailVATPrefix(object, prefix, countryProp, caption)
+    @defineDocumentInterfaceDetailVATPrefixCustom(object##Detail, prefix, countryProp, caption);
+END
+
 //-- Сумма НДС в detail
 META defineDocumentDetailVATDataSumCustom (detail, prefix)
     VATSum###detail 'Сумма НДС' (detail) = DATA NUMERIC[16,2] (detail);
