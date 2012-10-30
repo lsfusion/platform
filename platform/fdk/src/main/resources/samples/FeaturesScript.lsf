@@ -32,14 +32,19 @@ CLASS outcomeDocument 'Расход' : document, emptyClass;
 
 // Static class
 // Syntax:
-// CLASS STATIC name ['caption'] {
-//      instanceName1 ['instanceCaption1']
-//      [, instanceName2 ['instanceCaption2']]
+// CLASS STATIC name ['caption']
+// [{
+//      instanceName1 ['instanceCaption1'],
 //      ...
-//      [, instanceNameN ['instanceCaptionN']]
-// }
+//      instanceNameN ['instanceCaptionN']
+// }]
 // [: nonStaticBaseClass1 [, nonStaticBaseClass2, ..., nonStaticBaseClassN];]
-CLASS STATIC storeSize 'Размер склада'
+
+CLASS STATIC emptyInst;
+
+CLASS STATIC storeSize 'Размер склада' {}
+
+EXTEND CLASS storeSize
 {
     huge 'огромный',
     big 'большой'
@@ -50,9 +55,8 @@ CLASS STATIC storeSize 'Размер склада'
 // EXTEND CLASS className
 // [{
 //      instanceName1 ['instanceCaption1']
-//      [, instanceName2 ['instanceCaption2']]
 //      ...
-//      [, instanceNameN ['instanceCaptionN']]
+//      instanceNameN ['instanceCaptionN']
 // }]
 // [: nonStaticBaseClass1 [, nonStaticBaseClass2, ..., nonStaticBaseClassN];]
 EXTEND CLASS incomeDocument : emptyClass;
@@ -200,7 +204,7 @@ onlyIncomeQuantity(store, article) = ioQuantity(store, article)[1];
 
 // Abstract property
 // Expression syntax:
-// ABSTRACT returnClass ( [paramClass1, ..., paramClassN] )
+// ABSTRACT returnClass ( [paramClass1, ..., paramClassN] ) [EXCLUSIVE]
 testAbstract(named) = ABSTRACT INTEGER (namedClass);
 // overriding abstract property syntax:
 // propertyName(namedParam1, ..., namedParamN) += expression;
