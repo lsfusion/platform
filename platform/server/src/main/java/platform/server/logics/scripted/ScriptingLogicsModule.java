@@ -407,8 +407,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public LP<?, ?> addScriptedAbstractProp(String returnClass, List<String> paramClasses) throws ScriptingErrorLog.SemanticErrorException {
-        scriptLogger.info("addScriptedAbstractProp(" + returnClass + ", " + paramClasses + ");");
+    public LP<?, ?> addScriptedAbstractProp(String returnClass, List<String> paramClasses, boolean isExclusive) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedAbstractProp(" + returnClass + ", " + paramClasses + ", " + isExclusive + ");");
 
         ValueClass value = findClassByCompoundName(returnClass);
         ValueClass[] params = new ValueClass[paramClasses.size()];

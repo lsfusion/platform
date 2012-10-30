@@ -1126,9 +1126,12 @@ dataPropertyDefinition[boolean innerPD] returns [LP property]
 
 
 abstractPropertyDefinition returns [LP property]
+@init {
+	boolean isExclusive = false;
+}
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedAbstractProp($returnClass.sid, $paramClassNames.ids);	
+		$property = self.addScriptedAbstractProp($returnClass.sid, $paramClassNames.ids, isExclusive);	
 	}
 }
 	:	'ABSTRACT'
@@ -1136,6 +1139,7 @@ abstractPropertyDefinition returns [LP property]
 		'('
 			paramClassNames=classIdList
 		')'
+		('EXCLUSIVE' { isExclusive = true; })?
 	;
 
 abstractActionPropertyDefinition returns [LP property]
