@@ -194,6 +194,8 @@ inPromotionDiscountCard 'В акции' (promotion, discountCard) = UNION OVERRI
 minCumulativeSumPromotion 'Накоп. сумма (от)' (promotion) = DATA NUMERIC[14,2] (promotion);
 maxCumulativeSumPromotion 'Накоп. сумма (до)' (promotion) = DATA NUMERIC[14,2] (promotion);
 
+useCurrentReceiptPromotion 'Учитывать текущий чек' (promotion) = DATA BOOLEAN (promotion);
+
 minCumulativeSumPromotion(promotion) => hasDiscountCardPromotion (promotion) RESOLVE FALSE;
 maxCumulativeSumPromotion(promotion) => hasDiscountCardPromotion (promotion) RESOLVE FALSE;
 allDiscountCardPromotion(promotion) => hasDiscountCardPromotion (promotion) RESOLVE FALSE;
@@ -249,7 +251,7 @@ FORM promotion 'Акция'
                        dateFromPromotion, dateToPromotion, timeOfFromPromotion, timeOfToPromotion,
                        minSumBillPromotion, maxSumBillPromotion
     PROPERTIES(sh)                                     hasDiscountCardPromotion
-    PROPERTIES(sh) SHOWIF hasDiscountCardPromotion(sh) minCumulativeSumPromotion, maxCumulativeSumPromotion, allDiscountCardPromotion
+    PROPERTIES(sh) SHOWIF hasDiscountCardPromotion(sh) minCumulativeSumPromotion, maxCumulativeSumPromotion, useCurrentReceiptPromotion, allDiscountCardPromotion
     OBJECTS d=DOW
     PROPERTIES(d)     READONLY name
     PROPERTIES(sh, d)  skipPromotionDOW
@@ -350,6 +352,7 @@ DESIGN promotion FROM DEFAULT {
                 ADD PROPERTY(hasDiscountCardPromotion);
                 ADD PROPERTY(minCumulativeSumPromotion);
                 ADD PROPERTY(maxCumulativeSumPromotion);
+                ADD PROPERTY(useCurrentReceiptPromotion);
                 ADD PROPERTY(allDiscountCardPromotion);
             }
         }
@@ -406,7 +409,9 @@ DESIGN promotion FROM DEFAULT {
 FORM promotions 'Акции'
     OBJECTS sh=promotion
     PROPERTIES(sh)     READONLY name, numberObject, seriesObject, dateFromPromotion, dateToPromotion, storePromotion,
-                                timeOfFromPromotion, timeOfToPromotion, minSumBillPromotion, maxSumBillPromotion, hasDiscountCardPromotion, minCumulativeSumPromotion, maxCumulativeSumPromotion, allDiscountCardPromotion
+                                timeOfFromPromotion, timeOfToPromotion, minSumBillPromotion, maxSumBillPromotion,
+                                hasDiscountCardPromotion, minCumulativeSumPromotion, maxCumulativeSumPromotion,
+                                useCurrentReceiptPromotion, allDiscountCardPromotion
     PROPERTIES(sh)     ADDFORM, EDITFORM, delete
 
     PROPERTIES (sh) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated
@@ -420,7 +425,9 @@ FORM promotionGroup 'Группа акций'
     OBJECTS sh=promotion
     PROPERTIES(sh)     userOrderPromotion
     PROPERTIES(sh)     READONLY name, seriesObject, numberObject, dateFromPromotion, dateToPromotion, storePromotion,
-                                timeOfFromPromotion, timeOfToPromotion, minSumBillPromotion, maxSumBillPromotion, hasDiscountCardPromotion, minCumulativeSumPromotion, maxCumulativeSumPromotion, allDiscountCardPromotion
+                                timeOfFromPromotion, timeOfToPromotion, minSumBillPromotion, maxSumBillPromotion,
+                                hasDiscountCardPromotion, minCumulativeSumPromotion, maxCumulativeSumPromotion,
+                                useCurrentReceiptPromotion, allDiscountCardPromotion
     PROPERTIES(sh)     ADDFORM, EDITFORM, delete
     ORDER BY userOrderPromotion
 
@@ -437,7 +444,9 @@ FORM promotionGroups 'Группы акций'
     OBJECTS sh=promotion
     PROPERTIES(sh)     READONLY orderPromotion
     PROPERTIES(sh)     READONLY name, seriesObject, numberObject, dateFromPromotion, dateToPromotion, storePromotion,
-                                timeOfFromPromotion, timeOfToPromotion, minSumBillPromotion, maxSumBillPromotion, hasDiscountCardPromotion, minCumulativeSumPromotion, maxCumulativeSumPromotion, allDiscountCardPromotion
+                                timeOfFromPromotion, timeOfToPromotion, minSumBillPromotion, maxSumBillPromotion,
+                                hasDiscountCardPromotion, minCumulativeSumPromotion, maxCumulativeSumPromotion,
+                                useCurrentReceiptPromotion, allDiscountCardPromotion
     PROPERTIES(sh)     ADDFORM, EDITFORM, delete
     ORDER BY orderPromotion
 
@@ -449,7 +458,9 @@ EXTEND FORM discountCard
     OBJECTS p=promotion
     PROPERTIES(p, d) inPromotionDiscountCard
     PROPERTIES(p) READONLY name, numberObject, seriesObject, dateFromPromotion, dateToPromotion, storePromotion,
-                           timeOfFromPromotion, timeOfToPromotion, minSumBillPromotion, maxSumBillPromotion, hasDiscountCardPromotion, minCumulativeSumPromotion, maxCumulativeSumPromotion, allDiscountCardPromotion
+                           timeOfFromPromotion, timeOfToPromotion, minSumBillPromotion, maxSumBillPromotion,
+                           hasDiscountCardPromotion, minCumulativeSumPromotion, maxCumulativeSumPromotion,
+                           useCurrentReceiptPromotion, allDiscountCardPromotion
     FILTERS hasDiscountCardPromotion(p)
 ;
 

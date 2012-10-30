@@ -880,6 +880,8 @@ posSumDiscountCard 'Сумма продаж' (discountCard) = GROUP SUM sumRecei
 cumulativeSumDiscountCard 'Накопленная сумма' (discountCard) = initialSumDiscountCard(discountCard) (+) posSumDiscountCard(discountCard) PERSISTENT;
 
 prevCumulativeSumReceipt (receipt) = (0 AND receipt IS receipt) OR [PREV(cumulativeSumDiscountCard(discountCard))](discountCardReceipt(receipt));
+cumulativeSumReceiptPromotion (receipt, promotion) = IF useCurrentReceiptPromotion(promotion) THEN cumulativeSumDiscountCard(discountCardReceipt(receipt))
+                                                                                              ELSE prevCumulativeSumReceipt (receipt);
 
 EXTEND FORM discountCards
     PROPERTIES(d) posSumDiscountCard, cumulativeSumDiscountCard
@@ -899,7 +901,7 @@ inReceiptPromotion (receipt, promotion) = inPromotionStore(promotion, storeRecei
                                           NOT timeReceipt(receipt) < timeOfFromPromotion(promotion) AND NOT timeReceipt(receipt) > timeOfToPromotion(promotion) AND
                                           NOT sumReceiptDetailReceipt(receipt) < minSumBillPromotion(promotion) AND NOT sumReceiptDetailReceipt(receipt) > maxSumBillPromotion(promotion)
                                           AND NOT skipPromotionDOW(promotion, DOWInDate(dateReceipt(receipt)))
-                                          AND NOT prevCumulativeSumReceipt(receipt) < minCumulativeSumPromotion(promotion) AND NOT prevCumulativeSumReceipt(receipt) > maxCumulativeSumPromotion(promotion)
+                                          AND NOT cumulativeSumReceiptPromotion (receipt, promotion) < minCumulativeSumPromotion(promotion) AND NOT cumulativeSumReceiptPromotion (receipt, promotion) > maxCumulativeSumPromotion(promotion)
                                           AND NOT (hasDiscountCardPromotion(promotion) AND NOT inPromotionDiscountCard(promotion, discountCardReceipt(receipt)));
 
 maxSalePriceReceiptSku (receipt, sku) = GROUP MAX priceReceiptSaleDetail(detail) BY receiptReceiptSaleDetail(detail), skuReceiptSaleDetail(detail);
