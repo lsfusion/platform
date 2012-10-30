@@ -214,6 +214,7 @@ CONSTRAINT minSumPromotionCondition(promotionCondition) <= 0.0 MESSAGE 'Сумм
 quantityDiscountPromotionCondition 'Кол-во товаров со скидкой' = DATA NUMERIC[14,3] (promotionCondition) NOT NULL;
 percentPromotionCondition 'Процент скидки'  = DATA NUMERIC[8,3] (promotionCondition);
 resultPricePromotionCondition 'Цена со скидкой' = DATA NUMERIC[14,2] (promotionCondition);
+sumDiscountPromotionCondition 'Сумма скидки' (promotionCondition) = DATA NUMERIC[14,2] (promotionCondition);
 
 // discountSkuGroup
 TABLE promotionConditionDiscountSkuGroup (promotionCondition, discountSkuGroup);
@@ -256,7 +257,7 @@ FORM promotion 'Акция'
 
     OBJECTS sg=promotionCondition
     PROPERTIES(sg)     name, minQuantityPromotionCondition, minSumPromotionCondition, quantityDiscountPromotionCondition, percentPromotionCondition,
-                       resultPricePromotionCondition, ADDOBJ, delete
+                       resultPricePromotionCondition, sumDiscountPromotionCondition, ADDOBJ, delete
 
     FILTERS            promotionPromotionCondition(sg)==sh
 

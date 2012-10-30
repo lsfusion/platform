@@ -906,22 +906,22 @@ maxSalePriceReceiptSku (receipt, sku) = GROUP MAX priceReceiptSaleDetail(detail)
 
 calculatePromotionsReceipt 'Рассчитать акции' = ACTION (receipt) {
 
-    SET quantityReceiptSaleDetailPromotionCondition(detail, condition) IF receiptReceiptSaleDetail(detail) == receipt <- NULL;
-    SET promotionSumReceiptSaleDetailPromotionCondition(detail, condition) IF receiptReceiptSaleDetail(detail) == receipt <- NULL;
-    SET discountSumReceiptSaleDetail(detail) IF receiptReceiptSaleDetail(detail) == receipt <- NULL;
+    SET quantityReceiptSaleDetailPromotionCondition(detail, condition) <- NULL WHERE receiptReceiptSaleDetail(detail) == receipt;
+    SET promotionSumReceiptSaleDetailPromotionCondition(detail, condition) <- NULL WHERE receiptReceiptSaleDetail(detail) == receipt;
+    SET discountSumReceiptSaleDetail(detail) <- NULL WHERE receiptReceiptSaleDetail(detail) == receipt;
 
     LOCAL maxSalePriceSku = NUMERIC[14,2] (sku);
     SET maxSalePriceSku(sku) <- maxSalePriceReceiptSku(receipt, sku);
 
     FOR promotionGroup IS promotionGroup DO {
         LOCAL leftSku = NUMERIC[14,3] (sku);
-        SET leftSku(sku) <- quantityReceiptSaleDetailSkuReceipt (sku, receipt);
+        SET leftSku(sku) <- quantityReceiptSaleDetailSkuReceipt (sku, receipt);   //'Кол-во товара в документе'
 
         LOCAL leftQuantityReceiptSaleDetail = NUMERIC[14,3] (receiptSaleDetail);
-        SET leftQuantityReceiptSaleDetail(detail) <- quantityReceiptSaleDetail(detail) IF receiptReceiptSaleDetail(detail) == receipt;
+        SET leftQuantityReceiptSaleDetail(detail) <- quantityReceiptSaleDetail(detail) WHERE receiptReceiptSaleDetail(detail) == receipt;
 
         LOCAL leftSumReceiptSaleDetail = NUMERIC[16,3] (receiptSaleDetail);
-        SET leftSumReceiptSaleDetail(detail) <- (priceSumReceiptSaleDetail(detail) (-) promotionSumReceiptSaleDetail(detail)) IF receiptReceiptSaleDetail(detail) == receipt;
+        SET leftSumReceiptSaleDetail(detail) <- (priceSumReceiptSaleDetail(detail) (-) promotionSumReceiptSaleDetail(detail)) WHERE receiptReceiptSaleDetail(detail) == receipt;
 
         FOR promotionGroupPromotion(promotion) == promotionGroup AND inReceiptPromotion(receipt, promotion) ORDER orderPromotion(promotion) DO {
             LOCAL quantityPromotionCondition = NUMERIC[14,3] (promotionCondition);
@@ -981,16 +981,19 @@ calculatePromotionsReceipt 'Рассчитать акции' = ACTION (receipt) 
                     WHERE takenReceiptSaleDetailPromotionCondition(detail, condition);
 
                 SET promotionSumReceiptSaleDetailPromotionCondition (detail, condition) <-
-                    IF resultPricePromotionCondition(condition) THEN
-                        takenReceiptSaleDetailPromotionCondition(detail, condition) * (leftSumReceiptSaleDetail(detail) / quantityReceiptSaleDetail(detail) - resultPricePromotionCondition(condition))
+                    IF sumDiscountPromotionCondition(condition) THEN
+                        takenReceiptSaleDetailPromotionCondition(detail, condition) * sumDiscountPromotionCondition(condition)
                     ELSE
-                        takenReceiptSaleDetailPromotionCondition(detail, condition) * (leftSumReceiptSaleDetail(detail) / quantityReceiptSaleDetail(detail) * percentPromotionCondition(condition) / 100)
-                    WHERE takenReceiptSaleDetailPromotionCondition(detail, condition);
+                        IF resultPricePromotionCondition(condition) THEN
+                            takenReceiptSaleDetailPromotionCondition(detail, condition) * (leftSumReceiptSaleDetail(detail) / quantityReceiptSaleDetail(detail) - resultPricePromotionCondition(condition))
+                        ELSE
+                            takenReceiptSaleDetailPromotionCondition(detail, condition) * (leftSumReceiptSaleDetail(detail) / quantityReceiptSaleDetail(detail) * percentPromotionCondition(condition) / 100)
+                        WHERE takenReceiptSaleDetailPromotionCondition(detail, condition);
             }
         }
     }
 
-    SET discountSumReceiptSaleDetail(detail) IF receiptReceiptSaleDetail(detail) == receipt <- promotionSumReceiptSaleDetail(detail);
+    SET discountSumReceiptSaleDetail(detail) <- promotionSumReceiptSaleDetail(detail) WHERE receiptReceiptSaleDetail(detail) == receipt;
 }
 
 WHEN CHANGED(quantityReceiptDetailReceipt(receipt)) OR CHANGED(discountCardReceipt(receipt)) DO EXEC calculatePromotionsReceipt(receipt) SESSION;
