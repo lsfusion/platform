@@ -13,6 +13,7 @@ CLASS backup 'Backup';
 dateBackup 'Дата' = DATA DATE (backup);
 timeBackup 'Время' = DATA TIME (backup);
 fileBackup 'Адрес файла' = DATA STRING[200] (backup);
+fileLogBackup 'Адрес лога файла' = DATA STRING[200] (backup);
 fileDeletedBackup 'Файл удалён' = DATA BOOLEAN (backup);
 logBackup 'Лог' = DATA TEXT (backup);
 

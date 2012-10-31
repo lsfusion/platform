@@ -75,6 +75,7 @@ public class BackupActionProperty extends ScriptingActionProperty {
             LM.findLCPByCompoundName("dateBackup").change(new java.sql.Date(date.getTime()), session, backupObject);
             LM.findLCPByCompoundName("timeBackup").change(new java.sql.Time(date.getTime()), session, backupObject);
             LM.findLCPByCompoundName("fileBackup").change(dumpDir + dateTime, session, backupObject);
+            LM.findLCPByCompoundName("fileLogBackup").change(dumpDir + dateTime + "log.txt", session, backupObject);
 
             String log = "";
             Scanner scanner = new Scanner(new File(dumpDir + dateTime + "log.txt"), Charset.defaultCharset().name());

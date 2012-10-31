@@ -36,7 +36,11 @@ public class DeleteBackupActionProperty extends ScriptingActionProperty {
             DataObject backupObject = context.getKeyValue(backupInterface);
 
             String fileAddress = (String) LM.findLCPByCompoundName("fileBackup").read(session, backupObject);
+            String fileLogAddress = (String) LM.findLCPByCompoundName("fileLogBackup").read(session, backupObject);
             File f = new File(fileAddress);
+            File fLog = new File(fileLogAddress);
+            if(fLog.exists())
+                fLog.deleteOnExit();
             if (f.exists() && f.delete())
                 LM.findLCPByCompoundName("fileDeletedBackup").change(true, session, backupObject);
             session.apply(LM.getBL());
