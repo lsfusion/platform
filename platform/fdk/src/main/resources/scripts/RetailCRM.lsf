@@ -157,6 +157,7 @@ namePromotionGroupPromotion 'Группа акций' (promotion) = name(promoti
 userOrderPromotion 'Порядок' (promotion) = DATA INTEGER (promotion);
 orderPromotion 'Порядок' (promotion) = (1 IF promotion IS promotion) OR userOrderPromotion(promotion) PERSISTENT;
 
+userSetPromotion 'Задается кассиром' (promotion) = DATA BOOLEAN (promotion);
 // ----------------------------- Условия акций ------------------------ //
 
 CLASS promotionCondition 'Условие акции' : named;
@@ -219,6 +220,8 @@ resultPricePromotionCondition 'Цена со скидкой' = DATA NUMERIC[14,2
 sumDiscountPromotionCondition 'Сумма скидки' (promotionCondition) = DATA NUMERIC[14,2] (promotionCondition);
 sumReceiptPromotionCondition 'Сумма чека' (promotionCondition) = DATA NUMERIC[14,2] (promotionCondition);
 
+userSetPromotionCondition 'Задается кассиром' (promotionCondition) = userSetPromotion(promotionPromotionCondition(promotionCondition));
+
 // discountSkuGroup
 TABLE promotionConditionDiscountSkuGroup (promotionCondition, discountSkuGroup);
 allDiscountSkuGroupPromotionCondition 'Все дисконтные группы товаров' = DATA BOOLEAN (promotionCondition);
@@ -246,7 +249,7 @@ inPromotionConditionSku 'В условии' (promotionCondition, sku) = UNION OV
 
 FORM promotion 'Акция'
     OBJECTS sh=promotion   FIXED PANEL
-    PROPERTIES(sh)     name, namePromotionGroupPromotion,
+    PROPERTIES(sh)     name, namePromotionGroupPromotion, userSetPromotion,
                        nameNumeratorObject, numberObject, seriesObject,
                        dateFromPromotion, dateToPromotion, timeOfFromPromotion, timeOfToPromotion,
                        minSumBillPromotion, maxSumBillPromotion
@@ -324,6 +327,7 @@ DESIGN promotion FROM DEFAULT {
 
                 }
                 ADD PROPERTY(namePromotionGroupPromotion(sh));
+                ADD PROPERTY(userSetPromotion(sh));
             }
             ADD sh.numberedGroup {
                 childConstraints = TO THE BOTTOM;

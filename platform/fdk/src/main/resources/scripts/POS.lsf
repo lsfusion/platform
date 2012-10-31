@@ -892,6 +892,9 @@ EXTEND FORM discountCards
 TABLE receiptSaleDetailPromotionCondition(receiptSaleDetail, promotionCondition);
 quantityReceiptSaleDetailPromotionCondition 'Кол-во по акции' = DATA NUMERIC[14,3] (receiptSaleDetail, promotionCondition) INDEXED;
 promotionSumReceiptSaleDetailPromotionCondition 'Сумма скидки' = DATA NUMERIC[14,3] (receiptSaleDetail, promotionCondition);
+setUserPromotionReceiptSaleDetailPromotionCondition 'Применить скидку' = DATA BOOLEAN (receiptSaleDetail, promotionCondition);
+
+setUserPromotionReceipt (receipt) = GROUP SUM 1 IF setUserPromotionReceiptSaleDetailPromotionCondition (receiptSaleDetail, promotionCondition)  BY receiptReceiptSaleDetail (receiptSaleDetail);
 
 promotionSumReceiptSaleDetail (detail) = GROUP SUM promotionSumReceiptSaleDetailPromotionCondition(detail, condition)
                                                BY detail;
@@ -905,6 +908,10 @@ inReceiptPromotion (receipt, promotion) = inPromotionStore(promotion, storeRecei
                                           AND NOT (hasDiscountCardPromotion(promotion) AND NOT inPromotionDiscountCard(promotion, discountCardReceipt(receipt)));
 
 maxSalePriceReceiptSku (receipt, sku) = GROUP MAX priceReceiptSaleDetail(detail) BY receiptReceiptSaleDetail(detail), skuReceiptSaleDetail(detail);
+
+isAppliedPromotionReceiptSaleDetailPromotionCondition 'Акция применяется' (receiptSaleDetail, promotionCondition) =
+    IF userSetPromotionCondition(promotionCondition) THEN setUserPromotionReceiptSaleDetailPromotionCondition(receiptSaleDetail, promotionCondition)
+      ELSE TRUE AND receiptSaleDetail IS receiptSaleDetail AND promotionCondition IS promotionCondition;
 
 calculatePromotionsReceipt 'Рассчитать акции' = ACTION (receipt) {
 
@@ -980,7 +987,7 @@ calculatePromotionsReceipt 'Рассчитать акции' = ACTION (receipt) 
                 SET leftQuantityReceiptSaleDetail(detail) <- leftQuantityReceiptSaleDetail(detail) (-) takenReceiptSaleDetail(detail);
 
                 SET quantityReceiptSaleDetailPromotionCondition(detail, condition) <- takenReceiptSaleDetailPromotionCondition(detail, condition)
-                    WHERE takenReceiptSaleDetailPromotionCondition(detail, condition);
+                    WHERE takenReceiptSaleDetailPromotionCondition(detail, condition) AND isAppliedPromotionReceiptSaleDetailPromotionCondition(detail, condition);
 
                 SET promotionSumReceiptSaleDetailPromotionCondition (detail, condition) <-
                     IF sumReceiptPromotionCondition(condition) THEN
@@ -993,7 +1000,7 @@ calculatePromotionsReceipt 'Рассчитать акции' = ACTION (receipt) 
                                 takenReceiptSaleDetailPromotionCondition(detail, condition) * (leftSumReceiptSaleDetail(detail) / quantityReceiptSaleDetail(detail) - resultPricePromotionCondition(condition))
                             ELSE
                                 takenReceiptSaleDetailPromotionCondition(detail, condition) * (leftSumReceiptSaleDetail(detail) / quantityReceiptSaleDetail(detail) * percentPromotionCondition(condition) / 100)
-                            WHERE takenReceiptSaleDetailPromotionCondition(detail, condition);
+                            WHERE takenReceiptSaleDetailPromotionCondition(detail, condition) AND isAppliedPromotionReceiptSaleDetailPromotionCondition(detail, condition);
             }
         }
     }
@@ -1001,7 +1008,7 @@ calculatePromotionsReceipt 'Рассчитать акции' = ACTION (receipt) 
     SET discountSumReceiptSaleDetail(detail) <- promotionSumReceiptSaleDetail(detail) WHERE receiptReceiptSaleDetail(detail) == receipt;
 }
 
-WHEN CHANGED(quantityReceiptDetailReceipt(receipt)) OR CHANGED(discountCardReceipt(receipt)) DO EXEC calculatePromotionsReceipt(receipt) SESSION;
+WHEN CHANGED(quantityReceiptDetailReceipt(receipt)) OR CHANGED(discountCardReceipt(receipt)) OR CHANGED(setUserPromotionReceipt(receipt)) DO EXEC calculatePromotionsReceipt(receipt) SESSION;
 
 // Форма POS-терминала
 
@@ -1035,7 +1042,12 @@ FORM POS
     OBJECTS pc = promotionCondition FIXED GRID
     PROPERTIES(pc) SHOWIF currentZReport() READONLY namePromotionPromotionCondition, name, dateFromPromotionCondition, dateToPromotionCondition, percentPromotionCondition
     PROPERTIES(d, pc) SHOWIF currentZReport()       quantityReceiptSaleDetailPromotionCondition, promotionSumReceiptSaleDetailPromotionCondition
-    FILTERS quantityReceiptSaleDetailPromotionCondition(d, pc)
+    FILTERS quantityReceiptSaleDetailPromotionCondition(d, pc) AND NOT userSetPromotionCondition(pc)
+
+    OBJECTS pcu = promotionCondition FIXED GRID
+    PROPERTIES(pcu) SHOWIF currentZReport() READONLY namePromotionPromotionCondition, name, dateFromPromotionCondition, dateToPromotionCondition, percentPromotionCondition
+    PROPERTIES(d, pcu) SHOWIF currentZReport() quantityReceiptSaleDetailPromotionCondition, promotionSumReceiptSaleDetailPromotionCondition, setUserPromotionReceiptSaleDetailPromotionCondition
+    FILTERS userSetPromotionCondition(pcu)
 
     PROPERTIES() fiscalAdvancePaper, fiscalCutReceipt
 
@@ -1075,9 +1087,17 @@ DESIGN POS FROM DEFAULT {
                     PROPERTY(discountSumReceiptDetail) { font = 'Tahoma 14'; }
                     PROPERTY(delete) { font = 'Tahoma 14'; }
                 }
-                ADD pc.box {
-                    fillVertical = 0.3;
-                }
+                NEW promotionContainer {
+                type = TABBED;
+                fillVertical = 0.3;
+                    ADD pc.box {
+                      //  fillVertical = 0.3;
+                    }
+                    ADD pcu.box {
+                        title = 'Возможные акции';
+                     //   fillVertical = 0.3;
+                    }
+              }
             }
             NEW eastContainer {
                 childConstraints = TO THE BOTTOM;
