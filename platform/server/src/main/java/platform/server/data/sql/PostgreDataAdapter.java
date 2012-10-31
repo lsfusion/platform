@@ -6,6 +6,7 @@ import platform.server.data.type.Type;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.ServerResourceBundle;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -178,5 +179,29 @@ public class PostgreDataAdapter extends DataAdapter {
 
     public boolean orderTopTrouble() {
         return true;
+    }
+    
+    @Override
+    public boolean backupDB(String binPath, String dumpDir) throws IOException, InterruptedException {
+        String path = "\"" + ((binPath == null) ? "" : binPath) + "pg_dump.exe" + "\"";
+        String host = "", port = "5432";
+        if (server.contains(":")) {
+            host = server.substring(0, server.lastIndexOf(':'));
+            port = server.substring(server.lastIndexOf(':') + 1);
+        } else {
+            host = server;
+        }
+
+        String execute = "cmd SET PGPASSWORD=" + password + " /c start \"\" /B " + path + " --host " + host + " --port " + port + " --username " +
+                userID + " --format tar --blobs --verbose --file \"" + dumpDir + "\" " +
+                dataBase + " 2>> \"" + dumpDir + "log.txt\"";
+        Runtime rt = Runtime.getRuntime();
+        Process p = rt.exec(execute);
+        return p.waitFor()==0;
+    }
+
+    @Override
+    public String getAnalyze() {
+        return "VACUUM ANALYZE";
     }
 }

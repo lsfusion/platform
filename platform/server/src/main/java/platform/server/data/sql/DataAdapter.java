@@ -4,6 +4,7 @@ import org.apache.log4j.Logger;
 import platform.server.data.AbstractConnectionPool;
 import platform.server.data.type.Type;
 
+import java.io.IOException;
 import java.sql.SQLException;
 import java.sql.Types;
 
@@ -232,5 +233,13 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
 
     public boolean orderTopTrouble() {
         throw new RuntimeException("unknown");
+    }
+    
+    public boolean backupDB(String binPath, String dumpDir) throws IOException, InterruptedException {
+        return true;
+    }
+
+    public String getAnalyze(){
+        return "";
     }
 }

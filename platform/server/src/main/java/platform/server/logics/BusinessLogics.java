@@ -341,7 +341,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         try {
             DataSession session = createSession();
 
-            DataObject userObject =  new DataObject(user.ID, LM.customUser);
+            DataObject userObject = new DataObject(user.ID, LM.customUser);
 
             Object forbidAll = LM.forbidAllUserForm.read(session, userObject);
             Object allowAll = LM.allowAllUserForm.read(session, userObject);
@@ -389,7 +389,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             Expr propExpr = LM.SIDProperty.getExpr(session.getModifier(), qp.mapKeys.get("propertyId"));
             qp.and(propExpr.getWhere());
             qp.and(qp.mapKeys.get("userId").compare(new DataObject(user.ID, LM.customUser), Compare.EQUALS));
-            qp.and(LM.notNullPermissionUserProperty.getExpr(session.getModifier(),qp.mapKeys.get("userId"), qp.mapKeys.get("propertyId")).getWhere());
+            qp.and(LM.notNullPermissionUserProperty.getExpr(session.getModifier(), qp.mapKeys.get("userId"), qp.mapKeys.get("propertyId")).getWhere());
 
             qp.properties.put("sid", propExpr);
             qp.properties.put("permitView", LM.permitViewUserProperty.getExpr(session.getModifier(), qp.mapKeys.get("userId"), qp.mapKeys.get("propertyId")));
@@ -613,8 +613,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             }
             out.write("}\n");
             out.close();
+        } catch (Exception e) {
         }
-        catch (Exception e) {}
     }
 
     private List<LogicsModule> orderModules() {
@@ -684,7 +684,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
             Set idSet = new HashSet<String>();
             for (Property property : getProperties()) {
-    //            assert idSet.add(property.getSID()) : "Same sid " + property.getSID();
+                //            assert idSet.add(property.getSID()) : "Same sid " + property.getSID();
             }
 
             for (LogicsModule module : orderedModules) {
@@ -724,20 +724,20 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected void finishAbstract() {
         List<ExclusiveUnionProperty> abstractUnions = new ArrayList<ExclusiveUnionProperty>();
         for (Property property : getProperties())
-            if(property instanceof ExclusiveUnionProperty && ((ExclusiveUnionProperty)property).isAbstract()) {
+            if (property instanceof ExclusiveUnionProperty && ((ExclusiveUnionProperty) property).isAbstract()) {
                 property.finalizeInit();
                 abstractUnions.add((ExclusiveUnionProperty) property);
             }
 
-        for(ExclusiveUnionProperty abstractUnion : abstractUnions)
+        for (ExclusiveUnionProperty abstractUnion : abstractUnions)
             abstractUnion.checkClasses();
     }
 
     protected void finishActions() { // потому как могут использовать abstract
         for (Property property : getProperties())
-            if(property instanceof ActionProperty) {
+            if (property instanceof ActionProperty) {
                 ActionProperty.PropsNewSession change = ((ActionProperty<?>) property).getChangeExtProps();
-                for(int i=0;i<change.size;i++) // вообще говоря DataProperty и IsClassProperty
+                for (int i = 0; i < change.size; i++) // вообще говоря DataProperty и IsClassProperty
                     change.getKey(i).actionChangeProps.add(new Pair<Property<?>, LinkType>(property, change.getValue(i) ? LinkType.RECCHANGE : LinkType.DEPEND));
             }
     }
@@ -759,7 +759,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         getAppliedProperties(true);
         getAppliedProperties(false);
         getMapAppliedDepends();
-        for(Property property : getPropertyList()) // сделалем чтобы
+        for (Property property : getPropertyList()) // сделалем чтобы
             property.prereadCaches();
     }
 
@@ -811,21 +811,23 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         // считаем системного пользователя
         try {
             DataSession session = createSession(getThreadLocalSql(), new UserController() {
-                public void changeCurrentUser(DataObject user) {
-                    throw new RuntimeException("not supported");
-                }
+                        public void changeCurrentUser(DataObject user) {
+                            throw new RuntimeException("not supported");
+                        }
 
-                public DataObject getCurrentUser() {
-                    return new DataObject(0, LM.systemUser);
-                }
-            }, new ComputerController() {
+                        public DataObject getCurrentUser() {
+                            return new DataObject(0, LM.systemUser);
+                        }
+                    }, new ComputerController() {
                 public DataObject getCurrentComputer() {
                     return new DataObject(0, LM.computer);
                 }
+
                 public boolean isFullClient() {
                     return false;
                 }
-            });
+            }
+            );
 
             Query<String, Object> query = new Query<String, Object>(Collections.singleton("key"));
             query.and(BaseUtils.singleValue(query.mapKeys).isClass(LM.systemUser));
@@ -1031,7 +1033,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 List<PropertyDrawEntity> propertyDraws = ((FormEntity<T>) formElement).propertyDraws;
                 for (PropertyDrawEntity drawEntity : propertyDraws) {
                     GroupObjectEntity groupObjectEntity = drawEntity.getToDraw((FormEntity<T>) formElement);
-                    dataPropertyDraws.add(asList(drawEntity.propertyObject.toString(), drawEntity.getSID(), (Object) formElement.getSID(), groupObjectEntity==null ? null : groupObjectEntity.getSID()));
+                    dataPropertyDraws.add(asList(drawEntity.propertyObject.toString(), drawEntity.getSID(), (Object) formElement.getSID(), groupObjectEntity == null ? null : groupObjectEntity.getSID()));
                 }
             }
         }
@@ -1600,15 +1602,15 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     private static boolean findDependency(Property<?> property, Property<?> with, QuickSet<Property> proceeded, Stack<Link> path) {
-        if(property.equals(with))
+        if (property.equals(with))
             return true;
 
-        if(proceeded.add(property))
+        if (proceeded.add(property))
             return false;
 
-        for(Link link : property.getLinks()) {
+        for (Link link : property.getLinks()) {
             path.push(link);
-            if(findDependency(link.to, with, proceeded, path))
+            if (findDependency(link.to, with, proceeded, path))
                 return true;
             path.pop();
         }
@@ -1618,32 +1620,41 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     private static String outDependency(String direction, Property property, Stack<Link> path) {
         String result = direction + " : " + property;
-        for(Link link : path)
+        for (Link link : path)
             result += " " + link.type + " " + link.to;
         return result;
     }
+
     private static String findDependency(Property<?> property1, Property<?> property2) {
         String result = "";
 
         Stack<Link> forward = new Stack<Link>();
-        if(findDependency(property1, property2, new QuickSet<Property>(), forward))
+        if (findDependency(property1, property2, new QuickSet<Property>(), forward))
             result += outDependency("FORWARD", property1, forward) + '\n';
 
         Stack<Link> backward = new Stack<Link>();
-        if(findDependency(property2, property1, new QuickSet<Property>(), backward))
+        if (findDependency(property2, property1, new QuickSet<Property>(), backward))
             result += outDependency("BACKWARD", property2, backward) + '\n';
 
-        if(result.isEmpty())
+        if (result.isEmpty())
             result += "NO DEPENDENCY " + property1 + " " + property2 + '\n';
 
         return result;
     }
 
+    public boolean backupDB(String binPath, String dumpDir) throws IOException, InterruptedException {
+        return adapter.backupDB(binPath, dumpDir);
+    }
+
+    public void analyzeDB(SQLSession session) throws SQLException {
+        session.executeDDL(adapter.getAnalyze());
+    }
+
     private void showDependencies() {
         String show = "";
-        for(Property property : getProperties())
-            if(property instanceof ActionProperty && ((ActionProperty)property).showDep != null)
-                show += findDependency(property, ((ActionProperty)property).showDep);
+        for (Property property : getProperties())
+            if (property instanceof ActionProperty && ((ActionProperty) property).showDep != null)
+                show += findDependency(property, ((ActionProperty) property).showDep);
         System.out.println(show);
     }
 
@@ -1655,7 +1666,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         QuickSet<Property> cancelActions = new QuickSet<Property>();
         QuickSet<Property> rest = new QuickSet<Property>();
         for (Property property : getProperties())
-            if(property instanceof ActionProperty && ((ActionProperty) property).hasFlow(ChangeFlowType.CANCEL))
+            if (property instanceof ActionProperty && ((ActionProperty) property).hasFlow(ChangeFlowType.CANCEL))
                 cancelActions.add(property);
             else
                 rest.add(property);
@@ -2018,7 +2029,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             version = 3;
             this.dbVersion = dbVersion;
 
-            for (Table table :  LM.tableFactory.getImplementTablesMap().values()) {
+            for (Table table : LM.tableFactory.getImplementTablesMap().values()) {
                 tables.put(table, new HashMap<List<String>, Boolean>());
             }
 

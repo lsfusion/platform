@@ -421,7 +421,7 @@ public class SQLSession extends MutableObject {
     }
 
 
-    private void executeDDL(String DDL) throws SQLException {
+    public void executeDDL(String DDL) throws SQLException {
         executeDDL(DDL, ExecuteEnvironment.EMPTY);
     }
 

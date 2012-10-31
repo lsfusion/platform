@@ -513,6 +513,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     private LAP checkAggregationsAction;
     private LAP recalculateAction;
     private LAP recalculateFollowsAction;
+    private LAP analyzeDBAction;
     private LAP packAction;
 
     public SelectionPropertySet selection;
@@ -1028,6 +1029,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         checkAggregationsAction = addProperty(null, new LAP(new CheckAggregationsActionProperty(genSID(), getString("logics.check.aggregations"))));
         recalculateAction = addProperty(null, new LAP(new RecalculateActionProperty(genSID(), getString("logics.recalculate.aggregations"))));
         recalculateFollowsAction = addProperty(null, new LAP(new RecalculateFollowsActionProperty(genSID(), getString("logics.recalculate.follows"))));
+        analyzeDBAction = addProperty(null, new LAP(new AnalyzeDBActionProperty(genSID(), getString("logics.vacuum.analyze"))));
         packAction = addProperty(null, new LAP(new PackActionProperty(genSID(), getString("logics.tables.pack"))));
 
         currentUserName = addJProp("currentUserName", getString("logics.user.current.user.name"), name, currentUser);
@@ -1798,6 +1800,22 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
     }
 
+    private class AnalyzeDBActionProperty extends AdminActionProperty {
+        private AnalyzeDBActionProperty(String sID, String caption) {
+            super(sID, caption, new ValueClass[]{});
+        }
+
+        @Override
+        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
+            DataSession session = BL.createSession();
+            BL.analyzeDB(session.sql);
+            session.apply(BL);
+            session.close();
+
+            context.delayUserInterfaction(new MessageClientAction(getString("logics.vacuum.analyze.was.completed"), getString("logics.vacuum.analyze")));
+        }
+    }
+
     private class RecalculateStatsActionProperty extends AdminActionProperty {
         private RecalculateStatsActionProperty(String sID, String caption) {
             super(sID, caption, new ValueClass[]{});
@@ -2470,7 +2488,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
             addPropertyDraw(new LP[]{webHost, defaultBackgroundColor,
                     defaultForegroundColor, restartServerAction, cancelRestartServerAction, checkAggregationsAction, recalculateAction,
-                    recalculateFollowsAction, packAction, runGarbageCollector});
+                    recalculateFollowsAction, packAction, analyzeDBAction, runGarbageCollector});
         }
     }
 
