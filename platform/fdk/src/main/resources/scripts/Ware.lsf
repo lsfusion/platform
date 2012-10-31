@@ -37,8 +37,8 @@ TABLE wareDate(ware, DATE);
 
 CONSTRAINT taxRange(dataRangeWareDate(ware, date)) != tax.taxVAT CHECKED BY dataRangeWareDate MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 
-dataValueRangeWareDate 'НДС, %' (item, date) = valueRateRangeDate(dataRangeWareDate(item, date), date) IN baseGroup;
-valueCurrentRateRangeWare 'НДС, %' (item) = valueCurrentRateRange(rangeWare(item)) IN baseGroup;
+dataValueRangeWareDate 'НДС, %' (ware, date) = valueRateRangeDate(dataRangeWareDate(ware, date), date) IN baseGroup;
+valueCurrentRateRangeWare 'НДС, %' (ware) = valueCurrentRateRange(rangeWare(ware)) IN baseGroup;
 
 EXTEND FORM addRangeWare
     PROPERTIES READONLY dataValueRangeWareDate(a, d)

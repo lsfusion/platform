@@ -1,6 +1,6 @@
 MODULE Item;
 
-REQUIRE System, Stock, Hierarchy, RetailCRM, Barcode, Ware, PriceList;
+REQUIRE System, Stock, Hierarchy, RetailCRM, Barcode, PriceList;
 
 // ------------------------------------ Классификатор товаров --------------------------- //
 
@@ -176,7 +176,43 @@ DESIGN items FROM DEFAULT {
 
 CLASS ABSTRACT itemAttribute 'Атрибут товара' : named;
 TABLE itemAttribute(itemAttribute);
+TABLE itemItemAttribute(item, itemAttribute);
 
+// Отображение
+META defineItemAttribute (attribute, caption, group)
+    show###attribute##ItemGroup caption (itemGroup) = DATA BOOLEAN (itemGroup) IN group;
+    show###attribute##ItemGroup(itemGroup) <- TRUE WHEN ASSIGNED(itemGroup IS itemGroup);
+
+    show###attribute##Item caption (item) = show###attribute##ItemGroup(itemGroupItem(item));
+END
+
+// Объявление
+valueItemAttribute = ABSTRACT STRING[100] (item, itemAttribute) EXCLUSIVE PERSISTENT;
+
+META implementItemAttribute(attribute, caption, itemType, attributeClass)
+    EXTEND CLASS itemType##ItemAttribute { attributeClass caption }
+    value###attribute##ItemAttribute(item, attribute) = attribute##Item(item) AND attribute == itemType##ItemAttribute.##attributeClass;
+    value###itemType##ItemAttribute(item, attribute) += value###attribute##ItemAttribute(item, attribute);
+END
+
+META defineItemAttribute(attribute, formProperty, caption, group, itemType, attributeClass)
+    @defineItemAttribute(attribute, caption, group);
+
+    EXTEND FORM itemGroup PROPERTIES(g) show###attribute##ItemGroup;
+    EXTEND FORM itemGroups PROPERTIES(g) BEFORE delete show###attribute##ItemGroup;
+    EXTEND FORM item PROPERTIES(i) formProperty SHOWIF show###attribute##Item(i);
+    EXTEND FORM items PROPERTIES(i) READONLY BEFORE delete formProperty SHOWIF show###attribute##ItemGroup(g);
+
+    @implementItemAttribute(attribute, caption, itemType, attributeClass);
+END
+
+// Примитивный тип
+META definePrimitiveItemAttribute(attribute, type, caption, group, itemType)
+    attribute##Item caption = DATA type (item) IN group;
+    @defineItemAttribute(attribute, attribute##Item, caption, group, itemType, item###attribute);
+END
+
+// Расширяем формы настройки
 EXTEND FORM options
     OBJECTS ia = itemAttribute
     PROPERTIES(ia) name
@@ -190,347 +226,6 @@ EXTEND DESIGN options {
         }
     }
 }
-
-TABLE itemItemAttribute(item, itemAttribute);
-
-CLASS STATIC stringItemAttribute 'Строковый атрибут' {
-    itemCaption 'Название',
-    itemProperty 'Свойство'
-} : itemAttribute;
-
-CLASS STATIC integerItemAttribute 'Целочисленный атрибут' {
-    itemLength 'Длина',
-    itemWidth 'Ширина',
-    itemHeight 'Высота',
-    itemNumberComponents 'Кол-во компонентов'
-} : itemAttribute;
-
-CLASS STATIC doubleItemAttribute 'Дробный атрибут' {
-    itemNetWeight 'Вес нетто',
-    itemGrossWeight 'Вес брутто',
-    itemVolume 'Объём',
-    itemPercentFat '% жирности',
-    itemPercentAlcohol '% алкоголя'
-} : itemAttribute;
-
-CLASS STATIC objectItemAttribute 'Объектный атрибут' {
-    itemGroup 'Группа',
-    itemUOM 'Единица измерения',
-    itemWare 'Посуда',
-    itemBrand 'Брэнд',
-    itemType 'Вид',
-    itemForm 'Форма',
-    itemSort 'Сорт/категория',
-    itemPack 'Упаковка',
-    itemFeature 'Особенность',
-    itemArticle 'Артикул',
-    itemSize 'Размер',
-    itemCoolingDegree 'Степень охлаждения',
-    itemColor 'Цвет',
-    itemTaste 'Вкус',
-    itemCountry 'Страна',
-    itemManufacturer 'Производитель'
-} : itemAttribute;
-
-CLASS STATIC objectItemShortAttribute 'Объектный краткий атрибут' {
-    shortUOM 'Единица измерения (сокр.)',
-    shortItemPack 'Упаковка (сокр.)',
-    shortItemFeature 'Особенность (сокр.)',
-    shortItemSize 'Размер (сокр.)',
-    shortItemCoolingDegree 'Степень охлаждения (сокр.)'
-} : itemAttribute;
-
-// ---------------------------- Отображение -------------------------------- //
-META defineItemAttribute (attribute, caption, group)
-    show###attribute##ItemGroup caption (itemGroup) = DATA BOOLEAN (itemGroup) IN group;
-    show###attribute##ItemGroup(itemGroup) <- TRUE WHEN ASSIGNED(itemGroup IS itemGroup);
-
-    show###attribute##Item caption (item) = show###attribute##ItemGroup(itemGroupItem(item));
-END
-
-// ---------------------------- Конкретные свойства -------------------------------- //
-
-// Вспомогательный мета-код
-
-META defineItemAttribute(attribute, formProperty, caption, group, itemType, attributeClass)
-    @defineItemAttribute(attribute, caption, group);
-    value###attribute##ItemAttribute(item, attribute) = attribute##Item(item) AND attribute == itemType##ItemAttribute.##attributeClass;
-
-    EXTEND FORM itemGroup PROPERTIES(g) show###attribute##ItemGroup;
-    EXTEND FORM itemGroups PROPERTIES(g) BEFORE delete show###attribute##ItemGroup;
-    EXTEND FORM item PROPERTIES(i) formProperty SHOWIF show###attribute##Item(i);
-    EXTEND FORM items PROPERTIES(i) READONLY BEFORE delete formProperty SHOWIF show###attribute##ItemGroup(g);
-END
-
-META defineItemAttribute(attribute, formProperty, caption, group, itemType)
-    @defineItemAttribute(attribute, formProperty, caption, group, itemType, item###attribute);
-END
-
-META defineItemAttribute(attribute, caption, group, itemType)
-    @defineItemAttribute(attribute, attribute##Item, caption, group, itemType);
-END
-
-// Свойства товара
-
-GROUP itemBaseGroup 'Базовые свойства' : baseGroup;
-
-// Группа
-valueItemGroupItemAttribute(item, attribute) = itemGroupItem(item) AND attribute == objectItemAttribute.itemGroup;
-
-// Название
-captionItem 'Название' = DATA STRING[100](item) IN itemBaseGroup;
-@defineItemAttribute(caption, 'Название', itemBaseGroup, string);
-
-// Единица измерения
-UOMItem = DATA UOM(item);
-shortNameUOMItem 'Единица измерения' (item) = shortName(UOMItem(item)) IN itemBaseGroup;
-UOMSku(item) += UOMItem(item);
-
-@defineItemAttribute(UOM, shortNameUOMItem, 'Единица измерения', itemBaseGroup, object);
-valueUOMItemShortAttribute(item, attribute) = UOMItem(item) AND attribute == objectItemShortAttribute.shortUOM;
-
-// Брэнд
-CLASS brand 'Бренд' : named, externalObject;
-TABLE brand(brand);
-
-brandItem = DATA brand(item);
-nameBrandItem 'Бренд' (item) = name(brandItem(item)) IN itemBaseGroup;
-
-@defineItemAttribute(brand, nameBrandItem, 'Бренд', itemBaseGroup, object);
-
-// Страна
-countryItem = DATA country (item) IN idGroup;
-nameCountryItem 'Страна' = name(countryItem(item)) IN itemBaseGroup;
-residentItem 'Отечественное производство' (item) = residentCountry(countryItem(item)) IN itemBaseGroup;
-
-@defineItemAttribute(country, nameCountryItem, 'Страна', itemBaseGroup, object);
-
-// Производитель
-CLASS manufacturer 'Производитель товара' : named;
-TABLE manufacturer(manufacturer);
-
-manufacturerItem = DATA manufacturer (item);
-nameManufacturerItem 'Производитель' (item) = name(manufacturerItem(item)) IN itemBaseGroup;
-
-@defineItemAttribute(manufacturer, nameManufacturerItem, 'Производитель', itemBaseGroup, object);
-
-// Посуда
-wareItem = DATA ware (item) IN idGroup;
-nameWareItem 'Посуда' = name(wareItem(item)) IN itemBaseGroup;
-inWareItem 'Товар в посуде' (item) = item IS item AND wareItem(item);
-
-@defineItemAttribute(ware, nameWareItem, 'Посуда', itemBaseGroup, object);
-
-EXTEND DESIGN item { itemPrimaryColumn1 { ADD i.itemBaseGroup; } }
-
-// --------------------------------------- Описание ------------------------------------- //
-
-GROUP itemDescriptionGroup 'Описание' : publicGroup;
-
-// Вид
-CLASS type 'Вид товара' : named;
-TABLE type(type);
-
-typeItem = DATA type(item);
-nameTypeItem 'Вид' = name(typeItem(item)) IN itemDescriptionGroup;
-
-@defineItemAttribute(type, nameTypeItem, 'Вид', itemDescriptionGroup, object);
-
-// Сорт
-CLASS sort 'Сорт товара' : named;
-TABLE sort(sort);
-
-sortItem = DATA sort(item);
-nameSortItem 'Сорт' = name(sortItem(item)) IN itemDescriptionGroup;
-
-@defineItemAttribute(sort, nameSortItem, 'Сорт', itemDescriptionGroup, object);
-
-// Форма
-CLASS form 'Форма товара' : named;
-TABLE form(form);
-
-formItem = DATA form(item);
-nameFormItem 'Форма' = name(formItem(item)) IN itemDescriptionGroup;
-
-@defineItemAttribute(form, nameFormItem, 'Форма', itemDescriptionGroup, object);
-
-// Особенность
-CLASS feature 'Особенность товара' : doubleNamed;
-TABLE feature(feature);
-
-featureItem = DATA feature(item);
-shortNameFeatureItem 'Особенность' = shortName(featureItem(item)) IN itemDescriptionGroup;
-
-@defineItemAttribute(feature, shortNameFeatureItem, 'Особенность', itemDescriptionGroup, object);
-valueFeatureItemShortAttribute(item, attribute) = featureItem(item) AND attribute == objectItemShortAttribute.shortItemFeature;
-
-// Упаковка
-CLASS pack 'Упаковка' : doubleNamed;
-TABLE pack(pack);
-
-packItem = DATA pack(item);
-shortNamePackItem 'Упаковка' = shortName(packItem(item)) IN itemDescriptionGroup;
-
-@defineItemAttribute(pack, shortNamePackItem, 'Упаковка', itemDescriptionGroup, object);
-valuePackItemShortAttribute(item, attribute) = packItem(item) AND attribute == objectItemShortAttribute.shortItemPack;
-
-// Свойство
-propertyItem 'Свойство' = DATA STRING[100] (item) IN itemDescriptionGroup;
-@defineItemAttribute(property, propertyItem, 'Свойство', itemDescriptionGroup, string);
-
-// Кол-во компонентов
-numberComponentsItem 'Кол-во компонентов' = DATA INTEGER (item) IN itemDescriptionGroup;
-@defineItemAttribute(numberComponents, 'Кол-во компонентов', itemDescriptionGroup, integer);
-
-EXTEND DESIGN item { itemPrimaryColumn1 { ADD i.itemDescriptionGroup; } }
-
-// --------------------------------------- Пищевые характеристики ------------------------------------- //
-
-GROUP itemFoodGroup 'Пищевые характеристики' : publicGroup;
-
-// Вкус
-CLASS taste 'Вкус товара' : named;
-TABLE taste(taste);
-
-tasteItem = DATA taste (item);
-nameTasteItem 'Вкус' = name(tasteItem(item)) IN itemFoodGroup;
-
-@defineItemAttribute(taste, nameTasteItem, 'Вкус', itemFoodGroup, object);
-
-// Степень охлаждения
-CLASS coolingDegree 'Степень охлаждения товара' : doubleNamed;
-TABLE coolingDegree(coolingDegree);
-
-coolingDegreeItem = DATA coolingDegree (item);
-nameCoolingDegreeItem 'Степень охлаждения' = name(coolingDegreeItem(item)) IN itemFoodGroup;
-
-@defineItemAttribute(coolingDegree, nameCoolingDegreeItem, 'Степень охлаждения', itemFoodGroup, object);
-valueCoolingDegreeItemShortAttribute(item, attribute) = coolingDegreeItem(item) AND attribute == objectItemShortAttribute.shortItemCoolingDegree;
-
-// Жирность
-percentFatItem '% жирности' =  DATA DOUBLE (item) IN itemFoodGroup;
-@defineItemAttribute(percentFat, '% жирности', itemFoodGroup, double);
-
-// Алкоголь
-percentAlcoholItem '% алкоголя' =  DATA DOUBLE (item) IN itemFoodGroup;
-@defineItemAttribute(percentAlcohol, '% алкоголя', itemFoodGroup, double);
-
-EXTEND DESIGN item { itemPrimaryColumn2 { ADD i.itemFoodGroup; } }
-
-// --------------------------------------- Артикул ------------------------------------- //
-
-GROUP itemArticleGroup 'Артикул' : publicGroup;
-
-// Артикул
-CLASS article 'Артикул' : named;
-TABLE article(article);
-
-articleItem = DATA article (item);
-nameArticleItem 'Артикул' = name(articleItem(item)) IN itemArticleGroup;
-
-@defineItemAttribute(article, nameArticleItem, 'Артикул', itemArticleGroup, object);
-
-// Цвет
-CLASS color 'Цвет товара' : named;
-TABLE color (color);
-
-colorItem = DATA color(item);
-nameColorItem 'Цвет' = name(colorItem(item)) IN itemArticleGroup;
-
-@defineItemAttribute(color, nameColorItem, 'Цвет', itemArticleGroup, object);
-
-// Размер
-CLASS size 'Размер товара' : doubleNamed;
-TABLE size(size);
-
-sizeItem = DATA size(item);
-shortNameSizeItem 'Размер' = shortName(sizeItem(item)) IN itemArticleGroup;
-
-@defineItemAttribute(size, shortNameSizeItem, 'Размер', itemArticleGroup, object);
-valueSizeItemShortAttribute(item, attribute) = sizeItem(item) AND attribute == objectItemShortAttribute.shortItemSize;
-
-EXTEND DESIGN item { itemPrimaryColumn2 { ADD i.itemArticleGroup; } }
-
-// --------------------------------------------- Габариты товара -------------------------------------- //
-GROUP sizeGroup 'Габариты товара' : publicGroup;
-
-// Длина
-lengthItem 'Длина' = DATA NUMERIC[8,2] (item) IN sizeGroup;
-@defineItemAttribute(length, 'Длина', sizeGroup, integer);
-
-// Ширина
-widthItem 'Ширина' = DATA NUMERIC[8,2] (item) IN sizeGroup;
-@defineItemAttribute(width, 'Ширина', sizeGroup, integer);
-
-// Высота
-heightItem 'Высота' = DATA NUMERIC[8,2] (item) IN sizeGroup;
-@defineItemAttribute(height, 'Высота', sizeGroup, integer);
-
-// Объем
-volumeItem 'Объём' = DATA NUMERIC[9,3] (item) IN sizeGroup;
-@defineItemAttribute(volume, 'Объем', sizeGroup, double);
-
-// Вес нетто
-netWeightItem 'Вес нетто' = DATA NUMERIC[9,3] (item) IN sizeGroup;
-@defineItemAttribute(netWeight, 'Вес нетто', sizeGroup, double);
-netWeightSku(sku) += netWeightItem(sku);
-
-// Вес брутто
-grossWeightItem 'Вес брутто (кг)' = DATA NUMERIC[9,3] (item) IN sizeGroup;
-@defineItemAttribute(grossWeight, 'Вес брутто', sizeGroup, double);
-
-EXTEND DESIGN item { itemPrimaryColumn2 { ADD i.sizeGroup; } }
-
-// -------------------------------------------- Подсчет атрибутов ----------------------------------- //
-// todo : здесь нужно переделать на +=, но пока не получается из-за assertion'а на Exclusive Union
-
-valueStringItemAttribute(item, attribute) = UNION EXCLUSIVE  valueCaptionItemAttribute(item, attribute),
-                                                             valuePropertyItemAttribute(item, attribute) PERSISTENT;
-
-valueIntegerItemAttribute(item, attribute) = UNION EXCLUSIVE valueLengthItemAttribute(item, attribute),
-                                                             valueWidthItemAttribute(item, attribute),
-                                                             valueHeightItemAttribute(item, attribute),
-                                                             valueNumberComponentsItemAttribute(item, attribute) PERSISTENT;
-stringIntegerItemAttribute(item, attribute) = castToString255(valueIntegerItemAttribute(item, attribute));
-
-valueDoubleItemAttribute(item, attribute) = UNION EXCLUSIVE valueNetWeightItemAttribute(item, attribute),
-                                                            valueGrossWeightItemAttribute(item, attribute),
-                                                            valueVolumeItemAttribute(item, attribute),
-                                                            valuePercentFatItemAttribute(item, attribute),
-                                                            valuePercentAlcoholItemAttribute(item, attribute) PERSISTENT;
-stringDoubleItemAttribute(item, attribute) = castToString255(valueDoubleItemAttribute(item, attribute));
-
-valueObjectItemAttribute(item, attribute) = UNION EXCLUSIVE valueItemGroupItemAttribute(item, attribute),
-                                                            valueUOMItemAttribute(item, attribute),
-                                                            valueBrandItemAttribute(item, attribute),
-                                                            valueTypeItemAttribute(item, attribute),
-                                                            valueFormItemAttribute(item, attribute),
-                                                            valueSortItemAttribute(item, attribute),
-                                                            valuePackItemAttribute(item, attribute),
-                                                            valueFeatureItemAttribute(item, attribute),
-                                                            valueArticleItemAttribute(item, attribute),
-                                                            valueSizeItemAttribute(item, attribute),
-                                                            valueCoolingDegreeItemAttribute(item, attribute),
-                                                            valueColorItemAttribute(item, attribute),
-                                                            valueTasteItemAttribute(item, attribute),
-                                                            valueCountryItemAttribute(item, attribute),
-                                                            valueWareItemAttribute(item, attribute),
-                                                            valueManufacturerItemAttribute(item, attribute) PERSISTENT;
-nameObjectItemAttribute(item, attribute) = name(valueObjectItemAttribute(item, attribute));
-
-valueObjectItemShortAttribute(item, attribute) = UNION EXCLUSIVE valueUOMItemShortAttribute(item, attribute),
-                                                                 valuePackItemShortAttribute(item, attribute),
-                                                                 valueFeatureItemShortAttribute(item, attribute),
-                                                                 valueSizeItemShortAttribute(item, attribute),
-                                                                 valueCoolingDegreeItemShortAttribute(item, attribute) PERSISTENT;
-
-shortNameObjectItemAttribute(item, attribute) = shortName(valueObjectItemShortAttribute(item, attribute));
-
-valueItemAttribute(item, attribute) = UNION EXCLUSIVE valueStringItemAttribute(item, attribute),
-                                                      stringIntegerItemAttribute(item, attribute),
-                                                      stringDoubleItemAttribute(item, attribute),
-                                                      nameObjectItemAttribute(item, attribute),
-                                                      shortNameObjectItemAttribute(item, attribute) PERSISTENT;
 
 // -------------------------------------------- Формирование наименования ----------------------------------- //
 
@@ -550,6 +245,109 @@ META defineItemAttributeName (prefix, caption, group)
     EXTEND FORM item PROPERTIES(i) READONLY name###prefix##AttributeItem;
     EXTEND DESIGN item { itemHeaderColumn2 {ADD PROPERTY(name###prefix##AttributeItem); } }
 END
+
+// -------------------------------------- Типы атрибутов ------------------------------- //
+
+// Строка
+CLASS STATIC stringItemAttribute 'Строковый атрибут' : itemAttribute;
+
+valueStringItemAttribute = ABSTRACT STRING[100] (item, itemAttribute) EXCLUSIVE PERSISTENT;
+valueItemAttribute(item, attribute) += valueStringItemAttribute(item, attribute);
+
+META defineStringItemAttribute(attribute, type, caption, group)
+    @definePrimitiveItemAttribute(attribute, type, caption, group, string);
+END
+
+// Целое число
+CLASS STATIC integerItemAttribute 'Целочисленный атрибут' : itemAttribute;
+
+valueIntegerItemAttribute = ABSTRACT INTEGER (item, itemAttribute) EXCLUSIVE PERSISTENT;
+stringIntegerItemAttribute(item, attribute) = castToString255(valueIntegerItemAttribute(item, attribute));
+valueItemAttribute(item, attribute) += stringIntegerItemAttribute(item, attribute);
+
+META defineIntegerItemAttribute(attribute, caption, group)
+    @definePrimitiveItemAttribute(attribute, INTEGER, caption, group, integer);
+END
+
+// Дробное число
+CLASS STATIC doubleItemAttribute 'Дробный атрибут' : itemAttribute;
+
+valueDoubleItemAttribute = ABSTRACT DOUBLE (item, itemAttribute) EXCLUSIVE PERSISTENT;
+stringDoubleItemAttribute(item, attribute) = castToString255(valueDoubleItemAttribute(item, attribute));
+valueItemAttribute(item, attribute) += stringDoubleItemAttribute(item, attribute);
+
+META defineDoubleItemAttribute(attribute, type, caption, group)
+    @definePrimitiveItemAttribute(attribute, type, caption, group, double);
+END
+
+// Объектный атрибут
+CLASS STATIC objectItemAttribute 'Объектный атрибут' : itemAttribute;
+
+valueObjectItemAttribute = ABSTRACT named (item, itemAttribute) EXCLUSIVE PERSISTENT;
+nameObjectItemAttribute(item, attribute) = name(valueObjectItemAttribute(item, attribute));
+valueItemAttribute(item, attribute) += nameObjectItemAttribute(item, attribute);
+
+META implementObjectItemAttribute(attribute, caption)
+    @implementItemAttribute(attribute, caption, object, item###attribute);
+END
+
+META defineObjectItemAttribute(attribute, identity, caption, group)
+    attribute##Item = DATA attribute (item);
+    identity###attribute##Item caption (item) = identity(attribute##Item(item)) IN group;
+    @defineItemAttribute(attribute, identity###attribute##Item, caption, group, object, item###attribute);
+END
+
+// Краткое наименование атрибута
+CLASS STATIC objectShortItemAttribute 'Объектный краткий атрибут' : itemAttribute;
+
+valueObjectShortItemAttribute = ABSTRACT doubleNamed (item, itemAttribute) EXCLUSIVE PERSISTENT;
+shortNameObjectItemAttribute(item, attribute) = shortName(valueObjectShortItemAttribute(item, attribute));
+valueItemAttribute(item, attribute) += shortNameObjectItemAttribute(item, attribute);
+
+META implementObjectShortItemAttribute(attribute, caption)
+    EXTEND CLASS objectShortItemAttribute { shortItem###attribute caption }
+    value###attribute##ItemShortAttribute(item, attribute) = attribute##Item(item) AND attribute == objectShortItemAttribute.shortItem###attribute;
+    valueObjectShortItemAttribute(item, attribute) += value###attribute##ItemShortAttribute(item, attribute);
+END
+
+// ---------------------------- Конкретные свойства -------------------------------- //
+
+// Свойства товара
+GROUP itemBaseGroup 'Базовые свойства' : baseGroup;
+
+// Группа
+@implementObjectItemAttribute(itemGroup, 'Группа товаров');
+
+// Название
+@defineStringItemAttribute(caption, STRING[100], 'Название', itemBaseGroup);
+
+// Единица измерения
+@defineObjectItemAttribute(UOM, name, 'Единица измерения', itemBaseGroup);
+
+shortNameUOMItem 'Единица измерения' (item) = shortName(UOMItem(item)) IN itemBaseGroup;
+UOMSku(item) += UOMItem(item);
+
+@implementObjectShortItemAttribute(UOM, 'Единица измерения (сокр.)');
+
+// Брэнд
+CLASS brand 'Бренд' : named, externalObject;
+TABLE brand(brand);
+
+@defineObjectItemAttribute(brand, name, 'Бренд', itemBaseGroup);
+
+// Страна
+@defineObjectItemAttribute(country, name, 'Страна', itemBaseGroup);
+residentItem 'Отечественное производство' (item) = residentCountry(countryItem(item)) IN itemBaseGroup;
+
+// Производитель
+CLASS manufacturer 'Производитель товара' : named;
+TABLE manufacturer(manufacturer);
+
+@defineObjectItemAttribute(manufacturer, name, 'Производитель', itemBaseGroup);
+
+EXTEND DESIGN item { itemPrimaryColumn1 { ADD i.itemBaseGroup; } }
+
+// ---------------------------------------------- Формирование наименований -------------------------------------- //
 
 // Базовое наименование
 @defineItemAttributeName( , , recognizeGroup);

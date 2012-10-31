@@ -1,0 +1,24 @@
+MODULE ItemSize;
+
+REQUIRE System, Item;
+
+NAMESPACE Item;
+
+GROUP itemSizeGroup 'Габариты товара' : publicGroup;
+
+// Размеры
+@defineDoubleItemAttribute(length, NUMERIC[8,2], 'Длина', itemSizeGroup);
+@defineDoubleItemAttribute(width, NUMERIC[8,2], 'Ширина', itemSizeGroup);
+@defineDoubleItemAttribute(height, NUMERIC[8,2], 'Высота', itemSizeGroup);
+
+// Объем
+@defineDoubleItemAttribute(volume, NUMERIC[9,3], 'Объем', itemSizeGroup);
+
+// Вес нетто
+@defineDoubleItemAttribute(netWeight, NUMERIC[9,3], 'Вес нетто', itemSizeGroup);
+netWeightSku(sku) += netWeightItem(sku);
+
+// Вес брутто
+@defineDoubleItemAttribute(grossWeight, NUMERIC[9,3], 'Вес брутто', itemSizeGroup);
+
+EXTEND DESIGN item { itemPrimaryColumn2 { ADD i.itemSizeGroup; } }

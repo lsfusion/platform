@@ -1,6 +1,6 @@
 MODULE WareInvoice;
 
-REQUIRE Item, Ware, Invoice, Shipment;
+REQUIRE Item, ItemWare, Invoice, Shipment;
 
 META defineInvoiceWare(NS)
     wareUserInvoiceDetailUserInvoiceDetail = DATA NS.userInvoiceDetail(NS.userInvoiceDetail);

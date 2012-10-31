@@ -1,0 +1,28 @@
+MODULE ItemArticle;
+
+REQUIRE System, Item;
+
+NAMESPACE Item;
+
+GROUP itemArticleGroup 'Артикул' : publicGroup;
+
+// Артикул
+CLASS article 'Артикул' : named;
+TABLE article(article);
+
+@defineObjectItemAttribute(article, name, 'Артикул', itemArticleGroup);
+
+// Цвет
+CLASS color 'Цвет товара' : named;
+TABLE color (color);
+
+@defineObjectItemAttribute(color, name, 'Цвет', itemArticleGroup);
+
+// Размер
+CLASS size 'Размер товара' : doubleNamed;
+TABLE size(size);
+
+@defineObjectItemAttribute(size, name, 'Размер', itemArticleGroup);
+@implementObjectShortItemAttribute(size, 'Размер (сокр.)');
+
+EXTEND DESIGN item { itemPrimaryColumn2 { ADD i.itemArticleGroup; } }

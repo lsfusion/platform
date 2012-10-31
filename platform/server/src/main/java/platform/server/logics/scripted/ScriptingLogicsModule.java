@@ -415,7 +415,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         for (int i = 0; i < paramClasses.size(); i++) {
             params[i] = findClassByCompoundName(paramClasses.get(i));
         }
-        return addAUProp(null, genSID(), false, "", value, params);
+        return addAUProp(null, genSID(), isExclusive, false, "", value, params);
     }
 
     public LP addScriptedAbstractActionProp(int paramCnt) {

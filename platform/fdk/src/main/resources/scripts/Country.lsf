@@ -109,7 +109,7 @@ loadDefaultCountry 'Добавить страны' = ACTION (string, number, str
        SET nameOriginCountry(c) <- stringA AS STRING[50];
        SET sidOrigin2Country(c) <- stringB AS STRING[2];
        SET sidOrigin3Country(c) <- stringC AS STRING[3];
-       SET currencyCountry(c) <- currencyShortName(shortCurrency);
+       SET currencyCountry(c) <- currencyShortName(shortCurrency AS STRING[3]);
     }
 }
 

@@ -5,10 +5,12 @@ import platform.base.QuickSet;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
-import platform.server.data.query.Query;
 import platform.server.data.where.WhereBuilder;
 import platform.server.data.where.classes.ClassWhere;
-import platform.server.session.*;
+import platform.server.session.DataChanges;
+import platform.server.session.PropertyChange;
+import platform.server.session.PropertyChanges;
+import platform.server.session.StructChanges;
 
 import java.util.*;
 
@@ -16,6 +18,9 @@ import java.util.*;
 public class ExclusiveUnionProperty extends ExclusiveCaseUnionProperty {
 
     private final Collection<CalcPropertyInterfaceImplement<Interface>> operands;
+    private boolean isExclusive;
+
+    private ClassWhere<Object> classValueWhere;
 
     @IdentityLazy
     protected Iterable<Case> getCases() {
@@ -39,6 +44,23 @@ public class ExclusiveUnionProperty extends ExclusiveCaseUnionProperty {
         this.operands = operands;
 
         finalizeInit();
+    }
+
+    // для постзадания
+    public ExclusiveUnionProperty(String sID, boolean isExclusive, String caption, List<Interface> interfaces, ValueClass valueClass, Map<Interface, ValueClass> interfaceClasses) {
+        super(sID, caption, interfaces);
+
+        this.isExclusive = isExclusive;
+
+        operands = new ArrayList<CalcPropertyInterfaceImplement<Interface>>();
+
+        classValueWhere = new ClassWhere<Object>(BaseUtils.<Object, ValueClass>add(interfaceClasses, "value", valueClass), true);
+    }
+
+    public void addOperand(CalcPropertyMapImplement<?,Interface> operand) {
+        assert isAbstract();
+
+        operands.add(operand);
     }
 
     @Override
@@ -65,19 +87,6 @@ public class ExclusiveUnionProperty extends ExclusiveCaseUnionProperty {
 
     public boolean isAbstract() {
         return classValueWhere != null;
-    }
-    // для постзадания
-    private ClassWhere<Object> classValueWhere;
-    public ExclusiveUnionProperty(String sID, String caption, List<Interface> interfaces, ValueClass valueClass, Map<Interface, ValueClass> interfaceClasses) {
-        super(sID, caption, interfaces);
-        operands = new ArrayList<CalcPropertyInterfaceImplement<Interface>>();
-
-        classValueWhere = new ClassWhere<Object>(BaseUtils.<Object, ValueClass>add(interfaceClasses, "value", valueClass), true);
-    }
-    public void addOperand(CalcPropertyMapImplement<?,Interface> operand) {
-        assert isAbstract();
-
-        operands.add(operand);
     }
 
     public ClassWhere<Object> getClassValueWhere() {
@@ -122,6 +131,7 @@ public class ExclusiveUnionProperty extends ExclusiveCaseUnionProperty {
                 result.add((CalcPropertyMapImplement<?, Interface>)operand);
         return result;
     }
+
     public void checkClasses() {
         assert isAbstract();
 
@@ -137,14 +147,15 @@ public class ExclusiveUnionProperty extends ExclusiveCaseUnionProperty {
             listClasses.add(operandClassValueWhere);
             fullClassValueWhere = fullClassValueWhere.or(operandClassValueWhere);
         }
-        
-        for(int i=0;i<listOperands.size();i++)
-            for(int j=i+1;j<listOperands.size();j++) {
-                CalcPropertyMapImplement<?, Interface> op1 = listOperands.get(i);
-                CalcPropertyMapImplement<?, Interface> op2 = listOperands.get(j);
-                if(op1.mapIntersect(op2))
-                    throw new RuntimeException("Exclusive Intersect. Property : " + this + ", Operand 1 : " + op1.property +  ", Operand 2 : " + op2.property + ", Classes 1 : " + listClasses.get(i) + ", Classes 2 : " + listClasses.get(j));
-            }
+
+        if (!isExclusive)
+            for(int i=0;i<listOperands.size();i++)
+                for(int j=i+1;j<listOperands.size();j++) {
+                    CalcPropertyMapImplement<?, Interface> op1 = listOperands.get(i);
+                    CalcPropertyMapImplement<?, Interface> op2 = listOperands.get(j);
+                    if(op1.mapIntersect(op2))
+                        throw new RuntimeException("Exclusive Intersect. Property : " + this + ", Operand 1 : " + op1.property +  ", Operand 2 : " + op2.property + ", Classes 1 : " + listClasses.get(i) + ", Classes 2 : " + listClasses.get(j));
+                }
 
         if(checkFull() && classValueWhere.means(fullClassValueWhere))
             throw new RuntimeException("Property is not fully implemented : " + this +  ", Calculated : " + fullClassValueWhere + ", Specified : " + classValueWhere);

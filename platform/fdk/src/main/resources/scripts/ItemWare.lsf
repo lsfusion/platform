@@ -1,0 +1,9 @@
+MODULE ItemWare;
+
+REQUIRE System, Item, Ware;
+
+NAMESPACE Item;
+
+@defineObjectItemAttribute(ware, name, 'Посуда', itemBaseGroup);
+
+inWareItem 'Товар в посуде' (item) = item IS item AND wareItem(item);

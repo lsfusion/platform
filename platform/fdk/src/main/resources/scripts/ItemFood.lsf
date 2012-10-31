@@ -1,0 +1,28 @@
+MODULE ItemFood;
+
+REQUIRE System, Item;
+
+NAMESPACE Item;
+
+GROUP itemFoodGroup 'Пищевые характеристики' : publicGroup;
+
+// Вкус
+CLASS taste 'Вкус товара' : named;
+TABLE taste(taste);
+
+@defineObjectItemAttribute(taste, name, 'Вкус', itemFoodGroup);
+
+// Степень охлаждения
+CLASS coolingDegree 'Степень охлаждения товара' : doubleNamed;
+TABLE coolingDegree(coolingDegree);
+
+@defineObjectItemAttribute(coolingDegree, name, 'Степень охлаждения', itemFoodGroup);
+@implementObjectShortItemAttribute(coolingDegree, 'Степень охлаждения (сокр.)');
+
+// Жирность
+@defineDoubleItemAttribute(percentFat, NUMERIC[5,1], '% жирности', itemFoodGroup);
+
+// Алкоголь
+@defineDoubleItemAttribute(percentAlcohol, NUMERIC[5,1], '% алкоголя', itemFoodGroup);
+
+EXTEND DESIGN item { itemPrimaryColumn2 { ADD i.itemFoodGroup; } }

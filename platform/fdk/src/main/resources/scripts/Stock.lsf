@@ -60,7 +60,7 @@ nameSkuGroupStock 'Наименование (иностр.)' (skuGroup, stock) =
 CLASS ABSTRACT sku 'SKU';
 TABLE sku(sku);
 
-skuGroupSku (sku) = ABSTRACT skuGroup (sku);
+skuGroupSku (sku) = ABSTRACT skuGroup (sku) PERSISTENT;
 nameSku 'Наименование' (sku) = ABSTRACT STRING[200] (sku) PERSISTENT MINCHARWIDTH 40 PREFCHARWIDTH 80 INDEXED AGGPROP IN recognizeGroup;
 
 TABLE skuLanguage(sku, language);
@@ -68,15 +68,15 @@ nameSkuLanguage 'Наименование (иностр.)' = ABSTRACT STRING[200
 
 nameSkuStock 'Наименование (иностр.)' (sku, stock) = IF languageStock(stock) THEN nameSkuLanguage(sku, languageStock(stock)) ELSE nameSku(sku);
 
-UOMSku (sku) = ABSTRACT UOM (sku);
+UOMSku (sku) = ABSTRACT UOM (sku) PERSISTENT;
 shortNameUOMSku 'Ед. изм.' (sku) = shortName(UOMSku(sku)) IN recognizeGroup;
 
 TABLE skuGroupSku(skuGroup, sku);
 isParentSkuGroupSku (skuGroup, sku) = isParentSkuGroupSkuGroup(skuGroupSku(sku), skuGroup) PERSISTENT;
 
-isContainerSku 'Тара' (sku) = ABSTRACT BOOLEAN (sku);
-quantityPackSku 'Количество в грузовом месте' = ABSTRACT NUMERIC[9,3] (sku);
-netWeightSku 'Вес нетто' = ABSTRACT NUMERIC[9,3] (sku);
+isContainerSku 'Тара' (sku) = ABSTRACT BOOLEAN (sku) PERSISTENT;
+quantityPackSku 'Количество в грузовом месте' = ABSTRACT NUMERIC[9,3] (sku) PERSISTENT;
+netWeightSku 'Вес нетто' = ABSTRACT NUMERIC[9,3] (sku) PERSISTENT;
 
 // ----------------------------------- Ledger ------------------------------------------ //
 

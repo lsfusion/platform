@@ -1,0 +1,48 @@
+MODULE ItemDescription;
+
+REQUIRE System, Item;
+
+NAMESPACE Item;
+
+GROUP itemDescriptionGroup 'Описание' : publicGroup;
+
+// Вид
+CLASS type 'Вид товара' : named;
+TABLE type(type);
+
+@defineObjectItemAttribute(type, name, 'Вид', itemDescriptionGroup);
+
+// Сорт
+CLASS sort 'Сорт товара' : named;
+TABLE sort(sort);
+
+@defineObjectItemAttribute(sort, name, 'Сорт', itemDescriptionGroup);
+
+// Форма
+CLASS form 'Форма товара' : named;
+TABLE form(form);
+
+@defineObjectItemAttribute(form, name, 'Форма', itemDescriptionGroup);
+
+// Особенность
+CLASS feature 'Особенность товара' : doubleNamed;
+TABLE feature(feature);
+
+@defineObjectItemAttribute(feature, name, 'Особенность', itemDescriptionGroup);
+@implementObjectShortItemAttribute(feature, 'Особенность (сокр.)');
+
+// Упаковка
+CLASS pack 'Упаковка' : doubleNamed;
+TABLE pack(pack);
+
+@defineObjectItemAttribute(pack, name, 'Упаковка', itemDescriptionGroup);
+@implementObjectShortItemAttribute(pack, 'Упаковка (сокр.)');
+
+// Свойство
+@defineStringItemAttribute(property, STRING[100], 'Свойство', itemDescriptionGroup);
+
+// Кол-во компонентов
+@defineIntegerItemAttribute(numberComponents, 'Кол-во компонентов', itemDescriptionGroup);
+
+EXTEND DESIGN item { itemPrimaryColumn1 { ADD i.itemDescriptionGroup; } }
+

@@ -1825,10 +1825,10 @@ public abstract class LogicsModule {
         return addProperty(group, persistent, new LCP<UnionProperty.Interface>(property, listInterfaces));
     }
 
-    protected LCP addAUProp(AbstractGroup group, String name, boolean persistent, String caption, ValueClass valueClass, ValueClass... interfaces) {
+    protected LCP addAUProp(AbstractGroup group, String name, boolean isExclusive, boolean persistent, String caption, ValueClass valueClass, ValueClass... interfaces) {
         List<UnionProperty.Interface> listInterfaces = UnionProperty.getInterfaces(interfaces.length);
         return addProperty(group, persistent, new LCP<UnionProperty.Interface>(
-                new ExclusiveUnionProperty(name, caption, listInterfaces, valueClass, BaseUtils.buildMap(listInterfaces, toList(interfaces))), listInterfaces));
+                new ExclusiveUnionProperty(name, isExclusive, caption, listInterfaces, valueClass, BaseUtils.buildMap(listInterfaces, toList(interfaces))), listInterfaces));
     }
 
     protected LCP addCaseUProp(AbstractGroup group, String name, boolean persistent, String caption, Object... params) {

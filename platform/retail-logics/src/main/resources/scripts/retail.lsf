@@ -70,6 +70,9 @@ REQUIRE System,
         Inventory,
         DefaultData,
         Item,
+        ItemWare,
+        ItemSize,
+        ItemArticle,
         PriceList,
         Agreement;
 
@@ -370,9 +373,9 @@ proteinsItem 'Белки на 100г, г' = DATA DOUBLE (item) IN substanceGroup;
 isContainGMOItem 'Содержит ГМО' = DATA BOOLEAN (item) IN substanceGroup;
 
 //sizeGroup
-lengthPackItem 'Длина упаковки' = DATA NUMERIC[8,2] (item) IN sizeGroup;
-widthPackItem 'Ширина упаковки' = DATA NUMERIC[8,2] (item) IN sizeGroup;
-heightPackItem 'Высота упаковки' = DATA NUMERIC[8,2] (item) IN sizeGroup;
+lengthPackItem 'Длина упаковки' = DATA NUMERIC[8,2] (item) IN itemSizeGroup;
+widthPackItem 'Ширина упаковки' = DATA NUMERIC[8,2] (item) IN itemSizeGroup;
+heightPackItem 'Высота упаковки' = DATA NUMERIC[8,2] (item) IN itemSizeGroup;
 grossWeightPackItem 'Вес брутто упаковки' = DATA NUMERIC[9,3] (item) IN manufactoryGroup;
 quantityPackItem 'Количество в грузовом месте' = DATA NUMERIC[9,3] (item) IN orderGroup;
 quantityPackSku(sku) += quantityPackItem(sku);
