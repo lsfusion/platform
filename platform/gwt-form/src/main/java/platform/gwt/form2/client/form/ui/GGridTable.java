@@ -176,7 +176,7 @@ public class GGridTable extends GGridPropertyTable {
             for (int i = 0; i < columnProperties.size(); ++i) {
                 GridHeader header = headers.get(i);
                 header.setCaption(columnCaptions.get(i));
-                GPropertyDraw property = getProperty(0, i);
+                GPropertyDraw property = getProperty(i);
                 if (property != null) {
                     setColumnWidth(getColumn(i), property.getMinimumWidth());
                 }
@@ -228,8 +228,12 @@ public class GGridTable extends GGridPropertyTable {
         columnsUpdated = true;
     }
 
+    public GPropertyDraw getProperty(int column) {
+        return columnProperties.get(column);
+    }
+
     public GPropertyDraw getProperty(Cell.Context context) {
-        return columnProperties.get(context.getColumn());
+        return getProperty(context.getColumn());
     }
 
     private int getMinPropertyIndex(GPropertyDraw property) {
