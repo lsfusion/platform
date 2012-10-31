@@ -907,6 +907,10 @@ inReceiptPromotion (receipt, promotion) = inPromotionStore(promotion, storeRecei
                                           AND NOT cumulativeSumReceiptPromotion (receipt, promotion) < minCumulativeSumPromotion(promotion) AND NOT cumulativeSumReceiptPromotion (receipt, promotion) > maxCumulativeSumPromotion(promotion)
                                           AND NOT (hasDiscountCardPromotion(promotion) AND NOT inPromotionDiscountCard(promotion, discountCardReceipt(receipt)));
 
+inReceiptSaleDetailPromotionCondition (receiptDetail, promotionCondition) =
+    inReceiptPromotion(receiptReceiptDetail(receiptDetail), promotionPromotionCondition(promotionCondition))
+    AND inPromotionConditionSku(promotionCondition, skuReceiptDetail(receiptDetail));
+
 maxSalePriceReceiptSku (receipt, sku) = GROUP MAX priceReceiptSaleDetail(detail) BY receiptReceiptSaleDetail(detail), skuReceiptSaleDetail(detail);
 
 isAppliedPromotionReceiptSaleDetailPromotionCondition 'Акция применяется' (receiptSaleDetail, promotionCondition) =
@@ -1047,7 +1051,7 @@ FORM POS
     OBJECTS pcu = promotionCondition FIXED GRID
     PROPERTIES(pcu) SHOWIF currentZReport() READONLY namePromotionPromotionCondition, name, dateFromPromotionCondition, dateToPromotionCondition, percentPromotionCondition
     PROPERTIES(d, pcu) SHOWIF currentZReport() quantityReceiptSaleDetailPromotionCondition, promotionSumReceiptSaleDetailPromotionCondition, setUserPromotionReceiptSaleDetailPromotionCondition
-    FILTERS userSetPromotionCondition(pcu)
+    FILTERS userSetPromotionCondition(pcu) AND inReceiptSaleDetailPromotionCondition(d, pcu)
 
     PROPERTIES() fiscalAdvancePaper, fiscalCutReceipt
 
