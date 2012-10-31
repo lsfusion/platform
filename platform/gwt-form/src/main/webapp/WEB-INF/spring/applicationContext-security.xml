@@ -12,7 +12,7 @@
 
     <http auto-config="true" use-expressions="true" entry-point-ref="loginUrlAuthenticationEntryPoint">
         <intercept-url pattern="/form.jsp" access="hasAnyRole('admin')"/>
-        <intercept-url pattern="/platform.gwt.form2.Form/*" access="hasRole('admin')"/>
+        <intercept-url pattern="/platform.gwt.form.Form/*" access="hasRole('admin')"/>
 
         <form-login authentication-failure-url="/login.jsp?error=1" default-target-url="/form.jsp"/>
 
@@ -70,5 +70,5 @@
         <aop:scoped-proxy proxy-target-class="false"/>
     </b:bean>
 
-    <b:bean scope="session" id="formManager" class="platform.gwt.form2.server.FormSessionManager" />
+    <b:bean scope="session" id="formManager" class="platform.gwt.form.server.FormSessionManager" />
 </b:beans>

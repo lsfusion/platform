@@ -28,7 +28,7 @@
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>gwt-maven-plugin</artifactId>
                         <configuration>
-                            <module>platform.gwt.form2.Form</module>
+                            <module>platform.gwt.form.Form</module>
                         </configuration>
                     </plugin>
                 </plugins>

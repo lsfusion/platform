@@ -1,0 +1,36 @@
+package platform.gwt.form.shared.view.classes;
+
+import platform.gwt.form.shared.view.GPropertyDraw;
+import platform.gwt.form.shared.view.grid.EditManager;
+import platform.gwt.form.shared.view.grid.editor.ColorGridEditor;
+import platform.gwt.form.shared.view.grid.editor.GridCellEditor;
+import platform.gwt.form.shared.view.grid.renderer.ColorGridRenderer;
+import platform.gwt.form.shared.view.grid.renderer.GridCellRenderer;
+
+public class GColorType extends GDataType {
+    public static GColorType instance = new GColorType();
+
+    @Override
+    public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
+        return new ColorGridEditor(editManager);
+    }
+
+    @Override
+    public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
+        return new ColorGridRenderer();
+    }
+
+    @Override
+    public String getPreferredMask() {
+        return "";
+    }
+
+    @Override
+    public int getMinimumPixelWidth(int minimumCharWidth) {
+        return 40;
+    }
+
+    public int getPreferredPixelWidth(int preferredCharWidth) {
+        return 40;
+    }
+}

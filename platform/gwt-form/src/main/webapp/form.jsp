@@ -14,6 +14,6 @@
     </head>
     <body>
         <script type="text/javascript" language="javascript"
-                src="platform.gwt.form2.Form/platform.gwt.form2.Form.nocache.js"></script>
+                src="platform.gwt.form.Form/platform.gwt.form.Form.nocache.js"></script>
     </body>
 </html>

@@ -26,7 +26,7 @@
 
     <servlet>
         <servlet-name>RemoteGwtService</servlet-name>
-        <servlet-class>platform.gwt.form2.server.RemoteServiceImpl</servlet-class>
+        <servlet-class>platform.gwt.form.server.RemoteServiceImpl</servlet-class>
     </servlet>
     <servlet>
         <servlet-name>LoginService</servlet-name>
@@ -35,7 +35,7 @@
 
     <servlet-mapping>
         <servlet-name>RemoteGwtService</servlet-name>
-        <url-pattern>/platform.gwt.form2.Form/dispatch</url-pattern>
+        <url-pattern>/platform.gwt.form.Form/dispatch</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>LoginService</servlet-name>
