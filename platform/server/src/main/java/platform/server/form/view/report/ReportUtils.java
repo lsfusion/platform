@@ -39,9 +39,10 @@ class ReportUtils {
         return field;
     }
 
-    public static JRDesignField createField(String name) {
+    public static JRDesignField createField(String name, String className) {
         JRDesignField field = new JRDesignField();
         field.setName(name);
+        field.setValueClassName(className);
         return field;
     }
 

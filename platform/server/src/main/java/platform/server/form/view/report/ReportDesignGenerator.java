@@ -159,11 +159,11 @@ public class ReportDesignGenerator {
                 hasColumnGroupProperty = hasColumnGroupProperty || field.hasColumnGroupObjects;
                 if (field.hasCaptionProperty) {
                     String fieldId = field.sID + ReportConstants.captionSuffix;
-                    addDesignField(design, fieldId);
+                    addDesignField(design, fieldId, field.captionClass.getName());
                 }
                 if (field.hasFooterProperty) {
                     String fieldId = field.sID + ReportConstants.footerSuffix;
-                    addDesignField(design, fieldId);
+                    addDesignField(design, fieldId, field.footerClass.getName());
                 }
             }
 
@@ -287,11 +287,11 @@ public class ReportDesignGenerator {
     }
 
     private JRDesignField addDesignField(JasperDesign design, ReportDrawField reportField) throws JRException {
-        return addDesignField(design, reportField.sID);
+        return addDesignField(design, reportField.sID, reportField.valueClass.getName());
     }
 
-    private JRDesignField addDesignField(JasperDesign design, String id) throws JRException {
-        JRDesignField designField = ReportUtils.createField(id);
+    private JRDesignField addDesignField(JasperDesign design, String id, String className) throws JRException {
+        JRDesignField designField = ReportUtils.createField(id, className);
         design.addField(designField);
         return designField;
     }
