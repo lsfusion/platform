@@ -47,8 +47,6 @@ public class GGridTable extends GGridPropertyTable {
             }
         });
 
-        setKeyboardSelectionPolicy(KeyboardSelectionPolicy.BOUND_TO_SELECTION);
-
         sortableHeaderManager = new GGridSortableHeaderManager<Map<GPropertyDraw, GGroupObjectValue>>(this, false) {
             @Override
             protected void orderChanged(Map<GPropertyDraw, GGroupObjectValue> columnKey, GOrder modiType) {
@@ -99,7 +97,7 @@ public class GGridTable extends GGridPropertyTable {
         updatedColumnsIfNeeded();
 
         if (dataUpdated) {
-            currentRecords = GridDataRecord.createRecords(columnProperties, rowKeys, columnKeysList, values, rowBackgroundValues, rowForegroundValues, cellBackgroundValues, cellForegroundValues);
+            currentRecords = GridDataRecord.createRecords(this, columnProperties, rowKeys, columnKeysList, values, rowBackgroundValues, rowForegroundValues, cellBackgroundValues, cellForegroundValues);
             setRowData(currentRecords);
             dataUpdated = false;
         }

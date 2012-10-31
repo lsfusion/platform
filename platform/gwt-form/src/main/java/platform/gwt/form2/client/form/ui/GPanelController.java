@@ -179,13 +179,13 @@ public class GPanelController {
             if (background == null && cellBackgroundValues != null) {
                 background = cellBackgroundValues.get(columnKey);
             }
-            renderer.updateCellBackgroundValue(background);
+            renderer.updateCellBackgroundValue(background == null ? property.background : background);
 
             Object foreground = rowForeground;
             if (foreground == null && cellForegroundValues != null) {
                 foreground = cellForegroundValues.get(columnKey);
             }
-            renderer.updateCellForegroundValue(foreground);
+            renderer.updateCellForegroundValue(foreground == null ? property.foreground : foreground);
 
             if (propertyCaptions != null) {
                 renderer.setCaption(property.getDynamicCaption(propertyCaptions.get(columnKey)));

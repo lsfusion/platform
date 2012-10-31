@@ -2,6 +2,7 @@ package platform.gwt.form2.server.convert;
 
 import platform.client.logics.*;
 import platform.gwt.form2.shared.view.*;
+import platform.gwt.form2.shared.view.changes.dto.ColorDTO;
 import platform.gwt.form2.shared.view.reader.*;
 import platform.interop.ClassViewType;
 import platform.interop.PropertyEditType;
@@ -47,6 +48,14 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         }
 
         component.hAlign = clientComponent.constraints.directions.R > 0 ? GComponent.Alignment.RIGHT : GComponent.Alignment.LEFT;
+
+        if (clientComponent.design.getBackground() != null) {
+            component.background = new ColorDTO(Integer.toHexString(clientComponent.design.getBackground().getRGB()).substring(2, 8));
+        }
+
+        if (clientComponent.design.getForeground() != null) {
+            component.foreground = new ColorDTO(Integer.toHexString(clientComponent.design.getForeground().getRGB()).substring(2, 8));
+        }
 
         return component;
     }

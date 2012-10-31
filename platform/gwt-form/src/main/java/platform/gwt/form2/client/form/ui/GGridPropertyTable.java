@@ -53,6 +53,9 @@ public abstract class GGridPropertyTable extends GPropertyTable {
 
         selectionModel = new GGridTableSelectionModel();
         setSelectionModel(selectionModel, DefaultSelectionEventManager.<GridDataRecord>createDefaultManager());
+
+        setAutoHeaderRefreshDisabled(true);
+        setAutoFooterRefreshDisabled(true);
     }
 
     @Override

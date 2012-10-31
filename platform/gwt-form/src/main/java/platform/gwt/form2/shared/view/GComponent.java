@@ -1,5 +1,7 @@
 package platform.gwt.form2.shared.view;
 
+import platform.gwt.form2.shared.view.changes.dto.ColorDTO;
+
 import java.io.Serializable;
 
 public class GComponent implements Serializable {
@@ -19,6 +21,9 @@ public class GComponent implements Serializable {
     public int preferredHeight = -1;
 
     public Alignment hAlign;
+
+    public ColorDTO background;
+    public ColorDTO foreground;
 
     public enum Alignment {
         LEFT, RIGHT, CENTER

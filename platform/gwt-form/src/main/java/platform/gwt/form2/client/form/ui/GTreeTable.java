@@ -188,8 +188,8 @@ public class GTreeTable extends GGridPropertyTable {
                         }
                     }
 
-                    record.setBackground(j + 1, background);
-                    record.setForeground(j + 1, foreground);
+                    record.setBackground(j + 1, background == null ? property.background : background);
+                    record.setForeground(j + 1, foreground == null ? property.foreground : foreground);
                 }
             }
         }

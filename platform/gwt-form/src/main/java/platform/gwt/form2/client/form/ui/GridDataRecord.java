@@ -53,9 +53,9 @@ public class GridDataRecord {
 
     public void setForeground(int column, Object color) {
         if (color != null) {
-            createForerounds().put(column, color.toString());
+            createForegrounds().put(column, color.toString());
         } else {
-            createForerounds().remove(column);
+            createForegrounds().remove(column);
         }
     }
 
@@ -77,7 +77,7 @@ public class GridDataRecord {
         return backgrounds;
     }
 
-    private HashMap<Object, String> createForerounds() {
+    private HashMap<Object, String> createForegrounds() {
         if (foregrounds == null) {
             foregrounds = new HashMap<Object, String>();
         }
@@ -96,7 +96,8 @@ public class GridDataRecord {
                 '}';
     }
 
-    public static ArrayList<GridDataRecord> createRecords(ArrayList<GPropertyDraw> columnProperties,
+    public static ArrayList<GridDataRecord> createRecords(GGridTable table,
+                                                          ArrayList<GPropertyDraw> columnProperties,
                                                           ArrayList<GGroupObjectValue> rowKeys,
                                                           List<GGroupObjectValue> columnKeys,
                                                           Map<GPropertyDraw, Map<GGroupObjectValue, Object>> values,
@@ -125,8 +126,9 @@ public class GridDataRecord {
                                     : rowBackground;
 
                 record.setValue(j, value);
-                record.setBackground(j, background);
-                record.setForeground(j, foreground);
+                table.getSelectionModel().isSelected(record);
+                record.setBackground(j, background == null ? columnProperty.background : background);
+                record.setForeground(j, foreground == null ? columnProperty.foreground : foreground);
             }
             result.add(record);
         }
