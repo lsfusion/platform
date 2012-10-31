@@ -28,18 +28,10 @@
         <servlet-name>RemoteGwtService</servlet-name>
         <servlet-class>platform.gwt.form.server.RemoteServiceImpl</servlet-class>
     </servlet>
-    <servlet>
-        <servlet-name>LoginService</servlet-name>
-        <servlet-class>platform.gwt.login.server.LoginServiceImpl</servlet-class>
-    </servlet>
 
     <servlet-mapping>
         <servlet-name>RemoteGwtService</servlet-name>
         <url-pattern>/platform.gwt.form.Form/dispatch</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>LoginService</servlet-name>
-        <url-pattern>/platform.gwt.login.Login/dispatch</url-pattern>
     </servlet-mapping>
 
     <servlet>
