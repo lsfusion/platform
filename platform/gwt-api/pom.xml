@@ -56,10 +56,6 @@
         </dependency>
 
         <dependency>
-            <groupId>com.smartgwt</groupId>
-            <artifactId>smartgwt</artifactId>
-        </dependency>
-        <dependency>
             <groupId>com.google.code.gwt-log</groupId>
             <artifactId>gwt-log</artifactId>
         </dependency>

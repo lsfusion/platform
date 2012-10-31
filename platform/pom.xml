@@ -29,6 +29,7 @@
         <module>retail-logics</module>
         <module>gwt-form</module>
         <module>gwt-api</module>
+        <module>sgwt-api</module>
         <module>paas-api</module>
         <module>paas-logics</module>
         <module>paas-web</module>

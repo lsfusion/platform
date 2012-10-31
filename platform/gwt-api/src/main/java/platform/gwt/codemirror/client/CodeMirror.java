@@ -34,7 +34,7 @@ public class CodeMirror extends Widget {
     }
 
     private native JavaScriptObject initialize(String id, CodeMirrorOptions options) /*-{
-        var opts = options.@platform.gwt.codemirror.client.CodeMirrorOptions::getJsObj()();
+        var opts = options.@platform.gwt.codemirror.client.CodeMirrorOptions::getJSNObj()();
 
         $doc.getElementById(id).value = opts.value;
 

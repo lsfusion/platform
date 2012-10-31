@@ -19,6 +19,10 @@
         </dependency>
         <dependency>
             <groupId>by.luxsoft.platform</groupId>
+            <artifactId>sgwt-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>by.luxsoft.platform</groupId>
             <artifactId>paas-api</artifactId>
         </dependency>
 

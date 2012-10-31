@@ -40,7 +40,6 @@
             <arg value="mvn"/>
             <arg value="-Dmaven.test.skip=false"/>
             <arg value="test-compile" />
-            <arg value="-Dquickbuild" />
         </exec>
     </target>
 
@@ -305,6 +304,18 @@
     <target name="gwt-api-quickCompile">
         <antcall target="quickCompile">
             <param name="artifactId" value="gwt-api"/>
+        </antcall>
+    </target>
+
+    <target name="sgwt-api-recursiveCompile">
+        <antcall target="recursiveCompile">
+            <param name="artifactId" value="sgwt-api"/>
+        </antcall>
+    </target>
+
+    <target name="sgwt-api-quickCompile">
+        <antcall target="quickCompile">
+            <param name="artifactId" value="sgwt-api"/>
         </antcall>
     </target>
 
