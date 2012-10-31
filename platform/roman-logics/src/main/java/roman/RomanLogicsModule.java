@@ -2222,6 +2222,8 @@ public class RomanLogicsModule extends LogicsModule {
 
         currencyRRPDocument = addDProp(idGroup, "currencyRRPDocument", "Валюта RRP (ИД)", baseLM.currency, priceDocument);
         nameCurrencyRRPDocument = addJProp("nameCurrencyRRPDocument", "Валюта RRP", baseLM.name, currencyRRPDocument, 1);
+        nameCurrencyRRPDocument.property.preferredCharWidth = 50;
+        nameCurrencyRRPDocument.property.minimumCharWidth = 10;
 
         addConstraint(addJProp("Для инвойса должна быть задана валюта", baseLM.andNot1, is(invoice), 1, currencyDocument, 1), false);
 

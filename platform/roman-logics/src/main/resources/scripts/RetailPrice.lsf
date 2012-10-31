@@ -530,6 +530,7 @@ RRPBBasePriceSetDocumentSkuCurrencyDateTime(sku, currency, dateTime) = overRRPBa
 prevRRPBBasePriceSetDocumentSkuCurrencyDateTime(sku, currency, dateTime) = PREV(overRRPBasePriceSetDocumentSku(basePriceSetDocumentBSkuCurrencyDateTime(sku, currency, dateTime), sku));
 
 prevCurrencyBBasePriceSetDocumentSkuCurrencyDateTime(sku, currency, dateTime) = PREV(overCurrencyBasePriceSetDocumentSku(basePriceSetDocumentBSkuCurrencyDateTime(sku, currency, dateTime), sku));
+prevCurrencyRRPBBasePriceSetDocumentSkuCurrencyDateTime(sku, currency, dateTime) = PREV(overCurrencyRRPBasePriceSetDocumentSku(basePriceSetDocumentBSkuCurrencyRRPDateTime(sku, currency, dateTime), sku));
 prevTypeExchangeBBasePriceSetDocumentSkuCurrencyDateTime(sku, currency, dateTime) = PREV(overTypeExchangeBasePriceSetDocumentSku(basePriceSetDocumentBSkuCurrencyDateTime(sku, currency, dateTime), sku));
 
 prevMarkupBBasePriceSetDocumentSkuCurrencyDateTime(sku, currency, dateTime) = PREV(overMarkupBasePriceSetDocumentSku(basePriceSetDocumentBSkuCurrencyDateTime(sku, currency, dateTime), sku));
@@ -547,7 +548,7 @@ RRPBPriceSetDocumentSku 'Рекомендуемая цена (предыдуща
 prevRRPBPriceSetDocumentSku 'Рекомендуемая цена (предыдущая)' (document, sku) = prevRRPBBasePriceSetDocumentSkuCurrencyDateTime(sku, currencyPriceSetDocument(document), dateTimePriceSetDocumentSku(document, sku));
 
 prevCurrencyBPriceSetDocumentSku 'Валюта (предыдущая)' (document, sku) = prevCurrencyBBasePriceSetDocumentSkuCurrencyDateTime(sku, currencyPriceSetDocument(document), dateTimePriceSetDocumentSku(document, sku));
-//prevCurrencyRRPBPriceSetDocumentSku 'Валюта (предыдущая)' (document, sku) = prevCurrencyRRPBBasePriceSetDocumentSkuCurrencyDateTime(sku, overCurrencyRRPBasePriceSetDocumentSku(document, sku), dateTimePriceSetDocumentSku(document, sku));
+prevCurrencyRRPBPriceSetDocumentSku 'Валюта (предыдущая)' (document, sku) = prevCurrencyRRPBBasePriceSetDocumentSkuCurrencyDateTime(sku, currencyPriceSetDocument(document), dateTimePriceSetDocumentSku(document, sku));
 
 prevTypeExchangeBPriceSetDocumentSku 'Тип обмена (предыдущий)' (document, sku) = prevTypeExchangeBBasePriceSetDocumentSkuCurrencyDateTime(sku, currencyPriceSetDocument(document), dateTimePriceSetDocumentSku(document, sku));
 
@@ -642,7 +643,13 @@ RRPBasePriceSetDocumentSku(basePriceSetDocument, sku) <- prevRRPBPriceSetDocumen
 currencyBasePriceSetDocumentSku(basePriceSetDocument, sku) <- prevCurrencyBPriceSetDocumentSku (basePriceSetDocument, sku)
     WHEN ASSIGNED(inPriceSetDocumentSku(basePriceSetDocument, sku));
 
+currencyRRPBasePriceSetDocumentSku(basePriceSetDocument, sku) <- prevCurrencyRRPBPriceSetDocumentSku (basePriceSetDocument, sku)
+    WHEN ASSIGNED(inPriceSetDocumentSku(basePriceSetDocument, sku));
+
 typeExchangeBasePriceSetDocumentSku(basePriceSetDocument, sku) <- prevTypeExchangeBPriceSetDocumentSku (basePriceSetDocument, sku)
+    WHEN ASSIGNED(inPriceSetDocumentSku(basePriceSetDocument, sku));
+
+markupBasePriceSetDocumentSku (basePriceSetDocument, sku) <- prevMarkupBPriceSetDocumentSku (basePriceSetDocument, sku)
     WHEN ASSIGNED(inPriceSetDocumentSku(basePriceSetDocument, sku));
 
 methodBasePriceSetDocumentSku (basePriceSetDocument, sku) <- prevMethodBPriceSetDocumentSku (basePriceSetDocument, sku)
@@ -792,8 +799,8 @@ FORM priceSetDocument 'Розничный прайс'
     PROPERTIES (p, a) inPriceSetDocumentArticle,
                       dateTimePriceSetDocumentArticle, dateTimeToPriceSetDocumentArticle
     PROPERTIES(a) READONLY sidArticle, nameCategoryArticle, nameBrandSupplierArticle
-    PROPERTIES (p, a) nameCurrencyBasePriceSetDocumentArticle, priceInBasePriceSetDocumentArticle, markupBasePriceSetDocumentArticle,
-                      priceOutBasePriceSetDocumentArticle, nameCurrencyRRPBasePriceSetDocumentArticle, RRPBasePriceSetDocumentArticle,
+    PROPERTIES (p, a) priceInBasePriceSetDocumentArticle, markupBasePriceSetDocumentArticle, priceOutBasePriceSetDocumentArticle,
+                      nameCurrencyBasePriceSetDocumentArticle, RRPBasePriceSetDocumentArticle, nameCurrencyRRPBasePriceSetDocumentArticle,
                       nameTypeExchangeBasePriceSetDocumentArticle, rateBasePriceSetDocumentArticle, rateRRPBasePriceSetDocumentArticle,
                       priceOutRateBasePriceSetDocumentArticle, RRPRateBasePriceSetDocumentArticle, prevPriceBBasePriceSetDocumentArticle,
                       nameMethodBasePriceSetDocumentArticle, priceBasePriceSetDocumentArticle
@@ -821,9 +828,9 @@ FORM priceSetDocument 'Розничный прайс'
     PROPERTIES (p, sk) inPriceSetDocumentSku,
                        dateTimePriceSetDocumentSku, dateTimeToPriceSetDocumentSku
     PROPERTIES(sk) READONLY FORCE GRID barcode, sidArticleSku, nameCategoryArticleSku, nameBrandSupplierArticleSku, sidSizeSupplierItem, sidColorSupplierItem
-    PROPERTIES (p, sk) nameCurrencyBasePriceSetDocumentSku, priceInBasePriceSetDocumentSku, markupBasePriceSetDocumentSku, priceOutBasePriceSetDocumentSku,
-                       nameCurrencyRRPBasePriceSetDocumentSku, RRPBasePriceSetDocumentSku, nameTypeExchangeBasePriceSetDocumentSku,
-                       rateBasePriceSetDocumentSku, priceOutRateBasePriceSetDocumentSku, RRPRateBasePriceSetDocumentSku,
+    PROPERTIES (p, sk) priceInBasePriceSetDocumentSku, markupBasePriceSetDocumentSku, priceOutBasePriceSetDocumentSku, nameCurrencyBasePriceSetDocumentSku,
+                       RRPBasePriceSetDocumentSku, nameCurrencyRRPBasePriceSetDocumentSku, nameTypeExchangeBasePriceSetDocumentSku,
+                       rateBasePriceSetDocumentSku, rateRRPBasePriceSetDocumentSku, priceOutRateBasePriceSetDocumentSku, RRPRateBasePriceSetDocumentSku,
                        prevPriceBBasePriceSetDocumentSku, nameMethodBasePriceSetDocumentSku, priceBasePriceSetDocumentSku
 
     PROPERTIES (p, sk) percentDiscountPriceSetDocumentSku, calcPriceDiscountPriceSetDocumentSku, prevPriceBDiscountPriceSetDocumentSku,
@@ -1086,13 +1093,12 @@ FORM priceSetDocuments 'Розничные прайсы'
     OBJECTS a=article
     PROPERTIES(a) READONLY sidArticle, nameCategoryArticle, nameBrandSupplierArticle
 
-    PROPERTIES (p, a) READONLY nameCurrencyBasePriceSetDocumentArticle, priceInBasePriceSetDocumentArticle, markupBasePriceSetDocumentArticle,
-                      priceOutBasePriceSetDocumentArticle, nameCurrencyRRPBasePriceSetDocumentArticle, RRPBasePriceSetDocumentArticle,
+    PROPERTIES (p, a) READONLY priceInBasePriceSetDocumentArticle, markupBasePriceSetDocumentArticle, priceOutBasePriceSetDocumentArticle,
+                      nameCurrencyBasePriceSetDocumentArticle, RRPBasePriceSetDocumentArticle, nameCurrencyRRPBasePriceSetDocumentArticle,
                       nameTypeExchangeBasePriceSetDocumentArticle, rateBasePriceSetDocumentArticle, rateRRPBasePriceSetDocumentArticle,
-                      priceOutRateBasePriceSetDocumentArticle, RRPRateBasePriceSetDocumentArticle, priceOutRateBasePriceSetDocumentArticle,
-                      prevPriceBBasePriceSetDocumentArticle, nameMethodBasePriceSetDocumentArticle,
-                      priceBasePriceSetDocumentArticle, percentDiscountPriceSetDocumentArticle, calcPriceDiscountPriceSetDocumentArticle,
-                      prevPriceBDiscountPriceSetDocumentArticle, priceDiscountPriceSetDocumentArticle
+                      priceOutRateBasePriceSetDocumentArticle, RRPRateBasePriceSetDocumentArticle, prevPriceBBasePriceSetDocumentArticle,
+                      nameMethodBasePriceSetDocumentArticle, priceBasePriceSetDocumentArticle, percentDiscountPriceSetDocumentArticle,
+                      calcPriceDiscountPriceSetDocumentArticle, prevPriceBDiscountPriceSetDocumentArticle, priceDiscountPriceSetDocumentArticle
 
     PROPERTIES(ts, p) createUserPriceChangeStockPriceSetDocument FORCE GRID
     PROPERTIES(ts, p) READONLY nameUserPriceChangeStockPriceSetDocument
@@ -1109,11 +1115,12 @@ FORM priceSetDocuments 'Розничные прайсы'
 
     OBJECTS sk=sku
     PROPERTIES(sk) READONLY FORCE GRID barcode, sidArticleSku, nameCategoryArticleSku, nameBrandSupplierArticleSku, sidSizeSupplierItem, sidColorSupplierItem
-    PROPERTIES (p, sk) READONLY priceInBasePriceSetDocumentSku, RRPBasePriceSetDocumentSku, markupBasePriceSetDocumentSku, priceOutBasePriceSetDocumentSku,
-                       nameCurrencyBasePriceSetDocumentSku, nameTypeExchangeBasePriceSetDocumentSku, rateBasePriceSetDocumentSku, RRPRateBasePriceSetDocumentSku,
-                       priceOutRateBasePriceSetDocumentSku, prevPriceBBasePriceSetDocumentSku, nameMethodBasePriceSetDocumentSku,
-                       priceBasePriceSetDocumentSku, percentDiscountPriceSetDocumentSku, calcPriceDiscountPriceSetDocumentSku,
-                       prevPriceBDiscountPriceSetDocumentSku, priceDiscountPriceSetDocumentSku
+    PROPERTIES (p, sk) READONLY priceInBasePriceSetDocumentSku, markupBasePriceSetDocumentSku, priceOutBasePriceSetDocumentSku,
+                       nameCurrencyBasePriceSetDocumentSku, RRPBasePriceSetDocumentSku, nameCurrencyRRPBasePriceSetDocumentSku,
+                       nameTypeExchangeBasePriceSetDocumentSku, rateBasePriceSetDocumentSku, rateRRPBasePriceSetDocumentSku,
+                       priceOutRateBasePriceSetDocumentSku, RRPRateBasePriceSetDocumentSku, prevPriceBBasePriceSetDocumentSku,
+                       nameMethodBasePriceSetDocumentSku, priceBasePriceSetDocumentSku, percentDiscountPriceSetDocumentSku,
+                       calcPriceDiscountPriceSetDocumentSku, prevPriceBDiscountPriceSetDocumentSku, priceDiscountPriceSetDocumentSku
 
     PROPERTIES(ts, p, sk) READONLY quantityStockPriceSetDocumentSku
     PROPERTIES(ts, p, sk) printPricePriceSetDocumentSku

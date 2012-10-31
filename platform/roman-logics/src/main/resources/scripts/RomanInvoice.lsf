@@ -179,6 +179,7 @@ EXTEND DESIGN boxInvoiceForm {
     PROPERTY(objectClassName) { background = #FFEEEE; }
     PROPERTY(nameCompanyInvoice) { background = #FFEEEE; }
     PROPERTY(nameCurrencyDocument) { background = #FFEEEE; }
+    PROPERTY(nameCurrencyRRPDocument) { background = #FFEEEE; }
     PROPERTY(nameDestinationDestinationDocument) { background = #FFEEEE; }
     PROPERTY(numberContractInvoice) { background = #FFEEEE; }
 
@@ -291,6 +292,7 @@ EXTEND DESIGN simpleInvoiceForm {
     PROPERTY(objectClassName) { background = #FFEEEE; }
     PROPERTY(nameCompanyInvoice) { background = #FFEEEE; }
     PROPERTY(nameCurrencyDocument) { background = #FFEEEE; }
+    PROPERTY(nameCurrencyRRPDocument) { background = #FFEEEE; }
     PROPERTY(nameDestinationDestinationDocument) { background = #FFEEEE; }
     PROPERTY(numberContractInvoice) { background = #FFEEEE; }
 
