@@ -46,7 +46,7 @@ public abstract class GPropertyTable extends DataGrid implements EditManager, GE
     public void requestValue(GType valueType, Object oldValue) {
         editType = valueType;
 
-        GridCellEditor cellEditor = valueType.createGridCellEditor(this, getProperty(editContext.getIndex(), editContext.getColumn()));
+        GridCellEditor cellEditor = valueType.createGridCellEditor(this, getProperty(editContext));
         if (cellEditor != null) {
             NativeEvent event = editEvent;
             editEvent = null;
@@ -62,6 +62,7 @@ public abstract class GPropertyTable extends DataGrid implements EditManager, GE
         setValueAt(editContext, value);
     }
 
+    public abstract boolean isEditable(Cell.Context context);
     public abstract void setValueAt(Cell.Context context, Object value);
     public abstract Object getValueAt(Cell.Context context);
 
@@ -82,11 +83,13 @@ public abstract class GPropertyTable extends DataGrid implements EditManager, GE
         this.editContext = editContext;
         this.editCellParent = parent;
 
-        GPropertyDraw property = getProperty(editContext.getIndex(), editContext.getColumn());
-        GGroupObjectValue columnKey = getColumnKey(editContext.getIndex(), editContext.getColumn());
-        Object oldValue = getValueAt(editContext);
+        if (isEditable(editContext)) {
+            GPropertyDraw property = getProperty(editContext);
+            GGroupObjectValue columnKey = getColumnKey(editContext);
+            Object oldValue = getValueAt(editContext);
 
-        editDispatcher.executePropertyEditAction(this, property, oldValue, columnKey);
+            editDispatcher.executePropertyEditAction(this, property, oldValue, columnKey);
+        }
     }
 
     @Override

@@ -11,20 +11,11 @@ import java.util.*;
 public class ClientNavigatorElement {
     public static final String BASE_ELEMENT_SID = "baseElement";
 
-    public static ClientNavigatorElement root;
-
-    public static Map<String, HashSet<ClientNavigatorElement>> parents = new HashMap<String, HashSet<ClientNavigatorElement>>();
-
-    public static void dropCaches() {
-        root = null;
-        parents.clear();
-    }
-
     public int ID;
     public String caption;
     public String sID;
-    public List<String> childrenSid = new LinkedList<String>();
-    public List<ClientNavigatorElement> children = new LinkedList<ClientNavigatorElement>();
+    public List<ClientNavigatorElement> parents = new ArrayList<ClientNavigatorElement>();
+    public List<ClientNavigatorElement> children = new ArrayList<ClientNavigatorElement>();
     public ImageIcon image;
 
     protected boolean hasChildren = false;
@@ -58,52 +49,13 @@ public class ClientNavigatorElement {
         caption = inStream.readUTF();
         hasChildren = inStream.readBoolean();
         window = ClientNavigatorWindow.deserialize(inStream);
-        int cnt = inStream.readInt();
-        for (int i = 0; i < cnt; i++) {
-            String childSID = inStream.readUTF();
-            addChild(childSID);
-        }
 
         image = IOUtils.readImageIcon(inStream);
-
-        if (window != null) {
-            window.elements.add(this);
-        }
-        if (sID.equals(BASE_ELEMENT_SID)) {
-            root = this;
-        }
-    }
-
-    private void addChild(String childSID) {
-        childrenSid.add(childSID);
-        HashSet<ClientNavigatorElement> parentSet = parents.get(childSID);
-        if (parentSet == null) {
-            parentSet = new HashSet<ClientNavigatorElement>();
-            parents.put(childSID, parentSet);
-        }
-        parentSet.add(this);
-    }
-
-    public static ClientNavigatorElement deserialize(DataInputStream inStream) throws IOException {
-        byte type = inStream.readByte();
-
-        if (type == 0) {
-            return new ClientNavigatorForm(inStream);
-        }
-        if (type == 1) {
-            return new ClientNavigatorElement(inStream);
-        }
-        if (type == 2) {
-            return new ClientNavigatorAction(inStream);
-        }
-
-        throw new IOException();
     }
 
     public void serialize(DataOutputStream outStream) throws IOException {
         outStream.writeUTF(sID);
         outStream.writeUTF(caption);
-        //outStream.write
     }
 
     @Override
@@ -120,16 +72,40 @@ public class ClientNavigatorElement {
         return false;
     }
 
+    public static ClientNavigatorElement deserialize(DataInputStream inStream, Map<String, ClientNavigatorWindow> windows) throws IOException {
+        byte type = inStream.readByte();
+
+        ClientNavigatorElement element;
+
+        switch (type) {
+            case 0: element = new ClientNavigatorForm(inStream); break;
+            case 1: element = new ClientNavigatorElement(inStream); break;
+            case 2: element = new ClientNavigatorAction(inStream); break;
+            default:
+                throw new IOException("Incorrect navigator element type");
+        }
+
+        if (element.window != null) {
+            String windowSID = element.window.getSID();
+            if (windows.containsKey(windowSID)) {
+                element.window = windows.get(windowSID);
+            } else {
+                windows.put(windowSID, element.window);
+            }
+        }
+
+        return element;
+    }
+
     public String getSID() {
         return sID;
     }
 
     //содержатся ли родители текущей вершины в заданном множестве
     public boolean containsParent(Set<ClientNavigatorElement> set) {
-        Set<ClientNavigatorElement> parentSet = parents.get(sID);
-        if (parentSet != null) {
-            for (ClientNavigatorElement element : parentSet) {
-                if (set.contains(element)) return true;
+        for (ClientNavigatorElement parent : parents) {
+            if (set.contains(parent)) {
+                return true;
             }
         }
         return false;

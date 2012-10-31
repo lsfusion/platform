@@ -1,6 +1,6 @@
 package platform.gwt.form2.shared.actions.form;
 
-import platform.gwt.base.shared.GClassViewType;
+import platform.gwt.form2.shared.view.GClassViewType;
 
 public class ChangeClassView extends FormRequestIndexCountingAction<ServerResponseResult> {
     public int groupObjectId;

@@ -5,7 +5,7 @@ import platform.gwt.form2.shared.view.GGroupObject;
 import platform.gwt.form2.shared.view.GObject;
 import platform.gwt.form2.shared.view.GPropertyDraw;
 import platform.gwt.form2.shared.view.changes.GGroupObjectValue;
-import platform.gwt.utils.GwtSharedUtils;
+import platform.gwt.base.shared.GwtSharedUtils;
 
 import java.util.*;
 

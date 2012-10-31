@@ -6,10 +6,7 @@ import platform.gwt.form2.shared.view.GNavigatorElement;
 import platform.gwt.form2.shared.view.window.GAbstractWindow;
 import platform.gwt.form2.shared.view.window.GNavigatorWindow;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.Map;
+import java.util.*;
 
 public abstract class GNavigatorController implements GINavigatorController {
     private final FormsController formsController;
@@ -21,7 +18,7 @@ public abstract class GNavigatorController implements GINavigatorController {
         this.formsController = formsController;
     }
 
-    public void initializeNavigatorViews(GNavigatorWindow[] windows) {
+    public void initializeNavigatorViews(List<GNavigatorWindow> windows) {
         for (GNavigatorWindow window : windows) {
             views.put(window, window.createView(this));
         }

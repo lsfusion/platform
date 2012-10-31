@@ -6,7 +6,7 @@ import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 import platform.base.ClassUtils;
 import platform.base.ExceptionUtils;
-import platform.interop.RemoteLoaderInterface;
+import platform.interop.RemoteServerAgentLoaderInterface;
 import platform.server.Settings;
 import platform.server.lifecycle.LifecycleManager;
 
@@ -157,7 +157,7 @@ public class BusinessLogicsBootstrap {
             if (springContext.containsBean("serverAgentServer")) {
                 hostPort = (String) springContext.getBean("serverAgentServer");
             }
-            RemoteLoaderInterface remoteLoader = (RemoteLoaderInterface) Naming.lookup(MessageFormat.format("rmi://{0}/ServerAgentLoader", hostPort));
+            RemoteServerAgentLoaderInterface remoteLoader = (RemoteServerAgentLoaderInterface) Naming.lookup(MessageFormat.format("rmi://{0}/ServerAgentLoader", hostPort));
             remoteLoader.setDbName(BL.getDbName() == null ? "default" : BL.getDbName());
         } catch (ConnectException e) {
             //To change body of catch statement use File | Settings | File Templates.

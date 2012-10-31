@@ -17,7 +17,7 @@ public abstract class AbstractNavigatorPanel extends JPanel {
 
         setPreferredSize(new Dimension(175, 400));
 
-        tree = new NavigatorTree(this);
+        tree = new NavigatorTree(this, clientNavigator.rootElement);
 
         JScrollPane pane = new JScrollPane(tree);
         add(pane);

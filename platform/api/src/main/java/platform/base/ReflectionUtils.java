@@ -1,9 +1,6 @@
 package platform.base;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
+import java.lang.reflect.*;
 
 public class ReflectionUtils {
     public static Class getFirstTypeParameterOfSuperclass(Class clazz) {
@@ -71,6 +68,29 @@ public class ReflectionUtils {
             return clazz.getDeclaredMethod(methodName, args);
         } catch (NoSuchMethodException e) {
             return null;
+        }
+    }
+
+    public static <T> T makeSynchronized(Class<T> ifaceClass, T object) {
+        return (T) Proxy.newProxyInstance(ifaceClass.getClassLoader(), new Class<?>[]{ifaceClass}, new Handler(object));
+    }
+
+    private static class Handler<T> implements InvocationHandler {
+        private final T object;
+
+        public Handler(T object) {
+            this.object = object;
+        }
+
+        @Override
+        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+            synchronized (object) {
+                try {
+                    return method.invoke(object, args);
+                } catch (InvocationTargetException e) {
+                    throw e.getCause();
+                }
+            }
         }
     }
 }

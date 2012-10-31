@@ -7,7 +7,6 @@ import platform.server.logics.property.Property;
 import javax.swing.*;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.Collection;
 
 public class NavigatorAction<T extends BusinessLogics<T>> extends NavigatorElement<T> {
     private static ImageIcon image = new ImageIcon(NavigatorAction.class.getResource("/images/action.png"));
@@ -28,8 +27,8 @@ public class NavigatorAction<T extends BusinessLogics<T>> extends NavigatorEleme
     }
 
     @Override
-    public void serialize(DataOutputStream outStream, Collection<NavigatorElement> elements) throws IOException {
-        super.serialize(outStream, elements);
+    public void serialize(DataOutputStream outStream) throws IOException {
+        super.serialize(outStream);
     }
 
     @Override

@@ -956,8 +956,8 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     }
 
     @Override
-    public void serialize(DataOutputStream outStream, Collection<NavigatorElement> elements) throws IOException {
-        super.serialize(outStream, elements);
+    public void serialize(DataOutputStream outStream) throws IOException {
+        super.serialize(outStream);
         outStream.writeBoolean(isPrintForm);
         outStream.writeUTF(modalityType.name());
     }

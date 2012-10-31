@@ -2,7 +2,7 @@ package platform.gwt.form2.client.form.dispatch;
 
 import com.allen_sauer.gwt.log.client.Log;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import platform.gwt.base.client.ErrorAsyncCallback;
+import platform.gwt.form2.client.ErrorHandlingCallback;
 import platform.gwt.form2.client.form.ui.dialog.DialogBoxHelper;
 import platform.gwt.form2.shared.actions.form.ServerResponseResult;
 import platform.gwt.form2.shared.view.actions.*;
@@ -59,7 +59,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
             }
 
             if (response.resumeInvocation) {
-                continueServerInvocation(actionResults, new ErrorAsyncCallback<ServerResponseResult>() {
+                continueServerInvocation(actionResults, new ErrorHandlingCallback<ServerResponseResult>() {
                     @Override
                     public void success(ServerResponseResult response) {
                         dispatchResponse(response);

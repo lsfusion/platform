@@ -6,7 +6,6 @@ import platform.client.ClientResourceBundle;
 import platform.client.Log;
 import platform.client.Main;
 import platform.client.rmi.ConnectionLostManager;
-import platform.interop.exceptions.InternalServerException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
@@ -23,54 +22,47 @@ public class ClientExceptionManager {
     private final static Logger logger = Logger.getLogger(ClientExceptionManager.class);
 
     public static void handle(Throwable e) {
-
         // Проверяем на потерю соединения и делаем особую обработку
         RemoteException remote = getRemoteExceptionCause(e);
+        if (remote != null) {
+            handleRemoteException(e, remote);
+        } else {
+            handleClientException(e);
+        }
+    }
+
+    private static void handleRemoteException(Throwable initial, RemoteException remote) {
         if (remote instanceof ConnectIOException || remote instanceof ConnectException) {
             //при этих RemoteException'ах возможно продолжение работы
             ConnectionLostManager.connectionLost(false);
-            logger.error(ClientResourceBundle.getString("exceptions.error.on.communication.with.server"), e);
-            return;
+        } else {
+            //при остальных RemoteException'ах нужно релогиниться
+            ConnectionLostManager.connectionLost(true);
         }
+        logger.error(ClientResourceBundle.getString("exceptions.error.on.communication.with.server"), initial);
+    }
 
-        boolean isInternalServerException = false;
-        if (remote != null) {
-            // если не подкласс, а сам эксешн, то не считаем фатальным...
-            if (remote.getClass() == RemoteException.class || remote.getCause() instanceof InternalServerException) {
-                isInternalServerException = true;
-            } else {
-                //при остальных RemoteException'ах нужно релогиниться
-                ConnectionLostManager.connectionLost(true);
-                logger.error(ClientResourceBundle.getString("exceptions.error.on.communication.with.server"), e);
-                return;
-            }
-        }
+    private static void handleClientException(Throwable e) {
+        //здесь обрабатываются и все RemoteServerException
+        logger.error("Client error: ", e);
 
         String message = e.getLocalizedMessage();
-        if (!isInternalServerException) {
-            while (e instanceof RuntimeException && e.getCause() != null) {
-                e = e.getCause();
-                message += " : " + lineSeparator + e.getLocalizedMessage();
-            }
+        while (e instanceof RuntimeException && e.getCause() != null) {
+            e = e.getCause();
+            message += " : " + lineSeparator + e.getLocalizedMessage();
         }
 
-        e.printStackTrace();
+        OutputStream stackStream = new ByteArrayOutputStream();
+        e.printStackTrace(new PrintStream(stackStream));
+        String stackTrace = stackStream.toString();
 
-        OutputStream os = new ByteArrayOutputStream();
-        e.printStackTrace(new PrintStream(os));
-        String erTrace = os.toString();
-
-        if (!(e instanceof ConcurrentModificationException) ||
-            !(erTrace.contains("bibliothek.gui.dock.themes.basic.action.buttons.ButtonPanel.setForeground"))) {
+        if (!(e instanceof ConcurrentModificationException && stackTrace.contains("bibliothek.gui.dock.themes.basic.action.buttons.ButtonPanel.setForeground"))) {
             try {
-                String info = ClientResourceBundle.getString("exceptions.client.error", OSUtils.getLocalHostName(), message);
-                if (!isInternalServerException) {
-                    info += lineSeparator + erTrace;
-                }
-                Main.clientExceptionLog(info, OSUtils.getLocalHostName(), message, e.getClass().getName(), erTrace);
-            } catch (RemoteException exc) {
+                String info = ClientResourceBundle.getString("exceptions.client.error", OSUtils.getLocalHostName(), message) + lineSeparator + stackTrace;
+                Main.clientExceptionLog(info, OSUtils.getLocalHostName(), message, e.getClass().getName(), stackTrace);
+            } catch (RemoteException ignored) {
             }
-            Log.printFailedMessage(ClientResourceBundle.getString("exceptions.error.on.executing") + message, erTrace);
+            Log.printFailedMessage(ClientResourceBundle.getString("exceptions.error.on.executing") + message, stackTrace);
         }
     }
 

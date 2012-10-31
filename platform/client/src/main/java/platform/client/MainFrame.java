@@ -25,7 +25,7 @@ public abstract class MainFrame extends JFrame {
     public JLabel statusComponent;
     public JComponent status;
 
-    public MainFrame(final RemoteNavigatorInterface remoteNavigator) throws ClassNotFoundException, IOException {
+    public MainFrame(final RemoteNavigatorInterface remoteNavigator) throws IOException {
         super();
 
         this.remoteNavigator = remoteNavigator;
@@ -111,9 +111,9 @@ public abstract class MainFrame extends JFrame {
         }
     }
 
-    public void updateUser() throws IOException, ClassNotFoundException {
-        ObjectInputStream inputStream = new ObjectInputStream(new ByteArrayInputStream(remoteNavigator.getCurrentUserInfoByteArray()));
-        setTitle(Main.getMainTitle() + " - " + inputStream.readObject());
+    public void updateUser() throws IOException {
+        DataInputStream inputStream = new DataInputStream(new ByteArrayInputStream(remoteNavigator.getCurrentUserInfoByteArray()));
+        setTitle(Main.getMainTitle() + " - " + inputStream.readUTF());
     }
 
     public abstract void runReport(String reportSID, boolean isModal, ReportGenerationData generationData) throws IOException, ClassNotFoundException;

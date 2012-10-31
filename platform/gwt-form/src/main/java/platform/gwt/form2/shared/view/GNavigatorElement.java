@@ -13,15 +13,14 @@ public class GNavigatorElement implements Serializable {
     public String icon;
     public boolean isForm;
 
-    public boolean hasChildren;
     public ArrayList<GNavigatorElement> children;
-    public Set<GNavigatorElement> parents = new HashSet<GNavigatorElement>();
+    public HashSet<GNavigatorElement> parents = new HashSet<GNavigatorElement>();
 
     public GNavigatorWindow window;
 
     public boolean containsParent(Set<GNavigatorElement> set) {
-        for (GNavigatorElement element : parents) {
-            if (set.contains(element)) return true;
+        for (GNavigatorElement parent : parents) {
+            if (set.contains(parent)) return true;
         }
         return false;
     }

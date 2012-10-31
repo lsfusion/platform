@@ -3,7 +3,7 @@ package platform.gwt.form2.server.form.handlers;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
 import platform.base.BaseUtils;
-import platform.gwt.base.server.FormSessionObject;
+import platform.gwt.form2.server.FormSessionObject;
 import platform.gwt.form2.server.RemoteServiceImpl;
 import platform.gwt.form2.shared.actions.form.ExpandGroupObject;
 import platform.gwt.form2.shared.actions.form.ServerResponseResult;

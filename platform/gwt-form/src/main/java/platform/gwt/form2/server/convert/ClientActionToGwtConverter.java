@@ -7,7 +7,7 @@ import platform.base.BaseUtils;
 import platform.client.logics.ClientFormChanges;
 import platform.client.logics.classes.ClientObjectClass;
 import platform.client.logics.classes.ClientTypeSerializer;
-import platform.gwt.base.server.FormSessionObject;
+import platform.gwt.form2.server.FormSessionObject;
 import platform.gwt.base.server.LogicsDispatchServlet;
 import platform.gwt.form2.server.RemoteServiceImpl;
 import platform.gwt.form2.shared.view.actions.*;
@@ -68,13 +68,13 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
     @Converter(from = DialogClientAction.class)
     public GDialogAction convertAction(DialogClientAction action, RemoteServiceImpl servlet) throws IOException {
-        return new GDialogAction(servlet.getFormSessionManager().createFormAndPutInSession(action.dialog));
+        return new GDialogAction(servlet.getFormSessionManager().createForm(action.dialog));
     }
 
     @Converter(from = FormClientAction.class)
     public GFormAction convertAction(FormClientAction action, RemoteServiceImpl servlet) throws IOException {
         GModalityType modalityType = convertOrCast(action.modalityType);
-        return new GFormAction(modalityType, servlet.getFormSessionManager().createFormAndPutInSession(action.remoteForm));
+        return new GFormAction(modalityType, servlet.getFormSessionManager().createForm(action.remoteForm));
     }
 
     @Converter(from = ModalityType.class)

@@ -1,9 +1,9 @@
 package platform.gwt.form2.server.convert;
 
 import platform.client.logics.*;
-import platform.gwt.base.shared.GClassViewType;
+import platform.gwt.form2.shared.view.GClassViewType;
 import platform.gwt.form2.shared.view.changes.dto.ColorDTO;
-import platform.gwt.utils.GwtSharedUtils;
+import platform.gwt.base.shared.GwtSharedUtils;
 import platform.gwt.form2.shared.view.changes.dto.GFormChangesDTO;
 import platform.gwt.form2.shared.view.changes.dto.GGroupObjectValueDTO;
 import platform.gwt.form2.shared.view.changes.dto.GPropertyReaderDTO;

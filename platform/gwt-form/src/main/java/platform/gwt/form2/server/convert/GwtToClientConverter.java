@@ -2,7 +2,7 @@ package platform.gwt.form2.server.convert;
 
 import com.google.common.base.Throwables;
 import platform.base.DateConverter;
-import platform.gwt.base.shared.GClassViewType;
+import platform.gwt.form2.shared.view.GClassViewType;
 import platform.gwt.form2.shared.view.GUserInputResult;
 import platform.gwt.form2.shared.view.changes.dto.ColorDTO;
 import platform.gwt.form2.shared.view.changes.dto.GGroupObjectValueDTO;

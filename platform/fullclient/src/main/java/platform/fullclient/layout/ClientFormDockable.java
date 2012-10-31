@@ -12,15 +12,15 @@ public class ClientFormDockable extends ClientDockable {
 
     private ClientFormController clientForm;
 
-    public ClientFormDockable(ClientNavigator navigator, String formSID, DockableManager dockableManager) throws IOException, ClassNotFoundException, JRException {
+    public ClientFormDockable(ClientNavigator navigator, String formSID, DockableManager dockableManager) throws IOException, JRException {
         this(navigator, formSID, navigator.remoteNavigator.createForm(formSID, null, false, true), dockableManager, null);
     }
 
-    public ClientFormDockable(ClientNavigator navigator, RemoteFormInterface remoteForm, DockableManager dockableManager, MainFrame.FormCloseListener closeListener) throws IOException, ClassNotFoundException, JRException {
+    public ClientFormDockable(ClientNavigator navigator, RemoteFormInterface remoteForm, DockableManager dockableManager, MainFrame.FormCloseListener closeListener) throws IOException, JRException {
         this(navigator, remoteForm.getSID(), remoteForm, dockableManager, closeListener);
     }
 
-    private ClientFormDockable(ClientNavigator navigator, String formSID, RemoteFormInterface remoteForm, DockableManager dockableManager, final MainFrame.FormCloseListener closeListener) throws IOException, ClassNotFoundException, JRException {
+    private ClientFormDockable(ClientNavigator navigator, String formSID, RemoteFormInterface remoteForm, DockableManager dockableManager, final MainFrame.FormCloseListener closeListener) throws IOException {
         super(formSID, dockableManager);
 
         clientForm = new ClientFormController(remoteForm, navigator) {

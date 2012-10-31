@@ -5,7 +5,7 @@ import com.google.gwt.user.client.ui.Widget;
 import platform.gwt.form2.shared.view.GPropertyDraw;
 import platform.gwt.form2.shared.view.changes.GGroupObjectValue;
 import platform.gwt.form2.shared.view.panel.PanelRenderer;
-import platform.gwt.utils.GwtSharedUtils;
+import platform.gwt.base.shared.GwtSharedUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;

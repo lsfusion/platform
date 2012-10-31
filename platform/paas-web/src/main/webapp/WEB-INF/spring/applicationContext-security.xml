@@ -58,7 +58,6 @@
     </b:bean>
 
     <b:bean id="blLogicProvider" class="platform.gwt.base.server.spring.BusinessLogicsProviderImpl">
-        <!--suppress SpringModelInspection : servletContext - теперь bean по умолчанию в Spring 3.0-->
         <b:constructor-arg ref="servletContext"/>
     </b:bean>
 
@@ -68,7 +67,5 @@
         <!--</b:constructor-arg>-->
     <!--</b:bean>-->
 
-    <b:bean scope="session" id="navigatorProvider" class="platform.gwt.base.server.spring.NavigatorProviderImpl">
-        <b:property name="businessLogicsProvider" ref="blLogicProvider"/>
-    </b:bean>
+    <b:bean scope="session" id="navigatorProvider" class="platform.gwt.base.server.spring.NavigatorProviderImpl" />
 </b:beans>

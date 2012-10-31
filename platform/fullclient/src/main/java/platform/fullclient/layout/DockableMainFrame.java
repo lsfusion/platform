@@ -1,6 +1,9 @@
 package platform.fullclient.layout;
 
-import bibliothek.gui.dock.common.*;
+import bibliothek.gui.dock.common.CContentArea;
+import bibliothek.gui.dock.common.CControl;
+import bibliothek.gui.dock.common.CGrid;
+import bibliothek.gui.dock.common.SingleCDockable;
 import bibliothek.gui.dock.common.intern.CSetting;
 import bibliothek.gui.dock.common.menu.*;
 import bibliothek.gui.dock.common.theme.ThemeMap;
@@ -50,12 +53,12 @@ public class DockableMainFrame extends MainFrame {
     private final NavigatorController navigatorController;
     private final ClientNavigator mainNavigator;
 
-    public DockableMainFrame(RemoteNavigatorInterface remoteNavigator) throws ClassNotFoundException, IOException {
+    public DockableMainFrame(RemoteNavigatorInterface remoteNavigator) throws IOException {
         super(remoteNavigator);
 
-        DeSerializer.deserializeListClientNavigatorElementWithChildren(remoteNavigator.getNavigatorTree());
+        DeSerializer.NavigatorData navigatorData = DeSerializer.deserializeListClientNavigatorElementWithChildren(remoteNavigator.getNavigatorTree());
 
-        mainNavigator = new ClientNavigator(remoteNavigator) {
+        mainNavigator = new ClientNavigator(remoteNavigator, navigatorData.root, navigatorData.windows) {
             public void openForm(ClientNavigatorForm element) throws IOException, ClassNotFoundException {
                 try {
                     dockableManager.openForm(this, element.getSID());
@@ -372,8 +375,6 @@ public class DockableMainFrame extends MainFrame {
                     }
                 } catch (IOException e) {
                     throw new RuntimeException(e);
-                } catch (ClassNotFoundException e) {
-                    throw new RuntimeException(e);
                 }
             }
         });
@@ -435,8 +436,6 @@ public class DockableMainFrame extends MainFrame {
                             } else {
                                 throw new RuntimeException(e1);
                             }
-                        } catch (ClassNotFoundException e1) {
-                            e1.printStackTrace();
                         }
 
                     } else {

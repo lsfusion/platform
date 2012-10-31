@@ -16,7 +16,7 @@ public class FullMain extends Main {
 
     public static void main(final String[] args) {
         start(args, new ModuleFactory() {
-            public MainFrame initFrame(RemoteNavigatorInterface remoteNavigator) throws ClassNotFoundException, IOException {
+            public MainFrame initFrame(RemoteNavigatorInterface remoteNavigator) throws IOException {
                 return new DockableMainFrame(remoteNavigator);
             }
 

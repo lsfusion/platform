@@ -1,6 +1,6 @@
 package platform.gwt.form2.shared.view.changes.dto;
 
-import platform.gwt.base.shared.GClassViewType;
+import platform.gwt.form2.shared.view.GClassViewType;
 
 import java.io.Serializable;
 import java.util.ArrayList;

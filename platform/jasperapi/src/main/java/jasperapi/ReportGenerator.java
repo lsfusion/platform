@@ -49,7 +49,7 @@ public class ReportGenerator {
         public Map<String, List<List<Object>>> compositeColumnValues;
     }
 
-    public  ReportGenerator(ReportGenerationData generationData, TimeZone timeZone) {
+    public ReportGenerator(ReportGenerationData generationData, TimeZone timeZone) {
         this.generationData = generationData;
         this.reportTimeZone = timeZone;
     }

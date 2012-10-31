@@ -3,10 +3,8 @@
 <module>
     <inherits name='com.google.gwt.user.User'/>
     <inherits name="platform.gwt.sgwtbase.SGWTBase"/>
-    <inherits name="platform.gwt.UI"/>
     <inherits name="skolkovo.api.gwt.API"/>
     <inherits name="skolkovo.gwt.Resources"/>
-    <inherits name="platform.gwt.Utils"/>
 
     <!-- Include GWTUpload library -->
     <inherits name="gwtupload.GWTUpload"/>

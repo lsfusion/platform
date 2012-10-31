@@ -20,7 +20,7 @@ public class RelevantFormNavigatorPanel extends AbstractNavigatorPanel {
                         element.getSID().equals(BASE_ELEMENT_SID)
                         ? RemoteNavigatorInterface.NAVIGATORGROUP_RELEVANTFORM
                         : element.getSID()
-                ));
+                ), clientNavigator.windows);
     }
 
     public void currentFormChanged() {

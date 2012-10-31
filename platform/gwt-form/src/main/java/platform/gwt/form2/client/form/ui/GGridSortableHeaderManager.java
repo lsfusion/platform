@@ -1,6 +1,6 @@
 package platform.gwt.form2.client.form.ui;
 
-import platform.gwt.base.shared.GOrder;
+import platform.gwt.form2.shared.view.GOrder;
 
 import java.util.HashMap;
 import java.util.Map;

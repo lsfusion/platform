@@ -7,7 +7,7 @@ import platform.gwt.form2.shared.view.GPropertyDraw;
 import platform.gwt.form2.shared.view.changes.GGroupObjectValue;
 import platform.gwt.form2.shared.view.changes.dto.ColorDTO;
 import platform.gwt.form2.shared.view.grid.GridEditableCell;
-import platform.gwt.utils.GwtSharedUtils;
+import platform.gwt.base.shared.GwtSharedUtils;
 
 import java.util.Arrays;
 
@@ -83,14 +83,19 @@ public class GSinglePropertyTable extends GPropertyTable {
         return foreground;
     }
 
-    public GPropertyDraw getProperty(int row, int column) {
-        assert row == 0 && column == 0;
+    public GPropertyDraw getProperty(Cell.Context context) {
+        assert context.getIndex() == 0 && context.getColumn() == 0;
         return property;
     }
 
     @Override
-    public GGroupObjectValue getColumnKey(int row, int column) {
+    public GGroupObjectValue getColumnKey(Cell.Context context) {
         return columnKey;
+    }
+
+    @Override
+    public boolean isEditable(Cell.Context context) {
+        return true;
     }
 
     @Override

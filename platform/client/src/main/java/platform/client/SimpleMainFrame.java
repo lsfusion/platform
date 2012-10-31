@@ -1,7 +1,6 @@
 package platform.client;
 
 import platform.client.form.ClientFormController;
-import platform.client.logics.DeSerializer;
 import platform.interop.form.RemoteFormInterface;
 import platform.interop.form.ReportGenerationData;
 import platform.interop.navigator.RemoteNavigatorInterface;
@@ -13,9 +12,8 @@ import java.io.IOException;
 import java.util.StringTokenizer;
 
 public class SimpleMainFrame extends MainFrame {
-    public SimpleMainFrame(RemoteNavigatorInterface remoteNavigator, String forms) throws ClassNotFoundException, IOException {
+    public SimpleMainFrame(RemoteNavigatorInterface remoteNavigator, String forms) throws IOException {
         super(remoteNavigator);
-        DeSerializer.deserializeListClientNavigatorElement(remoteNavigator.getNavigatorTree());
 
         Container cont = getContentPane();
         final JTabbedPane mainPane = new JTabbedPane(JTabbedPane.BOTTOM);

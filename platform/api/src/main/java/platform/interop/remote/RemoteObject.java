@@ -27,9 +27,9 @@ public class RemoteObject extends UnicastRemoteObject implements PendingRemote {
             try {
                 result = invoke(this, invocation);
             } catch (InvocationTargetException e) {
-                throw new RemoteException(getString("remote.error.calling.method", invocation.name), e.getTargetException());
+                throw new RuntimeException(getString("remote.error.calling.method", invocation.name), e.getCause());
             } catch (Exception e) {
-                throw new RemoteException(getString("remote.error.calling.method", invocation.name), e);
+                throw new RuntimeException(getString("remote.error.calling.method", invocation.name), e);
             }
         }
 
@@ -45,7 +45,7 @@ public class RemoteObject extends UnicastRemoteObject implements PendingRemote {
         try {
             createdObject = invoke(this, creator);
         } catch (Exception e) {
-            throw new RemoteException(getString("remote.can.not.create.object.by.calling.method", creator.toString()), e);
+            throw new RuntimeException(getString("remote.can.not.create.object.by.calling.method", creator.toString()), e);
         }
 
         Object[] result = new Object[invocations.length + 1];
@@ -54,9 +54,9 @@ public class RemoteObject extends UnicastRemoteObject implements PendingRemote {
             try {
                 result[i+1] = createdObject == null ? null : invoke(createdObject, invocations[i]);
             } catch (InvocationTargetException e) {
-                throw new RemoteException(getString("remote.error.calling.method", invocations[i].name), e.getTargetException());
+                throw new RuntimeException(getString("remote.error.calling.method", invocations[i].name), e.getTargetException());
             } catch (Exception e) {
-                throw new RemoteException(getString("remote.error.calling.method", invocations[i].name), e);
+                throw new RuntimeException(getString("remote.error.calling.method", invocations[i].name), e);
             }
         }
         

@@ -12,15 +12,7 @@ import java.util.ArrayList;
 
 @SuppressWarnings("UnusedDeclaration")
 public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
-    private static final class InstanceHolder {
-        private static final ClientNavigatorToGwtConverter instance = new ClientNavigatorToGwtConverter();
-    }
-
-    public static ClientNavigatorToGwtConverter getInstance() {
-        return InstanceHolder.instance;
-    }
-
-    private ClientNavigatorToGwtConverter() {
+    public ClientNavigatorToGwtConverter() {
     }
 
     public GAction convertAction(ClientAction clientAction, Object... context) {
@@ -40,10 +32,8 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
             element.children.add(childElement);
         }
         element.window = convertOrCast(clientElement.window);
-        if (ClientNavigatorElement.parents.get(clientElement.sID) != null) {
-            for (ClientNavigatorElement parent : ClientNavigatorElement.parents.get(clientElement.sID)) {
-                element.parents.add((GNavigatorElement) convertOrCast(parent));
-            }
+        for (ClientNavigatorElement parent : clientElement.parents) {
+            element.parents.add((GNavigatorElement) convertOrCast(parent));
         }
         return element;
     }
@@ -75,7 +65,7 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
         return form;
     }
 
-    public <E extends GAbstractWindow> E initAbstractNavigatorElement(ClientAbstractWindow clientWindow, E window) {
+    public <E extends GAbstractWindow> E initAbstractNavigatorWindow(ClientAbstractWindow clientWindow, E window) {
         cacheInstance(clientWindow, window);
 
         window.borderConstraint = clientWindow.borderConstraint;
@@ -91,9 +81,8 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
     }
 
     public <E extends GNavigatorWindow> E initNavigatorWindow(ClientNavigatorWindow clientWindow, E window) {
-        cacheInstance(clientWindow, window);
+        initAbstractNavigatorWindow(clientWindow, window);
 
-        initAbstractNavigatorElement(clientWindow, window);
         window.drawRoot = clientWindow.drawRoot;
         window.drawScrollBars = clientWindow.drawScrollBars;
         window.type = clientWindow.type;
@@ -106,8 +95,8 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
 
     @Cached
     @Converter(from = ClientAbstractWindow.class)
-    public GAbstractWindow convertNavigatorWindow(ClientAbstractWindow clientWindow) {
-        return initAbstractNavigatorElement(clientWindow, new GAbstractWindow());
+    public GAbstractWindow convertAbstractNavigatorWindow(ClientAbstractWindow clientWindow) {
+        return initAbstractNavigatorWindow(clientWindow, new GAbstractWindow());
     }
 
     @Cached

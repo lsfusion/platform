@@ -4,7 +4,7 @@ import platform.base.OSUtils;
 import platform.client.remote.proxy.RemoteBusinessLogicProxy;
 import platform.interop.RemoteLoaderInterface;
 import platform.interop.RemoteLogicsInterface;
-import platform.interop.exceptions.InternalServerException;
+import platform.interop.exceptions.RemoteInternalException;
 import platform.interop.navigator.RemoteNavigatorInterface;
 
 import java.net.MalformedURLException;
@@ -137,7 +137,7 @@ public final class LoginAction {
         } catch (UnknownHostException e) {
             System.out.println(e.getCause());
             return HOST_NAME_ERROR;
-        } catch (InternalServerException e) {
+        } catch (RemoteInternalException e) {
             e.printStackTrace();
             return SERVER_ERROR;
         } catch (Throwable e) {

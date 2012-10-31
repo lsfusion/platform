@@ -9,15 +9,37 @@ import platform.gwt.form2.client.form.ui.dialog.WindowHiddenHandler;
 import platform.gwt.form2.shared.view.GForm;
 
 final class FormDockable {
-    private final TabWidget tabWidget;
-    private final ContentWidget contentWidget;
+    private TabWidget tabWidget;
+    private ContentWidget contentWidget;
 
-    private final GFormController form;
+    private GFormController form;
 
     private WindowHiddenHandler hiddenHandler;
 
+    private boolean initialized = false;
+
+    public FormDockable() {
+        tabWidget = new TabWidget("(loading...)");
+        tabWidget.setBlocked(true);
+
+        contentWidget = new ContentWidget(new LoadingWidget());
+    }
+
     public FormDockable(final FormsController formsController, GForm gForm) {
-        tabWidget = new TabWidget(gForm.caption);
+        tabWidget = new TabWidget("");
+        contentWidget = new ContentWidget(null);
+
+        initialize(formsController,  gForm);
+    }
+
+    public void initialize(final FormsController formsController, final GForm gForm) {
+        if (initialized) {
+            throw new IllegalStateException("Form dockable has already been initialized");
+        }
+        initialized = true;
+
+        tabWidget.setTitle(gForm.caption);
+        tabWidget.setBlocked(false);
 
         form = new GFormController(formsController, gForm, false) {
             @Override
@@ -41,7 +63,7 @@ final class FormDockable {
             }
         };
 
-        contentWidget = new ContentWidget(form);
+        contentWidget.setContent(form);
     }
 
     public void setHiddenHandler(WindowHiddenHandler hiddenHandler) {
@@ -63,12 +85,24 @@ final class FormDockable {
 
     private static class ContentWidget extends LayoutPanel {
         private final Widget mask;
+        private Widget content;
 
         private ContentWidget(Widget content) {
             mask = new SimpleLayoutPanel();
             mask.setStyleName("dockableBlockingMask");
 
-            addFullSizeChild(content);
+            setContent(content);
+        }
+
+        public void setContent(Widget icontent) {
+            if (content != null) {
+                remove(content);
+            }
+
+            content = icontent;
+            if (content != null) {
+                addFullSizeChild(content);
+            }
         }
 
         private void addFullSizeChild(Widget child) {
@@ -87,14 +121,11 @@ final class FormDockable {
 
     private class TabWidget extends HorizontalPanel {
         public static final String CROSS_SYMBOL_HTML = "&#215;";
+
         private Label label;
-
         private Button closeButton;
-        private String title;
 
-        public TabWidget(String ititle) {
-            title = ititle;
-
+        public TabWidget(String title) {
             label = new Label(title);
             label.addStyleName("customFontPresenter");
 
@@ -114,6 +145,16 @@ final class FormDockable {
 
         public void setBlocked(boolean blocked) {
             closeButton.setEnabled(!blocked);
+        }
+
+        public void setTitle(String title) {
+            label.setText(title);
+        }
+    }
+
+    private class LoadingWidget extends SimplePanel {
+        private LoadingWidget() {
+            setWidget(new Label("Loading...."));
         }
     }
 }

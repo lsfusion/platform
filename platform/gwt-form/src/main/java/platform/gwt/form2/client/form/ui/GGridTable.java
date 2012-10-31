@@ -4,12 +4,13 @@ import com.allen_sauer.gwt.log.client.Log;
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.view.client.SelectionChangeEvent;
-import platform.gwt.base.shared.GOrder;
+import platform.gwt.base.shared.GwtSharedUtils;
 import platform.gwt.form2.shared.view.GGroupObject;
+import platform.gwt.form2.shared.view.GOrder;
 import platform.gwt.form2.shared.view.GPropertyDraw;
 import platform.gwt.form2.shared.view.changes.GGroupObjectValue;
+import platform.gwt.form2.shared.view.classes.GObjectType;
 import platform.gwt.form2.shared.view.grid.GridEditableCell;
-import platform.gwt.utils.GwtSharedUtils;
 
 import java.util.*;
 
@@ -227,8 +228,8 @@ public class GGridTable extends GGridPropertyTable {
         columnsUpdated = true;
     }
 
-    public GPropertyDraw getProperty(int row, int column) {
-        return columnProperties.get(column);
+    public GPropertyDraw getProperty(Cell.Context context) {
+        return columnProperties.get(context.getColumn());
     }
 
     private int getMinPropertyIndex(GPropertyDraw property) {
@@ -269,8 +270,14 @@ public class GGridTable extends GGridPropertyTable {
     }
 
     @Override
-    public GGroupObjectValue getColumnKey(int row, int column) {
-        return columnKeysList.get(column);
+    public GGroupObjectValue getColumnKey(Cell.Context context) {
+        return columnKeysList.get(context.getColumn());
+    }
+
+    @Override
+    public boolean isEditable(Cell.Context context) {
+        GPropertyDraw property = getProperty(context);
+        return property != null && !property.isReadOnly() && !(property.baseType instanceof GObjectType);
     }
 
     public Object getValueAt(Cell.Context context) {

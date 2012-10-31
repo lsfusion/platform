@@ -4,7 +4,7 @@ import platform.gwt.form2.shared.view.GPropertyDraw;
 import platform.gwt.form2.shared.view.grid.EditManager;
 import platform.gwt.form2.shared.view.grid.editor.GridCellEditor;
 import platform.gwt.form2.shared.view.grid.editor.StringGridEditor;
-import platform.gwt.utils.GwtSharedUtils;
+import platform.gwt.base.shared.GwtSharedUtils;
 
 public class GStringType extends GDataType {
     protected int length = 50;

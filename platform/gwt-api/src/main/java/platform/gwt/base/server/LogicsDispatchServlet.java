@@ -14,12 +14,13 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
-import platform.base.ExceptionUtils;
 import platform.gwt.base.server.exceptions.RemoteDispatchException;
 import platform.gwt.base.server.spring.BusinessLogicsProvider;
 import platform.gwt.base.server.spring.NavigatorProvider;
+import platform.gwt.base.shared.InvalidateException;
 import platform.gwt.base.shared.MessageException;
 import platform.interop.RemoteLogicsInterface;
+import platform.interop.exceptions.RemoteMessageException;
 import platform.interop.navigator.RemoteNavigatorInterface;
 
 import javax.servlet.ServletConfig;
@@ -48,17 +49,15 @@ public abstract class LogicsDispatchServlet<T extends RemoteLogicsInterface> ext
         try {
             return super.execute(action);
         } catch (RemoteDispatchException e) {
-            String errorMessage;
-            if (!ExceptionUtils.isRecoverableRemoteException(e.getRemote())) {
-                getLogicsProvider().invalidate();
-                errorMessage = "Внутренняя ошибка сервера. Попробуйте перезагрузить страницу.";
-            } else {
-                errorMessage = ExceptionUtils.getInitialCause(e.getRemote()).getMessage();
-            }
+            getLogicsProvider().invalidate();
 
-            logger.error("Ошибка в LogicsDispatchServlet.execute: ", e);
             e.printStackTrace();
-            throw new MessageException(errorMessage);
+            logger.error("Ошибка в LogicsDispatchServlet.execute: ", e);
+            throw new InvalidateException("Внутренняя ошибка сервера. Попробуйте перезагрузить страницу.");
+        } catch (RemoteMessageException e) {
+            e.printStackTrace();
+            logger.error("Ошибка в LogicsDispatchServlet.execute: ", e);
+            throw new MessageException("Внутренняя ошибка сервера: " + e.getMessage());
         } catch (Throwable e) {
             e.printStackTrace();
             logger.error("Ошибка в LogicsDispatchServlet.execute: ", e);
@@ -83,7 +82,7 @@ public abstract class LogicsDispatchServlet<T extends RemoteLogicsInterface> ext
         return getSpringContext().getBean(BusinessLogicsProvider.class);
     }
 
-    public NavigatorProvider<T> getNavigatorProvider() {
+    public NavigatorProvider getNavigatorProvider() {
         return getSpringContext().getBean(NavigatorProvider.class);
     }
 

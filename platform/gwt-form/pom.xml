@@ -49,8 +49,6 @@
             </resource>
         </resources>
 
-        <outputDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF/classes</outputDirectory>
-
         <plugins>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
@@ -68,6 +66,11 @@
     </build>
 
     <dependencies>
+        <dependency>
+            <groupId>jstl</groupId>
+            <artifactId>jstl</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>com.google.gwt</groupId>
             <artifactId>gwt-servlet</artifactId>
@@ -97,6 +100,10 @@
         <dependency>
             <groupId>by.luxsoft.platform</groupId>
             <artifactId>gwt-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>by.luxsoft.platform</groupId>
+            <artifactId>client</artifactId>
         </dependency>
         <dependency>
             <groupId>log4j</groupId>

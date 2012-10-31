@@ -4,6 +4,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 
+/**
+ * The class is NOT syncronized
+ */
 public class CachedObjectConverter extends ObjectConverter {
     private final HashMap cache = new HashMap();
 

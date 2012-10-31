@@ -105,6 +105,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
         return iconPath;
     }
 
+    public boolean isReadOnly() {
+        return editType == GPropertyEditType.READONLY;
+    }
+
     public String getMinimumWidth() {
         return getMinimumPixelWidth() + "px";
     }

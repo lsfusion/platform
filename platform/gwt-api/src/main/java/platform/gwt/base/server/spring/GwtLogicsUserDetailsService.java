@@ -6,8 +6,8 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import platform.base.ExceptionUtils;
 import platform.interop.exceptions.LoginException;
+import platform.interop.exceptions.RemoteServerException;
 import platform.interop.remote.UserInfo;
 
 import java.rmi.RemoteException;
@@ -30,11 +30,10 @@ public class GwtLogicsUserDetailsService implements UserDetailsService {
             return new User(info.username, info.password, true, true, true, true, authorities);
         } catch (LoginException le) {
             throw new UsernameNotFoundException(le.getMessage());
+        } catch (RemoteServerException e) {
+            throw new RuntimeException("Ошибка во время чтения данных о пользователе.", e);
         } catch (RemoteException e) {
-            if (!ExceptionUtils.isRecoverableRemoteException(e)) {
-                businessLogicProvider.invalidate();
-            }
-
+            businessLogicProvider.invalidate();
             throw new RuntimeException("Ошибка во время чтения данных о пользователе.", e);
         }
     }

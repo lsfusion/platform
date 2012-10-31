@@ -1,6 +1,6 @@
 package platform.gwt.form2.shared.actions.form;
 
-import platform.gwt.base.shared.GOrder;
+import platform.gwt.form2.shared.view.GOrder;
 import platform.gwt.form2.shared.view.changes.dto.GGroupObjectValueDTO;
 
 public class ChangePropertyOrder extends FormRequestIndexCountingAction<ServerResponseResult> {

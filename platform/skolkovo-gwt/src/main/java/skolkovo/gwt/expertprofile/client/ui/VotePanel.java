@@ -20,7 +20,7 @@ import platform.gwt.base.client.AsyncCallbackEx;
 import platform.gwt.base.client.GwtClientUtils;
 import platform.gwt.base.shared.actions.VoidResult;
 import platform.gwt.sgwtbase.client.ui.VLayout100;
-import platform.gwt.ui.DateCellFormatter;
+import platform.gwt.sgwtbase.client.ui.DateCellFormatter;
 import skolkovo.api.gwt.shared.ProfileInfo;
 import skolkovo.api.gwt.shared.VoteInfo;
 import skolkovo.gwt.expertprofile.client.ExpertProfileMessages;

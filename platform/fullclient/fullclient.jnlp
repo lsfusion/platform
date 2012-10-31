@@ -14,7 +14,7 @@
         <all-permissions/>
     </security>
     <resources>
-	 <property name="jnlp.packEnabled" value="true"/>
+        <property name="jnlp.packEnabled" value="true"/>
         <j2se version="1.6+" initial-heap-size="32m" max-heap-size="1024m"/>
         <property name="platform.client.hostname" value="localhost"/>
         <property name="platform.client.hostport" value="7652"/>

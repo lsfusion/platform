@@ -40,11 +40,6 @@ public class MockPaasLogic implements PaasRemoteInterface {
     }
 
     @Override
-    public byte[] findClass(String name) throws RemoteException {
-        return new byte[0];
-    }
-
-    @Override
     public RemoteNavigatorInterface createNavigator(boolean isFullClient, String login, String password, int computer, boolean forceCreateNew) throws RemoteException {
         return null;
     }
@@ -70,11 +65,6 @@ public class MockPaasLogic implements PaasRemoteInterface {
 
     @Override
     public boolean checkUser(String login, String password) throws RemoteException {
-        return false;
-    }
-
-    @Override
-    public boolean getUseUniPass() throws RemoteException {
         return false;
     }
 

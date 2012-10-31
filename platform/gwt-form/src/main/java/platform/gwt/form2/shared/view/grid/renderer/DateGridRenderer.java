@@ -1,7 +1,7 @@
 package platform.gwt.form2.shared.view.grid.renderer;
 
 import com.google.gwt.i18n.client.DateTimeFormat;
-import platform.gwt.utils.GwtSharedUtils;
+import platform.gwt.base.shared.GwtSharedUtils;
 
 import java.util.Date;
 

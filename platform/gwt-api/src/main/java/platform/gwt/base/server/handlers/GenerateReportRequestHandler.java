@@ -1,6 +1,6 @@
 package platform.gwt.base.server.handlers;
 
-import gwtupload.server.UploadServlet;
+import com.google.common.io.ByteStreams;
 import org.springframework.web.HttpRequestHandler;
 
 import javax.servlet.ServletException;
@@ -17,6 +17,6 @@ public class GenerateReportRequestHandler implements HttpRequestHandler {
         String extension = request.getParameter("type");
         response.setContentType("application/" + extension);
         response.addHeader("Content-Disposition", "attachment; filename=" + extension + "Report." + extension);
-        UploadServlet.copyFromInputStreamToOutputStream(fis, response.getOutputStream());
+        ByteStreams.copy(fis, response.getOutputStream());
     }
 }

@@ -100,8 +100,6 @@
     </dependencies>
 
     <build>
-        <outputDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF/classes</outputDirectory>
-
         <plugins>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>

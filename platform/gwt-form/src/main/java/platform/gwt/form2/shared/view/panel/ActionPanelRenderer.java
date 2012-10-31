@@ -1,5 +1,6 @@
 package platform.gwt.form2.shared.view.panel;
 
+import com.google.gwt.cell.client.Cell;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
@@ -91,7 +92,7 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
 
     private class ActionEditManager extends EditManagerAdapter {
         @Override
-        public GPropertyDraw getProperty(int row, int column) {
+        public GPropertyDraw getProperty(Cell.Context context) {
             return property;
         }
 

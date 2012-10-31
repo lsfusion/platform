@@ -14,9 +14,6 @@
         <intercept-url pattern="/expertProfile.jsp" access="hasRole('expert')"/>
         <intercept-url pattern="/skolkovo.gwt.expertprofile.ExpertProfile/*" access="hasRole('expert')"/>
 
-        <intercept-url pattern="/form.jsp" access="hasRole('admin')"/>
-        <intercept-url pattern="/skolkovo.gwt.form.Form/*" access="hasRole('admin')"/>
-
         <!-- пока закрываем доступ -->
         <intercept-url pattern="/skolkovo.gwt.claimer.Claimer/*" access="hasRole('admin')"/>
         <intercept-url pattern="/claimer.jsp" access="hasRole('admin')"/>
@@ -48,7 +45,7 @@
 
     <b:bean id="successLogoutHandler" class="org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler" >
         <b:property name="targetUrlParameter" value="targetUrl" />
-        <b:property name="defaultTargetUrl" value="/form.jsp" />
+        <b:property name="defaultTargetUrl" value="/expertProfile.jsp" />
     </b:bean>
 
     <b:bean id="accessDeniedHandler" class="platform.gwt.base.server.spring.AccessDeniedHandlerImpl" >
@@ -69,11 +66,8 @@
     </b:bean>
 
     <b:bean id="blLogicProvider" class="platform.gwt.base.server.spring.BusinessLogicsProviderImpl">
-        <!--suppress SpringModelInspection : servletContext - теперь bean по умолчанию в Spring 3.0 -->
         <b:constructor-arg ref="servletContext"/>
     </b:bean>
 
-    <b:bean scope="session" id="navigatorProvider" class="platform.gwt.base.server.spring.NavigatorProviderImpl">
-        <b:property name="businessLogicsProvider" ref="blLogicProvider" />
-    </b:bean>
+    <b:bean scope="session" id="navigatorProvider" class="platform.gwt.base.server.spring.NavigatorProviderImpl" />
 </b:beans>

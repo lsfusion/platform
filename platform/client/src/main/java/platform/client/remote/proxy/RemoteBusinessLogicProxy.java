@@ -83,11 +83,6 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface>
         return target.checkUser(login, password);
     }
 
-    @Override
-    public boolean getUseUniPass() throws RemoteException {
-        return false;
-    }
-
     public TimeZone getTimeZone() throws RemoteException {
         return target.getTimeZone();
     }
@@ -107,14 +102,6 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface>
     @NonFlushRemoteMethod
     public void ping() throws RemoteException {
         target.ping();
-    }
-
-    @NonFlushRemoteMethod
-    public byte[] findClass(String name) throws RemoteException {
-        logRemoteMethodStartCall("findClass");
-        byte[] result = target.findClass(name);
-        logRemoteMethodEndCall("findClass", result);
-        return result;
     }
 
     public UserInfo getUserInfo(String username) throws RemoteException {

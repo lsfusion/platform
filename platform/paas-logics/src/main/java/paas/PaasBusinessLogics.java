@@ -11,6 +11,7 @@ import paas.manager.server.AppManager;
 import platform.base.OrderedMap;
 import platform.base.SoftHashMap;
 import platform.interop.Compare;
+import platform.interop.exceptions.RemoteMessageException;
 import platform.server.Context;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
@@ -151,7 +152,7 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
             }
         } catch (Exception e) {
             e.printStackTrace();
-            throw new RemoteException("Ошибка при считывании информации о проектах", e);
+            throw new RemoteMessageException("Ошибка при считывании информации о проектах", e);
         }
     }
 
@@ -176,7 +177,7 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
             return getProjects(userLogin);
         } catch (Exception e) {
             e.printStackTrace();
-            throw new RemoteException("Ошибка при добавлении проекта", e);
+            throw new RemoteMessageException("Ошибка при добавлении проекта", e);
         }
     }
 
@@ -201,7 +202,7 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
             }
         } catch (Exception e) {
             e.printStackTrace();
-            throw new RemoteException("Ошибка при сохранении проектов", e);
+            throw new RemoteMessageException("Ошибка при сохранении проектов", e);
         }
     }
 
@@ -221,7 +222,7 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
             return getProjects(userLogin);
         } catch (Exception e) {
             e.printStackTrace();
-            throw new RemoteException("Ошибка при удалении проекта", e);
+            throw new RemoteMessageException("Ошибка при удалении проекта", e);
         }
     }
 
@@ -249,7 +250,7 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
             }
         } catch (Exception e) {
             e.printStackTrace();
-            throw new RemoteException("Ошибка при считывании информации о модулях", e);
+            throw new RemoteMessageException("Ошибка при считывании информации о модулях", e);
         }
     }
 
@@ -277,7 +278,7 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
             }
         } catch (Exception e) {
             e.printStackTrace();
-            throw new RemoteException("Ошибка при считывании информации о модулях", e);
+            throw new RemoteMessageException("Ошибка при считывании информации о модулях", e);
         }
     }
 
@@ -337,7 +338,7 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
             }
         } catch (Exception e) {
             e.printStackTrace();
-            throw new RemoteException("Ошибка при считывании информации о конфигурациях", e);
+            throw new RemoteMessageException("Ошибка при считывании информации о конфигурациях", e);
         }
     }
 
@@ -378,7 +379,7 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
             }
         } catch (Exception e) {
             e.printStackTrace();
-            throw new RemoteException("Ошибка при считывании информации о модуле", e);
+            throw new RemoteMessageException("Ошибка при считывании информации о модуле", e);
         }
     }
 
@@ -399,7 +400,7 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
             }
         } catch (Exception e) {
             e.printStackTrace();
-            throw new RemoteException("Ошибка при сохранении модулей", e);
+            throw new RemoteMessageException("Ошибка при сохранении модулей", e);
         }
     }
 
@@ -419,7 +420,7 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
             }
         } catch (Exception e) {
             e.printStackTrace();
-            throw new RemoteException("Ошибка при добавлении модулей", e);
+            throw new RemoteMessageException("Ошибка при добавлении модулей", e);
         }
 
         return getProjectModules(userLogin, projectId);
@@ -444,7 +445,7 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
             }
         } catch (Exception e) {
             e.printStackTrace();
-            throw new RemoteException("Ошибка при добавлении модулей", e);
+            throw new RemoteMessageException("Ошибка при добавлении модулей", e);
         }
 
         return getProjectModules(userLogin, projectId);
@@ -465,7 +466,7 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
             }
         } catch (Exception e) {
             e.printStackTrace();
-            throw new RemoteException("Ошибка при удалении модуля", e);
+            throw new RemoteMessageException("Ошибка при удалении модуля", e);
         }
 
         return getProjectModules(userLogin, projectId);
@@ -500,7 +501,7 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
             return getProjectConfigurations(userLogin, projectId);
         } catch (Exception e) {
             e.printStackTrace();
-            throw new RemoteException("Ошибка при добавлении конфигурации", e);
+            throw new RemoteMessageException("Ошибка при добавлении конфигурации", e);
         }
     }
 
@@ -520,7 +521,7 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
             return getProjectConfigurations(userLogin, projectId);
         } catch (Exception e) {
             e.printStackTrace();
-            throw new RemoteException("Ошибка при удалении конфигурации", e);
+            throw new RemoteMessageException("Ошибка при удалении конфигурации", e);
         }
     }
 
@@ -550,7 +551,7 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
             }
         } catch (Exception e) {
             e.printStackTrace();
-            throw new RemoteException("Ошибка при сохранении конфигурации", e);
+            throw new RemoteMessageException("Ошибка при сохранении конфигурации", e);
         }
     }
 
@@ -582,7 +583,7 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
                 session.close();
             }
         } catch (Exception e) {
-            throw new RemoteException("Ошибка при старте конфигурации", e);
+            throw new RemoteMessageException("Ошибка при старте конфигурации", e);
         }
     }
 
@@ -696,7 +697,7 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
             }
         } catch (Exception e) {
             e.printStackTrace();
-            throw new RemoteException("Ошибка при остановке конфигурации", e);
+            throw new RemoteMessageException("Ошибка при остановке конфигурации", e);
         }
     }
 
@@ -727,7 +728,7 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
             }
         } catch (Exception e) {
             e.printStackTrace();
-            throw new RemoteException("Ошибка при считывании информации о конфигурации", e);
+            throw new RemoteMessageException("Ошибка при считывании информации о конфигурации", e);
         }
     }
 

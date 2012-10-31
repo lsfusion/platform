@@ -1,7 +1,7 @@
 package platform.gwt.form2.client.form.dispatch;
 
 import com.allen_sauer.gwt.log.client.Log;
-import platform.gwt.base.client.ErrorAsyncCallback;
+import platform.gwt.form2.client.ErrorHandlingCallback;
 import platform.gwt.form2.client.form.ui.GFormController;
 import platform.gwt.form2.client.form.ui.dialog.DialogBoxHelper;
 import platform.gwt.form2.shared.actions.form.ServerResponseResult;
@@ -52,7 +52,7 @@ public class GEditPropertyDispatcher extends GFormActionDispatcher {
                 executeSimpleChangeProperty(asyncModifyObject, editProperty, columnKey, currentValue);
             }
         } else {
-            form.executeEditAction(editProperty, columnKey, "change", new ErrorAsyncCallback<ServerResponseResult>() {
+            form.executeEditAction(editProperty, columnKey, "change", new ErrorHandlingCallback<ServerResponseResult>() {
                 @Override
                 public void success(ServerResponseResult response) {
                     Log.debug("Execute edit action response recieved...");

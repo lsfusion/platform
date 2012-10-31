@@ -14,8 +14,9 @@ import com.google.gwt.user.client.ui.Widget;
 import net.customware.gwt.dispatch.shared.Result;
 import platform.gwt.base.client.ErrorAsyncCallback;
 import platform.gwt.base.client.WrapperAsyncCallbackEx;
-import platform.gwt.base.shared.GClassViewType;
-import platform.gwt.base.shared.GOrder;
+import platform.gwt.form2.client.ErrorHandlingCallback;
+import platform.gwt.form2.shared.view.GClassViewType;
+import platform.gwt.form2.shared.view.GOrder;
 import platform.gwt.form2.client.LoadingBlocker;
 import platform.gwt.form2.client.dispatch.FormDispatchAsync;
 import platform.gwt.form2.client.dispatch.NavigatorDispatchAsync;
@@ -492,7 +493,7 @@ public class GFormController extends SimplePanel {
         final boolean add = property.addRemove.add;
 
         if (add) {
-            NavigatorDispatchAsync.Instance.get().execute(new GenerateID(), new ErrorAsyncCallback<GenerateIDResult>() {
+            NavigatorDispatchAsync.Instance.get().execute(new GenerateID(), new ErrorHandlingCallback<GenerateIDResult>() {
                 @Override
                 public void success(GenerateIDResult result) {
                     executeModifyObject(property, columnKey, object, add, result.ID, new GGroupObjectValue(object, result.ID));
@@ -668,7 +669,7 @@ public class GFormController extends SimplePanel {
         dialogSizeSet = true;
     }
 
-    private class ServerResponseCallback extends ErrorAsyncCallback<ServerResponseResult> {
+    private class ServerResponseCallback extends ErrorHandlingCallback<ServerResponseResult> {
         @Override
         public void success(ServerResponseResult response) {
             actionDispatcher.dispatchResponse(response);

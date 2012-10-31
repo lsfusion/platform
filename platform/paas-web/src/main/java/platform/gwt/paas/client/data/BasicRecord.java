@@ -2,7 +2,7 @@ package platform.gwt.paas.client.data;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.smartgwt.client.widgets.grid.ListGridRecord;
-import platform.gwt.utils.GwtSharedUtils;
+import platform.gwt.base.shared.GwtSharedUtils;
 
 public class BasicRecord extends ListGridRecord {
     public static final String ID_FIELD = "id";

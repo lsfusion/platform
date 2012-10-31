@@ -3,7 +3,7 @@ package platform.gwt.form2.client.form.ui;
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.view.client.SelectionChangeEvent;
-import platform.gwt.base.shared.GOrder;
+import platform.gwt.form2.shared.view.GOrder;
 import platform.gwt.form2.shared.view.GForm;
 import platform.gwt.form2.shared.view.GGroupObject;
 import platform.gwt.form2.shared.view.GPropertyDraw;
@@ -269,22 +269,6 @@ public class GTreeTable extends GGridPropertyTable {
         }
     }
 
-    @Override
-    public void setValueAt(Cell.Context context, Object value) {
-        int row = context.getIndex();
-        int column = context.getColumn();
-
-        GridDataRecord rowRecord = (GridDataRecord) context.getKey();
-
-        GPropertyDraw property = getProperty(row, column);
-        rowRecord.setAttribute(property.sID, value);
-
-        tree.putValue(property, rowRecord.key, value);
-
-
-        setRowData(row, Arrays.asList(rowRecord));
-    }
-
     public List<GPropertyDraw> getColumnProperties() {
         return tree.columnProperties;
     }
@@ -298,19 +282,44 @@ public class GTreeTable extends GGridPropertyTable {
     }
 
     @Override
+    public GPropertyDraw getProperty(Cell.Context context) {
+        return tree.getProperty(getRowGroup(context.getIndex()), context.getColumn() - 1);
+    }
+
+    @Override
+    public GGroupObjectValue getColumnKey(Cell.Context context) {
+        return currentRecords.get(context.getIndex()).key;
+    }
+
+    @Override
+    public boolean isEditable(Cell.Context context) {
+        if (context.getColumn() != 0) {
+            GPropertyDraw property = getProperty(context);
+            return property != null && !property.isReadOnly();
+        }
+        return false;
+    }
+
+    @Override
     public Object getValueAt(Cell.Context context) {
         GTreeGridRecord record = (GTreeGridRecord) context.getKey();
         return tree.getValue(record.getGroup(), context.getColumn() - 1, record.key);
     }
 
     @Override
-    public GPropertyDraw getProperty(int row, int column) {
-        return tree.getProperty(getRowGroup(row), column - 1);
-    }
+    public void setValueAt(Cell.Context context, Object value) {
+        int row = context.getIndex();
+        int column = context.getColumn();
 
-    @Override
-    public GGroupObjectValue getColumnKey(int row, int column) {
-        return currentRecords.get(row).key;
+        GridDataRecord rowRecord = (GridDataRecord) context.getKey();
+
+        GPropertyDraw property = getProperty(context);
+        rowRecord.setAttribute(property.sID, value);
+
+        tree.putValue(property, rowRecord.key, value);
+
+
+        setRowData(row, Arrays.asList(rowRecord));
     }
 
     public void changeOrder(GPropertyDraw property, GOrder modiType) {

@@ -12,15 +12,16 @@ import java.util.Map;
 
 public class NavigatorController implements INavigatorController {
     private final ClientNavigator mainNavigator;
-    private LinkedHashMap<ClientNavigatorWindow, NavigatorView> views = new LinkedHashMap<ClientNavigatorWindow, NavigatorView>();
-    private Map<JComponent, SingleCDockable> docks = new HashMap<JComponent, SingleCDockable>();
+    private final LinkedHashMap<ClientNavigatorWindow, NavigatorView> views = new LinkedHashMap<ClientNavigatorWindow, NavigatorView>();
+    private final Map<JComponent, SingleCDockable> docks = new HashMap<JComponent, SingleCDockable>();
 
     public NavigatorController(ClientNavigator mainNavigator) {
         this.mainNavigator = mainNavigator;
     }
 
-    public void initWindowViews() { // нет никакой гарантии, что в ходе работы sidToWindow не появятся новые элементы (например, с классовыми или объектными формами)
-        for (ClientNavigatorWindow window : ClientNavigatorWindow.sidToWindow.values()) {
+    public void initWindowViews() {
+        // нет никакой гарантии, что в ходе работы mainNavigator.windows не появятся новые элементы (например, с классовыми или объектными формами)
+        for (ClientNavigatorWindow window : mainNavigator.windows.values()) {
             NavigatorView navigatorView = window.createView(this);
             views.put(window, navigatorView);
         }
@@ -29,15 +30,16 @@ public class NavigatorController implements INavigatorController {
     public void update() {
         Map<ClientNavigatorWindow, LinkedHashSet<ClientNavigatorElement>> result = new HashMap<ClientNavigatorWindow, LinkedHashSet<ClientNavigatorElement>>();
 
-        for (ClientNavigatorWindow wind : ClientNavigatorWindow.sidToWindow.values()) {
+        for (ClientNavigatorWindow wind : mainNavigator.windows.values()) {
             result.put(wind, new LinkedHashSet<ClientNavigatorElement>());
         }
 
-        dfsAddElements(ClientNavigatorElement.root, null, result);
+        dfsAddElements(mainNavigator.rootElement, null, result);
 
         for (Map.Entry<ClientNavigatorWindow, LinkedHashSet<ClientNavigatorElement>> entry : result.entrySet()) {
             NavigatorView view = views.get(entry.getKey());
-            if (view != null) { // может быть ситуация, когда в sidToWindow есть окно, но во views его нет - при сериализации элементов в классовых и связанных формах
+            if (view != null) {
+                // может быть ситуация, когда в mainNavigator.windows есть окно, но во views его нет - при сериализации элементов в классовых и связанных формах
                 view.refresh(entry.getValue());
                 SingleCDockable dockable = docks.get(view.getView());
                 if (dockable != null) {

@@ -13,12 +13,12 @@ public class EditManagerAdapter implements EditManager {
     }
 
     @Override
-    public GPropertyDraw getProperty(int row, int column) {
+    public GPropertyDraw getProperty(Cell.Context context) {
         return null;
     }
 
     @Override
-    public GGroupObjectValue getColumnKey(int row, int column) {
+    public GGroupObjectValue getColumnKey(Cell.Context context) {
         return null;
     }
 

@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.HttpRequestHandler;
 import platform.base.ExceptionUtils;
 import platform.gwt.base.server.spring.BusinessLogicsProvider;
+import platform.interop.exceptions.RemoteInternalException;
 import skolkovo.api.remote.SkolkovoRemoteInterface;
 
 import javax.servlet.ServletException;
@@ -38,14 +39,12 @@ public class ConfVoteReqestHandler implements HttpRequestHandler {
             boolean voteResult = "yes".equalsIgnoreCase(sVoteResult);
             blProvider.getLogics().setConfResult(conferenceHash, voteResult);
             response.getOutputStream().println(voteResult?"You have confirmed your participation":"You have refused from participation");
+        } catch (RemoteInternalException e) {
+            response.getOutputStream().println(ExceptionUtils.getInitialCause(e).getMessage());
         } catch (Exception e) {
-            if (ExceptionUtils.isRecoverableRemoteException(e)) {
-                response.getOutputStream().println(ExceptionUtils.getInitialCause(e).getMessage());
-            } else {
-                blProvider.invalidate();
-                logger.debug("Error handling request: ", e);
-                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error processing request, plz try again later.");
-            }
+            blProvider.invalidate();
+            logger.debug("Error handling request: ", e);
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error processing request, plz try again later.");
         }
     }
 }

@@ -71,18 +71,10 @@
             <groupId>net.customware.gwt.dispatch</groupId>
             <artifactId>gwt-dispatch</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.googlecode.gwtupload</groupId>
-            <artifactId>gwtupload</artifactId>
-        </dependency>
 
         <dependency>
             <groupId>by.luxsoft.platform</groupId>
             <artifactId>api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>by.luxsoft.platform</groupId>
-            <artifactId>client</artifactId>
         </dependency>
         <dependency>
             <groupId>log4j</groupId>

@@ -1,6 +1,6 @@
 package platform.gwt.form2.shared.view.changes;
 
-import platform.gwt.base.shared.GClassViewType;
+import platform.gwt.form2.shared.view.GClassViewType;
 import platform.gwt.form2.shared.view.GForm;
 import platform.gwt.form2.shared.view.GGroupObject;
 import platform.gwt.form2.shared.view.GPropertyDraw;

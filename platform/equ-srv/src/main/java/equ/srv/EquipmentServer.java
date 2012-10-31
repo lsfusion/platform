@@ -261,7 +261,7 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
             }
             return transactionList;
         } catch (ScriptingErrorLog.SemanticErrorException e) {
-            throw new RemoteException(e.toString());
+            throw new RuntimeException(e.toString());
         }
     }
 
@@ -321,7 +321,7 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
             }
             return cashRegisterInfoList;
         } catch (ScriptingErrorLog.SemanticErrorException e) {
-            throw new RemoteException(e.toString());
+            throw new RuntimeException(e.toString());
         }
     }
 
@@ -376,7 +376,7 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
             }
             return terminalInfoList;
         } catch (ScriptingErrorLog.SemanticErrorException e) {
-            throw new RemoteException(e.toString());
+            throw new RuntimeException(e.toString());
         }
     }
 
@@ -448,7 +448,7 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
             }
             return terminalDocumentTypeInfoList;
         } catch (ScriptingErrorLog.SemanticErrorException e) {
-            throw new RemoteException(e.toString());
+            throw new RuntimeException(e.toString());
         }
     }
 
@@ -635,7 +635,7 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
 
             return session.applyMessage(this.BL);
         } catch (ScriptingErrorLog.SemanticErrorException e) {
-            throw new RemoteException(e.toString());
+            throw new RuntimeException(e.toString());
         }
     }
 
@@ -733,7 +733,7 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
 
             return session.applyMessage(this.BL);
         } catch (ScriptingErrorLog.SemanticErrorException e) {
-            throw new RemoteException(e.toString());
+            throw new RuntimeException(e.toString());
         }
     }
 
@@ -745,7 +745,7 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
                     session.getDataObject(transactionID, LM.findClassByCompoundName("machineryPriceTransaction").getType()));
             session.apply(this.BL);
         } catch (ScriptingErrorLog.SemanticErrorException e) {
-            throw new RemoteException(e.toString());
+            throw new RuntimeException(e.toString());
         }
     }
 
@@ -781,7 +781,7 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
             }
             return fileLabelFormats;
         } catch (ScriptingErrorLog.SemanticErrorException e) {
-            throw new RemoteException(e.toString());
+            throw new RuntimeException(e.toString());
         }
     }
 
@@ -799,7 +799,7 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
 
             session.apply(this.BL);
         } catch (ScriptingErrorLog.SemanticErrorException e2) {
-            throw new RemoteException(e2.toString());
+            throw new RuntimeException(e2.toString());
         }
     }
 
@@ -820,7 +820,7 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
 
             session.apply(this.BL);
         } catch (ScriptingErrorLog.SemanticErrorException e) {
-            throw new RemoteException(e.toString());
+            throw new RuntimeException(e.toString());
         }
     }
 
@@ -832,7 +832,7 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
             Integer delay = (Integer) LM.findLCPByCompoundName("delayEquipmentServer").read(session, new DataObject(equipmentServerID, (ConcreteClass) LM.findClassByCompoundName("equipmentServer")));
             return new EquipmentServerSettings(delay);
         } catch (ScriptingErrorLog.SemanticErrorException e) {
-            throw new RemoteException(e.toString());
+            throw new RuntimeException(e.toString());
         }
     }
 

@@ -21,8 +21,6 @@ public interface RemoteLogicsInterface extends PendingRemote, PingRemote, Remote
 
     byte[] getLogo() throws RemoteException;
 
-    byte[] findClass(String name) throws RemoteException;
-
     RemoteNavigatorInterface createNavigator(boolean isFullClient, String login, String password, int computer, boolean forceCreateNew) throws RemoteException;
 
     Integer getComputer(String hostname) throws RemoteException;
@@ -35,8 +33,6 @@ public interface RemoteLogicsInterface extends PendingRemote, PingRemote, Remote
 
     boolean checkUser(String login, String password) throws RemoteException;
 
-    boolean getUseUniPass() throws  RemoteException;
-    
     void ping() throws RemoteException;
 
     TimeZone getTimeZone() throws RemoteException;

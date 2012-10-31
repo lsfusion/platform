@@ -9,8 +9,8 @@ import platform.gwt.form2.shared.view.changes.GGroupObjectValue;
 public interface EditManager {
     public boolean canStartNewEdit();
 
-    GPropertyDraw getProperty(int row, int column);
-    GGroupObjectValue getColumnKey(int row, int column);
+    GPropertyDraw getProperty(Cell.Context context);
+    GGroupObjectValue getColumnKey(Cell.Context context);
 
     void executePropertyEditAction(GridEditableCell editCell, NativeEvent editEvent, Cell.Context context, Element parent);
 

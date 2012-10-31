@@ -6,6 +6,7 @@ import platform.base.DateConverter;
 import platform.base.IOUtils;
 import platform.base.OrderedMap;
 import platform.interop.Compare;
+import platform.interop.exceptions.RemoteMessageException;
 import platform.server.auth.SecurityPolicy;
 import platform.server.classes.ConcreteClass;
 import platform.server.data.expr.Expr;
@@ -130,7 +131,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             }
         } catch (Exception e) {
             e.printStackTrace();
-            throw new RemoteException("Ошибка при считывании информации о проекте", e);
+            throw new RemoteMessageException("Ошибка при считывании информации о проекте", e);
         }
     }
 
@@ -206,7 +207,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             }
         } catch (Exception e) {
             e.printStackTrace();
-            throw new RemoteException("Ошибка при записи информации о голосовании", e);
+            throw new RemoteMessageException("Ошибка при записи информации о голосовании", e);
         }
     }
 
@@ -377,7 +378,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             }
         } catch (Exception e) {
             e.printStackTrace();
-            throw new RemoteException("Ошибка при считывании информации о профиле эксперта", e);
+            throw new RemoteMessageException("Ошибка при считывании информации о профиле эксперта", e);
         }
     }
 
@@ -435,7 +436,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             }
         } catch (Exception e) {
             e.printStackTrace();
-            throw new RemoteException("Ошибка при записи информации о профиле эксперта", e);
+            throw new RemoteMessageException("Ошибка при записи информации о профиле эксперта", e);
         }
     }
 
@@ -455,7 +456,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             }
         } catch (Exception e) {
             e.printStackTrace();
-            throw new RemoteException("Ошибка при попытке выслать документы.", e);
+            throw new RemoteMessageException("Ошибка при попытке выслать документы.", e);
         }
     }
 
@@ -562,7 +563,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             }
         } catch (Exception e) {
             e.printStackTrace();
-            throw new RemoteException("Ошибка при записи результата", e);
+            throw new RemoteMessageException("Ошибка при записи результата", e);
         }
     }
 }

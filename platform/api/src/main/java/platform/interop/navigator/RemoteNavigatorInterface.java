@@ -13,6 +13,9 @@ import java.util.Map;
 
 public interface RemoteNavigatorInterface extends PendingRemote, RemoteContextInterface {
 
+    public static final String NAVIGATORGROUP_RELEVANTFORM = "_NAV_RELEVANTFORM_";
+    public static final String NAVIGATORGROUP_RELEVANTCLASS = "_NAV_RELEVANTCLASS_";
+
     byte[] getNavigatorTree() throws RemoteException;
 
     // окна лог, релевантные классы, статус и т.п.
@@ -51,11 +54,8 @@ public interface RemoteNavigatorInterface extends PendingRemote, RemoteContextIn
 
     void changePassword(String login, String newPassword) throws RemoteException;
 
-    // релевантные классы
+    // релевантные элементы
     byte[] getElementsByteArray(String groupSID) throws RemoteException;
-
-    final static String NAVIGATORGROUP_RELEVANTFORM = "_NAV_RELEVANTFORM_";
-    final static String NAVIGATORGROUP_RELEVANTCLASS = "_NAV_RELEVANTCLASS_";
 
     // для simple-client
     String getForms(String formSet) throws RemoteException;

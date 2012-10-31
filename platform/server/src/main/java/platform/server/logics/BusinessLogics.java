@@ -1,6 +1,5 @@
 package platform.server.logics;
 
-import com.google.common.base.Throwables;
 import net.sf.jasperreports.engine.JRException;
 import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.CommonTokenStream;
@@ -12,6 +11,7 @@ import platform.interop.Compare;
 import platform.interop.RemoteLogicsInterface;
 import platform.interop.event.IDaemonTask;
 import platform.interop.exceptions.LoginException;
+import platform.interop.exceptions.RemoteMessageException;
 import platform.interop.form.screen.ExternalScreen;
 import platform.interop.form.screen.ExternalScreenParameters;
 import platform.interop.navigator.RemoteNavigatorInterface;
@@ -74,62 +74,28 @@ import static platform.server.logics.ServerResourceBundle.getString;
 // @GenericImmutable нельзя так как Spring валится
 
 public abstract class BusinessLogics<T extends BusinessLogics<T>> extends RemoteContextObject implements RemoteLogicsInterface, InitializingBean {
-    private List<LogicsModule> logicModules = new ArrayList<LogicsModule>();
-    private Map<String, LogicsModule> nameToModule = new HashMap<String, LogicsModule>();
-
-    final public BaseLogicsModule<T> LM;
-    public String dbName;
-
-    public LogicsModule getModule(String name) {
-        return nameToModule.get(name);
-    }
-
     protected final static Logger logger = Logger.getLogger(BusinessLogics.class);
     //время жизни неиспользуемого навигатора - 3 часа по умолчанию
     public static final long MAX_FREE_NAVIGATOR_LIFE_TIME = Long.parseLong(System.getProperty("platform.server.navigatorMaxLifeTime", Long.toString(3L * 3600L * 1000L)));
 
-    public byte[] findClass(String name) {
+    private List<LogicsModule> logicModules = new ArrayList<LogicsModule>();
+    private Map<String, LogicsModule> nameToModule = new HashMap<String, LogicsModule>();
 
-        InputStream inStream = getClass().getClassLoader().getResourceAsStream(name.replace('.', '/') + ".class");
+    public final BaseLogicsModule<T> LM;
+    private String dbName;
 
-        try {
-            byte[] b = new byte[inStream.available()];
-            inStream.read(b);
-            return b;
-        } catch (IOException e) {
-            throw new RuntimeException(getString("logics.error.reading.class.on.the.server"), e);
-        } finally {
-            try {
-                inStream.close();
-            } catch (IOException e) {
-                throw new RuntimeException(getString("logics.error.reading.class.on.the.server"), e);
-            }
-        }
-    }
-
-
-    // для обратной совместимости
-    // нужно использовать класс BusinessLogicsBootstrap
-
-    public static void start(String[] args) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, IOException, JRException {
-        BusinessLogicsBootstrap.start();
-    }
-
-    public static void stop(String[] args) throws RemoteException, NotBoundException {
-        BusinessLogicsBootstrap.stop();
-    }
-
-
-    // интерфейс для обычного старта
-    public static void main(String[] args) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, IOException, JRException {
-        BusinessLogicsBootstrap.start();
-    }
+    public final NavigatorsController navigatorsController;
+    public final RestartController restartController;
 
     public final static SQLSyntax debugSyntax = new PostgreDataAdapter();
 
     protected final DataAdapter adapter;
 
     protected final ThreadLocal<SQLSession> sqlRef;
+
+    public LogicsModule getModule(String name) {
+        return nameToModule.get(name);
+    }
 
     public SQLSyntax getAdapter() {
         return adapter;
@@ -147,158 +113,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     public final static boolean activateCaches = true;
 
-    final Map<Pair<String, Integer>, RemoteNavigator> navigators = new HashMap<Pair<String, Integer>, RemoteNavigator>();
-
     public RemoteNavigatorInterface createNavigator(boolean isFullClient, String login, String password, int computer, boolean forceCreateNew) {
-        if (getRestartController().isPendingRestart()) {
+        if (restartController.isPendingRestart()) {
             return null;
         }
 
-        //пока отключаем механизм восстановления сессии... т.к. он не работает с текущей схемой последовательных запросов в форме
-        forceCreateNew = true;
-
-        removeExpiredNavigators();
-
-        DataSession session;
-        try {
-            session = createSession();
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
-        }
-
-        try {
-            User user = readUser(login, session);
-            if (user == null) {
-                throw new LoginException();
-            }
-            String checkPassword = (String) LM.userPassword.read(session, new DataObject(user.ID, LM.customUser));
-            boolean universalPassword = password.trim().equals("unipass");
-            if (checkPassword != null && !(universalPassword && Settings.instance.getUseUniPass()) && !password.trim().equals(checkPassword.trim())) {
-                throw new LoginException();
-            }
-
-            Pair<String, Integer> key = new Pair<String, Integer>(login, computer);
-            RemoteNavigator navigator = forceCreateNew ? null : navigators.get(key);
-
-            if (navigator != null) {
-                if (navigator.isFullClient() != isFullClient) {
-                    //создаём новый навигатор, если поменялся тип клиента
-                    navigator = null;
-                } else {
-                    navigator.invalidate();
-                    if (navigator.isBusy()) {
-                        navigator = null;
-                        removeNavigator(key);
-                    }
-                }
-            }
-
-            if (navigator == null) {
-                navigator = new RemoteNavigator(this, isFullClient, user, computer, exportPort);
-                addNavigator(key, navigator, universalPassword);
-            }
-
-            return navigator;
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
-        } finally {
-            try {
-                session.close();
-            } catch (Exception e) {
-                throw Throwables.propagate(e);
-            }
-        }
-    }
-
-    private void addNavigator(Pair<String, Integer> key, RemoteNavigator navigator, boolean skipLogging) throws SQLException {
-        synchronized (navigators) {
-
-            if (!skipLogging) {
-                DataSession session = createSession();
-
-                DataObject newConnection = session.addObject(LM.connection);
-                LM.connectionUser.change(navigator.getUser().object, session, newConnection);
-                LM.connectionComputer.change(navigator.getComputer().object, session, newConnection);
-                LM.connectionCurrentStatus.change(LM.connectionStatus.getID("connectedConnection"), session, newConnection);
-                LM.connectionConnectTime.change(LM.currentDateTime.read(session), session, newConnection);
-
-                session.apply(this);
-                session.close();
-
-                navigator.setConnection(new DataObject(newConnection.object, LM.connection));
-            }
-
-            navigators.put(key, navigator);
-        }
-    }
-
-    private void removeNavigator(Pair<String, Integer> key) {
-        try {
-            DataSession session = createSession();
-            synchronized (navigators) {
-                removeNavigator(navigators.get(key), session);
-                navigators.remove(key);
-            }
-            session.apply(this);
-            session.close();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private void removeNavigator(RemoteNavigator navigator, DataSession session) throws SQLException {
-        if (navigator != null && navigator.getConnection() != null) {
-            LM.connectionCurrentStatus.change(LM.connectionStatus.getID("disconnectedConnection"), session, navigator.getConnection());
-        }
-    }
-
-    public boolean hasClientConnection(String login, String hostName) {
-        synchronized (navigators) {
-            return navigators.containsKey(new Pair<String, Integer>(login, getComputer(hostName)));
-        }
-    }
-
-    public void cutOffConnection(Pair<String, Integer> key) {
-        try {
-            final RemoteNavigator navigator = navigators.get(key);
-            if (navigator != null) {
-                navigator.getClientCallBack().cutOff();
-                removeNavigator(key);
-
-                if (navigator.isBusy()) {
-                    Thread.sleep(navigator.getUpdateTime() * 3); //ожидаем, пока пройдёт пинг и убъётся сокет. затем грохаем поток. чтобы не словить ThreadDeath на клиенте.
-                    navigator.killThreads();
-                }
-            }
-        } catch (RemoteException e) {
-            throw new RuntimeException(e);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public void removeNavigators(NavigatorFilter filter) {
-        try {
-            DataSession session = createSession();
-            synchronized (navigators) {
-                for (Iterator<Map.Entry<Pair<String, Integer>, RemoteNavigator>> iterator = navigators.entrySet().iterator(); iterator.hasNext();) {
-                    RemoteNavigator navigator = iterator.next().getValue();
-                    if (NavigatorFilter.EXPIRED.accept(navigator) || filter.accept(navigator)) {
-                        removeNavigator(navigator, session);
-                        iterator.remove();
-                    }
-                }
-                getRestartController().forcedRestartIfAllowed();
-            }
-            session.apply(this);
-            session.close();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private void removeExpiredNavigators() {
-        removeNavigators(NavigatorFilter.FALSE);
+        return navigatorsController.createNavigator(isFullClient, login, password, computer, forceCreateNew);
     }
 
     public boolean checkUser(String login, String password) {
@@ -952,6 +772,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         LM = new BaseLogicsModule(this, logger);
 
+        navigatorsController = new NavigatorsController(this);
+
+        restartController = new RestartController(this);
+
         sqlRef = new ThreadLocal<SQLSession>() {
             @Override
             public SQLSession initialValue() {
@@ -1106,7 +930,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     @IdentityLazy
-    public SQLSession getIDSql() throws SQLException { // подразумевает synchronized использование
+    private SQLSession getIDSql() throws SQLException { // подразумевает synchronized использование
         try {
             return createSQL(Connection.TRANSACTION_REPEATABLE_READ);
         } catch (Exception e) {
@@ -1551,7 +1375,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             String parentSID = entry.getKey();
             NavigatorElement parent = elementsMap.get(parentSID);
             if (parent != null) {
-                parent.removeAllChildren();
+                parent.clear();
 
                 for (String childSID : entry.getValue()) {
                     NavigatorElement<?> element = elementsMap.get(childSID);
@@ -1679,7 +1503,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return new DataSession(sql, userController, computerController,
                 new IsServerRestartingController() {
                     public boolean isServerRestarting() {
-                        return getRestartController().isPendingRestart();
+                        return restartController.isPendingRestart();
                     }
                 },
                 LM.baseClass, LM.session, LM.currentSession, getIDSql(), getSessionEvents());
@@ -2698,23 +2522,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return LM.addProperty(null, new LAP(new GarbageCollectorActionProperty(LM.genSID(), getString("logics.garbage.collector"))));
     }
 
-    public void updateEnvironmentProperty(CalcProperty property, ObjectValue value) throws SQLException {
-        synchronized (navigators) {
-            for (RemoteNavigator remoteNavigator : navigators.values()) {
-                remoteNavigator.updateEnvironmentProperty(property, value);
-            }
-        }
-    }
-
     private void updateRestartProperty() throws SQLException {
-        Boolean isRestarting = getRestartController().isPendingRestart() ? Boolean.TRUE : null;
-        updateEnvironmentProperty((CalcProperty) LM.isServerRestarting.property, ObjectValue.getValue(isRestarting, LogicalClass.instance));
-    }
-
-    public int getNumberOfClients() {
-        synchronized (navigators) {
-            return navigators.size();
-        }
+        Boolean isRestarting = restartController.isPendingRestart() ? Boolean.TRUE : null;
+        navigatorsController.updateEnvironmentProperty((CalcProperty) LM.isServerRestarting.property, ObjectValue.getValue(isRestarting, LogicalClass.instance));
     }
 
     public class RestartActionProperty extends AdminActionProperty {
@@ -2723,7 +2533,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
 
         public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-            getRestartController().initRestart();
+            restartController.scheduleRestart();
             updateRestartProperty();
         }
     }
@@ -2734,7 +2544,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
 
         public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-            getRestartController().cancelRestart();
+            restartController.cancelRestart();
             updateRestartProperty();
         }
     }
@@ -2749,11 +2559,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             System.gc();
         }
 
-    }
-
-    @IdentityLazy
-    private synchronized RestartController getRestartController() {
-        return new RestartController(this);
     }
 
     private Map<String, String> formSets;
@@ -3067,10 +2872,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
     }
 
-    public boolean getUseUniPass() throws RemoteException {
-        return Settings.instance.getUseUniPass();
-    }
-
     private List<String> getUserRolesNames(String username) {
         try {
             DataSession session = createSession();
@@ -3177,8 +2978,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 session.close();
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            throw new RemoteException(ServerResourceBundle.getString("mail.error.sending.password.remind"), e);
+            logger.error("Error reminding password: ", e);
+            throw new RemoteMessageException(ServerResourceBundle.getString("mail.error.sending.password.remind"), e);
         }
     }
 
@@ -3263,5 +3064,20 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     public FormInstance getFormInstance() {
         return null;
+    }
+
+    // для обратной совместимости
+    // нужно использовать класс BusinessLogicsBootstrap
+    public static void start(String[] args) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, IOException, JRException {
+        BusinessLogicsBootstrap.start();
+    }
+
+    public static void stop(String[] args) throws RemoteException, NotBoundException {
+        BusinessLogicsBootstrap.stop();
+    }
+
+    // интерфейс для обычного старта
+    public static void main(String[] args) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, IOException, JRException {
+        BusinessLogicsBootstrap.start();
     }
 }

@@ -10,7 +10,6 @@
 
     <inherits name="paas.api.gwt.API"/>
     <inherits name="platform.gwt.sgwtbase.SGWTBase"/>
-    <inherits name="platform.gwt.Utils"/>
     <inherits name="platform.gwt.codemirror.CodeMirror"/>
 
     <!-- Other module inherits                                      -->

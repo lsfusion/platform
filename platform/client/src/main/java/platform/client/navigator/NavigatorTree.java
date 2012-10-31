@@ -17,10 +17,12 @@ public class NavigatorTree extends ClientTree {
     public NavigatorTreeNode rootNode;
     public final DefaultTreeModel model;
     public final AbstractNavigatorPanel navigator;
+    private final ClientNavigatorElement rootElement;
 
-    public NavigatorTree(AbstractNavigatorPanel navigator) {
+    public NavigatorTree(AbstractNavigatorPanel navigator, ClientNavigatorElement rootElement) {
         super();
         this.navigator = navigator;
+        this.rootElement = rootElement;
 
         setToggleClickCount(-1);
 
@@ -44,7 +46,7 @@ public class NavigatorTree extends ClientTree {
     }
 
     public void createRootNode() {
-        rootNode = new NavigatorTreeNode(this, ClientNavigatorElement.root);
+        rootNode = new NavigatorTreeNode(this, rootElement);
         model.setRoot(rootNode);
 
         rootNode.add(new ExpandingTreeNode());

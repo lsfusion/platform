@@ -6,8 +6,8 @@ import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.SimpleLayoutPanel;
 import com.google.gwt.user.client.ui.TabLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
-import platform.gwt.base.client.ErrorAsyncCallback;
 import platform.gwt.base.client.GwtClientUtils;
+import platform.gwt.form2.client.ErrorHandlingCallback;
 import platform.gwt.form2.client.dispatch.NavigatorDispatchAsync;
 import platform.gwt.form2.client.form.ui.dialog.GResizableModalForm;
 import platform.gwt.form2.client.form.ui.dialog.WindowHiddenHandler;
@@ -40,37 +40,63 @@ public class DefaultFormsController extends SimpleLayoutPanel implements FormsCo
     }
 
     public void openForm(final String formSID, final GModalityType modalityType) {
-        //todo: добавить loading-компонент перед вызовом и убрать его перед добавлением формы..
-        NavigatorDispatchAsync.Instance.get().execute(new GetForm(formSID, modalityType.isModal(), null), new ErrorAsyncCallback<GetFormResult>() {
+        final FormDockable dockable = modalityType.isDialog() ? null : addDockable(new FormDockable());
+
+        NavigatorDispatchAsync.Instance.get().execute(new GetForm(formSID, modalityType.isModal(), null), new ErrorHandlingCallback<GetFormResult>() {
+            @Override
+            public void failure(Throwable caught) {
+                if (dockable != null) {
+                    removeDockable(dockable);
+                }
+                super.failure(caught);
+            }
+
             @Override
             public void success(GetFormResult result) {
                 if (!GWT.isScript() && formSID != null) {
                     result.form.caption += "(" + formSID + ")";
                 }
 
-                openForm(result.form, modalityType, null);
+                openForm(dockable, result.form, modalityType, null);
             }
         });
     }
 
     public void openForm(GForm form, GModalityType modalityType, final WindowHiddenHandler hiddenHandler) {
+        openForm(null, form, modalityType, hiddenHandler);
+    }
+
+    private void openForm(FormDockable dockable, GForm form, GModalityType modalityType, final WindowHiddenHandler hiddenHandler) {
         if (modalityType.isDialog()) {
             showModalForm(form, modalityType.isFullScreen(), hiddenHandler);
         } else {
-            final FormDockable formDockable = new FormDockable(this, form);
+            if (dockable == null) {
+                dockable = addDockable(new FormDockable(this, form));
+            } else {
+                dockable.initialize(this, form);
+            }
 
-            formDockable.setHiddenHandler(new WindowHiddenHandler() {
+            final FormDockable finalDockable = dockable;
+            dockable.setHiddenHandler(new WindowHiddenHandler() {
                 @Override
                 public void onHidden() {
                     if (hiddenHandler != null) {
                         hiddenHandler.onHidden();
                     }
-                    tabsPanel.remove(formDockable.getContentWidget());
+                    removeDockable(finalDockable);
                 }
             });
-            tabsPanel.add(formDockable.getContentWidget(), formDockable.getTabWidget());
-            tabsPanel.selectTab(formDockable.getContentWidget());
         }
+    }
+
+    private FormDockable addDockable(FormDockable dockable) {
+        tabsPanel.add(dockable.getContentWidget(), dockable.getTabWidget());
+        tabsPanel.selectTab(dockable.getContentWidget());
+        return dockable;
+    }
+
+    private void removeDockable(FormDockable dockable) {
+        tabsPanel.remove(dockable.getContentWidget());
     }
 
     public void showModalForm(GForm form, boolean isFullScreen, final WindowHiddenHandler handler) {

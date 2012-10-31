@@ -3,7 +3,7 @@ package platform.gwt.form2.client.form.ui;
 import com.google.gwt.user.client.ui.CellPanel;
 import com.google.gwt.user.client.ui.ResizeLayoutPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
-import platform.gwt.base.shared.GOrder;
+import platform.gwt.form2.shared.view.GOrder;
 import platform.gwt.form2.shared.view.GGrid;
 import platform.gwt.form2.shared.view.GPropertyDraw;
 import platform.gwt.form2.shared.view.changes.GGroupObjectValue;

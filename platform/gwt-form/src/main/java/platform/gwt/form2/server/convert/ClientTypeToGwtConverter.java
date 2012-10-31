@@ -6,7 +6,7 @@ import platform.gwt.form2.shared.view.classes.*;
 import java.util.ArrayList;
 
 @SuppressWarnings("UnusedDeclaration")
-public class ClientTypeToGwtConverter extends CachedObjectConverter {
+public class ClientTypeToGwtConverter extends ObjectConverter {
     private static final class InstanceHolder {
         private static final ClientTypeToGwtConverter instance = new ClientTypeToGwtConverter();
     }
@@ -28,7 +28,6 @@ public class ClientTypeToGwtConverter extends CachedObjectConverter {
         return GDoubleType.instance;
     }
 
-    @Cached
     @Converter(from = ClientNumericClass.class)
     public GNumericType convertNumericClass(ClientNumericClass clientNumericClass) {
         return new GNumericType(clientNumericClass.length, clientNumericClass.precision);
@@ -89,13 +88,11 @@ public class ClientTypeToGwtConverter extends CachedObjectConverter {
         return GExcelType.instance;
     }
 
-    @Cached
     @Converter(from = ClientStringClass.class)
     public GStringType convertStringClass(ClientStringClass clientStringClass) {
         return new GStringType(clientStringClass.length);
     }
 
-    @Cached
     @Converter(from = ClientInsensitiveStringClass.class)
     public GInsensitiveStringType convertIntegerClass(ClientInsensitiveStringClass clientInsensitiveStringClass) {
         return new GInsensitiveStringType(clientInsensitiveStringClass.length);

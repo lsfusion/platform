@@ -2,8 +2,8 @@ package platform.gwt.form2.client.form.ui;
 
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
-import platform.gwt.base.shared.GClassViewType;
-import platform.gwt.base.shared.GOrder;
+import platform.gwt.form2.shared.view.GClassViewType;
+import platform.gwt.form2.shared.view.GOrder;
 import platform.gwt.form2.client.form.ui.container.GAbstractFormContainer;
 import platform.gwt.form2.shared.view.GContainer;
 import platform.gwt.form2.shared.view.GGroupObject;
@@ -13,7 +13,7 @@ import platform.gwt.form2.shared.view.changes.GFormChanges;
 import platform.gwt.form2.shared.view.changes.GGroupObjectValue;
 import platform.gwt.form2.shared.view.logics.GGroupObjectLogicsSupplier;
 import platform.gwt.form2.shared.view.reader.*;
-import platform.gwt.utils.GwtSharedUtils;
+import platform.gwt.base.shared.GwtSharedUtils;
 
 import java.util.*;
 

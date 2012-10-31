@@ -10,11 +10,12 @@ import com.gwtplatform.dispatch.shared.ServiceException;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import platform.base.ExceptionUtils;
 import platform.gwt.base.server.LogicsDispatchServlet;
 import platform.gwt.base.server.spring.BusinessLogicsProvider;
 import platform.gwt.paas.server.exceptions.RemoteActionException;
+import platform.gwt.paas.shared.exceptions.InvalidateException;
 import platform.gwt.paas.shared.exceptions.MessageException;
+import platform.interop.exceptions.RemoteMessageException;
 
 @Component("gwtpDispatch")
 public class LogicsDispatchServiceImpl extends DispatchServiceImpl {
@@ -32,20 +33,18 @@ public class LogicsDispatchServiceImpl extends DispatchServiceImpl {
         try {
             return super.execute(cookieSentByRPC, action);
         } catch (RemoteActionException e) {
-            String errorMessage = null;
-            if (!ExceptionUtils.isRecoverableRemoteException(e.getRemote())) {
-                blProvider.invalidate();
-                errorMessage = "Внутренняя ошибка сервера. Попробуйте перезагрузить страницу.";
-            } else {
-                errorMessage = ExceptionUtils.getInitialCause(e.getRemote()).getMessage();
-            }
+            blProvider.invalidate();
 
             e.printStackTrace();
-            logger.error("Ошибка в LogicsDispatchServiceImpl.execute: ", e);
-            throw new MessageException(errorMessage);
+            logger.error("Ошибка в LogicsDispatchServlet.execute: ", e);
+            throw new InvalidateException("Внутренняя ошибка сервера. Попробуйте перезагрузить страницу.");
+        } catch (RemoteMessageException e) {
+            e.printStackTrace();
+            logger.error("Ошибка в LogicsDispatchServlet.execute: ", e);
+            throw new MessageException("Внутренняя ошибка сервера: " + e.getMessage());
         } catch (Throwable e) {
             e.printStackTrace();
-            logger.error("Ошибка в LogicsDispatchServiceImpl.execute: ", e);
+            logger.error("Ошибка в LogicsDispatchServlet.execute: ", e);
             throw new MessageException("Внутренняя ошибка сервера.");
         }
     }

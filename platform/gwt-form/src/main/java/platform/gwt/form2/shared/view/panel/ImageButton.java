@@ -2,7 +2,7 @@ package platform.gwt.form2.shared.view.panel;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.ui.*;
-import platform.gwt.utils.GwtSharedUtils;
+import platform.gwt.base.shared.GwtSharedUtils;
 
 public class ImageButton extends Button {
     private final Image image;

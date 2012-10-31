@@ -1,5 +1,6 @@
 package platform.server.logics;
 
+import com.google.common.io.Resources;
 import net.sf.jasperreports.engine.JRException;
 import platform.interop.RemoteLoaderInterface;
 import platform.interop.RemoteLogicsInterface;
@@ -9,7 +10,8 @@ import java.io.IOException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.sql.SQLException;
-import java.util.List;
+
+import static platform.server.logics.ServerResourceBundle.getString;
 
 public class BusinessLogicsLoader extends UnicastRemoteObject implements RemoteLoaderInterface {
     private final BusinessLogics BL;
@@ -24,16 +26,10 @@ public class BusinessLogicsLoader extends UnicastRemoteObject implements RemoteL
     }
 
     public byte[] findClass(String name) throws RemoteException {
-        return  BL.findClass(name);
-    }
-
-    @Override
-    public void setDbName(String dbName) throws RemoteException {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public List<String> getDbNames() throws RemoteException {
-        return null;
+        try {
+            return Resources.toByteArray(Resources.getResource(name.replace('.', '/') + ".class"));
+        } catch (IOException e) {
+            throw new RuntimeException(getString("logics.error.reading.class.on.the.server"), e);
+        }
     }
 }

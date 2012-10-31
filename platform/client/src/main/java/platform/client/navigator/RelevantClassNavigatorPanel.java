@@ -22,7 +22,7 @@ public class RelevantClassNavigatorPanel extends AbstractNavigatorPanel {
                         element.getSID().equals(BASE_ELEMENT_SID)
                         ? RemoteNavigatorInterface.NAVIGATORGROUP_RELEVANTCLASS
                         : element.getSID()
-                ));
+                ), clientNavigator.windows);
     }
 
     public void updateCurrentClass(int classID) {

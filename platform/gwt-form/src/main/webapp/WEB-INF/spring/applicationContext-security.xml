@@ -11,14 +11,14 @@
     <config:annotation-config />
 
     <http auto-config="true" use-expressions="true" entry-point-ref="loginUrlAuthenticationEntryPoint">
-        <intercept-url pattern="/form2.jsp" access="hasAnyRole('admin')"/>
+        <intercept-url pattern="/form.jsp" access="hasAnyRole('admin')"/>
         <intercept-url pattern="/platform.gwt.form2.Form/*" access="hasRole('admin')"/>
 
-        <form-login authentication-failure-url="/loginFailed.txt" default-target-url="/form.jsp"/>
+        <form-login authentication-failure-url="/login.jsp?error=1" default-target-url="/form.jsp"/>
 
         <anonymous enabled="false" />
 
-        <logout logout-url="/logout.jsp" success-handler-ref="successLogoutHandler"/>
+        <logout invalidate-session="true" logout-url="/logout.jsp" success-handler-ref="successLogoutHandler"/>
 
         <access-denied-handler ref="accessDeniedHandler" />
 
@@ -35,8 +35,6 @@
     <b:bean id="readFileHandler" class="platform.gwt.base.server.handlers.ReadFileRequestHandler"/>
 
     <b:bean id="generateReportHandler" class="platform.gwt.base.server.handlers.GenerateReportRequestHandler"/>
-
-    <b:bean id="navigatorDSHandler" class="platform.gwt.form.server.navigator.ds.NavigatorDSHandler"/>
 
     <b:bean id="propertyReadAccessFilter" class="platform.gwt.base.server.spring.PropertyReadAccessFilter">
         <b:property name="URI" value="/readFile"/>
@@ -65,14 +63,12 @@
     </b:bean>
 
     <b:bean id="blLogicProvider" class="platform.gwt.base.server.spring.BusinessLogicsProviderImpl">
-        <!--suppress SpringModelInspection : servletContext - теперь bean по умолчанию в Spring 3.0 -->
         <b:constructor-arg ref="servletContext"/>
     </b:bean>
 
     <b:bean scope="session" id="navigatorProvider" class="platform.gwt.base.server.spring.NavigatorProviderImpl">
-        <b:property name="businessLogicsProvider" ref="blLogicProvider" />
         <aop:scoped-proxy proxy-target-class="false"/>
     </b:bean>
 
-    <b:bean scope="session" id="formManager" class="platform.gwt.form2.server.FormSessionManager"></b:bean>
+    <b:bean scope="session" id="formManager" class="platform.gwt.form2.server.FormSessionManager" />
 </b:beans>

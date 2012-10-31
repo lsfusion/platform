@@ -2,9 +2,7 @@
         "http://google-web-toolkit.googlecode.com/svn/releases/2.0/distro-source/core/src/gwt-module.dtd">
 <module>
     <inherits name='com.google.gwt.user.User'/>
-    <inherits name="platform.gwt.Utils"/>
     <inherits name="platform.gwt.base.Base"/>
-    <inherits name="platform.gwt.Resources"/>
 
     <!--  GWT dispatch -->
     <inherits name='net.customware.gwt.dispatch.Dispatch' />

@@ -84,7 +84,7 @@ public class GridEditableCell extends AbstractCell<Object> {
         if (isEditingCell(context)) {
             cellEditor.render(context, value, sb);
         } else {
-            GPropertyDraw property = editManager.getProperty(context.getIndex(), context.getColumn());
+            GPropertyDraw property = editManager.getProperty(context);
             if (property != null) {
                 GridCellRenderer cellRenderer = property.getGridCellRenderer();
                 cellRenderer.render(context, value, sb);

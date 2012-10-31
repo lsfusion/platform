@@ -15,9 +15,6 @@ import platform.interop.event.IDaemonTask;
 import platform.interop.form.RemoteFormInterface;
 import platform.interop.form.ServerResponse;
 import platform.interop.navigator.RemoteNavigatorInterface;
-import platform.interop.remote.CallbackMessage;
-import platform.interop.remote.ClientCallBackInterface;
-import platform.interop.remote.RemoteObject;
 import platform.server.ContextAwareDaemonThreadFactory;
 import platform.server.RemoteContextObject;
 import platform.server.auth.SecurityPolicy;
@@ -193,24 +190,20 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
     SecurityPolicy securityPolicy;
 
     public byte[] getCurrentUserInfoByteArray() {
-
-        //будем использовать стандартный OutputStream, чтобы кол-во передаваемых данных было бы как можно меньше
-        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-
         try {
             DataSession session = createSession();
-
-            ObjectOutputStream objectStream = new ObjectOutputStream(outStream);
             Query<Object, String> query = new Query<Object, String>(new HashMap<Object, KeyExpr>());
             query.properties.put("name", BL.LM.currentUserName.getExpr());
-            objectStream.writeObject(BaseUtils.nvl((String) query.execute(session).singleValue().get("name"), "(без имени)").trim());
-
+            String userName = BaseUtils.nvl((String) query.execute(session).singleValue().get("name"), "(без имени)").trim();
             session.close();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
 
-        return outStream.toByteArray();
+            ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+            DataOutputStream dataStream = new DataOutputStream(outStream);
+            dataStream.writeUTF(userName);
+            return outStream.toByteArray();
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
+        }
     }
 
     @Override
@@ -282,50 +275,42 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
         return session;
     }
 
-    List<NavigatorElement> getElements(String elementSID) {
+    public byte[] getElementsByteArray(String groupSID) {
 
-        List<NavigatorElement> navigatorElements;
-        if (elementSID.equals(RemoteNavigatorInterface.NAVIGATORGROUP_RELEVANTFORM)) {
+        List<NavigatorElement> navigatorElements = null;
+        if (groupSID.equals(RemoteNavigatorInterface.NAVIGATORGROUP_RELEVANTFORM)) {
             FormInstance<T> currentForm = getCurrentForm();
-            if (currentForm == null)
-                navigatorElements = new ArrayList<NavigatorElement>();
-            else
+            if (currentForm != null) {
                 navigatorElements = new ArrayList<NavigatorElement>(currentForm.entity.relevantElements);
-        } else if (elementSID.equals(RemoteNavigatorInterface.NAVIGATORGROUP_RELEVANTCLASS)) {
-            if (currentClass == null)
-                navigatorElements = new ArrayList();
-            else
-                return currentClass.getRelevantElements(BL.LM, securityPolicy);
+            }
+        } else if (groupSID.equals(RemoteNavigatorInterface.NAVIGATORGROUP_RELEVANTCLASS)) {
+            if (currentClass != null) {
+                navigatorElements = currentClass.getRelevantElements(BL.LM, securityPolicy);
+            }
         } else {
-            navigatorElements = getElements(BL.LM.baseElement.getNavigatorElement(elementSID));
+            NavigatorElement singleElement = BL.LM.baseElement.getNavigatorElement(groupSID);
+            navigatorElements = singleElement == null
+                                ? Collections.singletonList(singleElement)
+                                : new ArrayList<NavigatorElement>(singleElement.getChildren(false));
         }
 
         List<NavigatorElement> resultElements = new ArrayList();
-
-        for (NavigatorElement element : navigatorElements)
-            if (securityPolicy.navigator.checkPermission(element))
-                resultElements.add(element);
-
-        return resultElements;
-    }
-
-    List<NavigatorElement> getElements(NavigatorElement element) {
-
-        if (element == null) element = BL.LM.baseElement;
-        return new ArrayList(element.getChildren());
-    }
-
-    public byte[] getElementsByteArray(String groupSID) {
-
-        List<NavigatorElement> listElements = getElements(groupSID);
+        if (navigatorElements != null) {
+            for (NavigatorElement element1 : navigatorElements) {
+                if (securityPolicy.navigator.checkPermission(element1)) {
+                    resultElements.add(element1);
+                }
+            }
+        }
 
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         DataOutputStream dataStream = new DataOutputStream(outStream);
 
         try {
-            dataStream.writeInt(listElements.size());
-            for (NavigatorElement element : listElements)
-                element.serialize(dataStream, listElements);
+            dataStream.writeInt(resultElements.size());
+            for (NavigatorElement element : resultElements) {
+                element.serialize(dataStream);
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -437,7 +422,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
         if (prevEntity == null)
             throw new RuntimeException(ServerResourceBundle.getString("form.navigator.form.with.id.not.found"));
 
-        prevEntity.getParent().replaceChild(prevEntity, formEntity);
+        prevEntity.getParent().replace(prevEntity, formEntity);
     }
 
     public String getForms(String formSet) throws RemoteException {
@@ -591,11 +576,19 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
 
     public void close() throws RemoteException {
         try {
-            BL.removeNavigators(NavigatorFilter.single(this));
+            BL.navigatorsController.removeNavigators(NavigatorFilter.single(this));
             sql.close();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public void setUpdateTime(int updateTime) {
+        this.updateTime = updateTime;
+    }
+
+    public int getUpdateTime() {
+        return updateTime;
     }
 
     public synchronized void invalidate() throws SQLException {
@@ -623,14 +616,6 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
         return client;
     }
 
-    public void setUpdateTime(int updateTime) {
-        this.updateTime = updateTime;
-    }
-
-    public int getUpdateTime() {
-        return updateTime;
-    }
-
     public boolean isRestartAllowed() {
         return client.isRestartAllowed();
     }
@@ -641,51 +626,6 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
 
     public void notifyServerRestartCanceled() throws RemoteException {
         client.notifyServerRestartCanceled();
-    }
-
-    public static class ClientCallBackController extends RemoteObject implements ClientCallBackInterface {
-        private List<CallbackMessage> messages = new ArrayList<CallbackMessage>();
-        private Boolean deniedRestart = null;
-
-        public ClientCallBackController(int port) throws RemoteException {
-            super(port);
-        }
-
-        public synchronized void disconnect() {
-            addMessage(CallbackMessage.DISCONNECTED);
-        }
-
-        public synchronized void cutOff() {
-            addMessage(CallbackMessage.CUT_OFF);
-        }
-
-        public synchronized void notifyServerRestart() {
-            deniedRestart = false;
-            addMessage(CallbackMessage.SERVER_RESTARTING);
-        }
-
-        public synchronized void notifyServerRestartCanceled() {
-            deniedRestart = null;
-        }
-
-        public synchronized void denyRestart() {
-            deniedRestart = true;
-        }
-
-        public synchronized boolean isRestartAllowed() {
-            //если не спрашивали, либо если отказался
-            return deniedRestart != null && !deniedRestart;
-        }
-
-        public synchronized void addMessage(CallbackMessage message) {
-            messages.add(message);
-        }
-
-        public synchronized List<CallbackMessage> pullMessages() {
-            ArrayList result = new ArrayList(messages);
-            messages.clear();
-            return result.isEmpty() ? null : result;
-        }
     }
 
     @Override
@@ -701,17 +641,34 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
     @Override
     public byte[] getNavigatorTree() throws RemoteException {
 
-        Collection<NavigatorElement> listElements = BL.LM.baseElement.addSubTree(securityPolicy, new LinkedList<NavigatorElement>());
+        List<NavigatorElement<T>> elements = BL.LM.baseElement.getChildrenNonUnique(securityPolicy);
 
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         DataOutputStream dataStream = new DataOutputStream(outStream);
 
         try {
-            dataStream.writeInt(listElements.size());
-            for (NavigatorElement element : listElements)
-                element.serialize(dataStream, listElements);
+            dataStream.writeInt(elements.size());
+            for (NavigatorElement element : elements) {
+                element.serialize(dataStream);
+            }
+
+            for (NavigatorElement<T> element : elements) {
+                int childrenCount = 0;
+                for (NavigatorElement<T> child : element.getChildren(false)) {
+                    if (elements.contains(child)) {
+                        childrenCount++;
+                    }
+                }
+
+                dataStream.writeInt(childrenCount);
+                for (NavigatorElement<T> child : element.getChildren(false)) {
+                    if (elements.contains(child)) {
+                        dataStream.writeUTF(child.getSID());
+                    }
+                }
+            }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            Throwables.propagate(e);
         }
 
         return outStream.toByteArray();
@@ -729,7 +686,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
             BL.LM.statusWindow.serialize(dataStream);
             BL.LM.formsWindow.serialize(dataStream);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            Throwables.propagate(e);
         }
 
         return outStream.toByteArray();

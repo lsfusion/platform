@@ -328,8 +328,6 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
             Main.frame.updateUser();
         } catch (IOException e) {
             throw new RuntimeException(e);
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
         }
     }
 
@@ -361,8 +359,6 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
         } catch (LoginException e) {
             throw new RuntimeException(e);
         } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
     }

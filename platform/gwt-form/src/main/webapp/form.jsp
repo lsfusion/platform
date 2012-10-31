@@ -1,3 +1,5 @@
+<!DOCTYPE html>
+
 <%@ page import="platform.gwt.base.server.ServerUtils" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <html>
@@ -9,12 +11,9 @@
         <meta name="gwt:property" content="locale=<%=ServerUtils.getLocaleLanguage()%>">
 
         <title>Форма</title>
-        <link rel="stylesheet" href="style.css">
     </head>
     <body>
-        <jsp:include page="WEB-INF/jsp/smartgwt.jsp"/>
-
         <script type="text/javascript" language="javascript"
-                src="platform.gwt.form.Form/platform.gwt.form.Form.nocache.js"></script>
+                src="platform.gwt.form2.Form/platform.gwt.form2.Form.nocache.js"></script>
     </body>
 </html>

@@ -1,5 +1,6 @@
 package platform.client;
 
+import com.google.common.base.Throwables;
 import org.apache.log4j.Logger;
 import org.aspectj.lang.Aspects;
 import platform.base.BaseUtils;
@@ -10,8 +11,6 @@ import platform.client.form.ClientExternalScreen;
 import platform.client.form.SimplexLayout;
 import platform.client.logics.classes.ClientObjectClass;
 import platform.client.logics.classes.ClientTypeSerializer;
-import platform.client.navigator.ClientNavigatorElement;
-import platform.client.navigator.ClientNavigatorWindow;
 import platform.client.remote.ImmutableProxyMethodsAspect;
 import platform.client.remote.proxy.RemoteFormProxy;
 import platform.client.rmi.ConnectionLostManager;
@@ -81,7 +80,7 @@ public class Main {
 
     private static ClientObjectClass baseClass = null;
     public static EventBus eventBus = new EventBus();
-    private static ScheduledExecutorService executorService;
+    private static ScheduledExecutorService daemonTasksExecutor;
 
     public static void start(final String[] args, ModuleFactory startModule) {
         bootstrapThreadGroup = Thread.currentThread().getThreadGroup();
@@ -184,10 +183,10 @@ public class Main {
                             frame.setVisible(true);
 
                             ArrayList<IDaemonTask> tasks = remoteNavigator.getDaemonTasks(Main.computerId);
-                            executorService = Executors.newScheduledThreadPool(1);
+                            daemonTasksExecutor = Executors.newScheduledThreadPool(1);
                             for (IDaemonTask task : tasks) {
                                 task.setEventBus(eventBus);
-                                executorService.scheduleWithFixedDelay(new DaemonTask(task), task.getDelay(), task.getPeriod(), TimeUnit.MILLISECONDS);
+                                daemonTasksExecutor.scheduleWithFixedDelay(new DaemonTask(task), task.getDelay(), task.getPeriod(), TimeUnit.MILLISECONDS);
                             }
                         } catch (Exception e) {
                             closeSplashScreen();
@@ -478,14 +477,13 @@ public class Main {
 
         RemoteFormProxy.dropCaches();
         ClientExternalScreen.dropCaches();
-        ClientNavigatorWindow.dropCaches();
-        ClientNavigatorElement.dropCaches();
 
         eventBus.invalidate();
-        executorService.shutdown();
+        daemonTasksExecutor.shutdown();
         try {
-            executorService.awaitTermination(5, TimeUnit.SECONDS);
+            daemonTasksExecutor.awaitTermination(15, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
+            Throwables.propagate(e);
         }
 
         computerId = -1;
@@ -515,7 +513,7 @@ public class Main {
     }
 
     public interface ModuleFactory {
-        MainFrame initFrame(RemoteNavigatorInterface remoteNavigator) throws ClassNotFoundException, IOException;
+        MainFrame initFrame(RemoteNavigatorInterface remoteNavigator) throws IOException;
 
         void openInExcel(ReportGenerationData generationData);
 
@@ -526,7 +524,7 @@ public class Main {
 
     public static void main(final String[] args) {
         start(args, new ModuleFactory() {
-            public MainFrame initFrame(RemoteNavigatorInterface remoteNavigator) throws ClassNotFoundException, IOException {
+            public MainFrame initFrame(RemoteNavigatorInterface remoteNavigator) throws IOException {
 
                 String forms = System.getProperty(PLATFORM_CLIENT_FORMS);
                 if (forms == null) {

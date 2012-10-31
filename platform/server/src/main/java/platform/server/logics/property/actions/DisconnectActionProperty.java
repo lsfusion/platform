@@ -33,7 +33,7 @@ public class DisconnectActionProperty extends AdminActionProperty {
         String login = ((String) LM.userNameConnection.read(context, connection)).trim();
         Integer computer = (Integer) LM.connectionComputer.read(context, connection);
         Pair<String, Integer> key = new Pair<String, Integer>(login, computer);
-        BL.cutOffConnection(key);
+        BL.navigatorsController.cutOffConnection(key);
     }
 
     @Override

@@ -6,7 +6,7 @@ import com.intellij.uiDesigner.core.Spacer;
 import org.apache.commons.codec.binary.Base64;
 import platform.base.OSUtils;
 import platform.interop.KeyStrokes;
-import platform.interop.RemoteLoaderInterface;
+import platform.interop.RemoteServerAgentLoaderInterface;
 import platform.interop.ServerInfo;
 
 import javax.swing.*;
@@ -25,7 +25,6 @@ import java.rmi.ConnectException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
-import java.text.MessageFormat;
 import java.util.List;
 import java.util.Scanner;
 
@@ -130,7 +129,7 @@ public class LoginDialog extends JDialog {
             @Override
             public void popupMenuWillBecomeVisible(PopupMenuEvent event) {
                 try {
-                    RemoteLoaderInterface remoteLoader = (RemoteLoaderInterface) Naming.lookup("rmi://localhost:6666/ServerAgentLoader");
+                    RemoteServerAgentLoaderInterface remoteLoader = (RemoteServerAgentLoaderInterface) Naming.lookup("rmi://localhost:6666/ServerAgentLoader");
                     serverDB.removeAllItems();
                     for (String dbname : remoteLoader.getDbNames()) {
                         ((MutableComboBoxModel) serverDB.getModel()).addElement(dbname);
@@ -169,7 +168,7 @@ public class LoginDialog extends JDialog {
         }
 
         try {
-            RemoteLoaderInterface remoteLoader = (RemoteLoaderInterface) Naming.lookup("rmi://localhost:6666/ServerAgentLoader");
+            RemoteServerAgentLoaderInterface remoteLoader = (RemoteServerAgentLoaderInterface) Naming.lookup("rmi://localhost:6666/ServerAgentLoader");
 
             for (String dbname : remoteLoader.getDbNames()) {
                 ((MutableComboBoxModel) serverDB.getModel()).addElement(dbname);

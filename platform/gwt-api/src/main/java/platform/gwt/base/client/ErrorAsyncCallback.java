@@ -10,7 +10,7 @@ public class ErrorAsyncCallback<T> extends AsyncCallbackEx<T> {
         showErrorPage(caught);
     }
 
-    public static void showErrorPage(Throwable caught) {
+    private static void showErrorPage(Throwable caught) {
         GwtClientUtils.setAsRootPane(new ErrorFrameWidget(caught));
     }
 }

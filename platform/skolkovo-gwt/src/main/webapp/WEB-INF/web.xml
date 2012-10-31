@@ -10,10 +10,6 @@
         <session-timeout>1440</session-timeout>
     </session-config>
 
-    <welcome-file-list>
-        <welcome-file>form.jsp</welcome-file>
-    </welcome-file-list>
-
     <context-param>
         <description>Сервер, на котором работает сервер приложения.</description>
         <param-name>serverHost</param-name>
@@ -59,15 +55,6 @@
     <servlet-mapping>
         <servlet-name>LoginService</servlet-name>
         <url-pattern>/skolkovo.gwt.login.Login/dispatch</url-pattern>
-    </servlet-mapping>
-
-    <servlet>
-        <servlet-name>RemoteFormService</servlet-name>
-        <servlet-class>platform.gwt.form.server.RemoteServiceImpl</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>RemoteFormService</servlet-name>
-        <url-pattern>/skolkovo.gwt.form.Form/dispatch</url-pattern>
     </servlet-mapping>
 
     <servlet>
