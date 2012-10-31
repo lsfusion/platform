@@ -147,13 +147,23 @@ FORM agreement 'Соглашение'
     FILTERGROUP filters
         FILTER 'Только отмеченные' 'F10' inAgreementLegalEntityOver (a, l)
 
+    TREE priceGroupTree g=priceGroup PARENT parentPriceGroup
+    PROPERTIES READONLY name(g)
+    ORDER BY name(g)
+
     OBJECTS pg = priceGroup
     PROPERTIES(pg) READONLY name
     PROPERTIES(a, pg) namePriceListTypeAgreementPriceGroup
+    FILTERS isParentPriceGroupPriceGroup(pg, g)
+
+    TREE skuGroupTree sg=skuGroup PARENT parentSkuGroup
+    PROPERTIES READONLY name(sg)
+    ORDER BY name(sg)
 
     OBJECTS s = sku
     PROPERTIES(s) READONLY nameSku
     PROPERTIES(a, s) namePriceListTypeAgreementSku
+    FILTERS isParentSkuGroupSku(sg, s)
 
     EDIT agreement OBJECT a
 ;
@@ -203,11 +213,19 @@ DESIGN agreement FROM DEFAULT {
                         fillHorizontal = 2.0;
                     }
                 }
-                ADD pg.box{
+                NEW priceGroupContainer{
+                    childConstraints = TO THE RIGHT;
                     caption = 'Уточнение цен по ценовым группам';
+                    type = SPLITH;
+                    ADD priceGroupTree.tree.box;
+                    ADD pg.box{fillHorizontal = 3.0;}
                 }
-                ADD s.box{
+                NEW skuContainer{
+                    childConstraints = TO THE RIGHT;
                     caption = 'Уточнение цен по товарам';
+                    type = SPLITH;
+                    ADD skuGroupTree.tree.box;
+                    ADD s.box{fillHorizontal = 3.0;}
                 }
             }
     }
