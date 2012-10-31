@@ -55,6 +55,7 @@ CLASS userPriceListPosted 'Закрытый прайс (польз.)' : userPric
 @defineDocumentInterfaceTimePrefix(priceList, to, ' по');
 
 @defineDocumentInterfaceNumber(priceList);
+@defineNumeratedObject(priceList, 'Нумератор для прайсов', 'ПЛ');
 
 //@defineDocumentInterfaceDataStock(priceList, stock, 'Склад');
 @defineDocumentInterfacePosted(priceList);
@@ -66,6 +67,11 @@ CLASS userPriceListPosted 'Закрытый прайс (польз.)' : userPric
 
 @defineDocumentInterfaceDetailSku(priceList, sku);
 //@defineDocumentInterfaceDetailPrice(priceList);
+
+//castPriceList =
+//    FORMULA STRING[100] '\'Прайс №\' || CAST($1 AS TEXT) || \' от \' || CAST($2 AS TEXT)';
+//descriptionPriceList 'Описание' (priceList) =
+//    castPriceList(seriesNumberObject(priceList), datePriceList(priceList)) IN documentPrmGroup;
 
 toDateUserPriceList(userPriceList) <- NULL WHEN ASSIGNED(userPriceList IS userPriceList);
 toTimeUserPriceList(userPriceList) <- NULL WHEN ASSIGNED(userPriceList IS userPriceList);
@@ -496,7 +502,30 @@ pricePriceListTypeBatchStockDateTime(type, batch, stock, dateTime) += priceCalcP
 
 backgroundMarkup 'Цвет' (calcPriceListType, priceGroup) = RGB(255,160,160) AND markupCalcPriceListTypePriceGroup(calcPriceListType, priceGroup);
 
+descriptionPriceListPriceListTypeSkuStockDateTime 'Описание' (priceListType, sku, stock, dateTime) =
+    descriptionPriceList(priceListPriceListDetail(priceListDetailDataPriceListTypeSkuStockDateTime(priceListType, sku, stock, dateTime)));
+
+descriptionPriceListPriceListTypeBatchStockDateTime 'Описание' (priceListType, batch, stock, dateTime) =
+    descriptionPriceList(priceListPriceListDetail(priceListDetailDataPriceListTypeSkuStockDateTime(priceListType, skuBatch(batch), stock, dateTime)));
+
 // --------------------------- Формы ------------------------- //
+
+FORM editPriceListType 'Вид цены'
+    OBJECTS p = priceListType FIXED PANEL
+    PROPERTIES(p) objectClassName, name, nameCurrencyDataPriceListType, nameCurrencyCalcPriceListType
+
+    EDIT priceListType OBJECT p
+;
+
+DESIGN editPriceListType FROM DEFAULT{
+    NEW mainContainer{
+        ADD PROPERTY(objectClassName);
+        ADD PROPERTY(name);
+        ADD PROPERTY(nameCurrencyDataPriceListType);
+        ADD PROPERTY(nameCurrencyCalcPriceListType);
+    }
+    ADD functions.box;
+}
 
 FORM dataPriceListType 'Базовый вид цен'
     OBJECTS p = dataPriceListType FIXED PANEL
@@ -534,14 +563,68 @@ FORM priceListType 'Тип цены'
 ;
 
 FORM priceListTypes 'Типы цен'
-    OBJECTS pd = dataPriceListType
-    PROPERTIES(pd) READONLY name, nameCurrencyDataPriceListType
-    PROPERTIES(pd) ADDFORM, EDITFORM, delete
+    OBJECTS dt = DATETIME FIXED PANEL
+    PROPERTIES(dt) objValue = OBJVALUE
 
-    OBJECTS pc = calcPriceListType
-    PROPERTIES(pc) READONLY name, nameCurrencyCalcPriceListType
-    PROPERTIES(pc) ADDFORM, EDITFORM, delete
+    OBJECTS s = stock FIXED PANEL
+    PROPERTIES(s) SELECTOR name
+
+    OBJECTS pt = priceListType
+    PROPERTIES(pt) READONLY objectClassName, name, nameCurrencyPriceListType
+    PROPERTIES(pt) ADDFORM, EDITFORM, delete
+    ORDER BY objectClassName
+
+    OBJECTS p = userPriceList
+    PROPERTIES(p) READONLY seriesNumberObject, dateUserPriceList, timeUserPriceList, fromDateUserPriceList, fromTimeUserPriceList,
+                           toDateUserPriceList, toTimeUserPriceList, nameCurrencyUserPriceList, noteUserPriceList
+    PROPERTIES(p) EDITFORM, delete
+    ORDER BY fromDateUserPriceList, fromTimeUserPriceList
+    FILTERS inPriceListPriceListType(p, pt),
+            inPriceListStockOver(p, s)
+
+    OBJECTS sk = sku
+    PROPERTIES(sk) READONLY nameSku, idBarcodeSku
+    PROPERTIES(sk, s, dt) READONLY balanceASkuStockDateTime
+    ORDER BY nameSku
+
+    OBJECTS b = batch
+    PROPERTIES(b) READONLY isPostedBatch, dateBatch, timeBatch, nameSkuBatch, nameStockBatch, descriptionBatch, costBatch
+    PROPERTIES(b, s, dt) READONLY balanceABatchStockDateTime
+    ORDER BY dateBatch, timeBatch
+    FILTERGROUP filters
+        FILTER 'Проведенные партии' 'F10' isPostedBatch(b) DEFAULT
+
+    PROPERTIES READONLY pricePriceListTypeSkuStockDateTime(pt, sk, s, dt), descriptionPriceListPriceListTypeSkuStockDateTime(pt, sk, s, dt),
+                        pricePriceListTypeBatchStockDateTime(pt, b, s, dt), descriptionPriceListPriceListTypeBatchStockDateTime(pt, b, s, dt)
+    FILTERS pricePriceListTypeSkuStockDateTime(pt, sk, s, dt),
+            pricePriceListTypeBatchStockDateTime(pt, b, s, dt)
 ;
+
+DESIGN priceListTypes FROM DEFAULT{
+    NEW mainContainer{
+        type = SPLITV;
+        ADD pt.box;
+        NEW firstContainer{
+        ADD s.box;
+            NEW tabContainer{
+                type = TABBED;
+                ADD p.box{
+                    caption = 'Прайсы';
+                }
+                NEW priceContainer{
+                    caption = 'Текущие цены';
+                    ADD dt.box;
+                    NEW currentPriceContainer{
+                        type = TABBED;
+                        ADD sk.box;
+                        ADD b.box;
+                    }
+                }
+            }
+        }
+    }
+    ADD functions.box;
+}
 
 NAVIGATOR {
     NEW priceListNavigator 'Управление ценами' {

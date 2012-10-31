@@ -101,6 +101,7 @@ TABLE batchStock(batch, stock);
 
 dateTimeBatch 'Дата/время' (batch) = ABSTRACT DATETIME (batch) PERSISTENT INDEXED;
 dateBatch 'Дата' (batch) = dateInTime(dateTimeBatch(batch));
+timeBatch 'Время' (batch) = timeInDateTime(dateTimeBatch(batch));
 
 isPostedBatch 'Проведен' (batch) = ABSTRACT BOOLEAN (batch) PERSISTENT;
 
