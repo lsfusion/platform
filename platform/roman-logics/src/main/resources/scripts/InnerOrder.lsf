@@ -203,7 +203,7 @@ quantityOrderPickingInnerOrderDetail 'Количество подобрано' (
     quantitySkuInnerOrder(skuInnerOrderDetail(innerOrderDetail), innerOrderInnerOrderDetail(innerOrderDetail));
 
 FORM orderPicking 'Подбор товара'
-    OBJECTS o = innerOrder
+    OBJECTS o = innerOrder FIXED PANEL
     OBJECTS p = orderPicking FIXED PANEL
 
     PROPERTIES (p) objectClassName, nameNumeratorObject, numberObject, seriesObject, dateOrderPicking, timeOrderPicking,
@@ -212,8 +212,8 @@ FORM orderPicking 'Подбор товара'
 
 
     OBJECTS s = sku
-    PROPERTIES(s) READONLY barcode, nameCategoryArticleSku, nameBrandSupplierArticleSku, sidArticleSku,
-                           sidSizeSupplierItem FORCE GRID, sidColorSupplierItem FORCE GRID, nameColorSupplierItem FORCE GRID, shortNameUOMSku
+    PROPERTIES(s) READONLY FORCE GRID barcode, nameCategoryArticleSku, nameBrandSupplierArticleSku, sidArticleSku,
+                           sidSizeSupplierItem, sidColorSupplierItem, nameColorSupplierItem, shortNameUOMSku
     PROPERTIES(s, o) quantityInnerOrderDetailSkuInnerOrder, quantitySkuInnerOrder
     PROPERTIES(s, p) quantityOrderPickingDetailSkuOrderPicking
 
