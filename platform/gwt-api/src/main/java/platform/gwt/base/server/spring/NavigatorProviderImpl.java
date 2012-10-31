@@ -3,7 +3,6 @@ package platform.gwt.base.server.spring;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.Assert;
@@ -29,8 +28,8 @@ public class NavigatorProviderImpl implements NavigatorProvider, InitializingBea
                 if (navigator == null) {
                     Authentication auth = SecurityContextHolder.getContext().getAuthentication();
                     if (auth == null) {
-                        auth = new TestingAuthenticationToken("admin", "fusion");
-//                        throw new IllegalStateException("Пользователь должен быть аутентифицирован, чтобы использовать навигатор.");
+//                        auth = new TestingAuthenticationToken("admin", "fusion");
+                        throw new IllegalStateException("Пользователь должен быть аутентифицирован, чтобы использовать навигатор.");
                     }
 
                     String username = auth.getName();
