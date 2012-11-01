@@ -4250,8 +4250,8 @@ public class RomanLogicsModule extends LogicsModule {
 
         NavigatorElement purchaseCreate = addNavigatorElement(purchase, "purchaseCreate", "Создать");
         addFormEntity(new OrderEditFormEntity(purchaseCreate, "orderAddForm", "Заказ", false)).modalityType = ModalityType.FULLSCREEN_MODAL;
-        addFormEntity(new InvoiceEditFormEntity(purchaseCreate, "boxInvoiceAddForm", "Инвойс по коробам", true, false)).modalityType = ModalityType.FULLSCREEN_MODAL;
-        addFormEntity(new InvoiceEditFormEntity(purchaseCreate, "simpleInvoiceAddForm", "Инвойс без коробов", false, false)).modalityType = ModalityType.FULLSCREEN_MODAL;
+//        addFormEntity(new InvoiceEditFormEntity(purchaseCreate, "boxInvoiceAddForm", "Инвойс по коробам", true, false)).modalityType = ModalityType.FULLSCREEN_MODAL;
+//        addFormEntity(new InvoiceEditFormEntity(purchaseCreate, "simpleInvoiceAddForm", "Инвойс без коробов", false, false)).modalityType = ModalityType.FULLSCREEN_MODAL;
         purchaseCreate.window = generateToolbar;
 
         addFormEntity(new OrderEditFormEntity(null, "orderEditForm", "Редактировать заказ", true));
@@ -4848,12 +4848,11 @@ public class RomanLogicsModule extends LogicsModule {
             super(parent, sID, caption);
 
             this.box = box;
-            this.edit = edit;
 
             objInvoice = addSingleGroupObject("invoice", (box ? boxInvoice : simpleInvoice), "Инвойс");
             if (!edit) {
                 addPropertyDraw(nameSupplierDocument, objInvoice);
-                setAddOnEvent(objInvoice, RomanLogicsModule.this, FormEventType.INIT);
+//                setAddOnEvent(objInvoice, RomanLogicsModule.this, FormEventType.INIT);
             }
 
             addPropertyDraw(objInvoice, baseLM.date, baseLM.objectClassName, sidDocument, nameCurrencyDocument, nameCurrencyRRPDocument,
