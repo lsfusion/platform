@@ -465,7 +465,10 @@ META defineShipment(skuLedger, sign, contact, contactCaption, partyA, partyB)
 //-- аггр.объект
 
     @defineDocumentInterfaceDetailPricePrefix(invoice, shipment, ' (учетная)');
-    overShipmentPriceUserInvoiceDetail (userInvoiceDetail) = ABSTRACT NUMERIC[14,2] (userInvoiceDetail) PERSISTENT;
+    overShipmentPriceUserInvoiceDetail = ABSTRACT NUMERIC[14,2] (userInvoiceDetail) PERSISTENT;
+    calcShipmentPriceUserInvoiceDetail (detail) = priceUserInvoiceDetail(detail) OR overShipmentPriceUserInvoiceDetail(detail) PERSISTENT;
+
+    extraShipmentPriceUserInvoiceDetail = ABSTRACT NUMERIC[14,2] (userInvoiceDetail) PERSISTENT;
 
     @defineDocumentInterfaceDetailDataSumPrefix (invoice, shipment, ' (учетная)');
     @deriveDocumentDetailSumPrefix(userInvoice, shipment, currency);

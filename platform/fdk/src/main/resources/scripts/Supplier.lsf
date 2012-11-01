@@ -238,8 +238,9 @@ DESIGN suppliers FROM DEFAULT{
                 askConfirm = TRUE;
             }
         }
-        ADD s.box{
+        ADD s.box {
             fillHorizontal = 2.0;
+            s.grid { defaultComponent = TRUE; }
         }
     }
     ADD functions.box;

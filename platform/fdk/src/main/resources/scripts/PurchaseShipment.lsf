@@ -12,8 +12,8 @@ NAMESPACE Purchase;
 // Цены учетные
 priceUserShipmentDetail (detail) <- priceInvoiceDetail(invoiceDetailUserShipmentDetail(detail))
     WHEN CHANGED(priceInvoiceDetail(invoiceDetailUserShipmentDetail(detail)));
-shipmentPriceUserInvoiceDetail(detail) <- priceUserInvoiceDetail(detail) OR overShipmentPriceUserInvoiceDetail(detail) WHEN
-    CHANGED(priceUserInvoiceDetail(detail) OR overShipmentPriceUserInvoiceDetail(detail)) AND createShipmentUserInvoiceDetail(detail);
+shipmentPriceUserInvoiceDetail(detail) <- calcShipmentPriceUserInvoiceDetail(detail) (+) extraShipmentPriceUserInvoiceDetail(detail) WHEN
+    (CHANGED(calcShipmentPriceUserInvoiceDetail(detail)) OR CHANGED(extraShipmentPriceUserInvoiceDetail(detail))) AND createShipmentUserInvoiceDetail(detail);
 
 // Проводим по регистру
 

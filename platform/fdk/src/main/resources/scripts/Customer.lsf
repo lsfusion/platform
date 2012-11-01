@@ -146,6 +146,7 @@ DESIGN customer FROM DEFAULT {
                 ADD co.box;
                 ADD c.box {
                     fillHorizontal = 2;
+                    c.grid { defaultComponent = TRUE; }
                 }
             }
        }

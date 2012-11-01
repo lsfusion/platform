@@ -351,8 +351,16 @@ META defineSkuDepartmentStoreLedger(property, caption, type)
     nameDepartmentStore###property##Ledger 'Отдел магазина' (ledger) = name(departmentStore###property##Ledger(ledger));
 END
 
+META implementSkuDepartmentStoreLedgerCustom(property, concrete, skuProp, stockProp, propertyProp)
+    @implementHistorizableLedger(property, sku, departmentStore, concrete, skuProp, stockProp, propertyProp);
+END
+
 META implementSkuDepartmentStoreLedgerCustom(property, concrete, skuProp, propertyProp)
-    @implementHistorizableLedger(property, sku, departmentStore, concrete, skuProp, departmentStore, propertyProp);
+    @implementSkuDepartmentStoreLedgerCustom(property, concrete, skuProp, departmentStore, propertyProp);
+END
+
+META implementSkuDepartmentStoreLedger(property, concrete, skuProp, stockProp)
+    @implementSkuDepartmentStoreLedgerCustom(property, concrete, skuProp, stockProp, property);
 END
 
 META implementSkuDepartmentStoreLedger(property, concrete, skuProp)

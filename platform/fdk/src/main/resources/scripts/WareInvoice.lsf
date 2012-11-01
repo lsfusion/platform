@@ -23,8 +23,9 @@ META defineInvoiceWare(NS)
          AND wareItem(NS.skuUserInvoiceDetail(detail))
          DO EXEC createWareUserInvoiceDetail(detail) SESSION;
 
-    NS.overShipmentPriceUserInvoiceDetail(detail) += IF itemWareUserInvoiceDetailUserInvoiceDetail(detail)
-                                                    THEN 0 IF detail IS userInvoiceDetail
-                                                    ELSE NS.priceUserInvoiceDetail(detail) (+) NS.priceUserInvoiceDetail(wareUserInvoiceDetailUserInvoiceDetail(detail));
+    NS.extraShipmentPriceUserInvoiceDetail(detail) += IF itemWareUserInvoiceDetailUserInvoiceDetail(detail) THEN
+                                                         -NS.calcShipmentPriceUserInvoiceDetail(detail)
+                                                      ELSE
+                                                         NS.calcShipmentPriceUserInvoiceDetail(wareUserInvoiceDetailUserInvoiceDetail(detail));
     NS.skipCreateShipmentInvoiceDetail(detail) += TRUE IF itemWareUserInvoiceDetailUserInvoiceDetail(detail);
 END

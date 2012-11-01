@@ -17,6 +17,9 @@ CLASS ABSTRACT priceListType 'Вид цены' : named;
 pricePriceListTypeSkuStockDateTime 'Цена' = ABSTRACT NUMERIC[14,2] (priceListType, sku, stock, DATETIME);
 pricePriceListTypeBatchStockDateTime 'Цена' = ABSTRACT NUMERIC[14,2] (priceListType, batch, stock, DATETIME);
 
+prevPricePriceListTypeSkuStockDateTime 'Цена (пред.)' (type, sku, stock, dateTime) = PREV(pricePriceListTypeSkuStockDateTime(type, sku, stock, dateTime));
+prevPricePriceListTypeBatchStockDateTime 'Цена (пред.)' (type, batch, stock, dateTime) = PREV(pricePriceListTypeBatchStockDateTime(type, batch, stock, dateTime));
+
 @defineDocumentAbstractHeaderCurrency(priceListType);
 
 CLASS ABSTRACT basePriceListType 'Базовый вид цены' : priceListType;
@@ -745,10 +748,10 @@ END
 
 
 META deriveDocumentDetailPricePriceListTypeCustom (detail)
-    price###detail(detail) <- pricePriceListTypeSkuStockDateTime(priceListType###detail(detail),
-                                                                 sku###detail(detail),
-                                                                 stock###detail(detail),
-                                                                 dateTime###detail(detail))
+    price###detail(detail) <- prevPricePriceListTypeSkuStockDateTime(priceListType###detail(detail),
+                                                                     sku###detail(detail),
+                                                                     stock###detail(detail),
+                                                                     dateTime###detail(detail))
                                     WHEN CHANGED(priceListType###detail(detail)) OR
                                          CHANGED(sku###detail(detail)) OR
                                          CHANGED(stock###detail(detail)) OR
@@ -761,15 +764,15 @@ END
 
 META deriveDocumentDetailPriceBatchPriceListTypeCustom (detail)
     price###detail(detail) <- IF batch###detail(detail) THEN
-                                    pricePriceListTypeBatchStockDateTime(priceListType###detail(detail),
-                                                                         batch###detail(detail),
-                                                                         stock###detail(detail),
-                                                                         dateTime###detail(detail))
+                                    prevPricePriceListTypeBatchStockDateTime(priceListType###detail(detail),
+                                                                             batch###detail(detail),
+                                                                             stock###detail(detail),
+                                                                             dateTime###detail(detail))
                               ELSE
-                                    pricePriceListTypeSkuStockDateTime(priceListType###detail(detail),
-                                                                       sku###detail(detail),
-                                                                       stock###detail(detail),
-                                                                       dateTime###detail(detail))
+                                    prevPricePriceListTypeSkuStockDateTime(priceListType###detail(detail),
+                                                                           sku###detail(detail),
+                                                                           stock###detail(detail),
+                                                                           dateTime###detail(detail))
                                     WHEN CHANGED(batch###detail(detail)) OR
                                          CHANGED(priceListType###detail(detail)) OR
                                          CHANGED(sku###detail(detail)) OR
