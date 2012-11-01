@@ -99,6 +99,11 @@ DESIGN store FROM DEFAULT {
     }
 }
 
+skipAReceiptSaleDetailPriceChangeZReportDetail (priceChangeZReportDetail) =
+    skipAReceiptSaleDetail(receiptSaleDetailPriceChangeZReportDetail(priceChangeZReportDetail));
+
+skipASkuLedger (ledger) += skipAReceiptSaleDetailPriceChangeZReportDetail (ledger);
+
 NAVIGATOR {
     itemClassifier {
         ADD categories;
