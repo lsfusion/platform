@@ -15,6 +15,7 @@ import net.customware.gwt.dispatch.shared.Result;
 import platform.gwt.base.client.ErrorAsyncCallback;
 import platform.gwt.base.client.WrapperAsyncCallbackEx;
 import platform.gwt.form.client.ErrorHandlingCallback;
+import platform.gwt.form.client.dispatch.DeferredRunner;
 import platform.gwt.form.shared.view.GClassViewType;
 import platform.gwt.form.shared.view.GOrder;
 import platform.gwt.form.client.LoadingBlocker;
@@ -408,6 +409,7 @@ public class GFormController extends SimplePanel {
     }
 
     public void executeEditAction(GPropertyDraw property, GGroupObjectValue columnKey, String actionSID, AsyncCallback<ServerResponseResult> callback) {
+        DeferredRunner.get().commitDelayedGroupObjectChange(property.groupObject);
         syncDispatch(new ExecuteEditAction(property.ID, columnKey == null ? null : columnKey.getValueDTO(), actionSID), callback);
     }
 
@@ -517,6 +519,7 @@ public class GFormController extends SimplePanel {
     }
 
     public void changeClassView(GGroupObject groupObject, GClassViewType newClassView) {
+        DeferredRunner.get().commitDelayedGroupObjectChange(groupObject);
         syncDispatch(new ChangeClassView(groupObject.ID, newClassView), new ServerResponseCallback());
     }
 

@@ -5,6 +5,7 @@ import com.google.gwt.cell.client.Cell;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.view.client.SelectionChangeEvent;
 import platform.gwt.base.shared.GwtSharedUtils;
+import platform.gwt.form.client.dispatch.DeferredRunner;
 import platform.gwt.form.shared.view.GGroupObject;
 import platform.gwt.form.shared.view.GOrder;
 import platform.gwt.form.shared.view.GPropertyDraw;
@@ -40,10 +41,16 @@ public class GGridTable extends GGridPropertyTable {
         selectionModel.addSelectionChangeHandler(new SelectionChangeEvent.Handler() {
             @Override
             public void onSelectionChange(SelectionChangeEvent event) {
-                GridDataRecord selectedRecord = selectionModel.getSelectedRecord();
+                final GridDataRecord selectedRecord = selectionModel.getSelectedRecord();
                 if (selectedRecord != null && !selectedRecord.key.equals(currentKey)) {
                     setCurrentKey(selectedRecord.key);
-                    form.changeGroupObject(groupObject, selectedRecord.key);
+
+                    DeferredRunner.get().scheduleDelayedGroupObjectChange(groupObject, new DeferredRunner.AbstractCommand() {
+                        @Override
+                        public void execute() {
+                            form.changeGroupObject(groupObject, selectedRecord.key);
+                        }
+                    });
                 }
             }
         });
