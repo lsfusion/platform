@@ -25,7 +25,7 @@ META defineOrder(sign, contact)
     CLASS ABSTRACT order 'Заказ'###sign;
     CLASS ABSTRACT orderDetail 'Строка заказа'###sign : named;
 
-    CLASS userOrder 'Заказ (польз.)'###sign : order, historyObject, numeratedDocument;
+    CLASS userOrder 'Заказ (польз.)'###sign : order, historyObject, numeratedObject;
     CLASS userOrderDetail 'Строка заказа (польз.)'###sign : orderDetail;
     CLASS userOrderPosted 'Проведенный заказ (польз.)'###sign : userOrder, postedObject;
 

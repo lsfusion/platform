@@ -7,3 +7,5 @@ NAMESPACE Sale;
 //----------------------------------------------- Множественный Заказ ---------------------------------------------------//
 @defineBlanketOrder(' (продажа)', customer, 'Покупатель', 'ЗП');
 @defineOrderBlanketOrder(' (продажа)', customer, 'Покупатель');
+
+numeratorBlanketOrderCustomer(order, customer) <- saleDefaultNumeratorUserOrder() WHEN ASSIGNED(inBlanketOrderCustomer(order, customer));

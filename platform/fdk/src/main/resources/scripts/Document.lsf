@@ -23,7 +23,7 @@ computerClosed(postedObject) <- currentComputer() WHEN ASSIGNED(postedObject IS 
 // Логика нумерирования документов
 
 CLASS ABSTRACT numeratedDocument 'Нумерируемый документ' : numeratedObject;
-@defineNumeratedObject(numeratedDocument, 'Нумератор для документов', 'ДК');
+@defineNumeratedObjectDefault(numeratedDocument, 'Нумератор для документов', 'ДК');
 
 // Стандартные группы
 GROUP documentHeaderGroup 'Шапка документа' : baseGroup;

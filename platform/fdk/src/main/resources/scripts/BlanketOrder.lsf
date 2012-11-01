@@ -64,8 +64,7 @@ META defineBlanketOrder(sign, contact, contactCaption, series)
         BY blanketOrder
         ORDER contact MINCHARWIDTH 20 MAXCHARWIDTH 60 PREFCHARWIDTH 40 PERSISTENT;
 
-    @defineDefaultNumeratedDoubleObject (blanketOrder, contact, 'Нумератор для Заказ/'###contactCaption###sign, series, inBlanketOrder###contact);
-    @defineNumeratedDoubleObject (blanketOrder, contact, inBlanketOrder###contact);
+    @defineNumeratedObject (blanketOrder, contact);
 // --------------------------- Формы Заказа ---------------------------------
 
     FORM blanketOrder 'Множественный заказ'###sign

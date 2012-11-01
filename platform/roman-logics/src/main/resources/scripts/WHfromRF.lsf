@@ -25,7 +25,7 @@ GROUP exchangeGroup 'Курсы обмена' : publicGroup;
 
 @defineDocumentTables(WHfromRF);
 
-@defineNumeratedObject(WHfromRF, 'Нумератор для прихода из РФ', 'РФ');
+@defineNumeratedObjectDefault(WHfromRF, 'Нумератор для прихода из РФ', 'РФ');
 
 // расходы для фрахтов РФ
 currencyPayFreight 'Валюта платежей за РФ (ИД)' (freight) = currencyPayFreights() IF routeFreight(freight) == route.rf;

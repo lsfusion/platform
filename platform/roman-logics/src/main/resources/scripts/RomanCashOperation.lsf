@@ -7,7 +7,7 @@ NAMESPACE CashOperation;
 CLASS accountCollection 'Изъятие (упр.)' : outcomeCashOrder, historyObject, numeratedObject;
 TABLE accountCollection (accountCollection);
 
-@defineNumeratedObject(accountCollection, 'Нумератор для изъятий', 'ИЗ');
+@defineNumeratedObjectDefault(accountCollection, 'Нумератор для изъятий', 'ИЗ');
 
 @defineDocumentHeaderTime(accountCollection);
 

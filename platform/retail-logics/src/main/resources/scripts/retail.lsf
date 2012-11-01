@@ -3135,7 +3135,7 @@ TABLE supplierDepartmentStoreDate (supplier, departmentStore, DATE);
 CLASS ABSTRACT order 'Заказ' : historyObject, numeratedObject;
 //TABLE order(order);
 
-@defineNumeratedObject(order, 'Нумератор для заказов', 'ЗК');
+@defineNumeratedObjectDefault(order, 'Нумератор для заказов', 'ЗК');
 
 CLASS orderSupplier 'Заказ поставщику' : order;
 CLASS orderSupplierPosted 'Закрытый заказ поставщику' :orderSupplier, postedObject;

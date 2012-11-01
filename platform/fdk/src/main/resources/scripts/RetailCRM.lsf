@@ -35,7 +35,7 @@ FORM clients 'Покупатели (Ф.Л.)'
 CLASS discountCard 'Дисконтная карта' : numeratedObject;
 TABLE discountCard (discountCard);
 
-@defineNumeratedObject(discountCard, 'Нумератор для дисконтных карт', 'ДС');
+@defineNumeratedObjectDefault(discountCard, 'Нумератор для дисконтных карт', 'ДС');
 
 CLASS ABSTRACT discountSkuGroup 'Дисконтная группа товаров' : named;
 
@@ -149,7 +149,7 @@ TABLE promotionGroup (promotionGroup);
 CLASS promotion 'Акция' : historyObject, numeratedObject, named;
 TABLE promotion (promotion);
 
-@defineNumeratedObject(promotion, 'Нумератор для акций', 'АК');
+@defineNumeratedObjectDefault(promotion, 'Нумератор для акций', 'АК');
 
 promotionGroupPromotion (promotion) = DATA promotionGroup(promotion) IN idGroup AUTOSET NOT NULL;
 namePromotionGroupPromotion 'Группа акций' (promotion) = name(promotionGroupPromotion(promotion)) IN baseGroup;

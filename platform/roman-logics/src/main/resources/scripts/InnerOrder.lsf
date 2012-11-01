@@ -20,7 +20,7 @@ PRIORITY Stock, RomanLogicsModule;
 CLASS innerOrder 'Внутренний заказ': historyObject, numeratedObject;
 CLASS innerOrderDetail 'Строка внутреннего заказа';
 
-@defineNumeratedObject(innerOrder, 'Нумератор для внутренних заказов', 'ВЗ');
+@defineNumeratedObjectDefault(innerOrder, 'Нумератор для внутренних заказов', 'ВЗ');
 
 @defineDocument(innerOrder);
 
@@ -153,7 +153,7 @@ CLASS orderPickingPosted 'Проведенный подбор товара по 
 
 CLASS orderPickingDetail 'Строка подбора товара по заказу';
 
-@defineNumeratedObject(orderPicking, 'Нумератор для подборок товара по заказу', 'ПЗ');
+@defineNumeratedObjectDefault(orderPicking, 'Нумератор для подборок товара по заказу', 'ПЗ');
 
 innerOrderOrderPicking 'Подбор товара по заказу (ИД)' (orderPicking) = DATA innerOrder (orderPicking) IN idGroup AUTOSET NOT NULL DELETE;
 //orderPickingInnerOrder 'Подбор заказа (ИД)' (innerOrder) = GROUP UNIQUE  orderPicking BY innerOrderOrderPicking(orderPicking);

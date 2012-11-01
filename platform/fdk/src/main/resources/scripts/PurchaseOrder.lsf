@@ -1,12 +1,9 @@
 MODULE PurchaseOrder;
 
-REQUIRE Order
-;
-
+REQUIRE Order;
 
 NAMESPACE Purchase;
 
-
-//----------------------------------------------- Заказ ---------------------------------------------------//
-
 @defineOrder(' (покупка)', supplier);
+
+@defineNumeratedObjectDefaultPrefix(userOrder, 'Нумератор для заказов (покупка)', 'ЗК', purchase);

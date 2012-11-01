@@ -24,7 +24,7 @@ TABLE disparityInBatchDetail(disparityInBatchDetail);
 CLASS disparityOutBatchDetail 'Строка пересорта м/у партиями (Out)' : outFIFOSkuLedger;
 TABLE disparityOutBatchDetail(disparityOutBatchDetail);
 
-@defineNumeratedObject(disparityBatch, 'Нумератор для пересорта', 'ПР');
+@defineNumeratedObjectDefault(disparityBatch, 'Нумератор для пересорта', 'ПР');
 
 @defineDocumentRelation(disparityBatch, disparityInBatchDetail, ' (In)');
 @defineDocumentRelation(disparityBatch, disparityOutBatchDetail, ' (Out)');
@@ -336,7 +336,7 @@ TABLE disparityInBatchADetail(disparityInBatchADetail);
 CLASS disparityOutBatchADetail 'Строка пересорта м/у партиями (бухг.) (Out)' : outFIFOSkuLedger;
 TABLE disparityOutBatchADetail(disparityOutBatchADetail);
 
-@defineNumeratedObject(disparityBatchA, 'Нумератор для пересорта м/у партиями (бухг.)', 'ПБ');
+@defineNumeratedObjectDefault(disparityBatchA, 'Нумератор для пересорта м/у партиями (бухг.)', 'ПБ');
 
 @defineDocumentRelation(disparityBatchA, disparityInBatchADetail, ' (In)');
 @defineDocumentRelation(disparityBatchA, disparityOutBatchADetail, ' (Out)');

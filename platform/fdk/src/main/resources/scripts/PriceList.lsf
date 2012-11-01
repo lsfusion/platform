@@ -55,7 +55,7 @@ CLASS userPriceListPosted 'Закрытый прайс (польз.)' : userPric
 @defineDocumentInterfaceTimePrefix(priceList, to, ' по');
 
 @defineDocumentInterfaceNumber(priceList);
-@defineNumeratedObject(priceList, 'Нумератор для прайсов', 'ПЛ');
+@defineNumeratedObjectDefault(priceList, 'Нумератор для прайсов', 'ПЛ');
 
 //@defineDocumentInterfaceDataStock(priceList, stock, 'Склад');
 @defineDocumentInterfacePosted(priceList);

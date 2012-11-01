@@ -1,12 +1,9 @@
 MODULE PurchaseReturnOrder;
 
-REQUIRE Order, PurchaseShipment
-;
-
+REQUIRE Order, PurchaseShipment;
 
 NAMESPACE PurchaseReturn;
 
-
-//----------------------------------------------- Заказ ---------------------------------------------------//
-
 @defineOrder(' (покупка-возврат)', supplier);
+
+@defineNumeratedObjectDefaultPrefix(userOrder, 'Нумератор для заказов (покупка-возврат)', 'ВЗ', purchaseReturn);

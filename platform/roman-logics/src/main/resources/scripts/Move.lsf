@@ -18,7 +18,7 @@ CLASS moveOut 'Перемещение товаров' : historyObject, numerated
 CLASS moveOutPosted 'Проведенное перемещение товаров' : moveOut, postedObject;
 CLASS moveOutDetail 'Строка перемещения товаров' : outFIFOSkuLedger;
 
-@defineNumeratedObject(moveOut, 'Нумератор для перемещения товаров', 'ПБ');
+@defineNumeratedObjectDefault(moveOut, 'Нумератор для перемещения товаров', 'ПБ');
 
 @defineDocumentTransferOut(move, 'Перемещение товаров', sku, stock);
 @defineDocumentFormTransferOut(move, 'Перемещение товаров');

@@ -10,7 +10,7 @@ CLASS agreement 'Соглашение' : named, numeratedObject;
 
 TABLE agreement (agreement);
 
-@defineNumeratedObject(agreement, 'Нумератор для договоров', 'ТД');
+@defineNumeratedObjectDefault(agreement, 'Нумератор для договоров', 'ТД');
 @defineDocumentHeaderTime(agreement);
 @defineDocumentHeaderTimePrefix(agreement, from, ' с');
 @defineDocumentHeaderTimePrefix(agreement, to, ' по');

@@ -202,7 +202,7 @@ CLASS paymentPosted 'Закрытый платеж' : payment, postedObject;
 TABLE payment(payment);
 
 @defineDocumentHeaderPosted(payment);
-@defineNumeratedObject(payment, 'Нумератор для платежей', 'ПЛ');
+@defineNumeratedObjectDefault(payment, 'Нумератор для платежей', 'ПЛ');
 
 datePayment 'Дата' (payment) = DATA DATE (payment) PERSISTENT;
 datePayment(payment) <- currentDate() WHEN ASSIGNED(payment IS payment);
@@ -340,7 +340,7 @@ CLASS paymentRequestPosted 'Закрытое платежное требован
 TABLE paymentRequest(paymentRequest);
 
 @defineDocumentHeaderPosted(paymentRequest);
-@defineNumeratedObject(paymentRequest, 'Нумератор для платежных требований', 'ПТ');
+@defineNumeratedObjectDefault(paymentRequest, 'Нумератор для платежных требований', 'ПТ');
 
 datePaymentRequest 'Дата' (paymentRequest) = DATA DATE (paymentRequest) PERSISTENT;
 datePaymentRequest(paymentRequest) <- currentDate() WHEN ASSIGNED(paymentRequest IS paymentRequest);
@@ -436,7 +436,7 @@ META defineCreditMemoPrefix(prefix, caption, captionPost)
     CLASS creditMemo###prefix##Posted  captionPost : creditMemo###prefix, postedObject;
 
     @defineDocumentHeaderPosted(creditMemo###prefix);
-    @defineNumeratedObject(creditMemo###prefix, 'Нумератор для кредитных нот', 'КН');
+    @defineNumeratedObjectDefault(creditMemo###prefix, 'Нумератор для кредитных нот', 'КН');
 
     dateCreditMemo###prefix 'Дата' (creditMemo###prefix) = DATA DATE (creditMemo###prefix) PERSISTENT;
     dateCreditMemo###prefix(creditMemo###prefix) <- currentDate() WHEN ASSIGNED(creditMemo###prefix IS creditMemo###prefix);
