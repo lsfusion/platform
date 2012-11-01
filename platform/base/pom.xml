@@ -50,7 +50,7 @@
 
         <spring.version>3.0.5.RELEASE</spring.version>
         <cglib.version>2.2.2</cglib.version>
-        <aspectj.version>1.6.10</aspectj.version>
+        <aspectj.version>1.6.11</aspectj.version>
 
         <servlet.api.version>2.3</servlet.api.version>
         <jcaptcha.version>1.0</jcaptcha.version>
@@ -305,7 +305,7 @@
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>aspectj-maven-plugin</artifactId>
-                    <version>1.3</version>
+                    <version>1.4</version>
                     <configuration>
                         <encoding>UTF-8</encoding>
                         <source>6</source>
