@@ -1,6 +1,138 @@
 MODULE Pricing;
 
-REQUIRE Invoice;
+REQUIRE Invoice, Employee, Store;
+
+
+// ----------------------------------- Комиссия ------------------------------------------ //
+
+CLASS pricingCommittee 'Комиссия для акта расценки' : committee;
+
+META defineCommitteeEmployeePrefix (committee, prefix, caption)
+    prefix###committee = DATA employee (committee);
+    name###prefix###committee caption (committee) = commonName(prefix###committee(committee)) IN recognizeGroup;
+    namePosition###prefix###committee caption (committee) = namePositionEmployee(prefix###committee(committee));
+    CONSTRAINT prefix###committee(committee) AND NOT countDivisionEmployeeCommittee(prefix###committee(committee), committee)
+        CHECKED BY prefix###committee MESSAGE '\''##caption##'\' не входит в выбранные подразделения';
+END
+
+//@defineCommitteeEmployee(committee, chairman, 'Председатель');
+@defineCommitteeEmployeePrefix(pricingCommittee, formedMan, 'Цены сформировал');
+@defineCommitteeEmployeePrefix(pricingCommittee, checkedMan, 'Реестр проверил');
+@defineCommitteeEmployeePrefix(pricingCommittee, labeledMan, 'Товар промаркировал');
+@defineCommitteeEmployeePrefix(pricingCommittee, accountantMan, 'Бухгалтер');
+@defineCommitteeEmployeePrefix(pricingCommittee, headMan, 'Зав. магазином');
+
+// ----------------------------------- Комиссия по умолчанию для отдела ------------------------------------------ //
+
+pricingCommitteeStock 'Комиссия для акта расценки (ИД)' = DATA pricingCommittee (stock);
+namePricingCommitteeStock 'Комиссия для акта расценки' (stock) = name(pricingCommitteeStock(stock));
+isDefaultPricingCommitteeStock 'По умолчанию' (pricingCommittee, stock) = pricingCommitteeStock(stock) == pricingCommittee;
+CONSTRAINT pricingCommitteeStock(stock) AND NOT inCommitteeEmployeeDivision(pricingCommitteeStock(stock), stock)
+    CHECKED BY pricingCommitteeStock MESSAGE 'Для отдела выбрана комиссия, которая для него не действует';
+
+EXTEND FORM departmentStore PROPERTIES namePricingCommitteeStock(d);
+
+// ----------------------------------- Формы для комиссий для реестра цен ------------------------------------------ //
+
+FORM pricingCommittee 'Комиссия для акта расценки'
+    OBJECTS c=pricingCommittee FIXED PANEL
+    PROPERTIES(c)      name, nameFormedManPricingCommittee, nameCheckedManPricingCommittee,
+                       nameLabeledManPricingCommittee, nameAccountantManPricingCommittee, nameHeadManPricingCommittee
+
+    TREE stockTree sg = stockGroup PARENT parentStockGroup, ts = stock
+    PROPERTIES READONLY sgTreeName = name(sg), tsTreeName = name(ts)
+    FILTERS stockGroupStock(ts) == sg
+
+    OBJECTS           st=stock
+    PROPERTIES        READONLY stockName = name(st)
+    PROPERTIES(c, st) inCommitteeEmployeeDivision, isDefaultPricingCommitteeStock
+    ORDER BY          stockName
+    FILTERS           (st == ts AND sg IS stockGroup) OR (isParentStockGroupStock(sg, st) AND NOT ts)
+
+
+    FILTERGROUP filters1
+        FILTER 'Только включенный' 'F9' inCommitteeEmployeeDivision(c, st)
+
+    EDIT pricingCommittee OBJECT c
+;
+
+DESIGN pricingCommittee FROM DEFAULT {
+    main {
+        preferredSize = (1024, 768);
+        childConstraints = TO THE BOTTOM;
+
+        NEW caseOne AFTER c.box {
+            childConstraints = TO THE RIGHT;
+            title = 'Склады, для которых действуют комиссии';
+
+            ADD stockTree.tree {
+                fillHorizontal = 1;
+            }
+
+            ADD st.box{
+                fillHorizontal = 2;
+            }
+        }
+
+        NEW oneCase AFTER caseOne{
+            title = 'Состав комиссии';
+            fillHorizontal = 3;
+            childConstraints = TO THE BOTTOM;
+            ADD PROPERTY (nameFormedManPricingCommittee);
+            ADD PROPERTY (nameCheckedManPricingCommittee);
+            ADD PROPERTY (nameLabeledManPricingCommittee);
+            ADD PROPERTY (nameAccountantManPricingCommittee);
+            ADD PROPERTY (nameHeadManPricingCommittee);
+        }
+
+    }
+}
+
+FORM pricingCommitteeDialog 'Комиссии для акта расценки'
+    OBJECTS r=pricingCommittee
+    PROPERTIES(r)      READONLY name, nameEmployeeDivisionCommittee, nameFormedManPricingCommittee, nameCheckedManPricingCommittee, nameLabeledManPricingCommittee,
+                       nameAccountantManPricingCommittee, nameHeadManPricingCommittee
+    PROPERTIES(r)      ADDFORM, EDITFORM
+
+    DIALOG pricingCommittee OBJECT r
+;
+
+// ----------------------------------- Макрос для задания комиссии для документов ------------------------------------------ //
+
+GROUP pricingCommitteeGroup 'Комиссия' : publicGroup;
+
+META defineDocumentHeaderPricingCommittee(object)
+    pricingCommittee###object (object) = DATA pricingCommittee(object) IN idGroup;
+
+    namePricingCommittee###object 'Комиссия для акта расценки' (object) = commonName(pricingCommittee###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
+    pricingCommittee###object (object) <- pricingCommitteeStock(stock###object(object))
+        WHEN ASSIGNED(object IS object);
+
+    nameFormedMan###object 'Цены сформировал' (object) = nameFormedManPricingCommittee(pricingCommittee###object(object)) IN pricingCommitteeGroup;
+    nameCheckedMan###object 'Реестр проверил' (object) = nameCheckedManPricingCommittee(pricingCommittee###object(object)) IN pricingCommitteeGroup;
+    nameLabeledMan###object 'Товар промаркировал' (object) = nameLabeledManPricingCommittee(pricingCommittee###object(object)) IN pricingCommitteeGroup;
+    nameAccountantMan###object 'Бухгалтер' (object) = nameAccountantManPricingCommittee(pricingCommittee###object(object)) IN pricingCommitteeGroup;
+    nameHeadMan###object 'Зав. магазином' (object) = nameHeadManPricingCommittee(pricingCommittee###object(object)) IN pricingCommitteeGroup;
+
+END
+META defineDocumentHeaderAbstractPricingCommittee(object)
+    pricingCommittee###object (object) = ABSTRACT pricingCommittee(object) IN idGroup;
+
+    namePricingCommittee###object 'Комиссия для акта расценки' (object) = commonName(pricingCommittee###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
+
+    nameFormedMan###object 'Цены сформировал' (object) = nameFormedManPricingCommittee(pricingCommittee###object(object)) IN pricingCommitteeGroup;
+    nameCheckedMan###object 'Реестр проверил' (object) = nameCheckedManPricingCommittee(pricingCommittee###object(object)) IN pricingCommitteeGroup;
+    nameLabeledMan###object 'Товар промаркировал' (object) = nameLabeledManPricingCommittee(pricingCommittee###object(object)) IN pricingCommitteeGroup;
+    nameAccountantMan###object 'Бухгалтер' (object) = nameAccountantManPricingCommittee(pricingCommittee###object(object)) IN pricingCommitteeGroup;
+    nameHeadMan###object 'Зав. магазином' (object) = nameHeadManPricingCommittee(pricingCommittee###object(object)) IN pricingCommitteeGroup;
+
+END
+
+META defineDocumentInterfaceHeaderPricingCommittee (object)
+    @defineDocumentHeaderAbstractPricingCommittee (object);
+    @defineDocumentHeaderPricingCommittee (user###object);
+    pricingCommittee###object (object) += pricingCommittee###user###object(object);
+END
 
 
 //----------------------------------------------- Расценка ---------------------------------------------------//
@@ -54,6 +186,43 @@ META definePricing(sign, contact, contactCaption)
     @defineAddDetailDialogSkuStock(userPricing, sku, stock, dialogSku);
     @defineAddDetailDialogBarcode(userPricing, sku);
 
+    @defineDocumentInterfaceDetailVATDataSumPrefix (pricing, retail);
+    @deriveDocumentDetailReversVATSumPrefix(userPricing, retail);
+
+    @defineDocumentInterfaceDetailMarkupSumPrefix (pricing, retail);
+    @deriveDocumentDetailMarkupSumPrefix(userPricing, retail);
+
+    @defineDocumentInterfaceHeaderSumPrefix (pricing, retailMarkup, ' надбавки');
+    @defineDocumentInterfaceHeaderSumPrefix (pricing, retailVAT, ' НДС');
+
+    @defineDocumentInterfaceHeaderPricingCommittee (pricing);
+
+//------------------------------------ Печатные формы акт расценки ------------------------------------------------ //
+
+    FORM pricing 'Акт расценки (печать)' PRINT
+        OBJECTS p=pricing FIXED PANEL
+        PROPERTIES (p)  SELECTOR objectClassName
+
+        PROPERTIES (p) objectClassName, nameStockPricing, nameCompanyPricing, numberPricing, seriesPricing, datePricing, timePricing,
+                       name###contact###Pricing, nameCurrencyPricing, notePricing,
+                       countPricingDetailPricing, quantityPricingDetailPricing, sumPricingDetailPricing,
+                       retailMarkupSumPricingDetailPricing, retailVATSumPricingDetailPricing,
+                       retailSumPricingDetailPricing, namePricingCommitteePricing,
+                       nameFormedManPricing, nameCheckedManPricing, nameLabeledManPricing, nameAccountantManPricing,
+                       nameHeadManPricing    //notPassToBookkeepingListRegister
+
+        OBJECTS d=pricingDetail
+
+        PROPERTIES (d) indexPricingDetail, idBarcodeSkuPricingDetail, nameSkuPricingDetail, shortNameUOMSkuPricingDetail,
+                       quantityPricingDetail, pricePricingDetail, sumPricingDetail,
+                       retailMarkupPricingDetail, retailMarkupSumPricingDetail, numberRetailVATPricingDetail, valueRetailVATPricingDetail, retailVATSumPricingDetail,
+                       retailPricePricingDetail, retailSumPricingDetail
+
+        FILTERS pricingPricingDetail(d) == p
+    ;
+
+    printPricing 'Акт расценки' (pricing) = ACTION FORM pricing OBJECTS p IMAGE 'print.png' IN printGroup;
+
 // --------------------------- Формы --------------------------------- //
 
     FORM userPricing 'Акт расценки'###sign
@@ -61,13 +230,15 @@ META definePricing(sign, contact, contactCaption)
         PROPERTIES (p) objectClassName, nameStockUserPricing, nameNumeratorObject, numberObject, seriesObject, dateUserPricing, timeUserPricing,
                        name###contact###UserPricing, nameCurrencyUserPricing, noteUserPricing,
                        countUserPricingDetailUserPricing, quantityUserPricingDetailUserPricing, sumUserPricingDetailUserPricing,
-                       retailSumUserPricingDetailUserPricing
+                       retailSumUserPricingDetailUserPricing, namePricingCommitteeUserPricing
+        PROPERTIES (p) SHOWIF pricingCommitteeUserPricing(p)  nameFormedManUserPricing, nameCheckedManUserPricing, nameLabeledManUserPricing,
+                       nameAccountantManUserPricing, nameHeadManUserPricing
 
         OBJECTS d = userPricingDetail
         PROPERTIES (d) indexUserPricingDetail, idBarcodeSkuUserPricingDetail, nameSkuUserPricingDetail, shortNameUOMSkuUserPricingDetail,
                        quantityUserPricingDetail, priceUserPricingDetail, sumUserPricingDetail,
-                       retailMarkupUserPricingDetail, numberRetailVATUserPricingDetail, valueRetailVATUserPricingDetail,
-                       retailPriceUserPricingDetail, retailSumUserPricingDetail,
+                       retailMarkupUserPricingDetail, retailMarkupSumUserPricingDetail, numberRetailVATUserPricingDetail, valueRetailVATUserPricingDetail,
+                       retailVATSumUserPricingDetail, retailPriceUserPricingDetail, retailSumUserPricingDetail,
                        nameStockUserPricingDetail, ADDOBJ, delete
 
         PROPERTIES(p) TODRAW d addDetailDialogSkuStockUserPricingDetailUserPricing,
@@ -105,6 +276,7 @@ META definePricing(sign, contact, contactCaption)
                         childConstraints = TO THE RIGHT;
                         ADD p.documentPrmGroup;
                     }
+                    ADD p.pricingCommitteeGroup;
                 }
 
                 ADD p.documentSumGroup {
@@ -129,18 +301,19 @@ META definePricing(sign, contact, contactCaption)
         PROPERTIES (p) READONLY isPostedPricing FORCE GRID, objectClassName, numberPricing, seriesPricing, datePricing, timePricing,
                                 nameStockPricing, name###contact###Pricing, nameCurrencyPricing, notePricing,
                                 countPricingDetailPricing, quantityPricingDetailPricing, sumPricingDetailPricing,
-                                retailSumPricingDetailPricing
+                                retailSumPricingDetailPricing, namePricingCommitteePricing
 
         PROPERTIES (p) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
         PROPERTIES ()  addUserPricing TODRAW p
         PROPERTIES (p) editUserPricing
         PROPERTIES (p) delete FORCE PANEL DRAWTOTOOLBAR SHOWIF isUserPricing(p)
+        PROPERTIES (p) printPricing FORCE PANEL
 
         OBJECTS d = pricingDetail
-        PROPERTIES (d) indexPricingDetail, idBarcodeSkuPricingDetail, nameSkuPricingDetail, shortNameUOMSkuPricingDetail,
+        PROPERTIES (d) READONLY indexPricingDetail, idBarcodeSkuPricingDetail, nameSkuPricingDetail, shortNameUOMSkuPricingDetail,
                        quantityPricingDetail, pricePricingDetail, sumPricingDetail,
-                       retailMarkupPricingDetail, numberRetailVATPricingDetail, valueRetailVATPricingDetail,
+                       retailMarkupPricingDetail, retailMarkupSumPricingDetail, numberRetailVATPricingDetail, valueRetailVATPricingDetail, retailVATSumPricingDetail,
                        retailPricePricingDetail, retailSumPricingDetail, nameStockPricingDetail
 
         FILTERS pricingPricingDetail(d) == p
@@ -176,6 +349,7 @@ META definePricing(sign, contact, contactCaption)
                         title = 'Печать';
                         childConstraints = TO THE BOTTOM;
                         fillVertical = 1.0; // todo : иначе кнопка не всегда показывается, нужно будет пофиксить как-нибудь
+                        ADD p.printGroup;
                     }
                 }
             }
@@ -312,6 +486,7 @@ META definePricing(sign, contact, contactCaption)
 
 //-- аггр.объект
 
+    @defineDocumentInterfaceHeaderPricingCommittee(invoice);
     @defineDocumentInterfaceDetailPricePrefix(invoice, retail, ' розничная');
 
     @defineDocumentInterfaceDetailVATPrefix(invoice, retail, countryStock, ' розничный');
@@ -323,24 +498,38 @@ META definePricing(sign, contact, contactCaption)
 
     @defineDocumentInterfaceHeaderSumPrefix (invoice, retail, ' розничная');
 
+
+    @defineDocumentInterfaceDetailVATDataSumPrefix (invoice, retail);
+    @deriveDocumentDetailReversVATSumPrefix(userInvoice, retail);
+
+    @defineDocumentInterfaceDetailMarkupSumPrefix (invoice, retail);
+    @deriveDocumentDetailMarkupSumPrefix(userInvoice, retail);
+
+
     createPricingInvoice 'Создавать акт расценки' = ABSTRACT BOOLEAN (invoice) IN documentPrmGroup;
     createPricingUserInvoice 'Создавать акт расценки' = DATA BOOLEAN (userInvoice) IN documentPrmGroup;
     createPricingInvoice (invoice) += createPricingUserInvoice(invoice);
 
     EXTEND FORM userInvoice
         PROPERTIES(i) createPricingUserInvoice, retailSumUserInvoiceDetailUserInvoice
+        PROPERTIES(i) SHOWIF createPricingInvoice(i)  namePricingCommitteeUserInvoice, nameFormedManUserInvoice,
+                      nameCheckedManUserInvoice, nameLabeledManUserInvoice, nameAccountantManUserInvoice, nameHeadManUserInvoice
+
         PROPERTIES(d) BEFORE delete(d) SHOWIF createPricingInvoice(i)
                       retailMarkupUserInvoiceDetail, numberRetailVATUserInvoiceDetail, valueRetailVATUserInvoiceDetail,
-                      retailPriceUserInvoiceDetail, retailSumUserInvoiceDetail
+                      retailPriceUserInvoiceDetail, retailSumUserInvoiceDetail,
+                      retailVATSumUserInvoiceDetail, retailVATSumUserInvoiceDetail, retailMarkupSumUserInvoiceDetail
     ;
+    EXTEND DESIGN userInvoice { headerRow1 { ADD i.pricingCommitteeGroup; } }
+
     EXTEND FORM invoices
-        PROPERTIES(i) READONLY createPricingInvoice, retailSumInvoiceDetailInvoice BEFORE ordersInvoice(i)
+        PROPERTIES(i) READONLY createPricingInvoice, retailSumInvoiceDetailInvoice BEFORE ordersInvoice(i), namePricingCommitteeUserInvoice
         PROPERTIES(d) READONLY BEFORE nameStockInvoiceDetail(d) SHOWIF createPricingInvoice(i)
                       retailMarkupInvoiceDetail, numberRetailVATInvoiceDetail, valueRetailVATInvoiceDetail,
                       retailPriceInvoiceDetail, retailSumInvoiceDetail
     ;
     EXTEND FORM pricingInvoices
-        PROPERTIES(i) READONLY createPricingInvoice, retailSumInvoiceDetailInvoice BEFORE ordersInvoice(i)
+        PROPERTIES(i) READONLY createPricingInvoice, retailSumInvoiceDetailInvoice BEFORE ordersInvoice(i), namePricingCommitteeUserInvoice
         PROPERTIES(d) READONLY BEFORE nameStockInvoiceDetail(d) SHOWIF createPricingInvoice(i)
                       retailMarkupInvoiceDetail, numberRetailVATInvoiceDetail, valueRetailVATInvoiceDetail,
                       retailPriceInvoiceDetail, retailSumInvoiceDetail
@@ -357,8 +546,15 @@ META definePricing(sign, contact, contactCaption)
     @defineDocumentTables(invoicePricing);
 
     @defineDocumentAggregation(invoice, invoicePricing, createPricingInvoice);
-    pricingPricingDetail(detail) += invoicePricingInvoicePricingDetail(detail);
 
+
+    printPricingInvoice 'Акт расценки' (invoice) = printPricing(invoicePricingInvoice(invoice)) IMAGE 'print.png' IN printGroup;
+    EXTEND FORM invoices
+        PROPERTIES(i) FORCE PANEL printPricingInvoice SHOWIF createPricingInvoice(i)
+    ;
+    EXTEND DESIGN invoices {printContainer { ADD i.printGroup;}}
+
+    pricingPricingDetail(detail) += invoicePricingInvoicePricingDetail(detail);
     @defineDocumentDetailIndex(invoicePricing);
 
     datePricing(pricing) += dateInvoicePricing(pricing);
@@ -387,6 +583,7 @@ META definePricing(sign, contact, contactCaption)
 
     currencyInvoicePricing  (invoicePricing) = currencyInvoice(invoiceInvoicePricing(invoicePricing));
     currencyPricing (pricing) += currencyInvoicePricing(pricing);
+    pricingCommitteePricing(pricing) += pricingCommitteeInvoice(invoiceInvoicePricing(pricing));
 
     @defineDocumentDescription(invoicePricing, invoicePricingDetail, seriesNumberInvoicePricing, 'Поставка на основе инвойса'###sign);
     descriptionPricing (pricing) += descriptionInvoicePricing(pricing);
@@ -397,13 +594,27 @@ META definePricing(sign, contact, contactCaption)
     @defineDocumentAggregationDetailQuantity(invoice, invoicePricing);
     quantityPricingDetail(pricingDetail) += quantityInvoicePricingDetail(pricingDetail);
 
-    pricePricingDetail(pricingDetail) += priceInvoiceDetail(invoiceDetailInvoicePricingDetail(pricingDetail));
-    sumPricingDetail(pricingDetail) += sumInvoiceDetail(invoiceDetailInvoicePricingDetail(pricingDetail));
+//----------------------------------------------------------------------------------------------------------
+    @defineDocumentAggregationDetailProperty (invoice, invoicePricing, price, 'Цена входная');
+    pricePricingDetail(pricingDetail) += priceInvoicePricingDetail(pricingDetail);
+    @defineDocumentAggregationDetailProperty (invoice, invoicePricing, sum, 'Сумма входная');
+    sumPricingDetail(pricingDetail) += sumInvoicePricingDetail(pricingDetail);
+    @defineDocumentAggregationDetailProperty (invoice, invoicePricing, retailPrice, 'Цена выходная');
+    retailPricePricingDetail(pricingDetail) += retailPriceInvoicePricingDetail(pricingDetail);
+    @defineDocumentAggregationDetailProperty (invoice, invoicePricing, retailMarkup, 'Надбавка');
+    retailMarkupPricingDetail(pricingDetail) += retailMarkupInvoicePricingDetail(pricingDetail);
+    @defineDocumentAggregationDetailProperty (invoice, invoicePricing, retailVAT, 'НДС');
+    retailVATPricingDetail(pricingDetail) += retailVATInvoicePricingDetail(pricingDetail);
+    @defineDocumentAggregationDetailProperty (invoice, invoicePricing, valueRetailVAT, 'НДС,%');
 
-    retailPricePricingDetail(pricingDetail) += retailPriceInvoiceDetail(invoiceDetailInvoicePricingDetail(pricingDetail));
-    retailMarkupPricingDetail(pricingDetail) += retailMarkupInvoiceDetail(invoiceDetailInvoicePricingDetail(pricingDetail));
-    retailVATPricingDetail(pricingDetail) += retailVATInvoiceDetail(invoiceDetailInvoicePricingDetail(pricingDetail));
-    retailSumPricingDetail(pricingDetail) += retailSumInvoiceDetail(invoiceDetailInvoicePricingDetail(pricingDetail));
+    @defineDocumentAggregationDetailProperty (invoice, invoicePricing, retailSum, 'Сумма выходная');
+    retailSumPricingDetail(pricingDetail) += retailSumInvoicePricingDetail(pricingDetail);
+
+    @defineDocumentAggregationDetailProperty (invoice, invoicePricing, retailVATSum, 'Сумма НДС');
+    retailVATSumPricingDetail(pricingDetail) += retailVATSumInvoicePricingDetail(pricingDetail);
+
+    @defineDocumentAggregationDetailProperty (invoice, invoicePricing, retailMarkupSum, 'Сумма Надбавки');
+    retailMarkupSumPricingDetail(pricingDetail) += retailMarkupSumInvoicePricingDetail(pricingDetail);
 
     invoiceDetailPricingDetail(pricingDetail) += invoiceDetailInvoicePricingDetail(pricingDetail);
 

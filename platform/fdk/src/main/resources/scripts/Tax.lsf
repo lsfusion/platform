@@ -238,7 +238,7 @@ END
 
 META defineDocumentDetailVATSumCustom(detail, prefix, currencyProp)
     VATSum###detail 'Сумма НДС' (detail) = roundCurrency((sum###detail(detail) * valueVAT###detail (detail) / 100), currencyProp###detail(detail));
-    prefix###sum###detail 'Сумма с НДС' (detail) = sum###detail(detail) (+) VATSum###detail(detail);
+    prefix##Sum###detail 'Сумма с НДС' (detail) = sum###detail(detail) (+) VATSum###detail(detail);
 END
 META defineDocumentInterfaceDetailVATSumCustom(detail, prefix, currencyProp)
     @defineDocumentDetailVATSumCustom(detail, prefix, currencyProp);
@@ -293,11 +293,11 @@ END
 //-- Сумма НДС в detail
 META defineDocumentDetailVATDataSumCustom (detail, prefix)
     VATSum###detail 'Сумма НДС' (detail) = DATA NUMERIC[16,2] (detail);
-    prefix###sum###detail 'Сумма с НДС' (detail) = sum###detail(detail) (+) VATSum###detail(detail);
+    prefix##Sum###detail 'Сумма с НДС' (detail) = sum###detail(detail) (+) VATSum###detail(detail);
 END
 META defineDocumentAbstractDetailVATDataSumCustom (detail, prefix)
     VATSum###detail 'Сумма НДС' (detail) = ABSTRACT NUMERIC[16,2] (detail);
-    prefix###sum###detail 'Сумма с НДС' (detail) = sum###detail(detail) (+) VATSum###detail(detail);
+    prefix##Sum###detail 'Сумма с НДС' (detail) = sum###detail(detail) (+) VATSum###detail(detail);
 END
 
 META defineDocumentInterfaceDetailVATDataSumCustom (detail, prefix)
@@ -309,21 +309,54 @@ META defineDocumentInterfaceDetailVATDataSum (object)
     @defineDocumentInterfaceDetailVATDataSumCustom(object##Detail, object);
 END
 
-META deriveDocumentDetailVATSumCustom(detail, currencyProp)
+META deriveDocumentDetailDirectVATSumCustom(detail, currencyProp)
     VATSum###detail (detail)  <- roundCurrency((sum###detail(detail) * valueVAT###detail (detail) / 100), currencyProp###detail(detail))
-                    WHEN CHANGED(sum###detail(detail)) OR CHANGED (valueVAT###detail (detail));
+                    WHEN CHANGED(sum###detail(detail)) OR CHANGED (VAT###detail (detail)) OR CHANGED (currencyProp###detail (detail));
 END
-META deriveDocumentDetailVATSum(object, currencyProp)
-    @deriveDocumentDetailVATSumCustom(object##Detail, currencyProp);
+META deriveDocumentDetailDirectVATSum(object, currencyProp)
+    @deriveDocumentDetailDirectVATSumCustom(object##Detail, currencyProp);
 END
-META deriveDocumentDetailVATSum(object)
-    @deriveDocumentDetailVATSum(object, currency);
+META deriveDocumentDetailDirectVATSum(object)
+    @deriveDocumentDetailDirectVATSum(object, currency);
+END
+
+//-- НДС - Розничный
+
+META defineDocumentDetailVATDataSumCustomPrefix (detail, prefix, caption)
+    prefix##VATSum###detail 'Сумма НДС'###caption = DATA NUMERIC[14,3] (detail);
+END
+META defineDocumentAbstractDetailVATDataSumCustomPrefix (detail, prefix, caption)
+    prefix##VATSum###detail 'Сумма НДС'###caption = ABSTRACT NUMERIC[14,3] (detail);
+END
+META defineDocumentInterfaceDetailVATDataSumCustomPrefix (detail, prefix, caption)
+    @defineDocumentAbstractDetailVATDataSumCustomPrefix(detail, prefix, caption);
+    @defineDocumentDetailVATDataSumCustomPrefix(user###detail, prefix, caption);
+    prefix##VATSum###detail (detail) += prefix##VATSum###user###detail(detail);
+END
+META defineDocumentInterfaceDetailVATDataSumPrefix (object, prefix, caption)
+    @defineDocumentInterfaceDetailVATDataSumCustomPrefix(object##Detail, prefix, caption);
+END
+META defineDocumentInterfaceDetailVATDataSumPrefix (object, prefix)
+    @defineDocumentInterfaceDetailVATDataSumPrefix(object, prefix, );
+END
+
+META deriveDocumentDetailReversVATSumCustomPrefix(detail, prefix, currencyProp)
+    prefix##VATSum###detail (detail)  <- roundCurrency((prefix##Sum###detail(detail) * value###prefix##VAT###detail(detail) /
+     (100 + value###prefix##VAT###detail(detail))), currencyProp###detail(detail))
+                    WHEN CHANGED(prefix##Sum###detail(detail)) OR CHANGED (prefix##VAT###detail(detail)) OR CHANGED (currencyProp###detail(detail));
+
+END
+META deriveDocumentDetailReversVATSumPrefix(object, prefix, currencyProp)
+    @deriveDocumentDetailReversVATSumCustomPrefix(object##Detail, prefix, currencyProp);
+END
+META deriveDocumentDetailReversVATSumPrefix(object, prefix)
+    @deriveDocumentDetailReversVATSumPrefix(object, prefix, currency);
 END
 
 //-- Сумма НДС в документе
 META defineDocumentHeaderVATSumPrefix (object, detail, prefix)
     VATSum###detail###object 'Сумма НДС' (object) = GROUP SUM VATSum###detail(idetail) BY object###detail(idetail) IN documentSumGroup;
-    prefix###sum###detail###object 'Сумма с НДС' (object) = GROUP SUM prefix###sum###detail(idetail) BY object###detail(idetail) IN documentSumGroup;
+    prefix##Sum###detail###object 'Сумма с НДС' (object) = GROUP SUM prefix##Sum###detail(idetail) BY object###detail(idetail) IN documentSumGroup;
 END
 META defineDocumentInterfaceHeaderVATSumPrefix (object, detail, prefix)
     @defineDocumentHeaderVATSumPrefix(object, detail, prefix);

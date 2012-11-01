@@ -46,7 +46,7 @@ META defineInvoice(sign, contact, partyA, partyB)
 
     @defineDocumentInterfaceDetailVAT(invoice, countryStock);
     @defineDocumentInterfaceDetailVATDataSum (invoice);
-    @deriveDocumentDetailVATSum(userInvoice);
+    @deriveDocumentDetailDirectVATSum(userInvoice);
 
     @defineDocumentInterfaceHeaderQuantity(invoice);
     @defineDocumentHeaderSkuQuantity(invoice, sku);

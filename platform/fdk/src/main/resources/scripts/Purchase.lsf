@@ -33,6 +33,7 @@ NAVIGATOR {
         ADD Purchase.shipments;
         ADD Purchase.creditNotes;
         ADD Purchase.pricings;
+//        ADD Purchase.pricing;
     }
     NEW purchaseReturnNavigator 'Возвраты' {
         ADD PurchaseReturn.orders;

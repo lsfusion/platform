@@ -6833,6 +6833,7 @@ NAVIGATOR {
             ADD priceIntervals;
             ADD registerCommitteeDialog;
             ADD priceChangeCommitteeDialog;
+            ADD pricingCommitteeDialog;
         }
         ADD retailCRMNavigator;
         NEW retailCatalog 'Справочники' {
