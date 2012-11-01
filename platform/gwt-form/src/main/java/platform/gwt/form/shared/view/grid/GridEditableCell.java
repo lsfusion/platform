@@ -34,7 +34,7 @@ public class GridEditableCell extends AbstractCell<Object> {
         if (isEditingCell(context)) {
             cellEditor.onBrowserEvent(context, parent, value, event, valueUpdater);
         } else if (editManager.canStartNewEdit()) {
-            if ("dblclick".equals(event.getType()) || isEditKeyEvent(event)) {
+            if (isEditEvent(event)) {
                 event.stopPropagation();
                 event.preventDefault();
                 editManager.executePropertyEditAction(this, event, context, parent);
@@ -42,24 +42,33 @@ public class GridEditableCell extends AbstractCell<Object> {
         }
     }
 
-    private boolean isEditKeyEvent(NativeEvent event) {
+    private boolean isEditEvent(NativeEvent event) {
+        String eventType = event.getType();
+        if ("dblclick".equals(eventType)) {
+            return true;
+        }
+
+        if (event.getCtrlKey() || event.getAltKey() || event.getMetaKey()) {
+            return false;
+        }
+
         int keyCode = event.getKeyCode();
-        return "keypress".equals(event.getType())
-                && !event.getCtrlKey()
-                && !event.getAltKey()
-                && !event.getMetaKey()
-                && keyCode != KeyCodes.KEY_ENTER
-                && keyCode != KeyCodes.KEY_ESCAPE
-                && keyCode != KeyCodes.KEY_TAB
-                && keyCode != KeyCodes.KEY_HOME
-                && keyCode != KeyCodes.KEY_END
-                && keyCode != KeyCodes.KEY_PAGEUP
-                && keyCode != KeyCodes.KEY_PAGEDOWN
-                && keyCode != KeyCodes.KEY_LEFT
-                && keyCode != KeyCodes.KEY_RIGHT
-                && keyCode != KeyCodes.KEY_UP
-                && keyCode != KeyCodes.KEY_DOWN
-                ;
+        if ("keypress".equals(eventType)) {
+            return keyCode != KeyCodes.KEY_ENTER
+                    && keyCode != KeyCodes.KEY_ESCAPE
+                    && keyCode != KeyCodes.KEY_TAB
+                    && keyCode != KeyCodes.KEY_HOME
+                    && keyCode != KeyCodes.KEY_END
+                    && keyCode != KeyCodes.KEY_PAGEUP
+                    && keyCode != KeyCodes.KEY_PAGEDOWN
+                    && keyCode != KeyCodes.KEY_LEFT
+                    && keyCode != KeyCodes.KEY_RIGHT
+                    && keyCode != KeyCodes.KEY_UP
+                    && keyCode != KeyCodes.KEY_DOWN;
+        } else if ("keydown".equals(eventType)) {
+            return keyCode == KeyCodes.KEY_DELETE;
+        }
+        return false;
     }
 
     public void startEditing(NativeEvent editEvent, final Context context, Element parent, GridCellEditor cellEditor, Object oldValue) {

@@ -1,11 +1,14 @@
 package platform.gwt.form.client.form.ui;
 
 import com.google.gwt.cell.client.Cell;
+import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.user.cellview.client.AbstractCellTable;
 import com.google.gwt.user.cellview.client.DataGrid;
 import com.google.gwt.user.client.ui.CustomScrollPanel;
 import com.google.gwt.user.client.ui.HeaderPanel;
+import com.google.gwt.view.client.CellPreviewEvent;
 import platform.gwt.form.client.form.dispatch.GEditPropertyDispatcher;
 import platform.gwt.form.client.form.dispatch.GEditPropertyHandler;
 import platform.gwt.form.shared.actions.form.ServerResponseResult;
@@ -31,6 +34,8 @@ public abstract class GPropertyTable extends DataGrid implements EditManager, GE
         super(50, resources);
 
         addStyleName(getResources().style().widget());
+
+        setKeyboardSelectionHandler(new KeyboardSelectionHandler(this));
 
         this.form = iform;
 
@@ -117,5 +122,23 @@ public abstract class GPropertyTable extends DataGrid implements EditManager, GE
         editContext = null;
         editCellParent = null;
         editType = null;
+    }
+
+    public static class KeyboardSelectionHandler extends CellTableKeyboardSelectionHandler<GridDataRecord> {
+        public KeyboardSelectionHandler(AbstractCellTable<GridDataRecord> table) {
+            super(table);
+        }
+
+        @Override
+        public void onCellPreview(CellPreviewEvent<GridDataRecord> event) {
+            NativeEvent nativeEvent = event.getNativeEvent();
+            String eventType = event.getNativeEvent().getType();
+            if (BrowserEvents.KEYDOWN.equals(eventType) && !event.isCellEditing()) {
+                if (nativeEvent.getKeyCode() == 32) {
+                    return;
+                }
+            }
+            super.onCellPreview(event);
+        }
     }
 }
