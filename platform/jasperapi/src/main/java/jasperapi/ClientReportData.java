@@ -152,8 +152,7 @@ public class ClientReportData implements JRDataSource {
                     files.put(file, fileName);
                 }
                 value = fileName;
-            } else
-                value = "File";
+            }
         }
 
         return value;
