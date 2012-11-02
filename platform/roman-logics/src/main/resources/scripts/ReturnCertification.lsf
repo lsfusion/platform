@@ -13,6 +13,7 @@ REQUIRE System,
         RetailPrice,
         Barcode,
         MasterData,
+        Declaration,
         RomanLogicsModule;
 
 PRIORITY Stock, RomanLogicsModule;
@@ -41,7 +42,9 @@ CLASS returnCertificationDetail 'Строка возврата из сертиф
 
 @defineDocumentDetailSkuArticle(returnCertification);
 
-@defineAddDetailDialogSkuStock(returnCertification, sku, stock, dialogSku);
+@defineDialogSku(dialogCertificatedSku);
+//@defineAddDetailDialogSkuStock(returnCertification, sku, stock, dialogCertificatedSku);
+@defineAddDetailDialogSku(returnCertification, sku, dialogCertificatedSku);
 @defineAddDetailDialogBarcode(returnCertification, sku);
 
 // Проводим по регистру
@@ -57,21 +60,83 @@ quantityBatch (batch) += quantityReturnCertificationDetail(batch);
 sumInSkuLedger(batch) += 0.0 IF batch IS returnCertificationDetail;
 skipASkuLedger (ledger) += ledger IS returnCertificationDetail;
 
+customStoreReturnCertification = DATA customStore(returnCertification);
+nameCustomStoreReturnCertification 'СВХ' (returnCertification) = name(customStoreReturnCertification(returnCertification));
+
+customStoreReturnCertificationDetail (returnCertificationDetail) = customStoreReturnCertification(returnCertificationReturnCertificationDetail(returnCertificationDetail));
+
+quantityReturnCertificationStoreSku 'Кол-во возвращёное' (store, sku) = GROUP SUM quantityReturnCertificationDetail(returnCertificationDetail)
+                                                                               IF isPostedReturnCertificationDetail(returnCertificationDetail)
+                                                                               BY customStoreReturnCertificationDetail(returnCertificationDetail),
+                                                                                  skuReturnCertificationDetail(returnCertificationDetail);
+
+quantityForReturnCertificationStoreSku 'Остаток' (store, sku) = quantityCertificatedCustomStoreSku(store, sku) (-) quantityReturnCertificationStoreSku(store, sku);
+
+dialogCertificatedSkuCustomStore = SESSION DATA customStore();
+dialogCertificatedSkuNameCustomStore 'Склад' () = name(dialogCertificatedSkuCustomStore());
+
+addDetailDialogSkuReturnCertification 'Подбор товаров' = ACTION (returnCertification) {
+    SET dialogCertificatedSkuCustomStore() <- customStoreReturnCertification(returnCertification);
+    EXEC addDetailDialogSkuReturnCertificationDetailReturnCertification(returnCertification);
+} TOOLBAR;
+
+
+balanceDialogCertificatedSku 'Остаток на экспертизе' (sku) = quantityForReturnCertificationStoreSku(dialogCertificatedSkuCustomStore(), sku);
+
+EXTEND FORM dialogCertificatedSku
+
+    PROPERTIES(s) FORCE GRID balanceDialogCertificatedSku AFTER dialogCertificatedSkuQuantity, idBarcodeSku, nameCategoryArticleSku,
+                  nameBrandSupplierArticleSku, sidArticleSku, sidSizeSupplierItem, sidColorSupplierItem, nameColorSupplierItem
+    FILTERS balanceDialogCertificatedSku(s)>0
+;
+
+
+//returnCertificationQuantity 'Кол-во' = SESSION DATA NUMERIC[14,3] (sku);
+//
+//returnCertificationStock = SESSION DATA stock ();
+//returnCertificationNameStock 'Склад' () = name(returnCertificationStock()) PREFCHARWIDTH 30;
+//
+//returnCertificationBalance 'Остаток' (sku) = quantityForReturnCertificationStoreSku(returnCertificationStock(), sku);
+//returnCertificationBalanceFilter (sku) = (TRUE AND returnCertificationBalance(sku)) OR (sku IS sku AND NOT returnCertificationStock());
+//
+//FORM dialogCertificatedSku 'Подбор SKU'
+//    TREE skuTree sk = skuGroup PARENT parentSkuGroup
+//    PROPERTIES READONLY skuTreeName = name(sk)
+//    ORDER BY skuTreeName
+//
+//    PROPERTIES returnCertificationNameStock()
+//
+//    OBJECTS s=sku
+//    PROPERTIES READONLY    inputName = nameSku(s)
+//    PROPERTIES(s)          returnCertificationQuantity
+//    PROPERTIES(s) READONLY returnCertificationBalance SHOWIF returnCertificationStock()
+//    FILTERS                isParentSkuGroupSku(sk, s)
+//    FILTERS                returnCertificationBalanceFilter(s)
+//    ORDER BY inputName
+//
+//    OBJECTS si=sku
+//    PROPERTIES READONLY     selectedName = nameSku(si)
+//    PROPERTIES              returnCertificationQuantity(si)
+//    PROPERTIES(si) READONLY returnCertificationBalance SHOWIF returnCertificationStock()
+//    FILTERS                 returnCertificationQuantity(si)
+//    ORDER BY selectedName
+//;
+
 FORM returnCertification 'Возврат из сертификации'
 
     OBJECTS w = returnCertification FIXED PANEL, d = returnCertificationDetail
     PROPERTIES(w) objectClassName, nameNumeratorObject, numberObject, seriesObject, dateReturnCertification, timeReturnCertification, //nameCompanyReturnCertification,
-                  nameStockReturnCertification
+                  nameCustomStoreReturnCertification, nameStockReturnCertification
 
     PROPERTIES(d) indexReturnCertificationDetail, barcodeReturnCertificationDetail, nameCategoryReturnCertificationDetail,
                   nameBrandReturnCertificationDetail, sidArticleReturnCertificationDetail, sidSizeReturnCertificationDetail,
-                  sidColorReturnCertificationDetail, nameColorReturnCertificationDetail,shortNameUOMReturnCertificationDetail
+                  sidColorReturnCertificationDetail, nameColorReturnCertificationDetail, shortNameUOMReturnCertificationDetail
 
     PROPERTIES(d) quantityReturnCertificationDetail
 
     PROPERTIES(d) ADDOBJ, delete
 
-    PROPERTIES(w) TODRAW d addDetailDialogSkuStockReturnCertificationDetailReturnCertification, addDetailInputBarcodeReturnCertificationDetailReturnCertification,
+    PROPERTIES(w) TODRAW d addDetailDialogSkuReturnCertification, addDetailInputBarcodeReturnCertificationDetailReturnCertification,
                            deleteReturnCertificationDetailReturnCertification
 
 
@@ -96,6 +161,7 @@ DESIGN returnCertification FROM DEFAULT {
                     caption = 'Шапка документа';
                     childConstraints = TO THE RIGHTBOTTOM;
                     ADD PROPERTY(objectClassName){preferredCharWidth = 15;}
+                    ADD PROPERTY(nameCustomStoreReturnCertification);
                     ADD PROPERTY(nameStockReturnCertification);
                     ADD PROPERTY(nameNumeratorObject);
                     ADD PROPERTY(numberObject);
@@ -122,8 +188,9 @@ FORM returnCertifications 'Возвраты из сертификации'
 
     OBJECTS w = returnCertification
 
-    PROPERTIES(w) READONLY isPostedReturnCertification FORCE GRID, objectClassName, numberObject, seriesObject, dateReturnCertification, timeReturnCertification, nameStockReturnCertification,
-                           countReturnCertificationDetailReturnCertification, quantityReturnCertificationDetailReturnCertification
+    PROPERTIES(w) READONLY isPostedReturnCertification FORCE GRID, objectClassName, numberObject, seriesObject, dateReturnCertification,
+                  timeReturnCertification, nameCustomStoreReturnCertification, nameStockReturnCertification,
+                  countReturnCertificationDetailReturnCertification, quantityReturnCertificationDetailReturnCertification
 
     PROPERTIES(w) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
 

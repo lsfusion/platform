@@ -704,6 +704,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LCP nameCurrencyFreight;
     private LCP symbolCurrencyFreight;
     private LCP sumFreightFreight;
+    private LCP sumRateFreightFreight;
     private LCP insuranceFreight;
     private LCP insuranceFreightBrandSupplier;
     private LCP insuranceFreightBrandSupplierArticle;
@@ -3477,6 +3478,9 @@ public class RomanLogicsModule extends LogicsModule {
         symbolCurrencyFreight = addJProp(baseGroup, "symbolCurrencyFreight", "Валюта", baseLM.symbolCurrency, currencyFreight, 1);
 
         sumFreightFreight = addDProp(baseGroup, "sumFreightFreight", "Стоимость", NumericClass.get(14, 2), freight);
+
+        sumRateFreightFreight = addJProp(baseGroup, "sumRateFreightFreight", true, "Стоимость (конверт.)", round2, addJProp(multiplyNumeric2, sumFreightFreight, 1, addJProp(baseLM.nearestRateExchange, typeExchangeSTX, currencyFreight, 1, 1), 1), 1);
+
         insuranceFreight = addDProp(baseGroup, "insuranceFreight", "Страховка", NumericClass.get(14, 2), freight);
         insuranceFreightBrandSupplier = addDProp(baseGroup, "insuranceFreightBrandSupplier", "Страховка за бренд", NumericClass.get(14, 2), freight, brandSupplier);
         insuranceFreightBrandSupplierArticle = addJProp(baseGroup, "insuranceFreightBrandSupplierArticle", "Страховка за бренд", insuranceFreightBrandSupplier, 1, brandSupplierArticle, 2);

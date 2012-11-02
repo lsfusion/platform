@@ -431,6 +431,9 @@ quantityCertificatedDeclarationFreightUnit 'Кол-во для эксперти�
 quantityCertificatedDeclarationSku 'Кол-во для экспертизы' (declaration, sku) = GROUP SUM quantityCertificatedDeclarationFreightUnitSku(declaration, freightUnit, sku)
                                                                                        BY declaration, sku;
 
+quantityCertificatedCustomStoreSku 'Кол-во для экспертизы' (customStore, sku) = GROUP SUM quantityCertificatedDeclarationSku(declaration, sku)
+                                                                                       BY customStoreDeclaration(declaration), sku;
+
 certificateDeclarationDetail 'Сертификат партии (ИД)' = DATA certificate(declarationDetail) IN idGroup;
 temporalCertificateDeclarationDetail 'Временный сертификат партии (ИД)' = DATA temporalCertificate(declarationDetail) IN idGroup;
 permanentCertificateDeclarationDetail 'Постоянный сертификат партии (ИД)' = DATA permanentCertificate(declarationDetail) IN idGroup;
