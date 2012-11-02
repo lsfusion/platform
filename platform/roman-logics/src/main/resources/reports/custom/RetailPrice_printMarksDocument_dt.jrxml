@@ -70,6 +70,7 @@
 	<field name="localeLanguageCompany" class="java.lang.String"/>
 	<field name="sidTypeLabelArticleSku" class="java.lang.String"/>
 	<field name="translateNameColorSupplierItem" class="java.lang.String"/>
+	<field name="imageLabelSku" class="java.lang.Object"/>
 	<group name="designGroup10">
 		<groupExpression><![CDATA[String.valueOf($F{dt})]]></groupExpression>
 	</group>
@@ -274,6 +275,10 @@
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[($F{nameCountryBrandSupplierSku}!=null?$F{nameCountryBrandSupplierSku}:"")]]></textFieldExpression>
 			</textField>
+			<image>
+				<reportElement style="GroupCellStyle0_1" x="0" y="0" width="13" height="10"/>
+				<imageExpression class="java.io.InputStream"><![CDATA[new ByteArrayInputStream((byte[]) ($F{imageLabelSku}))]]></imageExpression>
+			</image>
 		</band>
 		<band height="197">
 			<printWhenExpression><![CDATA["uk_UA".equals( $F{localeLanguageCompany})]]></printWhenExpression>

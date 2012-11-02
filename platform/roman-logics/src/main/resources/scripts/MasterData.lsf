@@ -498,6 +498,8 @@ EXTEND DESIGN UOMs {
 
 
 // ------------------------------------------------------------ Глобальные параметры --------------------------------- //
+imageLabel 'Картинка' = DATA IMAGEFILE ();
+loadImageLabel 'Загрузить изображение' () = ACTION LOADFILE imageLabel();
 
 EXTEND FORM options
     PROPERTIES() barcodePrefix,
@@ -505,9 +507,8 @@ EXTEND FORM options
                  nameTypeExchangeSTX, nameTypeExchangeCustom, //nameTypeExchangePayCustom, nameTypeExchangePayManagerial,
                  nameCurrencyPayFreights, nameCurrencyCustom,
                  NDSPercentCustom, percentCostFreights, tariffVolumeFreights,
-                 sidTypeDutyDuty, nameTypeDutyDuty,
-                 sidTypeDutyNDS, nameTypeDutyNDS,
-                 sidTypeDutyRegistration, nameTypeDutyRegistration
+                 sidTypeDutyDuty, nameTypeDutyDuty, sidTypeDutyNDS, nameTypeDutyNDS,
+                 sidTypeDutyRegistration, nameTypeDutyRegistration, imageLabel, loadImageLabel
 ;
 EXTEND DESIGN options {
     commons {
@@ -529,6 +530,8 @@ EXTEND DESIGN options {
         ADD PROPERTY(nameTypeDutyNDS);
         ADD PROPERTY(sidTypeDutyRegistration);
         ADD PROPERTY(nameTypeDutyRegistration);
+        ADD PROPERTY(imageLabel);
+        ADD PROPERTY(loadImageLabel);
     }
 }
 

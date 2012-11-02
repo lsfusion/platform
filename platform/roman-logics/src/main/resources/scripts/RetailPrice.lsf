@@ -1238,6 +1238,8 @@ createPriceSetDocumentSku 'Расценить по товарам' =  ACTION (fr
 
 
 //Печать марккировки
+imageLabelSku (sku) = imageLabel() IF sku IS sku;
+
 countSku = SESSION DATA INTEGER (sku);
 
 FORM printMarksDocument 'Печать маркировок товара' PRINT
@@ -1252,9 +1254,10 @@ FORM printMarksDocument 'Печать маркировок товара' PRINT
     PROPERTIES(c) name, shortNameCurrency
 
     OBJECTS s = sku
-    PROPERTIES(s) READONLY sidArticleSku, sidSizeSupplierItem, nameCommonSizeSku, sidGenderArticleSku, sidTypeLabelArticleSku, nameCategoryArticleSku,
-                           mainCompositionSku, additionalCompositionSku, nameCountryBrandSupplierSku, nameBrandSupplierArticleSku, barcode, nameCountrySku,
-                           sidColorSupplierItem, nameColorSupplierItem, translateNameColorSupplierItem, nameSupplierArticleSku, addressSupplierArticleSku, warrantySku, countSku
+    PROPERTIES(s) READONLY sidArticleSku, sidSizeSupplierItem, nameCommonSizeSku, sidGenderArticleSku, sidTypeLabelArticleSku,
+                  nameCategoryArticleSku, mainCompositionSku, additionalCompositionSku, nameCountryBrandSupplierSku, nameBrandSupplierArticleSku,
+                  barcode, nameCountrySku, sidColorSupplierItem, nameColorSupplierItem, translateNameColorSupplierItem,
+                  nameSupplierArticleSku, addressSupplierArticleSku, warrantySku, imageLabelSku, countSku
 
     ORDER BY sidArticleSku, sidColorSupplierItem, sidSizeSupplierItem
 
