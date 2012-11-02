@@ -103,7 +103,7 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
     @Override
     public void execute(GLogMessageAction action) {
         pauseDispatching();
-        form.blockingMessage(action.failed, "", action.message, new DialogBoxHelper.CloseCallback() {
+        form.blockingMessage(action.failed, "LS Fusion", action.message, new DialogBoxHelper.CloseCallback() {
             @Override
             public void closed(DialogBoxHelper.OptionType chosenOption) {
                 continueDispatching();

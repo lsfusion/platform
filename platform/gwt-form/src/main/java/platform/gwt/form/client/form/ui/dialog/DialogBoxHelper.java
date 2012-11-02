@@ -3,6 +3,7 @@ package platform.gwt.form.client.form.ui.dialog;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.*;
+import platform.gwt.base.client.GwtClientUtils;
 
 public class DialogBoxHelper {
     public static interface CloseCallback {
@@ -50,7 +51,8 @@ public class DialogBoxHelper {
 
         private MessageBox(String caption, String message, final CloseCallback closeCallback, OptionType activeOption, OptionType... options) {
 
-            createMessagePanel(message);
+            messageLabel = new HTML(GwtClientUtils.toHtml(message));
+            messageLabel.addStyleName("messageBox-message");
 
             createButtonsPanel(activeOption, options, closeCallback);
 
@@ -62,11 +64,6 @@ public class DialogBoxHelper {
             setGlassEnabled(true);
             setText(caption);
             setWidget(mainPane);
-        }
-
-        private void createMessagePanel(String message) {
-            messageLabel = new HTML(message);
-            messageLabel.addStyleName("messageBox-message");
         }
 
         private void createButtonsPanel(OptionType activeOption, OptionType[] options, CloseCallback closeCallback) {
