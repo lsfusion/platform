@@ -11,6 +11,7 @@ CLASS ABSTRACT stock 'Склад' : named;
 TABLE stock(stock);
 
 stockGroupStock (stock) = ABSTRACT stockGroup (stock) PERSISTENT;
+nameStockGroupStock 'Группа' (stock) = name(stockGroupStock (stock));
 
 companyStock (stock) = ABSTRACT company (stock) PERSISTENT;
 nameCompanyStock 'Компания' (stock) = name(companyStock(stock));
@@ -963,15 +964,15 @@ META defineDocumentInterfaceDetailMarkupPrefix (object, prefix, caption)
 END
 
 META defineDocumentDetailMarkupSumCustomPrefix (detail, prefix, caption)
-    prefix##MarkupSum###detail 'Сумма надбавки'###caption = DATA NUMERIC[14,3] (detail);
+    prefix###markupSum###detail 'Сумма надбавки'###caption = DATA NUMERIC[14,3] (detail);
 END
 META defineDocumentAbstractDetailMarkupSumCustomPrefix (detail, prefix, caption)
-    prefix##MarkupSum###detail 'Сумма надбавки'###caption = ABSTRACT NUMERIC[14,3] (detail);
+    prefix###markupSum###detail 'Сумма надбавки'###caption = ABSTRACT NUMERIC[14,3] (detail);
 END
 META defineDocumentInterfaceDetailMarkupSumCustomPrefix (detail, prefix, caption)
     @defineDocumentAbstractDetailMarkupSumCustomPrefix(detail, prefix, caption);
     @defineDocumentDetailMarkupSumCustomPrefix(user###detail, prefix, caption);
-    prefix##MarkupSum###detail (detail) += prefix##MarkupSum###user###detail(detail);
+    prefix###markupSum###detail (detail) += prefix###markupSum###user###detail(detail);
 END
 META defineDocumentInterfaceDetailMarkupSumPrefix (object, prefix, caption)
     @defineDocumentInterfaceDetailMarkupSumCustomPrefix(object##Detail, prefix, caption);
@@ -980,12 +981,12 @@ META defineDocumentInterfaceDetailMarkupSumPrefix (object, prefix)
     @defineDocumentInterfaceDetailMarkupSumPrefix(object, prefix, );
 END
 
-META deriveDocumentDetailMarkupSumCustomPrefix(detail, prefix)
-    prefix##MarkupSum###detail(detail) <- prefix##Sum###detail(detail) (-) prefix##VATSum###detail (detail) (-) sum###detail(detail)
-                    WHEN CHANGED(prefix##Sum###detail(detail)) OR CHANGED (prefix##VATSum###detail (detail)) OR CHANGED (sum###detail(detail));
+META deriveDocumentDetailMarkupSumCustomPrefix(detail, prefixA, prefixB, prefixC)
+    prefixA###markupSum###detail(detail) <- prefixB###sum###detail(detail) (-) prefixA###VATSum###detail (detail) (-) prefixC###sum###detail(detail)
+                    WHEN CHANGED(prefixB###sum###detail(detail)) OR CHANGED (prefixA###VATSum###detail (detail)) OR CHANGED (prefixC###sum###detail(detail));
 END
-META deriveDocumentDetailMarkupSumPrefix(object, prefix)
-    @deriveDocumentDetailMarkupSumCustomPrefix(object##Detail, prefix);
+META deriveDocumentDetailMarkupSumPrefix(object, prefixA, prefixB, prefixC)
+    @deriveDocumentDetailMarkupSumCustomPrefix(object##Detail, prefixA, prefixB, prefixC);
 END
 
 //--------------------------------------------------Партия для Detail--------------------------------------//
@@ -1132,7 +1133,7 @@ META defineDocumentInterfaceHeaderSum (object)
 END
 
 META defineDocumentHeaderSumCustomPrefix (object, detail, prefix, caption)
-    prefix##Sum###detail###object 'Сумма'###caption (object) = GROUP SUM prefix###sum###detail(idetail) BY object###detail(idetail) IN documentSumGroup;
+    prefix###sum###detail###object 'Сумма'###caption (object) = GROUP SUM prefix###sum###detail(idetail) BY object###detail(idetail) IN documentSumGroup;
 END
 META defineDocumentInterfaceHeaderSumCustomPrefix (object, detail, prefix, caption)
     @defineDocumentHeaderSumCustomPrefix(object, detail, prefix, caption);
@@ -1146,6 +1147,20 @@ META defineDocumentInterfaceHeaderSumPrefix (object, prefix, caption)
     @defineDocumentHeaderSumPrefix(object, prefix, caption);
     @defineDocumentHeaderSumPrefix(user###object, prefix, caption);
 END
+
+META defineDocumentDetailDiffSumCustomPrefix (detail, prop, prefixA, prefixB, caption)
+    diff###prop###detail 'Сумма '###caption (detail) =  prefixA###prop###detail(detail) (-) prefixB###prop###detail(detail);
+END
+
+META defineDocumentInterfaceDetailDiffSumCustomPrefix (detail, prop, prefixA, prefixB, caption)
+    @defineDocumentDetailDiffSumCustomPrefix(detail, prop, prefixA, prefixB, caption);
+    @defineDocumentDetailDiffSumCustomPrefix(user###detail, prop, prefixA, prefixB, caption);
+
+END
+META defineDocumentInterfaceDetailDiffSumPrefix (object, prop, prefixA, prefixB, caption)
+    @defineDocumentInterfaceDetailDiffSumCustomPrefix(object##Detail, prop, prefixA, prefixB, caption);
+END
+
 
 // ------------------------------------------------ Сумма в документе для contact------------------------------------ //
 

@@ -45,6 +45,7 @@ REQUIRE System,
         PurchaseReturnShipment,
         PurchaseReturnCreditNote,
         SalePurchase,
+        Repricing,
         Employee,
         Store,
         ListRegister,
@@ -6834,6 +6835,8 @@ NAVIGATOR {
             ADD registerCommitteeDialog;
             ADD priceChangeCommitteeDialog;
             ADD pricingCommitteeDialog;
+            ADD repricingCommitteeDialog;
+            ADD repricings;
         }
         ADD retailCRMNavigator;
         NEW retailCatalog 'Справочники' {

@@ -7,14 +7,6 @@ REQUIRE Invoice, Employee, Store;
 
 CLASS pricingCommittee 'Комиссия для акта расценки' : committee;
 
-META defineCommitteeEmployeePrefix (committee, prefix, caption)
-    prefix###committee = DATA employee (committee);
-    name###prefix###committee caption (committee) = commonName(prefix###committee(committee)) IN recognizeGroup;
-    namePosition###prefix###committee caption (committee) = namePositionEmployee(prefix###committee(committee));
-    CONSTRAINT prefix###committee(committee) AND NOT countDivisionEmployeeCommittee(prefix###committee(committee), committee)
-        CHECKED BY prefix###committee MESSAGE '\''##caption##'\' не входит в выбранные подразделения';
-END
-
 //@defineCommitteeEmployee(committee, chairman, 'Председатель');
 @defineCommitteeEmployeePrefix(pricingCommittee, formedMan, 'Цены сформировал');
 @defineCommitteeEmployeePrefix(pricingCommittee, checkedMan, 'Реестр проверил');
@@ -51,7 +43,7 @@ FORM pricingCommittee 'Комиссия для акта расценки'
 
 
     FILTERGROUP filters1
-        FILTER 'Только включенный' 'F9' inCommitteeEmployeeDivision(c, st)
+        FILTER 'Показывать отделы только для данной комиссии' 'F9' inCommitteeEmployeeDivision(c, st)
 
     EDIT pricingCommittee OBJECT c
 ;
@@ -176,6 +168,8 @@ META definePricing(sign, contact, contactCaption)
 
     @defineDocumentInterfaceDetailPricePrefix(pricing, retail, ' выходная');
     @defineDocumentInterfaceDetailVATPrefix(pricing, retail, countryStock, );
+    @deriveDocumentDetailValueVATPrefix(userPricing, retail);
+
     @defineDocumentInterfaceDetailMarkupPrefix (pricing, retail, );
     @defineDocumentInterfaceDetailDataSumPrefix (pricing, retail, ' выходная');
 
@@ -187,10 +181,10 @@ META definePricing(sign, contact, contactCaption)
     @defineAddDetailDialogBarcode(userPricing, sku);
 
     @defineDocumentInterfaceDetailVATDataSumPrefix (pricing, retail);
-    @deriveDocumentDetailReversVATSumPrefix(userPricing, retail);
+    @deriveDocumentDetailReverseVATSumPrefix(userPricing, retail, retail);
 
     @defineDocumentInterfaceDetailMarkupSumPrefix (pricing, retail);
-    @deriveDocumentDetailMarkupSumPrefix(userPricing, retail);
+    @deriveDocumentDetailMarkupSumPrefix(userPricing, retail, retail, );
 
     @defineDocumentInterfaceHeaderSumPrefix (pricing, retailMarkup, ' надбавки');
     @defineDocumentInterfaceHeaderSumPrefix (pricing, retailVAT, ' НДС');
@@ -203,7 +197,7 @@ META definePricing(sign, contact, contactCaption)
         OBJECTS p=pricing FIXED PANEL
         PROPERTIES (p)  SELECTOR objectClassName
 
-        PROPERTIES (p) objectClassName, nameStockPricing, nameCompanyPricing, numberPricing, seriesPricing, datePricing, timePricing,
+        PROPERTIES (p) nameStockPricing, nameCompanyPricing, numberPricing, seriesPricing, datePricing, timePricing,
                        name###contact###Pricing, nameCurrencyPricing, notePricing,
                        countPricingDetailPricing, quantityPricingDetailPricing, sumPricingDetailPricing,
                        retailMarkupSumPricingDetailPricing, retailVATSumPricingDetailPricing,
@@ -490,6 +484,8 @@ META definePricing(sign, contact, contactCaption)
     @defineDocumentInterfaceDetailPricePrefix(invoice, retail, ' розничная');
 
     @defineDocumentInterfaceDetailVATPrefix(invoice, retail, countryStock, ' розничный');
+    @deriveDocumentDetailValueVATPrefix(userInvoice, retail);
+
     @defineDocumentInterfaceDetailMarkupPrefix (invoice, retail, );
     @defineDocumentInterfaceDetailDataSumPrefix (invoice, retail, ' розничная');
 
@@ -500,10 +496,10 @@ META definePricing(sign, contact, contactCaption)
 
 
     @defineDocumentInterfaceDetailVATDataSumPrefix (invoice, retail);
-    @deriveDocumentDetailReversVATSumPrefix(userInvoice, retail);
+    @deriveDocumentDetailReverseVATSumPrefix(userInvoice, retail, retail);
 
     @defineDocumentInterfaceDetailMarkupSumPrefix (invoice, retail);
-    @deriveDocumentDetailMarkupSumPrefix(userInvoice, retail);
+    @deriveDocumentDetailMarkupSumPrefix(userInvoice, retail, retail, );
 
 
     createPricingInvoice 'Создавать акт расценки' = ABSTRACT BOOLEAN (invoice) IN documentPrmGroup;
@@ -606,6 +602,7 @@ META definePricing(sign, contact, contactCaption)
     @defineDocumentAggregationDetailProperty (invoice, invoicePricing, retailVAT, 'НДС');
     retailVATPricingDetail(pricingDetail) += retailVATInvoicePricingDetail(pricingDetail);
     @defineDocumentAggregationDetailProperty (invoice, invoicePricing, valueRetailVAT, 'НДС,%');
+    valueRetailVATPricingDetail(pricingDetail) += valueRetailVATInvoicePricingDetail(pricingDetail);
 
     @defineDocumentAggregationDetailProperty (invoice, invoicePricing, retailSum, 'Сумма выходная');
     retailSumPricingDetail(pricingDetail) += retailSumInvoicePricingDetail(pricingDetail);

@@ -1,0 +1,406 @@
+MODULE Repricing;
+
+REQUIRE Employee, Store;
+
+
+// ----------------------------------- Комиссия ------------------------------------------ //
+
+CLASS repricingCommittee 'Комиссия переоценки' : committee;
+
+// ----------------------------------- Комиссия по умолчанию для отдела ------------------------------------------ //
+
+repricingCommitteeStock = DATA repricingCommittee (stock);
+nameRepricingCommitteeStock 'Комиссия переоценки' (stock) = name(repricingCommitteeStock(stock));
+isDefaultRepricingCommitteeStock 'По умолчанию' (repricingCommittee, stock) = repricingCommitteeStock(stock) == repricingCommittee;
+CONSTRAINT repricingCommitteeStock(stock) AND NOT inCommitteeEmployeeDivision(repricingCommitteeStock(stock), stock)
+    CHECKED BY repricingCommitteeStock MESSAGE 'Для отдела выбрана комиссия, которая для него не действует';
+
+EXTEND FORM departmentStore PROPERTIES nameRepricingCommitteeStock(d);
+
+// ----------------------------------- Формы для комиссий переоценки ------------------------------------------ //
+
+FORM repricingCommittee 'Комиссия переоценки'
+    OBJECTS c=repricingCommittee FIXED PANEL
+    PROPERTIES(c)      name, nameChairmanCommittee
+
+    TREE stockTree sg = stockGroup PARENT parentStockGroup, ts = stock
+    PROPERTIES READONLY sgTreeName = name(sg), tsTreeName = name(ts)
+    FILTERS stockGroupStock(ts) == sg
+
+    OBJECTS           st=stock
+    PROPERTIES        READONLY stockName = name(st)
+    PROPERTIES(c, st) inCommitteeEmployeeDivision, isDefaultRepricingCommitteeStock
+    ORDER BY          stockName
+    FILTERS           (st == ts AND sg IS stockGroup) OR (isParentStockGroupStock(sg, st) AND NOT ts)
+
+
+    OBJECTS e=employee
+    PROPERTIES(e)      READONLY name, userFirstName, userLastName, namePositionEmployee
+    PROPERTIES(e)      ADDSESSIONFORM, EDITSESSIONFORM, delete
+
+    PROPERTIES(c, e)   inCommitteeEmployee
+    FILTERS            countDivisionEmployeeCommittee (e, c)
+    FILTERGROUP filters6
+        FILTER 'Показывать только членов комиссии' 'F10' inCommitteeEmployee(c, e)
+
+    FILTERGROUP filters5
+        FILTER 'Показывать отделы только для данной комиссии' 'F9' inCommitteeEmployeeDivision(c, st)
+
+    EDIT repricingCommittee OBJECT c
+;
+
+DESIGN repricingCommittee FROM DEFAULT {
+    main {
+        preferredSize = (1024, 768);
+
+        NEW OneCase BEFORE e.box {
+            ADD PROPERTY (nameChairmanCommittee);
+        }
+
+        NEW caseOne BEFORE OneCase {
+            childConstraints = TO THE RIGHT;
+            title = 'Отделы, для которых действуют комиссии';
+
+            ADD stockTree.tree {
+                fillHorizontal = 1;
+            }
+
+            ADD st.box {
+                fillHorizontal = 2;
+            }
+        };
+    }
+}
+
+FORM repricingCommitteeDialog 'Комиссии переоценки'
+    OBJECTS rc=repricingCommittee
+    PROPERTIES(rc)      READONLY name, nameEmployeeDivisionCommittee, nameEmployeeCommittee, nameChairmanCommittee
+    PROPERTIES(rc)      ADDFORM, EDITFORM
+
+    DIALOG repricingCommittee OBJECT rc
+;
+
+// ----------------------------------- Макрос для задания комиссии для документов ------------------------------------------ //
+
+
+META defineDocumentHeaderRepricingCommittee(object)
+    numberDisposal###object '№ распоряжения на переоценку' (object) = DATA STRING[30] (object) IN documentPrmGroup;
+
+    repricingCommittee###object (object) = DATA repricingCommittee(object) IN idGroup;
+    nameRepricingCommittee###object 'Комиссия переоценки' (object) = commonName(repricingCommittee###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
+    repricingCommittee###object (object) <- repricingCommitteeStock(stock###object(object))
+        WHEN ASSIGNED(object IS object);
+
+    inCommittee###object##Employee (object, employee) = inCommitteeEmployee(repricingCommittee###object (object), employee);
+    commonNameEmployeeCommittee###object 'Сотрудники комиссии' (object) = namePositionEmployeeCommittee(repricingCommittee###object (object));
+    commonNameChairman###object 'Председатель комиссии' (object) = nameChairmanCommittee(repricingCommittee###object (object));
+    namePositionChairman###object 'Должность' (object) = namePositionChairmanCommittee(repricingCommittee###object (object));
+
+
+END
+META defineDocumentHeaderAbstractRepricingCommittee(object)
+    numberDisposal###object '№ распоряжения на переоценку' (object) = ABSTRACT STRING[30] (object) IN documentPrmGroup;
+    repricingCommittee###object (object) = ABSTRACT repricingCommittee(object) IN idGroup;
+    nameRepricingCommittee###object 'Комиссия переоценки' (object) = commonName(repricingCommittee###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
+
+    inCommittee###object##Employee (object, employee) = inCommitteeEmployee(repricingCommittee###object (object), employee);
+    commonNameEmployeeCommittee###object 'Сотрудники комиссии' (object) = namePositionEmployeeCommittee(repricingCommittee###object (object));
+    commonNameChairman###object 'Председатель комиссии' (object) = nameChairmanCommittee(repricingCommittee###object (object));
+    namePositionChairman###object 'Должность' (object) = namePositionChairmanCommittee(repricingCommittee###object (object));
+END
+
+META defineDocumentInterfaceHeaderRepricingCommittee (object)
+    @defineDocumentHeaderAbstractRepricingCommittee (object);
+    @defineDocumentHeaderRepricingCommittee (user###object);
+    repricingCommittee###object (object) += repricingCommittee###user###object(object);
+    numberDisposal###object (object) += numberDisposal###user###object(object);
+END
+
+//----------------------------------------------- Переоценка ---------------------------------------------------//
+
+CLASS ABSTRACT repricing 'Акт переоценки';
+CLASS ABSTRACT repricingDetail 'Строка акта переоценки';
+
+CLASS userRepricing 'Акт переоценки (польз.)' : repricing, historyObject, numeratedDocument;
+CLASS userRepricingDetail 'Строка акта переоценки (польз.)' : repricingDetail;
+CLASS userRepricingPosted 'Закрытый акт переоценки (польз.)' : userRepricing, postedObject;
+
+@defineDocumentInterface(repricing);
+
+@defineDocumentInterfaceNumber(repricing);
+
+@defineDocumentInterfaceDataStock(repricing, stock, 'Склад');
+@defineDocumentInterfacePosted(repricing);
+
+@defineDocumentInterfaceDescription(repricing, 'Акт переоценки');
+
+@defineDocumentInterfaceCurrency(repricing);
+@deriveDocumentCurrency(userRepricing, stock);
+
+@defineDocumentInterfaceDetailSku(repricing, sku);
+
+@defineDocumentInterfaceDetailQuantity(repricing);
+
+@defineDocumentInterfaceDetailPricePrefix(repricing, cur, ' поставщика до');
+@defineDocumentInterfaceDetailDataSumPrefix (repricing, cur, ' поставщика до');
+@deriveDocumentDetailSumPrefix(userRepricing, cur, currency);
+
+@defineDocumentInterfaceDetailPricePrefix(repricing, , ' поставщика после');
+@defineDocumentInterfaceDetailDataSumPrefix (repricing, , ' поставщика после');
+@deriveDocumentDetailSumPrefix(userRepricing, , currency);
+
+@defineDocumentInterfaceDetailPricePrefix(repricing, curRetail, ' розничная до');
+@defineDocumentInterfaceDetailDataSumPrefix (repricing, curRetail, ' розничная до');
+@deriveDocumentDetailSumPrefix(userRepricing, curRetail, currency);
+
+@defineDocumentInterfaceDetailPricePrefix(repricing, retail, ' розничная после');
+@defineDocumentInterfaceDetailDataSumPrefix (repricing, retail, ' розничная после');
+@deriveDocumentDetailSumPrefix(userRepricing, retail, currency);
+
+@defineDocumentInterfaceHeaderQuantity(repricing);
+@defineDocumentHeaderSkuQuantity(repricing, sku);
+@defineDocumentHeaderSkuQuantity(userRepricing, sku);
+
+@defineDocumentInterfaceDetailVATPrefix(repricing, cur, countryStock, ' до');
+@deriveDocumentDetailValueVATPrefix(userRepricing, cur);
+
+@defineDocumentInterfaceDetailVATPrefix(repricing, , countryStock, ' после');
+@deriveDocumentDetailValueVATPrefix(userRepricing, );
+
+@defineDocumentInterfaceDetailMarkupPrefix (repricing, cur, ' до');
+@defineDocumentInterfaceDetailMarkupPrefix (repricing, , ' после');
+
+@defineDocumentInterfaceDetailVATDataSumPrefix (repricing, cur, ' до');
+@deriveDocumentDetailReverseVATSumPrefix(userRepricing, cur, curRetail);
+
+@defineDocumentInterfaceDetailVATDataSumPrefix (repricing, , ' после');
+@deriveDocumentDetailReverseVATSumPrefix(userRepricing, , retail);
+
+@defineDocumentInterfaceDetailMarkupSumPrefix (repricing, cur, ' до');
+@deriveDocumentDetailMarkupSumPrefix(userRepricing, cur, curRetail, cur);
+
+@defineDocumentInterfaceDetailMarkupSumPrefix (repricing, , ' после');
+@deriveDocumentDetailMarkupSumPrefix(userRepricing, , retail, );
+
+@defineDocumentInterfaceDetailDiffSumPrefix (repricing, sum, , cur, ' изменения поставщика ');
+@defineDocumentInterfaceDetailDiffSumPrefix (repricing, markupSum, , cur, ' изменения надбавки');
+@defineDocumentInterfaceDetailDiffSumPrefix (repricing, VATSum, , cur, ' изменения НДС');
+@defineDocumentInterfaceDetailDiffSumPrefix (repricing, retailSum, , cur, ' изменения розничной');
+
+@defineDocumentInterfaceHeaderSumPrefix (repricing, cur, ' поставщика  до');
+@defineDocumentInterfaceHeaderSumPrefix (repricing, curMarkup, ' надбавки до');
+@defineDocumentInterfaceHeaderSumPrefix (repricing, curVAT, ' НДС до');
+@defineDocumentInterfaceHeaderSumPrefix (repricing, curRetail, ' розничная до');
+
+@defineDocumentInterfaceHeaderSumPrefix (repricing, , ' поставщика после');
+@defineDocumentInterfaceHeaderSumPrefix (repricing, markup, ' надбавки после');
+@defineDocumentInterfaceHeaderSumPrefix (repricing, VAT, ' НДС после');
+@defineDocumentInterfaceHeaderSumPrefix (repricing, retail, ' розничная после');
+
+@defineDocumentInterfaceHeaderSumPrefix (repricing, diff, ' изменения поставщика');
+@defineDocumentInterfaceHeaderSumPrefix (repricing, diffMarkup, ' изменения надбавки');
+@defineDocumentInterfaceHeaderSumPrefix (repricing, diffVAT, ' изменения НДС');
+@defineDocumentInterfaceHeaderSumPrefix (repricing, diffRetail, ' изменения розничной');
+
+@defineAddDetailDialogSkuStock(userRepricing, sku, stock, dialogSku);
+@defineAddDetailDialogBarcode(userRepricing, sku);
+@defineAddDetailDialogTerminal(userRepricing, sku);
+@defineDocumentInterfaceHeaderRepricingCommittee (repricing);
+
+//------------------------------------ Печатные формы акт расценки ------------------------------------------------ //
+nameStockGroupRepricing 'Магазин' (repricing) = nameStockGroupStock(stockRepricing(repricing));
+
+FORM repricing 'Акт переоценки (печать)' PRINT
+
+    OBJECTS p = repricing FIXED PANEL
+    PROPERTIES (p)  SELECTOR objectClassName
+
+    PROPERTIES (p) numberRepricing, seriesRepricing, dateRepricing, timeRepricing, nameStockGroupRepricing,
+               nameStockRepricing, countRepricingDetailRepricing, quantityRepricingDetailRepricing, nameCompanyRepricing,
+               curSumRepricingDetailRepricing, curMarkupSumRepricingDetailRepricing, curVATSumRepricingDetailRepricing,
+               curRetailSumRepricingDetailRepricing,
+               sumRepricingDetailRepricing, markupSumRepricingDetailRepricing, VATSumRepricingDetailRepricing,
+               retailSumRepricingDetailRepricing,
+               diffSumRepricingDetailRepricing, diffMarkupSumRepricingDetailRepricing, diffVATSumRepricingDetailRepricing,
+               diffRetailSumRepricingDetailRepricing,
+               noteRepricing, numberDisposalRepricing, repricingCommitteeRepricing, nameRepricingCommitteeRepricing,
+               commonNameChairmanRepricing, namePositionChairmanRepricing, commonNameEmployeeCommitteeRepricing
+
+
+    OBJECTS d = repricingDetail
+    PROPERTIES (d)  indexRepricingDetail, idBarcodeSkuRepricingDetail, nameSkuRepricingDetail, shortNameUOMSkuRepricingDetail, quantityRepricingDetail,
+               curPriceRepricingDetail, curSumRepricingDetail,
+               curMarkupRepricingDetail, curMarkupSumRepricingDetail,
+               numberCurVATRepricingDetail, valueCurVATRepricingDetail, curVATSumRepricingDetail,
+               curRetailPriceRepricingDetail, curRetailSumRepricingDetail,
+               priceRepricingDetail, sumRepricingDetail,
+               markupRepricingDetail, markupSumRepricingDetail,
+               numberVATRepricingDetail, valueVATRepricingDetail, VATSumRepricingDetail,
+               retailPriceRepricingDetail, retailSumRepricingDetail,
+               diffSumRepricingDetail, diffMarkupSumRepricingDetail, diffVATSumRepricingDetail,
+               diffRetailSumRepricingDetail
+
+    OBJECTS e=employee
+    PROPERTIES(e) READONLY   commonName, namePositionEmployee
+
+    FILTERS    repricingRepricingDetail(d) == p,
+               inCommitteeRepricingEmployee(p, e)
+
+;
+
+printRepricing 'Акт переоценки' (repricing) = ACTION FORM repricing OBJECTS p IMAGE 'print.png' IN printGroup;
+
+// --------------------------- Формы --------------------------------- //
+    
+FORM userRepricing 'Акт переоценки'
+    OBJECTS p=userRepricing FIXED PANEL
+    PROPERTIES (p) objectClassName, nameNumeratorObject, numberObject, seriesObject,
+                   dateUserRepricing, timeUserRepricing, nameStockUserRepricing,
+                   diffSumUserRepricingDetailUserRepricing, diffMarkupSumUserRepricingDetailUserRepricing, diffVATSumUserRepricingDetailUserRepricing,
+                   diffRetailSumUserRepricingDetailUserRepricing,
+                   noteUserRepricing, numberDisposalUserRepricing, nameRepricingCommitteeUserRepricing
+
+    OBJECTS d=userRepricingDetail
+    PROPERTIES (d) indexUserRepricingDetail, idBarcodeSkuUserRepricingDetail, nameSkuUserRepricingDetail, shortNameUOMSkuUserRepricingDetail, quantityUserRepricingDetail,
+
+                   curPriceUserRepricingDetail, curSumUserRepricingDetail,                    
+                   curMarkupUserRepricingDetail, curMarkupSumUserRepricingDetail,
+                   numberCurVATUserRepricingDetail, valueCurVATUserRepricingDetail, curVATSumUserRepricingDetail,
+                   curRetailPriceUserRepricingDetail, curRetailSumUserRepricingDetail,
+                   
+                   priceUserRepricingDetail, sumUserRepricingDetail,                    
+                   markupUserRepricingDetail, markupSumUserRepricingDetail,
+                   numberVATUserRepricingDetail, valueVATUserRepricingDetail, VATSumUserRepricingDetail,
+                   retailPriceUserRepricingDetail, retailSumUserRepricingDetail, ADDOBJ, delete         
+
+//    PROPERTIES dialogAddPercMarkupUserRepricing(p) TODRAW d SHOWIF toShowMarkupUserRepricing(p),
+//               dialogAddPercDiscountUserRepricing(p) TODRAW d SHOWIF toShowDiscountUserRepricing(p)
+
+    PROPERTIES(p) TODRAW d addDetailDialogSkuStockUserRepricingDetailUserRepricing, addDetailDialogTerminalUserRepricingDetailUserRepricing,
+                           addDetailInputBarcodeUserRepricingDetailUserRepricing, deleteUserRepricingDetailUserRepricing
+
+    FILTERS userRepricingUserRepricingDetail(d)==p
+
+    EVENTS
+        ON OK EXEC prePostUserRepricing(p)
+
+    EDIT userRepricing OBJECT p
+;
+
+DESIGN userRepricing FROM DEFAULT {
+    main {
+        preferredSize = (1024, 768);
+
+        NEW header.box BEFORE d.box {
+            childConstraints = TO THE RIGHT;
+
+            NEW headerCol1 {
+                childConstraints = TO THE BOTTOM;
+                ADD p.documentHeaderGroup {
+                    childConstraints = TO THE RIGHT;
+                    ADD PROPERTY(objectClassName);
+                    ADD PROPERTY(nameStockUserRepricing);
+                    ADD PROPERTY(nameNumeratorObject);
+                    ADD PROPERTY(numberObject);
+                    ADD PROPERTY(seriesObject);
+                    ADD PROPERTY(dateUserRepricing);
+                    ADD PROPERTY(timeUserRepricing);
+                }
+                ADD p.documentPrmGroup {
+                    childConstraints = TO THE RIGHT;
+                }
+            }
+
+            ADD p.documentSumGroup {
+                childConstraints = TO THE BOTTOM;
+            }
+        }
+
+        PROPERTY(priceUserRepricingDetail) { background = #FFFFCC; }
+        PROPERTY(sumUserRepricingDetail) { background = #FFFFCC; }
+        PROPERTY(markupUserRepricingDetail) { background = #FFFFCC; }
+        PROPERTY(markupSumUserRepricingDetail) { background = #FFFFCC; }
+        PROPERTY(numberVATUserRepricingDetail) { background = #FFFFCC; }
+        PROPERTY(valueVATUserRepricingDetail) { background = #FFFFCC; }
+        PROPERTY(VATSumUserRepricingDetail) { background = #FFFFCC; }
+        PROPERTY(retailPriceUserRepricingDetail) { background = #FFFFCC; }
+        PROPERTY(retailSumUserRepricingDetail) { background = #FFFFCC; }
+
+        PROPERTY(formOkAction) {
+            caption = 'Провести';
+        }
+    }
+}
+
+addUserRepricing 'Добавить' = ACTION ADDFORM userRepricing;
+editUserRepricing 'Редактировать' (userRepricing) = ACTION EDITFORM userRepricing;
+
+FORM repricings 'Акты переоценки' TITLE 'Акты переоценки'
+    OBJECTS p = repricing
+    PROPERTIES (p) READONLY isPostedRepricing FORCE GRID, objectClassName, numberRepricing, seriesRepricing, dateRepricing, timeRepricing,
+               nameStockRepricing, countRepricingDetailRepricing,
+               diffSumRepricingDetailRepricing, diffMarkupSumRepricingDetailRepricing, diffVATSumRepricingDetailRepricing,
+               diffRetailSumRepricingDetailRepricing,
+               noteRepricing, numberDisposalRepricing, nameRepricingCommitteeRepricing
+
+    PROPERTIES (p) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
+
+    PROPERTIES ()  addUserRepricing TODRAW p
+    PROPERTIES (p) editUserRepricing
+    PROPERTIES (p) delete FORCE PANEL DRAWTOTOOLBAR SHOWIF isUserRepricing(p)
+    PROPERTIES (p) printRepricing FORCE PANEL
+
+    OBJECTS d = repricingDetail
+    PROPERTIES (d) READONLY indexRepricingDetail, idBarcodeSkuRepricingDetail, nameSkuRepricingDetail, shortNameUOMSkuRepricingDetail, quantityRepricingDetail,
+
+               curPriceRepricingDetail, curSumRepricingDetail,
+               curMarkupRepricingDetail, curMarkupSumRepricingDetail,
+               numberCurVATRepricingDetail, valueCurVATRepricingDetail, curVATSumRepricingDetail,
+               curRetailPriceRepricingDetail, curRetailSumRepricingDetail,
+
+               priceRepricingDetail, sumRepricingDetail,
+               markupRepricingDetail, markupSumRepricingDetail,
+               numberVATRepricingDetail, valueVATRepricingDetail, VATSumRepricingDetail,
+               retailPriceRepricingDetail, retailSumRepricingDetail
+
+    FILTERS repricingRepricingDetail(d) == p
+
+    DIALOG repricing OBJECT p
+;
+DESIGN repricings FROM DEFAULT {
+    PROPERTY (delete(p)) {
+        askConfirm = TRUE;
+    }
+
+    NEW documentContainer BEFORE functions.box {
+        type = SPLITV;
+        childConstraints = TO THE BOTTOM;
+
+        ADD p.box;
+
+        NEW documentDetail {
+            type = TABBED;
+
+            ADD d.box {
+                title = 'Спецификация';
+            }
+            NEW documentHistory {
+                title = 'История';
+
+                ADD p.historyGroup;
+                ADD p.postedGroup;
+            }
+            NEW printTab {
+                title = 'Печатные формы';
+                NEW printContainer {
+                    title = 'Печать';
+                    childConstraints = TO THE BOTTOM;
+                    fillVertical = 1.0; // todo : иначе кнопка не всегда показывается, нужно будет пофиксить как-нибудь
+                        ADD p.printGroup;
+                }
+            }
+        }
+    }
+}
+
+

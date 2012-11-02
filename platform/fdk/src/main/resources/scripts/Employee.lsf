@@ -128,6 +128,14 @@ META defineCommitteeEmployee (committee, prefix, caption)
         CHECKED BY prefix##Committee MESSAGE '\''##caption##'\' не входит в выбранные подразделения';
 END
 
+META defineCommitteeEmployeePrefix (committee, prefix, caption)
+    prefix###committee = DATA employee (committee);
+    name###prefix###committee caption (committee) = commonName(prefix###committee(committee)) IN recognizeGroup;
+    namePosition###prefix###committee caption (committee) = namePositionEmployee(prefix###committee(committee));
+    CONSTRAINT prefix###committee(committee) AND NOT countDivisionEmployeeCommittee(prefix###committee(committee), committee)
+        CHECKED BY prefix###committee MESSAGE '\''##caption##'\' не входит в выбранные подразделения';
+END
+
 CLASS ABSTRACT committee 'Комиссия' : named;
 TABLE committee (committee);
 
