@@ -4932,6 +4932,7 @@ public class RomanLogicsModule extends LogicsModule {
                                                 objList, objArticle, objColorSupplier, objSizeSupplier);
 
             addPropertyDraw(quantityListSku, (box ? objSupplierBox : objInvoice), objItem);
+            addPropertyDraw(quantityListSku, (box ? objSupplierBox : objInvoice), objArticle);
             addPropertyDraw(priceDocumentSku, objInvoice, objItem);
             addPropertyDraw(priceRateDocumentSku, objInvoice, objItem);
             addPropertyDraw(orderedInvoiceSku, objInvoice, objItem);
@@ -4940,15 +4941,15 @@ public class RomanLogicsModule extends LogicsModule {
 
             if (box)
                 addFixedFilter(new CompareFilterEntity(addPropertyObject(boxInvoiceSupplierBox, objSupplierBox), Compare.EQUALS, objInvoice));
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierArticle, objArticle), Compare.EQUALS, addPropertyObject(supplierDocument, objInvoice)));
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierColorSupplier, objColorSupplier), Compare.EQUALS, addPropertyObject(supplierDocument, objInvoice)));
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierSizeSupplier, objSizeSupplier), Compare.EQUALS, addPropertyObject(supplierDocument, objInvoice)));
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(articleCompositeItem, objItem), Compare.EQUALS, objArticle));
-            //addFixedFilter(new NotNullFilterEntity(addPropertyObject(numberListArticle, (box ? objSupplierBox : objInvoice), objArticle)));
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(numberListArticle, (box ? objSupplierBox : objInvoice), objArticle), Compare.GREATER, addPropertyObject(baseLM.vzero)));
+                addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierArticle, objArticle), Compare.EQUALS, addPropertyObject(supplierDocument, objInvoice)));
+                addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierColorSupplier, objColorSupplier), Compare.EQUALS, addPropertyObject(supplierDocument, objInvoice)));
+                addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierSizeSupplier, objSizeSupplier), Compare.EQUALS, addPropertyObject(supplierDocument, objInvoice)));
+                addFixedFilter(new CompareFilterEntity(addPropertyObject(articleCompositeItem, objItem), Compare.EQUALS, objArticle));
+                //addFixedFilter(new NotNullFilterEntity(addPropertyObject(numberListArticle, (box ? objSupplierBox : objInvoice), objArticle)));
+                addFixedFilter(new CompareFilterEntity(addPropertyObject(numberListArticle, (box ? objSupplierBox : objInvoice), objArticle), Compare.GREATER, addPropertyObject(baseLM.vzero)));
 
-//            addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierSizeGroup, objGroupSizeSupplier), Compare.EQUALS, addPropertyObject(supplierDocument, objInvoice)));
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(groupSizeSupplier, objSizeSupplier), Compare.EQUALS, addPropertyObject(sizeGroupSupplierArticle, objArticle)));
+    //            addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierSizeGroup, objGroupSizeSupplier), Compare.EQUALS, addPropertyObject(supplierDocument, objInvoice)));
+                addFixedFilter(new CompareFilterEntity(addPropertyObject(groupSizeSupplier, objSizeSupplier), Compare.EQUALS, addPropertyObject(sizeGroupSupplierArticle, objArticle)));
 
 /*            RegularFilterGroupEntity filterGroupSize = new RegularFilterGroupEntity(genID());
             filterGroupSize.addFilter(new RegularFilterEntity(genID(),
