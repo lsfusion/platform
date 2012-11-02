@@ -5,7 +5,8 @@ REQUIRE System,
         Utils,
         LegalEntity,
         Stock,
-        Contract;
+        Contract,
+        Agreement;
 
 CLASS supplier 'Поставщик' : legalEntity;
 TABLE supplier (supplier);
@@ -137,6 +138,14 @@ FORM supplier 'Поставщик'
     FILTERS supplierContractSkuSupplier(c) == s,
             companyContractSkuSupplier(c) == co
 
+    OBJECTS ag=agreement
+    PROPERTIES(ag, s) isDefaultAgreementLegalEntity, inAgreementLegalEntityOver
+    PROPERTIES(ag) READONLY name, numberObject, seriesObject, dateAgreement, timeAgreement,
+                            fromDateAgreement, fromTimeAgreement, toDateAgreement, toTimeAgreement,
+                            nameCurrencyAgreement, namePriceListTypeAgreement, noteAgreement
+    PROPERTIES(s) addAgreementsLegalEntity TODRAW ag FORCE PANEL DRAWTOTOOLBAR
+    FILTERS inAgreementLegalEntityOver(ag, s)
+
     OBJECTS l=license
     PROPERTIES(l) numberLicense, dateFromLicense, dateToLicense, ADDOBJ, delete
     FILTERS legalEntityLicense(l) == s
@@ -196,6 +205,9 @@ DESIGN supplier FROM DEFAULT {
                 ADD c.box {
                     fillHorizontal = 3;
                 }
+            }
+            ADD ag.box{
+                caption = 'Соглашения';
             }
 
             ADD l.box;

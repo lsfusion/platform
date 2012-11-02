@@ -126,6 +126,44 @@ META deriveDocumentDetailPriceListTypeAgreement (object)
     @deriveDocumentDetailPriceListTypeAgreementCustom(object, object###detail);
 END
 
+userDefaultAgreementLegalEntity = DATA agreement (legalEntity);
+userDefaultAgreementLegalEntity(legalEntity) => inAgreementLegalEntityOver(userDefaultAgreementLegalEntity(legalEntity), legalEntity) RESOLVE FALSE;
+
+calcDefaultAgreementLegalEntity(legalEntity) = GROUP MAX agreement IF inAgreementLegalEntityOver(agreement, legalEntity) BY legalEntity;
+
+defaultAgreementLegalEntity(legalEntity) = UNION OVERRIDE calcDefaultAgreementLegalEntity(legalEntity), userDefaultAgreementLegalEntity(legalEntity) PERSISTENT;
+nameDefaultAgreementLegalEntity 'Соглашение по умолчанию' (legalEntity) = name(defaultAgreementLegalEntity(legalEntity));
+
+isDefaultAgreementLegalEntity 'Соглашение по умолчанию' (agreement, legalEntity) = defaultAgreementLegalEntity(legalEntity) == agreement;
+
+FORM agreementsLegalEntity 'Соглашения'
+
+    OBJECTS l=legalEntity FIXED PANEL
+    PROPERTIES(l) nameDefaultAgreementLegalEntity
+
+    OBJECTS ag=agreement
+    PROPERTIES(ag) READONLY name, numberObject, seriesObject, dateAgreement, timeAgreement,
+                            fromDateAgreement, fromTimeAgreement, toDateAgreement, toTimeAgreement,
+                            nameCurrencyAgreement, namePriceListTypeAgreement, noteAgreement
+    PROPERTIES inAgreementLegalEntityOver(ag, l)
+;
+
+DESIGN agreementsLegalEntity FROM DEFAULT{
+    NEW mainContainer{
+        REMOVE l.box;
+        ADD ag.box;
+    }
+    ADD functions.box;
+}
+
+addAgreementsLegalEntity 'Добавление соглашений' = ACTION (legalEntity) {
+
+    FORM agreementsLegalEntity OBJECTS l=legalEntity MODAL;
+    IF formResult() == formResult.ok THEN {
+        EXEC apply();
+    }
+} TOOLBAR;
+
 FORM agreement 'Соглашение'
 
     OBJECTS a = agreement FIXED PANEL
@@ -152,7 +190,7 @@ FORM agreement 'Соглашение'
     ORDER BY name(g)
 
     OBJECTS pg = priceGroup
-    PROPERTIES(pg) READONLY name
+    PROPERTIES(pg) READONLY canonicalNamePriceGroup
     PROPERTIES(a, pg) namePriceListTypeAgreementPriceGroup
     FILTERS isParentPriceGroupPriceGroup(pg, g)
 

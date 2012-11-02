@@ -5,7 +5,8 @@ REQUIRE System,
         Utils,
         LegalEntity,
         Stock,
-        Contract;
+        Contract,
+        Agreement;
 
 
 // ---------------------------------------- Договоры ------------------------------------ //
@@ -86,7 +87,8 @@ FORM contractsSkuCustomer 'Договора'
 
 FORM customer 'Оптовый покупатель'
     OBJECTS cu=customer FIXED PANEL
-    PROPERTIES(cu) name, nameCustomerGroupCustomer, nameOwnershipLegalEntity, shortNameOwnershipLegalEntity, fullNameLegalEntity,
+    PROPERTIES(cu) name, nameCustomerGroupCustomer, nameOwnershipLegalEntity,
+                   shortNameOwnershipLegalEntity, fullNameLegalEntity,
                    addressLegalEntity ON CHANGE EXEC dialogAddressLegalEntity(cu),
                    postAddressLegalEntity ON CHANGE EXEC dialogPostAddressLegalEntity(cu),
                    managerLegalEntity ON CHANGE EXEC dialogManagerLegalEntity(cu),
@@ -108,6 +110,14 @@ FORM customer 'Оптовый покупатель'
     PROPERTIES(c)  ADDFORM, EDITFORM, delete
     FILTERS companyContractSkuCustomer(c) == co,
             customerContractSkuCustomer(c) == cu
+
+    OBJECTS ag=agreement
+    PROPERTIES(ag, cu) isDefaultAgreementLegalEntity, inAgreementLegalEntityOver
+    PROPERTIES(ag) READONLY name, numberObject, seriesObject, dateAgreement, timeAgreement,
+                            fromDateAgreement, fromTimeAgreement, toDateAgreement, toTimeAgreement,
+                            nameCurrencyAgreement, namePriceListTypeAgreement, noteAgreement
+    PROPERTIES(cu) addAgreementsLegalEntity TODRAW ag FORCE PANEL DRAWTOTOOLBAR
+    FILTERS inAgreementLegalEntityOver(ag, cu)
 
     FILTERGROUP filters
         FILTER 'Есть договор' 'F10' countContractPartyAPartyB(co, cu) DEFAULT
@@ -148,6 +158,9 @@ DESIGN customer FROM DEFAULT {
                     fillHorizontal = 2;
                     c.grid { defaultComponent = TRUE; }
                 }
+            }
+            ADD ag.box{
+                caption = 'Соглашения';
             }
        }
    }
