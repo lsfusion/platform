@@ -1,5 +1,6 @@
 package platform.server.logics;
 
+import net.sf.jasperreports.engine.type.SplitTypeEnum;
 import org.apache.log4j.Logger;
 import platform.base.identity.DefaultIDGenerator;
 import platform.base.identity.IDGenerator;
@@ -45,6 +46,7 @@ import platform.server.logics.table.TableFactory;
 import platform.server.session.DataSession;
 
 import javax.swing.*;
+import javax.swing.plaf.basic.BasicBorders;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.sql.SQLException;
@@ -85,6 +87,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public ConcreteCustomClass notification;
     public ConcreteCustomClass scheduledTask;
     public ConcreteCustomClass scheduledTaskLog;
+    public ConcreteCustomClass scheduledClientTaskLog;
     public AbstractCustomClass exception;
     public ConcreteCustomClass clientException;
     public ConcreteCustomClass serverException;
@@ -416,6 +419,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP dateStartScheduledTaskLog;
     public LCP dateFinishScheduledTaskLog;
     public LCP scheduledTaskScheduledTaskLog;
+    public LCP currentScheduledTaskLogScheduledTask;
+    public LCP messageScheduledClientTaskLog;
+    public LCP scheduledTaskLogScheduledClientTaskLog;
     public LCP permitViewUserRoleProperty;
     public LCP permitViewUserProperty;
     public LCP forbidViewUserRoleProperty;
@@ -515,6 +521,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     private LAP recalculateFollowsAction;
     private LAP analyzeDBAction;
     private LAP packAction;
+    private LAP serviceDBAction;
 
     public SelectionPropertySet selection;
     protected CompositeNamePropertySet compositeName;
@@ -632,6 +639,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         notification = addConcreteClass("notification", getString("logics.notification"), baseClass);
         scheduledTask = addConcreteClass("scheduledTask", getString("logics.scheduled.task"), baseClass);
         scheduledTaskLog = addConcreteClass("scheduledTaskLog", getString("logics.scheduled.task.log"), baseClass);
+        scheduledClientTaskLog = addConcreteClass("scheduledClientTaskLog", getString("logics.scheduled.task.log.client"), baseClass);
         exception = addAbstractClass("exception", getString("logics.exception"), baseClass);
         clientException = addConcreteClass("clientException", getString("logics.exception.client"), exception);
         serverException = addConcreteClass("serverException", getString("logics.exception.server"), exception);
@@ -1026,11 +1034,12 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         runGarbageCollector = addGarbageCollectorActionProp();
         cancelRestartServerAction = addIfAProp(getString("logics.server.cancel.stop"), isServerRestarting, addCancelRestartActionProp());
 
-        checkAggregationsAction = addProperty(null, new LAP(new CheckAggregationsActionProperty(genSID(), getString("logics.check.aggregations"))));
-        recalculateAction = addProperty(null, new LAP(new RecalculateActionProperty(genSID(), getString("logics.recalculate.aggregations"))));
-        recalculateFollowsAction = addProperty(null, new LAP(new RecalculateFollowsActionProperty(genSID(), getString("logics.recalculate.follows"))));
-        analyzeDBAction = addProperty(null, new LAP(new AnalyzeDBActionProperty(genSID(), getString("logics.vacuum.analyze"))));
-        packAction = addProperty(null, new LAP(new PackActionProperty(genSID(), getString("logics.tables.pack"))));
+        checkAggregationsAction = addProperty(null, new LAP(new CheckAggregationsActionProperty("checkAggregationsAction", getString("logics.check.aggregations"))));
+        recalculateAction = addProperty(null, new LAP(new RecalculateActionProperty("recalculateAction", getString("logics.recalculate.aggregations"))));
+        recalculateFollowsAction = addProperty(null, new LAP(new RecalculateFollowsActionProperty("recalculateFollowsAction", getString("logics.recalculate.follows"))));
+        analyzeDBAction = addProperty(null, new LAP(new AnalyzeDBActionProperty("analyzeDBAction", getString("logics.vacuum.analyze"))));
+        packAction = addProperty(null, new LAP(new PackActionProperty("packAction", getString("logics.tables.pack"))));
+        serviceDBAction = addProperty(null, new LAP(new ServiceDBActionProperty("serviceDBAction", getString("logics.service.db"))));
 
         currentUserName = addJProp("currentUserName", getString("logics.user.current.user.name"), name, currentUser);
 
@@ -1136,6 +1145,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         dateStartScheduledTaskLog = addDProp(baseGroup, "dateStartScheduledTaskLog", getString("logics.scheduled.task.date.start"), DateTimeClass.instance, scheduledTaskLog);
         dateFinishScheduledTaskLog = addDProp(baseGroup, "dateFinishScheduledTaskLog", getString("logics.scheduled.task.date.finish"), DateTimeClass.instance, scheduledTaskLog);
         scheduledTaskScheduledTaskLog = addDProp(baseGroup, "scheduledTaskScheduledTaskLog", getString("logics.scheduled.task"), scheduledTask, scheduledTaskLog);
+        currentScheduledTaskLogScheduledTask = addDProp(baseGroup, "currentScheduledTaskLogScheduledTask", getString("logics.scheduled.task.log.current"), IntegerClass.instance, scheduledTask);
+        scheduledTaskLogScheduledClientTaskLog = addDProp(baseGroup, "scheduledTaskLogScheduledClientTaskLog", getString("logics.scheduled.task.log"), scheduledTaskLog, scheduledClientTaskLog);
+        messageScheduledClientTaskLog = addDProp(baseGroup, "messageScheduledClientTaskLog", getString("logics.scheduled.task.log.message"), StringClass.get(200), scheduledClientTaskLog);
         
         permitViewUserRoleProperty = addDProp(baseGroup, "permitViewUserRoleProperty", getString("logics.policy.permit.property.view"), LogicalClass.instance, userRole, property);
         permitViewUserProperty = addJProp(baseGroup, "permitViewUserProperty", getString("logics.policy.permit.property.view"), permitViewUserRoleProperty, userMainRole, 1, 2);
@@ -1816,6 +1828,34 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
     }
 
+    private class ServiceDBActionProperty extends AdminActionProperty {
+        private ServiceDBActionProperty(String sID, String caption) {
+            super(sID, caption, new ValueClass[]{});
+        }
+
+        @Override
+        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
+            SQLSession sqlSession = context.getSession().sql;
+
+            sqlSession.startTransaction();
+            BL.recalculateAggregations(sqlSession, BL.getAggregateStoredProperties());
+            sqlSession.commitTransaction();
+
+            BL.recalculateFollows(context.getSession());
+
+            sqlSession.startTransaction();
+            BL.packTables(sqlSession, tableFactory.getImplementTables());
+            sqlSession.commitTransaction();
+
+            BL.analyzeDB(sqlSession);
+
+            BL.recalculateStats(context.getSession());
+            context.getSession().apply(BL);
+
+            context.delayUserInterfaction(new MessageClientAction(getString("logics.service.db.completed"), getString("logics.service.db")));
+        }
+    }
+    
     private class RecalculateStatsActionProperty extends AdminActionProperty {
         private RecalculateStatsActionProperty(String sID, String caption) {
             super(sID, caption, new ValueClass[]{});
@@ -2237,6 +2277,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         private ObjectEntity objScheduledTask;
         private ObjectEntity objProperty;
         private ObjectEntity objScheduledTaskLog;
+        private ObjectEntity objScheduledClientTaskLog;
 
         public ScheduledTaskFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, getString("logics.scheduled.task.tasks"));
@@ -2244,17 +2285,23 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             objScheduledTask = addSingleGroupObject(scheduledTask, getString("logics.scheduled.task"));
             objProperty = addSingleGroupObject(property, getString("logics.property.properties"));
             objScheduledTaskLog = addSingleGroupObject(scheduledTaskLog, getString("logics.scheduled.task.log"));
+            objScheduledClientTaskLog = addSingleGroupObject(scheduledClientTaskLog, getString("logics.scheduled.task.log.client"));
 
             addPropertyDraw(objScheduledTask, objProperty, inScheduledTaskProperty, activeScheduledTaskProperty, orderScheduledTaskProperty);
             addPropertyDraw(objScheduledTask, activeScheduledTask, nameScheduledTask, startDateScheduledTask, periodScheduledTask, runAtStartScheduledTask);
             addObjectActions(this, objScheduledTask);
             addPropertyDraw(objProperty, captionProperty, SIDProperty, classProperty, returnProperty);
             addPropertyDraw(objScheduledTaskLog, propertyScheduledTaskLog, resultScheduledTaskLog, dateStartScheduledTaskLog, dateFinishScheduledTaskLog);
+            addPropertyDraw(objScheduledClientTaskLog, messageScheduledClientTaskLog);
             setEditType(captionProperty, PropertyEditType.READONLY);
             setEditType(SIDProperty, PropertyEditType.READONLY);
+            setEditType(classProperty, PropertyEditType.READONLY);
+            setEditType(returnProperty, PropertyEditType.READONLY);
             setEditType(objScheduledTaskLog, PropertyEditType.READONLY);
+            setEditType(objScheduledClientTaskLog, PropertyEditType.READONLY);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(scheduledTaskScheduledTaskLog, objScheduledTaskLog), Compare.EQUALS, objScheduledTask));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(scheduledTaskLogScheduledClientTaskLog, objScheduledClientTaskLog), Compare.EQUALS, objScheduledTaskLog));
             RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
             filterGroup.addFilter(
                     new RegularFilterEntity(genID(),
@@ -2269,18 +2316,22 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         public FormView createDefaultRichDesign() {
             DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
 
-            //ContainerView logContainer = design.createContainer(getString("logics.scheduled.task.log"));
-            //textContainer.constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
-            //textContainer.add(design.get(getPropertyDraw(textNotification, objNotification)));
-            //textContainer.constraints.fillHorizontal = 1.0;
-            //textContainer.constraints.fillVertical = 1.0;
-
             ContainerView specContainer = design.createContainer();
-            design.getMainContainer().addAfter(specContainer, design.getGroupObjectContainer(objScheduledTask.groupTo));
-            specContainer.add(design.getGroupObjectContainer(objProperty.groupTo));
-            specContainer.add(design.getGroupObjectContainer(objScheduledTaskLog.groupTo));
-            specContainer.type = ContainerType.TABBED_PANE;
+            ContainerView bottomContainer = design.createContainer();
+            bottomContainer.add(design.getGroupObjectContainer(objProperty.groupTo));
 
+            ContainerView logContainer = design.createContainer("Лог");
+            logContainer.add(design.getGroupObjectContainer(objScheduledTaskLog.groupTo));
+            logContainer.add(design.getGroupObjectContainer(objScheduledClientTaskLog.groupTo));
+
+            bottomContainer.add(logContainer);
+            bottomContainer.type = ContainerType.TABBED_PANE;
+            
+            specContainer.add(design.getGroupObjectContainer(objScheduledTask.groupTo));
+            specContainer.add(bottomContainer);
+            specContainer.type = ContainerType.SPLIT_PANE_VERTICAL;
+
+            design.getMainContainer().add(0, specContainer);
             return design;
         }
     }
@@ -2488,7 +2539,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
             addPropertyDraw(new LP[]{webHost, defaultBackgroundColor,
                     defaultForegroundColor, restartServerAction, cancelRestartServerAction, checkAggregationsAction, recalculateAction,
-                    recalculateFollowsAction, packAction, analyzeDBAction, runGarbageCollector});
+                    recalculateFollowsAction, packAction, analyzeDBAction, serviceDBAction, runGarbageCollector});
         }
     }
 

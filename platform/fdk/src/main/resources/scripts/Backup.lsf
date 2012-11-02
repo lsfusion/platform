@@ -5,10 +5,10 @@ REQUIRE System;
 dumpDirBackupTask 'Директория дампа'= DATA STRING[200] ();
 binPathBackupTask 'Директория установки POSTGRE'= DATA STRING[200] ();
 
-makeBackup 'Сделать Backup'= ACTION CUSTOM 'platform.fdk.actions.BackupActionProperty' TOOLBAR;
-deleteBackup 'Удалить Backup'= ACTION CUSTOM 'platform.fdk.actions.DeleteBackupActionProperty' CONFIRM;
+makeBackup 'Сделать резервное копирование'= ACTION CUSTOM 'platform.fdk.actions.BackupActionProperty' TOOLBAR;
+deleteBackup 'Удалить резервную копию'= ACTION CUSTOM 'platform.fdk.actions.DeleteBackupActionProperty' CONFIRM;
 
-CLASS backup 'Backup';
+CLASS backup 'Резервное копирование';
 
 dateBackup 'Дата' = DATA DATE (backup);
 timeBackup 'Время' = DATA TIME (backup);
@@ -18,7 +18,7 @@ fileDeletedBackup 'Файл удалён' = DATA BOOLEAN (backup);
 logBackup 'Лог' = DATA TEXT (backup);
 
 
-FORM backup 'Backup'
+FORM backup 'Резервное копирование'
     OBJECTS b = backup
     PROPERTIES() binPathBackupTask, dumpDirBackupTask, makeBackup TODRAW b FORCE PANEL
     PROPERTIES(b) READONLY dateBackup, timeBackup, fileBackup, fileDeletedBackup, logBackup FORCE PANEL

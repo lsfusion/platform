@@ -2444,7 +2444,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return LM.getLP(sID);
     }
 
-    protected LCP getLCP(String sID) {
+    public LCP getLCP(String sID) {
         return (LCP) LM.getLP(sID);
     }
 

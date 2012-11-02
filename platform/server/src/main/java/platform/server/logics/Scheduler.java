@@ -3,6 +3,8 @@ package platform.server.logics;
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.interop.Compare;
+import platform.server.ContextAwareDaemonThreadFactory;
+import platform.server.SchedulerContext;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.Query;
@@ -13,11 +15,17 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class Scheduler {
-    private BusinessLogics BL;
-    
-    public Scheduler(BusinessLogics BL){
+    public BusinessLogics BL;
+    public DataObject currentScheduledTaskObject;
+    public DataObject currentScheduledTaskLogObject;
+    public DataSession currentLogSession;
+
+    public Scheduler(BusinessLogics BL) {
         this.BL = BL;
     }
 
@@ -37,7 +45,7 @@ public class Scheduler {
 
         OrderedMap<Map<Object, Object>, Map<Object, Object>> scheduledTaskResult = scheduledTaskQuery.execute(session.sql);
         for (Map.Entry<Map<Object, Object>, Map<Object, Object>> rows : scheduledTaskResult.entrySet()) {
-            DataObject scheduledTaskObject = new DataObject(rows.getKey().entrySet().iterator().next().getValue(), BL.LM.scheduledTask);
+            currentScheduledTaskObject = new DataObject(rows.getKey().entrySet().iterator().next().getValue(), BL.LM.scheduledTask);
             Boolean runAtStart = rows.getValue().get("runAtStartScheduledTask") != null;
             Timestamp startDate = (Timestamp) rows.getValue().get("startDateScheduledTask");
             Integer period = (Integer) rows.getValue().get("periodScheduledTask");
@@ -53,9 +61,10 @@ public class Scheduler {
             propertyQuery.properties.put("orderScheduledTaskProperty", BL.LM.orderScheduledTaskProperty.getExpr(scheduledTaskExpr, propertyExpr));
             propertyQuery.and(BL.LM.inScheduledTaskProperty.getExpr(scheduledTaskExpr, propertyExpr).getWhere());
             propertyQuery.and(BL.LM.activeScheduledTaskProperty.getExpr(scheduledTaskExpr, propertyExpr).getWhere());
-            propertyQuery.and(scheduledTaskExpr.compare(scheduledTaskObject, Compare.EQUALS));
+            propertyQuery.and(scheduledTaskExpr.compare(currentScheduledTaskObject, Compare.EQUALS));
 
-            Timer timer = new Timer();
+            ScheduledExecutorService daemonTasksExecutor = Executors.newScheduledThreadPool(1, new ContextAwareDaemonThreadFactory(new SchedulerContext(this)));
+
             TreeMap<Integer, LAP> propertySIDMap = new TreeMap<Integer, LAP>();
             OrderedMap<Map<Object, Object>, Map<Object, Object>> propertyResult = propertyQuery.execute(session.sql);
             int defaultOrder = propertyResult.size() + 100;
@@ -73,7 +82,7 @@ public class Scheduler {
             }
 
             if (runAtStart) {
-                timer.schedule(new SchedulerTask(propertySIDMap, scheduledTaskObject), 0);
+                daemonTasksExecutor.schedule(new SchedulerTask(propertySIDMap, currentScheduledTaskObject), 0, TimeUnit.MILLISECONDS);
             }
             if (startDate != null) {
                 long start = startDate.getTime();
@@ -83,37 +92,40 @@ public class Scheduler {
                         int periods = (int) (System.currentTimeMillis() - start) / (period) + 1;
                         start += periods * period;
                     }
-                    timer.schedule(new SchedulerTask(propertySIDMap, scheduledTaskObject), new Date(start), period);
+                    daemonTasksExecutor.scheduleWithFixedDelay(new SchedulerTask(propertySIDMap, currentScheduledTaskObject), start - System.currentTimeMillis(), period, TimeUnit.MILLISECONDS);
+
                 } else if (start > System.currentTimeMillis()) {
-                    timer.schedule(new SchedulerTask(propertySIDMap, scheduledTaskObject), new Date(start));
+                    daemonTasksExecutor.schedule(new SchedulerTask(propertySIDMap, currentScheduledTaskObject), start - System.currentTimeMillis(), TimeUnit.MILLISECONDS);
                 }
             }
         }
     }
 
     private boolean executeLAP(LAP lap, DataObject scheduledTask) throws SQLException {
-        DataSession session = BL.createSession();
-        DataSession logSession = BL.createSession();
-        DataObject scheduledTaskLogObject = logSession.addObject((ConcreteCustomClass) BL.LM.getClassBySID("scheduledTaskLog"));
+        currentLogSession = BL.createSession();
+        currentScheduledTaskLogObject = currentLogSession.addObject((ConcreteCustomClass) BL.LM.getClassBySID("scheduledTaskLog"));
         try {
-            BL.getLCP("scheduledTaskScheduledTaskLog").change(scheduledTask.getValue(), logSession, scheduledTaskLogObject);
-            BL.getLCP("propertyScheduledTaskLog").change(lap.property.caption + " (" + lap.property.getSID() + ")", logSession, scheduledTaskLogObject);
-            BL.getLCP("dateStartScheduledTaskLog").change(new Timestamp(System.currentTimeMillis()), logSession, scheduledTaskLogObject);
+            BL.getLCP("scheduledTaskScheduledTaskLog").change(scheduledTask.getValue(), currentLogSession, currentScheduledTaskLogObject);
+            BL.getLCP("propertyScheduledTaskLog").change(lap.property.caption + " (" + lap.property.getSID() + ")", currentLogSession, currentScheduledTaskLogObject);
+            BL.getLCP("dateStartScheduledTaskLog").change(new Timestamp(System.currentTimeMillis()), currentLogSession, currentScheduledTaskLogObject);
+
+            DataSession session = BL.createSession();
             lap.execute(session);
             String applyResult = session.applyMessage(BL);
-            BL.getLCP("resultScheduledTaskLog").change(applyResult == null ? "Выполнено успешно" : applyResult, logSession, scheduledTaskLogObject);
-            BL.getLCP("dateFinishScheduledTaskLog").change(new Timestamp(System.currentTimeMillis()), logSession, scheduledTaskLogObject);
-            logSession.apply(BL);
-            return applyResult != null;
+
+            BL.getLCP("resultScheduledTaskLog").change(applyResult == null ? "Выполнено успешно" : applyResult, currentLogSession, currentScheduledTaskLogObject);
+            BL.getLCP("dateFinishScheduledTaskLog").change(new Timestamp(System.currentTimeMillis()), currentLogSession, currentScheduledTaskLogObject);
+            currentLogSession.apply(BL);
+            return applyResult == null;
         } catch (Exception e) {
-            BL.getLCP("resultScheduledTaskLog").change(e, logSession, scheduledTaskLogObject);
-            BL.getLCP("dateFinishScheduledTaskLog").change(new Timestamp(System.currentTimeMillis()), logSession, scheduledTaskLogObject);
-            logSession.apply(BL);
+            BL.getLCP("resultScheduledTaskLog").change(e, currentLogSession, currentScheduledTaskLogObject);
+            BL.getLCP("dateFinishScheduledTaskLog").change(new Timestamp(System.currentTimeMillis()), currentLogSession, currentScheduledTaskLogObject);
+            currentLogSession.apply(BL);
             return false;
         }
     }
 
-    class SchedulerTask extends TimerTask {
+    class SchedulerTask implements Runnable {
         TreeMap<Integer, LAP> lapMap;
         private DataObject scheduledTask;
 
@@ -127,7 +139,7 @@ public class Scheduler {
             try {
                 for (Map.Entry<Integer, LAP> entry : lapMap.entrySet()) {
                     if (entry.getValue() != null) {
-                        if(!executeLAP(entry.getValue(), scheduledTask))
+                        if (!executeLAP(entry.getValue(), scheduledTask))
                             break;
                     }
                 }
