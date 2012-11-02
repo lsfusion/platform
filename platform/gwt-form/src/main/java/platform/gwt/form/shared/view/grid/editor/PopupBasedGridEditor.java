@@ -4,6 +4,7 @@ import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.ValueUpdater;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.text.shared.SafeHtmlRenderer;
@@ -12,16 +13,23 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.Widget;
 import platform.gwt.form.shared.view.grid.EditManager;
+import platform.gwt.form.shared.view.grid.renderer.SafeHtmlGridRenderer;
 
 public abstract class PopupBasedGridEditor implements GridCellEditor {
     protected final SafeHtmlRenderer<String> renderer = SimpleSafeHtmlRenderer.getInstance();
 
     private final EditManager editManager;
+    private final Style.TextAlign textAlign;
 
     private final PopupPanel popup;
 
     public PopupBasedGridEditor(EditManager editManager) {
+        this(editManager, null);
+    }
+
+    public PopupBasedGridEditor(EditManager editManager, Style.TextAlign textAlign) {
         this.editManager = editManager;
+        this.textAlign = textAlign;
 
         popup = new PopupPanel(false, true) {
             @Override
@@ -71,9 +79,8 @@ public abstract class PopupBasedGridEditor implements GridCellEditor {
 
     @Override
     public void render(Cell.Context context, Object value, SafeHtmlBuilder sb) {
-        if (value != null) {
-            sb.append(renderer.render(formatValue(value)));
-        }
+        String sValue = value == null ? null : renderToString(value);
+        SafeHtmlGridRenderer.renderAligned(sValue, renderer, textAlign, sb);
     }
 
     @Override
@@ -81,7 +88,7 @@ public abstract class PopupBasedGridEditor implements GridCellEditor {
         return false;
     }
 
-    protected String formatValue(Object value) {
+    protected String renderToString(Object value) {
         return value == null ? "" : value.toString();
     }
 

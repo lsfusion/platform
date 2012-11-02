@@ -3,6 +3,7 @@ package platform.gwt.form.shared.view.grid.editor;
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
@@ -23,7 +24,7 @@ public class DateGridEditor extends PopupBasedGridEditor {
     }
 
     public DateGridEditor(DateTimeFormat format, EditManager editManager) {
-        super(editManager);
+        super(editManager, Style.TextAlign.RIGHT);
         this.format = format;
 
         datePicker.addValueChangeHandler(new ValueChangeHandler<Date>() {
@@ -33,7 +34,6 @@ public class DateGridEditor extends PopupBasedGridEditor {
             }
         });
     }
-
 
     @Override
     protected Widget createPopupComponent() {
@@ -50,7 +50,7 @@ public class DateGridEditor extends PopupBasedGridEditor {
     }
 
     @Override
-    protected String formatValue(Object value) {
+    protected String renderToString(Object value) {
         return format.format((Date) value);
     }
 }

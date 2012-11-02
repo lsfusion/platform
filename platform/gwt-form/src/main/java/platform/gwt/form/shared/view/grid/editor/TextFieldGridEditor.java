@@ -3,10 +3,7 @@ package platform.gwt.form.shared.view.grid.editor;
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.ValueUpdater;
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.EventTarget;
-import com.google.gwt.dom.client.InputElement;
-import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.dom.client.*;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.safehtml.client.SafeHtmlTemplates;
 import com.google.gwt.safehtml.shared.SafeHtml;
@@ -18,24 +15,30 @@ public abstract class TextFieldGridEditor implements GridCellEditor {
     interface Template extends SafeHtmlTemplates {
         @Template("<input style=\"border: 0px; margin: 0px; width: 100%; font-size: 8pt; \" type=\"text\" value=\"{0}\" tabindex=\"-1\"></input>")
         SafeHtml input(String value);
+
+        @Template("<input style=\"border: 0px; margin: 0px; width: 100%; font-size: 8pt; text-align: {0};\" type=\"text\" value=\"{1}\" tabindex=\"-1\"></input>")
+        SafeHtml aligned(String alignment, String value);
     }
+
+    protected static Template template;
 
     protected final class ParseException extends Exception {
     }
 
-    protected static Template template;
-    public static void initTemplateIfNeeded() {
+    public TextFieldGridEditor(EditManager editManager) {
+        this(editManager, null);
+    }
+
+    public TextFieldGridEditor(EditManager editManager, Style.TextAlign textAlign) {
         if (template == null) {
             template = GWT.create(Template.class);
         }
-    }
-
-    public TextFieldGridEditor(EditManager editManager) {
-        initTemplateIfNeeded();
+        this.textAlign = textAlign == Style.TextAlign.LEFT ? null : textAlign;
         this.editManager = editManager;
     }
 
     protected EditManager editManager;
+    protected Style.TextAlign textAlign;
     protected String currentText = "";
 
     private static TextBoxImpl textBoxImpl = GWT.create(TextBoxImpl.class);
@@ -88,7 +91,11 @@ public abstract class TextFieldGridEditor implements GridCellEditor {
 
     @Override
     public void render(Cell.Context context, Object value, SafeHtmlBuilder sb) {
-        sb.append(template.input(currentText));
+        if (textAlign != null) {
+            sb.append(template.aligned(textAlign.getCssName(), currentText));
+        } else {
+            sb.append(template.input(currentText));
+        }
     }
 
     @Override
@@ -102,6 +109,7 @@ public abstract class TextFieldGridEditor implements GridCellEditor {
         try {
             editManager.commitEditing(tryParseInputText(value));
         } catch (ParseException ignore) {
+            //если выкинулся ParseException, то не заканчиваем редактирование
         }
     }
 

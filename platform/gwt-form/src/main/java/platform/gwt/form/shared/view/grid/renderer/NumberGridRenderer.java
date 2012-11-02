@@ -1,5 +1,6 @@
 package platform.gwt.form.shared.view.grid.renderer;
 
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.i18n.client.NumberFormat;
 
 public class NumberGridRenderer extends SafeHtmlGridRenderer<Number> {
@@ -10,6 +11,7 @@ public class NumberGridRenderer extends SafeHtmlGridRenderer<Number> {
     }
 
     public NumberGridRenderer(NumberFormat format) {
+        super(Style.TextAlign.RIGHT);
         this.format = format;
     }
 

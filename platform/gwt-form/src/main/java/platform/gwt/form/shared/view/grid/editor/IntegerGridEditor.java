@@ -1,10 +1,11 @@
 package platform.gwt.form.shared.view.grid.editor;
 
+import com.google.gwt.dom.client.Style;
 import platform.gwt.form.shared.view.grid.EditManager;
 
 public class IntegerGridEditor extends TextFieldGridEditor {
     public IntegerGridEditor(EditManager editManager) {
-        super(editManager);
+        super(editManager, Style.TextAlign.RIGHT);
     }
 
     @Override

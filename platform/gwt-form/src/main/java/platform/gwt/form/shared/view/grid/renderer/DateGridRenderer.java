@@ -1,5 +1,6 @@
 package platform.gwt.form.shared.view.grid.renderer;
 
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import platform.gwt.base.shared.GwtSharedUtils;
 
@@ -13,6 +14,7 @@ public class DateGridRenderer extends SafeHtmlGridRenderer<Date> {
     }
 
     public DateGridRenderer(DateTimeFormat format) {
+        super(Style.TextAlign.RIGHT);
         this.format = format;
     }
 
