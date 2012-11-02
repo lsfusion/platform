@@ -1,6 +1,5 @@
 package platform.server.classes;
 
-import platform.server.data.expr.query.Stat;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.type.ParseException;
 import platform.server.logics.ServerResourceBundle;
@@ -39,7 +38,7 @@ public abstract class FileClass extends DataClass<byte[]> {
     }
 
     public Class getReportJavaClass() {
-        return String.class;
+        return Object.class;
     }
 
     public Format getReportFormat() {
