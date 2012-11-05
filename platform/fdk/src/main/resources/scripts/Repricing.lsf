@@ -1,6 +1,6 @@
 MODULE Repricing;
 
-REQUIRE Employee, Store;
+REQUIRE Employee, Store, Pricing;
 
 
 // ----------------------------------- Комиссия ------------------------------------------ //

@@ -890,17 +890,7 @@ END
 META deriveDocumentDetailSum(object)
     @deriveDocumentDetailSum(object, currency);
 END
-META deriveDocumentDetailPriceMarkupCustomPrefix(detail, prefix, currencyProp)
-    prefix###price###detail(detail)  <- roundCurrency([X*(Y+100)*(Z+100)/10000](
-    0.0 IF detail IS detail OR price###detail(detail),
-    0.0 IF detail IS detail OR prefix###markup###detail(detail),
-    value###prefix##VAT###detail(detail)), currencyProp###detail(detail))
-                    WHEN CHANGED(price###detail(detail)) OR CHANGED (prefix###markup###detail(detail)) OR CHANGED(currencyProp###detail(detail));
-END
 
-META deriveDocumentDetailPriceMarkupCustomPrefix(detail, prefix)
-    @deriveDocumentDetailPriceMarkupCustomPrefix(detail, prefix, currency);
-END
 //-
 
 META derivePriceOnSkuChangePrefix(concrete, skuProp, stockProp, prefix)
@@ -939,55 +929,6 @@ META defineDocumentHeaderItemSum (object)
     @defineDocumentHeaderItemSumCustom(object, object##Detail);
 END
 
-// ---------------------------------------------- Надбавка -------------------------------------------- //
-
-META defineDocumentDetailMarkupCustomPrefix (detail, prefix, caption)
-    prefix###markup###detail 'Надбавка,%'###caption = DATA NUMERIC[8,3] (detail);
-END
-META defineDocumentAbstractDetailMarkupCustomPrefix (detail, prefix, caption)
-    prefix###markup###detail 'Надбавка,%'###caption = ABSTRACT NUMERIC[8,3] (detail);
-END
-META defineDocumentInterfaceDetailMarkupCustomPrefix (detail, prefix, caption)
-    @defineDocumentAbstractDetailMarkupCustomPrefix(detail, prefix, caption);
-    @defineDocumentDetailMarkupCustomPrefix(user###detail, prefix, caption);
-    prefix###markup###detail (detail) += prefix###markup###user###detail(detail);
-END
-
-META defineDocumentDetailMarkupPrefix (object, prefix, caption)
-    @defineDocumentDetailMarkupCustomPrefix(object##Detail, prefix, caption);
-END
-META defineDocumentAbstractDetailMarkupPrefix (object, prefix, caption)
-    @defineDocumentAbstractDetailMarkupCustomPrefix(object##Detail, prefix, caption);
-END
-META defineDocumentInterfaceDetailMarkupPrefix (object, prefix, caption)
-    @defineDocumentInterfaceDetailMarkupCustomPrefix(object##Detail, prefix, caption);
-END
-
-META defineDocumentDetailMarkupSumCustomPrefix (detail, prefix, caption)
-    prefix###markupSum###detail 'Сумма надбавки'###caption = DATA NUMERIC[14,3] (detail);
-END
-META defineDocumentAbstractDetailMarkupSumCustomPrefix (detail, prefix, caption)
-    prefix###markupSum###detail 'Сумма надбавки'###caption = ABSTRACT NUMERIC[14,3] (detail);
-END
-META defineDocumentInterfaceDetailMarkupSumCustomPrefix (detail, prefix, caption)
-    @defineDocumentAbstractDetailMarkupSumCustomPrefix(detail, prefix, caption);
-    @defineDocumentDetailMarkupSumCustomPrefix(user###detail, prefix, caption);
-    prefix###markupSum###detail (detail) += prefix###markupSum###user###detail(detail);
-END
-META defineDocumentInterfaceDetailMarkupSumPrefix (object, prefix, caption)
-    @defineDocumentInterfaceDetailMarkupSumCustomPrefix(object##Detail, prefix, caption);
-END
-META defineDocumentInterfaceDetailMarkupSumPrefix (object, prefix)
-    @defineDocumentInterfaceDetailMarkupSumPrefix(object, prefix, );
-END
-
-META deriveDocumentDetailMarkupSumCustomPrefix(detail, prefixA, prefixB, prefixC)
-    prefixA###markupSum###detail(detail) <- prefixB###sum###detail(detail) (-) prefixA###VATSum###detail (detail) (-) prefixC###sum###detail(detail)
-                    WHEN CHANGED(prefixB###sum###detail(detail)) OR CHANGED (prefixA###VATSum###detail (detail)) OR CHANGED (prefixC###sum###detail(detail));
-END
-META deriveDocumentDetailMarkupSumPrefix(object, prefixA, prefixB, prefixC)
-    @deriveDocumentDetailMarkupSumCustomPrefix(object##Detail, prefixA, prefixB, prefixC);
-END
 
 //--------------------------------------------------Партия для Detail--------------------------------------//
 META defineDocumentDetailBatchCustom(detail, batchProp)

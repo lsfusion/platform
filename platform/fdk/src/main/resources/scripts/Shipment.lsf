@@ -352,9 +352,6 @@ META defineShipment(skuLedger, sign, contact, contactCaption, partyA, partyB)
     countBatchInvoiceDetail 'Кол-во партий' (invoiceDetail) = GROUP SUM 1 IF costInvoiceDetailBatch(invoiceDetail, batch) BY invoiceDetail PERSISTENT;
     maxBatchInvoiceDetail (invoiceDetail) = GROUP MAX batch IF costInvoiceDetailBatch(invoiceDetail, batch) BY invoiceDetail;
 
-    EXTEND FORM userInvoice PROPERTIES(d) READONLY shippedInvoiceDetail AFTER quantityUserInvoiceDetail;
-    EXTEND FORM invoices PROPERTIES(d) READONLY shippedInvoiceDetail AFTER quantityInvoiceDetail;
-
     toShipInvoiceDetail 'Не поставлено' (invoiceDetail) = quantityInvoiceDetail (invoiceDetail) (-) shippedInvoiceDetail(invoiceDetail);
 
     toShipInvoiceDetailStockInvoice 'Не поставлено по складу' (stock, invoice) =
@@ -476,14 +473,17 @@ META defineShipment(skuLedger, sign, contact, contactCaption, partyA, partyB)
     createShipmentInvoice 'Создавать поставку' = ABSTRACT BOOLEAN (invoice) IN documentPrmGroup;
     createShipmentUserInvoice 'Создавать поставку' = DATA BOOLEAN (userInvoice) IN documentPrmGroup;
     createShipmentInvoice (invoice) += createShipmentUserInvoice(invoice);
+    toShowInvoice (invoice) =  invoice IS invoice AND NOT createShipmentInvoice(invoice);
 
     EXTEND FORM userInvoice
         PROPERTIES(i) createShipmentUserInvoice
         PROPERTIES(d) BEFORE delete(d) SHOWIF createShipmentInvoice(i) shipmentPriceUserInvoiceDetail, shipmentSumUserInvoiceDetail
+        PROPERTIES(d) READONLY shippedInvoiceDetail AFTER quantityUserInvoiceDetail SHOWIF toShowInvoice(i)
     ;
     EXTEND FORM invoices
         PROPERTIES(i) READONLY createShipmentInvoice
         PROPERTIES(d) READONLY SHOWIF createShipmentInvoice(i) shipmentPriceInvoiceDetail, shipmentSumInvoiceDetail
+        PROPERTIES(d) READONLY shippedInvoiceDetail AFTER quantityInvoiceDetail SHOWIF toShowInvoice(i)
     ;
 
     skipCreateShipmentInvoiceDetail = ABSTRACT BOOLEAN (invoiceDetail) PERSISTENT;
