@@ -2,7 +2,7 @@ package platform.gwt.form.client.form.ui;
 
 import com.allen_sauer.gwt.log.client.Log;
 import com.google.gwt.cell.client.Cell;
-import com.google.gwt.user.cellview.client.Column;
+import platform.gwt.cellview.client.Column;
 import com.google.gwt.view.client.SelectionChangeEvent;
 import platform.gwt.base.shared.GwtSharedUtils;
 import platform.gwt.form.client.dispatch.DeferredRunner;

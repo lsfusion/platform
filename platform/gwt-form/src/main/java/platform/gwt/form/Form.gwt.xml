@@ -3,6 +3,7 @@
 <module>
     <inherits name='com.google.gwt.user.User'/>
     <inherits name="platform.gwt.base.Base"/>
+    <inherits name="platform.gwt.cellview.CellView"/>
 
     <!--  GWT dispatch -->
     <inherits name='net.customware.gwt.dispatch.Dispatch' />

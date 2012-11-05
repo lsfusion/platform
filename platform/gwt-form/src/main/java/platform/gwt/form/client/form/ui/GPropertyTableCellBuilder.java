@@ -5,16 +5,16 @@ import com.google.gwt.dom.builder.shared.DivBuilder;
 import com.google.gwt.dom.builder.shared.TableCellBuilder;
 import com.google.gwt.dom.builder.shared.TableRowBuilder;
 import com.google.gwt.dom.client.Style;
-import com.google.gwt.user.cellview.client.AbstractCellTable;
-import com.google.gwt.user.cellview.client.AbstractCellTableBuilder;
-import com.google.gwt.user.cellview.client.Column;
-import com.google.gwt.user.cellview.client.RowStyles;
+import platform.gwt.cellview.client.AbstractCellTable;
+import platform.gwt.cellview.client.AbstractCellTableBuilder;
+import platform.gwt.cellview.client.Column;
+import platform.gwt.cellview.client.RowStyles;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.view.client.SelectionModel;
 
 /**
- * Based on com.google.gwt.user.cellview.client.DefaultCellTableBuilder
+ * Based on platform.gwt.cellview.client.DefaultCellTableBuilder
  */
 public abstract class GPropertyTableCellBuilder<T> extends AbstractCellTableBuilder<T> {
     private final String evenRowStyle;

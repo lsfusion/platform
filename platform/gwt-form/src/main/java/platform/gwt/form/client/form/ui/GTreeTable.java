@@ -1,7 +1,7 @@
 package platform.gwt.form.client.form.ui;
 
 import com.google.gwt.cell.client.Cell;
-import com.google.gwt.user.cellview.client.Column;
+import platform.gwt.cellview.client.Column;
 import com.google.gwt.view.client.SelectionChangeEvent;
 import platform.gwt.form.shared.view.GOrder;
 import platform.gwt.form.shared.view.GForm;

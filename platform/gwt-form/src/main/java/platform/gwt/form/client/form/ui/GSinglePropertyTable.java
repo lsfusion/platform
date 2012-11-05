@@ -2,7 +2,7 @@ package platform.gwt.form.client.form.ui;
 
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.user.cellview.client.Column;
+import platform.gwt.cellview.client.Column;
 import platform.gwt.form.shared.view.GPropertyDraw;
 import platform.gwt.form.shared.view.changes.GGroupObjectValue;
 import platform.gwt.form.shared.view.changes.dto.ColorDTO;
@@ -48,8 +48,8 @@ public class GSinglePropertyTable extends GPropertyTable {
     }
 
     @Override
-    protected boolean isSingleCellTable() {
-        return true;
+    protected boolean preserveKeyboardStylesOnBlur() {
+        return false;
     }
 
     public void setValue(Object value) {

@@ -2,7 +2,7 @@ package platform.gwt.form.client.form.ui;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.TableRowElement;
-import com.google.gwt.user.cellview.client.Header;
+import platform.gwt.cellview.client.Header;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.view.client.DefaultSelectionEventManager;
 import platform.gwt.form.shared.view.GPropertyDraw;
