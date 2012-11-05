@@ -101,26 +101,29 @@ FORM customer 'Оптовый покупатель'
     FILTERS legalEntityAccount(a) == cu
 
     OBJECTS co=company
-    PROPERTIES(co)      name
-    PROPERTIES(co, cu)   numberContractSkuCustomerCompanyCustomer
+    PROPERTIES(co) READONLY name
+    FILTERGROUP filters
+        FILTER 'Есть договор' 'F10' countContractPartyAPartyB(co, cu) DEFAULT
 
     OBJECTS c=contractSkuCustomer
-    PROPERTIES(c)  READONLY numberContract, nameCompanyContractSkuCustomer, nameTypeContractSku, nameFormContractSku, dateFromContract,
-                   dateToContract, nameCurrencyContract, noteContract
-    PROPERTIES(c)  ADDFORM, EDITFORM, delete
+    PROPERTIES isCompanyCustomerContractSkuCustomer(co, cu, c)
+    PROPERTIES(c) READONLY numberContract, nameCompanyContractSkuCustomer, nameTypeContractSku, nameFormContractSku, dateFromContract,
+                  dateToContract, nameCurrencyContract, noteContract
+    PROPERTIES(c) ADDFORM, EDITFORM, delete
     FILTERS companyContractSkuCustomer(c) == co,
             customerContractSkuCustomer(c) == cu
+
+    OBJECTS co2=company
+    PROPERTIES(co2) READONLY name
 
     OBJECTS ag=agreement
     PROPERTIES(ag, cu) isDefaultAgreementLegalEntity, inAgreementLegalEntityOver
     PROPERTIES(ag) READONLY name, numberObject, seriesObject, dateAgreement, timeAgreement,
                             fromDateAgreement, fromTimeAgreement, toDateAgreement, toTimeAgreement,
                             nameCurrencyAgreement, namePriceListTypeAgreement, noteAgreement
-    PROPERTIES(cu) addAgreementsLegalEntity TODRAW ag FORCE PANEL DRAWTOTOOLBAR
-    FILTERS inAgreementLegalEntityOver(ag, cu)
-
-    FILTERGROUP filters
-        FILTER 'Есть договор' 'F10' countContractPartyAPartyB(co, cu) DEFAULT
+    PROPERTIES createAgreementLegalEntityCompany(cu, co2) TODRAW ag FORCE PANEL DRAWTOTOOLBAR, addAgreementsLegalEntity(cu) TODRAW ag FORCE PANEL DRAWTOTOOLBAR
+    FILTERS inAgreementLegalEntityOver(ag, cu),
+            companyAgreement(ag) == co2
 
     EDIT customer OBJECT cu
 ;
@@ -149,18 +152,21 @@ DESIGN customer FROM DEFAULT {
             type = TABBED;
             ADD a.box;
             NEW customerContainer {
-                title = 'Договоры с поставщиками';
+                title = 'Договоры';
                 type = SPLITH;
                 childConstraints = TO THE RIGHT;
 
                 ADD co.box;
                 ADD c.box {
-                    fillHorizontal = 2;
+                    fillHorizontal = 3;
                     c.grid { defaultComponent = TRUE; }
                 }
             }
-            ADD ag.box{
+            NEW agreementContainer{
                 caption = 'Соглашения';
+                type = SPLITH;
+                ADD co2.box;
+                ADD ag.box{fillHorizontal = 3;}
             }
        }
    }

@@ -22,9 +22,9 @@ toDateAgreement(agreement) <- NULL WHEN ASSIGNED(agreement IS agreement);
 toTimeAgreement(agreement) <- NULL WHEN ASSIGNED(agreement IS agreement);
 
 inAgreementAbstract 'Отм' = ABSTRACT BOOLEAN (agreement) PERSISTENT;
-inAgreement 'Отм' = DATA BOOLEAN (agreement);
-inAgreement(agreement) <- TRUE WHEN ASSIGNED(agreement IS agreement);
-inAgreementAbstract(agreement) += inAgreement(agreement);
+inLegalEntityAgreement 'Отм' = DATA BOOLEAN (agreement);
+//inLegalEntityAgreement(agreement) <- TRUE WHEN ASSIGNED(agreement IS agreement);
+inAgreementAbstract(agreement) += inLegalEntityAgreement(agreement);
 
 inAgreementLegalEntityGroupAbstract 'Отм' = ABSTRACT BOOLEAN (agreement, legalEntityGroup) PERSISTENT;
 inAgreementLegalEntityGroup 'Отм' = DATA BOOLEAN (agreement, legalEntityGroup);
@@ -43,12 +43,12 @@ nearestInAgreementLegalEntityGroup (agreement, legalEntityGroup) =
     inAgreementLegalEntityGroup(agreement, nearestParentLegalEntityGroup(agreement, legalEntityGroup));
 
 inAgreementLegalEntityGroupOver 'Отм' (agreement, legalEntityGroup) =
-    UNION OVERRIDE inAgreement(agreement) AND legalEntityGroup IS legalEntityGroup,
+    UNION OVERRIDE inLegalEntityAgreement(agreement) AND legalEntityGroup IS legalEntityGroup,
                    nearestInAgreementLegalEntityGroup(agreement, legalEntityGroup),
                    inAgreementLegalEntityGroup(agreement, legalEntityGroup);
 
 inAgreementLegalEntityOver 'Отм' (agreement, legalEntity) =
-    UNION OVERRIDE inAgreement(agreement) AND legalEntity IS legalEntity,
+    UNION OVERRIDE inLegalEntityAgreement(agreement) AND legalEntity IS legalEntity,
                    nearestInAgreementLegalEntityGroup(agreement, legalEntityGroupLegalEntity(legalEntity)),
                    inAgreementLegalEntity(agreement, legalEntity);
 
@@ -174,7 +174,7 @@ FORM agreement 'Соглашение'
     TREE legalEntityGroupTree b=STRING[3], lg = legalEntityGroup PARENT parentLegalEntityGroup
     PROPERTIES READONLY OBJVALUE(b), lgTreeName = name(lg)
     FILTERS stringEqualsAll(b)
-    PROPERTIES(a) inAgreement TODRAW b FORCE GRID
+    PROPERTIES(a) inLegalEntityAgreement TODRAW b FORCE GRID
     PROPERTIES(a, lg) inAgreementLegalEntityGroupOver
 
     OBJECTS l = legalEntity
@@ -269,6 +269,18 @@ DESIGN agreement FROM DEFAULT {
     }
     ADD functions.box;
 }
+
+createAgreementLegalEntityCompany 'Создать соглашение' = ACTION (legalEntity, company) {
+
+    FOR ADDOBJ ag = agreement DO {
+        SET inAgreementLegalEntity(ag, legalEntity) <- TRUE;
+        SET companyAgreement(ag) <- (company AS company);
+        FORM agreement OBJECTS a = ag MODAL;
+        IF TRUE AND NOT formResult() == formResult.ok THEN {
+            EXEC delete(ag);
+        }
+    }
+} TOOLBAR;
 
 FORM agreements 'Соглашения'
 
