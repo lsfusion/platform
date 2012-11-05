@@ -259,7 +259,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         outStream.writeInt(ID);
         outStream.writeUTF(getSID());
 
-        outStream.writeByte(children.size());
+        outStream.writeInt(children.size());
         for (CustomClass cls : children)
             cls.serialize(outStream);
     }
