@@ -19,7 +19,7 @@ PRIORITY Stock, RomanLogicsModule;
 
 CLASS saleOut 'Продажа товаров по накладным' : historyObject, numberedObject, consignment, outAccountDocumentLedger, innerDocument;
 CLASS saleOutPosted 'Проведенная продажа товаров по накладным' : saleOut, postedObject;
-CLASS saleOutDetail 'Строка продажи товаров по накладным' : outFIFOSkuLedger;
+CLASS saleOutDetail 'Строка продажи товаров по накладным';
 CLASS saleOutBatchDetail 'Строка продажи товаров по накладным (по партиям)': consignmentDetail;
 
 @defineDocumentTransferOut(sale, 'Продажа товаров по накладным', sku, stock);
@@ -81,7 +81,7 @@ useRetailPriceSaleOutDetail(detail) = [stockSaleOutDetail(detail) IS departmentS
 @extendFormDocumentSkipSkuLedgerCustomReadonly(saleOuts, t, saleOut);
 
 // Проводим по регистру
-@implementSkuLedger(saleOut, sku, stock);
+@implementSkuLedgerOutFIFO(saleOut, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantitySaleOutDetail (ledger);
 limitOutFIFOSkuLedgerBatch(ledger, batch) += currentBalanceABatchStock(batch, stockSaleOutDetail(ledger)) AND NOT commissionContractSkuBatchA(batch)
                                              AND batch IS batchA;
@@ -154,7 +154,7 @@ EXTEND FORM saleOuts
 
 CLASS saleIn 'Покупка товаров по накладным' : historyObject, incAccountDocumentLedger;
 CLASS saleInDetail 'Строка покупки товаров по накладным';
-CLASS saleInBatchDetail 'Строка покупки товаров по накладным (по партиям)' : batchA;
+CLASS saleInBatchDetail 'Строка покупки товаров по накладным (по партиям)';
 
 @defineDocumentTransferIn(sale, 'Покупка товаров по накладным', sku, stock);
 @defineDocumentFormTransferIn(sale, 'Покупка товаров по накладным');
@@ -236,7 +236,8 @@ useRetailPriceSaleInBatchDetail(detail) = [stockSaleInBatchDetail(detail) IS dep
     OR isCommissionSaleInBatchDetail(detail);
 @defineDocumentTransferAccountCustom(saleIn, useRetailPriceSaleInBatchDetail, saleInBatchDetail, b);
 
-@implementBatch(saleInBatch, sku, stock, cost);
+EXTEND CLASS saleInBatchDetail : batchA;
+@implementBatchCustom(saleInBatch, sku, stock, cost);
 quantityBatch(batch) += quantitySaleInBatchDetail(batch);
 ownerBatchA (batch) += IF isCommissionSaleInBatchDetail(batch) THEN companyStock(destinationStockSaleInBatchDetail(batch)) ELSE companyStock(stockSaleInBatchDetail(batch));
 commissionContractSkuBatchA (batch) += contractSkuCompanySaleInBatchDetail(batch) AND isCommissionSaleInBatchDetail(batch);
@@ -269,8 +270,8 @@ saleRecSaleInBatchDetail (detail) = saleRecSaleIn(saleInSaleInBatchDetail(detail
 CLASS saleDiff 'Акт расхождений приемки товаров по накладной (продажа)' : historyObject;
 
 CLASS ABSTRACT saleDiffDetail 'Строка расхождений акта приемки товаров по накладной (продажа)';
-CLASS saleDiffEDetail 'Строка расхождений акта приемки товаров по накладной (продажа, излишек)' : saleDiffDetail, batchB;
-CLASS saleDiffSDetail 'Строка расхождений акта приемки товаров по накладной (продажа, недостача)' : saleDiffDetail, outFIFOSkuLedger;
+CLASS saleDiffEDetail 'Строка расхождений акта приемки товаров по накладной (продажа, излишек)' : saleDiffDetail;
+CLASS saleDiffSDetail 'Строка расхождений акта приемки товаров по накладной (продажа, недостача)' : saleDiffDetail;
 
 @defineDocumentTransferDiff(sale, 'Акт расхождений приемки товаров по накладной (продажа)', sku, stock);
 @defineDocumentFormTransferDiff(sale);
@@ -279,11 +280,12 @@ CLASS saleDiffSDetail 'Строка расхождений акта приемк
 @extendFormDocumentDetailSkuArticleReadonlyQuantity(saleIns, f, saleDiff, signedQuantitySaleDiffDetail);
 
 costSaleDiffEDetail(detail) = 0.0 IF detail IS saleDiffEDetail;
-@implementBatch(saleDiffE, sku, stock, cost);
+EXTEND CLASS saleDiffEDetail : batchB;
+@implementBatchCustom(saleDiffE, sku, stock, cost);
 quantityBatch (batch) += quantitySaleDiffEDetail(batch);
 skipASkuLedger (ledger) += ledger IS saleDiffEDetail;
 
-@implementSkuLedger(saleDiffS, sku, stock);
+@implementSkuLedgerOutFIFO(saleDiffS, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantitySaleDiffSDetail(ledger);
 limitOutFIFOSkuLedgerBatch (ledger, batch) += costSaleInBatch(saleInSaleDiffSDetail(ledger), batch);
 orderOutFIFOSkuLedgerBatch (ledger, batch) += orderBBatch(batch) IF ledger IS saleDiffSDetail;

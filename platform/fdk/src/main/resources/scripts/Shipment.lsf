@@ -5,10 +5,10 @@ REQUIRE Invoice;
 
 //----------------------------------------------- Поставка ---------------------------------------------------//
 
-META defineShipment(skuLedger, sign, contact, contactCaption, partyA, partyB)
+META defineShipment(sign, contact, contactCaption, partyA, partyB)
 
     CLASS ABSTRACT shipment 'Поставка'###sign;
-    CLASS ABSTRACT shipmentDetail 'Строка поставки'###sign : skuLedger;
+    CLASS ABSTRACT shipmentDetail 'Строка поставки'###sign;
 
     CLASS userShipment 'Поставка (польз.)'###sign : shipment, historyObject, numeratedDocument;
     CLASS userShipmentDetail 'Строка поставки (польз.)'###sign : shipmentDetail;

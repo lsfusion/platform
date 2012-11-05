@@ -22,7 +22,7 @@ PRIORITY RomanLogicsModule, Stock;
 //--------------------------------------------- Поступление ---------------------------------------------------------- //
 
 CLASS WHfromCSI 'Приход на склад с СВХ' : historyObject;
-CLASS WHfromCSIDetail 'Строка прихода на склад' : inLIFOSkuLedger;
+CLASS WHfromCSIDetail 'Строка прихода на склад';
 
 @defineDocumentTables(WHfromCSI);
 
@@ -685,8 +685,8 @@ quantityWHfromCSRDetailWHfromCSI 'Кол-во принятое' (WHfromCSI) = qu
 CLASS WHfromCSD 'Акт расхождений на приемке на склад с СВХ' : historyObject, numberedObject;
 CLASS ABSTRACT WHfromCSDDetail 'Строка акта расхождений на приемке на склад с СВХ';
 
-CLASS WHfromCSDEDetail 'Строка акта расхождений на приемке на склад с СВХ (излишек)' : batchB, WHfromCSDDetail;
-CLASS WHfromCSDSDetail 'Строка акта расхождений на приемке на склад с СВХ (недостача)' : outFIFOSkuLedger, WHfromCSDDetail;
+CLASS WHfromCSDEDetail 'Строка акта расхождений на приемке на склад с СВХ (излишек)' : WHfromCSDDetail;
+CLASS WHfromCSDSDetail 'Строка акта расхождений на приемке на склад с СВХ (недостача)' : WHfromCSDDetail;
 TABLE WHfromCSDEDetail (WHfromCSDEDetail);
 TABLE WHfromCSDSDetail (WHfromCSDSDetail);
 
@@ -757,11 +757,12 @@ signedQuantityWHfromCSDDetail 'Кол-во' (WHfromCSDDetail) = UNION EXCLUSIVE 
 @defineDocumentDetailSkuArticle(WHfromCSD);
 
 costWHfromCSDEDetail(WHfromCSDDetail) = 0.0 IF WHfromCSDDetail IS WHfromCSDEDetail;
-@implementBatch(WHfromCSDE, sku, stock, cost);
+EXTEND CLASS WHfromCSDEDetail : batchB;
+@implementBatchCustom(WHfromCSDE, sku, stock, cost);
 quantityBatch (batch) += quantityWHfromCSDEDetail(batch);
 skipASkuLedger (ledger) += ledger IS WHfromCSDEDetail;
 
-@implementSkuLedger(WHfromCSDS, sku, stock);
+@implementSkuLedgerOutFIFO(WHfromCSDS, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantityWHfromCSDSDetail(ledger);
 limitOutFIFOSkuLedgerBatch (ledger, batch) += costWHfromCSIBatch(WHfromCSIWHfromCSDSDetail(ledger), batch);
 orderOutFIFOSkuLedgerBatch (ledger, batch) += orderBBatch(batch) IF ledger IS WHfromCSDSDetail;
@@ -1105,7 +1106,7 @@ useRetailPriceWHfromCSIDetail(WHfromCSIDetail) = stockWHfromCSIDetail(WHfromCSID
 @defineDocumentTransferAccount(WHfromCSI, useRetailPriceWHfromCSIDetail);
 
 //--Проводим по регистру
-@implementSkuLedger(WHfromCSI, sku, stock);
+@implementSkuLedgerInLIFO(WHfromCSI, sku, stock);
 quantityInLIFOSkuLedger (ledger) += quantityWHfromCSIDetail(ledger);
 limitInLIFOSkuLedgerBatch (ledger, batch) += quantityWHfromCSIDetail(ledger) AND batch == declarationDetailCStoWHDetail(CStoWHDetailWHfromCSIDetail(ledger));
 sumInSkuLedger(ledger) += accountSumWHfromCSIDetail(ledger);

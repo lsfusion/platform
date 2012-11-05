@@ -78,7 +78,7 @@ infoExternalStock 'Дополнительная информация' = DATA STR
 
 CLASS repair 'Передача в ремонт' : historyObject, numberedObject, consignment, outAccountDocumentLedger;
 CLASS repairPosted 'Проведенная передача в ремонт' : repair, postedObject;
-CLASS repairDetail 'Строка передачи в ремонт' : outFIFOSkuLedger, consignmentDetail;
+CLASS repairDetail 'Строка передачи в ремонт' : consignmentDetail;
 
 @defineDocument(repair);
 
@@ -285,7 +285,7 @@ END
 
 
 // Проводим по регистру
-@implementSkuLedger(repair, sku, stock);
+@implementSkuLedgerOutFIFO(repair, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantityRepairDetail (ledger);
 limitOutFIFOSkuLedgerBatch(ledger, batch) += currentBalanceBatchStock(batch, stockRepairDetail(ledger));
 
@@ -297,7 +297,7 @@ skipASkuLedger (ledger) += skipSkuLedgerRepairDetail(ledger);
 
 CLASS returnRepair 'Возврат из ремонта' : historyObject, numberedObject, outAccountDocumentLedger;
 CLASS returnRepairPosted 'Проведенный возврат из ремонта' : returnRepair, postedObject;
-CLASS returnRepairDetail 'Строка возврата из ремонта' : inLIFOSkuLedger;
+CLASS returnRepairDetail 'Строка возврата из ремонта';
 
 @defineDocument(returnRepair);
 
@@ -419,7 +419,7 @@ EXTEND FORM returnRepairs
 
 // Проводим по регистру
 
-@implementSkuLedger(returnRepair, sku, stock);
+@implementSkuLedgerInLIFO(returnRepair, sku, stock);
 quantityInLIFOSkuLedger (ledger) += quantityReturnRepairDetail(ledger);
 limitInLIFOSkuLedgerBatch (ledger, batch) += costDataSkuLedgerBatch(repairDetailReturnRepairDetail(ledger), batch);
 
@@ -527,7 +527,7 @@ DESIGN repairShops FROM DEFAULT {
 
 CLASS dryCleaning 'Передача в химчистку' : historyObject, numberedObject, consignment, outAccountDocumentLedger;
 CLASS dryCleaningPosted 'Проведенная передача в химчистку' : dryCleaning, postedObject;
-CLASS dryCleaningDetail 'Строка передачи в химчистку' : outFIFOSkuLedger, consignmentDetail;
+CLASS dryCleaningDetail 'Строка передачи в химчистку' : consignmentDetail;
 
 @defineDocument(dryCleaning);
 
@@ -571,7 +571,7 @@ cleaningStockDryCleaningDetail (detail) = cleaningStockDryCleaning(dryCleaningDr
 @extendFormDocumentCourierAndDateTo(dryCleaning);
 
 // Проводим по регистру
-@implementSkuLedger(dryCleaning, sku, stock);
+@implementSkuLedgerOutFIFO(dryCleaning, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantityDryCleaningDetail (ledger);
 limitOutFIFOSkuLedgerBatch(ledger, batch) += currentBalanceBatchStock(batch, stockDryCleaningDetail(ledger));
 
@@ -583,7 +583,7 @@ skipASkuLedger (ledger) += skipSkuLedgerDryCleaningDetail(ledger);
 
 CLASS returnDryCleaning 'Возврат из химчистки' : historyObject, numberedObject, outAccountDocumentLedger;
 CLASS returnDryCleaningPosted 'Проведенный возврат из химчистки' : returnDryCleaning, postedObject;
-CLASS returnDryCleaningDetail 'Строка возврата из химчистки' : inLIFOSkuLedger;
+CLASS returnDryCleaningDetail 'Строка возврата из химчистки';
 
 @defineDocument(returnDryCleaning);
 
@@ -703,7 +703,7 @@ EXTEND FORM returnDryCleanings
 
 // Проводим по регистру
 
-@implementSkuLedger(returnDryCleaning, sku, stock);
+@implementSkuLedgerInLIFO(returnDryCleaning, sku, stock);
 quantityInLIFOSkuLedger (ledger) += quantityReturnDryCleaningDetail(ledger);
 limitInLIFOSkuLedgerBatch (ledger, batch) += costDataSkuLedgerBatch(dryCleaningDetailReturnDryCleaningDetail(ledger), batch);
 

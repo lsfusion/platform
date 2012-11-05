@@ -57,8 +57,8 @@ importReceiptsZReport 'Импортировать чеки' = ACTION CUSTOM 'pla
 CLASS receipt 'Чек' : historyObject;
 
 CLASS ABSTRACT receiptDetail 'Строка чека';
-CLASS receiptSaleDetail 'Строка продажи' : receiptDetail, outFIFOSkuLedger, salesLedger;
-CLASS receiptReturnDetail 'Строка возврата' : receiptDetail, inLIFOSkuLedger;
+CLASS receiptSaleDetail 'Строка продажи' : receiptDetail;
+CLASS receiptReturnDetail 'Строка возврата' : receiptDetail;
 
 TABLE receipt (receipt);
 TABLE receiptDetail (receiptDetail);
@@ -269,12 +269,12 @@ descriptionReceiptDetail (receiptDetail) = descriptionReceiptReturnDetail(receip
 // -------------------------------------------- Проведение по регистрам --------------------------------------- //
 
 META implementSkuLedgerReceiptDetail(dumb)
-    @implementSkuLedger(receipt, sku, departmentStore);
-
+    @implementSkuLedgerOutFIFO(receiptSale, sku, departmentStore);
     quantityOutFIFOSkuLedger (ledger) += quantityReceiptSaleDetail(ledger);
     @implementSkuLedgerOutFIFOBalance(receiptSale, sku, departmentStore);
     sumOutSkuLedger (ledger) += sumReceiptSaleDetail(ledger);
 
+    @implementSkuLedgerInLIFO(receiptReturn, sku, departmentStore);
     quantityInLIFOSkuLedger (ledger) += quantityReceiptReturnDetail(ledger);
     @implementSkuLedgerInLIFOBalance(receiptReturn, sku, departmentStore);
     sumInSkuLedger (ledger) += sumReceiptReturnDetail(ledger);

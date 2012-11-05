@@ -440,20 +440,25 @@ costSumOutBalanceBatchStockDateFromTo 'Сумма расхода' (batch, stock,
 
 // ---------------------------------------------- Макросы ------------------------------------------------- //
 
-META implementSkuLedgerCustom(idetail, skuProp, stockProp)
-    dateTimeDataSkuLedger (ledger) += dateTime###idetail(ledger);
-    isPostedDataSkuLedger (ledger) += isPosted###idetail(ledger);
-    skuDataSkuLedger (ledger) += skuProp###idetail(ledger);
-    stockDataSkuLedger (ledger) += stockProp###idetail(ledger);
-    descriptionDataSkuLedger (ledger) += description###idetail(ledger);
+META implementSkuLedgerCustom(detail, skuProp, stockProp)
+    dateTimeDataSkuLedger (ledger) += dateTime###detail(ledger);
+    isPostedDataSkuLedger (ledger) += isPosted###detail(ledger);
+    skuDataSkuLedger (ledger) += skuProp###detail(ledger);
+    stockDataSkuLedger (ledger) += stockProp###detail(ledger);
+    descriptionDataSkuLedger (ledger) += description###detail(ledger);
 END
 
 META implementSkuLedger(concrete, skuProp, stockProp)
-    dateTimeDataSkuLedger (ledger) += dateTime###concrete##Detail(ledger);
-    isPostedDataSkuLedger (ledger) += isPosted###concrete##Detail(ledger);
-    skuDataSkuLedger (ledger) += skuProp###concrete##Detail(ledger);
-    stockDataSkuLedger (ledger) += stockProp###concrete##Detail(ledger);
-    descriptionDataSkuLedger (ledger) += description###concrete##Detail(ledger);
+    @implementSkuLedgerCustom(concrete##Detail, skuProp, stockProp);
+END
+
+META implementSkuLedgerInLIFOCustom(detail, skuProp, stockProp)
+    EXTEND CLASS detail : inLIFOSkuLedger;
+    @implementSkuLedgerCustom(detail, skuProp, stockProp);
+END
+
+META implementSkuLedgerInLIFO(concrete, skuProp, stockProp)
+    @implementSkuLedgerInLIFOCustom(concrete##Detail, skuProp, stockProp);
 END
 
 META implementSkuLedgerInLIFOBalancePostfix (concrete, skuProp, stockProp, postfix)
@@ -465,6 +470,15 @@ META implementSkuLedgerInLIFOBalance (concrete, skuProp, stockProp)
     @implementSkuLedgerInLIFOBalancePostfix(concrete, skuProp, stockProp, );
 END
 
+META implementSkuLedgerOutFIFOCustom(detail, skuProp, stockProp)
+    EXTEND CLASS detail : outFIFOSkuLedger;
+    @implementSkuLedgerCustom(detail, skuProp, stockProp);
+END
+
+META implementSkuLedgerOutFIFO(concrete, skuProp, stockProp)
+    @implementSkuLedgerOutFIFOCustom(concrete##Detail, skuProp, stockProp);
+END
+
 META implementSkuLedgerOutFIFOBalancePostfix (concrete, skuProp, stockProp, postfix)
     limitOutFIFOSkuLedgerBatch(ledger, batch) += currentBalance##postfix##BatchStock(batch, stockProp###concrete##Detail(ledger));
 END
@@ -473,13 +487,18 @@ META implementSkuLedgerOutFIFOBalance (concrete, skuProp, stockProp)
     @implementSkuLedgerOutFIFOBalancePostfix(concrete, skuProp, stockProp, );
 END
 
-META implementBatch(concrete, skuProp, stockProp, costProp)
+META implementBatchCustom(concrete, skuProp, stockProp, costProp)
     dateTimeBatch (batch) += dateTime###concrete##Detail(batch);
     isPostedBatch (batch) += isPosted###concrete##Detail(batch);
     skuBatch (batch) += skuProp###concrete##Detail(batch);
     stockBatch (batch) += stockProp###concrete##Detail(batch);
     descriptionBatch (batch) += description###concrete##Detail(batch);
     costBatch (batch) += costProp###concrete##Detail(batch);
+END
+
+META implementBatch(concrete, skuProp, stockProp, costProp)
+    EXTEND CLASS concrete##Detail : batch;
+    @implementBatchCustom(concrete, skuProp, stockProp, costProp);
 END
 
 META defineConstraintSkuLedgerCosted (concrete, caption)

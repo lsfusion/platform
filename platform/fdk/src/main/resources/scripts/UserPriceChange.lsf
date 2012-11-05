@@ -4,7 +4,7 @@ REQUIRE System, Stock, PriceChange, Numerator, Machinery, Terminal, Barcode;
 
 
 CLASS userPriceChange 'Переоценка товаров' : priceChangeDocument, numeratedObject, priceTransactionDocument, historyObject;
-CLASS userPriceChangeDetail 'Строка переоценки товаров' : priceChangeDocumentDetail, importerPriceLedger, supplierPriceLedger, retailPriceLedger, retailVATLedger, warePriceLedger;
+CLASS userPriceChangeDetail 'Строка переоценки товаров' : priceChangeDocumentDetail;
 CLASS userPriceChangePosted 'Проведенная переоценка товаров' : userPriceChange, postedObject;
 
 @defineDocument(userPriceChange);

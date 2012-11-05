@@ -607,7 +607,7 @@ concatSubNaturalLossItemGroupDetail (subNaturalLossItemGroup) =
     GROUP CONCAT castConcat(percentNaturalLossItemGroupDetail(subNaturalLossItemGroupDetail)), ','
           BY subNaturalLossItemGroupSubNaturalLossItemGroupDetail(subNaturalLossItemGroupDetail)
           ORDER subNaturalLossItemGroupDetail
-          MINCHARWIDTH 100 PREFCHARWIDTH 150;
+          MINCHARWIDTH 10 PREFCHARWIDTH 30;
 
 inSubNaturalLossItemGroup (subNaturalLossItemGroup, subNaturalLossItemGroupDetail) =
     subNaturalLossItemGroupSubNaturalLossItemGroupDetail(subNaturalLossItemGroupDetail) ==  subNaturalLossItemGroup;
@@ -1449,10 +1449,10 @@ CLASS actOfStudyPosted 'Акт проработки закрытый' : actOfStu
 @defineDocumentHeaderDepartmentStore(actOfStudy);
 @defineDocumentHeaderPosted (actOfStudy);
 
-CLASS studyInputDetail 'Строка проработки (вход)' : outFIFOSkuLedger;
+CLASS studyInputDetail 'Строка проработки (вход)';
 TABLE studyInputDetail(studyInputDetail);
 
-CLASS studyOutputDetail 'Строка проработки (выход)' : batch, importerPriceLedger, supplierPriceLedger, retailVATLedger, retailPriceLedger;
+CLASS studyOutputDetail 'Строка проработки (выход)';
 TABLE studyOutputDetail(studyOutputDetail);
 
 // строки расхода
@@ -1649,7 +1649,7 @@ descriptionConsumption 'Название документа' (consumption) =
 
 descriptionStudyInputDetail 'Название документа' (studyInputDetail) = descriptionConsumption(consumptionActOfStudy(actOfStudyStudyInputDetail(studyInputDetail))) PERSISTENT;
 
-@implementSkuLedger(studyInput, item, departmentStore);
+@implementSkuLedgerOutFIFO(studyInput, item, departmentStore);
 quantityOutFIFOSkuLedger (ledger) += quantityStudyInputDetail(ledger);
 @implementSkuLedgerOutFIFOBalance(studyInput, item, departmentStore);
 sumOutSkuLedger (ledger) += retailSumStudyInputDetail(ledger);
@@ -1777,7 +1777,7 @@ notNullAvailableQuantityItemBySpecificationDetail(specificationDetail) = availab
 //---------------------------- Документ на отгрузку из розницы ----------------------------------------//
 
 CLASS statement 'Выписка из розницы' : outAccountDocumentLedger, historyObject, numberedObject, consignment;
-CLASS statementDetail 'Строка выписки из розницы' : outFIFOSkuLedger, salesLedger, consignmentDetail;
+CLASS statementDetail 'Строка выписки из розницы' : consignmentDetail;
 CLASS statementPosted 'Закрытая выписка из розницы' : statement, postedObject;
 
 @defineDocument(statement);
@@ -1851,7 +1851,7 @@ descriptionStatement 'Название документа' (statement) =
 
 descriptionStatementDetail 'Название документа' (statementDetail) = descriptionStatement(statementStatementDetail(statementDetail));
 
-@implementSkuLedger(statement, item, departmentStore);
+@implementSkuLedgerOutFIFO(statement, item, departmentStore);
 quantityOutFIFOSkuLedger (ledger) += quantityStatementDetail(ledger);
 @implementSkuLedgerOutFIFOBalance(statement, item, departmentStore);
 sumOutSkuLedger (ledger) += retailSumStatementDetail(ledger);
@@ -1926,7 +1926,7 @@ GROUP shipmentOrderGroup 'Заказ' : documentPrmGroup;
 GROUP additionalInfo 'Дополнительно' : baseGroup;
 
 CLASS shipment 'Поставка' : incAccountDocumentLedger, historyObject, numberedObject, priceTransactionDocument, listRegister, contractLedger, contractALedger, inContractLedger;
-CLASS shipmentDetail 'Строка поставки' : batch, importerPriceLedger, supplierPriceLedger, retailVATLedger, retailPriceLedger, warePriceLedger, listRegisterDetail;
+CLASS shipmentDetail 'Строка поставки' : listRegisterDetail;
 CLASS shipmentPosted 'Закрытая поставка' : shipment, postedObject;
 
 @defineDocument(shipment);
@@ -2161,7 +2161,7 @@ needToWasteShipment (shipment) = GROUP SUM 1 IF needToWasteShipmentDetail(shipme
 
 CLASS wastage 'Списание отходов' : outAccountDocumentLedger, historyObject;
 CLASS wastagePosted 'Закрытое списание отходов' : wastage, postedObject;
-CLASS wastageDetail 'Строка документа': outFIFOSkuLedger;
+CLASS wastageDetail 'Строка документа';
 
 @defineDocumentAggregation(shipment, wastage, needToWasteShipment);
 @defineDocumentAggregationStock(shipment, wastage, departmentStore, 'Отдел магазина');
@@ -2202,7 +2202,7 @@ descriptionWastage 'Название документа' (wastage) =
 
 descriptionWastageDetail 'Название документа' (wastageDetail) = descriptionWastage(wastageWastageDetail(wastageDetail));
 
-@implementSkuLedger(wastage, item, departmentStore);
+@implementSkuLedgerOutFIFO(wastage, item, departmentStore);
 quantityOutFIFOSkuLedger (ledger) += quantityWastageDetail(ledger);
 @implementSkuLedgerOutFIFOBalance(wastage, item, departmentStore);
 sumOutSkuLedger (ledger) += retailSumWastageDetail(ledger);
@@ -2253,7 +2253,7 @@ sumContainerOutAccountDocumentLedger (ledger) += sumContainerWriteOffDetailWrite
 //----------------------------------- Внутреннее перемещение (расход) -------------------------------------------------//
 
 CLASS innerFlow 'Расход в отдел' : outAccountDocumentLedger, historyObject, numberedObject, consignment;
-CLASS innerFlowDetail 'Строка расхода в отдел' : outFIFOSkuLedger, consignmentDetail;
+CLASS innerFlowDetail 'Строка расхода в отдел' : consignmentDetail;
 CLASS innerFlowPosted 'Закрытый расход в отдел' : innerFlow, postedObject;
 
 @defineDocument(innerFlow);
@@ -2288,7 +2288,7 @@ descriptionInnerFlow 'Название документа' (innerFlow) =
 
 descriptionInnerFlowDetail 'Название документа' (innerFlowDetail) = descriptionInnerFlow(innerFlowInnerFlowDetail(innerFlowDetail));
 
-@implementSkuLedger(innerFlow, item, departmentStore);
+@implementSkuLedgerOutFIFO(innerFlow, item, departmentStore);
 quantityOutFIFOSkuLedger (ledger) += quantityInnerFlowDetail(ledger);
 @implementSkuLedgerOutFIFOBalance(innerFlow, item, departmentStore);
 sumOutSkuLedger (ledger) += retailSumInnerFlowDetail(ledger);
@@ -2344,7 +2344,7 @@ showWareInnerFlow 'Есть посуда' (innerFlow) = DATA BOOLEAN (innerFlow)
 
 
 CLASS innerArrival 'Приход в отдел' : incAccountDocumentLedger, historyObject, priceTransactionDocument, inputListRegister;
-CLASS innerArrivalDetail 'Строка прихода в отдел' : inLIFOSkuLedger, importerPriceLedger, supplierPriceLedger, retailPriceLedger, retailVATLedger, warePriceLedger, inputListRegisterDetail;
+CLASS innerArrivalDetail 'Строка прихода в отдел' : inputListRegisterDetail;
 CLASS innerArrivalPosted 'Закрытый приход в отдел' : innerArrival, postedObject;
 
 @defineDocument(innerArrival);
@@ -2458,7 +2458,7 @@ quantityInnerArrivalBatch (innerArrival, batch) = quantityInnerFlowBatch (innerF
 
 quantityInnerArrivalDetailBatch (innerArrivalDetail, batch) = quantityInnerArrivalBatch(innerArrivalInnerArrivalDetail(innerArrivalDetail), batch);
 
-@implementSkuLedger(innerArrival, item, departmentStore);
+@implementSkuLedgerInLIFO(innerArrival, item, departmentStore);
 quantityInLIFOSkuLedger(innerArrivalDetail) += quantityInnerArrivalDetail (innerArrivalDetail);
 limitInLIFOSkuLedgerBatch (innerArrivalDetail, batch) += quantityInnerArrivalDetailBatch (innerArrivalDetail, batch);
 sumInSkuLedger (ledger) += retailSumInnerArrivalDetail(ledger);
@@ -2515,7 +2515,7 @@ nameSenderDepartmentPriceChangeInnerArrival 'Отдел-отправитель' 
 //----------------------------- Возврат поставщику ---------------------------------------------------------------//
 
 CLASS returnSupplier 'Возврат поставщику' : outAccountDocumentLedger, historyObject, numberedObject, consignment, contractLedger, contractALedger, outContractLedger;
-CLASS returnSupplierDetail 'Строка возврата поставщику' : outFIFOSkuLedger, consignmentDetail;
+CLASS returnSupplierDetail 'Строка возврата поставщику' : consignmentDetail;
 CLASS returnSupplierPosted 'Закрытый возврат поставщику' : returnSupplier, postedObject;
 
 @defineDocument(returnSupplier);
@@ -2617,7 +2617,7 @@ descriptionReturnSupplier 'Название документа' (returnSupplier)
 
 descriptionReturnSupplierDetail 'Название документа' (returnSupplierDetail) = descriptionReturnSupplier(returnSupplierReturnSupplierDetail(returnSupplierDetail));
 
-@implementSkuLedger(returnSupplier, item, departmentStore);
+@implementSkuLedgerOutFIFO(returnSupplier, item, departmentStore);
 quantityOutFIFOSkuLedger (ledger) += quantityReturnSupplierDetail(ledger);
 limitOutFIFOSkuLedgerBatch (ledger, batch) += quantityReturnSupplierDetail(ledger) AND batch == batchReturnSupplierDetail(ledger);
 sumOutSkuLedger (ledger) += retailSumReturnSupplierDetail(ledger);
@@ -2723,7 +2723,7 @@ CONSTRAINT isPriceChangeWrongUserPriceChange (userPriceChangeDetail) MESSAGE 'У
 
 CLASS disparity 'Пересортица' : historyObject, numeratedDocument, priceTransactionDocument;
 CLASS disparityPosted 'Закрытая пересортица' : disparity, postedObject;
-CLASS disparityDetail 'Строка пересортицы': outFIFOSkuLedger;
+CLASS disparityDetail 'Строка пересортицы';
 
 @defineDocument(disparity);
 @defineDocumentDepartmentStore(disparity);
@@ -2751,7 +2751,7 @@ descriptionDisparityDetail 'Название документа' (disparityDetai
     [FORMULA STRING[200] '\'Пересортица (расход)\' ||  \' \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)'](
     seriesNumberObject(disparityDisparityDetail(disparityDetail)), dateDisparity(disparityDisparityDetail(disparityDetail)));
 
-@implementSkuLedger(disparity, item, departmentStore);
+@implementSkuLedgerOutFIFO(disparity, item, departmentStore);
 quantityOutFIFOSkuLedger (ledger) += quantityDisparityDetail(ledger);
 @implementSkuLedgerOutFIFOBalance(disparity, item, departmentStore);
 sumOutSkuLedger (ledger) += retailSumDisparityDetail(ledger);
@@ -2783,7 +2783,7 @@ balanceBeforeDisparityDetail (disparityDetail) <- balanceBSkuStockDateTime (
 
 //----------------------------  Изменение остатка пересорт --------------------------------------------//
 
-CLASS inputDisparityDetail 'Приход пересортицы' : batch, importerPriceLedger, supplierPriceLedger, retailVATLedger, retailPriceLedger;
+CLASS inputDisparityDetail 'Приход пересортицы';
 TABLE inputDisparityDetail (inputDisparityDetail);
 
 needToInputDisparityDetailDetail (disparityDetail) = inputQuantityDisparityDetail(disparityDetail) > 0

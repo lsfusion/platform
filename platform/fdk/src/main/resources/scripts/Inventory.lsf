@@ -610,8 +610,8 @@ includeManyStockInventory(stock, inventory) =
 CLASS ABSTRACT inventorySkuDetail 'Изменение остатка инвентаризации' : skuLedger;
 TABLE inventorySkuDetail (inventorySkuDetail);
 
-CLASS outInventorySkuDetail 'Недостача инвентаризации' : inventorySkuDetail, outFIFOSkuLedger;
-CLASS inInventorySkuDetail 'Излишки инвентаризации' : inventorySkuDetail, inLIFOSkuLedger;
+CLASS outInventorySkuDetail 'Недостача инвентаризации' : inventorySkuDetail;
+CLASS inInventorySkuDetail 'Излишки инвентаризации' : inventorySkuDetail;
 
 needToOutLedgerCollationSheetSku (collationSheet, sku) = quantityShortageCollationSheetSku(collationSheet, sku) > 0
     AND includeCollationSheetSku(collationSheet, sku) AND isPostedCollationSheet(collationSheet) AND NOT isBatchCollationSheet(collationSheet);
@@ -660,10 +660,12 @@ descriptionInventorySkuDetail 'Название документа' (inventorySk
 
 @implementSkuLedger(inventorySku, sku, stock);
 
+EXTEND CLASS outInventorySkuDetail : outFIFOSkuLedger;
 quantityOutFIFOSkuLedger (ledger) += quantityOutInventorySkuDetail(ledger);
 @implementSkuLedgerOutFIFOBalance(outInventorySku, sku, stock);
 sumOutSkuLedger (ledger) += sumOutInventorySkuDetail(ledger);
 
+EXTEND CLASS inInventorySkuDetail : inLIFOSkuLedger;
 quantityInLIFOSkuLedger (ledger) += quantityInInventorySkuDetail(ledger);
 @implementSkuLedgerInLIFOBalance(inInventorySku, sku, stock);
 sumInSkuLedger (ledger) += sumInInventorySkuDetail(ledger);
@@ -673,8 +675,8 @@ sumInSkuLedger (ledger) += sumInInventorySkuDetail(ledger);
 CLASS ABSTRACT inventoryBatchDetail 'Изменение остатка инвентаризации' : skuLedger;
 TABLE inventoryBatchDetail (inventoryBatchDetail);
 
-CLASS outInventoryBatchDetail 'Недостача инвентаризации' : inventoryBatchDetail, outFIFOSkuLedger;
-CLASS inInventoryBatchDetail 'Излишки инвентаризации' : inventoryBatchDetail, inLIFOSkuLedger;
+CLASS outInventoryBatchDetail 'Недостача инвентаризации' : inventoryBatchDetail;
+CLASS inInventoryBatchDetail 'Излишки инвентаризации' : inventoryBatchDetail;
 
 needToOutLedgerCollationSheetBatch (collationSheet, batch) = quantityShortageCollationSheetBatch(collationSheet, batch) > 0
     AND includeCollationSheetBatch(collationSheet, batch) AND isPostedCollationSheet(collationSheet) AND isBatchCollationSheet(collationSheet);
@@ -728,10 +730,12 @@ descriptionInventoryBatchDetail 'Название документа' (inventory
 
 @implementSkuLedger(inventoryBatch, sku, stock);
 
+EXTEND CLASS outInventoryBatchDetail : outFIFOSkuLedger;
 quantityOutFIFOSkuLedger (ledger) += quantityOutInventoryBatchDetail(ledger);
 limitOutFIFOSkuLedgerBatch(ledger, batch) += quantityOutInventoryBatchDetail(ledger) AND batchInventoryBatchDetail(ledger) == batch;
 sumOutSkuLedger (ledger) += sumOutInventoryBatchDetail(ledger);
 
+EXTEND CLASS inInventoryBatchDetail : inLIFOSkuLedger;
 quantityInLIFOSkuLedger (ledger) += quantityInInventoryBatchDetail(ledger);
 limitInLIFOSkuLedgerBatch (ledger, batch) +=  quantityInInventoryBatchDetail(ledger) AND batchInventoryBatchDetail(ledger) == batch;
 sumInSkuLedger (ledger) += sumInInventoryBatchDetail(ledger);

@@ -11,7 +11,7 @@ CLASS priceChangeCommittee 'Комиссия переоценки' : committee;
 CLASS ABSTRACT priceChangeDocument 'Акт переоценки' : incAccountDocumentLedger;
 TABLE priceChangeDocument (priceChangeDocument);
 
-CLASS ABSTRACT priceChangeDocumentDetail 'Строка переоценки': inLIFOSkuLedger;
+CLASS ABSTRACT priceChangeDocumentDetail 'Строка переоценки';
 TABLE priceChangeDocumentDetail (priceChangeDocumentDetail);
 
 dateTimePriceChangeDocument 'Дата/время' (priceChangeDocument) = ABSTRACT DATETIME (priceChangeDocument) PERSISTENT INDEXED;
@@ -402,7 +402,7 @@ isPostedPriceChangeDocumentDetail (priceChangeDocumentDetail) = isPostedPriceCha
 departmentStorePriceChangeDocumentDetail (priceChangeDocumentDetail) = departmentStorePriceChangeDocument(priceChangeDocumentPriceChangeDocumentDetail(priceChangeDocumentDetail));
 descriptionPriceChangeDocumentDetail (priceChangeDocumentDetail)= descriptionPriceChangeDocument(priceChangeDocumentPriceChangeDocumentDetail(priceChangeDocumentDetail));
 
-@implementSkuLedger(priceChangeDocument, sku, departmentStore);
+@implementSkuLedgerInLIFO(priceChangeDocument, sku, departmentStore);
 quantityInLIFOSkuLedger (ledger) += 0.0 IF ledger IS priceChangeDocumentDetail;
 limitInLIFOSkuLedgerBatch (ledger, batch) +=  0.0 IF ledger IS priceChangeDocumentDetail AND  batch IS batch;
 sumInSkuLedger(ledger) += diffRetailSumPriceChangeDocumentDetail(ledger);

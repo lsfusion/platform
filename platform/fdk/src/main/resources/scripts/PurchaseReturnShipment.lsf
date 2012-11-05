@@ -5,7 +5,7 @@ REQUIRE Shipment, PurchaseReturnInvoice;
 NAMESPACE PurchaseReturn;
 
 //----------------------------------------------- Поставка ---------------------------------------------------//
-@defineShipment(outFIFOSkuLedger, ' (покупка-возврат)', supplier, 'Поставщик', supplier, company);
+@defineShipment(' (покупка-возврат)', supplier, 'Поставщик', supplier, company);
 @defineShipmentBatch();
 
 // Берем учетную цену
@@ -14,7 +14,7 @@ NAMESPACE PurchaseReturn;
 
 // Проводим по регистру
 
-@implementSkuLedger(shipment, sku, stock);
+@implementSkuLedgerOutFIFO(shipment, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantityShipmentDetail(ledger);
 limitOutFIFOSkuLedgerBatch(ledger, batch) += IF batchShipmentDetail(ledger) THEN
                                                 quantityShipmentDetail (ledger) AND batchShipmentDetail(ledger) == batch

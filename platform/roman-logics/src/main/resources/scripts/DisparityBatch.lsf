@@ -18,10 +18,10 @@ CLASS disparityBatch 'Пересорт м/у партиями': historyObject, n
 TABLE disparityBatch(disparityBatch);
 CLASS disparityBatchPosted 'Проведенный пересорт м/у партиями' : disparityBatch, postedObject;
 
-CLASS disparityInBatchDetail 'Строка пересорта м/у партиями (In)' : inLIFOSkuLedger;
+CLASS disparityInBatchDetail 'Строка пересорта м/у партиями (In)';
 TABLE disparityInBatchDetail(disparityInBatchDetail);
 
-CLASS disparityOutBatchDetail 'Строка пересорта м/у партиями (Out)' : outFIFOSkuLedger;
+CLASS disparityOutBatchDetail 'Строка пересорта м/у партиями (Out)';
 TABLE disparityOutBatchDetail(disparityOutBatchDetail);
 
 @defineNumeratedObjectDefault(disparityBatch, 'Нумератор для пересорта', 'ПР');
@@ -249,14 +249,14 @@ createMixDisparityBatch 'Сделать подборку строк пересо
     }
 } IN documentPrmGroup CONFIRM;
 
-@implementSkuLedgerCustom(disparityOutBatchDetail, sku, stock);
+@implementSkuLedgerOutFIFOCustom(disparityOutBatchDetail, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantityDisparityOutBatchDetail(ledger);
 limitOutFIFOSkuLedgerBatch (ledger, batch) += quantityDisparityOutBatchDetail(ledger) AND batchDisparityOutBatchDetail(ledger) == batch;
 changedDataSkuLedger(ledger) += CHANGED(batchDisparityOutBatchDetail(ledger));
 sumOutSkuLedger(ledger) += 0.0 IF ledger IS disparityOutBatchDetail;
 skipASkuLedger (ledger) += ledger IS disparityOutBatchDetail;
 
-@implementSkuLedgerCustom(disparityInBatchDetail, sku, stock);
+@implementSkuLedgerInLIFOCustom(disparityInBatchDetail, sku, stock);
 quantityInLIFOSkuLedger (ledger) += quantityDisparityInBatchDetail(ledger);
 limitInLIFOSkuLedgerBatch (ledger, batch) += quantityDisparityInBatchDetail(ledger) AND batchDisparityInBatchDetail(ledger) == batch;
 changedDataSkuLedger(ledger) += CHANGED(batchDisparityInBatchDetail(ledger));
@@ -330,10 +330,10 @@ CLASS disparityBatchA 'Пересорт м/у партиями (бухг.)': his
 TABLE disparityBatchA(disparityBatchA);
 CLASS disparityBatchAPosted 'Проведенный пересорт м/у партиями (бухг.)' : disparityBatchA, postedObject;
 
-CLASS disparityInBatchADetail 'Строка пересорта м/у партиями (бухг.) (In)' : inLIFOSkuLedger;
+CLASS disparityInBatchADetail 'Строка пересорта м/у партиями (бухг.) (In)';
 TABLE disparityInBatchADetail(disparityInBatchADetail);
 
-CLASS disparityOutBatchADetail 'Строка пересорта м/у партиями (бухг.) (Out)' : outFIFOSkuLedger;
+CLASS disparityOutBatchADetail 'Строка пересорта м/у партиями (бухг.) (Out)';
 TABLE disparityOutBatchADetail(disparityOutBatchADetail);
 
 @defineNumeratedObjectDefault(disparityBatchA, 'Нумератор для пересорта м/у партиями (бухг.)', 'ПБ');
@@ -603,12 +603,12 @@ createMixDisparityBatchA 'Сделать подборку строк перес�
     }
 } IN documentPrmGroup CONFIRM;
 
-@implementSkuLedgerCustom(disparityOutBatchADetail, sku, stock);
+@implementSkuLedgerOutFIFOCustom(disparityOutBatchADetail, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantityDisparityOutBatchADetail(ledger);
 limitOutFIFOSkuLedgerBatch (ledger, batch) += quantityDisparityOutBatchADetail(ledger) AND batchDisparityOutBatchADetail(ledger) == batch;
 sumOutSkuLedger(ledger) += sumDisparityOutBatchADetail(ledger);
 
-@implementSkuLedgerCustom(disparityInBatchADetail, sku, stock);
+@implementSkuLedgerInLIFOCustom(disparityInBatchADetail, sku, stock);
 quantityInLIFOSkuLedger (ledger) += quantityDisparityInBatchADetail(ledger);
 limitInLIFOSkuLedgerBatch (ledger, batch) += quantityDisparityInBatchADetail(ledger) AND batchDisparityInBatchADetail(ledger) == batch;
 sumInSkuLedger(ledger) += sumDisparityInBatchADetail(ledger);

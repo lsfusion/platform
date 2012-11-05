@@ -22,7 +22,7 @@ PRIORITY Stock, RomanLogicsModule;
 
 CLASS invoiceWHOut 'Реализация товара по безналичному расчету' : historyObject, numberedObject, consignment, outAccountDocumentLedger, innerDocument;
 CLASS invoiceWHOutPosted 'Проведенная реализация товара по безналичному расчету' : invoiceWHOut, postedObject;
-CLASS invoiceWHOutDetail 'Строка реализации товара по безналичному расчету' : outFIFOSkuLedger, consignmentDetail;
+CLASS invoiceWHOutDetail 'Строка реализации товара по безналичному расчету' : consignmentDetail;
 
 @defineDocument(invoiceWHOut);
 
@@ -175,7 +175,7 @@ DESIGN invoiceWHOuts FROM DEFAULT {
 @defineDocumentRetailPrice(invoiceWHOut, d);
 
 // Проводим по регистру
-@implementSkuLedger(invoiceWHOut, sku, warehouse);
+@implementSkuLedgerOutFIFO(invoiceWHOut, sku, warehouse);
 quantityOutFIFOSkuLedger (ledger) += quantityInvoiceWHOutDetail (ledger);
 limitOutFIFOSkuLedgerBatch(ledger, batch) += IF batchAInvoiceWHOutDetail(ledger) THEN
                                                 quantityInvoiceWHOutDetail (ledger) AND batchAInvoiceWHOutDetail(ledger) == batch

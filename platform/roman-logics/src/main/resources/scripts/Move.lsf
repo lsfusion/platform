@@ -16,7 +16,7 @@ PRIORITY Stock, RomanLogicsModule;
 
 CLASS moveOut 'Перемещение товаров' : historyObject, numeratedObject, innerDocument;
 CLASS moveOutPosted 'Проведенное перемещение товаров' : moveOut, postedObject;
-CLASS moveOutDetail 'Строка перемещения товаров' : outFIFOSkuLedger;
+CLASS moveOutDetail 'Строка перемещения товаров';
 
 @defineNumeratedObjectDefault(moveOut, 'Нумератор для перемещения товаров', 'ПБ');
 
@@ -40,7 +40,7 @@ EXTEND DESIGN moveOut {
 }
 
 // Проводим по регистру
-@implementSkuLedger(moveOut, sku, stock);
+@implementSkuLedgerOutFIFO(moveOut, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantityMoveOutDetail (ledger);
 @implementSkuLedgerOutFIFOBalanceB(moveOut, sku, stock);
 sumOutSkuLedger(ledger) += costSumSkuLedger(ledger) IF ledger IS moveOutDetail;
@@ -56,7 +56,7 @@ EXTEND FORM moveOuts
 // ---------------------------------------- Поступление ------------------------------------ //
 
 CLASS moveIn 'Поступление товаров' : historyObject;
-CLASS moveInDetail 'Строка поступления товаров' : inLIFOSkuLedger;
+CLASS moveInDetail 'Строка поступления товаров';
 
 @defineDocumentTransferIn(move, 'Поступление товаров', sku, stock);
 @defineDocumentFormTransferIn(move, 'Поступление товаров');
@@ -66,7 +66,7 @@ CLASS moveInDetail 'Строка поступления товаров' : inLIFO
 
 costMoveInBatch(moveIn, batch) = GROUP SUM costSkuLedgerBatch(ledger, batch) BY moveInMoveInDetail(ledger), batch PERSISTENT;
 
-@implementSkuLedger(moveIn, sku, stock);
+@implementSkuLedgerInLIFO(moveIn, sku, stock);
 quantityInLIFOSkuLedger (ledger) += quantityMoveInDetail(ledger);
 limitInLIFOSkuLedgerBatch (ledger, batch) += costSkuLedgerBatch(moveOutDetailMoveInDetail(ledger), batch);
 sumInSkuLedger(ledger) += costSumSkuLedger(ledger) IF ledger IS moveInDetail;
@@ -93,8 +93,8 @@ CLASS moveRecDetail 'Строка приемки товаров (перемещ�
 CLASS moveDiff 'Акт расхождений приемки товаров (перемещение)' : historyObject;
 
 CLASS ABSTRACT moveDiffDetail 'Строка расхождений акта приемки товаров (перемещение)';
-CLASS moveDiffEDetail 'Строка расхождений акта приемки товаров (перемещение, излишек)' : moveDiffDetail, batchB;
-CLASS moveDiffSDetail 'Строка расхождений акта приемки товаров (перемещение, недостача)' : moveDiffDetail, outFIFOSkuLedger;
+CLASS moveDiffEDetail 'Строка расхождений акта приемки товаров (перемещение, излишек)' : moveDiffDetail;
+CLASS moveDiffSDetail 'Строка расхождений акта приемки товаров (перемещение, недостача)' : moveDiffDetail;
 
 @defineDocumentTransferDiff(move, 'Акт расхождений приемки товаров (перемещение)', sku, stock);
 @defineDocumentFormTransferDiff(move);
@@ -104,11 +104,12 @@ CLASS moveDiffSDetail 'Строка расхождений акта приемк
 
 costMoveDiffEDetail(detail) = 0.0 IF detail IS moveDiffEDetail;
 
-@implementBatch(moveDiffE, sku, stock, cost);
+EXTEND CLASS moveDiffEDetail : batchB;
+@implementBatchCustom(moveDiffE, sku, stock, cost);
 quantityBatch (batch) += quantityMoveDiffEDetail(batch);
 skipASkuLedger (ledger) += ledger IS moveDiffEDetail;
 
-@implementSkuLedger(moveDiffS, sku, stock);
+@implementSkuLedgerOutFIFO(moveDiffS, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantityMoveDiffSDetail(ledger);
 limitOutFIFOSkuLedgerBatch (ledger, batch) += costMoveInBatch(moveInMoveDiffSDetail(ledger), batch);
 orderOutFIFOSkuLedgerBatch (ledger, batch) += orderBBatch(batch) IF ledger IS moveDiffSDetail;

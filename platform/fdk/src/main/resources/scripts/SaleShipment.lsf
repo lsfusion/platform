@@ -7,7 +7,7 @@ NAMESPACE Sale;
 
 //----------------------------------------------- Поставка ---------------------------------------------------//
 
-@defineShipment(outFIFOSkuLedger, ' (продажа)', customer, 'Покупатель', company, customer);
+@defineShipment(' (продажа)', customer, 'Покупатель', company, customer);
 @defineShipmentBatch();
 
 // Берем учетную цену
@@ -15,7 +15,7 @@ NAMESPACE Sale;
 @deriveDocumentDetailPriceBatchStock(userShipment);
 
 // Проводим по регистру
-@implementSkuLedger(shipment, sku, stock);
+@implementSkuLedgerOutFIFO(shipment, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantityShipmentDetail (ledger);
 limitOutFIFOSkuLedgerBatch(ledger, batch) += IF batchShipmentDetail(ledger) THEN
                                                 quantityShipmentDetail (ledger) AND batchShipmentDetail(ledger) == batch

@@ -301,6 +301,7 @@ META defineHistorizableLedger(property, caption, type, key0, key1)
 END
 
 META implementHistorizableLedger(property, key0, key1, concrete, key0Prop, key1Prop, propertyProp)
+    EXTEND CLASS concrete##Detail : property##Ledger;
     dateTime###property##Ledger (ledger) += dateTime###concrete##Detail(ledger);
     isPosted###property##Ledger (ledger) += isPosted###concrete##Detail(ledger);
     key0###property##Ledger (ledger) += key0Prop###concrete##Detail(ledger);

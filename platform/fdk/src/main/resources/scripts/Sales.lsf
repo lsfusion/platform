@@ -238,12 +238,16 @@ NAVIGATOR {
 
 //---------------------------------------------- Макросы для имплементаций -------------------------------------//
 
-META implementSalesLedger(concrete, skuProp, stockProp)
+META implementSalesLedgerCustom(concrete, skuProp, stockProp)
     dateTimeSalesLedger (ledger) += dateTime###concrete##Detail(ledger);
     isPostedSalesLedger (ledger) += isPosted###concrete##Detail(ledger);
     skuSalesLedger (ledger) += skuProp###concrete##Detail(ledger);
     stockSalesLedger (ledger) += stockProp###concrete##Detail(ledger);
     descriptionSalesLedger (ledger) += description###concrete##Detail(ledger);
+END
+META implementSalesLedger(concrete, skuProp, stockProp)
+    EXTEND CLASS concrete##Detail : salesLedger;
+    @implementSalesLedgerCustom(concrete, skuProp, stockProp);
 END
 
 EXTEND FORM currentBalanceSkuStock PROPERTIES(s, st) averageSoldSkuStock READONLY;

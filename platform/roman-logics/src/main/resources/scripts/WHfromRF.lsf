@@ -19,7 +19,7 @@ PRIORITY Stock, RomanLogicsModule;
 
 CLASS WHfromRF 'Приход из РФ' : historyObject, numeratedObject;
 CLASS WHfromRFPosted 'Закрытый приход из РФ' : WHfromRF, postedObject;
-CLASS WHfromRFDetail 'Строка прихода из РФ' : batchB;
+CLASS WHfromRFDetail 'Строка прихода из РФ';
 
 GROUP exchangeGroup 'Курсы обмена' : publicGroup;
 
@@ -486,7 +486,8 @@ accountSumWHfromRF 'Сумма учетная' (WHfromRF) = GROUP SUM accountSum
 
 // Проводим по регистру
 
-@implementBatch(WHfromRF, sku, stock, cost);
+EXTEND CLASS WHfromRFDetail : batchB;
+@implementBatchCustom(WHfromRF, sku, stock, cost);
 quantityBatch (batch) += quantityWHfromRFDetail(batch);
 sumInSkuLedger(batch) += accountSumWHfromRFDetail(batch);
 skipASkuLedger (ledger) += ledger IS WHfromRFDetail;

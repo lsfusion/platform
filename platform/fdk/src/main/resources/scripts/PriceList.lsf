@@ -134,10 +134,10 @@ stocksPriceList 'Склады' (priceList) = GROUP CONCAT name(stock) IF inPrice
                                        ORDER stock MINCHARWIDTH 100 PERSISTENT;
 
 currentPricePriceListDetailDataPriceListTypeStock 'Действующая цена' (priceListDetail, dataPriceListType, stock) =
-    pricePriceListTypeSkuStockDateTime(dataPriceListType, skuPriceListDetail(priceListDetail), stock, fromDateTimePriceListDetail(priceListDetail));
+    prevPricePriceListTypeSkuStockDateTime(dataPriceListType, skuPriceListDetail(priceListDetail), stock, fromDateTimePriceListDetail(priceListDetail));
 
 currentPriceSkuPriceListDataPriceListTypeStock 'Действующая цена' (sku, priceList, dataPriceListType, stock) =
-    pricePriceListTypeSkuStockDateTime(dataPriceListType, sku, stock, fromDateTimePriceList(priceList));
+    prevPricePriceListTypeSkuStockDateTime(dataPriceListType, sku, stock, fromDateTimePriceList(priceList));
 
 markUpPricePriceListDetailDataPriceListTypeStock 'Надбавка, %' (priceListDetail, dataPriceListType, stock) =
     pricePriceListDetailDataPriceListType(priceListDetail, dataPriceListType) * 100.0 /

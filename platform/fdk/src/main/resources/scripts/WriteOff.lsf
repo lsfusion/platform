@@ -24,7 +24,7 @@ FORM reasonOff 'Причина списания'
 ;
 
 CLASS writeOff 'Списание' : outAccountDocumentLedger, historyObject, numeratedDocument;
-CLASS writeOffDetail 'Строка списания' : outFIFOSkuLedger;
+CLASS writeOffDetail 'Строка списания';
 CLASS writeOffPosted 'Закрытое списание' : writeOff, postedObject;
 
 @defineDocument(writeOff);
@@ -73,7 +73,7 @@ nameReasonOffWriteOff 'Причина списания' (writeOff) = name(reason
 
 // Проводим по регистру
 
-@implementSkuLedger(writeOff, sku, stock);
+@implementSkuLedgerOutFIFO(writeOff, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantityWriteOffDetail(ledger);
 sumOutSkuLedger (ledger) += sumWriteOffDetail(ledger);
 

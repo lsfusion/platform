@@ -795,8 +795,8 @@ EXTEND DESIGN innerOrders {
 CLASS innerOrderDiff 'Акт расхождений приемки товаров по внутреннему заказу' : historyObject;
 
 CLASS ABSTRACT innerOrderDiffDetail 'Строка расхождений акта приемки товаров по по внутреннему заказу';
-CLASS innerOrderDiffEDetail 'Строка расхождений акта приемки товаров по внутреннему заказу (излишек)' : innerOrderDiffDetail, batchB;
-CLASS innerOrderDiffSDetail 'Строка расхождений акта приемки товаров по внутреннему заказу (недостача)' : innerOrderDiffDetail, outFIFOSkuLedger;
+CLASS innerOrderDiffEDetail 'Строка расхождений акта приемки товаров по внутреннему заказу (излишек)' : innerOrderDiffDetail;
+CLASS innerOrderDiffSDetail 'Строка расхождений акта приемки товаров по внутреннему заказу (недостача)' : innerOrderDiffDetail;
 
 //@defineDocumentTransferDiff(transfer, 'Акт расхождений приемки товаров по накладной (перемещение)', sku, stock);
 //@defineDocumentFormTransferDiff(transfer);
@@ -885,13 +885,13 @@ EXTEND DESIGN innerOrders {
 @extendFormDocumentDetailSkuArticleReadonlyQuantity(innerOrders, f, innerOrderDiff, signedQuantityInnerOrderDiffDetail);
 
 costInnerOrderDiffEDetail(detail) = 0.0 IF detail IS innerOrderDiffEDetail;
-@implementBatch(innerOrderDiffE, sku, stock, cost);
+EXTEND CLASS innerOrderDiffEDetail : batchB;
+@implementBatchCustom(innerOrderDiffE, sku, stock, cost);
 quantityBatch (batch) += quantityInnerOrderDiffEDetail(batch);
 skipASkuLedger (ledger) += ledger IS innerOrderDiffEDetail;
 
-@implementSkuLedger(innerOrderDiffS, sku, stock);
+@implementSkuLedgerOutFIFO(innerOrderDiffS, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantityInnerOrderDiffSDetail(ledger);
-
 @implementSkuLedgerOutFIFOBalance (innerOrderDiffS, sku, stock);
 orderOutFIFOSkuLedgerBatch (ledger, batch) += orderBBatch(batch) IF ledger IS innerOrderDiffSDetail;
 

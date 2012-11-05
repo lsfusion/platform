@@ -339,6 +339,7 @@ END
 META defineDocumentInterfacePosted (object)
     @defineDocumentInterfaceHeaderPosted(object);
     @defineDocumentDetailPosted(object);
+    @defineDocumentDetailPosted(user###object);
 END
 
 // Closed
@@ -501,6 +502,7 @@ END
 META defineDocumentInterfaceDescription(object, detail, numberProp, caption)
     @defineDocumentInterfaceHeaderDescription(object, numberProp, caption);
     @defineDocumentDetailDescription(object, detail);
+    @defineDocumentDetailDescription(user###object, user###detail);
 END
 
 META defineDocumentDescription (object, caption)

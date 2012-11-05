@@ -141,7 +141,7 @@ CLASS declaration 'Таможенная декларация';
 CLASS preparedDeclaration 'Подготовленная декларация' : declaration;
 CLASS registeredDeclaration 'Зарегистрованная декларация' : preparedDeclaration;
 
-CLASS declarationDetail 'Позиция декларации' : batchA;
+CLASS declarationDetail 'Позиция декларации';
 
 @defineDocumentTables(declaration);
 
@@ -857,7 +857,8 @@ quantityDiffDeclarationDetail 'Кол-во' (declarationDetail) = quantityDeclar
 
 sumDiffDeclarationDetail 'Сумма' (declarationDetail) = supplierPriceDeclarationDetail(declarationDetail) * quantityDiffDeclarationDetail(declarationDetail);
 
-@implementBatch(declaration, sku, customStore, supplierPrice);
+EXTEND CLASS declarationDetail : batchA;
+@implementBatchCustom(declaration, sku, customStore, supplierPrice);
 quantityBatch (batch) += quantityDiffDeclarationDetail(batch);
 ownerBatchA (batch) += importerDeclarationDetail(batch);
 importerPriceBatchA (batch) += supplierPriceDeclarationDetail(batch);
