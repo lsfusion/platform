@@ -251,7 +251,7 @@ addDetailDialogTerminalListInventory 'Заполнить из документа
 
 // -------------------------------------------- Сличительная ведомость ----------------------------------------------- //
 
-CLASS ABSTRACT collationSheet 'Сличительная ведомость' : outAccountDocumentLedger;
+CLASS ABSTRACT collationSheet 'Сличительная ведомость';
 
 CLASS registerCollationSheet 'Сличительная ведомость по описи' : collationSheet;
 CLASS remainsCollationSheet 'Сличительная ведомость по остаткам' : collationSheet;
@@ -580,7 +580,7 @@ sumContainerShortageCollationSheet 'Сумма недостачи, тара' (co
 
 //-------------------------------------- Проведение по товарному отчету ----------------------------------------------------//
 
-@implementAccountDocumentLedger(collationSheet, stock);
+@implementAccountDocumentLedgerOut(collationSheet, stock);
 sumOutAccountDocumentLedger (ledger) += sumShortageCollationSheet(ledger);
 sumItemOutAccountDocumentLedger (ledger) += sumItemShortageCollationSheet(ledger);
 sumContainerOutAccountDocumentLedger (ledger) += sumContainerShortageCollationSheet(ledger);

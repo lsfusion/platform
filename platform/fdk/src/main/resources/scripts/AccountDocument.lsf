@@ -292,6 +292,14 @@ META implementAccountDocumentLedger (concrete, stockProp)
     descriptionAccountDocumentLedger (ledger) += description###concrete(ledger);
 END
 
+META implementAccountDocumentLedgerInc (concrete, stockProp)
+    EXTEND CLASS concrete : incAccountDocumentLedger;
+END
+
+META implementAccountDocumentLedgerOut (concrete, stockProp)
+    EXTEND CLASS concrete : outAccountDocumentLedger;
+END
+
 META extendStockFormAccountDocumentLedger(form, object)
     EXTEND FORM form
         PROPERTIES(object)   nameMRPStock, nameBookkeeperStock, namePersonCheckStock //namePositionMRPStock, namePositionBookkeeperStock, namePositionPersonCheckStock

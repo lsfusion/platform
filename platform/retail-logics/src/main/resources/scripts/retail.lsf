@@ -1588,7 +1588,7 @@ deleteStudyOutputDetailStudyInputDetail 'Очистить позиции' = ACTI
 
 //  приходный документ //
 
-CLASS parish 'Приходный документ (разруб)' : incAccountDocumentLedger;
+CLASS parish 'Приходный документ (разруб)';
 TABLE parish (parish);
 
 isActOfStudy(actOfStudy) = actOfStudy IS actOfStudy;
@@ -1620,14 +1620,14 @@ sumInSkuLedger (ledger) += retailSumStudyOutputDetail(ledger);
 
 @implementBaseISkuDepartmentStoreLedger(studyOutput, item);
 
-@implementAccountDocumentLedger(parish, departmentStore);
+@implementAccountDocumentLedgerInc(parish, departmentStore);
 sumIncAccountDocumentLedger (ledger) += retailSumParish(ledger);
 sumItemIncAccountDocumentLedger (ledger) += retailSumParish(ledger);
 sumContainerIncAccountDocumentLedger (ledger) += 0.0 IF ledger IS parish;
 
 //  расходный документ //
 
-CLASS consumption 'Расходный документ (разруб)' : outAccountDocumentLedger;
+CLASS consumption 'Расходный документ (разруб)';
 TABLE consumption (consumption);
 
 @defineAggregation(actOfStudy, consumption, isActOfStudy);
@@ -1654,7 +1654,7 @@ quantityOutFIFOSkuLedger (ledger) += quantityStudyInputDetail(ledger);
 @implementSkuLedgerOutFIFOBalance(studyInput, item, departmentStore);
 sumOutSkuLedger (ledger) += retailSumStudyInputDetail(ledger);
 
-@implementAccountDocumentLedger(consumption, departmentStore);
+@implementAccountDocumentLedgerOut(consumption, departmentStore);
 sumOutAccountDocumentLedger (ledger) += retailSumConsumption(ledger);
 sumItemOutAccountDocumentLedger (ledger) += retailSumConsumption(ledger);
 sumContainerOutAccountDocumentLedger (ledger) += 0.0 IF ledger IS consumption;
@@ -1776,7 +1776,7 @@ notNullAvailableQuantityItemBySpecificationDetail(specificationDetail) = availab
 
 //---------------------------- Документ на отгрузку из розницы ----------------------------------------//
 
-CLASS statement 'Выписка из розницы' : outAccountDocumentLedger, historyObject, numberedObject, consignment;
+CLASS statement 'Выписка из розницы' : historyObject, numberedObject, consignment;
 CLASS statementDetail 'Строка выписки из розницы' : consignmentDetail;
 CLASS statementPosted 'Закрытая выписка из розницы' : statement, postedObject;
 
@@ -1856,7 +1856,7 @@ quantityOutFIFOSkuLedger (ledger) += quantityStatementDetail(ledger);
 @implementSkuLedgerOutFIFOBalance(statement, item, departmentStore);
 sumOutSkuLedger (ledger) += retailSumStatementDetail(ledger);
 
-@implementAccountDocumentLedger(statement, departmentStore);
+@implementAccountDocumentLedgerOut(statement, departmentStore);
 sumOutAccountDocumentLedger (ledger) += retailSumStatementDetailStatement(ledger);
 sumItemOutAccountDocumentLedger (ledger) += retailSumItemStatementDetailStatement(ledger);
 sumContainerOutAccountDocumentLedger (ledger) += retailSumContainerStatementDetailStatement(ledger);
@@ -1925,7 +1925,7 @@ noteConsignmentDetail (consignmentDetail) += noteStatementDetail (consignmentDet
 GROUP shipmentOrderGroup 'Заказ' : documentPrmGroup;
 GROUP additionalInfo 'Дополнительно' : baseGroup;
 
-CLASS shipment 'Поставка' : incAccountDocumentLedger, historyObject, numberedObject, priceTransactionDocument, listRegister, contractLedger, contractALedger, inContractLedger;
+CLASS shipment 'Поставка' : historyObject, numberedObject, priceTransactionDocument, listRegister, contractLedger, contractALedger, inContractLedger;
 CLASS shipmentDetail 'Строка поставки' : listRegisterDetail;
 CLASS shipmentPosted 'Закрытая поставка' : shipment, postedObject;
 
@@ -2008,7 +2008,7 @@ sumInSkuLedger (ledger) += retailSumShipmentDetail(ledger);
 
 @implementBaseSkuDepartmentStoreLedger(shipment, item);
 
-@implementAccountDocumentLedger(shipment, departmentStore);
+@implementAccountDocumentLedgerInc(shipment, departmentStore);
 sumIncAccountDocumentLedger (ledger) += retailSumShipmentDetailShipment(ledger);
 sumItemIncAccountDocumentLedger (ledger) += retailSumItemShipmentDetailShipment(ledger);
 sumContainerIncAccountDocumentLedger (ledger) += retailSumContainerShipmentDetailShipment(ledger);
@@ -2159,7 +2159,7 @@ percentRateWasteShipmentDetail (shipmentDetail) <- percentRateWasteItem(itemShip
 needToWasteShipmentDetail (shipmentDetail) = TRUE IF percentRateWasteShipmentDetail(shipmentDetail);
 needToWasteShipment (shipment) = GROUP SUM 1 IF needToWasteShipmentDetail(shipmentDetail) BY shipmentShipmentDetail(shipmentDetail) IN baseGroup;
 
-CLASS wastage 'Списание отходов' : outAccountDocumentLedger, historyObject;
+CLASS wastage 'Списание отходов' : historyObject;
 CLASS wastagePosted 'Закрытое списание отходов' : wastage, postedObject;
 CLASS wastageDetail 'Строка документа';
 
@@ -2207,7 +2207,7 @@ quantityOutFIFOSkuLedger (ledger) += quantityWastageDetail(ledger);
 @implementSkuLedgerOutFIFOBalance(wastage, item, departmentStore);
 sumOutSkuLedger (ledger) += retailSumWastageDetail(ledger);
 
-@implementAccountDocumentLedger(wastage, departmentStore);
+@implementAccountDocumentLedgerOut(wastage, departmentStore);
 sumOutAccountDocumentLedger (ledger) += retailSumWastageDetailWastage(ledger);
 sumItemOutAccountDocumentLedger (ledger) += retailSumItemWastageDetailWastage(ledger);
 sumContainerOutAccountDocumentLedger (ledger) += retailSumContainerWastageDetailWastage(ledger);
@@ -2252,7 +2252,7 @@ sumContainerOutAccountDocumentLedger (ledger) += sumContainerWriteOffDetailWrite
 
 //----------------------------------- Внутреннее перемещение (расход) -------------------------------------------------//
 
-CLASS innerFlow 'Расход в отдел' : outAccountDocumentLedger, historyObject, numberedObject, consignment;
+CLASS innerFlow 'Расход в отдел' : historyObject, numberedObject, consignment;
 CLASS innerFlowDetail 'Строка расхода в отдел' : consignmentDetail;
 CLASS innerFlowPosted 'Закрытый расход в отдел' : innerFlow, postedObject;
 
@@ -2293,7 +2293,7 @@ quantityOutFIFOSkuLedger (ledger) += quantityInnerFlowDetail(ledger);
 @implementSkuLedgerOutFIFOBalance(innerFlow, item, departmentStore);
 sumOutSkuLedger (ledger) += retailSumInnerFlowDetail(ledger);
 
-@implementAccountDocumentLedger(innerFlow, departmentStore);
+@implementAccountDocumentLedgerOut(innerFlow, departmentStore);
 sumOutAccountDocumentLedger (ledger) += retailSumInnerFlowDetailInnerFlow(ledger);
 sumItemOutAccountDocumentLedger (ledger) += retailSumItemInnerFlowDetailInnerFlow(ledger);
 sumContainerOutAccountDocumentLedger (ledger) += retailSumContainerInnerFlowDetailInnerFlow(ledger);
@@ -2343,7 +2343,7 @@ showWareInnerFlow 'Есть посуда' (innerFlow) = DATA BOOLEAN (innerFlow)
 //----------------------------------- Внутреннее перемещение (приход) -------------------------------------------------//
 
 
-CLASS innerArrival 'Приход в отдел' : incAccountDocumentLedger, historyObject, priceTransactionDocument, inputListRegister;
+CLASS innerArrival 'Приход в отдел' : historyObject, priceTransactionDocument, inputListRegister;
 CLASS innerArrivalDetail 'Строка прихода в отдел' : inputListRegisterDetail;
 CLASS innerArrivalPosted 'Закрытый приход в отдел' : innerArrival, postedObject;
 
@@ -2465,7 +2465,7 @@ sumInSkuLedger (ledger) += retailSumInnerArrivalDetail(ledger);
 
 @implementBaseSkuDepartmentStoreLedger(innerArrival, item);
 
-@implementAccountDocumentLedger(innerArrival, departmentStore);
+@implementAccountDocumentLedgerInc(innerArrival, departmentStore);
 sumIncAccountDocumentLedger (ledger) += retailSumInnerArrivalDetailInnerArrival(ledger);
 sumItemIncAccountDocumentLedger (ledger) += retailSumItemInnerArrivalDetailInnerArrival(ledger);
 sumContainerIncAccountDocumentLedger (ledger) += retailSumContainerInnerArrivalDetailInnerArrival(ledger);
@@ -2514,7 +2514,7 @@ nameSenderDepartmentPriceChangeInnerArrival 'Отдел-отправитель' 
 
 //----------------------------- Возврат поставщику ---------------------------------------------------------------//
 
-CLASS returnSupplier 'Возврат поставщику' : outAccountDocumentLedger, historyObject, numberedObject, consignment, contractLedger, contractALedger, outContractLedger;
+CLASS returnSupplier 'Возврат поставщику' : historyObject, numberedObject, consignment, contractLedger, contractALedger, outContractLedger;
 CLASS returnSupplierDetail 'Строка возврата поставщику' : consignmentDetail;
 CLASS returnSupplierPosted 'Закрытый возврат поставщику' : returnSupplier, postedObject;
 
@@ -2622,7 +2622,7 @@ quantityOutFIFOSkuLedger (ledger) += quantityReturnSupplierDetail(ledger);
 limitOutFIFOSkuLedgerBatch (ledger, batch) += quantityReturnSupplierDetail(ledger) AND batch == batchReturnSupplierDetail(ledger);
 sumOutSkuLedger (ledger) += retailSumReturnSupplierDetail(ledger);
 
-@implementAccountDocumentLedger(returnSupplier, departmentStore);
+@implementAccountDocumentLedgerOut(returnSupplier, departmentStore);
 sumOutAccountDocumentLedger (ledger) += retailSumReturnSupplierDetailReturnSupplier(ledger);
 sumItemOutAccountDocumentLedger (ledger) += retailSumItemReturnSupplierDetailReturnSupplier(ledger);
 sumContainerOutAccountDocumentLedger (ledger) += retailSumContainerReturnSupplierDetailReturnSupplier(ledger);
@@ -2690,7 +2690,7 @@ nameSupplierPriceChangeReturnSupplier 'Поставщик' (priceChangeReturnSup
 @derivePriceLedgerOnSkuChangePrefix(retailVAT, receipt, VAT, sku);
 
 // документ скидок для товарного отчета
-CLASS saleDiscountDocument 'Скидка по продаже через кассы' : outAccountDocumentLedger;
+CLASS saleDiscountDocument 'Скидка по продаже через кассы';
 TABLE saleDiscountDocument (saleDiscountDocument);
 
 @defineAggregation(zReport, saleDiscountDocument, discountSumReceiptDetailZReport);
@@ -2706,7 +2706,7 @@ descriptionSaleDiscountDocument (saleDiscountDocument) =
     [FORMULA STRING[200] '\'Скидка по кассе \' || CAST($1 AS TEXT) || \' отдела \' || CAST($2 AS TEXT) ||  \' от \' || CAST($3 AS TEXT)'](
     numberCashRegisterSaleDiscountDocument(saleDiscountDocument), nameDepartmentStoreSaleDiscountDocument(saleDiscountDocument), dateSaleDiscountDocument(saleDiscountDocument));
 
-@implementAccountDocumentLedger(saleDiscountDocument, departmentStore);
+@implementAccountDocumentLedgerOut(saleDiscountDocument, departmentStore);
 sumOutAccountDocumentLedger (ledger) += discountSaleDiscountDocument(ledger);
 sumItemOutAccountDocumentLedger (ledger) += discountSaleDiscountDocument(ledger);
 sumContainerOutAccountDocumentLedger (ledger) += 0.0 IF ledger IS saleDiscountDocument;

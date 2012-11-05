@@ -1,6 +1,6 @@
 MODULE PurchasePricing;
 
-REQUIRE Pricing, PurchaseInvoice;
+REQUIRE Pricing, PurchaseInvoice;//, PurchaseShipment, StorePrice;
 
 NAMESPACE Purchase;
 
@@ -8,3 +8,10 @@ NAMESPACE Purchase;
 //----------------------------------------------- Акт расценки ---------------------------------------------------//
 
 @definePricing(' (покупка)', supplier, 'Поставщик');
+
+//@implementSkuDepartmentStoreLedgerCustom(supplierPrice, pricing, sku, stock, price);
+//@implementSkuDepartmentStoreLedger(retailVAT, pricing, sku, stock);
+//@implementSkuDepartmentStoreLedger(retailPrice, pricing, sku, stock);
+//
+//overShipmentPriceUserInvoiceDetail(detail) += retailPriceUserInvoiceDetail(detail)
+//    IF stockUserInvoiceDetail(detail) IS departmentStore AND NOT costLedgerDepartmentStore(stockUserInvoiceDetail(detail));

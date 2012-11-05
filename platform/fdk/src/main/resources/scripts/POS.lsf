@@ -15,7 +15,7 @@ REQUIRE System,
 
 // ------------------------------------- Объявление Z-отчета ---------------------------------------- //
 
-CLASS zReport 'Z-отчет (открытый)' : incomeCashOrder, outAccountDocumentLedger, historyObject, numberedObject;
+CLASS zReport 'Z-отчет (открытый)' : incomeCashOrder, historyObject, numberedObject;
 CLASS zReportPosted 'Z-отчет (закрытый)' : zReport, postedObject;
 
 TABLE zReport (zReport);
@@ -361,7 +361,7 @@ META implementAccountDocumentLedgerZReport(dumb)
 END
 
 META implementAccountDocumentLedgerZReportCustom (sumProp)
-    @implementAccountDocumentLedger(zReport, departmentStore);
+    @implementAccountDocumentLedgerOut(zReport, departmentStore);
     sumOutAccountDocumentLedger (ledger) += sumProp (ledger);
     sumItemOutAccountDocumentLedger (ledger) += sumProp (ledger);
     sumContainerOutAccountDocumentLedger (ledger) += 0.0 IF ledger IS zReport;

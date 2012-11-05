@@ -8,7 +8,7 @@ CLASS priceChangeCommittee 'Комиссия переоценки' : committee;
 
 // ----------------------------------- Акт переоценки ------------------------------------------ //
 
-CLASS ABSTRACT priceChangeDocument 'Акт переоценки' : incAccountDocumentLedger;
+CLASS ABSTRACT priceChangeDocument 'Акт переоценки';
 TABLE priceChangeDocument (priceChangeDocument);
 
 CLASS ABSTRACT priceChangeDocumentDetail 'Строка переоценки';
@@ -127,7 +127,7 @@ diffRetailSumContainerPriceChangeDocumentDetailPriceChangeDocument 'Сумма �
     GROUP SUM diffRetailSumPriceChangeDocumentDetail(priceChangeDocumentDetail) IF isContainerSku(skuPriceChangeDocumentDetail(priceChangeDocumentDetail))
         BY  priceChangeDocumentPriceChangeDocumentDetail(priceChangeDocumentDetail);
 
-@implementAccountDocumentLedger(priceChangeDocument, departmentStore);
+@implementAccountDocumentLedgerInc(priceChangeDocument, departmentStore);
 sumIncAccountDocumentLedger (ledger) += diffRetailSumPriceChangeDocumentDetailPriceChangeDocument(ledger);
 sumItemIncAccountDocumentLedger (ledger) += diffRetailSumItemPriceChangeDocumentDetailPriceChangeDocument(ledger);
 sumContainerIncAccountDocumentLedger (ledger) += diffRetailSumContainerPriceChangeDocumentDetailPriceChangeDocument(ledger);

@@ -23,7 +23,7 @@ FORM reasonOff 'Причина списания'
     PROPERTIES(r) name
 ;
 
-CLASS writeOff 'Списание' : outAccountDocumentLedger, historyObject, numeratedDocument;
+CLASS writeOff 'Списание' : historyObject, numeratedDocument;
 CLASS writeOffDetail 'Строка списания';
 CLASS writeOffPosted 'Закрытое списание' : writeOff, postedObject;
 
@@ -79,7 +79,7 @@ sumOutSkuLedger (ledger) += sumWriteOffDetail(ledger);
 
 // Товарный отчет
 
-@implementAccountDocumentLedger(writeOff, stock);
+@implementAccountDocumentLedgerOut(writeOff, stock);
 sumOutAccountDocumentLedger (ledger) += sumWriteOffDetailWriteOff(ledger);
 
 // Обязательно имплементить для каждого конкретно проекта.....    todo:

@@ -161,8 +161,11 @@ DESIGN salesLedger FROM DEFAULT {
 
 FORM salesSkuStock 'Продажи по SKU'
 
-    OBJECTS dates = (dFrom = DATE, dTo = DATE, te=typeExchange) FIXED PANEL
-    PROPERTIES valFrom = OBJVALUE(dFrom), valTo = OBJVALUE(dTo), nameType = name(te) SELECTOR, nameCurrencyTypeExchange(te) READONLY
+    OBJECTS dates = (dFrom = DATE, dTo = DATE) FIXED PANEL
+    PROPERTIES valFrom = OBJVALUE(dFrom), valTo = OBJVALUE(dTo)
+
+    OBJECTS te = typeExchange FIXED PANEL
+    PROPERTIES nameType = name(te) SELECTOR, nameCurrencyTypeExchange(te) READONLY
 
     OBJECTS w = INTEGER
     FILTERS quantitySkuSoldWeekDateFromTo(w, dFrom, dTo)
@@ -215,11 +218,13 @@ DESIGN salesSkuStock FROM DEFAULT {
                 fillHorizontal = 2;
                 childConstraints = TO THE BOTTOM;
 
-                ADD dates.box {
+                ADD dates.box { childConstraints = TO THE RIGHT; }
+                ADD te.box {
                     childConstraints = TO THE RIGHT;
                     PROPERTY(nameCurrencyTypeExchange(te)) { caption = 'Валюта'; preferredCharWidth = 20;}
                     PROPERTY(nameType) { caption = 'Тип обмена'; preferredCharWidth = 20;}
-                };
+                }
+
                 REMOVE w.box;
                 ADD sts.box { fillVertical = 2; }
 

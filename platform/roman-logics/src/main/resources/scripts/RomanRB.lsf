@@ -242,12 +242,13 @@ NAVIGATOR {
         }
     }
     wholesaleTrade {
-        NEW tradeClassifier  'Справочники' TO leftToolbar {
+        NEW tradeClassifier 'Справочники' {
             ADD customers;
         }
-        NEW tradeDocument 'Отгрузки' TO leftToolbar {
+        NEW tradeDocument 'Отгрузки' {
             ADD invoiceWHOuts;
         }
+        ADD priceListNavigator;
     }
 
     ADD machineryNavigator AFTER wholesaleTrade TO leftToolbar;
