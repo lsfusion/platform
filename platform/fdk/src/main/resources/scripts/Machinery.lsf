@@ -89,7 +89,7 @@ sidEquipmentServerGroupMachinery 'ИД сервера оборудования' 
 
 // -------------------------------- Склады --------------------------------------------- //
 
-stockGroupMachinery = ABSTRACT stock (groupMachinery);
+stockGroupMachinery = ABSTRACT stock (groupMachinery) PERSISTENT;
 nameStockGroupMachinery 'Склад' (groupMachinery) = name(stockGroupMachinery(groupMachinery));
 
 // фильтрация по группам товаров
@@ -145,7 +145,7 @@ TABLE machinery(machinery);
 groupMachineryMachinery = ABSTRACT groupMachinery (machinery) PERSISTENT;
 nameGroupMachineryMachinery 'Группа' (machinery) = nameGroupMachinery(groupMachineryMachinery(machinery));
 
-modelMachinery = ABSTRACT model (machinery);
+modelMachinery = ABSTRACT model (machinery) PERSISTENT;
 sidModelMachinery 'Код' (machinery) = sidModel(modelMachinery(machinery)) IN baseGroup;
 nameModelMachinery 'Модель' (machinery) = name(modelMachinery(machinery)) IN baseGroup;
 handlerModelMachinery 'Обработчик' (machinery) = handlerModel(modelMachinery(machinery)) IN baseGroup;
@@ -158,9 +158,17 @@ portMachinery 'Адрес/порт' = DATA STRING[100] (machinery) IN baseGroup;
 CLASS ABSTRACT priceTransactionDocument 'Документ, требующий загрузки в оборудование';
 TABLE priceTransactionDocument (priceTransactionDocument);
 
-isDraftPriceTransactionDocument 'Не проведен' = ABSTRACT BOOLEAN (priceTransactionDocument);
-descriptionPriceTransactionDocument 'Название документа загрузки' = ABSTRACT STRING[200] (priceTransactionDocument);
+isDraftPriceTransactionDocument 'Не проведен' = ABSTRACT BOOLEAN (priceTransactionDocument) PERSISTENT;
+descriptionPriceTransactionDocument 'Название документа загрузки' = ABSTRACT STRING[200] (priceTransactionDocument) PERSISTENT;
 
+sentPriceTransactionDocument 'Принят к загрузке в оборудование' = DATA BOOLEAN (priceTransactionDocument);
+sentPriceTransactionDocument(document) <- NULL WHEN ASSIGNED(isDraftPriceTransactionDocument(document));
+
+META implementPriceTransactionDocument(concrete)
+    EXTEND CLASS concrete : Machinery.priceTransactionDocument;
+    Machinery.isDraftPriceTransactionDocument (document) += isDraft###concrete(document);
+    Machinery.descriptionPriceTransactionDocument (document) += description###concrete(document);
+END
 //----------------------------------- Загрузка в ВУ -------------------------------------------------------
 
 CLASS ABSTRACT machineryPriceTransaction 'Загрузка прайса в оборудование' : historyObject;
@@ -206,9 +214,6 @@ descriptionPriceTransactionDocumentMachineryPriceTransaction 'Основание
 // todo : persistent почему-то не работает
 descriptionMachineryPriceTransaction 'Основание' (document) = UNION OVERRIDE descriptionPriceTransactionDocumentMachineryPriceTransaction(document),
                                                                              commentMachineryPriceTransaction(document);
-
-sentPriceTransactionDocument 'Принят к загрузке в оборудование' = DATA BOOLEAN (priceTransactionDocument);
-sentPriceTransactionDocument(document) <- NULL WHEN ASSIGNED(isDraftPriceTransactionDocument(document));
 
 countProcessPriceTransactionDocument 'Кол-во ожидающих транзакций' (document) = GROUP SUM 1 IF processMachineryPriceTransaction(transaction)
                                                                                  BY priceTransactionDocumentMachineryPriceTransaction(transaction) PERSISTENT;
@@ -518,7 +523,7 @@ END
 META defineDocumentMachineryPriceTransaction (document, skuProp, stockProp)
     create###document##MachineryPriceTransaction 'Загрузить в оборудование' = ACTION (document) NEWSESSION AUTOAPPLY {
         SET createMachineryPriceTransactionSku(sku) <- TRUE IF quantity###document##Detail###skuProp###document(sku, document);
-        SET createMachineryPriceTransactionDocument() <- document AS priceTransactionDocument;
+        SET createMachineryPriceTransactionDocument() <- document AS Machinery.priceTransactionDocument;
         EXEC createMachineryPriceTransaction(stockProp###document(document));
         SET sentPriceTransactionDocument(document) <- TRUE;
     } TOOLBAR CONFIRM;
@@ -526,7 +531,7 @@ META defineDocumentMachineryPriceTransaction (document, skuProp, stockProp)
     createSnapshot###document##MachineryPriceTransaction 'Перегрузить все позиции' = ACTION (document) NEWSESSION AUTOAPPLY {
         SET createMachineryPriceTransactionSnapshot() <- TRUE;
         SET createMachineryPriceTransactionSku(sku) <- TRUE IF quantity###document##Detail###skuProp###document(sku, document);
-        SET createMachineryPriceTransactionDocument() <- document AS priceTransactionDocument;
+        SET createMachineryPriceTransactionDocument() <- document AS Machinery.priceTransactionDocument;
         EXEC createMachineryPriceTransaction(stockProp###document(document));
         SET sentPriceTransactionDocument(document) <- TRUE;
     } SHORTCUT statusMachineryPriceTransactionDocument CONFIRM;

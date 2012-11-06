@@ -63,7 +63,7 @@ META defineInvoice(sign, contact, partyA, partyB)
     countInvoiceDetailStockInvoice (stock, invoice) = GROUP SUM 1 BY stockInvoiceDetail(invoiceDetail), invoiceInvoiceDetail(invoiceDetail);
 
 //--  Связь с заказом
-    orderInvoiceDetail = ABSTRACT order (invoiceDetail);
+    orderInvoiceDetail = ABSTRACT order (invoiceDetail) PERSISTENT;
     orderUserInvoiceDetail = DATA order(userInvoiceDetail);
     orderInvoiceDetail(invoiceDetail) += orderUserInvoiceDetail(invoiceDetail);
 
@@ -349,7 +349,7 @@ META defineInvoiceBatch(dumb)
 END
 
 META defineInvoiceReturn(NS, NSR, contact)
-    invoiceDetailInvoiceDetail (invoiceDetail) = ABSTRACT NS.invoiceDetail (NSR.invoiceDetail);
+    invoiceDetailInvoiceDetail (invoiceDetail) = ABSTRACT NS.invoiceDetail (NSR.invoiceDetail) PERSISTENT;
     invoiceDetailUserInvoiceDetail (userInvoiceDetail) = DATA NS.invoiceDetail (NSR.userInvoiceDetail);
     invoiceDetailInvoiceDetail(detail) += invoiceDetailUserInvoiceDetail(detail);
 

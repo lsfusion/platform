@@ -126,7 +126,7 @@ META defineDocumentHeaderCurrency (object)
     nameCurrency###object 'Валюта' (object)= name(currency###object(object)) IN documentPrmGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
 END
 META defineDocumentAbstractHeaderCurrency (object)
-    currency###object (object) = ABSTRACT currency (object);
+    currency###object (object) = ABSTRACT currency (object) PERSISTENT;
     nameCurrency###object 'Валюта' (object)= name(currency###object(object)) IN documentPrmGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
 END
 META defineDocumentInterfaceHeaderCurrency (object)

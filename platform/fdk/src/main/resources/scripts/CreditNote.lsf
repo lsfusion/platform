@@ -175,7 +175,7 @@ META defineCreditNote(sign, contact, contactCaption)
 
 
 //--  Связь акта и накладной
-    invoiceDetailCreditNoteDetail = ABSTRACT invoiceDetail (creditNoteDetail);
+    invoiceDetailCreditNoteDetail = ABSTRACT invoiceDetail (creditNoteDetail) PERSISTENT;
     invoiceDetailUserCreditNoteDetail = DATA invoiceDetail (userCreditNoteDetail);
     invoiceDetailCreditNoteDetail(creditNoteDetail) += invoiceDetailUserCreditNoteDetail(creditNoteDetail);
 
@@ -223,7 +223,7 @@ META defineCreditNote(sign, contact, contactCaption)
 
 //-- аггр.объект
 
-    createCreditNoteInvoice 'Создавать акт расхождения' = ABSTRACT BOOLEAN (invoice) IN documentPrmGroup;
+    createCreditNoteInvoice 'Создавать акт расхождения' = ABSTRACT BOOLEAN (invoice) PERSISTENT IN documentPrmGroup;
     createCreditNoteUserInvoice 'Создавать акт расхождения' = DATA BOOLEAN (userInvoice) IN documentPrmGroup;
     createCreditNoteInvoice (invoice) += createCreditNoteUserInvoice(invoice);
     createCreditNoteInvoiceDetail 'Создавать акт расхождения' (invoiceDetail) = createCreditNoteInvoice(invoiceInvoiceDetail(invoiceDetail));

@@ -1,9 +1,9 @@
 MODULE UserPriceChange;
 
-REQUIRE System, Stock, PriceChange, Numerator, Machinery, Terminal, Barcode;
+REQUIRE System, Stock, PriceChange, Numerator, Label, Machinery, Terminal, Barcode;
 
 
-CLASS userPriceChange 'Переоценка товаров' : priceChangeDocument, numeratedObject, priceTransactionDocument, historyObject;
+CLASS userPriceChange 'Переоценка товаров' : priceChangeDocument, numeratedObject, historyObject;
 CLASS userPriceChangeDetail 'Строка переоценки товаров' : priceChangeDocumentDetail;
 CLASS userPriceChangePosted 'Проведенная переоценка товаров' : userPriceChange, postedObject;
 
@@ -41,9 +41,6 @@ descriptionUserPriceChangeDetail 'Название документа' (userPric
 
 @implementPriceChangeDocument(userPriceChange, sku);
 @implementPriceChangeDocumentDetailAllPrice(userPriceChange);
-
-isDraftPriceTransactionDocument (document) += isDraftUserPriceChange(document);
-descriptionPriceTransactionDocument (document) += descriptionUserPriceChange(document);
 
 percMarkupUserPriceChange 'Процент торговой надбавки'  = DATA NUMERIC[8,3] (userPriceChange);
 percDiscountUserPriceChange 'Процент скидки от розн. цены'  = DATA NUMERIC[8,3] (userPriceChange);
@@ -265,3 +262,11 @@ DESIGN userPriceChanges FROM DEFAULT {
 
     ADD functions.box;
 }
+
+@Label.implementPriceTransactionDocument(userPriceChange);
+@defineDocumentLabelTransaction(userPriceChange, sku, departmentStore);
+@extendFormDocumentLabelTransaction(userPriceChanges, u, userPriceChange);
+
+@Machinery.implementPriceTransactionDocument(userPriceChange);
+@defineDocumentMachineryPriceTransaction(userPriceChange, sku, departmentStore);
+@extendFormDocumentMachineryPriceTransaction(userPriceChanges, u, userPriceChange);

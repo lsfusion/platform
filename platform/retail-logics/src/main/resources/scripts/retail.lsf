@@ -1440,7 +1440,7 @@ DESIGN seriesNumberCuttingStudyInputDetail FROM DEFAULT {
 
 // Акты проработки
 
-CLASS actOfStudy 'Акт проработки (разделки)' : historyObject, numeratedDocument, priceTransactionDocument;
+CLASS actOfStudy 'Акт проработки (разделки)' : historyObject, numeratedDocument;
 TABLE actOfStudy (actOfStudy);
 
 CLASS actOfStudyPosted 'Акт проработки закрытый' : actOfStudy, postedObject;
@@ -1659,9 +1659,6 @@ sumOutSkuLedger (ledger) += retailSumStudyInputDetail(ledger);
 sumOutAccountDocumentLedger (ledger) += retailSumConsumption(ledger);
 sumItemOutAccountDocumentLedger (ledger) += retailSumConsumption(ledger);
 sumContainerOutAccountDocumentLedger (ledger) += 0.0 IF ledger IS consumption;
-
-isDraftPriceTransactionDocument (document) += isDraftActOfStudy(document);
-descriptionPriceTransactionDocument (document) += descriptionActOfStudy(document);
 
 showSeriesNumberCuttingStudyInputDetail 'Карта проработки' = ACTION (detail) {
     FORM seriesNumberCuttingStudyInputDetail OBJECTS dep=departmentStoreStudyInputDetail(detail), i=itemStudyInputDetail(detail) MODAL;
@@ -1924,9 +1921,8 @@ noteConsignmentDetail (consignmentDetail) += noteStatementDetail (consignmentDet
 
 //---------------------------- Приход товара от поставщика ----------------------------------------//
 GROUP shipmentOrderGroup 'Заказ' : documentPrmGroup;
-GROUP additionalInfo 'Дополнительно' : baseGroup;
 
-CLASS shipment 'Поставка' : historyObject, numberedObject, priceTransactionDocument, listRegister, contractLedger, contractALedger, inContractLedger;
+CLASS shipment 'Поставка' : historyObject, numberedObject, listRegister, contractLedger, contractALedger, inContractLedger;
 CLASS shipmentDetail 'Строка поставки' : listRegisterDetail;
 CLASS shipmentPosted 'Закрытая поставка' : shipment, postedObject;
 
@@ -2013,9 +2009,6 @@ sumInSkuLedger (ledger) += retailSumShipmentDetail(ledger);
 sumIncAccountDocumentLedger (ledger) += retailSumShipmentDetailShipment(ledger);
 sumItemIncAccountDocumentLedger (ledger) += retailSumItemShipmentDetailShipment(ledger);
 sumContainerIncAccountDocumentLedger (ledger) += retailSumContainerShipmentDetailShipment(ledger);
-
-isDraftPriceTransactionDocument (document) += isDraftShipment(document);
-descriptionPriceTransactionDocument (document) += descriptionShipment(document);
 
 //--------------------------------------- Расчет с поставщиками -------------------------------------------------------//
 
@@ -2344,7 +2337,7 @@ showWareInnerFlow 'Есть посуда' (innerFlow) = DATA BOOLEAN (innerFlow)
 //----------------------------------- Внутреннее перемещение (приход) -------------------------------------------------//
 
 
-CLASS innerArrival 'Приход в отдел' : historyObject, priceTransactionDocument, inputListRegister;
+CLASS innerArrival 'Приход в отдел' : historyObject, inputListRegister;
 CLASS innerArrivalDetail 'Строка прихода в отдел' : inputListRegisterDetail;
 CLASS innerArrivalPosted 'Закрытый приход в отдел' : innerArrival, postedObject;
 
@@ -2470,9 +2463,6 @@ sumInSkuLedger (ledger) += retailSumInnerArrivalDetail(ledger);
 sumIncAccountDocumentLedger (ledger) += retailSumInnerArrivalDetailInnerArrival(ledger);
 sumItemIncAccountDocumentLedger (ledger) += retailSumItemInnerArrivalDetailInnerArrival(ledger);
 sumContainerIncAccountDocumentLedger (ledger) += retailSumContainerInnerArrivalDetailInnerArrival(ledger);
-
-isDraftPriceTransactionDocument (document) += isDraftInnerArrival(document);
-descriptionPriceTransactionDocument (document) += descriptionInnerArrival(document);
 
 //----------------------------------Для реестра цен----------------------------//
 
@@ -2722,7 +2712,7 @@ CONSTRAINT isPriceChangeWrongUserPriceChange (userPriceChangeDetail) MESSAGE 'У
 
 //----------------------------------- Пересорт товара -------------------------------------------------------
 
-CLASS disparity 'Пересортица' : historyObject, numeratedDocument, priceTransactionDocument;
+CLASS disparity 'Пересортица' : historyObject, numeratedDocument;
 CLASS disparityPosted 'Закрытая пересортица' : disparity, postedObject;
 CLASS disparityDetail 'Строка пересортицы';
 
@@ -2818,8 +2808,6 @@ descriptionDisparity 'Название документа' (disparity) =
     [FORMULA STRING[200] '\'Пересортица \' ||  \' \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)'](
     seriesNumberObject(disparity), dateDisparity(disparity));
 
-isDraftPriceTransactionDocument (document) += isDraftDisparity(document);
-descriptionPriceTransactionDocument (document) += descriptionDisparity(document);
 // ---------------------------------- Дооценка остатка при пересорте ------------------------------------------
 
 inputBalanceBeforeDisparityDetail 'Остаток до пересорта (приход)' (disparityDetail) = DATA NUMERIC[14,3] (disparityDetail) IN priceDetailGroup;
@@ -4228,9 +4216,11 @@ DESIGN disparities FROM DEFAULT {
     ADD functions.box;
 }
 
+@Label.implementPriceTransactionDocument(disparity);
 @defineDocumentLabelTransaction(disparity, item, departmentStore);
 @extendFormDocumentLabelTransaction(disparities, dis, disparity);
 
+@Machinery.implementPriceTransactionDocument(disparity);
 @defineDocumentMachineryPriceTransaction(disparity, item, departmentStore);
 @extendFormDocumentMachineryPriceTransaction(disparities, dis, disparity);
 
@@ -4425,9 +4415,11 @@ DESIGN shipments FROM DEFAULT {
     ADD functions.box;
 }
 
+@Label.implementPriceTransactionDocument(shipment);
 @defineDocumentLabelTransaction(shipment, item, departmentStore);
 @extendFormDocumentLabelTransaction(shipments, s, shipment);
 
+@Machinery.implementPriceTransactionDocument(shipment);
 @defineDocumentMachineryPriceTransaction(shipment, item, departmentStore);
 @extendFormDocumentMachineryPriceTransaction(shipments, s, shipment);
 
@@ -4788,14 +4780,6 @@ CONSTRAINT [(X*(Y+100)/Z/100-1)*100](
 //---------------------------Товарный отчет-------------------------------------//
 
 @extendStockFormAccountDocumentLedger(departmentStore, d);
-
-//---------------------------Акты переоценок-------------------------------------//
-
-@defineDocumentLabelTransaction(userPriceChange, sku, departmentStore);
-@extendFormDocumentLabelTransaction(userPriceChanges, u, userPriceChange);
-
-@defineDocumentMachineryPriceTransaction(userPriceChange, sku, departmentStore);
-@extendFormDocumentMachineryPriceTransaction(userPriceChanges, u, userPriceChange);
 
 //---------------- Формы внутреннего перемещения (приход и расход)-------------------------------------//
 
@@ -5197,9 +5181,11 @@ DESIGN innerArrivals FROM DEFAULT {
     ADD functions.box;
 }
 
+@Label.implementPriceTransactionDocument(innerArrival);
 @defineDocumentLabelTransaction(innerArrival, item, departmentStore);
 @extendFormDocumentLabelTransaction(innerArrivals, a, innerArrival);
 
+@Machinery.implementPriceTransactionDocument(innerArrival);
 @defineDocumentMachineryPriceTransaction(innerArrival, item, departmentStore);
 @extendFormDocumentMachineryPriceTransaction(innerArrivals, a, innerArrival);
 
@@ -5772,9 +5758,11 @@ DESIGN actOfStudies FROM DEFAULT {
     ADD functions.box;
 }
 
+@Label.implementPriceTransactionDocument(actOfStudy);
 @defineDocumentLabelTransaction(actOfStudy, item, departmentStore);
 @extendFormDocumentLabelTransaction(actOfStudy, a, actOfStudy);
 
+@Machinery.implementPriceTransactionDocument(actOfStudy);
 @defineDocumentMachineryPriceTransaction(actOfStudy, item, departmentStore);
 @extendFormDocumentMachineryPriceTransaction(actOfStudies, a, actOfStudy);
 

@@ -98,8 +98,8 @@ META defineDocumentHeaderRepricingCommittee(object, stockProp)
 
 END
 META defineDocumentHeaderAbstractRepricingCommittee(object)
-    numberDisposal###object '№ распоряжения на переоценку' (object) = ABSTRACT STRING[30] (object) IN documentPrmGroup;
-    repricingCommittee###object (object) = ABSTRACT repricingCommittee(object) IN idGroup;
+    numberDisposal###object '№ распоряжения на переоценку' (object) = ABSTRACT STRING[30] (object) PERSISTENT IN documentPrmGroup;
+    repricingCommittee###object (object) = ABSTRACT repricingCommittee(object) PERSISTENT IN idGroup;
     nameRepricingCommittee###object 'Комиссия переоценки' (object) = commonName(repricingCommittee###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
 
     inCommittee###object##Employee (object, employee) = inCommitteeEmployee(repricingCommittee###object (object), employee);
@@ -429,7 +429,7 @@ DESIGN repricings FROM DEFAULT {
 META defineRepricing(sign)
 //-- аггр.объект
 
-    createRepricingInvoice 'Создавать акт дооценки' = ABSTRACT BOOLEAN (invoice) IN documentPrmGroup;
+    createRepricingInvoice 'Создавать акт дооценки' = ABSTRACT BOOLEAN (invoice) PERSISTENT IN documentPrmGroup;
     createRepricingUserInvoice 'Создавать акт дооценки' = DATA BOOLEAN (userInvoice) IN documentPrmGroup;
     createRepricingInvoice (invoice) += createRepricingUserInvoice(invoice);
 

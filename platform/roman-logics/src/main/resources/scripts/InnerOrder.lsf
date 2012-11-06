@@ -283,7 +283,7 @@ DESIGN orderPicking FROM DEFAULT {
 }
 
 //Свойства генерируемых документов
-orderPickingInnerDocument (innerDocument) = ABSTRACT orderPicking (innerDocument);
+orderPickingInnerDocument (innerDocument) = ABSTRACT orderPicking (innerDocument) PERSISTENT;
 
 quantityInnerDocumentOrderPicking 'Количество документов' (orderPicking) =
     GROUP SUM 1 IF orderPickingInnerDocument (innerDocument) == orderPicking BY orderPicking;

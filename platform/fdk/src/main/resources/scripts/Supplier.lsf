@@ -304,7 +304,7 @@ META defineDocumentHeaderSupplier (object)
     nameSupplier###object 'Поставщик' (object)= name(supplier###object(object)) IN documentPrmGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
 END
 META defineDocumentAbstractHeaderSupplier (object)
-    supplier###object (object) = ABSTRACT supplier (object);
+    supplier###object (object) = ABSTRACT supplier (object) PERSISTENT;
     nameSupplier###object 'Поставщик' (object)= name(supplier###object(object)) IN documentPrmGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
 END
 META defineDocumentInterfaceHeaderSupplier (object)

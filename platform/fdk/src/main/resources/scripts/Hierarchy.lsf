@@ -6,7 +6,7 @@ META defineHierarchy (object)
 END
 
 META defineHierarchyAbstract (object)
-    parent###object = ABSTRACT object (object);
+    parent###object = ABSTRACT object (object) PERSISTENT;
     @defineHierarchyCustom(object);
 END
 

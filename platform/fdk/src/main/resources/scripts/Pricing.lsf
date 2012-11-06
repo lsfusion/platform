@@ -107,7 +107,7 @@ META defineDocumentHeaderPricingCommittee(object, stockClass)
 
 END
 META defineDocumentHeaderAbstractPricingCommittee(object, stockClass)
-    pricingCommittee###object (object) = ABSTRACT pricingCommittee(object) IN idGroup;
+    pricingCommittee###object (object) = ABSTRACT pricingCommittee(object) PERSISTENT IN idGroup;
 
     namePricingCommittee###object 'Комиссия для акта расценки' (object) = commonName(pricingCommittee###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
 
@@ -131,7 +131,7 @@ META defineDocumentDetailMarkupCustomPrefix (detail, prefix, caption)
     prefix###markup###detail 'Надбавка,%'###caption = DATA NUMERIC[8,3] (detail);
 END
 META defineDocumentAbstractDetailMarkupCustomPrefix (detail, prefix, caption)
-    prefix###markup###detail 'Надбавка,%'###caption = ABSTRACT NUMERIC[8,3] (detail);
+    prefix###markup###detail 'Надбавка,%'###caption = ABSTRACT NUMERIC[8,3] (detail) PERSISTENT;
 END
 META defineDocumentInterfaceDetailMarkupCustomPrefix (detail, prefix, caption)
     @defineDocumentAbstractDetailMarkupCustomPrefix(detail, prefix, caption);
@@ -153,7 +153,7 @@ META defineDocumentDetailMarkupSumCustomPrefix (detail, prefix, caption)
     prefix###markupSum###detail 'Сумма надбавки'###caption = DATA NUMERIC[14,3] (detail);
 END
 META defineDocumentAbstractDetailMarkupSumCustomPrefix (detail, prefix, caption)
-    prefix###markupSum###detail 'Сумма надбавки'###caption = ABSTRACT NUMERIC[14,3] (detail);
+    prefix###markupSum###detail 'Сумма надбавки'###caption = ABSTRACT NUMERIC[14,3] (detail) PERSISTENT;
 END
 META defineDocumentInterfaceDetailMarkupSumCustomPrefix (detail, prefix, caption)
     @defineDocumentAbstractDetailMarkupSumCustomPrefix(detail, prefix, caption);
@@ -452,7 +452,7 @@ DESIGN pricings FROM DEFAULT {
 
 META definePricing(sign, contact, contactCaption)
 //--  Связь накладной и поставки
-    invoiceDetailPricingDetail = ABSTRACT invoiceDetail (pricingDetail);
+    invoiceDetailPricingDetail = ABSTRACT invoiceDetail (pricingDetail) PERSISTENT;
     invoiceDetailUserPricingDetail = DATA invoiceDetail (userPricingDetail);
     invoiceDetailPricingDetail(pricingDetail) += invoiceDetailUserPricingDetail(pricingDetail);
 
@@ -603,7 +603,7 @@ META definePricing(sign, contact, contactCaption)
     @changeDocumentDetailMarkupCustomPrefix(userInvoiceDetail, retail, );
     @changeDocumentDetailPriceCustomPrefix(userInvoiceDetail, retail, , currency);
 
-    createPricingInvoice 'Создавать акт расценки' = ABSTRACT BOOLEAN (invoice) IN documentPrmGroup;
+    createPricingInvoice 'Создавать акт расценки' = ABSTRACT BOOLEAN (invoice) PERSISTENT IN documentPrmGroup;
     createPricingUserInvoice 'Создавать акт расценки' = DATA BOOLEAN (userInvoice) IN documentPrmGroup;
     createPricingInvoice (invoice) += createPricingUserInvoice(invoice);
 

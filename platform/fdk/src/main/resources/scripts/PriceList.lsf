@@ -6,7 +6,7 @@ REQUIRE System, Document, Numerator, Stock, Barcode;
 
 CLASS ABSTRACT priceGroup 'Ценовая группа' : named;
 
-priceGroupSku = ABSTRACT priceGroup (sku);
+priceGroupSku = ABSTRACT priceGroup (sku) PERSISTENT;
 
 @defineHierarchyAbstract(priceGroup);
 
@@ -79,7 +79,7 @@ CLASS userPriceListPosted 'Закрытый прайс (польз.)' : userPric
 toDateUserPriceList(userPriceList) <- NULL WHEN ASSIGNED(userPriceList IS userPriceList);
 toTimeUserPriceList(userPriceList) <- NULL WHEN ASSIGNED(userPriceList IS userPriceList);
 
-pricePriceListDetailDataPriceListType 'Цена' = ABSTRACT NUMERIC[14,2] (priceListDetail, dataPriceListType);
+pricePriceListDetailDataPriceListType 'Цена' = ABSTRACT NUMERIC[14,2] (priceListDetail, dataPriceListType) PERSISTENT;
 priceUserPriceListDetailDataPriceListType 'Цена' = DATA NUMERIC[14,2] (priceListDetail, dataPriceListType);
 pricePriceListDetailDataPriceListType (priceListDetail, dataPriceListType) += priceUserPriceListDetailDataPriceListType(priceListDetail, dataPriceListType);
 

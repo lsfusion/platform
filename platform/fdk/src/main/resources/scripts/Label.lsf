@@ -1,6 +1,6 @@
 MODULE Label;
 
-REQUIRE System, Store, Stock, Barcode, Machinery; // на Machinery пока нужна ссылка только для PriceTransactionDocument
+REQUIRE System, Store, Stock, Barcode;
 
 // Ориентация страницы
 CLASS STATIC printOrientation 'Ориентация' {
@@ -57,6 +57,23 @@ FORM labelTypes 'Типы ценников'
     PROPERTIES(l)          ADDFORM, EDITFORM, delete
 ;
 
+//---------------------------- Документы для печати ценников ----------------------------------------//
+
+CLASS ABSTRACT priceTransactionDocument 'Документ, требующий загрузки в оборудование';
+TABLE priceTransactionDocument (priceTransactionDocument);
+
+isDraftPriceTransactionDocument 'Не проведен' = ABSTRACT BOOLEAN (priceTransactionDocument) PERSISTENT;
+descriptionPriceTransactionDocument 'Название документа загрузки' = ABSTRACT STRING[200] (priceTransactionDocument) PERSISTENT;
+
+printedPriceTransactionDocument 'Распечатан' = DATA BOOLEAN (priceTransactionDocument);
+printedPriceTransactionDocument(document) <- NULL WHEN ASSIGNED(isDraftPriceTransactionDocument(document));
+
+META implementPriceTransactionDocument(concrete)
+    EXTEND CLASS concrete : Label.priceTransactionDocument;
+    Label.isDraftPriceTransactionDocument (document) += isDraft###concrete(document);
+    Label.descriptionPriceTransactionDocument (document) += description###concrete(document);
+END
+
 //----------------------------------- Печать ценников -------------------------------------------------------
 
 CLASS labelTransaction 'Печать ценников' : historyObject;
@@ -80,9 +97,6 @@ CONSTRAINT labelTypeLabelTransaction(transaction) AND NOT inLabelTypeDepartmentS
            CHECKED BY labelTypeLabelTransaction MESSAGE 'Тип ценника запрещен для выбранного подразделения';
 
 fileTemplateLabelTransaction 'Файл шаблона' (transaction) = fileTemplateLabelType(labelTypeLabelTransaction(transaction));
-
-printedPriceTransactionDocument 'Распечатан' = DATA BOOLEAN (priceTransactionDocument);
-printedPriceTransactionDocument(document) <- NULL WHEN ASSIGNED(isDraftPriceTransactionDocument(document));
 
 priceTransactionDocumentLabelTransaction = DATA priceTransactionDocument (labelTransaction);
 descriptionLabelTransaction 'Основание загрузки' (transaction) =
@@ -238,7 +252,7 @@ META defineDocumentLabelTransaction (document, skuProp, stockProp)
 
     createSnapshot###document##LabelTransaction 'Перепечатать ценники' = ACTION (document) NEWSESSION AUTOAPPLY {
         SET createLabelTransactionSku(skuProp) <- TRUE IF quantity###document##Detail###skuProp###document(skuProp, document);
-        SET createLabelTransactionDocument() <- document AS priceTransactionDocument;
+        SET createLabelTransactionDocument() <- document AS Label.priceTransactionDocument;
         SET createLabelTransactionSnapshot() <- TRUE;
         EXEC createLabelTransaction(stockProp###document(document), date###document(document));
     } SHORTCUT statusLabelPriceTransactionDocument CONFIRM;

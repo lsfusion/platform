@@ -206,7 +206,7 @@ META defineDocumentHeaderCustomer (object)
     nameCustomer###object 'Покупатель' (object)= name(customer###object(object)) IN documentPrmGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
 END
 META defineDocumentAbstractHeaderCustomer (object)
-    customer###object (object) = ABSTRACT customer (object);
+    customer###object (object) = ABSTRACT customer (object) PERSISTENT;
     nameCustomer###object 'Покупатель' (object)= name(customer###object(object)) IN documentPrmGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
 END
 META defineDocumentInterfaceHeaderCustomer (object)

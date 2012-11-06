@@ -271,10 +271,10 @@ END
 // Примечание
 
 META defineDocumentHeaderNote (object)
-    note###object 'Примечание' = DATA STRING[100] (object) IN additionalInfo MINCHARWIDTH 30 PREFCHARWIDTH 80 IN documentPrmGroup;
+    note###object 'Примечание' = DATA STRING[100] (object) MINCHARWIDTH 30 PREFCHARWIDTH 80 IN documentPrmGroup PERSISTENT;
 END
 META defineDocumentAbstractHeaderNote (object)
-    note###object 'Примечание' = ABSTRACT STRING[100] (object) IN additionalInfo MINCHARWIDTH 30 PREFCHARWIDTH 80 IN documentPrmGroup;
+    note###object 'Примечание' = ABSTRACT STRING[100] (object) MINCHARWIDTH 30 PREFCHARWIDTH 80 IN documentPrmGroup PERSISTENT;
 END
 META defineDocumentInterfaceHeaderNote(object)
     @defineDocumentAbstractHeaderNote(object);
@@ -424,8 +424,8 @@ END
 // ------- Number ----- //
 
 META defineDocumentAbstractHeaderNumber(object)
-    number###object 'Номер' = ABSTRACT STRING[18] (object) IN numberedGroup MINCHARWIDTH 7;
-    series###object 'Серия' = ABSTRACT STRING[2] (object) IN numberedGroup FIXEDCHARWIDTH 3;
+    number###object 'Номер' = ABSTRACT STRING[18] (object) IN numberedGroup MINCHARWIDTH 7 PERSISTENT;
+    series###object 'Серия' = ABSTRACT STRING[2] (object) IN numberedGroup FIXEDCHARWIDTH 3 PERSISTENT;
     seriesNumber###object 'Серия/Номер' (object) = ustring2(series###object(object), number###object(object)) MINCHARWIDTH 7 PREFCHARWIDTH 10 MAXCHARWIDTH 20 PERSISTENT;
 END
 META defineDocumentInterfaceHeaderNumber(object)

@@ -272,7 +272,7 @@ END
 META defineDocumentAbstractDetailVATPrefixCustom(detail, prefix, countryProp, caption)
     prefix###VAT###detail(detail) = ABSTRACT range (detail) PERSISTENT;
     number###prefix###VAT###detail 'НДС, номер'###caption (detail) = numberRange(prefix###VAT###detail(detail));
-    value###prefix###VAT###detail 'НДС, %'###caption (detail) = ABSTRACT NUMERIC[10,5] (detail);
+    value###prefix###VAT###detail 'НДС, %'###caption (detail) = ABSTRACT NUMERIC[10,5] (detail) PERSISTENT;
 END
 META defineDocumentInterfaceDetailVATPrefixCustom(detail, prefix, countryProp, caption)
     @defineDocumentAbstractDetailVATPrefixCustom(detail, prefix, countryProp, caption);
@@ -305,7 +305,7 @@ META defineDocumentDetailVATDataSumCustom (detail, prefix)
     prefix###sum###detail 'Сумма с НДС' (detail) = sum###detail(detail) (+) VATSum###detail(detail);
 END
 META defineDocumentAbstractDetailVATDataSumCustom (detail, prefix)
-    VATSum###detail 'Сумма НДС' (detail) = ABSTRACT NUMERIC[16,2] (detail);
+    VATSum###detail 'Сумма НДС' (detail) = ABSTRACT NUMERIC[16,2] (detail) PERSISTENT;
     prefix###sum###detail 'Сумма с НДС' (detail) = sum###detail(detail) (+) VATSum###detail(detail);
 END
 
@@ -336,7 +336,7 @@ META defineDocumentDetailVATDataSumCustomPrefix (detail, prefix, caption)
     prefix###VATSum###detail 'Сумма НДС'###caption = DATA NUMERIC[14,3] (detail);
 END
 META defineDocumentAbstractDetailVATDataSumCustomPrefix (detail, prefix, caption)
-    prefix###VATSum###detail 'Сумма НДС'###caption = ABSTRACT NUMERIC[14,3] (detail);
+    prefix###VATSum###detail 'Сумма НДС'###caption = ABSTRACT NUMERIC[14,3] (detail) PERSISTENT;
 END
 META defineDocumentInterfaceDetailVATDataSumCustomPrefix (detail, prefix, caption)
     @defineDocumentAbstractDetailVATDataSumCustomPrefix(detail, prefix, caption);

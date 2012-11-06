@@ -19,7 +19,7 @@ countryStock (stock) = countryLegalEntity(companyStock(stock)) PERSISTENT;
 currencyStock (stock) = currencyLegalEntity(companyStock(stock)) PERSISTENT;
 languageStock (stock) = languageLegalEntity(companyStock(stock)) PERSISTENT;
 
-addressStock 'Адрес' (stock) = ABSTRACT STRING[100] (stock);
+addressStock 'Адрес' (stock) = ABSTRACT STRING[100] (stock) PERSISTENT;
 
 TABLE stockGroupStock (stockGroup, stock);
 isParentStockGroupStock (stockGroup, stock) = isParentStockGroupStockGroup(stockGroupStock(stock), stockGroup) PERSISTENT;
@@ -648,7 +648,7 @@ META defineDocumentDetailSkuCustomPrefix (detail, skuClass, prefix, caption)
     prefix###idBarcodeSku###detail 'Штрих-код'###caption (detail) = idBarcodeSku(prefix###skuClass###detail(detail)) IN recognizeGroup;
 END
 META defineDocumentAbstractDetailSkuCustomPrefix (detail, skuClass, prefix, caption)
-    prefix###skuClass###detail = ABSTRACT skuClass (detail);
+    prefix###skuClass###detail = ABSTRACT skuClass (detail) PERSISTENT;
     prefix###nameSku###detail 'SKU'###caption (detail) = nameSku(prefix###skuClass###detail(detail)) IN recognizeGroup;
     prefix###shortNameUOMSku###detail 'Ед. изм.'###caption = shortNameUOMSku(prefix###skuClass###detail(detail)) IN recognizeGroup;
     prefix###idBarcodeSku###detail 'Штрих-код'###caption (detail) = idBarcodeSku(prefix###skuClass###detail(detail)) IN recognizeGroup;
@@ -750,7 +750,7 @@ META defineDocumentDetailQuantityCustomPrefix (detail, prefix, caption)
     prefix###quantity###detail 'Кол-во'###caption = DATA NUMERIC[14,3] (detail);
 END
 META defineDocumentAbstractDetailQuantityCustomPrefix (detail, prefix, caption)
-    prefix###quantity###detail 'Кол-во'###caption = ABSTRACT NUMERIC[14,3] (detail);
+    prefix###quantity###detail 'Кол-во'###caption = ABSTRACT NUMERIC[14,3] (detail) PERSISTENT;
 END
 META defineDocumentInterfaceDetailQuantityCustomPrefix (detail, prefix, caption)
     @defineDocumentAbstractDetailQuantityCustomPrefix(detail, prefix, caption);
@@ -794,7 +794,7 @@ META defineDocumentDetailPriceCustomPrefix (detail, prefix, caption)
     prefix###price###detail 'Цена'###caption = DATA NUMERIC[14,2] (detail);
 END
 META defineDocumentAbstractDetailPriceCustomPrefix (detail, prefix, caption)
-    prefix###price###detail 'Цена'###caption = ABSTRACT NUMERIC[14,2] (detail);
+    prefix###price###detail 'Цена'###caption = ABSTRACT NUMERIC[14,2] (detail) PERSISTENT;
 END
 META defineDocumentInterfaceDetailPriceCustomPrefix (detail, prefix, caption)
     @defineDocumentAbstractDetailPriceCustomPrefix(detail, prefix, caption);
@@ -881,7 +881,7 @@ META defineDocumentDetailDataSumCustomPrefix (detail, prefix, caption)
     prefix###sum###detail 'Сумма'###caption = DATA NUMERIC[16,2] (detail);
 END
 META defineDocumentAbstractDetailDataSumCustomPrefix (detail, prefix, caption)
-    prefix###sum###detail 'Сумма'###caption = ABSTRACT NUMERIC[16,2] (detail);
+    prefix###sum###detail 'Сумма'###caption = ABSTRACT NUMERIC[16,2] (detail) PERSISTENT;
 END
 
 META defineDocumentInterfaceDetailDataSumCustomPrefix (detail, prefix, caption)
@@ -967,7 +967,7 @@ META defineDocumentDetailBatchCustom(detail, batchProp)
         MESSAGE 'Для строки задана парктия, но не задан товар';
 END
 META defineDocumentAbstractDetailBatchCustom(detail, batchProp)
-    batch###detail = ABSTRACT batchProp (detail);
+    batch###detail = ABSTRACT batchProp (detail) PERSISTENT;
     descriptionBatch###detail 'Партия' (detail) = descriptionBatch(batch###detail(detail)) MINCHARWIDTH 20 PREFCHARWIDTH 40;
 END
 META defineDocumentInterfaceDetailBatchCustom(detail, batchProp)
@@ -1153,7 +1153,7 @@ META defineDocumentDetailSkuBalanceCustom (detail)
 
 END
 META defineDocumentAbstractDetailSkuBalanceCustom (detail)
-    balanceBSku###detail 'Количество до' (detail) = ABSTRACT NUMERIC[14,3] (detail);
+    balanceBSku###detail 'Количество до' (detail) = ABSTRACT NUMERIC[14,3] (detail) PERSISTENT;
 END
 
 

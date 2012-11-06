@@ -81,10 +81,10 @@ META defineDocumentContract (object, contractType, singleContractProp, partyAPro
         CHECKED BY contractType###object MESSAGE partyBMessage;
 END
 META defineDocumentAbstractContract (object, contractType)
-    contractType###object = ABSTRACT contractType (object);
+    contractType###object = ABSTRACT contractType (object) PERSISTENT;
     number###contractType###object 'Номер договора' (object) = numberContract(contractType###object(object)) IN documentPrmGroup;
 
-    isCommission###object 'Продажа на комиссию' = ABSTRACT BOOLEAN (object) IN documentPrmGroup;
+    isCommission###object 'Продажа на комиссию' = ABSTRACT BOOLEAN (object) PERSISTENT IN documentPrmGroup;
 END
 META defineDocumentInterfaceContract (object, contractType, singleContractProp, partyAProp, partyBProp, partyAMessage, partyBMessage)
     @defineDocumentAbstractContract(object, contractType);

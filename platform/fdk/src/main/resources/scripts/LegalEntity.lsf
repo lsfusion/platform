@@ -70,7 +70,7 @@ GROUP docGroup 'Для договора' : publicGroup;
 
 CLASS ABSTRACT legalEntityGroup 'Группа юр. лиц' : named;
 
-legalEntityGroupLegalEntity (legalEntity) = ABSTRACT legalEntityGroup (legalEntity);
+legalEntityGroupLegalEntity (legalEntity) = ABSTRACT legalEntityGroup (legalEntity) PERSISTENT;
 
 @defineHierarchyAbstract(legalEntityGroup);
 

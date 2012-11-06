@@ -16,7 +16,7 @@ nameSkuSalesLedger 'SKU' (ledger) = nameSku(skuSalesLedger(ledger));
 stockSalesLedger (ledger) = ABSTRACT stock (salesLedger) PERSISTENT INDEXED;
 nameStockSalesLedger 'Склад' (ledger) = name(stockSalesLedger(ledger));
 
-descriptionSalesLedger 'Название документа' (ledger) = ABSTRACT STRING[200] (salesLedger);
+descriptionSalesLedger 'Название документа' (ledger) = ABSTRACT STRING[200] (salesLedger) PERSISTENT;
 
 quantitySalesLedger 'Кол-во' (ledger) = ABSTRACT NUMERIC[14,3] (salesLedger) PERSISTENT;
 
