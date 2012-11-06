@@ -4,4 +4,4 @@ Patched files:
     com\google\gwt\user\cellview\client\AbstractCellTable.java
     com\google\gwt\user\cellview\client\AbstractHasData.java
     com\google\gwt\user\cellview\client\DataGrid.java
-	com\google\gwt\user\cellview\client\HasDataPresenter.java
+    com\google\gwt\user\cellview\client\HasDataPresenter.java
