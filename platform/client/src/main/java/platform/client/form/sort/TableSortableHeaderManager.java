@@ -1,5 +1,6 @@
 package platform.client.form.sort;
 
+import platform.base.OrderedMap;
 import platform.client.logics.ClientGroupObject;
 import platform.interop.Order;
 
@@ -51,7 +52,7 @@ public abstract class TableSortableHeaderManager<T> extends MouseAdapter {
         }
     }
 
-    private final Map<T, Boolean> orderDirections = new HashMap<T, Boolean>();
+    private final Map<T, Boolean> orderDirections = new OrderedMap<T, Boolean>();
 
     public Map<T, Boolean> getOrderDirections(){
         return orderDirections;

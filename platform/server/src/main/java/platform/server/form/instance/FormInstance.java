@@ -300,31 +300,30 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 for (Map.Entry<String, ColumnUserPreferences> entry : groupObjectPreferences.getColumnUserPreferences().entrySet()) {
                     Integer id = (Integer) BL.LM.SIDNavigatorElementSIDPropertyDrawToPropertyDraw.read(dataSession, new DataObject(entity.getSID(), StringClass.get(50)), new DataObject(entry.getKey(), StringClass.get(50)));
                     DataObject propertyDrawObject = dataSession.getDataObject(id, ObjectType.instance);
+                    Integer idShow = null;
                     if (entry.getValue().isNeedToHide() != null) {
-                        int idShow = entry.getValue().isNeedToHide() ? BL.LM.propertyDrawShowStatus.getID("Hide") : BL.LM.propertyDrawShowStatus.getID("Show");
-                        BL.LM.showPropertyDrawCustomUser.change(idShow, dataSession, propertyDrawObject, userObject);
-                        if (forAllUsers)
-                            BL.LM.showPropertyDraw.change(idShow, dataSession, propertyDrawObject, userObject);
+                        idShow = entry.getValue().isNeedToHide() ? BL.LM.propertyDrawShowStatus.getID("Hide") : BL.LM.propertyDrawShowStatus.getID("Show");
                     }
+                    BL.LM.showPropertyDrawCustomUser.change(idShow, dataSession, propertyDrawObject, userObject);
+                    if (forAllUsers)
+                        BL.LM.showPropertyDraw.change(idShow, dataSession, propertyDrawObject, userObject);
                     BL.LM.columnWidthPropertyDrawCustomUser.change(entry.getValue().getWidthUser(), dataSession, propertyDrawObject, userObject);
                     BL.LM.columnOrderPropertyDrawCustomUser.change(entry.getValue().getOrderUser(), dataSession, propertyDrawObject, userObject);
-                    if (entry.getValue().getAscendingSortUser() != null) {
                         BL.LM.columnSortPropertyDrawCustomUser.change(entry.getValue().getSortUser(), dataSession, propertyDrawObject, userObject);
                         BL.LM.columnAscendingSortPropertyDrawCustomUser.change(entry.getValue().getAscendingSortUser(), dataSession, propertyDrawObject, userObject);
                         if (forAllUsers) {
                             BL.LM.columnSortPropertyDraw.change(entry.getValue().getSortUser(), dataSession, propertyDrawObject, userObject);
                             BL.LM.columnAscendingSortPropertyDraw.change(entry.getValue().getAscendingSortUser(), dataSession, propertyDrawObject, userObject);
                         }
-                    }
                     if (forAllUsers) {
                         BL.LM.columnWidthPropertyDraw.change(entry.getValue().getWidthUser(), dataSession, propertyDrawObject);
                         BL.LM.columnOrderPropertyDraw.change(entry.getValue().getOrderUser(), dataSession, propertyDrawObject);
                     }
                 }
                 DataObject groupObjectObject = dataSession.getDataObject(BL.LM.SIDNavigatorElementSIDGroupObjectToGroupObject.read(dataSession, new DataObject(groupObjectPreferences.groupObjectSID, StringClass.get(50)), new DataObject(entity.getSID(), StringClass.get(50))), ObjectType.instance);
-                BL.LM.hasUserPreferencesGroupObjectCustomUser.change(true, dataSession, groupObjectObject, userObject);
+                BL.LM.hasUserPreferencesGroupObjectCustomUser.change(groupObjectPreferences.hasUserPreferences ? true : null, dataSession, groupObjectObject, userObject);
                 if (forAllUsers)
-                    BL.LM.hasUserPreferencesGroupObject.change(true, dataSession, groupObjectObject);
+                    BL.LM.hasUserPreferencesGroupObject.change(groupObjectPreferences.hasUserPreferences ? true : null, dataSession, groupObjectObject);
             }
             dataSession.apply(BL);
         } catch (SQLException e) {
@@ -423,13 +422,13 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     public PropertyDrawInstance getPropertyDraw(Property<?> property, GroupObjectInstance group) {
         for (PropertyDrawInstance propertyDraw : properties)
-            if (property.equals(propertyDraw.propertyObject.property) && (group==null || group.equals(propertyDraw.toDraw)))
+            if (property.equals(propertyDraw.propertyObject.property) && (group == null || group.equals(propertyDraw.toDraw)))
                 return propertyDraw;
         return null;
     }
 
     public PropertyDrawInstance getPropertyDraw(Property<?> property) {
-        return getPropertyDraw(property, (GroupObjectInstance)null);
+        return getPropertyDraw(property, (GroupObjectInstance) null);
     }
 
     public PropertyDrawInstance getPropertyDraw(LP property) {
@@ -458,14 +457,14 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     }
 
     public void expandGroupObject(GroupObjectInstance group, Map<ObjectInstance, DataObject> value) throws SQLException {
-        if(group.expandTable==null)
+        if (group.expandTable == null)
             group.expandTable = group.createKeyTable();
         group.expandTable.modifyRecord(session.sql, value, Modify.MODIFY);
         group.updated |= UPDATED_EXPANDS;
     }
 
     public void collapseGroupObject(GroupObjectInstance group, Map<ObjectInstance, DataObject> value) throws SQLException {
-        if(group.expandTable!=null) {
+        if (group.expandTable != null) {
             group.expandTable.modifyRecord(session.sql, value, Modify.DELETE);
             group.updated |= UPDATED_EXPANDS;
         }
@@ -487,7 +486,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 for (ObjectInstance obj : groupObject.objects) {
                     ObjectValue objectValue = obj.getObjectValue();
                     if (objectValue instanceof DataObject)
-                        value.put(obj, (DataObject)objectValue);
+                        value.put(obj, (DataObject) objectValue);
                 }
                 if (!value.isEmpty())
                     expandGroupObject(groupObject, value);
@@ -548,12 +547,12 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     // временно
     private boolean checkFilters(GroupObjectInstance groupTo) {
         Set<FilterInstance> filters = new HashSet<FilterInstance>();
-        for(FilterInstance filter : groupTo.getSetFilters())
+        for (FilterInstance filter : groupTo.getSetFilters())
             if (!FilterInstance.ignoreInInterface || filter.isInInterface(groupTo))
                 filters.add(filter);
         return filters.equals(groupTo.filters);
     }
-    
+
     public DataObject addFormObject(CustomObjectInstance object, ConcreteCustomClass cls, DataObject pushed) throws SQLException {
         DataObject dataObject = session.addObject(cls, pushed);
 
@@ -563,16 +562,16 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             filter.resolveAdd(this, object, dataObject);
 
         for (LP lp : BL.LM.lproperties) {
-            if(lp instanceof LCP) {
+            if (lp instanceof LCP) {
                 LCP<?> lcp = (LCP<?>) lp;
                 CalcProperty<?> property = lcp.property;
                 if (property.autoset) {
                     ValueClass interfaceClass = BaseUtils.singleValue(property.getInterfaceClasses());
                     ValueClass valueClass = property.getValueClass();
-                    if (valueClass instanceof CustomClass && interfaceClass instanceof CustomClass&&
+                    if (valueClass instanceof CustomClass && interfaceClass instanceof CustomClass &&
                             cls.isChild((CustomClass) interfaceClass)) { // в общем то для оптимизации
                         Integer obj = getClassListener().getObject((CustomClass) valueClass);
-                        if(obj!=null)
+                        if (obj != null)
                             lcp.change(obj, this, dataObject);
                     }
                 }
@@ -666,7 +665,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     private List<Map<ObjectInstance, DataObject>> readObjects(List<Map<Integer, Object>> keyIds) throws SQLException {
 
         List<Map<ObjectInstance, DataObject>> result = new ArrayList<Map<ObjectInstance, DataObject>>();
-        for(Map<Integer, Object> keyId : keyIds) {
+        for (Map<Integer, Object> keyId : keyIds) {
             Map<ObjectInstance, DataObject> key = new HashMap<ObjectInstance, DataObject>();
             for (Entry<Integer, Object> objectId : keyId.entrySet()) {
                 ObjectInstance objectInstance = getObjectInstance(objectId.getKey());
@@ -888,18 +887,19 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     public void gainedFocus() {
         dataChanged = true;
         FocusListener<T> focusListener = getFocusListener();
-        if(focusListener!=null)
+        if (focusListener != null)
             focusListener.gainedFocus(this);
     }
 
     private boolean closed = false;
+
     public void close() throws SQLException {
         closed = true;
         session.incrementChanges.remove(this);
         for (GroupObjectInstance group : groups) {
-            if(group.keyTable!=null)
+            if (group.keyTable != null)
                 group.keyTable.drop(session.sql);
-            if(group.expandTable!=null)
+            if (group.expandTable != null)
                 group.expandTable.drop(session.sql);
         }
     }
@@ -918,15 +918,15 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     public FormInstance<T> createForm(FormEntity<T> form, Map<ObjectEntity, DataObject> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOK, boolean interactive) throws SQLException {
         return new FormInstance<T>(form, BL,
-                                   sessionScope.isNewSession() ? session.createSession() : session,
-                                   securityPolicy, getFocusListener(), getClassListener(), instanceFactory.computer, mapObjects, isModal, sessionScope.isManageSession(),
-                                   checkOnOK, interactive, null);
+                sessionScope.isNewSession() ? session.createSession() : session,
+                securityPolicy, getFocusListener(), getClassListener(), instanceFactory.computer, mapObjects, isModal, sessionScope.isManageSession(),
+                checkOnOK, interactive, null);
     }
 
     public void forceChangeObject(ObjectInstance object, ObjectValue value) throws SQLException {
 
-        if(object instanceof DataObjectInstance && !(value instanceof DataObject))
-            object.changeValue(session, ((DataObjectInstance)object).getBaseClass().getDefaultObjectValue());
+        if (object instanceof DataObjectInstance && !(value instanceof DataObject))
+            object.changeValue(session, ((DataObjectInstance) object).getBaseClass().getDefaultObjectValue());
         else
             object.changeValue(session, value);
 
@@ -944,7 +944,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     // todo : временная затычка
     public void seekObject(ObjectInstance object, ObjectValue value) throws SQLException {
 
-        if(entity.eventActions.size() > 0) { // дебилизм конечно но пока так
+        if (entity.eventActions.size() > 0) { // дебилизм конечно но пока так
             forceChangeObject(object, value);
         } else {
             object.groupTo.addSeek(object, value, false);
@@ -952,7 +952,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     }
 
     public void changeObject(PropertyObjectInterfaceInstance objectInstance, ObjectValue objectValue) throws SQLException {
-        if(objectInstance instanceof ObjectInstance) {
+        if (objectInstance instanceof ObjectInstance) {
             ObjectInstance object = (ObjectInstance) objectInstance;
 
             seekObject(object, objectValue);
@@ -1084,10 +1084,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     public FormChanges endApply() throws SQLException {
 
         assert interactive;
-        
+
         final FormChanges result = new FormChanges();
 
-        if(closed)
+        if (closed)
             return result;
 
         QueryEnvironment queryEnv = getQueryEnv();
@@ -1449,7 +1449,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 ActionPropertyObjectInstance<? extends PropertyInterface> autoInstance = instanceFactory.getInstance(autoAction);
                 if (autoInstance.isInInterface(null)) { // для проверки null'ов
                     FlowResult result = autoInstance.execute(this);
-                    if(result != FlowResult.FINISH)
+                    if (result != FlowResult.FINISH)
                         return;
                 }
             }

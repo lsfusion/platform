@@ -1,6 +1,7 @@
 package platform.client.form.grid;
 
 import platform.base.BaseUtils;
+import platform.base.OrderedMap;
 import platform.base.Pair;
 import platform.client.Main;
 import platform.client.SwingUtils;
@@ -559,7 +560,7 @@ public class GridTable extends ClientPropertyTable {
     }
 
     public void setCurrentObject(ClientGroupObjectValue value) {
-        assert value==null || rowKeys.isEmpty() || rowKeys.contains(value);
+        assert value == null || rowKeys.isEmpty() || rowKeys.contains(value);
         currentObject = value;
     }
 
@@ -905,7 +906,7 @@ public class GridTable extends ClientPropertyTable {
         return model.getColumnProperty(col);
     }
 
-    public List<ClientPropertyDraw> getProperties(){
+    public List<ClientPropertyDraw> getProperties() {
         return properties;
     }
 
@@ -1164,11 +1165,7 @@ public class GridTable extends ClientPropertyTable {
         }
     }
 
-    public Map<String, Boolean> getSortDirections() {
-        Map<String, Boolean> sortDirections = new HashMap<String, Boolean>();
-        for (Map.Entry<Pair<ClientPropertyDraw, ClientGroupObjectValue>, Boolean> orderDirection : sortableHeaderManager.getOrderDirections().entrySet()) {
-            sortDirections.put(orderDirection.getKey().first.getSID(), orderDirection.getValue());
-        }
-        return sortDirections;
+    public Map<Pair<ClientPropertyDraw, ClientGroupObjectValue>, Boolean> getOrderDirections() {
+        return sortableHeaderManager.getOrderDirections();
     }
 }

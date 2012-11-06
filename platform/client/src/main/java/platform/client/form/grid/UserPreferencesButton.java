@@ -1,12 +1,14 @@
 package platform.client.form.grid;
 
 import platform.base.BaseUtils;
+import platform.base.Pair;
 import platform.client.ArrayListTransferHandler;
 import platform.client.Main;
 import platform.client.descriptor.editor.base.TitledPanel;
 import platform.client.form.ClientFormController;
 import platform.client.form.queries.FilterView;
 import platform.client.form.queries.ToolbarGridButton;
+import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
 import platform.interop.form.ColumnUserPreferences;
 import platform.interop.form.FormUserPreferences;
@@ -32,7 +34,7 @@ public abstract class UserPreferencesButton extends ToolbarGridButton {
     public HideSettingsDialog dialog;
 
     public UserPreferencesButton(boolean hasUserPreferences) {
-        super(hasUserPreferences ? savedIcon :unsavedIcon, getString("form.grid.user.preferences"));
+        super(hasUserPreferences ? savedIcon : unsavedIcon, getString("form.grid.user.preferences"));
     }
 
     public abstract void addListener();
@@ -174,6 +176,40 @@ public abstract class UserPreferencesButton extends ToolbarGridButton {
                 }
             });
 
+            final JButton resetButton = new JButton(getString("form.grid.hide.reset"));
+            resetButton.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    try {
+                        resetButtonPressed(false);
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
+                    if (dialog != null) {
+                        dialog.firePropertyChange("buttonPressed", null, null);
+                    }
+                    initialTable.updateTable();
+                }
+            });
+
+            final JButton resetForAllButton = new JButton(getString("form.grid.hide.reset.for.all"));
+            resetForAllButton.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    try {
+                        Boolean permission = Main.frame.remoteNavigator.getConfiguratorSecurityPolicy();
+                        if ((permission != null) && (permission))
+                            resetButtonPressed(true);
+                        else
+                            JOptionPane.showMessageDialog(null, getString("form.grid.hide.not.enough.rights"), getString("form.grid.hide.error"), JOptionPane.ERROR_MESSAGE);
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
+                    if (dialog != null) {
+                        dialog.firePropertyChange("buttonPressed", null, null);
+                    }
+                    initialTable.updateTable();
+                }
+            });
+
             JButton showAllButton = new JButton(new ImageIcon(Main.class.getResource("/images/arrowLeft.png")));
             showAllButton.setBorder(null);
             showAllButton.addActionListener(new ActionListener() {
@@ -241,9 +277,17 @@ public abstract class UserPreferencesButton extends ToolbarGridButton {
             applyButtonsPanel.add(applyButton, BorderLayout.NORTH);
             applyButtonsPanel.add(applyForAllButton, BorderLayout.SOUTH);
 
+            TitledPanel resetButtonsPanel = new TitledPanel(getString("form.grid.hide.reset.settings"));
+            resetButtonsPanel.add(resetButton, BorderLayout.NORTH);
+            resetButtonsPanel.add(resetForAllButton, BorderLayout.SOUTH);
+
+            JPanel applyResetButtonsPanel = new JPanel();
+            applyResetButtonsPanel.add(applyButtonsPanel, BorderLayout.WEST);
+            applyResetButtonsPanel.add(resetButtonsPanel, BorderLayout.EAST);
+
             JPanel bottomPanel = new JPanel();
             bottomPanel.setLayout(new BorderLayout());
-            bottomPanel.add(applyButtonsPanel, BorderLayout.NORTH);
+            bottomPanel.add(applyResetButtonsPanel, BorderLayout.NORTH);
             bottomPanel.add(buttonsPanel, BorderLayout.EAST);
 
             JPanel mainPanel = new JPanel();
@@ -276,17 +320,25 @@ public abstract class UserPreferencesButton extends ToolbarGridButton {
         }
 
         private void applyButtonPressed(Boolean forAllUsers) throws IOException {
-            Map<String, Boolean> sortDirections = initialTable.getSortDirections();
+            Map<Pair<ClientPropertyDraw,ClientGroupObjectValue>, Boolean> orderDirections = initialTable.getOrderDirections();
+            Map<ClientPropertyDraw, Pair<Boolean, Integer>> sortDirections = new HashMap<ClientPropertyDraw, Pair<Boolean, Integer>>();
+            int j = 1;
+            for(Map.Entry<Pair<ClientPropertyDraw, ClientGroupObjectValue>, Boolean> entry : orderDirections.entrySet()){
+                sortDirections.put(entry.getKey().first, new Pair<Boolean, Integer>(entry.getValue(), j));
+                j++;
+            }
+            
             Map<String, ColumnUserPreferences> preferences = new HashMap<String, ColumnUserPreferences>();
-            int sortIndex = 0;
             for (int i = 0; i < visibleListModel.getSize(); i++) {
                 int index = orderMap.get(visibleListModel.get(i));
-                String propertySID = initialTable.getProperties().get(index).getSID();
-                Boolean sortDirection = sortDirections.containsKey(propertySID) ? sortDirections.get(propertySID) : null;
-                if (sortDirection != null) sortIndex++;
-                preferences.put(propertySID,
-                        new ColumnUserPreferences(false, initialTable.getProperties().get(index).widthUser, i, sortDirection != null ? sortIndex : 0, sortDirection));
+                ClientPropertyDraw property = initialTable.getProperties().get(index);
+                Boolean sortDirection = sortDirections.containsKey(property) ? sortDirections.get(property).first : null;
+                Integer sortIndex = sortDirections.containsKey(property) ? sortDirections.get(property).second : null;
+                preferences.put(property.getSID(),
+                        new ColumnUserPreferences(false, initialTable.getProperties().get(index).widthUser, i, sortDirection != null ? sortIndex : null, sortDirection));
                 initialTable.getProperties().get(index).hideUser = false;
+                initialTable.getProperties().get(index).orderUser = i;
+                orderMap.put(initialTable.getProperties().get(index).caption, i);
             }
 
             for (int i = 0; i < invisibleListModel.getSize(); i++) {
@@ -294,6 +346,8 @@ public abstract class UserPreferencesButton extends ToolbarGridButton {
                 preferences.put(initialTable.getProperties().get(index).getSID(),
                         new ColumnUserPreferences(true, initialTable.getProperties().get(index).widthUser, i + visibleListModel.getSize(), 0, null));
                 initialTable.getProperties().get(index).hideUser = true;
+                initialTable.getProperties().get(index).orderUser = visibleListModel.getSize() + i;
+                orderMap.put(initialTable.getProperties().get(index).caption, visibleListModel.getSize() + i);
             }
             if (initialTable.getProperties().size() != 0) {
                 List<GroupObjectUserPreferences> groupObjectUserPreferencesList = new ArrayList<GroupObjectUserPreferences>();
@@ -301,6 +355,58 @@ public abstract class UserPreferencesButton extends ToolbarGridButton {
                 form.saveUserPreferences(new FormUserPreferences(groupObjectUserPreferencesList), forAllUsers);
             }
             JOptionPane.showMessageDialog(this, getString("form.grid.hide.save.settings.successfully.complete"), getString("form.grid.hide.save.complete"), JOptionPane.INFORMATION_MESSAGE);
+        }
+
+        private void resetButtonPressed(Boolean forAllUsers) throws IOException {
+            Map<String, ColumnUserPreferences> preferences = new HashMap<String, ColumnUserPreferences>();
+            initialTable.setOrResetPreferredColumnWidths();
+            for (int i = 0; i < visibleListModel.getSize(); i++) {
+                int index = orderMap.get(visibleListModel.get(i));
+                String propertySID = initialTable.getProperties().get(index).getSID();
+                preferences.put(propertySID,
+                        new ColumnUserPreferences(null, null, null, null, null));
+                initialTable.getProperties().get(index).hideUser = null;
+                if (initialTable.getColumnModel().getColumnCount() > index)
+                    initialTable.getProperties().get(index).widthUser = initialTable.getColumnModel().getColumn(index).getPreferredWidth();
+                else
+                    initialTable.getProperties().get(index).widthUser = null;
+                initialTable.getProperties().get(index).sortUser = null;
+                initialTable.getProperties().get(index).ascendingSortUser = null;
+                initialTable.getProperties().get(index).orderUser = initialTable.getProperties().get(index).getID();
+            }
+
+            for (int i = 0; i < invisibleListModel.getSize(); i++) {
+                int index = orderMap.get(invisibleListModel.get(i));
+                preferences.put(initialTable.getProperties().get(index).getSID(),
+                        new ColumnUserPreferences(null, null, null, null, null));
+                initialTable.getProperties().get(index).hideUser = null;
+                if (initialTable.getColumnModel().getColumnCount() > index)
+                    initialTable.getProperties().get(index).widthUser = initialTable.getColumnModel().getColumn(index).getPreferredWidth();
+                else
+                    initialTable.getProperties().get(index).widthUser = null;
+                initialTable.getProperties().get(index).sortUser = null;
+                initialTable.getProperties().get(index).ascendingSortUser = null;
+                initialTable.getProperties().get(index).orderUser = initialTable.getProperties().get(index).getID();
+            }
+            if (initialTable.getProperties().size() != 0) {
+                List<GroupObjectUserPreferences> groupObjectUserPreferencesList = new ArrayList<GroupObjectUserPreferences>();
+                groupObjectUserPreferencesList.add(new GroupObjectUserPreferences(preferences, initialTable.getProperties().get(0).groupObject.getSID(), false));
+                form.saveUserPreferences(new FormUserPreferences(groupObjectUserPreferencesList), forAllUsers);
+            }
+            initialTable.updateTable();
+            visibleListModel.clear();
+            invisibleListModel.clear();
+            for (int i = 0; i < initialTable.getProperties().size(); i++) {
+                ClientPropertyDraw property = initialTable.getProperties().get(i);
+                String caption = BaseUtils.nullTrim(property.getCaption());
+                orderMap.put(caption, i);
+                if (!property.hide)
+                    visibleListModel.addElement(caption);
+                else
+                    invisibleListModel.addElement(caption);
+            }
+
+            JOptionPane.showMessageDialog(this, getString("form.grid.hide.reset.settings.successfully.complete"), getString("form.grid.hide.reset.complete"), JOptionPane.INFORMATION_MESSAGE);
         }
 
         class ValueComparator implements Comparator {

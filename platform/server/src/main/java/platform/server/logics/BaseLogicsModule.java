@@ -2388,6 +2388,10 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             setEditType(columnWidthPropertyDraw, PropertyEditType.EDITABLE);
             setEditType(columnOrderPropertyDrawCustomUser, PropertyEditType.EDITABLE);
             setEditType(columnOrderPropertyDraw, PropertyEditType.EDITABLE);
+            setEditType(columnSortPropertyDraw, PropertyEditType.EDITABLE);
+            setEditType(columnAscendingSortPropertyDraw, PropertyEditType.EDITABLE);
+            setEditType(columnSortPropertyDrawCustomUser, PropertyEditType.EDITABLE);
+            setEditType(columnAscendingSortPropertyDrawCustomUser, PropertyEditType.EDITABLE);
         }
     }
 
