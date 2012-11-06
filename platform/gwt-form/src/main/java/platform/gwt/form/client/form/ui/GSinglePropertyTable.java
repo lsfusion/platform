@@ -36,6 +36,8 @@ public class GSinglePropertyTable extends GPropertyTable {
         this.property = iproperty;
         this.columnKey = columnKey;
 
+        setRemoveKeyboardStylesOnFocusLost(true);
+
         setTableBuilder(new GSinglePropertyTableCellBuilder(this));
 
         addColumn(new Column<Object, Object>(new GridEditableCell(this)) {
@@ -45,11 +47,6 @@ public class GSinglePropertyTable extends GPropertyTable {
             }
         });
         setRowData(Arrays.asList(new Object()));
-    }
-
-    @Override
-    protected boolean preserveKeyboardStylesOnBlur() {
-        return false;
     }
 
     public void setValue(Object value) {

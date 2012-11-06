@@ -2,9 +2,9 @@ package platform.gwt.form.client.form.ui;
 
 import com.allen_sauer.gwt.log.client.Log;
 import com.google.gwt.cell.client.Cell;
-import platform.gwt.cellview.client.Column;
 import com.google.gwt.view.client.SelectionChangeEvent;
 import platform.gwt.base.shared.GwtSharedUtils;
+import platform.gwt.cellview.client.Column;
 import platform.gwt.form.client.dispatch.DeferredRunner;
 import platform.gwt.form.shared.view.GGroupObject;
 import platform.gwt.form.shared.view.GOrder;
@@ -128,6 +128,10 @@ public class GGridTable extends GGridPropertyTable {
                 scrollToNewKey();
             }
             needToScroll = false;
+        }
+
+        if (currentInd != -1) {
+            setKeyboardSelectedRow(currentInd, false);
         }
         pendingState = null;
     }

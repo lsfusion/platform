@@ -1374,19 +1374,21 @@ class HasDataPresenter<T> implements HasData<T>, HasKeyProvider<T>, HasKeyboardP
         }
 
         view.resetFocus();
-      } else if (keyboardRowChanged) {
-        // Update the keyboard selected rows without redrawing.
-        // Deselect the old keyboard row.
-        int oldSelectedRow = oldState.getKeyboardSelectedRow();
-        if (oldSelectedRow >= 0 && oldSelectedRow < rowDataCount) {
-          view.setKeyboardSelected(oldSelectedRow, false, false);
-        }
+      }
 
-        // Select the new keyboard row.
-        int newSelectedRow = newState.getKeyboardSelectedRow();
-        if (newSelectedRow >= 0 && newSelectedRow < rowDataCount) {
-          view.setKeyboardSelected(newSelectedRow, true, newState.keyboardStealFocus);
-        }
+      //allways update keyboardSelection
+
+      // Update the keyboard selected rows without redrawing.
+      // Deselect the old keyboard row.
+      int oldSelectedRow = oldState.getKeyboardSelectedRow();
+      if (oldSelectedRow >= 0 && oldSelectedRow < rowDataCount) {
+        view.setKeyboardSelected(oldSelectedRow, false, false);
+      }
+
+      // Select the new keyboard row.
+      int newSelectedRow = newState.getKeyboardSelectedRow();
+      if (newSelectedRow >= 0 && newSelectedRow < rowDataCount) {
+        view.setKeyboardSelected(newSelectedRow, true, newState.keyboardStealFocus);
       }
     } catch (Error e) {
       // Force the error into the dev mode console.
