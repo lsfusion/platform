@@ -171,6 +171,8 @@ FORM userPriceListSku 'Подбор товаров для прайсов'
     PROPERTIES(s) inSku
     PROPERTIES READONLY inputName = nameSku(s), idBarcodeSku(s)
     PROPERTIES READONLY currentPriceSkuPriceListDataPriceListTypeStock(s, p, t, ts) COLUMNS (t) HEADER extendNameDataPriceListType(t)
+    FILTERGROUP filters
+        FILTER 'С действующей ценой' 'F10' currentPriceSkuPriceListDataPriceListTypeStock(s, p, t, ts) DEFAULT
 
     FILTERS isParentSkuGroupSku(sk, s)
     ORDER BY inputName
@@ -224,6 +226,9 @@ addDetailDialogSkuUserPriceListDetailUserPriceList 'Подбор товара' =
 } TOOLBAR;
 
 isSelectedPriceListDetail 'Отм' = SESSION DATA BOOLEAN (priceListDetail);
+sumSelectedPriceList (priceList) =
+    GROUP SUM 1 IF isSelectedPriceListDetail(priceListDetail)
+          BY priceListPriceListDetail(priceListDetail);
 
 FORM chooseMarkUpSkuUserPriceList 'Наценка'
 
@@ -256,6 +261,7 @@ changeMarkUpSkuUserPriceList 'Изменить наценку' = ACTION (userPri
 
     FORM chooseMarkUpSkuUserPriceList OBJECTS p = userPriceList, t = dataPriceListType MODAL;
     IF formResult() == formResult.ok THEN {
+        IF TRUE AND NOT sumSelectedPriceList(userPriceList) THEN MESSAGE 'Выберите хотя бы одну позицию' ELSE
         SET pricePriceListDetailDataPriceListType(detail, t) <-
                 currentPricePriceListDetailDataPriceListTypeStock(detail, t, stock) * (chosenNumeric('n') + 100.0) / 100.0
                 WHERE isSelectedPriceListDetail(detail) AND userPriceListUserPriceListDetail(detail) == userPriceList AND t == chosenObject('t');
@@ -515,48 +521,72 @@ descriptionPriceListPriceListTypeBatchStockDateTime 'Описание' (priceLis
 
 FORM editPriceListType 'Вид цены'
     OBJECTS p = priceListType FIXED PANEL
-    PROPERTIES(p) objectClassName, name, nameCurrencyDataPriceListType, nameCurrencyCalcPriceListType
+    PROPERTIES(p) READONLY objectClassName
+    PROPERTIES(p) name
+
+    TREE treeGroup g=priceGroup PARENT parentPriceGroup
+    PROPERTIES READONLY name(g)
+    ORDER BY name(g)
 
     EDIT priceListType OBJECT p
 ;
 
 DESIGN editPriceListType FROM DEFAULT{
     NEW mainContainer{
-        ADD PROPERTY(objectClassName);
-        ADD PROPERTY(name);
+        childConstraints = TO THE RIGHT;
+        type = SPLITH;
+        ADD treeGroup.tree.box{
+            fillHorizontal = 2.0;
+        }
+        ADD p.box{
+            fillHorizontal = 3.0;
+            ADD PROPERTY(name);
+        }
+    }
+    ADD functions.box;
+}
+
+EXTEND FORM editPriceListType
+    PROPERTIES(p) nameCurrencyDataPriceListType, nameCurrencyCalcPriceListType, nameBasePriceListTypeCalcPriceListType, roundCalcPriceListType
+    PROPERTIES(p, g) markupCalcPriceListTypePriceGroup , nearestMarkupCalcPriceListTypePriceGroup
+;
+
+EXTEND DESIGN editPriceListType{
+    p.box{
         ADD PROPERTY(nameCurrencyDataPriceListType);
         ADD PROPERTY(nameCurrencyCalcPriceListType);
+        ADD PROPERTY(nameBasePriceListTypeCalcPriceListType);
+        ADD PROPERTY(roundCalcPriceListType);
     }
-    ADD functions.box;
 }
 
-FORM dataPriceListType 'Базовый вид цен'
-    OBJECTS p = dataPriceListType FIXED PANEL
-    PROPERTIES(p) name, nameCurrencyDataPriceListType
+//FORM dataPriceListType 'Базовый вид цен'
+//    OBJECTS p = dataPriceListType FIXED PANEL
+//    PROPERTIES(p) name, nameCurrencyDataPriceListType
 
-    EDIT dataPriceListType OBJECT p
-;
+//    EDIT dataPriceListType OBJECT p
+//;
 
-DESIGN dataPriceListType FROM DEFAULT {
-    NEW topContainer{
-        ADD PROPERTY(name);
-        ADD PROPERTY(nameCurrencyDataPriceListType);
-    }
-    ADD functions.box;
-}
+//DESIGN dataPriceListType FROM DEFAULT {
+//    NEW topContainer{
+//       ADD PROPERTY(name);
+//        ADD PROPERTY(nameCurrencyDataPriceListType);
+//    }
+//    ADD functions.box;
+//}
 
-FORM calcPriceListType 'Базовый вид цен'
-    OBJECTS p = calcPriceListType FIXED PANEL
-    PROPERTIES(p) name, nameBasePriceListTypeCalcPriceListType, roundCalcPriceListType
+//FORM calcPriceListType 'Базовый вид цен'
+//    OBJECTS p = calcPriceListType FIXED PANEL
+//    PROPERTIES(p) name, nameBasePriceListTypeCalcPriceListType, roundCalcPriceListType
 
-    TREE treeGroup g=priceGroup PARENT parentPriceGroup
-    PROPERTIES READONLY name(g)
-    ORDER BY name(g)
+//    TREE treeGroup g=priceGroup PARENT parentPriceGroup
+//    PROPERTIES READONLY name(g)
+//   ORDER BY name(g)
 
-    PROPERTIES(p, g) markupCalcPriceListTypePriceGroup , nearestMarkupCalcPriceListTypePriceGroup
+//    PROPERTIES(p, g) markupCalcPriceListTypePriceGroup , nearestMarkupCalcPriceListTypePriceGroup
 
-    EDIT calcPriceListType OBJECT p
-;
+//    EDIT calcPriceListType OBJECT p
+//;
 
 FORM priceListType 'Тип цены'
     OBJECTS p = priceListType

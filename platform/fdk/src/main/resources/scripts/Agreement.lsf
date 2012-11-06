@@ -11,28 +11,21 @@ CLASS agreement 'Соглашение' : named, numeratedObject;
 TABLE agreement (agreement);
 
 @defineNumeratedObjectDefault(agreement, 'Нумератор для договоров', 'ТД');
+
 @defineDocumentHeaderTime(agreement);
 @defineDocumentHeaderTimePrefix(agreement, from, ' с');
+
 @defineDocumentHeaderTimePrefix(agreement, to, ' по');
+toDateAgreement(agreement) <- NULL WHEN ASSIGNED(agreement IS agreement);
+toTimeAgreement(agreement) <- NULL WHEN ASSIGNED(agreement IS agreement);
+
 @defineDocumentHeaderNote(agreement);
 @defineDocumentHeaderCurrency(agreement);
 @defineDocumentHeaderDescription(agreement, seriesNumberObject, 'Соглашение');
 
-toDateAgreement(agreement) <- NULL WHEN ASSIGNED(agreement IS agreement);
-toTimeAgreement(agreement) <- NULL WHEN ASSIGNED(agreement IS agreement);
-
-inAgreementAbstract 'Отм' = ABSTRACT BOOLEAN (agreement) PERSISTENT;
 inLegalEntityAgreement 'Отм' = DATA BOOLEAN (agreement);
-//inLegalEntityAgreement(agreement) <- TRUE WHEN ASSIGNED(agreement IS agreement);
-inAgreementAbstract(agreement) += inLegalEntityAgreement(agreement);
-
-inAgreementLegalEntityGroupAbstract 'Отм' = ABSTRACT BOOLEAN (agreement, legalEntityGroup) PERSISTENT;
 inAgreementLegalEntityGroup 'Отм' = DATA BOOLEAN (agreement, legalEntityGroup);
-inAgreementLegalEntityGroupAbstract(agreement, legalEntityGroup) += inAgreementLegalEntityGroup(agreement, legalEntityGroup);
-
-inAgreementLegalEntityAbstract 'Отм.' (agreement, legalEntity) = ABSTRACT BOOLEAN (agreement, legalEntity);
 inAgreementLegalEntity 'Отм.' (agreement, legalEntity) = DATA BOOLEAN (agreement, legalEntity);
-inAgreementLegalEntityAbstract(agreement, legalEntity) += inAgreementLegalEntity(agreement, legalEntity);
 
 levelParentAgreementLegalEntityGroup (agreement, legalEntityGroup) =
     GROUP MIN levelLegalEntityGroupLegalEntityGroup(legalEntityGroup, parent) IF inAgreementLegalEntityGroup(agreement, parent)
@@ -109,7 +102,7 @@ META defineDocumentInterfaceHeaderAgreement (object, company, legalEntity)
                MESSAGE 'Соглашение должно быть между заданными юр. лицами';
 
     CONSTRAINT agreement###user###object(object)
-               AND NOT inAgreementLegalEntityAbstract(agreement###user###object(object), legalEntity(object))
+               AND NOT inAgreementLegalEntityOver(agreement###user###object(object), legalEntity(object))
                CHECKED BY agreement###user###object
                MESSAGE 'Соглашение должно быть между заданными юр. лицами';
 END
