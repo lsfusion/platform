@@ -71,9 +71,17 @@
         <gwt.dnd.version>3.1.2</gwt.dnd.version>
         <color.picker.version>2.1</color.picker.version>
 
+        <!-- general properties -->
+        <maven.test.skip>true</maven.test.skip>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <!-- used by compiler -->
         <maven.compiler.source>1.6</maven.compiler.source>
         <maven.compiler.target>1.6</maven.compiler.target>
-        <maven.test.skip>true</maven.test.skip>
+
+        <!-- used by AspectJ-->
+        <mojo.java.target>1.6</mojo.java.target>
+        <project.build.java.target>1.6</project.build.java.target>
     </properties>
 
     <repositories>
@@ -282,10 +290,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-resources-plugin</artifactId>
-                    <version>2.4.3</version>
-                    <configuration>
-                        <encoding>UTF-8</encoding>
-                    </configuration>
+                    <version>2.6</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -295,22 +300,12 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>2.3.2</version>
-                    <configuration>
-                        <encoding>UTF-8</encoding>
-                        <source>6</source>
-                        <target>6</target>
-                    </configuration>
+                    <version>2.5.1</version>
                 </plugin>
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>aspectj-maven-plugin</artifactId>
                     <version>1.4</version>
-                    <configuration>
-                        <encoding>UTF-8</encoding>
-                        <source>6</source>
-                        <target>6</target>
-                    </configuration>
                     <executions>
                         <execution>
                             <goals>
@@ -318,6 +313,18 @@
                             </goals>
                         </execution>
                     </executions>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.aspectj</groupId>
+                            <artifactId>aspectjrt</artifactId>
+                            <version>${aspectj.version}</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.aspectj</groupId>
+                            <artifactId>aspectjtools</artifactId>
+                            <version>${aspectj.version}</version>
+                        </dependency>
+                    </dependencies>
                 </plugin>
             </plugins>
         </pluginManagement>
