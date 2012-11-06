@@ -36,8 +36,8 @@
 	<field name="seriesRepricing" class="java.lang.String"/>
 	<field name="dateRepricing" class="java.util.Date"/>
 	<field name="timeRepricing" class="java.sql.Time"/>
-	<field name="nameStockRepricing" class="java.lang.String"/>
-	<field name="nameStockGroupRepricing" class="java.lang.String"/>
+	<field name="nameDepartmentStoreRepricing" class="java.lang.String"/>
+	<field name="nameStoreRepricing" class="java.lang.String"/>
 	<field name="countRepricingDetailRepricing" class="java.lang.Integer"/>
 	<field name="quantityRepricingDetailRepricing" class="java.lang.Double"/>
 	<field name="nameCompanyRepricing" class="java.lang.String"/>
@@ -545,7 +545,7 @@ $F{numberRepricing}]]></textFieldExpression>
 					<rightPen lineWidth="0.0"/>
 				</box>
 				<textElement textAlignment="Center"/>
-				<textFieldExpression><![CDATA["магазин "+$F{nameStockGroupRepricing}+ ", отдел " +$F{nameStockRepricing}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["магазин "+$F{nameStoreRepricing}+ ", отдел " +$F{nameDepartmentStoreRepricing}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="10" y="64" width="792" height="13"/>

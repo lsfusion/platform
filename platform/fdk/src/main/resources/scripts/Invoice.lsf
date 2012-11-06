@@ -42,7 +42,7 @@ META defineInvoice(sign, contact, partyA, partyB)
     @deriveDocumentDetailPricePriceListTypeCustom(userInvoiceDetail);
 
     @defineDocumentInterfaceDetailDataSum(invoice);
-    @deriveDocumentDetailSum(userInvoice);
+    @deriveDocumentDetailSum(userInvoice, quantity);
 
     @defineDocumentInterfaceDetailVAT(invoice, countryStock);
     @defineDocumentInterfaceDetailVATDataSum (invoice);
@@ -216,7 +216,7 @@ META defineInvoice(sign, contact, partyA, partyB)
                 ADD d.box {
                     title = 'Спецификация';
                     d.panel {
-                        childConstraints = TO THE BOTTOM;
+                        childConstraints = TO THE RIGHT;
                     }
                 }
             }

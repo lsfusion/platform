@@ -895,19 +895,19 @@ META defineDocumentDetailDataSum(object)
     @defineDocumentDetailDataSumCustomPrefix(object##Detail, , );
 END
 
-META deriveDocumentDetailSumCustomPrefix(detail, prefix, currencyProp)
-    prefix###sum###detail (detail)  <- roundCurrency(quantity###detail(detail) * prefix###price###detail(detail), currencyProp###detail(detail))
-                    WHEN CHANGED(quantity###detail(detail)) OR CHANGED (prefix###price###detail(detail)) OR CHANGED(currencyProp###detail(detail));
+META deriveDocumentDetailSumCustomPrefix(detail, prefix, currencyProp, quantityProp)
+    prefix###sum###detail (detail)  <- roundCurrency(quantityProp###detail(detail) * prefix###price###detail(detail), currencyProp###detail(detail))
+                    WHEN CHANGED(quantityProp###detail(detail)) OR CHANGED (prefix###price###detail(detail)) OR CHANGED(currencyProp###detail(detail));
 END
 
-META deriveDocumentDetailSumPrefix(object, prefix, currencyProp)
-    @deriveDocumentDetailSumCustomPrefix(object##Detail, prefix, currencyProp);
+META deriveDocumentDetailSumPrefix(object, prefix, currencyProp, quantityProp)
+    @deriveDocumentDetailSumCustomPrefix(object##Detail, prefix, currencyProp, quantityProp);
 END
-META deriveDocumentDetailSum(object, currencyProp)
-    @deriveDocumentDetailSumPrefix(object, ,currencyProp);
+META deriveDocumentDetailSum(object, currencyProp, quantityProp)
+    @deriveDocumentDetailSumPrefix(object, ,currencyProp, quantityProp);
 END
-META deriveDocumentDetailSum(object)
-    @deriveDocumentDetailSum(object, currency);
+META deriveDocumentDetailSum(object, quantityProp)
+    @deriveDocumentDetailSum(object, currency, quantityProp);
 END
 
 //-

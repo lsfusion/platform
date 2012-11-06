@@ -35,7 +35,7 @@ META defineShipment(sign, contact, contactCaption, partyA, partyB)
     @defineDocumentInterfaceDetailPrice(shipment);
 
     @defineDocumentInterfaceDetailDataSum(shipment);
-    @deriveDocumentDetailSum(userShipment);
+    @deriveDocumentDetailSum(userShipment, quantity);
 
     @defineDocumentInterfaceHeaderQuantity(shipment);
     @defineDocumentHeaderSkuQuantity(shipment, sku);
@@ -468,7 +468,7 @@ META defineShipment(sign, contact, contactCaption, partyA, partyB)
     extraShipmentPriceUserInvoiceDetail = ABSTRACT NUMERIC[14,2] (userInvoiceDetail) PERSISTENT;
 
     @defineDocumentInterfaceDetailDataSumPrefix (invoice, shipment, ' (учетная)');
-    @deriveDocumentDetailSumPrefix(userInvoice, shipment, currency);
+    @deriveDocumentDetailSumPrefix(userInvoice, shipment, currency, quantity);
 
     createShipmentInvoice 'Создавать поставку' = ABSTRACT BOOLEAN (invoice) IN documentPrmGroup;
     createShipmentUserInvoice 'Создавать поставку' = DATA BOOLEAN (userInvoice) IN documentPrmGroup;

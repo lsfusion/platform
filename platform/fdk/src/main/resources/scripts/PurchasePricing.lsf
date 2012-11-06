@@ -1,6 +1,6 @@
 MODULE PurchasePricing;
 
-REQUIRE Pricing, PurchaseInvoice;//, PurchaseShipment, StorePrice;
+REQUIRE Pricing, PurchaseInvoice, Repricing;//, PurchaseShipment, StorePrice;
 
 NAMESPACE Purchase;
 
@@ -8,7 +8,7 @@ NAMESPACE Purchase;
 //----------------------------------------------- Акт расценки ---------------------------------------------------//
 
 @definePricing(' (покупка)', supplier, 'Поставщик');
-
+@defineRepricing(' (покупка)');
 //@implementSkuDepartmentStoreLedgerCustom(supplierPrice, pricing, sku, stock, price);
 //@implementSkuDepartmentStoreLedger(retailVAT, pricing, sku, stock);
 //@implementSkuDepartmentStoreLedger(retailPrice, pricing, sku, stock);

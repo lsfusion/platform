@@ -9,13 +9,13 @@ CLASS repricingCommittee 'Комиссия переоценки' : committee;
 
 // ----------------------------------- Комиссия по умолчанию для отдела ------------------------------------------ //
 
-repricingCommitteeStock = DATA repricingCommittee (stock);
-nameRepricingCommitteeStock 'Комиссия переоценки' (stock) = name(repricingCommitteeStock(stock));
-isDefaultRepricingCommitteeStock 'По умолчанию' (repricingCommittee, stock) = repricingCommitteeStock(stock) == repricingCommittee;
-CONSTRAINT repricingCommitteeStock(stock) AND NOT inCommitteeEmployeeDivision(repricingCommitteeStock(stock), stock)
-    CHECKED BY repricingCommitteeStock MESSAGE 'Для отдела выбрана комиссия, которая для него не действует';
+repricingCommitteeDepartmentStore = DATA repricingCommittee (departmentStore);
+nameRepricingCommitteeDepartmentStore 'Комиссия переоценки' (departmentStore) = name(repricingCommitteeDepartmentStore(departmentStore));
+isDefaultRepricingCommitteeDepartmentStore 'По умолчанию' (repricingCommittee, departmentStore) = repricingCommitteeDepartmentStore(departmentStore) == repricingCommittee;
+CONSTRAINT repricingCommitteeDepartmentStore(departmentStore) AND NOT inCommitteeEmployeeDivision(repricingCommitteeDepartmentStore(departmentStore), departmentStore)
+    CHECKED BY repricingCommitteeDepartmentStore MESSAGE 'Для отдела выбрана комиссия, которая для него не действует';
 
-EXTEND FORM departmentStore PROPERTIES nameRepricingCommitteeStock(d);
+EXTEND FORM departmentStore PROPERTIES nameRepricingCommitteeDepartmentStore(d);
 
 // ----------------------------------- Формы для комиссий переоценки ------------------------------------------ //
 
@@ -23,16 +23,15 @@ FORM repricingCommittee 'Комиссия переоценки'
     OBJECTS c=repricingCommittee FIXED PANEL
     PROPERTIES(c)      name, nameChairmanCommittee
 
-    TREE stockTree sg = stockGroup PARENT parentStockGroup, ts = stock
-    PROPERTIES READONLY sgTreeName = name(sg), tsTreeName = name(ts)
-    FILTERS stockGroupStock(ts) == sg
+    TREE treeStore a=STRING[3], t=chainStores, st=storeType, s=store
+    PROPERTIES         READONLY OBJVALUE(a), name(t), name(st), name(s)
+    FILTERS            stringEqualsAll(a), inChainStoresStoreType (t, st), inStoreTypeStore(st, s)
 
-    OBJECTS           st=stock
-    PROPERTIES        READONLY stockName = name(st)
-    PROPERTIES(c, st) inCommitteeEmployeeDivision, isDefaultRepricingCommitteeStock
-    ORDER BY          stockName
-    FILTERS           (st == ts AND sg IS stockGroup) OR (isParentStockGroupStock(sg, st) AND NOT ts)
-
+    OBJECTS dep=departmentStore
+    PROPERTIES(dep)    READONLY depName = name
+    PROPERTIES(c, dep) inCommitteeEmployeeDivision, isDefaultRepricingCommitteeDepartmentStore
+    FILTERS            inChainStoresStoreTypeStoreDepartment(t, st, s, dep)
+    ORDER BY depName
 
     OBJECTS e=employee
     PROPERTIES(e)      READONLY name, userFirstName, userLastName, namePositionEmployee
@@ -44,7 +43,7 @@ FORM repricingCommittee 'Комиссия переоценки'
         FILTER 'Показывать только членов комиссии' 'F10' inCommitteeEmployee(c, e)
 
     FILTERGROUP filters5
-        FILTER 'Показывать отделы только для данной комиссии' 'F9' inCommitteeEmployeeDivision(c, st)
+        FILTER 'Показывать отделы только для данной комиссии' 'F9' inCommitteeEmployeeDivision(c, dep)
 
     EDIT repricingCommittee OBJECT c
 ;
@@ -61,11 +60,11 @@ DESIGN repricingCommittee FROM DEFAULT {
             childConstraints = TO THE RIGHT;
             title = 'Отделы, для которых действуют комиссии';
 
-            ADD stockTree.tree {
+            ADD treeStore.tree {
                 fillHorizontal = 1;
             }
 
-            ADD st.box {
+            ADD dep.box {
                 fillHorizontal = 2;
             }
         };
@@ -83,12 +82,12 @@ FORM repricingCommitteeDialog 'Комиссии переоценки'
 // ----------------------------------- Макрос для задания комиссии для документов ------------------------------------------ //
 
 
-META defineDocumentHeaderRepricingCommittee(object)
+META defineDocumentHeaderRepricingCommittee(object, stockProp)
     numberDisposal###object '№ распоряжения на переоценку' (object) = DATA STRING[30] (object) IN documentPrmGroup;
 
     repricingCommittee###object (object) = DATA repricingCommittee(object) IN idGroup;
     nameRepricingCommittee###object 'Комиссия переоценки' (object) = commonName(repricingCommittee###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
-    repricingCommittee###object (object) <- repricingCommitteeStock(stock###object(object))
+    repricingCommittee###object (object) <- repricingCommitteeDepartmentStore(stockProp###object(object))
         WHEN ASSIGNED(object IS object);
 
     inCommittee###object##Employee (object, employee) = inCommitteeEmployee(repricingCommittee###object (object), employee);
@@ -109,9 +108,9 @@ META defineDocumentHeaderAbstractRepricingCommittee(object)
     namePositionChairman###object 'Должность' (object) = namePositionChairmanCommittee(repricingCommittee###object (object));
 END
 
-META defineDocumentInterfaceHeaderRepricingCommittee (object)
+META defineDocumentInterfaceHeaderRepricingCommittee (object, stockProp)
     @defineDocumentHeaderAbstractRepricingCommittee (object);
-    @defineDocumentHeaderRepricingCommittee (user###object);
+    @defineDocumentHeaderRepricingCommittee (user###object, stockProp);
     repricingCommittee###object (object) += repricingCommittee###user###object(object);
     numberDisposal###object (object) += numberDisposal###user###object(object);
 END
@@ -129,13 +128,13 @@ CLASS userRepricingPosted 'Закрытый акт переоценки (пол�
 
 @defineDocumentInterfaceNumber(repricing);
 
-@defineDocumentInterfaceDataStock(repricing, stock, 'Склад');
+@defineDocumentInterfaceDataStock(repricing, departmentStore, 'Склад');
 @defineDocumentInterfacePosted(repricing);
 
 @defineDocumentInterfaceDescription(repricing, 'Акт переоценки');
 
 @defineDocumentInterfaceCurrency(repricing);
-@deriveDocumentCurrency(userRepricing, stock);
+@deriveDocumentCurrency(userRepricing, departmentStore);
 
 @defineDocumentInterfaceDetailSku(repricing, sku);
 
@@ -143,28 +142,28 @@ CLASS userRepricingPosted 'Закрытый акт переоценки (пол�
 
 @defineDocumentInterfaceDetailPricePrefix(repricing, cur, ' поставщика до');
 @defineDocumentInterfaceDetailDataSumPrefix (repricing, cur, ' поставщика до');
-@deriveDocumentDetailSumPrefix(userRepricing, cur, currency);
+@deriveDocumentDetailSumPrefix(userRepricing, cur, currency, quantity);
 
 @defineDocumentInterfaceDetailPricePrefix(repricing, , ' поставщика после');
 @defineDocumentInterfaceDetailDataSumPrefix (repricing, , ' поставщика после');
-@deriveDocumentDetailSumPrefix(userRepricing, , currency);
+@deriveDocumentDetailSumPrefix(userRepricing, , currency, quantity);
 
 @defineDocumentInterfaceDetailPricePrefix(repricing, curRetail, ' розничная до');
 @defineDocumentInterfaceDetailDataSumPrefix (repricing, curRetail, ' розничная до');
-@deriveDocumentDetailSumPrefix(userRepricing, curRetail, currency);
+@deriveDocumentDetailSumPrefix(userRepricing, curRetail, currency, quantity);
 
 @defineDocumentInterfaceDetailPricePrefix(repricing, retail, ' розничная после');
 @defineDocumentInterfaceDetailDataSumPrefix (repricing, retail, ' розничная после');
-@deriveDocumentDetailSumPrefix(userRepricing, retail, currency);
+@deriveDocumentDetailSumPrefix(userRepricing, retail, currency, quantity);
 
 @defineDocumentInterfaceHeaderQuantity(repricing);
 @defineDocumentHeaderSkuQuantity(repricing, sku);
 @defineDocumentHeaderSkuQuantity(userRepricing, sku);
 
-@defineDocumentInterfaceDetailVATPrefix(repricing, cur, countryStock, ' до');
+@defineDocumentInterfaceDetailVATPrefix(repricing, cur, countryDepartmentStore, ' до');
 @deriveDocumentDetailValueVATPrefix(userRepricing, cur);
 
-@defineDocumentInterfaceDetailVATPrefix(repricing, , countryStock, ' после');
+@defineDocumentInterfaceDetailVATPrefix(repricing, , countryDepartmentStore, ' после');
 @deriveDocumentDetailValueVATPrefix(userRepricing, );
 
 @defineDocumentInterfaceDetailMarkupPrefix (repricing, cur, ' до');
@@ -202,21 +201,21 @@ CLASS userRepricingPosted 'Закрытый акт переоценки (пол�
 @defineDocumentInterfaceHeaderSumPrefix (repricing, diffVAT, ' изменения НДС');
 @defineDocumentInterfaceHeaderSumPrefix (repricing, diffRetail, ' изменения розничной');
 
-@defineAddDetailDialogSkuStock(userRepricing, sku, stock, dialogSku);
+@defineAddDetailDialogSkuStock(userRepricing, sku, departmentStore, dialogSku);
 @defineAddDetailDialogBarcode(userRepricing, sku);
 @defineAddDetailDialogTerminal(userRepricing, sku);
-@defineDocumentInterfaceHeaderRepricingCommittee (repricing);
+@defineDocumentInterfaceHeaderRepricingCommittee (repricing, departmentStore);
 
 //------------------------------------ Печатные формы акт расценки ------------------------------------------------ //
-nameStockGroupRepricing 'Магазин' (repricing) = nameStockGroupStock(stockRepricing(repricing));
+nameStoreRepricing 'Магазин' (repricing) = nameStoreDepartmentStore(departmentStoreRepricing(repricing));
 
 FORM repricing 'Акт переоценки (печать)' PRINT
 
     OBJECTS p = repricing FIXED PANEL
     PROPERTIES (p)  SELECTOR objectClassName
 
-    PROPERTIES (p) numberRepricing, seriesRepricing, dateRepricing, timeRepricing, nameStockGroupRepricing,
-               nameStockRepricing, countRepricingDetailRepricing, quantityRepricingDetailRepricing, nameCompanyRepricing,
+    PROPERTIES (p) numberRepricing, seriesRepricing, dateRepricing, timeRepricing, nameStoreRepricing,
+               nameDepartmentStoreRepricing, countRepricingDetailRepricing, quantityRepricingDetailRepricing, nameCompanyRepricing,
                curSumRepricingDetailRepricing, curMarkupSumRepricingDetailRepricing, curVATSumRepricingDetailRepricing,
                curRetailSumRepricingDetailRepricing,
                sumRepricingDetailRepricing, markupSumRepricingDetailRepricing, VATSumRepricingDetailRepricing,
@@ -255,7 +254,7 @@ printRepricing 'Акт переоценки' (repricing) = ACTION FORM repricing
 FORM userRepricing 'Акт переоценки'
     OBJECTS p=userRepricing FIXED PANEL
     PROPERTIES (p) objectClassName, nameNumeratorObject, numberObject, seriesObject,
-                   dateUserRepricing, timeUserRepricing, nameStockUserRepricing,
+                   dateUserRepricing, timeUserRepricing, nameDepartmentStoreUserRepricing,
                    diffSumUserRepricingDetailUserRepricing, diffMarkupSumUserRepricingDetailUserRepricing, diffVATSumUserRepricingDetailUserRepricing,
                    diffRetailSumUserRepricingDetailUserRepricing,
                    noteUserRepricing, numberDisposalUserRepricing, nameRepricingCommitteeUserRepricing
@@ -299,7 +298,7 @@ DESIGN userRepricing FROM DEFAULT {
                 ADD p.documentHeaderGroup {
                     childConstraints = TO THE RIGHT;
                     ADD PROPERTY(objectClassName);
-                    ADD PROPERTY(nameStockUserRepricing);
+                    ADD PROPERTY(nameDepartmentStoreUserRepricing);
                     ADD PROPERTY(nameNumeratorObject);
                     ADD PROPERTY(numberObject);
                     ADD PROPERTY(seriesObject);
@@ -338,7 +337,7 @@ editUserRepricing 'Редактировать' (userRepricing) = ACTION EDITFORM
 FORM repricings 'Акты переоценки' TITLE 'Акты переоценки'
     OBJECTS p = repricing
     PROPERTIES (p) READONLY isPostedRepricing FORCE GRID, objectClassName, numberRepricing, seriesRepricing, dateRepricing, timeRepricing,
-               nameStockRepricing, countRepricingDetailRepricing,
+               nameDepartmentStoreRepricing, countRepricingDetailRepricing,
                diffSumRepricingDetailRepricing, diffMarkupSumRepricingDetailRepricing, diffVATSumRepricingDetailRepricing,
                diffRetailSumRepricingDetailRepricing,
                noteRepricing, numberDisposalRepricing, nameRepricingCommitteeRepricing
@@ -403,4 +402,180 @@ DESIGN repricings FROM DEFAULT {
     }
 }
 
+META defineRepricing(sign)
+//-- аггр.объект
 
+    @defineDocumentDetailSkuBalance (invoice, sku, stock);
+    @defineDocumentDetailSkuBalance (userInvoice, sku, stock);
+// До
+    @defineDocumentInterfaceDetailPricePrefix(invoice, cur, ' поставщика до');
+    @defineDocumentInterfaceDetailDataSumPrefix (invoice, cur, ' поставщика до');
+    @deriveDocumentDetailSumPrefix(userInvoice, cur, currency, balanceBSku);
+
+    @defineDocumentInterfaceDetailPricePrefix(invoice, curRetail, ' розничная до');
+    @defineDocumentInterfaceDetailDataSumPrefix (invoice, curRetail, ' розничная до');
+    @deriveDocumentDetailSumPrefix(userInvoice, curRetail, currency, balanceBSku);
+
+    @defineDocumentInterfaceDetailVATPrefix(invoice, cur, countryStock, ' до');
+    @deriveDocumentDetailValueVATPrefix(userInvoice, cur);
+
+    @defineDocumentInterfaceDetailMarkupPrefix (invoice, cur, ' до');
+    curMarkupUserInvoiceDetail(userInvoiceDetail)  <- [round2((((X - X*Y/(100+Y))/Z)-1)*100)](
+        0.0 IF userInvoiceDetail IS userInvoiceDetail OR curRetailPriceUserInvoiceDetail(userInvoiceDetail),
+        0.0 IF userInvoiceDetail IS userInvoiceDetail OR valueCurVATUserInvoiceDetail(userInvoiceDetail),
+        curPriceUserInvoiceDetail(userInvoiceDetail))
+        WHEN CHANGED(curRetailPriceUserInvoiceDetail(userInvoiceDetail)) OR CHANGED (curVATUserInvoiceDetail(userInvoiceDetail)) OR CHANGED(curPriceUserInvoiceDetail(userInvoiceDetail));
+
+    @defineDocumentInterfaceDetailVATDataSumPrefix (invoice, cur, ' до');
+    @deriveDocumentDetailReverseVATSumPrefix(userInvoice, cur, curRetail);
+    @defineDocumentInterfaceDetailMarkupSumPrefix (invoice, cur, ' до');
+    @deriveDocumentDetailMarkupSumPrefix(userInvoice, cur, curRetail, cur);
+
+// После
+    @defineDocumentInterfaceDetailDataSumPrefix (invoice, after, ' поставщика после');
+    afterSumUserInvoiceDetail (detail)  <- roundCurrency(balanceBSkuUserInvoiceDetail(detail) * priceUserInvoiceDetail(detail), currencyUserInvoiceDetail(detail))
+                        WHEN CHANGED(balanceBSkuUserInvoiceDetail(detail)) OR CHANGED (priceUserInvoiceDetail(detail)) OR CHANGED(currencyUserInvoiceDetail(detail));
+    @defineDocumentInterfaceDetailDataSumPrefix (invoice, afterRetail, ' розничная после');
+    afterRetailSumUserInvoiceDetail (detail)  <- roundCurrency(balanceBSkuUserInvoiceDetail(detail) * retailPriceUserInvoiceDetail(detail), currencyUserInvoiceDetail(detail))
+                        WHEN CHANGED(balanceBSkuUserInvoiceDetail(detail)) OR CHANGED (retailPriceUserInvoiceDetail(detail)) OR CHANGED(currencyUserInvoiceDetail(detail));
+
+    @defineDocumentInterfaceDetailVATDataSumPrefix (invoice, afterRetail, ' после');
+
+    afterRetailVATSumUserInvoiceDetail (detail)  <- roundCurrency([X*Y/(100+Y)](afterRetailSumUserInvoiceDetail(detail), valueRetailVATUserInvoiceDetail(detail)), currencyUserInvoiceDetail(detail))
+                    WHEN CHANGED(afterRetailSumUserInvoiceDetail(detail)) OR CHANGED (valueRetailVATUserInvoiceDetail(detail)) OR CHANGED (currencyUserInvoiceDetail(detail));
+
+    @defineDocumentInterfaceDetailMarkupSumPrefix (invoice, afterRetail, ' после');
+    afterRetailMarkupSumUserInvoiceDetail(detail) <- afterRetailSumUserInvoiceDetail(detail) (-) afterRetailVATSumUserInvoiceDetail (detail) (-) afterSumUserInvoiceDetail(detail)
+                    WHEN CHANGED(afterRetailVATSumUserInvoiceDetail(detail)) OR CHANGED (afterRetailVATSumUserInvoiceDetail (detail)) OR CHANGED (afterSumUserInvoiceDetail(detail));
+
+
+    needToRepricingInvoiceDetail (invoiceDetail) = curRetailPriceInvoiceDetail(invoiceDetail) != retailPriceInvoiceDetail(invoiceDetail)
+                                                   AND balanceBSkuInvoiceDetail(invoiceDetail) != 0 AND stockInvoiceDetail(invoiceDetail) IS departmentStore
+                                                   AND NOT costLedgerDepartmentStore(stockInvoiceDetail(invoiceDetail))
+                                                   AND createPricingInvoiceDetail(invoiceDetail);// AND isPostedInvoiceDetail(invoiceDetail) ;
+
+    needToRepricingInvoice (invoice)= GROUP SUM 1 IF needToRepricingInvoiceDetail(invoiceDetail)
+        BY invoiceInvoiceDetail(invoiceDetail);
+
+    @defineDocumentInterfaceHeaderRepricingCommittee (invoice, stock);
+
+
+    CLASS invoiceRepricing 'Акт дооценки на основе инвойса'###sign : repricing;
+    CLASS invoiceRepricingPosted 'Закрытый акт дооценки на основе инвойса'###sign : invoiceRepricing, postedObject;
+    CLASS invoiceRepricingDetail 'Строка акта дооценки на основе инвойса'###sign : repricingDetail;
+
+    @defineDocumentTables(invoiceRepricing);
+
+    @defineDocumentAggregation(invoice, invoiceRepricing, needToRepricingInvoice);
+
+
+    repricingRepricingDetail(detail) += invoiceRepricingInvoiceRepricingDetail(detail);
+
+    printRepricing 'Акт переоценки' (repricing) = ACTION FORM repricing OBJECTS p IMAGE 'print.png' IN printGroup;
+    printRepricingInvoice 'Акт дооценки' (invoice) = printRepricing(invoiceRepricingInvoice(invoice)) IMAGE 'print.png' IN printGroup;
+    @defineDocumentDetailIndex(invoiceRepricing);
+
+    dateRepricing(repricing) += dateInvoiceRepricing(repricing);
+    timeRepricing(repricing) += timeInvoiceRepricing(repricing);
+
+    @defineDocumentAggregationStockPrefix(invoice, invoiceRepricing, stock, 'Склад', , );
+    departmentStoreRepricing(repricing) += stockInvoiceRepricing(repricing);
+    dataDepartmentStoreRepricingDetail(repricingDetail) += dataStockInvoiceDetail(invoiceDetailInvoiceRepricingDetail(repricingDetail));
+
+    @defineDocumentAggregationPosted(invoice, invoiceRepricing);
+    isPostedRepricing(repricing) += isPostedInvoiceRepricing(repricing);
+
+    numberInvoiceRepricing 'Номер документа' (invoiceRepricing) = numberInvoice(invoiceInvoiceRepricing(invoiceRepricing));
+    numberRepricing(repricing) += numberInvoiceRepricing(repricing);
+
+    seriesInvoiceRepricing 'Серия документа' (invoiceRepricing) = seriesInvoice(invoiceInvoiceRepricing(invoiceRepricing));
+    seriesRepricing(repricing) += seriesInvoiceRepricing(repricing);
+
+    seriesNumberInvoiceRepricing 'Серия/номер документа' (invoiceRepricing) = seriesNumberInvoice(invoiceInvoiceRepricing(invoiceRepricing));
+
+    noteInvoiceInvoiceRepricing 'Примечание' (invoiceRepricing) = noteInvoice(invoiceInvoiceRepricing(invoiceRepricing));
+    noteRepricing(repricing) += noteInvoiceInvoiceRepricing(repricing);
+
+    currencyInvoiceRepricing  (invoiceRepricing) = currencyInvoice(invoiceInvoiceRepricing(invoiceRepricing));
+    currencyRepricing (repricing) += currencyInvoiceRepricing(repricing);
+    repricingCommitteeRepricing(repricing) += repricingCommitteeInvoice(invoiceInvoiceRepricing(repricing));
+    numberDisposalRepricing(repricing) += numberDisposalInvoice(invoiceInvoiceRepricing(repricing));
+
+    @defineDocumentDescription(invoiceRepricing, invoiceRepricingDetail, seriesNumberInvoiceRepricing, 'Акт дооценки на основе инвойса');
+    descriptionRepricing (repricing) += descriptionInvoiceRepricing(repricing);
+
+    @defineDocumentAggregationDetailSku(invoice, invoiceRepricing, sku);
+    skuRepricingDetail(repricingDetail) +=  skuInvoiceRepricingDetail(repricingDetail);
+
+    EXTEND FORM userInvoice
+        PROPERTIES(i)   SHOWIF needToRepricingInvoice(i) nameRepricingCommitteeUserInvoice, numberDisposalUserInvoice
+        PROPERTIES(d)   SHOWIF needToRepricingInvoice(i) FORCE PANEL
+                        curPriceUserInvoiceDetail,
+                        numberCurVATUserInvoiceDetail, valueCurVATUserInvoiceDetail,
+                        curRetailPriceUserInvoiceDetail
+    ;
+    EXTEND DESIGN userInvoice {
+        headerRow3 {
+            NEW wor2 {
+                title = 'Дооценка';
+                ADD PROPERTY(nameRepricingCommitteeUserInvoice);
+                ADD PROPERTY(numberDisposalUserInvoice);
+            }
+        }
+        d.panel {title = 'Текущие значения';}
+    }
+
+    EXTEND FORM invoices
+        PROPERTIES(i) FORCE PANEL  printRepricingInvoice
+
+    ;
+
+//----------------------------------------------------------------------------------------------------------
+    quantityRepricingDetail(repricingDetail) += balanceBSkuInvoiceDetail(invoiceDetailInvoiceRepricingDetail(repricingDetail));
+
+    @defineDocumentAggregationDetailProperty (invoice, invoiceRepricing, price, 'Цена поставщика после');
+    priceRepricingDetail(repricingDetail) += priceInvoiceRepricingDetail(repricingDetail);
+    @defineDocumentAggregationDetailProperty (invoice, invoiceRepricing, curPrice, 'Цена поставщика до');
+    curPriceRepricingDetail(repricingDetail) += curPriceInvoiceRepricingDetail(repricingDetail);
+
+    @defineDocumentAggregationDetailProperty (invoice, invoiceRepricing, retailPrice, 'Цена розничная после');
+    retailPriceRepricingDetail(repricingDetail) += retailPriceInvoiceRepricingDetail(repricingDetail);
+    @defineDocumentAggregationDetailProperty (invoice, invoiceRepricing, curRetailPrice, 'Цена розничная до');
+    curRetailPriceRepricingDetail(repricingDetail) += curRetailPriceInvoiceRepricingDetail(repricingDetail);
+
+    @defineDocumentAggregationDetailProperty (invoice, invoiceRepricing, afterRetailSum, 'Сумма розничная после');
+    retailSumRepricingDetail(repricingDetail) += afterRetailSumInvoiceRepricingDetail(repricingDetail);
+    @defineDocumentAggregationDetailProperty (invoice, invoiceRepricing, curRetailSum, 'Сумма розничная до');
+    curRetailSumRepricingDetail(repricingDetail) += curRetailSumInvoiceRepricingDetail(repricingDetail);
+
+    @defineDocumentAggregationDetailProperty (invoice, invoiceRepricing, retailMarkup, 'Надбавка после');
+    markupRepricingDetail(repricingDetail) += retailMarkupInvoiceRepricingDetail(repricingDetail);
+    @defineDocumentAggregationDetailProperty (invoice, invoiceRepricing, curMarkup, 'Надбавка до');
+    curMarkupRepricingDetail(repricingDetail) += curMarkupInvoiceRepricingDetail(repricingDetail);
+
+    @defineDocumentAggregationDetailProperty (invoice, invoiceRepricing, retailVAT, 'НДС после');
+    VATRepricingDetail(repricingDetail) += retailVATInvoiceRepricingDetail(repricingDetail);
+    @defineDocumentAggregationDetailProperty (invoice, invoiceRepricing, curVAT, 'НДС до');
+    curVATRepricingDetail(repricingDetail) += curVATInvoiceRepricingDetail(repricingDetail);
+
+    @defineDocumentAggregationDetailProperty (invoice, invoiceRepricing, valueRetailVAT, 'НДС,% после');
+    valueVATRepricingDetail(repricingDetail) += valueRetailVATInvoiceRepricingDetail(repricingDetail);
+    @defineDocumentAggregationDetailProperty (invoice, invoiceRepricing, valueCurVAT, 'НДС,% до');
+    valueCurVATRepricingDetail(repricingDetail) += valueCurVATInvoiceRepricingDetail(repricingDetail);
+
+    @defineDocumentAggregationDetailProperty (invoice, invoiceRepricing, afterSum, 'Сумма поставщика после');
+    sumRepricingDetail(repricingDetail) += afterSumInvoiceRepricingDetail(repricingDetail);
+    @defineDocumentAggregationDetailProperty (invoice, invoiceRepricing, curSum, 'Сумма поставщика до');
+    curSumRepricingDetail(repricingDetail) += curSumInvoiceRepricingDetail(repricingDetail);
+
+    @defineDocumentAggregationDetailProperty (invoice, invoiceRepricing, afterRetailVATSum, 'Сумма НДС после');
+    VATSumRepricingDetail(repricingDetail) += afterRetailVATSumInvoiceRepricingDetail(repricingDetail);
+    @defineDocumentAggregationDetailProperty (invoice, invoiceRepricing, curVATSum, 'Сумма НДС до');
+    curVATSumRepricingDetail(repricingDetail) += curVATSumInvoiceRepricingDetail(repricingDetail);
+
+    @defineDocumentAggregationDetailProperty (invoice, invoiceRepricing, afterRetailMarkupSum, 'Сумма надбавки после');
+    markupSumRepricingDetail(repricingDetail) += afterRetailMarkupSumInvoiceRepricingDetail(repricingDetail);
+    @defineDocumentAggregationDetailProperty (invoice, invoiceRepricing, curMarkupSum, 'Сумма надбавки до');
+    curMarkupSumRepricingDetail(repricingDetail) += curMarkupSumInvoiceRepricingDetail(repricingDetail);
+
+END

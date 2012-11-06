@@ -56,7 +56,7 @@ META defineOrder(sign, contact)
     @deriveDocumentDetailPricePriceListType(userOrder);
 
     @defineDocumentInterfaceDetailDataSum(order);
-    @deriveDocumentDetailSum(userOrder);
+    @deriveDocumentDetailSum(userOrder, quantity);
 
     @defineDocumentInterfaceHeaderQuantity(order);
     @defineDocumentHeaderSkuQuantity(order, sku);

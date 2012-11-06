@@ -34,7 +34,7 @@ META defineCreditNote(sign, contact, contactCaption)
     @defineDocumentInterfaceDetailPrice(creditNote);
 
     @defineDocumentInterfaceDetailDataSum(creditNote);
-    @deriveDocumentDetailSum(userCreditNote);
+    @deriveDocumentDetailSum(userCreditNote, quantity);
 
     @defineDocumentInterfaceDetailVAT(creditNote, countryStock);
     @defineDocumentInterfaceDetailVATDataSumCustom(creditNoteDetail, invoice);

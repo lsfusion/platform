@@ -38,7 +38,7 @@ META defineBlanketOrder(sign, contact, contactCaption, series)
     @deriveDocumentDetailPricePriceListType(blanketOrder);
 
     @defineDocumentDetailDataSum (blanketOrder);
-    @deriveDocumentDetailSum(blanketOrder);
+    @deriveDocumentDetailSum(blanketOrder, quantity);
 
     @defineDocumentHeaderQuantityContractor(blanketOrder, contact);
     @defineDocumentHeaderQuantity(blanketOrder);
