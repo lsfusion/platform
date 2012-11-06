@@ -93,6 +93,7 @@ DESIGN groupsScales FROM DEFAULT {
 
 // Ячейки
 CLASS cellScales 'Ячейка весов';
+TABLE cellScales(cellScales);
 
 groupScalesCellScales = DATA groupScales (cellScales);
 
@@ -128,6 +129,7 @@ DESIGN cellScales FROM DEFAULT {
 //---------------------------- Этикетки в весы ----------------------------------------//
 
 CLASS labelFormat 'Формат этикетки' : named;
+TABLE labelFormat (labelFormat);
 
 idLabelFormat 'Код формата этикетки' = DATA INTEGER (labelFormat) IN baseGroup;
 idToLabelFormat (labelFormat) = GROUP UNIQUE labelFormat BY idLabelFormat(labelFormat) WHERE labelFormat IS labelFormat;

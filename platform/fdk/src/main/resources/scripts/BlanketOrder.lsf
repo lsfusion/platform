@@ -27,6 +27,7 @@ META defineBlanketOrder(sign, contact, contactCaption, series)
     @defineDocumentCurrency (blanketOrder);
     @deriveDocumentCurrency(blanketOrder, stock);
 
+    TABLE blanketOrder###contact(blanketOrder, contact);
     @defineDocumentDetail###contact(blanketOrderDetail);
 //    @defineDocumentDataPriceListType(blanketOrder);
     @defineDocumentDoubleObjPriceListType(blanketOrder, contact);

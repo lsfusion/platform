@@ -24,7 +24,11 @@ toTimeAgreement(agreement) <- NULL WHEN ASSIGNED(agreement IS agreement);
 @defineDocumentHeaderDescription(agreement, seriesNumberObject, 'Соглашение');
 
 inLegalEntityAgreement 'Отм' = DATA BOOLEAN (agreement);
+
+TABLE agreementLegalEntityGroup (agreement, legalEntityGroup);
 inAgreementLegalEntityGroup 'Отм' = DATA BOOLEAN (agreement, legalEntityGroup);
+
+TABLE agreementLegalEntity(agreement, legalEntity);
 inAgreementLegalEntity 'Отм.' (agreement, legalEntity) = DATA BOOLEAN (agreement, legalEntity);
 
 levelParentAgreementLegalEntityGroup (agreement, legalEntityGroup) =
@@ -55,9 +59,11 @@ nameCompanyAgreement 'Компания' (agreement) = name(companyAgreement(agre
 priceListTypeAgreement (agreement) = DATA priceListType (agreement) NOT NULL;
 namePriceListTypeAgreement 'Тип цены' (agreement) = name(priceListTypeAgreement(agreement));
 
+TABLE agreementPriceGroup(agreement, priceGroup);
 priceListTypeAgreementPriceGroup (agreement, priceGroup) = DATA priceListType (agreement, priceGroup);
 namePriceListTypeAgreementPriceGroup 'Тип цены' (agreement, priceGroup) = name(priceListTypeAgreementPriceGroup(agreement, priceGroup));
 
+TABLE agreementSku(agreement, sku);
 priceListTypeAgreementSku (agreement, sku) = DATA priceListType (agreement, sku);
 namePriceListTypeAgreementSku 'Тип цены' (agreement, sku) = name(priceListTypeAgreementSku(agreement, sku));
 

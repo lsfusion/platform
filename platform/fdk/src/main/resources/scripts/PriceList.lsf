@@ -13,6 +13,7 @@ priceGroupSku = ABSTRACT priceGroup (sku) PERSISTENT;
 // --------------------------- Виды цен ------------------------- //
 
 CLASS ABSTRACT priceListType 'Вид цены' : named;
+TABLE priceListType(priceListType);
 
 pricePriceListTypeSkuStockDateTime 'Цена' = ABSTRACT NUMERIC[14,2] (priceListType, sku, stock, DATETIME);
 pricePriceListTypeBatchStockDateTime 'Цена' = ABSTRACT NUMERIC[14,2] (priceListType, batch, stock, DATETIME);
@@ -103,14 +104,17 @@ inUserPriceList 'Отм' = DATA BOOLEAN (userPriceList);
 inUserPriceList(userPriceList) <- TRUE WHEN ASSIGNED(userPriceList IS userPriceList);
 inPriceList (priceList) += inUserPriceList(priceList);
 
+TABLE priceListStockGroup(priceList, stockGroup);
 inPriceListStockGroup 'Отм' = ABSTRACT BOOLEAN (priceList, stockGroup) PERSISTENT;
 inUserPriceListStockGroup 'Отм' = DATA BOOLEAN (userPriceList, stockGroup);
 inPriceListStockGroup (priceList, stockGroup) += inUserPriceListStockGroup(priceList, stockGroup);
 
+TABLE priceListStock(priceList, stock);
 inPriceListStock 'Отм' = ABSTRACT BOOLEAN (priceList, stock) PERSISTENT;
 inUserPriceListStock 'Отм' = DATA BOOLEAN (userPriceList, stock);
 inPriceListStock (priceList, stock) += inUserPriceListStock(priceList, stock);
 
+TABLE priceListDetailStock(priceListDetail, stock);
 dataPriceListDetailStock (detail, stock) = inPriceListStock(priceListPriceListDetail(detail), stock) PERSISTENT;
 
 levelParentPriceListStockGroup (priceList, stockGroup) = GROUP MIN levelStockGroupStockGroup(stockGroup, parent) IF inPriceListStockGroup(priceList, parent)

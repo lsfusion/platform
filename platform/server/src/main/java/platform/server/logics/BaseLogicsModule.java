@@ -1,6 +1,5 @@
 package platform.server.logics;
 
-import net.sf.jasperreports.engine.type.SplitTypeEnum;
 import org.apache.log4j.Logger;
 import platform.base.identity.DefaultIDGenerator;
 import platform.base.identity.IDGenerator;
@@ -8,7 +7,9 @@ import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.KeyStrokes;
 import platform.interop.PropertyEditType;
-import platform.interop.action.*;
+import platform.interop.action.MessageClientAction;
+import platform.interop.action.UserChangedClientAction;
+import platform.interop.action.UserReloginClientAction;
 import platform.interop.form.layout.ContainerType;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.server.Settings;
@@ -46,14 +47,14 @@ import platform.server.logics.table.TableFactory;
 import platform.server.session.DataSession;
 
 import javax.swing.*;
-import javax.swing.plaf.basic.BasicBorders;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.List;
 
-import static platform.server.logics.PropertyUtils.*;
+import static platform.server.logics.PropertyUtils.mapCalcImplement;
+import static platform.server.logics.PropertyUtils.readCalcImplements;
 import static platform.server.logics.ServerResourceBundle.getString;
 
 /**
@@ -703,10 +704,13 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         addTable("abstractGroup", abstractGroup);
         addTable("property", property);
         addTable("propertyDraw", propertyDraw);
+        addTable("groupObject", groupObject);
+        addTable("groupObjectCustomUser", groupObject, customUser);
         addTable("exception", exception);
         addTable("notification", notification);
         addTable("scheduledTask", scheduledTask);
         addTable("scheduledTaskLog", scheduledTaskLog);
+        addTable("scheduledClientTaskLog", scheduledClientTaskLog);
         addTable("launch", launch);
         addTable("transaction", transaction);
         addTable("named", baseClass.named);
@@ -744,7 +748,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         addTable("month", month);
         addTable("dow", DOW);
 
-        addTable("rateExchange", typeExchange, baseLM.currency, DateClass.instance);
+        addTable("typeExchange", typeExchange);
+        addTable("currency", currency);
+        addTable("rateExchange", typeExchange, currency, DateClass.instance);
     }
 
     @Override

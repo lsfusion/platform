@@ -2,13 +2,14 @@ MODULE Backup;
 
 REQUIRE System;
 
-dumpDirBackupTask 'Директория дампа'= DATA STRING[200] ();
-binPathBackupTask 'Директория установки POSTGRE'= DATA STRING[200] ();
+dumpDirBackupTask 'Директорий дампа' = DATA STRING[200] ();
+binPathBackupTask 'Директорий установки PostgreSQL' = DATA STRING[200] ();
 
 makeBackup 'Сделать резервное копирование'= ACTION CUSTOM 'platform.fdk.actions.BackupActionProperty' TOOLBAR;
 deleteBackup 'Удалить резервную копию'= ACTION CUSTOM 'platform.fdk.actions.DeleteBackupActionProperty' CONFIRM;
 
-CLASS backup 'Резервное копирование';
+CLASS backup 'Резервная копия';
+TABLE backup(backup);
 
 dateBackup 'Дата' = DATA DATE (backup);
 timeBackup 'Время' = DATA TIME (backup);
