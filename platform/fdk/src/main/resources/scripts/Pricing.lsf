@@ -560,6 +560,8 @@ META definePricing(sign, contact, contactCaption)
                     SET skuUserPricingDetail(d) <- skuInvoiceDetail(invoiceDetail);
                     SET quantityUserPricingDetail (d) <- toPricingInvoiceDetail(invoiceDetail);
                     SET priceUserPricingDetail (d) <- priceInvoiceDetail(invoiceDetail);
+
+                    SET retailVATUserPricingDetail(d) <- VATInvoiceDetail(invoiceDetail);
             }
         }
     } IN invoiceGroup;
@@ -673,8 +675,9 @@ META definePricing(sign, contact, contactCaption)
     timePricing(pricing) += timeInvoicePricing(pricing);
 
     @defineDocumentAggregationStockPrefix(invoice, invoicePricing, stock, 'Склад', , );
-    departmentStorePricing(pricing) += stockInvoicePricing(pricing);
-    dataDepartmentStorePricingDetail(pricingDetail) += dataStockInvoiceDetail(invoiceDetailInvoicePricingDetail(pricingDetail));
+    departmentStorePricing(pricing) += stockInvoicePricing(pricing) IF stockInvoicePricing(pricing) IS departmentStore;
+    dataDepartmentStorePricingDetail(pricingDetail) += dataStockInvoiceDetail(invoiceDetailInvoicePricingDetail(pricingDetail))
+                                                       IF dataStockInvoiceDetail(invoiceDetailInvoicePricingDetail(pricingDetail)) IS departmentStore;
 
     @defineDocumentAggregationStockPrefix(invoice, invoicePricing, contact, contactCaption, , );
     contact###Pricing(pricing) += contact###InvoicePricing(pricing);

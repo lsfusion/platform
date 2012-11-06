@@ -513,8 +513,9 @@ META defineRepricing(sign)
     timeRepricing(repricing) += timeInvoiceRepricing(repricing);
 
     @defineDocumentAggregationStockPrefix(invoice, invoiceRepricing, stock, 'Склад', , );
-    departmentStoreRepricing(repricing) += stockInvoiceRepricing(repricing);
-    dataDepartmentStoreRepricingDetail(repricingDetail) += dataStockInvoiceDetail(invoiceDetailInvoiceRepricingDetail(repricingDetail));
+    departmentStoreRepricing(repricing) += stockInvoiceRepricing(repricing) IF stockInvoiceRepricing(repricing) IS departmentStore;
+    dataDepartmentStoreRepricingDetail(repricingDetail) += dataStockInvoiceDetail(invoiceDetailInvoiceRepricingDetail(repricingDetail))
+                                                           IF dataStockInvoiceDetail(invoiceDetailInvoiceRepricingDetail(repricingDetail)) IS departmentStore;
 
     @defineDocumentAggregationPosted(invoice, invoiceRepricing);
     isPostedRepricing(repricing) += isPostedInvoiceRepricing(repricing);

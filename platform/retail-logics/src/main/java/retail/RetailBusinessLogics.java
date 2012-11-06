@@ -125,7 +125,8 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                 "/scripts/ByAccountDocument.lsf",
                 "/scripts/ByLegalEntity.lsf",
                 "/scripts/Agreement.lsf",
-                "/scripts/Backup.lsf"
+                "/scripts/Backup.lsf",
+                "/scripts/Warehouse.lsf"
         );
         retailLM = addModuleFromResource("/scripts/retail.lsf");
 

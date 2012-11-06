@@ -75,7 +75,8 @@ REQUIRE System,
         ItemSize,
         ItemArticle,
         PriceList,
-        Agreement;
+        Agreement,
+        Warehouse;
 
 GROUP emailGroup 'E-mail' : baseGroup;
 
@@ -6808,6 +6809,9 @@ NAVIGATOR {
             ADD innerFlows;
             ADD innerArrivals;
         }
+        NEW logisticsCatalog 'Справочники' {
+            ADD warehouses;
+        }
     }
 
     NEW retail 'Розничная торговля' TO formsToolbar {
@@ -6827,7 +6831,6 @@ NAVIGATOR {
         NEW retailStatement 'Безналичный расчет' {
             ADD specifications;
             ADD statements;
-            ADD customers;
         }
         NEW priceManagement 'Управление ценами' {
             ADD userPriceChanges;
@@ -6851,11 +6854,14 @@ NAVIGATOR {
             ADD sumMotionContainerDepartmentPrint;
         }
     }
-    NEW wholeSale 'Оптовая торговля' TO formsToolbar {
+    NEW sale 'Оптовая торговля' TO formsToolbar {
         ADD saleSaleNavigator;
         ADD saleReturnNavigator;
         ADD priceListNavigator{
             ADD agreements;
+        }
+        NEW saleCatalog 'Справочники' {
+            ADD customers;
         }
     }
 
