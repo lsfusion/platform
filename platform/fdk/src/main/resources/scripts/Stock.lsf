@@ -1148,6 +1148,31 @@ META defineDocumentDetailSkuBalance (object, skuProp, stockProp)
     balanceBSku###object##Detail 'Текущий остаток' (object##Detail) = balanceBSkuStockDateTime(
         skuProp###object##Detail(object##Detail), stockProp###object##Detail(object##Detail), dateTime###object##Detail(object##Detail));
 END
+META defineDocumentDetailSkuBalanceCustom (detail)
+    balanceBSku###detail 'Количество до' (detail) = DATA NUMERIC[14,3] (detail);
+
+END
+META defineDocumentAbstractDetailSkuBalanceCustom (detail)
+    balanceBSku###detail 'Количество до' (detail) = ABSTRACT NUMERIC[14,3] (detail);
+END
+
+
+META defineDocumentInterfaceDetailSkuBalanceCustom(detail)
+    @defineDocumentAbstractDetailSkuBalanceCustom(detail);
+    @defineDocumentDetailSkuBalanceCustom(user###detail);
+    balanceBSku###detail(detail) += balanceBSku###user###detail(detail);
+END
+META defineDocumentInterfaceDetailSkuBalance(object)
+    @defineDocumentInterfaceDetailSkuBalanceCustom(object##Detail);
+END
+
+META deriveDocumentDetailSkuBalanceCustom (detail, skuProp, stockProp)
+    balanceBSku###detail (detail)  <- balanceBSkuStockDateTime(skuProp###detail(detail), stockProp###detail(detail), dateTime###detail(detail))
+        WHEN CHANGED(skuProp###detail(detail)) OR CHANGED(stockProp###detail(detail)) OR CHANGED(dateTime###detail(detail));
+END
+META deriveDocumentDetailSkuBalance (object, skuProp, stockProp)
+    @deriveDocumentDetailSkuBalanceCustom(object##Detail, skuProp, stockProp);
+END
 
 // ---------------------------------------------- Остатки или партия или товар -------------------------------------------- //
 

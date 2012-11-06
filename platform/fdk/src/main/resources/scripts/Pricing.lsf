@@ -608,17 +608,18 @@ META definePricing(sign, contact, contactCaption)
     showCreatePricingInvoice (invoice) = stockInvoice(invoice) IS departmentStore AND NOT costLedgerDepartmentStore(stockInvoice(invoice));
     showPricingInvoice (invoice) = showCreatePricingInvoice (invoice) AND NOT createPricingInvoice(invoice);
 
+    backgroundRetailInvoice 'Цвет' (invoice) = RGB(224, 255, 255) IF invoice IS userInvoice;
     EXTEND FORM userInvoice
-        PROPERTIES(i) SHOWIF showCreatePricingInvoice(i) createPricingUserInvoice, namePricingCommitteeUserInvoice
+        PROPERTIES(i) SHOWIF showCreatePricingInvoice(i) BACKGROUND backgroundRetailInvoice(i) createPricingUserInvoice
+        PROPERTIES(i) SHOWIF createPricingUserInvoice(i) BACKGROUND backgroundRetailInvoice(i) namePricingCommitteeUserInvoice,
+                      retailSumUserInvoiceDetailUserInvoice
 
-        PROPERTIES(i) retailSumUserInvoiceDetailUserInvoice
-
-        PROPERTIES(d) BEFORE nameStockUserInvoiceDetail(d) SHOWIF createPricingInvoice(i)
+        PROPERTIES(d) BEFORE nameStockUserInvoiceDetail(d) SHOWIF createPricingInvoice(i) BACKGROUND backgroundRetailInvoice(i)
                       retailMarkupUserInvoiceDetail ON CHANGE EXEC changeRetailMarkupUserInvoiceDetail(d), retailMarkupSumUserInvoiceDetail, numberRetailVATUserInvoiceDetail,
                       valueRetailVATUserInvoiceDetail, retailVATSumUserInvoiceDetail,
                       retailPriceUserInvoiceDetail ON CHANGE EXEC changeRetailPriceUserInvoiceDetail(d),
                       retailSumUserInvoiceDetail
-        PROPERTIES(d) READONLY pricingInvoiceDetail AFTER quantityUserInvoiceDetail SHOWIF showPricingInvoice(i)
+        PROPERTIES(d) READONLY pricingInvoiceDetail AFTER quantityUserInvoiceDetail SHOWIF showPricingInvoice(i) BACKGROUND backgroundRetailInvoice(i)
 
     ;
     EXTEND DESIGN userInvoice {

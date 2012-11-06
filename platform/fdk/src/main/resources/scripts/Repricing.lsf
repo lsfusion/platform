@@ -167,7 +167,17 @@ CLASS userRepricingPosted 'Закрытый акт переоценки (пол�
 @deriveDocumentDetailValueVATPrefix(userRepricing, );
 
 @defineDocumentInterfaceDetailMarkupPrefix (repricing, cur, ' до');
+curMarkupUserRepricingDetail(userRepricingDetail)  <- [round2((((X - X*Y/(100+Y))/Z)-1)*100)](
+    0.0 IF userRepricingDetail IS userRepricingDetail OR curRetailPriceUserRepricingDetail(userRepricingDetail),
+    0.0 IF userRepricingDetail IS userRepricingDetail OR valueCurVATUserRepricingDetail(userRepricingDetail),
+    curPriceUserRepricingDetail(userRepricingDetail))
+    WHEN CHANGED(curRetailPriceUserRepricingDetail(userRepricingDetail)) OR CHANGED (curVATUserRepricingDetail(userRepricingDetail)) OR CHANGED(curPriceUserRepricingDetail(userRepricingDetail));
 @defineDocumentInterfaceDetailMarkupPrefix (repricing, , ' после');
+markupUserRepricingDetail(userRepricingDetail)  <- [round2((((X - X*Y/(100+Y))/Z)-1)*100)](
+    0.0 IF userRepricingDetail IS userRepricingDetail OR retailPriceUserRepricingDetail(userRepricingDetail),
+    0.0 IF userRepricingDetail IS userRepricingDetail OR valueVATUserRepricingDetail(userRepricingDetail),
+    priceUserRepricingDetail(userRepricingDetail))
+    WHEN CHANGED(curRetailPriceUserRepricingDetail(userRepricingDetail)) OR CHANGED (curVATUserRepricingDetail(userRepricingDetail)) OR CHANGED(curPriceUserRepricingDetail(userRepricingDetail));
 
 @defineDocumentInterfaceDetailVATDataSumPrefix (repricing, cur, ' до');
 @deriveDocumentDetailReverseVATSumPrefix(userRepricing, cur, curRetail);
@@ -205,6 +215,12 @@ CLASS userRepricingPosted 'Закрытый акт переоценки (пол�
 @defineAddDetailDialogBarcode(userRepricing, sku);
 @defineAddDetailDialogTerminal(userRepricing, sku);
 @defineDocumentInterfaceHeaderRepricingCommittee (repricing, departmentStore);
+
+@derivePriceLedgerOnSkuChangePrefix(supplierPrice, userRepricing, curPrice, sku, departmentStore);
+@derivePriceLedgerOnSkuChangePrefix(retailVAT, userRepricing, curVAT, sku, departmentStore);
+@deriveDocumentDetailValueVATPrefix(userRepricing, cur);
+@derivePriceLedgerOnSkuChangePrefix(retailPrice, userRepricing, curRetailPrice, sku, departmentStore);
+
 
 //------------------------------------ Печатные формы акт расценки ------------------------------------------------ //
 nameStoreRepricing 'Магазин' (repricing) = nameStoreDepartmentStore(departmentStoreRepricing(repricing));
@@ -402,11 +418,23 @@ DESIGN repricings FROM DEFAULT {
     }
 }
 
+// ------------------------------------- Проведение по регистру ------------------------------ //
+
+@implementSkuDepartmentStoreLedgerCustom(supplierPrice, repricing, sku, departmentStore, price);
+@implementSkuDepartmentStoreLedgerCustom(retailVAT, repricing, sku, departmentStore, VAT);
+@implementSkuDepartmentStoreLedger(retailPrice, repricing, sku, departmentStore);
+
+// ------------------------------------- Автоматическое создание дооценки для документа -------------------- //
+
 META defineRepricing(sign)
 //-- аггр.объект
 
-    @defineDocumentDetailSkuBalance (invoice, sku, stock);
-    @defineDocumentDetailSkuBalance (userInvoice, sku, stock);
+    createRepricingInvoice 'Создавать акт дооценки' = ABSTRACT BOOLEAN (invoice) IN documentPrmGroup;
+    createRepricingUserInvoice 'Создавать акт дооценки' = DATA BOOLEAN (userInvoice) IN documentPrmGroup;
+    createRepricingInvoice (invoice) += createRepricingUserInvoice(invoice);
+
+    @defineDocumentInterfaceDetailSkuBalance (invoice);
+    @deriveDocumentDetailSkuBalance (userInvoice, sku, stock);
 // До
     @defineDocumentInterfaceDetailPricePrefix(invoice, cur, ' поставщика до');
     @defineDocumentInterfaceDetailDataSumPrefix (invoice, cur, ' поставщика до');
@@ -431,6 +459,11 @@ META defineRepricing(sign)
     @defineDocumentInterfaceDetailMarkupSumPrefix (invoice, cur, ' до');
     @deriveDocumentDetailMarkupSumPrefix(userInvoice, cur, curRetail, cur);
 
+    @derivePriceLedgerOnSkuChangePrefix(supplierPrice, userInvoice, curPrice, sku, stock);
+    @derivePriceLedgerOnSkuChangePrefix(retailVAT, userInvoice, curVAT, sku, stock);
+    @deriveDocumentDetailValueVATPrefix(userInvoice, cur);
+    @derivePriceLedgerOnSkuChangePrefix(retailPrice, userInvoice, curRetailPrice, sku, stock);
+
 // После
     @defineDocumentInterfaceDetailDataSumPrefix (invoice, after, ' поставщика после');
     afterSumUserInvoiceDetail (detail)  <- roundCurrency(balanceBSkuUserInvoiceDetail(detail) * priceUserInvoiceDetail(detail), currencyUserInvoiceDetail(detail))
@@ -448,17 +481,18 @@ META defineRepricing(sign)
     afterRetailMarkupSumUserInvoiceDetail(detail) <- afterRetailSumUserInvoiceDetail(detail) (-) afterRetailVATSumUserInvoiceDetail (detail) (-) afterSumUserInvoiceDetail(detail)
                     WHEN CHANGED(afterRetailVATSumUserInvoiceDetail(detail)) OR CHANGED (afterRetailVATSumUserInvoiceDetail (detail)) OR CHANGED (afterSumUserInvoiceDetail(detail));
 
+    createRepricingInvoiceDetail 'Создавать акт дооценки' (invoiceDetail) = createRepricingInvoice(invoiceInvoiceDetail(invoiceDetail));
+    createRepricingUserInvoiceDetail 'Создавать акт дооценки' (userInvoiceDetail) = createRepricingUserInvoice(userInvoiceUserInvoiceDetail(userInvoiceDetail));
 
     needToRepricingInvoiceDetail (invoiceDetail) = curRetailPriceInvoiceDetail(invoiceDetail) != retailPriceInvoiceDetail(invoiceDetail)
                                                    AND balanceBSkuInvoiceDetail(invoiceDetail) != 0 AND stockInvoiceDetail(invoiceDetail) IS departmentStore
                                                    AND NOT costLedgerDepartmentStore(stockInvoiceDetail(invoiceDetail))
-                                                   AND createPricingInvoiceDetail(invoiceDetail);// AND isPostedInvoiceDetail(invoiceDetail) ;
+                                                   AND createRepricingInvoiceDetail(invoiceDetail);// AND isPostedInvoiceDetail(invoiceDetail) ;
 
     needToRepricingInvoice (invoice)= GROUP SUM 1 IF needToRepricingInvoiceDetail(invoiceDetail)
         BY invoiceInvoiceDetail(invoiceDetail);
 
     @defineDocumentInterfaceHeaderRepricingCommittee (invoice, stock);
-
 
     CLASS invoiceRepricing 'Акт дооценки на основе инвойса'###sign : repricing;
     CLASS invoiceRepricingPosted 'Закрытый акт дооценки на основе инвойса'###sign : invoiceRepricing, postedObject;
@@ -507,26 +541,33 @@ META defineRepricing(sign)
     @defineDocumentAggregationDetailSku(invoice, invoiceRepricing, sku);
     skuRepricingDetail(repricingDetail) +=  skuInvoiceRepricingDetail(repricingDetail);
 
+    backgroundCurInvoice 'Цвет' (invoice) = RGB(255, 255, 224) IF invoice IS userInvoice;
+    backgroundAfterInvoice 'Цвет' (invoice) = RGB(255, 255, 200) IF invoice IS userInvoice;
     EXTEND FORM userInvoice
-        PROPERTIES(i)   SHOWIF needToRepricingInvoice(i) nameRepricingCommitteeUserInvoice, numberDisposalUserInvoice
-        PROPERTIES(d)   SHOWIF needToRepricingInvoice(i) FORCE PANEL
-                        curPriceUserInvoiceDetail,
-                        numberCurVATUserInvoiceDetail, valueCurVATUserInvoiceDetail,
-                        curRetailPriceUserInvoiceDetail
+        PROPERTIES(i)   BACKGROUND backgroundCurInvoice(i) createRepricingUserInvoice
+        PROPERTIES(i)   BACKGROUND backgroundCurInvoice(i) SHOWIF createRepricingUserInvoice(i) nameRepricingCommitteeUserInvoice, numberDisposalUserInvoice
+        PROPERTIES(d)   BACKGROUND backgroundCurInvoice(i) SHOWIF createRepricingUserInvoice(i) BEFORE nameStockUserInvoiceDetail(d)
+                        balanceBSkuUserInvoiceDetail, curPriceUserInvoiceDetail, curSumUserInvoiceDetail,
+                        curMarkupUserInvoiceDetail, curMarkupSumUserInvoiceDetail,
+                        numberCurVATUserInvoiceDetail, valueCurVATUserInvoiceDetail, curVATSumUserInvoiceDetail,
+                        curRetailPriceUserInvoiceDetail, curRetailSumUserInvoiceDetail
+        PROPERTIES(d)   BACKGROUND backgroundAfterInvoice(i) SHOWIF createRepricingUserInvoice(i) BEFORE nameStockUserInvoiceDetail(d)
+                        afterSumUserInvoiceDetail, afterRetailVATSumUserInvoiceDetail, afterRetailMarkupSumUserInvoiceDetail, afterRetailSumUserInvoiceDetail
     ;
     EXTEND DESIGN userInvoice {
         headerRow3 {
             NEW wor2 {
                 title = 'Дооценка';
+                ADD PROPERTY(createRepricingUserInvoice);
                 ADD PROPERTY(nameRepricingCommitteeUserInvoice);
                 ADD PROPERTY(numberDisposalUserInvoice);
             }
         }
-        d.panel {title = 'Текущие значения';}
     }
 
     EXTEND FORM invoices
-        PROPERTIES(i) FORCE PANEL  printRepricingInvoice
+        PROPERTIES(i) createRepricingInvoice
+        PROPERTIES(i) FORCE PANEL  printRepricingInvoice SHOWIF createRepricingInvoice(i)
 
     ;
 

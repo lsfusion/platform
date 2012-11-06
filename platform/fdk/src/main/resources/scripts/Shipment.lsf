@@ -476,10 +476,12 @@ META defineShipment(sign, contact, contactCaption, partyA, partyB)
 
     showShipmentInvoice (invoice) =  invoice IS invoice AND NOT createShipmentInvoice(invoice);
 
+    backgroundShippedInvoice 'Цвет' (invoice) = RGB(255, 224, 255) IF invoice IS userInvoice;
     EXTEND FORM userInvoice
-        PROPERTIES(i) createShipmentUserInvoice
-        PROPERTIES(d) BEFORE delete(d) SHOWIF createShipmentInvoice(i) shipmentPriceUserInvoiceDetail, shipmentSumUserInvoiceDetail
-        PROPERTIES(d) READONLY shippedInvoiceDetail AFTER quantityUserInvoiceDetail SHOWIF showShipmentInvoice(i)
+        PROPERTIES(i) BACKGROUND backgroundShippedInvoice(i) createShipmentUserInvoice
+        PROPERTIES(d) BEFORE delete(d) SHOWIF createShipmentInvoice(i) BACKGROUND backgroundShippedInvoice(i) shipmentPriceUserInvoiceDetail,
+                      shipmentSumUserInvoiceDetail
+        PROPERTIES(d) READONLY shippedInvoiceDetail AFTER quantityUserInvoiceDetail SHOWIF showShipmentInvoice(i) BACKGROUND backgroundShippedInvoice(i)
     ;
     EXTEND FORM invoices
         PROPERTIES(i) READONLY createShipmentInvoice
