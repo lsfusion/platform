@@ -314,17 +314,22 @@ TABLE skuStockDate(sku, stock, DATE);
 
 META defineSkuLedgerBalanceProperties(postfix, caption)
     skip##postfix##SkuLedger 'Не проводить по учету'###caption = ABSTRACT BOOLEAN (skuLedger) PERSISTENT;
+    active##postfix##SkuLedger 'Активен'###caption (ledger) = isPostedSkuLedger(ledger) AND NOT skip##postfix##SkuLedger(ledger) PERSISTENT;
 
-    currentBalance##postfix##SkuStock 'Текущий остаток'###caption (sku, stock) = GROUP SUM signedQuantitySkuLedger (ledger) AND isPostedSkuLedger(ledger) AND NOT skip##postfix##SkuLedger(ledger)
-                                                              BY skuSkuLedger(ledger), stockSkuLedger(ledger) PERSISTENT;
-    countLedger##postfix##SkuStock 'Кол-во движений'###caption (sku, stock) = GROUP SUM 1 AND signedQuantitySkuLedger (ledger) AND isPostedSkuLedger(ledger) AND NOT skip##postfix##SkuLedger(ledger)
-                                                              BY skuSkuLedger(ledger), stockSkuLedger(ledger) PERSISTENT;
+    signedQuantityActiveSkuLedger(ledger) = signedQuantitySkuLedger(ledger) AND active##postfix##SkuLedger(ledger) PERSISTENT;
 
-    quantityIn##postfix##SkuStockDate (sku, stock, date) = GROUP SUM quantityInSkuLedger(ledger) AND isPostedSkuLedger(ledger) AND NOT skip##postfix##SkuLedger(ledger)
-                                                      BY skuSkuLedger(ledger), stockSkuLedger(ledger), dateSkuLedger(ledger) PERSISTENT;
+    currentBalance##postfix##SkuStock 'Текущий остаток'###caption (sku, stock) =
+        GROUP SUM signedQuantitySkuLedger(ledger) BY skuSkuLedger(ledger), stockSkuLedger(ledger) PERSISTENT;
+    countLedger##postfix##SkuStock 'Кол-во движений'###caption (sku, stock) =
+        GROUP SUM 1 AND signedQuantityActiveSkuLedger(ledger) BY skuSkuLedger(ledger), stockSkuLedger(ledger) PERSISTENT;
 
-    quantityOut##postfix##SkuStockDate (sku, stock, date) = GROUP SUM quantityOutSkuLedger(ledger) AND isPostedSkuLedger(ledger) AND NOT skip##postfix##SkuLedger(ledger)
-                                                       BY skuSkuLedger(ledger), stockSkuLedger(ledger), dateSkuLedger(ledger) PERSISTENT;
+    quantityInActiveSkuLedger(ledger) = quantityInSkuLedger(ledger) AND isPostedSkuLedger(ledger) AND NOT skip##postfix##SkuLedger(ledger) PERSISTENT;
+    quantityIn##postfix##SkuStockDate (sku, stock, date) =
+        GROUP SUM quantityInActiveSkuLedger(ledger) BY skuSkuLedger(ledger), stockSkuLedger(ledger), dateSkuLedger(ledger) PERSISTENT;
+
+    quantityOutActiveSkuLedger(ledger) = quantityInSkuLedger(ledger) AND isPostedSkuLedger(ledger) AND NOT skip##postfix##SkuLedger(ledger) PERSISTENT;
+    quantityOut##postfix##SkuStockDate (sku, stock, date) =
+        GROUP SUM quantityOutActiveSkuLedger(ledger) BY skuSkuLedger(ledger), stockSkuLedger(ledger), dateSkuLedger(ledger) PERSISTENT;
 
     quantity##postfix##SkuStockDate (sku, stock, date) = quantityIn##postfix##SkuStockDate(sku, stock, date)
                                                          (+)
@@ -346,25 +351,26 @@ META defineSkuLedgerBalanceProperties(postfix, caption)
 
     // без учета текущей даты/времени
     balanceB##postfix##SkuStockDateTime 'Остаток (до)'###caption (sku, stock, dateTime) = (currentBalance##postfix##SkuStock(sku, stock) AND dateTime AS DATETIME)
-                                                                              (-) [GROUP SUM signedQuantitySkuLedger (ledger) AND dateTimeSkuLedger(ledger) >= (dateTime AS DATETIME) AND isPostedSkuLedger(ledger) AND NOT skip##postfix##SkuLedger(ledger)
+                                                                              (-) [GROUP SUM signedQuantityActiveSkuLedger(ledger) AND dateTimeSkuLedger(ledger) >= (dateTime AS DATETIME)
                                                                                          BY skuSkuLedger(ledger), stockSkuLedger(ledger), dateTime](sku, stock, dateTime);
 
     // с учетом текущей даты/времени
     balanceA##postfix##SkuStockDateTime 'Остаток (после)'###caption (sku, stock, dateTime) = (currentBalance##postfix##SkuStock(sku, stock) AND dateTime AS DATETIME)
-                                                                             (-) [GROUP SUM signedQuantitySkuLedger (ledger) AND dateTimeSkuLedger(ledger) > (dateTime AS DATETIME) AND isPostedSkuLedger(ledger) AND NOT skip##postfix##SkuLedger(ledger)
+                                                                             (-) [GROUP SUM signedQuantityActiveSkuLedger(ledger) AND dateTimeSkuLedger(ledger) > (dateTime AS DATETIME)
                                                                                         BY skuSkuLedger(ledger), stockSkuLedger(ledger), dateTime](sku, stock, dateTime);
 
     currentBalance##postfix##Sku 'Остаток (всего)'###caption (sku) = GROUP SUM currentBalance##postfix##SkuStock(sku, stock) BY sku PERSISTENT;
 
-    currentBalance##postfix##BatchStock 'Текущий остаток'###caption (batch, stock) = GROUP SUM signedCostSkuLedgerBatch (ledger, batch) AND isPostedSkuLedger(ledger) AND NOT skip##postfix##SkuLedger(ledger)
+    currentBalance##postfix##BatchStock 'Текущий остаток'###caption (batch, stock) = GROUP SUM signedCostSkuLedgerBatch (ledger, batch) AND active##postfix##SkuLedger(ledger)
                                                                                            BY batch, stockSkuLedger(ledger) PERSISTENT;
 
     currentBalance##postfix##Batch 'Остаток (всего)'###caption (batch) = GROUP SUM currentBalance##postfix##BatchStock(batch, stock) BY batch PERSISTENT;
 
     // ---------------------------- Суммы по товару -------------------------------- //
 
-    currentSum##postfix##SkuStock 'Сумма остатка'###caption (sku, stock) = GROUP SUM signedSumSkuLedger (ledger) AND isPostedSkuLedger(ledger) AND NOT skip##postfix##SkuLedger(ledger)
-                                                            BY skuSkuLedger(ledger), stockSkuLedger(ledger) PERSISTENT;
+    signedSumActiveSkuLedger(ledger) = signedSumSkuLedger(ledger) AND isPostedSkuLedger(ledger) AND NOT skip##postfix##SkuLedger(ledger) PERSISTENT;
+    currentSum##postfix##SkuStock 'Сумма остатка'###caption (sku, stock) =
+        GROUP SUM signedSumActiveSkuLedger(ledger) BY skuSkuLedger(ledger), stockSkuLedger(ledger) PERSISTENT;
 
     averagePrice##postfix##SkuStock 'Цена (средневзв.)'###caption (sku, stock) = currentSum##postfix##SkuStock(sku, stock) / currentBalance##postfix##SkuStock(sku, stock); // IF NOT currentBalance##postfix##SkuStock(sku, stock) == 0; (возможно не нужно, так как 0 не может быть в GROUP SUM )
 

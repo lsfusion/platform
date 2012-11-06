@@ -473,17 +473,18 @@ META defineShipment(sign, contact, contactCaption, partyA, partyB)
     createShipmentInvoice 'Создавать поставку' = ABSTRACT BOOLEAN (invoice) IN documentPrmGroup;
     createShipmentUserInvoice 'Создавать поставку' = DATA BOOLEAN (userInvoice) IN documentPrmGroup;
     createShipmentInvoice (invoice) += createShipmentUserInvoice(invoice);
-    toShowInvoice (invoice) =  invoice IS invoice AND NOT createShipmentInvoice(invoice);
+
+    showShipmentInvoice (invoice) =  invoice IS invoice AND NOT createShipmentInvoice(invoice);
 
     EXTEND FORM userInvoice
         PROPERTIES(i) createShipmentUserInvoice
         PROPERTIES(d) BEFORE delete(d) SHOWIF createShipmentInvoice(i) shipmentPriceUserInvoiceDetail, shipmentSumUserInvoiceDetail
-        PROPERTIES(d) READONLY shippedInvoiceDetail AFTER quantityUserInvoiceDetail SHOWIF toShowInvoice(i)
+        PROPERTIES(d) READONLY shippedInvoiceDetail AFTER quantityUserInvoiceDetail SHOWIF showShipmentInvoice(i)
     ;
     EXTEND FORM invoices
         PROPERTIES(i) READONLY createShipmentInvoice
         PROPERTIES(d) READONLY SHOWIF createShipmentInvoice(i) shipmentPriceInvoiceDetail, shipmentSumInvoiceDetail
-        PROPERTIES(d) READONLY shippedInvoiceDetail AFTER quantityInvoiceDetail SHOWIF toShowInvoice(i)
+        PROPERTIES(d) READONLY shippedInvoiceDetail AFTER quantityInvoiceDetail SHOWIF showShipmentInvoice(i)
     ;
 
     skipCreateShipmentInvoiceDetail = ABSTRACT BOOLEAN (invoiceDetail) PERSISTENT;

@@ -245,6 +245,9 @@ META defineHistorizableLedger(property, caption, type, key0, key1)
     date###property##Ledger 'Дата' (ledger) = dateInTime(dateTime###property##Ledger(ledger)) PERSISTENT;
 
     isPosted###property##Ledger 'Проведен' (ledger) = ABSTRACT BOOLEAN (property##Ledger) PERSISTENT;
+    skip###property##Ledger 'Не изменять значение' (ledger) = ABSTRACT BOOLEAN (property##Ledger) PERSISTENT;
+
+    active###property##Ledger 'Активен' (ledger) = isPosted###property##Ledger(ledger) AND NOT skip###property##Ledger(ledger) PERSISTENT;
 
     key0###property##Ledger (ledger) = ABSTRACT key0 (property##Ledger) PERSISTENT INDEXED;
 
@@ -254,50 +257,42 @@ META defineHistorizableLedger(property, caption, type, key0, key1)
 
     property###property##Ledger caption (ledger) = ABSTRACT type (property##Ledger) PERSISTENT;
 
-    orderT###property##Ledger = LIST(dateTime###property##Ledger(ledger), ledger) PERSISTENT;
+    orderT###property##Ledger = LIST(dateTime###property##Ledger(ledger), ledger) AND active###property##Ledger(ledger) PERSISTENT INDEXED;
 
-    concatLedgerB###property##DateTime (key0, key1, dateTime) = GROUP MAX orderT###property##Ledger(ledger) AND
-        isPosted###property##Ledger(ledger) AND dateTime###property##Ledger(ledger) < (dateTime AS DATETIME)
-        BY key0###property##Ledger(ledger), key1###property##Ledger(ledger), dateTime;
+    concatLedgerB###property##DateTime (key0, key1, dateTime) =
+        GROUP MAX orderT###property##Ledger(ledger) AND dateTime###property##Ledger(ledger) < (dateTime AS DATETIME)
+              BY key0###property##Ledger(ledger), key1###property##Ledger(ledger), dateTime;
 
     ledgerB###property##DateTime (key0, key1, dateTime) = concatLedgerB###property##DateTime(key0, key1, dateTime)[2];
 
-    concatLedgerA###property##DateTime (key0, key1, dateTime) = GROUP MAX orderT###property##Ledger(ledger) AND
-        isPosted###property##Ledger(ledger) AND dateTime###property##Ledger(ledger) <= (dateTime AS DATETIME)
-        BY key0###property##Ledger(ledger), key1###property##Ledger(ledger), dateTime;
+    concatLedgerA###property##DateTime (key0, key1, dateTime) =
+        GROUP MAX orderT###property##Ledger(ledger) AND dateTime###property##Ledger(ledger) <= (dateTime AS DATETIME)
+              BY key0###property##Ledger(ledger), key1###property##Ledger(ledger), dateTime;
 
     ledgerA###property##DateTime (key0, key1, dateTime) = concatLedgerA###property##DateTime(key0, key1, dateTime)[2];
 
-    concatLedgerCurrent###property (key0, key1) = GROUP MAX orderT###property##Ledger(ledger) AND
-        isPosted###property##Ledger(ledger)
-        BY key0###property##Ledger(ledger), key1###property##Ledger(ledger);
+    concatLedgerCurrent###property (key0, key1) = GROUP MAX orderT###property##Ledger(ledger) BY key0###property##Ledger(ledger), key1###property##Ledger(ledger);
 
     property##BLedgerDateTime caption##' (до)' (key0, key1, dateTime) = property###property##Ledger(ledgerB###property##DateTime(key0, key1, dateTime));
     property##ALedgerDateTime caption##' (после)' (key0, key1, dateTime) = property###property##Ledger(ledgerA###property##DateTime(key0, key1, dateTime));
 
-    orderD###property##Ledger = LIST(date###property##Ledger(ledger), ledger) PERSISTENT;
-
-    concatLedgerB###property##Date (key0, key1, date) = GROUP MAX orderD###property##Ledger(ledger) AND
-        isPosted###property##Ledger(ledger) AND date###property##Ledger(ledger) < (date AS DATE)
-        BY key0###property##Ledger(ledger), key1###property##Ledger(ledger), date;
+    concatLedgerB###property##Date (key0, key1, date) =
+        GROUP MAX orderT###property##Ledger(ledger) AND date###property##Ledger(ledger) < (date AS DATE)
+              BY key0###property##Ledger(ledger), key1###property##Ledger(ledger), date;
 
     ledgerB###property##Date (key0, key1, date) = concatLedgerB###property##Date(key0, key1, date)[2];
 
-    concatLedgerA###property##Date (key0, key1, date) = GROUP MAX orderD###property##Ledger(ledger) AND
-        isPosted###property##Ledger(ledger) AND date###property##Ledger(ledger) <= (date AS DATE)
-        BY key0###property##Ledger(ledger), key1###property##Ledger(ledger), date;
+    concatLedgerA###property##Date (key0, key1, date) =
+        GROUP MAX orderT###property##Ledger(ledger) AND date###property##Ledger(ledger) <= (date AS DATE)
+              BY key0###property##Ledger(ledger), key1###property##Ledger(ledger), date;
 
     ledgerA###property##Date (key0, key1, date) = concatLedgerA###property##Date(key0, key1, date)[2];
-
-    concatLedgerCurrentDate###property (key0, key1) = GROUP MAX orderD###property##Ledger(ledger) AND
-        isPosted###property##Ledger(ledger)
-        BY key0###property##Ledger(ledger), key1###property##Ledger(ledger);
 
     property##BLedgerDate caption##' (до)' (key0, key1, date) = property###property##Ledger(ledgerB###property##Date(key0, key1, date));
     property##ALedgerDate caption##' (после)' (key0, key1, date) = property###property##Ledger(ledgerA###property##Date(key0, key1, date));
 
     currentLedger###property (key0, key1) = concatLedgerCurrent###property(key0, key1)[2];
-    current###property##Ledger caption (key0, key1) = property###property##Ledger(currentLedger###property(key0, key1));
+    current###property##Ledger caption (key0, key1) = property###property##Ledger(currentLedger###property(key0, key1)) PERSISTENT;
 END
 
 META implementHistorizableLedger(property, key0, key1, concrete, key0Prop, key1Prop, propertyProp)

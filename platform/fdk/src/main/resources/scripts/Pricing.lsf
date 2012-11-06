@@ -442,6 +442,14 @@ DESIGN pricings FROM DEFAULT {
     }
 }
 
+// ------------------------------------- Проведение по регистру ------------------------------ //
+
+@implementSkuDepartmentStoreLedgerCustom(supplierPrice, pricing, sku, departmentStore, price);
+@implementSkuDepartmentStoreLedger(retailVAT, pricing, sku, departmentStore);
+@implementSkuDepartmentStoreLedger(retailPrice, pricing, sku, departmentStore);
+
+// ------------------------------------- Автоматическое создание расценки для документа -------------------- //
+
 META definePricing(sign, contact, contactCaption)
 //--  Связь накладной и поставки
     invoiceDetailPricingDetail = ABSTRACT invoiceDetail (pricingDetail);
@@ -597,11 +605,11 @@ META definePricing(sign, contact, contactCaption)
     createPricingUserInvoice 'Создавать акт расценки' = DATA BOOLEAN (userInvoice) IN documentPrmGroup;
     createPricingInvoice (invoice) += createPricingUserInvoice(invoice);
 
-    toShowInvoice (invoice) = stockInvoice(invoice) IS departmentStore AND NOT costLedgerDepartmentStore(stockInvoice(invoice));
-    toShowCreateInvoice (invoice) = toShowInvoice (invoice) AND NOT createPricingInvoice(invoice);
+    showCreatePricingInvoice (invoice) = stockInvoice(invoice) IS departmentStore AND NOT costLedgerDepartmentStore(stockInvoice(invoice));
+    showPricingInvoice (invoice) = showCreatePricingInvoice (invoice) AND NOT createPricingInvoice(invoice);
 
     EXTEND FORM userInvoice
-        PROPERTIES(i) SHOWIF toShowInvoice(i) createPricingUserInvoice, namePricingCommitteeUserInvoice
+        PROPERTIES(i) SHOWIF showCreatePricingInvoice(i) createPricingUserInvoice, namePricingCommitteeUserInvoice
 
         PROPERTIES(i) retailSumUserInvoiceDetailUserInvoice
 
@@ -610,7 +618,7 @@ META definePricing(sign, contact, contactCaption)
                       valueRetailVATUserInvoiceDetail, retailVATSumUserInvoiceDetail,
                       retailPriceUserInvoiceDetail ON CHANGE EXEC changeRetailPriceUserInvoiceDetail(d),
                       retailSumUserInvoiceDetail
-        PROPERTIES(d) READONLY pricingInvoiceDetail AFTER quantityUserInvoiceDetail SHOWIF toShowCreateInvoice(i)
+        PROPERTIES(d) READONLY pricingInvoiceDetail AFTER quantityUserInvoiceDetail SHOWIF showPricingInvoice(i)
 
     ;
     EXTEND DESIGN userInvoice {
@@ -628,7 +636,7 @@ META definePricing(sign, contact, contactCaption)
                       retailMarkupInvoiceDetail, retailMarkupSumInvoiceDetail, numberRetailVATInvoiceDetail,
                       valueRetailVATInvoiceDetail, retailVATSumInvoiceDetail,
                       retailPriceInvoiceDetail, retailSumInvoiceDetail
-        PROPERTIES(d) READONLY pricingInvoiceDetail AFTER quantityInvoiceDetail  SHOWIF toShowCreateInvoice(i)
+        PROPERTIES(d) READONLY pricingInvoiceDetail AFTER quantityInvoiceDetail  SHOWIF showPricingInvoice(i)
     ;
     EXTEND FORM pricingInvoices
         PROPERTIES(i) READONLY createPricingInvoice, retailSumInvoiceDetailInvoice BEFORE ordersInvoice(i)
