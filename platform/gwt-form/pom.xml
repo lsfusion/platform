@@ -95,10 +95,6 @@
 
         <dependency>
             <groupId>by.luxsoft.platform</groupId>
-            <artifactId>skolkovo-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>by.luxsoft.platform</groupId>
             <artifactId>gwt-api</artifactId>
         </dependency>
         <dependency>

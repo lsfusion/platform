@@ -462,11 +462,11 @@ public abstract class AbstractCellTable<T> extends AbstractHasData<T> {
        */
       sectionTag = sectionTag.toLowerCase();
       if ("tbody".equals(sectionTag)) {
-        tmpElem.setInnerHTML(template.tbody(rowHtml).asString());
+        tmpElem.setInnerSafeHtml(template.tbody(rowHtml));
       } else if ("thead".equals(sectionTag)) {
-        tmpElem.setInnerHTML(template.thead(rowHtml).asString());
+        tmpElem.setInnerSafeHtml(template.thead(rowHtml));
       } else if ("tfoot".equals(sectionTag)) {
-        tmpElem.setInnerHTML(template.tfoot(rowHtml).asString());
+        tmpElem.setInnerSafeHtml(template.tfoot(rowHtml));
       } else {
         throw new IllegalArgumentException("Invalid table section tag: " + sectionTag);
       }
@@ -620,7 +620,7 @@ public abstract class AbstractCellTable<T> extends AbstractHasData<T> {
      */
     protected void replaceAllRowsImpl(AbstractCellTable<?> table, TableSectionElement section,
         SafeHtml html) {
-      section.setInnerHTML(html.asString());
+      section.setInnerSafeHtml(html);
     }
   }
 
@@ -1865,7 +1865,9 @@ public abstract class AbstractCellTable<T> extends AbstractHasData<T> {
      */
     TableRowElement targetTableRow = targetTableCell.getParentElement().cast();
     String eventType = event.getType();
-    boolean isClick = BrowserEvents.CLICK.equals(eventType);
+    boolean isSelect = BrowserEvents.CLICK.equals(eventType)
+        || (BrowserEvents.KEYDOWN.equals(eventType) && event.getKeyCode() == KeyCodes.KEY_ENTER);
+
     int col = targetTableCell.getCellIndex();
     if (targetTableSection == thead || targetTableSection == tfoot) {
       boolean isHeader = (targetTableSection == thead);
@@ -1888,7 +1890,7 @@ public abstract class AbstractCellTable<T> extends AbstractHasData<T> {
             header.onBrowserEvent(context, headerParent, event);
           }
 
-          if (isClick) {
+          if (isSelect) {
             // Preview the event, and possibily disable the column sort event. The event preview is
             // forced even if the header cell does not consume click event
             shouldSortColumn = header.onPreviewColumnSortEvent(context, headerParent, event);
@@ -1897,7 +1899,7 @@ public abstract class AbstractCellTable<T> extends AbstractHasData<T> {
       }
 
       // Sort the header.
-      if (isClick && shouldSortColumn && columnParent != null) {
+      if (isSelect && shouldSortColumn && columnParent != null) {
         Column<T, ?> column =
             isHeader ? headerBuilder.getColumn(columnParent) : footerBuilder
                 .getColumn(columnParent);

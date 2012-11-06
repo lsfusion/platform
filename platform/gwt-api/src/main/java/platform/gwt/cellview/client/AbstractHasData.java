@@ -366,7 +366,7 @@ public abstract class AbstractHasData<T> extends Composite implements HasData<T>
     // cached images.
     DOM.setEventListener(tmpElem, widget);
 
-    tmpElem.setInnerHTML(html.asString());
+    tmpElem.setInnerSafeHtml(html);
 
     // Detach the event listener.
     DOM.setEventListener(tmpElem, null);
@@ -389,7 +389,7 @@ public abstract class AbstractHasData<T> extends Composite implements HasData<T>
     }
 
     // Render the HTML.
-    childContainer.setInnerHTML(CellBasedWidgetImpl.get().processHtml(html).asString());
+    childContainer.setInnerSafeHtml(CellBasedWidgetImpl.get().processHtml(html));
 
     // Detach the event listener.
     if (!widget.isAttached()) {
@@ -1198,7 +1198,7 @@ public abstract class AbstractHasData<T> extends Composite implements HasData<T>
 
   /**
    * Add a {@link ValueChangeHandler} that is called when the display values
-   * change. Used by {@link CellBrowser} to detect when the displayed data
+   * change. Used by CellBrowser to detect when the displayed data
    * changes.
    * 
    * @param handler the handler
