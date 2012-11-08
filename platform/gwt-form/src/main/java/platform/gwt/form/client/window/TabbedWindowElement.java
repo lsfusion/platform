@@ -13,7 +13,7 @@ public class TabbedWindowElement extends WindowElement {
 
     private List<WindowElement> children = new ArrayList<WindowElement>();
 
-    private TabLayoutPanel panel = new TabLayoutPanel(2, Style.Unit.EM);
+    private TabLayoutPanel panel = new TabLayoutPanel(21, Style.Unit.PX);
 
     public TabbedWindowElement(WindowsController main) {
         super(main);

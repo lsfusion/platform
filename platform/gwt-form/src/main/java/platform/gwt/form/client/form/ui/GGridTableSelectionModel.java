@@ -34,7 +34,7 @@ public class GGridTableSelectionModel extends SelectionModel.AbstractSelectionMo
         if (curSelection == null || curKey == null || object == null) {
             return false;
         }
-        return curKey.equals(getKey(object));
+        return curKey == getKey(object);
     }
 
     public void setSelectedAndResolve(GridDataRecord object, boolean selected) {

@@ -15,10 +15,8 @@ import net.customware.gwt.dispatch.shared.Result;
 import platform.gwt.base.client.ErrorAsyncCallback;
 import platform.gwt.base.client.WrapperAsyncCallbackEx;
 import platform.gwt.form.client.ErrorHandlingCallback;
-import platform.gwt.form.client.dispatch.DeferredRunner;
-import platform.gwt.form.shared.view.GClassViewType;
-import platform.gwt.form.shared.view.GOrder;
 import platform.gwt.form.client.LoadingBlocker;
+import platform.gwt.form.client.dispatch.DeferredRunner;
 import platform.gwt.form.client.dispatch.FormDispatchAsync;
 import platform.gwt.form.client.dispatch.NavigatorDispatchAsync;
 import platform.gwt.form.client.form.FormsController;
@@ -542,7 +540,7 @@ public class GFormController extends SimplePanel {
         if (formLayout != null && visibleComponent instanceof GContainer) {
             formLayout.adjustContainerSizes((GContainer) visibleComponent);
         }
-        redrawGrids(visibleComponent);
+        redrawHeaders(visibleComponent);
     }
 
     public void closePressed() {
@@ -550,8 +548,8 @@ public class GFormController extends SimplePanel {
     }
 
     // судя по документации, TabPanel криво работает в StandardsMode. в данном случае неправильно отображает
-    // таблицы, кроме тех, что в первой вкладке. поэтому вынуждены сами вызывать redraw() для таблиц
-    private void redrawGrids(GComponent component) {
+    // таблицы, кроме тех, что в первой вкладке. поэтому вынуждены сами вызывать onResize() для заголовков таблиц
+    private void redrawHeaders(GComponent component) {
         if (controllers.isEmpty() && treeControllers.isEmpty()) {
             return;
         }
@@ -566,12 +564,14 @@ public class GFormController extends SimplePanel {
             treeGrids.addAll(((GContainer) component).getAllTreeGrids());
         }
         for (GGrid grid : grids) {
-            if (controllers.get(grid.groupObject) != null)
-            controllers.get(grid.groupObject).redrawGrid();
+            if (controllers.get(grid.groupObject) != null) {
+                controllers.get(grid.groupObject).redrawGridHeader();
+            }
         }
         for (GTreeGroup treeGroup : treeGrids) {
-            if (treeControllers.get(treeGroup) != null)
-            treeControllers.get(treeGroup).redrawGrid();
+            if (treeControllers.get(treeGroup) != null) {
+                treeControllers.get(treeGroup).redrawGridHeader();
+            }
         }
     }
 

@@ -20,7 +20,7 @@ public class DefaultFormsController extends SimpleLayoutPanel implements FormsCo
     private final TabLayoutPanel tabsPanel;
 
     public DefaultFormsController() {
-        tabsPanel = new TabLayoutPanel(2, Style.Unit.EM);
+        tabsPanel = new TabLayoutPanel(21, Style.Unit.PX);
 
         add(tabsPanel);
 

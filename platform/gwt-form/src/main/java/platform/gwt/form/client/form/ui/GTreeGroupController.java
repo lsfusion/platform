@@ -3,11 +3,7 @@ package platform.gwt.form.client.form.ui;
 import com.google.gwt.user.client.ui.CellPanel;
 import com.google.gwt.user.client.ui.ResizeLayoutPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
-import platform.gwt.form.shared.view.GOrder;
-import platform.gwt.form.shared.view.GForm;
-import platform.gwt.form.shared.view.GGroupObject;
-import platform.gwt.form.shared.view.GPropertyDraw;
-import platform.gwt.form.shared.view.GTreeGroup;
+import platform.gwt.form.shared.view.*;
 import platform.gwt.form.shared.view.changes.GFormChanges;
 import platform.gwt.form.shared.view.changes.GGroupObjectValue;
 import platform.gwt.form.shared.view.logics.GGroupObjectLogicsSupplier;
@@ -139,8 +135,8 @@ public class GTreeGroupController implements GGroupObjectLogicsSupplier {
         panelToolbar.setVisible(!panelToolbar.isEmpty());
     }
 
-    public void redrawGrid() {
-        tree.redraw();
+    public void redrawGridHeader() {
+        tree.onResize();
     }
 
     @Override

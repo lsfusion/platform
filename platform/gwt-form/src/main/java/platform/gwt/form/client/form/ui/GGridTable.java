@@ -105,7 +105,7 @@ public class GGridTable extends GGridPropertyTable {
         updatedColumnsIfNeeded();
 
         if (dataUpdated) {
-            currentRecords = GridDataRecord.createRecords(this, columnProperties, rowKeys, columnKeysList, values, rowBackgroundValues, rowForegroundValues, cellBackgroundValues, cellForegroundValues);
+            currentRecords = GridDataRecord.createRecords(columnProperties, rowKeys, columnKeysList, values, rowBackgroundValues, rowForegroundValues, cellBackgroundValues, cellForegroundValues);
             setRowData(currentRecords);
             dataUpdated = false;
         }

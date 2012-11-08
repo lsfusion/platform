@@ -96,8 +96,7 @@ public class GridDataRecord {
                 '}';
     }
 
-    public static ArrayList<GridDataRecord> createRecords(GGridTable table,
-                                                          ArrayList<GPropertyDraw> columnProperties,
+    public static ArrayList<GridDataRecord> createRecords(ArrayList<GPropertyDraw> columnProperties,
                                                           ArrayList<GGroupObjectValue> rowKeys,
                                                           List<GGroupObjectValue> columnKeys,
                                                           Map<GPropertyDraw, Map<GGroupObjectValue, Object>> values,
@@ -126,7 +125,6 @@ public class GridDataRecord {
                                     : rowBackground;
 
                 record.setValue(j, value);
-                table.getSelectionModel().isSelected(record);
                 record.setBackground(j, background == null ? columnProperty.background : background);
                 record.setForeground(j, foreground == null ? columnProperty.foreground : foreground);
             }

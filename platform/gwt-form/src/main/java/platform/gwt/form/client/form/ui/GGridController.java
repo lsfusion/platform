@@ -3,8 +3,8 @@ package platform.gwt.form.client.form.ui;
 import com.google.gwt.user.client.ui.CellPanel;
 import com.google.gwt.user.client.ui.ResizeLayoutPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
-import platform.gwt.form.shared.view.GOrder;
 import platform.gwt.form.shared.view.GGrid;
+import platform.gwt.form.shared.view.GOrder;
 import platform.gwt.form.shared.view.GPropertyDraw;
 import platform.gwt.form.shared.view.changes.GGroupObjectValue;
 
@@ -65,7 +65,7 @@ public class GGridController {
     }
 
     public void redrawGrid() {
-        table.redraw();
+        table.onResize();
     }
 
     public void updateCellBackgroundValues(GPropertyDraw propertyDraw, Map<GGroupObjectValue, Object> values) {

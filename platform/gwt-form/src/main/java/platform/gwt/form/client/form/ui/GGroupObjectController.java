@@ -2,18 +2,13 @@ package platform.gwt.form.client.form.ui;
 
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
-import platform.gwt.form.shared.view.GClassViewType;
-import platform.gwt.form.shared.view.GOrder;
+import platform.gwt.base.shared.GwtSharedUtils;
 import platform.gwt.form.client.form.ui.container.GAbstractFormContainer;
-import platform.gwt.form.shared.view.GContainer;
-import platform.gwt.form.shared.view.GGroupObject;
-import platform.gwt.form.shared.view.GPropertyDraw;
-import platform.gwt.form.shared.view.GRegularFilterGroup;
+import platform.gwt.form.shared.view.*;
 import platform.gwt.form.shared.view.changes.GFormChanges;
 import platform.gwt.form.shared.view.changes.GGroupObjectValue;
 import platform.gwt.form.shared.view.logics.GGroupObjectLogicsSupplier;
 import platform.gwt.form.shared.view.reader.*;
-import platform.gwt.base.shared.GwtSharedUtils;
 
 import java.util.*;
 
@@ -295,7 +290,7 @@ public class GGroupObjectController implements GGroupObjectLogicsSupplier {
         }
     }
 
-    public void redrawGrid() {
+    public void redrawGridHeader() {
         grid.redrawGrid();
     }
 

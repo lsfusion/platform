@@ -1,6 +1,8 @@
 package platform.gwt.form.client.form.ui;
 
-import com.google.gwt.user.client.ui.*;
+import com.google.gwt.user.client.ui.HTMLPanel;
+import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.Widget;
 
 public class GCaptionPanel extends VerticalPanel {
     public GCaptionPanel(String title, Widget content) {
@@ -21,5 +23,6 @@ public class GCaptionPanel extends VerticalPanel {
         container.setCellWidth(content, "100%");
 
         add(container);
+        setCellHeight(container, "100%");
     }
 }

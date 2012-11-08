@@ -55,6 +55,7 @@ input[type=checkbox] {
 
 .gwt-TabPanelBottom {
     padding: 1px;
+    overflow: visible; /* вероятно помогает избежать непрерывной перерисовки в FF */
 }
 
 .gwt-DecoratorPanel .middleCenter {
@@ -188,7 +189,7 @@ input[type=checkbox] {
 
 /* ------------ Caption panel ------------ */
 .captionPanel {
-    padding-top: 0.55em;
+    padding-top: 0.75em;
     padding-bottom: 0.15em;
 }
 

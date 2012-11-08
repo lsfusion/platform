@@ -70,8 +70,6 @@ public class GToolbarNavigatorView extends GNavigatorView {
 
         if (vertical) {
             panel.setCellWidth(button, "100%");
-        } else {
-            panel.setCellHeight(button, "100%");
         }
 
         if ((element.window != null) && (!element.window.equals(window))) {
