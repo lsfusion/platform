@@ -63,6 +63,7 @@ public class LoadingBlocker {
 
     public static class BlockerPopup extends PopupPanel {
         public BlockerPopup() {
+            setModal(true);
             setGlassEnabled(true);
             setWidget(new Image(GWT.getModuleBaseURL() + "images/loading_bar.gif"));
         }

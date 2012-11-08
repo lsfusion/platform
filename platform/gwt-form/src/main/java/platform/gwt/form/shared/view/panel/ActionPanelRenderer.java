@@ -90,6 +90,11 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
         button.getElement().getStyle().setColor(value == null ? null : value.toString());
     }
 
+    @Override
+    public void setFocus(boolean focus) {
+        button.setFocus(focus);
+    }
+
     private class ActionEditManager extends EditManagerAdapter {
         @Override
         public GPropertyDraw getProperty(Cell.Context context) {

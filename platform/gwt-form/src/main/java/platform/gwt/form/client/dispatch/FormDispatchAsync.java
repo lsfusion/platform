@@ -30,7 +30,6 @@ public class FormDispatchAsync {
         this.form = formController.getForm();
     }
 
-
     public <A extends FormBoundAction<R>, R extends Result> void execute(A action, AsyncCallback<R> callback) {
         action.formSessionID = form.sessionID;
         if (action instanceof FormRequestIndexCountingAction) {

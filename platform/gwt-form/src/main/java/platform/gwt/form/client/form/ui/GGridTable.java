@@ -268,6 +268,7 @@ public class GGridTable extends GGridPropertyTable {
                     int index = rowKeys.indexOf(rowKey);
                     index = index == rowKeys.size() - 1 ? index - 1 : index + 1;
                     setCurrentKey(rowKeys.get(index));
+                    setKeyboardSelectedRow(index, true);
                 }
             }
             rowKeys.remove(rowKey);

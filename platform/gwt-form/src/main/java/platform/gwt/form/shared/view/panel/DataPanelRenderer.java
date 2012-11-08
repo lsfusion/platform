@@ -1,7 +1,9 @@
 package platform.gwt.form.shared.view.panel;
 
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.*;
+import platform.gwt.cellview.client.CellBasedWidgetImpl;
 import platform.gwt.form.client.form.ui.GFormController;
 import platform.gwt.form.client.form.ui.GSinglePropertyTable;
 import platform.gwt.form.shared.view.GPropertyDraw;
@@ -67,5 +69,15 @@ public class DataPanelRenderer implements PanelRenderer {
     @Override
     public void updateCellForegroundValue(Object value) {
         valueTable.setForeground((ColorDTO) value);
+    }
+
+    @Override
+    public void setFocus(final boolean focus) {
+        CellBasedWidgetImpl.get().resetFocus(new Scheduler.ScheduledCommand() {
+                @Override
+                public void execute() {
+                    valueTable.setFocus(focus);
+                }
+            });
     }
 }

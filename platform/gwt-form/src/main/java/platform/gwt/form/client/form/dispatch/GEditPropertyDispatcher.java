@@ -37,6 +37,8 @@ public class GEditPropertyDispatcher extends GFormActionDispatcher {
         editColumnKey = null;
         oldValue = null;
 
+        editHandler.setFocus(false);
+
         final boolean asyncModifyObject = form.isAsyncModifyObject(editProperty);
         if (asyncModifyObject || editProperty.changeType != null) {
             if (editProperty.askConfirm) {

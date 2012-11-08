@@ -38,10 +38,14 @@ import java.io.*;
 import java.lang.ref.WeakReference;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static platform.base.BaseUtils.deserializeObject;
@@ -57,11 +61,10 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     private final WeakReference<RemoteFormListener> weakRemoteFormListener;
 
     private final ExecutorService pausablesExecutor = Executors.newCachedThreadPool(new ContextAwareDaemonThreadFactory(this, "-pausable-daemon-"));
-    private RemotePausableInvocation currentInvocation = null;
-
-    private AtomicInteger numberOfFormChangesRequests = new AtomicInteger();
-
+    private final AtomicInteger numberOfFormChangesRequests = new AtomicInteger();
+    private final AtomicBoolean isEditing = new AtomicBoolean(false);
     private final SequentialRequestLock requestLock;
+    private RemotePausableInvocation currentInvocation = null;
 
     public RemoteForm(F form, int port, RemoteFormListener remoteFormListener) throws RemoteException {
         super(port);
@@ -79,15 +82,6 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
 
     public RemoteFormListener getRemoteFormListener() {
         return weakRemoteFormListener.get();
-    }
-
-    private void emitExceptionIfHasActiveInvocation() {
-        if (currentInvocation != null && currentInvocation.isPaused()) {
-            //стопаем старый рабочий поток, чтобы можно было запустить новый без ожидания окончания старого
-            currentInvocation.cancel();
-            currentInvocation = null;
-            throw new RuntimeException("There is already invocation executing...");
-         }
     }
 
     public ReportGenerationData getReportData(long requestIndex, final Integer groupId, final boolean toExcel, final FormUserPreferences userPreferences) throws RemoteException {
@@ -550,30 +544,36 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     public ServerResponse executeEditAction(long requestIndex, final int propertyID, final byte[] columnKey, final String actionSID) throws RemoteException {
-        emitExceptionIfHasActiveInvocation();
+        if (!isEditing.compareAndSet(false, true)) {
+            return ServerResponse.empty;
+        }
         return processPausableRMIRequest(requestIndex, new ERunnable() {
             @Override
             public void run() throws Exception {
-                PropertyDrawInstance propertyDraw = form.getPropertyDraw(propertyID);
-                Map<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, columnKey);
+                try {
+                    PropertyDrawInstance propertyDraw = form.getPropertyDraw(propertyID);
+                    Map<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, columnKey);
 
-                form.executeEditAction(propertyDraw, actionSID, keys);
-
-                if (logger.isTraceEnabled()) {
-                    logger.trace(String.format("executeEditAction: [ID: %1$d, SID: %2$s]", propertyDraw.getID(), propertyDraw.getsID()));
-                    if (keys.size() > 0) {
-                        logger.trace("   columnKeys: ");
-                        for (Map.Entry<ObjectInstance, DataObject> entry : keys.entrySet()) {
-                            logger.trace(String.format("     %1$s == %2$s", entry.getKey(), entry.getValue()));
-                        }
-                    }
+                    form.executeEditAction(propertyDraw, actionSID, keys);
 
                     if (logger.isTraceEnabled()) {
-                        logger.trace("   current object's values: ");
-                        for (ObjectInstance obj : form.getObjects()) {
-                            logger.trace(String.format("     %1$s == %2$s", obj, obj.getObjectValue()));
+                        logger.trace(String.format("executeEditAction: [ID: %1$d, SID: %2$s]", propertyDraw.getID(), propertyDraw.getsID()));
+                        if (keys.size() > 0) {
+                            logger.trace("   columnKeys: ");
+                            for (Map.Entry<ObjectInstance, DataObject> entry : keys.entrySet()) {
+                                logger.trace(String.format("     %1$s == %2$s", entry.getKey(), entry.getValue()));
+                            }
+                        }
+
+                        if (logger.isTraceEnabled()) {
+                            logger.trace("   current object's values: ");
+                            for (ObjectInstance obj : form.getObjects()) {
+                                logger.trace(String.format("     %1$s == %2$s", obj, obj.getObjectValue()));
+                            }
                         }
                     }
+                } finally {
+                    isEditing.set(false);
                 }
             }
         });
@@ -586,7 +586,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         } catch (Exception e) {
             throw Throwables.propagate(e);
         } finally {
-            requestLock.releaseCurrentRequestLock(requestIndex);
+            requestLock.releaseRequestLock(requestIndex);
         }
     }
 
@@ -599,7 +599,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     private ServerResponse processPausableRMIRequest(final long requestIndex, final ERunnable runnable) throws RemoteException {
-        return executeServerInvocation(requestIndex, new RemotePausableInvocation("f#" + getSID() + "_rq#" + requestIndex,  pausablesExecutor, this) {
+        return executeServerInvocation(requestIndex, new RemotePausableInvocation("f#" + getSID() + "_rq#" + requestIndex, pausablesExecutor, this) {
             @Override
             protected ServerResponse callInvocation() throws Throwable {
                 runnable.run();
@@ -622,7 +622,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                 currentInvocation = null;
                 int left = numberOfFormChangesRequests.decrementAndGet();
                 assert left >= 0;
-                requestLock.releaseCurrentRequestLock(requestIndex);
+                requestLock.releaseRequestLock(requestIndex);
             }
         });
     }

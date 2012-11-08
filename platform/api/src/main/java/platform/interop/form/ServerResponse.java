@@ -5,8 +5,7 @@ import platform.interop.action.ClientAction;
 import java.io.Serializable;
 
 public class ServerResponse implements Serializable {
-    public static ServerResponse edited = new ServerResponse(new ClientAction[0], false);
-    public static ServerResponse finished = new ServerResponse(null, false);
+    public static final ServerResponse empty = new ServerResponse(null, false);
 
     public static final String CHANGE = "change";
     public static final String GROUP_CHANGE = "groupChange";

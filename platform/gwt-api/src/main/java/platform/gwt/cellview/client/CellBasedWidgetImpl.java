@@ -28,7 +28,7 @@ import java.util.Set;
 /**
  * Implementation used by various cell based widgets.
  */
-abstract class CellBasedWidgetImpl {
+public abstract class CellBasedWidgetImpl {
 
   /**
    * The singleton impl instance.

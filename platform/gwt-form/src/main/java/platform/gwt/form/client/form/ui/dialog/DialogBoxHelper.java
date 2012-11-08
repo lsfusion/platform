@@ -62,6 +62,8 @@ public class DialogBoxHelper {
             mainPane.setCellHorizontalAlignment(buttonPane, HasAlignment.ALIGN_CENTER);
 
             setGlassEnabled(true);
+            setModal(true);
+
             setText(caption);
             setWidget(mainPane);
         }

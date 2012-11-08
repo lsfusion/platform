@@ -1,8 +1,10 @@
 package platform.gwt.form.client.form.ui;
 
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.user.client.ui.CellPanel;
 import com.google.gwt.user.client.ui.ResizeLayoutPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import platform.gwt.cellview.client.CellBasedWidgetImpl;
 import platform.gwt.form.shared.view.*;
 import platform.gwt.form.shared.view.changes.GFormChanges;
 import platform.gwt.form.shared.view.changes.GGroupObjectValue;
@@ -210,5 +212,15 @@ public class GTreeGroupController implements GGroupObjectLogicsSupplier {
     @Override
     public void changeOrder(GPropertyDraw property, GOrder modiType) {
         tree.changeOrder(property, modiType);
+    }
+
+    public boolean focusFirstWidget() {
+        CellBasedWidgetImpl.get().resetFocus(new Scheduler.ScheduledCommand() {
+            @Override
+            public void execute() {
+                tree.setFocus(true);
+            }
+        });
+        return true;
     }
 }

@@ -9,4 +9,6 @@ public interface GEditPropertyHandler {
     public void updateEditValue(Object value);
 
     void postDispatchResponse(ServerResponseResult response);
+
+    void setFocus(boolean focus);
 }

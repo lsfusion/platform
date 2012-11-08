@@ -97,6 +97,20 @@ public class GPanelController {
         propertyControllers.get(property).setColumnKeys(columnKeys);
     }
 
+    public boolean focusFirstWidget() {
+        if (properties.isEmpty()) {
+            return false;
+        }
+
+        for (GPropertyDraw property : properties) {
+            if (propertyControllers.get(property).focusFirstWidget()) {
+                return true;
+            }
+        }
+
+        return true;
+    }
+
     private class GPropertyController {
         private boolean addedToLayout = false;
         private boolean columnsUpdated = true;
@@ -192,6 +206,17 @@ public class GPanelController {
             } else {
                 renderer.setCaption(property.getCaptionOrEmpty());
             }
+        }
+
+        public boolean focusFirstWidget() {
+            if (renderers.isEmpty()) {
+                return false;
+            }
+
+            PanelRenderer toFocus = columnKeys == null ? renderers.values().iterator().next() : renderers.get(columnKeys.get(0));
+            toFocus.setFocus(true);
+
+            return true;
         }
 
         public boolean isViewVisible() {

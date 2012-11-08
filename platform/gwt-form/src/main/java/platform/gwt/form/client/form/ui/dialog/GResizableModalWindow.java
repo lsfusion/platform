@@ -1,12 +1,18 @@
 package platform.gwt.form.client.form.ui.dialog;
 
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.EventTarget;
+import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
+import com.google.gwt.event.shared.HandlerRegistration;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.PopupPanel;
 
 public class GResizableModalWindow extends ResizableWindow {
     private ModalMask modalMask;
     private WindowHiddenHandler hiddenHandler;
+    private HandlerRegistration nativePreviewHandlerReg;
 
     public GResizableModalWindow(String caption) {
         this(caption, null);
@@ -17,14 +23,27 @@ public class GResizableModalWindow extends ResizableWindow {
 
         this.hiddenHandler = ihiddenHandler;
 
+        addHandlers();
+    }
+
+    private void addHandlers() {
         addCloseHandler(new CloseHandler<ResizableWindow>() {
             @Override
             public void onClose(CloseEvent<ResizableWindow> event) {
-                if (modalMask != null) {
-                    modalMask.hide();
-                    modalMask = null;
-                }
+                nativePreviewHandlerReg.removeHandler();
+                nativePreviewHandlerReg = null;
+
+                modalMask.hide();
+                modalMask = null;
+
                 hiddenHandler.onHidden();
+            }
+        });
+
+        nativePreviewHandlerReg = Event.addNativePreviewHandler(new Event.NativePreviewHandler() {
+            @Override
+            public void onPreviewNativeEvent(Event.NativePreviewEvent event) {
+                previewNativeEvent(event);
             }
         });
     }
@@ -35,16 +54,37 @@ public class GResizableModalWindow extends ResizableWindow {
 
     @Override
     public void center() {
-        if (modalMask != null) {
-            modalMask.hide();
+        if (modalMask == null) {
+            modalMask = new ModalMask();
+            modalMask.show();
         }
-        modalMask = new ModalMask();
-        modalMask.show();
 
         super.center();
     }
 
-    static class ModalMask {
+    private boolean eventTargetsPopup(NativeEvent event) {
+        EventTarget target = event.getEventTarget();
+        return Element.is(target) && getElement().isOrHasChild(Element.as(target));
+    }
+
+    private void previewNativeEvent(Event.NativePreviewEvent event) {
+        // If the event has been canceled or consumed, ignore it
+        if (event.isCanceled() || event.isConsumed()) {
+            return;
+        }
+
+        // If the event targets the popup, consume it
+        Event nativeEvent = Event.as(event.getNativeEvent());
+        if (eventTargetsPopup(nativeEvent)) {
+            event.consume();
+        }
+
+//        // Cancel the event if it doesn't target the modal popup. Note that the
+//        // event can be both canceled and consumed.
+        event.cancel();
+    }
+
+    private final static class ModalMask {
         private final PopupPanel popup;
 
         private ModalMask() {

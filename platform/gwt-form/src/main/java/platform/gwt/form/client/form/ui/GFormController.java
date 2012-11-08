@@ -63,6 +63,7 @@ public class GFormController extends SimplePanel {
     private final HashMap<GPropertyDraw, HashMap<GGroupObjectValue, Change>> lastChangePropertyRequestValues = new HashMap<GPropertyDraw, HashMap<GGroupObjectValue, Change>>();
 
     private boolean defaultOrdersInitialized = false;
+    private boolean initialFormChangesReceived = false;
     private boolean hasColumnGroupObjects;
 
     public GFormController(FormsController formsController, GForm gForm, final boolean isDialog) {
@@ -667,9 +668,22 @@ public class GFormController extends SimplePanel {
         }
     }
 
-    protected boolean dialogSizeSet = false;
-    protected void resizeDialog() {
-        dialogSizeSet = true;
+    protected void onInitialFormChangesReceived() {
+        focusFirstWidget();
+    }
+
+    private void focusFirstWidget() {
+        for (GGroupObjectController controller : controllers.values()) {
+            if (controller.focusFirstWidget()) {
+                return;
+            }
+        }
+
+        for (GTreeGroupController treeController : treeControllers.values()) {
+            if (treeController.focusFirstWidget()) {
+                return;
+            }
+        }
     }
 
     private class ServerResponseCallback extends ErrorHandlingCallback<ServerResponseResult> {
@@ -677,8 +691,9 @@ public class GFormController extends SimplePanel {
         public void success(ServerResponseResult response) {
             actionDispatcher.dispatchResponse(response);
 
-            if (!dialogSizeSet) {
-                resizeDialog();
+            if (!initialFormChangesReceived) {
+                onInitialFormChangesReceived();
+                initialFormChangesReceived = true;
             }
         }
     }

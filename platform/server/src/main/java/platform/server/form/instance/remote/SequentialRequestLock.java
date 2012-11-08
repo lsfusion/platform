@@ -47,7 +47,7 @@ public class SequentialRequestLock {
         }
     }
 
-    public void releaseCurrentRequestLock(long requestIndex) {
+    public void releaseRequestLock(long requestIndex) {
         logger.debug("Releasing request lock for #" + sid + " for request #" + requestIndex);
         try {
             requestLock.put(LOCK_OBJECT);
