@@ -3,6 +3,28 @@ MODULE Shipment;
 REQUIRE Invoice;
 
 
+// ----------------------------------- Создавать поставку по умолчанию для склада ------------------------------------------ //
+
+createShipmentStock 'Создавать поставку' = DATA BOOLEAN (stock);
+
+//EXTEND FORM departmentStore PROPERTIES createShipmentStock(d);
+
+META defineDocumentHeaderCreateShipment(object, stockClass)
+    createShipment###object 'Создавать поставку' (object) = DATA BOOLEAN(object) IN documentPrmGroup;
+
+    createShipment###object (object) <- TRUE IF createShipmentStock(stockClass###object(object))
+        WHEN CHANGED(stockClass###object(object));
+
+END
+META defineDocumentAbstractHeaderCreateShipment(object, stockClass)
+    createShipment###object 'Создавать апоставку' (object) = ABSTRACT BOOLEAN(object);
+END
+
+META defineDocumentInterfaceHeaderCreateShipment (object, stockClass)
+    @defineDocumentAbstractHeaderCreateShipment (object, stockClass);
+    @defineDocumentHeaderCreateShipment (user###object, stockClass);
+    createShipment###object (object) += createShipment###user###object(object);
+END
 //----------------------------------------------- Поставка ---------------------------------------------------//
 
 META defineShipment(sign, contact, contactCaption, partyA, partyB)
@@ -470,9 +492,11 @@ META defineShipment(sign, contact, contactCaption, partyA, partyB)
     @defineDocumentInterfaceDetailDataSumPrefix (invoice, shipment, ' (учетная)');
     @deriveDocumentDetailSumPrefix(userInvoice, shipment, currency, quantity);
 
-    createShipmentInvoice 'Создавать поставку' = ABSTRACT BOOLEAN (invoice) PERSISTENT IN documentPrmGroup;
-    createShipmentUserInvoice 'Создавать поставку' = DATA BOOLEAN (userInvoice) IN documentPrmGroup;
-    createShipmentInvoice (invoice) += createShipmentUserInvoice(invoice);
+    @defineDocumentInterfaceHeaderCreateShipment (invoice, stock);
+
+    skipCreateShipmentInvoiceDetail = ABSTRACT BOOLEAN (invoiceDetail) PERSISTENT;
+    createShipmentInvoiceDetail 'Создавать поставку' (invoiceDetail) = createShipmentInvoice(invoiceInvoiceDetail(invoiceDetail)) AND NOT skipCreateShipmentInvoiceDetail(invoiceDetail);
+    createShipmentUserInvoiceDetail 'Создавать поставку' (invoiceDetail) = createShipmentUserInvoice(userInvoiceUserInvoiceDetail(invoiceDetail));
 
     showShipmentInvoice (invoice) =  invoice IS invoice AND NOT createShipmentInvoice(invoice);
 
@@ -489,9 +513,6 @@ META defineShipment(sign, contact, contactCaption, partyA, partyB)
         PROPERTIES(d) READONLY shippedInvoiceDetail AFTER quantityInvoiceDetail SHOWIF showShipmentInvoice(i)
     ;
 
-    skipCreateShipmentInvoiceDetail = ABSTRACT BOOLEAN (invoiceDetail) PERSISTENT;
-    createShipmentInvoiceDetail 'Создавать поставку' (invoiceDetail) = createShipmentInvoice(invoiceInvoiceDetail(invoiceDetail)) AND NOT skipCreateShipmentInvoiceDetail(invoiceDetail);
-    createShipmentUserInvoiceDetail 'Создавать поставку' (invoiceDetail) = createShipmentUserInvoice(userInvoiceUserInvoiceDetail(invoiceDetail));
 
     CLASS invoiceShipment 'Поставка на основе инвойса'###sign : shipment;
     CLASS invoiceShipmentPosted 'Закрытая поставка на основе инвойса'###sign : invoiceShipment, postedObject;

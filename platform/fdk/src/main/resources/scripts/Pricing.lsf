@@ -3,6 +3,30 @@ MODULE Pricing;
 REQUIRE Invoice, Employee, Store, StorePrice;
 
 
+// ----------------------------------- Создавать акт расценки по умолчанию для отдела ------------------------------------------ //
+
+createPricingDepartmentStore 'Создавать акт расценки' = DATA BOOLEAN (departmentStore);
+
+EXTEND FORM departmentStore PROPERTIES createPricingDepartmentStore(d);
+
+META defineDocumentHeaderCreatePricing(object, stockClass)
+    createPricing###object 'Создавать акт расценки' (object) = DATA BOOLEAN(object) IN documentPrmGroup;
+
+    createPricing###object (object) <- TRUE IF createPricingDepartmentStore(stockClass###object(object))
+        WHEN CHANGED(stockClass###object(object));
+
+END
+META defineDocumentAbstractHeaderCreatePricing(object, stockClass)
+    createPricing###object 'Создавать акт расценки' (object) = ABSTRACT BOOLEAN(object);
+END
+
+META defineDocumentInterfaceHeaderCreatePricing (object, stockClass)
+    @defineDocumentAbstractHeaderCreatePricing (object, stockClass);
+    @defineDocumentHeaderCreatePricing (user###object, stockClass);
+    createPricing###object (object) += createPricing###user###object(object);
+END
+
+
 // ----------------------------------- Комиссия ------------------------------------------ //
 
 CLASS pricingCommittee 'Комиссия для акта расценки' : committee;
@@ -97,7 +121,7 @@ META defineDocumentHeaderPricingCommittee(object, stockClass)
 
     namePricingCommittee###object 'Комиссия для акта расценки' (object) = commonName(pricingCommittee###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
     pricingCommittee###object (object) <- pricingCommitteeDepartmentStore(stockClass###object(object))
-        WHEN ASSIGNED(object IS object);
+        WHEN CHANGED(stockClass###object(object));
 
     nameFormedMan###object 'Цены сформировал' (object) = nameFormedManPricingCommittee(pricingCommittee###object(object)) IN pricingCommitteeGroup;
     nameCheckedMan###object 'Реестр проверил' (object) = nameCheckedManPricingCommittee(pricingCommittee###object(object)) IN pricingCommitteeGroup;
@@ -602,10 +626,9 @@ META definePricing(sign, contact, contactCaption)
     @deriveDocumentDetailMarkupSumPrefix(userInvoice, retail, retail, );
     @changeDocumentDetailMarkupCustomPrefix(userInvoiceDetail, retail, );
     @changeDocumentDetailPriceCustomPrefix(userInvoiceDetail, retail, , currency);
-
-    createPricingInvoice 'Создавать акт расценки' = ABSTRACT BOOLEAN (invoice) PERSISTENT IN documentPrmGroup;
-    createPricingUserInvoice 'Создавать акт расценки' = DATA BOOLEAN (userInvoice) IN documentPrmGroup;
-    createPricingInvoice (invoice) += createPricingUserInvoice(invoice);
+    @defineDocumentInterfaceHeaderCreatePricing (invoice, stock);
+    createPricingInvoiceDetail 'Создавать акт расценки' (invoiceDetail) = createPricingInvoice(invoiceInvoiceDetail(invoiceDetail));
+    createPricingUserInvoiceDetail 'Создавать акт расценки' (userInvoiceDetail) = createPricingUserInvoice(userInvoiceUserInvoiceDetail(userInvoiceDetail));
 
     showCreatePricingInvoice (invoice) = stockInvoice(invoice) IS departmentStore AND NOT costLedgerDepartmentStore(stockInvoice(invoice));
     showPricingInvoice (invoice) = showCreatePricingInvoice (invoice) AND NOT createPricingInvoice(invoice);
@@ -648,10 +671,6 @@ META definePricing(sign, contact, contactCaption)
                       valueRetailVATInvoiceDetail, retailVATSumInvoiceDetail,
                       retailPriceInvoiceDetail, retailSumInvoiceDetail
     ;
-
-
-    createPricingInvoiceDetail 'Создавать акт расценки' (invoiceDetail) = createPricingInvoice(invoiceInvoiceDetail(invoiceDetail));
-    createPricingUserInvoiceDetail 'Создавать акт расценки' (userInvoiceDetail) = createPricingUserInvoice(userInvoiceUserInvoiceDetail(userInvoiceDetail));
 
     CLASS invoicePricing 'Акт расценки на основе инвойса'###sign : pricing;
     CLASS invoicePricingPosted 'Закрытый акт расценки на основе инвойса'###sign : invoicePricing, postedObject;

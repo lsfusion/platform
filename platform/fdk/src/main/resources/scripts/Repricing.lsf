@@ -2,6 +2,28 @@ MODULE Repricing;
 
 REQUIRE Employee, Store, Pricing;
 
+// ----------------------------------- Создавать акт расценки по умолчанию для отдела ------------------------------------------ //
+
+createRepricingDepartmentStore 'Создавать акт дооценки' = DATA BOOLEAN (departmentStore);
+
+EXTEND FORM departmentStore PROPERTIES createRepricingDepartmentStore(d);
+
+META defineDocumentHeaderCreateRepricing(object, stockClass)
+    createRepricing###object 'Создавать акт дооценки' (object) = DATA BOOLEAN(object) IN documentPrmGroup;
+
+    createRepricing###object (object) <- TRUE IF createRepricingDepartmentStore(stockClass###object(object))
+        WHEN CHANGED(stockClass###object(object));
+
+END
+META defineDocumentAbstractHeaderCreateRepricing(object, stockClass)
+    createRepricing###object 'Создавать акт дооценки' (object) = ABSTRACT BOOLEAN(object);
+END
+
+META defineDocumentInterfaceHeaderCreateRepricing (object, stockClass)
+    @defineDocumentAbstractHeaderCreateRepricing (object, stockClass);
+    @defineDocumentHeaderCreateRepricing (user###object, stockClass);
+    createRepricing###object (object) += createRepricing###user###object(object);
+END
 
 // ----------------------------------- Комиссия ------------------------------------------ //
 
@@ -88,7 +110,7 @@ META defineDocumentHeaderRepricingCommittee(object, stockProp)
     repricingCommittee###object (object) = DATA repricingCommittee(object) IN idGroup;
     nameRepricingCommittee###object 'Комиссия переоценки' (object) = commonName(repricingCommittee###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
     repricingCommittee###object (object) <- repricingCommitteeDepartmentStore(stockProp###object(object))
-        WHEN ASSIGNED(object IS object);
+        WHEN CHANGED(stockProp###object(object));
 
     inCommittee###object##Employee (object, employee) = inCommitteeEmployee(repricingCommittee###object (object), employee);
     commonNameEmployeeCommittee###object 'Сотрудники комиссии' (object) = namePositionEmployeeCommittee(repricingCommittee###object (object));
@@ -429,10 +451,6 @@ DESIGN repricings FROM DEFAULT {
 META defineRepricing(sign)
 //-- аггр.объект
 
-    createRepricingInvoice 'Создавать акт дооценки' = ABSTRACT BOOLEAN (invoice) PERSISTENT IN documentPrmGroup;
-    createRepricingUserInvoice 'Создавать акт дооценки' = DATA BOOLEAN (userInvoice) IN documentPrmGroup;
-    createRepricingInvoice (invoice) += createRepricingUserInvoice(invoice);
-
     @defineDocumentInterfaceDetailSkuBalance (invoice);
     @deriveDocumentDetailSkuBalance (userInvoice, sku, stock);
 // До
@@ -481,6 +499,10 @@ META defineRepricing(sign)
     afterRetailMarkupSumUserInvoiceDetail(detail) <- afterRetailSumUserInvoiceDetail(detail) (-) afterRetailVATSumUserInvoiceDetail (detail) (-) afterSumUserInvoiceDetail(detail)
                     WHEN CHANGED(afterRetailVATSumUserInvoiceDetail(detail)) OR CHANGED (afterRetailVATSumUserInvoiceDetail (detail)) OR CHANGED (afterSumUserInvoiceDetail(detail));
 
+    @defineDocumentInterfaceDetailDiffSumPrefix (invoice, retailSum, after, cur, ' дооценки');
+    @defineDocumentInterfaceHeaderSumPrefix (invoice, diffRetail, ' дооценки');
+
+    @defineDocumentInterfaceHeaderCreateRepricing (invoice, stock);
     createRepricingInvoiceDetail 'Создавать акт дооценки' (invoiceDetail) = createRepricingInvoice(invoiceInvoiceDetail(invoiceDetail));
     createRepricingUserInvoiceDetail 'Создавать акт дооценки' (userInvoiceDetail) = createRepricingUserInvoice(userInvoiceUserInvoiceDetail(userInvoiceDetail));
 
@@ -547,6 +569,7 @@ META defineRepricing(sign)
     EXTEND FORM userInvoice
         PROPERTIES(i)   BACKGROUND backgroundCurInvoice(i) createRepricingUserInvoice
         PROPERTIES(i)   BACKGROUND backgroundCurInvoice(i) SHOWIF createRepricingUserInvoice(i) nameRepricingCommitteeUserInvoice, numberDisposalUserInvoice
+        PROPERTIES(i)   BACKGROUND backgroundAfterInvoice(i) SHOWIF createRepricingUserInvoice(i) diffRetailSumUserInvoiceDetailUserInvoice
         PROPERTIES(d)   BACKGROUND backgroundCurInvoice(i) SHOWIF createRepricingUserInvoice(i) BEFORE nameStockUserInvoiceDetail(d)
                         balanceBSkuUserInvoiceDetail, curPriceUserInvoiceDetail, curSumUserInvoiceDetail,
                         curMarkupUserInvoiceDetail, curMarkupSumUserInvoiceDetail,
@@ -554,6 +577,7 @@ META defineRepricing(sign)
                         curRetailPriceUserInvoiceDetail, curRetailSumUserInvoiceDetail
         PROPERTIES(d)   BACKGROUND backgroundAfterInvoice(i) SHOWIF createRepricingUserInvoice(i) BEFORE nameStockUserInvoiceDetail(d)
                         afterSumUserInvoiceDetail, afterRetailVATSumUserInvoiceDetail, afterRetailMarkupSumUserInvoiceDetail, afterRetailSumUserInvoiceDetail
+
     ;
     EXTEND DESIGN userInvoice {
         headerRow3 {
