@@ -61,7 +61,7 @@ skuWriteOffDetail (detail)  <- skuBatch( batchWriteOffDetail(detail)) AND batchW
 @defineDocumentHeaderSkuQuantity(writeOff, sku);
 
 @defineDocumentHeaderSum(writeOff);
-@defineDocumentHeaderItemSum(writeOff);
+@defineDocumentHeaderItemSum(writeOff, , );
 
 @defineAddDetailDialogSkuStock(writeOff, sku, stock, dialogSku);
 @defineAddDetailDialogBarcode(writeOff, sku);

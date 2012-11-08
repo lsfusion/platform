@@ -22,3 +22,8 @@ shipmentPriceUserInvoiceDetail(detail) <- calcShipmentPriceUserInvoiceDetail(det
 quantityBatch (ledger) += quantityShipmentDetail(ledger);
 supplierBatch (ledger) += supplierShipmentDetail(ledger);
 sumInSkuLedger (ledger) += sumShipmentDetail(ledger);
+
+@implementAccountDocumentLedgerInc(shipment, stock);
+sumIncAccountDocumentLedger (ledger) += sumShipmentDetailShipment(ledger);
+sumItemIncAccountDocumentLedger (ledger) += sumItemShipmentDetailShipment(ledger);
+sumContainerIncAccountDocumentLedger (ledger) += sumContainerShipmentDetailShipment(ledger);

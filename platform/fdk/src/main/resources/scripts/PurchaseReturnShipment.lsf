@@ -21,3 +21,8 @@ limitOutFIFOSkuLedgerBatch(ledger, batch) += IF batchShipmentDetail(ledger) THEN
                                                 ELSE currentBalanceBatchStock(batch, stockShipmentDetail(ledger)); //AND NOT commissionContractSkuBatchA(batch);
 changedDataSkuLedger(ledger) += CHANGED(batchShipmentDetail(ledger));
 sumOutSkuLedger (ledger) += sumShipmentDetail(ledger);
+
+@implementAccountDocumentLedgerOut(shipment, stock);
+sumOutAccountDocumentLedger (ledger) += sumShipmentDetailShipment(ledger);
+sumItemOutAccountDocumentLedger (ledger) += sumItemShipmentDetailShipment(ledger);
+sumContainerOutAccountDocumentLedger (ledger) += sumContainerShipmentDetailShipment(ledger);

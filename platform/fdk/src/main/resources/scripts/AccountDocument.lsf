@@ -294,10 +294,12 @@ END
 
 META implementAccountDocumentLedgerInc (concrete, stockProp)
     EXTEND CLASS concrete : incAccountDocumentLedger;
+    @implementAccountDocumentLedger (concrete, stockProp);
 END
 
 META implementAccountDocumentLedgerOut (concrete, stockProp)
     EXTEND CLASS concrete : outAccountDocumentLedger;
+    @implementAccountDocumentLedger (concrete, stockProp);
 END
 
 META extendStockFormAccountDocumentLedger(form, object)

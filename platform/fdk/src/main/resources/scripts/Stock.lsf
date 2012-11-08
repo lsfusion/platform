@@ -942,16 +942,16 @@ META derivePriceOnBatchChange (concrete)
     @derivePriceOnBatchChangePrefix(concrete, batch, stock, );
 END
 
-META defineDocumentHeaderItemSumCustom (object, detail)
-    sumItem###detail###object 'Сумма, товар' (object) =
-        GROUP SUM sum###detail(idetail) AND NOT isContainerSku(sku###detail(idetail))
+META defineDocumentHeaderItemSumCustom (object, detail, prefixA, prefixB)
+    prefixB###sumItem###detail###object 'Сумма, товар' (object) =
+        GROUP SUM prefixA###sum###detail(idetail) AND NOT isContainerSku(sku###detail(idetail))
             BY object###detail(idetail) IN documentSumGroup;
-    sumContainer###detail###object 'Сумма, тара' (object) =
-        GROUP SUM sum###detail(idetail) IF isContainerSku(sku###detail(idetail))
+    prefixB###sumContainer###detail###object 'Сумма, тара' (object) =
+        GROUP SUM prefixA###sum###detail(idetail) IF isContainerSku(sku###detail(idetail))
             BY object###detail(idetail) IN documentSumGroup;
 END
-META defineDocumentHeaderItemSum (object)
-    @defineDocumentHeaderItemSumCustom(object, object##Detail);
+META defineDocumentHeaderItemSum (object, prefixA, prefixB)
+    @defineDocumentHeaderItemSumCustom(object, object##Detail, prefixA, prefixB);
 END
 
 

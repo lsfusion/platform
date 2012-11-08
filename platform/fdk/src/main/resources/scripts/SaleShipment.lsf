@@ -24,3 +24,8 @@ changedDataSkuLedger(ledger) += CHANGED(batchShipmentDetail(ledger));
 sumOutSkuLedger(ledger) += sumShipmentDetail(ledger);
 
 @defineConstraintSkuLedgerCosted(shipment, 'Не хватает остатков по партиям для продажи товаров');
+
+@implementAccountDocumentLedgerOut(shipment, stock);
+sumOutAccountDocumentLedger (ledger) += sumShipmentDetailShipment(ledger);
+sumItemOutAccountDocumentLedger (ledger) += sumItemShipmentDetailShipment(ledger);
+sumContainerOutAccountDocumentLedger (ledger) += sumContainerShipmentDetailShipment(ledger);

@@ -306,6 +306,9 @@ CLASS userPricingPosted 'Закрытый акт расценки (польз.)'
 
 @defineDocumentInterfaceHeaderPricingCommittee (pricing, departmentStore);
 
+@defineDocumentInterfaceHeaderSkip (pricing, changeLedger, 'Не изменять текущие цены');
+@defineDocumentInterfaceDetailSkip(pricing, changeLedger, 'Не изменять текущие цены');
+
 //------------------------------------ Печатные формы акт расценки ------------------------------------------------ //
 
 FORM pricing 'Акт расценки (печать)' PRINT
@@ -339,7 +342,7 @@ FORM userPricing 'Акт расценки'
     PROPERTIES (p) objectClassName, nameDepartmentStoreUserPricing, nameNumeratorObject, numberObject, seriesObject, dateUserPricing, timeUserPricing,
                    nameSupplierUserPricing, nameCurrencyUserPricing, noteUserPricing,
                    countUserPricingDetailUserPricing, quantityUserPricingDetailUserPricing, sumUserPricingDetailUserPricing,
-                   retailSumUserPricingDetailUserPricing, namePricingCommitteeUserPricing
+                   retailSumUserPricingDetailUserPricing, namePricingCommitteeUserPricing, skipChangeLedgerUserPricing
     PROPERTIES (p) SHOWIF pricingCommitteeUserPricing(p)  nameFormedManUserPricing, nameCheckedManUserPricing, nameLabeledManUserPricing,
                    nameAccountantManUserPricing, nameHeadManUserPricing
 
@@ -411,7 +414,7 @@ FORM pricings 'Акты расценки' TITLE 'Акты расценки'
     PROPERTIES (p) READONLY isPostedPricing FORCE GRID, objectClassName, numberPricing, seriesPricing, datePricing, timePricing,
                             nameDepartmentStorePricing, nameSupplierPricing, nameCurrencyPricing, notePricing,
                             countPricingDetailPricing, quantityPricingDetailPricing, sumPricingDetailPricing,
-                            retailSumPricingDetailPricing
+                            retailSumPricingDetailPricing, skipChangeLedgerPricing
 
     PROPERTIES (p) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
@@ -467,6 +470,10 @@ DESIGN pricings FROM DEFAULT {
 }
 
 // ------------------------------------- Проведение по регистру ------------------------------ //
+
+skipSupplierPriceLedger(ledger) +=  skipChangeLedgerPricingDetail(ledger);
+skipRetailVATLedger(ledger) +=  skipChangeLedgerPricingDetail(ledger);
+skipRetailPriceLedger(ledger) +=  skipChangeLedgerPricingDetail(ledger);
 
 @implementSkuDepartmentStoreLedgerCustom(supplierPrice, pricing, sku, departmentStore, price);
 @implementSkuDepartmentStoreLedger(retailVAT, pricing, sku, departmentStore);

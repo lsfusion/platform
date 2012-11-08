@@ -1,6 +1,6 @@
 MODULE Shipment;
 
-REQUIRE Invoice;
+REQUIRE Invoice, AccountDocument;
 
 
 // ----------------------------------- Создавать поставку по умолчанию для склада ------------------------------------------ //
@@ -60,6 +60,9 @@ META defineShipment(sign, contact, contactCaption, partyA, partyB)
     @defineDocumentInterfaceHeaderQuantity(shipment);
     @defineDocumentHeaderSkuQuantity(shipment, sku);
     @defineDocumentInterfaceHeaderSum(shipment);
+
+    @defineDocumentHeaderItemSum(shipment, , );
+    @defineDocumentHeaderItemSum(userShipment, , );
 
     @defineAddDetailDialogSkuStock(userShipment, sku, stock, dialogSku);
     @defineAddDetailDialogBarcode(userShipment, sku);

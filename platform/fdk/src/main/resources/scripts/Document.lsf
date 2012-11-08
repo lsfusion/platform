@@ -460,6 +460,36 @@ META defineDocumentInterfaceNumber(object)
     @defineDocumentInterfaceNumber(object, object##Detail);
 END
 
+// ----- Не проводить ----- //
+
+META defineDocumentHeaderSkip(object, postfix, caption)
+    skip###postfix###object caption (object) = DATA BOOLEAN(object) IN documentPrmGroup;
+
+END
+META defineDocumentAbstractHeaderSkip(object, postfix, caption)
+    skip###postfix###object caption (object) = ABSTRACT BOOLEAN(object);
+END
+
+META defineDocumentInterfaceHeaderSkip (object, postfix, caption)
+    @defineDocumentAbstractHeaderSkip (object, postfix, caption);
+    @defineDocumentHeaderSkip (user###object, postfix, caption);
+    skip###postfix###object (object) += skip###postfix###user###object(object);
+END
+
+META defineDocumentDetailSkipCustom(object, detail, postfix, caption)
+    skip###postfix###detail caption (detail) = skip###postfix###object(object###detail(detail));
+END
+META defineDocumentDetailSkip(object, postfix, caption)
+    @defineDocumentDetailSkipCustom(object, object##Detail, postfix, caption);
+END
+META defineDocumentInterfaceDetailSkipCustom (object, detail, postfix, caption)
+    @defineDocumentDetailSkipCustom(object, detail, postfix, caption);
+    @defineDocumentDetailSkipCustom(user###object, user###detail, postfix, caption);
+END
+META defineDocumentInterfaceDetailSkip(object, postfix, caption)
+    @defineDocumentInterfaceDetailSkipCustom(object, object##Detail, postfix, caption);
+END
+
 // ----- Description ----- //
 
 META defineDocumentHeaderDescription(object, numberProp, caption)

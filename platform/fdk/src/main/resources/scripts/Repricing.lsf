@@ -1,6 +1,6 @@
 MODULE Repricing;
 
-REQUIRE Employee, Store, Pricing;
+REQUIRE Employee, Store, Pricing, AccountDocument;
 
 // ----------------------------------- Создавать акт расценки по умолчанию для отдела ------------------------------------------ //
 
@@ -23,27 +23,6 @@ META defineDocumentInterfaceHeaderCreateRepricing (object, stockClass)
     @defineDocumentAbstractHeaderCreateRepricing (object, stockClass);
     @defineDocumentHeaderCreateRepricing (user###object, stockClass);
     createRepricing###object (object) += createRepricing###user###object(object);
-END
-
-META defineDocumentHeaderSkipChangeLedger(object, postfix, caption)
-    skip###postfix###object caption (object) = DATA BOOLEAN(object) IN documentPrmGroup;
-
-END
-META defineDocumentAbstractHeaderSkipChangeLedger(object, postfix, caption)
-    skip###postfix###object caption (object) = ABSTRACT BOOLEAN(object);
-END
-
-META defineDocumentInterfaceHeaderSkipChangeLedger (object, postfix, caption)
-    @defineDocumentAbstractHeaderSkipChangeLedger (object, postfix, caption);
-    @defineDocumentHeaderSkipChangeLedger (user###object, postfix, caption);
-    skip###postfix###object (object) += skip###postfix###user###object(object);
-END
-
-META defineDocumentDetailSkipChangeLedgerCustom(object, detail, postfix, caption)
-    skip###postfix###detail caption (detail) = skip###postfix###object(object###detail(detail));
-END
-META defineDocumentDetailSkipChangeLedger(object, postfix, caption)
-    @defineDocumentDetailSkipChangeLedgerCustom(object, object##Detail, postfix, caption);
 END
 
 // ----------------------------------- Комиссия ------------------------------------------ //
@@ -267,9 +246,11 @@ markupUserRepricingDetail(userRepricingDetail)  <- [round2((((X - X*Y/(100+Y))/Z
 @deriveDocumentDetailValueVATPrefix(userRepricing, cur);
 @derivePriceLedgerOnSkuChangePrefix(retailPrice, userRepricing, curRetailPrice, sku, departmentStore);
 
-@defineDocumentInterfaceHeaderSkipChangeLedger (repricing, changeLedger, 'Не изменять текущие цены');
-@defineDocumentDetailSkipChangeLedger(repricing, changeLedger, 'Не изменять текущие цены');
-@defineDocumentDetailSkipChangeLedger(userRepricing, changeLedger, 'Не изменять текущие цены');
+@defineDocumentInterfaceHeaderSkip (repricing, changeLedger, 'Не изменять текущие цены');
+@defineDocumentInterfaceDetailSkip(repricing, changeLedger, 'Не изменять текущие цены');
+
+@defineDocumentHeaderItemSum(repricing, diffRetail, );
+@defineDocumentHeaderItemSum(userRepricing, diffRetail, );
 
 //--
 
@@ -558,6 +539,11 @@ Machinery.skipPriceTransactionDocument(document) += skipChangeLedgerRepricing(do
 
 @defineDocumentMachineryPriceTransaction(repricing, sku, departmentStore);
 @extendFormDocumentMachineryPriceTransaction(repricings, p, repricing);
+
+@implementAccountDocumentLedgerInc(repricing, departmentStore);
+sumIncAccountDocumentLedger (ledger) += diffRetailSumRepricingDetailRepricing(ledger);
+sumItemIncAccountDocumentLedger (ledger) += sumItemRepricingDetailRepricing(ledger);
+sumContainerIncAccountDocumentLedger (ledger) += sumContainerRepricingDetailRepricing(ledger);
 
 // ------------------------------------- Автоматическое создание дооценки для документа -------------------- //
 
