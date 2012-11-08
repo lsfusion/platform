@@ -117,11 +117,12 @@ FORM customer 'Покупатель'
     PROPERTIES(co2) READONLY name
 
     OBJECTS ag=agreement
-    PROPERTIES(ag, cu) isDefaultAgreementLegalEntity, inAgreementLegalEntityOver
+    PROPERTIES(ag, co2, cu) isDefaultAgreementCompanyLegalEntity
+    PROPERTIES(ag, cu) inAgreementLegalEntityOver
     PROPERTIES(ag) READONLY name, numberObject, seriesObject, dateAgreement, timeAgreement,
                             fromDateAgreement, fromTimeAgreement, toDateAgreement, toTimeAgreement,
                             nameCurrencyAgreement, namePriceListTypeAgreement, noteAgreement
-    PROPERTIES createAgreementLegalEntityCompany(cu, co2) TODRAW ag FORCE PANEL DRAWTOTOOLBAR, addAgreementsLegalEntity(cu) TODRAW ag FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES createAgreementCompanyLegalEntity(co2, cu) TODRAW ag FORCE PANEL DRAWTOTOOLBAR, addAgreementsCompanyLegalEntity(co2, cu) TODRAW ag FORCE PANEL DRAWTOTOOLBAR
     FILTERS inAgreementLegalEntityOver(ag, cu),
             companyAgreement(ag) == co2
 

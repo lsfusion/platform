@@ -86,15 +86,17 @@ priceListTypeAgreementSkuOver (agreement, sku) =
 
 namePriceListTypeAgreementSkuOver 'Вид цены' = name(priceListTypeAgreementSkuOver(agreement, sku));
 
-userDefaultAgreementLegalEntity = DATA agreement (legalEntity);
-userDefaultAgreementLegalEntity(legalEntity) => inAgreementLegalEntityOver(userDefaultAgreementLegalEntity(legalEntity), legalEntity) RESOLVE FALSE;
+userDefaultAgreementCompanyLegalEntity = DATA agreement (company, legalEntity);
+userDefaultAgreementCompanyLegalEntity(company, legalEntity) => inAgreementLegalEntityOver(userDefaultAgreementCompanyLegalEntity(company, legalEntity), legalEntity) RESOLVE FALSE;
 
-calcDefaultAgreementLegalEntity(legalEntity) = GROUP MAX agreement IF inAgreementLegalEntityOver(agreement, legalEntity) BY legalEntity;
+calcDefaultAgreementCompanyLegalEntity(company, legalEntity) =
+    GROUP MAX agreement IF inAgreementLegalEntityOver(agreement, legalEntity)
+    BY companyAgreement(agreement), legalEntity;
 
-defaultAgreementLegalEntity(legalEntity) = UNION OVERRIDE calcDefaultAgreementLegalEntity(legalEntity), userDefaultAgreementLegalEntity(legalEntity) PERSISTENT;
-nameDefaultAgreementLegalEntity 'Соглашение по умолчанию' (legalEntity) = name(defaultAgreementLegalEntity(legalEntity));
+defaultAgreementCompanyLegalEntity(company, legalEntity) = UNION OVERRIDE calcDefaultAgreementCompanyLegalEntity(company, legalEntity), userDefaultAgreementCompanyLegalEntity(company, legalEntity) PERSISTENT;
+nameDefaultAgreementCompanyLegalEntity 'Соглашение по умолчанию' (company, legalEntity) = name(defaultAgreementCompanyLegalEntity(company, legalEntity));
 
-isDefaultAgreementLegalEntity 'Соглашение по умолчанию' (agreement, legalEntity) = defaultAgreementLegalEntity(legalEntity) == agreement;
+isDefaultAgreementCompanyLegalEntity 'Соглашение по умолчанию' (agreement, company, legalEntity) = defaultAgreementCompanyLegalEntity(company, legalEntity) == agreement;
 
 META defineDocumentAbstractHeaderAgreement (object)
     agreement###object (object) = ABSTRACT agreement (object) PERSISTENT;
@@ -107,9 +109,9 @@ END
 META defineDocumentInterfaceHeaderAgreement (object, company, legalEntity)
     @defineDocumentAbstractHeaderAgreement(object);
     @defineDocumentHeaderAgreement(user###object);
-    agreement###user###object (object) <- defaultAgreementLegalEntity(legalEntity(object))
-        IF currency###user###object(object) == currencyAgreement(defaultAgreementLegalEntity(legalEntity(object))) AND
-           companyAgreement(defaultAgreementLegalEntity(legalEntity(object))) == company(object)
+    agreement###user###object (object) <- defaultAgreementCompanyLegalEntity(company(object), legalEntity(object))
+        IF currency###user###object(object) == currencyAgreement(defaultAgreementCompanyLegalEntity(company(object), legalEntity(object))) AND
+           companyAgreement(defaultAgreementCompanyLegalEntity(company(object), legalEntity(object))) == company(object)
     WHEN CHANGED(currency###user###object(object)) OR
          CHANGED(legalEntity(object));
     agreement###object (object) += agreement###user###object(object);
@@ -143,7 +145,10 @@ END
 FORM agreementsLegalEntity 'Соглашения'
 
     OBJECTS l=legalEntity FIXED PANEL
-    PROPERTIES(l) nameDefaultAgreementLegalEntity
+    PROPERTIES(l) name
+
+    OBJECTS c=company FIXED PANEL
+    PROPERTIES(c) name
 
     OBJECTS ag=agreement
     PROPERTIES(ag) READONLY name, numberObject, seriesObject, dateAgreement, timeAgreement,
@@ -155,14 +160,15 @@ FORM agreementsLegalEntity 'Соглашения'
 DESIGN agreementsLegalEntity FROM DEFAULT{
     NEW mainContainer{
         REMOVE l.box;
+        REMOVE c.box;
         ADD ag.box;
     }
     ADD functions.box;
 }
 
-addAgreementsLegalEntity 'Добавление соглашений' = ACTION (legalEntity) {
+addAgreementsCompanyLegalEntity 'Добавление соглашений' = ACTION (company, legalEntity) {
 
-    FORM agreementsLegalEntity OBJECTS l=legalEntity MODAL;
+    FORM agreementsLegalEntity OBJECTS c=company, l=legalEntity MODAL;
     IF formResult() == formResult.ok THEN {
         EXEC apply();
     }
@@ -274,7 +280,7 @@ DESIGN agreement FROM DEFAULT {
     ADD functions.box;
 }
 
-createAgreementLegalEntityCompany 'Создать соглашение' = ACTION (legalEntity, company) {
+createAgreementCompanyLegalEntity 'Создать соглашение' = ACTION (company, legalEntity) {
 
     FOR ADDOBJ ag = agreement DO {
         SET inAgreementLegalEntity(ag, legalEntity) <- TRUE;
