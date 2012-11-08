@@ -94,7 +94,7 @@ public class GGridTable extends GGridPropertyTable {
 
     public void rememberScrollPosition() {
         GridDataRecord selectedRecord = selectionModel.getSelectedRecord();
-        if (needToScroll && selectedRecord != null && selectedRecord.rowIndex < getRowCount()) {
+        if (selectedRecord != null && selectedRecord.rowIndex < getRowCount()) {
             pendingState = new GridState();
             pendingState.oldRecord = selectedRecord;
             pendingState.oldKeyScrollTop = getRowElement(selectedRecord.rowIndex).getAbsoluteTop() - getScrollPanel().getAbsoluteTop();
@@ -107,6 +107,9 @@ public class GGridTable extends GGridPropertyTable {
         if (dataUpdated) {
             currentRecords = GridDataRecord.createRecords(columnProperties, rowKeys, columnKeysList, values, rowBackgroundValues, rowForegroundValues, cellBackgroundValues, cellForegroundValues);
             setRowData(currentRecords);
+            if (currentKey != null && rowKeys.contains(currentKey)) {
+                setKeyboardSelectedRow(rowKeys.indexOf(currentKey), false);
+            }
             dataUpdated = false;
         }
     }
@@ -130,9 +133,6 @@ public class GGridTable extends GGridPropertyTable {
             needToScroll = false;
         }
 
-        if (currentInd != -1) {
-            setKeyboardSelectedRow(currentInd, false);
-        }
         pendingState = null;
     }
 
