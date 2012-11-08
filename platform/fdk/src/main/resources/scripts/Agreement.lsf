@@ -57,34 +57,34 @@ companyAgreement (agreement) = DATA company (agreement);
 nameCompanyAgreement 'Компания' (agreement) = name(companyAgreement(agreement));
 
 priceListTypeAgreement (agreement) = DATA priceListType (agreement) NOT NULL;
-namePriceListTypeAgreement 'Тип цены' (agreement) = name(priceListTypeAgreement(agreement));
+namePriceListTypeAgreement 'Вид цены' (agreement) = name(priceListTypeAgreement(agreement));
 
 TABLE agreementPriceGroup(agreement, priceGroup);
 priceListTypeAgreementPriceGroup (agreement, priceGroup) = DATA priceListType (agreement, priceGroup);
-namePriceListTypeAgreementPriceGroup 'Тип цены' (agreement, priceGroup) = name(priceListTypeAgreementPriceGroup(agreement, priceGroup));
+namePriceListTypeAgreementPriceGroup 'Вид цены' (agreement, priceGroup) = name(priceListTypeAgreementPriceGroup(agreement, priceGroup));
 
 TABLE agreementSku(agreement, sku);
 priceListTypeAgreementSku (agreement, sku) = DATA priceListType (agreement, sku);
-namePriceListTypeAgreementSku 'Тип цены' (agreement, sku) = name(priceListTypeAgreementSku(agreement, sku));
+namePriceListTypeAgreementSku 'Вид цены' (agreement, sku) = name(priceListTypeAgreementSku(agreement, sku));
 
 CONSTRAINT currencyAgreement(agreement) != currencyPriceListType(priceListTypeAgreement(agreement))
            CHECKED BY priceListTypeAgreement
-           MESSAGE 'Валюта соглашения должна совпадать с валютой типа цены';
+           MESSAGE 'Валюта соглашения должна совпадать с валютой вида цены';
 
 CONSTRAINT currencyAgreement(agreement) != currencyPriceListType(priceListTypeAgreementPriceGroup(agreement, priceGroup))
            CHECKED BY priceListTypeAgreementPriceGroup
-           MESSAGE 'Валюта соглашения должна совпадать с валютой типа цены';
+           MESSAGE 'Валюта соглашения должна совпадать с валютой вида цены';
 
 CONSTRAINT currencyAgreement(agreement) != currencyPriceListType(priceListTypeAgreementSku(agreement, sku))
            CHECKED BY priceListTypeAgreementSku
-           MESSAGE 'Валюта соглашения должна совпадать с валютой типа цены';
+           MESSAGE 'Валюта соглашения должна совпадать с валютой вида цены';
 
 priceListTypeAgreementSkuOver (agreement, sku) =
     UNION OVERRIDE priceListTypeAgreement(agreement) AND sku IS sku,
                    priceListTypeAgreementPriceGroup(agreement, priceGroupSku(sku)),
                    priceListTypeAgreementSku(agreement, sku);
 
-namePriceListTypeAgreementSkuOver 'Тип цены' = name(priceListTypeAgreementSkuOver(agreement, sku));
+namePriceListTypeAgreementSkuOver 'Вид цены' = name(priceListTypeAgreementSkuOver(agreement, sku));
 
 META defineDocumentAbstractHeaderAgreement (object)
     agreement###object (object) = ABSTRACT agreement (object) PERSISTENT;

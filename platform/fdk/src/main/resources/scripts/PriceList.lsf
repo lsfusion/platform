@@ -259,7 +259,7 @@ DESIGN chooseMarkUpSkuUserPriceList FROM DEFAULT {
     ADD functions.box;
 }
 
-sessionDataPriceListType 'Тип цены' = SESSION DATA dataPriceListType();
+sessionDataPriceListType 'Вид цены' = SESSION DATA dataPriceListType();
 
 changeMarkUpSkuUserPriceList 'Изменить наценку' = ACTION (userPriceList, dataPriceListType, stock){
 
@@ -592,14 +592,16 @@ EXTEND DESIGN editPriceListType{
 //    EDIT calcPriceListType OBJECT p
 //;
 
-FORM priceListType 'Тип цены'
+FORM priceListType 'Вид цены'
     OBJECTS p = priceListType
     PROPERTIES(p) READONLY name, nameCurrencyPriceListType
 
     DIALOG priceListType OBJECT p
 ;
 
-FORM priceListTypes 'Типы цен'
+isParentSkuGroupBatch(skuGroup, batch) = isParentSkuGroupSku(skuGroup, skuBatch(batch));
+
+FORM priceListTypes 'Виды цен'
     OBJECTS dt = DATETIME FIXED PANEL
     PROPERTIES(dt) objValue = OBJVALUE
 
@@ -619,10 +621,19 @@ FORM priceListTypes 'Типы цен'
     FILTERS inPriceListPriceListType(p, pt),
             inPriceListStockOver(p, s)
 
+    TREE skuTree sg = skuGroup PARENT parentSkuGroup
+    PROPERTIES READONLY skuTreeName = name(sg)
+    ORDER BY skuTreeName
+
     OBJECTS sk = sku
     PROPERTIES(sk) READONLY nameSku, idBarcodeSku
     PROPERTIES(sk, s, dt) READONLY balanceASkuStockDateTime
     ORDER BY nameSku
+    FILTERS isParentSkuGroupSku(sg, sk)
+
+    TREE skuTree2 sg2 = skuGroup PARENT parentSkuGroup
+    PROPERTIES READONLY skuTreeName2 = name(sg2)
+    ORDER BY skuTreeName2
 
     OBJECTS b = batch
     PROPERTIES(b) READONLY isPostedBatch, dateBatch, timeBatch, nameSkuBatch, nameStockBatch, descriptionBatch, costBatch
@@ -630,6 +641,7 @@ FORM priceListTypes 'Типы цен'
     ORDER BY dateBatch, timeBatch
     FILTERGROUP filters
         FILTER 'Проведенные партии' 'F10' isPostedBatch(b) DEFAULT
+    FILTERS isParentSkuGroupBatch(sg2, b)
 
     PROPERTIES READONLY pricePriceListTypeSkuStockDateTime(pt, sk, s, dt), descriptionPriceListPriceListTypeSkuStockDateTime(pt, sk, s, dt),
                         pricePriceListTypeBatchStockDateTime(pt, b, s, dt), descriptionPriceListPriceListTypeBatchStockDateTime(pt, b, s, dt)
@@ -653,8 +665,20 @@ DESIGN priceListTypes FROM DEFAULT{
                     ADD dt.box;
                     NEW currentPriceContainer{
                         type = TABBED;
-                        ADD sk.box;
-                        ADD b.box;
+                        NEW skuContainer{
+                            caption = 'Товары';
+                            childConstraints = TO THE RIGHT;
+                            type = SPLITH;
+                            ADD skuTree.tree.box{fillHorizontal = 2.0;}
+                            ADD sk.box{fillHorizontal = 3.0;}
+                        }
+                        NEW batchContainer{
+                            caption = 'Партии';
+                            childConstraints = TO THE RIGHT;
+                            type = SPLITH;
+                            ADD skuTree2.tree.box{fillHorizontal = 2.0;}
+                            ADD b.box{fillHorizontal = 3.0;}
+                        }
                     }
                 }
             }
@@ -770,11 +794,11 @@ META defineDocumentInterfaceDataPriceListType (object, detail)
 
     CONSTRAINT currency###user###object(object) != currencyPriceListType(priceListType###user###object(object))
                CHECKED BY priceListType###user###object
-               MESSAGE 'Валюта документа должны совпадать с валютой типа цены';
+               MESSAGE 'Валюта документа должны совпадать с валютой вида цены';
 
     CONSTRAINT currency###user###object(object) != currencyPriceListType(priceListType###user###detail(detail))
                CHECKED BY priceListType###user###detail
-               MESSAGE 'Валюта документа должны совпадать с валютой типа цены';
+               MESSAGE 'Валюта документа должны совпадать с валютой вида цены';
 END
 META defineDocumentInterfaceDataPriceListType (object)
     @defineDocumentInterfaceDataPriceListType(object, object##Detail);
