@@ -113,6 +113,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                 "/scripts/BlanketOrder.lsf",
                 "/scripts/Invoice.lsf",
                 "/scripts/Shipment.lsf",
+                "/scripts/StoreShipment.lsf",
                 "/scripts/Pricing.lsf",
                 "/scripts/Repricing.lsf",
                 "/scripts/CreditNote.lsf",

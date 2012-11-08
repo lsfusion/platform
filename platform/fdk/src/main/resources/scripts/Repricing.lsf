@@ -25,6 +25,27 @@ META defineDocumentInterfaceHeaderCreateRepricing (object, stockClass)
     createRepricing###object (object) += createRepricing###user###object(object);
 END
 
+META defineDocumentHeaderSkipChangeLedger(object, postfix, caption)
+    skip###postfix###object caption (object) = DATA BOOLEAN(object) IN documentPrmGroup;
+
+END
+META defineDocumentAbstractHeaderSkipChangeLedger(object, postfix, caption)
+    skip###postfix###object caption (object) = ABSTRACT BOOLEAN(object);
+END
+
+META defineDocumentInterfaceHeaderSkipChangeLedger (object, postfix, caption)
+    @defineDocumentAbstractHeaderSkipChangeLedger (object, postfix, caption);
+    @defineDocumentHeaderSkipChangeLedger (user###object, postfix, caption);
+    skip###postfix###object (object) += skip###postfix###user###object(object);
+END
+
+META defineDocumentDetailSkipChangeLedgerCustom(object, detail, postfix, caption)
+    skip###postfix###detail caption (detail) = skip###postfix###object(object###detail(detail));
+END
+META defineDocumentDetailSkipChangeLedger(object, postfix, caption)
+    @defineDocumentDetailSkipChangeLedgerCustom(object, object##Detail, postfix, caption);
+END
+
 // ----------------------------------- Комиссия ------------------------------------------ //
 
 CLASS repricingCommittee 'Комиссия переоценки' : committee;
@@ -199,7 +220,10 @@ markupUserRepricingDetail(userRepricingDetail)  <- [round2((((X - X*Y/(100+Y))/Z
     0.0 IF userRepricingDetail IS userRepricingDetail OR retailPriceUserRepricingDetail(userRepricingDetail),
     0.0 IF userRepricingDetail IS userRepricingDetail OR valueVATUserRepricingDetail(userRepricingDetail),
     priceUserRepricingDetail(userRepricingDetail))
-    WHEN CHANGED(curRetailPriceUserRepricingDetail(userRepricingDetail)) OR CHANGED (curVATUserRepricingDetail(userRepricingDetail)) OR CHANGED(curPriceUserRepricingDetail(userRepricingDetail));
+    WHEN CHANGED(retailPriceUserRepricingDetail(userRepricingDetail)) OR CHANGED (VATUserRepricingDetail(userRepricingDetail)) OR CHANGED(priceUserRepricingDetail(userRepricingDetail));
+
+@changeDocumentDetailMarkupCustomPrefix(userRepricingDetail, retail, , , );
+@changeDocumentDetailPriceCustomPrefix(userRepricingDetail, retail, , , , currency);
 
 @defineDocumentInterfaceDetailVATDataSumPrefix (repricing, cur, ' до');
 @deriveDocumentDetailReverseVATSumPrefix(userRepricing, cur, curRetail);
@@ -242,6 +266,75 @@ markupUserRepricingDetail(userRepricingDetail)  <- [round2((((X - X*Y/(100+Y))/Z
 @derivePriceLedgerOnSkuChangePrefix(retailVAT, userRepricing, curVAT, sku, departmentStore);
 @deriveDocumentDetailValueVATPrefix(userRepricing, cur);
 @derivePriceLedgerOnSkuChangePrefix(retailPrice, userRepricing, curRetailPrice, sku, departmentStore);
+
+@defineDocumentInterfaceHeaderSkipChangeLedger (repricing, changeLedger, 'Не изменять текущие цены');
+@defineDocumentDetailSkipChangeLedger(repricing, changeLedger, 'Не изменять текущие цены');
+@defineDocumentDetailSkipChangeLedger(userRepricing, changeLedger, 'Не изменять текущие цены');
+
+//--
+
+CLASS STATIC changePriceType 'Тип изменения цены' {
+    markupChange 'Процент торговой надбавки',
+    discountChange 'Процент к розничной цене'
+}
+
+changePriceTypeUserRepricing = DATA changePriceType (userRepricing);
+nameChangePriceTypeUserRepricing 'Тип изменения цены' (userRepricing) = name(changePriceTypeUserRepricing(userRepricing)) MINCHARWIDTH 20 PREFCHARWIDTH 20 MAXCHARWIDTH 20;
+
+percentUserRepricing 'Процент' (userRepricing)= DATA NUMERIC[8,3](userRepricing);
+
+CONSTRAINT changePriceTypeUserRepricing(userRepricing) AND NOT percentUserRepricing(userRepricing) //CHECKED BY changePriceTypeUserRepricing
+        MESSAGE 'Не задан процент для изменения цены';
+
+newDiscountRetailPriceUserRepricingDetail (userRepricingDetail) =  roundCurrency([X+(X*Y)/100](
+    curRetailPriceUserRepricingDetail(userRepricingDetail),
+    percentUserRepricing(userRepricingUserRepricingDetail(userRepricingDetail))), currencyUserRepricingDetail(userRepricingDetail));
+
+newMarkupRetailPriceUserRepricingDetail (userRepricingDetail) = roundCurrency([X*(Y+100)*(Z+100)/10000](
+    0.0 IF userRepricingDetail IS userRepricingDetail OR curPriceUserRepricingDetail(userRepricingDetail),
+    0.0 IF userRepricingDetail IS userRepricingDetail OR percentUserRepricing(userRepricingUserRepricingDetail(userRepricingDetail)),
+    valueCurVATUserRepricingDetail(userRepricingDetail)), currencyUserRepricingDetail(userRepricingDetail));
+
+
+FORM addPercentUserRepricing 'Изменение цены'
+    OBJECTS u=userRepricing FIXED PANEL
+    PROPERTIES (u) nameChangePriceTypeUserRepricing, percentUserRepricing
+
+;
+
+DESIGN addPercentUserRepricing FROM DEFAULT {
+    main {
+        childConstraints = TO THE BOTTOM;
+        PROPERTY (nameChangePriceTypeUserRepricing) {
+            caption = 'Выберите тип';
+            font = 'Tahoma bold 28';
+            panelLabelAbove = TRUE;
+        }
+        PROPERTY (percentUserRepricing) {
+            caption = 'Введите процент';
+            font = 'Tahoma bold 64';
+            panelLabelAbove = TRUE;
+        }
+    }
+}
+
+changePriceUserRepricing 'Изменить цену' (userRepricing) = ACTION (userRepricing) {
+        FORM addPercentUserRepricing OBJECTS u = userRepricing MODAL;
+        IF formResult() == formResult.ok AND changePriceTypeUserRepricing(userRepricing) AND percentUserRepricing(userRepricing) THEN  {
+            FOR userRepricingUserRepricingDetail(userRepricingDetail) == userRepricing DO {
+                SET priceUserRepricingDetail(userRepricingDetail) <- curPriceUserRepricingDetail(userRepricingDetail);
+                SET VATUserRepricingDetail(userRepricingDetail) <- curVATUserRepricingDetail(userRepricingDetail);
+                SET valueVATUserRepricingDetail(userRepricingDetail) <- valueCurVATUserRepricingDetail(userRepricingDetail);
+                IF changePriceTypeUserRepricing(userRepricing) == changePriceType.markupChange THEN {
+                    SET retailPriceUserRepricingDetail(userRepricingDetail) <- newMarkupRetailPriceUserRepricingDetail(userRepricingDetail);
+                } ELSE {
+                    IF changePriceTypeUserRepricing(userRepricing)== changePriceType.discountChange THEN {
+                        SET retailPriceUserRepricingDetail(userRepricingDetail) <- newDiscountRetailPriceUserRepricingDetail(userRepricingDetail);
+                    }
+                }
+            }
+        }
+} TOOLBAR CONFIRM;
 
 
 //------------------------------------ Печатные формы акт расценки ------------------------------------------------ //
@@ -295,7 +388,7 @@ FORM userRepricing 'Акт переоценки'
                    dateUserRepricing, timeUserRepricing, nameDepartmentStoreUserRepricing,
                    diffSumUserRepricingDetailUserRepricing, diffMarkupSumUserRepricingDetailUserRepricing, diffVATSumUserRepricingDetailUserRepricing,
                    diffRetailSumUserRepricingDetailUserRepricing,
-                   noteUserRepricing, numberDisposalUserRepricing, nameRepricingCommitteeUserRepricing
+                   noteUserRepricing, numberDisposalUserRepricing, nameRepricingCommitteeUserRepricing, skipChangeLedgerUserRepricing
 
     OBJECTS d=userRepricingDetail
     PROPERTIES (d) indexUserRepricingDetail, idBarcodeSkuUserRepricingDetail, nameSkuUserRepricingDetail, shortNameUOMSkuUserRepricingDetail, quantityUserRepricingDetail,
@@ -306,12 +399,11 @@ FORM userRepricing 'Акт переоценки'
                    curRetailPriceUserRepricingDetail, curRetailSumUserRepricingDetail,
                    
                    priceUserRepricingDetail, sumUserRepricingDetail,                    
-                   markupUserRepricingDetail, markupSumUserRepricingDetail,
+                   markupUserRepricingDetail ON CHANGE EXEC changeMarkupUserRepricingDetail(d), markupSumUserRepricingDetail,
                    numberVATUserRepricingDetail, valueVATUserRepricingDetail, VATSumUserRepricingDetail,
-                   retailPriceUserRepricingDetail, retailSumUserRepricingDetail, ADDOBJ, delete         
+                   retailPriceUserRepricingDetail ON CHANGE EXEC changeRetailPriceUserRepricingDetail(d), retailSumUserRepricingDetail, ADDOBJ, delete
 
-//    PROPERTIES dialogAddPercMarkupUserRepricing(p) TODRAW d SHOWIF toShowMarkupUserRepricing(p),
-//               dialogAddPercDiscountUserRepricing(p) TODRAW d SHOWIF toShowDiscountUserRepricing(p)
+    PROPERTIES changePriceUserRepricing(p) TODRAW d
 
     PROPERTIES(p) TODRAW d addDetailDialogSkuStockUserRepricingDetailUserRepricing, addDetailDialogTerminalUserRepricingDetailUserRepricing,
                            addDetailInputBarcodeUserRepricingDetailUserRepricing, deleteUserRepricingDetailUserRepricing
@@ -378,7 +470,7 @@ FORM repricings 'Акты переоценки' TITLE 'Акты переоцен
                nameDepartmentStoreRepricing, countRepricingDetailRepricing,
                diffSumRepricingDetailRepricing, diffMarkupSumRepricingDetailRepricing, diffVATSumRepricingDetailRepricing,
                diffRetailSumRepricingDetailRepricing,
-               noteRepricing, numberDisposalRepricing, nameRepricingCommitteeRepricing
+               noteRepricing, numberDisposalRepricing, nameRepricingCommitteeRepricing, skipChangeLedgerRepricing
 
     PROPERTIES (p) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
@@ -441,6 +533,10 @@ DESIGN repricings FROM DEFAULT {
 }
 
 // ------------------------------------- Проведение по регистру ------------------------------ //
+
+skipSupplierPriceLedger(ledger) +=  skipChangeLedgerRepricingDetail(ledger);
+skipRetailVATLedger(ledger) +=  skipChangeLedgerRepricingDetail(ledger);
+skipRetailPriceLedger(ledger) +=  skipChangeLedgerRepricingDetail(ledger);
 
 @implementSkuDepartmentStoreLedgerCustom(supplierPrice, repricing, sku, departmentStore, price);
 @implementSkuDepartmentStoreLedgerCustom(retailVAT, repricing, sku, departmentStore, VAT);
@@ -561,15 +657,18 @@ META defineRepricing(sign)
     @defineDocumentDescription(invoiceRepricing, invoiceRepricingDetail, seriesNumberInvoiceRepricing, 'Акт дооценки на основе инвойса');
     descriptionRepricing (repricing) += descriptionInvoiceRepricing(repricing);
 
+    skipChangeLedgerRepricing(repricing) += repricing IS invoiceRepricing;
+
     @defineDocumentAggregationDetailSku(invoice, invoiceRepricing, sku);
     skuRepricingDetail(repricingDetail) +=  skuInvoiceRepricingDetail(repricingDetail);
 
-    backgroundCurInvoice 'Цвет' (invoice) = RGB(255, 255, 224) IF invoice IS userInvoice;
-    backgroundAfterInvoice 'Цвет' (invoice) = RGB(255, 255, 200) IF invoice IS userInvoice;
+    backgroundCurInvoice 'Цвет' (invoice) = RGB(255, 255, 224) IF invoice IS invoice;
+    backgroundAfterInvoice 'Цвет' (invoice) = RGB(255, 255, 200) IF invoice IS invoice;
     EXTEND FORM userInvoice
         PROPERTIES(i)   BACKGROUND backgroundCurInvoice(i) createRepricingUserInvoice
         PROPERTIES(i)   BACKGROUND backgroundCurInvoice(i) SHOWIF createRepricingUserInvoice(i) nameRepricingCommitteeUserInvoice, numberDisposalUserInvoice
         PROPERTIES(i)   BACKGROUND backgroundAfterInvoice(i) SHOWIF createRepricingUserInvoice(i) diffRetailSumUserInvoiceDetailUserInvoice
+
         PROPERTIES(d)   BACKGROUND backgroundCurInvoice(i) SHOWIF createRepricingUserInvoice(i) BEFORE nameStockUserInvoiceDetail(d)
                         balanceBSkuUserInvoiceDetail, curPriceUserInvoiceDetail, curSumUserInvoiceDetail,
                         curMarkupUserInvoiceDetail, curMarkupSumUserInvoiceDetail,
@@ -591,7 +690,7 @@ META defineRepricing(sign)
     }
 
     EXTEND FORM invoices
-        PROPERTIES(i) createRepricingInvoice
+        PROPERTIES(i) READONLY BACKGROUND backgroundCurInvoice(i) createRepricingInvoice, diffRetailSumInvoiceDetailInvoice AFTER retailSumInvoiceDetailInvoice
         PROPERTIES(i) FORCE PANEL  printRepricingInvoice SHOWIF createRepricingInvoice(i)
 
     ;

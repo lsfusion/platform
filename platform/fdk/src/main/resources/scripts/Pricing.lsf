@@ -206,17 +206,17 @@ META deriveDocumentDetailPriceMarkupCustomPrefix(detail, prefix, currencyProp)
     0.0 IF detail IS detail OR price###detail(detail),
     0.0 IF detail IS detail OR prefix###markup###detail(detail),
     value###prefix##VAT###detail(detail)), currencyProp###detail(detail))
-                    WHEN CHANGED(price###detail(detail)) OR CHANGED (prefix###markup###detail(detail)) OR CHANGED(currencyProp###detail(detail));
+                    WHEN CHANGED(price###detail(detail)) OR CHANGED (prefix###markup###detail(detail)) OR CHANGED(prefix##VAT###detail(detail)) OR CHANGED(currencyProp###detail(detail));
 END
 
 META deriveDocumentDetailPriceMarkupCustomPrefix(detail, prefix)
     @deriveDocumentDetailPriceMarkupCustomPrefix(detail, prefix, currency);
 END
 
-META changeDocumentDetailMarkupCustomPrefix(detail, prefixA, prefixB)
-    calc###prefixA###markup###detail(detail)  = [round2((((X - X*Y/(100+Y))/Z)-1)*100)](
+META changeDocumentDetailMarkupCustomPrefix(detail, prefixA, prefixB, prefixC, prefixD)
+    calc###prefixC###markup###detail(detail)  = [round2((((X - X*Y/(100+Y))/Z)-1)*100)](
         0.0 IF detail IS detail OR prefixA###price###detail(detail),
-        0.0 IF detail IS detail OR value###prefixA###VAT###detail(detail),
+        0.0 IF detail IS detail OR value###prefixD###VAT###detail(detail),
         prefixB###price###detail(detail));
 
     change###prefixA###price###detail = ACTION (detail) {
@@ -224,20 +224,20 @@ META changeDocumentDetailMarkupCustomPrefix(detail, prefixA, prefixB)
         REQUEST NUMERIC[14,2] INPUT;
         SET prefixA###price###detail(detail) <- requestedNumeric();
 
-        SET prefixA###markup###detail(detail) <- calc###prefixA###markup###detail(detail);
+        SET prefixC###markup###detail(detail) <- calc###prefixC###markup###detail(detail);
     }
 END
-META changeDocumentDetailPriceCustomPrefix(detail, prefixA, prefixB, currencyProp)
+META changeDocumentDetailPriceCustomPrefix(detail, prefixA, prefixB, prefixC, prefixD, currencyProp)
 
     calc###prefixA###price###detail(detail)  = roundCurrency([X*(Y+100)*(Z+100)/10000](
     0.0 IF detail IS detail OR prefixB###price###detail(detail),
-    0.0 IF detail IS detail OR prefixA###markup###detail(detail),
-    value###prefixA###VAT###detail(detail)), currencyProp###detail(detail));
+    0.0 IF detail IS detail OR prefixC###markup###detail(detail),
+    value###prefixD###VAT###detail(detail)), currencyProp###detail(detail));
 
-    change###prefixA###markup###detail = ACTION (detail) {
+    change###prefixC###markup###detail = ACTION (detail) {
 
         REQUEST NUMERIC[8,3] INPUT;
-        SET prefixA###markup###detail(detail) <- requestedNumeric();
+        SET prefixC###markup###detail(detail) <- requestedNumeric();
 
         SET prefixA###price###detail(detail) <- calc###prefixA###price###detail(detail);
     }
@@ -284,8 +284,8 @@ CLASS userPricingPosted 'Закрытый акт расценки (польз.)'
 @deriveDocumentDetailValueVATPrefix(userPricing, retail);
 
 @defineDocumentInterfaceDetailMarkupPrefix (pricing, retail, );
-@changeDocumentDetailMarkupCustomPrefix(userPricingDetail, retail, );
-@changeDocumentDetailPriceCustomPrefix(userPricingDetail, retail, , currency);
+@changeDocumentDetailMarkupCustomPrefix(userPricingDetail, retail, , retail, retail);
+@changeDocumentDetailPriceCustomPrefix(userPricingDetail, retail, , retail, retail, currency);
 @defineDocumentInterfaceDetailDataSumPrefix (pricing, retail, ' выходная');
 
 @deriveDocumentDetailPriceMarkupCustomPrefix(userPricingDetail, retail);
@@ -624,8 +624,8 @@ META definePricing(sign, contact, contactCaption)
 
     @defineDocumentInterfaceDetailMarkupSumPrefix (invoice, retail);
     @deriveDocumentDetailMarkupSumPrefix(userInvoice, retail, retail, );
-    @changeDocumentDetailMarkupCustomPrefix(userInvoiceDetail, retail, );
-    @changeDocumentDetailPriceCustomPrefix(userInvoiceDetail, retail, , currency);
+    @changeDocumentDetailMarkupCustomPrefix(userInvoiceDetail, retail, , retail, retail);
+    @changeDocumentDetailPriceCustomPrefix(userInvoiceDetail, retail, , retail, retail, currency);
     @defineDocumentInterfaceHeaderCreatePricing (invoice, stock);
     createPricingInvoiceDetail 'Создавать акт расценки' (invoiceDetail) = createPricingInvoice(invoiceInvoiceDetail(invoiceDetail));
     createPricingUserInvoiceDetail 'Создавать акт расценки' (userInvoiceDetail) = createPricingUserInvoice(userInvoiceUserInvoiceDetail(userInvoiceDetail));
@@ -633,7 +633,7 @@ META definePricing(sign, contact, contactCaption)
     showCreatePricingInvoice (invoice) = stockInvoice(invoice) IS departmentStore AND NOT costLedgerDepartmentStore(stockInvoice(invoice));
     showPricingInvoice (invoice) = showCreatePricingInvoice (invoice) AND NOT createPricingInvoice(invoice);
 
-    backgroundRetailInvoice 'Цвет' (invoice) = RGB(224, 255, 255) IF invoice IS userInvoice;
+    backgroundRetailInvoice 'Цвет' (invoice) = RGB(224, 255, 255) IF invoice IS invoice;
     EXTEND FORM userInvoice
         PROPERTIES(i) SHOWIF showCreatePricingInvoice(i) BACKGROUND backgroundRetailInvoice(i) createPricingUserInvoice
         PROPERTIES(i) SHOWIF createPricingUserInvoice(i) BACKGROUND backgroundRetailInvoice(i) namePricingCommitteeUserInvoice,
@@ -657,12 +657,12 @@ META definePricing(sign, contact, contactCaption)
         }
     }
     EXTEND FORM invoices
-        PROPERTIES(i) READONLY createPricingInvoice, retailSumInvoiceDetailInvoice BEFORE ordersInvoice(i)
-        PROPERTIES(d) READONLY BEFORE nameStockInvoiceDetail(d) SHOWIF createPricingInvoice(i)
+        PROPERTIES(i) READONLY BACKGROUND backgroundRetailInvoice(i) createPricingInvoice, retailSumInvoiceDetailInvoice BEFORE ordersInvoice(i)
+        PROPERTIES(d) READONLY BEFORE nameStockInvoiceDetail(d) SHOWIF createPricingInvoice(i) BACKGROUND backgroundRetailInvoice(i)
                       retailMarkupInvoiceDetail, retailMarkupSumInvoiceDetail, numberRetailVATInvoiceDetail,
                       valueRetailVATInvoiceDetail, retailVATSumInvoiceDetail,
                       retailPriceInvoiceDetail, retailSumInvoiceDetail
-        PROPERTIES(d) READONLY pricingInvoiceDetail AFTER quantityInvoiceDetail  SHOWIF showPricingInvoice(i)
+        PROPERTIES(d) READONLY BACKGROUND backgroundRetailInvoice(i) pricingInvoiceDetail AFTER quantityInvoiceDetail  SHOWIF showPricingInvoice(i)
     ;
     EXTEND FORM pricingInvoices
         PROPERTIES(i) READONLY createPricingInvoice, retailSumInvoiceDetailInvoice BEFORE ordersInvoice(i)

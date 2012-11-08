@@ -1,0 +1,5 @@
+MODULE StoreShipment;
+
+REQUIRE Shipment, Store;
+
+EXTEND FORM departmentStore PROPERTIES createShipmentStock(d);
