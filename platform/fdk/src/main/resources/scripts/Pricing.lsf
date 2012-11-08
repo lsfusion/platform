@@ -1,6 +1,6 @@
 MODULE Pricing;
 
-REQUIRE Invoice, Employee, Store, StorePrice;
+REQUIRE Invoice, Employee, Store, StorePrice, Label, Machinery;
 
 
 // ----------------------------------- Создавать акт расценки по умолчанию для отдела ------------------------------------------ //
@@ -471,6 +471,18 @@ DESIGN pricings FROM DEFAULT {
 @implementSkuDepartmentStoreLedgerCustom(supplierPrice, pricing, sku, departmentStore, price);
 @implementSkuDepartmentStoreLedger(retailVAT, pricing, sku, departmentStore);
 @implementSkuDepartmentStoreLedger(retailPrice, pricing, sku, departmentStore);
+
+// ------------------------------------- Печать ценников ------------------------------ //
+
+@Label.implementPriceTransactionDocument(pricing);
+@defineDocumentLabelTransaction(pricing, sku, departmentStore);
+@extendFormDocumentLabelTransaction(pricings, p, pricing);
+
+// ------------------------------------- Загрузка в оборудование ------------------------------ //
+
+@Machinery.implementPriceTransactionDocument(pricing);
+@defineDocumentMachineryPriceTransaction(pricing, sku, departmentStore);
+@extendFormDocumentMachineryPriceTransaction(pricings, p, pricing);
 
 // ------------------------------------- Автоматическое создание расценки для документа -------------------- //
 

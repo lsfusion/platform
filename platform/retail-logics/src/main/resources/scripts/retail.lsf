@@ -6823,7 +6823,6 @@ NAVIGATOR {
         }
         NEW priceManagement 'Управление ценами' {
             ADD userPriceChanges;
-            ADD priceIntervals;
             ADD registerCommitteeDialog;
             ADD priceChangeCommitteeDialog;
             ADD pricingCommitteeDialog;
@@ -6848,6 +6847,7 @@ NAVIGATOR {
         ADD saleReturnNavigator;
         ADD priceListNavigator{
             ADD agreements;
+            ADD priceIntervals;
         }
         NEW saleCatalog 'Справочники' {
             ADD customers;

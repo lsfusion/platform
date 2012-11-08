@@ -12,12 +12,12 @@ currencyRoundCondition = DATA currency(roundCondition);
 
 denominatorPriceRoundCondition 'Делитель (округление цен)' =  DATA NUMERIC[14,3](roundCondition);
 minPriceRoundCondition 'Нижний порог (округление цен)' =  DATA NUMERIC[14,3](roundCondition);
-priceRoundRoundCondition 'До скольки знаков округлять розничную цену' (roundCondition)=  DATA INTEGER (roundCondition);
+priceRoundRoundCondition 'До скольки знаков округлять цену' (roundCondition)=  DATA INTEGER (roundCondition);
 
 defaultRoundConditionCurrency = DATA roundCondition(currency);
 isDefaultRoundConditionCurrency 'По умолчанию' (roundCondition, currency) = defaultRoundConditionCurrency(currency) == roundCondition;
 
-priceRoundCurrency 'Округление по умолчанию для розницы' (currency) = priceRoundRoundCondition(defaultRoundConditionCurrency(currency)) PERSISTENT;
+priceRoundCurrency 'Округление по умолчанию' (currency) = priceRoundRoundCondition(defaultRoundConditionCurrency(currency)) PERSISTENT;
 
 CLASS priceInterval 'Диапазон цен';
 TABLE priceInterval (priceInterval);
@@ -63,7 +63,7 @@ roundConditionCurrencyRoundGroup (currency, roundGroup) = (defaultRoundCondition
 roundPriceCurrencyRoundGroup(price, currency, roundGroup) = roundPriceRoundCondition(price, roundConditionCurrencyRoundGroup(currency, roundGroup));
 roundPriceCurrency(price, currency) = roundPriceRoundCondition(price, defaultRoundConditionCurrency(currency));
 
-FORM priceIntervals 'Округления розничных цен'
+FORM priceIntervals 'Округления цен'
 
     OBJECTS c=currency FIXED PANEL
     PROPERTIES (c)  SELECTOR name
@@ -149,7 +149,7 @@ loadDefaultPriceInterval  = ACTION (value, shortName) {
     }
 }
 
-loadDefaultPriceIntervals 'Загрузить стандартные округления розничных цен'  = ACTION () {
+loadDefaultPriceIntervals 'Загрузить стандартные округления цен'  = ACTION () {
     EXEC loadDefaultPriceInterval( -2, 'BLR');
     EXEC loadDefaultPriceInterval( 2, 'RUB');
     EXEC loadDefaultPriceInterval( 2, 'UAH');

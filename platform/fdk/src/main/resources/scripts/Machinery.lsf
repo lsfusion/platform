@@ -160,6 +160,7 @@ TABLE priceTransactionDocument (priceTransactionDocument);
 
 isDraftPriceTransactionDocument 'Не проведен' = ABSTRACT BOOLEAN (priceTransactionDocument) PERSISTENT;
 descriptionPriceTransactionDocument 'Название документа загрузки' = ABSTRACT STRING[200] (priceTransactionDocument) PERSISTENT;
+skipPriceTransactionDocument 'Не загружать' = ABSTRACT BOOLEAN (priceTransactionDocument) PERSISTENT;
 
 sentPriceTransactionDocument 'Принят к загрузке в оборудование' = DATA BOOLEAN (priceTransactionDocument);
 sentPriceTransactionDocument(document) <- NULL WHEN ASSIGNED(isDraftPriceTransactionDocument(document));
@@ -222,10 +223,12 @@ succeededPriceTransactionDocument 'Загружен в оборудование'
 
 statusMachineryPriceTransactionDocument 'Статус загрузки в оборудование' (document) =
                                                         CASE
+                                                            WHEN skipPriceTransactionDocument(document) THEN 'Загрузка не требуется' IF document IS priceTransactionDocument
                                                             WHEN succeededPriceTransactionDocument(document) THEN 'Успешно загружен' IF document IS priceTransactionDocument
                                                             WHEN sentPriceTransactionDocument(document) THEN 'Принят к загрузке' IF document IS priceTransactionDocument
                                                             DEFAULT 'Не загружен' IF document IS priceTransactionDocument
                                                         END;
+
 // Загруженные штрих-коды
 inMachineryPriceTransactionBarcode 'Вкл' = DATA BOOLEAN (machineryPriceTransaction, barcode);
 nameMachineryPriceTransactionBarcode 'Наименование' = DATA STRING[255] (machineryPriceTransaction, barcode);
@@ -536,7 +539,8 @@ META defineDocumentMachineryPriceTransaction (document, skuProp, stockProp)
         SET sentPriceTransactionDocument(document) <- TRUE;
     } SHORTCUT statusMachineryPriceTransactionDocument CONFIRM;
 
-    showCreateMachineryPriceTransaction###document 'Показывать' (document) = isPosted###document(document) AND NOT sentPriceTransactionDocument(document);
+    showCreateMachineryPriceTransaction###document 'Показывать' (document) = isPosted###document(document) AND NOT Machinery.skipPriceTransactionDocument(document)
+                                                                                                           AND NOT sentPriceTransactionDocument(document);
     backgroundCreateMachineryPriceTransaction###document 'Цвет' (document) = IF countProcessPriceTransactionDocument(document) THEN
                                                                                 RGB(255,255,128)
                                                                              ELSE

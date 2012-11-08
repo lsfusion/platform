@@ -334,7 +334,7 @@ changePriceUserRepricing 'Изменить цену' (userRepricing) = ACTION (u
                 }
             }
         }
-} TOOLBAR CONFIRM;
+} TOOLBAR;
 
 
 //------------------------------------ Печатные формы акт расценки ------------------------------------------------ //
@@ -534,13 +534,30 @@ DESIGN repricings FROM DEFAULT {
 
 // ------------------------------------- Проведение по регистру ------------------------------ //
 
+@implementSkuDepartmentStoreLedgerCustom(supplierPrice, repricing, sku, departmentStore, price);
 skipSupplierPriceLedger(ledger) +=  skipChangeLedgerRepricingDetail(ledger);
+
+@implementSkuDepartmentStoreLedgerCustom(retailVAT, repricing, sku, departmentStore, VAT);
 skipRetailVATLedger(ledger) +=  skipChangeLedgerRepricingDetail(ledger);
+
+@implementSkuDepartmentStoreLedger(retailPrice, repricing, sku, departmentStore);
 skipRetailPriceLedger(ledger) +=  skipChangeLedgerRepricingDetail(ledger);
 
-@implementSkuDepartmentStoreLedgerCustom(supplierPrice, repricing, sku, departmentStore, price);
-@implementSkuDepartmentStoreLedgerCustom(retailVAT, repricing, sku, departmentStore, VAT);
-@implementSkuDepartmentStoreLedger(retailPrice, repricing, sku, departmentStore);
+// ------------------------------------- Печать ценников ------------------------------ //
+
+@Label.implementPriceTransactionDocument(repricing);
+Label.skipPriceTransactionDocument(document) += skipChangeLedgerRepricing(document);
+
+@defineDocumentLabelTransaction(repricing, sku, departmentStore);
+@extendFormDocumentLabelTransaction(repricings, p, repricing);
+
+// ------------------------------------- Загрузка в оборудование ------------------------------ //
+
+@Machinery.implementPriceTransactionDocument(repricing);
+Machinery.skipPriceTransactionDocument(document) += skipChangeLedgerRepricing(document);
+
+@defineDocumentMachineryPriceTransaction(repricing, sku, departmentStore);
+@extendFormDocumentMachineryPriceTransaction(repricings, p, repricing);
 
 // ------------------------------------- Автоматическое создание дооценки для документа -------------------- //
 

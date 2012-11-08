@@ -64,6 +64,7 @@ TABLE priceTransactionDocument (priceTransactionDocument);
 
 isDraftPriceTransactionDocument 'Не проведен' = ABSTRACT BOOLEAN (priceTransactionDocument) PERSISTENT;
 descriptionPriceTransactionDocument 'Название документа загрузки' = ABSTRACT STRING[200] (priceTransactionDocument) PERSISTENT;
+skipPriceTransactionDocument 'Не загружать' = ABSTRACT BOOLEAN (priceTransactionDocument) PERSISTENT;
 
 printedPriceTransactionDocument 'Распечатан' = DATA BOOLEAN (priceTransactionDocument);
 printedPriceTransactionDocument(document) <- NULL WHEN ASSIGNED(isDraftPriceTransactionDocument(document));
@@ -103,8 +104,11 @@ descriptionLabelTransaction 'Основание загрузки' (transaction) 
     descriptionPriceTransactionDocument(priceTransactionDocumentLabelTransaction(transaction));
 
 statusLabelPriceTransactionDocument 'Статус печати ценника' (document) =
-    IF printedPriceTransactionDocument(document) THEN 'Распечатан' AND document IS priceTransactionDocument
-                                                 ELSE 'Не распечатан' AND document IS priceTransactionDocument;
+                                                        CASE
+                                                            WHEN skipPriceTransactionDocument(document) THEN 'Загрузка не требуется' IF document IS priceTransactionDocument
+                                                            WHEN printedPriceTransactionDocument(document) THEN 'Распечатан' IF document IS priceTransactionDocument
+                                                            DEFAULT 'Не распечатан' AND document IS priceTransactionDocument
+                                                        END;
 
 TABLE labelTransactionBarcode(labelTransaction, barcode);
 
@@ -257,7 +261,8 @@ META defineDocumentLabelTransaction (document, skuProp, stockProp)
         EXEC createLabelTransaction(stockProp###document(document), date###document(document));
     } SHORTCUT statusLabelPriceTransactionDocument CONFIRM;
 
-    showPrintLabelTransaction###document 'Показывать' (document) = isPosted###document(document) AND NOT printedPriceTransactionDocument(document);
+    showPrintLabelTransaction###document 'Показывать' (document) = isPosted###document(document) AND NOT Label.skipPriceTransactionDocument(document)
+                                                                                                 AND NOT printedPriceTransactionDocument(document);
     backgroundPrintLabelTransaction###document 'Цвет' (document) = RGB(212,255,212) IF showPrintLabelTransaction###document(document);
 END
 
