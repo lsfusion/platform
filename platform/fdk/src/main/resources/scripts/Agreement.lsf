@@ -86,6 +86,16 @@ priceListTypeAgreementSkuOver (agreement, sku) =
 
 namePriceListTypeAgreementSkuOver 'Вид цены' = name(priceListTypeAgreementSkuOver(agreement, sku));
 
+userDefaultAgreementLegalEntity = DATA agreement (legalEntity);
+userDefaultAgreementLegalEntity(legalEntity) => inAgreementLegalEntityOver(userDefaultAgreementLegalEntity(legalEntity), legalEntity) RESOLVE FALSE;
+
+calcDefaultAgreementLegalEntity(legalEntity) = GROUP MAX agreement IF inAgreementLegalEntityOver(agreement, legalEntity) BY legalEntity;
+
+defaultAgreementLegalEntity(legalEntity) = UNION OVERRIDE calcDefaultAgreementLegalEntity(legalEntity), userDefaultAgreementLegalEntity(legalEntity) PERSISTENT;
+nameDefaultAgreementLegalEntity 'Соглашение по умолчанию' (legalEntity) = name(defaultAgreementLegalEntity(legalEntity));
+
+isDefaultAgreementLegalEntity 'Соглашение по умолчанию' (agreement, legalEntity) = defaultAgreementLegalEntity(legalEntity) == agreement;
+
 META defineDocumentAbstractHeaderAgreement (object)
     agreement###object (object) = ABSTRACT agreement (object) PERSISTENT;
     nameAgreement###object 'Соглашение' (object)= name(agreement###object(object)) IN documentPrmGroup MINCHARWIDTH 5 PREFCHARWIDTH 10;
@@ -97,6 +107,11 @@ END
 META defineDocumentInterfaceHeaderAgreement (object, company, legalEntity)
     @defineDocumentAbstractHeaderAgreement(object);
     @defineDocumentHeaderAgreement(user###object);
+    agreement###user###object (object) <- defaultAgreementLegalEntity(legalEntity(object))
+        IF currency###user###object(object) == currencyAgreement(defaultAgreementLegalEntity(legalEntity(object))) AND
+           companyAgreement(defaultAgreementLegalEntity(legalEntity(object))) == company(object)
+    WHEN CHANGED(currency###user###object(object)) OR
+         CHANGED(legalEntity(object));
     agreement###object (object) += agreement###user###object(object);
 
     CONSTRAINT currency###user###object(object) != currencyAgreement(agreement###user###object(object))
@@ -124,16 +139,6 @@ END
 META deriveDocumentDetailPriceListTypeAgreement (object)
     @deriveDocumentDetailPriceListTypeAgreementCustom(object, object###detail);
 END
-
-userDefaultAgreementLegalEntity = DATA agreement (legalEntity);
-userDefaultAgreementLegalEntity(legalEntity) => inAgreementLegalEntityOver(userDefaultAgreementLegalEntity(legalEntity), legalEntity) RESOLVE FALSE;
-
-calcDefaultAgreementLegalEntity(legalEntity) = GROUP MAX agreement IF inAgreementLegalEntityOver(agreement, legalEntity) BY legalEntity;
-
-defaultAgreementLegalEntity(legalEntity) = UNION OVERRIDE calcDefaultAgreementLegalEntity(legalEntity), userDefaultAgreementLegalEntity(legalEntity) PERSISTENT;
-nameDefaultAgreementLegalEntity 'Соглашение по умолчанию' (legalEntity) = name(defaultAgreementLegalEntity(legalEntity));
-
-isDefaultAgreementLegalEntity 'Соглашение по умолчанию' (agreement, legalEntity) = defaultAgreementLegalEntity(legalEntity) == agreement;
 
 FORM agreementsLegalEntity 'Соглашения'
 
