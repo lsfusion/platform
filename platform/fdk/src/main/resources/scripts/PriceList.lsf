@@ -539,12 +539,12 @@ DESIGN editPriceListType FROM DEFAULT{
     NEW mainContainer{
         childConstraints = TO THE RIGHT;
         type = SPLITH;
-        ADD treeGroup.tree.box{
-            fillHorizontal = 2.0;
-        }
         ADD p.box{
             fillHorizontal = 3.0;
             ADD PROPERTY(name);
+        }
+        ADD treeGroup.tree.box{
+            fillHorizontal = 2.0;
         }
     }
     ADD functions.box;
@@ -662,6 +662,7 @@ DESIGN priceListTypes FROM DEFAULT{
                 }
                 NEW priceContainer{
                     caption = 'Текущие цены';
+                    childConstraints = TO THE BOTTOM;
                     ADD dt.box;
                     NEW currentPriceContainer{
                         type = TABBED;
