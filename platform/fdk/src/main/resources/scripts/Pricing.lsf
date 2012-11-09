@@ -619,32 +619,31 @@ META definePricing(sign, contact, contactCaption)
         PROPERTIES(p) READONLY invoicesPricing
         PROPERTIES(d) READONLY descriptionIndexInvoiceDetailPricingDetail
     ;
+END
 
 //-- аггр.объект
+META definePricingAggregation(concrete, sign, caption, contact, contactCaption)
 
     @defineDocumentInterfaceHeaderPricingCommittee(invoice, stock);
     @defineDocumentInterfaceDetailPricePrefix(invoice, retail, ' розничная');
-
-    @defineDocumentInterfaceDetailVATPrefix(invoice, retail, countryStock, ' розничный');
-    @deriveDocumentDetailValueVATPrefix(userInvoice, retail);
-    retailVATUserInvoiceDetail (detail) <- VATUserInvoiceDetail(detail) WHEN ASSIGNED(VATUserInvoiceDetail(detail));
-
-    @defineDocumentInterfaceDetailMarkupPrefix (invoice, retail, );
     @defineDocumentInterfaceDetailDataSumPrefix (invoice, retail, ' розничная');
 
-    @deriveDocumentDetailPriceMarkupCustomPrefix(userInvoiceDetail, retail);
+    @defineDocumentInterfaceDetailVATPrefix(invoice, retail, countryStock, ' розничный');
+    @defineDocumentInterfaceDetailVATDataSumPrefix (invoice, retail, ' розничная');
+
+    @defineDocumentInterfaceDetailMarkupPrefix (invoice, retail, );
+    @defineDocumentInterfaceDetailMarkupSumPrefix (invoice, retail);
+
+    @deriveDocumentDetailValueVATPrefix(userInvoice, retail);
     @deriveDocumentDetailSumPrefix(userInvoice, retail, currency, quantity);
+    @deriveDocumentDetailReverseVATSumPrefix(userInvoice, retail, retail);
+    @deriveDocumentDetailMarkupSumPrefix(userInvoice, retail, retail, );
+
+    @changeDocumentDetailMarkupCustomPrefix(userInvoiceDetail, retail, , retail, retail);
+    @changeDocumentDetailPriceCustomPrefix(userInvoiceDetail, retail, , retail, retail, currency);
 
     @defineDocumentInterfaceHeaderSumPrefix (invoice, retail, ' розничная');
 
-
-    @defineDocumentInterfaceDetailVATDataSumPrefix (invoice, retail, ' розничная');
-    @deriveDocumentDetailReverseVATSumPrefix(userInvoice, retail, retail);
-
-    @defineDocumentInterfaceDetailMarkupSumPrefix (invoice, retail);
-    @deriveDocumentDetailMarkupSumPrefix(userInvoice, retail, retail, );
-    @changeDocumentDetailMarkupCustomPrefix(userInvoiceDetail, retail, , retail, retail);
-    @changeDocumentDetailPriceCustomPrefix(userInvoiceDetail, retail, , retail, retail, currency);
     @defineDocumentInterfaceHeaderCreatePricing (invoice, stock);
     createPricingInvoiceDetail 'Создавать акт расценки' (invoiceDetail) = createPricingInvoice(invoiceInvoiceDetail(invoiceDetail));
     createPricingUserInvoiceDetail 'Создавать акт расценки' (userInvoiceDetail) = createPricingUserInvoice(userInvoiceUserInvoiceDetail(userInvoiceDetail));
@@ -663,8 +662,6 @@ META definePricing(sign, contact, contactCaption)
                       valueRetailVATUserInvoiceDetail, retailVATSumUserInvoiceDetail,
                       retailPriceUserInvoiceDetail ON CHANGE EXEC changeRetailPriceUserInvoiceDetail(d),
                       retailSumUserInvoiceDetail
-        PROPERTIES(d) READONLY pricingInvoiceDetail AFTER quantityUserInvoiceDetail SHOWIF showPricingInvoice(i) BACKGROUND backgroundRetailInvoice(i)
-
     ;
     EXTEND DESIGN userInvoice {
         headerRow3 {
@@ -681,95 +678,86 @@ META definePricing(sign, contact, contactCaption)
                       retailMarkupInvoiceDetail, retailMarkupSumInvoiceDetail, numberRetailVATInvoiceDetail,
                       valueRetailVATInvoiceDetail, retailVATSumInvoiceDetail,
                       retailPriceInvoiceDetail, retailSumInvoiceDetail
-        PROPERTIES(d) READONLY BACKGROUND backgroundRetailInvoice(i) pricingInvoiceDetail AFTER quantityInvoiceDetail  SHOWIF showPricingInvoice(i)
-    ;
-    EXTEND FORM pricingInvoices
-        PROPERTIES(i) READONLY createPricingInvoice, retailSumInvoiceDetailInvoice BEFORE ordersInvoice(i)
-        PROPERTIES(d) READONLY BEFORE nameStockInvoiceDetail(d) SHOWIF createPricingInvoice(i)
-                      retailMarkupInvoiceDetail, retailMarkupSumInvoiceDetail, numberRetailVATInvoiceDetail,
-                      valueRetailVATInvoiceDetail, retailVATSumInvoiceDetail,
-                      retailPriceInvoiceDetail, retailSumInvoiceDetail
     ;
 
-    CLASS invoicePricing 'Акт расценки на основе инвойса'###sign : pricing;
-    CLASS invoicePricingPosted 'Закрытый акт расценки на основе инвойса'###sign : invoicePricing, postedObject;
-    CLASS invoicePricingDetail 'Строка акта расценки на основе инвойса'###sign : pricingDetail;
 
-    @defineDocumentTables(invoicePricing);
+    CLASS concrete###pricing caption###sign : pricing;
+    CLASS concrete###pricingPosted caption###sign : concrete###pricing, postedObject;
+    CLASS concrete###pricingDetail caption###sign : pricingDetail;
 
-    @defineDocumentAggregation(invoice, invoicePricing, createPricingInvoice);
+    @defineDocumentTables(concrete###pricing);
+
+    @defineDocumentAggregation(invoice, concrete###pricing, createPricingInvoice);
 
 
-    printPricingInvoice 'Акт расценки' (invoice) = printPricing(invoicePricingInvoice(invoice)) IMAGE 'print.png' IN printGroup;
+    printPricingInvoice 'Акт расценки' (invoice) = printPricing(concrete###pricingInvoice(invoice)) IMAGE 'print.png' IN printGroup;
     EXTEND FORM invoices
         PROPERTIES(i) FORCE PANEL printPricingInvoice SHOWIF createPricingInvoice(i)
     ;
     EXTEND DESIGN invoices {printContainer { ADD i.printGroup;}}
 
-    pricingPricingDetail(detail) += invoicePricingInvoicePricingDetail(detail);
-    @defineDocumentDetailIndex(invoicePricing);
+    pricingPricingDetail(detail) += concrete###pricing###concrete###pricingDetail(detail);
+    @defineDocumentDetailIndex(concrete###pricing);
 
-    datePricing(pricing) += dateInvoicePricing(pricing);
-    timePricing(pricing) += timeInvoicePricing(pricing);
+    datePricing(pricing) += date###concrete###pricing(pricing);
+    timePricing(pricing) += time###concrete###pricing(pricing);
 
-    @defineDocumentAggregationStockPrefix(invoice, invoicePricing, stock, 'Склад', , );
-    departmentStorePricing(pricing) += stockInvoicePricing(pricing) IF stockInvoicePricing(pricing) IS departmentStore;
-    dataDepartmentStorePricingDetail(pricingDetail) += dataStockInvoiceDetail(invoiceDetailInvoicePricingDetail(pricingDetail))
-                                                       IF dataStockInvoiceDetail(invoiceDetailInvoicePricingDetail(pricingDetail)) IS departmentStore;
+    @defineDocumentAggregationStockPrefix(invoice, concrete###pricing, stock, 'Склад', , );
+    departmentStorePricing(pricing) += stock###concrete###pricing(pricing) IF stock###concrete###pricing(pricing) IS departmentStore;
+    dataDepartmentStorePricingDetail(pricingDetail) += dataStockInvoiceDetail(invoiceDetail###concrete###pricingDetail(pricingDetail))
+                                                       IF dataStockInvoiceDetail(invoiceDetail###concrete###pricingDetail(pricingDetail)) IS departmentStore;
 
-    @defineDocumentAggregationStockPrefix(invoice, invoicePricing, contact, contactCaption, , );
-    contact###Pricing(pricing) += contact###InvoicePricing(pricing);
+    @defineDocumentAggregationStockPrefix(invoice, concrete###pricing, contact, contactCaption, , );
+    contact###Pricing(pricing) += contact###concrete###pricing(pricing);
 
-    @defineDocumentAggregationPosted(invoice, invoicePricing);
-    isPostedPricing(pricing) += isPostedInvoicePricing(pricing);
+    @defineDocumentAggregationPosted(invoice, concrete###pricing);
+    isPostedPricing(pricing) += isPosted###concrete###pricing(pricing);
 
-    numberInvoicePricing 'Номер документа' (invoicePricing) = numberInvoice(invoiceInvoicePricing(invoicePricing));
-    numberPricing(pricing) += numberInvoicePricing(pricing);
+    number###concrete###pricing 'Номер документа' (concrete###pricing) = numberInvoice(invoice###concrete###pricing(concrete###pricing));
+    numberPricing(pricing) += number###concrete###pricing(pricing);
 
-    seriesInvoicePricing 'Серия документа' (invoicePricing) = seriesInvoice(invoiceInvoicePricing(invoicePricing));
-    seriesPricing(pricing) += seriesInvoicePricing(pricing);
+    series###concrete###pricing 'Серия документа' (concrete###pricing) = seriesInvoice(invoice###concrete###pricing(concrete###pricing));
+    seriesPricing(pricing) += series###concrete###pricing(pricing);
 
-    seriesNumberInvoicePricing 'Серия/номер документа' (invoicePricing) = seriesNumberInvoice(invoiceInvoicePricing(invoicePricing));
+    seriesNumber###concrete###pricing 'Серия/номер документа' (concrete###pricing) = seriesNumberInvoice(invoice###concrete###pricing(concrete###pricing));
 
-    noteInvoiceInvoicePricing 'Примечание' (invoicePricing) = noteInvoice(invoiceInvoicePricing(invoicePricing));
-    notePricing(pricing) += noteInvoiceInvoicePricing(pricing);
+    noteInvoice###concrete###pricing 'Примечание' (concrete###pricing) = noteInvoice(invoice###concrete###pricing(concrete###pricing));
+    notePricing(pricing) += noteInvoice###concrete###pricing(pricing);
 
-    currencyInvoicePricing  (invoicePricing) = currencyInvoice(invoiceInvoicePricing(invoicePricing));
-    currencyPricing (pricing) += currencyInvoicePricing(pricing);
-    pricingCommitteePricing(pricing) += pricingCommitteeInvoice(invoiceInvoicePricing(pricing));
+    currency###concrete###pricing  (concrete###pricing) = currencyInvoice(invoice###concrete###pricing(concrete###pricing));
+    currencyPricing (pricing) += currency###concrete###pricing(pricing);
+    pricingCommitteePricing(pricing) += pricingCommitteeInvoice(invoice###concrete###pricing(pricing));
 
-    @defineDocumentDescription(invoicePricing, invoicePricingDetail, seriesNumberInvoicePricing, 'Поставка на основе инвойса'###sign);
-    descriptionPricing (pricing) += descriptionInvoicePricing(pricing);
+    @defineDocumentDescription(concrete###pricing, concrete###pricingDetail, seriesNumber###concrete###pricing, caption###sign);
+    descriptionPricing (pricing) += description###concrete###pricing(pricing);
 
-    @defineDocumentAggregationDetailSku(invoice, invoicePricing, sku);
-    skuPricingDetail(pricingDetail) +=  skuInvoicePricingDetail(pricingDetail);
+    @defineDocumentAggregationDetailSku(invoice, concrete###pricing, sku);
+    skuPricingDetail(pricingDetail) +=  sku###concrete###pricingDetail(pricingDetail);
 
-    @defineDocumentAggregationDetailQuantity(invoice, invoicePricing);
-    quantityPricingDetail(pricingDetail) += quantityInvoicePricingDetail(pricingDetail);
+    @defineDocumentAggregationDetailQuantity(invoice, concrete###pricing);
+    quantityPricingDetail(pricingDetail) += quantity###concrete###pricingDetail(pricingDetail);
 
 //----------------------------------------------------------------------------------------------------------
-    @defineDocumentAggregationDetailProperty (invoice, invoicePricing, price, 'Цена поставщика');
-    pricePricingDetail(pricingDetail) += priceInvoicePricingDetail(pricingDetail);
-    @defineDocumentAggregationDetailProperty (invoice, invoicePricing, sum, 'Сумма поставщика');
-    sumPricingDetail(pricingDetail) += sumInvoicePricingDetail(pricingDetail);
-    @defineDocumentAggregationDetailProperty (invoice, invoicePricing, retailPrice, 'Цена поставщика');
-    retailPricePricingDetail(pricingDetail) += retailPriceInvoicePricingDetail(pricingDetail);
-    @defineDocumentAggregationDetailProperty (invoice, invoicePricing, retailMarkup, 'Надбавка');
-    retailMarkupPricingDetail(pricingDetail) += retailMarkupInvoicePricingDetail(pricingDetail);
-    @defineDocumentAggregationDetailProperty (invoice, invoicePricing, retailVAT, 'НДС');
-    retailVATPricingDetail(pricingDetail) += retailVATInvoicePricingDetail(pricingDetail);
-    @defineDocumentAggregationDetailProperty (invoice, invoicePricing, valueRetailVAT, 'НДС,%');
-    valueRetailVATPricingDetail(pricingDetail) += valueRetailVATInvoicePricingDetail(pricingDetail);
+    @defineDocumentAggregationDetailProperty (invoice, concrete###pricing, price, 'Цена поставщика');
+    pricePricingDetail(pricingDetail) += price###concrete###pricingDetail(pricingDetail);
+    @defineDocumentAggregationDetailProperty (invoice, concrete###pricing, sum, 'Сумма поставщика');
+    sumPricingDetail(pricingDetail) += sum###concrete###pricingDetail(pricingDetail);
 
-    @defineDocumentAggregationDetailProperty (invoice, invoicePricing, retailSum, 'Сумма розничная');
-    retailSumPricingDetail(pricingDetail) += retailSumInvoicePricingDetail(pricingDetail);
+    @defineDocumentAggregationDetailProperty (invoice, concrete###pricing, retailPrice, 'Розничная цена');
+    retailPricePricingDetail(pricingDetail) += retailPrice###concrete###pricingDetail(pricingDetail);
+    @defineDocumentAggregationDetailProperty (invoice, concrete###pricing, retailSum, 'Сумма розничная');
+    retailSumPricingDetail(pricingDetail) += retailSum###concrete###pricingDetail(pricingDetail);
 
-    @defineDocumentAggregationDetailProperty (invoice, invoicePricing, retailVATSum, 'Сумма НДС');
-    retailVATSumPricingDetail(pricingDetail) += retailVATSumInvoicePricingDetail(pricingDetail);
+    @defineDocumentAggregationDetailProperty (invoice, concrete###pricing, retailMarkup, 'Надбавка');
+    retailMarkupPricingDetail(pricingDetail) += retailMarkup###concrete###pricingDetail(pricingDetail);
+    @defineDocumentAggregationDetailProperty (invoice, concrete###pricing, retailMarkupSum, 'Сумма надбавки');
+    retailMarkupSumPricingDetail(pricingDetail) += retailMarkupSum###concrete###pricingDetail(pricingDetail);
 
-    @defineDocumentAggregationDetailProperty (invoice, invoicePricing, retailMarkupSum, 'Сумма надбавки');
-    retailMarkupSumPricingDetail(pricingDetail) += retailMarkupSumInvoicePricingDetail(pricingDetail);
-
-    invoiceDetailPricingDetail(pricingDetail) += invoiceDetailInvoicePricingDetail(pricingDetail);
+    @defineDocumentAggregationDetailProperty (invoice, concrete###pricing, retailVAT, 'НДС');
+    retailVATPricingDetail(pricingDetail) += retailVAT###concrete###pricingDetail(pricingDetail);
+    @defineDocumentAggregationDetailProperty (invoice, concrete###pricing, valueRetailVAT, 'НДС,%');
+    valueRetailVATPricingDetail(pricingDetail) += valueRetailVAT###concrete###pricingDetail(pricingDetail);
+    @defineDocumentAggregationDetailProperty (invoice, concrete###pricing, retailVATSum, 'Сумма НДС');
+    retailVATSumPricingDetail(pricingDetail) += retailVATSum###concrete###pricingDetail(pricingDetail);
 
 END

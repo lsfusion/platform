@@ -431,7 +431,7 @@ END
 META derivePriceLedgerOnSkuChangePrefix (ledger, concrete, prefixP, skuProp)
     prefixP###concrete##Detail (detail)  <- ledger##BLedgerDateTime(
                     skuProp###concrete##Detail(detail), departmentStore###concrete##Detail(detail), dateTime###concrete##Detail(detail))
-                    WHEN CHANGED(skuProp###concrete##Detail(detail));
+                    WHEN CHANGED(skuProp###concrete##Detail(detail)) OR CHANGED(departmentStore###concrete##Detail(detail)) OR CHANGED(dateTime###concrete##Detail(detail));
 END
 
 META derivePriceLedgerOnSkuChange (ledger, concrete, skuProp)
@@ -451,10 +451,16 @@ META deriveBasePriceLedgerOnSkuChange (concrete, skuProp)
     @deriveBasePriceLedgerOnSkuChangePrefix(concrete, , skuProp);
 END
 
+META derivePrevPriceLedgerOnSkuChangePrefix (ledger, concrete, prefixP, skuProp, stockProp)
+    prefixP###concrete##Detail (detail)  <- [PREV(ledger##BLedgerDateTime(sku, stockProp, dateTime))](
+                    skuProp###concrete##Detail(detail), stockProp###concrete##Detail(detail), dateTime###concrete##Detail(detail))
+                    WHEN CHANGED(skuProp###concrete##Detail(detail)) OR CHANGED(stockProp###concrete##Detail(detail)) OR CHANGED(dateTime###concrete##Detail(detail));
+END
+
 META derivePrevPriceLedgerOnSkuChangePrefix (ledger, concrete, prefixP, skuProp)
     prefixP###concrete##Detail (detail)  <- [PREV(ledger##BLedgerDateTime(sku, departmentStore, dateTime))](
                     skuProp###concrete##Detail(detail), departmentStore###concrete##Detail(detail), dateTime###concrete##Detail(detail))
-                    WHEN CHANGED(skuProp###concrete##Detail(detail));
+                    WHEN CHANGED(skuProp###concrete##Detail(detail)) OR CHANGED(departmentStore###concrete##Detail(detail)) OR CHANGED(dateTime###concrete##Detail(detail));
 END
 
 META derivePrevBasePriceLedgerOnSkuChangePrefix (concrete, prefixP, skuProp)
