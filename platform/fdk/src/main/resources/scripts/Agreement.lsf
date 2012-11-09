@@ -110,8 +110,7 @@ META defineDocumentInterfaceHeaderAgreement (object, company, legalEntity)
     @defineDocumentAbstractHeaderAgreement(object);
     @defineDocumentHeaderAgreement(user###object);
     agreement###user###object (object) <- defaultAgreementCompanyLegalEntity(company(object), legalEntity(object))
-        IF currency###user###object(object) == currencyAgreement(defaultAgreementCompanyLegalEntity(company(object), legalEntity(object))) AND
-           companyAgreement(defaultAgreementCompanyLegalEntity(company(object), legalEntity(object))) == company(object)
+        IF currency###user###object(object) == currencyAgreement(defaultAgreementCompanyLegalEntity(company(object), legalEntity(object)))
     WHEN CHANGED(currency###user###object(object)) OR
          CHANGED(legalEntity(object));
     agreement###object (object) += agreement###user###object(object);
