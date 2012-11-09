@@ -11,6 +11,7 @@ REQUIRE System,
         Sales,
         RetailCRM,
         PriceInterval,
+        PriceList,
         AccountDocument; // todo : эту зависимость надо будет убить, но сейчас не получается из-за того что нельзя донаследовать классы
 
 // ------------------------------------- Объявление Z-отчета ---------------------------------------- //
@@ -495,9 +496,19 @@ DESIGN zReports FROM DEFAULT{
     ADD functions.box;
 }
 
+// ----------------------------- Расширяем форму отдела магазина нужными нам параметрами --------------------- //
+
+POSPriceListTypeDepartmentStore = DATA priceListType (departmentStore);
+namePOSPriceListTypeDepartmentStore 'Вид цен для POS' (departmentStore) = name(POSPriceListTypeDepartmentStore(departmentStore));
+
+EXTEND FORM departmentStore
+    PROPERTIES(d) namePOSPriceListTypeDepartmentStore
+;
+
 // ----------------------------- Кассовый модуль ---------------- //
 
-POSPriceSkuDepartmentStoreDateTime 'Цена в кассе' = ABSTRACT NUMERIC[14,2] (sku, departmentStore, DATETIME);
+POSPriceSkuDepartmentStoreDateTime 'Цена в кассе' (sku, departmentStore, dateTime) =
+    pricePriceListTypeSkuStockDateTime(POSPriceListTypeDepartmentStore(departmentStore), sku, departmentStore, dateTime);
 currentPOSPriceSkuDepartmentStore 'Текущая цена' (sku, departmentStore) = POSPriceSkuDepartmentStoreDateTime(sku, departmentStore, currentDateTime());
 
 zReportCashRegister = DATA zReport (cashRegister);

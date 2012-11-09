@@ -174,7 +174,6 @@ END
 
 CLASS ABSTRACT machineryPriceTransaction 'Загрузка прайса в оборудование' : historyObject;
 TABLE machineryPriceTransaction (machineryPriceTransaction);
-TABLE machineryPriceTransactionBarcode (machineryPriceTransaction, barcode);
 
 groupMachineryMachineryPriceTransaction (transaction) = ABSTRACT groupMachinery (machineryPriceTransaction);
 nameGroupMachineryMachineryPriceTransaction 'Группа оборудования' (transaction) = nameGroupMachinery(groupMachineryMachineryPriceTransaction(transaction));
@@ -230,18 +229,21 @@ statusMachineryPriceTransactionDocument 'Статус загрузки в обо
                                                         END;
 
 // Загруженные штрих-коды
+TABLE machineryPriceTransactionBarcode (machineryPriceTransaction, barcode);
+
 inMachineryPriceTransactionBarcode 'Вкл' = DATA BOOLEAN (machineryPriceTransaction, barcode);
 nameMachineryPriceTransactionBarcode 'Наименование' = DATA STRING[255] (machineryPriceTransaction, barcode);
 priceMachineryPriceTransactionBarcode 'Цена' = DATA NUMERIC[14,2] (machineryPriceTransaction, barcode);
 
+orderMachineryPriceTransactionBarcode(transaction, barcode) = orderMachineryPriceTransaction(transaction)
+                                                              AND inMachineryPriceTransactionBarcode(transaction, barcode)
+                                                              AND NOT canceledMachineryPriceTransaction(transaction) PERSISTENT INDEXED;
+
 // Текущие загруженные штрих-коды
 TABLE barcodeGroupMachinery (barcode, groupMachinery);
 
-lastOrderTransactionBarcodeGroupMachinery (barcode, groupMachinery) = GROUP MAX orderMachineryPriceTransaction(transaction)
-                                                                          AND inMachineryPriceTransactionBarcode(transaction, barcode)
-                                                                          AND NOT snapshotMachineryPriceTransaction(transaction)
-                                                                          AND NOT canceledMachineryPriceTransaction(transaction)
-                                                                      BY barcode, groupMachineryMachineryPriceTransaction(transaction);
+lastOrderTransactionBarcodeGroupMachinery (barcode, groupMachinery) = GROUP MAX orderMachineryPriceTransactionBarcode(transaction, barcode)
+                                                                            BY barcode, groupMachineryMachineryPriceTransaction(transaction);
 lastTransactionBarcodeGroupMachinery (barcode, groupMachinery) = lastOrderTransactionBarcodeGroupMachinery(barcode, groupMachinery) [2] PERSISTENT;
 
 transactionNameBarcodeGroupMachinery 'Текущее наименование в оборудовании' (barcode, groupMachinery)  =

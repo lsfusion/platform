@@ -26,19 +26,16 @@ prevPricePriceListTypeBatchStockDateTime 'Цена (пред.)' (type, batch, st
 CLASS ABSTRACT basePriceListType 'Базовый вид цены' : priceListType;
 
 // --------------------------- Системные виды цен ------------------------- //
-CLASS STATIC systemPriceListType 'Системный вид цены' {
-    stockPriceListType 'Учетная цена'
-} : basePriceListType;
+CLASS STATIC systemPriceListType 'Системный вид цены' : basePriceListType;
 
-priceStockPriceListTypeSkuStockDateTime (type, sku, stock, dateTime) =
-    priceSkuStockDateTime(sku, stock, dateTime) AND type == systemPriceListType.stockPriceListType;
-priceStockPriceListTypeBatchStockDateTime (type, batch, stock, dateTime) =
-    priceBatchStockDateTime(batch, stock, dateTime) AND type == systemPriceListType.stockPriceListType;
+priceSystemPriceListTypeSkuStockDateTime (type, sku, stock, dateTime) = ABSTRACT NUMERIC[14,3] (systemPriceListType, sku, stock, DATETIME) EXCLUSIVE;
+priceSystemPriceListTypeBatchStockDateTime (type, sku, stock, dateTime) = ABSTRACT NUMERIC[14,3] (systemPriceListType, batch, stock, DATETIME) EXCLUSIVE;
 
-priceSystemPriceListTypeSkuStockDateTime (type, sku, stock, dateTime) =
-    UNION EXCLUSIVE priceStockPriceListTypeSkuStockDateTime (type, sku, stock, dateTime);
-priceSystemPriceListTypeBatchStockDateTime (type, batch, stock, dateTime) =
-    UNION EXCLUSIVE priceStockPriceListTypeBatchStockDateTime (type, batch, stock, dateTime);
+// -------------------------- Учетная цена ---------------------- //
+
+EXTEND CLASS systemPriceListType { stockPriceListType 'Учетная' }
+priceSystemPriceListTypeSkuStockDateTime (type, sku, stock, dateTime) += priceSkuStockDateTime(sku, stock, dateTime) AND type == systemPriceListType.stockPriceListType;
+priceSystemPriceListTypeBatchStockDateTime (type, batch, stock, dateTime) += priceBatchStockDateTime(batch, stock, dateTime) AND type == systemPriceListType.stockPriceListType;
 
 // --------------------------- Пользовательские виды цен ------------------------- //
 

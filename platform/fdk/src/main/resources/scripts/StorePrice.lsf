@@ -1,6 +1,6 @@
 MODULE StorePrice;
 
-REQUIRE System, Historizable, Tax, Stock, Barcode, Store, Ware;
+REQUIRE System, Historizable, Tax, Stock, Barcode, Store, Ware, PriceList;
 
 GROUP priceDetailGroup 'Цены' : publicGroup;
 
@@ -351,6 +351,14 @@ META defineSkuDepartmentStoreLedger(property, caption, type)
     nameDepartmentStore###property##Ledger 'Отдел магазина' (ledger) = name(departmentStore###property##Ledger(ledger));
 END
 
+META defineSkuDepartmentStoreLedgerPrice(property, caption, type)
+    @defineSkuDepartmentStoreLedger(property, caption, type);
+
+    EXTEND CLASS systemPriceListType { property##PriceListType caption##' (расценка)' }
+    priceSystemPriceListTypeSkuStockDateTime (listType, sku, stock, dateTime) += property##BLedgerDateTime(sku, stock, dateTime) AND listType == systemPriceListType.property##PriceListType;
+    priceSystemPriceListTypeBatchStockDateTime (listType, batch, stock, dateTime) += property##BLedgerDateTime(skuBatch(batch), stock, dateTime) AND listType == systemPriceListType.property##PriceListType;
+END
+
 META implementSkuDepartmentStoreLedgerCustom(property, concrete, skuProp, stockProp, propertyProp)
     @implementHistorizableLedger(property, sku, departmentStore, concrete, skuProp, stockProp, propertyProp);
 END
@@ -395,7 +403,7 @@ TABLE importerPriceLedger (importerPriceLedger);
 
 CLASS ABSTRACT supplierPriceLedger 'Изменение цены поставщика';
 TABLE supplierPriceLedger (supplierPriceLedger);
-@defineSkuDepartmentStoreLedger(supplierPrice, 'Цена поставщика', NUMERIC[14,2]);
+@defineSkuDepartmentStoreLedgerPrice(supplierPrice, 'Поставщика', NUMERIC[14,2]);
 
 CLASS ABSTRACT retailVATLedger 'Изменение НДС';
 TABLE retailVATLedger (retailVATLedger);
@@ -410,7 +418,7 @@ currentValueRetailVATLedger 'НДС, %' (sku, departmentStore) =
 
 CLASS ABSTRACT retailPriceLedger 'Изменение розничной цены';
 TABLE retailPriceLedger (retailPriceLedger);
-@defineSkuDepartmentStoreLedger(retailPrice, 'Розничная цена', NUMERIC[14,2]);
+@defineSkuDepartmentStoreLedgerPrice(retailPrice, 'Розничная', NUMERIC[14,2]);
 currentRetailPriceBarcodeDepartmentStore 'Розничная цена' (barcode, departmentStore) = currentRetailPriceLedger(skuBarcode(barcode), departmentStore);
 
 costLedgerDepartmentStore 'Учет по себестоимости' = DATA BOOLEAN (departmentStore);

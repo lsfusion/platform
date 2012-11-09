@@ -8,7 +8,8 @@ REQUIRE System,
         UserPriceChange,
         Currency,
         RomanSales,
-        RomanLogicsModule;
+        RomanLogicsModule,
+        PriceList;
 
 PRIORITY MasterData, Stock, RomanLogicsModule;
 
@@ -712,7 +713,9 @@ priceBPriceSetDocumentSkuCurrencyDateTime(sku, currency, dateTime) = priceBBaseP
 priceAPriceSetDocumentSkuCurrencyDateTime(sku, currency, dateTime) = priceABasePriceSetDocumentSkuCurrencyDateTime(sku, currency, dateTime) OR priceADiscountPriceSetDocumentSkuCurrencyDateTime(sku, currency, dateTime);
 
 // Цена на кассе
-POSPriceSkuDepartmentStoreDateTime(sku, departmentStore, dateTime) += priceBPriceSetDocumentSkuCurrencyDateTime(sku, currencyStock(departmentStore), dateTime) IF departmentStore IS departmentStore;
+EXTEND CLASS systemPriceListType { userPriceListType 'Продажная' }
+priceSystemPriceListTypeSkuStockDateTime (listType, sku, departmentStore, dateTime) += priceBPriceSetDocumentSkuCurrencyDateTime(sku, currencyStock(departmentStore), dateTime) IF departmentStore IS departmentStore AND listType == systemPriceListType.userPriceListType;
+priceSystemPriceListTypeBatchStockDateTime (listType, batch, departmentStore, dateTime) += priceBPriceSetDocumentSkuCurrencyDateTime(skuBatch(batch), currencyStock(departmentStore), dateTime) IF departmentStore IS departmentStore AND listType == systemPriceListType.userPriceListType;
 
 // -------------------------------------------------- Форма истории изменения цен ------------------------------------- //
 

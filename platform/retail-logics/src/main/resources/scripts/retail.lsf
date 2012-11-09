@@ -1203,8 +1203,6 @@ FORM papers 'Документы качества'
 ;
 
 // -------------------------------------------- Подключение модуля POS -------------------------------------- //
-POSPriceSkuDepartmentStoreDateTime(sku, departmentStore, dateTime) += retailPriceBLedgerDateTime(sku, departmentStore, dateTime);
-
 @implementSkuLedgerReceiptDetail();
 @implementAccountDocumentLedgerZReport();
 
