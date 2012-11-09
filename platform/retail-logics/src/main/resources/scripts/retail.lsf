@@ -77,6 +77,11 @@ REQUIRE System,
         ItemSize,
         ItemArticle,
         PriceList,
+        Transport,
+        Route,
+        Trip,
+        SaleTrip,
+        SaleReturnTrip,
         Agreement,
         Warehouse;
 
@@ -2371,6 +2376,7 @@ CLASS innerArrivalPosted 'Закрытый приход в отдел' : innerAr
 
 innerFlowInnerArrival (innerArrival) = DATA innerFlowPosted (innerArrival);
 innerArrivalInnerFlow (innerFlow) = GROUP UNIQUE innerArrival BY innerFlowInnerArrival (innerArrival);
+// избыточность
 CONSTRAINT innerFlowInnerArrival(p1) == innerFlowInnerArrival(p2) AND p1 != p2 CHECKED BY innerFlowInnerArrival MESSAGE 'Накладная задействована в другом приходе';
 
 numberInnerArrival 'Номер накладной' (innerArrival) = numberObject(innerFlowInnerArrival(innerArrival)) IN documentHeaderGroup PERSISTENT;
@@ -6802,6 +6808,9 @@ NAVIGATOR {
         NEW logisticsCatalog 'Справочники' {
             ADD warehouses;
         }
+        ADD trucks;
+        ADD routes;
+        ADD trips;
     }
 
     NEW retail 'Розничная торговля' TO formsToolbar {

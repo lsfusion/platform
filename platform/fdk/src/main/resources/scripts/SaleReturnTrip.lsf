@@ -1,0 +1,15 @@
+MODULE SaleReturnTrip;
+
+REQUIRE SaleReturnOrder,
+        Trip;
+
+NAMESPACE SaleReturn;
+
+EXTEND CLASS order : orderTrip;
+EXTEND CLASS orderDetail : orderTripDetail;
+
+numberOrderTrip(order) += numberOrder(order);
+seriesOrderTrip(order) += seriesOrder(order);
+dateOrderTrip(order) += dateOrder(order);
+
+quantityOrderTripDetail(orderDetail) += quantityOrderDetail(orderDetail);
