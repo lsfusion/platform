@@ -1,6 +1,6 @@
 package platform.gwt.form.client.form.ui;
 
-import com.google.gwt.cell.client.TextCell;
+import com.google.gwt.cell.client.AbstractSafeHtmlCell;
 import com.google.gwt.cell.client.ValueUpdater;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
@@ -10,14 +10,10 @@ import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.safehtml.shared.SafeUri;
 import com.google.gwt.safehtml.shared.UriUtils;
+import com.google.gwt.text.shared.SimpleSafeHtmlRenderer;
 import platform.gwt.cellview.client.Header;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-
-public class GGridHeaderCell extends TextCell {
+public class GGridHeaderCell extends AbstractSafeHtmlCell<String> {
     private Header header;
     private GGridPropertyTable table;
 
@@ -36,7 +32,7 @@ public class GGridHeaderCell extends TextCell {
     private static Template template;
 
     public GGridHeaderCell() {
-        super();
+        super(SimpleSafeHtmlRenderer.getInstance(), "dblclick");
         if (template == null) {
             template = GWT.create(Template.class);
         }
@@ -48,11 +44,6 @@ public class GGridHeaderCell extends TextCell {
 
     public void setTable(GGridPropertyTable table) {
         this.table = table;
-    }
-
-    @Override
-    public Set<String> getConsumedEvents() {
-        return Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(new String[]{"dblclick"})));
     }
 
     @Override

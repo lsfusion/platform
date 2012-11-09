@@ -1,5 +1,6 @@
 package platform.gwt.form.server.convert;
 
+import platform.client.form.EditBindingMap;
 import platform.client.logics.*;
 import platform.gwt.form.shared.view.*;
 import platform.gwt.form.shared.view.changes.dto.ColorDTO;
@@ -9,8 +10,14 @@ import platform.interop.PropertyEditType;
 import platform.interop.form.layout.SimplexConstraints;
 import platform.interop.form.layout.SingleSimplexConstraint;
 
+import javax.swing.*;
+import java.awt.event.InputEvent;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
+import static platform.gwt.form.shared.view.GEditBindingMap.Key;
 import static platform.interop.form.layout.ContainerType.*;
 
 @SuppressWarnings("UnusedDeclaration")
@@ -186,6 +193,8 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.askConfirm = clientPropertyDraw.askConfirm;
         propertyDraw.askConfirmMessage = clientPropertyDraw.askConfirmMessage;
 
+        propertyDraw.editBindingMap = convertOrCast(clientPropertyDraw.editBindingMap);
+
         propertyDraw.iconPath = clientPropertyDraw.design.iconPath;
 
         propertyDraw.editType = convertOrCast(clientPropertyDraw.editType);
@@ -205,15 +214,30 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         return propertyDraw;
     }
 
-    @Cached
-    @Converter(from = PropertyEditType.class)
-    public GPropertyEditType convertEditType(PropertyEditType editType) {
-        switch (editType) {
-            case EDITABLE: return GPropertyEditType.EDITABLE;
-            case READONLY: return GPropertyEditType.READONLY;
-            case SELECTOR: return GPropertyEditType.SELECTOR;
+    @Converter(from = EditBindingMap.class)
+    public GEditBindingMap convertBindingMap(EditBindingMap editBindingMap) {
+        HashMap<GEditBindingMap.Key, String> keyBindingMap = null;
+        if (editBindingMap.getKeyBindingMap() != null) {
+            keyBindingMap = new HashMap<GEditBindingMap.Key, String>();
+            for (Map.Entry<KeyStroke, String> e : editBindingMap.getKeyBindingMap().entrySet()) {
+                keyBindingMap.put(convertKeyStroke(e.getKey()), e.getValue());
+            }
         }
-        return null;
+
+        LinkedHashMap<String, String> contextMenuBindingMap = editBindingMap.getContextMenuItems() != null
+                                                              ? new LinkedHashMap<String, String>(editBindingMap.getContextMenuItems())
+                                                              : null;
+        String mouseBinding = editBindingMap.getMouseAction();
+
+        return new GEditBindingMap(keyBindingMap, contextMenuBindingMap, mouseBinding);
+    }
+    
+    public Key convertKeyStroke(KeyStroke keyStroke) {
+        int modifiers = keyStroke.getModifiers();
+        boolean isAltPressed = (modifiers & InputEvent.ALT_MASK) != 0;
+        boolean isCtrlPressed = (modifiers & InputEvent.CTRL_MASK) != 0;
+        boolean isShiftPressed = (modifiers & InputEvent.SHIFT_MASK) != 0;
+        return new Key(keyStroke.getKeyCode(), isAltPressed, isCtrlPressed, isShiftPressed);
     }
 
     public GCaptionReader convertCaptionReader(ClientPropertyDraw.CaptionReader reader) {
@@ -238,6 +262,17 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
     public GRowForegroundReader convertRowForegroundReader(ClientGroupObject.RowForegroundReader reader) {
         return reader == null ? null : new GRowForegroundReader(reader.getID());
+    }
+
+    @Cached
+    @Converter(from = PropertyEditType.class)
+    public GPropertyEditType convertEditType(PropertyEditType editType) {
+        switch (editType) {
+            case EDITABLE: return GPropertyEditType.EDITABLE;
+            case READONLY: return GPropertyEditType.READONLY;
+            case SELECTOR: return GPropertyEditType.SELECTOR;
+        }
+        return null;
     }
 
     @Cached

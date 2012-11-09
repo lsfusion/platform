@@ -4,7 +4,6 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
 import platform.gwt.base.shared.GwtSharedUtils;
-import platform.gwt.cellview.client.CellBasedWidgetImpl;
 import platform.gwt.form.client.form.ui.container.GAbstractFormContainer;
 import platform.gwt.form.shared.view.*;
 import platform.gwt.form.shared.view.changes.GFormChanges;
@@ -321,7 +320,7 @@ public class GGroupObjectController implements GGroupObjectLogicsSupplier {
 
     public boolean focusFirstWidget() {
         if (grid != null && !grid.getTable().isEmpty()) {
-            CellBasedWidgetImpl.get().resetFocus(new Scheduler.ScheduledCommand() {
+            Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
                 @Override
                 public void execute() {
                     grid.getTable().setFocus(true);

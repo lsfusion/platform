@@ -6,10 +6,7 @@ import platform.interop.form.ServerResponse;
 import javax.swing.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
-import java.util.EventObject;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 public class EditBindingMap {
     private Map<KeyStroke, String> keyBindingMap = new HashMap<KeyStroke, String>();
@@ -49,6 +46,10 @@ public class EditBindingMap {
         keyBindingMap.put(keyStroke, actionSID);
     }
 
+    public Map<KeyStroke, String> getKeyBindingMap() {
+        return Collections.unmodifiableMap(keyBindingMap);
+    }
+
     public void setContextMenuAction(String actionSID, String caption) {
         contextMenuBindingMap.put(actionSID, caption);
     }
@@ -59,6 +60,10 @@ public class EditBindingMap {
 
     public void setMouseAction(String actionSID) {
         mouseBinding = actionSID;
+    }
+
+    public String getMouseAction() {
+        return mouseBinding;
     }
 
     public static boolean isEditableAwareEditEvent(String actionSID) {

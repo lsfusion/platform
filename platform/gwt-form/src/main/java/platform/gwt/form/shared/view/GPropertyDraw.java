@@ -30,6 +30,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
     public boolean askConfirm;
     public String askConfirmMessage;
 
+    public GEditBindingMap editBindingMap;
+
     public String iconPath;
     public Boolean focusable;
     public boolean checkEquals;

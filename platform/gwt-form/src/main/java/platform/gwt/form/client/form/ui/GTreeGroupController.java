@@ -4,7 +4,6 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.user.client.ui.CellPanel;
 import com.google.gwt.user.client.ui.ResizeLayoutPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
-import platform.gwt.cellview.client.CellBasedWidgetImpl;
 import platform.gwt.form.shared.view.*;
 import platform.gwt.form.shared.view.changes.GFormChanges;
 import platform.gwt.form.shared.view.changes.GGroupObjectValue;
@@ -215,7 +214,7 @@ public class GTreeGroupController implements GGroupObjectLogicsSupplier {
     }
 
     public boolean focusFirstWidget() {
-        CellBasedWidgetImpl.get().resetFocus(new Scheduler.ScheduledCommand() {
+        Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
             @Override
             public void execute() {
                 tree.setFocus(true);

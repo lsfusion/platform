@@ -1,18 +1,16 @@
 package platform.gwt.form.shared.view.panel;
 
-import com.google.gwt.cell.client.Cell;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
 import platform.gwt.form.client.form.dispatch.GEditPropertyDispatcher;
 import platform.gwt.form.client.form.dispatch.GEditPropertyHandler;
 import platform.gwt.form.client.form.ui.GFormController;
-import platform.gwt.form.shared.actions.form.ServerResponseResult;
+import platform.gwt.form.shared.view.GEditBindingMap;
 import platform.gwt.form.shared.view.GPropertyDraw;
 import platform.gwt.form.shared.view.changes.GGroupObjectValue;
 import platform.gwt.form.shared.view.classes.GType;
 import platform.gwt.form.shared.view.grid.EditManager;
-import platform.gwt.form.shared.view.grid.EditManagerAdapter;
 import platform.gwt.form.shared.view.grid.editor.GridCellEditor;
 import platform.gwt.form.shared.view.grid.editor.PopupBasedGridEditor;
 
@@ -40,7 +38,7 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
         button.addClickHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
-                editDispatcher.executePropertyEditAction(ActionPanelRenderer.this, property, null, columnKey);
+                editDispatcher.executePropertyEditAction(ActionPanelRenderer.this, property, columnKey, GEditBindingMap.CHANGE, null);
             }
         });
     }
@@ -57,10 +55,6 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
 
     @Override
     public void updateEditValue(Object value) {
-    }
-
-    @Override
-    public void postDispatchResponse(ServerResponseResult response) {
     }
 
     @Override
@@ -95,12 +89,7 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
         button.setFocus(focus);
     }
 
-    private class ActionEditManager extends EditManagerAdapter {
-        @Override
-        public GPropertyDraw getProperty(Cell.Context context) {
-            return property;
-        }
-
+    private class ActionEditManager implements EditManager {
         @Override
         public void commitEditing(Object value) {
             editDispatcher.commitValue(value);

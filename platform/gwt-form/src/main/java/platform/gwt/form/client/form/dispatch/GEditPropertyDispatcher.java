@@ -5,6 +5,7 @@ import platform.gwt.form.client.ErrorHandlingCallback;
 import platform.gwt.form.client.form.ui.GFormController;
 import platform.gwt.form.client.form.ui.dialog.DialogBoxHelper;
 import platform.gwt.form.shared.actions.form.ServerResponseResult;
+import platform.gwt.form.shared.view.GEditBindingMap;
 import platform.gwt.form.shared.view.GPropertyDraw;
 import platform.gwt.form.shared.view.GUserInputResult;
 import platform.gwt.form.shared.view.actions.GAsyncResultAction;
@@ -28,7 +29,7 @@ public class GEditPropertyDispatcher extends GFormActionDispatcher {
         super(form);
     }
 
-    public void executePropertyEditAction(final GEditPropertyHandler ieditHandler, final GPropertyDraw editProperty, final Object currentValue, final GGroupObjectValue columnKey) {
+    public void executePropertyEditAction(final GEditPropertyHandler ieditHandler, final GPropertyDraw editProperty, final GGroupObjectValue columnKey, String actionSID, final Object currentValue) {
         editHandler = ieditHandler;
 
         valueRequested = false;
@@ -40,7 +41,7 @@ public class GEditPropertyDispatcher extends GFormActionDispatcher {
         editHandler.setFocus(false);
 
         final boolean asyncModifyObject = form.isAsyncModifyObject(editProperty);
-        if (asyncModifyObject || editProperty.changeType != null) {
+        if (GEditBindingMap.CHANGE.equals(actionSID) && (asyncModifyObject || editProperty.changeType != null)) {
             if (editProperty.askConfirm) {
                 form.blockingConfirm("LS Fusion", editProperty.askConfirmMessage, new DialogBoxHelper.CloseCallback() {
                     @Override
@@ -54,7 +55,7 @@ public class GEditPropertyDispatcher extends GFormActionDispatcher {
                 executeSimpleChangeProperty(asyncModifyObject, editProperty, columnKey, currentValue);
             }
         } else {
-            form.executeEditAction(editProperty, columnKey, "change", new ErrorHandlingCallback<ServerResponseResult>() {
+            form.executeEditAction(editProperty, columnKey, actionSID, new ErrorHandlingCallback<ServerResponseResult>() {
                 @Override
                 public void success(ServerResponseResult response) {
                     Log.debug("Execute edit action response recieved...");
@@ -90,7 +91,7 @@ public class GEditPropertyDispatcher extends GFormActionDispatcher {
     @Override
     protected void postDispatchResponse(ServerResponseResult response) {
         super.postDispatchResponse(response);
-        editHandler.postDispatchResponse(response);
+        editHandler.setFocus(true);
     }
 
     private void requestValue(GType type) {

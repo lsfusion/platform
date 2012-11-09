@@ -5,22 +5,22 @@ import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.ValueUpdater;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
-import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
+import platform.gwt.form.client.form.ui.GPropertyTable;
 import platform.gwt.form.shared.view.GPropertyDraw;
 import platform.gwt.form.shared.view.grid.editor.GridCellEditor;
 import platform.gwt.form.shared.view.grid.renderer.GridCellRenderer;
 
 public class GridEditableCell extends AbstractCell<Object> {
 
-    private final EditManager editManager;
+    private final GPropertyTable table;
 
     private GridCellEditor cellEditor = null;
     private Object editKey = null;
 
-    public GridEditableCell(EditManager editManager) {
+    public GridEditableCell(GPropertyTable table) {
         super("dblclick", "keyup", "keydown", "keypress", "blur");
-        this.editManager = editManager;
+        this.table = table;
     }
 
     @Override
@@ -33,42 +33,9 @@ public class GridEditableCell extends AbstractCell<Object> {
                                NativeEvent event, ValueUpdater<Object> valueUpdater) {
         if (isEditingCell(context)) {
             cellEditor.onBrowserEvent(context, parent, value, event, valueUpdater);
-        } else if (editManager.canStartNewEdit()) {
-            if (isEditEvent(event)) {
-                event.stopPropagation();
-                event.preventDefault();
-                editManager.executePropertyEditAction(this, event, context, parent);
-            }
+        } else {
+            table.startEdit(this, event, context, parent);
         }
-    }
-
-    private boolean isEditEvent(NativeEvent event) {
-        String eventType = event.getType();
-        if ("dblclick".equals(eventType)) {
-            return true;
-        }
-
-        if (event.getCtrlKey() || event.getAltKey() || event.getMetaKey()) {
-            return false;
-        }
-
-        int keyCode = event.getKeyCode();
-        if ("keypress".equals(eventType)) {
-            return keyCode != KeyCodes.KEY_ENTER
-                    && keyCode != KeyCodes.KEY_ESCAPE
-                    && keyCode != KeyCodes.KEY_TAB
-                    && keyCode != KeyCodes.KEY_HOME
-                    && keyCode != KeyCodes.KEY_END
-                    && keyCode != KeyCodes.KEY_PAGEUP
-                    && keyCode != KeyCodes.KEY_PAGEDOWN
-                    && keyCode != KeyCodes.KEY_LEFT
-                    && keyCode != KeyCodes.KEY_RIGHT
-                    && keyCode != KeyCodes.KEY_UP
-                    && keyCode != KeyCodes.KEY_DOWN;
-        } else if ("keydown".equals(eventType)) {
-            return keyCode == KeyCodes.KEY_DELETE;
-        }
-        return false;
     }
 
     public void startEditing(NativeEvent editEvent, final Context context, Element parent, GridCellEditor cellEditor, Object oldValue) {
@@ -93,7 +60,7 @@ public class GridEditableCell extends AbstractCell<Object> {
         if (isEditingCell(context)) {
             cellEditor.render(context, value, sb);
         } else {
-            GPropertyDraw property = editManager.getProperty(context);
+            GPropertyDraw property = table.getProperty(context);
             if (property != null) {
                 GridCellRenderer cellRenderer = property.getGridCellRenderer();
                 cellRenderer.render(context, value, sb);

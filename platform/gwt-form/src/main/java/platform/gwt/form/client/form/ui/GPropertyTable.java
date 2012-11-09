@@ -4,6 +4,7 @@ import com.google.gwt.cell.client.Cell;
 import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.ui.CustomScrollPanel;
 import com.google.gwt.user.client.ui.HeaderPanel;
 import com.google.gwt.view.client.CellPreviewEvent;
@@ -11,7 +12,7 @@ import platform.gwt.cellview.client.AbstractCellTable;
 import platform.gwt.cellview.client.DataGrid;
 import platform.gwt.form.client.form.dispatch.GEditPropertyDispatcher;
 import platform.gwt.form.client.form.dispatch.GEditPropertyHandler;
-import platform.gwt.form.shared.actions.form.ServerResponseResult;
+import platform.gwt.form.shared.view.GEditBindingMap;
 import platform.gwt.form.shared.view.GPropertyDraw;
 import platform.gwt.form.shared.view.changes.GGroupObjectValue;
 import platform.gwt.form.shared.view.classes.GType;
@@ -19,9 +20,12 @@ import platform.gwt.form.shared.view.grid.EditManager;
 import platform.gwt.form.shared.view.grid.GridEditableCell;
 import platform.gwt.form.shared.view.grid.editor.GridCellEditor;
 
+import static platform.gwt.form.shared.view.GEditBindingMap.Key;
+
 public abstract class GPropertyTable extends DataGrid implements EditManager, GEditPropertyHandler {
 
     protected final GFormController form;
+    protected final GEditBindingMap editBindingMap;
     protected final GEditPropertyDispatcher editDispatcher;
 
     protected GridEditableCell editCell;
@@ -40,6 +44,9 @@ public abstract class GPropertyTable extends DataGrid implements EditManager, GE
         this.form = iform;
 
         this.editDispatcher = new GEditPropertyDispatcher(form);
+        this.editBindingMap = new GEditBindingMap();
+        this.editBindingMap.setMouseAction(GEditBindingMap.CHANGE);
+        this.editBindingMap.setKeyAction(new Key(KeyCodes.KEY_BACKSPACE), GEditBindingMap.EDIT_OBJECT);
     }
 
     public CustomScrollPanel getScrollPanel() {
@@ -69,33 +76,51 @@ public abstract class GPropertyTable extends DataGrid implements EditManager, GE
 
     public abstract boolean isEditable(Cell.Context context);
 
+    public abstract GPropertyDraw getProperty(Cell.Context editContext);
+
+    public abstract GGroupObjectValue getColumnKey(Cell.Context editContext);
+
     public abstract void setValueAt(Cell.Context context, Object value);
 
     public abstract Object getValueAt(Cell.Context context);
 
-    @Override
-    public void postDispatchResponse(ServerResponseResult response) {
-        setFocus(true);
+    protected String getEditAction(GPropertyDraw property, NativeEvent event) {
+        String actionSID = null;
+        if (property.editBindingMap != null) {
+            actionSID = property.editBindingMap.getAction(event);
+        }
+
+        if (actionSID == null) {
+            actionSID = editBindingMap.getAction(event);
+        }
+
+        return actionSID;
     }
 
-    @Override
-    public boolean canStartNewEdit() {
-        return !form.isEditing();
-    }
+    public void startEdit(GridEditableCell editCell, NativeEvent event, Cell.Context editContext, Element parent) {
+        //todo: в будущем похоже нужно вообще избавиться от GridEditableCell... вместо этого лучше напрямую переопределить AbstractCellTable.fireEventToCell()
 
-    @Override
-    public void executePropertyEditAction(GridEditableCell editCell, NativeEvent editEvent, Cell.Context editContext, Element parent) {
-        this.editCell = editCell;
-        this.editEvent = editEvent;
-        this.editContext = editContext;
-        this.editCellParent = parent;
+        if (form.isEditing()) return;
 
-        if (isEditable(editContext)) {
-            GPropertyDraw property = getProperty(editContext);
+        if (!isEditable(editContext)) return;
+
+        GPropertyDraw property = getProperty(editContext);
+
+        String actionSID = getEditAction(property, event);
+
+        if (actionSID != null) {
+            event.stopPropagation();
+            event.preventDefault();
+
+            this.editCell = editCell;
+            this.editEvent = event;
+            this.editContext = editContext;
+            this.editCellParent = parent;
+
             GGroupObjectValue columnKey = getColumnKey(editContext);
             Object oldValue = getValueAt(editContext);
 
-            editDispatcher.executePropertyEditAction(this, property, oldValue, columnKey);
+            editDispatcher.executePropertyEditAction(this, property, columnKey, actionSID, oldValue);
         }
     }
 

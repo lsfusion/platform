@@ -47,18 +47,26 @@ public abstract class TextFieldGridEditor implements GridCellEditor {
     public void startEditing(NativeEvent editEvent, Cell.Context context, Element parent, Object oldValue) {
         currentText = oldValue == null ? "" : oldValue.toString();
         InputElement inputElement = getInputElement(parent);
+        boolean selectAll = true;
         if (editEvent != null) {
             String eventType = editEvent.getType();
             if ("keydown".equals(eventType) && editEvent.getKeyCode() == KeyCodes.KEY_DELETE) {
                 currentText = "";
+                selectAll = false;
             } else if ("keypress".equals(eventType)) {
                 currentText = String.valueOf((char)editEvent.getCharCode());
+                selectAll = false;
             }
         }
         inputElement.setValue(currentText);
-        //перемещаем курсор в конец текста
-        textBoxImpl.setSelectionRange((com.google.gwt.user.client.Element) (Element) inputElement, currentText.length(), 0);
         inputElement.focus();
+
+        if (selectAll) {
+            textBoxImpl.setSelectionRange((com.google.gwt.user.client.Element) (Element) inputElement, 0, currentText.length());
+        } else {
+            //перемещаем курсор в конец текста
+            textBoxImpl.setSelectionRange((com.google.gwt.user.client.Element) (Element) inputElement, currentText.length(), 0);
+        }
     }
 
     @Override
