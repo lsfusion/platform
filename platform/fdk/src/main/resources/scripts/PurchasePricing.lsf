@@ -6,8 +6,9 @@ NAMESPACE Purchase;
 
 //----------------------------------------------- Акт расценки ---------------------------------------------------//
 
-@definePricing(' (покупка)', supplier, 'Поставщик');
 @definePricingAggregation(invoice, ' (покупка)', 'Акт расценки на основе инвойса', supplier, 'Поставщик');
+@definePricingRelation(' (покупка)', supplier, 'Поставщик');
+
 @defineRepricing(' (покупка)');
 
 overShipmentPriceUserInvoiceDetail(detail) += retailPriceUserInvoiceDetail(detail)
@@ -15,22 +16,6 @@ overShipmentPriceUserInvoiceDetail(detail) += retailPriceUserInvoiceDetail(detai
 
 //-- аггр.объект
 
-retailVATUserInvoiceDetail (detail) <- VATUserInvoiceDetail(detail) WHEN ASSIGNED(VATUserInvoiceDetail(detail));
 @deriveDocumentDetailPriceMarkupCustomPrefix(userInvoiceDetail, retail);
+retailVATUserInvoiceDetail (detail) <- VATUserInvoiceDetail(detail) WHEN ASSIGNED(VATUserInvoiceDetail(detail));
 
-EXTEND FORM userInvoice
-        PROPERTIES(d) READONLY pricingInvoiceDetail AFTER quantityUserInvoiceDetail SHOWIF showPricingInvoice(i) BACKGROUND backgroundRetailInvoice(i)
-;
-EXTEND FORM invoices
-        PROPERTIES(d) READONLY BACKGROUND backgroundRetailInvoice(i) pricingInvoiceDetail AFTER quantityInvoiceDetail  SHOWIF showPricingInvoice(i)
-;
-EXTEND FORM pricingInvoices
-    PROPERTIES(i) READONLY createPricingInvoice, retailSumInvoiceDetailInvoice BEFORE ordersInvoice(i)
-    PROPERTIES(d) READONLY BEFORE nameStockInvoiceDetail(d) SHOWIF createPricingInvoice(i)
-                  retailMarkupInvoiceDetail, retailMarkupSumInvoiceDetail, numberRetailVATInvoiceDetail,
-                  valueRetailVATInvoiceDetail, retailVATSumInvoiceDetail,
-                  retailPriceInvoiceDetail, retailSumInvoiceDetail
-;
-
-invoiceDetailPricingDetail(pricingDetail) += invoiceDetailInvoicePricingDetail(pricingDetail);
-//--
