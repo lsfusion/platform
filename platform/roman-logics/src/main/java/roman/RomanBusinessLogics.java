@@ -109,7 +109,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             "/scripts/RomanContractLedger.lsf",
             "/scripts/Warehouse.lsf",
             "/scripts/PriceChangeDiscount.lsf",
-            "/scripts/CustomCategory.lsf",    
+            "/scripts/CustomCategory.lsf",
             "/scripts/Freight.lsf",
             "/scripts/RomanInvoice.lsf",
             "/scripts/Particulars.lsf",
@@ -130,7 +130,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             "/scripts/ByLegalEntity.lsf",
             "/scripts/Backup.lsf",
             "/scripts/Agreement.lsf",
-            "/scripts/PriceList.lsf"
+            "/scripts/PriceList.lsf",
+            "/scripts/Label.lsf"
         );
         RomanLM = addModule(new RomanLogicsModule(LM, this));
         RomanLM.setRequiredModules(Arrays.asList("System", "Utils", "Hierarchy", "Historizable", "Numerator", "Stock", "Document", "Country"));

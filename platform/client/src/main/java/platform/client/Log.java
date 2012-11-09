@@ -1,11 +1,15 @@
 package platform.client;
 
 import javax.swing.*;
+import javax.swing.table.JTableHeader;
 import java.awt.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.text.DateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 
 import static platform.client.ClientResourceBundle.getString;
@@ -85,7 +89,11 @@ public final class Log {
     }
 
     public static void error(String message) {
-        printFailedMessage(message, "");
+        error(message, null, null);
+    }
+
+    public static void error(String message, ArrayList<String> titles, ArrayList<ArrayList<String>> data) {
+        printFailedMessage(message, titles, data, "");
     }
 
     static JTextArea errorText;
@@ -94,8 +102,13 @@ public final class Log {
     static JOptionPane optionPane;
     static JPanel line;
     static JPanel south;
+    static JTable table;
 
     public static void printFailedMessage(String message, String trace) {
+        printFailedMessage(message, null, null, trace);
+    }
+
+    public static void printFailedMessage(String message, ArrayList<String> titles, ArrayList<ArrayList<String>> data, String trace) {
         printmsg(message);
 
         provideErrorFeedback();
@@ -104,7 +117,10 @@ public final class Log {
         BorderLayout layout = new BorderLayout(10, 10);
         panel.setLayout(layout);
 
-        StringBuilder htmlMessage = new StringBuilder("<html>");
+        JPanel messagePanel = new JPanel();
+        messagePanel.setLayout(new BorderLayout(10, 10));
+
+        StringBuilder htmlMessage = new StringBuilder("<html><font size=+1>");
         for (int i = 0; i < message.length(); i++) {
             char ch = message.charAt(i);
             if (ch == '\n') {
@@ -113,10 +129,38 @@ public final class Log {
                 htmlMessage.append(ch);
             }
         }
-        htmlMessage.append("</html>");
+        htmlMessage.append("</font></html>");
 
         JLabel text = new JLabel(htmlMessage.toString());
-        panel.add(text, BorderLayout.CENTER);
+        messagePanel.add(text, BorderLayout.NORTH);
+
+        if (data != null) {
+            int size = data.size();
+            Object columnNames[] = titles.toArray();
+            Object dataArray[][] = new Object[size][];
+            int i = 0;
+            for (ArrayList<String> dataRow : data) {
+                dataArray[i] = dataRow.toArray();
+                i++;
+            }
+            table = new JTable(dataArray, columnNames) {
+                @Override
+                public boolean isCellEditable(int row, int column) {
+                    return false;
+                }
+            };
+            table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+            table.setPreferredScrollableViewportSize(
+                    new Dimension(
+                            table.getPreferredScrollableViewportSize().width,
+                            dataArray.length * table.getRowHeight()
+                    ));
+            table.setFocusable(false);
+            JScrollPane scrollPane = new JScrollPane(table);
+            messagePanel.add(scrollPane, BorderLayout.CENTER);
+        }
+
+        panel.add(messagePanel, BorderLayout.CENTER);
 
         south = new JPanel();
         south.setLayout(new BoxLayout(south, BoxLayout.Y_AXIS));
@@ -151,7 +195,7 @@ public final class Log {
         optionPane.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent e) {
                 Object value = optionPane.getValue();
-                if (dialog.isVisible() && value.equals("OK")) {
+                if (dialog.isVisible() && (value.equals("OK") || value.equals(-1))) {
                     dialog.dispose();
                 } else if (value.equals(getString("client.more"))) {
                     south.setVisible(!south.isVisible());

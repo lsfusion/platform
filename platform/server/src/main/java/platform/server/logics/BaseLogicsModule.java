@@ -810,7 +810,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         ustring5CM = addSFUProp("ustring5CM", ",", 5);
 
-        upper = addSFProp("upper", "prm1", 1);
+        upper = addSFProp("upper", "upper(prm1)", 1);
 
         sum = addSFProp("sum", "((prm1)+(prm2))", 2);
         sumDate = addSFProp("sumDate", "((prm1)+(prm2))", DateClass.instance, 2);
@@ -1270,7 +1270,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         translationDictionaryTerm = addCGProp(null, "translationDictionaryTerm", getString("logics.dictionary.translation"), translationDictionary, termDictionary, entryDictionary, 1, termDictionary, 1);
         nameEntryDictionary = addJProp(baseGroup, "nameEntryDictionary", getString("logics.dictionary"), name, entryDictionary, 1);
 
-        insensitiveTranslationDictionaryTerm = addMGProp((AbstractGroup)null, "insensitiveTranslationDictionaryTerm", getString("logics.dictionary.translation.insensitive"), translationDictionary, entryDictionary, 1, insensitiveTermDictionary, 1);
+        insensitiveTranslationDictionaryTerm = addMGProp(baseGroup, "insensitiveTranslationDictionaryTerm", getString("logics.dictionary.translation.insensitive"), translationDictionary, entryDictionary, 1, insensitiveTermDictionary, 1);
         
         currencyTypeExchange = addDProp(idGroup, "currencyTypeExchange", "Валюта типа обмена (ИД)", currency, typeExchange);
         nameCurrencyTypeExchange = addJProp(baseGroup, "nameCurrencyTypeExchange", "Валюта типа обмена (наим.)", name, currencyTypeExchange, 1);

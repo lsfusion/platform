@@ -928,10 +928,6 @@ public abstract class LogicsModule {
     }
 
     protected LAP addTAProp(LCP sourceProperty, LCP targetProperty) {
-        return addTAProp(sourceProperty, targetProperty, false);
-    }
-
-    protected LAP addTAProp(LCP sourceProperty, LCP targetProperty, boolean insensitive) {
         return addProperty(null, new LAP(new TranslateActionProperty(genSID(), "translate", baseLM.translationDictionaryTerm, baseLM.insensitiveTranslationDictionaryTerm, baseLM.insensitiveDictionary, sourceProperty, targetProperty, baseLM.dictionary)));
     }
 

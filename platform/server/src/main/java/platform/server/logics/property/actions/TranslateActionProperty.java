@@ -22,12 +22,12 @@ public class TranslateActionProperty extends UserActionProperty {
     private LCP insensitiveDictionary;
     
     public TranslateActionProperty(String sID, String caption, LCP translationDictionaryTerm, LCP insensitiveTranslationDictionaryTerm,
-                                   LCP inSensitiveDictionary, LCP sourceProperty, LCP targetProperty, ValueClass dictionary) {
+                                   LCP insensitiveDictionary, LCP sourceProperty, LCP targetProperty, ValueClass dictionary) {
         super(sID, caption, getValueClasses(sourceProperty, dictionary));
 
         this.translationDictionaryTerm = translationDictionaryTerm;
         this.insensitiveTranslationDictionaryTerm = insensitiveTranslationDictionaryTerm;
-        this.insensitiveDictionary = inSensitiveDictionary;
+        this.insensitiveDictionary = insensitiveDictionary;
         this.sourceProperty = sourceProperty;
         this.targetProperty = targetProperty;
     }

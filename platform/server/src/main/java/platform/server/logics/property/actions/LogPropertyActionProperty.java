@@ -37,30 +37,38 @@ public class LogPropertyActionProperty<P extends PropertyInterface> extends Syst
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
 
         DataSession session = context.getSession();
-
+        ArrayList<ArrayList<String>> data = new ArrayList<ArrayList<String>>();
         FormInstance formInstance = context.createFormInstance(new PropertyFormEntity(property, recognizeGroup),
                 new HashMap<ObjectEntity, DataObject>(), session, false, FormSessionScope.OLDSESSION, false, false);
 
-        String result = property.toString() + '\n';
-        for(FormRow formRow : formInstance.getFormData(30).rows) {
-            String rowResult = "";
-            for(Map.Entry<Set<ObjectInstance>, Collection<PropertyDrawInstance>> groupObj : BaseUtils.group(new BaseUtils.Group<Set<ObjectInstance>, PropertyDrawInstance>() {
-                                                        public Set<ObjectInstance> group(PropertyDrawInstance property) { // группируем по объектам
-                                                            return new HashSet<ObjectInstance>(property.propertyObject.mapping.values());
-                                                        } }, formRow.values.keySet()).entrySet()) {
-                String groupResult = "";
-                for(ObjectInstance objSet : groupObj.getKey())
-                    groupResult = (groupResult.length()==0?"":groupResult + ", ") + formRow.keys.get(objSet);
-                if(groupResult.length() > 0)
-                    groupResult = "id=" + groupResult;
-                for(PropertyDrawInstance property : groupObj.getValue())
-                    groupResult = (groupResult.length()==0?"":groupResult + ", ") + BaseUtils.toCaption(formRow.values.get(property));
-                if(groupResult.length()>0)
-                    rowResult += "[" + groupResult + "] ";
+        ArrayList<String> titleRow = new ArrayList<String>();
+        for (FormRow formRow : formInstance.getFormData(30).rows) {
+            ArrayList<String> propertyRow = new ArrayList<String>();
+            for (Map.Entry<Set<ObjectInstance>, Collection<PropertyDrawInstance>> groupObj : BaseUtils.group(new BaseUtils.Group<Set<ObjectInstance>, PropertyDrawInstance>() {
+                public Set<ObjectInstance> group(PropertyDrawInstance property) { // группируем по объектам
+                    return new HashSet<ObjectInstance>(property.propertyObject.mapping.values());
+                }
+            }, formRow.values.keySet()).entrySet()) {
+                String idResult = "";
+                String titleResult = "";
+                for (ObjectInstance objSet : groupObj.getKey()) {
+                    String id = "id=" + String.valueOf(formRow.keys.get(objSet));
+                    String caption = ((CustomObjectInstance) objSet).currentClass.getCaption();
+                    idResult = (idResult.length() == 0 ? "" : idResult + ", ") + caption + ": " + id;
+                    titleResult = (titleResult.length() == 0 ? "" : ", ") + caption;
+                }
+                propertyRow.add(idResult);
+                titleRow = new ArrayList<String>();
+                titleRow.add(titleResult);
+
+                for (PropertyDrawInstance prop : groupObj.getValue()) {
+                    propertyRow.add(BaseUtils.toCaption(formRow.values.get(prop)));
+                    titleRow.add(prop.toString());
+                }
+                data.add(propertyRow);
             }
-            result += "    " + rowResult + '\n';
         }
-        context.delayUserInteraction(new LogMessageClientAction(result, true));
+        context.delayUserInteraction(new LogMessageClientAction(property.toString(), titleRow, data, true));
 
         formInstance.close();
     }
