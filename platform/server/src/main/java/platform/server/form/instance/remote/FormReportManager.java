@@ -86,7 +86,7 @@ public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstan
         byte[] reportHierarchyByteArray = getReportHierarchyByteArray(groupReportHierarchy.getReportHierarchyMap());
         byte[] reportDesignsByteArray = getReportDesignsByteArray(toExcel, groupId, userPreferences);
         byte[] reportSourcesByteArray = getReportSourcesByteArray(
-                new ReportSourceGenerator<T>(form, groupReportHierarchy, fullReportHierarchy, getGridGroups(groupId))
+                new ReportSourceGenerator<T>(form, groupReportHierarchy, fullReportHierarchy, getGridGroups(groupId), groupId)
         );
 
         return new ReportGenerationData(reportHierarchyByteArray, reportDesignsByteArray, reportSourcesByteArray);

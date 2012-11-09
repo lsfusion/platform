@@ -46,7 +46,7 @@ public class ReportDependentDataSource implements JRDataSource {
             boolean hasNext = data.next();
             if (hasNext && values != null) {
                 for (int i = 0; i < values.size(); i++) {
-                    if (!data.getKeyValueByIndex(i).equals(values.get(i))) {
+                    if (data.getKeyValueByIndex(i) == null && values.get(i) != null || !data.getKeyValueByIndex(i).equals(values.get(i))) {
                         hasNext = false;
                         data.revert();
                         break;
