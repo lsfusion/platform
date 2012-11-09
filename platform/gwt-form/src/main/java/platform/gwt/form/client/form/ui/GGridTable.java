@@ -2,8 +2,12 @@ package platform.gwt.form.client.form.ui;
 
 import com.allen_sauer.gwt.log.client.Log;
 import com.google.gwt.cell.client.Cell;
+import com.google.gwt.dom.client.BrowserEvents;
+import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.view.client.SelectionChangeEvent;
 import platform.gwt.base.shared.GwtSharedUtils;
+import platform.gwt.cellview.client.AbstractCellTable;
 import platform.gwt.cellview.client.Column;
 import platform.gwt.form.client.dispatch.DeferredRunner;
 import platform.gwt.form.shared.view.GGroupObject;
@@ -37,6 +41,8 @@ public class GGridTable extends GGridPropertyTable {
         super(iform);
 
         this.groupObject = igroupController.groupObject;
+
+        setKeyboardSelectionHandler(new GridTableKeyboardSelectionHandler(this));
 
         selectionModel.addSelectionChangeHandler(new SelectionChangeEvent.Handler() {
             @Override
@@ -319,6 +325,29 @@ public class GGridTable extends GGridPropertyTable {
         @Override
         public Object getValue(GridDataRecord record) {
             return record.getValue(column);
+        }
+    }
+
+    public class GridTableKeyboardSelectionHandler extends GridPropertyTableKeyboardSelectionHandler {
+        public GridTableKeyboardSelectionHandler(AbstractCellTable<GridDataRecord> table) {
+            super(table);
+        }
+
+        @Override
+        public boolean handleKeyEvent(NativeEvent nativeEvent) {
+            assert BrowserEvents.KEYDOWN.equals(nativeEvent.getType());
+
+            int keyCode = nativeEvent.getKeyCode();
+            boolean ctrlPressed = nativeEvent.getCtrlKey();
+            if (keyCode == KeyCodes.KEY_HOME && ctrlPressed) {
+                form.scrollToEnd(groupObject, false);
+                return true;
+            } else if (keyCode == KeyCodes.KEY_END && ctrlPressed) {
+                form.scrollToEnd(groupObject, true);
+                return true;
+            }
+
+            return super.handleKeyEvent(nativeEvent);
         }
     }
 }

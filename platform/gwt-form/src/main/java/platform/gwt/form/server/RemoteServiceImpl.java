@@ -20,6 +20,7 @@ public class RemoteServiceImpl extends LogicsDispatchServlet<RemoteLogicsInterfa
         registry.addHandler(new CollapseGroupObjectHandler(this));
         registry.addHandler(new GetFormHandler(this));
         registry.addHandler(new ChangeGroupObjectHandler(this));
+        registry.addHandler(new ScrollToEndHandler(this));
         registry.addHandler(new GetRemoteChangesHandler(this));
         registry.addHandler(new SetRegularFilterHandler(this));
         registry.addHandler(new SetTabVisibleHandler(this));

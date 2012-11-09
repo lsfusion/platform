@@ -1,7 +1,11 @@
 package platform.gwt.form.client.form.ui;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.BrowserEvents;
+import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.TableRowElement;
+import com.google.gwt.event.dom.client.KeyCodes;
+import platform.gwt.cellview.client.AbstractCellTable;
 import platform.gwt.cellview.client.Header;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.view.client.DefaultSelectionEventManager;
@@ -50,6 +54,7 @@ public abstract class GGridPropertyTable extends GPropertyTable {
         setEmptyTableWidget(new HTML("The table is empty"));
 
         setKeyboardSelectionPolicy(KeyboardSelectionPolicy.BOUND_TO_SELECTION);
+        setKeyboardSelectionHandler(new GridPropertyTableKeyboardSelectionHandler(this));
 
         selectionModel = new GGridTableSelectionModel();
         setSelectionModel(selectionModel, DefaultSelectionEventManager.<GridDataRecord>createDefaultManager());
@@ -156,5 +161,27 @@ public abstract class GGridPropertyTable extends GPropertyTable {
 
         public GridDataRecord oldRecord = null;
         public int oldKeyScrollTop;
+    }
+
+    public static class GridPropertyTableKeyboardSelectionHandler extends PropertyTableKeyboardSelectionHandler {
+        public GridPropertyTableKeyboardSelectionHandler(AbstractCellTable<GridDataRecord> table) {
+            super(table);
+        }
+
+        @Override
+        public boolean handleKeyEvent(NativeEvent nativeEvent) {
+            assert BrowserEvents.KEYDOWN.equals(nativeEvent.getType());
+
+            int keyCode = nativeEvent.getKeyCode();
+            boolean ctrlPressed = nativeEvent.getCtrlKey();
+            if (keyCode == KeyCodes.KEY_HOME && !ctrlPressed) {
+                getDisplay().setKeyboardSelectedColumn(0);
+                return true;
+            } else if (keyCode == KeyCodes.KEY_END && !ctrlPressed) {
+                getDisplay().setKeyboardSelectedColumn(getDisplay().getColumnCount() - 1);
+                return true;
+            }
+            return super.handleKeyEvent(nativeEvent);
+        }
     }
 }

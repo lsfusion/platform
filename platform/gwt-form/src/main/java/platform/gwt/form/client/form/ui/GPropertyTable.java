@@ -4,11 +4,11 @@ import com.google.gwt.cell.client.Cell;
 import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
-import platform.gwt.cellview.client.AbstractCellTable;
-import platform.gwt.cellview.client.DataGrid;
 import com.google.gwt.user.client.ui.CustomScrollPanel;
 import com.google.gwt.user.client.ui.HeaderPanel;
 import com.google.gwt.view.client.CellPreviewEvent;
+import platform.gwt.cellview.client.AbstractCellTable;
+import platform.gwt.cellview.client.DataGrid;
 import platform.gwt.form.client.form.dispatch.GEditPropertyDispatcher;
 import platform.gwt.form.client.form.dispatch.GEditPropertyHandler;
 import platform.gwt.form.shared.actions.form.ServerResponseResult;
@@ -35,7 +35,7 @@ public abstract class GPropertyTable extends DataGrid implements EditManager, GE
 
         addStyleName(getResources().style().widget());
 
-        setKeyboardSelectionHandler(new KeyboardSelectionHandler(this));
+        setKeyboardSelectionHandler(new PropertyTableKeyboardSelectionHandler(this));
 
         this.form = iform;
 
@@ -68,7 +68,9 @@ public abstract class GPropertyTable extends DataGrid implements EditManager, GE
     }
 
     public abstract boolean isEditable(Cell.Context context);
+
     public abstract void setValueAt(Cell.Context context, Object value);
+
     public abstract Object getValueAt(Cell.Context context);
 
     @Override
@@ -124,21 +126,31 @@ public abstract class GPropertyTable extends DataGrid implements EditManager, GE
         editType = null;
     }
 
-    public static class KeyboardSelectionHandler extends CellTableKeyboardSelectionHandler<GridDataRecord> {
-        public KeyboardSelectionHandler(AbstractCellTable<GridDataRecord> table) {
+    public static class PropertyTableKeyboardSelectionHandler extends CellTableKeyboardSelectionHandler<GridDataRecord> {
+        public PropertyTableKeyboardSelectionHandler(AbstractCellTable<GridDataRecord> table) {
             super(table);
         }
 
         @Override
         public void onCellPreview(CellPreviewEvent<GridDataRecord> event) {
             NativeEvent nativeEvent = event.getNativeEvent();
-            String eventType = event.getNativeEvent().getType();
+            String eventType = nativeEvent.getType();
             if (BrowserEvents.KEYDOWN.equals(eventType) && !event.isCellEditing()) {
+                //не обрабатываем пробел, чтобы он обработался как начало редактирования
                 if (nativeEvent.getKeyCode() == 32) {
+                    return;
+                }
+
+                if (handleKeyEvent(nativeEvent)) {
+                    handledEvent(event);
                     return;
                 }
             }
             super.onCellPreview(event);
+        }
+
+        public boolean handleKeyEvent(NativeEvent nativeEvent) {
+            return false;
         }
     }
 }

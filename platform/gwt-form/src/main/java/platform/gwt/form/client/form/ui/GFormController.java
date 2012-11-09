@@ -407,6 +407,10 @@ public class GFormController extends SimplePanel {
         lastChangeCurrentObjectsRequestIndices.put(group, requestIndex);
     }
 
+    public void scrollToEnd(GGroupObject group, boolean toEnd) {
+        syncDispatch(new ScrollToEnd(group.ID, toEnd), new ServerResponseCallback());
+    }
+
     public void executeEditAction(GPropertyDraw property, GGroupObjectValue columnKey, String actionSID, AsyncCallback<ServerResponseResult> callback) {
         DeferredRunner.get().commitDelayedGroupObjectChange(property.groupObject);
         syncDispatch(new ExecuteEditAction(property.ID, columnKey == null ? null : columnKey.getValueDTO(), actionSID), callback);

@@ -166,7 +166,7 @@ public abstract class AbstractHasData<T> extends Composite implements HasData<T>
       setKeyboardSelectedRow(display.getRowCount() - 1);
     }
 
-    void handledEvent(CellPreviewEvent<?> event) {
+    protected void handledEvent(CellPreviewEvent<?> event) {
       event.setCanceled(true);
       event.getNativeEvent().preventDefault();
     }
