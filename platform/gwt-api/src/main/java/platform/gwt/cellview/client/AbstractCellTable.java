@@ -15,7 +15,6 @@
  */
 package platform.gwt.cellview.client;
 
-import com.allen_sauer.gwt.log.client.Log;
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.Cell.Context;
 import com.google.gwt.cell.client.FieldUpdater;
