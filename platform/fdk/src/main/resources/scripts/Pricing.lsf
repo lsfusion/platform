@@ -309,6 +309,8 @@ CLASS userPricingPosted 'Закрытый акт расценки (польз.)'
 @defineDocumentInterfaceHeaderSkip (pricing, changeLedger, 'Не изменять текущие цены');
 @defineDocumentInterfaceDetailSkip(pricing, changeLedger, 'Не изменять текущие цены');
 
+isReturnPricing 'Обратный' = ABSTRACT BOOLEAN (pricing);
+
 //------------------------------------ Печатные формы акт расценки ------------------------------------------------ //
 
 FORM pricing 'Акт расценки (печать)' PRINT
@@ -414,7 +416,7 @@ editUserPricing 'Редактировать' (userPricing) = ACTION EDITFORM use
 
 FORM pricings 'Акты расценки' TITLE 'Акты расценки'
     OBJECTS p = pricing
-    PROPERTIES (p) READONLY isPostedPricing FORCE GRID, objectClassName, numberPricing, seriesPricing, datePricing, timePricing,
+    PROPERTIES (p) READONLY isPostedPricing FORCE GRID, isReturnPricing, objectClassName, numberPricing, seriesPricing, datePricing, timePricing,
                             nameDepartmentStorePricing, nameSupplierPricing, nameCurrencyPricing, notePricing,
                             countPricingDetailPricing, quantityPricingDetailPricing, sumPricingDetailPricing,
                             retailSumPricingDetailPricing BACKGROUND backgroundRetailPricing(p), skipChangeLedgerPricing

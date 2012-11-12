@@ -22,5 +22,6 @@ retailMarkupUserInvoiceDetail(userInvoiceDetail)  <- [round2((((X - X*Y/(100+Y))
 @derivePrevPriceLedgerOnSkuChangePrefix(retailPrice, userInvoice, retailPrice, sku, stock);
 
 skipChangeLedgerPricing(pricing) += pricing IS invoicePricing;
+isReturnPricing(pricing) +=  pricing IS invoicePricing;
 //--
 

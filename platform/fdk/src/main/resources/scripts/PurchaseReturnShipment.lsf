@@ -9,8 +9,10 @@ NAMESPACE PurchaseReturn;
 @defineShipmentBatch();
 
 // Берем учетную цену
-@deriveDocumentDetailPriceBatchStockPrefix(userInvoice, shipment);
 @deriveDocumentDetailPriceBatchStock(userShipment);
+shipmentPriceUserInvoiceDetail(detail) <- calcShipmentPriceUserInvoiceDetail(detail) (+) extraShipmentPriceUserInvoiceDetail(detail) WHEN
+    (CHANGED(calcShipmentPriceUserInvoiceDetail(detail)) OR CHANGED(extraShipmentPriceUserInvoiceDetail(detail)) OR CHANGED(createShipmentUserInvoiceDetail(detail)))
+        AND createShipmentUserInvoiceDetail(detail);
 
 // Проводим по регистру
 
