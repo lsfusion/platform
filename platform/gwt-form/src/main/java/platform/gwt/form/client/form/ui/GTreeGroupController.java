@@ -136,7 +136,7 @@ public class GTreeGroupController implements GGroupObjectLogicsSupplier {
         panelToolbar.setVisible(!panelToolbar.isEmpty());
     }
 
-    public void redrawGridHeader() {
+    public void relayoutTable() {
         tree.onResize();
     }
 

@@ -20,6 +20,8 @@ import platform.gwt.form.shared.view.grid.GridEditableCell;
 
 import java.util.*;
 
+import static platform.gwt.base.shared.GwtSharedUtils.getFromDoubleMap;
+import static platform.gwt.base.shared.GwtSharedUtils.putToDoubleMap;
 import static platform.gwt.form.shared.view.GEditBindingMap.Key;
 
 public class GGridTable extends GGridPropertyTable {
@@ -148,6 +150,11 @@ public class GGridTable extends GGridPropertyTable {
 
     private void updatedColumnsIfNeeded() {
         if (columnsUpdated) {
+            HashMap<GPropertyDraw, HashMap<GGroupObjectValue, String>> columnWidths = new HashMap<GPropertyDraw, HashMap<GGroupObjectValue, String>>();
+            for (int i = 0; i < columnProperties.size(); i++) {
+                putToDoubleMap(columnWidths, columnProperties.get(i), columnKeysList.get(i), getColumnWidth(getColumn(i)));
+            }
+
             columnProperties.clear();
             columnKeysList.clear();
 
@@ -179,10 +186,11 @@ public class GGridTable extends GGridPropertyTable {
 
             for (int i = 0; i < Math.abs(columnDiff); ++i) {
                 if (columnDiff < 0) {
-                    GridHeader header = new GridHeader();
+                    GridColumn gridColumn = new GridColumn(getColumnCount());
+
+                    GGridPropertyTableHeader header = new GGridPropertyTableHeader(this);
                     headers.add(getColumnCount(), header);
 
-                    GridColumn gridColumn = new GridColumn(getColumnCount());
                     addColumn(gridColumn, header);
                 } else {
                     headers.remove(getColumnCount() - 1);
@@ -195,15 +203,21 @@ public class GGridTable extends GGridPropertyTable {
             }
 
             for (int i = 0; i < columnProperties.size(); ++i) {
-                GridHeader header = headers.get(i);
-                header.setCaption(columnCaptions.get(i));
-                GPropertyDraw property = getProperty(i);
-                if (property != null) {
-                    setColumnWidth(getColumn(i), property.getMinimumWidth());
+                GPropertyDraw property = columnProperties.get(i);
+                GGroupObjectValue columnKey = columnKeysList.get(i);
+                Column column = getColumn(i);
+                GGridPropertyTableHeader header = headers.get(i);
+
+                String columnWidth = getFromDoubleMap(columnWidths, property, columnKey);
+                if (columnWidth == null) {
+                    columnWidth = property.getMinimumWidth();
                 }
+
+                header.setCaption(columnCaptions.get(i));
+                setColumnWidth(column, columnWidth);
             }
 
-            redraw();
+            refreshHeadersAndRedraw();
 
             columnsUpdated = false;
             dataUpdated = true;

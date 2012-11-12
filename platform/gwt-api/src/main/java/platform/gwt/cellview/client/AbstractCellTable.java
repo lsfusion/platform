@@ -2554,6 +2554,11 @@ public abstract class AbstractCellTable<T> extends AbstractHasData<T> {
     redraw();
   }
 
+  public void refreshHeadersAndRedraw() {
+      headersDirty = true;
+      redraw();
+  }
+
   /**
    * Refresh the headers and column widths.
    */

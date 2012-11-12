@@ -28,7 +28,7 @@ public abstract class GGridPropertyTable extends GPropertyTable {
 
     protected ArrayList<GridDataRecord> currentRecords;
 
-    public ArrayList<GridHeader> headers = new ArrayList<GridHeader>();
+    public ArrayList<GGridPropertyTableHeader> headers = new ArrayList<GGridPropertyTableHeader>();
 
     protected boolean dataUpdated;
     protected boolean needToScroll;
@@ -123,34 +123,11 @@ public abstract class GGridPropertyTable extends GPropertyTable {
 
     public void headerClicked(Header header, boolean withCtrl) {
         sortableHeaderManager.headerClicked(headers.indexOf(header), withCtrl);
+        refreshHeadersAndRedraw();
     }
 
     public Boolean getSortDirection(Header header) {
         return sortableHeaderManager.getSortDirection(headers.indexOf(header));
-    }
-
-    protected class GridHeader extends Header<String> {
-        private String caption;
-
-        public GridHeader() {
-            this(null);
-        }
-
-        public GridHeader(String caption) {
-            super(new GGridHeaderCell());
-            this.caption = caption;
-            ((GGridHeaderCell) getCell()).setHeader(this);
-            ((GGridHeaderCell) getCell()).setTable(GGridPropertyTable.this);
-        }
-
-        public void setCaption(String caption) {
-            this.caption = caption;
-        }
-
-        @Override
-        public String getValue() {
-            return caption;
-        }
     }
 
     protected class GridState {

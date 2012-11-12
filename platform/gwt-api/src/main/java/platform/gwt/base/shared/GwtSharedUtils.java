@@ -68,4 +68,26 @@ public class GwtSharedUtils {
 
         return false;
     }
+
+    public static <R, C, V> void putToDoubleMap(HashMap<R, HashMap<C, V>> doubleMap, R row, C column, V value) {
+        HashMap<C, V> rowMap = doubleMap.get(row);
+        if (rowMap == null) {
+            doubleMap.put(row, rowMap = new HashMap<C, V>());
+        }
+        rowMap.put(column, value);
+    }
+
+    public static <R, C, V> V getFromDoubleMap(HashMap<R, HashMap<C, V>> doubleMap, R row, C column) {
+        HashMap<C, V> rowMap = doubleMap.get(row);
+        return rowMap == null ? null : rowMap.get(column);
+    }
+
+    public static <R, C, V> V removeFromDoubleMap(HashMap<R, HashMap<C, V>> doubleMap, R row, C column) {
+        V result = null;
+        HashMap<C, V> rowMap = doubleMap.get(row);
+        if (rowMap != null) {
+            result = rowMap.remove(column);
+        }
+        return result;
+    }
 }

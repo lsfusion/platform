@@ -31,7 +31,7 @@ public class GTreeTable extends GGridPropertyTable {
                 return object.getAttribute("treeColumn");
             }
         };
-        GridHeader header = new GridHeader("Дерево");
+        GGridPropertyTableHeader header = new GGridPropertyTableHeader(this, "Дерево");
         createdFields.add("treeColumn");
         headers.add(header);
         addColumn(column, header);
@@ -79,8 +79,8 @@ public class GTreeTable extends GGridPropertyTable {
             if (createdFields.contains(property.sID)) {
 //                showField(property.sID);
             } else {
-                GridHeader header = new GridHeader(property.getCaptionOrEmpty());
                 Column<GTreeGridRecord, Object> gridColumn = createGridColumn(property);
+                GGridPropertyTableHeader header = new GGridPropertyTableHeader(this, property.getCaptionOrEmpty());
 
                 headers.add(index, header);
                 insertColumn(index, gridColumn, header);

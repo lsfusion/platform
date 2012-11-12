@@ -64,7 +64,7 @@ public class GGridController {
         gridView.setVisible(true);
     }
 
-    public void redrawGrid() {
+    public void relayoutTable() {
         table.onResize();
     }
 

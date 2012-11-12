@@ -41,6 +41,9 @@ import platform.gwt.form.shared.view.window.GModalityType;
 import java.io.Serializable;
 import java.util.*;
 
+import static platform.gwt.base.shared.GwtSharedUtils.putToDoubleMap;
+import static platform.gwt.base.shared.GwtSharedUtils.removeFromDoubleMap;
+
 public class GFormController extends SimplePanel {
 
     private final FormDispatchAsync dispatcher;
@@ -356,28 +359,6 @@ public class GFormController extends SimplePanel {
         }
     }
 
-    public <R, C, V> void putToDoubleMap(HashMap<R, HashMap<C, V>> doubleMap, R row, C column, V value) {
-        HashMap<C, V> rowMap = doubleMap.get(row);
-        if (rowMap == null) {
-            doubleMap.put(row, rowMap = new HashMap<C, V>());
-        }
-        rowMap.put(column, value);
-    }
-
-    public <R, C, V> V getFromDoubleMap(HashMap<R, HashMap<C, V>> doubleMap, R row, C column) {
-        HashMap<C, V> rowMap = doubleMap.get(row);
-        return rowMap == null ? null : rowMap.get(column);
-    }
-
-    public <R, C, V> V removeFromDoubleMap(HashMap<R, HashMap<C, V>> doubleMap, R row, C column) {
-        V result = null;
-        HashMap<C, V> rowMap = doubleMap.get(row);
-        if (rowMap != null) {
-            result = rowMap.remove(column);
-        }
-        return result;
-    }
-
     public void openForm(GForm form, GModalityType modalityType, final WindowHiddenHandler handler) {
         if (isDialog && !modalityType.isDialog()) {
             modalityType = GModalityType.MODAL;
@@ -570,12 +551,12 @@ public class GFormController extends SimplePanel {
         }
         for (GGrid grid : grids) {
             if (controllers.get(grid.groupObject) != null) {
-                controllers.get(grid.groupObject).redrawGridHeader();
+                controllers.get(grid.groupObject).relayoutTable();
             }
         }
         for (GTreeGroup treeGroup : treeGrids) {
             if (treeControllers.get(treeGroup) != null) {
-                treeControllers.get(treeGroup).redrawGridHeader();
+                treeControllers.get(treeGroup).relayoutTable();
             }
         }
     }

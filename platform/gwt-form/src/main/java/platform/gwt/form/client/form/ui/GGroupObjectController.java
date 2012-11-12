@@ -291,8 +291,8 @@ public class GGroupObjectController implements GGroupObjectLogicsSupplier {
         }
     }
 
-    public void redrawGridHeader() {
-        grid.redrawGrid();
+    public void relayoutTable() {
+        grid.relayoutTable();
     }
 
     public boolean isInGridClassView() {
