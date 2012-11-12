@@ -81,10 +81,10 @@ public class GSplitPane {
 
     private void adjustSize(String firstPercentSize) {
         if (vertical) {
-            container.setCellHeight(firstWidget, firstPercentSize);
+            firstWidget.getElement().getParentElement().getStyle().setProperty("height", firstPercentSize);
             container.setCellHeight(secondWidget, "100%");
         } else {
-            container.setCellWidth(firstWidget, firstPercentSize);
+            firstWidget.getElement().getParentElement().getStyle().setProperty("width", firstPercentSize);
             container.setCellWidth(secondWidget, "100%");
         }
     }
@@ -96,15 +96,18 @@ public class GSplitPane {
     public void setWidgetSize(Widget widget, String width, String height) {
         if (widget.equals(firstWidget.getWidget())) {
             if (vertical && height != null) {
-                container.setCellHeight(firstWidget, height);
+                // на данный момент есть баг GWT + IE:
+                // http://code.google.com/p/google-web-toolkit/issues/detail?id=2065
+                // поэтому приходится делать так, хотя предполагается использовать container.setCellWidth()
+                firstWidget.getElement().getParentElement().getStyle().setProperty("height", height);
             } else if (!vertical && width != null) {
-                container.setCellWidth(firstWidget, width);
+                firstWidget.getElement().getParentElement().getStyle().setProperty("width", width);
             }
         } else if (widget.equals(secondWidget.getWidget())) {
             if (vertical && height != null) {
-                container.setCellHeight(secondWidget, height);
+                secondWidget.getElement().getParentElement().getStyle().setProperty("height", height);
             } else if (!vertical && width != null) {
-                container.setCellWidth(secondWidget, width);
+                secondWidget.getElement().getParentElement().getStyle().setProperty("width", width);
             }
         }
     }

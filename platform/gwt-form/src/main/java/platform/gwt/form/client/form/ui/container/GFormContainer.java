@@ -60,9 +60,12 @@ public class GFormContainer extends GAbstractFormContainer {
     public void setTableCellSize(Widget child, String size, boolean width) {
         if (size != null) {
             if (width) {
-                panel.setCellWidth(child, size);
+                // на данный момент есть баг GWT + IE:
+                // http://code.google.com/p/google-web-toolkit/issues/detail?id=2065
+                // поэтому приходится делать так, хотя предполагается использовать panel.setCellWidth()
+                child.getElement().getParentElement().getStyle().setProperty("width", size);
             } else {
-                panel.setCellHeight(child, size);
+                child.getElement().getParentElement().getStyle().setProperty("height", size);
             }
         }
     }

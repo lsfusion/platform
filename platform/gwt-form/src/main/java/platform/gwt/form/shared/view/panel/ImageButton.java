@@ -28,6 +28,7 @@ public class ImageButton extends Button {
         panel = directionBottom ? new VerticalPanel() : new HorizontalPanel();
         panel.add(image = new Image());
         panel.add(label = new Label());
+        image.setVisible(false);
 
         if (directionBottom) {
             panel.setCellHorizontalAlignment(image, HasHorizontalAlignment.ALIGN_CENTER);
@@ -48,6 +49,7 @@ public class ImageButton extends Button {
         if (!GwtSharedUtils.nullEquals(this.imagePath, imagePath)) {
             this.imagePath = imagePath;
             image.setUrl(imagePath == null ? "" : imagePath);
+            image.setVisible(imagePath != null);
             refreshHTML();
         }
     }

@@ -286,6 +286,7 @@ input[type=checkbox] {
 
 .checkBoxFilter {
     margin-top: 5px;
+    white-space: nowrap;
 }
 
 .comboBoxFilter {
