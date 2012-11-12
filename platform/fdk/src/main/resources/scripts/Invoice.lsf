@@ -374,15 +374,15 @@ META defineInvoiceReturn(NS, NSR, contact)
     NSR.priceUserInvoiceDetail(detail) <- IF invoiceDetailUserInvoiceDetail(detail) THEN
                                                     NS.priceInvoiceDetail(invoiceDetailUserInvoiceDetail(detail))
                                                  ELSE IF batchUserInvoiceDetail(detail) THEN
-                                                    pricePriceListTypeBatchStockDateTime(NSR.priceListTypeInvoiceDetail(detail),
-                                                                                         NSR.batchInvoiceDetail(detail),
-                                                                                         NSR.stockInvoiceDetail(detail),
-                                                                                         NSR.dateTimeInvoiceDetail(detail))
+                                                    prevPricePriceListTypeBatchStockDateTime(NSR.priceListTypeInvoiceDetail(detail),
+                                                                                             NSR.batchInvoiceDetail(detail),
+                                                                                             NSR.stockInvoiceDetail(detail),
+                                                                                             NSR.dateTimeInvoiceDetail(detail))
                                                  ELSE
-                                                    pricePriceListTypeSkuStockDateTime(NSR.priceListTypeInvoiceDetail(detail),
-                                                                                       NSR.skuInvoiceDetail(detail),
-                                                                                       NSR.stockInvoiceDetail(detail),
-                                                                                       NSR.dateTimeInvoiceDetail(detail))
+                                                    prevPricePriceListTypeSkuStockDateTime(NSR.priceListTypeInvoiceDetail(detail),
+                                                                                           NSR.skuInvoiceDetail(detail),
+                                                                                           NSR.stockInvoiceDetail(detail),
+                                                                                           NSR.dateTimeInvoiceDetail(detail))
                                         WHEN CHANGED(invoiceDetailUserInvoiceDetail(detail)) OR
                                              CHANGED(NSR.batchInvoiceDetail(detail)) OR
                                              CHANGED(NSR.priceListTypeInvoiceDetail(detail)) OR
