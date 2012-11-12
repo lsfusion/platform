@@ -35,26 +35,27 @@ META defineBlanketOrder(sign, contact, contactCaption, series)
     @defineDocumentDetailSku(blanketOrder, sku);
     @defineDocumentDetailQuantity(blanketOrder);
 
-    @defineDocumentDetailPrice(blanketOrder);
-    @deriveDocumentDetailPricePriceListType(blanketOrder);
-
-    @defineDocumentDetailDataSum (blanketOrder);
-    @deriveDocumentDetailSum(blanketOrder, quantity);
-
     @defineDocumentHeaderQuantityContractor(blanketOrder, contact);
     @defineDocumentHeaderQuantity(blanketOrder);
 
     @defineDocumentHeaderSkuQuantityContractor (blanketOrder, sku, contact);
     @defineDocumentHeaderSkuQuantity(blanketOrder, sku);
 
+    countBlanketOrderDetailStockBlanketOrder 'Кол-во строк по складу '(stock, blanketOrder) = GROUP SUM 1 BY stockBlanketOrderDetail(blanketOrderDetail), blanketOrderBlanketOrderDetail(blanketOrderDetail);
+    inBlanketOrder###contact 'В заказе' (blanketOrder, contact) = DATA BOOLEAN (blanketOrder, contact);
+
+    @defineDocumentDoubleInterfaceHeaderAgreement (blanketOrder, companyBlanketOrder, contact);
+    @deriveDocumentDoubleDetailPriceListTypeAgreement (blanketOrder, contact);
+
+    @defineDocumentDetailPrice(blanketOrder);
+    @deriveDocumentDetailPricePriceListType(blanketOrder);
+
+    @defineDocumentDetailDataSum (blanketOrder);
+    @deriveDocumentDetailSum(blanketOrder, quantity);
+
     @defineDocumentHeaderSumContractor (blanketOrder, contact);
     @defineDocumentHeaderSum (blanketOrder);
     @defineDocumentHeaderCountContractor (blanketOrder, contact);
-
-
-
-    countBlanketOrderDetailStockBlanketOrder 'Кол-во строк по складу '(stock, blanketOrder) = GROUP SUM 1 BY stockBlanketOrderDetail(blanketOrderDetail), blanketOrderBlanketOrderDetail(blanketOrderDetail);
-    inBlanketOrder###contact 'В заказе' (blanketOrder, contact) = DATA BOOLEAN (blanketOrder, contact);
 
     CONSTRAINT contact##BlanketOrderDetail(blanketOrderDetail) AND NOT inBlanketOrder###contact(blanketOrderBlanketOrderDetail(blanketOrderDetail), contact##BlanketOrderDetail(blanketOrderDetail))
         CHECKED BY contact##BlanketOrderDetail
@@ -82,7 +83,8 @@ META defineBlanketOrder(sign, contact, contactCaption, series)
                        shipmentTimeBlanketOrderDetail, ADDOBJ, delete
         OBJECTS c = contact
         PROPERTIES     name(c) READONLY, inBlanketOrder###contact(o,c)
-        PROPERTIES(o,c) nameNumeratorBlanketOrder###contact, numberBlanketOrder###contact, seriesBlanketOrder###contact, namePriceListTypeBlanketOrder###contact
+        PROPERTIES(o,c) nameNumeratorBlanketOrder###contact, numberBlanketOrder###contact, seriesBlanketOrder###contact,
+                        nameAgreementBlanketOrder###contact, namePriceListTypeBlanketOrder###contact
         PROPERTIES(o,c) READONLY countBlanketOrderDetailBlanketOrder###contact, quantityBlanketOrderDetailBlanketOrder###contact, sumBlanketOrderDetailBlanketOrder###contact
 
         PROPERTIES(o) TODRAW d deleteBlanketOrderDetailBlanketOrder

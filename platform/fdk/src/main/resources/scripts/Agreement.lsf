@@ -141,6 +141,91 @@ META deriveDocumentDetailPriceListTypeAgreement (object)
     @deriveDocumentDetailPriceListTypeAgreementCustom(object, object###detail);
 END
 
+//--------------------------------------- Для двух объектов ----------------------------------------------------------//
+META defineDocumentDoubleHeaderAgreement (object, legalEntity)
+    agreement###object###legalEntity (object, legalEntity) = DATA agreement (object, legalEntity);
+    nameAgreement###object###legalEntity 'Соглашение' (object, legalEntity)= name(agreement###object###legalEntity(object, legalEntity)) IN documentPrmGroup MINCHARWIDTH 5 PREFCHARWIDTH 10;
+    dataPriceListType###object###legalEntity (object, legalEntity) = priceListTypeAgreement(agreement###object###legalEntity (object, legalEntity));
+    priceListType###object###legalEntity (object, legalEntity) =
+        UNION OVERRIDE dataPriceListType###object###legalEntity(object, legalEntity),
+                       userPriceListType###object###legalEntity(object, legalEntity);
+    namePriceListType###object###legalEntity 'Вид цен' (object, legalEntity)= name(priceListType###object###legalEntity(object, legalEntity)) IN documentPrmGroup MINCHARWIDTH 5 PREFCHARWIDTH 10;
+END
+META defineDocumentDoubleInterfaceHeaderAgreement (object, company, legalEntity)
+    @defineDocumentDoubleHeaderAgreement(object, legalEntity);
+    agreement###object###legalEntity (object, legalEntity) <- defaultAgreementCompanyLegalEntity(company(object), legalEntity)
+        IF currency###object(object) == currencyAgreement(defaultAgreementCompanyLegalEntity(company(object), legalEntity))
+    WHEN CHANGED(currency###object(object)) AND legalEntity IS legalEntity OR
+         CHANGED(in###object###legalEntity(object, legalEntity));
+
+    CONSTRAINT currency###object(object) != currencyAgreement(agreement###object###legalEntity(object, legalEntity))
+               CHECKED BY agreement###object###legalEntity
+               MESSAGE 'Валюта документа должны совпадать с валютой соглашения';
+
+    CONSTRAINT companyAgreement(agreement###object###legalEntity(object, legalEntity)) != company(object)
+               CHECKED BY agreement###object###legalEntity
+               MESSAGE 'Соглашение должно быть между заданными юр. лицами';
+
+    CONSTRAINT agreement###object###legalEntity(object, legalEntity)
+               AND NOT inAgreementLegalEntityOver(agreement###object###legalEntity(object, legalEntity), legalEntity)
+               CHECKED BY agreement###object###legalEntity
+               MESSAGE 'Соглашение должно быть между заданными юр. лицами';
+END
+
+META deriveDocumentDoubleDetailPriceListTypeAgreementCustom (object, detail, legalEntity)
+    priceListType###detail (idetail) = UNION OVERRIDE priceListType###object###legalEntity(object###detail(idetail), legalEntity###detail(idetail)), dataPriceListType###detail(idetail) PERSISTENT;
+    namePriceListType###detail 'Вид цен' (idetail) = name(priceListType###detail(idetail)) MINCHARWIDTH 10 PREFCHARWIDTH 20;
+
+    priceListType###detail(detail) <- IF agreement###object###legalEntity(object###detail(detail), legalEntity###detail(detail))
+                                             THEN priceListTypeAgreementSkuOver(agreement###object###legalEntity(object###detail(detail), legalEntity###detail(detail)), sku###detail(detail))
+                                             ELSE priceListType###object###legalEntity(object###detail(detail), legalEntity###detail(detail))
+    WHEN CHANGED(agreement###object###legalEntity(object###detail(detail), legalEntity###detail(detail))) OR
+         CHANGED(priceListType###object###legalEntity(object###detail(detail), legalEntity###detail(detail))) OR
+         CHANGED(sku###detail(detail)) OR
+         CHANGED(stock###detail(detail)) OR
+         CHANGED(legalEntity###detail(detail));
+END
+META deriveDocumentDoubleDetailPriceListTypeAgreement (object, legalEntity)
+    @deriveDocumentDoubleDetailPriceListTypeAgreementCustom(object, object###detail, legalEntity);
+END
+
+META deriveDocumentDetailPricePriceListTypeCustom (detail)
+    price###detail(detail) <- prevPricePriceListTypeSkuStockDateTime(priceListType###detail(detail),
+                                                                     sku###detail(detail),
+                                                                     stock###detail(detail),
+                                                                     dateTime###detail(detail))
+                                    WHEN CHANGED(priceListType###detail(detail)) OR
+                                         CHANGED(sku###detail(detail)) OR
+                                         CHANGED(stock###detail(detail)) OR
+                                         CHANGED(dateTime###detail(detail));
+END
+
+META deriveDocumentDetailPricePriceListType (object)
+    @deriveDocumentDetailPricePriceListTypeCustom(object##Detail);
+END
+
+META deriveDocumentDetailPriceBatchPriceListTypeCustom (detail)
+    price###detail(detail) <- IF batch###detail(detail) THEN
+                                    prevPricePriceListTypeBatchStockDateTime(priceListType###detail(detail),
+                                                                             batch###detail(detail),
+                                                                             stock###detail(detail),
+                                                                             dateTime###detail(detail))
+                              ELSE
+                                    prevPricePriceListTypeSkuStockDateTime(priceListType###detail(detail),
+                                                                           sku###detail(detail),
+                                                                           stock###detail(detail),
+                                                                           dateTime###detail(detail))
+                                    WHEN CHANGED(batch###detail(detail)) OR
+                                         CHANGED(priceListType###detail(detail)) OR
+                                         CHANGED(sku###detail(detail)) OR
+                                         CHANGED(stock###detail(detail)) OR
+                                         CHANGED(dateTime###detail(detail));
+END
+
+META deriveDocumentDetailPriceBatchPriceListType (object)
+    @deriveDocumentDetailPriceBatchPriceListTypeCustom(object##Detail);
+END
+
 FORM agreementsLegalEntity 'Соглашения'
 
     OBJECTS l=legalEntity FIXED PANEL
