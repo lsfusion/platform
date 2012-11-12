@@ -23,7 +23,7 @@ FORM ownership 'Форма собственности'
 
 // ----------------------------------- Юридическое лицо --------------------------------- //
 
-CLASS ABSTRACT legalEntity 'Юридическое лицо' : named, externalObject;
+CLASS legalEntity 'Юридическое лицо' : named, externalObject, taxUnitGroup;
 TABLE legalEntity (legalEntity);
 TABLE legalEntityDate (legalEntity, DATE);
 
@@ -161,15 +161,15 @@ numberCurrentLicenseLegalEntity 'Действующая лицензия' (legal
 CONSTRAINT countryLegalEntity(legalEntityLicense(license)) != countryLicense(license)
     CHECKED BY legalEntityLicense MESSAGE 'Страна лицензии должна совпадать со страной юридического лица';
 
-// ------------------------------------ Собственные компании ----------------------------- //
-
-CLASS company 'Компания' : legalEntity, taxUnitGroup;
-TABLE company (company);
-
+//// ------------------------------------ Собственные компании ----------------------------- //
+//
+//CLASS company 'Компания' : legalEntity, taxUnitGroup;
+//TABLE company (company);
+//
 // ---------------------------------------- Формы для ввода компаний ------------------------------------- //
 
-FORM company 'Компания'
-    OBJECTS co=company FIXED PANEL
+FORM legalEntity 'Компания'
+    OBJECTS co=legalEntity FIXED PANEL
     PROPERTIES(co) name, nameCountryLegalEntity, nameLanguageLegalEntity, nameCurrencyLegalEntity,
                    nameOwnershipLegalEntity, shortNameOwnershipLegalEntity, fullNameLegalEntity,
                    addressLegalEntity ON CHANGE EXEC dialogAddressLegalEntity(co),
@@ -183,10 +183,10 @@ FORM company 'Компания'
     PROPERTIES(a)  numberAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount, MFOBankAccount, noteAccount, ADDOBJ, delete
     FILTERS legalEntityAccount(a) == co
 
-    EDIT company OBJECT co
+    EDIT legalEntity OBJECT co
 ;
 
-DESIGN company FROM DEFAULT {
+DESIGN legalEntity FROM DEFAULT {
     main{
        preferredSize = (1024, 768);
        co.box {
@@ -220,9 +220,9 @@ DESIGN company FROM DEFAULT {
    }
 }
 
-FORM companies 'Компании'
+FORM legalEntities 'Компании'
 
-    OBJECTS co=company
+    OBJECTS co=legalEntity
     PROPERTIES(co) READONLY name, fullNameLegalEntity, shortNameOwnershipLegalEntity,
                             numberAccountLegalEntity, addressLegalEntity, phoneLegalEntity
     PROPERTIES(co) ADDFORM, EDITFORM, delete

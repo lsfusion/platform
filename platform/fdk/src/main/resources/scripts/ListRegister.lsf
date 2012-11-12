@@ -102,7 +102,7 @@ nameDepartmentStoreListRegister 'Отдел документа' (inputListRegist
 
 consigneeListRegister 'Грузополучатель' (inputListRegister) =
     [FORMULA STRING[200] 'CAST($1 AS TEXT) || \', \' || CAST($2 AS TEXT) || \', отдел  \' || CAST($3 AS TEXT)'](
-    nameCompanyDepartmentStore(departmentStoreListRegister(inputListRegister)),
+    nameLegalEntityDepartmentStore(departmentStoreListRegister(inputListRegister)),
     nameStoreDepartmentStore(departmentStoreListRegister(inputListRegister)),
     nameDepartmentStoreListRegister(inputListRegister));
 

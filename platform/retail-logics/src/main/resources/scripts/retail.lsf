@@ -19,7 +19,6 @@ REQUIRE System,
         Ware,
         Country,
         ByLegalEntity,
-        Customer,
         Order,
         BlanketOrder,
         Invoice,
@@ -156,9 +155,9 @@ META defineDocumentHeaderSupplierContractDepartmentStore(object)
     @defineDocumentHeaderSupplierContract(object);
     @defineDocumentUNPSupplier(object);
 
-    contract###object (object) <- singleContractSkuSupplierSupplierCompany(supplier###object(object), companyDepartmentStore(departmentStore###object(object)))
+    contract###object (object) <- singleContractSkuSupplierSupplierLegalEntity(supplier###object(object), legalEntityDepartmentStore(departmentStore###object(object)))
                                   WHEN CHANGED(supplier###object(object));
-    CONSTRAINT contract###object(object) AND NOT companyDepartmentStore(departmentStore###object(object)) == companyContractSkuSupplier(contract###object(object))
+    CONSTRAINT contract###object(object) AND NOT legalEntityDepartmentStore(departmentStore###object(object)) == legalEntityContractSkuSupplier(contract###object(object))
         CHECKED BY contract###object MESSAGE 'Выберите договор данного юр. лица';
 END
 
@@ -1742,19 +1741,19 @@ noOverdueSpecification 'Непросрочена' (specification) = dateToSpecif
 overdueSpecificationDate 'Просрочена' (specification, date) = dateToSpecification(specification) < date AND date AS DATE;
 noOverdueSpecificationDate 'Непросрочена' (specification, date) = dateToSpecification(specification) >= date AND date AS DATE;
 
-UNPCompanySpecification 'УНП компании' (specification) = UNPLegalEntity(companySpecification(specification));
-fullNameCompanySpecification 'Полное наименование компании' (specification) = fullNameLegalEntity(companySpecification(specification));
-addressCompanySpecification 'Юридический адрес компании' (specification) = addressLegalEntityDate(companySpecification(specification), dateSpecification(specification));
+UNPLegalEntitySpecification 'УНП компании' (specification) = UNPLegalEntity(legalEntitySpecification(specification));
+fullNameLegalEntitySpecification 'Полное наименование компании' (specification) = fullNameLegalEntity(legalEntitySpecification(specification));
+addressLegalEntitySpecification 'Юридический адрес компании' (specification) = addressLegalEntityDate(legalEntitySpecification(specification), dateSpecification(specification));
 
-accountCompanySpecification 'Р/сч. компании ИД' (specification) = accountLegalEntity(companySpecification(specification));
-numberAccountCompanySpecification 'Р/сч. компании' (specification) = numberAccount(accountCompanySpecification(specification));
+accountLegalEntitySpecification 'Р/сч. компании ИД' (specification) = accountLegalEntity(legalEntitySpecification(specification));
+numberAccountLegalEntitySpecification 'Р/сч. компании' (specification) = numberAccount(accountLegalEntitySpecification(specification));
 
-nameBankAccountCompanySpecification 'Банк компании' (specification) = nameBankAccount(accountCompanySpecification(specification));
-addressBankAccountCompanySpecification 'Адрес банка компании' (specification) = addressBankDate(bankAccount(accountCompanySpecification(specification)), dateSpecification(specification));
-MFOBankAccountCompanySpecification 'Код МФО банка компании' (specification) = MFOBankAccount(accountCompanySpecification(specification));
-departmentBankAccountCompanySpecification 'Отдел банка компании' (specification) = departmentBankAccount(accountCompanySpecification(specification));
-CBUBankAccountCompanySpecification 'ЦБУ банка компании' (specification) = CBUBankAccount(accountCompanySpecification(specification));
-phoneCompanySpecification 'Телефон компании' (specification) = phoneLegalEntityDate(companySpecification(specification), dateSpecification(specification)) IN customerGroup;
+nameBankAccountLegalEntitySpecification 'Банк компании' (specification) = nameBankAccount(accountLegalEntitySpecification(specification));
+addressBankAccountLegalEntitySpecification 'Адрес банка компании' (specification) = addressBankDate(bankAccount(accountLegalEntitySpecification(specification)), dateSpecification(specification));
+MFOBankAccountLegalEntitySpecification 'Код МФО банка компании' (specification) = MFOBankAccount(accountLegalEntitySpecification(specification));
+departmentBankAccountLegalEntitySpecification 'Отдел банка компании' (specification) = departmentBankAccount(accountLegalEntitySpecification(specification));
+CBUBankAccountLegalEntitySpecification 'ЦБУ банка компании' (specification) = CBUBankAccount(accountLegalEntitySpecification(specification));
+phoneLegalEntitySpecification 'Телефон компании' (specification) = phoneLegalEntityDate(legalEntitySpecification(specification), dateSpecification(specification)) IN customerGroup;
 
 CONSTRAINT specification IS specification AND NOT dateToSpecification(specification) MESSAGE 'Не задан срок действия с/ф';
 CONSTRAINT dateToSpecification(specification) < dateSpecification(specification) MESSAGE 'Дата действия с/ф не может быть меньше даты документа';
@@ -1914,7 +1913,7 @@ needToPriceChangeStatementDetail (statementDetail) = curRetailPriceStatementDeta
 @defineConsignment(statement);
 @implementConsignment(statement, departmentStore);
 
-senderConsignment (consignment) += companyDepartmentStore(departmentStoreStatement(consignment));
+senderConsignment (consignment) += legalEntityDepartmentStore(departmentStoreStatement(consignment));
 recipientConsignment (consignment) += customerStatement(consignment);
 
 priceConsignmentDetail (consignmentDetail) += retailPriceStatementDetail (consignmentDetail);
@@ -2193,7 +2192,7 @@ quantityWastageDetail 'Количество для списания '(wastageDet
 supplierWastage (wastage) = supplierShipment(shipmentWastage(wastage));
 nameSupplierWastage 'Поставщик' (wastage) = name(supplierWastage(wastage));
 
-nameCompanyWastage 'Компания' (wastage) = nameCompanyDepartmentStore(departmentStoreWastage(wastage));
+nameLegalEntityWastage 'Компания' (wastage) = nameLegalEntityDepartmentStore(departmentStoreWastage(wastage));
 
 descriptionWastage 'Название документа' (wastage) =
     [FORMULA STRING[200] '\'Списание отходов \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)'](
@@ -2302,8 +2301,8 @@ sumContainerOutAccountDocumentLedger (ledger) += retailSumContainerInnerFlowDeta
 @defineConsignment(innerFlow);
 @implementConsignment(innerFlow, departmentStore);
 
-senderConsignment (consignment) += companyDepartmentStore(departmentStoreInnerFlow(consignment));
-recipientConsignment (consignment) += companyDepartmentStore(recipientDepartmentInnerFlow(consignment));
+senderConsignment (consignment) += legalEntityDepartmentStore(departmentStoreInnerFlow(consignment));
+recipientConsignment (consignment) += legalEntityDepartmentStore(recipientDepartmentInnerFlow(consignment));
 
 priceConsignmentDetail (consignmentDetail) += retailPriceInnerFlowDetail(consignmentDetail);
 sumConsignmentDetail (consignmentDetail) += retailSumInnerFlowDetail (consignmentDetail);
@@ -2475,9 +2474,9 @@ sumContainerIncAccountDocumentLedger (ledger) += retailSumContainerInnerArrivalD
 @implementInputListRegister(innerArrival, item);
 @implementHeaderInputListRegisterNumberCustom(innerArrival, innerArrival);
 
-senderListRegister (inputListRegister) += companyDepartmentStore(senderDepartmentInnerArrival(inputListRegister));
+senderListRegister (inputListRegister) += legalEntityDepartmentStore(senderDepartmentInnerArrival(inputListRegister));
 shipperListRegister (inputListRegister) += [FORMULA STRING[200] 'CAST($1 AS TEXT) || \', \' || CAST($2 AS TEXT) || \', отдел  \' || CAST($3 AS TEXT)'](
-                                        nameCompanyDepartmentStore(senderDepartmentInnerArrival(inputListRegister)),
+                                        nameLegalEntityDepartmentStore(senderDepartmentInnerArrival(inputListRegister)),
                                         nameStoreDepartmentStore(senderDepartmentInnerArrival(inputListRegister)),
                                         name(senderDepartmentInnerArrival(inputListRegister)));
 supplierSumListRegisterDetailListRegister (inputListRegister) += supplierISumInnerArrivalDetailInnerArrival(inputListRegister) (+) wareSumInnerArrivalDetailInnerArrival(inputListRegister);
@@ -2642,7 +2641,7 @@ sumOutContractLedger(outContractLedger) += invoiceSumReturnSupplierDetailReturnS
 @defineConsignment(returnSupplier);
 @implementConsignment(returnSupplier, departmentStore);
 
-senderConsignment (consignment) += companyDepartmentStore(departmentStoreReturnSupplier(consignment));
+senderConsignment (consignment) += legalEntityDepartmentStore(departmentStoreReturnSupplier(consignment));
 recipientConsignment (consignment) += supplierReturnSupplier(consignment);
 
 isWareConsignment (consignment) += consignment IS returnSupplier;
@@ -3142,12 +3141,12 @@ TABLE orderSupplierItem(orderSupplier, item);
 
 departmentStoreOrderSupplier 'Отдел заказа (ИД)' = DATA departmentStore (orderSupplier);
 nameDepartmentStoreOrderSupplier 'Отдел заказа' (orderSupplier) = name(departmentStoreOrderSupplier(orderSupplier)) IN documentHeaderGroup;
-companyOrderSupplier 'Компания заказа' (orderSupplier) =
-    fullNameLegalEntity(companyStore(storeDepartmentStore(departmentStoreOrderSupplier(orderSupplier)))) IN documentHeaderGroup;
+legalEntityOrderSupplier 'Компания заказа' (orderSupplier) =
+    fullNameLegalEntity(legalEntityStore(storeDepartmentStore(departmentStoreOrderSupplier(orderSupplier)))) IN documentHeaderGroup;
 
 castSubject = FORMULA STRING[100] '\'Заказ № \' || CAST($1 AS TEXT) || \' \' || CAST($2 AS TEXT) || \' от \' || CAST($3 AS TEXT)';
 subjectOrderSupplier (orderSupplier) =
-    castSubject(seriesObject(orderSupplier), numberObject(orderSupplier), companyOrderSupplier(orderSupplier)) IN documentHeaderGroup;
+    castSubject(seriesObject(orderSupplier), numberObject(orderSupplier), legalEntityOrderSupplier(orderSupplier)) IN documentHeaderGroup;
 
 supplierOrderSupplier 'Поставщик заказа (ИД)' = DATA supplier (orderSupplier);
 nameSupplierOrderSupplier 'Поставщик заказа' (orderSupplier) = name(supplierOrderSupplier(orderSupplier)) IN documentPrmGroup;
@@ -3779,7 +3778,7 @@ FORM orderSupplierPrint 'Заказ поставщику' PRINT
     PROPERTIES(o)          nameNumeratorObject, numberObject, seriesObject,
                            setValueNumeratedObject, curDateOrderSupplier, quantityDaysNextOrder, dateOrderSupplier,
                            quantityDaysAfterNextOrder, nextDateOrderSupplier, nameDepartmentStoreOrderSupplier,
-                           companyOrderSupplier, nameSupplierOrderSupplier, UNPSupplierOrderSupplier,
+                           legalEntityOrderSupplier, nameSupplierOrderSupplier, UNPSupplierOrderSupplier,
                            emailSupplierOrderSupplier, totalSumOrderSupplier,
                            totalSumVatOrderSupplier, totalFullSumOrderSupplier, allowablePercentOrderSupplier
     PROPERTIES(o) READONLY completePercentageOrderSupplier
@@ -3814,7 +3813,7 @@ FORM orderSupplierPrint 'Заказ поставщику' PRINT
 toPrintOrderSupplier 'Печать заказа поставщику' (orderSupplier) = ACTION FORM orderSupplierPrint OBJECTS o IMAGE 'print.png' IN printGroup;
 
 emailPrintOrderSupplier 'Отослать заказ поставщику' (orderSupplier) =
-    ACTION EMAIL FROM companyOrderSupplier(orderSupplier)
+    ACTION EMAIL FROM legalEntityOrderSupplier(orderSupplier)
                  SUBJECT subjectOrderSupplier(orderSupplier)
                  TO emailSupplierOrderSupplier(orderSupplier)
                  INLINE orderSupplierPrint OBJECTS o = orderSupplier IN emailGroup CONFIRM;
@@ -4028,10 +4027,10 @@ FORM specificationPrint 'Счет-фактура' PRINT
                     fullNameCustomerSpecification, UNPCustomerSpecification, addressCustomerSpecification,
                     numberAccountCustomerSpecification, nameBankAccountCustomerSpecification, addressBankAccountCustomerSpecification,
                     MFOBankAccountCustomerSpecification, departmentBankAccountCustomerSpecification, CBUBankAccountCustomerSpecification,
-                    fullNameCompanySpecification, addressCompanySpecification, UNPCompanySpecification,
-                    numberAccountCompanySpecification, nameBankAccountCompanySpecification, addressBankAccountCompanySpecification,
-                    MFOBankAccountCompanySpecification, departmentBankAccountCompanySpecification, CBUBankAccountCompanySpecification,
-                    nameObjectiveAcquiringSpecification, noteSpecification, phoneCustomerSpecification, phoneCompanySpecification,
+                    fullNameLegalEntitySpecification, addressLegalEntitySpecification, UNPLegalEntitySpecification,
+                    numberAccountLegalEntitySpecification, nameBankAccountLegalEntitySpecification, addressBankAccountLegalEntitySpecification,
+                    MFOBankAccountLegalEntitySpecification, departmentBankAccountLegalEntitySpecification, CBUBankAccountLegalEntitySpecification,
+                    nameObjectiveAcquiringSpecification, noteSpecification, phoneCustomerSpecification, phoneLegalEntitySpecification,
                     quantitySpecificationDetailSpecification, calcSaleSumSpecificationDetailSpecification, calcVATSumSpecificationDetailSpecification, retailSumSpecificationDetailSpecification
 
     OBJECTS d=specificationDetail
@@ -4433,7 +4432,7 @@ DESIGN shipments FROM DEFAULT {
 FORM wastagePrint 'Списания отходов' PRINT
 
     OBJECTS w=wastage FIXED PANEL
-    PROPERTIES (w) SELECTOR numberWastage, seriesWastage, dateWastage, timeWastage, nameCompanyWastage, nameDepartmentStoreWastage, nameSupplierWastage,
+    PROPERTIES (w) SELECTOR numberWastage, seriesWastage, dateWastage, timeWastage, nameLegalEntityWastage, nameDepartmentStoreWastage, nameSupplierWastage,
                    countWastageDetailWastage, quantityItemWastageDetailWastage, quantityWastageDetailWastage, supplierISumWastageDetailWastage,
                    markupSumWastageDetailWastage, retailVATSumWastageDetailWastage, retailSumWastageDetailWastage, wastageCommitteeWastage
 
@@ -5803,7 +5802,7 @@ FORM sumMotionContainerDepartmentPrint 'Отчет по таре' PRINT
     PROPERTIES objFrom = OBJVALUE(dFrom), objTo = OBJVALUE(dTo)
 
     OBJECTS dep = departmentStore  FIXED PANEL
-    PROPERTIES(dep) SELECTOR name, nameStoreDepartmentStore, nameCompanyDepartmentStore
+    PROPERTIES(dep) SELECTOR name, nameStoreDepartmentStore, nameLegalEntityDepartmentStore
 
     OBJECTS bt=batch
 
@@ -6047,152 +6046,152 @@ regionDepartmentStore(departmentStore) = regionStore(storeDepartmentStore(depart
 
                            //c коэффициентом пересчета за период//
 // всего
-quantitySoldByStatisticGroupRegionDateFromTo 'Продано, шт' (statisticGroup, company, region, dateFrom, dateTo)=
+quantitySoldByStatisticGroupRegionDateFromTo 'Продано, шт' (statisticGroup, legalEntity, region, dateFrom, dateTo)=
     [GROUP SUM quantitySoldSkuStockDateFromTo (item, departmentStore, dateFrom, dateTo) AND hasParentStatisticGroupSku(statisticGroup, item)
-    BY statisticGroup, companyDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateFrom, dateTo]
-        (statisticGroup, company, region, dateFrom, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+    BY statisticGroup, legalEntityDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateFrom, dateTo]
+        (statisticGroup, legalEntity, region, dateFrom, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
 
-netWeightSoldByStatisticGroupRegionDateFromTo 'Продано, кг' (statisticGroup, company, region, dateFrom, dateTo)=
+netWeightSoldByStatisticGroupRegionDateFromTo 'Продано, кг' (statisticGroup, legalEntity, region, dateFrom, dateTo)=
     [GROUP SUM netWeightSoldItemDepartmentStoreDateFromTo (item, departmentStore, dateFrom, dateTo) AND hasParentStatisticGroupSku(statisticGroup, item)
-    BY statisticGroup, companyDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateFrom, dateTo]
-        (statisticGroup, company, region, dateFrom, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+    BY statisticGroup, legalEntityDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateFrom, dateTo]
+        (statisticGroup, legalEntity, region, dateFrom, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
 
-volumeSoldByStatisticGroupRegionDateFromTo 'Продано, л' (statisticGroup, company, region, dateFrom, dateTo)=
+volumeSoldByStatisticGroupRegionDateFromTo 'Продано, л' (statisticGroup, legalEntity, region, dateFrom, dateTo)=
     [GROUP SUM volumeSoldItemDepartmentStoreDateFromTo (item, departmentStore, dateFrom, dateTo) AND hasParentStatisticGroupSku(statisticGroup, item)
-    BY statisticGroup, companyDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateFrom, dateTo]
-        (statisticGroup, company, region, dateFrom, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+    BY statisticGroup, legalEntityDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateFrom, dateTo]
+        (statisticGroup, legalEntity, region, dateFrom, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
 
-retailSumSoldByStatisticGroupRegionDateFromTo 'Продано, руб.' (statisticGroup, company, region, dateFrom, dateTo)=
+retailSumSoldByStatisticGroupRegionDateFromTo 'Продано, руб.' (statisticGroup, legalEntity, region, dateFrom, dateTo)=
     [GROUP SUM sumSoldSkuStockDateFromTo (item, departmentStore, dateFrom, dateTo) AND hasParentStatisticGroupSku(statisticGroup, item)
-    BY statisticGroup, companyDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateFrom, dateTo]
-        (statisticGroup, company, region, dateFrom, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+    BY statisticGroup, legalEntityDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateFrom, dateTo]
+        (statisticGroup, legalEntity, region, dateFrom, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
 
 // белорусского производствава
-quantitySoldResidentByStatisticGroupRegionDateFromTo 'Продано, шт' (statisticGroup, company, region, dateFrom, dateTo)=
+quantitySoldResidentByStatisticGroupRegionDateFromTo 'Продано, шт' (statisticGroup, legalEntity, region, dateFrom, dateTo)=
     [GROUP SUM quantitySoldSkuStockDateFromTo (item, departmentStore, dateFrom, dateTo) IF residentItem(item) AND hasParentStatisticGroupSku(statisticGroup, item)
-    BY statisticGroup, companyDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateFrom, dateTo]
-        (statisticGroup, company, region, dateFrom, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+    BY statisticGroup, legalEntityDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateFrom, dateTo]
+        (statisticGroup, legalEntity, region, dateFrom, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
 
-netWeightSoldResidentByStatisticGroupRegionDateFromTo 'Продано, кг' (statisticGroup, company, region, dateFrom, dateTo)=
+netWeightSoldResidentByStatisticGroupRegionDateFromTo 'Продано, кг' (statisticGroup, legalEntity, region, dateFrom, dateTo)=
     [GROUP SUM netWeightSoldItemDepartmentStoreDateFromTo (item, departmentStore, dateFrom, dateTo) IF residentItem(item) AND hasParentStatisticGroupSku(statisticGroup, item)
-    BY statisticGroup, companyDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateFrom, dateTo]
-        (statisticGroup, company, region, dateFrom, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+    BY statisticGroup, legalEntityDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateFrom, dateTo]
+        (statisticGroup, legalEntity, region, dateFrom, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
 
-volumeSoldResidentByStatisticGroupRegionDateFromTo 'Продано, л' (statisticGroup, company, region, dateFrom, dateTo)=
+volumeSoldResidentByStatisticGroupRegionDateFromTo 'Продано, л' (statisticGroup, legalEntity, region, dateFrom, dateTo)=
     [GROUP SUM volumeSoldItemDepartmentStoreDateFromTo (item, departmentStore, dateFrom, dateTo) IF residentItem(item) AND hasParentStatisticGroupSku(statisticGroup, item)
-    BY statisticGroup, companyDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateFrom, dateTo]
-        (statisticGroup, company, region, dateFrom, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+    BY statisticGroup, legalEntityDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateFrom, dateTo]
+        (statisticGroup, legalEntity, region, dateFrom, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
 
-retailSumSoldResidentByStatisticGroupRegionDateFromTo 'Продано, руб.' (statisticGroup, company, region, dateFrom, dateTo)=
+retailSumSoldResidentByStatisticGroupRegionDateFromTo 'Продано, руб.' (statisticGroup, legalEntity, region, dateFrom, dateTo)=
     [GROUP SUM sumSoldSkuStockDateFromTo (item, departmentStore, dateFrom, dateTo) IF residentItem(item) AND hasParentStatisticGroupSku(statisticGroup, item)
-    BY statisticGroup, companyDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateFrom, dateTo]
-        (statisticGroup, company, region, dateFrom, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+    BY statisticGroup, legalEntityDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateFrom, dateTo]
+        (statisticGroup, legalEntity, region, dateFrom, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
 
                              //с коэффициентом пересчета на коцен//
 // всего
-balanceByStatisticGroupRegionDateTo 'Остаток на конец' (statisticGroup, company, region, dateTo)=
+balanceByStatisticGroupRegionDateTo 'Остаток на конец' (statisticGroup, legalEntity, region, dateTo)=
     [GROUP SUM balanceASkuStockDate (item, departmentStore, dateTo) AND hasParentStatisticGroupSku(statisticGroup, item)
-    BY statisticGroup, companyDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateTo]
-        (statisticGroup, company, region, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+    BY statisticGroup,legalEntityDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateTo]
+        (statisticGroup, legalEntity, region, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
 
-netWeightByStatisticGroupRegionDateTo 'Вес на конец, кг' (statisticGroup, company, region, dateTo)=
+netWeightByStatisticGroupRegionDateTo 'Вес на конец, кг' (statisticGroup, legalEntity, region, dateTo)=
     [GROUP SUM netWeightBalanceAItemLedgerDate (item, departmentStore, dateTo) AND hasParentStatisticGroupSku(statisticGroup, item)
-    BY statisticGroup, companyDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateTo]
-        (statisticGroup, company, region, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+    BY statisticGroup, legalEntityDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateTo]
+        (statisticGroup, legalEntity, region, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
 
-volumeByStatisticGroupRegionDateTo 'Объем на конец, л' (statisticGroup, company, region, dateTo)=
+volumeByStatisticGroupRegionDateTo 'Объем на конец, л' (statisticGroup, legalEntity, region, dateTo)=
     [GROUP SUM volumeBalanceAItemLedgerDate (item, departmentStore, dateTo) AND hasParentStatisticGroupSku(statisticGroup, item)
-    BY statisticGroup, companyDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateTo]
-        (statisticGroup, company, region, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+    BY statisticGroup, legalEntityDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateTo]
+        (statisticGroup, legalEntity, region, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
 
-retailSumByStatisticGroupRegionDateTo 'Сумма на конец, руб' (statisticGroup, company, region, dateTo)=
+retailSumByStatisticGroupRegionDateTo 'Сумма на конец, руб' (statisticGroup, legalEntity, region, dateTo)=
     [GROUP SUM retailSumBalanceAItemLedgerDate (item, departmentStore, dateTo) AND hasParentStatisticGroupSku(statisticGroup, item)
-    BY statisticGroup, companyDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateTo]
-        (statisticGroup, company, region, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+    BY statisticGroup, legalEntityDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateTo]
+        (statisticGroup, legalEntity, region, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
 // белорусского производства
-balanceResidentByStatisticGroupRegionDateTo 'Остаток на конец' (statisticGroup, company, region, dateTo)=
+balanceResidentByStatisticGroupRegionDateTo 'Остаток на конец' (statisticGroup, legalEntity, region, dateTo)=
     [GROUP SUM balanceASkuStockDate (item, departmentStore, dateTo) IF residentItem(item) AND hasParentStatisticGroupSku(statisticGroup, item)
-    BY statisticGroup, companyDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateTo]
-        (statisticGroup, company, region, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+    BY statisticGroup, legalEntityDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateTo]
+        (statisticGroup, legalEntity, region, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
 
-netWeightResidentByStatisticGroupRegionDateTo 'Вес на конец, кг' (statisticGroup, company, region, dateTo)=
+netWeightResidentByStatisticGroupRegionDateTo 'Вес на конец, кг' (statisticGroup, legalEntity, region, dateTo)=
     [GROUP SUM netWeightBalanceAItemLedgerDate (item, departmentStore, dateTo) IF residentItem(item) AND hasParentStatisticGroupSku(statisticGroup, item)
-    BY statisticGroup, companyDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateTo]
-        (statisticGroup, company, region, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+    BY statisticGroup, legalEntityDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateTo]
+        (statisticGroup, legalEntity, region, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
 
-volumeResidentByStatisticGroupRegionDateTo 'Объем на конец, л' (statisticGroup, company, region, dateTo)=
+volumeResidentByStatisticGroupRegionDateTo 'Объем на конец, л' (statisticGroup, legalEntity, region, dateTo)=
     [GROUP SUM volumeBalanceAItemLedgerDate (item, departmentStore, dateTo) IF residentItem(item) AND hasParentStatisticGroupSku(statisticGroup, item)
-    BY statisticGroup, companyDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateTo]
-        (statisticGroup, company, region, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+    BY statisticGroup, legalEntityDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateTo]
+        (statisticGroup, legalEntity, region, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
 
-retailSumResidentByStatisticGroupRegionDateTo 'Сумма на конец, руб' (statisticGroup, company, region, dateTo)=
+retailSumResidentByStatisticGroupRegionDateTo 'Сумма на конец, руб' (statisticGroup, legalEntity, region, dateTo)=
     [GROUP SUM retailSumBalanceAItemLedgerDate (item, departmentStore, dateTo) IF residentItem(item) AND hasParentStatisticGroupSku(statisticGroup, item)
-    BY statisticGroup, companyDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateTo]
-        (statisticGroup, company, region, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+    BY statisticGroup, legalEntityDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateTo]
+        (statisticGroup, legalEntity, region, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
 
-valueByStatisticGroupCompanyRegionDateFromTo 'Продано всего' (statisticGroup, company, region, dateFrom, dateTo) =
+valueByStatisticGroupLegalEntityRegionDateFromTo 'Продано всего' (statisticGroup, legalEntity, region, dateFrom, dateTo) =
     CASE
         WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.thing
-            THEN quantitySoldByStatisticGroupRegionDateFromTo(statisticGroup, company, region, dateFrom, dateTo)
+            THEN quantitySoldByStatisticGroupRegionDateFromTo(statisticGroup, legalEntity, region, dateFrom, dateTo)
         WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.pounds
-            THEN netWeightSoldByStatisticGroupRegionDateFromTo(statisticGroup, company, region, dateFrom, dateTo)
+            THEN netWeightSoldByStatisticGroupRegionDateFromTo(statisticGroup, legalEntity, region, dateFrom, dateTo)
         WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.liter
-            THEN volumeSoldByStatisticGroupRegionDateFromTo(statisticGroup, company, region, dateFrom, dateTo)
+            THEN volumeSoldByStatisticGroupRegionDateFromTo(statisticGroup, legalEntity, region, dateFrom, dateTo)
         WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.ruble
-            THEN retailSumSoldByStatisticGroupRegionDateFromTo(statisticGroup, company, region, dateFrom, dateTo)
-        DEFAULT 0 AND statisticGroup IS statisticGroup AND company IS company AND region IS region AND dateFrom IS DATE AND dateTo IS DATE
+            THEN retailSumSoldByStatisticGroupRegionDateFromTo(statisticGroup, legalEntity, region, dateFrom, dateTo)
+        DEFAULT 0 AND statisticGroup IS statisticGroup AND legalEntity IS legalEntity AND region IS region AND dateFrom IS DATE AND dateTo IS DATE
     END;
 
-valueByStatisticGroupCompanyRegionDateTo 'Остаток на конец всего' (statisticGroup, company, region, dateTo) =
+valueByStatisticGroupLegalEntityRegionDateTo 'Остаток на конец всего' (statisticGroup, legalEntity, region, dateTo) =
     CASE
         WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.thing
-            THEN balanceByStatisticGroupRegionDateTo(statisticGroup, company, region, dateTo)
+            THEN balanceByStatisticGroupRegionDateTo(statisticGroup, legalEntity, region, dateTo)
         WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.pounds
-            THEN netWeightByStatisticGroupRegionDateTo(statisticGroup, company, region, dateTo)
+            THEN netWeightByStatisticGroupRegionDateTo(statisticGroup, legalEntity, region, dateTo)
         WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.liter
-            THEN volumeByStatisticGroupRegionDateTo(statisticGroup, company, region, dateTo)
+            THEN volumeByStatisticGroupRegionDateTo(statisticGroup, legalEntity, region, dateTo)
         WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.ruble
-            THEN retailSumByStatisticGroupRegionDateTo(statisticGroup, company, region, dateTo)
-        DEFAULT 0 IF statisticGroup IS statisticGroup AND company IS company AND region IS region AND dateTo IS DATE
+            THEN retailSumByStatisticGroupRegionDateTo(statisticGroup, legalEntity, region, dateTo)
+        DEFAULT 0 IF statisticGroup IS statisticGroup AND legalEntity IS legalEntity AND region IS region AND dateTo IS DATE
     END;
 
-valueResidentByStatisticGroupCompanyRegionDateFromTo 'Продано отеч. пр-ва' (statisticGroup, company, region, dateFrom, dateTo) =
+valueResidentByStatisticGroupLegalEntityRegionDateFromTo 'Продано отеч. пр-ва' (statisticGroup, legalEntity, region, dateFrom, dateTo) =
     CASE
         WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.thing
-            THEN quantitySoldResidentByStatisticGroupRegionDateFromTo(statisticGroup, company, region, dateFrom, dateTo)
+            THEN quantitySoldResidentByStatisticGroupRegionDateFromTo(statisticGroup, legalEntity, region, dateFrom, dateTo)
         WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.pounds
-            THEN netWeightSoldResidentByStatisticGroupRegionDateFromTo(statisticGroup, company, region, dateFrom, dateTo)
+            THEN netWeightSoldResidentByStatisticGroupRegionDateFromTo(statisticGroup, legalEntity, region, dateFrom, dateTo)
         WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.liter
-            THEN volumeSoldResidentByStatisticGroupRegionDateFromTo(statisticGroup, company, region, dateFrom, dateTo)
+            THEN volumeSoldResidentByStatisticGroupRegionDateFromTo(statisticGroup, legalEntity, region, dateFrom, dateTo)
         WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.ruble
-            THEN retailSumSoldResidentByStatisticGroupRegionDateFromTo(statisticGroup, company, region, dateFrom, dateTo)
-        DEFAULT 0 AND statisticGroup IS statisticGroup AND company IS company AND region IS region AND dateFrom IS DATE AND dateTo IS DATE
+            THEN retailSumSoldResidentByStatisticGroupRegionDateFromTo(statisticGroup, legalEntity, region, dateFrom, dateTo)
+        DEFAULT 0 AND statisticGroup IS statisticGroup AND legalEntity IS legalEntity AND region IS region AND dateFrom IS DATE AND dateTo IS DATE
     END;
 
-valueResidentByStatisticGroupCompanyRegionDateTo 'Остаток на конец отеч. пр-ва' (statisticGroup, company, region, dateTo) =
+valueResidentByStatisticGroupLegalEntityRegionDateTo 'Остаток на конец отеч. пр-ва' (statisticGroup, legalEntity, region, dateTo) =
     CASE
         WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.thing
-            THEN balanceResidentByStatisticGroupRegionDateTo(statisticGroup, company, region, dateTo)
+            THEN balanceResidentByStatisticGroupRegionDateTo(statisticGroup, legalEntity, region, dateTo)
         WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.pounds
-            THEN netWeightResidentByStatisticGroupRegionDateTo(statisticGroup, company, region, dateTo)
+            THEN netWeightResidentByStatisticGroupRegionDateTo(statisticGroup, legalEntity, region, dateTo)
         WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.liter
-            THEN volumeResidentByStatisticGroupRegionDateTo(statisticGroup, company, region, dateTo)
+            THEN volumeResidentByStatisticGroupRegionDateTo(statisticGroup, legalEntity, region, dateTo)
         WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.ruble
-            THEN retailSumResidentByStatisticGroupRegionDateTo(statisticGroup, company, region, dateTo)
-        DEFAULT 0 IF statisticGroup IS statisticGroup AND company IS company AND region IS region AND dateTo IS DATE
+            THEN retailSumResidentByStatisticGroupRegionDateTo(statisticGroup, legalEntity, region, dateTo)
+        DEFAULT 0 IF statisticGroup IS statisticGroup AND legalEntity IS legalEntity AND region IS region AND dateTo IS DATE
     END;
 
-totalRetailSumSoldByStatisticGroupRegionDateFromTo 'Итого продано, руб.' (statisticGroup, company, region, dateFrom, dateTo)=
+totalRetailSumSoldByStatisticGroupRegionDateFromTo 'Итого продано, руб.' (statisticGroup, legalEntity, region, dateFrom, dateTo)=
     GROUP SUM sumSoldSkuStockDateFromTo (item, departmentStore, dateFrom, dateTo) AND hasParentStatisticGroupSku(statisticGroup, item)
-    BY statisticGroup, companyDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateFrom, dateTo;
+    BY statisticGroup, legalEntityDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateFrom, dateTo;
 
-retailSumCardCompanyRegionDateFromTo 'Продано с использованием банк. карточек' (company, region, dateFrom, dateTo) =
+retailSumCardLegalEntityRegionDateFromTo 'Продано с использованием банк. карточек' (legalEntity, region, dateFrom, dateTo) =
     GROUP SUM  sumCardDepartmentStoreDateFromTo(departmentStore, dateFrom, dateTo)
-        BY companyDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateFrom, dateTo;
+        BY legalEntityDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateFrom, dateTo;
 
-retailSumSaleCompanyRegionDateFromTo 'Продано по кассе' (company, region, dateFrom, dateTo) =
+retailSumSaleLegalEntityRegionDateFromTo 'Продано по кассе' (legalEntity, region, dateFrom, dateTo) =
     GROUP SUM  sumSaleDepartmentStoreDateFromTo(departmentStore, dateFrom, dateTo)
-        BY companyDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateFrom, dateTo;
+        BY legalEntityDepartmentStore(departmentStore), regionDepartmentStore(departmentStore), dateFrom, dateTo;
 
 
 FORM torgSales '12-Торг (продажи)'
@@ -6201,7 +6200,7 @@ FORM torgSales '12-Торг (продажи)'
 
     PROPERTIES objFrom = OBJVALUE(dFrom), objTo = OBJVALUE(dTo)
 
-    OBJECTS c=company  FIXED PANEL
+    OBJECTS c=legalEntity  FIXED PANEL
     PROPERTIES(c) SELECTOR name
 
     OBJECTS r=region  FIXED PANEL
@@ -6211,10 +6210,10 @@ FORM torgSales '12-Торг (продажи)'
     PROPERTIES READONLY gname = name(g), sidStatisticGroup(g), nameUOMStatisticGroup(g)
     ORDER BY sidStatisticGroup
 
-    PROPERTIES(g, c, r, dFrom, dTo) valueByStatisticGroupCompanyRegionDateFromTo, valueResidentByStatisticGroupCompanyRegionDateFromTo
-    PROPERTIES(g, c, r, dTo) valueByStatisticGroupCompanyRegionDateTo, valueResidentByStatisticGroupCompanyRegionDateTo
+    PROPERTIES(g, c, r, dFrom, dTo) valueByStatisticGroupLegalEntityRegionDateFromTo, valueResidentByStatisticGroupLegalEntityRegionDateFromTo
+    PROPERTIES(g, c, r, dTo) valueByStatisticGroupLegalEntityRegionDateTo, valueResidentByStatisticGroupLegalEntityRegionDateTo
     PROPERTIES(g, c, r, dFrom, dTo) totalRetailSumSoldByStatisticGroupRegionDateFromTo
-    PROPERTIES(c, r, dFrom, dTo) retailSumSaleCompanyRegionDateFromTo, retailSumCardCompanyRegionDateFromTo
+    PROPERTIES(c, r, dFrom, dTo) retailSumSaleLegalEntityRegionDateFromTo, retailSumCardLegalEntityRegionDateFromTo
 ;
 
 DESIGN torgSales FROM DEFAULT {
@@ -6243,8 +6242,8 @@ DESIGN torgSales FROM DEFAULT {
         NEW secondCase {
             childConstraints = TO THE RIGHT;
             title = 'Суммы, руб.';
-            ADD PROPERTY(retailSumSaleCompanyRegionDateFromTo(c, r, dFrom, dTo));
-            ADD PROPERTY(retailSumCardCompanyRegionDateFromTo(c, r, dFrom, dTo));
+            ADD PROPERTY(retailSumSaleLegalEntityRegionDateFromTo(c, r, dFrom, dTo));
+            ADD PROPERTY(retailSumCardLegalEntityRegionDateFromTo(c, r, dFrom, dTo));
         }
 
         ADD functions.box;
@@ -6768,7 +6767,7 @@ NAVIGATOR {
             ADD papers;
         }
         NEW contragents 'Контрагенты' {
-            ADD companies;
+            ADD legalEntities;
             ADD banks;
         }
         NEW tax 'Налоги' {

@@ -57,7 +57,7 @@ META defineInvoice(sign, contact, partyA, partyB)
     @defineAddDetailDialogSkuStock(userInvoice, sku, stock, dialogSku);
     @defineAddDetailDialogBarcode(userInvoice, sku);
 
-    @defineDocumentInterfaceHeaderAgreement(invoice, companyUserInvoice, contact###userInvoice);
+    @defineDocumentInterfaceHeaderAgreement(invoice, legalEntityUserInvoice, contact###userInvoice);
     @deriveDocumentDetailPriceListTypeAgreement(invoice);
 
     countInvoiceDetailStockInvoice (stock, invoice) = GROUP SUM 1 BY stockInvoiceDetail(invoiceDetail), invoiceInvoiceDetail(invoiceDetail);
@@ -68,7 +68,7 @@ META defineInvoice(sign, contact, partyA, partyB)
     orderInvoiceDetail(invoiceDetail) += orderUserInvoiceDetail(invoiceDetail);
 
     CONSTRAINT contact###InvoiceDetail(invoiceDetail) != contact###Order(orderUserInvoiceDetail(invoiceDetail)) OR
-               companyStockUserInvoiceDetail(invoiceDetail) != companyOrder(orderUserInvoiceDetail(invoiceDetail))
+               legalEntityStockUserInvoiceDetail(invoiceDetail) != legalEntityOrder(orderUserInvoiceDetail(invoiceDetail))
         CHECKED BY orderUserInvoiceDetail
             MESSAGE 'Покупатель и компания в заказе и накладной должны соответствовать друг другу';
 
@@ -104,7 +104,7 @@ META defineInvoice(sign, contact, partyA, partyB)
     FORM invoiceOrders 'Заказы'###sign
         OBJECTS s = stock FIXED PANEL
         PROPERTIES (s) READONLY name
-        OBJECTS c = contact FIXED PANEL
+        OBJECTS c = legalEntity FIXED PANEL
         PROPERTIES (c) READONLY name
 
         OBJECTS o = order
@@ -365,7 +365,7 @@ META defineInvoiceReturn(NS, NSR, contact)
     CONSTRAINT NS.##contact##InvoiceDetail(invoiceDetailUserInvoiceDetail(detail)) != NSR.##contact##UserInvoiceDetail(detail) CHECKED BY invoiceDetailUserInvoiceDetail
         MESSAGE 'Контрагент строки основания должен соответствовать Контрагент строки возврата';
 
-    CONSTRAINT NS.companyStockInvoiceDetail(invoiceDetailUserInvoiceDetail(detail)) != NSR.companyStockUserInvoiceDetail(detail) CHECKED BY invoiceDetailUserInvoiceDetail
+    CONSTRAINT NS.legalEntityStockInvoiceDetail(invoiceDetailUserInvoiceDetail(detail)) != NSR.legalEntityStockUserInvoiceDetail(detail) CHECKED BY invoiceDetailUserInvoiceDetail
         MESSAGE 'Компания строки основания должна соответствовать Покупателю строки возврата';
 
     descriptionInvoiceDetailInvoiceDetail 'Основание' (invoiceDetail) = NS.descriptionInvoiceDetail(invoiceDetailInvoiceDetail(invoiceDetail));

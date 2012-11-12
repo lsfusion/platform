@@ -54,11 +54,11 @@ comPortCashRegister 'Порт кассы' = DATA INTEGER (cashRegister) IN baseG
 baudRateCashRegister 'Скорость кассы' = DATA INTEGER (cashRegister) IN baseGroup;
 countryCashRegister 'Страна кассы' (cashRegister) = countryStock(stockGroupMachinery(groupCashRegisterCashRegister(cashRegister)));
 
-userCompanyCashRegister (cashRegister) = DATA company (cashRegister);
-companyCashRegister (cashRegister) = UNION OVERRIDE companyDepartmentStore(departmentStoreCashRegister(cashRegister)),
-                                                    userCompanyCashRegister(cashRegister);
+userLegalEntityCashRegister (cashRegister) = DATA legalEntity (cashRegister);
+legalEntityCashRegister (cashRegister) = UNION OVERRIDE legalEntityDepartmentStore(departmentStoreCashRegister(cashRegister)),
+                                                    userLegalEntityCashRegister(cashRegister);
 
-nameCompanyCashRegister 'Владелец кассы' (cashRegister) = name(companyCashRegister(cashRegister));
+nameLegalEntityCashRegister 'Владелец кассы' (cashRegister) = name(legalEntityCashRegister(cashRegister));
 
 computerCashRegister = DATA computer (cashRegister);
 hostnameComputerCashRegister 'Компьютер' (cashRegister) = hostname(computerCashRegister(cashRegister)) IN baseGroup;
@@ -92,7 +92,7 @@ FORM groupCashRegister 'Группа касс'
     OBJECTS c=cashRegister
     PROPERTIES(c)   nameGroupMachineryMachinery, nppMachinery, descriptionMachinery, portMachinery, numberCashRegister,
                     directoryCashRegister, comPortCashRegister, baudRateCashRegister, nameModelMachinery,
-                    dateCashRegister, hostnameComputerCashRegister, nameCompanyCashRegister, ADDOBJ, delete
+                    dateCashRegister, hostnameComputerCashRegister, nameLegalEntityCashRegister, ADDOBJ, delete
 
     OBJECTS cu=customUser
     PROPERTIES(cu) userLogin, userFirstName, userLastName, customUserSIDMainRole
@@ -106,13 +106,13 @@ FORM groupCashRegister 'Группа касс'
 
 FORM groupsCashRegister 'Группы касс'
     OBJECTS grc=groupCashRegister, c=cashRegister
-    PROPERTIES(grc)  READONLY nameStockGroupMachinery, nameCompanyCashRegister, nameEquipmentServerGroupMachinery, nameGroupMachinery,
+    PROPERTIES(grc)  READONLY nameStockGroupMachinery, nameLegalEntityCashRegister, nameEquipmentServerGroupMachinery, nameGroupMachinery,
                      roundSalesGroupCashRegister, filterSkuGroupMachinery
     PROPERTIES(grc)  ADDFORM, EDITFORM, delete
 
     PROPERTIES(c) READONLY nppMachinery, descriptionMachinery, portMachinery,
                            numberCashRegister, directoryCashRegister, comPortCashRegister, baudRateCashRegister, nameModelMachinery,
-                           dateCashRegister, nameCompanyCashRegister
+                           dateCashRegister, nameLegalEntityCashRegister
     FILTERS groupCashRegisterCashRegister(c) == grc
 ;
 

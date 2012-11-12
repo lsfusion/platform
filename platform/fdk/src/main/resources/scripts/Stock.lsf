@@ -13,11 +13,11 @@ TABLE stock(stock);
 stockGroupStock (stock) = ABSTRACT stockGroup (stock) PERSISTENT;
 nameStockGroupStock 'Группа' (stock) = name(stockGroupStock (stock));
 
-companyStock (stock) = ABSTRACT company (stock) PERSISTENT;
-nameCompanyStock 'Компания' (stock) = name(companyStock(stock));
-countryStock (stock) = countryLegalEntity(companyStock(stock)) PERSISTENT;
-currencyStock (stock) = currencyLegalEntity(companyStock(stock)) PERSISTENT;
-languageStock (stock) = languageLegalEntity(companyStock(stock)) PERSISTENT;
+legalEntityStock (stock) = DATA legalEntity (stock) PERSISTENT;
+nameLegalEntityStock 'Компания' (stock) = name(legalEntityStock(stock));
+countryStock (stock) = countryLegalEntity(legalEntityStock(stock)) PERSISTENT;
+currencyStock (stock) = currencyLegalEntity(legalEntityStock(stock)) PERSISTENT;
+languageStock (stock) = languageLegalEntity(legalEntityStock(stock)) PERSISTENT;
 
 addressStock 'Адрес' (stock) = ABSTRACT STRING[100] (stock) PERSISTENT;
 
@@ -521,8 +521,8 @@ META defineDocumentHeaderStock (object, stockClass, stockCaption, prefix)
     name###prefix###stockClass###object stockCaption (object) = name(prefix###stockClass###object(object)) IN documentHeaderGroup
             MINCHARWIDTH 10 PREFCHARWIDTH 20;
 
-    prefix###company###object (object) = companyStock(prefix###stockClass###object(object));
-    name###prefix###company###object 'Компания ('###stockCaption###')' (object) = name(prefix###company###object (object));
+    prefix###legalEntity###object (object) = legalEntityStock(prefix###stockClass###object(object));
+    name###prefix###legalEntity###object 'Компания ('###stockCaption###')' (object) = name(prefix###legalEntity###object (object));
 
     prefix###country###object (object) = countryStock(prefix###stockClass###object(object));
 END
@@ -531,8 +531,8 @@ META defineDocumentAbstractHeaderStock (object, stockClass, stockCaption, prefix
     name###prefix###stockClass###object stockCaption (object) = name(prefix###stockClass###object(object)) IN documentHeaderGroup
             MINCHARWIDTH 10 PREFCHARWIDTH 20;
 
-    prefix###company###object (object) = companyStock(prefix###stockClass###object(object));
-    name###prefix###company###object 'Компания ('###stockCaption###')' (object) = name(prefix###company###object (object));
+    prefix###legalEntity###object (object) = legalEntityStock(prefix###stockClass###object(object));
+    name###prefix###legalEntity###object 'Компания ('###stockCaption###')' (object) = name(prefix###legalEntity###object (object));
 
     prefix###country###object (object) = countryStock(prefix###stockClass###object(object));
 END
@@ -556,8 +556,8 @@ META defineDocumentDetailStock (object, detail, stockProp, stockCaption)
     stockProp###detail (idetail) = stockProp###object(object###detail(idetail));
     name###stockProp###detail stockCaption (idetail) = name(stockProp###detail(idetail)) MINCHARWIDTH 10 PREFCHARWIDTH 20;
     country###stockProp###detail (idetail) = countryStock(stockProp###detail(idetail));
-    company###stockProp###detail (idetail) = companyStock(stockProp###detail(idetail));
-    name###company###stockProp###detail 'Компания ('###stockCaption###')' (idetail) = name(company###stockProp###detail (idetail));
+    legalEntity###stockProp###detail (idetail) = legalEntityStock(stockProp###detail(idetail));
+    name###legalEntity###stockProp###detail 'Компания ('###stockCaption###')' (idetail) = name(legalEntity###stockProp###detail (idetail));
 END
 META defineDocumentDetailStock (object, stockProp, stockCaption)
     @defineDocumentDetailStock (object, object##Detail, stockProp, stockCaption);
@@ -568,16 +568,16 @@ META defineDocumentDetailDataStock (object, detail, stockClass, stockProp, stock
     stockProp###detail (idetail) = UNION OVERRIDE stockProp###object(object###detail(idetail)), data###stockProp###detail(idetail) PERSISTENT;
     name###stockProp###detail stockCaption (idetail) = name(stockProp###detail(idetail)) MINCHARWIDTH 10 PREFCHARWIDTH 20;
     country###stockProp###detail (idetail) = countryStock(stockProp###detail(idetail));
-    company###stockProp###detail (idetail) = companyStock(stockProp###detail(idetail));
-    name###company###stockProp###detail 'Компания ('###stockCaption###')' (idetail) = name(company###stockProp###detail (idetail));
+    legalEntity###stockProp###detail (idetail) = legalEntityStock(stockProp###detail(idetail));
+    name###legalEntity###stockProp###detail 'Компания ('###stockCaption###')' (idetail) = name(legalEntity###stockProp###detail (idetail));
 END
 META defineDocumentAbstractDetailDataStock (object, detail, stockClass, stockProp, stockCaption)
     data###stockProp###detail = ABSTRACT stockClass(detail) PERSISTENT;
     stockProp###detail (idetail) = UNION OVERRIDE stockProp###object(object###detail(idetail)), data###stockProp###detail(idetail) PERSISTENT;
     name###stockProp###detail stockCaption (idetail) = name(stockProp###detail(idetail)) MINCHARWIDTH 10 PREFCHARWIDTH 20;
     country###stockProp###detail (idetail) = countryStock(stockProp###detail(idetail));
-    company###stockProp###detail (idetail) = companyStock(stockProp###detail(idetail));
-    name###company###stockProp###detail 'Компания ('###stockCaption###')' (idetail) = name(company###stockProp###detail (idetail));
+    legalEntity###stockProp###detail (idetail) = legalEntityStock(stockProp###detail(idetail));
+    name###legalEntity###stockProp###detail 'Компания ('###stockCaption###')' (idetail) = name(legalEntity###stockProp###detail (idetail));
 END
 META defineDocumentInterfaceDetailDataStock (object, detail, stockClass, stockProp, stockCaption)
     @defineDocumentAbstractDetailDataStock(object, detail, stockClass, stockProp, stockCaption);

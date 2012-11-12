@@ -16,7 +16,7 @@ numberCashDocument 'Номер' (cashDocument) = ABSTRACT STRING[21] (cashDocume
 departmentStoreCashDocument (cashDocument) = ABSTRACT departmentStore (cashDocument);
 nameDepartmentStoreCashDocument 'Подразделение' (cashDocument) =
     name(departmentStoreCashDocument(cashDocument)) IN documentHeaderGroup;
-nameCompanyCashDocument 'Компания' (cashDocument) = nameCompanyDepartmentStore(departmentStoreCashDocument(cashDocument)) IN documentHeaderGroup;
+nameLegalEntityCashDocument 'Компания' (cashDocument) = nameLegalEntityDepartmentStore(departmentStoreCashDocument(cashDocument)) IN documentHeaderGroup;
 
 basisCashDocument 'Основание' = ABSTRACT STRING[100] (cashDocument) IN documentPrmGroup;
 
@@ -326,7 +326,7 @@ cashRegisterCashOperation(outcomeCashOperation) += cashRegisterOutcomeCashOperat
 FORM incomeCashOrderPrint 'ПКО' PRINT
 
     OBJECTS i = incomeCashOrder FIXED PANEL
-    PROPERTIES(i) READONLY numberCashDocument, dateCashDocument, timeCashDocument, nameCompanyCashDocument,
+    PROPERTIES(i) READONLY numberCashDocument, dateCashDocument, timeCashDocument, nameLegalEntityCashDocument,
                            nameDepartmentStoreCashDocument, sumCashIncomeCashOrder, basisCashDocument
 
 ;
@@ -334,7 +334,7 @@ FORM incomeCashOrderPrint 'ПКО' PRINT
 FORM outcomeCashOrderPrint 'РКО' PRINT
 
     OBJECTS o = outcomeCashOrder FIXED PANEL
-    PROPERTIES(o) READONLY numberCashDocument, dateCashDocument, timeCashDocument, nameCompanyCashDocument,
+    PROPERTIES(o) READONLY numberCashDocument, dateCashDocument, timeCashDocument, nameLegalEntityCashDocument,
                            nameDepartmentStoreCashDocument, sumCashOutcomeCashOrder, basisCashDocument
 
 ;

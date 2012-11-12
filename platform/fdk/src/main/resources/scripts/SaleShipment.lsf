@@ -7,7 +7,7 @@ NAMESPACE Sale;
 
 //----------------------------------------------- Поставка ---------------------------------------------------//
 
-@defineShipment(' (продажа)', customer, 'Покупатель', company, customer);
+@defineShipment(' (продажа)', customer, 'Покупатель', legalEntity, customer);
 @defineShipmentBatch();
 
 // Берем учетную цену

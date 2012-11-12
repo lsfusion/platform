@@ -194,7 +194,7 @@ META defineShipment(sign, contact, contactCaption, partyA, partyB)
     orderShipmentDetail(shipmentDetail) += orderUserShipmentDetail(shipmentDetail);
 
     CONSTRAINT contact###ShipmentDetail(shipmentDetail) != contact###Order(orderUserShipmentDetail(shipmentDetail)) OR
-               companyUserShipment(shipmentDetail) != companyOrder(orderUserShipmentDetail(shipmentDetail))
+               legalEntityUserShipment(shipmentDetail) != legalEntityOrder(orderUserShipmentDetail(shipmentDetail))
         CHECKED BY orderUserShipmentDetail
             MESSAGE contactCaption###' и компания в заказе и поставке должны соответствовать друг другу';
 
@@ -352,7 +352,7 @@ META defineShipment(sign, contact, contactCaption, partyA, partyB)
     invoiceDetailShipmentDetail(shipmentDetail) += invoiceDetailUserShipmentDetail(shipmentDetail);
 
     CONSTRAINT contact###ShipmentDetail(detail) != contact###InvoiceDetail(invoiceDetailUserShipmentDetail(detail)) OR
-               companyStockShipmentDetail(detail) != companyInvoice(invoiceDetailUserShipmentDetail(detail)) OR
+               legalEntityStockShipmentDetail(detail) != legalEntityInvoice(invoiceDetailUserShipmentDetail(detail)) OR
                skuUserShipmentDetail(detail) != skuInvoiceDetail(invoiceDetailUserShipmentDetail(detail))
         CHECKED BY invoiceDetailUserShipmentDetail
             MESSAGE contactCaption###', компания и товар в накладной и поставке должны соответствовать друг другу';

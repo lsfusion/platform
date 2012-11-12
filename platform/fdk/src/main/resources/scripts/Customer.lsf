@@ -16,16 +16,16 @@ TABLE customer (customer);
 
 CLASS contractSkuCustomer 'Договор с покупателем' : contractSku;
 
-companyContractSkuCustomer = DATA company (contractSkuCustomer) AUTOSET;
-nameCompanyContractSkuCustomer 'Продавец' (contractSkuCustomer) = name(companyContractSkuCustomer(contractSkuCustomer)) IN recognizeGroup MAXCHARWIDTH 30 PREFCHARWIDTH 30;
-partyAContract (contract) += companyContractSkuCustomer(contract);
+legalEntityContractSkuCustomer = DATA legalEntity (contractSkuCustomer) AUTOSET;
+nameLegalEntityContractSkuCustomer 'Продавец' (contractSkuCustomer) = name(legalEntityContractSkuCustomer(contractSkuCustomer)) IN recognizeGroup MAXCHARWIDTH 30 PREFCHARWIDTH 30;
+partyAContract (contract) += legalEntityContractSkuCustomer(contract);
 
 customerContractSkuCustomer = DATA customer (contractSkuCustomer) AUTOSET;
 nameCustomerContractSkuCustomer 'Покупатель' (contractSkuCustomer) = name(customerContractSkuCustomer(contractSkuCustomer)) IN recognizeGroup MAXCHARWIDTH 30 PREFCHARWIDTH 30;
 partyBContract (contract) += customerContractSkuCustomer(contract);
 
-TABLE companyCustomer(company, customer);
-@defineContractDefault(contractSkuCustomer, company, customer);
+TABLE legalEntityCustomer(legalEntity, customer);
+@defineContractDefault(contractSkuCustomer, legalEntity, customer);
 
 // ---------------------------------------- Группы покупателей -------------------------------- //
 
@@ -59,7 +59,7 @@ FORM customerGroups 'Группы покупателей'
 // Формы
 FORM contractSkuCustomer 'Договор с покупателем'
     OBJECTS c=contractSkuCustomer FIXED PANEL
-    PROPERTIES(c) nameCompanyContractSkuCustomer, nameCustomerContractSkuCustomer,
+    PROPERTIES(c) nameLegalEntityContractSkuCustomer, nameCustomerContractSkuCustomer,
                   numberContract, dateFromContract, dateToContract,
                   nameCurrencyContract, noteContract
 
@@ -77,7 +77,7 @@ FORM contractSkuCustomer 'Договор с покупателем'
 FORM contractsSkuCustomer 'Договора'
     OBJECTS c=contractSkuCustomer
     PROPERTIES(c) READONLY numberContract, dateFromContract, dateToContract,
-                           nameCompanyContractSkuCustomer, nameCustomerContractSkuCustomer
+                           nameLegalEntityContractSkuCustomer, nameCustomerContractSkuCustomer
 
     PROPERTIES(c) ADDFORM, EDITFORM, delete
     ORDER BY dateFromContract
@@ -100,20 +100,20 @@ FORM customer 'Покупатель'
     PROPERTIES(a)  numberAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount, MFOBankAccount, noteAccount, ADDOBJ, delete
     FILTERS legalEntityAccount(a) == cu
 
-    OBJECTS co=company
+    OBJECTS co=legalEntity
     PROPERTIES(co) READONLY name
     FILTERGROUP filters
         FILTER 'Есть договор' 'F10' countContractPartyAPartyB(co, cu) DEFAULT
 
     OBJECTS c=contractSkuCustomer
-    PROPERTIES isCompanyCustomerContractSkuCustomer(co, cu, c)
-    PROPERTIES(c) READONLY numberContract, nameCompanyContractSkuCustomer, nameTypeContractSku, nameFormContractSku, dateFromContract,
+    PROPERTIES isLegalEntityCustomerContractSkuCustomer(co, cu, c)
+    PROPERTIES(c) READONLY numberContract, nameLegalEntityContractSkuCustomer, nameTypeContractSku, nameFormContractSku, dateFromContract,
                   dateToContract, nameCurrencyContract, noteContract
     PROPERTIES(c) ADDFORM, EDITFORM, delete
-    FILTERS companyContractSkuCustomer(c) == co,
+    FILTERS legalEntityContractSkuCustomer(c) == co,
             customerContractSkuCustomer(c) == cu
 
-    OBJECTS co2=company
+    OBJECTS co2=legalEntity
     PROPERTIES(co2) READONLY name
 
     OBJECTS ag=agreement
@@ -124,7 +124,7 @@ FORM customer 'Покупатель'
                             nameCurrencyAgreement, namePriceListTypeAgreement, noteAgreement
     PROPERTIES createAgreementCompanyLegalEntity(co2, cu) TODRAW ag FORCE PANEL DRAWTOTOOLBAR, addAgreementsCompanyLegalEntity(co2, cu) TODRAW ag FORCE PANEL DRAWTOTOOLBAR
     FILTERS inAgreementLegalEntityOver(ag, cu),
-            companyAgreement(ag) == co2
+            legalEntityAgreement(ag) == co2
 
     EDIT customer OBJECT cu
 ;
@@ -203,11 +203,11 @@ DESIGN customers FROM DEFAULT{
 
 // --------------------------------------------------- Макросы по добавлению покупателя в документы ------------------------------------ //
 META defineDocumentHeaderCustomer (object)
-    customer###object (object) = DATA customer (object);
+    customer###object (object) = DATA legalEntity (object);
     nameCustomer###object 'Покупатель' (object)= name(customer###object(object)) IN documentPrmGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
 END
 META defineDocumentAbstractHeaderCustomer (object)
-    customer###object (object) = ABSTRACT customer (object) PERSISTENT;
+    customer###object (object) = ABSTRACT legalEntity (object) PERSISTENT;
     nameCustomer###object 'Покупатель' (object)= name(customer###object(object)) IN documentPrmGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
 END
 META defineDocumentInterfaceHeaderCustomer (object)

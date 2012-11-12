@@ -67,17 +67,17 @@ supplierContractSkuSupplier = DATA supplier (contractSkuSupplier) AUTOSET;
 nameSupplierContractSkuSupplier 'Поставщик' (contract) = name(supplierContractSkuSupplier(contract)) IN recognizeGroup MAXCHARWIDTH 30 PREFCHARWIDTH 30;
 partyAContract (contract) += supplierContractSkuSupplier(contract);
 
-companyContractSkuSupplier = DATA company (contractSkuSupplier) AUTOSET;
-nameCompanyContractSkuSupplier 'Компания' (contract) = name(companyContractSkuSupplier(contract)) IN recognizeGroup MAXCHARWIDTH 30 PREFCHARWIDTH 30;
-partyBContract (contract) += companyContractSkuSupplier(contract);
+legalEntityContractSkuSupplier = DATA legalEntity (contractSkuSupplier) AUTOSET;
+nameLegalEntityContractSkuSupplier 'Компания' (contract) = name(legalEntityContractSkuSupplier(contract)) IN recognizeGroup MAXCHARWIDTH 30 PREFCHARWIDTH 30;
+partyBContract (contract) += legalEntityContractSkuSupplier(contract);
 
-TABLE supplierCompany(supplier, company);
-@defineContractDefault(contractSkuSupplier, supplier, company);
+TABLE supplierLegalEntity(supplier, legalEntity);
+@defineContractDefault(contractSkuSupplier, supplier, legalEntity);
 
 // Формы
 FORM contractSkuSupplier 'Договор'
     OBJECTS c=contractSkuSupplier FIXED PANEL
-    PROPERTIES(c) nameCompanyContractSkuSupplier, nameSupplierContractSkuSupplier,
+    PROPERTIES(c) nameLegalEntityContractSkuSupplier, nameSupplierContractSkuSupplier,
                   numberContract, dateFromContract, dateToContract,
                   nameCurrencyContract, noteContract
 
@@ -95,7 +95,7 @@ FORM contractSkuSupplier 'Договор'
 FORM contractsSkuSupplier 'Договора'
     OBJECTS c=contractSkuSupplier
     PROPERTIES(c) READONLY numberContract, dateFromContract, dateToContract,
-                           nameCompanyContractSkuSupplier, nameSupplierContractSkuSupplier
+                           nameLegalEntityContractSkuSupplier, nameSupplierContractSkuSupplier
 
     PROPERTIES(c) ADDFORM, EDITFORM, delete
     ORDER BY dateFromContract
@@ -123,22 +123,22 @@ FORM supplier 'Поставщик'
                   ADDOBJ, delete
     FILTERS legalEntityAccount(a) == s
 
-    OBJECTS co=company
+    OBJECTS co=legalEntity
     PROPERTIES(co) READONLY name
-    FILTERGROUP filtersCompany
+    FILTERGROUP filtersLegalEntity
         FILTER 'Есть договор' 'F5' countContractPartyAPartyB(s, co)
 
     OBJECTS c=contractSkuSupplier
-    PROPERTIES isSupplierCompanyContractSkuSupplier(s, co, c)
+    PROPERTIES isSupplierLegalEntityContractSkuSupplier(s, co, c)
     PROPERTIES(c)  READONLY numberContract, dateFromContract, dateToContract,
                             nameTypeContractSku, nameFormContractSku,
                             nameCurrencyContract, noteContract
-    PROPERTIES(s, co, c) isSupplierCompanyContractSkuSupplier
+    PROPERTIES(s, co, c) isSupplierLegalEntityContractSkuSupplier
     PROPERTIES(c)  ADDFORM, EDITFORM, delete
     FILTERS supplierContractSkuSupplier(c) == s,
-            companyContractSkuSupplier(c) == co
+            legalEntityContractSkuSupplier(c) == co
 
-    OBJECTS co2=company
+    OBJECTS co2=legalEntity
     PROPERTIES(co2) READONLY name
 
     OBJECTS ag=agreement
@@ -149,7 +149,7 @@ FORM supplier 'Поставщик'
                             nameCurrencyAgreement, namePriceListTypeAgreement, noteAgreement
     PROPERTIES createAgreementCompanyLegalEntity(co2, s) TODRAW ag FORCE PANEL DRAWTOTOOLBAR, addAgreementsCompanyLegalEntity(co2, s) TODRAW ag FORCE PANEL DRAWTOTOOLBAR
     FILTERS inAgreementLegalEntityOver(ag, s),
-            companyAgreement(ag) == co2
+            legalEntityAgreement(ag) == co2
 
     OBJECTS l=license
     PROPERTIES(l) numberLicense, dateFromLicense, dateToLicense, ADDOBJ, delete
@@ -268,23 +268,23 @@ DESIGN suppliers FROM DEFAULT{
 
 // ----------------------------- Расширяем форму компаний ------------------------------------------- //
 
-EXTEND FORM company
+EXTEND FORM legalEntity
     OBJECTS s=supplier
     PROPERTIES(s)       name
-    PROPERTIES(s, co)   numberContractSkuSupplierSupplierCompany
+    PROPERTIES(s, co)   numberContractSkuSupplierSupplierLegalEntity
 
     OBJECTS c=contractSkuSupplier
     PROPERTIES(c)  READONLY numberContract, nameSupplierContractSkuSupplier, nameTypeContractSku, nameFormContractSku, dateFromContract,
                    dateToContract, nameCurrencyContract, noteContract
     PROPERTIES(c)  ADDFORM, EDITFORM, delete
-    FILTERS companyContractSkuSupplier(c) == co,
+    FILTERS legalEntityContractSkuSupplier(c) == co,
             supplierContractSkuSupplier(c) == s
 
     FILTERGROUP filters
         FILTER 'Есть договор' 'F10' countContractPartyAPartyB(s, co) DEFAULT
 ;
 
-EXTEND DESIGN company {
+EXTEND DESIGN legalEntity {
     extendContainer {
         NEW supplierContainer {
             title = 'Договора с поставщиками';

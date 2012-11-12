@@ -44,10 +44,10 @@ TABLE region (region);
 CLASS store 'Магазин' : stockGroup, externalObject, taxUnit, employeeDivisionGroup;
 TABLE store (store);
 
-companyStore = DATA company (store);
-nameCompanyStore 'Компания' (store) = name(companyStore(store)) IN baseGroup;
+legalEntityStore = DATA legalEntity (store);
+nameLegalEntityStore 'Компания' (store) = name(legalEntityStore(store)) IN baseGroup;
 
-languageStore (store) = languageLegalEntity(companyStore(store));
+languageStore (store) = languageLegalEntity(legalEntityStore(store));
 
 regionStore = DATA region (store);
 nameRegionStore 'Регион' (store) = name(regionStore(store));
@@ -67,7 +67,7 @@ inChainStoresStore (chainStores, store) = chainStoresStore(store) == chainStores
 parentStockGroup (store) += storeTypeStore(store);
 parentEmployeeDivisionGroup (store) += storeTypeStore(store);
 
-taxUnitGroupTaxUnit(store) += companyStore(store);
+taxUnitGroupTaxUnit(store) += legalEntityStore(store);
 descriptionTaxUnit(store) += string2SP(name(store), addressStore(store));
 
 inChainStoresStoreTypeStore (chainStores, storeType, store) =
@@ -89,10 +89,9 @@ inStoreDepartment(store, departmentStore) = storeDepartmentStore(departmentStore
 storeTypeDepartmentStore(departmentStore) = storeTypeStore(storeDepartmentStore(departmentStore)) PERSISTENT;
 chainStoresDepartmentStore(departmentStore) = chainStoresStoreType(storeTypeDepartmentStore(departmentStore)) PERSISTENT;
 
-companyDepartmentStore (departmentStore) = companyStore(storeDepartmentStore(departmentStore)) PERSISTENT;
-companyStock (stock) += companyDepartmentStore(stock);
+legalEntityDepartmentStore (departmentStore) = legalEntityStore(storeDepartmentStore(departmentStore)) PERSISTENT;
 
-nameCompanyDepartmentStore 'Компания' (departmentStore) = name(companyDepartmentStore(departmentStore));
+nameLegalEntityDepartmentStore 'Компания' (departmentStore) = name(legalEntityDepartmentStore(departmentStore));
 
 primaryDepartmentStoreStore 'Основной отдел' (store) =
     GROUP MIN departmentStore BY storeDepartmentStore(departmentStore);
@@ -162,7 +161,7 @@ DESIGN departmentStores FROM DEFAULT {
 
 FORM store 'Магазин'
     OBJECTS s=store FIXED PANEL
-    PROPERTIES(s) name, addressStore, nameStoreTypeStore, tradingSquareStore, nameCompanyStore, nameRegionStore
+    PROPERTIES(s) name, addressStore, nameStoreTypeStore, tradingSquareStore, nameLegalEntityStore, nameRegionStore
 
     OBJECTS d=departmentStore
     PROPERTIES(d) READONLY objectClassName, name, tradingSquareDepartmentStore
@@ -184,7 +183,7 @@ FORM stores 'Магазины'
     PROPERTIES(t)          addT=ADDFORM FORCE PANEL, editT=EDITFORM FORCE PANEL, delete FORCE PANEL DRAWTOTOOLBAR
 
     OBJECTS s=store
-    PROPERTIES(s) READONLY name, addressStore, nameStoreTypeStore, nameCompanyStore, nameRegionStore
+    PROPERTIES(s) READONLY name, addressStore, nameStoreTypeStore, nameLegalEntityStore, nameRegionStore
     PROPERTIES(s)          ADDFORM, EDITFORM, delete DRAWTOTOOLBAR
     FILTERS inChainStoresStoreTypeStore(t, st, s)
 

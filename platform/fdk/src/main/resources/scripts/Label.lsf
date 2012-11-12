@@ -89,7 +89,7 @@ timeLabelTransaction (transaction) <- currentTime() WHEN ASSIGNED(transaction IS
 departmentStoreLabelTransaction = DATA departmentStore (labelTransaction);
 nameDepartmentStoreLabelTransaction 'Отдел магазина' (transaction) = name(departmentStoreLabelTransaction(transaction));
 nameStoreLabelTransaction 'Магазин' (transaction) = name(storeDepartmentStore(departmentStoreLabelTransaction(transaction)));
-nameCompanyLabelTransaction 'Компания' (transaction) = nameCompanyDepartmentStore(departmentStoreLabelTransaction(transaction));
+nameLegalEntityLabelTransaction 'Компания' (transaction) = nameLegalEntityDepartmentStore(departmentStoreLabelTransaction(transaction));
 
 labelTypeLabelTransaction = DATA labelType (labelTransaction);
 nameLabelTypeLabelTransaction 'Тип ценника' (transaction) = name(labelTypeLabelTransaction(transaction));
@@ -121,7 +121,7 @@ priceLabelTransactionBarcode 'Цена' = DATA NUMERIC[14,2] (labelTransaction, 
 FORM printLabelTransaction 'Печать ценников' PRINT
     OBJECTS l = labelTransaction REPORTFILE fileTemplateLabelTransaction(l) FIXED PANEL
     PROPERTIES(l) READONLY nameLabelTypeLabelTransaction, nameDepartmentStoreLabelTransaction, descriptionLabelTransaction,
-                  dateLabelTransaction, timeLabelTransaction, nameStoreLabelTransaction, nameCompanyLabelTransaction
+                  dateLabelTransaction, timeLabelTransaction, nameStoreLabelTransaction, nameLegalEntityLabelTransaction
 
     OBJECTS b = barcode
     PROPERTIES(l, b) READONLY inLabelTransactionBarcode
@@ -133,7 +133,7 @@ FORM printLabelTransaction 'Печать ценников' PRINT
 FORM customLabelTransaction 'Печать ценников'
     OBJECTS l = labelTransaction FIXED PANEL
     PROPERTIES(l) nameLabelTypeLabelTransaction, nameDepartmentStoreLabelTransaction, descriptionLabelTransaction, dateLabelTransaction, timeLabelTransaction,
-                  nameStoreLabelTransaction, nameCompanyLabelTransaction
+                  nameStoreLabelTransaction, nameLegalEntityLabelTransaction
 
     OBJECTS b = barcode
     PROPERTIES(l, b)          inLabelTransactionBarcode

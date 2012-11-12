@@ -295,7 +295,7 @@ FORM promotion 'Акция'
     FILTERS inChainStoresStoreType (t, st)
 
     OBJECTS s=store
-    PROPERTIES(s) READONLY name, addressStore, nameCompanyStore
+    PROPERTIES(s) READONLY name, addressStore, nameLegalEntityStore
 
     FILTERS inChainStoresStoreTypeStore(t, st, s)
 

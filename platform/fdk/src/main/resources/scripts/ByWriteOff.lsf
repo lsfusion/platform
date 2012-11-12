@@ -4,7 +4,7 @@ REQUIRE WriteOff, ByLegalEntity;
 
 NAMESPACE WriteOff;
 
-UNPLegalEntityWriteOff 'УНП' (writeOff) = UNPLegalEntity(companyWriteOff(writeOff));
+UNPLegalEntityWriteOff 'УНП' (writeOff) = UNPLegalEntity(legalEntityWriteOff(writeOff));
 
 EXTEND FORM writeOffPrint
 

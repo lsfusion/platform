@@ -180,7 +180,7 @@ META defineCreditNote(sign, contact, contactCaption)
     invoiceDetailCreditNoteDetail(creditNoteDetail) += invoiceDetailUserCreditNoteDetail(creditNoteDetail);
 
     CONSTRAINT contact###CreditNoteDetail(detail) != contact###InvoiceDetail(invoiceDetailUserCreditNoteDetail(detail)) OR
-               companyUserCreditNote(detail) != companyInvoice(invoiceDetailUserCreditNoteDetail(detail)) OR
+               legalEntityUserCreditNote(detail) != legalEntityInvoice(invoiceDetailUserCreditNoteDetail(detail)) OR
                skuUserCreditNoteDetail(detail) != skuInvoiceDetail(invoiceDetailUserCreditNoteDetail(detail))
         CHECKED BY invoiceDetailUserCreditNoteDetail
             MESSAGE contactCaption###', компания и товар в накладной и акте расхождения должны соответствовать друг другу';

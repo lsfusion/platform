@@ -317,7 +317,7 @@ FORM pricing 'Акт расценки (печать)' PRINT
     OBJECTS p=pricing FIXED PANEL
     PROPERTIES (p)  SELECTOR objectClassName
 
-    PROPERTIES (p) nameDepartmentStorePricing, nameCompanyPricing, numberPricing, seriesPricing, datePricing, timePricing,
+    PROPERTIES (p) nameDepartmentStorePricing, nameLegalEntityPricing, numberPricing, seriesPricing, datePricing, timePricing,
                    nameSupplierPricing, nameCurrencyPricing, notePricing,
                    countPricingDetailPricing, quantityPricingDetailPricing, sumPricingDetailPricing,
                    retailMarkupSumPricingDetailPricing, retailVATSumPricingDetailPricing,
@@ -647,7 +647,7 @@ META definePricingRelation(sign, contact, contactCaption)
     invoiceDetailPricingDetail(pricingDetail) += invoiceDetailUserPricingDetail(pricingDetail);
 
     CONSTRAINT contact###PricingDetail(detail) != contact###InvoiceDetail(invoiceDetailUserPricingDetail(detail)) OR
-               companyDepartmentStorePricingDetail(detail) != companyInvoice(invoiceDetailUserPricingDetail(detail)) OR
+               legalEntityDepartmentStorePricingDetail(detail) != legalEntityInvoice(invoiceDetailUserPricingDetail(detail)) OR
                skuUserPricingDetail(detail) != skuInvoiceDetail(invoiceDetailUserPricingDetail(detail))
         CHECKED BY invoiceDetailUserPricingDetail
             MESSAGE contactCaption###', компания и товар в накладной и акте расценки должны соответствовать друг другу';

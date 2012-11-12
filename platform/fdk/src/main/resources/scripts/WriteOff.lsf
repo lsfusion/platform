@@ -35,7 +35,7 @@ CLASS writeOffPosted 'Закрытое списание' : writeOff, postedObjec
 @defineDocumentCurrency(writeOff);
 @deriveDocumentCurrency(writeOff, stock);
 
-addressLegalEntityWriteOff 'Адрес' (writeOff) = addressLegalEntityDate(companyWriteOff(writeOff), dateWriteOff(writeOff));
+addressLegalEntityWriteOff 'Адрес' (writeOff) = addressLegalEntityDate(legalEntityWriteOff(writeOff), dateWriteOff(writeOff));
 
 @defineDocumentDetailNumber(writeOff);
 @defineDocumentDetailSku(writeOff, sku);
@@ -172,7 +172,7 @@ FORM writeOffPrint 'Акт списания' PRINT
     PROPERTIES (w)  SELECTOR numberObject, seriesObject, nameStockWriteOff,
                    dateWriteOff, timeWriteOff, nameReasonOffWriteOff, noteWriteOff, countWriteOffDetailWriteOff, quantityWriteOffDetailWriteOff,
                    sumWriteOffDetailWriteOff,
-                   nameCompanyWriteOff, addressLegalEntityWriteOff, nameWriteOffCommitteeWriteOff,
+                   nameLegalEntityWriteOff, addressLegalEntityWriteOff, nameWriteOffCommitteeWriteOff,
                    namePositionEmployeeWriteOff, writeOffCommitteeWriteOff
 
     OBJECTS d=writeOffDetail

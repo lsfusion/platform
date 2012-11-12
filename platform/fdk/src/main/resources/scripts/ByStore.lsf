@@ -4,5 +4,5 @@ REQUIRE Store, ByLegalEntity;
 
 NAMESPACE Store;
 
-UNPDepartmentStore 'УНП' (departmentStore) = UNPLegalEntity(companyDepartmentStore(departmentStore));
+UNPDepartmentStore 'УНП' (departmentStore) = UNPLegalEntity(legalEntityDepartmentStore(departmentStore));
 

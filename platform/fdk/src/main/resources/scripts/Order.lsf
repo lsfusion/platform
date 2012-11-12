@@ -65,7 +65,7 @@ META defineOrder(sign, contact)
     @defineAddDetailDialogSkuStock(userOrder, sku, stock, dialogSku);
     @defineAddDetailDialogBarcode(userOrder, sku);
 
-    @defineDocumentInterfaceHeaderAgreement(order, companyUserOrder, contact###userOrder);
+    @defineDocumentInterfaceHeaderAgreement(order, legalEntityUserOrder, contact###userOrder);
     @deriveDocumentDetailPriceListTypeAgreement(order);
 
     @defineDocumentDetailPackWeightSku(order);

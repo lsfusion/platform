@@ -21,9 +21,9 @@ groupWarehouseWarehouse (warehouse) = DATA groupWarehouse (warehouse);
 nameGroupWarehouseWarehouse 'Группа складов' (warehouse) = name(groupWarehouseWarehouse(warehouse)) IN baseGroup;
 stockGroupStock (stock) += groupWarehouseWarehouse (stock);
 
-companyWarehouse (warehouse) = DATA company (warehouse);
-nameCompanyWarehouse 'Компания' (warehouse) = name(companyWarehouse(warehouse)) IN baseGroup;
-companyStock (stock) += companyWarehouse(stock);
+legalEntityWarehouse (warehouse) = DATA legalEntity (warehouse);
+nameLegalEntityWarehouse 'Компания' (warehouse) = name(legalEntityWarehouse(warehouse)) IN baseGroup;
+//companyStock (stock) += companyWarehouse(stock);
 
 addressWarehouse 'Адрес' (warehouse) = DATA STRING[100] (warehouse);
 addressStock(stock) += addressWarehouse(stock);
@@ -33,7 +33,7 @@ employeeDivisionGroupEmployeeDivision (warehouse) += groupWarehouseWarehouse(war
 // -------------------------------------------------- Формы ----------------------------------------- //
 FORM warehouse 'Склад'
     OBJECTS           w=warehouse FIXED PANEL
-    PROPERTIES(w)     name, nameGroupWarehouseWarehouse, addressWarehouse, nameCompanyWarehouse, nameWriteOffCommitteeStock
+    PROPERTIES(w)     name, nameGroupWarehouseWarehouse, addressWarehouse, nameLegalEntityWarehouse, nameWriteOffCommitteeStock
 
     ORDER BY          name
     EDIT warehouse OBJECT w
@@ -41,7 +41,7 @@ FORM warehouse 'Склад'
 
 FORM warehouses 'Склады'
     OBJECTS           w=warehouse
-    PROPERTIES(w)     READONLY name, addressWarehouse, nameCompanyWarehouse
+    PROPERTIES(w)     READONLY name, addressWarehouse, nameLegalEntityWarehouse
     PROPERTIES(w)     ADDFORM, EDITFORM, delete
 
     ORDER BY          name

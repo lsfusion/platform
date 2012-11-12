@@ -4,4 +4,4 @@ REQUIRE Stock, ByLegalEntity;
 
 NAMESPACE Stock;
 
-UNPStock 'УНП' (stock) = UNPLegalEntity(companyStock(stock));
+UNPStock 'УНП' (stock) = UNPLegalEntity(legalEntityStock(stock));

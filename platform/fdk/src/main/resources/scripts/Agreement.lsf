@@ -53,7 +53,7 @@ legalEntityAgreement 'Контрагенты' (agreement) = GROUP CONCAT name(le
                                                  BY agreement
                                                  ORDER legalEntity MINCHARWIDTH 100 PERSISTENT;
 
-companyAgreement (agreement) = DATA company (agreement);
+companyAgreement (agreement) = DATA legalEntity (agreement);
 nameCompanyAgreement 'Компания' (agreement) = name(companyAgreement(agreement));
 
 priceListTypeAgreement (agreement) = DATA priceListType (agreement) NOT NULL;
@@ -86,7 +86,7 @@ priceListTypeAgreementSkuOver (agreement, sku) =
 
 namePriceListTypeAgreementSkuOver 'Вид цены' = name(priceListTypeAgreementSkuOver(agreement, sku));
 
-userDefaultAgreementCompanyLegalEntity = DATA agreement (company, legalEntity);
+userDefaultAgreementCompanyLegalEntity = DATA agreement (legalEntity, legalEntity);
 userDefaultAgreementCompanyLegalEntity(company, legalEntity) => inAgreementLegalEntityOver(userDefaultAgreementCompanyLegalEntity(company, legalEntity), legalEntity) RESOLVE FALSE;
 
 calcDefaultAgreementCompanyLegalEntity(company, legalEntity) =
@@ -231,7 +231,7 @@ FORM agreementsLegalEntity 'Соглашения'
     OBJECTS l=legalEntity FIXED PANEL
     PROPERTIES(l) name
 
-    OBJECTS c=company FIXED PANEL
+    OBJECTS c=legalEntity FIXED PANEL
     PROPERTIES(c) name
 
     OBJECTS ag=agreement
@@ -368,7 +368,7 @@ createAgreementCompanyLegalEntity 'Создать соглашение' = ACTION
 
     FOR ADDOBJ ag = agreement DO {
         SET inAgreementLegalEntity(ag, legalEntity) <- TRUE;
-        SET companyAgreement(ag) <- (company AS company);
+        SET companyAgreement(ag) <- (company AS legalEntity);
         FORM agreement OBJECTS a = ag MODAL;
         IF TRUE AND NOT formResult() == formResult.ok THEN {
             EXEC delete(ag);

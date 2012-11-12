@@ -8,19 +8,19 @@ UNPLegalEntity 'УНП' = DATA STRING[9] (legalEntity) IN docGroup FIXEDCHARWIDT
 OKPOLegalEntity 'ОКПО' = DATA STRING[20] (legalEntity) IN docGroup MINCHARWIDTH 15 PREFCHARWIDTH 15;
 OKYLPLegalEntity 'ОКЮЛП' = DATA STRING[20] (legalEntity) IN docGroup MINCHARWIDTH 15 PREFCHARWIDTH 15;
 
-EXTEND FORM company
+EXTEND FORM legalEntity
 
     PROPERTIES(co) UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity
 ;
 
-EXTEND DESIGN company{
+EXTEND DESIGN legalEntity{
 
     column2 {
         ADD co.docGroup;
     }
 }
 
-EXTEND FORM companies
+EXTEND FORM legalEntities
 
     PROPERTIES(co) UNPLegalEntity
 ;

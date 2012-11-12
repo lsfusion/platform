@@ -44,7 +44,7 @@ META defineBlanketOrder(sign, contact, contactCaption, series)
     countBlanketOrderDetailStockBlanketOrder 'Кол-во строк по складу '(stock, blanketOrder) = GROUP SUM 1 BY stockBlanketOrderDetail(blanketOrderDetail), blanketOrderBlanketOrderDetail(blanketOrderDetail);
     inBlanketOrder###contact 'В заказе' (blanketOrder, contact) = DATA BOOLEAN (blanketOrder, contact);
 
-    @defineDocumentDoubleInterfaceHeaderAgreement (blanketOrder, companyBlanketOrder, contact);
+    @defineDocumentDoubleInterfaceHeaderAgreement (blanketOrder, legalEntityBlanketOrder, contact);
     @deriveDocumentDoubleDetailPriceListTypeAgreement (blanketOrder, contact);
 
     @defineDocumentDetailPrice(blanketOrder);
