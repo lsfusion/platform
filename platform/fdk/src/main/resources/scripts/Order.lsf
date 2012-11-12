@@ -68,6 +68,10 @@ META defineOrder(sign, contact)
     @defineDocumentInterfaceHeaderAgreement(order, companyUserOrder, contact###userOrder);
     @deriveDocumentDetailPriceListTypeAgreement(order);
 
+    @defineDocumentDetailPackWeightSku(order);
+
+    grossWeightOrder 'Вес брутто' (order) = GROUP SUM grossWeightOrderDetail(orderDetail) BY orderOrderDetail(orderDetail);
+
     countOrderDetailStockOrder 'Кол-во строк по складу '(stock, order) = GROUP SUM 1 BY stockOrderDetail(orderDetail), orderOrderDetail(orderDetail);
 
 // --------------------------- Формы Заказа ---------------------------------
@@ -76,13 +80,13 @@ META defineOrder(sign, contact)
         OBJECTS o = userOrder FIXED PANEL
         PROPERTIES (o) objectClassName, nameStockUserOrder, nameNumeratorObject, numberObject, seriesObject, dateUserOrder, timeUserOrder,
                        name###contact###UserOrder, nameCurrencyUserOrder, nameAgreementUserOrder, namePriceListTypeUserOrder, noteUserOrder,
-                       countUserOrderDetailUserOrder, quantityUserOrderDetailUserOrder, sumUserOrderDetailUserOrder, shipmentDateUserOrder,
-                       shipmentTimeUserOrder
+                       countUserOrderDetailUserOrder, quantityUserOrderDetailUserOrder, sumUserOrderDetailUserOrder,
+                       shipmentDateUserOrder, shipmentTimeUserOrder
 
         OBJECTS d = userOrderDetail
         PROPERTIES (d) indexUserOrderDetail, idBarcodeSkuUserOrderDetail, nameSkuUserOrderDetail, shortNameUOMSkuUserOrderDetail,
-                       quantityUserOrderDetail, namePriceListTypeUserOrderDetail, priceUserOrderDetail, sumUserOrderDetail, nameStockUserOrderDetail, shipmentDateUserOrderDetail,
-                       shipmentTimeUserOrderDetail, ADDOBJ, delete
+                       quantityUserOrderDetail, namePriceListTypeUserOrderDetail, priceUserOrderDetail, sumUserOrderDetail,
+                       nameStockUserOrderDetail, shipmentDateUserOrderDetail, shipmentTimeUserOrderDetail, ADDOBJ, delete
 
         PROPERTIES(o) TODRAW d addDetailDialogSkuStockUserOrderDetailUserOrder,
                                addDetailInputBarcodeUserOrderDetailUserOrder, deleteUserOrderDetailUserOrder

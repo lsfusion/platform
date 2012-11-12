@@ -9,7 +9,7 @@ CLASS truck 'Машина';
 
 sidTruck 'Номер' = DATA STRING[20](truck);
 markTruck 'Марка' = DATA STRING[100](truck);
-weightTruck 'Грузоподьёмность' = DATA NUMERIC[14,2](truck);
+weightTruck 'Грузоподьёмность (тонн)' = DATA NUMERIC[14,2](truck);
 
 FORM truck 'Машина'
     OBJECTS t=truck FIXED PANEL

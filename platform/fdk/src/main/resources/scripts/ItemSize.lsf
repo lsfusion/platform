@@ -20,5 +20,6 @@ netWeightSku(sku) += netWeightItem(sku);
 
 // Вес брутто
 @defineDoubleItemAttribute(grossWeight, NUMERIC[9,3], 'Вес брутто', itemSizeGroup);
+grossWeightSku(sku) += grossWeightItem(sku);
 
 EXTEND DESIGN item { itemPrimaryColumn2 { ADD i.itemSizeGroup; } }

@@ -6,9 +6,11 @@ CLASS trip 'Рейс';
 CLASS ABSTRACT orderTrip 'Заказ';
 CLASS ABSTRACT orderTripDetail 'Строка';
 
+@defineDocumentHeaderTime(trip);
+
 truckTrip = DATA truck(trip);
 sidTruckTrip 'Машина (номер)'(trip) = sidTruck(truckTrip(trip));
-weightTruckTrip 'Грузоподъёмность'(trip) = weightTruck(truckTrip(trip));
+weightTruckTrip 'Грузоподъёмность (тонн)'(trip) = weightTruck(truckTrip(trip));
 
 nodeFromTrip = DATA node(trip);
 nodeToTrip = DATA node(trip);
@@ -24,6 +26,8 @@ numberOrderTrip 'Номер' = ABSTRACT STRING[100](orderTrip);
 seriesOrderTrip 'Серия' = ABSTRACT STRING[10](orderTrip);
 dateOrderTrip 'Дата' = ABSTRACT DATE(orderTrip);
 
+grossWeightOrderTrip 'Вес' = ABSTRACT NUMERIC[14,4](orderTrip);
+
 quantityOrderTripDetail 'Кол-во' = ABSTRACT NUMERIC[14,2](orderTripDetail);
 
 nodeFromOrderTrip = ABSTRACT node(orderTrip);
@@ -36,24 +40,32 @@ nameNodeToOrderTrip 'Куда' = nameNode(nodeToOrderTrip(orderTrip));
 tripOrderTrip = DATA trip(orderTrip);
 inTripOrderTrip 'Включен' (trip, orderTrip) = tripOrderTrip(orderTrip)==trip;
 
+filterTripOrderTrip(trip, orderTrip) = tripOrderTrip(orderTrip)==trip OR (trip IS trip AND orderTrip IS orderTrip AND NOT tripOrderTrip(orderTrip));
+
 quantityTripNodeFrom (trip, node) = GROUP SUM 1 BY tripOrderTrip(orderTrip), nodeFromOrderTrip(orderTrip);
 quantityTripNodeTo (trip, node) = GROUP SUM 1 BY tripOrderTrip(orderTrip), nodeToOrderTrip(orderTrip);
 quantityTripNode(trip, node) = UNION SUM quantityTripNodeFrom(trip, node), quantityTripNodeTo(trip, node);
 
 inNodeTrip 'Включен' (node, trip) = TRUE IF quantityTripNode(trip, node);
 
+grossWeightOrderedTrip 'Суммарный вес заказов' (trip) = GROUP SUM grossWeightOrderTrip(orderTrip) BY tripOrderTrip(orderTrip);
+
 quantityTripOrderTripDetail 'Кол-во' = DATA NUMERIC[14,2](trip, orderTripDetail);
 
 FORM trip 'Рейс'
     OBJECTS t=trip FIXED PANEL
-    PROPERTIES (t) sidTruckTrip, weightTruckTrip
+    PROPERTIES (t) dateTrip, timeTrip, sidTruckTrip, weightTruckTrip
+    PROPERTIES (t) READONLY grossWeightOrderedTrip
 
     OBJECTS o=orderTrip
     PROPERTIES(t, o) inTripOrderTrip
-    PROPERTIES(o) READONLY numberOrderTrip, seriesOrderTrip, dateOrderTrip, nameNodeFromOrderTrip, nameNodeToOrderTrip//, seriesOrder, dateOrder, timeOrder, nameStockOrder
+    PROPERTIES(o) READONLY numberOrderTrip, seriesOrderTrip, dateOrderTrip, nameNodeFromOrderTrip, nameNodeToOrderTrip, grossWeightOrderTrip
+
+    FILTERGROUP filtersOrder
+        FILTER 'Не расписанные заказы или в текущем рейсе' 'F11' filterTripOrderTrip(t, o) DEFAULT
 
     OBJECTS n=node
-    PROPERTIES(n) READONLY nameNode
+    PROPERTIES(n) READONLY nameNode, addressNode
     FILTERS inNodeTrip(n, t)
 
     EDIT trip OBJECT t
@@ -65,8 +77,11 @@ DESIGN trip FROM DEFAULT{
         NEW topContainer {
             caption = 'Шапка документа';
             childConstraints = TO THE RIGHT;
+            ADD PROPERTY(dateTrip);
+            ADD PROPERTY(timeTrip);
             ADD PROPERTY(sidTruckTrip);
             ADD PROPERTY(weightTruckTrip);
+            ADD PROPERTY(grossWeightOrderedTrip);
         }
 
         NEW bottomContainer {
@@ -81,11 +96,11 @@ DESIGN trip FROM DEFAULT{
 
 FORM trips 'Рейсы'
     OBJECTS t=trip
-    PROPERTIES(t) READONLY sidTruckTrip, weightTruckTrip
+    PROPERTIES(t) READONLY dateTrip, timeTrip, sidTruckTrip, weightTruckTrip
     PROPERTIES(t) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
 
     OBJECTS o=orderTrip
-    PROPERTIES(o) READONLY numberOrderTrip, seriesOrderTrip, dateOrderTrip//, seriesOrder, dateOrder, timeOrder, nameStockOrder
+    PROPERTIES(o) READONLY numberOrderTrip, seriesOrderTrip, dateOrderTrip
     FILTERS inTripOrderTrip(t, o)
 
     OBJECTS n=node

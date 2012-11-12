@@ -39,6 +39,7 @@ nameNode(customer) += name(customer) IF customer IS customer;
 nameNode(stock) += name(stock) IF stock IS stock;
 
 addressNode(customer) += addressLegalEntity(customer) IF customer IS customer;
+addressNode(stock) += addressStock(stock) IF stock IS stock;
 
 //nameNode(supplier) += name(supplier) IF supplier IS supplier;
 
