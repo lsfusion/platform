@@ -11,6 +11,7 @@ EXTEND CLASS orderDetail : orderTripDetail;
 numberOrderTrip(order) += numberOrder(order);
 seriesOrderTrip(order) += seriesOrder(order);
 dateOrderTrip(order) += dateOrder(order);
+grossWeightOrderTrip(order) += grossWeightOrder(order);
 
 nodeToOrderTrip(order) += customerOrder(order);
 nodeFromOrderTrip(order) += stockOrder(order);

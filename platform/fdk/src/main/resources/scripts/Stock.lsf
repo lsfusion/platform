@@ -78,6 +78,7 @@ isParentSkuGroupSku (skuGroup, sku) = isParentSkuGroupSkuGroup(skuGroupSku(sku),
 isContainerSku 'Тара' (sku) = ABSTRACT BOOLEAN (sku) PERSISTENT;
 quantityPackSku 'Количество в грузовом месте' = ABSTRACT NUMERIC[9,3] (sku) PERSISTENT;
 netWeightSku 'Вес нетто' = ABSTRACT NUMERIC[9,3] (sku) PERSISTENT;
+grossWeightSku 'Вес брутто' = ABSTRACT NUMERIC[9,3] (sku) PERSISTENT;
 
 // ----------------------------------- Ledger ------------------------------------------ //
 
