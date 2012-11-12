@@ -643,11 +643,45 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return new ArrayList<LogicsModule>(usedModules);
     }
 
+    private void resetModuleList(String startModulesList) {
+
+        Set<LogicsModule> was = new HashSet<LogicsModule>();
+        Queue<LogicsModule> queue = new LinkedList<LogicsModule>();
+
+        fillNameToModules();
+
+        for (String moduleName : startModulesList.split(",\\s*")) {
+            LogicsModule startModule = nameToModule.get(moduleName);
+            assert startModule != null;
+            queue.add(startModule);
+            was.add(startModule);
+        }
+
+        while (!queue.isEmpty()) {
+            LogicsModule current = queue.poll();
+
+            for (String nextModuleName : current.getRequiredModules()) {
+                LogicsModule nextModule = nameToModule.get(nextModuleName);
+                if (!was.contains(nextModule)) {
+                    was.add(nextModule);
+                    queue.add(nextModule);
+                }
+            }
+        }
+
+        logicModules = new ArrayList<LogicsModule>(was);
+        nameToModule.clear();
+    }
+
     protected void initModules() throws ClassNotFoundException, IOException, SQLException, InstantiationException, IllegalAccessException, JRException {
         String errors = "";
         try {
             for (LogicsModule module : logicModules) {
                 module.initModule();
+            }
+
+            if (System.getProperty("platform.server.logics.startmodules") != null) {
+                resetModuleList(System.getProperty("platform.server.logics.startmodules"));
             }
 
             List<LogicsModule> orderedModules = orderModules();
@@ -2057,9 +2091,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 tables.get(indexTable).put(tableIndex, index.getValue());
             }
 
+            System.out.print(System.currentTimeMillis() + "\n");
             for (CalcProperty<?> property : getStoredProperties()) {
                 storedProperties.add(new DBStoredProperty(property));
             }
+            System.out.print(System.currentTimeMillis() + "\n");
         }
 
         public DBStructure(DataInputStream inputDB) throws IOException {

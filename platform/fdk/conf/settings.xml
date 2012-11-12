@@ -6,7 +6,7 @@
        default-lazy-init="true">
 
     <bean id="dataAdapter" class="platform.server.data.sql.PostgreDataAdapter">
-        <constructor-arg value="scripted_logics_test"/>
+        <constructor-arg value="#{systemProperties['platform.server.logics.dbname'] ?: 'scripted_logics_test'}"/>
         <constructor-arg value="localhost"/>
         <constructor-arg value="postgres"/>
         <constructor-arg value="11111"/>

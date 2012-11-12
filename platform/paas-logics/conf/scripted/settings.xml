@@ -13,7 +13,7 @@
     </bean>
 
     <bean id="businessLogics" class="platform.server.logics.scripted.ScriptingBusinessLogics">
-        <constructor-arg index="0" value="scriptedLogic" />
+        <constructor-arg index="0" value="#{systemProperties['platform.server.logics.dbname'] ?: 'scriptedLogic'}"/>
         <constructor-arg index="1" ref="dataAdapter" />
         <constructor-arg index="2" value="#{systemProperties['paas.scripted.port']}" />
         <constructor-arg index="3" value="#{systemProperties['paas.scripted.modules.paths']}"/>
