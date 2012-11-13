@@ -63,7 +63,7 @@ FORM supplierGroups 'Группы поставщиков'
 
 CLASS contractSkuSupplier 'Договор с поставщиком' : contractSku;
 
-supplierContractSkuSupplier = DATA supplier (contractSkuSupplier) AUTOSET;
+supplierContractSkuSupplier = DATA legalEntity (contractSkuSupplier) AUTOSET;
 nameSupplierContractSkuSupplier 'Поставщик' (contract) = name(supplierContractSkuSupplier(contract)) IN recognizeGroup MAXCHARWIDTH 30 PREFCHARWIDTH 30;
 partyAContract (contract) += supplierContractSkuSupplier(contract);
 
@@ -269,7 +269,7 @@ DESIGN suppliers FROM DEFAULT{
 // ----------------------------- Расширяем форму компаний ------------------------------------------- //
 
 EXTEND FORM legalEntity
-    OBJECTS s=supplier
+    OBJECTS s=legalEntity
     PROPERTIES(s)       name
     PROPERTIES(s, co)   numberContractSkuSupplierSupplierLegalEntity
 
