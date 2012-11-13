@@ -2091,11 +2091,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 tables.get(indexTable).put(tableIndex, index.getValue());
             }
 
-            System.out.print(System.currentTimeMillis() + "\n");
             for (CalcProperty<?> property : getStoredProperties()) {
                 storedProperties.add(new DBStoredProperty(property));
             }
-            System.out.print(System.currentTimeMillis() + "\n");
         }
 
         public DBStructure(DataInputStream inputDB) throws IOException {
