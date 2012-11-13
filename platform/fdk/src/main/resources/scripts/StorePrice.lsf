@@ -355,8 +355,8 @@ META defineSkuDepartmentStoreLedgerPrice(property, caption, type)
     @defineSkuDepartmentStoreLedger(property, caption, type);
 
     EXTEND CLASS systemPriceListType { property##PriceListType caption##' (расценка)' }
-    priceSystemPriceListTypeSkuStockDateTime (listType, sku, stock, dateTime) += property##BLedgerDateTime(sku, stock, dateTime) AND listType == systemPriceListType.property##PriceListType;
-    priceSystemPriceListTypeBatchStockDateTime (listType, batch, stock, dateTime) += property##BLedgerDateTime(skuBatch(batch), stock, dateTime) AND listType == systemPriceListType.property##PriceListType;
+    priceSystemPriceListTypeSkuStockDateTime (listType, sku, stock, dateTime) += property##BSkuDepartmentStoreDateTime(sku, stock, dateTime) AND listType == systemPriceListType.property##PriceListType;
+    priceSystemPriceListTypeBatchStockDateTime (listType, batch, stock, dateTime) += property##BSkuDepartmentStoreDateTime(skuBatch(batch), stock, dateTime) AND listType == systemPriceListType.property##PriceListType;
 END
 
 META implementSkuDepartmentStoreLedgerCustom(property, concrete, skuProp, stockProp, propertyProp)
@@ -394,8 +394,8 @@ TABLE warePriceLedger (warePriceLedger);
 @defineSkuDepartmentStoreLedger(warePrice, 'Цена посуды', NUMERIC[14,2]);
 wareWarePriceLedger(ledger) = ABSTRACT ware (warePriceLedger) PERSISTENT;
 nameWareWarePriceLedger 'Посуда' (ledger) = name(wareWarePriceLedger(ledger));
-currentWareLedger 'Посуда' (sku, departmentStore) = wareWarePriceLedger(currentLedgerWarePrice(sku, departmentStore));
-wareBLedgerDateTime (sku, departmentStore, dateTime) = wareWarePriceLedger(ledgerBWarePriceDateTime(sku, departmentStore, dateTime));
+currentWareLedger 'Посуда' (sku, departmentStore) = wareWarePriceLedger(currentLedgerWarePriceSkuDepartmentStore(sku, departmentStore));
+wareBSkuDepartmentStoreDateTime (sku, departmentStore, dateTime) = wareWarePriceLedger(ledgerBWarePriceSkuDepartmentStoreDateTime(sku, departmentStore, dateTime));
 
 CLASS ABSTRACT importerPriceLedger 'Изменение цены изготовителя/импортера';
 TABLE importerPriceLedger (importerPriceLedger);
@@ -409,12 +409,12 @@ CLASS ABSTRACT retailVATLedger 'Изменение НДС';
 TABLE retailVATLedger (retailVATLedger);
 @defineSkuDepartmentStoreLedger(retailVAT, 'НДС', range);
 valueRetailVATRetailVATLedger 'НДС, %' (ledger) = valueRateRangeDate(retailVATRetailVATLedger(ledger), dateInTime(dateTimeRetailVATLedger(ledger))) PERSISTENT;
-valueRetailVATBLedgerDateTime 'НДС, % (до)' (sku, departmentStore, dateTime) =
-            valueRateRangeDate(retailVATBLedgerDateTime(sku, departmentStore, dateTime), dateInTime(dateTime));
-valueRetailVATALedgerDateTime 'НДС, % (после)' (sku, departmentStore, dateTime) =
-            valueRateRangeDate(retailVATALedgerDateTime(sku, departmentStore, dateTime), dateInTime(dateTime));
-currentValueRetailVATLedger 'НДС, %' (sku, departmentStore) =
-            valueCurrentRateRange(currentRetailVATLedger(sku, departmentStore));
+valueRetailVATBSkuDepartmentStoreDateTime 'НДС, % (до)' (sku, departmentStore, dateTime) =
+            valueRateRangeDate(retailVATBSkuDepartmentStoreDateTime(sku, departmentStore, dateTime), dateInTime(dateTime));
+valueRetailVATASkuDepartmentStoreDateTime 'НДС, % (после)' (sku, departmentStore, dateTime) =
+            valueRateRangeDate(retailVATASkuDepartmentStoreDateTime(sku, departmentStore, dateTime), dateInTime(dateTime));
+currentValueRetailVATSkuDepartmentStore 'НДС, %' (sku, departmentStore) =
+            valueCurrentRateRange(currentRetailVATSkuDepartmentStore(sku, departmentStore));
 
 CLASS ABSTRACT retailPriceLedger 'Изменение розничной цены';
 TABLE retailPriceLedger (retailPriceLedger);
@@ -423,20 +423,20 @@ TABLE retailPriceLedger (retailPriceLedger);
 costLedgerDepartmentStore 'Учет по себестоимости' = DATA BOOLEAN (departmentStore);
 EXTEND FORM departmentStore PROPERTIES(d) costLedgerDepartmentStore;
 
-priceSkuStockDateTime(sku, departmentStore, dateTime) += retailPriceBLedgerDateTime(sku, departmentStore, dateTime) AND NOT costLedgerDepartmentStore(departmentStore);
+priceSkuStockDateTime(sku, departmentStore, dateTime) += retailPriceBSkuDepartmentStoreDateTime(sku, departmentStore, dateTime) AND NOT costLedgerDepartmentStore(departmentStore);
 priceBatchStockDateTime(batch, departmentStore, dateTime) += IF costLedgerDepartmentStore(departmentStore)
                                                                 THEN costBatch(batch) IF departmentStore IS departmentStore AND dateTime IS DATETIME
-                                                                ELSE retailPriceBLedgerDateTime(skuBatch(batch), departmentStore, dateTime);
+                                                                ELSE retailPriceBSkuDepartmentStoreDateTime(skuBatch(batch), departmentStore, dateTime);
 
 // ------------------------------------- Заполнение текущих параметров --------------------------------- //
 
 META derivePriceLedgerOnSkuChangePrefix (ledger, concrete, prefixP, skuProp, stockProp)
-    prefixP###concrete##Detail (detail)  <- ledger##BLedgerDateTime(
+    prefixP###concrete##Detail (detail)  <- ledger##BSkuDepartmentStoreDateTime(
                     skuProp###concrete##Detail(detail), stockProp###concrete##Detail(detail), dateTime###concrete##Detail(detail))
                     WHEN CHANGED(skuProp###concrete##Detail(detail)) OR CHANGED(stockProp###concrete##Detail(detail)) OR CHANGED(dateTime###concrete##Detail(detail));
 END
 META derivePriceLedgerOnSkuChangePrefix (ledger, concrete, prefixP, skuProp)
-    prefixP###concrete##Detail (detail)  <- ledger##BLedgerDateTime(
+    prefixP###concrete##Detail (detail)  <- ledger##BSkuDepartmentStoreDateTime(
                     skuProp###concrete##Detail(detail), departmentStore###concrete##Detail(detail), dateTime###concrete##Detail(detail))
                     WHEN CHANGED(skuProp###concrete##Detail(detail)) OR CHANGED(departmentStore###concrete##Detail(detail)) OR CHANGED(dateTime###concrete##Detail(detail));
 END
@@ -459,13 +459,13 @@ META deriveBasePriceLedgerOnSkuChange (concrete, skuProp)
 END
 
 META derivePrevPriceLedgerOnSkuChangePrefix (ledger, concrete, prefixP, skuProp, stockProp)
-    prefixP###concrete##Detail (detail)  <- [PREV(ledger##BLedgerDateTime(sku, stockProp, dateTime))](
+    prefixP###concrete##Detail (detail)  <- [PREV(ledger##BSkuDepartmentStoreDateTime(sku, stockProp, dateTime))](
                     skuProp###concrete##Detail(detail), stockProp###concrete##Detail(detail), dateTime###concrete##Detail(detail))
                     WHEN CHANGED(skuProp###concrete##Detail(detail)) OR CHANGED(stockProp###concrete##Detail(detail)) OR CHANGED(dateTime###concrete##Detail(detail));
 END
 
 META derivePrevPriceLedgerOnSkuChangePrefix (ledger, concrete, prefixP, skuProp)
-    prefixP###concrete##Detail (detail)  <- [PREV(ledger##BLedgerDateTime(sku, departmentStore, dateTime))](
+    prefixP###concrete##Detail (detail)  <- [PREV(ledger##BSkuDepartmentStoreDateTime(sku, departmentStore, dateTime))](
                     skuProp###concrete##Detail(detail), departmentStore###concrete##Detail(detail), dateTime###concrete##Detail(detail))
                     WHEN CHANGED(skuProp###concrete##Detail(detail)) OR CHANGED(departmentStore###concrete##Detail(detail)) OR CHANGED(dateTime###concrete##Detail(detail));
 END
@@ -486,9 +486,9 @@ END
 // ----------------------------------------- Расширяем формы остатков ценами ----------------------------------- //
 
 EXTEND FORM currentBalanceSkuStock
-    PROPERTIES(s, st)   currentImporterPriceLedger, currentSupplierPriceLedger,
-                        currentValueRetailVATLedger, currentRetailPriceLedger,
-                        currentWarePriceLedger SHOWIF showWare()
+    PROPERTIES(s, st)   currentImporterPriceSkuDepartmentStore, currentSupplierPriceSkuDepartmentStore,
+                        currentValueRetailVATSkuDepartmentStore, currentRetailPriceSkuDepartmentStore,
+                        currentWarePriceSkuDepartmentStore SHOWIF showWare()
 
     OBJECTS rpl=retailPriceLedger
     PROPERTIES (rpl) READONLY descriptionRetailPriceLedger, dateTimeRetailPriceLedger, retailPriceRetailPriceLedger
@@ -528,9 +528,9 @@ EXTEND DESIGN currentBalanceSkuStock {
 }
 
 EXTEND FORM balanceSkuStock
-    PROPERTIES (s, st, t) READONLY importerPriceALedgerDateTime, supplierPriceALedgerDateTime,
-                                   valueRetailVATALedgerDateTime,
-                                   retailPriceALedgerDateTime, warePriceALedgerDateTime SHOWIF showWare()
+    PROPERTIES (s, st, t) READONLY importerPriceASkuDepartmentStoreDateTime, supplierPriceASkuDepartmentStoreDateTime,
+                                   valueRetailVATASkuDepartmentStoreDateTime,
+                                   retailPriceASkuDepartmentStoreDateTime, warePriceASkuDepartmentStoreDateTime SHOWIF showWare()
 
     OBJECTS rpl=retailPriceLedger
     PROPERTIES (rpl) READONLY descriptionRetailPriceLedger, dateTimeRetailPriceLedger, retailPriceRetailPriceLedger
@@ -572,9 +572,9 @@ EXTEND DESIGN balanceSkuStock {
 
 META defineDialogSkuStorePrice (form)
 
-    form###supplierPrice 'Цена поставщика' (sku) = currentSupplierPriceLedger(sku, form###stock());
-    form###valueRetailVAT 'НДС, %' (sku) = currentValueRetailVATLedger(sku, form###stock());
-    form###retailPrice 'Розничная цена' (sku) = currentRetailPriceLedger(sku, form###stock());
+    form###supplierPrice 'Цена поставщика' (sku) = currentSupplierPriceSkuDepartmentStore(sku, form###stock());
+    form###valueRetailVAT 'НДС, %' (sku) = currentValueRetailVATSkuDepartmentStore(sku, form###stock());
+    form###retailPrice 'Розничная цена' (sku) = currentRetailPriceSkuDepartmentStore(sku, form###stock());
 
     EXTEND FORM form
         PROPERTIES(s) READONLY SHOWIF form###stock() form###supplierPrice, form###valueRetailVAT, form###retailPrice

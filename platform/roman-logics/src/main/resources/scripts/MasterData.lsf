@@ -450,7 +450,7 @@ END
 
 //-------------------------------- НДС на кассе ------------------------- //
 
-VATRetailSkuDepartmentStoreDateTime(sku, departmentStore, dateTime) += retailVATBLedgerDateTime(sku, departmentStore, dateTime);
+VATRetailSkuDepartmentStoreDateTime(sku, departmentStore, dateTime) += retailVATBSkuDepartmentStoreDateTime(sku, departmentStore, dateTime);
 
 //@implementSkuLedger(userPriceChange, sku, departmentStore);
 //quantityInLIFOSkuLedger (ledger) += quantityUserPriceChangeDetail(ledger) (-) quantityUserPriceChangeDetail(ledger);

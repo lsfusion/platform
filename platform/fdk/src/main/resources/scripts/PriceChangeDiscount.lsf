@@ -53,44 +53,44 @@ quantityPriceChangeZReportDetail 'Количество' (priceChangeZReportDetai
 
 dateTimePriceChangeZReportDetail (priceChangeZReportDetail) = dateTimeReceiptSaleDetail (receiptSaleDetailPriceChangeZReportDetail(priceChangeZReportDetail));
 
-curImporterPricePriceChangeZReportDetail (priceChangeZReportDetail) = importerPriceBLedgerDateTime
+curImporterPricePriceChangeZReportDetail (priceChangeZReportDetail) = importerPriceBSkuDepartmentStoreDateTime
     (skuPriceChangeZReportDetail(priceChangeZReportDetail), departmentStorePriceChangeZReportDetail(priceChangeZReportDetail), dateTimePriceChangeZReportDetail(priceChangeZReportDetail));
 
-curSupplierPricePriceChangeZReportDetail (priceChangeZReportDetail) = supplierPriceBLedgerDateTime
+curSupplierPricePriceChangeZReportDetail (priceChangeZReportDetail) = supplierPriceBSkuDepartmentStoreDateTime
     (skuPriceChangeZReportDetail(priceChangeZReportDetail), departmentStorePriceChangeZReportDetail(priceChangeZReportDetail), dateTimePriceChangeZReportDetail(priceChangeZReportDetail));
 
-curRetailVATPriceChangeZReportDetail (priceChangeZReportDetail) = retailVATBLedgerDateTime
+curRetailVATPriceChangeZReportDetail (priceChangeZReportDetail) = retailVATBSkuDepartmentStoreDateTime
     (skuPriceChangeZReportDetail(priceChangeZReportDetail), departmentStorePriceChangeZReportDetail(priceChangeZReportDetail), dateTimePriceChangeZReportDetail(priceChangeZReportDetail));
 
 curValueRetailVATPriceChangeZReportDetail (priceChangeZReportDetail) = valueRateRangeDate (curRetailVATPriceChangeZReportDetail (priceChangeZReportDetail),
     dateInTime(dateTimePriceChangeZReportDetail(priceChangeZReportDetail)));
 
-curWarePriceChangeZReportDetail (priceChangeZReportDetail) = wareBLedgerDateTime
+curWarePriceChangeZReportDetail (priceChangeZReportDetail) = wareBSkuDepartmentStoreDateTime
     (skuPriceChangeZReportDetail(priceChangeZReportDetail), departmentStorePriceChangeZReportDetail(priceChangeZReportDetail), dateTimePriceChangeZReportDetail(priceChangeZReportDetail));
 
-curWarePricePriceChangeZReportDetail (priceChangeZReportDetail) = warePriceBLedgerDateTime
+curWarePricePriceChangeZReportDetail (priceChangeZReportDetail) = warePriceBSkuDepartmentStoreDateTime
     (skuPriceChangeZReportDetail(priceChangeZReportDetail), departmentStorePriceChangeZReportDetail(priceChangeZReportDetail), dateTimePriceChangeZReportDetail(priceChangeZReportDetail));
 
 curRetailPricePriceChangeZReportDetail (priceChangeZReportDetail) = priceReceiptSaleDetail (receiptSaleDetailPriceChangeZReportDetail(priceChangeZReportDetail));
 
-importerPricePriceChangeZReportDetail (priceChangeZReportDetail) = importerPriceBLedgerDateTime
+importerPricePriceChangeZReportDetail (priceChangeZReportDetail) = importerPriceBSkuDepartmentStoreDateTime
     (skuPriceChangeZReportDetail(priceChangeZReportDetail), departmentStorePriceChangeZReportDetail(priceChangeZReportDetail), dateTimePriceChangeZReportDetail(priceChangeZReportDetail));
 
-supplierPricePriceChangeZReportDetail (priceChangeZReportDetail) = supplierPriceBLedgerDateTime
+supplierPricePriceChangeZReportDetail (priceChangeZReportDetail) = supplierPriceBSkuDepartmentStoreDateTime
     (skuPriceChangeZReportDetail(priceChangeZReportDetail), departmentStorePriceChangeZReportDetail(priceChangeZReportDetail), dateTimePriceChangeZReportDetail(priceChangeZReportDetail));
 
-retailVATPriceChangeZReportDetail (priceChangeZReportDetail) = retailVATBLedgerDateTime
+retailVATPriceChangeZReportDetail (priceChangeZReportDetail) = retailVATBSkuDepartmentStoreDateTime
     (skuPriceChangeZReportDetail(priceChangeZReportDetail), departmentStorePriceChangeZReportDetail(priceChangeZReportDetail), dateTimePriceChangeZReportDetail(priceChangeZReportDetail));
 
 valueRetailVATPriceChangeZReportDetail (priceChangeZReportDetail) = valueRateRangeDate (retailVATPriceChangeZReportDetail (priceChangeZReportDetail),
     dateInTime(dateTimePriceChangeZReportDetail(priceChangeZReportDetail)));
 
-warePriceChangeZReportDetail (priceChangeZReportDetail) = wareBLedgerDateTime
+warePriceChangeZReportDetail (priceChangeZReportDetail) = wareBSkuDepartmentStoreDateTime
     (skuPriceChangeZReportDetail(priceChangeZReportDetail), departmentStorePriceChangeZReportDetail(priceChangeZReportDetail), dateTimePriceChangeZReportDetail(priceChangeZReportDetail));
 
 nameWarePriceChangeZReportDetail 'Посуда' (priceChangeZReportDetail) = name(warePriceChangeZReportDetail (priceChangeZReportDetail));
 
-warePricePriceChangeZReportDetail (priceChangeZReportDetail) = warePriceBLedgerDateTime
+warePricePriceChangeZReportDetail (priceChangeZReportDetail) = warePriceBSkuDepartmentStoreDateTime
     (skuPriceChangeZReportDetail(priceChangeZReportDetail), departmentStorePriceChangeZReportDetail(priceChangeZReportDetail), dateTimePriceChangeZReportDetail(priceChangeZReportDetail));
 
 retailPricePriceChangeZReportDetail (priceChangeZReportDetail) =

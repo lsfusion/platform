@@ -2877,13 +2877,13 @@ quantityLossNaturalLossDetail 'Кол-во' = DATA NUMERIC[14,3] (naturalLossDet
 //supplierSumNaturalLossDetail 'Сумма поставщика, руб.' = DATA NUMERIC[16,2] (naturalLossDetail);
 //retailSumNaturalLossDetail 'Розничная сумма, руб.' = DATA NUMERIC[16,2] (naturalLossDetail);
 
-supplierPriceNaturalLossDetail(naturalLossDetail) <- supplierPriceBLedgerDateTime(
+supplierPriceNaturalLossDetail(naturalLossDetail) <- supplierPriceBSkuDepartmentStoreDateTime(
                                                         itemNaturalLossDetail(naturalLossDetail),
                                                         departmentStoreNaturalLoss(naturalLossNaturalLossDetail(naturalLossDetail)),
                                                         dateTimeNaturalLoss(naturalLossNaturalLossDetail(naturalLossDetail)))
     WHEN CHANGED(itemNaturalLossDetail(naturalLossDetail));
 
-retailPriceNaturalLossDetail(naturalLossDetail) <- retailPriceBLedgerDateTime(
+retailPriceNaturalLossDetail(naturalLossDetail) <- retailPriceBSkuDepartmentStoreDateTime(
                                                         itemNaturalLossDetail(naturalLossDetail),
                                                         departmentStoreNaturalLoss(naturalLossNaturalLossDetail(naturalLossDetail)),
                                                         dateTimeNaturalLoss(naturalLossNaturalLossDetail(naturalLossDetail)))
@@ -4224,8 +4224,8 @@ FORM shipment 'Поставка'
     FILTERS isShippedOrOrderedItemShipment(i, s)
 
     HINTNOUPDATE LIST isPostedShipment,
-                  balanceBSkuStockDateTime, importerPriceBLedgerDateTime, wareBLedgerDateTime, warePriceBLedgerDateTime,
-                  retailVATBLedgerDateTime, retailPriceBLedgerDateTime, supplierPriceBLedgerDateTime
+                  balanceBSkuStockDateTime, importerPriceBSkuDepartmentStoreDateTime, wareBSkuDepartmentStoreDateTime, warePriceBSkuDepartmentStoreDateTime,
+                  retailVATBSkuDepartmentStoreDateTime, retailPriceBSkuDepartmentStoreDateTime, supplierPriceBSkuDepartmentStoreDateTime
 
     EVENTS
         ON OK EXEC prePostShipment(s)
@@ -5824,7 +5824,7 @@ netWeightBalanceAItemLedgerDate 'Вес товара на конец , кг' (it
 volumeBalanceAItemLedgerDate 'Объем товара на конец , л' (item, departmentStore, dateTo) =
     balanceASkuStockDate (item, departmentStore, dateTo) * volumeItem(item);
 retailSumBalanceAItemLedgerDate 'Сумма товара на конец , руб' (item, departmentStore, dateTo) =
-    retailPriceALedgerDate (item, departmentStore, dateTo) * balanceASkuStockDate(item, departmentStore, dateTo);
+    retailPriceASkuDepartmentStoreDate (item, departmentStore, dateTo) * balanceASkuStockDate(item, departmentStore, dateTo);
 //balanceASkuStockDate (item, departmentStore, dateTo)    - шт.
 
                                    //с коэффициентом пересчета на коцен//
