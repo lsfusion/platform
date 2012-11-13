@@ -25,7 +25,7 @@ META defineDocumentInterfaceHeaderCreateShipment (object, stockClass)
 END
 //----------------------------------------------- Поставка ---------------------------------------------------//
 
-META defineShipment(sign, contact, contactCaption, partyA, partyB)
+META defineShipment(sign, stockProp)
 
     CLASS ABSTRACT shipment 'Поставка'###sign;
     CLASS ABSTRACT shipmentDetail 'Строка поставки'###sign;
@@ -38,15 +38,21 @@ META defineShipment(sign, contact, contactCaption, partyA, partyB)
 
     @defineDocumentInterfaceNumber(shipment);
 
-    @defineDocumentInterfaceDataStock(shipment, stock, 'Склад');
+    @defineDocumentInterfaceLegalEntity (shipment, supplier, 'Поставщик');
+    @defineDocumentInterfaceLegalEntity (shipment, customer, 'Покупатель');
+
+    @defineDocumentInterfaceDataStock(shipment, stock, 'Склад поставщика', supplier);
+    @defineDocumentInterfaceDataStock(shipment, stock, 'Склад покупателя', customer);
+
+//    @defineDocumentInterfaceDataStock(shipment, stock, 'Склад');
     @defineDocumentInterfacePosted(shipment);
 
     @defineDocumentInterfaceDescription(shipment, 'Поставка'###sign);
 
     @defineDocumentInterfaceCurrency(shipment);
-    @deriveDocumentCurrency(userShipment, stock);
+    @deriveDocumentCurrency(userShipment, stockProp);
 
-    @defineDocumentInterface###contact(shipment);
+//    @defineDocumentInterface###contact(shipment);
 
     @defineDocumentInterfaceDetailSku(shipment, sku);
 
@@ -64,21 +70,22 @@ META defineShipment(sign, contact, contactCaption, partyA, partyB)
     @defineDocumentHeaderItemSum(shipment, , );
     @defineDocumentHeaderItemSum(userShipment, , );
 
-    @defineAddDetailDialogSkuStock(userShipment, sku, stock, dialogSku);
+    @defineAddDetailDialogSkuStock(userShipment, sku, stockProp, dialogSku);
     @defineAddDetailDialogBarcode(userShipment, sku);
 
 // --------------------------- Формы --------------------------------- //
 
     FORM userShipment 'Поставка'###sign
         OBJECTS s = userShipment FIXED PANEL
-        PROPERTIES (s) objectClassName, nameStockUserShipment, nameNumeratorObject, numberObject, seriesObject, dateUserShipment, timeUserShipment,
-                       name###contact###UserShipment, nameCurrencyUserShipment, noteUserShipment,
+        PROPERTIES (s) objectClassName, nameSupplierUserShipment, nameCustomerUserShipment, nameSupplierStockUserShipment, nameCustomerStockUserShipment,
+                       nameNumeratorObject, numberObject, seriesObject, dateUserShipment, timeUserShipment,
+                       nameCurrencyUserShipment, noteUserShipment,
                        countUserShipmentDetailUserShipment, quantityUserShipmentDetailUserShipment, sumUserShipmentDetailUserShipment
 
         OBJECTS d = userShipmentDetail
         PROPERTIES (d) indexUserShipmentDetail, idBarcodeSkuUserShipmentDetail, nameSkuUserShipmentDetail, shortNameUOMSkuUserShipmentDetail,
                        quantityUserShipmentDetail, priceUserShipmentDetail, sumUserShipmentDetail,
-                       nameStockUserShipmentDetail, ADDOBJ, delete
+                       name###stockProp###shipmentDetail, ADDOBJ, delete
 
         PROPERTIES(s) TODRAW d addDetailDialogSkuStockUserShipmentDetailUserShipment,
                                addDetailInputBarcodeUserShipmentDetailUserShipment, deleteUserShipmentDetailUserShipment
@@ -103,7 +110,10 @@ META defineShipment(sign, contact, contactCaption, partyA, partyB)
                     ADD s.documentHeaderGroup {
                         childConstraints = TO THE RIGHT;
                         ADD PROPERTY(objectClassName) { preferredCharWidth = 10; }
-                        ADD PROPERTY(nameStockUserShipment);
+                        ADD PROPERTY(nameSupplierUserShipment);
+                        ADD PROPERTY(nameCustomerUserShipment);
+                        ADD PROPERTY(nameSupplierStockUserShipment);
+                        ADD PROPERTY(nameCustomerStockUserShipment);
                         ADD PROPERTY(nameNumeratorObject);
                         ADD PROPERTY(numberObject);
                         ADD PROPERTY(seriesObject);
@@ -137,7 +147,8 @@ META defineShipment(sign, contact, contactCaption, partyA, partyB)
     FORM shipments 'Поставки' TITLE 'Поставки'###sign
         OBJECTS s = shipment
         PROPERTIES (s) READONLY isPostedShipment FORCE GRID, objectClassName, numberShipment, seriesShipment, dateShipment, timeShipment,
-                                nameStockShipment, name###contact###Shipment, nameCurrencyShipment, noteShipment,
+                                nameSupplierShipment, nameCustomerShipment, nameSupplierStockShipment, nameCustomerStockShipment,
+                                nameCurrencyShipment, noteShipment,
                                 countShipmentDetailShipment, quantityShipmentDetailShipment, sumShipmentDetailShipment
         PROPERTIES (s) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
@@ -148,7 +159,7 @@ META defineShipment(sign, contact, contactCaption, partyA, partyB)
         OBJECTS d = shipmentDetail
         PROPERTIES (d)  indexShipmentDetail, idBarcodeSkuShipmentDetail, nameSkuShipmentDetail, shortNameUOMSkuShipmentDetail,
                                 quantityShipmentDetail, priceShipmentDetail, sumShipmentDetail,
-                                nameStockShipmentDetail
+                                name###stockProp###shipmentDetail
         FILTERS shipmentShipmentDetail(d) == s
 
         DIALOG shipment OBJECT s
@@ -193,10 +204,10 @@ META defineShipment(sign, contact, contactCaption, partyA, partyB)
     orderUserShipmentDetail = DATA order (userShipmentDetail);
     orderShipmentDetail(shipmentDetail) += orderUserShipmentDetail(shipmentDetail);
 
-    CONSTRAINT contact###ShipmentDetail(shipmentDetail) != contact###Order(orderUserShipmentDetail(shipmentDetail)) OR
-               legalEntityUserShipment(shipmentDetail) != legalEntityOrder(orderUserShipmentDetail(shipmentDetail))
-        CHECKED BY orderUserShipmentDetail
-            MESSAGE contactCaption###' и компания в заказе и поставке должны соответствовать друг другу';
+//    CONSTRAINT contact###ShipmentDetail(shipmentDetail) != contact###Order(orderUserShipmentDetail(shipmentDetail)) OR
+//               companyUserShipment(shipmentDetail) != companyOrder(orderUserShipmentDetail(shipmentDetail))
+//        CHECKED BY orderUserShipmentDetail
+//            MESSAGE contactCaption###' и компания в заказе и поставке должны соответствовать друг другу';
 
     descriptionOrderShipmentDetail 'Заказ' (shipmentDetail) = descriptionOrder(orderShipmentDetail(shipmentDetail)) IN orderGroup;
     descriptionOrderUserShipmentDetail 'Заказ' (userShipmentDetail) = descriptionOrder(orderUserShipmentDetail(userShipmentDetail)) IN orderGroup;
@@ -218,36 +229,36 @@ META defineShipment(sign, contact, contactCaption, partyA, partyB)
     toShipOrderDetail 'Не поставлено' (orderDetail) = quantityOrderDetail (orderDetail) (-) shippedOrderDetail(orderDetail);
 
     toShipOrderDetailStockOrder 'Не поставлено по складу' (stock, order) = GROUP SUM toShipOrderDetail(orderDetail) IF toShipOrderDetail(orderDetail) > 0
-                                                                                     BY stockOrderDetail(orderDetail), orderOrderDetail(orderDetail);
+                                                                                     BY stockProp###orderDetail(orderDetail), orderOrderDetail(orderDetail);
 
     shippedOrderDetailOrder 'Кол-во (поставлено)' (order) = GROUP SUM shippedOrderDetail(orderDetail) BY orderOrderDetail(orderDetail) IN documentSumGroup PERSISTENT;
 
     // Создание поставки на основе заказа //
 
     FORM shipmentOrders 'Заказы'###sign
-        OBJECTS s = stock FIXED PANEL
-        PROPERTIES (s) READONLY name
-        OBJECTS c = contact FIXED PANEL
-        PROPERTIES (c) READONLY name
+//        OBJECTS s = stock FIXED PANEL
+//        PROPERTIES (s) READONLY name
+//        OBJECTS c = contact FIXED PANEL
+//        PROPERTIES (c) READONLY name
 
         OBJECTS o = order
         PROPERTIES (o) READONLY isPostedOrder FORCE GRID, objectClassName, numberOrder, seriesOrder, dateOrder, timeOrder,
-                                nameStockOrder, name###contact###Order, nameCurrencyOrder, noteOrder,
+                                nameSupplierStockOrder, nameCustomerStockOrder, nameCurrencyOrder, noteOrder,
                                 countOrderDetailOrder, quantityOrderDetailOrder, shippedOrderDetailOrder, sumOrderDetailOrder
-        FILTERS contact###Order(o) == c,
+        FILTERS //contact###Order(o) == c,
                 isPostedOrder(o)
-        FILTERGROUP order
-            FILTER 'Заказы с непоставленными товарами со склада' 'F10' toShipOrderDetailStockOrder(s, o) DEFAULT
-            FILTER 'Заказы со склада' 'F9' countOrderDetailStockOrder(s, o)
+//        FILTERGROUP order
+//            FILTER 'Заказы с непоставленными товарами со склада' 'F10' toShipOrderDetailStockOrder(s, o) DEFAULT
+//            FILTER 'Заказы со склада' 'F9' countOrderDetailStockOrder(s, o)
 
         OBJECTS d = orderDetail
         PROPERTIES (d) READONLY indexOrderDetail, idBarcodeSkuOrderDetail, nameSkuOrderDetail, shortNameUOMSkuOrderDetail,
-                                quantityOrderDetail, shippedOrderDetail, priceOrderDetail, sumOrderDetail, nameStockOrderDetail,
+                                quantityOrderDetail, shippedOrderDetail, priceOrderDetail, sumOrderDetail, name###stockProp###orderDetail,
                                 toShipOrderDetail
         FILTERS orderOrderDetail(d) == o
-        FILTERGROUP orderDetail
-            FILTER 'Строки с непоставленными товарами со склада' 'F10' stockOrderDetail(d) == s AND toShipOrderDetail(d) > 0 DEFAULT
-            FILTER 'Строки со склада' 'F9' stockOrderDetail(d) == s
+//        FILTERGROUP orderDetail
+//            FILTER 'Строки с непоставленными товарами со склада' 'F10' stockOrderDetail(d) == s AND toShipOrderDetail(d) > 0 DEFAULT
+//            FILTER 'Строки со склада' 'F9' stockOrderDetail(d) == s
 
         DIALOG order OBJECT o
     ;
@@ -259,11 +270,11 @@ META defineShipment(sign, contact, contactCaption, partyA, partyB)
 
                 childConstraints = TO THE BOTTOM;
 
-                NEW headerBox {
-                    childConstraints = TO THE RIGHT;
-                    ADD s.box;
-                    ADD c.box;
-                }
+//                NEW headerBox {
+//                    childConstraints = TO THE RIGHT;
+//                    ADD s.box;
+//                    ADD c.box;
+//                }
                 ADD o.box;
                 NEW documentDetail {
                     type = TABBED;
@@ -286,13 +297,13 @@ META defineShipment(sign, contact, contactCaption, partyA, partyB)
     }
 
     fillOrderUserShipment 'Заполнить на основе заказа' =  ACTION (userShipment) {
-        FORM shipmentOrders OBJECTS s = stockUserShipment(userShipment), c = contact###UserShipment(userShipment) MODAL;
+        FORM shipmentOrders MODAL;//s = stockUserShipment(userShipment), c = contact###UserShipment(userShipment) MODAL;
         IF formResult() == formResult.ok THEN {
             LOCAL saleOrder = order();
             SET saleOrder() <- chosenObject('o');
 
             FOR orderOrderDetail(orderDetail) == saleOrder() AND
-                stockOrderDetail(orderDetail) == stockUserShipment(userShipment) AND
+//                stockOrderDetail(orderDetail) == stockUserShipment(userShipment) AND
                 toShipOrderDetail(orderDetail) > 0
                 ADDOBJ d = userShipmentDetail DO {
                     SET userShipmentUserShipmentDetail(d) <- userShipment;
@@ -324,26 +335,26 @@ META defineShipment(sign, contact, contactCaption, partyA, partyB)
     ;
 //--  Резервирование
     currentReserveSkuStock 'Текущий резерв'###sign (sku, stock) = GROUP SUM toShipOrderDetail (orderDetail) AND isPostedOrderDetail(orderDetail) AND NOT isClosedOrderDetail(orderDetail)
-                                                              BY skuOrderDetail(orderDetail), stockOrderDetail(orderDetail) PERSISTENT;
+                                                              BY skuOrderDetail(orderDetail), stockProp###OrderDetail(orderDetail) PERSISTENT;
     // без учета текущей даты/времени
     reserveBSkuStockDate 'Остаток на начало дня'###sign (sku, stock, date) = (currentReserveSkuStock(sku, stock) AND  date AS DATE) (-)
         [GROUP SUM toShipOrderDetail (orderDetail) AND isPostedOrderDetail(orderDetail) AND NOT isClosedOrderDetail(orderDetail) AND shipmentDateOrderDetail(orderDetail) >= (date AS DATE)
-            BY skuOrderDetail(orderDetail), stockOrderDetail(orderDetail), date](sku, stock, date);
+            BY skuOrderDetail(orderDetail), stockProp###OrderDetail(orderDetail), date](sku, stock, date);
 
     // с учетом текущей даты/времени
     reserveASkuStockDate 'Остаток на конец дня'###sign (sku, stock, date) = (currentReserveSkuStock(sku, stock) AND date AS DATE) (-)
         [GROUP SUM toShipOrderDetail (orderDetail) AND isPostedOrderDetail(orderDetail) AND NOT isClosedOrderDetail(orderDetail) AND shipmentDateOrderDetail(orderDetail) > (date AS DATE)
-            BY skuOrderDetail(orderDetail), stockOrderDetail(orderDetail), date](sku, stock, date);
+            BY skuOrderDetail(orderDetail), stockProp###OrderDetail(orderDetail), date](sku, stock, date);
 
     // без учета текущей даты/времени
     reserveBSkuStockDateTime 'Остаток (до)'###sign (sku, stock, dateTime) = (currentReserveSkuStock(sku, stock) AND dateTime AS DATETIME) (-)
         [GROUP SUM toShipOrderDetail (orderDetail) AND isPostedOrderDetail(orderDetail) AND NOT isClosedOrderDetail(orderDetail) AND shipmentDateTimeOrderDetail(orderDetail) >= (dateTime AS DATETIME)
-            BY skuOrderDetail(orderDetail), stockOrderDetail(orderDetail), dateTime](sku, stock, dateTime);
+            BY skuOrderDetail(orderDetail), stockProp###OrderDetail(orderDetail), dateTime](sku, stock, dateTime);
 
     // с учетом текущей даты/времени
     reserveASkuStockDateTime 'Остаток (после)'###sign (sku, stock, dateTime) = (currentReserveSkuStock(sku, stock) AND dateTime AS DATETIME) (-)
         [GROUP SUM toShipOrderDetail (orderDetail) AND isPostedOrderDetail(orderDetail) AND NOT isClosedOrderDetail(orderDetail) AND shipmentDateTimeOrderDetail(orderDetail) > (dateTime AS DATETIME)
-            BY skuOrderDetail(orderDetail), stockOrderDetail(orderDetail), dateTime](sku, stock, dateTime);
+            BY skuOrderDetail(orderDetail), stockProp###OrderDetail(orderDetail), dateTime](sku, stock, dateTime);
 
 
 //--  Связь накладной и поставки
@@ -351,13 +362,12 @@ META defineShipment(sign, contact, contactCaption, partyA, partyB)
     invoiceDetailUserShipmentDetail = DATA invoiceDetail (userShipmentDetail);
     invoiceDetailShipmentDetail(shipmentDetail) += invoiceDetailUserShipmentDetail(shipmentDetail);
 
-    CONSTRAINT contact###ShipmentDetail(detail) != contact###InvoiceDetail(invoiceDetailUserShipmentDetail(detail)) OR
-               legalEntityStockShipmentDetail(detail) != legalEntityInvoice(invoiceDetailUserShipmentDetail(detail)) OR
+    CONSTRAINT supplierShipmentDetail(detail) != supplierInvoiceDetail(invoiceDetailUserShipmentDetail(detail)) OR
+               customerShipmentDetail(detail) != customerInvoice(invoiceDetailUserShipmentDetail(detail)) OR
                skuUserShipmentDetail(detail) != skuInvoiceDetail(invoiceDetailUserShipmentDetail(detail))
         CHECKED BY invoiceDetailUserShipmentDetail
-            MESSAGE contactCaption###', компания и товар в накладной и поставке должны соответствовать друг другу';
+            MESSAGE 'Поставщикб покупатель и товар в накладной и поставке должны соответствовать друг другу';
 
-//    GROUP invoiceGroup 'Информация о накладной' : baseGroup;
 
     descriptionIndexInvoiceDetailShipmentDetail 'Строка накладной' (detail) = descriptionIndexInvoiceDetail(invoiceDetailShipmentDetail(detail));
     descriptionIndexInvoiceDetailUserShipmentDetail 'Строка накладной' (detail) = descriptionIndexInvoiceDetail(invoiceDetailUserShipmentDetail(detail));
@@ -379,37 +389,39 @@ META defineShipment(sign, contact, contactCaption, partyA, partyB)
 
     toShipInvoiceDetailStockInvoice 'Не поставлено по складу' (stock, invoice) =
         GROUP SUM toShipInvoiceDetail(invoiceDetail) IF toShipInvoiceDetail(invoiceDetail) > 0
-              BY stockInvoiceDetail(invoiceDetail), invoiceInvoiceDetail(invoiceDetail);
+              BY stockProp###InvoiceDetail(invoiceDetail), invoiceInvoiceDetail(invoiceDetail);
 
     // Создание поставки на основе инвойса //
 
     FORM shipmentInvoices 'Накладные'###sign
-        OBJECTS s = stock FIXED PANEL
+        OBJECTS s = legalEntity FIXED PANEL
         PROPERTIES (s) READONLY name
-        OBJECTS c = contact FIXED PANEL
+        OBJECTS c = legalEntity FIXED PANEL
         PROPERTIES (c) READONLY name
 
         OBJECTS i = invoice
         PROPERTIES (i) READONLY isPostedInvoice FORCE GRID, objectClassName, numberInvoice, seriesInvoice, dateInvoice, timeInvoice,
-                                nameStockInvoice, name###contact###Invoice, nameCurrencyInvoice, noteInvoice,
-                                numberContractSku###contact###Invoice, isCommissionInvoice,
+                                nameSupplierInvoice, nameCustomerInvoice, nameSupplierStockInvoice, nameCustomerStockInvoice,
+                                nameCurrencyInvoice, noteInvoice,
+//                                numberContractSku###contact###Invoice, isCommissionInvoice,
                                 countInvoiceDetailInvoice, quantityInvoiceDetailInvoice, sumInvoiceDetailInvoice,
                                 VATSumInvoiceDetailInvoice, invoiceSumInvoiceDetailInvoice, ordersInvoice
-        FILTERS contact###Invoice(i) == c,
+        FILTERS supplierInvoice(i) == s,
+                customerInvoice(i) == c,
                 isPostedInvoice(i)
-        FILTERGROUP invoice
-            FILTER 'Накладные с непоставленными товарами со склада' 'F10' toShipInvoiceDetailStockInvoice(s,i) DEFAULT
-            FILTER 'Накладные со склада' 'F9' countInvoiceDetailStockInvoice(s,i)
+//        FILTERGROUP invoice
+//            FILTER 'Накладные с непоставленными товарами со склада' 'F10' toShipInvoiceDetailStockInvoice(s,i) DEFAULT
+//            FILTER 'Накладные со склада' 'F9' countInvoiceDetailStockInvoice(s,i)
 
         OBJECTS d = invoiceDetail
         PROPERTIES (d) READONLY indexInvoiceDetail, idBarcodeSkuInvoiceDetail, nameSkuInvoiceDetail, shortNameUOMSkuInvoiceDetail,
                        quantityInvoiceDetail, shippedInvoiceDetail, priceInvoiceDetail, sumInvoiceDetail,
                        numberVATInvoiceDetail, valueVATInvoiceDetail, VATSumInvoiceDetail, invoiceSumInvoiceDetail,
-                       nameStockInvoiceDetail, descriptionOrderInvoiceDetail, toShipInvoiceDetail
+                       name###stockProp###InvoiceDetail, descriptionOrderInvoiceDetail, toShipInvoiceDetail
         FILTERS invoiceInvoiceDetail(d) == i
-        FILTERGROUP invoiceDetail
-            FILTER 'Строки с непоставленными товарами со склада' 'F10' stockInvoiceDetail(d) == s AND toShipInvoiceDetail(d) > 0 DEFAULT
-            FILTER 'Строки со склада' 'F9' stockInvoiceDetail(d) == s
+//        FILTERGROUP invoiceDetail
+//            FILTER 'Строки с непоставленными товарами со склада' 'F10' stockInvoiceDetail(d) == s AND toShipInvoiceDetail(d) > 0 DEFAULT
+//            FILTER 'Строки со склада' 'F9' stockInvoiceDetail(d) == s
 
         DIALOG invoice OBJECT i
     ;
@@ -423,8 +435,8 @@ META defineShipment(sign, contact, contactCaption, partyA, partyB)
 
                 NEW headerBox {
                     childConstraints = TO THE RIGHT;
-                    ADD s.box;
-                    ADD c.box;
+                    ADD s.box {title = 'Поставщик';};
+                    ADD c.box {title = 'Покупатель';};
                 }
                 ADD i.box;
                 NEW documentDetail {
@@ -450,13 +462,13 @@ META defineShipment(sign, contact, contactCaption, partyA, partyB)
     fillInvoiceBatchUserShipmentDetail = ABSTRACT ACTION (userShipmentDetail, invoiceDetail);
 
     fillInvoiceUserShipment 'Заполнить на основе накладной' =  ACTION (userShipment) {
-        FORM shipmentInvoices OBJECTS s = stockUserShipment(userShipment), c = contact###UserShipment(userShipment) MODAL;
+        FORM shipmentInvoices OBJECTS s = supplierUserShipment(userShipment), c = customerUserShipment(userShipment) MODAL;
         IF formResult() == formResult.ok THEN {
             LOCAL saleInvoice = invoice();
             SET saleInvoice() <- chosenObject('i');
 
             FOR invoiceInvoiceDetail(invoiceDetail) == saleInvoice() AND
-                stockInvoiceDetail(invoiceDetail) == stockUserShipment(userShipment) AND
+                stockProp###invoiceDetail(invoiceDetail) == stockProp###userShipment(userShipment) AND
                 toShipInvoiceDetail(invoiceDetail) > 0
                 ADDOBJ d = userShipmentDetail DO {
                     SET userShipmentUserShipmentDetail(d) <- userShipment;
@@ -493,7 +505,7 @@ META defineShipment(sign, contact, contactCaption, partyA, partyB)
     @defineDocumentInterfaceDetailDataSumPrefix (invoice, shipment, ' (учетная)');
     @deriveDocumentDetailSumPrefix(userInvoice, shipment, currency, quantity);
 
-    @defineDocumentInterfaceHeaderCreateShipment (invoice, stock);
+    @defineDocumentInterfaceHeaderCreateShipment (invoice, stockProp);
 
     skipCreateShipmentInvoiceDetail = ABSTRACT BOOLEAN (invoiceDetail) PERSISTENT;
     createShipmentInvoiceDetail 'Создавать поставку' (invoiceDetail) = createShipmentInvoice(invoiceInvoiceDetail(invoiceDetail)) AND NOT skipCreateShipmentInvoiceDetail(invoiceDetail);
@@ -529,12 +541,17 @@ META defineShipment(sign, contact, contactCaption, partyA, partyB)
     dateShipment(shipment) += dateInvoiceShipment(shipment);
     timeShipment(shipment) += timeInvoiceShipment(shipment);
 
-    @defineDocumentAggregationStockPrefix(invoice, invoiceShipment, stock, 'Склад', , );
-    stockShipment(shipment) += stockInvoiceShipment(shipment);
-    dataStockShipmentDetail(shipmentDetail) += dataStockInvoiceDetail(invoiceDetailInvoiceShipmentDetail(shipmentDetail));
+    @defineDocumentAggregationStockPrefix(invoice, invoiceShipment, supplierStock, 'Склад поставщика', , );
+    supplierStockShipment(shipment) += supplierStockInvoiceShipment(shipment);
+    dataSupplierStockShipmentDetail(shipmentDetail) += dataSupplierStockInvoiceDetail(invoiceDetailInvoiceShipmentDetail(shipmentDetail));
+    @defineDocumentAggregationStockPrefix(invoice, invoiceShipment, customerStock, 'Склад покупателя', , );
+    customerStockShipment(shipment) += customerStockInvoiceShipment(shipment);
+    dataCustomerStockShipmentDetail(shipmentDetail) += dataCustomerStockInvoiceDetail(invoiceDetailInvoiceShipmentDetail(shipmentDetail));
 
-    @defineDocumentAggregationStockPrefix(invoice, invoiceShipment, contact, contactCaption, , );
-    contact###Shipment(shipment) += contact###InvoiceShipment(shipment);
+    @defineDocumentAggregationStockPrefix(invoice, invoiceShipment, supplier, 'Поставщик', , );
+    supplierShipment(shipment) += supplierInvoiceShipment(shipment);
+    @defineDocumentAggregationStockPrefix(invoice, invoiceShipment, customer, 'Покупатель', , );
+    customerShipment(shipment) += customerInvoiceShipment(shipment);
 
     @defineDocumentAggregationPosted(invoice, invoiceShipment);
     isPostedShipment(shipment) += isPostedInvoiceShipment(shipment);

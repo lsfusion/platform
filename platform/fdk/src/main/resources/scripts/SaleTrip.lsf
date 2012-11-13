@@ -14,7 +14,7 @@ dateOrderTrip(order) += dateOrder(order);
 grossWeightOrderTrip(order) += grossWeightOrder(order);
 
 //nodeToOrderTrip(order) += ;
-nodeFromOrderTrip(order) += stockOrder(order);
+//nodeFromOrderTrip(order) += stockOrder(order);
 
 quantityOrderTripDetail(orderDetail) += quantityOrderDetail(orderDetail);
 

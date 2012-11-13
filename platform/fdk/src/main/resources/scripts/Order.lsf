@@ -7,8 +7,6 @@ REQUIRE System,
         Numerator,
         Document,
         Currency,
-        Customer,
-        Supplier,
         Barcode,
         PriceList,
         Agreement;
@@ -19,7 +17,7 @@ PRIORITY Utils, Stock;
 
 //----------------------------------------------- Заказ ---------------------------------------------------//
 
-META defineOrder(sign, contact)
+META defineOrder(sign, stockProp)
 
     CLASS ABSTRACT order 'Заказ'###sign;
     CLASS ABSTRACT orderDetail 'Строка заказа'###sign : named;
@@ -32,7 +30,9 @@ META defineOrder(sign, contact)
 
     @defineDocumentInterfaceNumber(order);
 
-    @defineDocumentInterfaceDataStock(order, stock, 'Склад');
+    @defineDocumentInterfaceDataStock(order, stock, 'Склад поставщика', supplier);
+    @defineDocumentInterfaceDataStock(order, stock, 'Склад покупателя', customer);
+
     @defineDocumentInterfacePosted(order);
 
     @defineDocumentInterfaceTimeShipment(order);
@@ -42,9 +42,9 @@ META defineOrder(sign, contact)
     @defineDocumentInterfaceDescription(order, 'Заказ'###sign);
 
     @defineDocumentInterfaceCurrency(order);
-    @deriveDocumentCurrency(userOrder, stock);
+    @deriveDocumentCurrency(userOrder, stockProp);
 
-    @defineDocumentInterface###contact(order);
+//    @defineDocumentInterface###contact(order);
     @defineDocumentInterfaceDataPriceListType(order);
 
     @defineDocumentInterfaceDetailSku(order, sku);
@@ -52,7 +52,7 @@ META defineOrder(sign, contact)
     @defineDocumentInterfaceDetailQuantity(order);
 
     @defineDocumentInterfaceDetailPrice(order);
-    @deriveDocumentDetailPricePriceListType(userOrder);
+    @deriveDocumentDetailPricePriceListType(userOrder, stockProp);
 
     @defineDocumentInterfaceDetailDataSum(order);
     @deriveDocumentDetailSum(userOrder, quantity);
@@ -62,31 +62,36 @@ META defineOrder(sign, contact)
     @defineDocumentHeaderSkuQuantity(userOrder, sku);
     @defineDocumentInterfaceHeaderSum(order);
 
-    @defineAddDetailDialogSkuStock(userOrder, sku, stock, dialogSku);
+    @defineAddDetailDialogSkuStock(userOrder, sku, stockProp, dialogSku);
     @defineAddDetailDialogBarcode(userOrder, sku);
+//-- временно пока
+    @defineDocumentAbstractHeaderAgreement(order);
+    @defineDocumentHeaderAgreement(userOrder);
+    agreementOrder (order) += agreementUserOrder(order);
 
-    @defineDocumentInterfaceHeaderAgreement(order, legalEntityUserOrder, contact###userOrder);
-    @deriveDocumentDetailPriceListTypeAgreement(order);
+//    @defineDocumentInterfaceHeaderAgreement(order, legalEntityUserOrder, contact###userOrder);
+//    @deriveDocumentDetailPriceListTypeAgreement(order);
 
     @defineDocumentDetailPackWeightSku(order);
 
     grossWeightOrder 'Вес брутто' (order) = GROUP SUM grossWeightOrderDetail(orderDetail) BY orderOrderDetail(orderDetail);
 
-    countOrderDetailStockOrder 'Кол-во строк по складу '(stock, order) = GROUP SUM 1 BY stockOrderDetail(orderDetail), orderOrderDetail(orderDetail);
+    countOrderDetailStockOrder 'Кол-во строк по складу '(stock, order) = GROUP SUM 1 BY stockProp###orderDetail(orderDetail), orderOrderDetail(orderDetail);
+
 
 // --------------------------- Формы Заказа ---------------------------------
 
     FORM userOrder 'Заказ'###sign
         OBJECTS o = userOrder FIXED PANEL
-        PROPERTIES (o) objectClassName, nameStockUserOrder, nameNumeratorObject, numberObject, seriesObject, dateUserOrder, timeUserOrder,
-                       name###contact###UserOrder, nameCurrencyUserOrder, nameAgreementUserOrder, namePriceListTypeUserOrder, noteUserOrder,
-                       countUserOrderDetailUserOrder, quantityUserOrderDetailUserOrder, sumUserOrderDetailUserOrder,
-                       shipmentDateUserOrder, shipmentTimeUserOrder
+        PROPERTIES (o) objectClassName, nameSupplierStockUserOrder, nameCustomerStockUserOrder, nameNumeratorObject, numberObject, seriesObject, dateUserOrder, timeUserOrder,
+                       nameCurrencyUserOrder, nameAgreementUserOrder, namePriceListTypeUserOrder, noteUserOrder,  //
+                       countUserOrderDetailUserOrder, quantityUserOrderDetailUserOrder, sumUserOrderDetailUserOrder, shipmentDateUserOrder,
+                       shipmentTimeUserOrder
 
         OBJECTS d = userOrderDetail
         PROPERTIES (d) indexUserOrderDetail, idBarcodeSkuUserOrderDetail, nameSkuUserOrderDetail, shortNameUOMSkuUserOrderDetail,
-                       quantityUserOrderDetail, namePriceListTypeUserOrderDetail, priceUserOrderDetail, sumUserOrderDetail,
-                       nameStockUserOrderDetail, shipmentDateUserOrderDetail, shipmentTimeUserOrderDetail, ADDOBJ, delete
+                       quantityUserOrderDetail, namePriceListTypeUserOrderDetail, priceUserOrderDetail, sumUserOrderDetail, name###stockProp###userOrderDetail, shipmentDateUserOrderDetail,
+                       shipmentTimeUserOrderDetail, ADDOBJ, delete
 
         PROPERTIES(o) TODRAW d addDetailDialogSkuStockUserOrderDetailUserOrder,
                                addDetailInputBarcodeUserOrderDetailUserOrder, deleteUserOrderDetailUserOrder
@@ -120,7 +125,8 @@ META defineOrder(sign, contact)
                     ADD o.documentHeaderGroup {
                         childConstraints = TO THE RIGHT;
                         ADD PROPERTY(objectClassName) { preferredCharWidth = 10; }
-                        ADD PROPERTY(nameStockUserOrder);
+                        ADD PROPERTY(nameSupplierStockUserOrder);
+                        ADD PROPERTY(nameCustomerStockUserOrder);
                         ADD PROPERTY(nameNumeratorObject);
                         ADD PROPERTY(numberObject);
                         ADD PROPERTY(seriesObject);
@@ -151,8 +157,8 @@ META defineOrder(sign, contact)
     }
 
 //-- SKU
-    @defineDocumentSkuStock(userOrder);
-    @extendFormDocumentSkuStock(userOrder, userOrder, o);
+//    @defineDocumentSkuStock(userOrder);
+//    @extendFormDocumentSkuStock(userOrder, userOrder, o);
 
 
     addUserOrder 'Добавить' = ACTION ADDFORM userOrder;
@@ -161,7 +167,7 @@ META defineOrder(sign, contact)
     FORM orders 'Заказы' TITLE 'Заказы'###sign
         OBJECTS o = order
         PROPERTIES (o) READONLY isPostedOrder FORCE GRID, isClosedOrder, objectClassName, numberOrder, seriesOrder, dateOrder, timeOrder,
-                                nameStockOrder, name###contact##Order, nameCurrencyOrder, nameAgreementOrder, namePriceListTypeOrder, noteOrder,
+                                nameSupplierStockOrder, nameCustomerStockOrder, nameCurrencyOrder, nameAgreementOrder, namePriceListTypeOrder, noteOrder,
                                 countOrderDetailOrder, quantityOrderDetailOrder, sumOrderDetailOrder, shipmentDateOrder, shipmentTimeOrder
 
         PROPERTIES (o) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
@@ -173,7 +179,7 @@ META defineOrder(sign, contact)
 
         OBJECTS d=orderDetail
         PROPERTIES (d) READONLY indexOrderDetail, idBarcodeSkuOrderDetail, nameSkuOrderDetail, shortNameUOMSkuOrderDetail,
-                       quantityOrderDetail, namePriceListTypeOrderDetail, priceOrderDetail, sumOrderDetail, nameStockOrderDetail, shipmentDateOrderDetail,
+                       quantityOrderDetail, namePriceListTypeOrderDetail, priceOrderDetail, sumOrderDetail, name###stockProp###orderDetail, shipmentDateOrderDetail,
                        shipmentTimeOrderDetail
 
 

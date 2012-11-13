@@ -7,5 +7,5 @@ NAMESPACE Sale;
 
 //----------------------------------------------- Акт ---------------------------------------------------//
 
-@defineCreditNote(' (продажа)', customer, 'Покупатель');
+@defineCreditNote(' (продажа)', supplierStock);
 @defineCreditNoteBatch();

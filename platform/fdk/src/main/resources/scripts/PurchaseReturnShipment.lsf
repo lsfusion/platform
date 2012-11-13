@@ -5,26 +5,26 @@ REQUIRE Shipment, PurchaseReturnInvoice;
 NAMESPACE PurchaseReturn;
 
 //----------------------------------------------- Поставка ---------------------------------------------------//
-@defineShipment(' (покупка-возврат)', supplier, 'Поставщик', supplier, company);
+@defineShipment(' (покупка-возврат)', customerStock);
 @defineShipmentBatch();
 
 // Берем учетную цену
-@deriveDocumentDetailPriceBatchStock(userShipment);
+@deriveDocumentDetailPriceBatchStock(userShipment, customerStock);
 shipmentPriceUserInvoiceDetail(detail) <- calcShipmentPriceUserInvoiceDetail(detail) (+) extraShipmentPriceUserInvoiceDetail(detail) WHEN
     (CHANGED(calcShipmentPriceUserInvoiceDetail(detail)) OR CHANGED(extraShipmentPriceUserInvoiceDetail(detail)) OR CHANGED(createShipmentUserInvoiceDetail(detail)))
         AND createShipmentUserInvoiceDetail(detail);
 
 // Проводим по регистру
 
-@implementSkuLedgerOutFIFO(shipment, sku, stock);
+@implementSkuLedgerOutFIFO(shipment, sku, customerStock);
 quantityOutFIFOSkuLedger (ledger) += quantityShipmentDetail(ledger);
 limitOutFIFOSkuLedgerBatch(ledger, batch) += IF batchShipmentDetail(ledger) THEN
                                                 quantityShipmentDetail (ledger) AND batchShipmentDetail(ledger) == batch
-                                                ELSE currentBalanceBatchStock(batch, stockShipmentDetail(ledger)); //AND NOT commissionContractSkuBatchA(batch);
+                                                ELSE currentBalanceBatchStock(batch, customerStockShipmentDetail(ledger)); //AND NOT commissionContractSkuBatchA(batch);
 changedDataSkuLedger(ledger) += CHANGED(batchShipmentDetail(ledger));
 sumOutSkuLedger (ledger) += sumShipmentDetail(ledger);
 
-@implementAccountDocumentLedgerOut(shipment, stock);
+@implementAccountDocumentLedgerOut(shipment, customerStock);
 sumOutAccountDocumentLedger (ledger) += sumShipmentDetailShipment(ledger);
 sumItemOutAccountDocumentLedger (ledger) += sumItemShipmentDetailShipment(ledger);
 sumContainerOutAccountDocumentLedger (ledger) += sumContainerShipmentDetailShipment(ledger);

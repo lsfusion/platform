@@ -189,41 +189,41 @@ META deriveDocumentDoubleDetailPriceListTypeAgreement (object, legalEntity)
     @deriveDocumentDoubleDetailPriceListTypeAgreementCustom(object, object###detail, legalEntity);
 END
 
-META deriveDocumentDetailPricePriceListTypeCustom (detail)
+META deriveDocumentDetailPricePriceListTypeCustom (detail, stockProp)
     price###detail(detail) <- prevPricePriceListTypeSkuStockDateTime(priceListType###detail(detail),
                                                                      sku###detail(detail),
-                                                                     stock###detail(detail),
+                                                                     stockProp###detail(detail),
                                                                      dateTime###detail(detail))
                                     WHEN CHANGED(priceListType###detail(detail)) OR
                                          CHANGED(sku###detail(detail)) OR
-                                         CHANGED(stock###detail(detail)) OR
+                                         CHANGED(stockProp###detail(detail)) OR
                                          CHANGED(dateTime###detail(detail));
 END
 
-META deriveDocumentDetailPricePriceListType (object)
-    @deriveDocumentDetailPricePriceListTypeCustom(object##Detail);
+META deriveDocumentDetailPricePriceListType (object, stockProp)
+    @deriveDocumentDetailPricePriceListTypeCustom(object##Detail, stockProp);
 END
 
-META deriveDocumentDetailPriceBatchPriceListTypeCustom (detail)
+META deriveDocumentDetailPriceBatchPriceListTypeCustom (detail, stockProp)
     price###detail(detail) <- IF batch###detail(detail) THEN
                                     prevPricePriceListTypeBatchStockDateTime(priceListType###detail(detail),
                                                                              batch###detail(detail),
-                                                                             stock###detail(detail),
+                                                                             stockProp###detail(detail),
                                                                              dateTime###detail(detail))
                               ELSE
                                     prevPricePriceListTypeSkuStockDateTime(priceListType###detail(detail),
                                                                            sku###detail(detail),
-                                                                           stock###detail(detail),
+                                                                           stockProp###detail(detail),
                                                                            dateTime###detail(detail))
                                     WHEN CHANGED(batch###detail(detail)) OR
                                          CHANGED(priceListType###detail(detail)) OR
                                          CHANGED(sku###detail(detail)) OR
-                                         CHANGED(stock###detail(detail)) OR
+                                         CHANGED(stockProp###detail(detail)) OR
                                          CHANGED(dateTime###detail(detail));
 END
 
-META deriveDocumentDetailPriceBatchPriceListType (object)
-    @deriveDocumentDetailPriceBatchPriceListTypeCustom(object##Detail);
+META deriveDocumentDetailPriceBatchPriceListType (object, stockProp)
+    @deriveDocumentDetailPriceBatchPriceListTypeCustom(object##Detail, stockProp);
 END
 
 FORM agreementsLegalEntity 'Соглашения'

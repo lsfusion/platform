@@ -547,11 +547,11 @@ sumContainerIncAccountDocumentLedger (ledger) += sumContainerRepricingDetailRepr
 
 // ------------------------------------- Автоматическое создание дооценки для документа -------------------- //
 
-META defineRepricing(sign)
+META defineRepricing(sign, stockProp)
 //-- аггр.объект
 
     @defineDocumentInterfaceDetailSkuBalance (invoice);
-    @deriveDocumentDetailSkuBalance (userInvoice, sku, stock);
+    @deriveDocumentDetailSkuBalance (userInvoice, sku, stockProp);
 // До
     @defineDocumentInterfaceDetailPricePrefix(invoice, cur, ' поставщика до');
     @defineDocumentInterfaceDetailDataSumPrefix (invoice, cur, ' поставщика до');
@@ -561,7 +561,7 @@ META defineRepricing(sign)
     @defineDocumentInterfaceDetailDataSumPrefix (invoice, curRetail, ' розничная до');
     @deriveDocumentDetailSumPrefix(userInvoice, curRetail, currency, balanceBSku);
 
-    @defineDocumentInterfaceDetailVATPrefix(invoice, cur, countryStock, ' до');
+    @defineDocumentInterfaceDetailVATPrefix(invoice, cur, country###stockProp, ' до');
     @deriveDocumentDetailValueVATPrefix(userInvoice, cur);
 
     @defineDocumentInterfaceDetailMarkupPrefix (invoice, cur, ' до');
@@ -576,10 +576,10 @@ META defineRepricing(sign)
     @defineDocumentInterfaceDetailMarkupSumPrefix (invoice, cur, ' до');
     @deriveDocumentDetailMarkupSumPrefix(userInvoice, cur, curRetail, cur);
 
-    @derivePriceLedgerOnSkuChangePrefix(supplierPrice, userInvoice, curPrice, sku, stock);
-    @derivePriceLedgerOnSkuChangePrefix(retailVAT, userInvoice, curVAT, sku, stock);
+    @derivePriceLedgerOnSkuChangePrefix(supplierPrice, userInvoice, curPrice, sku, stockProp);
+    @derivePriceLedgerOnSkuChangePrefix(retailVAT, userInvoice, curVAT, sku, stockProp);
     @deriveDocumentDetailValueVATPrefix(userInvoice, cur);
-    @derivePriceLedgerOnSkuChangePrefix(retailPrice, userInvoice, curRetailPrice, sku, stock);
+    @derivePriceLedgerOnSkuChangePrefix(retailPrice, userInvoice, curRetailPrice, sku, stockProp);
 
 // После
     @defineDocumentInterfaceDetailDataSumPrefix (invoice, after, ' поставщика после');
@@ -601,19 +601,19 @@ META defineRepricing(sign)
     @defineDocumentInterfaceDetailDiffSumPrefix (invoice, retailSum, after, cur, ' дооценки');
     @defineDocumentInterfaceHeaderSumPrefix (invoice, diffRetail, ' дооценки');
 
-    @defineDocumentInterfaceHeaderCreateRepricing (invoice, stock);
+    @defineDocumentInterfaceHeaderCreateRepricing (invoice, stockProp);
     createRepricingInvoiceDetail 'Создавать акт дооценки' (invoiceDetail) = createRepricingInvoice(invoiceInvoiceDetail(invoiceDetail));
     createRepricingUserInvoiceDetail 'Создавать акт дооценки' (userInvoiceDetail) = createRepricingUserInvoice(userInvoiceUserInvoiceDetail(userInvoiceDetail));
 
     needToRepricingInvoiceDetail (invoiceDetail) = curRetailPriceInvoiceDetail(invoiceDetail) != retailPriceInvoiceDetail(invoiceDetail)
-                                                   AND balanceBSkuInvoiceDetail(invoiceDetail) != 0 AND stockInvoiceDetail(invoiceDetail) IS departmentStore
-                                                   AND NOT costLedgerDepartmentStore(stockInvoiceDetail(invoiceDetail))
+                                                   AND balanceBSkuInvoiceDetail(invoiceDetail) != 0 AND stockProp###InvoiceDetail(invoiceDetail) IS departmentStore
+                                                   AND NOT costLedgerDepartmentStore(stockProp###InvoiceDetail(invoiceDetail))
                                                    AND createRepricingInvoiceDetail(invoiceDetail);// AND isPostedInvoiceDetail(invoiceDetail) ;
 
     needToRepricingInvoice (invoice)= GROUP SUM 1 IF needToRepricingInvoiceDetail(invoiceDetail)
         BY invoiceInvoiceDetail(invoiceDetail);
 
-    @defineDocumentInterfaceHeaderRepricingCommittee (invoice, stock);
+    @defineDocumentInterfaceHeaderRepricingCommittee (invoice, stockProp);
 
     CLASS invoiceRepricing 'Акт дооценки на основе инвойса'###sign : repricing;
     CLASS invoiceRepricingPosted 'Закрытый акт дооценки на основе инвойса'###sign : invoiceRepricing, postedObject;
@@ -633,10 +633,10 @@ META defineRepricing(sign)
     dateRepricing(repricing) += dateInvoiceRepricing(repricing);
     timeRepricing(repricing) += timeInvoiceRepricing(repricing);
 
-    @defineDocumentAggregationStockPrefix(invoice, invoiceRepricing, stock, 'Склад', , );
-    departmentStoreRepricing(repricing) += stockInvoiceRepricing(repricing) IF stockInvoiceRepricing(repricing) IS departmentStore;
-    dataDepartmentStoreRepricingDetail(repricingDetail) += dataStockInvoiceDetail(invoiceDetailInvoiceRepricingDetail(repricingDetail))
-                                                           IF dataStockInvoiceDetail(invoiceDetailInvoiceRepricingDetail(repricingDetail)) IS departmentStore;
+    @defineDocumentAggregationStockPrefix(invoice, invoiceRepricing, stockProp, 'Склад', , );
+    departmentStoreRepricing(repricing) += stockProp###invoiceRepricing(repricing) IF stockProp###invoiceRepricing(repricing) IS departmentStore;
+    dataDepartmentStoreRepricingDetail(repricingDetail) += data###stockProp###InvoiceDetail(invoiceDetailInvoiceRepricingDetail(repricingDetail))
+                                                           IF data###stockProp###InvoiceDetail(invoiceDetailInvoiceRepricingDetail(repricingDetail)) IS departmentStore;
 
     @defineDocumentAggregationPosted(invoice, invoiceRepricing);
     isPostedRepricing(repricing) += isPostedInvoiceRepricing(repricing);
@@ -672,12 +672,12 @@ META defineRepricing(sign)
         PROPERTIES(i)   BACKGROUND backgroundCurInvoice(i) SHOWIF createRepricingUserInvoice(i) nameRepricingCommitteeUserInvoice, numberDisposalUserInvoice
         PROPERTIES(i)   BACKGROUND backgroundAfterInvoice(i) SHOWIF createRepricingUserInvoice(i) diffRetailSumUserInvoiceDetailUserInvoice
 
-        PROPERTIES(d)   BACKGROUND backgroundCurInvoice(i) SHOWIF createRepricingUserInvoice(i) BEFORE nameStockUserInvoiceDetail(d)
+        PROPERTIES(d)   BACKGROUND backgroundCurInvoice(i) SHOWIF createRepricingUserInvoice(i) BEFORE name###stockProp###userInvoiceDetail(d)
                         balanceBSkuUserInvoiceDetail, curPriceUserInvoiceDetail, curSumUserInvoiceDetail,
                         curMarkupUserInvoiceDetail, curMarkupSumUserInvoiceDetail,
                         numberCurVATUserInvoiceDetail, valueCurVATUserInvoiceDetail, curVATSumUserInvoiceDetail,
                         curRetailPriceUserInvoiceDetail, curRetailSumUserInvoiceDetail
-        PROPERTIES(d)   BACKGROUND backgroundAfterInvoice(i) SHOWIF createRepricingUserInvoice(i) BEFORE nameStockUserInvoiceDetail(d)
+        PROPERTIES(d)   BACKGROUND backgroundAfterInvoice(i) SHOWIF createRepricingUserInvoice(i) BEFORE name###stockProp###userInvoiceDetail(d)
                         afterSumUserInvoiceDetail, afterRetailVATSumUserInvoiceDetail, afterRetailMarkupSumUserInvoiceDetail, afterRetailSumUserInvoiceDetail
 
     ;

@@ -4,6 +4,6 @@ REQUIRE Order, SaleShipment;
 
 NAMESPACE SaleReturn;
 
-@defineOrder(' (продажа-возврат)', customer);
+@defineOrder(' (продажа-возврат)', supplierStock);
 
 @defineNumeratedObjectDefaultPrefix(userOrder, 'Нумератор для заказов (продажа-возврат)', 'ВП', saleReturn);

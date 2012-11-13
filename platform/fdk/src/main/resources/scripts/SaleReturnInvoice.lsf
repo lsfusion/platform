@@ -5,7 +5,7 @@ REQUIRE Invoice, SaleReturnOrder, SaleInvoice;
 NAMESPACE SaleReturn;
 
 //----------------------------------------------- Накладная ---------------------------------------------------//
-@defineInvoice(' (продажа-возврат)', customer, legalEntity, customer);
-@defineInvoiceBatch();
+@defineInvoice(' (продажа-возврат)', supplierStock);
+@defineInvoiceBatch(supplierStock);
 
-@defineInvoiceReturn(Sale, SaleReturn, customer);
+@defineInvoiceReturn(Sale, SaleReturn, supplierStock);

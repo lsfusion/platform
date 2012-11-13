@@ -264,7 +264,8 @@ CLASS userPricingPosted 'Закрытый акт расценки (польз.)'
 @defineDocumentInterfaceCurrency(pricing);
 @deriveDocumentCurrency(userPricing, departmentStore);
 
-@defineDocumentInterfaceSupplier(pricing);
+//@defineDocumentInterfaceSupplier(pricing);
+@defineDocumentInterfaceLegalEntity (pricing, supplier, 'Поставщик');
 
 @defineDocumentInterfaceDetailSku(pricing, sku);
 
@@ -500,13 +501,13 @@ skipRetailPriceLedger(ledger) +=  skipChangeLedgerPricingDetail(ledger);
 // ------------------------------------- Автоматическое создание расценки для документа -------------------- //
 
 //-- аггр.объект
-META definePricingAggregation(concrete, sign, caption, contact, contactCaption)
+META definePricingAggregation(concrete, sign, caption, stockProp)
 
-    @defineDocumentInterfaceHeaderPricingCommittee(invoice, stock);
+    @defineDocumentInterfaceHeaderPricingCommittee(invoice, stockProp);
     @defineDocumentInterfaceDetailPricePrefix(invoice, retail, ' розничная');
     @defineDocumentInterfaceDetailDataSumPrefix (invoice, retail, ' розничная');
 
-    @defineDocumentInterfaceDetailVATPrefix(invoice, retail, countryStock, ' розничный');
+    @defineDocumentInterfaceDetailVATPrefix(invoice, retail, country###stockProp, ' розничный');
     @defineDocumentInterfaceDetailVATDataSumPrefix (invoice, retail, ' розничная');
 
     @defineDocumentInterfaceDetailMarkupPrefix (invoice, retail, );
@@ -522,11 +523,11 @@ META definePricingAggregation(concrete, sign, caption, contact, contactCaption)
 
     @defineDocumentInterfaceHeaderSumPrefix (invoice, retail, ' розничная');
 
-    @defineDocumentInterfaceHeaderCreatePricing (invoice, stock);
+    @defineDocumentInterfaceHeaderCreatePricing (invoice, stockProp);
     createPricingInvoiceDetail 'Создавать акт расценки' (invoiceDetail) = createPricingInvoice(invoiceInvoiceDetail(invoiceDetail));
     createPricingUserInvoiceDetail 'Создавать акт расценки' (userInvoiceDetail) = createPricingUserInvoice(userInvoiceUserInvoiceDetail(userInvoiceDetail));
 
-    showCreatePricingInvoice (invoice) = stockInvoice(invoice) IS departmentStore AND NOT costLedgerDepartmentStore(stockInvoice(invoice));
+    showCreatePricingInvoice (invoice) = stockProp###invoice(invoice) IS departmentStore AND NOT costLedgerDepartmentStore(stockProp###invoice(invoice));
     showPricingInvoice (invoice) = showCreatePricingInvoice (invoice) AND NOT createPricingInvoice(invoice);
 
     backgroundRetailInvoice 'Цвет' (invoice) = RGB(224, 255, 255) IF invoice IS invoice;
@@ -535,7 +536,7 @@ META definePricingAggregation(concrete, sign, caption, contact, contactCaption)
         PROPERTIES(i) SHOWIF createPricingUserInvoice(i) BACKGROUND backgroundRetailInvoice(i) namePricingCommitteeUserInvoice,
                       retailSumUserInvoiceDetailUserInvoice
 
-        PROPERTIES(d) BEFORE nameStockUserInvoiceDetail(d) SHOWIF createPricingInvoice(i) BACKGROUND backgroundRetailInvoice(i)
+        PROPERTIES(d) BEFORE name###stockProp###userInvoiceDetail(d) SHOWIF createPricingInvoice(i) BACKGROUND backgroundRetailInvoice(i)
                       retailMarkupUserInvoiceDetail ON CHANGE EXEC changeRetailMarkupUserInvoiceDetail(d), retailMarkupSumUserInvoiceDetail, numberRetailVATUserInvoiceDetail,
                       valueRetailVATUserInvoiceDetail, retailVATSumUserInvoiceDetail,
                       retailPriceUserInvoiceDetail ON CHANGE EXEC changeRetailPriceUserInvoiceDetail(d),
@@ -552,7 +553,7 @@ META definePricingAggregation(concrete, sign, caption, contact, contactCaption)
     }
     EXTEND FORM invoices
         PROPERTIES(i) READONLY BACKGROUND backgroundRetailInvoice(i) createPricingInvoice, retailSumInvoiceDetailInvoice BEFORE ordersInvoice(i)
-        PROPERTIES(d) READONLY BEFORE nameStockInvoiceDetail(d) SHOWIF createPricingInvoice(i) BACKGROUND backgroundRetailInvoice(i)
+        PROPERTIES(d) READONLY BEFORE name###stockProp###invoiceDetail(d) SHOWIF createPricingInvoice(i) BACKGROUND backgroundRetailInvoice(i)
                       retailMarkupInvoiceDetail, retailMarkupSumInvoiceDetail, numberRetailVATInvoiceDetail,
                       valueRetailVATInvoiceDetail, retailVATSumInvoiceDetail,
                       retailPriceInvoiceDetail, retailSumInvoiceDetail
@@ -580,13 +581,13 @@ META definePricingAggregation(concrete, sign, caption, contact, contactCaption)
     datePricing(pricing) += date###concrete###pricing(pricing);
     timePricing(pricing) += time###concrete###pricing(pricing);
 
-    @defineDocumentAggregationStockPrefix(invoice, concrete###pricing, stock, 'Склад', , );
-    departmentStorePricing(pricing) += stock###concrete###pricing(pricing) IF stock###concrete###pricing(pricing) IS departmentStore;
-    dataDepartmentStorePricingDetail(pricingDetail) += dataStockInvoiceDetail(invoiceDetail###concrete###pricingDetail(pricingDetail))
-                                                       IF dataStockInvoiceDetail(invoiceDetail###concrete###pricingDetail(pricingDetail)) IS departmentStore;
+    @defineDocumentAggregationStockPrefix(invoice, concrete###pricing, stockProp, 'Склад', , );
+    departmentStorePricing(pricing) += stockProp###concrete###pricing(pricing) IF stockProp###concrete###pricing(pricing) IS departmentStore;
+    dataDepartmentStorePricingDetail(pricingDetail) += data###stockProp###invoiceDetail(invoiceDetail###concrete###pricingDetail(pricingDetail))
+                                                       IF data###stockProp###invoiceDetail(invoiceDetail###concrete###pricingDetail(pricingDetail)) IS departmentStore;
 
-    @defineDocumentAggregationStockPrefix(invoice, concrete###pricing, contact, contactCaption, , );
-    contact###Pricing(pricing) += contact###concrete###pricing(pricing);
+    @defineDocumentAggregationStockPrefix(invoice, concrete###pricing, supplier, 'Поставщик', , );
+    supplierPricing(pricing) += supplier###concrete###pricing(pricing);
 
     @defineDocumentAggregationPosted(invoice, concrete###pricing);
     isPostedPricing(pricing) += isPosted###concrete###pricing(pricing);
@@ -640,17 +641,17 @@ META definePricingAggregation(concrete, sign, caption, contact, contactCaption)
 
 END
 //--  Связь накладной и расценки
-META definePricingRelation(sign, contact, contactCaption)
+META definePricingRelation(sign, stockProp)
 
     invoiceDetailPricingDetail = ABSTRACT invoiceDetail (pricingDetail) PERSISTENT;
     invoiceDetailUserPricingDetail = DATA invoiceDetail (userPricingDetail);
     invoiceDetailPricingDetail(pricingDetail) += invoiceDetailUserPricingDetail(pricingDetail);
 
-    CONSTRAINT contact###PricingDetail(detail) != contact###InvoiceDetail(invoiceDetailUserPricingDetail(detail)) OR
-               legalEntityDepartmentStorePricingDetail(detail) != legalEntityInvoice(invoiceDetailUserPricingDetail(detail)) OR
+    CONSTRAINT supplierPricingDetail(detail) != supplierInvoiceDetail(invoiceDetailUserPricingDetail(detail)) OR
+//               legalEntityDepartmentStorePricingDetail(detail) != legalEntityInvoice(invoiceDetailUserPricingDetail(detail)) OR
                skuUserPricingDetail(detail) != skuInvoiceDetail(invoiceDetailUserPricingDetail(detail))
         CHECKED BY invoiceDetailUserPricingDetail
-            MESSAGE contactCaption###', компания и товар в накладной и акте расценки должны соответствовать друг другу';
+            MESSAGE 'Поставщик, покупатель и товар в накладной и акте расценки должны соответствовать друг другу';
 
     descriptionIndexInvoiceDetailPricingDetail 'Строка накладной' (detail) = descriptionIndexInvoiceDetail(invoiceDetailPricingDetail(detail));
     descriptionIndexInvoiceDetailUserPricingDetail 'Строка накладной' (detail) = descriptionIndexInvoiceDetail(invoiceDetailUserPricingDetail(detail));
@@ -668,36 +669,36 @@ META definePricingRelation(sign, contact, contactCaption)
 
     toPricingInvoiceDetailStockInvoice 'Не расценено по отделу' (stock, invoice) =
         GROUP SUM toPricingInvoiceDetail(invoiceDetail) IF toPricingInvoiceDetail(invoiceDetail) > 0
-              BY stockInvoiceDetail(invoiceDetail), invoiceInvoiceDetail(invoiceDetail);
+              BY stockProp###invoiceDetail(invoiceDetail), invoiceInvoiceDetail(invoiceDetail);
 
     // Создание расценки на основе инвойса //
 
     FORM pricingInvoices 'Накладные'###sign
-        OBJECTS s = stock FIXED PANEL
-        PROPERTIES (s) READONLY name
-        OBJECTS c = contact FIXED PANEL
-        PROPERTIES (c) READONLY name
+//        OBJECTS s = stock FIXED PANEL
+//        PROPERTIES (s) READONLY name
+//        OBJECTS c = contact FIXED PANEL
+//        PROPERTIES (c) READONLY name
 
         OBJECTS i = invoice
         PROPERTIES (i) READONLY isPostedInvoice FORCE GRID, objectClassName, numberInvoice, seriesInvoice, dateInvoice, timeInvoice,
-                                nameStockInvoice, name###contact###Invoice, nameCurrencyInvoice, noteInvoice,
-                                numberContractSku###contact###Invoice, isCommissionInvoice,
+                                nameSupplierInvoice, nameCustomerInvoice, nameSupplierStockInvoice, nameCustomerStockInvoice, nameCurrencyInvoice, noteInvoice,
+//                                numberContractSku###contact###Invoice, isCommissionInvoice,
                                 countInvoiceDetailInvoice, quantityInvoiceDetailInvoice, sumInvoiceDetailInvoice,
                                 VATSumInvoiceDetailInvoice, invoiceSumInvoiceDetailInvoice, ordersInvoice
-        FILTERS contact###Invoice(i) == c,
+        FILTERS //contact###Invoice(i) == c,
                 isPostedInvoice(i)
-        FILTERGROUP invoice
-            FILTER 'Накладные с нерасцененными товарами' 'F10' toPricingInvoiceDetailStockInvoice(s,i) DEFAULT
-            FILTER 'Накладные со склада' 'F9' countInvoiceDetailStockInvoice(s,i)
+//        FILTERGROUP invoice
+//            FILTER 'Накладные с нерасцененными товарами' 'F10' toPricingInvoiceDetailStockInvoice(s,i) DEFAULT
+//            FILTER 'Накладные со склада' 'F9' countInvoiceDetailStockInvoice(s,i)
 
         OBJECTS d = invoiceDetail
         PROPERTIES (d) READONLY indexInvoiceDetail, idBarcodeSkuInvoiceDetail, nameSkuInvoiceDetail, shortNameUOMSkuInvoiceDetail,
                        quantityInvoiceDetail, pricingInvoiceDetail, priceInvoiceDetail, sumInvoiceDetail,
-                       nameStockInvoiceDetail, descriptionOrderInvoiceDetail, toPricingInvoiceDetail
+                       name###stockProp###invoiceDetail, descriptionOrderInvoiceDetail, toPricingInvoiceDetail
         FILTERS invoiceInvoiceDetail(d) == i
-        FILTERGROUP invoiceDetail
-            FILTER 'Строки с нерасцененными товарами' 'F10' stockInvoiceDetail(d) == s AND toPricingInvoiceDetail(d) > 0 DEFAULT
-            FILTER 'Строки со склада' 'F9' stockInvoiceDetail(d) == s
+//        FILTERGROUP invoiceDetail
+//            FILTER 'Строки с нерасцененными товарами' 'F10' stockInvoiceDetail(d) == s AND toPricingInvoiceDetail(d) > 0 DEFAULT
+//            FILTER 'Строки со склада' 'F9' stockInvoiceDetail(d) == s
 
     ;
 
@@ -708,11 +709,11 @@ META definePricingRelation(sign, contact, contactCaption)
 
                 childConstraints = TO THE BOTTOM;
 
-                NEW headerBox {
-                    childConstraints = TO THE RIGHT;
-                    ADD s.box;
-                    ADD c.box;
-                }
+//                NEW headerBox {
+//                    childConstraints = TO THE RIGHT;
+//                    ADD s.box;
+//                    ADD c.box;
+//                }
                 ADD i.box;
                 NEW documentDetail {
                     type = TABBED;
@@ -735,13 +736,13 @@ META definePricingRelation(sign, contact, contactCaption)
     }
 
     fillInvoiceUserPricing 'Заполнить на основе накладной' =  ACTION (userPricing) {
-        FORM pricingInvoices OBJECTS s = departmentStoreUserPricing(userPricing), c = contact###UserPricing(userPricing) MODAL;
+        FORM pricingInvoices MODAL;//OBJECTS s = departmentStoreUserPricing(userPricing), c = contact###UserPricing(userPricing) MODAL;
         IF formResult() == formResult.ok THEN {
             LOCAL saleInvoice = invoice();
             SET saleInvoice() <- chosenObject('i');
 
             FOR invoiceInvoiceDetail(invoiceDetail) == saleInvoice() AND
-                stockInvoiceDetail(invoiceDetail) == departmentStoreUserPricing(userPricing) AND
+                stockProp###invoiceDetail(invoiceDetail) == departmentStoreUserPricing(userPricing) AND
                 toPricingInvoiceDetail(invoiceDetail) > 0
                 ADDOBJ d = userPricingDetail DO {
                 SET userPricingUserPricingDetail(d) <- userPricing;
@@ -776,7 +777,7 @@ META definePricingRelation(sign, contact, contactCaption)
     ;
     EXTEND FORM pricingInvoices
         PROPERTIES(i) READONLY createPricingInvoice, retailSumInvoiceDetailInvoice BEFORE ordersInvoice(i)
-        PROPERTIES(d) READONLY BEFORE nameStockInvoiceDetail(d) SHOWIF createPricingInvoice(i)
+        PROPERTIES(d) READONLY BEFORE name###stockProp###invoiceDetail(d) SHOWIF createPricingInvoice(i)
                       retailMarkupInvoiceDetail, retailMarkupSumInvoiceDetail, numberRetailVATInvoiceDetail,
                       valueRetailVATInvoiceDetail, retailVATSumInvoiceDetail,
                       retailPriceInvoiceDetail, retailSumInvoiceDetail

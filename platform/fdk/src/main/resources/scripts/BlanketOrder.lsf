@@ -4,7 +4,7 @@ REQUIRE Order;
 
 //----------------------------------------------- Множественнвй Заказ ---------------------------------------------------//
 
-META defineBlanketOrder(sign, contact, contactCaption, series)
+META defineBlanketOrder(sign, stockProp)//contact, contactCaption)
 
     CLASS blanketOrder 'Множественный заказ'###sign : historyObject, numeratedDocument;
     CLASS blanketOrderDetail 'Строка множественного заказа'###sign : named;
@@ -14,8 +14,8 @@ META defineBlanketOrder(sign, contact, contactCaption, series)
 
 
     @defineDocument(blanketOrder);
-    @defineDocumentHeaderStock(blanketOrder, stock, 'Склад',);
-    @defineDocumentDetailDataStock (blanketOrder, stock, stock, 'Склад');
+    @defineDocumentHeaderStock(blanketOrder, stock, 'Склад поставщика', supplier);
+    @defineDocumentDetailDataStock (blanketOrder, stock, supplierStock, 'Склад поставщика');
 
     @defineDocumentPosted(blanketOrder);
     @defineDocumentClosed (blanketOrder);
@@ -25,73 +25,76 @@ META defineBlanketOrder(sign, contact, contactCaption, series)
     @defineDocumentDescription(blanketOrder, 'Множественный заказ'###sign);
 
     @defineDocumentCurrency (blanketOrder);
-    @deriveDocumentCurrency(blanketOrder, stock);
+    @deriveDocumentCurrency(blanketOrder, stockProp);
 
-    TABLE blanketOrder###contact(blanketOrder, contact);
-    @defineDocumentDetail###contact(blanketOrderDetail);
+//    TABLE blanketOrder###contact(blanketOrder, contact);
+
 //    @defineDocumentDataPriceListType(blanketOrder);
-    @defineDocumentDoubleObjPriceListType(blanketOrder, contact);
+    customerStockBlanketOrderDetail (blanketOrderDetail) = DATA stock (blanketOrderDetail);
+    nameCustomerStockBlanketOrderDetail 'Склад покупателя' (blanketOrderDetail) = name(customerStockBlanketOrderDetail(blanketOrderDetail));
+    @defineDocumentDoubleObjPriceListType(blanketOrder, stock, customerStock);
 
     @defineDocumentDetailSku(blanketOrder, sku);
     @defineDocumentDetailQuantity(blanketOrder);
 
-    @defineDocumentHeaderQuantityContractor(blanketOrder, contact);
+    @defineDocumentHeaderQuantityContractor(blanketOrder, customerStock);
     @defineDocumentHeaderQuantity(blanketOrder);
 
-    @defineDocumentHeaderSkuQuantityContractor (blanketOrder, sku, contact);
+    @defineDocumentHeaderSkuQuantityContractor (blanketOrder, sku, customerStock);
     @defineDocumentHeaderSkuQuantity(blanketOrder, sku);
 
-    countBlanketOrderDetailStockBlanketOrder 'Кол-во строк по складу '(stock, blanketOrder) = GROUP SUM 1 BY stockBlanketOrderDetail(blanketOrderDetail), blanketOrderBlanketOrderDetail(blanketOrderDetail);
-    inBlanketOrder###contact 'В заказе' (blanketOrder, contact) = DATA BOOLEAN (blanketOrder, contact);
+    countBlanketOrderDetailStockBlanketOrder 'Кол-во строк по складу '(stock, blanketOrder) = GROUP SUM 1 BY supplierStockBlanketOrderDetail(blanketOrderDetail), blanketOrderBlanketOrderDetail(blanketOrderDetail);
+    inBlanketOrderCustomerStock 'В заказе' (blanketOrder, stock) = DATA BOOLEAN (blanketOrder, stock);
 
-    @defineDocumentDoubleInterfaceHeaderAgreement (blanketOrder, legalEntityBlanketOrder, contact);
-    @deriveDocumentDoubleDetailPriceListTypeAgreement (blanketOrder, contact);
+//    @defineDocumentDoubleInterfaceHeaderAgreement (blanketOrder, legalEntityBlanketOrder, contact);
+//    @deriveDocumentDoubleDetailPriceListTypeAgreement (blanketOrder, contact);
 
     @defineDocumentDetailPrice(blanketOrder);
-    @deriveDocumentDetailPricePriceListType(blanketOrder);
+//    @deriveDocumentDetailPricePriceListType(blanketOrder, stockProp);
 
     @defineDocumentDetailDataSum (blanketOrder);
     @deriveDocumentDetailSum(blanketOrder, quantity);
 
-    @defineDocumentHeaderSumContractor (blanketOrder, contact);
+    @defineDocumentHeaderSumContractor (blanketOrder, customerStock);
     @defineDocumentHeaderSum (blanketOrder);
-    @defineDocumentHeaderCountContractor (blanketOrder, contact);
+    @defineDocumentHeaderCountContractor (blanketOrder, customerStock);
 
-    CONSTRAINT contact##BlanketOrderDetail(blanketOrderDetail) AND NOT inBlanketOrder###contact(blanketOrderBlanketOrderDetail(blanketOrderDetail), contact##BlanketOrderDetail(blanketOrderDetail))
-        CHECKED BY contact##BlanketOrderDetail
-            MESSAGE 'Для строки множественного заказа выбран контрагент не включенный в заказ';
+    CONSTRAINT customerStockBlanketOrderDetail(blanketOrderDetail) AND NOT inBlanketOrderCustomerStock(blanketOrderBlanketOrderDetail(blanketOrderDetail), customerStockBlanketOrderDetail(blanketOrderDetail))
+        CHECKED BY customerStockBlanketOrderDetail
+            MESSAGE 'Для строки множественного заказа выбран склад не включенный в заказ';
 
-    contact##sBlanketOrder 'Контрагенты' (blanketOrder) =
-        GROUP CONCAT name(contact) IF inBlanketOrder###contact(blanketOrder, contact), ', '
+    customerStocksBlanketOrder 'Контрагенты' (blanketOrder) =
+        GROUP CONCAT name(contact) IF inBlanketOrderCustomerStock(blanketOrder, stock), ', '
         BY blanketOrder
         ORDER contact MINCHARWIDTH 20 MAXCHARWIDTH 60 PREFCHARWIDTH 40 PERSISTENT;
 
-    @defineNumeratedObject (blanketOrder, contact);
+    @defineNumeratedObject (blanketOrder, stock);
 // --------------------------- Формы Заказа ---------------------------------
 
     FORM blanketOrder 'Множественный заказ'###sign
         OBJECTS o = blanketOrder FIXED PANEL
-        PROPERTIES (o) objectClassName, nameStockBlanketOrder, nameNumeratorObject, numberObject, seriesObject, dateBlanketOrder, timeBlanketOrder,
+        PROPERTIES (o) objectClassName, nameSupplierStockBlanketOrder, nameNumeratorObject, numberObject, seriesObject, dateBlanketOrder, timeBlanketOrder,
                        nameCurrencyBlanketOrder, noteBlanketOrder,
                        countBlanketOrderDetailBlanketOrder, quantityBlanketOrderDetailBlanketOrder, sumBlanketOrderDetailBlanketOrder, shipmentDateBlanketOrder,
                        shipmentTimeBlanketOrder
 
         OBJECTS d = blanketOrderDetail
         PROPERTIES (d) indexBlanketOrderDetail, idBarcodeSkuBlanketOrderDetail, nameSkuBlanketOrderDetail, shortNameUOMSkuBlanketOrderDetail,
-                       quantityBlanketOrderDetail, namePriceListTypeBlanketOrderDetail, priceBlanketOrderDetail, sumBlanketOrderDetail, nameStockBlanketOrderDetail, name###contact##BlanketOrderDetail,
+                       quantityBlanketOrderDetail, //namePriceListTypeBlanketOrderDetail,
+                       priceBlanketOrderDetail, sumBlanketOrderDetail, nameSupplierStockBlanketOrderDetail, nameCustomerStockBlanketOrderDetail,
                        shipmentDateBlanketOrderDetail,
                        shipmentTimeBlanketOrderDetail, ADDOBJ, delete
-        OBJECTS c = contact
-        PROPERTIES     name(c) READONLY, inBlanketOrder###contact(o,c)
-        PROPERTIES(o,c) nameNumeratorBlanketOrder###contact, numberBlanketOrder###contact, seriesBlanketOrder###contact,
-                        nameAgreementBlanketOrder###contact, namePriceListTypeBlanketOrder###contact
-        PROPERTIES(o,c) READONLY countBlanketOrderDetailBlanketOrder###contact, quantityBlanketOrderDetailBlanketOrder###contact, sumBlanketOrderDetailBlanketOrder###contact
+        OBJECTS c = stock
+        PROPERTIES     name(c) READONLY, inBlanketOrderCustomerStock(o,c)
+        PROPERTIES(o,c) nameNumeratorBlanketOrderStock, numberBlanketOrderStock, seriesBlanketOrderStock
+//                        nameAgreementBlanketOrderStock, namePriceListTypeBlanketOrderStock
+        PROPERTIES(o,c) READONLY countBlanketOrderDetailBlanketOrderCustomerStock, quantityBlanketOrderDetailBlanketOrderCustomerStock, sumBlanketOrderDetailBlanketOrderCustomerStock
 
         PROPERTIES(o) TODRAW d deleteBlanketOrderDetailBlanketOrder
 
         FILTERS blanketOrderBlanketOrderDetail(d) == o
         FILTERGROUP filtr1
-            FILTER 'В заказе' 'F11' inBlanketOrder###contact(o,c)
+            FILTER 'В заказе' 'F11' inBlanketOrderCustomerStock(o,c)
 
 
         EVENTS
@@ -120,7 +123,7 @@ META defineBlanketOrder(sign, contact, contactCaption, series)
                     ADD o.documentHeaderGroup {
                         childConstraints = TO THE RIGHT;
                         ADD PROPERTY(objectClassName) { preferredCharWidth = 10; }
-                        ADD PROPERTY(nameStockBlanketOrder);
+                        ADD PROPERTY(nameSupplierStockBlanketOrder);
                         ADD PROPERTY(nameNumeratorObject);
                         ADD PROPERTY(numberObject);
                         ADD PROPERTY(seriesObject);
@@ -147,16 +150,16 @@ META defineBlanketOrder(sign, contact, contactCaption, series)
     }
 
 //-- SKU
-    @defineDocumentSkuStockContractor(blanketOrder, contact);
-    @extendFormDocumentSkuStockContractor(blanketOrder, blanketOrder, o, contact);
+//    @defineDocumentSkuStockContractor(blanketOrder, contact);
+//    @extendFormDocumentSkuStockContractor(blanketOrder, blanketOrder, o, contact);
 
 
     FORM blanketOrders 'Множественные заказы' TITLE 'Множественные заказы'###sign
         OBJECTS o = blanketOrder
         PROPERTIES (o) READONLY isPostedBlanketOrder FORCE GRID, objectClassName, numberObject, seriesObject, dateBlanketOrder, timeBlanketOrder,
-                                nameStockBlanketOrder, nameCurrencyBlanketOrder, noteBlanketOrder,
+                                nameSupplierStockBlanketOrder, nameCurrencyBlanketOrder, noteBlanketOrder,
                                 countBlanketOrderDetailBlanketOrder, quantityBlanketOrderDetailBlanketOrder, sumBlanketOrderDetailBlanketOrder,
-                                shipmentDateBlanketOrder, shipmentTimeBlanketOrder, contact##sBlanketOrder
+                                shipmentDateBlanketOrder, shipmentTimeBlanketOrder, customerStocksBlanketOrder
 
         PROPERTIES (o) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
@@ -166,7 +169,8 @@ META defineBlanketOrder(sign, contact, contactCaption, series)
 
         OBJECTS d=blanketOrderDetail
         PROPERTIES (d) READONLY indexBlanketOrderDetail, idBarcodeSkuBlanketOrderDetail, nameSkuBlanketOrderDetail, shortNameUOMSkuBlanketOrderDetail,
-                       quantityBlanketOrderDetail, namePriceListTypeBlanketOrderDetail, priceBlanketOrderDetail, sumBlanketOrderDetail, nameStockBlanketOrderDetail, name###contact##BlanketOrderDetail,
+                       quantityBlanketOrderDetail, //namePriceListTypeBlanketOrderDetail,
+                       priceBlanketOrderDetail, sumBlanketOrderDetail, nameSupplierStockBlanketOrderDetail, nameCustomerStockBlanketOrderDetail,
                        shipmentDateBlanketOrderDetail, shipmentTimeBlanketOrderDetail
 
 
@@ -223,66 +227,66 @@ META defineOrderBlanketOrder(sign, contact, contactCaption)
     @defineDocumentTables(blanketOrderOrder);
 
 
-    needToOrderBlanketOrderDetail###contact (blanketOrderDetail, contact)= quantityBlanketOrderDetail(blanketOrderDetail)
-        AND isPostedBlanketOrderDetail(blanketOrderDetail) AND contact###blanketOrderDetail(blanketOrderDetail) == contact;
+    needToOrderBlanketOrderDetailStock (blanketOrderDetail, stock)= quantityBlanketOrderDetail(blanketOrderDetail)
+        AND isPostedBlanketOrderDetail(blanketOrderDetail) AND customerStockBlanketOrderDetail(blanketOrderDetail) == stock;
 
-    needToOrderBlanketOrder###contact (blanketOrder, contact)= quantityBlanketOrderDetailBlanketOrder###contact(blanketOrder, contact)
+    needToOrderBlanketOrderStock (blanketOrder, stock)= quantityBlanketOrderDetailBlanketOrderCustomerStock(blanketOrder, stock)
         AND isPostedBlanketOrder(blanketOrder);
 
 //-- oblect
-    @defineAggregation(blanketOrder, contact, blanketOrderOrder, needToOrderBlanketOrder###contact);
-
-    @defineDocumentAggregationHeaderStock (blanketOrder, blanketOrderOrder, stock, 'Склад');
-    stockOrder(order) += stockBlanketOrderOrder(order);
-
-    shipmentDateBlanketOrderOrder 'Дата исполнения' (blanketOrderOrder)= shipmentDateBlanketOrder(blanketOrderBlanketOrderOrder(blanketOrderOrder));
-    shipmentDateOrder(order) += shipmentDateBlanketOrderOrder(order);
-
-    shipmentTimeOrder(order) += shipmentTimeBlanketOrder(blanketOrderBlanketOrderOrder(order));
-    contact##Order(order) += contact##BlanketOrderOrder(order);
-    currencyOrder(order) += currencyBlanketOrder(blanketOrderBlanketOrderOrder(order));
-    priceListTypeOrder(order) += priceListTypeBlanketOrder###contact(blanketOrderBlanketOrderOrder(order), contact###blanketOrderOrder(order));
-
-    @defineDocumentAggregationHeaderNote (blanketOrder, blanketOrderOrder);
-    noteOrder(order) += noteBlanketOrderOrder(order);
-
-    seriesOrder(order) += seriesBlanketOrder###contact(blanketOrderBlanketOrderOrder(order), contact###blanketOrderOrder(order));
-    numberOrder(order) += numberBlanketOrder###contact(blanketOrderBlanketOrderOrder(order), contact###blanketOrderOrder(order));
-    seriesNumberBlanketOrderOrder 'Серия/Номер' (blanketOrderOrder) = ustring2(
-        seriesBlanketOrder###contact(blanketOrderBlanketOrderOrder(blanketOrderOrder), contact###blanketOrderOrder(blanketOrderOrder)),
-        numberBlanketOrder###contact(blanketOrderBlanketOrderOrder(blanketOrderOrder), contact###blanketOrderOrder(blanketOrderOrder)));
+//    @defineAggregation(blanketOrder, customerStock, blanketOrderOrder, needToOrderBlanketOrderStock);
+//
+//    @defineDocumentAggregationHeaderStock (blanketOrder, blanketOrderOrder, stock, 'Склад');
+//    stockOrder(order) += stockBlanketOrderOrder(order);
+//
+//    shipmentDateBlanketOrderOrder 'Дата исполнения' (blanketOrderOrder)= shipmentDateBlanketOrder(blanketOrderBlanketOrderOrder(blanketOrderOrder));
+//    shipmentDateOrder(order) += shipmentDateBlanketOrderOrder(order);
+//
+//    shipmentTimeOrder(order) += shipmentTimeBlanketOrder(blanketOrderBlanketOrderOrder(order));
+//    contact##Order(order) += contact##BlanketOrderOrder(order);
+//    currencyOrder(order) += currencyBlanketOrder(blanketOrderBlanketOrderOrder(order));
+//    priceListTypeOrder(order) += priceListTypeBlanketOrder###contact(blanketOrderBlanketOrderOrder(order), contact###blanketOrderOrder(order));
+//
+//    @defineDocumentAggregationHeaderNote (blanketOrder, blanketOrderOrder);
+//    noteOrder(order) += noteBlanketOrderOrder(order);
+//
+//    seriesOrder(order) += seriesBlanketOrder###contact(blanketOrderBlanketOrderOrder(order), contact###blanketOrderOrder(order));
+//    numberOrder(order) += numberBlanketOrder###contact(blanketOrderBlanketOrderOrder(order), contact###blanketOrderOrder(order));
+//    seriesNumberBlanketOrderOrder 'Серия/Номер' (blanketOrderOrder) = ustring2(
+//        seriesBlanketOrder###contact(blanketOrderBlanketOrderOrder(blanketOrderOrder), contact###blanketOrderOrder(blanketOrderOrder)),
+//        numberBlanketOrder###contact(blanketOrderBlanketOrderOrder(blanketOrderOrder), contact###blanketOrderOrder(blanketOrderOrder)));
 
 //-- detail
-    @defineAggregation(blanketOrderDetail, contact, blanketOrderOrderDetail, needToOrderBlanketOrderDetail###contact);
-
-    blanketOrderOrderBlanketOrderOrderDetail (blanketOrderOrderDetail) = blanketOrderOrderBlanketOrder###contact(blanketOrderBlanketOrderDetail(blanketOrderDetailBlanketOrderOrderDetail(blanketOrderOrderDetail)),
-    contact###blanketOrderDetail(blanketOrderDetailBlanketOrderOrderDetail(blanketOrderOrderDetail)));
-    orderOrderDetail(detail) += blanketOrderOrderBlanketOrderOrderDetail(detail);
+//    @defineAggregation(blanketOrderDetail, contact, blanketOrderOrderDetail, needToOrderBlanketOrderDetail###contact);
+//
+//    blanketOrderOrderBlanketOrderOrderDetail (blanketOrderOrderDetail) = blanketOrderOrderBlanketOrder###contact(blanketOrderBlanketOrderDetail(blanketOrderDetailBlanketOrderOrderDetail(blanketOrderOrderDetail)),
+//    contact###blanketOrderDetail(blanketOrderDetailBlanketOrderOrderDetail(blanketOrderOrderDetail)));
+//    orderOrderDetail(detail) += blanketOrderOrderBlanketOrderOrderDetail(detail);
 
     @defineDocumentHeaderCount(blanketOrderOrder);
     @defineDocumentDetailIndex(blanketOrderOrder);
 
-    @defineDocumentAggregationTime(blanketOrder, blanketOrderOrder);
-    dateOrder(order) += dateBlanketOrderOrder(order);
-    timeOrder(order) += timeBlanketOrderOrder(order);
-
-    @defineDocumentHeaderDescription(blanketOrderOrder, seriesNumberBlanketOrderOrder, 'Заказ на основе множественного'###sign);
-    descriptionOrder (order) += descriptionBlanketOrderOrder(order);
-
-    @defineDocumentAggregationPosted(blanketOrder, blanketOrderOrder);
-    isPostedOrder(order) += isPostedBlanketOrderOrder(order);
-
-    @defineDocumentAggregationDetailSku (blanketOrder, blanketOrderOrder, sku);
-    skuOrderDetail(detail) +=  skuBlanketOrderOrderDetail(detail);
-
-    @defineDocumentAggregationDetailQuantity (blanketOrder, blanketOrderOrder);
-    quantityOrderDetail(detail) +=  quantityBlanketOrderOrderDetail(detail);
-
-    dataStockOrderDetail(detail) += dataStockBlanketOrderDetail(blanketOrderDetailBlanketOrderOrderDetail(detail));
-    shipmentDataDateOrderDetail(detail) += shipmentDataDateBlanketOrderDetail(blanketOrderDetailBlanketOrderOrderDetail(detail));
-    shipmentDataTimeOrderDetail(detail) += shipmentDataTimeBlanketOrderDetail(blanketOrderDetailBlanketOrderOrderDetail(detail));
-    dataPriceListTypeOrderDetail(detail) += dataPriceListTypeBlanketOrderDetail(blanketOrderDetailBlanketOrderOrderDetail(detail));
-    priceOrderDetail(detail) += priceBlanketOrderDetail(blanketOrderDetailBlanketOrderOrderDetail(detail));
-    sumOrderDetail(detail) += sumBlanketOrderDetail(blanketOrderDetailBlanketOrderOrderDetail(detail));
+//    @defineDocumentAggregationTime(blanketOrder, blanketOrderOrder);
+//    dateOrder(order) += dateBlanketOrderOrder(order);
+//    timeOrder(order) += timeBlanketOrderOrder(order);
+//
+//    @defineDocumentHeaderDescription(blanketOrderOrder, seriesNumberBlanketOrderOrder, 'Заказ на основе множественного'###sign);
+//    descriptionOrder (order) += descriptionBlanketOrderOrder(order);
+//
+//    @defineDocumentAggregationPosted(blanketOrder, blanketOrderOrder);
+//    isPostedOrder(order) += isPostedBlanketOrderOrder(order);
+//
+//    @defineDocumentAggregationDetailSku (blanketOrder, blanketOrderOrder, sku);
+//    skuOrderDetail(detail) +=  skuBlanketOrderOrderDetail(detail);
+//
+//    @defineDocumentAggregationDetailQuantity (blanketOrder, blanketOrderOrder);
+//    quantityOrderDetail(detail) +=  quantityBlanketOrderOrderDetail(detail);
+//
+//    dataStockOrderDetail(detail) += dataStockBlanketOrderDetail(blanketOrderDetailBlanketOrderOrderDetail(detail));
+//    shipmentDataDateOrderDetail(detail) += shipmentDataDateBlanketOrderDetail(blanketOrderDetailBlanketOrderOrderDetail(detail));
+//    shipmentDataTimeOrderDetail(detail) += shipmentDataTimeBlanketOrderDetail(blanketOrderDetailBlanketOrderOrderDetail(detail));
+//    dataPriceListTypeOrderDetail(detail) += dataPriceListTypeBlanketOrderDetail(blanketOrderDetailBlanketOrderOrderDetail(detail));
+//    priceOrderDetail(detail) += priceBlanketOrderDetail(blanketOrderDetailBlanketOrderOrderDetail(detail));
+//    sumOrderDetail(detail) += sumBlanketOrderDetail(blanketOrderDetailBlanketOrderOrderDetail(detail));
 END
 

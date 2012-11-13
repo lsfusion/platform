@@ -4,6 +4,6 @@ REQUIRE Order;
 
 NAMESPACE Purchase;
 
-@defineOrder(' (покупка)', supplier);
+@defineOrder(' (покупка)', customerStock);
 
 @defineNumeratedObjectDefaultPrefix(userOrder, 'Нумератор для заказов (покупка)', 'ЗК', purchase);

@@ -227,3 +227,64 @@ FORM legalEntities 'Организации'
                             numberAccountLegalEntity, addressLegalEntity, phoneLegalEntity
     PROPERTIES(co) ADDFORM, EDITFORM, delete
 ;
+
+// -------------------------------------------- Макросы --------------------------------------------- //
+META defineDocumentHeaderLegalEntity (object, contact, contactCaption)
+    contact###object (object) = DATA legalEntity (object);
+    name###contact###object contactCaption (object)= name(contact###object(object)) IN documentPrmGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
+END
+META defineDocumentAbstractHeaderLegalEntity (object, contact, contactCaption)
+    contact###object (object) = ABSTRACT legalEntity (object) PERSISTENT;
+    name###contact###object contactCaption (object)= name(contact###object(object)) IN documentPrmGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
+END
+META defineDocumentInterfaceHeaderLegalEntity (object, contact, contactCaption)
+    @defineDocumentAbstractHeaderLegalEntity(object, contact, contactCaption);
+    @defineDocumentHeaderLegalEntity(user###object, contact, contactCaption);
+    contact###object (object) += contact###user###object(object);
+END
+
+META defineDocumentDetailLegalEntity (object, detail, contact, contactCaption)
+    contact###detail (idetail) = contact###object(object###detail(idetail));
+    name###contact###detail contactCaption (idetail) = name(contact###detail(idetail));
+END
+
+META defineDocumentLegalEntity (object, detail, contact, contactCaption)
+    @defineDocumentHeaderLegalEntity(object, contact, contactCaption);
+    @defineDocumentDetailLegalEntity(object, detail, contact, contactCaption);
+END
+META defineDocumentDetailDataLegalEntity (object, detail, contact, contactCaption)
+    data###contact###detail (detail) = DATA legalEntity (detail);
+    contact###detail (idetail) = UNION OVERRIDE contact###object(object###detail(idetail)), data###contact###detail(idetail) PERSISTENT;
+    ame###contact###detail contactCaption (idetail) = name(contact###detail(idetail));
+END
+META defineDocumentDataLegalEntity (object, detail, contact, contactCaption)
+    @defineDocumentHeaderLegalEntity(object, contact, contactCaption);
+    @defineDocumentDetailDataLegalEntity(object, detail, contact, contactCaption);
+END
+META defineDocumentDataLegalEntity (object, contact, contactCaption)
+    @defineDocumentDataLegalEntity(object, object##Detail, contact, contactCaption);
+END
+META defineDocumentDetailLegalEntity(detail, contact, contactCaption)
+    contact###detail (detail) = DATA legalEntity (detail);
+    name###contact###detail contactCaption (detail) = name(contact###detail (detail));
+END
+
+META defineDocumentAbstractLegalEntity (object, detail, contact, contactCaption)
+    @defineDocumentAbstractHeaderLegalEntity(object, contact, contactCaption);
+    @defineDocumentDetailLegalEntity(object, detail, contact, contactCaption);
+END
+META defineDocumentInterfaceLegalEntity (object, detail, contact, contactCaption)
+    @defineDocumentInterfaceHeaderLegalEntity(object, contact, contactCaption);
+    @defineDocumentDetailLegalEntity(object, detail, contact, contactCaption);
+    @defineDocumentDetailLegalEntity(user###object, user###detail, contact, contactCaption);
+END
+
+META defineDocumentLegalEntity (object, contact, contactCaption)
+    @defineDocumentLegalEntity(object, object##Detail, contact, contactCaption);
+END
+META defineDocumentAbstractLegalEntity (object, contact, contactCaption)
+    @defineDocumentAbstractLegalEntity(object, object##Detail, contact, contactCaption);
+END
+META defineDocumentInterfaceLegalEntity (object, contact, contactCaption)
+    @defineDocumentInterfaceLegalEntity(object, object##Detail, contact, contactCaption);
+END

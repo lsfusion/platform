@@ -7,25 +7,25 @@ NAMESPACE Sale;
 
 //----------------------------------------------- Поставка ---------------------------------------------------//
 
-@defineShipment(' (продажа)', customer, 'Покупатель', legalEntity, customer);
+@defineShipment(' (продажа)', supplierStock);
 @defineShipmentBatch();
 
 // Берем учетную цену
-@deriveDocumentDetailPriceBatchStockPrefix(userInvoice, shipment);
-@deriveDocumentDetailPriceBatchStock(userShipment);
+@deriveDocumentDetailPriceBatchStockPrefix(userInvoice, shipment, supplierStock);
+@deriveDocumentDetailPriceBatchStock(userShipment, supplierStock);
 
 // Проводим по регистру
-@implementSkuLedgerOutFIFO(shipment, sku, stock);
+@implementSkuLedgerOutFIFO(shipment, sku, supplierStock);
 quantityOutFIFOSkuLedger (ledger) += quantityShipmentDetail (ledger);
 limitOutFIFOSkuLedgerBatch(ledger, batch) += IF batchShipmentDetail(ledger) THEN
                                                 quantityShipmentDetail (ledger) AND batchShipmentDetail(ledger) == batch
-                                                ELSE currentBalanceBatchStock(batch, stockShipmentDetail(ledger)); //AND NOT commissionContractSkuBatchA(batch);
+                                                ELSE currentBalanceBatchStock(batch, supplierStockShipmentDetail(ledger)); //AND NOT commissionContractSkuBatchA(batch);
 changedDataSkuLedger(ledger) += CHANGED(batchShipmentDetail(ledger));
 sumOutSkuLedger(ledger) += sumShipmentDetail(ledger);
 
 @defineConstraintSkuLedgerCosted(shipment, 'Не хватает остатков по партиям для продажи товаров');
 
-@implementAccountDocumentLedgerOut(shipment, stock);
+@implementAccountDocumentLedgerOut(shipment, supplierStock);
 sumOutAccountDocumentLedger (ledger) += sumShipmentDetailShipment(ledger);
 sumItemOutAccountDocumentLedger (ledger) += sumItemShipmentDetailShipment(ledger);
 sumContainerOutAccountDocumentLedger (ledger) += sumContainerShipmentDetailShipment(ledger);

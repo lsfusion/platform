@@ -4,7 +4,7 @@ REQUIRE Invoice, Shipment;
 
 //----------------------------------------------- Акт расхождения ---------------------------------------------------//
 
-META defineCreditNote(sign, contact, contactCaption)
+META defineCreditNote(sign, stockProp)//contact, contactCaption)
 
     CLASS ABSTRACT creditNote 'Акт расхождения'###sign ;
     CLASS ABSTRACT creditNoteDetail 'Строка акта расхождения'###sign ;
@@ -17,15 +17,22 @@ META defineCreditNote(sign, contact, contactCaption)
 
     @defineDocumentInterfaceNumber(creditNote);
 
-    @defineDocumentInterfaceDataStock(creditNote, stock, 'Склад');
+//    @defineDocumentInterfaceDataStock(creditNote, stock, 'Склад');
+
+    @defineDocumentInterfaceLegalEntity (creditNote, supplier, 'Поставщик');
+    @defineDocumentInterfaceLegalEntity (creditNote, customer, 'Покупатель');
+
+    @defineDocumentInterfaceDataStock(creditNote, stock, 'Склад поставщика', supplier);
+    @defineDocumentInterfaceDataStock(creditNote, stock, 'Склад покупателя', customer);
+
     @defineDocumentInterfacePosted(creditNote);
 
     @defineDocumentInterfaceDescription(creditNote, 'Акт расхождения'###sign);
 
     @defineDocumentInterfaceCurrency(creditNote);
-    @deriveDocumentCurrency(userCreditNote, stock);
+    @deriveDocumentCurrency(userCreditNote, stockProp);
 
-    @defineDocumentInterface###contact(creditNote);
+//    @defineDocumentInterface###contact(creditNote);
 
     @defineDocumentInterfaceDetailSku(creditNote, sku);
 
@@ -36,7 +43,7 @@ META defineCreditNote(sign, contact, contactCaption)
     @defineDocumentInterfaceDetailDataSum(creditNote);
     @deriveDocumentDetailSum(userCreditNote, quantity);
 
-    @defineDocumentInterfaceDetailVAT(creditNote, countryStock);
+    @defineDocumentInterfaceDetailVAT(creditNote, country###stockProp);
     @defineDocumentInterfaceDetailVATDataSumCustom(creditNoteDetail, invoice);
 
     @defineDocumentInterfaceHeaderQuantity(creditNote);
@@ -44,7 +51,7 @@ META defineCreditNote(sign, contact, contactCaption)
     @defineDocumentInterfaceHeaderSum(creditNote);
     @defineDocumentInterfaceHeaderVATSumPrefix(creditNote, creditNoteDetail, invoice);
 
-    @defineAddDetailDialogSkuStock(userCreditNote, sku, stock, dialogSku);
+    @defineAddDetailDialogSkuStock(userCreditNote, sku, stockProp, dialogSku);
     @defineAddDetailDialogBarcode(userCreditNote, sku);
         
 
@@ -52,8 +59,9 @@ META defineCreditNote(sign, contact, contactCaption)
 
     FORM userCreditNote 'Акт расхождений'###sign
         OBJECTS c = userCreditNote FIXED PANEL
-        PROPERTIES (c) objectClassName, nameStockUserCreditNote, nameNumeratorObject, numberObject, seriesObject, dateUserCreditNote, timeUserCreditNote,
-                       name###contact###UserCreditNote, nameCurrencyUserCreditNote, noteUserCreditNote,
+        PROPERTIES (c) objectClassName, nameNumeratorObject, numberObject, seriesObject, dateUserCreditNote, timeUserCreditNote,
+                       nameSupplierUserCreditNote, nameCustomerUserCreditNote, nameSupplierStockUserCreditNote, nameCustomerStockUserCreditNote,
+                       nameCurrencyUserCreditNote, noteUserCreditNote,
                        countUserCreditNoteDetailUserCreditNote, quantityUserCreditNoteDetailUserCreditNote, sumUserCreditNoteDetailUserCreditNote,
                        VATSumUserCreditNoteDetailUserCreditNote, invoiceSumUserCreditNoteDetailUserCreditNote
 
@@ -61,7 +69,7 @@ META defineCreditNote(sign, contact, contactCaption)
         PROPERTIES (d) indexUserCreditNoteDetail, idBarcodeSkuUserCreditNoteDetail, nameSkuUserCreditNoteDetail, shortNameUOMSkuUserCreditNoteDetail,
                        quantityUserCreditNoteDetail, priceUserCreditNoteDetail, sumUserCreditNoteDetail,
                        numberVATUserCreditNoteDetail, valueVATUserCreditNoteDetail, VATSumUserCreditNoteDetail, invoiceSumUserCreditNoteDetail,
-                       nameStockUserCreditNoteDetail, ADDOBJ, delete
+                       name###stockProp###userCreditNoteDetail, ADDOBJ, delete
 
         PROPERTIES(c) TODRAW d addDetailDialogSkuStockUserCreditNoteDetailUserCreditNote,
                                addDetailInputBarcodeUserCreditNoteDetailUserCreditNote, deleteUserCreditNoteDetailUserCreditNote
@@ -86,7 +94,10 @@ META defineCreditNote(sign, contact, contactCaption)
                     ADD c.documentHeaderGroup {
                         childConstraints = TO THE RIGHT;
                         ADD PROPERTY(objectClassName) { preferredCharWidth = 10; }
-                        ADD PROPERTY(nameStockUserCreditNote);
+                        ADD PROPERTY(nameSupplierUserCreditNote);
+                        ADD PROPERTY(nameCustomerUserCreditNote);
+                        ADD PROPERTY(nameSupplierStockUserCreditNote);
+                        ADD PROPERTY(nameCustomerStockUserCreditNote);
                         ADD PROPERTY(nameNumeratorObject);
                         ADD PROPERTY(numberObject);
                         ADD PROPERTY(seriesObject);
@@ -120,7 +131,8 @@ META defineCreditNote(sign, contact, contactCaption)
     FORM creditNotes 'Акты расхождений' TITLE 'Акты расхождений'###sign
         OBJECTS c = creditNote
         PROPERTIES (c) READONLY isPostedCreditNote FORCE GRID, objectClassName, numberCreditNote, seriesCreditNote, dateCreditNote, timeCreditNote,
-                                nameStockCreditNote, name###contact###CreditNote, nameCurrencyCreditNote, noteCreditNote,
+                                nameSupplierCreditNote, nameCustomerCreditNote, nameSupplierStockCreditNote, nameCustomerStockCreditNote,
+                                nameCurrencyCreditNote, noteCreditNote,
                                 countCreditNoteDetailCreditNote, quantityCreditNoteDetailCreditNote, sumCreditNoteDetailCreditNote,
                                 VATSumCreditNoteDetailCreditNote, invoiceSumCreditNoteDetailCreditNote
         PROPERTIES (c) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
@@ -132,7 +144,7 @@ META defineCreditNote(sign, contact, contactCaption)
         OBJECTS d = creditNoteDetail
         PROPERTIES (d) READONLY indexCreditNoteDetail, idBarcodeSkuCreditNoteDetail, nameSkuCreditNoteDetail, shortNameUOMSkuCreditNoteDetail,
                                 quantityCreditNoteDetail, priceCreditNoteDetail, sumCreditNoteDetail, numberVATCreditNoteDetail, valueVATCreditNoteDetail,
-                                 VATSumCreditNoteDetail, invoiceSumCreditNoteDetail, nameStockCreditNoteDetail
+                                 VATSumCreditNoteDetail, invoiceSumCreditNoteDetail, name###stockProp###creditNoteDetail
         FILTERS creditNoteCreditNoteDetail(d) == c
 
         DIALOG creditNote OBJECT c
@@ -179,11 +191,11 @@ META defineCreditNote(sign, contact, contactCaption)
     invoiceDetailUserCreditNoteDetail = DATA invoiceDetail (userCreditNoteDetail);
     invoiceDetailCreditNoteDetail(creditNoteDetail) += invoiceDetailUserCreditNoteDetail(creditNoteDetail);
 
-    CONSTRAINT contact###CreditNoteDetail(detail) != contact###InvoiceDetail(invoiceDetailUserCreditNoteDetail(detail)) OR
-               legalEntityUserCreditNote(detail) != legalEntityInvoice(invoiceDetailUserCreditNoteDetail(detail)) OR
+    CONSTRAINT supplierCreditNoteDetail(detail) != supplierInvoiceDetail(invoiceDetailUserCreditNoteDetail(detail)) OR
+               customerUserCreditNote(detail) != customerInvoice(invoiceDetailUserCreditNoteDetail(detail)) OR
                skuUserCreditNoteDetail(detail) != skuInvoiceDetail(invoiceDetailUserCreditNoteDetail(detail))
         CHECKED BY invoiceDetailUserCreditNoteDetail
-            MESSAGE contactCaption###', компания и товар в накладной и акте расхождения должны соответствовать друг другу';
+            MESSAGE 'Поставщик, покупатель и товар в накладной и акте расхождения должны соответствовать друг другу';
 
     descriptionIndexInvoiceUserCreditNoteDetail 'Накладная' (userCreditNoteDetail) =  descriptionIndexInvoiceDetail(invoiceDetailUserCreditNoteDetail(userCreditNoteDetail));
     descriptionIndexInvoiceInvoiceCreditNoteDetail 'Накладная' (creditNoteDetail) =  descriptionIndexInvoiceDetail(invoiceDetailCreditNoteDetail(creditNoteDetail));
@@ -250,12 +262,19 @@ META defineCreditNote(sign, contact, contactCaption)
     dateCreditNote(creditNote) += dateInvoiceCreditNote(creditNote);
     timeCreditNote(creditNote) += timeInvoiceCreditNote(creditNote);
 
-    @defineDocumentAggregationStockPrefix(invoice, invoiceCreditNote, stock, 'Склад', , );
-    stockCreditNote(creditNote) += stockInvoiceCreditNote(creditNote);
-    dataStockCreditNoteDetail(creditNoteDetail) += dataStockInvoiceDetail(invoiceDetailInvoiceCreditNoteDetail(creditNoteDetail));
+    @defineDocumentAggregationStockPrefix(invoice, invoiceCreditNote, supplierStock, 'Склад поставщика', , );
+    supplierStockCreditNote(creditNote) += supplierStockInvoiceCreditNote(creditNote);
+    dataSupplierStockCreditNoteDetail(creditNoteDetail) += dataSupplierStockInvoiceDetail(invoiceDetailInvoiceCreditNoteDetail(creditNoteDetail));
 
-    @defineDocumentAggregationStockPrefix(invoice, invoiceCreditNote, contact, contactCaption, , );
-    contact###CreditNote(creditNote) += contact###InvoiceCreditNote(creditNote);
+    @defineDocumentAggregationStockPrefix(invoice, invoiceCreditNote, customerStock, 'Склад покупателя', , );
+    customerStockCreditNote(creditNote) += customerStockInvoiceCreditNote(creditNote);
+    dataCustomerStockCreditNoteDetail(creditNoteDetail) += dataCustomerStockInvoiceDetail(invoiceDetailInvoiceCreditNoteDetail(creditNoteDetail));
+
+    @defineDocumentAggregationStockPrefix(invoice, invoiceCreditNote, supplier, 'Поставщик', , );
+    supplierCreditNote(creditNote) += supplierInvoiceCreditNote(creditNote);
+
+    @defineDocumentAggregationStockPrefix(invoice, invoiceCreditNote, customer, 'Покупатель', , );
+    customerCreditNote(creditNote) += customerInvoiceCreditNote(creditNote);
 
     @defineDocumentAggregationPosted(invoice, invoiceCreditNote);
     isPostedCreditNote(creditNote) += isPostedInvoiceCreditNote(creditNote);

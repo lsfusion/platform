@@ -7,7 +7,7 @@ NAMESPACE Purchase;
 
 //----------------------------------------------- Поставка ---------------------------------------------------//
 
-@defineShipment(' (покупка)', supplier, 'Поставщик', supplier, company);
+@defineShipment(' (покупка)', customerStock);
 
 // Цены учетные
 priceUserShipmentDetail (detail) <- priceInvoiceDetail(invoiceDetailUserShipmentDetail(detail))
@@ -18,12 +18,12 @@ shipmentPriceUserInvoiceDetail(detail) <- calcShipmentPriceUserInvoiceDetail(det
 
 // Проводим по регистру
 
-@implementBatch(shipment, sku, stock, price);
+@implementBatch(shipment, sku, customerStock, price);
 quantityBatch (ledger) += quantityShipmentDetail(ledger);
-supplierBatch (ledger) += supplierShipmentDetail(ledger);
+//supplierBatch (ledger) += supplierShipmentDetail(ledger);
 sumInSkuLedger (ledger) += sumShipmentDetail(ledger);
 
-@implementAccountDocumentLedgerInc(shipment, stock);
+@implementAccountDocumentLedgerInc(shipment, customerStock);
 sumIncAccountDocumentLedger (ledger) += sumShipmentDetailShipment(ledger);
 sumItemIncAccountDocumentLedger (ledger) += sumItemShipmentDetailShipment(ledger);
 sumContainerIncAccountDocumentLedger (ledger) += sumContainerShipmentDetailShipment(ledger);

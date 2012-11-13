@@ -4,6 +4,6 @@ REQUIRE Order, PurchaseShipment;
 
 NAMESPACE PurchaseReturn;
 
-@defineOrder(' (покупка-возврат)', supplier);
+@defineOrder(' (покупка-возврат)', customerStock);
 
 @defineNumeratedObjectDefaultPrefix(userOrder, 'Нумератор для заказов (покупка-возврат)', 'ВЗ', purchaseReturn);

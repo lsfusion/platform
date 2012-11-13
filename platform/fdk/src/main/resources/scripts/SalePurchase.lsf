@@ -14,16 +14,16 @@ META extendFormDocumentReserveSkuStock(object, NS, form, concrete)
     reservePurchaseB##NS##SkuStock###object 'Резерв (закупка)' (sku, stock, object) = reservePurchaseBSkuStockDateTime(sku, stock, NS.shipmentDateTime###object(object));
     reserveSaleB##NS##SkuStock###object 'Резерв (продажа)' (sku, stock, object) = reserveSaleBSkuStockDateTime(sku, stock, NS.shipmentDateTime###object(object));
 
-    EXTEND FORM NS.form
-        PROPERTIES READONLY BEFORE currentBalanceSkuStock(s, st) currentReservePurchaseSkuStock(s,st), currentReserveSaleSkuStock(s,st)
-        PROPERTIES READONLY AFTER currentBalanceSkuStock(s, st)
-                   availableQuantity##NS##SkuStock###object(s, st, concrete), reserveSaleB##NS##SkuStock###object(s, st, concrete), reservePurchaseB##NS##SkuStock###object(s, st, concrete)
-    ;
-    EXTEND DESIGN NS.form {
-        PROPERTY(availableQuantity##NS##SkuStock###object) { background = #FFEEEE; }
-        PROPERTY(currentReservePurchaseSkuStock) { background = #CCFFCC; }
-        PROPERTY(reservePurchaseB##NS##SkuStock###object) { background = #CCFFCC; }
-    }
+//    EXTEND FORM NS.form
+//        PROPERTIES READONLY BEFORE currentBalanceSkuStock(s, st) currentReservePurchaseSkuStock(s,st), currentReserveSaleSkuStock(s,st)
+//        PROPERTIES READONLY AFTER currentBalanceSkuStock(s, st)
+//                   availableQuantity##NS##SkuStock###object(s, st, concrete), reserveSaleB##NS##SkuStock###object(s, st, concrete), reservePurchaseB##NS##SkuStock###object(s, st, concrete)
+//    ;
+//    EXTEND DESIGN NS.form {
+//        PROPERTY(availableQuantity##NS##SkuStock###object) { background = #FFEEEE; }
+//        PROPERTY(currentReservePurchaseSkuStock) { background = #CCFFCC; }
+//        PROPERTY(reservePurchaseB##NS##SkuStock###object) { background = #CCFFCC; }
+//    }
 
 END
 

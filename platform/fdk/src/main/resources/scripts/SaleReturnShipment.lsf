@@ -8,21 +8,21 @@ NAMESPACE SaleReturn;
 
 //----------------------------------------------- Поставка ---------------------------------------------------//
 
-@defineShipment(' (продажа-возврат)', customer, 'Покупатель', company, customer);
+@defineShipment(' (продажа-возврат)', supplierStock);
 @defineShipmentBatch();
 
 // Берем учетную цену
-@deriveDocumentDetailPriceBatchStockPrefix(userInvoice, shipment);
-@deriveDocumentDetailPriceBatchStock(userShipment);
+@deriveDocumentDetailPriceBatchStockPrefix(userInvoice, shipment, supplierStock);
+@deriveDocumentDetailPriceBatchStock(userShipment, supplierStock);
 
 // Проводим по регистру
-@implementSkuLedgerInLIFO(shipment, sku, stock);
+@implementSkuLedgerInLIFO(shipment, sku, supplierStock);
 quantityInLIFOSkuLedger (ledger) += quantityShipmentDetail(ledger);
-@implementSkuLedgerInLIFOBalance(shipment, sku, stock);
+@implementSkuLedgerInLIFOBalance(shipment, sku, supplierStock);
 changedDataSkuLedger(ledger) += CHANGED(batchShipmentDetail(ledger));
 sumInSkuLedger(ledger) += sumShipmentDetail(ledger);
 
-@implementAccountDocumentLedgerInc(shipment, stock);
+@implementAccountDocumentLedgerInc(shipment, supplierStock);
 sumIncAccountDocumentLedger (ledger) += sumShipmentDetailShipment(ledger);
 sumItemIncAccountDocumentLedger (ledger) += sumItemShipmentDetailShipment(ledger);
 sumContainerIncAccountDocumentLedger (ledger) += sumContainerShipmentDetailShipment(ledger);
