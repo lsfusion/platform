@@ -4,7 +4,7 @@ REQUIRE Order;
 
 //----------------------------------------------- Множественнвй Заказ ---------------------------------------------------//
 
-META defineBlanketOrder(sign, stockProp)//contact, contactCaption)
+META defineBlanketOrder(sign, stockProp)
 
     CLASS blanketOrder 'Множественный заказ'###sign : historyObject, numeratedDocument;
     CLASS blanketOrderDetail 'Строка множественного заказа'###sign : named;
@@ -64,9 +64,9 @@ META defineBlanketOrder(sign, stockProp)//contact, contactCaption)
             MESSAGE 'Для строки множественного заказа выбран склад не включенный в заказ';
 
     customerStocksBlanketOrder 'Контрагенты' (blanketOrder) =
-        GROUP CONCAT name(contact) IF inBlanketOrderCustomerStock(blanketOrder, stock), ', '
+        GROUP CONCAT name(stock) IF inBlanketOrderCustomerStock(blanketOrder, stock), ', '
         BY blanketOrder
-        ORDER contact MINCHARWIDTH 20 MAXCHARWIDTH 60 PREFCHARWIDTH 40 PERSISTENT;
+        ORDER stock MINCHARWIDTH 20 MAXCHARWIDTH 60 PREFCHARWIDTH 40 PERSISTENT;
 
     @defineNumeratedObject (blanketOrder, stock);
 // --------------------------- Формы Заказа ---------------------------------
@@ -150,7 +150,8 @@ META defineBlanketOrder(sign, stockProp)//contact, contactCaption)
     }
 
 //-- SKU
-//    @defineDocumentSkuStockContractor(blanketOrder, contact);
+    @defineDocumentSkuStockContractor(blanketOrder, sku, stockProp, customerStock);
+    @extendFormDocumentSkuStockContractorCustom(blanketOrder, blanketOrder, o, stockProp, customerStock);
 //    @extendFormDocumentSkuStockContractor(blanketOrder, blanketOrder, o, contact);
 
 

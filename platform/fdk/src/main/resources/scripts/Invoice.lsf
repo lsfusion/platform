@@ -243,19 +243,23 @@ META defineInvoice(sign, stockProp)
                         ADD PROPERTY(objectClassName) { preferredCharWidth = 10; }
                         ADD PROPERTY(nameSupplierUserInvoice);
                         ADD PROPERTY(nameCustomerUserInvoice);
-                        ADD PROPERTY(nameSupplierStockUserInvoice);
-                        ADD PROPERTY(nameCustomerStockUserInvoice);
                         ADD PROPERTY(nameNumeratorObject);
                         ADD PROPERTY(numberObject);
                         ADD PROPERTY(seriesObject);
                         ADD PROPERTY(dateUserInvoice);
                         ADD PROPERTY(timeUserInvoice);
                     }
-
                     NEW headerRow2 {
+                        title = 'Склады';
+                        childConstraints = TO THE RIGHT;
+                        ADD PROPERTY(nameSupplierStockUserInvoice);
+                        ADD PROPERTY(nameCustomerStockUserInvoice);
+                    }
+
+                    NEW headerRow3 {
                         childConstraints = TO THE RIGHT;
                         ADD i.documentPrmGroup;
-                        NEW headerRow3 {
+                        NEW headerRow4 {
                             childConstraints = TO THE BOTTOM;
                             ADD i.orderGroup;
                         }
@@ -273,8 +277,8 @@ META defineInvoice(sign, stockProp)
     }
 
 //-- SKU
-//    @defineDocumentSku(userInvoice);
-//    @extendFormDocumentSku(userInvoice, userInvoice, i);
+    @defineDocumentSku(userInvoice, sku, stockProp);
+    @extendFormDocumentSku(userInvoice, userInvoice, i);
 
     addUserInvoice 'Добавить' = ACTION ADDFORM userInvoice;
     editUserInvoice 'Редактировать' (userInvoice) = ACTION EDITFORM userInvoice;

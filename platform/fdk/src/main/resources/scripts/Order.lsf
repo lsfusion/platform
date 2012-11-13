@@ -44,7 +44,6 @@ META defineOrder(sign, stockProp)
     @defineDocumentInterfaceCurrency(order);
     @deriveDocumentCurrency(userOrder, stockProp);
 
-//    @defineDocumentInterface###contact(order);
     @defineDocumentInterfaceDataPriceListType(order);
 
     @defineDocumentInterfaceDetailSku(order, sku);
@@ -84,7 +83,7 @@ META defineOrder(sign, stockProp)
     FORM userOrder 'Заказ'###sign
         OBJECTS o = userOrder FIXED PANEL
         PROPERTIES (o) objectClassName, nameSupplierStockUserOrder, nameCustomerStockUserOrder, nameNumeratorObject, numberObject, seriesObject, dateUserOrder, timeUserOrder,
-                       nameCurrencyUserOrder, nameAgreementUserOrder, namePriceListTypeUserOrder, noteUserOrder,  //
+                       nameCurrencyUserOrder, nameAgreementUserOrder, namePriceListTypeUserOrder, noteUserOrder,
                        countUserOrderDetailUserOrder, quantityUserOrderDetailUserOrder, sumUserOrderDetailUserOrder, shipmentDateUserOrder,
                        shipmentTimeUserOrder
 
@@ -157,7 +156,8 @@ META defineOrder(sign, stockProp)
     }
 
 //-- SKU
-//    @defineDocumentSkuStock(userOrder);
+    @defineDocumentSkuStock(userOrder, sku, stockProp);
+    @extendFormDocumentSkuStockCustom(userOrder, userOrder, o, stockProp);
 //    @extendFormDocumentSkuStock(userOrder, userOrder, o);
 
 
