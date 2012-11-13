@@ -183,6 +183,10 @@ FORM legalEntity 'Организация'
     PROPERTIES(a)  numberAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount, MFOBankAccount, noteAccount, ADDOBJ, delete
     FILTERS legalEntityAccount(a) == l
 
+    OBJECTS li=license
+    PROPERTIES(li) numberLicense, dateFromLicense, dateToLicense, ADDOBJ, delete
+    FILTERS legalEntityLicense(li) == l
+
     EDIT legalEntity OBJECT l
 ;
 
@@ -216,6 +220,7 @@ DESIGN legalEntity FROM DEFAULT {
        NEW extendContainer BEFORE functions.box {
             type = TABBED;
             ADD a.box;
+            ADD li.box;
        }
    }
 }

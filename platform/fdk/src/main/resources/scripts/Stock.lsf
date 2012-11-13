@@ -2065,6 +2065,22 @@ END
 
 @defineDialogStockSku(dialogSku);
 
+
+EXTEND FORM legalEntity
+    OBJECTS st=stock
+    PROPERTIES(st) READONLY name, nameLegalEntityStock
+    PROPERTIES(st) ADDOBJ, delete
+
+    FILTERS legalEntityStock(st)==l
+;
+
+EXTEND DESIGN legalEntity{
+    extendContainer {
+        ADD st.box{
+            caption = 'Склады';
+        }
+    }
+}
 // ------------------------------------------------ Стандартные значения --------------------------------------- //
 
 loadDefaultUOM 'Добавить ед.изм.' = ACTION (stringOne, stringTwo, numeric) {
