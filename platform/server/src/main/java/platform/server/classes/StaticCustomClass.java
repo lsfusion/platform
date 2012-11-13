@@ -77,7 +77,7 @@ public class StaticCustomClass extends ConcreteCustomClass implements StaticClas
         Map<String, Pair<Integer, String>> oldClasses = new HashMap<String, Pair<Integer, String>>();
         for (Map.Entry<Map<String, Object>, Map<Object, Object>> entry : qResult.entrySet()) {
             oldClasses.put(((String) entry.getValue().get("sid")).trim(),
-                            new Pair<Integer, String>((Integer) BaseUtils.singleValue(entry.getKey()), ((String) entry.getValue().get("name")).trim()));
+                            new Pair<Integer, String>((Integer) BaseUtils.singleValue(entry.getKey()), BaseUtils.nullTrim((String) entry.getValue().get("name"))));
         }
 
         // новый sid -> старый sid

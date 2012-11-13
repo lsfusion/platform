@@ -56,8 +56,7 @@ nameGroupTerminalDocumentTypeGroupTerminal 'Группа типов докуме
 // ------------------------------------- Виды справочников ТСД --------------------------------- //
 
 CLASS STATIC terminalHandbookType 'Вид справочника ТСД' {
-    terminalHandbookTypeSupplier 'Поставщик',
-    terminalHandbookTypeCustomer 'Покупатель'
+    terminalHandbookTypeLegalEntity 'Юр. лицо'
 };
 
 idTerminalHandbookType 'Код' = DATA STRING[10] (terminalHandbookType) IN baseGroup;
@@ -336,8 +335,7 @@ loadDefaultTerminalHandbookType 'Добавить вид справочника 
 }
 
 loadDefaultTerminalHandbookTypes 'Загрузить стандартные виды справочников ТСД' = ACTION () {
-    EXEC loadDefaultTerminalHandbookType(terminalHandbookType.terminalHandbookTypeSupplier, '01');
-    EXEC loadDefaultTerminalHandbookType(terminalHandbookType.terminalHandbookTypeCustomer, '02');
+    EXEC loadDefaultTerminalHandbookType(terminalHandbookType.terminalHandbookTypeLegalEntity, '01');
 } IN loadDefaultGroup;
 
 @implementLoadDefaultData(loadDefaultTerminalHandbookTypes);
@@ -360,7 +358,7 @@ loadDefaultTerminalDocumentTypes 'Загрузить стандартные ти
         SET nameGroupTerminalDocumentType(gtdt) <- 'Группа типов документов';
         EXEC loadDefaultTerminalDocumentType('Инвентаризация', gtdt, '01', ' ', ' ');
         EXEC loadDefaultTerminalDocumentType('Приход', gtdt, '02', '01', ' ');
-        EXEC loadDefaultTerminalDocumentType('Отгрузка по безналичному расчёту', gtdt, '03', '02', ' ');
+        EXEC loadDefaultTerminalDocumentType('Отгрузка по безналичному расчёту', gtdt, '03', '01', ' ');
     }
 } IN loadDefaultGroup;
 

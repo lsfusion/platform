@@ -386,36 +386,20 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
             DataSession session = BL.createSession();
 
             List<LegalEntityInfo> legalEntityInfoList = new ArrayList<LegalEntityInfo>();
-            LCP<PropertyInterface> isSupplier = (LCP<PropertyInterface>) LM.is(LM.findClassByCompoundName("supplier"));
 
-            OrderedMap<PropertyInterface, KeyExpr> supplierKeys = isSupplier.getMapKeys();
-            KeyExpr supplierKey = BaseUtils.singleValue(supplierKeys);
-            Query<PropertyInterface, Object> supplierQuery = new Query<PropertyInterface, Object>(supplierKeys);
+            LCP<PropertyInterface> isLegalEntity = (LCP<PropertyInterface>) LM.is(LM.findClassByCompoundName("legalEntity"));
 
-            supplierQuery.properties.put("name", LM.baseLM.name.getExpr(supplierKey));
-            supplierQuery.and(isSupplier.property.getExpr(supplierKeys).getWhere());
-            OrderedMap<Map<PropertyInterface, Object>, Map<Object, Object>> supplierResult = supplierQuery.execute(session.sql);
-            for (Map.Entry<Map<PropertyInterface, Object>, Map<Object, Object>> entry : supplierResult.entrySet()) {
+            OrderedMap<PropertyInterface, KeyExpr> legalEntityKeys = isLegalEntity.getMapKeys();
+            KeyExpr legalEntityKey = BaseUtils.singleValue(legalEntityKeys);
+            Query<PropertyInterface, Object> legalEntityQuery = new Query<PropertyInterface, Object>(legalEntityKeys);
+
+            legalEntityQuery.properties.put("name", LM.baseLM.name.getExpr(legalEntityKey));
+            legalEntityQuery.and(isLegalEntity.property.getExpr(legalEntityKeys).getWhere());
+            OrderedMap<Map<PropertyInterface, Object>, Map<Object, Object>> legalEntityResult = legalEntityQuery.execute(session.sql);
+            for (Map.Entry<Map<PropertyInterface, Object>, Map<Object, Object>> entry : legalEntityResult.entrySet()) {
                 String id = String.valueOf(entry.getKey().values().iterator().next());
                 String name = (String) entry.getValue().get("name");
-                DataObject terminalHandbookTypeObject = ((StaticCustomClass) LM.findClassByCompoundName("terminalHandbookType")).getDataObject("terminalHandbookTypeSupplier");
-                String type = (String) LM.findLCPByCompoundName("idTerminalHandbookType").read(session, terminalHandbookTypeObject);
-                legalEntityInfoList.add(new LegalEntityInfo(id, name, type));
-            }
-
-            LCP<PropertyInterface> isCustomer = (LCP<PropertyInterface>) LM.is(LM.findClassByCompoundName("customer"));
-
-            Map<PropertyInterface, KeyExpr> customerKeys = isCustomer.getMapKeys();
-            KeyExpr customerKey = BaseUtils.singleValue(customerKeys);
-            Query<PropertyInterface, Object> customerQuery = new Query<PropertyInterface, Object>(customerKeys);
-
-            customerQuery.properties.put("name", LM.baseLM.name.getExpr(customerKey));
-            customerQuery.and(isCustomer.property.getExpr(customerKeys).getWhere());
-            OrderedMap<Map<PropertyInterface, Object>, Map<Object, Object>> customerResult = customerQuery.execute(session.sql);
-            for (Map.Entry<Map<PropertyInterface, Object>, Map<Object, Object>> entry : customerResult.entrySet()) {
-                String id = String.valueOf(entry.getKey().values().iterator().next());
-                String name = (String) entry.getValue().get("name");
-                DataObject terminalHandbookTypeObject = ((StaticCustomClass) LM.findClassByCompoundName("terminalHandbookType")).getDataObject("terminalHandbookTypeCustomer");
+                DataObject terminalHandbookTypeObject = ((StaticCustomClass) LM.findClassByCompoundName("terminalHandbookType")).getDataObject("terminalHandbookTypeLegalEntity");
                 String type = (String) LM.findLCPByCompoundName("idTerminalHandbookType").read(session, terminalHandbookTypeObject);
                 legalEntityInfoList.add(new LegalEntityInfo(id, name, type));
             }
