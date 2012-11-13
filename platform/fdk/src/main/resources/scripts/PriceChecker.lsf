@@ -42,7 +42,8 @@ FORM priceChecker 'Прайс чекер'
 FORM groupPriceChecker 'Группа прайс чекеров'
     OBJECTS grch=groupPriceChecker FIXED PANEL
     PROPERTIES(grch) nameStockGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery,
-                     filterSkuGroupMachinery, showFilterSkuGroupMachinery SHOWIF filterSkuGroupMachinery(grch)
+                     filterSkuGroupMachinery, showFilterSkuGroupMachinery SHOWIF filterSkuGroupMachinery(grch),
+                     namePriceListTypeGroupMachinery
 
     OBJECTS ch=priceChecker
     PROPERTIES(ch)  nameGroupMachineryMachinery, nppMachinery, descriptionMachinery, portMachinery, ADDOBJ, delete

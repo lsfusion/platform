@@ -70,6 +70,8 @@ TABLE receiptReturnDetail (receiptReturnDetail);
 cashRegisterReceipt (receipt) = cashRegisterZReport(zReportReceipt(receipt));
 numberCashRegisterReceipt 'Номер кассы' (receipt) = numberCashRegister(cashRegisterReceipt(receipt)) IN recognizeGroup;
 
+groupCashRegisterReceipt (receipt) = groupCashRegisterCashRegister(cashRegisterReceipt(receipt));
+
 cashRegisterModelReceipt (receipt) = cashRegisterModelCashRegister(cashRegisterReceipt(receipt));
 sidCashRegisterModelReceipt 'Код модели' (receipt) = sidModel(cashRegisterModelReceipt(receipt));
 
@@ -498,18 +500,21 @@ DESIGN zReports FROM DEFAULT{
 
 // ----------------------------- Расширяем форму отдела магазина нужными нам параметрами --------------------- //
 
-POSPriceListTypeDepartmentStore = DATA priceListType (departmentStore);
-namePOSPriceListTypeDepartmentStore 'Вид цен для POS' (departmentStore) = name(POSPriceListTypeDepartmentStore(departmentStore));
-
-EXTEND FORM departmentStore
-    PROPERTIES(d) namePOSPriceListTypeDepartmentStore
+usePriceListGroupCashRegister 'Использовать в POS вид цены напрямую' = DATA BOOLEAN (groupCashRegister);
+EXTEND FORM groupCashRegister
+    PROPERTIES(grc) usePriceListGroupCashRegister
 ;
 
 // ----------------------------- Кассовый модуль ---------------- //
 
-POSPriceSkuDepartmentStoreDateTime 'Цена в кассе' (sku, departmentStore, dateTime) =
-    pricePriceListTypeSkuStockDateTime(POSPriceListTypeDepartmentStore(departmentStore), sku, departmentStore, dateTime);
-currentPOSPriceSkuDepartmentStore 'Текущая цена' (sku, departmentStore) = POSPriceSkuDepartmentStoreDateTime(sku, departmentStore, currentDateTime());
+POSPriceListTypeReceipt (receipt) = priceListTypeGroupMachinery(groupCashRegisterReceipt(receipt));
+
+POSPriceSkuReceiptDateTime 'Цена в кассе' (sku, receipt, dateTime) =
+    IF usePriceListGroupCashRegister(groupCashRegisterReceipt(receipt)) THEN
+        pricePriceListTypeSkuStockDateTime(POSPriceListTypeReceipt(receipt), sku, departmentStoreReceipt(receipt), dateTime)
+    ELSE
+        transactionPriceBarcodeGroupMachinery(barcodeSku(sku), groupCashRegisterReceipt(receipt)) AND dateTime IS DATETIME;
+currentPOSPriceSkuReceipt 'Текущая цена' (sku, receipt) = POSPriceSkuReceiptDateTime(sku, receipt, currentDateTime());
 
 zReportCashRegister = DATA zReport (cashRegister);
 
@@ -670,7 +675,7 @@ createReceiptSaleDetail 'Добавить строку продажи' = ACTION 
         SET idBarcodeReceiptDetail(d) <- barcode;
         SET skuReceiptSaleDetail(d) <- sku;
         SET quantityReceiptSaleDetail(d) <- 1.0;
-        SET priceReceiptSaleDetail(d) <- POSPriceSkuDepartmentStoreDateTime(sku, departmentStoreReceipt(receipt), currentDateTime());
+        SET priceReceiptSaleDetail(d) <- currentPOSPriceSkuReceipt(sku, receipt);
         SET VATReceiptSaleDetail(d) <- VATRetailSkuDepartmentStoreDateTime(sku, departmentStoreReceipt(receipt), currentDateTime());
     }
 }
@@ -692,6 +697,7 @@ changeBarcodeSaleReceipt = ACTION (receipt) {
 // Поиск подбором
 FORM searchSkuSaleReceipt 'Поиск SKU'
     OBJECTS st = departmentStore FIXED PANEL
+    OBJECTS r = receipt FIXED PANEL
 
     TREE skuTree sk = skuGroup PARENT parentSkuGroup
     PROPERTIES READONLY skuTreeName = nameSkuGroupStock(sk, st)
@@ -702,11 +708,14 @@ FORM searchSkuSaleReceipt 'Поиск SKU'
     FILTERS           isParentSkuGroupSku(sk, s)
     ORDER BY          nameSkuStock
 
-    PROPERTIES(s, st) READONLY currentBalanceSkuStock HINTNOUPDATE, currentPOSPriceSkuDepartmentStore
+    PROPERTIES(s, st) READONLY currentBalanceSkuStock HINTNOUPDATE
+
+    PROPERTIES(s, r)  READONLY currentPOSPriceSkuReceipt
 
     FILTERGROUP filters
         FILTER 'Товары с остатком' 'F10' currentBalanceSkuStock(s, st) DEFAULT
 
+    HINTTABLE LIST POSPriceListTypeReceipt, departmentStoreReceipt, groupCashRegisterReceipt
 ;
 
 DESIGN searchSkuSaleReceipt FROM DEFAULT {
@@ -727,7 +736,7 @@ DESIGN searchSkuSaleReceipt FROM DEFAULT {
 
 searchSkuSaleReceipt 'Поиск' = ACTION (receipt) {
     SET zReportReceipt(receipt) <- currentZReport();
-    FORM searchSkuSaleReceipt OBJECTS st = departmentStoreReceipt(receipt) MODAL;
+    FORM searchSkuSaleReceipt OBJECTS st = departmentStoreReceipt(receipt), r = receipt MODAL;
     IF formResult() == formResult.ok THEN {
         EXEC createReceiptSaleDetail(receipt, chosenObject('s'), idBarcodeSku(chosenObject('s')));
     }
@@ -1068,6 +1077,8 @@ FORM POS
 
     EVENTS
         ON INIT EXEC createCurrentReceipt()
+
+    HINTTABLE LIST POSPriceListTypeReceipt, departmentStoreReceipt, groupCashRegisterReceipt
 ;
 
 DESIGN POS FROM DEFAULT {

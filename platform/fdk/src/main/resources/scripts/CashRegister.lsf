@@ -87,7 +87,8 @@ FORM groupCashRegister 'Группа касс'
     OBJECTS grc=groupCashRegister FIXED PANEL
     PROPERTIES(grc) nameStockGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery,
                     roundSalesGroupCashRegister,
-                    filterSkuGroupMachinery, showFilterSkuGroupMachinery SHOWIF filterSkuGroupMachinery(grc)
+                    filterSkuGroupMachinery, showFilterSkuGroupMachinery SHOWIF filterSkuGroupMachinery(grc),
+                    namePriceListTypeGroupMachinery
 
     OBJECTS c=cashRegister
     PROPERTIES(c)   nameGroupMachineryMachinery, nppMachinery, descriptionMachinery, portMachinery, numberCashRegister,

@@ -171,7 +171,16 @@ DESIGN labelTransactions FROM DEFAULT {
 
 // -------------------------------------------- Действия по печати ценников ------------------------------ //
 
-priceLabelBarcodeDepartmentStore = ABSTRACT NUMERIC[14,2] (barcode, departmentStore);
+priceListTypeLabelDepartmentStore = DATA priceListType (departmentStore);
+namePriceListTypeLabelDepartmentStore 'Вид цен для ценников' (departmentStore) = name(priceListTypeLabelDepartmentStore(departmentStore));
+
+EXTEND FORM departmentStore PROPERTIES(d) namePriceListTypeLabelDepartmentStore;
+
+priceLabelBarcodeDepartmentStore (barcode, departmentStore) = pricePriceListTypeSkuStockDateTime(priceListTypeLabelDepartmentStore(departmentStore),
+                                                                                                 skuBarcode(barcode),
+                                                                                                 departmentStore,
+                                                                                                 currentDateTime());
+
 labelTypeBarcodeDepartmentStoreDate = ABSTRACT labelType (barcode, departmentStore, DATE);
 countLabelBarcodeDepartmentStoreDate = ABSTRACT INTEGER (barcode, departmentStore, DATE);
 

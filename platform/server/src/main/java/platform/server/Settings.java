@@ -335,7 +335,7 @@ public class Settings {
     private int limitHintIncrementComplexity = 50;
     private int limitGrowthIncrementComplexity = 1;
     private int limitHintIncrementStat = 1000;
-    private int limitHintNoUpdateComplexity = 2000;
+    private int limitHintNoUpdateComplexity = 4000;
     private int limitWrapComplexity = 200;
 
     public boolean isNoExclusiveCompile() {

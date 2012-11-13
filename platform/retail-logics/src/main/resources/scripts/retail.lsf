@@ -163,6 +163,12 @@ END
 
 // ----------------------------------- Товарный классификатор ------------------------------------------ //
 
+EXTEND CLASS itemGroup : roundGroup;
+roundGroupSku(sku) += itemGroupItem(sku);
+
+EXTEND CLASS itemGroup : discountSkuGroup;
+inDiscountSkuGroupSku(discountSkuGroup, sku) += itemGroupItem(sku) == discountSkuGroup;
+
 pieceNumeratorItemGroup = DATA numerator (itemGroup);
 namePieceNumeratorItemGroup 'Нумератор штрих-кодов (для штучного товара)' (itemGroup) = name(pieceNumeratorItemGroup(itemGroup));
 
@@ -1206,9 +1212,6 @@ FORM papers 'Документы качества'
 @implementAccountDocumentLedgerZReport();
 
 // ------------------------------------------- Загрузка в ВУ --------------------------------------------- //
-
-priceBarcodeGroupMachinery (barcode, groupMachinery) += currentRetailPriceBarcodeDepartmentStore(barcode, stockGroupMachinery(groupMachinery));
-createPriceMachineryPriceTransactionSkuStock(sku, stock) += TRUE IF currentRetailPriceLedger(sku, stock);
 
 @defineMachineryPriceTransactionAttribute(labelFormat, 'Формат этикетки', INTEGER);
 
@@ -3993,7 +3996,6 @@ DESIGN printTimeTable FROM DEFAULT {
 
 // --------------------------------------- Печать ценников ---------------------------------------- //
 
-priceLabelBarcodeDepartmentStore (barcode, departmentStore) += currentRetailPriceBarcodeDepartmentStore(barcode, departmentStore);
 labelTypeBarcodeDepartmentStoreDate (barcode, departmentStore, date) += labelBarcodeDepartmentStoreDate(barcode, departmentStore, date);
 countLabelBarcodeDepartmentStoreDate (barcode, departmentStore, date) += valOverMultiplierBarcodeDepartmentDate(barcode, departmentStore, date);
 

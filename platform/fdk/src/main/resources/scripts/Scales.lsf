@@ -58,7 +58,8 @@ FORM groupScales 'Группа весов'
     PROPERTIES(grs) nameStockGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery,
                     directoryGroupScales,
                     pieceCodeGroupScales, weightCodeGroupScales,
-                    filterSkuGroupMachinery, showFilterSkuGroupMachinery SHOWIF filterSkuGroupMachinery(grs)
+                    filterSkuGroupMachinery, showFilterSkuGroupMachinery SHOWIF filterSkuGroupMachinery(grs),
+                    namePriceListTypeGroupMachinery
 
     OBJECTS s=scales
     PROPERTIES(s)   nameGroupMachineryMachinery, nppMachinery, descriptionMachinery, portMachinery, numberScales, nameModelMachinery,

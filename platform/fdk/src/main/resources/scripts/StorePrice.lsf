@@ -419,7 +419,6 @@ currentValueRetailVATLedger 'НДС, %' (sku, departmentStore) =
 CLASS ABSTRACT retailPriceLedger 'Изменение розничной цены';
 TABLE retailPriceLedger (retailPriceLedger);
 @defineSkuDepartmentStoreLedgerPrice(retailPrice, 'Розничная', NUMERIC[14,2]);
-currentRetailPriceBarcodeDepartmentStore 'Розничная цена' (barcode, departmentStore) = currentRetailPriceLedger(skuBarcode(barcode), departmentStore);
 
 costLedgerDepartmentStore 'Учет по себестоимости' = DATA BOOLEAN (departmentStore);
 EXTEND FORM departmentStore PROPERTIES(d) costLedgerDepartmentStore;

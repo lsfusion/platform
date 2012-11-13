@@ -155,7 +155,9 @@ FORM groupsTerminal 'Группы ТСД'
     OBJECTS grt=groupTerminal, t=terminal
     PROPERTIES(grt)  READONLY nameStockGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery,
                      nameGroupTerminalDocumentTypeGroupTerminal,
-                     filterSkuGroupMachinery
+                     filterSkuGroupMachinery, showFilterSkuGroupMachinery SHOWIF filterSkuGroupMachinery(grt),
+                     namePriceListTypeGroupMachinery
+
     PROPERTIES(grt)  ADDFORM, EDITFORM, delete
 
     PROPERTIES(t) READONLY nppMachinery, descriptionMachinery, portMachinery,

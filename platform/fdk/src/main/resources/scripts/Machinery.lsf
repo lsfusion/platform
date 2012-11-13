@@ -1,6 +1,6 @@
 MODULE Machinery;
 
-REQUIRE System, Stock, Barcode, DefaultData;
+REQUIRE System, Stock, Barcode, PriceList, DefaultData;
 
 //---------------------------- Сервера управления оборудования ----------------------------//
 
@@ -249,7 +249,7 @@ lastTransactionBarcodeGroupMachinery (barcode, groupMachinery) = lastOrderTransa
 transactionNameBarcodeGroupMachinery 'Текущее наименование в оборудовании' (barcode, groupMachinery)  =
     nameMachineryPriceTransactionBarcode(lastTransactionBarcodeGroupMachinery(barcode, groupMachinery), barcode);
 transactionPriceBarcodeGroupMachinery 'Текущая цена в оборудовании' (barcode, groupMachinery)  =
-    priceMachineryPriceTransactionBarcode(lastTransactionBarcodeGroupMachinery(barcode, groupMachinery), barcode);
+    priceMachineryPriceTransactionBarcode(lastTransactionBarcodeGroupMachinery(barcode, groupMachinery), barcode) PERSISTENT;
 
 //--------------------Сообщения об ошибках транзакций--------------------//
 CLASS machineryPriceTransactionError 'Ошибка';
@@ -407,7 +407,15 @@ snapshotGroupMachineryDepartmentStore 'Перезагрузить прайс' = 
 // Инкрементная загрузка
 GROUP incrementMachineryPriceGroup 'Инкрементная загрузка' : publicGroup;
 
-priceBarcodeGroupMachinery 'Цена' (barcode, groupMachinery) = ABSTRACT NUMERIC[14,2] (barcode, groupMachinery);
+// ------------------------------- Определение цены, по которой загружать ------------------------------- //
+
+priceListTypeGroupMachinery = DATA priceListType (groupMachinery);
+namePriceListTypeGroupMachinery 'Вид цен для POS' (groupMachinery) = name(priceListTypeGroupMachinery(groupMachinery));
+
+priceBarcodeGroupMachinery 'Цена' (barcode, groupMachinery) = pricePriceListTypeSkuStockDateTime(priceListTypeGroupMachinery(groupMachinery),
+                                                                                                 skuBarcode(barcode),
+                                                                                                 stockGroupMachinery(groupMachinery),
+                                                                                                 currentDateTime());
 
 createMachineryPriceTransactionSnapshot = SESSION DATA BOOLEAN ();
 
@@ -469,9 +477,8 @@ createBalanceMachineryPriceTransaction 'Остатки' = ACTION (stock) NEWSESS
     EXEC createMachineryPriceTransaction(stock AS stock);
 } CONFIRM IN incrementMachineryPriceGroup;
 
-createPriceMachineryPriceTransactionSkuStock = ABSTRACT BOOLEAN (sku, stock);
 createPriceMachineryPriceTransaction 'Все товары' = ACTION (stock) NEWSESSION AUTOAPPLY {
-    SET createMachineryPriceTransactionSku(sku) <- createPriceMachineryPriceTransactionSkuStock(sku, stock);
+    SET createMachineryPriceTransactionSku(sku) <- TRUE;
     SET createMachineryPriceTransactionComment() <- 'Инкрементная загрузка товаров';
     EXEC createMachineryPriceTransaction(stock AS stock);
 } CONFIRM IN incrementMachineryPriceGroup;
