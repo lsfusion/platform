@@ -16,19 +16,19 @@ END
 
 EXTEND FORM legalEntity
 
-    PROPERTIES(co) UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity
+    PROPERTIES(l) UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity
 ;
 
 EXTEND DESIGN legalEntity{
 
     column2 {
-        ADD co.docGroup;
+        ADD l.docGroup;
     }
 }
 
 EXTEND FORM legalEntities
 
-    PROPERTIES(co) UNPLegalEntity
+    PROPERTIES(l) UNPLegalEntity
 ;
 
 
