@@ -98,7 +98,7 @@ isAvailableDeclarationCStoWH 'Декларация доступна для ра�
     currentBalanceDeclaration (declaration)>0 AND
     dateTimeCStoWH(CStoWH) >= dateTimeDeclaration(declaration) AND
     customStoreCStoWH(CStoWH)==customStoreDeclaration(declaration) AND
-    companyStock(destinationStockCStoWH(CStoWH))==importerDeclaration(declaration);
+    legalEntityStock(destinationStockCStoWH(CStoWH))==importerDeclaration(declaration);
 
 isCustomsDeclarationCStoWH 'Отгрузка с СВХ декларации' (declaration, CStoWH) =
     customStoreDeclaration (declaration) == customStoreCStoWH (CStoWH);
@@ -385,7 +385,7 @@ useRetailPriceCStoWHDetail(CStoWHDetail) = destinationStockCStoWHDetail(CStoWHDe
 @implementConsignmentHeader(CStoWH, customStore);
 
 senderConsignment (consignment) += customStoreCStoWH(consignment);
-recipientConsignment (consignment) += companyStock(destinationStockCStoWH(consignment));
+recipientConsignment (consignment) += legalEntityStock(destinationStockCStoWH(consignment));
 
 consignmentConsignmentDetail (consignmentDetail) += CStoWHCStoWHDetail (consignmentDetail);
 skuConsignmentDetail (consignmentDetail) += skuCStoWHDetail (consignmentDetail);

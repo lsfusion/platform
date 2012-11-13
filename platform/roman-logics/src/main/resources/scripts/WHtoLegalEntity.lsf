@@ -57,7 +57,7 @@ nameCustomerInvoiceWHOut 'Покупатель' (invoice) = name(customerInvoice
 
 //----------------
 
-@defineDocumentContract(invoiceWHOut, contractSkuCustomer, singleContractSkuCustomerCompanyCustomer, companyInvoiceWHOut, customerInvoiceWHOut,
+@defineDocumentContract(invoiceWHOut, contractSkuCustomer, singleContractSkuCustomerLegalEntityCustomer, legalEntityInvoiceWHOut, customerInvoiceWHOut,
                         'Сторона A договора продажи товаров не соответствуют компании склада-отправителя',
                         'Сторона B договора продажи товаров не соответствуют компании склада-получателя');
 
@@ -198,7 +198,7 @@ sumInvoiceInvoiceWHOutDetail 'Сумма с НДС' (invoiceWHOutDetail) = suppl
 @implementConsignmentHeader(invoiceWHOut, warehouse);
 //isCommissionInvoiceWHOutDetail 'Продажа на комиссию' (invoiceWHOutDetail) = isCommissionInvoiceWHOut(invoiceWHOutInvoiceWHOutDetail(invoiceWHOutDetail));
 
-senderConsignment (consignment) += companyWarehouse(warehouseInvoiceWHOut(consignment));
+senderConsignment (consignment) += legalEntityWarehouse(warehouseInvoiceWHOut(consignment));
 recipientConsignment (consignment) += customerInvoiceWHOut(consignment);
 consignmentConsignmentDetail (consignmentDetail) += invoiceWHOutInvoiceWHOutDetail(consignmentDetail);
 skuConsignmentDetail (consignmentDetail) += skuInvoiceWHOutDetail (consignmentDetail);

@@ -171,8 +171,8 @@ inInnerOrderOrderPicking (innerOrder, orderPicking) = innerOrderOrderPicking(ord
 
 @defineDocumentDetailStock(orderPicking, stock, 'Склад-отправитель');
 
-companyOrderPicking(orderPicking) = companyStock(stockOrderPicking(orderPicking));
-destinationCompanyOrderPicking(orderPicking) = companyStock(destinationStockOrderPicking(orderPicking));
+companyOrderPicking(orderPicking) = legalEntityStock(stockOrderPicking(orderPicking));
+destinationCompanyOrderPicking(orderPicking) = legalEntityStock(destinationStockOrderPicking(orderPicking));
 
 @defineDocumentAggregationHeaderNumber(innerOrder, orderPicking);
 

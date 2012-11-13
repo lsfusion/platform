@@ -14,6 +14,7 @@ REQUIRE System,
         Supplier,
         POS,
         Warehouse,
+        Company,
         RomanLogicsModule;
 
 PRIORITY Stock, LegalEntity, Store, RomanLogicsModule;
@@ -426,8 +427,8 @@ FORM skuDialog 'SKU'
 
 //----------------------------- для печати маркировок ----------------------------------------------------------------//
 
-nameImporterSku 'Наименование' (importer, sku) = name(importer) AND importer IS company AND sku IS sku;
-addressImporterSku 'Адрес' (importer, sku) = addressLegalEntity(importer) AND importer IS company AND sku IS sku;
+nameImporterSku 'Наименование' (importer, sku) = name(importer) AND importer IS legalEntity AND sku IS sku;
+addressImporterSku 'Адрес' (importer, sku) = addressLegalEntity(importer) AND importer IS legalEntity AND sku IS sku;
 
 localeLanguageCompany (company) = localeLanguage(languageLegalEntity(company));
 mainCompositionSkuCompany 'Состав (иностр.)' (sku, company) = mainCompositionSkuLanguage(sku, languageLegalEntity(company)) MINCHARWIDTH 20 MAXCHARWIDTH 50 PREFCHARWIDTH 50;
@@ -476,7 +477,7 @@ EXTEND DESIGN stores {
 
 FORM destinations 'Магазины'
     OBJECTS d=destination
-    PROPERTIES(d) READONLY name, nameStoreTypeStore, nameCompanyStore, nameRegionStore
+    PROPERTIES(d) READONLY name, nameStoreTypeStore, nameLegalEntityStore, nameRegionStore
     DIALOG destination OBJECT d
 ;
 

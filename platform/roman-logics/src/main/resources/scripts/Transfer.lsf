@@ -12,6 +12,7 @@ REQUIRE System,
         StorePriceTransfer,
         Consignment,
         AccountDocument,
+        ContractCompany,
         RomanLogicsModule;
 
 PRIORITY Stock, RomanLogicsModule;
@@ -29,7 +30,7 @@ CLASS transferOutBatchDetail 'Строка перемещения товаров
 @defineDocumentCurrency(transferOut);
 @deriveDocumentCurrency(transferOut, stock);
 
-CONSTRAINT companyTransferOut(transferOut) != destinationCompanyTransferOut(transferOut) CHECKED BY destinationStockTransferOut
+CONSTRAINT legalEntityTransferOut(transferOut) != destinationLegalEntityTransferOut(transferOut) CHECKED BY destinationStockTransferOut
     MESSAGE 'Перемещение товаров должно идти между складами одной компании';
 
 @defineDocumentDetailSkuArticle(transferOut);
@@ -45,7 +46,7 @@ isCommissionTransferOut 'Продажа на комиссию' (transferOut) = T
 CONSTRAINT typeContractSkuDate(commissionContractSkuTransferOut(transferOut), dateTransferOut(transferOut)) != contractSkuType.commission
     CHECKED BY commissionContractSkuTransferOut MESSAGE 'Для перемещения выбран договор, который не является договором комиссии';
 
-CONSTRAINT partyBContract(commissionContractSkuTransferOut(transferOut)) != companyTransferOut(transferOut)
+CONSTRAINT partyBContract(commissionContractSkuTransferOut(transferOut)) != legalEntityTransferOut(transferOut)
     CHECKED BY commissionContractSkuTransferOut MESSAGE 'Для перемещения выбран договор комиссии, у которого покупатель не совпадает с компанией склада';
 
 EXTEND FORM transferOut
@@ -99,8 +100,8 @@ skipSkuLedger (ledger) += skipSkuLedgerTransferOutDetail(ledger);
 @defineConsignment(transferOut);
 @implementConsignmentHeader(transferOut, stock);
 
-senderConsignment (consignment) += companyStock(stockTransferOut(consignment));
-recipientConsignment (consignment) += companyStock(destinationStockTransferOut(consignment));
+senderConsignment (consignment) += legalEntityStock(stockTransferOut(consignment));
+recipientConsignment (consignment) += legalEntityStock(destinationStockTransferOut(consignment));
 consignmentConsignmentDetail (consignmentDetail) += transferOutTransferOutBatchDetail (consignmentDetail);
 skuConsignmentDetail (consignmentDetail) += skuTransferOutBatchDetail (consignmentDetail);
 quantityConsignmentDetail (consignmentDetail) += quantityTransferOutBatchDetail (consignmentDetail);

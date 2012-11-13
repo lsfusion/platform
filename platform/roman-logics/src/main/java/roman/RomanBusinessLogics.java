@@ -22,6 +22,7 @@ import java.util.Arrays;
 public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     public ScriptingLogicsModule Stock;
     public ScriptingLogicsModule LegalEntity;
+    public ScriptingLogicsModule Company;
     public ScriptingLogicsModule Store;
     public ScriptingLogicsModule Numerator;
     public RomanLogicsModule RomanLM;
@@ -48,6 +49,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         super.createModules();
         Stock = addModuleFromResource("/scripts/Stock.lsf");
         LegalEntity = addModuleFromResource("/scripts/LegalEntity.lsf");
+        Company = addModuleFromResource("/scripts/Company.lsf");
         Store = addModuleFromResource("/scripts/Store.lsf");
         Numerator = addModuleFromResource("/scripts/Numerator.lsf");
         RetailCRM = addModuleFromResource("/scripts/RetailCRM.lsf");
@@ -131,7 +133,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             "/scripts/Backup.lsf",
             "/scripts/Agreement.lsf",
             "/scripts/PriceList.lsf",
-            "/scripts/Label.lsf"
+            "/scripts/Label.lsf",
+            "/scripts/ContractCompany.lsf"
         );
         RomanLM = addModule(new RomanLogicsModule(LM, this));
         RomanLM.setRequiredModules(Arrays.asList("System", "Utils", "Hierarchy", "Historizable", "Numerator", "Stock", "Document", "Country"));

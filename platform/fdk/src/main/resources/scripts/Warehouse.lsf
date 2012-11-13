@@ -23,7 +23,7 @@ stockGroupStock (stock) += groupWarehouseWarehouse (stock);
 
 legalEntityWarehouse (warehouse) = DATA legalEntity (warehouse);
 nameLegalEntityWarehouse 'Компания' (warehouse) = name(legalEntityWarehouse(warehouse)) IN baseGroup;
-//companyStock (stock) += companyWarehouse(stock);
+legalEntityStock (stock) += legalEntityWarehouse(stock);
 
 addressWarehouse 'Адрес' (warehouse) = DATA STRING[100] (warehouse);
 addressStock(stock) += addressWarehouse(stock);

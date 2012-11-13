@@ -91,10 +91,10 @@ changeQuantitySkuStockTransferTable = ACTION (sku, stock, transferTable) {
 //--Внутренний заказ
 
 quantityPositiveSkuCompanyTransferTable (sku, company, transferTable)= GROUP SUM quantitySkuStockTransferTable(sku, stock, transferTable)
-    IF quantitySkuStockTransferTable (sku, stock, transferTable) >0 BY sku, companyStock(stock), transferTable;
+    IF quantitySkuStockTransferTable (sku, stock, transferTable) >0 BY sku, legalEntityStock(stock), transferTable;
 
 quantityNegativeSkuCompanyTransferTable (sku, company, transferTable)= GROUP SUM quantitySkuStockTransferTable(sku, stock, transferTable)
-    IF quantitySkuStockTransferTable (sku, stock, transferTable) <0 BY sku, companyStock(stock), transferTable;
+    IF quantitySkuStockTransferTable (sku, stock, transferTable) <0 BY sku, legalEntityStock(stock), transferTable;
 
 
 maxPositiveSkuTransferTable (sku, transferTable)= GROUP MAX quantitySkuStockTransferTable(sku, stock, transferTable)

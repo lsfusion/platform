@@ -1,0 +1,70 @@
+MODULE Company;
+
+REQUIRE LegalEntity;
+
+NAMESPACE LegalEntity;
+
+CLASS company 'Компания' : legalEntity, taxUnitGroup;
+TABLE company (company);
+
+// ---------------------------------------- Формы для ввода компаний ------------------------------------- //
+
+FORM company 'Компания'
+    OBJECTS co=company FIXED PANEL
+    PROPERTIES(co) name, nameCountryLegalEntity, nameLanguageLegalEntity, nameCurrencyLegalEntity,
+                   nameOwnershipLegalEntity, shortNameOwnershipLegalEntity, fullNameLegalEntity,
+                   addressLegalEntity ON CHANGE EXEC dialogAddressLegalEntity(co),
+                   postAddressLegalEntity ON CHANGE EXEC dialogPostAddressLegalEntity(co),
+                   managerLegalEntity ON CHANGE EXEC dialogManagerLegalEntity(co),
+                   accountantLegalEntity ON CHANGE EXEC dialogAccountantLegalEntity(co),
+                   phoneLegalEntity ON CHANGE EXEC dialogPhoneLegalEntity(co),
+                   emailLegalEntity, siteLegalEntity
+
+    OBJECTS a=account
+    PROPERTIES(a)  numberAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount, MFOBankAccount, noteAccount, ADDOBJ, delete
+    FILTERS legalEntityAccount(a) == co
+
+    EDIT company OBJECT co
+;
+
+DESIGN company FROM DEFAULT {
+    main{
+       preferredSize = (1024, 768);
+       co.box {
+            childConstraints = TO THE RIGHT;
+
+            NEW column1 {
+                childConstraints = TO THE BOTTOM;
+
+                NEW row11 {
+                    childConstraints = TO THE RIGHT;
+                    ADD PROPERTY(name(co));
+                    ADD PROPERTY(nameCountryLegalEntity);
+                    ADD PROPERTY(nameCurrencyLegalEntity);
+                    ADD PROPERTY(nameLanguageLegalEntity);
+                }
+                ADD co.lawGroup;
+            }
+
+            NEW column2 {
+                childConstraints = TO THE BOTTOM;
+
+                ADD co.contactGroup;
+                ADD co.managementGroup;
+            }
+       }
+
+       NEW extendContainer BEFORE functions.box {
+            type = TABBED;
+            ADD a.box;
+       }
+   }
+}
+
+FORM companies 'Компании'
+
+    OBJECTS co=company
+    PROPERTIES(co) READONLY name, fullNameLegalEntity, shortNameOwnershipLegalEntity,
+                            numberAccountLegalEntity, addressLegalEntity, phoneLegalEntity
+    PROPERTIES(co) ADDFORM, EDITFORM, delete
+;

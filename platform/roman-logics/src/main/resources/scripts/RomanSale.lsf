@@ -7,6 +7,7 @@ REQUIRE System,
         RomanStock,
         DocumentTransfer,
         Contract,
+        ContractCompany,
         RetailPrice,
         StorePriceTransfer,
         WholesalePrice,
@@ -39,14 +40,14 @@ EXTEND FORM saleOuts
     PROPERTIES(o) READONLY importerPriceSaleOutBatchDetail, supplierPriceSaleOutBatchDetail
 ;
 
-CONSTRAINT companySaleOut(saleOut) == destinationCompanySaleOut(saleOut) CHECKED BY destinationStockSaleOut
+CONSTRAINT legalEntitySaleOut(saleOut) == destinationLegalEntitySaleOut(saleOut) CHECKED BY destinationStockSaleOut
     MESSAGE 'Продажа товаров должна идти между складами разных компаний';
 
 @defineDocumentDetailSkuArticle(saleOut);
 @extendFormDocumentDetailSkuArticle(saleOut, d, saleOut);
 @extendFormDocumentDetailSkuArticleReadonly(saleOuts, d, saleOut);
 
-@defineDocumentContract(saleOut, contractSkuCompany, singleContractSkuCompanyCompanyCompany, companySaleOut, destinationCompanySaleOut,
+@defineDocumentContract(saleOut, contractSkuCompany, singleContractSkuCompanyCompanyCompany, legalEntitySaleOut, destinationLegalEntitySaleOut,
                         'Сторона A договора продажи товаров не соответствуют компании склада-отправителя',
                         'Сторона B договора продажи товаров не соответствуют компании склада-получателя');
 
@@ -97,8 +98,8 @@ skipSkuLedger (ledger) += skipSkuLedgerSaleOutDetail(ledger);
 @implementConsignmentHeader(saleOut, stock);
 isCommissionSaleOutBatchDetail 'Продажа на комиссию' (saleOutBatchDetail) = isCommissionSaleOut(saleOutSaleOutBatchDetail(saleOutBatchDetail));
 
-senderConsignment (consignment) += companyStock(stockSaleOut(consignment));
-recipientConsignment (consignment) += companyStock(destinationStockSaleOut(consignment));
+senderConsignment (consignment) += legalEntityStock(stockSaleOut(consignment));
+recipientConsignment (consignment) += legalEntityStock(destinationStockSaleOut(consignment));
 consignmentConsignmentDetail (consignmentDetail) += saleOutSaleOutBatchDetail (consignmentDetail);
 skuConsignmentDetail (consignmentDetail) += skuSaleOutBatchDetail (consignmentDetail);
 quantityConsignmentDetail (consignmentDetail) += quantitySaleOutBatchDetail (consignmentDetail);
@@ -239,7 +240,7 @@ useRetailPriceSaleInBatchDetail(detail) = [stockSaleInBatchDetail(detail) IS dep
 EXTEND CLASS saleInBatchDetail : batchA;
 @implementBatchCustom(saleInBatch, sku, stock, cost);
 quantityBatch(batch) += quantitySaleInBatchDetail(batch);
-ownerBatchA (batch) += IF isCommissionSaleInBatchDetail(batch) THEN companyStock(destinationStockSaleInBatchDetail(batch)) ELSE companyStock(stockSaleInBatchDetail(batch));
+ownerBatchA (batch) += IF isCommissionSaleInBatchDetail(batch) THEN legalEntityStock(destinationStockSaleInBatchDetail(batch)) ELSE legalEntityStock(stockSaleInBatchDetail(batch));
 commissionContractSkuBatchA (batch) += contractSkuCompanySaleInBatchDetail(batch) AND isCommissionSaleInBatchDetail(batch);
 importerPriceBatchA(batch) += importerPriceSaleInBatchDetail(batch);
 supplierPriceBatchA(batch) += supplierPriceSaleInBatchDetail(batch);

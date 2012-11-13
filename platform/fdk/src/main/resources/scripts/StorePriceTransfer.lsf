@@ -113,7 +113,7 @@ META defineDocumentTransferPriceAct (object, caption, captionDetail, skuProp, st
 
     dateListRegister (inputListRegister) += dateTransferPriceAct###object (inputListRegister);
     departmentStoreListRegister (inputListRegister) += departmentStoreTransferPriceAct###object (inputListRegister);
-    senderListRegister (inputListRegister) += companyStock (stockProp###object##Out(object##OutTransferPriceAct###object(inputListRegister)));
+    senderListRegister (inputListRegister) += legalEntityStock (stockProp###object##Out(object##OutTransferPriceAct###object(inputListRegister)));
     shipperListRegister (inputListRegister) += name###stockProp###object##Out(object##OutTransferPriceAct###object(inputListRegister));
 
     quantityListRegisterDetailListRegister (inputListRegister) += quantityTransferPriceAct###object##DetailTransferPriceAct###object (inputListRegister);

@@ -110,7 +110,7 @@ META implementSkuLedgerOutFIFOBalanceB (concrete, skuProp, stockProp)
 END
 
 // ------------------------------------------------- Внутренние партии ----------------------------------------- //
-ownerBatchA = ABSTRACT company(batchA) PERSISTENT;
+ownerBatchA = ABSTRACT legalEntity(batchA) PERSISTENT;
 nameOwnerBatchA 'Собственник' (batch) = name(ownerBatchA(batch)) IN baseGroup;
 
 commissionContractSkuBatchA = ABSTRACT contractSku (batchA) PERSISTENT INDEXED;

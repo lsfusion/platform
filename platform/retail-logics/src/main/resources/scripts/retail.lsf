@@ -664,7 +664,7 @@ CONSTRAINT intersectNaturalLoss(interval1, interval2) AND interval1 != interval2
            OR dayToNaturalLossItemGroupDetail(subNaturalLossItemGroupDetail) > 31
            CHECKED BY dayToNaturalLossItemGroupDetail MESSAGE 'Задайте корректный день месяца';
 
-FORM naturalLossItem 'Справочник норм естественной убыли'
+FORM naturalLossItemGroups 'Справочник норм естественной убыли'
 
     TREE treeNaturalLossItem a=STRING[3], n=naturalLossItemGroup
     PROPERTIES READONLY OBJVALUE(a)
@@ -680,7 +680,7 @@ FORM naturalLossItem 'Справочник норм естественной у�
     ORDER BY name
 ;
 
-DESIGN naturalLossItem FROM DEFAULT {
+DESIGN naturalLossItemGroups FROM DEFAULT {
 
     NEW topContainer {
 
@@ -711,46 +711,6 @@ DESIGN naturalLossItem FROM DEFAULT {
         caption = 'Удалить';
         askConfirm = TRUE;
     }
-}
-
-FORM naturalLossItems 'Справочник норм естественной убыли'
-
-    TREE treeNaturalLossItem a=STRING[3], n=naturalLossItemGroup
-    PROPERTIES READONLY OBJVALUE(a), name(n)
-    ORDER BY name
-
-    OBJECTS sg=subNaturalLossItemGroup, d=subNaturalLossItemGroupDetail
-    PROPERTIES(sg) READONLY name, codeSubNaturalLossItemGroup
-    PROPERTIES(d) READONLY dayFromNaturalLossItemGroupDetail, nameMonthFromNaturalLossItemGroupDetail,
-                           dayToNaturalLossItemGroupDetail, nameMonthToNaturalLossItemGroupDetail,
-                           percentNaturalLossItemGroupDetail
-    FILTERS stringEqualsAll(a), inParentSubNaturalLossItemGroup(n, sg), inSubNaturalLossItemGroup(sg, d)
-    ORDER BY name
-
-    DIALOG subNaturalLossItemGroup OBJECT sg
-;
-
-DESIGN naturalLossItems FROM DEFAULT {
-
-    NEW topContainer {
-
-        type = SPLITH;
-        childConstraints = TO THE RIGHT;
-
-        ADD treeNaturalLossItem.tree.box;
-
-        NEW firstCase {
-
-            type = SPLITV;
-            childConstraints = TO THE BOTTOM;
-            fillHorizontal = 4;
-
-            ADD sg.box;
-            ADD d.box;
-        }
-    }
-
-    ADD functions.box;
 }
 
 //------------------------------------ Товар для подразделения с историей -------------------------------------------//
@@ -2228,16 +2188,6 @@ namePositionEmployeeEmployee 'Должность' (employee) = namePositionEmplo
 
 //----------------------------------------------- Списание товара ---------------------------------------------------//
 
-
-EXTEND FORM writeOffs
-    PROPERTIES     FORCE PANEL toPrintWriteOff(w)
-;
-
-EXTEND DESIGN writeOffs {
-    printContainer {
-        ADD PROPERTY (toPrintWriteOff);
-    }
-}
 // Проводим по регистру
 
 limitOutFIFOSkuLedgerBatch(ledger, batch) += IF batchWriteOffDetail(ledger) THEN
@@ -6764,8 +6714,6 @@ NAVIGATOR {
             ADD itemGroups;
             ADD UOMs;
             ADD wares;
-            ADD statisticGroups;
-            ADD naturalLossItem;
             ADD papers;
         }
         NEW contragents 'Контрагенты' {
@@ -6789,6 +6737,7 @@ NAVIGATOR {
     NEW warehouse 'Управление складом' TO formsToolbar {
         ADD inventoryNavigator {
             ADD naturalLosses;
+            ADD naturalLossItemGroups;
         }
         ADD writeOffNavigator;
 
@@ -6797,19 +6746,22 @@ NAVIGATOR {
         }
         ADD stockCost;
         ADD stockBalance;
-    }
-
-    NEW logistics 'Логистика' TO formsToolbar {
-        NEW itemInnerFlows 'Внутренние перемещения' {
-            ADD innerFlows;
-            ADD innerArrivals;
-        }
-        NEW logisticsCatalog 'Справочники' {
+        NEW warehouseCatalog 'Справочники' {
             ADD warehouses;
         }
-        ADD trucks;
-        ADD routes;
-        ADD trips;
+    }
+
+    NEW sale 'Управление продажами' TO formsToolbar {
+        ADD saleSaleNavigator;
+        ADD saleReturnNavigator;
+        ADD priceListNavigator{
+            ADD agreements;
+            ADD priceIntervals;
+        }
+        ADD salesNavigator;
+        NEW saleCatalog 'Справочники' {
+            ADD customers;
+        }
     }
 
     NEW retail 'Розничная торговля' TO formsToolbar {
@@ -6825,6 +6777,10 @@ NAVIGATOR {
             ADD wastages;
             ADD wastageCommitteeDialog;
         }
+        NEW itemInnerFlows 'Внутренние перемещения' {
+            ADD innerFlows;
+            ADD innerArrivals;
+        }
         ADD POSNavigator;
         NEW retailStatement 'Безналичный расчет' {
             ADD specifications;
@@ -6839,28 +6795,25 @@ NAVIGATOR {
             ADD repricings;
         }
         ADD retailCRMNavigator;
+        NEW statistics 'Статистика' {
+            ADD torgSales;
+            ADD statisticalReport;
+            ADD statisticGroups;
+        }
+        NEW accountDocuments 'Бухгалтерские документы' {
+            ADD sumAccountDocumentLedger;
+            ADD priceChangeDocuments;
+            ADD sumMotionContainerDepartmentPrint;
+        }
         NEW retailCatalog 'Справочники' {
             ADD stores;
         }
-        NEW retailReports 'Сводная информация' {
-            ADD salesNavigator;
-            ADD sumAccountDocumentLedger;
-            ADD priceChangeDocuments;
-            ADD statisticalReport;
-            ADD torgSales;
-            ADD sumMotionContainerDepartmentPrint;
-        }
     }
-    NEW sale 'Оптовая торговля' TO formsToolbar {
-        ADD saleSaleNavigator;
-        ADD saleReturnNavigator;
-        ADD priceListNavigator{
-            ADD agreements;
-            ADD priceIntervals;
-        }
-        NEW saleCatalog 'Справочники' {
-            ADD customers;
-        }
+
+    NEW transport 'Управление транспортом' TO formsToolbar {
+        ADD trucks;
+        ADD routes;
+        ADD trips;
     }
 
     ADD machineryNavigator TO formsToolbar;

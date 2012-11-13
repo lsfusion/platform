@@ -190,7 +190,7 @@ FORM writeOffPrint 'Акт списания' PRINT
     EDIT writeOff OBJECT w
 ;
 
-toPrintWriteOff 'Акт списания' (writeOff) = ACTION FORM writeOffPrint OBJECTS w IMAGE 'print.png' IN printGroup;
+printWriteOff 'Акт списания' (writeOff) = ACTION FORM writeOffPrint OBJECTS w IMAGE 'print.png' IN printGroup;
 
 // --------------------------- Формы списания ---------------------------------
 
@@ -269,6 +269,8 @@ FORM writeOffs 'Списания'
 
     PROPERTIES (w) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
 
+    PROPERTIES (w) FORCE PANEL printWriteOff
+
     OBJECTS d=writeOffDetail
     PROPERTIES (d) READONLY indexWriteOffDetail, idBarcodeSkuWriteOffDetail, nameSkuWriteOffDetail, shortNameUOMSkuWriteOffDetail, descriptionBatchWriteOffDetail,
                    quantityWriteOffDetail, priceWriteOffDetail, sumWriteOffDetail
@@ -305,6 +307,7 @@ DESIGN writeOffs FROM DEFAULT {
                     title = 'Печать';
                     childConstraints = TO THE BOTTOM;
                     fillVertical = 1.0; // todo : иначе кнопка не всегда показывается, нужно будет пофиксить как-нибудь
+                    ADD PROPERTY(printWriteOff);
                 }
             }
         }

@@ -8,7 +8,7 @@ NAMESPACE POS;
 
 userSkipAReceiptDetail (receiptDetail) = DATA BOOLEAN (receiptDetail);
 
-diffCompanyReceipt (receipt) = companyCashRegister (cashRegisterZReport(zReportReceipt(receipt))) != companyDepartmentStore (departmentStoreReceipt (receipt));
+diffCompanyReceipt (receipt) = legalEntityCashRegister (cashRegisterZReport(zReportReceipt(receipt))) != legalEntityDepartmentStore (departmentStoreReceipt (receipt));
 
 skipAReceiptSaleDetail 'Не бухг.' (receiptDetail) = UNION OVERRIDE diffCompanyReceipt (receiptReceiptDetail (receiptDetail)),
                                                             userSkipAReceiptDetail (receiptDetail) PERSISTENT;

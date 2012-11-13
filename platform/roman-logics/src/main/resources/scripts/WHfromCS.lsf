@@ -357,7 +357,7 @@ printMarksSkuFreightUnit 'Печать маркировок товаров' (WHf
     SET countSku(sku) <- NULL;
     SET shouldBePrintSku(sku) <- TRUE IF quantitySkuFreightUnitCStoWH(sku, currentFreightUnit(WHfromCSR), CStoWHWHfromCSI(WHfromCSIWHfromCSR(WHfromCSR)));
     SET countSku(sku) <- castToInteger(quantitySkuFreightUnitCStoWH(sku, currentFreightUnit(WHfromCSR), CStoWHWHfromCSI(WHfromCSIWHfromCSR(WHfromCSR))));
-    FORM printMarksDocument OBJECTS dt = dateTimeWHfromCSR(WHfromCSR), imp = companyStock(stockWHfromCSR(WHfromCSR)), c = currencyStock(stockWHfromCSR(WHfromCSR)) MODAL;
+    FORM printMarksDocument OBJECTS dt = dateTimeWHfromCSR(WHfromCSR), imp = legalEntityStock(stockWHfromCSR(WHfromCSR)), c = currencyStock(stockWHfromCSR(WHfromCSR)) MODAL;
 
 } CONFIRM;
 
@@ -378,7 +378,7 @@ printMarksSkuWHfromCSR 'Печать маркировок товаров' (WHfro
         SET shouldBePrintSku(sku) <- TRUE IF quantitySkuInWHfromCSR(WHfromCSR, sku);
         SET countSku(sku) <- castToInteger(quantitySkuInWHfromCSR(WHfromCSR, sku));
     }
-    FORM printMarksDocument OBJECTS dt = dateTimeWHfromCSR(WHfromCSR), imp = companyStock(stockWHfromCSR(WHfromCSR)), c = currencyStock(stockWHfromCSR(WHfromCSR)) MODAL;
+    FORM printMarksDocument OBJECTS dt = dateTimeWHfromCSR(WHfromCSR), imp = legalEntityStock(stockWHfromCSR(WHfromCSR)), c = currencyStock(stockWHfromCSR(WHfromCSR)) MODAL;
 
 } CONFIRM TOOLBAR;
 
@@ -505,7 +505,7 @@ quantityArticleColorWHfromCSRDetail (WHfromCSRDetail) =
 
 backgroundArticleColorWHfromCSRDetail 'Цвет' (WHfromCSRDetail) = RGB(255, 128, 128) IF quantityArticleColorWHfromCSRDetail(WHfromCSRDetail) == 1;
 
-nameCompanyWHfromCSR 'компания'(WHfromCSR) = name(companyStock(stockWHfromCSR(WHfromCSR)));
+nameCompanyWHfromCSR 'компания'(WHfromCSR) = name(legalEntityStock(stockWHfromCSR(WHfromCSR)));
 
 FORM WHfromCSR 'Приемка на оптовый склад'
 

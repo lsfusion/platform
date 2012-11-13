@@ -31,7 +31,7 @@ stockGroupStock (stock) += groupDefectStockDefectStock (stock);
 
 companyDefectStock (defectStock) = DATA company (defectStock);
 nameCompanyDefectStock 'Компания' (defectStock) = name(companyDefectStock(defectStock)) IN baseGroup;
-companyStock (stock) += companyDefectStock(stock);
+legalEntityStock (stock) += companyDefectStock(stock);
 
 addressDefectStock 'Адрес' (defectStock) = DATA STRING[100] (defectStock);
 addressStock(stock) += addressDefectStock(stock);

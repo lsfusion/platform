@@ -13,7 +13,7 @@ TABLE stock(stock);
 stockGroupStock (stock) = ABSTRACT stockGroup (stock) PERSISTENT;
 nameStockGroupStock 'Группа' (stock) = name(stockGroupStock (stock));
 
-legalEntityStock (stock) = DATA legalEntity (stock) PERSISTENT;
+legalEntityStock (stock) = ABSTRACT legalEntity (stock) PERSISTENT;
 nameLegalEntityStock 'Компания' (stock) = name(legalEntityStock(stock));
 countryStock (stock) = countryLegalEntity(legalEntityStock(stock)) PERSISTENT;
 currencyStock (stock) = currencyLegalEntity(legalEntityStock(stock)) PERSISTENT;

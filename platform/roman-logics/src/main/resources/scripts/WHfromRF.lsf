@@ -85,7 +85,8 @@ shortNameCurrencyWHfromRF 'Валюта фрахта' (WHfromRF) = shortNameCurr
 companyDataWHfromRF 'Импортёр (ИД)' = DATA company(WHfromRF) IN idGroup;
 nameCompanyDataWHfromRF 'Импортёр' = name(companyDataWHfromRF(WHfromRF)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
 
-overCompanyWHfromRF 'Импортёр (ИД)' (WHfromRF) = UNION OVERRIDE companyWHfromRF(WHfromRF), companyDataWHfromRF(WHfromRF);
+overCompanyWHfromRF 'Импортёр (ИД)' (WHfromRF) = UNION OVERRIDE legalEntityWHfromRF(WHfromRF) IF legalEntityWHfromRF(WHfromRF) IS company,
+                                                                companyDataWHfromRF(WHfromRF);
 
 costWHfromRFDetail 'Себестоимость' (WHfromRFDetail) = priceRFFreightSku(freightWHfromRF(WHfromRFWHfromRFDetail(WHfromRFDetail)), skuWHfromRFDetail(WHfromRFDetail));
 
@@ -496,7 +497,7 @@ skipASkuLedger (ledger) += ledger IS WHfromRFDetail;
 FORM WHfromRF 'Приход товара из РФ'
 
     OBJECTS w = WHfromRF FIXED PANEL, d = WHfromRFDetail
-    PROPERTIES(w) objectClassName, nameNumeratorObject, numberObject, seriesObject, dateWHfromRF, timeWHfromRF, nameCompanyWHfromRF, nameCompanyDataWHfromRF,
+    PROPERTIES(w) objectClassName, nameNumeratorObject, numberObject, seriesObject, dateWHfromRF, timeWHfromRF, nameLegalEntityWHfromRF, nameCompanyDataWHfromRF,
                   nameFreightWHfromRF, nameStockWHfromRF, barcodeCurrentFreightUnit, fillWHfromRFDetailsSkuFreightUnit,
                   printMarksSkuFreightUnit, printMarksSkuWHfromRF TODRAW d FORCE PANEL
     PROPERTIES(w) READONLY quantityRemainedPositionSkuWHfromRF SHOWIF barcodeCurrentFreightUnit(w),
@@ -667,7 +668,7 @@ FORM WHfromRFs 'Приход товара из РФ'
 
     PROPERTIES(w) READONLY objectClassName, numberObject, seriesObject, dateWHfromRF, timeWHfromRF, nameFreightWHfromRF, nameStockWHfromRF,
                            countWHfromRFDetailWHfromRF, quantityWHfromRFDetailWHfromRF, statusRecWHfromRF,
-                           descriptionFreightWHfromRF, nameCompanyWHfromRF, accountSumWHfromRF
+                           descriptionFreightWHfromRF, nameLegalEntityWHfromRF, accountSumWHfromRF
 
     PROPERTIES(w) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
 
