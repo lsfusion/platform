@@ -1,6 +1,6 @@
 MODULE Invoice;
 
-REQUIRE Order, Consignment;
+REQUIRE Order, Consignment, Supplier;
 
 
 //----------------------------------------------- Накладная ---------------------------------------------------//
@@ -33,7 +33,7 @@ META defineInvoice(sign, stockProp)
     @defineDocumentInterfaceCurrency(invoice);
     @deriveDocumentCurrency(userInvoice, stockProp);
 
-
+//    @defineDocumentInterfaceSupplier(invoice);
 //    @defineDocumentInterfaceContract(invoice, contractSku###contact, singleContractSku###contact###contactA###contactB, contactA###Invoice, contactB###Invoice,
 //                                     'Сторона A договора накладной не соответствует компании склада-отправителя',
 //                                     'Сторона B договора накладной не соответствует покупателю');

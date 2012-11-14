@@ -142,12 +142,12 @@ FORM supplier 'Поставщик'
 
     OBJECTS ag=agreement
     PROPERTIES(ag, co2, s) isDefaultAgreementCustomerSupplier
-    PROPERTIES(ag, s) inAgreementSupplierOver
+    PROPERTIES(ag, s) inAgreementCustomerOver
     PROPERTIES(ag) READONLY name, numberObject, seriesObject, dateAgreement, timeAgreement,
                             fromDateAgreement, fromTimeAgreement, toDateAgreement, toTimeAgreement,
                             nameCurrencyAgreement, namePriceListTypeAgreement, noteAgreement
     PROPERTIES createAgreementCustomerSupplier(co2, s) TODRAW ag FORCE PANEL DRAWTOTOOLBAR, addAgreementsCustomerSupplier(co2, s) TODRAW ag FORCE PANEL DRAWTOTOOLBAR
-    FILTERS inAgreementSupplierOver(ag, s),
+    FILTERS inAgreementCustomerOver(ag, s),
             supplierAgreement(ag) == co2
 
     OBJECTS l=license
@@ -301,11 +301,11 @@ EXTEND DESIGN legalEntity {
 
 // -------------------------------------------- Макросы --------------------------------------------- //
 META defineDocumentHeaderSupplier (object)
-    supplier###object (object) = DATA supplier (object);
+    supplier###object (object) = DATA legalEntity (object);
     nameSupplier###object 'Поставщик' (object)= name(supplier###object(object)) IN documentPrmGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
 END
 META defineDocumentAbstractHeaderSupplier (object)
-    supplier###object (object) = ABSTRACT supplier (object) PERSISTENT;
+    supplier###object (object) = ABSTRACT legalEntity (object) PERSISTENT;
     nameSupplier###object 'Поставщик' (object)= name(supplier###object(object)) IN documentPrmGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
 END
 META defineDocumentInterfaceHeaderSupplier (object)

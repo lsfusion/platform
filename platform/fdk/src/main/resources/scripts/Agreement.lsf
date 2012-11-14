@@ -23,38 +23,38 @@ toTimeAgreement(agreement) <- NULL WHEN ASSIGNED(agreement IS agreement);
 @defineDocumentHeaderCurrency(agreement);
 @defineDocumentHeaderDescription(agreement, seriesNumberObject, 'Соглашение');
 
-inSupplierAgreement 'Отм' = DATA BOOLEAN (agreement);
+inCustomerAgreement 'Отм' = DATA BOOLEAN (agreement);
 
 TABLE agreementLegalEntityGroup (agreement, legalEntityGroup);
-inAgreementSupplierGroup 'Отм' = DATA BOOLEAN (agreement, legalEntityGroup);
+inAgreementCustomerGroup 'Отм' = DATA BOOLEAN (agreement, legalEntityGroup);
 
 TABLE agreementLegalEntity(agreement, legalEntity);
-inAgreementSupplier 'Отм.' (agreement, legalEntity) = DATA BOOLEAN (agreement, legalEntity);
+inAgreementCustomer 'Отм.' (agreement, legalEntity) = DATA BOOLEAN (agreement, legalEntity);
 
-levelParentAgreementSupplierGroup (agreement, legalEntityGroup) =
-    GROUP MIN levelLegalEntityGroupLegalEntityGroup(legalEntityGroup, parent) IF inAgreementSupplierGroup(agreement, parent)
+levelParentAgreementCustomerGroup (agreement, legalEntityGroup) =
+    GROUP MIN levelLegalEntityGroupLegalEntityGroup(legalEntityGroup, parent) IF inAgreementCustomerGroup(agreement, parent)
           BY agreement, legalEntityGroup PERSISTENT;
 nearestParentLegalEntityGroup (agreement, legalEntityGroup) =
-    legalEntityGroupLegalEntityGroupLevel(legalEntityGroup, levelParentAgreementSupplierGroup(agreement, legalEntityGroup));
-nearestInAgreementSupplierGroup (agreement, legalEntityGroup) =
-    inAgreementSupplierGroup(agreement, nearestParentLegalEntityGroup(agreement, legalEntityGroup));
+    legalEntityGroupLegalEntityGroupLevel(legalEntityGroup, levelParentAgreementCustomerGroup(agreement, legalEntityGroup));
+nearestInAgreementCustomerGroup (agreement, legalEntityGroup) =
+    inAgreementCustomerGroup(agreement, nearestParentLegalEntityGroup(agreement, legalEntityGroup));
 
-inAgreementSupplierGroupOver 'Отм' (agreement, legalEntityGroup) =
-    UNION OVERRIDE inSupplierAgreement(agreement) AND legalEntityGroup IS legalEntityGroup,
-                   nearestInAgreementSupplierGroup(agreement, legalEntityGroup),
-                   inAgreementSupplierGroup(agreement, legalEntityGroup);
+inAgreementCustomerGroupOver 'Отм' (agreement, legalEntityGroup) =
+    UNION OVERRIDE inCustomerAgreement(agreement) AND legalEntityGroup IS legalEntityGroup,
+                   nearestInAgreementCustomerGroup(agreement, legalEntityGroup),
+                   inAgreementCustomerGroup(agreement, legalEntityGroup);
 
-inAgreementSupplierOver 'Отм' (agreement, legalEntity) =
-    UNION OVERRIDE inSupplierAgreement(agreement) AND legalEntity IS legalEntity,
-                   nearestInAgreementSupplierGroup(agreement, legalEntityGroupLegalEntity(legalEntity)),
-                   inAgreementSupplier(agreement, legalEntity);
+inAgreementCustomerOver 'Отм' (agreement, legalEntity) =
+    UNION OVERRIDE inCustomerAgreement(agreement) AND legalEntity IS legalEntity,
+                   nearestInAgreementCustomerGroup(agreement, legalEntityGroupLegalEntity(legalEntity)),
+                   inAgreementCustomer(agreement, legalEntity);
 
-supplierAgreement 'Контрагенты' (agreement) = GROUP CONCAT name(legalEntity) IF inAgreementSupplierOver(agreement, legalEntity) , ', '
+customerAgreement 'Покупатели' (agreement) = GROUP CONCAT name(legalEntity) IF inAgreementCustomerOver(agreement, legalEntity) , ', '
                                                  BY agreement
                                                  ORDER legalEntity MINCHARWIDTH 100 PERSISTENT;
 
-customerAgreement (agreement) = DATA legalEntity (agreement);
-nameCustomerAgreement 'Компания' (agreement) = name(customerAgreement(agreement));
+supplierAgreement (agreement) = DATA legalEntity (agreement);
+nameSupplierAgreement 'Компания' (agreement) = name(supplierAgreement(agreement));
 
 priceListTypeAgreement (agreement) = DATA priceListType (agreement) NOT NULL;
 namePriceListTypeAgreement 'Вид цены' (agreement) = name(priceListTypeAgreement(agreement));
@@ -87,16 +87,16 @@ priceListTypeAgreementSkuOver (agreement, sku) =
 namePriceListTypeAgreementSkuOver 'Вид цены' = name(priceListTypeAgreementSkuOver(agreement, sku));
 
 userDefaultAgreementCustomerSupplier = DATA agreement (legalEntity, legalEntity);
-userDefaultAgreementCustomerSupplier(company, legalEntity) => inAgreementSupplierOver(userDefaultAgreementCustomerSupplier(company, legalEntity), legalEntity) RESOLVE FALSE;
+userDefaultAgreementCustomerSupplier(company, legalEntity) => inAgreementCustomerOver(userDefaultAgreementCustomerSupplier(company, legalEntity), legalEntity) RESOLVE FALSE;
 
 calcDefaultAgreementCustomerSupplier(company, legalEntity) =
-    GROUP MAX agreement IF inAgreementSupplierOver(agreement, legalEntity)
-    BY customerAgreement(agreement), legalEntity;
+    GROUP MAX agreement IF inAgreementCustomerOver(agreement, legalEntity)
+    BY supplierAgreement(agreement), legalEntity;
 
-defaultAgreementCustomerSupplier(company, legalEntity) = UNION OVERRIDE calcDefaultAgreementCustomerSupplier(company, legalEntity), userDefaultAgreementCustomerSupplier(company, legalEntity) PERSISTENT;
-nameDefaultAgreementCustomerSupplier 'Соглашение по умолчанию' (company, legalEntity) = name(defaultAgreementCustomerSupplier(company, legalEntity));
+defaultAgreementCustomerSupplier(legalEntity, company) = UNION OVERRIDE calcDefaultAgreementCustomerSupplier(legalEntity, company), userDefaultAgreementCustomerSupplier(legalEntity, company) PERSISTENT;
+nameDefaultAgreementCustomerSupplier 'Соглашение по умолчанию' (legalEntity, company) = name(defaultAgreementCustomerSupplier(legalEntity, company));
 
-isDefaultAgreementCustomerSupplier 'Соглашение по умолчанию' (agreement, company, legalEntity) = defaultAgreementCustomerSupplier(company, legalEntity) == agreement;
+isDefaultAgreementCustomerSupplier 'Соглашение по умолчанию' (agreement, legalEntity, company) = defaultAgreementCustomerSupplier(legalEntity, company) == agreement;
 
 META defineDocumentAbstractHeaderAgreement (object)
     agreement###object (object) = ABSTRACT agreement (object) PERSISTENT;
@@ -109,8 +109,8 @@ END
 META defineDocumentInterfaceHeaderAgreement (object, company, legalEntity)
     @defineDocumentAbstractHeaderAgreement(object);
     @defineDocumentHeaderAgreement(user###object);
-    agreement###user###object (object) <- defaultAgreementCustomerSupplier(company(object), legalEntity(object))
-        IF currency###user###object(object) == currencyAgreement(defaultAgreementCustomerSupplier(company(object), legalEntity(object)))
+    agreement###user###object (object) <- defaultAgreementCustomerSupplier(legalEntity(object), company(object))
+        IF currency###user###object(object) == currencyAgreement(defaultAgreementCustomerSupplier(legalEntity(object), company(object)))
     WHEN CHANGED(currency###user###object(object)) OR
          CHANGED(legalEntity(object));
     agreement###object (object) += agreement###user###object(object);
@@ -119,12 +119,12 @@ META defineDocumentInterfaceHeaderAgreement (object, company, legalEntity)
                CHECKED BY agreement###user###object
                MESSAGE 'Валюта документа должны совпадать с валютой соглашения';
 
-    CONSTRAINT customerAgreement(agreement###user###object(object)) != company(object)
+    CONSTRAINT supplierAgreement(agreement###user###object(object)) != company(object)
                CHECKED BY agreement###user###object
                MESSAGE 'Соглашение должно быть между заданными юр. лицами';
 
     CONSTRAINT agreement###user###object(object)
-               AND NOT inAgreementSupplierOver(agreement###user###object(object), legalEntity(object))
+               AND NOT inAgreementCustomerOver(agreement###user###object(object), legalEntity(object))
                CHECKED BY agreement###user###object
                MESSAGE 'Соглашение должно быть между заданными юр. лицами';
 END
@@ -153,8 +153,8 @@ META defineDocumentDoubleHeaderAgreement (object, legalEntity)
 END
 META defineDocumentDoubleInterfaceHeaderAgreement (object, company, legalEntity)
     @defineDocumentDoubleHeaderAgreement(object, legalEntity);
-    agreement###object###legalEntity (object, legalEntity) <- defaultAgreementCustomerSupplier(company(object), legalEntity)
-        IF currency###object(object) == currencyAgreement(defaultAgreementCustomerSupplier(company(object), legalEntity))
+    agreement###object###legalEntity (object, legalEntity) <- defaultAgreementCustomerSupplier(legalEntity, company(object))
+        IF currency###object(object) == currencyAgreement(defaultAgreementCustomerSupplier(legalEntity, company(object))
     WHEN CHANGED(currency###object(object)) AND legalEntity IS legalEntity OR
          CHANGED(in###object###legalEntity(object, legalEntity));
 
@@ -162,12 +162,12 @@ META defineDocumentDoubleInterfaceHeaderAgreement (object, company, legalEntity)
                CHECKED BY agreement###object###legalEntity
                MESSAGE 'Валюта документа должны совпадать с валютой соглашения';
 
-    CONSTRAINT customerAgreement(agreement###object###legalEntity(object, legalEntity)) != company(object)
+    CONSTRAINT supplierAgreement(agreement###object###legalEntity(object, legalEntity)) != company(object)
                CHECKED BY agreement###object###legalEntity
                MESSAGE 'Соглашение должно быть между заданными юр. лицами';
 
     CONSTRAINT agreement###object###legalEntity(object, legalEntity)
-               AND NOT inAgreementSupplierOver(agreement###object###legalEntity(object, legalEntity), legalEntity)
+               AND NOT inAgreementCustomerOver(agreement###object###legalEntity(object, legalEntity), legalEntity)
                CHECKED BY agreement###object###legalEntity
                MESSAGE 'Соглашение должно быть между заданными юр. лицами';
 END
@@ -238,7 +238,7 @@ FORM agreementsLegalEntity 'Соглашения'
     PROPERTIES(ag) READONLY name, numberObject, seriesObject, dateAgreement, timeAgreement,
                             fromDateAgreement, fromTimeAgreement, toDateAgreement, toTimeAgreement,
                             nameCurrencyAgreement, namePriceListTypeAgreement, noteAgreement
-    PROPERTIES inAgreementSupplierOver(ag, l)
+    PROPERTIES inAgreementCustomerOver(ag, l)
 ;
 
 DESIGN agreementsLegalEntity FROM DEFAULT{
@@ -250,9 +250,9 @@ DESIGN agreementsLegalEntity FROM DEFAULT{
     ADD functions.box;
 }
 
-addAgreementsCustomerSupplier 'Добавление соглашений' = ACTION (company, legalEntity) {
+addAgreementsCustomerSupplier 'Добавление соглашений' = ACTION (legalEntity, company) {
 
-    FORM agreementsLegalEntity OBJECTS c=company, l=legalEntity MODAL;
+    FORM agreementsLegalEntity OBJECTS c=legalEntity, l=company MODAL;
     IF formResult() == formResult.ok THEN {
         EXEC apply();
     }
@@ -262,22 +262,22 @@ FORM agreement 'Соглашение'
 
     OBJECTS a = agreement FIXED PANEL
     PROPERTIES(a) name, nameNumeratorObject, numberObject, seriesObject, dateAgreement, timeAgreement,
-                  fromDateAgreement, fromTimeAgreement, toDateAgreement, toTimeAgreement, nameCustomerAgreement,
+                  fromDateAgreement, fromTimeAgreement, toDateAgreement, toTimeAgreement, nameSupplierAgreement,
                   nameCurrencyAgreement, namePriceListTypeAgreement, noteAgreement
 
     TREE legalEntityGroupTree b=STRING[3], lg = legalEntityGroup PARENT parentLegalEntityGroup
     PROPERTIES READONLY OBJVALUE(b), lgTreeName = name(lg)
     FILTERS stringEqualsAll(b)
-    PROPERTIES(a) inSupplierAgreement TODRAW b FORCE GRID
-    PROPERTIES(a, lg) inAgreementSupplierGroupOver
+    PROPERTIES(a) inCustomerAgreement TODRAW b FORCE GRID
+    PROPERTIES(a, lg) inAgreementCustomerGroupOver
 
     OBJECTS l = legalEntity
     PROPERTIES(l) READONLY name
-    PROPERTIES(a, l) inAgreementSupplierOver
+    PROPERTIES(a, l) inAgreementCustomerOver
     FILTERS inLegalEntityGroupLegalEntity(lg, l)
 
     FILTERGROUP filters
-        FILTER 'Только отмеченные' 'F10' inAgreementSupplierOver (a, l)
+        FILTER 'Только отмеченные' 'F10' inAgreementCustomerOver (a, l)
 
     TREE priceGroupTree g=priceGroup PARENT parentPriceGroup
     PROPERTIES READONLY name(g)
@@ -328,7 +328,7 @@ DESIGN agreement FROM DEFAULT {
             NEW propContainer{
                 caption = 'Параметры документа';
                 childConstraints = TO THE RIGHT;
-                ADD PROPERTY(nameCustomerAgreement);
+                ADD PROPERTY(nameSupplierAgreement);
                 ADD PROPERTY(nameCurrencyAgreement);
                 ADD PROPERTY(namePriceListTypeAgreement);
                 ADD PROPERTY(noteAgreement);
@@ -367,8 +367,8 @@ DESIGN agreement FROM DEFAULT {
 createAgreementCustomerSupplier 'Создать соглашение' = ACTION (company, legalEntity) {
 
     FOR ADDOBJ ag = agreement DO {
-        SET inAgreementSupplier(ag, legalEntity) <- TRUE;
-        SET customerAgreement(ag) <- (company AS legalEntity);
+        SET inAgreementCustomer(ag, legalEntity) <- TRUE;
+        SET supplierAgreement(ag) <- (company AS legalEntity);
         FORM agreement OBJECTS a = ag MODAL;
         IF TRUE AND NOT formResult() == formResult.ok THEN {
             EXEC delete(ag);
@@ -380,8 +380,8 @@ FORM agreements 'Соглашения'
 
     OBJECTS a = agreement
     PROPERTIES(a) READONLY name, seriesNumberObject, dateTimeAgreement,
-                           fromDateTimeAgreement, toDateTimeAgreement, nameCustomerAgreement,
-                           nameCurrencyAgreement, namePriceListTypeAgreement, supplierAgreement, noteAgreement
+                           fromDateTimeAgreement, toDateTimeAgreement, nameSupplierAgreement,
+                           nameCurrencyAgreement, namePriceListTypeAgreement, customerAgreement, noteAgreement
 
     PROPERTIES(a) ADDFORM, EDITFORM, delete
 ;
@@ -392,27 +392,27 @@ EXTEND FORM legalEntity
     PROPERTIES(s) READONLY name
 
     OBJECTS ag=agreement
-    PROPERTIES(ag, l, s) isDefaultAgreementCustomerSupplier
-    PROPERTIES(ag, s) inAgreementSupplierOver
+    PROPERTIES(ag, s, l) isDefaultAgreementCustomerSupplier
+    PROPERTIES(ag, l) inAgreementCustomerOver
     PROPERTIES(ag) READONLY name, numberObject, seriesObject, dateAgreement, timeAgreement,
                             fromDateAgreement, fromTimeAgreement, toDateAgreement, toTimeAgreement,
                             nameCurrencyAgreement, namePriceListTypeAgreement, noteAgreement
     PROPERTIES(ag) EDITFORM
-    PROPERTIES createAgreementCustomerSupplier(l, s) TODRAW ag FORCE PANEL DRAWTOTOOLBAR, addAgreementsCustomerSupplier(l, s) TODRAW ag FORCE PANEL DRAWTOTOOLBAR
-    FILTERS inAgreementSupplierOver(ag, s)
+    PROPERTIES createAgreementCustomerSupplier(s, l) TODRAW ag FORCE PANEL DRAWTOTOOLBAR, addAgreementsCustomerSupplier(s, l) TODRAW ag FORCE PANEL DRAWTOTOOLBAR
+    FILTERS inAgreementCustomerOver(ag, l)
 
     OBJECTS c=legalEntity
     PROPERTIES(c) READONLY name
 
     OBJECTS ag2=agreement
-    PROPERTIES(ag2, c, l) isDefaultAgreementCustomerSupplier
-    PROPERTIES(ag2, l) inAgreementSupplierOver
+    PROPERTIES(ag2, l, c) isDefaultAgreementCustomerSupplier
+    PROPERTIES(ag2, l) inAgreementCustomerOver
     PROPERTIES(ag2) READONLY name, numberObject, seriesObject, dateAgreement, timeAgreement,
                             fromDateAgreement, fromTimeAgreement, toDateAgreement, toTimeAgreement,
                             nameCurrencyAgreement, namePriceListTypeAgreement, noteAgreement
     PROPERTIES(ag2) EDITFORM
-    PROPERTIES createAgreementCustomerSupplier(c, l) TODRAW ag2 FORCE PANEL DRAWTOTOOLBAR, addAgreementsCustomerSupplier(c, l) TODRAW ag2 FORCE PANEL DRAWTOTOOLBAR
-    FILTERS inAgreementSupplierOver(ag2, l)
+    PROPERTIES createAgreementCustomerSupplier(l, c) TODRAW ag2 FORCE PANEL DRAWTOTOOLBAR, addAgreementsCustomerSupplier(l, c) TODRAW ag2 FORCE PANEL DRAWTOTOOLBAR
+    FILTERS inAgreementCustomerOver(ag2, l)
 ;
 
 EXTEND DESIGN legalEntity {
