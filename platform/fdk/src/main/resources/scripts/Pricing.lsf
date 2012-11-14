@@ -1,6 +1,6 @@
 MODULE Pricing;
 
-REQUIRE Invoice, Employee, Store, StorePrice, Label, Machinery;
+REQUIRE Invoice, Employee, Store, Label, Machinery;
 
 
 // ----------------------------------- Создавать акт расценки по умолчанию для отдела ------------------------------------------ //
@@ -477,14 +477,35 @@ DESIGN pricings FROM DEFAULT {
 }
 
 // ------------------------------------- Проведение по регистру ------------------------------ //
-
-skipSupplierPriceLedger(ledger) +=  skipChangeLedgerPricingDetail(ledger);
-skipRetailVATLedger(ledger) +=  skipChangeLedgerPricingDetail(ledger);
-skipRetailPriceLedger(ledger) +=  skipChangeLedgerPricingDetail(ledger);
+// todo : грохнуть когда уйдет StorePrice
 
 @implementSkuDepartmentStoreLedgerCustom(supplierPrice, pricing, sku, departmentStore, price);
+skipSupplierPriceLedger(ledger) +=  skipChangeLedgerPricingDetail(ledger);
+
 @implementSkuDepartmentStoreLedger(retailVAT, pricing, sku, departmentStore);
+skipRetailVATLedger(ledger) +=  skipChangeLedgerPricingDetail(ledger);
+
 @implementSkuDepartmentStoreLedger(retailPrice, pricing, sku, departmentStore);
+skipRetailPriceLedger(ledger) +=  skipChangeLedgerPricingDetail(ledger);
+
+// ---------------------------- Создание PriceList ----------------------------------- //
+
+EXTEND CLASS systemLedgerPriceListType {
+    supplierPricingPriceListType 'Поставщика (расценка)',
+    retailPricingPriceListType 'Розничная (расценка)'
+}
+
+EXTEND CLASS pricingDetail : priceListLedger;
+
+fromDateTimePriceListLedger (ledger) += dateTimePricingDetail(ledger);
+
+skuPriceListLedger (ledger) += skuPricingDetail(ledger);
+
+descriptionPriceListLedger (ledger) += descriptionPricingDetail(ledger);
+
+pricePriceListLedgerLedgerPriceListType (ledger, type) += pricePricingDetail(ledger) IF type == systemLedgerPriceListType.supplierPricingPriceListType;
+pricePriceListLedgerLedgerPriceListType (ledger, type) += retailPricePricingDetail(ledger) IF type == systemLedgerPriceListType.retailPricingPriceListType;
+inPriceListLedgerStock (ledger, stock) += departmentStorePricingDetail(ledger) == stock;
 
 // ------------------------------------- Печать ценников ------------------------------ //
 

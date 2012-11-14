@@ -524,6 +524,20 @@ skipRetailVATLedger(ledger) +=  skipChangeLedgerRepricingDetail(ledger);
 @implementSkuDepartmentStoreLedger(retailPrice, repricing, sku, departmentStore);
 skipRetailPriceLedger(ledger) +=  skipChangeLedgerRepricingDetail(ledger);
 
+// ---------------------------- Создание PriceList ----------------------------------- //
+
+EXTEND CLASS repricingDetail : priceListLedger;
+
+fromDateTimePriceListLedger (ledger) += dateTimeRepricingDetail(ledger);
+
+skuPriceListLedger (ledger) += skuRepricingDetail(ledger);
+
+descriptionPriceListLedger (ledger) += descriptionRepricingDetail(ledger);
+
+pricePriceListLedgerLedgerPriceListType (ledger, type) += priceRepricingDetail(ledger) IF type == systemLedgerPriceListType.supplierPricingPriceListType;
+pricePriceListLedgerLedgerPriceListType (ledger, type) += retailPriceRepricingDetail(ledger) IF type == systemLedgerPriceListType.retailPricingPriceListType;
+inPriceListLedgerStock (ledger, stock) += departmentStoreRepricingDetail(ledger) == stock;
+
 // ------------------------------------- Печать ценников ------------------------------ //
 
 @Label.implementPriceTransactionDocument(repricing);

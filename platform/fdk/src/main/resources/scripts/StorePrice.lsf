@@ -353,10 +353,6 @@ END
 
 META defineSkuDepartmentStoreLedgerPrice(property, caption, type)
     @defineSkuDepartmentStoreLedger(property, caption, type);
-
-    EXTEND CLASS systemPriceListType { property##PriceListType caption##' (расценка)' }
-    priceSystemPriceListTypeSkuStockDateTime (listType, sku, stock, dateTime) += property##BSkuDepartmentStoreDateTime(sku, stock, dateTime) AND listType == systemPriceListType.property##PriceListType;
-    priceSystemPriceListTypeBatchStockDateTime (listType, batch, stock, dateTime) += property##BSkuDepartmentStoreDateTime(skuBatch(batch), stock, dateTime) AND listType == systemPriceListType.property##PriceListType;
 END
 
 META implementSkuDepartmentStoreLedgerCustom(property, concrete, skuProp, stockProp, propertyProp)

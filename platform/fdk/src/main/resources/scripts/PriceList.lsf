@@ -25,11 +25,20 @@ prevPricePriceListTypeBatchStockDateTime 'Цена (пред.)' (type, batch, st
 
 CLASS ABSTRACT basePriceListType 'Базовый вид цены' : priceListType;
 
+priceBasePriceListTypeSkuStockDateTime (type, sku, stock, dateTime) = ABSTRACT NUMERIC[14,3] (basePriceListType, sku, stock, DATETIME) EXCLUSIVE;
+priceBasePriceListTypeBatchStockDateTime (type, sku, stock, dateTime) = ABSTRACT NUMERIC[14,3] (basePriceListType, batch, stock, DATETIME) EXCLUSIVE;
+
+pricePriceListTypeSkuStockDateTime(type, sku, stock, dateTime) += priceBasePriceListTypeSkuStockDateTime(type, sku, stock, dateTime);
+pricePriceListTypeBatchStockDateTime(type, batch, stock, dateTime) += priceBasePriceListTypeBatchStockDateTime(type, batch, stock, dateTime);
+
 // --------------------------- Системные виды цен ------------------------- //
 CLASS STATIC systemPriceListType 'Системный вид цены' : basePriceListType;
 
 priceSystemPriceListTypeSkuStockDateTime (type, sku, stock, dateTime) = ABSTRACT NUMERIC[14,3] (systemPriceListType, sku, stock, DATETIME) EXCLUSIVE;
 priceSystemPriceListTypeBatchStockDateTime (type, sku, stock, dateTime) = ABSTRACT NUMERIC[14,3] (systemPriceListType, batch, stock, DATETIME) EXCLUSIVE;
+
+priceBasePriceListTypeSkuStockDateTime(type, sku, stock, dateTime) += priceSystemPriceListTypeSkuStockDateTime(type, sku, stock, dateTime);
+priceBasePriceListTypeBatchStockDateTime(type, batch, stock, dateTime) += priceSystemPriceListTypeBatchStockDateTime(type, batch, stock, dateTime);
 
 // -------------------------- Учетная цена ---------------------- //
 
@@ -37,9 +46,59 @@ EXTEND CLASS systemPriceListType { stockPriceListType 'Учетная' }
 priceSystemPriceListTypeSkuStockDateTime (type, sku, stock, dateTime) += priceSkuStockDateTime(sku, stock, dateTime) AND type == systemPriceListType.stockPriceListType;
 priceSystemPriceListTypeBatchStockDateTime (type, batch, stock, dateTime) += priceBatchStockDateTime(batch, stock, dateTime) AND type == systemPriceListType.stockPriceListType;
 
+// ------------------------------------- Виды цен, формируемые ledger'ами ----------- //
+
+CLASS ABSTRACT ledgerPriceListType 'Регистровый вид цены' : basePriceListType;
+
+CLASS ABSTRACT priceListLedger;
+TABLE priceListLedger(priceListLedger);
+
+fromDateTimePriceListLedger = ABSTRACT DATETIME (priceListLedger) PERSISTENT INDEXED;
+toDateTimePriceListLedger = ABSTRACT DATETIME (priceListLedger) PERSISTENT INDEXED;
+
+skuPriceListLedger = ABSTRACT sku (priceListLedger) PERSISTENT INDEXED;
+
+descriptionPriceListLedger = ABSTRACT STRING[200] (priceListLedger) PERSISTENT;
+
+TABLE priceListLedgerLedgerPriceListType(priceListLedger, ledgerPriceListType);
+pricePriceListLedgerLedgerPriceListType = ABSTRACT NUMERIC[14,2] (priceListLedger, ledgerPriceListType) EXCLUSIVE PERSISTENT;
+
+TABLE priceListLedgerStock(priceListLedger, stock);
+inPriceListLedgerStock (ledger, stock) = ABSTRACT BOOLEAN (priceListLedger, stock) PERSISTENT;
+
+orderPriceListLedger(ledger) = LIST(fromDateTimePriceListLedger(ledger), ledger) PERSISTENT;
+
+TABLE priceListLedgerLedgerPriceListTypeStock (priceListLedger, ledgerPriceListType, stock);
+orderPriceListLedgerLedgerPriceListTypeStock(ledger, type, stock) =
+    orderPriceListLedger(ledger) IF pricePriceListLedgerLedgerPriceListType(ledger, type) AND inPriceListLedgerStock(ledger, stock) PERSISTENT INDEXED;
+
+concatLedgerPriceListTypeSkuStockDateTime(type, sku, stock, dateTime) =
+    GROUP MAX orderPriceListLedgerLedgerPriceListTypeStock(ledger, type, stock)
+              IF fromDateTimePriceListLedger(ledger) < (dateTimeIn AS DATETIME) AND NOT toDateTimePriceListLedger(ledger) <= (dateTimeIn AS DATETIME)
+          BY type, skuPriceListLedger(ledger), stock, dateTimeIn;
+priceListLedgerLedgerPriceListTypeSkuStockDateTime(type, sku, stock, dateTime) =
+    concatLedgerPriceListTypeSkuStockDateTime(type, sku, stock, dateTime)[2];
+
+priceLedgerPriceListTypeSkuStockDateTime 'Цена' (type, sku, stock, dateTime) =
+    pricePriceListLedgerLedgerPriceListType(priceListLedgerLedgerPriceListTypeSkuStockDateTime(type, sku, stock, dateTime), type);
+priceLedgerPriceListTypeBatchStockDateTime 'Цена' (type, batch, stock, dateTime) =
+    priceLedgerPriceListTypeSkuStockDateTime(type, skuBatch(batch), stock, dateTime);
+
+descriptionLedgerPriceListTypeSkuStockDateTime 'Описание' (type, sku, stock, dateTime) =
+    descriptionPriceListLedger(priceListLedgerLedgerPriceListTypeSkuStockDateTime(type, sku, stock, dateTime));
+descriptionLedgerPriceListTypeBatchStockDateTime 'Описание' (type, batch, stock, dateTime) =
+    descriptionPriceListLedger(priceListLedgerLedgerPriceListTypeSkuStockDateTime(type, skuBatch(batch), stock, dateTime));
+
+priceBasePriceListTypeSkuStockDateTime(type, sku, stock, dateTime) += priceLedgerPriceListTypeSkuStockDateTime(type, sku, stock, dateTime);
+priceBasePriceListTypeBatchStockDateTime(type, batch, stock, dateTime) += priceLedgerPriceListTypeBatchStockDateTime(type, batch, stock, dateTime);
+
+// --------------------------- Системные виды цен, на основе Ledger'ов ------------------ //
+
+CLASS STATIC systemLedgerPriceListType 'Системный вид цены (регистр)' : ledgerPriceListType;
+
 // --------------------------- Пользовательские виды цен ------------------------- //
 
-CLASS dataPriceListType 'Пользовательский вид цены' : basePriceListType;
+CLASS dataPriceListType 'Пользовательский вид цены' : ledgerPriceListType;
 @defineDocumentHeaderCurrency(dataPriceListType);
 currencyPriceListType(dataPriceListType) += currencyDataPriceListType(dataPriceListType);
 
@@ -94,7 +153,9 @@ priceListTypesPriceList 'Цены' (priceList) = GROUP CONCAT name(priceListType
                                                BY priceList
                                                ORDER priceListType MINCHARWIDTH 50 PERSISTENT;
 
-dataPriceListDetailPriceListType (detail, dataPriceListType) = inPriceListPriceListType(priceListPriceListDetail(detail), dataPriceListType) PERSISTENT;
+inPriceListDetailPriceListType (detail, dataPriceListType) = inPriceListPriceListType(priceListPriceListDetail(detail), dataPriceListType) PERSISTENT;
+
+pricePriceListDetailDataPriceListType(detail, dataPriceListType) => inPriceListDetailPriceListType (detail, dataPriceListType) RESOLVE FALSE;
 
 inPriceList 'Отм' = ABSTRACT BOOLEAN (priceList) PERSISTENT;
 inUserPriceList 'Отм' = DATA BOOLEAN (userPriceList);
@@ -443,38 +504,19 @@ DESIGN userPriceLists FROM DEFAULT{
     ADD functions.box;
 }
 
-// ------- Расчет действующей цен ----- //
+// ------- Проведение по priceListLedger ----- //
 
-TABLE priceListDetailDataPriceListTypeStock (priceListDetail, dataPriceListType, stock);
+EXTEND CLASS priceListDetail : priceListLedger;
 
-orderPriceListDetail(detail) = LIST(fromDateTimePriceListDetail(detail), detail) PERSISTENT;
-orderPriceListDetailPriceListTypeStock(detail, type, stock) = orderPriceListDetail(detail)
-    IF dataPriceListDetailPriceListType(detail, type) AND
-       pricePriceListDetailDataPriceListType(detail, type) AND
-       inPriceListStockOver(priceListPriceListDetail(detail), stock) PERSISTENT;
+fromDateTimePriceListLedger (ledger) += fromDateTimePriceListDetail(ledger);
+toDateTimePriceListLedger (ledger) += toDateTimePriceListDetail(ledger);
 
-concatDataPriceListTypeSkuStockDateTime(type, sku, stock, dateTime) =
-    GROUP MAX orderPriceListDetailPriceListTypeStock(detail, type, stock)
-              IF fromDateTimePriceListDetail(detail) < (dateTimeIn AS DATETIME) AND NOT toDateTimePriceListDetail(detail) <= (dateTimeIn AS DATETIME)
-          BY type, skuPriceListDetail(detail), stock, dateTimeIn;
-priceListDetailDataPriceListTypeSkuStockDateTime(type, sku, stock, dateTime) =
-    concatDataPriceListTypeSkuStockDateTime(type, sku, stock, dateTime)[2];
+skuPriceListLedger (ledger) += skuPriceListDetail(ledger);
 
-priceDataPriceListTypeSkuStockDateTime(type, sku, stock, dateTime) =
-    pricePriceListDetailDataPriceListType(priceListDetailDataPriceListTypeSkuStockDateTime(type, sku, stock, dateTime), type);
-priceDataPriceListTypeBatchStockDateTime(type, batch, stock, dateTime) =
-    priceDataPriceListTypeSkuStockDateTime(type, skuBatch(batch), stock, dateTime);
+descriptionPriceListLedger (ledger) += descriptionPriceList(priceListPriceListDetail(ledger));
 
-priceBasePriceListTypeSkuStockDateTime(type, sku, stock, dateTime) =
-    UNION EXCLUSIVE priceSystemPriceListTypeSkuStockDateTime(type, sku, stock, dateTime),
-                    priceDataPriceListTypeSkuStockDateTime(type, sku, stock, dateTime);
-
-priceBasePriceListTypeBatchStockDateTime(type, batch, stock, dateTime) =
-    UNION EXCLUSIVE priceSystemPriceListTypeBatchStockDateTime(type, batch, stock, dateTime),
-                    priceDataPriceListTypeBatchStockDateTime(type, batch, stock, dateTime);
-
-pricePriceListTypeSkuStockDateTime(type, sku, stock, dateTime) += priceBasePriceListTypeSkuStockDateTime(type, sku, stock, dateTime);
-pricePriceListTypeBatchStockDateTime(type, batch, stock, dateTime) += priceBasePriceListTypeBatchStockDateTime(type, batch, stock, dateTime);
+pricePriceListLedgerLedgerPriceListType (ledger, type) += pricePriceListDetailDataPriceListType(ledger, type);
+inPriceListLedgerStock (ledger, stock) += inPriceListStockOver(priceListPriceListDetail(ledger), stock);
 
 // --------------------------- Расчетные виды цен ------------------------- //
 
@@ -511,12 +553,6 @@ pricePriceListTypeSkuStockDateTime(type, sku, stock, dateTime) += priceCalcPrice
 pricePriceListTypeBatchStockDateTime(type, batch, stock, dateTime) += priceCalcPriceListTypeBatchStockDateTime(type, batch, stock, dateTime);
 
 backgroundMarkup 'Цвет' (calcPriceListType, priceGroup) = RGB(255,160,160) AND markupCalcPriceListTypePriceGroup(calcPriceListType, priceGroup);
-
-descriptionPriceListPriceListTypeSkuStockDateTime 'Описание' (priceListType, sku, stock, dateTime) =
-    descriptionPriceList(priceListPriceListDetail(priceListDetailDataPriceListTypeSkuStockDateTime(priceListType, sku, stock, dateTime)));
-
-descriptionPriceListPriceListTypeBatchStockDateTime 'Описание' (priceListType, batch, stock, dateTime) =
-    descriptionPriceList(priceListPriceListDetail(priceListDetailDataPriceListTypeSkuStockDateTime(priceListType, skuBatch(batch), stock, dateTime)));
 
 // --------------------------- Формы ------------------------- //
 
@@ -638,8 +674,8 @@ FORM priceListTypes 'Виды цен'
         FILTER 'Проведенные партии' 'F10' isPostedBatch(b) DEFAULT
     FILTERS isParentSkuGroupBatch(sg2, b)
 
-    PROPERTIES READONLY pricePriceListTypeSkuStockDateTime(pt, sk, s, dt), descriptionPriceListPriceListTypeSkuStockDateTime(pt, sk, s, dt),
-                        pricePriceListTypeBatchStockDateTime(pt, b, s, dt), descriptionPriceListPriceListTypeBatchStockDateTime(pt, b, s, dt)
+    PROPERTIES READONLY pricePriceListTypeSkuStockDateTime(pt, sk, s, dt), descriptionLedgerPriceListTypeSkuStockDateTime(pt, sk, s, dt),
+                        pricePriceListTypeBatchStockDateTime(pt, b, s, dt), descriptionLedgerPriceListTypeBatchStockDateTime(pt, b, s, dt)
     FILTERS pricePriceListTypeSkuStockDateTime(pt, sk, s, dt),
             pricePriceListTypeBatchStockDateTime(pt, b, s, dt)
 ;
