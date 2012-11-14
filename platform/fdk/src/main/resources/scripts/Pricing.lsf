@@ -1,6 +1,6 @@
 MODULE Pricing;
 
-REQUIRE Invoice, Employee, Store, Label, Machinery;
+REQUIRE Invoice, Employee, Store, StorePrice, Label, Machinery;
 
 
 // ----------------------------------- Создавать акт расценки по умолчанию для отдела ------------------------------------------ //
