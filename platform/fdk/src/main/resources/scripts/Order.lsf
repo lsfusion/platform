@@ -30,6 +30,9 @@ META defineOrder(sign, stockProp)
 
     @defineDocumentInterfaceNumber(order);
 
+    @defineDocumentInterfaceLegalEntity (order, supplier, 'Поставщик');
+    @defineDocumentInterfaceLegalEntity (order, customer, 'Покупатель');
+
     @defineDocumentInterfaceDataStock(order, stock, 'Склад поставщика', supplier);
     @defineDocumentInterfaceDataStock(order, stock, 'Склад покупателя', customer);
 
@@ -63,13 +66,9 @@ META defineOrder(sign, stockProp)
 
     @defineAddDetailDialogSkuStock(userOrder, sku, stockProp, dialogSku);
     @defineAddDetailDialogBarcode(userOrder, sku);
-//-- временно пока
-    @defineDocumentAbstractHeaderAgreement(order);
-    @defineDocumentHeaderAgreement(userOrder);
-    agreementOrder (order) += agreementUserOrder(order);
 
-//    @defineDocumentInterfaceHeaderAgreement(order, legalEntityUserOrder, contact###userOrder);
-//    @deriveDocumentDetailPriceListTypeAgreement(order);
+    @defineDocumentInterfaceHeaderAgreement(order, supplierUserOrder, customerUserOrder);
+    @deriveDocumentDetailPriceListTypeAgreement(order);
 
     @defineDocumentDetailPackWeightSku(order);
 
@@ -82,7 +81,8 @@ META defineOrder(sign, stockProp)
 
     FORM userOrder 'Заказ'###sign
         OBJECTS o = userOrder FIXED PANEL
-        PROPERTIES (o) objectClassName, nameSupplierStockUserOrder, nameCustomerStockUserOrder, nameNumeratorObject, numberObject, seriesObject, dateUserOrder, timeUserOrder,
+        PROPERTIES (o) objectClassName, nameSupplierStockUserOrder, nameCustomerStockUserOrder, nameSupplierStockUserOrder, nameCustomerStockUserOrder,
+                       nameNumeratorObject, numberObject, seriesObject, dateUserOrder, timeUserOrder,
                        nameCurrencyUserOrder, nameAgreementUserOrder, namePriceListTypeUserOrder, noteUserOrder,
                        countUserOrderDetailUserOrder, quantityUserOrderDetailUserOrder, sumUserOrderDetailUserOrder, shipmentDateUserOrder,
                        shipmentTimeUserOrder
@@ -132,6 +132,12 @@ META defineOrder(sign, stockProp)
                         ADD PROPERTY(dateUserOrder);
                         ADD PROPERTY(timeUserOrder);
                     }
+                    NEW headerRow2 {
+                        title = 'Склады';
+                        childConstraints = TO THE RIGHT;
+                        ADD PROPERTY(nameSupplierStockUserOrder);
+                        ADD PROPERTY(nameCustomerStockUserOrder);
+                    }
                     NEW wor {
                         childConstraints = TO THE RIGHTBOTTOM;
                         ADD o.documentPrmGroup {
@@ -158,8 +164,6 @@ META defineOrder(sign, stockProp)
 //-- SKU
     @defineDocumentSkuStock(userOrder, sku, stockProp);
     @extendFormDocumentSkuStockCustom(userOrder, userOrder, o, stockProp);
-//    @extendFormDocumentSkuStock(userOrder, userOrder, o);
-
 
     addUserOrder 'Добавить' = ACTION ADDFORM userOrder;
     editUserOrder 'Редактировать' (userOrder) = ACTION EDITFORM userOrder;
@@ -167,7 +171,8 @@ META defineOrder(sign, stockProp)
     FORM orders 'Заказы' TITLE 'Заказы'###sign
         OBJECTS o = order
         PROPERTIES (o) READONLY isPostedOrder FORCE GRID, isClosedOrder, objectClassName, numberOrder, seriesOrder, dateOrder, timeOrder,
-                                nameSupplierStockOrder, nameCustomerStockOrder, nameCurrencyOrder, nameAgreementOrder, namePriceListTypeOrder, noteOrder,
+                                nameSupplierStockOrder, nameCustomerStockOrder, nameSupplierStockOrder, nameCustomerStockOrder, nameCurrencyOrder,
+                                nameAgreementOrder, namePriceListTypeOrder, noteOrder,
                                 countOrderDetailOrder, quantityOrderDetailOrder, sumOrderDetailOrder, shipmentDateOrder, shipmentTimeOrder
 
         PROPERTIES (o) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed

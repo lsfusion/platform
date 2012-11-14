@@ -44,15 +44,12 @@ META defineShipment(sign, stockProp)
     @defineDocumentInterfaceDataStock(shipment, stock, 'Склад поставщика', supplier);
     @defineDocumentInterfaceDataStock(shipment, stock, 'Склад покупателя', customer);
 
-//    @defineDocumentInterfaceDataStock(shipment, stock, 'Склад');
     @defineDocumentInterfacePosted(shipment);
 
     @defineDocumentInterfaceDescription(shipment, 'Поставка'###sign);
 
     @defineDocumentInterfaceCurrency(shipment);
     @deriveDocumentCurrency(userShipment, stockProp);
-
-//    @defineDocumentInterface###contact(shipment);
 
     @defineDocumentInterfaceDetailSku(shipment, sku);
 
@@ -112,13 +109,17 @@ META defineShipment(sign, stockProp)
                         ADD PROPERTY(objectClassName) { preferredCharWidth = 10; }
                         ADD PROPERTY(nameSupplierUserShipment);
                         ADD PROPERTY(nameCustomerUserShipment);
-                        ADD PROPERTY(nameSupplierStockUserShipment);
-                        ADD PROPERTY(nameCustomerStockUserShipment);
                         ADD PROPERTY(nameNumeratorObject);
                         ADD PROPERTY(numberObject);
                         ADD PROPERTY(seriesObject);
                         ADD PROPERTY(dateUserShipment);
                         ADD PROPERTY(timeUserShipment);
+                    }
+                    NEW headerRow2 {
+                        title = 'Склады';
+                        childConstraints = TO THE RIGHT;
+                        ADD PROPERTY(nameSupplierStockUserShipment);
+                        ADD PROPERTY(nameCustomerStockUserShipment);
                     }
 
                     NEW headerColumn2 {
@@ -204,10 +205,10 @@ META defineShipment(sign, stockProp)
     orderUserShipmentDetail = DATA order (userShipmentDetail);
     orderShipmentDetail(shipmentDetail) += orderUserShipmentDetail(shipmentDetail);
 
-//    CONSTRAINT contact###ShipmentDetail(shipmentDetail) != contact###Order(orderUserShipmentDetail(shipmentDetail)) OR
-//               companyUserShipment(shipmentDetail) != companyOrder(orderUserShipmentDetail(shipmentDetail))
-//        CHECKED BY orderUserShipmentDetail
-//            MESSAGE contactCaption###' и компания в заказе и поставке должны соответствовать друг другу';
+    CONSTRAINT supplierShipmentDetail(shipmentDetail) != supplierOrder(orderUserShipmentDetail(shipmentDetail)) OR
+               customerUserShipment(shipmentDetail) != customerOrder(orderUserShipmentDetail(shipmentDetail))
+        CHECKED BY orderUserShipmentDetail
+            MESSAGE 'Поставщик и покупатель в заказе и поставке должны соответствовать друг другу';
 
     descriptionOrderShipmentDetail 'Заказ' (shipmentDetail) = descriptionOrder(orderShipmentDetail(shipmentDetail)) IN orderGroup;
     descriptionOrderUserShipmentDetail 'Заказ' (userShipmentDetail) = descriptionOrder(orderUserShipmentDetail(userShipmentDetail)) IN orderGroup;
@@ -236,16 +237,17 @@ META defineShipment(sign, stockProp)
     // Создание поставки на основе заказа //
 
     FORM shipmentOrders 'Заказы'###sign
-//        OBJECTS s = stock FIXED PANEL
-//        PROPERTIES (s) READONLY name
-//        OBJECTS c = contact FIXED PANEL
-//        PROPERTIES (c) READONLY name
+        OBJECTS s = legalEntity FIXED PANEL
+        PROPERTIES (s) READONLY name
+        OBJECTS c = legalEntity FIXED PANEL
+        PROPERTIES (c) READONLY name
 
         OBJECTS o = order
         PROPERTIES (o) READONLY isPostedOrder FORCE GRID, objectClassName, numberOrder, seriesOrder, dateOrder, timeOrder,
-                                nameSupplierStockOrder, nameCustomerStockOrder, nameCurrencyOrder, noteOrder,
+                                nameSupplierOrder, nameCustomerOrder, nameSupplierStockOrder, nameCustomerStockOrder, nameCurrencyOrder, noteOrder,
                                 countOrderDetailOrder, quantityOrderDetailOrder, shippedOrderDetailOrder, sumOrderDetailOrder
-        FILTERS //contact###Order(o) == c,
+        FILTERS supplierOrder(o) == s,
+                customerOrder(o) ==c,
                 isPostedOrder(o)
 //        FILTERGROUP order
 //            FILTER 'Заказы с непоставленными товарами со склада' 'F10' toShipOrderDetailStockOrder(s, o) DEFAULT
@@ -270,11 +272,11 @@ META defineShipment(sign, stockProp)
 
                 childConstraints = TO THE BOTTOM;
 
-//                NEW headerBox {
-//                    childConstraints = TO THE RIGHT;
-//                    ADD s.box;
-//                    ADD c.box;
-//                }
+                NEW headerBox {
+                    childConstraints = TO THE RIGHT;
+                    ADD s.box {title = 'Поставщик';};
+                    ADD c.box {title = 'Покупатель';};
+                }
                 ADD o.box;
                 NEW documentDetail {
                     type = TABBED;
@@ -297,13 +299,13 @@ META defineShipment(sign, stockProp)
     }
 
     fillOrderUserShipment 'Заполнить на основе заказа' =  ACTION (userShipment) {
-        FORM shipmentOrders MODAL;//s = stockUserShipment(userShipment), c = contact###UserShipment(userShipment) MODAL;
+        FORM shipmentOrders OBJECTS s = supplierUserShipment(userShipment), c = customerUserShipment(userShipment) MODAL;
         IF formResult() == formResult.ok THEN {
             LOCAL saleOrder = order();
             SET saleOrder() <- chosenObject('o');
 
             FOR orderOrderDetail(orderDetail) == saleOrder() AND
-//                stockOrderDetail(orderDetail) == stockUserShipment(userShipment) AND
+//                stockProp###OrderDetail(orderDetail) == stockProp###UserShipment(userShipment) AND
                 toShipOrderDetail(orderDetail) > 0
                 ADDOBJ d = userShipmentDetail DO {
                     SET userShipmentUserShipmentDetail(d) <- userShipment;
@@ -468,7 +470,7 @@ META defineShipment(sign, stockProp)
             SET saleInvoice() <- chosenObject('i');
 
             FOR invoiceInvoiceDetail(invoiceDetail) == saleInvoice() AND
-                stockProp###invoiceDetail(invoiceDetail) == stockProp###userShipment(userShipment) AND
+//                stockProp###invoiceDetail(invoiceDetail) == stockProp###userShipment(userShipment) AND
                 toShipInvoiceDetail(invoiceDetail) > 0
                 ADDOBJ d = userShipmentDetail DO {
                     SET userShipmentUserShipmentDetail(d) <- userShipment;

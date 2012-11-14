@@ -33,7 +33,7 @@ META defineInvoice(sign, stockProp)
     @defineDocumentInterfaceCurrency(invoice);
     @deriveDocumentCurrency(userInvoice, stockProp);
 
-//    @defineDocumentInterface###contact(invoice);
+
 //    @defineDocumentInterfaceContract(invoice, contractSku###contact, singleContractSku###contact###contactA###contactB, contactA###Invoice, contactB###Invoice,
 //                                     'Сторона A договора накладной не соответствует компании склада-отправителя',
 //                                     'Сторона B договора накладной не соответствует покупателю');
@@ -63,12 +63,8 @@ META defineInvoice(sign, stockProp)
     @defineAddDetailDialogSkuStock(userInvoice, sku, stockProp, dialogSku);
     @defineAddDetailDialogBarcode(userInvoice, sku);
 
-//    @defineDocumentInterfaceHeaderAgreement(invoice, legalEntityUserInvoice, contact###userInvoice);
-//    @deriveDocumentDetailPriceListTypeAgreement(invoice);
-//-- временно пока
-    @defineDocumentAbstractHeaderAgreement(invoice);
-    @defineDocumentHeaderAgreement(userInvoice);
-    agreementInvoice (invoice) += agreementUserInvoice(invoice);
+    @defineDocumentInterfaceHeaderAgreement(invoice, supplierUserInvoice, customerUserInvoice);
+    @deriveDocumentDetailPriceListTypeAgreement(invoice);
 
     countInvoiceDetailStockInvoice (stock, invoice) = GROUP SUM 1 BY stockProp###invoiceDetail(invoiceDetail), invoiceInvoiceDetail(invoiceDetail);
 
@@ -78,10 +74,10 @@ META defineInvoice(sign, stockProp)
     orderUserInvoiceDetail = DATA order(userInvoiceDetail);
     orderInvoiceDetail(invoiceDetail) += orderUserInvoiceDetail(invoiceDetail);
 
-//    CONSTRAINT contact###InvoiceDetail(invoiceDetail) != contact###Order(orderUserInvoiceDetail(invoiceDetail)) OR
-//               legalEntityStockUserInvoiceDetail(invoiceDetail) != legalEntityOrder(orderUserInvoiceDetail(invoiceDetail))
-//        CHECKED BY orderUserInvoiceDetail
-//            MESSAGE 'Покупатель и компания в заказе и накладной должны соответствовать друг другу';
+    CONSTRAINT supplierInvoiceDetail(invoiceDetail) != supplierOrder(orderUserInvoiceDetail(invoiceDetail)) OR
+               customerUserInvoiceDetail(invoiceDetail) != customerOrder(orderUserInvoiceDetail(invoiceDetail))
+        CHECKED BY orderUserInvoiceDetail
+            MESSAGE 'Поставщик и покупатель в заказе и накладной должны соответствовать друг другу';
 
     GROUP orderGroup 'Информация о заказе' : publicGroup;
 
@@ -113,17 +109,18 @@ META defineInvoice(sign, stockProp)
     // Создание заказа на основе инвойса //
 
     FORM invoiceOrders 'Заказы'###sign
-//        OBJECTS s = stock FIXED PANEL
-//        PROPERTIES (s) READONLY name
-//        OBJECTS c = legalEntity FIXED PANEL
-//        PROPERTIES (c) READONLY name
+        OBJECTS s = legalEntity FIXED PANEL
+        PROPERTIES (s) READONLY name
+        OBJECTS c = legalEntity FIXED PANEL
+        PROPERTIES (c) READONLY name
 
         OBJECTS o = order
         PROPERTIES (o) READONLY isPostedOrder FORCE GRID, objectClassName, numberOrder, seriesOrder, dateOrder, timeOrder,
-                                nameSupplierStockOrder, nameCustomerStockOrder, nameCurrencyOrder, noteOrder,
+                                nameSupplierOrder, nameCustomerOrder, nameSupplierStockOrder, nameCustomerStockOrder, nameCurrencyOrder, noteOrder,
                                 countOrderDetailOrder, quantityOrderDetailOrder, sumOrderDetailOrder
-        FILTERS isPostedOrder(o)//,
-//                contact###Order(o) == c
+        FILTERS isPostedOrder(o),
+                supplierOrder(o) == s,
+                customerOrder(o) ==c
 //        FILTERGROUP order
 //            FILTER 'Заказы с невыписанными товарами со склада' 'F10' toInvoiceOrderDetailStockOrder(s, o) DEFAULT
 //            FILTER 'Заказы со склада' 'F9' countOrderDetailStockOrder(s, o)
@@ -147,11 +144,11 @@ META defineInvoice(sign, stockProp)
 
                 childConstraints = TO THE BOTTOM;
 
-//                NEW headerBox {
-//                    childConstraints = TO THE RIGHT;
-//                    ADD s.box;
-//                    ADD c.box;
-//                }
+                NEW headerBox {
+                    childConstraints = TO THE RIGHT;
+                    ADD s.box {title = 'Поставщик';};
+                    ADD c.box {title = 'Покупатель';};
+                }
                 ADD o.box;
                 NEW documentDetail {
                     type = TABBED;
@@ -174,13 +171,13 @@ META defineInvoice(sign, stockProp)
     }
 
     fillOrderUserInvoice 'Заполнить на основе заказа' =  ACTION (userInvoice) {
-        FORM invoiceOrders MODAL;//OBJECTS s = stockProp###userInvoice(userInvoice), c = contact###UserInvoice(userInvoice) MODAL;
+        FORM invoiceOrders OBJECTS s = supplierUserInvoice(userInvoice), c = customerUserInvoice(userInvoice) MODAL;
         IF formResult() == formResult.ok THEN {
             LOCAL saleOrder = order();
             SET saleOrder() <- chosenObject('o');
 
             FOR orderOrderDetail(orderDetail) == saleOrder() AND
-                stockProp###orderDetail(orderDetail) == stockProp###userInvoice(userInvoice) AND
+//                stockProp###orderDetail(orderDetail) == stockProp###userInvoice(userInvoice) AND
                 toInvoiceOrderDetail(orderDetail) > 0
                 ADDOBJ d = userInvoiceDetail DO {
                     SET userInvoiceUserInvoiceDetail(d) <- userInvoice;
