@@ -7,8 +7,8 @@ import platform.base.BaseUtils;
 import platform.client.logics.ClientFormChanges;
 import platform.client.logics.classes.ClientObjectClass;
 import platform.client.logics.classes.ClientTypeSerializer;
-import platform.gwt.form.server.FormSessionObject;
 import platform.gwt.base.server.LogicsDispatchServlet;
+import platform.gwt.form.server.FormSessionObject;
 import platform.gwt.form.server.RemoteServiceImpl;
 import platform.gwt.form.shared.view.actions.*;
 import platform.gwt.form.shared.view.changes.dto.GFormChangesDTO;
@@ -113,9 +113,8 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     }
 
     @Converter(from = ReportClientAction.class)
-    public GReportAction convertAction(ReportClientAction action, LogicsDispatchServlet servlet) throws IOException {
-        //todo:
-        return new GReportAction();
+    public GReportAction convertAction(ReportClientAction action, HttpSession session, FormSessionObject form) throws IOException {
+        return new GReportAction(generateReport(session, false, action.generationData));
     }
 
     @Converter(from = RequestUserInputClientAction.class)
@@ -135,12 +134,12 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
     @Converter(from = RunPrintReportClientAction.class)
     public GRunPrintReportAction convertAction(RunPrintReportClientAction action, HttpSession session, FormSessionObject form) throws IOException {
-        return new GRunPrintReportAction(generateReport(session, form, true));
+        return new GRunPrintReportAction(generateReport(session, false, form.remoteForm.getReportData(-1, null, false, null)));
     }
 
     @Converter(from = RunOpenInExcelClientAction.class)
     public GRunOpenInExcelAction convertAction(RunOpenInExcelClientAction action, HttpSession session, FormSessionObject form) throws IOException {
-        return new GRunOpenInExcelAction(generateReport(session, form, false));
+        return new GRunOpenInExcelAction(generateReport(session, true, form.remoteForm.getReportData(-1, null, true, null)));
     }
 
     @Converter(from = AsyncResultClientAction.class)
@@ -148,12 +147,11 @@ public class ClientActionToGwtConverter extends ObjectConverter {
         return new GAsyncResultAction(deserializeServerValue(action.value));
     }
 
-    private String generateReport(HttpSession session, FormSessionObject form, boolean isPdf) {
+    private String generateReport(HttpSession session, boolean toExcel, ReportGenerationData reportData) {
         try {
             TimeZone zone = Calendar.getInstance().getTimeZone();
-            ReportGenerationData data = form.remoteForm.getReportData(-1, null, !isPdf, null);
-            ReportGenerator generator = new ReportGenerator(data, zone);
-            byte[] report = isPdf ? JasperExportManager.exportReportToPdf(generator.createReport(false, null)) : ReportGenerator.exportToExcelByteArray(data, zone);
+            ReportGenerator generator = new ReportGenerator(reportData, zone);
+            byte[] report = !toExcel ? JasperExportManager.exportReportToPdf(generator.createReport(false, null)) : ReportGenerator.exportToExcelByteArray(reportData, zone);
             File file = File.createTempFile("lsfReport", "");
             FileOutputStream fos = new FileOutputStream(file);
             fos.write(report);
@@ -164,7 +162,6 @@ public class ClientActionToGwtConverter extends ObjectConverter {
         } catch (Exception e) {
             Throwables.propagate(e);
         }
-        String s = BaseUtils.lineSeparator;
         return null;
     }
 

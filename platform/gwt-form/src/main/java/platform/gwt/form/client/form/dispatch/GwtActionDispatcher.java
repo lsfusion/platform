@@ -105,8 +105,6 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
     @Override
     public void execute(GReportAction action) {
-        //todo:
-//        SC.say("Report should be opened here.");
     }
 
     public void execute(GDialogAction action) {

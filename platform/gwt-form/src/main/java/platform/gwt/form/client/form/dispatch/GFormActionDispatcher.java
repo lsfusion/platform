@@ -35,7 +35,7 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
 
     @Override
     public void execute(GReportAction action) {
-        super.execute(action);
+        form.runPrintReport(action.reportSID);
     }
 
     @Override
