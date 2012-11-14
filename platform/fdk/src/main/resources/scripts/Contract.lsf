@@ -121,6 +121,35 @@ CLASS STATIC contractSkuForm 'Порядок оплаты договора на 
     requirement 'Платежное требование'
 }
 
+CLASS userContractSku 'Договор на поставку' : contractSku;
+
+supplierContractSku = DATA legalEntity (userContractSku) AUTOSET;
+nameSupplierContractSku 'Поставщик' (contract) = name(supplierContractSku(contract)) IN recognizeGroup MAXCHARWIDTH 30 PREFCHARWIDTH 30;
+partyAContract (contract) += supplierContractSku(contract);
+
+customerContractSku = DATA legalEntity (contractSku) AUTOSET;
+nameCustomerContractSku 'Организация' (contract) = name(customerContractSku(contract)) IN recognizeGroup MAXCHARWIDTH 30 PREFCHARWIDTH 30;
+partyBContract (contract) += customerContractSku(contract);
+
+TABLE supplierCustomer(legalEntity, legalEntity);
+//@defineContractDefault(contractSku, supplier, customer);
+
+dataContractSkuSupplierCustomer = DATA contract (legalEntity, legalEntity);
+
+CONSTRAINT supplier != supplierContractSku(dataContractSkuSupplierCustomer(supplier, customer)) CHECKED BY dataContractSkuSupplierCustomer
+    MESSAGE 'Договор по умолчанию не является договором между выбранными контрагентами';
+CONSTRAINT customer != customerContractSku(dataContractSkuSupplierCustomer(supplier, customer)) CHECKED BY dataContractSkuSupplierCustomer
+    MESSAGE 'Договор по умолчанию не является договором между выбранными контрагентами';
+
+contractSkuSupplierCustomer (supplier, customer) = [GROUP MAX contractSku IF dateFromContract(contractSku) <= currentDate() AND NOT dateToContract(contractSku) < currentDate()
+                                                         BY supplierContractSku(contractSku),customerContractSku(contractSku)](supplier, customer) OR
+                                                  dataContractSkuSupplierCustomer(supplier, customer);
+numberContractSkuSupplierCustomer 'Основной договор' (supplier, customer) = numberContract(contractSkuSupplierCustomer(supplier, customer));
+
+singleContractSkuSupplierCustomer (supplier, customer) = contractSkuSupplierCustomer(supplier, customer) IF countContractPartyAPartyB(supplier, customer);
+
+isSupplierCustomerContractSku 'Основной' (supplier, customer, contractSku) = contractSkuSupplierCustomer(supplier, customer) == contractSku;
+
 CLASS paymentCondition 'Условия оплаты';
 TABLE paymentCondition(paymentCondition);
 
@@ -207,7 +236,7 @@ FORM paymentCondition 'Условия оплаты'
 
 // Формы
 FORM contractSku 'Договор на поставку товаров'
-    OBJECTS c=contract FIXED PANEL
+    OBJECTS c=contractSku FIXED PANEL
     PROPERTIES(c) namePartyAContract, namePartyBContract,
                   numberContract, dateFromContract, dateToContract,
                   nameCurrencyContract, noteContract
@@ -220,17 +249,20 @@ FORM contractSku 'Договор на поставку товаров'
 
     FILTERS contractPaymentCondition(pc) == c
 
-    EDIT contract OBJECT c
+    EDIT userContractSku OBJECT c
 ;
+addUserContractSku 'Добавить' = ACTION ADDFORM userContractSku;
+editUserContractSku 'Редактировать' (userContractSku) = ACTION EDITFORM userContractSku;
+isUserContractSku (contractSku) = TRUE IF contractSku IS userContractSku;
 
 FORM contractSkus 'Договора на поставку'
-    OBJECTS c=contract
+    OBJECTS c=userContractSku
     PROPERTIES(c) READONLY namePartyAContract, namePartyBContract, numberContract, dateFromContract, dateToContract,
                            nameCurrencyContract, noteContract, nameTypeContractSku,
                            nameFormContractSku
 
-    PROPERTIES(c) ADDFORM, EDITFORM, delete
-
+    PROPERTIES() addUserContractSku TODRAW c
+    PROPERTIES(c) editUserContractSku, delete SHOWIF isUserContractSku(c)
 ;
 
 //// --------------------------------------- Договора между юрлицами ------------------------------------- //

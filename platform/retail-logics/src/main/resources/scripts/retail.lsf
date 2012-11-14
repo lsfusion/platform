@@ -155,9 +155,9 @@ META defineDocumentHeaderSupplierContractDepartmentStore(object)
     @defineDocumentHeaderSupplierContract(object);
     @defineDocumentUNPSupplier(object);
 
-    contract###object (object) <- singleContractSkuSupplierSupplierLegalEntity(supplier###object(object), legalEntityDepartmentStore(departmentStore###object(object)))
+    contract###object (object) <- singleContractSkuSupplierCustomer(supplier###object(object), legalEntityDepartmentStore(departmentStore###object(object)))
                                   WHEN CHANGED(supplier###object(object));
-    CONSTRAINT contract###object(object) AND NOT legalEntityDepartmentStore(departmentStore###object(object)) == legalEntityContractSkuSupplier(contract###object(object))
+    CONSTRAINT contract###object(object) AND NOT legalEntityDepartmentStore(departmentStore###object(object)) == customerContractSku(contract###object(object))
         CHECKED BY contract###object MESSAGE 'Выберите договор данного юр. лица';
 END
 

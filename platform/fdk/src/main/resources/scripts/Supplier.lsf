@@ -61,47 +61,47 @@ FORM supplierGroups 'Группы поставщиков'
 
 // ---------------------------------------- Договора ------------------------------------ //
 
-CLASS contractSkuSupplier 'Договор с поставщиком' : contractSku;
-
-supplierContractSkuSupplier = DATA legalEntity (contractSkuSupplier) AUTOSET;
-nameSupplierContractSkuSupplier 'Поставщик' (contract) = name(supplierContractSkuSupplier(contract)) IN recognizeGroup MAXCHARWIDTH 30 PREFCHARWIDTH 30;
-partyAContract (contract) += supplierContractSkuSupplier(contract);
-
-legalEntityContractSkuSupplier = DATA legalEntity (contractSkuSupplier) AUTOSET;
-nameLegalEntityContractSkuSupplier 'Компания' (contract) = name(legalEntityContractSkuSupplier(contract)) IN recognizeGroup MAXCHARWIDTH 30 PREFCHARWIDTH 30;
-partyBContract (contract) += legalEntityContractSkuSupplier(contract);
-
-TABLE supplierLegalEntity(supplier, legalEntity);
-@defineContractDefault(contractSkuSupplier, supplier, legalEntity);
+//CLASS contractSkuSupplier 'Договор с поставщиком' : contractSku;
+//
+//supplierContractSkuSupplier = DATA legalEntity (contractSkuSupplier) AUTOSET;
+//nameSupplierContractSkuSupplier 'Поставщик' (contract) = name(supplierContractSkuSupplier(contract)) IN recognizeGroup MAXCHARWIDTH 30 PREFCHARWIDTH 30;
+//partyAContract (contract) += supplierContractSkuSupplier(contract);
+//
+//legalEntityContractSkuSupplier = DATA legalEntity (contractSkuSupplier) AUTOSET;
+//nameLegalEntityContractSkuSupplier 'Компания' (contract) = name(legalEntityContractSkuSupplier(contract)) IN recognizeGroup MAXCHARWIDTH 30 PREFCHARWIDTH 30;
+//partyBContract (contract) += legalEntityContractSkuSupplier(contract);
+//
+//TABLE supplierLegalEntity(supplier, legalEntity);
+//@defineContractDefault(contractSkuSupplier, supplier, legalEntity);
 
 // Формы
-FORM contractSkuSupplier 'Договор'
-    OBJECTS c=contractSkuSupplier FIXED PANEL
-    PROPERTIES(c) nameLegalEntityContractSkuSupplier, nameSupplierContractSkuSupplier,
-                  numberContract, dateFromContract, dateToContract,
-                  nameCurrencyContract, noteContract
-
-    OBJECTS pc = paymentCondition
-    PROPERTIES(pc) READONLY datePaymentCondition, numberContractPaymentCondition, nameTypePaymentCondition,
-                            nameFormPaymentCondition
-    PROPERTIES(pc) ADDSESSIONFORM, EDITSESSIONFORM, delete
-    ORDER BY datePaymentCondition
-
-    FILTERS contractPaymentCondition(pc) == c
-
-    EDIT contractSkuSupplier OBJECT c
-;
-
-FORM contractsSkuSupplier 'Договора'
-    OBJECTS c=contractSkuSupplier
-    PROPERTIES(c) READONLY numberContract, dateFromContract, dateToContract,
-                           nameLegalEntityContractSkuSupplier, nameSupplierContractSkuSupplier
-
-    PROPERTIES(c) ADDFORM, EDITFORM, delete
-    ORDER BY dateFromContract
-
-    DIALOG contractSkuSupplier OBJECT c
-;
+//FORM contractSkuSupplier 'Договор'
+//    OBJECTS c=contractSku FIXED PANEL
+//    PROPERTIES(c) nameLegalEntityContractSkuSupplier, nameSupplierContractSkuSupplier,
+//                  numberContract, dateFromContract, dateToContract,
+//                  nameCurrencyContract, noteContract
+//
+//    OBJECTS pc = paymentCondition
+//    PROPERTIES(pc) READONLY datePaymentCondition, numberContractPaymentCondition, nameTypePaymentCondition,
+//                            nameFormPaymentCondition
+//    PROPERTIES(pc) ADDSESSIONFORM, EDITSESSIONFORM, delete
+//    ORDER BY datePaymentCondition
+//
+//    FILTERS contractPaymentCondition(pc) == c
+//
+//    EDIT contractSkuSupplier OBJECT c
+//;
+//
+//FORM contractsSkuSupplier 'Договора'
+//    OBJECTS c=contractSkuSupplier
+//    PROPERTIES(c) READONLY numberContract, dateFromContract, dateToContract,
+//                           nameLegalEntityContractSkuSupplier, nameSupplierContractSkuSupplier
+//
+//    PROPERTIES(c) ADDFORM, EDITFORM, delete
+//    ORDER BY dateFromContract
+//
+//    DIALOG contractSkuSupplier OBJECT c
+//;
 
 // ------------------------------------------ Формы для поставщика --------------------------------------- //
 
@@ -128,15 +128,14 @@ FORM supplier 'Поставщик'
     FILTERGROUP filtersLegalEntity
         FILTER 'Есть договор' 'F5' countContractPartyAPartyB(s, co)
 
-    OBJECTS c=contractSkuSupplier
-    PROPERTIES isSupplierLegalEntityContractSkuSupplier(s, co, c)
+    OBJECTS c=contractSku
+    PROPERTIES isSupplierCustomerContractSku(s, co, c)
     PROPERTIES(c)  READONLY numberContract, dateFromContract, dateToContract,
                             nameTypeContractSku, nameFormContractSku,
                             nameCurrencyContract, noteContract
-    PROPERTIES(s, co, c) isSupplierLegalEntityContractSkuSupplier
     PROPERTIES(c)  ADDFORM, EDITFORM, delete
-    FILTERS supplierContractSkuSupplier(c) == s,
-            legalEntityContractSkuSupplier(c) == co
+    FILTERS supplierContractSku(c) == s,
+            customerContractSku(c) == co
 
     OBJECTS co2=legalEntity
     PROPERTIES(co2) READONLY name
@@ -271,14 +270,15 @@ DESIGN suppliers FROM DEFAULT{
 EXTEND FORM legalEntity
     OBJECTS s2=legalEntity
     PROPERTIES(s2) name
-    PROPERTIES(s2, l) numberContractSkuSupplierSupplierLegalEntity
+    PROPERTIES(s2, l) numberContractSkuSupplierCustomer
 
-    OBJECTS cs=contractSkuSupplier
-    PROPERTIES(cs)  READONLY numberContract, nameSupplierContractSkuSupplier, nameTypeContractSku, nameFormContractSku, dateFromContract,
+    OBJECTS cs=contractSku
+    PROPERTIES(cs)  READONLY numberContract, nameSupplierContractSku, nameTypeContractSku, nameFormContractSku, dateFromContract,
                    dateToContract, nameCurrencyContract, noteContract
-    PROPERTIES(cs)  ADDFORM, EDITFORM, delete
-    FILTERS legalEntityContractSkuSupplier(cs) == l,
-            supplierContractSkuSupplier(cs) == s2
+    PROPERTIES ()  addUserContractSku TODRAW cs
+    PROPERTIES(cs)  editUserContractSku, delete SHOWIF isUserContractSku(cs)
+    FILTERS customerContractSku(cs) == l,
+            supplierContractSku(cs) == s2
 
     FILTERGROUP filters
         FILTER 'Есть договор' 'F10' countContractPartyAPartyB(s2, l) DEFAULT
@@ -366,12 +366,12 @@ META defineDocumentHeaderSupplierContract(object)
 
     supplier###object##Detail (detail) = supplier###object(object###object##Detail(detail));
 
-    contract###object (object) = DATA contractSkuSupplier (object);
+    contract###object (object) = DATA contractSku (object);
     numberContract###object 'Договор' (object) = numberContract(contract###object(object)) IN documentPrmGroup;
 
     dateFromContract###object 'Договор от' (object) = dateFromContract(contract###object(object)) IN documentPrmGroup;
 
-    CONSTRAINT contract###object(object) AND NOT supplier###object(object) == supplierContractSkuSupplier(contract###object(object))
+    CONSTRAINT contract###object(object) AND NOT supplier###object(object) == supplierContractSku(contract###object(object))
         CHECKED BY contract###object MESSAGE 'Выберите договор данного поставщика';
     CONSTRAINT contract###object(object) AND NOT activeContract(contract###object(object), date###object(object))
         CHECKED BY contract###object MESSAGE 'Выберите действующий договор';

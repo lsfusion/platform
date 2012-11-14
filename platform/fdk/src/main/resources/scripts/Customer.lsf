@@ -14,18 +14,18 @@ REQUIRE System,
 CLASS customer 'Покупатель' : legalEntity;
 TABLE customer (customer);
 
-CLASS contractSkuCustomer 'Договор с покупателем' : contractSku;
-
-legalEntityContractSkuCustomer = DATA legalEntity (contractSkuCustomer) AUTOSET;
-nameLegalEntityContractSkuCustomer 'Продавец' (contractSkuCustomer) = name(legalEntityContractSkuCustomer(contractSkuCustomer)) IN recognizeGroup MAXCHARWIDTH 30 PREFCHARWIDTH 30;
-partyAContract (contract) += legalEntityContractSkuCustomer(contract);
-
-customerContractSkuCustomer = DATA customer (contractSkuCustomer) AUTOSET;
-nameCustomerContractSkuCustomer 'Покупатель' (contractSkuCustomer) = name(customerContractSkuCustomer(contractSkuCustomer)) IN recognizeGroup MAXCHARWIDTH 30 PREFCHARWIDTH 30;
-partyBContract (contract) += customerContractSkuCustomer(contract);
-
-TABLE legalEntityCustomer(legalEntity, customer);
-@defineContractDefault(contractSkuCustomer, legalEntity, customer);
+//CLASS contractSkuCustomer 'Договор с покупателем' : contractSku;
+//
+//legalEntityContractSkuCustomer = DATA legalEntity (contractSkuCustomer) AUTOSET;
+//nameLegalEntityContractSkuCustomer 'Продавец' (contractSkuCustomer) = name(legalEntityContractSkuCustomer(contractSkuCustomer)) IN recognizeGroup MAXCHARWIDTH 30 PREFCHARWIDTH 30;
+//partyAContract (contract) += legalEntityContractSkuCustomer(contract);
+//
+//customerContractSkuCustomer = DATA customer (contractSkuCustomer) AUTOSET;
+//nameCustomerContractSkuCustomer 'Покупатель' (contractSkuCustomer) = name(customerContractSkuCustomer(contractSkuCustomer)) IN recognizeGroup MAXCHARWIDTH 30 PREFCHARWIDTH 30;
+//partyBContract (contract) += customerContractSkuCustomer(contract);
+//
+//TABLE legalEntityCustomer(legalEntity, customer);
+//@defineContractDefault(contractSkuCustomer, legalEntity, customer);
 
 // ---------------------------------------- Группы покупателей -------------------------------- //
 
@@ -57,33 +57,33 @@ FORM customerGroups 'Группы покупателей'
 ;
 
 // Формы
-FORM contractSkuCustomer 'Договор с покупателем'
-    OBJECTS c=contractSkuCustomer FIXED PANEL
-    PROPERTIES(c) nameLegalEntityContractSkuCustomer, nameCustomerContractSkuCustomer,
-                  numberContract, dateFromContract, dateToContract,
-                  nameCurrencyContract, noteContract
-
-    OBJECTS pc = paymentCondition
-    PROPERTIES(pc) READONLY datePaymentCondition, numberContractPaymentCondition, nameTypePaymentCondition,
-                            nameFormPaymentCondition
-    PROPERTIES(pc) ADDSESSIONFORM, EDITSESSIONFORM, delete
-    ORDER BY datePaymentCondition
-
-    FILTERS contractPaymentCondition(pc) == c
-
-    EDIT contractSkuCustomer OBJECT c
-;
-
-FORM contractsSkuCustomer 'Договора'
-    OBJECTS c=contractSkuCustomer
-    PROPERTIES(c) READONLY numberContract, dateFromContract, dateToContract,
-                           nameLegalEntityContractSkuCustomer, nameCustomerContractSkuCustomer
-
-    PROPERTIES(c) ADDFORM, EDITFORM, delete
-    ORDER BY dateFromContract
-
-    DIALOG contractSkuCustomer OBJECT c
-;
+//FORM contractSkuCustomer 'Договор с покупателем'
+//    OBJECTS c=contractSkuCustomer FIXED PANEL
+//    PROPERTIES(c) nameLegalEntityContractSkuCustomer, nameCustomerContractSkuCustomer,
+//                  numberContract, dateFromContract, dateToContract,
+//                  nameCurrencyContract, noteContract
+//
+//    OBJECTS pc = paymentCondition
+//    PROPERTIES(pc) READONLY datePaymentCondition, numberContractPaymentCondition, nameTypePaymentCondition,
+//                            nameFormPaymentCondition
+//    PROPERTIES(pc) ADDSESSIONFORM, EDITSESSIONFORM, delete
+//    ORDER BY datePaymentCondition
+//
+//    FILTERS contractPaymentCondition(pc) == c
+//
+//    EDIT contractSkuCustomer OBJECT c
+//;
+//
+//FORM contractsSkuCustomer 'Договора'
+//    OBJECTS c=contractSkuCustomer
+//    PROPERTIES(c) READONLY numberContract, dateFromContract, dateToContract,
+//                           nameLegalEntityContractSkuCustomer, nameCustomerContractSkuCustomer
+//
+//    PROPERTIES(c) ADDFORM, EDITFORM, delete
+//    ORDER BY dateFromContract
+//
+//    DIALOG contractSkuCustomer OBJECT c
+//;
 
 FORM customer 'Покупатель'
     OBJECTS cu=customer FIXED PANEL
@@ -105,13 +105,13 @@ FORM customer 'Покупатель'
     FILTERGROUP filters
         FILTER 'Есть договор' 'F10' countContractPartyAPartyB(co, cu) DEFAULT
 
-    OBJECTS c=contractSkuCustomer
-    PROPERTIES isLegalEntityCustomerContractSkuCustomer(co, cu, c)
-    PROPERTIES(c) READONLY numberContract, nameLegalEntityContractSkuCustomer, nameTypeContractSku, nameFormContractSku, dateFromContract,
-                  dateToContract, nameCurrencyContract, noteContract
-    PROPERTIES(c) ADDFORM, EDITFORM, delete
-    FILTERS legalEntityContractSkuCustomer(c) == co,
-            customerContractSkuCustomer(c) == cu
+//    OBJECTS c=contractSkuCustomer
+//    PROPERTIES isLegalEntityCustomerContractSkuCustomer(co, cu, c)
+//    PROPERTIES(c) READONLY numberContract, nameLegalEntityContractSkuCustomer, nameTypeContractSku, nameFormContractSku, dateFromContract,
+//                  dateToContract, nameCurrencyContract, noteContract
+//    PROPERTIES(c) ADDFORM, EDITFORM, delete
+//    FILTERS legalEntityContractSkuCustomer(c) == co,
+//            customerContractSkuCustomer(c) == cu
 
     OBJECTS co2=legalEntity
     PROPERTIES(co2) READONLY name
@@ -152,17 +152,17 @@ DESIGN customer FROM DEFAULT {
        NEW extendContainer BEFORE functions.box {
             type = TABBED;
             ADD a.box;
-            NEW customerContainer {
-                title = 'Договоры';
-                type = SPLITH;
-                childConstraints = TO THE RIGHT;
-
-                ADD co.box;
-                ADD c.box {
-                    fillHorizontal = 3;
-                    c.grid { defaultComponent = TRUE; }
-                }
-            }
+//            NEW customerContainer {
+//                title = 'Договоры';
+//                type = SPLITH;
+//                childConstraints = TO THE RIGHT;
+//
+//                ADD co.box;
+//                ADD c.box {
+//                    fillHorizontal = 3;
+//                    c.grid { defaultComponent = TRUE; }
+//                }
+//            }
             NEW agreementContainer{
                 caption = 'Соглашения';
                 type = SPLITH;
