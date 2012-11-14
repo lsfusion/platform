@@ -6,6 +6,7 @@ import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.user.client.ui.CustomScrollPanel;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.view.client.DefaultSelectionEventManager;
 import platform.gwt.cellview.client.AbstractCellTable;
@@ -83,6 +84,7 @@ public abstract class GGridPropertyTable extends GPropertyTable {
             TableRowElement currentRow = getRowElement(currentIndex);
             pendingState.currentRowTop = currentRow.getOffsetTop();
             pendingState.rowHeight = currentRow.getOffsetHeight();
+            pendingState.hScrollBarHeight = getScrollPanel().getHorizontalScrollbar().asWidget().getOffsetHeight();
         }
     }
 
@@ -90,8 +92,7 @@ public abstract class GGridPropertyTable extends GPropertyTable {
         if (pendingState.verticalScrollPosition >= pendingState.currentRowTop) {
             getScrollPanel().setVerticalScrollPosition(pendingState.currentRowTop);
         } else if (pendingState.verticalScrollPosition + pendingState.scrollPanelHeight <= pendingState.currentRowTop + pendingState.rowHeight) {
-            getScrollPanel().setVerticalScrollPosition(pendingState.currentRowTop
-                    + (getScrollPanel().getMaximumHorizontalScrollPosition() == 0 ? pendingState.rowHeight : pendingState.rowHeight * 2)
+            getScrollPanel().setVerticalScrollPosition(pendingState.currentRowTop + pendingState.rowHeight + pendingState.hScrollBarHeight
                     - pendingState.scrollPanelHeight);
         } else {
             scrollRowToVerticalPosition();
@@ -147,6 +148,7 @@ public abstract class GGridPropertyTable extends GPropertyTable {
         public int scrollPanelHeight;
         public int currentRowTop;
         public int rowHeight;
+        public int hScrollBarHeight;
 
         public GridDataRecord oldRecord = null;
         public int oldKeyScrollTop;
@@ -169,6 +171,29 @@ public abstract class GGridPropertyTable extends GPropertyTable {
             } else if (keyCode == KeyCodes.KEY_END && !ctrlPressed) {
                 getDisplay().setKeyboardSelectedColumn(getDisplay().getColumnCount() - 1);
                 return true;
+            } else if (keyCode == KeyCodes.KEY_DOWN) { // проскролливаем окно таблицы на один ряд вверх или вниз,
+                                                       // чтобы избежать различного поведения в браузерах при выходе фокуса из видимости
+                CustomScrollPanel scrollPanel = ((GGridPropertyTable) getDisplay()).getScrollPanel();
+                int scrollPosition = scrollPanel.getVerticalScrollPosition();
+                int scrollHeight = scrollPanel.getOffsetHeight();
+                TableRowElement row = getDisplay().getRowElement(getDisplay().getKeyboardSelectedRow());
+                int rowHeight = row.getOffsetHeight();
+                int rowTop = row.getOffsetTop();
+                int hScrollBarHeight = scrollPanel.getHorizontalScrollbar().asWidget().getOffsetHeight();
+
+                if (scrollHeight - hScrollBarHeight - (rowTop - scrollPosition) - rowHeight < rowHeight) {
+                    scrollPanel.setVerticalScrollPosition(rowTop + rowHeight - (scrollHeight - hScrollBarHeight) + hScrollBarHeight);
+                }
+            } else if (keyCode == KeyCodes.KEY_UP) {
+                CustomScrollPanel scrollPanel = ((GGridPropertyTable) getDisplay()).getScrollPanel();
+                int scrollPosition = scrollPanel.getVerticalScrollPosition();
+                TableRowElement row = getDisplay().getRowElement(getDisplay().getKeyboardSelectedRow());
+                int rowHeight = row.getOffsetHeight();
+                int rowTop = row.getOffsetTop();
+
+                if (rowTop - scrollPosition <= rowHeight) {
+                    scrollPanel.setVerticalScrollPosition(rowTop - rowHeight);
+                }
             }
             return super.handleKeyEvent(nativeEvent);
         }
