@@ -80,6 +80,11 @@ public class GSinglePropertyTable extends GPropertyTable {
         return foreground;
     }
 
+    @Override
+    public GPropertyDraw getSelectedProperty() {
+        return property;
+    }
+
     public GPropertyDraw getProperty(Cell.Context context) {
         assert context.getIndex() == 0 && context.getColumn() == 0;
         return property;

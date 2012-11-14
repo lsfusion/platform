@@ -2,7 +2,6 @@ package platform.gwt.form.shared.view.grid.editor;
 
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
@@ -10,6 +9,7 @@ import com.google.gwt.user.client.ui.*;
 import net.auroris.ColorPicker.client.ColorPicker;
 import platform.gwt.form.client.MainFrameMessages;
 import platform.gwt.form.shared.view.changes.dto.ColorDTO;
+import platform.gwt.form.shared.view.grid.EditEvent;
 import platform.gwt.form.shared.view.grid.EditManager;
 import platform.gwt.form.shared.view.grid.renderer.ColorGridRenderer;
 
@@ -55,7 +55,7 @@ public class ColorGridEditor extends PopupBasedGridEditor {
     }
 
     @Override
-    public void startEditing(NativeEvent editEvent, Cell.Context context, Element parent, Object oldValue) {
+    public void startEditing(EditEvent editEvent, Cell.Context context, Element parent, Object oldValue) {
         if (oldValue != null) {
             try {
                 colorPicker.setHex(((ColorDTO)oldValue).value);

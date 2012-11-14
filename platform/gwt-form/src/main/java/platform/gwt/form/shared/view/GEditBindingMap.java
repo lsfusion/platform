@@ -2,6 +2,9 @@ package platform.gwt.form.shared.view;
 
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.KeyCodes;
+import platform.gwt.form.shared.view.grid.EditEvent;
+import platform.gwt.form.shared.view.grid.InternalEditEvent;
+import platform.gwt.form.shared.view.grid.NativeEditEvent;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -32,20 +35,25 @@ public class GEditBindingMap implements Serializable {
         this.mouseBinding = mouseBinding;
     }
 
-    public String getAction(NativeEvent event) {
-        String eventType = event.getType();
-        if ("dblclick".equals(eventType)) {
-            return mouseBinding;
-        } else if (isPossibleEditKeyEvent(event)) {
-            String actionSID = getKeyAction(new Key(event.getKeyCode(), event.getAltKey(), event.getCtrlKey(), event.getShiftKey()));
+    public String getAction(EditEvent event) {
+        if (event instanceof NativeEditEvent) {
+            NativeEvent nativeEvent = ((NativeEditEvent) event).getNativeEvent();
+            String eventType = nativeEvent.getType();
+            if ("dblclick".equals(eventType)) {
+                return mouseBinding;
+            } else if (isPossibleEditKeyEvent(nativeEvent)) {
+                String actionSID = getKeyAction(new Key(nativeEvent.getKeyCode(), nativeEvent.getAltKey(), nativeEvent.getCtrlKey(), nativeEvent.getShiftKey()));
 
-            if (actionSID != null) {
-                return actionSID;
-            }
+                if (actionSID != null) {
+                    return actionSID;
+                }
 
-            if (isCommonEditKeyEvent(event)) {
-                return CHANGE;
+                if (isCommonEditKeyEvent(nativeEvent)) {
+                    return CHANGE;
+                }
             }
+        } else if (event instanceof InternalEditEvent) {
+            return ((InternalEditEvent) event).getAction();
         }
 
         return null;
@@ -103,7 +111,7 @@ public class GEditBindingMap implements Serializable {
     }
 
     public void setKeyAction(Key key, String actionSID) {
-        getKeyBindingMap().put(key, actionSID);
+        createKeyBindingMap().put(key, actionSID);
     }
 
     public String getKeyAction(Key key) {
@@ -111,20 +119,24 @@ public class GEditBindingMap implements Serializable {
     }
 
     public void setContextMenuAction(String actionSID, String caption) {
-        getContextMenuItems().put(actionSID, caption);
+        createContextMenuItems().put(actionSID, caption);
     }
 
-    private HashMap<Key,String> getKeyBindingMap() {
+    private HashMap<Key,String> createKeyBindingMap() {
         if (keyBindingMap == null) {
             keyBindingMap = new HashMap<Key, String>();
         }
         return keyBindingMap;
     }
 
-    public LinkedHashMap<String, String> getContextMenuItems() {
+    public LinkedHashMap<String, String> createContextMenuItems() {
         if (contextMenuBindingMap == null) {
             contextMenuBindingMap = new LinkedHashMap<String, String>();
         }
+        return contextMenuBindingMap;
+    }
+
+    public LinkedHashMap<String, String> getContextMenuItems() {
         return contextMenuBindingMap;
     }
 

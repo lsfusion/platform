@@ -2,13 +2,13 @@ package platform.gwt.form.shared.view.grid.editor;
 
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.datepicker.client.DatePicker;
+import platform.gwt.form.shared.view.grid.EditEvent;
 import platform.gwt.form.shared.view.grid.EditManager;
 import platform.gwt.base.shared.GwtSharedUtils;
 
@@ -41,7 +41,7 @@ public class DateGridEditor extends PopupBasedGridEditor {
     }
 
     @Override
-    public void startEditing(NativeEvent editEvent, Cell.Context context, Element parent, Object oldValue) {
+    public void startEditing(EditEvent editEvent, Cell.Context context, Element parent, Object oldValue) {
         if (oldValue != null) {
             datePicker.setValue((Date) oldValue);
             datePicker.setCurrentMonth((Date) oldValue);

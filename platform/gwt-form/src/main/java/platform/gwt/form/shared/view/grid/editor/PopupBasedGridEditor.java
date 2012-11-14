@@ -12,6 +12,7 @@ import com.google.gwt.text.shared.SimpleSafeHtmlRenderer;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.Widget;
+import platform.gwt.form.shared.view.grid.EditEvent;
 import platform.gwt.form.shared.view.grid.EditManager;
 import platform.gwt.form.shared.view.grid.renderer.SafeHtmlGridRenderer;
 
@@ -41,11 +42,11 @@ public abstract class PopupBasedGridEditor implements GridCellEditor {
                 }
             }
         };
-        popup.add(createPopupComponent());
+        popup.setWidget(createPopupComponent());
     }
 
     @Override
-    public void startEditing(NativeEvent editEvent, Cell.Context context, final Element parent, Object oldValue) {
+    public void startEditing(EditEvent editEvent, Cell.Context context, final Element parent, Object oldValue) {
         showPopup(parent);
     }
 

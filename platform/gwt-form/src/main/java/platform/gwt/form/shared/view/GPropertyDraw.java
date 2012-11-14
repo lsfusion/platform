@@ -12,6 +12,7 @@ import platform.gwt.form.shared.view.reader.*;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class GPropertyDraw extends GComponent implements GPropertyReader {
@@ -153,6 +154,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
 
     public String getPreferredHeight() {
         return preferredHeight + "px";
+    }
+
+    public LinkedHashMap<String, String> getContextMenuItems() {
+        return editBindingMap == null ? null : editBindingMap.getContextMenuItems();
     }
 
     @Override

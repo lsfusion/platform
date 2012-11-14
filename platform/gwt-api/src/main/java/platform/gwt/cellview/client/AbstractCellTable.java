@@ -146,7 +146,9 @@ public abstract class AbstractCellTable<T> extends AbstractHasData<T> {
             return;
           }
         }
-      } else if (BrowserEvents.CLICK.equals(eventType) || BrowserEvents.FOCUS.equals(eventType)) {
+      } else if (BrowserEvents.CLICK.equals(eventType) ||
+              BrowserEvents.FOCUS.equals(eventType) ||
+              (BrowserEvents.MOUSEDOWN.equals(eventType) && nativeEvent.getButton() == Event.BUTTON_RIGHT)) {
         /*
          * Move keyboard focus to the clicked column, even if the cell is being
          * edited. Unlike key events, we aren't moving the currently selected

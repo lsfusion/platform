@@ -16,8 +16,10 @@ import platform.gwt.form.shared.view.GEditBindingMap;
 import platform.gwt.form.shared.view.GPropertyDraw;
 import platform.gwt.form.shared.view.changes.GGroupObjectValue;
 import platform.gwt.form.shared.view.classes.GType;
+import platform.gwt.form.shared.view.grid.EditEvent;
 import platform.gwt.form.shared.view.grid.EditManager;
 import platform.gwt.form.shared.view.grid.GridEditableCell;
+import platform.gwt.form.shared.view.grid.NativeEditEvent;
 import platform.gwt.form.shared.view.grid.editor.GridCellEditor;
 
 import static platform.gwt.form.shared.view.GEditBindingMap.Key;
@@ -28,8 +30,10 @@ public abstract class GPropertyTable extends DataGrid implements EditManager, GE
     protected final GEditBindingMap editBindingMap;
     protected final GEditPropertyDispatcher editDispatcher;
 
+    private GGridPropertyTableMenuHandler contextMenuHandler = new GGridPropertyTableMenuHandler(this);
+
     protected GridEditableCell editCell;
-    protected NativeEvent editEvent;
+    protected EditEvent editEvent;
     protected Cell.Context editContext;
     protected Element editCellParent;
     protected GType editType;
@@ -60,7 +64,7 @@ public abstract class GPropertyTable extends DataGrid implements EditManager, GE
 
         GridCellEditor cellEditor = valueType.createGridCellEditor(this, getProperty(editContext));
         if (cellEditor != null) {
-            NativeEvent event = editEvent;
+            EditEvent event = editEvent;
             editEvent = null;
             form.setCurrentEditingTable(this);
             editCell.startEditing(event, editContext, editCellParent, cellEditor, oldValue);
@@ -76,6 +80,8 @@ public abstract class GPropertyTable extends DataGrid implements EditManager, GE
 
     public abstract boolean isEditable(Cell.Context context);
 
+    public abstract GPropertyDraw getSelectedProperty();
+
     public abstract GPropertyDraw getProperty(Cell.Context editContext);
 
     public abstract GGroupObjectValue getColumnKey(Cell.Context editContext);
@@ -84,7 +90,7 @@ public abstract class GPropertyTable extends DataGrid implements EditManager, GE
 
     public abstract Object getValueAt(Cell.Context context);
 
-    protected String getEditAction(GPropertyDraw property, NativeEvent event) {
+    protected String getEditAction(GPropertyDraw property, EditEvent event) {
         String actionSID = null;
         if (property.editBindingMap != null) {
             actionSID = property.editBindingMap.getAction(event);
@@ -97,9 +103,19 @@ public abstract class GPropertyTable extends DataGrid implements EditManager, GE
         return actionSID;
     }
 
-    public void startEdit(GridEditableCell editCell, NativeEvent event, Cell.Context editContext, Element parent) {
+    public void onEventFromCell(GridEditableCell editCell, NativeEvent event, Cell.Context editContext, Element parent) {
         //todo: в будущем похоже нужно вообще избавиться от GridEditableCell... вместо этого лучше напрямую переопределить AbstractCellTable.fireEventToCell()
 
+        if (BrowserEvents.CONTEXTMENU.equals(event.getType())) {
+            event.stopPropagation();
+            event.preventDefault();
+            contextMenuHandler.show(event.getClientX(), event.getClientY(), editCell, editContext, parent);
+        } else {
+            onEditEvent(editCell, new NativeEditEvent(event), editContext, parent);
+        }
+    }
+
+    public void onEditEvent(GridEditableCell editCell, EditEvent event, Cell.Context editContext, Element parent) {
         if (form.isEditing()) return;
 
         if (!isEditable(editContext)) return;
@@ -110,7 +126,6 @@ public abstract class GPropertyTable extends DataGrid implements EditManager, GE
 
         if (actionSID != null) {
             event.stopPropagation();
-            event.preventDefault();
 
             this.editCell = editCell;
             this.editEvent = event;

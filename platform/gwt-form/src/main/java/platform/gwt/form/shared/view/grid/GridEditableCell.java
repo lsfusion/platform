@@ -19,7 +19,7 @@ public class GridEditableCell extends AbstractCell<Object> {
     private Object editKey = null;
 
     public GridEditableCell(GPropertyTable table) {
-        super("dblclick", "keyup", "keydown", "keypress", "blur");
+        super("dblclick", "keyup", "keydown", "keypress", "blur", "contextmenu");
         this.table = table;
     }
 
@@ -34,11 +34,11 @@ public class GridEditableCell extends AbstractCell<Object> {
         if (isEditingCell(context)) {
             cellEditor.onBrowserEvent(context, parent, value, event, valueUpdater);
         } else {
-            table.startEdit(this, event, context, parent);
+            table.onEventFromCell(this, event, context, parent);
         }
     }
 
-    public void startEditing(NativeEvent editEvent, final Context context, Element parent, GridCellEditor cellEditor, Object oldValue) {
+    public void startEditing(EditEvent editEvent, final Context context, Element parent, GridCellEditor cellEditor, Object oldValue) {
         this.editKey = context.getKey();
         this.cellEditor = cellEditor;
 

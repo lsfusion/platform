@@ -9,7 +9,9 @@ import com.google.gwt.safehtml.client.SafeHtmlTemplates;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.user.client.ui.impl.TextBoxImpl;
+import platform.gwt.form.shared.view.grid.EditEvent;
 import platform.gwt.form.shared.view.grid.EditManager;
+import platform.gwt.form.shared.view.grid.NativeEditEvent;
 
 public abstract class TextFieldGridEditor implements GridCellEditor {
     interface Template extends SafeHtmlTemplates {
@@ -44,17 +46,18 @@ public abstract class TextFieldGridEditor implements GridCellEditor {
     private static TextBoxImpl textBoxImpl = GWT.create(TextBoxImpl.class);
 
     @Override
-    public void startEditing(NativeEvent editEvent, Cell.Context context, Element parent, Object oldValue) {
+    public void startEditing(EditEvent editEvent, Cell.Context context, Element parent, Object oldValue) {
         currentText = oldValue == null ? "" : oldValue.toString();
         InputElement inputElement = getInputElement(parent);
         boolean selectAll = true;
-        if (editEvent != null) {
-            String eventType = editEvent.getType();
-            if ("keydown".equals(eventType) && editEvent.getKeyCode() == KeyCodes.KEY_DELETE) {
+        if (editEvent instanceof NativeEditEvent) {
+            NativeEvent nativeEvent = ((NativeEditEvent) editEvent).getNativeEvent();
+            String eventType = nativeEvent.getType();
+            if ("keydown".equals(eventType) && nativeEvent.getKeyCode() == KeyCodes.KEY_DELETE) {
                 currentText = "";
                 selectAll = false;
             } else if ("keypress".equals(eventType)) {
-                currentText = String.valueOf((char)editEvent.getCharCode());
+                currentText = String.valueOf((char)nativeEvent.getCharCode());
                 selectAll = false;
             }
         }

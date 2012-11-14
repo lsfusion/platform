@@ -59,7 +59,7 @@ public class GGridPropertyTableHeader extends Header<String> {
                 int anchorRight = target.getAbsoluteRight() - ANCHOR_WIDTH;
                 int anchorLeft = target.getAbsoluteLeft() + ANCHOR_WIDTH;
 
-                int headerIndex = table.headers.indexOf(this);
+                int headerIndex = table.getHeaderIndex(this);
                 if ((mouseX > anchorRight && headerIndex != table.getColumnCount() - 1) || (mouseX < anchorLeft && headerIndex > 0)) {
                     target.getStyle().setCursor(Cursor.COL_RESIZE);
                     if (eventType.equals("mousedown")) {

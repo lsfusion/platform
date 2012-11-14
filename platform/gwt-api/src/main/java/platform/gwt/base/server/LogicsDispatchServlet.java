@@ -51,15 +51,12 @@ public abstract class LogicsDispatchServlet<T extends RemoteLogicsInterface> ext
         } catch (RemoteDispatchException e) {
             getLogicsProvider().invalidate();
 
-            e.printStackTrace();
-            logger.error("Ошибка в LogicsDispatchServlet.execute: ", e);
+            logger.error("Ошибка в LogicsDispatchServlet.execute: ", e.getRemote());
             throw new InvalidateException("Внутренняя ошибка сервера. Попробуйте перезагрузить страницу.");
         } catch (RemoteMessageException e) {
-            e.printStackTrace();
             logger.error("Ошибка в LogicsDispatchServlet.execute: ", e);
             throw new MessageException("Внутренняя ошибка сервера: " + e.getMessage());
         } catch (Throwable e) {
-            e.printStackTrace();
             logger.error("Ошибка в LogicsDispatchServlet.execute: ", e);
             throw new MessageException("Внутренняя ошибка сервера.");
         }

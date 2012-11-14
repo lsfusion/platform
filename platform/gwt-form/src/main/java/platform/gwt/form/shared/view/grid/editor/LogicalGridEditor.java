@@ -5,6 +5,7 @@ import com.google.gwt.cell.client.ValueUpdater;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
+import platform.gwt.form.shared.view.grid.EditEvent;
 import platform.gwt.form.shared.view.grid.EditManager;
 
 public class LogicalGridEditor implements GridCellEditor {
@@ -15,7 +16,7 @@ public class LogicalGridEditor implements GridCellEditor {
     protected EditManager editManager;
 
     @Override
-    public void startEditing(NativeEvent editEvent, Cell.Context context, Element parent, Object oldValue) {
+    public void startEditing(EditEvent editEvent, Cell.Context context, Element parent, Object oldValue) {
         Boolean currentValue = (Boolean) oldValue;
         editManager.commitEditing(currentValue == null || !currentValue ? true : null);
     }

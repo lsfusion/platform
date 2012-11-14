@@ -74,7 +74,6 @@ public class BusinessLogicsProviderImpl<T extends RemoteLogicsInterface> impleme
 
             return loader.getRemoteLogics();
         } catch (Exception e) {
-            e.printStackTrace();
             logger.error("Ошибка при получении объекта логики: ", e);
             throw new RuntimeException("Произошла ошибка при подлючении к серверу приложения.", e);
         }
