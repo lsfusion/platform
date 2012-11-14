@@ -38,8 +38,8 @@ supplierGroupSupplier (supplier) = DATA supplierGroup (supplier) AUTOSET NOT NUL
 nameSupplierGroupSupplier 'Группа поставщиков' (supplier) = name(supplierGroupSupplier(supplier));
 
 @defineHierarchy(supplierGroup);
-parentLegalEntityGroup(supplierGroup) += parentSupplierGroup(supplierGroup);
-legalEntityGroupLegalEntity(supplier) += supplierGroupSupplier(supplier);
+//parentLegalEntityGroup(supplierGroup) += parentSupplierGroup(supplierGroup);
+//legalEntityGroupLegalEntity(supplier) += supplierGroupSupplier(supplier);
 
 inSupplierGroupSupplier (supplierGroup, supplier) =
     UNION OVERRIDE supplier IS supplier AND NOT supplierGroup IS supplierGroup, isParentSupplierGroupSupplierGroup(supplierGroupSupplier(supplier), supplierGroup);

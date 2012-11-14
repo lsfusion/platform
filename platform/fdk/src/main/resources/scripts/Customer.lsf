@@ -35,8 +35,8 @@ customerGroupCustomer (customer) = DATA customerGroup (customer) AUTOSET NOT NUL
 nameCustomerGroupCustomer 'Группа покупателей' (customer) = name(customerGroupCustomer(customer));
 
 @defineHierarchy(customerGroup);
-parentLegalEntityGroup(customerGroup) += parentCustomerGroup(customerGroup);
-legalEntityGroupLegalEntity(customer) += customerGroupCustomer(customer);
+//parentLegalEntityGroup(customerGroup) += parentCustomerGroup(customerGroup);
+//legalEntityGroupLegalEntity(customer) += customerGroupCustomer(customer);
 
 inCustomerGroupCustomer (customerGroup, customer) =
     UNION OVERRIDE customer IS customer AND NOT customerGroup IS customerGroup, isParentCustomerGroupCustomerGroup(customerGroupCustomer(customer), customerGroup);

@@ -68,11 +68,12 @@ GROUP docGroup 'Для договора' : publicGroup;
 
 // ----------------------------------- Группы юридический лиц ---------------------------- //
 
-CLASS ABSTRACT legalEntityGroup 'Группа юр. лиц' : named;
+CLASS legalEntityGroup 'Группа юр. лиц' : named;
 
-legalEntityGroupLegalEntity (legalEntity) = ABSTRACT legalEntityGroup (legalEntity) PERSISTENT;
+legalEntityGroupLegalEntity (legalEntity) = DATA legalEntityGroup (legalEntity) PERSISTENT;
+nameLegalEntityGroupLegalEntity 'Группа юр. лиц' (legalEntity) = name(legalEntityGroupLegalEntity(legalEntity));
 
-@defineHierarchyAbstract(legalEntityGroup);
+@defineHierarchy(legalEntityGroup);
 
 inLegalEntityGroupLegalEntity (legalEntityGroup, legalEntity) =
     UNION OVERRIDE legalEntity IS legalEntity AND NOT legalEntityGroup IS legalEntityGroup,
@@ -170,7 +171,7 @@ CONSTRAINT countryLegalEntity(legalEntityLicense(license)) != countryLicense(lic
 
 FORM legalEntity 'Организация'
     OBJECTS l=legalEntity FIXED PANEL
-    PROPERTIES(l) name, nameCountryLegalEntity, nameLanguageLegalEntity, nameCurrencyLegalEntity,
+    PROPERTIES(l) name, nameLegalEntityGroupLegalEntity, nameCountryLegalEntity, nameLanguageLegalEntity, nameCurrencyLegalEntity,
                    nameOwnershipLegalEntity, shortNameOwnershipLegalEntity, fullNameLegalEntity,
                    addressLegalEntity ON CHANGE EXEC dialogAddressLegalEntity(l),
                    postAddressLegalEntity ON CHANGE EXEC dialogPostAddressLegalEntity(l),
@@ -232,11 +233,11 @@ FORM legalEntities 'Организации'
     PROPERTIES(lg) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
 
     OBJECTS l=legalEntity
-    PROPERTIES(l) READONLY name, fullNameLegalEntity, shortNameOwnershipLegalEntity, //nameLegalEntityGroupLegalEntity,
+    PROPERTIES(l) READONLY name, fullNameLegalEntity, shortNameOwnershipLegalEntity, nameLegalEntityGroupLegalEntity,
                             numberAccountLegalEntity, addressLegalEntity, phoneLegalEntity
     PROPERTIES(l) ADDFORM, EDITFORM, delete
 
-    FILTERS inLegalEntityGroupLegalEntity(lg, l)
+    FILTERS (inLegalEntityGroupLegalEntity(lg, l) OR (l IS legalEntity AND lg IS legalEntityGroup AND NOT legalEntityGroupLegalEntity(l)))
 ;
 
 

@@ -401,18 +401,7 @@ EXTEND FORM legalEntity
     PROPERTIES createAgreementCustomerSupplier(s, l) TODRAW ag FORCE PANEL DRAWTOTOOLBAR, addAgreementsCustomerSupplier(s, l) TODRAW ag FORCE PANEL DRAWTOTOOLBAR
     FILTERS inAgreementCustomerOver(ag, l)
 
-    OBJECTS c=legalEntity
-    PROPERTIES(c) READONLY name
 
-    OBJECTS ag2=agreement
-    PROPERTIES(ag2, l, c) isDefaultAgreementCustomerSupplier
-    PROPERTIES(ag2, l) inAgreementCustomerOver
-    PROPERTIES(ag2) READONLY name, numberObject, seriesObject, dateAgreement, timeAgreement,
-                            fromDateAgreement, fromTimeAgreement, toDateAgreement, toTimeAgreement,
-                            nameCurrencyAgreement, namePriceListTypeAgreement, noteAgreement
-    PROPERTIES(ag2) EDITFORM
-    PROPERTIES createAgreementCustomerSupplier(l, c) TODRAW ag2 FORCE PANEL DRAWTOTOOLBAR, addAgreementsCustomerSupplier(l, c) TODRAW ag2 FORCE PANEL DRAWTOTOOLBAR
-    FILTERS inAgreementCustomerOver(ag2, l)
 ;
 
 EXTEND DESIGN legalEntity {
@@ -423,11 +412,6 @@ EXTEND DESIGN legalEntity {
             ADD s.box;
             ADD ag.box{fillHorizontal = 3;}
         }
-        NEW agreementSaleContainer{
-            caption = 'Соглашения на продажу';
-            type = SPLITH;
-            ADD c.box;
-            ADD ag2.box{fillHorizontal = 3;}
-        }
+
     }
 }
