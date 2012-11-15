@@ -1,0 +1,32 @@
+MODULE ItemTax;
+
+REQUIRE System, Item, StockTax;
+
+NAMESPACE Item;
+
+//------------------------- НДС -------------------------//
+
+VATItemCountry (item, country) = DATA range (item, country);
+
+VATSkuCountry (item, country) += VATItemCountry (item, country);
+
+CONSTRAINT taxRange(VATItemCountry(item, country)) != tax.taxVAT OR
+           countryRange(VATItemCountry(item, country)) != country AS country
+           CHECKED BY VATItemCountry
+           MESSAGE 'ошибка: Шкала и страна строки должна соответствовать шкале и строке НДС';
+
+EXTEND FORM item
+    OBJECTS c=country
+    PROPERTIES (c) READONLY name
+    PROPERTIES (i, c) numberVATSkuCountry, valueCurrentVATSkuCountry
+    FILTERS countRangeTaxCountry (tax.taxVAT, c)
+;
+
+EXTEND DESIGN item{
+    itemDetail{
+        NEW itemTax AFTER itemPrimary {
+            ADD c.box;
+            caption = 'Налоги';
+        }
+    }
+}

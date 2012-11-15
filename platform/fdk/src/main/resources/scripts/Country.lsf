@@ -42,11 +42,11 @@ addDayOff 'Добавить выходной день' = ACTION (country) NEWSES
 }
 
 FORM daysOffForm 'Выходные дни' // logics.days.off
-OBJECTS country 'Страна', day=DATE 'День'
-PROPERTIES(country) FORCE PANEL fillDaysOff, addDayOff
-PROPERTIES(country) READONLY nameOriginCountry, sidCountry, sidOrigin2Country, sidOrigin3Country, nameCurrencyCountry, residentCountry
-PROPERTIES OBJVALUE(day), isDayOffCountryDate(country, day)
-FILTERS isDayOffCountryDate(country, day)
+    OBJECTS country 'Страна', day=DATE 'День'
+    PROPERTIES(country) FORCE PANEL fillDaysOff, addDayOff
+    PROPERTIES(country) READONLY nameOriginCountry, sidCountry, sidOrigin2Country, sidOrigin3Country, nameCurrencyCountry, residentCountry
+    PROPERTIES OBJVALUE(day), isDayOffCountryDate(country, day)
+    FILTERS isDayOffCountryDate(country, day)
 ;
 
 DESIGN daysOffForm FROM DEFAULT {

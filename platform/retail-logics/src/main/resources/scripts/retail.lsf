@@ -82,7 +82,9 @@ REQUIRE System,
         SaleTrip,
         SaleReturnTrip,
         Agreement,
-        Warehouse;
+        Warehouse,
+        StockTax,
+        ItemTax;
 
 GROUP emailGroup 'E-mail' : baseGroup;
 

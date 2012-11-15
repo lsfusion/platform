@@ -1,0 +1,17 @@
+MODULE StockTax;
+
+REQUIRE System, Stock, Tax, Country;
+
+NAMESPACE Stock;
+
+//------------------------- НДС -------------------------//
+
+VATSkuCountry (sku, country) = ABSTRACT range (sku, country);
+
+numberVATSkuCountry 'НДС, номер' (sku, country) = numberRange (VATSkuCountry(sku, country));
+valueCurrentVATSkuCountry 'Действующая ставка' (sku, country) = valueCurrentRateRange(VATSkuCountry(sku, country));
+
+CONSTRAINT taxRange(VATSkuCountry(sku, country)) != tax.taxVAT OR
+           countryRange(VATSkuCountry(sku, country)) != country AS country
+           CHECKED BY VATSkuCountry
+           MESSAGE 'ошибка: Шкала и страна строки должна соответствовать шкале и строке НДС';
