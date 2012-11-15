@@ -10,9 +10,9 @@
         <version>1.0-SNAPSHOT</version>
         <relativePath>../base/pom.xml</relativePath>
     </parent>
-    <artifactId>jasperapi</artifactId>
+    <artifactId>report-api</artifactId>
     <packaging>jar</packaging>
-    <name>Jasper API</name>
+    <name>Reports API</name>
 
     <dependencies>
         <dependency>

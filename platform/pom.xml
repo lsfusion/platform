@@ -11,7 +11,7 @@
         <module>base</module>
         <module>logics</module>
         <module>api</module>
-        <module>jasperapi</module>
+        <module>report-api</module>
         <module>desktop-client</module>
         <module>server</module>
         <module>fdk</module>

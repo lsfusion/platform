@@ -79,15 +79,15 @@
         </antcall>
     </target>
 
-    <target name="jasperapi-recursiveCompile">
+    <target name="report-api-recursiveCompile">
         <antcall target="recursiveCompile">
-            <param name="artifactId" value="jasperapi"/>
+            <param name="artifactId" value="report-api"/>
         </antcall>
     </target>
 
-    <target name="jasperapi-quickCompile">
+    <target name="report-api-quickCompile">
         <antcall target="quickCompile">
-            <param name="artifactId" value="jasperapi"/>
+            <param name="artifactId" value="report-api"/>
         </antcall>
     </target>
 

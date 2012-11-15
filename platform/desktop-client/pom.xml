@@ -32,7 +32,7 @@
         </dependency>
         <dependency>
             <groupId>by.luxsoft.platform</groupId>
-            <artifactId>jasperapi</artifactId>
+            <artifactId>report-api</artifactId>
         </dependency>
 
         <dependency>
