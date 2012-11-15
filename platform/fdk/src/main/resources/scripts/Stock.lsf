@@ -1206,15 +1206,15 @@ META defineDocumentSkuStockCustom(object, detail, skuProp, stockProp)
                 }
             }
         } ELSE {
-            ADDOBJ detail;
-            FOR d == addedObject() DO {
-               SET object###detail(d) <- object;
-               SET data###stockProp###detail (d) <- stock;
-               SET skuProp###detail(d) <- sku;
-               SET quantity###detail (d) <- requestedNumeric();
-               SET shipmentDataDate###detail (d) <- shipmentDate###object(object);
-               SET shipmentDataTime###detail (d) <- shipmentTime###object(object);
-            }
+            IF requestedNumeric() THEN
+                FOR ADDOBJ d = detail DO {
+                   SET object###detail(d) <- object;
+                   SET data###stockProp###detail (d) <- stock;
+                   SET skuProp###detail(d) <- sku;
+                   SET quantity###detail (d) <- requestedNumeric();
+                   SET shipmentDataDate###detail (d) <- shipmentDate###object(object);
+                   SET shipmentDataTime###detail (d) <- shipmentTime###object(object);
+                }
         }
     }
 END
