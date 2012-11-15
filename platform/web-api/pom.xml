@@ -10,7 +10,7 @@
         <relativePath>../base/pom.xml</relativePath>
     </parent>
 
-    <artifactId>gwt-api</artifactId>
+    <artifactId>web-api</artifactId>
     <packaging>jar</packaging>
     <name>GWT Api</name>
 

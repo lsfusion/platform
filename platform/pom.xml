@@ -12,7 +12,7 @@
         <module>logics</module>
         <module>api</module>
         <module>jasperapi</module>
-        <module>client</module>
+        <module>desktop-client</module>
         <module>fullclient</module>
         <module>server</module>
         <module>fdk</module>
@@ -27,8 +27,8 @@
         <module>equ-clt</module>
         <module>equ-srv</module>
         <module>retail-logics</module>
-        <module>gwt-form</module>
-        <module>gwt-api</module>
+        <module>web-api</module>
+        <module>web-client</module>
         <module>sgwt-api</module>
         <module>paas-api</module>
         <module>paas-logics</module>

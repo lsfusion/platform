@@ -35,7 +35,7 @@
     <dependencies>
         <dependency>
             <groupId>by.luxsoft.platform</groupId>
-            <artifactId>client</artifactId>
+            <artifactId>desktop-client</artifactId>
         </dependency>
         <dependency>
             <groupId>by.luxsoft.platform</groupId>

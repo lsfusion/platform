@@ -91,15 +91,15 @@
         </antcall>
     </target>
 
-    <target name="client-recursiveCompile">
+    <target name="desktop-client-recursiveCompile">
         <antcall target="recursiveCompile">
-            <param name="artifactId" value="client"/>
+            <param name="artifactId" value="desktop-client"/>
         </antcall>
     </target>
 
-    <target name="client-quickCompile">
+    <target name="desktop-client-quickCompile">
         <antcall target="quickCompile">
-            <param name="artifactId" value="client"/>
+            <param name="artifactId" value="desktop-client"/>
         </antcall>
     </target>
 
@@ -283,27 +283,27 @@
         </antcall>
     </target>
 
-    <target name="gwt-form-recursiveCompile">
+    <target name="web-client-recursiveCompile">
         <antcall target="recursiveCompile">
-            <param name="artifactId" value="gwt-form"/>
+            <param name="artifactId" value="web-client"/>
         </antcall>
     </target>
 
-    <target name="gwt-form-quickCompile">
+    <target name="web-client-quickCompile">
         <antcall target="quickCompile">
-            <param name="artifactId" value="gwt-form"/>
+            <param name="artifactId" value="web-client"/>
         </antcall>
     </target>
 
-    <target name="gwt-api-recursiveCompile">
+    <target name="web-api-recursiveCompile">
         <antcall target="recursiveCompile">
-            <param name="artifactId" value="gwt-api"/>
+            <param name="artifactId" value="web-api"/>
         </antcall>
     </target>
 
-    <target name="gwt-api-quickCompile">
+    <target name="web-api-quickCompile">
         <antcall target="quickCompile">
-            <param name="artifactId" value="gwt-api"/>
+            <param name="artifactId" value="web-api"/>
         </antcall>
     </target>
 

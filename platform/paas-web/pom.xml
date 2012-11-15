@@ -15,7 +15,7 @@
     <dependencies>
         <dependency>
             <groupId>by.luxsoft.platform</groupId>
-            <artifactId>gwt-api</artifactId>
+            <artifactId>web-api</artifactId>
         </dependency>
         <dependency>
             <groupId>by.luxsoft.platform</groupId>
