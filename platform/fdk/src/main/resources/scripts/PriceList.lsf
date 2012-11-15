@@ -679,7 +679,8 @@ DESIGN priceListTypes FROM DEFAULT{
         type = SPLITV;
         ADD pt.box;
         NEW firstContainer{
-        ADD s.box;
+            fillVertical = 2.0;
+            ADD s.box;
             NEW tabContainer{
                 type = TABBED;
                 ADD p.box{
@@ -695,15 +696,15 @@ DESIGN priceListTypes FROM DEFAULT{
                             caption = 'Товары';
                             childConstraints = TO THE RIGHT;
                             type = SPLITH;
-                            ADD skuTree.tree.box{fillHorizontal = 2.0;}
-                            ADD sk.box{fillHorizontal = 3.0;}
+                            ADD skuTree.tree.box;
+                            ADD sk.box{fillHorizontal = 2.0;}
                         }
                         NEW batchContainer{
                             caption = 'Партии';
                             childConstraints = TO THE RIGHT;
                             type = SPLITH;
-                            ADD skuTree2.tree.box{fillHorizontal = 2.0;}
-                            ADD b.box{fillHorizontal = 3.0;}
+                            ADD skuTree2.tree.box;
+                            ADD b.box{fillHorizontal = 2.0;}
                         }
                     }
                 }
