@@ -445,7 +445,7 @@ copyUserPriceList 'Копировать' = ACTION (price) NEWSESSION {
                 SET skuUserPriceListDetail(d) <- skuUserPriceListDetail(detail);
             }
         }
-        FORM userPriceList OBJECTS p = u MANAGESESSION MODAL;
+        FORM userPriceList OBJECTS p = u MANAGESESSION DOCKED_MODAL;
     }
 }
 

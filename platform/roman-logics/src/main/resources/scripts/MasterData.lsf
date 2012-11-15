@@ -310,10 +310,10 @@ priceManagerialDateTime(article, dateTime) = priceManagerialBatch(batchPriceMana
 //--------------------------------- Склады временного хранения -------------------------------------------//
 
 TABLE customStore (customStore);
-groupWarehouseCustomStore = DATA groupWarehouse(customStore);
-nameGroupWarehouseCustomStore 'Группа складов' (customStore) = name(groupWarehouseCustomStore(customStore));
+warehouseGroupCustomStore = DATA warehouseGroup(customStore);
+nameWarehouseGroupCustomStore 'Группа складов' (customStore) = name(warehouseGroupCustomStore(customStore));
 
-stockGroupStock (stock) += groupWarehouseCustomStore(stock);
+stockGroupStock (stock) += warehouseGroupCustomStore(stock);
 
 allowImportExportXLSLegalEntityUA 'Разрешить импорт/экспорт из/в Excel(Украина)' = DATA BOOLEAN (legalEntity) IN lawGroup;
 allowImportExportXMLLegalEntityBY 'Разрешить импорт/экспорт из/в XML(Беларусь)' = DATA BOOLEAN (legalEntity) IN lawGroup;
@@ -322,7 +322,7 @@ FORM customStore 'Склад временного хранения'
 
     OBJECTS c=customStore FIXED PANEL
 
-    PROPERTIES(c) name, nameGroupWarehouseCustomStore, fullNameLegalEntity, nameOwnershipLegalEntity, shortNameOwnershipLegalEntity,
+    PROPERTIES(c) name, nameWarehouseGroupCustomStore, fullNameLegalEntity, nameOwnershipLegalEntity, shortNameOwnershipLegalEntity,
                   UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity,
                   addressLegalEntity, dialogAddressLegalEntity,
                   postAddressLegalEntity, dialogPostAddressLegalEntity,

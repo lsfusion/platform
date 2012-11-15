@@ -8,18 +8,20 @@ REQUIRE System,
         LegalEntity;
 
 // ----------------------------------------- Группы складов ------------------------------ //
-CLASS groupWarehouse 'Группа складов' : stockGroup, employeeDivisionGroup;
+CLASS warehouseGroup 'Группа складов' : stockGroup, employeeDivisionGroup;
 
-@defineHierarchy(groupWarehouse);
-parentStockGroup (stockGroup) += parentGroupWarehouse (stockGroup);
+@defineHierarchy(warehouseGroup);
+parentStockGroup (stockGroup) += parentWarehouseGroup (stockGroup);
 
 // ----------------------------------------- Склады ------------------------------ //
 
 CLASS warehouse 'Склад' : stock, employeeDivision;
 
-groupWarehouseWarehouse (warehouse) = DATA groupWarehouse (warehouse);
-nameGroupWarehouseWarehouse 'Группа складов' (warehouse) = name(groupWarehouseWarehouse(warehouse)) IN baseGroup;
-stockGroupStock (stock) += groupWarehouseWarehouse (stock);
+warehouseGroupWarehouse (warehouse) = DATA warehouseGroup (warehouse) AUTOSET;
+nameWarehouseGroupWarehouse 'Группа складов' (warehouse) = name(warehouseGroupWarehouse(warehouse)) IN baseGroup;
+isParentWarehouseGroupWarehouse (warehouseGroup, warehouse) =
+    isParentWarehouseGroupWarehouseGroup(warehouseGroupWarehouse(warehouse), warehouseGroup) PERSISTENT;
+stockGroupStock (stock) += warehouseGroupWarehouse (stock);
 
 legalEntityWarehouse (warehouse) = DATA legalEntity (warehouse);
 nameLegalEntityWarehouse 'Компания' (warehouse) = name(legalEntityWarehouse(warehouse)) IN baseGroup;
@@ -28,21 +30,39 @@ legalEntityStock (stock) += legalEntityWarehouse(stock);
 addressWarehouse 'Адрес' (warehouse) = DATA STRING[100] (warehouse);
 addressStock(stock) += addressWarehouse(stock);
 
-employeeDivisionGroupEmployeeDivision (warehouse) += groupWarehouseWarehouse(warehouse);
+employeeDivisionGroupEmployeeDivision (warehouse) += warehouseGroupWarehouse(warehouse);
 
 // -------------------------------------------------- Формы ----------------------------------------- //
 FORM warehouse 'Склад'
-    OBJECTS           w=warehouse FIXED PANEL
-    PROPERTIES(w)     name, nameGroupWarehouseWarehouse, addressWarehouse, nameLegalEntityWarehouse, nameWriteOffCommitteeStock
 
+    OBJECTS           w=warehouse FIXED PANEL
+    PROPERTIES(w)     name, nameWarehouseGroupWarehouse, addressWarehouse, nameLegalEntityWarehouse, nameWriteOffCommitteeStock
     ORDER BY          name
+
     EDIT warehouse OBJECT w
 ;
 
 FORM warehouses 'Склады'
-    OBJECTS           w=warehouse
-    PROPERTIES(w)     READONLY name, addressWarehouse, nameLegalEntityWarehouse
-    PROPERTIES(w)     ADDFORM, EDITFORM, delete
 
-    ORDER BY          name
+    TREE warehouseTree wg = warehouseGroup PARENT parentWarehouseGroup
+    PROPERTIES READONLY wgTreeName = name(wg)
+    PROPERTIES(wg) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
+    ORDER BY wgTreeName
+
+    OBJECTS w=warehouse
+    PROPERTIES(w) READONLY name, addressWarehouse, nameLegalEntityWarehouse
+    PROPERTIES(w) ADDFORM, EDITFORM, delete
+    ORDER BY name
+    FILTERS isParentWarehouseGroupWarehouse(wg, w) OR (w IS warehouse AND wg IS warehouseGroup AND NOT warehouseGroupWarehouse(w))
 ;
+
+DESIGN warehouses FROM DEFAULT{
+
+    NEW mainContainer{
+        type = SPLITH;
+        childConstraints = TO THE RIGHT;
+        ADD warehouseTree.tree.box;
+        ADD w.box{fillHorizontal = 2.0;}
+    }
+    ADD functions.box;
+}
