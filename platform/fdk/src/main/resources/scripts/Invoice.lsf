@@ -117,7 +117,7 @@ META defineInvoice(sign, stockProp)
 
         OBJECTS o = order
         PROPERTIES (o) READONLY isPostedOrder FORCE GRID, objectClassName, numberOrder, seriesOrder, dateOrder, timeOrder,
-                                nameSupplierOrder, nameCustomerOrder, nameSupplierStockOrder, nameCustomerStockOrder, nameCurrencyOrder, noteOrder,
+                                nameSupplierOrder, nameSupplierStockOrder, nameCustomerOrder, nameCustomerStockOrder, nameCurrencyOrder, noteOrder,
                                 countOrderDetailOrder, quantityOrderDetailOrder, sumOrderDetailOrder
         FILTERS isPostedOrder(o),
                 supplierOrder(o) == s,
@@ -296,7 +296,7 @@ META defineInvoice(sign, stockProp)
     FORM invoices 'Накладные' TITLE 'Накладные'###sign
         OBJECTS i = invoice
         PROPERTIES (i) READONLY isPostedInvoice FORCE GRID, objectClassName, numberInvoice, seriesInvoice, dateInvoice, timeInvoice,
-                                nameSupplierInvoice, nameCustomerInvoice, nameSupplierStockInvoice, nameCustomerStockInvoice,
+                                nameSupplierInvoice, nameSupplierStockInvoice, nameCustomerInvoice, nameCustomerStockInvoice,
                                 nameCurrencyInvoice, nameAgreementInvoice, noteInvoice,
 //                                numberContractSku###contact###Invoice, isCommissionInvoice,
                                 countInvoiceDetailInvoice, quantityInvoiceDetailInvoice, sumInvoiceDetailInvoice,

@@ -256,7 +256,7 @@ CLASS userPricingPosted 'Закрытый акт расценки (польз.)'
 
 @defineDocumentInterfaceNumber(pricing);
 
-@defineDocumentInterfaceDataStock(pricing, departmentStore, 'Отдел');
+@defineDocumentInterfaceDataStock(pricing, departmentStore, 'Склад');
 @defineDocumentInterfacePosted(pricing);
 
 @defineDocumentInterfaceDescription(pricing, 'Акт расценки');
@@ -264,7 +264,6 @@ CLASS userPricingPosted 'Закрытый акт расценки (польз.)'
 @defineDocumentInterfaceCurrency(pricing);
 @deriveDocumentCurrency(userPricing, departmentStore);
 
-//@defineDocumentInterfaceSupplier(pricing);
 @defineDocumentInterfaceLegalEntity (pricing, supplier, 'Поставщик');
 
 @defineDocumentInterfaceDetailSku(pricing, sku);
@@ -281,7 +280,7 @@ CLASS userPricingPosted 'Закрытый акт расценки (польз.)'
 @defineDocumentInterfaceHeaderSumCustom (pricing, pricingDetail, ' входная');
 
 @defineDocumentInterfaceDetailPricePrefix(pricing, retail, ' выходная');
-@defineDocumentInterfaceDetailVATPrefix(pricing, retail, countryDepartmentStore, );    //countryStock
+@defineDocumentInterfaceDetailVATPrefix(pricing, retail, countryDepartmentStore, );
 @deriveDocumentDetailValueVATPrefix(userPricing, retail);
 
 @defineDocumentInterfaceDetailMarkupPrefix (pricing, retail, );
@@ -670,7 +669,7 @@ META definePricingRelation(sign, stockProp)
     invoiceDetailPricingDetail(pricingDetail) += invoiceDetailUserPricingDetail(pricingDetail);
 
     CONSTRAINT supplierPricingDetail(detail) != supplierInvoiceDetail(invoiceDetailUserPricingDetail(detail)) OR
-//               legalEntityDepartmentStorePricingDetail(detail) != legalEntityInvoice(invoiceDetailUserPricingDetail(detail)) OR
+               departmentStorePricingDetail(detail) != stockProp###invoice(invoiceDetailUserPricingDetail(detail)) OR
                skuUserPricingDetail(detail) != skuInvoiceDetail(invoiceDetailUserPricingDetail(detail))
         CHECKED BY invoiceDetailUserPricingDetail
             MESSAGE 'Поставщик, покупатель и товар в накладной и акте расценки должны соответствовать друг другу';
@@ -696,31 +695,32 @@ META definePricingRelation(sign, stockProp)
     // Создание расценки на основе инвойса //
 
     FORM pricingInvoices 'Накладные'###sign
-//        OBJECTS s = stock FIXED PANEL
-//        PROPERTIES (s) READONLY name
-//        OBJECTS c = contact FIXED PANEL
-//        PROPERTIES (c) READONLY name
+        OBJECTS s = legalEntity FIXED PANEL
+        PROPERTIES (s) READONLY name
+        OBJECTS c = stock FIXED PANEL
+        PROPERTIES (c) READONLY name
 
         OBJECTS i = invoice
         PROPERTIES (i) READONLY isPostedInvoice FORCE GRID, objectClassName, numberInvoice, seriesInvoice, dateInvoice, timeInvoice,
-                                nameSupplierInvoice, nameCustomerInvoice, nameSupplierStockInvoice, nameCustomerStockInvoice, nameCurrencyInvoice, noteInvoice,
+                                nameSupplierInvoice, nameSupplierStockInvoice, nameCustomerInvoice, nameCustomerStockInvoice, nameCurrencyInvoice, noteInvoice,
 //                                numberContractSku###contact###Invoice, isCommissionInvoice,
                                 countInvoiceDetailInvoice, quantityInvoiceDetailInvoice, sumInvoiceDetailInvoice,
                                 VATSumInvoiceDetailInvoice, invoiceSumInvoiceDetailInvoice, ordersInvoice
-        FILTERS //contact###Invoice(i) == c,
+        FILTERS supplierInvoice(i) == s,
+                stockProp###invoice(i) == c,
                 isPostedInvoice(i)
-//        FILTERGROUP invoice
-//            FILTER 'Накладные с нерасцененными товарами' 'F10' toPricingInvoiceDetailStockInvoice(s,i) DEFAULT
-//            FILTER 'Накладные со склада' 'F9' countInvoiceDetailStockInvoice(s,i)
+        FILTERGROUP invoice
+            FILTER 'Накладные с нерасцененными товарами' 'F10' toPricingInvoiceDetailStockInvoice(c,i) DEFAULT
+            FILTER 'Накладные со склада' 'F9' countInvoiceDetailStockInvoice(c,i)
 
         OBJECTS d = invoiceDetail
         PROPERTIES (d) READONLY indexInvoiceDetail, idBarcodeSkuInvoiceDetail, nameSkuInvoiceDetail, shortNameUOMSkuInvoiceDetail,
                        quantityInvoiceDetail, pricingInvoiceDetail, priceInvoiceDetail, sumInvoiceDetail,
                        name###stockProp###invoiceDetail, descriptionOrderInvoiceDetail, toPricingInvoiceDetail
         FILTERS invoiceInvoiceDetail(d) == i
-//        FILTERGROUP invoiceDetail
-//            FILTER 'Строки с нерасцененными товарами' 'F10' stockInvoiceDetail(d) == s AND toPricingInvoiceDetail(d) > 0 DEFAULT
-//            FILTER 'Строки со склада' 'F9' stockInvoiceDetail(d) == s
+        FILTERGROUP invoiceDetail
+            FILTER 'Строки с нерасцененными товарами' 'F10' stockProp###invoiceDetail(d) == c AND toPricingInvoiceDetail(d) > 0 DEFAULT
+            FILTER 'Строки со склада' 'F9' stockProp###invoiceDetail(d) == c
 
     ;
 
@@ -731,11 +731,11 @@ META definePricingRelation(sign, stockProp)
 
                 childConstraints = TO THE BOTTOM;
 
-//                NEW headerBox {
-//                    childConstraints = TO THE RIGHT;
-//                    ADD s.box;
-//                    ADD c.box;
-//                }
+                NEW headerBox {
+                    childConstraints = TO THE RIGHT;
+                    ADD s.box { title = 'Поставщик';}
+                    ADD c.box { title = 'Склад';}
+                }
                 ADD i.box;
                 NEW documentDetail {
                     type = TABBED;
@@ -758,7 +758,7 @@ META definePricingRelation(sign, stockProp)
     }
 
     fillInvoiceUserPricing 'Заполнить на основе накладной' =  ACTION (userPricing) {
-        FORM pricingInvoices MODAL;//OBJECTS s = departmentStoreUserPricing(userPricing), c = contact###UserPricing(userPricing) MODAL;
+        FORM pricingInvoices OBJECTS s = supplierUserPricing(userPricing), c = departmentStoreUserPricing(userPricing) MODAL;
         IF formResult() == formResult.ok THEN {
             LOCAL saleInvoice = invoice();
             SET saleInvoice() <- chosenObject('i');

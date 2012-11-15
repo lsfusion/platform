@@ -157,7 +157,7 @@ META defineShipment(sign, stockProp)
     FORM shipments 'Поставки' TITLE 'Поставки'###sign
         OBJECTS s = shipment
         PROPERTIES (s) READONLY isPostedShipment FORCE GRID, objectClassName, numberShipment, seriesShipment, dateShipment, timeShipment,
-                                nameSupplierShipment, nameCustomerShipment, nameSupplierStockShipment, nameCustomerStockShipment,
+                                nameSupplierShipment, nameSupplierStockShipment, nameCustomerShipment, nameCustomerStockShipment,
                                 nameCurrencyShipment, noteShipment,
                                 countShipmentDetailShipment, quantityShipmentDetailShipment, sumShipmentDetailShipment
         PROPERTIES (s) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
@@ -253,7 +253,7 @@ META defineShipment(sign, stockProp)
 
         OBJECTS o = order
         PROPERTIES (o) READONLY isPostedOrder FORCE GRID, objectClassName, numberOrder, seriesOrder, dateOrder, timeOrder,
-                                nameSupplierOrder, nameCustomerOrder, nameSupplierStockOrder, nameCustomerStockOrder, nameCurrencyOrder, noteOrder,
+                                nameSupplierOrder, nameSupplierStockOrder, nameCustomerOrder, nameCustomerStockOrder, nameCurrencyOrder, noteOrder,
                                 countOrderDetailOrder, quantityOrderDetailOrder, shippedOrderDetailOrder, sumOrderDetailOrder
         FILTERS supplierOrder(o) == s,
                 customerOrder(o) ==c,
@@ -412,7 +412,7 @@ META defineShipment(sign, stockProp)
 
         OBJECTS i = invoice
         PROPERTIES (i) READONLY isPostedInvoice FORCE GRID, objectClassName, numberInvoice, seriesInvoice, dateInvoice, timeInvoice,
-                                nameSupplierInvoice, nameCustomerInvoice, nameSupplierStockInvoice, nameCustomerStockInvoice,
+                                nameSupplierInvoice, nameSupplierStockInvoice, nameCustomerInvoice, nameCustomerStockInvoice,
                                 nameCurrencyInvoice, noteInvoice,
 //                                numberContractSku###contact###Invoice, isCommissionInvoice,
                                 countInvoiceDetailInvoice, quantityInvoiceDetailInvoice, sumInvoiceDetailInvoice,

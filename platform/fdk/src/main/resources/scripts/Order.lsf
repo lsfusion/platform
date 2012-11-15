@@ -181,7 +181,7 @@ META defineOrder(sign, stockProp)
     FORM orders 'Заказы' TITLE 'Заказы'###sign
         OBJECTS o = order
         PROPERTIES (o) READONLY isPostedOrder FORCE GRID, isClosedOrder, objectClassName, numberOrder, seriesOrder, dateOrder, timeOrder,
-                                nameSupplierOrder, nameCustomerOrder, nameSupplierStockOrder, nameCustomerStockOrder, nameCurrencyOrder,
+                                nameSupplierOrder, nameSupplierStockOrder, nameCustomerOrder, nameCustomerStockOrder, nameCurrencyOrder,
                                 nameAgreementOrder, namePriceListTypeOrder, noteOrder,
                                 countOrderDetailOrder, quantityOrderDetailOrder, sumOrderDetailOrder, shipmentDateOrder, shipmentTimeOrder
 
