@@ -48,6 +48,7 @@ META defineBlanketOrder(sign)
     inBlanketOrderStock 'В заказе' (blanketOrder, stock) = DATA BOOLEAN (blanketOrder, stock); //customerStock
 
     @defineDocumentHeaderAgreement (blanketOrder);
+    @deriveDocumentHeaderAgreement (blanketOrder, supplierBlanketOrder, customerBlanketOrder);
     @defineDocumentDoubleInterfaceHeaderAgreement (blanketOrder, stock, supplier, customer);
 
     @deriveDocumentDoubleDetailPriceListTypeAgreement (blanketOrder, stock, customerStock);

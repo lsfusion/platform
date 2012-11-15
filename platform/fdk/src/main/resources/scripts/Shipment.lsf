@@ -414,7 +414,7 @@ META defineShipment(sign, stockProp)
         PROPERTIES (i) READONLY isPostedInvoice FORCE GRID, objectClassName, numberInvoice, seriesInvoice, dateInvoice, timeInvoice,
                                 nameSupplierInvoice, nameSupplierStockInvoice, nameCustomerInvoice, nameCustomerStockInvoice,
                                 nameCurrencyInvoice, noteInvoice,
-//                                numberContractSku###contact###Invoice, isCommissionInvoice,
+                                numberContractSkuInvoice, isCommissionInvoice,
                                 countInvoiceDetailInvoice, quantityInvoiceDetailInvoice, sumInvoiceDetailInvoice,
                                 VATSumInvoiceDetailInvoice, invoiceSumInvoiceDetailInvoice, ordersInvoice
         FILTERS supplierInvoice(i) == s,

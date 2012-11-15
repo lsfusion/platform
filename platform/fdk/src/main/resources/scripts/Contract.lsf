@@ -40,55 +40,52 @@ noteContract 'Примечание' = DATA TEXT (contract) MINCHARWIDTH 50 PREFC
 
 // ------------------------------------ Макрос для создания договоров по умолчанию ----------------------------- //
 
-META defineContractDefault (contract, partyA, partyB)
-    @defineContractDefaultCustom(contract, partyA, partyB, partyA, partyB);
-END
-
 META defineContractDefaultCustom (contract, partyA, partyB, prefixA, prefixB)
-    data###contract###partyA###partyB = DATA contract (partyA, partyB);
+    data###contract###prefixA###prefixB = DATA contract (partyA, partyB);
 
-    CONSTRAINT partyA != prefixA###contract(data###contract###partyA###partyB(partyA, partyB)) CHECKED BY data###contract###partyA###partyB
+    CONSTRAINT partyA != prefixA###contract(data###contract###prefixA###prefixB(partyA, partyB)) CHECKED BY data###contract###prefixA###prefixB
         MESSAGE 'Договор по умолчанию не является договором между выбранными контрагентами';
-    CONSTRAINT partyB != prefixB###contract(data###contract###partyA###partyB(partyA, partyB)) CHECKED BY data###contract###partyA###partyB
+    CONSTRAINT partyB != prefixB###contract(data###contract###prefixA###prefixB(partyA, partyB)) CHECKED BY data###contract###prefixA###prefixB
         MESSAGE 'Договор по умолчанию не является договором между выбранными контрагентами';
 
-    contract###partyA###partyB (pA, pB) = [GROUP MAX contract IF dateFromContract(contract) <= currentDate() AND NOT dateToContract(contract) < currentDate()
+    contract###prefixA###prefixB (pA, pB) = [GROUP MAX contract IF dateFromContract(contract) <= currentDate() AND NOT dateToContract(contract) < currentDate()
                                                          BY prefixA###contract(contract), prefixB###contract(contract)](pA, pB) OR
-                                                  data###contract###partyA###partyB(pA, pB);
-    number###contract###partyA###partyB 'Основной договор' (pA, pB) = numberContract(contract###partyA###partyB(pA, pB));
+                                                  data###contract###prefixA###prefixB(pA, pB);
+    number###contract###prefixA###prefixB 'Основной договор' (pA, pB) = numberContract(contract###prefixA###prefixB(pA, pB));
 
-    single###contract###partyA###partyB (pA, pB) = contract###partyA###partyB(pA, pB) IF countContractPartyAPartyB(pA, pB);
+    single###contract###prefixA###prefixB (pA, pB) = contract###prefixA###prefixB(pA, pB) IF countContractPartyAPartyB(pA, pB);
 
-    is###partyA###partyB###contract 'Основной' (pA, pB, contract) = contract###partyA###partyB (pA, pB) == contract;
+    is###prefixA###prefixB###contract 'Основной' (pA, pB, contract) = contract###prefixA###prefixB (pA, pB) == contract;
 END
-
-META defineDocumentContract (object, contractType, singleContractProp, partyAProp, partyBProp, partyAMessage, partyBMessage)
+META defineDocumentContract (object, contractType, prefixA, prefixB, partyAMessage, partyBMessage)
     contractType###object = DATA contractType (object);
     number###contractType###object 'Номер договора' (object) = numberContract(contractType###object(object)) IN documentPrmGroup;
-    
+
     isCommission###object 'Продажа на комиссию' = DATA BOOLEAN (object) IN documentPrmGroup;
     isCommission###object(object) <- typeContractSkuDate(contractType###object(object), date###object(object)) == contractSkuType.commission
         WHEN CHANGED(contractType###object(object)) OR
              CHANGED(date###object(object));
 
-    contractType###object(object) <- singleContractProp(partyAProp(object), partyBProp(object))
-                                          WHEN CHANGED(partyAProp(object)) OR CHANGED(partyBProp(object));
+    contractType###object(object) <- single###contractType###prefixA###prefixB(prefixA###object(object), prefixB###object(object))
+                                          WHEN CHANGED(prefixA###object(object)) OR CHANGED(prefixB###object(object));
 
-    CONSTRAINT contractType###object(object) AND NOT partyAProp(object) == partyAContract(contractType###object(object))
+    CONSTRAINT contractType###object(object) AND NOT prefixA###object(object) == partyAContract(contractType###object(object))
         CHECKED BY contractType###object MESSAGE partyAMessage;
 
-    CONSTRAINT contractType###object(object) AND NOT partyBProp(object) == partyBContract(contractType###object(object))
+    CONSTRAINT contractType###object(object) AND NOT prefixB###object(object) == partyBContract(contractType###object(object))
         CHECKED BY contractType###object MESSAGE partyBMessage;
 END
+
+
 META defineDocumentAbstractContract (object, contractType)
     contractType###object = ABSTRACT contractType (object) PERSISTENT;
     number###contractType###object 'Номер договора' (object) = numberContract(contractType###object(object)) IN documentPrmGroup;
 
     isCommission###object 'Продажа на комиссию' = ABSTRACT BOOLEAN (object) PERSISTENT IN documentPrmGroup;
 END
-META defineDocumentInterfaceContract (object, contractType, singleContractProp, partyAProp, partyBProp, partyAMessage, partyBMessage)
+META defineDocumentInterfaceContract (object, contractType, prefixA, prefixB, partyAMessage, partyBMessage)
     @defineDocumentAbstractContract(object, contractType);
-    @defineDocumentContract(user###object, contractType, singleContractProp, partyAProp, partyBProp, partyAMessage, partyBMessage);
+    @defineDocumentContract(user###object, contractType, prefixA, prefixB, partyAMessage, partyBMessage);
     contractType###object(object) += contractType###user###object(object);
     isCommission###object(object) += isCommission###user###object(object);
 END
@@ -132,23 +129,7 @@ nameCustomerContractSku 'Организация' (contract) = name(customerContr
 partyBContract (contract) += customerContractSku(contract);
 
 TABLE supplierCustomer(legalEntity, legalEntity);
-//@defineContractDefault(contractSku, supplier, customer);
-
-dataContractSkuSupplierCustomer = DATA contract (legalEntity, legalEntity);
-
-CONSTRAINT supplier != supplierContractSku(dataContractSkuSupplierCustomer(supplier, customer)) CHECKED BY dataContractSkuSupplierCustomer
-    MESSAGE 'Договор по умолчанию не является договором между выбранными контрагентами';
-CONSTRAINT customer != customerContractSku(dataContractSkuSupplierCustomer(supplier, customer)) CHECKED BY dataContractSkuSupplierCustomer
-    MESSAGE 'Договор по умолчанию не является договором между выбранными контрагентами';
-
-contractSkuSupplierCustomer (supplier, customer) = [GROUP MAX contractSku IF dateFromContract(contractSku) <= currentDate() AND NOT dateToContract(contractSku) < currentDate()
-                                                         BY supplierContractSku(contractSku),customerContractSku(contractSku)](supplier, customer) OR
-                                                  dataContractSkuSupplierCustomer(supplier, customer);
-numberContractSkuSupplierCustomer 'Основной договор' (supplier, customer) = numberContract(contractSkuSupplierCustomer(supplier, customer));
-
-singleContractSkuSupplierCustomer (supplier, customer) = contractSkuSupplierCustomer(supplier, customer) IF countContractPartyAPartyB(supplier, customer);
-
-isSupplierCustomerContractSku 'Основной' (supplier, customer, contractSku) = contractSkuSupplierCustomer(supplier, customer) == contractSku;
+@defineContractDefaultCustom(contractSku, legalEntity, legalEntity, supplier, customer);
 
 CLASS paymentCondition 'Условия оплаты';
 TABLE paymentCondition(paymentCondition);

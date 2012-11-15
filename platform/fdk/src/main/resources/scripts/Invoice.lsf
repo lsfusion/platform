@@ -33,10 +33,9 @@ META defineInvoice(sign, stockProp)
     @defineDocumentInterfaceCurrency(invoice);
     @deriveDocumentCurrency(userInvoice, stockProp);
 
-//    @defineDocumentInterfaceSupplier(invoice);
-//    @defineDocumentInterfaceContract(invoice, contractSku###contact, singleContractSku###contact###contactA###contactB, contactA###Invoice, contactB###Invoice,
-//                                     'Сторона A договора накладной не соответствует компании склада-отправителя',
-//                                     'Сторона B договора накладной не соответствует покупателю');
+    @defineDocumentInterfaceContract(invoice, contractSku, supplier, customer,
+                                     'Сторона A договора накладной не соответствует стороне А накладной',
+                                     'Сторона B договора накладной не соответствует стороне В накладной');
 
     @defineDocumentInterfaceDataPriceListType(invoice);
 
@@ -198,7 +197,7 @@ META defineInvoice(sign, stockProp)
         PROPERTIES (i) objectClassName, nameSupplierUserInvoice, nameCustomerUserInvoice, //nameSupplierStockUserInvoice, nameCustomerStockUserInvoice,
                        nameNumeratorObject, numberObject, seriesObject, dateUserInvoice, timeUserInvoice,
                        nameCurrencyUserInvoice, nameAgreementUserInvoice, namePriceListTypeUserInvoice, noteUserInvoice,
-//                       numberContractSku###contact###UserInvoice, isCommissionUserInvoice,
+                       numberContractSkuUserInvoice, isCommissionUserInvoice,
                        fillOrderUserInvoice, ordersInvoice READONLY,
                        countUserInvoiceDetailUserInvoice, quantityUserInvoiceDetailUserInvoice, sumUserInvoiceDetailUserInvoice,
                        VATSumUserInvoiceDetailUserInvoice, invoiceSumUserInvoiceDetailUserInvoice
@@ -261,6 +260,12 @@ META defineInvoice(sign, stockProp)
                             childConstraints = TO THE RIGHTBOTTOM;
                             ADD PROPERTY(nameCustomerUserInvoice);
                         }
+                        NEW headerRow113 {
+                            title = 'Договор';
+                            childConstraints = TO THE RIGHTBOTTOM;
+                            ADD PROPERTY(numberContractSkuUserInvoice);
+                            ADD PROPERTY(isCommissionUserInvoice);
+                        }
                     }
                     ADD i.documentPrmGroup {
                         childConstraints = TO THE RIGHTBOTTOM;
@@ -298,7 +303,7 @@ META defineInvoice(sign, stockProp)
         PROPERTIES (i) READONLY isPostedInvoice FORCE GRID, objectClassName, numberInvoice, seriesInvoice, dateInvoice, timeInvoice,
                                 nameSupplierInvoice, nameSupplierStockInvoice, nameCustomerInvoice, nameCustomerStockInvoice,
                                 nameCurrencyInvoice, nameAgreementInvoice, noteInvoice,
-//                                numberContractSku###contact###Invoice, isCommissionInvoice,
+                                numberContractSkuInvoice, isCommissionInvoice,
                                 countInvoiceDetailInvoice, quantityInvoiceDetailInvoice, sumInvoiceDetailInvoice,
                                 VATSumInvoiceDetailInvoice, invoiceSumInvoiceDetailInvoice, ordersInvoice
         PROPERTIES (i) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed

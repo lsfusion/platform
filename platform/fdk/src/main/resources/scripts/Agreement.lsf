@@ -115,8 +115,8 @@ END
 
 META deriveDocumentHeaderAgreement (object, supplier, customer)
 
-    agreement###object (object) <- defaultAgreementSupplierCustomer(customer(object), supplier(object))
-        IF currency###object(object) == currencyAgreement(defaultAgreementSupplierCustomer(customer(object), supplier(object)))
+    agreement###object (object) <- defaultAgreementSupplierCustomer(supplier(object), customer(object))
+        IF currency###object(object) == currencyAgreement(defaultAgreementSupplierCustomer(supplier(object), customer(object)))
     WHEN CHANGED(currency###object(object)) OR
          CHANGED(customer(object)) OR
          CHANGED(supplier(object));
@@ -161,8 +161,9 @@ END
 
 META defineDocumentDoubleInterfaceHeaderAgreement (object1, object2, supplierProp, customerProp)
     @defineDocumentDoubleHeaderAgreement(object1, object2);
-    agreement###object1###object2 (object1, object2) <- defaultAgreementSupplierCustomer(customerProp###object1(object1), supplierProp###object1(object1))
-        IF currency###object1(object1) == currencyAgreement(defaultAgreementSupplierCustomer(customerProp###object1(object1), supplierProp###object1(object1)))
+    agreement###object1###object2 (object1, object2) <- defaultAgreementSupplierCustomer(supplierProp###object1(object1), customerProp###object1(object1))
+        IF currency###object1(object1) == currencyAgreement(defaultAgreementSupplierCustomer(supplierProp###object1(object1), customerProp###object1(object1)))
+        AND in###object1###object2(object1, object2)
     WHEN CHANGED(currency###object1(object1)) AND object2 IS object2 OR
          CHANGED(supplierProp###object1(object1)) AND object2 IS object2 OR
          CHANGED(customerProp###object1(object1))AND object2 IS object2  OR
