@@ -99,32 +99,41 @@ META defineShipment(sign, stockProp)
             preferredSize = (1024, 768);
 
             NEW header.box BEFORE d.box {
-                childConstraints = TO THE RIGHT;
+                childConstraints = TO THE RIGHTBOTTOM;
 
                 NEW headerRow1 {
                     childConstraints = TO THE BOTTOM;
 
                     ADD s.documentHeaderGroup {
-                        childConstraints = TO THE RIGHT;
+                        childConstraints = TO THE RIGHTBOTTOM;
                         ADD PROPERTY(objectClassName) { preferredCharWidth = 10; }
-                        ADD PROPERTY(nameSupplierUserShipment);
-                        ADD PROPERTY(nameCustomerUserShipment);
                         ADD PROPERTY(nameNumeratorObject);
                         ADD PROPERTY(numberObject);
                         ADD PROPERTY(seriesObject);
                         ADD PROPERTY(dateUserShipment);
                         ADD PROPERTY(timeUserShipment);
                     }
-                    NEW headerRow2 {
-                        title = 'Склады';
-                        childConstraints = TO THE RIGHT;
-                        ADD PROPERTY(nameSupplierStockUserShipment);
-                        ADD PROPERTY(nameCustomerStockUserShipment);
+                    NEW headerRow11 {
+                        childConstraints = TO THE RIGHTBOTTOM;
+                        NEW headerRow111 {
+                            title = 'Поставщик';
+                            childConstraints = TO THE RIGHTBOTTOM;
+                            ADD PROPERTY(nameSupplierUserShipment);
+                            ADD PROPERTY(nameSupplierStockUserShipment);
+                        }
+                        NEW headerRow112 {
+                            title = 'Покупатель';
+                            childConstraints = TO THE RIGHTBOTTOM;
+                            ADD PROPERTY(nameCustomerUserShipment);
+                            ADD PROPERTY(nameCustomerStockUserShipment);
+                        }
                     }
-
-                    NEW headerColumn2 {
-                        childConstraints = TO THE RIGHT;
-                        ADD s.documentPrmGroup;
+                    ADD s.documentPrmGroup {
+                        childConstraints = TO THE RIGHTBOTTOM;
+                    }
+                    NEW headerRow12 {
+//                        title = 'Сооздать на основании';
+                        childConstraints = TO THE RIGHTBOTTOM;
                     }
                 }
 
@@ -330,7 +339,7 @@ META defineShipment(sign, stockProp)
         PROPERTIES(s) fillOrderUserShipment, ordersShipment READONLY
         PROPERTIES(d) descriptionOrderUserShipmentDetail BEFORE delete(d)
     ;
-    EXTEND DESIGN userShipment { headerColumn2 { ADD s.orderGroup; } }
+    EXTEND DESIGN userShipment { headerRow12 { ADD s.orderGroup {childConstraints = TO THE RIGHTBOTTOM;}}}
     EXTEND FORM shipments
         PROPERTIES(s) READONLY ordersShipment
         PROPERTIES(d) READONLY descriptionOrderShipmentDetail
@@ -489,7 +498,7 @@ META defineShipment(sign, stockProp)
         PROPERTIES(s) fillInvoiceUserShipment, invoicesShipment READONLY
         PROPERTIES(d) descriptionIndexInvoiceDetailUserShipmentDetail BEFORE delete(d)
     ;
-    EXTEND DESIGN userShipment { headerColumn2 { ADD s.invoiceGroup; } }
+    EXTEND DESIGN userShipment { headerRow12{ ADD s.invoiceGroup {childConstraints = TO THE RIGHTBOTTOM;}}}
 
     EXTEND FORM shipments
         PROPERTIES(s) READONLY invoicesShipment
@@ -518,10 +527,17 @@ META defineShipment(sign, stockProp)
     backgroundShippedInvoice 'Цвет' (invoice) = RGB(255, 224, 255) IF invoice IS userInvoice;
     EXTEND FORM userInvoice
         PROPERTIES(i) BACKGROUND backgroundShippedInvoice(i) createShipmentUserInvoice
+        PROPERTIES(i) SHOWIF createShipmentInvoice(i) nameSupplierStockUserInvoice, nameCustomerStockUserInvoice
         PROPERTIES(d) BEFORE delete(d) SHOWIF createShipmentInvoice(i) BACKGROUND backgroundShippedInvoice(i) shipmentPriceUserInvoiceDetail,
                       shipmentSumUserInvoiceDetail
         PROPERTIES(d) READONLY shippedInvoiceDetail AFTER quantityUserInvoiceDetail SHOWIF showShipmentInvoice(i) BACKGROUND backgroundShippedInvoice(i)
     ;
+    EXTEND DESIGN userInvoice {
+        headerRow11{ADD PROPERTY(createShipmentUserInvoice); }
+        headerRow111{ ADD PROPERTY(nameSupplierStockUserInvoice); }
+        headerRow112{ ADD PROPERTY(nameCustomerStockUserInvoice); }
+    }
+
     EXTEND FORM invoices
         PROPERTIES(i) READONLY BACKGROUND backgroundShippedInvoice(i) createShipmentInvoice
         PROPERTIES(d) READONLY SHOWIF createShipmentInvoice(i) BACKGROUND backgroundShippedInvoice(i) shipmentPriceInvoiceDetail, shipmentSumInvoiceDetail

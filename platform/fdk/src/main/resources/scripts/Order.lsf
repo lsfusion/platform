@@ -67,7 +67,8 @@ META defineOrder(sign, stockProp)
     @defineAddDetailDialogSkuStock(userOrder, sku, stockProp, dialogSku);
     @defineAddDetailDialogBarcode(userOrder, sku);
 
-    @defineDocumentInterfaceHeaderAgreement(order, supplierUserOrder, customerUserOrder);
+    @defineDocumentInterfaceHeaderAgreement(order);
+    @deriveDocumentHeaderAgreement (userOrder, supplierUserOrder, customerUserOrder);
     @deriveDocumentDetailPriceListTypeAgreement(order);
 
     @defineDocumentDetailPackWeightSku(order);
@@ -81,7 +82,7 @@ META defineOrder(sign, stockProp)
 
     FORM userOrder 'Заказ'###sign
         OBJECTS o = userOrder FIXED PANEL
-        PROPERTIES (o) objectClassName, nameSupplierStockUserOrder, nameCustomerStockUserOrder, nameSupplierStockUserOrder, nameCustomerStockUserOrder,
+        PROPERTIES (o) objectClassName, nameSupplierUserOrder, nameCustomerUserOrder, nameSupplierStockUserOrder, nameCustomerStockUserOrder,
                        nameNumeratorObject, numberObject, seriesObject, dateUserOrder, timeUserOrder,
                        nameCurrencyUserOrder, nameAgreementUserOrder, namePriceListTypeUserOrder, noteUserOrder,
                        countUserOrderDetailUserOrder, quantityUserOrderDetailUserOrder, sumUserOrderDetailUserOrder, shipmentDateUserOrder,
@@ -122,29 +123,39 @@ META defineOrder(sign, stockProp)
                     childConstraints = TO THE BOTTOM;
 
                     ADD o.documentHeaderGroup {
-                        childConstraints = TO THE RIGHT;
+                        childConstraints = TO THE RIGHTBOTTOM;
                         ADD PROPERTY(objectClassName) { preferredCharWidth = 10; }
-                        ADD PROPERTY(nameSupplierStockUserOrder);
-                        ADD PROPERTY(nameCustomerStockUserOrder);
                         ADD PROPERTY(nameNumeratorObject);
                         ADD PROPERTY(numberObject);
                         ADD PROPERTY(seriesObject);
                         ADD PROPERTY(dateUserOrder);
                         ADD PROPERTY(timeUserOrder);
                     }
-                    NEW headerRow2 {
-                        title = 'Склады';
-                        childConstraints = TO THE RIGHT;
-                        ADD PROPERTY(nameSupplierStockUserOrder);
-                        ADD PROPERTY(nameCustomerStockUserOrder);
+                    NEW headerRow11 {
+
+                        childConstraints = TO THE RIGHTBOTTOM;
+                        NEW headerRow111 {
+                            title = 'Поставщик';
+                            childConstraints = TO THE RIGHTBOTTOM;
+                            ADD PROPERTY(nameSupplierUserOrder);
+                            ADD PROPERTY(nameSupplierStockUserOrder);
+
+                        }
+                        NEW headerRow112 {
+                            title = 'Покупатель';
+                            childConstraints = TO THE RIGHTBOTTOM;
+                            ADD PROPERTY(nameCustomerUserOrder);
+                            ADD PROPERTY(nameCustomerStockUserOrder);
+                        }
+
                     }
-                    NEW wor {
+                    NEW headerRow12 {
                         childConstraints = TO THE RIGHTBOTTOM;
                         ADD o.documentPrmGroup {
-                            childConstraints = TO THE RIGHT;
+                            childConstraints = TO THE RIGHTBOTTOM;
                         }
                         ADD o.documentShipmentGroup {
-                            childConstraints = TO THE RIGHT;
+                            childConstraints = TO THE RIGHTBOTTOM;
                         }
                     }
                 }
@@ -153,7 +164,6 @@ META defineOrder(sign, stockProp)
                     childConstraints = TO THE BOTTOM;
                 }
             }
-
 
             PROPERTY(formOkAction) {
                 caption = 'Провести';
@@ -171,7 +181,7 @@ META defineOrder(sign, stockProp)
     FORM orders 'Заказы' TITLE 'Заказы'###sign
         OBJECTS o = order
         PROPERTIES (o) READONLY isPostedOrder FORCE GRID, isClosedOrder, objectClassName, numberOrder, seriesOrder, dateOrder, timeOrder,
-                                nameSupplierStockOrder, nameCustomerStockOrder, nameSupplierStockOrder, nameCustomerStockOrder, nameCurrencyOrder,
+                                nameSupplierOrder, nameCustomerOrder, nameSupplierStockOrder, nameCustomerStockOrder, nameCurrencyOrder,
                                 nameAgreementOrder, namePriceListTypeOrder, noteOrder,
                                 countOrderDetailOrder, quantityOrderDetailOrder, sumOrderDetailOrder, shipmentDateOrder, shipmentTimeOrder
 

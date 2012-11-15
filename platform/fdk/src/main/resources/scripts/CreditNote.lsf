@@ -17,8 +17,6 @@ META defineCreditNote(sign, stockProp)//contact, contactCaption)
 
     @defineDocumentInterfaceNumber(creditNote);
 
-//    @defineDocumentInterfaceDataStock(creditNote, stock, 'Склад');
-
     @defineDocumentInterfaceLegalEntity (creditNote, supplier, 'Поставщик');
     @defineDocumentInterfaceLegalEntity (creditNote, customer, 'Покупатель');
 
@@ -31,8 +29,6 @@ META defineCreditNote(sign, stockProp)//contact, contactCaption)
 
     @defineDocumentInterfaceCurrency(creditNote);
     @deriveDocumentCurrency(userCreditNote, stockProp);
-
-//    @defineDocumentInterface###contact(creditNote);
 
     @defineDocumentInterfaceDetailSku(creditNote, sku);
 
@@ -94,20 +90,32 @@ META defineCreditNote(sign, stockProp)//contact, contactCaption)
                     ADD c.documentHeaderGroup {
                         childConstraints = TO THE RIGHT;
                         ADD PROPERTY(objectClassName) { preferredCharWidth = 10; }
-                        ADD PROPERTY(nameSupplierUserCreditNote);
-                        ADD PROPERTY(nameCustomerUserCreditNote);
-                        ADD PROPERTY(nameSupplierStockUserCreditNote);
-                        ADD PROPERTY(nameCustomerStockUserCreditNote);
                         ADD PROPERTY(nameNumeratorObject);
                         ADD PROPERTY(numberObject);
                         ADD PROPERTY(seriesObject);
                         ADD PROPERTY(dateUserCreditNote);
                         ADD PROPERTY(timeUserCreditNote);
                     }
+                    NEW headerRow11 {
+                        childConstraints = TO THE RIGHTBOTTOM;
+                        NEW headerRow111 {
+                            title = 'Поставщик';
+                            childConstraints = TO THE RIGHTBOTTOM;
+                            ADD PROPERTY(nameSupplierUserCreditNote);
+                            ADD PROPERTY(nameSupplierStockUserCreditNote);
 
-                    NEW headerColumn2 {
-                        childConstraints = TO THE RIGHT;
-                        ADD c.documentPrmGroup;
+                        }
+                        NEW headerRow112 {
+                            title = 'Покупатель';
+                            childConstraints = TO THE RIGHTBOTTOM;
+                            ADD PROPERTY(nameCustomerUserCreditNote);
+                            ADD PROPERTY(nameCustomerStockUserCreditNote);
+                        }
+
+                    }
+                    ADD c.documentPrmGroup { childConstraints = TO THE RIGHTBOTTOM;}
+                    NEW headerRow12 {
+                        childConstraints = TO THE RIGHTBOTTOM;
                     }
                 }
 
@@ -209,7 +217,8 @@ META defineCreditNote(sign, stockProp)//contact, contactCaption)
         PROPERTIES(c) READONLY invoicesCreditNote
         PROPERTIES(d) descriptionIndexInvoiceUserCreditNoteDetail BEFORE delete(d)
     ;
-    EXTEND DESIGN userCreditNote { headerColumn2 { ADD c.invoiceGroup; } }
+    EXTEND DESIGN userCreditNote { headerRow12 { ADD c.invoiceGroup {childConstraints = TO THE RIGHTBOTTOM;}}}
+
 
     EXTEND FORM creditNotes
         PROPERTIES(c) READONLY invoicesCreditNote
@@ -246,6 +255,8 @@ META defineCreditNote(sign, stockProp)//contact, contactCaption)
     needToCreditNoteInvoice (invoice) = GROUP SUM 1 IF needToCreditNoteInvoiceDetail(invoiceDetail) BY invoiceInvoiceDetail(invoiceDetail);
 
     EXTEND FORM userInvoice PROPERTIES(i) createCreditNoteUserInvoice;
+    EXTEND DESIGN userInvoice { headerRow11 { ADD PROPERTY(createCreditNoteUserInvoice);}}
+
     EXTEND FORM invoices PROPERTIES(i) READONLY createCreditNoteInvoice;
 
     CLASS invoiceCreditNote 'Акт расхождения на основе инвойса' : creditNote;

@@ -5,7 +5,7 @@ REQUIRE SaleOrder, BlanketOrder;
 NAMESPACE Sale;
 
 //----------------------------------------------- Множественный Заказ ---------------------------------------------------//
-@defineBlanketOrder(' (продажа)', supplierStock);
-//@defineOrderBlanketOrder(' (продажа)', customer, 'Покупатель');
+@defineBlanketOrder(' (продажа)');
+@defineOrderBlanketOrder(' (продажа)');
 
-numeratorBlanketOrderStock(order, stock) <- saleDefaultNumeratorUserOrder() WHEN ASSIGNED(inBlanketOrderCustomerStock(order, stock));
+numeratorBlanketOrderStock(order, stock) <- saleDefaultNumeratorUserOrder() WHEN ASSIGNED(inBlanketOrderStock(order, stock));

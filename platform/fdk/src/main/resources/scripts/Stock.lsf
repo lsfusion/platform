@@ -1362,7 +1362,7 @@ META defineDocumentSkuStockContractorCustom(object, detail, skuProp, stockProp, 
     backgroundQuantitySku###object###Stock 'Цвет' (sku, object, stock) = RGB(255,128,128)
         IF quantitySku###object###stockProp(sku, object, stock) > (currentBalanceSkuStock(sku, stock) AND object IS object);
 
-    priceSkuStock###object###contactStock 'Цена' (sku, stockProp, object, contactStock) = pricePriceListTypeSkuStockDateTime(userPriceListType###object###contactStock(object, contactStock), sku, stockProp, dateTime###object(object));
+    priceSkuStock###object###contactStock 'Цена' (sku, stockProp, object, contactStock) = pricePriceListTypeSkuStockDateTime(userPriceListType###object###stock(object, contactStock), sku, stockProp, dateTime###object(object));
 
     changeQuantitySku###object###Stock###contactStock = ACTION (sku, object, stockProp, contactStock) {
         REQUEST NUMERIC[14,3] INPUT;
@@ -1422,7 +1422,7 @@ META extendFormDocumentSkuStockContractorCustom(object, form, concrete, stockPro
         PROPERTIES quantitySku###object###stockProp###contactStock(s, concrete, st, cc)  COLUMNS (cc) HEADER nameQuantity###contactStock(cc) ON CHANGE EXEC changeQuantitySku###object###Stock###contactStock(s, concrete, st, cc)
         PROPERTIES READONLY  priceSkuStock###object###contactStock(s, st, concrete, cc)  COLUMNS (cc) HEADER namePrice###contactStock(cc)
         PROPERTIES quantitySku###object###stockProp(s, concrete, st) READONLY BACKGROUND backgroundQuantitySku###object###Stock(s, concrete, st)
-        FILTERS in###object###contactStock(concrete,cc)
+        FILTERS in###object###stock(concrete,cc)
 
         FILTERGROUP filtr2
             FILTER 'Товары с остатком ' 'F10' currentBalanceSkuStock(s, st) DEFAULT

@@ -106,28 +106,35 @@ META defineDocumentHeaderAgreement (object)
     agreement###object (object) = DATA agreement (object);
     nameAgreement###object 'Соглашение' (object)= name(agreement###object(object)) IN documentPrmGroup MINCHARWIDTH 5 PREFCHARWIDTH 10;
 END
-META defineDocumentInterfaceHeaderAgreement (object, company, legalEntity)
+META defineDocumentInterfaceHeaderAgreement (object)
     @defineDocumentAbstractHeaderAgreement(object);
     @defineDocumentHeaderAgreement(user###object);
-    agreement###user###object (object) <- defaultAgreementCustomerSupplier(legalEntity(object), company(object))
-        IF currency###user###object(object) == currencyAgreement(defaultAgreementCustomerSupplier(legalEntity(object), company(object)))
-    WHEN CHANGED(currency###user###object(object)) OR
-         CHANGED(legalEntity(object));
-    agreement###object (object) += agreement###user###object(object);
+    agreement###object(object) += agreement###user###object(object);
 
-    CONSTRAINT currency###user###object(object) != currencyAgreement(agreement###user###object(object))
-               CHECKED BY agreement###user###object
+END
+
+META deriveDocumentHeaderAgreement (object, company, legalEntity)
+
+    agreement###object (object) <- defaultAgreementCustomerSupplier(legalEntity(object), company(object))
+        IF currency###object(object) == currencyAgreement(defaultAgreementCustomerSupplier(legalEntity(object), company(object)))
+    WHEN CHANGED(currency###object(object)) OR
+         CHANGED(legalEntity(object)) OR
+         CHANGED(company(object));
+
+    CONSTRAINT currency###object(object) != currencyAgreement(agreement###object(object))
+               CHECKED BY agreement###object
                MESSAGE 'Валюта документа должны совпадать с валютой соглашения';
 
-    CONSTRAINT supplierAgreement(agreement###user###object(object)) != company(object)
-               CHECKED BY agreement###user###object
+    CONSTRAINT supplierAgreement(agreement###object(object)) != company(object)
+               CHECKED BY agreement###object
                MESSAGE 'Соглашение должно быть между заданными юр. лицами';
 
-    CONSTRAINT agreement###user###object(object)
-               AND NOT inAgreementCustomerOver(agreement###user###object(object), legalEntity(object))
-               CHECKED BY agreement###user###object
+    CONSTRAINT agreement###object(object)
+               AND NOT inAgreementCustomerOver(agreement###object(object), legalEntity(object))
+               CHECKED BY agreement###object
                MESSAGE 'Соглашение должно быть между заданными юр. лицами';
 END
+
 
 
 META deriveDocumentDetailPriceListTypeAgreementCustom (object, detail)
@@ -141,52 +148,55 @@ META deriveDocumentDetailPriceListTypeAgreement (object)
     @deriveDocumentDetailPriceListTypeAgreementCustom(object, object###detail);
 END
 
-//--------------------------------------- Для двух объектов ----------------------------------------------------------//
-META defineDocumentDoubleHeaderAgreement (object, legalEntity)
-    agreement###object###legalEntity (object, legalEntity) = DATA agreement (object, legalEntity);
-    nameAgreement###object###legalEntity 'Соглашение' (object, legalEntity)= name(agreement###object###legalEntity(object, legalEntity)) IN documentPrmGroup MINCHARWIDTH 5 PREFCHARWIDTH 10;
-    dataPriceListType###object###legalEntity (object, legalEntity) = priceListTypeAgreement(agreement###object###legalEntity (object, legalEntity));
-    priceListType###object###legalEntity (object, legalEntity) =
-        UNION OVERRIDE dataPriceListType###object###legalEntity(object, legalEntity),
-                       userPriceListType###object###legalEntity(object, legalEntity);
-    namePriceListType###object###legalEntity 'Вид цен' (object, legalEntity)= name(priceListType###object###legalEntity(object, legalEntity)) IN documentPrmGroup MINCHARWIDTH 5 PREFCHARWIDTH 10;
+//--------------------------------------- Для двух объектов (object1 - документ)----------------------------------------------------------//
+META defineDocumentDoubleHeaderAgreement (object1, object2)
+    agreement###object1###object2 (object1, object2) = DATA agreement (object1, object2);
+    nameAgreement###object1###object2 'Соглашение' (object1, object2)= name(agreement###object1###object2 (object1, object2)) IN documentPrmGroup MINCHARWIDTH 5 PREFCHARWIDTH 10;
+    defaultPriceListType###object1###object2 (object1, object2) = priceListTypeAgreement(agreement###object1###object2 (object1, object2));
+    priceListType###object1###object2 (object1, object2) =
+        UNION OVERRIDE defaultPriceListType###object1###object2(object1, object2),
+                       userPriceListType###object1###object2(object1, object2);
+    namePriceListType###object1###object2 'Вид цен' (object1, object2)= name(priceListType###object1###object2(object1, object2)) IN documentPrmGroup MINCHARWIDTH 5 PREFCHARWIDTH 10;
 END
-META defineDocumentDoubleInterfaceHeaderAgreement (object, company, legalEntity)
-    @defineDocumentDoubleHeaderAgreement(object, legalEntity);
-    agreement###object###legalEntity (object, legalEntity) <- defaultAgreementCustomerSupplier(legalEntity, company(object))
-        IF currency###object(object) == currencyAgreement(defaultAgreementCustomerSupplier(legalEntity, company(object))
-    WHEN CHANGED(currency###object(object)) AND legalEntity IS legalEntity OR
-         CHANGED(in###object###legalEntity(object, legalEntity));
 
-    CONSTRAINT currency###object(object) != currencyAgreement(agreement###object###legalEntity(object, legalEntity))
-               CHECKED BY agreement###object###legalEntity
+META defineDocumentDoubleInterfaceHeaderAgreement (object1, object2, supplierProp, customerProp)
+    @defineDocumentDoubleHeaderAgreement(object1, object2);
+    agreement###object1###object2 (object1, object2) <- defaultAgreementCustomerSupplier(customerProp###object1(object1), supplierProp###object1(object1))
+        IF currency###object1(object1) == currencyAgreement(defaultAgreementCustomerSupplier(customerProp###object1(object1), supplierProp###object1(object1)))
+    WHEN CHANGED(currency###object1(object1)) AND object2 IS object2 OR
+         CHANGED(supplierProp###object1(object1)) AND object2 IS object2 OR
+         CHANGED(customerProp###object1(object1))AND object2 IS object2  OR
+         CHANGED(in###object1###object2(object1, object2));
+
+    CONSTRAINT currency###object1(object1) != currencyAgreement(agreement###object1###object2(object1, object2))
+               CHECKED BY agreement###object1###object2
                MESSAGE 'Валюта документа должны совпадать с валютой соглашения';
 
-    CONSTRAINT supplierAgreement(agreement###object###legalEntity(object, legalEntity)) != company(object)
-               CHECKED BY agreement###object###legalEntity
+    CONSTRAINT supplierAgreement(agreement###object1###object2(object1, object2)) != supplierProp###object1(object1)
+               CHECKED BY agreement###object1###object2
                MESSAGE 'Соглашение должно быть между заданными юр. лицами';
 
-    CONSTRAINT agreement###object###legalEntity(object, legalEntity)
-               AND NOT inAgreementCustomerOver(agreement###object###legalEntity(object, legalEntity), legalEntity)
-               CHECKED BY agreement###object###legalEntity
+    CONSTRAINT agreement###object1###object2(object1, object2)
+               AND NOT inAgreementCustomerOver(agreement###object1###object2(object1, object2), customerProp###object1(object1))
+               CHECKED BY agreement###object1###object2
                MESSAGE 'Соглашение должно быть между заданными юр. лицами';
 END
 
-META deriveDocumentDoubleDetailPriceListTypeAgreementCustom (object, detail, legalEntity)
-    priceListType###detail (idetail) = UNION OVERRIDE priceListType###object###legalEntity(object###detail(idetail), legalEntity###detail(idetail)), dataPriceListType###detail(idetail) PERSISTENT;
+META deriveDocumentDoubleDetailPriceListTypeAgreementCustom (object1, detail, object2, stockProp2)
+    priceListType###detail (idetail) = UNION OVERRIDE priceListType###object1###object2 (object1###detail(idetail), stockProp2###detail(idetail)), dataPriceListType###detail(idetail) PERSISTENT;
     namePriceListType###detail 'Вид цен' (idetail) = name(priceListType###detail(idetail)) MINCHARWIDTH 10 PREFCHARWIDTH 20;
 
-    priceListType###detail(detail) <- IF agreement###object###legalEntity(object###detail(detail), legalEntity###detail(detail))
-                                             THEN priceListTypeAgreementSkuOver(agreement###object###legalEntity(object###detail(detail), legalEntity###detail(detail)), sku###detail(detail))
-                                             ELSE priceListType###object###legalEntity(object###detail(detail), legalEntity###detail(detail))
-    WHEN CHANGED(agreement###object###legalEntity(object###detail(detail), legalEntity###detail(detail))) OR
-         CHANGED(priceListType###object###legalEntity(object###detail(detail), legalEntity###detail(detail))) OR
+    priceListType###detail(detail) <- IF agreement###object1###object2(object1###detail(detail), stockProp2###detail(detail))
+                                             THEN priceListTypeAgreementSkuOver(agreement###object1###object2(object1###detail(detail), stockProp2###detail(detail)), sku###detail(detail))
+                                             ELSE priceListType###object1###object2(object1###detail(detail), stockProp2###detail(detail))
+    WHEN CHANGED(agreement###object1###object2(object1###detail(detail), stockProp2###detail(detail))) OR
+         CHANGED(priceListType###object1###object2(object1###detail(detail), stockProp2###detail(detail))) OR
          CHANGED(sku###detail(detail)) OR
-         CHANGED(stock###detail(detail)) OR
-         CHANGED(legalEntity###detail(detail));
+         CHANGED(object1###detail(detail)) OR
+         CHANGED(stockProp2###detail(detail));
 END
-META deriveDocumentDoubleDetailPriceListTypeAgreement (object, legalEntity)
-    @deriveDocumentDoubleDetailPriceListTypeAgreementCustom(object, object###detail, legalEntity);
+META deriveDocumentDoubleDetailPriceListTypeAgreement (object1, object2, stockProp2)
+    @deriveDocumentDoubleDetailPriceListTypeAgreementCustom(object1, object1###detail, object2, stockProp2);
 END
 
 META deriveDocumentDetailPricePriceListTypeCustom (detail, stockProp)

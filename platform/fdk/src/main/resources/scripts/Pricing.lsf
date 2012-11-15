@@ -564,9 +564,10 @@ META definePricingAggregation(concrete, sign, caption, stockProp)
                       retailSumUserInvoiceDetail
     ;
     EXTEND DESIGN userInvoice {
-        headerRow3 {
-            NEW wor1 {
+        headerRow14 {
+            NEW headerRow141 {
                 title = 'Расценка';
+                childConstraints = TO THE RIGHTBOTTOM;
                 ADD PROPERTY(createPricingUserInvoice);
                 ADD PROPERTY(namePricingCommitteeUserInvoice);
             }

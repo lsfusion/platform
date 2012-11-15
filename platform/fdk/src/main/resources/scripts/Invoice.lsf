@@ -63,7 +63,8 @@ META defineInvoice(sign, stockProp)
     @defineAddDetailDialogSkuStock(userInvoice, sku, stockProp, dialogSku);
     @defineAddDetailDialogBarcode(userInvoice, sku);
 
-    @defineDocumentInterfaceHeaderAgreement(invoice, supplierUserInvoice, customerUserInvoice);
+    @defineDocumentInterfaceHeaderAgreement(invoice);
+    @deriveDocumentHeaderAgreement (userInvoice, supplierUserInvoice, customerUserInvoice);
     @deriveDocumentDetailPriceListTypeAgreement(invoice);
 
     countInvoiceDetailStockInvoice (stock, invoice) = GROUP SUM 1 BY stockProp###invoiceDetail(invoiceDetail), invoiceInvoiceDetail(invoiceDetail);
@@ -194,7 +195,7 @@ META defineInvoice(sign, stockProp)
 
     FORM userInvoice 'Накладная'###sign
         OBJECTS i = userInvoice FIXED PANEL
-        PROPERTIES (i) objectClassName, nameSupplierUserInvoice, nameCustomerUserInvoice, nameSupplierStockUserInvoice, nameCustomerStockUserInvoice,
+        PROPERTIES (i) objectClassName, nameSupplierUserInvoice, nameCustomerUserInvoice, //nameSupplierStockUserInvoice, nameCustomerStockUserInvoice,
                        nameNumeratorObject, numberObject, seriesObject, dateUserInvoice, timeUserInvoice,
                        nameCurrencyUserInvoice, nameAgreementUserInvoice, namePriceListTypeUserInvoice, noteUserInvoice,
 //                       numberContractSku###contact###UserInvoice, isCommissionUserInvoice,
@@ -225,41 +226,53 @@ META defineInvoice(sign, stockProp)
                 ADD d.box {
                     title = 'Спецификация';
                     d.panel {
-                        childConstraints = TO THE RIGHT;
+                        childConstraints = TO THE RIGHTBOTTOM;
                     }
                 }
             }
             NEW header.box BEFORE specification.box {
-                childConstraints = TO THE RIGHT;
+                childConstraints = TO THE RIGHTBOTTOM;
 
                 NEW headerRow1 {
                     childConstraints = TO THE BOTTOM;
 
                     ADD i.documentHeaderGroup {
-                        childConstraints = TO THE RIGHT;
+                        childConstraints = TO THE RIGHTBOTTOM;
                         ADD PROPERTY(objectClassName) { preferredCharWidth = 10; }
-                        ADD PROPERTY(nameSupplierUserInvoice);
-                        ADD PROPERTY(nameCustomerUserInvoice);
                         ADD PROPERTY(nameNumeratorObject);
                         ADD PROPERTY(numberObject);
                         ADD PROPERTY(seriesObject);
                         ADD PROPERTY(dateUserInvoice);
                         ADD PROPERTY(timeUserInvoice);
                     }
-                    NEW headerRow2 {
-                        title = 'Склады';
-                        childConstraints = TO THE RIGHT;
-                        ADD PROPERTY(nameSupplierStockUserInvoice);
-                        ADD PROPERTY(nameCustomerStockUserInvoice);
+                    NEW headerRow11 {
+                        title = 'Поставка / Акт расхождения';
+                        childConstraints = TO THE RIGHTBOTTOM;
                     }
-
-                    NEW headerRow3 {
-                        childConstraints = TO THE RIGHT;
-                        ADD i.documentPrmGroup;
-                        NEW headerRow4 {
-                            childConstraints = TO THE BOTTOM;
-                            ADD i.orderGroup;
+                    NEW headerRow12 {
+                        childConstraints = TO THE RIGHTBOTTOM;
+                        NEW headerRow111 {
+                            title = 'Поставщик';
+                            childConstraints = TO THE RIGHTBOTTOM;
+                            ADD PROPERTY(nameSupplierUserInvoice);
                         }
+                        NEW headerRow112 {
+                            title = 'Покупатель';
+                            childConstraints = TO THE RIGHTBOTTOM;
+                            ADD PROPERTY(nameCustomerUserInvoice);
+                        }
+                    }
+                    ADD i.documentPrmGroup {
+                        childConstraints = TO THE RIGHTBOTTOM;
+                    }
+                    NEW headerRow13 {
+//                        title = 'Сооздать на основании';
+                        childConstraints = TO THE RIGHTBOTTOM;
+                        ADD i.orderGroup {childConstraints = TO THE RIGHTBOTTOM;};
+                    }
+                    NEW headerRow14 {
+//                        title = 'Расценка / Дооценка';
+                        childConstraints = TO THE RIGHTBOTTOM;
                     }
                 }
 

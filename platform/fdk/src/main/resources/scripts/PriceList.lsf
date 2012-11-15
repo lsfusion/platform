@@ -776,15 +776,16 @@ END
 
 
 // ------------------------- Макросы по добавлению видов цен в документы (два объекта) --------------------- //
-META defineDocumentDoubleObjHeaderPriceListType (object, contactClass, contactProp)
-    userPriceListType###object###contactProp (object, contactClass) = DATA priceListType (object, contactClass);
+META defineDocumentDoubleObjHeaderPriceListType (object1, object2)  //  object1 - документ
+    userPriceListType###object1###object2 (object1, object2) = DATA priceListType (object1, object2);
+
 END
 META defineDocumentDoubleObjDetailDataPriceListType (detail)
     dataPriceListType###detail =  DATA priceListType (detail);
 END
-META defineDocumentDoubleObjPriceListType (object, contactClass, contactProp)
-    @defineDocumentDoubleObjHeaderPriceListType(object, contactClass, contactProp);
-    @defineDocumentDoubleObjDetailDataPriceListType(object##Detail);
+META defineDocumentDoubleObjPriceListType (object1, object2)
+    @defineDocumentDoubleObjHeaderPriceListType(object1, object2);
+    @defineDocumentDoubleObjDetailDataPriceListType(object1##Detail);
 END
 
 //--
