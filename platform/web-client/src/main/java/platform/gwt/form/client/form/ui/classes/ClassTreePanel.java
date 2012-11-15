@@ -1,9 +1,12 @@
 package platform.gwt.form.client.form.ui.classes;
 
+import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.EventListener;
 import com.google.gwt.user.client.ui.*;
 import platform.gwt.form.shared.view.classes.GObjectClass;
 
-public class ClassTreePanel extends Composite {
+public abstract class ClassTreePanel extends Composite {
     private GObjectClass baseClass;
     private GObjectClass defaultClass;
 
@@ -45,6 +48,14 @@ public class ClassTreePanel extends Composite {
         final TreeItem classNode = parentNode == null ? tree.addItem(objectClass.caption) : parentNode.addItem(objectClass.caption);
         classNode.setUserObject(objectClass);
 
+        DOM.sinkEvents(classNode.getElement(), Event.ONDBLCLICK);
+        DOM.setEventListener(classNode.getElement(), new EventListener() {
+            @Override
+            public void onBrowserEvent(Event event) {
+                classChosen();
+            }
+        });
+
         for (GObjectClass childClass : objectClass.children) {
             addClassNode(classNode, childClass);
         }
@@ -63,4 +74,6 @@ public class ClassTreePanel extends Composite {
         }
         return null;
     }
+
+    public abstract void classChosen();
 }

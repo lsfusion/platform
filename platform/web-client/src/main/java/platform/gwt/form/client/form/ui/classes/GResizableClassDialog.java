@@ -34,7 +34,12 @@ public class GResizableClassDialog extends GResizableModalWindow {
     }
 
     private void configureLayout(GObjectClass baseClass, GObjectClass defaultClass) {
-        classPanel = new ClassTreePanel(baseClass, defaultClass);
+        classPanel = new ClassTreePanel(baseClass, defaultClass) {
+            @Override
+            public void classChosen() {
+                okPressed();
+            }
+        };
 
         btnOk = new Button(messages.ok());
         btnCancel = new Button(messages.cancel());
@@ -63,10 +68,7 @@ public class GResizableClassDialog extends GResizableModalWindow {
         btnOk.addClickHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
-                GObjectClass selectedClass = classPanel.getSelectedClass();
-                if (selectedClass != null) {
-                    chooseClass(selectedClass);
-                }
+                okPressed();
             }
         });
 
@@ -83,6 +85,13 @@ public class GResizableClassDialog extends GResizableModalWindow {
                 classChosenHandler.onClassChosen(chosenClass);
             }
         });
+    }
+
+    private void okPressed() {
+        GObjectClass selectedClass = classPanel.getSelectedClass();
+        if (selectedClass != null) {
+            chooseClass(selectedClass);
+        }
     }
 
     private void chooseClass(GObjectClass chosenClass) {

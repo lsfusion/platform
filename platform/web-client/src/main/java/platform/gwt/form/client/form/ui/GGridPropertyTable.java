@@ -6,6 +6,7 @@ import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.CustomScrollPanel;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.view.client.DefaultSelectionEventManager;
@@ -63,6 +64,16 @@ public abstract class GGridPropertyTable extends GPropertyTable {
 
         setAutoHeaderRefreshDisabled(true);
         setAutoFooterRefreshDisabled(true);
+    }
+
+    @Override
+    protected void onBrowserEvent2(Event event) {
+        if (form.isDialog() && event.getTypeInt() == Event.ONDBLCLICK) {
+            event.stopPropagation();
+            event.preventDefault();
+            form.okPressed();
+        }
+        super.onBrowserEvent2(event);
     }
 
     @Override

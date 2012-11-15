@@ -547,6 +547,10 @@ public class GFormController extends SimplePanel {
         syncDispatch(new ClosePressed(), new ServerResponseCallback());
     }
 
+    public void okPressed() {
+        syncDispatch(new OkPressed(), new ServerResponseCallback());
+    }
+
     // судя по документации, TabPanel криво работает в StandardsMode. в данном случае неправильно отображает
     // таблицы, кроме тех, что в первой вкладке. поэтому вынуждены сами вызывать onResize() для заголовков таблиц
     private void redrawHeaders(GComponent component) {
@@ -639,6 +643,10 @@ public class GFormController extends SimplePanel {
 
     public boolean isEditing() {
         return editingTable != null;
+    }
+
+    public boolean isDialog() {
+        return isDialog;
     }
 
     public GForm getForm() {
