@@ -1,8 +1,6 @@
 package platform.gwt.form.client.form.ui.classes;
 
-import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.EventListener;
 import com.google.gwt.user.client.ui.*;
 import platform.gwt.form.shared.view.classes.GObjectClass;
 
@@ -32,7 +30,7 @@ public abstract class ClassTreePanel extends Composite {
     }
 
     private void createTreeGrid() {
-        tree = new Tree();
+        tree = new ClassTree();
         tree.setAnimationEnabled(false);
 
         addClassNode(null, baseClass);
@@ -47,14 +45,6 @@ public abstract class ClassTreePanel extends Composite {
     private void addClassNode(TreeItem parentNode, GObjectClass objectClass) {
         final TreeItem classNode = parentNode == null ? tree.addItem(objectClass.caption) : parentNode.addItem(objectClass.caption);
         classNode.setUserObject(objectClass);
-
-        DOM.sinkEvents(classNode.getElement(), Event.ONDBLCLICK);
-        DOM.setEventListener(classNode.getElement(), new EventListener() {
-            @Override
-            public void onBrowserEvent(Event event) {
-                classChosen();
-            }
-        });
 
         for (GObjectClass childClass : objectClass.children) {
             addClassNode(classNode, childClass);
@@ -76,4 +66,21 @@ public abstract class ClassTreePanel extends Composite {
     }
 
     public abstract void classChosen();
+
+    class ClassTree extends Tree {
+        public ClassTree() {
+            super();
+            sinkEvents(Event.ONDBLCLICK);
+        }
+
+        @Override
+        public void onBrowserEvent(Event event) {
+            if (event.getTypeInt() == Event.ONDBLCLICK) {
+                event.preventDefault();
+                event.stopPropagation();
+                classChosen();
+            }
+            super.onBrowserEvent(event);
+        }
+    }
 }
