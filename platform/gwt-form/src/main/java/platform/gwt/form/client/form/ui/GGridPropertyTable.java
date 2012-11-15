@@ -174,15 +174,15 @@ public abstract class GGridPropertyTable extends GPropertyTable {
             } else if (keyCode == KeyCodes.KEY_DOWN) { // проскролливаем окно таблицы на один ряд вверх или вниз,
                                                        // чтобы избежать различного поведения в браузерах при выходе фокуса из видимости
                 CustomScrollPanel scrollPanel = ((GGridPropertyTable) getDisplay()).getScrollPanel();
+                int hScrollBarHeight = scrollPanel.getHorizontalScrollbar().asWidget().getOffsetHeight();
                 int scrollPosition = scrollPanel.getVerticalScrollPosition();
-                int scrollHeight = scrollPanel.getOffsetHeight();
+                int scrollHeight = scrollPanel.getOffsetHeight() - hScrollBarHeight;
                 TableRowElement row = getDisplay().getRowElement(getDisplay().getKeyboardSelectedRow());
                 int rowHeight = row.getOffsetHeight();
-                int rowTop = row.getOffsetTop();
-                int hScrollBarHeight = scrollPanel.getHorizontalScrollbar().asWidget().getOffsetHeight();
+                int rowBottom = row.getOffsetTop() + rowHeight;
 
-                if (scrollHeight - hScrollBarHeight - (rowTop - scrollPosition) - rowHeight < rowHeight) {
-                    scrollPanel.setVerticalScrollPosition(rowTop + rowHeight - (scrollHeight - hScrollBarHeight) + hScrollBarHeight);
+                if (rowBottom + rowHeight > scrollPosition + scrollHeight) {
+                    scrollPanel.setVerticalScrollPosition(rowBottom + rowHeight - scrollHeight);
                 }
             } else if (keyCode == KeyCodes.KEY_UP) {
                 CustomScrollPanel scrollPanel = ((GGridPropertyTable) getDisplay()).getScrollPanel();
@@ -191,7 +191,7 @@ public abstract class GGridPropertyTable extends GPropertyTable {
                 int rowHeight = row.getOffsetHeight();
                 int rowTop = row.getOffsetTop();
 
-                if (rowTop - scrollPosition <= rowHeight) {
+                if (rowTop - rowHeight < scrollPosition) {
                     scrollPanel.setVerticalScrollPosition(rowTop - rowHeight);
                 }
             }

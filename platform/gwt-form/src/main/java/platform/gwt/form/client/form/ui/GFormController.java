@@ -383,9 +383,23 @@ public class GFormController extends SimplePanel {
         GResizableClassDialog.showDialog(baseClass, defaultClass, concreate, classChosenHandler);
     }
 
-    public void changeGroupObject(GGroupObject group, GGroupObjectValue key) {
-        long requestIndex = dispatcher.execute(new ChangeGroupObject(group.ID, key.getValueDTO()), new ServerResponseCallback());
+    public void changeGroupObject(final GGroupObject group, GGroupObjectValue key) {
+        long requestIndex = dispatcher.execute(new ChangeGroupObject(group.ID, key.getValueDTO()), new ServerResponseCallback() {
+            @Override
+            public void preProcess() {
+                DeferredRunner.get().commitDelayedGroupObjectChange(group);
+            }
+        });
         lastChangeCurrentObjectsRequestIndices.put(group, requestIndex);
+    }
+
+    public void changeGroupObjectLater(final GGroupObject group, final GGroupObjectValue key) {
+        DeferredRunner.get().scheduleDelayedGroupObjectChange(group, new DeferredRunner.AbstractCommand() {
+            @Override
+            public void execute() {
+                changeGroupObject(group, key);
+            }
+        });
     }
 
     public void scrollToEnd(GGroupObject group, boolean toEnd) {

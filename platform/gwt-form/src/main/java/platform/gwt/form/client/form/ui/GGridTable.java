@@ -9,7 +9,6 @@ import com.google.gwt.view.client.SelectionChangeEvent;
 import platform.gwt.base.shared.GwtSharedUtils;
 import platform.gwt.cellview.client.AbstractCellTable;
 import platform.gwt.cellview.client.Column;
-import platform.gwt.form.client.dispatch.DeferredRunner;
 import platform.gwt.form.shared.view.GEditBindingMap;
 import platform.gwt.form.shared.view.GGroupObject;
 import platform.gwt.form.shared.view.GOrder;
@@ -57,12 +56,7 @@ public class GGridTable extends GGridPropertyTable {
                 if (selectedRecord != null && !selectedRecord.key.equals(currentKey)) {
                     setCurrentKey(selectedRecord.key);
 
-                    DeferredRunner.get().scheduleDelayedGroupObjectChange(groupObject, new DeferredRunner.AbstractCommand() {
-                        @Override
-                        public void execute() {
-                            form.changeGroupObject(groupObject, selectedRecord.key);
-                        }
-                    });
+                    form.changeGroupObjectLater(groupObject, selectedRecord.key);
                 }
             }
         });
