@@ -79,7 +79,20 @@ inLegalEntityGroupLegalEntity (legalEntityGroup, legalEntity) =
     UNION OVERRIDE legalEntity IS legalEntity AND NOT legalEntityGroup IS legalEntityGroup,
                    isParentLegalEntityGroupLegalEntityGroup(legalEntityGroupLegalEntity(legalEntity), legalEntityGroup);
 
+ FORM legalEntityGroup 'Группа юр. лиц'
+     OBJECTS l = legalEntityGroup FIXED PANEL
+     PROPERTIES(l) name, nameParentLegalEntityGroup
 
+     EDIT legalEntityGroup OBJECT l
+ ;
+
+ FORM legalEntityGroups 'Группы юр. лиц'
+     TREE legalEntityGroupTree lg = legalEntityGroup PARENT parentLegalEntityGroup
+     PROPERTIES READONLY lgTreeName = name(lg)
+     ORDER BY name(lg)
+
+     DIALOG legalEntityGroup OBJECT lg
+ ;
 // ----------------------------------- Банк ------------------------------------------- //
 
 CLASS bank 'Банк' : named, externalObject;
@@ -203,6 +216,7 @@ DESIGN legalEntity FROM DEFAULT {
                 NEW row11 {
                     childConstraints = TO THE RIGHT;
                     ADD PROPERTY(name(l));
+                    ADD PROPERTY(nameLegalEntityGroupLegalEntity(l));
                     ADD PROPERTY(nameCountryLegalEntity);
                     ADD PROPERTY(nameCurrencyLegalEntity);
                     ADD PROPERTY(nameLanguageLegalEntity);

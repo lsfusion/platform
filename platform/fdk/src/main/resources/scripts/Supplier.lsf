@@ -141,12 +141,12 @@ FORM supplier 'Поставщик'
     PROPERTIES(co2) READONLY name
 
     OBJECTS ag=agreement
-    PROPERTIES(ag, co2, s) isDefaultAgreementCustomerSupplier
+    PROPERTIES(ag, s, co2) isDefaultAgreementSupplierCustomer
     PROPERTIES(ag, s) inAgreementCustomerOver
     PROPERTIES(ag) READONLY name, numberObject, seriesObject, dateAgreement, timeAgreement,
                             fromDateAgreement, fromTimeAgreement, toDateAgreement, toTimeAgreement,
                             nameCurrencyAgreement, namePriceListTypeAgreement, noteAgreement
-    PROPERTIES createAgreementCustomerSupplier(co2, s) TODRAW ag FORCE PANEL DRAWTOTOOLBAR, addAgreementsCustomerSupplier(co2, s) TODRAW ag FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES createAgreementSupplierCustomer(s, co2) TODRAW ag FORCE PANEL DRAWTOTOOLBAR, addAgreementsSupplierCustomer(s, co2) TODRAW ag FORCE PANEL DRAWTOTOOLBAR
     FILTERS inAgreementCustomerOver(ag, s),
             supplierAgreement(ag) == co2
 
