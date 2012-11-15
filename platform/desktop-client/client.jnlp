@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jnlp spec="1.5+" codebase="http://localhost/fusion/" href="client.jnlp">
     <information>
-        <title>Fusion Simple Client</title>
+        <title>Fusion Client</title>
         <vendor>Nomosoft Ltd.</vendor>
         <description>Fusion</description>
         <icon href="default.png" kind="default"/>
@@ -14,12 +14,12 @@
         <all-permissions/>
     </security>
     <resources>
-    <j2se version="1.6+" initial-heap-size="32m" max-heap-size="128m"/>
-        <property name="platform.client.formset" value="cashregister"/>
+        <property name="jnlp.packEnabled" value="true"/>
+        <j2se version="1.6+" initial-heap-size="32m" max-heap-size="1024m"/>
         <property name="platform.client.hostname" value="localhost"/>
         <property name="platform.client.hostport" value="7652"/>
         <property name="platform.client.db" value="default"/>
-        <jar href="client-prod.jar"/>
+        <jar href="client.jar"/>
     </resources>
     <application-desc>
     </application-desc>

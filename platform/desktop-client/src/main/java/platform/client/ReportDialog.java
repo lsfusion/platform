@@ -1,12 +1,10 @@
-package platform.fullclient.layout;
+package platform.client;
 
 import jasperapi.ReportGenerator;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.export.JRXlsAbstractExporterParameter;
 import net.sf.jasperreports.view.JRViewer;
-import platform.client.Main;
-import platform.client.SwingUtils;
 import platform.interop.form.ReportGenerationData;
 
 import javax.swing.*;

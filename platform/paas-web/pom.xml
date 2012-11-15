@@ -116,9 +116,9 @@
                 <configuration>
                     <webResources>
                         <resource>
-                            <directory>../fullclient/target</directory>
+                            <directory>../desktop-client/target</directory>
                             <includes>
-                                <include>fullclient-prod.jar</include>
+                                <include>client.jar</include>
                             </includes>
                             <targetPath>jnlp</targetPath>
                         </resource>

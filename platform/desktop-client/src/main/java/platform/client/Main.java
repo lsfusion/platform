@@ -1,10 +1,12 @@
 package platform.client;
 
 import com.google.common.base.Throwables;
+import jasperapi.ReportGenerator;
 import org.apache.log4j.Logger;
 import org.aspectj.lang.Aspects;
 import platform.base.BaseUtils;
 import platform.base.OSUtils;
+import platform.client.dock.DockableMainFrame;
 import platform.client.exceptions.ClientExceptionManager;
 import platform.client.exceptions.ExceptionThreadGroup;
 import platform.client.form.ClientExternalScreen;
@@ -17,7 +19,6 @@ import platform.client.rmi.ConnectionLostManager;
 import platform.client.rmi.RMITimeoutSocketFactory;
 import platform.interop.RemoteLoaderInterface;
 import platform.interop.RemoteLogicsInterface;
-import platform.interop.ServerInfo;
 import platform.interop.event.EventBus;
 import platform.interop.event.IDaemonTask;
 import platform.interop.form.ReportGenerationData;
@@ -41,8 +42,10 @@ import java.rmi.server.RMIFailureHandler;
 import java.rmi.server.RMISocketFactory;
 import java.sql.Timestamp;
 import java.text.DateFormat;
-import java.util.*;
-import java.util.List;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.TimeZone;
+import java.util.TimerTask;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -518,39 +521,20 @@ public class Main {
         void openInExcel(ReportGenerationData generationData);
 
         boolean isFull();
-
-        SwingWorker<List<ServerInfo>, ServerInfo> getServerHostEnumerator(MutableComboBoxModel serverHostModel, String waitMessage);
     }
 
     public static void main(final String[] args) {
         start(args, new ModuleFactory() {
             public MainFrame initFrame(RemoteNavigatorInterface remoteNavigator) throws IOException {
-
-                String forms = System.getProperty(PLATFORM_CLIENT_FORMS);
-                if (forms == null) {
-                    String formSet = System.getProperty(PLATFORM_CLIENT_FORMSET);
-                    if (formSet == null) {
-                        throw new RuntimeException(getString("client.property.not.set"));
-                    }
-                    forms = remoteNavigator.getForms(formSet);
-                    if (forms == null) {
-                        throw new RuntimeException(getString("client.forms.not.found", formSet));
-                    }
-                }
-
-                return new SimpleMainFrame(remoteNavigator, forms);
+                return new DockableMainFrame(remoteNavigator);
             }
 
             public void openInExcel(ReportGenerationData generationData) {
-                // not supported
+                ReportGenerator.exportToExcelAndOpen(generationData, timeZone);
             }
 
             public boolean isFull() {
-                return false;
-            }
-
-            public SwingWorker<List<ServerInfo>, ServerInfo> getServerHostEnumerator(MutableComboBoxModel serverHostModel, String waitMessage) {
-                return null;
+                return true;
             }
         });
     }

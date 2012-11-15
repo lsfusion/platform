@@ -1,4 +1,4 @@
-package platform.fullclient.navigator;
+package platform.client.navigator;
 
 import bibliothek.gui.dock.common.SingleCDockable;
 import platform.client.navigator.*;

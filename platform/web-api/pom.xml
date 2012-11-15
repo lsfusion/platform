@@ -12,7 +12,7 @@
 
     <artifactId>web-api</artifactId>
     <packaging>jar</packaging>
-    <name>GWT Api</name>
+    <name>Web API</name>
 
     <build>
         <resources>

@@ -88,15 +88,15 @@
                 <configuration>
                     <webResources>
                         <resource>
-                            <directory>../fullclient/target</directory>
+                            <directory>../desktop-client/target</directory>
                             <includes>
-                                <include>fullclient-prod.jar</include>
+                                <include>client.jar</include>
                             </includes>
                         </resource>
                         <resource>
                             <directory>src/main/resources</directory>
                             <includes>
-                                <include>fullclient.jnlp</include>
+                                <include>client.jnlp</include>
                                 <include>logo.png</include>
                                 <include>splash.png</include>
                             </includes>

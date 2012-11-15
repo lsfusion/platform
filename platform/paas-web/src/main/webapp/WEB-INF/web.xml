@@ -39,7 +39,7 @@
     </servlet>
     <servlet-mapping>
         <servlet-name>jnlpHandler</servlet-name>
-        <url-pattern>/jnlp/fullclient.jnlp</url-pattern>
+        <url-pattern>/jnlp/client.jnlp</url-pattern>
     </servlet-mapping>
 
     <servlet>

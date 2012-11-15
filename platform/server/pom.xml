@@ -12,10 +12,8 @@
     <name>Server</name>
 
     <properties>
-        <assemble.jar>${project.build.directory}/fusion-prod.jar</assemble.jar>
         <assemble.mainClass>platform.server.logics.BusinessLogics</assemble.mainClass>
-        <assemble.descriptor>src/assemble/distribution.xml</assemble.descriptor>
-        <assemble.finalName>fusion</assemble.finalName>
+        <assemble.finalName>server</assemble.finalName>
     </properties>
 
     <profiles>

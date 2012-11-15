@@ -5,7 +5,7 @@ import com.google.gwt.core.client.JavaScriptObject;
 import paas.api.gwt.shared.dto.ConfigurationDTO;
 
 public class ConfigurationRecord extends BasicRecord {
-    public static final String JNLP_SERVLET_PREFIX = "jnlp/fullclient.jnlp?confId=";
+    public static final String JNLP_SERVLET_PREFIX = "jnlp/client.jnlp?confId=";
     public static final String PORT_FIELD = "port";
     public static final String STATUS_FIELD = "status";
     public static final String JNLP_FIELD = "jnlp";

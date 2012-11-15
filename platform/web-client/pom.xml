@@ -12,23 +12,37 @@
 
     <artifactId>web-client</artifactId>
     <packaging>jar</packaging>
-    <name>GWT Form</name>
+    <name>Web Client</name>
 
     <profiles>
         <profile>
-            <id>dev</id>
+            <id>warWithDesktopClient</id>
             <activation>
                 <property>
-                    <name>dev</name>
+                    <name>!nodesktop</name>
                 </property>
             </activation>
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>gwt-maven-plugin</artifactId>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-war-plugin</artifactId>
+                        <version>2.1.1</version>
                         <configuration>
-                            <module>platform.gwt.form.Form</module>
+                            <webResources>
+                                <resource>
+                                    <directory>../desktop-client/target</directory>
+                                    <includes>
+                                        <include>client.jar</include>
+                                    </includes>
+                                </resource>
+                                <resource>
+                                    <directory>../desktop-client</directory>
+                                    <includes>
+                                        <include>client.jnlp</include>
+                                    </includes>
+                                </resource>
+                            </webResources>
                         </configuration>
                     </plugin>
                 </plugins>
@@ -59,7 +73,7 @@
                 <artifactId>maven-war-plugin</artifactId>
                 <version>2.1.1</version>
                 <configuration>
-                    <warName>form</warName>
+                    <warName>client</warName>
                 </configuration>
             </plugin>
         </plugins>

@@ -1,4 +1,4 @@
-package platform.fullclient.layout;
+package platform.client.dock;
 
 import bibliothek.extension.gui.dock.theme.eclipse.EclipseTabDockAction;
 import bibliothek.gui.dock.common.CControl;

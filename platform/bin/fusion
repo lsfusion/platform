@@ -10,7 +10,7 @@ PID_FILE=/var/run/jsvc-fusion.pid
 
 FUSION_OPTS="-Xms512m -Xmx2048m"
 
-CLASSPATH=/usr/local/fusion/fusion-prod.jar
+CLASSPATH=/usr/local/fusion/server.jar
 
 cd $FUSION_HOME
 

@@ -1,4 +1,4 @@
-package platform.fullclient.layout;
+package platform.client.dock;
 
 import bibliothek.gui.dock.common.DefaultSingleCDockable;
 import platform.client.navigator.ClientAbstractWindow;

@@ -9,17 +9,11 @@
     </parent>
     <artifactId>desktop-client</artifactId>
     <packaging>jar</packaging>
-    <name>Client</name>
+    <name>Desktop Client</name>
 
     <properties>
-        <assemble.jar>${project.build.directory}/client-prod.jar</assemble.jar>
         <assemble.mainClass>platform.client.Main</assemble.mainClass>
-        <assemble.descriptor>src/assemble/distribution.xml</assemble.descriptor>
         <assemble.finalName>client</assemble.finalName>
-
-        <keystore.file>${project.basedir}/src/assemble/keystore</keystore.file>
-        <keystore.alias>lsf</keystore.alias>
-        <keystore.pass>qwerty</keystore.pass>
     </properties>
 
     <build>
@@ -37,13 +31,10 @@
             <artifactId>api</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.toedter</groupId>
-            <artifactId>jcalendar</artifactId>
+            <groupId>by.luxsoft.platform</groupId>
+            <artifactId>jasperapi</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.intellij</groupId>
-            <artifactId>forms_rt</artifactId>
-        </dependency>
+
         <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjweaver</artifactId>
@@ -58,9 +49,52 @@
             <artifactId>aspectjtools</artifactId>
             <scope>provided</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.jboss.netty</groupId>
+            <artifactId>netty</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>net.sf.jacob-project</groupId>
             <artifactId>jacob</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.xmlgraphics</groupId>
+            <artifactId>batik-bridge</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.sf.barcode4j</groupId>
+            <artifactId>barcode4j</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.sourceforge.jexcelapi</groupId>
+            <artifactId>jxl</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jssc</groupId>
+            <artifactId>jssc</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>bibliothek.gui</groupId>
+            <artifactId>dockingFramesCore</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>bibliothek.gui</groupId>
+            <artifactId>dockingFramesCommon</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.toedter</groupId>
+            <artifactId>jcalendar</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.intellij</groupId>
+            <artifactId>forms_rt</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.swinglabs</groupId>
+            <artifactId>swingx</artifactId>
         </dependency>
         <dependency>
             <groupId>org.swinglabs</groupId>
@@ -71,24 +105,12 @@
             <artifactId>filters</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.swinglabs</groupId>
-            <artifactId>swingx</artifactId>
-        </dependency>
-        <dependency>
             <groupId>com.jgoodies</groupId>
             <artifactId>looks</artifactId>
         </dependency>
         <dependency>
             <groupId>com.jgoodies</groupId>
             <artifactId>common</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>net.sourceforge.jexcelapi</groupId>
-            <artifactId>jxl</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>jssc</groupId>
-            <artifactId>jssc</artifactId>
         </dependency>
     </dependencies>
 </project>

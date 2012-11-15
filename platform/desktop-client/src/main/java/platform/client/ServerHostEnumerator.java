@@ -1,4 +1,4 @@
-package platform.fullclient;
+package platform.client;
 
 import org.jboss.netty.bootstrap.ConnectionlessBootstrap;
 import org.jboss.netty.channel.*;

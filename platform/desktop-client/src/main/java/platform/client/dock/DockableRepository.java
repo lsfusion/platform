@@ -1,4 +1,4 @@
-package platform.fullclient.layout;
+package platform.client.dock;
 
 
 import java.io.DataInputStream;

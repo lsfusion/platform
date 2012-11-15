@@ -1,4 +1,4 @@
-package platform.fullclient.layout;
+package platform.client.dock;
 
 import net.sf.jasperreports.engine.JRException;
 import platform.client.MainFrame;

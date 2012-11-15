@@ -63,7 +63,7 @@ public class JNLPReqestHandler implements HttpRequestHandler {
             properties.put("scripted.port", configuration.port.toString());
 
             String content = stringResolver.replacePlaceholders(
-                    IOUtils.readStreamToString(getClass().getResourceAsStream("/fullclient.jnlp")), properties
+                    IOUtils.readStreamToString(getClass().getResourceAsStream("/client.jnlp")), properties
             );
 
             response.setContentType("application/x-java-jnlp-file");

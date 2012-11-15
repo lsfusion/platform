@@ -30,10 +30,6 @@ public class StartupProperties {
 
     public static final String PLATFORM_CLIENT_LOGO = "platform.client.logo";
 
-    public static final String PLATFORM_CLIENT_FORMS = "platform.client.forms";
-
-    public static final String PLATFORM_CLIENT_FORMSET = "platform.client.formset";
-
     public static final String PLATFORM_CLIENT_BLOCKER_ACTIVATION_OFF = "platform.client.blocker.activation.off";
 
     public static final String PLATFORM_CLIENT_BLOCKER_AUTORECONNECT = "platform.client.blocker.autoreconnect";

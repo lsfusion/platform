@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jnlp spec="1.5+" codebase="http://10.245.181.31/res/" href="fullclient.jnlp">
+<jnlp spec="1.5+" codebase="http://10.245.181.31/res/" href="client.jnlp">
     <information>
         <title>Skolkovo</title>
         <vendor>Nomosoft Ltd.</vendor>
@@ -18,7 +18,7 @@
         <property name="platform.client.hostname" value="10.245.181.31"/>
         <property name="platform.client.hostport" value="7652"/>
         <property name="platform.client.logo" value="http://10.245.181.31/res/splash.png"/>
-        <jar href="fullclient-prod.jar"/>
+        <jar href="client.jar"/>
     </resources>
     <application-desc>
     </application-desc>

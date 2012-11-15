@@ -13,7 +13,6 @@
         <module>api</module>
         <module>jasperapi</module>
         <module>desktop-client</module>
-        <module>fullclient</module>
         <module>server</module>
         <module>fdk</module>
         <module>tmc</module>

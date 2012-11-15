@@ -1,4 +1,4 @@
-package platform.fullclient.layout;
+package platform.client.dock;
 
 import bibliothek.gui.dock.common.CControl;
 import bibliothek.gui.dock.common.CGridArea;

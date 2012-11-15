@@ -26,7 +26,7 @@
                     </tr>
                     <tr>
                         <td>Password</td>
-                        <td><input name="j_password" type="password" value="fusion"/></td>
+                        <td><input name="j_password" type="password" value=""/></td>
                     </tr>
                     <tr>
                         <td></td>

@@ -103,18 +103,6 @@
         </antcall>
     </target>
 
-    <target name="fullclient-recursiveCompile">
-        <antcall target="recursiveCompile">
-            <param name="artifactId" value="fullclient"/>
-        </antcall>
-    </target>
-
-    <target name="fullclient-quickCompile">
-        <antcall target="quickCompile">
-            <param name="artifactId" value="fullclient"/>
-        </antcall>
-    </target>
-
     <target name="server-recursiveCompile">
         <antcall target="recursiveCompile">
             <param name="artifactId" value="server"/>

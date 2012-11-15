@@ -25,7 +25,6 @@ import java.rmi.ConnectException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
-import java.util.List;
 import java.util.Scanner;
 
 import static platform.client.StartupProperties.PLATFORM_CLIENT_HOSTPORT;
@@ -250,10 +249,7 @@ public class LoginDialog extends JDialog {
     }
 
     private void initServerHostList(MutableComboBoxModel serverHostModel) {
-        SwingWorker<List<ServerInfo>, ServerInfo> serverHostEnumerator = Main.module.getServerHostEnumerator(serverHostModel, waitMessage);
-        if (serverHostEnumerator != null) {
-            serverHostEnumerator.execute();
-        }
+        new ServerHostEnumerator(serverHostModel, waitMessage).execute();
     }
 
     private LoginInfo result = null;

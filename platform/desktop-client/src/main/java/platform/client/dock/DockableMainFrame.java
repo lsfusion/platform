@@ -1,4 +1,4 @@
-package platform.fullclient.layout;
+package platform.client.dock;
 
 import bibliothek.gui.dock.common.CContentArea;
 import bibliothek.gui.dock.common.CControl;
@@ -16,14 +16,11 @@ import platform.base.ExceptionUtils;
 import platform.client.Log;
 import platform.client.Main;
 import platform.client.MainFrame;
+import platform.client.ReportDialog;
 import platform.client.descriptor.view.LogicsDescriptorView;
 import platform.client.form.dispatch.ClientNavigatorActionDispatcher;
 import platform.client.logics.DeSerializer;
-import platform.client.navigator.ClientAbstractWindow;
-import platform.client.navigator.ClientNavigator;
-import platform.client.navigator.ClientNavigatorAction;
-import platform.client.navigator.ClientNavigatorForm;
-import platform.fullclient.navigator.NavigatorController;
+import platform.client.navigator.*;
 import platform.interop.AbstractWindowType;
 import platform.interop.exceptions.LoginException;
 import platform.interop.form.RemoteFormInterface;
