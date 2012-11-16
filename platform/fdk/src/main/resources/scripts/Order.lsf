@@ -77,7 +77,6 @@ META defineOrder(sign, stockProp)
 
     countOrderDetailStockOrder 'Кол-во строк по складу '(stock, order) = GROUP SUM 1 BY stockProp###orderDetail(orderDetail), orderOrderDetail(orderDetail);
 
-
 // --------------------------- Формы Заказа ---------------------------------
 
     FORM userOrder 'Заказ'###sign

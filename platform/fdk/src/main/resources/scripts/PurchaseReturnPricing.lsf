@@ -25,3 +25,6 @@ skipChangeLedgerPricing(pricing) += pricing IS invoicePricing;
 isReturnPricing(pricing) +=  pricing IS invoicePricing;
 //--
 
+CONSTRAINT supplierUserPricing(userPricing) AND NOT isSupplierLegalEntity(supplierUserPricing(userPricing))
+    CHECKED BY supplierUserPricing MESSAGE 'Для акта расценки выбрано в качестве поставщика юр.лицо, не являющееся поставщиком';
+

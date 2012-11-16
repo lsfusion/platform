@@ -8,3 +8,8 @@ NAMESPACE Sale;
 @defineInvoice(' (продажа)', supplierStock);
 @defineInvoiceBatch(supplierStock);
 @defineInvoiceConsignment(supplier, customer, supplierStock);
+
+CONSTRAINT supplierUserInvoice(userInvoice) AND NOT isCompanyLegalEntity(supplierUserInvoice(userInvoice))
+    CHECKED BY supplierUserInvoice MESSAGE 'Для накладной выбрано в качестве поставщика юр.лицо, не являющееся компанией';
+CONSTRAINT customerUserInvoice(userInvoice) AND NOT isCustomerLegalEntity(customerUserInvoice(userInvoice))
+    CHECKED BY customerUserInvoice MESSAGE 'Для накладной выбрано в качестве покупателя юр.лицо, не являющееся покупателем';

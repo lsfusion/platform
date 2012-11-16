@@ -8,3 +8,8 @@ NAMESPACE Purchase;
 //----------------------------------------------- Акт ---------------------------------------------------//
 
 @defineCreditNote(' (покупка)', customerStock);
+
+CONSTRAINT supplierUserCreditNote(userCreditNote) AND NOT isSupplierLegalEntity(supplierUserCreditNote(userCreditNote))
+    CHECKED BY supplierUserCreditNote MESSAGE 'Для акта расхождения выбрано в качестве поставщика юр.лицо, не являющееся поставщиком';
+CONSTRAINT customerUserCreditNote(userCreditNote) AND NOT isCompanyLegalEntity(customerUserCreditNote(userCreditNote))
+    CHECKED BY customerUserCreditNote MESSAGE 'Для акта расхождения выбрано в качестве покупателя юр.лицо, не являющееся компанией';

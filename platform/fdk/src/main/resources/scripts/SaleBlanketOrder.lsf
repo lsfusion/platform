@@ -9,3 +9,8 @@ NAMESPACE Sale;
 @defineOrderBlanketOrder(' (продажа)');
 
 numeratorBlanketOrderStock(order, stock) <- saleDefaultNumeratorUserOrder() WHEN ASSIGNED(inBlanketOrderStock(order, stock));
+
+CONSTRAINT supplierBlanketOrder(blanketOrder) AND NOT isCompanyLegalEntity(supplierBlanketOrder(blanketOrder))
+    CHECKED BY supplierBlanketOrder MESSAGE 'Для множественного заказа выбрано в качестве поставщика юр.лицо, не являющееся компанией';
+CONSTRAINT customerBlanketOrder(blanketOrder) AND NOT isCustomerLegalEntity(customerBlanketOrder(blanketOrder))
+    CHECKED BY customerBlanketOrder MESSAGE 'Для множественного заказа выбрано в качестве покупателя юр.лицо, не являющееся покупателем';

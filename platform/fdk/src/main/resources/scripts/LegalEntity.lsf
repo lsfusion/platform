@@ -175,11 +175,15 @@ numberCurrentLicenseLegalEntity 'Действующая лицензия' (legal
 CONSTRAINT countryLegalEntity(legalEntityLicense(license)) != countryLicense(license)
     CHECKED BY legalEntityLicense MESSAGE 'Страна лицензии должна совпадать со страной юридического лица';
 
-//// ------------------------------------ Собственные компании ----------------------------- //
-//
-//CLASS company 'Компания' : legalEntity, taxUnitGroup;
-//TABLE company (company);
-//
+// ------------------------------------ Собственные компании ----------------------------- //
+GROUP filterEntityGroup 'Фильтры' : publicGroup;
+
+isSupplierLegalEntity 'Явл. поставщиком' = DATA BOOLEAN (legalEntity) IN filterEntityGroup;
+isCompanyLegalEntity 'Явл. компанией' = DATA BOOLEAN (legalEntity) IN filterEntityGroup;
+isCustomerLegalEntity 'Явл. покупателем' = DATA BOOLEAN (legalEntity) IN filterEntityGroup;
+isSellerLegalEntity 'Постващик или компания' (legalEntity) = isSupplierLegalEntity(legalEntity) OR isCompanyLegalEntity(legalEntity);
+isBuyerLegalEntity 'Покупатель или компания' (legalEntity) = isCustomerLegalEntity(legalEntity) OR isCompanyLegalEntity(legalEntity);
+
 // ---------------------------------------- Формы для ввода компаний ------------------------------------- //
 
 FORM legalEntity 'Организация'
@@ -191,7 +195,8 @@ FORM legalEntity 'Организация'
                    managerLegalEntity ON CHANGE EXEC dialogManagerLegalEntity(l),
                    accountantLegalEntity ON CHANGE EXEC dialogAccountantLegalEntity(l),
                    phoneLegalEntity ON CHANGE EXEC dialogPhoneLegalEntity(l),
-                   emailLegalEntity, siteLegalEntity
+                   emailLegalEntity, siteLegalEntity,
+                   isSupplierLegalEntity, isCompanyLegalEntity, isCustomerLegalEntity
 
     OBJECTS a=account
     PROPERTIES(a)  numberAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount, MFOBankAccount, noteAccount, ADDOBJ, delete
@@ -221,7 +226,11 @@ DESIGN legalEntity FROM DEFAULT {
                     ADD PROPERTY(nameCurrencyLegalEntity);
                     ADD PROPERTY(nameLanguageLegalEntity);
                 }
-                ADD l.lawGroup;
+                NEW row12 {
+                    childConstraints = TO THE RIGHTBOTTOM;
+                    ADD l.lawGroup {childConstraints = TO THE BOTTOM;}
+                    ADD l.filterEntityGroup{childConstraints = TO THE BOTTOM;}
+                }
             }
 
             NEW column2 {
@@ -248,7 +257,8 @@ FORM legalEntities 'Организации'
 
     OBJECTS l=legalEntity
     PROPERTIES(l) READONLY name, fullNameLegalEntity, shortNameOwnershipLegalEntity, nameLegalEntityGroupLegalEntity,
-                            numberAccountLegalEntity, addressLegalEntity, phoneLegalEntity
+                            numberAccountLegalEntity, addressLegalEntity, phoneLegalEntity,
+                            isSupplierLegalEntity, isCompanyLegalEntity, isCustomerLegalEntity
     PROPERTIES(l) ADDFORM, EDITFORM, delete
 
     FILTERS (inLegalEntityGroupLegalEntity(lg, l) OR (l IS legalEntity AND lg IS legalEntityGroup AND NOT legalEntityGroupLegalEntity(l)))

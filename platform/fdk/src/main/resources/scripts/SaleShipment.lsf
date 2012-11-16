@@ -29,3 +29,8 @@ sumOutSkuLedger(ledger) += sumShipmentDetail(ledger);
 sumOutAccountDocumentLedger (ledger) += sumShipmentDetailShipment(ledger);
 sumItemOutAccountDocumentLedger (ledger) += sumItemShipmentDetailShipment(ledger);
 sumContainerOutAccountDocumentLedger (ledger) += sumContainerShipmentDetailShipment(ledger);
+
+CONSTRAINT supplierUserShipment(userShipment) AND NOT isCompanyLegalEntity(supplierUserShipment(userShipment))
+    CHECKED BY supplierUserShipment MESSAGE 'Для поставки выбрано в качестве поставщика юр.лицо, не являющееся компанией';
+CONSTRAINT customerUserShipment(userShipment) AND NOT isCustomerLegalEntity(customerUserShipment(userShipment))
+    CHECKED BY customerUserShipment MESSAGE 'Для поставки выбрано в качестве покупателя юр.лицо, не являющееся покупателем';

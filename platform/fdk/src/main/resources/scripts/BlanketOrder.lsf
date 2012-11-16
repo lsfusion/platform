@@ -176,7 +176,7 @@ META defineBlanketOrder(sign)
     FORM blanketOrders 'Множественные заказы' TITLE 'Множественные заказы'###sign
         OBJECTS o = blanketOrder
         PROPERTIES (o) READONLY isPostedBlanketOrder FORCE GRID, objectClassName, numberObject, seriesObject, dateBlanketOrder, timeBlanketOrder,
-                                nameSupplierBlanketOrder, nameSupplierStockBlanketOrder, nameCurrencyBlanketOrder, noteBlanketOrder,
+                                nameSupplierBlanketOrder, nameSupplierStockBlanketOrder, nameCustomerBlanketOrder, nameCurrencyBlanketOrder, noteBlanketOrder,
                                 countBlanketOrderDetailBlanketOrder, quantityBlanketOrderDetailBlanketOrder, sumBlanketOrderDetailBlanketOrder,
                                 shipmentDateBlanketOrder, shipmentTimeBlanketOrder, customerStocksBlanketOrder
 

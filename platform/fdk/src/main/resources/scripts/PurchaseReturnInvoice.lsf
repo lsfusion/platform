@@ -11,3 +11,8 @@ NAMESPACE PurchaseReturn;
 @defineInvoiceReturn(Purchase, PurchaseReturn, customerStock);
 
 @defineInvoiceConsignment(customer, supplier, customerStock);
+
+CONSTRAINT supplierUserInvoice(userInvoice) AND NOT isSupplierLegalEntity(supplierUserInvoice(userInvoice))
+    CHECKED BY supplierUserInvoice MESSAGE 'Для накладной выбрано в качестве поставщика юр.лицо, не являющееся поставщиком';
+CONSTRAINT customerUserInvoice(userInvoice) AND NOT isCompanyLegalEntity(customerUserInvoice(userInvoice))
+    CHECKED BY customerUserInvoice MESSAGE 'Для накладной выбрано в качестве покупателя юр.лицо, не являющееся компанией';

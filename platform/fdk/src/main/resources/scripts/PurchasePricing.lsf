@@ -19,3 +19,7 @@ overShipmentPriceUserInvoiceDetail(detail) += retailPriceUserInvoiceDetail(detai
 @deriveDocumentDetailPriceMarkupCustomPrefix(userInvoiceDetail, retail);
 retailVATUserInvoiceDetail (detail) <- VATUserInvoiceDetail(detail) WHEN ASSIGNED(VATUserInvoiceDetail(detail));
 
+CONSTRAINT supplierUserPricing(userPricing) AND NOT isSupplierLegalEntity(supplierUserPricing(userPricing))
+    CHECKED BY supplierUserPricing MESSAGE 'Для акта расценки выбрано в качестве поставщика юр.лицо, не являющееся поставщиком';
+
+
