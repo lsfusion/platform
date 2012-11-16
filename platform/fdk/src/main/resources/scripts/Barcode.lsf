@@ -6,7 +6,7 @@ CLASS barcode 'Штрих код';
 TABLE barcode (barcode);
 TABLE stringDate (STRING[14], DATE);
 
-idBarcode 'Штрих код' = DATA STRING[14] (barcode) IN recognizeGroup FIXEDCHARWIDTH 14 INDEXED;
+idBarcode 'Штрих код' = DATA STRING[14] (barcode) IN recognizeGroup FIXEDCHARWIDTH 14 AGGPROP INDEXED;
 
 dataDateBarcode 'Дата действия' = DATA DATE (barcode);
 dateBarcode 'Дата действия' = (2001_01_01 IF barcode IS barcode) OR dataDateBarcode(barcode) IN baseGroup PERSISTENT;
@@ -34,7 +34,7 @@ barcodeSku(sku) = [GROUP MIN barcode BY skuBarcode(barcode)](sku) OR dataBarcode
 
 primaryBarcode 'Основной' (barcode) = barcodeSku(skuBarcode(barcode)) == barcode;
 
-idBarcodeSku 'Штрих-код' (sku) = idBarcode(barcodeSku(sku)) IN baseGroup PERSISTENT;
+idBarcodeSku 'Штрих-код' (sku) = idBarcode(barcodeSku(sku)) IN baseGroup AGGPROP PERSISTENT;
 idBarcodeSkuBatch 'Штрих-код' (batch) = idBarcodeSku(skuBatch(batch));
 idBarcodeSkuSkuLedger 'Штрих-код' (skuLedger) = idBarcodeSku(skuSkuLedger(skuLedger));
 

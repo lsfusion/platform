@@ -408,52 +408,52 @@ EXTEND FORM legalEntity
     OBJECTS s=legalEntity
     PROPERTIES(s) READONLY name
 
-    OBJECTS ag=agreement
-    PROPERTIES(ag, s, l) isDefaultAgreementSupplierCustomer
-    PROPERTIES(ag, l) inAgreementCustomerOver
-    PROPERTIES(ag) READONLY name, numberObject, seriesObject, dateAgreement, timeAgreement,
+    OBJECTS ags=agreement
+    PROPERTIES(ags, s, l) isDefaultAgreementSupplierCustomer
+    PROPERTIES(ags, l) inAgreementCustomerOver
+    PROPERTIES(ags) READONLY name, numberObject, seriesObject, dateAgreement, timeAgreement,
                             fromDateAgreement, fromTimeAgreement, toDateAgreement, toTimeAgreement,
                             nameCurrencyAgreement, namePriceListTypeAgreement, noteAgreement
-    PROPERTIES(ag) EDITFORM
-    PROPERTIES createAgreementSupplierCustomer(s, l) TODRAW ag FORCE PANEL DRAWTOTOOLBAR, addAgreementsSupplierCustomer(s, l) TODRAW ag FORCE PANEL DRAWTOTOOLBAR
-    FILTERS inAgreementCustomerOver(ag,l),
-            supplierAgreement(ag)==s,
+    PROPERTIES(ags) EDITFORM
+    PROPERTIES createAgreementSupplierCustomer(s, l) TODRAW ags FORCE PANEL DRAWTOTOOLBAR, addAgreementsSupplierCustomer(s, l) TODRAW ags FORCE PANEL DRAWTOTOOLBAR
+    FILTERS inAgreementCustomerOver(ags, l),
+            supplierAgreement(ags) == s,
             isSellerLegalEntity(s)
-    FILTERGROUP filters1
+    FILTERGROUP filtersSupplier
         FILTER 'Только с соглашением' 'F11' relationSupplierCustomer(s, l) DEFAULT
 
-    OBJECTS ag2=agreement
-    PROPERTIES(ag2) READONLY name, numberObject, seriesObject, dateAgreement, timeAgreement,
+    OBJECTS agc=agreement
+    PROPERTIES(agc) READONLY name, numberObject, seriesObject, dateAgreement, timeAgreement,
                             fromDateAgreement, fromTimeAgreement, toDateAgreement, toTimeAgreement,
                             nameCurrencyAgreement, namePriceListTypeAgreement, noteAgreement
-    PROPERTIES(ag2) EDITFORM
-    FILTERS supplierAgreement(ag2) == l
+    PROPERTIES(agc) EDITFORM
+    FILTERS supplierAgreement(agc) == l
 
     OBJECTS c=legalEntity
     PROPERTIES(c) READONLY name
 
-    PROPERTIES(ag2, c) READONLY inAgreementCustomerOver
-    PROPERTIES(ag2, l, c) isDefaultAgreementSupplierCustomer
-    PROPERTIES createAgreementSupplierCustomer(l, c) TODRAW ag2 FORCE PANEL DRAWTOTOOLBAR, addAgreementsSupplierCustomer (l, c) TODRAW ag2 FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES(agc, c) READONLY inAgreementCustomerOver
+    PROPERTIES(agc, l, c) isDefaultAgreementSupplierCustomer
+    PROPERTIES createAgreementSupplierCustomer(l, c) TODRAW agc FORCE PANEL DRAWTOTOOLBAR, addAgreementsSupplierCustomer (l, c) TODRAW agc FORCE PANEL DRAWTOTOOLBAR
     FILTERS isBuyerLegalEntity(c)
 
     FILTERGROUP filters3
-        FILTER 'Только отмеченные' 'F9' inAgreementCustomerOver(ag2,c)
+        FILTER 'Только отмеченные' 'F9' inAgreementCustomerOver(agc,c)
 
 ;
 
 EXTEND DESIGN legalEntity {
     extendContainer {
         NEW agreementBuyContainer {
-            caption = 'Соглашения на поставку';
+            caption = 'Соглашения на закупку';
             type = SPLITH;
             ADD s.box {title = 'Поставщики';};
-            ADD ag.box{fillHorizontal = 3;}
+            ADD ags.box{fillHorizontal = 3;}
         }
         NEW agreementSaleContainer {
             caption = 'Соглашения на продажу';
             type = SPLITH;
-            ADD ag2.box{fillHorizontal = 3;}
+            ADD agc.box{fillHorizontal = 3;}
             ADD c.box {title = 'Покупатели';}
         }
     }
