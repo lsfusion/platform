@@ -6,10 +6,10 @@ NAMESPACE Purchase;
 
 //----------------------------------------------- Акт расценки ---------------------------------------------------//
 
-@definePricingAggregation(invoice, ' (покупка)', 'Акт расценки на основе инвойса', customerStock);
-@definePricingRelation(' (покупка)', customerStock);
+@definePricingAggregation(invoice, ' (закупка)', 'Акт расценки на основе инвойса', customerStock);
+@definePricingRelation(' (закупка)', customerStock);
 
-@defineRepricing(' (покупка)', customerStock);
+@defineRepricing(' (закупка)', customerStock);
 
 overShipmentPriceUserInvoiceDetail(detail) += retailPriceUserInvoiceDetail(detail)
     IF customerStockUserInvoiceDetail(detail) IS departmentStore AND NOT costLedgerDepartmentStore(customerStockUserInvoiceDetail(detail));

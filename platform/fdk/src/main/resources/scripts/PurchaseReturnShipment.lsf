@@ -5,7 +5,7 @@ REQUIRE Shipment, PurchaseReturnInvoice;
 NAMESPACE PurchaseReturn;
 
 //----------------------------------------------- Поставка ---------------------------------------------------//
-@defineShipment(' (покупка-возврат)', customerStock);
+@defineShipment(' (закупка-возврат)', customerStock);
 @defineShipmentBatch();
 
 // Берем учетную цену

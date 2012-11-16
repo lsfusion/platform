@@ -5,7 +5,7 @@ REQUIRE PurchaseOrder, Invoice;
 NAMESPACE Purchase;
 
 //----------------------------------------------- Накладная ---------------------------------------------------//
-@defineInvoice(' (покупка)', customerStock);
+@defineInvoice(' (закупка)', customerStock);
 
 CONSTRAINT supplierUserInvoice(userInvoice) AND NOT isSupplierLegalEntity(supplierUserInvoice(userInvoice))
     CHECKED BY supplierUserInvoice MESSAGE 'Для накладной выбрано в качестве поставщика юр.лицо, не являющееся поставщиком';

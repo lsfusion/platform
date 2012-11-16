@@ -4,9 +4,9 @@ REQUIRE Order, PurchaseShipment;
 
 NAMESPACE PurchaseReturn;
 
-@defineOrder(' (покупка-возврат)', customerStock);
+@defineOrder(' (закупка-возврат)', customerStock);
 
-@defineNumeratedObjectDefaultPrefix(userOrder, 'Нумератор для заказов (покупка-возврат)', 'ВЗ', purchaseReturn);
+@defineNumeratedObjectDefaultPrefix(userOrder, 'Нумератор для заказов (закупка-возврат)', 'ВЗ', purchaseReturn);
 
 CONSTRAINT supplierUserOrder(userOrder) AND NOT isSupplierLegalEntity(supplierUserOrder(userOrder))
     CHECKED BY supplierUserOrder MESSAGE 'Для заказа выбрано в качестве поставщика юр.лицо, не являющееся поставщиком';

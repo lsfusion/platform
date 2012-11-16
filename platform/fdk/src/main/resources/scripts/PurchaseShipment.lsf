@@ -7,7 +7,7 @@ NAMESPACE Purchase;
 
 //----------------------------------------------- Поставка ---------------------------------------------------//
 
-@defineShipment(' (покупка)', customerStock);
+@defineShipment(' (закупка)', customerStock);
 
 // Цены учетные
 priceUserShipmentDetail (detail) <- priceInvoiceDetail(invoiceDetailUserShipmentDetail(detail))

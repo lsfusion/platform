@@ -15,7 +15,10 @@ nameStockGroupStock 'Группа' (stock) = name(stockGroupStock (stock));
 
 legalEntityStock (stock) = ABSTRACT legalEntity (stock) PERSISTENT;
 nameLegalEntityStock 'Компания' (stock) = name(legalEntityStock(stock));
+
 countryStock (stock) = countryLegalEntity(legalEntityStock(stock)) PERSISTENT;
+nameCountryStock 'Страна' (stock) = name(countryStock(stock));
+
 currencyStock (stock) = currencyLegalEntity(legalEntityStock(stock)) PERSISTENT;
 languageStock (stock) = languageLegalEntity(legalEntityStock(stock)) PERSISTENT;
 
@@ -1333,7 +1336,7 @@ META extendFormDocumentSkuCustom(object, form, concrete, skuProp, detail)
             type = TABBED;
             NEW itemBox {
                 childConstraints = TO THE RIGHT;
-                title = 'SKU';
+                title = 'Подбор';
                 type = SPLITH;
 
                 ADD skuTree.tree.box { title = 'Группы SKU'; }
@@ -1461,7 +1464,7 @@ FORM stocks 'Склады'
     PROPERTIES READONLY stockGroupName = name(sg)
 
     OBJECTS s = stock
-    PROPERTIES(s) READONLY skuName = name
+    PROPERTIES(s) READONLY skuName = name, nameLegalEntityStock, nameCountryStock, addressStock
     FILTERS isParentStockGroupStock(sg, s)
 
     DIALOG stock OBJECT s

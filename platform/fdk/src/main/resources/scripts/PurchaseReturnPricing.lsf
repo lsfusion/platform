@@ -6,7 +6,7 @@ NAMESPACE PurchaseReturn;
 
 // ------------------------------------- Автоматическое создание расценки для документа -------------------- //
 
-@definePricingAggregation(invoice, ' (покупка-возврат)', 'Акт расценки при возврате', customerStock);
+@definePricingAggregation(invoice, ' (закупка-возврат)', 'Акт расценки при возврате', customerStock);
 
 overShipmentPriceUserInvoiceDetail(detail) += retailPriceUserInvoiceDetail(detail)
     IF customerStockUserInvoiceDetail(detail) IS departmentStore AND NOT costLedgerDepartmentStore(customerStockUserInvoiceDetail(detail));

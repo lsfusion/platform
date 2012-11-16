@@ -118,7 +118,7 @@ CLASS STATIC contractSkuForm 'Порядок оплаты договора на 
     requirement 'Платежное требование'
 }
 
-CLASS userContractSku 'Договор на поставку' : contractSku;
+CLASS userContractSku 'Договор на поставку (польз.)' : contractSku;
 
 supplierContractSku = DATA legalEntity (userContractSku) AUTOSET;
 nameSupplierContractSku 'Поставщик' (contract) = name(supplierContractSku(contract)) IN recognizeGroup MAXCHARWIDTH 30 PREFCHARWIDTH 30;
