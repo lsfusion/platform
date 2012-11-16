@@ -194,7 +194,7 @@ META defineInvoice(sign, stockProp)
 
     FORM userInvoice 'Накладная'###sign
         OBJECTS i = userInvoice FIXED PANEL
-        PROPERTIES (i) objectClassName, nameSupplierUserInvoice, nameCustomerUserInvoice, //nameSupplierStockUserInvoice, nameCustomerStockUserInvoice,
+        PROPERTIES (i) objectClassName, nameSupplierUserInvoice, nameCustomerUserInvoice,
                        nameNumeratorObject, numberObject, seriesObject, dateUserInvoice, timeUserInvoice,
                        nameCurrencyUserInvoice, nameAgreementUserInvoice, namePriceListTypeUserInvoice, noteUserInvoice,
                        numberContractSkuUserInvoice, isCommissionUserInvoice,
@@ -205,7 +205,7 @@ META defineInvoice(sign, stockProp)
         PROPERTIES (d) indexUserInvoiceDetail, idBarcodeSkuUserInvoiceDetail, nameSkuUserInvoiceDetail, shortNameUOMSkuUserInvoiceDetail,
                        quantityUserInvoiceDetail, namePriceListTypeUserInvoiceDetail, priceUserInvoiceDetail, sumUserInvoiceDetail,
                        numberVATUserInvoiceDetail, valueVATUserInvoiceDetail, VATSumUserInvoiceDetail, invoiceSumUserInvoiceDetail,
-                       name###stockProp###userInvoiceDetail, descriptionOrderUserInvoiceDetail, ADDOBJ, delete
+                       descriptionOrderUserInvoiceDetail, ADDOBJ, delete
 
         PROPERTIES(i) TODRAW d addDetailDialogSkuStockUserInvoiceDetailUserInvoice,
                                addDetailInputBarcodeUserInvoiceDetailUserInvoice, deleteUserInvoiceDetailUserInvoice
@@ -316,7 +316,7 @@ META defineInvoice(sign, stockProp)
         PROPERTIES (d) READONLY indexInvoiceDetail, idBarcodeSkuInvoiceDetail, nameSkuInvoiceDetail, shortNameUOMSkuInvoiceDetail,
                        quantityInvoiceDetail, namePriceListTypeInvoiceDetail, priceInvoiceDetail, sumInvoiceDetail,
                        numberVATInvoiceDetail, valueVATInvoiceDetail, VATSumInvoiceDetail, invoiceSumInvoiceDetail,
-                       name###stockProp###invoiceDetail, descriptionOrderInvoiceDetail
+                       descriptionOrderInvoiceDetail
 
         FILTERS invoiceInvoiceDetail(d) == i
 

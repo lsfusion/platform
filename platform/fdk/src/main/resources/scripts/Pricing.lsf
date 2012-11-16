@@ -532,9 +532,10 @@ META definePricingAggregation(concrete, sign, caption, stockProp)
 
     @defineDocumentInterfaceDetailMarkupPrefix (invoice, retail, );
     @defineDocumentInterfaceDetailMarkupSumPrefix (invoice, retail);
+    @defineDocumentInterfaceDetailQuantityPrefix (invoice, pricing, ' (расценено)');
 
     @deriveDocumentDetailValueVATPrefix(userInvoice, retail);
-    @deriveDocumentDetailSumPrefix(userInvoice, retail, currency, quantity);
+    @deriveDocumentDetailSumPrefix(userInvoice, retail, currency, pricingQuantity);
     @deriveDocumentDetailReverseVATSumPrefix(userInvoice, retail, retail);
     @deriveDocumentDetailMarkupSumPrefix(userInvoice, retail, retail, );
 
@@ -549,6 +550,7 @@ META definePricingAggregation(concrete, sign, caption, stockProp)
 
     showCreatePricingInvoice (invoice) = stockProp###invoice(invoice) IS departmentStore AND NOT costLedgerDepartmentStore(stockProp###invoice(invoice));
     showPricingInvoice (invoice) = showCreatePricingInvoice (invoice) AND NOT createPricingInvoice(invoice);
+    toShowPricingInvoice (invoice) = showCreatePricingInvoice (invoice) AND createPricingInvoice(invoice);
 
     backgroundRetailInvoice 'Цвет' (invoice) = RGB(224, 255, 255) IF invoice IS invoice;
     EXTEND FORM userInvoice
@@ -561,6 +563,7 @@ META definePricingAggregation(concrete, sign, caption, stockProp)
                       valueRetailVATUserInvoiceDetail, retailVATSumUserInvoiceDetail,
                       retailPriceUserInvoiceDetail ON CHANGE EXEC changeRetailPriceUserInvoiceDetail(d),
                       retailSumUserInvoiceDetail
+        PROPERTIES(d) pricingQuantityUserInvoiceDetail AFTER quantityUserInvoiceDetail SHOWIF toShowPricingInvoice(i) BACKGROUND backgroundRetailInvoice(i)
     ;
     EXTEND DESIGN userInvoice {
         headerRow14 {
@@ -578,6 +581,7 @@ META definePricingAggregation(concrete, sign, caption, stockProp)
                       retailMarkupInvoiceDetail, retailMarkupSumInvoiceDetail, numberRetailVATInvoiceDetail,
                       valueRetailVATInvoiceDetail, retailVATSumInvoiceDetail,
                       retailPriceInvoiceDetail, retailSumInvoiceDetail
+        PROPERTIES(d) READONLY BACKGROUND backgroundRetailInvoice(i) pricingQuantityInvoiceDetail AFTER quantityInvoiceDetail  SHOWIF toShowPricingInvoice(i)
     ;
 
 
@@ -634,8 +638,8 @@ META definePricingAggregation(concrete, sign, caption, stockProp)
     @defineDocumentAggregationDetailSku(invoice, concrete###pricing, sku);
     skuPricingDetail(pricingDetail) +=  sku###concrete###pricingDetail(pricingDetail);
 
-    @defineDocumentAggregationDetailQuantity(invoice, concrete###pricing);
-    quantityPricingDetail(pricingDetail) += quantity###concrete###pricingDetail(pricingDetail);
+    @defineDocumentAggregationDetailProperty (invoice, concrete###pricing, pricingQuantity, 'Кол-во (расценено)');
+    quantityPricingDetail(pricingDetail) += pricingQuantity###concrete###pricingDetail(pricingDetail);
 
 //----------------------------------------------------------------------------------------------------------
     @defineDocumentAggregationDetailProperty (invoice, concrete###pricing, price, 'Цена поставщика');
