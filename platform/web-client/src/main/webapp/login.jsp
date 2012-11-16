@@ -5,41 +5,43 @@
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <title>Login LSFForms...</title>
-        <style type="text/css">
-            .errorblock {
-                color: #ff0000;
-                background-color: #ffEEEE;
-                border: 3px solid #ff0000;
-                padding: 8px;
-                margin: 16px;
-            }
-        </style>
+
+        <link rel="stylesheet" href="login.css">
     </head>
     <body onload="document.loginForm.j_username.focus();">
 
-        <h3>Login with Username and Password</h3>
+    <table class="content-table">
+        <tr></tr>
+        <tr>
+            <td>
+                <div id="content">
+                    <form name="loginForm" action="j_spring_security_check" method="POST" id="login-form">
+                        <fieldset>
+                            <p>
+                                <label for="j_username">login</label>
+                                <input type="text" id="j_username" name="j_username" class="round full-width-input"/>
+                            </p>
+                            <p>
+                                <label for="j_password">password</label>
+                                <input type="password" id="j_password" name="j_password" class="round full-width-input"/>
+                            </p>
+                            <input name="submit" type="submit" class="button round blue image-right ic-right-arrow" value="log in"/>
+                            <a class="desktop-link" href="/client.jnlp">
+                                Run desktop client
+                            </a>
+                        </fieldset>
+                    </form>
+                    <c:if test="${not empty param.error}">
+                        <div class="errorblock round">
+                            Your login attempt was not successful, try again.<br/> Caused :
+                                ${sessionScope["SPRING_SECURITY_LAST_EXCEPTION"].message}
+                        </div>
+                    </c:if>
+                </div>
+            </td>
+        </tr>
+        <tr></tr>
+    </table>
 
-        <c:if test="${not empty param.error}">
-            <div class="errorblock">
-                Your login attempt was not successful, try again.<br /> Caused :
-                    ${sessionScope["SPRING_SECURITY_LAST_EXCEPTION"].message}
-            </div>
-        </c:if>
-
-        <form name="loginForm" action="j_spring_security_check" method="POST">
-            <table>
-                <tbody>
-                <tr>
-                    <td><label for="j_username">Username:</label></td>
-                    <td><input type="text" id="j_username" name="j_username"/></td>
-                </tr>
-                <tr>
-                    <td><label for="j_password">Password:</label></td>
-                    <td><input type="password" id="j_password" name="j_password"/></td>
-                </tr>
-                </tbody>
-            </table>
-            <input name="submit" type="submit" value="Login"/>
-        </form>
     </body>
 </html>
