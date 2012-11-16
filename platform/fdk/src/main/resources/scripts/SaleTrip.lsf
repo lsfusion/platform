@@ -1,22 +1,45 @@
 MODULE SaleTrip;
 
 REQUIRE SaleOrder,
+        SaleShipment,
         Trip;
 
 NAMESPACE Sale;
 
-EXTEND CLASS order : orderTrip;
-EXTEND CLASS orderDetail : orderTripDetail;
+// для заказов
+EXTEND CLASS order : Trip.order;
+EXTEND CLASS orderDetail : Trip.orderDetail;
 
-numberOrderTrip(order) += numberOrder(order);
-seriesOrderTrip(order) += seriesOrder(order);
-dateOrderTrip(order) += dateOrder(order);
-grossWeightOrderTrip(order) += grossWeightOrder(order);
+Trip.numberOrder(order) += numberOrder(order);
+Trip.seriesOrder(order) += seriesOrder(order);
+Trip.dateOrder(order) += dateOrder(order);
+Trip.grossWeightOrder(order) += grossWeightOrder(order);
 
-//nodeToOrderTrip(order) += ;
-//nodeFromOrderTrip(order) += stockOrder(order);
+Trip.nodeToOrder(order) += customerStockOrder(order);
+Trip.nodeFromOrder(order) += supplierStockOrder(order);
 
-quantityOrderTripDetail(orderDetail) += quantityOrderDetail(orderDetail);
+Trip.orderOrderDetail(orderDetail) += orderOrderDetail(orderDetail);
+
+Trip.skuOrderDetail(orderDetail) += skuOrderDetail(orderDetail);
+Trip.quantityOrderDetail(orderDetail) += quantityOrderDetail(orderDetail);
+
+
+// для поставок
+EXTEND CLASS shipment : Trip.shipment;
+EXTEND CLASS shipmentDetail : Trip.shipmentDetail;
+
+Trip.numberShipment(shipment) += numberShipment(shipment);
+Trip.seriesShipment(shipment) += seriesShipment(shipment);
+Trip.dateShipment(shipment) += dateShipment(shipment);
+Trip.grossWeightShipment(shipment) += grossWeightShipment(shipment);
+
+Trip.nodeToShipment(shipment) += customerStockShipment(shipment);
+Trip.nodeFromShipment(shipment) += supplierStockShipment(shipment);
+
+Trip.shipmentShipmentDetail(shipmentDetail) += shipmentShipmentDetail(shipmentDetail);
+
+Trip.skuShipmentDetail(shipmentDetail) += skuShipmentDetail(shipmentDetail);
+Trip.quantityShipmentDetail(shipmentDetail) += quantityShipmentDetail(shipmentDetail);
 
 //fillQuantityTripOrderTrip 'Заполнить из заказа' (trip, orderTrip) = ACTION (trip, orderTrip) {
 //    FOR quantityOrderDetail(orderTripDetail) AND orderOrderDetail(orderTripDetail)== orderTrip AND inTripOrderTrip(trip, orderTrip) DO {

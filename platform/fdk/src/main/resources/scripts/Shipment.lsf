@@ -70,6 +70,10 @@ META defineShipment(sign, stockProp)
     @defineAddDetailDialogSkuStock(userShipment, sku, stockProp, dialogSku);
     @defineAddDetailDialogBarcode(userShipment, sku);
 
+    @defineDocumentDetailPackWeightSku(shipment);
+
+    grossWeightShipment 'Вес брутто' (shipment) = GROUP SUM grossWeightShipmentDetail(shipmentDetail) BY shipmentShipmentDetail(shipmentDetail);
+
 // --------------------------- Формы --------------------------------- //
 
     FORM userShipment 'Поставка'###sign

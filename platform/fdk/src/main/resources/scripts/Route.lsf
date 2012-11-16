@@ -27,6 +27,9 @@ CLASS ABSTRACT node 'Пункт';
 
 nameNode 'Наименование' = ABSTRACT STRING[110](node);
 addressNode 'Адрес' = ABSTRACT STRING[110](node);
+legalEntityNode = ABSTRACT legalEntity(node);
+
+nameLegalEntityNode 'Юр. лицо' (node) = name(legalEntityNode(node));
 
 inNodeRoute 'Вкючен' = DATA BOOLEAN(node, route);
 numberNodeRoute 'Порядковый номер' = DATA INTEGER(node, route);
@@ -40,6 +43,9 @@ nameNode(stock) += name(stock) IF stock IS stock;
 
 addressNode(customer) += addressLegalEntity(customer) IF customer IS customer;
 addressNode(stock) += addressStock(stock) IF stock IS stock;
+
+legalEntityNode(stock) += legalEntityStock(stock);
+
 
 //nameNode(supplier) += name(supplier) IF supplier IS supplier;
 
