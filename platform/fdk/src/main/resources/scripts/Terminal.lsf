@@ -56,7 +56,7 @@ nameGroupTerminalDocumentTypeGroupTerminal 'Группа типов докуме
 // ------------------------------------- Виды справочников ТСД --------------------------------- //
 
 CLASS STATIC terminalHandbookType 'Вид справочника ТСД' {
-    terminalHandbookTypeLegalEntity 'Юр. лицо'
+    terminalHandbookTypeLegalEntity 'Организация'
 };
 
 idTerminalHandbookType 'Код' = DATA STRING[10] (terminalHandbookType) IN baseGroup;

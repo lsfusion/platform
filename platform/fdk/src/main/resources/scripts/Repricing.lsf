@@ -9,14 +9,14 @@ createRepricingDepartmentStore 'Создавать акт дооценки' = DA
 EXTEND FORM departmentStore PROPERTIES createRepricingDepartmentStore(d);
 
 META defineDocumentHeaderCreateRepricing(object, stockClass)
-    createRepricing###object 'Создавать акт дооценки' (object) = DATA BOOLEAN(object) IN documentPrmGroup;
+    createRepricing###object 'Создать акт дооценки' (object) = DATA BOOLEAN(object) IN documentPrmGroup;
 
     createRepricing###object (object) <- TRUE IF createRepricingDepartmentStore(stockClass###object(object))
         WHEN CHANGED(stockClass###object(object));
 
 END
 META defineDocumentAbstractHeaderCreateRepricing(object, stockClass)
-    createRepricing###object 'Создавать акт дооценки' (object) = ABSTRACT BOOLEAN(object);
+    createRepricing###object 'Создать акт дооценки' (object) = ABSTRACT BOOLEAN(object);
 END
 
 META defineDocumentInterfaceHeaderCreateRepricing (object, stockClass)
@@ -616,8 +616,8 @@ META defineRepricing(sign, stockProp)
     @defineDocumentInterfaceHeaderSumPrefix (invoice, diffRetail, ' дооценки');
 
     @defineDocumentInterfaceHeaderCreateRepricing (invoice, stockProp);
-    createRepricingInvoiceDetail 'Создавать акт дооценки' (invoiceDetail) = createRepricingInvoice(invoiceInvoiceDetail(invoiceDetail));
-    createRepricingUserInvoiceDetail 'Создавать акт дооценки' (userInvoiceDetail) = createRepricingUserInvoice(userInvoiceUserInvoiceDetail(userInvoiceDetail));
+    createRepricingInvoiceDetail 'Создать акт дооценки' (invoiceDetail) = createRepricingInvoice(invoiceInvoiceDetail(invoiceDetail));
+    createRepricingUserInvoiceDetail 'Создать акт дооценки' (userInvoiceDetail) = createRepricingUserInvoice(userInvoiceUserInvoiceDetail(userInvoiceDetail));
 
     needToRepricingInvoiceDetail (invoiceDetail) = curRetailPriceInvoiceDetail(invoiceDetail) != retailPriceInvoiceDetail(invoiceDetail)
                                                    AND balanceBSkuInvoiceDetail(invoiceDetail) != 0 AND stockProp###InvoiceDetail(invoiceDetail) IS departmentStore

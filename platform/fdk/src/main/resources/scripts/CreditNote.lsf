@@ -244,10 +244,10 @@ META defineCreditNote(sign, stockProp)//contact, contactCaption)
 
 //-- аггр.объект
 
-    createCreditNoteInvoice 'Создавать акт расхождения' = ABSTRACT BOOLEAN (invoice) PERSISTENT IN documentPrmGroup;
-    createCreditNoteUserInvoice 'Создавать акт расхождения' = DATA BOOLEAN (userInvoice) IN documentPrmGroup;
+    createCreditNoteInvoice 'Создать акт расхождения' = ABSTRACT BOOLEAN (invoice) PERSISTENT IN documentPrmGroup;
+    createCreditNoteUserInvoice 'Создать акт расхождения' = DATA BOOLEAN (userInvoice) IN documentPrmGroup;
     createCreditNoteInvoice (invoice) += createCreditNoteUserInvoice(invoice);
-    createCreditNoteInvoiceDetail 'Создавать акт расхождения' (invoiceDetail) = createCreditNoteInvoice(invoiceInvoiceDetail(invoiceDetail));
+    createCreditNoteInvoiceDetail 'Создать акт расхождения' (invoiceDetail) = createCreditNoteInvoice(invoiceInvoiceDetail(invoiceDetail));
 
     needToCreditNoteInvoiceDetail (invoiceDetail)= createCreditNoteInvoiceDetail(invoiceDetail)  AND
         toShipInvoiceDetail (invoiceDetail) AND isPostedInvoiceDetail(invoiceDetail);

@@ -30,6 +30,6 @@ sumItemOutAccountDocumentLedger (ledger) += sumItemShipmentDetailShipment(ledger
 sumContainerOutAccountDocumentLedger (ledger) += sumContainerShipmentDetailShipment(ledger);
 
 CONSTRAINT supplierUserShipment(userShipment) AND NOT isSupplierLegalEntity(supplierUserShipment(userShipment))
-    CHECKED BY supplierUserShipment MESSAGE 'Для поставки выбрано в качестве поставщика юр.лицо, не являющееся поставщиком';
+    CHECKED BY supplierUserShipment MESSAGE 'Для поставки выбрано в качестве поставщика организация, не являющаяся поставщиком';
 CONSTRAINT customerUserShipment(userShipment) AND NOT isCompanyLegalEntity(customerUserShipment(userShipment))
-    CHECKED BY customerUserShipment MESSAGE 'Для поставки выбрано в качестве покупателя юр.лицо, не являющееся компанией';
+    CHECKED BY customerUserShipment MESSAGE 'Для поставки выбрано в качестве покупателя организация, не являющаяся компанией';

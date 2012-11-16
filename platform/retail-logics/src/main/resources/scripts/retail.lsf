@@ -65,7 +65,6 @@ REQUIRE System,
         Label,
         Default,
         RetailCRM,
-        UserPriceChange,
         CashOperation,
         POS,
         ContractLedger,
@@ -404,7 +403,6 @@ nameReturnItem 'Наименование для уценки, бонуса по 
 quantityDiscountItem 'Количество товара, при котором предост-ся скидка' = DATA INTEGER (item) IN discountGroup;
 fixPriceItem 'Фиксированная цена при соотв.типе скидки' = DATA INTEGER (item) IN discountGroup;
 isFixPriceItem 'Товар с фиксированной ценой' = DATA BOOLEAN (item) IN retailGroup;
-banMarkdownItem 'Запретить уценку товара' = DATA BOOLEAN (item) IN retailGroup;
 //minTradeAllowanceItem 'MIN допустимая торговая надбавка, %' = DATA NUMERIC[8,3] (item) IN retailGroup;
 //maxTradeAllowanceItem 'MAX допустимая торговая надбавка, %' = DATA NUMERIC[8,3] (item) IN retailGroup;
 minAllowedRetailPriceItem 'MIN допустимая розн.цена' = DATA NUMERIC[14,2] (item) IN retailGroup;
@@ -782,7 +780,7 @@ EXTEND FORM item
                   numberRangeSupplierVATItem, valueCurrentRateSupplierVATItem, dialogSupplierVATItem,
                   numberRangeRetailVATItem, valueCurrentRateRetailVATItem, dialogRetailVATItem,
                   percentWholesaleMarkItem, minTradeAllowanceItem, dialogMinTradeAllowanceItem, maxTradeAllowanceItem, dialogMaxTradeAllowanceItem,
-                  minAllowedRetailPriceItem, isFixPriceItem, banMarkdownItem,
+                  minAllowedRetailPriceItem, isFixPriceItem,
 
                   quantityDiscountItem, fixPriceItem, nameBanDiscountItem, dialogBanDiscountItem,
 
@@ -2662,14 +2660,6 @@ sumOutAccountDocumentLedger (ledger) += discountSaleDiscountDocument(ledger);
 sumItemOutAccountDocumentLedger (ledger) += discountSaleDiscountDocument(ledger);
 sumContainerOutAccountDocumentLedger (ledger) += 0.0 IF ledger IS saleDiscountDocument;
 
-//------------------------------------ Проверка на запрет переоценки ------------------------------------------------- //
-
-isPriceChangeWrongUserPriceChange (userPriceChangeDetail) =
-    retailPriceUserPriceChangeDetail(userPriceChangeDetail) < curRetailPriceUserPriceChangeDetail(userPriceChangeDetail)
-    IF banMarkdownItem(skuUserPriceChangeDetail(userPriceChangeDetail)) == TRUE;
-
-CONSTRAINT isPriceChangeWrongUserPriceChange (userPriceChangeDetail) MESSAGE 'Уценка товара запрещена';
-
 //----------------------------------- Пересорт товара -------------------------------------------------------
 
 CLASS disparity 'Пересортица' : historyObject, numeratedDocument;
@@ -2802,11 +2792,6 @@ priceChangeCommitteeInputPriceChangeDisparity 'Комиссия переоцен
 numberInputPriceChangeDisparity 'Номер документа' (inputPriceChangeDisparity) = numberObject(disparityInputPriceChangeDisparity(inputPriceChangeDisparity));
 seriesInputPriceChangeDisparity 'Серия документа' (inputPriceChangeDisparity) = seriesObject(disparityInputPriceChangeDisparity(inputPriceChangeDisparity));
 seriesNumberInputPriceChangeDisparity 'Серия/номер документ' (inputPriceChangeDisparity) = seriesNumberObject(disparityInputPriceChangeDisparity(inputPriceChangeDisparity));
-
-isPriceChangeWrongInputPriceChangeDisparityDetail (inputPriceChangeDisparityDetail) =
-    retailPriceInputPriceChangeDisparityDetail(inputPriceChangeDisparityDetail) < curRetailPriceInputPriceChangeDisparityDetail(inputPriceChangeDisparityDetail)
-      AND banMarkdownItem(itemInputPriceChangeDisparityDetail(inputPriceChangeDisparityDetail));
-CONSTRAINT isPriceChangeWrongInputPriceChangeDisparityDetail (inputPriceChangeDisparityDetail) MESSAGE 'Уценка товара запрещена';
 
 @implementPriceChangeDocument(inputPriceChangeDisparity, item);
 @implementPriceChangeDocumentDetailAllPrice(inputPriceChangeDisparity);
@@ -5005,7 +4990,7 @@ FORM innerArrival 'Приход из другого отдела'
     PROPERTIES (d) FORCE PANEL curImporterPriceInnerArrivalDetail, curSupplierPriceInnerArrivalDetail, curNameWareInnerArrivalDetail,
                    curWarePriceInnerArrivalDetail, curValueRetailVATInnerArrivalDetail, curRetailPriceInnerArrivalDetail
 
-    PROPERTIES(a) TODRAW d addDetailDialogSkuInnerArrivalDetailInnerArrival, addDetailDialogTerminalUserPriceChangeDetailUserPriceChange,
+    PROPERTIES(a) TODRAW d addDetailDialogSkuInnerArrivalDetailInnerArrival, addDetailDialogTerminalInnerArrivalDetailInnerArrival,
                            addDetailInputBarcodeInnerArrivalDetailInnerArrival, deleteInnerArrivalDetailInnerArrival
 
     FILTERS inInnerArrivalInnerArrivalDetail(a, d)
@@ -6788,13 +6773,15 @@ NAVIGATOR {
             ADD specifications;
             ADD statements;
         }
-        NEW priceManagement 'Управление ценами' {
-            ADD userPriceChanges;
-            ADD registerCommitteeDialog;
-            ADD priceChangeCommitteeDialog;
+        NEW priceAccount 'Учет в розничных ценах' {
+            ADD pricings;
+            ADD repricings;
             ADD pricingCommitteeDialog;
             ADD repricingCommitteeDialog;
-            ADD repricings;
+            NEW priceAccountArchive 'Архив' {
+                ADD registerCommitteeDialog;
+                ADD priceChangeCommitteeDialog;
+            }
         }
         ADD retailCRMNavigator;
         NEW statistics 'Статистика' {
@@ -6832,29 +6819,6 @@ NAVIGATOR {
     }
     NEW hr 'Кадры' TO formsToolbar {
         ADD employees;
-    }
-    NEW printedForms 'Печатные формы' TO formsToolbar{
-        ADD listRegister;
-        ADD inputListRegister;
-        ADD priceChangePrint;
-        ADD consignmentVerticalA;
-        ADD consignmentHorizontalA;
-        ADD consignmentVerticalB;
-        ADD consignmentHorizontalB;
-        ADD consignmentAttach;
-        ADD consignmentSimpleHorizontal;
-        ADD consignmentSimpleVertical;
-        ADD consignmentSimpleAttach;
-        ADD specificationPrint;
-        ADD wastagePrint;
-        ADD naturalLossPrint;
-        ADD writeOffPrint;
-        ADD orderSupplierPrint;
-        ADD printListInventory;
-        ADD printTotalCollationSheet;
-        ADD printCollationSheet;
-        ADD incomeCashOrderPrint;
-        ADD outcomeCashOrderPrint;
     }
 
     ADD adminElement TO formsTree;

@@ -9,6 +9,6 @@ NAMESPACE Sale;
 @defineNumeratedObjectDefaultPrefix(userOrder, 'Нумератор для заказов (продажа)', 'ЗП', sale);
 
 CONSTRAINT supplierUserOrder(userOrder) AND NOT isCompanyLegalEntity(supplierUserOrder(userOrder))
-    CHECKED BY supplierUserOrder MESSAGE 'Для заказа выбрано в качестве поставщика юр.лицо, не являющееся компанией';
+    CHECKED BY supplierUserOrder MESSAGE 'Для заказа выбрано в качестве поставщика организация, не являющаяся компанией';
 CONSTRAINT customerUserOrder(userOrder) AND NOT isCustomerLegalEntity(customerUserOrder(userOrder))
-    CHECKED BY customerUserOrder MESSAGE 'Для заказа выбрано в качестве покупателя юр.лицо, не являющееся покупателем';
+    CHECKED BY customerUserOrder MESSAGE 'Для заказа выбрано в качестве покупателя организация, не являющаяся покупателем';

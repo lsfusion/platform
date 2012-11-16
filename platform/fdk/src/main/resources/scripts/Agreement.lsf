@@ -57,7 +57,7 @@ supplierAgreement (agreement) = DATA legalEntity (agreement);
 nameSupplierAgreement 'Поставщик' (agreement) = name(supplierAgreement(agreement));
 
 CONSTRAINT supplierAgreement(agreement) AND NOT isSellerLegalEntity(supplierAgreement(agreement))
-    CHECKED BY supplierAgreement MESSAGE 'Для соглашения выбрано в качестве поставщика юр.лицо, не являющееся поставщиком или компанией';
+    CHECKED BY supplierAgreement MESSAGE 'Для соглашения выбрано в качестве поставщика организация, не являющеяся поставщиком или компанией';
 
 priceListTypeAgreement (agreement) = DATA priceListType (agreement) NOT NULL;
 namePriceListTypeAgreement 'Вид цены' (agreement) = name(priceListTypeAgreement(agreement));
@@ -130,12 +130,12 @@ META deriveDocumentHeaderAgreement (object, supplier, customer)
 
     CONSTRAINT supplierAgreement(agreement###object(object)) != supplier(object)
                CHECKED BY agreement###object
-               MESSAGE 'Соглашение должно быть между заданными юр. лицами';
+               MESSAGE 'Соглашение должно быть между заданными организациями';
 
     CONSTRAINT agreement###object(object)
                AND NOT inAgreementCustomerOver(agreement###object(object), customer(object))
                CHECKED BY agreement###object
-               MESSAGE 'Соглашение должно быть между заданными юр. лицами';
+               MESSAGE 'Соглашение должно быть между заданными организациями';
 END
 
 
@@ -178,12 +178,12 @@ META defineDocumentDoubleInterfaceHeaderAgreement (object1, object2, supplierPro
 
     CONSTRAINT supplierAgreement(agreement###object1###object2(object1, object2)) != supplierProp###object1(object1)
                CHECKED BY agreement###object1###object2
-               MESSAGE 'Соглашение должно быть между заданными юр. лицами';
+               MESSAGE 'Соглашение должно быть между заданными организациями';
 
     CONSTRAINT agreement###object1###object2(object1, object2)
                AND NOT inAgreementCustomerOver(agreement###object1###object2(object1, object2), customerProp###object1(object1))
                CHECKED BY agreement###object1###object2
-               MESSAGE 'Соглашение должно быть между заданными юр. лицами';
+               MESSAGE 'Соглашение должно быть между заданными организациями';
 END
 
 META deriveDocumentDoubleDetailPriceListTypeAgreementCustom (object1, detail, object2, stockProp2)

@@ -23,7 +23,7 @@ FORM ownership 'Форма собственности'
 
 // ----------------------------------- Юридическое лицо --------------------------------- //
 
-CLASS legalEntity 'Юридическое лицо' : named, externalObject, taxUnitGroup;
+CLASS legalEntity 'Организация' : named, externalObject, taxUnitGroup;
 TABLE legalEntity (legalEntity);
 TABLE legalEntityDate (legalEntity, DATE);
 
@@ -45,7 +45,7 @@ nameOwnershipLegalEntity 'Форма собственности' = name(ownershi
 shortNameOwnershipLegalEntity 'Форма собственности (сокр.)' = shortNameOwnership(ownershipLegalEntity(legalEntity)) IN lawGroup;
 
 CONSTRAINT countryOwnership(ownershipLegalEntity(legalEntity)) != countryLegalEntity(legalEntity)
-    CHECKED BY ownershipLegalEntity MESSAGE 'Страна формы собственности должна совпадать со страной юридического лица';
+    CHECKED BY ownershipLegalEntity MESSAGE 'Страна формы собственности должна совпадать со страной организации';
 
 fullNameLegalEntity 'Полное наименование' = DATA STRING[200] (legalEntity) IN lawGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
 
@@ -68,10 +68,10 @@ GROUP docGroup 'Для договора' : publicGroup;
 
 // ----------------------------------- Группы юридический лиц ---------------------------- //
 
-CLASS legalEntityGroup 'Группа юр. лиц' : named;
+CLASS legalEntityGroup 'Группа организаций' : named;
 
 legalEntityGroupLegalEntity (legalEntity) = DATA legalEntityGroup (legalEntity) PERSISTENT;
-nameLegalEntityGroupLegalEntity 'Группа юр. лиц' (legalEntity) = name(legalEntityGroupLegalEntity(legalEntity));
+nameLegalEntityGroupLegalEntity 'Группа организаций' (legalEntity) = name(legalEntityGroupLegalEntity(legalEntity));
 
 @defineHierarchy(legalEntityGroup);
 
@@ -79,14 +79,14 @@ inLegalEntityGroupLegalEntity (legalEntityGroup, legalEntity) =
     UNION OVERRIDE legalEntity IS legalEntity AND NOT legalEntityGroup IS legalEntityGroup,
                    isParentLegalEntityGroupLegalEntityGroup(legalEntityGroupLegalEntity(legalEntity), legalEntityGroup);
 
- FORM legalEntityGroup 'Группа юр. лиц'
+ FORM legalEntityGroup 'Группа организаций'
      OBJECTS l = legalEntityGroup FIXED PANEL
      PROPERTIES(l) name, nameParentLegalEntityGroup
 
      EDIT legalEntityGroup OBJECT l
  ;
 
- FORM legalEntityGroups 'Группы юр. лиц'
+ FORM legalEntityGroups 'Группы организаций'
      TREE legalEntityGroupTree lg = legalEntityGroup PARENT parentLegalEntityGroup
      PROPERTIES READONLY lgTreeName = name(lg)
      ORDER BY name(lg)
@@ -173,7 +173,7 @@ currentLicenseLegalEntity 'Действующая' (legalEntity) = licenseLegalE
 numberCurrentLicenseLegalEntity 'Действующая лицензия' (legalEntity) = numberLicense(currentLicenseLegalEntity(legalEntity)) IN lawGroup;
 
 CONSTRAINT countryLegalEntity(legalEntityLicense(license)) != countryLicense(license)
-    CHECKED BY legalEntityLicense MESSAGE 'Страна лицензии должна совпадать со страной юридического лица';
+    CHECKED BY legalEntityLicense MESSAGE 'Страна лицензии должна совпадать со страной организации';
 
 // ------------------------------------ Собственные компании ----------------------------- //
 GROUP filterEntityGroup 'Фильтры' : publicGroup;

@@ -10,14 +10,14 @@ createPricingDepartmentStore 'Создавать акт расценки' = DATA
 EXTEND FORM departmentStore PROPERTIES createPricingDepartmentStore(d);
 
 META defineDocumentHeaderCreatePricing(object, stockClass)
-    createPricing###object 'Создавать акт расценки' (object) = DATA BOOLEAN(object) IN documentPrmGroup;
+    createPricing###object 'Создать акт расценки' (object) = DATA BOOLEAN(object) IN documentPrmGroup;
 
     createPricing###object (object) <- TRUE IF createPricingDepartmentStore(stockClass###object(object))
         WHEN CHANGED(stockClass###object(object));
 
 END
 META defineDocumentAbstractHeaderCreatePricing(object, stockClass)
-    createPricing###object 'Создавать акт расценки' (object) = ABSTRACT BOOLEAN(object);
+    createPricing###object 'Создать акт расценки' (object) = ABSTRACT BOOLEAN(object);
 END
 
 META defineDocumentInterfaceHeaderCreatePricing (object, stockClass)
@@ -544,8 +544,8 @@ META definePricingAggregation(concrete, sign, caption, stockProp)
     @defineDocumentInterfaceHeaderSumPrefix (invoice, retail, ' розничная');
 
     @defineDocumentInterfaceHeaderCreatePricing (invoice, stockProp);
-    createPricingInvoiceDetail 'Создавать акт расценки' (invoiceDetail) = createPricingInvoice(invoiceInvoiceDetail(invoiceDetail));
-    createPricingUserInvoiceDetail 'Создавать акт расценки' (userInvoiceDetail) = createPricingUserInvoice(userInvoiceUserInvoiceDetail(userInvoiceDetail));
+    createPricingInvoiceDetail 'Создать акт расценки' (invoiceDetail) = createPricingInvoice(invoiceInvoiceDetail(invoiceDetail));
+    createPricingUserInvoiceDetail 'Создать акт расценки' (userInvoiceDetail) = createPricingUserInvoice(userInvoiceUserInvoiceDetail(userInvoiceDetail));
 
     showCreatePricingInvoice (invoice) = stockProp###invoice(invoice) IS departmentStore AND NOT costLedgerDepartmentStore(stockProp###invoice(invoice));
     showPricingInvoice (invoice) = showCreatePricingInvoice (invoice) AND NOT createPricingInvoice(invoice);
