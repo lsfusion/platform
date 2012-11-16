@@ -236,7 +236,7 @@ CONSTRAINT taxRange(VATReceiptSaleDetail(detail)) != tax.taxVAT OR
            CHECKED BY VATReceiptSaleDetail
            MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС и стране магазина';
 
-VATSumSaleZReport 'Сумма налогов по продажам' (zReport) = DATA NUMERIC[16,2] (zReport);
+VATSumSaleZReport 'Сумма НДС по продажам' (zReport) = DATA NUMERIC[16,2] (zReport);
 
 VATReceiptReturnDetail = DATA range (receiptReturnDetail);
 CONSTRAINT taxRange(VATReceiptReturnDetail(detail)) != tax.taxVAT OR
@@ -244,7 +244,7 @@ CONSTRAINT taxRange(VATReceiptReturnDetail(detail)) != tax.taxVAT OR
            CHECKED BY VATReceiptReturnDetail
            MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС и стране магазина';
 
-VATSumReturnZReport 'Сумма налогов по возвратам' (zReport) = DATA NUMERIC[16,2] (zReport);
+VATSumReturnZReport 'Сумма НДС по возвратам' (zReport) = DATA NUMERIC[16,2] (zReport);
 
 VATReceiptDetail (receiptDetail) = UNION EXCLUSIVE VATReceiptReturnDetail(receiptDetail), VATReceiptSaleDetail(receiptDetail) PERSISTENT;
 numberVATReceiptDetail 'НДС, номер' (receiptDetail) = numberRange(VATReceiptDetail(receiptDetail));

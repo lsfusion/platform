@@ -6705,20 +6705,13 @@ NAVIGATOR {
         }
         NEW contragents 'Контрагенты' {
             ADD legalEntities;
-            ADD banks;
-        }
-        NEW tax 'Налоги' {
-            ADD taxes;
+            ADD contractSkus;
         }
     }
 
     NEW purchase 'Управление закупками' TO formsToolbar {
         ADD purchasePurchaseNavigator;
         ADD purchaseReturnNavigator;
-        NEW purchaseCatalog 'Справочники' {
-            ADD suppliers;
-            ADD contractSkus;
-        }
     }
 
     NEW warehouse 'Управление складом' TO formsToolbar {
@@ -6741,14 +6734,7 @@ NAVIGATOR {
     NEW sale 'Управление продажами' TO formsToolbar {
         ADD saleSaleNavigator;
         ADD saleReturnNavigator;
-        ADD priceListNavigator{
-            ADD agreements;
-            ADD priceIntervals;
-        }
         ADD salesNavigator;
-        NEW saleCatalog 'Справочники' {
-            ADD customers;
-        }
     }
 
     NEW retail 'Розничная торговля' TO formsToolbar {
@@ -6799,6 +6785,10 @@ NAVIGATOR {
         }
     }
 
+    ADD priceListNavigator TO formsToolbar {
+        ADD priceIntervals;
+    }
+
     NEW transport 'Управление транспортом' TO formsToolbar {
         ADD trucks;
         ADD routes;
@@ -6809,6 +6799,10 @@ NAVIGATOR {
 
     NEW finance 'Финансы' TO formsToolbar {
         ADD contractNavigator;
+        NEW financeCatalog 'Справочники' {
+            ADD banks;
+            ADD taxes;
+        }
     }
 
     NEW manufactory 'Производство' TO formsToolbar {

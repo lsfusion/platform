@@ -59,7 +59,7 @@ nameSupplierAgreement 'Поставщик' (agreement) = name(supplierAgreement(
 CONSTRAINT supplierAgreement(agreement) AND NOT isSellerLegalEntity(supplierAgreement(agreement))
     CHECKED BY supplierAgreement MESSAGE 'Для соглашения выбрано в качестве поставщика организация, не являющеяся поставщиком или компанией';
 
-priceListTypeAgreement (agreement) = DATA priceListType (agreement) NOT NULL;
+priceListTypeAgreement 'Вид цены' (agreement) = DATA priceListType (agreement) NOT NULL;
 namePriceListTypeAgreement 'Вид цены' (agreement) = name(priceListTypeAgreement(agreement));
 
 TABLE agreementPriceGroup(agreement, priceGroup);
@@ -456,5 +456,11 @@ EXTEND DESIGN legalEntity {
             ADD agc.box{fillHorizontal = 3;}
             ADD c.box {title = 'Покупатели';}
         }
+    }
+}
+
+NAVIGATOR {
+    priceListNavigator {
+        ADD agreements;
     }
 }

@@ -274,8 +274,6 @@ META defineShipment(sign, stockProp)
 //        FILTERGROUP orderDetail
 //            FILTER 'Строки с непоставленными товарами со склада' 'F10' stockOrderDetail(d) == s AND toShipOrderDetail(d) > 0 DEFAULT
 //            FILTER 'Строки со склада' 'F9' stockOrderDetail(d) == s
-
-        DIALOG order OBJECT o
     ;
 
     DESIGN shipmentOrders FROM DEFAULT {

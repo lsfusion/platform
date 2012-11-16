@@ -168,7 +168,11 @@ META defineDocumentInterfaceCurrency (object)
 END
 
 META deriveDocumentCurrency (object, stockProp)
-    currency###object (object) <- currencyStock(stockProp###object(object)) WHEN CHANGED(stockProp###object(object));
+    @deriveDocumentCurrency(object, stockProp, currencyStock);
+END
+
+META deriveDocumentCurrency (object, objectProp, currencyProp)
+    currency###object (object) <- currencyProp(objectProp###object(object)) WHEN CHANGED(objectProp###object(object));
 END
 
 // --------------------------------------------------- Стандартные значения ------------------------------------ //

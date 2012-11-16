@@ -31,7 +31,7 @@ META defineInvoice(sign, stockProp)
     @defineDocumentInterfaceDescription(invoice, 'Накладная'###sign);
 
     @defineDocumentInterfaceCurrency(invoice);
-    @deriveDocumentCurrency(userInvoice, stockProp);
+    @deriveDocumentCurrency(userInvoice, supplier, currencyLegalEntity);
 
     @defineDocumentInterfaceContract(invoice, contractSku, supplier, customer,
                                      'Сторона A договора накладной не соответствует стороне А накладной',
@@ -65,6 +65,8 @@ META defineInvoice(sign, stockProp)
     @defineDocumentInterfaceHeaderAgreement(invoice);
     @deriveDocumentHeaderAgreement (userInvoice, supplierUserInvoice, customerUserInvoice);
     @deriveDocumentDetailPriceListTypeAgreement(invoice);
+
+    noAgreementUserInvoice (invoice) = invoice IS userInvoice AND NOT agreementUserInvoice(invoice);
 
     countInvoiceDetailStockInvoice (stock, invoice) = GROUP SUM 1 BY stockProp###invoiceDetail(invoiceDetail), invoiceInvoiceDetail(invoiceDetail);
 
@@ -120,7 +122,7 @@ META defineInvoice(sign, stockProp)
                                 countOrderDetailOrder, quantityOrderDetailOrder, sumOrderDetailOrder
         FILTERS isPostedOrder(o),
                 supplierOrder(o) == s,
-                customerOrder(o) ==c
+                customerOrder(o) == c
 //        FILTERGROUP order
 //            FILTER 'Заказы с невыписанными товарами со склада' 'F10' toInvoiceOrderDetailStockOrder(s, o) DEFAULT
 //            FILTER 'Заказы со склада' 'F9' countOrderDetailStockOrder(s, o)
@@ -133,8 +135,6 @@ META defineInvoice(sign, stockProp)
 //        FILTERGROUP orderDetail
 //            FILTER 'Строки с невыписанными товарами со склада' 'F10' stockProp###orderDetail(d) == s AND toInvoiceOrderDetail(d) > 0 DEFAULT
 //            FILTER 'Строки со склада' 'F9' stockProp###orderDetail(d) == s
-
-        DIALOG order OBJECT o
     ;
 
     DESIGN invoiceOrders FROM DEFAULT {
@@ -196,7 +196,7 @@ META defineInvoice(sign, stockProp)
         OBJECTS i = userInvoice FIXED PANEL
         PROPERTIES (i) objectClassName, nameSupplierUserInvoice, nameCustomerUserInvoice,
                        nameNumeratorObject, numberObject, seriesObject, dateUserInvoice, timeUserInvoice,
-                       nameCurrencyUserInvoice, nameAgreementUserInvoice, namePriceListTypeUserInvoice, noteUserInvoice,
+                       nameCurrencyUserInvoice, nameAgreementUserInvoice, namePriceListTypeUserInvoice SHOWIF noAgreementUserInvoice(i), noteUserInvoice,
                        numberContractSkuUserInvoice, isCommissionUserInvoice,
                        fillOrderUserInvoice, ordersInvoice READONLY,
                        countUserInvoiceDetailUserInvoice, quantityUserInvoiceDetailUserInvoice, sumUserInvoiceDetailUserInvoice,

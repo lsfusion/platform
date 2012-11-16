@@ -71,6 +71,8 @@ META defineOrder(sign, stockProp)
     @deriveDocumentHeaderAgreement (userOrder, supplierUserOrder, customerUserOrder);
     @deriveDocumentDetailPriceListTypeAgreement(order);
 
+    noAgreementUserOrder (order) = order IS userOrder AND NOT agreementUserOrder(order);
+
     @defineDocumentDetailPackWeightSku(order);
 
     grossWeightOrder 'Вес брутто' (order) = GROUP SUM grossWeightOrderDetail(orderDetail) BY orderOrderDetail(orderDetail);
@@ -83,7 +85,7 @@ META defineOrder(sign, stockProp)
         OBJECTS o = userOrder FIXED PANEL
         PROPERTIES (o) objectClassName, nameSupplierUserOrder, nameCustomerUserOrder, nameSupplierStockUserOrder, nameCustomerStockUserOrder,
                        nameNumeratorObject, numberObject, seriesObject, dateUserOrder, timeUserOrder,
-                       nameCurrencyUserOrder, nameAgreementUserOrder, namePriceListTypeUserOrder, noteUserOrder,
+                       nameCurrencyUserOrder, nameAgreementUserOrder, namePriceListTypeUserOrder SHOWIF noAgreementUserOrder(o), noteUserOrder,
                        countUserOrderDetailUserOrder, quantityUserOrderDetailUserOrder, sumUserOrderDetailUserOrder, shipmentDateUserOrder,
                        shipmentTimeUserOrder
 

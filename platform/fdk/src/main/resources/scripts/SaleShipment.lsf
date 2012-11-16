@@ -23,8 +23,6 @@ limitOutFIFOSkuLedgerBatch(ledger, batch) += IF batchShipmentDetail(ledger) THEN
 changedDataSkuLedger(ledger) += CHANGED(batchShipmentDetail(ledger));
 sumOutSkuLedger(ledger) += sumShipmentDetail(ledger);
 
-@defineConstraintSkuLedgerCosted(shipment, 'Не хватает остатков по партиям для продажи товаров');
-
 @implementAccountDocumentLedgerOut(shipment, supplierStock);
 sumOutAccountDocumentLedger (ledger) += sumShipmentDetailShipment(ledger);
 sumItemOutAccountDocumentLedger (ledger) += sumItemShipmentDetailShipment(ledger);
