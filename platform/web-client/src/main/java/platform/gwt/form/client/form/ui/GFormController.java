@@ -536,7 +536,7 @@ public class GFormController extends SimplePanel {
     }
 
     public void setTabVisible(GContainer tabbedPane, GComponent visibleComponent) {
-        syncDispatch(new SetTabVisible(tabbedPane.ID, visibleComponent.ID), new ServerResponseCallback());
+        dispatcher.execute(new SetTabVisible(tabbedPane.ID, visibleComponent.ID), new ServerResponseCallback());
         if (formLayout != null && visibleComponent instanceof GContainer) {
             formLayout.adjustContainerSizes((GContainer) visibleComponent);
         }
