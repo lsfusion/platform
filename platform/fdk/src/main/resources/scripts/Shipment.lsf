@@ -513,6 +513,7 @@ META defineShipment(sign, stockProp)
 
     extraShipmentPriceUserInvoiceDetail = ABSTRACT NUMERIC[14,2] (userInvoiceDetail) PERSISTENT;
     @defineDocumentInterfaceDetailQuantityPrefix (invoice, shipment, ' (поставлено)');
+    shipmentQuantityUserInvoiceDetail(detail) <- quantityUserInvoiceDetail(detail) WHEN CHANGED(quantityUserInvoiceDetail(detail));
 
     @defineDocumentInterfaceDetailDataSumPrefix (invoice, shipment, ' (учетная)');
     @deriveDocumentDetailSumPrefix(userInvoice, shipment, currency, shipmentQuantity);
