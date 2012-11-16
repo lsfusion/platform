@@ -14,98 +14,14 @@ REQUIRE System,
 
 PRIORITY Stock;
 
-//----------------------------------------------- Списание товара ---------------------------------------------------//
-CLASS reasonOff 'Причина списания' : named;
-TABLE reasonOff (reasonOff);
-
-FORM reasonOff 'Причина списания'
-    OBJECTS r=reasonOff  FIXED PANEL
-    PROPERTIES(r) name
-;
-
-CLASS writeOff 'Списание' : historyObject, numeratedDocument;
-CLASS writeOffDetail 'Строка списания';
-CLASS writeOffPosted 'Закрытое списание' : writeOff, postedObject;
-
-@defineDocument(writeOff);
-@defineDocumentStock(writeOff, stock, 'Склад');
-@defineDocumentPosted(writeOff);
-@defineDocumentDescription (writeOff, 'Списание товара');
-
-@defineDocumentCurrency(writeOff);
-@deriveDocumentCurrency(writeOff, stock);
-
-addressLegalEntityWriteOff 'Адрес' (writeOff) = addressLegalEntityDate(legalEntityWriteOff(writeOff), dateWriteOff(writeOff));
-
-@defineDocumentDetailNumber(writeOff);
-@defineDocumentDetailSku(writeOff, sku);
-
-// Для инвентаризации по партиям
-@defineDocumentDetailBatchCustom(writeOffDetail, batch);
-@defineDocumentDetailQuantity(writeOff);
-@defineDocumentDetailPrice(writeOff);
-@defineDocumentDetailSum(writeOff);
-
-priceWriteOffDetail (detail)  <- IF batchWriteOffDetail(detail)
-                THEN priceBatchStockDateTime(batchWriteOffDetail(detail), stockWriteOffDetail(detail), dateTimeWriteOffDetail(detail))
-                ELSE priceSkuStockDateTime(skuWriteOffDetail(detail), stockWriteOffDetail(detail), dateTimeWriteOffDetail(detail))
-                WHEN CHANGED(skuWriteOffDetail(detail)) OR CHANGED(batchWriteOffDetail(detail)) OR CHANGED(stockWriteOffDetail(detail)) OR CHANGED (dateTimeWriteOffDetail(detail));
-
-skuWriteOffDetail (detail)  <- skuBatch( batchWriteOffDetail(detail)) AND batchWriteOffDetail(detail)
-                               WHEN CHANGED(batchWriteOffDetail(detail));
-
-
-
-@defineDocumentDetailSkuBatchBalance(writeOff, sku, stock);
-@defineDocumentHeaderQuantity(writeOff);
-@defineDocumentHeaderSkuQuantity(writeOff, sku);
-
-@defineDocumentHeaderSum(writeOff);
-@defineDocumentHeaderItemSum(writeOff, , );
-
-@defineAddDetailDialogSkuStock(writeOff, sku, stock, dialogSku);
-@defineAddDetailDialogBarcode(writeOff, sku);
-@defineAddDetailDialogTerminal(writeOff, sku);
-
-
-reasonOffWriteOff 'Причина списания (ИД)' = DATA reasonOff (writeOff) IN idGroup;
-nameReasonOffWriteOff 'Причина списания' (writeOff) = name(reasonOffWriteOff (writeOff)) IN documentPrmGroup;
-
-// Проводим по регистру
-
-@implementSkuLedgerOutFIFO(writeOff, sku, stock);
-quantityOutFIFOSkuLedger (ledger) += quantityWriteOffDetail(ledger);
-sumOutSkuLedger (ledger) += sumWriteOffDetail(ledger);
-
-// Товарный отчет
-
-@implementAccountDocumentLedgerOut(writeOff, stock);
-sumOutAccountDocumentLedger (ledger) += sumWriteOffDetailWriteOff(ledger);
-
-// Обязательно имплементить для каждого конкретно проекта.....    todo:
-//limitOutFIFOSkuLedgerBatch(ledger, batch) +=
-//sumItemOutAccountDocumentLedger (ledger) +=
-//sumContainerOutAccountDocumentLedger (ledger) +=
-//skipASkuLedger (ledger) +=                         - если необходимо
-
 //--------------------------------Комиссия для списания----------------------------------//
 CLASS writeOffCommittee 'Комиссия для списания товаров' : committee;
-
-writeOffCommitteeWriteOff (writeOff) = DATA writeOffCommittee (writeOff) IN idGroup;
-nameWriteOffCommitteeWriteOff 'Комиссия для списания товаров' (writeOff) = name(writeOffCommitteeWriteOff(writeOff)) IN documentPrmGroup;
-
-
-inWriteOffEmployee (writeOff, employee) = inCommitteeEmployee(writeOffCommitteeWriteOff(writeOff), employee);
-namePositionEmployeeWriteOff 'Члены комиссии' (writeOff) = namePositionEmployeeCommittee(writeOffCommitteeWriteOff(writeOff)) MINCHARWIDTH 50 PREFCHARWIDTH 50;
 
 writeOffCommitteeStock 'Комиссия для списания товаров (ИД)' = DATA writeOffCommittee (stock);
 nameWriteOffCommitteeStock 'Комиссия для списания товаров' (stock) = name(writeOffCommitteeStock(stock));
 isWriteOffCommitteeStock 'По умолчанию' (writeOffCommittee, stock) = writeOffCommitteeStock(stock) == writeOffCommittee;
 CONSTRAINT writeOffCommitteeStock(stock) AND NOT inCommitteeEmployeeDivision(writeOffCommitteeStock(stock), stock)
     CHECKED BY writeOffCommitteeStock MESSAGE 'Для отдела выбрана комиссия, которая для него не действует';
-
-writeOffCommitteeWriteOff(writeOff) <- writeOffCommitteeStock(stockWriteOff(writeOff))
-    WHEN ASSIGNED(writeOff IS writeOff);
 
 FORM writeOffCommittee 'Комиссия для списания товаров'
     OBJECTS c=writeOffCommittee FIXED PANEL
@@ -163,6 +79,122 @@ FORM writeOffCommittees 'Комиссии для списания товаров
 
     DIALOG writeOffCommittee OBJECT w
 ;
+// ----------------------------------- Макрос для задания комиссии для документов ------------------------------------------ //
+
+META defineDocumentHeaderWriteOffCommittee(object, stockProp)
+
+    writeOffCommittee###object (object) = DATA writeOffCommittee(object);
+    nameWriteOffCommittee###object 'Комиссия для списания товаров' (object) = commonName(writeOffCommittee###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
+    writeOffCommittee###object (object) <- writeOffCommitteeStock(stockProp###object(object))
+        WHEN CHANGED(stockProp###object(object));
+
+    inCommittee###object##Employee (object, employee) = inCommitteeEmployee(writeOffCommittee###object (object), employee);
+    commonNameEmployeeCommittee###object 'Члены комиссии' (object) = namePositionEmployeeCommittee(writeOffCommittee###object (object));
+END
+META defineDocumentHeaderAbstractWriteOffCommittee(object)
+    writeOffCommittee###object (object) = ABSTRACT writeOffCommittee(object);
+    nameWriteOffCommittee###object 'Комиссия для списания товаров' (object) = commonName(writeOffCommittee###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
+
+    inCommittee###object##Employee (object, employee) = inCommitteeEmployee(writeOffCommittee###object (object), employee);
+    commonNameEmployeeCommittee###object 'Члены комиссии' (object) = namePositionEmployeeCommittee(writeOffCommittee###object (object));
+END
+
+META defineDocumentInterfaceHeaderWriteOffCommittee (object, stockProp)
+    @defineDocumentHeaderAbstractWriteOffCommittee (object);
+    @defineDocumentHeaderWriteOffCommittee (user###object, stockProp);
+    writeOffCommittee###object (object) += writeOffCommittee###user###object(object);
+END
+
+//----------------------------------------------- Списание товара ---------------------------------------------------//
+CLASS reason 'Причина списания' : named;
+TABLE reason (reason);
+
+FORM reason 'Причина списания'
+    OBJECTS r=reason  FIXED PANEL
+    PROPERTIES(r) name
+;
+
+CLASS writeOff 'Списание' ;
+CLASS writeOffDetail 'Строка списания';
+
+CLASS userWriteOff 'Списание (польз.)' : writeOff, historyObject, numeratedDocument;
+CLASS userWriteOffDetail 'Строка списания (польз.)' : writeOffDetail;
+CLASS userWriteOffPosted 'Закрытое списание (польз.)' : userWriteOff, postedObject;
+
+@defineDocumentInterface(writeOff);
+@defineDocumentInterfaceDataStock(writeOff, stock, 'Склад');
+
+@defineDocumentInterfacePosted(writeOff);
+@defineDocumentInterfaceDescription (writeOff, 'Списание товара');
+
+@defineDocumentInterfaceCurrency(writeOff);
+@deriveDocumentCurrency(userWriteOff, stock);
+
+addressLegalEntityWriteOff 'Адрес' (writeOff) = addressLegalEntityDate(legalEntityWriteOff(writeOff), dateWriteOff(writeOff));
+addressLegalEntityUserWriteOff 'Адрес' (userWriteOff) = addressLegalEntityDate(legalEntityUserWriteOff(userWriteOff), dateUserWriteOff(userWriteOff));
+
+@defineDocumentInterfaceNumber(writeOff);
+@defineDocumentInterfaceDetailSku(writeOff, sku);
+
+// Для инвентаризации по партиям
+@defineDocumentInterfaceDetailBatch(writeOff, batch);
+@defineDocumentInterfaceDetailQuantity(writeOff);
+@defineDocumentInterfaceDetailPrice(writeOff);
+@defineDocumentInterfaceDetailDataSum(writeOff);
+@deriveDocumentDetailSum(userWriteOff, quantity);
+
+priceUserWriteOffDetail (detail)  <- IF batchUserWriteOffDetail(detail)
+                THEN priceBatchStockDateTime(batchUserWriteOffDetail(detail), stockUserWriteOffDetail(detail), dateTimeUserWriteOffDetail(detail))
+                ELSE priceSkuStockDateTime(skuUserWriteOffDetail(detail), stockUserWriteOffDetail(detail), dateTimeUserWriteOffDetail(detail))
+                WHEN CHANGED(skuUserWriteOffDetail(detail)) OR CHANGED(batchUserWriteOffDetail(detail)) OR CHANGED(stockUserWriteOffDetail(detail)) OR CHANGED (dateTimeUserWriteOffDetail(detail));
+
+skuUserWriteOffDetail (detail)  <- skuBatch( batchUserWriteOffDetail(detail)) AND batchUserWriteOffDetail(detail)
+                               WHEN CHANGED(batchUserWriteOffDetail(detail));
+
+balanceBSkuBatchWriteOffDetail 'Текущий остаток' (writeOffDetail) = ABSTRACT NUMERIC[14,3] (writeOffDetail);
+balanceBSkuBatchUserWriteOffDetail 'Текущий остаток' (userWriteOffDetail) = DATA NUMERIC[14,3] (userWriteOffDetail);
+balanceBSkuBatchWriteOffDetail(writeOffDetail) += balanceBSkuBatchUserWriteOffDetail(writeOffDetail);
+balanceBSkuBatchUserWriteOffDetail (detail) <- IF batchUserWriteOffDetail(detail) IS batch
+    THEN balanceBBatchStockDateTime(batchUserWriteOffDetail(detail), stockUserWriteOffDetail(detail), dateTimeUserWriteOffDetail(detail))
+        ELSE balanceBSkuStockDateTime(skuUserWriteOffDetail(detail), stockUserWriteOffDetail(detail), dateTimeUserWriteOffDetail(detail))
+            WHEN CHANGED(skuUserWriteOffDetail(detail)) OR CHANGED(batchUserWriteOffDetail(detail)) OR CHANGED(stockUserWriteOffDetail(detail)) OR CHANGED (dateTimeUserWriteOffDetail(detail));
+
+@defineDocumentInterfaceHeaderQuantity(writeOff);
+@defineDocumentHeaderSkuQuantity(writeOff, sku);
+@defineDocumentHeaderSkuQuantity(userWriteOff, sku);
+
+@defineDocumentInterfaceHeaderSum(writeOff);
+
+@defineDocumentHeaderItemSum(writeOff, , );
+@defineDocumentHeaderItemSum(userWriteOff, , );
+
+@defineAddDetailDialogSkuStock(userWriteOff, sku, stock, dialogSku);
+@defineAddDetailDialogBarcode(userWriteOff, sku);
+@defineAddDetailDialogTerminal(userWriteOff, sku);
+
+@defineDocumentInterfaceHeaderWriteOffCommittee(writeOff, stock);
+
+reasonWriteOff 'Причина списания (ИД)' = ABSTRACT reason (writeOff) IN idGroup;
+reasonUserWriteOff 'Причина списания (ИД)' = DATA reason (userWriteOff) IN idGroup;
+reasonWriteOff(writeOff) += reasonUserWriteOff(writeOff);
+nameReasonWriteOff 'Причина списания' (writeOff) = name(reasonWriteOff (writeOff)) IN documentPrmGroup;
+nameReasonUserWriteOff 'Причина списания' (userWriteOff) = name(reasonUserWriteOff (userWriteOff)) IN documentPrmGroup;
+// Проводим по регистру
+
+@implementSkuLedgerOutFIFO(writeOff, sku, stock);
+quantityOutFIFOSkuLedger (ledger) += quantityWriteOffDetail(ledger);
+sumOutSkuLedger (ledger) += sumWriteOffDetail(ledger);
+
+// Товарный отчет
+
+@implementAccountDocumentLedgerOut(writeOff, stock);
+sumOutAccountDocumentLedger (ledger) += sumWriteOffDetailWriteOff(ledger);
+
+// Обязательно имплементить для каждого конкретно проекта.....    todo:
+//limitOutFIFOSkuLedgerBatch(ledger, batch) +=
+//sumItemOutAccountDocumentLedger (ledger) +=
+//sumContainerOutAccountDocumentLedger (ledger) +=
+//skipASkuLedger (ledger) +=                         - если необходимо
 
 // --------------------------- Печатная форма ---------------------------------
 
@@ -170,10 +202,10 @@ FORM writeOffCommittees 'Комиссии для списания товаров
 FORM writeOffPrint 'Акт списания' PRINT
     OBJECTS w=writeOff FIXED PANEL
     PROPERTIES (w)  SELECTOR numberObject, seriesObject, nameStockWriteOff,
-                   dateWriteOff, timeWriteOff, nameReasonOffWriteOff, noteWriteOff, countWriteOffDetailWriteOff, quantityWriteOffDetailWriteOff,
+                   dateWriteOff, timeWriteOff, nameReasonWriteOff, noteWriteOff, countWriteOffDetailWriteOff, quantityWriteOffDetailWriteOff,
                    sumWriteOffDetailWriteOff,
                    nameLegalEntityWriteOff, addressLegalEntityWriteOff, nameWriteOffCommitteeWriteOff,
-                   namePositionEmployeeWriteOff, writeOffCommitteeWriteOff
+                   commonNameEmployeeCommitteeWriteOff, writeOffCommitteeWriteOff
 
     OBJECTS d=writeOffDetail
     PROPERTIES (d) READONLY indexWriteOffDetail, idBarcodeSkuWriteOffDetail, nameSkuWriteOffDetail, shortNameUOMSkuWriteOffDetail, descriptionBatchWriteOffDetail,
@@ -185,7 +217,7 @@ FORM writeOffPrint 'Акт списания' PRINT
     PROPERTIES(e) SELECTOR   commonName, namePositionEmployee
 
     FILTERS inWriteOffWriteOffDetail(w, d),
-            inWriteOffEmployee(w, e)
+            inCommitteeWriteOffEmployee(w, e)
 
     EDIT writeOff OBJECT w
 ;
@@ -193,32 +225,32 @@ FORM writeOffPrint 'Акт списания' PRINT
 printWriteOff 'Акт списания' (writeOff) = ACTION FORM writeOffPrint OBJECTS w IMAGE 'print.png' IN printGroup;
 
 // --------------------------- Формы списания ---------------------------------
+backgroundBalanceWriteOffDetail 'Цвет' (writeOffDetail) = RGB(255, 128, 128) IF quantityWriteOffDetail(writeOffDetail) > balanceBSkuBatchWriteOffDetail(writeOffDetail);
 
-FORM writeOff 'Списание'
-    OBJECTS w=writeOff FIXED PANEL
-    PROPERTIES (w) objectClassName, nameNumeratorObject, numberObject, seriesObject, dateWriteOff, timeWriteOff,
-                   nameStockWriteOff, nameCurrencyWriteOff, noteWriteOff, sumWriteOffDetailWriteOff,
-                   countWriteOffDetailWriteOff, quantityWriteOffDetailWriteOff, nameReasonOffWriteOff,
-                   nameWriteOffCommitteeWriteOff
+FORM userWriteOff 'Списание'
+    OBJECTS w=userWriteOff FIXED PANEL
+    PROPERTIES (w) objectClassName, nameNumeratorObject, numberObject, seriesObject, dateUserWriteOff, timeUserWriteOff,
+                   nameStockUserWriteOff, nameCurrencyUserWriteOff, noteUserWriteOff, sumUserWriteOffDetailUserWriteOff,
+                   countUserWriteOffDetailUserWriteOff, quantityUserWriteOffDetailUserWriteOff, nameReasonUserWriteOff,
+                   nameWriteOffCommitteeUserWriteOff
 
-    OBJECTS d=writeOffDetail
-    PROPERTIES (d) indexWriteOffDetail, idBarcodeSkuWriteOffDetail, nameSkuWriteOffDetail, shortNameUOMSkuWriteOffDetail,
-                   descriptionBatchWriteOffDetail, quantityWriteOffDetail,
-                   priceWriteOffDetail, sumWriteOffDetail, ADDOBJ, delete
+    OBJECTS d=userWriteOffDetail
+    PROPERTIES (d) indexUserWriteOffDetail, idBarcodeSkuUserWriteOffDetail, nameSkuUserWriteOffDetail, shortNameUOMSkuUserWriteOffDetail,
+                   descriptionBatchUserWriteOffDetail, quantityUserWriteOffDetail,
+                   priceUserWriteOffDetail, sumUserWriteOffDetail, balanceBSkuBatchUserWriteOffDetail BACKGROUND backgroundBalanceWriteOffDetail(d),
+                   ADDOBJ, delete
 
-    PROPERTIES FORCE PANEL READONLY balanceBSkuBatchWriteOffDetail (d)
-
-    PROPERTIES(w) TODRAW d addDetailDialogSkuStockWriteOffDetailWriteOff, addDetailDialogTerminalWriteOffDetailWriteOff,
-                           addDetailInputBarcodeWriteOffDetailWriteOff, deleteWriteOffDetailWriteOff
-    FILTERS inWriteOffWriteOffDetail(w, d)
+    PROPERTIES(w) TODRAW d addDetailDialogSkuStockUserWriteOffDetailUserWriteOff, addDetailDialogTerminalUserWriteOffDetailUserWriteOff,
+                           addDetailInputBarcodeUserWriteOffDetailUserWriteOff, deleteUserWriteOffDetailUserWriteOff
+    FILTERS userWriteOffUserWriteOffDetail(d)==w
 
     EVENTS
-        ON OK EXEC prePostWriteOff(w)
+        ON OK EXEC prePostUserWriteOff(w)
 
-    EDIT writeOff OBJECT w
+    EDIT userWriteOff OBJECT w
 ;
 
-DESIGN writeOff FROM DEFAULT{
+DESIGN userWriteOff FROM DEFAULT{
 
     main {
         preferredSize = (1024, 768);
@@ -232,12 +264,12 @@ DESIGN writeOff FROM DEFAULT{
                 ADD w.documentHeaderGroup {
                     childConstraints = TO THE RIGHT;
                     ADD PROPERTY(objectClassName);
-                    ADD PROPERTY(nameStockWriteOff);
+                    ADD PROPERTY(nameStockUserWriteOff);
                     ADD PROPERTY(nameNumeratorObject);
                     ADD PROPERTY(numberObject);
                     ADD PROPERTY(seriesObject);
-                    ADD PROPERTY(dateWriteOff);
-                    ADD PROPERTY(timeWriteOff);
+                    ADD PROPERTY(dateUserWriteOff);
+                    ADD PROPERTY(timeUserWriteOff);
                 }
 
                 ADD w.documentPrmGroup {
@@ -259,23 +291,27 @@ DESIGN writeOff FROM DEFAULT{
     }
 }
 
+addUserWriteOff 'Добавить' = ACTION ADDFORM userWriteOff;
+editUserWriteOff 'Редактировать'  = ACTION EDITFORM userWriteOff;
+
 FORM writeOffs 'Списания'
     OBJECTS w=writeOff
-    PROPERTIES (w) READONLY isPostedWriteOff FORCE GRID, numberObject, seriesObject, dateWriteOff, timeWriteOff, nameStockWriteOff,
-                            nameReasonOffWriteOff, noteWriteOff, quantityWriteOffDetailWriteOff, countWriteOffDetailWriteOff,
+    PROPERTIES (w) READONLY isPostedWriteOff FORCE GRID, numberWriteOff, seriesWriteOff, dateWriteOff, timeWriteOff, nameStockWriteOff,
+                            nameReasonWriteOff, noteWriteOff, quantityWriteOffDetailWriteOff, countWriteOffDetailWriteOff,
                             sumWriteOffDetailWriteOff, nameWriteOffCommitteeWriteOff
 
     PROPERTIES (w) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
-
-    PROPERTIES (w) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES ()  addUserWriteOff TODRAW w
+    PROPERTIES (w) editUserWriteOff
+    PROPERTIES (w) delete FORCE PANEL DRAWTOTOOLBAR  SHOWIF isUserWriteOff(w)
 
     PROPERTIES (w) FORCE PANEL printWriteOff
 
     OBJECTS d=writeOffDetail
     PROPERTIES (d) READONLY indexWriteOffDetail, idBarcodeSkuWriteOffDetail, nameSkuWriteOffDetail, shortNameUOMSkuWriteOffDetail, descriptionBatchWriteOffDetail,
-                   quantityWriteOffDetail, priceWriteOffDetail, sumWriteOffDetail
+                   quantityWriteOffDetail, priceWriteOffDetail, sumWriteOffDetail, balanceBSkuBatchWriteOffDetail BACKGROUND backgroundBalanceWriteOffDetail(d)
 
-    FILTERS inWriteOffWriteOffDetail(w, d)
+    FILTERS writeOffWriteOffDetail(d) == w
 ;
 
 DESIGN writeOffs FROM DEFAULT {
