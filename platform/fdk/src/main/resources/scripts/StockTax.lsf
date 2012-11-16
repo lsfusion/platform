@@ -6,12 +6,9 @@ NAMESPACE Stock;
 
 //------------------------- НДС -------------------------//
 
-VATSkuCountry (sku, country) = ABSTRACT range (sku, country);
+VATSkuCountryDate = ABSTRACT range (sku, country, DATE);
 
-numberVATSkuCountry 'НДС, номер' (sku, country) = numberRange (VATSkuCountry(sku, country));
-valueCurrentVATSkuCountry 'Действующая ставка' (sku, country) = valueCurrentRateRange(VATSkuCountry(sku, country));
-
-CONSTRAINT taxRange(VATSkuCountry(sku, country)) != tax.taxVAT OR
-           countryRange(VATSkuCountry(sku, country)) != country AS country
-           CHECKED BY VATSkuCountry
-           MESSAGE 'ошибка: Шкала и страна строки должна соответствовать шкале и строке НДС';
+//CONSTRAINT taxRange(VATSkuCountryDate(sku, country, date)) != tax.taxVAT OR
+//           countryRange(VATSkuCountryDate(sku, country, date)) != country AS country
+//           CHECKED BY VATSkuCountryDate
+//           MESSAGE 'ошибка: Шкала и страна строки должна соответствовать шкале и строке НДС';

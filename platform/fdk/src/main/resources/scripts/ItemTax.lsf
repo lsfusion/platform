@@ -1,30 +1,37 @@
 MODULE ItemTax;
 
-REQUIRE System, Item, StockTax;
+REQUIRE System, Historizable, Item, StockTax;
 
 NAMESPACE Item;
 
 //------------------------- НДС -------------------------//
 
-VATItemCountry (item, country) = DATA range (item, country);
+@defineHistorizableCustom (VATItemCountry, 'НДС', range, numberRange, number, item, nameAttributeItem, country, name, 15, baseGroup);
+                        //(property,            caption, type, typeIdentity, object1, object1Identity, object2, object2Identity, fixedCharWidth, group)
+VATSkuCountryDate (item, country, date) += VATItemCountryDate (item, country, date);
 
-VATSkuCountry (item, country) += VATItemCountry (item, country);
-
-CONSTRAINT taxRange(VATItemCountry(item, country)) != tax.taxVAT OR
-           countryRange(VATItemCountry(item, country)) != country AS country
-           CHECKED BY VATItemCountry
+CONSTRAINT taxRange(dataVATItemCountryDate(item, country, date)) != tax.taxVAT OR
+           countryRange(dataVATItemCountryDate(item, country, date)) != country AS country
+           CHECKED BY dataVATItemCountryDate
            MESSAGE 'ошибка: Шкала и страна строки должна соответствовать шкале и строке НДС';
 
+valueVATItemCountryDate 'НДС, %' (item, country, date) = valueRateRangeDate(VATItemCountryDate(item, country, date), date);
+valueCurrentRateVATItemCountry 'НДС, %' (item, country) = valueCurrentRateRange(VATItemCountry(item, country));
+
 EXTEND FORM item
+    OBJECTS dt2=DATE FIXED PANEL
+    PROPERTIES (dt2) OBJVALUE BACKGROUND dateDiffersCurrent(dt2)
+
     OBJECTS c=country
     PROPERTIES (c) READONLY name
-    PROPERTIES (i, c) numberVATSkuCountry, valueCurrentVATSkuCountry
+    PROPERTIES (i, c, dt2) overNumberVATItemCountryDate, valueVATItemCountryDate
     FILTERS countRangeTaxCountry (tax.taxVAT, c)
 ;
 
 EXTEND DESIGN item{
     itemDetail{
         NEW itemTax AFTER itemPrimary {
+            ADD dt2.box;
             ADD c.box;
             caption = 'Налоги';
         }
