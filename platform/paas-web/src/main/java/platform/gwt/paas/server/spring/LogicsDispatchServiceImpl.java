@@ -31,19 +31,17 @@ public class LogicsDispatchServiceImpl extends DispatchServiceImpl {
     @Override
     public Result execute(String cookieSentByRPC, Action<?> action) throws ActionException, ServiceException {
         try {
-            return super.execute(cookieSentByRPC, action);
+            //мы никак не юзаем cookieSentByRPC, потому что у нас нету ни одного Action у когторого isSecured == true
+            return dispatch.execute(action);
         } catch (RemoteActionException e) {
             blProvider.invalidate();
 
-            e.printStackTrace();
-            logger.error("Ошибка в LogicsDispatchServlet.execute: ", e);
+            logger.error("Ошибка в LogicsDispatchServlet.execute: ", e.getRemote());
             throw new InvalidateException("Внутренняя ошибка сервера. Попробуйте перезагрузить страницу.");
         } catch (RemoteMessageException e) {
-            e.printStackTrace();
             logger.error("Ошибка в LogicsDispatchServlet.execute: ", e);
             throw new MessageException("Внутренняя ошибка сервера: " + e.getMessage());
         } catch (Throwable e) {
-            e.printStackTrace();
             logger.error("Ошибка в LogicsDispatchServlet.execute: ", e);
             throw new MessageException("Внутренняя ошибка сервера.");
         }
