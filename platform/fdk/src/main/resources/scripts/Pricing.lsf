@@ -1,6 +1,6 @@
 MODULE Pricing;
 
-REQUIRE Invoice, Employee, Store, StorePrice, Label, Machinery;
+REQUIRE Invoice, Employee, Store, StorePrice, Label, Machinery, ItemTax;
 
 
 // ----------------------------------- Создавать акт расценки по умолчанию для отдела ------------------------------------------ //
@@ -281,6 +281,7 @@ CLASS userPricingPosted 'Закрытый акт расценки (польз.)'
 
 @defineDocumentInterfaceDetailPricePrefix(pricing, retail, ' выходная');
 @defineDocumentInterfaceDetailVATPrefix(pricing, retail, countryDepartmentStore, );
+@deriveDocumentDetailVATSkuPrefix(userPricing, retail, departmentStore);
 @deriveDocumentDetailValueVATPrefix(userPricing, retail);
 
 @defineDocumentInterfaceDetailMarkupPrefix (pricing, retail, );
@@ -544,6 +545,8 @@ META definePricingAggregation(concrete, sign, caption, stockProp)
     @changeDocumentDetailPriceCustomPrefix(userInvoiceDetail, retail, , retail, retail, currency);
 
     @defineDocumentInterfaceHeaderSumPrefix (invoice, retail, ' розничная');
+
+    @deriveDocumentDetailVATSkuPrefix(userInvoice, retail, stockProp);
 
     @defineDocumentInterfaceHeaderCreatePricing (invoice, stockProp);
     createPricingInvoiceDetail 'Создать акт расценки' (invoiceDetail) = createPricingInvoice(invoiceInvoiceDetail(invoiceDetail));
