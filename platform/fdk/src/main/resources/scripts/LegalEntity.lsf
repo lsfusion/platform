@@ -222,6 +222,10 @@ DESIGN legalEntity FROM DEFAULT {
                     childConstraints = TO THE RIGHT;
                     ADD PROPERTY(name(l));
                     ADD PROPERTY(nameLegalEntityGroupLegalEntity(l));
+                }
+                NEW regionContainer {
+                    childConstraints =  TO THE RIGHT;
+                    caption = 'Региональные настройки';
                     ADD PROPERTY(nameCountryLegalEntity);
                     ADD PROPERTY(nameCurrencyLegalEntity);
                     ADD PROPERTY(nameLanguageLegalEntity);
@@ -257,8 +261,8 @@ FORM legalEntities 'Организации'
 
     OBJECTS l=legalEntity
     PROPERTIES(l) READONLY name, fullNameLegalEntity, shortNameOwnershipLegalEntity, nameLegalEntityGroupLegalEntity,
-                            numberAccountLegalEntity, addressLegalEntity, phoneLegalEntity,
-                            isSupplierLegalEntity, isCompanyLegalEntity, isCustomerLegalEntity
+                           numberAccountLegalEntity, addressLegalEntity, phoneLegalEntity,
+                           isSupplierLegalEntity, isCompanyLegalEntity, isCustomerLegalEntity
     PROPERTIES(l) ADDFORM, EDITFORM, delete
 
     FILTERS (inLegalEntityGroupLegalEntity(lg, l) OR (l IS legalEntity AND lg IS legalEntityGroup AND NOT legalEntityGroupLegalEntity(l)))

@@ -44,7 +44,7 @@ TABLE region (region);
 CLASS store 'Магазин' : stockGroup, externalObject, taxUnit, employeeDivisionGroup;
 TABLE store (store);
 
-legalEntityStore = DATA legalEntity (store);
+legalEntityStore = DATA legalEntity (store) NOT NULL;
 nameLegalEntityStore 'Компания' (store) = name(legalEntityStore(store)) IN baseGroup;
 
 languageStore (store) = languageLegalEntity(legalEntityStore(store));
@@ -258,4 +258,17 @@ META defineDocumentDepartmentStore (object)
     @defineDocumentHeaderDepartmentStore(object);
     @defineDocumentDetailDepartmentStore(object);
 END
+
+addStoreLegalEntity 'Добавить магазин' = ACTION (legalEntity) {
+
+    FOR ADDOBJ st = store DO {
+        SET legalEntityStore(st) <- legalEntity;
+        FORM store OBJECTS s = st DOCKED_MODAL;
+    }
+}
+
+EXTEND FORM legalEntity
+
+    PROPERTIES addStoreLegalEntity(l) TODRAW st FORCE PANEL DRAWTOTOOLBAR
+;
 

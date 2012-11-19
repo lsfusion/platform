@@ -23,7 +23,7 @@ isParentWarehouseGroupWarehouse (warehouseGroup, warehouse) =
     isParentWarehouseGroupWarehouseGroup(warehouseGroupWarehouse(warehouse), warehouseGroup) PERSISTENT;
 stockGroupStock (stock) += warehouseGroupWarehouse (stock);
 
-legalEntityWarehouse (warehouse) = DATA legalEntity (warehouse);
+legalEntityWarehouse (warehouse) = DATA legalEntity (warehouse) NOT NULL;
 nameLegalEntityWarehouse 'Компания' (warehouse) = name(legalEntityWarehouse(warehouse)) IN baseGroup;
 legalEntityStock (stock) += legalEntityWarehouse(stock);
 
@@ -66,3 +66,16 @@ DESIGN warehouses FROM DEFAULT{
     }
     ADD functions.box;
 }
+
+addWarehouseLegalEntity 'Добавить склад' = ACTION (legalEntity) {
+
+    FOR ADDOBJ wr = warehouse DO {
+        SET legalEntityWarehouse(wr) <- legalEntity;
+        FORM warehouse OBJECTS w = wr DOCKED_MODAL;
+    }
+}
+
+EXTEND FORM legalEntity
+
+    PROPERTIES addWarehouseLegalEntity(l) TODRAW st FORCE PANEL DRAWTOTOOLBAR
+;

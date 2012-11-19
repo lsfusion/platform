@@ -302,7 +302,7 @@ FORM userPriceList 'Прайс'
 
     OBJECTS d = userPriceListDetail
     PROPERTIES(d) isSelectedPriceListDetail, indexUserPriceListDetail, idBarcodeSkuUserPriceListDetail, nameSkuUserPriceListDetail,
-                  shortNameUOMSkuUserPriceListDetail
+                  shortNameUOMSkuUserPriceListDetail, ADDOBJ, delete
 
     TREE stockTree a=STRING[3], sg = stockGroup PARENT parentStockGroup
     PROPERTIES READONLY OBJVALUE(a), sgTreeName = name(sg)

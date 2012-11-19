@@ -13,8 +13,11 @@ TABLE stock(stock);
 stockGroupStock (stock) = ABSTRACT stockGroup (stock) PERSISTENT;
 nameStockGroupStock 'Группа' (stock) = name(stockGroupStock (stock));
 
-legalEntityStock (stock) = ABSTRACT legalEntity (stock) PERSISTENT;
+legalEntityStock (stock) = ABSTRACT legalEntity (stock) PERSISTENT NOT NULL;
 nameLegalEntityStock 'Компания' (stock) = name(legalEntityStock(stock));
+
+userLegalEntityStock 'Отм.' = DATA BOOLEAN (legalEntity, stock);
+inLegalEntityStock 'Отм.' (legalEntity, stock) = (legalEntityStock(stock) == legalEntity) OR userLegalEntityStock(legalEntity, stock);
 
 currencyStock (stock) = currencyLegalEntity(legalEntityStock(stock)) PERSISTENT;
 languageStock (stock) = languageLegalEntity(legalEntityStock(stock)) PERSISTENT;
@@ -2185,19 +2188,61 @@ END
 
 @defineDialogStockSku(dialogSku);
 
+FORM chooseStocks 'Выбор складов'
+
+    OBJECTS l = legalEntity
+
+    TREE stockTree a = STRING[3], sg = stockGroup PARENT parentStockGroup
+    PROPERTIES READONLY OBJVALUE(a), sgTreeName = name(sg)
+    ORDER BY sgTreeName
+    FILTERS stringEqualsAll(a)
+
+    OBJECTS s=stock
+    PROPERTIES(s) READONLY name, addressStock, nameLegalEntityStock
+    PROPERTIES userLegalEntityStock(l, s)
+    ORDER BY name
+    FILTERS isParentStockGroupStock(sg, s) OR (s IS stock AND sg IS stockGroup AND NOT stockGroupStock(s)) OR (s IS stock AND NOT sg)
+;
+
+DESIGN chooseStocks FROM DEFAULT{
+
+    NEW mainContainer{
+        REMOVE l.box;
+        type = SPLITH;
+        childConstraints = TO THE RIGHT;
+        ADD stockTree.tree.box;
+        ADD s.box{fillHorizontal = 2.0;}
+    }
+    ADD functions.box;
+}
+
+chooseStocksLegalEntity 'Выбрать склады' = ACTION (legalEntity) {
+
+    FORM chooseStocks OBJECTS l = legalEntity MODAL;
+}
 
 EXTEND FORM legalEntity
+    TREE stockTree b=STRING[3], sg = stockGroup PARENT parentStockGroup
+    PROPERTIES READONLY OBJVALUE(b), sgTreeName = name(sg)
+    ORDER BY sgTreeName
+    FILTERS stringEqualsAll(b)
+
     OBJECTS st=stock
     PROPERTIES(st) READONLY name, nameLegalEntityStock
-    PROPERTIES(st) ADDOBJ, delete
+    FILTERS isParentStockGroupStock(sg, st) OR (st IS stock AND sg IS stockGroup AND NOT stockGroupStock(st)) OR (st IS stock AND NOT sg)
 
-    FILTERS legalEntityStock(st)==l
+    PROPERTIES chooseStocksLegalEntity(l) TODRAW st FORCE PANEL DRAWTOTOOLBAR
+    FILTERS inLegalEntityStock(l, st)
 ;
 
 EXTEND DESIGN legalEntity{
     extendContainer {
-        ADD st.box{
+        NEW stockContainer {
             caption = 'Склады';
+            childConstraints = TO THE RIGHT;
+            type = SPLITH;
+            ADD stockTree.tree.box;
+            ADD st.box{fillHorizontal = 3.0;}
         }
     }
 }
