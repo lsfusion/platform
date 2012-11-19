@@ -126,8 +126,10 @@ sumVATConsignmentDetail 'Сумма НДС' (consignmentDetail) = ABSTRACT NUMER
 
 sumInvoiceConsignmentDetail 'Сумма с НДС' (consignmentDetail) = ABSTRACT NUMERIC[16,2] (consignmentDetail);
 
-packQuantityConsignmentDetail 'Количество грузовых мест' (consignmentDetail) = ABSTRACT NUMERIC[14,3] (consignmentDetail);
-grossWeightConsignmentDetail 'Масса груза, т.' (consignmentDetail) = ABSTRACT NUMERIC[14,6] (consignmentDetail);
+quantityPackConsignmentDetail 'Количество грузовых мест' (consignmentDetail) = ABSTRACT NUMERIC[14,3] (consignmentDetail);
+
+grossWeightConsignmentDetail 'Масса груза, кг.' (consignmentDetail) = ABSTRACT NUMERIC[14,6] (consignmentDetail);
+grossWeightTonConsignmentDetail 'Масса груза, т.' (consignmentDetail) = round6(grossWeightConsignmentDetail(consignmentDetail) / 1000);
 
 noteConsignmentDetail 'Примечание' (consignmentDetail) = ABSTRACT STRING[100] (consignmentDetail) MINCHARWIDTH 30 PREFCHARWIDTH 80;
 
@@ -137,13 +139,14 @@ countConsignmentDetailConsignment 'Количество строк' (consignment
 quantityConsignmentDetailConsignment 'Количество (всего)' (consignment) = GROUP SUM quantityConsignmentDetail(consignmentDetail)
                                                             BY consignmentConsignmentDetail(consignmentDetail) IN sumConsignmentGroup;
 
-packQuantityConsignmentDetailConsignment 'Общее количество грузовых мест' (consignment) = GROUP SUM packQuantityConsignmentDetail(consignmentDetail)
+quantityPackConsignmentDetailConsignment 'Общее количество грузовых мест' (consignment) = GROUP SUM quantityPackConsignmentDetail(consignmentDetail)
                                                             BY consignmentConsignmentDetail(consignmentDetail) IN sumConsignmentGroup;
 
-grossWeightConsignmentDetailConsignment 'Общая масса груза, т.' (consignment) = GROUP SUM grossWeightConsignmentDetail(consignmentDetail)
-                                                            BY consignmentConsignmentDetail(consignmentDetail) IN sumConsignmentGroup;;
+grossWeightTonConsignmentDetailConsignment 'Общая масса груза, т.' (consignment) = GROUP SUM grossWeightTonConsignmentDetail(consignmentDetail)
+                                                            BY consignmentConsignmentDetail(consignmentDetail) IN sumConsignmentGroup;
 
-sumKgGrossWeightConsignment 'Общая масса груза, кг.'(consignment) = grossWeightConsignmentDetailConsignment(consignment)*1000;
+grossWeightConsignmentDetailConsignment 'Общая масса груза, кг.'(consignment) = GROUP SUM grossWeightConsignmentDetail(consignmentDetail)
+                                                            BY consignmentConsignmentDetail(consignmentDetail) IN sumConsignmentGroup;
 
 
 isCustomsFlowConsignment 'Расход с СВХ' (consignment) = ABSTRACT BOOLEAN (consignment);
@@ -221,7 +224,7 @@ META defineConsignmentForm(form, caption)
                        forwarderConsignment, warrantConsignment, warrantHolderConsignment, goodsAcceptedConsignment,
                        commonNameLoadingExecuterConsignment, nameWayOfLoadingConsignment, codeLoadingConsignment,
                        arrivalTimeConsignment, departureTimeConsignment, downtimeConsignment, raceQuantityConsignment,
-                       quantityConsignmentDetailConsignment, packQuantityConsignmentDetailConsignment, grossWeightConsignmentDetailConsignment, sumKgGrossWeightConsignment,
+                       quantityConsignmentDetailConsignment, quantityPackConsignmentDetailConsignment, grossWeightTonConsignmentDetailConsignment, grossWeightConsignmentDetailConsignment,
                        sumConsignmentDetailConsignment, sumVATConsignmentDetailConsignment, sumInvoiceConsignmentDetailConsignment,
                        countConsignmentDetailConsignment, wareSumConsignmentDetailConsignment, supplierSumConsignmentDetailConsignment,
                        seriesObject, numberObject, isWareConsignment, isCustomsFlowConsignment, isCurrencyConsignment, noteConsignment, documentNameCurrencyConsignment
@@ -230,7 +233,7 @@ META defineConsignmentForm(form, caption)
 
         PROPERTIES(d) nameSkuConsignmentDetail, shortNameUOMConsignmentDetail, quantityConsignmentDetail, priceConsignmentDetail,
                       sumConsignmentDetail, vatConsignmentDetail, sumVATConsignmentDetail, sumInvoiceConsignmentDetail,
-                      packQuantityConsignmentDetail, grossWeightConsignmentDetail, noteConsignmentDetail,
+                      quantityPackConsignmentDetail, grossWeightTonConsignmentDetail, noteConsignmentDetail,
                       nameWareConsignmentDetail, warePriceConsignmentDetail, valueWareRangeConsignmentDetail,
                       wareSupplierPriceConsignmentDetail, wareSumConsignmentDetail, wareSupplierSumConsignmentDetail,
                       wareVATSumConsignmentDetail, wareSumConsignmentDetail
@@ -257,7 +260,7 @@ FORM consignment 'Атрибуты накладной'
                    forwarderConsignment, warrantConsignment, warrantHolderConsignment, goodsAcceptedConsignment,
                    commonNameLoadingExecuterConsignment, nameWayOfLoadingConsignment, codeLoadingConsignment,
                    arrivalTimeConsignment, departureTimeConsignment, downtimeConsignment, raceQuantityConsignment,
-                   quantityConsignmentDetailConsignment, packQuantityConsignmentDetailConsignment, grossWeightConsignmentDetailConsignment,
+                   quantityConsignmentDetailConsignment, quantityPackConsignmentDetailConsignment, grossWeightTonConsignmentDetailConsignment,
                    sumConsignmentDetailConsignment, sumVATConsignmentDetailConsignment, sumInvoiceConsignmentDetailConsignment,
                    countConsignmentDetailConsignment, noteConsignment, shortNameCurrencyConsignment//, SHOWIF isCustomsFlowConsignment(c)
 
@@ -266,7 +269,7 @@ FORM consignment 'Атрибуты накладной'
 
     PROPERTIES(d) nameSkuConsignmentDetail READONLY, shortNameUOMConsignmentDetail READONLY, quantityConsignmentDetail, priceConsignmentDetail,
                   sumConsignmentDetail, vatConsignmentDetail, sumVATConsignmentDetail, sumInvoiceConsignmentDetail,
-                  packQuantityConsignmentDetail, grossWeightConsignmentDetail, noteConsignmentDetail,
+                  quantityPackConsignmentDetail, grossWeightTonConsignmentDetail, noteConsignmentDetail,
                   nameWareConsignmentDetail, warePriceConsignmentDetail, valueWareRangeConsignmentDetail,
                   wareSupplierPriceConsignmentDetail, wareSumConsignmentDetail, wareSupplierSumConsignmentDetail,
                   wareVATSumConsignmentDetail, wareSumConsignmentDetail
@@ -304,8 +307,8 @@ DESIGN consignment FROM DEFAULT {
                             childConstraints = TO THE RIGHT;
                             ADD PROPERTY(countConsignmentDetailConsignment);
                             ADD PROPERTY(quantityConsignmentDetailConsignment);
-                            ADD PROPERTY(packQuantityConsignmentDetailConsignment);
-                            ADD PROPERTY(grossWeightConsignmentDetailConsignment);
+                            ADD PROPERTY(quantityPackConsignmentDetailConsignment);
+                            ADD PROPERTY(grossWeightTonConsignmentDetailConsignment);
                         }
                         NEW wor22 {
                             childConstraints = TO THE RIGHT;
@@ -427,6 +430,8 @@ printConsignment 'Печать' (consignment) = ACTION FORM printConsignment OBJ
 
 // ------------------------------------- Метакод по объявлению и имплементации накладных ------------------ //
 
+// ----------------- Объявление заголовка накладной --------------- //
+
 META defineConsignment (object)
 
     car###object 'Автомобиль' (object) = DATA STRING[30] (object) IN carConsignmentGroup;
@@ -468,6 +473,61 @@ META defineConsignment (object)
 
     raceQuantity###object 'Количество ездок' (object) = DATA INTEGER (object) IN carConsignmentGroup;
 END
+
+META defineConsignmentAbstract(object)
+
+    car###object 'Автомобиль' (object) = ABSTRACT STRING[30] (object) IN carConsignmentGroup;
+    ownerCar###object 'Владелец автомобиля' (object) = ABSTRACT STRING[100] (object) IN carConsignmentGroup;
+    trailer###object 'Прицеп' (object) = ABSTRACT STRING[10] (object) IN carConsignmentGroup;
+    driverCar###object 'Водитель' (object) = ABSTRACT STRING[40] (object) IN carConsignmentGroup;
+    waybill###object 'Путевой лист' (object) = ABSTRACT STRING[20] (object) IN carConsignmentGroup;
+
+    transportPayer###object 'Заказчик перевозки (ИД)' (object) = ABSTRACT legalEntity (object) IN carConsignmentGroup;
+
+    dataLoadingPlace###object 'Пункт погрузки' (object) = ABSTRACT STRING[50] (object);
+
+    dataUnloadingPlace###object 'Пункт разгрузки' (object) = ABSTRACT STRING[50] (object);
+
+    readdressing###object 'Переадресовка' (object) = ABSTRACT STRING[50] (object) IN carConsignmentGroup;
+
+    shipmentBase###object 'Основание отпуска' (object) = ABSTRACT STRING[30] (object) IN issuanceConsignmentGroup;
+
+    issuanceAllowed###object (object) = ABSTRACT employee(object);
+
+    issuanceExecuted###object (object) = ABSTRACT employee(object);
+
+    forwarder###object 'Товар к перевозке принял (экспедитор), должность, фамилия, инициалы' (object) = ABSTRACT STRING[40] (object) IN issuanceConsignmentGroup;
+
+    warrant###object 'По доверенности (номер, дата)' (object) = ABSTRACT STRING[30] (object) IN issuanceConsignmentGroup;
+    warrantHolder###object 'По доверенности выданной (наименование орг-ии)' (object) = ABSTRACT STRING[100] (object) IN issuanceConsignmentGroup;
+
+    goodsAccepted###object 'Принял грузополучатель' (object) = ABSTRACT STRING[40] (object) IN issuanceConsignmentGroup;
+
+    loadingExecuter###object (object) = ABSTRACT employee(object);
+
+    wayOfLoading###object (object) = ABSTRACT wayOfLoading(object);
+
+    codeLoading###object 'Код ПРР' (object) = ABSTRACT STRING[3] (object) IN loadingConsignmentGroup;
+
+    arrivalTime###object 'Время прибытия' (object) = ABSTRACT DATETIME(object) IN carConsignmentGroup;
+    departureTime###object 'Время убытия' (object) = ABSTRACT DATETIME(object) IN carConsignmentGroup;
+    downtime###object 'Время простоя' (object) = ABSTRACT STRING[10] (object) IN carConsignmentGroup;
+
+    raceQuantity###object 'Количество ездок' (object) = ABSTRACT INTEGER (object) IN carConsignmentGroup;
+END
+
+META defineConsignmentInterface(object, stockProp)
+    @defineConsignmentAbstract (object);
+    @defineConsignment (user###object);
+    @implementConsignmentDocumentHeaderCustom(object, user###object, stockProp);
+    @implementConsignmentHeader (object, stockProp);
+END
+
+META defineConsignmentInterface(object)
+    @defineConsignmentInterface(object, stock);
+END
+
+// ----------------- Implement заголовка накладной --------------- //
 
 META implementConsignmentHeader (concrete, stockProp)
     dateConsignment (consignment) += date###concrete(consignment);
@@ -512,66 +572,7 @@ META implementConsignmentHeader (concrete, stockProp)
     raceQuantityConsignment (consignment) += raceQuantity###concrete (consignment);
 END
 
-META implementConsignmentDetail (concrete)
-    consignmentConsignmentDetail (consignmentDetail) += concrete###concrete##Detail (consignmentDetail);
-    skuConsignmentDetail (consignmentDetail) += item###concrete##Detail (consignmentDetail);
-    quantityConsignmentDetail (consignmentDetail) += quantity###concrete##Detail (consignmentDetail);
-
-    packQuantityConsignmentDetail (consignmentDetail) += packQuantity###concrete##Detail (consignmentDetail);
-    grossWeightConsignmentDetail (consignmentDetail) += grossWeight###concrete##Detail (consignmentDetail);
-END
-
-META implementConsignment (concrete, stockProp)
-    @implementConsignmentHeader(concrete, stockProp);
-    @implementConsignmentDetail(concrete);
-END
-
-// ------------------------------------- Метакод по объявлению и имплементации накладных (ABSTRACT)------------------ //
-META defineConsignmentAbstract(object)
-
-    car###object 'Автомобиль' (object) = ABSTRACT STRING[30] (object) IN carConsignmentGroup;
-    ownerCar###object 'Владелец автомобиля' (object) = ABSTRACT STRING[100] (object) IN carConsignmentGroup;
-    trailer###object 'Прицеп' (object) = ABSTRACT STRING[10] (object) IN carConsignmentGroup;
-    driverCar###object 'Водитель' (object) = ABSTRACT STRING[40] (object) IN carConsignmentGroup;
-    waybill###object 'Путевой лист' (object) = ABSTRACT STRING[20] (object) IN carConsignmentGroup;
-
-    transportPayer###object 'Заказчик перевозки (ИД)' (object) = ABSTRACT legalEntity (object) IN carConsignmentGroup;
-
-    dataLoadingPlace###object 'Пункт погрузки' (object) = ABSTRACT STRING[50] (object);
-
-    dataUnloadingPlace###object 'Пункт разгрузки' (object) = ABSTRACT STRING[50] (object);
-
-    readdressing###object 'Переадресовка' (object) = ABSTRACT STRING[50] (object) IN carConsignmentGroup;
-
-    shipmentBase###object 'Основание отпуска' (object) = ABSTRACT STRING[30] (object) IN issuanceConsignmentGroup;
-
-    issuanceAllowed###object (object) = ABSTRACT employee(object);
-
-    issuanceExecuted###object (object) = ABSTRACT employee(object);
-
-    forwarder###object 'Товар к перевозке принял (экспедитор), должность, фамилия, инициалы' (object) = ABSTRACT STRING[40] (object) IN issuanceConsignmentGroup;
-
-    warrant###object 'По доверенности (номер, дата)' (object) = ABSTRACT STRING[30] (object) IN issuanceConsignmentGroup;
-    warrantHolder###object 'По доверенности выданной (наименование орг-ии)' (object) = ABSTRACT STRING[100] (object) IN issuanceConsignmentGroup;
-
-    goodsAccepted###object 'Принял грузополучатель' (object) = ABSTRACT STRING[40] (object) IN issuanceConsignmentGroup;
-
-    loadingExecuter###object (object) = ABSTRACT employee(object);
-
-    wayOfLoading###object (object) = ABSTRACT wayOfLoading(object);
-
-    codeLoading###object 'Код ПРР' (object) = ABSTRACT STRING[3] (object) IN loadingConsignmentGroup;
-
-    arrivalTime###object 'Время прибытия' (object) = ABSTRACT DATETIME(object) IN carConsignmentGroup;
-    departureTime###object 'Время убытия' (object) = ABSTRACT DATETIME(object) IN carConsignmentGroup;
-    downtime###object 'Время простоя' (object) = ABSTRACT STRING[10] (object) IN carConsignmentGroup;
-
-    raceQuantity###object 'Количество ездок' (object) = ABSTRACT INTEGER (object) IN carConsignmentGroup;
-END
-
 META implementConsignmentDocumentHeaderCustom (concrete, object, stockProp)
-//    date###concrete (concrete) += date###object(concrete);
-//    stock###concrete (concrete) += stockProp###object(concrete);
 
     car###concrete (concrete) += car###object (concrete);
     ownerCar###concrete (concrete) += ownerCar###object (concrete);
@@ -617,27 +618,23 @@ META implementConsignmentDocumentHeader (concrete, stockProp)
     @implementConsignmentDocumentHeaderCustom (concrete, user###concrete, stockProp)
 END
 
+// -------------------------- Implement строк накладной -------------------- //
 
-META defineConsignmentInterface(object, stockProp)
-    @defineConsignmentAbstract (object);
-    @defineConsignment (user###object);
-    @implementConsignmentDocumentHeaderCustom(object, user###object, stockProp);
-    @implementConsignmentHeader (object, stockProp);
-END
-
-META defineConsignmentInterface(object)
-    @defineConsignmentInterface(object, stock);
-END
-
-META implementConsignmentDetailSku (concrete, skuProp)
+META implementConsignmentDetail (concrete, skuProp)
     consignmentConsignmentDetail (consignmentDetail) += concrete###concrete##Detail (consignmentDetail);
     skuConsignmentDetail (consignmentDetail) += skuProp###concrete##Detail (consignmentDetail);
     quantityConsignmentDetail (consignmentDetail) += quantity###concrete##Detail (consignmentDetail);
 
-    packQuantityConsignmentDetail (consignmentDetail) += packQuantity###concrete##Detail (consignmentDetail);
+    quantityPackConsignmentDetail (consignmentDetail) += quantityPack###concrete##Detail (consignmentDetail);
     grossWeightConsignmentDetail (consignmentDetail) += grossWeight###concrete##Detail (consignmentDetail);
 END
-META implementConsignmentDetailSku (concrete)
-    @implementConsignmentDetailSku (concrete, sku);
+META implementConsignmentDetail (concrete)
+    @implementConsignmentDetail (concrete, sku);
 END
 
+// -------------------------- Implement всей накладной -------------------- //
+
+META implementConsignment (concrete, skuProp, stockProp)
+    @implementConsignmentHeader(concrete, stockProp);
+    @implementConsignmentDetail(concrete, skuProp);
+END

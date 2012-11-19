@@ -392,8 +392,6 @@ lengthPackItem 'Длина упаковки' = DATA NUMERIC[8,2] (item) IN itemS
 widthPackItem 'Ширина упаковки' = DATA NUMERIC[8,2] (item) IN itemSizeGroup;
 heightPackItem 'Высота упаковки' = DATA NUMERIC[8,2] (item) IN itemSizeGroup;
 grossWeightPackItem 'Вес брутто упаковки' = DATA NUMERIC[9,3] (item) IN manufactoryGroup;
-quantityPackItem 'Количество в грузовом месте' = DATA NUMERIC[9,3] (item) IN orderGroup;
-quantityPackSku(sku) += quantityPackItem(sku);
 
 //retailGroup
 minQuantityOrderItem 'Минимальный заказ' = DATA INTEGER (item) IN orderGroup;
@@ -1871,10 +1869,11 @@ needToPriceChangeStatementDetail (statementDetail) = curRetailPriceStatementDeta
 
 // для накладной (шапка и хвост)
 
-@defineDocumentDetailPackWeightSku(statement, item);
+@defineDocumentDetailGrossWeight(statement, item);
+@defineDocumentDetailQuantityPack(statement, item);
 
 @defineConsignment(statement);
-@implementConsignment(statement, departmentStore);
+@implementConsignment(statement, item, departmentStore);
 
 senderConsignment (consignment) += legalEntityDepartmentStore(departmentStoreStatement(consignment));
 recipientConsignment (consignment) += customerStatement(consignment);
@@ -2249,10 +2248,11 @@ sumOutAccountDocumentLedger (ledger) += retailSumInnerFlowDetailInnerFlow(ledger
 sumItemOutAccountDocumentLedger (ledger) += retailSumItemInnerFlowDetailInnerFlow(ledger);
 sumContainerOutAccountDocumentLedger (ledger) += retailSumContainerInnerFlowDetailInnerFlow(ledger);
 
-@defineDocumentDetailPackWeightSku(innerFlow, item);
+@defineDocumentDetailGrossWeight(innerFlow, item);
+@defineDocumentDetailQuantityPack(innerFlow, item);
 
 @defineConsignment(innerFlow);
-@implementConsignment(innerFlow, departmentStore);
+@implementConsignment(innerFlow, item, departmentStore);
 
 senderConsignment (consignment) += legalEntityDepartmentStore(departmentStoreInnerFlow(consignment));
 recipientConsignment (consignment) += legalEntityDepartmentStore(recipientDepartmentInnerFlow(consignment));
@@ -2589,10 +2589,11 @@ sumOutContractLedger(outContractLedger) += invoiceSumReturnSupplierDetailReturnS
 
 // для возвратной накладной (шапка и хвост)
 
-@defineDocumentDetailPackWeightSku(returnSupplier, item);
+@defineDocumentDetailGrossWeight(returnSupplier, item);
+@defineDocumentDetailQuantityPack(returnSupplier, item);
 
 @defineConsignment(returnSupplier);
-@implementConsignment(returnSupplier, departmentStore);
+@implementConsignment(returnSupplier, item, departmentStore);
 
 senderConsignment (consignment) += legalEntityDepartmentStore(departmentStoreReturnSupplier(consignment));
 recipientConsignment (consignment) += supplierReturnSupplier(consignment);
@@ -4448,7 +4449,7 @@ FORM returnSupplier 'Возврат поставщику'
                   forwarderConsignment, warrantConsignment, warrantHolderConsignment, goodsAcceptedConsignment,
                   commonNameLoadingExecuterConsignment, nameWayOfLoadingConsignment, codeLoadingConsignment,
                   arrivalTimeConsignment, departureTimeConsignment, downtimeConsignment, raceQuantityConsignment,
-                  quantityConsignmentDetailConsignment, packQuantityConsignmentDetailConsignment, grossWeightConsignmentDetailConsignment,
+                  quantityConsignmentDetailConsignment, quantityPackConsignmentDetailConsignment, grossWeightTonConsignmentDetailConsignment,
                   sumConsignmentDetailConsignment, sumVATConsignmentDetailConsignment, sumInvoiceConsignmentDetailConsignment
 
     OBJECTS d=returnSupplierDetail
@@ -4551,8 +4552,8 @@ DESIGN returnSupplier FROM DEFAULT {
                     NEW wor21 {
                         childConstraints = TO THE RIGHT;
                         ADD PROPERTY(quantityConsignmentDetailConsignment);
-                        ADD PROPERTY(packQuantityConsignmentDetailConsignment);
-                        ADD PROPERTY(grossWeightConsignmentDetailConsignment);
+                        ADD PROPERTY(quantityPackConsignmentDetailConsignment);
+                        ADD PROPERTY(grossWeightTonConsignmentDetailConsignment);
                     }
                     NEW wor22 {
                         childConstraints = TO THE RIGHT;
@@ -4739,7 +4740,7 @@ FORM innerFlow 'Расход в другой отдел'
                    forwarderConsignment, warrantConsignment, warrantHolderConsignment, goodsAcceptedConsignment,
                    commonNameLoadingExecuterConsignment, nameWayOfLoadingConsignment, codeLoadingConsignment,
                    arrivalTimeConsignment, departureTimeConsignment, downtimeConsignment, raceQuantityConsignment,
-                   quantityConsignmentDetailConsignment, packQuantityConsignmentDetailConsignment, grossWeightConsignmentDetailConsignment,
+                   quantityConsignmentDetailConsignment, quantityPackConsignmentDetailConsignment, grossWeightTonConsignmentDetailConsignment,
                    sumConsignmentDetailConsignment, sumVATConsignmentDetailConsignment, sumInvoiceConsignmentDetailConsignment
 
     OBJECTS d=innerFlowDetail
@@ -4791,8 +4792,8 @@ DESIGN innerFlow FROM DEFAULT{
                         NEW oneCase {
                             childConstraints = TO THE RIGHT;
                             ADD PROPERTY (quantityConsignmentDetailConsignment);
-                            ADD PROPERTY (packQuantityConsignmentDetailConsignment);
-                            ADD PROPERTY (grossWeightConsignmentDetailConsignment);
+                            ADD PROPERTY (quantityPackConsignmentDetailConsignment);
+                            ADD PROPERTY (grossWeightTonConsignmentDetailConsignment);
                         }
                         NEW twoCase {
                             childConstraints = TO THE RIGHT;
@@ -5356,7 +5357,7 @@ FORM statement 'Отгрузка из розницы'
                    forwarderConsignment, warrantConsignment, warrantHolderConsignment, goodsAcceptedConsignment,
                    commonNameLoadingExecuterConsignment, nameWayOfLoadingConsignment, codeLoadingConsignment,
                    arrivalTimeConsignment, departureTimeConsignment, downtimeConsignment, raceQuantityConsignment,
-                   quantityConsignmentDetailConsignment, packQuantityConsignmentDetailConsignment, grossWeightConsignmentDetailConsignment,
+                   quantityConsignmentDetailConsignment, quantityPackConsignmentDetailConsignment, grossWeightTonConsignmentDetailConsignment,
                    sumConsignmentDetailConsignment, sumVATConsignmentDetailConsignment, sumInvoiceConsignmentDetailConsignment
 
     OBJECTS d=statementDetail
@@ -5408,8 +5409,8 @@ DESIGN statement FROM DEFAULT {
                         NEW wor21 {
                             childConstraints = TO THE RIGHT;
                             ADD PROPERTY(quantityConsignmentDetailConsignment);
-                            ADD PROPERTY(packQuantityConsignmentDetailConsignment);
-                            ADD PROPERTY(grossWeightConsignmentDetailConsignment);
+                            ADD PROPERTY(quantityPackConsignmentDetailConsignment);
+                            ADD PROPERTY(grossWeightTonConsignmentDetailConsignment);
                         }
                         NEW wor22 {
                             childConstraints = TO THE RIGHT;

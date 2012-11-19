@@ -47,8 +47,8 @@
 	<field name="downtimeConsignment" class="java.lang.String"/>
 	<field name="raceQuantityConsignment" class="java.lang.Integer"/>
 	<field name="quantityConsignmentDetailConsignment" class="java.lang.Double"/>
-	<field name="packQuantityConsignmentDetailConsignment" class="java.lang.Double"/>
-	<field name="grossWeightConsignmentDetailConsignment" class="java.lang.Double"/>
+	<field name="quantityPackConsignmentDetailConsignment" class="java.lang.Double"/>
+	<field name="grossWeightTonConsignmentDetailConsignment" class="java.lang.Double"/>
 	<field name="sumConsignmentDetailConsignment" class="java.lang.Double"/>
 	<field name="sumVATConsignmentDetailConsignment" class="java.lang.Double"/>
 	<field name="UNPRecipientConsignment" class="java.lang.String"/>
@@ -72,8 +72,8 @@
 	<field name="vatConsignmentDetail" class="java.lang.Double"/>
 	<field name="sumVATConsignmentDetail" class="java.lang.Double"/>
 	<field name="sumInvoiceConsignmentDetail" class="java.lang.Double"/>
-	<field name="packQuantityConsignmentDetail" class="java.lang.Double"/>
-	<field name="grossWeightConsignmentDetail" class="java.lang.Double"/>
+	<field name="quantityPackConsignmentDetail" class="java.lang.Double"/>
+	<field name="grossWeightTonConsignmentDetail" class="java.lang.Double"/>
 	<field name="noteConsignmentDetail" class="java.lang.String"/>
 	<field name="nameWareConsignmentDetail" class="java.lang.String"/>
 	<field name="warePriceConsignmentDetail" class="java.lang.Double"/>
@@ -85,7 +85,7 @@
 	<field name="seriesObject" class="java.lang.String"/>
 	<field name="numberObject" class="java.lang.String"/>
 	<field name="wareSumConsignmentDetail" class="java.lang.Double"/>
-	<field name="sumKgGrossWeightConsignment" class="java.lang.Double"/>
+	<field name="grossWeightConsignmentDetailConsignment" class="java.lang.Double"/>
 	<field name="isCurrencyConsignment" class="java.lang.Boolean"/>
 	<variable name="npp" class="java.lang.Integer" calculation="Count">
 		<variableExpression><![CDATA[0]]></variableExpression>
@@ -357,14 +357,14 @@
 					<textElement textAlignment="Right">
 						<font size="9"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{packQuantityConsignmentDetailConsignment}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{quantityPackConsignmentDetailConsignment}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.######" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" x="460" y="0" width="30" height="14" backcolor="#FFFFFF"/>
 					<textElement textAlignment="Right">
 						<font size="6"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{grossWeightConsignmentDetailConsignment}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{grossWeightTonConsignmentDetailConsignment}]]></textFieldExpression>
 				</textField>
 			</band>
 			<band height="21">
@@ -473,7 +473,7 @@
 					<textElement>
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[platform.base.Words.toString($F{sumKgGrossWeightConsignment}) + " кг"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[platform.base.Words.toString($F{grossWeightConsignmentDetailConsignment}) + " кг"]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="0" y="0" width="80" height="12"/>
@@ -512,7 +512,7 @@
 					<textElement>
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[platform.base.Words.toString($F{packQuantityConsignmentDetailConsignment}) + " мест"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[platform.base.Words.toString($F{quantityPackConsignmentDetailConsignment}) + " мест"]]></textFieldExpression>
 				</textField>
 				<line>
 					<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="275" y="0" width="1" height="20"/>
@@ -1022,7 +1022,7 @@
 				<textElement textAlignment="Right">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{packQuantityConsignmentDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{quantityPackConsignmentDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.######" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="460" y="0" width="30" height="12"/>
@@ -1035,7 +1035,7 @@
 				<textElement textAlignment="Right">
 					<font size="6"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{grossWeightConsignmentDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{grossWeightTonConsignmentDetail}]]></textFieldExpression>
 			</textField>
 		</band>
 		<band height="12">

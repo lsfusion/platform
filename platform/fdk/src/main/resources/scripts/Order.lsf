@@ -31,7 +31,7 @@ CLASS ABSTRACT orderDetail 'Строка заказа';
 @defineDocumentAbstractDetailSku(order, sku);
 
 @defineDocumentAbstractDetailQuantity(order);
-@defineDocumentDetailGrossWeight(order);
+@defineDocumentDetailGrossWeight(order, sku);
 
 @defineDocumentHeaderGrossWeight(order);
 
@@ -104,10 +104,6 @@ META defineOrder(sign, stockProp)
     @deriveDocumentDetailPriceListTypeAgreement(order);
 
     noAgreementUserOrder (order) = order IS userOrder AND NOT agreementUserOrder(order);
-
-    @defineDocumentDetailPackWeightSku(order);
-
-    grossWeightOrder 'Вес брутто' (order) = GROUP SUM grossWeightOrderDetail(orderDetail) BY orderOrderDetail(orderDetail);
 
     countOrderDetailStockOrder 'Кол-во строк по складу '(stock, order) = GROUP SUM 1 BY stockProp###orderDetail(orderDetail), orderOrderDetail(orderDetail);
 

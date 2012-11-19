@@ -28,8 +28,6 @@ numberOrder 'Номер' = ABSTRACT STRING[100](order);
 seriesOrder 'Серия' = ABSTRACT STRING[10](order);
 dateOrder 'Дата' = ABSTRACT DATE(order);
 
-grossWeightOrder 'Вес' = ABSTRACT NUMERIC[14,4](order);
-
 orderOrderDetail = ABSTRACT order(orderDetail);
 
 skuOrderDetail '' = ABSTRACT sku(orderDetail);
@@ -56,8 +54,6 @@ inTripOrder 'Включен' (trip, order) = tripOrder(order)==trip;
 numberShipment 'Номер' = ABSTRACT STRING[100](shipment);
 seriesShipment 'Серия' = ABSTRACT STRING[10](shipment);
 dateShipment 'Дата' = ABSTRACT DATE(shipment);
-
-grossWeightShipment 'Вес' = ABSTRACT NUMERIC[14,4](shipment);
 
 nodeFromShipment = ABSTRACT node(shipment);
 nodeToShipment = ABSTRACT node(shipment);
@@ -99,8 +95,6 @@ indexTripOrder 'Номер' (trip, order) = maxNumberTrip(trip) - numberNodeTrip
 CONSTRAINT numberNodeTrip(nodeFromOrder(order), tripOrder(order)) >= numberNodeTrip(nodeToOrder(order), tripOrder(order))
     MESSAGE 'Номер не соответствует направлению заказа';
 
-grossWeightOrderedTrip 'Суммарный вес заказов' (trip) = GROUP SUM grossWeightOrder(order) BY tripOrder(order);
-
 quantityTripOrderDetail 'Кол-во' = DATA NUMERIC[14,2](trip, orderDetail);
 
 FORM waybill PRINT
@@ -120,11 +114,10 @@ printWaybill 'Печать путевого листа' (trip) = ACTION (trip) {
 FORM trip 'Рейс'
     OBJECTS t=trip FIXED PANEL
     PROPERTIES (t) nameNumeratorObject, numberObject, seriesObject, dateTrip, driverTrip, timeTrip, sidTruckTrip, nameMarkTruckTrip, weightTruckTrip, printWaybill
-    PROPERTIES (t) READONLY grossWeightOrderedTrip
 
     OBJECTS o=order
     PROPERTIES(t, o) inTripOrder, indexTripOrder
-    PROPERTIES(o) READONLY numberOrder, seriesOrder, dateOrder, nameNodeFromOrder, nameNodeToOrder, grossWeightOrder
+    PROPERTIES(o) READONLY numberOrder, seriesOrder, dateOrder, nameNodeFromOrder, nameNodeToOrder
 
     FILTERGROUP filterDate
         FILTER 'Заказы к отправке' 'F10' dateOrder(o) <= dateTrip(t) DEFAULT
@@ -137,7 +130,7 @@ FORM trip 'Рейс'
 
     OBJECTS s=shipment
     PROPERTIES (t, s) inTripShipment
-    PROPERTIES(s) READONLY numberShipment, seriesShipment, dateShipment, grossWeightShipment
+    PROPERTIES(s) READONLY numberShipment, seriesShipment, dateShipment
 
     OBJECTS sd=shipmentDetail
     PROPERTIES(sd) READONLY barcodeSkuShipmentDetail, nameSkuShipmentDetail, shortNameUOMSkuShipmentDetail, quantityShipmentDetail, netWeightSkuShipmentDetail
@@ -171,7 +164,6 @@ DESIGN trip FROM DEFAULT{
             ADD PROPERTY(sidTruckTrip);
             ADD PROPERTY(nameMarkTruckTrip);
             ADD PROPERTY(weightTruckTrip);
-            ADD PROPERTY(grossWeightOrderedTrip);
             ADD PROPERTY(printWaybill);
         }
 
@@ -200,11 +192,11 @@ DESIGN trip FROM DEFAULT{
 
 FORM trips 'Рейсы'
     OBJECTS t=trip
-    PROPERTIES(t) READONLY numberObject, seriesObject, dateTrip, timeTrip, driverTrip, sidTruckTrip, nameMarkTruckTrip, weightTruckTrip, grossWeightOrderedTrip
+    PROPERTIES(t) READONLY numberObject, seriesObject, dateTrip, timeTrip, driverTrip, sidTruckTrip, nameMarkTruckTrip, weightTruckTrip
     PROPERTIES(t) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
 
     OBJECTS o=order
-    PROPERTIES(o) READONLY numberOrder, seriesOrder, dateOrder, nameNodeFromOrder, nameNodeToOrder, grossWeightOrder
+    PROPERTIES(o) READONLY numberOrder, seriesOrder, dateOrder, nameNodeFromOrder, nameNodeToOrder
     FILTERS inTripOrder(t, o)
 
     OBJECTS n=node

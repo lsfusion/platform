@@ -969,66 +969,99 @@ END
 
 // ------------------------------------------------- Вес нетто ----------------------------------- //
 
-META defineDocumentDetailNetWeightCustomPrefix (detail, prefix, caption)
-    prefix###netWeight###detail 'Вес нетто'###caption (detail) = quantity###detail(detail) * netWeightSku(sku###detail(detail)) PERSISTENT;
+META defineDocumentDetailNetWeightCustomPrefix (detail, skuProp, prefix, caption)
+    prefix###netWeight###detail 'Вес нетто'###caption (detail) = quantity###detail(detail) * netWeightSku(skuProp###detail(detail)) PERSISTENT;
 END
-META defineDocumentInterfaceDetailNetWeightCustomPrefix (detail, prefix, caption)
-    @defineDocumentDetailNetWeightCustomPrefix(detail, prefix, caption);
-    @defineDocumentDetailNetWeightCustomPrefix (user###detail, prefix, caption);
+META defineDocumentInterfaceDetailNetWeightCustomPrefix (detail, skuProp, prefix, caption)
+    @defineDocumentDetailNetWeightCustomPrefix(detail, skuProp, prefix, caption);
+    @defineDocumentDetailNetWeightCustomPrefix (user###detail, skuProp, prefix, caption);
     prefix###netWeight###detail (detail) += prefix###netWeight###user###detail(detail);
 END
 
-META defineDocumentDetailNetWeightCustom (detail)
-    @defineDocumentDetailNetWeightCustomPrefix(detail, , );
+META defineDocumentDetailNetWeightCustom (detail, skuProp)
+    @defineDocumentDetailNetWeightCustomPrefix(detail, skuProp, , );
 END
-META defineDocumentInterfaceDetailNetWeightCustom (detail)
-    @defineDocumentInterfaceDetailNetWeightCustomPrefix(detail, , );
-END
-
-META defineDocumentDetailNetWeightPrefix (object, prefix, caption)
-    @defineDocumentDetailNetWeightCustomPrefix(object##Detail, prefix, caption);
-END
-META defineDocumentInterfaceDetailNetWeightPrefix (object, prefix, caption)
-    @defineDocumentInterfaceDetailNetWeightCustomPrefix(object##Detail, prefix, caption);
+META defineDocumentInterfaceDetailNetWeightCustom (detail, skuProp)
+    @defineDocumentInterfaceDetailNetWeightCustomPrefix(detail, skuProp, , );
 END
 
-META defineDocumentDetailNetWeight (object)
-    @defineDocumentDetailNetWeightPrefix(object, , );
+META defineDocumentDetailNetWeightPrefix (object, skuProp, prefix, caption)
+    @defineDocumentDetailNetWeightCustomPrefix(object##Detail, skuProp, prefix, caption);
 END
-META defineDocumentInterfaceDetailNetWeight (object)
-    @defineDocumentInterfaceDetailNetWeightPrefix(object, , );
+META defineDocumentInterfaceDetailNetWeightPrefix (object, skuProp, prefix, caption)
+    @defineDocumentInterfaceDetailNetWeightCustomPrefix(object##Detail, skuProp, prefix, caption);
+END
+
+META defineDocumentDetailNetWeight (object, skuProp)
+    @defineDocumentDetailNetWeightPrefix(object, skuProp, , );
+END
+META defineDocumentInterfaceDetailNetWeight (object, skuProp)
+    @defineDocumentInterfaceDetailNetWeightPrefix(object, skuProp, , );
 END
 
 // ------------------------------------------------- Вес брутто ----------------------------------- //
 
-META defineDocumentDetailGrossWeightCustomPrefix (detail, prefix, caption)
-    prefix###grossWeight###detail 'Вес брутто'###caption (detail) = quantity###detail(detail) * grossWeightSku(sku###detail(detail)) PERSISTENT;
+META defineDocumentDetailGrossWeightCustomPrefix (detail, skuProp, prefix, caption)
+    prefix###grossWeight###detail 'Вес брутто, кг'###caption (detail) = quantity###detail(detail) * grossWeightSku(skuProp###detail(detail)) PERSISTENT;
+    prefix###grossWeightTon###detail 'Вес брутто, т'###caption (detail) = round6(prefix###grossWeight###detail(detail) / 1000);
 END
-META defineDocumentInterfaceDetailGrossWeightCustomPrefix (detail, prefix, caption)
-    @defineDocumentDetailGrossWeightCustomPrefix(detail, prefix, caption);
-    @defineDocumentDetailGrossWeightCustomPrefix (user###detail, prefix, caption);
+META defineDocumentInterfaceDetailGrossWeightCustomPrefix (detail, skuProp, prefix, caption)
+    @defineDocumentDetailGrossWeightCustomPrefix(detail, skuProp, prefix, caption);
+    @defineDocumentDetailGrossWeightCustomPrefix (user###detail, skuProp, prefix, caption);
     prefix###grossWeight###detail (detail) += prefix###grossWeight###user###detail(detail);
 END
 
-META defineDocumentDetailGrossWeightCustom (detail)
-    @defineDocumentDetailGrossWeightCustomPrefix(detail, , );
+META defineDocumentDetailGrossWeightCustom (detail, skuProp)
+    @defineDocumentDetailGrossWeightCustomPrefix(detail, skuProp, , );
 END
-META defineDocumentInterfaceDetailGrossWeightCustom (detail)
-    @defineDocumentInterfaceDetailGrossWeightCustomPrefix(detail, , );
-END
-
-META defineDocumentDetailGrossWeightPrefix (object, prefix, caption)
-    @defineDocumentDetailGrossWeightCustomPrefix(object##Detail, prefix, caption);
-END
-META defineDocumentInterfaceDetailGrossWeightPrefix (object, prefix, caption)
-    @defineDocumentInterfaceDetailGrossWeightCustomPrefix(object##Detail, prefix, caption);
+META defineDocumentInterfaceDetailGrossWeightCustom (detail, skuProp)
+    @defineDocumentInterfaceDetailGrossWeightCustomPrefix(detail, skuProp, , );
 END
 
-META defineDocumentDetailGrossWeight (object)
-    @defineDocumentDetailGrossWeightPrefix(object, , );
+META defineDocumentDetailGrossWeightPrefix (object, skuProp, prefix, caption)
+    @defineDocumentDetailGrossWeightCustomPrefix(object##Detail, skuProp, prefix, caption);
 END
-META defineDocumentInterfaceDetailGrossWeight (object)
-    @defineDocumentInterfaceDetailGrossWeightPrefix(object, , );
+META defineDocumentInterfaceDetailGrossWeightPrefix (object, skuProp, prefix, caption)
+    @defineDocumentInterfaceDetailGrossWeightCustomPrefix(object##Detail, skuProp, prefix, caption);
+END
+
+META defineDocumentDetailGrossWeight (object, skuProp)
+    @defineDocumentDetailGrossWeightPrefix(object, skuProp, , );
+END
+META defineDocumentInterfaceDetailGrossWeight (object, skuProp)
+    @defineDocumentInterfaceDetailGrossWeightPrefix(object, skuProp, , );
+END
+
+// ------------------------------------------------- Кол-во в грузовом месте ----------------------------------- //
+
+META defineDocumentDetailQuantityPackCustomPrefix (detail, skuProp, prefix, caption)
+    prefix###quantityPack###detail 'Кол-во грузовых мест'###caption (detail) = round0(quantity###detail(detail) / quantityPackSku(skuProp###detail(detail))) PERSISTENT;
+END
+META defineDocumentInterfaceDetailQuantityPackCustomPrefix (detail, skuProp, prefix, caption)
+    @defineDocumentDetailQuantityPackCustomPrefix(detail, skuProp, prefix, caption);
+    @defineDocumentDetailQuantityPackCustomPrefix (user###detail, skuProp, prefix, caption);
+    prefix###quantityPack###detail (detail) += prefix###quantityPack###user###detail(detail);
+END
+
+META defineDocumentDetailQuantityPackCustom (detail, skuProp)
+    @defineDocumentDetailQuantityPackCustomPrefix(detail, skuProp, , );
+END
+META defineDocumentInterfaceDetailQuantityPackCustom (detail, skuProp)
+    @defineDocumentInterfaceDetailQuantityPackCustomPrefix(detail, skuProp, , );
+END
+
+META defineDocumentDetailQuantityPackPrefix (object, skuProp, prefix, caption)
+    @defineDocumentDetailQuantityPackCustomPrefix(object##Detail, skuProp, prefix, caption);
+END
+META defineDocumentInterfaceDetailQuantityPackPrefix (object, skuProp, prefix, caption)
+    @defineDocumentInterfaceDetailQuantityPackCustomPrefix(object##Detail, skuProp, prefix, caption);
+END
+
+META defineDocumentDetailQuantityPack (object, skuProp)
+    @defineDocumentDetailQuantityPackPrefix(object, skuProp, , );
+END
+META defineDocumentInterfaceDetailQuantityPack (object, skuProp)
+    @defineDocumentInterfaceDetailQuantityPackPrefix(object, skuProp, , );
 END
 
 //--------------------------------------------------Партия для Detail--------------------------------------//

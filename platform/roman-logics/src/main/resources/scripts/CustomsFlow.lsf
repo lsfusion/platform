@@ -393,7 +393,7 @@ quantityConsignmentDetail (consignmentDetail) += quantityCStoWHDetail (consignme
 priceConsignmentDetail (consignmentDetail) += priceCStoWHDetail (consignmentDetail);
 sumInvoiceConsignmentDetail (consignmentDetail) += printSumCStoWHDetail (consignmentDetail);
 sumConsignmentDetail (consignmentDetail) += printSumCStoWHDetail (consignmentDetail);
-grossWeightConsignmentDetail (consignmentDetail) += sumGrossWeightCStoWHDetail (consignmentDetail);
+grossWeightTonConsignmentDetail (consignmentDetail) += sumGrossWeightCStoWHDetail (consignmentDetail);
 
 currencyConsignment(consignment) += declarationCurrencyCStoWH(consignment);
 isCustomsFlowConsignment (consignment) += consignment IS CStoWH;

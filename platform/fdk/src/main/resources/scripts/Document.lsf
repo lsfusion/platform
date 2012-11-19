@@ -685,18 +685,6 @@ META defineDocumentInterface (object)
     @defineDocumentDetailActions(user###object);
 END
 
-// ----------------------------- количество упаковок и вес товаров ----------------------- //
-META defineDocumentDetailPackWeightSku (object, skuProp)
-    packQuantity###object##Detail 'Количество грузовых мест' (idetail) = round0(quantity###object##Detail(idetail)/
-        UNION OVERRIDE 1 IF idetail IS object##Detail, quantityPack###skuProp(skuProp###object##Detail(idetail)));
-
-    grossWeight###object##Detail 'Масса груза, т.' (idetail) = round6(
-        (netWeight###skuProp(skuProp###object##Detail(idetail))*quantity###object##Detail(idetail))/1000);
-END
-META defineDocumentDetailPackWeightSku (object)
-    @defineDocumentDetailPackWeightSku (object, sku);
-END
-
 // ------------------------- Основной - агрегированный документы ---------------------------------- //
 
 META defineDocumentAggregationHeader(primObject, aggrObject, aggrProperty)

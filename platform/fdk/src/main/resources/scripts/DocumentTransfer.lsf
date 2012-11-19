@@ -19,7 +19,8 @@ META defineDocumentTransferOut(object, caption, skuProp, stockProp)
 
     @defineDocumentDetailQuantity(object##Out);
 
-    @defineDocumentDetailPackWeightSku(object##Out);
+    @defineDocumentDetailGrossWeight(object##Out, skuProp);
+    @defineDocumentDetailQuantityPack(object##Out, skuProp);
 
     @defineDocumentDetailSkuBalance(object##Out, skuProp, stockProp);
 

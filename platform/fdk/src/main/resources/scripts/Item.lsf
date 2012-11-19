@@ -353,12 +353,17 @@ EXTEND DESIGN item { itemPrimaryColumn1 { ADD i.itemBaseGroup; } }
 GROUP itemSizeGroup 'Габариты товара' : publicGroup;
 
 // Вес нетто
-@defineDoubleItemAttribute(netWeight, NUMERIC[9,3], 'Вес нетто', itemSizeGroup);
+@defineDoubleItemAttribute(netWeight, NUMERIC[9,3], 'Вес нетто, кг', itemSizeGroup);
 netWeightSku(sku) += netWeightItem(sku);
 
 // Вес брутто
-@defineDoubleItemAttribute(grossWeight, NUMERIC[9,3], 'Вес брутто', itemSizeGroup);
+@defineDoubleItemAttribute(grossWeight, NUMERIC[9,3], 'Вес брутто, кг', itemSizeGroup);
 grossWeightSku(sku) += grossWeightItem(sku);
+
+// Кол-во в грузовом месте
+// todo : здесь скорее всего надо будет рефакторить на более сложную логику
+@defineDoubleItemAttribute(quantityPack, NUMERIC[9,3], 'Количество в грузовом месте', itemSizeGroup);
+quantityPackSku(sku) += quantityPackItem(sku);
 
 EXTEND DESIGN item { itemPrimaryColumn2 { ADD i.itemSizeGroup; } }
 

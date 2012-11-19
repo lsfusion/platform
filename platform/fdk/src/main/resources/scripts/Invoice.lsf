@@ -43,6 +43,9 @@ META defineInvoice(sign, stockProp)
 
     @defineDocumentInterfaceDetailQuantity(invoice);
 
+    @defineDocumentDetailGrossWeight(invoice, sku);
+    @defineDocumentDetailQuantityPack(invoice, sku);
+
     @defineDocumentInterfaceDetailPrice(invoice);
     @deriveDocumentDetailPricePriceListTypeCustom(userInvoiceDetail, stockProp);
 
@@ -444,9 +447,8 @@ END
 
 // Товарные накладные
 META defineInvoiceConsignment(contactA, contactB, stockProp)
-    @defineDocumentDetailPackWeightSku(invoice);
     @defineConsignmentInterface(invoice, stockProp);
-    @implementConsignmentDetailSku(invoice);
+    @implementConsignmentDetail(invoice);
 
     senderConsignment (consignment) += contactA###invoice(consignment);
     recipientConsignment (consignment) += contactB###invoice(consignment);

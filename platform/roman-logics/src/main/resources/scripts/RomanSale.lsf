@@ -92,7 +92,8 @@ skipSkuLedger (ledger) += skipSkuLedgerSaleOutDetail(ledger);
 @defineConstraintSkuLedgerCosted(saleOut, 'Не хватает остатков по партиям для продажи товаров');
 
 // Товарные накладные
-@defineDocumentDetailPackWeightSku(saleOutBatch);
+@defineDocumentDetailGrossWeight(saleOutBatch, sku);
+@defineDocumentDetailQuantityPack(saleOutBatch, sku);
 
 @defineConsignment(saleOut);
 @implementConsignmentHeader(saleOut, stock);
@@ -131,8 +132,8 @@ sumVATConsignmentDetail (consignmentDetail) +=  sumVATSaleOutBatchDetailS(consig
 sumInvoiceConsignmentDetail (consignmentDetail) += IF isCommissionSaleOutBatchDetail(consignmentDetail) THEN supplierSumSaleOutBatchDetailC(consignmentDetail)
     ELSE supplierSumSaleOutBatchDetailS(consignmentDetail) (+) sumVATSaleOutBatchDetailS(consignmentDetail);
 
-grossWeightConsignmentDetail (consignmentDetail) += grossWeightSaleOutBatchDetail (consignmentDetail);
-packQuantityConsignmentDetail (consignmentDetail) += packQuantitySaleOutBatchDetail (consignmentDetail);
+grossWeightTonConsignmentDetail (consignmentDetail) += grossWeightSaleOutBatchDetail (consignmentDetail);
+quantityPackConsignmentDetail (consignmentDetail) += packQuantitySaleOutBatchDetail (consignmentDetail);
 shortNameUOMConsignmentDetail (consignmentDetail) += shortNameUOMSaleOutBatchDetail (consignmentDetail);
 
 
