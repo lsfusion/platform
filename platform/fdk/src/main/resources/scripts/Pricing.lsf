@@ -281,7 +281,7 @@ CLASS userPricingPosted 'Закрытый акт расценки (польз.)'
 
 @defineDocumentInterfaceDetailPricePrefix(pricing, retail, ' выходная');
 @defineDocumentInterfaceDetailVATPrefix(pricing, retail, countryDepartmentStore, );
-@deriveDocumentDetailVATSkuPrefix(userPricing, retail, departmentStore);
+@deriveDocumentDetailVAT(userPricing, retail);
 @deriveDocumentDetailValueVATPrefix(userPricing, retail);
 
 @defineDocumentInterfaceDetailMarkupPrefix (pricing, retail, );
@@ -546,7 +546,7 @@ META definePricingAggregation(concrete, sign, caption, stockProp)
 
     @defineDocumentInterfaceHeaderSumPrefix (invoice, retail, ' розничная');
 
-    @deriveDocumentDetailVATSkuPrefix(userInvoice, retail, stockProp);
+    @deriveDocumentDetailVAT(userInvoice, retail, date, sku, stockProp);
 
     @defineDocumentInterfaceHeaderCreatePricing (invoice, stockProp);
     createPricingInvoiceDetail 'Создать акт расценки' (invoiceDetail) = createPricingInvoice(invoiceInvoiceDetail(invoiceDetail));

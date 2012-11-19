@@ -831,3 +831,13 @@ META defineDocumentInterfaceDataPriceListType (object)
     @defineDocumentInterfaceDataPriceListType(object, object##Detail);
 END
 
+META deriveDocumentDetailPricePriceListType (concrete, priceListTypeProp, prefixP, skuProp, stockProp)
+    prefixP###Price###concrete##Detail (detail)  <- pricePriceListTypeSkuStockDateTime(
+                    systemLedgerPriceListType.##priceListTypeProp,
+                    skuProp###concrete##Detail(detail), stockProp###concrete##Detail(detail), dateTime###concrete##Detail(detail))
+                    WHEN CHANGED(skuProp###concrete##Detail(detail)) OR CHANGED(stockProp###concrete##Detail(detail)) OR CHANGED(dateTime###concrete##Detail(detail));
+END
+META deriveDocumentDetailPricePriceListType (concrete, priceListTypeProp, prefixP)
+    @deriveDocumentDetailPricePriceListType (concrete, priceListTypeProp, prefixP, sku, departmentStore);
+END
+

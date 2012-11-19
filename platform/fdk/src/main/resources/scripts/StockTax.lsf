@@ -8,15 +8,21 @@ NAMESPACE Stock;
 
 VATSkuCountryDate = ABSTRACT range (sku, country, DATE);
 
-META deriveDocumentDetailVATSkuCustomPrefix(detail, prefix, stockProp)
-    prefix###VAT###detail (detail)  <- VATSkuCountryDate (sku###detail(detail), countryStock(stockProp###detail(detail)), date###detail(detail))
-                    WHEN CHANGED(sku###detail(detail)) OR CHANGED (stockProp###detail(detail)) OR CHANGED (date###detail(detail));
-END
-META deriveDocumentDetailVATSkuPrefix(object, prefix, stockProp)
-    @deriveDocumentDetailVATSkuCustomPrefix(object##Detail, prefix, stockProp);
-END
+//META deriveDocumentDetailVATSkuCustomPrefix(detail, prefix, stockProp)
+//    prefix###VAT###detail (detail)  <- VATSkuCountryDate (sku###detail(detail), countryStock(stockProp###detail(detail)), date###detail(detail))
+//                    WHEN CHANGED(sku###detail(detail)) OR CHANGED (stockProp###detail(detail)) OR CHANGED (date###detail(detail));
+//END
+//META deriveDocumentDetailVATSkuPrefix(object, prefix, stockProp)
+//    @deriveDocumentDetailVATSkuCustomPrefix(object##Detail, prefix, stockProp);
+//END
 
-//CONSTRAINT taxRange(VATSkuCountryDate(sku, country, date)) != tax.taxVAT OR
-//           countryRange(VATSkuCountryDate(sku, country, date)) != country AS country
-//           CHECKED BY VATSkuCountryDate
-//           MESSAGE 'ошибка: Шкала и страна строки должна соответствовать шкале и строке НДС';
+META deriveDocumentDetailVAT (concrete, prefixP, dateProp,  skuProp, stockProp)
+    prefixP###VAT###concrete##Detail(detail) <- VATSkuCountryDate (skuProp###concrete##Detail(detail), countryStock(stockProp###concrete##Detail(detail)), dateProp###concrete##Detail(detail))
+        WHEN CHANGED(skuProp###concrete##Detail(detail)) OR CHANGED (stockProp###concrete##Detail(detail)) OR CHANGED (dateProp###concrete##Detail(detail));
+END
+META deriveDocumentDetailVAT (concrete, prefixP, dateProp)
+    @deriveDocumentDetailVAT (concrete, prefixP, dateProp,  sku, departmentStore);
+END
+META deriveDocumentDetailVAT (concrete, prefixP)
+    @deriveDocumentDetailVAT (concrete, prefixP, date);
+END
