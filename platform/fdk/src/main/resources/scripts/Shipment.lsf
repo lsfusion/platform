@@ -2,6 +2,39 @@ MODULE Shipment;
 
 REQUIRE Invoice, AccountDocument;
 
+CLASS ABSTRACT shipment 'Поставка';
+CLASS ABSTRACT shipmentDetail 'Строка поставки';
+
+@defineDocumentAbstract(shipment);
+@defineDocumentAbstractNumber(shipment);
+
+@defineDocumentAbstractDataStock(shipment, stock, 'Склад поставщика', supplier);
+@defineDocumentAbstractDataStock(shipment, stock, 'Склад покупателя', customer);
+
+@defineDocumentAbstractDataStock(shipment, stock, 'Склад (с)', from);
+@defineDocumentAbstractDataStock(shipment, stock, 'Склад (на)', to);
+
+@defineDocumentAbstractPosted(shipment);
+
+@defineDocumentAbstractDetailSku(shipment, sku);
+
+@defineDocumentAbstractDetailQuantity(shipment);
+@defineDocumentDetailGrossWeight(shipment);
+
+@defineDocumentHeaderGrossWeight(shipment);
+
+FORM test 'test'
+    OBJECTS o = shipment
+    PROPERTIES(o) objectClassName, numberShipment, seriesShipment, dateShipment, timeShipment,
+                  nameSupplierStockShipment, nameCustomerStockShipment, nameFromStockShipment, nameToStockShipment,
+                  grossWeightShipmentDetailShipment
+
+    OBJECTS d = shipmentDetail
+    PROPERTIES(d) indexShipmentDetail, idBarcodeSkuShipmentDetail, nameSkuShipmentDetail, shortNameUOMSkuShipmentDetail, quantityShipmentDetail, grossWeightShipmentDetail
+    FILTERS shipmentShipmentDetail(d) == o
+;
+
+NAVIGATOR { baseElement { ADD test; } }
 
 // ----------------------------------- Создавать поставку по умолчанию для склада ------------------------------------------ //
 
@@ -23,28 +56,39 @@ META defineDocumentInterfaceHeaderCreateShipment (object, stockClass)
     @defineDocumentHeaderCreateShipment (user###object, stockClass);
     createShipment###object (object) += createShipment###user###object(object);
 END
+
 //----------------------------------------------- Поставка ---------------------------------------------------//
 
 META defineShipment(sign, stockProp)
 
-    CLASS ABSTRACT shipment 'Поставка'###sign;
-    CLASS ABSTRACT shipmentDetail 'Строка поставки'###sign;
+    CLASS ABSTRACT shipment 'Поставка'###sign : Shipment.shipment;
+    CLASS ABSTRACT shipmentDetail 'Строка поставки'###sign : Shipment.shipmentDetail;
 
     CLASS userShipment 'Поставка (польз.)'###sign : shipment, historyObject, numeratedDocument;
     CLASS userShipmentDetail 'Строка поставки (польз.)'###sign : shipmentDetail;
     CLASS userShipmentPosted 'Закрытая поставка (польз.)'###sign : userShipment, postedObject;
 
     @defineDocumentInterface(shipment);
+    Shipment.shipmentShipmentDetail (detail) += shipmentShipmentDetail(detail);
+    Shipment.dateShipment (shipment) += dateShipment(shipment);
+    Shipment.timeShipment (shipment) += timeShipment(shipment);
 
     @defineDocumentInterfaceNumber(shipment);
+    Shipment.numberShipment (shipment) += numberShipment(shipment);
+    Shipment.seriesShipment (shipment) += seriesShipment(shipment);
 
     @defineDocumentInterfaceLegalEntity (shipment, supplier, 'Поставщик');
     @defineDocumentInterfaceLegalEntity (shipment, customer, 'Покупатель');
 
     @defineDocumentInterfaceDataStock(shipment, stock, 'Склад поставщика', supplier);
     @defineDocumentInterfaceDataStock(shipment, stock, 'Склад покупателя', customer);
+    Shipment.supplierStockShipment(shipment) += supplierStockShipment(shipment);
+    Shipment.customerStockShipment(shipment) += customerStockShipment(shipment);
+    Shipment.dataSupplierStockShipmentDetail(detail) += dataSupplierStockShipmentDetail(detail);
+    Shipment.dataCustomerStockShipmentDetail(detail) += dataCustomerStockShipmentDetail(detail);
 
     @defineDocumentInterfacePosted(shipment);
+    Shipment.isPostedShipment (shipment) += isPostedShipment(shipment);
 
     @defineDocumentInterfaceDescription(shipment, 'Поставка'###sign);
 
@@ -52,8 +96,10 @@ META defineShipment(sign, stockProp)
     @deriveDocumentCurrency(userShipment, stockProp);
 
     @defineDocumentInterfaceDetailSku(shipment, sku);
+    Shipment.skuShipmentDetail(detail) += skuShipmentDetail(detail);
 
     @defineDocumentInterfaceDetailQuantity(shipment);
+    Shipment.quantityShipmentDetail(detail) += quantityShipmentDetail(detail);
 
     @defineDocumentInterfaceDetailPrice(shipment);
 
@@ -628,4 +674,11 @@ META defineShipmentBatch(dumb)
     @defineDocumentAggregationDetailBatch (invoice, invoiceShipment);
     batchShipmentDetail (shipmentDetail) += batchInvoiceShipmentDetail(shipmentDetail);
 
+END
+
+META defineShipmentStockDestination(fromStock, toStock)
+    Shipment.fromStockShipment(shipment) += fromStock##Shipment(shipment);
+    Shipment.toStockShipment(shipment) += toStock##Shipment(shipment);
+    Shipment.dataFromStockShipmentDetail(detail) += data###fromStock##ShipmentDetail(detail);
+    Shipment.dataToStockShipmentDetail(detail) += data###toStock##ShipmentDetail(detail);
 END

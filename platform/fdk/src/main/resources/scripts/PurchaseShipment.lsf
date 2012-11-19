@@ -9,6 +9,8 @@ NAMESPACE Purchase;
 
 @defineShipment(' (закупка)', customerStock);
 
+@defineShipmentStockDestination(supplierStock, customerStock);
+
 // Цены учетные
 priceUserShipmentDetail (detail) <- priceInvoiceDetail(invoiceDetailUserShipmentDetail(detail))
     WHEN CHANGED(priceInvoiceDetail(invoiceDetailUserShipmentDetail(detail)));

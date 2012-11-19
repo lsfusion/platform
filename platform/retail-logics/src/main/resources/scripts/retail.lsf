@@ -6726,6 +6726,10 @@ NAVIGATOR {
         }
         ADD stockCost;
         ADD stockBalance;
+        NEW accountDocuments 'Бухгалтерские документы' {
+            ADD sumAccountDocumentLedger;
+            ADD sumMotionContainerDepartmentPrint;
+        }
         NEW warehouseCatalog 'Справочники' {
             ADD warehouses;
         }
@@ -6735,6 +6739,11 @@ NAVIGATOR {
         ADD saleSaleNavigator;
         ADD saleReturnNavigator;
         ADD salesNavigator;
+        NEW statistics 'Статистика' {
+            ADD torgSales;
+            ADD statisticalReport;
+            ADD statisticGroups;
+        }
     }
 
     NEW retail 'Розничная торговля' TO formsToolbar {
@@ -6770,15 +6779,8 @@ NAVIGATOR {
             }
         }
         ADD retailCRMNavigator;
-        NEW statistics 'Статистика' {
-            ADD torgSales;
-            ADD statisticalReport;
-            ADD statisticGroups;
-        }
-        NEW accountDocuments 'Бухгалтерские документы' {
-            ADD sumAccountDocumentLedger;
+        NEW retailAccountDocuments 'Бухгалтерские документы' {
             ADD priceChangeDocuments;
-            ADD sumMotionContainerDepartmentPrint;
         }
         NEW retailCatalog 'Справочники' {
             ADD stores;

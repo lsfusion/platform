@@ -312,11 +312,12 @@ END
 
 // ---------------------------- Конкретные свойства -------------------------------- //
 
-// Свойства товара
 GROUP itemBaseGroup 'Базовые свойства' : baseGroup;
 
 // Группа
 @implementObjectItemAttribute(itemGroup, 'Группа товаров');
+
+// ------ Базовые свойства товара ------ //
 
 // Название
 @defineStringItemAttribute(caption, STRING[100], 'Название', itemBaseGroup);
@@ -346,6 +347,20 @@ TABLE manufacturer(manufacturer);
 @defineObjectItemAttribute(manufacturer, name, 'Производитель', itemBaseGroup);
 
 EXTEND DESIGN item { itemPrimaryColumn1 { ADD i.itemBaseGroup; } }
+
+// ------ Габариты товара ------ //
+
+GROUP itemSizeGroup 'Габариты товара' : publicGroup;
+
+// Вес нетто
+@defineDoubleItemAttribute(netWeight, NUMERIC[9,3], 'Вес нетто', itemSizeGroup);
+netWeightSku(sku) += netWeightItem(sku);
+
+// Вес брутто
+@defineDoubleItemAttribute(grossWeight, NUMERIC[9,3], 'Вес брутто', itemSizeGroup);
+grossWeightSku(sku) += grossWeightItem(sku);
+
+EXTEND DESIGN item { itemPrimaryColumn2 { ADD i.itemSizeGroup; } }
 
 // ---------------------------------------------- Формирование наименований -------------------------------------- //
 

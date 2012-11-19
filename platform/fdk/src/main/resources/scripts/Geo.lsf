@@ -1,0 +1,14 @@
+MODULE Geo;
+
+REQUIRE Country;
+
+CLASS ABSTRACT POI 'POI';
+TABLE POI(POI);
+
+namePOI 'Название'= ABSTRACT STRING[200] (POI) PERSISTENT;
+
+countryPOI = ABSTRACT country (POI) PERSISTENT;
+nameCountryPOI 'Страна' (poi) = name(countryPOI(poi));
+
+addressPOI 'Адрес' = ABSTRACT STRING[100] (POI) PERSISTENT;
+

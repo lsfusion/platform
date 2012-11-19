@@ -11,6 +11,8 @@ NAMESPACE SaleReturn;
 @defineShipment(' (продажа-возврат)', supplierStock);
 @defineShipmentBatch();
 
+@defineShipmentStockDestination(customerStock, supplierStock);
+
 // Берем учетную цену
 @deriveDocumentDetailPriceBatchStockPrefix(userInvoice, shipment, supplierStock);
 @deriveDocumentDetailPriceBatchStock(userShipment, supplierStock);

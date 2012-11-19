@@ -1,6 +1,6 @@
 MODULE Stock;
 
-REQUIRE System, Utils, Hierarchy, LegalEntity, I18n;
+REQUIRE System, Utils, Hierarchy, LegalEntity, I18n, Geo;
 
 // ----------------------------------- Склады ------------------------------------------ //
 
@@ -16,13 +16,19 @@ nameStockGroupStock 'Группа' (stock) = name(stockGroupStock (stock));
 legalEntityStock (stock) = ABSTRACT legalEntity (stock) PERSISTENT;
 nameLegalEntityStock 'Компания' (stock) = name(legalEntityStock(stock));
 
-countryStock (stock) = countryLegalEntity(legalEntityStock(stock)) PERSISTENT;
-nameCountryStock 'Страна' (stock) = name(countryStock(stock));
-
 currencyStock (stock) = currencyLegalEntity(legalEntityStock(stock)) PERSISTENT;
 languageStock (stock) = languageLegalEntity(legalEntityStock(stock)) PERSISTENT;
 
+EXTEND CLASS stock : POI;
+
+namePOI(poi) += name(poi) IF poi IS stock;
+
+countryStock (stock) = countryLegalEntity(legalEntityStock(stock)) PERSISTENT;
+nameCountryStock 'Страна' (stock) = name(countryStock(stock));
+countryPOI (poi) += countryStock(poi);
+
 addressStock 'Адрес' (stock) = ABSTRACT STRING[100] (stock) PERSISTENT;
+addressPOI (poi) += addressStock(poi);
 
 TABLE stockGroupStock (stockGroup, stock);
 isParentStockGroupStock (stockGroup, stock) = isParentStockGroupStockGroup(stockGroupStock(stock), stockGroup) PERSISTENT;
@@ -958,6 +964,69 @@ META defineDocumentHeaderItemSum (object, prefixA, prefixB)
     @defineDocumentHeaderItemSumCustom(object, object##Detail, prefixA, prefixB);
 END
 
+// ------------------------------------------------- Вес нетто ----------------------------------- //
+
+META defineDocumentDetailNetWeightCustomPrefix (detail, prefix, caption)
+    prefix###netWeight###detail 'Вес нетто'###caption (detail) = quantity###detail(detail) * netWeightSku(sku###detail(detail)) PERSISTENT;
+END
+META defineDocumentInterfaceDetailNetWeightCustomPrefix (detail, prefix, caption)
+    @defineDocumentDetailNetWeightCustomPrefix(detail, prefix, caption);
+    @defineDocumentDetailNetWeightCustomPrefix (user###detail, prefix, caption);
+    prefix###netWeight###detail (detail) += prefix###netWeight###user###detail(detail);
+END
+
+META defineDocumentDetailNetWeightCustom (detail)
+    @defineDocumentDetailNetWeightCustomPrefix(detail, , );
+END
+META defineDocumentInterfaceDetailNetWeightCustom (detail)
+    @defineDocumentInterfaceDetailNetWeightCustomPrefix(detail, , );
+END
+
+META defineDocumentDetailNetWeightPrefix (object, prefix, caption)
+    @defineDocumentDetailNetWeightCustomPrefix(object##Detail, prefix, caption);
+END
+META defineDocumentInterfaceDetailNetWeightPrefix (object, prefix, caption)
+    @defineDocumentInterfaceDetailNetWeightCustomPrefix(object##Detail, prefix, caption);
+END
+
+META defineDocumentDetailNetWeight (object)
+    @defineDocumentDetailNetWeightPrefix(object, , );
+END
+META defineDocumentInterfaceDetailNetWeight (object)
+    @defineDocumentInterfaceDetailNetWeightPrefix(object, , );
+END
+
+// ------------------------------------------------- Вес брутто ----------------------------------- //
+
+META defineDocumentDetailGrossWeightCustomPrefix (detail, prefix, caption)
+    prefix###grossWeight###detail 'Вес брутто'###caption (detail) = quantity###detail(detail) * grossWeightSku(sku###detail(detail)) PERSISTENT;
+END
+META defineDocumentInterfaceDetailGrossWeightCustomPrefix (detail, prefix, caption)
+    @defineDocumentDetailGrossWeightCustomPrefix(detail, prefix, caption);
+    @defineDocumentDetailGrossWeightCustomPrefix (user###detail, prefix, caption);
+    prefix###grossWeight###detail (detail) += prefix###grossWeight###user###detail(detail);
+END
+
+META defineDocumentDetailGrossWeightCustom (detail)
+    @defineDocumentDetailGrossWeightCustomPrefix(detail, , );
+END
+META defineDocumentInterfaceDetailGrossWeightCustom (detail)
+    @defineDocumentInterfaceDetailGrossWeightCustomPrefix(detail, , );
+END
+
+META defineDocumentDetailGrossWeightPrefix (object, prefix, caption)
+    @defineDocumentDetailGrossWeightCustomPrefix(object##Detail, prefix, caption);
+END
+META defineDocumentInterfaceDetailGrossWeightPrefix (object, prefix, caption)
+    @defineDocumentInterfaceDetailGrossWeightCustomPrefix(object##Detail, prefix, caption);
+END
+
+META defineDocumentDetailGrossWeight (object)
+    @defineDocumentDetailGrossWeightPrefix(object, , );
+END
+META defineDocumentInterfaceDetailGrossWeight (object)
+    @defineDocumentInterfaceDetailGrossWeightPrefix(object, , );
+END
 
 //--------------------------------------------------Партия для Detail--------------------------------------//
 META defineDocumentDetailBatchCustom(detail, batchProp)
@@ -1020,6 +1089,72 @@ END
 META defineDocumentInterfaceHeaderQuantity (object)
     @defineDocumentHeaderQuantity(object);
     @defineDocumentHeaderQuantity(user###object);
+END
+
+// ------------------------------------------------ Вес нетто в документе ------------------------------------ //
+META defineDocumentHeaderNetWeightCustomPrefix (object, detail, prefix, caption)
+    prefix###netWeight###detail###object 'Вес нетто (всего)'###caption (object) = GROUP SUM prefix###netWeight###detail(idetail) BY object###detail(idetail) IN documentSumGroup PERSISTENT;
+END
+META defineDocumentInterfaceHeaderNetWeightCustomPrefix (object, detail, prefix, caption)
+    @defineDocumentHeaderNetWeightCustomPrefix (object, detail, prefix, caption);
+    @defineDocumentHeaderNetWeightCustomPrefix (user###object, user###detail, prefix, caption);
+END
+
+META defineDocumentHeaderNetWeightCustom (object, detail)
+    @defineDocumentHeaderNetWeightCustomPrefix(object, detail, , );
+END
+META defineDocumentInterfaceHeaderNetWeightCustom (object, detail)
+    @defineDocumentHeaderNetWeightCustom (object, detail)
+    @defineDocumentHeaderNetWeightCustom (user###object, user###detail)
+END
+
+META defineDocumentHeaderNetWeightPrefix (object, prefix, caption)
+    @defineDocumentHeaderNetWeightCustomPrefix(object, object##Detail, prefix, caption);
+END
+META defineDocumentInterfaceHeaderNetWeightPrefix (object, prefix, caption)
+    @defineDocumentHeaderNetWeightPrefix (object, prefix, caption)
+    @defineDocumentHeaderNetWeightPrefix (user###object, prefix, caption)
+END
+
+META defineDocumentHeaderNetWeight (object)
+    @defineDocumentHeaderNetWeightCustomPrefix(object, object##Detail, , );
+END
+META defineDocumentInterfaceHeaderNetWeight (object)
+    @defineDocumentHeaderNetWeight(object);
+    @defineDocumentHeaderNetWeight(user###object);
+END
+
+// ------------------------------------------------ Вес брутто в документе ------------------------------------ //
+META defineDocumentHeaderGrossWeightCustomPrefix (object, detail, prefix, caption)
+    prefix###grossWeight###detail###object 'Вес брутто (всего)'###caption (object) = GROUP SUM prefix###grossWeight###detail(idetail) BY object###detail(idetail) IN documentSumGroup PERSISTENT;
+END
+META defineDocumentInterfaceHeaderGrossWeightCustomPrefix (object, detail, prefix, caption)
+    @defineDocumentHeaderGrossWeightCustomPrefix (object, detail, prefix, caption);
+    @defineDocumentHeaderGrossWeightCustomPrefix (user###object, user###detail, prefix, caption);
+END
+
+META defineDocumentHeaderGrossWeightCustom (object, detail)
+    @defineDocumentHeaderGrossWeightCustomPrefix(object, detail, , );
+END
+META defineDocumentInterfaceHeaderGrossWeightCustom (object, detail)
+    @defineDocumentHeaderGrossWeightCustom (object, detail)
+    @defineDocumentHeaderGrossWeightCustom (user###object, user###detail)
+END
+
+META defineDocumentHeaderGrossWeightPrefix (object, prefix, caption)
+    @defineDocumentHeaderGrossWeightCustomPrefix(object, object##Detail, prefix, caption);
+END
+META defineDocumentInterfaceHeaderGrossWeightPrefix (object, prefix, caption)
+    @defineDocumentHeaderGrossWeightPrefix (object, prefix, caption)
+    @defineDocumentHeaderGrossWeightPrefix (user###object, prefix, caption)
+END
+
+META defineDocumentHeaderGrossWeight (object)
+    @defineDocumentHeaderGrossWeightCustomPrefix(object, object##Detail, , );
+END
+META defineDocumentInterfaceHeaderGrossWeight (object)
+    @defineDocumentHeaderGrossWeight(object);
+    @defineDocumentHeaderGrossWeight(user###object);
 END
 
 // ------------------------------------------------ Кол-во в документе для contact ------------------------------------ //

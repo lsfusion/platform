@@ -10,6 +10,8 @@ NAMESPACE Sale;
 @defineShipment(' (продажа)', supplierStock);
 @defineShipmentBatch();
 
+@defineShipmentStockDestination(supplierStock, customerStock);
+
 // Берем учетную цену
 @deriveDocumentDetailPriceBatchStockPrefix(userInvoice, shipment, supplierStock);
 @deriveDocumentDetailPriceBatchStock(userShipment, supplierStock);

@@ -40,12 +40,9 @@ META defineDocumentTables (object)
     TABLE object (object);
     TABLE object##Detail (object##Detail);
 END
-META defineDocumentAbstractTables (object)
-    @defineDocumentTables(user###object);
-END
 META defineDocumentInterfaceTables (object)
-    @defineDocumentAbstractTables(object);
     @defineDocumentTables(object);
+    @defineDocumentTables(user###object);
 END
 
 // ----- Relation ----- //
@@ -664,7 +661,7 @@ META defineDocument (object)
     @defineDocumentDetailActions(object);
 END
 META defineDocumentAbstract (object)
-    @defineDocumentAbstractTables(object);
+    @defineDocumentTables(object);
 
     @defineDocumentAbstractRelation(object);
     @defineDocumentDetailIndex(object);

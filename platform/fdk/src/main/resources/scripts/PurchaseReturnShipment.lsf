@@ -8,6 +8,8 @@ NAMESPACE PurchaseReturn;
 @defineShipment(' (закупка-возврат)', customerStock);
 @defineShipmentBatch();
 
+@defineShipmentStockDestination(customerStock, supplierStock);
+
 // Берем учетную цену
 @deriveDocumentDetailPriceBatchStock(userShipment, customerStock);
 shipmentPriceUserInvoiceDetail(detail) <- calcShipmentPriceUserInvoiceDetail(detail) (+) extraShipmentPriceUserInvoiceDetail(detail) WHEN

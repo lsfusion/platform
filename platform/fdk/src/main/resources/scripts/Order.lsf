@@ -14,29 +14,72 @@ REQUIRE System,
 
 PRIORITY Utils, Stock;
 
+CLASS ABSTRACT order 'Заказ';
+CLASS ABSTRACT orderDetail 'Строка заказа';
+
+@defineDocumentAbstract(order);
+@defineDocumentAbstractNumber(order);
+
+@defineDocumentAbstractDataStock(order, stock, 'Склад поставщика', supplier);
+@defineDocumentAbstractDataStock(order, stock, 'Склад покупателя', customer);
+
+@defineDocumentAbstractDataStock(order, stock, 'Склад (с)', from);
+@defineDocumentAbstractDataStock(order, stock, 'Склад (на)', to);
+
+@defineDocumentAbstractPosted(order);
+
+@defineDocumentAbstractDetailSku(order, sku);
+
+@defineDocumentAbstractDetailQuantity(order);
+@defineDocumentDetailGrossWeight(order);
+
+@defineDocumentHeaderGrossWeight(order);
+
+FORM test 'test'
+    OBJECTS o = order
+    PROPERTIES(o) objectClassName, numberOrder, seriesOrder, dateOrder, timeOrder,
+                  nameSupplierStockOrder, nameCustomerStockOrder, nameFromStockOrder, nameToStockOrder,
+                  grossWeightOrderDetailOrder
+
+    OBJECTS d = orderDetail
+    PROPERTIES(d) indexOrderDetail, idBarcodeSkuOrderDetail, nameSkuOrderDetail, shortNameUOMSkuOrderDetail, quantityOrderDetail, grossWeightOrderDetail
+    FILTERS orderOrderDetail(d) == o
+;
+
+NAVIGATOR { baseElement { ADD test; } }
 
 //----------------------------------------------- Заказ ---------------------------------------------------//
 
 META defineOrder(sign, stockProp)
 
-    CLASS ABSTRACT order 'Заказ'###sign;
-    CLASS ABSTRACT orderDetail 'Строка заказа'###sign : named;
+    CLASS ABSTRACT order 'Заказ'###sign : Order.order;
+    CLASS ABSTRACT orderDetail 'Строка заказа'###sign : Order.orderDetail, named;
 
     CLASS userOrder 'Заказ (польз.)'###sign : order, historyObject, numeratedObject;
     CLASS userOrderDetail 'Строка заказа (польз.)'###sign : orderDetail;
     CLASS userOrderPosted 'Проведенный заказ (польз.)'###sign : userOrder, postedObject;
 
     @defineDocumentInterface(order);
+    Order.orderOrderDetail (detail) += orderOrderDetail(detail);
+    Order.dateOrder (order) += dateOrder(order);
+    Order.timeOrder (order) += timeOrder(order);
 
     @defineDocumentInterfaceNumber(order);
+    Order.numberOrder (order) += numberOrder(order);
+    Order.seriesOrder (order) += seriesOrder(order);
 
     @defineDocumentInterfaceLegalEntity (order, supplier, 'Поставщик');
     @defineDocumentInterfaceLegalEntity (order, customer, 'Покупатель');
 
     @defineDocumentInterfaceDataStock(order, stock, 'Склад поставщика', supplier);
     @defineDocumentInterfaceDataStock(order, stock, 'Склад покупателя', customer);
+    Order.supplierStockOrder(order) += supplierStockOrder(order);
+    Order.customerStockOrder(order) += customerStockOrder(order);
+    Order.dataSupplierStockOrderDetail(detail) += dataSupplierStockOrderDetail(detail);
+    Order.dataCustomerStockOrderDetail(detail) += dataCustomerStockOrderDetail(detail);
 
     @defineDocumentInterfacePosted(order);
+    Order.isPostedOrder (order) += isPostedOrder(order);
 
     @defineDocumentInterfaceTimeShipment(order);
 
@@ -50,8 +93,10 @@ META defineOrder(sign, stockProp)
     @defineDocumentInterfaceDataPriceListType(order);
 
     @defineDocumentInterfaceDetailSku(order, sku);
+    Order.skuOrderDetail(detail) += skuOrderDetail(detail);
 
     @defineDocumentInterfaceDetailQuantity(order);
+    Order.quantityOrderDetail(detail) += quantityOrderDetail(detail);
 
     @defineDocumentInterfaceDetailPrice(order);
     @deriveDocumentDetailPricePriceListType(userOrder, stockProp);
@@ -239,3 +284,9 @@ META defineOrder(sign, stockProp)
     }
 END
 
+META defineOrderStockDestination(fromStock, toStock)
+    Order.fromStockOrder(order) += fromStock##Order(order);
+    Order.toStockOrder(order) += toStock##Order(order);
+    Order.dataFromStockOrderDetail(detail) += data###fromStock##OrderDetail(detail);
+    Order.dataToStockOrderDetail(detail) += data###toStock##OrderDetail(detail);
+END

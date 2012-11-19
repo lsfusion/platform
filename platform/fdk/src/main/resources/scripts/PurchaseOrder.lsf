@@ -6,6 +6,8 @@ NAMESPACE Purchase;
 
 @defineOrder(' (закупка)', customerStock);
 
+@defineOrderStockDestination(supplierStock, customerStock);
+
 @defineNumeratedObjectDefaultPrefix(userOrder, 'Нумератор для заказов (закупка)', 'ЗК', purchase);
 
 CONSTRAINT supplierUserOrder(userOrder) AND NOT isSupplierLegalEntity(supplierUserOrder(userOrder))
