@@ -35,19 +35,6 @@ CLASS ABSTRACT orderDetail 'Строка заказа';
 
 @defineDocumentHeaderGrossWeight(order);
 
-FORM test 'test'
-    OBJECTS o = order
-    PROPERTIES(o) objectClassName, numberOrder, seriesOrder, dateOrder, timeOrder,
-                  nameSupplierStockOrder, nameCustomerStockOrder, nameFromStockOrder, nameToStockOrder,
-                  grossWeightOrderDetailOrder
-
-    OBJECTS d = orderDetail
-    PROPERTIES(d) indexOrderDetail, idBarcodeSkuOrderDetail, nameSkuOrderDetail, shortNameUOMSkuOrderDetail, quantityOrderDetail, grossWeightOrderDetail
-    FILTERS orderOrderDetail(d) == o
-;
-
-NAVIGATOR { baseElement { ADD test; } }
-
 //----------------------------------------------- Заказ ---------------------------------------------------//
 
 META defineOrder(sign, stockProp)

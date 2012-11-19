@@ -23,19 +23,6 @@ CLASS ABSTRACT shipmentDetail 'Строка поставки';
 
 @defineDocumentHeaderGrossWeight(shipment);
 
-FORM test 'test'
-    OBJECTS o = shipment
-    PROPERTIES(o) objectClassName, numberShipment, seriesShipment, dateShipment, timeShipment,
-                  nameSupplierStockShipment, nameCustomerStockShipment, nameFromStockShipment, nameToStockShipment,
-                  grossWeightShipmentDetailShipment
-
-    OBJECTS d = shipmentDetail
-    PROPERTIES(d) indexShipmentDetail, idBarcodeSkuShipmentDetail, nameSkuShipmentDetail, shortNameUOMSkuShipmentDetail, quantityShipmentDetail, grossWeightShipmentDetail
-    FILTERS shipmentShipmentDetail(d) == o
-;
-
-NAVIGATOR { baseElement { ADD test; } }
-
 // ----------------------------------- Создавать поставку по умолчанию для склада ------------------------------------------ //
 
 createShipmentStock 'Создавать поставку' = DATA BOOLEAN (stock);
