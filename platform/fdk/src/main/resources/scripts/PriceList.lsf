@@ -324,7 +324,7 @@ FORM userPriceList 'Прайс'
     PROPERTIES(d, st, ts) markUpPricePriceListDetailDataPriceListTypeStock COLUMNS (st) HEADER extendNameMarkUpDataPriceListType(st)
 
     FILTERS userPriceListUserPriceListDetail(d) == p,
-            isParentSkuGroupSku(sk, skuPriceListDetail(d)),
+            isParentSkuGroupSku(sk, skuPriceListDetail(d)) OR (sk IS skuGroup AND d IS priceListDetail AND NOT skuPriceListDetail(d)),
             inStockGroupStock(sg, ts),
             currencyUserPriceList(p) == currencyDataPriceListType(t)
 
