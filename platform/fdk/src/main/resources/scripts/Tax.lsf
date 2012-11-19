@@ -290,13 +290,6 @@ END
 META defineDocumentInterfaceDetailVATPrefix(object, prefix, countryProp, caption)
     @defineDocumentInterfaceDetailVATPrefixCustom(object##Detail, prefix, countryProp, caption);
 END
-META deriveDocumentDetailVATSkuCustomPrefix(detail, prefix, stockProp)
-    prefix###VAT###detail (detail)  <- VATSkuCountryDate (sku###detail(detail), countryStock(stockProp###detail(detail)), date###detail(detail))
-                    WHEN CHANGED(sku###detail(detail)) OR CHANGED (stockProp###detail(detail)) OR CHANGED (date###detail(detail));
-END
-META deriveDocumentDetailVATSkuPrefix(object, prefix, stockProp)
-    @deriveDocumentDetailVATSkuCustomPrefix(object##Detail, prefix, stockProp);
-END
 META deriveDocumentDetailValueVATCustomPrefix(detail, prefix)
     value###prefix###VAT###detail (detail)  <- valueRateRangeDate(prefix###VAT###detail(detail), date###detail(detail))
                     WHEN CHANGED(prefix###VAT###detail(detail)) OR CHANGED (date###detail(detail));

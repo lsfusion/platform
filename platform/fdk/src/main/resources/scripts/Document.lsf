@@ -205,6 +205,94 @@ META defineDocumentInterfaceTime (object)
     @defineDocumentInterfaceDetailTime(object);
 END
 
+// ----- Time Before ----- //
+META defineDocumentHeaderTimeBeforePrefix (object, prefix, caption)
+    prefix###dateBefore###object 'Дата'##caption = DATA DATE (object) IN documentHeaderGroup;
+    prefix###dateBefore###object (object) <- currentDate() WHEN ASSIGNED(object AS object);
+
+    prefix###timeBefore###object 'Время'##caption = DATA TIME (object) IN documentHeaderGroup;
+    prefix###timeBefore###object (object) <- currentTime() WHEN ASSIGNED(object AS object);
+
+    prefix###dateTimeBefore###object 'Дата/время'##caption (object) = toDateTime(prefix###dateBefore###object(object), prefix###timeBefore###object(object)) PERSISTENT;
+END
+META defineDocumentAbstractHeaderTimeBeforePrefix (object, prefix, caption)
+    prefix###dateBefore###object 'Дата'##caption = ABSTRACT DATE (object) IN documentHeaderGroup PERSISTENT;
+    prefix###timeBefore###object 'Время'##caption = ABSTRACT TIME (object) IN documentHeaderGroup PERSISTENT;
+    prefix###dateTimeBefore###object 'Дата/время'##caption (object) = toDateTime(prefix###dateBefore###object(object), prefix###timeBefore###object(object)) PERSISTENT;
+END
+META defineDocumentInterfaceHeaderTimeBeforePrefix(object, prefix, caption)
+    @defineDocumentAbstractHeaderTimeBeforePrefix(object, prefix, caption);
+    @defineDocumentHeaderTimeBeforePrefix(user###object, prefix, caption);
+    prefix###dateBefore###object(object) += prefix###dateBefore##User###object(object);
+    prefix###timeBefore###object(object) += prefix###timeBefore##User###object(object);
+END
+
+META defineDocumentHeaderTimeBefore (object)
+    @defineDocumentHeaderTimeBeforePrefix(object, ,' документа (до)');
+END
+META defineDocumentAbstractHeaderTimeBefore (object)
+    @defineDocumentAbstractHeaderTimeBeforePrefix(object, ,' документа (до)');
+END
+META defineDocumentInterfaceHeaderTimeBefore(object)
+    @defineDocumentInterfaceHeaderTimeBeforePrefix(object, ,' документа (до)');
+END
+
+META defineDocumentDetailTimeBeforePrefix (object, detail, prefix, caption)
+    prefix###dateTimeBefore###detail 'Дата/время'##caption (detail) = prefix###dateTimeBefore###object(object###detail(detail)) PERSISTENT;
+    prefix###dateBefore###detail 'Дата'##caption = prefix###dateBefore###object(object###detail(detail));
+    prefix###timeBefore###detail 'Время'##caption = prefix###timeBefore###object(object###detail(detail));
+END
+META defineDocumentInterfaceDetailTimeBeforePrefix (object, detail, prefix, caption)
+    @defineDocumentDetailTimeBeforePrefix(object, detail, prefix, caption);
+    @defineDocumentDetailTimeBeforePrefix(user###object, user###detail, prefix, caption);
+END
+
+META defineDocumentDetailTimeBeforePrefix (object, prefix, caption)
+    @defineDocumentDetailTimeBeforePrefix(object, object##Detail, prefix, caption);
+END
+META defineDocumentInterfaceDetailTimeBeforePrefix (object, prefix, caption)
+    @defineDocumentInterfaceDetailTimeBeforePrefix(object, object##Detail, prefix, caption);
+END
+
+META defineDocumentDetailTimeBefore (object, detail)
+    @defineDocumentDetailTimeBeforePrefix(object, detail, ,' документа');
+END
+META defineDocumentInterfaceDetailTimeBefore (object, detail)
+    @defineDocumentInterfaceDetailTimeBeforePrefix(object, detail, ,' документа');
+END
+
+META defineDocumentDetailTimeBefore (object)
+    @defineDocumentDetailTimeBefore(object, object##Detail);
+END
+META defineDocumentInterfaceDetailTimeBefore (object)
+    @defineDocumentInterfaceDetailTimeBefore(object, object##Detail);
+END
+
+META defineDocumentTimeBeforePrefix (object, prefix, caption)
+    @defineDocumentHeaderTimeBeforePrefix(object, prefix, caption);
+    @defineDocumentDetailTimeBeforePrefix(object, prefix, caption);
+END
+META defineDocumentAbstractTimeBeforePrefix (object, prefix, caption)
+    @defineDocumentAbstractHeaderTimeBeforePrefix(object, prefix, caption);
+    @defineDocumentDetailTimeBeforePrefix(object, prefix, caption);
+END
+META defineDocumentInterfaceTimeBeforePrefix (object, prefix, caption)
+    @defineDocumentInterfaceHeaderTimeBeforePrefix(object, prefix, caption);
+    @defineDocumentInterfaceDetailTimeBeforePrefix(object, prefix, caption);
+END
+
+META defineDocumentTimeBefore (object)
+    @defineDocumentHeaderTimeBefore(object);
+    @defineDocumentDetailTimeBefore(object);
+END
+META defineDocumentAbstractTimeBefore (object)
+    @defineDocumentAbstractHeaderTimeBefore(object);
+    @defineDocumentDetailTimeBefore(object);
+END
+META defineDocumentInterfaceTimeBefore (object)
+    @defineDocumentInterfaceHeaderTimeBefore(object);
+    @defineDocumentInterfaceDetailTimeBefore(object);
+END
 // ----- Time ----- //
 META defineDocumentHeaderTimeShipment (object)
     shipmentDate###object 'Дата исполнения' = DATA DATE (object) IN documentShipmentGroup;

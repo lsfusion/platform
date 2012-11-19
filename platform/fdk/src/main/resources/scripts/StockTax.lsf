@@ -8,6 +8,14 @@ NAMESPACE Stock;
 
 VATSkuCountryDate = ABSTRACT range (sku, country, DATE);
 
+META deriveDocumentDetailVATSkuCustomPrefix(detail, prefix, stockProp)
+    prefix###VAT###detail (detail)  <- VATSkuCountryDate (sku###detail(detail), countryStock(stockProp###detail(detail)), date###detail(detail))
+                    WHEN CHANGED(sku###detail(detail)) OR CHANGED (stockProp###detail(detail)) OR CHANGED (date###detail(detail));
+END
+META deriveDocumentDetailVATSkuPrefix(object, prefix, stockProp)
+    @deriveDocumentDetailVATSkuCustomPrefix(object##Detail, prefix, stockProp);
+END
+
 //CONSTRAINT taxRange(VATSkuCountryDate(sku, country, date)) != tax.taxVAT OR
 //           countryRange(VATSkuCountryDate(sku, country, date)) != country AS country
 //           CHECKED BY VATSkuCountryDate

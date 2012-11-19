@@ -148,6 +148,8 @@ CLASS userRepricingPosted 'Закрытый акт переоценки (пол�
 
 @defineDocumentInterface(repricing);
 
+@defineDocumentInterfaceTimeBefore(repricing);
+
 @defineDocumentInterfaceNumber(repricing);
 
 @defineDocumentInterfaceDataStock(repricing, departmentStore, 'Склад');
@@ -186,6 +188,7 @@ CLASS userRepricingPosted 'Закрытый акт переоценки (пол�
 @deriveDocumentDetailValueVATPrefix(userRepricing, cur);
 
 @defineDocumentInterfaceDetailVATPrefix(repricing, , countryDepartmentStore, ' после');
+@deriveDocumentDetailVATSkuPrefix(userRepricing, , departmentStore);
 @deriveDocumentDetailValueVATPrefix(userRepricing, );
 
 @defineDocumentInterfaceDetailMarkupPrefix (repricing, cur, ' до');
@@ -241,10 +244,19 @@ markupUserRepricingDetail(userRepricingDetail)  <- [round2((((X - X*Y/(100+Y))/Z
 @defineAddDetailDialogTerminal(userRepricing, sku);
 @defineDocumentInterfaceHeaderRepricingCommittee (repricing, departmentStore);
 
-@derivePriceLedgerOnSkuChangePrefix(supplierPrice, userRepricing, curPrice, sku, departmentStore);
-@derivePriceLedgerOnSkuChangePrefix(retailVAT, userRepricing, curVAT, sku, departmentStore);
+curPriceUserRepricingDetail(detail) <- pricePriceListTypeSkuStockDateTime(systemLedgerPriceListType.supplierPricingPriceListType, skuUserRepricingDetail(detail), departmentStoreUserRepricingDetail(detail), dateTimeUserRepricingDetail(detail))
+    WHEN CHANGED(skuUserRepricingDetail(detail)) OR CHANGED(departmentStoreUserRepricingDetail(detail)) OR CHANGED(dateTimeUserRepricingDetail(detail));
+//@derivePriceLedgerOnSkuChangePrefix(supplierPrice, userRepricing, curPrice, sku, departmentStore);
+
+curVATUserRepricingDetail(detail) <- VATSkuCountryDate (skuRepricingDetail(detail), countryStock(departmentStoreRepricingDetail(detail)), dateBeforeRepricingDetail(detail))
+    WHEN CHANGED(skuRepricingDetail(detail)) OR CHANGED (departmentStoreRepricingDetail(detail)) OR CHANGED (dateBeforeRepricingDetail(detail));;
+//@derivePriceLedgerOnSkuChangePrefix(retailVAT, userRepricing, curVAT, sku, departmentStore);
+
 @deriveDocumentDetailValueVATPrefix(userRepricing, cur);
-@derivePriceLedgerOnSkuChangePrefix(retailPrice, userRepricing, curRetailPrice, sku, departmentStore);
+
+curRetailPriceUserRepricingDetail(detail) <- pricePriceListTypeSkuStockDateTime(systemLedgerPriceListType.retailPricingPriceListType, skuUserRepricingDetail(detail), departmentStoreUserRepricingDetail(detail), dateTimeUserRepricingDetail(detail))
+    WHEN CHANGED(skuUserRepricingDetail(detail)) OR CHANGED(departmentStoreUserRepricingDetail(detail)) OR CHANGED(dateTimeUserRepricingDetail(detail));
+//@derivePriceLedgerOnSkuChangePrefix(retailPrice, userRepricing, curRetailPrice, sku, departmentStore);
 
 @defineDocumentInterfaceHeaderSkip (repricing, changeLedger, 'Не изменять текущие цены');
 @defineDocumentInterfaceDetailSkip(repricing, changeLedger, 'Не изменять текущие цены');
@@ -366,7 +378,7 @@ printRepricing 'Акт переоценки' (repricing) = ACTION FORM repricing
 FORM userRepricing 'Акт переоценки'
     OBJECTS p=userRepricing FIXED PANEL
     PROPERTIES (p) objectClassName, nameNumeratorObject, numberObject, seriesObject,
-                   dateUserRepricing, timeUserRepricing, nameDepartmentStoreUserRepricing,
+                   dateUserRepricing, timeUserRepricing, dateBeforeUserRepricing, nameDepartmentStoreUserRepricing,
                    diffSumUserRepricingDetailUserRepricing, diffMarkupSumUserRepricingDetailUserRepricing, diffVATSumUserRepricingDetailUserRepricing,
                    diffRetailSumUserRepricingDetailUserRepricing,
                    noteUserRepricing, numberDisposalUserRepricing, nameRepricingCommitteeUserRepricing, skipChangeLedgerUserRepricing
@@ -415,6 +427,7 @@ DESIGN userRepricing FROM DEFAULT {
                     ADD PROPERTY(seriesObject);
                     ADD PROPERTY(dateUserRepricing);
                     ADD PROPERTY(timeUserRepricing);
+                    ADD PROPERTY(dateBeforeUserRepricing);
                 }
                 ADD p.documentPrmGroup {
                     childConstraints = TO THE RIGHT;
