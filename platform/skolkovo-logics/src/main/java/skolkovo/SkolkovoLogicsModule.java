@@ -249,6 +249,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public StaticCustomClass projectMission;
 
     @Override
+    public void initModuleDependencies() {
+        setRequiredModules(Arrays.asList("System", "Country"));
+    }
+
+    @Override
     public void initModule() {
     }
 

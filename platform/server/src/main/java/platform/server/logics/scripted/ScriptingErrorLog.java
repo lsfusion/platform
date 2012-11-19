@@ -427,6 +427,10 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, String.format("class '%s' is a parent already", className));
     }
 
+    public void emitEvalExpressionError(ScriptParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "ACTION EVAL expression should be string");
+    }
+
     private void emitSimpleError(ScriptParser parser, String message) throws SemanticErrorException {
         SemanticErrorException e = new SemanticErrorException(parser.getCurrentParser().input);
         String msg = getSemanticRecognitionErrorText(message + "\n", parser, e);

@@ -8,7 +8,6 @@ import platform.server.logics.BusinessLogics;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Arrays;
 
 public class SampleBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
     private SampleLogicsModule sampleLM;
@@ -21,7 +20,6 @@ public class SampleBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
     protected void createModules() throws IOException {
         super.createModules();
         sampleLM = addModule(new SampleLogicsModule(LM));
-        sampleLM.setRequiredModules(Arrays.asList("System"));
     }
 
     protected void initAuthentication() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {

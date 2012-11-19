@@ -22,6 +22,8 @@ import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.group.AbstractGroup;
 
+import java.util.Arrays;
+
 public class PaasLogicsModule extends LogicsModule {
 
     public ConcreteCustomClass paasUser;
@@ -67,6 +69,11 @@ public class PaasLogicsModule extends LogicsModule {
     @Override
     public String getNamePrefix() {
         return null;
+    }
+
+    @Override
+    public void initModuleDependencies() {
+        setRequiredModules(Arrays.asList("System"));
     }
 
     @Override

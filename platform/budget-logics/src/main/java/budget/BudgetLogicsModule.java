@@ -16,6 +16,8 @@ import platform.server.logics.LogicsModule;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.property.group.AbstractGroup;
 
+import java.util.Arrays;
+
 /**
  * User: DAle
  * Date: 26.05.11
@@ -42,6 +44,11 @@ public class BudgetLogicsModule extends LogicsModule {
     ConcreteCustomClass investmentCash, investmentNotCash;
     ConcreteCustomClass investmentNotMoney;
     ConcreteCustomClass transfer, incomeProfit;
+
+    @Override
+    public void initModuleDependencies() {
+        setRequiredModules(Arrays.asList("System"));
+    }
 
     @Override
     public void initModule() {

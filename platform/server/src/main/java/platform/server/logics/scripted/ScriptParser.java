@@ -15,7 +15,7 @@ import java.util.Stack;
  */
 
 public class ScriptParser {
-    public enum State {INIT, GROUP, CLASS, PROP, TABLE, INDEX}
+    public enum State {PRE, INIT, GROUP, CLASS, PROP, TABLE, INDEX}
 
     private State currentState = null;
     private Stack<ParserInfo> parsers = new Stack<ParserInfo>();
@@ -37,7 +37,7 @@ public class ScriptParser {
 
         currentState = state;
         parsers.push(new ParserInfo(parser, null, null, 0));
-        if (state == State.INIT) {
+        if (state == State.PRE) {
             parser.moduleHeader();
         } else {
             parser.script();

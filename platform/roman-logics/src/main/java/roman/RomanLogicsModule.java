@@ -46,6 +46,7 @@ import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -1503,6 +1504,11 @@ public class RomanLogicsModule extends LogicsModule {
 
     public AnnexInvoiceFormEntity invoiceFromFormEntity;
     public InvoiceExportFormEntity invoiceExportForm;
+
+    @Override
+    public void initModuleDependencies() {
+        setRequiredModules(Arrays.asList("System", "Utils", "Hierarchy", "Historizable", "Numerator", "Stock", "Document", "Country"));
+    }
 
     @Override
     public void initModule() {

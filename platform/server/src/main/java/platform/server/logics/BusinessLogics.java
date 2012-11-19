@@ -677,7 +677,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         String errors = "";
         try {
             for (LogicsModule module : logicModules) {
-                module.initModule();
+                module.initModuleDependencies();
             }
 
             if (System.getProperty("platform.server.logics.startmodules") != null) {
@@ -687,8 +687,13 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             List<LogicsModule> orderedModules = orderModules();
 
             for (LogicsModule module : orderedModules) {
+                module.initModule();
+            }
+
+            for (LogicsModule module : orderedModules) {
                 module.initGroups();
             }
+
             for (LogicsModule module : orderedModules) {
                 module.initClasses();
             }
@@ -1848,6 +1853,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     public void updateClassStat(SQLSession session) throws SQLException {
         LM.baseClass.updateClassStat(session);
+    }
+
+    public List<LogicsModule> getLogicModules() {
+        return logicModules;
     }
 
     public static class SIDChange {

@@ -120,8 +120,17 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public ScriptingLogicsModule(InputStream stream, BaseLogicsModule<?> baseModule, BusinessLogics<?> BL) throws IOException {
+        this(stream, "utf-8", baseModule, BL);
+    }
+
+    public ScriptingLogicsModule(InputStream stream, String charsetName, BaseLogicsModule<?> baseModule, BusinessLogics<?> BL) throws IOException {
         this(baseModule, BL);
-        this.code = IOUtils.readStreamToString(stream, "utf-8");
+        this.code = IOUtils.readStreamToString(stream, charsetName);
+    }
+
+    public ScriptingLogicsModule(BaseLogicsModule<?> baseModule, BusinessLogics<?> BL, String code) {
+        this(baseModule, BL);
+        this.code = code;
     }
 
     private void setModuleName(String moduleName) {
@@ -983,6 +992,15 @@ public class ScriptingLogicsModule extends LogicsModule {
         checkChangeClassActionClass(cls);
         LAP<?> res = addChangeClassAProp((ConcreteCustomClass) cls);
         return new LPWithParams(res,  param.usedParams);
+    }
+
+    public LPWithParams addScriptedEvalActionProp(LPWithParams property) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedEvalActionProp(" + property + ")");
+        if (!(property.property.property.getType() instanceof StringClass)) {
+            errLog.emitEvalExpressionError(parser);
+        }
+        LAP<?> res = addEvalAProp((LCP) property.property);
+        return new LPWithParams(res, property.usedParams);
     }
 
     public LPWithParams addScriptedSetPropertyAProp(List<String> context, LPWithParams toProperty, LPWithParams fromProperty, LPWithParams whereProperty) throws ScriptingErrorLog.SemanticErrorException {
@@ -2191,6 +2209,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
+    @Override
+    public void initModuleDependencies() {
+        parseStep(ScriptParser.State.PRE);
+    }
 
     @Override
     public void initModule() {
@@ -2233,6 +2255,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         setNamespace(namespace == null ? name : namespace);
         setRequiredModules(requiredModules);
         this.namespacePriority = namespacePriority;
+    }
+
+    public void initAliases() {
+        initBaseGroupAliases();
+        initBaseClassAliases();
     }
 
     private void showWarnings() {

@@ -33,7 +33,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     protected void createModules() throws IOException {
         super.createModules();
         VEDLM = addModule(new VEDLogicsModule(LM, this, logger));
-        VEDLM.setRequiredModules(Arrays.asList("System"));
         addModulesFromResource(
                 "/scripts/VEDScript.lsf",
                 "/scripts/Country.lsf",

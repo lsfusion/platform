@@ -84,6 +84,10 @@ grammar LsfLogics;
 		return this.parseState == parseState;
 	}
 
+	public boolean inPreParseState() {
+		return inParseState(ScriptParser.State.PRE);
+	}
+
 	public boolean inInitParseState() {
 		return inParseState(ScriptParser.State.INIT); 
 	}
@@ -174,9 +178,9 @@ moduleHeader
 	String namespaceName = null;
 }
 @after {
-	if (inInitParseState()) {
+	if (inPreParseState()) {
 		self.initScriptingModule($name.text, namespaceName, requiredModules, namespacePriority);
-	} else if (inGroupParseState()) {
+	} else if (inInitParseState()) {
 		self.initModulesAndNamespaces(requiredModules, namespacePriority);
 	}
 }
@@ -1582,9 +1586,10 @@ customActionPDB[List<String> context, boolean dynamic] returns [LPWithParams pro
 	|   mailPDB=emailActionPropertyDefinitionBody[context, dynamic] { $property = $mailPDB.property; }
 	|	filePDB=fileActionPropertyDefinitionBody[context, dynamic] { $property = $filePDB.property; }
 	|	classPDB=changeClassActionPropertyDefinitionBody[context, dynamic] { $property = $classPDB.property; }
+	|	evalPDB=evalActionPropertyDefinitionBody[context, dynamic] { $property = $evalPDB.property; }
 	;
 
-			
+
 formActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns [LPWithParams property]
 @init {
 	FormSessionScope sessionScope = FormSessionScope.OLDSESSION;
@@ -1754,6 +1759,15 @@ changeClassActionPropertyDefinitionBody[List<String> context, boolean dynamic] r
 }
 	:	'CHANGECLASS' param=singleParameter[context, dynamic] 'TO' className=classId 
 	;  
+
+evalActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns [LPWithParams property]
+@after {
+	if (inPropParseState()) {
+		$property = self.addScriptedEvalActionProp($expr.property);
+	}
+}
+	:	'EVAL' expr=propertyExpression[context, dynamic]
+	;
 
 requestInputActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns [LPWithParams property]
 @after {
@@ -2475,7 +2489,7 @@ metaCodeDeclarationStatement
 	int lineNumber = self.getParser().getCurrentParserLineNumber(); 
 }
 @after {
-	if (inGroupParseState()) {
+	if (inInitParseState()) {
 		self.addScriptedMetaCodeFragment($id.text, $list.ids, tokens, $text, lineNumber);
 	}
 }

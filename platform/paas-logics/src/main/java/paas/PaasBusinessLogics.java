@@ -43,7 +43,6 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
         super.createModules();
 
         paasLM = addModule(new PaasLogicsModule(LM, this));
-        paasLM.setRequiredModules(Arrays.asList("System"));
     }
 
     @Override

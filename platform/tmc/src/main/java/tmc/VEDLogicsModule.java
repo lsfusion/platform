@@ -403,6 +403,11 @@ public class VEDLogicsModule extends LogicsModule {
 
 
     @Override
+    public void initModuleDependencies() {
+        setRequiredModules(Arrays.asList("System"));
+    }
+
+    @Override
     public void initModule() {
     }
 

@@ -21,13 +21,13 @@ import platform.server.logics.linear.LAP;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
-import platform.server.logics.property.actions.CustomActionProperty;
 import platform.server.logics.property.actions.UserActionProperty;
 
 import javax.swing.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.sql.SQLException;
+import java.util.Arrays;
 
 /**
  * User: DAle
@@ -49,6 +49,11 @@ public class SampleLogicsModule extends LogicsModule {
 
     protected ConcreteCustomClass article, descriptedArticle, store, descriptedStore, incomeDocument, outcomeDocument;
     protected ConcreteCustomClass articleGroup, descriptedArticleGroup;
+
+    @Override
+    public void initModuleDependencies() {
+        setRequiredModules(Arrays.asList("System"));
+    }
 
     @Override
     public void initModule() {

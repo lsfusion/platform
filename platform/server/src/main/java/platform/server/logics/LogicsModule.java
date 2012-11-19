@@ -33,6 +33,7 @@ import platform.server.logics.property.actions.*;
 import platform.server.logics.property.actions.flow.*;
 import platform.server.logics.property.derived.*;
 import platform.server.logics.property.group.AbstractGroup;
+import platform.server.logics.scripted.EvalActionProperty;
 import platform.server.logics.scripted.MetaCodeFragment;
 import platform.server.logics.table.ImplementTable;
 import platform.server.mail.AttachmentFormat;
@@ -56,6 +57,9 @@ import static platform.server.logics.property.derived.DerivedProperty.*;
  */
 
 public abstract class LogicsModule {
+    // после этого шага должны быть установлены name, namespace, requiredModules
+    public abstract void initModuleDependencies();
+
     public abstract void initModule();
 
     public abstract void initClasses();
@@ -2171,6 +2175,10 @@ public abstract class LogicsModule {
         if(checkClasses.size() > 0)
             result = createIfAction(innerInterfaces, createAnd(checkClasses), result, null, false);
         return mapLAProp(null, result, innerInterfaces);
+    }
+
+    public LAP addEvalAProp(LCP<?> scriptSource) {
+        return addAProp(null, new EvalActionProperty(genSID(), "", baseLM.BL, scriptSource));
     }
 
     public LAP getAddObjectAction(CustomClass cls, boolean forceDialog, CalcProperty storeNewObjectProperty) {
