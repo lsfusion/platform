@@ -454,7 +454,7 @@ editUserRepricing 'Редактировать' (userRepricing) = ACTION EDITFORM
 
 FORM repricings 'Акты переоценки' TITLE 'Акты переоценки'
     OBJECTS p = repricing
-    PROPERTIES (p) READONLY isPostedRepricing FORCE GRID, objectClassName, numberRepricing, seriesRepricing, dateRepricing, timeRepricing,
+    PROPERTIES (p) READONLY isPostedRepricing FORCE GRID, objectClassName, numberRepricing, seriesRepricing, dateRepricing, timeRepricing, dateBeforeRepricing,
                nameDepartmentStoreRepricing, countRepricingDetailRepricing,
                diffSumRepricingDetailRepricing, diffMarkupSumRepricingDetailRepricing, diffVATSumRepricingDetailRepricing,
                diffRetailSumRepricingDetailRepricing,
@@ -648,7 +648,7 @@ META defineRepricing(sign, stockProp)
     @defineDocumentTables(invoiceRepricing);
 
     @defineDocumentAggregation(invoice, invoiceRepricing, needToRepricingInvoice);
-
+    @defineDocumentAggregationTimeBefore(invoice, invoiceRepricing);
 
     repricingRepricingDetail(detail) += invoiceRepricingInvoiceRepricingDetail(detail);
 
@@ -658,6 +658,9 @@ META defineRepricing(sign, stockProp)
 
     dateRepricing(repricing) += dateInvoiceRepricing(repricing);
     timeRepricing(repricing) += timeInvoiceRepricing(repricing);
+
+    dateBeforeRepricing(repricing) += dateBeforeInvoiceRepricing(repricing);
+    timeBeforeRepricing(repricing) += timeBeforeInvoiceRepricing(repricing);
 
     @defineDocumentAggregationStockPrefix(invoice, invoiceRepricing, stockProp, 'Склад', , );
     departmentStoreRepricing(repricing) += stockProp###invoiceRepricing(repricing) IF stockProp###invoiceRepricing(repricing) IS departmentStore;
@@ -695,7 +698,7 @@ META defineRepricing(sign, stockProp)
     backgroundAfterInvoice 'Цвет' (invoice) = RGB(255, 255, 200) IF invoice IS invoice;
     EXTEND FORM userInvoice
         PROPERTIES(i)   BACKGROUND backgroundCurInvoice(i) createRepricingUserInvoice
-        PROPERTIES(i)   BACKGROUND backgroundCurInvoice(i) SHOWIF createRepricingUserInvoice(i) nameRepricingCommitteeUserInvoice, numberDisposalUserInvoice
+        PROPERTIES(i)   BACKGROUND backgroundCurInvoice(i) SHOWIF createRepricingUserInvoice(i) nameRepricingCommitteeUserInvoice, numberDisposalUserInvoice, dateBeforeUserInvoice
         PROPERTIES(i)   BACKGROUND backgroundAfterInvoice(i) SHOWIF createRepricingUserInvoice(i) diffRetailSumUserInvoiceDetailUserInvoice
 
         PROPERTIES(d)   BACKGROUND backgroundCurInvoice(i) SHOWIF createRepricingUserInvoice(i) BEFORE name###stockProp###userInvoiceDetail(d)
@@ -715,6 +718,7 @@ META defineRepricing(sign, stockProp)
                 ADD PROPERTY(createRepricingUserInvoice);
                 ADD PROPERTY(nameRepricingCommitteeUserInvoice);
                 ADD PROPERTY(numberDisposalUserInvoice);
+                ADD PROPERTY(dateBeforeUserInvoice);
             }
         }
     }

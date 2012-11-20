@@ -724,6 +724,24 @@ META defineDocumentAggregationTime (primObject, aggrObject)
     @defineDocumentAggregationDetailTime(primObject, aggrObject);
 END
 
+// TimeBefore
+META defineDocumentAggregationHeaderTimeBefore (primObject, aggrObject)
+    dateBefore###aggrObject 'Дата' (object) = dateBefore###primObject(primObject###aggrObject(object));
+    timeBefore###aggrObject 'Время' (object) = timeBefore###primObject(primObject###aggrObject(object));
+    dateTimeBefore###aggrObject 'Дата/время' (object) = dateTimeBefore###primObject(primObject###aggrObject(object));
+END
+
+META defineDocumentAggregationDetailTimeBefore (primObject, aggrObject)
+    dateBefore###aggrObject##Detail 'Дата' (detail) = dateBefore###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
+    timeBefore###aggrObject##Detail 'Время' (detail) = timeBefore###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
+    dateTimeBefore###aggrObject##Detail 'Дата/время' (detail) = dateTimeBefore###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
+END
+
+META defineDocumentAggregationTimeBefore (primObject, aggrObject)
+    @defineDocumentAggregationHeaderTimeBefore(primObject, aggrObject);
+    @defineDocumentAggregationDetailTimeBefore(primObject, aggrObject);
+END
+
 // Posted
 META defineDocumentAggregationHeaderPosted (primObject, aggrObject)
     isPosted###aggrObject 'Проведен' (object) = isPosted###primObject(primObject###aggrObject(object));
