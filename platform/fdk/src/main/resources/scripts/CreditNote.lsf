@@ -244,10 +244,11 @@ META defineCreditNote(sign, stockProp)//contact, contactCaption)
 
 //-- аггр.объект
 
-    createCreditNoteInvoice 'Создать акт расхождения' = ABSTRACT BOOLEAN (invoice) PERSISTENT IN documentPrmGroup;
-    createCreditNoteUserInvoice 'Создать акт расхождения' = DATA BOOLEAN (userInvoice) IN documentPrmGroup;
-    createCreditNoteInvoice (invoice) += createCreditNoteUserInvoice(invoice);
-    createCreditNoteInvoiceDetail 'Создать акт расхождения' (invoiceDetail) = createCreditNoteInvoice(invoiceInvoiceDetail(invoiceDetail));
+    @defineDocumentInterfaceCreate (invoice, createCreditNote, 'Создать акт расхождения');
+//    createCreditNoteInvoice 'Создать акт расхождения' = ABSTRACT BOOLEAN (invoice) PERSISTENT IN documentPrmGroup;
+//    createCreditNoteUserInvoice 'Создать акт расхождения' = DATA BOOLEAN (userInvoice) IN documentPrmGroup;
+//    createCreditNoteInvoice (invoice) += createCreditNoteUserInvoice(invoice);
+//    createCreditNoteInvoiceDetail 'Создать акт расхождения' (invoiceDetail) = createCreditNoteInvoice(invoiceInvoiceDetail(invoiceDetail));
 
     needToCreditNoteInvoiceDetail (invoiceDetail)= createCreditNoteInvoiceDetail(invoiceDetail)  AND
         toShipInvoiceDetail (invoiceDetail) AND isPostedInvoiceDetail(invoiceDetail) PERSISTENT;
@@ -255,7 +256,7 @@ META defineCreditNote(sign, stockProp)//contact, contactCaption)
     needToCreditNoteInvoice (invoice) = GROUP SUM 1 IF needToCreditNoteInvoiceDetail(invoiceDetail) BY invoiceInvoiceDetail(invoiceDetail) PERSISTENT;
 
     EXTEND FORM userInvoice PROPERTIES(i) createCreditNoteUserInvoice;
-    EXTEND DESIGN userInvoice { headerRow11 { ADD PROPERTY(createCreditNoteUserInvoice);}}
+    EXTEND DESIGN userInvoice { headerRow113 { ADD PROPERTY(createCreditNoteUserInvoice);}}
 
     EXTEND FORM invoices PROPERTIES(i) READONLY createCreditNoteInvoice;
 

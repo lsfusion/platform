@@ -459,7 +459,7 @@ META defineShipment(sign, stockProp)
         PROPERTIES (d) READONLY indexInvoiceDetail, idBarcodeSkuInvoiceDetail, nameSkuInvoiceDetail, shortNameUOMSkuInvoiceDetail,
                        quantityInvoiceDetail, shippedInvoiceDetail, priceInvoiceDetail, sumInvoiceDetail,
                        numberVATInvoiceDetail, valueVATInvoiceDetail, VATSumInvoiceDetail, invoiceSumInvoiceDetail,
-                       name###stockProp###InvoiceDetail, descriptionOrderInvoiceDetail, toShipInvoiceDetail
+                       name###stockProp###InvoiceDetail, descriptionOrderInvoiceDetail
         FILTERS invoiceInvoiceDetail(d) == i
 //        FILTERGROUP invoiceDetail
 //            FILTER 'Строки с непоставленными товарами со склада' 'F10' stockInvoiceDetail(d) == s AND toShipInvoiceDetail(d) > 0 DEFAULT
@@ -497,7 +497,6 @@ META defineShipment(sign, stockProp)
                     }
                 }
             }
-            PROPERTY(toShipInvoiceDetail) { background = #FFFFCC; }
         }
     }
 
@@ -550,6 +549,7 @@ META defineShipment(sign, stockProp)
     @deriveDocumentDetailSumPrefix(userInvoice, shipment, currency, shipmentQuantity);
 
     @defineDocumentInterfaceHeaderCreateShipment (invoice, stockProp);
+    @defineDocumentInterfaceHeaderSumPrefix (invoice, shipment, ' (учетная)');
 
     skipCreateShipmentInvoiceDetail = ABSTRACT BOOLEAN (invoiceDetail) PERSISTENT;
     createShipmentInvoiceDetail 'Создать поставку' (invoiceDetail) = createShipmentInvoice(invoiceInvoiceDetail(invoiceDetail)) AND NOT skipCreateShipmentInvoiceDetail(invoiceDetail) PERSISTENT;
@@ -557,26 +557,30 @@ META defineShipment(sign, stockProp)
 
     showShipmentInvoice (invoice) =  invoice IS invoice AND NOT createShipmentInvoice(invoice);
 
-    backgroundShippedInvoice 'Цвет' (invoice) = RGB(255, 224, 255) IF invoice IS userInvoice;
+    backgroundShippedInvoice 'Цвет' (invoice) = RGB(255, 224, 255) IF invoice IS invoice;
     EXTEND FORM userInvoice
         PROPERTIES(i) BACKGROUND backgroundShippedInvoice(i) createShipmentUserInvoice
+        PROPERTIES(i) BACKGROUND backgroundShippedInvoice(i) SHOWIF createShipmentUserInvoice(i) shipmentSumUserInvoiceDetailUserInvoice
         PROPERTIES(d) BEFORE delete(d) SHOWIF createShipmentInvoice(i) BACKGROUND backgroundShippedInvoice(i)
                       name###stockProp###userInvoiceDetail, shipmentPriceUserInvoiceDetail, shipmentSumUserInvoiceDetail
         PROPERTIES(d) READONLY shippedInvoiceDetail AFTER quantityUserInvoiceDetail SHOWIF showShipmentInvoice(i) BACKGROUND backgroundShippedInvoice(i)
         PROPERTIES(d) shipmentQuantityUserInvoiceDetail AFTER quantityUserInvoiceDetail SHOWIF createShipmentInvoice(i) BACKGROUND backgroundShippedInvoice(i)
     ;
     EXTEND DESIGN userInvoice {
-        headerRow11{ADD PROPERTY(createShipmentUserInvoice); }
+        headerRow111{ADD PROPERTY(createShipmentUserInvoice); }
     }
 
     EXTEND FORM invoices
         PROPERTIES(i) READONLY BACKGROUND backgroundShippedInvoice(i) createShipmentInvoice
+        PROPERTIES(i) BACKGROUND backgroundShippedInvoice(i) shipmentSumInvoiceDetailInvoice BEFORE ordersInvoice
         PROPERTIES(d) READONLY SHOWIF createShipmentInvoice(i) BACKGROUND backgroundShippedInvoice(i)
                       name###stockProp###invoiceDetail, shipmentPriceInvoiceDetail, shipmentSumInvoiceDetail
         PROPERTIES(d) READONLY shippedInvoiceDetail AFTER quantityInvoiceDetail SHOWIF showShipmentInvoice(i) BACKGROUND backgroundShippedInvoice(i)
         PROPERTIES(d) READONLY shipmentQuantityInvoiceDetail AFTER quantityInvoiceDetail SHOWIF createShipmentInvoice(i) BACKGROUND backgroundShippedInvoice(i)
     ;
-
+    EXTEND FORM shipmentInvoices
+        PROPERTIES (d) READONLY BACKGROUND backgroundShippedInvoice(i)  toShipInvoiceDetail, shipmentPriceInvoiceDetail
+    ;
 
     CLASS invoiceShipment 'Поставка на основе инвойса'###sign : shipment;
     CLASS invoiceShipmentPosted 'Закрытая поставка на основе инвойса'###sign : invoiceShipment, postedObject;
@@ -647,7 +651,9 @@ META defineShipmentBatch(dumb)
 
     EXTEND FORM userShipment PROPERTIES (d) descriptionBatchUserShipmentDetail AFTER shortNameUOMSkuUserShipmentDetail;
     EXTEND FORM shipments PROPERTIES (d) READONLY descriptionBatchShipmentDetail AFTER shortNameUOMSkuShipmentDetail;
-    EXTEND FORM shipmentInvoices PROPERTIES (d) READONLY descriptionBatchInvoiceDetail AFTER shortNameUOMSkuInvoiceDetail;
+    EXTEND FORM shipmentInvoices
+        PROPERTIES (d) READONLY descriptionBatchInvoiceDetail AFTER shortNameUOMSkuInvoiceDetail
+    ;
 
     fillInvoiceBatchUserShipmentDetail (sd, id) += ACTION SET batchUserShipmentDetail (sd) <- batchInvoiceDetail(id);
 

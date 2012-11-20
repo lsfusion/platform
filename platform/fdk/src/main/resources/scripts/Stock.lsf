@@ -801,6 +801,38 @@ META defineDocumentInterfaceDetailQuantity (object)
     @defineDocumentInterfaceDetailQuantityPrefix(object, , );
 END
 
+// --------------------- Задание  значения по умолчанию для stock ---------------------------//
+META defineDocumentHeaderCreate(object, createProp, caption)
+    createProp###object caption (object) = DATA BOOLEAN(object) IN documentPrmGroup;
+END
+META defineDocumentAbstractHeaderCreate(object, createProp, caption)
+    createProp###object caption (object) = ABSTRACT BOOLEAN(object) PERSISTENT IN documentPrmGroup;
+END
+META deriveDocumentHeaderCreate(object, createProp, stockClass, stockProp)
+    createProp###object (object) <- TRUE IF createProp###stockClass(stockProp###object(object))
+        WHEN CHANGED(stockProp###object(object));
+END
+
+META defineDocumentInterfaceHeaderCreate (object, createProp, caption)
+    @defineDocumentAbstractHeaderCreate (object, createProp, caption);
+    @defineDocumentHeaderCreate (user###object, createProp, caption);
+    createProp###object (object) += createProp###user###object(object);
+END
+META defineDocumentDetailCreateCustom(object, detail, createProp, caption)
+    createProp###detail caption (detail) = createProp###object(object###detail(detail)) PERSISTENT;
+END
+META defineDocumentInterfaceDetailCreateCustom (object, detail, createProp, caption)
+    @defineDocumentDetailCreateCustom (object, detail, createProp, caption);
+    @defineDocumentDetailCreateCustom (user###object, user###detail, createProp, caption);
+END
+META defineDocumentInterfaceDetailCreate (object, createProp, caption)
+    @defineDocumentInterfaceDetailCreateCustom (object, object##Detail, createProp, caption);
+END
+META defineDocumentInterfaceCreate (object, createProp, caption)
+    @defineDocumentInterfaceHeaderCreate (object, createProp, caption);
+    @defineDocumentInterfaceDetailCreate (object, createProp, caption);
+END
+
 // ---------------------------------------------- Учетные суммы -------------------------------------------- //
 
 META defineDocumentDetailPriceCustomPrefix (detail, prefix, caption)

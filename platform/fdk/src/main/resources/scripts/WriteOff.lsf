@@ -151,14 +151,6 @@ priceUserWriteOffDetail (detail)  <- IF batchUserWriteOffDetail(detail)
 skuUserWriteOffDetail (detail)  <- skuBatch( batchUserWriteOffDetail(detail)) AND batchUserWriteOffDetail(detail)
                                WHEN CHANGED(batchUserWriteOffDetail(detail));
 
-balanceBSkuBatchWriteOffDetail 'Текущий остаток' (writeOffDetail) = ABSTRACT NUMERIC[14,3] (writeOffDetail);
-balanceBSkuBatchUserWriteOffDetail 'Текущий остаток' (userWriteOffDetail) = DATA NUMERIC[14,3] (userWriteOffDetail);
-balanceBSkuBatchWriteOffDetail(writeOffDetail) += balanceBSkuBatchUserWriteOffDetail(writeOffDetail);
-balanceBSkuBatchUserWriteOffDetail (detail) <- IF batchUserWriteOffDetail(detail) IS batch
-    THEN balanceBBatchStockDateTime(batchUserWriteOffDetail(detail), stockUserWriteOffDetail(detail), dateTimeUserWriteOffDetail(detail))
-        ELSE balanceBSkuStockDateTime(skuUserWriteOffDetail(detail), stockUserWriteOffDetail(detail), dateTimeUserWriteOffDetail(detail))
-            WHEN CHANGED(skuUserWriteOffDetail(detail)) OR CHANGED(batchUserWriteOffDetail(detail)) OR CHANGED(stockUserWriteOffDetail(detail)) OR CHANGED (dateTimeUserWriteOffDetail(detail));
-
 @defineDocumentInterfaceHeaderQuantity(writeOff);
 @defineDocumentHeaderSkuQuantity(writeOff, sku);
 @defineDocumentHeaderSkuQuantity(userWriteOff, sku);
@@ -225,7 +217,6 @@ FORM writeOffPrint 'Акт списания' PRINT
 printWriteOff 'Акт списания' (writeOff) = ACTION FORM writeOffPrint OBJECTS w IMAGE 'print.png' IN printGroup;
 
 // --------------------------- Формы списания ---------------------------------
-backgroundBalanceWriteOffDetail 'Цвет' (writeOffDetail) = RGB(255, 128, 128) IF quantityWriteOffDetail(writeOffDetail) > balanceBSkuBatchWriteOffDetail(writeOffDetail);
 
 FORM userWriteOff 'Списание'
     OBJECTS w=userWriteOff FIXED PANEL
@@ -237,8 +228,7 @@ FORM userWriteOff 'Списание'
     OBJECTS d=userWriteOffDetail
     PROPERTIES (d) indexUserWriteOffDetail, idBarcodeSkuUserWriteOffDetail, nameSkuUserWriteOffDetail, shortNameUOMSkuUserWriteOffDetail,
                    descriptionBatchUserWriteOffDetail, quantityUserWriteOffDetail,
-                   priceUserWriteOffDetail, sumUserWriteOffDetail, balanceBSkuBatchUserWriteOffDetail BACKGROUND backgroundBalanceWriteOffDetail(d),
-                   ADDOBJ, delete
+                   priceUserWriteOffDetail, sumUserWriteOffDetail, ADDOBJ, delete
 
     PROPERTIES(w) TODRAW d addDetailDialogSkuStockUserWriteOffDetailUserWriteOff, addDetailDialogTerminalUserWriteOffDetailUserWriteOff,
                            addDetailInputBarcodeUserWriteOffDetailUserWriteOff, deleteUserWriteOffDetailUserWriteOff
@@ -309,7 +299,7 @@ FORM writeOffs 'Списания'
 
     OBJECTS d=writeOffDetail
     PROPERTIES (d) READONLY indexWriteOffDetail, idBarcodeSkuWriteOffDetail, nameSkuWriteOffDetail, shortNameUOMSkuWriteOffDetail, descriptionBatchWriteOffDetail,
-                   quantityWriteOffDetail, priceWriteOffDetail, sumWriteOffDetail, balanceBSkuBatchWriteOffDetail BACKGROUND backgroundBalanceWriteOffDetail(d)
+                   quantityWriteOffDetail, priceWriteOffDetail, sumWriteOffDetail
 
     FILTERS writeOffWriteOffDetail(d) == w
 ;

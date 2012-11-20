@@ -8,22 +8,22 @@ createRepricingDepartmentStore 'Создавать акт дооценки' = DA
 
 EXTEND FORM departmentStore PROPERTIES createRepricingDepartmentStore(d);
 
-META defineDocumentHeaderCreateRepricing(object, stockClass)
-    createRepricing###object 'Создать акт дооценки' (object) = DATA BOOLEAN(object) IN documentPrmGroup;
-
-    createRepricing###object (object) <- TRUE IF createRepricingDepartmentStore(stockClass###object(object))
-        WHEN CHANGED(stockClass###object(object));
-
-END
-META defineDocumentAbstractHeaderCreateRepricing(object, stockClass)
-    createRepricing###object 'Создать акт дооценки' (object) = ABSTRACT BOOLEAN(object);
-END
-
-META defineDocumentInterfaceHeaderCreateRepricing (object, stockClass)
-    @defineDocumentAbstractHeaderCreateRepricing (object, stockClass);
-    @defineDocumentHeaderCreateRepricing (user###object, stockClass);
-    createRepricing###object (object) += createRepricing###user###object(object);
-END
+//META defineDocumentHeaderCreateRepricing(object, stockClass)
+//    createRepricing###object 'Создать акт дооценки' (object) = DATA BOOLEAN(object) IN documentPrmGroup;
+//
+//    createRepricing###object (object) <- TRUE IF createRepricingDepartmentStore(stockClass###object(object))
+//        WHEN CHANGED(stockClass###object(object));
+//
+//END
+//META defineDocumentAbstractHeaderCreateRepricing(object, stockClass)
+//    createRepricing###object 'Создать акт дооценки' (object) = ABSTRACT BOOLEAN(object);
+//END
+//
+//META defineDocumentInterfaceHeaderCreateRepricing (object, stockClass)
+//    @defineDocumentAbstractHeaderCreateRepricing (object, stockClass);
+//    @defineDocumentHeaderCreateRepricing (user###object, stockClass);
+//    createRepricing###object (object) += createRepricing###user###object(object);
+//END
 
 // ----------------------------------- Комиссия ------------------------------------------ //
 
@@ -627,9 +627,8 @@ META defineRepricing(sign, stockProp)
     @defineDocumentInterfaceDetailDiffSumPrefix (invoice, retailSum, after, cur, ' дооценки');
     @defineDocumentInterfaceHeaderSumPrefix (invoice, diffRetail, ' дооценки');
 
-    @defineDocumentInterfaceHeaderCreateRepricing (invoice, stockProp);
-    createRepricingInvoiceDetail 'Создать акт дооценки' (invoiceDetail) = createRepricingInvoice(invoiceInvoiceDetail(invoiceDetail));
-    createRepricingUserInvoiceDetail 'Создать акт дооценки' (userInvoiceDetail) = createRepricingUserInvoice(userInvoiceUserInvoiceDetail(userInvoiceDetail));
+    @defineDocumentInterfaceCreate (invoice, createRepricing, 'Создать акт дооценки');
+    @deriveDocumentHeaderCreate(userInvoice, createRepricing, departmentStore, stockProp);
 
     needToRepricingInvoiceDetail (invoiceDetail) = curRetailPriceInvoiceDetail(invoiceDetail) != retailPriceInvoiceDetail(invoiceDetail)
                                                    AND balanceBSkuInvoiceDetail(invoiceDetail) != 0 AND stockProp###InvoiceDetail(invoiceDetail) IS departmentStore
