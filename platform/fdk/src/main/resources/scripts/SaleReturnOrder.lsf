@@ -6,6 +6,8 @@ NAMESPACE SaleReturn;
 
 @defineOrder(' (продажа-возврат)', supplierStock);
 
+@defineOrderStockDestination(customerStock, supplierStock);
+
 @defineNumeratedObjectDefaultPrefix(userOrder, 'Нумератор для заказов (продажа-возврат)', 'ВП', saleReturn);
 
 CONSTRAINT supplierUserOrder(userOrder) AND NOT isCompanyLegalEntity(supplierUserOrder(userOrder))

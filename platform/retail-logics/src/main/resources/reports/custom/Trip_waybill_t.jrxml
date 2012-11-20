@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="t" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
+	<property name="ireport.zoom" value="1.2100000000000006"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
+		<box>
+			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+		<paragraph leftIndent="2" rightIndent="2"/>
+	</style>
+	<style name="GroupCellStyle0" mode="Opaque" backcolor="#FFFFFF" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
+		<box>
+			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+		<paragraph leftIndent="2" rightIndent="2"/>
+	</style>
+	<field name="t" class="java.lang.Integer"/>
+	<field name="dateTrip" class="java.util.Date"/>
+	<field name="numberObject" class="java.lang.String"/>
+	<field name="sidTruckTrip" class="java.lang.String"/>
+	<field name="nameMarkTruckTrip" class="java.lang.String"/>
+	<field name="driverTrip" class="java.lang.String"/>
+	<field name="st" class="java.lang.Integer"/>
+	<field name="name" class="java.lang.String"/>
+	<field name="addressStock" class="java.lang.String"/>
+	<field name="nameLegalEntityStock" class="java.lang.String"/>
+	<title>
+		<band height="250">
+			<textField isStretchWithOverflow="true">
+				<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="30" y="0" width="118" height="18"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Путевой лист № "]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="8" y="50" width="290" height="18"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Машина "]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="8" y="68" width="89" height="36"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Марка"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="8" y="138" width="290" height="18"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Водитель"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd.MM.yy" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="30" y="18" width="206" height="18"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{dateTrip}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="148" y="0" width="88" height="18"/>
+				<textElement textAlignment="Left"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{numberObject}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="97" y="104" width="91" height="18"/>
+				<textElement textAlignment="Left"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{sidTruckTrip}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="8" y="104" width="89" height="18"/>
+				<textElement textAlignment="Left"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{nameMarkTruckTrip}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="97" y="68" width="91" height="36"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Регистрационный знак"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="188" y="68" width="110" height="36"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Гаражный номер"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="8" y="156" width="90" height="54"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Фамилия, инициалы"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="98" y="156" width="90" height="54"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Табельный номер, класс"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="188" y="156" width="110" height="54"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA["водитель по состоянию здоровья к управлению допущен. Подпись (штамп)"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="8" y="210" width="90" height="18"/>
+				<textElement textAlignment="Left"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{driverTrip}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="54">
+			<textField>
+				<reportElement x="176" y="18" width="100" height="36"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Пункт отправления"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="276" y="18" width="100" height="36"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Пункт назначения"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="8" y="0" width="609" height="18"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Задание водителю"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="8" y="18" width="68" height="36"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Заказчик"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="76" y="36" width="53" height="18"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA["прибытия"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="76" y="18" width="100" height="18"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Дата, время"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="129" y="36" width="47" height="18"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA["убытия"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="376" y="18" width="64" height="36"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Расстояние, км"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="440" y="18" width="74" height="36"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Наименование груза"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="514" y="18" width="40" height="36"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Вес груза, т"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="554" y="18" width="63" height="36"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Количество ездок с грузом, ч"]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<detail>
+		<band height="18">
+			<textField isStretchWithOverflow="true">
+				<reportElement x="176" y="0" width="100" height="18"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{addressStock}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement x="8" y="0" width="68" height="18"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{nameLegalEntityStock}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="18"/>
+	</detail>
+</jasperReport>

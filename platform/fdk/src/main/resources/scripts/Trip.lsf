@@ -1,16 +1,10 @@
 MODULE Trip;
 
-REQUIRE Route;
+REQUIRE Order, Shipment, Consignment, Route;
 
 NAMESPACE Trip;
 
 CLASS trip 'Рейс' : numeratedObject;
-
-CLASS ABSTRACT order 'Заказ';
-CLASS ABSTRACT orderDetail 'Строка';
-
-CLASS ABSTRACT shipment 'Поставка';
-CLASS ABSTRACT shipmentDetail 'Строка';
 
 @defineDocumentHeaderTime(trip);
 
@@ -23,88 +17,49 @@ nameMarkTruckTrip 'Марка' (trip) = name(markTruckTrip(trip));
 
 driverTrip 'Водитель' = DATA STRING[50](trip);
 
-// абстрактные свойства
-numberOrder 'Номер' = ABSTRACT STRING[100](order);
-seriesOrder 'Серия' = ABSTRACT STRING[10](order);
-dateOrder 'Дата' = ABSTRACT DATE(order);
-
-orderOrderDetail = ABSTRACT order(orderDetail);
-
-skuOrderDetail '' = ABSTRACT sku(orderDetail);
-nameSkuOrderDetail 'SKU' (orderDetail) = nameSku(skuOrderDetail(orderDetail));
-netWeightSkuOrderDetail 'Вес нетто' (orderDetail) = netWeightSku(skuOrderDetail(orderDetail));
-barcodeSkuOrderDetail 'Штрих-код' (orderDetail) = idBarcodeSku(skuOrderDetail(orderDetail));
-shortNameUOMSkuOrderDetail 'Ед. изм.' (orderDetail) = shortNameUOMSku(skuOrderDetail(orderDetail));
-
-quantityOrderDetail 'Кол-во' = ABSTRACT NUMERIC[14,2](orderDetail);
-
-nodeFromOrder = ABSTRACT node(order);
-nodeToOrder = ABSTRACT node(order);
-
-nameNodeFromOrder 'Откуда' = nameNode(nodeFromOrder(order));
-nameNodeToOrder 'Куда' = nameNode(nodeToOrder(order));
-
-addressNodeFromOrder 'Адрес' = addressNode(nodeFromOrder(order));
-addressNodeToOrder 'Адрес' = addressNode(nodeToOrder(order));
-
+// заказы
 tripOrder = DATA trip(order);
 inTripOrder 'Включен' (trip, order) = tripOrder(order)==trip;
 
+filterTripOrder(trip, order) = tripOrder(order)==trip OR (trip IS trip AND order IS order AND NOT tripOrder(order));
+
+quantityTripStockFrom (trip, stock) = GROUP SUM 1 BY tripOrder(order), fromStockOrder(order);
+quantityTripStockTo (trip, stock) = GROUP SUM 1 BY tripOrder(order), toStockOrder(order);
+quantityTripStock(trip, stock) = UNION SUM quantityTripStockFrom(trip, stock), quantityTripStockTo(trip, stock);
+
+//inNodeTrip 'Включен' (node, trip) = TRUE IF quantityTripNode(trip, node);
+numberStockTrip 'Порядковый номер' = DATA INTEGER(stock, trip);
+numberStockTrip(stock, trip) => quantityTripStock(trip, stock)>0 RESOLVE FALSE;
+
+maxNumberTrip(trip) = GROUP MAX numberStockTrip(stock, trip) BY trip;
+indexTripOrder 'Номер' (trip, order) = maxNumberTrip(trip) - numberStockTrip(toStockOrder(order), trip) + 1 IF inTripOrder(trip, order);
+
+CONSTRAINT numberStockTrip(fromStockOrder(order), tripOrder(order)) >= numberStockTrip(toStockOrder(order), tripOrder(order))
+    MESSAGE 'Номер не соответствует направлению заказа';
+
+grossWeightOrderedTrip 'Суммарный вес заказов' (trip) = GROUP SUM grossWeightOrderDetailOrder(order) BY tripOrder(order);
+
+//netWeightSkuOrderDetail 'Вес нетто' (orderDetail) = netWeightSku(skuOrderDetail(orderDetail));
+
 // поставки
-numberShipment 'Номер' = ABSTRACT STRING[100](shipment);
-seriesShipment 'Серия' = ABSTRACT STRING[10](shipment);
-dateShipment 'Дата' = ABSTRACT DATE(shipment);
-
-nodeFromShipment = ABSTRACT node(shipment);
-nodeToShipment = ABSTRACT node(shipment);
-
-nameNodeFromShipment 'Откуда' (shipment) = nameNode(nodeFromShipment(shipment));
-nameNodeToShipment 'Куда' (shipment) = nameNode(nodeToShipment(shipment));
-
-addressNodeFromShipment 'Адрес' (shipment) = addressNode(nodeFromShipment(shipment));
-addressNodeToShipment 'Адрес' (shipment) = addressNode(nodeToShipment(shipment));
-
 tripShipment = DATA trip(shipment);
 inTripShipment 'Включен' (trip, shipment) = tripShipment(shipment)==trip;
 
-filterTripOrder(trip, order) = tripOrder(order)==trip OR (trip IS trip AND order IS order AND NOT tripOrder(order));
-
-quantityTripNodeFrom (trip, node) = GROUP SUM 1 BY tripOrder(order), nodeFromOrder(order);
-quantityTripNodeTo (trip, node) = GROUP SUM 1 BY tripOrder(order), nodeToOrder(order);
-quantityTripNode(trip, node) = UNION SUM quantityTripNodeFrom(trip, node), quantityTripNodeTo(trip, node);
-
-inNodeTrip 'Включен' (node, trip) = TRUE IF quantityTripNode(trip, node);
-numberNodeTrip 'Порядковый номер' = DATA INTEGER(node, trip);
-numberNodeTrip(node, trip) => inNodeTrip(node, trip) RESOLVE FALSE;
-
-skuShipmentDetail '' = ABSTRACT sku(shipmentDetail);
-nameSkuShipmentDetail 'SKU' (shipmentDetail) = nameSku(skuShipmentDetail(shipmentDetail));
-netWeightSkuShipmentDetail 'Вес нетто' (shipmentDetail) = netWeightSku(skuShipmentDetail(shipmentDetail));
-barcodeSkuShipmentDetail 'Штрих-код' (shipmentDetail) = idBarcodeSku(skuShipmentDetail(shipmentDetail));
-shortNameUOMSkuShipmentDetail 'Ед. изм.' (shipmentDetail) = shortNameUOMSku(skuShipmentDetail(shipmentDetail));
-
-shipmentShipmentDetail '' = ABSTRACT shipment(shipmentDetail);
-
-quantityShipmentDetail 'Кол-во' = ABSTRACT NUMERIC[14,2](shipmentDetail);
-
-//dateTimeNodeTrip '' = DATA DATETIME(node, trip);
-
-maxNumberTrip(trip) = GROUP MAX numberNodeTrip(node, trip) BY trip;
-indexTripOrder 'Номер' (trip, order) = maxNumberTrip(trip) - numberNodeTrip(nodeToOrder(order), trip) + 1 IF inTripOrder(trip, order);
-
-CONSTRAINT numberNodeTrip(nodeFromOrder(order), tripOrder(order)) >= numberNodeTrip(nodeToOrder(order), tripOrder(order))
-    MESSAGE 'Номер не соответствует направлению заказа';
-
-quantityTripOrderDetail 'Кол-во' = DATA NUMERIC[14,2](trip, orderDetail);
+//netWeightSkuShipmentDetail 'Вес нетто' (shipmentDetail) = netWeightSku(skuShipmentDetail(shipmentDetail));
+//grossWeightShipmentDetail 'Вес' = ABSTRACT NUMERIC[14,4](shipmentDetail);
+//packQuantityShipmentDetail 'Кол-во грузовых мест' = ABSTRACT NUMERIC[14,3](shipmentDetail);
+//@implementConsignmentDetailSku(shipment);
+//
+grossWeightShipmentedTrip 'Суммарный вес поставок' (trip) = GROUP SUM grossWeightShipmentDetailShipment(shipment) BY tripShipment(shipment);
 
 FORM waybill PRINT
 
     OBJECTS t=trip FIXED PANEL
     PROPERTIES(t) dateTrip, numberObject, sidTruckTrip, nameMarkTruckTrip, driverTrip
 
-    OBJECTS n=node
-    PROPERTIES(n) nameNode, addressNode, nameLegalEntityNode
-    FILTERS inNodeTrip(n, t)
+    OBJECTS st=stock
+    PROPERTIES(st) name, addressStock, nameLegalEntityStock
+    FILTERS quantityTripStock(t, st)>0
 ;
 
 printWaybill 'Печать путевого листа' (trip) = ACTION (trip) {
@@ -114,10 +69,11 @@ printWaybill 'Печать путевого листа' (trip) = ACTION (trip) {
 FORM trip 'Рейс'
     OBJECTS t=trip FIXED PANEL
     PROPERTIES (t) nameNumeratorObject, numberObject, seriesObject, dateTrip, driverTrip, timeTrip, sidTruckTrip, nameMarkTruckTrip, weightTruckTrip, printWaybill
+    PROPERTIES (t) READONLY grossWeightOrderedTrip, grossWeightShipmentedTrip
 
     OBJECTS o=order
-    PROPERTIES(t, o) inTripOrder, indexTripOrder
-    PROPERTIES(o) READONLY numberOrder, seriesOrder, dateOrder, nameNodeFromOrder, nameNodeToOrder
+    PROPERTIES(t, o) inTripOrder
+    PROPERTIES(o) READONLY numberOrder, seriesOrder, dateOrder, nameFromStockOrder, nameToStockOrder, grossWeightOrderDetailOrder
 
     FILTERGROUP filterDate
         FILTER 'Заказы к отправке' 'F10' dateOrder(o) <= dateTrip(t) DEFAULT
@@ -125,21 +81,24 @@ FORM trip 'Рейс'
         FILTER 'Не расписанные заказы или в текущем рейсе' 'F11' filterTripOrder(t, o) DEFAULT
 
     OBJECTS od=orderDetail
-    PROPERTIES(od) READONLY barcodeSkuOrderDetail, nameSkuOrderDetail, shortNameUOMSkuOrderDetail, quantityOrderDetail, netWeightSkuOrderDetail
+    PROPERTIES(od) READONLY idBarcodeSkuOrderDetail, nameSkuOrderDetail, shortNameUOMSkuOrderDetail, quantityOrderDetail//, grossWeightSkuOrderDetail
     FILTERS orderOrderDetail(od)==o
 
     OBJECTS s=shipment
     PROPERTIES (t, s) inTripShipment
-    PROPERTIES(s) READONLY numberShipment, seriesShipment, dateShipment
+    PROPERTIES(s) READONLY numberShipment, seriesShipment, dateShipment, nameFromStockShipment, nameToStockShipment, grossWeightShipmentDetailShipment
+    //PROPERTIES(s) printConsignmentSimpleVertical, printConsignmentSimpleHorizontal, printConsignmentSimpleAttach,
+    //              printConsignmentVerticalA, printConsignmentHorizontalA, printConsignmentVerticalB,
+    //              printConsignmentHorizontalB, printConsignmentAttach, editConsignment
 
     OBJECTS sd=shipmentDetail
-    PROPERTIES(sd) READONLY barcodeSkuShipmentDetail, nameSkuShipmentDetail, shortNameUOMSkuShipmentDetail, quantityShipmentDetail, netWeightSkuShipmentDetail
-    //FILTERS orderOrderDetail(od)==o
+    PROPERTIES(sd) READONLY idBarcodeSkuShipmentDetail, nameSkuShipmentDetail, shortNameUOMSkuShipmentDetail, quantityShipmentDetail//, netWeightSkuShipmentDetail
+    FILTERS shipmentShipmentDetail(sd)==s
 
-    OBJECTS n=node
-    PROPERTIES(n) READONLY nameNode, addressNode, nameLegalEntityNode
-    PROPERTIES(n, t) numberNodeTrip
-    FILTERS inNodeTrip(n, t)
+    OBJECTS st=stock
+    PROPERTIES(st) READONLY name, addressStock, nameLegalEntityStock
+    PROPERTIES(st, t) numberStockTrip
+    FILTERS quantityTripStock (t, st)>0
 
     EDIT trip OBJECT t
 ;
@@ -164,6 +123,8 @@ DESIGN trip FROM DEFAULT{
             ADD PROPERTY(sidTruckTrip);
             ADD PROPERTY(nameMarkTruckTrip);
             ADD PROPERTY(weightTruckTrip);
+            ADD PROPERTY(grossWeightOrderedTrip);
+            ADD PROPERTY(grossWeightShipmentedTrip);
             ADD PROPERTY(printWaybill);
         }
 
@@ -183,7 +144,7 @@ DESIGN trip FROM DEFAULT{
                 ADD sd.box;
             }
 
-            ADD n.box;
+            ADD st.box;
         }
 
         ADD functions.box;
@@ -196,13 +157,13 @@ FORM trips 'Рейсы'
     PROPERTIES(t) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
 
     OBJECTS o=order
-    PROPERTIES(o) READONLY numberOrder, seriesOrder, dateOrder, nameNodeFromOrder, nameNodeToOrder
+    PROPERTIES(o) READONLY numberOrder, seriesOrder, dateOrder, nameFromStockOrder, nameToStockOrder, grossWeightOrderDetailOrder
     FILTERS inTripOrder(t, o)
 
-    OBJECTS n=node
-    PROPERTIES(n) READONLY nameNode
-    PROPERTIES(n, t) READONLY numberNodeTrip
-    FILTERS inNodeTrip(n, t)
+    OBJECTS st=stock
+    PROPERTIES(st) READONLY name, addressStock, nameLegalEntityStock
+    PROPERTIES(st, t) READONLY numberStockTrip
+    FILTERS quantityTripStock(t, st)>0
 ;
 
 DESIGN trips FROM DEFAULT{
@@ -212,7 +173,7 @@ DESIGN trips FROM DEFAULT{
         NEW bottomContainer {
             type = TABBED;
             ADD o.box;
-            ADD n.box;
+            ADD st.box;
         }
 
         ADD functions.box;

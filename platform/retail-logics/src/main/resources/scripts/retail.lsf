@@ -78,8 +78,6 @@ REQUIRE System,
         Transport,
         Route,
         Trip,
-        SaleTrip,
-        SaleReturnTrip,
         Agreement,
         Warehouse,
         StockTax,
@@ -6793,6 +6791,7 @@ NAVIGATOR {
     }
 
     NEW transport 'Управление транспортом' TO formsToolbar {
+        ADD marks;
         ADD trucks;
         ADD routes;
         ADD trips;

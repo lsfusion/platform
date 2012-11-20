@@ -14,6 +14,21 @@ nameMarkTruck 'Марка' (truck) = name(markTruck(truck));
 weightTruck 'Грузоподьёмность (тонн)' = DATA NUMERIC[14,2](truck);
 ownerTruck 'Владелец' = DATA STRING[100](truck);
 
+FORM mark 'Модель машины'
+    OBJECTS m=mark FIXED PANEL
+    PROPERTIES (m) name
+
+    EDIT mark OBJECT m
+;
+
+FORM marks 'Модели машин'
+    OBJECTS m=mark
+    PROPERTIES(m) READONLY name
+    PROPERTIES(m) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
+
+    DIALOG mark OBJECT m
+;
+
 FORM truck 'Машина'
     OBJECTS t=truck FIXED PANEL
     PROPERTIES (t) sidTruck, nameMarkTruck, ownerTruck, weightTruck
