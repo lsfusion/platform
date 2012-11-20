@@ -381,11 +381,12 @@ useRetailPriceCStoWHDetail(CStoWHDetail) = destinationStockCStoWHDetail(CStoWHDe
     AND NOT costLedgerDepartmentStore(destinationStockCStoWHDetail(CStoWHDetail));
 @defineDocumentTransferAccount(CStoWH, useRetailPriceCStoWHDetail);
 
-@defineConsignment(CStoWH);
-@implementConsignmentHeader(CStoWH, customStore);
+@defineConsignmentHeader(CStoWH);
+@implementConsignmentHeader(CStoWH);
 
-senderConsignment (consignment) += customStoreCStoWH(consignment);
-recipientConsignment (consignment) += legalEntityStock(destinationStockCStoWH(consignment));
+supplierConsignment (consignment) += customStoreCStoWH(consignment);
+supplierStockConsignment (consignment) += customStoreCStoWH(consignment);
+customerConsignment (consignment) += legalEntityStock(destinationStockCStoWH(consignment));
 
 consignmentConsignmentDetail (consignmentDetail) += CStoWHCStoWHDetail (consignmentDetail);
 skuConsignmentDetail (consignmentDetail) += skuCStoWHDetail (consignmentDetail);

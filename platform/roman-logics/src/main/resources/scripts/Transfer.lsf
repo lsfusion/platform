@@ -98,11 +98,13 @@ skipSkuLedger (ledger) += skipSkuLedgerTransferOutDetail(ledger);
 @defineDocumentDetailGrossWeight(transferOutBatch, sku);
 @defineDocumentDetailQuantityPack(transferOutBatch, sku);
 
-@defineConsignment(transferOut);
-@implementConsignmentHeader(transferOut, stock);
+@defineConsignmentHeader(transferOut);
+@implementConsignmentHeader(transferOut);
 
-senderConsignment (consignment) += legalEntityStock(stockTransferOut(consignment));
-recipientConsignment (consignment) += legalEntityStock(destinationStockTransferOut(consignment));
+supplierConsignment (consignment) += legalEntityStock(stockTransferOut(consignment));
+supplierStockConsignment (consignment) += stockTransferOut(consignment);
+customerConsignment (consignment) += legalEntityStock(destinationStockTransferOut(consignment));
+
 consignmentConsignmentDetail (consignmentDetail) += transferOutTransferOutBatchDetail (consignmentDetail);
 skuConsignmentDetail (consignmentDetail) += skuTransferOutBatchDetail (consignmentDetail);
 quantityConsignmentDetail (consignmentDetail) += quantityTransferOutBatchDetail (consignmentDetail);

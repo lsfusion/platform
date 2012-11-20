@@ -95,12 +95,15 @@ skipSkuLedger (ledger) += skipSkuLedgerSaleOutDetail(ledger);
 @defineDocumentDetailGrossWeight(saleOutBatch, sku);
 @defineDocumentDetailQuantityPack(saleOutBatch, sku);
 
-@defineConsignment(saleOut);
-@implementConsignmentHeader(saleOut, stock);
+@defineConsignmentHeader(saleOut);
 isCommissionSaleOutBatchDetail 'Продажа на комиссию' (saleOutBatchDetail) = isCommissionSaleOut(saleOutSaleOutBatchDetail(saleOutBatchDetail));
 
-senderConsignment (consignment) += legalEntityStock(stockSaleOut(consignment));
-recipientConsignment (consignment) += legalEntityStock(destinationStockSaleOut(consignment));
+@implementConsignmentHeader(saleOut);
+
+supplierConsignment (consignment) += legalEntityStock(stockSaleOut(consignment));
+supplierStockConsignment (consignment) += stockSaleOut(consignment);
+customerConsignment (consignment) += legalEntityStock(destinationStockSaleOut(consignment));
+
 consignmentConsignmentDetail (consignmentDetail) += saleOutSaleOutBatchDetail (consignmentDetail);
 skuConsignmentDetail (consignmentDetail) += skuSaleOutBatchDetail (consignmentDetail);
 quantityConsignmentDetail (consignmentDetail) += quantitySaleOutBatchDetail (consignmentDetail);

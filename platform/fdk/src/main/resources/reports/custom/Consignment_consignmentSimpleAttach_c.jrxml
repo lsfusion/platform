@@ -33,12 +33,12 @@
 	<field name="quantityConsignmentDetailConsignment" class="java.lang.Double"/>
 	<field name="sumConsignmentDetailConsignment" class="java.lang.Double"/>
 	<field name="sumVATConsignmentDetailConsignment" class="java.lang.Double"/>
-	<field name="UNPRecipientConsignment" class="java.lang.String"/>
-	<field name="UNPSenderConsignment" class="java.lang.String"/>
-	<field name="addressSenderConsignment" class="java.lang.String"/>
-	<field name="addressRecipientConsignment" class="java.lang.String"/>
-	<field name="fullNameSenderConsignment" class="java.lang.String"/>
-	<field name="fullNameRecipientConsignment" class="java.lang.String"/>
+	<field name="UNPCustomerConsignment" class="java.lang.String"/>
+	<field name="UNPSupplierConsignment" class="java.lang.String"/>
+	<field name="addressSupplierConsignment" class="java.lang.String"/>
+	<field name="addressCustomerConsignment" class="java.lang.String"/>
+	<field name="fullNameSupplierConsignment" class="java.lang.String"/>
+	<field name="fullNameCustomerConsignment" class="java.lang.String"/>
 	<field name="d" class="java.lang.Integer"/>
 	<field name="nameSkuConsignmentDetail" class="java.lang.String"/>
 	<field name="shortNameUOMConsignmentDetail" class="java.lang.String"/>
@@ -83,7 +83,7 @@
 						<rightPen lineWidth="0.0"/>
 					</box>
 					<textElement textAlignment="Left"/>
-					<textFieldExpression><![CDATA[$F{fullNameSenderConsignment}+", "+$F{addressSenderConsignment}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{fullNameSupplierConsignment}+", "+$F{addressSupplierConsignment}]]></textFieldExpression>
 				</textField>
 				<line>
 					<reportElement positionType="Float" x="90" y="13" width="465" height="1"/>
@@ -137,7 +137,7 @@
 						<rightPen lineWidth="0.0"/>
 					</box>
 					<textElement textAlignment="Left"/>
-					<textFieldExpression><![CDATA[$F{fullNameRecipientConsignment}+", "+$F{addressRecipientConsignment}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{fullNameCustomerConsignment}+", "+$F{addressCustomerConsignment}]]></textFieldExpression>
 				</textField>
 				<staticText>
 					<reportElement positionType="Float" x="90" y="14" width="465" height="7"/>

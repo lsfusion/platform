@@ -20,8 +20,26 @@ CLASS ABSTRACT consignment 'Накладная';
 CLASS ABSTRACT consignmentDetail 'Строка накладной';
 
 dateConsignment 'Дата' (consignment) = ABSTRACT DATE (consignment);
-stockConsignment (consignment) = ABSTRACT stock (consignment);
-nameStockConsignment 'Отдел документа' (consignment) = name(stockConsignment(consignment)) MINCHARWIDTH 30 PREFCHARWIDTH 30;
+
+// ---------------------------------- Юридические лица ---------------------- //
+supplierConsignment = ABSTRACT legalEntity (consignment);
+UNPSupplierConsignment 'УНП отправителя' (consignment) = UNPLegalEntity(supplierConsignment(consignment));
+addressSupplierConsignment 'Юридический адрес отправителя' (consignment) =
+    addressLegalEntityDate(supplierConsignment(consignment), dateConsignment(consignment)) MINCHARWIDTH 30 PREFCHARWIDTH 50;
+fullNameSupplierConsignment 'Наименование для накладных отправителя' (consignment) = fullNameLegalEntity(supplierConsignment(consignment)) MINCHARWIDTH 30 PREFCHARWIDTH 50;
+
+customerConsignment = ABSTRACT legalEntity (consignment);
+UNPCustomerConsignment 'УНП получателя' (consignment) = UNPLegalEntity(customerConsignment(consignment));
+addressCustomerConsignment 'Юридический адрес получателя' (consignment) =
+    addressLegalEntityDate(customerConsignment(consignment), dateConsignment(consignment)) MINCHARWIDTH 30 PREFCHARWIDTH 50;
+fullNameCustomerConsignment 'Наименование для накладных получателя' (consignment) = fullNameLegalEntity(customerConsignment(consignment)) MINCHARWIDTH 30 PREFCHARWIDTH 50;
+
+payerConsignment = ABSTRACT legalEntity (consignment);
+UNPPayerConsignment 'УНП заказчика перевозки' (consignment) = UNPLegalEntity(payerConsignment(consignment));
+addressPayerConsignment 'Юридический адрес заказчика перевозки' (consignment) =
+    addressLegalEntityDate(payerConsignment(consignment), dateConsignment(consignment));
+fullNamePayerConsignment 'Наименование для накладных заказчика перевозки' (consignment) =
+    fullNameLegalEntity(payerConsignment(consignment)) ;
 
 // ------------------------------------- Атрибуты --------------------------------- //
 
@@ -33,13 +51,21 @@ trailerConsignment 'Прицеп' (consignment) = ABSTRACT STRING[10] (consignme
 driverCarConsignment 'Водитель' (consignment) = ABSTRACT STRING[40] (consignment) IN carConsignmentGroup;
 waybillConsignment 'Путевой лист' (consignment) = ABSTRACT STRING[20] (consignment) IN carConsignmentGroup;
 
-transportPayerConsignment 'Заказчик перевозки (ИД)' (consignment) = ABSTRACT legalEntity (consignment);
+// Склад погрузки
+supplierStockConsignment (consignment) = ABSTRACT stock (consignment);
+nameSupplierStockConsignment 'Склад погрузки' (consignment) = name(supplierStockConsignment(consignment)) MINCHARWIDTH 30 PREFCHARWIDTH 30;
 
-dataLoadingPlaceConsignment 'Пункт погрузки' (consignment) = ABSTRACT STRING[50] (consignment);
-loadingPlaceConsignment 'Пункт погрузки' (consignment) = UNION OVERRIDE addressStock(stockConsignment(consignment)),
-                                                                 dataLoadingPlaceConsignment (consignment) IN carConsignmentGroup;
+dataAddressSupplierStockConsignment 'Пункт погрузки' (consignment) = ABSTRACT STRING[50] (consignment);
+addressSupplierStockConsignment 'Пункт погрузки' (consignment) = UNION OVERRIDE addressStock(supplierStockConsignment(consignment)),
+                                                                                dataAddressSupplierStockConsignment (consignment) IN carConsignmentGroup;
 
-dataUnloadingPlaceConsignment 'Пункт разгрузки' (consignment) = ABSTRACT STRING[50] (consignment) IN carConsignmentGroup;
+// Склад разгрузки
+customerStockConsignment (consignment) = ABSTRACT stock (consignment);
+nameCustomerStockConsignment 'Склад разгрузки' (consignment) = name(customerStockConsignment(consignment)) MINCHARWIDTH 30 PREFCHARWIDTH 30;
+
+dataAddressCustomerStockConsignment 'Пункт разгрузки' (consignment) = ABSTRACT STRING[50] (consignment) IN carConsignmentGroup;
+addressCustomerStockConsignment 'Пункт разгрузки' (consignment) = UNION OVERRIDE addressStock(customerStockConsignment(consignment)),
+                                                                                 dataAddressCustomerStockConsignment (consignment) IN carConsignmentGroup;
 
 readdressingConsignment 'Переадресовка' (consignment) = ABSTRACT STRING[50] (consignment) IN carConsignmentGroup;
 
@@ -80,31 +106,11 @@ downtimeConsignment 'Время простоя' (consignment) = ABSTRACT STRING[
 
 raceQuantityConsignment 'Количество ездок' (consignment) = ABSTRACT INTEGER (consignment) IN carConsignmentGroup;
 
-recipientConsignment 'Получатель (ИД)' = ABSTRACT legalEntity (consignment);
-UNPRecipientConsignment 'УНП получателя' (consignment) = UNPLegalEntity(recipientConsignment(consignment));
-addressRecipientConsignment 'Юридический адрес получателя' (consignment) = addressLegalEntityDate(recipientConsignment(consignment), dateConsignment(consignment)) MINCHARWIDTH 30 PREFCHARWIDTH 50;
-fullNameRecipientConsignment 'Наименование для накладных получателя' (consignment) = fullNameLegalEntity(recipientConsignment(consignment)) MINCHARWIDTH 30 PREFCHARWIDTH 50;
-
-unloadingPlaceConsignment 'Пункт разгрузки' (consignment) = UNION OVERRIDE addressRecipientConsignment(consignment),
-                                                                           dataUnloadingPlaceConsignment (consignment) IN carConsignmentGroup;
-
-senderConsignment (consignment) = ABSTRACT legalEntity (consignment);
-
-UNPSenderConsignment 'УНП отправителя' (consignment) = UNPLegalEntity(senderConsignment(consignment));
-addressSenderConsignment 'Юридический адрес отправителя' (consignment) = addressLegalEntityDate(senderConsignment(consignment), dateConsignment(consignment)) MINCHARWIDTH 30 PREFCHARWIDTH 50;
-fullNameSenderConsignment 'Наименование для накладных отправителя' (consignment) = fullNameLegalEntity(senderConsignment(consignment)) MINCHARWIDTH 30 PREFCHARWIDTH 50;
-
-UNPTransportPayerConsignment 'УНП заказчика перевозки' (consignment) = UNPLegalEntity(transportPayerConsignment(consignment));
-addressTransportPayerConsignment 'Юридический адрес заказчика перевозки' (consignment) =
-    addressLegalEntityDate(transportPayerConsignment(consignment), dateConsignment(consignment));
-fullNameTransportPayerConsignment 'Наименование для накладных заказчика перевозки' (consignment) =
-    fullNameLegalEntity(transportPayerConsignment(consignment)) ;
-
 noteConsignment 'Примечание' (consignment) = ABSTRACT STRING[100] (consignment) MINCHARWIDTH 30 PREFCHARWIDTH 80;
 
-nameTransportPayerConsignment 'Заказчик перевозки ' (consignment) =
+namePayerConsignment 'Заказчик перевозки ' (consignment) =
     [FORMULA STRING[100] 'CAST($1 AS TEXT) ||  \' , \' || CAST($2 AS TEXT)']
-    (name(transportPayerConsignment(consignment)), UNPLegalEntity(transportPayerConsignment(consignment))) IN carConsignmentGroup;
+    (name(payerConsignment(consignment)), UNPLegalEntity(payerConsignment(consignment))) IN carConsignmentGroup;
 
 skuConsignmentDetail (consignmentDetail) = ABSTRACT sku (consignmentDetail);
 nameSkuConsignmentDetail 'Наименование товара' (consignmentDetail) = nameSku(skuConsignmentDetail(consignmentDetail));
@@ -193,9 +199,9 @@ META defineConsignmentFormSimple(form, caption)
 
         PROPERTIES (c) dateConsignment, shipmentBaseConsignment, commonNameIssuanceAllowedConsignment, commonNameIssuanceExecutedConsignment,
                        forwarderConsignment, warrantConsignment, warrantHolderConsignment, goodsAcceptedConsignment,
-                       quantityConsignmentDetailConsignment, sumConsignmentDetailConsignment, sumVATConsignmentDetailConsignment, sumInvoiceConsignmentDetailConsignment, UNPRecipientConsignment,
-                       UNPSenderConsignment, addressSenderConsignment, addressRecipientConsignment, fullNameSenderConsignment,
-                       fullNameRecipientConsignment, numberObject, seriesObject, countConsignmentDetailConsignment,
+                       quantityConsignmentDetailConsignment, sumConsignmentDetailConsignment, sumVATConsignmentDetailConsignment, sumInvoiceConsignmentDetailConsignment, UNPCustomerConsignment,
+                       UNPSupplierConsignment, addressSupplierConsignment, addressCustomerConsignment, fullNameSupplierConsignment,
+                       fullNameCustomerConsignment, numberObject, seriesObject, countConsignmentDetailConsignment,
                        isWareConsignment, isCustomsFlowConsignment, isCurrencyConsignment, noteConsignment, documentNameCurrencyConsignment
 
         OBJECTS d=consignmentDetail
@@ -219,9 +225,9 @@ META defineConsignmentForm(form, caption)
     FORM form caption PRINT
         OBJECTS c=consignment FIXED PANEL
 
-        PROPERTIES (c) dateConsignment, UNPRecipientConsignment, UNPSenderConsignment, addressSenderConsignment, addressRecipientConsignment, fullNameSenderConsignment,
-                       fullNameRecipientConsignment, carConsignment, ownerCarConsignment, trailerConsignment, driverCarConsignment, waybillConsignment,
-                       nameTransportPayerConsignment, shipmentBaseConsignment, loadingPlaceConsignment, unloadingPlaceConsignment,
+        PROPERTIES (c) dateConsignment, UNPCustomerConsignment, UNPSupplierConsignment, addressSupplierConsignment, addressCustomerConsignment, fullNameSupplierConsignment,
+                       fullNameCustomerConsignment, carConsignment, ownerCarConsignment, trailerConsignment, driverCarConsignment, waybillConsignment,
+                       namePayerConsignment, shipmentBaseConsignment, addressSupplierStockConsignment, addressCustomerStockConsignment,
                        readdressingConsignment, commonNameIssuanceAllowedConsignment, commonNameIssuanceExecutedConsignment,
                        forwarderConsignment, warrantConsignment, warrantHolderConsignment, goodsAcceptedConsignment,
                        commonNameLoadingExecuterConsignment, nameWayOfLoadingConsignment, codeLoadingConsignment,
@@ -254,10 +260,10 @@ END
 FORM consignment 'Атрибуты накладной'
     OBJECTS c=consignment FIXED PANEL
 
-    PROPERTIES (c) READONLY objectClassName, nameStockConsignment, seriesObject, numberObject
-    PROPERTIES (c) dateConsignment, UNPRecipientConsignment, UNPSenderConsignment, addressSenderConsignment, addressRecipientConsignment, fullNameSenderConsignment,
-                   fullNameRecipientConsignment, carConsignment, ownerCarConsignment, trailerConsignment, driverCarConsignment, waybillConsignment,
-                   nameTransportPayerConsignment, shipmentBaseConsignment, loadingPlaceConsignment, unloadingPlaceConsignment,
+    PROPERTIES (c) READONLY objectClassName, nameSupplierStockConsignment, seriesObject, numberObject
+    PROPERTIES (c) dateConsignment, UNPCustomerConsignment, UNPSupplierConsignment, addressSupplierConsignment, addressCustomerConsignment, fullNameSupplierConsignment,
+                   fullNameCustomerConsignment, carConsignment, ownerCarConsignment, trailerConsignment, driverCarConsignment, waybillConsignment,
+                   namePayerConsignment, shipmentBaseConsignment, addressSupplierStockConsignment, addressCustomerStockConsignment,
                    readdressingConsignment, commonNameIssuanceAllowedConsignment, commonNameIssuanceExecutedConsignment,
                    forwarderConsignment, warrantConsignment, warrantHolderConsignment, goodsAcceptedConsignment,
                    commonNameLoadingExecuterConsignment, nameWayOfLoadingConsignment, codeLoadingConsignment,
@@ -345,7 +351,7 @@ DESIGN consignment FROM DEFAULT {
                     NEW headerCol11 {
                         title = 'Шапка документа';
                         childConstraints = TO THE RIGHT;
-                        ADD PROPERTY(nameStockConsignment);
+                        ADD PROPERTY(nameSupplierStockConsignment);
                         ADD PROPERTY(numberObject);
                         ADD PROPERTY(seriesObject);
                         ADD PROPERTY(dateConsignment);
@@ -357,16 +363,16 @@ DESIGN consignment FROM DEFAULT {
                     NEW row11 {
                         title = 'Грузоотправитель';
                         childConstraints = TO THE RIGHT;
-                        ADD PROPERTY(fullNameSenderConsignment);
-                        ADD PROPERTY(UNPSenderConsignment);
-                        ADD PROPERTY(addressSenderConsignment);
+                        ADD PROPERTY(fullNameSupplierConsignment);
+                        ADD PROPERTY(UNPSupplierConsignment);
+                        ADD PROPERTY(addressSupplierConsignment);
                     }
                     NEW row22 {
                         title = 'Грузополучатель';
                         childConstraints = TO THE RIGHT;
-                        ADD PROPERTY(fullNameRecipientConsignment);
-                        ADD PROPERTY(UNPRecipientConsignment);
-                        ADD PROPERTY(addressRecipientConsignment);
+                        ADD PROPERTY(fullNameCustomerConsignment);
+                        ADD PROPERTY(UNPCustomerConsignment);
+                        ADD PROPERTY(addressCustomerConsignment);
                     }
                 }
             }
@@ -434,7 +440,9 @@ printConsignment 'Печать' (consignment) = ACTION FORM printConsignment OBJ
 
 // ----------------- Объявление заголовка накладной --------------- //
 
-META defineConsignment (object)
+META defineConsignmentHeader (object)
+
+    payer###object (object) = DATA legalEntity (object) IN carConsignmentGroup;
 
     car###object 'Автомобиль' (object) = DATA STRING[30] (object) IN carConsignmentGroup;
     ownerCar###object 'Владелец автомобиля' (object) = DATA STRING[100] (object) IN carConsignmentGroup;
@@ -442,11 +450,8 @@ META defineConsignment (object)
     driverCar###object 'Водитель' (object) = DATA STRING[40] (object) IN carConsignmentGroup;
     waybill###object 'Путевой лист' (object) = DATA STRING[20] (object) IN carConsignmentGroup;
 
-    transportPayer###object 'Заказчик перевозки (ИД)' (object) = DATA legalEntity (object) IN carConsignmentGroup;
-
-    dataLoadingPlace###object 'Пункт погрузки' (object) = DATA STRING[50] (object);
-
-    dataUnloadingPlace###object 'Пункт разгрузки' (object) = DATA STRING[50] (object);
+    dataAddressSupplierStock###object 'Пункт погрузки' (object) = DATA STRING[50] (object);
+    dataAddressCustomerStock###object 'Пункт разгрузки' (object) = DATA STRING[50] (object);
 
     readdressing###object 'Переадресовка' (object) = DATA STRING[50] (object) IN carConsignmentGroup;
 
@@ -476,7 +481,9 @@ META defineConsignment (object)
     raceQuantity###object 'Количество ездок' (object) = DATA INTEGER (object) IN carConsignmentGroup;
 END
 
-META defineConsignmentAbstract(object)
+META defineConsignmentAbstractHeader(object)
+
+    payer###object 'Заказчик перевозки (ИД)' (object) = ABSTRACT legalEntity (object) IN carConsignmentGroup;
 
     car###object 'Автомобиль' (object) = ABSTRACT STRING[30] (object) IN carConsignmentGroup;
     ownerCar###object 'Владелец автомобиля' (object) = ABSTRACT STRING[100] (object) IN carConsignmentGroup;
@@ -484,11 +491,8 @@ META defineConsignmentAbstract(object)
     driverCar###object 'Водитель' (object) = ABSTRACT STRING[40] (object) IN carConsignmentGroup;
     waybill###object 'Путевой лист' (object) = ABSTRACT STRING[20] (object) IN carConsignmentGroup;
 
-    transportPayer###object 'Заказчик перевозки (ИД)' (object) = ABSTRACT legalEntity (object) IN carConsignmentGroup;
-
-    dataLoadingPlace###object 'Пункт погрузки' (object) = ABSTRACT STRING[50] (object);
-
-    dataUnloadingPlace###object 'Пункт разгрузки' (object) = ABSTRACT STRING[50] (object);
+    dataAddressSupplierStock###object 'Пункт погрузки' (object) = ABSTRACT STRING[50] (object);
+    dataAddressCustomerStock###object 'Пункт разгрузки' (object) = ABSTRACT STRING[50] (object);
 
     readdressing###object 'Переадресовка' (object) = ABSTRACT STRING[50] (object) IN carConsignmentGroup;
 
@@ -518,24 +522,23 @@ META defineConsignmentAbstract(object)
     raceQuantity###object 'Количество ездок' (object) = ABSTRACT INTEGER (object) IN carConsignmentGroup;
 END
 
-META defineConsignmentInterface(object, stockProp)
-    @defineConsignmentAbstract (object);
-    @defineConsignment (user###object);
-    @implementConsignmentDocumentHeaderCustom(object, user###object, stockProp);
-    @implementConsignmentHeader (object, stockProp);
+META defineConsignmentInterfaceHeader(object, stockProp)
+    @defineConsignmentAbstractHeader (object);
+    @defineConsignmentHeader (user###object);
 END
 
-META defineConsignmentInterface(object)
-    @defineConsignmentInterface(object, stock);
+META defineConsignmentInterfaceHeader(object)
+    @defineConsignmentInterfaceHeader(object, stock);
 END
 
 // ----------------- Implement заголовка накладной --------------- //
 
-META implementConsignmentHeader (concrete, stockProp)
+META implementConsignmentHeader (concrete)
     EXTEND CLASS concrete : consignment;
 
     dateConsignment (consignment) += date###concrete(consignment);
-    stockConsignment (consignment) += stockProp###concrete(consignment);
+
+    payerConsignment (consignment) += payer###concrete (consignment);
 
     carConsignment (consignment) += car###concrete (consignment);
     ownerCarConsignment (consignment) += ownerCar###concrete (consignment);
@@ -543,11 +546,8 @@ META implementConsignmentHeader (concrete, stockProp)
     driverCarConsignment (consignment) += driverCar###concrete (consignment);
     waybillConsignment (consignment) += waybill###concrete (consignment);
 
-    transportPayerConsignment (consignment) += transportPayer###concrete (consignment);
-
-    dataLoadingPlaceConsignment (consignment) += dataLoadingPlace###concrete (consignment);
-
-    dataUnloadingPlaceConsignment (consignment) += dataUnloadingPlace###concrete (consignment);
+    dataAddressSupplierStockConsignment (consignment) += dataAddressSupplierStock###concrete (consignment);
+    dataAddressCustomerStockConsignment (consignment) += dataAddressCustomerStock###concrete (consignment);
 
     readdressingConsignment (consignment) += readdressing###concrete (consignment);
 
@@ -576,7 +576,9 @@ META implementConsignmentHeader (concrete, stockProp)
     raceQuantityConsignment (consignment) += raceQuantity###concrete (consignment);
 END
 
-META implementConsignmentDocumentHeaderCustom (concrete, object, stockProp)
+META implementConsignmentDocumentHeader (concrete, object)
+
+    payer###concrete (concrete) += payer###object (concrete);
 
     car###concrete (concrete) += car###object (concrete);
     ownerCar###concrete (concrete) += ownerCar###object (concrete);
@@ -584,11 +586,8 @@ META implementConsignmentDocumentHeaderCustom (concrete, object, stockProp)
     driverCar###concrete (concrete) += driverCar###object (concrete);
     waybill###concrete (concrete) += waybill###object (concrete);
 
-    transportPayer###concrete (concrete) += transportPayer###object (concrete);
-
-    dataLoadingPlace###concrete (concrete) += dataLoadingPlace###object (concrete);
-
-    dataUnloadingPlace###concrete (concrete) += dataUnloadingPlace###object (concrete);
+    dataAddressSupplierStock###concrete (concrete) += dataAddressSupplierStock###object (concrete);
+    dataAddressCustomerStock###concrete (concrete) += dataAddressCustomerStock###object (concrete);
 
     readdressing###concrete (concrete) += readdressing###object (concrete);
 
@@ -616,10 +615,11 @@ META implementConsignmentDocumentHeaderCustom (concrete, object, stockProp)
 
     raceQuantity###concrete (concrete) += raceQuantity###object (concrete);
 
-
 END
-META implementConsignmentDocumentHeader (concrete, stockProp)
-    @implementConsignmentDocumentHeaderCustom (concrete, user###concrete, stockProp)
+
+META implementConsignmentInterfaceHeader(object)
+    @implementConsignmentDocumentHeader(object, user###object);
+    @implementConsignmentHeader (object);
 END
 
 // -------------------------- Implement строк накладной -------------------- //
@@ -640,7 +640,7 @@ END
 
 // -------------------------- Implement всей накладной -------------------- //
 
-META implementConsignment (concrete, skuProp, stockProp)
-    @implementConsignmentHeader(concrete, stockProp);
+META implementConsignment(concrete, skuProp)
+    @implementConsignmentHeader(concrete);
     @implementConsignmentDetail(concrete, skuProp);
 END

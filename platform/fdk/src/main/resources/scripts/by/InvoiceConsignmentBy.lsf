@@ -5,31 +5,26 @@ REQUIRE Invoice,
 
 NAMESPACE Invoice;
 
-META defineInvoiceConsignment(contactA, contactB, stockProp)
-    @defineConsignmentInterface(invoice, stockProp);
-    @implementConsignmentDetail(invoice);
+META defineInvoiceConsignment(contactA, contactB)
+    @defineConsignmentInterfaceHeader(invoice);
+    @implementConsignmentInterfaceHeader(invoice);
 
-    senderConsignment (consignment) += contactA###invoice(consignment);
-    recipientConsignment (consignment) += contactB###invoice(consignment);
+    supplierConsignment (consignment) += contactA###invoice(consignment);
+    supplierStockConsignment (consignment) += contactA###stock###invoice(consignment);
+
+    customerConsignment (consignment) += contactB###invoice(consignment);
+    customerStockConsignment (consignment) += contactB###stock###invoice(consignment);
+
     currencyConsignment (consignment) += currencyInvoice(consignment);
 
+    @implementConsignmentDetail(invoice);
+
     priceConsignmentDetail (consignmentDetail) += priceInvoiceDetail(consignmentDetail);
-
     sumConsignmentDetail (consignmentDetail) += sumInvoiceDetail (consignmentDetail);
-
     vatConsignmentDetail (consignmentDetail) += valueVATInvoiceDetail(consignmentDetail);
-
     sumVATConsignmentDetail (consignmentDetail) +=  VATSumInvoiceDetail(consignmentDetail);
-
     sumInvoiceConsignmentDetail (consignmentDetail) += invoiceSumInvoiceDetail(consignmentDetail);
-
     shortNameUOMConsignmentDetail (consignmentDetail) += shortNameUOMSku(skuInvoiceDetail (consignmentDetail));
-
-    //noteInvoiceWHOutDetail (invoiceWHOutDetail) = [FORMULA STRING[30] '\'Цена импортера:\' ||  \' \' || CAST($1 AS TEXT)'](
-    //    importerPriceBatchA(batchAInvoiceWHOutDetail(invoiceWHOutDetail)));
-
-    //noteConsignmentDetail (consignmentDetail) += noteInvoiceWHOutDetail(consignmentDetail) IF
-    //    importerPriceBatchA(batchAInvoiceWHOutDetail(consignmentDetail)) != supplierPriceInvoiceWHOutDetail(consignmentDetail);
 
     EXTEND FORM  invoices
         PROPERTIES (i)  FORCE PANEL printConsignmentVerticalA, printConsignmentHorizontalA,

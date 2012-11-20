@@ -113,11 +113,13 @@ skipSkuLedger (ledger) += skipSkuLedgerReturnOutDetail(ledger);
 
 // Товарные накладные
 
-@defineConsignment(returnOut);
-@implementConsignmentHeader(returnOut, stock);
+@defineConsignmentHeader(returnOut);
+@implementConsignmentHeader(returnOut);
 
-senderConsignment (consignment) += legalEntityReturnOut(consignment);
-recipientConsignment (consignment) += destinationLegalEntityReturnOut(consignment);
+supplierConsignment (consignment) += legalEntityReturnOut(consignment);
+supplierStockConsignment (consignment) += stockReturnOut(consignment);
+customerConsignment (consignment) += destinationLegalEntityReturnOut(consignment);
+
 consignmentConsignmentDetail (consignmentDetail) += returnOutReturnOutDetail (consignmentDetail);
 skuConsignmentDetail (consignmentDetail) += skuReturnOutDetail (consignmentDetail);
 quantityConsignmentDetail (consignmentDetail) += quantityReturnOutDetail (consignmentDetail);

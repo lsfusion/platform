@@ -16,10 +16,10 @@
 	<field name="trailerConsignment" class="java.lang.String"/>
 	<field name="driverCarConsignment" class="java.lang.String"/>
 	<field name="waybillConsignment" class="java.lang.String"/>
-	<field name="nameTransportPayerConsignment" class="java.lang.String"/>
+	<field name="namePayerConsignment" class="java.lang.String"/>
 	<field name="shipmentBaseConsignment" class="java.lang.String"/>
-	<field name="loadingPlaceConsignment" class="java.lang.String"/>
-	<field name="unloadingPlaceConsignment" class="java.lang.String"/>
+	<field name="addressSupplierStockConsignment" class="java.lang.String"/>
+	<field name="addressCustomerStockConsignment" class="java.lang.String"/>
 	<field name="readdressingConsignment" class="java.lang.String"/>
 	<field name="commonNameIssuanceAllowedConsignment" class="java.lang.String"/>
 	<field name="commonNameIssuanceExecutedConsignment" class="java.lang.String"/>
@@ -40,15 +40,15 @@
 	<field name="sumConsignmentDetailConsignment" class="java.lang.Double"/>
 	<field name="sumVATConsignmentDetailConsignment" class="java.lang.Double"/>
 	<field name="sumInvoiceConsignmentDetailConsignment" class="java.lang.Double"/>
-	<field name="UNPRecipientConsignment" class="java.lang.String"/>
-	<field name="UNPSenderConsignment" class="java.lang.String"/>
-	<field name="UNPTransportPayerConsignment" class="java.lang.String"/>
-	<field name="addressSenderConsignment" class="java.lang.String"/>
-	<field name="addressRecipientConsignment" class="java.lang.String"/>
-	<field name="addressTransportPayerConsignment" class="java.lang.String"/>
-	<field name="fullNameSenderConsignment" class="java.lang.String"/>
-	<field name="fullNameRecipientConsignment" class="java.lang.String"/>
-	<field name="fullNameTransportPayerConsignment" class="java.lang.String"/>
+	<field name="UNPCustomerConsignment" class="java.lang.String"/>
+	<field name="UNPSupplierConsignment" class="java.lang.String"/>
+	<field name="UNPPayerConsignment" class="java.lang.String"/>
+	<field name="addressSupplierConsignment" class="java.lang.String"/>
+	<field name="addressCustomerConsignment" class="java.lang.String"/>
+	<field name="addressPayerConsignment" class="java.lang.String"/>
+	<field name="fullNameSupplierConsignment" class="java.lang.String"/>
+	<field name="fullNameCustomerConsignment" class="java.lang.String"/>
+	<field name="fullNamePayerConsignment" class="java.lang.String"/>
 	<field name="documentNameCurrencyConsignment" class="java.lang.String"/>
 	<field name="isCustomsFlowConsignment" class="java.lang.Boolean"/>
 	<field name="noteConsignment" class="java.lang.String"/>

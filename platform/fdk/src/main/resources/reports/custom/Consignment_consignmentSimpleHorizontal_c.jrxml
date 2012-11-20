@@ -63,13 +63,13 @@
 	<field name="sumVATConsignmentDetail" class="java.lang.Double"/>
 	<field name="sumInvoiceConsignmentDetail" class="java.lang.Double"/>
 	<field name="noteConsignmentDetail" class="java.lang.String"/>
-	<field name="UNPRecipientConsignment" class="java.lang.String"/>
-	<field name="UNPSenderConsignment" class="java.lang.String"/>
+	<field name="UNPCustomerConsignment" class="java.lang.String"/>
+	<field name="UNPSupplierConsignment" class="java.lang.String"/>
 	<field name="dateConsignment" class="java.util.Date"/>
-	<field name="addressSenderConsignment" class="java.lang.String"/>
-	<field name="addressRecipientConsignment" class="java.lang.String"/>
-	<field name="fullNameSenderConsignment" class="java.lang.String"/>
-	<field name="fullNameRecipientConsignment" class="java.lang.String"/>
+	<field name="addressSupplierConsignment" class="java.lang.String"/>
+	<field name="addressCustomerConsignment" class="java.lang.String"/>
+	<field name="fullNameSupplierConsignment" class="java.lang.String"/>
+	<field name="fullNameCustomerConsignment" class="java.lang.String"/>
 	<field name="countConsignmentDetailConsignment" class="java.lang.Integer"/>
 	<field name="sumInvoiceConsignmentDetailConsignment" class="java.lang.Double"/>
 	<field name="warePriceConsignmentDetail" class="java.lang.Double"/>
@@ -103,7 +103,7 @@
 						<rightPen lineWidth="0.0"/>
 					</box>
 					<textElement textAlignment="Left"/>
-					<textFieldExpression><![CDATA[($F{fullNameSenderConsignment}!=null?$F{fullNameSenderConsignment}:"")+" "+($F{addressSenderConsignment}!=null?$F{addressSenderConsignment}:"")]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{fullNameSupplierConsignment}!=null?$F{fullNameSupplierConsignment}:"")+" "+($F{addressSupplierConsignment}!=null?$F{addressSupplierConsignment}:"")]]></textFieldExpression>
 				</textField>
 				<line>
 					<reportElement positionType="Float" x="109" y="13" width="701" height="1"/>
@@ -157,7 +157,7 @@
 						<rightPen lineWidth="0.0"/>
 					</box>
 					<textElement textAlignment="Left"/>
-					<textFieldExpression><![CDATA[($F{fullNameRecipientConsignment}!=null?$F{fullNameRecipientConsignment}:"")+" "+($F{addressRecipientConsignment}!=null?$F{addressRecipientConsignment}:"")]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{fullNameCustomerConsignment}!=null?$F{fullNameCustomerConsignment}:"")+" "+($F{addressCustomerConsignment}!=null?$F{addressCustomerConsignment}:"")]]></textFieldExpression>
 				</textField>
 				<line>
 					<reportElement positionType="Float" x="109" y="13" width="701" height="1"/>
@@ -893,12 +893,12 @@
 			<textField isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" x="373" y="70" width="97" height="20" backcolor="#FFFFFF"/>
 				<textElement textAlignment="Center"/>
-				<textFieldExpression><![CDATA[($F{UNPSenderConsignment}!=null?$F{UNPSenderConsignment}:"")]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{UNPSupplierConsignment}!=null?$F{UNPSupplierConsignment}:"")]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" x="470" y="70" width="101" height="20" backcolor="#FFFFFF"/>
 				<textElement textAlignment="Center"/>
-				<textFieldExpression><![CDATA[($F{UNPRecipientConsignment}!=null?$F{UNPRecipientConsignment}:"")]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{UNPCustomerConsignment}!=null?$F{UNPCustomerConsignment}:"")]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement style="GroupCellStyle0" x="470" y="50" width="101" height="20" backcolor="#FFFFFF"/>

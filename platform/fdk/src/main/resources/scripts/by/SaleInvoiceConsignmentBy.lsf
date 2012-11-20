@@ -5,4 +5,4 @@ REQUIRE SaleInvoice,
 
 NAMESPACE Sale;
 
-@defineInvoiceConsignment(supplier, customer, supplierStock);
+@defineInvoiceConsignment(supplier, customer);

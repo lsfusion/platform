@@ -195,12 +195,14 @@ sumVATInvoiceWHOutDetail 'Сумма НДС' (invoiceWHOutDetail) =  [round0(X*Y
 
 sumInvoiceInvoiceWHOutDetail 'Сумма с НДС' (invoiceWHOutDetail) = supplierSumInvoiceWHOutDetail(invoiceWHOutDetail) (+) sumVATInvoiceWHOutDetail(invoiceWHOutDetail);
 
-@defineConsignment(invoiceWHOut);
-@implementConsignmentHeader(invoiceWHOut, warehouse);
-//isCommissionInvoiceWHOutDetail 'Продажа на комиссию' (invoiceWHOutDetail) = isCommissionInvoiceWHOut(invoiceWHOutInvoiceWHOutDetail(invoiceWHOutDetail));
+@defineConsignmentHeader(invoiceWHOut);
 
-senderConsignment (consignment) += legalEntityWarehouse(warehouseInvoiceWHOut(consignment));
-recipientConsignment (consignment) += customerInvoiceWHOut(consignment);
+@implementConsignmentHeader(invoiceWHOut);
+
+supplierConsignment (consignment) += legalEntityWarehouse(warehouseInvoiceWHOut(consignment));
+supplierStockConsignment (consignment) += warehouseInvoiceWHOut(consignment);
+customerConsignment (consignment) += customerInvoiceWHOut(consignment);
+
 consignmentConsignmentDetail (consignmentDetail) += invoiceWHOutInvoiceWHOutDetail(consignmentDetail);
 skuConsignmentDetail (consignmentDetail) += skuInvoiceWHOutDetail (consignmentDetail);
 quantityConsignmentDetail (consignmentDetail) += quantityInvoiceWHOutDetail (consignmentDetail);

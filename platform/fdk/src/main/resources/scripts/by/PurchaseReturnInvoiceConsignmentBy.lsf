@@ -5,4 +5,4 @@ REQUIRE PurchaseReturnInvoice,
 
 NAMESPACE PurchaseReturn;
 
-@defineInvoiceConsignment(customer, supplier, customerStock);
+@defineInvoiceConsignment(customer, supplier);

@@ -33,12 +33,12 @@
 	<field name="quantityConsignmentDetailConsignment" class="java.lang.Double"/>
 	<field name="sumConsignmentDetailConsignment" class="java.lang.Double"/>
 	<field name="sumVATConsignmentDetailConsignment" class="java.lang.Double"/>
-	<field name="UNPRecipientConsignment" class="java.lang.String"/>
-	<field name="UNPSenderConsignment" class="java.lang.String"/>
-	<field name="addressSenderConsignment" class="java.lang.String"/>
-	<field name="addressRecipientConsignment" class="java.lang.String"/>
-	<field name="fullNameSenderConsignment" class="java.lang.String"/>
-	<field name="fullNameRecipientConsignment" class="java.lang.String"/>
+	<field name="UNPCustomerConsignment" class="java.lang.String"/>
+	<field name="UNPSupplierConsignment" class="java.lang.String"/>
+	<field name="addressSupplierConsignment" class="java.lang.String"/>
+	<field name="addressCustomerConsignment" class="java.lang.String"/>
+	<field name="fullNameSupplierConsignment" class="java.lang.String"/>
+	<field name="fullNameCustomerConsignment" class="java.lang.String"/>
 	<field name="documentNameCurrencyConsignment" class="java.lang.String"/>
 	<field name="isCustomsFlowConsignment" class="java.lang.Boolean"/>
 	<field name="noteConsignment" class="java.lang.String"/>
@@ -85,7 +85,7 @@
 						<rightPen lineWidth="0.0"/>
 					</box>
 					<textElement textAlignment="Left"/>
-					<textFieldExpression><![CDATA[($F{fullNameSenderConsignment}!=null?$F{fullNameSenderConsignment}:"")+" "+($F{addressSenderConsignment}!=null?$F{addressSenderConsignment}:"")]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{fullNameSupplierConsignment}!=null?$F{fullNameSupplierConsignment}:"")+" "+($F{addressSupplierConsignment}!=null?$F{addressSupplierConsignment}:"")]]></textFieldExpression>
 				</textField>
 				<line>
 					<reportElement positionType="Float" x="90" y="13" width="465" height="1"/>
@@ -139,7 +139,7 @@
 						<rightPen lineWidth="0.0"/>
 					</box>
 					<textElement textAlignment="Left"/>
-					<textFieldExpression><![CDATA[($F{fullNameRecipientConsignment}!=null?$F{fullNameRecipientConsignment}:"")+" "+($F{addressRecipientConsignment}!=null?$F{addressRecipientConsignment}:"")]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{fullNameCustomerConsignment}!=null?$F{fullNameCustomerConsignment}:"")+" "+($F{addressCustomerConsignment}!=null?$F{addressCustomerConsignment}:"")]]></textFieldExpression>
 				</textField>
 				<staticText>
 					<reportElement positionType="Float" x="90" y="14" width="465" height="7"/>
@@ -879,7 +879,7 @@
 			<textField isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" x="284" y="77" width="101" height="20" backcolor="#FFFFFF"/>
 				<textElement textAlignment="Center"/>
-				<textFieldExpression><![CDATA[($F{UNPRecipientConsignment}!=null?$F{UNPRecipientConsignment}:"")]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{UNPCustomerConsignment}!=null?$F{UNPCustomerConsignment}:"")]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement x="157" y="77" width="30" height="20"/>
@@ -895,7 +895,7 @@
 			<textField isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" x="187" y="77" width="97" height="20" backcolor="#FFFFFF"/>
 				<textElement textAlignment="Center"/>
-				<textFieldExpression><![CDATA[($F{UNPSenderConsignment}!=null?$F{UNPSenderConsignment}:"")]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{UNPSupplierConsignment}!=null?$F{UNPSupplierConsignment}:"")]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="dd.MM.yy" isBlankWhenNull="true">
 				<reportElement stretchType="RelativeToBandHeight" x="0" y="140" width="141" height="18"/>

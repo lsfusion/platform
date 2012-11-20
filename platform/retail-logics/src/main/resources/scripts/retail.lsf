@@ -1872,11 +1872,12 @@ needToPriceChangeStatementDetail (statementDetail) = curRetailPriceStatementDeta
 @defineDocumentDetailGrossWeight(statement, item);
 @defineDocumentDetailQuantityPack(statement, item);
 
-@defineConsignment(statement);
-@implementConsignment(statement, item, departmentStore);
+@defineConsignmentHeader(statement);
+@implementConsignment(statement, item);
 
-senderConsignment (consignment) += legalEntityDepartmentStore(departmentStoreStatement(consignment));
-recipientConsignment (consignment) += customerStatement(consignment);
+supplierConsignment (consignment) += legalEntityDepartmentStore(departmentStoreStatement(consignment));
+supplierStockConsignment (consignment) += departmentStoreStatement(consignment);
+customerConsignment (consignment) += customerStatement(consignment);
 
 priceConsignmentDetail (consignmentDetail) += retailPriceStatementDetail (consignmentDetail);
 sumConsignmentDetail (consignmentDetail) += retailSumStatementDetail (consignmentDetail);
@@ -2251,11 +2252,12 @@ sumContainerOutAccountDocumentLedger (ledger) += retailSumContainerInnerFlowDeta
 @defineDocumentDetailGrossWeight(innerFlow, item);
 @defineDocumentDetailQuantityPack(innerFlow, item);
 
-@defineConsignment(innerFlow);
-@implementConsignment(innerFlow, item, departmentStore);
+@defineConsignmentHeader(innerFlow);
+@implementConsignment(innerFlow, item);
 
-senderConsignment (consignment) += legalEntityDepartmentStore(departmentStoreInnerFlow(consignment));
-recipientConsignment (consignment) += legalEntityDepartmentStore(recipientDepartmentInnerFlow(consignment));
+supplierConsignment (consignment) += legalEntityDepartmentStore(departmentStoreInnerFlow(consignment));
+supplierStockConsignment (consignment) += departmentStoreInnerFlow(consignment);
+customerConsignment (consignment) += legalEntityDepartmentStore(recipientDepartmentInnerFlow(consignment));
 
 priceConsignmentDetail (consignmentDetail) += retailPriceInnerFlowDetail(consignmentDetail);
 sumConsignmentDetail (consignmentDetail) += retailSumInnerFlowDetail (consignmentDetail);
@@ -2592,11 +2594,12 @@ sumOutContractLedger(outContractLedger) += invoiceSumReturnSupplierDetailReturnS
 @defineDocumentDetailGrossWeight(returnSupplier, item);
 @defineDocumentDetailQuantityPack(returnSupplier, item);
 
-@defineConsignment(returnSupplier);
-@implementConsignment(returnSupplier, item, departmentStore);
+@defineConsignmentHeader(returnSupplier);
+@implementConsignment(returnSupplier, item);
 
-senderConsignment (consignment) += legalEntityDepartmentStore(departmentStoreReturnSupplier(consignment));
-recipientConsignment (consignment) += supplierReturnSupplier(consignment);
+supplierConsignment (consignment) += legalEntityDepartmentStore(departmentStoreReturnSupplier(consignment));
+supplierStockConsignment (consignment) += departmentStoreReturnSupplier(consignment);
+customerConsignment (consignment) += supplierReturnSupplier(consignment);
 
 isWareConsignment (consignment) += consignment IS returnSupplier;
 wareSumConsignmentDetailConsignment  (consignment) += wareSumReturnSupplierDetailReturnSupplier (consignment);
@@ -4444,7 +4447,7 @@ FORM returnSupplier 'Возврат поставщику'
                   namePriceChangeCommitteeReturnSupplier SHOWIF needToPriceChangeReturnSupplier(r)
 
     PROPERTIES(r) carConsignment, ownerCarConsignment, trailerConsignment, driverCarConsignment, waybillConsignment,
-                  nameTransportPayerConsignment, shipmentBaseConsignment, loadingPlaceConsignment, unloadingPlaceConsignment,
+                  namePayerConsignment, shipmentBaseConsignment, addressSupplierStockConsignment, addressCustomerStockConsignment,
                   readdressingConsignment, commonNameIssuanceAllowedConsignment, commonNameIssuanceExecutedConsignment,
                   forwarderConsignment, warrantConsignment, warrantHolderConsignment, goodsAcceptedConsignment,
                   commonNameLoadingExecuterConsignment, nameWayOfLoadingConsignment, codeLoadingConsignment,
@@ -4735,7 +4738,7 @@ FORM innerFlow 'Расход в другой отдел'
                    retailSumInnerFlowDetailInnerFlow
 
     PROPERTIES (f) carConsignment, ownerCarConsignment, trailerConsignment, driverCarConsignment, waybillConsignment,
-                   nameTransportPayerConsignment, shipmentBaseConsignment, loadingPlaceConsignment, unloadingPlaceConsignment,
+                   namePayerConsignment, shipmentBaseConsignment, addressSupplierStockConsignment, addressCustomerStockConsignment,
                    readdressingConsignment, commonNameIssuanceAllowedConsignment, commonNameIssuanceExecutedConsignment,
                    forwarderConsignment, warrantConsignment, warrantHolderConsignment, goodsAcceptedConsignment,
                    commonNameLoadingExecuterConsignment, nameWayOfLoadingConsignment, codeLoadingConsignment,
@@ -5352,7 +5355,7 @@ FORM statement 'Отгрузка из розницы'
                     numberDisposalStatement SHOWIF needToPriceChangeStatement(st), namePriceChangeCommitteeStatement SHOWIF needToPriceChangeStatement(st)
 
     PROPERTIES(st) carConsignment, ownerCarConsignment, trailerConsignment, driverCarConsignment, waybillConsignment,
-                   nameTransportPayerConsignment, shipmentBaseConsignment, loadingPlaceConsignment, unloadingPlaceConsignment,
+                   namePayerConsignment, shipmentBaseConsignment, addressSupplierStockConsignment, addressCustomerStockConsignment,
                    readdressingConsignment, commonNameIssuanceAllowedConsignment, commonNameIssuanceExecutedConsignment,
                    forwarderConsignment, warrantConsignment, warrantHolderConsignment, goodsAcceptedConsignment,
                    commonNameLoadingExecuterConsignment, nameWayOfLoadingConsignment, codeLoadingConsignment,
