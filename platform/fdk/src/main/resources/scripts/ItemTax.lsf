@@ -19,21 +19,9 @@ valueVATItemCountryDate 'НДС, %' (item, country, date) = valueRateRangeDate(V
 valueCurrentRateVATItemCountry 'НДС, %' (item, country) = valueCurrentRateRange(VATItemCountry(item, country));
 
 EXTEND FORM item
-    OBJECTS dt2=DATE FIXED PANEL
-    PROPERTIES (dt2) OBJVALUE BACKGROUND dateDiffersCurrent(dt2)
-
-    OBJECTS c=country
-    PROPERTIES (c) READONLY name
     PROPERTIES (i, c, dt2) overNumberVATItemCountryDate, valueVATItemCountryDate
-    FILTERS countRangeTaxCountry (tax.taxVAT, c)
+    FILTERGROUP filters1
+            FILTER 'Страну, у которых есть НДС' 'F11' countRangeTaxCountry (tax.taxVAT, c) DEFAULT
+
 ;
 
-EXTEND DESIGN item{
-    itemDetail{
-        NEW itemTax AFTER itemPrimary {
-            ADD dt2.box;
-            ADD c.box;
-            caption = 'Налоги';
-        }
-    }
-}

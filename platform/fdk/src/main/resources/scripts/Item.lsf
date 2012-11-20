@@ -96,6 +96,12 @@ FORM item 'Товар'
     PROPERTIES(b)       ADDOBJ, delete
     FILTERS skuBarcode(b) == i
 
+    OBJECTS dt2=DATE FIXED PANEL
+    PROPERTIES (dt2) OBJVALUE BACKGROUND dateDiffersCurrent(dt2)
+
+    OBJECTS c=country
+    PROPERTIES (c) READONLY name
+
     EDIT item OBJECT i
 ;
 
@@ -130,6 +136,12 @@ DESIGN item FROM DEFAULT {
                     }
                 }
                 ADD b.box;
+            }
+            NEW regionalPrm {
+                caption = 'Региональные параметры';
+                ADD dt2.box;
+                ADD c.box;
+
             }
             NEW itemImage {
                 title = 'Изображение';

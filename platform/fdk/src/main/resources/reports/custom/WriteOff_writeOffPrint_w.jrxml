@@ -22,12 +22,12 @@
 	<parameter name="e_source" class="net.sf.jasperreports.engine.JRDataSource"/>
 	<parameter name="e_params" class="java.util.Map"/>
 	<field name="w" class="java.lang.Integer"/>
-	<field name="numberObject" class="java.lang.String"/>
-	<field name="seriesObject" class="java.lang.String"/>
+	<field name="numberWriteOff" class="java.lang.String"/>
+	<field name="seriesWriteOff" class="java.lang.String"/>
 	<field name="nameStockWriteOff" class="java.lang.String"/>
 	<field name="dateWriteOff" class="java.util.Date"/>
 	<field name="timeWriteOff" class="java.sql.Time"/>
-	<field name="nameReasonOffWriteOff" class="java.lang.String"/>
+	<field name="nameReasonWriteOff" class="java.lang.String"/>
 	<field name="noteWriteOff" class="java.lang.String"/>
 	<field name="quantityWriteOffDetailWriteOff" class="java.lang.Double"/>
 	<field name="sumWriteOffDetailWriteOff" class="java.lang.Double"/>
@@ -35,7 +35,7 @@
 	<field name="addressLegalEntityWriteOff" class="java.lang.String"/>
 	<field name="UNPLegalEntityWriteOff" class="java.lang.String"/>
 	<field name="nameWriteOffCommitteeWriteOff" class="java.lang.String"/>
-	<field name="namePositionEmployeeWriteOff" class="java.lang.String"/>
+	<field name="commonNameEmployeeCommitteeWriteOff" class="java.lang.String"/>
 	<field name="writeOffCommitteeWriteOff" class="java.lang.Integer"/>
 	<group name="captionGroup1">
 		<groupExpression><![CDATA[String.valueOf($F{w})]]></groupExpression>
@@ -279,7 +279,7 @@
 				<textElement textAlignment="Center">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{numberObject}+"-"+$F{seriesObject}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{numberWriteOff}+"-"+$F{seriesWriteOff}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="477" y="148" width="60" height="20"/>
@@ -707,11 +707,11 @@
 				<textElement verticalAlignment="Bottom">
 					<font size="10" isBold="false" isItalic="true" isUnderline="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{namePositionEmployeeWriteOff}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{commonNameEmployeeCommitteeWriteOff}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement positionType="Float" x="0" y="244" width="537" height="12" isRemoveLineWhenBlank="true">
-					<printWhenExpression><![CDATA[$F{nameReasonOffWriteOff}!=null]]></printWhenExpression>
+					<printWhenExpression><![CDATA[$F{nameReasonWriteOff}!=null]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0"/>
@@ -722,11 +722,11 @@
 				<textElement verticalAlignment="Bottom">
 					<font size="10" isBold="false" isItalic="true" isUnderline="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{nameReasonOffWriteOff}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{nameReasonWriteOff}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement positionType="Float" x="0" y="256" width="537" height="12" isRemoveLineWhenBlank="true">
-					<printWhenExpression><![CDATA[$F{nameReasonOffWriteOff}==null]]></printWhenExpression>
+					<printWhenExpression><![CDATA[$F{nameReasonWriteOff}==null]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0"/>
@@ -741,7 +741,7 @@
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement positionType="Float" x="0" y="268" width="537" height="8" isRemoveLineWhenBlank="true">
-					<printWhenExpression><![CDATA[$F{nameReasonOffWriteOff}==null]]></printWhenExpression>
+					<printWhenExpression><![CDATA[$F{nameReasonWriteOff}==null]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0"/>

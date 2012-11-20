@@ -1,0 +1,16 @@
+MODULE ItemWriteOff;
+
+REQUIRE PurchaseWriteOff, Item;
+
+writeOffRateCountryItem 'Норма отходов' = DATA writeOffRate (country, item);
+nameWriteOffRateCountryItem 'Норма отходов' = name(writeOffRateCountryItem(country, item));
+percentWriteOffRateCountryItem 'Норма отходов,%' = percentWriteOffRate(writeOffRateCountryItem(country, item));
+
+writeOffRateCountrySku (country, sku) += writeOffRateCountryItem (country, sku);
+
+EXTEND FORM item
+    PROPERTIES(c,i) nameWriteOffRateCountryItem, percentWriteOffRateCountryItem
+;
+
+
+

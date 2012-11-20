@@ -44,6 +44,7 @@ REQUIRE System,
         PurchaseReturnShipment,
         PurchaseReturnCreditNote,
         PurchaseReturnPricing,
+        PurchaseWriteOff,
         SalePurchase,
         Repricing,
         Employee,
@@ -74,6 +75,7 @@ REQUIRE System,
         ItemWare,
         ItemSize,
         ItemArticle,
+        ItemWriteOff,
         PriceList,
         Transport,
         Route,
@@ -6595,6 +6597,48 @@ loadDefaultNaturalLossItemGroups 'Загрузить стандартные гр
 } IN loadDefaultGroup;
 
 @implementLoadDefaultData(loadDefaultNaturalLossItemGroups);
+
+
+loadDefaultWriteOffRate 'Добавить нормы отходов' = ACTION (string, numeric)  {
+    ADDOBJ writeOffRate;
+    FOR g == addedObject() DO {
+        SET name(g) <- string AS STRING[110];
+        SET percentWriteOffRate(g) <-  numeric AS NUMERIC[10,3];
+    }
+};
+
+loadDefaultWriteOffRates 'Загрузить стандартные нормы отходов' = ACTION () {
+    EXEC loadDefaultWriteOffRate('ВАРЕНЫЕ, ФАРШИРОВАННЫЕ', 0.7);
+    EXEC loadDefaultWriteOffRate('САЛЯМИ (ФИНЛЯНДИЯ)', 0.56);
+    EXEC loadDefaultWriteOffRate('С/К ФИЛЕЙ В ОБОЛ', 1);
+    EXEC loadDefaultWriteOffRate('С/К ШЕЙКА ВЕТЧИННАЯ', 0.75);
+    EXEC loadDefaultWriteOffRate('КОЛБАСЫ ВАРЕНЫЕ ПЕРЕВЯЗ.ШПАГАТОМ', 0.5);
+    EXEC loadDefaultWriteOffRate('К/З БЕКОН,РУЛЕТ,ВЕТЧИНА', 0.87);
+    EXEC loadDefaultWriteOffRate('ХЛЕБЫ МЯСНЫЕ', 0.67);
+    EXEC loadDefaultWriteOffRate('КОЛБАСЫ ПОЛУКОПЧЕНЫЕ ОТЕЧ.ПРОИЗ-ВА', 0.62);
+    EXEC loadDefaultWriteOffRate('ПР.ИЗ СВИНИНЫ ВАРЕНЫЕ,ПЕРЕВ.ШПАГАТОМ', 0.55);
+    EXEC loadDefaultWriteOffRate('ЗЕЛЬЦЫ, С МЕТАЛ. СКРЕПКАМИ', 0.1);
+    EXEC loadDefaultWriteOffRate('ПР.ИЗ СВИНИНЫ ВАРЕНЫЕ, С МЕТАЛ. СКРЕПКАМИ', 0.15);
+    EXEC loadDefaultWriteOffRate('ШПИК (ВКЛ.ИМПОРТ), САЛО', 0.4);
+    EXEC loadDefaultWriteOffRate('С/К РУЛЬКА', 0.75);
+    EXEC loadDefaultWriteOffRate('САРДЕЛЬКИ, ПЕРЕВЯЗ. НИТКАМИ', 0.2);
+    EXEC loadDefaultWriteOffRate('КОЛБАСЫ ВАРЕНО-КОПЧЕНЫЕ ОТЕЧ.ПРОИЗ-ВА', 0.75);
+    EXEC loadDefaultWriteOffRate('К/З КОРЕЙКА,ГРУДИНКА', 0.45);
+    EXEC loadDefaultWriteOffRate('С/К КОРЕЙКА, ГРУДИНКА, БЕКОН. ОКОР.', 0.2);
+    EXEC loadDefaultWriteOffRate('КОЛБАСЫ СЫРОКОПЧ. СЫРОВЯЛЕН. ОТЕЧ. ПРОИЗ.', 0.8);
+    EXEC loadDefaultWriteOffRate('СЕРВИЛАТ(ФИНЛЯНДИЯ)', 0.25);
+    EXEC loadDefaultWriteOffRate('К/В БАЛЫК СВИНОЙ В ОБОЛ.', 1);
+    EXEC loadDefaultWriteOffRate('КОЛБАСЫ ВАРЕНЫЕ С МЕТАЛИЧ.СКРЕПКАМИ', 0.2);
+    EXEC loadDefaultWriteOffRate('ЛИВЕРНЫЕ', 0.98);
+    EXEC loadDefaultWriteOffRate('СОСИСКИ', 0.12);
+    EXEC loadDefaultWriteOffRate('САРДЕЛЬКИ, ПЕРЕВЯЗ. ШПАГАТОМ', 0.5);
+    EXEC loadDefaultWriteOffRate('ЗЕЛЬЦЫ, ПЕРЕВЯЗ.ШПАГАТОМ', 0.31);
+    EXEC loadDefaultWriteOffRate('С/К РУЛЕТЫ: ЛЕНИНГРАДСКИЙ, РОСТОВСКИЙ', 0.6);
+    EXEC loadDefaultWriteOffRate('К/В ГРУДИНКА, КОРЕЙКА', 0.2);
+    EXEC loadDefaultWriteOffRate('КРОВЯНЫЕ', 0.65);
+} IN loadDefaultGroup;
+
+@implementLoadDefaultData(loadDefaultWriteOffRates);
 
 //---------------------------------------------- Генерация Z-отчета -------------------------------------------------//
 

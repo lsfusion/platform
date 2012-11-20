@@ -201,7 +201,7 @@ sumOutAccountDocumentLedger (ledger) += sumWriteOffDetailWriteOff(ledger);
 
 FORM writeOffPrint 'Акт списания' PRINT
     OBJECTS w=writeOff FIXED PANEL
-    PROPERTIES (w)  SELECTOR numberObject, seriesObject, nameStockWriteOff,
+    PROPERTIES (w)  SELECTOR numberWriteOff, seriesWriteOff, nameStockWriteOff,
                    dateWriteOff, timeWriteOff, nameReasonWriteOff, noteWriteOff, countWriteOffDetailWriteOff, quantityWriteOffDetailWriteOff,
                    sumWriteOffDetailWriteOff,
                    nameLegalEntityWriteOff, addressLegalEntityWriteOff, nameWriteOffCommitteeWriteOff,
@@ -296,7 +296,7 @@ editUserWriteOff 'Редактировать'  = ACTION EDITFORM userWriteOff;
 
 FORM writeOffs 'Списания'
     OBJECTS w=writeOff
-    PROPERTIES (w) READONLY isPostedWriteOff FORCE GRID, numberWriteOff, seriesWriteOff, dateWriteOff, timeWriteOff, nameStockWriteOff,
+    PROPERTIES (w) READONLY isPostedWriteOff FORCE GRID, objectClassName, numberWriteOff, seriesWriteOff, dateWriteOff, timeWriteOff, nameStockWriteOff,
                             nameReasonWriteOff, noteWriteOff, quantityWriteOffDetailWriteOff, countWriteOffDetailWriteOff,
                             sumWriteOffDetailWriteOff, nameWriteOffCommitteeWriteOff
 

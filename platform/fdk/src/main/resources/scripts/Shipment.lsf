@@ -405,8 +405,8 @@ META defineShipment(sign, stockProp)
     invoiceDetailShipmentDetail(shipmentDetail) += invoiceDetailUserShipmentDetail(shipmentDetail);
 
     CONSTRAINT supplierShipmentDetail(detail) != supplierInvoiceDetail(invoiceDetailUserShipmentDetail(detail)) OR
-               customerShipmentDetail(detail) != customerInvoice(invoiceDetailUserShipmentDetail(detail)) OR
-               skuUserShipmentDetail(detail) != skuInvoiceDetail(invoiceDetailUserShipmentDetail(detail))
+               customerShipmentDetail(detail) != customerInvoiceDetail(invoiceDetailUserShipmentDetail(detail)) OR
+               skuShipmentDetail(detail) != skuInvoiceDetail(invoiceDetailUserShipmentDetail(detail))
         CHECKED BY invoiceDetailUserShipmentDetail
             MESSAGE 'Поставщикб покупатель и товар в накладной и поставке должны соответствовать друг другу';
 
@@ -560,7 +560,6 @@ META defineShipment(sign, stockProp)
     backgroundShippedInvoice 'Цвет' (invoice) = RGB(255, 224, 255) IF invoice IS userInvoice;
     EXTEND FORM userInvoice
         PROPERTIES(i) BACKGROUND backgroundShippedInvoice(i) createShipmentUserInvoice
-        PROPERTIES(i) SHOWIF createShipmentInvoice(i) nameSupplierStockUserInvoice, nameCustomerStockUserInvoice
         PROPERTIES(d) BEFORE delete(d) SHOWIF createShipmentInvoice(i) BACKGROUND backgroundShippedInvoice(i)
                       name###stockProp###userInvoiceDetail, shipmentPriceUserInvoiceDetail, shipmentSumUserInvoiceDetail
         PROPERTIES(d) READONLY shippedInvoiceDetail AFTER quantityUserInvoiceDetail SHOWIF showShipmentInvoice(i) BACKGROUND backgroundShippedInvoice(i)
@@ -568,8 +567,6 @@ META defineShipment(sign, stockProp)
     ;
     EXTEND DESIGN userInvoice {
         headerRow11{ADD PROPERTY(createShipmentUserInvoice); }
-        headerRow111{ ADD PROPERTY(nameSupplierStockUserInvoice); }
-        headerRow112{ ADD PROPERTY(nameCustomerStockUserInvoice); }
     }
 
     EXTEND FORM invoices
