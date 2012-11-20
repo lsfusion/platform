@@ -292,3 +292,11 @@ input[type=checkbox] {
 .comboBoxFilter {
     margin-top: 2px;
 }
+
+.logPanel {
+    white-space: nowrap;
+}
+
+.errorLogMessage {
+    color: #ff4500;
+}

@@ -4,6 +4,7 @@ import com.allen_sauer.gwt.log.client.Log;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import platform.gwt.form.client.ErrorHandlingCallback;
 import platform.gwt.form.client.form.ui.dialog.DialogBoxHelper;
+import platform.gwt.form.client.log.GLog;
 import platform.gwt.form.shared.actions.form.ServerResponseResult;
 import platform.gwt.form.shared.view.actions.*;
 
@@ -126,9 +127,9 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     @Override
     public void execute(GLogMessageAction action) {
         if (action.failed) {
-            Log.error(action.message);
+            GLog.error(action.message, action.data, action.titles);
         } else {
-            Log.debug(action.message);
+            GLog.message(action.message);
         }
     }
 

@@ -5,6 +5,7 @@ import platform.gwt.form.client.form.ui.GFormController;
 import platform.gwt.form.client.form.ui.classes.ClassChosenHandler;
 import platform.gwt.form.client.form.ui.dialog.DialogBoxHelper;
 import platform.gwt.form.client.form.ui.dialog.WindowHiddenHandler;
+import platform.gwt.form.client.log.GLog;
 import platform.gwt.form.shared.actions.form.ServerResponseResult;
 import platform.gwt.form.shared.view.actions.*;
 import platform.gwt.form.shared.view.classes.GObjectClass;
@@ -102,13 +103,17 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
 
     @Override
     public void execute(GLogMessageAction action) {
-        pauseDispatching();
-        form.blockingMessage(action.failed, "LS Fusion", action.message, new DialogBoxHelper.CloseCallback() {
-            @Override
-            public void closed(DialogBoxHelper.OptionType chosenOption) {
-                continueDispatching();
-            }
-        });
+        if (GLog.isLogPanelVisible || action.failed) {
+            super.execute(action);
+        } else {
+            pauseDispatching();
+            form.blockingMessage(action.failed, "LS Fusion", action.message, new DialogBoxHelper.CloseCallback() {
+                @Override
+                public void closed(DialogBoxHelper.OptionType chosenOption) {
+                    continueDispatching();
+                }
+            });
+        }
     }
 
     @Override

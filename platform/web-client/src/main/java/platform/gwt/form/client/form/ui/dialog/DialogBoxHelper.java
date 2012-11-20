@@ -40,24 +40,31 @@ public class DialogBoxHelper {
         new MessageBox(caption, message, closeCallback, OptionType.CLOSE, OptionType.CLOSE).showCenter();
     }
 
+    public static void showMessageBox(boolean isError, String caption, Widget contents, final CloseCallback closeCallback) {
+        new MessageBox(caption, contents, closeCallback, OptionType.CLOSE, OptionType.CLOSE).showCenter();
+    }
+
     public static void showConfirmBox(String caption, String message, final CloseCallback closeCallback) {
         new MessageBox(caption, message, closeCallback, OptionType.YES, OptionType.YES, OptionType.NO).showCenter();
     }
 
     private static final class MessageBox extends DialogBox {
-        private HTML messageLabel;
+        private Widget contents;
         private FlowPanel buttonPane;
         private Button activeButton;
 
         private MessageBox(String caption, String message, final CloseCallback closeCallback, OptionType activeOption, OptionType... options) {
+            this(caption, new HTML(GwtClientUtils.toHtml(message)), closeCallback, activeOption, options);
+        }
 
-            messageLabel = new HTML(GwtClientUtils.toHtml(message));
-            messageLabel.addStyleName("messageBox-message");
+        private MessageBox(String caption, Widget contents, final CloseCallback closeCallback, OptionType activeOption, OptionType... options) {
+            this.contents = contents;
+            this.contents.addStyleName("messageBox-message");
 
             createButtonsPanel(activeOption, options, closeCallback);
 
             final VerticalPanel mainPane = new VerticalPanel();
-            mainPane.add(messageLabel);
+            mainPane.add(this.contents);
             mainPane.add(buttonPane);
             mainPane.setCellHorizontalAlignment(buttonPane, HasAlignment.ALIGN_CENTER);
 

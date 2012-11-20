@@ -55,7 +55,7 @@ public class LogPropertyActionProperty<P extends PropertyInterface> extends Syst
                     String id = "id=" + String.valueOf(formRow.keys.get(objSet));
                     String caption = ((CustomObjectInstance) objSet).currentClass.getCaption();
                     idResult = (idResult.length() == 0 ? "" : idResult + ", ") + caption + ": " + id;
-                    titleResult = (titleResult.length() == 0 ? "" : ", ") + caption;
+                    titleResult += (titleResult.length() == 0 ? "" : ", ") + caption;
                 }
                 propertyRow.add(idResult);
                 titleRow = new ArrayList<String>();

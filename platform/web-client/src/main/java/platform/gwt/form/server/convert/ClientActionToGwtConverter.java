@@ -95,7 +95,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
     @Converter(from = LogMessageClientAction.class)
     public GLogMessageAction convertAction(LogMessageClientAction action, LogicsDispatchServlet servlet) throws IOException {
-        return new GLogMessageAction(action.failed, action.message);
+        return new GLogMessageAction(action.failed, action.message, action.data, action.titles);
     }
 
     @Converter(from = MessageClientAction.class)

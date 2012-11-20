@@ -395,7 +395,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
 
     public void execute(LogMessageClientAction action) {
         if (action.failed) {
-            Log.error(action.textMessage, action.titles, action.data);
+            Log.error(action.message, action.titles, action.data);
         } else {
             Log.message(action.message);
         }
