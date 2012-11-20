@@ -15,7 +15,7 @@ import platform.gwt.form.shared.view.classes.GType;
 
 public class GEditPropertyDispatcher extends GFormActionDispatcher {
 
-    private GEditPropertyHandler editHandler;
+    private final GEditPropertyHandler editHandler;
 
     private GType readType;
     private Object oldValue;
@@ -25,20 +25,17 @@ public class GEditPropertyDispatcher extends GFormActionDispatcher {
     private boolean valueRequested;
 
 
-    public GEditPropertyDispatcher(GFormController form) {
+    public GEditPropertyDispatcher(GFormController form, GEditPropertyHandler editHandler) {
         super(form);
+        this.editHandler = editHandler;
     }
 
-    public void executePropertyEditAction(final GEditPropertyHandler ieditHandler, final GPropertyDraw editProperty, final GGroupObjectValue columnKey, String actionSID, final Object currentValue) {
-        editHandler = ieditHandler;
-
+    public void executePropertyEditAction(final GPropertyDraw editProperty, final GGroupObjectValue columnKey, String actionSID, final Object currentValue) {
         valueRequested = false;
         simpleChangeProperty = null;
         readType = null;
         editColumnKey = null;
         oldValue = null;
-
-        editHandler.setFocus(false);
 
         final boolean asyncModifyObject = form.isAsyncModifyObject(editProperty);
         if (GEditBindingMap.CHANGE.equals(actionSID) && (asyncModifyObject || editProperty.changeType != null)) {
@@ -48,6 +45,8 @@ public class GEditPropertyDispatcher extends GFormActionDispatcher {
                     public void closed(DialogBoxHelper.OptionType chosenOption) {
                         if (chosenOption == DialogBoxHelper.OptionType.YES) {
                             executeSimpleChangeProperty(asyncModifyObject, editProperty, columnKey, currentValue);
+                        } else {
+                            editHandler.onEditFinished();
                         }
                     }
                 });
@@ -68,6 +67,7 @@ public class GEditPropertyDispatcher extends GFormActionDispatcher {
     private void executeSimpleChangeProperty(boolean asyncModifyObject, GPropertyDraw editProperty, GGroupObjectValue columnKey, Object currentValue) {
         if (asyncModifyObject) {
             form.modifyObject(editProperty, columnKey);
+            editHandler.onEditFinished();
         } else {
 //          т.е. property.changeType != null
             editColumnKey = columnKey;
@@ -91,7 +91,7 @@ public class GEditPropertyDispatcher extends GFormActionDispatcher {
     @Override
     protected void postDispatchResponse(ServerResponseResult response) {
         super.postDispatchResponse(response);
-        editHandler.setFocus(true);
+        editHandler.onEditFinished();
     }
 
     private void requestValue(GType type) {
@@ -118,6 +118,7 @@ public class GEditPropertyDispatcher extends GFormActionDispatcher {
         if (simpleChangeProperty != null) {
             if (!inputResult.isCanceled()) {
                 form.changeProperty(editHandler, simpleChangeProperty, editColumnKey, inputResult.getValue(), oldValue);
+                editHandler.onEditFinished();
             }
             return;
         }

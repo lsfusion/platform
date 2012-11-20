@@ -1,6 +1,7 @@
 package platform.gwt.form.shared.view.grid;
 
 import com.google.gwt.dom.client.NativeEvent;
+import platform.gwt.base.client.GwtClientUtils;
 
 public class NativeEditEvent extends EditEvent {
     private final NativeEvent nativeEvent;
@@ -15,7 +16,6 @@ public class NativeEditEvent extends EditEvent {
 
     @Override
     public void stopPropagation() {
-        nativeEvent.stopPropagation();
-        nativeEvent.preventDefault();
+        GwtClientUtils.stopPropagation(nativeEvent);
     }
 }

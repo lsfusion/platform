@@ -70,6 +70,8 @@ public class MainFrame implements EntryPoint {
             }
         };
 
+        HotkeyManager.get().install(windowsController);
+
         initCommonWindows();
     }
 

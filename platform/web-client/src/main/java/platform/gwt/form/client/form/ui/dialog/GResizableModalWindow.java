@@ -77,11 +77,10 @@ public class GResizableModalWindow extends ResizableWindow {
         Event nativeEvent = Event.as(event.getNativeEvent());
         if (eventTargetsPopup(nativeEvent)) {
             event.consume();
+        } else {
+            // Cancel the event if it doesn't target the modal popup.
+            event.cancel();
         }
-
-//        // Cancel the event if it doesn't target the modal popup. Note that the
-//        // event can be both canceled and consumed.
-        event.cancel();
     }
 
     private final static class ModalMask {

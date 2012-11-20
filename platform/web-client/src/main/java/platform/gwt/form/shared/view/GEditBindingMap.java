@@ -1,7 +1,6 @@
 package platform.gwt.form.shared.view;
 
 import com.google.gwt.dom.client.NativeEvent;
-import com.google.gwt.event.dom.client.KeyCodes;
 import platform.gwt.form.shared.view.grid.EditEvent;
 import platform.gwt.form.shared.view.grid.InternalEditEvent;
 import platform.gwt.form.shared.view.grid.NativeEditEvent;
@@ -10,7 +9,10 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
-import static com.google.gwt.event.dom.client.KeyCodes.*;
+import static com.google.gwt.dom.client.BrowserEvents.*;
+import static platform.gwt.form.shared.view.GKeyStroke.getKeyStroke;
+import static platform.gwt.form.shared.view.GKeyStroke.isCommonEditKeyEvent;
+import static platform.gwt.form.shared.view.GKeyStroke.isPossibleEditKeyEvent;
 
 public class GEditBindingMap implements Serializable {
     public static final String CHANGE = "change";
@@ -18,18 +20,14 @@ public class GEditBindingMap implements Serializable {
     public static final String EDIT_OBJECT = "editObject";
     public static final String CHANGE_WYS = "change_wys";
 
-    public static final int KEY_F1 = 112;
-    public static final int KEY_F12 = KEY_F1 + 11;
-    public static final int KEY_INSERT = 45;
-
-    private HashMap<Key, String> keyBindingMap;
+    private HashMap<GKeyStroke, String> keyBindingMap;
     private LinkedHashMap<String, String> contextMenuBindingMap;
     private String mouseBinding;
 
     public GEditBindingMap() {
     }
 
-    public GEditBindingMap(HashMap<Key, String> keyBindingMap, LinkedHashMap<String, String> contextMenuBindingMap, String mouseBinding) {
+    public GEditBindingMap(HashMap<GKeyStroke, String> keyBindingMap, LinkedHashMap<String, String> contextMenuBindingMap, String mouseBinding) {
         this.keyBindingMap = keyBindingMap;
         this.contextMenuBindingMap = contextMenuBindingMap;
         this.mouseBinding = mouseBinding;
@@ -39,10 +37,10 @@ public class GEditBindingMap implements Serializable {
         if (event instanceof NativeEditEvent) {
             NativeEvent nativeEvent = ((NativeEditEvent) event).getNativeEvent();
             String eventType = nativeEvent.getType();
-            if ("dblclick".equals(eventType)) {
+            if (DBLCLICK.equals(eventType)) {
                 return mouseBinding;
             } else if (isPossibleEditKeyEvent(nativeEvent)) {
-                String actionSID = getKeyAction(new Key(nativeEvent.getKeyCode(), nativeEvent.getAltKey(), nativeEvent.getCtrlKey(), nativeEvent.getShiftKey()));
+                String actionSID = getKeyAction(getKeyStroke(nativeEvent));
 
                 if (actionSID != null) {
                     return actionSID;
@@ -59,49 +57,6 @@ public class GEditBindingMap implements Serializable {
         return null;
     }
 
-    private boolean isCommonEditKeyEvent(NativeEvent event) {
-        if (event.getCtrlKey() || event.getAltKey() || event.getMetaKey()) {
-            return false;
-        }
-
-        String eventType = event.getType();
-        int keyCode = event.getKeyCode();
-        if ("keypress".equals(eventType)) {
-            return isCommonKeyPress(keyCode);
-        } else if ("keydown".equals(eventType)) {
-            return keyCode == KeyCodes.KEY_DELETE;
-        }
-        return false;
-    }
-
-    private boolean isPossibleEditKeyEvent(NativeEvent event) {
-        String eventType = event.getType();
-        int keyCode = event.getKeyCode();
-        if ("keypress".equals(eventType)) {
-            return isCommonKeyPress(keyCode);
-        } else if ("keydown".equals(eventType)) {
-            return keyCode == KEY_DELETE ||
-                    keyCode == KEY_BACKSPACE ||
-                    keyCode == KEY_INSERT ||
-                    (KEY_F1 <= keyCode && keyCode <= KEY_F12);
-        }
-        return false;
-    }
-
-    private boolean isCommonKeyPress(int keyCode) {
-        return keyCode != KEY_ENTER
-                && keyCode != KEY_ESCAPE
-                && keyCode != KEY_TAB
-                && keyCode != KEY_HOME
-                && keyCode != KEY_END
-                && keyCode != KEY_PAGEUP
-                && keyCode != KEY_PAGEDOWN
-                && keyCode != KEY_LEFT
-                && keyCode != KEY_RIGHT
-                && keyCode != KEY_UP
-                && keyCode != KEY_DOWN;
-    }
-
     public void setMouseAction(String actionSID) {
         mouseBinding = actionSID;
     }
@@ -110,11 +65,11 @@ public class GEditBindingMap implements Serializable {
         return mouseBinding;
     }
 
-    public void setKeyAction(Key key, String actionSID) {
+    public void setKeyAction(GKeyStroke key, String actionSID) {
         createKeyBindingMap().put(key, actionSID);
     }
 
-    public String getKeyAction(Key key) {
+    public String getKeyAction(GKeyStroke key) {
         return keyBindingMap != null ? keyBindingMap.get(key) : null;
     }
 
@@ -122,9 +77,9 @@ public class GEditBindingMap implements Serializable {
         createContextMenuItems().put(actionSID, caption);
     }
 
-    private HashMap<Key,String> createKeyBindingMap() {
+    private HashMap<GKeyStroke,String> createKeyBindingMap() {
         if (keyBindingMap == null) {
-            keyBindingMap = new HashMap<Key, String>();
+            keyBindingMap = new HashMap<GKeyStroke, String>();
         }
         return keyBindingMap;
     }
@@ -140,45 +95,4 @@ public class GEditBindingMap implements Serializable {
         return contextMenuBindingMap;
     }
 
-    public static class Key implements Serializable {
-        public int keyCode;
-        public boolean altPressed;
-        public boolean ctrlPressed;
-        public boolean shiftPressed;
-
-        public Key() {}
-
-        public Key(int keyCode) {
-            this.keyCode = keyCode;
-        }
-
-        public Key(int keyCode, boolean altPressed, boolean ctrlPressed, boolean shiftPressed) {
-            this.keyCode = keyCode;
-            this.altPressed = altPressed;
-            this.ctrlPressed = ctrlPressed;
-            this.shiftPressed = shiftPressed;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof Key)) return false;
-
-            Key key = (Key) o;
-
-            return altPressed == key.altPressed &&
-                    ctrlPressed == key.ctrlPressed &&
-                    keyCode == key.keyCode
-                    && shiftPressed == key.shiftPressed;
-        }
-
-        @Override
-        public int hashCode() {
-            int result = keyCode;
-            result = 31 * result + (altPressed ? 1 : 0);
-            result = 31 * result + (ctrlPressed ? 1 : 0);
-            result = 31 * result + (shiftPressed ? 1 : 0);
-            return result;
-        }
-    }
 }

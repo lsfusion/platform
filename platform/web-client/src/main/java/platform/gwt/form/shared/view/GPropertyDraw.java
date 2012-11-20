@@ -38,6 +38,9 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
     public boolean checkEquals;
     public GPropertyEditType editType = GPropertyEditType.EDITABLE;
 
+    public GKeyStroke editKey;
+    public boolean showEditKey;
+
     public GCaptionReader captionReader;
     public GFooterReader footerReader;
     public GBackgroundReader backgroundReader;
@@ -95,6 +98,18 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
         return CAPTION_ORIGINAL.equals(caption)
                ? getCaptionOrEmpty()
                : (caption == null ? "" : caption.toString().trim());
+    }
+
+    public String getEditCaption(String caption) {
+        if (caption == null) {
+            caption = this.caption;
+        }
+
+        return showEditKey && editKey != null ? caption + " (" + editKey + ")" : caption;
+    }
+
+    public String getEditCaption() {
+        return getEditCaption(caption);
     }
 
     public String getIconPath(boolean enabled) {

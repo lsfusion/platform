@@ -5475,7 +5475,7 @@ public class RomanLogicsModule extends LogicsModule {
                         inSimpleShipment,
                         "Оприходовано в поставке"));
             }
-            filterGroup.defaultFilter = 0;
+            filterGroup.defaultFilterIndex = 0;
             addRegularFilterGroup(filterGroup);
 
             RegularFilterGroupEntity filterGroup2 = new RegularFilterGroupEntity(genID());
@@ -5483,7 +5483,7 @@ public class RomanLogicsModule extends LogicsModule {
                     new CompareFilterEntity(addPropertyObject(shipmentShipmentDetail, objShipmentDetail), Compare.EQUALS, objShipment),
                     "В поставке",
                     KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)));
-            filterGroup2.defaultFilter = 0;
+            filterGroup2.defaultFilterIndex = 0;
             addRegularFilterGroup(filterGroup2);
 
             RegularFilterGroupEntity filterGroup4 = new RegularFilterGroupEntity(genID());
@@ -5894,7 +5894,7 @@ public class RomanLogicsModule extends LogicsModule {
                     new CompareFilterEntity(addPropertyObject(palletFreightBox, objBox), Compare.EQUALS, objPallet),
                     "В текущей паллете",
                     KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
-            filterGroup.defaultFilter = 0;
+            filterGroup.defaultFilterIndex = 0;
             addRegularFilterGroup(filterGroup);
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityStock, objBox)));
@@ -5968,7 +5968,7 @@ public class RomanLogicsModule extends LogicsModule {
                     new CompareFilterEntity(addPropertyObject(freightPallet, objPallet), Compare.EQUALS, objFreight),
                     "В текущем фрахте",
                     KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
-            filterGroup.defaultFilter = 0;
+            filterGroup.defaultFilterIndex = 0;
             addRegularFilterGroup(filterGroup);
 
             RegularFilterGroupEntity filterGroupInvoice = new RegularFilterGroupEntity(genID());
@@ -5981,7 +5981,7 @@ public class RomanLogicsModule extends LogicsModule {
                     new CompareFilterEntity(addPropertyObject(freightDirectInvoice, objDirectInvoice), Compare.EQUALS, objFreight),
                     "В текущем фрахте",
                     KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0)));
-            filterGroupInvoice.defaultFilter = 0;
+            filterGroupInvoice.defaultFilterIndex = 0;
             addRegularFilterGroup(filterGroupInvoice);
 
             freightCompleteFA = addDMFAProp(actionGroup, "Скомплектовать", this, new ObjectEntity[] {objFreight}, true,
@@ -6189,7 +6189,7 @@ public class RomanLogicsModule extends LogicsModule {
                     new CompareFilterEntity(addPropertyObject(quantitySku, objSku), Compare.EQUALS,addPropertyObject( baseLM.vzero)),
                     "Нулевые остатки",
                     KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));
-            filterGroup.defaultFilter = 0;
+            filterGroup.defaultFilterIndex = 0;
             addRegularFilterGroup(filterGroup);
         }
 
@@ -6243,7 +6243,7 @@ public class RomanLogicsModule extends LogicsModule {
                     new CompareFilterEntity(addPropertyObject(brandSupplierArticleSku, objSku), Compare.EQUALS, objBrand),
                     "Текущего бренда",
                     KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));
-            filterGroupBrand.defaultFilter = 0;
+            filterGroupBrand.defaultFilterIndex = 0;
             addRegularFilterGroup(filterGroupBrand);*/
 
         }
@@ -6311,7 +6311,7 @@ public class RomanLogicsModule extends LogicsModule {
                     new CompareFilterEntity(addPropertyObject(supplierArticleSku, objSku), Compare.EQUALS, objSupplier),
                     "Текущего поставщика",
                     KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));
-            filterGroupSupplierSku.defaultFilter = 0;
+            filterGroupSupplierSku.defaultFilterIndex = 0;
             addRegularFilterGroup(filterGroupSupplierSku);
 
             RegularFilterGroupEntity filterGroupCategorySku = new RegularFilterGroupEntity(genID());
@@ -6319,7 +6319,7 @@ public class RomanLogicsModule extends LogicsModule {
                     new CompareFilterEntity(addPropertyObject(categoryArticleSku, objSku), Compare.EQUALS, objCategory),
                     "Текущей номенклатурной группы",
                     KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
-            filterGroupCategorySku.defaultFilter = 0;
+            filterGroupCategorySku.defaultFilterIndex = 0;
             addRegularFilterGroup(filterGroupCategorySku);
 
             RegularFilterGroupEntity filterGroupSupplierArticle = new RegularFilterGroupEntity(genID());
@@ -6327,7 +6327,7 @@ public class RomanLogicsModule extends LogicsModule {
                     new CompareFilterEntity(addPropertyObject(supplierArticle, objArticle), Compare.EQUALS, objSupplier),
                     "Текущего поставщика",
                     KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)));
-            filterGroupSupplierArticle.defaultFilter = 0;
+            filterGroupSupplierArticle.defaultFilterIndex = 0;
             addRegularFilterGroup(filterGroupSupplierArticle);
 
             RegularFilterGroupEntity filterGroupCategoryArticle = new RegularFilterGroupEntity(genID());
@@ -6335,7 +6335,7 @@ public class RomanLogicsModule extends LogicsModule {
                     new CompareFilterEntity(addPropertyObject(categoryArticle, objArticle), Compare.EQUALS, objCategory),
                     "Текущей номенклатурной группы",
                     KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0)));
-            filterGroupCategoryArticle.defaultFilter = 0;
+            filterGroupCategoryArticle.defaultFilterIndex = 0;
             addRegularFilterGroup(filterGroupCategoryArticle);
         }
 
@@ -6401,7 +6401,7 @@ public class RomanLogicsModule extends LogicsModule {
                     new CompareFilterEntity(addPropertyObject(supplierSizeSupplier, objSizeSupplier), Compare.EQUALS, objSupplier),
                     "Текущего поставщика",
                     KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));
-            filterGroupSupplierSize.defaultFilter = 0;
+            filterGroupSupplierSize.defaultFilterIndex = 0;
             addRegularFilterGroup(filterGroupSupplierSize);
 
         }
@@ -6829,7 +6829,7 @@ public class RomanLogicsModule extends LogicsModule {
                     new CompareFilterEntity(addPropertyObject(categoryArticleSku, objSku), Compare.EQUALS, objCategory),
                     "По ном. группе",
                     KeyStroke.getKeyStroke(KeyEvent.VK_F7, 0)));
-            filterGroupCategory.defaultFilter = 0;
+            filterGroupCategory.defaultFilterIndex = 0;
             addRegularFilterGroup(filterGroupCategory);
 
             filterGroupCustomCategory10 = new RegularFilterGroupEntity(genID());
@@ -7825,7 +7825,7 @@ public class RomanLogicsModule extends LogicsModule {
                     new NotNullFilterEntity(addPropertyObject(quantityTransferSku, objTransfer, objSku)),
                     "В документе",
                     KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
-            filterGroup.defaultFilter = 0;
+            filterGroup.defaultFilterIndex = 0;
             addRegularFilterGroup(filterGroup);
         }
 
@@ -8607,7 +8607,7 @@ public class RomanLogicsModule extends LogicsModule {
                     new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(baseLM.barcode, objSku))),
                     "Без штрих-кода",
                     KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
-                filterGroup.defaultFilter = 0;
+                filterGroup.defaultFilterIndex = 0;
                 addRegularFilterGroup(filterGroup);
             }
 
@@ -8617,7 +8617,7 @@ public class RomanLogicsModule extends LogicsModule {
                     new NotNullFilterEntity(addPropertyObject(quantityListSku, objSupplierBox, objSku)),
                     "В текущем коробе",
                     KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));
-//                filterGroup.defaultFilter = 0;
+//                filterGroup.defaultFilterIndex = 0;
                 addRegularFilterGroup(filterGroup);
             }
 

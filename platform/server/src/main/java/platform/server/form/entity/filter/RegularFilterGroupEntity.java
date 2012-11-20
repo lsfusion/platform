@@ -31,23 +31,23 @@ public class RegularFilterGroupEntity extends IdentityObject implements ServerId
         filters.add(filter);
     }
 
-    public int defaultFilter = -1;
+    public int defaultFilterIndex = -1;
 
     public void addFilter(RegularFilterEntity filter, boolean setDefault) {
         if (setDefault) {
-            defaultFilter = filters.size();
+            defaultFilterIndex = filters.size();
         }
         filters.add(filter);
     }
 
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         pool.serializeCollection(outStream, filters);
-        outStream.writeInt(defaultFilter);
+        outStream.writeInt(defaultFilterIndex);
     }
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
         filters = pool.deserializeList(inStream);
-        defaultFilter = inStream.readInt();
+        defaultFilterIndex = inStream.readInt();
     }
 
     public GroupObjectEntity getToDraw(FormEntity form) {

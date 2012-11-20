@@ -7,5 +7,5 @@ public interface GEditPropertyHandler {
 
     public void updateEditValue(Object value);
 
-    void setFocus(boolean focus);
+    public void onEditFinished();
 }

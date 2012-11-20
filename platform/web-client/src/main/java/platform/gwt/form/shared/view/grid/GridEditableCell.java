@@ -11,6 +11,8 @@ import platform.gwt.form.shared.view.GPropertyDraw;
 import platform.gwt.form.shared.view.grid.editor.GridCellEditor;
 import platform.gwt.form.shared.view.grid.renderer.GridCellRenderer;
 
+import static com.google.gwt.dom.client.BrowserEvents.*;
+
 public class GridEditableCell extends AbstractCell<Object> {
 
     private final GPropertyTable table;
@@ -19,7 +21,7 @@ public class GridEditableCell extends AbstractCell<Object> {
     private Object editKey = null;
 
     public GridEditableCell(GPropertyTable table) {
-        super("dblclick", "keyup", "keydown", "keypress", "blur", "contextmenu");
+        super(DBLCLICK, KEYDOWN, KEYPRESS, BLUR, CONTEXTMENU);
         this.table = table;
     }
 

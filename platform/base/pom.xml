@@ -47,6 +47,7 @@
         <antlr.version>3.3</antlr.version>
         <supercsv.version>1.52</supercsv.version>
         <edireader.version>4.7.3</edireader.version>
+        <jna.version>3.2.3</jna.version>
 
         <spring.version>3.0.5.RELEASE</spring.version>
         <cglib.version>2.2.2</cglib.version>
@@ -560,6 +561,11 @@
                 <groupId>com.berryworks.edireader</groupId>
                 <artifactId>edireader</artifactId>
                 <version>${edireader.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.java.dev.jna</groupId>
+                <artifactId>jna</artifactId>
+                <version>${jna.version}</version>
             </dependency>
 
             <!-- Spring libraries -->

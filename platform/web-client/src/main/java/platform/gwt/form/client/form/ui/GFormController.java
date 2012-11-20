@@ -1,6 +1,7 @@
 package platform.gwt.form.client.form.ui;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
@@ -15,6 +16,7 @@ import net.customware.gwt.dispatch.shared.Result;
 import platform.gwt.base.client.ErrorAsyncCallback;
 import platform.gwt.base.client.WrapperAsyncCallbackEx;
 import platform.gwt.form.client.ErrorHandlingCallback;
+import platform.gwt.form.client.HotkeyManager;
 import platform.gwt.form.client.LoadingBlocker;
 import platform.gwt.form.client.dispatch.DeferredRunner;
 import platform.gwt.form.client.dispatch.FormDispatchAsync;
@@ -107,7 +109,7 @@ public class GFormController extends SimplePanel {
     }
 
     private void createSingleFilterComponent(final GRegularFilterGroup filterGroup, final GRegularFilter filter) {
-        final CheckBox filterCheck = new CheckBox(filter.caption);
+        final CheckBox filterCheck = new CheckBox(filter.getFullCaption());
         filterCheck.setValue(false);
         filterCheck.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
             @Override
@@ -118,8 +120,18 @@ public class GFormController extends SimplePanel {
         filterCheck.addStyleName("checkBoxFilter");
         addFilterComponent(filterGroup, filterCheck);
 
-        if (filterGroup.defaultFilter >= 0) {
-            filterCheck.setValue(true);
+        if (filterGroup.defaultFilterIndex >= 0) {
+            filterCheck.setValue(true, true);
+        }
+
+        if (filter.key != null) {
+            HotkeyManager.get().addHotkeyBinding(getElement(), filter.key, new HotkeyManager.Binding() {
+                @Override
+                public boolean onKeyPress(NativeEvent event, GKeyStroke key) {
+                    filterCheck.setValue(!filterCheck.getValue(), true);
+                    return true;
+                }
+            });
         }
     }
 
@@ -129,25 +141,39 @@ public class GFormController extends SimplePanel {
 
         ArrayList<GRegularFilter> filters = filterGroup.filters;
         for (int i = 0; i < filters.size(); i++) {
-            GRegularFilter filter = filters.get(i);
-            filterBox.addItem(filter.caption, "" + i);
+            final GRegularFilter filter = filters.get(i);
+            filterBox.addItem(filter.getFullCaption(), "" + i);
+
+            final int filterIndex = i;
+            HotkeyManager.get().addHotkeyBinding(getElement(), filter.key, new HotkeyManager.Binding() {
+                @Override
+                public boolean onKeyPress(NativeEvent event, GKeyStroke key) {
+                    filterBox.setSelectedIndex(filterIndex + 1);
+                    setRegularFilter(filterGroup, filterIndex);
+                    return true;
+                }
+            });
+
         }
 
         filterBox.addChangeHandler(new ChangeHandler() {
             @Override
             public void onChange(ChangeEvent event) {
-                int ind = Integer.parseInt(filterBox.getValue(filterBox.getSelectedIndex()));
-                setRegularFilter(filterGroup, ind == -1 ? null : filterGroup.filters.get(ind));
+                setRegularFilter(filterGroup, filterBox.getSelectedIndex() - 1);
             }
         });
 
         filterBox.addStyleName("comboBoxFilter");
 
         addFilterComponent(filterGroup, filterBox);
-        if (filterGroup.defaultFilter >= 0) {
-            //todo: check if this is correct
-            filterBox.setSelectedIndex(filterGroup.defaultFilter + 1);
+        if (filterGroup.defaultFilterIndex >= 0) {
+            filterBox.setSelectedIndex(filterGroup.defaultFilterIndex + 1);
+            setRegularFilter(filterGroup, filterGroup.defaultFilterIndex);
         }
+    }
+
+    private void setRegularFilter(GRegularFilterGroup filterGroup, int index) {
+        setRemoteRegularFilter(filterGroup, index == -1 ? null : filterGroup.filters.get(index));
     }
 
     private void setRegularFilter(GRegularFilterGroup filterGroup, GRegularFilter filter) {
@@ -596,7 +622,7 @@ public class GFormController extends SimplePanel {
     }
 
     public void hideForm() {
-        //do nothing by default
+        HotkeyManager.get().removeHotkeyBinding(getElement());
     }
 
     public void runPrintReport(String reportSID) {

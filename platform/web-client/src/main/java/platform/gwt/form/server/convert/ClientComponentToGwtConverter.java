@@ -1,5 +1,6 @@
 package platform.gwt.form.server.convert;
 
+import com.google.gwt.event.dom.client.KeyCodes;
 import platform.client.form.EditBindingMap;
 import platform.client.logics.*;
 import platform.gwt.form.shared.view.*;
@@ -12,12 +13,12 @@ import platform.interop.form.layout.SingleSimplexConstraint;
 
 import javax.swing.*;
 import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import static platform.gwt.form.shared.view.GEditBindingMap.Key;
 import static platform.interop.form.layout.ContainerType.*;
 
 @SuppressWarnings("UnusedDeclaration")
@@ -111,7 +112,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
     public GRegularFilterGroup convertRegularFilterGroup(ClientRegularFilterGroup clientFilterGroup) {
         GRegularFilterGroup filterGroup = initGwtComponent(clientFilterGroup, new GRegularFilterGroup());
 
-        filterGroup.defaultFilter = clientFilterGroup.defaultFilter;
+        filterGroup.defaultFilterIndex = clientFilterGroup.defaultFilterIndex;
         filterGroup.groupObject = convertOrCast(clientFilterGroup.groupObject);
 
         for (ClientRegularFilter filter : clientFilterGroup.filters) {
@@ -127,6 +128,8 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         GRegularFilter filter = new GRegularFilter();
         filter.ID = clientFilter.ID;
         filter.caption = clientFilter.caption;
+        filter.key = convertOrCast(clientFilter.key);
+        filter.showKey = clientFilter.showKey;
         return filter;
     }
 
@@ -199,6 +202,9 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
         propertyDraw.editType = convertOrCast(clientPropertyDraw.editType);
 
+        propertyDraw.editKey = convertOrCast(clientPropertyDraw.editKey);
+        propertyDraw.showEditKey = clientPropertyDraw.showEditKey;
+
         propertyDraw.focusable = clientPropertyDraw.focusable;
         propertyDraw.checkEquals = clientPropertyDraw.checkEquals;
 
@@ -216,11 +222,12 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
     @Converter(from = EditBindingMap.class)
     public GEditBindingMap convertBindingMap(EditBindingMap editBindingMap) {
-        HashMap<GEditBindingMap.Key, String> keyBindingMap = null;
+        HashMap<GKeyStroke, String> keyBindingMap = null;
         if (editBindingMap.getKeyBindingMap() != null) {
-            keyBindingMap = new HashMap<GEditBindingMap.Key, String>();
+            keyBindingMap = new HashMap<GKeyStroke, String>();
             for (Map.Entry<KeyStroke, String> e : editBindingMap.getKeyBindingMap().entrySet()) {
-                keyBindingMap.put(convertKeyStroke(e.getKey()), e.getValue());
+                GKeyStroke key = convertOrCast(e.getKey());
+                keyBindingMap.put(key, e.getValue());
             }
         }
 
@@ -231,13 +238,31 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
         return new GEditBindingMap(keyBindingMap, contextMenuBindingMap, mouseBinding);
     }
-    
-    public Key convertKeyStroke(KeyStroke keyStroke) {
+
+    @Converter(from = KeyStroke.class)
+    public GKeyStroke convertKeyStroke(KeyStroke keyStroke) {
         int modifiers = keyStroke.getModifiers();
         boolean isAltPressed = (modifiers & InputEvent.ALT_MASK) != 0;
         boolean isCtrlPressed = (modifiers & InputEvent.CTRL_MASK) != 0;
         boolean isShiftPressed = (modifiers & InputEvent.SHIFT_MASK) != 0;
-        return new Key(keyStroke.getKeyCode(), isAltPressed, isCtrlPressed, isShiftPressed);
+        int keyCode = convertKeyCode(keyStroke.getKeyCode());
+
+        return new GKeyStroke(keyCode, isAltPressed, isCtrlPressed, isShiftPressed);
+    }
+
+    private int convertKeyCode(int keyCode) {
+        switch (keyCode) {
+            case KeyEvent.VK_DELETE:
+                return KeyCodes.KEY_DELETE;
+            case KeyEvent.VK_ESCAPE:
+                return KeyCodes.KEY_ESCAPE;
+            case KeyEvent.VK_ENTER:
+                return KeyCodes.KEY_ENTER;
+            case KeyEvent.VK_INSERT:
+                return GKeyStroke.KEY_INSERT;
+            default:
+                return keyCode;
+        }
     }
 
     public GCaptionReader convertCaptionReader(ClientPropertyDraw.CaptionReader reader) {

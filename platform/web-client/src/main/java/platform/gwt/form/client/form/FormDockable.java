@@ -44,6 +44,7 @@ final class FormDockable {
         form = new GFormController(formsController, gForm, false) {
             @Override
             public void hideForm() {
+                super.hideForm();
                 if (hiddenHandler != null) {
                     hiddenHandler.onHidden();
                 }

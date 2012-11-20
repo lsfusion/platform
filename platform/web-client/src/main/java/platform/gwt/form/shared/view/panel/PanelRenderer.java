@@ -12,5 +12,5 @@ public interface PanelRenderer extends Serializable {
     void updateCellBackgroundValue(Object value);
     void updateCellForegroundValue(Object value);
 
-    void setFocus(boolean focus);
+    void focus();
 }

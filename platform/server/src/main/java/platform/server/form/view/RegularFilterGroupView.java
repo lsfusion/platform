@@ -49,7 +49,7 @@ public class RegularFilterGroupView extends ComponentView {
         super.customSerialize(pool, outStream, serializationType);
 
         pool.serializeCollection(outStream, filters);
-        outStream.writeInt(entity.defaultFilter);
+        outStream.writeInt(entity.defaultFilterIndex);
 
         pool.serializeObject(outStream, pool.context.view.getGroupObject(entity.getToDraw(pool.context.view.entity)));
     }

@@ -203,8 +203,6 @@ public class GPanelController {
 
             if (propertyCaptions != null) {
                 renderer.setCaption(property.getDynamicCaption(propertyCaptions.get(columnKey)));
-            } else {
-                renderer.setCaption(property.getCaptionOrEmpty());
             }
         }
 
@@ -214,7 +212,7 @@ public class GPanelController {
             }
 
             PanelRenderer toFocus = columnKeys == null ? renderers.values().iterator().next() : renderers.get(columnKeys.get(0));
-            toFocus.setFocus(true);
+            toFocus.focus();
 
             return true;
         }

@@ -1,6 +1,7 @@
 package platform.gwt.base.client;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.http.client.URL;
 import com.google.gwt.http.client.UrlBuilder;
 import com.google.gwt.i18n.client.Dictionary;
@@ -130,5 +131,10 @@ public class GwtClientUtils {
 
     public static String getPageParameter(String parameterName) {
         return getPageParameters().get(parameterName);
+    }
+
+    public static void stopPropagation(NativeEvent event) {
+        event.stopPropagation();
+        event.preventDefault();
     }
 }

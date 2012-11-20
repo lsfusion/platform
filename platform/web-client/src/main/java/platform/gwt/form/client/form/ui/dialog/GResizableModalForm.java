@@ -16,6 +16,7 @@ public class GResizableModalForm extends GResizableModalWindow {
         GFormController editorForm = new GFormController(formsController, form, true) {
             @Override
             public void hideForm() {
+                super.hideForm();
                 GResizableModalForm.this.hide();
             }
 

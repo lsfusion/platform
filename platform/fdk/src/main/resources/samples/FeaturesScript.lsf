@@ -252,6 +252,9 @@ baz(store, article) = bar(store, article) > bar2(store, article) IN base;
 baz2 = foo(s, a) >= 15 == foo2(s, a) >= 15;
 
 storeIsHuge(store) = storeSize(store) == storeSize.huge;                        // static class instance
+storeIsBig(store) = storeSize(store) == storeSize.big;                        // static class instance
+storeIsMedium(store) = storeSize(store) == storeSize.medium;                        // static class instance
+storeIsSmall(store) = storeSize(store) == storeSize.small;                        // static class instance
 storeIsHuge2(store) = (storeSize(store) == storeSize.huge) == TRUE;
 
 documentBalance(document, article) = balanceQuantity(store(document), article);
@@ -720,6 +723,29 @@ FILTERGROUP filters1
     FILTER 'Показывать только огромные склады' 'F10' storeIsHuge(s)
 ;
 
+FORM TestHotkeys 'Тест хоткеев'
+OBJECTS s=store, a=article
+PROPERTIES(s) ns=name, storeSizeCode
+PROPERTIES(a) OBJVALUE, na=name
+PROPERTIES(s, a) incomeQuantity, outcomeQuantity, foobar, testUnion
+FILTERGROUP filters1
+    FILTER 'Показывать только огромные склады' 'F7' storeIsHuge(s)
+FILTERGROUP filters2
+    FILTER 'Показывать только огромные склады' 'F3' storeIsHuge(s)
+    FILTER 'Показывать только большие склады' 'F9' storeIsBig(s)
+    FILTER 'Показывать только средние склады' 'F10' storeIsMedium(s)
+    FILTER 'Показывать только маленькие склады' 'F11' storeIsSmall(s)
+;
+
+DESIGN TestHotkeys FROM DEFAULT {
+    PROPERTY(ns) {
+        editKey = 'F4';
+    }
+
+    PROPERTY(na) {
+        editKey = 'F5';
+    }
+}
 //////////////// INDEX STATEMENT //////////////////
 // Syntax:
 // INDEX propertyName1 [, ..., propertyNameN];
@@ -803,6 +829,7 @@ NAVIGATOR {
     ADD TestTree;
     ADD TestAggr;
     ADD TestHeaders;
+    ADD TestHotkeys;
 }
 
 //////////////// DESIGN STATEMENT /////////////////

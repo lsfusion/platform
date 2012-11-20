@@ -10,6 +10,7 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.CustomScrollPanel;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.view.client.DefaultSelectionEventManager;
+import platform.gwt.base.client.GwtClientUtils;
 import platform.gwt.cellview.client.AbstractCellTable;
 import platform.gwt.cellview.client.Header;
 import platform.gwt.form.shared.view.GPropertyDraw;
@@ -18,6 +19,8 @@ import platform.gwt.form.shared.view.changes.GGroupObjectValue;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+
+import static platform.gwt.base.client.GwtClientUtils.stopPropagation;
 
 public abstract class GGridPropertyTable extends GPropertyTable {
     protected Map<GPropertyDraw, Map<GGroupObjectValue, Object>> propertyCaptions = new HashMap<GPropertyDraw, Map<GGroupObjectValue, Object>>();
@@ -69,8 +72,7 @@ public abstract class GGridPropertyTable extends GPropertyTable {
     @Override
     protected void onBrowserEvent2(Event event) {
         if (form.isDialog() && event.getTypeInt() == Event.ONDBLCLICK) {
-            event.stopPropagation();
-            event.preventDefault();
+            stopPropagation(event);
             form.okPressed();
         }
         super.onBrowserEvent2(event);

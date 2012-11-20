@@ -19,6 +19,7 @@ import platform.gwt.cellview.client.Header;
 import static com.google.gwt.dom.client.Style.Cursor;
 import static com.google.gwt.user.client.Event.NativePreviewEvent;
 import static com.google.gwt.user.client.Event.NativePreviewHandler;
+import static platform.gwt.base.client.GwtClientUtils.stopPropagation;
 
 public class GGridPropertyTableHeader extends Header<String> {
     private static final int ANCHOR_WIDTH = 10;
@@ -80,8 +81,7 @@ public class GGridPropertyTableHeader extends Header<String> {
                             scaleWidth = getColumnWidth(rightColumn);
                         }
                         resizeHelper = new ColumnResizeHelper(leftColumn, rightColumn, initialMouseX, scaleWidth, scalePixelWidth);
-                        event.preventDefault();
-                        event.stopPropagation();
+                        stopPropagation(event);
                     }
                 } else {
                     target.getStyle().setCursor(Cursor.DEFAULT);
@@ -131,9 +131,7 @@ public class GGridPropertyTableHeader extends Header<String> {
         @Override
         public void onPreviewNativeEvent(NativePreviewEvent event) {
             NativeEvent nativeEvent = event.getNativeEvent();
-            nativeEvent.preventDefault();
-            nativeEvent.stopPropagation();
-
+            stopPropagation(nativeEvent);
             if (nativeEvent.getType().equals("mousemove")) {
                 resizeHeaders(nativeEvent.getClientX());
             } else if (nativeEvent.getType().equals("mouseup")) {

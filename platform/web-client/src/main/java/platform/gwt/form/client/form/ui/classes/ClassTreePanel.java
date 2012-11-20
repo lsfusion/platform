@@ -4,6 +4,8 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.*;
 import platform.gwt.form.shared.view.classes.GObjectClass;
 
+import static platform.gwt.base.client.GwtClientUtils.stopPropagation;
+
 public abstract class ClassTreePanel extends Composite {
     private GObjectClass baseClass;
     private GObjectClass defaultClass;
@@ -76,8 +78,7 @@ public abstract class ClassTreePanel extends Composite {
         @Override
         public void onBrowserEvent(Event event) {
             if (event.getTypeInt() == Event.ONDBLCLICK) {
-                event.preventDefault();
-                event.stopPropagation();
+                stopPropagation(event);
                 classChosen();
             }
             super.onBrowserEvent(event);

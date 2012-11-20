@@ -13,6 +13,9 @@ import platform.gwt.form.shared.view.grid.EditEvent;
 import platform.gwt.form.shared.view.grid.EditManager;
 import platform.gwt.form.shared.view.grid.NativeEditEvent;
 
+import static com.google.gwt.dom.client.BrowserEvents.*;
+import static platform.gwt.base.client.GwtClientUtils.stopPropagation;
+
 public abstract class TextFieldGridEditor implements GridCellEditor {
     interface Template extends SafeHtmlTemplates {
         @Template("<input style=\"border: 0px; margin: 0px; width: 100%; font-size: 8pt; \" type=\"text\" value=\"{0}\" tabindex=\"-1\"></input>")
@@ -53,10 +56,10 @@ public abstract class TextFieldGridEditor implements GridCellEditor {
         if (editEvent instanceof NativeEditEvent) {
             NativeEvent nativeEvent = ((NativeEditEvent) editEvent).getNativeEvent();
             String eventType = nativeEvent.getType();
-            if ("keydown".equals(eventType) && nativeEvent.getKeyCode() == KeyCodes.KEY_DELETE) {
+            if (KEYDOWN.equals(eventType) && nativeEvent.getKeyCode() == KeyCodes.KEY_DELETE) {
                 currentText = "";
                 selectAll = false;
-            } else if ("keypress".equals(eventType)) {
+            } else if (KEYPRESS.equals(eventType)) {
                 currentText = String.valueOf((char)nativeEvent.getCharCode());
                 selectAll = false;
             }
@@ -75,19 +78,20 @@ public abstract class TextFieldGridEditor implements GridCellEditor {
     @Override
     public void onBrowserEvent(Cell.Context context, Element parent, Object value, NativeEvent event, ValueUpdater<Object> valueUpdater) {
         String type = event.getType();
-        boolean keyUp = "keyup".equals(type);
-        boolean keyDown = "keydown".equals(type);
-        boolean keyPress = "keypress".equals(type);
-        if (keyUp || keyDown || keyPress) {
+        boolean keyDown = KEYDOWN.equals(type);
+        boolean keyPress = KEYPRESS.equals(type);
+        if (keyDown || keyPress) {
             int keyCode = event.getKeyCode();
             if (keyPress && keyCode == KeyCodes.KEY_ENTER) {
+                stopPropagation(event);
                 validateAndCommit(parent);
-            } else if (keyUp && keyCode == KeyCodes.KEY_ESCAPE) {
+            } else if (keyDown && keyCode == KeyCodes.KEY_ESCAPE) {
+                stopPropagation(event);
                 editManager.cancelEditing();
             } else {
                 currentText = getCurrentText(parent);
             }
-        } else if ("blur".equals(type)) {
+        } else if (BLUR.equals(type)) {
             // Cancel the change. Ensure that we are blurring the input element and
             // not the parent element itself.
             EventTarget eventTarget = event.getEventTarget();

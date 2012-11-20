@@ -9,10 +9,7 @@ import com.google.gwt.view.client.SelectionChangeEvent;
 import platform.gwt.base.shared.GwtSharedUtils;
 import platform.gwt.cellview.client.AbstractCellTable;
 import platform.gwt.cellview.client.Column;
-import platform.gwt.form.shared.view.GEditBindingMap;
-import platform.gwt.form.shared.view.GGroupObject;
-import platform.gwt.form.shared.view.GOrder;
-import platform.gwt.form.shared.view.GPropertyDraw;
+import platform.gwt.form.shared.view.*;
 import platform.gwt.form.shared.view.changes.GGroupObjectValue;
 import platform.gwt.form.shared.view.classes.GObjectType;
 import platform.gwt.form.shared.view.grid.GridEditableCell;
@@ -21,7 +18,6 @@ import java.util.*;
 
 import static platform.gwt.base.shared.GwtSharedUtils.getFromDoubleMap;
 import static platform.gwt.base.shared.GwtSharedUtils.putToDoubleMap;
-import static platform.gwt.form.shared.view.GEditBindingMap.Key;
 
 public class GGridTable extends GGridPropertyTable {
 
@@ -47,7 +43,7 @@ public class GGridTable extends GGridPropertyTable {
         this.groupObject = igroupController.groupObject;
 
         setKeyboardSelectionHandler(new GridTableKeyboardSelectionHandler(this));
-        editBindingMap.setKeyAction(new Key(GEditBindingMap.KEY_F12), GEditBindingMap.GROUP_CHANGE);
+        editBindingMap.setKeyAction(new GKeyStroke(GKeyStroke.KEY_F12), GEditBindingMap.GROUP_CHANGE);
 
         selectionModel.addSelectionChangeHandler(new SelectionChangeEvent.Handler() {
             @Override

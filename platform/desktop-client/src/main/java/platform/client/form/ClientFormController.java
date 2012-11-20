@@ -210,12 +210,17 @@ public class ClientFormController implements AsyncListener {
     private void createMultipleFilterComponent(final ClientRegularFilterGroup filterGroup) {
         final JComboBox comboBox = new JComboBox();
         comboBox.addItem(new ClientRegularFilterWrapper(getString("form.all")));
-        for (ClientRegularFilter filter : filterGroup.filters) {
+        for (final ClientRegularFilter filter : filterGroup.filters) {
             comboBox.addItem(new ClientRegularFilterWrapper(filter));
+            formLayout.addBinding(filter.key, "regularFilter" + filterGroup.getID() + filter.getID(), new AbstractAction() {
+                public void actionPerformed(ActionEvent e) {
+                    comboBox.setSelectedItem(new ClientRegularFilterWrapper(filter));
+                }
+            });
         }
 
-        if (filterGroup.defaultFilter >= 0) {
-            ClientRegularFilter defaultFilter = filterGroup.filters.get(filterGroup.defaultFilter);
+        if (filterGroup.defaultFilterIndex >= 0) {
+            ClientRegularFilter defaultFilter = filterGroup.filters.get(filterGroup.defaultFilterIndex);
             comboBox.setSelectedItem(new ClientRegularFilterWrapper(defaultFilter));
         }
         comboBox.addItemListener(new ItemAdapter() {
@@ -229,21 +234,13 @@ public class ClientFormController implements AsyncListener {
             }
         });
 
-        for (final ClientRegularFilter filter : filterGroup.filters) {
-            formLayout.addBinding(filter.key, "regularFilter" + filterGroup.getID() + filter.getID(), new AbstractAction() {
-                public void actionPerformed(ActionEvent e) {
-                    comboBox.setSelectedItem(new ClientRegularFilterWrapper(filter));
-                }
-            });
-        }
-
         formLayout.add(filterGroup, comboBox);
     }
 
     private void createSingleFilterComponent(final ClientRegularFilterGroup filterGroup, final ClientRegularFilter singleFilter) {
         final JCheckBox checkBox = new JCheckBox(singleFilter.getFullCaption());
 
-        if (filterGroup.defaultFilter >= 0) {
+        if (filterGroup.defaultFilterIndex >= 0) {
             checkBox.setSelected(true);
         }
 

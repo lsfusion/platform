@@ -5,6 +5,7 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.EventListener;
 import com.google.gwt.user.client.ui.Tree;
 import com.google.gwt.user.client.ui.TreeItem;
+import platform.gwt.base.client.GwtClientUtils;
 import platform.gwt.form.shared.view.GNavigatorElement;
 import platform.gwt.form.shared.view.window.GTreeNavigatorWindow;
 
@@ -12,6 +13,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
+import static platform.gwt.base.client.GwtClientUtils.stopPropagation;
 
 public class GTreeNavigatorView extends GNavigatorView {
     private Tree tree;
@@ -45,8 +48,7 @@ public class GTreeNavigatorView extends GNavigatorView {
                     selected = element;
                     navigatorController.update();
                     navigatorController.openElement(selected);
-                    event.stopPropagation();
-                    event.preventDefault();
+                    stopPropagation(event);
                 }
             }
         });

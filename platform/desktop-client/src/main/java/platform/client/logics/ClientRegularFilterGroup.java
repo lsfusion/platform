@@ -15,7 +15,7 @@ public class ClientRegularFilterGroup extends ClientComponent {
 
     public List<ClientRegularFilter> filters = new ArrayList<ClientRegularFilter>();
 
-    public int defaultFilter = -1;
+    public int defaultFilterIndex = -1;
 
     public ClientGroupObject groupObject;
 
@@ -45,7 +45,7 @@ public class ClientRegularFilterGroup extends ClientComponent {
 
         filters = pool.deserializeList(inStream);
 
-        defaultFilter = inStream.readInt();
+        defaultFilterIndex = inStream.readInt();
 
         groupObject = pool.deserializeObject(inStream);
     }
