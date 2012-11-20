@@ -1,12 +1,14 @@
-MODULE Consignment;
+MODULE ConsignmentBy;
 
 REQUIRE System,
-        ByLegalEntity,
+        LegalEntityBy,
         Stock,
         Employee,
         Utils,
         Ware,
         Numerator; // вот эту зависимость нужно будет убрать
+
+NAMESPACE Consignment;
 
 CLASS wayOfLoading 'Способ ПРР' : named;
 TABLE wayOfLoading (wayOfLoading);
@@ -372,7 +374,7 @@ DESIGN consignment FROM DEFAULT {
     }
 }
 
-editConsignment 'Заполнить атрибуты накладной' (consignment) = ACTION FORM consignment OBJECTS c MODAL IMAGE 'edit.png';
+editConsignment 'Заполнить атрибуты накладной' (consignment) = ACTION FORM consignment OBJECTS c DOCKED_MODAL IMAGE 'edit.png';
 
 
 FORM printConsignment 'Печать накладных'
@@ -530,6 +532,8 @@ END
 // ----------------- Implement заголовка накладной --------------- //
 
 META implementConsignmentHeader (concrete, stockProp)
+    EXTEND CLASS concrete : consignment;
+
     dateConsignment (consignment) += date###concrete(consignment);
     stockConsignment (consignment) += stockProp###concrete(consignment);
 
@@ -621,6 +625,8 @@ END
 // -------------------------- Implement строк накладной -------------------- //
 
 META implementConsignmentDetail (concrete, skuProp)
+    EXTEND CLASS concrete##Detail : consignmentDetail;
+
     consignmentConsignmentDetail (consignmentDetail) += concrete###concrete##Detail (consignmentDetail);
     skuConsignmentDetail (consignmentDetail) += skuProp###concrete##Detail (consignmentDetail);
     quantityConsignmentDetail (consignmentDetail) += quantity###concrete##Detail (consignmentDetail);

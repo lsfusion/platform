@@ -1,0 +1,8 @@
+MODULE PurchaseReturnInvoiceConsignmentBy;
+
+REQUIRE PurchaseReturnInvoice,
+        InvoiceConsignmentBy;
+
+NAMESPACE PurchaseReturn;
+
+@defineInvoiceConsignment(customer, supplier, customerStock);

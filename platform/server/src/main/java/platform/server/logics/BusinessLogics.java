@@ -537,6 +537,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     protected void addModulesFromResource(String... paths) throws IOException {
         for (String path : paths) {
+            InputStream is = getClass().getResourceAsStream(path);
+            if (is == null)
+                throw new RuntimeException(String.format("[error]:\tmodule '%s' cannot be found", path));
             addModule(new ScriptingLogicsModule(getClass().getResourceAsStream(path), LM, this));
         }
     }

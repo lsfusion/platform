@@ -1,12 +1,11 @@
-MODULE ByWriteOff;
+MODULE WriteOffBy;
 
-REQUIRE WriteOff, ByLegalEntity;
+REQUIRE WriteOff, LegalEntityBy;
 
 NAMESPACE WriteOff;
 
 UNPLegalEntityWriteOff 'УНП' (writeOff) = UNPLegalEntity(legalEntityWriteOff(writeOff));
 
 EXTEND FORM writeOffPrint
-
     PROPERTIES(w) UNPLegalEntityWriteOff
 ;

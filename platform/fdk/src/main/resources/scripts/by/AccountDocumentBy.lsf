@@ -1,6 +1,6 @@
 MODULE ByAccountDocument;
 
-REQUIRE AccountDocument, ByStock;
+REQUIRE AccountDocument, StockBy;
 
 NAMESPACE AccountDocument;
 

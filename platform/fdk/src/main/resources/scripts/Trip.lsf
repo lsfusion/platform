@@ -1,6 +1,6 @@
 MODULE Trip;
 
-REQUIRE Order, Shipment, Consignment, Route;
+REQUIRE Order, Shipment, Route;
 
 NAMESPACE Trip;
 

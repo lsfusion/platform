@@ -1,6 +1,6 @@
-MODULE ByCustomer;
+MODULE CustomerBy;
 
-REQUIRE Customer, ByLegalEntity;
+REQUIRE Customer, LegalEntityBy;
 
 NAMESPACE Customer;
 

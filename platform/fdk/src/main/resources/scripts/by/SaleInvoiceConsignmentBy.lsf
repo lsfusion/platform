@@ -1,0 +1,8 @@
+MODULE SaleInvoiceConsignmentBy;
+
+REQUIRE SaleInvoice,
+        InvoiceConsignmentBy;
+
+NAMESPACE Sale;
+
+@defineInvoiceConsignment(supplier, customer, supplierStock);

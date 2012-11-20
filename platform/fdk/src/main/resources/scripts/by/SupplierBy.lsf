@@ -1,6 +1,6 @@
-MODULE BySupplier;
+MODULE SupplierBy;
 
-REQUIRE Supplier, ByLegalEntity;
+REQUIRE Supplier, LegalEntityBy;
 
 NAMESPACE Supplier;
 

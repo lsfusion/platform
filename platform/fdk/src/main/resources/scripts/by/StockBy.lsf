@@ -1,6 +1,6 @@
-MODULE ByStock;
+MODULE StockBy;
 
-REQUIRE Stock, ByLegalEntity;
+REQUIRE Stock, LegalEntityBy;
 
 NAMESPACE Stock;
 

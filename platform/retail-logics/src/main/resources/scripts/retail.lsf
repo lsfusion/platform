@@ -18,7 +18,7 @@ REQUIRE System,
         Tax,
         Ware,
         Country,
-        ByLegalEntity,
+        LegalEntityBy,
         Order,
         BlanketOrder,
         Invoice,
@@ -51,8 +51,8 @@ REQUIRE System,
         StoreShipment,
         Store,
         ListRegister,
-        BySupplier,
-        Consignment,
+        SupplierBy,
+        ConsignmentBy,
         AccountDocument,
         StorePrice,
         Sales,
@@ -1739,8 +1739,8 @@ notNullAvailableQuantityItemBySpecificationDetail(specificationDetail) = availab
 
 //---------------------------- Документ на отгрузку из розницы ----------------------------------------//
 
-CLASS statement 'Выписка из розницы' : historyObject, numberedObject, consignment;
-CLASS statementDetail 'Строка выписки из розницы' : consignmentDetail;
+CLASS statement 'Выписка из розницы' : historyObject, numberedObject;
+CLASS statementDetail 'Строка выписки из розницы';
 CLASS statementPosted 'Закрытая выписка из розницы' : statement, postedObject;
 
 @defineDocument(statement);
@@ -2202,8 +2202,8 @@ sumContainerOutAccountDocumentLedger (ledger) += sumContainerWriteOffDetailWrite
 
 //----------------------------------- Внутреннее перемещение (расход) -------------------------------------------------//
 
-CLASS innerFlow 'Расход в отдел' : historyObject, numberedObject, consignment;
-CLASS innerFlowDetail 'Строка расхода в отдел' : consignmentDetail;
+CLASS innerFlow 'Расход в отдел' : historyObject, numberedObject;
+CLASS innerFlowDetail 'Строка расхода в отдел';
 CLASS innerFlowPosted 'Закрытый расход в отдел' : innerFlow, postedObject;
 
 @defineDocument(innerFlow);
@@ -2463,8 +2463,8 @@ nameSenderDepartmentPriceChangeInnerArrival 'Отдел-отправитель' 
 
 //----------------------------- Возврат поставщику ---------------------------------------------------------------//
 
-CLASS returnSupplier 'Возврат поставщику' : historyObject, numberedObject, consignment, contractLedger, contractALedger, outContractLedger;
-CLASS returnSupplierDetail 'Строка возврата поставщику' : consignmentDetail;
+CLASS returnSupplier 'Возврат поставщику' : historyObject, numberedObject, contractLedger, contractALedger, outContractLedger;
+CLASS returnSupplierDetail 'Строка возврата поставщику';
 CLASS returnSupplierPosted 'Закрытый возврат поставщику' : returnSupplier, postedObject;
 
 @defineDocument(returnSupplier);

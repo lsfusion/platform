@@ -1,6 +1,6 @@
-MODULE ByStore;
+MODULE StoreBy;
 
-REQUIRE Store, ByLegalEntity;
+REQUIRE Store, LegalEntityBy;
 
 NAMESPACE Store;
 

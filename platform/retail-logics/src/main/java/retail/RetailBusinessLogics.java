@@ -55,7 +55,6 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                 "/scripts/Employee.lsf",
                 "/scripts/Store.lsf",
                 "/scripts/ListRegister.lsf",
-                "/scripts/Consignment.lsf",
                 "/scripts/AccountDocument.lsf",
                 "/scripts/StorePrice.lsf",
                 "/scripts/Contract.lsf",
@@ -120,13 +119,6 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                 "/scripts/Repricing.lsf",
                 "/scripts/CreditNote.lsf",
                 "/scripts/PriceList.lsf",
-                "/scripts/ByStock.lsf",
-                "/scripts/ByStore.lsf",
-                "/scripts/ByWriteOff.lsf",
-                "/scripts/ByCustomer.lsf",
-                "/scripts/BySupplier.lsf",
-                "/scripts/ByAccountDocument.lsf",
-                "/scripts/ByLegalEntity.lsf",
                 "/scripts/Transport.lsf",
                 "/scripts/Route.lsf",
                 "/scripts/Trip.lsf",
@@ -136,7 +128,18 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                 "/scripts/StockTax.lsf",
                 "/scripts/ItemTax.lsf",
                 "/scripts/Geo.lsf",
-                "/scripts/FiscalVMK.lsf"
+                "/scripts/FiscalVMK.lsf",
+                "/scripts/by/StockBy.lsf",
+                "/scripts/by/StoreBy.lsf",
+                "/scripts/by/WriteOffBy.lsf",
+                "/scripts/by/CustomerBy.lsf",
+                "/scripts/by/SupplierBy.lsf",
+                "/scripts/by/AccountDocumentBy.lsf",
+                "/scripts/by/LegalEntityBy.lsf",
+                "/scripts/by/ConsignmentBy.lsf",
+                "/scripts/by/InvoiceConsignmentBy.lsf",
+                "/scripts/by/SaleInvoiceConsignmentBy.lsf",
+                "/scripts/by/PurchaseReturnInvoiceConsignmentBy.lsf"
         );
         retailLM = addModuleFromResource("/scripts/retail.lsf");
 

@@ -1,0 +1,69 @@
+MODULE InvoiceConsignmentBy;
+
+REQUIRE Invoice,
+        ConsignmentBy;
+
+NAMESPACE Invoice;
+
+META defineInvoiceConsignment(contactA, contactB, stockProp)
+    @defineConsignmentInterface(invoice, stockProp);
+    @implementConsignmentDetail(invoice);
+
+    senderConsignment (consignment) += contactA###invoice(consignment);
+    recipientConsignment (consignment) += contactB###invoice(consignment);
+    currencyConsignment (consignment) += currencyInvoice(consignment);
+
+    priceConsignmentDetail (consignmentDetail) += priceInvoiceDetail(consignmentDetail);
+
+    sumConsignmentDetail (consignmentDetail) += sumInvoiceDetail (consignmentDetail);
+
+    vatConsignmentDetail (consignmentDetail) += valueVATInvoiceDetail(consignmentDetail);
+
+    sumVATConsignmentDetail (consignmentDetail) +=  VATSumInvoiceDetail(consignmentDetail);
+
+    sumInvoiceConsignmentDetail (consignmentDetail) += invoiceSumInvoiceDetail(consignmentDetail);
+
+    shortNameUOMConsignmentDetail (consignmentDetail) += shortNameUOMSku(skuInvoiceDetail (consignmentDetail));
+
+    //noteInvoiceWHOutDetail (invoiceWHOutDetail) = [FORMULA STRING[30] '\'Цена импортера:\' ||  \' \' || CAST($1 AS TEXT)'](
+    //    importerPriceBatchA(batchAInvoiceWHOutDetail(invoiceWHOutDetail)));
+
+    //noteConsignmentDetail (consignmentDetail) += noteInvoiceWHOutDetail(consignmentDetail) IF
+    //    importerPriceBatchA(batchAInvoiceWHOutDetail(consignmentDetail)) != supplierPriceInvoiceWHOutDetail(consignmentDetail);
+
+    EXTEND FORM  invoices
+        PROPERTIES (i)  FORCE PANEL printConsignmentVerticalA, printConsignmentHorizontalA,
+                         printConsignmentVerticalB, printConsignmentHorizontalB,
+                         printConsignmentAttach, printConsignmentSimpleHorizontal, editConsignment,
+                         printConsignmentSimpleVertical, printConsignmentSimpleAttach
+    ;
+
+    EXTEND DESIGN invoices {
+        printContainer {
+            NEW consignmentRow1 {
+                childConstraints = TO THE RIGHT;
+
+                NEW contOne {
+                    title = 'Накладная';
+                    ADD PROPERTY(editConsignment);
+                }
+                NEW tn{
+                    childConstraints = TO THE RIGHT;
+                    title = 'ТН-2';
+                    ADD PROPERTY(printConsignmentSimpleVertical);
+                    ADD PROPERTY(printConsignmentSimpleHorizontal);
+                    ADD PROPERTY(printConsignmentSimpleAttach);
+                }
+            }
+            NEW consignmentRow2 {
+                childConstraints = TO THE RIGHT;
+                title = 'ТТН-1';
+                ADD PROPERTY(printConsignmentVerticalA);
+                ADD PROPERTY(printConsignmentHorizontalA);
+                ADD PROPERTY(printConsignmentVerticalB);
+                ADD PROPERTY(printConsignmentHorizontalB);
+                ADD PROPERTY(printConsignmentAttach);
+            }
+        }
+    }
+END

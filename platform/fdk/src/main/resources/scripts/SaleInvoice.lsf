@@ -7,7 +7,6 @@ NAMESPACE Sale;
 //----------------------------------------------- Накладная ---------------------------------------------------//
 @defineInvoice(' (продажа)', supplierStock);
 @defineInvoiceBatch(supplierStock);
-@defineInvoiceConsignment(supplier, customer, supplierStock);
 
 CONSTRAINT supplierUserInvoice(userInvoice) AND NOT isCompanyLegalEntity(supplierUserInvoice(userInvoice))
     CHECKED BY supplierUserInvoice MESSAGE 'Для накладной выбрано в качестве поставщика организация, не являющаяся компанией';
