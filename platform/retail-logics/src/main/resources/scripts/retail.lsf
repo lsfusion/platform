@@ -1704,11 +1704,11 @@ noOverdueSpecification 'Непросрочена' (specification) = dateToSpecif
 overdueSpecificationDate 'Просрочена' (specification, date) = dateToSpecification(specification) < date AND date AS DATE;
 noOverdueSpecificationDate 'Непросрочена' (specification, date) = dateToSpecification(specification) >= date AND date AS DATE;
 
-UNPLegalEntitySpecification 'УНП компании' (specification) = UNPLegalEntity(legalEntitySpecification(specification));
-fullNameLegalEntitySpecification 'Полное наименование компании' (specification) = fullNameLegalEntity(legalEntitySpecification(specification));
-addressLegalEntitySpecification 'Юридический адрес компании' (specification) = addressLegalEntityDate(legalEntitySpecification(specification), dateSpecification(specification));
+UNPLegalEntitySpecification 'УНП компании' (specification) = UNPLegalEntity(legalEntityStockSpecification(specification));
+fullNameLegalEntitySpecification 'Полное наименование компании' (specification) = fullNameLegalEntity(legalEntityStockSpecification(specification));
+addressLegalEntitySpecification 'Юридический адрес компании' (specification) = addressLegalEntityDate(legalEntityStockSpecification(specification), dateSpecification(specification));
 
-accountLegalEntitySpecification 'Р/сч. компании ИД' (specification) = accountLegalEntity(legalEntitySpecification(specification));
+accountLegalEntitySpecification 'Р/сч. компании ИД' (specification) = accountLegalEntity(legalEntityStockSpecification(specification));
 numberAccountLegalEntitySpecification 'Р/сч. компании' (specification) = numberAccount(accountLegalEntitySpecification(specification));
 
 nameBankAccountLegalEntitySpecification 'Банк компании' (specification) = nameBankAccount(accountLegalEntitySpecification(specification));
@@ -1716,7 +1716,7 @@ addressBankAccountLegalEntitySpecification 'Адрес банка компани
 MFOBankAccountLegalEntitySpecification 'Код МФО банка компании' (specification) = MFOBankAccount(accountLegalEntitySpecification(specification));
 departmentBankAccountLegalEntitySpecification 'Отдел банка компании' (specification) = departmentBankAccount(accountLegalEntitySpecification(specification));
 CBUBankAccountLegalEntitySpecification 'ЦБУ банка компании' (specification) = CBUBankAccount(accountLegalEntitySpecification(specification));
-phoneLegalEntitySpecification 'Телефон компании' (specification) = phoneLegalEntityDate(legalEntitySpecification(specification), dateSpecification(specification)) IN customerGroup;
+phoneLegalEntitySpecification 'Телефон компании' (specification) = phoneLegalEntityDate(legalEntityStockSpecification(specification), dateSpecification(specification)) IN customerGroup;
 
 CONSTRAINT specification IS specification AND NOT dateToSpecification(specification) MESSAGE 'Не задан срок действия с/ф';
 CONSTRAINT dateToSpecification(specification) < dateSpecification(specification) MESSAGE 'Дата действия с/ф не может быть меньше даты документа';

@@ -39,7 +39,7 @@
 	<field name="objectClassName" class="java.lang.String"/>
 	<field name="objectClassName1" class="java.lang.String"/>
 	<field name="nameDepartmentStorePricing" class="java.lang.String"/>
-	<field name="nameCompanyPricing" class="java.lang.String"/>
+	<field name="nameLegalEntityStockPricing" class="java.lang.String"/>
 	<field name="numberPricing" class="java.lang.String"/>
 	<field name="seriesPricing" class="java.lang.String"/>
 	<field name="datePricing" class="java.util.Date"/>
@@ -252,7 +252,7 @@
 					<rightPen lineWidth="0.0"/>
 				</box>
 				<textElement/>
-				<textFieldExpression><![CDATA[$F{nameCompanyPricing}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{nameLegalEntityStockPricing}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="210" y="10" width="585" height="13"/>

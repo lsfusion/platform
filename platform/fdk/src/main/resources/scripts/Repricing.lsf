@@ -333,7 +333,7 @@ FORM repricing 'Акт переоценки (печать)' PRINT
     PROPERTIES (p)  SELECTOR objectClassName
 
     PROPERTIES (p) numberRepricing, seriesRepricing, dateRepricing, timeRepricing, nameStoreRepricing,
-               nameDepartmentStoreRepricing, countRepricingDetailRepricing, quantityRepricingDetailRepricing, nameLegalEntityRepricing,
+               nameDepartmentStoreRepricing, countRepricingDetailRepricing, quantityRepricingDetailRepricing, nameLegalEntityStockRepricing,
                curSumRepricingDetailRepricing, curMarkupSumRepricingDetailRepricing, curVATSumRepricingDetailRepricing,
                curRetailSumRepricingDetailRepricing,
                sumRepricingDetailRepricing, markupSumRepricingDetailRepricing, VATSumRepricingDetailRepricing,

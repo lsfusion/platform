@@ -23,8 +23,8 @@ CLASS ABSTRACT orderDetail 'Строка заказа';
 @defineDocumentAbstractDataStock(order, stock, 'Склад поставщика', supplier);
 @defineDocumentAbstractDataStock(order, stock, 'Склад покупателя', customer);
 
-@defineDocumentAbstractDataStock(order, stock, 'Склад (с)', from);
-@defineDocumentAbstractDataStock(order, stock, 'Склад (на)', to);
+@defineDocumentAbstractDataStock(order, stock, 'Склад (отправитель)', from);
+@defineDocumentAbstractDataStock(order, stock, 'Склад (получатель)', to);
 
 @defineDocumentAbstractPosted(order);
 

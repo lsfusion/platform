@@ -2,12 +2,39 @@ MODULE Invoice;
 
 REQUIRE Order, Supplier;
 
+CLASS ABSTRACT invoice 'Накладная';
+CLASS ABSTRACT invoiceDetail 'Строка накладной';
+
+@defineDocumentAbstract(invoice);
+@defineDocumentAbstractNumber(invoice);
+
+@defineDocumentAbstractLegalEntity(invoice, supplier, 'Поставщик');
+@defineDocumentAbstractLegalEntity(invoice, customer, 'Покупатель');
+
+@defineDocumentAbstractLegalEntity(invoice, fromLegalEntity, 'Отправитель');
+@defineDocumentAbstractLegalEntity(invoice, toLegalEntity, 'Получатель');
+
+@defineDocumentAbstractDataStock(invoice, stock, 'Склад поставщика', supplier);
+@defineDocumentAbstractDataStock(invoice, stock, 'Склад покупателя', customer);
+
+@defineDocumentAbstractDataStock(invoice, stock, 'Склад (отправитель)', from);
+@defineDocumentAbstractDataStock(invoice, stock, 'Склад (получатель)', to);
+
+@defineDocumentAbstractPosted(invoice);
+
+@defineDocumentAbstractDetailSku(invoice, sku);
+
+@defineDocumentAbstractDetailQuantity(invoice);
+@defineDocumentDetailGrossWeight(invoice, sku);
+
+@defineDocumentHeaderGrossWeight(invoice);
+
 //----------------------------------------------- Накладная ---------------------------------------------------//
 
 META defineInvoice(sign, stockProp)
 
-    CLASS ABSTRACT invoice 'Накладная'###sign;
-    CLASS ABSTRACT invoiceDetail 'Строка накладной'###sign;
+    CLASS ABSTRACT invoice 'Накладная'###sign : Invoice.invoice;
+    CLASS ABSTRACT invoiceDetail 'Строка накладной'###sign : Invoice.invoiceDetail;
 
     CLASS userInvoice 'Накладная (польз.)'###sign : invoice, historyObject, numeratedDocument;
     CLASS userInvoiceDetail 'Строка накладной (польз.)'###sign : invoiceDetail;
@@ -16,18 +43,30 @@ META defineInvoice(sign, stockProp)
     GROUP invoiceGroup 'Информация о накладной' : baseGroup;
 
     @defineDocumentInterface(invoice);
+    Invoice.invoiceInvoiceDetail (detail) += invoiceInvoiceDetail(detail);
+    Invoice.dateInvoice (invoice) += dateInvoice(invoice);
+    Invoice.timeInvoice (invoice) += timeInvoice(invoice);
 
     @defineDocumentInterfaceTimeBefore(invoice);
 
     @defineDocumentInterfaceNumber(invoice);
+    Invoice.numberInvoice (invoice) += numberInvoice(invoice);
+    Invoice.seriesInvoice (invoice) += seriesInvoice(invoice);
 
     @defineDocumentInterfaceLegalEntity (invoice, supplier, 'Поставщик');
     @defineDocumentInterfaceLegalEntity (invoice, customer, 'Покупатель');
+    Invoice.supplierInvoice(invoice) += supplierInvoice(invoice);
+    Invoice.customerInvoice(invoice) += customerInvoice(invoice);
 
     @defineDocumentInterfaceDataStock(invoice, stock, 'Склад поставщика', supplier);
     @defineDocumentInterfaceDataStock(invoice, stock, 'Склад покупателя', customer);
+    Invoice.supplierStockInvoice(invoice) += supplierStockInvoice(invoice);
+    Invoice.customerStockInvoice(invoice) += customerStockInvoice(invoice);
+    Invoice.dataSupplierStockInvoiceDetail(detail) += dataSupplierStockInvoiceDetail(detail);
+    Invoice.dataCustomerStockInvoiceDetail(detail) += dataCustomerStockInvoiceDetail(detail);
 
     @defineDocumentInterfacePosted(invoice);
+    Invoice.isPostedInvoice (invoice) += isPostedInvoice(invoice);
 
     @defineDocumentInterfaceDescription(invoice, 'Накладная'###sign);
 
@@ -41,8 +80,10 @@ META defineInvoice(sign, stockProp)
     @defineDocumentInterfaceDataPriceListType(invoice);
 
     @defineDocumentInterfaceDetailSku(invoice, sku);
+    Invoice.skuInvoiceDetail(detail) += skuInvoiceDetail(detail);
 
     @defineDocumentInterfaceDetailQuantity(invoice);
+    Invoice.quantityInvoiceDetail(detail) += quantityInvoiceDetail(detail);
 
     @defineDocumentDetailGrossWeight(invoice, sku);
     @defineDocumentDetailQuantityPack(invoice, sku);

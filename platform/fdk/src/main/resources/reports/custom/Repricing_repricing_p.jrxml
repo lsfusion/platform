@@ -40,7 +40,7 @@
 	<field name="nameStoreRepricing" class="java.lang.String"/>
 	<field name="countRepricingDetailRepricing" class="java.lang.Integer"/>
 	<field name="quantityRepricingDetailRepricing" class="java.lang.Double"/>
-	<field name="nameCompanyRepricing" class="java.lang.String"/>
+	<field name="nameLegalEntityStockRepricing" class="java.lang.String"/>
 	<field name="curSumRepricingDetailRepricing" class="java.lang.Double"/>
 	<field name="curMarkupSumRepricingDetailRepricing" class="java.lang.Double"/>
 	<field name="curVATSumRepricingDetailRepricing" class="java.lang.Double"/>

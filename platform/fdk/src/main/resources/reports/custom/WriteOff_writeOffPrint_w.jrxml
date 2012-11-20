@@ -31,9 +31,9 @@
 	<field name="noteWriteOff" class="java.lang.String"/>
 	<field name="quantityWriteOffDetailWriteOff" class="java.lang.Double"/>
 	<field name="sumWriteOffDetailWriteOff" class="java.lang.Double"/>
-	<field name="nameCompanyWriteOff" class="java.lang.String"/>
+	<field name="nameLegalEntityWriteOff" class="java.lang.String"/>
 	<field name="addressLegalEntityWriteOff" class="java.lang.String"/>
-	<field name="UNPLegalEntityWriteOff" class="java.lang.String"/>
+	<field name="UNPLegalEntityStockWriteOff" class="java.lang.String"/>
 	<field name="nameWriteOffCommitteeWriteOff" class="java.lang.String"/>
 	<field name="commonNameEmployeeCommitteeWriteOff" class="java.lang.String"/>
 	<field name="writeOffCommitteeWriteOff" class="java.lang.Integer"/>
@@ -448,7 +448,7 @@
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{UNPLegalEntityWriteOff}!=null?$F{UNPLegalEntityWriteOff}:"")]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{UNPLegalEntityStockWriteOff}!=null?$F{UNPLegalEntityStockWriteOff}:"")]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="494" y="0" width="43" height="10"/>
@@ -526,7 +526,7 @@
 				<textElement>
 					<font size="8" isUnderline="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Компания: "+$F{nameCompanyWriteOff}+($F{addressLegalEntityWriteOff}!=null?", адрес: "+$F{addressLegalEntityWriteOff}:"")]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Компания: "+$F{nameLegalEntityStockWriteOff}+($F{addressLegalEntityWriteOff}!=null?", адрес: "+$F{addressLegalEntityWriteOff}:"")]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="417" y="72" width="63" height="10"/>

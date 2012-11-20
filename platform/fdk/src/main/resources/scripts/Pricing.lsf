@@ -318,7 +318,7 @@ FORM pricing 'Акт расценки (печать)' PRINT
     OBJECTS p=pricing FIXED PANEL
     PROPERTIES (p)  SELECTOR objectClassName
 
-    PROPERTIES (p) nameDepartmentStorePricing, nameLegalEntityPricing, numberPricing, seriesPricing, datePricing, timePricing,
+    PROPERTIES (p) nameDepartmentStorePricing, nameLegalEntityStockPricing, numberPricing, seriesPricing, datePricing, timePricing,
                    nameSupplierPricing, nameCurrencyPricing, notePricing,
                    countPricingDetailPricing, quantityPricingDetailPricing, sumPricingDetailPricing,
                    retailMarkupSumPricingDetailPricing, retailVATSumPricingDetailPricing,

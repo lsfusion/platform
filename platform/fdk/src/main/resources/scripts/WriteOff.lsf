@@ -130,8 +130,8 @@ CLASS userWriteOffPosted 'Закрытое списание (польз.)' : use
 @defineDocumentInterfaceCurrency(writeOff);
 @deriveDocumentCurrency(userWriteOff, stock);
 
-addressLegalEntityWriteOff 'Адрес' (writeOff) = addressLegalEntityDate(legalEntityWriteOff(writeOff), dateWriteOff(writeOff));
-addressLegalEntityUserWriteOff 'Адрес' (userWriteOff) = addressLegalEntityDate(legalEntityUserWriteOff(userWriteOff), dateUserWriteOff(userWriteOff));
+addressLegalEntityWriteOff 'Адрес' (writeOff) = addressLegalEntityDate(legalEntityStockWriteOff(writeOff), dateWriteOff(writeOff));
+addressLegalEntityUserWriteOff 'Адрес' (userWriteOff) = addressLegalEntityDate(legalEntityStockUserWriteOff(userWriteOff), dateUserWriteOff(userWriteOff));
 
 @defineDocumentInterfaceNumber(writeOff);
 @defineDocumentInterfaceDetailSku(writeOff, sku);
@@ -196,7 +196,7 @@ FORM writeOffPrint 'Акт списания' PRINT
     PROPERTIES (w)  SELECTOR numberWriteOff, seriesWriteOff, nameStockWriteOff,
                    dateWriteOff, timeWriteOff, nameReasonWriteOff, noteWriteOff, countWriteOffDetailWriteOff, quantityWriteOffDetailWriteOff,
                    sumWriteOffDetailWriteOff,
-                   nameLegalEntityWriteOff, addressLegalEntityWriteOff, nameWriteOffCommitteeWriteOff,
+                   nameLegalEntityStockWriteOff, addressLegalEntityWriteOff, nameWriteOffCommitteeWriteOff,
                    commonNameEmployeeCommitteeWriteOff, writeOffCommitteeWriteOff
 
     OBJECTS d=writeOffDetail

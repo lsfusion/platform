@@ -533,8 +533,8 @@ META defineDocumentHeaderStock (object, stockClass, stockCaption, prefix)
     name###prefix###stockClass###object stockCaption (object) = name(prefix###stockClass###object(object)) IN documentHeaderGroup
             MINCHARWIDTH 10 PREFCHARWIDTH 20;
 
-    prefix###legalEntity###object (object) = legalEntityStock(prefix###stockClass###object(object));
-    name###prefix###legalEntity###object 'Компания ('###stockCaption###')' (object) = name(prefix###legalEntity###object (object));
+    prefix###legalEntityStock###object (object) = legalEntityStock(prefix###stockClass###object(object));
+    name###prefix###legalEntityStock###object 'Компания ('###stockCaption###')' (object) = name(prefix###legalEntityStock###object (object));
 
     prefix###country###object (object) = countryStock(prefix###stockClass###object(object));
 END
@@ -543,8 +543,8 @@ META defineDocumentAbstractHeaderStock (object, stockClass, stockCaption, prefix
     name###prefix###stockClass###object stockCaption (object) = name(prefix###stockClass###object(object)) IN documentHeaderGroup
             MINCHARWIDTH 10 PREFCHARWIDTH 20;
 
-    prefix###legalEntity###object (object) = legalEntityStock(prefix###stockClass###object(object));
-    name###prefix###legalEntity###object 'Компания ('###stockCaption###')' (object) = name(prefix###legalEntity###object (object));
+    prefix###legalEntityStock###object (object) = legalEntityStock(prefix###stockClass###object(object));
+    name###prefix###legalEntityStock###object 'Компания ('###stockCaption###')' (object) = name(prefix###legalEntityStock###object (object));
 
     prefix###country###object (object) = countryStock(prefix###stockClass###object(object));
 END

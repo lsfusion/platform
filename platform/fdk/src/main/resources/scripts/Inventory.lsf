@@ -747,7 +747,7 @@ sumInSkuLedger (ledger) += sumInInventoryBatchDetail(ledger);
 FORM printListInventory 'Опись' PRINT
 
     OBJECTS         li=listInventory FIXED PANEL
-    PROPERTIES (li) dateListInventory, nameLegalEntityListInventory, nameStockListInventory,
+    PROPERTIES (li) dateListInventory, nameLegalEntityStockListInventory, nameStockListInventory,
                     nameInventoryListInventory, nameListInventory, noteListInventory, committeeListInventory,
                     nameCommitteeListInventory, nameChairmanCommitteeListInventory, namePositionChairmanListInventory, nameEmployeeListInventory,
                     countPageInventoryListInventory, countPageInventoryDetailListInventory, quantityPageInventoryDetailListInventory,
@@ -822,7 +822,7 @@ FORM printTotalCollationSheet 'Сличительная ведомость (ит
 
     OBJECTS          cs=collationSheet FIXED PANEL
 
-    PROPERTIES (cs)  SELECTOR nameCollationSheet, nameLegalEntityCollationSheet, nameCommitteeCollationSheet,
+    PROPERTIES (cs)  SELECTOR nameCollationSheet, nameLegalEntityStockCollationSheet, nameCommitteeCollationSheet,
                               nameChairmanCommitteeCollationSheet, namePositionChairmanCollationSheet, nameEmployeeCollationSheet,
                               timeFromCollationSheet, timeToCollationSheet, dateCollationSheet, nameHeadManCollationSheet
     PROPERTIES (cs)  SELECTOR nameTypeOfAdditionCollationSheet, nameStockCollationSheet,
@@ -841,7 +841,7 @@ printTotalCollationSheet 'Сличительная ведомость (итог�
 FORM printCollationSheet 'Сличительная ведомость' PRINT
 
     OBJECTS          cs=collationSheet FIXED PANEL
-    PROPERTIES (cs)  SELECTOR nameCollationSheet, nameLegalEntityCollationSheet, nameCommitteeCollationSheet,
+    PROPERTIES (cs)  SELECTOR nameCollationSheet, nameLegalEntityStockCollationSheet, nameCommitteeCollationSheet,
                               nameChairmanCommitteeCollationSheet, namePositionChairmanCollationSheet, nameEmployeeCollationSheet,
                               nameTypeOfAdditionCollationSheet, nameStockCollationSheet, dateCollationSheet,
                               quantityPageInventoryDetailCollationSheet, quantityBalanceCollationSheet, quantityShortageCollationSheet,
