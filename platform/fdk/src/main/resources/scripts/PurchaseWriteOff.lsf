@@ -230,10 +230,10 @@ EXTEND FORM writeOffs
 
 //-- аггр. объект
 
-needToWrittenShipmentDetail (shipmentDetail) = writeOffQuantityShipmentDetail(shipmentDetail) AND createWriteOffShipmentDetail(shipmentDetail);
+needToWrittenShipmentDetail (shipmentDetail) = writeOffQuantityShipmentDetail(shipmentDetail) AND createWriteOffShipmentDetail(shipmentDetail) PERSISTENT;
 
 needToWrittenShipment (shipment)= GROUP SUM 1 IF needToWrittenShipmentDetail(shipmentDetail)
-    BY shipmentShipmentDetail(shipmentDetail);
+    BY shipmentShipmentDetail(shipmentDetail) PERSISTENT;
 
 CLASS shipmentWriteOff 'Акт списания на основе поставки': writeOff;
 CLASS shipmentWriteOffPosted 'Закрытый акт списания на основе поставки' : shipmentWriteOff, postedObject;

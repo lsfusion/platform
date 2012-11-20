@@ -552,7 +552,7 @@ META defineShipment(sign, stockProp)
     @defineDocumentInterfaceHeaderCreateShipment (invoice, stockProp);
 
     skipCreateShipmentInvoiceDetail = ABSTRACT BOOLEAN (invoiceDetail) PERSISTENT;
-    createShipmentInvoiceDetail 'Создать поставку' (invoiceDetail) = createShipmentInvoice(invoiceInvoiceDetail(invoiceDetail)) AND NOT skipCreateShipmentInvoiceDetail(invoiceDetail);
+    createShipmentInvoiceDetail 'Создать поставку' (invoiceDetail) = createShipmentInvoice(invoiceInvoiceDetail(invoiceDetail)) AND NOT skipCreateShipmentInvoiceDetail(invoiceDetail) PERSISTENT;
     createShipmentUserInvoiceDetail 'Создать поставку' (invoiceDetail) = createShipmentUserInvoice(userInvoiceUserInvoiceDetail(invoiceDetail));
 
     showShipmentInvoice (invoice) =  invoice IS invoice AND NOT createShipmentInvoice(invoice);

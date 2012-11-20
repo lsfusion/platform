@@ -17,6 +17,7 @@ TABLE priceListType(priceListType);
 
 pricePriceListTypeSkuStockDateTime 'Цена' = ABSTRACT NUMERIC[14,2] (priceListType, sku, stock, DATETIME);
 pricePriceListTypeBatchStockDateTime 'Цена' = ABSTRACT NUMERIC[14,2] (priceListType, batch, stock, DATETIME);
+includeVATPriceListType 'Цена с НДС' = ABSTRACT BOOLEAN (priceListType);
 
 prevPricePriceListTypeSkuStockDateTime 'Цена (пред.)' (type, sku, stock, dateTime) = PREV(pricePriceListTypeSkuStockDateTime(type, sku, stock, dateTime));
 prevPricePriceListTypeBatchStockDateTime 'Цена (пред.)' (type, batch, stock, dateTime) = PREV(pricePriceListTypeBatchStockDateTime(type, batch, stock, dateTime));
@@ -27,18 +28,22 @@ CLASS ABSTRACT basePriceListType 'Базовый вид цены' : priceListTyp
 
 priceBasePriceListTypeSkuStockDateTime (type, sku, stock, dateTime) = ABSTRACT NUMERIC[14,3] (basePriceListType, sku, stock, DATETIME) EXCLUSIVE;
 priceBasePriceListTypeBatchStockDateTime (type, sku, stock, dateTime) = ABSTRACT NUMERIC[14,3] (basePriceListType, batch, stock, DATETIME) EXCLUSIVE;
+includeVATBasePriceListType 'Цена с НДС' = ABSTRACT BOOLEAN (basePriceListType);
 
 pricePriceListTypeSkuStockDateTime(type, sku, stock, dateTime) += priceBasePriceListTypeSkuStockDateTime(type, sku, stock, dateTime);
 pricePriceListTypeBatchStockDateTime(type, batch, stock, dateTime) += priceBasePriceListTypeBatchStockDateTime(type, batch, stock, dateTime);
+includeVATPriceListType(type) += includeVATBasePriceListType(type);
 
 // --------------------------- Системные виды цен ------------------------- //
 CLASS STATIC systemPriceListType 'Системный вид цены' : basePriceListType;
 
 priceSystemPriceListTypeSkuStockDateTime (type, sku, stock, dateTime) = ABSTRACT NUMERIC[14,3] (systemPriceListType, sku, stock, DATETIME) EXCLUSIVE;
 priceSystemPriceListTypeBatchStockDateTime (type, sku, stock, dateTime) = ABSTRACT NUMERIC[14,3] (systemPriceListType, batch, stock, DATETIME) EXCLUSIVE;
+includeVATSystemPriceListType 'Цена с НДС' = DATA BOOLEAN (systemPriceListType);
 
 priceBasePriceListTypeSkuStockDateTime(type, sku, stock, dateTime) += priceSystemPriceListTypeSkuStockDateTime(type, sku, stock, dateTime);
 priceBasePriceListTypeBatchStockDateTime(type, batch, stock, dateTime) += priceSystemPriceListTypeBatchStockDateTime(type, batch, stock, dateTime);
+includeVATBasePriceListType(type) += includeVATSystemPriceListType(type);
 
 // -------------------------- Учетная цена ---------------------- //
 
@@ -89,8 +94,12 @@ descriptionLedgerPriceListTypeSkuStockDateTime 'Описание' (type, sku, st
 descriptionLedgerPriceListTypeBatchStockDateTime 'Описание' (type, batch, stock, dateTime) =
     descriptionPriceListLedger(priceListLedgerLedgerPriceListTypeSkuStockDateTime(type, skuBatch(batch), stock, dateTime));
 
+includeVATLedgerPriceListType 'Цена с НДС' = DATA BOOLEAN (ledgerPriceListType);
+
 priceBasePriceListTypeSkuStockDateTime(type, sku, stock, dateTime) += priceLedgerPriceListTypeSkuStockDateTime(type, sku, stock, dateTime);
 priceBasePriceListTypeBatchStockDateTime(type, batch, stock, dateTime) += priceLedgerPriceListTypeBatchStockDateTime(type, batch, stock, dateTime);
+
+includeVATBasePriceListType(type) += includeVATLedgerPriceListType(type);
 
 // --------------------------- Системные виды цен, на основе Ledger'ов ------------------ //
 
@@ -290,7 +299,7 @@ FORM userPriceList 'Прайс'
     PROPERTIES(p) objectClassName, nameNumeratorObject, numberObject, seriesObject,
                   dateUserPriceList, timeUserPriceList,
                   fromDateUserPriceList, fromTimeUserPriceList, toDateUserPriceList, toTimeUserPriceList,
-                  nameCurrencyUserPriceList, noteUserPriceList
+                  nameCurrencyUserPriceList, noteUserPriceList, includeVATLedgerPriceListType
 
     OBJECTS t = dataPriceListType
     PROPERTIES(t) READONLY name
@@ -519,6 +528,10 @@ CLASS calcPriceListType 'Расчетный вид цены' : priceListType;
 basePriceListTypeCalcPriceListType(type) = DATA basePriceListType (calcPriceListType);
 nameBasePriceListTypeCalcPriceListType 'Базовый вид цены' (type) = name(basePriceListTypeCalcPriceListType(type));
 
+includeVATCalcPriceListType 'Цена с НДС' = DATA BOOLEAN (calcPriceListType);
+
+includeVATPriceListType(type) += includeVATCalcPriceListType(type);
+
 @defineDocumentHeaderCurrency(calcPriceListType);
 currencyPriceListType(calcPriceListType) += currencyCalcPriceListType(calcPriceListType);
 
@@ -553,7 +566,7 @@ backgroundMarkup 'Цвет' (calcPriceListType, priceGroup) = RGB(255,160,160) A
 FORM editPriceListType 'Вид цены'
     OBJECTS p = priceListType FIXED PANEL
     PROPERTIES(p) READONLY objectClassName
-    PROPERTIES(p) name
+    PROPERTIES(p) name, includeVATPriceListType
 
     TREE treeGroup g=priceGroup PARENT parentPriceGroup
     PROPERTIES READONLY name(g)
@@ -622,6 +635,7 @@ EXTEND DESIGN editPriceListType{
 FORM priceListType 'Вид цены'
     OBJECTS p = priceListType
     PROPERTIES(p) READONLY name, nameCurrencyPriceListType
+    PROPERTIES(p) includeVATPriceListType
 
     DIALOG priceListType OBJECT p
 ;
