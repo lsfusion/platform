@@ -6,6 +6,9 @@ writeOffRateCountryItem 'Норма отходов' = DATA writeOffRate (country
 nameWriteOffRateCountryItem 'Норма отходов' = name(writeOffRateCountryItem(country, item));
 percentWriteOffRateCountryItem 'Норма отходов,%' = percentWriteOffRate(writeOffRateCountryItem(country, item));
 
+CONSTRAINT countryWriteOffRate(writeOffRateCountryItem(country, item)) != country
+    CHECKED BY writeOffRateCountryItem MESSAGE 'Страна нормы отходов не совпадает со страной';
+
 writeOffRateCountrySku (country, sku) += writeOffRateCountryItem (country, sku);
 
 EXTEND FORM item

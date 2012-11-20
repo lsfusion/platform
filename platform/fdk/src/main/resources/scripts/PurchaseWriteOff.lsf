@@ -8,11 +8,13 @@ NAMESPACE Purchase;
 CLASS writeOffRate 'Норма отходов' : named, externalObject;
 TABLE writeOffRate(writeOffRate);
 
-percentWriteOffRate 'Норма,%' = DATA NUMERIC[10,3] (writeOffRate) IN baseGroup;
+percentWriteOffRate 'Норма,%' = DATA NUMERIC[10,3] (writeOffRate);
+countryWriteOffRate  = DATA country (writeOffRate);
+nameCountryWriteOffRate 'Страна' (writeOffRate) = name(countryWriteOffRate(writeOffRate)) IN baseGroup;
 
 FORM writeOffRate 'Норма отходов'
     OBJECTS r=writeOffRate FIXED PANEL
-    PROPERTIES(r) name, percentWriteOffRate
+    PROPERTIES(r) name, percentWriteOffRate, nameCountryWriteOffRate
     EDIT writeOffRate OBJECT r
 ;
 
@@ -22,7 +24,7 @@ percentWriteOffRateCountrySku 'Норма отходов,%' = percentWriteOffRat
 
 FORM writeOffRateDialog 'Нормы отходов'
     OBJECTS r=writeOffRate
-    PROPERTIES(r) READONLY name, percentWriteOffRate
+    PROPERTIES(r) READONLY name, percentWriteOffRate, nameCountryWriteOffRate
     DIALOG writeOffRate OBJECT r
 ;
 

@@ -534,7 +534,9 @@ META definePricingAggregation(concrete, sign, caption, stockProp)
     @defineDocumentInterfaceDetailMarkupPrefix (invoice, retail, );
     @defineDocumentInterfaceDetailMarkupSumPrefix (invoice, retail);
     @defineDocumentInterfaceDetailQuantityPrefix (invoice, pricing, ' (расценено)');
-    pricingQuantityUserInvoiceDetail(detail) <- quantityUserInvoiceDetail(detail) WHEN CHANGED(quantityUserInvoiceDetail(detail));
+    extraPricingQuantityUserInvoiceDetail = ABSTRACT NUMERIC[14,3] (userInvoiceDetail) PERSISTENT;
+    pricingQuantityUserInvoiceDetail(detail) <- quantityUserInvoiceDetail(detail) (+) extraPricingQuantityUserInvoiceDetail(detail)
+        WHEN CHANGED(quantityUserInvoiceDetail(detail)) OR CHANGED(extraPricingQuantityUserInvoiceDetail(detail));
 
     @deriveDocumentDetailValueVATPrefix(userInvoice, retail);
     @deriveDocumentDetailSumPrefix(userInvoice, retail, currency, pricingQuantity);
