@@ -471,7 +471,7 @@ public class Settings {
         this.disableWrapComplexity = disableWrapComplexity;
     }
 
-    public boolean applyNoIncrement = false;
+    public boolean applyNoIncrement = true;
 
     public boolean isApplyNoIncrement() {
         return applyNoIncrement;

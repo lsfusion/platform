@@ -244,13 +244,13 @@ markupUserRepricingDetail(userRepricingDetail)  <- [round2((((X - X*Y/(100+Y))/Z
 @defineAddDetailDialogTerminal(userRepricing, sku);
 @defineDocumentInterfaceHeaderRepricingCommittee (repricing, departmentStore);
 
-@deriveDocumentDetailPricePriceListType(userRepricing, supplierPricingPriceListType, cur);
+@deriveDocumentDetailPriceSystemLedgerPriceListType(userRepricing, supplierPricingPriceListType, cur, sku, departmentStore);
 
 @deriveDocumentDetailVAT (userRepricing, cur, dateBefore);
 
 @deriveDocumentDetailValueVATPrefix(userRepricing, cur);
 
-@deriveDocumentDetailPricePriceListType(userRepricing, retailPricingPriceListType, curRetail);
+@deriveDocumentDetailPriceSystemLedgerPriceListType(userRepricing, retailPricingPriceListType, curRetail, sku, departmentStore);
 
 @defineDocumentInterfaceHeaderSkip (repricing, changeLedger, 'Не изменять текущие цены');
 @defineDocumentInterfaceDetailSkip(repricing, changeLedger, 'Не изменять текущие цены');
@@ -598,14 +598,14 @@ META defineRepricing(sign, stockProp)
     @deriveDocumentDetailMarkupSumPrefix(userInvoice, cur, curRetail, cur);
 
 //    @derivePriceLedgerOnSkuChangePrefix(supplierPrice, userInvoice, curPrice, sku, stockProp);
-    @deriveDocumentDetailPricePriceListType(userInvoice, supplierPricingPriceListType, cur, sku, stockProp);
+    @deriveDocumentDetailPriceSystemLedgerPriceListType(userInvoice, supplierPricingPriceListType, cur, sku, stockProp);
 
 //    @derivePriceLedgerOnSkuChangePrefix(retailVAT, userInvoice, curVAT, sku, stockProp);
     @deriveDocumentDetailVAT (userInvoice, cur, dateBefore, sku, stockProp);
     @deriveDocumentDetailValueVATPrefix(userInvoice, cur);
 
 //    @derivePriceLedgerOnSkuChangePrefix(retailPrice, userInvoice, curRetailPrice, sku, stockProp);
-    @deriveDocumentDetailPricePriceListType(userInvoice, retailPricingPriceListType, curRetail, sku, stockProp);
+    @deriveDocumentDetailPriceSystemLedgerPriceListType(userInvoice, retailPricingPriceListType, curRetail, sku, stockProp);
 
 // После
     @defineDocumentInterfaceDetailDataSumPrefix (invoice, after, ' поставщика после');

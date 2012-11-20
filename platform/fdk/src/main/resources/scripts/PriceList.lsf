@@ -845,12 +845,51 @@ META defineDocumentInterfaceDataPriceListType (object)
     @defineDocumentInterfaceDataPriceListType(object, object##Detail);
 END
 
-META deriveDocumentDetailPricePriceListType (concrete, priceListTypeProp, prefixP, skuProp, stockProp)
-    prefixP###Price###concrete##Detail (detail)  <- pricePriceListTypeSkuStockDateTime(
-                    systemLedgerPriceListType.##priceListTypeProp,
-                    skuProp###concrete##Detail(detail), stockProp###concrete##Detail(detail), dateTime###concrete##Detail(detail))
-                    WHEN CHANGED(skuProp###concrete##Detail(detail)) OR CHANGED(stockProp###concrete##Detail(detail)) OR CHANGED(dateTime###concrete##Detail(detail));
+// ----------------------------------------------- Автоматическое проставление
+
+META deriveDocumentDetailPricePriceListTypeCustom (detail, stockProp)
+    price###detail(detail) <- prevPricePriceListTypeSkuStockDateTime(priceListType###detail(detail),
+                                                                     sku###detail(detail),
+                                                                     stockProp###detail(detail),
+                                                                     dateTime###detail(detail))
+                                    WHEN CHANGED(priceListType###detail(detail)) OR
+                                         CHANGED(sku###detail(detail)) OR
+                                         CHANGED(stockProp###detail(detail)) OR
+                                         CHANGED(dateTime###detail(detail));
 END
-META deriveDocumentDetailPricePriceListType (concrete, priceListTypeProp, prefixP)
-    @deriveDocumentDetailPricePriceListType (concrete, priceListTypeProp, prefixP, sku, departmentStore);
+
+META deriveDocumentDetailPricePriceListType (object, stockProp)
+    @deriveDocumentDetailPricePriceListTypeCustom(object##Detail, stockProp);
+END
+
+META deriveDocumentDetailPriceBatchPriceListTypeCustom (detail, stockProp)
+    price###detail(detail) <- IF batch###detail(detail) THEN
+                                    prevPricePriceListTypeBatchStockDateTime(priceListType###detail(detail),
+                                                                             batch###detail(detail),
+                                                                             stockProp###detail(detail),
+                                                                             dateTime###detail(detail))
+                              ELSE
+                                    prevPricePriceListTypeSkuStockDateTime(priceListType###detail(detail),
+                                                                           sku###detail(detail),
+                                                                           stockProp###detail(detail),
+                                                                           dateTime###detail(detail))
+                                    WHEN CHANGED(batch###detail(detail)) OR
+                                         CHANGED(priceListType###detail(detail)) OR
+                                         CHANGED(sku###detail(detail)) OR
+                                         CHANGED(stockProp###detail(detail)) OR
+                                         CHANGED(dateTime###detail(detail));
+END
+
+META deriveDocumentDetailPriceBatchPriceListType (object, stockProp)
+    @deriveDocumentDetailPriceBatchPriceListTypeCustom(object##Detail, stockProp);
+END
+
+META deriveDocumentDetailPriceSystemLedgerPriceListType (concrete, priceListTypeProp, prefixP, skuProp, stockProp)
+    prefixP###Price###concrete##Detail (detail)  <- prevPricePriceListTypeSkuStockDateTime(systemLedgerPriceListType.##priceListTypeProp,
+                                                                                           skuProp###concrete##Detail(detail),
+                                                                                           stockProp###concrete##Detail(detail),
+                                                                                           dateTime###concrete##Detail(detail))
+                                                    WHEN CHANGED(skuProp###concrete##Detail(detail)) OR
+                                                         CHANGED(stockProp###concrete##Detail(detail)) OR
+                                                         CHANGED(dateTime###concrete##Detail(detail));
 END

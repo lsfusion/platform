@@ -203,43 +203,6 @@ META deriveDocumentDoubleDetailPriceListTypeAgreement (object1, object2, stockPr
     @deriveDocumentDoubleDetailPriceListTypeAgreementCustom(object1, object1###detail, object2, stockProp2);
 END
 
-META deriveDocumentDetailPricePriceListTypeCustom (detail, stockProp)
-    price###detail(detail) <- prevPricePriceListTypeSkuStockDateTime(priceListType###detail(detail),
-                                                                     sku###detail(detail),
-                                                                     stockProp###detail(detail),
-                                                                     dateTime###detail(detail))
-                                    WHEN CHANGED(priceListType###detail(detail)) OR
-                                         CHANGED(sku###detail(detail)) OR
-                                         CHANGED(stockProp###detail(detail)) OR
-                                         CHANGED(dateTime###detail(detail));
-END
-
-META deriveDocumentDetailPricePriceListType (object, stockProp)
-    @deriveDocumentDetailPricePriceListTypeCustom(object##Detail, stockProp);
-END
-
-META deriveDocumentDetailPriceBatchPriceListTypeCustom (detail, stockProp)
-    price###detail(detail) <- IF batch###detail(detail) THEN
-                                    prevPricePriceListTypeBatchStockDateTime(priceListType###detail(detail),
-                                                                             batch###detail(detail),
-                                                                             stockProp###detail(detail),
-                                                                             dateTime###detail(detail))
-                              ELSE
-                                    prevPricePriceListTypeSkuStockDateTime(priceListType###detail(detail),
-                                                                           sku###detail(detail),
-                                                                           stockProp###detail(detail),
-                                                                           dateTime###detail(detail))
-                                    WHEN CHANGED(batch###detail(detail)) OR
-                                         CHANGED(priceListType###detail(detail)) OR
-                                         CHANGED(sku###detail(detail)) OR
-                                         CHANGED(stockProp###detail(detail)) OR
-                                         CHANGED(dateTime###detail(detail));
-END
-
-META deriveDocumentDetailPriceBatchPriceListType (object, stockProp)
-    @deriveDocumentDetailPriceBatchPriceListTypeCustom(object##Detail, stockProp);
-END
-
 FORM agreementsCustomer 'Соглашения'
 
     OBJECTS s=legalEntity FIXED PANEL

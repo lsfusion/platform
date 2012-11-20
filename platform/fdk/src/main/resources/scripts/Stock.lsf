@@ -1374,7 +1374,7 @@ META defineDocumentInterfaceDetailSkuBalance(object)
 END
 
 META deriveDocumentDetailSkuBalanceCustom (detail, skuProp, stockProp)
-    balanceBSku###detail (detail)  <- balanceBSkuStockDateTime(skuProp###detail(detail), stockProp###detail(detail), dateTime###detail(detail))
+    balanceBSku###detail (detail)  <- [PREV(balanceBSkuStockDateTime(sku, stock, dateTime))](skuProp###detail(detail), stockProp###detail(detail), dateTime###detail(detail))
         WHEN CHANGED(skuProp###detail(detail)) OR CHANGED(stockProp###detail(detail)) OR CHANGED(dateTime###detail(detail));
 END
 META deriveDocumentDetailSkuBalance (object, skuProp, stockProp)
