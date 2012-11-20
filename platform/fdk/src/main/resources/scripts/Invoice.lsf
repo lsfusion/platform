@@ -18,6 +18,8 @@ META defineInvoice(sign, stockProp)
 
     @defineDocumentInterface(invoice);
 
+    @defineDocumentInterfaceTimeBefore(invoice);
+
     @defineDocumentInterfaceNumber(invoice);
 
     @defineDocumentInterfaceLegalEntity (invoice, supplier, 'Поставщик');

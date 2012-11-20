@@ -1,6 +1,6 @@
 MODULE Repricing;
 
-REQUIRE Employee, Store, Pricing, AccountDocument;
+REQUIRE Employee, Store, Pricing, AccountDocument, PriceList;
 
 // ----------------------------------- Создавать акт расценки по умолчанию для отдела ------------------------------------------ //
 
@@ -597,18 +597,15 @@ META defineRepricing(sign, stockProp)
     @defineDocumentInterfaceDetailMarkupSumPrefix (invoice, cur, ' до');
     @deriveDocumentDetailMarkupSumPrefix(userInvoice, cur, curRetail, cur);
 
-    @derivePriceLedgerOnSkuChangePrefix(supplierPrice, userInvoice, curPrice, sku, stockProp);
-    @deriveDocumentDetailPricePriceListType(userRepricing, supplierPricingPriceListType, cur);
-//    curPriceUserRepricingDetail(detail) <-
-//        pricePriceListTypeSkuStockDateTime(systemLedgerPriceListType.supplierPricingPriceListType, skuUserRepricingDetail(detail), departmentStoreUserRepricingDetail(detail), dateTimeUserRepricingDetail(detail))
-//        WHEN CHANGED(skuUserRepricingDetail(detail)) OR CHANGED(departmentStoreUserRepricingDetail(detail)) OR CHANGED(dateTimeUserRepricingDetail(detail));
+//    @derivePriceLedgerOnSkuChangePrefix(supplierPrice, userInvoice, curPrice, sku, stockProp);
+    @deriveDocumentDetailPricePriceListType(userInvoice, supplierPricingPriceListType, cur, sku, stockProp);
 
-    @derivePriceLedgerOnSkuChangePrefix(retailVAT, userInvoice, curVAT, sku, stockProp);
-
+//    @derivePriceLedgerOnSkuChangePrefix(retailVAT, userInvoice, curVAT, sku, stockProp);
+    @deriveDocumentDetailVAT (userInvoice, cur, dateBefore, sku, stockProp);
     @deriveDocumentDetailValueVATPrefix(userInvoice, cur);
 
-
-    @derivePriceLedgerOnSkuChangePrefix(retailPrice, userInvoice, curRetailPrice, sku, stockProp);
+//    @derivePriceLedgerOnSkuChangePrefix(retailPrice, userInvoice, curRetailPrice, sku, stockProp);
+    @deriveDocumentDetailPricePriceListType(userInvoice, retailPricingPriceListType, curRetail, sku, stockProp);
 
 // После
     @defineDocumentInterfaceDetailDataSumPrefix (invoice, after, ' поставщика после');

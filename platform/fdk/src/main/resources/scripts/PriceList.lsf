@@ -840,4 +840,3 @@ END
 META deriveDocumentDetailPricePriceListType (concrete, priceListTypeProp, prefixP)
     @deriveDocumentDetailPricePriceListType (concrete, priceListTypeProp, prefixP, sku, departmentStore);
 END
-
