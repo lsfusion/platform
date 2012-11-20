@@ -20,11 +20,13 @@
 	<field name="numberObject" class="java.lang.String"/>
 	<field name="sidTruckTrip" class="java.lang.String"/>
 	<field name="nameMarkTruckTrip" class="java.lang.String"/>
-	<field name="driverTrip" class="java.lang.String"/>
+	<field name="nameDriverTrip" class="java.lang.String"/>
 	<field name="st" class="java.lang.Integer"/>
 	<field name="name" class="java.lang.String"/>
 	<field name="addressStock" class="java.lang.String"/>
 	<field name="nameLegalEntityStock" class="java.lang.String"/>
+	<field name="sidDriverTrip" class="java.lang.String"/>
+	<field name="typeDriverTrip" class="java.lang.String"/>
 	<title>
 		<band height="250">
 			<textField isStretchWithOverflow="true">
@@ -95,7 +97,12 @@
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="8" y="210" width="90" height="18"/>
 				<textElement textAlignment="Left"/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{driverTrip}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{nameDriverTrip}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="98" y="210" width="90" height="18"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{sidDriverTrip} + ", " + $F{typeDriverTrip}]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
@@ -159,9 +166,9 @@
 		</band>
 	</pageHeader>
 	<detail>
-		<band height="18">
+		<band height="18" splitType="Stretch">
 			<textField isStretchWithOverflow="true">
-				<reportElement x="176" y="0" width="100" height="18"/>
+				<reportElement stretchType="RelativeToBandHeight" x="176" y="0" width="100" height="18"/>
 				<textElement/>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{addressStock}]]></textFieldExpression>
 			</textField>
@@ -171,6 +178,6 @@
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{nameLegalEntityStock}]]></textFieldExpression>
 			</textField>
 		</band>
-		<band height="18"/>
+		<band/>
 	</detail>
 </jasperReport>

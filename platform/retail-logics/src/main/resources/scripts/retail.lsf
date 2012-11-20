@@ -6841,6 +6841,7 @@ NAVIGATOR {
     NEW transport 'Управление транспортом' TO formsToolbar {
         ADD marks;
         ADD trucks;
+        ADD drivers;
         ADD routes;
         ADD trips;
     }

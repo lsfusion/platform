@@ -1,6 +1,6 @@
 MODULE Shipment;
 
-REQUIRE Invoice, AccountDocument;
+REQUIRE Order, Invoice, AccountDocument;
 
 CLASS ABSTRACT shipment 'Поставка';
 CLASS ABSTRACT shipmentDetail 'Строка поставки';
@@ -22,6 +22,8 @@ CLASS ABSTRACT shipmentDetail 'Строка поставки';
 @defineDocumentDetailGrossWeight(shipment, sku);
 
 @defineDocumentHeaderGrossWeight(shipment);
+
+quantityShipmentDetailOrderShipment = ABSTRACT NUMERIC[14,2] (order, shipment);
 
 // ----------------------------------- Создавать поставку по умолчанию для склада ------------------------------------------ //
 
@@ -256,6 +258,8 @@ META defineShipment(sign, stockProp)
     descriptionOrderUserShipmentDetail 'Заказ' (userShipmentDetail) = descriptionOrder(orderUserShipmentDetail(userShipmentDetail)) IN orderGroup;
 
     quantityShipmentDetailOrderShipment (order, shipment) = GROUP SUM quantityShipmentDetail(shipmentDetail) BY orderShipmentDetail(shipmentDetail), shipmentShipmentDetail(shipmentDetail);
+    Shipment.quantityShipmentDetailOrderShipment (order, shipment) += quantityShipmentDetailOrderShipment (order, shipment);
+
     ordersShipment 'Заказы' (shipment) = GROUP CONCAT castToString255(descriptionOrder(order)) IF quantityShipmentDetailOrderShipment(order, shipment) , ', '
                                                BY shipment
                                                ORDER order IN orderGroup MINCHARWIDTH 30 PREFCHARWIDTH 50 PERSISTENT;

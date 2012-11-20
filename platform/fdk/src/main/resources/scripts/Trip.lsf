@@ -14,8 +14,12 @@ weightTruckTrip 'Грузоподъёмность (тонн)'(trip) = weightTruc
 ownerTruckTrip 'Владелец'(trip) = ownerTruck(truckTrip(trip));
 markTruckTrip (trip) = markTruck(truckTrip(trip));
 nameMarkTruckTrip 'Марка' (trip) = name(markTruckTrip(trip));
+trailerTruckTrip 'Прицеп' (trip) = trailerTruck(truckTrip(trip));
 
-driverTrip 'Водитель' = DATA STRING[50](trip);
+driverTrip = DATA driver(trip);
+nameDriverTrip 'Водитель' (trip) = commonName(driverTrip(trip));
+sidDriverTrip 'Табельный номер' (trip) = sidDriver(driverTrip(trip));
+typeDriverTrip 'Класс' (trip) = typeDriver(driverTrip(trip));
 
 // заказы
 tripOrder = DATA trip(order);
@@ -52,10 +56,17 @@ inTripShipment 'Включен' (trip, shipment) = tripShipment(shipment)==trip;
 //
 grossWeightShipmentedTrip 'Суммарный вес поставок' (trip) = GROUP SUM grossWeightShipmentDetailShipment(shipment) BY tripShipment(shipment);
 
+quantityShipmentDetailTripShipment (trip, shipment) = GROUP SUM quantityShipmentDetailOrderShipment (order, shipment) BY tripOrder(order), shipment;
+
+createShipmentsTrip 'Присоединить поставки' (trip) = ACTION (trip) {
+    SET tripShipment(shipment) <- NULL WHERE tripShipment(shipment) == trip;
+    SET tripShipment(shipment) <- trip WHERE quantityShipmentDetailTripShipment(trip, shipment);
+}
+
 FORM waybill PRINT
 
     OBJECTS t=trip FIXED PANEL
-    PROPERTIES(t) dateTrip, numberObject, sidTruckTrip, nameMarkTruckTrip, driverTrip
+    PROPERTIES(t) dateTrip, numberObject, sidTruckTrip, nameMarkTruckTrip, trailerTruckTrip, sidDriverTrip, typeDriverTrip
 
     OBJECTS st=stock
     PROPERTIES(st) name, addressStock, nameLegalEntityStock
@@ -68,7 +79,7 @@ printWaybill 'Печать путевого листа' (trip) = ACTION (trip) {
 
 FORM trip 'Рейс'
     OBJECTS t=trip FIXED PANEL
-    PROPERTIES (t) nameNumeratorObject, numberObject, seriesObject, dateTrip, driverTrip, timeTrip, sidTruckTrip, nameMarkTruckTrip, weightTruckTrip, printWaybill
+    PROPERTIES (t) nameNumeratorObject, numberObject, seriesObject, dateTrip, timeTrip, nameDriverTrip, sidTruckTrip, nameMarkTruckTrip, trailerTruckTrip, weightTruckTrip, printWaybill
     PROPERTIES (t) READONLY grossWeightOrderedTrip, grossWeightShipmentedTrip
 
     OBJECTS o=order
@@ -90,6 +101,8 @@ FORM trip 'Рейс'
     //PROPERTIES(s) printConsignmentSimpleVertical, printConsignmentSimpleHorizontal, printConsignmentSimpleAttach,
     //              printConsignmentVerticalA, printConsignmentHorizontalA, printConsignmentVerticalB,
     //              printConsignmentHorizontalB, printConsignmentAttach, editConsignment
+
+    PROPERTIES (t) createShipmentsTrip TODRAW s FORCE PANEL DRAWTOTOOLBAR
 
     OBJECTS sd=shipmentDetail
     PROPERTIES(sd) READONLY idBarcodeSkuShipmentDetail, nameSkuShipmentDetail, shortNameUOMSkuShipmentDetail, quantityShipmentDetail//, netWeightSkuShipmentDetail
@@ -119,13 +132,15 @@ DESIGN trip FROM DEFAULT{
         NEW midContainer {
             caption = 'Параметры машины';
             childConstraints = TO THE RIGHT;
-            ADD PROPERTY(driverTrip);
+            ADD PROPERTY(nameDriverTrip);
             ADD PROPERTY(sidTruckTrip);
             ADD PROPERTY(nameMarkTruckTrip);
+            ADD PROPERTY(trailerTruckTrip);
             ADD PROPERTY(weightTruckTrip);
             ADD PROPERTY(grossWeightOrderedTrip);
             ADD PROPERTY(grossWeightShipmentedTrip);
             ADD PROPERTY(printWaybill);
+
         }
 
         NEW bottomContainer {
@@ -142,6 +157,7 @@ DESIGN trip FROM DEFAULT{
                 childConstraints = TO THE BOTTOM;
                 ADD s.box;
                 ADD sd.box;
+                ADD PROPERTY(createShipmentsTrip);
             }
 
             ADD st.box;
@@ -153,7 +169,7 @@ DESIGN trip FROM DEFAULT{
 
 FORM trips 'Рейсы'
     OBJECTS t=trip
-    PROPERTIES(t) READONLY numberObject, seriesObject, dateTrip, timeTrip, driverTrip, sidTruckTrip, nameMarkTruckTrip, weightTruckTrip
+    PROPERTIES(t) READONLY numberObject, seriesObject, dateTrip, timeTrip, nameDriverTrip, sidTruckTrip, nameMarkTruckTrip, trailerTruckTrip, weightTruckTrip
     PROPERTIES(t) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
 
     OBJECTS o=order
