@@ -26,8 +26,16 @@ CLASS ABSTRACT invoiceDetail 'Строка накладной';
 
 @defineDocumentAbstractDetailQuantity(invoice);
 @defineDocumentDetailGrossWeight(invoice, sku);
+@defineDocumentDetailQuantityPack (invoice, sku);
 
 @defineDocumentHeaderGrossWeight(invoice);
+
+@defineDocumentAbstractHeaderCurrency (invoice);
+
+@defineDocumentAbstractDetailPrice(invoice);
+@defineDocumentAbstractDetailDataSumCustomPrefix (invoiceDetail, , );
+@defineDocumentAbstractDetailVATPrefix(invoice, , );
+@defineDocumentAbstractDetailVATDataSumCustom (invoiceDetail, invoice);
 
 editInvoice 'Редактировать' = ABSTRACT ACTION (invoice) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' TOOLBAR;
 
@@ -74,6 +82,7 @@ META defineInvoice(sign, stockProp)
 
     @defineDocumentInterfaceCurrency(invoice);
     @deriveDocumentCurrency(userInvoice, supplier, currencyLegalEntity);
+    Invoice.currencyInvoice(invoice) += currencyInvoice(invoice);
 
     @defineDocumentInterfaceContract(invoice, contractSku, supplier, customer,
                                      'Сторона A договора накладной не соответствует стороне А накладной',
@@ -92,13 +101,18 @@ META defineInvoice(sign, stockProp)
 
     @defineDocumentInterfaceDetailPrice(invoice);
    // @deriveDocumentDetailPricePriceListTypeCustom(userInvoiceDetail, stockProp);
+    Invoice.priceInvoiceDetail(detail) += priceInvoiceDetail(detail);
 
     @defineDocumentInterfaceDetailDataSum(invoice);
     @deriveDocumentDetailSum(userInvoice, quantity);
+    Invoice.sumInvoiceDetail(detail) += sumInvoiceDetail(detail);
 
     @defineDocumentInterfaceDetailVAT(invoice, country###stockProp);
     @defineDocumentInterfaceDetailVATDataSum (invoice);
     @deriveDocumentDetailDirectVATSum(userInvoice);
+    Invoice.VATInvoiceDetail(detail) += VATInvoiceDetail(detail);
+    Invoice.valueVATInvoiceDetail(detail) += valueVATInvoiceDetail(detail);
+    Invoice.VATSumInvoiceDetail(detail) += VATSumInvoiceDetail(detail);
 
     @defineDocumentInterfaceDetailPricePrefix (invoice, invoice, ' с НДС');
     @deriveDocumentDetailVAT (userInvoice, , date,  sku, stockProp);

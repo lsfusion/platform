@@ -215,13 +215,13 @@ META defineDocumentDetailVATCustom(detail, countryProp)
                CHECKED BY VAT###detail
                MESSAGE 'ошибка: Шкала и страна строки должна соответствовать шкале и строке НДС';
 END
-META defineDocumentAbstractDetailVATCustom(detail, countryProp)
+META defineDocumentAbstractDetailVATCustom(detail)
     VAT###detail(detail) = ABSTRACT range (detail) PERSISTENT;
     numberVAT###detail 'НДС, номер' (detail) = numberRange(VAT###detail(detail));
     valueVAT###detail 'НДС, %' (detail) = valueRateRangeDate(VAT###detail(detail), date###detail(detail));
 END
 META defineDocumentInterfaceDetailVATCustom(detail, countryProp)
-    @defineDocumentAbstractDetailVATCustom(detail, countryProp);
+    @defineDocumentAbstractDetailVATCustom(detail);
     @defineDocumentDetailVATCustom(user###detail, countryProp);
     VAT###detail(detail) += VAT###user###detail(detail);
 END
@@ -229,8 +229,8 @@ END
 META defineDocumentDetailVAT(object, countryProp)
     @defineDocumentDetailVATCustom(object##Detail, countryProp);
 END
-META defineDocumentAbstractDetailVAT(object, countryProp)
-    @defineDocumentAbstractDetailVATCustom(object##Detail, countryProp);
+META defineDocumentAbstractDetailVAT(object)
+    @defineDocumentAbstractDetailVATCustom(object##Detail);
 END
 META defineDocumentInterfaceDetailVAT(object, countryProp)
     @defineDocumentInterfaceDetailVATCustom(object##Detail, countryProp);
@@ -269,13 +269,13 @@ META defineDocumentDetailVATPrefixCustom(detail, prefix, countryProp, caption)
                CHECKED BY prefix###VAT###detail
                MESSAGE 'ошибка: Шкала и страна строки должна соответствовать шкале и строке НДС';
 END
-META defineDocumentAbstractDetailVATPrefixCustom(detail, prefix, countryProp, caption)
+META defineDocumentAbstractDetailVATPrefixCustom(detail, prefix, caption)
     prefix###VAT###detail(detail) = ABSTRACT range (detail) PERSISTENT;
     number###prefix###VAT###detail 'НДС, номер'###caption (detail) = numberRange(prefix###VAT###detail(detail));
     value###prefix###VAT###detail 'НДС, %'###caption (detail) = ABSTRACT NUMERIC[10,5] (detail) PERSISTENT;
 END
 META defineDocumentInterfaceDetailVATPrefixCustom(detail, prefix, countryProp, caption)
-    @defineDocumentAbstractDetailVATPrefixCustom(detail, prefix, countryProp, caption);
+    @defineDocumentAbstractDetailVATPrefixCustom(detail, prefix, caption);
     @defineDocumentDetailVATPrefixCustom(user###detail, prefix, countryProp, caption);
     prefix###VAT###detail(detail) += prefix###VAT###user###detail(detail);
     value###prefix###VAT###detail(detail) += value###prefix###VAT###user###detail(detail);
@@ -284,8 +284,8 @@ END
 META defineDocumentDetailVATPrefix(object, prefix, countryProp, caption)
     @defineDocumentDetailVATPrefixCustom(object##Detail, prefix, countryProp, caption);
 END
-META defineDocumentAbstractDetailVATPrefix(object, prefix, countryProp, caption)
-    @defineDocumentAbstractDetailVATPrefixCustom(object##Detail, prefix, countryProp, caption);
+META defineDocumentAbstractDetailVATPrefix(object, prefix, caption)
+    @defineDocumentAbstractDetailVATPrefixCustom(object##Detail, prefix, caption);
 END
 META defineDocumentInterfaceDetailVATPrefix(object, prefix, countryProp, caption)
     @defineDocumentInterfaceDetailVATPrefixCustom(object##Detail, prefix, countryProp, caption);

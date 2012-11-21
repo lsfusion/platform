@@ -130,10 +130,8 @@ namePayerConsignment 'Заказчик перевозки ' (consignment) =
 skuConsignmentDetail (consignmentDetail) = ABSTRACT sku (consignmentDetail);
 nameSkuConsignmentDetail 'Наименование товара' (consignmentDetail) = nameSku(skuConsignmentDetail(consignmentDetail));
 
-//UOMConsignmentDetail (consignmentDetail) = ABSTRACT UOM (consignmentDetail);
-//shortNameUOMConsignmentDetail 'Единица измерения' (consignmentDetail) = shortName(UOMConsignmentDetail(consignmentDetail));
-shortNameUOMConsignmentDetail 'Единица измерения' (consignmentDetail) = ABSTRACT STRING[15] (consignmentDetail);
-
+shortNameUOMConsignmentDetail 'Единица измерения' (consignmentDetail) = shortNameUOMSku(skuConsignmentDetail(consignmentDetail));
+//shortNameUOMConsignmentDetail 'Единица измерения' (consignmentDetail) = ABSTRACT STRING[15] (consignmentDetail);
 
 consignmentConsignmentDetail (consignmentDetail) = ABSTRACT consignment (consignmentDetail);
 
@@ -591,50 +589,92 @@ META implementConsignmentHeader (concrete)
     raceQuantityConsignment (consignment) += raceQuantity###concrete (consignment);
 END
 
-META implementConsignmentDocumentHeader (concrete, object)
+META implementConsignmentDocumentHeader (concrete, object, prefix)
 
-    payer###concrete (concrete) += payer###object (concrete);
+    prefix###payer###concrete (concrete) += payer###object (concrete);
 
-    dataNameTruck###concrete (concrete) += dataNameTruck###object (concrete);
-    dataOwner###concrete (concrete) += dataOwner###object (concrete);
-    dataTrailer###concrete (concrete) += dataTrailer###object (concrete);
-    dataNameDriver###concrete (concrete) += dataNameDriver###object (concrete);
-    waybill###concrete (concrete) += waybill###object (concrete);
+    prefix###dataNameTruck###concrete (concrete) += dataNameTruck###object (concrete);
+    prefix###dataOwner###concrete (concrete) += dataOwner###object (concrete);
+    prefix###dataTrailer###concrete (concrete) += dataTrailer###object (concrete);
+    prefix###dataNameDriver###concrete (concrete) += dataNameDriver###object (concrete);
+    prefix###waybill###concrete (concrete) += waybill###object (concrete);
 
-    dataAddressSupplierStock###concrete (concrete) += dataAddressSupplierStock###object (concrete);
-    dataAddressCustomerStock###concrete (concrete) += dataAddressCustomerStock###object (concrete);
+    prefix###dataAddressSupplierStock###concrete (concrete) += dataAddressSupplierStock###object (concrete);
+    prefix###dataAddressCustomerStock###concrete (concrete) += dataAddressCustomerStock###object (concrete);
 
-    readdressing###concrete (concrete) += readdressing###object (concrete);
+    prefix###readdressing###concrete (concrete) += readdressing###object (concrete);
 
-    shipmentBase###concrete (concrete) += shipmentBase###object (concrete);
+    prefix###shipmentBase###concrete (concrete) += shipmentBase###object (concrete);
 
-    issuanceAllowed###concrete (concrete) += issuanceAllowed###object (concrete);
+    prefix###issuanceAllowed###concrete (concrete) += issuanceAllowed###object (concrete);
 
-    issuanceExecuted###concrete (concrete) += issuanceExecuted###object (concrete);
+    prefix###issuanceExecuted###concrete (concrete) += issuanceExecuted###object (concrete);
 
-    forwarder###concrete (concrete) += forwarder###object (concrete);
+    prefix###forwarder###concrete (concrete) += forwarder###object (concrete);
 
-    warrant###concrete (concrete) += warrant###object (concrete);
-    warrantHolder###concrete (concrete) += warrantHolder###object (concrete);
+    prefix###warrant###concrete (concrete) += warrant###object (concrete);
+    prefix###warrantHolder###concrete (concrete) += warrantHolder###object (concrete);
 
-    goodsAccepted###concrete (concrete) += goodsAccepted###object (concrete);
+    prefix###goodsAccepted###concrete (concrete) += goodsAccepted###object (concrete);
 
-    loadingExecuter###concrete (concrete) += loadingExecuter###object (concrete);
+    prefix###loadingExecuter###concrete (concrete) += loadingExecuter###object (concrete);
 
-    wayOfLoading###concrete (concrete) += wayOfLoading###object (concrete);
-    codeLoading###concrete (concrete) += codeLoading###object (concrete);
+    prefix###wayOfLoading###concrete (concrete) += wayOfLoading###object (concrete);
+    prefix###codeLoading###concrete (concrete) += codeLoading###object (concrete);
 
-    arrivalTime###concrete (concrete) += arrivalTime###object (concrete);
-    departureTime###concrete (concrete) += departureTime###object (concrete);
-    downtime###concrete (concrete) += downtime###object (concrete);
+    prefix###arrivalTime###concrete (concrete) += arrivalTime###object (concrete);
+    prefix###departureTime###concrete (concrete) += departureTime###object (concrete);
+    prefix###downtime###concrete (concrete) += downtime###object (concrete);
 
-    raceQuantity###concrete (concrete) += raceQuantity###object (concrete);
+    prefix###raceQuantity###concrete (concrete) += raceQuantity###object (concrete);
 
 END
 
 META implementConsignmentInterfaceHeader(object)
-    @implementConsignmentDocumentHeader(object, user###object);
+    @implementConsignmentDocumentHeader(object, user###object, );
     @implementConsignmentHeader (object);
+END
+//--
+
+META implementConsignmentDocumentHeaderPrefix (concrete, object, NS)
+
+    NS.payer###concrete (concrete) += payer###object (concrete);
+
+    NS.dataNameTruck###concrete (concrete) += dataNameTruck###object (concrete);
+    NS.dataOwner###concrete (concrete) += dataOwner###object (concrete);
+    NS.dataTrailer###concrete (concrete) += dataTrailer###object (concrete);
+    NS.dataNameDriver###concrete (concrete) += dataNameDriver###object (concrete);
+    NS.waybill###concrete (concrete) += waybill###object (concrete);
+
+    NS.dataAddressSupplierStock###concrete (concrete) += dataAddressSupplierStock###object (concrete);
+    NS.dataAddressCustomerStock###concrete (concrete) += dataAddressCustomerStock###object (concrete);
+
+    NS.readdressing###concrete (concrete) += readdressing###object (concrete);
+
+    NS.shipmentBase###concrete (concrete) += shipmentBase###object (concrete);
+
+    NS.issuanceAllowed###concrete (concrete) += issuanceAllowed###object (concrete);
+
+    NS.issuanceExecuted###concrete (concrete) += issuanceExecuted###object (concrete);
+
+    NS.forwarder###concrete (concrete) += forwarder###object (concrete);
+
+    NS.warrant###concrete (concrete) += warrant###object (concrete);
+    NS.warrantHolder###concrete (concrete) += warrantHolder###object (concrete);
+
+    NS.goodsAccepted###concrete (concrete) += goodsAccepted###object (concrete);
+
+    NS.loadingExecuter###concrete (concrete) += loadingExecuter###object (concrete);
+
+    NS.wayOfLoading###concrete (concrete) += wayOfLoading###object (concrete);
+    NS.codeLoading###concrete (concrete) += codeLoading###object (concrete);
+
+    NS.arrivalTime###concrete (concrete) += arrivalTime###object (concrete);
+    NS.departureTime###concrete (concrete) += departureTime###object (concrete);
+    NS.downtime###concrete (concrete) += downtime###object (concrete);
+
+    NS.raceQuantity###concrete (concrete) += raceQuantity###object (concrete);
+
 END
 
 // -------------------------- Implement строк накладной -------------------- //

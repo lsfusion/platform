@@ -113,7 +113,7 @@ DESIGN employees FROM DEFAULT {
 
 FORM employeeDialog 'Сотрудники'
     OBJECTS e=employee
-    PROPERTIES(e) userFirstName, userLastName, namePositionEmployee
+    PROPERTIES(e) READONLY userFirstName, userLastName, namePositionEmployee
 
     DIALOG employee OBJECT e
 ;

@@ -137,7 +137,7 @@ sumInvoiceConsignmentDetail (consignmentDetail) += IF isCommissionSaleOutBatchDe
 
 grossWeightTonConsignmentDetail (consignmentDetail) += grossWeightSaleOutBatchDetail (consignmentDetail);
 quantityPackConsignmentDetail (consignmentDetail) += packQuantitySaleOutBatchDetail (consignmentDetail);
-shortNameUOMConsignmentDetail (consignmentDetail) += shortNameUOMSaleOutBatchDetail (consignmentDetail);
+//shortNameUOMConsignmentDetail (consignmentDetail) += shortNameUOMSaleOutBatchDetail (consignmentDetail);
 
 
 noteSaleOutBatchDetail (saleOutBatchDetail) = [FORMULA STRING[30] '\'Цена импортера:\' ||  \' \' || CAST($1 AS TEXT)'](

@@ -5,26 +5,29 @@ REQUIRE Invoice,
 
 NAMESPACE Invoice;
 
+@defineConsignmentAbstractHeader(invoice);
+@implementConsignmentHeader (invoice);
+@implementConsignmentDetail (invoice);
+
+supplierConsignment (consignment) += fromLegalEntityInvoice(consignment);
+supplierStockConsignment (consignment) += fromStockInvoice(consignment);
+
+customerConsignment (consignment) += toLegalEntityInvoice(consignment);
+customerStockConsignment (consignment) += toStockInvoice(consignment);
+
+currencyConsignment (consignment) += currencyInvoice(consignment);
+
+priceConsignmentDetail (detail) += priceInvoiceDetail(detail);
+sumConsignmentDetail (detail) += sumInvoiceDetail(detail);
+vatConsignmentDetail (detail) += valueVATInvoiceDetail(detail);
+
+sumVATConsignmentDetail (detail) += VATSumInvoiceDetail(detail);
+sumInvoiceConsignmentDetail (detail) += invoiceSumInvoiceDetail(detail);
+
 META defineInvoiceConsignment(contactA, contactB)
+
     @defineConsignmentInterfaceHeader(invoice);
-    @implementConsignmentInterfaceHeader(invoice);
-
-    supplierConsignment (consignment) += contactA###invoice(consignment);
-    supplierStockConsignment (consignment) += contactA###stock###invoice(consignment);
-
-    customerConsignment (consignment) += contactB###invoice(consignment);
-    customerStockConsignment (consignment) += contactB###stock###invoice(consignment);
-
-    currencyConsignment (consignment) += currencyInvoice(consignment);
-
-    @implementConsignmentDetail(invoice);
-
-    priceConsignmentDetail (consignmentDetail) += priceInvoiceDetail(consignmentDetail);
-    sumConsignmentDetail (consignmentDetail) += sumInvoiceDetail (consignmentDetail);
-    vatConsignmentDetail (consignmentDetail) += valueVATInvoiceDetail(consignmentDetail);
-    sumVATConsignmentDetail (consignmentDetail) +=  VATSumInvoiceDetail(consignmentDetail);
-    sumInvoiceConsignmentDetail (consignmentDetail) += invoiceSumInvoiceDetail(consignmentDetail);
-    shortNameUOMConsignmentDetail (consignmentDetail) += shortNameUOMSku(skuInvoiceDetail (consignmentDetail));
+    @implementConsignmentDocumentHeader(invoice, userInvoice, );
 
     EXTEND FORM  invoices
         PROPERTIES (i)  FORCE PANEL printConsignmentVerticalA, printConsignmentHorizontalA,
