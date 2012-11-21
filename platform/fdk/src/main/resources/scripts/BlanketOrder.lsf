@@ -169,6 +169,8 @@ META defineBlanketOrder(sign)
         }
     }
 
+    editBlanketOrder 'Редактировать' = ACTION EDITFORM blanketOrder;
+
 //-- SKU
     @defineDocumentSkuStockContractor(blanketOrder, sku, supplierStock, customerStock);
     @extendFormDocumentSkuStockContractorCustom(blanketOrder, blanketOrder, o, supplierStock, customerStock);
@@ -245,7 +247,6 @@ META defineOrderBlanketOrder(sign)
 
     @defineDocumentTables(blanketOrderOrder);
 
-
     needToOrderBlanketOrderDetailStock (blanketOrderDetail, stock)= quantityBlanketOrderDetail(blanketOrderDetail)
         AND isPostedBlanketOrderDetail(blanketOrderDetail) AND customerStockBlanketOrderDetail(blanketOrderDetail) == stock;
 
@@ -255,16 +256,15 @@ META defineOrderBlanketOrder(sign)
 //-- object
     @defineAggregation(blanketOrder, stock, blanketOrderOrder, needToOrderBlanketOrderStock);
 
-    @defineDocumentAggregationHeaderStock (blanketOrder, blanketOrderOrder, supplierStock, 'Склад поставщика');
-    supplierStockOrder(order) += supplierStockBlanketOrderOrder(order);
-    customerStockOrder(order) += stockBlanketOrderOrder(order);
-
     supplierOrder(order) += supplierBlanketOrder(blanketOrderBlanketOrderOrder(order));
     customerOrder(order) += customerBlanketOrder(blanketOrderBlanketOrderOrder(order));
 
-    shipmentDateBlanketOrderOrder 'Дата исполнения' (blanketOrderOrder)= shipmentDateBlanketOrder(blanketOrderBlanketOrderOrder(blanketOrderOrder));
-    shipmentDateOrder(order) += shipmentDateBlanketOrderOrder(order);
+    @defineDocumentAggregationHeaderStock (blanketOrder, blanketOrderOrder, supplierStock, 'Склад поставщика');
+    supplierStockOrder(order) += supplierStockBlanketOrderOrder(order);
 
+    customerStockOrder(order) += stockBlanketOrderOrder(order);
+
+    shipmentDateOrder(order) += shipmentDateBlanketOrder(blanketOrderBlanketOrderOrder(order));
     shipmentTimeOrder(order) += shipmentTimeBlanketOrder(blanketOrderBlanketOrderOrder(order));
 
     currencyOrder(order) += currencyBlanketOrder(blanketOrderBlanketOrderOrder(order));
@@ -282,9 +282,12 @@ META defineOrderBlanketOrder(sign)
 //-- detail
     @defineAggregation(blanketOrderDetail, stock, blanketOrderOrderDetail, needToOrderBlanketOrderDetailStock);
 
-    blanketOrderOrderBlanketOrderOrderDetail (blanketOrderOrderDetail) = blanketOrderOrderBlanketOrderStock(blanketOrderBlanketOrderDetail(blanketOrderDetailBlanketOrderOrderDetail(blanketOrderOrderDetail)),
-    customerStockBlanketOrderDetail(blanketOrderDetailBlanketOrderOrderDetail(blanketOrderOrderDetail)));
+    blanketOrderOrderBlanketOrderOrderDetail (blanketOrderOrderDetail) =
+        blanketOrderOrderBlanketOrderStock(blanketOrderBlanketOrderDetail(blanketOrderDetailBlanketOrderOrderDetail(blanketOrderOrderDetail)),
+                                           customerStockBlanketOrderDetail(blanketOrderDetailBlanketOrderOrderDetail(blanketOrderOrderDetail)));
     orderOrderDetail(detail) += blanketOrderOrderBlanketOrderOrderDetail(detail);
+
+    dataSupplierStockOrderDetail(detail) += dataSupplierStockBlanketOrderDetail(blanketOrderDetailBlanketOrderOrderDetail(detail));
 
     @defineDocumentHeaderCount(blanketOrderOrder);
     @defineDocumentDetailIndex(blanketOrderOrder);
@@ -305,11 +308,15 @@ META defineOrderBlanketOrder(sign)
     @defineDocumentAggregationDetailQuantity (blanketOrder, blanketOrderOrder);
     quantityOrderDetail(detail) +=  quantityBlanketOrderOrderDetail(detail);
 
-    dataSupplierStockOrderDetail(detail) += dataSupplierStockBlanketOrderDetail(blanketOrderDetailBlanketOrderOrderDetail(detail));
     shipmentDataDateOrderDetail(detail) += shipmentDataDateBlanketOrderDetail(blanketOrderDetailBlanketOrderOrderDetail(detail));
     shipmentDataTimeOrderDetail(detail) += shipmentDataTimeBlanketOrderDetail(blanketOrderDetailBlanketOrderOrderDetail(detail));
+
     dataPriceListTypeOrderDetail(detail) += dataPriceListTypeBlanketOrderDetail(blanketOrderDetailBlanketOrderOrderDetail(detail));
+
     priceOrderDetail(detail) += priceBlanketOrderDetail(blanketOrderDetailBlanketOrderOrderDetail(detail));
     sumOrderDetail(detail) += sumBlanketOrderDetail(blanketOrderDetailBlanketOrderOrderDetail(detail));
+
+    editOrder(order) += ACTION EXEC editBlanketOrder(blanketOrderBlanketOrderOrder(order));
+
 END
 

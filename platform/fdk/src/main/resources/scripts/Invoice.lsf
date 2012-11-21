@@ -29,6 +29,8 @@ CLASS ABSTRACT invoiceDetail 'Строка накладной';
 
 @defineDocumentHeaderGrossWeight(invoice);
 
+editInvoice 'Редактировать' = ABSTRACT ACTION (invoice) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' TOOLBAR;
+
 //----------------------------------------------- Накладная ---------------------------------------------------//
 
 META defineInvoice(sign, stockProp)
@@ -237,6 +239,9 @@ META defineInvoice(sign, stockProp)
 
 // --------------------------- Формы ---------------------------------- //
 
+    editInvoice 'Редактировать' = ABSTRACT ACTION (invoice) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' TOOLBAR;
+    Invoice.editInvoice (invoice) += editInvoice(invoice);
+
     FORM userInvoice 'Накладная'###sign
         OBJECTS i = userInvoice FIXED PANEL
         PROPERTIES (i) objectClassName, nameSupplierUserInvoice, nameSupplierStockUserInvoice, nameCustomerUserInvoice, nameCustomerStockUserInvoice,
@@ -352,6 +357,7 @@ META defineInvoice(sign, stockProp)
 
     addUserInvoice 'Добавить' = ACTION ADDFORM userInvoice;
     editUserInvoice 'Редактировать' (userInvoice) = ACTION EDITFORM userInvoice;
+    editInvoice (invoice) += editUserInvoice(invoice);
 
     FORM invoices 'Накладные' TITLE 'Накладные'###sign
         OBJECTS i = invoice
@@ -364,7 +370,7 @@ META defineInvoice(sign, stockProp)
         PROPERTIES (i) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
         PROPERTIES ()  addUserInvoice TODRAW i
-        PROPERTIES (i) editUserInvoice
+        PROPERTIES (i) editInvoice
         PROPERTIES (i) delete FORCE PANEL DRAWTOTOOLBAR  SHOWIF isUserInvoice(i)
 
         OBJECTS d = invoiceDetail

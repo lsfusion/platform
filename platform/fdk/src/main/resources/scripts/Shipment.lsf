@@ -25,6 +25,8 @@ CLASS ABSTRACT shipmentDetail 'Строка поставки';
 
 quantityShipmentDetailOrderShipment = ABSTRACT NUMERIC[14,2] (order, shipment);
 
+editShipment 'Редактировать' = ABSTRACT ACTION (shipment) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' TOOLBAR;
+
 // ----------------------------------- Создавать поставку по умолчанию для склада ------------------------------------------ //
 
 createShipmentStock 'Создавать поставку' = DATA BOOLEAN (stock);
@@ -107,6 +109,9 @@ META defineShipment(sign, stockProp)
 
 // --------------------------- Формы --------------------------------- //
 
+    editShipment 'Редактировать' = ABSTRACT ACTION (shipment) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' TOOLBAR;
+    Shipment.editShipment (shipment) += editShipment(shipment);
+
     FORM userShipment 'Поставка'###sign
         OBJECTS s = userShipment FIXED PANEL
         PROPERTIES (s) objectClassName, nameSupplierUserShipment, nameCustomerUserShipment, nameSupplierStockUserShipment, nameCustomerStockUserShipment,
@@ -188,6 +193,7 @@ META defineShipment(sign, stockProp)
 
     addUserShipment 'Добавить' = ACTION ADDFORM userShipment;
     editUserShipment 'Редактировать' (userShipment) = ACTION EDITFORM userShipment;
+    editShipment (shipment) += editUserShipment(shipment);
 
     FORM shipments 'Поставки' TITLE 'Поставки'###sign
         OBJECTS s = shipment
@@ -198,7 +204,7 @@ META defineShipment(sign, stockProp)
         PROPERTIES (s) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
         PROPERTIES ()  addUserShipment TODRAW s
-        PROPERTIES (s) editUserShipment
+        PROPERTIES (s) editShipment
         PROPERTIES (s) delete FORCE PANEL DRAWTOTOOLBAR SHOWIF isUserShipment(s)
 
         OBJECTS d = shipmentDetail
@@ -647,6 +653,8 @@ META defineShipment(sign, stockProp)
     sumShipmentDetail(shipmentDetail) += sumInvoiceShipmentDetail(shipmentDetail);
 
     invoiceDetailShipmentDetail(shipmentDetail) += invoiceDetailInvoiceShipmentDetail(shipmentDetail);
+
+    editShipment(shipment) += ACTION EXEC editInvoice(invoiceInvoiceShipment(shipment));
 
 END
 

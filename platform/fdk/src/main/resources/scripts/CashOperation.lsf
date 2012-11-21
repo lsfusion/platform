@@ -135,14 +135,15 @@ DESIGN addCollection FROM DEFAULT {
     ADD functions.box;
 }
 
-FORM editCollection 'Инкассация'
-
-    OBJECTS c= collection FIXED PANEL
+FORM collection 'Инкассация'
+    OBJECTS c = collection FIXED PANEL
     PROPERTIES(c) numberObject, seriesObject, dateCollection, timeCollection, nameDepartmentStoreCollection,
                   sumCashCollection, basisCollection
+
+    EDIT collection OBJECT c
 ;
 
-DESIGN editCollection FROM DEFAULT {
+DESIGN collection FROM DEFAULT {
     NEW topContainer{
         childConstraints = TO THE RIGHTBOTTOM;
         NEW firstCase{
@@ -186,12 +187,7 @@ addCollectionForm 'Инкасация' () = ACTION () {
     }
 } TOOLBAR;
 
-editCollectionForm 'Редактировать' (collection) = ACTION (collection) {
-    FORM editCollection OBJECTS c = (collection AS collection) MODAL;
-    IF formResult() == formResult.ok THEN {
-        EXEC apply();
-    }
-} TOOLBAR;
+editCollection 'Редактировать' (collection) = ACTION EDITFORM collection;
 
 //--------------------------------- Операции с наличными -------------------------------------------------//
 
@@ -420,15 +416,16 @@ DESIGN addIncomeCashOperation FROM DEFAULT {
     ADD functions.box;
 }
 
-FORM editIncomeCashOperation 'Внесение денег'
+FORM incomeCashOperation 'Внесение денег'
 
     OBJECTS i = incomeCashOperation FIXED PANEL
     PROPERTIES(i) numberObject, seriesObject,dateIncomeCashOperation, timeIncomeCashOperation, nameDepartmentStoreIncomeCashOperation,
                   numberCashRegisterIncomeCashOperation, sumCashIncomeCashOperation, basisIncomeCashOperation
 
+    EDIT incomeCashOperation OBJECT i
 ;
 
-DESIGN editIncomeCashOperation FROM DEFAULT {
+DESIGN incomeCashOperation FROM DEFAULT {
     NEW topContainer{
         childConstraints = TO THE RIGHTBOTTOM;
         NEW firstCase{
@@ -477,14 +474,7 @@ addIncomeCashOperationForm 'Внесение денег' () = ACTION () NEWSESSI
     SET sessionDepartmentStore() <- NULL;
 } TOOLBAR;
 
-editIncomeCashOperationForm 'Редактировать' (incomeCashOperation) = ACTION (incomeCashOperation) NEWSESSION {
-
-    FORM editIncomeCashOperation OBJECTS i = (incomeCashOperation AS incomeCashOperation) MODAL;
-    IF formResult() == formResult.ok THEN {
-        EXEC apply();
-    }
-
-} TOOLBAR;
+editIncomeCashOperation 'Редактировать' (incomeCashOperation) = ACTION EDITFORM incomeCashOperation;
 
 sumCashForOutcomeCashOperation 'Сумма изъятия денег' = SESSION DATA NUMERIC[16,2] (cashRegister);
 
@@ -526,15 +516,16 @@ DESIGN addOutcomeCashOperation FROM DEFAULT {
     ADD functions.box;
 }
 
-FORM editOutcomeCashOperation 'Изъятие денег'
+FORM outcomeCashOperation 'Изъятие денег'
 
     OBJECTS o = outcomeCashOperation FIXED PANEL
     PROPERTIES(o) numberObject, seriesObject,dateOutcomeCashOperation, timeOutcomeCashOperation, nameDepartmentStoreOutcomeCashOperation,
                   numberCashRegisterOutcomeCashOperation, sumCashOutcomeCashOperation, basisOutcomeCashOperation
 
+    EDIT outcomeCashOperation OBJECT o;
 ;
 
-DESIGN editOutcomeCashOperation FROM DEFAULT {
+DESIGN outcomeCashOperation FROM DEFAULT {
     NEW topContainer{
         childConstraints = TO THE RIGHTBOTTOM;
         NEW firstCase{
@@ -582,14 +573,7 @@ addOutcomeCashOperationForm 'Изъятие денег' () = ACTION () NEWSESSIO
     SET sessionDepartmentStore() <- NULL;
 } TOOLBAR;
 
-editOutcomeCashOperationForm 'Редактировать' (outcomeCashOperation) = ACTION (outcomeCashOperation) NEWSESSION {
-
-    FORM editOutcomeCashOperation OBJECTS o = (outcomeCashOperation AS outcomeCashOperation) MODAL;
-    IF formResult() == formResult.ok THEN {
-        EXEC apply();
-    }
-
-} TOOLBAR;
+editOutcomeCashOperation 'Редактировать' (outcomeCashOperation) = ACTION EDITFORM outcomeCashOperation;
 
 FORM operationCashRegister 'Кассовые операции'
 
@@ -605,8 +589,8 @@ FORM operationCashRegister 'Кассовые операции'
     PROPERTIES(c) isCompleteCashOperation FORCE GRID
     PROPERTIES addIncomeCashOperationForm() TODRAW c FORCE PANEL DRAWTOTOOLBAR
     PROPERTIES addOutcomeCashOperationForm() TODRAW c FORCE PANEL DRAWTOTOOLBAR
-    PROPERTIES editIncomeCashOperationForm(c) SHOWIF isIncomeCashOperation(c)
-    PROPERTIES editOutcomeCashOperationForm(c) SHOWIF isOutcomeCashOperation(c)
+    PROPERTIES editIncomeCashOperation(c) SHOWIF isIncomeCashOperation(c)
+    PROPERTIES editOutcomeCashOperation(c) SHOWIF isOutcomeCashOperation(c)
 
     FILTERS dateCashOperation(c) >= (dFrom AS DATE),
             dateCashOperation(c) <= (dTo AS DATE)
@@ -658,7 +642,7 @@ FORM centralCashRegister 'Центральная касса'
     PROPERTIES(i) printIncomeCashOrder
     PROPERTIES(i) READONLY isCompleteCashOperation FORCE GRID
     PROPERTIES addOutcomeCashOperationForm() TODRAW i FORCE PANEL DRAWTOTOOLBAR
-    PROPERTIES editOutcomeCashOperationForm(i) SHOWIF isOutcomeCashOperation(i)
+    PROPERTIES editOutcomeCashOperation(i) SHOWIF isOutcomeCashOperation(i)
     PROPERTIES printAllIncomeCashOrder(dFrom, dTo) TODRAW i
     PROPERTIES(i) delete
     ORDER BY dateCashDocument, timeCashDocument
@@ -673,8 +657,8 @@ FORM centralCashRegister 'Центральная касса'
     PROPERTIES(o) printOutcomeCashOrder, isCompleteCashOperation FORCE GRID
     PROPERTIES addIncomeCashOperationForm() TODRAW o FORCE PANEL DRAWTOTOOLBAR
     PROPERTIES addCollectionForm() TODRAW o FORCE PANEL DRAWTOTOOLBAR
-    PROPERTIES editIncomeCashOperationForm(o) SHOWIF isIncomeCashOperation(o)
-    PROPERTIES editCollectionForm(o) SHOWIF isCollection(o)
+    PROPERTIES editIncomeCashOperation(o) SHOWIF isIncomeCashOperation(o)
+    PROPERTIES editCollection(o) SHOWIF isCollection(o)
     PROPERTIES printAllOutcomeCashOrder(dFrom, dTo) TODRAW o
     PROPERTIES(o) delete
     ORDER BY dateCashDocument(o), timeCashDocument(o)

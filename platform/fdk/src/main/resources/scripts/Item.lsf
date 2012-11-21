@@ -157,7 +157,7 @@ DESIGN item FROM DEFAULT {
     }
 }
 
-editFormSku(sku) += [ACTION EDITFORM item](sku);
+editSku(sku) += [ACTION EDITFORM item](sku);
 
 FORM items 'Товары'
     TREE treeGroup g=itemGroup PARENT parentItemGroup

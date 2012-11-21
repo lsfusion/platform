@@ -1698,7 +1698,7 @@ DESIGN stocks FROM DEFAULT {
     }
 }
 
-editFormSku 'Редактировать' = ABSTRACT ACTION (sku) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' TOOLBAR;
+editSku 'Редактировать' = ABSTRACT ACTION (sku) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' TOOLBAR;
 
 FORM skus 'Sku'
     TREE skuTree sg = skuGroup PARENT parentSkuGroup
@@ -1706,7 +1706,7 @@ FORM skus 'Sku'
 
     OBJECTS s = sku
     PROPERTIES(s) READONLY nameSku, shortNameUOMSku
-    PROPERTIES(s) editFormSku
+    PROPERTIES(s) editSku
     FILTERS isParentSkuGroupSku(sg, s)
     ORDER BY nameSku
 

@@ -35,6 +35,8 @@ CLASS ABSTRACT orderDetail 'Строка заказа';
 
 @defineDocumentHeaderGrossWeight(order);
 
+editOrder 'Редактировать' = ABSTRACT ACTION (order) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' TOOLBAR;
+
 //----------------------------------------------- Заказ ---------------------------------------------------//
 
 META defineOrder(sign, stockProp)
@@ -108,6 +110,9 @@ META defineOrder(sign, stockProp)
     countOrderDetailStockOrder 'Кол-во строк по складу '(stock, order) = GROUP SUM 1 BY stockProp###orderDetail(orderDetail), orderOrderDetail(orderDetail);
 
 // --------------------------- Формы Заказа ---------------------------------
+
+    editOrder 'Редактировать' = ABSTRACT ACTION (order) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' TOOLBAR;
+    Order.editOrder (order) += editOrder(order);
 
     FORM userOrder 'Заказ'###sign
         OBJECTS o = userOrder FIXED PANEL
@@ -206,6 +211,7 @@ META defineOrder(sign, stockProp)
 
     addUserOrder 'Добавить' = ACTION ADDFORM userOrder;
     editUserOrder 'Редактировать' (userOrder) = ACTION EDITFORM userOrder;
+    editOrder(order) += editUserOrder(order);
 
     FORM orders 'Заказы' TITLE 'Заказы'###sign
         OBJECTS o = order
@@ -217,7 +223,7 @@ META defineOrder(sign, stockProp)
         PROPERTIES (o) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
         PROPERTIES ()  addUserOrder TODRAW o
-        PROPERTIES (o) editUserOrder
+        PROPERTIES (o) editOrder
         PROPERTIES (o) closeOrder SHOWIF isOpendOrder(o), uncloseOrder SHOWIF isClosedOrder(o)
         PROPERTIES     delete(o) FORCE PANEL DRAWTOTOOLBAR  SHOWIF isUserOrder(o)
 
