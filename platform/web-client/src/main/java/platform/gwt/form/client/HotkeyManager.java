@@ -53,7 +53,7 @@ public class HotkeyManager {
     public void removeHotkeyBinding(Element rootElement) {
         //удаление биндингов на элементах-потомках rootElement'а
 
-        if (rootElement.isOrHasChild(defaultRoot)) {
+        if (defaultRoot != null && rootElement.isOrHasChild(defaultRoot)) {
             defaultRoot = null;
         }
 

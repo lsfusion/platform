@@ -4,6 +4,7 @@ import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
+import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
 import platform.gwt.form.client.dispatch.NavigatorDispatchAsync;
 import platform.gwt.form.client.form.DefaultFormsController;
@@ -70,7 +71,7 @@ public class MainFrame implements EntryPoint {
             }
         };
 
-        HotkeyManager.get().install(windowsController);
+        HotkeyManager.get().install(RootPanel.get());
 
         initCommonWindows();
     }
