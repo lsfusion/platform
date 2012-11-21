@@ -53,7 +53,7 @@ customerAgreement 'Покупатели' (agreement) = GROUP CONCAT name(custome
                                                  BY agreement
                                                  ORDER customer MINCHARWIDTH 100 PERSISTENT;
 
-supplierAgreement (agreement) = DATA legalEntity (agreement);
+supplierAgreement = DATA legalEntity (agreement) NOT NULL;
 nameSupplierAgreement 'Поставщик' (agreement) = name(supplierAgreement(agreement));
 
 CONSTRAINT supplierAgreement(agreement) AND NOT isSellerLegalEntity(supplierAgreement(agreement))
@@ -227,7 +227,7 @@ DESIGN agreementsCustomer FROM DEFAULT{
     ADD functions.box;
 }
 
-addAgreementsSupplierCustomer 'Добавление соглашений' = ACTION (supplier, customer) {
+addAgreementsSupplierCustomer 'Присоединить' = ACTION (supplier, customer) {
 
     FORM agreementsCustomer OBJECTS s=supplier, c=customer MODAL;
     IF formResult() == formResult.ok THEN {
@@ -252,7 +252,7 @@ FORM agreement 'Соглашение'
     PROPERTIES(c) READONLY name
     PROPERTIES(a, c) inAgreementCustomerOver
     FILTERS inLegalEntityGroupLegalEntity(lg, c),
-            isBuyerLegalEntity(c)
+            supplierAgreement(a) != c OR (c IS legalEntity AND NOT supplierAgreement(a))
 
     FILTERGROUP filters
         FILTER 'Только отмеченные' 'F10' inAgreementCustomerOver (a, c)
@@ -342,7 +342,7 @@ DESIGN agreement FROM DEFAULT {
     ADD functions.box;
 }
 
-createAgreementSupplierCustomer 'Создать соглашение' = ACTION (supplier, customer) {
+createAgreementSupplierCustomer 'Добавить' = ACTION (supplier, customer) {
 
     FOR ADDOBJ ag = agreement DO {
         SET inAgreementCustomer(ag, customer) <- TRUE;
@@ -371,37 +371,48 @@ EXTEND FORM legalEntity
     OBJECTS s=legalEntity
     PROPERTIES(s) READONLY name
 
+//    TREE supplierGroupTree sg = legalEntityGroup PARENT parentLegalEntityGroup
+//    PROPERTIES READONLY sgTreeName = name(sg)
+
     OBJECTS ags=agreement
     PROPERTIES(ags, s, l) isDefaultAgreementSupplierCustomer
     PROPERTIES(ags, l) inAgreementCustomerOver
     PROPERTIES(ags) READONLY name, numberObject, seriesObject, dateAgreement, timeAgreement,
-                            fromDateAgreement, fromTimeAgreement, toDateAgreement, toTimeAgreement,
-                            nameCurrencyAgreement, namePriceListTypeAgreement, noteAgreement
+                             fromDateAgreement, fromTimeAgreement, toDateAgreement, toTimeAgreement,
+                             nameCurrencyAgreement, namePriceListTypeAgreement, noteAgreement
     PROPERTIES(ags) EDITFORM
     PROPERTIES createAgreementSupplierCustomer(s, l) TODRAW ags FORCE PANEL DRAWTOTOOLBAR, addAgreementsSupplierCustomer(s, l) TODRAW ags FORCE PANEL DRAWTOTOOLBAR
-    FILTERS inAgreementCustomerOver(ags, l),
+    FILTERS //(inLegalEntityGroupLegalEntity(sg, s) OR (s IS legalEntity AND sg IS legalEntityGroup AND NOT legalEntityGroupLegalEntity(s))),
+            inAgreementCustomerOver(ags, l),
             supplierAgreement(ags) == s,
-            isSellerLegalEntity(s)
+            isSellerLegalEntity(s),
+            l != s
     FILTERGROUP filtersSupplier
         FILTER 'Только с соглашением' 'F11' relationSupplierCustomer(s, l) DEFAULT
 
-    OBJECTS agc=agreement
-    PROPERTIES(agc) READONLY name, numberObject, seriesObject, dateAgreement, timeAgreement,
-                            fromDateAgreement, fromTimeAgreement, toDateAgreement, toTimeAgreement,
-                            nameCurrencyAgreement, namePriceListTypeAgreement, noteAgreement
-    PROPERTIES(agc) EDITFORM
-    FILTERS supplierAgreement(agc) == l
+//    TREE customerGroupTree cg = legalEntityGroup PARENT parentLegalEntityGroup
+//    PROPERTIES READONLY cgTreeName = name(cg)
 
     OBJECTS c=legalEntity
     PROPERTIES(c) READONLY name
 
+    OBJECTS agc=agreement
     PROPERTIES(agc, c) READONLY inAgreementCustomerOver
     PROPERTIES(agc, l, c) isDefaultAgreementSupplierCustomer
+    PROPERTIES(agc) READONLY name, numberObject, seriesObject, dateAgreement, timeAgreement,
+                             fromDateAgreement, fromTimeAgreement, toDateAgreement, toTimeAgreement,
+                             nameCurrencyAgreement, namePriceListTypeAgreement, noteAgreement
+    PROPERTIES(agc) EDITSESSIONFORM
+
     PROPERTIES createAgreementSupplierCustomer(l, c) TODRAW agc FORCE PANEL DRAWTOTOOLBAR, addAgreementsSupplierCustomer (l, c) TODRAW agc FORCE PANEL DRAWTOTOOLBAR
-    FILTERS isBuyerLegalEntity(c)
+    FILTERS //(inLegalEntityGroupLegalEntity(cg, c) OR (c IS legalEntity AND cg IS legalEntityGroup AND NOT legalEntityGroupLegalEntity(c))),
+            inAgreementCustomerOver(agc, c),
+            supplierAgreement(agc) == l,
+            isBuyerLegalEntity(c),
+            c != l
 
     FILTERGROUP filters3
-        FILTER 'Только отмеченные' 'F9' inAgreementCustomerOver(agc,c)
+        FILTER 'Только с соглашением' 'F9' relationSupplierCustomer(l, c) DEFAULT
 
 ;
 
@@ -410,14 +421,16 @@ EXTEND DESIGN legalEntity {
         NEW agreementBuyContainer {
             caption = 'Соглашения на закупку';
             type = SPLITH;
+//            ADD supplierGroupTree.tree.box;
             ADD s.box {title = 'Поставщики';};
             ADD ags.box{fillHorizontal = 3;}
         }
         NEW agreementSaleContainer {
             caption = 'Соглашения на продажу';
             type = SPLITH;
-            ADD agc.box{fillHorizontal = 3;}
+//            ADD customerGroupTree.tree.box;
             ADD c.box {title = 'Покупатели';}
+            ADD agc.box{fillHorizontal = 3;}
         }
     }
 }
