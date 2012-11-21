@@ -34,10 +34,10 @@
 	</style>
 	<field name="c" class="java.lang.Integer"/>
 	<field name="dateConsignment" class="java.util.Date"/>
-	<field name="carConsignment" class="java.lang.String"/>
-	<field name="ownerCarConsignment" class="java.lang.String"/>
+	<field name="nameTruckConsignment" class="java.lang.String"/>
+	<field name="ownerTruckConsignment" class="java.lang.String"/>
 	<field name="trailerConsignment" class="java.lang.String"/>
-	<field name="driverCarConsignment" class="java.lang.String"/>
+	<field name="nameDriverConsignment" class="java.lang.String"/>
 	<field name="waybillConsignment" class="java.lang.String"/>
 	<field name="namePayerConsignment" class="java.lang.String"/>
 	<field name="shipmentBaseConsignment" class="java.lang.String"/>
@@ -269,7 +269,7 @@
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{carConsignment}!=null?$F{carConsignment}:"")]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{nameTruckConsignment}!=null?$F{nameTruckConsignment}:"")]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="26" y="189" width="90" height="12"/>
@@ -377,7 +377,7 @@
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{ownerCarConsignment}!=null?$F{ownerCarConsignment}:"")]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{ownerTruckConsignment}!=null?$F{ownerTruckConsignment}:"")]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement style="GroupCellStyle0" mode="Transparent" x="230" y="26" width="101" height="27"/>
@@ -405,7 +405,7 @@
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{driverCarConsignment}!=null?$F{driverCarConsignment}:"")]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{nameDriverConsignment}!=null?$F{nameDriverConsignment}:"")]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" mode="Transparent" x="230" y="53" width="101" height="20"/>

@@ -11,10 +11,10 @@
 	</style>
 	<field name="c" class="java.lang.Integer"/>
 	<field name="dateConsignment" class="java.util.Date"/>
-	<field name="carConsignment" class="java.lang.String"/>
-	<field name="ownerCarConsignment" class="java.lang.String"/>
+	<field name="nameTruckConsignment" class="java.lang.String"/>
+	<field name="ownerTruckConsignment" class="java.lang.String"/>
 	<field name="trailerConsignment" class="java.lang.String"/>
-	<field name="driverCarConsignment" class="java.lang.String"/>
+	<field name="nameDriverConsignment" class="java.lang.String"/>
 	<field name="waybillConsignment" class="java.lang.String"/>
 	<field name="namePayerConsignment" class="java.lang.String"/>
 	<field name="shipmentBaseConsignment" class="java.lang.String"/>
