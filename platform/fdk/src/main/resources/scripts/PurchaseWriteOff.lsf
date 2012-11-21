@@ -25,6 +25,7 @@ percentWriteOffRateCountrySku 'Норма отходов,%' = percentWriteOffRat
 FORM writeOffRateDialog 'Нормы отходов'
     OBJECTS r=writeOffRate
     PROPERTIES(r) READONLY name, percentWriteOffRate, nameCountryWriteOffRate
+    PROPERTIES(r) ADDSESSIONFORM, EDITSESSIONFORM, delete
     DIALOG writeOffRate OBJECT r
 ;
 
@@ -379,4 +380,8 @@ printWriteOffInvoice 'Акт списания' (invoice) = printWriteOff(shipmen
 EXTEND FORM invoices
     PROPERTIES(i) FORCE PANEL printWriteOffInvoice SHOWIF createWriteOffInvoice(i)
 ;
-
+NAVIGATOR {
+    writeOffNavigator  {
+        ADD writeOffRateDialog;
+    }
+}
