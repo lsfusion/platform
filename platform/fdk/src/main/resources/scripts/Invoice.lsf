@@ -235,23 +235,41 @@ META defineInvoice(sign, stockProp)
         }
     }
 
+    createDetailUserInvoiceOrder = ACTION (userInvoice, order) {
+        FOR orderOrderDetail(orderDetail) == order AND
+            toInvoiceOrderDetail(orderDetail) > 0 // возможно еще нужно фильтровать по складам
+            ADDOBJ d = userInvoiceDetail DO {
+                SET userInvoiceUserInvoiceDetail(d) <- userInvoice;
+                SET orderUserInvoiceDetail(d) <- order;
+                SET skuUserInvoiceDetail(d) <- skuOrderDetail(orderDetail);
+                SET quantityUserInvoiceDetail (d) <- toInvoiceOrderDetail(orderDetail);
+                SET priceUserInvoiceDetail (d) <- priceOrderDetail(orderDetail);
+                SET sumUserInvoiceDetail (d) <- sumOrderDetail(orderDetail);
+        }
+    }
+
+    createUserInvoiceOrder 'Создать накладную' = ACTION (order) {
+        FOR ADDOBJ i = userInvoice DO {
+            SET supplierInvoice(i) <- supplierOrder(order);
+            SET supplierStockInvoice(i) <- supplierStockOrder(order);
+
+            SET customerInvoice(i) <- customerOrder(order);
+            SET customerStockInvoice(i) <- customerStockOrder(order);
+
+            SET currencyInvoice(i) <- currencyOrder(order);
+            SET agreementInvoice(i) <- agreementOrder(order);
+            SET priceListTypeInvoice(i) <- priceListTypeOrder(order);
+
+            SET noteInvoice(i) <- noteOrder(order);
+
+            EXEC createDetailUserInvoiceOrder(i, order);
+        }
+    }
+
     fillOrderUserInvoice 'Заполнить на основе заказа' =  ACTION (userInvoice) {
         FORM invoiceOrders OBJECTS s = supplierUserInvoice(userInvoice), c = customerUserInvoice(userInvoice) MODAL;
         IF formResult() == formResult.ok THEN {
-            LOCAL saleOrder = order();
-            SET saleOrder() <- chosenObject('o');
-
-            FOR orderOrderDetail(orderDetail) == saleOrder() AND
-//                stockProp###orderDetail(orderDetail) == stockProp###userInvoice(userInvoice) AND
-                toInvoiceOrderDetail(orderDetail) > 0
-                ADDOBJ d = userInvoiceDetail DO {
-                    SET userInvoiceUserInvoiceDetail(d) <- userInvoice;
-                    SET orderUserInvoiceDetail(d) <- saleOrder();
-                    SET skuUserInvoiceDetail(d) <- skuOrderDetail(orderDetail);
-                    SET quantityUserInvoiceDetail (d) <- toInvoiceOrderDetail(orderDetail);
-                    SET priceUserInvoiceDetail (d) <- priceOrderDetail(orderDetail);
-                    SET sumUserInvoiceDetail (d) <- sumOrderDetail(orderDetail);
-            }
+            EXEC createDetailUserInvoiceOrder(userInvoice, chosenObject('o'));
         }
     } IN orderGroup;
 
