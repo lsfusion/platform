@@ -32,6 +32,7 @@ CLASS ABSTRACT orderDetail 'Строка заказа';
 
 @defineDocumentAbstractDetailQuantity(order);
 @defineDocumentDetailGrossWeight(order, sku);
+@defineDocumentHeaderSkuQuantity(order, sku);
 
 @defineDocumentHeaderGrossWeight(order);
 
@@ -95,6 +96,8 @@ META defineOrder(sign, stockProp)
 
     @defineDocumentInterfaceHeaderQuantity(order);
     @defineDocumentHeaderSkuQuantity(order, sku);
+    //Order.quantityOrderSku (order, sku) += quantityOrderDetailSkuOrder(sku, order);
+
     @defineDocumentHeaderSkuQuantity(userOrder, sku);
     @defineDocumentInterfaceHeaderSum(order);
 

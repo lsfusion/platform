@@ -43,6 +43,8 @@ CONSTRAINT numberStockTrip(fromStockOrder(order), tripOrder(order)) >= numberSto
 
 grossWeightOrderedTrip 'Суммарный вес заказов' (trip) = GROUP SUM grossWeightOrderDetailOrder(order) BY tripOrder(order);
 
+quantityOrderedTripSku 'Кол-во в заказах' (trip, sku) = GROUP SUM quantityOrderDetail(orderDetail) BY tripOrder(orderOrderDetail(orderDetail)), skuOrderDetail(orderDetail);
+
 //netWeightSkuOrderDetail 'Вес нетто' (orderDetail) = netWeightSku(skuOrderDetail(orderDetail));
 
 // поставки
@@ -57,6 +59,8 @@ inTripShipment 'Включен' (trip, shipment) = tripShipment(shipment)==trip;
 grossWeightShipmentedTrip 'Суммарный вес поставок' (trip) = GROUP SUM grossWeightShipmentDetailShipment(shipment) BY tripShipment(shipment);
 
 quantityShipmentDetailTripShipment (trip, shipment) = GROUP SUM quantityShipmentDetailOrderShipment (order, shipment) BY tripOrder(order), shipment;
+
+quantityShipmentedTripSku 'Кол-во в поставках' (trip, sku) = GROUP SUM quantityShipmentDetail(shipmentDetail) BY tripShipment(shipmentShipmentDetail(shipmentDetail)), skuShipmentDetail(shipmentDetail);
 
 createShipmentsTrip 'Присоединить поставки' (trip) = ACTION (trip) {
     SET tripShipment(shipment) <- NULL WHERE tripShipment(shipment) == trip;
@@ -85,6 +89,9 @@ FORM trip 'Рейс'
     OBJECTS o=order
     PROPERTIES(t, o) inTripOrder
     PROPERTIES(o) READONLY numberOrder, seriesOrder, dateOrder, nameFromStockOrder, nameToStockOrder, grossWeightOrderDetailOrder
+    PROPERTIES(o) editOrder
+
+    FILTERS isPostedOrder(o)
 
     FILTERGROUP filterDate
         FILTER 'Заказы к отправке' 'F10' dateOrder(o) <= dateTrip(t) DEFAULT
@@ -98,15 +105,39 @@ FORM trip 'Рейс'
     OBJECTS s=shipment
     PROPERTIES (t, s) inTripShipment
     PROPERTIES(s) READONLY numberShipment, seriesShipment, dateShipment, nameFromStockShipment, nameToStockShipment, grossWeightShipmentDetailShipment
+    PROPERTIES (s) editShipment
     //PROPERTIES(s) printConsignmentSimpleVertical, printConsignmentSimpleHorizontal, printConsignmentSimpleAttach,
     //              printConsignmentVerticalA, printConsignmentHorizontalA, printConsignmentVerticalB,
     //              printConsignmentHorizontalB, printConsignmentAttach, editConsignment
+    FILTERS isPostedShipment(s)
 
     PROPERTIES (t) createShipmentsTrip TODRAW s FORCE PANEL DRAWTOTOOLBAR
 
     OBJECTS sd=shipmentDetail
     PROPERTIES(sd) READONLY idBarcodeSkuShipmentDetail, nameSkuShipmentDetail, shortNameUOMSkuShipmentDetail, quantityShipmentDetail//, netWeightSkuShipmentDetail
     FILTERS shipmentShipmentDetail(sd)==s
+
+    OBJECTS sk=sku
+    PROPERTIES(sk) READONLY idBarcodeSku, nameSku, shortNameUOMSku
+    PROPERTIES(t, sk) READONLY quantityOrderedTripSku, quantityShipmentedTripSku
+
+    FILTERGROUP filterSku
+        FILTER 'Товары в заказах или поставках' 'F11' quantityOrderedTripSku(t, sk)>0 OR quantityShipmentedTripSku(t, sk)>0 DEFAULT
+        FILTER 'Товары в заказах' 'F9' quantityOrderedTripSku(t, sk)>0
+        FILTER 'Товары в поставках' 'F10' quantityShipmentedTripSku(t, sk)>0
+        FILTER 'Товары в заказах и поставках' 'F8' quantityOrderedTripSku(t, sk)>0 AND quantityShipmentedTripSku(t, sk)>0
+
+    OBJECTS o2=order
+    PROPERTIES(o2) READONLY numberOrder, seriesOrder, dateOrder, nameFromStockOrder, nameToStockOrder
+    PROPERTIES(o2) editOrder
+    PROPERTIES(sk, o2) READONLY quantityOrderDetailSkuOrder
+    FILTERS inTripOrder(t, o2), quantityOrderDetailSkuOrder(sk, o2)>0
+
+    OBJECTS s2=shipment
+    PROPERTIES(s2) READONLY numberShipment, seriesShipment, dateShipment, nameFromStockShipment, nameToStockShipment
+    PROPERTIES(s2)  editShipment
+    PROPERTIES(sk, s2) READONLY quantityShipmentDetailSkuShipment
+    FILTERS inTripShipment(t, s2), quantityShipmentDetailSkuShipment(sk, s2)>0
 
     OBJECTS st=stock
     PROPERTIES(st) READONLY name, addressStock, nameLegalEntityStock
@@ -160,6 +191,19 @@ DESIGN trip FROM DEFAULT{
                 ADD PROPERTY(createShipmentsTrip);
             }
 
+            NEW skuContainer {
+                caption = 'Итоги по товарам';
+                childConstraints = TO THE RIGHT;
+                ADD sk.box;
+
+                NEW documentContainer {
+                    childConstraints = TO THE BOTTOM;
+                    type = SPLITV;
+                    ADD o2.box;
+                    ADD s2.box;
+                }
+            }
+
             ADD st.box;
         }
 
@@ -176,6 +220,20 @@ FORM trips 'Рейсы'
     PROPERTIES(o) READONLY numberOrder, seriesOrder, dateOrder, nameFromStockOrder, nameToStockOrder, grossWeightOrderDetailOrder
     FILTERS inTripOrder(t, o)
 
+    OBJECTS s=shipment
+    PROPERTIES(s) READONLY numberShipment, seriesShipment, dateShipment, nameFromStockShipment, nameToStockShipment, grossWeightShipmentDetailShipment
+    FILTERS inTripShipment(t, s)
+
+    OBJECTS sk=sku
+    PROPERTIES(sk) READONLY idBarcodeSku, nameSku, shortNameUOMSku
+    PROPERTIES(t, sk) READONLY quantityOrderedTripSku, quantityShipmentedTripSku
+
+    FILTERGROUP filterSku
+        FILTER 'Товары в заказах или поставках' 'F11' quantityOrderedTripSku(t, sk)>0 OR quantityShipmentedTripSku(t, sk)>0 DEFAULT
+        FILTER 'Товары в заказах' 'F9' quantityOrderedTripSku(t, sk)>0
+        FILTER 'Товары в поставках' 'F10' quantityShipmentedTripSku(t, sk)>0
+        FILTER 'Товары в заказах и поставках' 'F8' quantityOrderedTripSku(t, sk)>0 AND quantityShipmentedTripSku(t, sk)>0
+
     OBJECTS st=stock
     PROPERTIES(st) READONLY name, addressStock, nameLegalEntityStock
     PROPERTIES(st, t) READONLY numberStockTrip
@@ -189,6 +247,8 @@ DESIGN trips FROM DEFAULT{
         NEW bottomContainer {
             type = TABBED;
             ADD o.box;
+            ADD s.box;
+            ADD sk.box;
             ADD st.box;
         }
 
