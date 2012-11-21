@@ -1,6 +1,6 @@
 MODULE Contract;
 
-REQUIRE System, Historizable, LegalEntity;
+REQUIRE System, Historizable, LegalEntity, Agreement;
 
 // ---------------------------------------- Договора ------------------------------------ //
 
@@ -125,7 +125,7 @@ nameSupplierContractSku 'Поставщик' (contract) = name(supplierContractS
 partyAContract (contract) += supplierContractSku(contract);
 
 customerContractSku = DATA legalEntity (contractSku) AUTOSET;
-nameCustomerContractSku 'Организация' (contract) = name(customerContractSku(contract)) IN recognizeGroup MAXCHARWIDTH 30 PREFCHARWIDTH 30;
+nameCustomerContractSku 'Покупатель' (contract) = name(customerContractSku(contract)) IN recognizeGroup MAXCHARWIDTH 30 PREFCHARWIDTH 30;
 partyBContract (contract) += customerContractSku(contract);
 
 TABLE supplierCustomer(legalEntity, legalEntity);
@@ -218,7 +218,7 @@ FORM paymentCondition 'Условия оплаты'
 // Формы
 FORM contractSku 'Договор на поставку товаров'
     OBJECTS c=contractSku FIXED PANEL
-    PROPERTIES(c) namePartyAContract, namePartyBContract,
+    PROPERTIES(c) nameSupplierContractSku, nameCustomerContractSku,
                   numberContract, dateFromContract, dateToContract,
                   nameCurrencyContract, noteContract
 
@@ -238,10 +238,47 @@ isUserContractSku (contractSku) = TRUE IF contractSku IS userContractSku;
 
 FORM contractSkus 'Договора на поставку'
     OBJECTS c=userContractSku
-    PROPERTIES(c) READONLY namePartyAContract, namePartyBContract, numberContract, dateFromContract, dateToContract,
+    PROPERTIES(c) READONLY nameSupplierContractSku, nameCustomerContractSku, numberContract, dateFromContract, dateToContract,
                            nameCurrencyContract, noteContract, nameTypeContractSku,
                            nameFormContractSku
 
     PROPERTIES() addUserContractSku TODRAW c
     PROPERTIES(c) editUserContractSku, delete SHOWIF isUserContractSku(c)
 ;
+
+// ----------------------------- Расширяем форму организаций ------------------------------------------- //
+
+EXTEND FORM legalEntity
+
+    OBJECTS css = contractSku
+    PROPERTIES(css)  READONLY numberContract, nameTypeContractSku, nameFormContractSku, dateFromContract,
+                    dateToContract, nameCurrencyContract, noteContract
+    PROPERTIES ()   addUserContractSku TODRAW css
+    PROPERTIES(css)  editUserContractSku, delete SHOWIF isUserContractSku(css)
+    FILTERS customerContractSku(css) == l,
+            supplierContractSku(css) == s
+
+    FILTERGROUP filters
+        FILTER 'Есть договор' 'F10' countContractPartyAPartyB(s, l)
+
+    OBJECTS csc = contractSku
+    PROPERTIES(csc)  READONLY numberContract, nameTypeContractSku, nameFormContractSku, dateFromContract,
+                    dateToContract, nameCurrencyContract, noteContract
+    PROPERTIES ()   addUserContractSku TODRAW css
+    PROPERTIES(csc)  editUserContractSku, delete SHOWIF isUserContractSku(csc)
+    FILTERS customerContractSku(csc) == c,
+            supplierContractSku(csc) == l
+
+    FILTERGROUP filters
+        FILTER 'Есть договор' 'F8' countContractPartyAPartyB(l, c)
+;
+
+EXTEND DESIGN legalEntity {
+
+    docContainer{
+        ADD css.box BEFORE ags.box;
+    }
+    docContainer2{
+        ADD csc.box BEFORE agc.box;
+    }
+}

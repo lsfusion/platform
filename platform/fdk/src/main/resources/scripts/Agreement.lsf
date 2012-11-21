@@ -379,7 +379,7 @@ EXTEND FORM legalEntity
     PROPERTIES(ags, l) inAgreementCustomerOver
     PROPERTIES(ags) READONLY name, numberObject, seriesObject, dateAgreement, timeAgreement,
                              fromDateAgreement, fromTimeAgreement, toDateAgreement, toTimeAgreement,
-                             nameCurrencyAgreement, namePriceListTypeAgreement, noteAgreement
+                             nameCurrencyAgreement, namePriceListTypeAgreement, noteAgreement, delete
     PROPERTIES(ags) EDITFORM
     PROPERTIES createAgreementSupplierCustomer(s, l) TODRAW ags FORCE PANEL DRAWTOTOOLBAR, addAgreementsSupplierCustomer(s, l) TODRAW ags FORCE PANEL DRAWTOTOOLBAR
     FILTERS //(inLegalEntityGroupLegalEntity(sg, s) OR (s IS legalEntity AND sg IS legalEntityGroup AND NOT legalEntityGroupLegalEntity(s))),
@@ -387,8 +387,9 @@ EXTEND FORM legalEntity
             supplierAgreement(ags) == s,
             isSellerLegalEntity(s),
             l != s
+
     FILTERGROUP filtersSupplier
-        FILTER 'Только с соглашением' 'F11' relationSupplierCustomer(s, l) DEFAULT
+        FILTER 'Только с соглашением' 'F11' relationSupplierCustomer(s, l)
 
 //    TREE customerGroupTree cg = legalEntityGroup PARENT parentLegalEntityGroup
 //    PROPERTIES READONLY cgTreeName = name(cg)
@@ -401,7 +402,7 @@ EXTEND FORM legalEntity
     PROPERTIES(agc, l, c) isDefaultAgreementSupplierCustomer
     PROPERTIES(agc) READONLY name, numberObject, seriesObject, dateAgreement, timeAgreement,
                              fromDateAgreement, fromTimeAgreement, toDateAgreement, toTimeAgreement,
-                             nameCurrencyAgreement, namePriceListTypeAgreement, noteAgreement
+                             nameCurrencyAgreement, namePriceListTypeAgreement, noteAgreement, delete
     PROPERTIES(agc) EDITSESSIONFORM
 
     PROPERTIES createAgreementSupplierCustomer(l, c) TODRAW agc FORCE PANEL DRAWTOTOOLBAR, addAgreementsSupplierCustomer (l, c) TODRAW agc FORCE PANEL DRAWTOTOOLBAR
@@ -412,25 +413,37 @@ EXTEND FORM legalEntity
             c != l
 
     FILTERGROUP filters3
-        FILTER 'Только с соглашением' 'F9' relationSupplierCustomer(l, c) DEFAULT
+        FILTER 'Только с соглашением' 'F9' relationSupplierCustomer(l, c)
 
 ;
 
 EXTEND DESIGN legalEntity {
     extendContainer {
         NEW agreementBuyContainer {
-            caption = 'Соглашения на закупку';
+            caption = 'Закупка';
             type = SPLITH;
 //            ADD supplierGroupTree.tree.box;
-            ADD s.box {title = 'Поставщики';};
-            ADD ags.box{fillHorizontal = 3;}
+            ADD s.box {title = 'Поставщики';}
+            NEW docContainer{
+                type = SPLITV;
+                caption = 'Договоры и соглашения';
+                childConstraints = TO THE BOTTOM;
+                fillHorizontal = 3;
+                ADD ags.box;
+            }
         }
         NEW agreementSaleContainer {
-            caption = 'Соглашения на продажу';
+            caption = 'Продажа';
             type = SPLITH;
 //            ADD customerGroupTree.tree.box;
             ADD c.box {title = 'Покупатели';}
-            ADD agc.box{fillHorizontal = 3;}
+            NEW docContainer2{
+                type = SPLITV;
+                caption = 'Договоры и соглашения';
+                childConstraints = TO THE BOTTOM;
+                fillHorizontal = 3;
+                ADD agc.box;
+            }
         }
     }
 }
