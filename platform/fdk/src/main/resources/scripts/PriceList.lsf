@@ -36,6 +36,20 @@ prevPricePVATPriceListTypeSkuStockDateTimeVAT 'Цена с НДС (пред.)' (
         ELSE
             prevPricePriceListTypeSkuStockDateTime(type, sku, stock, dateTime) * (100 + VAT)/100;
 
+prevPriceMVATPriceListTypeBatchStockDateTimeVAT 'Цена без НДС (пред.)' (type, batch, stock, dateTime, VAT) =
+    IF includeVATPriceListType(type)
+        THEN
+            prevPricePriceListTypeBatchStockDateTime(type, batch, stock, dateTime) * 100 /(100 + VAT)
+        ELSE
+            prevPricePriceListTypeBatchStockDateTime(type, batch, stock, dateTime) AND VAT IS NUMERIC[10,5];
+
+prevPricePVATPriceListTypeBatchStockDateTimeVAT 'Цена с НДС (пред.)' (type, batch, stock, dateTime, VAT) =
+    IF includeVATPriceListType(type)
+        THEN
+            prevPricePriceListTypeBatchStockDateTime(type, batch, stock, dateTime) AND VAT IS NUMERIC[10,5]
+        ELSE
+            prevPricePriceListTypeBatchStockDateTime(type, batch, stock, dateTime) * (100 + VAT)/100;
+
 @defineDocumentAbstractHeaderCurrency(priceListType);
 
 CLASS ABSTRACT basePriceListType 'Базовый вид цены' : priceListType;
@@ -925,6 +939,35 @@ END
 
 META deriveDocumentDetailPriceBatchPriceListType (object, stockProp)
     @deriveDocumentDetailPriceBatchPriceListTypeCustom(object##Detail, stockProp);
+END
+
+META deriveDocumentDetailPricePriceListTypeVATBatchCustom (detail, stockProp)
+    price###detail(detail) <- prevPriceMVATPriceListTypeBatchStockDateTimeVAT (priceListType###detail(detail),
+                                                                             batch###detail(detail),
+                                                                             stockProp###detail(detail),
+                                                                             dateTime###detail(detail),
+                                                                             valueVAT###detail(detail))
+                            WHEN CHANGED(priceListType###detail(detail)) OR
+                                 CHANGED(batch###detail(detail)) OR
+                                 CHANGED(stockProp###detail(detail)) OR
+                                 CHANGED(dateTime###detail(detail)) OR
+                                 CHANGED(valueVAT###detail(detail));
+
+    invoice###price###detail(detail) <- prevPricePVATPriceListTypeBatchStockDateTimeVAT (priceListType###detail(detail),
+                                                                             batch###detail(detail),
+                                                                             stockProp###detail(detail),
+                                                                             dateTime###detail(detail),
+                                                                             valueVAT###detail(detail))
+                            WHEN CHANGED(priceListType###detail(detail)) OR
+                                 CHANGED(batch###detail(detail)) OR
+                                 CHANGED(stockProp###detail(detail)) OR
+                                 CHANGED(dateTime###detail(detail)) OR
+                                 CHANGED(valueVAT###detail(detail));
+
+END
+
+META deriveDocumentDetailPricePriceListTypeBatchVAT (object, stockProp)
+    @deriveDocumentDetailPricePriceListTypeVATBatchCustom (object##Detail, stockProp);
 END
 
 META deriveDocumentDetailPriceSystemLedgerPriceListType (concrete, priceListTypeProp, prefixP, skuProp, stockProp)
