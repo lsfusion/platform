@@ -456,7 +456,8 @@ END
 // Партии
 META defineInvoiceBatch(stockProp)
     @defineDocumentInterfaceDetailBatch(invoice, batch);
-    @deriveDocumentDetailPriceBatchPriceListType(userInvoice, stockProp);
+    //@deriveDocumentDetailPriceBatchPriceListType(userInvoice, stockProp);
+    @deriveDocumentDetailPricePriceListTypeBatchVAT(userInvoice, stockProp);
 
     EXTEND FORM userInvoice PROPERTIES (d) descriptionBatchUserInvoiceDetail AFTER shortNameUOMSkuUserInvoiceDetail;
     EXTEND FORM invoices PROPERTIES (d) READONLY descriptionBatchInvoiceDetail AFTER shortNameUOMSkuInvoiceDetail;
