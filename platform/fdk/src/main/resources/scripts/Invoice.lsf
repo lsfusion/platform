@@ -1,6 +1,6 @@
 MODULE Invoice;
 
-REQUIRE Order, Supplier;
+REQUIRE Order, Supplier, StockTax;
 
 CLASS ABSTRACT invoice 'Накладная';
 CLASS ABSTRACT invoiceDetail 'Строка накладной';
@@ -91,7 +91,7 @@ META defineInvoice(sign, stockProp)
     @defineDocumentDetailQuantityPack(invoice, sku);
 
     @defineDocumentInterfaceDetailPrice(invoice);
-    @deriveDocumentDetailPricePriceListTypeCustom(userInvoiceDetail, stockProp);
+   // @deriveDocumentDetailPricePriceListTypeCustom(userInvoiceDetail, stockProp);
 
     @defineDocumentInterfaceDetailDataSum(invoice);
     @deriveDocumentDetailSum(userInvoice, quantity);
@@ -99,6 +99,10 @@ META defineInvoice(sign, stockProp)
     @defineDocumentInterfaceDetailVAT(invoice, country###stockProp);
     @defineDocumentInterfaceDetailVATDataSum (invoice);
     @deriveDocumentDetailDirectVATSum(userInvoice);
+
+    @defineDocumentInterfaceDetailPricePrefix (invoice, invoice, ' с НДС');
+    @deriveDocumentDetailVAT (userInvoice, , date,  sku, stockProp);
+    @deriveDocumentDetailPricePriceListTypeVAT (userInvoice, stockProp);
 
     @defineDocumentInterfaceHeaderQuantity(invoice);
     @defineDocumentHeaderSkuQuantity(invoice, sku);
@@ -253,7 +257,7 @@ META defineInvoice(sign, stockProp)
                        VATSumUserInvoiceDetailUserInvoice, invoiceSumUserInvoiceDetailUserInvoice
         OBJECTS d = userInvoiceDetail
         PROPERTIES (d) indexUserInvoiceDetail, idBarcodeSkuUserInvoiceDetail, nameSkuUserInvoiceDetail, shortNameUOMSkuUserInvoiceDetail,
-                       quantityUserInvoiceDetail, namePriceListTypeUserInvoiceDetail, priceUserInvoiceDetail, sumUserInvoiceDetail,
+                       quantityUserInvoiceDetail, namePriceListTypeUserInvoiceDetail, priceUserInvoiceDetail, sumUserInvoiceDetail, invoicePriceUserInvoiceDetail,
                        numberVATUserInvoiceDetail, valueVATUserInvoiceDetail, VATSumUserInvoiceDetail, invoiceSumUserInvoiceDetail,
                        descriptionOrderUserInvoiceDetail, ADDOBJ, delete
 
