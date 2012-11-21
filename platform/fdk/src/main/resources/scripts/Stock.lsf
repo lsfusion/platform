@@ -1745,6 +1745,27 @@ FORM batchDialog 'Партии'
     DIALOG batch OBJECT bt
 ;
 
+FORM dialogBatch 'Партии'
+    OBJECTS st = stock FIXED PANEL
+    OBJECTS t = DATETIME FIXED PANEL
+    OBJECTS sk = sku FIXED PANEL
+
+    OBJECTS bt = batch
+    PROPERTIES (bt) READONLY nameSkuBatch, dateTimeBatch, descriptionBatch, quantityBatch, costBatch
+    PROPERTIES  READONLY balanceBBatchStockDateTime(bt, st, t)
+    FILTERS skuBatch(bt) == sk
+
+    FILTERGROUP batch
+        FILTER 'Партии с остатком' 'F11' balanceBBatchStockDateTime(bt, st, t) DEFAULT
+;
+DESIGN dialogBatch FROM DEFAULT {
+    main {
+        PROPERTY (balanceBBatchStockDateTime) {
+            caption = 'Текущий остаток';
+        }
+    }
+}
+
 // ------------------------------------------------- Себестоимость --------------------------- //
 
 FORM costSkuLedger 'Себестоимость (операции)'

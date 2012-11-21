@@ -157,3 +157,6 @@ EXTEND FORM costSkuLedger
 EXTEND FORM batchDialog
     PROPERTIES(bt) READONLY idBarcodeSkuBatch AFTER nameSkuBatch
 ;
+EXTEND FORM dialogBatch
+    PROPERTIES(bt) READONLY idBarcodeSkuBatch AFTER nameSkuBatch
+;

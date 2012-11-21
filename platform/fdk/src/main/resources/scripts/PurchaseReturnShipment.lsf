@@ -6,7 +6,7 @@ NAMESPACE PurchaseReturn;
 
 //----------------------------------------------- Поставка ---------------------------------------------------//
 @defineShipment(' (закупка-возврат)', customerStock);
-@defineShipmentBatch();
+@defineShipmentBatch(customerStock);
 
 @defineShipmentStockDestination(customerStock, supplierStock);
 

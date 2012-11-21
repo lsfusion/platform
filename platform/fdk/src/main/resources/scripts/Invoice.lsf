@@ -477,7 +477,16 @@ META defineInvoiceBatch(stockProp)
     //@deriveDocumentDetailPriceBatchPriceListType(userInvoice, stockProp);
     @deriveDocumentDetailPricePriceListTypeBatchVAT(userInvoice, stockProp);
 
-    EXTEND FORM userInvoice PROPERTIES (d) descriptionBatchUserInvoiceDetail AFTER shortNameUOMSkuUserInvoiceDetail;
+    batchDialogUserInvoiceDetail = ACTION (userInvoiceDetail) {
+        FORM dialogBatch OBJECTS st = stockProp###userInvoiceDetail(userInvoiceDetail), t = dateTimeUserInvoiceDetail(userInvoiceDetail),
+        sk = skuUserInvoiceDetail(userInvoiceDetail) MODAL;
+
+        IF formResult() == formResult.ok THEN {
+            SET batchUserInvoiceDetail(userInvoiceDetail) <- chosenObject('bt');
+        }
+    };
+
+    EXTEND FORM userInvoice PROPERTIES (d) descriptionBatchUserInvoiceDetail ON CHANGE EXEC batchDialogUserInvoiceDetail(d) AFTER shortNameUOMSkuUserInvoiceDetail;
     EXTEND FORM invoices PROPERTIES (d) READONLY descriptionBatchInvoiceDetail AFTER shortNameUOMSkuInvoiceDetail;
 END
 
