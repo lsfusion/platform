@@ -1,6 +1,8 @@
 package platform.server.logics.scripted;
 
+import org.antlr.runtime.RecognitionException;
 import platform.base.BaseUtils;
+import platform.interop.action.MessageClientAction;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.LogicsModule;
@@ -66,13 +68,24 @@ public class EvalActionProperty<P extends PropertyInterface> extends SystemActio
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
         String script = getScript(context);
         ScriptingLogicsModule module = new ScriptingLogicsModule(BL.LM, BL, wrapScript(script));
-        module.initModuleDependencies();
-        module.initModule();
-        module.initAliases();
-        module.initProperties();
-        LAP<?> runAction = module.getLAPByName("run");
-        if (runAction != null) {
-            runAction.execute(context);
+        String errString = "";
+        try {
+            module.initModuleDependencies();
+            module.initModule();
+            module.initAliases();
+            module.initProperties();
+            errString = module.getErrorsDescription();
+
+            LAP<?> runAction = module.getLAPByName("run");
+            if (runAction != null && errString.isEmpty()) {
+                runAction.execute(context);
+            }
+        } catch (RecognitionException e) {
+            errString = module.getErrorsDescription() + e.getMessage();
+        }
+
+        if (!errString.isEmpty()) {
+            context.requestUserInteraction(new MessageClientAction(errString, "parse error"));
         }
     }
 }

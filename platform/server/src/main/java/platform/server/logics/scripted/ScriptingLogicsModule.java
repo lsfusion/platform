@@ -3,6 +3,7 @@ package platform.server.logics.scripted;
 import org.antlr.runtime.ANTLRFileStream;
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CharStream;
+import org.antlr.runtime.RecognitionException;
 import org.apache.log4j.Logger;
 import platform.base.BaseUtils;
 import platform.base.IOUtils;
@@ -996,7 +997,8 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LPWithParams addScriptedEvalActionProp(LPWithParams property) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedEvalActionProp(" + property + ")");
-        if (!(property.property.property.getType() instanceof StringClass)) {
+        Type exprType = property.property.property.getType();
+        if (!(exprType instanceof StringClass || exprType instanceof TextClass)) {
             errLog.emitEvalExpressionError(parser);
         }
         LAP<?> res = addEvalAProp((LCP) property.property);
@@ -2184,10 +2186,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         property.setCreationPath(parser.getCurrentScriptPath(getName(), lineNumber, "\n"));
     }
 
-    private void parseStep(ScriptParser.State state) {
+    private void parseStep(ScriptParser.State state) throws RecognitionException {
         try {
             parser.initParseStep(this, createStream(), state);
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
@@ -2210,40 +2212,40 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     @Override
-    public void initModuleDependencies() {
+    public void initModuleDependencies() throws RecognitionException {
         parseStep(ScriptParser.State.PRE);
     }
 
     @Override
-    public void initModule() {
+    public void initModule() throws RecognitionException {
         parseStep(ScriptParser.State.INIT);
     }
 
     @Override
-    public void initClasses() {
+    public void initClasses() throws RecognitionException {
         initBaseClassAliases();
         parseStep(ScriptParser.State.CLASS);
     }
 
     @Override
-    public void initTables() {
+    public void initTables() throws RecognitionException {
         parseStep(ScriptParser.State.TABLE);
     }
 
     @Override
-    public void initGroups() {
+    public void initGroups() throws RecognitionException {
         initBaseGroupAliases();
         parseStep(ScriptParser.State.GROUP);
     }
 
     @Override
-    public void initProperties()  {
+    public void initProperties() throws RecognitionException {
         warningList.clear();
         parseStep(ScriptParser.State.PROP);
     }
 
     @Override
-    public void initIndexes() {
+    public void initIndexes() throws RecognitionException {
         parseStep(ScriptParser.State.INDEX);
         if (!parser.isInsideMetacode()) {
             showWarnings();

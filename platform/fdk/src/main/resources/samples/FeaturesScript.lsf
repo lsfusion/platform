@@ -351,6 +351,17 @@ editActionTest(obj) = ACTION EDITFORM store;
 // REQUEST type (INPUT | [objectName] actionStatement)
 // type can be built-in type or OBJECT
 
+// Eval action
+// statement syntax:
+// EVAL expression
+
+script(doc) = DATA TEXT (document);
+evalScript(doc) = ACTION EVAL script(doc);
+
+FORM TestEvalActionForm 'Тест скриптов'
+OBJECTS d=document
+PROPERTIES(d) store, script, evalScript;
+
 
 copyStoreNameToArticles 'Скопировать имя склада в имена артиклей' (s) = ACTION(s) {
     SET (name(a) AND a IS article) <- (name(s) AND s IS store);
@@ -830,6 +841,7 @@ NAVIGATOR {
     ADD TestAggr;
     ADD TestHeaders;
     ADD TestHotkeys;
+    ADD TestEvalActionForm;
 }
 
 //////////////// DESIGN STATEMENT /////////////////

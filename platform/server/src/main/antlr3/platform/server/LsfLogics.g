@@ -58,7 +58,7 @@ grammar LsfLogics;
 	
 	@Override
 	public void emitErrorMessage(String msg) {
-		if (parseState == ScriptParser.State.GROUP) { 
+		if (parseState == ScriptParser.State.INIT) { 
 			self.getErrLog().write(msg + "\n");
 		}
 	}
@@ -134,7 +134,7 @@ grammar LsfLogics;
 
 	@Override
 	public void emitErrorMessage(String msg) {
-		if (parseState == ScriptParser.State.GROUP) { 
+		if (parseState == ScriptParser.State.INIT) { 
 			self.getErrLog().write(msg + "\n");
 		}
 	}

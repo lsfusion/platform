@@ -86,6 +86,7 @@
       <keyword name="EMAIL" />
       <keyword name="END" />
       <keyword name="EQUAL" />
+      <keyword name="EVAL" />
       <keyword name="EVENTID" />
       <keyword name="EVENTS" />
       <keyword name="EXCELFILE" />

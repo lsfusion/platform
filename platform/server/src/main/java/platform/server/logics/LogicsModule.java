@@ -1,5 +1,6 @@
 package platform.server.logics;
 
+import org.antlr.runtime.RecognitionException;
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.base.Pair;
@@ -58,19 +59,19 @@ import static platform.server.logics.property.derived.DerivedProperty.*;
 
 public abstract class LogicsModule {
     // после этого шага должны быть установлены name, namespace, requiredModules
-    public abstract void initModuleDependencies();
+    public abstract void initModuleDependencies() throws RecognitionException;
 
-    public abstract void initModule();
+    public abstract void initModule() throws RecognitionException;
 
-    public abstract void initClasses();
+    public abstract void initClasses() throws RecognitionException;
 
-    public abstract void initTables();
+    public abstract void initTables() throws RecognitionException;
 
-    public abstract void initGroups();
+    public abstract void initGroups() throws RecognitionException;
 
-    public abstract void initProperties() throws FileNotFoundException;
+    public abstract void initProperties() throws FileNotFoundException, RecognitionException;
 
-    public abstract void initIndexes();
+    public abstract void initIndexes() throws RecognitionException;
 
     public String getErrorsDescription() { return "";}
 
