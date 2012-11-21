@@ -4448,7 +4448,7 @@ FORM returnSupplier 'Возврат поставщику'
                   retailSumReturnSupplierDetailReturnSupplier, returnLossSupplierReturnSupplier, numberDisposalReturnSupplier SHOWIF needToPriceChangeReturnSupplier(r),
                   namePriceChangeCommitteeReturnSupplier SHOWIF needToPriceChangeReturnSupplier(r)
 
-    PROPERTIES(r) carConsignment, ownerCarConsignment, trailerConsignment, driverCarConsignment, waybillConsignment,
+    PROPERTIES(r) nameTruckConsignment, ownerTruckConsignment, trailerConsignment, driverConsignment, waybillConsignment,
                   namePayerConsignment, shipmentBaseConsignment, addressSupplierStockConsignment, addressCustomerStockConsignment,
                   readdressingConsignment, commonNameIssuanceAllowedConsignment, commonNameIssuanceExecutedConsignment,
                   forwarderConsignment, warrantConsignment, warrantHolderConsignment, goodsAcceptedConsignment,
@@ -4739,7 +4739,7 @@ FORM innerFlow 'Расход в другой отдел'
                    nameRecipientDepartmentInnerFlow, showWareInnerFlow, noteInnerFlow, quantityInnerFlowDetailInnerFlow,
                    retailSumInnerFlowDetailInnerFlow
 
-    PROPERTIES (f) carConsignment, ownerCarConsignment, trailerConsignment, driverCarConsignment, waybillConsignment,
+    PROPERTIES (f) nameTruckConsignment, ownerTruckConsignment, trailerConsignment, driverConsignment, waybillConsignment,
                    namePayerConsignment, shipmentBaseConsignment, addressSupplierStockConsignment, addressCustomerStockConsignment,
                    readdressingConsignment, commonNameIssuanceAllowedConsignment, commonNameIssuanceExecutedConsignment,
                    forwarderConsignment, warrantConsignment, warrantHolderConsignment, goodsAcceptedConsignment,
@@ -5356,7 +5356,7 @@ FORM statement 'Отгрузка из розницы'
                     noteStatement, quantityStatementDetailStatement, calcSaleSumStatementDetailStatement, calcVATSumStatementDetailStatement, retailSumStatementDetailStatement,
                     numberDisposalStatement SHOWIF needToPriceChangeStatement(st), namePriceChangeCommitteeStatement SHOWIF needToPriceChangeStatement(st)
 
-    PROPERTIES(st) carConsignment, ownerCarConsignment, trailerConsignment, driverCarConsignment, waybillConsignment,
+    PROPERTIES(st) nameTruckConsignment, ownerTruckConsignment, trailerConsignment, driverConsignment, waybillConsignment,
                    namePayerConsignment, shipmentBaseConsignment, addressSupplierStockConsignment, addressCustomerStockConsignment,
                    readdressingConsignment, commonNameIssuanceAllowedConsignment, commonNameIssuanceExecutedConsignment,
                    forwarderConsignment, warrantConsignment, warrantHolderConsignment, goodsAcceptedConsignment,

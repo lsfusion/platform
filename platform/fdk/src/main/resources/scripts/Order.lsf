@@ -273,3 +273,4 @@ META defineOrderStockDestination(fromStock, toStock)
     Order.dataFromStockOrderDetail(detail) += data###fromStock##OrderDetail(detail);
     Order.dataToStockOrderDetail(detail) += data###toStock##OrderDetail(detail);
 END
+

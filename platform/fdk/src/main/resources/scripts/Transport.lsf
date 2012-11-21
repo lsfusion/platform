@@ -12,6 +12,9 @@ CLASS mark 'Модель': named;
 sidTruck 'Номер' = DATA STRING[20](truck);
 markTruck = DATA mark(truck);
 nameMarkTruck 'Марка' (truck) = name(markTruck(truck));
+
+nameTruck 'Наименование' (truck) = [FORMULA STRING[70] ' CAST($1 AS TEXT) || \' \' || CAST($2 AS TEXT)'](nameMarkTruck(truck), sidTruck(truck));
+
 trailerTruck 'Прицеп' = DATA STRING[100](truck);
 weightTruck 'Грузоподьёмность (тонн)' = DATA NUMERIC[14,2](truck);
 ownerTruck 'Владелец' = DATA STRING[100](truck);
@@ -33,14 +36,14 @@ FORM marks 'Модели машин'
 
 FORM truck 'Машина'
     OBJECTS t=truck FIXED PANEL
-    PROPERTIES (t) sidTruck, nameMarkTruck, trailerTruck, ownerTruck, weightTruck
+    PROPERTIES (t) sidTruck, nameMarkTruck, nameTruck, trailerTruck, ownerTruck, weightTruck
 
     EDIT truck OBJECT t
 ;
 
 FORM trucks 'Машины'
     OBJECTS t=truck
-    PROPERTIES(t) READONLY sidTruck, nameMarkTruck, trailerTruck, ownerTruck, weightTruck
+    PROPERTIES(t) READONLY sidTruck, nameMarkTruck, nameTruck, trailerTruck, ownerTruck, weightTruck
     PROPERTIES(t) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
 
     DIALOG truck OBJECT t

@@ -6,6 +6,7 @@ REQUIRE System,
         Employee,
         Utils,
         Ware,
+        Transport,
         Numerator; // вот эту зависимость нужно будет убрать
 
 NAMESPACE Consignment;
@@ -45,10 +46,24 @@ fullNamePayerConsignment 'Наименование для накладных з�
 
 GROUP carConsignmentGroup 'Автомобиль' : baseGroup;
 
-carConsignment 'Автомобиль' (consignment) = ABSTRACT STRING[30] (consignment) IN carConsignmentGroup;
-ownerCarConsignment 'Владелец автомобиля' (consignment) = ABSTRACT STRING[100] (consignment) IN carConsignmentGroup;
-trailerConsignment 'Прицеп' (consignment) = ABSTRACT STRING[10] (consignment) IN carConsignmentGroup;
-driverCarConsignment 'Водитель' (consignment) = ABSTRACT STRING[40] (consignment) IN carConsignmentGroup;
+truckConsignment = ABSTRACT truck(consignment);
+dataNameTruckConsignment = ABSTRACT STRING[70] (consignment);
+nameTruckConsignment 'Автомобиль' (consignment) = UNION OVERRIDE nameTruck(truckConsignment(consignment)),
+                                                                 dataNameTruckConsignment(consignment) IN carConsignmentGroup;
+
+dataOwnerConsignment = ABSTRACT STRING[100] (consignment);
+ownerTruckConsignment 'Владелец автомобиля' (consignment) = UNION OVERRIDE ownerTruck(truckConsignment(consignment)),
+                                                                           dataOwnerConsignment(consignment) IN carConsignmentGroup;
+
+dataTrailerConsignment = ABSTRACT STRING[100] (consignment);
+trailerConsignment 'Прицеп' (consignment) = UNION OVERRIDE trailerTruck(truckConsignment(consignment)),
+                                                           dataTrailerConsignment(consignment) IN carConsignmentGroup;
+
+driverConsignment = ABSTRACT driver(consignment);
+dataNameDriverConsignment 'Водитель' = ABSTRACT STRING[40] (consignment);
+nameDriverConsignment 'Водитель' (consignment) = UNION OVERRIDE commonName(driverConsignment(consignment)),
+                                                                dataNameDriverConsignment(consignment) IN carConsignmentGroup;
+
 waybillConsignment 'Путевой лист' (consignment) = ABSTRACT STRING[20] (consignment) IN carConsignmentGroup;
 
 // Склад погрузки
@@ -226,7 +241,7 @@ META defineConsignmentForm(form, caption)
         OBJECTS c=consignment FIXED PANEL
 
         PROPERTIES (c) dateConsignment, UNPCustomerConsignment, UNPSupplierConsignment, addressSupplierConsignment, addressCustomerConsignment, fullNameSupplierConsignment,
-                       fullNameCustomerConsignment, carConsignment, ownerCarConsignment, trailerConsignment, driverCarConsignment, waybillConsignment,
+                       fullNameCustomerConsignment, nameTruckConsignment, ownerTruckConsignment, trailerConsignment, nameDriverConsignment, waybillConsignment,
                        namePayerConsignment, shipmentBaseConsignment, addressSupplierStockConsignment, addressCustomerStockConsignment,
                        readdressingConsignment, commonNameIssuanceAllowedConsignment, commonNameIssuanceExecutedConsignment,
                        forwarderConsignment, warrantConsignment, warrantHolderConsignment, goodsAcceptedConsignment,
@@ -262,7 +277,7 @@ FORM consignment 'Атрибуты накладной'
 
     PROPERTIES (c) READONLY objectClassName, nameSupplierStockConsignment, seriesObject, numberObject
     PROPERTIES (c) dateConsignment, UNPCustomerConsignment, UNPSupplierConsignment, addressSupplierConsignment, addressCustomerConsignment, fullNameSupplierConsignment,
-                   fullNameCustomerConsignment, carConsignment, ownerCarConsignment, trailerConsignment, driverCarConsignment, waybillConsignment,
+                   fullNameCustomerConsignment, nameTruckConsignment, ownerTruckConsignment, trailerConsignment, nameDriverConsignment, waybillConsignment,
                    namePayerConsignment, shipmentBaseConsignment, addressSupplierStockConsignment, addressCustomerStockConsignment,
                    readdressingConsignment, commonNameIssuanceAllowedConsignment, commonNameIssuanceExecutedConsignment,
                    forwarderConsignment, warrantConsignment, warrantHolderConsignment, goodsAcceptedConsignment,
@@ -444,10 +459,10 @@ META defineConsignmentHeader (object)
 
     payer###object (object) = DATA legalEntity (object) IN carConsignmentGroup;
 
-    car###object 'Автомобиль' (object) = DATA STRING[30] (object) IN carConsignmentGroup;
-    ownerCar###object 'Владелец автомобиля' (object) = DATA STRING[100] (object) IN carConsignmentGroup;
-    trailer###object 'Прицеп' (object) = DATA STRING[10] (object) IN carConsignmentGroup;
-    driverCar###object 'Водитель' (object) = DATA STRING[40] (object) IN carConsignmentGroup;
+    dataNameTruck###object 'Автомобиль' (object) = DATA STRING[30] (object) IN carConsignmentGroup;
+    dataOwner###object 'Владелец автомобиля' (object) = DATA STRING[100] (object) IN carConsignmentGroup;
+    dataTrailer###object 'Прицеп' (object) = DATA STRING[10] (object) IN carConsignmentGroup;
+    dataNameDriver###object 'Водитель' (object) = DATA STRING[40] (object) IN carConsignmentGroup;
     waybill###object 'Путевой лист' (object) = DATA STRING[20] (object) IN carConsignmentGroup;
 
     dataAddressSupplierStock###object 'Пункт погрузки' (object) = DATA STRING[50] (object);
@@ -485,10 +500,10 @@ META defineConsignmentAbstractHeader(object)
 
     payer###object 'Заказчик перевозки (ИД)' (object) = ABSTRACT legalEntity (object) IN carConsignmentGroup;
 
-    car###object 'Автомобиль' (object) = ABSTRACT STRING[30] (object) IN carConsignmentGroup;
-    ownerCar###object 'Владелец автомобиля' (object) = ABSTRACT STRING[100] (object) IN carConsignmentGroup;
-    trailer###object 'Прицеп' (object) = ABSTRACT STRING[10] (object) IN carConsignmentGroup;
-    driverCar###object 'Водитель' (object) = ABSTRACT STRING[40] (object) IN carConsignmentGroup;
+    dataNameTruck###object 'Автомобиль' (object) = ABSTRACT STRING[30] (object) IN carConsignmentGroup;
+    dataOwner###object 'Владелец автомобиля' (object) = ABSTRACT STRING[100] (object) IN carConsignmentGroup;
+    dataTrailer###object 'Прицеп' (object) = ABSTRACT STRING[10] (object) IN carConsignmentGroup;
+    dataNameDriver###object 'Водитель' (object) = ABSTRACT STRING[40] (object) IN carConsignmentGroup;
     waybill###object 'Путевой лист' (object) = ABSTRACT STRING[20] (object) IN carConsignmentGroup;
 
     dataAddressSupplierStock###object 'Пункт погрузки' (object) = ABSTRACT STRING[50] (object);
@@ -540,10 +555,10 @@ META implementConsignmentHeader (concrete)
 
     payerConsignment (consignment) += payer###concrete (consignment);
 
-    carConsignment (consignment) += car###concrete (consignment);
-    ownerCarConsignment (consignment) += ownerCar###concrete (consignment);
-    trailerConsignment (consignment) += trailer###concrete (consignment);
-    driverCarConsignment (consignment) += driverCar###concrete (consignment);
+    dataNameTruckConsignment (consignment) += dataNameTruck###concrete (consignment);
+    dataOwnerConsignment (consignment) += dataOwner###concrete (consignment);
+    dataTrailerConsignment (consignment) += dataTrailer###concrete (consignment);
+    dataNameDriverConsignment (consignment) += dataNameDriver###concrete (consignment);
     waybillConsignment (consignment) += waybill###concrete (consignment);
 
     dataAddressSupplierStockConsignment (consignment) += dataAddressSupplierStock###concrete (consignment);
@@ -580,10 +595,10 @@ META implementConsignmentDocumentHeader (concrete, object)
 
     payer###concrete (concrete) += payer###object (concrete);
 
-    car###concrete (concrete) += car###object (concrete);
-    ownerCar###concrete (concrete) += ownerCar###object (concrete);
-    trailer###concrete (concrete) += trailer###object (concrete);
-    driverCar###concrete (concrete) += driverCar###object (concrete);
+    dataNameTruck###concrete (concrete) += dataNameTruck###object (concrete);
+    dataOwner###concrete (concrete) += dataOwner###object (concrete);
+    dataTrailer###concrete (concrete) += dataTrailer###object (concrete);
+    dataNameDriver###concrete (concrete) += dataNameDriver###object (concrete);
     waybill###concrete (concrete) += waybill###object (concrete);
 
     dataAddressSupplierStock###concrete (concrete) += dataAddressSupplierStock###object (concrete);
