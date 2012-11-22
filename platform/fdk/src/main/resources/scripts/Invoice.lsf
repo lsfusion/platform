@@ -270,7 +270,7 @@ META defineInvoice(sign, stockProp)
     createUserInvoiceOrder 'Создать накладную' = ACTION (order) {
         IF order IS order THEN {
             FOR ADDOBJ i = userInvoice DO {
-                EXEC fillUserInvoiceOrder(i);
+                EXEC fillUserInvoiceOrder(i, order);
             }
         }
     }
@@ -279,7 +279,7 @@ META defineInvoice(sign, stockProp)
     createUserInvoicePostedOrder 'Создать проведенную накладную' = ACTION (order) {
         IF order IS order THEN {
             FOR ADDOBJ i = userInvoicePosted DO {
-                EXEC fillUserInvoiceOrder(i);
+                EXEC fillUserInvoiceOrder(i, order);
             }
         }
     }
