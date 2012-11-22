@@ -1,6 +1,6 @@
 MODULE ContractLedger;
 
-REQUIRE Contract,
+REQUIRE ContractStock,
         Document,
         LegalEntity,
         Numerator,

@@ -5,7 +5,7 @@ REQUIRE System,
         Utils,
         LegalEntity,
         Stock,
-        Contract,
+        ContractStock,
         Agreement;
 
 CLASS supplier 'Поставщик' : legalEntity;

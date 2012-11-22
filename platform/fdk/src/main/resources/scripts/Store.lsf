@@ -92,6 +92,9 @@ chainStoresDepartmentStore(departmentStore) = chainStoresStoreType(storeTypeDepa
 legalEntityDepartmentStore (departmentStore) = legalEntityStore(storeDepartmentStore(departmentStore)) PERSISTENT;
 legalEntityStock (stock) += legalEntityDepartmentStore(stock);
 
+userLegalEntityDepartmentStore 'Отм.' = DATA BOOLEAN (legalEntity, departmentStore);
+userLegalEntityStock(legalEntity, stock) += userLegalEntityDepartmentStore(legalEntity, stock);
+
 nameLegalEntityDepartmentStore 'Компания' (departmentStore) = name(legalEntityDepartmentStore(departmentStore));
 
 primaryDepartmentStoreStore 'Основной отдел' (store) =

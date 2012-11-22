@@ -16,7 +16,7 @@ nameStockGroupStock 'Группа' (stock) = name(stockGroupStock (stock));
 legalEntityStock (stock) = ABSTRACT legalEntity (stock) PERSISTENT NOT NULL;
 nameLegalEntityStock 'Компания' (stock) = name(legalEntityStock(stock));
 
-userLegalEntityStock 'Отм.' = DATA BOOLEAN (legalEntity, stock);
+userLegalEntityStock 'Отм.' = ABSTRACT BOOLEAN (legalEntity, stock);
 inLegalEntityStock 'Отм.' (legalEntity, stock) = (legalEntityStock(stock) == legalEntity) OR userLegalEntityStock(legalEntity, stock);
 isDefaultLegalEntityStock 'Свой склад' (legalEntity, stock) = legalEntityStock(stock) == legalEntity;
 
@@ -2320,6 +2320,12 @@ EXTEND FORM legalEntity
     PROPERTIES(st) delete FORCE PANEL DRAWTOTOOLBAR SHOWIF isDefaultLegalEntityStock(l,st)
     PROPERTIES chooseStocksLegalEntity(l) TODRAW st FORCE PANEL DRAWTOTOOLBAR
     FILTERS inLegalEntityStock(l, st)
+
+    OBJECTS s=legalEntity
+    PROPERTIES(s) READONLY name
+
+    OBJECTS c=legalEntity
+    PROPERTIES(c) READONLY name
 ;
 
 EXTEND DESIGN legalEntity{
@@ -2331,8 +2337,33 @@ EXTEND DESIGN legalEntity{
             ADD stockTree.tree.box;
             ADD st.box{fillHorizontal = 3.0;}
         }
+
+        NEW agreementBuyContainer {
+            caption = 'Закупка';
+            type = SPLITH;
+            ADD s.box {title = 'Поставщики';}
+            NEW docContainer{
+                type = SPLITV;
+                caption = 'Договоры и соглашения';
+                childConstraints = TO THE BOTTOM;
+                fillHorizontal = 3;
+            }
+        }
+
+        NEW agreementSaleContainer {
+            caption = 'Продажа';
+            type = SPLITH;
+            ADD c.box {title = 'Покупатели';}
+            NEW docContainer2{
+                type = SPLITV;
+                caption = 'Договоры и соглашения';
+                childConstraints = TO THE BOTTOM;
+                fillHorizontal = 3;
+            }
+        }
     }
 }
+
 // ------------------------------------------------ Стандартные значения --------------------------------------- //
 
 loadDefaultUOM 'Добавить ед.изм.' = ACTION (stringOne, stringTwo, numeric) {

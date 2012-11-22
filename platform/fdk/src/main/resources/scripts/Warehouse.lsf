@@ -27,6 +27,9 @@ legalEntityWarehouse (warehouse) = DATA legalEntity (warehouse) NOT NULL;
 nameLegalEntityWarehouse 'Компания' (warehouse) = name(legalEntityWarehouse(warehouse)) IN baseGroup;
 legalEntityStock (stock) += legalEntityWarehouse(stock);
 
+userLegalEntityWarehouse 'Отм.' = DATA BOOLEAN (legalEntity, warehouse);
+userLegalEntityStock(legalEntity, stock) += userLegalEntityWarehouse(legalEntity, stock);
+
 addressWarehouse 'Адрес' (warehouse) = DATA STRING[100] (warehouse);
 addressStock(stock) += addressWarehouse(stock);
 

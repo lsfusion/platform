@@ -347,7 +347,7 @@ createAgreementSupplierCustomer 'Добавить' = ACTION (supplier, customer)
     FOR ADDOBJ ag = agreement DO {
         SET inAgreementCustomer(ag, customer) <- TRUE;
         SET supplierAgreement(ag) <- (supplier AS legalEntity);
-        FORM agreement OBJECTS a = ag MODAL;
+        FORM agreement OBJECTS a = ag DOCKED_MODAL;
         IF TRUE AND NOT formResult() == formResult.ok THEN {
             EXEC delete(ag);
         }
@@ -368,34 +368,21 @@ relationSupplierCustomer 'Связь' (supplier, customer)= GROUP SUM 1 IF inAgr
 
 EXTEND FORM legalEntity
 
-    OBJECTS s=legalEntity
-    PROPERTIES(s) READONLY name
-
-//    TREE supplierGroupTree sg = legalEntityGroup PARENT parentLegalEntityGroup
-//    PROPERTIES READONLY sgTreeName = name(sg)
-
     OBJECTS ags=agreement
     PROPERTIES(ags, s, l) isDefaultAgreementSupplierCustomer
     PROPERTIES(ags, l) inAgreementCustomerOver
     PROPERTIES(ags) READONLY name, numberObject, seriesObject, dateAgreement, timeAgreement,
                              fromDateAgreement, fromTimeAgreement, toDateAgreement, toTimeAgreement,
                              nameCurrencyAgreement, namePriceListTypeAgreement, noteAgreement, delete
-    PROPERTIES(ags) EDITFORM
+    PROPERTIES(ags) EDITSESSIONFORM
     PROPERTIES createAgreementSupplierCustomer(s, l) TODRAW ags FORCE PANEL DRAWTOTOOLBAR, addAgreementsSupplierCustomer(s, l) TODRAW ags FORCE PANEL DRAWTOTOOLBAR
-    FILTERS //(inLegalEntityGroupLegalEntity(sg, s) OR (s IS legalEntity AND sg IS legalEntityGroup AND NOT legalEntityGroupLegalEntity(s))),
-            inAgreementCustomerOver(ags, l),
+    FILTERS inAgreementCustomerOver(ags, l),
             supplierAgreement(ags) == s,
             isSellerLegalEntity(s),
             l != s
 
     FILTERGROUP filtersSupplier
-        FILTER 'Только с соглашением' 'F11' relationSupplierCustomer(s, l)
-
-//    TREE customerGroupTree cg = legalEntityGroup PARENT parentLegalEntityGroup
-//    PROPERTIES READONLY cgTreeName = name(cg)
-
-    OBJECTS c=legalEntity
-    PROPERTIES(c) READONLY name
+        FILTER 'Есть соглашение' 'F11' relationSupplierCustomer(s, l)
 
     OBJECTS agc=agreement
     PROPERTIES(agc, c) READONLY inAgreementCustomerOver
@@ -406,44 +393,23 @@ EXTEND FORM legalEntity
     PROPERTIES(agc) EDITSESSIONFORM
 
     PROPERTIES createAgreementSupplierCustomer(l, c) TODRAW agc FORCE PANEL DRAWTOTOOLBAR, addAgreementsSupplierCustomer (l, c) TODRAW agc FORCE PANEL DRAWTOTOOLBAR
-    FILTERS //(inLegalEntityGroupLegalEntity(cg, c) OR (c IS legalEntity AND cg IS legalEntityGroup AND NOT legalEntityGroupLegalEntity(c))),
-            inAgreementCustomerOver(agc, c),
+    FILTERS inAgreementCustomerOver(agc, c),
             supplierAgreement(agc) == l,
             isBuyerLegalEntity(c),
             c != l
 
     FILTERGROUP filters3
-        FILTER 'Только с соглашением' 'F9' relationSupplierCustomer(l, c)
+        FILTER 'Есть соглашение' 'F9' relationSupplierCustomer(l, c)
 
 ;
 
 EXTEND DESIGN legalEntity {
     extendContainer {
-        NEW agreementBuyContainer {
-            caption = 'Закупка';
-            type = SPLITH;
-//            ADD supplierGroupTree.tree.box;
-            ADD s.box {title = 'Поставщики';}
-            NEW docContainer{
-                type = SPLITV;
-                caption = 'Договоры и соглашения';
-                childConstraints = TO THE BOTTOM;
-                fillHorizontal = 3;
-                ADD ags.box;
-            }
+        docContainer{
+            ADD ags.box;
         }
-        NEW agreementSaleContainer {
-            caption = 'Продажа';
-            type = SPLITH;
-//            ADD customerGroupTree.tree.box;
-            ADD c.box {title = 'Покупатели';}
-            NEW docContainer2{
-                type = SPLITV;
-                caption = 'Договоры и соглашения';
-                childConstraints = TO THE BOTTOM;
-                fillHorizontal = 3;
-                ADD agc.box;
-            }
+        docContainer2{
+            ADD agc.box;
         }
     }
 }

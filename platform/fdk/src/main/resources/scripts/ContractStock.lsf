@@ -1,0 +1,198 @@
+MODULE ContractStock;
+
+REQUIRE Contract, Stock;
+
+NAMESPACE Contract;
+
+// ------------------------------------ Договора на перемещение товаров ---------------- //
+
+
+CLASS ABSTRACT contractSku 'Договор на поставку' : contract;
+
+GROUP paymentGroup 'Взаиморасчеты' : publicGroup;
+
+CLASS STATIC contractSkuType 'Тип договора на поставку' {
+    sale 'Договор купли-продажи',
+    commission 'Договор комиссии'
+}
+
+CLASS STATIC contractSkuForm 'Порядок оплаты договора на поставку' {
+    prepayment 'С отсрочкой платежа',
+    implement 'По факту реализации',
+    requirement 'Платежное требование'
+}
+
+CLASS userContractSku 'Договор на поставку (польз.)' : contractSku;
+
+supplierContractSku = DATA legalEntity (userContractSku) AUTOSET;
+nameSupplierContractSku 'Поставщик' (contract) = name(supplierContractSku(contract)) IN recognizeGroup MAXCHARWIDTH 30 PREFCHARWIDTH 30;
+partyAContract (contract) += supplierContractSku(contract);
+
+customerContractSku = DATA legalEntity (contractSku) AUTOSET;
+nameCustomerContractSku 'Покупатель' (contract) = name(customerContractSku(contract)) IN recognizeGroup MAXCHARWIDTH 30 PREFCHARWIDTH 30;
+partyBContract (contract) += customerContractSku(contract);
+
+TABLE supplierCustomer(legalEntity, legalEntity);
+@defineContractDefaultCustom(contractSku, legalEntity, legalEntity, supplier, customer);
+
+CLASS paymentCondition 'Условия оплаты';
+TABLE paymentCondition(paymentCondition);
+
+datePaymentCondition 'Дата' = DATA DATE (paymentCondition);
+datePaymentCondition (paymentCondition) <- currentDate() WHEN ASSIGNED(paymentCondition IS paymentCondition);
+contractPaymentCondition 'Договор' = DATA contractSku (paymentCondition) AUTOSET;
+numberContractPaymentCondition 'Номер договора' (paymentCondition) = numberContract(contractPaymentCondition(paymentCondition));
+
+TABLE contractSkuDate (contractSku, DATE);
+dataPaymentConditionContractDate 'Условия оплаты для контракта и даты' (contract, date) =
+    GROUP UNIQUE paymentCondition BY contractPaymentCondition(paymentCondition), datePaymentCondition(paymentCondition) PERSISTENT;
+
+datePaymentConditionContractDate 'Дата' (contract, date) =
+    GROUP MAX datePaymentCondition(paymentCondition) AND datePaymentCondition(paymentCondition) <= (date AS DATE)
+    BY contractPaymentCondition(paymentCondition), date;
+
+paymentConditionContractDate 'Условия оплаты по договору на дату' (contract, date) =
+    dataPaymentConditionContractDate(contract, datePaymentConditionContractDate(contract, date));
+
+currentPaymentConditionContract 'Текущие условия оплаты по договору' (contract) =
+    dataPaymentConditionContractDate(contract, datePaymentConditionContractDate(contract, currentDate()));
+
+typePaymentCondition = DATA contractSkuType (paymentCondition);
+nameTypePaymentCondition 'Тип договора' (paymentCondition) = name(typePaymentCondition(paymentCondition));
+isSaleTypePaymentCondition(paymentCondition) = typePaymentCondition(paymentCondition) == contractSkuType.sale;
+
+formPaymentCondition = DATA contractSkuForm (paymentCondition);
+nameFormPaymentCondition 'Порядок оплаты' (paymentCondition) = name(formPaymentCondition(paymentCondition));
+isPrepaymentFormPaymentCondition(paymentCondition) = formPaymentCondition(paymentCondition) == contractSkuForm.prepayment;
+
+isSaleTypePrepaymentFormPaymentCondition(paymentCondition) = isSaleTypePaymentCondition(paymentCondition) AND isPrepaymentFormPaymentCondition(paymentCondition);
+
+//для обратной совместимости
+
+typeContractSkuDate(contract, date) = typePaymentCondition(paymentConditionContractDate(contract, date));
+typeContractSku(contract) = typeContractSkuDate(contract, currentDate());
+nameTypeContractSku 'Тип договора' (contract) = name(typeContractSku(contract));
+formContractSkuDate(contract, date) = formPaymentCondition(paymentConditionContractDate(contract, date));
+formContractSku(contract) = formContractSkuDate(contract, currentDate());
+nameFormContractSku 'Условия оплаты' (contract) = name(formContractSku(contract));
+
+CLASS paymentPeriod 'Период рассрочки';
+TABLE paymentPeriod(paymentPeriod);
+
+countDaysPaymentPeriod 'Кол-во дней' = DATA INTEGER (paymentPeriod);
+percentPaymentPeriod 'Процент' = DATA NUMERIC[8,3] (paymentPeriod);
+paymentConditionPaymentPeriod 'Условия оплаты периода рассрочки' = DATA paymentCondition (paymentPeriod);
+
+CLASS bonusPeriod 'Период бонуса';
+TABLE bonusPeriod(bonusPeriod);
+
+countDaysBonusPeriod 'Кол-во дней' = DATA INTEGER (bonusPeriod);
+percentBonusPeriod 'Процент' = DATA NUMERIC[8,3] (bonusPeriod);
+paymentConditionBonusPeriod 'Условия оплаты периода бонуса' = DATA paymentCondition (bonusPeriod);
+
+bonusPeriodPaymentConditionDays(paymentCondition, days) = GROUP UNIQUE bonusPeriod BY paymentConditionBonusPeriod(bonusPeriod),
+                                                                                      countDaysBonusPeriod(bonusPeriod)
+                                                                                   WHERE bonusPeriod IS bonusPeriod;
+
+sumPercentPaymentCondition(paymentCondition) = GROUP SUM percentPaymentPeriod(paymentPeriod) BY paymentConditionPaymentPeriod(paymentPeriod);
+CONSTRAINT sumPercentPaymentCondition(paymentCondition) != 100.0 CHECKED BY sumPercentPaymentCondition
+    MESSAGE 'Сумма процентов рассрочки должна быть равна 100';
+
+FORM paymentCondition 'Условия оплаты'
+
+    OBJECTS pc = paymentCondition FIXED PANEL
+    PROPERTIES(pc) datePaymentCondition, numberContractPaymentCondition, nameTypePaymentCondition, nameFormPaymentCondition
+
+    OBJECTS pp = paymentPeriod
+    PROPERTIES(pp) countDaysPaymentPeriod SHOWIF isSaleTypePrepaymentFormPaymentCondition(pc),
+                   percentPaymentPeriod SHOWIF isSaleTypePrepaymentFormPaymentCondition(pc)
+    PROPERTIES(pp) ADDOBJ SHOWIF isSaleTypePrepaymentFormPaymentCondition(pc),
+                   delete SHOWIF isSaleTypePrepaymentFormPaymentCondition(pc)
+
+    OBJECTS bp = bonusPeriod
+    PROPERTIES(bp) countDaysBonusPeriod, percentBonusPeriod
+    PROPERTIES(bp) ADDOBJ, delete
+
+    FILTERS paymentConditionPaymentPeriod(pp) == pc,
+            paymentConditionBonusPeriod(bp) == pc
+
+    EDIT paymentCondition OBJECT pc
+;
+
+// Формы
+FORM contractSku 'Договор на поставку товаров'
+    OBJECTS c=userContractSku FIXED PANEL
+    PROPERTIES(c) nameSupplierContractSku, nameCustomerContractSku,
+                  numberContract, dateFromContract, dateToContract,
+                  nameCurrencyContract, noteContract
+
+    OBJECTS pc = paymentCondition
+    PROPERTIES(pc) READONLY datePaymentCondition, numberContractPaymentCondition, nameTypePaymentCondition,
+                            nameFormPaymentCondition
+    PROPERTIES(pc) ADDSESSIONFORM, EDITSESSIONFORM, delete
+    ORDER BY datePaymentCondition
+
+    FILTERS contractPaymentCondition(pc) == c
+
+    EDIT userContractSku OBJECT c
+;
+addUserContractSku 'Добавить' = ACTION (supplier, customer) {
+
+    FOR ADDOBJ uc = userContractSku DO {
+        SET supplierContractSku(uc) <- (supplier AS legalEntity);
+        SET customerContractSku(uc) <- (customer AS legalEntity);
+        FORM contractSku OBJECTS c = uc DOCKED_MODAL;
+        IF TRUE AND NOT formResult() == formResult.ok THEN {
+            EXEC delete(uc);
+        }
+    }
+} TOOLBAR;
+
+isUserContractSku (contractSku) = TRUE IF contractSku IS userContractSku;
+
+FORM contractSkus 'Договора на поставку'
+    OBJECTS c=userContractSku
+    PROPERTIES(c) READONLY nameSupplierContractSku, nameCustomerContractSku, numberContract, dateFromContract, dateToContract,
+                           nameCurrencyContract, noteContract, nameTypeContractSku,
+                           nameFormContractSku
+
+    PROPERTIES(c) ADDSESSIONFORM
+    PROPERTIES(c) EDITSESSIONFORM, delete SHOWIF isUserContractSku(c)
+;
+
+// ----------------------------- Расширяем форму организаций ------------------------------------------- //
+
+EXTEND FORM legalEntity
+
+    OBJECTS css = userContractSku
+    PROPERTIES(css) READONLY numberContract, nameTypeContractSku, nameFormContractSku, dateFromContract,
+                    dateToContract, nameCurrencyContract, noteContract
+    PROPERTIES addUserContractSku(s, l) TODRAW css FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES(css)  EDITSESSIONFORM, delete SHOWIF isUserContractSku(css)
+    FILTERS customerContractSku(css) == l,
+            supplierContractSku(css) == s
+
+    FILTERGROUP filters
+        FILTER 'Есть договор' 'F10' countContractPartyAPartyB(s, l)
+
+    OBJECTS csc = userContractSku
+    PROPERTIES(csc) READONLY numberContract, nameTypeContractSku, nameFormContractSku, dateFromContract,
+                    dateToContract, nameCurrencyContract, noteContract
+    PROPERTIES addUserContractSku(l, c) TODRAW csc FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES(csc) EDITSESSIONFORM, delete SHOWIF isUserContractSku(csc)
+    FILTERS customerContractSku(csc) == c,
+            supplierContractSku(csc) == l
+
+    FILTERGROUP filters
+        FILTER 'Есть договор' 'F8' countContractPartyAPartyB(l, c)
+;
+
+EXTEND DESIGN legalEntity {
+
+    docContainer{
+        ADD css.box;
+    }
+    docContainer2{
+        ADD csc.box;
+    }
+}
