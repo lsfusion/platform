@@ -19,6 +19,11 @@ META defineBlanketOrder(sign)
     @defineDocumentHeaderStock(blanketOrder, stock, 'Склад поставщика', supplier);
     @defineDocumentDetailDataStock (blanketOrder, stock, supplierStock, 'Склад поставщика');
 
+    CONSTRAINT supplierBlanketOrder(blanketOrder) AND supplierStockBlanketOrder(blanketOrder) AND NOT
+    inLegalEntityStock(supplierBlanketOrder(blanketOrder), supplierStockBlanketOrder(blanketOrder))
+        CHECKED BY supplierBlanketOrder, supplierStockBlanketOrder
+            MESSAGE 'Поставщик и склад поставщика не имеют связи';
+
     @defineDocumentPosted(blanketOrder);
     @defineDocumentClosed (blanketOrder);
 
@@ -46,6 +51,7 @@ META defineBlanketOrder(sign)
 
     countBlanketOrderDetailStockBlanketOrder 'Кол-во строк по складу '(stock, blanketOrder) = GROUP SUM 1 BY supplierStockBlanketOrderDetail(blanketOrderDetail), blanketOrderBlanketOrderDetail(blanketOrderDetail);
     inBlanketOrderStock 'В заказе' (blanketOrder, stock) = DATA BOOLEAN (blanketOrder, stock); //customerStock
+    inCustomerBlanketOrderStock 'Отм.' (blanketOrder, stock) = inLegalEntityStock(customerBlanketOrder(blanketOrder), stock);
 
     @defineDocumentHeaderAgreement (blanketOrder);
     @deriveDocumentHeaderAgreement (blanketOrder, supplierBlanketOrder, customerBlanketOrder);
@@ -96,7 +102,8 @@ META defineBlanketOrder(sign)
 
         PROPERTIES(o) TODRAW d deleteBlanketOrderDetailBlanketOrder
 
-        FILTERS blanketOrderBlanketOrderDetail(d) == o
+        FILTERS blanketOrderBlanketOrderDetail(d) == o,
+                inCustomerBlanketOrderStock(o,c)
         FILTERGROUP filtr1
             FILTER 'В заказе' 'F11' inBlanketOrderStock(o,c)
 

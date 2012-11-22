@@ -18,6 +18,7 @@ nameLegalEntityStock 'Компания' (stock) = name(legalEntityStock(stock));
 
 userLegalEntityStock 'Отм.' = DATA BOOLEAN (legalEntity, stock);
 inLegalEntityStock 'Отм.' (legalEntity, stock) = (legalEntityStock(stock) == legalEntity) OR userLegalEntityStock(legalEntity, stock);
+isDefaultLegalEntityStock 'Свой склад' (legalEntity, stock) = legalEntityStock(stock) == legalEntity;
 
 currencyStock (stock) = currencyLegalEntity(legalEntityStock(stock)) PERSISTENT;
 languageStock (stock) = languageLegalEntity(legalEntityStock(stock)) PERSISTENT;
@@ -2316,7 +2317,7 @@ EXTEND FORM legalEntity
     OBJECTS st=stock
     PROPERTIES(st) READONLY name, nameLegalEntityStock
     FILTERS isParentStockGroupStock(sg, st) OR (st IS stock AND sg IS stockGroup AND NOT stockGroupStock(st)) OR (st IS stock AND NOT sg)
-
+    PROPERTIES(st) delete FORCE PANEL DRAWTOTOOLBAR SHOWIF isDefaultLegalEntityStock(l,st)
     PROPERTIES chooseStocksLegalEntity(l) TODRAW st FORCE PANEL DRAWTOTOOLBAR
     FILTERS inLegalEntityStock(l, st)
 ;

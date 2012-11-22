@@ -79,6 +79,15 @@ META defineShipment(sign, stockProp)
     Shipment.dataSupplierStockShipmentDetail(detail) += dataSupplierStockShipmentDetail(detail);
     Shipment.dataCustomerStockShipmentDetail(detail) += dataCustomerStockShipmentDetail(detail);
 
+    CONSTRAINT supplierUserShipment(userShipment) AND supplierStockUserShipment(userShipment) AND NOT
+    inLegalEntityStock(supplierUserShipment(userShipment), supplierStockUserShipment(userShipment))
+        CHECKED BY supplierUserShipment, supplierStockUserShipment
+            MESSAGE 'Поставщик и склад поставщика не имеют связи';
+    CONSTRAINT customerUserShipment(userShipment) AND customerStockUserShipment(userShipment) AND NOT
+    inLegalEntityStock(customerUserShipment(userShipment), customerStockUserShipment(userShipment))
+        CHECKED BY customerUserShipment, customerStockUserShipment
+            MESSAGE 'Покупатель и склад покупателя не имеют связи';
+
     @defineDocumentInterfacePosted(shipment);
     Shipment.isPostedShipment (shipment) += isPostedShipment(shipment);
 

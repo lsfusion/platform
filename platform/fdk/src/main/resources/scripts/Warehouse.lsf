@@ -44,16 +44,17 @@ FORM warehouse 'Склад'
 
 FORM warehouses 'Склады'
 
-    TREE warehouseTree wg = warehouseGroup PARENT parentWarehouseGroup
-    PROPERTIES READONLY wgTreeName = name(wg)
+    TREE warehouseTree b=STRING[3], wg = warehouseGroup PARENT parentWarehouseGroup
+    PROPERTIES READONLY OBJVALUE(b), wgTreeName = name(wg)
     PROPERTIES(wg) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
     ORDER BY wgTreeName
+    FILTERS stringEqualsAll(b)
 
     OBJECTS w=warehouse
     PROPERTIES(w) READONLY name, addressWarehouse, nameLegalEntityWarehouse
     PROPERTIES(w) ADDFORM, EDITFORM, delete
     ORDER BY name
-    FILTERS isParentWarehouseGroupWarehouse(wg, w) OR (w IS warehouse AND wg IS warehouseGroup AND NOT warehouseGroupWarehouse(w))
+    FILTERS isParentWarehouseGroupWarehouse(wg, w) OR (w IS warehouse AND wg IS warehouseGroup AND NOT warehouseGroupWarehouse(w)) OR (w IS warehouse AND NOT wg)
 ;
 
 DESIGN warehouses FROM DEFAULT{

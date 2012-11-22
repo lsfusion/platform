@@ -68,6 +68,15 @@ META defineOrder(sign, stockProp)
     Order.dataSupplierStockOrderDetail(detail) += dataSupplierStockOrderDetail(detail);
     Order.dataCustomerStockOrderDetail(detail) += dataCustomerStockOrderDetail(detail);
 
+    CONSTRAINT supplierUserOrder(userOrder) AND supplierStockUserOrder(userOrder) AND NOT
+    inLegalEntityStock(supplierUserOrder(userOrder), supplierStockUserOrder(userOrder))
+        CHECKED BY supplierUserOrder, supplierStockUserOrder
+            MESSAGE 'Поставщик и склад поставщика не имеют связи';
+    CONSTRAINT customerUserOrder(userOrder) AND customerStockUserOrder(userOrder) AND NOT
+    inLegalEntityStock(customerUserOrder(userOrder), customerStockUserOrder(userOrder))
+        CHECKED BY customerUserOrder, customerStockUserOrder
+            MESSAGE 'Покупатель и склад покупателя не имеют связи';
+
     @defineDocumentInterfacePosted(order);
     Order.isPostedOrder (order) += isPostedOrder(order);
 
