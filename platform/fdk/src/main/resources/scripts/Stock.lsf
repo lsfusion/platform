@@ -195,6 +195,8 @@ signedQuantitySkuLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quantityInSkuLe
 
 // -------------------------------------------- Расчет себестоимости -------------------------------------- //
 
+explicitBatchLedgerStock 'Партионный учет' = ABSTRACT BOOLEAN (stock) PERSISTENT;
+
 orderDataSkuLedger (ledger) = LIST(dateTimeDataSkuLedger(ledger), ledger);
 
 // Формулы для расчета
@@ -1662,6 +1664,9 @@ META extendFormDocumentSkuStockContractorCustom(object, form, concrete, stockPro
 END
 // ---------------------------------- Диалоги --------------------------- //
 
+editStock 'Редактировать' = ABSTRACT ACTION (stock) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
+editSessionStock 'Редактировать' = ABSTRACT ACTION (stock) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
+
 FORM stocks 'Склады'
 
     TREE stockTree sg = stockGroup PARENT parentStockGroup
@@ -1669,10 +1674,10 @@ FORM stocks 'Склады'
 
     OBJECTS s = stock
     PROPERTIES(s) READONLY skuName = name, nameLegalEntityStock, nameCountryStock, addressStock
+    PROPERTIES(s)          editStock
     FILTERS isParentStockGroupStock(sg, s)
 
     DIALOG stock OBJECT s
-
 ;
 
 DESIGN stocks FROM DEFAULT {
@@ -1699,7 +1704,7 @@ DESIGN stocks FROM DEFAULT {
     }
 }
 
-editSku 'Редактировать' = ABSTRACT ACTION (sku) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' TOOLBAR;
+editSku 'Редактировать' = ABSTRACT ACTION (sku) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
 
 FORM skus 'Sku'
     TREE skuTree sg = skuGroup PARENT parentSkuGroup
@@ -2316,9 +2321,9 @@ EXTEND FORM legalEntity
 
     OBJECTS st=stock
     PROPERTIES(st) READONLY name, nameLegalEntityStock
-    FILTERS isParentStockGroupStock(sg, st) OR (st IS stock AND sg IS stockGroup AND NOT stockGroupStock(st)) OR (st IS stock AND NOT sg)
-    PROPERTIES(st) delete FORCE PANEL DRAWTOTOOLBAR SHOWIF isDefaultLegalEntityStock(l,st)
     PROPERTIES chooseStocksLegalEntity(l) TODRAW st FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES(st) FORCE PANEL DRAWTOTOOLBAR SHOWIF isDefaultLegalEntityStock(l,st) editSessionStock, delete
+    FILTERS isParentStockGroupStock(sg, st) OR (st IS stock AND sg IS stockGroup AND NOT stockGroupStock(st)) OR (st IS stock AND NOT sg)
     FILTERS inLegalEntityStock(l, st)
 
     OBJECTS s=legalEntity

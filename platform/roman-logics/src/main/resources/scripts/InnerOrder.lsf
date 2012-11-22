@@ -592,7 +592,7 @@ editInnerDocument 'Редактировать' (innerDocument) = ACTION (innerDo
                         FORM invoiceWHOut OBJECTS t = innerDocument MODAL;
                 }
     }
-} IMAGE 'edit.png' EDITKEY 'BACK_SPACE';
+} IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE;
 
 quantityOrderPickingPostedInnerOrder (innerOrder) = GROUP SUM 1 IF orderPicking IS orderPickingPosted BY innerOrderOrderPicking(orderPicking);
 quantityOrderPickingInnerOrder (innerOrder) = GROUP SUM 1 IF orderPicking IS orderPicking BY innerOrderOrderPicking(orderPicking);

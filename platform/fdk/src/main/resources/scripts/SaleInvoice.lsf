@@ -9,12 +9,8 @@ NAMESPACE Sale;
 @defineInvoiceBatch(supplierStock);
 @defineDocumentInterfaceHeaderTAX(invoice, VAT, 'НДС расч.');
 
-storeSupplierStockUserInvoice (userInvoice) = storeDepartmentStore(supplierStockUserInvoice (userInvoice));
-VATUserInvoice (userInvoice) <- rangeTaxTaxUnit(tax.taxVAT, storeSupplierStockUserInvoice(userInvoice))
+VATUserInvoice (userInvoice) <- rangeTaxTaxUnit(tax.taxVAT, storeDepartmentStore(supplierStockUserInvoice(userInvoice)))
         WHEN CHANGED(supplierStockUserInvoice(userInvoice));
-
-//VATUserInvoiceDetail (userInvoiceDetail) <- VATUserInvoice(userInvoiceUserInvoiceDetail(userInvoiceDetail))
-//        WHEN CHANGED(VATUserInvoice(userInvoiceUserInvoiceDetail(userInvoiceDetail)));
 
 @deriveDocumentHeaderTAXDetail(userInvoice, VAT);
 
@@ -33,6 +29,21 @@ EXTEND FORM userInvoice
     PROPERTIES(i) numberVATUserInvoice, valueVATUserInvoice
 ;
 
-EXTEND DESIGN userInvoice{
+// ------- Создание инвойса по партиям -------- //
+useExplicitBatchDetailUserInvoiceOrder (userInvoice, order) += userInvoice IS Sale.userInvoice AND order IS Sale.order;
 
+toInvoiceBatchOrderDetail (batch, orderDetail) = PARTITION UNGROUP toInvoiceOrderDetail
+                                                           LIMIT STRICT currentBalanceBatchStock(batch, supplierStockOrderDetail(orderDetail)) AND skuBatch(batch) == skuOrderDetail(orderDetail)
+                                                           BY orderDetail
+                                                           ORDER orderBatch(batch);
+
+createExplicitBatchDetailUserInvoiceOrder (userInvoice, order) += ACTION (userInvoice, order) {
+    FOR orderOrderDetail(orderDetail) == order AND toInvoiceBatchOrderDetail(batch, orderDetail)
+        ADDOBJ d = userInvoiceDetail DO {
+            SET userInvoiceUserInvoiceDetail(d) <- userInvoice;
+            SET orderUserInvoiceDetail(d) <- order;
+            SET skuUserInvoiceDetail(d) <- skuOrderDetail(orderDetail);
+            SET batchUserInvoiceDetail(d) <- batch;
+            SET quantityUserInvoiceDetail (d) <- toInvoiceBatchOrderDetail(batch, orderDetail);
+        }
 }

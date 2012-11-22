@@ -37,7 +37,7 @@ CLASS ABSTRACT invoiceDetail 'Строка накладной';
 @defineDocumentAbstractDetailVATPrefix(invoice, , );
 @defineDocumentAbstractDetailVATDataSumCustom (invoiceDetail, invoice);
 
-editInvoice 'Редактировать' = ABSTRACT ACTION (invoice) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' TOOLBAR;
+editInvoice 'Редактировать' = ABSTRACT ACTION (invoice) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
 
 createUserInvoiceOrder 'Создать накладную' = ABSTRACT ACTION (order);
 createUserInvoicePostedOrder 'Создать проведенную накладную' = ABSTRACT ACTION (order);
@@ -247,17 +247,23 @@ META defineInvoice(sign, stockProp)
         }
     }
 
+    createExplicitBatchDetailUserInvoiceOrder = ABSTRACT ACTION (userInvoice, order);
+    useExplicitBatchDetailUserInvoiceOrder = ABSTRACT BOOLEAN (userInvoice, order);
+
     createDetailUserInvoiceOrder = ACTION (userInvoice, order) {
-        FOR orderOrderDetail(orderDetail) == order AND
-            toInvoiceOrderDetail(orderDetail) > 0 // возможно еще нужно фильтровать по складам
-            ADDOBJ d = userInvoiceDetail DO {
-                SET userInvoiceUserInvoiceDetail(d) <- userInvoice;
-                SET orderUserInvoiceDetail(d) <- order;
-                SET skuUserInvoiceDetail(d) <- skuOrderDetail(orderDetail);
-                SET quantityUserInvoiceDetail (d) <- toInvoiceOrderDetail(orderDetail);
-                SET priceUserInvoiceDetail (d) <- priceOrderDetail(orderDetail);
-                SET sumUserInvoiceDetail (d) <- sumOrderDetail(orderDetail);
-        }
+        IF useExplicitBatchDetailUserInvoiceOrder(userInvoice, order) AND explicitBatchLedgerStock(stockProp##Order(order)) THEN {
+            EXEC createExplicitBatchDetailUserInvoiceOrder(userInvoice, order);
+        } ELSE
+            FOR orderOrderDetail(orderDetail) == order AND
+                toInvoiceOrderDetail(orderDetail) > 0 // возможно еще нужно фильтровать по складам
+                ADDOBJ d = userInvoiceDetail DO {
+                    SET userInvoiceUserInvoiceDetail(d) <- userInvoice;
+                    SET orderUserInvoiceDetail(d) <- order;
+                    SET skuUserInvoiceDetail(d) <- skuOrderDetail(orderDetail);
+                    SET quantityUserInvoiceDetail (d) <- toInvoiceOrderDetail(orderDetail);
+                    SET priceUserInvoiceDetail (d) <- priceOrderDetail(orderDetail);
+                    SET sumUserInvoiceDetail (d) <- sumOrderDetail(orderDetail);
+            }
     }
 
     fillUserInvoiceOrder = ACTION (userInvoice, order) {
@@ -303,7 +309,7 @@ META defineInvoice(sign, stockProp)
 
 // --------------------------- Формы ---------------------------------- //
 
-    editInvoice 'Редактировать' = ABSTRACT ACTION (invoice) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' TOOLBAR;
+    editInvoice 'Редактировать' = ABSTRACT ACTION (invoice) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
     Invoice.editInvoice (invoice) += editInvoice(invoice);
 
     FORM userInvoice 'Накладная'###sign

@@ -36,7 +36,7 @@ CLASS ABSTRACT orderDetail 'Строка заказа';
 
 @defineDocumentHeaderGrossWeight(order);
 
-editOrder 'Редактировать' = ABSTRACT ACTION (order) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' TOOLBAR;
+editOrder 'Редактировать' = ABSTRACT ACTION (order) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
 
 //----------------------------------------------- Заказ ---------------------------------------------------//
 
@@ -123,7 +123,7 @@ META defineOrder(sign, stockProp)
 
 // --------------------------- Формы Заказа ---------------------------------
 
-    editOrder 'Редактировать' = ABSTRACT ACTION (order) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' TOOLBAR;
+    editOrder 'Редактировать' = ABSTRACT ACTION (order) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
     Order.editOrder (order) += editOrder(order);
 
     FORM userOrder 'Заказ'###sign

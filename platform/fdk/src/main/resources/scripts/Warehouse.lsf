@@ -24,7 +24,7 @@ isParentWarehouseGroupWarehouse (warehouseGroup, warehouse) =
 stockGroupStock (stock) += warehouseGroupWarehouse (stock);
 
 legalEntityWarehouse (warehouse) = DATA legalEntity (warehouse) NOT NULL;
-nameLegalEntityWarehouse 'Компания' (warehouse) = name(legalEntityWarehouse(warehouse)) IN baseGroup;
+nameLegalEntityWarehouse 'Организация' (warehouse) = name(legalEntityWarehouse(warehouse)) IN baseGroup;
 legalEntityStock (stock) += legalEntityWarehouse(stock);
 
 userLegalEntityWarehouse 'Отм.' = DATA BOOLEAN (legalEntity, warehouse);
@@ -35,15 +35,25 @@ addressStock(stock) += addressWarehouse(stock);
 
 employeeDivisionGroupEmployeeDivision (warehouse) += warehouseGroupWarehouse(warehouse);
 
+explicitBatchLedgerWarehouse 'Партионный учет' = DATA BOOLEAN (warehouse);
+explicitBatchLedgerStock(stock) += explicitBatchLedgerWarehouse(stock);
+
 // -------------------------------------------------- Формы ----------------------------------------- //
 FORM warehouse 'Склад'
 
     OBJECTS           w=warehouse FIXED PANEL
-    PROPERTIES(w)     name, nameWarehouseGroupWarehouse, addressWarehouse, nameLegalEntityWarehouse, nameWriteOffCommitteeStock
+    PROPERTIES(w)     name, nameWarehouseGroupWarehouse, addressWarehouse, nameLegalEntityWarehouse, nameWriteOffCommitteeStock,
+                      explicitBatchLedgerWarehouse
     ORDER BY          name
 
     EDIT warehouse OBJECT w
 ;
+
+editWarehouse 'Редактировать' = ACTION EDITFORM warehouse;
+editStock(stock) += editWarehouse(stock);
+
+editSessionWarehouse 'Редактировать' = ACTION EDITFORM SESSION warehouse;
+editSessionStock(stock) += editSessionWarehouse(stock);
 
 FORM warehouses 'Склады'
 

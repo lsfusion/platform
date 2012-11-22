@@ -83,6 +83,8 @@ TABLE departmentStoreDate (departmentStore, DATE);
 
 storeDepartmentStore = DATA store (departmentStore) AUTOSET;
 nameStoreDepartmentStore 'Магазин' (departmentStore) = name(storeDepartmentStore(departmentStore)) IN baseGroup;
+stockGroupStock (departmentStore) += storeDepartmentStore(departmentStore);
+employeeDivisionGroupEmployeeDivision (departmentStore) += storeDepartmentStore(departmentStore);
 
 inStoreDepartment(store, departmentStore) = storeDepartmentStore(departmentStore) == store;
 
@@ -101,15 +103,15 @@ primaryDepartmentStoreStore 'Основной отдел' (store) =
     GROUP MIN departmentStore BY storeDepartmentStore(departmentStore);
 
 addressDepartmentStore 'Адрес' (departmentStore) = addressStore(storeDepartmentStore(departmentStore));
+addressStock (departmentStore) += addressDepartmentStore(departmentStore);
+
+explicitBatchLedgerDepartmentStore 'Партионный учет' = DATA BOOLEAN (departmentStore);
+explicitBatchLedgerStock(stock) += explicitBatchLedgerDepartmentStore(stock);
 
 @defineHistorizable(tradingSquareDepartmentStore, 'Торговая площадь', NUMERIC[10,2], departmentStore, name, publicGroup);
 
 tradingSquareStoreDate (store, date) = GROUP SUM tradingSquareDepartmentStoreDate(departmentStore, date) BY storeDepartmentStore(departmentStore), date;
 tradingSquareStore 'Торговая площадь' (store) = tradingSquareStoreDate(store, currentDate());
-
-stockGroupStock (departmentStore) += storeDepartmentStore(departmentStore);
-addressStock (departmentStore) += addressDepartmentStore(departmentStore);
-employeeDivisionGroupEmployeeDivision (departmentStore) += storeDepartmentStore(departmentStore);
 
 inChainStoresStoreTypeStoreDepartment (chainStores, storeType, store, department) =
     (storeDepartmentStore(department) == store AND storeType AND chainStores) OR
@@ -120,10 +122,11 @@ inChainStoresStoreTypeStoreDepartment (chainStores, storeType, store, department
 // -------------------------------------- Формы отдела магазинов ------------------------------------------ //
 
 FORM departmentStore 'Отдел магазина'
-    OBJECTS d=departmentStore FIXED PANEL
-    PROPERTIES(d)   name, nameStoreDepartmentStore, tradingSquareDepartmentStore, dialogTradingSquareDepartmentStore, nameWriteOffCommitteeStock
+    OBJECTS d = departmentStore FIXED PANEL
+    PROPERTIES(d) name, nameStoreDepartmentStore, tradingSquareDepartmentStore, dialogTradingSquareDepartmentStore, nameWriteOffCommitteeStock,
+                  explicitBatchLedgerStock
 
-    OBJECTS e=employee
+    OBJECTS e = employee
     PROPERTIES(e) READONLY userFirstName, userLastName
     PROPERTIES(e) ADDSESSIONFORM, EDITSESSIONFORM, delete
     FILTERS inEmployeeDivisionEmployee(d, e)
@@ -139,6 +142,12 @@ DESIGN departmentStore FROM DEFAULT {
         }
     }
 }
+
+editDepartmentStore 'Редактировать' = ACTION EDITFORM departmentStore;
+editStock(stock) += editDepartmentStore(stock);
+
+editSessionDepartmentStore 'Редактировать' = ACTION EDITFORM SESSION departmentStore;
+editSessionStock(stock) += editSessionDepartmentStore(stock);
 
 FORM departmentStores 'Отделы магазинов'
     TREE treeStore a=STRING[3], t=chainStores, st=storeType, s=store

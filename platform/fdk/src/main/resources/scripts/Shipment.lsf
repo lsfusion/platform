@@ -26,7 +26,7 @@ CLASS ABSTRACT shipmentDetail 'Строка поставки';
 
 quantityShipmentDetailOrderShipment = ABSTRACT NUMERIC[14,2] (order, shipment);
 
-editShipment 'Редактировать' = ABSTRACT ACTION (shipment) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' TOOLBAR;
+editShipment 'Редактировать' = ABSTRACT ACTION (shipment) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
 
 // ----------------------------------- Создавать поставку по умолчанию для склада ------------------------------------------ //
 
@@ -119,7 +119,7 @@ META defineShipment(sign, stockProp)
 
 // --------------------------- Формы --------------------------------- //
 
-    editShipment 'Редактировать' = ABSTRACT ACTION (shipment) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' TOOLBAR;
+    editShipment 'Редактировать' = ABSTRACT ACTION (shipment) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
     Shipment.editShipment (shipment) += editShipment(shipment);
 
     FORM userShipment 'Поставка'###sign
