@@ -16,15 +16,11 @@
 package platform.gwt.cellview.client;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.dom.client.Document;
-import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.*;
 import com.google.gwt.dom.client.Style.Display;
 import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.dom.client.Style.TableLayout;
 import com.google.gwt.dom.client.Style.Unit;
-import com.google.gwt.dom.client.TableColElement;
-import com.google.gwt.dom.client.TableElement;
-import com.google.gwt.dom.client.TableSectionElement;
 import com.google.gwt.event.dom.client.ScrollEvent;
 import com.google.gwt.event.dom.client.ScrollHandler;
 import com.google.gwt.resources.client.ClientBundle;
@@ -32,16 +28,9 @@ import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.resources.client.CssResource.ImportedWithPrefix;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.resources.client.ImageResource.ImageOptions;
-import platform.gwt.cellview.client.LoadingStateChangeEvent.LoadingState;
-import com.google.gwt.user.client.ui.CustomScrollPanel;
-import com.google.gwt.user.client.ui.FlexTable;
-import com.google.gwt.user.client.ui.HeaderPanel;
-import com.google.gwt.user.client.ui.Image;
-import com.google.gwt.user.client.ui.RequiresResize;
-import com.google.gwt.user.client.ui.ScrollPanel;
-import com.google.gwt.user.client.ui.SimplePanel;
-import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.*;
 import com.google.gwt.view.client.ProvidesKey;
+import platform.gwt.cellview.client.LoadingStateChangeEvent.LoadingState;
 
 /**
  * A tabular view with a fixed header and footer section and a scrollable data
@@ -513,7 +502,7 @@ public class DataGrid<T> extends AbstractCellTable<T> implements RequiresResize 
   private final FlexTable loadingIndicatorContainer;
   private final Style style;
   private final Element tableDataContainer;
-  private final ScrollPanel tableDataScroller;
+  private final CustomScrollPanel tableDataScroller;
   private final SimplePanel tableFooterContainer;
   private final Element tableFooterScroller;
   private final SimplePanel tableHeaderContainer;
@@ -827,7 +816,11 @@ public class DataGrid<T> extends AbstractCellTable<T> implements RequiresResize 
     return tableHeader.section;
   }
 
-  /**
+  public CustomScrollPanel getTableDataScroller() {
+    return tableDataScroller;
+  }
+
+    /**
    * Called when the loading state changes.
    * 
    * @param state the new loading state

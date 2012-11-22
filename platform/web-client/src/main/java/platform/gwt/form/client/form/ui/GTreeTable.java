@@ -119,7 +119,7 @@ public class GTreeTable extends GGridPropertyTable {
         if (selectedRecord != null && selectedRecord.rowIndex < getRowCount()) {
             pendingState = new GridState();
             pendingState.oldRecord = selectedRecord;
-            pendingState.oldKeyScrollTop = getRowElement(currentRecords.indexOf(selectedRecord)).getAbsoluteTop() - getScrollPanel().getAbsoluteTop();
+            pendingState.oldKeyScrollTop = getRowElement(currentRecords.indexOf(selectedRecord)).getAbsoluteTop() - getTableDataScroller().getAbsoluteTop();
         }
     }
 
@@ -245,7 +245,7 @@ public class GTreeTable extends GGridPropertyTable {
     }
 
     public void restoreVisualState() {
-        for (GTreeTableNode node :tree.root.getChildren()) {
+        for (GTreeTableNode node : tree.root.getChildren()) {
             expandNode(node);
         }
     }

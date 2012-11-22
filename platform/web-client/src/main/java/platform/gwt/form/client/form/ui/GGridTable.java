@@ -99,7 +99,7 @@ public class GGridTable extends GGridPropertyTable {
         if (selectedRecord != null && selectedRecord.rowIndex < getRowCount()) {
             pendingState = new GridState();
             pendingState.oldRecord = selectedRecord;
-            pendingState.oldKeyScrollTop = getRowElement(selectedRecord.rowIndex).getAbsoluteTop() - getScrollPanel().getAbsoluteTop();
+            pendingState.oldKeyScrollTop = getRowElement(selectedRecord.rowIndex).getAbsoluteTop() - getTableDataScroller().getAbsoluteTop();
         }
     }
 

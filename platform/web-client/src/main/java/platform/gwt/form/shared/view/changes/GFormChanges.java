@@ -59,7 +59,7 @@ public class GFormChanges {
     }
 
     private static HashMap<GGroupObjectValue, Object> remapGroupObjectValueMap(GForm form, HashMap<GGroupObjectValueDTO, Object> values) {
-        HashMap<GGroupObjectValue, Object> res = new HashMap<GGroupObjectValue, Object>();
+        HashMap<GGroupObjectValue, Object> res = new HashMap<GGroupObjectValue, Object>(values.size());
         for (Map.Entry<GGroupObjectValueDTO, Object> e : values.entrySet()) {
             res.put(remapGroupObjectValue(form, e.getKey()), e.getValue());
         }
@@ -67,7 +67,7 @@ public class GFormChanges {
     }
 
     private static ArrayList<GGroupObjectValue> remapGroupObjectValues(GForm form, ArrayList<GGroupObjectValueDTO> values) {
-        ArrayList<GGroupObjectValue> res = new ArrayList<GGroupObjectValue>();
+        ArrayList<GGroupObjectValue> res = new ArrayList<GGroupObjectValue>(values.size());
         for (GGroupObjectValueDTO key : values) {
             res.add(remapGroupObjectValue(form, key));
         }

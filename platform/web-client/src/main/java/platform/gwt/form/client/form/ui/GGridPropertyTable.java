@@ -10,7 +10,6 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.CustomScrollPanel;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.view.client.DefaultSelectionEventManager;
-import platform.gwt.base.client.GwtClientUtils;
 import platform.gwt.cellview.client.AbstractCellTable;
 import platform.gwt.cellview.client.Header;
 import platform.gwt.form.shared.view.GPropertyDraw;
@@ -92,20 +91,20 @@ public abstract class GGridPropertyTable extends GPropertyTable {
 
     public void rememberOldState(int currentIndex) {
         if (currentIndex != -1 && needToScroll) {
-            pendingState.verticalScrollPosition = getScrollPanel().getVerticalScrollPosition();
-            pendingState.scrollPanelHeight = getScrollPanel().getOffsetHeight();
+            pendingState.verticalScrollPosition = getTableDataScroller().getVerticalScrollPosition();
+            pendingState.scrollPanelHeight = getTableDataScroller().getOffsetHeight();
             TableRowElement currentRow = getRowElement(currentIndex);
             pendingState.currentRowTop = currentRow.getOffsetTop();
             pendingState.rowHeight = currentRow.getOffsetHeight();
-            pendingState.hScrollBarHeight = getScrollPanel().getHorizontalScrollbar().asWidget().getOffsetHeight();
+            pendingState.hScrollBarHeight = getTableDataScroller().getHorizontalScrollbar().asWidget().getOffsetHeight();
         }
     }
 
     protected void scrollToNewKey() {
         if (pendingState.verticalScrollPosition >= pendingState.currentRowTop) {
-            getScrollPanel().setVerticalScrollPosition(pendingState.currentRowTop);
+            getTableDataScroller().setVerticalScrollPosition(pendingState.currentRowTop);
         } else if (pendingState.verticalScrollPosition + pendingState.scrollPanelHeight <= pendingState.currentRowTop + pendingState.rowHeight) {
-            getScrollPanel().setVerticalScrollPosition(pendingState.currentRowTop + pendingState.rowHeight + pendingState.hScrollBarHeight
+            getTableDataScroller().setVerticalScrollPosition(pendingState.currentRowTop + pendingState.rowHeight + pendingState.hScrollBarHeight
                     - pendingState.scrollPanelHeight);
         } else {
             scrollRowToVerticalPosition();
@@ -114,7 +113,7 @@ public abstract class GGridPropertyTable extends GPropertyTable {
 
     protected void scrollRowToVerticalPosition() {
         if (pendingState.oldKeyScrollTop != -1) {
-            getScrollPanel().setVerticalScrollPosition(pendingState.currentRowTop - pendingState.oldKeyScrollTop);
+            getTableDataScroller().setVerticalScrollPosition(pendingState.currentRowTop - pendingState.oldKeyScrollTop);
         }
     }
 
@@ -186,7 +185,7 @@ public abstract class GGridPropertyTable extends GPropertyTable {
                 return true;
             } else if (keyCode == KeyCodes.KEY_DOWN) { // проскролливаем окно таблицы на один ряд вверх или вниз,
                                                        // чтобы избежать различного поведения в браузерах при выходе фокуса из видимости
-                CustomScrollPanel scrollPanel = ((GGridPropertyTable) getDisplay()).getScrollPanel();
+                CustomScrollPanel scrollPanel = ((GGridPropertyTable) getDisplay()).getTableDataScroller();
                 int hScrollBarHeight = scrollPanel.getHorizontalScrollbar().asWidget().getOffsetHeight();
                 int scrollPosition = scrollPanel.getVerticalScrollPosition();
                 int scrollHeight = scrollPanel.getOffsetHeight() - hScrollBarHeight;
@@ -198,7 +197,7 @@ public abstract class GGridPropertyTable extends GPropertyTable {
                     scrollPanel.setVerticalScrollPosition(rowBottom + rowHeight - scrollHeight);
                 }
             } else if (keyCode == KeyCodes.KEY_UP) {
-                CustomScrollPanel scrollPanel = ((GGridPropertyTable) getDisplay()).getScrollPanel();
+                CustomScrollPanel scrollPanel = ((GGridPropertyTable) getDisplay()).getTableDataScroller();
                 int scrollPosition = scrollPanel.getVerticalScrollPosition();
                 TableRowElement row = getDisplay().getRowElement(getDisplay().getKeyboardSelectedRow());
                 int rowHeight = row.getOffsetHeight();

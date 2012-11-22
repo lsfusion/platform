@@ -19,16 +19,8 @@ public class GForm implements Serializable {
 
     public boolean allowScrollSplits;
 
-    public GObject getObject(int id) {
-        for (GGroupObject groupObject : groupObjects) {
-            for (GObject object : groupObject.objects) {
-                if (object.ID == id) {
-                    return object;
-                }
-            }
-        }
-        return null;
-    }
+    private transient HashMap<Integer, GPropertyDraw> idProps;
+    private transient HashMap<Integer, GObject> idObjects;
 
     public GGroupObject getGroupObject(int id) {
         for (GGroupObject groupObject : groupObjects) {
@@ -39,26 +31,48 @@ public class GForm implements Serializable {
         return null;
     }
 
-    private transient HashMap<Integer, GPropertyDraw> idProps;
+    public GObject getObject(int id) {
+        GObject obj;
+        if (idObjects == null) {
+            idObjects = new HashMap<Integer, GObject>();
+            obj = null;
+        } else {
+            obj = idObjects.get(id);
+        }
 
-    private HashMap<Integer, GPropertyDraw> getIDProps() {
-        if (idProps == null) {
-            idProps = new HashMap<Integer, GPropertyDraw>();
-            for (GPropertyDraw property : propertyDraws) {
-                idProps.put(property.ID, property);
+        if (obj == null) {
+            OBJECTS:
+            for (GGroupObject groupObject : groupObjects) {
+                for (GObject object : groupObject.objects) {
+                    if (object.ID == id) {
+                        obj = object;
+                        idObjects.put(id, object);
+                        break OBJECTS;
+                    }
+                }
             }
         }
-        return idProps;
+        return obj;
     }
 
     public GPropertyDraw getProperty(int id) {
-//        return getIDProps().get(id);
-        for (GPropertyDraw property : propertyDraws) {
-            if (property.ID == id) {
-                return property;
+        GPropertyDraw prop;
+        if (idProps == null) {
+            idProps = new HashMap<Integer, GPropertyDraw>();
+            prop = null;
+        } else {
+            prop = idProps.get(id);
+        }
+
+        if (prop == null) {
+            for (GPropertyDraw property : propertyDraws) {
+                if (property.ID == id) {
+                    prop = property;
+                    break;
+                }
             }
         }
-        return null;
+        return prop;
     }
 
 }

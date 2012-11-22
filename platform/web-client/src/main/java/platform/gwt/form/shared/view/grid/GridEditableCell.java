@@ -1,7 +1,6 @@
 package platform.gwt.form.shared.view.grid;
 
 import com.google.gwt.cell.client.AbstractCell;
-import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.ValueUpdater;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
@@ -26,12 +25,12 @@ public class GridEditableCell extends AbstractCell<Object> {
     }
 
     @Override
-    public boolean isEditing(Cell.Context context, Element parent, Object value) {
+    public boolean isEditing(Context context, Element parent, Object value) {
         return isEditingCell(context);
     }
 
     @Override
-    public void onBrowserEvent(final Cell.Context context, final Element parent, final Object value,
+    public void onBrowserEvent(final Context context, final Element parent, final Object value,
                                NativeEvent event, ValueUpdater<Object> valueUpdater) {
         if (isEditingCell(context)) {
             cellEditor.onBrowserEvent(context, parent, value, event, valueUpdater);
@@ -58,7 +57,7 @@ public class GridEditableCell extends AbstractCell<Object> {
     }
 
     @Override
-    public void render(Cell.Context context, Object value, SafeHtmlBuilder sb) {
+    public void render(Context context, Object value, SafeHtmlBuilder sb) {
         if (isEditingCell(context)) {
             cellEditor.render(context, value, sb);
         } else {
@@ -71,11 +70,11 @@ public class GridEditableCell extends AbstractCell<Object> {
     }
 
     @Override
-    public boolean resetFocus(Cell.Context context, Element parent, Object value) {
+    public boolean resetFocus(Context context, Element parent, Object value) {
         return isEditingCell(context) && cellEditor.resetFocus(context, parent, value);
     }
 
-    private boolean isEditingCell(Cell.Context context) {
+    private boolean isEditingCell(Context context) {
         if (context.getKey() == editKey) {
             assert cellEditor != null;
             return true;

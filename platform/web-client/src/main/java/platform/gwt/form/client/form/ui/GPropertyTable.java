@@ -6,8 +6,6 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.user.client.ui.CustomScrollPanel;
-import com.google.gwt.user.client.ui.HeaderPanel;
 import com.google.gwt.view.client.CellPreviewEvent;
 import platform.gwt.cellview.client.AbstractCellTable;
 import platform.gwt.cellview.client.DataGrid;
@@ -50,11 +48,6 @@ public abstract class GPropertyTable extends DataGrid implements EditManager, GE
         this.editBindingMap = new GEditBindingMap();
         this.editBindingMap.setMouseAction(GEditBindingMap.CHANGE);
         this.editBindingMap.setKeyAction(new GKeyStroke(KeyCodes.KEY_BACKSPACE), GEditBindingMap.EDIT_OBJECT);
-    }
-
-    public CustomScrollPanel getScrollPanel() {
-        HeaderPanel header = (HeaderPanel) getWidget();
-        return (CustomScrollPanel) header.getContentWidget();
     }
 
     @Override

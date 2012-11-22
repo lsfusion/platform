@@ -230,13 +230,17 @@ public class GPanelController {
         }
 
         public void setPropertyCaptions(Map<GGroupObjectValue,Object> propertyCaptions) {
-            this.propertyCaptions = propertyCaptions;
-            columnsUpdated = true;
+            if (columnsUpdated || !GwtSharedUtils.nullEquals(this.propertyCaptions, propertyCaptions)) {
+                this.propertyCaptions = propertyCaptions;
+                columnsUpdated = true;
+            }
         }
 
         public void setColumnKeys(List<GGroupObjectValue> columnKeys) {
-            this.columnKeys = columnKeys;
-            columnsUpdated = true;
+            if (columnsUpdated || !GwtSharedUtils.nullEquals(this.columnKeys, columnKeys)) {
+                this.columnKeys = columnKeys;
+                columnsUpdated = true;
+            }
         }
 
         public void setCellBackgroundValues(Map<GGroupObjectValue, Object> cellBackgroundValues) {
