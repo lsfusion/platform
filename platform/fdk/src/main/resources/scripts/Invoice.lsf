@@ -40,6 +40,7 @@ CLASS ABSTRACT invoiceDetail 'Строка накладной';
 editInvoice 'Редактировать' = ABSTRACT ACTION (invoice) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' TOOLBAR;
 
 createUserInvoiceOrder 'Создать накладную' = ABSTRACT ACTION (order);
+createUserInvoicePostedOrder 'Создать проведенную накладную' = ABSTRACT ACTION (order);
 
 //----------------------------------------------- Накладная ---------------------------------------------------//
 
@@ -250,26 +251,39 @@ META defineInvoice(sign, stockProp)
         }
     }
 
+    fillUserInvoiceOrder = ACTION (userInvoice, order) {
+        SET supplierInvoice(userInvoice) <- supplierOrder(order);
+        SET supplierStockInvoice(userInvoice) <- supplierStockOrder(order);
+
+        SET customerInvoice(userInvoice) <- customerOrder(order);
+        SET customerStockInvoice(userInvoice) <- customerStockOrder(order);
+
+        SET currencyInvoice(userInvoice) <- currencyOrder(order);
+        SET agreementInvoice(userInvoice) <- agreementOrder(order);
+        SET priceListTypeInvoice(userInvoice) <- priceListTypeOrder(order);
+
+        SET noteInvoice(userInvoice) <- noteOrder(order);
+
+        EXEC createDetailUserInvoiceOrder(userInvoice, order);
+    }
+
     createUserInvoiceOrder 'Создать накладную' = ACTION (order) {
         IF order IS order THEN {
             FOR ADDOBJ i = userInvoice DO {
-                SET supplierInvoice(i) <- supplierOrder(order);
-                SET supplierStockInvoice(i) <- supplierStockOrder(order);
-
-                SET customerInvoice(i) <- customerOrder(order);
-                SET customerStockInvoice(i) <- customerStockOrder(order);
-
-                SET currencyInvoice(i) <- currencyOrder(order);
-                SET agreementInvoice(i) <- agreementOrder(order);
-                SET priceListTypeInvoice(i) <- priceListTypeOrder(order);
-
-                SET noteInvoice(i) <- noteOrder(order);
-
-                EXEC createDetailUserInvoiceOrder(i, order);
+                EXEC fillUserInvoiceOrder(i);
             }
         }
     }
     Invoice.createUserInvoiceOrder (order) += createUserInvoiceOrder(order);
+
+    createUserInvoicePostedOrder 'Создать проведенную накладную' = ACTION (order) {
+        IF order IS order THEN {
+            FOR ADDOBJ i = userInvoicePosted DO {
+                EXEC fillUserInvoiceOrder(i);
+            }
+        }
+    }
+    Invoice.createUserInvoicePostedOrder (order) += createUserInvoicePostedOrder(order);
 
     fillOrderUserInvoice 'Заполнить на основе заказа' =  ACTION (userInvoice) {
         FORM invoiceOrders OBJECTS s = supplierUserInvoice(userInvoice), c = customerUserInvoice(userInvoice) MODAL;
