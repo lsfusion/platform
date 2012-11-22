@@ -252,17 +252,17 @@ META defineInvoice(sign, stockProp)
     }
 
     fillUserInvoiceOrder = ACTION (userInvoice, order) {
-        SET supplierInvoice(userInvoice) <- supplierOrder(order);
-        SET supplierStockInvoice(userInvoice) <- supplierStockOrder(order);
+        SET supplierUserInvoice(userInvoice) <- supplierOrder(order);
+        SET supplierStockUserInvoice(userInvoice) <- supplierStockOrder(order);
 
-        SET customerInvoice(userInvoice) <- customerOrder(order);
-        SET customerStockInvoice(userInvoice) <- customerStockOrder(order);
+        SET customerUserInvoice(userInvoice) <- customerOrder(order);
+        SET customerStockUserInvoice(userInvoice) <- customerStockOrder(order);
 
-        SET currencyInvoice(userInvoice) <- currencyOrder(order);
-        SET agreementInvoice(userInvoice) <- agreementOrder(order);
-        SET priceListTypeInvoice(userInvoice) <- priceListTypeOrder(order);
+        SET currencyUserInvoice(userInvoice) <- currencyOrder(order);
+        SET agreementUserInvoice(userInvoice) <- agreementOrder(order);
+        SET priceListTypeUserInvoice(userInvoice) <- priceListTypeOrder(order);
 
-        SET noteInvoice(userInvoice) <- noteOrder(order);
+        SET noteUserInvoice(userInvoice) <- noteOrder(order);
 
         EXEC createDetailUserInvoiceOrder(userInvoice, order);
     }
