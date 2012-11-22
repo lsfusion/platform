@@ -102,7 +102,7 @@ END
 
 META defineDocumentDetailCalcRange (object, stockProp)
     calcRange###object##Detail = DATA range (object##Detail);
-    calcRange###object##Detail (detail) <- rangeVATTaxTaxUnit(tax.taxVAT,
+    calcRange###object##Detail (detail) <- rangeTaxTaxUnit(tax.taxVAT,
                                 storeDepartmentStore(departmentStore###object##Detail(detail))) WHEN detail IS object##Detail;
 
     numberCalcRange###object##Detail 'НДС расчетный, номер' (detail) = numberRange(calcRange###object##Detail(detail));

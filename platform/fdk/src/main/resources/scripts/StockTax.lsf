@@ -26,3 +26,36 @@ END
 META deriveDocumentDetailVAT (concrete, prefixP)
     @deriveDocumentDetailVAT (concrete, prefixP, date);
 END
+
+//НДС расчетный
+META defineDocumentHeaderTax (object, taxSID, taxCaption, prefix)
+    prefix###taxSID###object = DATA range(object);
+    number###prefix###taxSID###object taxCaption (object) = numberRange(prefix###taxSID###object(object)) IN documentPrmGroup;
+    value###prefix###taxSID###object taxCaption (object) = valueRateRangeDate (prefix###taxSID###object(object),  date###object(object)) IN documentPrmGroup;
+END
+META defineDocumentAbstractHeaderTax (object, taxSID, taxCaption, prefix)
+    prefix###taxSID###object = ABSTRACT range(object);
+    number###prefix###taxSID###object taxCaption (object) = numberRange(prefix###taxSID###object(object)) IN documentPrmGroup;
+    value###prefix###taxSID###object taxCaption (object) = valueRateRangeDate(prefix###taxSID###object(object), date###object(object)) IN documentPrmGroup;
+END
+META defineDocumentInterfaceHeaderTAX (object, taxSID, taxCaption, prefix)
+    @defineDocumentAbstractHeaderTax (object, taxSID, taxCaption, prefix);
+    @defineDocumentHeaderTax (user###object, taxSID, taxCaption, prefix);
+    prefix###taxSID###object (object) += prefix###taxSID###user###object(object);
+END
+
+META defineDocumentHeaderTAX(object, taxSID, taxCaption)
+    @defineDocumentHeaderTAX(object, taxSID, taxCaption, );
+END
+META defineDocumentAbstractHeaderTAX(object, taxSID, taxCaption)
+    @defineDocumentAbstractHeaderTAX(object, taxSID, taxCaption, );
+END
+META defineDocumentInterfaceHeaderTAX(object, taxSID, taxCaption)
+    @defineDocumentInterfaceHeaderTAX(object, taxSID, taxCaption, );
+END
+META deriveDocumentHeaderTAXDetail(object, taxSID)
+    taxSID###object###Detail (object###Detail) <- taxSID###object(object###object###Detail(object###Detail))
+            WHEN CHANGED(taxSID###object(object###object###Detail(object###Detail)));
+END
+
+

@@ -30,6 +30,8 @@ maxDataRangeTax(tax, country) = UNION OVERRIDE 0 IF tax IS tax AND country IS co
 addNewRange 'Добавить шкалу' = ACTION (tax, country) {
     ADDOBJ range;
     SET numberRange(r) IF r == addedObject() <- maxDataRangeTax(tax, country) + 1;
+    SET countryRange(r) IF r == addedObject() <- country AS country;
+    SET taxRange(r) IF r == addedObject() <- tax AS tax;
 } TOOLBAR IMAGE 'add.png';
 
 CLASS STATIC rangeType 'Для каких подразделений действует шкала'
@@ -59,8 +61,10 @@ TABLE rangeTaxUnit (range, taxUnit);
 inRangeTaxUnit 'Вкл.' (range, taxUnit) = DATA BOOLEAN (range, taxUnit);
 inRangeTaxUnit (range, taxUnit) => isUnitsTypeRange(range) RESOLVE FALSE;
 
-rangeVATTaxTaxUnit 'Шкала по налогу и субъекту' (tax, taxUnit) = GROUP UNIQUE range BY taxRange(range), taxUnit
+rangeTaxTaxUnit 'Шкала по налогу и субъекту' (tax, taxUnit) = GROUP UNIQUE range BY taxRange(range), taxUnit
                                                                        WHERE inRangeTaxUnit(range, taxUnit) AND tax.taxVAT == taxRange(range);
+
+rangeVATTaxUnit 'Шкала субъекту' (taxUnit) = rangeTaxTaxUnit (tax.taxVAT, taxUnit);
 
 
 // ---------------------------------- История изменений шкалы --------------------------------------- //
@@ -93,6 +97,8 @@ valueCurrentVATCountryValue 'Шкала НДС по значению' (country, 
 
 valueCurrentVATDefaultValue 'Шкала по значению' (doubleValue) = valueCurrentVATCountryValue(defaultCountry(), doubleValue);
 
+valueVATUnitDate 'НДС, %' (taxUnit, date) = valueRateRangeDate(rangeTaxTaxUnit(tax.taxVAT, taxUnit), date);
+currentVATUnitDate 'НДС, %' (taxUnit) = valueRateRangeDate(rangeTaxTaxUnit(tax.taxVAT, taxUnit), currentDate());
 // --------------------------------------- Формы ------------------------------------- //
 
 FORM tax 'Налог'

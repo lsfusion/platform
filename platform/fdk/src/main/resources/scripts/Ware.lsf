@@ -29,6 +29,13 @@ skuGroupSku(ware) += wareGroupWare(ware);
 
 nameSku(ware) += name(ware) IF ware IS ware;
 
+nameWareGroupWare 'Группа посуды' (ware) = name(wareGroupWare(ware));
+canonicalNameWareGroupWare 'Группа посуды' (ware) = canonicalNameWareGroup(wareGroupWare(ware)) IN baseGroup;
+
+TABLE wareGroupWare (wareGroup, ware);
+
+isParentWareGroupware (wareGroup, ware) = isParentWareGroupWareGroup(wareGroupWare(ware), wareGroup) PERSISTENT;
+
 TABLE wareDate(ware, DATE);
 
 @defineHistorizable(warePrice, 'Цена', NUMERIC[14,2], ware, name, baseGroup);
@@ -49,7 +56,7 @@ EXTEND FORM dialogRangeWare
 
 FORM ware 'Посуда'
     OBJECTS w=ware FIXED PANEL
-    PROPERTIES(w) name, warePrice, dialogWarePrice
+    PROPERTIES(w) name, canonicalNameWareGroupWare, warePrice, dialogWarePrice
     PROPERTIES(w) numberRangeRangeWare, valueCurrentRateRangeWare, dialogRangeWare
 
     EDIT ware OBJECT w
@@ -57,7 +64,7 @@ FORM ware 'Посуда'
 
 FORM wares 'Посуда'
     OBJECTS w=ware
-    PROPERTIES(w) READONLY name, warePrice, dialogWarePrice, numberRangeRangeWare, valueCurrentRateRangeWare
+    PROPERTIES(w) READONLY name, canonicalNameWareGroupWare, warePrice, dialogWarePrice, numberRangeRangeWare, valueCurrentRateRangeWare
     PROPERTIES(w)          ADDFORM, EDITFORM, delete
 
     DIALOG ware OBJECT w

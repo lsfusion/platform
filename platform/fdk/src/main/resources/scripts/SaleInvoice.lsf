@@ -1,14 +1,38 @@
 MODULE SaleInvoice;
 
-REQUIRE SaleOrder, Invoice;
+REQUIRE SaleOrder, Invoice, StockTax, Store;
 
 NAMESPACE Sale;
 
 //----------------------------------------------- Накладная ---------------------------------------------------//
 @defineInvoice(' (продажа)', supplierStock);
 @defineInvoiceBatch(supplierStock);
+@defineDocumentInterfaceHeaderTAX(invoice, VAT, 'НДС расч.');
+
+storeSupplierStockUserInvoice (userInvoice) = storeDepartmentStore(supplierStockUserInvoice (userInvoice));
+VATUserInvoice (userInvoice) <- rangeTaxTaxUnit(tax.taxVAT, storeSupplierStockUserInvoice(userInvoice))
+        WHEN CHANGED(supplierStockUserInvoice(userInvoice));
+
+//VATUserInvoiceDetail (userInvoiceDetail) <- VATUserInvoice(userInvoiceUserInvoiceDetail(userInvoiceDetail))
+//        WHEN CHANGED(VATUserInvoice(userInvoiceUserInvoiceDetail(userInvoiceDetail)));
+
+@deriveDocumentHeaderTAXDetail(userInvoice, VAT);
 
 CONSTRAINT supplierUserInvoice(userInvoice) AND NOT isCompanyLegalEntity(supplierUserInvoice(userInvoice))
     CHECKED BY supplierUserInvoice MESSAGE 'Для накладной выбрано в качестве поставщика организация, не являющаяся компанией';
 CONSTRAINT customerUserInvoice(userInvoice) AND NOT isCustomerLegalEntity(customerUserInvoice(userInvoice))
     CHECKED BY customerUserInvoice MESSAGE 'Для накладной выбрано в качестве покупателя организация, не являющаяся покупателем';
+
+CONSTRAINT taxRange(VATUserInvoice(userInvoice)) != tax.taxVAT OR
+           countryRange(VATUserInvoice(userInvoice)) != countryStock(supplierStockInvoice(userInvoice)) OR
+           rangeTypeRange(VATUserInvoice(userInvoice)) != rangeType.units
+           CHECKED BY VATUserInvoice
+           MESSAGE 'ошибка: Шкала и страна строки должна соответствовать шкале и строке НДС';
+
+EXTEND FORM userInvoice
+    PROPERTIES(i) numberVATUserInvoice, valueVATUserInvoice
+;
+
+EXTEND DESIGN userInvoice{
+
+}
