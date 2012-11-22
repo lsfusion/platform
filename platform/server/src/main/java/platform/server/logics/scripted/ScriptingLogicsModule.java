@@ -950,6 +950,8 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LPWithParams addScriptedJoinAProp(LP mainProp, List<LPWithParams> properties) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedJoinAProp(" + mainProp + ", " + properties + ", " + ");");
+        checkParamCount(mainProp, properties.size());
+
         List<Object> resultParams = getParamsPlainList(properties);
         List<Integer> usedParams = mergeAllParams(properties);
         LP prop = addJoinAProp(null, genSID(), "", (LAP<?>) mainProp, resultParams.toArray());
