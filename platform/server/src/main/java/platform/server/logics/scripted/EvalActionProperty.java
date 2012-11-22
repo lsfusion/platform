@@ -15,6 +15,7 @@ import platform.server.logics.property.actions.SystemActionProperty;
 
 import java.sql.SQLException;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * User: DAle
@@ -26,7 +27,7 @@ public class EvalActionProperty<P extends PropertyInterface> extends SystemActio
     private final LCP<P> source;
     private final BusinessLogics<?> BL;
     private final Map<P, ClassPropertyInterface> mapSource;
-    private static int counter = 0;
+    private static AtomicLong counter = new AtomicLong(0);
 
     public EvalActionProperty(String sID, String caption, BusinessLogics<?> BL, LCP<P> source) {
         super(sID, caption, source.getInterfaceClasses());
@@ -41,8 +42,7 @@ public class EvalActionProperty<P extends PropertyInterface> extends SystemActio
     }
 
     private String getUniqueName() {
-        ++counter;
-        return "UNIQUENAME" + counter; // todo [dale]: сделать нормально
+        return "UNIQUENSNAME" + counter.incrementAndGet();
     }
 
     private String wrapScript(String script) {

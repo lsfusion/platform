@@ -1515,7 +1515,6 @@ public class RomanLogicsModule extends LogicsModule {
     }
 
     @Override
-
     public void initClasses() {
         initBaseClassAliases();
 

@@ -1,0 +1,40 @@
+MODULE EvalScript;
+
+REQUIRE System;
+
+NAMESPACE System;
+
+scriptStorage 'Скрипт' () = DATA TEXT ();
+
+scriptExecution 'Выполнить скрипт' () = ACTION EVAL scriptStorage();
+actionBodyExecution 'Выполнить action' () = ACTION EVAL ustring3('run() = ACTION {\n', scriptStorage(), ';\n};');
+formExecution 'Показать форму' () = ACTION EVAL ustring3('FORM form\n', scriptStorage(), ';\nrun() = ACTION FORM form;');
+
+FORM mainForm 'Выполнение скрипта'
+    PROPERTIES() scriptStorage,
+                 scriptExecution, actionBodyExecution, formExecution
+;
+
+DESIGN mainForm FROM DEFAULT {
+    main {
+        childConstraints = TO THE BOTTOM;
+        NEW south BEFORE functions.box {
+            childConstraints = TO THE RIGHT;
+            ADD PROPERTY(scriptExecution);
+            ADD PROPERTY(actionBodyExecution);
+            ADD PROPERTY(formExecution);
+        }
+        ADD PROPERTY(scriptStorage) BEFORE south {
+            panelLabelAbove = TRUE;
+            fillVertical = 1.0;
+            fillHorizontal = 1.0;
+        }
+    }
+}
+
+NAVIGATOR {
+    adminElement {
+        ADD mainForm;
+    }
+}
+

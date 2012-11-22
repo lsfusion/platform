@@ -83,6 +83,7 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
         if (!children.contains(compBefore)) {
             add(comp);
         } else {
+            remove(comp);
             add(children.indexOf(compBefore), comp);
         }
     }
