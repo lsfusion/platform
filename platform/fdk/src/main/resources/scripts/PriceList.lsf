@@ -971,7 +971,7 @@ META deriveDocumentDetailPricePriceListTypeBatchVAT (object, stockProp)
 END
 
 META deriveDocumentDetailPriceSystemLedgerPriceListType (concrete, priceListTypeProp, prefixP, skuProp, stockProp)
-    prefixP###Price###concrete##Detail (detail)  <- prevPricePriceListTypeSkuStockDateTime(systemLedgerPriceListType.##priceListTypeProp,
+    prefixP###price###concrete##Detail (detail)  <- prevPricePriceListTypeSkuStockDateTime(systemLedgerPriceListType.##priceListTypeProp,
                                                                                            skuProp###concrete##Detail(detail),
                                                                                            stockProp###concrete##Detail(detail),
                                                                                            dateTime###concrete##Detail(detail))

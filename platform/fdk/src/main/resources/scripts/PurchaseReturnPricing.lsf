@@ -6,7 +6,7 @@ NAMESPACE PurchaseReturn;
 
 // ------------------------------------- Автоматическое создание расценки для документа -------------------- //
 
-@definePricingAggregation(invoice, ' (закупка-возврат)', 'Акт расценки при возврате', customerStock);
+@definePricingAggregation(invoice, ' (закупка-возврат)', 'Акт расценки при возврате', customerStock, );
 
 overShipmentPriceUserInvoiceDetail(detail) += retailPriceUserInvoiceDetail(detail)
     IF customerStockUserInvoiceDetail(detail) IS departmentStore AND NOT costLedgerDepartmentStore(customerStockUserInvoiceDetail(detail));
@@ -18,8 +18,9 @@ retailMarkupUserInvoiceDetail(userInvoiceDetail)  <- [round2((((X - X*Y/(100+Y))
     priceUserInvoiceDetail(userInvoiceDetail))
     WHEN CHANGED(retailPriceUserInvoiceDetail(userInvoiceDetail)) OR CHANGED (retailVATUserInvoiceDetail(userInvoiceDetail)) OR CHANGED(priceUserInvoiceDetail(userInvoiceDetail));
 
-@derivePrevPriceLedgerOnSkuChangePrefix(retailVAT, userInvoice, retailVAT, sku, customerStock);
-@derivePrevPriceLedgerOnSkuChangePrefix(retailPrice, userInvoice, retailPrice, sku, customerStock);
+@deriveDocumentDetailPriceSystemLedgerPriceListType(userInvoice, retailPricingPriceListType, retail, sku, customerStock);
+@deriveDocumentDetailVAT (userInvoice, retail, date, sku, customerStock);
+@deriveDocumentDetailValueVATPrefix(userInvoice, retail);
 
 skipChangeLedgerPricing(pricing) += pricing IS invoicePricing;
 isReturnPricing(pricing) +=  pricing IS invoicePricing;

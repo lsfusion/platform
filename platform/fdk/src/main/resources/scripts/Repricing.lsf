@@ -598,13 +598,11 @@ META defineRepricing(sign, stockProp)
     @deriveDocumentDetailMarkupSumPrefix(userInvoice, cur, curRetail, cur);
 
 //    @derivePriceLedgerOnSkuChangePrefix(supplierPrice, userInvoice, curPrice, sku, stockProp);
-    @deriveDocumentDetailPriceSystemLedgerPriceListType(userInvoice, supplierPricingPriceListType, cur, sku, stockProp);
-
 //    @derivePriceLedgerOnSkuChangePrefix(retailVAT, userInvoice, curVAT, sku, stockProp);
+//    @derivePriceLedgerOnSkuChangePrefix(retailPrice, userInvoice, curRetailPrice, sku, stockProp);
+    @deriveDocumentDetailPriceSystemLedgerPriceListType(userInvoice, supplierPricingPriceListType, cur, sku, stockProp);
     @deriveDocumentDetailVAT (userInvoice, cur, dateBefore, sku, stockProp);
     @deriveDocumentDetailValueVATPrefix(userInvoice, cur);
-
-//    @derivePriceLedgerOnSkuChangePrefix(retailPrice, userInvoice, curRetailPrice, sku, stockProp);
     @deriveDocumentDetailPriceSystemLedgerPriceListType(userInvoice, retailPricingPriceListType, curRetail, sku, stockProp);
 
 // После

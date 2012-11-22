@@ -1,0 +1,51 @@
+MODULE SalePricing;
+
+REQUIRE Pricing, SaleInvoice, SaleShipment;
+
+NAMESPACE Sale;
+
+// ------------------------------------- Автоматическое создание расценки для документа -------------------- //
+@defineDocumentInterfaceDetailPricePrefix(invoice, supplier, ' поставщика');
+@defineDocumentInterfaceDetailDataSumPrefix (invoice, supplier, ' поставщика');
+@deriveDocumentDetailSumPrefix(userInvoice, supplier, currency, quantity);
+@defineDocumentInterfaceHeaderSumPrefix (invoice, supplier, ' поставщика');
+
+@definePricingAggregation(invoice, ' (закупка-возврат)', 'Акт расценки при продаже', supplierStock, supplier);
+
+
+overShipmentPriceUserInvoiceDetail(detail) += retailPriceUserInvoiceDetail(detail)
+    IF supplierStockUserInvoiceDetail(detail) IS departmentStore AND NOT costLedgerDepartmentStore(supplierStockUserInvoiceDetail(detail));
+//-- аггр.объект
+
+retailMarkupUserInvoiceDetail(userInvoiceDetail)  <- [round2((((X - X*Y/(100+Y))/Z)-1)*100)](
+    0.0 IF userInvoiceDetail IS userInvoiceDetail OR retailPriceUserInvoiceDetail(userInvoiceDetail),
+    0.0 IF userInvoiceDetail IS userInvoiceDetail OR valueRetailVATUserInvoiceDetail(userInvoiceDetail),
+    supplierPriceUserInvoiceDetail(userInvoiceDetail))
+    WHEN CHANGED(retailPriceUserInvoiceDetail(userInvoiceDetail)) OR CHANGED (retailVATUserInvoiceDetail(userInvoiceDetail)) OR CHANGED(supplierPriceUserInvoiceDetail(userInvoiceDetail));
+
+@deriveDocumentDetailPriceSystemLedgerPriceListType(userInvoice, supplierPricingPriceListType, supplier, sku, supplierStock);
+@deriveDocumentDetailPriceSystemLedgerPriceListType(userInvoice, retailPricingPriceListType, retail, sku, supplierStock);
+@deriveDocumentDetailVAT (userInvoice, retail, date, sku, supplierStock);
+@deriveDocumentDetailValueVATPrefix(userInvoice, retail);
+
+skipChangeLedgerPricing(pricing) += pricing IS invoicePricing;
+isReturnPricing(pricing) +=  pricing IS invoicePricing;
+
+EXTEND FORM userInvoice
+    PROPERTIES(i) SHOWIF createPricingInvoice(i) BACKGROUND backgroundRetailInvoice(i) supplierSumUserInvoiceDetailUserInvoice
+    PROPERTIES(d) SHOWIF createPricingInvoice(i) BACKGROUND backgroundRetailInvoice(i) BEFORE retailMarkupUserInvoiceDetail(d)
+    supplierPriceUserInvoiceDetail, supplierSumUserInvoiceDetail
+;
+EXTEND FORM invoices
+    PROPERTIES(i) READONLY BACKGROUND backgroundRetailInvoice(i) supplierSumInvoiceDetailInvoice BEFORE retailSumInvoiceDetailInvoice(i)
+    PROPERTIES(d) SHOWIF createPricingInvoice(i) BACKGROUND backgroundRetailInvoice(i) BEFORE retailMarkupInvoiceDetail(d)
+    supplierPriceInvoiceDetail, supplierSumInvoiceDetail
+;
+//--
+CONSTRAINT supplierUserPricing(userPricing) AND NOT isCompanyLegalEntity(supplierUserPricing(userPricing))
+    CHECKED BY supplierUserPricing MESSAGE 'Для акта расценки выбрано в качестве поставщика организация, не являющаяся компанией';
+
+CONSTRAINT supplierUserPricing(userPricing) AND departmentStoreUserPricing(userPricing) AND NOT
+inLegalEntityStock(supplierUserPricing(userPricing), departmentStoreUserPricing(userPricing))
+    CHECKED BY supplierUserPricing, departmentStoreUserPricing
+        MESSAGE 'Для акта расценки поставщик и склад не имеют связи';

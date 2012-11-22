@@ -7,26 +7,6 @@ REQUIRE Invoice, Employee, Store, StorePrice, Label, Machinery, ItemTax;
 
 createPricingDepartmentStore 'Создавать акт расценки' = DATA BOOLEAN (departmentStore);
 
-//EXTEND FORM departmentStore PROPERTIES createPricingDepartmentStore(d);
-//
-//META defineDocumentHeaderCreatePricing(object, stockClass)
-//    createPricing###object 'Создать акт расценки' (object) = DATA BOOLEAN(object) IN documentPrmGroup;
-//
-//    createPricing###object (object) <- TRUE IF createPricingDepartmentStore(stockClass###object(object))
-//        WHEN CHANGED(stockClass###object(object));
-//
-//END
-//META defineDocumentAbstractHeaderCreatePricing(object, stockClass)
-//    createPricing###object 'Создать акт расценки' (object) = ABSTRACT BOOLEAN(object);
-//END
-//
-//META defineDocumentInterfaceHeaderCreatePricing (object, stockClass)
-//    @defineDocumentAbstractHeaderCreatePricing (object, stockClass);
-//    @defineDocumentHeaderCreatePricing (user###object, stockClass);
-//    createPricing###object (object) += createPricing###user###object(object);
-//END
-
-
 // ----------------------------------- Комиссия ------------------------------------------ //
 
 CLASS pricingCommittee 'Комиссия для акта расценки' : committee;
@@ -522,7 +502,7 @@ inPriceListLedgerStock (ledger, stock) += departmentStorePricingDetail(ledger) =
 // ------------------------------------- Автоматическое создание расценки для документа -------------------- //
 
 //-- аггр.объект
-META definePricingAggregation(concrete, sign, caption, stockProp)
+META definePricingAggregation(concrete, sign, caption, stockProp, prefix)
 
     @defineDocumentInterfaceHeaderPricingCommittee(invoice, stockProp);
     @defineDocumentInterfaceDetailPricePrefix(invoice, retail, ' розничная');
@@ -647,10 +627,10 @@ META definePricingAggregation(concrete, sign, caption, stockProp)
     quantityPricingDetail(pricingDetail) += pricingQuantity###concrete###pricingDetail(pricingDetail);
 
 //----------------------------------------------------------------------------------------------------------
-    @defineDocumentAggregationDetailProperty (invoice, concrete###pricing, price, 'Цена поставщика');
-    pricePricingDetail(pricingDetail) += price###concrete###pricingDetail(pricingDetail);
-    @defineDocumentAggregationDetailProperty (invoice, concrete###pricing, sum, 'Сумма поставщика');
-    sumPricingDetail(pricingDetail) += sum###concrete###pricingDetail(pricingDetail);
+    @defineDocumentAggregationDetailProperty (invoice, concrete###pricing, prefix###price, 'Цена поставщика');
+    pricePricingDetail(pricingDetail) += prefix###price###concrete###pricingDetail(pricingDetail);
+    @defineDocumentAggregationDetailProperty (invoice, concrete###pricing, prefix###sum, 'Сумма поставщика');
+    sumPricingDetail(pricingDetail) += prefix###sum###concrete###pricingDetail(pricingDetail);
 
     @defineDocumentAggregationDetailProperty (invoice, concrete###pricing, retailPrice, 'Розничная цена');
     retailPricePricingDetail(pricingDetail) += retailPrice###concrete###pricingDetail(pricingDetail);
