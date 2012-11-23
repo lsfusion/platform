@@ -693,8 +693,11 @@ META defineRepricing(sign, stockProp)
 
     backgroundCurInvoice 'Цвет' (invoice) = RGB(255, 255, 224) IF invoice IS invoice;
     backgroundAfterInvoice 'Цвет' (invoice) = RGB(255, 255, 200) IF invoice IS invoice;
+
+    showCreateRepricingInvoice (invoice) = stockProp###invoice(invoice) IS departmentStore AND NOT costLedgerDepartmentStore(stockProp###invoice(invoice));
+
     EXTEND FORM userInvoice
-        PROPERTIES(i)   BACKGROUND backgroundCurInvoice(i) createRepricingUserInvoice
+        PROPERTIES(i)   SHOWIF showCreateRepricingInvoice(i) BACKGROUND backgroundCurInvoice(i) createRepricingUserInvoice
         PROPERTIES(i)   BACKGROUND backgroundCurInvoice(i) SHOWIF createRepricingUserInvoice(i) nameRepricingCommitteeUserInvoice, numberDisposalUserInvoice, dateBeforeUserInvoice
         PROPERTIES(i)   BACKGROUND backgroundAfterInvoice(i) SHOWIF createRepricingUserInvoice(i) diffRetailSumUserInvoiceDetailUserInvoice
 
