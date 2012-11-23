@@ -671,14 +671,14 @@ END
 META defineShipmentBatch(stockProp)
     @defineDocumentInterfaceDetailBatch(shipment, batch);
 
-        batchDialogUserShipmentDetail = ACTION (userShipmentDetail) {
-            FORM dialogBatch OBJECTS st = stockProp###userShipmentDetail(userShipmentDetail), t = dateTimeUserShipmentDetail(userShipmentDetail),
-            sk = skuUserShipmentDetail(userShipmentDetail) MODAL;
+    batchDialogUserShipmentDetail = ACTION (userShipmentDetail) {
+        FORM dialogBatch OBJECTS st = stockProp###userShipmentDetail(userShipmentDetail), t = dateTimeUserShipmentDetail(userShipmentDetail),
+        sk = skuUserShipmentDetail(userShipmentDetail) MODAL;
 
-            IF formResult() == formResult.ok THEN {
-                SET batchUserShipmentDetail(userShipmentDetail) <- chosenObject('bt');
-            }
-        };
+        IF formResult() == formResult.ok THEN {
+            SET batchUserShipmentDetail(userShipmentDetail) <- chosenObject('bt');
+        }
+    };
 
     EXTEND FORM userShipment PROPERTIES (d) descriptionBatchUserShipmentDetail ON CHANGE EXEC batchDialogUserShipmentDetail(d) AFTER shortNameUOMSkuUserShipmentDetail;
     EXTEND FORM shipments PROPERTIES (d) READONLY descriptionBatchShipmentDetail AFTER shortNameUOMSkuShipmentDetail;

@@ -323,6 +323,9 @@ signedSumSkuLedger 'Сумма' (ledger) = UNION EXCLUSIVE sumInSkuLedger(ledger
 priceSkuStockDateTime 'Цена' = ABSTRACT NUMERIC[14,2] (sku, stock, DATETIME);
 priceBatchStockDateTime 'Цена' = ABSTRACT NUMERIC[14,2] (batch, stock, DATETIME);
 
+prevPriceSkuStockDateTime 'Цена' (sku, stock, dateTime) = PREV(priceSkuStockDateTime(sku, stock, dateTime));
+prevPriceBatchStockDateTime 'Цена' (batch, stock, dateTime) = PREV(priceBatchStockDateTime(batch, stock, dateTime));
+
 // ---------------------------- Остаток по товару -------------------------------- //
 
 TABLE skuStock(sku, stock);
@@ -882,8 +885,8 @@ END
 
 META deriveDocumentDetailPriceBatchStockCustomPrefix (detail, prefix, stockProp)
     prefix###price###detail (detail)  <- IF batch###detail(detail)
-                THEN priceBatchStockDateTime(batch###detail(detail), stockProp###detail(detail), dateTime###detail(detail))
-                ELSE priceSkuStockDateTime(sku###detail(detail), stockProp###detail(detail), dateTime###detail(detail))
+                THEN prevPriceBatchStockDateTime(batch###detail(detail), stockProp###detail(detail), dateTime###detail(detail))
+                ELSE prevPriceSkuStockDateTime(sku###detail(detail), stockProp###detail(detail), dateTime###detail(detail))
                 WHEN CHANGED(sku###detail(detail)) OR CHANGED(batch###detail(detail)) OR CHANGED(stockProp###detail(detail)) OR CHANGED (dateTime###detail(detail));
 END
 META deriveDocumentDetailPriceBatchStockPrefix (object, prefix, stockProp)

@@ -1,0 +1,87 @@
+MODULE PurchaseSaleShipment;
+
+REQUIRE SaleShipment, PurchaseShipment;
+
+PRIORITY Sale;
+
+//----------------------------------------------------------------------------//
+
+createPurchaseShipment 'Создать поставку' = ABSTRACT BOOLEAN (shipment) PERSISTENT;
+createPurchaseUserShipment 'Создать поставку' = DATA BOOLEAN (userShipment) PERSISTENT;
+createPurchaseShipment(shipment) += createPurchaseUserShipment(shipment);
+
+createPurchaseShipmentDetail 'Создать поставку' (shipmentDetail) = createPurchaseShipment(shipmentShipmentDetail(shipmentDetail))PERSISTENT;
+createPurchaseUserShipmentDetail 'Создать поставку' (userShipmentDetail) = createPurchaseUserShipment(userShipmentUserShipmentDetail(userShipmentDetail));
+backgroundPurchaseShipment 'Цвет' (shipment) = RGB(255, 224, 255) IF shipment IS shipment;
+EXTEND FORM userShipment
+    PROPERTIES(s) BACKGROUND backgroundPurchaseShipment(s) createPurchaseUserShipment
+;
+EXTEND DESIGN userShipment {
+    headerRow1{
+        NEW headerRow13{
+            title = 'Поставка';
+            childConstraints = TO THE RIGHTBOTTOM;
+            ADD PROPERTY(createPurchaseUserShipment);
+        }
+    }
+}
+
+EXTEND FORM shipments
+    PROPERTIES(s) READONLY BACKGROUND backgroundPurchaseShipment(s) createPurchaseShipment
+;
+
+CLASS purchaseShipment 'Поставка на основе поставки': Purchase.shipment;
+CLASS purchaseShipmentPosted 'Закрытая поставка на основе поставки' : purchaseShipment, postedObject;
+CLASS purchaseShipmentDetail 'Строка поставки на основе поставки' : Purchase.shipmentDetail;
+
+@defineDocumentTables(purchaseShipment);
+
+@defineDocumentAggregation(shipment, purchaseShipment, createPurchaseShipment);
+Purchase.shipmentShipmentDetail(detail) += purchaseShipmentPurchaseShipmentDetail(detail);
+
+@defineDocumentDetailIndex(purchaseShipment);
+
+Purchase.dateShipment(shipment) += datePurchaseShipment(shipment);
+Purchase.timeShipment(shipment) += timePurchaseShipment(shipment);
+
+@defineDocumentAggregationStockPrefix(shipment, purchaseShipment, supplierStock, 'Склад поставщика', , );
+Purchase.supplierStockShipment(shipment) += supplierStockPurchaseShipment(shipment);
+Purchase.dataSupplierStockShipmentDetail(shipmentDetail) += dataSupplierStockShipmentDetail(shipmentDetailPurchaseShipmentDetail(shipmentDetail));
+@defineDocumentAggregationStockPrefix(shipment, purchaseShipment, customerStock, 'Склад покупателя', , );
+Purchase.customerStockShipment(shipment) += customerStockPurchaseShipment(shipment);
+Purchase.dataCustomerStockShipmentDetail(shipmentDetail) += dataCustomerStockShipmentDetail(shipmentDetailPurchaseShipmentDetail(shipmentDetail));
+
+@defineDocumentAggregationStockPrefix(shipment, purchaseShipment, supplier, 'Поставщик', , );
+Purchase.supplierShipment(shipment) += supplierPurchaseShipment(shipment);
+@defineDocumentAggregationStockPrefix(shipment, purchaseShipment, customer, 'Покупатель', , );
+Purchase.customerShipment(shipment) += customerPurchaseShipment(shipment);
+
+@defineDocumentAggregationPosted(shipment, purchaseShipment);
+Purchase.isPostedShipment(shipment) += isPostedPurchaseShipment(shipment);
+
+Purchase.numberShipment(shipment) += numberShipment(shipmentPurchaseShipment(shipment));
+Purchase.seriesShipment(shipment) += seriesShipment(shipmentPurchaseShipment(shipment));
+seriesNumberPurchaseShipment 'Серия/номер документа' (purchaseShipment) = seriesNumberShipment(shipmentPurchaseShipment(purchaseShipment));
+
+noteShipmentPurchaseShipment 'Примечание' (purchaseShipment) = noteShipment(shipmentPurchaseShipment(purchaseShipment));
+Purchase.noteShipment(shipment) += noteShipmentPurchaseShipment(shipment);
+
+currencyPurchaseShipment  (purchaseShipment) = currencyShipment(shipmentPurchaseShipment(purchaseShipment));
+Purchase.currencyShipment (shipment) += currencyPurchaseShipment(shipment);
+
+@defineDocumentDescription(purchaseShipment, purchaseShipmentDetail, seriesNumberPurchaseShipment, 'Поставка на основе поставки ');
+Purchase.descriptionShipment (shipment) += descriptionPurchaseShipment(shipment);
+
+@defineDocumentAggregationDetailSku(shipment, purchaseShipment, sku);
+Purchase.skuShipmentDetail(shipmentDetail) +=  skuPurchaseShipmentDetail(shipmentDetail);
+
+Purchase.quantityShipmentDetail(shipmentDetail) += quantityShipmentDetail(shipmentDetailPurchaseShipmentDetail(shipmentDetail));
+
+Purchase.priceShipmentDetail(shipmentDetail) += priceShipmentDetail(shipmentDetailPurchaseShipmentDetail(shipmentDetail));
+
+Purchase.sumShipmentDetail(shipmentDetail) += sumShipmentDetail(shipmentDetailPurchaseShipmentDetail(shipmentDetail));
+
+Purchase.editShipment(shipment) += ACTION EXEC editShipment(shipmentPurchaseShipment(shipment));
+
+
+
