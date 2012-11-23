@@ -1532,7 +1532,7 @@ actionPropertyDefinition[List<String> context, boolean dynamic] returns [LPWithP
 }
 @after {
 	if (inPropParseState()) {
-		self.checkActionAllParamsUsed(context, $property.property, ownContext);
+		self.checkActionAllParamsUsed(localContext, $property.property, ownContext);
 	}
 }
 	:	'ACTION'
