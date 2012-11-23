@@ -1,5 +1,6 @@
 package platform.server.logics.scripted;
 
+import com.google.common.base.Throwables;
 import org.antlr.runtime.RecognitionException;
 import platform.base.BaseUtils;
 import platform.interop.action.MessageClientAction;
@@ -82,6 +83,12 @@ public class EvalActionProperty<P extends PropertyInterface> extends SystemActio
             }
         } catch (RecognitionException e) {
             errString = module.getErrorsDescription() + e.getMessage();
+        } catch (Exception e) {
+            if (!module.getErrorsDescription().isEmpty()) {
+                errString = module.getErrorsDescription() + e.getMessage();
+            } else {
+                Throwables.propagate(e);
+            }
         }
 
         if (!errString.isEmpty()) {
