@@ -536,6 +536,7 @@ END
 META defineDocumentInterfaceNumber(object, detail)
     @defineDocumentInterfaceHeaderNumber(object);
     @defineDocumentDetailNumber(object, detail);
+    @defineDocumentDetailNumber(user###object, user###detail);
 END
 
 META defineDocumentAbstractNumber(object)

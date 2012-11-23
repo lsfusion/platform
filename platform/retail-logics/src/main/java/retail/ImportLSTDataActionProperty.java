@@ -5,6 +5,7 @@ import org.xBaseJ.DBF;
 import org.xBaseJ.xBaseJException;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.DateClass;
+import platform.server.classes.StringClass;
 import platform.server.integration.*;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.ClassPropertyInterface;
@@ -36,54 +37,56 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
         try {
             String path = getLCP("importLSTDirectory").read(context).toString().trim();
             if (!"".equals(path)) {
+
+                Object countryBelarus = getLCP("countrySID").read(context.getSession(), new DataObject("112", StringClass.get(3)));
+                getLCP("defaultCountry").change(countryBelarus, context.getSession());
+                applySession(context.getSession());
+
                 Boolean importInactive = getLCP("importInactive").read(context) != null;
                 if (getLCP("importGroupItems").read(context) != null) {
                     importItemGroups(path + "//_sprgrt.dbf", context);
                     importParentGroups(path + "//_sprgrt.dbf", context);
                 }
-    
+
                 if (getLCP("importBanks").read(context) != null)
                     importBanks(path + "//_sprbank.dbf", context);
-    
-                if (getLCP("importCompanies").read(context) != null)
-                    importCompanies(path + "//_sprana.dbf", importInactive, context);
-    
-                if (getLCP("importSuppliers").read(context) != null)
-                    importSuppliers(path + "//_sprana.dbf", importInactive, context);
-    
-                if (getLCP("importCustomers").read(context) != null)
-                    importCustomers(path + "//_sprana.dbf", importInactive, context);
-    
+
+                if (getLCP("importLegalEntities").read(context) != null)
+                    importLegalEntities(path + "//_sprana.dbf", importInactive, context);
+
+                if (getLCP("importWarehouses").read(context) != null)
+                    importWarehouses(path + "//_sprana.dbf", importInactive, context);
+
                 if (getLCP("importStores").read(context) != null)
                     importStores(path + "//_sprana.dbf", importInactive, context);
-    
+
                 if (getLCP("importDepartmentStores").read(context) != null)
                     importStocks(path + "//_sprana.dbf", path + "//_storestr.dbf", importInactive, context);
-    
+
                 if (getLCP("importRateWastes").read(context) != null)
                     importRateWastes(path + "//_sprvgrt.dbf", context);
-    
+
                 if (getLCP("importWares").read(context) != null) {
                     importWares(path + "//_sprgrm.dbf", context);
                 }
-    
+
                 if (getLCP("importItems").read(context) != null) {
                     Object numberOfItems = getLCP("importNumberItems").read(context);
                     Object numberOfItemsAtATime = getLCP("importNumberItemsAtATime").read(context);
                     importItems(path + "//_sprgrm.dbf", path + "//_postvar.dbf", path + "//_grmcen.dbf", importInactive, context,
                             numberOfItems == null ? 0 : (Integer) numberOfItems, numberOfItemsAtATime == null ? 5000 : (Integer) numberOfItemsAtATime);
                 }
-    
+
                 if (getLCP("importPrices").read(context) != null) {
                     importPrices(path + "//_grmcen.dbf", context);
                 }
-    
+
                 if (getLCP("importAssortment").read(context) != null) {
                     importAssortment(path + "//_strvar.dbf", context);
                 }
-    
-                if (getLCP("importShipment").read(context) != null) {
-                    importShipment(path + "//_ostn.dbf", context);
+
+                if (getLCP("importUserInvoices").read(context) != null) {
+                    importUserInvoices(path + "//_ostn.dbf", context);
                 }
             }
         } catch (ScriptingErrorLog.SemanticErrorException e) {
@@ -99,9 +102,9 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             ImportField parentGroupID = new ImportField(getLCP("extSID"));
 
             ImportKey<?> itemGroupKey = new ImportKey((ConcreteCustomClass) getClass("itemGroup"),
-                                                      getLCP("extSIDToObject").getMapping(itemGroupID));
+                    getLCP("extSIDToObject").getMapping(itemGroupID));
             ImportKey<?> parentGroupKey = new ImportKey((ConcreteCustomClass) getClass("itemGroup"),
-                                                        getLCP("extSIDToObject").getMapping(parentGroupID));
+                    getLCP("extSIDToObject").getMapping(parentGroupID));
 
             List<ImportProperty<?>> propsParent = new ArrayList<ImportProperty<?>>();
             propsParent.add(new ImportProperty(parentGroupID, getLCP("parentItemGroup").getMapping(itemGroupKey),
@@ -160,8 +163,11 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
         try {
             List<List<Object>> data = importWaresFromDBF(path);
 
+            DataObject defaultDate = new DataObject(new java.sql.Date(2001 - 1900, 0, 01), DateClass.instance);
+
             ImportField wareIDField = new ImportField(getLCP("extSID"));
             ImportField wareNameField = new ImportField(getLCP("name"));
+            ImportField warePriceField = new ImportField(getLCP("warePrice"));
 
             ImportKey<?> wareKey = new ImportKey((ConcreteCustomClass) getClass("ware"),
                     getLCP("extSIDToObject").getMapping(wareIDField));
@@ -170,8 +176,9 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
 
             props.add(new ImportProperty(wareIDField, getLCP("extSID").getMapping(wareKey)));
             props.add(new ImportProperty(wareNameField, getLCP("name").getMapping(wareKey)));
+            props.add(new ImportProperty(warePriceField, getLCP("dataWarePriceDate").getMapping(wareKey, defaultDate)));
 
-            ImportTable table = new ImportTable(Arrays.asList(wareIDField, wareNameField), data);
+            ImportTable table = new ImportTable(Arrays.asList(wareIDField, wareNameField, warePriceField), data);
 
             DataSession session = createSession();
             IntegrationService service = new IntegrationService(session, table, Arrays.asList(wareKey), props);
@@ -231,11 +238,14 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
         ImportField compositionField = new ImportField(getLCP("compositionScalesItem"));
         ImportField dataSuppliersRangeItemField = new ImportField(getLCP("valueRate"));
         ImportField valueRetailVATItemField = new ImportField(getLCP("valueRate"));
+        ImportField valueVATItemCountryDateField = new ImportField(getLCP("valueVATItemCountryDate"));
         ImportField quantityPackItemField = new ImportField(getLCP("quantityPackItem"));
         ImportField wareIDField = new ImportField(getLCP("extSID"));
         ImportField priceWareField = new ImportField(getLCP("dataWarePriceDate"));
         ImportField ndsWareField = new ImportField(getLCP("valueRate"));
-        ImportField rateWasteIDField = new ImportField(getLCP("extSID"));
+        ImportField writeOffRateIDField = new ImportField(getLCP("extSID"));
+
+        DataObject defaultCountryObject = (DataObject) getLCP("defaultCountry").readClasses(context.getSession());
 
         ImportKey<?> itemKey = new ImportKey((ConcreteCustomClass) getClass("item"),
                 getLCP("extSIDToObject").getMapping(itemIDField));
@@ -261,14 +271,17 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
         ImportKey<?> retailVATKey = new ImportKey((ConcreteCustomClass) getClass("range"),
                 getLCP("valueCurrentVATDefaultValue").getMapping(valueRetailVATItemField));
 
+        ImportKey<?> VATKey = new ImportKey((ConcreteCustomClass) getClass("range"),
+                getLCP("valueCurrentVATDefaultValue").getMapping(valueVATItemCountryDateField));
+
         ImportKey<?> wareKey = new ImportKey((ConcreteCustomClass) getClass("ware"),
                 getLCP("extSIDToObject").getMapping(wareIDField));
 
         ImportKey<?> rangeKey = new ImportKey((ConcreteCustomClass) getClass("range"),
                 getLCP("valueCurrentVATDefaultValue").getMapping(ndsWareField));
 
-        ImportKey<?> rateWasteKey = new ImportKey((ConcreteCustomClass) getClass("rateWaste"),
-                getLCP("extSIDToObject").getMapping(rateWasteIDField));
+        ImportKey<?> writeOffRateKey = new ImportKey((ConcreteCustomClass) getClass("writeOffRate"),
+                getLCP("extSIDToObject").getMapping(writeOffRateIDField));
 
         List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
 
@@ -309,6 +322,8 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                 LM.object(getClass("range")).getMapping(supplierVATKey)));
         props.add(new ImportProperty(valueRetailVATItemField, getLCP("dataRetailVATItemDate").getMapping(itemKey, dateField, retailVATKey),
                 LM.object(getClass("range")).getMapping(retailVATKey)));
+        props.add(new ImportProperty(valueVATItemCountryDateField, getLCP("dataVATItemCountryDate").getMapping(itemKey, defaultCountryObject, dateField),
+                LM.object(getClass("range")).getMapping(VATKey)));
         props.add(new ImportProperty(quantityPackItemField, getLCP("quantityPackItem").getMapping(itemKey)));
 
         props.add(new ImportProperty(wareIDField, getLCP("wareItem").getMapping(itemKey),
@@ -319,18 +334,18 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
         props.add(new ImportProperty(ndsWareField, getLCP("dataRangeWareDate").getMapping(wareKey, dateField, rangeKey),
                 LM.object(getClass("range")).getMapping(rangeKey)));
 
-        props.add(new ImportProperty(rateWasteIDField, getLCP("rateWasteItem").getMapping(itemKey),
-                LM.object(getClass("rateWaste")).getMapping(rateWasteKey)));
+        props.add(new ImportProperty(writeOffRateIDField, getLCP("writeOffRateCountryItem").getMapping(defaultCountryObject, itemKey),
+                LM.object(getClass("writeOffRate")).getMapping(writeOffRateKey)));
 
         ImportTable table = new ImportTable(Arrays.asList(itemIDField, itemGroupIDField, itemCaptionField, UOMIDField,
                 nameUOMField, nameBrandField, brandIDField, nameCountryField, barcodeField, dateField,
                 importerPriceField, percentWholesaleMarkItemField, isFixPriceItemField, isLoafCutItemField, isWeightItemField,
-                compositionField, dataSuppliersRangeItemField, valueRetailVATItemField, quantityPackItemField, wareIDField,
-                priceWareField, ndsWareField, rateWasteIDField), data);
+                compositionField, dataSuppliersRangeItemField, valueRetailVATItemField, valueVATItemCountryDateField, quantityPackItemField, wareIDField,
+                priceWareField, ndsWareField, writeOffRateIDField), data);
 
         DataSession session = createSession();
         IntegrationService service = new IntegrationService(session, table, Arrays.asList(itemKey, itemGroupKey, UOMKey,
-                brandKey, countryKey, barcodeKey, supplierVATKey, retailVATKey, wareKey, rangeKey, rateWasteKey), props);
+                brandKey, countryKey, barcodeKey, supplierVATKey, retailVATKey, VATKey, wareKey, rangeKey, writeOffRateKey), props);
         service.synchronize(true, false);
         applySession(session);
         session.close();
@@ -380,93 +395,87 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
 
     }
 
-    private void importShipment(String path, ExecutionContext context) throws SQLException, ScriptingErrorLog.SemanticErrorException {
+    private void importUserInvoices(String path, ExecutionContext context) throws SQLException, ScriptingErrorLog.SemanticErrorException {
 
         try {
             int count = 20000;
             for (int start = 0; true; start += count) {
 
-                List<List<Object>> data = importShipmentFromDBF(path, start, count);
+                List<List<Object>> data = importUserInvoicesFromDBF(path, start, count);
                 if (data.isEmpty())
                     return;
 
-                ImportField shipmentField = new ImportField(getLCP("extSID"));
-                ImportField departmentStoreIDField = new ImportField(getLCP("extSID"));
+                ImportField userInvoiceField = new ImportField(getLCP("extSID"));
+                ImportField customerDepartmentStoreIDField = new ImportField(getLCP("extSID"));
                 ImportField supplierIDField = new ImportField(getLCP("extSID"));
+                ImportField supplierWarehouseIDField = new ImportField(getLCP("extSID"));
 
-                ImportField waybillShipmentField = new ImportField(getLCP("numberObject"));
-                ImportField seriesWaybillShipmentField = new ImportField(getLCP("seriesObject"));
-                ImportField dateShipmentField = new ImportField(getLCP("dateShipment"));
+                ImportField numberUserInvoiceField = new ImportField(getLCP("numberObject"));
+                ImportField seriesUserInvoiceField = new ImportField(getLCP("seriesObject"));
+                ImportField createPricingUserInvoiceField = new ImportField(getLCP("Purchase.createPricingUserInvoice"));
+                ImportField createShipmentUserInvoiceField = new ImportField(getLCP("Purchase.createShipmentUserInvoice"));
+                ImportField dateUserInvoiceField = new ImportField(getLCP("Purchase.dateUserInvoice"));
 
-                ImportField itemIDField = new ImportField(getLCP("extSID"));
-                ImportField shipmentDetailIDField = new ImportField(getLCP("extSID"));
-                ImportField quantityShipmentDetailField = new ImportField(getLCP("quantityShipmentDetail"));
-                ImportField supplierPriceShipmentDetail = new ImportField(getLCP("supplierPriceShipmentDetail"));
-                ImportField importerPriceShipmentDetail = new ImportField(getLCP("importerPriceShipmentDetail"));
-                ImportField retailPriceShipmentDetailField = new ImportField(getLCP("retailPriceShipmentDetail"));
-                ImportField retailMarkupShipmentDetailField = new ImportField(getLCP("retailMarkupShipmentDetail"));
-                ImportField dataSuppliersRangeField = new ImportField(getLCP("valueRate"));
-                ImportField valueRetailVATField = new ImportField(getLCP("valueRate"));
-                ImportField toShowWareField = new ImportField(getLCP("toShowWareShipment"));
+                ImportField itemField = new ImportField(getLCP("extSID"));
+                ImportField sidUserInvoiceDetailField = new ImportField(getLCP("Purchase.sidUserInvoiceDetail"));
+                ImportField quantityUserInvoiceDetailField = new ImportField(getLCP("Purchase.quantityUserInvoiceDetail"));
+                ImportField priceUserInvoiceDetail = new ImportField(getLCP("Purchase.priceUserInvoiceDetail"));
+                ImportField retailPriceUserInvoiceDetailField = new ImportField(getLCP("Purchase.retailPriceUserInvoiceDetail"));
+                ImportField retailMarkupUserInvoiceDetailField = new ImportField(getLCP("Purchase.retailMarkupUserInvoiceDetail"));
 
-                ImportKey<?> shipmentKey = new ImportKey((ConcreteCustomClass) getClass("shipment"),
-                        getLCP("numberSeriesToShipment").getMapping(waybillShipmentField, seriesWaybillShipmentField));
+                ImportKey<?> userInvoiceKey = new ImportKey((ConcreteCustomClass) getClass("Purchase.userInvoice"),
+                        getLCP("Purchase.numberSeriesToUserInvoice").getMapping(numberUserInvoiceField, seriesUserInvoiceField));
 
-                ImportKey<?> supplierKey = new ImportKey((ConcreteCustomClass) getClass("supplier"),
+                ImportKey<?> supplierKey = new ImportKey((ConcreteCustomClass) getClass("legalEntity"),
                         getLCP("extSIDToObject").getMapping(supplierIDField));
 
-                ImportKey<?> departmentStoreKey = new ImportKey((ConcreteCustomClass) getClass("departmentStore"),
-                        getLCP("extSIDToObject").getMapping(departmentStoreIDField));
+                ImportKey<?> customerDepartmentStoreKey = new ImportKey((ConcreteCustomClass) getClass("departmentStore"),
+                        getLCP("extSIDToObject").getMapping(customerDepartmentStoreIDField));
 
-                ImportKey<?> shipmentDetailKey = new ImportKey((ConcreteCustomClass) getClass("shipmentDetail"),
-                        getLCP("sidNumberSeriesToShipmentDetail").getMapping(shipmentDetailIDField, waybillShipmentField, seriesWaybillShipmentField));
+                ImportKey<?> supplierWarehouseKey = new ImportKey((ConcreteCustomClass) getClass("warehouse"),
+                        getLCP("extSIDToObject").getMapping(supplierWarehouseIDField));
+
+                ImportKey<?> userInvoiceDetailKey = new ImportKey((ConcreteCustomClass) getClass("Purchase.userInvoiceDetail"),
+                        getLCP("Purchase.userInvoiceDetailSID").getMapping(sidUserInvoiceDetailField));
 
                 ImportKey<?> itemKey = new ImportKey((ConcreteCustomClass) getClass("item"),
-                        getLCP("extSIDToObject").getMapping(itemIDField));
-
-                ImportKey<?> supplierVATKey = new ImportKey((ConcreteCustomClass) getClass("range"),
-                        getLCP("valueCurrentVATDefaultValue").getMapping(dataSuppliersRangeField));
-
-                ImportKey<?> retailVATKey = new ImportKey((ConcreteCustomClass) getClass("range"),
-                        getLCP("valueCurrentVATDefaultValue").getMapping(valueRetailVATField));
-
+                        getLCP("extSIDToObject").getMapping(itemField));
 
                 List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
 
-                props.add(new ImportProperty(waybillShipmentField, getLCP("numberObject").getMapping(shipmentKey)));
-                props.add(new ImportProperty(seriesWaybillShipmentField, getLCP("seriesObject").getMapping(shipmentKey)));
-                props.add(new ImportProperty(dateShipmentField, getLCP("dateShipment").getMapping(shipmentKey)));
-                props.add(new ImportProperty(departmentStoreIDField, getLCP("departmentStoreShipment").getMapping(shipmentKey),
-                        LM.object(getClass("departmentStore")).getMapping(departmentStoreKey)));
-                props.add(new ImportProperty(supplierIDField, getLCP("supplierShipment").getMapping(shipmentKey),
-                        LM.object(getClass("supplier")).getMapping(supplierKey)));
-                props.add(new ImportProperty(toShowWareField, getLCP("toShowWareShipment").getMapping(shipmentKey)));
+                props.add(new ImportProperty(numberUserInvoiceField, getLCP("numberObject").getMapping(userInvoiceKey)));
+                props.add(new ImportProperty(seriesUserInvoiceField, getLCP("seriesObject").getMapping(userInvoiceKey)));
+                props.add(new ImportProperty(createPricingUserInvoiceField, getLCP("Purchase.createPricingUserInvoice").getMapping(userInvoiceKey)));
+                props.add(new ImportProperty(createShipmentUserInvoiceField, getLCP("Purchase.createShipmentUserInvoice").getMapping(userInvoiceKey)));
+                props.add(new ImportProperty(dateUserInvoiceField, getLCP("Purchase.dateUserInvoice").getMapping(userInvoiceKey)));
+                props.add(new ImportProperty(customerDepartmentStoreIDField, getLCP("Purchase.customerStockUserInvoice").getMapping(userInvoiceKey),
+                        LM.object(getClass("departmentStore")).getMapping(customerDepartmentStoreKey)));
+                props.add(new ImportProperty(supplierWarehouseIDField, getLCP("Purchase.supplierStockUserInvoice").getMapping(userInvoiceKey),
+                        LM.object(getClass("warehouse")).getMapping(supplierWarehouseKey)));
+                props.add(new ImportProperty(supplierIDField, getLCP("Purchase.supplierUserInvoice").getMapping(userInvoiceKey),
+                        LM.object(getClass("legalEntity")).getMapping(supplierKey)));
+                props.add(new ImportProperty(customerDepartmentStoreIDField, getLCP("Purchase.customerUserInvoice").getMapping(userInvoiceKey),
+                        getLCP("legalEntityStock").getMapping(customerDepartmentStoreKey)));
 
-                props.add(new ImportProperty(shipmentDetailIDField, getLCP("sidShipmentDetail").getMapping(shipmentDetailKey)));
-                props.add(new ImportProperty(quantityShipmentDetailField, getLCP("quantityShipmentDetail").getMapping(shipmentDetailKey)));
-                props.add(new ImportProperty(supplierPriceShipmentDetail, getLCP("supplierPriceShipmentDetail").getMapping(shipmentDetailKey)));
-                props.add(new ImportProperty(importerPriceShipmentDetail, getLCP("importerPriceShipmentDetail").getMapping(shipmentDetailKey)));
-                props.add(new ImportProperty(retailPriceShipmentDetailField, getLCP("retailPriceShipmentDetail").getMapping(shipmentDetailKey)));
-                props.add(new ImportProperty(retailMarkupShipmentDetailField, getLCP("retailMarkupShipmentDetail").getMapping(shipmentDetailKey)));
+                props.add(new ImportProperty(quantityUserInvoiceDetailField, getLCP("Purchase.quantityUserInvoiceDetail").getMapping(userInvoiceDetailKey)));
+                props.add(new ImportProperty(priceUserInvoiceDetail, getLCP("Purchase.priceUserInvoiceDetail").getMapping(userInvoiceDetailKey)));
+                props.add(new ImportProperty(retailPriceUserInvoiceDetailField, getLCP("Purchase.retailPriceUserInvoiceDetail").getMapping(userInvoiceDetailKey)));
+                props.add(new ImportProperty(retailMarkupUserInvoiceDetailField, getLCP("Purchase.retailMarkupUserInvoiceDetail").getMapping(userInvoiceDetailKey)));
 
-                props.add(new ImportProperty(dataSuppliersRangeField, getLCP("supplierVATShipmentDetail").getMapping(shipmentDetailKey, /*dateShipmentField, */supplierVATKey),
-                        LM.object(getClass("range")).getMapping(supplierVATKey)));
-                props.add(new ImportProperty(valueRetailVATField, getLCP("retailVATShipmentDetail").getMapping(shipmentDetailKey, /*dateShipmentField, */retailVATKey),
-                        LM.object(getClass("range")).getMapping(retailVATKey)));
-
-                props.add(new ImportProperty(itemIDField, getLCP("itemShipmentDetail").getMapping(shipmentDetailKey),
+                props.add(new ImportProperty(itemField, getLCP("Purchase.skuInvoiceDetail").getMapping(userInvoiceDetailKey),
                         LM.object(getClass("item")).getMapping(itemKey)));
 
-                props.add(new ImportProperty(shipmentField, getLCP("shipmentShipmentDetail").getMapping(shipmentDetailKey),
-                        LM.object(getClass("shipment")).getMapping(shipmentKey)));
+                props.add(new ImportProperty(userInvoiceField, getLCP("Purchase.userInvoiceUserInvoiceDetail").getMapping(userInvoiceDetailKey),
+                        LM.object(getClass("Purchase.userInvoice")).getMapping(userInvoiceKey)));
 
-                ImportTable table = new ImportTable(Arrays.asList(waybillShipmentField, seriesWaybillShipmentField,
-                        departmentStoreIDField, supplierIDField, dateShipmentField, itemIDField, shipmentDetailIDField,
-                        quantityShipmentDetailField, supplierPriceShipmentDetail, importerPriceShipmentDetail, retailPriceShipmentDetailField,
-                        retailMarkupShipmentDetailField, dataSuppliersRangeField, valueRetailVATField, toShowWareField), data);
+                ImportTable table = new ImportTable(Arrays.asList(numberUserInvoiceField, seriesUserInvoiceField,
+                        createPricingUserInvoiceField, createShipmentUserInvoiceField, sidUserInvoiceDetailField, dateUserInvoiceField, itemField,
+                        quantityUserInvoiceDetailField, supplierIDField, customerDepartmentStoreIDField,
+                        supplierWarehouseIDField, priceUserInvoiceDetail, retailPriceUserInvoiceDetailField,
+                        retailMarkupUserInvoiceDetailField), data);
 
                 DataSession session = createSession();
-                IntegrationService service = new IntegrationService(session, table, Arrays.asList(shipmentKey, supplierKey, departmentStoreKey, shipmentDetailKey, itemKey, supplierVATKey, retailVATKey), props);
+                IntegrationService service = new IntegrationService(session, table, Arrays.asList(userInvoiceKey, userInvoiceDetailKey, itemKey, supplierKey, customerDepartmentStoreKey), props);
                 service.synchronize(true, false);
                 applySession(session);
                 session.close();
@@ -507,7 +516,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                 ImportKey<?> itemKey = new ImportKey((ConcreteCustomClass) getClass("item"),
                         getLCP("extSIDToObject").getMapping(itemIDField));
 
-                ImportKey<?> supplierKey = new ImportKey((ConcreteCustomClass) getClass("supplier"),
+                ImportKey<?> supplierKey = new ImportKey((ConcreteCustomClass) getClass("legalEntity"),
                         getLCP("extSIDToObject").getMapping(supplierIDField));
 
                 ImportKey<?> departmentStoreKey = new ImportKey((ConcreteCustomClass) getClass("departmentStore"),
@@ -542,12 +551,12 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
         }
     }
 
-    private void importCompanies(String path, Boolean importInactive, ExecutionContext context) throws SQLException, ScriptingErrorLog.SemanticErrorException {
+    private void importLegalEntities(String path, Boolean importInactive, ExecutionContext context) throws SQLException, ScriptingErrorLog.SemanticErrorException {
 
         try {
-            List<List<Object>> data = importLegalEntitiesFromDBF(path, importInactive, "ЮР");
+            List<List<Object>> data = importLegalEntitiesFromDBF(path, importInactive, false);
 
-            ImportField companyIDField = new ImportField(getLCP("extSID"));
+            ImportField legalEntityIDField = new ImportField(getLCP("extSID"));
             ImportField nameLegalEntityField = new ImportField(getLCP("name"));
             ImportField legalAddressField = new ImportField(getLCP("name"));
             ImportField unpField = new ImportField(getLCP("UNPLegalEntity"));
@@ -560,18 +569,26 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
 
             ImportField chainStoresIDField = new ImportField(getLCP("extSID"));
             ImportField nameChainStoresField = new ImportField(getLCP("name"));
+            ImportField bankIDField = new ImportField(getLCP("extSID"));
             ImportField nameCountryField = new ImportField(getLCP("name"));
+
+            ImportField isSupplierLegalEntityField = new ImportField(getLCP("isSupplierLegalEntity"));
+            ImportField isCompanyLegalEntityField = new ImportField(getLCP("isCompanyLegalEntity"));
+            ImportField isCustomerLegalEntityField = new ImportField(getLCP("isCustomerLegalEntity"));
 
             DataObject defaultDate = new DataObject(new java.sql.Date(2001 - 1900, 0, 01), DateClass.instance);
 
-            ImportKey<?> companyKey = new ImportKey((ConcreteCustomClass) getClass("company"),
-                    getLCP("extSIDToObject").getMapping(companyIDField));
+            ImportKey<?> legalEntityKey = new ImportKey((ConcreteCustomClass) getClass("legalEntity"),
+                    getLCP("extSIDToObject").getMapping(legalEntityIDField));
 
             ImportKey<?> ownershipKey = new ImportKey((ConcreteCustomClass) getClass("ownership"),
                     getLCP("shortNameToOwnership").getMapping(shortNameOwnershipField));
 
             ImportKey<?> accountKey = new ImportKey((ConcreteCustomClass) getClass("account"),
                     getLCP("accountNumber").getMapping(accountField));
+
+            ImportKey<?> bankKey = new ImportKey((ConcreteCustomClass) getClass("bank"),
+                    getLCP("extSIDToObject").getMapping(bankIDField));
 
             ImportKey<?> chainStoresKey = new ImportKey((ConcreteCustomClass) getClass("chainStores"),
                     getLCP("extSIDToObject").getMapping(chainStoresIDField));
@@ -581,37 +598,45 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
 
             List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
 
-            props.add(new ImportProperty(companyIDField, getLCP("extSID").getMapping(companyKey)));
-            props.add(new ImportProperty(nameLegalEntityField, getLCP("name").getMapping(companyKey)));
-            props.add(new ImportProperty(nameLegalEntityField, getLCP("fullNameLegalEntity").getMapping(companyKey)));
-            props.add(new ImportProperty(legalAddressField, getLCP("dataAddressLegalEntityDate").getMapping(companyKey, defaultDate)));
-            props.add(new ImportProperty(unpField, getLCP("UNPLegalEntity").getMapping(companyKey)));
-            props.add(new ImportProperty(okpoField, getLCP("OKPOLegalEntity").getMapping(companyKey)));
-            props.add(new ImportProperty(phoneField, getLCP("dataPhoneLegalEntityDate").getMapping(companyKey, defaultDate)));
-            props.add(new ImportProperty(emailField, getLCP("emailLegalEntity").getMapping(companyKey)));
+            props.add(new ImportProperty(legalEntityIDField, getLCP("extSID").getMapping(legalEntityKey)));
+            props.add(new ImportProperty(nameLegalEntityField, getLCP("name").getMapping(legalEntityKey)));
+            props.add(new ImportProperty(nameLegalEntityField, getLCP("fullNameLegalEntity").getMapping(legalEntityKey)));
+            props.add(new ImportProperty(legalAddressField, getLCP("dataAddressLegalEntityDate").getMapping(legalEntityKey, defaultDate)));
+            props.add(new ImportProperty(unpField, getLCP("UNPLegalEntity").getMapping(legalEntityKey)));
+            props.add(new ImportProperty(okpoField, getLCP("OKPOLegalEntity").getMapping(legalEntityKey)));
+            props.add(new ImportProperty(phoneField, getLCP("dataPhoneLegalEntityDate").getMapping(legalEntityKey, defaultDate)));
+            props.add(new ImportProperty(emailField, getLCP("emailLegalEntity").getMapping(legalEntityKey)));
+
+            props.add(new ImportProperty(isSupplierLegalEntityField, getLCP("isSupplierLegalEntity").getMapping(legalEntityKey)));
+            props.add(new ImportProperty(isCompanyLegalEntityField, getLCP("isCompanyLegalEntity").getMapping(legalEntityKey)));
+            props.add(new ImportProperty(isCustomerLegalEntityField, getLCP("isCustomerLegalEntity").getMapping(legalEntityKey)));
 
             props.add(new ImportProperty(nameOwnershipField, getLCP("name").getMapping(ownershipKey)));
             props.add(new ImportProperty(shortNameOwnershipField, getLCP("shortNameOwnership").getMapping(ownershipKey)));
-            props.add(new ImportProperty(shortNameOwnershipField, getLCP("ownershipLegalEntity").getMapping(companyKey),
+            props.add(new ImportProperty(shortNameOwnershipField, getLCP("ownershipLegalEntity").getMapping(legalEntityKey),
                     LM.object(getClass("ownership")).getMapping(ownershipKey)));
 
             props.add(new ImportProperty(accountField, getLCP("numberAccount").getMapping(accountKey)));
-            props.add(new ImportProperty(companyIDField, getLCP("legalEntityAccount").getMapping(accountKey),
-                    LM.object(getClass("company")).getMapping(companyKey)));
+            props.add(new ImportProperty(legalEntityIDField, getLCP("legalEntityAccount").getMapping(accountKey),
+                    LM.object(getClass("legalEntity")).getMapping(legalEntityKey)));
 
             props.add(new ImportProperty(chainStoresIDField, getLCP("extSID").getMapping(chainStoresKey)));
             props.add(new ImportProperty(nameChainStoresField, getLCP("name").getMapping(chainStoresKey)));
 
+            props.add(new ImportProperty(bankIDField, getLCP("bankAccount").getMapping(accountKey),
+                    LM.object(getClass("bank")).getMapping(bankKey)));
+
             props.add(new ImportProperty(nameCountryField, getLCP("name").getMapping(countryKey)));
-            props.add(new ImportProperty(nameCountryField, getLCP("countryLegalEntity").getMapping(companyKey),
+            props.add(new ImportProperty(nameCountryField, getLCP("countryLegalEntity").getMapping(legalEntityKey),
                     LM.object(getClass("country")).getMapping(countryKey)));
 
-            ImportTable table = new ImportTable(Arrays.asList(companyIDField, nameLegalEntityField, legalAddressField,
+            ImportTable table = new ImportTable(Arrays.asList(legalEntityIDField, nameLegalEntityField, legalAddressField,
                     unpField, okpoField, phoneField, emailField, nameOwnershipField, shortNameOwnershipField,
-                    accountField, chainStoresIDField, nameChainStoresField, nameCountryField), data);
+                    accountField, chainStoresIDField, nameChainStoresField, bankIDField, nameCountryField,
+                    isSupplierLegalEntityField, isCompanyLegalEntityField, isCustomerLegalEntityField), data);
 
             DataSession session = createSession();
-            IntegrationService service = new IntegrationService(session, table, Arrays.asList(companyKey, ownershipKey, accountKey, chainStoresKey, countryKey), props);
+            IntegrationService service = new IntegrationService(session, table, Arrays.asList(legalEntityKey, ownershipKey, accountKey, bankKey, chainStoresKey, countryKey), props);
             service.synchronize(true, false);
             applySession(session);
             session.close();
@@ -625,137 +650,35 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
         }
     }
 
-    private void importSuppliers(String path, Boolean importInactive, ExecutionContext context) throws SQLException, ScriptingErrorLog.SemanticErrorException {
+    private void importWarehouses(String path, Boolean importInactive, ExecutionContext context) throws SQLException, ScriptingErrorLog.SemanticErrorException {
 
         try {
-            List<List<Object>> data = importLegalEntitiesFromDBF(path, importInactive, "ПС");
+            List<List<Object>> data = importWarehousesFromDBF(path, importInactive);
 
-            ImportField supplierIDField = new ImportField(getLCP("extSID"));
-            ImportField nameLegalEntityField = new ImportField(getLCP("name"));
-            ImportField legalAddressField = new ImportField(getLCP("name"));
-            ImportField unpField = new ImportField(getLCP("UNPLegalEntity"));
-            ImportField okpoField = new ImportField(getLCP("OKPOLegalEntity"));
-            ImportField phoneField = new ImportField(getLCP("dataPhoneLegalEntityDate"));
-            ImportField emailField = new ImportField(getLCP("name"));
-            ImportField nameOwnershipField = new ImportField(getLCP("name"));
-            ImportField shortNameOwnershipField = new ImportField(getLCP("shortNameOwnership"));
-            ImportField accountField = new ImportField(getLCP("numberAccount"));
-            ImportField bankIDField = new ImportField(getLCP("extSID"));
+            ImportField legalEntityIDField = new ImportField(getLCP("extSID"));
+            ImportField warehouseIDField = new ImportField(getLCP("extSID"));
+            ImportField nameWarehouseField = new ImportField(getLCP("name"));
+            ImportField addressWarehouseField = new ImportField(getLCP("name"));
 
-            DataObject defaultDate = new DataObject(new java.sql.Date(2001 - 1900, 0, 01), DateClass.instance);
+            ImportKey<?> legalEntityKey = new ImportKey((ConcreteCustomClass) getClass("legalEntity"),
+                    getLCP("extSIDToObject").getMapping(legalEntityIDField));
 
-            ImportKey<?> supplierKey = new ImportKey((ConcreteCustomClass) getClass("supplier"),
-                    getLCP("extSIDToObject").getMapping(supplierIDField));
-
-            ImportKey<?> ownershipKey = new ImportKey((ConcreteCustomClass) getClass("ownership"),
-                    getLCP("shortNameToOwnership").getMapping(shortNameOwnershipField));
-
-            ImportKey<?> accountKey = new ImportKey((ConcreteCustomClass) getClass("account"),
-                    getLCP("accountNumber").getMapping(accountField));
-
-            ImportKey<?> bankKey = new ImportKey((ConcreteCustomClass) getClass("bank"),
-                    getLCP("extSIDToObject").getMapping(bankIDField));
+            ImportKey<?> warehouseKey = new ImportKey((ConcreteCustomClass) getClass("warehouse"),
+                    getLCP("extSIDToObject").getMapping(warehouseIDField));
 
             List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
 
-            props.add(new ImportProperty(supplierIDField, getLCP("extSID").getMapping(supplierKey)));
-            props.add(new ImportProperty(nameLegalEntityField, getLCP("name").getMapping(supplierKey)));
-            props.add(new ImportProperty(nameLegalEntityField, getLCP("fullNameLegalEntity").getMapping(supplierKey)));
-            props.add(new ImportProperty(legalAddressField, getLCP("dataAddressLegalEntityDate").getMapping(supplierKey, defaultDate)));
-            props.add(new ImportProperty(unpField, getLCP("UNPLegalEntity").getMapping(supplierKey)));
-            props.add(new ImportProperty(okpoField, getLCP("OKPOLegalEntity").getMapping(supplierKey)));
-            props.add(new ImportProperty(phoneField, getLCP("dataPhoneLegalEntityDate").getMapping(supplierKey, defaultDate)));
-            props.add(new ImportProperty(emailField, getLCP("emailLegalEntity").getMapping(supplierKey)));
+            props.add(new ImportProperty(warehouseIDField, getLCP("extSID").getMapping(warehouseKey)));
+            props.add(new ImportProperty(nameWarehouseField, getLCP("name").getMapping(warehouseKey)));
+            props.add(new ImportProperty(addressWarehouseField, getLCP("addressWarehouse").getMapping(warehouseKey)));
+            props.add(new ImportProperty(legalEntityIDField, getLCP("legalEntityWarehouse").getMapping(warehouseKey),
+                    LM.object(getClass("legalEntity")).getMapping(legalEntityKey)));
 
-            props.add(new ImportProperty(nameOwnershipField, getLCP("name").getMapping(ownershipKey)));
-            props.add(new ImportProperty(shortNameOwnershipField, getLCP("shortNameOwnership").getMapping(ownershipKey)));
-            props.add(new ImportProperty(shortNameOwnershipField, getLCP("ownershipLegalEntity").getMapping(supplierKey),
-                    LM.object(getClass("ownership")).getMapping(ownershipKey)));
-
-            props.add(new ImportProperty(accountField, getLCP("numberAccount").getMapping(accountKey)));
-            props.add(new ImportProperty(supplierIDField, getLCP("legalEntityAccount").getMapping(accountKey),
-                    LM.object(getClass("supplier")).getMapping(supplierKey)));
-            props.add(new ImportProperty(bankIDField, getLCP("bankAccount").getMapping(accountKey),
-                    LM.object(getClass("bank")).getMapping(bankKey)));
-
-            ImportTable table = new ImportTable(Arrays.asList(supplierIDField, nameLegalEntityField, legalAddressField,
-                    unpField, okpoField, phoneField, emailField, nameOwnershipField, shortNameOwnershipField,
-                    accountField, bankIDField), data);
+            ImportTable table = new ImportTable(Arrays.asList(legalEntityIDField, warehouseIDField,
+                    nameWarehouseField, addressWarehouseField), data);
 
             DataSession session = createSession();
-            IntegrationService service = new IntegrationService(session, table, Arrays.asList(supplierKey, ownershipKey, accountKey, bankKey), props);
-            service.synchronize(true, false);
-            applySession(session);
-            session.close();
-
-        } catch (xBaseJException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private void importCustomers(String path, Boolean importInactive, ExecutionContext context) throws SQLException, ScriptingErrorLog.SemanticErrorException {
-
-        try {
-            List<List<Object>> data = importLegalEntitiesFromDBF(path, importInactive, "ПК");
-
-            ImportField customerIDField = new ImportField(getLCP("extSID"));
-            ImportField nameLegalEntityField = new ImportField(getLCP("name"));
-            ImportField legalAddressField = new ImportField(getLCP("name"));
-            ImportField unpField = new ImportField(getLCP("UNPLegalEntity"));
-            ImportField okpoField = new ImportField(getLCP("OKPOLegalEntity"));
-            ImportField phoneField = new ImportField(getLCP("dataPhoneLegalEntityDate"));
-            ImportField emailField = new ImportField(getLCP("name"));
-            ImportField nameOwnershipField = new ImportField(getLCP("name"));
-            ImportField shortNameOwnershipField = new ImportField(getLCP("shortNameOwnership"));
-            ImportField accountField = new ImportField(getLCP("numberAccount"));
-            ImportField bankIDField = new ImportField(getLCP("extSID"));
-
-            DataObject defaultDate = new DataObject(new java.sql.Date(2001 - 1900, 0, 01), DateClass.instance);
-
-            ImportKey<?> customerKey = new ImportKey((ConcreteCustomClass) getClass("customer"),
-                    getLCP("extSIDToObject").getMapping(customerIDField));
-
-            ImportKey<?> ownershipKey = new ImportKey((ConcreteCustomClass) getClass("ownership"),
-                    getLCP("shortNameToOwnership").getMapping(shortNameOwnershipField));
-
-            ImportKey<?> accountKey = new ImportKey((ConcreteCustomClass) getClass("account"),
-                    getLCP("accountNumber").getMapping(accountField));
-
-            ImportKey<?> bankKey = new ImportKey((ConcreteCustomClass) getClass("bank"),
-                    getLCP("extSIDToObject").getMapping(bankIDField));
-
-            List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
-
-            props.add(new ImportProperty(customerIDField, getLCP("extSID").getMapping(customerKey)));
-            props.add(new ImportProperty(nameLegalEntityField, getLCP("name").getMapping(customerKey)));
-            props.add(new ImportProperty(nameLegalEntityField, getLCP("fullNameLegalEntity").getMapping(customerKey)));
-            props.add(new ImportProperty(legalAddressField, getLCP("dataAddressLegalEntityDate").getMapping(customerKey, defaultDate)));
-            props.add(new ImportProperty(unpField, getLCP("UNPLegalEntity").getMapping(customerKey)));
-            props.add(new ImportProperty(okpoField, getLCP("OKPOLegalEntity").getMapping(customerKey)));
-            props.add(new ImportProperty(phoneField, getLCP("dataPhoneLegalEntityDate").getMapping(customerKey, defaultDate)));
-            props.add(new ImportProperty(emailField, getLCP("emailLegalEntity").getMapping(customerKey)));
-
-            props.add(new ImportProperty(nameOwnershipField, getLCP("name").getMapping(ownershipKey)));
-            props.add(new ImportProperty(shortNameOwnershipField, getLCP("shortNameOwnership").getMapping(ownershipKey)));
-            props.add(new ImportProperty(shortNameOwnershipField, getLCP("ownershipLegalEntity").getMapping(customerKey),
-                    LM.object(getClass("ownership")).getMapping(ownershipKey)));
-
-            props.add(new ImportProperty(accountField, getLCP("numberAccount").getMapping(accountKey)));
-            props.add(new ImportProperty(customerIDField, getLCP("legalEntityAccount").getMapping(accountKey),
-                    LM.object(getClass("customer")).getMapping(customerKey)));
-            props.add(new ImportProperty(bankIDField, getLCP("bankAccount").getMapping(accountKey),
-                    LM.object(getClass("bank")).getMapping(bankKey)));
-
-            ImportTable table = new ImportTable(Arrays.asList(customerIDField, nameLegalEntityField, legalAddressField,
-                    unpField, okpoField, phoneField, emailField, nameOwnershipField, shortNameOwnershipField,
-                    accountField, bankIDField), data);
-
-            DataSession session = createSession();
-            IntegrationService service = new IntegrationService(session, table, Arrays.asList(customerKey, ownershipKey, accountKey, bankKey), props);
+            IntegrationService service = new IntegrationService(session, table, Arrays.asList(legalEntityKey, warehouseKey), props);
             service.synchronize(true, false);
             applySession(session);
             session.close();
@@ -772,20 +695,20 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
     private void importStores(String path, Boolean importInactive, ExecutionContext context) throws SQLException, ScriptingErrorLog.SemanticErrorException {
 
         try {
-            List<List<Object>> data = importLegalEntitiesFromDBF(path, importInactive, "МГ");
+            List<List<Object>> data = importLegalEntitiesFromDBF(path, importInactive, true);
 
             ImportField storeIDField = new ImportField(getLCP("extSID"));
             ImportField nameStoreField = new ImportField(getLCP("name"));
             ImportField addressStoreField = new ImportField(getLCP("name"));
-            ImportField companyIDField = new ImportField(getLCP("extSID"));
+            ImportField legalEntityIDField = new ImportField(getLCP("extSID"));
             ImportField chainStoresIDField = new ImportField(getLCP("extSID"));
             ImportField storeTypeField = new ImportField(getLCP("name"));
 
             ImportKey<?> storeKey = new ImportKey((ConcreteCustomClass) getClass("store"),
                     getLCP("extSIDToObject").getMapping(storeIDField));
 
-            ImportKey<?> companyKey = new ImportKey((ConcreteCustomClass) getClass("company"),
-                    getLCP("extSIDToObject").getMapping(companyIDField));
+            ImportKey<?> legalEntityKey = new ImportKey((ConcreteCustomClass) getClass("legalEntity"),
+                    getLCP("extSIDToObject").getMapping(legalEntityIDField));
 
             ImportKey<?> chainStoresKey = new ImportKey((ConcreteCustomClass) getClass("chainStores"),
                     getLCP("extSIDToObject").getMapping(chainStoresIDField));
@@ -798,8 +721,8 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             props.add(new ImportProperty(storeIDField, getLCP("extSID").getMapping(storeKey)));
             props.add(new ImportProperty(nameStoreField, getLCP("name").getMapping(storeKey)));
             props.add(new ImportProperty(addressStoreField, getLCP("addressStore").getMapping(storeKey)));
-            props.add(new ImportProperty(companyIDField, getLCP("companyStore").getMapping(storeKey),
-                    LM.object(getClass("company")).getMapping(companyKey)));
+            props.add(new ImportProperty(legalEntityIDField, getLCP("legalEntityStore").getMapping(storeKey),
+                    LM.object(getClass("legalEntity")).getMapping(legalEntityKey)));
 
             props.add(new ImportProperty(storeTypeField, getLCP("name").getMapping(storeTypeKey)));
             props.add(new ImportProperty(storeTypeField, getLCP("storeTypeStore").getMapping(storeKey),
@@ -807,10 +730,10 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             props.add(new ImportProperty(chainStoresIDField, getLCP("chainStoresStoreType").getMapping(storeTypeKey),
                     LM.object(getClass("chainStores")).getMapping(chainStoresKey)));
 
-            ImportTable table = new ImportTable(Arrays.asList(storeIDField, nameStoreField, addressStoreField, companyIDField, storeTypeField, chainStoresIDField), data);
+            ImportTable table = new ImportTable(Arrays.asList(storeIDField, nameStoreField, addressStoreField, legalEntityIDField, storeTypeField, chainStoresIDField), data);
 
             DataSession session = createSession();
-            IntegrationService service = new IntegrationService(session, table, Arrays.asList(storeKey, companyKey, chainStoresKey, storeTypeKey), props);
+            IntegrationService service = new IntegrationService(session, table, Arrays.asList(storeKey, legalEntityKey, chainStoresKey, storeTypeKey), props);
             service.synchronize(true, false);
             applySession(session);
             session.close();
@@ -912,23 +835,30 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
         try {
             List<List<Object>> data = importRateWastesFromDBF(path);
 
-            ImportField rateWasteIDField = new ImportField(getLCP("extSID"));
-            ImportField nameRateWasteField = new ImportField(getLCP("name"));
-            ImportField percentRateWasteField = new ImportField(getLCP("percentRateWaste"));
+            ImportField writeOffRateIDField = new ImportField(getLCP("extSID"));
+            ImportField nameWriteOffRateField = new ImportField(getLCP("name"));
+            ImportField percentWriteOffRateField = new ImportField(getLCP("percentWriteOffRate"));
+            ImportField countryWriteOffRateField = new ImportField(getLCP("name"));
 
-            ImportKey<?> rateWasteKey = new ImportKey((ConcreteCustomClass) getClass("rateWaste"),
-                    getLCP("extSIDToObject").getMapping(rateWasteIDField));
+            //DataObject defaultCountryObject = (DataObject) getLCP("defaultCountry").readClasses(context.getSession());
+
+            ImportKey<?> writeOffRateKey = new ImportKey((ConcreteCustomClass) getClass("writeOffRate"),
+                    getLCP("extSIDToObject").getMapping(writeOffRateIDField));
+
+            ImportKey<?> countryKey = new ImportKey((ConcreteCustomClass) getClass("country"),
+                    getLCP("countryName").getMapping(countryWriteOffRateField));
 
             List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
 
-            props.add(new ImportProperty(rateWasteIDField, getLCP("extSID").getMapping(rateWasteKey)));
-            props.add(new ImportProperty(nameRateWasteField, getLCP("name").getMapping(rateWasteKey)));
-            props.add(new ImportProperty(percentRateWasteField, getLCP("percentRateWaste").getMapping(rateWasteKey)));
-
-            ImportTable table = new ImportTable(Arrays.asList(rateWasteIDField, nameRateWasteField, percentRateWasteField), data);
+            props.add(new ImportProperty(writeOffRateIDField, getLCP("extSID").getMapping(writeOffRateKey)));
+            props.add(new ImportProperty(nameWriteOffRateField, getLCP("name").getMapping(writeOffRateKey)));
+            props.add(new ImportProperty(percentWriteOffRateField, getLCP("percentWriteOffRate").getMapping(writeOffRateKey)));
+            props.add(new ImportProperty(countryWriteOffRateField, getLCP("countryWriteOffRate").getMapping(writeOffRateKey),
+                    LM.object(getClass("country")).getMapping(countryKey)));
+            ImportTable table = new ImportTable(Arrays.asList(writeOffRateIDField, nameWriteOffRateField, percentWriteOffRateField, countryWriteOffRateField), data);
 
             DataSession session = createSession();
-            IntegrationService service = new IntegrationService(session, table, Arrays.asList(rateWasteKey), props);
+            IntegrationService service = new IntegrationService(session, table, Arrays.asList(writeOffRateKey, countryKey), props);
             service.synchronize(true, false);
             applySession(session);
             session.close();
@@ -995,9 +925,10 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             Boolean isWare = "T".equals(new String(importFile.getField("LGRMSEC").getBytes(), "Cp1251").trim());
             String wareID = new String(importFile.getField("K_GRMAT").getBytes(), "Cp1251").trim();
             String pol_naim = new String(importFile.getField("POL_NAIM").getBytes(), "Cp1251").trim();
+            Double price = new Double(new String(importFile.getField("N_PRCEN").getBytes(), "Cp1251").trim());
 
             if (!"".equals(wareID) && isWare)
-                data.add(Arrays.asList((Object) wareID, pol_naim));
+                data.add(Arrays.asList((Object) wareID, pol_naim, price));
         }
         return data;
     }
@@ -1074,6 +1005,8 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                 String UOM = new String(itemsImportFile.getField("K_IZM").getBytes(), "Cp1251").trim();
                 String brand = new String(itemsImportFile.getField("BRAND").getBytes(), "Cp1251").trim();
                 String country = new String(itemsImportFile.getField("MANFR").getBytes(), "Cp1251").trim();
+                if ("РБ".equals(country) || "Беларусь".equals(country))
+                    country = "БЕЛАРУСЬ";
                 String dateString = new String(itemsImportFile.getField("P_TIME").getBytes(), "Cp1251").trim();
                 Date date = "".equals(dateString) ? null : new java.sql.Date(DateUtils.parseDate(dateString, new String[]{"yyyyMMdd"}).getTime());
                 Double importerPrice = new Double(new String(itemsImportFile.getField("N_IZG").getBytes(), "Cp1251").trim());
@@ -1097,7 +1030,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                 if (!"".equals(k_grtov) && (!inactiveItem || importInactive) && !isWare)
                     data.add(Arrays.asList((Object) itemID, k_grtov, pol_naim, "U_" + UOM, UOM, brand, "B_" + brand, country, barcode,
                             date, importerPrice, percentWholesaleMarkItem, isFixPriceItem ? isFixPriceItem : null, isLoafCutItem ? isLoafCutItem : null, isWeightItem ? isWeightItem : null,
-                            "".equals(composition) ? null : composition, suppliersRange, retailVAT, quantityPackItem, wareID,
+                            "".equals(composition) ? null : composition, suppliersRange, retailVAT, retailVAT, quantityPackItem, wareID,
                             wares.containsKey(itemID) ? wares.get(itemID)[0] : null, wares.containsKey(itemID) ? wares.get(itemID)[1] : null,
                             "RW_".equals(rateWasteID) ? null : rateWasteID));
             } catch (ParseException e) {
@@ -1132,8 +1065,8 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
         return data;
     }
 
-    private List<List<Object>> importShipmentFromDBF(String path, int start, int count) throws
-            IOException, xBaseJException, ParseException {
+    private List<List<Object>> importUserInvoicesFromDBF(String path, int start, int count) throws
+            IOException, xBaseJException, ParseException, ScriptingErrorLog.SemanticErrorException {
 
         DBF importFile = new DBF(path);
         int totalRecordCount = importFile.getRecordCount();
@@ -1147,24 +1080,22 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             String post_dok[] = new String(importFile.getField("POST_DOK").getBytes(), "Cp1251").trim().split("-");
             String number = post_dok[0];
             String series = post_dok.length == 1 ? null : post_dok[1];
-            String departmentStoreID = new String(importFile.getField("K_SKL").getBytes(), "Cp1251").trim();
-            String supplierID = new String(importFile.getField("K_POST").getBytes(), "Cp1251").trim();
+            String itemID = new String(importFile.getField("K_GRMAT").getBytes(), "Cp1251").trim();
+            String userInvoiceDetailSID = "SD_" + number + series + itemID;
             String dateString = new String(importFile.getField("D_PRIH").getBytes(), "Cp1251").trim();
             Date dateShipment = "".equals(dateString) ? null : new java.sql.Date(DateUtils.parseDate(dateString, new String[]{"yyyyMMdd"}).getTime());
-            String itemID = new String(importFile.getField("K_GRMAT").getBytes(), "Cp1251").trim();
-            String shipmentDetailID = "SD_" + itemID;
             Double quantityShipmentDetail = new Double(new String(importFile.getField("N_MAT").getBytes(), "Cp1251").trim());
-            Double supplierPriceShipmentDetail = new Double(new String(importFile.getField("N_IZG").getBytes(), "Cp1251").trim()); // пока одинаковые
-            Double importerPriceShipmentDetail = new Double(new String(importFile.getField("N_IZG").getBytes(), "Cp1251").trim());
+            String supplierID = new String(importFile.getField("K_POST").getBytes(), "Cp1251").trim();
+            String warehouseID = new String(importFile.getField("K_SKL").getBytes(), "Cp1251").trim();
+            String supplierWarehouse = supplierID + "WH";
+            Double priceShipmentDetail = new Double(new String(importFile.getField("N_IZG").getBytes(), "Cp1251").trim());
             Double retailPriceShipmentDetail = new Double(new String(importFile.getField("N_CENU").getBytes(), "Cp1251").trim());
             Double retailMarkupShipmentDetail = new Double(new String(importFile.getField("N_TN").getBytes(), "Cp1251").trim());
-            Double suppliersRange = new Double(new String(importFile.getField("NDSP").getBytes(), "Cp1251").trim());
-            Double retailVAT = new Double(new String(importFile.getField("NDSR").getBytes(), "Cp1251").trim());
 
-            if (post_dok.length != 1)
-                data.add(Arrays.asList((Object) number, series, departmentStoreID, supplierID, dateShipment, itemID,
-                        shipmentDetailID, quantityShipmentDetail, supplierPriceShipmentDetail, importerPriceShipmentDetail, retailPriceShipmentDetail,
-                        retailMarkupShipmentDetail, suppliersRange, retailVAT, true));
+            if ((post_dok.length != 1)&&(supplierID.startsWith("ПС")))
+                data.add(Arrays.asList((Object) number, series, true, true, userInvoiceDetailSID, dateShipment, itemID,
+                        quantityShipmentDetail, supplierID, warehouseID, supplierWarehouse, priceShipmentDetail,
+                        retailPriceShipmentDetail, retailMarkupShipmentDetail));
         }
         return data;
     }
@@ -1213,7 +1144,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             {"СП", "Совместное предприятие"}};
 
 
-    private List<List<Object>> importLegalEntitiesFromDBF(String path, Boolean importInactive, String type) throws
+    private List<List<Object>> importLegalEntitiesFromDBF(String path, Boolean importInactive, Boolean isStore) throws
             IOException, xBaseJException {
 
         DBF importFile = new DBF(path);
@@ -1226,7 +1157,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             importFile.read();
             String k_ana = new String(importFile.getField("K_ANA").getBytes(), "Cp1251").trim();
             Boolean inactiveItem = "T".equals(new String(importFile.getField("LINACTIVE").getBytes(), "Cp1251"));
-            if (type.equals(k_ana.substring(0, 2)) && (!inactiveItem || importInactive)) {
+            if (!inactiveItem || importInactive) {
                 String name = new String(importFile.getField("POL_NAIM").getBytes(), "Cp1251").trim();
                 String address = new String(importFile.getField("ADDRESS").getBytes(), "Cp1251").trim();
                 String unp = new String(importFile.getField("UNN").getBytes(), "Cp1251").trim();
@@ -1237,17 +1168,45 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                 String companyStore = new String(importFile.getField("K_JUR").getBytes(), "Cp1251").trim();
                 String k_bank = new String(importFile.getField("K_BANK").getBytes(), "Cp1251").trim();
                 String[] ownership = getAndTrimOwnershipFromName(name);
-                String nameCountry = "РБ";
+                String nameCountry = "БЕЛАРУСЬ";
+                String type = k_ana.substring(0, 2);
+                Boolean isCompany = "ЮР".equals(type);
+                Boolean isSupplier = "ПС".equals(type);
+                Boolean isCustomer = "ПК".equals(type);
+                if (isStore) {
+                    if ("МГ".equals(type))
+                        data.add(Arrays.asList((Object) k_ana, ownership[2], address, companyStore, "Магазин", companyStore + "ТС"));
+                } else if (isCompany || isSupplier || isCustomer)
+                    data.add(Arrays.asList((Object) k_ana, ownership[2], address, unp, okpo, phone, email, ownership[1],
+                            ownership[0], account, isCompany ? (k_ana + "ТС") : null, isCompany ? ownership[2] : null,
+                            "BANK_" + k_bank, nameCountry, isSupplier ? true : null, isCompany ? true : null,
+                            isCustomer ? true : null));
+            }
+        }
+        return data;
+    }
 
-                if ("МГ".equals(type))
-                    data.add(Arrays.asList((Object) k_ana, ownership[2], address, companyStore, "Магазин", companyStore + "ТС"));
-                else if ("ПС".equals(type))
-                    data.add(Arrays.asList((Object) k_ana, ownership[2], address, unp, okpo, phone, email, ownership[1], ownership[0], account, "BANK_" + k_bank));
-                else if ("ЮР".equals(type))
-                    data.add(Arrays.asList((Object) k_ana, ownership[2], address, unp, okpo, phone, email, ownership[1], ownership[0], account, k_ana + "ТС", ownership[2], nameCountry));
-                else if ("ПК".equals(type))
-                    data.add(Arrays.asList((Object) k_ana, ownership[2], address, unp, okpo, phone, email, ownership[1], ownership[0], account, "BANK_" + k_bank));
+    private List<List<Object>> importWarehousesFromDBF(String path, Boolean importInactive) throws
+            IOException, xBaseJException {
 
+        DBF importFile = new DBF(path);
+        int recordCount = importFile.getRecordCount();
+
+        data = new ArrayList<List<Object>>();
+
+        for (int i = 0; i < recordCount; i++) {
+
+            importFile.read();
+            String k_ana = new String(importFile.getField("K_ANA").getBytes(), "Cp1251").trim();
+            Boolean inactiveItem = "T".equals(new String(importFile.getField("LINACTIVE").getBytes(), "Cp1251"));
+            if (!inactiveItem || importInactive) {
+                String name = new String(importFile.getField("POL_NAIM").getBytes(), "Cp1251").trim();
+                String address = new String(importFile.getField("ADDRESS").getBytes(), "Cp1251").trim();
+                String type = k_ana.substring(0, 2);
+                Boolean isSupplier = "ПС".equals(type);
+                Boolean isCustomer = "ПК".equals(type);
+                if (isSupplier || isCustomer)
+                    data.add(Arrays.asList((Object) k_ana, k_ana + "WH", "Склад " + name, address));
             }
         }
         return data;
@@ -1320,7 +1279,8 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             String rateWasteID = new String(importFile.getField("K_GRTOV").getBytes(), "Cp1251").trim();
             String name = new String(importFile.getField("POL_NAIM").getBytes(), "Cp1251").trim();
             Double coef = new Double(new String(importFile.getField("KOEFF").getBytes(), "Cp1251").trim());
-            data.add(Arrays.asList((Object) ("RW_" + rateWasteID), name, coef));
+            String country = "БЕЛАРУСЬ";
+            data.add(Arrays.asList((Object) ("RW_" + rateWasteID), name, coef, country));
         }
         return data;
     }

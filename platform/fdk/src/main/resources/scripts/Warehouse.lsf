@@ -15,7 +15,7 @@ parentStockGroup (stockGroup) += parentWarehouseGroup (stockGroup);
 
 // ----------------------------------------- Склады ------------------------------ //
 
-CLASS warehouse 'Склад' : stock, employeeDivision;
+CLASS warehouse 'Склад' : stock, externalObject, employeeDivision;
 
 warehouseGroupWarehouse (warehouse) = DATA warehouseGroup (warehouse) AUTOSET;
 nameWarehouseGroupWarehouse 'Группа складов' (warehouse) = name(warehouseGroupWarehouse(warehouse)) IN baseGroup;
