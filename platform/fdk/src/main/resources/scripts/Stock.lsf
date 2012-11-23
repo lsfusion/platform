@@ -1468,7 +1468,7 @@ META extendFormDocumentSkuStockCustom(object, form, concrete, stockProp)
 
                 NEW skuFilters {
                     type = SPLITV;
-                    ADD stockTree.tree.box { title = 'Склады'; }
+                    ADD stockTree.tree.box { title = 'Группы складов'; }
                     ADD skuTree.tree.box { title = 'Группы SKU'; }
                 }
                 ADD sts.box {
@@ -1571,7 +1571,7 @@ META defineDocumentSkuStockContractorCustom(object, detail, skuProp, stockProp, 
     backgroundQuantitySku###object###Stock 'Цвет' (sku, object, stock) = RGB(255,128,128)
         IF quantitySku###object###stockProp(sku, object, stock) > (currentBalanceSkuStock(sku, stock) AND object IS object);
 
-    priceSkuStock###object###contactStock 'Цена' (sku, stockProp, object, contactStock) = pricePriceListTypeSkuStockDateTime(userPriceListType###object###stock(object, contactStock), sku, stockProp, dateTime###object(object));
+    priceSkuStock###object###contactStock 'Цена' (sku, stockProp, object, contactStock) = pricePriceListTypeSkuStockDateTime(priceListType###object###stock(object, contactStock), sku, stockProp, dateTime###object(object));
 
     changeQuantitySku###object###Stock###contactStock = ACTION (sku, object, stockProp, contactStock) {
         REQUEST NUMERIC[14,3] INPUT;
@@ -1650,7 +1650,7 @@ META extendFormDocumentSkuStockContractorCustom(object, form, concrete, stockPro
 
                 NEW skuFilters {
                     type = SPLITV;
-                    ADD stockTree.tree.box { title = 'Склады'; }
+                    ADD stockTree.tree.box { title = 'Группы складов'; }
                     ADD skuTree.tree.box { title = 'Группы SKU'; }
                 }
                 ADD sts.box {
@@ -2321,8 +2321,8 @@ EXTEND FORM legalEntity
 
     OBJECTS st=stock
     PROPERTIES(st) READONLY name, nameLegalEntityStock
-    PROPERTIES chooseStocksLegalEntity(l) TODRAW st FORCE PANEL DRAWTOTOOLBAR
     PROPERTIES(st) FORCE PANEL DRAWTOTOOLBAR SHOWIF isDefaultLegalEntityStock(l,st) editSessionStock, delete
+    PROPERTIES chooseStocksLegalEntity(l) TODRAW st FORCE PANEL DRAWTOTOOLBAR
     FILTERS isParentStockGroupStock(sg, st) OR (st IS stock AND sg IS stockGroup AND NOT stockGroupStock(st)) OR (st IS stock AND NOT sg)
     FILTERS inLegalEntityStock(l, st)
 

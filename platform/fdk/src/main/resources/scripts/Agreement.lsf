@@ -164,12 +164,11 @@ END
 
 META defineDocumentDoubleInterfaceHeaderAgreement (object1, object2, supplierProp, customerProp)
     @defineDocumentDoubleHeaderAgreement(object1, object2);
-    agreement###object1###object2 (object1, object2) <- defaultAgreementSupplierCustomer(supplierProp###object1(object1), customerProp###object1(object1))
-        IF currency###object1(object1) == currencyAgreement(defaultAgreementSupplierCustomer(supplierProp###object1(object1), customerProp###object1(object1)))
+    agreement###object1###object2 (object1, object2) <- agreement###object1(object1)
+        IF currency###object1(object1) == currencyAgreement(agreement###object1(object1))
         AND in###object1###object2(object1, object2)
     WHEN CHANGED(currency###object1(object1)) AND object2 IS object2 OR
-         CHANGED(supplierProp###object1(object1)) AND object2 IS object2 OR
-         CHANGED(customerProp###object1(object1))AND object2 IS object2  OR
+         CHANGED(agreement###object1(object1)) AND object2 IS object2 OR
          CHANGED(in###object1###object2(object1, object2));
 
     CONSTRAINT currency###object1(object1) != currencyAgreement(agreement###object1###object2(object1, object2))
