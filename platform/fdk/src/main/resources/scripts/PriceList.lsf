@@ -953,7 +953,7 @@ META deriveDocumentDetailPricePriceListTypeVATBatchCustom (detail, stockProp)
                                  CHANGED(dateTime###detail(detail)) OR
                                  CHANGED(valueVAT###detail(detail));
 
-    invoice###price###detail(detail) <- prevPricePVATPriceListTypeBatchStockDateTimeVAT (priceListType###detail(detail),
+    invoicePrice###detail(detail) <- prevPricePVATPriceListTypeBatchStockDateTimeVAT (priceListType###detail(detail),
                                                                              batch###detail(detail),
                                                                              stockProp###detail(detail),
                                                                              dateTime###detail(detail),
@@ -964,6 +964,34 @@ META deriveDocumentDetailPricePriceListTypeVATBatchCustom (detail, stockProp)
                                  CHANGED(dateTime###detail(detail)) OR
                                  CHANGED(valueVAT###detail(detail));
 
+END
+
+META deriveDocumentPriceDetailOnChangeCustom (detail)
+    changePrice###detail (detail) = ACTION (detail) {
+        REQUEST NUMERIC[14,3] INPUT;
+        IF requestedNumeric() THEN {
+            SET invoicePrice###detail (detail) <- requestedNumeric();
+            SET price###detail (detail) <- invoicePrice###detail (detail) * 100/(100 + valueVAT###detail(detail));
+        }
+    };
+END
+
+META deriveDocumentPriceDetailOnChange (object)
+    @deriveDocumentPriceDetailOnChangeCustom(object###Detail);
+END
+
+META deriveDocumentInvoicePriceDetailOnChangeCustom (detail)
+    changeInvoicePrice###detail (detail) = ACTION (detail) {
+        REQUEST NUMERIC[14,3] INPUT;
+        IF requestedNumeric() THEN {
+            SET price###detail (detail) <- requestedNumeric();
+            SET invoicePrice###detail (detail) <- price###detail (detail) * (100 + valueVAT###detail(detail))/100;
+        }
+    };
+END
+
+META deriveDocumentInvoicePriceDetailOnChange (object)
+    @deriveDocumentInvoicePriceDetailOnChangeCustom(object###Detail);
 END
 
 META deriveDocumentDetailPricePriceListTypeBatchVAT (object, stockProp)
