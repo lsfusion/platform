@@ -338,6 +338,12 @@ META defineInvoice(sign, stockProp)
         EVENTS
             ON OK EXEC prePostUserInvoice(i)
 
+        HINTTABLE LIST dateTimeUserInvoiceDetail, skuUserInvoiceDetail, supplierStockUserInvoiceDetail, customerStockUserInvoiceDetail,
+                       priceListTypeUserInvoiceDetail, currencyUserInvoiceDetail,
+                       priceUserInvoiceDetail, VATUserInvoiceDetail, valueVATUserInvoiceDetail, invoicePriceUserInvoiceDetail,
+                       prevListSkuPriceUserInvoiceDetail, prevListSkuPriceMVATUserInvoiceDetail, prevListSkuPricePVATUserInvoiceDetail
+
+
         EDIT userInvoice OBJECT i
     ;
 
@@ -524,7 +530,10 @@ META defineInvoiceBatch(stockProp)
         }
     };
 
-    EXTEND FORM userInvoice PROPERTIES (d) descriptionBatchUserInvoiceDetail ON CHANGE EXEC batchDialogUserInvoiceDetail(d) AFTER shortNameUOMSkuUserInvoiceDetail;
+    EXTEND FORM userInvoice
+        PROPERTIES (d) descriptionBatchUserInvoiceDetail ON CHANGE EXEC batchDialogUserInvoiceDetail(d) AFTER shortNameUOMSkuUserInvoiceDetail
+        HINTTABLE LIST batchUserInvoiceDetail, prevListBatchPriceUserInvoiceDetail, prevListPriceMVATUserInvoiceDetail, prevListPricePVATUserInvoiceDetail
+    ;
     EXTEND FORM invoices PROPERTIES (d) READONLY descriptionBatchInvoiceDetail AFTER shortNameUOMSkuInvoiceDetail;
 END
 

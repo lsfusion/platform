@@ -17,7 +17,7 @@ TABLE priceListType(priceListType);
 
 pricePriceListTypeSkuStockDateTime 'Цена' = ABSTRACT NUMERIC[14,2] (priceListType, sku, stock, DATETIME);
 pricePriceListTypeBatchStockDateTime 'Цена' = ABSTRACT NUMERIC[14,2] (priceListType, batch, stock, DATETIME);
-includeVATPriceListType 'Цена с НДС' = ABSTRACT BOOLEAN (priceListType);
+includeVATPriceListType 'Цена с НДС' = ABSTRACT BOOLEAN (priceListType) PERSISTENT;
 
 prevPricePriceListTypeSkuStockDateTime 'Цена (пред.)' (type, sku, stock, dateTime) = PREV(pricePriceListTypeSkuStockDateTime(type, sku, stock, dateTime));
 prevPricePriceListTypeBatchStockDateTime 'Цена (пред.)' (type, batch, stock, dateTime) = PREV(pricePriceListTypeBatchStockDateTime(type, batch, stock, dateTime));
@@ -891,22 +891,33 @@ META deriveDocumentDetailPricePriceListType (object, stockProp)
 END
 
 META deriveDocumentDetailPricePriceListTypeVATCustom (detail, stockProp)
-    price###detail(detail) <- prevPriceMVATPriceListTypeSkuStockDateTimeVAT (priceListType###detail(detail),
-                                                                             sku###detail(detail),
-                                                                             stockProp###detail(detail),
-                                                                             dateTime###detail(detail),
-                                                                             valueVAT###detail(detail))
+    prevListSkuPrice###detail (detail) = prevPricePriceListTypeSkuStockDateTime(priceListType###detail(detail),
+                                                                                sku###detail(detail),
+                                                                                stockProp###detail(detail),
+                                                                                dateTime###detail(detail));
+
+    prevListSkuPriceMVAT###detail (detail) =
+        IF includeVATPriceListType(priceListType###detail(detail))
+            THEN
+                prevListSkuPrice###detail(detail) * 100.0 /(100.0 + valueVAT###detail(detail))
+            ELSE
+                prevListSkuPrice###detail(detail);
+
+    prevListSkuPricePVAT###detail (detail) =
+        IF includeVATPriceListType(priceListType###detail(detail))
+            THEN
+                prevListSkuPrice###detail(detail)
+            ELSE
+                prevListSkuPrice###detail(detail) * (100.0 + valueVAT###detail(detail)) / 100.0;
+
+    price###detail(detail) <- prevListSkuPriceMVAT###detail (detail)
                             WHEN CHANGED(priceListType###detail(detail)) OR
                                  CHANGED(sku###detail(detail)) OR
                                  CHANGED(stockProp###detail(detail)) OR
                                  CHANGED(dateTime###detail(detail)) OR
                                  CHANGED(valueVAT###detail(detail));
 
-    invoice###price###detail(detail) <- prevPricePVATPriceListTypeSkuStockDateTimeVAT (priceListType###detail(detail),
-                                                                             sku###detail(detail),
-                                                                             stockProp###detail(detail),
-                                                                             dateTime###detail(detail),
-                                                                             valueVAT###detail(detail))
+    invoice###price###detail(detail) <- prevListSkuPricePVAT###detail (detail)
                             WHEN CHANGED(priceListType###detail(detail)) OR
                                  CHANGED(sku###detail(detail)) OR
                                  CHANGED(stockProp###detail(detail)) OR
@@ -942,24 +953,38 @@ META deriveDocumentDetailPriceBatchPriceListType (object, stockProp)
 END
 
 META deriveDocumentDetailPricePriceListTypeVATBatchCustom (detail, stockProp)
-    price###detail(detail) <- prevPriceMVATPriceListTypeBatchStockDateTimeVAT (priceListType###detail(detail),
-                                                                             batch###detail(detail),
-                                                                             stockProp###detail(detail),
-                                                                             dateTime###detail(detail),
-                                                                             valueVAT###detail(detail))
+    prevListBatchPrice###detail (detail) = prevPricePriceListTypeBatchStockDateTime(priceListType###detail(detail),
+                                                                                    batch###detail(detail),
+                                                                                    stockProp###detail(detail),
+                                                                                    dateTime###detail(detail));
+    prevListPrice###detail (detail) = IF batch###detail(detail) THEN prevListBatchPrice###detail(detail) ELSE prevListSkuPrice###detail (detail);
+
+    prevListPriceMVAT###detail (detail) =
+        IF includeVATPriceListType(priceListType###detail(detail))
+            THEN
+                prevListPrice###detail(detail) * 100.0 /(100.0 + valueVAT###detail(detail))
+            ELSE
+                prevListPrice###detail(detail);
+
+    prevListPricePVAT###detail (detail) =
+        IF includeVATPriceListType(priceListType###detail(detail))
+            THEN
+                prevListPrice###detail(detail)
+            ELSE
+                prevListPrice###detail(detail) * (100.0 + valueVAT###detail(detail)) / 100.0;
+
+    price###detail(detail) <- prevListPriceMVAT###detail (detail)
                             WHEN CHANGED(priceListType###detail(detail)) OR
                                  CHANGED(batch###detail(detail)) OR
+                                 CHANGED(sku###detail(detail)) OR
                                  CHANGED(stockProp###detail(detail)) OR
                                  CHANGED(dateTime###detail(detail)) OR
                                  CHANGED(valueVAT###detail(detail));
 
-    invoicePrice###detail(detail) <- prevPricePVATPriceListTypeBatchStockDateTimeVAT (priceListType###detail(detail),
-                                                                             batch###detail(detail),
-                                                                             stockProp###detail(detail),
-                                                                             dateTime###detail(detail),
-                                                                             valueVAT###detail(detail))
+    invoicePrice###detail(detail) <- prevListPricePVAT###detail (detail)
                             WHEN CHANGED(priceListType###detail(detail)) OR
                                  CHANGED(batch###detail(detail)) OR
+                                 CHANGED(sku###detail(detail)) OR
                                  CHANGED(stockProp###detail(detail)) OR
                                  CHANGED(dateTime###detail(detail)) OR
                                  CHANGED(valueVAT###detail(detail));
