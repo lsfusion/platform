@@ -1,0 +1,23 @@
+MODULE InvoiceTrip;
+
+REQUIRE Order, Shipment, Invoice, Trip;
+
+createConsignmentTrip 'Создать накладные по заказам' (trip) = ACTION (trip) {
+    FOR tripOrder(order) == trip DO {
+        EXEC createUserInvoicePostedOrder(order);
+        EXEC apply();
+    };
+    EXEC createShipmentsTrip(trip);
+    EXEC apply();
+} TOOLBAR CONFIRM;
+
+EXTEND FORM trip
+    PROPERTIES createConsignmentTrip(t) TODRAW s FORCE PANEL
+    PROPERTIES createUserInvoicePostedOrder(o)
+;
+
+//EXTEND DESIGN trip {
+//    s.box {
+//        ADD PROPERTY(createConsignmentTrip);
+//    }
+//}

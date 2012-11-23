@@ -51,11 +51,8 @@ quantityOrderedTripSku 'Кол-во в заказах' (trip, sku) = GROUP SUM q
 tripShipment = DATA trip(shipment);
 inTripShipment 'Включен' (trip, shipment) = tripShipment(shipment)==trip;
 
-//netWeightSkuShipmentDetail 'Вес нетто' (shipmentDetail) = netWeightSku(skuShipmentDetail(shipmentDetail));
-//grossWeightShipmentDetail 'Вес' = ABSTRACT NUMERIC[14,4](shipmentDetail);
-//packQuantityShipmentDetail 'Кол-во грузовых мест' = ABSTRACT NUMERIC[14,3](shipmentDetail);
-//@implementConsignmentDetailSku(shipment);
-//
+filterTripShipment(trip, shipment) = tripShipment(shipment)==trip OR (trip IS trip AND shipment IS shipment AND NOT tripShipment(shipment));
+
 grossWeightShipmentedTrip 'Суммарный вес поставок' (trip) = GROUP SUM grossWeightShipmentDetailShipment(shipment) BY tripShipment(shipment);
 
 quantityShipmentDetailTripShipment (trip, shipment) = GROUP SUM quantityShipmentDetailOrderShipment (order, shipment) BY tripOrder(order), shipment;
@@ -65,7 +62,7 @@ quantityShipmentedTripSku 'Кол-во в поставках' (trip, sku) = GROU
 createShipmentsTrip 'Присоединить поставки' (trip) = ACTION (trip) {
     SET tripShipment(shipment) <- NULL WHERE tripShipment(shipment) == trip;
     SET tripShipment(shipment) <- trip WHERE quantityShipmentDetailTripShipment(trip, shipment);
-}
+} TOOLBAR CONFIRM;
 
 FORM waybill PRINT
 
@@ -81,6 +78,27 @@ printWaybill 'Печать путевого листа' (trip) = ACTION (trip) {
     FORM waybill OBJECTS t = trip;
 } CONFIRM TOOLBAR;
 
+
+FORM ordersTrip PRINT
+    OBJECTS t=trip FIXED PANEL
+    PROPERTIES (t) nameNumeratorObject, numberObject, seriesObject, dateTrip, timeTrip, nameDriverTrip, sidTruckTrip, nameMarkTruckTrip, trailerTruckTrip
+
+    OBJECTS o=order FIXED GRID
+    FILTERS isPostedOrder(o), inTripOrder(t, o)
+
+    OBJECTS s=sku
+    PROPERTIES READONLY idBarcodeSku(s), nameSku(s), shortNameUOMSku(s)
+    PROPERTIES READONLY quantityOrderedTripSku(t, s)
+    PROPERTIES READONLY quantityOrderDetailSkuOrder(s, o) COLUMNS (o) HEADER seriesNumberObject(o)
+    FILTERS quantityOrderedTripSku(t, s) > 0
+
+    //PROPERTIES(o) READONLY numberOrder, seriesOrder, dateOrder, nameFromStockOrder, nameToStockOrder, grossWeightOrderDetailOrder
+;
+
+printOrdersTrip 'Печать заказов' (trip) = ACTION (trip) {
+    FORM ordersTrip OBJECTS t = trip;
+} CONFIRM TOOLBAR;
+
 FORM trip 'Рейс'
     OBJECTS t=trip FIXED PANEL
     PROPERTIES (t) nameNumeratorObject, numberObject, seriesObject, dateTrip, timeTrip, nameDriverTrip, sidTruckTrip, nameMarkTruckTrip, trailerTruckTrip, weightTruckTrip, printWaybill
@@ -90,10 +108,11 @@ FORM trip 'Рейс'
     PROPERTIES(t, o) inTripOrder
     PROPERTIES(o) READONLY numberOrder, seriesOrder, dateOrder, nameFromStockOrder, nameToStockOrder, grossWeightOrderDetailOrder
     PROPERTIES(o) editOrder
+    PROPERTIES printOrdersTrip(t) TODRAW o FORCE PANEL
 
     FILTERS isPostedOrder(o)
 
-    FILTERGROUP filterDate
+    FILTERGROUP filterDateOrder
         FILTER 'Заказы к отправке' 'F10' dateOrder(o) <= dateTrip(t) DEFAULT
     FILTERGROUP filterOrder
         FILTER 'Не расписанные заказы или в текущем рейсе' 'F11' filterTripOrder(t, o) DEFAULT
@@ -111,7 +130,12 @@ FORM trip 'Рейс'
     //              printConsignmentHorizontalB, printConsignmentAttach, editConsignment
     FILTERS isPostedShipment(s)
 
-    PROPERTIES (t) createShipmentsTrip TODRAW s FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES createShipmentsTrip(t) TODRAW s FORCE PANEL
+
+    FILTERGROUP filterDateShipment
+        FILTER 'Поставки к отправке' 'F10' dateShipment(s) <= dateTrip(t) DEFAULT
+    FILTERGROUP filterShipment
+        FILTER 'Не расписанные поставки или в текущем рейсе' 'F11' filterTripShipment(t, s) DEFAULT
 
     OBJECTS sd=shipmentDetail
     PROPERTIES(sd) READONLY idBarcodeSkuShipmentDetail, nameSkuShipmentDetail, shortNameUOMSkuShipmentDetail, quantityShipmentDetail//, netWeightSkuShipmentDetail
@@ -170,8 +194,6 @@ DESIGN trip FROM DEFAULT{
             ADD PROPERTY(weightTruckTrip);
             ADD PROPERTY(grossWeightOrderedTrip);
             ADD PROPERTY(grossWeightShipmentedTrip);
-            ADD PROPERTY(printWaybill);
-
         }
 
         NEW bottomContainer {
@@ -188,7 +210,6 @@ DESIGN trip FROM DEFAULT{
                 childConstraints = TO THE BOTTOM;
                 ADD s.box;
                 ADD sd.box;
-                ADD PROPERTY(createShipmentsTrip);
             }
 
             NEW skuContainer {
@@ -207,6 +228,7 @@ DESIGN trip FROM DEFAULT{
             ADD st.box;
         }
 
+        ADD PROPERTY(printWaybill);
         ADD functions.box;
     }
 }
