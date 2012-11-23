@@ -121,6 +121,7 @@ META defineInvoice(sign, stockProp)
 
     @defineDocumentInterfaceDetailVAT(invoice, country###stockProp);
     @defineDocumentInterfaceDetailVATDataSum (invoice);
+    @deriveDocumentDetailSumUserObject (invoice);
     @deriveDocumentDetailDirectVATSum(userInvoice);
     Invoice.VATInvoiceDetail(detail) += VATInvoiceDetail(detail);
     Invoice.valueVATInvoiceDetail(detail) += valueVATInvoiceDetail(detail);

@@ -14,6 +14,35 @@ VATUserInvoice (userInvoice) <- rangeTaxTaxUnit(tax.taxVAT, storeDepartmentStore
 
 @deriveDocumentHeaderTAXDetail(userInvoice, VAT);
 
+derivedVATSumUserInvoiceDetail (userInvoiceDetail) =
+    IF rangeTypeRange(VATUserInvoiceDetail(userInvoiceDetail)) == rangeType.units
+        THEN roundCurrency(invoicePriceUserInvoiceDetail (userInvoiceDetail) * quantityUserInvoiceDetail (userInvoiceDetail) * valueVATUserInvoiceDetail (userInvoiceDetail)/100, currencyUserInvoiceDetail(userInvoiceDetail))
+        ELSE roundCurrency((sumUserInvoiceDetail(userInvoiceDetail) * valueVATUserInvoiceDetail (userInvoiceDetail) / 100), currencyUserInvoiceDetail(userInvoiceDetail))
+    PERSISTENT;
+
+VATSumUserInvoiceDetail (userInvoiceDetail) <- derivedVATSumUserInvoiceDetail (userInvoiceDetail)
+    WHEN CHANGED(invoicePriceUserInvoiceDetail(userInvoiceDetail)) OR CHANGED(quantityUserInvoiceDetail(userInvoiceDetail)) OR CHANGED(VATUserInvoiceDetail(userInvoiceDetail))
+      OR CHANGED(sumUserInvoiceDetail(userInvoiceDetail)) OR CHANGED(currencyUserInvoiceDetail(userInvoiceDetail));
+
+derivedInvoiceSumUserInvoiceDetail (userInvoiceDetail) =
+    IF rangeTypeRange(VATUserInvoiceDetail(userInvoiceDetail)) == rangeType.units
+        THEN invoicePriceUserInvoiceDetail (userInvoiceDetail) * quantityUserInvoiceDetail (userInvoiceDetail)
+        ELSE sumUserInvoiceDetail (userInvoiceDetail) (+) VATSumUserInvoiceDetail (userInvoiceDetail)
+    PERSISTENT;
+
+invoiceSumUserInvoiceDetail (userInvoiceDetail) <- derivedInvoiceSumUserInvoiceDetail (userInvoiceDetail)
+    WHEN CHANGED(priceUserInvoiceDetail(userInvoiceDetail)) OR CHANGED(quantityUserInvoiceDetail(userInvoiceDetail))
+    OR CHANGED(sumUserInvoiceDetail(userInvoiceDetail)) OR CHANGED(VATSumUserInvoiceDetail(userInvoiceDetail));
+
+derivedPriceUserInvoiceDetail (userInvoiceDetail) =
+    IF rangeTypeRange(VATUserInvoiceDetail(userInvoiceDetail)) == rangeType.units
+        THEN invoicePriceUserInvoiceDetail(userInvoiceDetail)*(100-valueVATUserInvoiceDetail (userInvoiceDetail))/100
+        ELSE invoicePriceUserInvoiceDetail(userInvoiceDetail)*100/(100+valueVATUserInvoiceDetail (userInvoiceDetail))
+    PERSISTENT;
+
+priceUserInvoiceDetail (userInvoiceDetail) <- derivedPriceUserInvoiceDetail (userInvoiceDetail)
+    WHEN CHANGED(invoicePriceUserInvoiceDetail(userInvoiceDetail)) OR CHANGED(VATUserInvoiceDetail (userInvoiceDetail));
+
 CONSTRAINT supplierUserInvoice(userInvoice) AND NOT isCompanyLegalEntity(supplierUserInvoice(userInvoice))
     CHECKED BY supplierUserInvoice MESSAGE 'Для накладной выбрано в качестве поставщика организация, не являющаяся компанией';
 CONSTRAINT customerUserInvoice(userInvoice) AND NOT isCustomerLegalEntity(customerUserInvoice(userInvoice))

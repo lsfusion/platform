@@ -995,10 +995,17 @@ META deriveDocumentPriceDetailOnChangeCustom (detail)
     changePrice###detail (detail) = ACTION (detail) {
         REQUEST NUMERIC[14,3] INPUT;
         IF requestedNumeric() THEN {
-            SET invoicePrice###detail (detail) <- requestedNumeric();
-            SET price###detail (detail) <- invoicePrice###detail (detail) * 100/(100 + valueVAT###detail(detail));
-        }
-    };
+            IF rangeTypeRange(VAT###detail(detail)) == rangeType.units
+                THEN {
+                    SET invoicePrice###detail (detail) <- requestedNumeric();
+                    SET price###detail (detail) <- invoicePrice###detail (detail) * (100-valueVAT###detail(detail))/100;
+                }
+                ELSE {
+                    SET invoicePrice###detail (detail) <- requestedNumeric();
+                    SET price###detail (detail) <- invoicePrice###detail (detail) * 100/(100 + valueVAT###detail(detail));
+                }
+            }
+        };
 END
 
 META deriveDocumentPriceDetailOnChange (object)
@@ -1009,8 +1016,15 @@ META deriveDocumentInvoicePriceDetailOnChangeCustom (detail)
     changeInvoicePrice###detail (detail) = ACTION (detail) {
         REQUEST NUMERIC[14,3] INPUT;
         IF requestedNumeric() THEN {
-            SET price###detail (detail) <- requestedNumeric();
-            SET invoicePrice###detail (detail) <- price###detail (detail) * (100 + valueVAT###detail(detail))/100;
+            IF rangeTypeRange(VAT###detail(detail)) == rangeType.units
+                THEN {
+                    SET price###detail (detail) <- requestedNumeric();
+                    SET invoicePrice###detail (detail) <- price###detail (detail) * 100 /(100 - valueVAT###detail(detail));
+                }
+                ELSE{
+                    SET price###detail (detail) <- requestedNumeric();
+                    SET invoicePrice###detail (detail) <- price###detail (detail) * (100 + valueVAT###detail(detail))/100;
+            }
         }
     };
 END
