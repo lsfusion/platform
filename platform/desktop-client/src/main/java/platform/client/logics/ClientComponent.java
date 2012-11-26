@@ -2,10 +2,10 @@ package platform.client.logics;
 
 import platform.base.context.ApplicationContext;
 import platform.base.context.ContextIdentityObject;
+import platform.base.serialization.IdentitySerializable;
 import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.editor.ComponentEditor;
 import platform.client.descriptor.nodes.ComponentNode;
-import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
 import platform.interop.ComponentDesign;
 import platform.interop.form.layout.AbstractComponent;
@@ -21,7 +21,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class ClientComponent extends ContextIdentityObject implements Serializable, ClientIdentitySerializable, AbstractComponent<ClientContainer, ClientComponent> {
+public abstract class ClientComponent extends ContextIdentityObject implements Serializable, IdentitySerializable<ClientSerializationPool>, AbstractComponent<ClientContainer, ClientComponent> {
 
     public ComponentDesign design;
 

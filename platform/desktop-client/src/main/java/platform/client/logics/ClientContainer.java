@@ -21,7 +21,7 @@ import java.util.List;
 
 import static platform.interop.form.layout.ContainerType.SPLIT_PANE_VERTICAL;
 
-public class ClientContainer extends ClientComponent implements ClientIdentitySerializable, AbstractContainer<ClientContainer, ClientComponent>, CustomConstructible {
+public class ClientContainer extends ClientComponent implements AbstractContainer<ClientContainer, ClientComponent>, CustomConstructible {
 
     private String title;
     private String description;
