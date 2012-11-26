@@ -1404,7 +1404,9 @@ META defineDocumentSkuStockCustom(object, detail, skuProp, stockProp)
     quantitySku###object###stockProp 'Кол-во товара в документе' (sku, object, stock) = GROUP SUM quantity###detail(detail)
         BY skuProp###detail(detail), object###detail(detail), stockProp###detail(detail);
 
-    priceSkuStock###object 'Цена' (sku, stock, object) = pricePriceListTypeSkuStockDateTime(priceListType###object(object), sku, stock, dateTime###object(object));
+    priceListType###object###sku(object, sku) = (priceListType###object(object) AND sku IS sku) OR priceListTypeAgreementSkuOver(agreement###object(object), sku);
+
+    priceSkuStock###object 'Цена' (sku, stock, object) = pricePriceListTypeSkuStockDateTime(priceListType###object###sku(object, sku), sku, stock, dateTime###object(object));
 
 
     changeQuantitySku###object###Stock = ACTION (sku, object, stock) {
@@ -1459,6 +1461,9 @@ META extendFormDocumentSkuStockCustom(object, form, concrete, stockProp)
         FILTERGROUP filter
             FILTER 'Товары с остатком ' 'F10' currentBalanceSkuStock(s, st) DEFAULT
             FILTER 'Товары в заказе ' 'F9' quantitySku###object###stockProp(s, concrete, st)
+        FILTERGROUP filter1
+            FILTER 'Товары с ценой ' 'F11' priceSkuStock###object(s, st, concrete)
+
     ;
 
     EXTEND DESIGN form {
@@ -1492,7 +1497,9 @@ META defineDocumentSkuCustom(object, detail, skuProp, stockProp)
     detail###Sku###object (sku, object) = detail###Sku###object###stockProp(sku, object, stockProp###object(object));
 
     currentBalanceSku###object 'Остаток' (sku, object) = currentBalanceSkuStock(sku, stockProp###object(object));
-    priceSku###object 'Цена' (sku, object) = pricePriceListTypeSkuStockDateTime(priceListType###object(object), sku, stockProp###object(object), dateTime###object(object));
+    priceListType###object###sku(object, sku) = (priceListType###object(object) AND sku IS sku) OR priceListTypeAgreementSkuOver(agreement###object(object), sku);
+
+    priceSku###object 'Цена' (sku, object) = pricePriceListTypeSkuStockDateTime(priceListType###object###sku(object, sku), sku, stockProp###object(object), dateTime###object(object));
 
     changeQuantitySku###object = ACTION (sku, object) {
         REQUEST NUMERIC[14,3] INPUT;
@@ -1538,6 +1545,9 @@ META extendFormDocumentSkuCustom(object, form, concrete, skuProp, detail)
         FILTERGROUP filter
             FILTER 'Товары с остатком ' 'F10' currentBalanceSku###object(s, concrete) DEFAULT
             FILTER 'Товары в заказе ' 'F9' quantity###detail###skuProp###object(s, concrete)
+
+        FILTERGROUP filter1
+            FILTER 'Товары с ценой ' 'F11' priceSku###object(s, concrete)
     ;
 
     EXTEND DESIGN form {
@@ -1639,6 +1649,9 @@ META extendFormDocumentSkuStockContractorCustom(object, form, concrete, stockPro
         FILTERGROUP filtr2
             FILTER 'Товары с остатком ' 'F10' currentBalanceSkuStock(s, st) DEFAULT
             FILTER 'Товар в заказе' 'F9' quantitySku###object###stockProp(s, concrete, st)
+
+        FILTERGROUP filter1
+            FILTER 'Товары с ценой ' 'F11' priceSkuStock###object###contactStock(s, st, concrete, cc)
 
     ;
 

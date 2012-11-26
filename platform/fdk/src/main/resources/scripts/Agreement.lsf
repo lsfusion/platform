@@ -188,15 +188,6 @@ END
 META deriveDocumentDoubleDetailPriceListTypeAgreementCustom (object1, detail, object2, stockProp2)
     priceListType###detail (idetail) = UNION OVERRIDE priceListType###object1###object2 (object1###detail(idetail), stockProp2###detail(idetail)), dataPriceListType###detail(idetail) PERSISTENT;
     namePriceListType###detail 'Вид цен' (idetail) = name(priceListType###detail(idetail)) MINCHARWIDTH 10 PREFCHARWIDTH 20;
-
-    priceListType###detail(detail) <- IF agreement###object1###object2(object1###detail(detail), stockProp2###detail(detail))
-                                             THEN priceListTypeAgreementSkuOver(agreement###object1###object2(object1###detail(detail), stockProp2###detail(detail)), sku###detail(detail))
-                                             ELSE priceListType###object1###object2(object1###detail(detail), stockProp2###detail(detail))
-    WHEN CHANGED(agreement###object1###object2(object1###detail(detail), stockProp2###detail(detail))) OR
-         CHANGED(priceListType###object1###object2(object1###detail(detail), stockProp2###detail(detail))) OR
-         CHANGED(sku###detail(detail)) OR
-         CHANGED(object1###detail(detail)) OR
-         CHANGED(stockProp2###detail(detail));
 END
 META deriveDocumentDoubleDetailPriceListTypeAgreement (object1, object2, stockProp2)
     @deriveDocumentDoubleDetailPriceListTypeAgreementCustom(object1, object1###detail, object2, stockProp2);
