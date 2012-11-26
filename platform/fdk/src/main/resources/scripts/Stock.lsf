@@ -1686,13 +1686,16 @@ editSessionStock 'Редактировать' = ABSTRACT ACTION (stock) IMAGE 'e
 
 FORM stocks 'Склады'
 
-    TREE stockTree sg = stockGroup PARENT parentStockGroup
-    PROPERTIES READONLY stockGroupName = name(sg)
+    TREE stockTree a = STRING[3], sg = stockGroup PARENT parentStockGroup
+    PROPERTIES READONLY OBJVALUE(a), sgTreeName = name(sg)
+    ORDER BY sgTreeName
+    FILTERS stringEqualsAll(a)
 
     OBJECTS s = stock
-    PROPERTIES(s) READONLY skuName = name, nameLegalEntityStock, nameCountryStock, addressStock
+    PROPERTIES(s) READONLY stockName = name, nameLegalEntityStock, nameCountryStock, addressStock
     PROPERTIES(s)          editStock
-    FILTERS isParentStockGroupStock(sg, s)
+    ORDER BY stockName
+    FILTERS isParentStockGroupStock(sg, s) OR (s IS stock AND NOT sg)
 
     DIALOG stock OBJECT s
 ;
@@ -2337,10 +2340,10 @@ EXTEND FORM legalEntity
     FILTERS stringEqualsAll(b)
 
     OBJECTS st=stock
-    PROPERTIES(st) READONLY name, nameLegalEntityStock
+    PROPERTIES(st) READONLY name, nameLegalEntityStock, nameCountryStock, addressStock
     PROPERTIES(st) FORCE PANEL DRAWTOTOOLBAR SHOWIF isDefaultLegalEntityStock(l,st) editSessionStock, delete
     PROPERTIES chooseStocksLegalEntity(l) TODRAW st FORCE PANEL DRAWTOTOOLBAR
-    FILTERS isParentStockGroupStock(sg, st) OR (st IS stock AND sg IS stockGroup AND NOT stockGroupStock(st)) OR (st IS stock AND NOT sg)
+    FILTERS isParentStockGroupStock(sg, st) OR (st IS stock AND NOT sg)
     FILTERS inLegalEntityStock(l, st)
 
     OBJECTS s=legalEntity
