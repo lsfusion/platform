@@ -39,6 +39,16 @@ explicitBatchLedgerWarehouse 'Партионный учет' = DATA BOOLEAN (war
 explicitBatchLedgerStock(stock) += explicitBatchLedgerWarehouse(stock);
 
 // -------------------------------------------------- Формы ----------------------------------------- //
+
+FORM warehouseGroup 'Группа складов'
+
+    OBJECTS           w=warehouseGroup FIXED PANEL
+    PROPERTIES(w)     name, nameParentWarehouseGroup
+    ORDER BY          name
+
+    EDIT warehouseGroup OBJECT w
+;
+
 FORM warehouse 'Склад'
 
     OBJECTS           w=warehouse FIXED PANEL
