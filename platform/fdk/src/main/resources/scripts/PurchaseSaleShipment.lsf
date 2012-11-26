@@ -6,6 +6,8 @@ PRIORITY Sale;
 
 //----------------------------------------------------------------------------//
 
+GROUP shipmentGroup 'Информация о поставке' : baseGroup;
+
 createPurchaseShipment 'Создать поставку' = ABSTRACT BOOLEAN (shipment) PERSISTENT;
 createPurchaseUserShipment 'Создать поставку' = DATA BOOLEAN (userShipment) PERSISTENT;
 createPurchaseShipment(shipment) += createPurchaseUserShipment(shipment);
@@ -29,6 +31,36 @@ EXTEND DESIGN userShipment {
 EXTEND FORM shipments
     PROPERTIES(s) READONLY BACKGROUND backgroundPurchaseShipment(s) createPurchaseShipment
 ;
+//--  Связь поставки с поставкой
+
+shipmentDetailShipmentDetail = ABSTRACT shipmentDetail (Purchase.shipmentDetail) PERSISTENT;
+shipmentDetailUserShipmentDetail = DATA shipmentDetail (Purchase.userShipmentDetail);
+shipmentDetailShipmentDetail(shipmentDetail) += shipmentDetailUserShipmentDetail(shipmentDetail);
+
+CONSTRAINT Purchase.supplierShipmentDetail(detail) != supplierShipmentDetail(shipmentDetailUserShipmentDetail(detail)) OR
+           Purchase.supplierStockShipmentDetail(detail) != supplierStockShipmentDetail(shipmentDetailUserShipmentDetail(detail)) OR
+           Purchase.customerShipmentDetail(detail) != customerShipmentDetail(shipmentDetailUserShipmentDetail(detail)) OR
+           Purchase.customerStockShipmentDetail(detail) != customerStockShipmentDetail(shipmentDetailUserShipmentDetail(detail)) OR
+           Purchase.skuShipmentDetail(detail) != skuShipmentDetail(shipmentDetailUserShipmentDetail(detail))
+    CHECKED BY shipmentDetailUserShipmentDetail
+        MESSAGE 'Поставщик, покупатель, склад поставщика и склад покупателя в поставке и поставке на осове поставке должны соответствовать друг другу';
+
+
+descriptionIndexShipmentDetailShipmentDetail 'Строка поставки (продажа)' (detail) = descriptionIndexShipmentDetail(shipmentDetailShipmentDetail(detail));
+descriptionIndexShipmentDetailUserShipmentDetail 'Строка поставки (продажа)' (detail) = descriptionIndexShipmentDetail(shipmentDetailUserShipmentDetail(detail));
+
+quantityShipmentDetailShipmentShipment (sale, purchase) = GROUP SUM Purchase.quantityShipmentDetail(detail) BY shipmentShipmentDetail(shipmentDetailShipmentDetail(detail)), Purchase.shipmentShipmentDetail(detail);
+
+saleShipmentsShipment 'Поставки (продажа)' (purchase) = GROUP CONCAT castToString255(descriptionShipment(sale)) IF quantityShipmentDetailShipmentShipment(sale, purchase) , ', '
+                                                        BY purchase
+                                                        ORDER sale IN shipmentGroup MINCHARWIDTH 30 PREFCHARWIDTH 50 PERSISTENT;
+
+relationPurchaseShipment 'Связь' (purchase) = GROUP SUM quantityShipmentDetailShipmentShipment (sale, purchase) BY purchase PERSISTENT;
+
+shippedShipmentDetail 'Кол-во (поставлено)' (shipmentDetail) = GROUP SUM Purchase.quantityShipmentDetail(detail) IF Purchase.isPostedShipmentDetail(detail)
+                                                                   BY shipmentDetailShipmentDetail(detail) PERSISTENT;
+
+toShipShipmentDetail 'Не поставлено' (shipmentDetail) = quantityShipmentDetail (shipmentDetail) (-) shippedShipmentDetail(shipmentDetail);
 
 CLASS purchaseShipment 'Поставка на основе поставки': Purchase.shipment;
 CLASS purchaseShipmentPosted 'Закрытая поставка на основе поставки' : purchaseShipment, postedObject;
@@ -82,6 +114,112 @@ Purchase.priceShipmentDetail(shipmentDetail) += priceShipmentDetail(shipmentDeta
 Purchase.sumShipmentDetail(shipmentDetail) += sumShipmentDetail(shipmentDetailPurchaseShipmentDetail(shipmentDetail));
 
 Purchase.editShipment(shipment) += ACTION EXEC editShipment(shipmentPurchaseShipment(shipment));
+
+shipmentDetailShipmentDetail(shipmentDetail) += shipmentDetailPurchaseShipmentDetail(shipmentDetail);
+
+// Создание поставки на основе поставки //
+
+FORM shipmentShipments 'Поставки'
+    OBJECTS s = legalEntity FIXED PANEL
+    PROPERTIES (s) READONLY name
+    OBJECTS c = legalEntity FIXED PANEL
+    PROPERTIES (c) READONLY name
+
+    OBJECTS ss = stock FIXED PANEL
+    PROPERTIES (ss) READONLY name
+    OBJECTS cs = stock FIXED PANEL
+    PROPERTIES (cs) READONLY name
+
+    OBJECTS o = shipment
+    PROPERTIES (o) READONLY isPostedShipment FORCE GRID, objectClassName, numberShipment, seriesShipment, dateShipment, timeShipment,
+                            nameCurrencyShipment, noteShipment,
+                            countShipmentDetailShipment, quantityShipmentDetailShipment, sumShipmentDetailShipment
+    FILTERS supplierShipment(o) == s,
+            customerShipment(o) == c,
+            supplierStockShipment(o) == ss,
+            customerStockShipment(o) == cs,
+            isPostedShipment(o) AND NOT createPurchaseShipment(o)
+
+    OBJECTS d = shipmentDetail
+
+    PROPERTIES (d) READONLY indexShipmentDetail, idBarcodeSkuShipmentDetail, nameSkuShipmentDetail, shortNameUOMSkuShipmentDetail,
+                            quantityShipmentDetail, priceShipmentDetail, sumShipmentDetail,
+                            nameSupplierStockShipmentDetail, toShipShipmentDetail BACKGROUND backgroundPurchaseShipment(o)
+    FILTERS shipmentShipmentDetail(d) == o
+;
+
+DESIGN shipmentShipments FROM DEFAULT {
+    main {
+        preferredSize = (1024, 768);
+        NEW documentContainer BEFORE functions.box {
+
+            childConstraints = TO THE BOTTOM;
+            NEW headerBox {
+                childConstraints = TO THE RIGHTBOTTOM;
+                NEW headerBox1 {
+                    childConstraints = TO THE RIGHTBOTTOM;
+                    title = 'Поставщик';
+                    ADD s.box;
+                    ADD ss.box;
+                }
+                NEW headerBox2 {
+                    childConstraints = TO THE RIGHTBOTTOM;
+                    title = 'Покупатель';
+                    ADD c.box;
+                    ADD cs.box;
+                }
+            }
+            ADD o.box;
+            NEW documentDetail {
+                type = TABBED;
+
+                ADD d.box {
+                    title = 'Спецификация';
+                }
+                NEW printTab {
+                    title = 'Печатные формы';
+                    NEW printContainer {
+                        title = 'Печать';
+                        childConstraints = TO THE BOTTOM;
+                        fillVertical = 1.0;
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+fillShipmentUserShipment 'Заполнить на основе поставки' =  ACTION (userShipment) {       // подставляем все количество ???
+    FORM shipmentShipments OBJECTS s = Purchase.supplierUserShipment(userShipment), c = Purchase.customerUserShipment(userShipment),
+                                   ss = Purchase.supplierStockUserShipment(userShipment), cs = Purchase.customerStockUserShipment(userShipment) MODAL;
+    IF formResult() == formResult.ok THEN {
+        LOCAL saleShipment = shipment();
+        SET saleShipment() <- chosenObject('o');
+
+        FOR shipmentShipmentDetail(shipmentDetail) == saleShipment() ADDOBJ d = Purchase.userShipmentDetail DO {
+            SET Purchase.userShipmentUserShipmentDetail(d) <- userShipment;
+            SET shipmentDetailUserShipmentDetail(d) <- shipmentDetail;
+
+            SET Purchase.priceUserShipmentDetail(d) <- priceShipmentDetail(shipmentDetail);
+
+            SET Purchase.skuUserShipmentDetail(d) <- skuShipmentDetail(shipmentDetail);
+            SET Purchase.quantityUserShipmentDetail (d) <- quantityShipmentDetail(shipmentDetail);
+        }
+    }
+} IN shipmentGroup;
+
+EXTEND FORM Purchase.userShipment
+    PROPERTIES(s) fillShipmentUserShipment, saleShipmentsShipment READONLY
+    PROPERTIES(d) descriptionIndexShipmentDetailUserShipmentDetail BEFORE delete(d)
+;
+EXTEND DESIGN Purchase.userShipment { headerRow12{ ADD s.shipmentGroup {childConstraints = TO THE RIGHTBOTTOM;}}}
+
+EXTEND FORM Purchase.shipments
+//    PROPERTIES(s) READONLY saleShipmentsShipment
+    PROPERTIES(d) READONLY descriptionIndexShipmentDetailShipmentDetail SHOWIF relationPurchaseShipment(s)
+;
+
 
 
 

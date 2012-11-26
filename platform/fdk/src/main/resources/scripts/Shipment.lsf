@@ -428,7 +428,7 @@ META defineShipment(sign, stockProp)
                customerShipmentDetail(detail) != customerInvoiceDetail(invoiceDetailUserShipmentDetail(detail)) OR
                skuShipmentDetail(detail) != skuInvoiceDetail(invoiceDetailUserShipmentDetail(detail))
         CHECKED BY invoiceDetailUserShipmentDetail
-            MESSAGE 'Поставщикб покупатель и товар в накладной и поставке должны соответствовать друг другу';
+            MESSAGE 'Поставщик, покупатель и товар в накладной и поставке должны соответствовать друг другу';
 
 
     descriptionIndexInvoiceDetailShipmentDetail 'Строка накладной' (detail) = descriptionIndexInvoiceDetail(invoiceDetailShipmentDetail(detail));
