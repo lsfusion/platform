@@ -209,6 +209,15 @@ DESIGN taxes FROM DEFAULT {
     ADD functions.box;
 }
 
+FORM range 'Шкала'
+    OBJECTS r=range
+    PROPERTIES(r) numberRange, nameTaxRange, nameCountryRange, nameRangeTypeRange, valueCurrentRateRange, dateFromActingRateRange,
+                  dateToActingRateRange
+    PROPERTIES(r) ADDFORM, EDITFORM FORCE PANEL DRAWTOTOOLBAR
+    DIALOG range OBJECT r
+;
+
+
 // ----------------------------------------- Макросы по объявлению налогов в документах ---------------------------- //
 
 META defineDocumentDetailVATCustom(detail, countryProp)

@@ -991,7 +991,7 @@ META deriveDocumentDetailPricePriceListTypeVATBatchCustom (detail, stockProp)
 
 END
 
-META deriveDocumentPriceDetailOnChangeCustom (detail)
+META deriveDocumentPriceDetailOnChangeInvoicePriceCustom (detail)
     changePrice###detail (detail) = ACTION (detail) {
         REQUEST NUMERIC[14,3] INPUT;
         IF requestedNumeric() THEN {
@@ -1008,11 +1008,11 @@ META deriveDocumentPriceDetailOnChangeCustom (detail)
         };
 END
 
-META deriveDocumentPriceDetailOnChange (object)
-    @deriveDocumentPriceDetailOnChangeCustom(object###Detail);
+META deriveDocumentPriceDetailOnChangeInvoicePrice (object)
+    @deriveDocumentPriceDetailOnChangeInvoicePriceCustom(object###Detail);
 END
 
-META deriveDocumentInvoicePriceDetailOnChangeCustom (detail)
+META deriveDocumentInvoicePriceDetailOnChangePriceCustom (detail)
     changeInvoicePrice###detail (detail) = ACTION (detail) {
         REQUEST NUMERIC[14,3] INPUT;
         IF requestedNumeric() THEN {
@@ -1029,8 +1029,29 @@ META deriveDocumentInvoicePriceDetailOnChangeCustom (detail)
     };
 END
 
-META deriveDocumentInvoicePriceDetailOnChange (object)
-    @deriveDocumentInvoicePriceDetailOnChangeCustom(object###Detail);
+META deriveDocumentInvoicePriceDetailOnChangePrice (object)
+    @deriveDocumentInvoicePriceDetailOnChangePriceCustom(object###Detail);
+END
+
+META deriveDocumentInvoicePriceDetailOnChangeVATCustom (detail)
+    changeInvoicePriceVAT###detail (detail) = ACTION (detail) {
+        REQUEST OBJECT r FORM range MODAL;
+        IF formResult() == formResult.ok THEN {
+            IF rangeTypeRange(VAT###detail(detail)) == rangeType.units
+                THEN {
+                    SET VAT###detail (detail) <- chosenObject('r');
+                    SET invoicePrice###detail (detail) <- price###detail (detail) * 100 /(100 - valueVAT###detail(detail));
+                }
+                ELSE{
+                    SET VAT###detail (detail) <- chosenObject('r');
+                    SET invoicePrice###detail (detail) <- price###detail (detail) * (100 + valueVAT###detail(detail))/100;
+            }
+        }
+    };
+END
+
+META deriveDocumentInvoicePriceDetailOnChangeVAT (object)
+    @deriveDocumentInvoicePriceDetailOnChangeVATCustom(object###Detail);
 END
 
 META deriveDocumentDetailPricePriceListTypeBatchVAT (object, stockProp)

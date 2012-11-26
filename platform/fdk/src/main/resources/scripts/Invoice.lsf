@@ -130,8 +130,9 @@ META defineInvoice(sign, stockProp)
     @defineDocumentInterfaceDetailPricePrefix (invoice, invoice, ' с НДС');
     @deriveDocumentDetailVAT (userInvoice, , date,  sku, stockProp);
     @deriveDocumentDetailPricePriceListTypeVAT (userInvoice, stockProp);
-    @deriveDocumentPriceDetailOnChange(userInvoice);
-    @deriveDocumentInvoicePriceDetailOnChange(userInvoice);
+    @deriveDocumentPriceDetailOnChangeInvoicePrice(userInvoice);
+    @deriveDocumentInvoicePriceDetailOnChangePrice(userInvoice);
+    @deriveDocumentInvoicePriceDetailOnChangeVAT(userInvoice);
 
     @defineDocumentInterfaceHeaderQuantity(invoice);
     @defineDocumentHeaderSkuQuantity(invoice, sku);
@@ -334,8 +335,10 @@ META defineInvoice(sign, stockProp)
         PROPERTIES (d) indexUserInvoiceDetail, idBarcodeSkuUserInvoiceDetail, nameSkuUserInvoiceDetail, shortNameUOMSkuUserInvoiceDetail,
                        quantityUserInvoiceDetail, namePriceListTypeUserInvoiceDetail,
                        priceUserInvoiceDetail ON CHANGE EXEC changeInvoicePriceUserInvoiceDetail(d), sumUserInvoiceDetail,
+                       numberVATUserInvoiceDetail ON CHANGE EXEC changeInvoicePriceVATUserInvoiceDetail(d),
+                       valueVATUserInvoiceDetail,
                        invoicePriceUserInvoiceDetail ON CHANGE EXEC changePriceUserInvoiceDetail(d),
-                       numberVATUserInvoiceDetail, valueVATUserInvoiceDetail, VATSumUserInvoiceDetail, invoiceSumUserInvoiceDetail,
+                       VATSumUserInvoiceDetail, invoiceSumUserInvoiceDetail,
                        descriptionOrderUserInvoiceDetail, ADDOBJ, delete
 
         PROPERTIES(i) TODRAW d addDetailDialogSkuStockUserInvoiceDetailUserInvoice,
