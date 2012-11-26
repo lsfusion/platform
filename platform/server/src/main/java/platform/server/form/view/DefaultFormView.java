@@ -315,16 +315,30 @@ public class DefaultFormView extends FormView {
             if (groupAbstract == null) break;
 
             ContainerView groupPropertyContainer = groupPropertyContainers.get(Optional.fromNullable(groupObject), groupAbstract);
-            boolean createContainer = groupPropertyContainer == null;
-            if (createContainer) {
-                groupPropertyContainer = createContainer(groupAbstract.caption, null, getPropertyGroupContainerSID(groupObject, groupAbstract));
+            boolean isNewContainer = false;
+            if (groupPropertyContainer == null) {
+                String groupContainerSID = getPropertyGroupContainerSID(groupObject, groupAbstract);
+
+                ComponentView component = getComponentBySID(groupContainerSID);
+                if (component != null) {
+                    if (!(component instanceof ContainerView)) {
+                        throw new IllegalStateException(groupContainerSID + " component isn't a container");
+                    }
+                    groupPropertyContainer = (ContainerView) component;
+                } else {
+                    groupPropertyContainer = createContainer(groupAbstract.caption, null, groupContainerSID);
+                    isNewContainer = true;
+                }
+
                 groupPropertyContainers.put(Optional.fromNullable(groupObject), groupAbstract, groupPropertyContainer);
             }
 
-            if (addChild) // здесь важно не трогать уже созданные контейнеры, чтобы при extend формы не происходило "перетасовывания" контейнеров
+            // здесь важно не трогать уже созданные контейнеры, чтобы при extend формы не происходило "перетасовывания" контейнеров
+            if (addChild) {
                 groupPropertyContainer.add(childComponent);
+            }
 
-            addChild = createContainer;
+            addChild = isNewContainer;
             childComponent = groupPropertyContainer;
 
             groupAbstract = groupAbstract.getParent();
@@ -343,7 +357,7 @@ public class DefaultFormView extends FormView {
             String[] sids = propertyGroupSID.split("_", 2);
             propertyGroupSID = sids[1];
         }
-        // todo : здесь конечно совсем хак - нужно более четку схему сделать
+        // todo : здесь конечно совсем хак - нужно более четкую схему сделать
 //        if (lm.getGroupBySID(propertyGroupSID) != null) {
 //            используем простое имя для групп данного модуля
 //            propertyGroupSID = lm.transformSIDToName(propertyGroupSID);
