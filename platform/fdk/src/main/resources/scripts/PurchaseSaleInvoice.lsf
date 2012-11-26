@@ -1,0 +1,115 @@
+MODULE PurchaseSaleInvoice;
+
+REQUIRE SaleInvoice, PurchaseInvoice;
+
+PRIORITY Sale;
+
+//----------------------------------------------------------------------------//
+
+// Создание накладной на основе накладной //
+
+FORM invoiceInvoices 'Накладные'
+    OBJECTS s = legalEntity FIXED PANEL
+    PROPERTIES (s) READONLY name
+    OBJECTS c = legalEntity FIXED PANEL
+    PROPERTIES (c) READONLY name
+
+    OBJECTS ss = stock FIXED PANEL
+    PROPERTIES (ss) READONLY name
+    OBJECTS cs = stock FIXED PANEL
+    PROPERTIES (cs) READONLY name
+
+    OBJECTS o = invoice
+    PROPERTIES (o) READONLY isPostedInvoice FORCE GRID, objectClassName, numberInvoice, seriesInvoice, dateInvoice, timeInvoice,
+                            nameCurrencyInvoice, noteInvoice,
+                            countInvoiceDetailInvoice, quantityInvoiceDetailInvoice, sumInvoiceDetailInvoice
+    FILTERS supplierInvoice(o) == s,
+            customerInvoice(o) == c,
+            supplierStockInvoice(o) == ss,
+            customerStockInvoice(o) == cs,
+            isPostedInvoice(o)
+
+    OBJECTS d = invoiceDetail
+
+    PROPERTIES (d) READONLY indexInvoiceDetail, idBarcodeSkuInvoiceDetail, nameSkuInvoiceDetail, shortNameUOMSkuInvoiceDetail,
+                            quantityInvoiceDetail, priceInvoiceDetail, sumInvoiceDetail, numberVATInvoiceDetail, valueVATInvoiceDetail,
+                            VATSumInvoiceDetail, invoiceSumInvoiceDetail, nameSupplierStockInvoiceDetail
+
+    FILTERS invoiceInvoiceDetail(d) == o
+;
+
+DESIGN invoiceInvoices FROM DEFAULT {
+    main {
+        preferredSize = (1024, 768);
+        NEW documentContainer BEFORE functions.box {
+
+            childConstraints = TO THE BOTTOM;
+            NEW headerBox {
+                childConstraints = TO THE RIGHTBOTTOM;
+                NEW headerBox1 {
+                    childConstraints = TO THE RIGHTBOTTOM;
+                    title = 'Поставщик';
+                    ADD s.box;
+                    ADD ss.box;
+                }
+                NEW headerBox2 {
+                    childConstraints = TO THE RIGHTBOTTOM;
+                    title = 'Покупатель';
+                    ADD c.box;
+                    ADD cs.box;
+                }
+            }
+            ADD o.box;
+            NEW documentDetail {
+                type = TABBED;
+
+                ADD d.box {
+                    title = 'Спецификация';
+                }
+                NEW printTab {
+                    title = 'Печатные формы';
+                    NEW printContainer {
+                        title = 'Печать';
+                        childConstraints = TO THE BOTTOM;
+                        fillVertical = 1.0;
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+fillInvoiceUserInvoice 'Заполнить на основе накладной' =  ACTION (userInvoice) {
+    FORM invoiceInvoices OBJECTS s = Purchase.supplierUserInvoice(userInvoice), c = Purchase.customerUserInvoice(userInvoice),
+                                   ss = Purchase.supplierStockUserInvoice(userInvoice), cs = Purchase.customerStockUserInvoice(userInvoice) MODAL;
+    IF formResult() == formResult.ok THEN {
+        LOCAL saleInvoice = invoice();
+        SET saleInvoice() <- chosenObject('o');
+
+        FOR invoiceInvoiceDetail(invoiceDetail) == saleInvoice() ADDOBJ d = Purchase.userInvoiceDetail DO {
+            SET Purchase.userInvoiceUserInvoiceDetail(d) <- userInvoice;
+            SET Purchase.skuUserInvoiceDetail(d) <- skuInvoiceDetail(invoiceDetail);
+            SET Purchase.quantityUserInvoiceDetail (d) <- quantityInvoiceDetail(invoiceDetail);
+            SET Purchase.VATUserInvoiceDetail(d) <- VATInvoiceDetail(invoiceDetail);
+            SET Purchase.valueVATUserInvoiceDetail(d) <- valueVATInvoiceDetail(invoiceDetail);
+            SET Purchase.priceUserInvoiceDetail(d) <- priceInvoiceDetail(invoiceDetail);
+            SET Purchase.invoicePriceUserInvoiceDetail(d) <- invoicePriceInvoiceDetail(invoiceDetail);
+        }
+    }
+} IN Purchase.invoiceGroup;
+
+EXTEND FORM Purchase.userInvoice
+    PROPERTIES(i) fillInvoiceUserInvoice
+;
+EXTEND DESIGN Purchase.userInvoice {
+    headerRow13{
+        NEW headerRow131{
+            title = 'Информация о накладной';
+            childConstraints = TO THE RIGHTBOTTOM;
+            ADD PROPERTY(fillInvoiceUserInvoice);
+        }
+    }
+}
+
+
