@@ -2,6 +2,7 @@ package platform.gwt.form.client.form.dispatch;
 
 import com.allen_sauer.gwt.log.client.Log;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import platform.gwt.base.client.GwtClientUtils;
 import platform.gwt.form.client.ErrorHandlingCallback;
 import platform.gwt.form.client.form.ui.dialog.DialogBoxHelper;
 import platform.gwt.form.client.log.GLog;
@@ -117,6 +118,13 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
     @Override
     public void execute(GMessageAction action) {
+        pauseDispatching();
+        DialogBoxHelper.showMessageBox(false, action.caption, action.message, new DialogBoxHelper.CloseCallback() {
+            @Override
+            public void closed(DialogBoxHelper.OptionType chosenOption) {
+                continueDispatching();
+            }
+        });
     }
 
     @Override
@@ -156,5 +164,10 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
     @Override
     public void execute(GAsyncResultAction action) {
+    }
+
+    @Override
+    public void execute(GLogOutAction action) {
+        GwtClientUtils.logout();
     }
 }

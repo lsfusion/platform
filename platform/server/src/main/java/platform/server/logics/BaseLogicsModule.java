@@ -7,6 +7,7 @@ import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.KeyStrokes;
 import platform.interop.PropertyEditType;
+import platform.interop.action.LogOutClientAction;
 import platform.interop.action.MessageClientAction;
 import platform.interop.action.UserChangedClientAction;
 import platform.interop.action.UserReloginClientAction;
@@ -242,6 +243,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP currentSession;
     public LCP currentComputer, hostnameCurrentComputer;
     public LAP changeUser;
+    public LAP logOut;
     protected LCP isServerRestarting;
     public LCP<PropertyInterface> barcode;
     public LCP<PropertyInterface> barcodeToObject;
@@ -532,6 +534,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     // navigators
     public NavigatorElement<T> baseElement;
     public NavigatorElement<T> objectElement;
+    public NavigatorElement<T> accountElement;
     public NavigatorElement<T> adminElement;
 
     public NavigatorElement<T> applicationElement;
@@ -942,6 +945,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         isServerRestarting = addProperty(null, new LCP<PropertyInterface>(new IsServerRestartingFormulaProperty("isServerRestarting")));
         changeUser = addProperty(null, new LAP(new ChangeUserActionProperty("changeUser", customUser)));
+        logOut = addProperty(null, new LAP(new LogOutActionProperty("logOut")));
 
         userLogin = addDProp(baseGroup, "userLogin", getString("logics.user.login"), StringClass.get(30), customUser);
         loginToUser = addAGProp("loginToUser", getString("logics.user"), userLogin);
@@ -1027,7 +1031,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         extSID = addDProp(recognizeGroup, "extSID", getString("logics.extsid"), StringClass.get(100), externalObject);
         extSIDToObject = addAGProp("extSIDToObject", getString("logics.object"), extSID);
-        
+
         timeCreated = addDProp(historyGroup, "timeCreated", getString("logics.timecreated"), DateTimeClass.instance, historyObject);
         userCreated = addDProp(idGroup, "userCreated", getString("logics.usercreated"), customUser, historyObject);
         nameUserCreated = addJProp(historyGroup, "nameUserCreated", getString("logics.usercreated"), name, userCreated, 1);
@@ -1035,7 +1039,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         computerCreated = addDProp(idGroup, "computerCreated", getString("logics.computercreated"), computer, historyObject);
         hostnameComputerCreated = addJProp(historyGroup, "hostnameComputerCreated", getString("logics.computercreated"), hostname, computerCreated, 1);
         hostnameComputerCreated.setMinimumCharWidth(10); hostnameComputerCreated.setPreferredCharWidth(20);
-        
+
         timeCreated.setEventChangeNew(currentDateTime, is(historyObject), 1);
         userCreated.setEventChangeNew(currentUser, is(historyObject), 1);
         computerCreated.setEventChangeNew(currentComputer, is(historyObject), 1);
@@ -1580,6 +1584,10 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         baseElement = addNavigatorElement("baseElement", getString("logics.forms"));
         baseElement.window = navigatorWindow;
+
+        accountElement = addNavigatorElement(baseElement, "accountElement", getString("logics.account"));
+        addNavigatorAction(accountElement, "logout", getString("logics.logout"), logOut);
+
         adminElement = addNavigatorElement(baseElement, "adminElement", getString("logics.administration"));
 
         objectElement = addNavigatorElement(adminElement, "objectElement", getString("logics.object"));
@@ -1727,6 +1735,17 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
                 context.getSession().user.changeCurrentUser(user);
                 context.delayUserInterfaction(new UserChangedClientAction());
             }
+        }
+    }
+
+    private class LogOutActionProperty extends AdminActionProperty {
+        private LogOutActionProperty(String sID) {
+            super(sID, getString("logics.logout"), new ValueClass[]{});
+        }
+
+        @Override
+        protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
+            context.delayUserInteraction(new LogOutClientAction());
         }
     }
 
@@ -1936,7 +1955,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
             objRole = addSingleGroupObject(userRole, name, userRoleSID);
             setEditType(objRole, PropertyEditType.READONLY);
-            
+
             addPropertyDraw(objUser, objRole, inUserMainRole);
         }
 
@@ -1947,7 +1966,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             design.addIntersection(design.getGroupObjectContainer(objUser.groupTo),
                                    design.getGroupObjectContainer(objRole.groupTo),
                                    DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
-            
+
             return design;
         }
     }
@@ -2211,7 +2230,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             treeContainer.add(design.getGroupObjectContainer(objProperties.groupTo));
 
             tableContainer.add(design.getGroupObjectContainer(objProperties.groupTo));
-            
+
             container.add(treeContainer);
             container.add(tableContainer);
 
@@ -2366,7 +2385,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             objPropertyDraw = addSingleGroupObject(propertyDraw, getString("logics.property.draw"), propertyDrawSID, captionPropertyDraw);
 
             addPropertyDraw(hasUserPreferencesGroupObjectCustomUser, objGroupObject, objUser);
-            
+
             addPropertyDraw(nameShowPropertyDraw, objPropertyDraw);
             addPropertyDraw(nameShowPropertyDrawCustomUser, objPropertyDraw, objUser);
             addPropertyDraw(columnWidthPropertyDraw, objPropertyDraw);

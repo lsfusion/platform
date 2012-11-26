@@ -830,6 +830,7 @@ NAVIGATOR {
     baseElement TO mainToolbar;
     testNavigators TO leftToolbar;
     adminElement TO leftToolbar;
+    accountElement TO leftToolbar;
     objectElement TO objectsWindow;
 
     ADD dictionaries 'Словари' AFTER daysOffForm;

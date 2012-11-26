@@ -2,17 +2,23 @@ package platform.gwt.form.client;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
+import platform.gwt.base.client.ErrorAsyncCallback;
 import platform.gwt.form.client.dispatch.NavigatorDispatchAsync;
 import platform.gwt.form.client.form.DefaultFormsController;
+import platform.gwt.form.client.form.dispatch.GwtActionDispatcher;
+import platform.gwt.form.client.form.ui.dialog.WindowHiddenHandler;
 import platform.gwt.form.client.log.GLog;
+import platform.gwt.form.client.navigator.GNavigatorAction;
 import platform.gwt.form.client.navigator.GNavigatorController;
 import platform.gwt.form.client.window.WindowsController;
-import platform.gwt.form.shared.actions.navigator.GetNavigatorInfo;
-import platform.gwt.form.shared.actions.navigator.GetNavigatorInfoResult;
+import platform.gwt.form.shared.actions.form.ServerResponseResult;
+import platform.gwt.form.shared.actions.navigator.*;
+import platform.gwt.form.shared.view.actions.GFormAction;
 import platform.gwt.form.shared.view.window.GAbstractWindow;
 import platform.gwt.form.shared.view.window.GNavigatorWindow;
 
@@ -31,6 +37,8 @@ public class MainFrame implements EntryPoint {
     public GAbstractWindow formsWindow;
     public Map<GAbstractWindow, Widget> commonWindows = new LinkedHashMap<GAbstractWindow, Widget>();
 
+    public GNavigatorActionDispatcher actionDispatcher = new GNavigatorActionDispatcher();
+
     public void onModuleLoad() {
         GWT.setUncaughtExceptionHandler(new GWT.UncaughtExceptionHandler() {
             @Override
@@ -42,7 +50,17 @@ public class MainFrame implements EntryPoint {
         // inject global styles
         GWT.<MainFrameResources>create(MainFrameResources.class).css().ensureInjected();
 
-        formsController = new DefaultFormsController();
+        formsController = new DefaultFormsController() {
+            @Override
+            public void executeNavigatorAction(GNavigatorAction action) {
+                dispatcher.execute(new ExecuteNavigatorAction(action.sid), new ErrorHandlingCallback<ServerResponseResult>() {
+                    @Override
+                    public void success(ServerResponseResult result) {
+                        actionDispatcher.dispatchResponse(result);
+                    }
+                });
+            }
+        };
 
         windowsController = new WindowsController() {
             @Override
@@ -103,5 +121,32 @@ public class MainFrame implements EntryPoint {
                 navigatorController.update();
             }
         });
+    }
+
+    private class GNavigatorActionDispatcher extends GwtActionDispatcher {
+        @Override
+        protected void throwInServerInvocation(Exception ex) {
+            dispatcher.execute(new ThrowInNavigatorAction(ex), new ErrorAsyncCallback<ServerResponseResult>());
+        }
+
+        @Override
+        protected void continueServerInvocation(Object[] actionResults, AsyncCallback<ServerResponseResult> callback) {
+            dispatcher.execute(new ContinueNavigatorAction(actionResults), callback);
+        }
+
+        @Override
+        public void execute(final GFormAction action) {
+            if (action.modalityType.isModal()) {
+                pauseDispatching();
+            }
+            formsController.openForm(action.form, action.modalityType, new WindowHiddenHandler() {
+                @Override
+                public void onHidden() {
+                    if (action.modalityType.isModal()) {
+                        continueDispatching();
+                    }
+                }
+            });
+        }
     }
 }

@@ -26,7 +26,6 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
         element.caption = clientElement.caption;
         element.children = new ArrayList<GNavigatorElement>();
         element.icon = "open.png";
-        element.isForm = false;
         for (ClientNavigatorElement child : clientElement.children) {
             GNavigatorElement childElement = convertOrCast(child);
             element.children.add(childElement);
@@ -49,7 +48,6 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
     public GNavigatorForm convertNavigatorForm(ClientNavigatorForm clientForm) {
         GNavigatorForm form = initNavigatorElement(clientForm, new GNavigatorForm());
         form.icon = "form.png";
-        form.isForm = true;
         form.isPrintForm = clientForm.isPrintForm;
         form.modalityType = GModalityType.valueOf(clientForm.modalityType.name());
         return form;
@@ -58,10 +56,8 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
     @Cached
     @Converter(from = ClientNavigatorAction.class)
     public GNavigatorAction convertNavigatorAction(ClientNavigatorAction clientAction) {
-        //todo:
         GNavigatorAction form = initNavigatorElement(clientAction, new GNavigatorAction());
-        form.icon = "form.png";
-        form.isForm = true;
+        form.icon = "action.png";
         return form;
     }
 

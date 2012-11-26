@@ -89,7 +89,7 @@ public abstract class GNavigatorController implements GINavigatorController {
 
             formsController.openForm(form.sid, form.modalityType);
         } else if (element instanceof GNavigatorAction) {
-//            openAction((GNavigatorAction) element);
+            formsController.executeNavigatorAction((GNavigatorAction) element);
         }
     }
 }

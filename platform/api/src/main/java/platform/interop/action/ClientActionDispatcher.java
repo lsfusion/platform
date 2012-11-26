@@ -1,7 +1,5 @@
 package platform.interop.action;
 
-import java.io.IOException;
-
 // такая дебильная схема с Dispatcher'ом чтобы модульность не нарушать
 public interface ClientActionDispatcher {
 
@@ -52,4 +50,6 @@ public interface ClientActionDispatcher {
     public void execute(EditNotPerformedClientAction action);
 
     public void execute(AsyncResultClientAction action);
+
+    public void execute(LogOutClientAction action);
 }

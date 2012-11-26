@@ -4172,6 +4172,7 @@ public class RomanLogicsModule extends LogicsModule {
         ToolBarNavigatorWindow leftToolbar = addWindow(new ToolBarNavigatorWindow(JToolBar.VERTICAL, "leftToolbar", "Список"));
 
         baseLM.baseElement.window = mainToolbar;
+        baseLM.accountElement.window = leftToolbar;
         baseLM.adminElement.window = leftToolbar;
 
         TreeNavigatorWindow objectsWindow = addWindow(new TreeNavigatorWindow("objectsWindow", "Объекты"));

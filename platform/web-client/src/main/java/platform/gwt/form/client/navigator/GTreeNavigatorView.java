@@ -1,11 +1,8 @@
 package platform.gwt.form.client.navigator;
 
-import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.EventListener;
 import com.google.gwt.user.client.ui.Tree;
 import com.google.gwt.user.client.ui.TreeItem;
-import platform.gwt.base.client.GwtClientUtils;
 import platform.gwt.form.shared.view.GNavigatorElement;
 import platform.gwt.form.shared.view.window.GTreeNavigatorWindow;
 
@@ -17,12 +14,13 @@ import java.util.Set;
 import static platform.gwt.base.client.GwtClientUtils.stopPropagation;
 
 public class GTreeNavigatorView extends GNavigatorView {
-    private Tree tree;
+    private NavigatorTree tree;
     private List<GNavigatorElement> openElements = new ArrayList<GNavigatorElement>();
 
     public GTreeNavigatorView(GTreeNavigatorWindow window, GINavigatorController navigatorController) {
-        super(window, new Tree(), navigatorController);
-        tree = (Tree) getComponent();
+        super(window, navigatorController);
+        setComponent(new NavigatorTree());
+        tree = (NavigatorTree) getComponent();
         tree.setAnimationEnabled(false);
     }
 
@@ -37,21 +35,6 @@ public class GTreeNavigatorView extends GNavigatorView {
         } else {
             parent.addItem(node);
         }
-        node.setUserObject(element);
-
-        DOM.sinkEvents(node.getElement(), Event.ONDBLCLICK);
-        DOM.setEventListener(node.getElement(), new EventListener() {
-            @Override
-            public void onBrowserEvent(Event event) {
-                GNavigatorElement element = (GNavigatorElement) node.getUserObject();
-                if (element.isForm) {
-                    selected = element;
-                    navigatorController.update();
-                    navigatorController.openElement(selected);
-                    stopPropagation(event);
-                }
-            }
-        });
 
         for (GNavigatorElement child : element.children) {
             if (newElements.contains(child)) {
@@ -94,6 +77,15 @@ public class GTreeNavigatorView extends GNavigatorView {
         }
     }
 
+    private void doubleClicked() {
+        TreeNavigatorItem selectedItem = (TreeNavigatorItem) tree.getSelectedItem();
+        if (selectedItem != null) {
+            selected = selectedItem.element;
+            navigatorController.update();
+            navigatorController.openElement(selected);
+        }
+    }
+
     @Override
     public GNavigatorElement getSelectedElement() {
         return selected;
@@ -115,6 +107,23 @@ public class GTreeNavigatorView extends GNavigatorView {
         public TreeNavigatorItem(final GNavigatorElement element) {
             super(element.caption);
             this.element = element;
+            setUserObject(element);
+        }
+    }
+
+    private class NavigatorTree extends Tree {
+        public NavigatorTree() {
+            super();
+            sinkEvents(Event.ONDBLCLICK);
+        }
+
+        @Override
+        public void onBrowserEvent(Event event) {
+            if (event.getTypeInt() == Event.ONDBLCLICK) {
+                stopPropagation(event);
+                doubleClicked();
+            }
+            super.onBrowserEvent(event);
         }
     }
 }

@@ -26,4 +26,6 @@ public interface GActionDispatcher {
     public Object execute(GRequestUserInputAction action);
 
     public void execute(GAsyncResultAction action);
+
+    public void execute(GLogOutAction action);
 }

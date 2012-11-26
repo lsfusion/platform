@@ -147,6 +147,11 @@ public class ClientActionToGwtConverter extends ObjectConverter {
         return new GAsyncResultAction(deserializeServerValue(action.value));
     }
 
+    @Converter(from = LogOutClientAction.class)
+    public GLogOutAction convertAction(LogOutClientAction action) {
+        return new GLogOutAction();
+    }
+
     private String generateReport(HttpSession session, boolean toExcel, ReportGenerationData reportData) {
         try {
             TimeZone zone = Calendar.getInstance().getTimeZone();

@@ -14,12 +14,12 @@ public abstract class GNavigatorView {
     protected GNavigatorElement selected;
 
     public GNavigatorView(GNavigatorWindow window, GINavigatorController navigatorController) {
-        this(window, null, navigatorController);
+        this.window = window;
+        this.navigatorController = navigatorController;
     }
 
     public GNavigatorView(GNavigatorWindow window, Widget component, GINavigatorController navigatorController) {
-        this.window = window;
-        this.navigatorController = navigatorController;
+        this(window, navigatorController);
         setComponent(component);
     }
 

@@ -3,8 +3,7 @@ package platform.gwt.form.server;
 import net.customware.gwt.dispatch.server.InstanceActionHandlerRegistry;
 import platform.gwt.base.server.LogicsDispatchServlet;
 import platform.gwt.form.server.form.handlers.*;
-import platform.gwt.form.server.navigator.handlers.GenerateIDHandler;
-import platform.gwt.form.server.navigator.handlers.GetNavigatorInfoHandler;
+import platform.gwt.form.server.navigator.handlers.*;
 import platform.interop.RemoteLogicsInterface;
 
 public class RemoteServiceImpl extends LogicsDispatchServlet<RemoteLogicsInterface> {
@@ -30,6 +29,9 @@ public class RemoteServiceImpl extends LogicsDispatchServlet<RemoteLogicsInterfa
         registry.addHandler(new ThrowInInvocationHandler(this));
         registry.addHandler(new ClosePressedHandler(this));
         registry.addHandler(new OkPressedHandler(this));
+        registry.addHandler(new ExecuteNavigatorActionHandler(this));
+        registry.addHandler(new ContinueNavigatorActionHandler(this));
+        registry.addHandler(new ThrowInNavigatorActionHandler(this));
     }
 
     public FormSessionManager getFormSessionManager() {

@@ -78,17 +78,6 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
     }
 
     @Override
-    public void execute(GMessageAction action) {
-        pauseDispatching();
-        form.blockingMessage(action.caption, action.message, new DialogBoxHelper.CloseCallback() {
-            @Override
-            public void closed(DialogBoxHelper.OptionType chosenOption) {
-                continueDispatching();
-            }
-        });
-    }
-
-    @Override
     public int execute(GConfirmAction action) {
         pauseDispatching();
         form.blockingConfirm(action.caption, action.message, new DialogBoxHelper.CloseCallback() {

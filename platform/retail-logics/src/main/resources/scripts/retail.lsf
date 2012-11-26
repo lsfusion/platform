@@ -6870,6 +6870,7 @@ NAVIGATOR {
         ADD employees;
     }
 
+    ADD accountElement TO formsToolbar;
     ADD adminElement TO formsTree;
 }
 

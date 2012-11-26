@@ -17,6 +17,10 @@ public abstract class ServerResponseActionHandler<A extends Action<ServerRespons
         super(servlet);
     }
 
+    protected ServerResponseResult getServerResponseResult(ServerResponse serverResponse) throws IOException {
+        return getServerResponseResult(null, serverResponse);
+    }
+
     protected ServerResponseResult getServerResponseResult(FormSessionObject form, ServerResponse serverResponse) throws IOException {
         GAction[] resultActions;
         if (serverResponse.actions == null) {
@@ -24,7 +28,11 @@ public abstract class ServerResponseActionHandler<A extends Action<ServerRespons
         } else {
             resultActions = new GAction[serverResponse.actions.length];
             for (int i = 0; i < serverResponse.actions.length; i++) {
-                resultActions[i] = clientActionConverter.convertAction(serverResponse.actions[i], getSession(), form, servlet);
+                if (form != null) {
+                    resultActions[i] = clientActionConverter.convertAction(serverResponse.actions[i], getSession(), form, servlet);
+                } else {
+                    resultActions[i] = clientActionConverter.convertAction(serverResponse.actions[i], getSession(), servlet);
+                }
             }
         }
 

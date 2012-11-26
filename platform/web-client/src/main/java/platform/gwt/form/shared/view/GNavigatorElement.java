@@ -11,7 +11,6 @@ public class GNavigatorElement implements Serializable {
     public String sid;
     public String caption;
     public String icon;
-    public boolean isForm;
 
     public ArrayList<GNavigatorElement> children;
     public HashSet<GNavigatorElement> parents = new HashSet<GNavigatorElement>();

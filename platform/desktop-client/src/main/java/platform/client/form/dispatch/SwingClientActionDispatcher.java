@@ -450,4 +450,8 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
 
     public void execute(AsyncResultClientAction action) {
     }
+
+    public void execute(LogOutClientAction action) {
+        Main.restart();
+    }
 }

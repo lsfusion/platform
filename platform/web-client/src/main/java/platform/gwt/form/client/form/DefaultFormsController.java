@@ -16,7 +16,7 @@ import platform.gwt.form.shared.actions.GetFormResult;
 import platform.gwt.form.shared.view.GForm;
 import platform.gwt.form.shared.view.window.GModalityType;
 
-public class DefaultFormsController extends SimpleLayoutPanel implements FormsController {
+public abstract class DefaultFormsController extends SimpleLayoutPanel implements FormsController {
     private final TabLayoutPanel tabsPanel;
 
     public DefaultFormsController() {
