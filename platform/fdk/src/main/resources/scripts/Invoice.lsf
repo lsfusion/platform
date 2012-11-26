@@ -133,6 +133,7 @@ META defineInvoice(sign, stockProp)
     @deriveDocumentPriceDetailOnChangeInvoicePrice(userInvoice);
     @deriveDocumentInvoicePriceDetailOnChangePrice(userInvoice);
     @deriveDocumentInvoicePriceDetailOnChangeVAT(userInvoice);
+    Invoice.invoiceSumInvoiceDetail(detail) += invoiceSumInvoiceDetail(detail);
 
     @defineDocumentInterfaceHeaderQuantity(invoice);
     @defineDocumentHeaderSkuQuantity(invoice, sku);

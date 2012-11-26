@@ -327,6 +327,7 @@ META defineDocumentInterfaceDetailVATDataSumCustom (detail, prefix)
     @defineDocumentAbstractDetailVATDataSumCustom(detail, prefix);
     @defineDocumentDetailVATDataSumCustom(user###detail, prefix);
     VATSum###detail (detail) += VATSum###user###detail(detail);
+    prefix###sum###detail (detail) += prefix###sum###user###detail (detail);
 END
 META defineDocumentInterfaceDetailVATDataSum (object)
     @defineDocumentInterfaceDetailVATDataSumCustom(object##Detail, object);
