@@ -1,0 +1,97 @@
+MODULE PurchaseSaleOrder;
+
+REQUIRE SaleOrder, PurchaseOrder;
+
+PRIORITY Sale;
+
+//----------------------------------------------------------------------------//
+
+GROUP orderSaleGroup 'Информация о заказе' : publicGroup;
+
+createPurchaseOrder 'Создать заказ' = ABSTRACT BOOLEAN (order) PERSISTENT;
+createPurchaseUserOrder 'Создать заказ' = DATA BOOLEAN (userOrder) PERSISTENT;
+createPurchaseOrder(order) += createPurchaseUserOrder(order);
+
+createPurchaseOrderDetail 'Создать заказ' (orderDetail) = createPurchaseOrder(orderOrderDetail(orderDetail))PERSISTENT;
+createPurchaseUserOrderDetail 'Создать заказ' (userOrderDetail) = createPurchaseUserOrder(userOrderUserOrderDetail(userOrderDetail));
+backgroundPurchaseOrder 'Цвет' (order) = RGB(255, 214, 214) IF order IS order;
+EXTEND FORM userOrder
+    PROPERTIES(o) BACKGROUND backgroundPurchaseOrder(o) createPurchaseUserOrder
+;
+EXTEND DESIGN userOrder {
+    headerRow1{
+        NEW headerRow13{
+            title = 'Заказ';
+            childConstraints = TO THE RIGHTBOTTOM;
+            ADD PROPERTY(createPurchaseUserOrder);
+        }
+    }
+}
+
+EXTEND FORM orders
+    PROPERTIES(o) READONLY BACKGROUND backgroundPurchaseOrder(o) createPurchaseOrder
+;
+
+CLASS purchaseOrder 'Заказ на основе заказа': Purchase.order;
+CLASS purchaseOrderPosted 'Закрытый заказ на основе заказа' : purchaseOrder, postedObject;
+CLASS purchaseOrderDetail 'Строка заказа на основе заказа' : Purchase.orderDetail;
+
+@defineDocumentTables(purchaseOrder);
+
+@defineDocumentAggregation(order, purchaseOrder, createPurchaseOrder);
+Purchase.orderOrderDetail(detail) += purchaseOrderPurchaseOrderDetail(detail);
+
+@defineDocumentDetailIndex(purchaseOrder);
+
+Purchase.dateOrder(order) += datePurchaseOrder(order);
+Purchase.timeOrder(order) += timePurchaseOrder(order);
+
+Purchase.shipmentDateOrder(order) += shipmentDateOrder(orderPurchaseOrder(order));
+Purchase.shipmentDataDateOrderDetail(detail) += shipmentDataDateOrderDetail(orderDetailPurchaseOrderDetail(detail));
+
+Purchase.shipmentTimeOrder(order) += shipmentTimeOrder(orderPurchaseOrder(order));
+Purchase.shipmentDataTimeOrderDetail(detail) += shipmentDataTimeOrderDetail(orderDetailPurchaseOrderDetail(detail));
+
+Purchase.agreementOrder(order) += agreementOrder(orderPurchaseOrder(order));
+Purchase.priceListTypeOrder(order) += priceListTypeOrder(orderPurchaseOrder(order));
+Purchase.dataPriceListTypeOrderDetail(detail) += dataPriceListTypeOrderDetail(orderDetailPurchaseOrderDetail(detail));
+
+@defineDocumentAggregationStockPrefix(order, purchaseOrder, supplierStock, 'Склад поставщика', , );
+Purchase.supplierStockOrder(order) += supplierStockPurchaseOrder(order);
+Purchase.dataSupplierStockOrderDetail(orderDetail) += dataSupplierStockOrderDetail(orderDetailPurchaseOrderDetail(orderDetail));
+@defineDocumentAggregationStockPrefix(order, purchaseOrder, customerStock, 'Склад покупателя', , );
+Purchase.customerStockOrder(order) += customerStockPurchaseOrder(order);
+Purchase.dataCustomerStockOrderDetail(orderDetail) += dataCustomerStockOrderDetail(orderDetailPurchaseOrderDetail(orderDetail));
+
+@defineDocumentAggregationStockPrefix(order, purchaseOrder, supplier, 'Поставщик', , );
+Purchase.supplierOrder(order) += supplierPurchaseOrder(order);
+@defineDocumentAggregationStockPrefix(order, purchaseOrder, customer, 'Покупатель', , );
+Purchase.customerOrder(order) += customerPurchaseOrder(order);
+
+@defineDocumentAggregationPosted(order, purchaseOrder);
+Purchase.isPostedOrder(order) += isPostedPurchaseOrder(order);
+
+Purchase.numberOrder(order) += numberOrder(orderPurchaseOrder(order));
+Purchase.seriesOrder(order) += seriesOrder(orderPurchaseOrder(order));
+seriesNumberPurchaseOrder 'Серия/номер документа' (purchaseOrder) = seriesNumberOrder(orderPurchaseOrder(purchaseOrder));
+
+noteOrderPurchaseOrder 'Примечание' (purchaseOrder) = noteOrder(orderPurchaseOrder(purchaseOrder));
+Purchase.noteOrder(order) += noteOrderPurchaseOrder(order);
+
+currencyPurchaseOrder  (purchaseOrder) = currencyOrder(orderPurchaseOrder(purchaseOrder));
+Purchase.currencyOrder (order) += currencyPurchaseOrder(order);
+
+@defineDocumentDescription(purchaseOrder, purchaseOrderDetail, seriesNumberPurchaseOrder, 'Поставка на основе поставки ');
+Purchase.descriptionOrder (order) += descriptionPurchaseOrder(order);
+
+@defineDocumentAggregationDetailSku(order, purchaseOrder, sku);
+Purchase.skuOrderDetail(orderDetail) +=  skuPurchaseOrderDetail(orderDetail);
+
+Purchase.quantityOrderDetail(orderDetail) += quantityOrderDetail(orderDetailPurchaseOrderDetail(orderDetail));
+
+Purchase.priceOrderDetail(orderDetail) += priceOrderDetail(orderDetailPurchaseOrderDetail(orderDetail));
+
+Purchase.sumOrderDetail(orderDetail) += sumOrderDetail(orderDetailPurchaseOrderDetail(orderDetail));
+
+Purchase.editOrder(order) += ACTION EXEC editOrder(orderPurchaseOrder(order));
+

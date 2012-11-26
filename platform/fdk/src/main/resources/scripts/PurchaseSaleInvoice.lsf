@@ -19,6 +19,9 @@ FORM invoiceInvoices 'Накладные'
     OBJECTS cs = stock FIXED PANEL
     PROPERTIES (cs) READONLY name
 
+    OBJECTS t=DATE FIXED PANEL
+    PROPERTIES(t) OBJVALUE
+
     OBJECTS o = invoice
     PROPERTIES (o) READONLY isPostedInvoice FORCE GRID, objectClassName, numberInvoice, seriesInvoice, dateInvoice, timeInvoice,
                             nameCurrencyInvoice, noteInvoice,
@@ -28,6 +31,9 @@ FORM invoiceInvoices 'Накладные'
             supplierStockInvoice(o) == ss,
             customerStockInvoice(o) == cs,
             isPostedInvoice(o)
+
+    FILTERGROUP filters1
+        FILTER 'Только этой даты' 'F11' dateInvoice(o) == t DEFAULT
 
     OBJECTS d = invoiceDetail
 
@@ -44,20 +50,24 @@ DESIGN invoiceInvoices FROM DEFAULT {
         NEW documentContainer BEFORE functions.box {
 
             childConstraints = TO THE BOTTOM;
-            NEW headerBox {
+            NEW headerBox1 {
                 childConstraints = TO THE RIGHTBOTTOM;
-                NEW headerBox1 {
+                NEW headerBox11 {
                     childConstraints = TO THE RIGHTBOTTOM;
                     title = 'Поставщик';
                     ADD s.box;
                     ADD ss.box;
                 }
-                NEW headerBox2 {
+                NEW headerBox12 {
                     childConstraints = TO THE RIGHTBOTTOM;
                     title = 'Покупатель';
                     ADD c.box;
                     ADD cs.box;
                 }
+            }
+            NEW headerBox2 {
+                childConstraints = TO THE RIGHTBOTTOM;
+                ADD t.box;
             }
             ADD o.box;
             NEW documentDetail {
@@ -82,7 +92,8 @@ DESIGN invoiceInvoices FROM DEFAULT {
 
 fillInvoiceUserInvoice 'Заполнить на основе накладной' =  ACTION (userInvoice) {
     FORM invoiceInvoices OBJECTS s = Purchase.supplierUserInvoice(userInvoice), c = Purchase.customerUserInvoice(userInvoice),
-                                   ss = Purchase.supplierStockUserInvoice(userInvoice), cs = Purchase.customerStockUserInvoice(userInvoice) MODAL;
+                                   ss = Purchase.supplierStockUserInvoice(userInvoice), cs = Purchase.customerStockUserInvoice(userInvoice),
+                                   t = Purchase.dateUserInvoice(userInvoice) MODAL;
     IF formResult() == formResult.ok THEN {
         LOCAL saleInvoice = invoice();
         SET saleInvoice() <- chosenObject('o');
