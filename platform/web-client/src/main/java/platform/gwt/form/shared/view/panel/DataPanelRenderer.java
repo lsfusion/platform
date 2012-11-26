@@ -92,6 +92,14 @@ public class DataPanelRenderer implements PanelRenderer {
     }
 
     @Override
+    public void setDefaultIcon() {
+    }
+
+    @Override
+    public void setIcon(String iconPath) {
+    }
+
+    @Override
     public void updateCellBackgroundValue(Object value) {
         valueTable.setBackground((ColorDTO) value);
     }

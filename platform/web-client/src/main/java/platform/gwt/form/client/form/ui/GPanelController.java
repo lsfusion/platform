@@ -2,10 +2,10 @@ package platform.gwt.form.client.form.ui;
 
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Widget;
+import platform.gwt.base.shared.GwtSharedUtils;
 import platform.gwt.form.shared.view.GPropertyDraw;
 import platform.gwt.form.shared.view.changes.GGroupObjectValue;
 import platform.gwt.form.shared.view.panel.PanelRenderer;
-import platform.gwt.base.shared.GwtSharedUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -179,6 +179,10 @@ public class GPanelController {
                     }
                 }
                 columnsUpdated = false;
+
+                if (property.drawAsync && !renderers.isEmpty()) {
+                    form.setAsyncView(renderers.get(columnKeys.get(0)));
+                }
             }
 
             for (Map.Entry<GGroupObjectValue, PanelRenderer> e : renderers.entrySet()) {

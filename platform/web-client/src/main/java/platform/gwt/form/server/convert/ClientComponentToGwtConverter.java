@@ -205,6 +205,8 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.editKey = convertOrCast(clientPropertyDraw.editKey);
         propertyDraw.showEditKey = clientPropertyDraw.showEditKey;
 
+        propertyDraw.drawAsync = clientPropertyDraw.drawAsync;
+
         propertyDraw.focusable = clientPropertyDraw.focusable;
         propertyDraw.checkEquals = clientPropertyDraw.checkEquals;
 

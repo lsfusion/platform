@@ -6,6 +6,7 @@ import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
@@ -38,6 +39,7 @@ import platform.gwt.form.shared.view.changes.GGroupObjectValue;
 import platform.gwt.form.shared.view.changes.dto.GFormChangesDTO;
 import platform.gwt.form.shared.view.classes.GObjectClass;
 import platform.gwt.form.shared.view.logics.GGroupObjectLogicsSupplier;
+import platform.gwt.form.shared.view.panel.PanelRenderer;
 import platform.gwt.form.shared.view.window.GModalityType;
 
 import java.io.Serializable;
@@ -71,6 +73,10 @@ public class GFormController extends SimplePanel {
     private boolean initialFormChangesReceived = false;
     private boolean hasColumnGroupObjects;
 
+    private Timer asyncTimer;
+    private PanelRenderer asyncView;
+    private final int ASYNC_TIME_OUT = 50;
+
     public GFormController(FormsController formsController, GForm gForm, final boolean isDialog) {
         actionDispatcher = new GFormActionDispatcher(this);
 
@@ -81,6 +87,13 @@ public class GFormController extends SimplePanel {
         dispatcher = new FormDispatchAsync(this);
 
         formLayout = new GFormLayout(this, gForm.mainContainer);
+
+        asyncTimer = new Timer() {
+            @Override
+            public void run() {
+                asyncView.setIcon("loading.gif");
+            }
+        };
 
         addStyleName("formController");
 
@@ -611,6 +624,23 @@ public class GFormController extends SimplePanel {
 
     public List<GPropertyDraw> getPropertyDraws() {
         return form.propertyDraws;
+    }
+
+    public void setAsyncView(PanelRenderer asyncView) {
+        this.asyncView = asyncView;
+    }
+
+    public void onAsyncStarted() {
+        if (asyncView != null) {
+            asyncTimer.schedule(ASYNC_TIME_OUT);
+        }
+    }
+
+    public void onAsyncFinished() {
+        if (asyncView != null) {
+            asyncTimer.cancel();
+            asyncView.setDefaultIcon();
+        }
     }
 
     public void block() {

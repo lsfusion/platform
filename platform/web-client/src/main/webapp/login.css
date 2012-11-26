@@ -88,11 +88,11 @@ a:hover {
 }
 
 .ic-left-arrow {
-    background-image: url("../images/left_arrow.png");
+    background-image: url("images/left_arrow.png");
 }
 
 .ic-right-arrow {
-    background-image: url("../images/right_arrow.png");
+    background-image: url("images/right_arrow.png");
 }
 
 form label {

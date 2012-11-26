@@ -102,6 +102,16 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
     }
 
     @Override
+    public void setDefaultIcon() {
+        button.setImagePath(property.iconPath);
+    }
+
+    @Override
+    public void setIcon(String iconPath) {
+        button.setImagePath(iconPath);
+    }
+
+    @Override
     public void updateCellBackgroundValue(Object value) {
         button.getElement().getStyle().setBorderColor(value == null ? null : value.toString());
     }

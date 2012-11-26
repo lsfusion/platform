@@ -7,6 +7,7 @@
         <title>LS Fusion</title>
 
         <link rel="stylesheet" href="login.css">
+        <link rel="shortcut icon" href="favicon.ico" />
     </head>
     <body onload="document.loginForm.j_username.focus();">
 
@@ -26,7 +27,7 @@
                                 <input type="password" id="j_password" name="j_password" class="round full-width-input"/>
                             </p>
                             <input name="submit" type="submit" class="button round blue image-right ic-right-arrow" value="log in"/>
-                            <a class="desktop-link" href="/client.jnlp">
+                            <a class="desktop-link" href="${pageContext.request.contextPath}/client.jnlp">
                                 Run desktop client
                             </a>
                         </fieldset>

@@ -10,6 +10,8 @@
         <meta http-equiv="Expires" content="0"/>
         <meta name="gwt:property" content="locale=<%=ServerUtils.getLocaleLanguage()%>">
 
+        <link rel="shortcut icon" href="favicon.ico" />
+        
         <title>LS Fusion</title>
     </head>
     <body>

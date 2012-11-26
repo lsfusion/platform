@@ -8,6 +8,7 @@
     <title>Ошибка доступа</title>
 
     <link rel="stylesheet" href="login.css">
+    <link rel="shortcut icon" href="favicon.ico" />
 </head>
 <body>
 

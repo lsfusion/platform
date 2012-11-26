@@ -41,6 +41,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
     public GKeyStroke editKey;
     public boolean showEditKey;
 
+    public boolean drawAsync;
+
     public GCaptionReader captionReader;
     public GFooterReader footerReader;
     public GBackgroundReader backgroundReader;

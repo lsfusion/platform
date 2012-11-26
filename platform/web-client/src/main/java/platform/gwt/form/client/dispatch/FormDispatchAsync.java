@@ -50,6 +50,8 @@ public class FormDispatchAsync {
         final QueuedAction queuedAction = new QueuedAction(action, callback);
         q.add(queuedAction);
 
+        formController.onAsyncStarted();
+
         final long startExecTime = System.currentTimeMillis();
         gwtDispatch.execute(action, new AsyncCallbackEx<R>() {
             @Override
@@ -72,6 +74,7 @@ public class FormDispatchAsync {
             @Override
             public void postProcess() {
                 flushCompletedRequests();
+                formController.onAsyncFinished();
             }
         });
     }
