@@ -4,7 +4,7 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <title>Login LSFForms...</title>
+        <title>LS Fusion</title>
 
         <link rel="stylesheet" href="login.css">
     </head>

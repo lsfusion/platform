@@ -25,6 +25,10 @@ quantityBatch (ledger) += quantityShipmentDetail(ledger);
 //supplierBatch (ledger) += supplierShipmentDetail(ledger);
 sumInSkuLedger (ledger) += sumShipmentDetail(ledger);
 
+// Проводим по регистру учетных цен
+@implementSystemLedgerPriceListTypeDetailBatch(shipment, account);
+
+// Пишем в товарный отчет
 @implementAccountDocumentLedgerInc(shipment, customerStock);
 sumIncAccountDocumentLedger (ledger) += sumShipmentDetailShipment(ledger);
 sumItemIncAccountDocumentLedger (ledger) += sumItemShipmentDetailShipment(ledger);

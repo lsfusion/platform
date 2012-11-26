@@ -11,3 +11,8 @@ CONSTRAINT supplierUserInvoice(userInvoice) AND NOT isSupplierLegalEntity(suppli
     CHECKED BY supplierUserInvoice MESSAGE 'Для накладной выбрано в качестве поставщика организация, не являющаяся поставщиком';
 CONSTRAINT customerUserInvoice(userInvoice) AND NOT isCompanyLegalEntity(customerUserInvoice(userInvoice))
     CHECKED BY customerUserInvoice MESSAGE 'Для накладной выбрано в качестве покупателя организация, не являющаяся компанией';
+
+        // для импорта
+numberSeriesToUserInvoice (number, series) = GROUP UNIQUE userInvoice BY numberObject(userInvoice), seriesObject(userInvoice) WHERE userInvoice IS userInvoice;
+sidUserInvoiceDetail (userInvoiceDetail) = DATA STRING[200] (userInvoiceDetail);
+userInvoiceDetailSID (sidUserInvoiceDetail) = GROUP MAX userInvoiceDetail BY sidUserInvoiceDetail(userInvoiceDetail) WHERE userInvoiceDetail IS userInvoice;

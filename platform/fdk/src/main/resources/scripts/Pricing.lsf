@@ -479,12 +479,16 @@ EXTEND CLASS pricingDetail : priceListLedger;
 
 fromDateTimePriceListLedger (ledger) += dateTimePricingDetail(ledger);
 
+isPostedPriceListLedger(ledger) += isPostedPricingDetail(ledger);
+skipPriceListLedger(ledger) += skipChangeLedgerPricingDetail(ledger);
+
 skuPriceListLedger (ledger) += skuPricingDetail(ledger);
 
 descriptionPriceListLedger (ledger) += descriptionPricingDetail(ledger);
 
 pricePriceListLedgerLedgerPriceListType (ledger, type) += pricePricingDetail(ledger) IF type == systemLedgerPriceListType.supplierPricingPriceListType;
 pricePriceListLedgerLedgerPriceListType (ledger, type) += retailPricePricingDetail(ledger) IF type == systemLedgerPriceListType.retailPricingPriceListType;
+pricePriceListLedgerLedgerPriceListType (ledger, type) += retailPricePricingDetail(ledger) IF type == systemLedgerPriceListType.accountPriceListType;
 inPriceListLedgerStock (ledger, stock) += departmentStorePricingDetail(ledger) == stock;
 
 // ------------------------------------- Печать ценников ------------------------------ //

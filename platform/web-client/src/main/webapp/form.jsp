@@ -10,7 +10,7 @@
         <meta http-equiv="Expires" content="0"/>
         <meta name="gwt:property" content="locale=<%=ServerUtils.getLocaleLanguage()%>">
 
-        <title>Форма</title>
+        <title>LS Fusion</title>
     </head>
     <body>
         <script type="text/javascript" language="javascript"

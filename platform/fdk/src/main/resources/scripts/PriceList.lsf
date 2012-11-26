@@ -15,9 +15,10 @@ priceGroupSku = ABSTRACT priceGroup (sku) PERSISTENT;
 CLASS ABSTRACT priceListType 'Вид цены' : named;
 TABLE priceListType(priceListType);
 
+includeVATPriceListType 'Цена с НДС' = ABSTRACT BOOLEAN (priceListType) PERSISTENT;
+
 pricePriceListTypeSkuStockDateTime 'Цена' = ABSTRACT NUMERIC[14,2] (priceListType, sku, stock, DATETIME);
 pricePriceListTypeBatchStockDateTime 'Цена' = ABSTRACT NUMERIC[14,2] (priceListType, batch, stock, DATETIME);
-includeVATPriceListType 'Цена с НДС' = ABSTRACT BOOLEAN (priceListType) PERSISTENT;
 
 prevPricePriceListTypeSkuStockDateTime 'Цена (пред.)' (type, sku, stock, dateTime) = PREV(pricePriceListTypeSkuStockDateTime(type, sku, stock, dateTime));
 prevPricePriceListTypeBatchStockDateTime 'Цена (пред.)' (type, batch, stock, dateTime) = PREV(pricePriceListTypeBatchStockDateTime(type, batch, stock, dateTime));
@@ -56,32 +57,27 @@ CLASS ABSTRACT basePriceListType 'Базовый вид цены' : priceListTyp
 
 priceBasePriceListTypeSkuStockDateTime (type, sku, stock, dateTime) = ABSTRACT NUMERIC[14,3] (basePriceListType, sku, stock, DATETIME) EXCLUSIVE;
 priceBasePriceListTypeBatchStockDateTime (type, sku, stock, dateTime) = ABSTRACT NUMERIC[14,3] (basePriceListType, batch, stock, DATETIME) EXCLUSIVE;
+
 includeVATBasePriceListType 'Цена с НДС' = ABSTRACT BOOLEAN (basePriceListType);
+includeVATPriceListType(type) += includeVATBasePriceListType(type);
 
 pricePriceListTypeSkuStockDateTime(type, sku, stock, dateTime) += priceBasePriceListTypeSkuStockDateTime(type, sku, stock, dateTime);
 pricePriceListTypeBatchStockDateTime(type, batch, stock, dateTime) += priceBasePriceListTypeBatchStockDateTime(type, batch, stock, dateTime);
-includeVATPriceListType(type) += includeVATBasePriceListType(type);
 
 // --------------------------- Системные виды цен ------------------------- //
 CLASS STATIC systemPriceListType 'Системный вид цены' : basePriceListType;
 
 priceSystemPriceListTypeSkuStockDateTime (type, sku, stock, dateTime) = ABSTRACT NUMERIC[14,3] (systemPriceListType, sku, stock, DATETIME) EXCLUSIVE;
 priceSystemPriceListTypeBatchStockDateTime (type, sku, stock, dateTime) = ABSTRACT NUMERIC[14,3] (systemPriceListType, batch, stock, DATETIME) EXCLUSIVE;
-includeVATSystemPriceListType 'Цена с НДС' = DATA BOOLEAN (systemPriceListType);
 
-priceBasePriceListTypeSkuStockDateTime(type, sku, stock, dateTime) += priceSystemPriceListTypeSkuStockDateTime(type, sku, stock, dateTime);
-priceBasePriceListTypeBatchStockDateTime(type, batch, stock, dateTime) += priceSystemPriceListTypeBatchStockDateTime(type, batch, stock, dateTime);
+includeVATSystemPriceListType 'Цена с НДС' = ABSTRACT BOOLEAN (systemPriceListType);
 includeVATBasePriceListType(type) += includeVATSystemPriceListType(type);
-
-// -------------------------- Учетная цена ---------------------- //
-
-EXTEND CLASS systemPriceListType { stockPriceListType 'Учетная' }
-priceSystemPriceListTypeSkuStockDateTime (type, sku, stock, dateTime) += priceSkuStockDateTime(sku, stock, dateTime) AND type == systemPriceListType.stockPriceListType;
-priceSystemPriceListTypeBatchStockDateTime (type, batch, stock, dateTime) += priceBatchStockDateTime(batch, stock, dateTime) AND type == systemPriceListType.stockPriceListType;
 
 // ------------------------------------- Виды цен, формируемые ledger'ами ----------- //
 
 CLASS ABSTRACT ledgerPriceListType 'Регистровый вид цены' : basePriceListType;
+
+batchLedgerPriceListType 'Использовать для партий свои цены' = ABSTRACT BOOLEAN (priceListType) PERSISTENT;
 
 CLASS ABSTRACT priceListLedger;
 TABLE priceListLedger(priceListLedger);
@@ -89,7 +85,13 @@ TABLE priceListLedger(priceListLedger);
 fromDateTimePriceListLedger = ABSTRACT DATETIME (priceListLedger) PERSISTENT INDEXED;
 toDateTimePriceListLedger = ABSTRACT DATETIME (priceListLedger) PERSISTENT INDEXED;
 
+isPostedPriceListLedger 'Проведен' (ledger) = ABSTRACT BOOLEAN (priceListLedger) PERSISTENT;
+skipPriceListLedger 'Не изменять значение' (ledger) = ABSTRACT BOOLEAN (priceListLedger) PERSISTENT;
+
+activePriceListLedger 'Активен' (ledger) = isPostedPriceListLedger(ledger) AND NOT skipPriceListLedger(ledger) PERSISTENT;
+
 skuPriceListLedger = ABSTRACT sku (priceListLedger) PERSISTENT INDEXED;
+batchPriceListLedger = ABSTRACT batch (priceListLedger) PERSISTENT INDEXED;
 
 descriptionPriceListLedger = ABSTRACT STRING[200] (priceListLedger) PERSISTENT;
 
@@ -99,7 +101,7 @@ pricePriceListLedgerLedgerPriceListType = ABSTRACT NUMERIC[14,2] (priceListLedge
 TABLE priceListLedgerStock(priceListLedger, stock);
 inPriceListLedgerStock (ledger, stock) = ABSTRACT BOOLEAN (priceListLedger, stock) PERSISTENT;
 
-orderPriceListLedger(ledger) = LIST(fromDateTimePriceListLedger(ledger), ledger) PERSISTENT;
+orderPriceListLedger(ledger) = LIST(fromDateTimePriceListLedger(ledger), ledger) AND activePriceListLedger(ledger) PERSISTENT;
 
 TABLE priceListLedgerLedgerPriceListTypeStock (priceListLedger, ledgerPriceListType, stock);
 orderPriceListLedgerLedgerPriceListTypeStock(ledger, type, stock) =
@@ -112,15 +114,23 @@ concatLedgerPriceListTypeSkuStockDateTime(type, sku, stock, dateTime) =
 priceListLedgerLedgerPriceListTypeSkuStockDateTime(type, sku, stock, dateTime) =
     concatLedgerPriceListTypeSkuStockDateTime(type, sku, stock, dateTime)[2];
 
+concatLedgerPriceListTypeBatchStockDateTime(type, batch, stock, dateTime) =
+    GROUP MAX orderPriceListLedgerLedgerPriceListTypeStock(ledger, type, stock)
+              IF fromDateTimePriceListLedger(ledger) < (dateTimeIn AS DATETIME) AND NOT toDateTimePriceListLedger(ledger) <= (dateTimeIn AS DATETIME)
+          BY type, batchPriceListLedger(ledger), stock, dateTimeIn;
+priceListLedgerLedgerPriceListTypeBatchStockDateTime(type, batch, stock, dateTime) =
+    IF batchLedgerPriceListType(type) THEN concatLedgerPriceListTypeBatchStockDateTime(type, batch, stock, dateTime)[2]
+                                      ELSE priceListLedgerLedgerPriceListTypeSkuStockDateTime(type, skuBatch(batch), stock, dateTime);
+
 priceLedgerPriceListTypeSkuStockDateTime 'Цена' (type, sku, stock, dateTime) =
     pricePriceListLedgerLedgerPriceListType(priceListLedgerLedgerPriceListTypeSkuStockDateTime(type, sku, stock, dateTime), type);
 priceLedgerPriceListTypeBatchStockDateTime 'Цена' (type, batch, stock, dateTime) =
-    priceLedgerPriceListTypeSkuStockDateTime(type, skuBatch(batch), stock, dateTime);
+    pricePriceListLedgerLedgerPriceListType(priceListLedgerLedgerPriceListTypeBatchStockDateTime(type, batch, stock, dateTime), type);
 
 descriptionLedgerPriceListTypeSkuStockDateTime 'Описание' (type, sku, stock, dateTime) =
     descriptionPriceListLedger(priceListLedgerLedgerPriceListTypeSkuStockDateTime(type, sku, stock, dateTime));
 descriptionLedgerPriceListTypeBatchStockDateTime 'Описание' (type, batch, stock, dateTime) =
-    descriptionPriceListLedger(priceListLedgerLedgerPriceListTypeSkuStockDateTime(type, skuBatch(batch), stock, dateTime));
+    descriptionPriceListLedger(priceListLedgerLedgerPriceListTypeBatchStockDateTime(type, batch, stock, dateTime));
 
 includeVATLedgerPriceListType 'Цена с НДС' = DATA BOOLEAN (ledgerPriceListType);
 
@@ -131,11 +141,40 @@ includeVATBasePriceListType(type) += includeVATLedgerPriceListType(type);
 
 // --------------------------- Системные виды цен, на основе Ledger'ов ------------------ //
 
-CLASS STATIC systemLedgerPriceListType 'Системный вид цены (регистр)' : ledgerPriceListType;
+CLASS STATIC systemLedgerPriceListType 'Системный вид цены (регистр)' {
+    accountPriceListType 'Учетная'
+}: ledgerPriceListType;
 
+batchLedgerPriceListType (type) += type == systemLedgerPriceListType.accountPriceListType;
+
+META implementSystemLedgerPriceListTypeDetail (object, type, prefix)
+    EXTEND CLASS object##Detail : priceListLedger;
+
+    fromDateTimePriceListLedger (ledger) += dateTime###object##Detail(ledger);
+
+    isPostedPriceListLedger(ledger) += isPosted###object##Detail(ledger);
+
+    skuPriceListLedger (ledger) += sku###object##Detail(ledger);
+
+    descriptionPriceListLedger (ledger) += description###object##Detail(ledger);
+
+    pricePriceListLedgerLedgerPriceListType (ledger, type) += prefix###price###object##Detail(ledger) IF type == systemLedgerPriceListType.##type##PriceListType;
+    inPriceListLedgerStock (ledger, stock) += customerStock###object##Detail(ledger) == stock;
+END
+
+META implementSystemLedgerPriceListTypeDetail (object, type)
+    @implementSystemLedgerPriceListTypeDetail(object, type, );
+END
+
+META implementSystemLedgerPriceListTypeDetailBatch (object, type)
+    @implementSystemLedgerPriceListTypeDetail(object, type);
+    batchPriceListLedger (ledger) += ledger AS object##Detail;
+END
 // --------------------------- Пользовательские виды цен ------------------------- //
 
 CLASS dataPriceListType 'Пользовательский вид цены' : ledgerPriceListType;
+batchLedgerPriceListType (priceListType) += priceListType IS dataPriceListType;
+
 @defineDocumentHeaderCurrency(dataPriceListType);
 currencyPriceListType(dataPriceListType) += currencyDataPriceListType(dataPriceListType);
 
@@ -541,6 +580,8 @@ EXTEND CLASS priceListDetail : priceListLedger;
 
 fromDateTimePriceListLedger (ledger) += fromDateTimePriceListDetail(ledger);
 toDateTimePriceListLedger (ledger) += toDateTimePriceListDetail(ledger);
+
+isPostedPriceListLedger(ledger) += isPostedPriceListDetail(ledger);
 
 skuPriceListLedger (ledger) += skuPriceListDetail(ledger);
 
