@@ -211,7 +211,7 @@ DESIGN taxes FROM DEFAULT {
 
 FORM range 'Шкала'
     OBJECTS r=range
-    PROPERTIES(r) numberRange, nameTaxRange, nameCountryRange, nameRangeTypeRange, valueCurrentRateRange, dateFromActingRateRange,
+    PROPERTIES(r) READONLY numberRange, nameTaxRange, nameCountryRange, nameRangeTypeRange, valueCurrentRateRange, dateFromActingRateRange,
                   dateToActingRateRange
     PROPERTIES(r) ADDFORM, EDITFORM FORCE PANEL DRAWTOTOOLBAR
     DIALOG range OBJECT r
