@@ -95,6 +95,8 @@ batchPriceListLedger = ABSTRACT batch (priceListLedger) PERSISTENT INDEXED;
 
 descriptionPriceListLedger = ABSTRACT STRING[200] (priceListLedger) PERSISTENT;
 
+companyPriceListLedger = ABSTRACT legalEntity (priceListLedger) PERSISTENT;
+
 TABLE priceListLedgerLedgerPriceListType(priceListLedger, ledgerPriceListType);
 pricePriceListLedgerLedgerPriceListType = ABSTRACT NUMERIC[14,2] (priceListLedger, ledgerPriceListType) EXCLUSIVE PERSISTENT;
 
@@ -126,6 +128,15 @@ priceLedgerPriceListTypeSkuStockDateTime 'Цена' (type, sku, stock, dateTime)
     pricePriceListLedgerLedgerPriceListType(priceListLedgerLedgerPriceListTypeSkuStockDateTime(type, sku, stock, dateTime), type);
 priceLedgerPriceListTypeBatchStockDateTime 'Цена' (type, batch, stock, dateTime) =
     pricePriceListLedgerLedgerPriceListType(priceListLedgerLedgerPriceListTypeBatchStockDateTime(type, batch, stock, dateTime), type);
+
+companyLedgerPriceListTypeSkuStockDateTime (type, sku, stock, dateTime) =
+    companyPriceListLedger(priceListLedgerLedgerPriceListTypeSkuStockDateTime(type, sku, stock, dateTime));
+nameCompanyLedgerPriceListTypeSkuStockDateTime 'Компания прайса' (type, sku, stock, dateTime) =
+    name(companyLedgerPriceListTypeSkuStockDateTime(type, sku, stock, dateTime));
+companyLedgerPriceListTypeBatchStockDateTime (type, batch, stock, dateTime) =
+    companyPriceListLedger(priceListLedgerLedgerPriceListTypeSkuStockDateTime(type, skuBatch(batch), stock, dateTime));
+nameCompanyLedgerPriceListTypeBatchStockDateTime 'Компания прайса' (type, batch, stock, dateTime) =
+    name(companyLedgerPriceListTypeBatchStockDateTime(type, batch, stock, dateTime));
 
 descriptionLedgerPriceListTypeSkuStockDateTime 'Описание' (type, sku, stock, dateTime) =
     descriptionPriceListLedger(priceListLedgerLedgerPriceListTypeSkuStockDateTime(type, sku, stock, dateTime));
@@ -208,6 +219,8 @@ CLASS userPriceListPosted 'Закрытый прайс (польз.)' : userPric
 //    FORMULA STRING[100] '\'Прайс №\' || CAST($1 AS TEXT) || \' от \' || CAST($2 AS TEXT)';
 //descriptionPriceList 'Описание' (priceList) =
 //    castPriceList(seriesNumberObject(priceList), datePriceList(priceList)) IN documentPrmGroup;
+
+@defineDocumentInterfaceLegalEntity(priceList, company, 'Организация');
 
 toDateUserPriceList(userPriceList) <- NULL WHEN ASSIGNED(userPriceList IS userPriceList);
 toTimeUserPriceList(userPriceList) <- NULL WHEN ASSIGNED(userPriceList IS userPriceList);
@@ -366,7 +379,7 @@ FORM userPriceList 'Прайс'
     PROPERTIES(p) objectClassName, nameNumeratorObject, numberObject, seriesObject,
                   dateUserPriceList, timeUserPriceList,
                   fromDateUserPriceList, fromTimeUserPriceList, toDateUserPriceList, toTimeUserPriceList,
-                  nameCurrencyUserPriceList, noteUserPriceList, includeVATLedgerPriceListType
+                  nameCurrencyUserPriceList, nameCompanyUserPriceList, noteUserPriceList, includeVATLedgerPriceListType
 
     OBJECTS t = dataPriceListType
     PROPERTIES(t) READONLY name
@@ -460,6 +473,7 @@ DESIGN userPriceList FROM DEFAULT {
             caption = 'Параметры документа';
             childConstraints = TO THE RIGHT;
             ADD PROPERTY(nameCurrencyUserPriceList);
+            ADD PROPERTY(nameCompanyUserPriceList);
             ADD PROPERTY(noteUserPriceList);
         }
         POSITION propContainer TO THE RIGHT timeContainer;
@@ -530,7 +544,7 @@ FORM userPriceLists 'Прайсы'
     OBJECTS p = userPriceList
     PROPERTIES(p) READONLY objectClassName, numberObject, seriesObject,
                            fromDateTimeUserPriceList, toDateTimeUserPriceList, nameCurrencyUserPriceList,
-                           noteUserPriceList, priceListTypesPriceList, stocksPriceList
+                           nameCompanyUserPriceList, noteUserPriceList, priceListTypesPriceList, stocksPriceList
     PROPERTIES(p) copyUserPriceList TODRAW p FORCE PANEL DRAWTOTOOLBAR
     PROPERTIES(p) ADDFORM, EDITFORM, delete TODRAW p FORCE PANEL DRAWTOTOOLBAR
 
@@ -584,6 +598,8 @@ toDateTimePriceListLedger (ledger) += toDateTimePriceListDetail(ledger);
 isPostedPriceListLedger(ledger) += isPostedPriceListDetail(ledger);
 
 skuPriceListLedger (ledger) += skuPriceListDetail(ledger);
+
+companyPriceListLedger (ledger) += companyPriceList(priceListPriceListDetail(ledger));
 
 descriptionPriceListLedger (ledger) += descriptionPriceList(priceListPriceListDetail(ledger));
 
@@ -658,7 +674,6 @@ DESIGN editPriceListType FROM DEFAULT{
     }
     ADD functions.box;
 }
-
 EXTEND FORM editPriceListType
     PROPERTIES(p) nameCurrencyDataPriceListType, nameCurrencyCalcPriceListType, nameBasePriceListTypeCalcPriceListType, roundCalcPriceListType
     PROPERTIES(p, g) markupCalcPriceListTypePriceGroup , nearestMarkupCalcPriceListTypePriceGroup
@@ -751,8 +766,8 @@ FORM priceListTypes 'Виды цен'
         FILTER 'Проведенные партии' 'F10' isPostedBatch(b) DEFAULT
     FILTERS isParentSkuGroupBatch(sg2, b)
 
-    PROPERTIES READONLY pricePriceListTypeSkuStockDateTime(pt, sk, s, dt), descriptionLedgerPriceListTypeSkuStockDateTime(pt, sk, s, dt),
-                        pricePriceListTypeBatchStockDateTime(pt, b, s, dt), descriptionLedgerPriceListTypeBatchStockDateTime(pt, b, s, dt)
+    PROPERTIES(pt, sk, s, dt) READONLY pricePriceListTypeSkuStockDateTime, nameCompanyLedgerPriceListTypeSkuStockDateTime, descriptionLedgerPriceListTypeSkuStockDateTime
+    PROPERTIES(pt, b, s, dt) READONLY pricePriceListTypeBatchStockDateTime, nameCompanyLedgerPriceListTypeBatchStockDateTime, descriptionLedgerPriceListTypeBatchStockDateTime
     FILTERS pricePriceListTypeSkuStockDateTime(pt, sk, s, dt),
             pricePriceListTypeBatchStockDateTime(pt, b, s, dt)
 ;
@@ -796,6 +811,24 @@ DESIGN priceListTypes FROM DEFAULT{
     }
     ADD functions.box;
 }
+
+EXTEND FORM legalEntity
+
+    OBJECTS p = userPriceList
+    PROPERTIES(p) READONLY objectClassName, numberObject, seriesObject, fromDateTimeUserPriceList, toDateTimeUserPriceList,
+                           nameCurrencyUserPriceList, nameCompanyUserPriceList, noteUserPriceList, priceListTypesPriceList,
+                           stocksPriceList
+    PROPERTIES(p) ADDSESSIONFORM, EDITSESSIONFORM, delete FORCE PANEL DRAWTOTOOLBAR
+    FILTERS companyUserPriceList(p) == l
+;
+
+EXTEND DESIGN legalEntity{
+
+    extendContainer {
+        ADD p.box{caption = 'Прайсы';}
+    }
+}
+
 
 NAVIGATOR {
     NEW priceListNavigator 'Управление ценами' {

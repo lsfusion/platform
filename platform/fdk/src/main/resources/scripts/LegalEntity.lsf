@@ -288,7 +288,7 @@ DESIGN legalEntities FROM DEFAULT{
     
 // -------------------------------------------- Макросы --------------------------------------------- //
 META defineDocumentHeaderLegalEntity (object, contact, contactCaption)
-    contact###object (object) = DATA legalEntity (object);
+    contact###object (object) = DATA legalEntity (object)AUTOSET;
     name###contact###object contactCaption (object)= name(contact###object(object)) IN documentPrmGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
 END
 META defineDocumentAbstractHeaderLegalEntity (object, contact, contactCaption)
@@ -313,7 +313,7 @@ END
 META defineDocumentDetailDataLegalEntity (object, detail, contact, contactCaption)
     data###contact###detail (detail) = DATA legalEntity (detail);
     contact###detail (idetail) = UNION OVERRIDE contact###object(object###detail(idetail)), data###contact###detail(idetail) PERSISTENT;
-    ame###contact###detail contactCaption (idetail) = name(contact###detail(idetail));
+    name###contact###detail contactCaption (idetail) = name(contact###detail(idetail));
 END
 META defineDocumentDataLegalEntity (object, detail, contact, contactCaption)
     @defineDocumentHeaderLegalEntity(object, contact, contactCaption);
