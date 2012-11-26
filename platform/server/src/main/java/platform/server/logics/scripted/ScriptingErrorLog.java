@@ -63,7 +63,7 @@ public class ScriptingErrorLog {
     }
 
     public String getSemanticRecognitionErrorText(String msg, ScriptParser parser, RecognitionException e) {
-        return "\n" + getRecognitionErrorText(parser, "error", getErrorMessage(parser.getCurrentParser(), msg, e), e) + "Subsequent errors (if any) could not be found.";
+        return getRecognitionErrorText(parser, "error", getErrorMessage(parser.getCurrentParser(), msg, e), e) + "Subsequent errors (if any) could not be found.";
     }
 
     public void displayRecognitionError(BaseRecognizer parser, ScriptParser scriptParser, String errorType, String[] tokenNames, RecognitionException e) {

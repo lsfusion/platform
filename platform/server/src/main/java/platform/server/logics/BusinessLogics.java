@@ -745,14 +745,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             setNotNullProperties();
         } catch (Exception e) {
             logger.error("Error while create BL", e);
-            String msg = e.getMessage();
-            if (msg != null) {
-                int errorTagPos = msg.indexOf("[error]"); // todo [dale]: надо как-то получше это реализовать
-                if (errorTagPos > 0) {
-                    msg = msg.substring(errorTagPos);
-                }
-            }
-            errors += msg;
+            errors += e.getMessage();
         }
 
         String syntaxErrors = "";
