@@ -1457,7 +1457,7 @@ META extendFormDocumentSkuStockCustom(object, form, concrete, stockProp)
 
         ORDER BY          nameSku, stockName
 
-        PROPERTIES        currentBalanceSkuStock(s,st) READONLY, priceSkuStock###object(s, st, concrete) READONLY, quantitySku###object###stockProp(s, concrete, st) ON CHANGE EXEC changeQuantitySku###object###stock(s, concrete, st)
+        PROPERTIES        quantitySku###object###stockProp(s, concrete, st) ON CHANGE EXEC changeQuantitySku###object###stock(s, concrete, st), currentBalanceSkuStock(s,st) READONLY, priceSkuStock###object(s, st, concrete) READONLY
         FILTERGROUP filter
             FILTER 'Товары с остатком ' 'F10' currentBalanceSkuStock(s, st) DEFAULT
             FILTER 'Товары в заказе ' 'F9' quantitySku###object###stockProp(s, concrete, st)
@@ -1537,7 +1537,7 @@ META extendFormDocumentSkuCustom(object, form, concrete, skuProp, detail)
         OBJECTS s=sku
         PROPERTIES             READONLY    inputName = nameSku(s)
         PROPERTIES(s)          READONLY idBarcodeSku, shortNameUOMSku
-        PROPERTIES(s, concrete)       currentBalanceSku###object READONLY, priceSku###object READONLY, quantity###detail###skuProp###object ON CHANGE EXEC changeQuantitySku###object(s, concrete)
+        PROPERTIES(s, concrete) quantity###detail###skuProp###object ON CHANGE EXEC changeQuantitySku###object(s, concrete), currentBalanceSku###object READONLY, priceSku###object READONLY
 
         FILTERS                isParentSkuGroupSku(sk, s)
         ORDER BY inputName
@@ -1633,7 +1633,6 @@ META extendFormDocumentSkuStockContractorCustom(object, form, concrete, stockPro
 
         OBJECTS           sts=(st=stock, s=sku)
         PROPERTIES        READONLY nameSku(s), stockName = name(st), idBarcodeSku(s), shortNameUOMSku(s)
-        PROPERTIES        READONLY currentBalanceSkuStock(s,st)
 
         FILTERS           isParentSkuGroupSku(sk, s),
                           (st == ts AND sg IS stockGroup OR isParentStockGroupStock(sg, st) AND NOT ts) AND NOT stockProp###object(concrete) OR
@@ -1641,9 +1640,11 @@ META extendFormDocumentSkuStockContractorCustom(object, form, concrete, stockPro
 
         ORDER BY          nameSku, stockName
 
-        PROPERTIES quantitySku###object###stockProp###contactStock(s, concrete, st, cc)  COLUMNS (cc) HEADER nameQuantity###contactStock(cc) ON CHANGE EXEC changeQuantitySku###object###Stock###contactStock(s, concrete, st, cc)
-        PROPERTIES READONLY  priceSkuStock###object###contactStock(s, st, concrete, cc)  COLUMNS (cc) HEADER namePrice###contactStock(cc)
         PROPERTIES quantitySku###object###stockProp(s, concrete, st) READONLY BACKGROUND backgroundQuantitySku###object###Stock(s, concrete, st)
+        PROPERTIES quantitySku###object###stockProp###contactStock(s, concrete, st, cc)  COLUMNS (cc) HEADER nameQuantity###contactStock(cc) ON CHANGE EXEC changeQuantitySku###object###Stock###contactStock(s, concrete, st, cc)
+        PROPERTIES READONLY currentBalanceSkuStock(s,st)
+        PROPERTIES READONLY  priceSkuStock###object###contactStock(s, st, concrete, cc)  COLUMNS (cc) HEADER namePrice###contactStock(cc)
+
         FILTERS in###object###stock(concrete,cc)
 
         FILTERGROUP filtr2
