@@ -315,12 +315,6 @@ GROUP barGroup 'Бар' : publicGroup;
 GROUP activeGroup 'Активность товара' : publicGroup;
 GROUP documentGroup 'Для документов' : publicGroup;
 
-CLASS STATIC groupProduct 'Группа изделий для печати заборного листа'
-{
-   hot 'Горячее',
-   cold  'Холодное'
-};
-
 tmpSku() = SESSION DATA sku ();
 
 //-----------------------------------------------------------------------------------------------//
@@ -343,8 +337,8 @@ isWeightItem 'Весовой товар' = DATA BOOLEAN (item) IN itemBaseGroup;
 compositionScalesItem 'Состав товара (ингредиенты) для весов' = DATA TEXT (item) IN equipmentGroup;
 isMarkItem 'Маркировать товар' = DATA BOOLEAN (item) IN equipmentGroup;
 isLoafCutItem 'Буханка разрезается' = DATA BOOLEAN (item) IN equipmentGroup;
-passScalesItem 'Передавать на весы' = DATA BOOLEAN (item) IN equipmentGroup;
 
+passScalesItem 'Передавать на весы' = DATA BOOLEAN (item) IN equipmentGroup;
 labelFormatPackItem = DATA labelFormat(item);
 idLabelFormatPackItem 'Код формата этикетки' (item) = idLabelFormat(labelFormatPackItem(item)) IN equipmentGroup;
 
