@@ -1440,9 +1440,11 @@ META extendFormDocumentSkuStockCustom(object, form, concrete, stockProp)
 
     EXTEND FORM form
 
-        TREE stockTree sg = stockGroup PARENT parentStockGroup, ts = stock
-        PROPERTIES READONLY sgTreeName = name(sg), tsTreeName = name(ts)
-        FILTERS stockGroupStock(ts) == sg
+        TREE stockTree a = STRING[3], sg = stockGroup PARENT parentStockGroup, ts = stock
+        PROPERTIES READONLY OBJVALUE(a), sgTreeName = name(sg), tsTreeName = name(ts)
+        ORDER BY sgTreeName
+        FILTERS stringEqualsAll(a),
+                stockGroupStock(ts) == sg
 
         TREE skuTree sk = skuGroup PARENT parentSkuGroup
         PROPERTIES READONLY skuTreeName = name(sk)
@@ -1452,7 +1454,7 @@ META extendFormDocumentSkuStockCustom(object, form, concrete, stockProp)
         PROPERTIES        READONLY nameSku(s), stockName = name(st), idBarcodeSku(s), shortNameUOMSku(s)
 
         FILTERS           isParentSkuGroupSku(sk, s),
-                          (st == ts AND sg IS stockGroup OR isParentStockGroupStock(sg, st) AND NOT ts) AND NOT stockProp###object(concrete) OR
+                          (st == ts AND sg IS stockGroup OR isParentStockGroupStock(sg, st) AND NOT ts OR st IS stock AND NOT sg AND NOT ts) AND NOT stockProp###object(concrete) OR
                           st == stockProp###object(concrete) AND sg IS stockGroup AND NOT ts
 
         ORDER BY          nameSku, stockName
@@ -1622,9 +1624,11 @@ META extendFormDocumentSkuStockContractorCustom(object, form, concrete, stockPro
 
     EXTEND FORM form
 
-        TREE stockTree sg = stockGroup PARENT parentStockGroup, ts = stock
-        PROPERTIES READONLY sgTreeName = name(sg), tsTreeName = name(ts)
-        FILTERS stockGroupStock(ts) == sg
+        TREE stockTree a = STRING[3], sg = stockGroup PARENT parentStockGroup, ts = stock
+        PROPERTIES READONLY OBJVALUE(a), sgTreeName = name(sg), tsTreeName = name(ts)
+        ORDER BY sgTreeName
+        FILTERS stringEqualsAll(a),
+                stockGroupStock(ts) == sg
 
         TREE skuTree sk = skuGroup PARENT parentSkuGroup
         PROPERTIES READONLY skuTreeName = name(sk)
@@ -1636,7 +1640,7 @@ META extendFormDocumentSkuStockContractorCustom(object, form, concrete, stockPro
         PROPERTIES        READONLY nameSku(s), stockName = name(st), idBarcodeSku(s), shortNameUOMSku(s)
 
         FILTERS           isParentSkuGroupSku(sk, s),
-                          (st == ts AND sg IS stockGroup OR isParentStockGroupStock(sg, st) AND NOT ts) AND NOT stockProp###object(concrete) OR
+                          (st == ts AND sg IS stockGroup OR isParentStockGroupStock(sg, st) AND NOT ts OR st IS stock AND NOT sg AND NOT ts) AND NOT stockProp###object(concrete) OR
                           st == stockProp###object(concrete) AND sg IS stockGroup AND NOT ts
 
         ORDER BY          nameSku, stockName
@@ -1879,9 +1883,11 @@ DESIGN costSkuBatchLedger FROM DEFAULT {
 
 FORM currentBalanceSkuStock 'Текущие остатки'
 
-    TREE stockTree sg = stockGroup PARENT parentStockGroup, ts = stock
-    PROPERTIES READONLY sgTreeName = name(sg), tsTreeName = name(ts)
-    FILTERS stockGroupStock(ts) == sg
+    TREE stockTree a = STRING[3], sg = stockGroup PARENT parentStockGroup, ts = stock
+    PROPERTIES READONLY OBJVALUE(a), sgTreeName = name(sg), tsTreeName = name(ts)
+    ORDER BY sgTreeName
+    FILTERS stringEqualsAll(a),
+            stockGroupStock(ts) == sg
 
     TREE skuTree sk = skuGroup PARENT parentSkuGroup
     PROPERTIES READONLY skuTreeName = name(sk)
@@ -1890,7 +1896,7 @@ FORM currentBalanceSkuStock 'Текущие остатки'
     OBJECTS           sts=(st=stock, s=sku)
     PROPERTIES        READONLY nameSku(s), stockName = name(st)  //  idBarcodeSku
     FILTERS           isParentSkuGroupSku(sk, s),
-                      (st == ts AND sg IS stockGroup) OR (isParentStockGroupStock(sg, st) AND NOT ts)
+                      st == ts AND sg IS stockGroup OR isParentStockGroupStock(sg, st) AND NOT ts OR st IS stock AND NOT sg AND NOT ts
 
     ORDER BY          nameSku
 
@@ -1953,9 +1959,11 @@ FORM balanceSkuStock 'Остатки на дату'
     OBJECTS t=DATETIME FIXED PANEL
     PROPERTIES(t) OBJVALUE
 
-    TREE stockTree sg = stockGroup PARENT parentStockGroup, ts = stock
-    PROPERTIES READONLY sgTreeName = name(sg), tsTreeName = name(ts)
-    FILTERS stockGroupStock(ts) == sg
+    TREE stockTree a = STRING[3], sg = stockGroup PARENT parentStockGroup, ts = stock
+    PROPERTIES READONLY OBJVALUE(a), sgTreeName = name(sg), tsTreeName = name(ts)
+    ORDER BY sgTreeName
+    FILTERS stringEqualsAll(a),
+            stockGroupStock(ts) == sg
 
     TREE skuTree sk = skuGroup PARENT parentSkuGroup
     PROPERTIES READONLY skuTreeName = name(sk)
@@ -1964,7 +1972,7 @@ FORM balanceSkuStock 'Остатки на дату'
     OBJECTS           sts=(st=stock, s=sku)
     PROPERTIES        READONLY nameSku(s), stockName = name(st)  //  idBarcodeSku
     FILTERS           isParentSkuGroupSku(sk, s),
-                      st == ts AND sg IS stockGroup OR isParentStockGroupStock(sg, st) AND NOT ts
+                      st == ts AND sg IS stockGroup OR isParentStockGroupStock(sg, st) AND NOT ts OR st IS stock AND NOT sg AND NOT ts
 
     PROPERTIES(s, st, t) READONLY balanceASkuStockDateTime
     PROPERTIES(s, st) READONLY dateLastMovedSkuStock
@@ -2025,9 +2033,11 @@ DESIGN balanceSkuStock FROM DEFAULT {
 
 FORM currentBalanceBatchStock 'Текущие остатки по партиям'
 
-    TREE stockTree sg = stockGroup PARENT parentStockGroup, ts = stock
-    PROPERTIES READONLY sgTreeName = name(sg), tsTreeName = name(ts)
-    FILTERS stockGroupStock(ts) == sg
+    TREE stockTree a = STRING[3], sg = stockGroup PARENT parentStockGroup, ts = stock
+    PROPERTIES READONLY OBJVALUE(a), sgTreeName = name(sg), tsTreeName = name(ts)
+    ORDER BY sgTreeName
+    FILTERS stringEqualsAll(a),
+            stockGroupStock(ts) == sg
 
     TREE skuTree sk = skuGroup PARENT parentSkuGroup
     PROPERTIES READONLY skuTreeName = name(sk)
@@ -2038,7 +2048,7 @@ FORM currentBalanceBatchStock 'Текущие остатки по партиям
     PROPERTIES        currentBalanceBatchStock(bt, st)
     PROPERTIES(bt)    READONLY dateTimeBatch, descriptionBatch, quantityBatch, costBatch, expiryDateBatch
     FILTERS           isParentSkuGroupBatch(sk, bt),
-                      st == ts AND sg IS stockGroup OR isParentStockGroupStock(sg, st) AND NOT ts
+                      st == ts AND sg IS stockGroup OR isParentStockGroupStock(sg, st) AND NOT ts OR st IS stock AND NOT sg AND NOT ts
 
     ORDER BY          dateTimeBatch
 
@@ -2098,9 +2108,11 @@ FORM balanceBatchStock 'Остатки по партиям на дату'
     OBJECTS t=DATETIME FIXED PANEL
     PROPERTIES(t) OBJVALUE
 
-    TREE stockTree sg = stockGroup PARENT parentStockGroup, ts = stock
-    PROPERTIES READONLY sgTreeName = name(sg), tsTreeName = name(ts)
-    FILTERS stockGroupStock(ts) == sg
+    TREE stockTree a = STRING[3], sg = stockGroup PARENT parentStockGroup, ts = stock
+    PROPERTIES READONLY OBJVALUE(a), sgTreeName = name(sg), tsTreeName = name(ts)
+    ORDER BY sgTreeName
+    FILTERS stringEqualsAll(a),
+            stockGroupStock(ts) == sg
 
     TREE skuTree sk = skuGroup PARENT parentSkuGroup
     PROPERTIES READONLY skuTreeName = name(sk)
@@ -2111,7 +2123,7 @@ FORM balanceBatchStock 'Остатки по партиям на дату'
     PROPERTIES        balanceBBatchStockDateTime(bt, st, t)
     PROPERTIES(bt)    READONLY dateTimeBatch, descriptionBatch, quantityBatch, costBatch, expiryDateBatch
     FILTERS           isParentSkuGroupBatch(sk, bt),
-                      st == ts AND sg IS stockGroup OR isParentStockGroupStock(sg, st) AND NOT ts
+                      st == ts AND sg IS stockGroup OR isParentStockGroupStock(sg, st) AND NOT ts OR st IS stock AND NOT sg AND NOT ts
     ORDER BY          dateTimeBatch
 
     FILTERGROUP filterBalance
