@@ -43,14 +43,14 @@ public class EvalActionProperty<P extends PropertyInterface> extends SystemActio
     }
 
     private String getUniqueName() {
-        return "UNIQUENSNAME" + counter.incrementAndGet();
+        return "UNIQUE" + counter.incrementAndGet() + "NSNAME";
     }
 
     private String wrapScript(String script) {
         StringBuilder strBuilder = new StringBuilder();
         strBuilder.append("MODULE ");
         strBuilder.append(getUniqueName());
-        strBuilder.append(";\n");
+        strBuilder.append("; ");
         strBuilder.append("REQUIRE ");
         boolean isFirst = true;
         for (LogicsModule module : BL.getLogicModules()) {
@@ -60,7 +60,7 @@ public class EvalActionProperty<P extends PropertyInterface> extends SystemActio
             isFirst = false;
             strBuilder.append(module.getName());
         }
-        strBuilder.append(";\n");
+        strBuilder.append("; ");
         strBuilder.append(script);
         return strBuilder.toString();
     }

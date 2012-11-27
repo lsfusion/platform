@@ -1386,16 +1386,12 @@ public class ScriptingLogicsModule extends LogicsModule {
         addMetaCodeFragment(name, fragment);
     }
 
-    public void runMetaCode(String name, List<String> params, int lineNumber) throws ScriptingErrorLog.SemanticErrorException {
+    public void runMetaCode(String name, List<String> params, int lineNumber) throws RecognitionException {
         MetaCodeFragment metaCode = findMetaCodeFragmentByCompoundName(name, params.size());
         checkMetaCodeParamCount(metaCode, params.size());
 
         String code = metaCode.getCode(params);
-        try {
-            parser.runMetaCode(this, code, metaCode, metaCodeCallString(name, metaCode, params), lineNumber);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        parser.runMetaCode(this, code, metaCode, metaCodeCallString(name, metaCode, params), lineNumber);
     }
 
     private String metaCodeCallString(String name, MetaCodeFragment metaCode, List<String> actualParams) {
