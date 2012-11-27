@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jnlp spec="1.5+" codebase="http://localhost/fusion/" href="client.jnlp">
+<jnlp spec="1.5+" codebase="http://localhost/client/" href="client.jnlp">
     <information>
         <title>Fusion Client</title>
         <vendor>Nomosoft Ltd.</vendor>
