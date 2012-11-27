@@ -12,7 +12,7 @@ NAMESPACE Sale;
 VATUserInvoice (userInvoice) <- rangeTaxTaxUnit(tax.taxVAT, storeDepartmentStore(supplierStockUserInvoice(userInvoice)))
         WHEN CHANGED(supplierStockUserInvoice(userInvoice));
 
-@deriveDocumentHeaderTAXDetail(userInvoice, VAT);
+@deriveDocumentHeaderTAXDetail(userInvoice, VAT, supplierStock);
 
 derivedVATSumUserInvoiceDetail (userInvoiceDetail) =
     IF rangeTypeRange(VATUserInvoiceDetail(userInvoiceDetail)) == rangeType.units
@@ -54,8 +54,10 @@ CONSTRAINT taxRange(VATUserInvoice(userInvoice)) != tax.taxVAT OR
            CHECKED BY VATUserInvoice
            MESSAGE 'ошибка: Шкала и страна строки должна соответствовать шкале и строке НДС';
 
+isDepartmentStoreSupplierStockInvoice (invoice) = isDepartmentStoreStock (supplierStockInvoice(invoice));
+
 EXTEND FORM userInvoice
-    PROPERTIES(i) numberVATUserInvoice, valueVATUserInvoice
+    PROPERTIES(i) numberVATUserInvoice SHOWIF isDepartmentStoreSupplierStockInvoice(i), valueVATUserInvoice SHOWIF isDepartmentStoreSupplierStockInvoice(i);
 ;
 
 // ------- Создание инвойса по партиям -------- //

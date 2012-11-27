@@ -20,6 +20,8 @@ userLegalEntityStock 'Отм.' = ABSTRACT BOOLEAN (legalEntity, stock);
 inLegalEntityStock 'Отм.' (legalEntity, stock) = (legalEntityStock(stock) == legalEntity) OR userLegalEntityStock(legalEntity, stock);
 isDefaultLegalEntityStock 'Свой склад' (legalEntity, stock) = legalEntityStock(stock) == legalEntity;
 
+isRetailStock (stock) = ABSTRACT BOOLEAN (stock) PERSISTENT;
+
 currencyStock (stock) = currencyLegalEntity(legalEntityStock(stock)) PERSISTENT;
 languageStock (stock) = languageLegalEntity(legalEntityStock(stock)) PERSISTENT;
 
@@ -1455,7 +1457,7 @@ META extendFormDocumentSkuStockCustom(object, form, concrete, stockProp)
 
         FILTERS           isParentSkuGroupSku(sk, s),
                           (st == ts AND sg IS stockGroup OR isParentStockGroupStock(sg, st) AND NOT ts OR st IS stock AND NOT sg AND NOT ts) AND NOT stockProp###object(concrete) OR
-                          st == stockProp###object(concrete) AND sg IS stockGroup AND NOT ts
+                          st == stockProp###object(concrete) AND NOT sg AND NOT ts
 
         ORDER BY          nameSku, stockName
 
@@ -1641,7 +1643,7 @@ META extendFormDocumentSkuStockContractorCustom(object, form, concrete, stockPro
 
         FILTERS           isParentSkuGroupSku(sk, s),
                           (st == ts AND sg IS stockGroup OR isParentStockGroupStock(sg, st) AND NOT ts OR st IS stock AND NOT sg AND NOT ts) AND NOT stockProp###object(concrete) OR
-                          st == stockProp###object(concrete) AND sg IS stockGroup AND NOT ts
+                          st == stockProp###object(concrete) AND NOT sg AND NOT ts
 
         ORDER BY          nameSku, stockName
 

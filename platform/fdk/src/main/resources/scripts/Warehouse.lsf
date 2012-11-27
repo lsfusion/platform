@@ -74,7 +74,7 @@ FORM warehouses 'Склады'
     FILTERS stringEqualsAll(b)
 
     OBJECTS w=warehouse
-    PROPERTIES(w) READONLY name, addressWarehouse, nameLegalEntityWarehouse
+    PROPERTIES(w) READONLY name, nameWarehouseGroupWarehouse, addressWarehouse, nameLegalEntityWarehouse
     PROPERTIES(w) ADDFORM, EDITFORM, delete
     ORDER BY name
     FILTERS isParentWarehouseGroupWarehouse(wg, w) OR (w IS warehouse AND wg IS warehouseGroup AND NOT warehouseGroupWarehouse(w)) OR (w IS warehouse AND NOT wg)

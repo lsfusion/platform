@@ -94,7 +94,7 @@ EXTEND DESIGN userInvoice {
 }
 EXTEND FORM invoices
     PROPERTIES (i) createWriteOffInvoice BACKGROUND backgroundWrittenInvoice(i)
-    PROPERTIES (i) writeOffSumInvoiceDetailInvoice BACKGROUND backgroundWrittenInvoice(i) BEFORE ordersInvoice
+    PROPERTIES (i) READONLY writeOffSumInvoiceDetailInvoice BACKGROUND backgroundWrittenInvoice(i) BEFORE ordersInvoice
     PROPERTIES (d) SHOWIF createWriteOffInvoice(i) BACKGROUND backgroundWrittenInvoice(i) writeOffQuantityInvoiceDetail,
                    writeOffPriceInvoiceDetail,  writeOffSumInvoiceDetail
 ;

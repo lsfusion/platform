@@ -592,7 +592,7 @@ META defineShipment(sign, stockProp)
 
     EXTEND FORM invoices
         PROPERTIES(i) READONLY BACKGROUND backgroundShippedInvoice(i) createShipmentInvoice
-        PROPERTIES(i) BACKGROUND backgroundShippedInvoice(i) shipmentSumInvoiceDetailInvoice BEFORE ordersInvoice
+        PROPERTIES(i) READONLY BACKGROUND backgroundShippedInvoice(i) shipmentSumInvoiceDetailInvoice BEFORE ordersInvoice
         PROPERTIES(d) READONLY SHOWIF createShipmentInvoice(i) BACKGROUND backgroundShippedInvoice(i)
                       name###stockProp###invoiceDetail, shipmentPriceInvoiceDetail, shipmentSumInvoiceDetail
         PROPERTIES(d) READONLY shippedInvoiceDetail AFTER quantityInvoiceDetail SHOWIF showShipmentInvoice(i) BACKGROUND backgroundShippedInvoice(i)

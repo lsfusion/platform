@@ -119,6 +119,8 @@ inChainStoresStoreTypeStoreDepartment (chainStores, storeType, store, department
     (chainStoresDepartmentStore(department) == chainStores AND NOT store AND NOT storeType) OR
     (department IS departmentStore AND NOT store AND NOT storeType AND NOT chainStores);
 
+isDepartmentStoreStock (stock) = TRUE IF stock IS departmentStore;
+isRetailStock (stock) += isDepartmentStoreStock (stock);
 // -------------------------------------- Формы отдела магазинов ------------------------------------------ //
 
 FORM departmentStore 'Отдел магазина'
