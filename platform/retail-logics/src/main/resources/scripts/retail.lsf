@@ -118,8 +118,6 @@ META defineDocumentDetailSkuItemPrefix (object, prefix, caption)
         controlExpiryItem (prefix###item###object##Detail(detail)) IN itemDetailGroup;
 
     prefix###isWeightItem###object##Detail 'Весовой товар?'###caption (detail) = isWeightItem(prefix###item###object##Detail(detail)) IN itemDetailGroup;
-
-    prefix###hintItem###object##Detail 'Подсказка по товару'###caption (detail) = hintItem(prefix###item###object##Detail(detail)) IN itemDetailGroup MINCHARWIDTH 20 PREFCHARWIDTH 20;
 END
 
 META defineDocumentDetailSkuItem (object)
@@ -311,16 +309,12 @@ GROUP expiryGroup 'Контроль сроков годности' : publicGroup
 GROUP equipmentGroup 'Внешние устройства' : publicGroup;
 GROUP labelGroup 'Ценник' : publicGroup;
 
-GROUP orderGroup 'Заказ' : publicGroup;
 GROUP barGroup 'Бар' : publicGroup;
 GROUP activeGroup 'Активность товара' : publicGroup;
-GROUP documentGroup 'Для документов' : publicGroup;
 
 tmpSku() = SESSION DATA sku ();
 
 //-----------------------------------------------------------------------------------------------//
-
-hintItem 'Подсказка по товару' = DATA STRING[200] (item) IN documentGroup;
 
 statisticGroupSku = DATA statisticGroup(sku) IN idGroup AUTOSET;
 nameStatisticGroupSku 'Статистическая группа' (sku) = name(statisticGroupSku(sku)) IN rateGroup;
@@ -357,22 +351,6 @@ lengthPackItem 'Длина упаковки' = DATA NUMERIC[8,2] (item) IN itemS
 widthPackItem 'Ширина упаковки' = DATA NUMERIC[8,2] (item) IN itemSizeGroup;
 heightPackItem 'Высота упаковки' = DATA NUMERIC[8,2] (item) IN itemSizeGroup;
 grossWeightPackItem 'Вес брутто упаковки' = DATA NUMERIC[9,3] (item) IN itemSizeGroup;
-
-//retailGroup
-minQuantityOrderItem 'Минимальный заказ' = DATA INTEGER (item) IN orderGroup;
-minReserveItem 'Минимальный резерв' = DATA INTEGER (item) IN orderGroup;
-bonusReturnItem 'Уценка (бонус) по товару при возврате поставщику' = DATA NUMERIC[9,2] (item) IN documentGroup;
-nameReturnItem 'Наименование для уценки, бонуса по товару в возврат' = DATA STRING[200] (item) IN documentGroup;
-quantityDiscountItem 'Количество товара, при котором предост-ся скидка' = DATA INTEGER (item) IN discountGroup;
-fixPriceItem 'Фиксированная цена при соотв.типе скидки' = DATA INTEGER (item) IN discountGroup;
-isFixPriceItem 'Товар с фиксированной ценой' = DATA BOOLEAN (item) IN retailGroup;
-//minTradeAllowanceItem 'MIN допустимая торговая надбавка, %' = DATA NUMERIC[8,3] (item) IN retailGroup;
-//maxTradeAllowanceItem 'MAX допустимая торговая надбавка, %' = DATA NUMERIC[8,3] (item) IN retailGroup;
-minAllowedRetailPriceItem 'MIN допустимая розн.цена' = DATA NUMERIC[14,2] (item) IN retailGroup;
-bonusItem 'Бонус получаемый по товару' = DATA NUMERIC[9,2] (item) IN documentGroup;
-percentWholesaleMarkItem '% оптовой надбавки' = DATA NUMERIC[8,3] (item) IN retailGroup;
-banSailItem 'Запрет продаж товара в указанное время' = DATA STRING[200] (item) IN equipmentGroup;
-storageTemperatureItem 'Температура хранения' =  DATA STRING[100] (item) IN equipmentGroup MINCHARWIDTH 50;
 
 //expiryGroup
 controlExpiryItem 'Контролировать сроки годности товара?' = DATA BOOLEAN (item) IN expiryGroup;
@@ -592,9 +570,6 @@ DESIGN naturalLossItemGroups FROM DEFAULT {
 TABLE itemDepartmentStore (item, departmentStore);
 TABLE itemDepartmentStoreDate (item, departmentStore, DATE);
 
-@defineHistorizable(maxReserveItemDepartment, 'Максимально допустимый товарный запас в днях', NUMERIC[8,2], item, nameAttributeItem, departmentStore, name, orderGroup);
-@defineHistorizable(minReserveItemDepartment, 'Минимально допустимый товарный запас в днях', NUMERIC[8,2], item, nameAttributeItem, departmentStore, name, orderGroup);
-
 @defineHistorizableYesNo(banPriceChangeItemDepartment, 'Запрет на переоценку', item, nameAttributeItem, departmentStore, name, retailGroup);
 
 @defineHistorizableYesNo(inActionItemDepartment, 'Товар акции', item, nameAttributeItem, departmentStore, name, discountGroup);
@@ -619,16 +594,6 @@ valOverMultiplierBarcodeDepartmentDate (barcode, departmentStore, date) = valOve
 
 @defineHistorizable(oldPriceItemDepartment, 'Старая цена', NUMERIC[14,2], item, nameAttributeItem, departmentStore, name, labelGroup);
 
-TABLE supplierItemDepartmentStoreDate (supplier, item, departmentStore, DATE);
-
-@defineHistorizableYesNo(isSupplierItemDepartment, 'Поставляется', supplier, name, item, nameAttributeItem, departmentStore, name, orderGroup);
-
-@defineHistorizable(priceSupplierItemDepartment, 'Цена поставщика', NUMERIC[14,2], supplier, name, item, nameAttributeItem, departmentStore, name, retailGroup);
-
-@defineHistorizable(markupItemDepartment, 'Торговая надбавка', NUMERIC[8,3], item, nameAttributeItem, departmentStore, name, retailGroup);
-
-@defineHistorizableYesNo(banSupplierItemDepartment, 'Запретить закупку', supplier, name, item, nameAttributeItem, departmentStore, name, orderGroup);
-
 EXTEND FORM item
 
     PROPERTIES(i) isContainerItem,
@@ -642,24 +607,21 @@ EXTEND FORM item
 
                   // Дополнительные
                   passScalesItem, isMarkItem, isLoafCutItem,
-                  compositionScalesItem, idLabelFormatPackItem, storageTemperatureItem, banSailItem,
+                  compositionScalesItem, idLabelFormatPackItem,
 
                   importerPriceItem, dialogImporterPriceItem,
                   numberRangeSupplierVATItem, valueCurrentRateSupplierVATItem, dialogSupplierVATItem,
                   numberRangeRetailVATItem, valueCurrentRateRetailVATItem, dialogRetailVATItem,
-                  percentWholesaleMarkItem, minTradeAllowanceItem, dialogMinTradeAllowanceItem, maxTradeAllowanceItem, dialogMaxTradeAllowanceItem,
-                  minAllowedRetailPriceItem, isFixPriceItem,
+                  minTradeAllowanceItem, dialogMinTradeAllowanceItem, maxTradeAllowanceItem, dialogMaxTradeAllowanceItem,
 
-                  quantityDiscountItem, fixPriceItem, nameBanDiscountItem, dialogBanDiscountItem,
+                  nameBanDiscountItem, dialogBanDiscountItem,
 
                   nutritionalValueItem, energyItem,
                   fatsItem, carbohydratesItem, proteinsItem, isContainGMOItem,
 
                   controlExpiryItem, daysExpiryItem, daysExpiryPackItem, hoursExpiryPackItem,
 
-                  quantityPackItem, minQuantityOrderItem, minReserveItem,
-
-                  bonusReturnItem, nameReturnItem, hintItem, bonusItem
+                  quantityPackItem
 
     PROPERTIES(b) BEFORE delete titleScalesBarcode, titleCashRegisterBarcode
 
@@ -674,13 +636,7 @@ EXTEND FORM item
 
     PROPERTIES (dt) OBJVALUE BACKGROUND dateDiffersCurrent(dt)
     PROPERTIES (sp) SELECTOR name
-    PROPERTIES      overNameIsSupplierItemDepartmentDate(sp, i, d, dt) BACKGROUND dataIsSupplierItemDepartmentDate(sp, i, d, dt), overDialogIsSupplierItemDepartmentDate(sp, i, d),
-                    overNameBanSupplierItemDepartmentDate(sp, i, d, dt) BACKGROUND dataBanSupplierItemDepartmentDate(sp, i, d, dt), overDialogBanSupplierItemDepartmentDate(sp, i, d),
-                    overPriceSupplierItemDepartmentDate(sp, i, d, dt) BACKGROUND dataPriceSupplierItemDepartmentDate(sp, i, d, dt), overDialogPriceSupplierItemDepartmentDate(sp, i, d),
-                    overMarkupItemDepartmentDate(i, d, dt) BACKGROUND dataMarkupItemDepartmentDate(i, d, dt), overDialogMarkupItemDepartmentDate(i, d)
     PROPERTIES      overRetailPriceItemDepartmentDate(i, d, dt) BACKGROUND dataRetailPriceItemDepartmentDate(i, d, dt), overDialogRetailPriceItemDepartmentDate(i, d),
-                    overMaxReserveItemDepartmentDate(i, d, dt) BACKGROUND dataMaxReserveItemDepartmentDate(i, d, dt), overDialogMaxReserveItemDepartmentDate(i, d),
-                    overMinReserveItemDepartmentDate(i, d, dt) BACKGROUND dataMinReserveItemDepartmentDate(i, d, dt), overDialogMinReserveItemDepartmentDate(i, d),
                     overNameBanPriceChangeItemDepartmentDate(i, d, dt) BACKGROUND dataNameBanPriceChangeItemDepartmentDate(i, d, dt), overDialogBanPriceChangeItemDepartmentDate(i, d),
                     overNameInActionItemDepartmentDate(i, d, dt) BACKGROUND dataNameInActionItemDepartmentDate(i, d, dt), overDialogInActionItemDepartmentDate(i, d),
                     overMarginProductionItemDepartmentDate(i, d, dt) BACKGROUND dataMarginProductionItemDepartmentDate(i, d, dt), overDialogMarginProductionItemDepartmentDate(i, d),
@@ -729,12 +685,6 @@ EXTEND DESIGN item {
                         childConstraints = TO THE BOTTOM;
                     };
                     ADD i.expiryGroup {
-                        childConstraints = TO THE BOTTOM;
-                    };
-                    ADD i.orderGroup {
-                        childConstraints = TO THE BOTTOM;
-                    };
-                    ADD i.documentGroup {
                         childConstraints = TO THE BOTTOM;
                     };
                 };
@@ -1606,8 +1556,6 @@ sumInvoiceConsignmentDetail (consignmentDetail) += retailSumStatementDetail (con
 noteConsignmentDetail (consignmentDetail) += noteStatementDetail (consignmentDetail);
 
 //---------------------------- Приход товара от поставщика ----------------------------------------//
-GROUP shipmentOrderGroup 'Заказ' : documentPrmGroup;
-
 CLASS shipment 'Поставка' : historyObject, numberedObject, listRegister, contractLedger, contractALedger, inContractLedger;
 CLASS shipmentDetail 'Строка поставки' : listRegisterDetail;
 CLASS shipmentPosted 'Проведенная поставка' : shipment, postedObject;
@@ -1671,7 +1619,6 @@ CONSTRAINT controlExpiryItemShipmentDetail(shipmentDetail) AND NOT expiryDateShi
 //    CHECKED BY controlExpiryItemShipmentDetail MESSAGE 'Не задан для товара срок годности';
 
 isFixPriceShipmentDetail 'Товар с фиксированной ценой' (shipmentDetail) = DATA BOOLEAN (shipmentDetail) IN itemDetailGroup;
-isFixPriceShipmentDetail(shipmentDetail) <- isFixPriceItem (itemShipmentDetail (shipmentDetail)) WHEN CHANGED(itemShipmentDetail(shipmentDetail));
 
 retailMarkupShipmentDetail 'Торговая надбавка, %'(shipmentDetail) = DATA NUMERIC[8,3] (shipmentDetail) IN baseGroup;
 importerMarkupShipmentDetail '% надбавки с уч. оптовой' (shipmentDetail) = [X*(100+Y)/100](
@@ -1723,10 +1670,6 @@ numberContractListRegister (listRegister) += numberContractShipment(listRegister
 
 // ------ Запись значений по умолчанию ----- //
 
-supplierPriceShipmentDetail(shipmentDetail) <-
-    priceSupplierItemDepartmentDate (supplierShipmentDetail(shipmentDetail), itemShipmentDetail(shipmentDetail), departmentStoreShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail))
-    WHEN CHANGED(itemShipmentDetail(shipmentDetail));
-
 nonRoundImporterPriceShipmentDetail 'Цена изготовителя/импортера (неокругленная)' (shipmentDetail) =
      IF isFixPriceShipmentDetail(shipmentDetail) THEN
      [X*(100+Y)/100](supplierPriceShipmentDetail(shipmentDetail), overSupplierMarkupShipmentDetail(shipmentDetail)) ELSE
@@ -1738,10 +1681,6 @@ importerPriceShipmentDetail (shipmentDetail) <-
 
 supplierVATShipmentDetail(shipmentDetail) <-
     supplierVATItemDate(itemShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail))
-    WHEN CHANGED(itemShipmentDetail(shipmentDetail));
-
-retailMarkupShipmentDetail(shipmentDetail) <-
-    markupItemDepartmentDate(itemShipmentDetail(shipmentDetail), departmentStoreShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail))
     WHEN CHANGED(itemShipmentDetail(shipmentDetail));
 
 retailVATShipmentDetail(shipmentDetail) <-
@@ -2957,7 +2896,7 @@ FORM shipment 'Поставка'
                     ADDOBJ, delete
     PROPERTIES (d) FORCE PANEL isFixPriceShipmentDetail,
                                controlExpiryItemShipmentDetail, isWeightItemShipmentDetail, nameInActionItemDepartmentShipmentDetail,
-                               hintItemShipmentDetail, nameCountryItemShipmentDetail, nameBanPriceChangeItemDepartmentShipmentDetail,
+                               nameCountryItemShipmentDetail, nameBanPriceChangeItemDepartmentShipmentDetail,
                                curImporterPriceShipmentDetail, curSupplierPriceShipmentDetail, curValueRetailVATShipmentDetail, curNameWareShipmentDetail SHOWIF inWareShipmentDetail(d),
                                valueWareRangeShipmentDetail SHOWIF inWareShipmentDetail(d), curWarePriceShipmentDetail SHOWIF inWareShipmentDetail(d)
 
@@ -3164,7 +3103,7 @@ FORM returnSupplier 'Возврат поставщику'
                                     curRetailPriceReturnSupplierDetail(d), curValueRetailVATReturnSupplierDetail(d),
                                     controlExpiryItemReturnSupplierDetail(d),
                                     isWeightItemReturnSupplierDetail(d), nameInActionItemDepartmentReturnSupplierDetail(d),
-                                    hintItemReturnSupplierDetail(d), nameCountryItemReturnSupplierDetail(d),
+                                    nameCountryItemReturnSupplierDetail(d),
                                     nameBanPriceChangeItemDepartmentReturnSupplierDetail(d), valueWareRangeReturnSupplierDetail(d),
                                     curNameWareReturnSupplierDetail(d), curWarePriceReturnSupplierDetail(d)
 
@@ -4886,73 +4825,6 @@ DESIGN torgSales FROM DEFAULT {
     }
 }
 
-//---------------------------------------------- Форма поставки товаров в отдел -------------------------------------//
-
-FORM isSupplierItemDepartmentStore 'Ассортимент поставщиков'
-
-    OBJECTS t=DATE FIXED PANEL
-    PROPERTIES(t) OBJVALUE
-
-    TREE treeStore a=STRING[3], tn=chainStores, st=storeType, s=store, ds=departmentStore
-    PROPERTIES READONLY OBJVALUE(a), name(tn), name(st), name(s), name(ds)
-    FILTERS stringEqualsAll(a), inChainStoresStoreType (tn, st), inStoreTypeStore (st, s), inStoreDepartment(s, ds)
-
-    TREE treeGroups g=itemGroup PARENT parentItemGroup
-    PROPERTIES READONLY name(g)
-
-    OBJECTS           sp=supplier
-    PROPERTIES(sp)    READONLY name
-
-    OBJECTS           dsi=(dep=departmentStore, i=item)
-    PROPERTIES        READONLY nameDep=name(dep), nameIt=nameAttributeItem(i), idBarcodeSku(i)
-    PROPERTIES        EDITFORM(i)
-    ORDER BY          nameDep
-    PROPERTIES        overNameIsSupplierItemDepartmentDate(sp, i, dep, t) BACKGROUND dataIsSupplierItemDepartmentDate(sp, i, dep, t), overDialogIsSupplierItemDepartmentDate(sp, i, dep),
-                      overPriceSupplierItemDepartmentDate(sp, i, dep, t) BACKGROUND dataPriceSupplierItemDepartmentDate(sp, i, dep, t), overDialogPriceSupplierItemDepartmentDate(sp, i, dep)
-    FILTERS           inChainStoresStoreTypeStoreDepartmentDepartment(tn, st, s, dep, ds)
-    FILTERS           isParentItemGroupItem(g, i)
-    FILTERGROUP filters10
-        FILTER 'Показывать поставляемые товары' 'F10' isSupplierItemDepartmentDate(sp, i, dep, t) == yesNo.yes DEFAULT
-;
-
-DESIGN isSupplierItemDepartmentStore FROM DEFAULT {
-    main{
-        preferredSize = (1024, 768);
-
-        NEW topContainer {
-
-            type = SPLITH;
-            childConstraints = TO THE RIGHT;
-
-            NEW firstCase {
-
-                type = SPLITV;
-                fillHorizontal = 1;
-                childConstraints = TO THE BOTTOM;
-                ADD t.box;
-                NEW firstCaseTwo {
-
-                    type = SPLITV;
-                    ADD treeStore.tree.box { title = 'Магазины'; }
-                    ADD treeGroups.tree.box { title = 'Товарные группы'; }
-                }
-            }
-
-            NEW secondCase {
-
-                type = SPLITV;
-                fillHorizontal = 2;
-                childConstraints = TO THE BOTTOM;
-                ADD sp.box;
-                ADD dsi.box {fillVertical = 2;}
-
-            }
-        }
-
-        ADD functions.box;
-    }
-}
-
 //---------------------------------------------- Автоматическое заполнение -----------------------------------------------------//
 
 //------------------- Статистические группы----------------------------//
@@ -5443,9 +5315,6 @@ NAVIGATOR {
     }
 
     NEW retail 'Розничная торговля' TO formsToolbar {
-        NEW orders 'Заказы' {
-            ADD isSupplierItemDepartmentStore;
-        }
         NEW incomeShipments 'Поставки' {
             ADD shipments;
             ADD returnSuppliers;
