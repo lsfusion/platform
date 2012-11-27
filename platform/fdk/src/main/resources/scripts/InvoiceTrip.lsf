@@ -11,10 +11,9 @@ createConsignmentTrip 'Создать накладные по заказам' (t
     EXEC apply();
 } TOOLBAR CONFIRM;
 
-EXTEND FORM trip
-    PROPERTIES createConsignmentTrip(t) TODRAW s FORCE PANEL
-    PROPERTIES createUserInvoicePostedOrder(o)
-;
+//EXTEND FORM trip
+//    PROPERTIES createConsignmentTrip(t) TODRAW i FORCE PANEL
+//;
 
 //EXTEND DESIGN trip {
 //    s.box {

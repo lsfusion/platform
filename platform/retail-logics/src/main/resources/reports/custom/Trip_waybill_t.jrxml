@@ -15,6 +15,12 @@
 		</box>
 		<paragraph leftIndent="2" rightIndent="2"/>
 	</style>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["D:\\Projects\\platform\\retail-logics\\src\\main\\resources\\reports\\custom\\"]]></defaultValueExpression>
+	</parameter>
+    <parameter name="i_report" class="net.sf.jasperreports.engine.JasperReport"/>
+	<parameter name="i_source" class="net.sf.jasperreports.engine.JRDataSource"/>
+	<parameter name="i_params" class="java.util.Map"/>
 	<field name="t" class="java.lang.Integer"/>
 	<field name="dateTrip" class="java.util.Date"/>
 	<field name="numberObject" class="java.lang.String"/>
@@ -28,7 +34,7 @@
 	<field name="sidDriverTrip" class="java.lang.String"/>
 	<field name="typeDriverTrip" class="java.lang.String"/>
 	<title>
-		<band height="250">
+		<band height="300">
 			<textField isStretchWithOverflow="true">
 				<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="30" y="0" width="118" height="18"/>
 				<textElement textAlignment="Center"/>
@@ -52,7 +58,7 @@
 			<textField isStretchWithOverflow="true" pattern="dd.MM.yy" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="30" y="18" width="206" height="18"/>
 				<textElement textAlignment="Center"/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{dateTrip}]]></textFieldExpression>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{dateTrip}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="148" y="0" width="88" height="18"/>
@@ -103,6 +109,131 @@
 				<reportElement x="98" y="210" width="90" height="18"/>
 				<textElement/>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{sidDriverTrip} + ", " + $F{typeDriverTrip}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="334" y="14" width="456" height="18"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Работа водителя и автомобиля"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="467" y="32" width="127" height="36"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Дата (число, месяц), время (ч, мин)"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="594" y="32" width="50" height="54"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Нулевой пробег, км"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="644" y="32" width="146" height="36"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Время работы, ч"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="410" y="32" width="57" height="54"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Показания спидометра"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="334" y="32" width="76" height="54"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Операция"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="467" y="68" width="62" height="18"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA["по графику"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="529" y="68" width="65" height="18"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA["фактическое"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="644" y="68" width="59" height="18"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA["двигателя"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="703" y="68" width="87" height="18"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA["спецоборудования"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="334" y="86" width="76" height="36"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[""]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="334" y="122" width="76" height="36"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[""]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="334" y="158" width="456" height="18"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Движение топливно-смазочных материалов (ТСМ)"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="334" y="176" width="133" height="18"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["заправка ТСМ"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="467" y="176" width="323" height="18"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Остаток ТСМ, л"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="334" y="194" width="58" height="36"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Дата (число, месяц)"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="392" y="194" width="75" height="36"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Марка ТСМ"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="467" y="194" width="100" height="36"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["количество, л"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="567" y="194" width="100" height="36"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["при выезде"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="667" y="194" width="123" height="36"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["при возвращении"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="334" y="230" width="58" height="18"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="392" y="230" width="75" height="18"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="467" y="230" width="100" height="18"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="567" y="230" width="100" height="18"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="667" y="230" width="123" height="18"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
@@ -178,6 +309,138 @@
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{nameLegalEntityStock}]]></textFieldExpression>
 			</textField>
 		</band>
-		<band/>
+        <band>
+			<subreport>
+				<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="0" height="0"/>
+				<parametersMapExpression><![CDATA[$P{i_params}]]></parametersMapExpression>
+				<dataSourceExpression><![CDATA[$P{i_source}]]></dataSourceExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{i_report}]]></subreportExpression>
+			</subreport>
+		</band>
+			
 	</detail>
+	<summary>
+		<band height="200">
+			<textField>
+				<reportElement x="8" y="12" width="807" height="18"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Результаты работы"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="8" y="30" width="76" height="18"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Расход ТСМ, л"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="84" y="30" width="217" height="18"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Время в наряде, ч"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="361" y="30" width="208" height="18"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Пробег, км"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="692" y="30" width="123" height="18"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Выполнено, т км"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="569" y="30" width="123" height="18"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Перевезено, т"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="301" y="30" width="60" height="90"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Количество ездок с грузом"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="361" y="48" width="104" height="36"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["общий"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="465" y="48" width="104" height="36"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["в том числе с грузом"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="361" y="84" width="61" height="36"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA["автомобиля"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="422" y="84" width="43" height="36"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA["прицепа"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="526" y="84" width="43" height="36"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA["прицепа"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="465" y="84" width="61" height="36"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA["автомобиля"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="148" y="48" width="46" height="72"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Прицепа"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="84" y="48" width="64" height="72"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Автомобиля"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="8" y="48" width="38" height="72"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA["по норме"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="46" y="48" width="38" height="72"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA["факт"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="569" y="48" width="65" height="72"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["всего"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="634" y="48" width="58" height="72"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA["в том числе на прицепе"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="692" y="48" width="59" height="72"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["всего"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="751" y="48" width="64" height="72"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA["в том числе на прицепе"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="194" y="48" width="107" height="36"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["в том числе автомобиля"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="194" y="84" width="52" height="36"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["в движении"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="246" y="84" width="55" height="36"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["в простое (прочее)"]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
 </jasperReport>

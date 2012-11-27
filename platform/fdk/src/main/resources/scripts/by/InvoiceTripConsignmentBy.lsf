@@ -1,0 +1,48 @@
+MODULE InvoiceTripConsignmentBy;
+
+REQUIRE Shipment, Invoice, InvoiceTrip, ConsignmentBy;
+
+quantityTripInvoice (trip, invoice) = GROUP SUM quantityOrderInvoice(order, invoice) IF inTripOrder(trip, order) BY trip, invoice;
+
+inTripInvoice 'Включен' (trip, invoice) = quantityTripInvoice (trip, invoice)>0;
+
+printHorizontalConsignmentTrip 'Печать накладных ТТН-1 (гор.)' (trip) = ACTION (trip) {
+    FOR inTripInvoice(trip, invoice) DO {
+        EXEC printConsignmentHorizontalA(invoice);
+        EXEC printConsignmentHorizontalB(invoice);
+        EXEC printConsignmentAttach(invoice);
+    };
+} TOOLBAR;
+
+printVerticalConsignmentTrip 'Печать накладных ТТН-1 (верт.)' (trip) = ACTION (trip) {
+    FOR inTripInvoice(trip, invoice) DO {
+        EXEC printConsignmentVerticalA(invoice);
+        EXEC printConsignmentVerticalB(invoice);
+        EXEC printConsignmentAttach(invoice);
+    };
+} TOOLBAR;
+
+EXTEND FORM trip
+    OBJECTS i=invoice
+    PROPERTIES (i) numberInvoice, seriesInvoice, dateInvoice, nameSupplierStockInvoice, nameCustomerStockInvoice
+    FILTERS inTripInvoice(t, i)
+
+    PROPERTIES createConsignmentTrip(t) TODRAW i
+    PROPERTIES printHorizontalConsignmentTrip(t) TODRAW i
+    PROPERTIES printVerticalConsignmentTrip(t) TODRAW i
+;
+
+EXTEND DESIGN trip {
+
+    bottomContainer {
+        ADD i.box AFTER orderContainer {
+            caption = 'Накладные';
+        }
+    };
+}
+
+EXTEND FORM waybill
+    OBJECTS i=invoice
+    PROPERTIES (i) numberInvoice, seriesInvoice
+;
+

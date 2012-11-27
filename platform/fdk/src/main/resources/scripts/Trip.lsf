@@ -72,11 +72,12 @@ FORM waybill PRINT
     OBJECTS st=stock
     PROPERTIES(st) name, addressStock, nameLegalEntityStock
     FILTERS quantityTripStock(t, st)>0
+
 ;
 
 printWaybill 'Печать путевого листа' (trip) = ACTION (trip) {
     FORM waybill OBJECTS t = trip;
-} CONFIRM TOOLBAR;
+} TOOLBAR;
 
 
 FORM ordersTrip PRINT
@@ -97,11 +98,11 @@ FORM ordersTrip PRINT
 
 printOrdersTrip 'Печать заказов' (trip) = ACTION (trip) {
     FORM ordersTrip OBJECTS t = trip;
-} CONFIRM TOOLBAR;
+} TOOLBAR;
 
 FORM trip 'Рейс'
     OBJECTS t=trip FIXED PANEL
-    PROPERTIES (t) nameNumeratorObject, numberObject, seriesObject, dateTrip, timeTrip, nameDriverTrip, sidTruckTrip, nameMarkTruckTrip, trailerTruckTrip, weightTruckTrip, printWaybill
+    PROPERTIES (t) nameNumeratorObject, numberObject, seriesObject, dateTrip, timeTrip, nameDriverTrip, sidTruckTrip, nameMarkTruckTrip, trailerTruckTrip, weightTruckTrip
     PROPERTIES (t) READONLY grossWeightOrderedTrip, grossWeightShipmentedTrip
 
     OBJECTS o=order
@@ -125,9 +126,7 @@ FORM trip 'Рейс'
     PROPERTIES (t, s) inTripShipment
     PROPERTIES(s) READONLY numberShipment, seriesShipment, dateShipment, nameFromStockShipment, nameToStockShipment, grossWeightShipmentDetailShipment
     PROPERTIES (s) editShipment
-    //PROPERTIES(s) printConsignmentSimpleVertical, printConsignmentSimpleHorizontal, printConsignmentSimpleAttach,
-    //              printConsignmentVerticalA, printConsignmentHorizontalA, printConsignmentVerticalB,
-    //              printConsignmentHorizontalB, printConsignmentAttach, editConsignment
+
     FILTERS isPostedShipment(s)
 
     PROPERTIES createShipmentsTrip(t) TODRAW s FORCE PANEL
@@ -167,6 +166,7 @@ FORM trip 'Рейс'
     PROPERTIES(st) READONLY name, addressStock, nameLegalEntityStock
     PROPERTIES(st, t) numberStockTrip
     FILTERS quantityTripStock (t, st)>0
+    PROPERTIES (t) printWaybill TODRAW st
 
     EDIT trip OBJECT t
 ;
@@ -186,7 +186,7 @@ DESIGN trip FROM DEFAULT{
 
         NEW midContainer {
             caption = 'Параметры машины';
-            childConstraints = TO THE RIGHT;
+            childConstraints = TO THE RIGHTBOTTOM;
             ADD PROPERTY(nameDriverTrip);
             ADD PROPERTY(sidTruckTrip);
             ADD PROPERTY(nameMarkTruckTrip);
@@ -225,10 +225,11 @@ DESIGN trip FROM DEFAULT{
                 }
             }
 
-            ADD st.box;
+            ADD st.box {
+                caption = 'Путевой лист';
+            };
         }
 
-        ADD PROPERTY(printWaybill);
         ADD functions.box;
     }
 }

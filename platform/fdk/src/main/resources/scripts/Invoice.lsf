@@ -42,6 +42,12 @@ editInvoice 'Редактировать' = ABSTRACT ACTION (invoice) IMAGE 'edit
 createUserInvoiceOrder 'Создать накладную' = ABSTRACT ACTION (order);
 createUserInvoicePostedOrder 'Создать проведенную накладную' = ABSTRACT ACTION (order);
 
+orderInvoiceDetail = ABSTRACT order(invoiceDetail);
+
+quantityOrderInvoice (order, invoice) = GROUP SUM quantityInvoiceDetail(invoiceDetail)
+                                               BY orderInvoiceDetail(invoiceDetail),
+                                                  invoiceInvoiceDetail(invoiceDetail);
+
 //----------------------------------------------- Накладная ---------------------------------------------------//
 
 META defineInvoice(sign, stockProp)
@@ -155,6 +161,8 @@ META defineInvoice(sign, stockProp)
 
 //--  Связь с заказом
     orderInvoiceDetail = ABSTRACT order (invoiceDetail) PERSISTENT;
+    Invoice.orderInvoiceDetail (invoiceDetail) += orderInvoiceDetail(invoiceDetail);
+
     orderUserInvoiceDetail = DATA order(userInvoiceDetail);
     orderInvoiceDetail(invoiceDetail) += orderUserInvoiceDetail(invoiceDetail);
 
