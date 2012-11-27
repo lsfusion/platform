@@ -393,56 +393,6 @@ weightNumeratorItem (item) = weightNumeratorItemGroup(itemGroupItem(item));
 
 barcodeNumeratorSku(item) += IF isWeightItem(item) THEN weightNumeratorItem(item) ELSE pieceNumeratorItem(item);
 
-// ----------------------------------- Генерация графика --------------------------------------- //
-
-CLASS STATIC genType 'Тип генерации' {
-    genDays 'Генерация через N дней',
-    genNumber 'Генерация по числам',
-    genDayMonth 'Генерация по дням недели и месяца'
-};
-
-CLASS genTimeTable 'Генерация графика' : historyObject;
-TABLE genTimeTable(genTimeTable);
-
-//общие свойства
-genTimeTableType 'Тип генерации графика (ИД)' = DATA genType (genTimeTable);
-nameGenTimeTableType 'Тип генерации графика' (genTimeTable) = name(genTimeTableType(genTimeTable)) IN baseGroup;
-
-supplierGenTimeTable 'Поставщик (ИД)' = DATA supplier (genTimeTable) AUTOSET;
-nameSupplierGenTimeTable 'Поставщик' (genTimeTable) = name(supplierGenTimeTable(genTimeTable)) IN baseGroup;
-UNPSupplierGenTimeTable 'УНП поставщика' (genTimeTable) = UNPLegalEntity(supplierGenTimeTable(genTimeTable)) IN baseGroup;
-
-departmentStoreGenTimeTable 'Подразделение (ИД)' = DATA departmentStore (genTimeTable) AUTOSET;
-nameDepartmentStoreGenTimeTable 'Подразделение' (genTimeTable) = name(departmentStoreGenTimeTable(genTimeTable)) IN baseGroup;
-
-startDateGenTimeTable 'Дата начала' = DATA DATE (genTimeTable) IN baseGroup;
-endDateGenTimeTable 'Дата окончания' = DATA DATE (genTimeTable) IN baseGroup;
-
-dayBeforeGenTimeTable 'За сколько дней формировать заказ' = DATA INTEGER (genTimeTable);
-
-//свойства "Каждые N недель"
-periodGenTimeTable 'По прошествии скольки недель будет осуществится следующая поставка' = DATA INTEGER (genTimeTable);
-
-//свойства "Каждые N дней"
-dayAfterGenTimeTable 'Через сколько дней после последней поставки делать заказ' = DATA INTEGER (genTimeTable);
-dayLastOrderGenTimeTable 'Дата последнего заказа' = DATA DATE (genTimeTable);
-
-//свойства "По числам"
-stringNumberGenTimeTable 'Числа месяца поставок (указывать через запятую)' = DATA STRING[100] (genTimeTable);
-transferDayGenTimeTable 'День на который переносить поставки с Субботы и Воскресенья (ИД)' = DATA DOW (genTimeTable);
-nameTransferDayGenTimeTable 'День на который переносить поставки с Субботы и Воскресенья' (genTimeTable) = name(transferDayGenTimeTable(genTimeTable));
-CONSTRAINT transferDayGenTimeTable(genTimeTable) != DOW.friday AND transferDayGenTimeTable(genTimeTable) != DOW.monday CHECKED MESSAGE 'Выберите день с ПН по ПТ';
-
-//свойства "По дням недели и месяца"
-inMonthGenTimeTable 'Включать' = DATA BOOLEAN (genTimeTable, month);
-inDayGenTimeTable 'Включать' = DATA BOOLEAN (genTimeTable, DOW);
-inAllMonthGenTable 'Включить все месяцы' = DATA BOOLEAN (genTimeTable);
-inMonthGenTimeTable(genTimeTable, month) <- inAllMonthGenTable(genTimeTable) WHEN ASSIGNED(inAllMonthGenTable(genTimeTable) AND month IS month);
-
-toShowGenDay (genTimeTable) = genTimeTableType(genTimeTable) == genType.genDays;
-toShowGenNumber (genTimeTable) = genTimeTableType(genTimeTable) == genType.genNumber;
-toShowGenDayMonth (genTimeTable) = genTimeTableType(genTimeTable) == genType.genDayMonth;
-
 //------------------------------------ Товар с историей -------------------------------------------------------------//
 GROUP historyGroup 'Изменяемые характеристики' : baseGroup;
 
@@ -2746,20 +2696,6 @@ DESIGN naturalLosses FROM DEFAULT {
 
 //--------------------------------------Заказ------------------------------------------------------------------//
 
-GROUP orderSupplierGroup 'Информация о заказе' : publicGroup;
-GROUP dateOrderSupplierGroup 'Даты' : publicGroup;
-
-CLASS preliminaryOrder 'Предварительный заказ' : historyObject;
-TABLE preliminaryOrder (preliminaryOrder);
-
-dateOrderPreliminaryOrder 'Дата заказа' = DATA DATE (preliminaryOrder) IN baseGroup;
-dateSupplyPreliminaryOrder 'Дата поставки' = DATA DATE (preliminaryOrder) IN baseGroup;
-departmentStorePreliminaryOrder 'Отдел заказа (ИД)' = DATA departmentStore (preliminaryOrder) AUTOSET;
-nameDepartmentStorePreliminaryOrder 'Отдел заказа' (preliminaryOrder) = name(departmentStorePreliminaryOrder(preliminaryOrder)) IN orderSupplierGroup AUTOSET;
-supplierPreliminaryOrder 'Поставщик заказа (ИД)' = DATA supplier (preliminaryOrder);
-nameSupplierPreliminaryOrder 'Поставщик заказа' (preliminaryOrder) = name(supplierPreliminaryOrder(preliminaryOrder));
-genTimeTablePreliminaryOrder 'График поставок'  = DATA genTimeTable (preliminaryOrder);
-
 TABLE supplierDepartmentStoreDate (supplier, departmentStore, DATE);
 
 @defineHistorizable(timeTable, 'Поставка', BOOLEAN, supplier, name, departmentStore, name, baseGroup);
@@ -2790,22 +2726,14 @@ nameSupplierOrderSupplier 'Поставщик заказа' (orderSupplier) = na
 UNPSupplierOrderSupplier 'УНП поставщика' (orderSupplier) = UNPLegalEntity(supplierOrderSupplier(orderSupplier)) IN documentPrmGroup;
 emailSupplierOrderSupplier 'E-mail поставщика' (orderSupplier) = emailLegalEntity(supplierOrderSupplier(orderSupplier)) IN documentPrmGroup;
 
+GROUP dateOrderSupplierGroup 'Даты' : publicGroup;
+
 curDateOrderSupplier 'Дата заказа' = DATA DATE (orderSupplier) IN dateOrderSupplierGroup;
 curDateOrderSupplier (orderSupplier) <- currentDate() WHEN ASSIGNED(departmentStoreOrderSupplier(orderSupplier));
 dateOrderSupplier 'Дата поставки' = DATA DATE (orderSupplier) IN dateOrderSupplierGroup;
 dateOrderSupplier (orderSupplier) <- sumDate(currentDate(),1) WHEN ASSIGNED(departmentStoreOrderSupplier(orderSupplier));
 
-preliminaryOrderOrderSupplier 'Предварительный заказ заказа' = DATA preliminaryOrder (orderSupplier);
-
-preliminaryOrderToOrderSupplier 'Заказ по предварительному заказу' (preliminaryOrder) = GROUP UNIQUE orderSupplier BY preliminaryOrderOrderSupplier(orderSupplier);
-dataOrderPreliminaryOrder 'Номер заказа для предварительного заказа' (preliminaryOrder) = seriesNumberObject(preliminaryOrderToOrderSupplier(preliminaryOrder));
-
-preliminaryOrderDateFromToDepartmentStoreSupplier (date1, date2, departmentStore, supplier) = GROUP UNIQUE preliminaryOrder
-                                                                   BY dateOrderPreliminaryOrder(preliminaryOrder),
-                                                                      dateSupplyPreliminaryOrder(preliminaryOrder),
-                                                                      departmentStorePreliminaryOrder(preliminaryOrder),
-                                                                      supplierPreliminaryOrder(preliminaryOrder);
-
+GROUP orderSupplierGroup 'Информация о заказе' : publicGroup;
 completePercentageOrderSupplier 'Процент выполнения' (orderSupplier) = DATA NUMERIC[8,3] (orderSupplier) IN orderSupplierGroup;
 allowablePercentOrderSupplier 'Допустимый % изменения цен 1го поставщика' = DATA INTEGER (orderSupplier) IN documentPrmGroup;
 
@@ -2915,30 +2843,8 @@ quantityOrderOrderSupplier 'Заказов на дату заказа' (supplier
 quantitySupplyOrderSupplier 'Заказов на дату поставки' (supplier, departmentStore, date) =
     GROUP SUM 1 IF orderSupplier BY supplierOrderSupplier(orderSupplier), departmentStoreOrderSupplier(orderSupplier),
                                     dateOrderSupplier(orderSupplier);
-quantityOrderPreliminaryOrder 'Предварительных заказов на дату заказа' (supplier, departmentStore, date) =
-    GROUP SUM 1 IF preliminaryOrder BY supplierPreliminaryOrder(preliminaryOrder), departmentStorePreliminaryOrder(preliminaryOrder),
-                                       dateOrderPreliminaryOrder(preliminaryOrder);
-quantitySupplyPreliminaryOrder 'Предварительных заказов на дату поставки' (supplier, departmentStore, date) =
-    GROUP SUM 1 IF preliminaryOrder BY supplierPreliminaryOrder(preliminaryOrder), departmentStorePreliminaryOrder(preliminaryOrder),
-                                       dateSupplyPreliminaryOrder(preliminaryOrder);
-nextDateOrder 'Дата следующей поставки' (preliminaryOrder) =
-    PARTITION PREV dateSupplyPreliminaryOrder(preliminaryOrder)
-    BY supplierPreliminaryOrder(preliminaryOrder), departmentStorePreliminaryOrder(preliminaryOrder)
-    ORDER DESC dateSupplyPreliminaryOrder(preliminaryOrder);
-
-minDateSupplyOrderSupplier (supplier, departmentStore, date) = GROUP MIN dateSupplyPreliminaryOrder(preliminaryOrder)
-                                                                         IF dateSupplyPreliminaryOrder(preliminaryOrder) > (date AS DATE)
-                                                                         BY supplierPreliminaryOrder(preliminaryOrder), departmentStorePreliminaryOrder(preliminaryOrder), date;
 
 nextDateOrderSupplier 'Дата следующей поставки' (orderSupplier) = DATA DATE (orderSupplier) IN dateOrderSupplierGroup;
-nextDateOrderSupplier (orderSupplier) <- [UNION OVERRIDE sumDate(dateOrderSupplier(orderSupplier),
-                                                                  periodicitySupply(supplierOrderSupplier(orderSupplier))),
-                                                         minDateSupplyOrderSupplier(
-                                                                  supplierOrderSupplier(orderSupplier),
-                                                                  departmentStoreOrderSupplier(orderSupplier),
-                                                                  dateOrderSupplier(orderSupplier))] (orderSupplier)
-                                         WHEN ASSIGNED(supplierOrderSupplier(orderSupplier));
-
 quantityDaysAfterNextOrder 'Дней до следующей поставки' (orderSupplier) =
     daysInclBetweenDates(curDateOrderSupplier(orderSupplier), nextDateOrderSupplier(orderSupplier)) IN dateOrderSupplierGroup;
 
@@ -2967,33 +2873,8 @@ isBanSupplierItemDepartmentOrderSupplier (orderSupplier, item) = banSupplierItem
 isSupplierItemDepartmentOrderSupplier (orderSupplier, item) = isSupplierItemDepartmentDate(
     supplierOrderSupplier(orderSupplier), item, departmentStoreOrderSupplier(orderSupplier), dateOrderSupplier(orderSupplier)) == yesNo.yes;
 
-isSupplyDatePreliminaryOrder (preliminaryOrder, date) = dateSupplyPreliminaryOrder(preliminaryOrder) >= (date AS DATE) ;
-isOrderDatePreliminaryOrder (preliminaryOrder, date) = dateOrderPreliminaryOrder(preliminaryOrder) >= (date AS DATE) ;
-inSupplyIntervalPreliminaryOrder (preliminaryOrder, date1, date2) =
-    dateSupplyPreliminaryOrder(preliminaryOrder) >= (date1 AS DATE) AND
-    dateSupplyPreliminaryOrder(preliminaryOrder) <= (date2 AS DATE);
-
-isDepartmentPreliminaryOrder (preliminaryOrder, departmentStore) =
-   departmentStorePreliminaryOrder(preliminaryOrder) == departmentStore AS departmentStore;
-
-dateLastPreliminaryOrder 'Дата последнего заказа' (departmentStore, supplier, date) =
-    GROUP MAX dateOrderPreliminaryOrder(preliminaryOrder)
-              AND dateOrderPreliminaryOrder(preliminaryOrder) < (date AS DATE)
-              AND preliminaryOrderToOrderSupplier(preliminaryOrder)
-          BY departmentStorePreliminaryOrder(preliminaryOrder), supplierPreliminaryOrder(preliminaryOrder), date;
-
-dayLastOrderGenTimeTable (genTimeTable) <- dateLastPreliminaryOrder(departmentStoreGenTimeTable(genTimeTable),
-                                                                    supplierGenTimeTable(genTimeTable),
-                                                                    startDateGenTimeTable(genTimeTable))
-                                           WHEN CHANGED(startDateGenTimeTable(genTimeTable));
-
-CONSTRAINT startDateGenTimeTable(genTimeTable) > endDateGenTimeTable(genTimeTable)
-    MESSAGE 'Некорректно заданный интервал';
-
 inDateMonth (date1, date2, month) = numberMonth(month AS month) >= numberMonthInDate(date1 AS DATE) AND
                                     numberMonth(month AS month) <= numberMonthInDate(date2 AS DATE);
-inDateMonthGTT(genTimeTable, month) = inDateMonth(startDateGenTimeTable(genTimeTable),
-                                                  endDateGenTimeTable(genTimeTable), month);
 
 inShipmentOrder 'Поставка по заказу' (shipment, orderSupplier) = DATA BOOLEAN (shipment, orderSupplier)
     IN idGroup MINCHARWIDTH 10 PREFCHARWIDTH 10;
@@ -3108,156 +2989,6 @@ toFillShipmentDetailsShipment 'Заполнить поставку из зака
     };
 } IN shipmentOrderGroup CONFIRM;
 
-FORM genTimeTable 'Генерация графика'
-OBJECTS g=genTimeTable FIXED PANEL, m=month, d=DOW
-PROPERTIES(g) READONLY nameUserCreated, timeCreated
-PROPERTIES(g) nameGenTimeTableType, nameDepartmentStoreGenTimeTable, nameSupplierGenTimeTable, UNPSupplierGenTimeTable, startDateGenTimeTable,
-              endDateGenTimeTable, dayBeforeGenTimeTable, periodGenTimeTable SHOWIF toShowGenDayMonth(g),
-              dayAfterGenTimeTable SHOWIF toShowGenDay(g), inAllMonthGenTable SHOWIF toShowGenDayMonth(g),
-              stringNumberGenTimeTable SHOWIF toShowGenNumber(g), nameTransferDayGenTimeTable SHOWIF toShowGenNumber(g),
-              dayLastOrderGenTimeTable SHOWIF toShowGenDay(g)
-PROPERTIES(m) READONLY name SHOWIF toShowGenDayMonth(g)
-PROPERTIES(d) READONLY name SHOWIF toShowGenDayMonth(g)
-PROPERTIES(g, m) inMonthGenTimeTable SHOWIF toShowGenDayMonth(g)
-PROPERTIES(g, d) inDayGenTimeTable SHOWIF toShowGenDayMonth(g)
-FILTERS inDateMonthGTT(g, m)
-EDIT genTimeTable OBJECT g;
-
-DESIGN genTimeTable FROM DEFAULT {
-    g.panel {
-        fillVertical = 0.5;
-        preferredSize = (1280, 1024);
-    }
-    ADD g.historyGroup BEFORE functions.box;
-}
-
-dialogGenTimeTable 'Показать генерацию графика' (genTimeTable) = ACTION FORM genTimeTable OBJECTS g MODAL;
-
-FORM genTimeTables 'Графики' //служит для добавления сущности "генерации графиков" и в дальнейшем будет удалена
-OBJECTS g=genTimeTable
-PROPERTIES(g) READONLY name
-PROPERTIES(g) ADDFORM, EDITFORM, delete;
-
-FORM preliminaryOrder 'Предварительный заказ'
-OBJECTS p=preliminaryOrder FIXED PANEL
-PROPERTIES(p) nameDepartmentStorePreliminaryOrder, nameSupplierPreliminaryOrder, dateOrderPreliminaryOrder,
-              dateSupplyPreliminaryOrder
-EDIT preliminaryOrder OBJECT p;
-
-DESIGN preliminaryOrder FROM DEFAULT {
-    p.box{
-        title = 'Предварительный заказ';
-        childConstraints = TO THE BOTTOM;
-        ADD PROPERTY (nameDepartmentStorePreliminaryOrder);
-        ADD PROPERTY (nameSupplierPreliminaryOrder);
-        ADD PROPERTY (dateOrderPreliminaryOrder);
-        ADD PROPERTY (dateSupplyPreliminaryOrder);
-    }
-}
-
-tmpGTT = SESSION DATA genTimeTable();
-tmpDate = SESSION DATA DATE();
-tmpDateP = SESSION DATA DATE();
-tmpDateS = SESSION DATA DATE();
-
-
-createGenTimeTable 'Создать график поставок' = ACTION (departmentStore, supplier) NEWSESSION {
-
-    ADDOBJ genTimeTable;
-    FOR gt == addedObject() DO {
-        SET departmentStoreGenTimeTable(gt) <- departmentStore AS departmentStore;
-        SET supplierGenTimeTable(gt) <- supplier AS supplier;
-        SET startDateGenTimeTable(gt) <- currentDate();
-        SET endDateGenTimeTable(gt) <- sumDate(currentDate(), 30);
-        SET dayBeforeGenTimeTable(gt) <- 1;
-        SET periodGenTimeTable(gt) <- 0;
-        SET dayAfterGenTimeTable(gt) <- 1;
-        SET inAllMonthGenTable(gt) <- TRUE;
-        //SET dayLastOrderGenTimeTable(gt) <- dateLastPreliminaryOrder(departmentStore, supplier, startDateGenTimeTable(gt));
-        FORM genTimeTable OBJECTS g = (gt AS genTimeTable) MODAL;
-    }
-
-    IF formResult() == formResult.ok THEN {
-
-        SET tmpGTT() <- chosenObject('g');
-
-        // генерация через N дней
-        IF genTimeTableType(tmpGTT()) == genType.genDays THEN {
-            SET tmpDate() <- dayLastOrderGenTimeTable(tmpGTT());
-            // итерируемся по всем датам через n дней
-            WHILE tmpDate() <= endDateGenTimeTable(tmpGTT()) DO {
-                IF tmpDate() >= startDateGenTimeTable(tmpGTT()) THEN {
-                    ADDOBJ preliminaryOrder;
-                    FOR o == addedObject() DO {
-                        SET departmentStorePreliminaryOrder(o) <- departmentStoreGenTimeTable(tmpGTT());
-                        SET supplierPreliminaryOrder(o) <- supplierGenTimeTable(tmpGTT());
-                        SET dateOrderPreliminaryOrder(o) <- subtractDate(tmpDate(), dayBeforeGenTimeTable(tmpGTT()));
-                        SET dateSupplyPreliminaryOrder(o) <- tmpDate();
-                        SET genTimeTablePreliminaryOrder(o) <- tmpGTT();
-                    };
-                };
-                SET tmpDate() <- sumDate(tmpDate(), dayAfterGenTimeTable(tmpGTT()));
-            };
-        };
-
-        // генерация по числам
-        IF genTimeTableType(tmpGTT()) == genType.genNumber THEN {
-            SET tmpDate() <- startDateGenTimeTable(tmpGTT());
-            // итерируемся по всем датам через 1 день
-            WHILE tmpDate() <= endDateGenTimeTable(tmpGTT()) DO {
-                IF isWordInCSV(dayInDate(tmpDate()), stringNumberGenTimeTable(tmpGTT())) == 1 THEN {
-                    ADDOBJ preliminaryOrder;
-                    FOR o == addedObject() DO {
-                        SET departmentStorePreliminaryOrder(o) <- departmentStoreGenTimeTable(tmpGTT());
-                        SET supplierPreliminaryOrder(o) <- supplierGenTimeTable(tmpGTT());
-                        SET tmpDateS() <- tmpDate();
-                        SET genTimeTablePreliminaryOrder(o) <- tmpGTT();
-                        // если попали на субботу или воскресенье
-                        IF UNION OVERRIDE numberDOWInDate(tmpDateS()) == 0, numberDOWInDate(tmpDateS()) == 6 THEN {
-                            IF numberDOW(transferDayGenTimeTable(tmpGTT())) == 1 THEN {
-                                // если нужно переносить на понедельник, то добавляем
-                                WHILE numberDOWInDate(tmpDateS()) != 1 DO SET tmpDateS() <- sumDate(tmpDateS(), 1);
-                            } ELSE {
-                                // если нужно переносить на пятницу, то отнимаем
-                                WHILE numberDOWInDate(tmpDateS()) != 5 DO SET tmpDateS() <- subtractDate(tmpDateS(), 1);
-                            };
-                        };
-                        SET dateSupplyPreliminaryOrder(o) <- tmpDateS();
-                        SET dateOrderPreliminaryOrder(o) <- subtractDate(tmpDateS(), dayBeforeGenTimeTable(tmpGTT()));
-                    };
-                };
-                SET tmpDate() <- sumDate(tmpDate(), 1);
-            };
-        };
-
-        // генерация по дням и месяцам
-        IF genTimeTableType(tmpGTT()) == genType.genDayMonth THEN {
-            SET tmpDate() <- startDateGenTimeTable(tmpGTT());
-            // итерируемся по всем датам через 1 день
-            WHILE tmpDate() <= endDateGenTimeTable(tmpGTT()) DO {
-                SET tmpDateP() <- tmpDate();
-                WHILE tmpDate() < sumDate(tmpDateP(), 7) AND tmpDate() <= endDateGenTimeTable(tmpGTT()) DO {
-                    IF inMonthGenTimeTable(tmpGTT(), monthInDate(tmpDate())) AND inDayGenTimeTable(tmpGTT(), DOWInDate(tmpDate())) THEN {
-                        ADDOBJ preliminaryOrder;
-                        FOR o == addedObject() DO {
-                            SET departmentStorePreliminaryOrder(o) <- departmentStoreGenTimeTable(tmpGTT());
-                            SET supplierPreliminaryOrder(o) <- supplierGenTimeTable(tmpGTT());
-                            SET dateOrderPreliminaryOrder(o) <- subtractDate(tmpDate(), dayBeforeGenTimeTable(tmpGTT()));
-                            SET dateSupplyPreliminaryOrder(o) <- tmpDate();
-                            SET genTimeTablePreliminaryOrder(o) <- tmpGTT();
-                        };
-                    };
-                    SET tmpDate() <- sumDate(tmpDate(), 1);
-                };
-                SET tmpDate() <- sumDate(tmpDate(), periodGenTimeTable(tmpGTT()) * 7);
-            };
-        };
-
-        EXEC apply();
-    };
-};
-//nextDateOrderSupplier (orderSupplier) <- nextDateOrder(preliminaryOrderOrderSupplier(orderSupplier)) WHEN ASSIGNED(orderSupplier);
-
 // todo : здесь вообще-то нужно заполнять только ассортиментом данного поставщика, а не всем подряд как сейчас
 fillInOrderSupplier 'Заполнить заказ рекомендованным количеством' = ACTION (orderSupplier) {
     FOR recommendCountOrderSupplier(orderSupplier, item AS item) AND isSupplierItemDepartmentOrderSupplier(orderSupplier, item AS item)
@@ -3265,33 +2996,6 @@ fillInOrderSupplier 'Заполнить заказ рекомендованны�
         SET packQuantityItemOrderSupplier(orderSupplier, item) <- recommendCountOrderSupplier(orderSupplier, item AS item) ;
     };
 };
-
-//addOrderSupplier 'Создать заказ' = ACTION () NEWSESSION {
-//    ADDOBJ orderSupplier;
-//    FOR os == addedObject() DO {
-//        SET curDateOrderSupplier(os) <- currentDate();
-//        FORM orderSupplier OBJECTS o = os AS orderSupplier MODAL;
-//        IF formResult() == formResult.ok THEN {
-//            EXEC apply();
-//        }
-//    }
-//} TOOLBAR;
-
-
-createOrderSupplier 'Создать заказ' = [ACTION (preliminaryOrder) {
-    ADDOBJ orderSupplier;
-    FOR o == addedObject() DO {
-        SET dateOrderSupplier(o) <- dateSupplyPreliminaryOrder(preliminaryOrder);
-        SET curDateOrderSupplier(o) <- dateOrderPreliminaryOrder(preliminaryOrder);
-        SET departmentStoreOrderSupplier(o) <- departmentStorePreliminaryOrder(preliminaryOrder);
-        SET supplierOrderSupplier(o) <- supplierPreliminaryOrder(preliminaryOrder);
-        SET allowablePercentOrderSupplier(o) <- allowablePercentSupplier(supplierPreliminaryOrder(preliminaryOrder));
-        SET preliminaryOrderOrderSupplier(o) <- preliminaryOrder AS preliminaryOrder;
-        SET nextDateOrderSupplier(o) <- nextDateOrder(preliminaryOrder);
-        EXEC fillInOrderSupplier(o AS orderSupplier);
-    }
-    EXEC apply();
-}] (preliminaryOrder) AND NOT preliminaryOrderToOrderSupplier(preliminaryOrder) CONFIRM;
 
 FORM orderSupplier 'Заказ поставщику'
 
@@ -3512,118 +3216,6 @@ DESIGN orderSuppliers FROM DEFAULT{
     ADD o.printGroup;
     ADD o.emailGroup;
     POSITION o.emailGroup TO THE RIGHT o.printGroup;
-
-    ADD functions.box;
-}
-
-// ----------------------------------- Разрешать поставки ------------------------------------------- //
-
-isOrderDate (date, preliminaryOrder) = dateOrderPreliminaryOrder(preliminaryOrder) == date AS DATE;
-isSupplyDate (date, preliminaryOrder) = dateSupplyPreliminaryOrder(preliminaryOrder) == date AS DATE;
-isSupplierDepartmentStore (departmentStore, supplier, preliminaryOrder) =
-    departmentStorePreliminaryOrder(preliminaryOrder) == departmentStore AND supplierPreliminaryOrder(preliminaryOrder) ==supplier;
-
-dialogGenTimeTablePreliminaryOrder 'Показать генерацию графика' (preliminaryOrder) = dialogGenTimeTable(genTimeTablePreliminaryOrder(preliminaryOrder));
-
-FORM timeTableDate 'График поставок'
-
-    OBJECTS t=DATE FIXED PANEL
-    PROPERTIES(t) OBJVALUE
-
-    OBJECTS d=departmentStore FIXED PANEL
-    PROPERTIES name(d) SELECTOR
-
-    OBJECTS s=supplier
-    PROPERTIES(s) READONLY name
-
-    PROPERTIES createGenTimeTable(d, s) FORCE PANEL
-
-    OBJECTS p=preliminaryOrder
-    PROPERTIES(p) dialogGenTimeTablePreliminaryOrder
-    PROPERTIES(p) READONLY dateOrderPreliminaryOrder, dateSupplyPreliminaryOrder, dataOrderPreliminaryOrder
-    PROPERTIES(p) nextDateOrder, createOrderSupplier
-    PROPERTIES(p) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
-    PROPERTIES(s, d, t) READONLY quantityOrderOrderSupplier, quantitySupplyOrderSupplier, quantityOrderPreliminaryOrder, quantitySupplyPreliminaryOrder
-
-    FILTERS isSupplierDepartmentStore(d, s, p)
-    FILTERGROUP filters
-        FILTER 'С предварительным заказом на дату заказа' 'F10' quantityOrderPreliminaryOrder(s, d, t)
-        FILTER 'С предварительным заказом на дату поставки' 'F10' quantitySupplyPreliminaryOrder(s, d, t)
-        FILTER 'С заказом на дату заказа' 'F10' quantityOrderOrderSupplier(s, d, t)
-        FILTER 'С заказом на дату поставки' 'F10' quantitySupplyOrderSupplier(s, d, t)
-    FILTERGROUP filters2
-        FILTER 'Заказы после даты заказа' 'F10' isOrderDatePreliminaryOrder(p, t) DEFAULT
-        FILTER 'Заказы после даты поставки' 'F10' isSupplyDatePreliminaryOrder(p, t)
-        FILTER 'Заказы на дату заказа' 'F10' isOrderDate(t, p)
-        FILTER 'Заказы на дату поставки' 'F10' isSupplyDate(t, p)
-
-    ORDER BY dateOrderPreliminaryOrder
-;
-
-DESIGN timeTableDate FROM DEFAULT {
-
-    NEW topContainer{
-
-        type = SPLITH;
-        childConstraints = TO THE RIGHT;
-
-        ADD s.box{
-            fillHorizontal = 3;
-        }
-        ADD p.box{
-            fillHorizontal = 2;
-        }
-    }
-
-    ADD PROPERTY(createGenTimeTable) IN d.panel;
-    PROPERTY (delete(p)) {
-        askConfirm = TRUE;
-    }
-
-    ADD functions.box;
-}
-
-FORM printTimeTable 'Печать графика поставок по датам'
-
-    OBJECTS interval = (dFrom = DATE, dTo = DATE) FIXED PANEL
-    PROPERTIES objFrom = OBJVALUE(dFrom), objTo = OBJVALUE(dTo)
-
-    OBJECTS d=departmentStore FIXED PANEL
-    PROPERTIES name(d) SELECTOR
-
-    OBJECTS p=preliminaryOrder
-    PROPERTIES(p) dialogGenTimeTablePreliminaryOrder
-    PROPERTIES(p) READONLY dateOrderPreliminaryOrder, dateSupplyPreliminaryOrder, dataOrderPreliminaryOrder,
-                           nameSupplierPreliminaryOrder, nextDateOrder
-    PROPERTIES(p) createOrderSupplier
-    PROPERTIES(p) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
-
-    FILTERS inSupplyIntervalPreliminaryOrder(p, dFrom, dTo)
-    FILTERS isDepartmentPreliminaryOrder(p, d)
-
-    ORDER BY dateSupplyPreliminaryOrder
-;
-
-DESIGN printTimeTable FROM DEFAULT {
-
-    ADD interval.box BEFORE d.box{
-        caption = 'Период';
-        childConstraints = TO THE RIGHT;
-        PROPERTY(objFrom) {
-            caption = 'Дата (с)';
-        }
-        PROPERTY(objTo) {
-            caption = 'Дата (по)';
-        }
-    }
-    ADD d.box BEFORE p.box;
-
-    ADD p.box;
-
-    PROPERTY (delete(p)) {
-        askConfirm = TRUE;
-    }
-    POSITION d.box TO THE BOTTOM interval.box;
 
     ADD functions.box;
 }
@@ -6390,8 +5982,6 @@ NAVIGATOR {
     NEW retail 'Розничная торговля' TO formsToolbar {
         NEW orders 'Заказы' {
             ADD isSupplierItemDepartmentStore;
-            ADD timeTableDate;
-            ADD printTimeTable;
             ADD orderSuppliers;
         }
         NEW incomeShipments 'Поставки' {
