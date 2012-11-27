@@ -22,7 +22,6 @@ shipmentPriceUserInvoiceDetail(detail) <- calcShipmentPriceUserInvoiceDetail(det
 
 @implementBatch(shipment, sku, customerStock, price);
 quantityBatch (ledger) += quantityShipmentDetail(ledger);
-//supplierBatch (ledger) += supplierShipmentDetail(ledger);
 sumInSkuLedger (ledger) += sumShipmentDetail(ledger);
 
 // Проводим по регистру учетных цен

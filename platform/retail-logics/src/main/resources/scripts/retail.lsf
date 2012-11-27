@@ -303,36 +303,6 @@ FORM statisticGroupDialog 'Статистические группы'
     DIALOG statisticGroup OBJECT g
 ;
 
-//------------------------------- Строки 1-торг ------------------------------------//
-CLASS rowTorg1 'Строка формы 1-торг' : named;
-TABLE rowTorg1(rowTorg1);
-
-FORM rowTorg1 'Строка формы 1-торг'
-OBJECTS r=rowTorg1 FIXED PANEL
-PROPERTIES(r) name;
-
-//---------------------------------- Норма отходов ------------------------------------//
-CLASS rateWaste 'Норма отходов' : named, externalObject;
-TABLE rateWaste(rateWaste);
-
-percentRateWaste 'Норма,%' = DATA NUMERIC[10,3] (rateWaste) IN baseGroup;
-
-FORM rateWaste 'Норма отходов'
-OBJECTS r=rateWaste FIXED PANEL
-PROPERTIES(r) name, percentRateWaste;
-
-// ----------------------------------- Отдел магазина (Подразделение) ----------------------------------- //
-
-GROUP printDepartmentStoreGroup 'Печать' : publicGroup;
-
-wastageCommitteeDepartmentStore 'Комиссия для списания отходов (ИД)' = DATA wastageCommittee (departmentStore);
-nameWastageCommitteeDepartmentStore 'Комиссия для реестра' (departmentStore) = name(wastageCommitteeDepartmentStore(departmentStore)) IN printDepartmentStoreGroup;
-isWastageCommitteeDepartmentStore 'По умолчанию' (wastageCommittee, departmentStore) = wastageCommitteeDepartmentStore(departmentStore) == wastageCommittee;
-CONSTRAINT wastageCommitteeDepartmentStore(departmentStore) AND NOT inCommitteeEmployeeDivision(wastageCommitteeDepartmentStore(departmentStore), departmentStore)
-    CHECKED BY wastageCommitteeDepartmentStore MESSAGE 'Для отдела выбрана комиссия, которая для него не действует';
-
-EXTEND FORM departmentStore PROPERTIES nameWastageCommitteeDepartmentStore(d);
-
 // ----------------------------------- Товар ------------------------------------------ //
 GROUP rateGroup 'Нормы' : publicGroup;
 GROUP retailGroup 'Ценообразование' : publicGroup;
@@ -356,10 +326,6 @@ CLASS STATIC groupProduct 'Группа изделий для печати за�
 tmpSku() = SESSION DATA sku ();
 
 //-----------------------------------------------------------------------------------------------//
-
-rateWasteItem = DATA rateWaste(item) IN idGroup;
-nameRateWasteItem 'Норма отходов' = name(rateWasteItem(item)) IN rateGroup;
-percentRateWasteItem 'Норма отходов,%' = percentRateWaste(rateWasteItem(item)) IN rateGroup;
 
 isManufacturedItem 'Товар производится' = DATA BOOLEAN (item) IN manufactoryGroup;
 hintItem 'Подсказка по товару' = DATA STRING[200] (item) IN documentGroup;
@@ -437,11 +403,8 @@ controlExpiryItem 'Контролировать сроки годности то
 daysExpiryItem 'Срок годности в днях' = DATA NUMERIC[8,2] (item) IN expiryGroup;
 daysExpiryPackItem 'Срок годности в днях с момента фасовки' = DATA NUMERIC[8,2] (item) IN expiryGroup;
 hoursExpiryPackItem 'Срок годности в часах с момента фасовки' = DATA INTEGER (item) IN expiryGroup;
-//rowTorg1Item 'Строка формы 1-торг (ИД)' = DATA rowTorg1(item) IN idGroup;
 
 // ----------------------------------- Штрих код ------------------------------------------ //
-
-hasParentItemGroupBarcode (itemGroup, barcode) = isParentItemGroupItem(itemGroup, skuBarcode(barcode));
 
 daysExpiryBarcode 'Срок годности в днях' = daysExpiryPackItem(skuBarcode(barcode));
 hoursExpiryBarcode 'Срок годности в часах' = hoursExpiryPackItem(skuBarcode(barcode));
@@ -771,7 +734,7 @@ EXTEND FORM item
                   normOutItem SHOWIF isManufacturedItem(i), nameGroupMenuItem SHOWIF isManufacturedItem(i),
                   isCutedItem SHOWIF isManufacturedItem(i), coefficientNetGrossItem SHOWIF isManufacturedItem(i), dialogCoefficientNetGrossItem,
 
-                  nameRateWasteItem, percentRateWasteItem, nameGroupNaturalLossItem, rateGroupNaturalLossItem, nameStatisticGroupSku,
+                  nameGroupNaturalLossItem, rateGroupNaturalLossItem, nameStatisticGroupSku,
 
                   lengthPackItem, widthPackItem, heightPackItem,
 
@@ -901,32 +864,6 @@ EXTEND DESIGN item {
     }
 }
 
-FORM barcodeForm 'Товары по Ш-К'
-    TREE treeGroup g=itemGroup PARENT parentItemGroup
-    PROPERTIES READONLY name(g)
-    ORDER BY name
-
-    OBJECTS b=barcode
-    PROPERTIES(b) READONLY idBarcode, nameSkuBarcode, shortNameUOMBarcode
-    PROPERTIES(b) ADDFORM, EDITFORM, delete
-    FILTERS hasParentItemGroupBarcode(g, b)
-    ORDER BY nameSkuBarcode
-
-    DIALOG barcode OBJECT b
-;
-
-DESIGN barcodeForm FROM DEFAULT {
-    POSITION treeGroup.tree.box TO THE LEFT b.box;
-
-    treeGroup.tree {
-        fillHorizontal = 0.4;
-    }
-
-    b.grid {
-        defaultComponent = TRUE;
-    }
-}
-
 // ----------------------------------- Комиссии ---------------------------------------------------------- //
 
 CLASS inventoryCommittee 'Комиссия для инвентаризации' : committee;
@@ -990,69 +927,6 @@ FORM inventoryCommittees 'Комиссии для инвентаризации'
     PROPERTIES(ic)      ADDFORM, EDITFORM
 
     DIALOG inventoryCommittee OBJECT ic
-;
-
-CLASS wastageCommittee 'Комиссия для списания отходов' : committee;
-
-FORM wastageCommittee 'Комиссия для списания отходов'
-    OBJECTS c=wastageCommittee FIXED PANEL
-    PROPERTIES(c)      name//, nameChairmanCommittee
-
-    TREE treeStore a=STRING[3], t=chainStores, st=storeType, s=store
-    PROPERTIES         READONLY OBJVALUE(a), name(t), name(st), name(s)
-    FILTERS            stringEqualsAll(a), inChainStoresStoreType (t, st), inStoreTypeStore(st, s)
-
-    OBJECTS dep=departmentStore
-    PROPERTIES(dep)    READONLY depName = name
-    PROPERTIES(c, dep) inCommitteeEmployeeDivision, isWastageCommitteeDepartmentStore
-    FILTERS            inChainStoresStoreTypeStoreDepartment(t, st, s, dep)
-    ORDER BY depName
-
-
-    OBJECTS e=employee
-    PROPERTIES(e)      READONLY name, userFirstName, userLastName, namePositionEmployee
-    PROPERTIES(e)      ADDSESSIONFORM, EDITSESSIONFORM, delete
-
-    PROPERTIES(c, e)   inCommitteeEmployee
-    FILTERS            countDivisionEmployeeCommittee (e, c)
-    FILTERGROUP filters6
-        FILTER 'Показывать только членов комиссии' 'F10' inCommitteeEmployee(c, e)
-
-    FILTERGROUP filters5
-        FILTER 'Показывать отделы только для данной комиссии' 'F9' inCommitteeEmployeeDivision(c, dep)
-
-    EDIT wastageCommittee OBJECT c
-;
-
-DESIGN wastageCommittee FROM DEFAULT {
-    main {
-        preferredSize = (1024, 768);
-
-//        NEW OneCase BEFORE e.box {
-//            ADD PROPERTY (nameChairmanCommittee);
-//        }
-
-        NEW caseOne BEFORE e.box {
-            childConstraints = TO THE RIGHT;
-            title = 'Отделы, для которых действуют комиссии';
-
-            ADD treeStore.tree {
-                fillHorizontal = 1;
-            }
-
-            ADD dep.box {
-                fillHorizontal = 2;
-            }
-        };
-    }
-}
-
-FORM wastageCommitteeDialog 'Комиссии для списания отходов'
-    OBJECTS wc=wastageCommittee
-    PROPERTIES(wc)      READONLY name, nameEmployeeDivisionCommittee, nameEmployeeCommittee
-    PROPERTIES(wc)      ADDFORM, EDITFORM
-
-    DIALOG wastageCommittee OBJECT wc
 ;
 
 //---------------------------- Рецепты блюд ----------------------------------------//
@@ -2117,81 +1991,6 @@ nameSupplierPriceChangeShipment 'Поставщик' (priceChangeShipment) = nam
 
 @implementPriceChangeDocument(priceChangeShipment, item);
 @implementPriceChangeDocumentDetailAllPrice(priceChangeShipment);
-
-//----------------------------------- Списание отходов по нормам -------------------------------------------------//
-percentRateWasteShipmentDetail 'Процент для списания отходов' (shipmentDetail) = DATA NUMERIC[10,3] (shipmentDetail);
-
-percentRateWasteShipmentDetail (shipmentDetail) <- percentRateWasteItem(itemShipmentDetail(shipmentDetail))
-    WHEN CHANGED(itemShipmentDetail(shipmentDetail));
-
-needToWasteShipmentDetail (shipmentDetail) = TRUE IF percentRateWasteShipmentDetail(shipmentDetail);
-needToWasteShipment (shipment) = GROUP SUM 1 IF needToWasteShipmentDetail(shipmentDetail) BY shipmentShipmentDetail(shipmentDetail) IN baseGroup;
-
-CLASS wastage 'Списание отходов' : historyObject;
-CLASS wastagePosted 'Проведенное списание отходов' : wastage, postedObject;
-CLASS wastageDetail 'Строка документа';
-
-@defineDocumentAggregation(shipment, wastage, needToWasteShipment);
-@defineDocumentAggregationStock(shipment, wastage, departmentStore, 'Отдел магазина');
-@defineDocumentAggregationPosted(shipment, wastage);
-
-@defineDocumentTables(wastage);
-@defineDocumentDetailIndex(wastage);
-
-@defineDocumentAggregationHeaderNumber(shipment, wastage);
-
-@defineDocumentAggregationDetailSku(shipment, wastage, item);
-
-quantityItemWastageDetail 'Количество' (wastageDetail) =  quantityShipmentDetail(shipmentDetailWastageDetail(wastageDetail));
-quantityItemWastageDetailWastage 'Общее количество' (wastage) = GROUP SUM quantityItemWastageDetail(wastageDetail) BY wastageWastageDetail(wastageDetail) IN documentSumGroup;
-
-percentRateWasteWastageDetail 'Процент списания' (wastageDetail) = percentRateWasteShipmentDetail(shipmentDetailWastageDetail(wastageDetail));
-
-quantityWastageDetail 'Количество для списания '(wastageDetail) = [round3(X*Y/100)](
-    quantityShipmentDetail(shipmentDetailWastageDetail(wastageDetail)), percentRateWasteWastageDetail (wastageDetail));
-
-@defineDocumentAggregationDetailPrice(shipment, wastage);
-
-@defineDocumentDetailBaseSum(wastage);
-
-@defineDocumentHeaderQuantity(wastage);
-
-@defineDocumentHeaderBaseSum(wastage);
-@defineDocumentHeaderItemRetailSum(wastage);
-
-supplierWastage (wastage) = supplierShipment(shipmentWastage(wastage));
-nameSupplierWastage 'Поставщик' (wastage) = name(supplierWastage(wastage));
-
-nameLegalEntityWastage 'Компания' (wastage) = nameLegalEntityDepartmentStore(departmentStoreWastage(wastage));
-
-descriptionWastage 'Название документа' (wastage) =
-    [FORMULA STRING[200] '\'Списание отходов \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)'](
-    seriesNumberWastage(wastage), dateWastage(wastage), nameSupplierWastage(wastage));
-
-descriptionWastageDetail 'Название документа' (wastageDetail) = descriptionWastage(wastageWastageDetail(wastageDetail));
-
-@implementSkuLedgerOutFIFO(wastage, item, departmentStore);
-quantityOutFIFOSkuLedger (ledger) += quantityWastageDetail(ledger);
-@implementSkuLedgerOutFIFOBalance(wastage, item, departmentStore);
-sumOutSkuLedger (ledger) += retailSumWastageDetail(ledger);
-
-@implementAccountDocumentLedgerOut(wastage, departmentStore);
-sumOutAccountDocumentLedger (ledger) += retailSumWastageDetailWastage(ledger);
-sumItemOutAccountDocumentLedger (ledger) += retailSumItemWastageDetailWastage(ledger);
-sumContainerOutAccountDocumentLedger (ledger) += retailSumContainerWastageDetailWastage(ledger);
-
-//----------------------------------- Комиссия -------------------------------------------------//
-
-wastageCommitteeShipment (shipment) = DATA wastageCommittee (shipment) IN idGroup;
-nameWastageCommitteeShipment 'Комиссия для списания отходов' (shipment) = name(wastageCommitteeShipment(shipment)) IN documentPrmGroup;
-wastageCommitteeShipment(shipment) <- wastageCommitteeDepartmentStore(departmentStoreShipment(shipment))
-    WHEN ASSIGNED(shipment IS shipment);
-
-wastageCommitteeWastage (wastage) = wastageCommitteeShipment(shipmentWastage(wastage));
-inWastageEmployee (wastage, employee) = inCommitteeEmployee(wastageCommitteeWastage(wastage), employee);
-nameWastageCommitteeWastage 'Комиссия' (wastage) = name(wastageCommitteeWastage(wastage));
-commonNameEmployee 'Имя' (employee) = commonName(employee) AND employee IS employee;
-namePositionEmployeeEmployee 'Должность' (employee) = namePositionEmployee(employee) AND employee IS employee;
 
 //----------------------------------------------- Списание товара ---------------------------------------------------//
 
@@ -4190,7 +3989,7 @@ FORM shipment 'Поставка'
                    percentOrderedShipmentDetailsShipment, dialogOrdersShipment,
                    carryingChargesShipment, quantityShipmentDetailShipment, invoiceVATSumShipmentDetailShipment, invoiceSumShipmentDetailShipment, retailSumShipmentDetailShipment,
                    noteShipment, toShowPriceImporterShipment, toShowWareShipment, toShowPapersShipment, nameRegisterCommitteeShipment, numberDisposalShipment SHOWIF needToPriceChangeShipment(s),
-                   namePriceChangeCommitteeShipment SHOWIF needToPriceChangeShipment(s), nameWastageCommitteeShipment SHOWIF needToWasteShipment(s)
+                   namePriceChangeCommitteeShipment SHOWIF needToPriceChangeShipment(s)
 
     OBJECTS d=shipmentDetail
     PROPERTIES (d)  indexShipmentDetail, idBarcodeSkuShipmentDetail, nameAttributeItemShipmentDetail, quantityShipmentDetail,
@@ -4262,7 +4061,6 @@ DESIGN shipment FROM DEFAULT{
             childConstraints = TO THE RIGHTBOTTOM;
                 title = 'Параметры';
                 ADD PROPERTY (nameRegisterCommitteeShipment(s));
-                ADD PROPERTY (nameWastageCommitteeShipment(s));
                 ADD PROPERTY (noteShipment(s));
             }
             NEW row3 {
@@ -4377,60 +4175,6 @@ DESIGN shipments FROM DEFAULT {
 @Machinery.implementPriceTransactionDocument(shipment);
 @defineDocumentMachineryPriceTransaction(shipment, item, departmentStore);
 @extendFormDocumentMachineryPriceTransaction(shipments, s, shipment);
-
-//-------------------------------Печатная форма---------------------------------//
-FORM wastagePrint 'Списания отходов' PRINT
-
-    OBJECTS w=wastage FIXED PANEL
-    PROPERTIES (w) SELECTOR numberWastage, seriesWastage, dateWastage, timeWastage, nameLegalEntityWastage, nameDepartmentStoreWastage, nameSupplierWastage,
-                   countWastageDetailWastage, quantityItemWastageDetailWastage, quantityWastageDetailWastage, supplierISumWastageDetailWastage,
-                   markupSumWastageDetailWastage, retailVATSumWastageDetailWastage, retailSumWastageDetailWastage, wastageCommitteeWastage
-
-    OBJECTS d=wastageDetail
-    PROPERTIES (d) SELECTOR indexWastageDetail, idBarcodeSkuWastageDetail, nameSkuWastageDetail, quantityItemWastageDetail, quantityWastageDetail, percentRateWasteWastageDetail,
-                   supplierISumWastageDetail, markupSumWastageDetail, retailVATSumWastageDetail, retailSumWastageDetail
-
-    OBJECTS e=employee
-    PROPERTIES(e) SELECTOR   commonName, namePositionEmployee
-    OBJECTS a=employee
-    PROPERTIES(a) SELECTOR   commonNameEmployee, namePositionEmployee
-
-    FILTERS                  wastageWastageDetail(d)== w,
-                             inWastageEmployee(w, e),
-                             inWastageEmployee(w, a)
-;
-
-toPrintWastage 'Списание отходов' (wastage) = ACTION FORM wastagePrint OBJECTS w IMAGE 'print.png' IN printGroup;
-
-FORM wastages 'Списания отходов'
-
-    OBJECTS w=wastage
-    PROPERTIES (w) READONLY numberWastage, seriesWastage, dateWastage, timeWastage, nameDepartmentStoreWastage, nameSupplierWastage,
-                   countWastageDetailWastage, quantityItemWastageDetailWastage, quantityWastageDetailWastage, supplierISumWastageDetailWastage, markupSumWastageDetailWastage,
-                   retailVATSumWastageDetailWastage, retailSumWastageDetailWastage, nameWastageCommitteeWastage
-
-    OBJECTS d=wastageDetail
-    PROPERTIES (d) READONLY indexWastageDetail, idBarcodeSkuWastageDetail, nameSkuWastageDetail, quantityItemWastageDetail, quantityWastageDetail,
-                   supplierISumWastageDetail, markupSumWastageDetail, retailVATSumWastageDetail, retailSumWastageDetail
-
-    PROPERTIES     FORCE PANEL toPrintWastage(w) TODRAW d
-
-    FILTERS wastageWastageDetail(d)== w;
-;
-
-DESIGN wastages FROM DEFAULT {
-
-    NEW topContainer{
-
-        type = SPLITV;
-        childConstraints = TO THE BOTTOM;
-
-        ADD w.box;
-        ADD d.box;
-    }
-
-    ADD functions.box;
-}
 
 //-----------------------------------Формы возврата поставщику-------------------------------------------------------
 
@@ -6766,8 +6510,6 @@ NAVIGATOR {
         NEW incomeShipments 'Поставки' {
             ADD shipments;
             ADD returnSuppliers;
-            ADD wastages;
-            ADD wastageCommitteeDialog;
         }
         NEW itemInnerFlows 'Внутренние перемещения' {
             ADD innerFlows;

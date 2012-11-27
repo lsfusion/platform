@@ -182,12 +182,6 @@ sumOutSkuLedger (ledger) += sumWriteOffDetail(ledger);
 @implementAccountDocumentLedgerOut(writeOff, stock);
 sumOutAccountDocumentLedger (ledger) += sumWriteOffDetailWriteOff(ledger);
 
-// Обязательно имплементить для каждого конкретно проекта.....    todo:
-//limitOutFIFOSkuLedgerBatch(ledger, batch) +=
-//sumItemOutAccountDocumentLedger (ledger) +=
-//sumContainerOutAccountDocumentLedger (ledger) +=
-//skipASkuLedger (ledger) +=                         - если необходимо
-
 // --------------------------- Печатная форма ---------------------------------
 
 
