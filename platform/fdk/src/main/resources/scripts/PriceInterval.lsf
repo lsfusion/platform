@@ -9,6 +9,7 @@ CLASS roundCondition 'Условие округления' : named;
 TABLE roundCondition (roundCondition);
 
 currencyRoundCondition = DATA currency(roundCondition);
+nameCurrencyRoundCondition 'Валюта' (roundCondition)= name(currencyRoundCondition(roundCondition));
 
 denominatorPriceRoundCondition 'Делитель (округление цен)' =  DATA NUMERIC[14,3](roundCondition);
 minPriceRoundCondition 'Нижний порог (округление цен)' =  DATA NUMERIC[14,3](roundCondition);
@@ -134,6 +135,23 @@ DESIGN priceIntervals FROM DEFAULT {
             }
         }
         ADD functions.box;
+    }
+}
+
+FORM dialogPriceIntervals 'Округления цен'
+
+    OBJECTS rc=roundCondition
+    PROPERTIES(rc) READONLY name, denominatorPriceRoundCondition, minPriceRoundCondition, priceRoundRoundCondition, nameCurrencyRoundCondition
+    OBJECTS p=priceInterval
+    PROPERTIES(p) READONLY fromPriceInterval, toPriceInterval, modifierPriceInterval
+
+    FILTERS roundConditionPriceInterval(p) == rc
+
+    DIALOG roundCondition OBJECT rc
+;
+DESIGN dialogPriceIntervals FROM DEFAULT {
+    main {
+        preferredSize = (1024, 768);
     }
 }
 

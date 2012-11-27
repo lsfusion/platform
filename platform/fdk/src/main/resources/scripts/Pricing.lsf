@@ -28,6 +28,11 @@ CONSTRAINT pricingCommitteeDepartmentStore(departmentStore) AND NOT inCommitteeE
 
 EXTEND FORM departmentStore PROPERTIES namePricingCommitteeDepartmentStore(d);
 
+// ----------------------------------- Вид цен по умолчанию для отдела ------------------------------------------ //
+priceListTypeDepartmentStore  = DATA priceListType (departmentStore);
+namePriceListTypeDepartmentStore 'Вид цен для акта расценки' (departmentStore) = name(priceListTypeDepartmentStore(departmentStore));
+
+EXTEND FORM departmentStore PROPERTIES namePriceListTypeDepartmentStore(d);
 // ----------------------------------- Формы для комиссий для реестра цен ------------------------------------------ //
 
 FORM pricingCommittee 'Комиссия для акта расценки'
@@ -194,7 +199,7 @@ META deriveDocumentDetailPriceMarkupCustomPrefix(detail, prefix)
 END
 
 META changeDocumentDetailMarkupCustomPrefix(detail, prefixA, prefixB, prefixC, prefixD)
-    calc###prefixC###markup###detail(detail)  = [round2((((X - X*Y/(100+Y))/Z)-1)*100)](
+    calc###prefixC###markup###detail(detail)  = [round2(((X/Z*100/(100+Y))-1)*100)](
         0.0 IF detail IS detail OR prefixA###price###detail(detail),
         0.0 IF detail IS detail OR value###prefixD###VAT###detail(detail),
         prefixB###price###detail(detail));

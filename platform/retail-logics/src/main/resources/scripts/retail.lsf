@@ -8,6 +8,7 @@ MODULE retail;
 // Норма списания отходов - NUMERIC[10,3]
 
 REQUIRE System,
+        EvalScript,
         Utils,
         Hierarchy,
         Historizable,

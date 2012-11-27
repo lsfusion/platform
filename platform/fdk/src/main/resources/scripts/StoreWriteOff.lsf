@@ -3,3 +3,5 @@ MODULE StoreWriteOff;
 REQUIRE PurchaseWriteOff, Store;
 
 EXTEND FORM departmentStore PROPERTIES createWriteOffStock(d);
+
+toShowCreateWriteOffInvoice (invoice) += customerStockUserInvoice(invoice) IS departmentStore;

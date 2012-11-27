@@ -1,6 +1,6 @@
 MODULE PriceList;
 
-REQUIRE System, Document, Numerator, Stock, Barcode;
+REQUIRE System, Document, Numerator, Stock, Barcode, PriceInterval;
 
 // --------------------------- Ценовые группы -------------------------------------//
 
@@ -623,7 +623,13 @@ currencyPriceListType(calcPriceListType) += currencyCalcPriceListType(calcPriceL
 TABLE calcPriceListTypePriceGroup (calcPriceListType, priceGroup);
 
 markupCalcPriceListTypePriceGroup 'Надбавка, %' = DATA NUMERIC[8,2] (calcPriceListType, priceGroup);
-roundCalcPriceListType 'Округление (кол-во знаков)' = DATA INTEGER (calcPriceListType);
+
+roundConditionCalcPriceListType 'Условие округления' = DATA roundCondition (calcPriceListType);
+nameRoundConditionCalcPriceListType 'Условие округления' (calcPriceListType) = name(roundConditionCalcPriceListType(calcPriceListType));
+
+CONSTRAINT currencyRoundCondition(roundConditionCalcPriceListType(calcPriceListType)) != currencyCalcPriceListType(calcPriceListType)
+           CHECKED BY roundConditionCalcPriceListType
+           MESSAGE 'Валюта документа должна совпадать с валютой условия округления цены';
 
 levelParentMarkupPriceGroup (calcPriceListType, priceGroup) = GROUP MIN levelPriceGroupPriceGroup(priceGroup, parent) IF markupCalcPriceListTypePriceGroup(calcPriceListType, parent)
                                                               BY calcPriceListType, priceGroup PERSISTENT;
@@ -637,9 +643,9 @@ markupCalcPriceListTypePriceGroupOver 'Надбавка, %' (calcPriceListType, 
 multiplierCalcPriceListTypePriceGroup (type, priceGroup) = (100 + markupCalcPriceListTypePriceGroupOver(type, priceGroup)) / 100 PERSISTENT;
 
 priceCalcPriceListTypeSkuStockDateTime(type, sku, stock, dateTime) =
-    round(priceBasePriceListTypeSkuStockDateTime(basePriceListTypeCalcPriceListType(type), sku, stock, dateTime) * multiplierCalcPriceListTypePriceGroup(type, priceGroupSku(sku)), roundCalcPriceListType(type));
+    roundPriceRoundCondition(priceBasePriceListTypeSkuStockDateTime(basePriceListTypeCalcPriceListType(type), sku, stock, dateTime) * multiplierCalcPriceListTypePriceGroup(type, priceGroupSku(sku)), roundConditionCalcPriceListType(type));
 priceCalcPriceListTypeBatchStockDateTime(type, batch, stock, dateTime) =
-    round(priceBasePriceListTypeBatchStockDateTime(basePriceListTypeCalcPriceListType(type), batch, stock, dateTime) * multiplierCalcPriceListTypePriceGroup(type, priceGroupSku(skuBatch(batch))), roundCalcPriceListType(type));
+    roundPriceRoundCondition(priceBasePriceListTypeBatchStockDateTime(basePriceListTypeCalcPriceListType(type), batch, stock, dateTime) * multiplierCalcPriceListTypePriceGroup(type, priceGroupSku(skuBatch(batch))), roundConditionCalcPriceListType(type));
 
 pricePriceListTypeSkuStockDateTime(type, sku, stock, dateTime) += priceCalcPriceListTypeSkuStockDateTime(type, sku, stock, dateTime);
 pricePriceListTypeBatchStockDateTime(type, batch, stock, dateTime) += priceCalcPriceListTypeBatchStockDateTime(type, batch, stock, dateTime);
@@ -675,7 +681,7 @@ DESIGN editPriceListType FROM DEFAULT{
     ADD functions.box;
 }
 EXTEND FORM editPriceListType
-    PROPERTIES(p) nameCurrencyDataPriceListType, nameCurrencyCalcPriceListType, nameBasePriceListTypeCalcPriceListType, roundCalcPriceListType
+    PROPERTIES(p) nameCurrencyDataPriceListType, nameCurrencyCalcPriceListType, nameBasePriceListTypeCalcPriceListType, nameRoundConditionCalcPriceListType
     PROPERTIES(p, g) markupCalcPriceListTypePriceGroup , nearestMarkupCalcPriceListTypePriceGroup
 ;
 
@@ -684,7 +690,7 @@ EXTEND DESIGN editPriceListType{
         ADD PROPERTY(nameCurrencyDataPriceListType);
         ADD PROPERTY(nameCurrencyCalcPriceListType);
         ADD PROPERTY(nameBasePriceListTypeCalcPriceListType);
-        ADD PROPERTY(roundCalcPriceListType);
+        ADD PROPERTY(nameRoundConditionCalcPriceListType);
     }
 }
 
@@ -885,6 +891,100 @@ META defineDocumentInterfacePriceListType (object)
     @defineDocumentInterfacePriceListType(object, object##Detail);
 END
 
+// ---------------------- Макросы по добавлению видов цен в документы ------------------------------------ //
+
+META defineDocumentHeaderPriceListTypePrefix (object, type, prefix, caption)
+    prefix###type###object (object) = DATA type (object);
+    name###prefix###type###object 'Вид цен'###caption (object)= name(prefix###type###object(object)) IN documentPrmGroup MINCHARWIDTH 5 PREFCHARWIDTH 10;
+END
+META defineDocumentAbstractHeaderPriceListTypePrefix (object, type, prefix, caption)
+    prefix###type###object (object) = ABSTRACT type (object);
+    name###prefix###type###object 'Вид цен'###caption (object)= name(prefix###type###object(object)) IN documentPrmGroup MINCHARWIDTH 5 PREFCHARWIDTH 10;
+END
+META defineDocumentInterfaceHeaderPriceListTypePrefix (object, type, prefix, caption)
+    @defineDocumentAbstractHeaderPriceListTypePrefix(object, type, prefix, caption);
+    @defineDocumentHeaderPriceListTypePrefix(user###object, type, prefix, caption);
+    prefix###type###object (object) += prefix###type###user###object(object);
+END
+
+META defineDocumentDetailPriceListTypePrefix (object, detail, type, prefix, caption)
+    prefix###type###detail (idetail) = prefix###type###object(object###detail(idetail)) PERSISTENT;
+    name###prefix###type###detail 'Вид цен'###caption (idetail) = name###prefix###type###object(object###detail(idetail)) IN documentPrmGroup MINCHARWIDTH 5 PREFCHARWIDTH 10;
+END
+META defineDocumentInterfaceDetailPriceListTypePrefix(object, detail, type, prefix, caption)
+    @defineDocumentDetailPriceListTypePrefix(object, detail, type, prefix, caption);
+    @defineDocumentDetailPriceListTypePrefix(user###object, user###detail, type, prefix, caption);
+END
+
+META defineDocumentPriceListTypePrefix (object, detail, type, prefix, caption)
+    @defineDocumentHeaderPriceListTypePrefix(object, type, prefix, caption);
+    @defineDocumentDetailPriceListTypePrefix(object, detail, type, prefix, caption);
+END
+META defineDocumentAbstractPriceListTypePrefix (object, detail, type, prefix, caption)
+    @defineDocumentAbstractHeaderPriceListTypePrefix(object, type, prefix, caption);
+    @defineDocumentDetailPriceListTypePrefix(object, detail, type, prefix, caption);
+END
+META defineDocumentInterfacePriceListTypePrefix (object, detail, type, prefix, caption)
+    @defineDocumentInterfaceHeaderPriceListTypePrefix(object, type, prefix, caption);
+    @defineDocumentInterfaceDetailPriceListTypePrefix(object, detail, type, prefix, caption);
+END
+
+META defineDocumentPriceListTypePrefix (object, type, prefix, caption)
+    @defineDocumentPriceListTypePrefix(object, object##Detail, type, prefix, caption);
+END
+META defineDocumentAbstractPriceListTypePrefix (object, type, prefix, caption)
+    @defineDocumentAbstractPriceListTypePrefix(object, object##Detail, type, prefix, caption);
+END
+META defineDocumentInterfacePriceListTypePrefix (object, type, prefix, caption)
+    @defineDocumentInterfacePriceListTypePrefix(object, object##Detail, type, prefix, caption);
+END
+//--
+
+META defineDocumentDetailDataPriceListTypePrefix (object, detail, type, prefix, caption)
+    data###prefix###type###detail =  DATA type (detail);
+    prefix###type###detail (idetail) = UNION OVERRIDE prefix###type###object(object###detail(idetail)), data###prefix###type###detail(idetail) PERSISTENT;
+    name###prefix###type###detail 'Вид цен'###caption (idetail) = name(prefix###type###detail(idetail)) MINCHARWIDTH 10 PREFCHARWIDTH 20;
+END
+
+META defineDocumentAbstractDetailDataPriceListTypePrefix (object, detail, type, prefix, caption)
+    data###prefix###type###detail =  ABSTRACT type (detail);
+    prefix###type###detail (idetail) = UNION OVERRIDE prefix###type###object(object###detail(idetail)), data###prefix###type###detail(idetail) PERSISTENT;
+    name###prefix###type###detail 'Вид цен'###caption (idetail) = name(prefix###type###detail(idetail)) MINCHARWIDTH 10 PREFCHARWIDTH 20;
+END
+
+META defineDocumentDataPriceListTypePrefix (object, detail, type, prefix, caption)
+    @defineDocumentHeaderPriceListTypePrefix(object, type, prefix, caption);
+    @defineDocumentDetailDataPriceListTypePrefix(object, detail, type, prefix, caption);
+END
+META defineDocumentDataPriceListTypePrefix (object, type, prefix, caption)
+    @defineDocumentDataPriceListTypePrefix(object, object##Detail, type, prefix, caption);
+END
+
+META defineDocumentInterfaceDetailDataPriceListTypePrefix (object, detail, type, prefix, caption)
+    @defineDocumentAbstractDetailDataPriceListTypePrefix(object, detail, type, prefix, caption);
+    @defineDocumentDetailDataPriceListTypePrefix(user###object, user###detail, type, prefix, caption);
+    data###prefix###type###detail (detail) += data###prefix###type###user###detail (detail);
+END
+
+META defineDocumentInterfaceDetailDataPriceListTypePrefix (object, type, prefix, caption)
+    @defineDocumentInterfaceDetailDataPriceListTypePrefix(object, object##Detail, type, prefix, caption);
+END
+
+META defineDocumentInterfaceDataPriceListTypePrefix (object, detail, type, prefix, caption)
+    @defineDocumentInterfaceHeaderPriceListTypePrefix(object, type, prefix, caption);
+    @defineDocumentInterfaceDetailDataPriceListTypePrefix(object, detail, type, prefix, caption);
+
+    CONSTRAINT currency###user###object(object) != currencyPriceListType(prefix###type###user###object(object))
+               CHECKED BY prefix###type###user###object
+               MESSAGE 'Валюта документа должна совпадать с валютой вида цены';
+
+    CONSTRAINT currency###user###object(object) != currencyPriceListType(prefix###type###user###detail(detail))
+               CHECKED BY prefix###type###user###detail
+               MESSAGE 'Валюта документа должна совпадать с валютой вида цены';
+END
+META defineDocumentInterfaceDataPriceListTypePrefix (object, type, prefix, caption)
+    @defineDocumentInterfaceDataPriceListTypePrefix(object, object##Detail, type, prefix, caption);
+END
 
 // ------------------------- Макросы по добавлению видов цен в документы (два объекта) --------------------- //
 META defineDocumentDoubleObjHeaderPriceListType (object1, object2)  //  object1 - документ
@@ -937,11 +1037,11 @@ META defineDocumentInterfaceDataPriceListType (object, detail)
 
     CONSTRAINT currency###user###object(object) != currencyPriceListType(priceListType###user###object(object))
                CHECKED BY priceListType###user###object
-               MESSAGE 'Валюта документа должны совпадать с валютой вида цены';
+               MESSAGE 'Валюта документа должна совпадать с валютой вида цены';
 
     CONSTRAINT currency###user###object(object) != currencyPriceListType(priceListType###user###detail(detail))
                CHECKED BY priceListType###user###detail
-               MESSAGE 'Валюта документа должны совпадать с валютой вида цены';
+               MESSAGE 'Валюта документа должна совпадать с валютой вида цены';
 END
 META defineDocumentInterfaceDataPriceListType (object)
     @defineDocumentInterfaceDataPriceListType(object, object##Detail);

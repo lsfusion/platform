@@ -74,9 +74,10 @@ writeOffRateInvoiceDetail (detail) += writeOffRateUserInvoiceDetail(detail);
 percentWriteOffRateInvoiceDetail (detail) += percentWriteOffRateUserInvoiceDetail(detail);
 
 backgroundWrittenInvoice 'Цвет' (invoice) = RGB(212, 255, 212) IF invoice IS invoice;
+toShowCreateWriteOffInvoice (invoice) = ABSTRACT BOOLEAN (invoice);
 
 EXTEND FORM userInvoice
-    PROPERTIES (i) createWriteOffUserInvoice BACKGROUND backgroundWrittenInvoice(i)
+    PROPERTIES (i) createWriteOffUserInvoice BACKGROUND backgroundWrittenInvoice(i) SHOWIF toShowCreateWriteOffInvoice(i)
     PROPERTIES (i) BACKGROUND backgroundWrittenInvoice(i) SHOWIF createWriteOffUserInvoice(i)
                    nameWriteOffCommitteeUserInvoice, nameReasonUserInvoice, writeOffSumUserInvoiceDetailUserInvoice
     PROPERTIES (d) SHOWIF createWriteOffUserInvoice(i) BEFORE delete(d) BACKGROUND backgroundWrittenInvoice(i)

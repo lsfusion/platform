@@ -4,3 +4,4 @@ REQUIRE PurchaseWriteOff, PurchasePricing;
 NAMESPACE Purchase;
 
 extraPricingQuantityUserInvoiceDetail(detail) += - writeOffQuantityUserInvoiceDetail(detail);
+
