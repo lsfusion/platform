@@ -116,7 +116,6 @@ META defineDocumentDetailSkuItemPrefix (object, prefix, caption)
     prefix###controlExpiryItem###object##Detail 'Контролировать сроки годности товара?'###caption (detail) =
         controlExpiryItem (prefix###item###object##Detail(detail)) IN itemDetailGroup;
 
-    prefix###isManufacturedItem###object##Detail 'Товар производится?'###caption (detail) = isManufacturedItem(prefix###item###object##Detail(detail)) IN itemDetailGroup;
     prefix###isWeightItem###object##Detail 'Весовой товар?'###caption (detail) = isWeightItem(prefix###item###object##Detail(detail)) IN itemDetailGroup;
 
     prefix###hintItem###object##Detail 'Подсказка по товару'###caption (detail) = hintItem(prefix###item###object##Detail(detail)) IN itemDetailGroup MINCHARWIDTH 20 PREFCHARWIDTH 20;
@@ -311,7 +310,6 @@ GROUP expiryGroup 'Контроль сроков годности' : publicGroup
 GROUP equipmentGroup 'Внешние устройства' : publicGroup;
 GROUP labelGroup 'Ценник' : publicGroup;
 
-GROUP manufactoryGroup 'Производство' : publicGroup;
 GROUP orderGroup 'Заказ' : publicGroup;
 GROUP barGroup 'Бар' : publicGroup;
 GROUP activeGroup 'Активность товара' : publicGroup;
@@ -327,7 +325,6 @@ tmpSku() = SESSION DATA sku ();
 
 //-----------------------------------------------------------------------------------------------//
 
-isManufacturedItem 'Товар производится' = DATA BOOLEAN (item) IN manufactoryGroup;
 hintItem 'Подсказка по товару' = DATA STRING[200] (item) IN documentGroup;
 
 statisticGroupSku = DATA statisticGroup(sku) IN idGroup AUTOSET;
@@ -364,7 +361,7 @@ isContainGMOItem 'Содержит ГМО' = DATA BOOLEAN (item) IN substanceGro
 lengthPackItem 'Длина упаковки' = DATA NUMERIC[8,2] (item) IN itemSizeGroup;
 widthPackItem 'Ширина упаковки' = DATA NUMERIC[8,2] (item) IN itemSizeGroup;
 heightPackItem 'Высота упаковки' = DATA NUMERIC[8,2] (item) IN itemSizeGroup;
-grossWeightPackItem 'Вес брутто упаковки' = DATA NUMERIC[9,3] (item) IN manufactoryGroup;
+grossWeightPackItem 'Вес брутто упаковки' = DATA NUMERIC[9,3] (item) IN itemSizeGroup;
 
 //retailGroup
 minQuantityOrderItem 'Минимальный заказ' = DATA INTEGER (item) IN orderGroup;
@@ -380,22 +377,6 @@ minAllowedRetailPriceItem 'MIN допустимая розн.цена' = DATA NU
 bonusItem 'Бонус получаемый по товару' = DATA NUMERIC[9,2] (item) IN documentGroup;
 percentWholesaleMarkItem '% оптовой надбавки' = DATA NUMERIC[8,3] (item) IN retailGroup;
 banSailItem 'Запрет продаж товара в указанное время' = DATA STRING[200] (item) IN equipmentGroup;
-
-//manufactoryGroup
-CLASS groupMenu 'Группа меню' : named;
-TABLE groupMenu(groupMenu);
-
-isCrudeItem 'Товар-сырьё для калькуляции?' = DATA BOOLEAN (item) IN manufactoryGroup;
-
-groupProductItem = DATA groupProduct (item) IN idGroup;
-nameGroupProductItem 'Группа изделий для печати заборного листа' = name(groupProductItem(item)) IN manufactoryGroup;
-
-compositionMenuItem 'Состав изделия для печати в меню' = DATA STRING[400] (item)IN manufactoryGroup MINCHARWIDTH 50;
-standartItem 'Стандарт изготовления изделия (СТБ и пр.)' = DATA STRING[100] (item) IN manufactoryGroup MINCHARWIDTH 50;
-normOutItem 'Норма выхода для печати в меню и калькуляцию' = DATA STRING[100] (item) IN manufactoryGroup MINCHARWIDTH 50;
-groupMenuItem 'Группа для печати в меню ИД' = DATA groupMenu (item) IN idGroup;
-nameGroupMenuItem 'Группа для печати в меню' = name(groupMenuItem(item)) IN manufactoryGroup MINCHARWIDTH 50;
-isCutedItem 'Товар разрубается/прорабатывается' = DATA BOOLEAN (item) IN manufactoryGroup;
 storageTemperatureItem 'Температура хранения' =  DATA STRING[100] (item) IN equipmentGroup MINCHARWIDTH 50;
 
 //expiryGroup
@@ -417,25 +398,6 @@ pieceNumeratorItem (item) = pieceNumeratorItemGroup(itemGroupItem(item));
 weightNumeratorItem (item) = weightNumeratorItemGroup(itemGroupItem(item));
 
 barcodeNumeratorSku(item) += IF isWeightItem(item) THEN weightNumeratorItem(item) ELSE pieceNumeratorItem(item);
-
-// ----------------------------------- Компоненты ------------------------------------------ //
-CLASS component 'Компонент' : sku, named;
-TABLE component(component);
-
-nettoBruttoCoeffComponent 'Сезонный коэффициент пересчета сырья из нетто в брутто' (component) = DATA NUMERIC[8,3] (component) IN manufactoryGroup;
-percentHumidityFlourDepartmentStoreComponent '% влажности муки' = DATA NUMERIC[8,3] (departmentStore, component) IN manufactoryGroup;
-
-FORM component 'Компонент'
-OBJECTS c=component FIXED PANEL
-PROPERTIES(c) name, nettoBruttoCoeffComponent
-EDIT component OBJECT c;
-
-FORM components 'Компоненты'
-OBJECTS c=component
-PROPERTIES(c) READONLY name, nettoBruttoCoeffComponent
-PROPERTIES(c) ADDFORM, EDITFORM, delete;
-
-
 
 // ----------------------------------- Генерация графика --------------------------------------- //
 
@@ -500,8 +462,6 @@ EXTEND FORM items
 @defineHistorizableCustom(isPortionBarItem, 'Порционный товар для бара', yesNo, name, item, nameAttributeItem, barGroup);
 
 @defineHistorizableCustom(banDiscountItem, 'Запретить скидки по товару', yesNo, name, item, nameAttributeItem, discountGroup);
-
-@defineHistorizable(coefficientNetGrossItem, 'Сезонный коэффициент пересчета сырья из нетто в брутто', NUMERIC[8,3], item, nameAttributeItem, manufactoryGroup);
 
 @defineHistorizable(importerPriceItem, 'Цена импортёра', NUMERIC[14,3], item, nameAttributeItem, retailGroup);
 
@@ -727,16 +687,11 @@ TABLE supplierItemDepartmentStoreDate (supplier, item, departmentStore, DATE);
 EXTEND FORM item
 
     PROPERTIES(i) isContainerItem,
-                  isWeightItem, isManufacturedItem,
-                  compositionMenuItem SHOWIF isManufacturedItem(i),
-                  grossWeightPackItem SHOWIF isManufacturedItem(i), isCrudeItem SHOWIF isManufacturedItem(i),
-                  nameGroupProductItem SHOWIF isManufacturedItem(i), standartItem SHOWIF isManufacturedItem(i),
-                  normOutItem SHOWIF isManufacturedItem(i), nameGroupMenuItem SHOWIF isManufacturedItem(i),
-                  isCutedItem SHOWIF isManufacturedItem(i), coefficientNetGrossItem SHOWIF isManufacturedItem(i), dialogCoefficientNetGrossItem,
+                  isWeightItem,
 
                   nameGroupNaturalLossItem, rateGroupNaturalLossItem, nameStatisticGroupSku,
 
-                  lengthPackItem, widthPackItem, heightPackItem,
+                  lengthPackItem, widthPackItem, heightPackItem, grossWeightPackItem,
 
                   nameIsPortionBarItem, dialogIsPortionBarItem, nameInactiveItem, dialogInactiveItem,
 
@@ -797,9 +752,6 @@ EXTEND DESIGN item {
         itemDetail {
             itemPrimary {
                 itemPrimaryColumn1 {
-                    ADD i.manufactoryGroup {
-                        childConstraints = TO THE BOTTOM;
-                    };
                 }
 
                 itemPrimaryColumn2 {
@@ -929,65 +881,6 @@ FORM inventoryCommittees 'Комиссии для инвентаризации'
     DIALOG inventoryCommittee OBJECT ic
 ;
 
-//---------------------------- Рецепты блюд ----------------------------------------//
-CLASS recipe 'Рецепт' : named;
-TABLE recipe (recipe);
-
-CLASS recipeDetail 'Сырье рецепта';
-TABLE recipeDetail (recipeDetail);
-
-dishRecipe  'Блюдо (ИД)' = DATA item (recipe) IN idGroup;
-CONSTRAINT dishRecipe (recipe) AND NOT isManufacturedItem(dishRecipe(recipe)) CHECKED MESSAGE 'Блюдо должно производиться';
-captionDishRecipe 'Блюдо' = captionItem (dishRecipe(recipe)) IN baseGroup;
-
-beginDateRecipe 'Используется с' = DATA DATE (recipe) IN baseGroup;
-isUsedRecipe 'Используется' = DATA BOOLEAN (recipe) IN baseGroup;
-numberRecipe 'Номер рецептуры (из сборника и пр.)' = DATA STRING[40] (recipe) IN baseGroup;
-notesRecipe 'Технология приготовления' = DATA STRING[100] (recipe) IN baseGroup;
-outWeightRecipe 'Количество выхода изделия' = DATA NUMERIC[14,3] (recipe) IN baseGroup;
-
-recipeRecipeDetail 'Рецепт (ИД)' = DATA recipe(recipeDetail) IN baseGroup;
-componentRecipeDetail 'Компонент (ИД)' = DATA component(recipeDetail) IN idGroup;
-nameComponentRecipeDetail 'Компонент' = name(componentRecipeDetail(recipeDetail)) IN baseGroup;
-normQuantityRecipeDetail 'Норма закладки (брутто)' = DATA NUMERIC[9,3] (recipeDetail) IN baseGroup;
-
-inRecipeRecipeDetail(recipe, recipeDetail) = recipeRecipeDetail(recipeDetail) == recipe;
-
-FORM recipe 'Рецепт блюда'
-    OBJECTS r=recipe FIXED PANEL
-    PROPERTIES(r) captionDishRecipe, numberRecipe, beginDateRecipe, isUsedRecipe, notesRecipe, outWeightRecipe
-
-    OBJECTS rd=recipeDetail
-    PROPERTIES(rd) nameComponentRecipeDetail, normQuantityRecipeDetail, ADDOBJ, delete
-
-    FILTERS inRecipeRecipeDetail(r, rd)
-
-    EDIT recipe OBJECT r
-;
-
-FORM recipes 'Рецепты блюд'
-    OBJECTS r=recipe
-    PROPERTIES(r)  READONLY captionDishRecipe, numberRecipe, isUsedRecipe
-    PROPERTIES(r)  ADDFORM, EDITFORM, delete
-
-    OBJECTS rd=recipeDetail
-    PROPERTIES(rd) READONLY nameComponentRecipeDetail, normQuantityRecipeDetail
-
-    FILTERS   inRecipeRecipeDetail(r, rd)
-;
-
-DESIGN recipes FROM DEFAULT {
-
-    NEW topContainer{
-
-        type = SPLITV;
-        childConstraints = TO THE BOTTOM;
-
-        ADD r.box;
-        ADD rd.box;
-    }
-    ADD functions.box;
-}
 //---------------------------- Документы качества ----------------------------------------//
 
 CLASS ABSTRACT paper 'Документы качества' : named;
@@ -4003,7 +3896,7 @@ FORM shipment 'Поставка'
                     numberCertificateConformityShipmentDetail SHOWIF toShowPapersShipment(s), numberStateExaminationShipmentDetail SHOWIF toShowPapersShipment(s),
                     ADDOBJ, delete
     PROPERTIES (d) FORCE PANEL isFixPriceShipmentDetail,
-                               controlExpiryItemShipmentDetail, isManufacturedItemShipmentDetail, isWeightItemShipmentDetail, nameInActionItemDepartmentShipmentDetail,
+                               controlExpiryItemShipmentDetail, isWeightItemShipmentDetail, nameInActionItemDepartmentShipmentDetail,
                                hintItemShipmentDetail, nameCountryItemShipmentDetail, nameBanPriceChangeItemDepartmentShipmentDetail,
                                curImporterPriceShipmentDetail, curSupplierPriceShipmentDetail, curValueRetailVATShipmentDetail, curNameWareShipmentDetail SHOWIF inWareShipmentDetail(d),
                                valueWareRangeShipmentDetail SHOWIF inWareShipmentDetail(d), curWarePriceShipmentDetail SHOWIF inWareShipmentDetail(d)
@@ -4220,7 +4113,7 @@ FORM returnSupplier 'Возврат поставщику'
 
     PROPERTIES FORCE PANEL READONLY curImporterPriceReturnSupplierDetail(d), curSupplierPriceReturnSupplierDetail(d),
                                     curRetailPriceReturnSupplierDetail(d), curValueRetailVATReturnSupplierDetail(d),
-                                    controlExpiryItemReturnSupplierDetail(d), isManufacturedItemReturnSupplierDetail(d),
+                                    controlExpiryItemReturnSupplierDetail(d),
                                     isWeightItemReturnSupplierDetail(d), nameInActionItemDepartmentReturnSupplierDetail(d),
                                     hintItemReturnSupplierDetail(d), nameCountryItemReturnSupplierDetail(d),
                                     nameBanPriceChangeItemDepartmentReturnSupplierDetail(d), valueWareRangeReturnSupplierDetail(d),
@@ -6563,9 +6456,7 @@ NAVIGATOR {
 
     NEW manufactory 'Производство' TO formsToolbar {
         ADD actOfStudies;
-        ADD components;
         ADD cuttings;
-        ADD recipes;
     }
     NEW hr 'Кадры' TO formsToolbar {
         ADD employees;

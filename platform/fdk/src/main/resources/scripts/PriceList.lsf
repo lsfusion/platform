@@ -629,10 +629,10 @@ levelParentMarkupPriceGroup (calcPriceListType, priceGroup) = GROUP MIN levelPri
                                                               BY calcPriceListType, priceGroup PERSISTENT;
 nearestParentPriceGroup (calcPriceListType, priceGroup) = priceGroupPriceGroupLevel(priceGroup, levelParentMarkupPriceGroup(calcPriceListType, priceGroup));
 nearestMarkupCalcPriceListTypePriceGroup 'Расчетная надбавка, %' (calcPriceListType, priceGroup) =
-    markupCalcPriceListTypePriceGroup(calcPriceListType, nearestParentPriceGroup(calcPriceListType, priceGroup));
+    markupCalcPriceListTypePriceGroup(calcPriceListType, nearestParentPriceGroup(calcPriceListType, priceGroup)) PERSISTENT;
 
 markupCalcPriceListTypePriceGroupOver 'Надбавка, %' (calcPriceListType, priceGroup) =
-    UNION OVERRIDE nearestMarkupCalcPriceListTypePriceGroup(calcPriceListType, priceGroup), markupCalcPriceListTypePriceGroup(calcPriceListType, priceGroup);
+    UNION OVERRIDE nearestMarkupCalcPriceListTypePriceGroup(calcPriceListType, priceGroup), markupCalcPriceListTypePriceGroup(calcPriceListType, priceGroup) PERSISTENT;
 
 multiplierCalcPriceListTypePriceGroup (type, priceGroup) = (100 + markupCalcPriceListTypePriceGroupOver(type, priceGroup)) / 100 PERSISTENT;
 
