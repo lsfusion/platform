@@ -230,7 +230,7 @@ CLASS ABSTRACT pricingDetail 'Строка акта расценки';
 
 CLASS userPricing 'Акт расценки (польз.)' : pricing, historyObject, numeratedDocument;
 CLASS userPricingDetail 'Строка акта расценки (польз.)' : pricingDetail;
-CLASS userPricingPosted 'Закрытый акт расценки (польз.)' : userPricing, postedObject;
+CLASS userPricingPosted 'Проведенный акт расценки (польз.)' : userPricing, postedObject;
 
 @defineDocumentInterface(pricing);
 
@@ -506,7 +506,7 @@ inPriceListLedgerStock (ledger, stock) += departmentStorePricingDetail(ledger) =
 // ------------------------------------- Автоматическое создание расценки для документа -------------------- //
 
 //-- аггр.объект
-META definePricingAggregation(concrete, sign, caption, stockProp, prefix)
+META definePricingAggregation(concrete, sign, caption, captionPost, stockProp, prefix)
 
     @defineDocumentInterfaceHeaderPricingCommittee(invoice, stockProp);
     @defineDocumentInterfaceDetailPricePrefix(invoice, retail, ' розничная');
@@ -575,7 +575,7 @@ META definePricingAggregation(concrete, sign, caption, stockProp, prefix)
 
 
     CLASS concrete###pricing caption###sign : pricing;
-    CLASS concrete###pricingPosted caption###sign : concrete###pricing, postedObject;
+    CLASS concrete###pricingPosted captionPost###sign : concrete###pricing, postedObject;
     CLASS concrete###pricingDetail caption###sign : pricingDetail;
 
     @defineDocumentTables(concrete###pricing);

@@ -16,7 +16,7 @@ PRIORITY Stock, RomanLogicsModule, Utils, Store;
 
 CLASS CStoWH 'Расход с СВХ' : historyObject, numberedObject, consignment;
 CLASS CStoWHDetail 'Строка расхода с СВХ' : consignmentDetail;
-CLASS CStoWHPosted 'Закрытый расход с СВХ' : CStoWH, postedObject, consignment;
+CLASS CStoWHPosted 'Проведенный расход с СВХ' : CStoWH, postedObject, consignment;
 
 @defineDocument(CStoWH);
 

@@ -10,7 +10,7 @@ NAMESPACE Sale;
 @deriveDocumentDetailSumPrefix(userInvoice, supplier, currency, quantity);
 @defineDocumentInterfaceHeaderSumPrefix (invoice, supplier, ' поставщика');
 
-@definePricingAggregation(invoice, ' (закупка-возврат)', 'Акт расценки при продаже', supplierStock, supplier);
+@definePricingAggregation(invoice, ' (закупка-возврат)', 'Акт расценки при продаже', 'Проведенный акт расценки при продаже', supplierStock, supplier);
 
 
 overShipmentPriceUserInvoiceDetail(detail) += retailPriceUserInvoiceDetail(detail)

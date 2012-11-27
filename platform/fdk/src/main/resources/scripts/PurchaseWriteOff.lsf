@@ -320,7 +320,7 @@ needToWrittenShipment (shipment)= GROUP SUM 1 IF needToWrittenShipmentDetail(shi
     BY shipmentShipmentDetail(shipmentDetail) PERSISTENT;
 
 CLASS shipmentWriteOff 'Акт списания на основе поставки': writeOff;
-CLASS shipmentWriteOffPosted 'Закрытый акт списания на основе поставки' : shipmentWriteOff, postedObject;
+CLASS shipmentWriteOffPosted 'Проведенный акт списания на основе поставки' : shipmentWriteOff, postedObject;
 CLASS shipmentWriteOffDetail 'Строка акта списания на основе поставки ': writeOffDetail;
 
 @defineDocumentTables(shipmentWriteOff);

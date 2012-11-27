@@ -144,7 +144,7 @@ CLASS ABSTRACT repricingDetail 'Строка акта переоценки';
 
 CLASS userRepricing 'Акт переоценки (польз.)' : repricing, historyObject, numeratedDocument;
 CLASS userRepricingDetail 'Строка акта переоценки (польз.)' : repricingDetail;
-CLASS userRepricingPosted 'Закрытый акт переоценки (польз.)' : userRepricing, postedObject;
+CLASS userRepricingPosted 'Проведенный акт переоценки (польз.)' : userRepricing, postedObject;
 
 @defineDocumentInterface(repricing);
 
@@ -643,7 +643,7 @@ META defineRepricing(sign, stockProp)
     @defineDocumentInterfaceHeaderRepricingCommittee (invoice, stockProp);
 
     CLASS invoiceRepricing 'Акт дооценки на основе инвойса'###sign : repricing;
-    CLASS invoiceRepricingPosted 'Закрытый акт дооценки на основе инвойса'###sign : invoiceRepricing, postedObject;
+    CLASS invoiceRepricingPosted 'Проведенный акт дооценки на основе инвойса'###sign : invoiceRepricing, postedObject;
     CLASS invoiceRepricingDetail 'Строка акта дооценки на основе инвойса'###sign : repricingDetail;
 
     @defineDocumentTables(invoiceRepricing);

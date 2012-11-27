@@ -1415,7 +1415,7 @@ DESIGN seriesNumberCuttingStudyInputDetail FROM DEFAULT {
 CLASS actOfStudy 'Акт проработки (разделки)' : historyObject, numeratedDocument;
 TABLE actOfStudy (actOfStudy);
 
-CLASS actOfStudyPosted 'Акт проработки закрытый' : actOfStudy, postedObject;
+CLASS actOfStudyPosted 'Проведенный акт проработки' : actOfStudy, postedObject;
 
 // шапка дакта
 @defineDocumentHeaderTime(actOfStudy);
@@ -1748,7 +1748,7 @@ notNullAvailableQuantityItemBySpecificationDetail(specificationDetail) = availab
 
 CLASS statement 'Выписка из розницы' : historyObject, numberedObject;
 CLASS statementDetail 'Строка выписки из розницы';
-CLASS statementPosted 'Закрытая выписка из розницы' : statement, postedObject;
+CLASS statementPosted 'Проведенная выписка из розницы' : statement, postedObject;
 
 @defineDocument(statement);
 @defineDocumentDepartmentStore(statement);
@@ -1898,7 +1898,7 @@ GROUP shipmentOrderGroup 'Заказ' : documentPrmGroup;
 
 CLASS shipment 'Поставка' : historyObject, numberedObject, listRegister, contractLedger, contractALedger, inContractLedger;
 CLASS shipmentDetail 'Строка поставки' : listRegisterDetail;
-CLASS shipmentPosted 'Закрытая поставка' : shipment, postedObject;
+CLASS shipmentPosted 'Проведенная поставка' : shipment, postedObject;
 
 @defineDocument(shipment);
 @defineDocumentDepartmentStore(shipment);
@@ -2128,7 +2128,7 @@ needToWasteShipmentDetail (shipmentDetail) = TRUE IF percentRateWasteShipmentDet
 needToWasteShipment (shipment) = GROUP SUM 1 IF needToWasteShipmentDetail(shipmentDetail) BY shipmentShipmentDetail(shipmentDetail) IN baseGroup;
 
 CLASS wastage 'Списание отходов' : historyObject;
-CLASS wastagePosted 'Закрытое списание отходов' : wastage, postedObject;
+CLASS wastagePosted 'Проведенное списание отходов' : wastage, postedObject;
 CLASS wastageDetail 'Строка документа';
 
 @defineDocumentAggregation(shipment, wastage, needToWasteShipment);
@@ -2212,7 +2212,7 @@ sumContainerOutAccountDocumentLedger (ledger) += sumContainerWriteOffDetailWrite
 
 CLASS innerFlow 'Расход в отдел' : historyObject, numberedObject;
 CLASS innerFlowDetail 'Строка расхода в отдел';
-CLASS innerFlowPosted 'Закрытый расход в отдел' : innerFlow, postedObject;
+CLASS innerFlowPosted 'Проведенный расход в отдел' : innerFlow, postedObject;
 
 @defineDocument(innerFlow);
 @defineDocumentDepartmentStore(innerFlow);
@@ -2305,7 +2305,7 @@ showWareInnerFlow 'Есть посуда' (innerFlow) = DATA BOOLEAN (innerFlow)
 
 CLASS innerArrival 'Приход в отдел' : historyObject, inputListRegister;
 CLASS innerArrivalDetail 'Строка прихода в отдел' : inputListRegisterDetail;
-CLASS innerArrivalPosted 'Закрытый приход в отдел' : innerArrival, postedObject;
+CLASS innerArrivalPosted 'Проведенный приход в отдел' : innerArrival, postedObject;
 
 @defineDocument(innerArrival);
 @defineDocumentDepartmentStore(innerArrival);
@@ -2474,7 +2474,7 @@ nameSenderDepartmentPriceChangeInnerArrival 'Отдел-отправитель' 
 
 CLASS returnSupplier 'Возврат поставщику' : historyObject, numberedObject, contractLedger, contractALedger, outContractLedger;
 CLASS returnSupplierDetail 'Строка возврата поставщику';
-CLASS returnSupplierPosted 'Закрытый возврат поставщику' : returnSupplier, postedObject;
+CLASS returnSupplierPosted 'Проведенный возврат поставщику' : returnSupplier, postedObject;
 
 @defineDocument(returnSupplier);
 @defineDocumentDepartmentStore(returnSupplier);
@@ -2674,7 +2674,7 @@ sumContainerOutAccountDocumentLedger (ledger) += 0.0 IF ledger IS saleDiscountDo
 //----------------------------------- Пересорт товара -------------------------------------------------------
 
 CLASS disparity 'Пересортица' : historyObject, numeratedDocument;
-CLASS disparityPosted 'Закрытая пересортица' : disparity, postedObject;
+CLASS disparityPosted 'Проведенная пересортица' : disparity, postedObject;
 CLASS disparityDetail 'Строка пересортицы';
 
 @defineDocument(disparity);
@@ -2834,7 +2834,7 @@ showPriceChangeDisparity 'Отображать комиссию при пере�
 
 CLASS naturalLoss 'Ведомость естественной убыли' : historyObject, externalObject, numberedObject;
 CLASS naturalLossDetail 'Строка ведомости естественной убыли': externalObject;
-CLASS naturalLossPosted 'Закрытая ведомость естественной убыли' : naturalLoss, postedObject;
+CLASS naturalLossPosted 'Проведенная ведомость естественной убыли' : naturalLoss, postedObject;
 
 @defineDocument(naturalLoss);
 @defineDocumentDepartmentStore(naturalLoss);
@@ -3084,7 +3084,7 @@ CLASS ABSTRACT order 'Заказ' : historyObject, numeratedObject;
 @defineNumeratedObjectDefault(order, 'Нумератор для заказов', 'ЗК');
 
 CLASS orderSupplier 'Заказ поставщику' : order;
-CLASS orderSupplierPosted 'Закрытый заказ поставщику' :orderSupplier, postedObject;
+CLASS orderSupplierPosted 'Проведенный заказ поставщику' :orderSupplier, postedObject;
 //CLASS orderStock 'Заказ складу' :order;
 
 TABLE orderSupplier(orderSupplier);

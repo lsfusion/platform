@@ -57,7 +57,7 @@ META defineInvoice(sign, stockProp)
 
     CLASS userInvoice 'Накладная (польз.)'###sign : invoice, historyObject, numeratedDocument;
     CLASS userInvoiceDetail 'Строка накладной (польз.)'###sign : invoiceDetail;
-    CLASS userInvoicePosted 'Закрытая накладная (польз.)'###sign : userInvoice, postedObject;
+    CLASS userInvoicePosted 'Проведенная накладная (польз.)'###sign : userInvoice, postedObject;
 
     GROUP invoiceGroup 'Информация о накладной' : baseGroup;
 

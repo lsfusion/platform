@@ -17,7 +17,7 @@ REQUIRE System,
 // ------------------------------------- Объявление Z-отчета ---------------------------------------- //
 
 CLASS zReport 'Z-отчет (открытый)' : incomeCashOrder, historyObject, numberedObject;
-CLASS zReportPosted 'Z-отчет (закрытый)' : zReport, postedObject;
+CLASS zReportPosted 'Z-отчет (проведенный)' : zReport, postedObject;
 
 TABLE zReport (zReport);
 

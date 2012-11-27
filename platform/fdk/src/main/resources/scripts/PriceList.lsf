@@ -194,7 +194,7 @@ CLASS ABSTRACT priceListDetail 'Строка прайса';
 
 CLASS userPriceList 'Прайс (польз.)' : priceList, historyObject, numeratedObject;
 CLASS userPriceListDetail 'Строка прайса (польз.)' : priceListDetail;
-CLASS userPriceListPosted 'Закрытый прайс (польз.)' : userPriceList, postedObject;
+CLASS userPriceListPosted 'Проведенный прайс (польз.)' : userPriceList, postedObject;
 
 @defineDocumentInterface(priceList);
 

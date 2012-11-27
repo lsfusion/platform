@@ -58,7 +58,7 @@ META defineShipment(sign, stockProp)
 
     CLASS userShipment 'Поставка (польз.)'###sign : shipment, historyObject, numeratedDocument;
     CLASS userShipmentDetail 'Строка поставки (польз.)'###sign : shipmentDetail;
-    CLASS userShipmentPosted 'Закрытая поставка (польз.)'###sign : userShipment, postedObject;
+    CLASS userShipmentPosted 'Проведенная поставка (польз.)'###sign : userShipment, postedObject;
 
     @defineDocumentInterface(shipment);
     Shipment.shipmentShipmentDetail (detail) += shipmentShipmentDetail(detail);
@@ -603,7 +603,7 @@ META defineShipment(sign, stockProp)
     ;
 
     CLASS invoiceShipment 'Поставка на основе инвойса'###sign : shipment;
-    CLASS invoiceShipmentPosted 'Закрытая поставка на основе инвойса'###sign : invoiceShipment, postedObject;
+    CLASS invoiceShipmentPosted 'Проведенная поставка на основе инвойса'###sign : invoiceShipment, postedObject;
     CLASS invoiceShipmentDetail 'Строка поставки на основе инвойса'###sign : shipmentDetail;
 
     @defineDocumentTables(invoiceShipment);

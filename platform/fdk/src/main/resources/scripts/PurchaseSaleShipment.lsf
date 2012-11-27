@@ -63,7 +63,7 @@ shippedShipmentDetail 'Кол-во (поставлено)' (shipmentDetail) = GR
 toShipShipmentDetail 'Не поставлено' (shipmentDetail) = quantityShipmentDetail (shipmentDetail) (-) shippedShipmentDetail(shipmentDetail);
 
 CLASS purchaseShipment 'Поставка на основе поставки': Purchase.shipment;
-CLASS purchaseShipmentPosted 'Закрытая поставка на основе поставки' : purchaseShipment, postedObject;
+CLASS purchaseShipmentPosted 'Проведенная поставка на основе поставки' : purchaseShipment, postedObject;
 CLASS purchaseShipmentDetail 'Строка поставки на основе поставки' : Purchase.shipmentDetail;
 
 @defineDocumentTables(purchaseShipment);

@@ -198,7 +198,7 @@ END
 //-------------------------------------------- Логика платежей ----------------------------------------------------------------//
 
 CLASS payment 'Платеж' : numeratedObject, contractLedger, contractALedger, outContractLedger;
-CLASS paymentPosted 'Закрытый платеж' : payment, postedObject;
+CLASS paymentPosted 'Проведенный платеж' : payment, postedObject;
 TABLE payment(payment);
 
 @defineDocumentHeaderPosted(payment);
@@ -336,7 +336,7 @@ namePartyB 'Сторона Б' = name(partyB());
 //--------------------------------------------- Платежное требование ------------------------------------------------------//
 
 CLASS paymentRequest 'Платежное требование' : numeratedObject, contractLedger, inContractLedger;
-CLASS paymentRequestPosted 'Закрытое платежное требование' : paymentRequest, postedObject;
+CLASS paymentRequestPosted 'Проведенное платежное требование' : paymentRequest, postedObject;
 TABLE paymentRequest(paymentRequest);
 
 @defineDocumentHeaderPosted(paymentRequest);
@@ -472,8 +472,8 @@ META defineCreditMemoUnion (prop, caption)
 
 END
 
-@defineCreditMemoPrefix(in, 'Кредитная нота', 'Закрытая кредитная нота');
-@defineCreditMemoPrefix(out, 'Дебетная нота', 'Закрытая дебитовая нота');
+@defineCreditMemoPrefix(in, 'Кредитная нота', 'Проведенная кредитная нота');
+@defineCreditMemoPrefix(out, 'Дебетная нота', 'Проведенная дебитовая нота');
 
 prePostCreditMemo 'Провести' (creditMemo) = ABSTRACT ACTION(creditMemo);
 prePostCreditMemo(creditMemo) += prePostCreditMemoIn(creditMemo);

@@ -59,7 +59,7 @@ nameUnitOfMeasureArticleSkuWHfromCSIDetail 'Ед. измерения товар�
 barcodeFreightUnitWHfromCSIDetail 'Штрих-код короба' (WHfromCSIDetail) = barcode(freightUnitCStoWHDetail(CStoWHDetailWHfromCSIDetail(WHfromCSIDetail)));
 
 CLASS WHfromCSR 'Приемка на склад с СВХ' : historyObject;
-CLASS WHfromCSRPosted 'Закрытая приемка на склад с СВХ' : WHfromCSR, postedObject;
+CLASS WHfromCSRPosted 'Проведенная приемка на склад с СВХ' : WHfromCSR, postedObject;
 CLASS WHfromCSRDetail 'Строка приемки на склад с СВХ';
 
 @defineDocument(WHfromCSR);

@@ -11,7 +11,7 @@ META defineCreditNote(sign, stockProp)//contact, contactCaption)
 
     CLASS userCreditNote 'Акт расхождения (польз.)'###sign : creditNote, historyObject, numeratedDocument;
     CLASS userCreditNoteDetail 'Строка акта расхождения (польз.)'###sign : creditNoteDetail;
-    CLASS userCreditNotePosted 'Закрытый акта расхождения (польз.)'###sign : userCreditNote, postedObject;
+    CLASS userCreditNotePosted 'Проведенный акта расхождения (польз.)'###sign : userCreditNote, postedObject;
 
     @defineDocumentInterface(creditNote);
 
@@ -261,7 +261,7 @@ META defineCreditNote(sign, stockProp)//contact, contactCaption)
     EXTEND FORM invoices PROPERTIES(i) READONLY createCreditNoteInvoice;
 
     CLASS invoiceCreditNote 'Акт расхождения на основе инвойса' : creditNote;
-    CLASS invoiceCreditNotePosted 'Закрытый акт расхождения на основе инвойса' : invoiceCreditNote, postedObject;
+    CLASS invoiceCreditNotePosted 'Проведенный акт расхождения на основе инвойса' : invoiceCreditNote, postedObject;
     CLASS invoiceCreditNoteDetail 'Строка акта расхождения на основе инвойса' : creditNoteDetail;
 
     @defineDocumentTables(invoiceCreditNote);

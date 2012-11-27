@@ -33,7 +33,7 @@ EXTEND FORM orders
 ;
 
 CLASS purchaseOrder 'Заказ на основе заказа': Purchase.order;
-CLASS purchaseOrderPosted 'Закрытый заказ на основе заказа' : purchaseOrder, postedObject;
+CLASS purchaseOrderPosted 'Проведенный заказ на основе заказа' : purchaseOrder, postedObject;
 CLASS purchaseOrderDetail 'Строка заказа на основе заказа' : Purchase.orderDetail;
 
 @defineDocumentTables(purchaseOrder);

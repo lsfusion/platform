@@ -19,7 +19,7 @@ REQUIRE System,
 PRIORITY Stock, RomanLogicsModule;
 
 CLASS returnCertification 'Возврат из сертификации' : historyObject, numeratedObject;
-CLASS returnCertificationPosted 'Закрытый возврат из сертификации' : returnCertification, postedObject;
+CLASS returnCertificationPosted 'Проведенный возврат из сертификации' : returnCertification, postedObject;
 CLASS returnCertificationDetail 'Строка возврата из сертификации' : batchB;
 
 @defineDocumentTables(returnCertification);

@@ -129,7 +129,7 @@ userTypeOfAdditionStockInventory(stock, inventory) => includeStockInventory(stoc
 // ---------------------------------------------- Описи -------------------------------------- //
 
 CLASS listInventory 'Опись (открытая)';
-CLASS listInventoryPosted 'Опись (закрытая)' : listInventory, postedObject;
+CLASS listInventoryPosted 'Опись (проведенная)' : listInventory, postedObject;
 
 TABLE listInventory (listInventory);
 

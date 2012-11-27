@@ -119,7 +119,7 @@ CLASS writeOffDetail 'Строка списания';
 
 CLASS userWriteOff 'Списание (польз.)' : writeOff, historyObject, numeratedDocument;
 CLASS userWriteOffDetail 'Строка списания (польз.)' : writeOffDetail;
-CLASS userWriteOffPosted 'Закрытое списание (польз.)' : userWriteOff, postedObject;
+CLASS userWriteOffPosted 'Проведенное списание (польз.)' : userWriteOff, postedObject;
 
 @defineDocumentInterface(writeOff);
 @defineDocumentInterfaceDataStock(writeOff, stock, 'Склад');

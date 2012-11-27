@@ -6,7 +6,7 @@ NAMESPACE Purchase;
 
 //----------------------------------------------- Акт расценки ---------------------------------------------------//
 
-@definePricingAggregation(invoice, ' (закупка)', 'Акт расценки на основе инвойса', customerStock, );
+@definePricingAggregation(invoice, ' (закупка)', 'Акт расценки на основе инвойса', 'Проведенный акт расценки на основе инвойса', customerStock, );
 @definePricingRelation(' (закупка)', customerStock);
 
 @defineRepricing(' (закупка)', customerStock);

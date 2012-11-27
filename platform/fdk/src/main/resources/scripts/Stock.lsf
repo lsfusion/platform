@@ -1564,6 +1564,7 @@ META extendFormDocumentSkuCustom(object, form, concrete, skuProp, detail)
                 }
             }
         }
+        PROPERTY(currentBalanceSku###object) { background = #FFEEEE; }
     }
 END
 META extendFormDocumentSku(object, form, concrete)

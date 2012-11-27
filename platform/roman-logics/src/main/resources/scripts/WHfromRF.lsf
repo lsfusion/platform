@@ -18,7 +18,7 @@ REQUIRE System,
 PRIORITY Stock, RomanLogicsModule;
 
 CLASS WHfromRF 'Приход из РФ' : historyObject, numeratedObject;
-CLASS WHfromRFPosted 'Закрытый приход из РФ' : WHfromRF, postedObject;
+CLASS WHfromRFPosted 'Проведенный приход из РФ' : WHfromRF, postedObject;
 CLASS WHfromRFDetail 'Строка прихода из РФ';
 
 GROUP exchangeGroup 'Курсы обмена' : publicGroup;
