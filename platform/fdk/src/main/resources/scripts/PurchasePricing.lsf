@@ -52,8 +52,9 @@ retailMarkupUserInvoiceDetail(detail)  <- IF retailPriceListTypeUserInvoiceDetai
                                                    skuUserInvoiceDetail(detail),
                                                    customerStockUserInvoiceDetail(detail),
                                                    dateTimeUserInvoiceDetail(detail)),
-            valueRetailVATUserInvoiceDetail(detail),
-            priceUserInvoiceDetail(detail))
+            priceUserInvoiceDetail(detail),
+            valueRetailVATUserInvoiceDetail(detail))
+
 
     WHEN CHANGED(retailPriceListTypeUserInvoiceDetail(detail)) OR
          CHANGED(priceGroupSku(skuUserInvoiceDetail(detail))) OR

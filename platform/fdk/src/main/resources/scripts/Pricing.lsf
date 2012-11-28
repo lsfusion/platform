@@ -201,8 +201,8 @@ END
 META changeDocumentDetailMarkupCustomPrefix(detail, prefixA, prefixB, prefixC, prefixD)
     calc###prefixC###markup###detail(detail)  = [round2(((X/Z*100/(100+Y))-1)*100)](
         0.0 IF detail IS detail OR prefixA###price###detail(detail),
-        0.0 IF detail IS detail OR value###prefixD###VAT###detail(detail),
-        prefixB###price###detail(detail));
+        prefixB###price###detail(detail),
+        0.0 IF detail IS detail OR value###prefixD###VAT###detail(detail));
 
     change###prefixA###price###detail = ACTION (detail) {
 
