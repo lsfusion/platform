@@ -309,7 +309,6 @@ GROUP expiryGroup 'Контроль сроков годности' : publicGroup
 GROUP equipmentGroup 'Внешние устройства' : publicGroup;
 GROUP labelGroup 'Ценник' : publicGroup;
 
-GROUP barGroup 'Бар' : publicGroup;
 GROUP activeGroup 'Активность товара' : publicGroup;
 
 tmpSku() = SESSION DATA sku ();
@@ -373,7 +372,6 @@ weightNumeratorItem (item) = weightNumeratorItemGroup(itemGroupItem(item));
 barcodeNumeratorSku(item) += IF isWeightItem(item) THEN weightNumeratorItem(item) ELSE pieceNumeratorItem(item);
 
 //------------------------------------ Товар с историей -------------------------------------------------------------//
-GROUP historyGroup 'Изменяемые характеристики' : baseGroup;
 
 @defineHistorizableCustom(inactiveItem, 'Неактивный товар', yesNo, name, item, nameAttributeItem, activeGroup);
 isActiveItem (item) = item IS item AND NOT inactiveItem(item) == yesNo.yes PERSISTENT;
@@ -381,51 +379,6 @@ EXTEND FORM items
     FILTERGROUP filters
         FILTER 'Отображать только активные товары' 'F10' isActiveItem(i) DEFAULT
 ;
-
-@defineHistorizableCustom(isPortionBarItem, 'Порционный товар для бара', yesNo, name, item, nameAttributeItem, barGroup);
-
-@defineHistorizableCustom(banDiscountItem, 'Запретить скидки по товару', yesNo, name, item, nameAttributeItem, discountGroup);
-
-@defineHistorizable(importerPriceItem, 'Цена импортёра', NUMERIC[14,3], item, nameAttributeItem, retailGroup);
-
-@defineHistorizable(minTradeAllowanceItem, 'MIN допустимая торговая надбавка, %', NUMERIC[8,3], item, nameAttributeItem, retailGroup);
-@defineHistorizable(maxTradeAllowanceItem, 'MAX допустимая торговая надбавка, %', NUMERIC[8,3], item, nameAttributeItem, retailGroup);
-
-//---------------------------- Налоги ----------------------------------------//
-
-GROUP supplierVATGroup 'НДС поставщика' : retailGroup;
-@defineHistorizableCustom(supplierVATItem, 'НДС поставщика', range, numberRange, item, nameAttributeItem, supplierVATGroup);
-
-CONSTRAINT taxRange(dataSupplierVATItemDate(item, date)) != tax.taxVAT CHECKED BY dataSupplierVATItemDate MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
-
-dataValueSupplierVATItemDate 'НДС поставщика, %' (item, date) = valueRateRangeDate(dataSupplierVATItemDate(item, date), date) IN supplierVATGroup;
-valueCurrentRateSupplierVATItem 'НДС поставщика, %' (item) = valueCurrentRateRange(supplierVATItem(item)) IN supplierVATGroup;
-
-EXTEND FORM addSupplierVATItem
-    PROPERTIES READONLY dataValueSupplierVATItemDate(a, d)
-;
-EXTEND FORM dialogSupplierVATItem
-    PROPERTIES dataValueSupplierVATItemDate(a, d)
-;
-
-//---------------------------- НДС розничный для товара ----------------------------------------//
-
-GROUP retailVATGroup 'НДС розничный' : retailGroup;
-
-@defineHistorizableCustom(retailVATItem, 'НДС розничный', range, numberRange, item, nameAttributeItem, retailVATGroup);
-
-CONSTRAINT taxRange(dataRetailVATItemDate(item, date)) != tax.taxVAT CHECKED BY dataRetailVATItemDate MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
-
-dataValueRetailVATItemDate 'НДС розничный, %' (item, date) = valueRateRangeDate(dataRetailVATItemDate(item, date), date) IN retailVATGroup;
-valueCurrentRateRetailVATItem 'НДС розничный, %' (item) = valueCurrentRateRange(retailVATItem(item)) IN retailVATGroup;
-
-EXTEND FORM addRetailVATItem
-    PROPERTIES READONLY dataValueRetailVATItemDate(a, d)
-;
-EXTEND FORM dialogRetailVATItem
-    PROPERTIES dataValueRetailVATItemDate(a, d)
-;
-
 
 // ----------------------------------- Справочник норм естественной убыли -------------------------------------------- //
 
@@ -603,18 +556,11 @@ EXTEND FORM item
 
                   lengthPackItem, widthPackItem, heightPackItem, grossWeightPackItem,
 
-                  nameIsPortionBarItem, dialogIsPortionBarItem, nameInactiveItem, dialogInactiveItem,
+                  nameInactiveItem, dialogInactiveItem,
 
                   // Дополнительные
                   passScalesItem, isMarkItem, isLoafCutItem,
                   compositionScalesItem, idLabelFormatPackItem,
-
-                  importerPriceItem, dialogImporterPriceItem,
-                  numberRangeSupplierVATItem, valueCurrentRateSupplierVATItem, dialogSupplierVATItem,
-                  numberRangeRetailVATItem, valueCurrentRateRetailVATItem, dialogRetailVATItem,
-                  minTradeAllowanceItem, dialogMinTradeAllowanceItem, maxTradeAllowanceItem, dialogMaxTradeAllowanceItem,
-
-                  nameBanDiscountItem, dialogBanDiscountItem,
 
                   nutritionalValueItem, energyItem,
                   fatsItem, carbohydratesItem, proteinsItem, isContainGMOItem,
@@ -659,7 +605,6 @@ EXTEND DESIGN item {
                     ADD i.rateGroup {
                         childConstraints = TO THE BOTTOM;
                     }
-                    ADD i.barGroup;
                     ADD i.activeGroup;
                 }
             }
@@ -673,11 +618,8 @@ EXTEND DESIGN item {
                     childConstraints = TO THE BOTTOM;
                     ADD i.equipmentGroup {
                         childConstraints = TO THE BOTTOM;
-                    };
-                    ADD i.retailGroup {
-                        childConstraints = TO THE BOTTOM;
-                    };
-                };
+                    }
+                }
 
                 NEW containerARight {
                     childConstraints = TO THE BOTTOM;
@@ -1678,14 +1620,6 @@ nonRoundImporterPriceShipmentDetail 'Цена изготовителя/импо�
 importerPriceShipmentDetail (shipmentDetail) <-
     round0(nonRoundImporterPriceShipmentDetail(shipmentDetail))
     WHEN CHANGED(nonRoundImporterPriceShipmentDetail(shipmentDetail));
-
-supplierVATShipmentDetail(shipmentDetail) <-
-    supplierVATItemDate(itemShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail))
-    WHEN CHANGED(itemShipmentDetail(shipmentDetail));
-
-retailVATShipmentDetail(shipmentDetail) <-
-    retailVATItemDate(itemShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail))
-    WHEN CHANGED(itemShipmentDetail(shipmentDetail));
 
 wareShipmentDetail(shipmentDetail) <-
     wareItem(itemShipmentDetail(shipmentDetail))
@@ -3326,36 +3260,6 @@ DESIGN commonInfoBatchReturnSupplierDetail FROM DEFAULT {
         preferredSize = (800, 500);
     };
 }
-
-// ---------------------------------- Контроль предельных надбавок ------------------------------------------
-
-// todo : здесь надо деление на 0 во что-то обернуть - иначе будет division by zero
-CONSTRAINT [(X*(Y+100)/Z/100-1)*100](
-            supplierPriceShipmentDetail(shipmentDetail), retailMarkupShipmentDetail(shipmentDetail), importerPriceShipmentDetail(shipmentDetail))
-                >
-            maxTradeAllowanceItemDate (itemShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail)) MESSAGE 'Превышена предельно допустимая наценка';
-
-CONSTRAINT commonMarkupPriceChangeDocumentDetail (priceChangeDocumentDetail) >
-            maxTradeAllowanceItemDate (skuPriceChangeDocumentDetail(priceChangeDocumentDetail), datePriceChangeDocumentDetail(priceChangeDocumentDetail)) MESSAGE 'Превышена предельно допустимая наценка';
-
-CONSTRAINT [(X*(Y+100)/Z/100-1)*100](
-            supplierPriceInnerArrivalDetail(innerArrivalDetail), retailMarkupInnerArrivalDetail(innerArrivalDetail), importerPriceInnerArrivalDetail(innerArrivalDetail))
-                >
-            maxTradeAllowanceItemDate (itemInnerArrivalDetail(innerArrivalDetail), dateInnerArrivalDetail(innerArrivalDetail)) MESSAGE 'Превышена предельно допустимая наценка';
-
-
-CONSTRAINT [(X*(Y+100)/Z/100-1)*100](
-            supplierPriceShipmentDetail(shipmentDetail), retailMarkupShipmentDetail(shipmentDetail), importerPriceShipmentDetail(shipmentDetail))
-                <
-            minTradeAllowanceItemDate (itemShipmentDetail(shipmentDetail), dateShipmentDetail(shipmentDetail)) MESSAGE 'Наценка меньше минимально допустимой';
-
-CONSTRAINT commonMarkupPriceChangeDocumentDetail (priceChangeDocumentDetail) <
-            minTradeAllowanceItemDate (skuPriceChangeDocumentDetail(priceChangeDocumentDetail), datePriceChangeDocumentDetail(priceChangeDocumentDetail)) MESSAGE 'Наценка меньше минимально допустимой';
-
-CONSTRAINT [(X*(Y+100)/Z/100-1)*100](
-            supplierPriceInnerArrivalDetail(innerArrivalDetail), retailMarkupInnerArrivalDetail(innerArrivalDetail), importerPriceInnerArrivalDetail(innerArrivalDetail))
-                <
-            minTradeAllowanceItemDate (itemInnerArrivalDetail(innerArrivalDetail), dateInnerArrivalDetail(innerArrivalDetail)) MESSAGE 'Наценка меньше минимально допустимой';
 
 //---------------------------Товарный отчет-------------------------------------//
 
