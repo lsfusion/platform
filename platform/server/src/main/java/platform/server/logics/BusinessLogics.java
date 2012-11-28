@@ -1,8 +1,10 @@
 package platform.server.logics;
 
+import com.google.common.base.Throwables;
 import net.sf.jasperreports.engine.JRException;
 import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.CommonTokenStream;
+import org.antlr.runtime.RecognitionException;
 import org.apache.log4j.Logger;
 import org.postgresql.util.PSQLException;
 import org.springframework.beans.factory.InitializingBean;
@@ -676,8 +678,15 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         nameToModule.clear();
     }
 
+    static class ScriptErrorsException extends RuntimeException {
+        public ScriptErrorsException(String message) {
+            super(message);
+        }
+    }
+
     protected void initModules() throws ClassNotFoundException, IOException, SQLException, InstantiationException, IllegalAccessException, JRException {
         String errors = "";
+        Exception ex = null;
         try {
             for (LogicsModule module : logicModules) {
                 module.initModuleDependencies();
@@ -743,18 +752,25 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             //setUserLoggableProperties();
             setPropertyNotifications();
             setNotNullProperties();
-        } catch (Exception e) {
-            logger.error("Error while create BL", e);
+        } catch (RecognitionException e) {
             errors += e.getMessage();
+        } catch (Exception e) {
+            ex = e;
         }
 
         String syntaxErrors = "";
         for (LogicsModule module : logicModules) {
             syntaxErrors += module.getErrorsDescription();
         }
+
         if (errors.length() > 0 || syntaxErrors.length() > 0) {
             errors = "\n" + syntaxErrors + errors;
-            throw new RuntimeException(errors);
+            if (ex != null) {
+                errors += ex.getMessage();
+            }
+            throw new ScriptErrorsException(errors);
+        } else if (ex != null) {
+            Throwables.propagate(ex);
         }
     }
 
