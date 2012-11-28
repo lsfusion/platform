@@ -821,13 +821,25 @@ DESIGN priceListTypes FROM DEFAULT{
     ADD functions.box;
 }
 
+addUserPriceListLegalEntity 'Добавить' = ACTION (legalEntity) {
+
+    FOR ADDOBJ u = userPriceList DO {
+        SET companyUserPriceList(u) <- legalEntity;
+        FORM userPriceList OBJECTS p = u DOCKED_MODAL;
+        IF TRUE AND NOT formResult() == formResult.ok THEN {
+            EXEC delete(u);
+        }
+    }
+} TOOLBAR;
+
 EXTEND FORM legalEntity
 
     OBJECTS p = userPriceList
     PROPERTIES(p) READONLY objectClassName, numberObject, seriesObject, fromDateTimeUserPriceList, toDateTimeUserPriceList,
                            nameCurrencyUserPriceList, nameCompanyUserPriceList, noteUserPriceList, priceListTypesPriceList,
                            stocksPriceList
-    PROPERTIES(p) ADDSESSIONFORM, EDITSESSIONFORM, delete FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES addUserPriceListLegalEntity(l) TODRAW p FORCE PANEL
+    PROPERTIES(p) EDITSESSIONFORM, delete FORCE PANEL DRAWTOTOOLBAR
     FILTERS companyUserPriceList(p) == l
 ;
 
