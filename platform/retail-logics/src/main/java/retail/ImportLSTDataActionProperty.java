@@ -3,11 +3,16 @@ package retail;
 import org.apache.commons.lang.time.DateUtils;
 import org.xBaseJ.DBF;
 import org.xBaseJ.xBaseJException;
-import platform.server.classes.ConcreteCustomClass;
-import platform.server.classes.DateClass;
-import platform.server.classes.StringClass;
+import platform.base.BaseUtils;
+import platform.base.OrderedMap;
+import platform.interop.Compare;
+import platform.server.classes.*;
+import platform.server.data.expr.KeyExpr;
+import platform.server.data.query.Query;
 import platform.server.integration.*;
 import platform.server.logics.DataObject;
+import platform.server.logics.NullValue;
+import platform.server.logics.linear.LCP;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.scripted.ScriptingActionProperty;
@@ -16,6 +21,8 @@ import platform.server.logics.scripted.ScriptingLogicsModule;
 import platform.server.session.DataSession;
 
 import java.io.IOException;
+import java.security.Timestamp;
+import java.security.cert.CertPath;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.*;
@@ -503,43 +510,86 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
 
                 List<List<Object>> data = importAssortmentFromDBF(path, start, count);
                 if (data.isEmpty())
-                    return;
+                    break;
 
-                DataObject defaultDate = new DataObject(new java.sql.Date(2001 - 1900, 0, 01), DateClass.instance);
+                DataSession currencySession = LM.getBL().createSession();
 
-                ImportField itemIDField = new ImportField(getLCP("extSID"));
-                ImportField supplierIDField = new ImportField(getLCP("extSID"));
-                ImportField departmentStoreIDField = new ImportField(getLCP("extSID"));
-                ImportField isSupplierItemDepartmentField = new ImportField(getLCP("name"));
-                ImportField priceSupplierItemDepartmentField = new ImportField(getLCP("dataPriceSupplierItemDepartmentDate"));
+                DataObject dataPriceListTypeObject = currencySession.addObject((ConcreteCustomClass) getClass("dataPriceListType"));
+                Object defaultCurrency = getLCP("currencyShortName").read(currencySession, new DataObject("BLR", StringClass.get(3)));
+                getLCP("name").change("Поставщика", currencySession, dataPriceListTypeObject);
+                getLCP("currencyDataPriceListType").change(defaultCurrency, currencySession, dataPriceListTypeObject);
+                currencySession.apply(LM.getBL());
+
+                ImportField itemField = new ImportField(getLCP("extSID"));
+                ImportField legalEntityField = new ImportField(getLCP("extSID"));
+                ImportField userPriceListField = new ImportField(getLCP("extSID"));
+                ImportField departmentStoreField = new ImportField(getLCP("extSID"));
+                ImportField currencyField = new ImportField(getLCP("shortNameCurrency"));
+                ImportField pricePriceListDetailDataPriceListTypeField = new ImportField(getLCP("pricePriceListDetailDataPriceListType"));
+                ImportField inPriceListPriceListTypeField = new ImportField(getLCP("inPriceListPriceListType"));
+
+                ImportKey<?> userPriceListDetailKey = new ImportKey((ConcreteCustomClass) getClass("userPriceListDetail"),
+                        getLCP("userPriceListDetailSkuUserPriceList").getMapping(itemField, userPriceListField));
+
+                ImportKey<?> legalEntityKey = new ImportKey((ConcreteCustomClass) getClass("legalEntity"),
+                        getLCP("extSIDToObject").getMapping(legalEntityField));
+
+                ImportKey<?> userPriceListKey = new ImportKey((ConcreteCustomClass) getClass("userPriceList"),
+                        getLCP("extSIDToObject").getMapping(userPriceListField));
 
                 ImportKey<?> itemKey = new ImportKey((ConcreteCustomClass) getClass("item"),
-                        getLCP("extSIDToObject").getMapping(itemIDField));
+                        getLCP("extSIDToObject").getMapping(itemField));
 
-                ImportKey<?> supplierKey = new ImportKey((ConcreteCustomClass) getClass("legalEntity"),
-                        getLCP("extSIDToObject").getMapping(supplierIDField));
-
-                ImportKey<?> departmentStoreKey = new ImportKey((ConcreteCustomClass) getClass("departmentStore"),
-                        getLCP("extSIDToObject").getMapping(departmentStoreIDField));
-
-                ImportKey<?> logicalKey = new ImportKey((ConcreteCustomClass) getClass("yesNo"),
-                        getLCP("classSIDToYesNo").getMapping(isSupplierItemDepartmentField));
+                ImportKey<?> currencyKey = new ImportKey((ConcreteCustomClass) getClass("currency"),
+                        getLCP("currencyShortName").getMapping(currencyField));
 
                 List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
 
-                props.add(new ImportProperty(priceSupplierItemDepartmentField, getLCP("dataPriceSupplierItemDepartmentDate").getMapping(supplierKey, itemKey, departmentStoreKey, defaultDate)));
-                props.add(new ImportProperty(isSupplierItemDepartmentField, getLCP("dataIsSupplierItemDepartmentDate").getMapping(supplierKey, itemKey, departmentStoreKey, defaultDate),
-                        LM.object(getClass("yesNo")).getMapping(logicalKey)));
-
-                ImportTable table = new ImportTable(Arrays.asList(itemIDField, supplierIDField, departmentStoreIDField, isSupplierItemDepartmentField, priceSupplierItemDepartmentField), data);
+                props.add(new ImportProperty(userPriceListField, getLCP("extSID").getMapping(userPriceListKey)));
+                props.add(new ImportProperty(legalEntityField, getLCP("companyUserPriceList").getMapping(userPriceListKey),
+                        LM.object(getClass("legalEntity")).getMapping(legalEntityKey)));
+                props.add(new ImportProperty(itemField, getLCP("skuUserPriceListDetail").getMapping(userPriceListDetailKey),
+                        LM.object(getClass("item")).getMapping(itemKey)));
+                props.add(new ImportProperty(legalEntityField, getLCP("userPriceListUserPriceListDetail").getMapping(userPriceListDetailKey),
+                        LM.object(getClass("userPriceList")).getMapping(userPriceListKey)));
+                props.add(new ImportProperty(currencyField, getLCP("currencyUserPriceList").getMapping(userPriceListKey),
+                        LM.object(getClass("currency")).getMapping(currencyKey)));
+                props.add(new ImportProperty(inPriceListPriceListTypeField, getLCP("inUserPriceListPriceListType").getMapping(userPriceListKey, new DataObject(dataPriceListTypeObject.object, (ConcreteClass) getClass("dataPriceListType")))));
+                props.add(new ImportProperty(pricePriceListDetailDataPriceListTypeField, getLCP("priceUserPriceListDetailDataPriceListType").getMapping(userPriceListDetailKey, new DataObject(dataPriceListTypeObject.object, (ConcreteClass) getClass("dataPriceListType"))/*, itemKey, departmentStoreKey, defaultDate*/)));
+                ImportTable table = new ImportTable(Arrays.asList(itemField, legalEntityField, userPriceListField, departmentStoreField, currencyField, pricePriceListDetailDataPriceListTypeField, inPriceListPriceListTypeField), data);
 
                 DataSession session = createSession();
-                IntegrationService service = new IntegrationService(session, table, Arrays.asList(supplierKey, itemKey, departmentStoreKey, logicalKey), props);
+                IntegrationService service = new IntegrationService(session, table, Arrays.asList(userPriceListKey, userPriceListDetailKey, itemKey, legalEntityKey, currencyKey), props);
                 service.synchronize(true, false);
                 applySession(session);
                 session.close();
 
-                System.out.println("done assortment " + start);
+                System.out.println("done assortment " + data.size());
+
+                data = importStockSuppliersFromDBF(context, path, start, count);
+
+                ImportField inPriceList2Field = new ImportField(getLCP("inPriceList"));
+                ImportField inPriceListStock2Field = new ImportField(getLCP("inPriceListStock"));
+                ImportField userPriceList2Field = new ImportField(getLCP("extSID"));
+                ImportField departmentStore2Field = new ImportField(getLCP("extSID"));
+
+                ImportKey<?> userPriceList2Key = new ImportKey((ConcreteCustomClass) getClass("userPriceList"),
+                        getLCP("extSIDToObject").getMapping(userPriceList2Field));
+                ImportKey<?> departmentStore2Key = new ImportKey((ConcreteCustomClass) getClass("departmentStore"),
+                        getLCP("extSIDToObject").getMapping(departmentStore2Field));
+
+                props = new ArrayList<ImportProperty<?>>();
+                props.add(new ImportProperty(userPriceList2Field, getLCP("extSID").getMapping(userPriceList2Key)));
+                props.add(new ImportProperty(inPriceList2Field, getLCP("inPriceList").getMapping(userPriceList2Key)));
+                props.add(new ImportProperty(inPriceListStock2Field, getLCP("inPriceListStock").getMapping(userPriceList2Key, departmentStore2Key)));
+
+                table = new ImportTable(Arrays.asList(userPriceList2Field, departmentStore2Field, inPriceList2Field, inPriceListStock2Field), data);
+
+                session = createSession();
+                service = new IntegrationService(session, table, Arrays.asList(userPriceList2Key, departmentStore2Key), props);
+                service.synchronize(true, false);
+                applySession(session);
+                session.close();
             }
 
         } catch (xBaseJException e) {
@@ -840,8 +890,6 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             ImportField percentWriteOffRateField = new ImportField(getLCP("percentWriteOffRate"));
             ImportField countryWriteOffRateField = new ImportField(getLCP("name"));
 
-            //DataObject defaultCountryObject = (DataObject) getLCP("defaultCountry").readClasses(context.getSession());
-
             ImportKey<?> writeOffRateKey = new ImportKey((ConcreteCustomClass) getClass("writeOffRate"),
                     getLCP("extSIDToObject").getMapping(writeOffRateIDField));
 
@@ -1092,7 +1140,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             Double retailPriceShipmentDetail = new Double(new String(importFile.getField("N_CENU").getBytes(), "Cp1251").trim());
             Double retailMarkupShipmentDetail = new Double(new String(importFile.getField("N_TN").getBytes(), "Cp1251").trim());
 
-            if ((post_dok.length != 1)&&(supplierID.startsWith("ПС")))
+            if ((post_dok.length != 1) && (supplierID.startsWith("ПС")))
                 data.add(Arrays.asList((Object) number, series, true, true, userInvoiceDetailSID, dateShipment, itemID,
                         quantityShipmentDetail, supplierID, warehouseID, supplierWarehouse, priceShipmentDetail,
                         retailPriceShipmentDetail, retailMarkupShipmentDetail));
@@ -1116,10 +1164,52 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             String item = new String(importFile.getField("K_GRMAT").getBytes(), "Cp1251").trim();
             String supplier = new String(importFile.getField("K_ANA").getBytes(), "Cp1251").trim();
             String departmentStore = new String(importFile.getField("K_SKL").getBytes(), "Cp1251").trim();
+            String currency = "BLR";
             Double price = new Double(new String(importFile.getField("N_CENU").getBytes(), "Cp1251").trim());
 
-            if (departmentStore.length() >= 2) {
-                data.add(Arrays.asList((Object) item, supplier, "СК" + departmentStore.substring(2, departmentStore.length()), "yes", price));
+            if (departmentStore.length() >= 2 && supplier.startsWith("ПС")) {
+                data.add(Arrays.asList((Object) item, supplier, supplier + "ПР", departmentStore, currency, price, true));
+            }
+        }
+        return data;
+    }
+
+    private List<List<Object>> importStockSuppliersFromDBF(ExecutionContext context, String path, int start, int count) throws
+            IOException, xBaseJException, ScriptingErrorLog.SemanticErrorException, SQLException {
+
+        DBF importFile = new DBF(path);
+        int totalRecordCount = importFile.getRecordCount();
+
+        data = new ArrayList<List<Object>>();
+        Set<String> stores = new HashSet<String>();
+        for (int i = 0; i < Math.min(totalRecordCount, start + count); i++) {
+            importFile.read();
+            if (i < start) continue;
+
+            String supplier = new String(importFile.getField("K_ANA").getBytes(), "Cp1251").trim();
+            String store = new String(importFile.getField("K_SKL").getBytes(), "Cp1251").trim();
+
+            if (supplier.startsWith("ПС") && (!stores.contains(store))) {
+
+                Object storeObject = getLCP("extSIDToObject").readClasses(context.getSession(), new DataObject(store, StringClass.get(110)));
+                if (!(storeObject instanceof NullValue)) {
+                    LCP isDepartmentStore = LM.is(getClass("departmentStore"));
+                    Map<Object, KeyExpr> keys = isDepartmentStore.getMapKeys();
+                    KeyExpr key = BaseUtils.singleValue(keys);
+                    Query<Object, Object> query = new Query<Object, Object>(keys);
+                    query.properties.put("extSID", getLCP("extSID").getExpr(context.getModifier(), key));
+                    query.and(isDepartmentStore.getExpr(key).getWhere());
+                    query.and(getLCP("storeDepartmentStore").getExpr(context.getModifier(), key).compare(((DataObject)storeObject).getExpr(), Compare.EQUALS));
+                    OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(context.getSession().sql);
+
+                    for (Map.Entry<Map<Object, Object>, Map<Object, Object>> entry : result.entrySet()) {
+                        List<Object> row = new ArrayList<Object>();
+                        row.addAll(Arrays.asList(supplier + "ПР", entry.getValue().get("extSID"), null, true));
+                        if (!data.contains(row))
+                            data.add(row);
+                    }
+                    stores.add(store);
+                }
             }
         }
         return data;

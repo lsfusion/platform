@@ -192,7 +192,7 @@ currencyPriceListType(dataPriceListType) += currencyDataPriceListType(dataPriceL
 CLASS ABSTRACT priceList 'Прайс';
 CLASS ABSTRACT priceListDetail 'Строка прайса';
 
-CLASS userPriceList 'Прайс (польз.)' : priceList, historyObject, numeratedObject;
+CLASS userPriceList 'Прайс (польз.)' : priceList, historyObject, numeratedObject, externalObject;
 CLASS userPriceListDetail 'Строка прайса (польз.)' : priceListDetail;
 CLASS userPriceListPosted 'Проведенный прайс (польз.)' : userPriceList, postedObject;
 
@@ -224,6 +224,9 @@ CLASS userPriceListPosted 'Проведенный прайс (польз.)' : us
 
 toDateUserPriceList(userPriceList) <- NULL WHEN ASSIGNED(userPriceList IS userPriceList);
 toTimeUserPriceList(userPriceList) <- NULL WHEN ASSIGNED(userPriceList IS userPriceList);
+
+userPriceListLegalEntity (legalEntity) = GROUP MAX userPriceList BY companyPriceList(userPriceList) WHERE userPriceList IS userPriceList;
+userPriceListDetailSkuUserPriceList (sku, userPriceList) = GROUP UNIQUE userPriceListDetail BY skuUserPriceListDetail (userPriceListDetail), userPriceListUserPriceListDetail (userPriceListDetail) WHERE userPriceListDetail IS userPriceListDetail;
 
 pricePriceListDetailDataPriceListType 'Цена' = ABSTRACT NUMERIC[14,2] (priceListDetail, dataPriceListType) PERSISTENT;
 priceUserPriceListDetailDataPriceListType 'Цена' = DATA NUMERIC[14,2] (priceListDetail, dataPriceListType);
