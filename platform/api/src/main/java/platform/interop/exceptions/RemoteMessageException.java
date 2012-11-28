@@ -11,6 +11,6 @@ public class RemoteMessageException extends RemoteServerException {
     }
 
     public RemoteMessageException(String message, Throwable cause) {
-        super(message, cause);
+        super(message + (cause == null ? "" : ": " + cause.getMessage()) , cause);
     }
 }

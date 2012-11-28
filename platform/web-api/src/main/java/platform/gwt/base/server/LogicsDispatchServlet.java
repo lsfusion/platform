@@ -20,7 +20,6 @@ import platform.gwt.base.server.spring.NavigatorProvider;
 import platform.gwt.base.shared.InvalidateException;
 import platform.gwt.base.shared.MessageException;
 import platform.interop.RemoteLogicsInterface;
-import platform.interop.exceptions.RemoteMessageException;
 import platform.interop.navigator.RemoteNavigatorInterface;
 
 import javax.servlet.ServletConfig;
@@ -51,13 +50,13 @@ public abstract class LogicsDispatchServlet<T extends RemoteLogicsInterface> ext
         } catch (RemoteDispatchException e) {
             getLogicsProvider().invalidate();
 
-            logger.error("Ошибка в LogicsDispatchServlet.execute1: ", e.getRemote());
+            logger.error("Ошибка в LogicsDispatchServlet.execute: ", e.getRemote());
             throw new InvalidateException("Внутренняя ошибка сервера. Попробуйте перезагрузить страницу.");
-        } catch (RemoteMessageException e) {
-            logger.error("Ошибка в LogicsDispatchServlet.execute2: ", e);
+        } catch (MessageException e) {
+            logger.error("Ошибка в LogicsDispatchServlet.execute: ", e);
             throw new MessageException("Внутренняя ошибка сервера: " + e.getMessage());
         } catch (Throwable e) {
-            logger.error("Ошибка в LogicsDispatchServlet.execute3: ", e);
+            logger.error("Ошибка в LogicsDispatchServlet.execute: ", e);
             throw new MessageException("Внутренняя ошибка сервера.");
         }
     }

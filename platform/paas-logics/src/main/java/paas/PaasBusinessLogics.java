@@ -24,7 +24,6 @@ import platform.server.session.DataSession;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.Map;
 
 import static java.util.Arrays.asList;
@@ -529,7 +528,7 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
         String currentStatus = getConfigurationStatus(configuration.id);
         if ("started".equals(currentStatus)) {
             //запрещаем изменение запущенных конфигураций
-            throw new RuntimeException("Изменение запущенных конфигураций запрещено");
+            throw new RemoteMessageException("Изменение запущенных конфигураций запрещено");
         }
 
         try {
@@ -572,7 +571,7 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
 
                 String errorMsg = waitForStarted(configuration.id);
                 if (errorMsg != null) {
-                    throw new RuntimeException("Error starting configuration: " + errorMsg);
+                    throw new RuntimeException(errorMsg);
                 }
 
                 session.apply(this);
@@ -582,7 +581,7 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
                 session.close();
             }
         } catch (Exception e) {
-            throw new RemoteMessageException("Ошибка при старте конфигурации", e);
+            throw new RemoteMessageException("Ошибка при старте конфигурации: ", e);
         }
     }
 

@@ -10,6 +10,8 @@ import platform.base.ReflectionUtils;
 import platform.gwt.base.server.ServerUtils;
 import platform.gwt.paas.server.exceptions.IOActionException;
 import platform.gwt.paas.server.exceptions.RemoteActionException;
+import platform.gwt.paas.shared.exceptions.MessageException;
+import platform.interop.exceptions.RemoteMessageException;
 
 import java.io.IOException;
 import java.rmi.RemoteException;
@@ -33,6 +35,8 @@ public abstract class SimpleActionHandlerEx<A extends Action<R>, R extends Resul
     public final R execute(A action, ExecutionContext context) throws ActionException {
         try {
             return executeEx(action, context);
+        } catch (RemoteMessageException rme) {
+            throw new MessageException(rme.getMessage());
         } catch (RemoteException re) {
             throw new RemoteActionException("Удалённая ошибка при выполнении action: ", re);
         } catch (IOException ioe) {

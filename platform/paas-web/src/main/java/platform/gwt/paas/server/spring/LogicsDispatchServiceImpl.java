@@ -15,7 +15,6 @@ import platform.gwt.base.server.spring.BusinessLogicsProvider;
 import platform.gwt.paas.server.exceptions.RemoteActionException;
 import platform.gwt.paas.shared.exceptions.InvalidateException;
 import platform.gwt.paas.shared.exceptions.MessageException;
-import platform.interop.exceptions.RemoteMessageException;
 
 @Component("gwtpDispatch")
 public class LogicsDispatchServiceImpl extends DispatchServiceImpl {
@@ -36,13 +35,13 @@ public class LogicsDispatchServiceImpl extends DispatchServiceImpl {
         } catch (RemoteActionException e) {
             blProvider.invalidate();
 
-            logger.error("Ошибка в LogicsDispatchServlet.execute: ", e.getRemote());
+            logger.error("Ошибка в LogicsDispatchServiceImpl.execute: ", e.getRemote());
             throw new InvalidateException("Внутренняя ошибка сервера. Попробуйте перезагрузить страницу.");
-        } catch (RemoteMessageException e) {
-            logger.error("Ошибка в LogicsDispatchServlet.execute: ", e);
+        } catch (MessageException e) {
+            logger.error("Ошибка в LogicsDispatchServiceImpl.execute: ", e);
             throw new MessageException("Внутренняя ошибка сервера: " + e.getMessage());
         } catch (Throwable e) {
-            logger.error("Ошибка в LogicsDispatchServlet.execute: ", e);
+            logger.error("Ошибка в LogicsDispatchServiceImpl.execute: ", e);
             throw new MessageException("Внутренняя ошибка сервера.");
         }
     }

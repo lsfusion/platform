@@ -9,7 +9,9 @@ import org.apache.log4j.Logger;
 import platform.gwt.base.server.LogicsDispatchServlet;
 import platform.gwt.base.server.exceptions.IODispatchException;
 import platform.gwt.base.server.exceptions.RemoteDispatchException;
+import platform.gwt.base.shared.MessageException;
 import platform.interop.RemoteLogicsInterface;
+import platform.interop.exceptions.RemoteMessageException;
 
 import java.io.IOException;
 import java.rmi.RemoteException;
@@ -26,11 +28,11 @@ public abstract class SimpleActionHandlerEx<A extends Action<R>, R extends Resul
     public final R execute(A action, ExecutionContext context) throws DispatchException {
         try {
            return executeEx(action, context);
+        } catch (RemoteMessageException rme) {
+            throw new MessageException(rme.getMessage());
         } catch (RemoteException re) {
-            logger.error("Удалённая ошибка при выполнении action: ", re);
             throw new RemoteDispatchException("Удалённая ошибка при выполнении action: ", re);
         } catch (IOException ioe) {
-            logger.error("Ошибка ввода/вывода при выполнении action: ", ioe);
             throw new IODispatchException("Ошибка ввода/вывода при выполнении action: ", ioe);
         }
     }
