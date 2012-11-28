@@ -32,8 +32,8 @@ EXTEND DESIGN userInvoice {
 retailPriceUserInvoiceDetail(detail)  <- IF retailPriceListTypeUserInvoiceDetail(detail) IS basePriceListType
     THEN prevPricePriceListTypeSkuStockDateTime(retailPriceListTypeUserInvoiceDetail(detail), skuUserInvoiceDetail(detail), customerStockUserInvoiceDetail(detail), dateTimeUserInvoiceDetail(detail))
         ELSE roundPriceRoundCondition([X*(Y+100)*(Z+100)/10000](
-            0.0 IF detail IS userInvoiceDetail OR priceUserInvoiceDetail(detail),
-            0.0 IF detail IS userInvoiceDetail OR retailMarkupUserInvoiceDetail(detail),
+            priceUserInvoiceDetail(detail),
+            retailMarkupUserInvoiceDetail(detail),
             valueRetailVATUserInvoiceDetail(detail)), roundConditionCalcPriceListType(retailPriceListTypeUserInvoiceDetail(detail)))
 
     WHEN CHANGED(retailPriceListTypeUserInvoiceDetail(detail)) OR

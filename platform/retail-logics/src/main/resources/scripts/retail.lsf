@@ -124,14 +124,6 @@ META defineDocumentDetailSkuItem (object)
     @defineDocumentDetailSkuItemPrefix(object, , );
 END
 
-META defineDocumentDetailSkuItemDepartmentStore (object)
-    nameInActionItemDepartment###object##Detail 'Товар акции?' (detail) = nameInActionItemDepartmentDate(item###object##Detail(detail),
-        departmentStore###object##Detail(detail), date###object##Detail(detail)) IN itemDetailGroup FIXEDCHARWIDTH 3;
-
-    nameBanPriceChangeItemDepartment###object##Detail 'Запрет на переоценку' (detail) = name(banPriceChangeItemDepartmentDate(item###object##Detail(detail),
-        departmentStore###object##Detail(detail), date###object##Detail(detail))) IN itemDetailGroup FIXEDCHARWIDTH 3;
-END
-
 META defineDocumentHeaderItemRetailSumCustomPrefix (object, detail, prefix, caption)
     prefix###retailSum###detail##Item###object 'Розничная сумма (окр.) товара в документе' (item, object) =
             GROUP SUM retailSum###detail(idetail)
@@ -303,8 +295,6 @@ FORM statisticGroupDialog 'Статистические группы'
 
 // ----------------------------------- Товар ------------------------------------------ //
 GROUP rateGroup 'Нормы' : publicGroup;
-GROUP retailGroup 'Ценообразование' : publicGroup;
-GROUP discountGroup 'Скидки' : retailGroup;
 GROUP expiryGroup 'Контроль сроков годности' : publicGroup;
 GROUP equipmentGroup 'Внешние устройства' : publicGroup;
 GROUP labelGroup 'Ценник' : publicGroup;
@@ -518,20 +508,9 @@ DESIGN naturalLossItemGroups FROM DEFAULT {
 }
 
 //------------------------------------ Товар для подразделения с историей -------------------------------------------//
-//inActionItemDepartmentDate 'Товар акции' = DATA BOOLEAN (item, departmentStore, DATE) IN baseGroup;
 
 TABLE itemDepartmentStore (item, departmentStore);
 TABLE itemDepartmentStoreDate (item, departmentStore, DATE);
-
-@defineHistorizableYesNo(banPriceChangeItemDepartment, 'Запрет на переоценку', item, nameAttributeItem, departmentStore, name, retailGroup);
-
-@defineHistorizableYesNo(inActionItemDepartment, 'Товар акции', item, nameAttributeItem, departmentStore, name, discountGroup);
-
-@defineHistorizable(marginProductionItemDepartment, 'Наценка производства', NUMERIC[8,3], item, nameAttributeItem, departmentStore, name, retailGroup);
-
-@defineHistorizable(retailPriceItemDepartment, 'Розничная цена', NUMERIC[14,2], item, nameAttributeItem, departmentStore, name, retailGroup);
-
-@defineHistorizable(discountItemDepartment, 'Скидка для товара', STRING[100], item, nameAttributeItem, departmentStore, name, discountGroup);
 
 defaultLabelTypeItemDepartmentStore(item, departmentStore) = defaultLabelTypeDepartmentStore(departmentStore) AND item IS item;
 @defineHistorizableCustomDefault(labelItemDepartmentStore, defaultLabelTypeItemDepartmentStore, 'Ценник', labelType, name, item, nameAttributeItem, departmentStore, name, 10, labelGroup);
@@ -544,8 +523,6 @@ CONSTRAINT dataLabelItemDepartmentStoreDate(item, departmentStore, date) AND NOT
 valOverMultiplierItemDepartmentStoreDate (item, departmentStore, date) = UNION OVERRIDE 1 IF item IS item AND departmentStore IS departmentStore AND date IS DATE,
                                                                                multiplierItemDepartmentStoreDate(item, departmentStore, date);
 valOverMultiplierBarcodeDepartmentDate (barcode, departmentStore, date) = valOverMultiplierItemDepartmentStoreDate(skuBarcode(barcode), departmentStore, date);
-
-@defineHistorizable(oldPriceItemDepartment, 'Старая цена', NUMERIC[14,2], item, nameAttributeItem, departmentStore, name, labelGroup);
 
 EXTEND FORM item
 
@@ -582,14 +559,8 @@ EXTEND FORM item
 
     PROPERTIES (dt) OBJVALUE BACKGROUND dateDiffersCurrent(dt)
     PROPERTIES (sp) SELECTOR name
-    PROPERTIES      overRetailPriceItemDepartmentDate(i, d, dt) BACKGROUND dataRetailPriceItemDepartmentDate(i, d, dt), overDialogRetailPriceItemDepartmentDate(i, d),
-                    overNameBanPriceChangeItemDepartmentDate(i, d, dt) BACKGROUND dataNameBanPriceChangeItemDepartmentDate(i, d, dt), overDialogBanPriceChangeItemDepartmentDate(i, d),
-                    overNameInActionItemDepartmentDate(i, d, dt) BACKGROUND dataNameInActionItemDepartmentDate(i, d, dt), overDialogInActionItemDepartmentDate(i, d),
-                    overMarginProductionItemDepartmentDate(i, d, dt) BACKGROUND dataMarginProductionItemDepartmentDate(i, d, dt), overDialogMarginProductionItemDepartmentDate(i, d),
-                    overDiscountItemDepartmentDate(i, d, dt) BACKGROUND dataDiscountItemDepartmentDate(i, d, dt), overDialogDiscountItemDepartmentDate(i, d),
-                    overNameLabelItemDepartmentStoreDate(i, d, dt) BACKGROUND dataLabelItemDepartmentStoreDate(i, d, dt), overDialogLabelItemDepartmentStoreDate(i, d),
-                    overMultiplierItemDepartmentStoreDate(i, d, dt) BACKGROUND dataMultiplierItemDepartmentStoreDate(i, d, dt), overDialogMultiplierItemDepartmentStoreDate(i, d),
-                    overOldPriceItemDepartmentDate(i, d, dt) BACKGROUND dataOldPriceItemDepartmentDate(i, d, dt), overDialogOldPriceItemDepartmentDate(i, d)
+    PROPERTIES      overNameLabelItemDepartmentStoreDate(i, d, dt) BACKGROUND dataLabelItemDepartmentStoreDate(i, d, dt), overDialogLabelItemDepartmentStoreDate(i, d),
+                    overMultiplierItemDepartmentStoreDate(i, d, dt) BACKGROUND dataMultiplierItemDepartmentStoreDate(i, d, dt), overDialogMultiplierItemDepartmentStoreDate(i, d)
 
     EDIT item OBJECT i
 ;
@@ -652,71 +623,6 @@ EXTEND DESIGN item {
        }
     }
 }
-
-// ----------------------------------- Комиссии ---------------------------------------------------------- //
-
-CLASS inventoryCommittee 'Комиссия для инвентаризации' : committee;
-
-FORM inventoryCommittee 'Комиссия для инвентаризации'
-    OBJECTS c=inventoryCommittee FIXED PANEL
-    PROPERTIES(c)      name, nameChairmanCommittee
-
-    TREE treeStore a=STRING[3], t=chainStores, st=storeType, s=store
-    PROPERTIES         READONLY OBJVALUE(a), name(t), name(st), name(s)
-    FILTERS            stringEqualsAll(a), inChainStoresStoreType (t, st), inStoreTypeStore(st, s)
-
-    OBJECTS dep=departmentStore
-    PROPERTIES(dep)    READONLY depName = name
-    PROPERTIES(c, dep) inCommitteeEmployeeDivision
-    FILTERS            inChainStoresStoreTypeStoreDepartment(t, st, s, dep)
-    ORDER BY depName
-
-    OBJECTS e=employee
-    PROPERTIES(e)      READONLY name, userFirstName, userLastName, namePositionEmployee
-    PROPERTIES(e)      ADDSESSIONFORM, EDITSESSIONFORM, delete
-
-    PROPERTIES(c, e)   inCommitteeEmployee
-    FILTERS            countDivisionEmployeeCommittee (e, c)
-    FILTERGROUP filters6
-        FILTER 'Показывать только членов комиссии' 'F10' inCommitteeEmployee(c, e)
-
-    FILTERGROUP filters5
-        FILTER 'Показывать отделы только для данной комиссии' 'F9' inCommitteeEmployeeDivision(c, dep)
-
-    EDIT inventoryCommittee OBJECT c
-
-;
-
-DESIGN inventoryCommittee FROM DEFAULT {
-    main {
-        preferredSize = (1024, 768);
-
-        NEW OneCase BEFORE e.box {
-            ADD PROPERTY (nameChairmanCommittee);
-        }
-
-        NEW caseOne BEFORE OneCase {
-            childConstraints = TO THE RIGHT;
-            title = 'Отделы, для которых действуют комиссии';
-
-            ADD treeStore.tree {
-                fillHorizontal = 1;
-            }
-
-            ADD dep.box {
-                fillHorizontal = 2;
-            }
-        };
-    }
-}
-
-FORM inventoryCommittees 'Комиссии для инвентаризации'
-    OBJECTS ic=inventoryCommittee
-    PROPERTIES(ic)      READONLY name, nameEmployeeDivisionCommittee, nameEmployeeCommittee, nameChairmanCommittee
-    PROPERTIES(ic)      ADDFORM, EDITFORM
-
-    DIALOG inventoryCommittee OBJECT ic
-;
 
 //---------------------------- Документы качества ----------------------------------------//
 
@@ -1511,7 +1417,6 @@ CLASS shipmentPosted 'Проведенная поставка' : shipment, poste
 @defineDocumentDetailNumber(shipment);
 
 @defineDocumentDetailSkuItem(shipment);
-@defineDocumentDetailSkuItemDepartmentStore(shipment);
 
 @defineDocumentDetailQuantity(shipment);
 
@@ -1993,7 +1898,6 @@ CLASS returnSupplierPosted 'Проведенный возврат поставщ
 @defineDocumentHeaderSupplierContractDepartmentStore(returnSupplier);
 
 @defineDocumentDetailSkuItem(returnSupplier);
-@defineDocumentDetailSkuItemDepartmentStore(returnSupplier);
 
 @defineDocumentDetailQuantity(returnSupplier);
 
@@ -2829,8 +2733,8 @@ FORM shipment 'Поставка'
                     numberCertificateConformityShipmentDetail SHOWIF toShowPapersShipment(s), numberStateExaminationShipmentDetail SHOWIF toShowPapersShipment(s),
                     ADDOBJ, delete
     PROPERTIES (d) FORCE PANEL isFixPriceShipmentDetail,
-                               controlExpiryItemShipmentDetail, isWeightItemShipmentDetail, nameInActionItemDepartmentShipmentDetail,
-                               nameCountryItemShipmentDetail, nameBanPriceChangeItemDepartmentShipmentDetail,
+                               controlExpiryItemShipmentDetail, isWeightItemShipmentDetail,
+                               nameCountryItemShipmentDetail,
                                curImporterPriceShipmentDetail, curSupplierPriceShipmentDetail, curValueRetailVATShipmentDetail, curNameWareShipmentDetail SHOWIF inWareShipmentDetail(d),
                                valueWareRangeShipmentDetail SHOWIF inWareShipmentDetail(d), curWarePriceShipmentDetail SHOWIF inWareShipmentDetail(d)
 
@@ -3036,9 +2940,9 @@ FORM returnSupplier 'Возврат поставщику'
     PROPERTIES FORCE PANEL READONLY curImporterPriceReturnSupplierDetail(d), curSupplierPriceReturnSupplierDetail(d),
                                     curRetailPriceReturnSupplierDetail(d), curValueRetailVATReturnSupplierDetail(d),
                                     controlExpiryItemReturnSupplierDetail(d),
-                                    isWeightItemReturnSupplierDetail(d), nameInActionItemDepartmentReturnSupplierDetail(d),
+                                    isWeightItemReturnSupplierDetail(d),
                                     nameCountryItemReturnSupplierDetail(d),
-                                    nameBanPriceChangeItemDepartmentReturnSupplierDetail(d), valueWareRangeReturnSupplierDetail(d),
+                                    valueWareRangeReturnSupplierDetail(d),
                                     curNameWareReturnSupplierDetail(d), curWarePriceReturnSupplierDetail(d)
 
     FILTERS returnSupplierReturnSupplierDetail(d) == r
