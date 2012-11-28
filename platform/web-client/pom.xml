@@ -40,6 +40,8 @@
                                     <directory>../desktop-client</directory>
                                     <includes>
                                         <include>client.jnlp</include>
+                                        <include>default.png</include>
+                                        <include>splash.jpg</include>
                                     </includes>
                                 </resource>
                             </webResources>
