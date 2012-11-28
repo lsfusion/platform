@@ -64,7 +64,6 @@ REQUIRE System,
         AccountDocument,
         StorePrice,
         Sales,
-        PriceChange,
         Machinery,
         CashRegister,
         Scales,
@@ -92,8 +91,6 @@ REQUIRE System,
         Warehouse,
         StockTax,
         ItemTax;
-
-GROUP emailGroup 'E-mail' : baseGroup;
 
 // ----------------------------------- Свойства изменения объектов в Posted ------------------------------------------ //
 
@@ -1284,8 +1281,6 @@ CLASS statementPosted 'Проведенная выписка из розницы
 @defineAddDetailDialogBarcode(statement, item);
 @defineAddDetailDialogTerminal(statement, item);
 
-@defineDocumentHeaderPriceChange(statement);
-
 @defineDocumentHeaderQuantity(statement);
 @defineDocumentHeaderSkuQuantity(statement, item);
 
@@ -1365,24 +1360,6 @@ toFillStatementDetailsStatement 'Заполнить отгрузку на осн
         };
     };
 } IN specificationGroup CONFIRM;
-
-// ---------------------------------- Переоценка при реализации из розницы ------------------------------------------
-
-CLASS priceChangeStatement 'Переоценка при отгрузке из розницы' : priceChangeDocument;
-CLASS priceChangeStatementDetail 'Строка переоценки при отгрузке из розницы' : priceChangeDocumentDetail;
-
-needToPriceChangeStatementDetail (statementDetail) = curRetailPriceStatementDetail(statementDetail) != retailPriceStatementDetail(statementDetail) AND
-                                                   quantityStatementDetail(statementDetail) >0; // <= balanceDepartmentStoreItemStatementDetail(statementDetail);
-
-@defineDocumentPriceChange(statement);
-@defineDocumentPriceChangeNumber(statement);
-@defineDocumentPriceChangeSku(statement, item);
-@defineDocumentPriceChangeQuantity(statement);
-@defineDocumentPriceChangePrice(statement);
-@defineDocumentPriceChangeRetailPricePrefix(statement, cur, ' (тек.)');
-
-@implementPriceChangeDocument(priceChangeStatement, item);
-@implementPriceChangeDocumentDetailRetailPrice(priceChangeStatement);
 
 // для накладной (шапка и хвост)
 
@@ -1469,8 +1446,6 @@ CLASS disparityDetail 'Строка пересортицы';
 @defineDocumentHeaderQuantity(disparity);
 @defineDocumentHeaderBaseSum(disparity);
 
-@defineDocumentHeaderPriceChange(disparity);
-
 descriptionDisparityDetail 'Название документа' (disparityDetail) =
     [FORMULA STRING[200] '\'Пересортица (расход)\' ||  \' \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)'](
     seriesNumberObject(disparityDisparityDetail(disparityDetail)), dateDisparity(disparityDisparityDetail(disparityDetail)));
@@ -1540,67 +1515,6 @@ sumInSkuLedger (ledger) += retailSumInputDisparityDetail(ledger);
 descriptionDisparity 'Название документа' (disparity) =
     [FORMULA STRING[200] '\'Пересортица \' ||  \' \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)'](
     seriesNumberObject(disparity), dateDisparity(disparity));
-
-// ---------------------------------- Дооценка остатка при пересорте ------------------------------------------
-
-inputBalanceBeforeDisparityDetail 'Остаток до пересорта (приход)' (disparityDetail) = DATA NUMERIC[14,3] (disparityDetail) IN priceDetailGroup;
-inputBalanceBeforeDisparityDetail (disparityDetail) <- balanceBSkuStockDateTime (
-                inputItemDisparityDetail(disparityDetail), departmentStoreDisparityDetail(disparityDetail), dateTimeDisparityDetail(disparityDetail))
-                WHEN CHANGED(inputItemDisparityDetail(disparityDetail));
-
-CLASS inputPriceChangeDisparity 'Переоценка остатка при пересортице' : priceChangeDocument;
-CLASS inputPriceChangeDisparityDetail 'Строка переоценки остатка при пересортице' : priceChangeDocumentDetail;
-
-needToInputPriceChangeDisparityDetail (disparityDetail) = inputCurRetailPriceDisparityDetail(disparityDetail) != inputRetailPriceDisparityDetail(disparityDetail) AND
-                                                   inputBalanceBeforeDisparityDetail(disparityDetail) !=0;
-
-needToInputPriceChangeDisparity (disparity) = GROUP SUM 1 IF needToInputPriceChangeDisparityDetail(disparityDetail) BY disparityDisparityDetail(disparityDetail);
-
-@defineDocumentAggregation(disparity, inputPriceChangeDisparity, needToInputPriceChangeDisparity);
-@defineDocumentAggregationStock(disparity, inputPriceChangeDisparity, departmentStore, 'Отдел магазина');
-@defineDocumentAggregationPosted(disparity, inputPriceChangeDisparity);
-
-@defineDocumentAggregationHeaderDescription(disparity, inputPriceChangeDisparity);
-
-@defineDocumentAggregationDetailSkuPrefix(disparity, inputPriceChangeDisparity, item, input);
-quantityInputPriceChangeDisparityDetail 'Количество' (inputPriceChangeDisparityDetail) = inputBalanceBeforeDisparityDetail(disparityDetailInputPriceChangeDisparityDetail(inputPriceChangeDisparityDetail));
-
-@defineDocumentAggregationDetailPricePrefix(disparity, inputPriceChangeDisparity, input, , );
-@defineDocumentAggregationDetailPricePrefix(disparity, inputPriceChangeDisparity, inputCur, cur, ' (тек.)');
-//curRetailPriceInputPriceChangeDisparityDetail 'Розничная цена (тек.)' (inputPriceChangeDisparityDetail) = inputCurRetailPriceDisparityDetail(disparityDetailInputPriceChangeDisparityDetail(inputPriceChangeDisparityDetail));
-
-numberDisposalInputPriceChangeDisparity '№ распоряжения на переоценку' (inputPriceChangeDisparity) = numberDisposalDisparity(disparityInputPriceChangeDisparity(inputPriceChangeDisparity));
-priceChangeCommitteeInputPriceChangeDisparity 'Комиссия переоценки ИД' (inputPriceChangeDisparity) = priceChangeCommitteeDisparity(disparityInputPriceChangeDisparity(inputPriceChangeDisparity));
-
-numberInputPriceChangeDisparity 'Номер документа' (inputPriceChangeDisparity) = numberObject(disparityInputPriceChangeDisparity(inputPriceChangeDisparity));
-seriesInputPriceChangeDisparity 'Серия документа' (inputPriceChangeDisparity) = seriesObject(disparityInputPriceChangeDisparity(inputPriceChangeDisparity));
-seriesNumberInputPriceChangeDisparity 'Серия/номер документ' (inputPriceChangeDisparity) = seriesNumberObject(disparityInputPriceChangeDisparity(inputPriceChangeDisparity));
-
-@implementPriceChangeDocument(inputPriceChangeDisparity, item);
-@implementPriceChangeDocumentDetailAllPrice(inputPriceChangeDisparity);
-
-// ---------------------------------- Переоценка при пересорте ------------------------------------------
-
-CLASS priceChangeDisparity 'Переоценка при пересортице' : priceChangeDocument;
-CLASS priceChangeDisparityDetail 'Строка переоценки при пересортице' : priceChangeDocumentDetail;
-
-needToPriceChangeDisparityDetail (disparityDetail) = retailPriceDisparityDetail(disparityDetail) != inputRetailPriceDisparityDetail(disparityDetail) AND
-                                                     inputQuantityDisparityDetail(disparityDetail) > 0;
-
-@defineDocumentPriceChange(disparity);
-@defineDocumentPriceChangeNumber(disparity);
-@defineDocumentPriceChangeSkuPrefix(disparity, item, input);
-quantityPriceChangeDisparityDetail 'Количество' (priceChangeDisparityDetail) = inputQuantityDisparityDetail(disparityDetailPriceChangeDisparityDetail(priceChangeDisparityDetail));
-
-@defineDocumentPriceChangePricePrefix(disparity, , input, );
-@defineDocumentPriceChangePricePrefix(disparity, cur , , ' (тек.)');
-
-@implementPriceChangeDocument(priceChangeDisparity, item);
-@implementPriceChangeDocumentDetailAllPrice(priceChangeDisparity);
-
-needPriceChangeDisparityDetail (disparityDetail) = UNION OVERRIDE needToInputPriceChangeDisparityDetail (disparityDetail), needToPriceChangeDisparityDetail (disparityDetail);
-
-showPriceChangeDisparity 'Отображать комиссию при пересорте' (disparity) = GROUP SUM 1 IF needPriceChangeDisparityDetail(disparityDetail) BY disparityDisparityDetail(disparityDetail);
 
 //------------------------------------- Ведомость расчета естественной убыли ----------------------------------//
 
@@ -1870,9 +1784,6 @@ toPrintSpecification 'Счет-фактура'(specification) = ACTION FORM spec
 
 quantityDisparityDetailItemDisparity 'Кол-во для закачки в оборудование (приход)' (item, disparity) = GROUP SUM inputQuantityDisparityDetail(disparityDetail) BY inputItemDisparityDetail(disparityDetail), disparityDisparityDetail(disparityDetail);
 
-printPriceChangeDisparity 'Акт переоценки (приход)' (disparity) = printPriceChange(priceChangeDisparityDisparity(disparity)) IN printGroup;
-printInputPriceChangeDisparity 'Акт переоценки (остатки)' (disparity) = printPriceChange(inputPriceChangeDisparityDisparity(disparity)) IN printGroup;
-
 FORM disparity 'Пересортица'
 
     OBJECTS dis=disparity FIXED PANEL
@@ -1880,9 +1791,7 @@ FORM disparity 'Пересортица'
     PROPERTIES(dis) objectClassName, nameNumeratorObject, numberObject, seriesObject, setValueNumeratedObject, nameDepartmentStoreDisparity,
                     dateDisparity, timeDisparity,
                     quantityDisparityDetailDisparity, retailSumDisparityDetailDisparity,
-                    inputQuantityDisparityDetailDisparity, inputRetailSumDisparityDetailDisparity,
-                    numberDisposalDisparity SHOWIF showPriceChangeDisparity(dis),
-                    namePriceChangeCommitteeDisparity SHOWIF showPriceChangeDisparity(dis)
+                    inputQuantityDisparityDetailDisparity, inputRetailSumDisparityDetailDisparity
 
     OBJECTS d = disparityDetail
     PROPERTIES(d)   indexDisparityDetail,
@@ -1900,7 +1809,7 @@ FORM disparity 'Пересортица'
                                 inputCurImporterPriceDisparityDetail, inputCurSupplierPriceDisparityDetail, inputCurNameWareDisparityDetail,
                                 inputCurWarePriceDisparityDetail, inputCurValueRetailVATDisparityDetail, inputCurRetailPriceDisparityDetail,
                                 inputImporterPriceDisparityDetail, inputSupplierPriceDisparityDetail, inputNameWareDisparityDetail,
-                                inputWarePriceDisparityDetail, inputValueRetailVATDisparityDetail, inputBalanceBeforeDisparityDetail
+                                inputWarePriceDisparityDetail, inputValueRetailVATDisparityDetail
 
     FILTERS         disparityDisparityDetail(d) == dis
 
@@ -1927,8 +1836,6 @@ DESIGN disparity FROM DEFAULT {
                     ADD PROPERTY(seriesObject);
                     ADD PROPERTY(dateDisparity);
                     ADD PROPERTY(timeDisparity);
-                }
-                ADD dis.documentPrmGroup{
                 }
             }
                 ADD dis.documentSumGroup {
@@ -1976,7 +1883,6 @@ DESIGN disparity FROM DEFAULT {
                     ADD PROPERTY (inputNameWareDisparityDetail);
                     ADD PROPERTY (inputWarePriceDisparityDetail);
                     ADD PROPERTY (inputValueRetailVATDisparityDetail);
-                    ADD PROPERTY (inputBalanceBeforeDisparityDetail);
                 }
             }
         }
@@ -1996,9 +1902,7 @@ FORM disparities 'Пересортицы'
 
     PROPERTIES(dis)  READONLY FORCE PANEL timeCreated, nameUserCreated, hostnameComputerCreated, timeClosed, nameUserClosed, hostnameComputerClosed
 
-    PROPERTIES (dis) printPriceChangeDisparity FORCE PANEL SHOWIF needToPriceChangeDisparity(dis),
-                     printInputPriceChangeDisparity FORCE PANEL SHOWIF needToInputPriceChangeDisparity(dis),
-                     ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES (dis) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
 
     OBJECTS d=disparityDetail
     PROPERTIES(d)   READONLY indexDisparityDetail,
@@ -2033,9 +1937,6 @@ DESIGN disparities FROM DEFAULT {
             childConstraints = TO THE BOTTOM;
         }
         ADD dis.postedGroup {
-            childConstraints = TO THE BOTTOM;
-        }
-        ADD dis.printGroup {
             childConstraints = TO THE BOTTOM;
         }
     }
@@ -2263,14 +2164,11 @@ FORM specificationsStatement 'Счета'
 
 dialogSpecificationsStatement 'Заказы' (statement) = ACTION FORM specificationsStatement OBJECTS st MODAL SHORTCUT specificationsStatement DEFAULT;
 
-printPriceChangeStatement 'Акт переоценки' (statement) = printPriceChange(priceChangeStatementStatement(statement)) IN printGroup;
-
 FORM statement 'Отгрузка из розницы'
     OBJECTS st=statement FIXED PANEL
     PROPERTIES (st) objectClassName, numberObject, seriesObject, dateStatement, timeStatement, nameCustomerStatement, UNPCustomerStatement,
                     nameDepartmentStoreStatement, specificationsStatement, toFillStatementDetailsStatement, dialogSpecificationsStatement,
-                    noteStatement, quantityStatementDetailStatement, calcSaleSumStatementDetailStatement, calcVATSumStatementDetailStatement, retailSumStatementDetailStatement,
-                    numberDisposalStatement SHOWIF needToPriceChangeStatement(st), namePriceChangeCommitteeStatement SHOWIF needToPriceChangeStatement(st)
+                    noteStatement, quantityStatementDetailStatement, calcSaleSumStatementDetailStatement, calcVATSumStatementDetailStatement, retailSumStatementDetailStatement
 
     PROPERTIES(st) nameTruckConsignment, ownerTruckConsignment, trailerConsignment, nameDriverConsignment, waybillConsignment,
                    namePayerConsignment, shipmentBaseConsignment, addressSupplierStockConsignment, addressCustomerStockConsignment,
@@ -2386,7 +2284,7 @@ FORM statements 'Отгрузки из розницы'
     PROPERTIES (st)  FORCE PANEL printConsignmentVerticalA, printConsignmentHorizontalA,
                      printConsignmentVerticalB, printConsignmentHorizontalB,
                      printConsignmentAttach, printConsignmentSimpleHorizontal, editConsignment,
-                     printConsignmentSimpleVertical, printConsignmentSimpleAttach, printPriceChangeStatement SHOWIF needToPriceChangeStatement(st),
+                     printConsignmentSimpleVertical, printConsignmentSimpleAttach,
                      nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
     PROPERTIES (st)  ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
@@ -3613,13 +3511,9 @@ NAVIGATOR {
             ADD repricingCommitteeDialog;
             NEW priceAccountArchive 'Архив' {
                 ADD registerCommitteeDialog;
-                ADD priceChangeCommitteeDialog;
             }
         }
         ADD retailCRMNavigator;
-        NEW retailAccountDocuments 'Бухгалтерские документы' {
-            ADD priceChangeDocuments;
-        }
         NEW retailCatalog 'Справочники' {
             ADD stores;
         }
