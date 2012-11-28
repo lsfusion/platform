@@ -88,6 +88,7 @@ REQUIRE System,
         Route,
         Trip,
         Warehouse,
+        WarehouseShipment,
         StockTax,
         ItemTax;
 

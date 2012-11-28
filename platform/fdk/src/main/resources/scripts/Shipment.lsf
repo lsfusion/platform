@@ -218,7 +218,7 @@ META defineShipment(sign, stockProp)
         PROPERTIES (s) delete FORCE PANEL DRAWTOTOOLBAR SHOWIF isUserShipment(s)
 
         OBJECTS d = shipmentDetail
-        PROPERTIES (d)  indexShipmentDetail, idBarcodeSkuShipmentDetail, nameSkuShipmentDetail, shortNameUOMSkuShipmentDetail,
+        PROPERTIES (d)  READONLY indexShipmentDetail, idBarcodeSkuShipmentDetail, nameSkuShipmentDetail, shortNameUOMSkuShipmentDetail,
                                 quantityShipmentDetail, priceShipmentDetail, sumShipmentDetail,
                                 name###stockProp###shipmentDetail
         FILTERS shipmentShipmentDetail(d) == s
