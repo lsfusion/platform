@@ -544,6 +544,8 @@ META defineDocumentHeaderStock (object, stockClass, stockCaption, prefix)
     prefix###legalEntityStock###object (object) = legalEntityStock(prefix###stockClass###object(object));
     name###prefix###legalEntityStock###object 'Компания ('###stockCaption###')' (object) = name(prefix###legalEntityStock###object (object));
 
+    address###prefix##Stock###object 'Адрес ('###stockCaption###')' (object) = addressStock(prefix###stockClass###object(object));
+
     prefix###country###object (object) = countryStock(prefix###stockClass###object(object));
 END
 META defineDocumentAbstractHeaderStock (object, stockClass, stockCaption, prefix)
@@ -553,6 +555,8 @@ META defineDocumentAbstractHeaderStock (object, stockClass, stockCaption, prefix
 
     prefix###legalEntityStock###object (object) = legalEntityStock(prefix###stockClass###object(object));
     name###prefix###legalEntityStock###object 'Компания ('###stockCaption###')' (object) = name(prefix###legalEntityStock###object (object));
+
+    address###prefix##Stock###object 'Адрес ('###stockCaption###')' (object) = addressStock(prefix###stockClass###object(object));
 
     prefix###country###object (object) = countryStock(prefix###stockClass###object(object));
 END

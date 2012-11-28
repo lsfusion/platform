@@ -1,0 +1,44 @@
+MODULE TripInvoice;
+
+REQUIRE Order, Shipment, Invoice, Trip;
+
+quantityTripInvoice (trip, invoice) = GROUP SUM quantityOrderInvoice(order, invoice) IF inTripOrder(trip, order) BY trip, invoice;
+
+tripInvoice = DATA trip(invoice);
+
+inTripInvoice 'Включен' (trip, invoice) = tripInvoice(invoice)==trip;
+filterTripInvoice(trip, invoice) = tripInvoice(invoice)==trip OR (trip IS trip AND invoice IS invoice AND NOT tripInvoice(invoice));
+
+createConsignmentTrip 'Создать накладные по заказам' (trip) = ACTION (trip) {
+    FOR tripOrder(order) == trip DO {
+        EXEC createUserInvoicePostedOrder(order);
+        SET tripInvoice(invoice) <- trip IF quantityTripInvoice (trip, invoice);
+
+        EXEC apply();
+    };
+    EXEC createShipmentsTrip(trip);
+    EXEC apply();
+} TOOLBAR CONFIRM;
+
+
+EXTEND FORM trip
+    OBJECTS i=invoice
+    PROPERTIES (i) numberInvoice, seriesInvoice, dateInvoice, nameSupplierStockInvoice, nameCustomerStockInvoice
+    PROPERTIES (t, i) inTripInvoice
+    FILTERS filterTripInvoice(t, i)
+;
+
+EXTEND DESIGN trip {
+
+    bottomContainer {
+        ADD i.box AFTER orderContainer {
+            caption = 'Накладные';
+        }
+    };
+}
+
+EXTEND FORM waybill
+    OBJECTS i=invoice
+    PROPERTIES (i) numberInvoice, seriesInvoice, dateInvoice, addressSupplierStockInvoice, addressCustomerStockInvoice
+    FILTERS inTripInvoice(t, i)
+;

@@ -7,10 +7,11 @@ NAMESPACE Trip;
 CLASS trip 'Рейс' : numeratedObject;
 
 @defineDocumentHeaderTime(trip);
+@defineNumeratedObjectDefault(trip, 'Нумератор для рейсов', 'РЕ');
 
 truckTrip = DATA truck(trip);
 sidTruckTrip 'Машина (номер)'(trip) = sidTruck(truckTrip(trip));
-weightTruckTrip 'Грузоподъёмность (тонн)'(trip) = weightTruck(truckTrip(trip));
+weightTruckTrip 'Грузоподъёмность (кг)'(trip) = weightTruck(truckTrip(trip));
 ownerTruckTrip 'Владелец'(trip) = ownerTruck(truckTrip(trip));
 markTruckTrip (trip) = markTruck(truckTrip(trip));
 nameMarkTruckTrip 'Марка' (trip) = name(markTruckTrip(trip));
@@ -31,7 +32,6 @@ quantityTripStockFrom (trip, stock) = GROUP SUM 1 BY tripOrder(order), fromStock
 quantityTripStockTo (trip, stock) = GROUP SUM 1 BY tripOrder(order), toStockOrder(order);
 quantityTripStock(trip, stock) = UNION SUM quantityTripStockFrom(trip, stock), quantityTripStockTo(trip, stock);
 
-//inNodeTrip 'Включен' (node, trip) = TRUE IF quantityTripNode(trip, node);
 numberStockTrip 'Порядковый номер' = DATA INTEGER(stock, trip);
 numberStockTrip(stock, trip) => quantityTripStock(trip, stock)>0 RESOLVE FALSE;
 
@@ -92,8 +92,6 @@ FORM ordersTrip PRINT
     PROPERTIES READONLY quantityOrderedTripSku(t, s)
     PROPERTIES READONLY quantityOrderDetailSkuOrder(s, o) COLUMNS (o) HEADER seriesNumberObject(o)
     FILTERS quantityOrderedTripSku(t, s) > 0
-
-    //PROPERTIES(o) READONLY numberOrder, seriesOrder, dateOrder, nameFromStockOrder, nameToStockOrder, grossWeightOrderDetailOrder
 ;
 
 printOrdersTrip 'Печать заказов' (trip) = ACTION (trip) {
