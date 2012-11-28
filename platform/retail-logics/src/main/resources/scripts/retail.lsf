@@ -58,7 +58,6 @@ REQUIRE System,
         StoreWriteOff,
         Store,
         PurchasePricingWriteOff,
-        ListRegister,
         SupplierBy,
         ConsignmentBy,
         AccountDocument,
@@ -3509,9 +3508,6 @@ NAVIGATOR {
             ADD repricings;
             ADD pricingCommitteeDialog;
             ADD repricingCommitteeDialog;
-            NEW priceAccountArchive 'Архив' {
-                ADD registerCommitteeDialog;
-            }
         }
         ADD retailCRMNavigator;
         NEW retailCatalog 'Справочники' {
