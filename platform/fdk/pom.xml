@@ -23,5 +23,10 @@
             <groupId>net.java.dev.jna</groupId>
             <artifactId>jna</artifactId>
         </dependency>
+        <dependency>
+            <groupId>geoGoogle</groupId>
+            <artifactId>geoGoogle</artifactId>
+            <version>1.5.0</version>
+        </dependency>
     </dependencies>
 </project>

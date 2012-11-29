@@ -53,7 +53,7 @@ FORM warehouse 'Склад'
 
     OBJECTS           w=warehouse FIXED PANEL
     PROPERTIES(w)     name, nameWarehouseGroupWarehouse, addressWarehouse, nameLegalEntityWarehouse, nameWriteOffCommitteeStock,
-                      explicitBatchLedgerWarehouse
+                      explicitBatchLedgerWarehouse, latitudePOI, longitudePOI
     ORDER BY          name
 
     EDIT warehouse OBJECT w
@@ -74,7 +74,7 @@ FORM warehouses 'Склады'
     FILTERS stringEqualsAll(b)
 
     OBJECTS w=warehouse
-    PROPERTIES(w) READONLY name, nameWarehouseGroupWarehouse, addressWarehouse, nameLegalEntityWarehouse
+    PROPERTIES(w) READONLY name, nameWarehouseGroupWarehouse, addressWarehouse, nameLegalEntityWarehouse, latitudePOI, longitudePOI
     PROPERTIES(w) ADDFORM, EDITFORM, delete
     ORDER BY name
     FILTERS isParentWarehouseGroupWarehouse(wg, w) OR (w IS warehouse AND wg IS warehouseGroup AND NOT warehouseGroupWarehouse(w)) OR (w IS warehouse AND NOT wg)

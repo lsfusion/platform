@@ -166,7 +166,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     public LCP string2SP, istring2SP;
     public LCP string2, istring2;
-    public LCP ustring2SP, ustring2, ustring3, ustring4, ustring5CM;
+    public LCP ustring2CM, ustring2SP, ustring2, ustring3, ustring4, ustring5CM;
 
     protected LCP concat2;
     public LCP percent;
@@ -810,6 +810,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         string2 = addSProp("string2", 2, "");
         istring2 = addInsensitiveSProp("istring2", 2, "");
 
+        ustring2CM = addSFUProp("ustring2CM", " ", 2);
         ustring2SP = addSFUProp("ustring2SP", " ", 2);
         ustring2 = addSFUProp("ustring2", "", 2);
         ustring3 = addSFUProp("ustring3", "", 3);

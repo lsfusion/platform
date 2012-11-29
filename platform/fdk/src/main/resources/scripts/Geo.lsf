@@ -12,3 +12,20 @@ nameCountryPOI 'Страна' (poi) = name(countryPOI(poi));
 
 addressPOI 'Адрес' = ABSTRACT STRING[100] (POI) PERSISTENT;
 
+readLatitude 'Координата X' = SESSION DATA NUMERIC[10,5] ();
+readLongitude 'Координата Y' = SESSION DATA NUMERIC[10,5] ();
+
+getCoordinatesAddress = ACTION CUSTOM 'platform.fdk.actions.GetCoordinatesAddressActionProperty';
+
+latitudePOI 'Координата X' = DATA NUMERIC[10,5] (POI);
+longitudePOI 'Координата Y' = DATA NUMERIC[10,5] (POI);
+
+changeCoordinatesPOI 'Изменить координаты'= ACTION (POI) {
+
+    EXEC getCoordinatesAddress (ustring2CM(nameCountryPOI (POI), addressPOI (POI)));
+    SET latitudePOI(POI) <- readLatitude();
+    SET longitudePOI(POI) <- readLongitude();
+
+}
+
+WHEN CHANGED(countryPOI(POI)) OR CHANGED(addressPOI(POI)) DO EXEC changeCoordinatesPOI(POI) SESSION;
