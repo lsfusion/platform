@@ -58,7 +58,6 @@ REQUIRE System,
         StoreWriteOff,
         Store,
         PurchasePricingWriteOff,
-        SupplierBy,
         ConsignmentBy,
         AccountDocument,
         StorePrice,
@@ -142,18 +141,6 @@ META defineDocumentHeaderItemRetailSumPrefix (object, prefix, caption)
 END
 META defineDocumentHeaderItemRetailSum (object)
     @defineDocumentHeaderItemRetailSumCustomPrefix(object, object##Detail, , );
-END
-
-// ----------------------------------- Поставщик ------------------------------------------ //
-
-META defineDocumentHeaderSupplierContractDepartmentStore(object)
-    @defineDocumentHeaderSupplierContract(object);
-    @defineDocumentUNPSupplier(object);
-
-    contract###object (object) <- singleContractSkuSupplierCustomer(supplier###object(object), legalEntityDepartmentStore(departmentStore###object(object)))
-                                  WHEN CHANGED(supplier###object(object));
-    CONSTRAINT contract###object(object) AND NOT legalEntityDepartmentStore(departmentStore###object(object)) == customerContractSku(contract###object(object))
-        CHECKED BY contract###object MESSAGE 'Выберите договор данного юр. лица';
 END
 
 // ----------------------------------- Товарный классификатор ------------------------------------------ //
@@ -550,12 +537,11 @@ EXTEND FORM item
     PROPERTIES READONLY OBJVALUE(a), name(t), name(st), name(s)
     FILTERS stringEqualsAll(a), inChainStoresStoreType (t, st), inStoreTypeStore (st, s)
 
-    OBJECTS dt=DATE FIXED PANEL, sp=supplier FIXED PANEL, d=departmentStore
+    OBJECTS dt=DATE FIXED PANEL, d=departmentStore
     PROPERTIES (d) name
     FILTERS inChainStoresStoreTypeStoreDepartment(t, st, s, d)
 
     PROPERTIES (dt) OBJVALUE BACKGROUND dateDiffersCurrent(dt)
-    PROPERTIES (sp) SELECTOR name
     PROPERTIES      overNameLabelItemDepartmentStoreDate(i, d, dt) BACKGROUND dataLabelItemDepartmentStoreDate(i, d, dt), overDialogLabelItemDepartmentStoreDate(i, d),
                     overMultiplierItemDepartmentStoreDate(i, d, dt) BACKGROUND dataMultiplierItemDepartmentStoreDate(i, d, dt), overDialogMultiplierItemDepartmentStoreDate(i, d)
 
@@ -608,8 +594,6 @@ EXTEND DESIGN item {
                 fillVertical = 1.0;
                 fillHorizontal = 1.0;
                 ADD dt.box BEFORE d.grid.box;
-                ADD sp.box BEFORE d.grid.box;
-                POSITION dt.box TO THE LEFT sp.box;
                 ADD treeStore.tree.box BEFORE d.grid.box;
                 POSITION treeStore.tree.box TO THE LEFT d.grid.box;
                 POSITION d.grid.box TO THE LEFT d.panel;
