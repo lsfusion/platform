@@ -1130,111 +1130,6 @@ showSeriesNumberCuttingStudyInputDetail 'Карта проработки' = ACTI
     }
 } SHORTCUT seriesNumberCuttingStudyInputDetail DEFAULT;
 
-//---------------------------- Отгрузка по безналу(розница) ----------------------------//
-
-GROUP customerGroup 'Покупатель' : documentPrmGroup;
-GROUP itemSpecificationDetailInfo 'Информация по товару' : baseGroup;
-
-CLASS objectiveAcquiring 'Цель приобретения' : named;
-TABLE objectiveAcquiring (objectiveAcquiring);
-
-CLASS specification 'Счет-фактура': historyObject, numeratedDocument;
-CLASS specificationDetail 'Строка счет-фактуры';
-
-@defineDocument(specification);
-@defineDocumentDepartmentStore(specification);
-
-@defineDocumentDetailNumber(specification);
-@defineDocumentDetailSkuItem(specification);
-@defineDocumentDetailQuantity(specification);
-
-@defineDocumentDetailRetailPrice(specification);
-@derivePriceLedgerOnSkuChange(retailPrice, specification, item);
-
-@defineDocumentDetailRetailSum(specification);
-
-@defineDocumentDetailCalcRange(specification, departmentStore);
-@defineDocumentDetailCalcVATSum(specification);
-
-@defineAddDetailDialogSkuStock(specification, item, departmentStore, dialogSku);
-@defineAddDetailDialogBarcode(specification, item);
-@defineAddDetailDialogTerminal(specification, item);
-
-@defineDocumentHeaderQuantity(specification);
-@defineDocumentHeaderSkuQuantity(specification, item);
-
-@defineDocumentHeaderRetailSum(specification);
-@defineDocumentHeaderCalcVATSum(specification);
-
-//descriptionSpecificationDetail(specificationDetail) = [FORMULA STRING[40] '$1 || CAST ($2 AS character(20)) || $3 || $4 || CAST ($5 AS character(20))']
-//            ('С/ф № ', seriesNumberSpecificationDetail(specificationDetail), ' от ', ' ', dateSpecificationDetail(specificationDetail));
-
-descriptionSpecificationDetail(specificationDetail) = [FORMULA STRING[40] '\'С-ф № \' || \' \' || CAST($1 AS TEXT) || \' от \' || \' \' || CAST($2 AS TEXT)']
-            (seriesNumberSpecificationDetail(specificationDetail), dateSpecificationDetail(specificationDetail));
-
-customerSpecification(specification) = DATA customer (specification) IN idGroup;
-nameCustomerSpecification 'Покупатель' (specification) = name(customerSpecification(specification)) IN customerGroup;
-fullNameCustomerSpecification 'Полное наименование' (specification) = fullNameLegalEntity(customerSpecification(specification)) IN customerGroup;
-UNPCustomerSpecification 'УНП покупателя' (specification) = UNPLegalEntity(customerSpecification(specification)) IN customerGroup;
-addressCustomerSpecification 'Юридический адрес' (specification) = addressLegalEntityDate(customerSpecification(specification), dateSpecification(specification)) IN customerGroup;
-nameOwnershipCustomerSpecification 'Форма собственности' (specification) = nameOwnershipLegalEntity(customerSpecification(specification)) IN customerGroup;
-postAddressCustomerSpecification 'Почтовый адрес' (specification) = postAddressLegalEntity(customerSpecification(specification)) IN customerGroup;
-managerCustomerSpecification 'Руководитель' (specification) = managerLegalEntity(customerSpecification(specification)) IN customerGroup;
-phoneCustomerSpecification 'Телефон покупателя' (specification) = phoneLegalEntityDate(customerSpecification(specification), dateSpecification(specification)) IN customerGroup;
-
-objectiveAcquiringSpecification(specification) = DATA objectiveAcquiring (specification) IN idGroup;
-nameObjectiveAcquiringSpecification 'Цель приобретения' (specification) = name(objectiveAcquiringSpecification(specification)) IN documentPrmGroup;
-
-accountCustomerSpecification 'Р/сч. покупателя ИД' (specification) = accountLegalEntity(customerSpecification(specification));
-numberAccountCustomerSpecification 'Р/сч. покупателя' (specification) = numberAccount(accountCustomerSpecification(specification));
-nameBankAccountCustomerSpecification 'Банк покупателя' (specification) = nameBankAccount(accountCustomerSpecification(specification));
-addressBankAccountCustomerSpecification 'Адрес банка покупателя' (specification) = addressBankDate(bankAccount(accountCustomerSpecification(specification)), dateSpecification(specification));
-MFOBankAccountCustomerSpecification 'Код МФО банка покупателя' (specification) = MFOBankAccount(accountCustomerSpecification(specification));
-departmentBankAccountCustomerSpecification 'Отдел банка покупателя' (specification) = departmentBankAccount(accountCustomerSpecification(specification));
-CBUBankAccountCustomerSpecification 'ЦБУ банка покупателя' (specification) = CBUBankAccount(accountCustomerSpecification(specification));
-
-dateToSpecification 'Срок действия с/ф' (specification) = DATA DATE (specification) IN documentPrmGroup;
-overdueSpecification 'Просрочена' (specification) = dateToSpecification(specification) < currentDate();
-noOverdueSpecification 'Непросрочена' (specification) = dateToSpecification(specification) >= currentDate();
-
-overdueSpecificationDate 'Просрочена' (specification, date) = dateToSpecification(specification) < date AND date AS DATE;
-noOverdueSpecificationDate 'Непросрочена' (specification, date) = dateToSpecification(specification) >= date AND date AS DATE;
-
-UNPLegalEntitySpecification 'УНП компании' (specification) = UNPLegalEntity(legalEntityStockSpecification(specification));
-fullNameLegalEntitySpecification 'Полное наименование компании' (specification) = fullNameLegalEntity(legalEntityStockSpecification(specification));
-addressLegalEntitySpecification 'Юридический адрес компании' (specification) = addressLegalEntityDate(legalEntityStockSpecification(specification), dateSpecification(specification));
-
-accountLegalEntitySpecification 'Р/сч. компании ИД' (specification) = accountLegalEntity(legalEntityStockSpecification(specification));
-numberAccountLegalEntitySpecification 'Р/сч. компании' (specification) = numberAccount(accountLegalEntitySpecification(specification));
-
-nameBankAccountLegalEntitySpecification 'Банк компании' (specification) = nameBankAccount(accountLegalEntitySpecification(specification));
-addressBankAccountLegalEntitySpecification 'Адрес банка компании' (specification) = addressBankDate(bankAccount(accountLegalEntitySpecification(specification)), dateSpecification(specification));
-MFOBankAccountLegalEntitySpecification 'Код МФО банка компании' (specification) = MFOBankAccount(accountLegalEntitySpecification(specification));
-departmentBankAccountLegalEntitySpecification 'Отдел банка компании' (specification) = departmentBankAccount(accountLegalEntitySpecification(specification));
-CBUBankAccountLegalEntitySpecification 'ЦБУ банка компании' (specification) = CBUBankAccount(accountLegalEntitySpecification(specification));
-phoneLegalEntitySpecification 'Телефон компании' (specification) = phoneLegalEntityDate(legalEntityStockSpecification(specification), dateSpecification(specification)) IN customerGroup;
-
-CONSTRAINT specification IS specification AND NOT dateToSpecification(specification) MESSAGE 'Не задан срок действия с/ф';
-CONSTRAINT dateToSpecification(specification) < dateSpecification(specification) MESSAGE 'Дата действия с/ф не может быть меньше даты документа';
-
-balanceDepartmentStoreItemSpecificationDetail 'Текущий остаток' (specificationDetail) = balanceBSkuStockDateTime(
-                itemSpecificationDetail(specificationDetail), departmentStoreSpecificationDetail(specificationDetail), dateTimeSpecificationDetail(specificationDetail)) IN itemDetailGroup;
-
-highlightSpecificationDetail(specificationDetail) =  quantitySpecificationDetailItemSpecification(itemSpecificationDetail(specificationDetail), specificationSpecificationDetail(specificationDetail)) > balanceDepartmentStoreItemSpecificationDetail(specificationDetail);
-
-reservedItemDepartmentStoreDate 'Количество выставленного товара' (departmentStore, item, date) = GROUP SUM
-    quantitySpecificationDetail(specificationDetail)
-    IF dateToSpecification(specificationSpecificationDetail(specificationDetail)) >= date AND date AS DATE
-    BY departmentStoreSpecificationDetail(specificationDetail), itemSpecificationDetail(specificationDetail), date;
-
-quantityExhibitedItemBySpecificationDetail(specificationDetail) = reservedItemDepartmentStoreDate(departmentStoreSpecificationDetail(specificationDetail),
-    itemSpecificationDetail(specificationDetail), dateSpecification(specificationSpecificationDetail(specificationDetail)));
-
-availableQuantityItemBySpecificationDetail 'Доступное к-во, с учетом непросроченных с/ф' (specificationDetail) =
-    balanceDepartmentStoreItemSpecificationDetail(specificationDetail)-quantityExhibitedItemBySpecificationDetail(specificationDetail) IN itemDetailGroup;
-
-notNullAvailableQuantityItemBySpecificationDetail(specificationDetail) = availableQuantityItemBySpecificationDetail(specificationDetail) < 0;
-
 //----------------------------------------------- Списание товара ---------------------------------------------------//
 
 // Проводим по регистру
@@ -1610,31 +1505,6 @@ nameCountryItemBarcode = nameCountryItem(skuBarcode(barcode));
 nameManufacturerItemBarcode = nameManufacturerItem(skuBarcode(barcode));
 @defineLabelTransactionAttribute(manufacturer, 'Производитель', STRING[255], nameManufacturerItem);
 
-// --------------------------- Печатная форма с/ф ---------------------------------
-
-FORM specificationPrint 'Счет-фактура' PRINT
-    OBJECTS sp=specification FIXED PANEL
-    PROPERTIES (sp) SELECTOR seriesNumberObject, nameDepartmentStoreSpecification, dateSpecification, dateToSpecification,
-                    fullNameCustomerSpecification, UNPCustomerSpecification, addressCustomerSpecification,
-                    numberAccountCustomerSpecification, nameBankAccountCustomerSpecification, addressBankAccountCustomerSpecification,
-                    MFOBankAccountCustomerSpecification, departmentBankAccountCustomerSpecification, CBUBankAccountCustomerSpecification,
-                    fullNameLegalEntitySpecification, addressLegalEntitySpecification, UNPLegalEntitySpecification,
-                    numberAccountLegalEntitySpecification, nameBankAccountLegalEntitySpecification, addressBankAccountLegalEntitySpecification,
-                    MFOBankAccountLegalEntitySpecification, departmentBankAccountLegalEntitySpecification, CBUBankAccountLegalEntitySpecification,
-                    nameObjectiveAcquiringSpecification, noteSpecification, phoneCustomerSpecification, phoneLegalEntitySpecification,
-                    quantitySpecificationDetailSpecification, calcSaleSumSpecificationDetailSpecification, calcVATSumSpecificationDetailSpecification, retailSumSpecificationDetailSpecification
-
-    OBJECTS d=specificationDetail
-    PROPERTIES (d) READONLY indexSpecificationDetail, idBarcodeSkuSpecificationDetail, nameAttributeItemSpecificationDetail,
-                            shortNameUOMItemSpecificationDetail, quantitySpecificationDetail,
-                            retailPriceSpecificationDetail, calcSaleSumSpecificationDetail, numberCalcRangeSpecificationDetail, dataCalcRangeSpecificationDetail,
-                            calcVATSumSpecificationDetail, retailSumSpecificationDetail
-
-    FILTERS inSpecificationSpecificationDetail(sp, d)
-;
-
-toPrintSpecification 'Счет-фактура'(specification) = ACTION FORM specificationPrint OBJECTS sp IMAGE 'print.png' IN printGroup;
-
 //------------------------------------------- Пересорт товара----------------------------------------------------//
 
 quantityDisparityDetailItemDisparity 'Кол-во для закачки в оборудование (приход)' (item, disparity) = GROUP SUM inputQuantityDisparityDetail(disparityDetail) BY inputItemDisparityDetail(disparityDetail), disparityDisparityDetail(disparityDetail);
@@ -1810,119 +1680,6 @@ DESIGN disparities FROM DEFAULT {
 //---------------------------Товарный отчет-------------------------------------//
 
 @extendStockFormAccountDocumentLedger(departmentStore, d);
-
-//------------------------------------формы: Отпуск из розницы-------------------------//
-
-FORM specification 'Счет-фактура'
-    OBJECTS sp=specification FIXED PANEL
-    PROPERTIES (sp) nameNumeratorObject, numberObject, seriesObject, setValueNumeratedObject, nameDepartmentStoreSpecification,
-                    dateSpecification, timeSpecification, dateToSpecification, nameCustomerSpecification, UNPCustomerSpecification,
-                    nameObjectiveAcquiringSpecification, noteSpecification,
-                    quantitySpecificationDetailSpecification, calcSaleSumSpecificationDetailSpecification, calcVATSumSpecificationDetailSpecification, retailSumSpecificationDetailSpecification
-
-    OBJECTS d=specificationDetail
-    PROPERTIES (d) indexSpecificationDetail, idBarcodeSkuSpecificationDetail, nameAttributeItemSpecificationDetail, quantitySpecificationDetail,
-                   retailPriceSpecificationDetail, calcSaleSumSpecificationDetail, numberCalcRangeSpecificationDetail, dataCalcRangeSpecificationDetail,
-                   calcVATSumSpecificationDetail, retailSumSpecificationDetail,
-                   ADDOBJ, delete
-
-    PROPERTIES FORCE PANEL READONLY articleItemSpecificationDetail(d), nameCountryItemSpecificationDetail(d), balanceDepartmentStoreItemSpecificationDetail(d)
-                   BACKGROUND highlightSpecificationDetail(d), availableQuantityItemBySpecificationDetail(d) BACKGROUND notNullAvailableQuantityItemBySpecificationDetail(d)
-
-    PROPERTIES(sp) TODRAW d addDetailDialogSkuStockSpecificationDetailSpecification, addDetailDialogTerminalSpecificationDetailSpecification,
-                            addDetailInputBarcodeSpecificationDetailSpecification, deleteSpecificationDetailSpecification
-
-    FILTERS inSpecificationSpecificationDetail(sp, d)
-
-    EDIT specification OBJECT sp
-;
-
-DESIGN specification FROM DEFAULT{
-    main {
-        preferredSize = (1024, 768);
-
-        NEW header.box BEFORE d.box {
-            childConstraints = TO THE RIGHT;
-
-            NEW headerRow1 {
-                childConstraints = TO THE BOTTOM;
-
-                ADD sp.documentHeaderGroup {
-                    childConstraints = TO THE RIGHT;
-                    ADD PROPERTY(nameDepartmentStoreSpecification);
-                    ADD PROPERTY(nameNumeratorObject);
-                    ADD PROPERTY(numberObject);
-                    ADD PROPERTY(seriesObject);
-                    ADD PROPERTY(dateSpecification);
-                    ADD PROPERTY(timeSpecification);
-                }
-
-                ADD sp.documentPrmGroup {
-                    childConstraints = TO THE BOTTOM;
-                    NEW headerRow21 {
-                        childConstraints = TO THE RIGHT;
-                        ADD PROPERTY(nameCustomerSpecification);
-                        ADD PROPERTY(UNPCustomerSpecification);
-                        ADD PROPERTY(nameObjectiveAcquiringSpecification);
-                    }
-                    NEW headerRow22 {
-                        childConstraints = TO THE RIGHT;
-                        ADD PROPERTY(dateToSpecification);
-                        ADD PROPERTY(noteSpecification);
-                    }
-                }
-            }
-
-            ADD sp.documentSumGroup {
-                childConstraints = TO THE BOTTOM;
-            }
-        }
-    }
-}
-
-FORM specifications 'Счет-фактуры'
-    OBJECTS sp=specification
-    PROPERTIES (sp) READONLY numberObject, seriesObject, dateSpecification, timeSpecification, nameDepartmentStoreSpecification,
-                             nameCustomerSpecification, dateToSpecification, countSpecificationDetailSpecification, quantitySpecificationDetailSpecification,
-                             calcSaleSumSpecificationDetailSpecification, calcVATSumSpecificationDetailSpecification, retailSumSpecificationDetailSpecification
-
-    PROPERTIES (sp)          ADDFORM, EDITFORM, delete
-
-    OBJECTS d=specificationDetail
-    PROPERTIES (d) READONLY  indexSpecificationDetail, idBarcodeSkuSpecificationDetail, nameAttributeItemSpecificationDetail,
-                             quantitySpecificationDetail, retailPriceSpecificationDetail,
-                             calcSaleSumSpecificationDetail, numberCalcRangeSpecificationDetail, dataCalcRangeSpecificationDetail,
-                             calcVATSumSpecificationDetail, retailSumSpecificationDetail
-
-    PROPERTIES      FORCE PANEL toPrintSpecification(sp) TODRAW d
-    FILTERS         inSpecificationSpecificationDetail(sp, d)
-
-    FILTERGROUP filters6
-            FILTER 'Просроченные с/ф' 'F10' overdueSpecification(sp)
-            FILTER 'Непросроченные с/ф' 'F9' noOverdueSpecification(sp)
-;
-
-DESIGN specifications FROM DEFAULT {
-
-    NEW topContainer{
-
-        type = SPLITV;
-        childConstraints = TO THE BOTTOM;
-
-        ADD sp.box;
-        ADD d.box {
-            d.panel {
-                childConstraints = TO THE RIGHT;
-                NEW caseOne{
-                    title = 'Печатные формы';
-                    ADD PROPERTY (toPrintSpecification(sp));
-                }
-            }
-        }
-    }
-
-    ADD functions.box;
-}
 
 //----------------------------------- Акты проработки -------------------------------------------------//
 FORM actOfStudy 'Акт проработки'
@@ -3060,9 +2817,6 @@ NAVIGATOR {
 
     NEW retail 'Розничная торговля' TO formsToolbar {
         ADD POSNavigator;
-        NEW retailStatement 'Безналичный расчет' {
-            ADD specifications;
-        }
         NEW priceAccount 'Учет в розничных ценах' {
             ADD pricings;
             ADD repricings;
