@@ -1,6 +1,6 @@
 MODULE Invoice;
 
-REQUIRE Order, Supplier, StockTax;
+REQUIRE Order, ContractStock, StockTax;
 
 CLASS ABSTRACT invoice 'Накладная';
 CLASS ABSTRACT invoiceDetail 'Строка накладной';
