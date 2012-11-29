@@ -194,11 +194,11 @@ descriptionCommercialInvoice 'Название документа' (commercialIn
     [FORMULA STRING[200] '\'Коммерческий инвойс \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)'](
     seriesNumberObject(commercialInvoice), dateCommercialInvoice(commercialInvoice),
     nameSupplierCommercialInvoice(commercialInvoice)) AND commercialInvoice IS commercialInvoice;
-@implementContractLedger(a, commercialInvoice);
+@implementContractLedger(a, commercialInvoice, contract);
 sumContractALedger(contractALedger) += sumCommercialInvoice(contractALedger) IF isPostedCommercialInvoice(contractALedger);;
 
-@implementContractPrepaymentLedger(commercialInvoice, sumCommercialInvoice);
+@implementContractPrepaymentLedger(commercialInvoice, sumCommercialInvoice, contract);
 //sumContractLedger(commercialInvoiceContractLedger) += sumCommercialInvoice(commercialInvoiceCommercialInvoiceContractLedger(commercialInvoiceContractLedger));
 
-@implementOutContractLedgerInContractLedgerPrefix(in, commercialInvoice);
+@implementOutContractLedgerInContractLedgerPrefix(in, commercialInvoice, contract);
 sumInContractLedger(inContractLedger) += sumCommercialInvoice(inContractLedger) IF isPostedCommercialInvoice(inContractLedger);;

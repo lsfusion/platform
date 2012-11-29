@@ -1,8 +1,8 @@
 MODULE Invoice;
 
-REQUIRE Order, ContractStock, StockTax;
+REQUIRE Order, ContractLedger, StockTax;
 
-CLASS ABSTRACT invoice 'Накладная';
+CLASS ABSTRACT invoice 'Накладная' : contractLedger, contractALedger, inContractLedger, outContractLedger;
 CLASS ABSTRACT invoiceDetail 'Строка накладной';
 
 @defineDocumentAbstract(invoice);

@@ -8,6 +8,9 @@ NAMESPACE Contract;
 
 
 CLASS ABSTRACT contractSku 'Договор на поставку' : contract;
+TABLE contractSku(contractSku);
+
+editContractSku 'Редактировать' = ABSTRACT ACTION (contractSku) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
 
 GROUP paymentGroup 'Взаиморасчеты' : publicGroup;
 
@@ -24,7 +27,7 @@ CLASS STATIC contractSkuForm 'Порядок оплаты договора на 
 
 CLASS userContractSku 'Договор на поставку (польз.)' : contractSku;
 
-supplierContractSku = DATA legalEntity (userContractSku) AUTOSET;
+supplierContractSku = DATA legalEntity (contractSku) AUTOSET;
 nameSupplierContractSku 'Поставщик' (contract) = name(supplierContractSku(contract)) IN recognizeGroup MAXCHARWIDTH 30 PREFCHARWIDTH 30;
 partyAContract (contract) += supplierContractSku(contract);
 
@@ -103,7 +106,7 @@ FORM paymentCondition 'Условия оплаты'
     OBJECTS pc = paymentCondition FIXED PANEL
     PROPERTIES(pc) datePaymentCondition, numberContractPaymentCondition, nameTypePaymentCondition, nameFormPaymentCondition
 
-    OBJECTS pp = paymentPeriod
+    OBJECTS pp = paymentPeriod FIXED GRID
     PROPERTIES(pp) countDaysPaymentPeriod SHOWIF isSaleTypePrepaymentFormPaymentCondition(pc),
                    percentPaymentPeriod SHOWIF isSaleTypePrepaymentFormPaymentCondition(pc)
     PROPERTIES(pp) ADDOBJ SHOWIF isSaleTypePrepaymentFormPaymentCondition(pc),
@@ -120,7 +123,7 @@ FORM paymentCondition 'Условия оплаты'
 ;
 
 // Формы
-FORM contractSku 'Договор на поставку товаров'
+FORM userContractSku 'Договор на поставку товаров'
     OBJECTS c=userContractSku FIXED PANEL
     PROPERTIES(c) nameSupplierContractSku, nameCustomerContractSku,
                   numberContract, dateFromContract, dateToContract,
@@ -136,12 +139,16 @@ FORM contractSku 'Договор на поставку товаров'
 
     EDIT userContractSku OBJECT c
 ;
-addUserContractSku 'Добавить' = ACTION (supplier, customer) {
+
+editUserContractSku 'Редактировать' = ACTION EDITFORM userContractSku;
+editContractSku(userContractSku) += editUserContractSku(userContractSku);
+
+addUserContractSkuSupplierCustomer 'Добавить' = ACTION (supplier, customer) {
 
     FOR ADDOBJ uc = userContractSku DO {
         SET supplierContractSku(uc) <- (supplier AS legalEntity);
         SET customerContractSku(uc) <- (customer AS legalEntity);
-        FORM contractSku OBJECTS c = uc DOCKED_MODAL;
+        FORM userContractSku OBJECTS c = uc DOCKED_MODAL;
         IF TRUE AND NOT formResult() == formResult.ok THEN {
             EXEC delete(uc);
         }
@@ -150,14 +157,18 @@ addUserContractSku 'Добавить' = ACTION (supplier, customer) {
 
 isUserContractSku (contractSku) = TRUE IF contractSku IS userContractSku;
 
+addUserContractSku 'Добавить' = ACTION ADDFORM userContractSku;
+
 FORM contractSkus 'Договора на поставку'
-    OBJECTS c=userContractSku
+    OBJECTS c=contractSku
     PROPERTIES(c) READONLY nameSupplierContractSku, nameCustomerContractSku, numberContract, dateFromContract, dateToContract,
                            nameCurrencyContract, noteContract, nameTypeContractSku,
                            nameFormContractSku
 
-    PROPERTIES(c) ADDSESSIONFORM
-    PROPERTIES(c) EDITSESSIONFORM, delete SHOWIF isUserContractSku(c)
+    PROPERTIES() addUserContractSku TODRAW c
+    PROPERTIES(c) editContractSku, delete FORCE PANEL DRAWTOTOOLBAR SHOWIF isUserContractSku(c)
+
+    DIALOG contractSku OBJECT c
 ;
 
 // ----------------------------- Расширяем форму организаций ------------------------------------------- //
@@ -167,7 +178,7 @@ EXTEND FORM legalEntity
     OBJECTS css = userContractSku
     PROPERTIES(css) READONLY numberContract, nameTypeContractSku, nameFormContractSku, dateFromContract,
                     dateToContract, nameCurrencyContract, noteContract
-    PROPERTIES addUserContractSku(s, l) TODRAW css FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES addUserContractSkuSupplierCustomer(s, l) TODRAW css FORCE PANEL DRAWTOTOOLBAR
     PROPERTIES(css)  EDITSESSIONFORM, delete SHOWIF isUserContractSku(css)
     FILTERS customerContractSku(css) == l,
             supplierContractSku(css) == s
@@ -178,7 +189,7 @@ EXTEND FORM legalEntity
     OBJECTS csc = userContractSku
     PROPERTIES(csc) READONLY numberContract, nameTypeContractSku, nameFormContractSku, dateFromContract,
                     dateToContract, nameCurrencyContract, noteContract
-    PROPERTIES addUserContractSku(l, c) TODRAW csc FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES addUserContractSkuSupplierCustomer(l, c) TODRAW csc FORCE PANEL DRAWTOTOOLBAR
     PROPERTIES(csc) EDITSESSIONFORM, delete SHOWIF isUserContractSku(csc)
     FILTERS customerContractSku(csc) == c,
             supplierContractSku(csc) == l

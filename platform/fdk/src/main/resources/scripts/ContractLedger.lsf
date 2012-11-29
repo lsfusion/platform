@@ -46,23 +46,23 @@ END
 @defineContractLedgerPrefix('Изменение управленческого долга по контракту', );
 @defineContractLedgerPrefix('Изменение бухгалтерского долга по контракту', a);
 
-META implementContractLedger(prefix, object)
+META implementContractLedger(prefix, object, contractProp)
 
     isPostedContract###prefix##Ledger(contract###prefix##Ledger) += isPosted###object(contract###prefix##Ledger);
     dateTimeContract###prefix##Ledger(contract###prefix##Ledger) += dateTime###object(contract###prefix##Ledger) IF isPostedContract###prefix##Ledger(contract###prefix##Ledger);
-    contractContract###prefix##Ledger(contract###prefix##Ledger) += contract###object(contract###prefix##Ledger) IF isPostedContract###prefix##Ledger(contract###prefix##Ledger);
+    contractContract###prefix##Ledger(contract###prefix##Ledger) += contractProp###object(contract###prefix##Ledger) IF isPostedContract###prefix##Ledger(contract###prefix##Ledger);
     descriptionContract###prefix##Ledger(contract###prefix##Ledger) += description###object(contract###prefix##Ledger) IF isPostedContract###prefix##Ledger(contract###prefix##Ledger);
 
 END
 
-META implementContractPrepaymentLedger(object, sumProp)
+META implementContractPrepaymentLedger(object, sumProp, contractProp)
 
     CLASS object##ContractLedger : contractLedger;
     //TABLE object##ContractLedger(object##ContractLedger);
 
     needToCreate###object##ContractLedger (object, paymentPeriod) =
-        isSaleTypePrepaymentFormPaymentCondition(paymentConditionContractDate(contract###object(object), date###object(object))) AND
-        contract###object(object) == contractPaymentCondition(paymentConditionPaymentPeriod(paymentPeriod)) AND
+        isSaleTypePrepaymentFormPaymentCondition(paymentConditionContractDate(contractProp###object(object), date###object(object))) AND
+        contractProp###object(object) == contractPaymentCondition(paymentConditionPaymentPeriod(paymentPeriod)) AND
         isPosted###object(object);
 
     @defineAggregation(object, paymentPeriod, object##ContractLedger, needToCreate###object##ContractLedger);
@@ -70,7 +70,7 @@ META implementContractPrepaymentLedger(object, sumProp)
     isPostedContractLedger(object##ContractLedger) += isPosted###object(object###object##ContractLedger(object##ContractLedger));
     dateTimeContractLedger(object##ContractLedger) += sumDateTimeDay(dateTime###object(object###object##ContractLedger(object##ContractLedger)),
                                                                      countDaysPaymentPeriod(paymentPeriod###object##ContractLedger(object##ContractLedger)));
-    contractContractLedger(object##ContractLedger) += contract###object(object###object##ContractLedger(object##ContractLedger));
+    contractContractLedger(object##ContractLedger) += contractProp###object(object###object##ContractLedger(object##ContractLedger));
     descriptionContractLedger(object##ContractLedger) += description###object(object###object##ContractLedger(object##ContractLedger));
     sumContractLedger(object##ContractLedger) +=
         sumProp(object###object##ContractLedger(object##ContractLedger)) * percentPaymentPeriod(paymentPeriod###object##ContractLedger(object##ContractLedger)) / 100.0;
@@ -186,11 +186,11 @@ writeOutContractLedgerLIFO 'Расписать по LIFO' = ACTION (outContractL
     SET costOutContractLedgerInContractLedger(outContractLedger, inContractLedger) <- sumInLIFOOutContractLedgerInContractLedger(outContractLedger, inContractLedger);
 }
 
-META implementOutContractLedgerInContractLedgerPrefix(prefix, object)
+META implementOutContractLedgerInContractLedgerPrefix(prefix, object, contractProp)
 
     isPosted###prefix##ContractLedger(prefix##ContractLedger) += isPosted###object(prefix##ContractLedger);
     dateTime###prefix##ContractLedger(prefix##ContractLedger) += dateTime###object(prefix##ContractLedger) IF isPosted###prefix##ContractLedger(prefix##ContractLedger);
-    contract###prefix##ContractLedger(prefix##ContractLedger) += contract###object(prefix##ContractLedger) IF isPosted###prefix##ContractLedger(prefix##ContractLedger);
+    contract###prefix##ContractLedger(prefix##ContractLedger) += contractProp###object(prefix##ContractLedger) IF isPosted###prefix##ContractLedger(prefix##ContractLedger);
     description###prefix##ContractLedger(prefix##ContractLedger) += description###object(prefix##ContractLedger) IF isPosted###prefix##ContractLedger(prefix##ContractLedger);
 
 END
@@ -244,13 +244,13 @@ descriptionPayment 'Название документа' =
     [FORMULA STRING[200] '\'Платеж \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)'](
     seriesNumberObject(payment), datePayment(payment), nameBeneficiaryPayment(payment)) PERSISTENT;
 
-@implementContractLedger( ,payment);
+@implementContractLedger( ,payment, contract);
 sumContractLedger(contractLedger) += -sumRateExchangePayment(contractLedger) IF isPostedPayment(contractLedger);
 
-@implementContractLedger(a ,payment);
+@implementContractLedger(a ,payment, contract);
 sumContractALedger(contractALedger) += -sumRateExchangePayment(contractALedger) IF isPostedPayment(contractALedger);
 
-@implementOutContractLedgerInContractLedgerPrefix(out, payment);
+@implementOutContractLedgerInContractLedgerPrefix(out, payment, contract);
 sumOutContractLedger(outContractLedger) += sumRateExchangePayment(outContractLedger) IF isPostedPayment(outContractLedger);
 
 FORM payment 'Платеж'
@@ -329,9 +329,9 @@ DESIGN payment FROM DEFAULT{
 }
 
 partyA = SESSION DATA legalEntity();
-namePartyA 'Сторона А' = name(partyA());
+namePartyA 'Сторона А(поставщик)' = name(partyA());
 partyB = SESSION DATA legalEntity();
-namePartyB 'Сторона Б' = name(partyB());
+namePartyB 'Сторона Б(покупатель)' = name(partyB());
 
 //--------------------------------------------- Платежное требование ------------------------------------------------------//
 
@@ -366,7 +366,7 @@ descriptionPaymentRequest 'Название документа' =
     [FORMULA STRING[200] '\'Платежное требование \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)'](
     seriesNumberObject(paymentRequest), datePaymentRequest(paymentRequest), nameLenderPaymentRequest(paymentRequest)) PERSISTENT;
 
-@implementContractLedger( ,paymentRequest);
+@implementContractLedger( ,paymentRequest, contract);
 sumContractLedger(contractLedger) += sumPaymentRequest(contractLedger) IF isPostedPaymentRequest(contractLedger);
 
 FORM paymentRequest 'Платежное требование'
@@ -492,22 +492,22 @@ namePartyACreditMemo 'Сторона А' (creditMemo) = name(partyACreditMemo(cr
 @defineCreditMemoUnion(description, 'Название документа');
 @defineCreditMemoUnion(note, 'Примечание');
 
-@implementContractLedger( ,creditMemoIn);
+@implementContractLedger( ,creditMemoIn, contract);
 sumContractLedger(contractLedger) += sumCreditMemoIn(contractLedger) IF isPostedCreditMemoIn(contractLedger);
 
-@implementContractLedger(a ,creditMemoIn);
+@implementContractLedger(a ,creditMemoIn, contract);
 sumContractALedger(contractALedger) += sumCreditMemoIn(contractALedger) IF isPostedCreditMemoIn(contractALedger);
 
-@implementOutContractLedgerInContractLedgerPrefix(in, creditMemoIn);
+@implementOutContractLedgerInContractLedgerPrefix(in, creditMemoIn, contract);
 sumInContractLedger(inContractLedger) += sumCreditMemoIn(inContractLedger) IF isPostedCreditMemoIn(inContractLedger);
 
-@implementContractLedger( ,creditMemoOut);
+@implementContractLedger( ,creditMemoOut, contract);
 sumContractLedger(contractLedger) += -sumCreditMemoOut(contractLedger IF isPostedCreditMemoOut(contractLedger));
 
-@implementContractLedger(a ,creditMemoOut);
+@implementContractLedger(a ,creditMemoOut,contract);
 sumContractALedger(contractALedger) += -sumCreditMemoOut(contractALedger) IF isPostedCreditMemoOut(contractALedger);
 
-@implementOutContractLedgerInContractLedgerPrefix(out, creditMemoOut);
+@implementOutContractLedgerInContractLedgerPrefix(out, creditMemoOut, contract);
 sumOutContractLedger(outContractLedger) += sumCreditMemoOut(outContractLedger) IF isPostedCreditMemoOut(outContractLedger);
 
 FORM creditMemo 'Кредитная нота'

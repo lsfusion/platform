@@ -89,13 +89,3 @@ META defineDocumentInterfaceContract (object, contractType, prefixA, prefixB, pa
     contractType###object(object) += contractType###user###object(object);
     isCommission###object(object) += isCommission###user###object(object);
 END
-
-// Формы
-FORM contract 'Договор'
-    OBJECTS c=contract FIXED PANEL
-    PROPERTIES(c) namePartyAContract, namePartyBContract,
-                  numberContract, dateFromContract, dateToContract,
-                  nameCurrencyContract, noteContract
-
-    EDIT contract OBJECT c
-;

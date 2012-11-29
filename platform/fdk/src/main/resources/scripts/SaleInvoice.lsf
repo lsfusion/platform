@@ -78,3 +78,13 @@ createExplicitBatchDetailUserInvoiceOrder (userInvoice, order) += ACTION (userIn
             SET quantityUserInvoiceDetail (d) <- toInvoiceBatchOrderDetail(batch, orderDetail);
         }
 }
+
+// -------------------------------------- Формирование задолженности ---------------------------------------------------
+
+@implementContractLedger(a, userInvoice, contractSku);
+sumContractALedger(contractALedger) += invoiceSumUserInvoiceDetailUserInvoice(contractALedger) IF isPostedInvoice(contractALedger);
+
+@implementContractPrepaymentLedger(userInvoice, invoiceSumUserInvoiceDetailUserInvoice, contractSku);
+
+@implementOutContractLedgerInContractLedgerPrefix(in, userInvoice, contractSku);
+sumInContractLedger(inContractLedger) += invoiceSumUserInvoiceDetailUserInvoice(inContractLedger) IF isPostedInvoice(inContractLedger);
