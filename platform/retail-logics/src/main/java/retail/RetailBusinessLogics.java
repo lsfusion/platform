@@ -65,7 +65,6 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                 "/scripts/PriceChecker.lsf",
                 "/scripts/Terminal.lsf",
                 "/scripts/Label.lsf",
-                "/scripts/Default.lsf",
                 "/scripts/RetailCRM.lsf",
                 "/scripts/CashOperation.lsf",
                 "/scripts/PriceInterval.lsf",
