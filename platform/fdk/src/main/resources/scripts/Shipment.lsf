@@ -8,6 +8,9 @@ CLASS ABSTRACT shipmentDetail 'Строка поставки';
 @defineDocumentAbstract(shipment);
 @defineDocumentAbstractNumber(shipment);
 
+@defineDocumentAbstractLegalEntity(shipment, supplier, 'Поставщик');
+@defineDocumentAbstractLegalEntity(shipment, customer, 'Покупатель');
+
 @defineDocumentAbstractDataStock(shipment, stock, 'Склад поставщика', supplier);
 @defineDocumentAbstractDataStock(shipment, stock, 'Склад покупателя', customer);
 
@@ -71,6 +74,8 @@ META defineShipment(sign, stockProp)
 
     @defineDocumentInterfaceLegalEntity (shipment, supplier, 'Поставщик');
     @defineDocumentInterfaceLegalEntity (shipment, customer, 'Покупатель');
+    Shipment.supplierShipment(shipment) += supplierShipment(shipment);
+    Shipment.customerShipment(shipment) += customerShipment(shipment);
 
     @defineDocumentInterfaceDataStock(shipment, stock, 'Склад поставщика', supplier);
     @defineDocumentInterfaceDataStock(shipment, stock, 'Склад покупателя', customer);

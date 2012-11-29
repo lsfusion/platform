@@ -9,7 +9,7 @@ NAMESPACE PurchaseReturn;
 
 Invoice.fromLegalEntityInvoice (invoice) += customerInvoice(invoice);
 Invoice.fromStockInvoice (invoice) += customerStockInvoice(invoice);
-Invoice.toLegalEntityInvoice (invoice) +=supplierInvoice(invoice);
+Invoice.toLegalEntityInvoice (invoice) += supplierInvoice(invoice);
 Invoice.toStockInvoice (invoice) += supplierStockInvoice(invoice);
 
 @implementConsignmentDocumentHeaderPrefix (invoice, invoice, Invoice);

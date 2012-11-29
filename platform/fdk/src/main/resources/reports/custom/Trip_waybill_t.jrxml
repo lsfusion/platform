@@ -510,7 +510,7 @@
 				<textFieldExpression class="java.lang.String"><![CDATA[""]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="40" y="120" width="36" height="18"/>
+				<reportElement x="38" y="120" width="38" height="18"/>
 				<textElement/>
 				<textFieldExpression class="java.lang.String"><![CDATA[""]]></textFieldExpression>
 			</textField>

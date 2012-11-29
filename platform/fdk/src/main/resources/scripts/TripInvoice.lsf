@@ -22,17 +22,27 @@ createConsignmentTrip 'Создать накладные по заказам' (t
 
 
 EXTEND FORM trip
+
     OBJECTS i=invoice
-    PROPERTIES (i) numberInvoice, seriesInvoice, dateInvoice, nameSupplierStockInvoice, nameCustomerStockInvoice
+    PROPERTIES (i) READONLY numberInvoice, seriesInvoice, dateInvoice, nameSupplierInvoice, nameSupplierStockInvoice, nameCustomerInvoice, nameCustomerStockInvoice
     PROPERTIES (t, i) inTripInvoice
     FILTERS filterTripInvoice(t, i)
+
+    FILTERS customerInvoice(i) == partyB() OR (i IS invoice AND NOT partyB()),
+            supplierInvoice(i) == partyA() OR (i IS invoice AND NOT partyA())
+
+    OBJECTS id=invoiceDetail
+    PROPERTIES (id) READONLY idBarcodeSkuInvoiceDetail, nameSkuInvoiceDetail, shortNameUOMSkuInvoiceDetail, quantityInvoiceDetail
+    FILTERS invoiceInvoiceDetail(id)==i
 ;
 
 EXTEND DESIGN trip {
 
     bottomContainer {
-        ADD i.box AFTER orderContainer {
+        NEW invoiceContainer AFTER orderContainer{
             caption = 'Накладные';
+            ADD i.box;
+            ADD id.box;
         }
     };
 }

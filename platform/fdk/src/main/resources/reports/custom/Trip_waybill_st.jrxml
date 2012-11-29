@@ -22,60 +22,62 @@
 	<field name="name" class="java.lang.String"/>
 	<field name="addressStock" class="java.lang.String"/>
 	<field name="nameLegalEntityStock" class="java.lang.String"/>
+	<field name="grossWeightTripToStock" class="java.lang.Double"/>
+	<field name="addressStockPrevTripStock" class="java.lang.String"/>
 	<pageHeader>
 		<band height="72">
 			<textField>
-				<reportElement style="DefaultStyle" x="121" y="54" width="47" height="18"/>
+				<reportElement style="DefaultStyle" x="135" y="54" width="47" height="18"/>
 				<textElement/>
 				<textFieldExpression class="java.lang.String"><![CDATA["убытия"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="DefaultStyle" x="0" y="18" width="68" height="54"/>
+				<reportElement style="DefaultStyle" x="0" y="18" width="82" height="54"/>
 				<textElement/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Заказчик"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="DefaultStyle" x="0" y="0" width="609" height="18"/>
+				<reportElement style="DefaultStyle" x="0" y="0" width="701" height="18"/>
 				<textElement textAlignment="Center"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Задание водителю"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="DefaultStyle" x="268" y="18" width="100" height="54"/>
+				<reportElement style="DefaultStyle" x="298" y="18" width="126" height="54"/>
 				<textElement textAlignment="Center"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Пункт назначения"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="DefaultStyle" x="168" y="18" width="100" height="54"/>
+				<reportElement style="DefaultStyle" x="182" y="18" width="116" height="54"/>
 				<textElement textAlignment="Center"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Пункт отправления"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="DefaultStyle" x="68" y="54" width="53" height="18"/>
+				<reportElement style="DefaultStyle" x="82" y="54" width="53" height="18"/>
 				<textElement/>
 				<textFieldExpression class="java.lang.String"><![CDATA["прибытия"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="DefaultStyle" x="506" y="18" width="40" height="54"/>
+				<reportElement style="DefaultStyle" x="598" y="18" width="40" height="54"/>
 				<textElement textAlignment="Center"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Вес груза, т"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="DefaultStyle" x="546" y="18" width="63" height="54"/>
+				<reportElement style="DefaultStyle" x="638" y="18" width="63" height="54"/>
 				<textElement textAlignment="Center"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Количество ездок с грузом, ч"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="DefaultStyle" x="68" y="18" width="100" height="36"/>
+				<reportElement style="DefaultStyle" x="82" y="18" width="100" height="36"/>
 				<textElement textAlignment="Center"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Дата (число, месяц), время (ч, мин)"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="DefaultStyle" x="368" y="18" width="64" height="54"/>
+				<reportElement style="DefaultStyle" x="424" y="18" width="64" height="54"/>
 				<textElement textAlignment="Center"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Расстояние, км"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="DefaultStyle" x="432" y="18" width="74" height="54"/>
+				<reportElement style="DefaultStyle" x="488" y="18" width="110" height="54"/>
 				<textElement textAlignment="Center"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Наименование груза"]]></textFieldExpression>
 			</textField>
@@ -84,47 +86,47 @@
 	<detail>
 		<band height="18">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="168" y="0" width="100" height="18"/>
-				<textElement textAlignment="Left"/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{addressStock}]]></textFieldExpression>
+				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="182" y="0" width="116" height="18"/>
+				<textElement textAlignment="Left" verticalAlignment="Top"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{addressStockPrevTripStock}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="68" height="18"/>
+				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="82" height="18"/>
 				<textElement textAlignment="Left"/>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{nameLegalEntityStock}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="68" y="0" width="53" height="18"/>
+				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="82" y="0" width="53" height="18"/>
 				<textElement/>
 				<textFieldExpression class="java.lang.String"><![CDATA[""]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="121" y="0" width="47" height="18"/>
+				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="135" y="0" width="47" height="18"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[""]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="298" y="0" width="126" height="18"/>
+				<textElement verticalAlignment="Top"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{addressStock}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="424" y="0" width="64" height="18"/>
 				<textElement/>
 				<textFieldExpression class="java.lang.String"><![CDATA[""]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="268" y="0" width="100" height="18"/>
+				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="488" y="0" width="110" height="18"/>
 				<textElement/>
 				<textFieldExpression class="java.lang.String"><![CDATA[""]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="368" y="0" width="64" height="18"/>
-				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA[""]]></textFieldExpression>
+				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="598" y="0" width="40" height="18"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{grossWeightTripToStock}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="432" y="0" width="74" height="18"/>
-				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA[""]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="506" y="0" width="40" height="18"/>
-				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA[""]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="546" y="0" width="63" height="18"/>
+				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="638" y="0" width="63" height="18"/>
 				<textElement/>
 				<textFieldExpression class="java.lang.String"><![CDATA[""]]></textFieldExpression>
 			</textField>
@@ -143,12 +145,12 @@
 				<textFieldExpression class="java.lang.String"><![CDATA["Сопровождающие лица ____________________"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle1" x="249" y="29" width="174" height="24"/>
+				<reportElement style="GroupCellStyle1" x="258" y="29" width="174" height="24"/>
 				<textElement verticalAlignment="Top"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Подпись (штамп) ______________"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle1" x="435" y="29" width="174" height="24"/>
+				<reportElement style="GroupCellStyle1" x="444" y="29" width="174" height="24"/>
 				<textElement verticalAlignment="Top"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Подпись водителя ______________"]]></textFieldExpression>
 			</textField>
@@ -158,7 +160,7 @@
 				<textFieldExpression class="java.lang.String"><![CDATA["Водительское удостоверение проверил, задание выдал."]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle1" x="249" y="77" width="174" height="24"/>
+				<reportElement style="GroupCellStyle1" x="258" y="77" width="174" height="24"/>
 				<textElement verticalAlignment="Top"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Подпись водителя ______________"]]></textFieldExpression>
 			</textField>
@@ -168,27 +170,27 @@
 				<textFieldExpression class="java.lang.String"><![CDATA["Подпись (штамп) ______________"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle1" x="249" y="53" width="174" height="24"/>
+				<reportElement style="GroupCellStyle1" x="258" y="53" width="174" height="24"/>
 				<textElement verticalAlignment="Top"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Автомобиль в технически исправном состоянии принял."]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle1" x="249" y="5" width="174" height="24"/>
+				<reportElement style="GroupCellStyle1" x="258" y="5" width="174" height="24"/>
 				<textElement verticalAlignment="Top"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Автомобиль технически исправен. Выезд разрешен."]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle1" x="435" y="5" width="174" height="24"/>
+				<reportElement style="GroupCellStyle1" x="444" y="5" width="174" height="24"/>
 				<textElement verticalAlignment="Top"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Автомобиль сдал."]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle1" x="435" y="77" width="174" height="24"/>
+				<reportElement style="GroupCellStyle1" x="444" y="77" width="174" height="24"/>
 				<textElement verticalAlignment="Top"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Подпись (штамп) _______________"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle1" x="435" y="53" width="174" height="24"/>
+				<reportElement style="GroupCellStyle1" x="444" y="53" width="174" height="24"/>
 				<textElement verticalAlignment="Top"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Автомобиль принял."]]></textFieldExpression>
 			</textField>

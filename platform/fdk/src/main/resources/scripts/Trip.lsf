@@ -1,6 +1,6 @@
 MODULE Trip;
 
-REQUIRE Order, Shipment, Route;
+REQUIRE Order, Shipment, Route, ContractLedger;
 
 NAMESPACE Trip;
 
@@ -35,6 +35,9 @@ quantityTripStock(trip, stock) = UNION SUM quantityTripStockFrom(trip, stock), q
 numberStockTrip 'Порядковый номер' = DATA INTEGER(stock, trip);
 numberStockTrip(stock, trip) => quantityTripStock(trip, stock)>0 RESOLVE FALSE;
 
+stockPrevTripStock (trip, stock) = PARTITION PREV stock IF quantityTripStock(trip, stock) BY trip ORDER numberStockTrip(stock, trip);
+addressStockPrevTripStock 'Адрес' (trip, stock) = addressStock(stockPrevTripStock (trip, stock));
+
 maxNumberTrip(trip) = GROUP MAX numberStockTrip(stock, trip) BY trip;
 indexTripOrder 'Номер' (trip, order) = maxNumberTrip(trip) - numberStockTrip(toStockOrder(order), trip) + 1 IF inTripOrder(trip, order);
 
@@ -42,6 +45,8 @@ CONSTRAINT numberStockTrip(fromStockOrder(order), tripOrder(order)) >= numberSto
     MESSAGE 'Номер не соответствует направлению заказа';
 
 grossWeightOrderedTrip 'Суммарный вес заказов' (trip) = GROUP SUM grossWeightOrderDetailOrder(order) BY tripOrder(order);
+
+grossWeightTripToStock 'Вес' = GROUP SUM grossWeightOrderDetailOrder(order) BY tripOrder(order), toStockOrder(order);
 
 quantityOrderedTripSku 'Кол-во в заказах' (trip, sku) = GROUP SUM quantityOrderDetail(orderDetail) BY tripOrder(orderOrderDetail(orderDetail)), skuOrderDetail(orderDetail);
 
@@ -67,12 +72,14 @@ createShipmentsTrip 'Присоединить поставки' (trip) = ACTION 
 FORM waybill PRINT
 
     OBJECTS t=trip FIXED PANEL
-    PROPERTIES(t) dateTrip, numberObject, sidTruckTrip, nameMarkTruckTrip, trailerTruckTrip, sidDriverTrip, typeDriverTrip
+    PROPERTIES(t) dateTrip, numberObject, sidTruckTrip, nameDriverTrip, nameMarkTruckTrip, trailerTruckTrip, sidDriverTrip, typeDriverTrip
 
     OBJECTS st=stock
     PROPERTIES(st) name, addressStock, nameLegalEntityStock
-    FILTERS quantityTripStock(t, st)>0
-
+    PROPERTIES(t, st) addressStockPrevTripStock, grossWeightTripToStock
+    PROPERTIES (st, t) numberStockTrip
+    ORDER BY numberStockTrip(st, t)
+    FILTERS quantityTripStock(t, st)>0, stockPrevTripStock(t, st)
 ;
 
 printWaybill 'Печать путевого листа' (trip) = ACTION (trip) {
@@ -81,6 +88,7 @@ printWaybill 'Печать путевого листа' (trip) = ACTION (trip) {
 
 
 FORM ordersTrip PRINT
+
     OBJECTS t=trip FIXED PANEL
     PROPERTIES (t) nameNumeratorObject, numberObject, seriesObject, dateTrip, timeTrip, nameDriverTrip, sidTruckTrip, nameMarkTruckTrip, trailerTruckTrip
 
@@ -99,17 +107,22 @@ printOrdersTrip 'Печать заказов' (trip) = ACTION (trip) {
 } TOOLBAR;
 
 FORM trip 'Рейс'
+    PROPERTIES() namePartyA FORCE PANEL, namePartyB FORCE PANEL
+
     OBJECTS t=trip FIXED PANEL
     PROPERTIES (t) nameNumeratorObject, numberObject, seriesObject, dateTrip, timeTrip, nameDriverTrip, sidTruckTrip, nameMarkTruckTrip, trailerTruckTrip, weightTruckTrip
     PROPERTIES (t) READONLY grossWeightOrderedTrip, grossWeightShipmentedTrip
 
     OBJECTS o=order
     PROPERTIES(t, o) inTripOrder
-    PROPERTIES(o) READONLY numberOrder, seriesOrder, dateOrder, nameFromStockOrder, nameToStockOrder, grossWeightOrderDetailOrder
+    PROPERTIES(o) READONLY numberOrder, seriesOrder, dateOrder, nameSupplierOrder, nameFromStockOrder, nameCustomerOrder, nameToStockOrder, grossWeightOrderDetailOrder
     PROPERTIES(o) editOrder
     PROPERTIES printOrdersTrip(t) TODRAW o FORCE PANEL
 
     FILTERS isPostedOrder(o)
+
+    FILTERS customerOrder(o) == partyB() OR (o IS order AND NOT partyB()),
+            supplierOrder(o) == partyA() OR (o IS order AND NOT partyA())
 
     FILTERGROUP filterDateOrder
         FILTER 'Заказы к отправке' 'F10' dateOrder(o) <= dateTrip(t) DEFAULT
@@ -122,10 +135,14 @@ FORM trip 'Рейс'
 
     OBJECTS s=shipment
     PROPERTIES (t, s) inTripShipment
-    PROPERTIES(s) READONLY numberShipment, seriesShipment, dateShipment, nameFromStockShipment, nameToStockShipment, grossWeightShipmentDetailShipment
+    PROPERTIES(s) READONLY numberShipment, seriesShipment, dateShipment, nameSupplierShipment, nameFromStockShipment,
+                  nameCustomerShipment, nameToStockShipment, grossWeightShipmentDetailShipment
     PROPERTIES (s) editShipment
 
     FILTERS isPostedShipment(s)
+
+     FILTERS customerShipment(s) == partyB() OR (s IS shipment AND NOT partyB()),
+             supplierShipment(s) == partyA() OR (s IS shipment AND NOT partyA())
 
     PROPERTIES createShipmentsTrip(t) TODRAW s FORCE PANEL
 
@@ -156,12 +173,13 @@ FORM trip 'Рейс'
 
     OBJECTS s2=shipment
     PROPERTIES(s2) READONLY numberShipment, seriesShipment, dateShipment, nameFromStockShipment, nameToStockShipment
-    PROPERTIES(s2)  editShipment
+    PROPERTIES(s2) editShipment
     PROPERTIES(sk, s2) READONLY quantityShipmentDetailSkuShipment
     FILTERS inTripShipment(t, s2), quantityShipmentDetailSkuShipment(sk, s2)>0
 
     OBJECTS st=stock
     PROPERTIES(st) READONLY name, addressStock, nameLegalEntityStock
+    PROPERTIES(t, st) grossWeightTripToStock
     PROPERTIES(st, t) numberStockTrip
     FILTERS quantityTripStock (t, st)>0
     PROPERTIES (t) printWaybill TODRAW st
@@ -192,6 +210,17 @@ DESIGN trip FROM DEFAULT{
             ADD PROPERTY(weightTruckTrip);
             ADD PROPERTY(grossWeightOrderedTrip);
             ADD PROPERTY(grossWeightShipmentedTrip);
+        }
+
+        NEW filterContainer {
+            caption = 'Фильтрация по поставщику и покупателю';
+            childConstraints = TO THE RIGHT;
+            ADD PROPERTY(namePartyA) {
+                caption = 'Поставщик';
+            };
+            ADD PROPERTY(namePartyB){
+                caption = 'Покупатель';
+            };
         }
 
         NEW bottomContainer {

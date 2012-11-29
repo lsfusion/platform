@@ -20,6 +20,9 @@ CLASS ABSTRACT orderDetail 'Строка заказа';
 @defineDocumentAbstract(order);
 @defineDocumentAbstractNumber(order);
 
+@defineDocumentAbstractLegalEntity(order, supplier, 'Поставщик');
+@defineDocumentAbstractLegalEntity(order, customer, 'Покупатель');
+
 @defineDocumentAbstractDataStock(order, stock, 'Склад поставщика', supplier);
 @defineDocumentAbstractDataStock(order, stock, 'Склад покупателя', customer);
 
@@ -60,6 +63,8 @@ META defineOrder(sign, stockProp)
 
     @defineDocumentInterfaceLegalEntity (order, supplier, 'Поставщик');
     @defineDocumentInterfaceLegalEntity (order, customer, 'Покупатель');
+    Order.supplierOrder(order) += supplierOrder(order);
+    Order.customerOrder(order) += customerOrder(order);
 
     @defineDocumentInterfaceDataStock(order, stock, 'Склад поставщика', supplier);
     @defineDocumentInterfaceDataStock(order, stock, 'Склад покупателя', customer);
