@@ -1,9 +1,10 @@
-package platform.fdk.actions;
+package platform.fdk.actions.geo;
 
-import geo.google.GeoAddressStandardizer;
-import geo.google.GeoException;
-import geo.google.datamodel.GeoAddress;
-import geo.google.datamodel.GeoCoordinate;
+import com.google.code.geocoder.Geocoder;
+import com.google.code.geocoder.GeocoderRequestBuilder;
+import com.google.code.geocoder.model.GeocodeResponse;
+import com.google.code.geocoder.model.GeocoderRequest;
+import com.google.code.geocoder.model.GeocoderResult;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.StringClass;
 import platform.server.classes.ValueClass;
@@ -38,17 +39,20 @@ public class GetCoordinatesAddressActionProperty extends ScriptingActionProperty
             DataSession session = context.getSession();
             DataObject fullAddress = context.getKeyValue(POIInterface);
 
-            GeoAddressStandardizer st = new GeoAddressStandardizer("apikey");
-            List<GeoAddress> addresses = st.standardizeToGeoAddresses(((String)fullAddress.object).trim());
-            GeoAddress address = addresses.get(0);
-            GeoCoordinate coords = address.getCoordinate();
-            double longitude = coords.getLongitude();
-            double latitude = coords.getLatitude();
+            final Geocoder geocoder = new Geocoder();
+            GeocoderRequest geocoderRequest = new GeocoderRequestBuilder().setAddress((String) fullAddress.object).setLanguage("ru").getGeocoderRequest();
+            GeocodeResponse geocoderResponse = geocoder.geocode(geocoderRequest);
 
-            getLCP("readLatitude").change(latitude, session);
-            getLCP("readLongitude").change(longitude, session);
+            if (geocoderResponse!=null && geocoderResponse.getResults().size() != 0) {
+                GeocoderResult result = geocoderResponse.getResults().get(0);
 
-        } catch (GeoException e) {
+                double longitude = result.getGeometry().getLocation().getLng().doubleValue();
+                double latitude = result.getGeometry().getLocation().getLat().doubleValue();
+
+                getLCP("readLatitude").change(latitude, session);
+                getLCP("readLongitude").change(longitude, session);
+            }
+
         } catch (SQLException e) {
         } catch (ScriptingErrorLog.SemanticErrorException e) {
         }
