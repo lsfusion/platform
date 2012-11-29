@@ -1,6 +1,6 @@
 MODULE Route;
 
-REQUIRE Transport, Customer, Numerator;
+REQUIRE Transport, Numerator;
 
 // ------------------------------- Route ----------------------------------- //
 CLASS route 'Маршрут' : numeratedObject;
@@ -34,14 +34,11 @@ nameLegalEntityNode 'Юр. лицо' (node) = name(legalEntityNode(node));
 inNodeRoute 'Вкючен' = DATA BOOLEAN(node, route);
 numberNodeRoute 'Порядковый номер' = DATA INTEGER(node, route);
 
-EXTEND CLASS customer : node;
 EXTEND CLASS stock : node;
 //EXTEND CLASS supplier : node;
 
-nameNode(customer) += name(customer) IF customer IS customer;
 nameNode(stock) += name(stock) IF stock IS stock;
 
-addressNode(customer) += addressLegalEntity(customer) IF customer IS customer;
 addressNode(stock) += addressStock(stock) IF stock IS stock;
 
 legalEntityNode(stock) += legalEntityStock(stock);
