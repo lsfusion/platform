@@ -34,11 +34,6 @@ FORM chainStores 'Торговая сеть'
     EDIT chainStores OBJECT n
 ;
 
-// -------------------------------------- Регион ------------------------------- //
-
-CLASS region 'Регион' : named;
-TABLE region (region);
-
 // -------------------------------------- Магазин ------------------------------- //
 
 CLASS store 'Магазин' : stockGroup, externalObject, taxUnit, employeeDivisionGroup;
@@ -107,6 +102,8 @@ addressStock (departmentStore) += addressDepartmentStore(departmentStore);
 
 explicitBatchLedgerDepartmentStore 'Партионный учет' = DATA BOOLEAN (departmentStore);
 explicitBatchLedgerStock(stock) += explicitBatchLedgerDepartmentStore(stock);
+
+regionStock(stock) += regionStore(storeDepartmentStore(stock));
 
 @defineHistorizable(tradingSquareDepartmentStore, 'Торговая площадь', NUMERIC[10,2], departmentStore, name, publicGroup);
 

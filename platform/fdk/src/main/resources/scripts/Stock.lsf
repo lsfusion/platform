@@ -39,6 +39,14 @@ addressPOI (poi) += addressStock(poi);
 TABLE stockGroupStock (stockGroup, stock);
 isParentStockGroupStock (stockGroup, stock) = isParentStockGroupStockGroup(stockGroupStock(stock), stockGroup) PERSISTENT;
 
+// -------------------------------------- Регион ------------------------------- //
+
+CLASS region 'Регион' : named;
+TABLE region (region);
+
+regionStock 'Регион' (stock) = ABSTRACT region (stock) PERSISTENT;
+nameRegionStock 'Регион' (stock)= name(regionStock(stock));
+
 // ----------------------------------- Единицы измерения ------------------------------------------ //
 
 CLASS UOM 'Единица измерения' : doubleNamed, externalObject;
@@ -87,13 +95,18 @@ nameSkuStock 'Наименование (иностр.)' (sku, stock) = IF langua
 UOMSku (sku) = ABSTRACT UOM (sku) PERSISTENT;
 shortNameUOMSku 'Ед. изм.' (sku) = shortName(UOMSku(sku)) IN recognizeGroup;
 
+countrySku = ABSTRACT country (sku) PERSISTENT;
+nameCountrySku 'Страна' (sku) = name(countrySku(sku)) IN recognizeGroup;
+
 TABLE skuGroupSku(skuGroup, sku);
 isParentSkuGroupSku (skuGroup, sku) = isParentSkuGroupSkuGroup(skuGroupSku(sku), skuGroup) PERSISTENT;
 
 isContainerSku 'Тара' (sku) = ABSTRACT BOOLEAN (sku) PERSISTENT;
 quantityPackSku 'Количество в грузовом месте' = ABSTRACT NUMERIC[9,3] (sku) PERSISTENT;
 netWeightSku 'Вес нетто' = ABSTRACT NUMERIC[9,3] (sku) PERSISTENT;
+isWeightSku 'Весовой товар' =  ABSTRACT BOOLEAN (sku) PERSISTENT;
 grossWeightSku 'Вес брутто' = ABSTRACT NUMERIC[9,3] (sku) PERSISTENT;
+volumeSku 'Объем' = ABSTRACT NUMERIC[9,3] (sku) PERSISTENT;
 
 // ----------------------------------- Ledger ------------------------------------------ //
 
@@ -348,7 +361,7 @@ META defineSkuLedgerBalanceProperties(postfix, caption)
     quantityIn##postfix##SkuStockDate (sku, stock, date) =
         GROUP SUM quantityInActiveSkuLedger(ledger) BY skuSkuLedger(ledger), stockSkuLedger(ledger), dateSkuLedger(ledger) PERSISTENT;
 
-    quantityOutActiveSkuLedger(ledger) = quantityInSkuLedger(ledger) AND isPostedSkuLedger(ledger) AND NOT skip##postfix##SkuLedger(ledger) PERSISTENT;
+    quantityOutActiveSkuLedger(ledger) = quantityOutSkuLedger(ledger) AND isPostedSkuLedger(ledger) AND NOT skip##postfix##SkuLedger(ledger) PERSISTENT;
     quantityOut##postfix##SkuStockDate (sku, stock, date) =
         GROUP SUM quantityOutActiveSkuLedger(ledger) BY skuSkuLedger(ledger), stockSkuLedger(ledger), dateSkuLedger(ledger) PERSISTENT;
 
@@ -392,6 +405,32 @@ META defineSkuLedgerBalanceProperties(postfix, caption)
     signedSumActiveSkuLedger(ledger) = signedSumSkuLedger(ledger) AND isPostedSkuLedger(ledger) AND NOT skip##postfix##SkuLedger(ledger) PERSISTENT;
     currentSum##postfix##SkuStock 'Сумма остатка'###caption (sku, stock) =
         GROUP SUM signedSumActiveSkuLedger(ledger) BY skuSkuLedger(ledger), stockSkuLedger(ledger) PERSISTENT;
+
+    sumInActiveSkuLedger(ledger) = sumInSkuLedger(ledger) AND isPostedSkuLedger(ledger) AND NOT skip##postfix##SkuLedger(ledger) PERSISTENT;
+    sumIn##postfix##SkuStockDate (sku, stock, date) =
+        GROUP SUM sumInActiveSkuLedger(ledger) BY skuSkuLedger(ledger), stockSkuLedger(ledger), dateSkuLedger(ledger) PERSISTENT;
+
+    sumOutActiveSkuLedger(ledger) = sumOutSkuLedger(ledger) AND isPostedSkuLedger(ledger) AND NOT skip##postfix##SkuLedger(ledger) PERSISTENT;
+    sumOut##postfix##SkuStockDate (sku, stock, date) =
+        GROUP SUM sumOutActiveSkuLedger(ledger) BY skuSkuLedger(ledger), stockSkuLedger(ledger), dateSkuLedger(ledger) PERSISTENT;
+
+    sum##postfix##SkuStockDate (sku, stock, date) = sumIn##postfix##SkuStockDate(sku, stock, date)
+                                                         (+)
+                                                         sumOut##postfix##SkuStockDate(sku, stock, date) PERSISTENT;
+
+    signedSum##postfix##SkuStockDate (sku, stock, date) = sumIn##postfix##SkuStockDate(sku, stock, date)
+                                                               (-)
+                                                               sumOut##postfix##SkuStockDate(sku, stock, date) PERSISTENT;
+
+    // без учета текущей даты/времени
+    sumB##postfix##SkuStockDate 'Сумма на начало дня'###caption (sku, stock, date) = (currentSum##postfix##SkuStock(sku, stock) AND date AS DATE)
+                                                                      (-) [GROUP SUM signedSum##postfix##SkuStockDate (sku, stock, dateIn) AND dateIn >= (date AS DATE)
+                                                                                 BY sku, stock, date](sku, stock, date);
+
+    // с учетом текущей даты/времени
+    sumA##postfix##SkuStockDate 'Сумма на конец дня'###caption (sku, stock, date) = (currentSum##postfix##SkuStock(sku, stock) AND date AS DATE)
+                                                                     (-) [GROUP SUM signedSum##postfix##SkuStockDate (sku, stock, dateIn) AND dateIn > (date AS DATE)
+                                                                                BY sku, stock, date](sku, stock, date);
 
     averagePrice##postfix##SkuStock 'Цена (средневзв.)'###caption (sku, stock) = currentSum##postfix##SkuStock(sku, stock) / currentBalance##postfix##SkuStock(sku, stock); // IF NOT currentBalance##postfix##SkuStock(sku, stock) == 0; (возможно не нужно, так как 0 не может быть в GROUP SUM )
 

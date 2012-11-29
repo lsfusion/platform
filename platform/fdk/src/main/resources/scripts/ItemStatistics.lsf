@@ -1,0 +1,15 @@
+MODULE ItemStatistics;
+
+REQUIRE Statistics, Item;
+
+statisticGroupCountryItem 'Статистическая группа' = DATA statisticGroup (country, item);
+nameStatisticGroupCountryItem 'Статистическая группа' = name(statisticGroupCountryItem(country, item));
+
+CONSTRAINT countryStatisticGroup(statisticGroupCountryItem(country, item)) != country
+    CHECKED BY nameStatisticGroupCountryItem MESSAGE 'Страна статистической группы не совпадает со страной';
+
+statisticGroupCountrySku (country, sku) += statisticGroupCountryItem (country, sku);
+
+EXTEND FORM item
+    PROPERTIES(c,i) nameStatisticGroupCountryItem
+;

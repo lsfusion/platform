@@ -1,0 +1,708 @@
+MODULE Statistics;
+
+REQUIRE System, Utils, Historizable, Stock, LegalEntity, Sales;
+
+
+// ----------------------------------- Статистический классификатор ------------------------------------------ //
+
+CLASS statisticGroup 'Статистическая группа' : named, externalObject;
+
+CLASS STATIC groupStatic 'Ед. изм.' {
+    statisticLiter 'Литр',
+    statisticThing 'Штука',
+    statisticPounds 'Килограмм',
+    statisticSum 'Валюта'
+};
+
+@defineHierarchy(statisticGroup);
+
+countryStatisticGroup = DATA country (statisticGroup);
+nameCountryStatisticGroup 'Страна' (statisticGroup)= name(countryStatisticGroup(statisticGroup)) IN baseGroup;
+
+CONSTRAINT  countryStatisticGroup(parentStatisticGroup(statisticGroup))!=  countryStatisticGroup(statisticGroup)
+    CHECKED BY  parentStatisticGroup MESSAGE 'Страна родительской группы должна совпадать со страной группы';
+
+unitMeasureStatisticGroup 'Ед. изм. ИД' (statisticGroup) = DATA groupStatic (statisticGroup) IN idGroup;
+nameUOMStatisticGroup 'Ед. изм.' (statisticGroup) = name(unitMeasureStatisticGroup(statisticGroup)) MINCHARWIDTH 12 MAXCHARWIDTH 12 PREFCHARWIDTH 12;
+
+sidStatisticGroup 'Код группы' (statisticGroup) = DATA STRING[12] (statisticGroup)  MINCHARWIDTH 12 MAXCHARWIDTH 12 PREFCHARWIDTH 12;
+canonicalNumberStatisticGroup 'Каноническое код' (statisticGroup) = castToString255(
+                           [GROUP CONCAT sidStatisticGroup(parent), ' / ' BY child ORDER DESC levelStatisticGroupStatisticGroup(child, parent)](statisticGroup))
+                           MINCHARWIDTH 50 MAXCHARWIDTH 100 PREFCHARWIDTH 100 PERSISTENT;
+
+canonicalNumberNameStatisticGroup 'Канонический код-название' (statisticGroup) = [FORMULA STRING[100] '$1 || \' / \' || $2'](
+    canonicalNumberStatisticGroup(statisticGroup), name(statisticGroup));
+
+sidToStatisticGroup(sid) = GROUP UNIQUE statisticGroup BY sidStatisticGroup(statisticGroup);
+
+sidParentStatisticGroup 'Код родительского объекта' (statisticGroup) = sidStatisticGroup(parentStatisticGroup(statisticGroup));
+
+conversionFactorStatisticGroup 'Коэффициент перевода' (statisticGroup) = DATA NUMERIC[14,5] (statisticGroup);
+
+FORM statisticGroup 'Статистическая группа'
+    OBJECTS g=statisticGroup FIXED PANEL
+    PROPERTIES(g)   nameStat=name, nameParentStatisticGroup, sidParentStatisticGroup, sidStatisticGroup, nameUOMStatisticGroup,
+                    nameCountryStatisticGroup, conversionFactorStatisticGroup
+
+    EDIT statisticGroup OBJECT g
+;
+
+addStatisticGroupCountry 'Добавить' = ACTION (statisticGroup, country) NEWSESSION {
+    ADDOBJ statisticGroup;
+    FOR g == addedObject() DO {
+        SET parentStatisticGroup(g) <- statisticGroup AS statisticGroup;
+        SET countryStatisticGroup(g) <- country;
+        FORM statisticGroup OBJECTS g=addedObject() MODAL;
+        IF formResult() == formResult.ok THEN
+            EXEC apply();
+    };
+} TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
+
+addStatisticGroup 'Добавить' (statisticGroup)= addStatisticGroupCountry(statisticGroup, countryStatisticGroup(statisticGroup));
+
+statisticGroupCountrySku 'Статистическая группа' = ABSTRACT statisticGroup (country, sku);
+nameStatisticGroupCountrySku 'Статистическая группа' = name(statisticGroupCountrySku(country, sku));
+
+isParentStatisticGroupSku (statisticGroup, sku) = isParentStatisticGroupStatisticGroup(statisticGroupCountrySku(countryStatisticGroup(statisticGroup),sku), statisticGroup) PERSISTENT;
+isParentLeafStatisticGroupSku (statisticGroup, sku) = isParentLeafStatisticGroupStatisticGroup(statisticGroupCountrySku(countryStatisticGroup(statisticGroup),sku), statisticGroup) PERSISTENT;
+parentStatisticGroupCountrySku (country, sku) = parentStatisticGroup(statisticGroupCountrySku(country,sku)) PERSISTENT;
+
+residentCountryCountry 'Отечественный производитель' =  DATA BOOLEAN (country, country);
+
+residentStatisticGroupSku (group, sku) = residentCountryCountry(countryStatisticGroup(group), countrySku(sku));
+
+FORM statisticGroups 'Статистические группы'
+    OBJECTS c=country FIXED PANEL
+    PROPERTIES(c) SELECTOR name
+
+    TREE treeGroups g=statisticGroup PARENT parentStatisticGroup
+    PROPERTIES READONLY name(g), sidStatisticGroup(g)
+    PROPERTIES(g,c)       addStatisticGroupCountry
+    PROPERTIES(g) EDITFORM
+    ORDER BY sidStatisticGroup
+
+    OBJECTS cg=statisticGroup
+    PROPERTIES(cg)     READONLY canonicalNumberNameStatisticGroup, sidStatisticGroup, nameUOMStatisticGroup,
+                       conversionFactorStatisticGroup
+    PROPERTIES(cg)  delete
+
+    FILTERS countryStatisticGroup(g) == c,
+            countryStatisticGroup(cg) == c
+
+    OBJECTS s = country
+
+    PROPERTIES(s) READONLY name, nameOriginCountry, sidCountry, sidOrigin2Country, sidOrigin3Country,
+                           nameCurrencyCountry, nameLanguageCountry
+    PROPERTIES(c,s) residentCountryCountry
+    FILTERGROUP filter
+        FILTER 'Страны явл. отечественными' 'F11' residentCountryCountry(c, s) DEFAULT
+
+    FILTERGROUP filters
+        FILTER 'Все листья' 'F10' isParentLeafStatisticGroupStatisticGroup(cg, g) DEFAULT
+        FILTER 'Всех потомков' 'F9' isParentStatisticGroupStatisticGroup(cg, g)
+        FILTER 'Только непосредственных потомков' 'F8' parentStatisticGroup(cg) == g
+;
+
+DESIGN statisticGroups FROM DEFAULT {
+    main {
+        childConstraints = TO THE BOTTOM;
+        ADD c.box;
+        NEW specification.box {
+            type = TABBED;
+            NEW topContainer{
+                title = 'Статистические группы';
+                childConstraints = TO THE RIGHT;
+                type = SPLITH;
+
+                ADD treeGroups.tree.box;
+
+                ADD cg.box{
+                    fillHorizontal = 4;
+                }
+            }
+            ADD s.box {title = 'Страны являющиеся отечественными';}
+        }
+    }
+
+    ADD functions.box;
+}
+
+FORM statisticGroupDialog 'Статистические группы'
+    TREE treeGroups g=statisticGroup PARENT parentStatisticGroup
+    PROPERTIES(g) READONLY name, sidStatisticGroup, nameCountryStatisticGroup
+    PROPERTIES(g) addStatisticGroup, EDITFORM
+    ORDER BY sidStatisticGroup
+
+    DIALOG statisticGroup OBJECT g
+;
+
+
+//---------------------------------------------- Формы стат. отчетов -------------------------------------//
+
+//  12 ТОРГ ПРОДАЖИ
+
+netWeightSoldSkuStockDateFromTo 'Вес проданного товара, кг' (sku, stock, dateFrom, dateTo) =
+    quantitySoldSkuStockDateFromTo(sku, stock, dateFrom, dateTo) *
+    (UNION OVERRIDE 1 IF sku IS sku, netWeightSku(sku) AND NOT isWeightSku(sku));
+volumeSoldSkuStockDateFromTo 'Объем проданного товара, л' (sku, stock, dateFrom, dateTo) =
+    quantitySoldSkuStockDateFromTo(sku, stock, dateFrom, dateTo) * volumeSku(sku);
+// sumSoldSkuStockDateFromTo 'Продано, сумма' (sku, stock, dateFrom, dateTo)   - рубли
+//quantitySoldSkuStockDateFromTo (sku, stock, dateFrom, dateTo)                      - шт.
+
+                            //с коэффициентом пересчета за период//
+//всего
+quantitySoldByStatisticGroupDateFromTo 'Продано, шт' (statisticGroup, stock, dateFrom, dateTo)=
+    [GROUP SUM quantitySoldSkuStockDateFromTo (sku, stock, dateFrom, dateTo) AND isParentStatisticGroupSku(statisticGroup, sku)
+    BY statisticGroup, stock, dateFrom, dateTo](statisticGroup, stock, dateFrom, dateTo)/
+        (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+netWeightSoldByStatisticGroupDateFromTo 'Продано, кг' (statisticGroup, stock, dateFrom, dateTo)=
+    [GROUP SUM netWeightSoldSkuStockDateFromTo (sku, stock, dateFrom, dateTo) AND isParentStatisticGroupSku(statisticGroup, sku)
+    BY statisticGroup, stock, dateFrom, dateTo](statisticGroup, stock, dateFrom, dateTo)/
+        (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+volumeSoldByStatisticGroupDateFromTo 'Продано, л' (statisticGroup, stock, dateFrom, dateTo)=
+    [GROUP SUM volumeSoldSkuStockDateFromTo (sku, stock, dateFrom, dateTo) AND isParentStatisticGroupSku(statisticGroup, sku)
+    BY statisticGroup, stock, dateFrom, dateTo](statisticGroup, stock, dateFrom, dateTo)/
+        (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+retailSumSoldByStatisticGroupDateFromTo 'Продано, сум.' (statisticGroup, stock, dateFrom, dateTo)=
+    [GROUP SUM sumSoldSkuStockDateFromTo (sku, stock, dateFrom, dateTo) AND isParentStatisticGroupSku(statisticGroup, sku)
+    BY statisticGroup, stock, dateFrom, dateTo](statisticGroup, stock, dateFrom, dateTo)/
+        (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+
+//отечеств. пр-ва
+quantitySoldResidentByStatisticGroupDateFromTo 'Продано, шт' (statisticGroup, stock, dateFrom, dateTo)=
+    [GROUP SUM quantitySoldSkuStockDateFromTo (sku, stock, dateFrom, dateTo) IF  residentStatisticGroupSku (statisticGroup, sku) AND isParentStatisticGroupSku(statisticGroup, sku)
+    BY statisticGroup, stock, dateFrom, dateTo](statisticGroup, stock, dateFrom, dateTo)/
+        (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+netWeightSoldResidentByStatisticGroupDateFromTo 'Продано, кг' (statisticGroup, stock, dateFrom, dateTo)=
+    [GROUP SUM netWeightSoldSkuStockDateFromTo (sku, stock, dateFrom, dateTo) IF residentStatisticGroupSku (statisticGroup, sku) AND isParentStatisticGroupSku(statisticGroup, sku)
+    BY statisticGroup, stock, dateFrom, dateTo](statisticGroup, stock, dateFrom, dateTo)/
+        (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+volumeSoldResidentByStatisticGroupDateFromTo 'Продано, л' (statisticGroup, stock, dateFrom, dateTo)=
+    [GROUP SUM volumeSoldSkuStockDateFromTo (sku, stock, dateFrom, dateTo) IF residentStatisticGroupSku (statisticGroup, sku) AND isParentStatisticGroupSku(statisticGroup, sku)
+    BY statisticGroup, stock, dateFrom, dateTo](statisticGroup, stock, dateFrom, dateTo)/
+        (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+retailSumSoldResidentByStatisticGroupDateFromTo 'Продано, сум.' (statisticGroup, stock, dateFrom, dateTo)=
+    [GROUP SUM sumSoldSkuStockDateFromTo (sku, stock, dateFrom, dateTo) IF residentStatisticGroupSku (statisticGroup, sku) AND isParentStatisticGroupSku(statisticGroup, sku)
+    BY statisticGroup, stock, dateFrom, dateTo](statisticGroup, stock, dateFrom, dateTo)/
+        (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+
+netWeightBalanceASkuLedgerDate 'Вес товара на конец , кг' (sku, stock, dateTo) =
+    balanceASkuStockDate (sku, stock, dateTo) * (UNION OVERRIDE 1 IF sku IS sku, netWeightSku(sku) AND NOT isWeightSku(sku));
+volumeBalanceASkuLedgerDate 'Объем товара на конец , л' (sku, stock, dateTo) =
+    balanceASkuStockDate (sku, stock, dateTo) * volumeSku(sku);
+
+//sumASkuStockDate (sku, stock, dateTo) -  сумма на конец
+
+//retailSumBalanceASkuLedgerDate 'Сумма товара на конец , сум.' (sku, stock, dateTo) =
+//    retailPriceASkuStockDate (sku, stock, dateTo) * balanceASkuStockDate(sku, stock, dateTo);
+//balanceASkuStockDate (sku, stock, dateTo)    - шт.
+
+                                   //с коэффициентом пересчета на коцен//
+// всего
+balanceByStatisticGroupDateTo 'Остаток на конец' (statisticGroup, stock, dateTo)=
+    [GROUP SUM balanceASkuStockDate (sku, stock, dateTo) AND isParentStatisticGroupSku(statisticGroup, sku)
+    BY statisticGroup, stock, dateTo](statisticGroup, stock, dateTo)/
+        (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+netWeightByStatisticGroupDateTo 'Вес на конец, кг' (statisticGroup, stock, dateTo)=
+    [GROUP SUM netWeightBalanceASkuLedgerDate (sku, stock, dateTo) AND isParentStatisticGroupSku(statisticGroup, sku)
+    BY statisticGroup, stock, dateTo](statisticGroup, stock, dateTo)/
+        (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+volumeByStatisticGroupDateTo 'Объем на конец, л' (statisticGroup, stock, dateTo)=
+    [GROUP SUM volumeBalanceASkuLedgerDate (sku, stock, dateTo) AND isParentStatisticGroupSku(statisticGroup, sku)
+    BY statisticGroup, stock, dateTo](statisticGroup, stock, dateTo)/
+        (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+retailSumByStatisticGroupDateTo 'Сумма на конец, сум.' (statisticGroup, stock, dateTo)=
+    [GROUP SUM sumASkuStockDate (sku, stock, dateTo) AND isParentStatisticGroupSku(statisticGroup, sku)
+    BY statisticGroup, stock, dateTo](statisticGroup, stock, dateTo)/
+        (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+
+// отечеств. пр-ва
+balanceResidentByStatisticGroupDateTo 'Остаток на конец' (statisticGroup, stock, dateTo)=
+    [GROUP SUM balanceASkuStockDate (sku, stock, dateTo) IF residentStatisticGroupSku (statisticGroup, sku) AND isParentStatisticGroupSku(statisticGroup, sku)
+    BY statisticGroup, stock, dateTo](statisticGroup, stock, dateTo)/
+        (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+netWeightResidentByStatisticGroupDateTo 'Вес на конец, кг' (statisticGroup, stock, dateTo)=
+    [GROUP SUM netWeightBalanceASkuLedgerDate (sku, stock, dateTo) IF residentStatisticGroupSku (statisticGroup, sku) AND isParentStatisticGroupSku(statisticGroup, sku)
+    BY statisticGroup, stock, dateTo](statisticGroup, stock, dateTo)/
+        (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+volumeResidentByStatisticGroupDateTo 'Объем на конец, л' (statisticGroup, stock, dateTo)=
+    [GROUP SUM volumeBalanceASkuLedgerDate (sku, stock, dateTo) IF residentStatisticGroupSku (statisticGroup, sku) AND isParentStatisticGroupSku(statisticGroup, sku)
+    BY statisticGroup, stock, dateTo](statisticGroup, stock, dateTo)/
+        (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+retailSumResidentByStatisticGroupDateTo 'Сумма на конец, сум.' (statisticGroup, stock, dateTo)=
+    [GROUP SUM sumASkuStockDate (sku, stock, dateTo) IF residentStatisticGroupSku (statisticGroup, sku) AND isParentStatisticGroupSku(statisticGroup, sku)
+    BY statisticGroup, stock, dateTo](statisticGroup, stock, dateTo)/
+        (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+
+valueByStatisticGroupDateFromTo 'Продано' (statisticGroup, stock, dateFrom, dateTo) =
+    CASE
+        WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.statisticThing
+            THEN quantitySoldByStatisticGroupDateFromTo(statisticGroup, stock, dateFrom, dateTo)
+        WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.statisticPounds
+            THEN netWeightSoldByStatisticGroupDateFromTo(statisticGroup, stock, dateFrom, dateTo)
+        WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.statisticLiter
+            THEN volumeSoldByStatisticGroupDateFromTo(statisticGroup, stock, dateFrom, dateTo)
+        WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.statisticSum
+            THEN retailSumSoldByStatisticGroupDateFromTo(statisticGroup, stock, dateFrom, dateTo)
+        DEFAULT 0 AND statisticGroup IS statisticGroup AND stock IS stock AND dateFrom IS DATE AND dateTo IS DATE
+    END;
+valueResidentByStatisticGroupDateFromTo 'Продано, бел. пр-ва' (statisticGroup, stock, dateFrom, dateTo) =
+    CASE
+        WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.statisticThing
+            THEN quantitySoldResidentByStatisticGroupDateFromTo(statisticGroup, stock, dateFrom, dateTo)
+        WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.statisticPounds
+            THEN netWeightSoldResidentByStatisticGroupDateFromTo(statisticGroup, stock, dateFrom, dateTo)
+        WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.statisticLiter
+            THEN volumeSoldResidentByStatisticGroupDateFromTo(statisticGroup, stock, dateFrom, dateTo)
+        WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.statisticSum
+            THEN retailSumSoldResidentByStatisticGroupDateFromTo(statisticGroup, stock, dateFrom, dateTo)
+        DEFAULT 0 AND statisticGroup IS statisticGroup AND stock IS stock AND dateFrom IS DATE AND dateTo IS DATE
+    END;
+
+valueByStatisticGroupDateTo 'Остаток на конец' (statisticGroup, stock, dateTo) =
+    CASE
+        WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.statisticThing
+            THEN balanceByStatisticGroupDateTo(statisticGroup, stock, dateTo)
+        WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.statisticPounds
+            THEN netWeightByStatisticGroupDateTo(statisticGroup, stock, dateTo)
+        WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.statisticLiter
+            THEN volumeByStatisticGroupDateTo(statisticGroup, stock, dateTo)
+        WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.statisticSum
+            THEN retailSumByStatisticGroupDateTo(statisticGroup, stock, dateTo)
+        DEFAULT 0 IF statisticGroup IS statisticGroup AND stock IS stock AND dateTo IS DATE
+    END;
+valueResidentByStatisticGroupDateTo 'Остаток на конец, бел. пр-ва' (statisticGroup, stock, dateTo) =
+    CASE
+        WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.statisticThing
+            THEN balanceResidentByStatisticGroupDateTo(statisticGroup, stock, dateTo)
+        WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.statisticPounds
+            THEN netWeightResidentByStatisticGroupDateTo(statisticGroup, stock, dateTo)
+        WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.statisticLiter
+            THEN volumeResidentByStatisticGroupDateTo(statisticGroup, stock, dateTo)
+        WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.statisticSum
+            THEN retailSumResidentByStatisticGroupDateTo(statisticGroup, stock, dateTo)
+        DEFAULT 0 IF statisticGroup IS statisticGroup AND stock IS stock AND dateTo IS DATE
+    END;
+
+
+FORM statisticalReport 'Статистика (продажи) склад/группа/sku'
+
+    OBJECTS dates = (dFrom = DATE, dTo = DATE) FIXED PANEL
+    PROPERTIES OBJVALUE(dFrom), OBJVALUE(dTo)
+    OBJECTS c = country FIXED PANEL
+    PROPERTIES SELECTOR name(c)
+
+    TREE stockTree a = STRING[3], sg = stockGroup PARENT parentStockGroup, ts = stock
+    PROPERTIES READONLY OBJVALUE(a), sgTreeName = name(sg), name(ts)
+    ORDER BY sgTreeName
+    FILTERS stringEqualsAll(a)
+
+    TREE treeGroups g=statisticGroup PARENT parentStatisticGroup
+    PROPERTIES READONLY gname = name(g),  sidStatisticGroup(g), nameUOMStatisticGroup(g)
+    ORDER BY gname
+    FILTERS countryStatisticGroup(g) ==c
+
+    OBJECTS           sts=(st=stock, s=sku)
+    PROPERTIES        READONLY nameS=nameSku(s), name(st)
+    FILTERS           st == ts AND sg IS stockGroup OR isParentStockGroupStock(sg, st) AND NOT ts OR st IS stock AND NOT sg AND NOT ts
+
+    ORDER BY          nameS
+    FILTERGROUP filters
+        FILTER 'Все листья' 'F10' isParentLeafStatisticGroupSku(g, s) DEFAULT
+        FILTER 'Всех потомков' 'F9' isParentStatisticGroupSku(g, s)
+        FILTER 'Только непосредственных потомков' 'F8' parentStatisticGroupCountrySku(c,s) == g
+
+    PROPERTIES        balanceBSkuStockDate(s, st, dFrom),
+                      quantitySoldSkuStockDateFromTo(s, st, dFrom, dTo),
+                      balanceASkuStockDate(s, st, dTo)
+    PROPERTIES  FORCE PANEL valueByStatisticGroupDateFromTo(g, ts, dFrom, dTo), valueResidentByStatisticGroupDateFromTo(g, ts, dFrom, dTo)
+    PROPERTIES  FORCE PANEL valueByStatisticGroupDateTo(g, ts, dTo), valueResidentByStatisticGroupDateTo(g, ts, dTo)
+;
+
+DESIGN statisticalReport FROM DEFAULT {
+
+    main{
+
+        NEW topContainer{
+
+            type = SPLITH;
+            childConstraints = TO THE RIGHT;
+
+            NEW firstCase {
+
+                type = SPLITV;
+                childConstraints = TO THE BOTTOM;
+
+                ADD stockTree.tree.box { title = 'Склады'; }
+                ADD treeGroups.tree.box { title = 'Статистические группы'; }
+            }
+
+            NEW secondCase {
+
+                type = SPLITV;
+                fillHorizontal = 2;
+                childConstraints = TO THE BOTTOM;
+
+                NEW wor {
+                    childConstraints = TO THE RIGHT;
+                    ADD dates.box;
+                    ADD c.box {title = 'Страна статистических групп';};
+                }
+                ADD sts.box {fillVertical = 2;
+                    title = 'Показатели по продажам в номинальных единицах';
+                }
+            }
+        }
+
+        NEW row {
+            title = 'Суммы';
+            childConstraints = TO THE BOTTOM;
+            NEW row1 {
+            title = 'По отдел-группа, с учетом ед. изм. и коэфф. перевода';
+            ADD PROPERTY(valueByStatisticGroupDateFromTo);
+            ADD PROPERTY(valueResidentByStatisticGroupDateFromTo);
+            ADD PROPERTY(valueByStatisticGroupDateTo);
+            ADD PROPERTY(valueResidentByStatisticGroupDateTo);
+            }
+        }
+    }
+
+    ADD functions.box;
+}
+
+                ///////////////--------по регионам и компании----------/////////////////
+
+                           //c коэффициентом пересчета за период//
+// всего
+quantitySoldByStatisticGroupRegionDateFromTo 'Продано, шт' (statisticGroup, legalEntity, region, dateFrom, dateTo)=
+    [GROUP SUM quantitySoldSkuStockDateFromTo (sku, stock, dateFrom, dateTo) AND isParentStatisticGroupSku(statisticGroup, sku)
+    BY statisticGroup, legalEntityStock(stock), regionStock(stock), dateFrom, dateTo]
+        (statisticGroup, legalEntity, region, dateFrom, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+
+netWeightSoldByStatisticGroupRegionDateFromTo 'Продано, кг' (statisticGroup, legalEntity, region, dateFrom, dateTo)=
+    [GROUP SUM netWeightSoldSkuStockDateFromTo (sku, stock, dateFrom, dateTo) AND isParentStatisticGroupSku(statisticGroup, sku)
+    BY statisticGroup, legalEntityStock(stock), regionStock(stock), dateFrom, dateTo]
+        (statisticGroup, legalEntity, region, dateFrom, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+
+volumeSoldByStatisticGroupRegionDateFromTo 'Продано, л' (statisticGroup, legalEntity, region, dateFrom, dateTo)=
+    [GROUP SUM volumeSoldSkuStockDateFromTo (sku, stock, dateFrom, dateTo) AND isParentStatisticGroupSku(statisticGroup, sku)
+    BY statisticGroup, legalEntityStock(stock), regionStock(stock), dateFrom, dateTo]
+        (statisticGroup, legalEntity, region, dateFrom, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+
+retailSumSoldByStatisticGroupRegionDateFromTo 'Продано, руб.' (statisticGroup, legalEntity, region, dateFrom, dateTo)=
+    [GROUP SUM sumSoldSkuStockDateFromTo (sku, stock, dateFrom, dateTo) AND isParentStatisticGroupSku(statisticGroup, sku)
+    BY statisticGroup, legalEntityStock(stock), regionStock(stock), dateFrom, dateTo]
+        (statisticGroup, legalEntity, region, dateFrom, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+
+// отечест. производствава
+quantitySoldResidentByStatisticGroupRegionDateFromTo 'Продано, шт' (statisticGroup, legalEntity, region, dateFrom, dateTo)=
+    [GROUP SUM quantitySoldSkuStockDateFromTo (sku, stock, dateFrom, dateTo) IF residentStatisticGroupSku (statisticGroup, sku) AND isParentStatisticGroupSku(statisticGroup, sku)
+    BY statisticGroup, legalEntityStock(stock), regionStock(stock), dateFrom, dateTo]
+        (statisticGroup, legalEntity, region, dateFrom, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+
+netWeightSoldResidentByStatisticGroupRegionDateFromTo 'Продано, кг' (statisticGroup, legalEntity, region, dateFrom, dateTo)=
+    [GROUP SUM netWeightSoldSkuStockDateFromTo (sku, stock, dateFrom, dateTo) IF residentStatisticGroupSku (statisticGroup, sku) AND isParentStatisticGroupSku(statisticGroup, sku)
+    BY statisticGroup, legalEntityStock(stock), regionStock(stock), dateFrom, dateTo]
+        (statisticGroup, legalEntity, region, dateFrom, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+
+volumeSoldResidentByStatisticGroupRegionDateFromTo 'Продано, л' (statisticGroup, legalEntity, region, dateFrom, dateTo)=
+    [GROUP SUM volumeSoldSkuStockDateFromTo (sku, stock, dateFrom, dateTo) IF residentStatisticGroupSku (statisticGroup, sku) AND isParentStatisticGroupSku(statisticGroup, sku)
+    BY statisticGroup, legalEntityStock(stock), regionStock(stock), dateFrom, dateTo]
+        (statisticGroup, legalEntity, region, dateFrom, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+
+retailSumSoldResidentByStatisticGroupRegionDateFromTo 'Продано, руб.' (statisticGroup, legalEntity, region, dateFrom, dateTo)=
+    [GROUP SUM sumSoldSkuStockDateFromTo (sku, stock, dateFrom, dateTo) IF residentStatisticGroupSku (statisticGroup, sku) AND isParentStatisticGroupSku(statisticGroup, sku)
+    BY statisticGroup, legalEntityStock(stock), regionStock(stock), dateFrom, dateTo]
+        (statisticGroup, legalEntity, region, dateFrom, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+
+                             //с коэффициентом пересчета на коцен//
+// всего
+balanceByStatisticGroupRegionDateTo 'Остаток на конец' (statisticGroup, legalEntity, region, dateTo)=
+    [GROUP SUM balanceASkuStockDate (sku, stock, dateTo) AND isParentStatisticGroupSku(statisticGroup, sku)
+    BY statisticGroup,legalEntityStock(stock), regionStock(stock), dateTo]
+        (statisticGroup, legalEntity, region, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+
+netWeightByStatisticGroupRegionDateTo 'Вес на конец, кг' (statisticGroup, legalEntity, region, dateTo)=
+    [GROUP SUM netWeightBalanceASkuLedgerDate (sku, stock, dateTo) AND isParentStatisticGroupSku(statisticGroup, sku)
+    BY statisticGroup, legalEntityStock(stock), regionStock(stock), dateTo]
+        (statisticGroup, legalEntity, region, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+
+volumeByStatisticGroupRegionDateTo 'Объем на конец, л' (statisticGroup, legalEntity, region, dateTo)=
+    [GROUP SUM volumeBalanceASkuLedgerDate (sku, stock, dateTo) AND isParentStatisticGroupSku(statisticGroup, sku)
+    BY statisticGroup, legalEntityStock(stock), regionStock(stock), dateTo]
+        (statisticGroup, legalEntity, region, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+
+retailSumByStatisticGroupRegionDateTo 'Сумма на конец, руб' (statisticGroup, legalEntity, region, dateTo)=
+    [GROUP SUM sumASkuStockDate (sku, stock, dateTo) AND isParentStatisticGroupSku(statisticGroup, sku)
+    BY statisticGroup, legalEntityStock(stock), regionStock(stock), dateTo]
+        (statisticGroup, legalEntity, region, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+// белорусского производства
+balanceResidentByStatisticGroupRegionDateTo 'Остаток на конец' (statisticGroup, legalEntity, region, dateTo)=
+    [GROUP SUM balanceASkuStockDate (sku, stock, dateTo) IF residentStatisticGroupSku (statisticGroup, sku) AND isParentStatisticGroupSku(statisticGroup, sku)
+    BY statisticGroup, legalEntityStock(stock), regionStock(stock), dateTo]
+        (statisticGroup, legalEntity, region, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+
+netWeightResidentByStatisticGroupRegionDateTo 'Вес на конец, кг' (statisticGroup, legalEntity, region, dateTo)=
+    [GROUP SUM netWeightBalanceASkuLedgerDate (sku, stock, dateTo) IF residentStatisticGroupSku (statisticGroup, sku) AND isParentStatisticGroupSku(statisticGroup, sku)
+    BY statisticGroup, legalEntityStock(stock), regionStock(stock), dateTo]
+        (statisticGroup, legalEntity, region, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+
+volumeResidentByStatisticGroupRegionDateTo 'Объем на конец, л' (statisticGroup, legalEntity, region, dateTo)=
+    [GROUP SUM volumeBalanceASkuLedgerDate (sku, stock, dateTo) IF residentStatisticGroupSku (statisticGroup, sku) AND isParentStatisticGroupSku(statisticGroup, sku)
+    BY statisticGroup, legalEntityStock(stock), regionStock(stock), dateTo]
+        (statisticGroup, legalEntity, region, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+
+retailSumResidentByStatisticGroupRegionDateTo 'Сумма на конец, руб' (statisticGroup, legalEntity, region, dateTo)=
+    [GROUP SUM sumASkuStockDate (sku, stock, dateTo) IF residentStatisticGroupSku (statisticGroup, sku) AND isParentStatisticGroupSku(statisticGroup, sku)
+    BY statisticGroup, legalEntityStock(stock), regionStock(stock), dateTo]
+        (statisticGroup, legalEntity, region, dateTo) / (UNION OVERRIDE 1 AND statisticGroup IS statisticGroup, conversionFactorStatisticGroup(statisticGroup));
+
+valueByStatisticGroupLegalEntityRegionDateFromTo 'Продано всего' (statisticGroup, legalEntity, region, dateFrom, dateTo) =
+    CASE
+        WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.statisticThing
+            THEN quantitySoldByStatisticGroupRegionDateFromTo(statisticGroup, legalEntity, region, dateFrom, dateTo)
+        WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.statisticPounds
+            THEN netWeightSoldByStatisticGroupRegionDateFromTo(statisticGroup, legalEntity, region, dateFrom, dateTo)
+        WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.statisticLiter
+            THEN volumeSoldByStatisticGroupRegionDateFromTo(statisticGroup, legalEntity, region, dateFrom, dateTo)
+        WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.statisticSum
+            THEN retailSumSoldByStatisticGroupRegionDateFromTo(statisticGroup, legalEntity, region, dateFrom, dateTo)
+        DEFAULT 0 AND statisticGroup IS statisticGroup AND legalEntity IS legalEntity AND region IS region AND dateFrom IS DATE AND dateTo IS DATE
+    END;
+
+valueByStatisticGroupLegalEntityRegionDateTo 'Остаток на конец всего' (statisticGroup, legalEntity, region, dateTo) =
+    CASE
+        WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.statisticThing
+            THEN balanceByStatisticGroupRegionDateTo(statisticGroup, legalEntity, region, dateTo)
+        WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.statisticPounds
+            THEN netWeightByStatisticGroupRegionDateTo(statisticGroup, legalEntity, region, dateTo)
+        WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.statisticLiter
+            THEN volumeByStatisticGroupRegionDateTo(statisticGroup, legalEntity, region, dateTo)
+        WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.statisticSum
+            THEN retailSumByStatisticGroupRegionDateTo(statisticGroup, legalEntity, region, dateTo)
+        DEFAULT 0 IF statisticGroup IS statisticGroup AND legalEntity IS legalEntity AND region IS region AND dateTo IS DATE
+    END;
+
+valueResidentByStatisticGroupLegalEntityRegionDateFromTo 'Продано отеч. пр-ва' (statisticGroup, legalEntity, region, dateFrom, dateTo) =
+    CASE
+        WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.statisticThing
+            THEN quantitySoldResidentByStatisticGroupRegionDateFromTo(statisticGroup, legalEntity, region, dateFrom, dateTo)
+        WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.statisticPounds
+            THEN netWeightSoldResidentByStatisticGroupRegionDateFromTo(statisticGroup, legalEntity, region, dateFrom, dateTo)
+        WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.statisticLiter
+            THEN volumeSoldResidentByStatisticGroupRegionDateFromTo(statisticGroup, legalEntity, region, dateFrom, dateTo)
+        WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.statisticSum
+            THEN retailSumSoldResidentByStatisticGroupRegionDateFromTo(statisticGroup, legalEntity, region, dateFrom, dateTo)
+        DEFAULT 0 AND statisticGroup IS statisticGroup AND legalEntity IS legalEntity AND region IS region AND dateFrom IS DATE AND dateTo IS DATE
+    END;
+
+valueResidentByStatisticGroupLegalEntityRegionDateTo 'Остаток на конец отеч. пр-ва' (statisticGroup, legalEntity, region, dateTo) =
+    CASE
+        WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.statisticThing
+            THEN balanceResidentByStatisticGroupRegionDateTo(statisticGroup, legalEntity, region, dateTo)
+        WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.statisticPounds
+            THEN netWeightResidentByStatisticGroupRegionDateTo(statisticGroup, legalEntity, region, dateTo)
+        WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.statisticLiter
+            THEN volumeResidentByStatisticGroupRegionDateTo(statisticGroup, legalEntity, region, dateTo)
+        WHEN unitMeasureStatisticGroup(statisticGroup)==groupStatic.statisticSum
+            THEN retailSumResidentByStatisticGroupRegionDateTo(statisticGroup, legalEntity, region, dateTo)
+        DEFAULT 0 IF statisticGroup IS statisticGroup AND legalEntity IS legalEntity AND region IS region AND dateTo IS DATE
+    END;
+
+totalRetailSumSoldByStatisticGroupRegionDateFromTo 'Итого продано, руб.' (statisticGroup, legalEntity, region, dateFrom, dateTo)=
+    GROUP SUM sumSoldSkuStockDateFromTo (sku, stock, dateFrom, dateTo) AND isParentStatisticGroupSku(statisticGroup, sku)
+    BY statisticGroup, legalEntityStock(stock), regionStock(stock), dateFrom, dateTo;
+
+FORM torgSales 'Статистика (продажи) организация/регион/группа'
+
+    OBJECTS params = (dFrom = DATE, dTo = DATE) FIXED PANEL
+
+    PROPERTIES objFrom = OBJVALUE(dFrom), objTo = OBJVALUE(dTo)
+
+    OBJECTS l=legalEntity  FIXED PANEL
+    PROPERTIES(l) SELECTOR name
+
+    OBJECTS r=region  FIXED PANEL
+    PROPERTIES(r) SELECTOR name
+
+    TREE treeGroups g=statisticGroup PARENT parentStatisticGroup
+    PROPERTIES READONLY gname = name(g), sidStatisticGroup(g), nameUOMStatisticGroup(g)
+    ORDER BY sidStatisticGroup
+
+    FILTERS countryStatisticGroup(g) ==countryLegalEntity(l)
+
+    PROPERTIES(g, l, r, dFrom, dTo) valueByStatisticGroupLegalEntityRegionDateFromTo, valueResidentByStatisticGroupLegalEntityRegionDateFromTo
+    PROPERTIES(g, l, r, dTo) valueByStatisticGroupLegalEntityRegionDateTo, valueResidentByStatisticGroupLegalEntityRegionDateTo
+    PROPERTIES(g, l, r, dFrom, dTo) totalRetailSumSoldByStatisticGroupRegionDateFromTo
+;
+
+DESIGN torgSales FROM DEFAULT {
+
+    main{
+        ADD treeGroups.tree.box  BEFORE functions.box {
+            title = 'Показатели по стат. группам с учетом ед. изм. и коэфф. перевода';
+        }
+        NEW firstCase BEFORE treeGroups.tree.box {
+            childConstraints = TO THE RIGHT;
+            title = 'Параметры отчета';
+
+            NEW dateCase {
+                title = 'Даты';
+                childConstraints = TO THE RIGHT;
+                ADD PROPERTY(objFrom) {
+                    caption = 'Дата (с)';
+                }
+                ADD PROPERTY(objTo) {
+                    caption = 'Дата (по)';
+                }
+            }
+            ADD l.box;
+            ADD r.box;
+        }
+        ADD functions.box;
+    }
+}
+
+//---------------------------------------------- Автоматическое заполнение -----------------------------------------------------//
+
+loadDefaultStatisticGroup 'Добавить стат. группы' = ACTION (idCountry, parentStat, nameStat, sidStat, groupStatic, value)  {
+    ADDOBJ statisticGroup;
+    FOR g == addedObject() DO {
+        SET parentStatisticGroup(g) <- sidToStatisticGroup(parentStat AS STRING[12]);
+        SET name(g) <- nameStat AS STRING[110];
+        SET sidStatisticGroup(g) <- sidStat AS STRING[12];
+        SET countryStatisticGroup(g) <- countrySID(idCountry);;
+        SET unitMeasureStatisticGroup(g) <- groupStatic AS groupStatic;
+        SET conversionFactorStatisticGroup(g) <- value AS NUMERIC[14,5];
+    }
+}
+
+
+loadDefaultResidentCountry 'Добавить отеч. производ' = ACTION (idCountry, idCountry2)  {
+    SET residentCountryCountry(a,b) IF a IS country AND b IS country <- TRUE WHERE a == countrySID(idCountry) AND b == countrySID(idCountry2);
+}
+
+loadDefaultStatisticGroups 'Загрузить стандартные статистические группы' = ACTION () {
+    EXEC loadDefaultStatisticGroup('112', ' ', 'ВСЕ', 'ВСЕ', groupStatic.statisticThing, 1);
+    EXEC loadDefaultStatisticGroup('112', 'ВСЕ', 'Пищевые продукты, напитки и табачные изделия', '52.2', groupStatic.statisticThing, 1);
+    EXEC loadDefaultStatisticGroup('112', '52.2', 'Фрукты', '52.21.10.100', groupStatic.statisticPounds, 1000);
+    EXEC loadDefaultStatisticGroup('112', '52.2', 'Овощи', '52.21.10.200', groupStatic.statisticPounds, 1000);
+    EXEC loadDefaultStatisticGroup('112', '52.21.10.200', 'Картофель', '52.21.10.210', groupStatic.statisticPounds, 1000);
+    EXEC loadDefaultStatisticGroup('112', '52.2', 'Мясо, в том числе мясо домашней птицы и мясные продукты', '52.22.10', groupStatic.statisticPounds, 1000);
+    EXEC loadDefaultStatisticGroup('112', '52.22.10', 'Продукты из мяса', '52.22.10.410', groupStatic.statisticPounds, 1000);
+    EXEC loadDefaultStatisticGroup('112', '52.22.10', 'Консервы из мяса', '52.22.10.420', groupStatic.statisticPounds, 1000);
+    EXEC loadDefaultStatisticGroup('112', '52.2', 'Рыба, ракообразные и моллюски', '52.23.10', groupStatic.statisticPounds, 1000);
+    EXEC loadDefaultStatisticGroup('112', '52.23.10', 'Консервы и пресервы из рыбы и  морепродуктов', '52.23.10.420', groupStatic.statisticPounds, 1000);
+    EXEC loadDefaultStatisticGroup('112', '52.2', 'Хлеб, пирожные и хлебобулочные изделия', '52.24.11', groupStatic.statisticThing, 1);
+    EXEC loadDefaultStatisticGroup('112', '52.2', 'Кондитерские изделия из сахара', '52.24.12', groupStatic.statisticPounds, 1000);
+    EXEC loadDefaultStatisticGroup('112', '52.2', 'Напитки, включая алкогольные', '52.25.10', groupStatic.statisticThing, 1);
+    EXEC loadDefaultStatisticGroup('112', '52.25.10', 'Вино', '52.25.10.100', groupStatic.statisticLiter, 10);
+    EXEC loadDefaultStatisticGroup('112', '52.25.10.100', 'Вина виноградные', '52.25.10.110', groupStatic.statisticLiter, 10);
+    EXEC loadDefaultStatisticGroup('112', '52.25.10.100', 'Вина плодовые', '52.25.10.120', groupStatic.statisticLiter, 10);
+    EXEC loadDefaultStatisticGroup('112', '52.25.10.100', 'Вина игристые, включая шампанское', '52.25.10.130', groupStatic.statisticLiter, 10);
+    EXEC loadDefaultStatisticGroup('112', '52.2', 'Водка', '52.25.10.200', groupStatic.statisticLiter, 10);
+    EXEC loadDefaultStatisticGroup('112', '52.2', 'Коньяк, коньячные напитки и бренди', '52.25.10.300', groupStatic.statisticLiter, 10);
+    EXEC loadDefaultStatisticGroup('112', '52.2', 'Пиво', '52.25.10.400', groupStatic.statisticLiter, 10);
+    EXEC loadDefaultStatisticGroup('112', '52.2', 'Прочие алкогольные напитки', '52.25.10.500', groupStatic.statisticLiter, 10);
+    EXEC loadDefaultStatisticGroup('112', '52.25.10.500', 'Напитки слабоалкогольные', '52.25.10.510', groupStatic.statisticLiter, 10);
+    EXEC loadDefaultStatisticGroup('112', '52.25.10.500', 'Прочие алкогольные напитки, не включенные в другие группировки', '52.25.10.590', groupStatic.statisticLiter, 10);
+    EXEC loadDefaultStatisticGroup('112', '52.2', 'Безалкогольные напитки', '52.25.21', groupStatic.statisticThing, 1);
+    EXEC loadDefaultStatisticGroup('112', '52.25.21', 'Фруктовые и овощные соки', '52.25.21.100', groupStatic.statisticPounds, 1000);
+    EXEC loadDefaultStatisticGroup('112', '52.25.21', 'Минеральная вода', '52.25.21.200', groupStatic.statisticLiter, 10);
+    EXEC loadDefaultStatisticGroup('112', '52.25.21', 'Безалкогольные напитки прочие', '52.25.21.300', groupStatic.statisticLiter, 10);
+    EXEC loadDefaultStatisticGroup('112', '52.2', 'Табачные изделия', '52.26.10', groupStatic.statisticThing, 1000);
+    EXEC loadDefaultStatisticGroup('112', '52.2', 'Молочные продукты', '52.27.11.100', groupStatic.statisticThing, 0);
+    EXEC loadDefaultStatisticGroup('112', '52.27.11.100', 'Сыр', '52.27.11.110', groupStatic.statisticPounds, 1000);
+    EXEC loadDefaultStatisticGroup('112', '52.27.11.100', 'Масло сливочное', '52.27.11.120', groupStatic.statisticPounds, 1000);
+    EXEC loadDefaultStatisticGroup('112', '52.2', 'Яйца', '52.27.11.200', groupStatic.statisticThing, 1000);
+    EXEC loadDefaultStatisticGroup('112', '52.2', 'Сушеные и консервированные орехи, офощи и фрукты', '52.27.12.100', groupStatic.statisticThing, 1);
+    EXEC loadDefaultStatisticGroup('112', '52.2', 'Чай, кофе, какао, специи', '52.27.12.200', groupStatic.statisticThing, 1);
+    EXEC loadDefaultStatisticGroup('112', '52.2', 'Пищевые масла и жиры', '52.27.12.300', groupStatic.statisticThing, 1);
+    EXEC loadDefaultStatisticGroup('112', '52.27.12.300', 'Масла растительные', '52.27.12.310', groupStatic.statisticPounds, 1000);
+    EXEC loadDefaultStatisticGroup('112', '52.2', 'Мука', '52.27.12.400', groupStatic.statisticPounds, 100);
+    EXEC loadDefaultStatisticGroup('112', '52.2', 'Соль', '52.27.12.500', groupStatic.statisticThing, 1);
+    EXEC loadDefaultStatisticGroup('112', '52.2', 'Сахар', '52.27.12.600', groupStatic.statisticPounds, 1000);
+    EXEC loadDefaultStatisticGroup('112', '52.2', 'Рис и прочие крупы', '52.27.12.700', groupStatic.statisticPounds, 100);
+    EXEC loadDefaultStatisticGroup('112', '52.2', 'Рис', '52.27.12.710', groupStatic.statisticPounds, 100);
+    EXEC loadDefaultStatisticGroup('112', '52.2', 'Овсяная крупа', '52.27.12.720', groupStatic.statisticPounds, 100);
+    EXEC loadDefaultStatisticGroup('112', '52.2', 'Гречневая крупа', '52.27.12.730', groupStatic.statisticPounds, 100);
+    EXEC loadDefaultStatisticGroup('112', '52.2', 'Лапша и прочие макаронные изделия', '52.27.12.800', groupStatic.statisticPounds, 100);
+    EXEC loadDefaultStatisticGroup('112', '52.2', 'Прочие пищевые продукты', '52.27.12.900', groupStatic.statisticThing, 1);
+    EXEC loadDefaultStatisticGroup('112', '52.27.12.900', 'Детское питание', '52.27.12.910', groupStatic.statisticPounds, 1000);
+    EXEC loadDefaultStatisticGroup('112', 'ВСЕ', 'Непродовольственные товары', '5', groupStatic.statisticThing, 1);
+    EXEC loadDefaultStatisticGroup('112', '5', 'Автомобили', '50.10.2', groupStatic.statisticThing, 1);
+    EXEC loadDefaultStatisticGroup('112', '5', 'Детали и принадлежности для автомобилей', '50.30.2', groupStatic.statisticThing, 1);
+    EXEC loadDefaultStatisticGroup('112', '5', 'Мотоциклы и относящиеся к ним детали и принадлежности', '50.40.20', groupStatic.statisticThing, 1);
+    EXEC loadDefaultStatisticGroup('112', '5', 'Моторное топливо', '50.50.10', groupStatic.statisticThing, 1);
+    EXEC loadDefaultStatisticGroup('112', '50.50.10', 'Моторное топливо', '50.50.10.100', groupStatic.statisticSum, 1000000);
+    EXEC loadDefaultStatisticGroup('112', '5', 'Фармацевтические товары', '52.31.10', groupStatic.statisticSum, 1000000);
+    EXEC loadDefaultStatisticGroup('112', '5', 'Медицинские и ортопедические товары', '52.32.10', groupStatic.statisticThing, 1);
+    EXEC loadDefaultStatisticGroup('112', '5', 'Парфюмерные и косметические товары и туалетные принадлежности', '52.33.10', groupStatic.statisticSum, 1000000);
+    EXEC loadDefaultStatisticGroup('112', '5', 'Текстильные товары', '52.41.11', groupStatic.statisticThing, 1);
+    EXEC loadDefaultStatisticGroup('112', '5', 'Галантерейные товары', '52.41.12', groupStatic.statisticThing, 1);
+    EXEC loadDefaultStatisticGroup('112', '5', 'Меховая и кожаная одежда', '52.42.10.100', groupStatic.statisticThing, 1);
+    EXEC loadDefaultStatisticGroup('112', '5', 'Верхняя одежда', '52.42.10.200', groupStatic.statisticSum, 1000000);
+    EXEC loadDefaultStatisticGroup('112', '5', 'Нижнее белье', '52.42.10.300', groupStatic.statisticSum, 1000000);
+    EXEC loadDefaultStatisticGroup('112', '5', 'Спортивная одежда', '52.42.10.400', groupStatic.statisticSum, 1000000);
+    EXEC loadDefaultStatisticGroup('112', '5', 'Трикотажные изделия', '52.42.10.510', groupStatic.statisticSum, 1000000);
+    EXEC loadDefaultStatisticGroup('112', '5', 'Чулочно-носочные изделия', '52.42.10.520', groupStatic.statisticSum, 1000000);
+    EXEC loadDefaultStatisticGroup('112', '5', 'Головные уборы', '52.42.10.600', groupStatic.statisticThing, 1);
+    EXEC loadDefaultStatisticGroup('112', '5', 'Аксессуары для одежды', '52.42.10.700', groupStatic.statisticThing, 1);
+    EXEC loadDefaultStatisticGroup('112', '5', 'Обувь', '52.43.11', groupStatic.statisticSum, 1000000);
+    EXEC loadDefaultStatisticGroup('112', '5', 'Изделия из кожи и дорожные принадлежности', '52.43.12', groupStatic.statisticThing, 1);
+    EXEC loadDefaultStatisticGroup('112', '5', 'Бытовая мебель', '52.44.11', groupStatic.statisticThing, 1);
+    EXEC loadDefaultStatisticGroup('112', '5', 'Домашняя утварь, ножевые изделия, фаянсовая посуда, изделия из стекла, фарфора и керамики', '52.44.12', groupStatic.statisticThing, 1);
+    EXEC loadDefaultStatisticGroup('112', '5', 'Осветительные приборы', '52.44.13', groupStatic.statisticThing, 1);
+    EXEC loadDefaultStatisticGroup('112', '5', 'Портьеры, сетчатые занавеси и различные предметы домашнего обихода из текстильных материалов', '52.44.14', groupStatic.statisticThing, 1);
+    EXEC loadDefaultStatisticGroup('112', '5', 'Изделия из дерева, пробки и плетеные изделия', '52.44.15', groupStatic.statisticThing, 1);
+    EXEC loadDefaultStatisticGroup('112', '5', 'Бытовые неэлектрические приборы, изделия и оборудование, не включенные в другие группировки', '52.44.16', groupStatic.statisticThing, 1);
+    EXEC loadDefaultStatisticGroup('112', '5', 'Бытовые электрические приборы', '52.45.10', groupStatic.statisticThing, 1);
+    EXEC loadDefaultStatisticGroup('112', '52.45.10', 'Холодильники и морозильники', '52.45.10.001', groupStatic.statisticThing, 1);
+    EXEC loadDefaultStatisticGroup('112', '52.45.10', 'Стиральные машины', '52.45.10.002', groupStatic.statisticThing, 1);
+    EXEC loadDefaultStatisticGroup('112', '5', 'Аудио- и видеоаппаратура', '52.45.21', groupStatic.statisticThing, 0);
+    EXEC loadDefaultStatisticGroup('112', '52.45.21', 'Телевизоры', '52.45.21.210', groupStatic.statisticThing, 1);
+    EXEC loadDefaultStatisticGroup('112', '5', 'Аудио- и видеопленка с записями или без, кассеты и компакт-диски, цифровые видеодиски, грампластинки', '52.45.22', groupStatic.statisticThing, 1);
+    EXEC loadDefaultStatisticGroup('112', '5', 'Музыкальные инструменты и партитуры', '52.45.23', groupStatic.statisticThing, 1);
+    EXEC loadDefaultStatisticGroup('112', '5', 'Строительные материалы', '52.46', groupStatic.statisticSum, 1000000);
+    EXEC loadDefaultStatisticGroup('112', '52.46', 'Скобяные товары', '52.46.11', groupStatic.statisticThing, 1);
+    EXEC loadDefaultStatisticGroup('112', '52.46', 'Краски, лаки и эмали, лакокрасочные материалы', '52.46.12', groupStatic.statisticThing, 1);
+    EXEC loadDefaultStatisticGroup('112', '52.46', 'Стекло', '52.46.13', groupStatic.statisticThing, 1);
+    EXEC loadDefaultStatisticGroup('112', '52.46', 'Материалы и оборудование для изготовления поделок в домашних условиях (для "умелых рук")', '52.46.14', groupStatic.statisticThing, 1);
+    EXEC loadDefaultStatisticGroup('112', '52.46', 'Санитарно-техническое оборудование', '52.46.15', groupStatic.statisticThing, 1);
+    EXEC loadDefaultStatisticGroup('112', '52.46', 'Строительные материалы, не включенные в другие группировки', '52.46.16', groupStatic.statisticThing, 1);
+    EXEC loadDefaultStatisticGroup('112', '5', 'Книги', '52.47.11', groupStatic.statisticThing, 1);
+    EXEC loadDefaultStatisticGroup('112', '5', 'Газеты и журналы', '52.47.12', groupStatic.statisticThing, 1);
+    EXEC loadDefaultStatisticGroup('112', '5', 'Канцелярские товары', '52.47.13', groupStatic.statisticThing, 1);
+    EXEC loadDefaultStatisticGroup('112', '5', 'Офисная мебель', '52.48.11', groupStatic.statisticThing, 1);
+    EXEC loadDefaultStatisticGroup('112', '5', 'Офисные машины и оборудование', '52.48.12', groupStatic.statisticThing, 1);
+    EXEC loadDefaultStatisticGroup('112', '5', 'Компьютеры и программное обеспечение, не приспособленное к индивидуальным требованиям заказчика', '52.48.13', groupStatic.statisticThing, 1);
+    EXEC loadDefaultStatisticGroup('112', '5', 'Фотоаппаратура, оптические и точные приборы и оборудование', '52.48.14', groupStatic.statisticThing, 1);
+    EXEC loadDefaultStatisticGroup('112', '5', 'Оборудование электросвязи', '52.48.15', groupStatic.statisticThing, 1);
+    EXEC loadDefaultStatisticGroup('112', '5', 'Часы и ювелирные изделия', '52.48.21', groupStatic.statisticThing, 1);
+    EXEC loadDefaultStatisticGroup('112', '5', 'Спортивные товары, включая велосипеды', '52.48.22', groupStatic.statisticThing, 1);
+    EXEC loadDefaultStatisticGroup('112', '5', 'Игры и игрушки', '52.48.23', groupStatic.statisticThing, 1);
+    EXEC loadDefaultStatisticGroup('112', '5', 'Чистящие средства, обои и напольные покрытия', '52.48.31', groupStatic.statisticThing, 1);
+    EXEC loadDefaultStatisticGroup('112', '52.48.31', 'Синтетические моющие средства', '52.48.31.110', groupStatic.statisticPounds, 1000);
+    EXEC loadDefaultStatisticGroup('112', '5', 'Цветы, растения, семена и удобрения', '52.48.32', groupStatic.statisticThing, 1);
+    EXEC loadDefaultStatisticGroup('112', '5', 'Домашние животные и корма для них', '52.48.33', groupStatic.statisticThing, 1);
+    EXEC loadDefaultStatisticGroup('112', '5', 'Сувениры, изделия кустарного промысла и предметы культового и религиозного назначения', '52.48.34', groupStatic.statisticThing, 1);
+    EXEC loadDefaultStatisticGroup('112', '5', 'Жидкое бытовое топливо, газ в баллонах, уголь, древесное топливо', '52.48.35', groupStatic.statisticThing, 1);
+    EXEC loadDefaultStatisticGroup('112', '5', 'Почтовые марки и монеты', '52.48.36', groupStatic.statisticThing, 1);
+    EXEC loadDefaultStatisticGroup('112', '5', 'Произведения искусства', '52.48.37', groupStatic.statisticThing, 1);
+    EXEC loadDefaultStatisticGroup('112', '5', 'Непродовольственные товары, не включенные в другие группировки', '52.48.38', groupStatic.statisticThing, 1);
+    EXEC loadDefaultStatisticGroup('112', '5', 'Подержанные товары', '52.50.1', groupStatic.statisticThing, 1);
+
+    EXEC loadDefaultResidentCountry('112', '112');
+    EXEC loadDefaultResidentCountry('112', '643');
+
+} IN loadDefaultGroup;
+
+@implementLoadDefaultData(loadDefaultStatisticGroups);
+
+NAVIGATOR {
+    NEW statisticsNavigator 'Статистика' {
+        ADD statisticGroups;
+        ADD statisticalReport;
+        ADD torgSales;
+    }
+}

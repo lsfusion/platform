@@ -11,3 +11,4 @@ NAMESPACE Item;
 
 // Объем
 @defineDoubleItemAttribute(volume, NUMERIC[9,3], 'Объем', itemSizeGroup);
+volumeSku(sku) += volumeItem(sku);

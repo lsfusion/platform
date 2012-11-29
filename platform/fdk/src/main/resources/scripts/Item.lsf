@@ -351,6 +351,7 @@ TABLE brand(brand);
 // Страна
 @defineObjectItemAttribute(country, name, 'Страна', itemBaseGroup);
 residentItem 'Отечественное производство' (item) = residentCountry(countryItem(item)) IN itemBaseGroup;
+countrySku(sku) += countryItem(sku);
 
 // Производитель
 CLASS manufacturer 'Производитель товара' : named;
