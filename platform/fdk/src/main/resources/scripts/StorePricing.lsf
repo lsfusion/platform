@@ -1,0 +1,5 @@
+MODULE StorePricing;
+
+REQUIRE Pricing, Store;
+
+EXTEND FORM departmentStore PROPERTIES createPricingDepartmentStore(d);
