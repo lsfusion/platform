@@ -126,7 +126,7 @@ META defineBlanketOrder(sign)
             }
 
             NEW header.box BEFORE specification.box {
-                childConstraints = TO THE RIGHTBOTTOM;
+                childConstraints = TO THE RIGHT;
 
                 NEW headerRow1 {
                     childConstraints = TO THE BOTTOM;
