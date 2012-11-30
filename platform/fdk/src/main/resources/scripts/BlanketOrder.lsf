@@ -59,6 +59,16 @@ META defineBlanketOrder(sign)
 
     @deriveDocumentDoubleDetailPriceListTypeAgreement (blanketOrder, stock, customerStock);
 
+    dataPriceListTypeBlanketOrderDetail (detail) <-
+        IF TRUE AND NOT supplierStockBlanketOrder (blanketOrderBlanketOrderDetail(detail))
+            THEN priceListTypeAgreementSkuOver(defaultAgreementSupplierCustomer(legalEntityStock(supplierStockBlanketOrderDetail(detail)), legalEntityStock(customerStockBlanketOrderDetail(detail))), skuBlanketOrderDetail(detail))
+            ELSE priceListTypeBlanketOrderStock (blanketOrderBlanketOrderDetail(detail), customerStockBlanketOrderDetail(detail))
+        WHEN CHANGED(supplierStockBlanketOrderDetail(detail)) OR CHANGED(customerStockBlanketOrderDetail(detail)) OR CHANGED(skuBlanketOrderDetail(detail));
+
+//    dataPriceListTypeBlanketOrderDetail (detail) <-
+//        priceListTypeAgreementSkuOver(defaultAgreementSupplierCustomer(legalEntityStock(supplierStockBlanketOrderDetail(detail)), legalEntityStock(customerStockBlanketOrderDetail(detail))), skuBlanketOrderDetail(detail))
+//        WHEN ASSIGNED(detail IS blanketOrderDetail);
+
     @defineDocumentDetailPrice(blanketOrder);
     @deriveDocumentDetailPricePriceListType(blanketOrder, supplierStock);
 

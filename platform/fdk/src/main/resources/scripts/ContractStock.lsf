@@ -41,7 +41,7 @@ TABLE supplierCustomer(legalEntity, legalEntity);
 CLASS paymentCondition 'Условия оплаты';
 TABLE paymentCondition(paymentCondition);
 
-datePaymentCondition 'Дата' = DATA DATE (paymentCondition);
+datePaymentCondition 'Дата' = DATA DATE (paymentCondition) IN baseGroup;
 datePaymentCondition (paymentCondition) <- currentDate() WHEN ASSIGNED(paymentCondition IS paymentCondition);
 contractPaymentCondition 'Договор' = DATA contractSku (paymentCondition) AUTOSET;
 numberContractPaymentCondition 'Номер договора' (paymentCondition) = numberContract(contractPaymentCondition(paymentCondition));
