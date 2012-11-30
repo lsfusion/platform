@@ -18,7 +18,7 @@ PRIORITY Stock;
 CLASS writeOffCommittee 'Комиссия для списания товаров' : committee;
 
 writeOffCommitteeStock 'Комиссия для списания товаров (ИД)' = DATA writeOffCommittee (stock);
-nameWriteOffCommitteeStock 'Комиссия для списания товаров' (stock) = name(writeOffCommitteeStock(stock));
+nameWriteOffCommitteeStock 'Комиссия для списания товаров' (stock) = name(writeOffCommitteeStock(stock)) IN committeeGroup;
 isWriteOffCommitteeStock 'По умолчанию' (writeOffCommittee, stock) = writeOffCommitteeStock(stock) == writeOffCommittee;
 CONSTRAINT writeOffCommitteeStock(stock) AND NOT inCommitteeEmployeeDivision(writeOffCommitteeStock(stock), stock)
     CHECKED BY writeOffCommitteeStock MESSAGE 'Для отдела выбрана комиссия, которая для него не действует';

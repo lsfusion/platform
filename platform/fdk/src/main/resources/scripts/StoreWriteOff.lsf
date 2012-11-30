@@ -4,4 +4,8 @@ REQUIRE PurchaseWriteOff, Store;
 
 EXTEND FORM departmentStore PROPERTIES createWriteOffStock(d);
 
+EXTEND DESIGN departmentStore{
+    row21 { ADD PROPERTY(createWriteOffStock);}
+}
+
 toShowCreateWriteOffInvoice (invoice) += customerStockUserInvoice(invoice) IS departmentStore;

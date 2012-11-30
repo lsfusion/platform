@@ -5,7 +5,7 @@ REQUIRE Invoice, Employee, Store, StorePrice, Label, Machinery, ItemTax;
 
 // ----------------------------------- Создавать акт расценки по умолчанию для отдела ------------------------------------------ //
 
-createPricingDepartmentStore 'Создавать акт расценки' = DATA BOOLEAN (departmentStore);
+createPricingDepartmentStore 'Создавать акт расценки' = DATA BOOLEAN (departmentStore) IN createGroup;
 
 // ----------------------------------- Комиссия ------------------------------------------ //
 
@@ -21,7 +21,7 @@ CLASS pricingCommittee 'Комиссия для акта расценки' : com
 // ----------------------------------- Комиссия по умолчанию для отдела ------------------------------------------ //
 
 pricingCommitteeDepartmentStore 'Комиссия для акта расценки (ИД)' = DATA pricingCommittee (departmentStore);
-namePricingCommitteeDepartmentStore 'Комиссия для акта расценки' (departmentStore) = name(pricingCommitteeDepartmentStore(departmentStore));
+namePricingCommitteeDepartmentStore 'Комиссия для акта расценки' (departmentStore) = name(pricingCommitteeDepartmentStore(departmentStore)) IN committeeGroup;
 isDefaultPricingCommitteeDepartmentStore 'По умолчанию' (pricingCommittee, departmentStore) = pricingCommitteeDepartmentStore(departmentStore) == pricingCommittee;
 CONSTRAINT pricingCommitteeDepartmentStore(departmentStore) AND NOT inCommitteeEmployeeDivision(pricingCommitteeDepartmentStore(departmentStore), departmentStore)
     CHECKED BY pricingCommitteeDepartmentStore MESSAGE 'Для отдела выбрана комиссия, которая для него не действует';
@@ -30,7 +30,7 @@ EXTEND FORM departmentStore PROPERTIES namePricingCommitteeDepartmentStore(d);
 
 // ----------------------------------- Вид цен по умолчанию для отдела ------------------------------------------ //
 priceListTypeDepartmentStore  = DATA priceListType (departmentStore);
-namePriceListTypeDepartmentStore 'Вид цен для акта расценки' (departmentStore) = name(priceListTypeDepartmentStore(departmentStore));
+namePriceListTypeDepartmentStore 'Вид цен для акта расценки' (departmentStore) = name(priceListTypeDepartmentStore(departmentStore)) IN bookkeepingGroup;
 
 EXTEND FORM departmentStore PROPERTIES namePriceListTypeDepartmentStore(d);
 // ----------------------------------- Формы для комиссий для реестра цен ------------------------------------------ //

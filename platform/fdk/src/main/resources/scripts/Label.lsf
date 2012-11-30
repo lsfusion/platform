@@ -172,7 +172,7 @@ DESIGN labelTransactions FROM DEFAULT {
 // -------------------------------------------- Действия по печати ценников ------------------------------ //
 
 priceListTypeLabelDepartmentStore = DATA priceListType (departmentStore);
-namePriceListTypeLabelDepartmentStore 'Вид цен для ценников' (departmentStore) = name(priceListTypeLabelDepartmentStore(departmentStore));
+namePriceListTypeLabelDepartmentStore 'Вид цен для ценников' (departmentStore) = name(priceListTypeLabelDepartmentStore(departmentStore)) IN bookkeepingGroup;
 
 EXTEND FORM departmentStore PROPERTIES(d) namePriceListTypeLabelDepartmentStore;
 

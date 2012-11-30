@@ -144,21 +144,21 @@ subtotalContainerIncAccountDocumentStockDateInterval 'Итого с остатк
 
 MRPStock 'Материально ответственное лицо, подписывающее товарный отчет (ИД)' = DATA employee (stock);
 nameMRPStock 'Материально ответственное лицо, подписывающее товарный отчет' (stock) =
-    commonName (MRPStock(stock));
+    commonName (MRPStock(stock)) IN responsibilityGroup;
 namePositionMRPStock 'Материально ответственное лицо, подписывающее товарный отчет (должность)' =
     namePositionEmployee(MRPStock(stock));
 CONSTRAINT MRPStock(stock) AND NOT inEmployeeDivisionEmployee(stock, MRPStock(stock))
     CHECKED BY MRPStock MESSAGE 'МОЛ не сотрудник отдела';
 
 bookkeeperStock 'Бухгалтер, принимающий товарный отчет (ИД)' = DATA employee (stock);
-nameBookkeeperStock 'Бухгалтер, принимающий товарный отчет' (stock) = commonName(bookkeeperStock(stock));
+nameBookkeeperStock 'Бухгалтер, принимающий товарный отчет' (stock) = commonName(bookkeeperStock(stock)) IN responsibilityGroup;
 namePositionBookkeeperStock 'Бухгалтер, принимающий товарный отчет (должность)' =
     namePositionEmployee(bookkeeperStock(stock));
 CONSTRAINT bookkeeperStock(stock) AND NOT inEmployeeDivisionEmployee(stock, bookkeeperStock(stock))
     CHECKED BY bookkeeperStock MESSAGE 'Бухгалтер не сотрудник отдела';
 
 personCheckStock 'Кто проверяет товарный отчет (ИД)' = DATA employee (stock);
-namePersonCheckStock 'Кто проверяет товарный отчет' (stock) = commonName(personCheckStock(stock));
+namePersonCheckStock 'Кто проверяет товарный отчет' (stock) = commonName(personCheckStock(stock)) IN responsibilityGroup;
 namePositionPersonCheckStock 'Кто проверяет товарный отчет (должность)' =
     namePositionEmployee(personCheckStock(stock));
 CONSTRAINT personCheckStock(stock) AND NOT inEmployeeDivisionEmployee(stock, personCheckStock(stock))
@@ -304,6 +304,6 @@ END
 
 META extendStockFormAccountDocumentLedger(form, object)
     EXTEND FORM form
-        PROPERTIES(object)   nameMRPStock, nameBookkeeperStock, namePersonCheckStock //namePositionMRPStock, namePositionBookkeeperStock, namePositionPersonCheckStock
+        PROPERTIES(object)   nameMRPStock, nameBookkeeperStock, namePersonCheckStock
     ;
 END

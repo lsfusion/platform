@@ -31,7 +31,7 @@ FORM writeOffRateDialog 'Нормы отходов'
 
 // ----------------------------------- Создавать по умолчанию для склада ------------------------------------------ //
 
-createWriteOffStock 'Создавать акт списания' = DATA BOOLEAN (stock);
+createWriteOffStock 'Создавать акт списания' = DATA BOOLEAN (stock) IN createGroup;
 
 //---------------------------------- Extend Invoice ------------------------------------//
 

@@ -1570,6 +1570,11 @@ DESIGN disparities FROM DEFAULT {
 //---------------------------Товарный отчет-------------------------------------//
 
 @extendStockFormAccountDocumentLedger(departmentStore, d);
+EXTEND DESIGN departmentStore {
+    row1 {
+        ADD d. responsibilityGroup {childConstraints = TO THE BOTTOM;}
+    }
+}
 
 //----------------------------------- Акты проработки -------------------------------------------------//
 FORM actOfStudy 'Акт проработки'

@@ -33,7 +33,7 @@ editShipment 'Редактировать' = ABSTRACT ACTION (shipment) IMAGE 'ed
 
 // ----------------------------------- Создавать поставку по умолчанию для склада ------------------------------------------ //
 
-createShipmentStock 'Создавать поставку' = DATA BOOLEAN (stock);
+createShipmentStock 'Создавать поставку' = DATA BOOLEAN (stock) IN createGroup;
 
 META defineDocumentHeaderCreateShipment(object, stockClass)
     createShipment###object 'Создать поставку' (object) = DATA BOOLEAN(object) IN documentPrmGroup;

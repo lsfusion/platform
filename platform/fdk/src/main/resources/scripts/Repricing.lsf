@@ -4,9 +4,13 @@ REQUIRE Employee, Store, Pricing, AccountDocument, PriceList;
 
 // ----------------------------------- Создавать акт расценки по умолчанию для отдела ------------------------------------------ //
 
-createRepricingDepartmentStore 'Создавать акт дооценки' = DATA BOOLEAN (departmentStore);
+createRepricingDepartmentStore 'Создавать акт дооценки' = DATA BOOLEAN (departmentStore) IN createGroup;
 
 EXTEND FORM departmentStore PROPERTIES createRepricingDepartmentStore(d);
+
+EXTEND DESIGN departmentStore{
+    row21 { ADD PROPERTY(createRepricingDepartmentStore);}
+}
 
 //META defineDocumentHeaderCreateRepricing(object, stockClass)
 //    createRepricing###object 'Создать акт дооценки' (object) = DATA BOOLEAN(object) IN documentPrmGroup;
@@ -32,7 +36,7 @@ CLASS repricingCommittee 'Комиссия переоценки' : committee;
 // ----------------------------------- Комиссия по умолчанию для отдела ------------------------------------------ //
 
 repricingCommitteeDepartmentStore = DATA repricingCommittee (departmentStore);
-nameRepricingCommitteeDepartmentStore 'Комиссия переоценки' (departmentStore) = name(repricingCommitteeDepartmentStore(departmentStore));
+nameRepricingCommitteeDepartmentStore 'Комиссия переоценки' (departmentStore) = name(repricingCommitteeDepartmentStore(departmentStore)) IN committeeGroup;
 isDefaultRepricingCommitteeDepartmentStore 'По умолчанию' (repricingCommittee, departmentStore) = repricingCommitteeDepartmentStore(departmentStore) == repricingCommittee;
 CONSTRAINT repricingCommitteeDepartmentStore(departmentStore) AND NOT inCommitteeEmployeeDivision(repricingCommitteeDepartmentStore(departmentStore), departmentStore)
     CHECKED BY repricingCommitteeDepartmentStore MESSAGE 'Для отдела выбрана комиссия, которая для него не действует';

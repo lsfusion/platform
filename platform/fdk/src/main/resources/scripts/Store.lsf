@@ -122,7 +122,7 @@ isRetailStock (stock) += isDepartmentStoreStock (stock);
 
 FORM departmentStore 'Отдел магазина'
     OBJECTS d = departmentStore FIXED PANEL
-    PROPERTIES(d) name, nameStoreDepartmentStore, tradingSquareDepartmentStore, dialogTradingSquareDepartmentStore, nameWriteOffCommitteeStock,
+    PROPERTIES(d) nameDep=name, nameStoreDepartmentStore, tradingSquareDepartmentStore, dialogTradingSquareDepartmentStore, nameWriteOffCommitteeStock,
                   explicitBatchLedgerStock
 
     OBJECTS e = employee
@@ -138,6 +138,29 @@ DESIGN departmentStore FROM DEFAULT {
         preferredSize = (1024, 768);
         d.panel {
             childConstraints = TO THE BOTTOM;
+            NEW topContainer {
+                childConstraints = TO THE RIGHT;
+                ADD PROPERTY(nameDep);
+                ADD PROPERTY(nameStoreDepartmentStore);
+                ADD PROPERTY(tradingSquareDepartmentStore);
+            }
+            NEW row {
+                childConstraints = TO THE BOTTOM;
+                NEW row1 {
+                    childConstraints = TO THE RIGHT;
+                    ADD d.committeeGroup {childConstraints = TO THE BOTTOM;}
+                }
+                NEW row2 {
+                    childConstraints = TO THE RIGHT;
+                    ADD d. bookkeepingGroup {childConstraints = TO THE BOTTOM;}
+                    NEW row21{
+                        title = 'Создавать по умолчанию';
+                        childConstraints = TO THE BOTTOM;
+                    }
+
+                }
+            }
+
         }
     }
 }

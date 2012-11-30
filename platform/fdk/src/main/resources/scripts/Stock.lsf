@@ -39,6 +39,11 @@ addressPOI (poi) += addressStock(poi);
 TABLE stockGroupStock (stockGroup, stock);
 isParentStockGroupStock (stockGroup, stock) = isParentStockGroupStockGroup(stockGroupStock(stock), stockGroup) PERSISTENT;
 
+GROUP createGroup 'Создавать по умолчанию' : publicGroup;
+GROUP committeeGroup 'Комиссии' : publicGroup;
+GROUP responsibilityGroup 'Ответственные лица' : publicGroup;
+GROUP bookkeepingGroup 'Учет и цены' : publicGroup;
+
 // -------------------------------------- Регион ------------------------------- //
 
 CLASS region 'Регион' : named;
@@ -210,7 +215,7 @@ signedQuantitySkuLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quantityInSkuLe
 
 // -------------------------------------------- Расчет себестоимости -------------------------------------- //
 
-explicitBatchLedgerStock 'Партионный учет' = ABSTRACT BOOLEAN (stock) PERSISTENT;
+explicitBatchLedgerStock 'Партионный учет' = ABSTRACT BOOLEAN (stock) PERSISTENT IN bookkeepingGroup;
 
 orderDataSkuLedger (ledger) = LIST(dateTimeDataSkuLedger(ledger), ledger);
 
