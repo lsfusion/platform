@@ -27,6 +27,7 @@ CLASS ABSTRACT invoiceDetail 'Строка накладной';
 @defineDocumentAbstractDetailQuantity(invoice);
 @defineDocumentDetailGrossWeight(invoice, sku);
 @defineDocumentDetailQuantityPack (invoice, sku);
+@defineDocumentHeaderSkuQuantity(invoice, sku);
 
 @defineDocumentHeaderGrossWeight(invoice);
 

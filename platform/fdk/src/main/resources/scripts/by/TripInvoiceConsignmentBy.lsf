@@ -6,7 +6,7 @@ truckConsignment(invoice) += truckTrip(tripInvoice(invoice));
 driverConsignment(invoice) += driverTrip(tripInvoice(invoice));
 //trailerConsignment(invoice) += trailerTruckTrip(tripInvoice(invoice));
 
-printHorizontalConsignmentTrip 'Печать накладных ТТН-1 (гор.)' (trip) = ACTION (trip) {
+printHorizontalConsignmentTrip 'Печать ТТН-1 (гор.)' (trip) = ACTION (trip) {
     FOR inTripInvoice(trip, invoice) DO {
         EXEC printConsignmentHorizontalA(invoice);
         EXEC printConsignmentHorizontalB(invoice);
@@ -14,7 +14,7 @@ printHorizontalConsignmentTrip 'Печать накладных ТТН-1 (гор
     };
 } TOOLBAR;
 
-printVerticalConsignmentTrip 'Печать накладных ТТН-1 (верт.)' (trip) = ACTION (trip) {
+printVerticalConsignmentTrip 'Печать ТТН-1 (верт.)' (trip) = ACTION (trip) {
     FOR inTripInvoice(trip, invoice) DO {
         EXEC printConsignmentVerticalA(invoice);
         EXEC printConsignmentVerticalB(invoice);

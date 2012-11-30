@@ -30,6 +30,7 @@
 	<field name="nameDriverTrip" class="java.lang.String"/>
 	<field name="sidDriverTrip" class="java.lang.String"/>
 	<field name="typeDriverTrip" class="java.lang.String"/>
+	<field name="trailerTruckTrip" class="java.lang.String"/>
 	<title>
 		<band height="320">
 			<textField isStretchWithOverflow="true">
@@ -38,9 +39,9 @@
 				<textFieldExpression class="java.lang.String"><![CDATA["Путевой лист № "]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="0" y="50" width="290" height="18"/>
-				<textElement textAlignment="Center"/>
-				<textFieldExpression class="java.lang.String"><![CDATA["Машина "]]></textFieldExpression>
+				<reportElement style="GroupCellStyle1" stretchType="RelativeToBandHeight" x="0" y="50" width="290" height="18"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Автомобиль, прицеп, полуприцеп"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="0" y="68" width="89" height="36"/>
@@ -48,7 +49,7 @@
 				<textFieldExpression class="java.lang.String"><![CDATA["Марка"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="0" y="158" width="290" height="18"/>
+				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="0" y="171" width="290" height="18"/>
 				<textElement textAlignment="Center"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Водитель"]]></textFieldExpression>
 			</textField>
@@ -63,14 +64,14 @@
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{numberObject}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="89" y="104" width="91" height="36"/>
+				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="89" y="104" width="91" height="54"/>
 				<textElement textAlignment="Left"/>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{sidTruckTrip}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="0" y="104" width="89" height="36"/>
+				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="0" y="104" width="89" height="54"/>
 				<textElement textAlignment="Left"/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{nameMarkTruckTrip}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{nameMarkTruckTrip} + " " + ($F{trailerTruckTrip}!=null?$F{trailerTruckTrip}:"")]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="DefaultStyle" x="89" y="68" width="91" height="36"/>
@@ -83,27 +84,27 @@
 				<textFieldExpression class="java.lang.String"><![CDATA["Гаражный номер"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="DefaultStyle" x="0" y="176" width="90" height="54"/>
+				<reportElement style="DefaultStyle" x="0" y="189" width="90" height="54"/>
 				<textElement/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Фамилия, инициалы"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="DefaultStyle" x="90" y="176" width="90" height="54"/>
+				<reportElement style="DefaultStyle" x="90" y="189" width="90" height="54"/>
 				<textElement/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Табельный номер, класс"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="DefaultStyle" x="180" y="176" width="110" height="54"/>
+				<reportElement style="DefaultStyle" x="180" y="189" width="110" height="54"/>
 				<textElement/>
 				<textFieldExpression class="java.lang.String"><![CDATA["водитель по состоянию здоровья к управлению допущен. Подпись (штамп)"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="0" y="230" width="90" height="36"/>
+				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="0" y="243" width="90" height="36"/>
 				<textElement textAlignment="Left"/>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{nameDriverTrip}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="DefaultStyle" x="90" y="230" width="90" height="36"/>
+				<reportElement style="DefaultStyle" x="90" y="243" width="90" height="36"/>
 				<textElement/>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{sidDriverTrip} + ", " + $F{typeDriverTrip}]]></textFieldExpression>
 			</textField>
@@ -233,12 +234,12 @@
 				<textFieldExpression class="java.lang.String"><![CDATA[""]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="DefaultStyle" x="180" y="104" width="110" height="36"/>
+				<reportElement style="DefaultStyle" x="180" y="104" width="110" height="54"/>
 				<textElement/>
 				<textFieldExpression class="java.lang.String"><![CDATA[""]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="DefaultStyle" x="180" y="230" width="110" height="36"/>
+				<reportElement style="DefaultStyle" x="180" y="243" width="110" height="36"/>
 				<textElement/>
 				<textFieldExpression class="java.lang.String"><![CDATA[""]]></textFieldExpression>
 			</textField>

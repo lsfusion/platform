@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="st" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
-	<property name="ireport.zoom" value="1.3310000000000008"/>
+	<property name="ireport.zoom" value="1.1000000000000005"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
@@ -37,17 +37,17 @@
 				<textFieldExpression class="java.lang.String"><![CDATA["Заказчик"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="DefaultStyle" x="0" y="0" width="701" height="18"/>
+				<reportElement style="DefaultStyle" x="0" y="0" width="778" height="18"/>
 				<textElement textAlignment="Center"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Задание водителю"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="DefaultStyle" x="298" y="18" width="126" height="54"/>
+				<reportElement style="DefaultStyle" x="337" y="18" width="164" height="54"/>
 				<textElement textAlignment="Center"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Пункт назначения"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="DefaultStyle" x="182" y="18" width="116" height="54"/>
+				<reportElement style="DefaultStyle" x="182" y="18" width="155" height="54"/>
 				<textElement textAlignment="Center"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Пункт отправления"]]></textFieldExpression>
 			</textField>
@@ -57,12 +57,12 @@
 				<textFieldExpression class="java.lang.String"><![CDATA["прибытия"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="DefaultStyle" x="598" y="18" width="40" height="54"/>
+				<reportElement style="DefaultStyle" x="675" y="18" width="40" height="54"/>
 				<textElement textAlignment="Center"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Вес груза, т"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="DefaultStyle" x="638" y="18" width="63" height="54"/>
+				<reportElement style="DefaultStyle" x="715" y="18" width="63" height="54"/>
 				<textElement textAlignment="Center"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Количество ездок с грузом, ч"]]></textFieldExpression>
 			</textField>
@@ -72,12 +72,12 @@
 				<textFieldExpression class="java.lang.String"><![CDATA["Дата (число, месяц), время (ч, мин)"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="DefaultStyle" x="424" y="18" width="64" height="54"/>
+				<reportElement style="DefaultStyle" x="501" y="18" width="64" height="54"/>
 				<textElement textAlignment="Center"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Расстояние, км"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="DefaultStyle" x="488" y="18" width="110" height="54"/>
+				<reportElement style="DefaultStyle" x="565" y="18" width="110" height="54"/>
 				<textElement textAlignment="Center"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Наименование груза"]]></textFieldExpression>
 			</textField>
@@ -86,7 +86,7 @@
 	<detail>
 		<band height="18">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="182" y="0" width="116" height="18"/>
+				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="182" y="0" width="155" height="18"/>
 				<textElement textAlignment="Left" verticalAlignment="Top"/>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{addressStockPrevTripStock}]]></textFieldExpression>
 			</textField>
@@ -105,28 +105,28 @@
 				<textElement/>
 				<textFieldExpression class="java.lang.String"><![CDATA[""]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="298" y="0" width="126" height="18"/>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="337" y="0" width="164" height="18"/>
 				<textElement verticalAlignment="Top"/>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{addressStock}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="424" y="0" width="64" height="18"/>
+				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="501" y="0" width="64" height="18"/>
 				<textElement/>
 				<textFieldExpression class="java.lang.String"><![CDATA[""]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="488" y="0" width="110" height="18"/>
+				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="565" y="0" width="110" height="18"/>
 				<textElement/>
 				<textFieldExpression class="java.lang.String"><![CDATA[""]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="598" y="0" width="40" height="18"/>
+				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="675" y="0" width="40" height="18"/>
 				<textElement textAlignment="Center"/>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{grossWeightTripToStock}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="638" y="0" width="63" height="18"/>
+				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="715" y="0" width="63" height="18"/>
 				<textElement/>
 				<textFieldExpression class="java.lang.String"><![CDATA[""]]></textFieldExpression>
 			</textField>

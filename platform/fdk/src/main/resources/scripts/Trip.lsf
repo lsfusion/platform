@@ -125,12 +125,12 @@ FORM trip 'Рейс'
             supplierOrder(o) == partyA() OR (o IS order AND NOT partyA())
 
     FILTERGROUP filterDateOrder
-        FILTER 'Заказы к отправке' 'F10' dateOrder(o) <= dateTrip(t) DEFAULT
+        FILTER 'Текущие' 'F10' dateOrder(o) <= dateTrip(t) DEFAULT
     FILTERGROUP filterOrder
-        FILTER 'Не расписанные заказы или в текущем рейсе' 'F11' filterTripOrder(t, o) DEFAULT
+        FILTER 'Не расписанные или в текущем рейсе' 'F11' filterTripOrder(t, o) DEFAULT
 
     OBJECTS od=orderDetail
-    PROPERTIES(od) READONLY idBarcodeSkuOrderDetail, nameSkuOrderDetail, shortNameUOMSkuOrderDetail, quantityOrderDetail//, grossWeightSkuOrderDetail
+    PROPERTIES(od) READONLY idBarcodeSkuOrderDetail, nameSkuOrderDetail, shortNameUOMSkuOrderDetail, quantityOrderDetail, grossWeightOrderDetail
     FILTERS orderOrderDetail(od)==o
 
     OBJECTS s=shipment
@@ -147,12 +147,12 @@ FORM trip 'Рейс'
     PROPERTIES createShipmentsTrip(t) TODRAW s FORCE PANEL
 
     FILTERGROUP filterDateShipment
-        FILTER 'Поставки к отправке' 'F10' dateShipment(s) <= dateTrip(t) DEFAULT
+        FILTER 'Текущие' 'F10' dateShipment(s) <= dateTrip(t) DEFAULT
     FILTERGROUP filterShipment
-        FILTER 'Не расписанные поставки или в текущем рейсе' 'F11' filterTripShipment(t, s) DEFAULT
+        FILTER 'Не расписанные или в текущем рейсе' 'F11' filterTripShipment(t, s) DEFAULT
 
     OBJECTS sd=shipmentDetail
-    PROPERTIES(sd) READONLY idBarcodeSkuShipmentDetail, nameSkuShipmentDetail, shortNameUOMSkuShipmentDetail, quantityShipmentDetail//, netWeightSkuShipmentDetail
+    PROPERTIES(sd) READONLY idBarcodeSkuShipmentDetail, nameSkuShipmentDetail, shortNameUOMSkuShipmentDetail, quantityShipmentDetail, grossWeightShipmentDetail
     FILTERS shipmentShipmentDetail(sd)==s
 
     OBJECTS sk=sku
@@ -201,19 +201,28 @@ DESIGN trip FROM DEFAULT{
         }
 
         NEW midContainer {
-            caption = 'Параметры машины';
-            childConstraints = TO THE RIGHTBOTTOM;
-            ADD PROPERTY(nameDriverTrip);
-            ADD PROPERTY(sidTruckTrip);
-            ADD PROPERTY(nameMarkTruckTrip);
-            ADD PROPERTY(trailerTruckTrip);
-            ADD PROPERTY(weightTruckTrip);
-            ADD PROPERTY(grossWeightOrderedTrip);
-            ADD PROPERTY(grossWeightShipmentedTrip);
+
+            childConstraints = TO THE RIGHT;
+            NEW truckContainer {
+                caption = 'Параметры машины';
+                childConstraints = TO THE RIGHTBOTTOM;
+                ADD PROPERTY(nameDriverTrip);
+                ADD PROPERTY(sidTruckTrip);
+                ADD PROPERTY(nameMarkTruckTrip);
+                ADD PROPERTY(trailerTruckTrip);
+                ADD PROPERTY(weightTruckTrip);
+            }
+
+            NEW sumContainer {
+                caption = 'Итоги';
+                childConstraints = TO THE BOTTOM;
+                ADD PROPERTY(grossWeightOrderedTrip);
+                ADD PROPERTY(grossWeightShipmentedTrip);
+            }
         }
 
         NEW filterContainer {
-            caption = 'Фильтрация по поставщику и покупателю';
+            caption = 'Фильтрация';
             childConstraints = TO THE RIGHT;
             ADD PROPERTY(namePartyA) {
                 caption = 'Поставщик';
@@ -246,7 +255,7 @@ DESIGN trip FROM DEFAULT{
 
                 NEW documentContainer {
                     childConstraints = TO THE BOTTOM;
-                    type = SPLITV;
+                    //type = SPLITV;
                     ADD o2.box;
                     ADD s2.box;
                 }
