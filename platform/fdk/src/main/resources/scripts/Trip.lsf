@@ -276,11 +276,11 @@ FORM trips 'Рейсы'
     PROPERTIES(t) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
 
     OBJECTS o=order
-    PROPERTIES(o) READONLY numberOrder, seriesOrder, dateOrder, nameFromStockOrder, nameToStockOrder, grossWeightOrderDetailOrder
+    PROPERTIES(o) READONLY numberOrder, seriesOrder, dateOrder, nameSupplierOrder, nameFromStockOrder, nameCustomerOrder, nameToStockOrder, grossWeightOrderDetailOrder
     FILTERS inTripOrder(t, o)
 
     OBJECTS s=shipment
-    PROPERTIES(s) READONLY numberShipment, seriesShipment, dateShipment, nameFromStockShipment, nameToStockShipment, grossWeightShipmentDetailShipment
+    PROPERTIES(s) READONLY numberShipment, seriesShipment, dateShipment, nameSupplierShipment, nameFromStockShipment, nameCustomerShipment, nameToStockShipment, grossWeightShipmentDetailShipment
     FILTERS inTripShipment(t, s)
 
     OBJECTS sk=sku

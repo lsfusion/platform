@@ -70,6 +70,18 @@ EXTEND DESIGN trip {
     }
 }
 
+EXTEND FORM trips
+    OBJECTS i=invoice
+    PROPERTIES (i) READONLY numberInvoice, seriesInvoice, dateInvoice, nameSupplierInvoice, nameSupplierStockInvoice, nameCustomerInvoice, nameCustomerStockInvoice
+    FILTERS inTripInvoice(t, i)
+;
+
+EXTEND DESIGN trips {
+    bottomContainer{
+        ADD i.box AFTER o.box;
+    }
+}
+
 EXTEND FORM waybill
     OBJECTS i=invoice
     PROPERTIES (i) numberInvoice, seriesInvoice, dateInvoice, addressSupplierStockInvoice, addressCustomerStockInvoice
