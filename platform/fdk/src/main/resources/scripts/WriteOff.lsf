@@ -173,7 +173,7 @@ nameReasonWriteOff 'Причина списания' (writeOff) = name(reasonWri
 nameReasonUserWriteOff 'Причина списания' (userWriteOff) = name(reasonUserWriteOff (userWriteOff)) IN documentPrmGroup;
 // Проводим по регистру
 
-@implementSkuLedgerOutFIFO(writeOff, sku, stock);
+@implementSkuLedgerOutFIFO(writeOffDetail, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantityWriteOffDetail(ledger);
 sumOutSkuLedger (ledger) += sumWriteOffDetail(ledger);
 

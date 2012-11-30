@@ -8,6 +8,7 @@ NAMESPACE Purchase;
 //----------------------------------------------- Поставка ---------------------------------------------------//
 
 @defineShipment(' (закупка)', customerStock);
+@defineShipmentBatch(customerStock);
 
 @defineShipmentStockDestination(supplierStock, customerStock);
 
@@ -20,12 +21,47 @@ shipmentPriceUserInvoiceDetail(detail) <- calcShipmentPriceUserInvoiceDetail(det
 
 // Проводим по регистру
 
-@implementBatch(shipment, sku, customerStock, price);
-quantityBatch (ledger) += quantityShipmentDetail(ledger);
-sumInSkuLedger (ledger) += sumShipmentDetail(ledger);
+overCreateBatchShipmentDetail = ABSTRACT BOOLEAN (shipmentDetail);
+createBatchShipmentDetail (detail) = (detail IS shipmentDetail OR overCreateBatchShipmentDetail(detail)) AND NOT batchShipmentDetail(detail);
+
+// Создаем партию
+CLASS shipmentBatch 'Партия на основе закупки';
+@defineAggregation(shipmentDetail, shipmentBatch, createBatchShipmentDetail);
+
+@defineSkuLedgerAggregation(shipmentDetail, shipmentBatch, sku, customerStock);
+priceShipmentBatch (batch) = priceShipmentDetail(shipmentDetailShipmentBatch(batch));
+
+@implementBatch(shipmentBatch, sku, stock, price);
+quantityBatch (ledger) += quantityShipmentDetail(shipmentDetailShipmentBatch(ledger));
+sumInSkuLedger (ledger) += sumShipmentDetail(shipmentDetailShipmentBatch(ledger));
+
+ledgerBatchShipmentDetail (detail) = shipmentBatchShipmentDetail(detail) OR batchShipmentDetail(detail);
 
 // Проводим по регистру учетных цен
-@implementSystemLedgerPriceListTypeDetailBatch(shipment, account);
+@implementSystemLedgerPriceListTypeBatch(account, shipmentBatch, stock);
+
+// Создаем просто inLIFOSkuLedger
+createSkuLedgerShipmentDetail (detail) = detail IS shipmentDetail AND NOT createBatchShipmentDetail(detail);
+
+CLASS shipmentSkuLedger 'Изменение остатка на основе закупки';
+@defineAggregation(shipmentDetail, shipmentSkuLedger, createSkuLedgerShipmentDetail);
+
+@defineSkuLedgerAggregation(shipmentDetail, shipmentSkuLedger, sku, customerStock);
+priceShipmentSkuLedger (ledger) = priceShipmentDetail(shipmentDetailShipmentSkuLedger(ledger));
+
+@implementSkuLedgerInLIFO(shipmentSkuLedger, sku, stock);
+quantityInLIFOSkuLedger (ledger) += quantityShipmentDetail(shipmentDetailShipmentSkuLedger(ledger));
+limitInLIFOSkuLedgerBatch(ledger, batch) += quantityShipmentDetail(shipmentDetailShipmentSkuLedger(ledger)) IF batchShipmentDetail(shipmentDetailShipmentSkuLedger(ledger)) == batch;
+sumInSkuLedger (ledger) += sumShipmentDetail(shipmentDetailShipmentSkuLedger(ledger));
+
+costShipmentDetailBatch(detail, batch) += IF createBatchShipmentDetail(detail) THEN
+                                             costSkuLedgerBatch(shipmentBatchShipmentDetail(detail), batch)
+                                          ELSE
+                                             costSkuLedgerBatch(shipmentSkuLedgerShipmentDetail(detail), batch);
+
+// Проводим по регистру учетных цен
+@implementSystemLedgerPriceListType(account, shipmentSkuLedger, stock);
+batchPriceListLedger(ledger) += batchShipmentDetail(shipmentDetailShipmentSkuLedger(ledger));
 
 // Пишем в товарный отчет
 @implementAccountDocumentLedgerInc(shipment, customerStock);

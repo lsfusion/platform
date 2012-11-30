@@ -858,7 +858,7 @@ quantityDiffDeclarationDetail 'Кол-во' (declarationDetail) = quantityDeclar
 sumDiffDeclarationDetail 'Сумма' (declarationDetail) = supplierPriceDeclarationDetail(declarationDetail) * quantityDiffDeclarationDetail(declarationDetail);
 
 EXTEND CLASS declarationDetail : batchA;
-@implementBatchCustom(declaration, sku, customStore, supplierPrice);
+@implementBatchCustom(declarationDetail, sku, customStore, supplierPrice);
 quantityBatch (batch) += quantityDiffDeclarationDetail(batch);
 ownerBatchA (batch) += importerDeclarationDetail(batch);
 importerPriceBatchA (batch) += supplierPriceDeclarationDetail(batch);

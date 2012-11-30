@@ -101,6 +101,7 @@ fillInvoiceUserInvoice 'Заполнить на основе накладной'
         FOR invoiceInvoiceDetail(invoiceDetail) == saleInvoice() ADDOBJ d = Purchase.userInvoiceDetail DO {
             SET Purchase.userInvoiceUserInvoiceDetail(d) <- userInvoice;
             SET Purchase.skuUserInvoiceDetail(d) <- skuInvoiceDetail(invoiceDetail);
+            SET Purchase.batchUserInvoiceDetail(d) <- batchInvoiceDetail(invoiceDetail);
             SET Purchase.quantityUserInvoiceDetail (d) <- quantityInvoiceDetail(invoiceDetail);
             SET Purchase.VATUserInvoiceDetail(d) <- VATInvoiceDetail(invoiceDetail);
             SET Purchase.valueVATUserInvoiceDetail(d) <- valueVATInvoiceDetail(invoiceDetail);

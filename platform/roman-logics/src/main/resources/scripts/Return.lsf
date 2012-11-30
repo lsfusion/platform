@@ -102,7 +102,7 @@ useRetailPriceReturnOutDetail(detail) = [stockReturnOutDetail(detail) IS departm
 @extendFormDocumentSkipSkuLedgerCustomReadonly(returnOuts, t, returnOut);
 
 // Проводим по регистру
-@implementSkuLedgerOutFIFO(returnOut, sku, stock);
+@implementSkuLedgerOutFIFO(returnOutDetail, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantityReturnOutDetail (ledger);
 limitOutFIFOSkuLedgerBatch (ledger, batch) += quantityReturnOutDetail(ledger) IF batch == saleInBatchDetailReturnOutDetail(ledger);
 changedDataSkuLedger(ledger) += CHANGED(saleInBatchDetailReturnOutDetail(ledger));
@@ -196,7 +196,7 @@ useRetailPriceReturnInDetail(detail) = [stockReturnInDetail(detail) IS departmen
 @extendFormDocumentSkipSkuLedgerCustomReadonly(returnIns, t, returnIn);
 
 
-@implementSkuLedgerInLIFO(returnIn, sku, stock);
+@implementSkuLedgerInLIFO(returnInDetail, sku, stock);
 quantityInLIFOSkuLedger (ledger) += quantityReturnInDetail(ledger);
 limitInLIFOSkuLedgerBatch (ledger, batch) += quantityReturnInDetail(ledger) AND batch == batchReturnInDetail(ledger);
 sumInSkuLedger(ledger) += accountSumReturnInDetail(ledger);
@@ -235,11 +235,11 @@ CLASS returnDiffSDetail 'Строка расхождений акта прием
 costReturnDiffEDetail(detail) = 0.0 IF detail IS returnDiffEDetail;
 
 EXTEND CLASS returnDiffEDetail : batchB;
-@implementBatchCustom(returnDiffE, sku, stock, cost);
+@implementBatchCustom(returnDiffEDetail, sku, stock, cost);
 quantityBatch (batch) += quantityReturnDiffEDetail(batch);
 skipASkuLedger (ledger) += ledger IS returnDiffEDetail;
 
-@implementSkuLedgerOutFIFO(returnDiffS, sku, stock);
+@implementSkuLedgerOutFIFO(returnDiffSDetail, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantityReturnDiffSDetail(ledger);
 limitOutFIFOSkuLedgerBatch (ledger, batch) += costReturnInBatch(returnInReturnDiffSDetail(ledger), batch);
 orderOutFIFOSkuLedgerBatch (ledger, batch) += orderBBatch(batch) IF ledger IS returnDiffSDetail;

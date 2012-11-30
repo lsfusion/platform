@@ -176,7 +176,7 @@ DESIGN invoiceWHOuts FROM DEFAULT {
 @defineDocumentRetailPrice(invoiceWHOut, d);
 
 // Проводим по регистру
-@implementSkuLedgerOutFIFO(invoiceWHOut, sku, warehouse);
+@implementSkuLedgerOutFIFO(invoiceWHOutDetail, sku, warehouse);
 quantityOutFIFOSkuLedger (ledger) += quantityInvoiceWHOutDetail (ledger);
 limitOutFIFOSkuLedgerBatch(ledger, batch) += IF batchAInvoiceWHOutDetail(ledger) THEN
                                                 quantityInvoiceWHOutDetail (ledger) AND batchAInvoiceWHOutDetail(ledger) == batch

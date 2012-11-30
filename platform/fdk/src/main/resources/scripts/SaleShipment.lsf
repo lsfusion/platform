@@ -18,13 +18,15 @@ NAMESPACE Sale;
 //@deriveDocumentDetailPriceBatchStock(userShipment, supplierStock);
 
 // Проводим по регистру
-@implementSkuLedgerOutFIFO(shipment, sku, supplierStock);
+@implementSkuLedgerOutFIFO(shipmentDetail, sku, supplierStock);
 quantityOutFIFOSkuLedger (ledger) += quantityShipmentDetail (ledger);
 limitOutFIFOSkuLedgerBatch(ledger, batch) += IF batchShipmentDetail(ledger) THEN
                                                 quantityShipmentDetail (ledger) AND batchShipmentDetail(ledger) == batch
                                                 ELSE currentBalanceBatchStock(batch, supplierStockShipmentDetail(ledger)); //AND NOT commissionContractSkuBatchA(batch);
 changedDataSkuLedger(ledger) += CHANGED(batchShipmentDetail(ledger));
 sumOutSkuLedger(ledger) += sumShipmentDetail(ledger);
+
+costShipmentDetailBatch(detail, batch) += costSkuLedgerBatch(detail, batch) IF detail IS shipmentDetail;
 
 @implementAccountDocumentLedgerOut(shipment, supplierStock);
 sumOutAccountDocumentLedger (ledger) += sumShipmentDetailShipment(ledger);

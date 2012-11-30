@@ -158,28 +158,28 @@ CLASS STATIC systemLedgerPriceListType 'Системный вид цены (ре
 
 batchLedgerPriceListType (type) += type == systemLedgerPriceListType.accountPriceListType;
 
-META implementSystemLedgerPriceListTypeDetail (object, type, prefix)
-    EXTEND CLASS object##Detail : priceListLedger;
+META implementSystemLedgerPriceListType (type, object, stockProp, prefix)
+    EXTEND CLASS object : priceListLedger;
 
-    fromDateTimePriceListLedger (ledger) += dateTime###object##Detail(ledger);
+    fromDateTimePriceListLedger (ledger) += dateTime###object(ledger);
 
-    isPostedPriceListLedger(ledger) += isPosted###object##Detail(ledger);
+    isPostedPriceListLedger(ledger) += isPosted###object(ledger);
 
-    skuPriceListLedger (ledger) += sku###object##Detail(ledger);
+    skuPriceListLedger (ledger) += sku###object(ledger);
 
-    descriptionPriceListLedger (ledger) += description###object##Detail(ledger);
+    descriptionPriceListLedger (ledger) += description###object(ledger);
 
-    pricePriceListLedgerLedgerPriceListType (ledger, type) += prefix###price###object##Detail(ledger) IF type == systemLedgerPriceListType.##type##PriceListType;
-    inPriceListLedgerStock (ledger, stock) += customerStock###object##Detail(ledger) == stock;
+    pricePriceListLedgerLedgerPriceListType (ledger, type) += prefix###price###object(ledger) IF type == systemLedgerPriceListType.##type##PriceListType;
+    inPriceListLedgerStock (ledger, stock) += stockProp###object(ledger) == stock;
 END
 
-META implementSystemLedgerPriceListTypeDetail (object, type)
-    @implementSystemLedgerPriceListTypeDetail(object, type, );
+META implementSystemLedgerPriceListType (type, object, stockProp)
+    @implementSystemLedgerPriceListType(type, object, stockProp, );
 END
 
-META implementSystemLedgerPriceListTypeDetailBatch (object, type)
-    @implementSystemLedgerPriceListTypeDetail(object, type);
-    batchPriceListLedger (ledger) += ledger AS object##Detail;
+META implementSystemLedgerPriceListTypeBatch (type, object, stockProp)
+    @implementSystemLedgerPriceListType(type, object, stockProp);
+    batchPriceListLedger (ledger) += ledger AS object;
 END
 // --------------------------- Пользовательские виды цен ------------------------- //
 

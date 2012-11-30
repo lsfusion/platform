@@ -967,7 +967,7 @@ descriptionParish 'Название документа' (parish) =
 
 descriptionStudyOutputDetail 'Название документа' (studyOutputDetail) = descriptionParish(parishActOfStudy(actOfStudyStudyOutputDetail(studyOutputDetail))) PERSISTENT;
 
-@implementBatch(studyOutput, item, departmentStore, supplierPrice);
+@implementBatch(studyOutputDetail, item, departmentStore, supplierPrice);
 quantityBatch (ledger) += quantityStudyOutputDetail(ledger);
 expiryDateBatch (ledger) += expiryDateStudyOutputDetail(ledger);
 sumInSkuLedger (ledger) += retailSumStudyOutputDetail(ledger);
@@ -1003,9 +1003,9 @@ descriptionConsumption 'Название документа' (consumption) =
 
 descriptionStudyInputDetail 'Название документа' (studyInputDetail) = descriptionConsumption(consumptionActOfStudy(actOfStudyStudyInputDetail(studyInputDetail))) PERSISTENT;
 
-@implementSkuLedgerOutFIFO(studyInput, item, departmentStore);
+@implementSkuLedgerOutFIFO(studyInputDetail, item, departmentStore);
 quantityOutFIFOSkuLedger (ledger) += quantityStudyInputDetail(ledger);
-@implementSkuLedgerOutFIFOBalance(studyInput, item, departmentStore);
+@implementSkuLedgerOutFIFOBalance(studyInputDetail, item, departmentStore);
 sumOutSkuLedger (ledger) += retailSumStudyInputDetail(ledger);
 
 @implementAccountDocumentLedgerOut(consumption, departmentStore);
@@ -1090,9 +1090,9 @@ descriptionDisparityDetail 'Название документа' (disparityDetai
     [FORMULA STRING[200] '\'Пересортица (расход)\' ||  \' \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)'](
     seriesNumberObject(disparityDisparityDetail(disparityDetail)), dateDisparity(disparityDisparityDetail(disparityDetail)));
 
-@implementSkuLedgerOutFIFO(disparity, item, departmentStore);
+@implementSkuLedgerOutFIFO(disparityDetail, item, departmentStore);
 quantityOutFIFOSkuLedger (ledger) += quantityDisparityDetail(ledger);
-@implementSkuLedgerOutFIFOBalance(disparity, item, departmentStore);
+@implementSkuLedgerOutFIFOBalance(disparityDetail, item, departmentStore);
 sumOutSkuLedger (ledger) += retailSumDisparityDetail(ledger);
 
                                   // Приход
@@ -1145,7 +1145,7 @@ descriptionInputDisparityDetail 'Название документа' (inputDisp
     [FORMULA STRING[200] '\'Пересортица (приход)\' ||  \' \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)'](
     seriesNumberObject(disparityDisparityDetail(disparityDetailInputDisparityDetail(inputDisparityDetail))), dateDisparity(disparityDisparityDetail(disparityDetailInputDisparityDetail(inputDisparityDetail))));
 
-@implementBatch(inputDisparity, item, departmentStore, supplierPrice);
+@implementBatch(inputDisparityDetail, item, departmentStore, supplierPrice);
 quantityBatch (ledger) += quantityInputDisparityDetail(ledger);
 expiryDateBatch (ledger) += expiryDateInputDisparityDetail(ledger);
 sumInSkuLedger (ledger) += retailSumInputDisparityDetail(ledger);

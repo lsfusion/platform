@@ -758,11 +758,11 @@ signedQuantityWHfromCSDDetail 'Кол-во' (WHfromCSDDetail) = UNION EXCLUSIVE 
 
 costWHfromCSDEDetail(WHfromCSDDetail) = 0.0 IF WHfromCSDDetail IS WHfromCSDEDetail;
 EXTEND CLASS WHfromCSDEDetail : batchB;
-@implementBatchCustom(WHfromCSDE, sku, stock, cost);
+@implementBatchCustom(WHfromCSDEDetail, sku, stock, cost);
 quantityBatch (batch) += quantityWHfromCSDEDetail(batch);
 skipASkuLedger (ledger) += ledger IS WHfromCSDEDetail;
 
-@implementSkuLedgerOutFIFO(WHfromCSDS, sku, stock);
+@implementSkuLedgerOutFIFO(WHfromCSDSDetail, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantityWHfromCSDSDetail(ledger);
 limitOutFIFOSkuLedgerBatch (ledger, batch) += costWHfromCSIBatch(WHfromCSIWHfromCSDSDetail(ledger), batch);
 orderOutFIFOSkuLedgerBatch (ledger, batch) += orderBBatch(batch) IF ledger IS WHfromCSDSDetail;
@@ -1106,7 +1106,7 @@ useRetailPriceWHfromCSIDetail(WHfromCSIDetail) = stockWHfromCSIDetail(WHfromCSID
 @defineDocumentTransferAccount(WHfromCSI, useRetailPriceWHfromCSIDetail);
 
 //--Проводим по регистру
-@implementSkuLedgerInLIFO(WHfromCSI, sku, stock);
+@implementSkuLedgerInLIFO(WHfromCSIDetail, sku, stock);
 quantityInLIFOSkuLedger (ledger) += quantityWHfromCSIDetail(ledger);
 limitInLIFOSkuLedgerBatch (ledger, batch) += quantityWHfromCSIDetail(ledger) AND batch == declarationDetailCStoWHDetail(CStoWHDetailWHfromCSIDetail(ledger));
 sumInSkuLedger(ledger) += accountSumWHfromCSIDetail(ledger);

@@ -40,9 +40,9 @@ EXTEND DESIGN moveOut {
 }
 
 // Проводим по регистру
-@implementSkuLedgerOutFIFO(moveOut, sku, stock);
+@implementSkuLedgerOutFIFO(moveOutDetail, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantityMoveOutDetail (ledger);
-@implementSkuLedgerOutFIFOBalanceB(moveOut, sku, stock);
+@implementSkuLedgerOutFIFOBalanceB(moveOutDetail, sku, stock);
 sumOutSkuLedger(ledger) += costSumSkuLedger(ledger) IF ledger IS moveOutDetail;
 skipASkuLedger (ledger) += ledger IS moveOutDetail;
 
@@ -66,7 +66,7 @@ CLASS moveInDetail 'Строка поступления товаров';
 
 costMoveInBatch(moveIn, batch) = GROUP SUM costSkuLedgerBatch(ledger, batch) BY moveInMoveInDetail(ledger), batch PERSISTENT;
 
-@implementSkuLedgerInLIFO(moveIn, sku, stock);
+@implementSkuLedgerInLIFO(moveInDetail, sku, stock);
 quantityInLIFOSkuLedger (ledger) += quantityMoveInDetail(ledger);
 limitInLIFOSkuLedgerBatch (ledger, batch) += costSkuLedgerBatch(moveOutDetailMoveInDetail(ledger), batch);
 sumInSkuLedger(ledger) += costSumSkuLedger(ledger) IF ledger IS moveInDetail;
@@ -105,11 +105,11 @@ CLASS moveDiffSDetail 'Строка расхождений акта приемк
 costMoveDiffEDetail(detail) = 0.0 IF detail IS moveDiffEDetail;
 
 EXTEND CLASS moveDiffEDetail : batchB;
-@implementBatchCustom(moveDiffE, sku, stock, cost);
+@implementBatchCustom(moveDiffEDetail, sku, stock, cost);
 quantityBatch (batch) += quantityMoveDiffEDetail(batch);
 skipASkuLedger (ledger) += ledger IS moveDiffEDetail;
 
-@implementSkuLedgerOutFIFO(moveDiffS, sku, stock);
+@implementSkuLedgerOutFIFO(moveDiffSDetail, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantityMoveDiffSDetail(ledger);
 limitOutFIFOSkuLedgerBatch (ledger, batch) += costMoveInBatch(moveInMoveDiffSDetail(ledger), batch);
 orderOutFIFOSkuLedgerBatch (ledger, batch) += orderBBatch(batch) IF ledger IS moveDiffSDetail;

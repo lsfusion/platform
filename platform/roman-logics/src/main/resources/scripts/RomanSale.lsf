@@ -82,7 +82,7 @@ useRetailPriceSaleOutDetail(detail) = [stockSaleOutDetail(detail) IS departmentS
 @extendFormDocumentSkipSkuLedgerCustomReadonly(saleOuts, t, saleOut);
 
 // Проводим по регистру
-@implementSkuLedgerOutFIFO(saleOut, sku, stock);
+@implementSkuLedgerOutFIFO(saleOutDetail, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantitySaleOutDetail (ledger);
 limitOutFIFOSkuLedgerBatch(ledger, batch) += currentBalanceABatchStock(batch, stockSaleOutDetail(ledger)) AND NOT commissionContractSkuBatchA(batch)
                                              AND batch IS batchA;
@@ -242,7 +242,7 @@ useRetailPriceSaleInBatchDetail(detail) = [stockSaleInBatchDetail(detail) IS dep
 @defineDocumentTransferAccountCustom(saleIn, useRetailPriceSaleInBatchDetail, saleInBatchDetail, b);
 
 EXTEND CLASS saleInBatchDetail : batchA;
-@implementBatchCustom(saleInBatch, sku, stock, cost);
+@implementBatchCustom(saleInBatchDetail, sku, stock, cost);
 quantityBatch(batch) += quantitySaleInBatchDetail(batch);
 ownerBatchA (batch) += IF isCommissionSaleInBatchDetail(batch) THEN legalEntityStock(destinationStockSaleInBatchDetail(batch)) ELSE legalEntityStock(stockSaleInBatchDetail(batch));
 commissionContractSkuBatchA (batch) += contractSkuCompanySaleInBatchDetail(batch) AND isCommissionSaleInBatchDetail(batch);
@@ -286,11 +286,11 @@ CLASS saleDiffSDetail 'Строка расхождений акта приемк
 
 costSaleDiffEDetail(detail) = 0.0 IF detail IS saleDiffEDetail;
 EXTEND CLASS saleDiffEDetail : batchB;
-@implementBatchCustom(saleDiffE, sku, stock, cost);
+@implementBatchCustom(saleDiffEDetail, sku, stock, cost);
 quantityBatch (batch) += quantitySaleDiffEDetail(batch);
 skipASkuLedger (ledger) += ledger IS saleDiffEDetail;
 
-@implementSkuLedgerOutFIFO(saleDiffS, sku, stock);
+@implementSkuLedgerOutFIFO(saleDiffSDetail, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantitySaleDiffSDetail(ledger);
 limitOutFIFOSkuLedgerBatch (ledger, batch) += costSaleInBatch(saleInSaleDiffSDetail(ledger), batch);
 orderOutFIFOSkuLedgerBatch (ledger, batch) += orderBBatch(batch) IF ledger IS saleDiffSDetail;

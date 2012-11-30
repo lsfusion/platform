@@ -272,14 +272,14 @@ descriptionReceiptDetail (receiptDetail) = descriptionReceiptReturnDetail(receip
 // -------------------------------------------- Проведение по регистрам --------------------------------------- //
 
 META implementSkuLedgerReceiptDetail(dumb)
-    @implementSkuLedgerOutFIFO(receiptSale, sku, departmentStore);
+    @implementSkuLedgerOutFIFO(receiptSaleDetail, sku, departmentStore);
     quantityOutFIFOSkuLedger (ledger) += quantityReceiptSaleDetail(ledger);
-    @implementSkuLedgerOutFIFOBalance(receiptSale, sku, departmentStore);
+    @implementSkuLedgerOutFIFOBalance(receiptSaleDetail, sku, departmentStore);
     sumOutSkuLedger (ledger) += sumReceiptSaleDetail(ledger);
 
-    @implementSkuLedgerInLIFO(receiptReturn, sku, departmentStore);
+    @implementSkuLedgerInLIFO(receiptReturnDetail, sku, departmentStore);
     quantityInLIFOSkuLedger (ledger) += quantityReceiptReturnDetail(ledger);
-    @implementSkuLedgerInLIFOBalance(receiptReturn, sku, departmentStore);
+    @implementSkuLedgerInLIFOBalance(receiptReturnDetail, sku, departmentStore);
     sumInSkuLedger (ledger) += sumReceiptReturnDetail(ledger);
 END
 

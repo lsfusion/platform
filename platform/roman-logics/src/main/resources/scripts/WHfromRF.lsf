@@ -488,7 +488,7 @@ accountSumWHfromRF 'Сумма учетная' (WHfromRF) = GROUP SUM accountSum
 // Проводим по регистру
 
 EXTEND CLASS WHfromRFDetail : batchB;
-@implementBatchCustom(WHfromRF, sku, stock, cost);
+@implementBatchCustom(WHfromRFDetail, sku, stock, cost);
 quantityBatch (batch) += quantityWHfromRFDetail(batch);
 sumInSkuLedger(batch) += accountSumWHfromRFDetail(batch);
 skipASkuLedger (ledger) += ledger IS WHfromRFDetail;

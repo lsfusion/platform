@@ -448,7 +448,8 @@ META defineShipment(sign, stockProp)
     shippedInvoiceDetail 'Кол-во (поставлено)' (invoiceDetail) = GROUP SUM quantityShipmentDetail(shipmentDetail) IF isPostedShipmentDetail(shipmentDetail)
                                                                        BY invoiceDetailShipmentDetail(shipmentDetail) PERSISTENT;
 
-    costInvoiceDetailBatch (invoiceDetail, batch) = GROUP SUM costSkuLedgerBatch(shipmentDetail, batch) BY invoiceDetailShipmentDetail(shipmentDetail), batch;
+    costShipmentDetailBatch = ABSTRACT NUMERIC[14,3] (shipmentDetail, batch);
+    costInvoiceDetailBatch (invoiceDetail, batch) = GROUP SUM costShipmentDetailBatch(shipmentDetail, batch) BY invoiceDetailShipmentDetail(shipmentDetail), batch;
     countBatchInvoiceDetail 'Кол-во партий' (invoiceDetail) = GROUP SUM 1 IF costInvoiceDetailBatch(invoiceDetail, batch) BY invoiceDetail PERSISTENT;
     maxBatchInvoiceDetail (invoiceDetail) = GROUP MAX batch IF costInvoiceDetailBatch(invoiceDetail, batch) BY invoiceDetail;
 

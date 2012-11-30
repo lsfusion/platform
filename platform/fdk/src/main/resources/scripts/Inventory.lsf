@@ -658,16 +658,16 @@ descriptionInInventorySkuDetail 'Название документа' (inventory
 
 descriptionInventorySkuDetail 'Название документа' (inventorySkuDetail) = descriptionOutInventorySkuDetail(inventorySkuDetail) OR descriptionInInventorySkuDetail(inventorySkuDetail);
 
-@implementSkuLedger(inventorySku, sku, stock);
+@implementSkuLedger(inventorySkuDetail, sku, stock);
 
 EXTEND CLASS outInventorySkuDetail : outFIFOSkuLedger;
 quantityOutFIFOSkuLedger (ledger) += quantityOutInventorySkuDetail(ledger);
-@implementSkuLedgerOutFIFOBalance(outInventorySku, sku, stock);
+@implementSkuLedgerOutFIFOBalance(outInventorySkuDetail, sku, stock);
 sumOutSkuLedger (ledger) += sumOutInventorySkuDetail(ledger);
 
 EXTEND CLASS inInventorySkuDetail : inLIFOSkuLedger;
 quantityInLIFOSkuLedger (ledger) += quantityInInventorySkuDetail(ledger);
-@implementSkuLedgerInLIFOBalance(inInventorySku, sku, stock);
+@implementSkuLedgerInLIFOBalance(inInventorySkuDetail, sku, stock);
 sumInSkuLedger (ledger) += sumInInventorySkuDetail(ledger);
 
 //---------------------------- Изменение остатка инвентаризации batch----------------------------//
@@ -728,7 +728,7 @@ descriptionInInventoryBatchDetail 'Название документа' (invento
 
 descriptionInventoryBatchDetail 'Название документа' (inventoryBatchDetail) = descriptionOutInventoryBatchDetail(inventoryBatchDetail) OR descriptionInInventoryBatchDetail(inventoryBatchDetail);
 
-@implementSkuLedger(inventoryBatch, sku, stock);
+@implementSkuLedger(inventoryBatchDetail, sku, stock);
 
 EXTEND CLASS outInventoryBatchDetail : outFIFOSkuLedger;
 quantityOutFIFOSkuLedger (ledger) += quantityOutInventoryBatchDetail(ledger);

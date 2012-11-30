@@ -58,7 +58,7 @@ sumCStoWHDetail 'Стоимость' (CStoWHDetail) = priceCStoWHDetail(CStoWHDe
 sumCStoWHDetailCStoWH 'Общая стоимость' (CStoWH) =
     GROUP SUM sumCStoWHDetail(CStoWHDetail) BY CStoWHCStoWHDetail(CStoWHDetail) IN documentSumGroup PERSISTENT  MINCHARWIDTH 15 PREFCHARWIDTH 15;
 
-@implementSkuLedgerOutFIFO(CStoWH, sku, customStore);
+@implementSkuLedgerOutFIFO(CStoWHDetail, sku, customStore);
 quantityOutFIFOSkuLedger(outUserSkuLedger) += quantityCStoWHDetail (outUserSkuLedger);
 limitOutFIFOSkuLedgerBatch(outUserSkuLedger, batch) += quantityCStoWHDetail(outUserSkuLedger) AND batch == declarationDetailCStoWHDetail (outUserSkuLedger);
 sumOutSkuLedger(outUserSkuLedger) += sumCStoWHDetail(outUserSkuLedger);

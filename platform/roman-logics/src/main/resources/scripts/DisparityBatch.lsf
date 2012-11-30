@@ -249,14 +249,14 @@ createMixDisparityBatch 'Сделать подборку строк пересо
     }
 } IN documentPrmGroup CONFIRM;
 
-@implementSkuLedgerOutFIFOCustom(disparityOutBatchDetail, sku, stock);
+@implementSkuLedgerOutFIFO(disparityOutBatchDetail, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantityDisparityOutBatchDetail(ledger);
 limitOutFIFOSkuLedgerBatch (ledger, batch) += quantityDisparityOutBatchDetail(ledger) AND batchDisparityOutBatchDetail(ledger) == batch;
 changedDataSkuLedger(ledger) += CHANGED(batchDisparityOutBatchDetail(ledger));
 sumOutSkuLedger(ledger) += 0.0 IF ledger IS disparityOutBatchDetail;
 skipASkuLedger (ledger) += ledger IS disparityOutBatchDetail;
 
-@implementSkuLedgerInLIFOCustom(disparityInBatchDetail, sku, stock);
+@implementSkuLedgerInLIFO(disparityInBatchDetail, sku, stock);
 quantityInLIFOSkuLedger (ledger) += quantityDisparityInBatchDetail(ledger);
 limitInLIFOSkuLedgerBatch (ledger, batch) += quantityDisparityInBatchDetail(ledger) AND batchDisparityInBatchDetail(ledger) == batch;
 changedDataSkuLedger(ledger) += CHANGED(batchDisparityInBatchDetail(ledger));
@@ -603,12 +603,12 @@ createMixDisparityBatchA 'Сделать подборку строк перес�
     }
 } IN documentPrmGroup CONFIRM;
 
-@implementSkuLedgerOutFIFOCustom(disparityOutBatchADetail, sku, stock);
+@implementSkuLedgerOutFIFO(disparityOutBatchADetail, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantityDisparityOutBatchADetail(ledger);
 limitOutFIFOSkuLedgerBatch (ledger, batch) += quantityDisparityOutBatchADetail(ledger) AND batchDisparityOutBatchADetail(ledger) == batch;
 sumOutSkuLedger(ledger) += sumDisparityOutBatchADetail(ledger);
 
-@implementSkuLedgerInLIFOCustom(disparityInBatchADetail, sku, stock);
+@implementSkuLedgerInLIFO(disparityInBatchADetail, sku, stock);
 quantityInLIFOSkuLedger (ledger) += quantityDisparityInBatchADetail(ledger);
 limitInLIFOSkuLedgerBatch (ledger, batch) += quantityDisparityInBatchADetail(ledger) AND batchDisparityInBatchADetail(ledger) == batch;
 sumInSkuLedger(ledger) += sumDisparityInBatchADetail(ledger);

@@ -107,6 +107,9 @@ Purchase.descriptionShipment (shipment) += descriptionPurchaseShipment(shipment)
 @defineDocumentAggregationDetailSku(shipment, purchaseShipment, sku);
 Purchase.skuShipmentDetail(shipmentDetail) +=  skuPurchaseShipmentDetail(shipmentDetail);
 
+@defineDocumentAggregationDetailBatch(shipment, purchaseShipment);
+Purchase.batchShipmentDetail(shipmentDetail) += batchPurchaseShipmentDetail(shipmentDetail);
+
 Purchase.quantityShipmentDetail(shipmentDetail) += quantityShipmentDetail(shipmentDetailPurchaseShipmentDetail(shipmentDetail));
 
 Purchase.priceShipmentDetail(shipmentDetail) += priceShipmentDetail(shipmentDetailPurchaseShipmentDetail(shipmentDetail));
@@ -204,6 +207,7 @@ fillShipmentUserShipment 'Заполнить на основе поставки'
             SET Purchase.priceUserShipmentDetail(d) <- priceShipmentDetail(shipmentDetail);
 
             SET Purchase.skuUserShipmentDetail(d) <- skuShipmentDetail(shipmentDetail);
+            SET Purchase.batchUserShipmentDetail(d) <- batchShipmentDetail(shipmentDetail);
             SET Purchase.quantityUserShipmentDetail (d) <- quantityShipmentDetail(shipmentDetail);
         }
     }

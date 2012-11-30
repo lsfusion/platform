@@ -18,9 +18,9 @@ NAMESPACE SaleReturn;
 @deriveDocumentDetailPriceBatchStock(userShipment, supplierStock);
 
 // Проводим по регистру
-@implementSkuLedgerInLIFO(shipment, sku, supplierStock);
+@implementSkuLedgerInLIFO(shipmentDetail, sku, supplierStock);
 quantityInLIFOSkuLedger (ledger) += quantityShipmentDetail(ledger);
-@implementSkuLedgerInLIFOBalance(shipment, sku, supplierStock);
+@implementSkuLedgerInLIFOBalance(shipmentDetail, sku, supplierStock);
 changedDataSkuLedger(ledger) += CHANGED(batchShipmentDetail(ledger));
 sumInSkuLedger(ledger) += sumShipmentDetail(ledger);
 

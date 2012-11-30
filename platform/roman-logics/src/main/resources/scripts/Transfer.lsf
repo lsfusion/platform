@@ -82,7 +82,7 @@ EXTEND FORM transferOuts
 @extendFormDocumentSkipSkuLedgerCustomReadonly(transferOuts, t, transferOut);
 
 // Проводим по регистру
-@implementSkuLedgerOutFIFO(transferOut, sku, stock);
+@implementSkuLedgerOutFIFO(transferOutDetail, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantityTransferOutDetail (ledger);
 limitOutFIFOSkuLedgerBatch(ledger, batch) += IF commissionContractSkuTransferOutDetail(ledger)
                                                 THEN currentBalanceABatchStock(batch, stockTransferOutDetail(ledger)) AND commissionContractSkuBatchA(batch) == commissionContractSkuTransferOutDetail(ledger)
@@ -177,7 +177,7 @@ useRetailPriceTransferInDetail(detail) = [stockTransferInDetail(detail) IS depar
     OR commissionContractSkuTransferInDetail(detail) IS contractSku;
 @defineDocumentTransferAccount(transferIn, useRetailPriceTransferInDetail);
 
-@implementSkuLedgerInLIFO(transferIn, sku, stock);
+@implementSkuLedgerInLIFO(transferInDetail, sku, stock);
 quantityInLIFOSkuLedger (ledger) += quantityTransferInDetail(ledger);
 limitInLIFOSkuLedgerBatch (ledger, batch) += costSkuLedgerBatch(transferOutDetailTransferInDetail(ledger), batch);
 sumInSkuLedger(ledger) += accountSumTransferInDetail(ledger);
@@ -215,11 +215,11 @@ CLASS transferDiffSDetail 'Строка расхождений акта прие
 
 costTransferDiffEDetail(detail) = 0.0 IF detail IS transferDiffEDetail;
 EXTEND CLASS transferDiffEDetail : batchB;
-@implementBatchCustom(transferDiffE, sku, stock, cost);
+@implementBatchCustom(transferDiffEDetail, sku, stock, cost);
 quantityBatch (batch) += quantityTransferDiffEDetail(batch);
 skipASkuLedger (ledger) += ledger IS transferDiffEDetail;
 
-@implementSkuLedgerOutFIFO(transferDiffS, sku, stock);
+@implementSkuLedgerOutFIFO(transferDiffSDetail, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantityTransferDiffSDetail(ledger);
 limitOutFIFOSkuLedgerBatch (ledger, batch) += costTransferInBatch(transferInTransferDiffSDetail(ledger), batch);
 orderOutFIFOSkuLedgerBatch (ledger, batch) += orderBBatch(batch) IF ledger IS transferDiffSDetail;

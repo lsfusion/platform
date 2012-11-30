@@ -887,13 +887,13 @@ EXTEND DESIGN innerOrders {
 
 costInnerOrderDiffEDetail(detail) = 0.0 IF detail IS innerOrderDiffEDetail;
 EXTEND CLASS innerOrderDiffEDetail : batchB;
-@implementBatchCustom(innerOrderDiffE, sku, stock, cost);
+@implementBatchCustom(innerOrderDiffEDetail, sku, stock, cost);
 quantityBatch (batch) += quantityInnerOrderDiffEDetail(batch);
 skipASkuLedger (ledger) += ledger IS innerOrderDiffEDetail;
 
-@implementSkuLedgerOutFIFO(innerOrderDiffS, sku, stock);
+@implementSkuLedgerOutFIFO(innerOrderDiffSDetail, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantityInnerOrderDiffSDetail(ledger);
-@implementSkuLedgerOutFIFOBalance (innerOrderDiffS, sku, stock);
+@implementSkuLedgerOutFIFOBalance (innerOrderDiffSDetail, sku, stock);
 orderOutFIFOSkuLedgerBatch (ledger, batch) += orderBBatch(batch) IF ledger IS innerOrderDiffSDetail;
 
 //accountPriceInnerOrderRecBatchA (innerOrderRec, batchA) = GROUP MAX accountPriceInnerOrderDetailBatchA(detail, batchA) BY innerOrderRecInnerOrderDetail(detail), batchA;

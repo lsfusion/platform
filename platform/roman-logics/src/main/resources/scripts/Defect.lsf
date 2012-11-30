@@ -286,7 +286,7 @@ END
 
 
 // Проводим по регистру
-@implementSkuLedgerOutFIFO(repair, sku, stock);
+@implementSkuLedgerOutFIFO(repairDetail, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantityRepairDetail (ledger);
 limitOutFIFOSkuLedgerBatch(ledger, batch) += currentBalanceBatchStock(batch, stockRepairDetail(ledger));
 
@@ -420,7 +420,7 @@ EXTEND FORM returnRepairs
 
 // Проводим по регистру
 
-@implementSkuLedgerInLIFO(returnRepair, sku, stock);
+@implementSkuLedgerInLIFO(returnRepairDetail, sku, stock);
 quantityInLIFOSkuLedger (ledger) += quantityReturnRepairDetail(ledger);
 limitInLIFOSkuLedgerBatch (ledger, batch) += costDataSkuLedgerBatch(repairDetailReturnRepairDetail(ledger), batch);
 
@@ -573,7 +573,7 @@ cleaningStockDryCleaningDetail (detail) = cleaningStockDryCleaning(dryCleaningDr
 @extendFormDocumentCourierAndDateTo(dryCleaning);
 
 // Проводим по регистру
-@implementSkuLedgerOutFIFO(dryCleaning, sku, stock);
+@implementSkuLedgerOutFIFO(dryCleaningDetail, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantityDryCleaningDetail (ledger);
 limitOutFIFOSkuLedgerBatch(ledger, batch) += currentBalanceBatchStock(batch, stockDryCleaningDetail(ledger));
 
@@ -705,7 +705,7 @@ EXTEND FORM returnDryCleanings
 
 // Проводим по регистру
 
-@implementSkuLedgerInLIFO(returnDryCleaning, sku, stock);
+@implementSkuLedgerInLIFO(returnDryCleaningDetail, sku, stock);
 quantityInLIFOSkuLedger (ledger) += quantityReturnDryCleaningDetail(ledger);
 limitInLIFOSkuLedgerBatch (ledger, batch) += costDataSkuLedgerBatch(dryCleaningDetailReturnDryCleaningDetail(ledger), batch);
 

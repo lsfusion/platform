@@ -365,7 +365,7 @@ writeOffCommitteeWriteOff(writeOff) += writeOffCommitteeShipment(shipmentShipmen
 skuWriteOffDetail(writeOffDetail) +=  skuShipmentWriteOffDetail(writeOffDetail);
 
 quantityWriteOffDetail(writeOffDetail) += writeOffQuantityShipmentDetail(shipmentDetailShipmentWriteOffDetail(writeOffDetail));
-batchWriteOffDetail(writeOffDetail) += shipmentDetailShipmentWriteOffDetail(writeOffDetail);
+batchWriteOffDetail(writeOffDetail) += ledgerBatchShipmentDetail(shipmentDetailShipmentWriteOffDetail(writeOffDetail));
 
 writeOffPriceShipmentWriteOffDetail(shipmentWriteOffDetail) = writeOffPriceShipmentDetail(shipmentDetailShipmentWriteOffDetail(shipmentWriteOffDetail));
 priceWriteOffDetail(writeOffDetail) += writeOffPriceShipmentWriteOffDetail(writeOffDetail);
