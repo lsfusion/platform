@@ -2141,7 +2141,6 @@ NAVIGATOR {
         ADD saleReturnNavigator;
         ADD salesNavigator;
         ADD statisticsNavigator;
-        ADD orderPrint;
     }
 
     NEW retail 'Розничная торговля' TO formsToolbar {
