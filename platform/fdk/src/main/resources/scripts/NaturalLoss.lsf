@@ -1,0 +1,586 @@
+MODULE NaturalLoss;
+
+REQUIRE Document, StorePrice, Sales;
+
+GROUP rateGroup 'Нормы' : publicGroup;
+
+ // ----------------------------------- Справочник норм естественной убыли -------------------------------------------- //
+
+ CLASS naturalLossGroup 'Группа естественной убыли': named, externalObject;
+
+ CLASS subNaturalLossGroup 'Группа естественной убыли': named, externalObject;
+ CLASS subNaturalLossGroupDetail 'Строка группы естественной убыли' : externalObject;
+
+ parentNaturalLossGroup 'Родительская группа' = DATA naturalLossGroup(subNaturalLossGroup);
+ codeSubNaturalLossGroup 'Код нормы естественной убыли' = DATA STRING[3] (subNaturalLossGroup);
+
+ nameToNaturalLossGroup (name) = GROUP UNIQUE naturalLossGroup BY name(naturalLossGroup) WHERE naturalLossGroup IS naturalLossGroup;
+ subNaturalLossGroupSubNaturalLossGroupDetail = DATA subNaturalLossGroup (subNaturalLossGroupDetail);
+ dayFromNaturalLossGroupDetail 'День' = DATA INTEGER (subNaturalLossGroupDetail);
+ monthFromNaturalLossGroupDetail = DATA month (subNaturalLossGroupDetail);
+ nameMonthFromNaturalLossGroupDetail 'Месяц' = name(monthFromNaturalLossGroupDetail(subNaturalLossGroupDetail));
+ dayToNaturalLossGroupDetail 'День' = DATA INTEGER (subNaturalLossGroupDetail);
+ monthToNaturalLossGroupDetail = DATA month (subNaturalLossGroupDetail);
+ nameMonthToNaturalLossGroupDetail 'Месяц' = name(monthToNaturalLossGroupDetail(subNaturalLossGroupDetail));
+ percentNaturalLossGroupDetail '% естественной убыли' = DATA NUMERIC[10,5] (subNaturalLossGroupDetail);
+
+ dateToNumber(prm1, prm2) = prm2*32 + prm1;
+ inInterval(prm1, prm2, prm3, prm4, prm5, prm6) = (dateToNumber(prm1, prm2) >= dateToNumber(prm3, prm4))
+                                                   AND (dateToNumber(prm1, prm2) <= dateToNumber(prm5, prm6));
+
+ inIntervalNaturalLoss (date, subNaturalLossGroupDetail) =
+     inInterval(dayInDate(date), numberMonthInDate(date),
+                dayFromNaturalLossGroupDetail(subNaturalLossGroupDetail),
+                numberMonth(monthFromNaturalLossGroupDetail(subNaturalLossGroupDetail)),
+                dayToNaturalLossGroupDetail(subNaturalLossGroupDetail),
+                numberMonth(monthToNaturalLossGroupDetail(subNaturalLossGroupDetail))) AND date IS DATE;
+
+ castInterval =
+     FORMULA STRING[100] ' CAST($1 AS TEXT) || \' \' || CAST($2 AS TEXT) || \' - \' || CAST($3 AS TEXT) || \' \' || CAST($4 AS TEXT)';
+ castIntervalNaturalLoss (subNaturalLossGroupDetail) =
+     castInterval(dayFromNaturalLossGroupDetail(subNaturalLossGroupDetail),
+                  nameMonthFromNaturalLossGroupDetail(subNaturalLossGroupDetail),
+                  dayToNaturalLossGroupDetail(subNaturalLossGroupDetail),
+                  nameMonthToNaturalLossGroupDetail(subNaturalLossGroupDetail));
+
+ castConcat = FORMULA STRING[15] 'CAST($1 AS TEXT)';
+ concatSubNaturalLossGroupDetail (subNaturalLossGroup) =
+     GROUP CONCAT castConcat(percentNaturalLossGroupDetail(subNaturalLossGroupDetail)), ','
+           BY subNaturalLossGroupSubNaturalLossGroupDetail(subNaturalLossGroupDetail)
+           ORDER subNaturalLossGroupDetail
+           MINCHARWIDTH 10 PREFCHARWIDTH 30;
+
+ inSubNaturalLossGroup (subNaturalLossGroup, subNaturalLossGroupDetail) =
+     subNaturalLossGroupSubNaturalLossGroupDetail(subNaturalLossGroupDetail) ==  subNaturalLossGroup;
+
+ groupNaturalLossCountrySku 'Группа естественной убыли товара(ИД)' = DATA subNaturalLossGroup (country, sku);
+ nameGroupNaturalLossCountrySku 'Группа естественной убыли товара' (country, sku) = name(groupNaturalLossCountrySku(country, sku)) IN rateGroup;
+ rateGroupNaturalLossCountrySku 'Норма естественной убыли, %' (country, sku) =
+     concatSubNaturalLossGroupDetail(groupNaturalLossCountrySku(country, sku)) IN rateGroup;
+
+ inParentNaturalLossGroup(naturalLossGroup, subNaturalLossGroup) =
+     parentNaturalLossGroup(subNaturalLossGroup ) == naturalLossGroup;
+
+ inParentSubNaturalLossGroup (naturalLossGroup, subNaturalLossGroup) = UNION OVERRIDE
+     parentNaturalLossGroup(subNaturalLossGroup) == naturalLossGroup,
+     subNaturalLossGroup IS subNaturalLossGroup AND NOT naturalLossGroup;
+
+ numberFromSubNaturalLossGroupDetail (subNaturalLossGroupDetail) =
+     dateToNumber(dayFromNaturalLossGroupDetail(subNaturalLossGroupDetail),
+                  numberMonth(monthFromNaturalLossGroupDetail(subNaturalLossGroupDetail)));
+
+ numberToSubNaturalLossGroupDetail (subNaturalLossGroupDetail) =
+     dateToNumber(dayToNaturalLossGroupDetail(subNaturalLossGroupDetail),
+                  numberMonth(monthToNaturalLossGroupDetail(subNaturalLossGroupDetail)));
+
+ intersect(prm1, prm2, prm3, prm4) = (prm4-prm1)*(prm2-prm3) >= 0;
+
+ intersectNaturalLoss(interval1, interval2) = intersect(numberFromSubNaturalLossGroupDetail(interval1),
+                                                        numberToSubNaturalLossGroupDetail(interval1),
+                                                        numberFromSubNaturalLossGroupDetail(interval2),
+                                                        numberToSubNaturalLossGroupDetail(interval2));
+
+ CONSTRAINT intersectNaturalLoss(interval1, interval2) AND interval1 != interval2
+            AND subNaturalLossGroupSubNaturalLossGroupDetail(interval1) == subNaturalLossGroupSubNaturalLossGroupDetail(interval2)
+            CHECKED BY intersectNaturalLoss MESSAGE 'Интервалы не могут пересекаться';
+
+     CONSTRAINT dayFromNaturalLossGroupDetail(subNaturalLossGroupDetail) < 1
+            OR dayFromNaturalLossGroupDetail(subNaturalLossGroupDetail) > 31
+            CHECKED BY dayFromNaturalLossGroupDetail MESSAGE 'Задайте корректный день месяца';
+
+     CONSTRAINT dayToNaturalLossGroupDetail(subNaturalLossGroupDetail) < 1
+            OR dayToNaturalLossGroupDetail(subNaturalLossGroupDetail) > 31
+            CHECKED BY dayToNaturalLossGroupDetail MESSAGE 'Задайте корректный день месяца';
+
+ FORM naturalLossGroups 'Справочник норм естественной убыли'
+
+     TREE treeNaturalLoss a=STRING[3], n=naturalLossGroup
+     PROPERTIES READONLY OBJVALUE(a)
+     PROPERTIES name(n), ADDOBJ(n), delete(n) FORCE PANEL DRAWTOTOOLBAR
+     ORDER BY name
+
+     OBJECTS sg=subNaturalLossGroup, d=subNaturalLossGroupDetail
+     PROPERTIES(sg) name, codeSubNaturalLossGroup, ADDOBJ TODRAW sg, delete FORCE PANEL DRAWTOTOOLBAR
+     PROPERTIES(d) dayFromNaturalLossGroupDetail, nameMonthFromNaturalLossGroupDetail,
+                    dayToNaturalLossGroupDetail, nameMonthToNaturalLossGroupDetail,
+                    percentNaturalLossGroupDetail, ADDOBJ, delete
+     FILTERS stringEqualsAll(a), inParentSubNaturalLossGroup(n, sg),  inSubNaturalLossGroup(sg, d)
+     ORDER BY name
+ ;
+
+ DESIGN naturalLossGroups FROM DEFAULT {
+
+     NEW topContainer {
+
+         type = SPLITH;
+         childConstraints = TO THE RIGHT;
+
+         ADD treeNaturalLoss.tree.box;
+
+         NEW firstCase {
+
+             type = SPLITV;
+             childConstraints = TO THE BOTTOM;
+             fillHorizontal = 4;
+
+             ADD sg.box;
+             ADD d.box;
+         }
+     }
+
+     ADD functions.box;
+
+     PROPERTY (delete(n)) {
+         caption = 'Удалить';
+         askConfirm = TRUE;
+     }
+
+     PROPERTY (delete(sg)) {
+         caption = 'Удалить';
+         askConfirm = TRUE;
+     }
+ }
+
+//------------------------------------- Ведомость расчета естественной убыли ----------------------------------//
+
+CLASS naturalLoss 'Ведомость естественной убыли' : historyObject, externalObject, numberedObject;
+CLASS naturalLossDetail 'Строка ведомости естественной убыли': externalObject;
+CLASS naturalLossPosted 'Проведенная ведомость естественной убыли' : naturalLoss, postedObject;
+
+@defineDocument(naturalLoss);
+@defineDocumentDepartmentStore(naturalLoss);
+@defineDocumentPosted(naturalLoss);
+
+@defineDocumentDetailSku(naturalLoss, sku);
+//@defineDocumentDetailSkuItem(naturalLoss);
+
+@defineDocumentDetailQuantity(naturalLoss);
+@defineDocumentDetailBasePrice(naturalLoss, departmentStore);
+
+@defineDocumentHeaderQuantity(naturalLoss);
+
+//countryNaturalLoss(naturalLoss) = countryLegalEntity(legalEntityStore(storeDepartmentStore(departmentStoreNaturalLoss(naturalLoss))));
+countryNaturalLossDetail(naturalLossDetail) = countryNaturalLoss(naturalLossNaturalLossDetail(naturalLossDetail));
+
+dateFromNaturalLoss 'с' = DATA DATE (naturalLoss) IN documentPrmGroup;
+dateToNaturalLoss 'по' = DATA DATE (naturalLoss) IN documentPrmGroup;
+
+dateFromNaturalLossDetail 'с' (naturalLossDetail) = dateFromNaturalLoss(naturalLossNaturalLossDetail(naturalLossDetail));
+dateToNaturalLossDetail 'по' (naturalLossDetail) = dateToNaturalLoss(naturalLossNaturalLossDetail(naturalLossDetail));
+
+subNaturalLossGroupNaturalLossDetail = DATA subNaturalLossGroup(naturalLossDetail);
+nameSubNaturalLossGroupNaturalLossDetail 'Группа естественной убыли' =
+    name(subNaturalLossGroupNaturalLossDetail(naturalLossDetail));
+codeNaturalLossDetail 'Код нормы естественной убыли' =
+    codeSubNaturalLossGroup(groupNaturalLossCountrySku(countryNaturalLossDetail(naturalLossDetail), skuNaturalLossDetail(naturalLossDetail)));
+percentNaturalLossDetail 'Норма естественной убыли, %' = DATA NUMERIC[10,3] (naturalLossDetail);
+
+subNaturalDetailNaturalLossDetail = DATA subNaturalLossGroupDetail(naturalLossDetail);
+nameSubNaturalDetailNaturalLossDetail 'Период' (naturalLossDetail) =
+    castIntervalNaturalLoss(subNaturalDetailNaturalLossDetail(naturalLossDetail));
+
+castTwoObjectsToString150 = FORMULA STRING[150] 'CAST($1 AS TEXT) || \'  \' || CAST($2 AS TEXT)';
+castNameSubNaturalLossGroup 'Группа естественной убыли' (naturalLossDetail) =
+    castTwoObjectsToString150(nameSubNaturalLossGroupNaturalLossDetail(naturalLossDetail),
+                              nameSubNaturalDetailNaturalLossDetail(naturalLossDetail));
+
+quantityLossNaturalLossDetail 'Кол-во' = DATA NUMERIC[14,3] (naturalLossDetail);
+//supplierSumLossNaturalLossDetail 'Сумма поставщика, руб.' = DATA NUMERIC[16,2] (naturalLossDetail);
+//retailSumLossNaturalLossDetail 'Розничная сумма, руб' = DATA NUMERIC[16,2] (naturalLossDetail);
+//supplierSumNaturalLossDetail 'Сумма поставщика, руб.' = DATA NUMERIC[16,2] (naturalLossDetail);
+//retailSumNaturalLossDetail 'Розничная сумма, руб.' = DATA NUMERIC[16,2] (naturalLossDetail);
+
+supplierPriceNaturalLossDetail(naturalLossDetail) <- supplierPriceBSkuDepartmentStoreDateTime(
+                                                        skuNaturalLossDetail(naturalLossDetail),
+                                                        departmentStoreNaturalLoss(naturalLossNaturalLossDetail(naturalLossDetail)),
+                                                        dateTimeNaturalLoss(naturalLossNaturalLossDetail(naturalLossDetail)))
+    WHEN CHANGED(skuNaturalLossDetail(naturalLossDetail));
+
+retailPriceNaturalLossDetail(naturalLossDetail) <- retailPriceBSkuDepartmentStoreDateTime(
+                                                        skuNaturalLossDetail(naturalLossDetail),
+                                                        departmentStoreNaturalLoss(naturalLossNaturalLossDetail(naturalLossDetail)),
+                                                        dateTimeNaturalLoss(naturalLossNaturalLossDetail(naturalLossDetail)))
+    WHEN CHANGED(skuNaturalLossDetail(naturalLossDetail));
+
+retailSumLossNaturalLossDetail 'Розничная сумма, руб' (naturalLossDetail) = round0(retailPriceNaturalLossDetail(naturalLossDetail) * quantityLossNaturalLossDetail(naturalLossDetail));
+supplierSumLossNaturalLossDetail 'Сумма поставщика, руб.' (naturalLossDetail) = round0(supplierPriceNaturalLossDetail(naturalLossDetail) * quantityLossNaturalLossDetail(naturalLossDetail));
+supplierSumNaturalLossDetail 'Сумма поставщика, руб.' (naturalLossDetail)  = round0(supplierPriceNaturalLossDetail(naturalLossDetail) * quantityNaturalLossDetail(naturalLossDetail));
+retailSumNaturalLossDetail 'Розничная сумма, руб.' (naturalLossDetail) = round0(retailPriceNaturalLossDetail(naturalLossDetail) * quantityNaturalLossDetail(naturalLossDetail));
+
+@defineDocumentHeaderRetailSum(naturalLoss);
+
+invoiceSumNaturalLossDetailNaturalLoss 'Сумма поставщика' (naturalLoss) =
+    GROUP SUM supplierSumNaturalLossDetail(naturalLossDetail) BY naturalLossNaturalLossDetail(naturalLossDetail) IN documentSumGroup PERSISTENT;
+
+quantitySoldSkuDepartmentNaturalLoss 'Продано' (sku, departmentStore, dateFrom, dateTo, subNaturalLossGroupDetail) =
+    GROUP SUM quantitySalesLedger(ledger) AND dateSalesLedger(ledger) >= (dateFrom AS DATE) AND dateSalesLedger(ledger) <= (dateTo AS DATE)
+              AND inIntervalNaturalLoss(dateSalesLedger(ledger), subNaturalLossGroupDetail)
+              AND groupNaturalLossCountrySku(countryStock(stockSalesLedger(ledger)), skuSalesLedger(ledger)) == subNaturalLossGroupSubNaturalLossGroupDetail(subNaturalLossGroupDetail)
+              BY skuSalesLedger(ledger), stockSalesLedger(ledger), dateFrom, dateTo, subNaturalLossGroupDetail;
+
+toFillNaturalLossDetail 'Заполнить ведомость естественной убыли' = ACTION (naturalLoss) {
+    FOR quantitySoldSkuDepartmentNaturalLoss( sku,
+                                              departmentStoreNaturalLoss(naturalLoss),
+                                              dateFromNaturalLoss(naturalLoss),
+                                              dateToNaturalLoss(naturalLoss),
+                                              subNaturalLossGroupDetail) ORDER nameSku(sku), subNaturalLossGroupDetail
+        DO {
+        FOR ADDOBJ d = naturalLossDetail DO {
+            SET skuNaturalLossDetail(d) <- sku AS sku;
+            SET subNaturalLossGroupNaturalLossDetail(d) <- groupNaturalLossCountrySku(countryNaturalLoss(naturalLossNaturalLossDetail(d)), sku AS sku);
+            SET quantityLossNaturalLossDetail(d) <- quantitySoldSkuDepartmentNaturalLoss(
+                                                                    sku AS sku,
+                                                                    departmentStoreNaturalLoss(naturalLoss),
+                                                                    dateFromNaturalLoss(naturalLoss),
+                                                                    dateToNaturalLoss(naturalLoss),
+                                                                    subNaturalLossGroupDetail AS subNaturalLossGroupDetail);
+            SET subNaturalDetailNaturalLossDetail(d) <- subNaturalLossGroupDetail AS subNaturalLossGroupDetail;
+            SET percentNaturalLossDetail(d) <- percentNaturalLossGroupDetail(subNaturalLossGroupDetail AS subNaturalLossGroupDetail);
+            SET quantityNaturalLossDetail (d) <- percentNaturalLossDetail(d) * quantityLossNaturalLossDetail(d) /100;
+        };
+    };
+} IN documentPrmGroup CONFIRM;
+
+FORM naturalLossPrint 'Ведомость естественной убыли' PRINT
+    OBJECTS s=naturalLoss FIXED PANEL
+    PROPERTIES(s) READONLY SELECTOR numberObject, nameDepartmentStoreNaturalLoss, timeNaturalLoss, seriesObject,
+                           dateNaturalLoss, dateFromNaturalLoss, dateToNaturalLoss,
+                           quantityNaturalLossDetailNaturalLoss, invoiceSumNaturalLossDetailNaturalLoss,
+                           retailSumNaturalLossDetailNaturalLoss, noteNaturalLoss
+    OBJECTS d=naturalLossDetail
+    PROPERTIES(d) READONLY indexNaturalLossDetail, nameSkuNaturalLossDetail, codeNaturalLossDetail,
+                           shortNameUOMSkuNaturalLossDetail, quantityLossNaturalLossDetail,
+                           supplierPriceNaturalLossDetail, retailPriceNaturalLossDetail, supplierSumLossNaturalLossDetail,
+                           retailSumLossNaturalLossDetail, nameSubNaturalLossGroupNaturalLossDetail,
+                           nameSubNaturalDetailNaturalLossDetail, castNameSubNaturalLossGroup, percentNaturalLossDetail,
+                           quantityNaturalLossDetail, supplierSumNaturalLossDetail, retailSumNaturalLossDetail
+
+    FILTERS inNaturalLossNaturalLossDetail(s, d)
+;
+
+toPrintNaturalLoss 'Ведомость естественной убыли' (naturalLoss) = ACTION FORM naturalLossPrint OBJECTS s IMAGE 'print.png' IN printGroup;
+
+FORM naturalLoss 'Ведомость естественной убыли'
+    OBJECTS s=naturalLoss FIXED PANEL
+    PROPERTIES(s) objectClassName, numberObject, nameDepartmentStoreNaturalLoss, timeNaturalLoss, seriesObject,
+                  dateNaturalLoss, dateFromNaturalLoss, dateToNaturalLoss, toFillNaturalLossDetail,
+                  quantityNaturalLossDetailNaturalLoss, invoiceSumNaturalLossDetailNaturalLoss,
+                  retailSumNaturalLossDetailNaturalLoss, noteNaturalLoss
+    OBJECTS d=naturalLossDetail
+    PROPERTIES(d) indexNaturalLossDetail, nameSkuNaturalLossDetail, codeNaturalLossDetail,
+                  quantityLossNaturalLossDetail, supplierPriceNaturalLossDetail, retailPriceNaturalLossDetail,
+                  supplierSumLossNaturalLossDetail, retailSumLossNaturalLossDetail,
+                  nameSubNaturalLossGroupNaturalLossDetail, shortNameUOMSkuNaturalLossDetail,
+                  nameSubNaturalDetailNaturalLossDetail, percentNaturalLossDetail,
+                  quantityNaturalLossDetail, supplierSumNaturalLossDetail, retailSumNaturalLossDetail, ADDOBJ, delete
+
+    FILTERS inNaturalLossNaturalLossDetail(s, d)
+
+    EVENTS
+        ON OK EXEC prePostNaturalLoss(s)
+
+    EDIT naturalLoss OBJECT s
+;
+
+DESIGN naturalLoss FROM DEFAULT{
+
+    NEW header.box  BEFORE d.box{
+        childConstraints = TO THE RIGHT;
+
+        NEW headerCol1 {
+            childConstraints = TO THE BOTTOM;
+
+            ADD s.documentHeaderGroup {
+                childConstraints = TO THE RIGHTBOTTOM;
+                ADD PROPERTY(objectClassName);
+                ADD PROPERTY(nameDepartmentStoreNaturalLoss);
+                ADD PROPERTY(numberObject);
+                ADD PROPERTY(seriesObject);
+                ADD PROPERTY(dateNaturalLoss);
+                ADD PROPERTY(timeNaturalLoss);
+            };
+
+            NEW headerCol1Row2 {
+                childConstraints = TO THE RIGHT;
+                ADD s.documentPrmGroup {
+                }
+            }
+
+            ADD PROPERTY(noteNaturalLoss);
+        }
+
+        ADD s.documentSumGroup {
+            childConstraints = TO THE BOTTOM;
+        }
+        PROPERTY(formOkAction) {
+            caption = 'Провести';
+        }
+    }
+}
+
+FORM naturalLosses 'Ведомости естественной убыли'
+    OBJECTS s=naturalLoss
+    PROPERTIES(s) READONLY numberObject, seriesObject, dateNaturalLoss, timeNaturalLoss,
+                           nameDepartmentStoreNaturalLoss, dateFromNaturalLoss, dateToNaturalLoss,
+                           quantityNaturalLossDetailNaturalLoss, invoiceSumNaturalLossDetailNaturalLoss,
+                           retailSumNaturalLossDetailNaturalLoss, noteNaturalLoss
+    PROPERTIES(s) toPrintNaturalLoss FORCE PANEL
+    PROPERTIES(s) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES(s) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
+    OBJECTS d=naturalLossDetail
+    PROPERTIES(d) READONLY indexNaturalLossDetail, nameSkuNaturalLossDetail, codeNaturalLossDetail,
+                           shortNameUOMSkuNaturalLossDetail, quantityLossNaturalLossDetail,
+                           supplierPriceNaturalLossDetail, retailPriceNaturalLossDetail, supplierSumLossNaturalLossDetail,
+                           retailSumLossNaturalLossDetail, nameSubNaturalLossGroupNaturalLossDetail,
+                           percentNaturalLossDetail, quantityNaturalLossDetail,
+                           supplierSumNaturalLossDetail, retailSumNaturalLossDetail
+
+    FILTERS inNaturalLossNaturalLossDetail(s, d)
+;
+
+DESIGN naturalLosses FROM DEFAULT {
+
+    NEW topContainer{
+
+        type = SPLITV;
+        childConstraints = TO THE BOTTOM;
+
+        ADD s.box;
+        ADD d.box;
+    }
+
+    PROPERTY (delete(s)) {
+        askConfirm = TRUE;
+    }
+
+    ADD s.printGroup{
+        childConstraints = TO THE BOTTOM;
+    }
+
+    ADD s.historyGroup{
+        childConstraints = TO THE BOTTOM;
+    }
+
+    ADD s.postedGroup{
+        childConstraints = TO THE BOTTOM;
+    }
+
+    POSITION s.postedGroup TO THE RIGHT s.historyGroup;
+    POSITION s.printGroup TO THE BOTTOM s.postedGroup;
+    POSITION s.printGroup TO THE BOTTOM s.historyGroup;
+
+    ADD functions.box;
+}
+
+//------------------- Справочник норм естественной убыли----------------------------//
+
+loadDefaultNaturalLossGroup 'Добавить нормы естественной убыли' = ACTION (string)  {
+    ADDOBJ naturalLossGroup;
+    FOR cg == addedObject() DO {
+         SET name(cg) <- string AS STRING[110];
+    }
+}
+
+loadDefaultSubNaturalLossGroup 'Добавить нормы естественной убыли' = ACTION (string, stringOne, stringTwo, numeric)  {
+    ADDOBJ subNaturalLossGroup;
+    FOR g == addedObject() DO {
+        SET parentNaturalLossGroup(g) <- nameToNaturalLossGroup(string AS STRING[110]);
+        SET name(g) <-  stringOne AS STRING[110];
+        SET codeSubNaturalLossGroup(g) <- stringTwo AS STRING[3];
+
+        ADDOBJ subNaturalLossGroupDetail;
+        FOR d == addedObject() DO {
+            SET subNaturalLossGroupSubNaturalLossGroupDetail(d) <- g AS subNaturalLossGroup;
+            SET percentNaturalLossGroupDetail(d) <- numeric AS NUMERIC[10,5];
+            SET dayFromNaturalLossGroupDetail(d) <- 1;
+            SET monthFromNaturalLossGroupDetail(d) <- month.january AS month;
+            SET dayToNaturalLossGroupDetail(d) <- 31;
+            SET monthToNaturalLossGroupDetail(d) <- month.december AS month;
+        }
+    }
+}
+
+loadDefaultNaturalLossGroups 'Загрузить стандартные группы естественной убыли' = ACTION () {
+    EXEC loadDefaultNaturalLossGroup('молоко разливное');
+    EXEC loadDefaultNaturalLossGroup('молоко,сливки сух.,яич.порошок');
+    EXEC loadDefaultNaturalLossGroup('мороженое вес. и проч.вес.мол.');
+    EXEC loadDefaultNaturalLossGroup('КАРТОФЕЛЬ РАННИЙ');
+    EXEC loadDefaultNaturalLossGroup('КАПУСТА БЕЛОКОЧАННАЯ СРЕДНЯЯ И ПОЗДНЯЯ, КРАСНОКОЧАННАЯ, САВОЙСКАЯ, КОЛЬРАБИ');
+    EXEC loadDefaultNaturalLossGroup('КАПУСТА БЕЛОКОЧАННАЯ РАННЯЯ, ЦВЕТНАЯ, БРЮССЕЛЬСКАЯ');
+    EXEC loadDefaultNaturalLossGroup('КОРНЕПЛОДЫ ОБРЕЗНЫЕ (СВЕКЛА, МОРКОВЬ, РЕДЬКА, ПЕТРУШКА, СЕЛЬДЕРЕЙ, ПАСТЕРНАК, ХРЕН И ДР.)');
+    EXEC loadDefaultNaturalLossGroup('КОРНЕПЛОДЫ С ЗЕЛЕНЬЮ МОЛОДЫЕ');
+    EXEC loadDefaultNaturalLossGroup('РЕДИС');
+    EXEC loadDefaultNaturalLossGroup('ЗЕЛЕНЬ СВЕЖАЯ (САЛАТ, УКРОП, ШПИНАТ, И ДР.) БОБОВЫЕ (ГОРОХ-ЛАПАТОЧКИ, ФАСОЛЬ-СТРУЧКИ) И ПР ОВОЩИ');
+    EXEC loadDefaultNaturalLossGroup('ЛУК ЗЕЛЕНЫЙ, ЛУК-ПОРЕЙ, ЧЕСНОК ЗЕЛЕНЫЙ');
+    EXEC loadDefaultNaturalLossGroup('ЛУК РЕПЧАТЫЙ');
+    EXEC loadDefaultNaturalLossGroup('ЧЕСНОК');
+    EXEC loadDefaultNaturalLossGroup('КУКУРУЗА В ПОЧАТКАХ МОЛОЧНО-ВОСКОВОЙ СПЕЛОСТИ');
+    EXEC loadDefaultNaturalLossGroup('ТОМАТЫ (КРАСНЫЕ, РОЗОВЫЕ, БУРЫЕ, МОЛОЧНЫЕ)');
+    EXEC loadDefaultNaturalLossGroup('БАКЛАЖАНЫ, КАБАЧКИ, ПЕРЕЦ СЛАДКИЙ И ГОРЬКИЙ СТРУЧКОВЫЙ, ПАТИССОНЫ');
+    EXEC loadDefaultNaturalLossGroup('БАХЧЕВЫЕ (АРБУЗЫ, ДЫНИ, ТЫКВА)');
+    EXEC loadDefaultNaturalLossGroup('СЕМЕЧКОВЫЕ ПЛОДЫ (ЯБЛОКИ, ГРУШИ, АЙВА И ДР)');
+    EXEC loadDefaultNaturalLossGroup('КОСТОЧКОВЫЕ ПЛОДЫ (ЧЕРЕШНИ, ВИШНИ, СЛИВЫ, АБРИКОСЫ, ПЕРСИКИ И ДР)');
+    EXEC loadDefaultNaturalLossGroup('ГРАНАТЫ');
+    EXEC loadDefaultNaturalLossGroup('МАЛИНА, ЗЕМЛЯНИКА И КЛУБНИКА');
+    EXEC loadDefaultNaturalLossGroup('ВИНОГРАД, СМОРОДИНА, КРЫЖОВНИК');
+    EXEC loadDefaultNaturalLossGroup('ДИКОРАСТУЩИЕ (КЛЮКВА, БРУСНИКА, ОБЛЕПИХА И ДР.) ЯГОДЫ');
+    EXEC loadDefaultNaturalLossGroup('ГРИБЫ СВЕЖИЕ ВСЕХ ВИДОВ');
+    EXEC loadDefaultNaturalLossGroup('МАНДАРИНЫ');
+    EXEC loadDefaultNaturalLossGroup('АПЕЛЬСИНЫ');
+    EXEC loadDefaultNaturalLossGroup('АНАНАСЫ');
+    EXEC loadDefaultNaturalLossGroup('БАНАНЫ');
+    EXEC loadDefaultNaturalLossGroup('ЛИМОНЫ');
+    EXEC loadDefaultNaturalLossGroup('ГРЕЙПФРУТЫ');
+    EXEC loadDefaultNaturalLossGroup('ПЛОДЫ, ОВОЩИ И ГРИБЫ ПЕРЕАБОТАННЫЕ. ФРУКТЫ СУШЕННЫЕ');
+    EXEC loadDefaultNaturalLossGroup('ФРУКТЫ И ОВОЩИ ЗАМОРОЖЕННЫЕ');
+    EXEC loadDefaultNaturalLossGroup('ОРЕХИ ВСЯКИЕ');
+    EXEC loadDefaultNaturalLossGroup('ОВОЩИ ЗЕЛЕНЬ СУШЕНЫЕ');
+    EXEC loadDefaultNaturalLossGroup('ОВОЩИ СОЛЕНЫЕ И КВАШЕНЫЕ');
+    EXEC loadDefaultNaturalLossGroup('ГРИБЫ СУШЕННЫЕ');
+    EXEC loadDefaultNaturalLossGroup('ГРИБЫ СОЛЕНЫЕ И МАРИНОВАННЫЕ');
+    EXEC loadDefaultNaturalLossGroup('ТОМАТ-ПАСТА И ТОМАТ-ПЮРЕ');
+    EXEC loadDefaultNaturalLossGroup('КАРТОФЕЛЬ ПОЗДНИЙ');
+    EXEC loadDefaultNaturalLossGroup('ОГУРЦЫ ОТКРЫТОГО И ЗАКРЫТОГО ГРУНТА');
+    EXEC loadDefaultNaturalLossGroup('ОВЕС И ЯЧМЕНЬ');
+    EXEC loadDefaultNaturalLossGroup('ЖМЫХ И КОМБИКОРМ');
+    EXEC loadDefaultNaturalLossGroup('ОТРУБИ И ДР.');
+    EXEC loadDefaultNaturalLossGroup('КЕРОСИН ПРИ ПРОДАЖЕ ВЕСОВ');
+    EXEC loadDefaultNaturalLossGroup('БАКАЛЕЙНЫЕ ТОВАРЫ');
+    EXEC loadDefaultNaturalLossGroup('КОНДИТЕРСКИЕ ТОВАРЫ');
+    EXEC loadDefaultNaturalLossGroup('МОЛОЧНЫЕ И ЖИРОВЫЕ ТОВАРЫ');
+    EXEC loadDefaultNaturalLossGroup('МЯСО МОРОЖЕНОЕ');
+    EXEC loadDefaultNaturalLossGroup('МЯСО ОХЛАЖДЕННОЕ');
+    EXEC loadDefaultNaturalLossGroup('МЯСО ОХОЛЖДЕННОЕ');
+    EXEC loadDefaultNaturalLossGroup('РЫБА И РЫБНЫЕ ТОВАРЫ');
+    EXEC loadDefaultNaturalLossGroup('СУБПРОДУКТЫ');
+    EXEC loadDefaultNaturalLossGroup('СЫРЫ');
+    EXEC loadDefaultNaturalLossGroup('ХЛЕБОБУЛОЧНЫЕ ТОВАРЫ');
+    EXEC loadDefaultSubNaturalLossGroup('молоко разливное','молоко разливное','05А',0.05);
+    EXEC loadDefaultSubNaturalLossGroup('молоко,сливки сух.,яич.порошок','молоко,сливки сух.,яич.порошок','05Б',0.25);
+    EXEC loadDefaultSubNaturalLossGroup('мороженое вес. и проч.вес.мол.','мороженое вес. и проч.вес.мол.','05В',0.3);
+    EXEC loadDefaultSubNaturalLossGroup('КАРТОФЕЛЬ РАННИЙ','КАРТОФЕЛЬ РАННИЙ','101',0.68);
+    EXEC loadDefaultSubNaturalLossGroup('КАПУСТА БЕЛОКОЧАННАЯ СРЕДНЯЯ И ПОЗДНЯЯ, КРАСНОКОЧАННАЯ, САВОЙСКАЯ, КОЛЬРАБИ','КАПУСТА БЕЛОКОЧАННАЯ СРЕДНЯЯ И ПОЗДНЯЯ, КРАСНОКОЧАННАЯ, САВОЙСКАЯ, КОЛЬРАБИ','102',0.63);
+    EXEC loadDefaultSubNaturalLossGroup('КАПУСТА БЕЛОКОЧАННАЯ РАННЯЯ, ЦВЕТНАЯ, БРЮССЕЛЬСКАЯ','КАПУСТА БЕЛОКОЧАННАЯ РАННЯЯ, ЦВЕТНАЯ, БРЮССЕЛЬСКАЯ','103',0.82);
+    EXEC loadDefaultSubNaturalLossGroup('КОРНЕПЛОДЫ ОБРЕЗНЫЕ (СВЕКЛА, МОРКОВЬ, РЕДЬКА, ПЕТРУШКА, СЕЛЬДЕРЕЙ, ПАСТЕРНАК, ХРЕН И ДР.)','КОРНЕПЛОДЫ ОБРЕЗНЫЕ (СВЕКЛА, МОРКОВЬ, РЕДЬКА, ПЕТРУШКА, СЕЛЬДЕРЕЙ, ПАСТЕРНАК, ХРЕН И ДР.)','104',0.69);
+    EXEC loadDefaultSubNaturalLossGroup('КОРНЕПЛОДЫ С ЗЕЛЕНЬЮ МОЛОДЫЕ','КОРНЕПЛОДЫ С ЗЕЛЕНЬЮ МОЛОДЫЕ','105',1.03);
+    EXEC loadDefaultSubNaturalLossGroup('РЕДИС','РЕДИС','106',0.81);
+    EXEC loadDefaultSubNaturalLossGroup('ЗЕЛЕНЬ СВЕЖАЯ (САЛАТ, УКРОП, ШПИНАТ, И ДР.) БОБОВЫЕ (ГОРОХ-ЛАПАТОЧКИ, ФАСОЛЬ-СТРУЧКИ) И ПР ОВОЩИ','ЗЕЛЕНЬ СВЕЖАЯ (САЛАТ, УКРОП, ШПИНАТ, И ДР.) БОБОВЫЕ (ГОРОХ-ЛАПАТОЧКИ, ФАСОЛЬ-СТРУЧКИ) И ПР ОВОЩИ','107',1.41);
+    EXEC loadDefaultSubNaturalLossGroup('ЛУК ЗЕЛЕНЫЙ, ЛУК-ПОРЕЙ, ЧЕСНОК ЗЕЛЕНЫЙ','ЛУК ЗЕЛЕНЫЙ, ЛУК-ПОРЕЙ, ЧЕСНОК ЗЕЛЕНЫЙ','108',0.99);
+    EXEC loadDefaultSubNaturalLossGroup('ЛУК РЕПЧАТЫЙ','ЛУК РЕПЧАТЫЙ','109',0.46);
+    EXEC loadDefaultSubNaturalLossGroup('ЧЕСНОК','ЧЕСНОК','110',0.49);
+    EXEC loadDefaultSubNaturalLossGroup('КУКУРУЗА В ПОЧАТКАХ МОЛОЧНО-ВОСКОВОЙ СПЕЛОСТИ','КУКУРУЗА В ПОЧАТКАХ МОЛОЧНО-ВОСКОВОЙ СПЕЛОСТИ','111',0.67);
+    EXEC loadDefaultSubNaturalLossGroup('ТОМАТЫ (КРАСНЫЕ, РОЗОВЫЕ, БУРЫЕ, МОЛОЧНЫЕ)','ТОМАТЫ (КРАСНЫЕ, РОЗОВЫЕ, БУРЫЕ, МОЛОЧНЫЕ)','113',0.64);
+    EXEC loadDefaultSubNaturalLossGroup('БАКЛАЖАНЫ, КАБАЧКИ, ПЕРЕЦ СЛАДКИЙ И ГОРЬКИЙ СТРУЧКОВЫЙ, ПАТИССОНЫ','БАКЛАЖАНЫ, КАБАЧКИ, ПЕРЕЦ СЛАДКИЙ И ГОРЬКИЙ СТРУЧКОВЫЙ, ПАТИССОНЫ','114',0.75);
+    EXEC loadDefaultSubNaturalLossGroup('БАХЧЕВЫЕ (АРБУЗЫ, ДЫНИ, ТЫКВА)','БАХЧЕВЫЕ (АРБУЗЫ, ДЫНИ, ТЫКВА)','115',0.42);
+    EXEC loadDefaultSubNaturalLossGroup('СЕМЕЧКОВЫЕ ПЛОДЫ (ЯБЛОКИ, ГРУШИ, АЙВА И ДР)','СЕМЕЧКОВЫЕ ПЛОДЫ (ЯБЛОКИ, ГРУШИ, АЙВА И ДР)','116',0.43);
+    EXEC loadDefaultSubNaturalLossGroup('КОСТОЧКОВЫЕ ПЛОДЫ (ЧЕРЕШНИ, ВИШНИ, СЛИВЫ, АБРИКОСЫ, ПЕРСИКИ И ДР)','КОСТОЧКОВЫЕ ПЛОДЫ (ЧЕРЕШНИ, ВИШНИ, СЛИВЫ, АБРИКОСЫ, ПЕРСИКИ И ДР)','117',0.67);
+    EXEC loadDefaultSubNaturalLossGroup('ГРАНАТЫ','ГРАНАТЫ','118',0.6);
+    EXEC loadDefaultSubNaturalLossGroup('МАЛИНА, ЗЕМЛЯНИКА И КЛУБНИКА','МАЛИНА, ЗЕМЛЯНИКА И КЛУБНИКА','119',1.05);
+    EXEC loadDefaultSubNaturalLossGroup('ВИНОГРАД, СМОРОДИНА, КРЫЖОВНИК','ВИНОГРАД, СМОРОДИНА, КРЫЖОВНИК','120',0.66);
+    EXEC loadDefaultSubNaturalLossGroup('ДИКОРАСТУЩИЕ (КЛЮКВА, БРУСНИКА, ОБЛЕПИХА И ДР.) ЯГОДЫ','ДИКОРАСТУЩИЕ (КЛЮКВА, БРУСНИКА, ОБЛЕПИХА И ДР.) ЯГОДЫ','121',0.48);
+    EXEC loadDefaultSubNaturalLossGroup('ГРИБЫ СВЕЖИЕ ВСЕХ ВИДОВ','ГРИБЫ СВЕЖИЕ ВСЕХ ВИДОВ','122',1.26);
+    EXEC loadDefaultSubNaturalLossGroup('МАНДАРИНЫ','МАНДАРИНЫ','123',0.13);
+    EXEC loadDefaultSubNaturalLossGroup('АПЕЛЬСИНЫ','АПЕЛЬСИНЫ','124',0.21);
+    EXEC loadDefaultSubNaturalLossGroup('АНАНАСЫ','АНАНАСЫ','125',0.38);
+    EXEC loadDefaultSubNaturalLossGroup('БАНАНЫ','БАНАНЫ','126',0.48);
+    EXEC loadDefaultSubNaturalLossGroup('ЛИМОНЫ','ЛИМОНЫ','127',0.21);
+    EXEC loadDefaultSubNaturalLossGroup('ГРЕЙПФРУТЫ','ГРЕЙПФРУТЫ','128',0.25);
+    EXEC loadDefaultSubNaturalLossGroup('ПЛОДЫ, ОВОЩИ И ГРИБЫ ПЕРЕАБОТАННЫЕ. ФРУКТЫ СУШЕННЫЕ','ПЛОДЫ, ОВОЩИ И ГРИБЫ ПЕРЕАБОТАННЫЕ. ФРУКТЫ СУШЕННЫЕ','129',0.02);
+    EXEC loadDefaultSubNaturalLossGroup('ФРУКТЫ И ОВОЩИ ЗАМОРОЖЕННЫЕ','ФРУКТЫ И ОВОЩИ ЗАМОРОЖЕННЫЕ','130',0.15);
+    EXEC loadDefaultSubNaturalLossGroup('ОРЕХИ ВСЯКИЕ','ОРЕХИ ВСЯКИЕ','131',0.08);
+    EXEC loadDefaultSubNaturalLossGroup('ОВОЩИ ЗЕЛЕНЬ СУШЕНЫЕ','ОВОЩИ ЗЕЛЕНЬ СУШЕНЫЕ','132',0.01);
+    EXEC loadDefaultSubNaturalLossGroup('ОВОЩИ СОЛЕНЫЕ И КВАШЕНЫЕ','ОВОЩИ СОЛЕНЫЕ И КВАШЕНЫЕ','133',0.04);
+    EXEC loadDefaultSubNaturalLossGroup('ГРИБЫ СУШЕННЫЕ','ГРИБЫ СУШЕННЫЕ','134',0.07);
+    EXEC loadDefaultSubNaturalLossGroup('ГРИБЫ СОЛЕНЫЕ И МАРИНОВАННЫЕ','ГРИБЫ СОЛЕНЫЕ И МАРИНОВАННЫЕ','135',0.1);
+    EXEC loadDefaultSubNaturalLossGroup('ТОМАТ-ПАСТА И ТОМАТ-ПЮРЕ','ТОМАТ-ПАСТА И ТОМАТ-ПЮРЕ','136',0.05);
+    EXEC loadDefaultSubNaturalLossGroup('КАРТОФЕЛЬ ПОЗДНИЙ','КАРТОФЕЛЬ ПОЗДНИЙ','100',0.33);
+    EXEC loadDefaultSubNaturalLossGroup('ОГУРЦЫ ОТКРЫТОГО И ЗАКРЫТОГО ГРУНТА','ОГУРЦЫ ОТКРЫТОГО И ЗАКРЫТОГО ГРУНТА','112',0.9);
+    EXEC loadDefaultSubNaturalLossGroup('ОВЕС И ЯЧМЕНЬ','ОВЕС И ЯЧМЕНЬ','137',0.1);
+    EXEC loadDefaultSubNaturalLossGroup('ЖМЫХ И КОМБИКОРМ','ЖМЫХ И КОМБИКОРМ','138',0.08);
+    EXEC loadDefaultSubNaturalLossGroup('ОТРУБИ И ДР.','ОТРУБИ И ДР.','139',0.12);
+    EXEC loadDefaultSubNaturalLossGroup('КЕРОСИН ПРИ ПРОДАЖЕ ВЕСОВ','КЕРОСИН ПРИ ПРОДАЖЕ ВЕСОВ','140',0.08);
+    EXEC loadDefaultSubNaturalLossGroup('БАКАЛЕЙНЫЕ ТОВАРЫ','крупа,включая зернобоб.и саго','080',0.14);
+    EXEC loadDefaultSubNaturalLossGroup('БАКАЛЕЙНЫЕ ТОВАРЫ','макаронные изделия','081',0.21);
+    EXEC loadDefaultSubNaturalLossGroup('БАКАЛЕЙНЫЕ ТОВАРЫ','мука и крахмал','082',0.14);
+    EXEC loadDefaultSubNaturalLossGroup('БАКАЛЕЙНЫЕ ТОВАРЫ','сахар-песок','083',0.08);
+    EXEC loadDefaultSubNaturalLossGroup('БАКАЛЕЙНЫЕ ТОВАРЫ','сахар рафинад','084',0.13);
+    EXEC loadDefaultSubNaturalLossGroup('БАКАЛЕЙНЫЕ ТОВАРЫ','сахарная пудра','085',0.21);
+    EXEC loadDefaultSubNaturalLossGroup('БАКАЛЕЙНЫЕ ТОВАРЫ','кофе в зернах','086',0.1);
+    EXEC loadDefaultSubNaturalLossGroup('БАКАЛЕЙНЫЕ ТОВАРЫ','соль поваренная','087',0.32);
+    EXEC loadDefaultSubNaturalLossGroup('БАКАЛЕЙНЫЕ ТОВАРЫ','дрожжи пресованные','088',0.39);
+    EXEC loadDefaultSubNaturalLossGroup('БАКАЛЕЙНЫЕ ТОВАРЫ','прочие весовые бакалейные т-ры','089',0.11);
+    EXEC loadDefaultSubNaturalLossGroup('БАКАЛЕЙНЫЕ ТОВАРЫ','соки и безалк.напитки в розлив','08А',0.04);
+    EXEC loadDefaultSubNaturalLossGroup('КОНДИТЕРСКИЕ ТОВАРЫ','Карамель,ирис и драже','070',0.1);
+    EXEC loadDefaultSubNaturalLossGroup('КОНДИТЕРСКИЕ ТОВАРЫ','конфеты глазированные','071',0.15);
+    EXEC loadDefaultSubNaturalLossGroup('КОНДИТЕРСКИЕ ТОВАРЫ','конфеты неглазированные','072',0.26);
+    EXEC loadDefaultSubNaturalLossGroup('КОНДИТЕРСКИЕ ТОВАРЫ','мармелад и пат','073',0.33);
+    EXEC loadDefaultSubNaturalLossGroup('КОНДИТЕРСКИЕ ТОВАРЫ','пастила и зефир','074',0.46);
+    EXEC loadDefaultSubNaturalLossGroup('КОНДИТЕРСКИЕ ТОВАРЫ','халва','075',0.55);
+    EXEC loadDefaultSubNaturalLossGroup('КОНДИТЕРСКИЕ ТОВАРЫ','мед и повидло','076',0.45);
+    EXEC loadDefaultSubNaturalLossGroup('КОНДИТЕРСКИЕ ТОВАРЫ','печенье,галеты и вафли','077',0.22);
+    EXEC loadDefaultSubNaturalLossGroup('КОНДИТЕРСКИЕ ТОВАРЫ','пряники и коврижки','078',0.34);
+    EXEC loadDefaultSubNaturalLossGroup('КОНДИТЕРСКИЕ ТОВАРЫ','прочие весовые кондитер. т-ры','079',0.15);
+    EXEC loadDefaultSubNaturalLossGroup('МОЛОЧНЫЕ И ЖИРОВЫЕ ТОВАРЫ','масло коровье(слив.,топленое)','050',0.15);
+    EXEC loadDefaultSubNaturalLossGroup('МОЛОЧНЫЕ И ЖИРОВЫЕ ТОВАРЫ','маргарин,жиры топл.и кулинар.','051',0.15);
+    EXEC loadDefaultSubNaturalLossGroup('МОЛОЧНЫЕ И ЖИРОВЫЕ ТОВАРЫ','масло растител.(ручная продажа','052',0.25);
+    EXEC loadDefaultSubNaturalLossGroup('МОЛОЧНЫЕ И ЖИРОВЫЕ ТОВАРЫ','сметана,творог,творож.масса','053',0.46);
+    EXEC loadDefaultSubNaturalLossGroup('МЯСО МОРОЖЕНОЕ','говядина,телятина,баранина','010',0.33);
+    EXEC loadDefaultSubNaturalLossGroup('МЯСО МОРОЖЕНОЕ','свинина','012',0.3);
+    EXEC loadDefaultSubNaturalLossGroup('МЯСО МОРОЖЕНОЕ','куры,кролики(кр/полим.пленки)','013',0.19);
+    EXEC loadDefaultSubNaturalLossGroup('МЯСО МОРОЖЕНОЕ','гуси,утки,индейки и др.','014',0.3);
+    EXEC loadDefaultSubNaturalLossGroup('МЯСО МОРОЖЕНОЕ','мясо птицы в полимер.пленке','015',0.05);
+    EXEC loadDefaultSubNaturalLossGroup('МЯСО МОРОЖЕНОЕ','мясо диких животных (кабана, медведя, лося, сайгака и др.)','016',0.47);
+    EXEC loadDefaultSubNaturalLossGroup('МЯСО ОХЛАЖДЕННОЕ','говядина,телятина,баранина','020',0.58);
+    EXEC loadDefaultSubNaturalLossGroup('МЯСО ОХЛАЖДЕННОЕ','свинина','021',0.51);
+    EXEC loadDefaultSubNaturalLossGroup('МЯСО ОХЛАЖДЕННОЕ','куры,цыплята-бройлеры,кролики','022',0.37);
+    EXEC loadDefaultSubNaturalLossGroup('МЯСО ОХЛАЖДЕННОЕ','гуси,утки,индейки','023',0.47);
+    EXEC loadDefaultSubNaturalLossGroup('МЯСО ОХЛАЖДЕННОЕ','мясо птицы в полимерной пленке','024',0.2);
+    EXEC loadDefaultSubNaturalLossGroup('МЯСО ОХОЛЖДЕННОЕ','мясо диких животных (кабана, медведя, лося, сайгака и др.)','025',0.64);
+    EXEC loadDefaultSubNaturalLossGroup('РЫБА И РЫБНЫЕ ТОВАРЫ','рыба живая','040',0.1);
+    EXEC loadDefaultSubNaturalLossGroup('РЫБА И РЫБНЫЕ ТОВАРЫ','рыба любая и мидии охлажд.','041',0.6);
+    EXEC loadDefaultSubNaturalLossGroup('РЫБА И РЫБНЫЕ ТОВАРЫ','рыба,рыбн.товары морож.неглазир','042',0.27);
+    EXEC loadDefaultSubNaturalLossGroup('РЫБА И РЫБНЫЕ ТОВАРЫ','рыба соленая в сухотарн.бочках','044',0.4);
+    EXEC loadDefaultSubNaturalLossGroup('РЫБА И РЫБНЫЕ ТОВАРЫ','рыба лососев.,прод-мая нарезной','045',0.3);
+    EXEC loadDefaultSubNaturalLossGroup('РЫБА И РЫБНЫЕ ТОВАРЫ','рыба(кроме осетр.) горяч.копчен','046',0.37);
+    EXEC loadDefaultSubNaturalLossGroup('РЫБА И РЫБНЫЕ ТОВАРЫ','рыба и рыб.т-ры осетр.гор.копч.','047',0.3);
+    EXEC loadDefaultSubNaturalLossGroup('РЫБА И РЫБНЫЕ ТОВАРЫ','рыба и рыбн.т-ры холод.копч.','048',0.35);
+    EXEC loadDefaultSubNaturalLossGroup('РЫБА И РЫБНЫЕ ТОВАРЫ','балыч.изд.холод.копч.(б/нарезки','049',0.33);
+    EXEC loadDefaultSubNaturalLossGroup('РЫБА И РЫБНЫЕ ТОВАРЫ','балыч.изд.холод.копч.(внарезку)','04А',0.28);
+    EXEC loadDefaultSubNaturalLossGroup('РЫБА И РЫБНЫЕ ТОВАРЫ','рыбные т-ры сол.-суш.и вяленые','04Б',0.2);
+    EXEC loadDefaultSubNaturalLossGroup('РЫБА И РЫБНЫЕ ТОВАРЫ','икра осетровых,лососевых,прочих','04В',0.18);
+    EXEC loadDefaultSubNaturalLossGroup('РЫБА И РЫБНЫЕ ТОВАРЫ','кулинария(рыбная)','04Г',0.36);
+    EXEC loadDefaultSubNaturalLossGroup('РЫБА И РЫБНЫЕ ТОВАРЫ','проч.вес.т-ры из морепродуктов','04Д',0.28);
+    EXEC loadDefaultSubNaturalLossGroup('СУБПРОДУКТЫ','ноги','030',0.35);
+    EXEC loadDefaultSubNaturalLossGroup('СУБПРОДУКТЫ','головы мороженые','031',0.35);
+    EXEC loadDefaultSubNaturalLossGroup('СУБПРОДУКТЫ','головы охлажденные','032',0.54);
+    EXEC loadDefaultSubNaturalLossGroup('СУБПРОДУКТЫ','прочие субпродукты мороженые','033',0.4);
+    EXEC loadDefaultSubNaturalLossGroup('СУБПРОДУКТЫ','прочие субпродукты охлажденные','034',1.62);
+    EXEC loadDefaultSubNaturalLossGroup('СУБПРОДУКТЫ','полуфабрикаты весовые','035',0.4);
+    EXEC loadDefaultSubNaturalLossGroup('СУБПРОДУКТЫ','жир-сырец мороженый','036',0.16);
+    EXEC loadDefaultSubNaturalLossGroup('СУБПРОДУКТЫ','кул-рия вес.(студни,пашт.мясо)','037',0.3);
+    EXEC loadDefaultSubNaturalLossGroup('СУБПРОДУКТЫ','жир-сырец охлажденный','038',0.32);
+    EXEC loadDefaultSubNaturalLossGroup('СУБПРОДУКТЫ','колбасы вареные','039',0.53);
+    EXEC loadDefaultSubNaturalLossGroup('СУБПРОДУКТЫ','сосиски и сардельки','03А',0.75);
+    EXEC loadDefaultSubNaturalLossGroup('СУБПРОДУКТЫ','колбасы полукопченые','03Б',0.32);
+    EXEC loadDefaultSubNaturalLossGroup('СУБПРОДУКТЫ','колбасы варено-копченые','03В',0.36);
+    EXEC loadDefaultSubNaturalLossGroup('СУБПРОДУКТЫ','колбасы сырокопченые','03Г',0.06);
+    EXEC loadDefaultSubNaturalLossGroup('СУБПРОДУКТЫ','мясокопчености сырокопченые','03Д',0.25);
+    EXEC loadDefaultSubNaturalLossGroup('СУБПРОДУКТЫ','мясокопчен.копч.-варен.копч.-за','03Е',0.48);
+    EXEC loadDefaultSubNaturalLossGroup('СУБПРОДУКТЫ','мясокопч.вареные,запеченые,жарен','03Ж',0.59);
+    EXEC loadDefaultSubNaturalLossGroup('СУБПРОДУКТЫ','шпик свиной и товары из шпика','03З',0.26);
+    EXEC loadDefaultSubNaturalLossGroup('СУБПРОДУКТЫ','прочие весовые мясные товары','03И',0.3);
+    EXEC loadDefaultSubNaturalLossGroup('СЫРЫ','в парафиновом покрытии','054',0.3);
+    EXEC loadDefaultSubNaturalLossGroup('СЫРЫ','колбасный копченый плавленый','055',0.4);
+    EXEC loadDefaultSubNaturalLossGroup('СЫРЫ','в полимерной пленке','056',0.4);
+    EXEC loadDefaultSubNaturalLossGroup('СЫРЫ','в фольге или пергаменте','057',0.55);
+    EXEC loadDefaultSubNaturalLossGroup('СЫРЫ','без покрытия(без рассола)','058',0.3);
+    EXEC loadDefaultSubNaturalLossGroup('СЫРЫ','в рассоле(брынза и др.)','059',0.25);
+    EXEC loadDefaultSubNaturalLossGroup('ХЛЕБОБУЛОЧНЫЕ ТОВАРЫ','хлеб печеный','060',0.5);
+    EXEC loadDefaultSubNaturalLossGroup('ХЛЕБОБУЛОЧНЫЕ ТОВАРЫ','бараночные изделия','061',0.35);
+    EXEC loadDefaultSubNaturalLossGroup('ХЛЕБОБУЛОЧНЫЕ ТОВАРЫ','сухари','062',0.3);
+    EXEC loadDefaultSubNaturalLossGroup('ХЛЕБОБУЛОЧНЫЕ ТОВАРЫ','пироги и кулебяки','064',0.45);
+    EXEC loadDefaultSubNaturalLossGroup('ХЛЕБОБУЛОЧНЫЕ ТОВАРЫ','лаваш и чурек','065',0.35);
+    EXEC loadDefaultSubNaturalLossGroup('ХЛЕБОБУЛОЧНЫЕ ТОВАРЫ','прочие весовые хлебобул.товары','066',0.3);
+} IN loadDefaultGroup;
+
+@implementLoadDefaultData(loadDefaultNaturalLossGroups);
