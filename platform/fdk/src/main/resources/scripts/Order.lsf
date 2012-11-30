@@ -9,7 +9,8 @@ REQUIRE System,
         Currency,
         Barcode,
         PriceList,
-        Agreement;
+        Agreement,
+        StockTax;
 
 
 PRIORITY Utils, Stock;
@@ -19,9 +20,15 @@ CLASS ABSTRACT orderDetail 'Строка заказа';
 
 @defineDocumentAbstract(order);
 @defineDocumentAbstractNumber(order);
+//@defineDocumentDetailIndex(order);
 
 @defineDocumentAbstractLegalEntity(order, supplier, 'Поставщик');
+addressSupplierOrder 'Адрес поставщика' (order) = addressLegalEntity(supplierOrder(order));
+
 @defineDocumentAbstractLegalEntity(order, customer, 'Покупатель');
+addressCustomerOrder 'Адрес покупателя' (order) = addressLegalEntity(customerOrder(order));
+
+toDateOrder 'Дата автоматического закрытия' = ABSTRACT DATE (order) IN documentPrmGroup PERSISTENT;
 
 @defineDocumentAbstractDataStock(order, stock, 'Склад поставщика', supplier);
 @defineDocumentAbstractDataStock(order, stock, 'Склад покупателя', customer);
@@ -33,11 +40,21 @@ CLASS ABSTRACT orderDetail 'Строка заказа';
 
 @defineDocumentAbstractDetailSku(order, sku);
 
+@defineDocumentAbstractDetailPrice(order);
+@defineDocumentAbstractDetailDataSumCustomPrefix (orderDetail, , );
+@defineDocumentAbstractDetailVATPrefix(order, , );
+@defineDocumentAbstractDetailVATDataSumCustom (orderDetail, invoice);
+
 @defineDocumentAbstractDetailQuantity(order);
 @defineDocumentDetailGrossWeight(order, sku);
 @defineDocumentHeaderSkuQuantity(order, sku);
 
+@defineDocumentHeaderQuantity(order);
+@defineDocumentHeaderVATSumPrefix(order, orderDetail, invoice);
+@defineDocumentHeaderSum (order);
+
 @defineDocumentHeaderGrossWeight(order);
+@defineDocumentAbstractHeaderCurrency (order);
 
 editOrder 'Редактировать' = ABSTRACT ACTION (order) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
 
@@ -86,6 +103,10 @@ META defineOrder(sign, stockProp)
     Order.isPostedOrder (order) += isPostedOrder(order);
 
     @defineDocumentInterfaceTimeShipment(order);
+    toDateOrder 'Дата автоматического закрытия' = ABSTRACT DATE (order) IN documentPrmGroup PERSISTENT;
+    toDateUserOrder 'Дата автоматического закрытия' = DATA DATE (userOrder) IN documentPrmGroup;
+    toDateOrder(order) += toDateUserOrder(order);
+    Order.toDateOrder (order) += toDateOrder(order);
 
     @defineDocumentClosed (order);
 
@@ -93,6 +114,7 @@ META defineOrder(sign, stockProp)
 
     @defineDocumentInterfaceCurrency(order);
     @deriveDocumentCurrency(userOrder, stockProp);
+    Order.currencyOrder(order) += currencyOrder(order);
 
     @defineDocumentInterfaceDataPriceListType(order);
 
@@ -104,9 +126,30 @@ META defineOrder(sign, stockProp)
 
     @defineDocumentInterfaceDetailPrice(order);
     @deriveDocumentDetailPricePriceListType(userOrder, stockProp);
+    Order.priceOrderDetail(detail) += priceOrderDetail(detail);
 
     @defineDocumentInterfaceDetailDataSum(order);
     @deriveDocumentDetailSum(userOrder, quantity);
+    Order.sumOrderDetail(detail) += sumOrderDetail(detail);
+
+    @defineDocumentInterfaceDetailVATPrefix(order, , country###stockProp, );
+    @defineDocumentInterfaceDetailVATDataSumCustom (orderDetail, invoice);
+    @deriveDocumentDetailPrefixSumCustom (userOrderDetail, invoice);
+    @deriveDocumentDetailDirectVATSum(userOrder);
+    Order.VATOrderDetail(detail) += VATOrderDetail(detail);
+    Order.valueVATOrderDetail(detail) += valueVATOrderDetail(detail);
+    Order.VATSumOrderDetail(detail) += VATSumOrderDetail(detail);
+
+    @defineDocumentInterfaceDetailPricePrefix (order, invoice, ' с НДС');
+    @deriveDocumentDetailVAT (userOrder, , date,  sku, stockProp);
+    @deriveDocumentDetailValueVATPrefix(userOrder, );
+    @deriveDocumentDetailPricePriceListTypeVAT (userOrder, stockProp);
+    @deriveDocumentPriceDetailOnChangeInvoicePrice(userOrder);
+    @deriveDocumentInvoicePriceDetailOnChangePrice(userOrder);
+    @deriveDocumentInvoicePriceDetailOnChangeVAT(userOrder);
+    Order.invoiceSumOrderDetail(detail) += invoiceSumOrderDetail(detail);
+
+    @defineDocumentInterfaceHeaderVATSumPrefix (order, orderDetail, invoice);
 
     @defineDocumentInterfaceHeaderQuantity(order);
     @defineDocumentHeaderSkuQuantity(order, sku);
@@ -136,12 +179,18 @@ META defineOrder(sign, stockProp)
         PROPERTIES (o) objectClassName, nameSupplierUserOrder, nameCustomerUserOrder, nameSupplierStockUserOrder, nameCustomerStockUserOrder,
                        nameNumeratorObject, numberObject, seriesObject, dateUserOrder, timeUserOrder,
                        nameCurrencyUserOrder, nameAgreementUserOrder, namePriceListTypeUserOrder SHOWIF noAgreementUserOrder(o), noteUserOrder,
-                       countUserOrderDetailUserOrder, quantityUserOrderDetailUserOrder, sumUserOrderDetailUserOrder, shipmentDateUserOrder,
-                       shipmentTimeUserOrder
+                       countUserOrderDetailUserOrder, quantityUserOrderDetailUserOrder, sumUserOrderDetailUserOrder,
+                       VATSumUserOrderDetailUserOrder, invoiceSumUserOrderDetailUserOrder,
+                       shipmentDateUserOrder, shipmentTimeUserOrder, toDateUserOrder
 
         OBJECTS d = userOrderDetail
         PROPERTIES (d) indexUserOrderDetail, idBarcodeSkuUserOrderDetail, nameSkuUserOrderDetail, shortNameUOMSkuUserOrderDetail,
-                       quantityUserOrderDetail, namePriceListTypeUserOrderDetail, priceUserOrderDetail, sumUserOrderDetail, name###stockProp###userOrderDetail, shipmentDateUserOrderDetail,
+                       quantityUserOrderDetail, namePriceListTypeUserOrderDetail, //priceUserOrderDetail, sumUserOrderDetail,
+                       priceUserOrderDetail ON CHANGE EXEC changeInvoicePriceUserOrderDetail(d), sumUserOrderDetail,
+                       numberVATUserOrderDetail ON CHANGE EXEC changeInvoicePriceVATUserOrderDetail(d),
+                       valueVATUserOrderDetail, invoicePriceUserOrderDetail ON CHANGE EXEC changePriceUserOrderDetail(d),
+                       VATSumUserOrderDetail, invoiceSumUserOrderDetail,
+                       name###stockProp###userOrderDetail, shipmentDateUserOrderDetail,
                        shipmentTimeUserOrderDetail, ADDOBJ, delete
 
         PROPERTIES(o) TODRAW d addDetailDialogSkuStockUserOrderDetailUserOrder,
@@ -235,7 +284,8 @@ META defineOrder(sign, stockProp)
         PROPERTIES (o) READONLY isPostedOrder FORCE GRID, isClosedOrder, objectClassName, numberOrder, seriesOrder, dateOrder, timeOrder,
                                 nameSupplierOrder, nameSupplierStockOrder, nameCustomerOrder, nameCustomerStockOrder, nameCurrencyOrder,
                                 nameAgreementOrder, namePriceListTypeOrder, noteOrder,
-                                countOrderDetailOrder, quantityOrderDetailOrder, sumOrderDetailOrder, shipmentDateOrder, shipmentTimeOrder
+                                countOrderDetailOrder, quantityOrderDetailOrder, sumOrderDetailOrder,
+                                VATSumOrderDetailOrder, invoiceSumOrderDetailOrder, shipmentDateOrder, shipmentTimeOrder, toDateOrder
 
         PROPERTIES (o) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
 
@@ -246,8 +296,9 @@ META defineOrder(sign, stockProp)
 
         OBJECTS d=orderDetail
         PROPERTIES (d) READONLY indexOrderDetail, idBarcodeSkuOrderDetail, nameSkuOrderDetail, shortNameUOMSkuOrderDetail,
-                       quantityOrderDetail, namePriceListTypeOrderDetail, priceOrderDetail, sumOrderDetail, name###stockProp###orderDetail, shipmentDateOrderDetail,
-                       shipmentTimeOrderDetail
+                       quantityOrderDetail, namePriceListTypeOrderDetail, priceOrderDetail, sumOrderDetail,
+                       numberVATOrderDetail, valueVATOrderDetail, VATSumOrderDetail, invoiceSumOrderDetail,
+                       name###stockProp###orderDetail, shipmentDateOrderDetail, shipmentTimeOrderDetail
 
 
         FILTERS orderOrderDetail(d) == o

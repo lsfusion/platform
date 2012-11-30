@@ -31,7 +31,7 @@ derivedInvoiceSumUserInvoiceDetail (userInvoiceDetail) =
     PERSISTENT;
 
 invoiceSumUserInvoiceDetail (userInvoiceDetail) <- derivedInvoiceSumUserInvoiceDetail (userInvoiceDetail)
-    WHEN CHANGED(priceUserInvoiceDetail(userInvoiceDetail)) OR CHANGED(quantityUserInvoiceDetail(userInvoiceDetail))
+    WHEN CHANGED(invoicePriceUserInvoiceDetail(userInvoiceDetail)) OR CHANGED(quantityUserInvoiceDetail(userInvoiceDetail))
     OR CHANGED(sumUserInvoiceDetail(userInvoiceDetail)) OR CHANGED(VATSumUserInvoiceDetail(userInvoiceDetail));
 
 derivedPriceUserInvoiceDetail (userInvoiceDetail) =

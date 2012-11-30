@@ -201,6 +201,7 @@ FORM legalEntity 'Организация'
     OBJECTS a=account
     PROPERTIES(a)  numberAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount, MFOBankAccount, noteAccount, ADDOBJ, delete
     FILTERS legalEntityAccount(a) == l
+    PROPERTIES equalsLegalEntityAccount(l,a)
 
     OBJECTS li=license
     PROPERTIES(li) numberLicense, dateFromLicense, dateToLicense, ADDOBJ, delete
@@ -346,3 +347,14 @@ END
 META defineDocumentInterfaceLegalEntity (object, contact, contactCaption)
     @defineDocumentInterfaceLegalEntity(object, object##Detail, contact, contactCaption);
 END
+
+META defineDocumentAccountPhoneContact(object, contact, caption)
+    numberAccount###contact###object 'Расчетный счет'###caption (object) = numberAccountLegalEntity(contact###object(object)) IN documentPrmGroup;
+    phone###contact###object 'Телефон'###caption (object) = phoneLegalEntity(contact###object(object)) IN documentPrmGroup;
+    nameBank###contact###object 'Банк'###caption (object) = nameBankAccount(accountLegalEntity(contact###object(object))) IN documentPrmGroup;
+    addressBank###contact###object 'Адрес банка'###caption (object) = addressBankAccount(accountLegalEntity(contact###object(object))) IN documentPrmGroup;
+    departmentBank###contact###object 'Отдел банка'###caption (object) = departmentBankAccount(accountLegalEntity(contact###object(object))) IN documentPrmGroup;
+    CBUBank###contact###object 'ЦБУ банка'###caption (object) = CBUBankAccount(accountLegalEntity(contact###object(object))) IN documentPrmGroup;
+    MFOBank###contact###object 'Код МФО банка'###caption (object) = MFOBankAccount(accountLegalEntity(contact###object(object))) IN documentPrmGroup;
+END
+

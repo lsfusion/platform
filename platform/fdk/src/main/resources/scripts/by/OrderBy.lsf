@@ -1,0 +1,32 @@
+MODULE OrderBy;
+
+REQUIRE LegalEntityBy, Order;
+
+
+@defineDocumentUNPLegalEntity(order, supplier, ' поставщика');
+@defineDocumentUNPLegalEntity(order, customer, ' покупателя');
+
+@defineDocumentAccountPhoneContact(order, supplier, ' поставщика');
+@defineDocumentAccountPhoneContact(order, customer, ' покупателя');
+
+FORM orderPrint 'Счет-фактура (печать)' PRINT
+    OBJECTS o = order FIXED PANEL
+    PROPERTIES (o) READONLY nameSupplierOrder, nameSupplierStockOrder, addressSupplierOrder, UNPSupplierOrder,
+                   numberAccountSupplierOrder, nameBankSupplierOrder, addressBankSupplierOrder,
+                   departmentBankSupplierOrder, CBUBankSupplierOrder, MFOBankSupplierOrder, phoneSupplierOrder,
+                   nameCustomerOrder, nameCustomerStockOrder, addressCustomerOrder, UNPCustomerOrder,
+                   numberAccountCustomerOrder, nameBankCustomerOrder, addressBankCustomerOrder,
+                   departmentBankCustomerOrder, CBUBankCustomerOrder, MFOBankCustomerOrder, phoneCustomerOrder,
+                   numberOrder, seriesOrder, seriesNumberOrder, dateOrder, timeOrder, toDateOrder, currencyOrder,
+                   nameCurrencyOrder, noteOrder, countOrderDetailOrder, quantityOrderDetailOrder, sumOrderDetailOrder,
+                   VATSumOrderDetailOrder, invoiceSumOrderDetailOrder
+
+    OBJECTS d = orderDetail
+    PROPERTIES (d) READONLY indexOrderDetail, nameSkuOrderDetail, shortNameUOMSkuOrderDetail,
+                   quantityOrderDetail,
+                   priceOrderDetail, sumOrderDetail, numberVATOrderDetail,
+                   valueVATOrderDetail,  VATSumOrderDetail, invoiceSumOrderDetail
+    FILTERS orderOrderDetail(d) == o
+;
+
+printOrder 'Счет-фактура' (order) = ACTION FORM orderPrint OBJECTS o IMAGE 'print.png' IN printGroup;

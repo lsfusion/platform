@@ -20,6 +20,8 @@ REQUIRE System,
         Ware,
         Country,
         LegalEntityBy,
+        OrderBy,
+        SaleOrderBy,
         Agreement,
         Order,
         BlanketOrder,
@@ -2139,6 +2141,7 @@ NAVIGATOR {
         ADD saleReturnNavigator;
         ADD salesNavigator;
         ADD statisticsNavigator;
+        ADD orderPrint;
     }
 
     NEW retail 'Розничная торговля' TO formsToolbar {

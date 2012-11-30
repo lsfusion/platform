@@ -1,0 +1,14 @@
+MODULE SaleOrderBy;
+
+REQUIRE SaleOrder, OrderBy;
+
+NAMESPACE Sale;
+
+EXTEND FORM orders
+    PROPERTIES (o) printOrder FORCE PANEL;
+
+EXTEND DESIGN orders {
+    printContainer {
+        ADD PROPERTY(printOrder);
+    }
+}

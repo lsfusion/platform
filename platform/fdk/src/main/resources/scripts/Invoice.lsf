@@ -126,7 +126,7 @@ META defineInvoice(sign, stockProp)
     @deriveDocumentDetailSum(userInvoice, quantity);
     Invoice.sumInvoiceDetail(detail) += sumInvoiceDetail(detail);
 
-    @defineDocumentInterfaceDetailVAT(invoice, country###stockProp);
+    @defineDocumentInterfaceDetailVATPrefix(invoice, , country###stockProp, );
     @defineDocumentInterfaceDetailVATDataSum (invoice);
     @deriveDocumentDetailSumUserObject (invoice);
     @deriveDocumentDetailDirectVATSum(userInvoice);
@@ -136,6 +136,7 @@ META defineInvoice(sign, stockProp)
 
     @defineDocumentInterfaceDetailPricePrefix (invoice, invoice, ' с НДС');
     @deriveDocumentDetailVAT (userInvoice, , date,  sku, stockProp);
+    @deriveDocumentDetailValueVATPrefix(userInvoice, );
     @deriveDocumentDetailPricePriceListTypeVAT (userInvoice, stockProp);
     @deriveDocumentPriceDetailOnChangeInvoicePrice(userInvoice);
     @deriveDocumentInvoicePriceDetailOnChangePrice(userInvoice);
@@ -210,7 +211,7 @@ META defineInvoice(sign, stockProp)
         OBJECTS o = order
         PROPERTIES (o) READONLY isPostedOrder FORCE GRID, objectClassName, numberOrder, seriesOrder, dateOrder, timeOrder,
                                 nameSupplierOrder, nameSupplierStockOrder, nameCustomerOrder, nameCustomerStockOrder, nameCurrencyOrder, noteOrder,
-                                countOrderDetailOrder, quantityOrderDetailOrder, sumOrderDetailOrder
+                                countOrderDetailOrder, quantityOrderDetailOrder, sumOrderDetailOrder, VATSumOrderDetailOrder, invoiceSumOrderDetailOrder
         FILTERS isPostedOrder(o),
                 supplierOrder(o) == s,
                 customerOrder(o) == c
@@ -220,8 +221,9 @@ META defineInvoice(sign, stockProp)
 
         OBJECTS d = orderDetail
         PROPERTIES (d) READONLY indexOrderDetail, idBarcodeSkuOrderDetail, nameSkuOrderDetail, shortNameUOMSkuOrderDetail,
-                                quantityOrderDetail, invoicedOrderDetail, priceOrderDetail, sumOrderDetail, name###stockProp###orderDetail,
-                                toInvoiceOrderDetail
+                                quantityOrderDetail, invoicedOrderDetail, priceOrderDetail, sumOrderDetail,
+                                numberVATOrderDetail, valueVATOrderDetail, VATSumOrderDetail, invoiceSumOrderDetail,
+                                name###stockProp###orderDetail, toInvoiceOrderDetail
         FILTERS orderOrderDetail(d) == o
 //        FILTERGROUP orderDetail
 //            FILTER 'Строки с невыписанными товарами со склада' 'F10' stockProp###orderDetail(d) == s AND toInvoiceOrderDetail(d) > 0 DEFAULT
@@ -275,7 +277,10 @@ META defineInvoice(sign, stockProp)
                     SET orderUserInvoiceDetail(d) <- order;
                     SET skuUserInvoiceDetail(d) <- skuOrderDetail(orderDetail);
                     SET quantityUserInvoiceDetail (d) <- toInvoiceOrderDetail(orderDetail);
+                    SET VATUserInvoiceDetail (d) <- VATOrderDetail(orderDetail);
+                    SET valueVATUserInvoiceDetail (d) <- valueVATOrderDetail(orderDetail);
                     SET priceUserInvoiceDetail (d) <- priceOrderDetail(orderDetail);
+                    SET invoicePriceUserInvoiceDetail (d) <- invoicePriceOrderDetail(orderDetail);
                     SET sumUserInvoiceDetail (d) <- sumOrderDetail(orderDetail);
             }
     }

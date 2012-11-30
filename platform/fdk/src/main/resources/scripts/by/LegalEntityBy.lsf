@@ -8,11 +8,13 @@ UNPLegalEntity 'УНП' = DATA STRING[9] (legalEntity) IN docGroup FIXEDCHARWIDT
 OKPOLegalEntity 'ОКПО' = DATA STRING[20] (legalEntity) IN docGroup MINCHARWIDTH 15 PREFCHARWIDTH 15;
 OKYLPLegalEntity 'ОКЮЛП' = DATA STRING[20] (legalEntity) IN docGroup MINCHARWIDTH 15 PREFCHARWIDTH 15;
 
-META defineDocumentUNPSupplier(object)
-
-    UNPSupplier###object 'УНП поставщика' (object) = UNPLegalEntity(supplier###object(object)) IN documentPrmGroup;
-
+META defineDocumentUNPLegalEntity(object, contact, caption)
+    UNP###contact###object 'УНП'###caption (object) = UNPLegalEntity(contact###object(object)) IN documentPrmGroup;
+    OKPO###contact###object 'ОКПО'###caption (object) = OKPOLegalEntity(contact###object(object)) IN documentPrmGroup;
+    OKYLP###contact###object 'ОКЮЛП'###caption (object) = OKYLPLegalEntity(contact###object(object)) IN documentPrmGroup;
 END
+
+
 
 EXTEND FORM legalEntity
 
