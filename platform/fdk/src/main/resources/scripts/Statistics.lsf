@@ -571,7 +571,7 @@ loadDefaultStatisticGroup 'Добавить стат. группы' = ACTION (id
         SET parentStatisticGroup(g) <- sidToStatisticGroup(parentStat AS STRING[12]);
         SET name(g) <- nameStat AS STRING[110];
         SET sidStatisticGroup(g) <- sidStat AS STRING[12];
-        SET countryStatisticGroup(g) <- countrySID(idCountry);;
+        SET countryStatisticGroup(g) <- countrySID(idCountry);
         SET unitMeasureStatisticGroup(g) <- groupStatic AS groupStatic;
         SET conversionFactorStatisticGroup(g) <- value AS NUMERIC[14,5];
     }
