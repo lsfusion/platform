@@ -853,8 +853,13 @@ EXTEND DESIGN legalEntity{
 
 NAVIGATOR {
     NEW priceListNavigator 'Управление ценами' {
-        ADD priceListTypes;
-        ADD userPriceLists;
+        NEW priceListDocuments 'Документы' {
+            ADD userPriceLists;
+        }
+        NEW priceListCatalog 'Справочники' {
+            ADD priceListTypes;
+            ADD priceIntervals;
+        }
     }
 }
 

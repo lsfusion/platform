@@ -314,3 +314,9 @@ DESIGN trips FROM DEFAULT{
         ADD functions.box;
     }
 }
+
+NAVIGATOR {
+    transportDocuments {
+        ADD trips BEFORE routes;
+    }
+}

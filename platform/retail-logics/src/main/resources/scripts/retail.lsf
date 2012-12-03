@@ -1583,18 +1583,8 @@ NAVIGATOR {
         }
     }
 
-    ADD priceListNavigator TO formsToolbar {
-        ADD priceIntervals;
-    }
-
-    NEW transport 'Управление транспортом' TO formsToolbar {
-        ADD marks;
-        ADD trucks;
-        ADD drivers;
-        ADD routes;
-        ADD trips;
-    }
-
+    ADD priceListNavigator TO formsToolbar;
+    ADD transportNavigator TO formsToolbar;
     ADD machineryNavigator TO formsToolbar;
 
     NEW finance 'Финансы' TO formsToolbar {

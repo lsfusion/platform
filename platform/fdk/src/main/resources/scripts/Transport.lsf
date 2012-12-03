@@ -6,18 +6,9 @@ REQUIRE System,
         LegalEntity,
         Stock;
 
-CLASS truck 'Машина';
+// Модели машины
+
 CLASS mark 'Модель': named;
-
-sidTruck 'Номер' = DATA STRING[20](truck);
-markTruck = DATA mark(truck);
-nameMarkTruck 'Марка' (truck) = name(markTruck(truck));
-
-nameTruck 'Наименование' (truck) = [FORMULA STRING[70] ' CAST($1 AS TEXT) || \' \' || CAST($2 AS TEXT)'](nameMarkTruck(truck), sidTruck(truck));
-
-trailerTruck 'Прицеп' = DATA STRING[100](truck);
-weightTruck 'Грузоподьёмность (тонн)' = DATA NUMERIC[14,2](truck);
-ownerTruck 'Владелец' = DATA STRING[100](truck);
 
 FORM mark 'Модель машины'
     OBJECTS m=mark FIXED PANEL
@@ -34,6 +25,20 @@ FORM marks 'Модели машин'
     DIALOG mark OBJECT m
 ;
 
+// Машины
+
+CLASS truck 'Машина';
+
+sidTruck 'Номер' = DATA STRING[20](truck);
+markTruck = DATA mark(truck);
+nameMarkTruck 'Марка' (truck) = name(markTruck(truck));
+
+nameTruck 'Наименование' (truck) = [FORMULA STRING[70] ' CAST($1 AS TEXT) || \' \' || CAST($2 AS TEXT)'](nameMarkTruck(truck), sidTruck(truck));
+
+trailerTruck 'Прицеп' = DATA STRING[100](truck);
+weightTruck 'Грузоподьёмность (тонн)' = DATA NUMERIC[14,2](truck);
+ownerTruck 'Владелец' = DATA STRING[100](truck);
+
 FORM truck 'Машина'
     OBJECTS t=truck FIXED PANEL
     PROPERTIES (t) sidTruck, nameMarkTruck, nameTruck, trailerTruck, ownerTruck, weightTruck
@@ -48,6 +53,8 @@ FORM trucks 'Машины'
 
     DIALOG truck OBJECT t
 ;
+
+// Водители
 
 CLASS driver 'Водитель': employee;
 
@@ -68,3 +75,14 @@ FORM drivers 'Водители'
 
     DIALOG driver OBJECT d
 ;
+
+NAVIGATOR {
+    NEW transportNavigator 'Управление транспортом' {
+        NEW transportDocuments 'Документы';
+        NEW transportCatalog 'Справочники' {
+            ADD drivers;
+            ADD trucks;
+            ADD marks;
+        }
+    }
+}

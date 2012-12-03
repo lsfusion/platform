@@ -60,3 +60,8 @@ EXTEND FORM routes
     FILTERS inNodeRoute(n, r)
 ;
 
+NAVIGATOR {
+    transportDocuments {
+        ADD routes;
+    }
+}

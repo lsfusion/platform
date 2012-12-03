@@ -405,7 +405,7 @@ EXTEND DESIGN legalEntity {
 }
 
 NAVIGATOR {
-    priceListNavigator {
+    priceListDocuments {
         ADD agreements;
     }
 }
