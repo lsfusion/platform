@@ -302,20 +302,25 @@ META defineShipment(sign, stockProp)
     shippedOrderDetailOrder 'Кол-во (поставлено)' (order) = GROUP SUM shippedOrderDetail(orderDetail) BY orderOrderDetail(orderDetail) IN documentSumGroup PERSISTENT;
 
     // Создание поставки на основе заказа //
-
     FORM shipmentOrders 'Заказы'###sign
         OBJECTS s = legalEntity FIXED PANEL
         PROPERTIES (s) READONLY name
+        OBJECTS ss = stock FIXED PANEL
+        PROPERTIES (ss) READONLY name
+
         OBJECTS c = legalEntity FIXED PANEL
         PROPERTIES (c) READONLY name
+        OBJECTS cs = stock FIXED PANEL
+        PROPERTIES (cs) READONLY name
 
         OBJECTS o = order
         PROPERTIES (o) READONLY isPostedOrder FORCE GRID, objectClassName, numberOrder, seriesOrder, dateOrder, timeOrder,
                                 nameSupplierOrder, nameSupplierStockOrder, nameCustomerOrder, nameCustomerStockOrder, nameCurrencyOrder, noteOrder,
                                 countOrderDetailOrder, quantityOrderDetailOrder, shippedOrderDetailOrder, sumOrderDetailOrder
-        FILTERS supplierOrder(o) == s,
-                customerOrder(o) ==c,
-                isPostedOrder(o)
+        FILTERS isPostedOrder(o),
+                inOrderSupplier(o, s),
+                customerOrder(o) == c,
+                customerStockOrder(o) == cs
 //        FILTERGROUP order
 //            FILTER 'Заказы с непоставленными товарами со склада' 'F10' toShipOrderDetailStockOrder(s, o) DEFAULT
 //            FILTER 'Заказы со склада' 'F9' countOrderDetailStockOrder(s, o)
@@ -337,10 +342,22 @@ META defineShipment(sign, stockProp)
 
                 childConstraints = TO THE BOTTOM;
 
-                NEW headerBox {
-                    childConstraints = TO THE RIGHT;
-                    ADD s.box {title = 'Поставщик';};
-                    ADD c.box {title = 'Покупатель';};
+//                NEW headerBox {
+//                    childConstraints = TO THE RIGHT;
+//                    ADD s.box {title = 'Поставщик';};
+//                    ADD c.box {title = 'Покупатель';};
+//                }
+                NEW headerSupplierBox {
+                    childConstraints = TO THE RIGHTBOTTOM;
+                    title = 'Поставщик';
+                    ADD s.box;
+                    ADD ss.box;
+                }
+                NEW headerCustomerBox {
+                    childConstraints = TO THE RIGHTBOTTOM;
+                    title = 'Покупатель';
+                    ADD c.box;
+                    ADD cs.box;
                 }
                 ADD o.box;
                 NEW documentDetail {
@@ -363,8 +380,13 @@ META defineShipment(sign, stockProp)
         }
     }
 
+    inOrderDetailUserShipment (orderDetail, userShipment) = IF differentStockInDetailsStock(customerStockOrderDetail(orderDetail))
+        THEN TRUE AND orderDetail IS orderDetail AND userShipment IS userShipment
+        ELSE TRUE AND supplierStockOrderDetail(orderDetail)==supplierStockUserShipment(userShipment);
+
     fillOrderUserShipment 'Заполнить на основе заказа' =  ACTION (userShipment) {
-        FORM shipmentOrders OBJECTS s = supplierUserShipment(userShipment), c = customerUserShipment(userShipment) MODAL;
+        FORM shipmentOrders OBJECTS s = supplierUserShipment(userShipment), ss = supplierStockUserShipment(userShipment),
+                                    c = customerUserShipment(userShipment), cs = customerStockUserShipment(userShipment) MODAL;
         IF formResult() == formResult.ok THEN {
             LOCAL saleOrder = order();
             SET saleOrder() <- chosenObject('o');
@@ -372,6 +394,7 @@ META defineShipment(sign, stockProp)
             FOR orderOrderDetail(orderDetail) == saleOrder() AND
 //                stockProp###OrderDetail(orderDetail) == stockProp###UserShipment(userShipment) AND
                 toShipOrderDetail(orderDetail) > 0
+                AND inOrderDetailUserShipment(orderDetail, userShipment)
                 ADDOBJ d = userShipmentDetail DO {
                     SET userShipmentUserShipmentDetail(d) <- userShipment;
                     SET orderUserShipmentDetail(d) <- saleOrder();

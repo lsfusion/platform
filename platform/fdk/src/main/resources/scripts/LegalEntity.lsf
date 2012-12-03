@@ -181,8 +181,10 @@ GROUP filterEntityGroup 'Фильтры' : publicGroup;
 isSupplierLegalEntity 'Явл. поставщиком' = DATA BOOLEAN (legalEntity) IN filterEntityGroup;
 isCompanyLegalEntity 'Явл. компанией' = DATA BOOLEAN (legalEntity) IN filterEntityGroup;
 isCustomerLegalEntity 'Явл. покупателем' = DATA BOOLEAN (legalEntity) IN filterEntityGroup;
-isSellerLegalEntity 'Постващик или компания' (legalEntity) = isSupplierLegalEntity(legalEntity) OR isCompanyLegalEntity(legalEntity);
+isSellerLegalEntity 'Поставщик или компания' (legalEntity) = isSupplierLegalEntity(legalEntity) OR isCompanyLegalEntity(legalEntity);
 isBuyerLegalEntity 'Покупатель или компания' (legalEntity) = isCustomerLegalEntity(legalEntity) OR isCompanyLegalEntity(legalEntity);
+
+differentStocksInDetailsLegalEntity 'Разные склады в строках' = DATA BOOLEAN (legalEntity) IN filterEntityGroup;
 
 // ---------------------------------------- Формы для ввода компаний ------------------------------------- //
 
@@ -196,7 +198,8 @@ FORM legalEntity 'Организация'
                    accountantLegalEntity ON CHANGE EXEC dialogAccountantLegalEntity(l),
                    phoneLegalEntity ON CHANGE EXEC dialogPhoneLegalEntity(l),
                    emailLegalEntity, siteLegalEntity,
-                   isSupplierLegalEntity, isCompanyLegalEntity, isCustomerLegalEntity
+                   isSupplierLegalEntity, isCompanyLegalEntity, isCustomerLegalEntity,
+                   differentStocksInDetailsLegalEntity SHOWIF isCompanyLegalEntity(l)
 
     OBJECTS a=account
     PROPERTIES(a)  numberAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount, MFOBankAccount, noteAccount, ADDOBJ, delete
