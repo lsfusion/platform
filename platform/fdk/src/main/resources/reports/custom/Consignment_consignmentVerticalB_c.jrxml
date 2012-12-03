@@ -15,7 +15,7 @@
 	<field name="ownerTruckConsignment" class="java.lang.String"/>
 	<field name="trailerConsignment" class="java.lang.String"/>
 	<field name="nameDriverConsignment" class="java.lang.String"/>
-	<field name="waybillConsignment" class="java.lang.String"/>
+	<field name="overWaybillConsignment" class="java.lang.String"/>
 	<field name="namePayerConsignment" class="java.lang.String"/>
 	<field name="shipmentBaseConsignment" class="java.lang.String"/>
 	<field name="addressSupplierStockConsignment" class="java.lang.String"/>

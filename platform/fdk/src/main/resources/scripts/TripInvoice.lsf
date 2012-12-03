@@ -11,6 +11,8 @@ filterTripInvoice(trip, invoice) = tripInvoice(invoice)==trip OR (trip IS trip A
 
 quantityInvoicedTripSku 'Кол-во в накладных' (trip, sku) = GROUP SUM quantityInvoiceDetail(invoiceDetail) BY tripInvoice(invoiceInvoiceDetail(invoiceDetail)), skuInvoiceDetail(invoiceDetail);
 
+grossWeightInvoicedTrip 'Суммарный вес накладных' (trip) = GROUP SUM grossWeightInvoiceDetailInvoice(invoice) BY tripInvoice(invoice);
+
 createConsignmentTrip 'Создать накладные по заказам' (trip) = ACTION (trip) {
     FOR tripOrder(order) == trip DO {
         EXEC createUserInvoicePostedOrder(order);
@@ -25,9 +27,11 @@ createConsignmentTrip 'Создать накладные по заказам' (t
 
 EXTEND FORM trip
 
+    PROPERTIES (t) grossWeightInvoicedTrip BEFORE grossWeightShipmentedTrip(t)
+
     OBJECTS i=invoice
     PROPERTIES (t, i) inTripInvoice
-    PROPERTIES (i) READONLY numberInvoice, seriesInvoice, dateInvoice, nameSupplierInvoice, nameSupplierStockInvoice, nameCustomerInvoice, nameCustomerStockInvoice
+    PROPERTIES (i) READONLY numberInvoice, seriesInvoice, dateInvoice, nameSupplierInvoice, nameFromStockOrder, nameCustomerInvoice, nameToStockOrder
 
     PROPERTIES quantityInvoicedTripSku(t, sk) AFTER quantityOrderedTripSku
 
@@ -57,6 +61,10 @@ EXTEND FORM trip
 
 EXTEND DESIGN trip {
 
+    sumContainer {
+        ADD PROPERTY(grossWeightInvoicedTrip) AFTER PROPERTY(grossWeightOrderedTrip);
+    };
+
     bottomContainer {
         NEW invoiceContainer AFTER orderContainer{
             caption = 'Накладные';
@@ -71,6 +79,7 @@ EXTEND DESIGN trip {
 }
 
 EXTEND FORM trips
+    PROPERTIES (t) grossWeightInvoicedTrip AFTER grossWeightOrderedTrip(t)
     OBJECTS i=invoice
     PROPERTIES (i) READONLY numberInvoice, seriesInvoice, dateInvoice, nameSupplierInvoice, nameSupplierStockInvoice, nameCustomerInvoice, nameCustomerStockInvoice
     FILTERS inTripInvoice(t, i)
@@ -78,12 +87,14 @@ EXTEND FORM trips
 
 EXTEND DESIGN trips {
     bottomContainer{
-        ADD i.box AFTER o.box;
+        ADD i.box AFTER o.box {
+            caption = 'Накладные';
+        };
     }
 }
 
 EXTEND FORM waybill
     OBJECTS i=invoice
-    PROPERTIES (i) numberInvoice, seriesInvoice, dateInvoice, addressSupplierStockInvoice, addressCustomerStockInvoice
+    PROPERTIES (i) seriesNumberObject, dateInvoice, addressSupplierStockInvoice, addressCustomerStockInvoice
     FILTERS inTripInvoice(t, i)
 ;

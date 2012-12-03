@@ -10,6 +10,8 @@ NAMESPACE PurchaseReturn;
 @defineInvoiceBatch(customerStock);
 @defineInvoiceReturn(Purchase, PurchaseReturn, customerStock);
 
+@defineInvoiceStockDestination(customerStock, supplierStock);
+
 // -------------------------------------- Формирование задолженности ---------------------------------------------------
 
 @implementContractLedger(, userInvoice, contractSku);

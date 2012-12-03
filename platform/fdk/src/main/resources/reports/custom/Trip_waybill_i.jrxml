@@ -16,8 +16,7 @@
 		<paragraph leftIndent="2" rightIndent="2"/>
 	</style>
 	<field name="i" class="java.lang.Integer"/>
-	<field name="numberInvoice" class="java.lang.String"/>
-	<field name="seriesInvoice" class="java.lang.String"/>
+	<field name="seriesNumberObject" class="java.lang.String"/>
 	<field name="addressSupplierStockInvoice" class="java.lang.String"/>
 	<field name="addressCustomerStockInvoice" class="java.lang.String"/>
 	<field name="dateInvoice" class="java.util.Date">
@@ -76,7 +75,7 @@
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="106" y="0" width="213" height="18"/>
 				<textElement textAlignment="Left"/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{seriesInvoice} + " " + $F{numberInvoice} + " от " + $F{dateInvoice}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{seriesNumberObject}!=null?$F{seriesNumberObject}:" ") + " от " + ($F{dateInvoice}!=null?$F{dateInvoice}:" ")]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="419" y="0" width="141" height="18"/>

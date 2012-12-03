@@ -16,6 +16,7 @@
 		<paragraph leftIndent="2" rightIndent="2"/>
 	</style>
 	<field name="o" class="java.lang.Integer"/>
+	<field name="seriesNumberObject" class="java.lang.String"/>
 	<pageHeader>
 		<band/>
 	</pageHeader>

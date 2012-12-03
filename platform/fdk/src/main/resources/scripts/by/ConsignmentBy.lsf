@@ -64,7 +64,12 @@ dataNameDriverConsignment 'Водитель' = ABSTRACT STRING[40] (consignment)
 nameDriverConsignment 'Водитель' (consignment) = UNION OVERRIDE commonName(driverConsignment(consignment)),
                                                                 dataNameDriverConsignment(consignment) IN carConsignmentGroup;
 
+dataWaybillConsignment 'Путевой лист' (consignment) = ABSTRACT STRING[20] (consignment) IN carConsignmentGroup;
+
 waybillConsignment 'Путевой лист' (consignment) = ABSTRACT STRING[20] (consignment) IN carConsignmentGroup;
+
+overWaybillConsignment 'Путевой лист' (consignment) = UNION OVERRIDE waybillConsignment(consignment), dataWaybillConsignment(consignment);
+
 
 // Склад погрузки
 supplierStockConsignment (consignment) = ABSTRACT stock (consignment);
@@ -239,7 +244,7 @@ META defineConsignmentForm(form, caption)
         OBJECTS c=consignment FIXED PANEL
 
         PROPERTIES (c) dateConsignment, UNPCustomerConsignment, UNPSupplierConsignment, addressSupplierConsignment, addressCustomerConsignment, fullNameSupplierConsignment,
-                       fullNameCustomerConsignment, nameTruckConsignment, ownerTruckConsignment, trailerConsignment, nameDriverConsignment, waybillConsignment,
+                       fullNameCustomerConsignment, nameTruckConsignment, ownerTruckConsignment, trailerConsignment, nameDriverConsignment, overWaybillConsignment,
                        namePayerConsignment, shipmentBaseConsignment, addressSupplierStockConsignment, addressCustomerStockConsignment,
                        readdressingConsignment, commonNameIssuanceAllowedConsignment, commonNameIssuanceExecutedConsignment,
                        forwarderConsignment, warrantConsignment, warrantHolderConsignment, goodsAcceptedConsignment,
@@ -275,7 +280,7 @@ FORM consignment 'Атрибуты накладной'
 
     PROPERTIES (c) READONLY objectClassName, nameSupplierStockConsignment, seriesObject, numberObject
     PROPERTIES (c) dateConsignment, UNPCustomerConsignment, UNPSupplierConsignment, addressSupplierConsignment, addressCustomerConsignment, fullNameSupplierConsignment,
-                   fullNameCustomerConsignment, nameTruckConsignment, ownerTruckConsignment, trailerConsignment, nameDriverConsignment, waybillConsignment,
+                   fullNameCustomerConsignment, nameTruckConsignment, ownerTruckConsignment, trailerConsignment, nameDriverConsignment, overWaybillConsignment,
                    namePayerConsignment, shipmentBaseConsignment, addressSupplierStockConsignment, addressCustomerStockConsignment,
                    readdressingConsignment, commonNameIssuanceAllowedConsignment, commonNameIssuanceExecutedConsignment,
                    forwarderConsignment, warrantConsignment, warrantHolderConsignment, goodsAcceptedConsignment,
@@ -557,7 +562,7 @@ META implementConsignmentHeader (concrete)
     dataOwnerConsignment (consignment) += dataOwner###concrete (consignment);
     dataTrailerConsignment (consignment) += dataTrailer###concrete (consignment);
     dataNameDriverConsignment (consignment) += dataNameDriver###concrete (consignment);
-    waybillConsignment (consignment) += waybill###concrete (consignment);
+    dataWaybillConsignment (consignment) += waybill###concrete (consignment);
 
     dataAddressSupplierStockConsignment (consignment) += dataAddressSupplierStock###concrete (consignment);
     dataAddressCustomerStockConsignment (consignment) += dataAddressCustomerStock###concrete (consignment);

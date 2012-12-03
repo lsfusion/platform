@@ -7,33 +7,31 @@ REQUIRE System,
         Stock;
 
 // Модели машины
+CLASS truckModel 'Модель': named;
 
-CLASS mark 'Модель': named;
-
-FORM mark 'Модель машины'
-    OBJECTS m=mark FIXED PANEL
+FORM truckModel 'Модель машины'
+    OBJECTS m=truckModel FIXED PANEL
     PROPERTIES (m) name
 
-    EDIT mark OBJECT m
+    EDIT truckModel OBJECT m
 ;
 
-FORM marks 'Модели машин'
-    OBJECTS m=mark
+FORM truckModels 'Модели машин'
+    OBJECTS m=truckModel
     PROPERTIES(m) READONLY name
     PROPERTIES(m) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
 
-    DIALOG mark OBJECT m
+    DIALOG truckModel OBJECT m
 ;
 
 // Машины
-
 CLASS truck 'Машина';
 
 sidTruck 'Номер' = DATA STRING[20](truck);
-markTruck = DATA mark(truck);
-nameMarkTruck 'Марка' (truck) = name(markTruck(truck));
+truckModelTruck = DATA truckModel(truck);
+nameTruckModelTruck 'Марка' (truck) = name(truckModelTruck(truck));
 
-nameTruck 'Наименование' (truck) = [FORMULA STRING[70] ' CAST($1 AS TEXT) || \' \' || CAST($2 AS TEXT)'](nameMarkTruck(truck), sidTruck(truck));
+nameTruck 'Наименование' (truck) = [FORMULA STRING[70] ' CAST($1 AS TEXT) || \' \' || CAST($2 AS TEXT)'](nameTruckModelTruck(truck), sidTruck(truck));
 
 trailerTruck 'Прицеп' = DATA STRING[100](truck);
 weightTruck 'Грузоподьёмность (тонн)' = DATA NUMERIC[14,2](truck);
@@ -41,14 +39,14 @@ ownerTruck 'Владелец' = DATA STRING[100](truck);
 
 FORM truck 'Машина'
     OBJECTS t=truck FIXED PANEL
-    PROPERTIES (t) sidTruck, nameMarkTruck, nameTruck, trailerTruck, ownerTruck, weightTruck
+    PROPERTIES (t) sidTruck, nameTruckModelTruck, nameTruck, trailerTruck, ownerTruck, weightTruck
 
     EDIT truck OBJECT t
 ;
 
 FORM trucks 'Машины'
     OBJECTS t=truck
-    PROPERTIES(t) READONLY sidTruck, nameMarkTruck, nameTruck, trailerTruck, ownerTruck, weightTruck
+    PROPERTIES(t) READONLY sidTruck, nameTruckModelTruck, nameTruck, trailerTruck, ownerTruck, weightTruck
     PROPERTIES(t) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
 
     DIALOG truck OBJECT t
@@ -82,7 +80,7 @@ NAVIGATOR {
         NEW transportCatalog 'Справочники' {
             ADD drivers;
             ADD trucks;
-            ADD marks;
+            ADD truckModels;
         }
     }
 }

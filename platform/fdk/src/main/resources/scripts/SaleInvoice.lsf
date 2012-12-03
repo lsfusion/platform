@@ -9,6 +9,8 @@ NAMESPACE Sale;
 @defineInvoiceBatch(supplierStock);
 @defineDocumentInterfaceHeaderTAX(invoice, VAT, 'НДС расч.');
 
+@defineInvoiceStockDestination(supplierStock, customerStock);
+
 VATUserInvoice (userInvoice) <- rangeTaxTaxUnit(tax.taxVAT, storeDepartmentStore(supplierStockUserInvoice(userInvoice)))
         WHEN CHANGED(supplierStockUserInvoice(userInvoice));
 

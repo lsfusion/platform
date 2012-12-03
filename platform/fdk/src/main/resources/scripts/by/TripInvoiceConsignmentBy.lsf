@@ -4,7 +4,7 @@ REQUIRE Shipment, Invoice, TripInvoice, ConsignmentBy;
 
 truckConsignment(invoice) += truckTrip(tripInvoice(invoice));
 driverConsignment(invoice) += driverTrip(tripInvoice(invoice));
-//trailerConsignment(invoice) += trailerTruckTrip(tripInvoice(invoice));
+waybillConsignment(invoice) += seriesNumberObject(tripInvoice(invoice));
 
 printHorizontalConsignmentTrip 'Печать ТТН-1 (гор.)' (trip) = ACTION (trip) {
     FOR inTripInvoice(trip, invoice) DO {

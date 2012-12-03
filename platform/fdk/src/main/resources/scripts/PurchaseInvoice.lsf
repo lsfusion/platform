@@ -8,6 +8,8 @@ NAMESPACE Purchase;
 @defineInvoice(' (закупка)', customerStock);
 @defineInvoiceBatch(customerStock);
 
+@defineInvoiceStockDestination(supplierStock, customerStock);
+
 // -------------------------------------- Формирование задолженности ---------------------------------------------------
 
 @implementContractLedger(a, userInvoice, contractSku);

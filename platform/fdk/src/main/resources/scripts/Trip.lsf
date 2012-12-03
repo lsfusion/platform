@@ -13,8 +13,8 @@ truckTrip = DATA truck(trip);
 sidTruckTrip 'Машина (номер)'(trip) = sidTruck(truckTrip(trip));
 weightTruckTrip 'Грузоподъёмность (кг)'(trip) = weightTruck(truckTrip(trip));
 ownerTruckTrip 'Владелец'(trip) = ownerTruck(truckTrip(trip));
-markTruckTrip (trip) = markTruck(truckTrip(trip));
-nameMarkTruckTrip 'Марка' (trip) = name(markTruckTrip(trip));
+truckModelTruckTrip (trip) = truckModelTruck(truckTrip(trip));
+nameTruckModelTruckTrip 'Марка' (trip) = name(truckModelTruckTrip(trip));
 trailerTruckTrip 'Прицеп' (trip) = trailerTruck(truckTrip(trip));
 
 driverTrip = DATA driver(trip);
@@ -72,7 +72,7 @@ createShipmentsTrip 'Присоединить поставки' (trip) = ACTION 
 FORM waybill PRINT
 
     OBJECTS t=trip FIXED PANEL
-    PROPERTIES(t) dateTrip, numberObject, sidTruckTrip, nameDriverTrip, nameMarkTruckTrip, trailerTruckTrip, sidDriverTrip, typeDriverTrip
+    PROPERTIES(t) dateTrip, seriesNumberObject, sidTruckTrip, nameDriverTrip, nameTruckModelTruckTrip, trailerTruckTrip, sidDriverTrip, typeDriverTrip
 
     OBJECTS st=stock
     PROPERTIES(st) name, addressStock, nameLegalEntityStock
@@ -90,15 +90,16 @@ printWaybill 'Печать путевого листа' (trip) = ACTION (trip) {
 FORM ordersTrip PRINT
 
     OBJECTS t=trip FIXED PANEL
-    PROPERTIES (t) nameNumeratorObject, numberObject, seriesObject, dateTrip, timeTrip, nameDriverTrip, sidTruckTrip, nameMarkTruckTrip, trailerTruckTrip
+    PROPERTIES (t) nameNumeratorObject, numberObject, seriesObject, dateTrip, timeTrip, nameDriverTrip, sidTruckTrip, nameTruckModelTruckTrip, trailerTruckTrip
 
     OBJECTS o=order FIXED GRID
+    //PROPERTIES(o) numberObject
     FILTERS isPostedOrder(o), inTripOrder(t, o)
 
     OBJECTS s=sku
     PROPERTIES READONLY idBarcodeSku(s), nameSku(s), shortNameUOMSku(s)
     PROPERTIES READONLY quantityOrderedTripSku(t, s)
-    PROPERTIES READONLY quantityOrderDetailSkuOrder(s, o) COLUMNS (o) HEADER seriesNumberObject(o)
+    PROPERTIES READONLY quantityOrderDetailSkuOrder(s, o) COLUMNS (o) HEADER seriesNumberOrder(o)
     FILTERS quantityOrderedTripSku(t, s) > 0
 ;
 
@@ -110,7 +111,7 @@ FORM trip 'Рейс'
     PROPERTIES() namePartyA FORCE PANEL, namePartyB FORCE PANEL
 
     OBJECTS t=trip FIXED PANEL
-    PROPERTIES (t) nameNumeratorObject, numberObject, seriesObject, dateTrip, timeTrip, nameDriverTrip, sidTruckTrip, nameMarkTruckTrip, trailerTruckTrip, weightTruckTrip
+    PROPERTIES (t) nameNumeratorObject, numberObject, seriesObject, dateTrip, timeTrip, nameDriverTrip, sidTruckTrip, nameTruckModelTruckTrip, trailerTruckTrip, weightTruckTrip
     PROPERTIES (t) READONLY grossWeightOrderedTrip, grossWeightShipmentedTrip
 
     OBJECTS o=order
@@ -208,7 +209,7 @@ DESIGN trip FROM DEFAULT{
                 childConstraints = TO THE RIGHTBOTTOM;
                 ADD PROPERTY(nameDriverTrip);
                 ADD PROPERTY(sidTruckTrip);
-                ADD PROPERTY(nameMarkTruckTrip);
+                ADD PROPERTY(nameTruckModelTruckTrip);
                 ADD PROPERTY(trailerTruckTrip);
                 ADD PROPERTY(weightTruckTrip);
             }
@@ -272,7 +273,7 @@ DESIGN trip FROM DEFAULT{
 
 FORM trips 'Рейсы'
     OBJECTS t=trip
-    PROPERTIES(t) READONLY numberObject, seriesObject, dateTrip, timeTrip, nameDriverTrip, sidTruckTrip, nameMarkTruckTrip, trailerTruckTrip, weightTruckTrip
+    PROPERTIES(t) READONLY numberObject, seriesObject, dateTrip, timeTrip, nameDriverTrip, sidTruckTrip, nameTruckModelTruckTrip, trailerTruckTrip, weightTruckTrip, grossWeightOrderedTrip, grossWeightShipmentedTrip
     PROPERTIES(t) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
 
     OBJECTS o=order
@@ -305,10 +306,18 @@ DESIGN trips FROM DEFAULT{
 
         NEW bottomContainer {
             type = TABBED;
-            ADD o.box;
-            ADD s.box;
-            ADD sk.box;
-            ADD st.box;
+            ADD o.box {
+                caption = 'Заказы';
+            };
+            ADD s.box{
+                caption = 'Поставки';
+            };
+            ADD sk.box{
+                caption = 'Итоги по товарам';
+            };
+            ADD st.box{
+                caption = 'Путевой лист';
+            };
         }
 
         ADD functions.box;

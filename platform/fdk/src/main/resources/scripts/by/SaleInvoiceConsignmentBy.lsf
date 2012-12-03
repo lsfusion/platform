@@ -7,11 +7,6 @@ NAMESPACE Sale;
 
 @defineInvoiceConsignment(supplier, customer);
 
-Invoice.fromLegalEntityInvoice (invoice) += supplierInvoice(invoice);
-Invoice.fromStockInvoice (invoice) += supplierStockInvoice(invoice);
-Invoice.toLegalEntityInvoice (invoice) += customerInvoice(invoice);
-Invoice.toStockInvoice (invoice) += customerStockInvoice(invoice);
-
 @implementConsignmentDocumentHeaderPrefix (invoice, invoice, Invoice);
 
 

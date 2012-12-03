@@ -15,6 +15,7 @@
 		</box>
 		<paragraph leftIndent="2" rightIndent="2"/>
 	</style>
+	<style name="GroupCellStyle1" vAlign="Middle" fontName="Times New Roman" fontSize="10"/>
 	<parameter name="o_report" class="net.sf.jasperreports.engine.JasperReport"/>
 	<parameter name="o_source" class="net.sf.jasperreports.engine.JRDataSource"/>
 	<parameter name="o_params" class="java.util.Map"/>
@@ -29,87 +30,87 @@
 	<field name="timeTrip" class="java.sql.Time"/>
 	<field name="nameDriverTrip" class="java.lang.String"/>
 	<field name="sidTruckTrip" class="java.lang.String"/>
-	<field name="nameMarkTruckTrip" class="java.lang.String"/>
+	<field name="nameTruckModelTruckTrip" class="java.lang.String"/>
 	<field name="trailerTruckTrip" class="java.lang.String"/>
 	<title>
 		<band height="80">
 			<textField>
-				<reportElement style="DefaultStyle" x="0" y="0" width="53" height="18"/>
+				<reportElement style="GroupCellStyle1" x="0" y="0" width="53" height="18"/>
 				<textElement textAlignment="Center"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Номер"]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement style="DefaultStyle" x="53" y="0" width="75" height="18"/>
+				<reportElement style="GroupCellStyle1" x="53" y="0" width="75" height="18"/>
 				<textElement textAlignment="Left"/>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{numberObject}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="DefaultStyle" x="0" y="18" width="53" height="18"/>
+				<reportElement style="GroupCellStyle1" x="0" y="18" width="53" height="18"/>
 				<textElement textAlignment="Center"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Серия"]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement style="DefaultStyle" x="53" y="18" width="75" height="18"/>
+				<reportElement style="GroupCellStyle1" x="53" y="18" width="75" height="18"/>
 				<textElement textAlignment="Left"/>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{seriesObject}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="DefaultStyle" x="0" y="36" width="53" height="18"/>
+				<reportElement style="GroupCellStyle1" x="0" y="36" width="53" height="18"/>
 				<textElement textAlignment="Center"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Дата документа"]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yy" isBlankWhenNull="true">
-				<reportElement style="DefaultStyle" x="53" y="36" width="75" height="18"/>
+				<reportElement style="GroupCellStyle1" x="53" y="36" width="75" height="18"/>
 				<textElement/>
 				<textFieldExpression class="java.util.Date"><![CDATA[$F{dateTrip}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="DefaultStyle" x="0" y="54" width="53" height="18"/>
+				<reportElement style="GroupCellStyle1" x="0" y="54" width="53" height="18"/>
 				<textElement textAlignment="Center"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Время документа"]]></textFieldExpression>
 			</textField>
 			<textField pattern="H:mm" isBlankWhenNull="true">
-				<reportElement style="DefaultStyle" x="53" y="54" width="75" height="18"/>
+				<reportElement style="GroupCellStyle1" x="53" y="54" width="75" height="18"/>
 				<textElement textAlignment="Left"/>
 				<textFieldExpression class="java.sql.Time"><![CDATA[$F{timeTrip}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="DefaultStyle" x="207" y="0" width="59" height="18"/>
+				<reportElement style="GroupCellStyle1" x="207" y="0" width="59" height="18"/>
 				<textElement textAlignment="Center"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Водитель"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="DefaultStyle" x="207" y="18" width="59" height="18"/>
+				<reportElement style="GroupCellStyle1" x="207" y="18" width="59" height="18"/>
 				<textElement textAlignment="Center"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Машина (номер)"]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement style="DefaultStyle" x="266" y="0" width="202" height="18"/>
+				<reportElement style="GroupCellStyle1" x="266" y="0" width="202" height="18"/>
 				<textElement textAlignment="Left"/>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{nameDriverTrip}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement style="DefaultStyle" x="266" y="18" width="202" height="18"/>
+				<reportElement style="GroupCellStyle1" x="266" y="18" width="202" height="18"/>
 				<textElement textAlignment="Left"/>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{sidTruckTrip}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="DefaultStyle" x="207" y="36" width="59" height="18"/>
+				<reportElement style="GroupCellStyle1" x="207" y="36" width="59" height="18"/>
 				<textElement textAlignment="Center"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Марка"]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement style="DefaultStyle" x="266" y="36" width="202" height="18"/>
+				<reportElement style="GroupCellStyle1" x="266" y="36" width="202" height="18"/>
 				<textElement textAlignment="Left"/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{nameMarkTruckTrip}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{nameTruckModelTruckTrip}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="DefaultStyle" x="207" y="54" width="59" height="18"/>
+				<reportElement style="GroupCellStyle1" x="207" y="54" width="59" height="18"/>
 				<textElement textAlignment="Center"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Прицеп"]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement style="DefaultStyle" x="266" y="54" width="202" height="18"/>
+				<reportElement style="GroupCellStyle1" x="266" y="54" width="202" height="18"/>
 				<textElement textAlignment="Left"/>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{trailerTruckTrip}]]></textFieldExpression>
 			</textField>

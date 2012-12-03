@@ -614,3 +614,10 @@ META defineInvoiceReturn(NS, NSR, stockProp)
                CHECKED BY batchUserInvoiceDetail, invoiceDetailUserInvoiceDetail
                MESSAGE 'Выбрана партия, которая не была списана в соответствующей строке продажи';
 END
+
+META defineInvoiceStockDestination(fromStock, toStock)
+    Invoice.fromStockInvoice(invoice) += fromStock##Invoice(invoice);
+    Invoice.toStockInvoice(invoice) += toStock##Invoice(invoice);
+    Invoice.dataFromStockInvoiceDetail(detail) += data###fromStock##InvoiceDetail(detail);
+    Invoice.dataToStockInvoiceDetail(detail) += data###toStock##InvoiceDetail(detail);
+END

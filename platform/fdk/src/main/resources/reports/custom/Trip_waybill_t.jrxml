@@ -24,9 +24,9 @@
 	<parameter name="i_params" class="java.util.Map"/>
 	<field name="t" class="java.lang.Integer"/>
 	<field name="dateTrip" class="java.util.Date"/>
-	<field name="numberObject" class="java.lang.String"/>
+	<field name="seriesNumberObject" class="java.lang.String"/>
 	<field name="sidTruckTrip" class="java.lang.String"/>
-	<field name="nameMarkTruckTrip" class="java.lang.String"/>
+	<field name="nameTruckModelTruckTrip" class="java.lang.String"/>
 	<field name="nameDriverTrip" class="java.lang.String"/>
 	<field name="sidDriverTrip" class="java.lang.String"/>
 	<field name="typeDriverTrip" class="java.lang.String"/>
@@ -61,7 +61,7 @@
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="140" y="0" width="88" height="18"/>
 				<textElement textAlignment="Left" verticalAlignment="Middle"/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{numberObject}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{seriesNumberObject}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="89" y="104" width="91" height="54"/>
@@ -71,7 +71,7 @@
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="0" y="104" width="89" height="54"/>
 				<textElement textAlignment="Left"/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{nameMarkTruckTrip} + " " + ($F{trailerTruckTrip}!=null?$F{trailerTruckTrip}:"")]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{nameTruckModelTruckTrip} + " " + ($F{trailerTruckTrip}!=null?$F{trailerTruckTrip}:"")]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="DefaultStyle" x="89" y="68" width="91" height="36"/>
@@ -106,7 +106,7 @@
 			<textField>
 				<reportElement style="DefaultStyle" x="90" y="243" width="90" height="36"/>
 				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{sidDriverTrip} + ", " + $F{typeDriverTrip}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{sidDriverTrip}!=null?$F{sidDriverTrip}:" ") + ", " +  ($F{typeDriverTrip}!=null?$F{typeDriverTrip}:" ")]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="DefaultStyle" x="326" y="14" width="456" height="18"/>
