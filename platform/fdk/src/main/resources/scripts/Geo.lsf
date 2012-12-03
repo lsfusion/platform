@@ -37,3 +37,9 @@ showOnMapPOI 'Показать на карте'= ACTION (POI) {
     EXEC showOnMap (latitudePOI (POI), longitudePOI (POI));
 }
 
+// Показать на карте путь
+numberPathPOI 'Номер' = SESSION DATA INTEGER (POI);
+descriptionPathPOI 'Описание' = SESSION DATA STRING[200] (POI);
+
+showOnMapPath 'Показать точки на карте'= ACTION CUSTOM 'platform.fdk.actions.geo.ShowOnMapPathActionProperty';
+
