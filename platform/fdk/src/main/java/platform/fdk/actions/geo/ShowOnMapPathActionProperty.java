@@ -53,8 +53,8 @@ public class ShowOnMapPathActionProperty extends ScriptingActionProperty {
                 String description = (String) values.get("descriptionPathPOI");
                 String overDescription = description==null ? name : description;
                 if (latitude != null && longitude != null && overDescription!=null) {
-                    String prefix = index == 1 ? "saddr" : (index == result.values().size() ? "&mrad" : "&daddr");
-                    uri += prefix + "=" + overDescription.trim().replace(" ", "+").replace("\"", "") + "@" + latitude + "+" + longitude;
+                    String prefix = index == 1 ? "saddr=" : (index == result.values().size() ? "&daddr=": "+to:");
+                    uri += prefix + overDescription.trim().replace(" ", "+").replace("\"", "") + "@" + latitude + "+" + longitude;
                     index++;
                 }
             }

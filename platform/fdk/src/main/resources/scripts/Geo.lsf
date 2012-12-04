@@ -43,3 +43,7 @@ descriptionPathPOI 'Описание' = SESSION DATA STRING[200] (POI);
 
 showOnMapPath 'Показать точки на карте'= ACTION CUSTOM 'platform.fdk.actions.geo.ShowOnMapPathActionProperty';
 
+inPathPOI 'Вкл' = SESSION DATA BOOLEAN (POI);
+startPathPOI 'Место старта'= SESSION DATA POI();
+calculatePath 'Рассчитать путь'= ACTION CUSTOM 'platform.fdk.actions.geo.CalculatePathActionProperty';
+
