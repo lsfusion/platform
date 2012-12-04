@@ -31,6 +31,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     public ScriptingLogicsModule PriceInterval;
     public ScriptingLogicsModule Currency;
     public ScriptingLogicsModule Contract;
+    public ScriptingLogicsModule ContractStock;
     public ScriptingLogicsModule ContractLedger;
     public ScriptingLogicsModule Supplier;
     public ScriptingLogicsModule I18n;
@@ -56,6 +57,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         PriceInterval = addModuleFromResource("/scripts/PriceInterval.lsf");
         Currency = addModuleFromResource("/scripts/Currency.lsf");
         Contract = addModuleFromResource("/scripts/Contract.lsf");
+        ContractStock = addModuleFromResource("/scripts/ContractStock.lsf");
         ContractLedger = addModuleFromResource("/scripts/ContractLedger.lsf");
         Supplier = addModuleFromResource("/scripts/Supplier.lsf");
         Utils = addModuleFromResource("/scripts/Utils.lsf");
@@ -67,10 +69,12 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             "/scripts/Historizable.lsf",
             //"/scripts/Numerator.lsf",
             "/scripts/Document.lsf",
-            "/scripts/Consignment.lsf",
+            "/scripts/Transport.lsf",
+            "/scripts/by/ConsignmentBy.lsf",
             "/scripts/Employee.lsf",
             "/scripts/Tax.lsf",
             "/scripts/Ware.lsf",
+            "/scripts/Geo.lsf",
             "/scripts/AccountDocument.lsf",
             "/scripts/Declaration.lsf",
             "/scripts/WholesalePrice.lsf",
@@ -122,14 +126,14 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             "/scripts/RomanPOS.lsf",
             "/scripts/RomanCashOperation.lsf",
             "/scripts/ReturnCertification.lsf",
-            "/scripts/ByStock.lsf",
-            "/scripts/ByStore.lsf",
+            "/scripts/by/StockBy.lsf",
+            "/scripts/by/StoreBy.lsf",
             "/scripts/RomanSales.lsf",
-            "/scripts/ByWriteOff.lsf",
+            "/scripts/by/WriteOffBy.lsf",
             "/scripts/CustomerBy.lsf",
             "/scripts/SupplierBy.lsf",
-            "/scripts/ByAccountDocument.lsf",
-            "/scripts/ByLegalEntity.lsf",
+            "/scripts/by/AccountDocumentBy.lsf",
+            "/scripts/by/LegalEntityBy.lsf",
             "/scripts/Backup.lsf",
             "/scripts/Agreement.lsf",
             "/scripts/PriceList.lsf",

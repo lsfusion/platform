@@ -7,7 +7,7 @@ REQUIRE System,
         RomanStock,
         DocumentTransfer,
         Sale,
-        Consignment,
+        ConsignmentBy,
         ContractCompany,
         RomanLogicsModule;
 
@@ -15,14 +15,14 @@ PRIORITY Stock, RomanLogicsModule;
 
 // ---------------------------------------- Возврат ------------------------------------ //
 
-CLASS returnOut 'Возврат товаров по накладным' : historyObject, numberedObject, consignment, outAccountDocumentLedger, innerDocument;
+CLASS returnOut 'Возврат товаров по накладным' : historyObject, numberedObject, outAccountDocumentLedger, innerDocument;
 CLASS returnOutPosted 'Проведенный возврат товаров по накладным' : returnOut, postedObject;
-CLASS returnOutDetail 'Строка возврата товаров по накладным' : consignmentDetail;
+CLASS returnOutDetail 'Строка возврата товаров по накладным';
 
 @defineDocumentTransferOut(return, 'Возврат товаров по накладным', sku, stock);
 @defineDocumentFormTransferOut(return, 'Возврат товаров по накладным');
 
-CONSTRAINT legalEntityReturnOut(returnOut) == destinationLegalEntityReturnOut(returnOut) CHECKED BY destinationStockReturnOut
+CONSTRAINT legalEntityStockReturnOut(returnOut) == destinationLegalEntityStockReturnOut(returnOut) CHECKED BY destinationStockReturnOut
     MESSAGE 'Возврат товаров должна идти между складами разных компаний';
 
 @defineDocumentDetailSkuArticle(returnOut);
@@ -32,12 +32,12 @@ CONSTRAINT legalEntityReturnOut(returnOut) == destinationLegalEntityReturnOut(re
 @defineDocumentCurrency(returnOut);
 @deriveDocumentCurrency(returnOut, stock);
 
-@defineDocumentContract(returnOut, contractSkuCompany, singleContractSkuCompanyCompanyCompany, destinationLegalEntityReturnOut, legalEntityReturnOut,
+@defineDocumentContract(returnOut, contractSku, destinationLegalEntityStock, legalEntityStock, singleContractSkuSupplierCustomer,
                         'Сторона A договора возврата товаров не соответствуют компании склада-отправителя',
                         'Сторона B договора возврата товаров не соответствуют компании склада-получателя');
 
 EXTEND FORM returnOut
-    PROPERTIES(t) numberContractSkuCompanyReturnOut, isCommissionReturnOut
+    PROPERTIES(t) numberContractSkuReturnOut, isCommissionReturnOut
 ;
 
 EXTEND FORM returnOuts
@@ -50,7 +50,7 @@ descriptionBatchReturnOutDetail 'Партия' (returnOutDetail) = descriptionBa
 CONSTRAINT skuBatch(saleInBatchDetailReturnOutDetail(detail)) != skuReturnOutDetail(detail) CHECKED BY saleInBatchDetailReturnOutDetail
     MESSAGE 'Партия строки возврата должна соответствовать SKU строки возврата';
 
-CONSTRAINT contractSkuCompanyReturnOut(returnOutReturnOutDetail(detail)) != contractSkuCompanySaleInBatchDetail(saleInBatchDetailReturnOutDetail(detail)) CHECKED BY saleInBatchDetailReturnOutDetail
+CONSTRAINT contractSkuReturnOut(returnOutReturnOutDetail(detail)) != contractSkuSaleInBatchDetail(saleInBatchDetailReturnOutDetail(detail)) CHECKED BY saleInBatchDetailReturnOutDetail
     MESSAGE 'Договор партии строки возврата должен соответствовать договору возврата';
 
 currentBalanceBatchReturnOutDetail 'Текущий остаток' (batch, returnOutDetail) = currentBalanceBatchStock(batch, stockReturnOut(returnOutReturnOutDetail(returnOutDetail)));
@@ -69,7 +69,7 @@ FORM saleInBatchDetailDialog 'Партия'
             FILTER 'Товары с остатком' 'F10' currentBalanceBatchReturnOutDetail(bt, rd) != 0 DEFAULT
 
     FILTERS skuBatch(bt) == skuReturnOutDetail(rd) AND
-            contractSkuCompanyReturnOut(returnOutReturnOutDetail(rd)) == contractSkuCompanySaleInBatchDetail(bt)
+            contractSkuReturnOut(returnOutReturnOutDetail(rd)) == contractSkuSaleInBatchDetail(bt)
 ;
 
 dialogBatchReturnOutDetail 'Партия' (returnOutDetail) = ACTION (returnOutDetail) {
@@ -116,10 +116,12 @@ skipSkuLedger (ledger) += skipSkuLedgerReturnOutDetail(ledger);
 @defineConsignmentHeader(returnOut);
 @implementConsignmentHeader(returnOut);
 
-supplierConsignment (consignment) += legalEntityReturnOut(consignment);
+supplierConsignment (consignment) += legalEntityStockReturnOut(consignment);
 supplierStockConsignment (consignment) += stockReturnOut(consignment);
-customerConsignment (consignment) += destinationLegalEntityReturnOut(consignment);
+customerConsignment (consignment) += destinationLegalEntityStockReturnOut(consignment);
+customerStockConsignment (consignment) += destinationStockReturnOut(consignment);
 
+EXTEND CLASS returnOutDetail : consignmentDetail;
 consignmentConsignmentDetail (consignmentDetail) += returnOutReturnOutDetail (consignmentDetail);
 skuConsignmentDetail (consignmentDetail) += skuReturnOutDetail (consignmentDetail);
 quantityConsignmentDetail (consignmentDetail) += quantityReturnOutDetail (consignmentDetail);
@@ -143,8 +145,8 @@ sumVATConsignmentDetail (consignmentDetail) +=  sumVATReturnOutDetailS(consignme
 sumInvoiceConsignmentDetail (consignmentDetail) += IF isCommissionReturnOutDetail(consignmentDetail) THEN supplierSumReturnOutDetailC(consignmentDetail)
     ELSE supplierSumReturnOutDetailS(consignmentDetail) (+) sumVATReturnOutDetailS(consignmentDetail);
 
-grossWeightTonConsignmentDetail (consignmentDetail) += grossWeightReturnOutDetail (consignmentDetail);
-quantityPackConsignmentDetail (consignmentDetail) += packQuantityReturnOutDetail (consignmentDetail);
+grossWeightConsignmentDetail (consignmentDetail) += grossWeightReturnOutDetail (consignmentDetail);
+quantityPackConsignmentDetail (consignmentDetail) += quantityPackReturnOutDetail (consignmentDetail);
 //shortNameUOMConsignmentDetail (consignmentDetail) += shortNameUOMReturnOutDetail (consignmentDetail);
 
 noteReturnOutDetail (returnOutDetail) = [FORMULA STRING[30] '\'Цена импортера:\' ||  \' \' || CAST($1 AS TEXT)'](

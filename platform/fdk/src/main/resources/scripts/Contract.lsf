@@ -40,7 +40,11 @@ noteContract 'Примечание' = DATA TEXT (contract) MINCHARWIDTH 50 PREFC
 
 // ------------------------------------ Макрос для создания договоров по умолчанию ----------------------------- //
 
-META defineContractDefaultCustom (contract, partyA, partyB, prefixA, prefixB)
+META defineContractDefault (contract, partyA, partyB)
+    @defineContractDefault (contract, partyA, partyB, partyA, partyB);
+END
+
+META defineContractDefault (contract, partyA, partyB, prefixA, prefixB)
     data###contract###prefixA###prefixB = DATA contract (partyA, partyB);
 
     CONSTRAINT partyA != prefixA###contract(data###contract###prefixA###prefixB(partyA, partyB)) CHECKED BY data###contract###prefixA###prefixB
@@ -57,7 +61,12 @@ META defineContractDefaultCustom (contract, partyA, partyB, prefixA, prefixB)
 
     is###prefixA###prefixB###contract 'Основной' (pA, pB, contract) = contract###prefixA###prefixB (pA, pB) == contract;
 END
+
 META defineDocumentContract (object, contractType, prefixA, prefixB, partyAMessage, partyBMessage)
+    @defineDocumentContract (object, contractType, prefixA, prefixB, single###contractType###prefixA###prefixB, partyAMessage, partyBMessage);
+END
+
+META defineDocumentContract (object, contractType, prefixA, prefixB, singleContractProp, partyAMessage, partyBMessage)
     contractType###object = DATA contractType (object);
     number###contractType###object 'Номер договора' (object) = numberContract(contractType###object(object)) IN documentPrmGroup;
 
@@ -66,7 +75,7 @@ META defineDocumentContract (object, contractType, prefixA, prefixB, partyAMessa
         WHEN CHANGED(contractType###object(object)) OR
              CHANGED(date###object(object));
 
-    contractType###object(object) <- single###contractType###prefixA###prefixB(prefixA###object(object), prefixB###object(object))
+    contractType###object(object) <- singleContractProp(prefixA###object(object), prefixB###object(object))
                                           WHEN CHANGED(prefixA###object(object)) OR CHANGED(prefixB###object(object));
 
     CONSTRAINT contractType###object(object) AND NOT prefixA###object(object) == partyAContract(contractType###object(object))

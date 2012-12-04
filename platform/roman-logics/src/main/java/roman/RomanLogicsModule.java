@@ -1015,12 +1015,6 @@ public class RomanLogicsModule extends LogicsModule {
     private LCP dateContract;
     private LCP conditionShipmentContract;
     private LCP conditionPaymentContract;
-    //private LCP buyerContract;
-    //private LCP nameBuyerContract;
-    private LCP sellerContract;
-    private LCP nameSellerContract;
-    private LCP subjectContract;
-    private LCP nameSubjectContract;
 
     private LCP currencyContract;
     private LCP nameCurrencyContract;
@@ -1535,7 +1529,7 @@ public class RomanLogicsModule extends LogicsModule {
         document = addAbstractClass("document", "Документ", baseLM.transaction);
         list = addAbstractClass("list", "Список", baseClass);
 
-        contract = addConcreteClass("contract", "Договор", baseLM.transaction, (CustomClass) BL.Contract.getClassByName("contractSku"));
+        contract = addConcreteClass("contract", "Договор", baseLM.transaction, (CustomClass) BL.ContractStock.getClassByName("contractSku"));
 
         priceDocument = addAbstractClass("priceDocument", "Документ с ценами", document);
         destinationDocument = addAbstractClass("destinationDocument", "Документ в пункт назначения", document);
@@ -1936,12 +1930,6 @@ public class RomanLogicsModule extends LogicsModule {
 
         //buyerContract = addDProp(idGroup, "buyerContract", "Покупатель (ИД)", buyer, contract);
         //nameBuyerContract = addJProp(baseGroup, "nameBuyerContract", "Покупатель", baseLM.name, buyerContract, 1);
-
-        subjectContract = addDProp(idGroup, "subjectContract", "Покупатель (ИД)", subject, contract);
-        nameSubjectContract = addJProp(baseGroup, "nameSubjectContract", "Покупатель", baseLM.name, subjectContract, 1);
-
-        sellerContract = addDProp(idGroup, "sellerContract", "Продавец (ИД)", seller, contract);
-        nameSellerContract = addJProp(baseGroup, "nameSellerContract", "Продавец", baseLM.name, sellerContract, 1);
 
         currencyContract = addDProp(idGroup, "currencyContract", "Валюта (ИД)", baseLM.currency, contract);
         nameCurrencyContract = addJProp(baseGroup, "nameCurrencyContract", "Валюта", baseLM.name, currencyContract, 1);
@@ -3550,9 +3538,6 @@ public class RomanLogicsModule extends LogicsModule {
 
         contractImporterFreight = addDProp(idGroup, "contractImporterFreight", "Договор (ИД)", contract, importer, freight);
         //nameContractImporterFreight = addJProp(baseGroup, "nameContractImporterFreight", "Договор", baseLM.name, contractImporterFreight, 1, 2);
-
-        addConstraint(addJProp("Импортер договора должен соответствовать импортеру исходящего инвойса", baseLM.diff2, 1, addJProp(subjectContract, contractImporterFreight, 1, 2), 1, 2), true);
-        addConstraint(addJProp("Продавец по договору должен соответствовать экспортеру исходящего инвойса", baseLM.diff2, exporterFreight, 2, addJProp(sellerContract, contractImporterFreight, 1, 2), 1, 2), true);
 
         sidContractImporterFreight = addJProp(baseGroup, "sidContractImporterFreight", "Договор", sidContract, contractImporterFreight, 1, 2);
         dateContractImporterFreight = addJProp(baseGroup, "dateContractImporterFreight", "Дата договора", dateContract, contractImporterFreight, 1, 2);
@@ -6472,33 +6457,6 @@ public class RomanLogicsModule extends LogicsModule {
         }
     }
 
-    private class ContractFormEntity extends FormEntity<RomanBusinessLogics> {
-
-        private ObjectEntity objSeller;
-        private ObjectEntity objContract;
-
-        private ContractFormEntity(NavigatorElement parent, String sID, String caption) {
-            super(parent, sID, caption);
-
-            objSeller = addSingleGroupObject(seller, "Продавец", baseLM.name, baseLM.objectClassName);
-
-            objContract = addSingleGroupObject(contract, "Договор", sidContract, dateContract, baseLM.date, nameSubjectContract, nameCurrencyContract, conditionShipmentContract, conditionPaymentContract);
-            addObjectActions(this, objContract);
-
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(sellerContract, objContract), Compare.EQUALS, objSeller));
-        }
-
-        @Override
-        public FormView createDefaultRichDesign() {
-            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
-
-            design.get(getPropertyDraw(baseLM.objectClassName, objSeller)).caption = "Тип продавца";
-            design.get(objSeller.groupTo).grid.constraints.fillVertical = 1;
-            design.get(objContract.groupTo).grid.constraints.fillVertical = 3;
-
-            return design;
-        }
-    }
 
     private class BalanceBrandWarehouseFormEntity extends FormEntity<RomanBusinessLogics> {
 

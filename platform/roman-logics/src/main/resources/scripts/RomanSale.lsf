@@ -11,17 +11,17 @@ REQUIRE System,
         RetailPrice,
         StorePriceTransfer,
         WholesalePrice,
-        Consignment,
+        ConsignmentBy,
         RomanLogicsModule;
 
 PRIORITY Stock, RomanLogicsModule;
 
 // ---------------------------------------- Перемещение ------------------------------------ //
 
-CLASS saleOut 'Продажа товаров по накладным' : historyObject, numberedObject, consignment, outAccountDocumentLedger, innerDocument;
+CLASS saleOut 'Продажа товаров по накладным' : historyObject, numberedObject, outAccountDocumentLedger, innerDocument;
 CLASS saleOutPosted 'Проведенная продажа товаров по накладным' : saleOut, postedObject;
 CLASS saleOutDetail 'Строка продажи товаров по накладным';
-CLASS saleOutBatchDetail 'Строка продажи товаров по накладным (по партиям)': consignmentDetail;
+CLASS saleOutBatchDetail 'Строка продажи товаров по накладным (по партиям)';
 
 @defineDocumentTransferOut(sale, 'Продажа товаров по накладным', sku, stock);
 @defineDocumentFormTransferOut(sale, 'Продажа товаров по накладным');
@@ -40,14 +40,14 @@ EXTEND FORM saleOuts
     PROPERTIES(o) READONLY importerPriceSaleOutBatchDetail, supplierPriceSaleOutBatchDetail
 ;
 
-CONSTRAINT legalEntitySaleOut(saleOut) == destinationLegalEntitySaleOut(saleOut) CHECKED BY destinationStockSaleOut
+CONSTRAINT legalEntityStockSaleOut(saleOut) == destinationLegalEntityStockSaleOut(saleOut) CHECKED BY destinationStockSaleOut
     MESSAGE 'Продажа товаров должна идти между складами разных компаний';
 
 @defineDocumentDetailSkuArticle(saleOut);
 @extendFormDocumentDetailSkuArticle(saleOut, d, saleOut);
 @extendFormDocumentDetailSkuArticleReadonly(saleOuts, d, saleOut);
 
-@defineDocumentContract(saleOut, contractSkuCompany, singleContractSkuCompanyCompanyCompany, legalEntitySaleOut, destinationLegalEntitySaleOut,
+@defineDocumentContract(saleOut, contractSku, legalEntityStock, destinationLegalEntityStock, singleContractSkuSupplierCustomer,
                         'Сторона A договора продажи товаров не соответствуют компании склада-отправителя',
                         'Сторона B договора продажи товаров не соответствуют компании склада-получателя');
 
@@ -59,7 +59,7 @@ supplierPriceSaleOutDetail (saleOutDetail) <- priceWholesaleArticleCurrencyDateT
     WHEN CHANGED(skuSaleOutDetail(saleOutDetail)) OR CHANGED(dateTimeSaleOutDetail(saleOutDetail)) OR CHANGED(currencySaleOutDetail(saleOutDetail));
 
 EXTEND FORM saleOut
-    PROPERTIES(t) numberContractSkuCompanySaleOut, isCommissionSaleOut
+    PROPERTIES(t) numberContractSkuSaleOut, isCommissionSaleOut
     PROPERTIES(d) supplierPriceSaleOutDetail
 ;
 
@@ -103,7 +103,9 @@ isCommissionSaleOutBatchDetail 'Продажа на комиссию' (saleOutBa
 supplierConsignment (consignment) += legalEntityStock(stockSaleOut(consignment));
 supplierStockConsignment (consignment) += stockSaleOut(consignment);
 customerConsignment (consignment) += legalEntityStock(destinationStockSaleOut(consignment));
+customerStockConsignment (consignment) += destinationStockSaleOut(consignment);
 
+EXTEND CLASS saleOutBatchDetail : consignmentDetail;
 consignmentConsignmentDetail (consignmentDetail) += saleOutSaleOutBatchDetail (consignmentDetail);
 skuConsignmentDetail (consignmentDetail) += skuSaleOutBatchDetail (consignmentDetail);
 quantityConsignmentDetail (consignmentDetail) += quantitySaleOutBatchDetail (consignmentDetail);
@@ -135,8 +137,8 @@ sumVATConsignmentDetail (consignmentDetail) +=  sumVATSaleOutBatchDetailS(consig
 sumInvoiceConsignmentDetail (consignmentDetail) += IF isCommissionSaleOutBatchDetail(consignmentDetail) THEN supplierSumSaleOutBatchDetailC(consignmentDetail)
     ELSE supplierSumSaleOutBatchDetailS(consignmentDetail) (+) sumVATSaleOutBatchDetailS(consignmentDetail);
 
-grossWeightTonConsignmentDetail (consignmentDetail) += grossWeightSaleOutBatchDetail (consignmentDetail);
-quantityPackConsignmentDetail (consignmentDetail) += packQuantitySaleOutBatchDetail (consignmentDetail);
+grossWeightConsignmentDetail (consignmentDetail) += grossWeightSaleOutBatchDetail (consignmentDetail);
+quantityPackConsignmentDetail (consignmentDetail) += quantityPackSaleOutBatchDetail (consignmentDetail);
 //shortNameUOMConsignmentDetail (consignmentDetail) += shortNameUOMSaleOutBatchDetail (consignmentDetail);
 
 
@@ -188,7 +190,7 @@ skipSkuLedgerSaleInBatchDetail (detail) = skipSkuLedgerSaleOutDetail(saleOutDeta
 
 quantitySaleInBatchDetail 'Кол-во' (detail) = costDataSkuLedgerBatch(saleOutDetailSaleInBatchDetail(detail), batchSaleInBatchDetail(detail));
 
-contractSkuCompanySaleInBatchDetail (detail) = contractSkuCompanySaleOut(saleOutSaleInBatchDetail(detail));
+contractSkuSaleInBatchDetail (detail) = contractSkuSaleOut(saleOutSaleInBatchDetail(detail));
 isCommissionSaleInBatchDetail 'Продажа на комиссию' (detail) = isCommissionSaleOut(saleOutSaleInBatchDetail(detail));
 
 isCommissionSaleIn 'Продажа на комиссию' (saleIn) = isCommissionSaleOut(saleOutSaleIn(saleIn));
@@ -245,7 +247,7 @@ EXTEND CLASS saleInBatchDetail : batchA;
 @implementBatchCustom(saleInBatchDetail, sku, stock, cost);
 quantityBatch(batch) += quantitySaleInBatchDetail(batch);
 ownerBatchA (batch) += IF isCommissionSaleInBatchDetail(batch) THEN legalEntityStock(destinationStockSaleInBatchDetail(batch)) ELSE legalEntityStock(stockSaleInBatchDetail(batch));
-commissionContractSkuBatchA (batch) += contractSkuCompanySaleInBatchDetail(batch) AND isCommissionSaleInBatchDetail(batch);
+commissionContractSkuBatchA (batch) += contractSkuSaleInBatchDetail(batch) AND isCommissionSaleInBatchDetail(batch);
 importerPriceBatchA(batch) += importerPriceSaleInBatchDetail(batch);
 supplierPriceBatchA(batch) += supplierPriceSaleInBatchDetail(batch);
 rangeVATBatchA(batch) += rangeVATSaleInBatchDetail(batch);
@@ -313,10 +315,10 @@ prevRangeVATBatch (batch) = PREV(rangeVATBatchA(batch)) AND batch IS batch;
 @defineDocumentTransferPriceActExtra (sale, prevRangeVATBatch);
 notPassToBookkeepingListRegister (inputListRegister) += isCommissionSaleOut(saleOutTransferPriceActSale(inputListRegister));
 
-contractSkuCompanyTransferPriceActSale(transferPriceActSale) = contractSkuCompanySaleOut(saleOutTransferPriceActSale(transferPriceActSale));
+contractSkuTransferPriceActSale(transferPriceActSale) = contractSkuSaleOut(saleOutTransferPriceActSale(transferPriceActSale));
 
-dataFromContractListRegister (listRegister) += dateFromContract(contractSkuCompanyTransferPriceActSale (listRegister));
-numberContractListRegister (listRegister) += numberContract(contractSkuCompanyTransferPriceActSale (listRegister));
+dataFromContractListRegister (listRegister) += dateFromContract(contractSkuTransferPriceActSale (listRegister));
+numberContractListRegister (listRegister) += numberContract(contractSkuTransferPriceActSale (listRegister));
 fullInputListRegister (inputListRegister) +=  inputListRegister IS transferPriceActSale;
 
 printInputListRegisterSaleIn 'Реестр цен' (saleIn) = printListRegister(transferPriceActSaleSaleOut(saleOutSaleIn(saleIn))) TOOLBAR;

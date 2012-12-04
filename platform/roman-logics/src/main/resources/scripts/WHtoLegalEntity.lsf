@@ -10,7 +10,7 @@ REQUIRE System,
         RetailPrice,
         Employee,
         StorePriceTransfer,
-        Consignment,
+        ConsignmentBy,
         WholesalePrice,
         Customer,
         AccountDocument,
@@ -20,9 +20,9 @@ PRIORITY Stock, RomanLogicsModule;
 
 // ---------------------------------------- Перемещение ------------------------------------ //
 
-CLASS invoiceWHOut 'Реализация товара по безналичному расчету' : historyObject, numberedObject, consignment, outAccountDocumentLedger, innerDocument;
+CLASS invoiceWHOut 'Реализация товара по безналичному расчету' : historyObject, numberedObject, outAccountDocumentLedger, innerDocument;
 CLASS invoiceWHOutPosted 'Проведенная реализация товара по безналичному расчету' : invoiceWHOut, postedObject;
-CLASS invoiceWHOutDetail 'Строка реализации товара по безналичному расчету' : consignmentDetail;
+CLASS invoiceWHOutDetail 'Строка реализации товара по безналичному расчету';
 
 @defineDocument(invoiceWHOut);
 
@@ -58,7 +58,7 @@ nameCustomerInvoiceWHOut 'Покупатель' (invoice) = name(customerInvoice
 
 //----------------
 
-@defineDocumentContract(invoiceWHOut, contractSkuCustomer, singleContractSkuCustomerLegalEntityCustomer, legalEntityInvoiceWHOut, customerInvoiceWHOut,
+@defineDocumentContract(invoiceWHOut, contractSku, legalEntityStock, customer, singleContractSkuSupplierCustomer,
                         'Сторона A договора продажи товаров не соответствуют компании склада-отправителя',
                         'Сторона B договора продажи товаров не соответствуют компании склада-получателя');
 
@@ -203,6 +203,7 @@ supplierConsignment (consignment) += legalEntityWarehouse(warehouseInvoiceWHOut(
 supplierStockConsignment (consignment) += warehouseInvoiceWHOut(consignment);
 customerConsignment (consignment) += customerInvoiceWHOut(consignment);
 
+EXTEND CLASS invoiceWHOutDetail : consignmentDetail;
 consignmentConsignmentDetail (consignmentDetail) += invoiceWHOutInvoiceWHOutDetail(consignmentDetail);
 skuConsignmentDetail (consignmentDetail) += skuInvoiceWHOutDetail (consignmentDetail);
 quantityConsignmentDetail (consignmentDetail) += quantityInvoiceWHOutDetail (consignmentDetail);
@@ -217,8 +218,8 @@ sumVATConsignmentDetail (consignmentDetail) +=  sumVATInvoiceWHOutDetail(consign
 
 sumInvoiceConsignmentDetail (consignmentDetail) += sumInvoiceInvoiceWHOutDetail(consignmentDetail);
 
-grossWeightTonConsignmentDetail (consignmentDetail) += grossWeightInvoiceWHOutDetail (consignmentDetail);
-quantityPackConsignmentDetail (consignmentDetail) += packQuantityInvoiceWHOutDetail (consignmentDetail);
+grossWeightConsignmentDetail (consignmentDetail) += grossWeightInvoiceWHOutDetail (consignmentDetail);
+quantityPackConsignmentDetail (consignmentDetail) += quantityPackInvoiceWHOutDetail (consignmentDetail);
 //shortNameUOMConsignmentDetail (consignmentDetail) += shortNameUOMInvoiceWHOutDetail (consignmentDetail);
 
 noteInvoiceWHOutDetail (invoiceWHOutDetail) = [FORMULA STRING[30] '\'Цена импортера:\' ||  \' \' || CAST($1 AS TEXT)'](
@@ -254,7 +255,7 @@ dialogBatchAInvoiceWHOutDetail 'Партия' (invoiceWHOutDetail) = ACTION (inv
 }
 
 EXTEND FORM invoiceWHOut
-    PROPERTIES(t) numberContractSkuCustomerInvoiceWHOut, nameCurrencyInvoiceWHOut, skipSkuLedgerInvoiceWHOut
+    PROPERTIES(t) numberContractSkuInvoiceWHOut, nameCurrencyInvoiceWHOut, skipSkuLedgerInvoiceWHOut
     PROPERTIES(d) descriptionBatchInvoiceWHOutDetail ON CHANGE EXEC dialogBatchAInvoiceWHOutDetail(d), supplierPriceInvoiceWHOutDetail, supplierSumInvoiceWHOutDetail,
                   valueSupplierVATInvoiceWHOutDetail, sumVATInvoiceWHOutDetail, sumInvoiceInvoiceWHOutDetail, currentBalanceInvoiceWHOutDetail
 ;

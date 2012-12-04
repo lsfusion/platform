@@ -36,7 +36,7 @@ nameCustomerContractSku 'Покупатель' (contract) = name(customerContrac
 partyBContract (contract) += customerContractSku(contract);
 
 TABLE supplierCustomer(legalEntity, legalEntity);
-@defineContractDefaultCustom(contractSku, legalEntity, legalEntity, supplier, customer);
+@defineContractDefault(contractSku, legalEntity, legalEntity, supplier, customer);
 
 CLASS paymentCondition 'Условия оплаты';
 TABLE paymentCondition(paymentCondition);

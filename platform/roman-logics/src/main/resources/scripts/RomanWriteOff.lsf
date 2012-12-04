@@ -8,7 +8,7 @@ REQUIRE System,
         RetailPrice,
         Employee,
         StorePriceTransfer,
-        Consignment,
+        ConsignmentBy,
         WholesalePrice,
         WriteOff,
         AccountDocument,
@@ -20,7 +20,7 @@ PRIORITY Stock, RomanLogicsModule;
 //----------------------------------------------- Списание товара ---------------------------------------------------//
 
 @defineDocumentSkipSkuLedgerCustom(writeOff, writeOffDetail);
-@extendFormDocumentSkipSkuLedgerCustom(writeOff, w, writeOff);
+@extendFormDocumentSkipSkuLedgerCustom(userWriteOff, w, writeOff);
 @extendFormDocumentSkipSkuLedgerCustomReadonly(writeOffs, w, writeOff);
 
 isPostedSkipSkuLedgerWriteOff (writeOff) = isPostedWriteOff(writeOff) AND NOT skipSkuLedgerWriteOff(writeOff);

@@ -3,12 +3,12 @@ MODULE RB;
 REQUIRE System,
 
         Utils,
-        ByStock,
+        StockBy,
         Barcode,
         Numerator,
         Document,
         Historizable,
-        Consignment,
+        ConsignmentBy,
         Declaration,
         WHfromCS,
         WHfromRF,
@@ -29,7 +29,7 @@ REQUIRE System,
         PriceInterval,
         WriteOff,
         RomanWriteOff,
-        ByCustomer,
+        CustomerBy,
         Inventory,
         Surplus,
         Particulars,
@@ -253,11 +253,15 @@ NAVIGATOR {
 
     ADD machineryNavigator AFTER wholesaleTrade TO leftToolbar;
 
-    NEW finance 'Финансы' AFTER machineryNavigator TO leftToolbar {
+    ADD transportNavigator AFTER machineryNavigator TO leftToolbar;
+
+    NEW finance 'Финансы' AFTER transportNavigator TO leftToolbar {
         ADD contractNavigator;
     }
 
     NEW hr 'Кадры' AFTER machineryNavigator TO leftToolbar {
         ADD employees;
     }
+
+    ADD accountElement TO leftToolbar;
 }

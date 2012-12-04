@@ -11,7 +11,7 @@ REQUIRE System,
         InnerOrder,
         Employee,
         StorePriceTransfer,
-        Consignment,
+        ConsignmentBy,
         AccountDocument,
         RomanLogicsModule;
 

@@ -17,9 +17,6 @@ REQUIRE System,
 
 PRIORITY Stock, LegalEntity, Store, RomanLogicsModule;
 
-partyAContract(contract) += sellerContract(contract);
-partyBContract(contract) += subjectContract(contract);
-
 changeMainCompositionSkuLanguage = ACTION (sku, freight) {
     REQUEST STRING[200] INPUT;
     SET mainCompositionSkuLanguage(sku, language) IF language == languageFreight(freight) <- requestedString();
@@ -207,12 +204,12 @@ EXTEND DESIGN freightShipmentForm {
 
 EXTEND FORM freightChangeForm
 
-    PROPERTIES (freight, sku) nameCategoryFreightLanguageSku AFTER nameCategoryArticleSku(sku) SHOWIF languageFreight(freight),
-                              nameCountryLanguageFreightSku  AFTER nameCountrySku(sku) SHOWIF languageFreight(freight)
+    PROPERTIES (freight, sku) nameCategoryFreightLanguageSku AFTER nameCategoryArticleSku SHOWIF languageFreight(freight),
+                              nameCountryLanguageFreightSku  AFTER nameCountrySku SHOWIF languageFreight(freight)
 
     PROPERTIES (sku) mainCompositionOriginSku, mainCompositionSku, translationMainCompositionSku, translationAllMainComposition
-    PROPERTIES (sku, freight) sidCustomCategory10SkuFreight BEFORE nameCountrySku(sku),
-                              nameSubCategorySkuFreight BEFORE nameCountrySku(sku),
+    PROPERTIES (sku, freight) sidCustomCategory10SkuFreight BEFORE nameCountrySku,
+                              nameSubCategorySkuFreight BEFORE nameCountrySku,
                               mainCompositionSkuFreight ON CHANGE EXEC changeMainCompositionSkuLanguage(sku, freight) SHOWIF languageFreight(freight),
                               translationMainCompositionSkuFreight SHOWIF languageFreight(freight), translationAllMainCompositionLanguage SHOWIF languageFreight(freight)
 

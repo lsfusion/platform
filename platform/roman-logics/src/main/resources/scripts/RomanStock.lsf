@@ -1,6 +1,6 @@
 MODULE RomanStock;
 
-REQUIRE ByStock, Warehouse, Barcode, RomanLogicsModule, Contract, MasterData, I18n;
+REQUIRE StockBy, Warehouse, Barcode, RomanLogicsModule, Contract, MasterData, I18n;
 
 PRIORITY Stock, RomanLogicsModule;
 
@@ -99,14 +99,14 @@ typeBatch 'Тип партии' (batch) = IF batch IS batchA THEN 'А' AND batch
 orderABatch (batch) = IF batch IS batchA THEN 0 IF batch IS batchA ELSE 1 IF batch IS batchB PERSISTENT;
 orderBBatch (batch) = IF batch IS batchB THEN 0 IF batch IS batchB ELSE 1 IF batch IS batchA PERSISTENT;
 
-META implementSkuLedgerOutFIFOBalanceA (concrete, skuProp, stockProp)
-    @implementSkuLedgerOutFIFOBalance (concrete, skuProp, stockProp);
-    orderOutFIFOSkuLedgerBatch (ledger, batch) += orderABatch(batch) IF ledger IS concrete##Detail;
+META implementSkuLedgerOutFIFOBalanceA (object, skuProp, stockProp)
+    @implementSkuLedgerOutFIFOBalance (object, skuProp, stockProp);
+    orderOutFIFOSkuLedgerBatch (ledger, batch) += orderABatch(batch) IF ledger IS object;
 END
 
-META implementSkuLedgerOutFIFOBalanceB (concrete, skuProp, stockProp)
-    @implementSkuLedgerOutFIFOBalance (concrete, skuProp, stockProp);
-    orderOutFIFOSkuLedgerBatch (ledger, batch) += orderBBatch(batch) IF ledger IS concrete##Detail;
+META implementSkuLedgerOutFIFOBalanceB (object, skuProp, stockProp)
+    @implementSkuLedgerOutFIFOBalance (object, skuProp, stockProp);
+    orderOutFIFOSkuLedgerBatch (ledger, batch) += orderBBatch(batch) IF ledger IS object;
 END
 
 // ------------------------------------------------- Внутренние партии ----------------------------------------- //

@@ -193,7 +193,7 @@ dateCorrectionDeclaration 'Дата оплаты КТС' = DATA DATE (declaratio
 declarationInnerInvoice 'Декларация инвойса (ИД)' = DATA declaration(innerInvoice) IN idGroup;
 sidDeclarationInnerInvoice 'Декларация инвойса' (innerInvoice) = sidDeclaration(declarationInnerInvoice(innerInvoice)) IN baseGroup;
 
-contractDeclaration = DATA contractSkuSupplier(declaration);
+contractDeclaration = DATA contractSku (declaration);
 contractInvoicesDeclaration = GROUP MAX contractInnerInvoice(innerInvoice) BY declarationInnerInvoice(innerInvoice);
 
 numberContractDeclaration 'Договор' (declaration) = numberContract(contractInvoicesDeclaration(declaration));

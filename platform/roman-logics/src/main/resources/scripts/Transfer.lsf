@@ -10,7 +10,7 @@ REQUIRE System,
         RetailPrice,
         Employee,
         StorePriceTransfer,
-        Consignment,
+        ConsignmentBy,
         AccountDocument,
         ContractCompany,
         RomanLogicsModule;
@@ -19,10 +19,10 @@ PRIORITY Stock, RomanLogicsModule;
 
 // ---------------------------------------- Перемещение ------------------------------------ //
 
-CLASS transferOut 'Перемещение товаров по накладным' : historyObject, numberedObject, innerDocument, consignment, outAccountDocumentLedger;
+CLASS transferOut 'Перемещение товаров по накладным' : historyObject, numberedObject, innerDocument, outAccountDocumentLedger;
 CLASS transferOutPosted 'Проведенное перемещение товаров по накладным' : transferOut, postedObject;
 CLASS transferOutDetail 'Строка перемещения товаров по накладным';
-CLASS transferOutBatchDetail 'Строка перемещения товаров по накладным (по партиям)' : consignmentDetail;
+CLASS transferOutBatchDetail 'Строка перемещения товаров по накладным (по партиям)';
 
 @defineDocumentTransferOut(transfer, 'Перемещение товаров по накладным', sku, stock);
 @defineDocumentFormTransferOut(transfer, 'Перемещение товаров по накладным');
@@ -30,7 +30,7 @@ CLASS transferOutBatchDetail 'Строка перемещения товаров
 @defineDocumentCurrency(transferOut);
 @deriveDocumentCurrency(transferOut, stock);
 
-CONSTRAINT legalEntityTransferOut(transferOut) != destinationLegalEntityTransferOut(transferOut) CHECKED BY destinationStockTransferOut
+CONSTRAINT legalEntityStockTransferOut(transferOut) != destinationLegalEntityStockTransferOut(transferOut) CHECKED BY destinationStockTransferOut
     MESSAGE 'Перемещение товаров должно идти между складами одной компании';
 
 @defineDocumentDetailSkuArticle(transferOut);
@@ -46,7 +46,7 @@ isCommissionTransferOut 'Продажа на комиссию' (transferOut) = T
 CONSTRAINT typeContractSkuDate(commissionContractSkuTransferOut(transferOut), dateTransferOut(transferOut)) != contractSkuType.commission
     CHECKED BY commissionContractSkuTransferOut MESSAGE 'Для перемещения выбран договор, который не является договором комиссии';
 
-CONSTRAINT partyBContract(commissionContractSkuTransferOut(transferOut)) != legalEntityTransferOut(transferOut)
+CONSTRAINT partyBContract(commissionContractSkuTransferOut(transferOut)) != legalEntityStockTransferOut(transferOut)
     CHECKED BY commissionContractSkuTransferOut MESSAGE 'Для перемещения выбран договор комиссии, у которого покупатель не совпадает с компанией склада';
 
 EXTEND FORM transferOut
@@ -104,7 +104,9 @@ skipSkuLedger (ledger) += skipSkuLedgerTransferOutDetail(ledger);
 supplierConsignment (consignment) += legalEntityStock(stockTransferOut(consignment));
 supplierStockConsignment (consignment) += stockTransferOut(consignment);
 customerConsignment (consignment) += legalEntityStock(destinationStockTransferOut(consignment));
+customerStockConsignment (consignment) += destinationStockTransferOut(consignment);
 
+EXTEND CLASS transferOutBatchDetail : consignmentDetail;
 consignmentConsignmentDetail (consignmentDetail) += transferOutTransferOutBatchDetail (consignmentDetail);
 skuConsignmentDetail (consignmentDetail) += skuTransferOutBatchDetail (consignmentDetail);
 quantityConsignmentDetail (consignmentDetail) += quantityTransferOutBatchDetail (consignmentDetail);
@@ -137,8 +139,8 @@ sumInvoiceConsignmentDetail (consignmentDetail) += IF isStockToStockTransferOutB
     THEN sumInvoiceTransferOutBatchDetail(consignmentDetail)
     ELSE retailPriceTransferOutDetail(transferOutDetailTransferOutBatchDetail(consignmentDetail)) * quantityTransferOutBatchDetail (consignmentDetail);
 
-grossWeightTonConsignmentDetail (consignmentDetail) += grossWeightTransferOutBatchDetail (consignmentDetail);
-quantityPackConsignmentDetail (consignmentDetail) += packQuantityTransferOutBatchDetail (consignmentDetail);
+grossWeightConsignmentDetail (consignmentDetail) += grossWeightTransferOutBatchDetail (consignmentDetail);
+quantityPackConsignmentDetail (consignmentDetail) += quantityPackTransferOutBatchDetail (consignmentDetail);
 //shortNameUOMConsignmentDetail (consignmentDetail) += shortNameUOMTransferOutBatchDetail (consignmentDetail);
 
 @defineDocumentFormTransferOutConsignment(transfer, t);

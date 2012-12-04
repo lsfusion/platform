@@ -385,17 +385,17 @@ quantityAOrderPickingDetailSkuOrderPicking (sku, orderPicking) = GROUP SUM
     quantityOrderPickingDetailBatchOrderPicking (batch, orderPicking) IF batch IS batchA AND NOT commissionContractSkuBatchA(batch)
     BY skuBatch(batch), orderPicking;
 
-quantityOrderPickingDetailSkuContractSkuCompanyOrderPicking(sku, contractSkuCompany, orderPicking) = GROUP SUM
+quantityOrderPickingDetailSkuContractSkuOrderPicking(sku, contractSku, orderPicking) = GROUP SUM
     quantityOrderPickingDetailBatchOrderPicking (batch, orderPicking) AND NOT commissionContractSkuBatchA(batch)
-    BY skuBatch(batch), contractSkuCompanySaleInBatchDetail(batch), orderPicking;
+    BY skuBatch(batch), contractSkuSaleInBatchDetail(batch), orderPicking;
 
-quantityOrderPickingDetailSkuContractCompanyOrderPicking(contractSkuCompany, orderPicking) = GROUP SUM
-    quantityOrderPickingDetailSkuContractSkuCompanyOrderPicking(sku, contractSkuCompany, orderPicking)
-    BY contractSkuCompany, orderPicking;
+quantityOrderPickingDetailSkuContractCompanyOrderPicking(contractSku, orderPicking) = GROUP SUM
+    quantityOrderPickingDetailSkuContractSkuOrderPicking(sku, contractSku, orderPicking)
+    BY contractSku, orderPicking;
 
 quantityOrderPickingDetailSkuCompanyOrderPicking(sku, company, orderPicking) = GROUP SUM
-    quantityOrderPickingDetailSkuContractSkuCompanyOrderPicking(sku, contractSkuCompany, orderPicking)
-    BY sku, companyAContractSkuCompany(contractSkuCompany), orderPicking;
+    quantityOrderPickingDetailSkuContractSkuOrderPicking(sku, contractSku, orderPicking)
+    BY sku, supplierContractSku(contractSku), orderPicking;
 
 leftOrderPickingDetailSkuCompanyOrderPicking(sku, company, orderPicking) = quantityAOrderPickingDetailSkuOrderPicking (sku, orderPicking) (-)
                                                                            quantityOrderPickingDetailSkuCompanyOrderPicking(sku, company, orderPicking);
@@ -457,16 +457,16 @@ createDocumentsOrderPicking 'Создать документы' (orderPicking) =
             }
         } ELSE {
             // Делаем возвраты поставщику, если эти партии от него же и приходили
-            FOR quantityOrderPickingDetailSkuContractCompanyOrderPicking(contractSkuCompany, orderPicking) AND
-                companyAContractSkuCompany(contractSkuCompany) == destinationCompanyOrderPicking(orderPicking) DO {
+            FOR quantityOrderPickingDetailSkuContractCompanyOrderPicking(contractSku, orderPicking) AND
+                supplierContractSku(contractSku) == destinationCompanyOrderPicking(orderPicking) DO {
                 ADDOBJ returnOutPosted;
                 FOR r == addedObject() DO {
                     SET stockReturnOut(r) <- stockOrderPicking(orderPicking);
                     SET destinationStockReturnOut(r) <- destinationStockOrderPicking(orderPicking);
                     SET orderPickingReturnOut(r) <- orderPicking;
-                    SET contractSkuCompanyReturnOut(r) <- contractSkuCompany;
+                    SET contractSkuReturnOut(r) <- contractSku;
 
-                    FOR quantityOrderPickingDetailBatchOrderPicking (batch, orderPicking) IF contractSkuCompanySaleInBatchDetail(batch) == contractSkuCompany DO {
+                    FOR quantityOrderPickingDetailBatchOrderPicking (batch, orderPicking) IF contractSkuSaleInBatchDetail(batch) == contractSku DO {
                         ADDOBJ returnOutDetail;
                         FOR d == addedObject() DO {
                              SET returnOutReturnOutDetail(d) <- r;
@@ -497,13 +497,13 @@ createDocumentsOrderPicking 'Создать документы' (orderPicking) =
             }
             FOR quantityOrderPickingDetailCommissionContractOrderPicking(commissionContract, orderPicking) DO {
                 // значит просто возврат на указанный склад
-                IF destinationCompanyOrderPicking(orderPicking) == companyAContractSkuCompany(commissionContract) THEN {
+                IF destinationCompanyOrderPicking(orderPicking) == supplierContractSku(commissionContract) THEN {
                     ADDOBJ returnOutPosted;
                     FOR r == addedObject() DO {
                         SET stockReturnOut(r) <- stockOrderPicking(orderPicking);
                         SET destinationStockReturnOut(r) <- destinationStockOrderPicking(orderPicking);
                         SET orderPickingReturnOut(r) <- orderPicking;
-                        SET contractSkuCompanyReturnOut(r) <- commissionContract;
+                        SET contractSkuReturnOut(r) <- commissionContract;
 
                         FOR quantityOrderPickingDetailBatchOrderPicking (batch, orderPicking) IF commissionContractSkuBatchA(batch) == commissionContract DO {
                             ADDOBJ returnOutDetail;
@@ -522,7 +522,7 @@ createDocumentsOrderPicking 'Создать документы' (orderPicking) =
                         SET stockReturnOut(r) <- stockOrderPicking(orderPicking);
                         SET destinationStockReturnOut(r) <- stockOrderPickingDetailCommissionContractOrderPicking(commissionContract, orderPicking);
                         SET orderPickingReturnOut(r) <- orderPicking;
-                        SET contractSkuCompanyReturnOut(r) <- commissionContract;
+                        SET contractSkuReturnOut(r) <- commissionContract;
 
                         FOR quantityOrderPickingDetailBatchOrderPicking (batch, orderPicking) IF commissionContractSkuBatchA(batch) == commissionContract DO {
                             ADDOBJ returnOutDetail;

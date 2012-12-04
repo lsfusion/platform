@@ -6,7 +6,7 @@ REQUIRE System,
         Numerator,
         Document,
         RomanDocument,
-        Consignment,
+        ConsignmentBy,
         Declaration,
         MasterData,
         RomanStock,
@@ -14,9 +14,9 @@ REQUIRE System,
 
 PRIORITY Stock, RomanLogicsModule, Utils, Store;
 
-CLASS CStoWH 'Расход с СВХ' : historyObject, numberedObject, consignment;
-CLASS CStoWHDetail 'Строка расхода с СВХ' : consignmentDetail;
-CLASS CStoWHPosted 'Проведенный расход с СВХ' : CStoWH, postedObject, consignment;
+CLASS CStoWH 'Расход с СВХ' : historyObject, numberedObject;
+CLASS CStoWHDetail 'Строка расхода с СВХ';
+CLASS CStoWHPosted 'Проведенный расход с СВХ' : CStoWH, postedObject;
 
 @defineDocument(CStoWH);
 
@@ -387,14 +387,16 @@ useRetailPriceCStoWHDetail(CStoWHDetail) = destinationStockCStoWHDetail(CStoWHDe
 supplierConsignment (consignment) += customStoreCStoWH(consignment);
 supplierStockConsignment (consignment) += customStoreCStoWH(consignment);
 customerConsignment (consignment) += legalEntityStock(destinationStockCStoWH(consignment));
+customerStockConsignment (consignment) += destinationStockCStoWH(consignment);
 
+EXTEND CLASS CStoWHDetail : consignmentDetail;
 consignmentConsignmentDetail (consignmentDetail) += CStoWHCStoWHDetail (consignmentDetail);
 skuConsignmentDetail (consignmentDetail) += skuCStoWHDetail (consignmentDetail);
 quantityConsignmentDetail (consignmentDetail) += quantityCStoWHDetail (consignmentDetail);
 priceConsignmentDetail (consignmentDetail) += priceCStoWHDetail (consignmentDetail);
 sumInvoiceConsignmentDetail (consignmentDetail) += printSumCStoWHDetail (consignmentDetail);
 sumConsignmentDetail (consignmentDetail) += printSumCStoWHDetail (consignmentDetail);
-grossWeightTonConsignmentDetail (consignmentDetail) += sumGrossWeightCStoWHDetail (consignmentDetail);
+grossWeightConsignmentDetail (consignmentDetail) += sumGrossWeightCStoWHDetail (consignmentDetail);
 
 currencyConsignment(consignment) += declarationCurrencyCStoWH(consignment);
 isCustomsFlowConsignment (consignment) += consignment IS CStoWH;

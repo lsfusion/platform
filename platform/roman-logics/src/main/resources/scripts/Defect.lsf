@@ -10,7 +10,7 @@ REQUIRE System,
         WriteOff,
         StorePriceTransfer,
         WholesalePrice,
-        Consignment;
+        ConsignmentBy;
 
 PRIORITY Stock;
 

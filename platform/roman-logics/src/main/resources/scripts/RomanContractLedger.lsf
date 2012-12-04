@@ -6,10 +6,10 @@ REQUIRE Supplier,
 
 //---------------------------------------------- Договоры для инвойсов ----------------------------------------------//
 
-userContractInvoice 'Договор инвойса' = DATA contractSkuSupplier (invoice);
+userContractInvoice 'Договор инвойса' = DATA contractSku (invoice);
 numberUserContractInvoice 'Номер договора инвойса' (invoice) = numberContract(userContractInvoice(invoice));
 
-contractDirectInvoice 'Договор инвойса напрямую' = DATA contractSkuSupplier (directInvoice);
+contractDirectInvoice 'Договор инвойса напрямую' = DATA contractSku (directInvoice);
 numberContractDirectInvoice 'Номер договора инвойса напрямую' (directInvoice) = numberContract(contractDirectInvoice(directInvoice));
 
 contractInvoice 'Договор' (invoice) = UNION OVERRIDE userContractInvoice(invoice), contractDirectInvoice(invoice);
