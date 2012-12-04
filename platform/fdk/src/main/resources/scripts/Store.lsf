@@ -36,7 +36,7 @@ FORM chainStores 'Торговая сеть'
 
 // -------------------------------------- Магазин ------------------------------- //
 
-CLASS store 'Магазин' : stockGroup, externalObject, taxUnit, employeeDivisionGroup;
+CLASS store 'Магазин' : stockGroup, externalObject, taxUnit, employeeDivisionGroup, POI;
 TABLE store (store);
 
 legalEntityStore = DATA legalEntity (store) NOT NULL;
@@ -48,6 +48,13 @@ regionStore = DATA region (store);
 nameRegionStore 'Регион' (store) = name(regionStore(store));
 
 addressStore 'Адрес' = DATA STRING[100] (store);
+addressPOI (store) += addressStore(store);
+
+latitudeStore 'Координата X' = DATA NUMERIC[10,5](store);
+longitudeStore 'Координата Y' = DATA NUMERIC[10,5](store);
+
+latitudePOI (store) += latitudeStore(store);
+longitudePOI (store) += longitudeStore(store);
 
 storeTypeStore = DATA storeType (store) AUTOSET;
 nameStoreTypeStore 'Формат' (store) = name(storeTypeStore(store)) IN baseGroup;
@@ -100,6 +107,12 @@ primaryDepartmentStoreStore 'Основной отдел' (store) =
 addressDepartmentStore 'Адрес' (departmentStore) = addressStore(storeDepartmentStore(departmentStore));
 addressStock (departmentStore) += addressDepartmentStore(departmentStore);
 
+latitudeDepartmentStore 'Координата X' (departmentStore) = latitudeStore(storeDepartmentStore(departmentStore));
+longitudeDepartmentStore 'Координата Y' (departmentStore) = longitudeStore(storeDepartmentStore(departmentStore));
+
+latitudePOI (departmentStore) += latitudeDepartmentStore(departmentStore);
+longitudePOI (departmentStore) += longitudeDepartmentStore(departmentStore);
+
 explicitBatchLedgerDepartmentStore 'Партионный учет' = DATA BOOLEAN (departmentStore);
 explicitBatchLedgerStock(stock) += explicitBatchLedgerDepartmentStore(stock);
 
@@ -123,7 +136,7 @@ isRetailStock (stock) += isDepartmentStoreStock (stock);
 FORM departmentStore 'Отдел магазина'
     OBJECTS d = departmentStore FIXED PANEL
     PROPERTIES(d) nameDep=name, nameStoreDepartmentStore, tradingSquareDepartmentStore, dialogTradingSquareDepartmentStore, nameWriteOffCommitteeStock,
-                  explicitBatchLedgerStock
+                  explicitBatchLedgerStock, latitudePOI, longitudePOI
 
     OBJECTS e = employee
     PROPERTIES(e) READONLY userFirstName, userLastName
@@ -196,7 +209,7 @@ DESIGN departmentStores FROM DEFAULT {
 
 FORM store 'Магазин'
     OBJECTS s=store FIXED PANEL
-    PROPERTIES(s) name, addressStore, nameStoreTypeStore, tradingSquareStore, nameLegalEntityStore, nameRegionStore
+    PROPERTIES(s) name, addressStore, nameStoreTypeStore, tradingSquareStore, nameLegalEntityStore, nameRegionStore, latitudePOI, longitudePOI, showOnMapPOI
 
     OBJECTS d=departmentStore
     PROPERTIES(d) READONLY objectClassName, name, tradingSquareDepartmentStore

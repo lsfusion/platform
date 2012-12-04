@@ -12,8 +12,8 @@ nameCountryPOI 'Страна' (poi) = name(countryPOI(poi));
 
 addressPOI 'Адрес' = ABSTRACT STRING[100] (POI) PERSISTENT;
 
-latitudePOI 'Координата X' = DATA NUMERIC[10,5] (POI);
-longitudePOI 'Координата Y' = DATA NUMERIC[10,5] (POI);
+latitudePOI 'Координата X' = ABSTRACT NUMERIC[10,5] (POI);
+longitudePOI 'Координата Y' = ABSTRACT NUMERIC[10,5] (POI);
 
 // Получение координат
 readLatitude 'Координата X' = SESSION DATA NUMERIC[10,5] ();

@@ -36,9 +36,10 @@ EXTEND FORM trip
     PROPERTIES quantityInvoicedTripSku(t, sk) AFTER quantityOrderedTripSku
 
     FILTERGROUP filterDateInvoice
-        FILTER 'Текущие' 'F10' dateInvoice(i) <= dateTrip(t) DEFAULT
+        FILTER 'Текущие' 'F9' dateInvoice(i) <= dateTrip(t) DEFAULT
     FILTERGROUP filterInvoice
         FILTER 'Не расписанные или в текущем рейсе' 'F11' filterTripInvoice(t, i) DEFAULT
+        FILTER 'В текущем рейсе' 'F10' inTripInvoice(t, i)
 
     FILTERS customerInvoice(i) == partyB() OR (i IS invoice AND NOT partyB()),
             supplierInvoice(i) == partyA() OR (i IS invoice AND NOT partyA())

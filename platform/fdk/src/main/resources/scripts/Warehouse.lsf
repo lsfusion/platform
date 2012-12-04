@@ -33,6 +33,12 @@ userLegalEntityStock(legalEntity, stock) += userLegalEntityWarehouse(legalEntity
 addressWarehouse 'Адрес' (warehouse) = DATA STRING[100] (warehouse);
 addressStock(stock) += addressWarehouse(stock);
 
+latitudeWarehouse 'Координата X' = DATA NUMERIC[10,5](warehouse);
+longitudeWarehouse 'Координата Y' = DATA NUMERIC[10,5](warehouse);
+
+latitudePOI (warehouse) += latitudeWarehouse(warehouse);
+longitudePOI (warehouse) += longitudeWarehouse(warehouse);
+
 employeeDivisionGroupEmployeeDivision (warehouse) += warehouseGroupWarehouse(warehouse);
 
 explicitBatchLedgerWarehouse 'Партионный учет' = DATA BOOLEAN (warehouse);

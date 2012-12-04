@@ -36,6 +36,12 @@ countryPOI (poi) += countryStock(poi);
 addressStock 'Адрес' (stock) = ABSTRACT STRING[100] (stock) PERSISTENT;
 addressPOI (poi) += addressStock(poi);
 
+//latitudeStock 'Координата X' = DATA NUMERIC[10,5](stock);
+//longitudeStock 'Координата Y' = DATA NUMERIC[10,5](stock);
+
+//latitudePOI(stock) += latitudeStock(stock);
+//longitudePOI(stock) += longitudeStock(stock);
+
 TABLE stockGroupStock (stockGroup, stock);
 isParentStockGroupStock (stockGroup, stock) = isParentStockGroupStockGroup(stockGroupStock(stock), stockGroup) PERSISTENT;
 

@@ -69,6 +69,14 @@ createShipmentsTrip 'Присоединить поставки' (trip) = ACTION 
     SET tripShipment(shipment) <- trip WHERE quantityShipmentDetailTripShipment(trip, shipment);
 } TOOLBAR CONFIRM;
 
+showPointsTrip 'Показать путь на карте' (trip) = ACTION (trip) {
+    FOR quantityTripStock(trip, stock)>0 DO {
+        SET numberPathPOI(stock) <- (1 IF trip IS trip AND stock IS stock) OR numberStockTrip(stock, trip);
+    }
+    EXEC showOnMapPath();
+
+} TOOLBAR;
+
 FORM waybill PRINT
 
     OBJECTS t=trip FIXED PANEL
@@ -126,9 +134,10 @@ FORM trip 'Рейс'
             supplierOrder(o) == partyA() OR (o IS order AND NOT partyA())
 
     FILTERGROUP filterDateOrder
-        FILTER 'Текущие' 'F10' dateOrder(o) <= dateTrip(t) DEFAULT
+        FILTER 'Текущие' 'F9' dateOrder(o) <= dateTrip(t) DEFAULT
     FILTERGROUP filterOrder
         FILTER 'Не расписанные или в текущем рейсе' 'F11' filterTripOrder(t, o) DEFAULT
+        FILTER 'В текущем рейсе' 'F10' inTripOrder(t, o)
 
     OBJECTS od=orderDetail
     PROPERTIES(od) READONLY idBarcodeSkuOrderDetail, nameSkuOrderDetail, shortNameUOMSkuOrderDetail, quantityOrderDetail, grossWeightOrderDetail
@@ -148,9 +157,10 @@ FORM trip 'Рейс'
     PROPERTIES createShipmentsTrip(t) TODRAW s FORCE PANEL
 
     FILTERGROUP filterDateShipment
-        FILTER 'Текущие' 'F10' dateShipment(s) <= dateTrip(t) DEFAULT
+        FILTER 'Текущие' 'F9' dateShipment(s) <= dateTrip(t) DEFAULT
     FILTERGROUP filterShipment
         FILTER 'Не расписанные или в текущем рейсе' 'F11' filterTripShipment(t, s) DEFAULT
+        FILTER 'В текущем рейсе' 'F10' inTripShipment(t, s)
 
     OBJECTS sd=shipmentDetail
     PROPERTIES(sd) READONLY idBarcodeSkuShipmentDetail, nameSkuShipmentDetail, shortNameUOMSkuShipmentDetail, quantityShipmentDetail, grossWeightShipmentDetail
@@ -184,6 +194,7 @@ FORM trip 'Рейс'
     PROPERTIES(st, t) numberStockTrip
     FILTERS quantityTripStock (t, st)>0
     PROPERTIES (t) printWaybill TODRAW st
+    PROPERTIES (t) showPointsTrip TODRAW st
 
     EDIT trip OBJECT t
 ;
