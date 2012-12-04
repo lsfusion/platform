@@ -201,7 +201,7 @@ META defineInvoice(sign, stockProp)
         BY stockProp###OrderDetail(orderDetail), orderOrderDetail(orderDetail);
 
     // Создание заказа на основе инвойса //
-
+    inOrderSupplierStock (order, supplierStock) = GROUP SUM 1 IF supplierStockOrderDetail(orderDetail) == supplierStock BY orderOrderDetail(orderDetail), supplierStock;
     inOrderSupplier (order, supplier) = GROUP SUM 1 IF legalEntityStock(supplierStockOrderDetail(orderDetail)) == supplier BY orderOrderDetail(orderDetail), supplier;
 
     FORM invoiceOrders 'Заказы'###sign
@@ -286,9 +286,9 @@ META defineInvoice(sign, stockProp)
     createExplicitBatchDetailUserInvoiceOrder = ABSTRACT ACTION (userInvoice, order);
     useExplicitBatchDetailUserInvoiceOrder = ABSTRACT BOOLEAN (userInvoice, order);
 
-    differentStockInDetailsStock (stock) = differentStocksInDetailsLegalEntity(legalEntityStock(stock)) PERSISTENT;
+    differentStocksInDetailsStock (stock) = differentStocksInDetailsLegalEntity(legalEntityStock(stock)) PERSISTENT;
 
-    inOrderDetailUserInvoice (orderDetail, userInvoice) = IF differentStockInDetailsStock(customerStockOrderDetail(orderDetail))
+    inOrderDetailUserInvoice (orderDetail, userInvoice) = IF differentStocksInDetailsStock(customerStockOrderDetail(orderDetail))
         THEN TRUE AND orderDetail IS orderDetail AND userInvoice IS userInvoice
         ELSE TRUE AND supplierStockOrderDetail(orderDetail)==supplierStockUserInvoice(userInvoice);
 
@@ -328,6 +328,22 @@ META defineInvoice(sign, stockProp)
         EXEC createDetailUserInvoiceOrder(userInvoice, order);
     }
 
+    fillSupplierStockUserInvoiceOrder = ACTION (supplierStock, userInvoice, order) {
+        SET supplierUserInvoice(userInvoice) <- legalEntityStock(supplierStock);
+        SET supplierStockUserInvoice(userInvoice) <- supplierStock AS stock;
+
+        SET customerUserInvoice(userInvoice) <- customerOrder(order);
+        SET customerStockUserInvoice(userInvoice) <- customerStockOrder(order);
+
+        SET currencyUserInvoice(userInvoice) <- currencyOrder(order);
+        SET agreementUserInvoice(userInvoice) <- agreementOrder(order);
+        SET priceListTypeUserInvoice(userInvoice) <- priceListTypeOrder(order);
+
+        SET noteUserInvoice(userInvoice) <- noteOrder(order);
+
+        EXEC createDetailUserInvoiceOrder(userInvoice, order);
+    }
+
     createUserInvoiceOrder 'Создать накладную' = ACTION (order) {
         IF order IS order THEN {
             FOR ADDOBJ i = userInvoice DO {
@@ -339,10 +355,20 @@ META defineInvoice(sign, stockProp)
 
     createUserInvoicePostedOrder 'Создать проведенную накладную' = ACTION (order) {
         IF order IS order THEN {
-            FOR ADDOBJ i = userInvoicePosted DO {
-                EXEC fillUserInvoiceOrder(i, order);
+            IF differentStocksInDetailsStock(customerStockOrder(order)) THEN {
+                FOR ADDOBJ i = userInvoicePosted DO {
+                    EXEC fillUserInvoiceOrder(i, order);
+                }
             }
-        }
+                ELSE {
+                FOR inOrderSupplierStock(order, supplierStock) DO {
+                        FOR ADDOBJ i = userInvoicePosted DO {
+                            EXEC fillSupplierStockUserInvoiceOrder(supplierStock, i, order);
+                        }
+                    }
+
+                }
+            }
     }
     Invoice.createUserInvoicePostedOrder (order) += createUserInvoicePostedOrder(order);
 

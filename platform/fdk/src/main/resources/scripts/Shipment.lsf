@@ -380,7 +380,7 @@ META defineShipment(sign, stockProp)
         }
     }
 
-    inOrderDetailUserShipment (orderDetail, userShipment) = IF differentStockInDetailsStock(customerStockOrderDetail(orderDetail))
+    inOrderDetailUserShipment (orderDetail, userShipment) = IF differentStocksInDetailsStock(customerStockOrderDetail(orderDetail))
         THEN TRUE AND orderDetail IS orderDetail AND userShipment IS userShipment
         ELSE TRUE AND supplierStockOrderDetail(orderDetail)==supplierStockUserShipment(userShipment);
 
