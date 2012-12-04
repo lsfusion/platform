@@ -136,7 +136,7 @@ isRetailStock (stock) += isDepartmentStoreStock (stock);
 FORM departmentStore 'Отдел магазина'
     OBJECTS d = departmentStore FIXED PANEL
     PROPERTIES(d) nameDep=name, nameStoreDepartmentStore, tradingSquareDepartmentStore, dialogTradingSquareDepartmentStore, nameWriteOffCommitteeStock,
-                  explicitBatchLedgerStock, latitudePOI, longitudePOI
+                  explicitBatchLedgerStock
 
     OBJECTS e = employee
     PROPERTIES(e) READONLY userFirstName, userLastName

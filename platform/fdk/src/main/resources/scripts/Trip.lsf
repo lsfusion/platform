@@ -69,10 +69,21 @@ createShipmentsTrip 'Присоединить поставки' (trip) = ACTION 
     SET tripShipment(shipment) <- trip WHERE quantityShipmentDetailTripShipment(trip, shipment);
 } TOOLBAR CONFIRM;
 
+// отображение на карте
 showPointsTrip 'Показать путь на карте' (trip) = ACTION (trip) {
-    FOR quantityTripStock(trip, stock)>0 DO {
-        SET numberPathPOI(stock) <- (1 IF trip IS trip AND stock IS stock) OR numberStockTrip(stock, trip);
-    }
+    SET numberPathPOI(stock) <- 1 IF quantityTripStock(trip, stock)>0 OR numberStockTrip(stock, trip);
+    EXEC showOnMapPath();
+
+} TOOLBAR;
+
+selectTripOrder 'Отмечен' = SESSION DATA BOOLEAN(trip, order);
+
+quantityAllTripStockFrom (trip, stock) = GROUP SUM 1 IF selectTripOrder(trip, order) BY trip, fromStockOrder(order);
+quantityAllTripStockTo (trip, stock) = GROUP SUM 1 IF selectTripOrder(trip, order) BY trip, toStockOrder(order);
+quantityAllTripStock(trip, stock) = UNION SUM quantityAllTripStockFrom(trip, stock), quantityAllTripStockTo(trip, stock);
+
+showPointOrders 'Показать отмеченные заказы' (trip) = ACTION (trip) {
+    SET numberPathPOI(stock) <- 1 IF quantityAllTripStock(trip, stock);
     EXEC showOnMapPath();
 
 } TOOLBAR;
@@ -101,7 +112,6 @@ FORM ordersTrip PRINT
     PROPERTIES (t) nameNumeratorObject, numberObject, seriesObject, dateTrip, timeTrip, nameDriverTrip, sidTruckTrip, nameTruckModelTruckTrip, trailerTruckTrip
 
     OBJECTS o=order FIXED GRID
-    //PROPERTIES(o) numberObject
     FILTERS isPostedOrder(o), inTripOrder(t, o)
 
     OBJECTS s=sku
@@ -123,10 +133,11 @@ FORM trip 'Рейс'
     PROPERTIES (t) READONLY grossWeightOrderedTrip, grossWeightShipmentedTrip
 
     OBJECTS o=order
-    PROPERTIES(t, o) inTripOrder
+    PROPERTIES(t, o) selectTripOrder, inTripOrder
     PROPERTIES(o) READONLY numberOrder, seriesOrder, dateOrder, nameSupplierOrder, nameFromStockOrder, nameCustomerOrder, nameToStockOrder, grossWeightOrderDetailOrder
     PROPERTIES(o) editOrder
     PROPERTIES printOrdersTrip(t) TODRAW o FORCE PANEL
+    PROPERTIES showPointOrders(t) TODRAW o
 
     FILTERS isPostedOrder(o)
 
