@@ -35,6 +35,10 @@ quantityTripStock(trip, stock) = UNION SUM quantityTripStockFrom(trip, stock), q
 numberStockTrip 'Порядковый номер' = DATA INTEGER(stock, trip);
 numberStockTrip(stock, trip) => quantityTripStock(trip, stock)>0 RESOLVE FALSE;
 
+firstStockTrip = DATA stock(trip);
+isFirstStockTrip 'Начальный пункт' (stock, trip) = firstStockTrip(trip)==stock;
+addressFirstStockTrip 'Начальный пункт' (trip) = addressStock(firstStockTrip(trip));
+
 stockPrevTripStock (trip, stock) = PARTITION PREV stock IF quantityTripStock(trip, stock) BY trip ORDER numberStockTrip(stock, trip);
 addressStockPrevTripStock 'Адрес' (trip, stock) = addressStock(stockPrevTripStock (trip, stock));
 
@@ -87,6 +91,15 @@ showPointOrders 'Показать отмеченные заказы' (trip) = AC
     EXEC showOnMapPath();
 
 } TOOLBAR;
+
+createPathTrip 'Рассчитать путь' (trip) = ACTION (trip) {
+    SET startPathPOI() <- firstStockTrip(trip);
+    SET inPathPOI(stock) <- TRUE IF quantityTripStock(trip, stock);
+    EXEC calculatePath();
+    SET numberStockTrip(stock, trip) <- numberPathPOI(stock);
+} TOOLBAR;
+
+
 
 FORM waybill PRINT
 
@@ -202,10 +215,11 @@ FORM trip 'Рейс'
     OBJECTS st=stock
     PROPERTIES(st) READONLY name, addressStock, nameLegalEntityStock
     PROPERTIES(t, st) grossWeightTripToStock
-    PROPERTIES(st, t) numberStockTrip
+    PROPERTIES(st, t) numberStockTrip, isFirstStockTrip
     FILTERS quantityTripStock (t, st)>0
     PROPERTIES (t) printWaybill TODRAW st
     PROPERTIES (t) showPointsTrip TODRAW st
+    PROPERTIES (t) createPathTrip TODRAW st
 
     EDIT trip OBJECT t
 ;
