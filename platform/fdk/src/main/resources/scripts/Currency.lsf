@@ -1,6 +1,6 @@
 MODULE Currency;
 
-REQUIRE System, DefaultData;
+REQUIRE System, Utils, DefaultData;
 
 CLASS currency 'Валюта' : named;
 TABLE currency(currency);

@@ -130,25 +130,15 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP groeq2;
     public LCP lsoeq2;
     public LCP greater2, less2;
-    public LCP greater22, less22;
-    public LCP between;
     protected LCP betweenDate;
-    public LCP betweenDates;
     public LCP object1, and1, andNot1;
     public LCP equals2, diff2;
     public LCP upper;
     public LCP sum;
     public LCP subtract;
-    protected LCP delta;
     public LCP multiply;
     public LCP subtractInteger;
-    public LCP subtractIntegerIncl;
-    protected LCP sqr;
-    protected LCP sqrt;
     public LCP divide;
-    public LCP divideInteger;
-    public LCP divideIntegerNeg;
-    public LCP divideIntegerRnd;
     public LCP sumDate;
     public LCP sumDateTimeDay;
     public LCP subtractDate;
@@ -159,10 +149,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP string2, istring2;
     public LCP ustring2CM, ustring2SP, ustring2, ustring3, ustring4, ustring5CM;
 
-    protected LCP concat2;
-    public LCP percent;
-    public LCP percent2;
-    public LCP share;
     public LCP weekInDate;
     public LCP numberDOWInDate;
     public LCP numberMonthInDate;
@@ -184,14 +170,10 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP vtrue;
     public LCP vzero;
     public LCP vnull;
-    public LCP charLength;
-
-    public LCP round;
 
     public LCP minusInteger;
     public LCP minus;
 
-    public LCP dumb1;
     public LCP dumb2;
 
     public LCP<?> name;
@@ -209,10 +191,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LAP formCancel;
     public LAP formOk;
     public LAP formClose;
-
-    public LCP daysInclBetweenDates;
-    public LCP weeksInclBetweenDates;
-    public LCP weeksNullInclBetweenDates;
 
     public LCP sumDateWeekFrom;
     public LCP sumDateWeekTo;
@@ -307,7 +285,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     public LCP hostname;
     public LCP notZero;
-    public LCP onlyNotZero;
 
     public LAP delete;
     public LAP deleteApply;
@@ -865,7 +842,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         formClose = addProperty(null, new LAP(new CloseActionProperty()));
 
         notZero = addJProp(diff2, 1, vzero);
-        onlyNotZero = addJProp(andNot1, 1, addJProp(equals2, 1, vzero), 1);
 
         sumDateWeekFrom = addJProp("sumDateWeekFrom", getString("logics.date.from"), and(false, false), addSFProp("((prm1)+(prm2)*7)", DateClass.instance, 2), 1, 2, is(DateClass.instance), 1, is(IntegerClass.instance), 2);
         sumDateWeekTo = addJProp("sumDateWeekTo", getString("logics.date.to"), and(false, false), addSFProp("((prm1)+((prm2)*7+6))", DateClass.instance, 2), 1, 2, is(DateClass.instance), 1, is(IntegerClass.instance), 2);
@@ -1236,40 +1212,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         insensitiveTranslationDictionaryTerm = addMGProp(baseGroup, "insensitiveTranslationDictionaryTerm", getString("logics.dictionary.translation.insensitive"), translationDictionary, entryDictionary, 1, insensitiveTermDictionary, 1);
 
         //todo : инлайнить в свои модули
-
-        //        object1 = addAFProp();
-        //        betweenDate = addJProp(getString("logics.date.of.doc.between"), betweenDates, date, 1, 2, 3);
-        //        dumb2 = dumb(2);
-
-        concat2 = addCCProp(2);
-        greater22 = addJProp(greater2, concat2, 1, 2, concat2, 3, 4);
-        less22 = addJProp(less2, concat2, 1, 2, concat2, 3, 4);
-
-        between = addJProp("between", getString("logics.between"), and1, groeq2, 1, 2, groeq2, 3, 1);
-        betweenDates = addJProp(getString("logics.date.of.doc.between"), between, object(DateClass.instance), 1, object(DateClass.instance), 2, object(DateClass.instance), 3);
-
-        dumb1 = dumb(1);
-
-        // В Utils.lsf
-        sqr = addSFProp("sqr", "(prm1)*(prm1)", 1);
-        sqrt = addSFProp("sqrt", "sqrt(prm1)", 1);
-        percent = addSFProp("percent", "((prm1)*(prm2)/100)", 2);
-        share = addSFProp("share", "((prm1)*100/(prm2))", 2);
-
-        round = addSFProp("round", "round(CAST((prm1) as numeric),prm2)", 2);
-
-        delta = addSFProp("delta", "abs((prm1)-(prm2))", 2);
-
-        charLength = addSFProp("char_length(prm1)", IntegerClass.instance, 1);
-
-        divideInteger = addSFProp("divideInteger", "CAST(CAST(trunc(prm1) AS integer)/CAST(trunc(prm2) as integer) as integer)", IntegerClass.instance, 2);
-        divideIntegerNeg = addSFProp("divideIntegerNeg", "CASE WHEN CAST((prm1) AS integer)<0 THEN -CAST(((-CAST((prm1) as integer)-1)/CAST((prm2) as integer)) as integer) ELSE CAST(CAST((prm1) as integer)/CAST((prm2) as integer) as integer) END", IntegerClass.instance, 2);
-        divideIntegerRnd = addSFProp("divideIntegerRnd", "CAST(round((prm1)/(prm2),0) as integer)", IntegerClass.instance, 2);
-
-        subtractIntegerIncl = addSFProp("subtractIntegerIncl", "((prm1)-(prm2)+1)", IntegerClass.instance, 2);
-        daysInclBetweenDates = addJProp("daysInclBetweenDates", getString("logics.date.quantity.days"), and(false, false), addJProp(subtractIntegerIncl, 2, 1), 1, 2, is(DateClass.instance), 1, is(DateClass.instance), 2);
-        weeksInclBetweenDates = addJProp("weeksInclBetweenDates", getString("logics.date.quantity.weeks"), divideInteger, daysInclBetweenDates, 1, 2, addCProp(IntegerClass.instance, 7));
-        weeksNullInclBetweenDates = addJProp("weeksNullInclBetweenDates", getString("logics.date.quantity.weeks"), onlyNotZero, weeksInclBetweenDates, 1, 2);
 
         // в Country.lsf
         jumpWorkdays = addSFProp("jumpWorkdays", "jumpWorkdays(prm1, prm2, prm3)", DateClass.instance, 3); //1 - country, 2 - date, 3 - days to jump
@@ -2191,7 +2133,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
             LP dumb1 = dumb(1);
             addPropertyDraw(new LP[]{captionProperty, SIDProperty, signatureProperty, returnProperty, classProperty, parentProperty, numberProperty, userLoggableProperty, loggableProperty, storedProperty, isSetNotNullProperty}, objProperties);
-            addPropertyDraw(new LP[]{captionAbstractGroup, SIDAbstractGroup, dumb1, dumb1, dumb1, parentAbstractGroup, numberAbstractGroup, baseLM.dumb1, baseLM.dumb1, baseLM.dumb1, baseLM.dumb1}, objTreeProps);
+            addPropertyDraw(new LP[]{captionAbstractGroup, SIDAbstractGroup, dumb1, dumb1, dumb1, parentAbstractGroup, numberAbstractGroup, dumb1, dumb1, dumb1, dumb1}, objTreeProps);
             addPropertyDraw(new LP[]{captionProperty, SIDProperty, signatureProperty, returnProperty, classProperty, parentProperty, numberProperty, userLoggableProperty, loggableProperty, storedProperty, isSetNotNullProperty}, objProps);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(parentProperty, objProps), Compare.EQUALS, objTreeProps));

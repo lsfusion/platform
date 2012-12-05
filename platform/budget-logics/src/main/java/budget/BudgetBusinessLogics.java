@@ -23,7 +23,8 @@ public class BudgetBusinessLogics extends BusinessLogics<BudgetBusinessLogics> {
 
         addModulesFromResource(
                 "/scripts/DefaultData.lsf",
-                "/scripts/Currency.lsf");
+                "/scripts/Currency.lsf",
+                "/scripts/Utils.lsf");
     }
 
     protected void initAuthentication() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {

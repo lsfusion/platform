@@ -767,6 +767,9 @@ public class RomanLogicsModule extends LogicsModule {
     private LCP barcodeAction4;
     LCP supplierBoxSIDSupplier;
     private LAP seekSupplierBoxSIDSupplier;
+    private LCP between;
+    private LCP betweenDates;
+    private LCP dumb1;
     private LCP quantityPalletShipmentBetweenDate;
     private LCP quantityPalletFreightBetweenDate;
     private LCP quantityShipmentStockSku;
@@ -1789,6 +1792,10 @@ public class RomanLogicsModule extends LogicsModule {
     @Override
     public void initProperties() {
         ConcreteCustomClass country = getCountryClass();
+
+        between = addJProp("between", "Между", baseLM.and1, baseLM.groeq2, 1, 2, baseLM.groeq2, 3, 1);
+        betweenDates = addJProp("Между датами", between, object(DateClass.instance), 1, object(DateClass.instance), 2, object(DateClass.instance), 3);
+        dumb1 = dumb(1);
 
         idGroup.add(baseLM.objectValue);
         baseLM.delete.property.askConfirm = true;
@@ -3069,7 +3076,7 @@ public class RomanLogicsModule extends LogicsModule {
         invoicedShipmentSku = addSGProp(baseGroup, "invoicedShipmentSku", true, true, "Ожид. (пост.)",
                 addJProp(baseLM.and1, quantityDocumentSku, 1, 2, inInvoiceShipment, 1, 3), 3, 2);
 
-        invoicedBetweenDateSku = addSGProp(baseGroup, "invoicedBetweenDateSku", "Заявленное кол-во на период", addJProp(baseLM.and1, invoicedShipmentSku, 1, 2, addJProp(baseLM.betweenDates, dateArrivalShipment, 1, object(DateClass.instance), 3, object(DateClass.instance), 4), 1, 2, 3, 4), 2, 3, 4);
+        invoicedBetweenDateSku = addSGProp(baseGroup, "invoicedBetweenDateSku", "Заявленное кол-во на период", addJProp(baseLM.and1, invoicedShipmentSku, 1, 2, addJProp(betweenDates, dateArrivalShipment, 1, object(DateClass.instance), 3, object(DateClass.instance), 4), 1, 2, 3, 4), 2, 3, 4);
         invoicedBetweenDateBrandSupplier = addSGProp(baseGroup, "invoicedBetweenDateBrandSupplier", "Заявленное кол-во на период", invoicedBetweenDateSku, brandSupplierArticleSku, 1, 2, 3);
 
         emptyBarcodeShipment = addSGProp(privateGroup, "emptyBarcodeShipment", true, true, "Кол-во позиций без штрих-кода",
@@ -3281,7 +3288,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         quantityShipmentSku = addSGProp(baseGroup, "quantityShipmentSku", "Оприход. (пост.)", quantityShipmentStockSku, 1, 3);
 
-        quantityShipmentedBetweenDateSku = addSGProp(baseGroup, "quantityShipmentedBetweenDateSku", "Фактический приход за период", addJProp(baseLM.and1, quantityShipmentSku, 1, 2, addJProp(baseLM.betweenDates, dateArrivalShipment, 1, object(DateClass.instance), 3, object(DateClass.instance), 4), 1, 2, 3, 4), 2, 3, 4);
+        quantityShipmentedBetweenDateSku = addSGProp(baseGroup, "quantityShipmentedBetweenDateSku", "Фактический приход за период", addJProp(baseLM.and1, quantityShipmentSku, 1, 2, addJProp(betweenDates, dateArrivalShipment, 1, object(DateClass.instance), 3, object(DateClass.instance), 4), 1, 2, 3, 4), 2, 3, 4);
         quantityShipmentedBetweenDateBrandSupplier = addSGProp(baseGroup, "quantityShipmentedBetweenDateBrandSupplier", "Фактический приход за период", quantityShipmentedBetweenDateSku, brandSupplierArticleSku, 1, 2, 3);
 
         quantityShipmentedSku = addSGProp(baseGroup, "quantityShipmentedSku", "Фактический приход", quantityShipmentSku, 2);
@@ -3295,7 +3302,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         shipmentedOrderSku = addSGProp(baseGroup, "shipmentedOrderSku", "Прислано по заказу", quantityOrderShipmentSku, 1, 3);
 
-        shipmentedAtTermOrderSku = addSGProp(baseGroup, "shipmentedAtTermOrderSku", "Прислано в срок", addJProp(baseLM.and1, quantityOrderShipmentSku, 1, 2, 3, addJProp(baseLM.betweenDates, dateArrivalShipment, 2, dateFromOrderArticleSku, 1, 3, dateToOrderArticleSku, 1, 3), 1, 2, 3), 1, 3);
+        shipmentedAtTermOrderSku = addSGProp(baseGroup, "shipmentedAtTermOrderSku", "Прислано в срок", addJProp(baseLM.and1, quantityOrderShipmentSku, 1, 2, 3, addJProp(betweenDates, dateArrivalShipment, 2, dateFromOrderArticleSku, 1, 3, dateToOrderArticleSku, 1, 3), 1, 2, 3), 1, 3);
 
         quantityShipment = addSGProp(baseGroup, "quantityShipment", true, "Оприходовано", quantityShipmentSku, 1);
 
@@ -3545,9 +3552,9 @@ public class RomanLogicsModule extends LogicsModule {
         conditionPaymentContractImporterFreight = addJProp(baseGroup, "conditionPaymentContractImporterFreight", "Условие оплаты", conditionPaymentContract, contractImporterFreight, 1, 2);
 
         quantityPalletShipmentBetweenDate = addSGProp(baseGroup, "quantityPalletShipmentBetweenDate", "Кол-во паллет по поставкам за интервал",
-                addJProp(baseLM.and1, quantityPalletShipment, 1, addJProp(baseLM.between, baseLM.date, 1, object(DateClass.instance), 2, object(DateClass.instance), 3), 1, 2, 3), 2, 3);
+                addJProp(baseLM.and1, quantityPalletShipment, 1, addJProp(between, baseLM.date, 1, object(DateClass.instance), 2, object(DateClass.instance), 3), 1, 2, 3), 2, 3);
         quantityPalletFreightBetweenDate = addSGProp(baseGroup, "quantityPalletFreightBetweenDate", "Кол-во паллет по фрахтам за интервал",
-                addJProp(baseLM.and1, palletCountFreight, 1, addJProp(baseLM.between, baseLM.date, 1, object(DateClass.instance), 2, object(DateClass.instance), 3), 1, 2, 3), 2, 3);
+                addJProp(baseLM.and1, palletCountFreight, 1, addJProp(between, baseLM.date, 1, object(DateClass.instance), 2, object(DateClass.instance), 3), 1, 2, 3), 2, 3);
 
         freightBoxNumberPallet = addSGProp(baseGroup, "freightBoxNumberPallet", "Кол-во коробов", addCProp(IntegerClass.instance, 1, freightBox), palletFreightBox, 1);
 
@@ -3628,7 +3635,7 @@ public class RomanLogicsModule extends LogicsModule {
         quantityShipmentedFreightArticle = addSGProp(baseGroup, "quantityShipmentedFreightArticle", true, true, "Кол-во по данным поставщика", quantityShipmentedAllFreightSku, 1, articleSku, 2);
         quantityShipmentedFreightBrandSupplier = addSGProp(baseGroup, "quantityShipmentedFreightBrandSupplier", true, true, "Кол-во по данным поставщика", quantityShipmentedFreightArticle, 1, brandSupplierArticle, 2);
 
-        quantityFreightedBetweenDateSku = addSGProp(baseGroup, "quantityFreightedBetweenDateSku", "Кол-во отгруженное за период", addJProp(and(false, false), quantityFreightSku, 1, 2, is(freightShipped), 1, addJProp(baseLM.betweenDates, baseLM.date, 1, object(DateClass.instance), 3, object(DateClass.instance), 4), 1, 2, 3, 4), 2, 3, 4);
+        quantityFreightedBetweenDateSku = addSGProp(baseGroup, "quantityFreightedBetweenDateSku", "Кол-во отгруженное за период", addJProp(and(false, false), quantityFreightSku, 1, 2, is(freightShipped), 1, addJProp(betweenDates, baseLM.date, 1, object(DateClass.instance), 3, object(DateClass.instance), 4), 1, 2, 3, 4), 2, 3, 4);
         quantityFreightedSku = addSGProp(baseGroup, "quantityFreightedSku", "Кол-во отгруженное", quantityFreightSku, 2);
 
         balanceSku = addDUProp(baseGroup, "balanceSku", "Остатки на складе", quantityShipmentedSku, quantityFreightedSku);
@@ -3878,7 +3885,7 @@ public class RomanLogicsModule extends LogicsModule {
         markupPercentImporterFreightBrandSupplierSku = addJProp(baseGroup, "markupPercentImporterFreightBrandSupplierSku", true, "Надбавка (%)", baseLM.and1, addJProp(markupPercentImporterFreightBrandSupplier, 1, 2, brandSupplierArticleSku, 3), 1, 2, 3, quantityImporterFreightSku, 1, 2, 3);
         markupPercentImporterFreightSku = addSUProp(baseGroup, "markupPercentImporterFreightSku", true, "Надбавка (%)", Union.OVERRIDE, markupPercentImporterFreightArticleSku, markupPercentImporterFreightDataSku);
 
-        LCP round0 = addJProp(baseLM.round, 1, addCProp(IntegerClass.instance, 0));
+        LCP round0 = addJProp(BL.getModule("Utils").getLCPByName("round"), 1, addCProp(IntegerClass.instance, 0));
 
         sumPercentImporterFreightBrandSupplier = addSGProp(baseGroup, "sumPercentImporterFreightBrandSupplier", true, "Сумма процентов надбавок", addJProp(multiplyNumeric2, markupPercentImporterFreightSku, 1, 2, 3, quantityImporterFreightSku, 1, 2, 3), 1, 2, brandSupplierArticleSku, 3);
         averagePercentImporterFreightBrandSupplier = addJProp(baseGroup, "averagePercentImporterFreightBrandSupplier", "Средний процент надбавки", round0, addJProp(divideNumeric2, sumPercentImporterFreightBrandSupplier, 1, 2, 3, quantityImporterFreightBrandSupplier, 1, 2, 3), 1, 2, 3);
@@ -6485,7 +6492,7 @@ public class RomanLogicsModule extends LogicsModule {
         private BalanceBrandWarehouseFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
 
-            objSupplier = addSingleGroupObject(supplier, "Поставщик", baseLM.name, baseLM.dumb1, baseLM.dumb1, baseLM.dumb1);
+            objSupplier = addSingleGroupObject(supplier, "Поставщик", baseLM.name, dumb1, dumb1, dumb1);
 
             objBrand = addSingleGroupObject(brandSupplier, "Бренд", baseLM.name, quantityBrandSupplier);
 
@@ -6507,7 +6514,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             objArticle2 = addSingleGroupObject(article, "Артикул", sidArticle);
             addPropertyDraw(quantityDocumentArticle, objInvoice, objArticle2);
-            addPropertyDraw(objArticle2, baseLM.dumb1, nameArticleSku, nameThemeSupplierArticle, nameCategoryArticleSku);
+            addPropertyDraw(objArticle2, dumb1, nameArticleSku, nameThemeSupplierArticle, nameCategoryArticleSku);
 
             objSku = addSingleGroupObject(sku, "SKU", baseLM.barcode);
             addPropertyDraw(quantityStockSku, objBox, objSku);
@@ -6518,7 +6525,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             objSku2 = addSingleGroupObject(sku, "SKU", baseLM.barcode);
             addPropertyDraw(quantityDocumentSku, objInvoice, objSku2);
-            addPropertyDraw(objSku2, baseLM.dumb1, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem,
+            addPropertyDraw(objSku2, dumb1, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem,
                     nameCountrySku, netWeightSku, mainCompositionSku, additionalCompositionSku);
 
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku2.groupTo);

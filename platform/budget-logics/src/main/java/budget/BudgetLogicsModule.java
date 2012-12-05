@@ -49,7 +49,7 @@ public class BudgetLogicsModule extends LogicsModule {
 
     @Override
     public void initModuleDependencies() {
-        setRequiredModules(Arrays.asList("System"));
+        setRequiredModules(Arrays.asList("System", "Utils"));
     }
 
     @Override
@@ -140,6 +140,8 @@ public class BudgetLogicsModule extends LogicsModule {
         baseCurGroup = addAbstractGroup("baseCurGroup", "Сумма в базовой валюте");
     }
 
+    LCP concat2, greater22, less22;
+    
     LCP inSum, outSum, inCur, outCur, outPerson, outYear, outMonth;
     LCP operationDepartment, nameOperationDepartment;
     LCP personDepartment, reimbursementCurrencyIn, reimbursementPayer, vacationPerson;
@@ -172,6 +174,10 @@ public class BudgetLogicsModule extends LogicsModule {
 
     @Override
     public void initProperties() {
+
+        concat2 = addCCProp(2);
+        greater22 = addJProp(baseLM.greater2, concat2, 1, 2, concat2, 3, 4);
+        less22 = addJProp(baseLM.less2, concat2, 1, 2, concat2, 3, 4);
 
         operationDepartment = addDProp(idGroup, "operDepartment", "Отдел (ИД)", department, departmentAbs);
         nameOperationDepartment = addJProp(baseGroup, "nameOperationDepartment", "Отдел", baseLM.name, operationDepartment, 1);
@@ -351,8 +357,8 @@ public class BudgetLogicsModule extends LogicsModule {
         //args: person, month, year
         isWorkingMonthForPerson = addJProp("isWorkingMonthForPerson", "Рабочий месяц", and(false, false, true, true),
                 is(person), 1, is(absMonth), 2, is(YearClass.instance), 3,
-                addJProp(baseLM.less22, 3, 2, personStartWorkYear, 1, personStartWorkMonth, 1), 1, 2, 3,
-                addJProp(baseLM.greater22, 3, 2, personEndWorkYear, 1, personEndWorkMonth, 1), 1, 2, 3
+                addJProp(less22, 3, 2, personStartWorkYear, 1, personStartWorkMonth, 1), 1, 2, 3,
+                addJProp(greater22, 3, 2, personEndWorkYear, 1, personEndWorkMonth, 1), 1, 2, 3
         );
 
         /*addConstraint(addJProp("Время окончания работы меньше, чем время начала", greater22,
@@ -400,13 +406,13 @@ public class BudgetLogicsModule extends LogicsModule {
         //LCP isReimbursed = addDProp(payerGroup, "isReimbersed", "Возмещено", LogicalClass.instance, payerAbs);
 
         LCP[] maxDateSal = addMGProp((AbstractGroup) null, false, new String[]{"maxYear", "maxMonth"}, new String[]{"год", "месяц"}, 1,
-                addJProp(and(false, false, true, false), 4, is(absMonth), 1, is(YearClass.instance), 2, baseLM.less22, 2, 1, 4, 3, salaryInMonth, 5, 3, 4), 3, 1, 2, 5);
+                addJProp(and(false, false, true, false), 4, is(absMonth), 1, is(YearClass.instance), 2, less22, 2, 1, 4, 3, salaryInMonth, 5, 3, 4), 3, 1, 2, 5);
         LCP curSalary = addJProp(salaryGroup, "Тек. зарплата", salaryInMonth, 3, maxDateSal[1], 1, 2, 3, maxDateSal[0], 1, 2, 3);
         LCP curCurrency = addJProp(currencyInMonth, 3, maxDateSal[1], 1, 2, 3, maxDateSal[0], 1, 2, 3);
         addJProp(salaryGroup, "Тек. валюта", baseLM.name, curCurrency, 1, 2, 3);
 
         LCP[] maxDateExtra = addMGProp((AbstractGroup) null, false, new String[]{"maxExtraYear", "maxExtraMonth"}, new String[]{"год", "месяц1"}, 1,
-                addJProp(and(false, false, true, false), 4, is(absMonth), 1, is(YearClass.instance), 2, baseLM.less22, 2, 1, 4, 3, extraInMonth, 5, 3, 4, 6), 3, 1, 2, 5, 6);
+                addJProp(and(false, false, true, false), 4, is(absMonth), 1, is(YearClass.instance), 2, less22, 2, 1, 4, 3, extraInMonth, 5, 3, 4, 6), 3, 1, 2, 5, 6);
         LCP curExtra = addJProp(baseGroup, "Тек. затраты", extraInMonth, 3, maxDateExtra[1], 1, 2, 3, 4, maxDateExtra[0], 1, 2, 3, 4, 4);
         // 3 - extraSection, 4 - department
         LCP curExtraCurrency = addJProp(currencyExtraInMonth, 3, maxDateExtra[1], 1, 2, 3, 4, maxDateExtra[0], 1, 2, 3, 4, 4);
@@ -498,12 +504,12 @@ public class BudgetLogicsModule extends LogicsModule {
         nameCurInvestment = addJProp(baseGroup, "nameCurInvestment", "Валюта", baseLM.name, curInvestment, 1);
 
         exchangeBaseRateInvestment = addJProp("exchangeBaseRateInvestment", "Курс", exchangeRateCurrencyTransaction, curInvestment, 1, 1);
-        sumBaseInvestment = addJProp("sumBaseInvestment", "Сумма (БВ)", addJProp(baseLM.round, 1, addCProp(IntegerClass.instance, 0)), addJProp(multiplyDouble2, sumInvestment, 1, exchangeBaseRateInvestment, 1), 1);
+        sumBaseInvestment = addJProp("sumBaseInvestment", "Сумма (БВ)", addJProp(BL.getModule("Utils").getLCPByName("round"), 1, addCProp(IntegerClass.instance, 0)), addJProp(multiplyDouble2, sumInvestment, 1, exchangeBaseRateInvestment, 1), 1);
 
         sumInvestmentInvestor = addSGProp("sumInvestmentInvestor", "Проинвестировано", sumBaseInvestment, investorInvestment, 1);
         investmentTotal = addSGProp("investmentTotal", "Всего проинвестировано", sumBaseInvestment);
 
-        shareInvestor = addJProp("shareInvestor", "Доля (%)", baseLM.share, sumInvestmentInvestor, 1, investmentTotal);
+        shareInvestor = addJProp("shareInvestor", "Доля (%)", BL.getModule("Utils").getLCPByName("share"), sumInvestmentInvestor, 1, investmentTotal);
 
         initNavigators();
     }

@@ -151,6 +151,7 @@ public class VEDLogicsModule extends LogicsModule {
     private LCP actionOutArticle;
     private LCP articleDocQuantity;
     private LCP contragentOrder;
+    private LCP between;
     private LCP betweenDate2;
     private LCP quantitySupplierArticleBetweenDates;
     private LCP sumNoNDSSupplierArticleBetweenDates;
@@ -404,7 +405,7 @@ public class VEDLogicsModule extends LogicsModule {
 
     @Override
     public void initModuleDependencies() {
-        setRequiredModules(Arrays.asList("System"));
+        setRequiredModules(Arrays.asList("System", "Utils"));
     }
 
     @Override
@@ -1122,7 +1123,7 @@ public class VEDLogicsModule extends LogicsModule {
         LCP discountOrderReturnArticle = addMGProp(privateGroup, "discountOrderReturnArticle", "Скидка возвр.", addJProp(baseLM.and1, orderArticleSaleDiscount, 3, 2, returnDocumentQuantity, 1, 2, 3), 1, 2);
         discountOrderArticle = addCUProp(baseGroup, "discountOrderArticle", "Скидка", orderArticleSaleDiscount, discountOrderReturnArticle); // возвращаем ту же скидку при возврате
 
-        discountSumOrderArticle = addJProp(documentDiscountGroup, "discountSumOrderArticle", "Сумма скидки", roundSum, addJProp(baseLM.percent, sumOrderArticle, 1, 2, discountOrderArticle, 1, 2), 1, 2);
+        discountSumOrderArticle = addJProp(documentDiscountGroup, "discountSumOrderArticle", "Сумма скидки", roundSum, addJProp(VEDBL.getModule("Utils").getLCPByName("percent"), sumOrderArticle, 1, 2, discountOrderArticle, 1, 2), 1, 2);
         sumWithDiscountOrderArticle = addDUProp(documentDiscountGroup, "sumWithDiscountOrderArticle", "Сумма со скидкой", sumOrderArticle, discountSumOrderArticle);
 
         LCP orderSalePayGift = addSGProp(addJProp(and(false, false, false), obligationSum, 2, issueObligation, 1, 2, is(order), 1, is(giftObligation), 2), 1);
@@ -1208,7 +1209,7 @@ public class VEDLogicsModule extends LogicsModule {
         LCP orderMaxCoupon = addDCProp("orderMaxCoupon", "Макс. процент по купонам", couponMaxPercent, is(orderSaleArticleRetail), 1);
 
         // сумма без сертификатов
-        LCP orderSalePayCoupon = addJProp("orderSalePayCoupon", true, "Сумма куп." , min, addSGProp(addJProp(baseLM.and1, obligationUseSum, 1, 2, is(coupon), 2), 1), 1, addJProp(roundSum, addJProp(baseLM.percent, sumWithDiscountOrder, 1, orderMaxCoupon, 1), 1), 1);
+        LCP orderSalePayCoupon = addJProp("orderSalePayCoupon", true, "Сумма куп." , min, addSGProp(addJProp(baseLM.and1, obligationUseSum, 1, 2, is(coupon), 2), 1), 1, addJProp(roundSum, addJProp(VEDBL.getModule("Utils").getLCPByName("percent"), sumWithDiscountOrder, 1, orderMaxCoupon, 1), 1), 1);
         LCP orderSalePayGiftObligation = addSGProp("orderSalePayGiftObligation", true, "Сумма под. серт.", addJProp(baseLM.and1, obligationUseSum, 1, 2, is(giftObligation), 2), 1);
         orderSalePayObligation = addSUProp(documentObligationGroup, "orderSalePayObligation", true, "Сумма серт.", Union.SUM, orderSalePayGiftObligation, orderSalePayCoupon);
         sumWithDiscountObligationOrder = addJProp(documentObligationGroup, "sumWithDiscountObligationOrder", true, "Сумма к опл.", onlyPositive, addDUProp(sumWithDiscountOrder, orderSalePayObligation), 1);
@@ -1413,7 +1414,8 @@ public class VEDLogicsModule extends LogicsModule {
 
     void initDateProperties() {
 
-        betweenDate2 = addJProp(baseLM.between, baseLM.date, 1, object(DateClass.instance), 2, object(DateClass.instance), 3);
+        between = addJProp("between", getString("logics.between"), baseLM.and1, baseLM.groeq2, 1, 2, baseLM.groeq2, 3, 1);
+        betweenDate2 = addJProp(between, baseLM.date, 1, object(DateClass.instance), 2, object(DateClass.instance), 3);
 
         quantitySupplierArticleBetweenDates = addSGProp("quantitySupplierArticleBetweenDates", "Проданное кол-во",
                 addJProp(and(false,false), innerQuantity, 1, 2, 3, is(orderSale), 1, betweenDate2, 1, 4, 5), contragentOrder, 3, 2, 4, 5);
@@ -1427,13 +1429,13 @@ public class VEDLogicsModule extends LogicsModule {
 
 
 
-        betweenObligationIssuedDateFromDateTo = addJProp(baseLM.between, dateIssued, 1, object(DateClass.instance), 2, object(DateClass.instance), 3);
-        betweenObligationToIssuedDateFromDateTo = addJProp(baseLM.between, obligToIssued, 1, object(DateClass.instance), 2, object(DateClass.instance), 3);
+        betweenObligationIssuedDateFromDateTo = addJProp(between, dateIssued, 1, object(DateClass.instance), 2, object(DateClass.instance), 3);
+        betweenObligationToIssuedDateFromDateTo = addJProp(between, obligToIssued, 1, object(DateClass.instance), 2, object(DateClass.instance), 3);
 
 
 
 
-        betweenDate = addJProp(baseLM.between, baseLM.date, 1, object(DateClass.instance), 2, object(DateClass.instance), 3);
+        betweenDate = addJProp(between, baseLM.date, 1, object(DateClass.instance), 2, object(DateClass.instance), 3);
 
         sumRetailIncBetweenDate = addSGProp(baseGroup, "sumRetailIncBetweenDate", "Приходная сумма за интервал",
                 addJProp(baseLM.and1, sumRetailOrder, 1, betweenDate, 1, 2, 3), subjectIncOrder, 1, 2, 3);
