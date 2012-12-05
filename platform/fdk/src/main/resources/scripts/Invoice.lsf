@@ -141,6 +141,7 @@ META defineInvoice(sign, stockProp)
     @deriveDocumentPriceDetailOnChangeInvoicePrice(userInvoice);
     @deriveDocumentInvoicePriceDetailOnChangePrice(userInvoice);
     @deriveDocumentInvoicePriceDetailOnChangeVAT(userInvoice);
+    @deriveDocumentInvoicePriceDetailOnChangeValueVAT(userInvoice);
     Invoice.invoiceSumInvoiceDetail(detail) += invoiceSumInvoiceDetail(detail);
 
     @defineDocumentInterfaceHeaderQuantity(invoice);
@@ -399,7 +400,7 @@ META defineInvoice(sign, stockProp)
                        quantityUserInvoiceDetail, namePriceListTypeUserInvoiceDetail,
                        priceUserInvoiceDetail ON CHANGE EXEC changeInvoicePriceUserInvoiceDetail(d), sumUserInvoiceDetail,
                        numberVATUserInvoiceDetail ON CHANGE EXEC changeInvoicePriceVATUserInvoiceDetail(d),
-                       valueVATUserInvoiceDetail,
+                       valueVATUserInvoiceDetail ON CHANGE EXEC changeInvoicePriceValueVATUserInvoiceDetail(d),
                        invoicePriceUserInvoiceDetail ON CHANGE EXEC changePriceUserInvoiceDetail(d),
                        VATSumUserInvoiceDetail, invoiceSumUserInvoiceDetail,
                        descriptionOrderUserInvoiceDetail, ADDOBJ, delete

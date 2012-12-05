@@ -60,3 +60,30 @@ isDepartmentStoreSupplierStockOrder (order) = isDepartmentStoreStock (supplierSt
 EXTEND FORM userOrder
     PROPERTIES(o) numberVATUserOrder SHOWIF isDepartmentStoreSupplierStockOrder(o), valueVATUserOrder SHOWIF isDepartmentStoreSupplierStockOrder(o);
 ;
+
+FORM emailOrder 'Заказ' PRINT
+    OBJECTS o = order FIXED PANEL
+    PROPERTIES (o) numberOrder, seriesOrder, nameSupplierOrder, nameCustomerOrder, nameSupplierStockOrder, nameCustomerStockOrder,
+                   numberObject, seriesObject, dateOrder, timeOrder, nameCurrencyOrder, noteOrder,
+                   countOrderDetailOrder, quantityOrderDetailOrder, sumOrderDetailOrder,
+                   VATSumOrderDetailOrder, invoiceSumOrderDetailOrder, shipmentDateOrder
+
+    OBJECTS d = orderDetail
+    PROPERTIES (d) indexOrderDetail, idBarcodeSkuOrderDetail, nameSkuOrderDetail, shortNameUOMSkuOrderDetail,
+                   quantityOrderDetail, priceOrderDetail,  sumOrderDetail, valueVATOrderDetail,
+                   VATSumOrderDetail, invoiceSumOrderDetail
+
+    FILTERS orderOrderDetail(d) == o
+;
+
+emailCustomerOrder 'Выслать подтвержденный заказ покупателю' (order) = ACTION EMAIL
+    FROM emailLegalEntity(supplierOrder(order))
+    SUBJECT [FORMULA STRING[60] '\'Подтверждение заказа №\' || CAST($1 AS TEXT) || \' от \' || CAST($2 AS TEXT)'](seriesNumberOrder(order), dateOrder(order))
+    TO emailLegalEntity(customerOrder(order))
+   // INLINE [FORMULA STRING[60] '\'Подтверждение заказа №\' || CAST($1 AS TEXT) || \' от \' || CAST($2 AS TEXT)'](seriesNumberOrder(order), dateOrder(order))
+    ATTACH PDF
+           NAME [FORMULA STRING[60] '\'Заказ №\' || CAST($1 AS TEXT) || \' от \' || CAST($2 AS TEXT)'](seriesNumberOrder(order), dateOrder(order))
+           emailOrder OBJECTS o=order
+;
+
+WHEN isPostedOrder(order) DO EXEC emailCustomerOrder(order);

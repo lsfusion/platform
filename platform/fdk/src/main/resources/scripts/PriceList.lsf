@@ -1105,18 +1105,20 @@ META deriveDocumentDetailPricePriceListTypeVATCustom (detail, stockProp)
                 prevListSkuPrice###detail(detail) * (100.0 + valueVAT###detail(detail)) / 100.0;
 
     price###detail(detail) <- prevListSkuPriceMVAT###detail (detail)
-                            WHEN CHANGED(priceListType###detail(detail)) OR
+                            WHEN priceListType###detail(detail) AND
+                                 (CHANGED(priceListType###detail(detail)) OR
                                  CHANGED(sku###detail(detail)) OR
                                  CHANGED(stockProp###detail(detail)) OR
                                  CHANGED(dateTime###detail(detail)) OR
-                                 CHANGED(valueVAT###detail(detail));
+                                 CHANGED(valueVAT###detail(detail)));
 
     invoice###price###detail(detail) <- prevListSkuPricePVAT###detail (detail)
-                            WHEN CHANGED(priceListType###detail(detail)) OR
+                            WHEN priceListType###detail(detail) AND
+                                 (CHANGED(priceListType###detail(detail)) OR
                                  CHANGED(sku###detail(detail)) OR
                                  CHANGED(stockProp###detail(detail)) OR
                                  CHANGED(dateTime###detail(detail)) OR
-                                 CHANGED(valueVAT###detail(detail));
+                                 CHANGED(valueVAT###detail(detail)));
 
 END
 
@@ -1135,11 +1137,12 @@ META deriveDocumentDetailPriceBatchPriceListTypeCustom (detail, stockProp)
                                                                            sku###detail(detail),
                                                                            stockProp###detail(detail),
                                                                            dateTime###detail(detail))
-                                    WHEN CHANGED(batch###detail(detail)) OR
+                                    WHEN priceListType###detail(detail) AND
+                                        (CHANGED(batch###detail(detail)) OR
                                          CHANGED(priceListType###detail(detail)) OR
                                          CHANGED(sku###detail(detail)) OR
                                          CHANGED(stockProp###detail(detail)) OR
-                                         CHANGED(dateTime###detail(detail));
+                                         CHANGED(dateTime###detail(detail)));
 END
 
 META deriveDocumentDetailPriceBatchPriceListType (object, stockProp)
@@ -1168,20 +1171,22 @@ META deriveDocumentDetailPricePriceListTypeVATBatchCustom (detail, stockProp)
                 prevListPrice###detail(detail) * (100.0 + valueVAT###detail(detail)) / 100.0;
 
     price###detail(detail) <- prevListPriceMVAT###detail (detail)
-                            WHEN CHANGED(priceListType###detail(detail)) OR
+                            WHEN priceListType###detail(detail) AND
+                                (CHANGED(priceListType###detail(detail)) OR
                                  CHANGED(batch###detail(detail)) OR
                                  CHANGED(sku###detail(detail)) OR
                                  CHANGED(stockProp###detail(detail)) OR
                                  CHANGED(dateTime###detail(detail)) OR
-                                 CHANGED(valueVAT###detail(detail));
+                                 CHANGED(VAT###detail(detail)));
 
     invoicePrice###detail(detail) <- prevListPricePVAT###detail (detail)
-                            WHEN CHANGED(priceListType###detail(detail)) OR
+                            WHEN priceListType###detail(detail) AND
+                                (CHANGED(priceListType###detail(detail)) OR
                                  CHANGED(batch###detail(detail)) OR
                                  CHANGED(sku###detail(detail)) OR
                                  CHANGED(stockProp###detail(detail)) OR
                                  CHANGED(dateTime###detail(detail)) OR
-                                 CHANGED(valueVAT###detail(detail));
+                                 CHANGED(VAT###detail(detail)));
 
 END
 
@@ -1227,11 +1232,32 @@ META deriveDocumentInvoicePriceDetailOnChangePrice (object)
     @deriveDocumentInvoicePriceDetailOnChangePriceCustom(object###Detail);
 END
 
+META deriveDocumentInvoicePriceDetailOnChangeValueVATCustom (detail)
+    changeInvoicePriceValueVAT###detail (detail) = ACTION (detail) {
+        REQUEST NUMERIC[10,5] INPUT;
+        IF requestedNumeric() THEN {
+            IF rangeTypeRange(VAT###detail(detail)) == rangeType.units
+                THEN {
+                    SET valueVAT###detail (detail) <- requestedNumeric();
+                    SET invoicePrice###detail (detail) <- price###detail (detail) * 100 /(100 - requestedNumeric());
+                }
+                ELSE{
+                    SET valueVAT###detail (detail) <- requestedNumeric();
+                    SET invoicePrice###detail (detail) <- price###detail (detail) * (100 + requestedNumeric())/100;
+            }
+        }
+    };
+END
+
+META deriveDocumentInvoicePriceDetailOnChangeValueVAT (object)
+    @deriveDocumentInvoicePriceDetailOnChangeValueVATCustom(object###Detail);
+END
+
 META deriveDocumentInvoicePriceDetailOnChangeVATCustom (detail)
     changeInvoicePriceVAT###detail (detail) = ACTION (detail) {
         REQUEST OBJECT r FORM range MODAL;
         IF formResult() == formResult.ok THEN {
-            IF rangeTypeRange(VAT###detail(detail)) == rangeType.units
+            IF rangeTypeRange(chosenObject('r')) == rangeType.units
                 THEN {
                     SET VAT###detail (detail) <- chosenObject('r');
                     SET invoicePrice###detail (detail) <- price###detail (detail) * 100 /(100 - valueVAT###detail(detail));
