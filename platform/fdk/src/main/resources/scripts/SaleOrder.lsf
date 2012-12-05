@@ -80,7 +80,7 @@ emailCustomerOrder 'Выслать подтвержденный заказ по�
     FROM emailLegalEntity(supplierOrder(order))
     SUBJECT [FORMULA STRING[60] '\'Подтверждение заказа №\' || CAST($1 AS TEXT) || \' от \' || CAST($2 AS TEXT)'](seriesNumberOrder(order), dateOrder(order))
     TO emailLegalEntity(customerOrder(order))
-   // INLINE [FORMULA STRING[60] '\'Подтверждение заказа №\' || CAST($1 AS TEXT) || \' от \' || CAST($2 AS TEXT)'](seriesNumberOrder(order), dateOrder(order))
+    INLINE emailOrder OBJECTS o=order
     ATTACH PDF
            NAME [FORMULA STRING[60] '\'Заказ №\' || CAST($1 AS TEXT) || \' от \' || CAST($2 AS TEXT)'](seriesNumberOrder(order), dateOrder(order))
            emailOrder OBJECTS o=order
