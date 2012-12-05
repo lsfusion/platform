@@ -1,8 +1,16 @@
 package platform.gwt.form.shared.view.classes;
 
 import platform.gwt.form.shared.view.GPropertyDraw;
+import platform.gwt.form.shared.view.filter.GCompare;
+import platform.gwt.form.shared.view.grid.EditManager;
+import platform.gwt.form.shared.view.grid.editor.GridCellEditor;
+import platform.gwt.form.shared.view.grid.editor.IntegerGridEditor;
 import platform.gwt.form.shared.view.grid.renderer.GridCellRenderer;
 import platform.gwt.form.shared.view.grid.renderer.NumberGridRenderer;
+
+import static platform.gwt.form.shared.view.filter.GCompare.*;
+
+//import platform.gwt.form.shared.view.filter.GCompare;
 
 public class GObjectType extends GType {
     public static final GObjectType instance = new GObjectType();
@@ -20,5 +28,15 @@ public class GObjectType extends GType {
     @Override
     public int getPreferredPixelWidth(int preferredCharWidth) {
         return 50;
+    }
+
+    @Override
+    public GridCellEditor createValueCellEditor(EditManager editManager, GPropertyDraw editProperty) {
+        return new IntegerGridEditor(editManager);
+    }
+
+    @Override
+    public GCompare[] getFilterCompares() {
+        return new GCompare[] {EQUALS, GREATER, LESS, GREATER_EQUALS, LESS_EQUALS, NOT_EQUALS};
     }
 }

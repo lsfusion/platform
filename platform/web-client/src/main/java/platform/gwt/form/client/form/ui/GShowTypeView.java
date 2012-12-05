@@ -34,7 +34,7 @@ public class GShowTypeView extends HorizontalPanel {
 
     private Button createShowTypeButton(String imagePath, GClassViewType newClassView) {
         Button showTypeButton = new ImageButton(null, imagePath);
-        showTypeButton.addStyleName("viewTypeButton");
+        showTypeButton.addStyleName("toolbarButton");
         showTypeButton.addClickHandler(new ChangeViewBtnClickHandler(newClassView));
         return showTypeButton;
     }

@@ -3,6 +3,7 @@ package platform.gwt.form.shared.view.classes;
 import platform.gwt.form.client.form.ui.GFormController;
 import platform.gwt.form.shared.view.GPropertyDraw;
 import platform.gwt.form.shared.view.changes.GGroupObjectValue;
+import platform.gwt.form.shared.view.filter.GCompare;
 import platform.gwt.form.shared.view.grid.EditManager;
 import platform.gwt.form.shared.view.grid.editor.GridCellEditor;
 import platform.gwt.form.shared.view.grid.renderer.GridCellRenderer;
@@ -29,6 +30,15 @@ public abstract class GType implements Serializable {
         return null;
     }
 
+    public GridCellEditor createValueCellEditor(EditManager editManager, GPropertyDraw editProperty) {
+        return createGridCellEditor(editManager, editProperty);
+    }
+
+    public GCompare getDefaultCompare() {
+        return GCompare.EQUALS;
+    }
+
     public abstract int getMinimumPixelWidth(int minimumCharWidth);
     public abstract int getPreferredPixelWidth(int preferredCharWidth);
+    public abstract GCompare[] getFilterCompares();
 }

@@ -16,6 +16,7 @@ import com.google.gwt.user.client.ui.Widget;
 import net.customware.gwt.dispatch.shared.Result;
 import platform.gwt.base.client.ErrorAsyncCallback;
 import platform.gwt.base.client.WrapperAsyncCallbackEx;
+import platform.gwt.base.shared.GwtSharedUtils;
 import platform.gwt.form.client.ErrorHandlingCallback;
 import platform.gwt.form.client.HotkeyManager;
 import platform.gwt.form.client.LoadingBlocker;
@@ -37,7 +38,9 @@ import platform.gwt.form.shared.view.*;
 import platform.gwt.form.shared.view.changes.GFormChanges;
 import platform.gwt.form.shared.view.changes.GGroupObjectValue;
 import platform.gwt.form.shared.view.changes.dto.GFormChangesDTO;
+import platform.gwt.form.shared.view.changes.dto.GPropertyFilterDTO;
 import platform.gwt.form.shared.view.classes.GObjectClass;
+import platform.gwt.form.shared.view.filter.GPropertyFilter;
 import platform.gwt.form.shared.view.logics.GGroupObjectLogicsSupplier;
 import platform.gwt.form.shared.view.panel.PanelRenderer;
 import platform.gwt.form.shared.view.window.GModalityType;
@@ -61,6 +64,8 @@ public class GFormController extends SimplePanel {
     private final boolean isDialog;
 
     private final HashMap<GGroupObject, List<GGroupObjectValue>> currentGridObjects = new HashMap<GGroupObject, List<GGroupObjectValue>>();
+
+    private final Map<GGroupObject, List<GPropertyFilter>> currentFilters = new HashMap<GGroupObject, List<GPropertyFilter>>();
 
     private final Map<GGroupObject, GGroupObjectController> controllers = new LinkedHashMap<GGroupObject, GGroupObjectController>();
     private final Map<GTreeGroup, GTreeGroupController> treeControllers = new LinkedHashMap<GTreeGroup, GTreeGroupController>();
@@ -622,6 +627,41 @@ public class GFormController extends SimplePanel {
         syncDispatch(new SetRegularFilter(filterGroup.ID, (filter == null) ? -1 : filter.ID), new ServerResponseCallback());
     }
 
+    public void changeFilter(GGroupObject groupObject, List<GPropertyFilter> conditions) {
+        currentFilters.put(groupObject, conditions);
+        applyCurrentFilters();
+    }
+
+    public void changeFilter(GTreeGroup treeGroup, List<GPropertyFilter> conditions) {
+        Map<GGroupObject, List<GPropertyFilter>> filters = GwtSharedUtils.groupList(new GwtSharedUtils.Group<GGroupObject, GPropertyFilter>() {
+            public GGroupObject group(GPropertyFilter key) {
+                return key.groupObject;
+            }
+        }, conditions);
+
+        for (GGroupObject group : treeGroup.groups) {
+            List<GPropertyFilter> groupFilters = filters.get(group);
+            if (groupFilters == null) {
+                groupFilters = new ArrayList<GPropertyFilter>();
+            }
+            currentFilters.put(group, groupFilters);
+        }
+
+        applyCurrentFilters();
+    }
+
+    private void applyCurrentFilters() {
+        List<GPropertyFilterDTO> filters = new ArrayList<GPropertyFilterDTO>();
+
+        for (List<GPropertyFilter> groupFilters : currentFilters.values()) {
+            for (GPropertyFilter filter : groupFilters) {
+                filters.add(filter.getFilterDTO());
+            }
+        }
+
+        dispatcher.execute(new SetUserFilters(filters), new ServerResponseCallback());
+    }
+
     public List<GPropertyDraw> getPropertyDraws() {
         return form.propertyDraws;
     }
@@ -707,6 +747,25 @@ public class GFormController extends SimplePanel {
 
     public GForm getForm() {
         return form;
+    }
+
+    public List<GObject> getObjects() {
+        ArrayList<GObject> objects = new ArrayList<GObject>();
+        for (GGroupObject groupObject : form.groupObjects) {
+            for (GObject object : groupObject.objects) {
+                objects.add(object);
+            }
+        }
+        return objects;
+    }
+
+    public void setSelected(boolean selected) {
+        for (GGroupObjectController goc : controllers.values()) {
+            goc.setFilterVisible(selected);
+        }
+        for (GTreeGroupController tgc : treeControllers.values()) {
+            tgc.setFilterVisible(selected);
+        }
     }
 
     private static final class Change {

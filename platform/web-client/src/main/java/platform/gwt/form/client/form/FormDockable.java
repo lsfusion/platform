@@ -84,7 +84,7 @@ final class FormDockable {
     }
 
 
-    private static class ContentWidget extends LayoutPanel {
+    public static class ContentWidget extends LayoutPanel {
         private final Widget mask;
         private Widget content;
 
@@ -116,6 +116,12 @@ final class FormDockable {
                 addFullSizeChild(mask);
             } else {
                 remove(mask);
+            }
+        }
+
+        public void setSelected(boolean selected) {
+            if (content instanceof GFormController) {
+                ((GFormController) content).setSelected(selected);
             }
         }
     }

@@ -1,10 +1,11 @@
 package platform.gwt.form.shared.view.classes;
 
+import platform.gwt.base.shared.GwtSharedUtils;
 import platform.gwt.form.shared.view.GPropertyDraw;
+import platform.gwt.form.shared.view.filter.GCompare;
 import platform.gwt.form.shared.view.grid.EditManager;
 import platform.gwt.form.shared.view.grid.editor.GridCellEditor;
 import platform.gwt.form.shared.view.grid.editor.StringGridEditor;
-import platform.gwt.base.shared.GwtSharedUtils;
 
 public class GStringType extends GDataType {
     protected int length = 50;
@@ -33,5 +34,15 @@ public class GStringType extends GDataType {
 
     public String getPreferredMask() {
         return preferredMask;
+    }
+
+    @Override
+    public GCompare[] getFilterCompares() {
+        return GCompare.values();
+    }
+
+    @Override
+    public GCompare getDefaultCompare() {
+        return GCompare.START_WITH;
     }
 }

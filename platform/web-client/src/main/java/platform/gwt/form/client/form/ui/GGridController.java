@@ -35,6 +35,14 @@ public class GGridController {
         return table;
     }
 
+    public GPropertyDraw getCurrentProperty() {
+        return table.getCurrentProperty();
+    }
+
+    public Object getSelectedValue(GPropertyDraw property) {
+        return table.getSelectedValue(property);
+    }
+
     public void rememberScrollPosition() {
         table.rememberScrollPosition();
     }

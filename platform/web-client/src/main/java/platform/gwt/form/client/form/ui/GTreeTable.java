@@ -254,8 +254,25 @@ public class GTreeTable extends GGridPropertyTable {
         this.selectedRecord = record;
     }
 
+    public GTreeGridRecord getSelectedRecord() {
+        return selectedRecord;
+    }
+
     public GGroupObjectValue getCurrentKey() {
         return selectedRecord == null ? new GGroupObjectValue() : selectedRecord.key;
+    }
+
+    public GPropertyDraw getCurrentProperty() {
+        GPropertyDraw property = getSelectedProperty();
+        if (property == null && getColumnCount() > 1) {
+            property = tree.getColumnProperty(1);
+        }
+        return property;
+    }
+
+    public Object getSelectedValue(GPropertyDraw property) {
+        GTreeGridRecord record = getSelectedRecord();
+        return record == null ? null : tree.getValue(record.getGroup(), getColumnIndex(property) - 1, record.key);
     }
 
     private void expandNode(GTreeTableNode node) {

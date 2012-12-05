@@ -1,11 +1,11 @@
 package platform.gwt.form.client.form.ui;
 
+import platform.gwt.base.shared.GwtSharedUtils;
 import platform.gwt.form.shared.view.GForm;
 import platform.gwt.form.shared.view.GGroupObject;
 import platform.gwt.form.shared.view.GObject;
 import platform.gwt.form.shared.view.GPropertyDraw;
 import platform.gwt.form.shared.view.changes.GGroupObjectValue;
-import platform.gwt.base.shared.GwtSharedUtils;
 
 import java.util.*;
 
@@ -245,7 +245,7 @@ public class GTreeTableTree {
 
     public GPropertyDraw getProperty(GGroupObject group, int column) {
         List<GPropertyDraw> groupProperties = groupPropsMap.get(group);
-        if (groupProperties == null || column >= groupProperties.size()) {
+        if (groupProperties == null || column < 0 || column >= groupProperties.size()) {
             return null;
         }
 

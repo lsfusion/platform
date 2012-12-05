@@ -11,4 +11,9 @@ public class GObject implements Serializable {
     public String getCaption() {
         return caption;
     }
+
+    @Override
+    public String toString() {
+        return getCaption();
+    }
 }

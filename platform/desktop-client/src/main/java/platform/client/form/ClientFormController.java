@@ -870,7 +870,7 @@ public class ClientFormController implements AsyncListener {
     }
 
     public void changeFilter(ClientGroupObject groupObject, List<ClientPropertyFilter> conditions) throws IOException {
-        currentFilters.put(groupObject, conditions);
+        currentFilters.put(groupObject, new ArrayList<ClientPropertyFilter>(conditions));
         applyCurrentFilters();
     }
 
@@ -879,7 +879,7 @@ public class ClientFormController implements AsyncListener {
             public ClientGroupObject group(ClientPropertyFilter key) {
                 return key.groupObject;
             }
-        }, conditions);
+        }, new ArrayList<ClientPropertyFilter>(conditions));
 
         for (ClientGroupObject group : treeGroup.groups) {
             List<ClientPropertyFilter> groupFilters = filters.get(group);

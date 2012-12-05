@@ -24,6 +24,8 @@ public class GGroupObject implements Serializable {
     public GRowBackgroundReader rowBackgroundReader;
     public GRowForegroundReader rowForegroundReader;
 
+    public GPropertyDraw filterProperty;
+
     public String getCaption() {
         if (objects.isEmpty()) {
             //todo: локализовать попозже через GWT-шный Messages interface

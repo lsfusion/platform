@@ -90,4 +90,24 @@ public class GwtSharedUtils {
         }
         return result;
     }
+
+    public static abstract class Group<G, K> {
+        public abstract G group(K key);
+    }
+
+    public static <G, K> Map<G, List<K>> groupList(Group<G, K> getter, List<K> keys) {
+        Map<G, List<K>> result = new HashMap<G, List<K>>();
+        for (K key : keys) {
+            G group = getter.group(key);
+            if(group!=null) {
+                List<K> groupList = result.get(group);
+                if (groupList == null) {
+                    groupList = new ArrayList<K>();
+                    result.put(group, groupList);
+                }
+                groupList.add(key);
+            }
+        }
+        return result;
+    }
 }

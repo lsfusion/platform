@@ -144,13 +144,17 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
     @Cached
     @Converter(from = ClientToolbar.class)
     public GToolbar convertToolbar(ClientToolbar clientToolbar) {
-        return initGwtComponent(clientToolbar, new GToolbar());
+        GToolbar toolbar = initGwtComponent(clientToolbar, new GToolbar());
+        toolbar.visible = clientToolbar.visible;
+        return toolbar;
     }
 
     @Cached
     @Converter(from = ClientFilter.class)
     public GFilter convertFilter(ClientFilter clientFilter) {
-        return initGwtComponent(clientFilter, new GFilter());
+        GFilter filter = initGwtComponent(clientFilter, new GFilter());
+        filter.visible = clientFilter.visible;
+        return filter;
     }
 
     @Cached
@@ -346,6 +350,8 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
         groupObject.rowBackgroundReader = convertRowBackgroundReader(clientGroupObject.rowBackgroundReader);
         groupObject.rowForegroundReader = convertRowForegroundReader(clientGroupObject.rowForegroundReader);
+
+        groupObject.filterProperty = convertOrCast(clientGroupObject.filterProperty);
 
         return groupObject;
     }

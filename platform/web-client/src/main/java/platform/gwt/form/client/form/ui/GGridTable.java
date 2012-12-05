@@ -222,6 +222,19 @@ public class GGridTable extends GGridPropertyTable {
         return currentKey;
     }
 
+    public GPropertyDraw getCurrentProperty() {
+        GPropertyDraw property = getSelectedProperty();
+        if (property == null && getColumnCount() > 0) {
+            property = getProperty(0);
+        }
+        return property;
+    }
+
+    public Object getSelectedValue(GPropertyDraw property) {
+        GridDataRecord selectedRecord = selectionModel.getSelectedRecord();
+        return selectedRecord == null ? null : selectedRecord.getValue(getMinPropertyIndex(property));
+    }
+
     public void setCurrentKey(GGroupObjectValue currentKey) {
         Log.debug("Setting current object to: " + currentKey);
         this.currentKey = currentKey;

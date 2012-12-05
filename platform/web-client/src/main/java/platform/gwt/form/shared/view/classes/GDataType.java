@@ -1,5 +1,9 @@
 package platform.gwt.form.shared.view.classes;
 
+import platform.gwt.form.shared.view.filter.GCompare;
+
+import static platform.gwt.form.shared.view.filter.GCompare.*;
+
 public abstract class GDataType extends GType implements GClass {
     @Override
     public boolean hasChildren() {
@@ -20,5 +24,10 @@ public abstract class GDataType extends GType implements GClass {
     @Override
     public int getPreferredPixelWidth(int preferredCharWidth) {
         return (preferredCharWidth > 0 ? preferredCharWidth : getPreferredMask().length()) * 7;
+    }
+
+    @Override
+    public GCompare[] getFilterCompares() {
+        return new GCompare[] {EQUALS, GREATER, LESS, GREATER_EQUALS, LESS_EQUALS, NOT_EQUALS};
     }
 }

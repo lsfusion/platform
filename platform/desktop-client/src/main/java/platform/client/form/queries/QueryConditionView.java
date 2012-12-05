@@ -82,7 +82,7 @@ public class QueryConditionView extends JPanel implements FilterValueListener {
 
         negationView.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                filter.negation = ((JCheckBox) e.getSource()).isSelected();
+                filter.negation = negationView.isSelected();
                 uiHandlers.conditionChanged();
             }
         });

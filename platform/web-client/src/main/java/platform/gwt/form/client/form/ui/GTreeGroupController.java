@@ -7,34 +7,30 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 import platform.gwt.form.shared.view.*;
 import platform.gwt.form.shared.view.changes.GFormChanges;
 import platform.gwt.form.shared.view.changes.GGroupObjectValue;
-import platform.gwt.form.shared.view.logics.GGroupObjectLogicsSupplier;
-import platform.gwt.form.shared.view.reader.*;
+import platform.gwt.form.shared.view.filter.GPropertyFilter;
+import platform.gwt.form.shared.view.reader.GBackgroundReader;
+import platform.gwt.form.shared.view.reader.GCaptionReader;
+import platform.gwt.form.shared.view.reader.GForegroundReader;
+import platform.gwt.form.shared.view.reader.GPropertyReader;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-public class GTreeGroupController implements GGroupObjectLogicsSupplier {
-    private GFormController formController;
+public class GTreeGroupController extends GAbstractGroupObjectController {
     private GTreeGroup treeGroup;
 
     private GTreeTable tree;
-    private GToolbarPanel treeToolbar;
-
-    public GPanelController panel;
-    public GToolbarPanel panelToolbar;
 
     public GGroupObject lastGroupObject;
 
     public GTreeGroupController(GTreeGroup iTreeGroup, GFormController iFormController, GForm iForm, GFormLayout iFormLayout) {
-        formController = iFormController;
+        super(iFormController, iFormLayout, iTreeGroup.toolbar);
         treeGroup = iTreeGroup;
         lastGroupObject = treeGroup.groups.size() > 0 ? treeGroup.groups.get(treeGroup.groups.size() - 1) : null;
 
         tree = new GTreeTable(iFormController, iForm);
-        treeToolbar = new GToolbarPanel();
-
-        panel = new GPanelController(iFormController, iFormLayout);
-        panelToolbar = new GToolbarPanel();
 
         CellPanel treeTableView = new VerticalPanel();
         treeTableView.setSize("100%", "100%");
@@ -47,10 +43,14 @@ public class GTreeGroupController implements GGroupObjectLogicsSupplier {
         treeTableView.add(panel);
         treeTableView.setCellHeight(panel, "100%");
         treeTableView.setCellWidth(panel, "100%");
-        treeTableView.add(treeToolbar);
-        treeTableView.add(panelToolbar);
 
-        iFormLayout.add(treeGroup, treeTableView);
+        iFormLayout.add(treeGroup, treeTableView, 0);
+
+        addFilterButton();
+
+        if (filter != null) {
+            filter.addHotKeys(tree.getElement());
+        }
     }
 
     public void processFormChanges(GFormChanges fc) {
@@ -131,9 +131,6 @@ public class GTreeGroupController implements GGroupObjectLogicsSupplier {
             tree.update();
         }
         panel.update();
-
-        treeToolbar.setVisible(!treeToolbar.isEmpty());
-        panelToolbar.setVisible(!panelToolbar.isEmpty());
     }
 
     public void relayoutTable() {
@@ -181,10 +178,6 @@ public class GTreeGroupController implements GGroupObjectLogicsSupplier {
     }
 
     @Override
-    public void updateFooterValues(GFooterReader reader, Map<GGroupObjectValue, Object> values) {
-    }
-
-    @Override
     public void updateRowBackgroundValues(Map<GGroupObjectValue, Object> values) {
         tree.updateRowBackgroundValues(values);
         if (values != null && !values.isEmpty())
@@ -199,11 +192,6 @@ public class GTreeGroupController implements GGroupObjectLogicsSupplier {
     }
 
     @Override
-    public boolean hasPanelProperty(GPropertyDraw property) {
-        return panel.containsProperty(property);
-    }
-
-    @Override
     public GGroupObjectValue getCurrentKey() {
         return tree.getCurrentKey();
     }
@@ -211,6 +199,41 @@ public class GTreeGroupController implements GGroupObjectLogicsSupplier {
     @Override
     public void changeOrder(GPropertyDraw property, GOrder modiType) {
         tree.changeOrder(property, modiType);
+    }
+
+    @Override
+    public GGroupObject getSelectedGroupObject() {
+        GTreeGridRecord record = tree.getSelectedRecord();
+        return record != null
+                ? record.getGroup()
+                : treeGroup.groups.get(0);
+    }
+
+    @Override
+    public List<GPropertyDraw> getGroupObjectProperties() {
+        GGroupObject currentGroupObject = getSelectedGroupObject();
+
+        ArrayList<GPropertyDraw> properties = new ArrayList<GPropertyDraw>();
+        for (GPropertyDraw property : formController.getPropertyDraws()) {
+            if (currentGroupObject != null && currentGroupObject.equals(property.groupObject)) {
+                properties.add(property);
+            }
+        }
+
+        return properties;
+    }
+
+    @Override
+    public GPropertyDraw getSelectedProperty() {
+        GPropertyDraw defaultProperty = lastGroupObject.filterProperty;
+        return defaultProperty != null
+                ? defaultProperty
+                : tree.getCurrentProperty();
+    }
+
+    @Override
+    public Object getSelectedValue(GPropertyDraw property) {
+        return tree.getSelectedValue(property);
     }
 
     public boolean focusFirstWidget() {
@@ -221,5 +244,10 @@ public class GTreeGroupController implements GGroupObjectLogicsSupplier {
             }
         });
         return true;
+    }
+
+    @Override
+    protected void changeFilter(List<GPropertyFilter> conditions) {
+        formController.changeFilter(treeGroup, conditions);
     }
 }

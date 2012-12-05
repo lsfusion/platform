@@ -8,33 +8,30 @@ import platform.gwt.form.client.form.ui.container.GAbstractFormContainer;
 import platform.gwt.form.shared.view.*;
 import platform.gwt.form.shared.view.changes.GFormChanges;
 import platform.gwt.form.shared.view.changes.GGroupObjectValue;
-import platform.gwt.form.shared.view.logics.GGroupObjectLogicsSupplier;
-import platform.gwt.form.shared.view.reader.*;
+import platform.gwt.form.shared.view.filter.GPropertyFilter;
+import platform.gwt.form.shared.view.reader.GBackgroundReader;
+import platform.gwt.form.shared.view.reader.GCaptionReader;
+import platform.gwt.form.shared.view.reader.GForegroundReader;
+import platform.gwt.form.shared.view.reader.GPropertyReader;
 
 import java.util.*;
 
-public class GGroupObjectController implements GGroupObjectLogicsSupplier {
+public class GGroupObjectController extends GAbstractGroupObjectController {
     public GGroupObject groupObject;
     private GFormLayout formLayout;
-    private GFormController formController;
 
     private GGridController grid;
-    private GPanelController panel;
     private GShowTypeView showTypeView;
 
     private GClassViewType classViewType = GClassViewType.HIDE;
-
-    private HashSet<GPropertyDraw> panelProperties = new HashSet<GPropertyDraw>();
 
     // пустая панель внизу контейнера группы, которая расширяется при спрятанном гриде, прижимая тулбар и панельный контейнер кверху
     private SimplePanel blankElement = new SimplePanel();
 
     public GGroupObjectController(GFormController iformController, GGroupObject igroupObject, GFormLayout iformLayout) {
+        super(iformController, iformLayout, igroupObject == null ? null : igroupObject.toolbar);
         groupObject = igroupObject;
         formLayout = iformLayout;
-        formController = iformController;
-
-        panel = new GPanelController(formController, formLayout);
 
         if (groupObject != null) {
             grid = new GGridController(groupObject.grid, formController, this);
@@ -59,6 +56,12 @@ public class GGroupObjectController implements GGroupObjectLogicsSupplier {
             GAbstractFormContainer gridParentParent = formLayout.getFormContainer(groupObject.grid.container.container);
             if (gridParentParent != null) {
                 gridParentParent.addDirectly(blankElement);
+            }
+
+            addFilterButton();
+
+            if (filter != null && grid != null) {
+                filter.addHotKeys(grid.getTable().getElement());
             }
         }
     }
@@ -166,10 +169,6 @@ public class GGroupObjectController implements GGroupObjectLogicsSupplier {
     }
 
     @Override
-    public void updateFooterValues(GFooterReader reader, Map<GGroupObjectValue, Object> values) {
-    }
-
-    @Override
     public void updateRowBackgroundValues(Map<GGroupObjectValue, Object> values) {
         if (isInGridClassView()) {
             grid.updateRowBackgroundValues(values);
@@ -204,12 +203,20 @@ public class GGroupObjectController implements GGroupObjectLogicsSupplier {
     private void updateToolbar() {
         if (groupObject != null) {
             GContainer gridContainer = groupObject.grid.container;
-            if (classViewType == GClassViewType.GRID) {
+            if (isInGridClassView()) {
                 grid.show();
+                toolbar.setVisible(true);
+                if (filter != null) {
+                    filter.setVisible(true);
+                }
                 formLayout.setTableCellSize(gridContainer.container, gridContainer, "100%", false);
                 formLayout.setTableCellSize(gridContainer.container, blankElement, "auto", false);
             } else {
                 grid.hide();
+                toolbar.setVisible(false);
+                if (filter != null) {
+                    filter.setVisible(false);
+                }
                 formLayout.setTableCellSize(gridContainer.container, gridContainer, "auto", false);
                 formLayout.setTableCellSize(gridContainer.container, blankElement, "100%", false);
             }
@@ -231,7 +238,6 @@ public class GGroupObjectController implements GGroupObjectLogicsSupplier {
         if (grid != null) {
             grid.getTable().removeProperty(property);
         }
-        panelProperties.remove(property);
     }
 
     private void addProperty(GPropertyDraw property, boolean toPanel) {
@@ -247,7 +253,6 @@ public class GGroupObjectController implements GGroupObjectLogicsSupplier {
             grid.getTable().addProperty(property);
         }
         panel.removeProperty(property);
-        panelProperties.remove(property);
     }
 
     private void addPanelProperty(GPropertyDraw property) {
@@ -255,11 +260,6 @@ public class GGroupObjectController implements GGroupObjectLogicsSupplier {
             grid.getTable().removeProperty(property);
         }
         panel.addProperty(property);
-        panelProperties.add(property);
-    }
-
-    public boolean hasPanelProperty(GPropertyDraw property) {
-        return panelProperties.contains(property);
     }
 
     public void addFilterComponent(GRegularFilterGroup filterGroup, Widget filterWidget) {
@@ -312,6 +312,35 @@ public class GGroupObjectController implements GGroupObjectLogicsSupplier {
         grid.changeOrder(property, modiType);
     }
 
+    @Override
+    public GGroupObject getSelectedGroupObject() {
+        return groupObject;
+    }
+
+    @Override
+    public List<GPropertyDraw> getGroupObjectProperties() {
+        ArrayList<GPropertyDraw> properties = new ArrayList<GPropertyDraw>();
+        for (GPropertyDraw property : formController.getPropertyDraws()) {
+            if (groupObject.equals(property.groupObject)) {
+                properties.add(property);
+            }
+        }
+        return properties;
+    }
+
+    @Override
+    public GPropertyDraw getSelectedProperty() {
+        GPropertyDraw defaultProperty = groupObject.filterProperty;
+        return defaultProperty != null
+                ? defaultProperty
+                : grid.getCurrentProperty();
+    }
+
+    @Override
+    public Object getSelectedValue(GPropertyDraw property) {
+        return grid.getSelectedValue(property);
+    }
+
     public void modifyGroupObject(GGroupObjectValue key, boolean add) {
         assert classViewType == GClassViewType.GRID;
 
@@ -330,5 +359,22 @@ public class GGroupObjectController implements GGroupObjectLogicsSupplier {
         }
 
         return panel.focusFirstWidget();
+    }
+
+    @Override
+    protected boolean showFilter() {
+        return groupObject != null && groupObject.filter.visible;
+    }
+
+    @Override
+        protected void changeFilter(List<GPropertyFilter> conditions) {
+        formController.changeFilter(groupObject, conditions);
+    }
+
+    @Override
+    public void setFilterVisible(boolean visible) {
+        if (isInGridClassView()) {
+            super.setFilterVisible(visible);
+        }
     }
 }

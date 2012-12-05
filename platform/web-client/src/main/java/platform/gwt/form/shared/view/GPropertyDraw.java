@@ -87,6 +87,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
         return baseType.createGridCellEditor(editManager, this);
     }
 
+    public GridCellEditor createValueCellEdtor(EditManager editManager) {
+        return baseType.createValueCellEditor(editManager, this);
+    }
+
     @Override
     public int getGroupObjectID() {
         return groupObject != null ? groupObject.ID : -1;
@@ -112,6 +116,14 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
 
     public String getEditCaption() {
         return getEditCaption(caption);
+    }
+
+    public String getNotEmptyCaption() {
+        if (caption == null || caption.trim().length() == 0) {
+            return "Неопределённое свойство";
+        } else {
+            return caption;
+        }
     }
 
     public String getIconPath(boolean enabled) {
