@@ -42,6 +42,7 @@ import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.actions.CustomReadValueActionProperty;
+import platform.server.logics.property.actions.DropObjectActionProperty;
 import platform.server.logics.property.actions.UserActionProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.session.DataSession;
@@ -1854,7 +1855,7 @@ public class VEDLogicsModule extends LogicsModule {
             objBarcode.groupTo.initClassView = ClassViewType.PANEL;
             objBarcode.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
 
-            addActionsOnEvent(FormEventType.APPLY, addPropertyObject(baseLM.dropString, objBarcode));
+            addActionsOnEvent(FormEventType.APPLY, addPropertyObject(addAProp(new DropObjectActionProperty(StringClass.get(13))), objBarcode));
 
             addPropertyDraw(baseLM.reverseBarcode);
 

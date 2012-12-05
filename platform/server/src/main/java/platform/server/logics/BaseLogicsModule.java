@@ -103,7 +103,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public ConcreteCustomClass tableColumn;
     public ConcreteCustomClass dropColumn;
 
-    public AbstractCustomClass transaction, transactionTime, barcodeObject, externalObject, historyObject;
+    public AbstractCustomClass transaction, barcodeObject, externalObject, historyObject;
 
     public AbstractCustomClass emailObject;
 
@@ -160,11 +160,11 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP completeBarcode;
 
     public LCP numberMonth;
-    public LCP numberToMonth;
+    public LCP monthNumber;
     public LCP monthInDate;
 
     public LCP numberDOW;
-    public LCP numberToDOW;
+    public LCP DOWNumber;
     public LCP DOWInDate;
 
     public LCP vtrue;
@@ -288,7 +288,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     public LAP delete;
     public LAP deleteApply;
-    public LAP dropString;
 
     public LAP<?> apply;
     public LCP<?> canceled;
@@ -567,7 +566,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public void initClasses() {
         baseClass = addBaseClass("object", getString("logics.object"));
 
-        transaction = addAbstractClass("transaction", getString("logics.transaction"), baseClass);
         barcodeObject = addAbstractClass("barcodeObject", getString("logics.object.barcoded.object"), baseClass);
 
         externalObject = addAbstractClass("externalObject", getString("logics.object.external.object"), baseClass);
@@ -632,6 +630,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         formResult = addStaticClass("formResult", "Результат вызова формы",
                 new String[]{"null", "ok", "close"},
                 new String[]{"Неизвестно", "Принять", "Закрыть"});
+
+        // todo : раскидать по модулям
+        transaction = addAbstractClass("transaction", getString("logics.transaction"), baseClass);
     }
 
     @Override
@@ -791,12 +792,27 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         vzero = addCProp("0", DoubleClass.instance, 0);
         vnull = addProperty(privateGroup, new LCP<PropertyInterface>(NullValueProperty.instance));
 
+        // Обработка дат
+
+        numberDOW = addJProp(baseGroup, "numberDOW", true, getString("logics.week.day.number"), subtractInteger,
+                addOProp("numberDOWP1", getString("logics.week.day.number.plus.one"), PartitionType.SUM, addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), is(DOW), 1), true, false, 0, 1), 1,
+                addCProp(IntegerClass.instance, 1));
+        DOWNumber = addAGProp("DOWNumber", getString("logics.week.day.id"), numberDOW);
+
+        numberMonth = addOProp(baseGroup, "numberMonth", true, getString("logics.month.number"), addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), is(month), 1), PartitionType.SUM, true, true, 0, 1);
+        monthNumber = addAGProp("monthNumber", getString("logics.month.id"), numberMonth);
+
         // Преобразование типов
 
         dayInDate = addSFProp("dayInDate", "(extract(day from (prm1)))", IntegerClass.instance, 1);
         weekInDate = addSFProp("weekInDate", "(extract(week from (prm1)))", IntegerClass.instance, 1);
+
         numberDOWInDate = addSFProp("numberDOWInDate", "(extract(dow from (prm1)))", IntegerClass.instance, 1);
+        DOWInDate = addJProp("DOWInDate", getString("logics.week.day.id"), DOWNumber, numberDOWInDate, 1);
+
         numberMonthInDate = addSFProp("numberMonthInDate", "(extract(month from (prm1)))", IntegerClass.instance, 1);
+        monthInDate = addJProp("monthInDate", getString("logics.month.id"), monthNumber, numberMonthInDate, 1);
+
         yearInDate = addSFProp("yearInDate", "(extract(year from (prm1)))", IntegerClass.instance, 1);
 
         toDate = addSFProp("toDate", "(CAST((prm1) as date))", DateClass.instance, 1);
@@ -805,15 +821,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         dateTimeToDateTime = addSFProp("dateTimeToDateTime", "to_timestamp(CAST(prm1 as char(10)) || CAST(prm2 as char(8)), \'YYYY-MM-DDHH24:MI:SS\')", DateTimeClass.instance, 2);
 
-        numberMonth = addOProp(baseGroup, "numberMonth", true, getString("logics.month.number"), addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), is(month), 1), PartitionType.SUM, true, true, 0, 1);
-        numberToMonth = addAGProp("numberToMonth", getString("logics.month.id"), numberMonth);
-        monthInDate = addJProp("monthInDate", getString("logics.month.id"), numberToMonth, numberMonthInDate, 1);
-
-        numberDOW = addJProp(baseGroup, "numberDOW", true, getString("logics.week.day.number"), subtractInteger,
-                addOProp("numberDOWP1", getString("logics.week.day.number.plus.one"), PartitionType.SUM, addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), is(DOW), 1), true, false, 0, 1), 1,
-                addCProp(IntegerClass.instance, 1));
-        numberToDOW = addAGProp("numberToDOW", getString("logics.week.day.id"), numberDOW);
-        DOWInDate = addJProp("DOWInDate", getString("logics.week.day.id"), numberToDOW, numberDOWInDate, 1);
+        // Действия
 
         delete = addAProp(baseClass.unknown.getChangeClassAction());
 
@@ -823,13 +831,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         deleteApply.setShowEditKey(false);
         deleteApply.setAskConfirm(true);
         deleteApply.setShouldBeLast(true);
-
-        dropString = addAProp(new DropObjectActionProperty(StringClass.get(13)));
-
-        date = addDProp(baseGroup, "date", getString("logics.date"), DateClass.instance, transaction);
-
-        redColor = addCProp(ColorClass.instance, Color.RED);
-        yellowColor = addCProp(ColorClass.instance, Color.YELLOW);
 
         formApply = addProperty(null, new LAP(new FormApplyActionProperty(BL)));
         formCancel = addProperty(null, new LAP(new FormCancelActionProperty()));
@@ -841,38 +842,30 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         formOk = addProperty(null, new LAP(new OkActionProperty()));
         formClose = addProperty(null, new LAP(new CloseActionProperty()));
 
-        notZero = addJProp(diff2, 1, vzero);
-
-        sumDateWeekFrom = addJProp("sumDateWeekFrom", getString("logics.date.from"), and(false, false), addSFProp("((prm1)+(prm2)*7)", DateClass.instance, 2), 1, 2, is(DateClass.instance), 1, is(IntegerClass.instance), 2);
-        sumDateWeekTo = addJProp("sumDateWeekTo", getString("logics.date.to"), and(false, false), addSFProp("((prm1)+((prm2)*7+6))", DateClass.instance, 2), 1, 2, is(DateClass.instance), 1, is(IntegerClass.instance), 2);
-
-        transactionLater = addSUProp(getString("logics.transaction.later"), Union.OVERRIDE, addJProp(getString("logics.date.later"), greater2, date, 1, date, 2),
-                                     addJProp("", and1, addJProp(getString("logics.date.equals.date"), equals2, date, 1, date, 2), 1, 2, addJProp(getString("logics.transaction.code.later"), greater2, 1, 2), 1, 2));
-
-        hostname = addDProp(baseGroup, "hostname", getString("logics.host.name"), InsensitiveStringClass.get(100), computer);
-
         currentDate = addDProp(baseGroup, "currentDate", getString("logics.date.current.date"), DateClass.instance);
         currentMonth = addJProp(baseGroup, "currentMonth", getString("logics.date.current.month"), numberMonthInDate, currentDate);
         currentYear = addJProp(baseGroup, "currentYear", getString("logics.date.current.year"), yearInDate, currentDate);
-        currentHour = addTProp("currentHour", getString("logics.date.current.hour"), Time.HOUR);
-        currentMinute = addTProp("currentMinute", getString("logics.date.current.minute"), Time.MINUTE);
-        currentEpoch = addTProp("currentEpoch", getString("logics.date.current.epoch"), Time.EPOCH);
+
         currentDateTime = addTProp("currentDateTime", getString("logics.date.current.datetime"), Time.DATETIME);
         currentTime = addJProp("currentTime", getString("logics.date.current.time"), toTime, currentDateTime);
-        currentUser = addProperty(null, new LCP<PropertyInterface>(new CurrentUserFormulaProperty("currentUser", user)));
+        currentMinute = addTProp("currentMinute", getString("logics.date.current.minute"), Time.MINUTE);
+        currentHour = addTProp("currentHour", getString("logics.date.current.hour"), Time.HOUR);
+        currentEpoch = addTProp("currentEpoch", getString("logics.date.current.epoch"), Time.EPOCH);
+
         currentSession = addProperty(null, new LCP<ClassPropertyInterface>(new CurrentSessionDataProperty("currentSession", session)));
 
+        // Компьютер
+        // todo : переименовать в соответствии с naming policy
+        hostname = addDProp(baseGroup, "hostname", getString("logics.host.name"), InsensitiveStringClass.get(100), computer);
         currentComputer = addProperty(null, new LCP<PropertyInterface>(new CurrentComputerFormulaProperty("currentComputer", computer)));
         hostnameCurrentComputer = addJProp("hostnameCurrentComputer", getString("logics.current.computer.hostname"), hostname, currentComputer);
 
-        isServerRestarting = addProperty(null, new LCP<PropertyInterface>(new IsServerRestartingFormulaProperty("isServerRestarting")));
+        // Действия по авторизация
         changeUser = addProperty(null, new LAP(new ChangeUserActionProperty("changeUser", customUser)));
         logOut = addProperty(null, new LAP(new LogOutActionProperty("logOut")));
 
-        userLogin = addDProp(baseGroup, "userLogin", getString("logics.user.login"), StringClass.get(30), customUser);
-        loginToUser = addAGProp("loginToUser", getString("logics.user"), userLogin);
-        userPassword = addDProp(publicGroup, "userPassword", getString("logics.user.password"), StringClass.get(30), customUser);
-        userPassword.setEchoSymbols(true);
+        // Контакты
+        // todo : переименовать в соответствии с namingPolicy
         userFirstName = addDProp(publicGroup, "userFirstName", getString("logics.user.firstname"), StringClass.get(30), contact);
         userFirstName.setMinimumCharWidth(10);
 
@@ -887,20 +880,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         userBirthday = addDProp(publicGroup, "userBirthday", getString("logics.user.birthday"),  DateClass.instance, contact);
 
-        userRoleSID = addDProp(baseGroup, "userRoleSID", getString("logics.user.identificator"), StringClass.get(30), userRole);
-        sidToRole = addAGProp(idGroup, "sidToRole", getString("logics.user.role.id"), userRole, userRoleSID);
-        inUserRole = addDProp(baseGroup, "inUserRole", getString("logics.user.role.in"), LogicalClass.instance, customUser, userRole);
-        userRoleDefaultForms = addDProp(baseGroup, "userRoleDefaultForms", getString("logics.user.displaying.forms.by.default"), LogicalClass.instance, userRole);
-        inLoginSID = addJProp("inLoginSID", true, getString("logics.login.has.a.role"), inUserRole, loginToUser, 1, sidToRole, 2);
-
-        email = addDProp(baseGroup, "email", getString("logics.email"), StringClass.get(50), contact);
-        email.setRegexp("^[-a-zA-Z0-9!#$%&'*+/=?^_`{|}~]+(?:\\.[-a-zA-Z0-9!#$%&'*+/=?^_`{|}~]+)*@(?:[a-zA-Z0-9]([-a-zA-Z0-9]{0,61}[a-zA-Z0-9])?\\.)*(?:aero|arpa|asia|biz|cat|com|coop|edu|gov|info|int|jobs|mil|mobi|museum|name|net|org|pro|tel|travel|[a-zA-Z][a-zA-Z])$");
-        email.setRegexpMessage("<html>Неверный формат e-mail</html>");
-
-        emailToObject = addAGProp("emailToObject", getString("logics.email.to.object"), email);
-
-        generateLoginPassword = addAProp(actionGroup, new GenerateLoginPasswordActionProperty(email, userLogin, userPassword, customUser));
-
+        // todo : тут надо что-то придумать более логичное
         dataName = addDProp("name", getString("logics.name"), InsensitiveStringClass.get(110), baseClass.named);
         ((CalcProperty)dataName.property).aggProp = true;
         name = addCUProp(recognizeGroup, "commonName", getString("logics.name"), dataName,
@@ -913,10 +893,51 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         objectClassName = addJProp(baseGroup, "objectClassName", getString("logics.object.class"), name, objectClass, 1);
         objectClassName.makeLoggable(this, true);
 
+        // записываем в имя имя класса + номер объекта
         dataName.setEventChange(addJProp(string2, addJProp(name.getOld(), objectClass, 1), 1,
-                                                  addSFProp("CAST((prm1) as char(50))", StringClass.get(50), 1), 1), 1,
-                                         is(baseClass.named), 1);
+                addSFProp("CAST((prm1) as char(50))", StringClass.get(50), 1), 1), 1,
+                is(baseClass.named), 1);
 
+        // Email
+        email = addDProp(baseGroup, "email", getString("logics.email"), StringClass.get(50), contact);
+        email.setRegexp("^[-a-zA-Z0-9!#$%&'*+/=?^_`{|}~]+(?:\\.[-a-zA-Z0-9!#$%&'*+/=?^_`{|}~]+)*@(?:[a-zA-Z0-9]([-a-zA-Z0-9]{0,61}[a-zA-Z0-9])?\\.)*(?:aero|arpa|asia|biz|cat|com|coop|edu|gov|info|int|jobs|mil|mobi|museum|name|net|org|pro|tel|travel|[a-zA-Z][a-zA-Z])$");
+        email.setRegexpMessage("<html>Неверный формат e-mail</html>");
+
+        emailToObject = addAGProp("emailToObject", getString("logics.email.to.object"), email);
+
+        // ----- Пользователи
+        // todo : переименовать в соответствии с namingPolicy
+        // Авторизация
+        userLogin = addDProp(baseGroup, "userLogin", getString("logics.user.login"), StringClass.get(30), customUser);
+        loginToUser = addAGProp("loginToUser", getString("logics.user"), userLogin);
+
+        userPassword = addDProp(publicGroup, "userPassword", getString("logics.user.password"), StringClass.get(30), customUser);
+        userPassword.setEchoSymbols(true);
+
+        generateLoginPassword = addAProp(actionGroup, new GenerateLoginPasswordActionProperty(email, userLogin, userPassword, customUser));
+
+        // Текущий пользователь
+        currentUser = addProperty(null, new LCP<PropertyInterface>(new CurrentUserFormulaProperty("currentUser", user)));
+        currentUserName = addJProp("currentUserName", getString("logics.user.current.user.name"), name, currentUser);
+
+        // ---- Роли
+        // todo : переименовать в соответствии с namingPolicy
+        userRoleSID = addDProp(baseGroup, "userRoleSID", getString("logics.user.identificator"), StringClass.get(30), userRole);
+        sidToRole = addAGProp(idGroup, "sidToRole", getString("logics.user.role.id"), userRole, userRoleSID);
+        inUserRole = addDProp(baseGroup, "inUserRole", getString("logics.user.role.in"), LogicalClass.instance, customUser, userRole);
+        userRoleDefaultForms = addDProp(baseGroup, "userRoleDefaultForms", getString("logics.user.displaying.forms.by.default"), LogicalClass.instance, userRole);
+        inLoginSID = addJProp("inLoginSID", true, getString("logics.login.has.a.role"), inUserRole, loginToUser, 1, sidToRole, 2);
+
+        // Главная роль
+        userMainRole = addDProp(idGroup, "userMainRole", getString("logics.user.role.main.role.id"), userRole, user);
+        customUserMainRole = addJProp(idGroup, "customUserMainRole", getString("logics.user.role.main.role.id"), and1, userMainRole, 1, is(customUser), 1);
+        customUserSIDMainRole = addJProp("customUserSIDMainRole", getString("logics.user.role.main.role.identificator"), userRoleSID, customUserMainRole, 1);
+        nameUserMainRole = addJProp(baseGroup, "nameUserMainRole", getString("logics.user.role.main.role"), name, userMainRole, 1);
+
+        inUserMainRole = addSUProp("inUserMainRole", getString("logics.user.role.in"), Union.OVERRIDE,
+                addJProp(equals2, customUserMainRole, 1, 2), inUserRole);
+
+        // Подключения к серверу
         connectionComputer = addDProp("connectionComputer", getString("logics.computer"), computer, connection);
         addJProp(baseGroup, getString("logics.computer"), hostname, connectionComputer, 1);
         connectionUser = addDProp("connectionUser", getString("logics.user"), customUser, connection);
@@ -931,67 +952,37 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         disconnectConnection = addProperty(null, new LAP(new DisconnectActionProperty(BL, this, connection)));
         addIfAProp(baseGroup, getString("logics.connection.disconnect"), true, connectionDisconnectTime, 1, disconnectConnection, 1);
 
+        // Открытые формы во время подключения
         connectionFormCount = addDProp(baseGroup, "connectionFormCount", getString("logics.forms.number.of.opened.forms"), IntegerClass.instance, connection, navigatorElement);
 
+        // Логирование старта сервера
         launchComputer = addDProp("launchComputer", getString("logics.computer"), computer, launch);
         computerNameLaunch = addJProp(baseGroup, getString("logics.computer"), hostname, launchComputer, 1);
         launchTime = addDProp(baseGroup, "launchConnectTime", getString("logics.launch.time"), DateTimeClass.instance, launch);
         launchRevision = addDProp(baseGroup, "launchRevision", getString("logics.launch.revision"), StringClass.get(10), launch);
 
-        userMainRole = addDProp(idGroup, "userMainRole", getString("logics.user.role.main.role.id"), userRole, user);
-        customUserMainRole = addJProp(idGroup, "customUserMainRole", getString("logics.user.role.main.role.id"), and1, userMainRole, 1, is(customUser), 1);
-        customUserSIDMainRole = addJProp("customUserSIDMainRole", getString("logics.user.role.main.role.identificator"), userRoleSID, customUserMainRole, 1);
-        nameUserMainRole = addJProp(baseGroup, "nameUserMainRole", getString("logics.user.role.main.role"), name, userMainRole, 1);
-
-        inUserMainRole = addSUProp("inUserMainRole", getString("logics.user.role.in"), Union.OVERRIDE,
-                         addJProp(equals2, customUserMainRole, 1, 2), inUserRole);
-
+        // Политика безопасности
         nameToPolicy = addAGProp("nameToPolicy", getString("logics.policy"), policy, name);
         policyDescription = addDProp(baseGroup, "policyDescription", getString("logics.policy.description"), StringClass.get(100), policy);
 
         userRolePolicyOrder = addDProp(baseGroup, "userRolePolicyOrder", getString("logics.policy.order"), IntegerClass.instance, userRole, policy);
         userPolicyOrder = addJProp(baseGroup, "userPolicyOrder", getString("logics.policy.order"), userRolePolicyOrder, userMainRole, 1, 2);
 
-        barcode = addDProp(recognizeGroup, "barcode", getString("logics.barcode"), StringClass.get(Settings.instance.getBarcodeLength()), barcodeObject);
-
-        barcode.setFixedCharWidth(13);
-        barcodeToObject = addAGProp("barcodeToObject", getString("logics.object"), barcode);
-        barcodeObjectName = addJProp(baseGroup, "barcodeObjectName", getString("logics.object"), name, barcodeToObject, 1);
-
-        equalsObjectBarcode = addJProp(equals2, barcode, 1, 2);
-
-        seekBarcodeAction = addJoinAProp(getString("logics.barcode.search"), addSAProp(null), barcodeToObject, 1);
-        barcodeNotFoundMessage = addIfAProp(addJProp(baseLM.andNot1, is(StringClass.get(13)), 1, barcodeToObject, 1), 1, addMAProp(getString("logics.barcode.not.found"), getString("logics.error")));
-
-        completeBarcode = addSFProp("completeBarcode", "completeBarcode(prm1)", StringClass.get(13), 1);
-
-        extSID = addDProp(recognizeGroup, "extSID", getString("logics.extsid"), StringClass.get(100), externalObject);
-        extSIDToObject = addAGProp("extSIDToObject", getString("logics.object"), extSID);
-
-        timeCreated = addDProp(historyGroup, "timeCreated", getString("logics.timecreated"), DateTimeClass.instance, historyObject);
-        userCreated = addDProp(idGroup, "userCreated", getString("logics.usercreated"), customUser, historyObject);
-        nameUserCreated = addJProp(historyGroup, "nameUserCreated", getString("logics.usercreated"), name, userCreated, 1);
-        nameUserCreated.setMinimumCharWidth(10); nameUserCreated.setPreferredCharWidth(20);
-        computerCreated = addDProp(idGroup, "computerCreated", getString("logics.computercreated"), computer, historyObject);
-        hostnameComputerCreated = addJProp(historyGroup, "hostnameComputerCreated", getString("logics.computercreated"), hostname, computerCreated, 1);
-        hostnameComputerCreated.setMinimumCharWidth(10); hostnameComputerCreated.setPreferredCharWidth(20);
-
-        timeCreated.setEventChangeNew(currentDateTime, is(historyObject), 1);
-        userCreated.setEventChangeNew(currentUser, is(historyObject), 1);
-        computerCreated.setEventChangeNew(currentComputer, is(historyObject), 1);
+        // Управление сервером приложений
+        isServerRestarting = addProperty(null, new LCP<PropertyInterface>(new IsServerRestartingFormulaProperty("isServerRestarting")));
 
         restartServerAction = addIfAProp(getString("logics.server.stop"), true, isServerRestarting, addRestartActionProp());
         runGarbageCollector = addGarbageCollectorActionProp();
         cancelRestartServerAction = addIfAProp(getString("logics.server.cancel.stop"), isServerRestarting, addCancelRestartActionProp());
 
+        // Управление сервером базы данных
+        // todo : правильно разрисовать контейнеры
         checkAggregationsAction = addProperty(null, new LAP(new CheckAggregationsActionProperty("checkAggregationsAction", getString("logics.check.aggregations"))));
         recalculateAction = addProperty(null, new LAP(new RecalculateActionProperty("recalculateAction", getString("logics.recalculate.aggregations"))));
         recalculateFollowsAction = addProperty(null, new LAP(new RecalculateFollowsActionProperty("recalculateFollowsAction", getString("logics.recalculate.follows"))));
         analyzeDBAction = addProperty(null, new LAP(new AnalyzeDBActionProperty("analyzeDBAction", getString("logics.vacuum.analyze"))));
         packAction = addProperty(null, new LAP(new PackActionProperty("packAction", getString("logics.tables.pack"))));
         serviceDBAction = addProperty(null, new LAP(new ServiceDBActionProperty("serviceDBAction", getString("logics.service.db"))));
-
-        currentUserName = addJProp("currentUserName", getString("logics.user.current.user.name"), name, currentUser);
 
         reverseBarcode = addSDProp("reverseBarcode", getString("logics.barcode.reverse"), LogicalClass.instance);
 
@@ -1195,11 +1186,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         disableEmail = addDProp(emailGroup, "disableEmail", getString("logics.email.disable.email.sending"), LogicalClass.instance);
 
         defaultBackgroundColor = addDProp("defaultBackgroundColor", getString("logics.default.background.color"), ColorClass.instance);
-        defaultOverrideBackgroundColor = addSUProp("defaultOverrideBackgroundColor", true, getString("logics.default.background.color"), Union.OVERRIDE, yellowColor, defaultBackgroundColor);
+        defaultOverrideBackgroundColor = addSUProp("defaultOverrideBackgroundColor", true, getString("logics.default.background.color"), Union.OVERRIDE, addCProp(ColorClass.instance, Color.YELLOW), defaultBackgroundColor);
         defaultForegroundColor = addDProp("defaultForegroundColor", getString("logics.default.foreground.color"), ColorClass.instance);
-        defaultOverrideForegroundColor = addSUProp("defaultOverrideForegroundColor", true, getString("logics.default.foreground.color"), Union.OVERRIDE, redColor, defaultForegroundColor);
-
-        date.setEventChange(currentDate, is(transaction), 1);
+        defaultOverrideForegroundColor = addSUProp("defaultOverrideForegroundColor", true, getString("logics.default.foreground.color"), Union.OVERRIDE, addCProp(ColorClass.instance, Color.RED), defaultForegroundColor);
 
         insensitiveDictionary = addDProp(recognizeGroup, "insensitiveDictionary", getString("logics.dictionary.insensitive"), LogicalClass.instance, dictionary);
         entryDictionary = addDProp("entryDictionary", getString("logics.dictionary"), dictionary, dictionaryEntry);
@@ -1212,6 +1201,48 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         insensitiveTranslationDictionaryTerm = addMGProp(baseGroup, "insensitiveTranslationDictionaryTerm", getString("logics.dictionary.translation.insensitive"), translationDictionary, entryDictionary, 1, insensitiveTermDictionary, 1);
 
         //todo : инлайнить в свои модули
+
+        date = addDProp(baseGroup, "date", getString("logics.date"), DateClass.instance, transaction);
+        date.setEventChange(currentDate, is(transaction), 1);
+
+        redColor = addCProp(ColorClass.instance, Color.RED);
+        yellowColor = addCProp(ColorClass.instance, Color.YELLOW);
+
+        notZero = addJProp(diff2, 1, vzero);
+
+        barcode = addDProp(recognizeGroup, "barcode", getString("logics.barcode"), StringClass.get(Settings.instance.getBarcodeLength()), barcodeObject);
+
+        barcode.setFixedCharWidth(13);
+        barcodeToObject = addAGProp("barcodeToObject", getString("logics.object"), barcode);
+        barcodeObjectName = addJProp(baseGroup, "barcodeObjectName", getString("logics.object"), name, barcodeToObject, 1);
+
+        equalsObjectBarcode = addJProp(equals2, barcode, 1, 2);
+
+        seekBarcodeAction = addJoinAProp(getString("logics.barcode.search"), addSAProp(null), barcodeToObject, 1);
+        barcodeNotFoundMessage = addIfAProp(addJProp(baseLM.andNot1, is(StringClass.get(13)), 1, barcodeToObject, 1), 1, addMAProp(getString("logics.barcode.not.found"), getString("logics.error")));
+
+        completeBarcode = addSFProp("completeBarcode", "completeBarcode(prm1)", StringClass.get(13), 1);
+
+        // в отдельный Integration.lsf
+        extSID = addDProp(recognizeGroup, "extSID", getString("logics.extsid"), StringClass.get(100), externalObject);
+        extSIDToObject = addAGProp("extSIDToObject", getString("logics.object"), extSID);
+
+        // в Historizable.lsf
+        timeCreated = addDProp(historyGroup, "timeCreated", getString("logics.timecreated"), DateTimeClass.instance, historyObject);
+        userCreated = addDProp(idGroup, "userCreated", getString("logics.usercreated"), customUser, historyObject);
+        nameUserCreated = addJProp(historyGroup, "nameUserCreated", getString("logics.usercreated"), name, userCreated, 1);
+        nameUserCreated.setMinimumCharWidth(10); nameUserCreated.setPreferredCharWidth(20);
+        computerCreated = addDProp(idGroup, "computerCreated", getString("logics.computercreated"), computer, historyObject);
+        hostnameComputerCreated = addJProp(historyGroup, "hostnameComputerCreated", getString("logics.computercreated"), hostname, computerCreated, 1);
+        hostnameComputerCreated.setMinimumCharWidth(10); hostnameComputerCreated.setPreferredCharWidth(20);
+
+        timeCreated.setEventChangeNew(currentDateTime, is(historyObject), 1);
+        userCreated.setEventChangeNew(currentUser, is(historyObject), 1);
+        computerCreated.setEventChangeNew(currentComputer, is(historyObject), 1);
+
+        // в Utils.lsf
+        sumDateWeekFrom = addJProp("sumDateWeekFrom", getString("logics.date.from"), and(false, false), addSFProp("((prm1)+(prm2)*7)", DateClass.instance, 2), 1, 2, is(DateClass.instance), 1, is(IntegerClass.instance), 2);
+        sumDateWeekTo = addJProp("sumDateWeekTo", getString("logics.date.to"), and(false, false), addSFProp("((prm1)+((prm2)*7+6))", DateClass.instance, 2), 1, 2, is(DateClass.instance), 1, is(IntegerClass.instance), 2);
 
         // в Country.lsf
         jumpWorkdays = addSFProp("jumpWorkdays", "jumpWorkdays(prm1, prm2, prm3)", DateClass.instance, 3); //1 - country, 2 - date, 3 - days to jump
