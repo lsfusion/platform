@@ -12,9 +12,13 @@ GROUP printGroup 'Печатные формы' : publicGroup;
 
 stringEqualsAll(string) = string == 'Все';
 
-castToString255 = FORMULA STRING[255] 'CAST($1 AS character(255))';
-castToString3 = FORMULA STRING[3] 'CAST($1 AS character(3))' FIXEDCHARWIDTH 3;
-castToString4 = FORMULA STRING[4] 'CAST($1 AS character(4))' FIXEDCHARWIDTH 4;
+toText = FORMULA TEXT 'CAST($1 AS TEXT)';
+
+toString3 = FORMULA STRING[3] 'CAST($1 AS character(3))' FIXEDCHARWIDTH 3;
+toString4 = FORMULA STRING[4] 'CAST($1 AS character(4))' FIXEDCHARWIDTH 4;
+toString15 = FORMULA STRING[15] 'CAST($1 AS character(15))' FIXEDCHARWIDTH 15;
+toString255 = FORMULA STRING[255] 'CAST($1 AS character(255))';
+
 isWordInCSV = FORMULA INTEGER 'CASE WHEN CAST($1 AS text)=ANY(string_to_array($2,\',\')) THEN 1 ELSE 0 END';
 
 isSubstring = FORMULA BOOLEAN 'CASE WHEN (($1) LIKE (\'%\'||($2)||\'%\')) THEN 1 ELSE NULL END';

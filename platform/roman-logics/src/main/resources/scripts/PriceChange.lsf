@@ -15,7 +15,7 @@ CLASS ABSTRACT priceChangeDocumentDetail 'Строка переоценки';
 TABLE priceChangeDocumentDetail (priceChangeDocumentDetail);
 
 dateTimePriceChangeDocument 'Дата/время' (priceChangeDocument) = ABSTRACT DATETIME (priceChangeDocument) PERSISTENT INDEXED;
-datePriceChangeDocument 'Дата' (priceChangeDocument) = dateInTime(dateTimePriceChangeDocument(priceChangeDocument)) PERSISTENT;
+datePriceChangeDocument 'Дата' (priceChangeDocument) = toDate(dateTimePriceChangeDocument(priceChangeDocument)) PERSISTENT;
 
 isPostedPriceChangeDocument 'Проведен' (priceChangeDocument) = ABSTRACT BOOLEAN (priceChangeDocument) PERSISTENT;
 

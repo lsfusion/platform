@@ -404,11 +404,11 @@ TABLE supplierPriceLedger (supplierPriceLedger);
 CLASS ABSTRACT retailVATLedger 'Изменение НДС';
 TABLE retailVATLedger (retailVATLedger);
 @defineSkuDepartmentStoreLedger(retailVAT, 'НДС', range);
-valueRetailVATRetailVATLedger 'НДС, %' (ledger) = valueRateRangeDate(retailVATRetailVATLedger(ledger), dateInTime(dateTimeRetailVATLedger(ledger))) PERSISTENT;
+valueRetailVATRetailVATLedger 'НДС, %' (ledger) = valueRateRangeDate(retailVATRetailVATLedger(ledger), toDate(dateTimeRetailVATLedger(ledger))) PERSISTENT;
 valueRetailVATBSkuDepartmentStoreDateTime 'НДС, % (до)' (sku, departmentStore, dateTime) =
-            valueRateRangeDate(retailVATBSkuDepartmentStoreDateTime(sku, departmentStore, dateTime), dateInTime(dateTime));
+            valueRateRangeDate(retailVATBSkuDepartmentStoreDateTime(sku, departmentStore, dateTime), toDate(dateTime));
 valueRetailVATASkuDepartmentStoreDateTime 'НДС, % (после)' (sku, departmentStore, dateTime) =
-            valueRateRangeDate(retailVATASkuDepartmentStoreDateTime(sku, departmentStore, dateTime), dateInTime(dateTime));
+            valueRateRangeDate(retailVATASkuDepartmentStoreDateTime(sku, departmentStore, dateTime), toDate(dateTime));
 currentValueRetailVATSkuDepartmentStore 'НДС, %' (sku, departmentStore) =
             valueCurrentRateRange(currentRetailVATSkuDepartmentStore(sku, departmentStore));
 

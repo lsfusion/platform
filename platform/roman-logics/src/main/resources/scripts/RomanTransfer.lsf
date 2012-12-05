@@ -166,7 +166,7 @@ quantityOrdersSkuStockTransferTable (sku, stock, transferTable)= quantityInOrder
 stringQuantityOrdersSkuStockTransferTable (sku, stock, transferTable)= [FORMULA STRING[30] '\'(\' || CAST($1 AS TEXT) || \')\'']
     (round0(quantityOrdersSkuStockTransferTable(sku, stock, transferTable)));
 
-stringQuantitySkuStockTransferTable 'Количество' (sku, stock, transferTable)= ustring3(castToString255(round0(currentBalanceSkuStock(sku, stock))),
+stringQuantitySkuStockTransferTable 'Количество' (sku, stock, transferTable)= ustring3(toString255(round0(currentBalanceSkuStock(sku, stock))),
     stringQuantitySoldSkuStockTransferTable(sku, stock, transferTable), stringQuantityTransferSkuStockTransferTable(sku, stock, transferTable)) MINCHARWIDTH 10 PREFCHARWIDTH 20;
 
 stringTotalQuantitySkuStockTransferTable 'Количество' (sku, stock, transferTable)= ustring2(stringQuantityTransferSkuStockTransferTable(sku, stock, transferTable),

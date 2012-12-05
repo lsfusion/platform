@@ -30,7 +30,7 @@ META defineHierarchyCustom (object)
 
     isParentLeaf###object###object (child, parent) = isParent###object###object(child, parent) AND isLeaf###object(child);
 
-    canonicalName###object 'Каноническое имя' (object) = castToString255(
+    canonicalName###object 'Каноническое имя' (object) = toString255(
                            [GROUP CONCAT name(parent), ' / ' BY child ORDER DESC level###object###object(child, parent)](object))
                            MINCHARWIDTH 50 MAXCHARWIDTH 100 PREFCHARWIDTH 100 PERSISTENT;
 END

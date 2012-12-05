@@ -22,38 +22,10 @@ generateDatesCountry 'Генерировать выходные' (country) = DAT
 
 residentCountry 'Отечественный производитель' (country) = DATA BOOLEAN (country) IN baseGroup MINCHARWIDTH 15; // logics.country.resident.country
 
-isDayOffCountryDate 'Выходной' (country, date) = DATA BOOLEAN (country, DATE) IN baseGroup; // logics.day.off
-
 countryName(name) = GROUP UNIQUE country BY name(country) WHERE country IS country;
 
 defaultCountry 'Страна по умолчанию' () = DATA country (); // logics.country.default.country
 nameDefaultCountry 'Страна по умолчанию' () = name(defaultCountry()) PREFCHARWIDTH 30; // logics.country.default.country
-
-fillDaysOff 'Заполнить выходные дни' = ACTION CUSTOM 'platform.fdk.actions.FillDaysOffActionProperty';
-
-addDayOff 'Добавить выходной день' = ACTION (country) NEWSESSION {
-    FORM dialogDate MODAL;
-    IF formResult() == formResult.ok THEN {
-        FOR d == chosenDate('d') DO {
-            SET isDayOffCountryDate (country, d) <- TRUE;
-            EXEC apply();
-        }
-    }
-}
-
-FORM daysOffForm 'Выходные дни' // logics.days.off
-    OBJECTS country 'Страна', day=DATE 'День'
-    PROPERTIES(country) FORCE PANEL fillDaysOff, addDayOff
-    PROPERTIES(country) READONLY nameOriginCountry, sidCountry, sidOrigin2Country, sidOrigin3Country, nameCurrencyCountry, residentCountry
-    PROPERTIES OBJVALUE(day), isDayOffCountryDate(country, day)
-    FILTERS isDayOffCountryDate(country, day)
-;
-
-DESIGN daysOffForm FROM DEFAULT {
-    day.grid {
-        fillVertical = 3;
-    }
-}
 
 EXTEND FORM options
     PROPERTIES() nameDefaultCountry
@@ -95,6 +67,41 @@ FORM countries 'Страны'
 NAVIGATOR {
     catalogElement {
         ADD countries;
+    }
+}
+
+// ------------------------------------------------ Выходные дни --------------------------------------- //
+
+isDayOffCountryDate 'Выходной' (country, date) = DATA BOOLEAN (country, DATE) IN baseGroup; // logics.day.off
+
+fillDaysOff 'Заполнить выходные дни' = ACTION CUSTOM 'platform.fdk.actions.FillDaysOffActionProperty';
+
+addDayOff 'Добавить выходной день' = ACTION (country) NEWSESSION {
+    FORM dialogDate MODAL;
+    IF formResult() == formResult.ok THEN {
+        FOR d == chosenDate('d') DO {
+            SET isDayOffCountryDate (country, d) <- TRUE;
+            EXEC apply();
+        }
+    }
+}
+
+FORM daysOffForm 'Выходные дни' // logics.days.off
+    OBJECTS country 'Страна', day=DATE 'День'
+    PROPERTIES(country) FORCE PANEL fillDaysOff, addDayOff
+    PROPERTIES(country) READONLY nameOriginCountry, sidCountry, sidOrigin2Country, sidOrigin3Country, nameCurrencyCountry, residentCountry
+    PROPERTIES OBJVALUE(day), isDayOffCountryDate(country, day)
+    FILTERS isDayOffCountryDate(country, day)
+;
+
+DESIGN daysOffForm FROM DEFAULT {
+    day.grid {
+        fillVertical = 3;
+    }
+}
+
+NAVIGATOR {
+    catalogElement {
         ADD daysOffForm;
     }
 }

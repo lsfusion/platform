@@ -9,7 +9,7 @@ CLASS ABSTRACT incAccountDocumentLedger 'Учетный документ (при
 CLASS ABSTRACT outAccountDocumentLedger 'Учетный документ (расход)' : accountDocumentLedger;
 
 dateTimeAccountDocumentLedger 'Дата/время' (ledger) = ABSTRACT DATETIME (accountDocumentLedger) PERSISTENT INDEXED;
-dateAccountDocumentLedger 'Дата' (ledger) = dateInTime(dateTimeAccountDocumentLedger(ledger)) PERSISTENT;
+dateAccountDocumentLedger 'Дата' (ledger) = toDate(dateTimeAccountDocumentLedger(ledger)) PERSISTENT;
 
 isPostedAccountDocumentLedger 'Проведен' (ledger) = ABSTRACT BOOLEAN (accountDocumentLedger) PERSISTENT;
 

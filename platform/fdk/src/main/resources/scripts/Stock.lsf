@@ -141,8 +141,8 @@ TABLE skuLedgerBatch (skuLedger, batch);
 TABLE batchStock(batch, stock);
 
 dateTimeBatch 'Дата/время' (batch) = ABSTRACT DATETIME (batch) PERSISTENT INDEXED;
-dateBatch 'Дата' (batch) = dateInTime(dateTimeBatch(batch));
-timeBatch 'Время' (batch) = timeInDateTime(dateTimeBatch(batch));
+dateBatch 'Дата' (batch) = toDate(dateTimeBatch(batch));
+timeBatch 'Время' (batch) = toTime(dateTimeBatch(batch));
 
 isPostedBatch 'Проведен' (batch) = ABSTRACT BOOLEAN (batch) PERSISTENT;
 
@@ -156,7 +156,7 @@ costBatch 'Себестоимость' (batch) = ABSTRACT NUMERIC[14,2] (batch) 
 descriptionBatch 'Описание' (batch) = ABSTRACT STRING[200] (batch) PERSISTENT IN recognizeGroup MINCHARWIDTH 30 PREFCHARWIDTH 60;
 
 expiryDateBatch 'Годен до' (batch) = ABSTRACT DATE (batch) PERSISTENT INDEXED;
-expiresBatchDateTime(batch, dateTime, period) = expiryDateBatch(batch) < sumDate(dateInTime(dateTime), period);
+expiresBatchDateTime(batch, dateTime, period) = expiryDateBatch(batch) < sumDate(toDate(dateTime), period);
 expiresBatchDate(batch, date, period) = expiryDateBatch(batch) < sumDate(date, period);
 
 orderBatch (batch) = LIST (dateTimeBatch(batch), batch) PERSISTENT;
@@ -170,7 +170,7 @@ isContainerBatch 'Тара' (batch) = isContainerSku(skuBatch(batch));
 //---------------------------- Количественные регистры (конкретная реализация) ----------------------------------------//
 
 dateTimeDataSkuLedger 'Дата/время' = ABSTRACT DATETIME (dataSkuLedger) PERSISTENT INDEXED;
-dateDataSkuLedger 'Дата' (ledger) = dateInTime(dateTimeDataSkuLedger(ledger)) PERSISTENT;
+dateDataSkuLedger 'Дата' (ledger) = toDate(dateTimeDataSkuLedger(ledger)) PERSISTENT;
 
 isPostedDataSkuLedger 'Проведен' = ABSTRACT BOOLEAN (dataSkuLedger) PERSISTENT;
 
@@ -185,7 +185,7 @@ changedDataSkuLedger = ABSTRACT BOOLEAN (dataSkuLedger);
 // -------------------------------- Для всего ledger'а -------------------- //
 
 dateTimeSkuLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateTimeDataSkuLedger (ledger), dateTimeBatch (ledger) PERSISTENT INDEXED;
-dateSkuLedger 'Дата' (ledger) = dateInTime(dateTimeSkuLedger(ledger)) PERSISTENT INDEXED;
+dateSkuLedger 'Дата' (ledger) = toDate(dateTimeSkuLedger(ledger)) PERSISTENT INDEXED;
 
 isPostedSkuLedger 'Проведен' (ledger) = UNION EXCLUSIVE isPostedDataSkuLedger (ledger), isPostedBatch (ledger) PERSISTENT;
 
@@ -459,7 +459,7 @@ dateLastMovedSkuStock 'Дата последнего движения товар
     BY skuSkuLedger(ledger), stockSkuLedger(ledger) PERSISTENT;
 
 movedSkuStockDateTimePeriod (item, departmentStore, dateTime, period) =
-    dateLastMovedSkuStock(item, departmentStore) >= subtractDate(dateInTime(dateTime), period AS INTEGER);
+    dateLastMovedSkuStock(item, departmentStore) >= subtractDate(toDate(dateTime), period AS INTEGER);
 
 balanceSkuStockDateTimePeriod (item, departmentStore, dateTime, period) =
     movedSkuStockDateTimePeriod (item, departmentStore, dateTime, period) OR (period IS INTEGER) IF balanceASkuStockDateTime(item, departmentStore, dateTime);

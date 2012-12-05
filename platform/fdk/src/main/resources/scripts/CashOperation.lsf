@@ -9,7 +9,7 @@ TABLE cashDocument (cashDocument);
 
 dateCashDocument 'Дата документа' = ABSTRACT DATE (cashDocument) IN documentHeaderGroup;
 timeCashDocument 'Время документа' = ABSTRACT TIME (cashDocument) IN documentHeaderGroup;
-dateTimeCashDocument 'Дата/время документа' (cashDocument) = toDateTime(dateCashDocument(cashDocument), timeCashDocument(cashDocument)) IN documentHeaderGroup;
+dateTimeCashDocument 'Дата/время документа' (cashDocument) = dateTimeToDateTime(dateCashDocument(cashDocument), timeCashDocument(cashDocument)) IN documentHeaderGroup;
 
 numberCashDocument 'Номер' (cashDocument) = ABSTRACT STRING[21] (cashDocument) IN documentPrmGroup;
 
@@ -196,7 +196,7 @@ TABLE cashOperation(cashOperation);
 
 dateCashOperation 'Дата документа' = ABSTRACT DATE (cashOperation) IN documentHeaderGroup;
 timeCashOperation 'Время документа' = ABSTRACT TIME (cashOperation) IN documentHeaderGroup;
-dateTimeCashOperation 'Дата/время документа'(cashOperation) = toDateTime(dateCashOperation(cashOperation), timeCashOperation(cashOperation)) IN documentHeaderGroup;
+dateTimeCashOperation 'Дата/время документа'(cashOperation) = dateTimeToDateTime(dateCashOperation(cashOperation), timeCashOperation(cashOperation)) IN documentHeaderGroup;
 
 numberCashOperation 'Номер' (cashOperation) = ABSTRACT STRING[21] (cashOperation) IN documentPrmGroup;
 

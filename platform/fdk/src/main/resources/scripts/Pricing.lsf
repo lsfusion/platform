@@ -677,7 +677,7 @@ META definePricingRelation(sign, stockProp)
 
     quantityPricingDetailInvoicePricing (invoice, pricing) = GROUP SUM quantityPricingDetail(pricingDetail) BY invoiceInvoiceDetail(invoiceDetailPricingDetail(pricingDetail)), pricingPricingDetail(pricingDetail);
 
-    invoicesPricing 'Накладные' (pricing) = GROUP CONCAT castToString255(descriptionInvoice(invoice)) IF quantityPricingDetailInvoicePricing(invoice, pricing) , ', '
+    invoicesPricing 'Накладные' (pricing) = GROUP CONCAT toString255(descriptionInvoice(invoice)) IF quantityPricingDetailInvoicePricing(invoice, pricing) , ', '
                                                     BY pricing
                                                     ORDER invoice IN invoiceGroup MINCHARWIDTH 30 PREFCHARWIDTH 50 PERSISTENT;
 

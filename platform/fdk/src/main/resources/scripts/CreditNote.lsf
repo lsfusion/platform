@@ -209,7 +209,7 @@ META defineCreditNote(sign, stockProp)//contact, contactCaption)
     descriptionIndexInvoiceInvoiceCreditNoteDetail 'Накладная' (creditNoteDetail) =  descriptionIndexInvoiceDetail(invoiceDetailCreditNoteDetail(creditNoteDetail));
 
     quantityInvoiceCreditNote (invoice, creditNote) = GROUP SUM quantityCreditNoteDetail(creditNoteDetail) BY invoiceInvoiceDetail(invoiceDetailCreditNoteDetail(creditNoteDetail)), creditNoteCreditNoteDetail(creditNoteDetail);
-    invoicesCreditNote 'Накладные' (creditNote) = GROUP CONCAT castToString255(descriptionInvoice(invoice)) IF quantityInvoiceCreditNote(invoice, creditNote) , ', '
+    invoicesCreditNote 'Накладные' (creditNote) = GROUP CONCAT toString255(descriptionInvoice(invoice)) IF quantityInvoiceCreditNote(invoice, creditNote) , ', '
                                                     BY creditNote
                                                     ORDER invoice IN invoiceGroup MINCHARWIDTH 30 PREFCHARWIDTH 50;
 

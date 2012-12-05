@@ -664,6 +664,8 @@ public class VEDLogicsModule extends LogicsModule {
 
         LCP multiplyDouble2 = addMFProp(2);
 
+        LCP positive = addJProp(baseLM.greater2, 1, baseLM.vzero);
+        LCP negative = addJProp(baseLM.less2, 1, baseLM.vzero);
         LCP onlyPositive = addJProp(baseLM.and1, 1, baseLM.positive, 1);
         LCP min = addSFProp(FormulaExpr.MIN2, DoubleClass.instance, 2);
         LCP abs = addSFProp("ABS(prm1)", DoubleClass.instance, 1);

@@ -208,7 +208,7 @@ descriptionIndexShipmentDetailUserWriteOffDetail 'Строка поставки'
 
 quantityWriteOffDetailShipmentWriteOff (shipment, writeOff) = GROUP SUM quantityWriteOffDetail(writeOffDetail) BY shipmentShipmentDetail(shipmentDetailWriteOffDetail(writeOffDetail)), writeOffWriteOffDetail(writeOffDetail);
 
-shipmentsWriteOff 'Поставки' (writeOff) = GROUP CONCAT castToString255(descriptionShipment(shipment)) IF quantityWriteOffDetailShipmentWriteOff(shipment, writeOff) , ', '
+shipmentsWriteOff 'Поставки' (writeOff) = GROUP CONCAT toString255(descriptionShipment(shipment)) IF quantityWriteOffDetailShipmentWriteOff(shipment, writeOff) , ', '
                                                 BY writeOff
                                                 ORDER writeOff IN shipmentGroup MINCHARWIDTH 30 PREFCHARWIDTH 50 PERSISTENT;
 

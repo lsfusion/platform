@@ -190,7 +190,7 @@ dateMachineryPriceTransaction (transaction) <- currentDate() WHEN ASSIGNED(trans
 timeMachineryPriceTransaction 'Время' = DATA TIME (machineryPriceTransaction);
 timeMachineryPriceTransaction (transaction) <- currentTime() WHEN ASSIGNED(transaction IS machineryPriceTransaction);
 
-dateTimeMachineryPriceTransaction 'Дата/время' (transaction) = toDateTime(dateMachineryPriceTransaction(transaction), timeMachineryPriceTransaction(transaction));
+dateTimeMachineryPriceTransaction 'Дата/время' (transaction) = dateTimeToDateTime(dateMachineryPriceTransaction(transaction), timeMachineryPriceTransaction(transaction));
 
 orderMachineryPriceTransaction (transaction) = LIST(dateTimeMachineryPriceTransaction(transaction), transaction) PERSISTENT;
 
@@ -266,7 +266,7 @@ quantityMachineryPriceTransactionErrorMachineryPriceTransaction 'Количес�
 TABLE machineryPriceTransactionMachinery (machineryPriceTransaction, machinery);
 inMachineryPriceTransactionMachinery 'Вкл' = DATA BOOLEAN (machineryPriceTransaction, machinery);
 nppsMachineryPriceTransaction 'Номера устройств' (transaction) =
-    GROUP CONCAT castToString3(nppMachinery(machinery)) IF inMachineryPriceTransactionMachinery(transaction, machinery), ','
+    GROUP CONCAT toString3(nppMachinery(machinery)) IF inMachineryPriceTransactionMachinery(transaction, machinery), ','
           BY transaction
           ORDER machinery MINCHARWIDTH 10 PREFCHARWIDTH 20 PERSISTENT;
 

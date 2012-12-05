@@ -63,7 +63,7 @@ curRetailVATPriceChangeZReportDetail (priceChangeZReportDetail) = retailVATBSkuD
     (skuPriceChangeZReportDetail(priceChangeZReportDetail), departmentStorePriceChangeZReportDetail(priceChangeZReportDetail), dateTimePriceChangeZReportDetail(priceChangeZReportDetail));
 
 curValueRetailVATPriceChangeZReportDetail (priceChangeZReportDetail) = valueRateRangeDate (curRetailVATPriceChangeZReportDetail (priceChangeZReportDetail),
-    dateInTime(dateTimePriceChangeZReportDetail(priceChangeZReportDetail)));
+    toDate(dateTimePriceChangeZReportDetail(priceChangeZReportDetail)));
 
 curWarePriceChangeZReportDetail (priceChangeZReportDetail) = wareBSkuDepartmentStoreDateTime
     (skuPriceChangeZReportDetail(priceChangeZReportDetail), departmentStorePriceChangeZReportDetail(priceChangeZReportDetail), dateTimePriceChangeZReportDetail(priceChangeZReportDetail));
@@ -83,7 +83,7 @@ retailVATPriceChangeZReportDetail (priceChangeZReportDetail) = retailVATBSkuDepa
     (skuPriceChangeZReportDetail(priceChangeZReportDetail), departmentStorePriceChangeZReportDetail(priceChangeZReportDetail), dateTimePriceChangeZReportDetail(priceChangeZReportDetail));
 
 valueRetailVATPriceChangeZReportDetail (priceChangeZReportDetail) = valueRateRangeDate (retailVATPriceChangeZReportDetail (priceChangeZReportDetail),
-    dateInTime(dateTimePriceChangeZReportDetail(priceChangeZReportDetail)));
+    toDate(dateTimePriceChangeZReportDetail(priceChangeZReportDetail)));
 
 warePriceChangeZReportDetail (priceChangeZReportDetail) = wareBSkuDepartmentStoreDateTime
     (skuPriceChangeZReportDetail(priceChangeZReportDetail), departmentStorePriceChangeZReportDetail(priceChangeZReportDetail), dateTimePriceChangeZReportDetail(priceChangeZReportDetail));

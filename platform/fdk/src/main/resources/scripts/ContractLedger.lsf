@@ -16,8 +16,8 @@ META defineContractLedgerPrefix (caption, prefix)
     isPostedContract###prefix##Ledger 'Закрыт' (contract###prefix##Ledger) = ABSTRACT BOOLEAN (contract###prefix##Ledger) PERSISTENT;
 
     dateTimeContract###prefix##Ledger 'Дата/время' (contract###prefix##Ledger) = ABSTRACT DATETIME (contract###prefix##Ledger) PERSISTENT;
-    dateContract###prefix##Ledger 'Дата' (contract###prefix##Ledger) = dateInTime(dateTimeContract###prefix##Ledger(contract###prefix##Ledger));
-    timeContract###prefix##Ledger 'Время' (contract###prefix##Ledger) = timeInDateTime(dateTimeContract###prefix##Ledger(contract###prefix##Ledger));
+    dateContract###prefix##Ledger 'Дата' (contract###prefix##Ledger) = toDate(dateTimeContract###prefix##Ledger(contract###prefix##Ledger));
+    timeContract###prefix##Ledger 'Время' (contract###prefix##Ledger) = toTime(dateTimeContract###prefix##Ledger(contract###prefix##Ledger));
 
     contractContract###prefix##Ledger 'Договор' (contract###prefix##Ledger) = ABSTRACT contract (contract###prefix##Ledger) PERSISTENT;
 
@@ -87,8 +87,8 @@ META defineOutContractLedgerInContractLedgerPrefix(caption, prefix)
     isPosted###prefix##ContractLedger 'Закрыт' (prefix##ContractLedger) = ABSTRACT BOOLEAN (prefix##ContractLedger) PERSISTENT;
 
     dateTime###prefix##ContractLedger 'Дата/время' (prefix##ContractLedger) = ABSTRACT DATETIME (prefix##ContractLedger) PERSISTENT;
-    date###prefix##ContractLedger 'Дата' (prefix##ContractLedger) = dateInTime(dateTime###prefix##ContractLedger(prefix##ContractLedger));
-    time###prefix##ContractLedger 'Время' (prefix##ContractLedger) = timeInDateTime(dateTime###prefix##ContractLedger(prefix##ContractLedger));
+    date###prefix##ContractLedger 'Дата' (prefix##ContractLedger) = toDate(dateTime###prefix##ContractLedger(prefix##ContractLedger));
+    time###prefix##ContractLedger 'Время' (prefix##ContractLedger) = toTime(dateTime###prefix##ContractLedger(prefix##ContractLedger));
 
     contract###prefix##ContractLedger 'Договор' (prefix##ContractLedger) = ABSTRACT contract (prefix##ContractLedger) PERSISTENT;
 
@@ -208,7 +208,7 @@ datePayment 'Дата' (payment) = DATA DATE (payment) PERSISTENT;
 datePayment(payment) <- currentDate() WHEN ASSIGNED(payment IS payment);
 timePayment 'Время' (payment) = DATA TIME (payment) PERSISTENT;
 timePayment(payment) <- currentTime() WHEN ASSIGNED(payment IS payment);
-dateTimePayment 'Дата время' (payment) = toDateTime(datePayment(payment), timePayment(payment));
+dateTimePayment 'Дата время' (payment) = dateTimeToDateTime(datePayment(payment), timePayment(payment));
 
 contractPayment 'Контракт' (payment) = DATA contract (payment) AUTOSET  PERSISTENT;
 numberContractPayment 'Номер контракта' (payment) = numberContract(contractPayment(payment));
@@ -346,7 +346,7 @@ datePaymentRequest 'Дата' (paymentRequest) = DATA DATE (paymentRequest) PERS
 datePaymentRequest(paymentRequest) <- currentDate() WHEN ASSIGNED(paymentRequest IS paymentRequest);
 timePaymentRequest 'Время' (paymentRequest) = DATA TIME (paymentRequest) PERSISTENT;
 timePaymentRequest(paymentRequest) <- currentTime() WHEN ASSIGNED(paymentRequest IS paymentRequest);
-dateTimePaymentRequest 'Дата время' (paymentRequest) = toDateTime(datePaymentRequest(paymentRequest), timePaymentRequest(paymentRequest));
+dateTimePaymentRequest 'Дата время' (paymentRequest) = dateTimeToDateTime(datePaymentRequest(paymentRequest), timePaymentRequest(paymentRequest));
 
 contractPaymentRequest 'Контракт' (paymentRequest) = DATA contract (paymentRequest) AUTOSET PERSISTENT;
 numberContractPaymentRequest 'Номер контракта' (paymentRequest) = numberContract(contractPaymentRequest(paymentRequest));
@@ -442,7 +442,7 @@ META defineCreditMemoPrefix(prefix, caption, captionPost)
     dateCreditMemo###prefix(creditMemo###prefix) <- currentDate() WHEN ASSIGNED(creditMemo###prefix IS creditMemo###prefix);
     timeCreditMemo###prefix 'Время' (creditMemo###prefix) = DATA TIME (creditMemo###prefix) PERSISTENT;
     timeCreditMemo###prefix(creditMemo###prefix) <- currentTime() WHEN ASSIGNED(creditMemo###prefix IS creditMemo###prefix);
-    dateTimeCreditMemo###prefix 'Дата время' (creditMemo###prefix) = toDateTime(dateCreditMemo###prefix(creditMemo###prefix), timeCreditMemo###prefix(creditMemo###prefix));
+    dateTimeCreditMemo###prefix 'Дата время' (creditMemo###prefix) = dateTimeToDateTime(dateCreditMemo###prefix(creditMemo###prefix), timeCreditMemo###prefix(creditMemo###prefix));
 
     contractCreditMemo###prefix 'Контракт' (creditMemo###prefix) = DATA contract (creditMemo###prefix) AUTOSET PERSISTENT;
     numberContractCreditMemo###prefix 'Номер контракта' (creditMemo###prefix) = numberContract(contractCreditMemo###prefix(creditMemo###prefix));
@@ -481,7 +481,7 @@ prePostCreditMemo(creditMemo) += prePostCreditMemoOut(creditMemo);
 
 @defineCreditMemoUnion(date, 'Дата');
 @defineCreditMemoUnion(time, 'Время');
-dateTimeCreditMemo 'Дата/время' (creditMemo) = toDateTime(dateCreditMemo(creditMemo), timeCreditMemo(creditMemo));
+dateTimeCreditMemo 'Дата/время' (creditMemo) = dateTimeToDateTime(dateCreditMemo(creditMemo), timeCreditMemo(creditMemo));
 @defineCreditMemoUnion(contract, 'Контракт');
 numberContractCreditMemo 'Номер контракта' (creditMemo) = numberContract(contractCreditMemo(creditMemo));
 @defineCreditMemoUnion(partyB, );
@@ -596,7 +596,7 @@ payContractDate 'Оплатить по договору' = ACTION (contract, dat
 
     ADDOBJ payment;
     FOR pm == addedObject() DO {
-        SET dateTimePayment(pm) <- timeDate(date AS DATE);
+        SET dateTimePayment(pm) <- toDateTime(date AS DATE);
         SET contractPayment(pm) <- contract AS contract;
         SET currencyPayment(pm) <- currencyContract(contract);
         SET sumPayment(pm) <- debtSumContractDate(contract, date);
@@ -616,7 +616,7 @@ payPaymentConditionInContractLedgerDate 'Оплатить c учетом бон�
 
     ADDOBJ payment;
     FOR pm == addedObject() DO {
-        SET dateTimePayment(pm) <- timeDate(date AS DATE);
+        SET dateTimePayment(pm) <- toDateTime(date AS DATE);
         SET contractPayment(pm) <- contractInContractLedger(inContractLedger);
         SET currencyPayment(pm) <- currencyContract(contractInContractLedger(inContractLedger));
         SET sumPayment(pm) <- bonusDebtSumInContractLedgerDate(inContractLedger, date);
@@ -625,7 +625,7 @@ payPaymentConditionInContractLedgerDate 'Оплатить c учетом бон�
         IF formResult() == formResult.ok THEN {
             ADDOBJ creditMemoOut;
             FOR cm == addedObject() DO {
-                SET dateTimeCreditMemoOut(cm) <- timeDate(date AS DATE);
+                SET dateTimeCreditMemoOut(cm) <- toDateTime(date AS DATE);
                 SET contractCreditMemoOut(cm) <- contractInContractLedger(inContractLedger);
                 SET sumCreditMemoOut(cm) <- bonusSumInContractLedger(inContractLedger, date);
                 SET costOutContractLedgerInContractLedger(cm, inContractLedger) <- bonusSumInContractLedger(inContractLedger, date);
@@ -642,7 +642,7 @@ payPaymentConditionContractDate 'Оплатить c учетом бонусов 
 
     ADDOBJ payment;
     FOR pm == addedObject() DO {
-        SET dateTimePayment(pm) <- timeDate(date AS DATE);
+        SET dateTimePayment(pm) <- toDateTime(date AS DATE);
         SET contractPayment(pm) <- contract AS contract;
         SET currencyPayment(pm) <- currencyContract(contract);
         SET sumPayment(pm) <- bonusDebtSumContractDate(contract, date);
@@ -652,7 +652,7 @@ payPaymentConditionContractDate 'Оплатить c учетом бонусов 
         IF formResult() == formResult.ok THEN {
             ADDOBJ creditMemoOut;
             FOR cm == addedObject() DO {
-                SET dateTimeCreditMemoOut(cm) <- timeDate(date AS DATE);
+                SET dateTimeCreditMemoOut(cm) <- toDateTime(date AS DATE);
                 SET contractCreditMemoOut(cm) <- contract AS contract;
                 SET sumCreditMemoOut(cm) <- bonusSumContractDate(contract, date);
                 SET costOutContractLedgerInContractLedger(cm, inContractLedger) <- bonusSumInContractLedger(inContractLedger, date)

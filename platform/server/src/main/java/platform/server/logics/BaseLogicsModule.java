@@ -161,8 +161,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP sumDate;
     public LCP sumDateTimeDay;
     public LCP subtractDate;
+    public LCP dateTimeToDateTime;
     public LCP toDateTime;
-    public LCP timeDate;
 
     public LCP string2SP, istring2SP;
     public LCP string2, istring2;
@@ -177,8 +177,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP numberMonthInDate;
     public LCP yearInDate;
     public LCP dayInDate;
-    public LCP dateInTime;
-    public LCP timeInDateTime;
+    public LCP toDate;
+    public LCP toTime;
     public LCP jumpWorkdays;
     public LCP completeBarcode;
 
@@ -203,9 +203,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     public LCP dumb1;
     public LCP dumb2;
-
-    protected LCP castText;
-    protected LCP castString;
 
     public LCP<?> name;
     public LCP<?> date;
@@ -771,6 +768,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         flowBreak = addProperty(null, new LAP(new BreakActionProperty()));
         flowReturn = addProperty(null, new LAP(new ReturnActionProperty()));
 
+        // Множества свойств
         selection = new SelectionPropertySet();
         sessionGroup.add(selection);
 
@@ -780,30 +778,24 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         compositeName = new CompositeNamePropertySet();
         privateGroup.add(compositeName);
 
-        classSID = addDProp("classSID", getString("logics.statcode"), StringClass.get(250), baseClass.sidClass);
-        dataName = addDProp("name", getString("logics.name"), InsensitiveStringClass.get(110), baseClass.named);
-        ((CalcProperty)dataName.property).aggProp = true;
-
         symbolCurrency = addDProp(baseGroup, "symbolCurrency", getString("logics.currency.symbol.currency"), StringClass.get(5), currency);
         shortNameCurrency = addDProp(baseGroup, "shortNameCurrency", getString("logics.currency.short.name.currency"), StringClass.get(3), currency);
         currencyShortName = addAGProp(baseGroup, "currencyShortName", getString("logics.currency.short.name.currency"), shortNameCurrency);
         documentNameCurrency = addDProp(baseGroup, "documentNameCurrency", getString("logics.currency.document.name.currency"), StringClass.get(10), currency);
 
-        // математические св-ва
-        equals2 = addCFProp("equals2", Compare.EQUALS);
-        object1 = addAFProp();
+        // логические св-ва
         and1 = addAFProp("and1", false);
         andNot1 = addAFProp(true);
-        concat2 = addCCProp(2);
+
+        // Сравнения
+        equals2 = addCFProp("equals2", Compare.EQUALS);
         groeq2 = addCFProp(Compare.GREATER_EQUALS);
         greater2 = addCFProp("greater2", Compare.GREATER);
         lsoeq2 = addCFProp(Compare.LESS_EQUALS);
         less2 = addCFProp(Compare.LESS);
-        greater22 = addJProp(greater2, concat2, 1, 2, concat2, 3, 4);
-        less22 = addJProp(less2, concat2, 1, 2, concat2, 3, 4);
         diff2 = addCFProp("diff2", Compare.NOT_EQUALS);
-        between = addJProp("between", getString("logics.between"), and1, groeq2, 1, 2, groeq2, 3, 1);
 
+        // "Склеивание" строк
         string2SP = addSProp("string2SP", 2);
         istring2SP = addInsensitiveSProp("istring2SP", 2);
 
@@ -818,63 +810,46 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         ustring5CM = addSFUProp("ustring5CM", ",", 5);
 
+        // Обработка строк
         upper = addSFProp("upper", "upper(prm1)", 1);
 
+        // Математические операции
         sum = addSFProp("sum", "((prm1)+(prm2))", 2);
+        subtract = addSFProp("subtract", "((prm1)-(prm2))", 2);
+        multiply = addMFProp("multiply", 2);
+        divide = addSFProp("divide", "((prm1)/(prm2))", 2);
+
+        minus = addSFProp("minus", "(-(prm1))", 1);
+
+        // Оставляем пока в BaseLogicsModule, посколько скорее всего их придется использовать в DSL
+
+        // Операции с целыми числами
+        subtractInteger = addSFProp("subtractInteger", "((prm1)-(prm2))", IntegerClass.instance, 2);
+
+        // Операции над датами
         sumDate = addSFProp("sumDate", "((prm1)+(prm2))", DateClass.instance, 2);
+        subtractDate = addSFProp("subtractDate", "((prm1)-(prm2))", DateClass.instance, 2);
 
         sumDateTimeDay = addSFProp("sumDateTimeDay", "((prm1)+(prm2)*CAST('1 days' AS INTERVAL))", DateTimeClass.instance, 2);
 
-        multiply = addMFProp("multiply", 2);
-
-        subtract = addSFProp("subtract", "((prm1)-(prm2))", 2);
-        delta = addSFProp("delta", "abs((prm1)-(prm2))", 2);
-        subtractDate = addSFProp("subtractDate", "((prm1)-(prm2))", DateClass.instance, 2);
-        subtractInteger = addSFProp("subtractInteger", "((prm1)-(prm2))", IntegerClass.instance, 2);
-        subtractIntegerIncl = addSFProp("subtractIntegerIncl", "((prm1)-(prm2)+1)", IntegerClass.instance, 2);
-
-        divide = addSFProp("divide", "((prm1)/(prm2))", 2);
-        divideInteger = addSFProp("divideInteger", "CAST(CAST(trunc(prm1) AS integer)/CAST(trunc(prm2) as integer) as integer)", IntegerClass.instance, 2);
-        divideIntegerNeg = addSFProp("divideIntegerNeg", "CASE WHEN CAST((prm1) AS integer)<0 THEN -CAST(((-CAST((prm1) as integer)-1)/CAST((prm2) as integer)) as integer) ELSE CAST(CAST((prm1) as integer)/CAST((prm2) as integer) as integer) END", IntegerClass.instance, 2);
-        divideIntegerRnd = addSFProp("divideIntegerRnd", "CAST(round((prm1)/(prm2),0) as integer)", IntegerClass.instance, 2);
-
-        sqr = addSFProp("sqr", "(prm1)*(prm1)", 1);
-        sqrt = addSFProp("sqrt", "sqrt(prm1)", 1);
-        percent = addSFProp("percent", "((prm1)*(prm2)/100)", 2);
-        share = addSFProp("share", "((prm1)*100/(prm2))", 2);
-
-        jumpWorkdays = addSFProp("jumpWorkdays", "jumpWorkdays(prm1, prm2, prm3)", DateClass.instance, 3); //1 - country, 2 - date, 3 - days to jump
-        completeBarcode = addSFProp("completeBarcode", "completeBarcode(prm1)", StringClass.get(13), 1);
-
+        // Константы
         vtrue = addCProp(getString("logics.true"), LogicalClass.instance, true);
         vzero = addCProp("0", DoubleClass.instance, 0);
         vnull = addProperty(privateGroup, new LCP<PropertyInterface>(NullValueProperty.instance));
 
-        round = addSFProp("round", "round(CAST((prm1) as numeric),prm2)", 2);
+        // Преобразование типов
 
-        minus = addSFProp("minus", "(-(prm1))", 1);
-
-        dumb1 = dumb(1);
-        dumb2 = dumb(2);
-
-        castText = addSFProp("CAST((prm1) as text)", TextClass.instance, 1);
-        castString = addSFProp("CAST((prm1) as char(50))", StringClass.get(50), 1);
-
-        charLength = addSFProp("char_length(prm1)", IntegerClass.instance, 1);
-
-        positive = addJProp(greater2, 1, vzero);
-        negative = addJProp(less2, 1, vzero);
-
+        dayInDate = addSFProp("dayInDate", "(extract(day from (prm1)))", IntegerClass.instance, 1);
         weekInDate = addSFProp("weekInDate", "(extract(week from (prm1)))", IntegerClass.instance, 1);
         numberDOWInDate = addSFProp("numberDOWInDate", "(extract(dow from (prm1)))", IntegerClass.instance, 1);
         numberMonthInDate = addSFProp("numberMonthInDate", "(extract(month from (prm1)))", IntegerClass.instance, 1);
         yearInDate = addSFProp("yearInDate", "(extract(year from (prm1)))", IntegerClass.instance, 1);
-        dayInDate = addJProp("dayInDate", "День даты", baseLM.and1, addSFProp("(extract(day from (prm1)))", IntegerClass.instance, 1), 1, is(DateClass.instance), 1);
 
-        dateInTime = addSFProp("dateInTime", "(CAST((prm1) as date))", DateClass.instance, 1);
-        toDateTime = addSFProp("toDateTime", "to_timestamp(CAST(prm1 as char(10)) || CAST(prm2 as char(8)), \'YYYY-MM-DDHH24:MI:SS\')", DateTimeClass.instance, 2);
-        timeDate = addSFProp("timeDate", "(CAST((prm1) as timestamp))", DateTimeClass.instance, 1);
-        timeInDateTime = addSFProp("timeInDateTime", "(CAST((prm1) as time))", TimeClass.instance, 1);
+        toDate = addSFProp("toDate", "(CAST((prm1) as date))", DateClass.instance, 1);
+        toTime = addSFProp("toTime", "(CAST((prm1) as time))", TimeClass.instance, 1);
+        toDateTime = addSFProp("toDateTime", "(CAST((prm1) as timestamp))", DateTimeClass.instance, 1);
+
+        dateTimeToDateTime = addSFProp("dateTimeToDateTime", "to_timestamp(CAST(prm1 as char(10)) || CAST(prm2 as char(8)), \'YYYY-MM-DDHH24:MI:SS\')", DateTimeClass.instance, 2);
 
         numberMonth = addOProp(baseGroup, "numberMonth", true, getString("logics.month.number"), addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), is(month), 1), PartitionType.SUM, true, true, 0, 1);
         numberToMonth = addAGProp("numberToMonth", getString("logics.month.id"), numberMonth);
@@ -915,15 +890,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         notZero = addJProp(diff2, 1, vzero);
         onlyNotZero = addJProp(andNot1, 1, addJProp(equals2, 1, vzero), 1);
 
-        daysInclBetweenDates = addJProp("daysInclBetweenDates", getString("logics.date.quantity.days"), and(false, false), addJProp(subtractIntegerIncl, 2, 1), 1, 2, is(DateClass.instance), 1, is(DateClass.instance), 2);
-        weeksInclBetweenDates = addJProp("weeksInclBetweenDates", getString("logics.date.quantity.weeks"), divideInteger, daysInclBetweenDates, 1, 2, addCProp(IntegerClass.instance, 7));
-        weeksNullInclBetweenDates = addJProp("weeksNullInclBetweenDates", getString("logics.date.quantity.weeks"), onlyNotZero, weeksInclBetweenDates, 1, 2);
-
         sumDateWeekFrom = addJProp("sumDateWeekFrom", getString("logics.date.from"), and(false, false), addSFProp("((prm1)+(prm2)*7)", DateClass.instance, 2), 1, 2, is(DateClass.instance), 1, is(IntegerClass.instance), 2);
         sumDateWeekTo = addJProp("sumDateWeekTo", getString("logics.date.to"), and(false, false), addSFProp("((prm1)+((prm2)*7+6))", DateClass.instance, 2), 1, 2, is(DateClass.instance), 1, is(IntegerClass.instance), 2);
-
-        betweenDates = addJProp(getString("logics.date.of.doc.between"), between, object(DateClass.instance), 1, object(DateClass.instance), 2, object(DateClass.instance), 3);
-        betweenDate = addJProp(getString("logics.date.of.doc.between"), betweenDates, date, 1, 2, 3);
 
         transactionLater = addSUProp(getString("logics.transaction.later"), Union.OVERRIDE, addJProp(getString("logics.date.later"), greater2, date, 1, date, 2),
                                      addJProp("", and1, addJProp(getString("logics.date.equals.date"), equals2, date, 1, date, 2), 1, 2, addJProp(getString("logics.transaction.code.later"), greater2, 1, 2), 1, 2));
@@ -937,7 +905,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         currentMinute = addTProp("currentMinute", getString("logics.date.current.minute"), Time.MINUTE);
         currentEpoch = addTProp("currentEpoch", getString("logics.date.current.epoch"), Time.EPOCH);
         currentDateTime = addTProp("currentDateTime", getString("logics.date.current.datetime"), Time.DATETIME);
-        currentTime = addJProp("currentTime", getString("logics.date.current.time"), timeInDateTime, currentDateTime);
+        currentTime = addJProp("currentTime", getString("logics.date.current.time"), toTime, currentDateTime);
         currentUser = addProperty(null, new LCP<PropertyInterface>(new CurrentUserFormulaProperty("currentUser", user)));
         currentSession = addProperty(null, new LCP<ClassPropertyInterface>(new CurrentSessionDataProperty("currentSession", session)));
 
@@ -980,9 +948,21 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         generateLoginPassword = addAProp(actionGroup, new GenerateLoginPasswordActionProperty(email, userLogin, userPassword, customUser));
 
+        dataName = addDProp("name", getString("logics.name"), InsensitiveStringClass.get(110), baseClass.named);
+        ((CalcProperty)dataName.property).aggProp = true;
         name = addCUProp(recognizeGroup, "commonName", getString("logics.name"), dataName,
                 addJProp(istring2SP, userFirstName, 1, userLastName, 1));
         ((CalcProperty)name.property).aggProp = true;
+
+        // todo : тут надо рефакторить как имена свойст, так и классов
+        classSID = addDProp("classSID", getString("logics.statcode"), StringClass.get(250), baseClass.sidClass);
+        objectClass = addProperty(null, new LCP<ClassPropertyInterface>(baseClass.getObjectClassProperty()));
+        objectClassName = addJProp(baseGroup, "objectClassName", getString("logics.object.class"), name, objectClass, 1);
+        objectClassName.makeLoggable(this, true);
+
+        dataName.setEventChange(addJProp(string2, addJProp(name.getOld(), objectClass, 1), 1,
+                                                  addSFProp("CAST((prm1) as char(50))", StringClass.get(50), 1), 1), 1,
+                                         is(baseClass.named), 1);
 
         connectionComputer = addDProp("connectionComputer", getString("logics.computer"), computer, connection);
         addJProp(baseGroup, getString("logics.computer"), hostname, connectionComputer, 1);
@@ -1030,6 +1010,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         seekBarcodeAction = addJoinAProp(getString("logics.barcode.search"), addSAProp(null), barcodeToObject, 1);
         barcodeNotFoundMessage = addIfAProp(addJProp(baseLM.andNot1, is(StringClass.get(13)), 1, barcodeToObject, 1), 1, addMAProp(getString("logics.barcode.not.found"), getString("logics.error")));
 
+        completeBarcode = addSFProp("completeBarcode", "completeBarcode(prm1)", StringClass.get(13), 1);
+
         extSID = addDProp(recognizeGroup, "extSID", getString("logics.extsid"), StringClass.get(100), externalObject);
         extSIDToObject = addAGProp("extSIDToObject", getString("logics.object"), extSID);
 
@@ -1059,10 +1041,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         currentUserName = addJProp("currentUserName", getString("logics.user.current.user.name"), name, currentUser);
 
         reverseBarcode = addSDProp("reverseBarcode", getString("logics.barcode.reverse"), LogicalClass.instance);
-
-        objectClass = addProperty(null, new LCP<ClassPropertyInterface>(baseClass.getObjectClassProperty()));
-        objectClassName = addJProp(baseGroup, "objectClassName", getString("logics.object.class"), name, objectClass, 1);
-        objectClassName.makeLoggable(this, true);
 
         navigatorElementSID = addDProp(baseGroup, "navigatorElementSID", getString("logics.forms.code"), navigatorElementSIDClass, navigatorElement);
         numberNavigatorElement = addDProp(baseGroup, "numberNavigatorElement", getString("logics.number"), IntegerClass.instance, navigatorElement);
@@ -1268,7 +1246,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         defaultForegroundColor = addDProp("defaultForegroundColor", getString("logics.default.foreground.color"), ColorClass.instance);
         defaultOverrideForegroundColor = addSUProp("defaultOverrideForegroundColor", true, getString("logics.default.foreground.color"), Union.OVERRIDE, redColor, defaultForegroundColor);
 
-        dataName.setEventChange(addJProp(string2, addJProp(name.getOld(), objectClass, 1), 1, castString, 1), 1, is(baseClass.named), 1);
         date.setEventChange(currentDate, is(transaction), 1);
 
         insensitiveDictionary = addDProp(recognizeGroup, "insensitiveDictionary", getString("logics.dictionary.insensitive"), LogicalClass.instance, dictionary);
@@ -1289,6 +1266,45 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         lessCmpDate = addJProp(and(false, true, false), object(DateClass.instance), 3, rateExchange, 1, 2, 3, addJProp(greater2, 3, date, 4), 1, 2, 3, 4, is(transaction), 4);
         nearestPredDate = addMGProp((AbstractGroup) null, "nearestPredDate", "Ближайшая меньшая дата", lessCmpDate, 1, 2, 4);
         nearestRateExchange = addJProp("nearestRateExchange", "Ближайший курс обмена", rateExchange, 1, 2, nearestPredDate, 1, 2, 3);
+
+        //todo : инлайнить в свои модули
+
+        //        object1 = addAFProp();
+        //        betweenDate = addJProp(getString("logics.date.of.doc.between"), betweenDates, date, 1, 2, 3);
+        //        dumb2 = dumb(2);
+
+        concat2 = addCCProp(2);
+        greater22 = addJProp(greater2, concat2, 1, 2, concat2, 3, 4);
+        less22 = addJProp(less2, concat2, 1, 2, concat2, 3, 4);
+
+        between = addJProp("between", getString("logics.between"), and1, groeq2, 1, 2, groeq2, 3, 1);
+        betweenDates = addJProp(getString("logics.date.of.doc.between"), between, object(DateClass.instance), 1, object(DateClass.instance), 2, object(DateClass.instance), 3);
+
+        dumb1 = dumb(1);
+
+        // В Utils.lsf
+        sqr = addSFProp("sqr", "(prm1)*(prm1)", 1);
+        sqrt = addSFProp("sqrt", "sqrt(prm1)", 1);
+        percent = addSFProp("percent", "((prm1)*(prm2)/100)", 2);
+        share = addSFProp("share", "((prm1)*100/(prm2))", 2);
+
+        round = addSFProp("round", "round(CAST((prm1) as numeric),prm2)", 2);
+
+        delta = addSFProp("delta", "abs((prm1)-(prm2))", 2);
+
+        charLength = addSFProp("char_length(prm1)", IntegerClass.instance, 1);
+
+        divideInteger = addSFProp("divideInteger", "CAST(CAST(trunc(prm1) AS integer)/CAST(trunc(prm2) as integer) as integer)", IntegerClass.instance, 2);
+        divideIntegerNeg = addSFProp("divideIntegerNeg", "CASE WHEN CAST((prm1) AS integer)<0 THEN -CAST(((-CAST((prm1) as integer)-1)/CAST((prm2) as integer)) as integer) ELSE CAST(CAST((prm1) as integer)/CAST((prm2) as integer) as integer) END", IntegerClass.instance, 2);
+        divideIntegerRnd = addSFProp("divideIntegerRnd", "CAST(round((prm1)/(prm2),0) as integer)", IntegerClass.instance, 2);
+
+        subtractIntegerIncl = addSFProp("subtractIntegerIncl", "((prm1)-(prm2)+1)", IntegerClass.instance, 2);
+        daysInclBetweenDates = addJProp("daysInclBetweenDates", getString("logics.date.quantity.days"), and(false, false), addJProp(subtractIntegerIncl, 2, 1), 1, 2, is(DateClass.instance), 1, is(DateClass.instance), 2);
+        weeksInclBetweenDates = addJProp("weeksInclBetweenDates", getString("logics.date.quantity.weeks"), divideInteger, daysInclBetweenDates, 1, 2, addCProp(IntegerClass.instance, 7));
+        weeksNullInclBetweenDates = addJProp("weeksNullInclBetweenDates", getString("logics.date.quantity.weeks"), onlyNotZero, weeksInclBetweenDates, 1, 2);
+
+        // в Country.lsf
+        jumpWorkdays = addSFProp("jumpWorkdays", "jumpWorkdays(prm1, prm2, prm3)", DateClass.instance, 3); //1 - country, 2 - date, 3 - days to jump
 
         initNavigators();
     }
@@ -2205,8 +2221,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             objTreeProps.groupTo.setIsParents(addPropertyObject(parentAbstractGroup, objTreeProps));
             treePropertiesObject = addTreeGroupObject(objTreeProps.groupTo, objProps.groupTo);
 
+            LP dumb1 = dumb(1);
             addPropertyDraw(new LP[]{captionProperty, SIDProperty, signatureProperty, returnProperty, classProperty, parentProperty, numberProperty, userLoggableProperty, loggableProperty, storedProperty, isSetNotNullProperty}, objProperties);
-            addPropertyDraw(new LP[]{captionAbstractGroup, SIDAbstractGroup, baseLM.dumb1, baseLM.dumb1, baseLM.dumb1, parentAbstractGroup, numberAbstractGroup, baseLM.dumb1, baseLM.dumb1, baseLM.dumb1, baseLM.dumb1}, objTreeProps);
+            addPropertyDraw(new LP[]{captionAbstractGroup, SIDAbstractGroup, dumb1, dumb1, dumb1, parentAbstractGroup, numberAbstractGroup, baseLM.dumb1, baseLM.dumb1, baseLM.dumb1, baseLM.dumb1}, objTreeProps);
             addPropertyDraw(new LP[]{captionProperty, SIDProperty, signatureProperty, returnProperty, classProperty, parentProperty, numberProperty, userLoggableProperty, loggableProperty, storedProperty, isSetNotNullProperty}, objProps);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(parentProperty, objProps), Compare.EQUALS, objTreeProps));

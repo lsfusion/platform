@@ -6,7 +6,7 @@ CLASS ABSTRACT salesLedger 'Продажа товара' : skuLedger;
 TABLE salesLedger(salesLedger);
 
 dateTimeSalesLedger 'Дата/время' (ledger) = ABSTRACT DATETIME (salesLedger) PERSISTENT INDEXED;
-dateSalesLedger 'Дата' (ledger) = dateInTime(dateTimeSalesLedger(ledger)) PERSISTENT INDEXED;
+dateSalesLedger 'Дата' (ledger) = toDate(dateTimeSalesLedger(ledger)) PERSISTENT INDEXED;
 
 isPostedSalesLedger 'Проведен' (ledger) = ABSTRACT BOOLEAN (salesLedger) PERSISTENT;
 
@@ -186,7 +186,7 @@ FORM salesSkuStock 'Продажи по SKU'
 
     ORDER BY          nameSku
 
-    PROPERTIES        balanceBSkuStockDate(s, st, dFrom), quantitySoldSkuStockWeekDateFromTo(s, st, w, dFrom, dTo)  COLUMNS (w) HEADER castToString4 (w),
+    PROPERTIES        balanceBSkuStockDate(s, st, dFrom), quantitySoldSkuStockWeekDateFromTo(s, st, w, dFrom, dTo)  COLUMNS (w) HEADER toString4 (w),
                       quantitySoldSkuStockDateFromTo(s, st, dFrom, dTo),
                       balanceASkuStockDate(s, st, dTo), sumSoldSkuStockDateFromTo (s, st, dFrom, dTo),  sumSoldTypeExchangeSkuStockDateFromTo(te,s, st, dFrom, dTo)
 

@@ -44,9 +44,8 @@ GROUP rateGroup 'Нормы' : publicGroup;
                   dayToNaturalLossGroupDetail(subNaturalLossGroupDetail),
                   nameMonthToNaturalLossGroupDetail(subNaturalLossGroupDetail));
 
- castConcat = FORMULA STRING[15] 'CAST($1 AS TEXT)';
  concatSubNaturalLossGroupDetail (subNaturalLossGroup) =
-     GROUP CONCAT castConcat(percentNaturalLossGroupDetail(subNaturalLossGroupDetail)), ','
+     GROUP CONCAT toString15(percentNaturalLossGroupDetail(subNaturalLossGroupDetail)), ','
            BY subNaturalLossGroupSubNaturalLossGroupDetail(subNaturalLossGroupDetail)
            ORDER subNaturalLossGroupDetail
            MINCHARWIDTH 10 PREFCHARWIDTH 30;

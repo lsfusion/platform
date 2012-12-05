@@ -1022,7 +1022,7 @@ priceManagerialDeclarationArticle 'Себестоимость (УУ)' (declarati
 quantityDeclarationBrandSupplier (declaration, brandSupplier) = GROUP SUM quantityDeclarationDetail(declarationDetail)
     BY declarationDeclarationDetail(declarationDetail), brandDeclarationDetail(declarationDetail);
 
-canonicalBrandDeclaration 'Бренды' (declaration) = castToString255(
+canonicalBrandDeclaration 'Бренды' (declaration) = toString255(
     [GROUP CONCAT commonName(brandSupplier) IF quantityDeclarationBrandSupplier(declaration, brandSupplier), ' , '
            BY declaration
            ORDER brandSupplier](declaration))

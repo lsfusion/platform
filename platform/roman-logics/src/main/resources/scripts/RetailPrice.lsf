@@ -695,7 +695,7 @@ quantityPriceSetDocumentBrandSupplierArticle (priceSetDocument, brandSupplier) =
 quantityPriceSetDocumentBrandSupplierSku (priceSetDocument, brandSupplier) = GROUP SUM 1 IF inPriceSetDocumentSku(priceSetDocument, sku)
     BY priceSetDocument, brandSupplierArticleSku(sku);
 
-canonicalBrandPriceSetDocument 'Бренды' (priceSetDocument) = castToString255(
+canonicalBrandPriceSetDocument 'Бренды' (priceSetDocument) = toString255(
     [GROUP CONCAT commonName(brandSupplier) IF (quantityPriceSetDocumentBrandSupplierArticle(priceSetDocument, brandSupplier) OR quantityPriceSetDocumentBrandSupplierSku(priceSetDocument, brandSupplier)), ' , '
            BY priceSetDocument
            ORDER brandSupplier](priceSetDocument)) MINCHARWIDTH 50 MAXCHARWIDTH 100 PREFCHARWIDTH 100 PERSISTENT;
@@ -770,7 +770,7 @@ FORM priceSetDocument 'Розничный прайс'
     PROPERTIES (p, aa) READONLY prevPriceDocumentBBasePriceSetDocumentArticle
 
 
-    PROPERTIES        READONLY balanceBArticleDate(aa, dFrom), averageSoldArticleWeekDateFromToDocument(aa, w, dFrom, dTo, p)  COLUMNS (w) HEADER castToString4(w),
+    PROPERTIES        READONLY balanceBArticleDate(aa, dFrom), averageSoldArticleWeekDateFromToDocument(aa, w, dFrom, dTo, p)  COLUMNS (w) HEADER toString4(w),
                       quantitySoldArticleDateFromTo(aa, dFrom, dTo), balanceAArticleDate(aa, dTo)
     PROPERTIES (p,aa) prevPriceDocumentBDiscountPriceSetDocumentArticle READONLY, inPriceSetDocumentArticle, percentDiscountPriceSetDocumentArticle
 

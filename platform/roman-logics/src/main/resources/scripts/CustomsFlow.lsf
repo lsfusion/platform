@@ -108,11 +108,11 @@ inCStoWHDeclaration (CStoWH, declaration) = GROUP SUM 1
         AND CStoWHCStoWHDetail (CStoWHDetail) == CStoWH AS CStoWH
     BY CStoWHCStoWHDetail(CStoWHDetail), declarationCStoWHDetail(CStoWHDetail);
 
-//declarationsCStoWH 'Декларации' (CStoWH) = GROUP CONCAT castToString255(sidDeclaration(declaration))
+//declarationsCStoWH 'Декларации' (CStoWH) = GROUP CONCAT toString255(sidDeclaration(declaration))
 //    IF inCStoWHDeclaration (CStoWH, declaration), ', ' BY CStoWH IN documentPrmGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
 
 declarationsCStoWH 'Декларации' (CStoWH) =
-    GROUP CONCAT castToString255([FORMULA STRING[30] 'CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) '] (sidDeclaration(declaration), dateDeclaration(declaration)))
+    GROUP CONCAT toString255([FORMULA STRING[30] 'CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) '] (sidDeclaration(declaration), dateDeclaration(declaration)))
                  IF inCStoWHDeclaration (CStoWH, declaration), ', '
           BY CStoWH
           ORDER declaration IN documentPrmGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;

@@ -51,7 +51,7 @@ descriptionIndexShipmentDetailUserShipmentDetail 'Строка поставки 
 
 quantityShipmentDetailShipmentShipment (sale, purchase) = GROUP SUM Purchase.quantityShipmentDetail(detail) BY shipmentShipmentDetail(shipmentDetailShipmentDetail(detail)), Purchase.shipmentShipmentDetail(detail);
 
-saleShipmentsShipment 'Поставки (продажа)' (purchase) = GROUP CONCAT castToString255(descriptionShipment(sale)) IF quantityShipmentDetailShipmentShipment(sale, purchase) , ', '
+saleShipmentsShipment 'Поставки (продажа)' (purchase) = GROUP CONCAT toString255(descriptionShipment(sale)) IF quantityShipmentDetailShipmentShipment(sale, purchase) , ', '
                                                         BY purchase
                                                         ORDER sale IN shipmentGroup MINCHARWIDTH 30 PREFCHARWIDTH 50 PERSISTENT;
 

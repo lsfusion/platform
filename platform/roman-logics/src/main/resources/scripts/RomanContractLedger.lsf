@@ -189,7 +189,7 @@ EXTEND FORM simpleInvoiceForm
 
 //------------------------------------------------ Расчет с поставщиками ---------------------------------------------//
 
-dateTimeCommercialInvoice 'Дата/время' (commercialInvoice) = timeDate(dateCommercialInvoice(commercialInvoice));
+dateTimeCommercialInvoice 'Дата/время' (commercialInvoice) = toDateTime(dateCommercialInvoice(commercialInvoice));
 descriptionCommercialInvoice 'Название документа' (commercialInvoice) =
     [FORMULA STRING[200] '\'Коммерческий инвойс \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)'](
     seriesNumberObject(commercialInvoice), dateCommercialInvoice(commercialInvoice),

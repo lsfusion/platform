@@ -281,7 +281,7 @@ META defineShipment(sign, stockProp)
     quantityShipmentDetailOrderShipment (order, shipment) = GROUP SUM quantityShipmentDetail(shipmentDetail) BY orderShipmentDetail(shipmentDetail), shipmentShipmentDetail(shipmentDetail);
     Shipment.quantityShipmentDetailOrderShipment (order, shipment) += quantityShipmentDetailOrderShipment (order, shipment);
 
-    ordersShipment 'Заказы' (shipment) = GROUP CONCAT castToString255(descriptionOrder(order)) IF quantityShipmentDetailOrderShipment(order, shipment) , ', '
+    ordersShipment 'Заказы' (shipment) = GROUP CONCAT toString255(descriptionOrder(order)) IF quantityShipmentDetailOrderShipment(order, shipment) , ', '
                                                BY shipment
                                                ORDER order IN orderGroup MINCHARWIDTH 30 PREFCHARWIDTH 50 PERSISTENT;
 
@@ -464,7 +464,7 @@ META defineShipment(sign, stockProp)
 
     quantityShipmentDetailInvoiceShipment (invoice, shipment) = GROUP SUM quantityShipmentDetail(shipmentDetail) BY invoiceInvoiceDetail(invoiceDetailShipmentDetail(shipmentDetail)), shipmentShipmentDetail(shipmentDetail);
 
-    invoicesShipment 'Накладные' (shipment) = GROUP CONCAT castToString255(descriptionInvoice(invoice)) IF quantityShipmentDetailInvoiceShipment(invoice, shipment) , ', '
+    invoicesShipment 'Накладные' (shipment) = GROUP CONCAT toString255(descriptionInvoice(invoice)) IF quantityShipmentDetailInvoiceShipment(invoice, shipment) , ', '
                                                     BY shipment
                                                     ORDER invoice IN invoiceGroup MINCHARWIDTH 30 PREFCHARWIDTH 50 PERSISTENT;
 
