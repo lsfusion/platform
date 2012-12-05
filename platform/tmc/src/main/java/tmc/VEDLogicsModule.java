@@ -873,11 +873,11 @@ public class VEDLogicsModule extends LogicsModule {
         addJProp(artExtraGroup, "Пол", baseLM.name, genderArticle, 1);
         //**************************************************************************************************************
         currentRRP = addDProp(priceGroup, "currentRRP", "RRP", DoubleClass.instance, article);
-        currencyArticle = addDProp("currencyArticle", "Валюта (ИД)", baseLM.currency, article);
+        currencyArticle = addDProp("currencyArticle", "Валюта (ИД)", getCurrencyClass(), article);
         nameCurrencyArticle = addJProp(priceGroup, "nameCurrencyArticle", "Валюта", baseLM.name, currencyArticle, 1);
         unitOfMeasureArticle = addDProp("unitOfMeasureArticle", "Ед. изм.", unitOfMeasure, article);
         nameUnitOfMeasureArticle = addJProp(baseGroup, "nameUnitOfMeasureArticle", "Ед. изм.", baseLM.name, unitOfMeasureArticle, 1);
-        LCP currentCurrencyRate = addDProp(baseGroup, "currentCurrencyRate", "Курс", DoubleClass.instance, baseLM.currency);
+        LCP currentCurrencyRate = addDProp(baseGroup, "currentCurrencyRate", "Курс", DoubleClass.instance, getCurrencyClass());
         LCP currentFormatDiscount = addDProp(priceGroup, "currentFormatDiscount", "Скидка на формат", DoubleClass.instance, format);
         LCP currentWarehouseDiscount = addDProp(priceGroup, "currentWarehouseDiscount", "Опт. скидка", DoubleClass.instance);
 
@@ -1320,7 +1320,7 @@ public class VEDLogicsModule extends LogicsModule {
         quantityDiffCommitArticle = addDUProp(articleOrderQuantity, addCUProp("Кол-во свер.", outerCommitedQuantity, quantityCheckCommitInnerArticle));
 
         // для импорта
-        nameToCurrency = addAGProp("nameToCurrency", "Валюта", baseLM.currency, baseLM.name);
+        nameToCurrency = addAGProp("nameToCurrency", "Валюта", getCurrencyClass(), baseLM.name);
         nameToArticleGroup = addAGProp("nameToArticleGroup", "Гр. тов.", articleGroup, baseLM.name);
         nameToUnitOfMeasure = addAGProp("nameToUnitOfMeasure", "Ед. изм.", unitOfMeasure, baseLM.name);
         nameToBrend = addAGProp("nameToBrend", "Бренд", brend, baseLM.name);
@@ -1770,6 +1770,9 @@ public class VEDLogicsModule extends LogicsModule {
         return null;
     }
 
+    public ConcreteCustomClass getCurrencyClass() {
+        return (ConcreteCustomClass) VEDBL.getModule("Currency").getClassByName("currency");
+    }
 
     public static Font FONT_SMALL_BOLD = new Font("Tahoma", Font.BOLD, 12);
     public static Font FONT_SMALL_PLAIN = new Font("Tahoma", Font.PLAIN, 12);
@@ -4416,7 +4419,7 @@ public class VEDLogicsModule extends LogicsModule {
 
             addImportField(fields, properties, articleKey, baseLM.name);
             addImportField(fields, properties, articleKey, currentRRP);
-            addImportObjectNameField(fields, properties, importKeys, articleKey, nameToCurrency, currencyArticle, baseLM.currency);
+            addImportObjectNameField(fields, properties, importKeys, articleKey, nameToCurrency, currencyArticle, getCurrencyClass());
 
             java.util.List<java.util.List<Object>> rows = new ArrayList<java.util.List<Object>>();
 

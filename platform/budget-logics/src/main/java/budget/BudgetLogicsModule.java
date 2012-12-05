@@ -25,10 +25,12 @@ import java.util.Arrays;
  */
 
 public class BudgetLogicsModule extends LogicsModule {
+    private final BudgetBusinessLogics BL;
 
-    public BudgetLogicsModule(BaseLogicsModule<BudgetBusinessLogics> baseLM) {
+    public BudgetLogicsModule(BaseLogicsModule<BudgetBusinessLogics> baseLM, BudgetBusinessLogics BL) {
         super("BudgetLogicsModule");
         setBaseLogicsModule(baseLM);
+        this.BL = BL;
     }
 
     AbstractGroup salaryGroup, dateTimeGroup, personGroup, extraGroup, outGroup, inOperationGroup, payerGroup, baseCurGroup;
@@ -121,7 +123,7 @@ public class BudgetLogicsModule extends LogicsModule {
         addTable("isAddToSum", person, extraPersonSection, absMonth, YearClass.instance);
         addTable("workDays", absMonth, YearClass.instance);
         addTable("adminExtra", department, absMonth, YearClass.instance);
-        addTable("exchangeRate", baseLM.currency, baseLM.currency, DateClass.instance);
+        addTable("exchangeRate", getCurrencyClass(), getCurrencyClass(), DateClass.instance);
     }
 
     @Override
@@ -176,7 +178,7 @@ public class BudgetLogicsModule extends LogicsModule {
         operationPayer = addDProp("operPayer", "Плательщик", payer, payerAbs);
         personDepartment = addDProp("personDepartment", "Отдел", department, person);
 
-        baseCurrency = addDProp("baseCurrency", "Базовая валюта", baseLM.currency);
+        baseCurrency = addDProp("baseCurrency", "Базовая валюта", getCurrencyClass());
         baseCurrencyName = addJProp(baseGroup, "Базовая валюта", baseLM.name, baseCurrency);
 
         rateDate = addDProp("rateDate", "Дата курса", DoubleClass.instance);
@@ -233,10 +235,10 @@ public class BudgetLogicsModule extends LogicsModule {
 
         LCP payRate = addDProp(baseGroup, "rateP", "Курс", DoubleClass.instance, pay);
         LCP extraRate = addDProp(baseGroup, "rateExtra", "Курс", DoubleClass.instance, extraCost);
-        LCP extraCurrency = addDProp("curExtra", "Валюта затрат", baseLM.currency, extraCost);
+        LCP extraCurrency = addDProp("curExtra", "Валюта затрат", getCurrencyClass(), extraCost);
         addJProp(baseGroup, "Валюта затрат", baseLM.name, extraCurrency, 1);
 
-        exchangeRate = addDProp("exchangeRate", "Курс обмена", DoubleClass.instance, baseLM.currency, baseLM.currency, DateClass.instance);
+        exchangeRate = addDProp("exchangeRate", "Курс обмена", DoubleClass.instance, getCurrencyClass(), getCurrencyClass(), DateClass.instance);
 
         LCP lessCmpDate = addJProp(and(false, true, false), object(DateClass.instance), 3, exchangeRate, 1, 2, 3, baseLM.greater2, 3, 4, is(DateClass.instance), 4);
         nearestPredDate = addMGProp((AbstractGroup) null, "nearestPredDate", "Ближайшая меньшая дата", lessCmpDate, 1, 2, 4);
@@ -264,8 +266,8 @@ public class BudgetLogicsModule extends LogicsModule {
         reimbursementPayer = addDProp("reimbPayer", "Плательщик", payer, reimbursement);
         LCP reimbursementSum = addDProp(baseGroup, "reimbSum", "Сумма", IntegerClass.instance, reimbursement);
         LCP reimbursementRate = addDProp(baseGroup, "reimbRate", "Курс", DoubleClass.instance, reimbursement);
-        reimbursementCurrencyIn = addDProp("reimbCurIn", "Валюта расх.", baseLM.currency, reimbursement);
-        LCP reimbursementCurrencyOut = addDProp("reimbCurOut", "Валюта выплаты", baseLM.currency, reimbursement);
+        reimbursementCurrencyIn = addDProp("reimbCurIn", "Валюта расх.", getCurrencyClass(), reimbursement);
+        LCP reimbursementCurrencyOut = addDProp("reimbCurOut", "Валюта выплаты", getCurrencyClass(), reimbursement);
         reimbursementDepartment = addDProp("reimbDep", "Отдел", department, reimbursement);
         addJProp(baseGroup, "Валюта", baseLM.name, reimbursementCurrencyOut, 1);
 
@@ -278,8 +280,8 @@ public class BudgetLogicsModule extends LogicsModule {
 
         missionOperation = addDProp("misOp", "Командировка", mission, misOperation);
 
-        inCur = addDProp("inCurrency", "Валюта пр.", baseLM.currency, inAbsOperation);
-        outCur = addDProp("outCurrency", "Валюта расх.", baseLM.currency, outAbsOperation);
+        inCur = addDProp("inCurrency", "Валюта пр.", getCurrencyClass(), inAbsOperation);
+        outCur = addDProp("outCurrency", "Валюта расх.", getCurrencyClass(), outAbsOperation);
 
         LCP inCurName = addJProp(baseGroup, "Валюта прих.", baseLM.name, inCur, 1);
         addJProp(baseGroup, "Город", baseLM.name, missionCity, 1);
@@ -303,7 +305,7 @@ public class BudgetLogicsModule extends LogicsModule {
 
         opDep = addCUProp(operationDepartment, payOperationDepartment);
 
-        LCP currencyTransfer = addDProp("currencyTransfer", "Валюта перем.", baseLM.currency, transfer);
+        LCP currencyTransfer = addDProp("currencyTransfer", "Валюта перем.", getCurrencyClass(), transfer);
         LCP nameCurrencyTransfer = addJProp(baseGroup, "nameCurrencyTransfer", "Валюта перемещения", baseLM.name, currencyTransfer, 1);
         LCP depFrom = addDProp("depFrom", "Отдел отправитель", department, transfer);
         LCP depFromName = addJProp(baseGroup, "depFromName", "Отдел отправитель", baseLM.name, depFrom, 1);
@@ -313,7 +315,7 @@ public class BudgetLogicsModule extends LogicsModule {
         LCP incSumTransfer = addSGProp("incSumTransfer", "Перемещение в отдел", valueTransfer, currencyTransfer, 1, depTo, 1);
         LCP outSumTransfer = addSGProp("outSumTransfer", "Перемещение от отдела", valueTransfer, currencyTransfer, 1, depFrom, 1);
 
-        LCP currencyIncomeProfit = addDProp("currencyIncomeProfit", "Валюта выр.", baseLM.currency, incomeProfit);
+        LCP currencyIncomeProfit = addDProp("currencyIncomeProfit", "Валюта выр.", getCurrencyClass(), incomeProfit);
         LCP nameCurrencyIncomeProfit = addJProp(baseGroup, "nameCurrencyIncomeProfit", "Валюта выручки", baseLM.name, currencyIncomeProfit, 1);
         LCP depProfit = addDProp("depProfit", "Отдел", department, incomeProfit);
         LCP nameDepProfit = addJProp(baseGroup, "nameDepProfit", "Отдел." ,baseLM.name, depProfit, 1);
@@ -380,7 +382,7 @@ public class BudgetLogicsModule extends LogicsModule {
         LCP extraSum = addJProp(baseLM.and1, addJProp(multiplyDouble2, outSum, 1, extraRate, 1), 1, is(extraCost), 1);
 
         salaryInMonth = addDProp(salaryGroup, "salaryInM", "Зарплата", DoubleClass.instance, person, absMonth, YearClass.instance);
-        LCP currencyInMonth = addDProp("currencyInM", "Валюта (зарплата)", baseLM.currency, person, absMonth, YearClass.instance);
+        LCP currencyInMonth = addDProp("currencyInM", "Валюта (зарплата)", getCurrencyClass(), person, absMonth, YearClass.instance);
         LCP workDays = addDProp(dateTimeGroup, "workD", "Раб. дни", IntegerClass.instance, absMonth, YearClass.instance);
         LCP dayInMonth = addDProp("dayWorkInM", "Дней отраб.", IntegerClass.instance, person, absMonth, YearClass.instance);
         dayInMonthOv = addSUProp(dateTimeGroup, "dayWorkInMOv", "Дней отраб.", Union.OVERRIDE, addJProp(baseLM.and1, workDays, 2, 3, isWorkingMonthForPerson, 1, 2, 3), dayInMonth);
@@ -389,7 +391,7 @@ public class BudgetLogicsModule extends LogicsModule {
                 Union.OVERRIDE, addJProp(baseLM.and1, addJProp(hourInDay, dayInMonthOv, 1, 2, 3), 1, 2, 3, isWorkingMonthForPerson, 1, 2, 3), hourInMonth);
         LCP extraInMonth = addDProp(baseGroup, "extraInM", "Затраты", DoubleClass.instance, extraSection, absMonth, YearClass.instance, department);
         // LCP extraAdminInMonth = addDProp(baseGroup, "extraAdminInM", "Админ. затраты",DoubleClass.instance, department, absMonth, YearClass.instance);
-        LCP currencyExtraInMonth = addDProp("currencyExtraInM", "Валюта (доп. затрат)", baseLM.currency, extraSection, absMonth, YearClass.instance, department);
+        LCP currencyExtraInMonth = addDProp("currencyExtraInM", "Валюта (доп. затрат)", getCurrencyClass(), extraSection, absMonth, YearClass.instance, department);
 
         addJProp(salaryGroup, "Валюта", baseLM.name, currencyInMonth, 1, 2, 3);
         addJProp(baseGroup, "Валюта", baseLM.name, currencyExtraInMonth, 1, 2, 3, 4);
@@ -489,7 +491,7 @@ public class BudgetLogicsModule extends LogicsModule {
         curInvestmentMoney = addCUProp(idGroup, "curInvestmentMoney", "Валюта (ИД)", curInvestmentCash, curInvestmentNotCash);
 
         sumInvestmentNotMoney = addDProp(baseGroup, "sumInvestmentNotMoney", "Сумма", DoubleClass.instance, investmentNotMoney);
-        curInvestmentNotMoney = addDProp(idGroup, "curInvestmentNotMoney", "Валюта (ИД)", baseLM.currency, investmentNotMoney);
+        curInvestmentNotMoney = addDProp(idGroup, "curInvestmentNotMoney", "Валюта (ИД)", getCurrencyClass(), investmentNotMoney);
 
         sumInvestment = addCUProp("sumInvestment", "Сумма", sumInvestmentMoney, sumInvestmentNotMoney);
         curInvestment = addCUProp(idGroup, "curInvestment", "Валюта (ИД)", curInvestmentMoney, curInvestmentNotMoney);
@@ -538,6 +540,10 @@ public class BudgetLogicsModule extends LogicsModule {
         return null;
     }
 
+    public ConcreteCustomClass getCurrencyClass() {
+        return (ConcreteCustomClass) BL.getModule("Currency").getClassByName("currency");
+    }
+    
     private class RecordFormEntity extends FormEntity {
 
         public RecordFormEntity(NavigatorElement parent, String sID, String caption) {
@@ -639,7 +645,7 @@ public class BudgetLogicsModule extends LogicsModule {
             objYearOp.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             objMonthOp = addSingleGroupObject(absMonth, baseGroup);
-            objCur = addSingleGroupObject(baseLM.currency, baseGroup);
+            objCur = addSingleGroupObject(getCurrencyClass(), baseGroup);
             ObjectEntity objExtraOp = addSingleGroupObject(extraCost, baseGroup);
 
             addPropertyDraw(objExtraStateOp, objYearOp, objMonthOp, baseGroup);
@@ -686,7 +692,7 @@ public class BudgetLogicsModule extends LogicsModule {
             objYearOp.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             objMonthOp = addSingleGroupObject(absMonth, baseGroup);
-            objCur = addSingleGroupObject(baseLM.currency, baseGroup);
+            objCur = addSingleGroupObject(getCurrencyClass(), baseGroup);
             objExtraStateOp = addSingleGroupObject(extraPersonSection, baseGroup);
 
             objPayOp = addSingleGroupObject(pay, baseGroup);
@@ -784,7 +790,7 @@ public class BudgetLogicsModule extends LogicsModule {
             ObjectEntity objDepartment = addSingleGroupObject(department, baseGroup);
             objDepartment.groupTo.setSingleClassView(ClassViewType.PANEL);
 
-            ObjectEntity objCur = addSingleGroupObject(baseLM.currency, baseGroup);
+            ObjectEntity objCur = addSingleGroupObject(getCurrencyClass(), baseGroup);
             addPropertyDraw(baseGroup, false, false, objDepartment, objCur);
 
             ObjectEntity objTransfer = addSingleGroupObject(transfer, baseGroup);
@@ -801,7 +807,7 @@ public class BudgetLogicsModule extends LogicsModule {
             ObjectEntity objDepartment = addSingleGroupObject(department, baseGroup);
             objDepartment.groupTo.setSingleClassView(ClassViewType.PANEL);
 
-            ObjectEntity objCur = addSingleGroupObject(baseLM.currency, baseGroup);
+            ObjectEntity objCur = addSingleGroupObject(getCurrencyClass(), baseGroup);
             ObjectEntity objInOp = addSingleGroupObject(inAbsOperation, baseGroup, true);
             ObjectEntity objOutOp = addSingleGroupObject(outAbsOperation, baseGroup, true);
             addPropertyDraw(baseGroup, true, false, objCur, objInOp);
@@ -826,7 +832,7 @@ public class BudgetLogicsModule extends LogicsModule {
             super(parent, sID, caption);
 
             ObjectEntity objPayer = addSingleGroupObject(payer, baseGroup);
-            objCurrency = addSingleGroupObject(baseLM.currency, baseGroup);
+            objCurrency = addSingleGroupObject(getCurrencyClass(), baseGroup);
             objDepartment = addSingleGroupObject(department, baseGroup);
             objOutOp = addSingleGroupObject(payerAbs, baseGroup);
             objReimbursement = addSingleGroupObject(reimbursement, baseGroup);
@@ -876,7 +882,7 @@ public class BudgetLogicsModule extends LogicsModule {
 
             addPropertyDraw(baseCurGroup, true, objDepartment, objMonthOp, objYearOp);
 
-            ObjectEntity objCurrency = addSingleGroupObject(baseLM.currency, baseGroup);
+            ObjectEntity objCurrency = addSingleGroupObject(getCurrencyClass(), baseGroup);
 
             addPropertyDraw(personGroup, true, objDepartment, objMonthOp, objYearOp, objCurrency);
             addPropertyDraw(extraGroup, true, objDepartment, objMonthOp, objYearOp, objCurrency);
@@ -898,8 +904,8 @@ public class BudgetLogicsModule extends LogicsModule {
 //            addPropertyDraw(userRateDay, objMonthOp, objYearOp);
 //            addPropertyDraw(dateByMY, objMonthOp, objYearOp);
 
-            ObjectEntity objSrcCurrency = addSingleGroupObject(baseLM.currency, "Исходная валюта", baseGroup);
-            ObjectEntity objDstCurrency = addSingleGroupObject(baseLM.currency, "Целевая валюта", baseGroup);
+            ObjectEntity objSrcCurrency = addSingleGroupObject(getCurrencyClass(), "Исходная валюта", baseGroup);
+            ObjectEntity objDstCurrency = addSingleGroupObject(getCurrencyClass(), "Целевая валюта", baseGroup);
 
             ObjectEntity objDate = addSingleGroupObject(DateClass.instance, "Дата", baseGroup);
             objDate.groupTo.setSingleClassView(ClassViewType.PANEL);

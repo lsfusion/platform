@@ -103,15 +103,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public ConcreteCustomClass tableColumn;
     public ConcreteCustomClass dropColumn;
 
-    public ConcreteCustomClass currency;
-    public ConcreteCustomClass typeExchange;
-    public LCP currencyTypeExchange;
-    public LCP nameCurrencyTypeExchange;
-    public LCP rateExchange;
-    private LCP lessCmpDate;
-    public LCP nearestPredDate;
-    public LCP nearestRateExchange;
-
     public AbstractCustomClass transaction, transactionTime, barcodeObject, externalObject, historyObject;
 
     public AbstractCustomClass emailObject;
@@ -304,15 +295,11 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP connectionDisconnectTime;
     public LAP disconnectConnection;
 
-    public LCP symbolCurrency;
-    public LCP shortNameCurrency;
-    public LCP currencyShortName;
 
     public LCP launchComputer;
     public LCP computerNameLaunch;
     public LCP launchTime;
     public LCP launchRevision;
-    public LP documentNameCurrency;
 
     public LCP policyDescription;
     protected LCP<?> nameToPolicy;
@@ -568,6 +555,10 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     T BL;
 
+    public T getBL(){
+        return BL;
+    }
+    
     public BaseLogicsModule(T BL, Logger logger) {
         super("System", "System");
         setBaseLogicsModule(this);
@@ -665,10 +656,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         formResult = addStaticClass("formResult", "Результат вызова формы",
                 new String[]{"null", "ok", "close"},
                 new String[]{"Неизвестно", "Принять", "Закрыть"});
-
-        currency = addConcreteClass("currency", getString("logics.currency"), baseClass.named);
-        typeExchange = addConcreteClass("typeExchange", "Тип обмена", baseClass.named);
-
     }
 
     @Override
@@ -751,10 +738,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         addTable("month", month);
         addTable("dow", DOW);
-
-        addTable("typeExchange", typeExchange);
-        addTable("currency", currency);
-        addTable("rateExchange", typeExchange, currency, DateClass.instance);
     }
 
     @Override
@@ -777,11 +760,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         compositeName = new CompositeNamePropertySet();
         privateGroup.add(compositeName);
-
-        symbolCurrency = addDProp(baseGroup, "symbolCurrency", getString("logics.currency.symbol.currency"), StringClass.get(5), currency);
-        shortNameCurrency = addDProp(baseGroup, "shortNameCurrency", getString("logics.currency.short.name.currency"), StringClass.get(3), currency);
-        currencyShortName = addAGProp(baseGroup, "currencyShortName", getString("logics.currency.short.name.currency"), shortNameCurrency);
-        documentNameCurrency = addDProp(baseGroup, "documentNameCurrency", getString("logics.currency.document.name.currency"), StringClass.get(10), currency);
 
         // логические св-ва
         and1 = addAFProp("and1", false);
@@ -1257,15 +1235,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         nameEntryDictionary = addJProp(baseGroup, "nameEntryDictionary", getString("logics.dictionary"), name, entryDictionary, 1);
 
         insensitiveTranslationDictionaryTerm = addMGProp(baseGroup, "insensitiveTranslationDictionaryTerm", getString("logics.dictionary.translation.insensitive"), translationDictionary, entryDictionary, 1, insensitiveTermDictionary, 1);
-        
-        currencyTypeExchange = addDProp(idGroup, "currencyTypeExchange", "Валюта типа обмена (ИД)", currency, typeExchange);
-        nameCurrencyTypeExchange = addJProp(baseGroup, "nameCurrencyTypeExchange", "Валюта типа обмена (наим.)", name, currencyTypeExchange, 1);
-        rateExchange = addDProp(baseGroup, "rateExchange", "Курс обмена", NumericClass.get(15, 8), typeExchange, baseLM.currency, DateClass.instance);
-
-         //lessCmpDate = addJProp(and(false, true, false), object(DateClass.instance), 3, rateExchange, 1, 2, 3, greater2, 3, 4, is(DateClass.instance), 4);
-        lessCmpDate = addJProp(and(false, true, false), object(DateClass.instance), 3, rateExchange, 1, 2, 3, addJProp(greater2, 3, date, 4), 1, 2, 3, 4, is(transaction), 4);
-        nearestPredDate = addMGProp((AbstractGroup) null, "nearestPredDate", "Ближайшая меньшая дата", lessCmpDate, 1, 2, 4);
-        nearestRateExchange = addJProp("nearestRateExchange", "Ближайший курс обмена", rateExchange, 1, 2, nearestPredDate, 1, 2, 3);
 
         //todo : инлайнить в свои модули
 

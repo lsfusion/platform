@@ -4039,7 +4039,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         caseCountry = addDProp(baseGroup, "caseCountry", "Страна в Предложном падеже", StringClass.get(40), country);
         caseCountryExpert = addJProp("caseCountryExpert", "Страна эксперта П.П.", caseCountry, countryExpert, 1);
 
-        currencyExpert = addDProp("currencyExpert", "Валюта (ИД)", baseLM.currency, expert);
+        currencyExpert = addDProp("currencyExpert", "Валюта (ИД)", getCurrencyClass(), expert);
         nameCurrencyExpert = addJProp("nameCurrencyExpert", "Валюта договора", baseLM.name, currencyExpert, 1);
         nameCurrencyExpert.setMinimumWidth(10);
         nameCurrencyExpert.setPreferredWidth(20);
@@ -4053,14 +4053,14 @@ public class SkolkovoLogicsModule extends LogicsModule {
         residencyCountryExpert = addJProp("residencyCountryExpert", "Резидент", residency, countryExpert, 1);
         moneyQuantityDoneExpertMonthYear = addJProp("moneyQuantityDoneExpertMonthYear", "ЗП эксперта за мес.", addJProp(baseLM.round, 1, addCProp(IntegerClass.instance, 0)), addJProp(baseLM.multiply, quantityDoneExpertMonthYear, 1, 2, 3, rateExpert), 1, 2, 3);
 
-        baseCurrency = addDProp(baseGroup, "baseCurrency", "Базовая валюта", LogicalClass.instance, baseLM.currency);
+        baseCurrency = addDProp(baseGroup, "baseCurrency", "Базовая валюта", LogicalClass.instance, getCurrencyClass());
         baseCurrencyExpert = addJProp("baseCurrencyExpert", "Базовая валюта", baseCurrency, currencyExpert, 1);
 
         englCountry = addDProp(baseGroup, "englCountry", "Страна на английском", StringClass.get(40), country);
         englCountryExpert = addJProp("englCountryExpert", "Страна эксперта англ", englCountry, countryExpert, 1);
-        englCurrency = addDProp(baseGroup, "englCurrency", "Валюта на английском", StringClass.get(40), baseLM.currency);
+        englCurrency = addDProp(baseGroup, "englCurrency", "Валюта на английском", StringClass.get(40), getCurrencyClass());
         englCurrencyExpert = addJProp("englCurrencyExpert", "Валюта эксперта англ", englCurrency, currencyExpert, 1);
-        pluralCurrency = addDProp(baseGroup, "pluralCurrency", "Валюта множ.числ", StringClass.get(40), baseLM.currency);
+        pluralCurrency = addDProp(baseGroup, "pluralCurrency", "Валюта множ.числ", StringClass.get(40), getCurrencyClass());
         pluralCurrencyExpert = addJProp("pluralCurrencyExpert", "Валюта эксперта мн.ч.", pluralCurrency, currencyExpert, 1);
 
         emailLetterExpertMonthYearEA = addEAProp("Акт выполненных работ", IntegerClass.instance, IntegerClass.instance);
@@ -4614,6 +4614,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
     @Override
     public String getNamePrefix() {
         return null;
+    }
+
+    public ConcreteCustomClass getCurrencyClass() {
+        return (ConcreteCustomClass) BL.getModule("Currency").getClassByName("currency");
     }
 
     private void addDefaultHintsIncrementTable(FormEntity form) {

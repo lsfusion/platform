@@ -2,24 +2,18 @@ MODULE Currency;
 
 REQUIRE System, DefaultData;
 
-dateTypeExchangeCurrencyDate (typeExchange, currency, date)  =
-    GROUP MAX dateIn IF rateExchange(typeExchange, currency, dateIn) AND dateIn <= date AND date IS DATE
-    BY typeExchange, currency, date;
+CLASS currency 'Валюта' : named;
+TABLE currency(currency);
 
-rateTypeExchangeCurrencyDate 'Курс обмена' (typeExchange, currency, date) =
-    rateExchange(typeExchange, currency, dateTypeExchangeCurrencyDate(typeExchange, currency, date));
-
-dateTypeExchangeCurrencyDateEx (typeExchange, currency, date)  =
-    GROUP MAX dateIn IF rateExchange(typeExchange, currency, dateIn) AND dateIn <= date AND date IS DATE
-    BY typeExchange, currency, date;
-
-curRateTypeExchangeCurrency 'Текущий курс обмена' (typeExchange, currency) =
-    rateExchange(typeExchange, currency, dateTypeExchangeCurrencyDateEx(typeExchange, currency, currentDate()));
+symbolCurrency 'Символ' = DATA STRING[5] (currency);
+shortNameCurrency 'Валюта сокр.' = DATA STRING[3] (currency);
+documentNameCurrency 'Валюта в накладной сокр.' = DATA STRING[10] (currency);
+currencyShortName (string) = GROUP UNIQUE currency BY shortNameCurrency(currency) WHERE currency IS currency;
 
 precisionCurrency 'Округление (число знаков после запятой)' = DATA INTEGER(currency);
 roundCurrency (number, currency) = round(number, precisionCurrency(currency));
 
-// --------------------------------------------- Формы для ввода курсов валют --------------------------------------- //
+// Формы
 
 FORM currency 'Валюта'
     OBJECTS c = currency FIXED PANEL
@@ -36,6 +30,26 @@ FORM currencies 'Валюты'
 
     DIALOG currency OBJECT c
 ;
+
+// ---------------------------------- Типы обмена ---------------------------- //
+
+CLASS typeExchange 'Тип обмена' : named;
+TABLE typeExchange(typeExchange);
+TABLE rateExchange (typeExchange, currency, DATE);
+
+currencyTypeExchange 'Валюта типа обмена (ИД)'= DATA currency(typeExchange);
+nameCurrencyTypeExchange 'Валюта типа обмена (наим.)' (typeExchange) = name(currencyTypeExchange(typeExchange));
+rateExchange 'Курс обмена' = DATA NUMERIC[15,8] (typeExchange, currency, DATE);
+
+dateTypeExchangeCurrencyDate (typeExchange, currency, date)  =
+    GROUP MAX dateIn IF rateExchange(typeExchange, currency, dateIn) AND dateIn <= date AND date IS DATE
+    BY typeExchange, currency, date;
+
+rateTypeExchangeCurrencyDate 'Курс обмена' (typeExchange, currency, date) =
+    rateExchange(typeExchange, currency, dateTypeExchangeCurrencyDate(typeExchange, currency, date));
+
+curRateTypeExchangeCurrency 'Текущий курс обмена' (typeExchange, currency) =
+    rateExchange(typeExchange, currency, dateTypeExchangeCurrencyDate(typeExchange, currency, currentDate()));
 
 // -------------------------------------------- Курсы валют --------------------------------- //
 

@@ -1821,27 +1821,27 @@ public class RomanLogicsModule extends LogicsModule {
         nameSeasonYear = addJProp("nameSeasonYear", "Наименование", baseLM.istring2SP, nameSeasonSeasonYear, 1, yearSeasonYear, 1);
 
         // rate
-        typeExchangeSTX = addDProp(idGroup, "typeExchangeSTX", "Тип обмена валют для STX (ИД)", baseLM.typeExchange);
+        typeExchangeSTX = addDProp(idGroup, "typeExchangeSTX", "Тип обмена валют для STX (ИД)", getTypeExchangeClass());
         nameTypeExchangeSTX = addJProp(baseGroup, "nameTypeExchangeSTX", "Тип обмена валют для STX", baseLM.name, typeExchangeSTX);
-        typeExchangeCustom = addDProp(idGroup, "typeExchangeCustom", "Тип обмена валют для мин.цен (ИД)", baseLM.typeExchange);
+        typeExchangeCustom = addDProp(idGroup, "typeExchangeCustom", "Тип обмена валют для мин.цен (ИД)", getTypeExchangeClass());
         nameTypeExchangeCustom = addJProp(baseGroup, "nameTypeExchangeCustom", "Тип обмена валют для мин.цен", baseLM.name, typeExchangeCustom);
-        typeExchangePayCustom = addDProp(idGroup, "typeExchangePayCustom", "Тип обмена валют для платежей (ИД)", baseLM.typeExchange);
+        typeExchangePayCustom = addDProp(idGroup, "typeExchangePayCustom", "Тип обмена валют для платежей (ИД)", getTypeExchangeClass());
         nameTypeExchangePayCustom = addJProp(baseGroup, "nameTypeExchangePayCustom", "Тип обмена валют для платежей (БУ)", baseLM.name, typeExchangePayCustom);
-        typeExchangePayManagerial = addDProp(idGroup, "typeExchangePayManagerial", "Тип обмена валют для платежей (ИД)", baseLM.typeExchange);
+        typeExchangePayManagerial = addDProp(idGroup, "typeExchangePayManagerial", "Тип обмена валют для платежей (ИД)", getTypeExchangeClass());
         nameTypeExchangePayManagerial = addJProp(baseGroup, "nameTypeExchangePayManagerial", "Тип обмена валют для платежей (УУ)", baseLM.name, typeExchangePayManagerial);
 
-        typeExchangePayCustomCustomsZone = addDProp(idGroup, "typeExchangePayCustomCustomsZone", "Тип обмена для платежей (ИД)", baseLM.typeExchange, customsZone);
+        typeExchangePayCustomCustomsZone = addDProp(idGroup, "typeExchangePayCustomCustomsZone", "Тип обмена для платежей (ИД)", getTypeExchangeClass(), customsZone);
         nameTypeExchangePayCustomCustomsZone = addJProp(baseGroup, "nameTypeExchangePayCustomCustomsZone", "Тип обмена для платежей (БУ)", baseLM.name, typeExchangePayCustomCustomsZone, 1);
 
-        typeExchangePayManagerialCustomsZone = addDProp(idGroup, "typeExchangePayManagerialCustomsZone", "Тип обмена для платежей (ИД)", baseLM.typeExchange, customsZone);
+        typeExchangePayManagerialCustomsZone = addDProp(idGroup, "typeExchangePayManagerialCustomsZone", "Тип обмена для платежей (ИД)", getTypeExchangeClass(), customsZone);
         nameTypeExchangePayManagerialCustomsZone = addJProp(baseGroup, "nameTypeExchangePayManagerialCustomsZone", "Тип обмена для платежей (УУ)", baseLM.name, typeExchangePayManagerialCustomsZone, 1);
 
-        currencyPayFreights = addDProp(idGroup, "currencyPayFreights", "Валюта транспорта (ИД)", baseLM.currency);
+        currencyPayFreights = addDProp(idGroup, "currencyPayFreights", "Валюта транспорта (ИД)", getCurrencyClass());
         nameCurrencyPayFreights = addJProp(baseGroup, "nameCurrencyPayFreights", "Валюта платежей за транспорт (РФ)", baseLM.name, currencyPayFreights);
 
-        currencyCustom = addDProp(idGroup, "currencyCustom", "Валюта мин.цен (ИД)", baseLM.currency);
+        currencyCustom = addDProp(idGroup, "currencyCustom", "Валюта мин.цен (ИД)", getCurrencyClass());
         nameCurrencyCustom = addJProp(baseGroup, "nameCurrencyCustom", "Валюта мин.цен", baseLM.name, currencyCustom);
-        currencyPayCustom = addDProp(idGroup, "currencyPayCustom", "Валюта для платежей (ИД)", baseLM.currency);
+        currencyPayCustom = addDProp(idGroup, "currencyPayCustom", "Валюта для платежей (ИД)", getCurrencyClass());
         //nameCurrencyPayCustom = addJProp(baseGroup, "nameCurrencyPayCustom", "Валюта для платежей", baseLM.name, currencyPayCustom);
 //        typeExchangeRetail = addDProp(idGroup, "typeExchangeRetail", "Тип обмена для розницы", baseLM.typeExchange);
 //        nameTypeExchangeRetail = addJProp(baseGroup, "nameTypeExchangeRetail", "Тип обмена для розницы", baseLM.name, typeExchangeRetail);
@@ -1931,7 +1931,7 @@ public class RomanLogicsModule extends LogicsModule {
         //buyerContract = addDProp(idGroup, "buyerContract", "Покупатель (ИД)", buyer, contract);
         //nameBuyerContract = addJProp(baseGroup, "nameBuyerContract", "Покупатель", baseLM.name, buyerContract, 1);
 
-        currencyContract = addDProp(idGroup, "currencyContract", "Валюта (ИД)", baseLM.currency, contract);
+        currencyContract = addDProp(idGroup, "currencyContract", "Валюта (ИД)", getCurrencyClass(), contract);
         nameCurrencyContract = addJProp(baseGroup, "nameCurrencyContract", "Валюта", baseLM.name, currencyContract, 1);
 
         // Subject
@@ -2099,7 +2099,7 @@ public class RomanLogicsModule extends LogicsModule {
 //                addJProp(is(customCategory10), customCategory10CustomCategoryOrigin, 1), 1), true);
 
         // Supplier
-        currencySupplier = addDProp(idGroup, "currencySupplier", "Валюта (ИД)", baseLM.currency, supplier);
+        currencySupplier = addDProp(idGroup, "currencySupplier", "Валюта (ИД)", getCurrencyClass(), supplier);
         nameCurrencySupplier = addJProp(baseGroup, "nameCurrencySupplier", "Валюта", baseLM.name, currencySupplier, 1);
 
         sidColorSupplier = addDProp(baseGroup, "sidColorSupplier", "Код", StringClass.get(50), colorSupplier);
@@ -2214,7 +2214,7 @@ public class RomanLogicsModule extends LogicsModule {
         nameCurrencyDocument.property.preferredCharWidth = 50;
         nameCurrencyDocument.property.minimumCharWidth = 10;
 
-        currencyRRPDocument = addDProp(idGroup, "currencyRRPDocument", "Валюта RRP (ИД)", baseLM.currency, priceDocument);
+        currencyRRPDocument = addDProp(idGroup, "currencyRRPDocument", "Валюта RRP (ИД)", getCurrencyClass(), priceDocument);
         nameCurrencyRRPDocument = addJProp("nameCurrencyRRPDocument", "Валюта RRP", baseLM.name, currencyRRPDocument, 1);
         nameCurrencyRRPDocument.property.preferredCharWidth = 50;
         nameCurrencyRRPDocument.property.minimumCharWidth = 10;
@@ -2960,14 +2960,14 @@ public class RomanLogicsModule extends LogicsModule {
         priceDocumentSku = addSUProp(baseGroup, "priceDocumentSku", true, "Цена", Union.OVERRIDE, priceArticleDocumentSku, priceDataDocumentItem);
 
         //priceRateDocumentSku = addJProp(baseGroup, "priceRateDocumentSku", true, "Цена (конверт.)", round2, addJProp(multiplyNumeric2, priceDocumentSku, 1, 2, addJProp(baseLM.nearestRateExchange, typeExchangeSTX, currencyDocument, 1, 1), 1), 1, 2);
-        priceRateOriginDocumentSku = addJProp(baseGroup, "priceRateOriginDocumentSku", true, "Цена (конверт.)", round2, addJProp(multiplyNumeric2, priceDocumentSku, 1, 2, addJProp(baseLM.nearestRateExchange, typeExchangeSTX, currencyDocument, 1, 1), 1), 1, 2);
+        priceRateOriginDocumentSku = addJProp(baseGroup, "priceRateOriginDocumentSku", true, "Цена (конверт.)", round2, addJProp(multiplyNumeric2, priceDocumentSku, 1, 2, addJProp(BL.getModule("Currency").getLCPByName("rateTypeExchangeCurrencyDate"), typeExchangeSTX, currencyDocument, 1, baseLM.date, 1), 1), 1, 2);
         priceRateDocumentSku = addDProp("priceRateDocumentSku", "Цена (конверт.)", NumericClass.get(14, 4), priceDocument, sku);
 
         RRPDocumentArticle = addDProp(baseGroup, "RRPDocumentArticle", "Рекомендованная цена", NumericClass.get(14, 4), priceDocument, article);
         RRPDocumentSku = addJProp(baseGroup, "RRPDocumentSku", "Рекомендованная цена", RRPDocumentArticle, 1, articleSku, 2);
         currencyRRPDocumentSku = addJProp(idGroup, "currencyRRPDocumentSku", baseLM.and1, currencyRRPDocument, 1, quantityDocumentSku, 1, 2);
 
-        RRPRateDocumentArticle = addJProp(baseGroup, "RRPRateDocumentArticle", true, "Рекомендованная цена (конверт.)", round2, addJProp(multiplyNumeric2, RRPDocumentArticle, 1, 2, addJProp(baseLM.nearestRateExchange, typeExchangeSTX, currencyDocument, 1, 1), 1), 1, 2);
+        RRPRateDocumentArticle = addJProp(baseGroup, "RRPRateDocumentArticle", true, "Рекомендованная цена (конверт.)", round2, addJProp(multiplyNumeric2, RRPDocumentArticle, 1, 2, addJProp(BL.getModule("Currency").getLCPByName("rateTypeExchangeCurrencyDate"), typeExchangeSTX, currencyDocument, 1, baseLM.date, 1), 1), 1, 2);
         RRPRateDocumentSku = addJProp(baseGroup, "RRPRateDocumentSku", "Рекомендованная цена (конверт.)", RRPRateDocumentArticle, 1, articleSku, 2);
 
         priceSupplierBoxSku = addJProp(baseGroup, "priceSupplierBoxSku", "Цена", priceDocumentSku, boxInvoiceSupplierBox, 1, 2);
@@ -3465,14 +3465,14 @@ public class RomanLogicsModule extends LogicsModule {
         volumeFreight = addJProp(baseGroup, "volumeFreight", "Объём", volumeFreightType, freightTypeFreight, 1);
         volumeDataFreight = addDProp(baseGroup, "volumeDataFreight", "Объем груза", NumericClass.get(14, 3), freight);
 
-        currencyFreight = addDProp(idGroup, "currencyFreight", "Валюта (ИД)", baseLM.currency, freight);
+        currencyFreight = addDProp(idGroup, "currencyFreight", "Валюта (ИД)", getCurrencyClass(), freight);
         nameCurrencyFreight = addJProp(baseGroup, "nameCurrencyFreight", "Валюта", baseLM.name, currencyFreight, 1);
         nameCurrencyFreight.setFixedCharWidth(10);
-        symbolCurrencyFreight = addJProp(baseGroup, "symbolCurrencyFreight", "Валюта", baseLM.symbolCurrency, currencyFreight, 1);
+        symbolCurrencyFreight = addJProp(baseGroup, "symbolCurrencyFreight", "Валюта", BL.getModule("Currency").getLCPByName("symbolCurrency"), currencyFreight, 1);
 
         sumFreightFreight = addDProp(baseGroup, "sumFreightFreight", "Стоимость", NumericClass.get(14, 2), freight);
 
-        sumRateFreightFreight = addJProp(baseGroup, "sumRateFreightFreight", true, "Стоимость (конверт.)", round2, addJProp(multiplyNumeric2, sumFreightFreight, 1, addJProp(baseLM.nearestRateExchange, typeExchangeSTX, currencyFreight, 1, 1), 1), 1);
+        sumRateFreightFreight = addJProp(baseGroup, "sumRateFreightFreight", true, "Стоимость (конверт.)", round2, addJProp(multiplyNumeric2, sumFreightFreight, 1, addJProp(BL.getModule("Currency").getLCPByName("rateTypeExchangeCurrencyDate"), typeExchangeSTX, currencyFreight, 1, baseLM.date, 1), 1), 1);
 
         insuranceFreight = addDProp(baseGroup, "insuranceFreight", "Страховка", NumericClass.get(14, 2), freight);
         insuranceFreightBrandSupplier = addDProp(baseGroup, "insuranceFreightBrandSupplier", "Страховка за бренд", NumericClass.get(14, 2), freight, brandSupplier);
@@ -3834,7 +3834,7 @@ public class RomanLogicsModule extends LogicsModule {
         RRPDirectImporterFreightSku = addMGProp(baseGroup, "RRPDirectImporterFreightSku", true, "Цена рекомендованная", RRPDocumentSku, importerDirectInvoice, 1, freightDirectInvoice, 1, 2);
         RRPInImporterFreightSku = addSUProp(baseGroup, "RRPInImporterFreightSku", "Цена рекомендованная", Union.OVERRIDE, RRPDirectImporterFreightSku, RRPProxyImporterFreightSku, RRPImporterFreightSku);
 
-        currencyRRPImporterFreightSku = addDProp(idGroup, "currencyRRPImporterFreightSku", "Валюта RRP (ИД)", baseLM.currency, importer, freight, sku);
+        currencyRRPImporterFreightSku = addDProp(idGroup, "currencyRRPImporterFreightSku", "Валюта RRP (ИД)", getCurrencyClass(), importer, freight, sku);
         currencyRRPProxyImporterFreightSku = addMGProp(idGroup, "currencyRRPProxyImporterFreightSku", true, "Валюта RRP (ИД)", currencyRRPInShipmentStockSku, importerShipmentFreightBox, 1, 2, freightFreightUnit, 2, 3);
         currencyRRPDirectImporterFreightSku = addMGProp(idGroup, "currencyRRPDirectImporterFreightSku", true, "Валюта RRP (ИД)", currencyRRPDocumentSku, importerDirectInvoice, 1, freightDirectInvoice, 1, 2);
         currencyRRPInImporterFreightSku = addSUProp(idGroup, "currencyRRPInImporterFreightSku", "Валюта RRP (ИД)", Union.OVERRIDE, currencyRRPDirectImporterFreightSku, currencyRRPProxyImporterFreightSku, currencyRRPImporterFreightSku);
@@ -3886,8 +3886,8 @@ public class RomanLogicsModule extends LogicsModule {
         minPriceCustomCategoryFreightSku = addJProp(baseGroup, "minPriceCustomCategoryFreightSku", "Минимальная цена ($)", minPriceCustomCategory10SubCategory, customCategory10FreightSku, 1, 2, subCategoryFreightSku, 1, 2);
         minPriceCustomCategoryCountryFreightSku = addJProp(baseGroup, "minPriceCustomCategoryCountryFreightSku", "Минимальная цена для страны ($)", minPriceCustomCategory10SubCategoryCountry, customCategory10FreightSku, 1, 2, subCategoryFreightSku, 1, 2, countryOfOriginFreightSku, 1, 2);
 
-        minPriceRateCustomCategoryFreightSku = addJProp(baseGroup, "minPriceRateCustomCategoryFreightSku", true, "Минимальная цена (евро)", round2, addJProp(multiplyNumeric2, minPriceCustomCategoryFreightSku, 1, 2, addJProp(baseLM.nearestRateExchange, typeExchangeCustom, currencyCustom, 1), 1), 1, 2);
-        minPriceRateCustomCategoryCountryFreightSku = addJProp(baseGroup, "minPriceRateCustomCategoryCountryFreightSku", true, "Минимальная цена (евро)", round2, addJProp(multiplyNumeric2, minPriceCustomCategoryCountryFreightSku, 1, 2, addJProp(baseLM.nearestRateExchange, typeExchangeCustom, currencyCustom, 1), 1), 1, 2);
+        minPriceRateCustomCategoryFreightSku = addJProp(baseGroup, "minPriceRateCustomCategoryFreightSku", true, "Минимальная цена (евро)", round2, addJProp(multiplyNumeric2, minPriceCustomCategoryFreightSku, 1, 2, addJProp(BL.getModule("Currency").getLCPByName("rateTypeExchangeCurrencyDate"), typeExchangeCustom, currencyCustom, baseLM.date, 1), 1), 1, 2);
+        minPriceRateCustomCategoryCountryFreightSku = addJProp(baseGroup, "minPriceRateCustomCategoryCountryFreightSku", true, "Минимальная цена (евро)", round2, addJProp(multiplyNumeric2, minPriceCustomCategoryCountryFreightSku, 1, 2, addJProp(BL.getModule("Currency").getLCPByName("rateTypeExchangeCurrencyDate"), typeExchangeCustom, currencyCustom, baseLM.date, 1), 1), 1, 2);
 
         minPriceRateFreightSku = addSUProp(baseGroup, "minPriceRateFreightSku", "Минимальная цена (евро)", Union.OVERRIDE, minPriceRateCustomCategoryFreightSku, minPriceRateCustomCategoryCountryFreightSku);
         minPriceRateImporterFreightSku = addJProp(baseGroup, "minPriceImporterFreightSku", "Минимальная цена (евро)", baseLM.and1, minPriceRateFreightSku, 2, 3, is(importer), 1);
@@ -4369,6 +4369,14 @@ public class RomanLogicsModule extends LogicsModule {
 
     public ConcreteCustomClass getCountryClass() {
         return (ConcreteCustomClass) BL.getModule("Country").getClassByName("country");
+    }
+
+    public ConcreteCustomClass getCurrencyClass() {
+        return (ConcreteCustomClass) BL.getModule("Currency").getClassByName("currency");
+    }
+
+    public ConcreteCustomClass getTypeExchangeClass() {
+        return (ConcreteCustomClass) BL.getModule("Currency").getClassByName("typeExchange");
     }
 
     public LCP getSidOrigin2Country() {

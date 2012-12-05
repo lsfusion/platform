@@ -14,3 +14,18 @@ V0.3 {
     PROPERTY isDayOffCD -> Country_isDayOffCountryDate
     PROPERTY defaultCountry -> Country_defaultCountry
 }
+
+V0.4 {
+    CLASS currency -> Currency_currency
+    CLASS typeExchange -> Currency_typeExchange
+
+    TABLE currency -> Currency_currency
+    TABLE typeExchange -> Currency_typeExchange
+    TABLE rateExchange -> Currency_rateExchange
+
+    PROPERTY currencyTypeExchange -> Currency_currencyTypeExchange
+    PROPERTY rateExchange -> Currency_rateExchange
+    PROPERTY symbolCurrency -> Currency_symbolCurrency
+    PROPERTY shortNameCurrency -> Currency_shortNameCurrency
+    PROPERTY documentNameCurrency -> Currency_documentNameCurrency
+}
