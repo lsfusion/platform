@@ -666,7 +666,7 @@ public class VEDLogicsModule extends LogicsModule {
 
         LCP positive = addJProp(baseLM.greater2, 1, baseLM.vzero);
         LCP negative = addJProp(baseLM.less2, 1, baseLM.vzero);
-        LCP onlyPositive = addJProp(baseLM.and1, 1, baseLM.positive, 1);
+        LCP onlyPositive = addJProp(baseLM.and1, 1, positive, 1);
         LCP min = addSFProp(FormulaExpr.MIN2, DoubleClass.instance, 2);
         LCP abs = addSFProp("ABS(prm1)", DoubleClass.instance, 1);
 
@@ -1244,7 +1244,7 @@ public class VEDLogicsModule extends LogicsModule {
         // сдача/доплата
         LCP orderSalePayAll = addSUProp(Union.SUM, orderSalePayCard, orderSalePayCash);
         LCP orderSaleDiffSum = addJProp(baseLM.and1, addDUProp(orderSalePayAll, sumWithDiscountObligationOrder), 1, is(orderSaleRetail), 1);
-        LCP notEnoughSum = addJProp(baseLM.negative, orderSaleDiffSum, 1);
+        LCP notEnoughSum = addJProp(negative, orderSaleDiffSum, 1);
         orderSaleToDo = addJProp(documentPayGroup, "Необходимо", baseLM.and1, addIfElseUProp(addCProp(StringClass.get(5), "Итого", orderSaleRetail),
                 addCProp(StringClass.get(5), "Сдача", orderSaleRetail), notEnoughSum, 1), 1, orderSaleDiffSum, 1);
         orderSaleToDoSum = addJProp(documentPayGroup, "Сумма необх.", abs, orderSaleDiffSum, 1);

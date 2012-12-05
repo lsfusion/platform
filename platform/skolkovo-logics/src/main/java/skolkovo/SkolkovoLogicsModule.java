@@ -508,6 +508,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         changeLegalCheckGroup = addAbstractGroup("changeLegalCheckGroup", "Изменение типа заявки", publicGroup); 
     }
 
+    public LCP negative;
     public LCP nameNative;
     public LCP nameForeign;
     public LCP nameNativeShort;
@@ -1637,6 +1638,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public void initProperties0() {
 
         idGroup.add(baseLM.objectValue);
+
+        negative = addJProp(baseLM.less2, 1, baseLM.vzero);
 
         previousDate = addJProp("previousDate", "Вчерашняя дата", baseLM.subtractDate, baseLM.currentDate, addCProp("1", IntegerClass.instance, 1));
         monthInPreviousDate = addJProp("monthInPreviousDate", "Вчерашний месяц", baseLM.numberMonthInDate, previousDate);
@@ -3277,10 +3280,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         dateTimeSubmitFormalControl = addDProp("dateTimeSubmitFormalControl", "Дата/время отправки проекта", DateTimeClass.instance, formalControl);
         dateTimeSubmitFormalControl.setEventChangeNewSet(updateDateFormalControl, 1, is(formalControl), 1);
-        dateSubmitFormalControl = addJProp("dateSubmitFormalControl", "Дата отправки проекта", baseLM.dateInDateTime, dateTimeSubmitFormalControl, 1);
+        dateSubmitFormalControl = addJProp("dateSubmitFormalControl", "Дата отправки проекта", baseLM.toDate, dateTimeSubmitFormalControl, 1);
 
         dateTimeFormalControl = addTCProp(Time.DATETIME, "dateTimeFormalControl", true, "Дата/время экспертизы", resultFormalControl);
-        dateFormalControl = addJProp("dateFormalControl", "Дата экспертизы", baseLM.dateInDateTime, dateTimeFormalControl, 1);
+        dateFormalControl = addJProp("dateFormalControl", "Дата экспертизы", baseLM.toDate, dateTimeFormalControl, 1);
         resultNoticedFormalControl = addDProp("resultNoticedFormalControl", "Отослано уведомление", LogicalClass.instance, formalControl);
         dateResultNoticedFormalControl = addDProp("dateResultNoticedFormalControl", "Дата отсылки уведомления", DateClass.instance, formalControl);
 
@@ -3313,13 +3316,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         dateTimeSubmitLegalCheck = addDProp("dateTimeSubmitLegalCheck", "Дата/время отправки проекта", DateTimeClass.instance, legalCheck);
         dateTimeSubmitLegalCheck.setEventChangeNewSet(updateDateLegalCheck, 1, is(legalCheck), 1);
-        dateSubmitLegalCheck = addJProp("dateSubmitLegalCheck", "Дата отправки проекта", baseLM.dateInDateTime, dateTimeSubmitLegalCheck, 1);
+        dateSubmitLegalCheck = addJProp("dateSubmitLegalCheck", "Дата отправки проекта", baseLM.toDate, dateTimeSubmitLegalCheck, 1);
 
         resultNoticedLegalCheck = addDProp("resultNoticedLegalCheck", "Отослано уведомление", LogicalClass.instance, legalCheck);
         dateResultNoticedLegalCheck = addDProp("dateResultNoticedLegalCheck", "Дата отсылки уведомления", DateClass.instance, legalCheck);
 
         dateTimeLegalCheck = addTCProp(Time.DATETIME, "dateTimeLegalCheck", true, "Дата проверки", resultLegalCheck);
-        dateLegalCheck = addJProp("dateLegalCheck", "Дата отправки уведомления", baseLM.dateInDateTime, dateTimeLegalCheck, 1);
+        dateLegalCheck = addJProp("dateLegalCheck", "Дата отправки уведомления", baseLM.toDate, dateTimeLegalCheck, 1);
 
         isR1LegalCheck = addJProp("isR1LegalCheck", "ЮП по R1", isR1Project, projectLegalCheck, 1);
         projectActionLegalCheck = addDProp(idGroup, "projectActionLegalCheck", "Тип заявки (ИД)", projectAction, legalCheck);
@@ -3526,7 +3529,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         commentOriginalDocsCheck = addDProp("commentOriginalDocsCheck", "Комментарий", TextClass.instance, originalDocsCheck);
         nameResultOriginalDocsCheck = addJProp("nameResultOriginalDocsCheck", "Проверка оригиналов документов", baseLM.name, resultOriginalDocsCheck, 1);
 
-        dateOriginalDocsCheck = addJProp("dateOriginalDocsCheck", "Дата отправки уведомления", baseLM.dateInDateTime, dateTimeOriginalDocsCheck, 1);
+        dateOriginalDocsCheck = addJProp("dateOriginalDocsCheck", "Дата отправки уведомления", baseLM.toDate, dateTimeOriginalDocsCheck, 1);
         overdueDateOriginalDocsCheck = addJProp("overdueDateOriginalDocsCheck", "Дата просрочки подачи оригиналов документов", baseLM.sumDate, addJProp(baseLM.jumpWorkdays, defaultCountry, dateOriginalDocsCheck, 1, addCProp(IntegerClass.instance, 1)), 1, addJProp(baseLM.subtractDate, overduePeriod, addCProp(IntegerClass.instance, 1)));
 
         dateFirstSubmitOriginalDocsProject = addMGProp("dateFirstSubmitOriginalDocsProject", true, "Дата первой подачи документов", true, baseLM.date, projectOriginalDocsCheck, 1);
@@ -7461,7 +7464,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addPropertyDraw(objDateFrom, objWeek, baseLM.sumDateWeekFrom, baseLM.sumDateWeekTo, applicationsSubmitDateWeek);
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(applicationsSubmitDateWeek, objDateFrom, objWeek)));
-            addFixedFilter(new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(baseLM.negative, objWeek))));
+            addFixedFilter(new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(negative, objWeek))));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(baseLM.sumDateWeekTo, objDateFrom, objWeek), Compare.LESS_EQUALS, objDateTo));
         }
     }
@@ -7490,7 +7493,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addPropertyDraw(objDateFrom, objWeek, baseLM.sumDateWeekFrom, baseLM.sumDateWeekTo, submitRegisterApplicationsDateWeek, risingDaysRegisterApplicationDateWeek, risingRegisterApplicationsDateWeek, averageDaysRegisterApplicationsDateWeekWeek, averageDaysRegisterApplicationsDateWeek);
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(submitRegisterApplicationsDateWeek, objDateFrom, objWeek)));
-            addFixedFilter(new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(baseLM.negative, objWeek))));
+            addFixedFilter(new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(negative, objWeek))));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(baseLM.sumDateWeekTo, objDateFrom, objWeek), Compare.LESS_EQUALS, objDateTo));
 
         }

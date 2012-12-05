@@ -185,7 +185,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP vzero;
     public LCP vnull;
     public LCP charLength;
-    public LCP positive, negative;
 
     public LCP round;
 
