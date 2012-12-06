@@ -1,10 +1,44 @@
 MODULE TripInvoiceConsignmentBy;
 
-REQUIRE Shipment, Invoice, TripInvoice, ConsignmentBy;
+REQUIRE Shipment, Invoice, TripInvoice, InvoiceConsignmentBy;
 
 truckConsignment(invoice) += truckTrip(tripInvoice(invoice));
 driverConsignment(invoice) += driverTrip(tripInvoice(invoice));
 waybillConsignment(invoice) += seriesNumberObject(tripInvoice(invoice));
+
+META setTripPropTrip(prop)
+    setTrip###prop##Trip = ACTION (invoice) {
+        SET prop##Invoice(invoice) <- prop##Trip(tripInvoice(invoice));
+    }
+    WHEN CHANGED(prop##Trip(tripInvoice(invoice))) DO EXEC setTrip###prop##Trip(invoice);
+END
+
+issuanceAllowedTrip = DATA employee(trip);
+commonNameIssuanceAllowedTrip 'Отпуск разрешил' (trip) = commonName(issuanceAllowedTrip(trip));
+@setTripPropTrip(issuanceAllowed);
+
+issuanceExecutedTrip = DATA employee(trip);
+commonNameIssuanceExecutedTrip 'Отпуск произвел' (trip) = commonName(issuanceExecutedTrip(trip));
+@setTripPropTrip(issuanceExecuted);
+
+forwarderTrip 'Товар к перевозке принял (экспедитор), должность, фамилия, инициалы'= DATA STRING[40](trip);
+@setTripPropTrip(forwarder);
+
+loadingExecuterTrip = DATA employee(trip);
+commonNameLoadingExecuterTrip 'Исполнитель ПРР' (trip) = commonName(loadingExecuterTrip(trip));
+@setTripPropTrip(loadingExecuter);
+
+wayOfLoadingTrip = DATA wayOfLoading(trip);
+nameWayOfLoadingTrip 'Способ ПРР' (trip) = name(wayOfLoadingTrip(trip));
+@setTripPropTrip(wayOfLoading);
+
+codeLoadingTrip 'Код ПРР' = DATA STRING[3] (trip);
+@setTripPropTrip(codeLoading);
+
+currencyTrip 'Валюта (ИД)' = DATA currency(trip);
+shortNameCurrencyTrip 'Валюта' (trip) = shortNameCurrency(currencyTrip(trip));
+documentNameCurrencyTrip 'Валюта в накладной сокр.' (trip) = documentNameCurrency(currencyTrip(trip));
+@setTripPropTrip(currency);
 
 printHorizontalConsignmentTrip 'Печать ТТН-1 (гор.)' (trip) = ACTION (trip) {
     FOR inTripInvoice(trip, invoice) DO {
@@ -23,8 +57,36 @@ printVerticalConsignmentTrip 'Печать ТТН-1 (верт.)' (trip) = ACTION
 } TOOLBAR;
 
 EXTEND FORM trip
+    PROPERTIES (t) commonNameIssuanceAllowedTrip, commonNameIssuanceExecutedTrip, forwarderTrip, commonNameLoadingExecuterTrip, nameWayOfLoadingTrip, codeLoadingTrip, documentNameCurrencyTrip
     PROPERTIES createConsignmentTrip(t) TODRAW i
     PROPERTIES printHorizontalConsignmentTrip(t) TODRAW i
     PROPERTIES printVerticalConsignmentTrip(t) TODRAW i
+
 ;
 
+EXTEND DESIGN trip {
+
+    bottomContainer {
+        NEW consignmentContainer AFTER invoiceContainer{
+            caption = 'Атрибуты накладных';
+            childConstraints = TO THE BOTTOM;
+            NEW issuanceContainer {
+                caption = 'Отпуск';
+                ADD PROPERTY(commonNameIssuanceAllowedTrip);
+                ADD PROPERTY(commonNameIssuanceExecutedTrip);
+                ADD PROPERTY(forwarderTrip);
+            }
+            NEW loadingContainer {
+                caption = 'ППР';
+                ADD PROPERTY(commonNameLoadingExecuterTrip);
+                ADD PROPERTY(nameWayOfLoadingTrip);
+                ADD PROPERTY(codeLoadingTrip);
+            }
+            NEW dopContainer {
+                caption = 'Дополнительно';
+                ADD PROPERTY(documentNameCurrencyTrip);
+            }
+
+        };
+    }
+}

@@ -227,82 +227,86 @@ FORM trip 'Рейс'
 
 DESIGN trip FROM DEFAULT{
     main {
-        NEW topContainer {
-            caption = 'Шапка документа';
-            childConstraints = TO THE RIGHT;
-            ADD PROPERTY(nameNumeratorObject);
-            ADD PROPERTY(numberObject);
-            ADD PROPERTY(seriesObject);
-            ADD PROPERTY(dateTrip);
-            ADD PROPERTY(timeTrip);
-        }
-
-        NEW midContainer {
-
-            childConstraints = TO THE RIGHT;
-            NEW truckContainer {
-                caption = 'Параметры машины';
-                childConstraints = TO THE RIGHTBOTTOM;
-                ADD PROPERTY(nameDriverTrip);
-                ADD PROPERTY(sidTruckTrip);
-                ADD PROPERTY(nameTruckModelTruckTrip);
-                ADD PROPERTY(trailerTruckTrip);
-                ADD PROPERTY(weightTruckTrip);
-            }
-
-            NEW sumContainer {
-                caption = 'Итоги';
+        NEW allContainer {
+            type = SPLITV;
+            NEW headContainer {
                 childConstraints = TO THE BOTTOM;
-                ADD PROPERTY(grossWeightOrderedTrip);
-                ADD PROPERTY(grossWeightShipmentedTrip);
-            }
-        }
+                NEW topContainer {
+                    caption = 'Шапка документа';
+                    childConstraints = TO THE RIGHT;
+                    ADD PROPERTY(nameNumeratorObject);
+                    ADD PROPERTY(numberObject);
+                    ADD PROPERTY(seriesObject);
+                    ADD PROPERTY(dateTrip);
+                    ADD PROPERTY(timeTrip);
+                }
 
-        NEW filterContainer {
-            caption = 'Фильтрация';
-            childConstraints = TO THE RIGHT;
-            ADD PROPERTY(namePartyA) {
-                caption = 'Поставщик';
-            };
-            ADD PROPERTY(namePartyB){
-                caption = 'Покупатель';
-            };
-        }
+                NEW midContainer {
+                    childConstraints = TO THE RIGHT;
+                    NEW truckContainer {
+                        caption = 'Параметры машины';
+                        childConstraints = TO THE RIGHTBOTTOM;
+                        ADD PROPERTY(nameDriverTrip);
+                        ADD PROPERTY(sidTruckTrip);
+                        ADD PROPERTY(nameTruckModelTruckTrip);
+                        ADD PROPERTY(trailerTruckTrip);
+                        ADD PROPERTY(weightTruckTrip);
+                    }
 
-        NEW bottomContainer {
-            type = TABBED;
-            NEW orderContainer {
-                caption = 'Заказы';
-                childConstraints = TO THE BOTTOM;
-                ADD o.box;
-                ADD od.box;
-            }
+                    NEW sumContainer {
+                        caption = 'Итоги';
+                        childConstraints = TO THE BOTTOM;
+                        ADD PROPERTY(grossWeightOrderedTrip);
+                        ADD PROPERTY(grossWeightShipmentedTrip);
+                    }
+                }
 
-            NEW shipmentContainer {
-                caption = 'Поставки';
-                childConstraints = TO THE BOTTOM;
-                ADD s.box;
-                ADD sd.box;
-            }
-
-            NEW skuContainer {
-                caption = 'Итоги по товарам';
-                childConstraints = TO THE RIGHT;
-                ADD sk.box;
-
-                NEW documentContainer {
-                    childConstraints = TO THE BOTTOM;
-                    //type = SPLITV;
-                    ADD o2.box;
-                    ADD s2.box;
+                NEW filterContainer {
+                    caption = 'Фильтрация';
+                    childConstraints = TO THE RIGHT;
+                    ADD PROPERTY(namePartyA) {
+                        caption = 'Поставщик';
+                    };
+                    ADD PROPERTY(namePartyB){
+                        caption = 'Покупатель';
+                    };
                 }
             }
 
-            ADD st.box {
-                caption = 'Путевой лист';
-            };
-        }
+            NEW bottomContainer {
+                type = TABBED;
+                NEW orderContainer {
+                    caption = 'Заказы';
+                    childConstraints = TO THE BOTTOM;
+                    ADD o.box;
+                    ADD od.box;
+                }
 
+                NEW shipmentContainer {
+                    caption = 'Поставки';
+                    childConstraints = TO THE BOTTOM;
+                    ADD s.box;
+                    ADD sd.box;
+                }
+
+                NEW skuContainer {
+                    caption = 'Итоги по товарам';
+                    childConstraints = TO THE RIGHT;
+                    ADD sk.box;
+
+                    NEW documentContainer {
+                        childConstraints = TO THE BOTTOM;
+                        //type = SPLITV;
+                        ADD o2.box;
+                        ADD s2.box;
+                    }
+                }
+
+                ADD st.box {
+                    caption = 'Путевой лист';
+                };
+            }
+        }
         ADD functions.box;
     }
 }

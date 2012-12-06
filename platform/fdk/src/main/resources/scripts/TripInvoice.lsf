@@ -31,7 +31,7 @@ EXTEND FORM trip
 
     OBJECTS i=invoice
     PROPERTIES (t, i) inTripInvoice
-    PROPERTIES (i) READONLY numberInvoice, seriesInvoice, dateInvoice, nameSupplierInvoice, nameFromStockOrder, nameCustomerInvoice, nameToStockOrder
+    PROPERTIES (i) READONLY numberInvoice, seriesInvoice, dateInvoice, nameFromLegalEntityInvoice, nameSupplierStockInvoice, nameToLegalEntityInvoice, nameCustomerStockInvoice
 
     PROPERTIES quantityInvoicedTripSku(t, sk) AFTER quantityOrderedTripSku
 
@@ -82,7 +82,7 @@ EXTEND DESIGN trip {
 EXTEND FORM trips
     PROPERTIES (t) grossWeightInvoicedTrip AFTER grossWeightOrderedTrip(t)
     OBJECTS i=invoice
-    PROPERTIES (i) READONLY numberInvoice, seriesInvoice, dateInvoice, nameSupplierInvoice, nameSupplierStockInvoice, nameCustomerInvoice, nameCustomerStockInvoice
+    PROPERTIES (i) READONLY numberInvoice, seriesInvoice, dateInvoice, nameFromLegalEntityInvoice, nameSupplierStockInvoice, nameToLegalEntityInvoice, nameCustomerStockInvoice
     FILTERS inTripInvoice(t, i)
 ;
 

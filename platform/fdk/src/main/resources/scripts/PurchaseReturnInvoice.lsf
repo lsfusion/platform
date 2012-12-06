@@ -10,6 +10,7 @@ NAMESPACE PurchaseReturn;
 @defineInvoiceBatch(customerStock);
 @defineInvoiceReturn(Purchase, PurchaseReturn, customerStock);
 
+@defineInvoiceDestination(customer, supplier);
 @defineInvoiceStockDestination(customerStock, supplierStock);
 
 // -------------------------------------- Формирование задолженности ---------------------------------------------------

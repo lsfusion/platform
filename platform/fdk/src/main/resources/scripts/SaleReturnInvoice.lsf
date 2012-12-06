@@ -9,6 +9,7 @@ NAMESPACE SaleReturn;
 @defineInvoiceBatch(supplierStock);
 
 @defineInvoiceReturn(Sale, SaleReturn, supplierStock);
+@defineInvoiceDestination(customer, supplier);
 @defineInvoiceStockDestination(customerStock, supplierStock);
 
 // -------------------------------------- Формирование задолженности ---------------------------------------------------

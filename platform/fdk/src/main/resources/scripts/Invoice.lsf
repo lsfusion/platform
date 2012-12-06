@@ -670,6 +670,14 @@ META defineInvoiceReturn(NS, NSR, stockProp)
                MESSAGE 'Выбрана партия, которая не была списана в соответствующей строке продажи';
 END
 
+META defineInvoiceDestination(fromLegalEntity, toLegalEntity)
+    Invoice.fromLegalEntityInvoice(invoice) += fromLegalEntity##Invoice(invoice);
+    Invoice.toLegalEntityInvoice(invoice) += toLegalEntity##Invoice(invoice);
+    //Invoice.dataFromLegalEntityInvoiceDetail(detail) += data###fromLegalEntity##InvoiceDetail(detail);
+    //Invoice.dataToLegalEntityInvoiceDetail(detail) += data###toLegalEntity##InvoiceDetail(detail);
+END
+
+
 META defineInvoiceStockDestination(fromStock, toStock)
     Invoice.fromStockInvoice(invoice) += fromStock##Invoice(invoice);
     Invoice.toStockInvoice(invoice) += toStock##Invoice(invoice);
