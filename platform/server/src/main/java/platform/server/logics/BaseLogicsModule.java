@@ -429,7 +429,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP quantityTableKey;
     public LCP quantityTableColumn;
     public LCP notNullQuantityTableColumn;
-    public LCP perCentNotNullTableColumn;
+    public LCP perсentNotNullTableColumn;
     public LAP recalculateAggregationTableColumn;
 
     public LCP<?> sidDropColumn;
@@ -443,9 +443,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP stringID;
     public LCP integerID;
     public LCP dateID;
-
-    public LCP objectByName;
-    public LAP seekObjectName;
 
     public LCP webHost;
 
@@ -898,13 +895,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
                 addSFProp("CAST((prm1) as char(50))", StringClass.get(50), 1), 1), 1,
                 is(baseClass.named), 1);
 
-        // Email
-        email = addDProp(baseGroup, "email", getString("logics.email"), StringClass.get(50), contact);
-        email.setRegexp("^[-a-zA-Z0-9!#$%&'*+/=?^_`{|}~]+(?:\\.[-a-zA-Z0-9!#$%&'*+/=?^_`{|}~]+)*@(?:[a-zA-Z0-9]([-a-zA-Z0-9]{0,61}[a-zA-Z0-9])?\\.)*(?:aero|arpa|asia|biz|cat|com|coop|edu|gov|info|int|jobs|mil|mobi|museum|name|net|org|pro|tel|travel|[a-zA-Z][a-zA-Z])$");
-        email.setRegexpMessage("<html>Неверный формат e-mail</html>");
-
-        emailToObject = addAGProp("emailToObject", getString("logics.email.to.object"), email);
-
         // ----- Пользователи
         // todo : переименовать в соответствии с namingPolicy
         // Авторизация
@@ -913,8 +903,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         userPassword = addDProp(publicGroup, "userPassword", getString("logics.user.password"), StringClass.get(30), customUser);
         userPassword.setEchoSymbols(true);
-
-        generateLoginPassword = addAProp(actionGroup, new GenerateLoginPasswordActionProperty(email, userLogin, userPassword, customUser));
 
         // Текущий пользователь
         currentUser = addProperty(null, new LCP<PropertyInterface>(new CurrentUserFormulaProperty("currentUser", user)));
@@ -936,6 +924,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         inUserMainRole = addSUProp("inUserMainRole", getString("logics.user.role.in"), Union.OVERRIDE,
                 addJProp(equals2, customUserMainRole, 1, 2), inUserRole);
+
+        // -------------------- Логирование сервера ----------------- //
 
         // Подключения к серверу
         connectionComputer = addDProp("connectionComputer", getString("logics.computer"), computer, connection);
@@ -961,12 +951,14 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         launchTime = addDProp(baseGroup, "launchConnectTime", getString("logics.launch.time"), DateTimeClass.instance, launch);
         launchRevision = addDProp(baseGroup, "launchRevision", getString("logics.launch.revision"), StringClass.get(10), launch);
 
-        // Политика безопасности
-        nameToPolicy = addAGProp("nameToPolicy", getString("logics.policy"), policy, name);
-        policyDescription = addDProp(baseGroup, "policyDescription", getString("logics.policy.description"), StringClass.get(100), policy);
-
-        userRolePolicyOrder = addDProp(baseGroup, "userRolePolicyOrder", getString("logics.policy.order"), IntegerClass.instance, userRole, policy);
-        userPolicyOrder = addJProp(baseGroup, "userPolicyOrder", getString("logics.policy.order"), userRolePolicyOrder, userMainRole, 1, 2);
+        // Ошибки выполнения
+        messageException = addDProp(baseGroup, "messageException", getString("logics.exception.message"), propertyCaptionValueClass, exception);
+        dateException = addDProp(baseGroup, "dateException", getString("logics.exception.date"), DateTimeClass.instance, exception);
+        erTraceException = addDProp(baseGroup, "erTraceException", getString("logics.exception.ertrace"), TextClass.instance, exception);
+        erTraceException.setPreferredWidth(500);
+        typeException =  addDProp(baseGroup, "typeException", getString("logics.exception.type"), propertyCaptionValueClass, exception);
+        clientClientException = addDProp(baseGroup, "clientClientException", getString("logics.exception.client.client"), loginValueClass, clientException);
+        loginClientException = addDProp(baseGroup, "loginClientException", getString("logics.exception.client.login"), loginValueClass, clientException);
 
         // Управление сервером приложений
         isServerRestarting = addProperty(null, new LCP<PropertyInterface>(new IsServerRestartingFormulaProperty("isServerRestarting")));
@@ -984,68 +976,18 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         packAction = addProperty(null, new LAP(new PackActionProperty("packAction", getString("logics.tables.pack"))));
         serviceDBAction = addProperty(null, new LAP(new ServiceDBActionProperty("serviceDBAction", getString("logics.service.db"))));
 
-        reverseBarcode = addSDProp("reverseBarcode", getString("logics.barcode.reverse"), LogicalClass.instance);
+        // ------------------------------------------------- Логическая модель ------------------------------------ //
 
-        navigatorElementSID = addDProp(baseGroup, "navigatorElementSID", getString("logics.forms.code"), navigatorElementSIDClass, navigatorElement);
-        numberNavigatorElement = addDProp(baseGroup, "numberNavigatorElement", getString("logics.number"), IntegerClass.instance, navigatorElement);
-        navigatorElementCaption = addDProp(baseGroup, "navigatorElementCaption", getString("logics.forms.name"), navigatorElementCaptionClass, navigatorElement);
-        SIDToNavigatorElement = addAGProp("SIDToNavigatorElement", getString("logics.forms.form"), navigatorElementSID);
-        parentNavigatorElement = addDProp("parentNavigatorElement", getString("logics.forms.parent.form"), navigatorElement, navigatorElement);
-        isNavigatorElement = addJProp("isNavigatorElement", and(true, true), is(navigatorElement), 1, is(form), 1, is(navigatorAction), 1);
-        isForm = is(form);
-        isNavigatorAction = is(navigatorAction);
+        // ------- Доменная логика --------- //
 
-        propertyDrawSID = addDProp(baseGroup, "propertyDrawSID", getString("logics.forms.property.draw.code"), propertySIDValueClass, propertyDraw);
-        captionPropertyDraw = addDProp(baseGroup, "captionPropertyDraw", getString("logics.forms.property.draw.caption"), propertyCaptionValueClass, propertyDraw);
-        formPropertyDraw = addDProp(baseGroup, "formPropertyDraw", getString("logics.forms.form"), form, propertyDraw);
-        groupObjectPropertyDraw = addDProp(baseGroup, "groupObjectPropertyDraw", getString("logics.group.object"), groupObject, propertyDraw);
-        SIDToPropertyDraw = addAGProp(baseGroup, "SIDToPropertyDraw", getString("logics.property.draw"), formPropertyDraw, propertyDrawSID);
-        SIDNavigatorElementSIDPropertyDrawToPropertyDraw = addJProp(baseGroup, "SIDNavigatorElementSIDPropertyDrawToPropertyDraw", getString("logics.forms.code"), SIDToPropertyDraw, SIDToNavigatorElement, 1, 2);
-        showPropertyDraw = addDProp(baseGroup, "showPropertyDraw", getString("logics.forms.property.show"), propertyDrawShowStatus, propertyDraw);
-        nameShowPropertyDraw = addJProp(baseGroup, "nameShowPropertyDraw", getString("logics.forms.property.show"), name, showPropertyDraw, 1);
-        nameShowPropertyDraw.setPreferredWidth(50);
-        showPropertyDrawCustomUser = addDProp(baseGroup, "showPropertyDrawCustomUser", getString("logics.forms.property.show.user"), propertyDrawShowStatus, propertyDraw, customUser);
-        nameShowPropertyDrawCustomUser = addJProp(baseGroup, "nameShowPropertyDrawCustomUser", getString("logics.forms.property.show.user"), name, showPropertyDrawCustomUser, 1, 2);
-        nameShowPropertyDrawCustomUser.setPreferredWidth(50);
-        showOverridePropertyDrawCustomUser = addSUProp(baseGroup, "showOverridePropertyDrawCustomUser", getString("logics.forms.property.show"), Union.OVERRIDE, addJProp(and1, showPropertyDraw, 1, is(customUser), 2), showPropertyDrawCustomUser);
-        nameShowOverridePropertyDrawCustomUser = addJProp(baseGroup, "nameShowOverridePropertyDrawCustomUser", getString("logics.forms.property.show"), name, showOverridePropertyDrawCustomUser, 1, 2);
-        columnWidthPropertyDrawCustomUser = addDProp(baseGroup, "columnWidthPropertyDrawCustomUser", getString("logics.forms.property.width.user"), IntegerClass.instance, propertyDraw, customUser);
-        columnWidthPropertyDraw = addDProp(baseGroup, "columnWidthPropertyDraw", getString("logics.forms.property.width"), IntegerClass.instance, propertyDraw);
-        columnWidthOverridePropertyDrawCustomUser = addSUProp(baseGroup, "columnWidthOverridePropertyDrawCustomUser", getString("logics.forms.property.width"), Union.OVERRIDE, addJProp(and1, columnWidthPropertyDraw, 1, is(customUser), 2), columnWidthPropertyDrawCustomUser);
-        columnOrderPropertyDrawCustomUser = addDProp(baseGroup, "columnOrderPropertyDrawCustomUser", getString("logics.forms.property.order.user"), IntegerClass.instance, propertyDraw, customUser);
-        columnOrderPropertyDraw = addDProp(baseGroup, "columnOrderPropertyDraw", getString("logics.forms.property.order"), IntegerClass.instance, propertyDraw);
-        columnOrderOverridePropertyDrawCustomUser = addSUProp(baseGroup, "columnOrderOverridePropertyDrawCustomUser", getString("logics.forms.property.order"), Union.OVERRIDE, addJProp(and1, columnOrderPropertyDraw, 1, is(customUser), 2), columnOrderPropertyDrawCustomUser);
-
-        columnSortPropertyDrawCustomUser = addDProp(baseGroup, "columnSortPropertyDrawCustomUser", getString("logics.forms.property.sort.user"), IntegerClass.instance, propertyDraw, customUser);
-        columnSortPropertyDraw = addDProp(baseGroup, "columnSortPropertyDraw", getString("logics.forms.property.sort"), IntegerClass.instance, propertyDraw);
-        columnSortOverridePropertyDrawCustomUser = addSUProp(baseGroup, "columnSortOverridePropertyDrawCustomUser", getString("logics.forms.property.sort"), Union.OVERRIDE, addJProp(and1, columnSortPropertyDraw, 1, is(customUser), 2), columnSortPropertyDrawCustomUser);
-        columnAscendingSortPropertyDrawCustomUser = addDProp(baseGroup, "columnAscendingSortPropertyDrawCustomUser", getString("logics.forms.property.ascending.sort.user"), LogicalClass.instance, propertyDraw, customUser);
-        columnAscendingSortPropertyDraw = addDProp(baseGroup, "columnAscendingSortPropertyDraw", getString("logics.forms.property.ascending.sort"), LogicalClass.instance, propertyDraw);
-        columnAscendingSortOverridePropertyDrawCustomUser = addSUProp(baseGroup, "columnAscendingSortOverridePropertyDrawCustomUser", getString("logics.forms.property.ascending.sort"), Union.OVERRIDE, addJProp(and1, columnAscendingSortPropertyDraw, 1, is(customUser), 2), columnAscendingSortPropertyDrawCustomUser);
-
-        hasUserPreferencesGroupObjectCustomUser = addDProp(baseGroup, "hasUserPreferencesGroupObjectCustomUser", getString("logics.group.object.has.user.preferences.user"), LogicalClass.instance, groupObject, customUser);
-        hasUserPreferencesGroupObject = addDProp(baseGroup, "hasUserPreferencesGroupObject", getString("logics.group.object.has.user.preferences"), LogicalClass.instance, groupObject);
-        hasUserPreferencesOverrideGroupObjectCustomUser = addSUProp(baseGroup, "hasUserPreferencesOverrideGroupObjectCustomUser", getString("logics.group.object.has.user.preferences"), Union.OVERRIDE, addJProp(and1, hasUserPreferencesGroupObject, 1, is(customUser), 2), hasUserPreferencesGroupObjectCustomUser);
-
-        groupObjectSID = addDProp(baseGroup, "groupObjectSID", getString("logics.group.object.sid"), propertySIDValueClass, groupObject);
-        navigatorElementGroupObject = addDProp(baseGroup, "navigatorElementGroupObject", getString("logics.navigator.element"), navigatorElement, groupObject);
-        sidNavigatorElementGroupObject = addJProp(baseGroup, "sidNavigatorElementGroupObject", navigatorElementSID, navigatorElementGroupObject, 1);
-        SIDNavigatorElementSIDGroupObjectToGroupObject = addAGProp(baseGroup, "SIDToGroupObject", getString("logics.group.object"), groupObjectSID, sidNavigatorElementGroupObject);
-
-        messageException = addDProp(baseGroup, "messageException", getString("logics.exception.message"), propertyCaptionValueClass, exception);
-        dateException = addDProp(baseGroup, "dateException", getString("logics.exception.date"), DateTimeClass.instance, exception);
-        erTraceException = addDProp(baseGroup, "erTraceException", getString("logics.exception.ertrace"), TextClass.instance, exception);
-        erTraceException.setPreferredWidth(500);
-        typeException =  addDProp(baseGroup, "typeException", getString("logics.exception.type"), propertyCaptionValueClass, exception);
-        clientClientException = addDProp(baseGroup, "clientClientException", getString("logics.exception.client.client"), loginValueClass, clientException);
-        loginClientException = addDProp(baseGroup, "loginClientException", getString("logics.exception.client.login"), loginValueClass, clientException);
-
+        // Группы свойства
         captionAbstractGroup = addDProp(baseGroup, "captionAbstractGroup", getString("logics.name"), propertyCaptionValueClass, abstractGroup);
         parentAbstractGroup = addDProp(baseGroup, "parentAbstractGroup", getString("logics.property.group"), abstractGroup, abstractGroup);
         numberAbstractGroup = addDProp(baseGroup, "numberAbstractGroup", getString("logics.property.number"), IntegerClass.instance, abstractGroup);
         SIDAbstractGroup = addDProp(baseGroup, "SIDAbstractGroup", getString("logics.property.sid"), propertySIDValueClass, abstractGroup);
         SIDToAbstractGroup = addAGProp("SIDToAbstractGroup", getString("logics.property"), SIDAbstractGroup);
 
+        // Свойства
         parentProperty = addDProp(baseGroup, "parentProperty", getString("logics.property.group"), abstractGroup, property);
         numberProperty = addDProp(baseGroup, "numberProperty", getString("logics.property.number"), IntegerClass.instance, property);
         SIDProperty = addDProp(baseGroup, "SIDProperty", getString("logics.property.sid"), propertySIDValueClass, property);
@@ -1059,6 +1001,142 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         captionProperty = addDProp(baseGroup, "captionProperty", getString("logics.property.caption"), propertyCaptionValueClass, property);
         SIDToProperty = addAGProp("SIDToProperty", getString("logics.property"), SIDProperty);
 
+        // ------- Логика представлений --------- //
+
+        // Навигатор
+        navigatorElementSID = addDProp(baseGroup, "navigatorElementSID", getString("logics.forms.code"), navigatorElementSIDClass, navigatorElement);
+        numberNavigatorElement = addDProp(baseGroup, "numberNavigatorElement", getString("logics.number"), IntegerClass.instance, navigatorElement);
+        navigatorElementCaption = addDProp(baseGroup, "navigatorElementCaption", getString("logics.forms.name"), navigatorElementCaptionClass, navigatorElement);
+        SIDToNavigatorElement = addAGProp("SIDToNavigatorElement", getString("logics.forms.form"), navigatorElementSID);
+        parentNavigatorElement = addDProp("parentNavigatorElement", getString("logics.forms.parent.form"), navigatorElement, navigatorElement);
+        isNavigatorElement = addJProp("isNavigatorElement", and(true, true), is(navigatorElement), 1, is(form), 1, is(navigatorAction), 1);
+        isForm = is(form);
+        isNavigatorAction = is(navigatorAction);
+
+        // ----- Формы ---- //
+        // Группа объектов
+        groupObjectSID = addDProp(baseGroup, "groupObjectSID", getString("logics.group.object.sid"), propertySIDValueClass, groupObject);
+        navigatorElementGroupObject = addDProp(baseGroup, "navigatorElementGroupObject", getString("logics.navigator.element"), navigatorElement, groupObject);
+        sidNavigatorElementGroupObject = addJProp(baseGroup, "sidNavigatorElementGroupObject", navigatorElementSID, navigatorElementGroupObject, 1);
+        SIDNavigatorElementSIDGroupObjectToGroupObject = addAGProp(baseGroup, "SIDToGroupObject", getString("logics.group.object"), groupObjectSID, sidNavigatorElementGroupObject);
+
+        // PropertyDraw
+        propertyDrawSID = addDProp(baseGroup, "propertyDrawSID", getString("logics.forms.property.draw.code"), propertySIDValueClass, propertyDraw);
+        captionPropertyDraw = addDProp(baseGroup, "captionPropertyDraw", getString("logics.forms.property.draw.caption"), propertyCaptionValueClass, propertyDraw);
+        formPropertyDraw = addDProp(baseGroup, "formPropertyDraw", getString("logics.forms.form"), form, propertyDraw);
+        groupObjectPropertyDraw = addDProp(baseGroup, "groupObjectPropertyDraw", getString("logics.group.object"), groupObject, propertyDraw);
+        SIDToPropertyDraw = addAGProp(baseGroup, "SIDToPropertyDraw", getString("logics.property.draw"), formPropertyDraw, propertyDrawSID);
+        // todo : это свойство должно быть для форм, а не навигаторов
+        SIDNavigatorElementSIDPropertyDrawToPropertyDraw = addJProp(baseGroup, "SIDNavigatorElementSIDPropertyDrawToPropertyDraw", getString("logics.forms.code"), SIDToPropertyDraw, SIDToNavigatorElement, 1, 2);
+
+        // UserPreferences
+        showPropertyDraw = addDProp(baseGroup, "showPropertyDraw", getString("logics.forms.property.show"), propertyDrawShowStatus, propertyDraw);
+        showPropertyDrawCustomUser = addDProp(baseGroup, "showPropertyDrawCustomUser", getString("logics.forms.property.show.user"), propertyDrawShowStatus, propertyDraw, customUser);
+        showOverridePropertyDrawCustomUser = addSUProp(baseGroup, "showOverridePropertyDrawCustomUser", getString("logics.forms.property.show"), Union.OVERRIDE, addJProp(and1, showPropertyDraw, 1, is(customUser), 2), showPropertyDrawCustomUser);
+
+        nameShowPropertyDraw = addJProp(baseGroup, "nameShowPropertyDraw", getString("logics.forms.property.show"), name, showPropertyDraw, 1);
+        nameShowPropertyDraw.setPreferredWidth(50);
+        nameShowPropertyDrawCustomUser = addJProp(baseGroup, "nameShowPropertyDrawCustomUser", getString("logics.forms.property.show.user"), name, showPropertyDrawCustomUser, 1, 2);
+        nameShowPropertyDrawCustomUser.setPreferredWidth(50);
+        nameShowOverridePropertyDrawCustomUser = addJProp(baseGroup, "nameShowOverridePropertyDrawCustomUser", getString("logics.forms.property.show"), name, showOverridePropertyDrawCustomUser, 1, 2);
+
+        columnWidthPropertyDrawCustomUser = addDProp(baseGroup, "columnWidthPropertyDrawCustomUser", getString("logics.forms.property.width.user"), IntegerClass.instance, propertyDraw, customUser);
+        columnWidthPropertyDraw = addDProp(baseGroup, "columnWidthPropertyDraw", getString("logics.forms.property.width"), IntegerClass.instance, propertyDraw);
+        columnWidthOverridePropertyDrawCustomUser = addSUProp(baseGroup, "columnWidthOverridePropertyDrawCustomUser", getString("logics.forms.property.width"), Union.OVERRIDE, addJProp(and1, columnWidthPropertyDraw, 1, is(customUser), 2), columnWidthPropertyDrawCustomUser);
+
+        columnOrderPropertyDrawCustomUser = addDProp(baseGroup, "columnOrderPropertyDrawCustomUser", getString("logics.forms.property.order.user"), IntegerClass.instance, propertyDraw, customUser);
+        columnOrderPropertyDraw = addDProp(baseGroup, "columnOrderPropertyDraw", getString("logics.forms.property.order"), IntegerClass.instance, propertyDraw);
+        columnOrderOverridePropertyDrawCustomUser = addSUProp(baseGroup, "columnOrderOverridePropertyDrawCustomUser", getString("logics.forms.property.order"), Union.OVERRIDE, addJProp(and1, columnOrderPropertyDraw, 1, is(customUser), 2), columnOrderPropertyDrawCustomUser);
+
+        columnSortPropertyDrawCustomUser = addDProp(baseGroup, "columnSortPropertyDrawCustomUser", getString("logics.forms.property.sort.user"), IntegerClass.instance, propertyDraw, customUser);
+        columnSortPropertyDraw = addDProp(baseGroup, "columnSortPropertyDraw", getString("logics.forms.property.sort"), IntegerClass.instance, propertyDraw);
+        columnSortOverridePropertyDrawCustomUser = addSUProp(baseGroup, "columnSortOverridePropertyDrawCustomUser", getString("logics.forms.property.sort"), Union.OVERRIDE, addJProp(and1, columnSortPropertyDraw, 1, is(customUser), 2), columnSortPropertyDrawCustomUser);
+
+        columnAscendingSortPropertyDrawCustomUser = addDProp(baseGroup, "columnAscendingSortPropertyDrawCustomUser", getString("logics.forms.property.ascending.sort.user"), LogicalClass.instance, propertyDraw, customUser);
+        columnAscendingSortPropertyDraw = addDProp(baseGroup, "columnAscendingSortPropertyDraw", getString("logics.forms.property.ascending.sort"), LogicalClass.instance, propertyDraw);
+        columnAscendingSortOverridePropertyDrawCustomUser = addSUProp(baseGroup, "columnAscendingSortOverridePropertyDrawCustomUser", getString("logics.forms.property.ascending.sort"), Union.OVERRIDE, addJProp(and1, columnAscendingSortPropertyDraw, 1, is(customUser), 2), columnAscendingSortPropertyDrawCustomUser);
+
+        hasUserPreferencesGroupObjectCustomUser = addDProp(baseGroup, "hasUserPreferencesGroupObjectCustomUser", getString("logics.group.object.has.user.preferences.user"), LogicalClass.instance, groupObject, customUser);
+        hasUserPreferencesGroupObject = addDProp(baseGroup, "hasUserPreferencesGroupObject", getString("logics.group.object.has.user.preferences"), LogicalClass.instance, groupObject);
+        hasUserPreferencesOverrideGroupObjectCustomUser = addSUProp(baseGroup, "hasUserPreferencesOverrideGroupObjectCustomUser", getString("logics.group.object.has.user.preferences"), Union.OVERRIDE, addJProp(and1, hasUserPreferencesGroupObject, 1, is(customUser), 2), hasUserPreferencesGroupObjectCustomUser);
+
+        // ------------------------------------------------- Физическая модель ------------------------------------ //
+
+        // Таблицы
+        sidTable = addDProp(recognizeGroup, "sidTable", getString("logics.tables.name"), StringClass.get(100), table);
+        sidToTable = addAGProp("sidToTable", getString("logics.tables.table"), sidTable);
+
+        rowsTable = addDProp(baseGroup, "rowsTable", getString("logics.tables.rows"), IntegerClass.instance, table);
+        sparseColumnsTable = addDProp(baseGroup, "sparseColumnsTable", getString("logics.tables.sparse.columns"), IntegerClass.instance, table);
+
+        // Ключи таблиц
+        tableTableKey = addDProp("tableTableKey", getString("logics.tables.table"), table, tableKey);
+
+        sidTableKey = addDProp("sidTableKey", getString("logics.tables.key.sid"), StringClass.get(100), tableKey);
+        sidToTableKey = addAGProp("sidToTableKey", getString("logics.tables.key"), sidTableKey);
+
+        classTableKey = addDProp(baseGroup, "classTableKey", getString("logics.tables.key.class"), StringClass.get(40), tableKey);
+        nameTableKey = addDProp(baseGroup, "nameTableKey", getString("logics.tables.key.name"), StringClass.get(20), tableKey);
+
+        quantityTableKey = addDProp(baseGroup, "quantityTableKey", getString("logics.tables.key.variety.quantity"), IntegerClass.instance, tableKey);
+
+        // Колонки таблиц
+        tableTableColumn = addDProp("tableTableColumn", getString("logics.tables.table"), table, tableColumn);
+
+        sidTableColumn = addDProp(baseGroup, "sidTableColumn", getString("logics.tables.column.name"), StringClass.get(100), tableColumn);
+        sidToTableColumn = addAGProp("sidToTableColumn", getString("logics.tables.column"), sidTableColumn);
+
+        propertyTableColumn = addJProp("propertyTableColumn", getString("logics.property"), SIDToProperty, sidTableColumn, 1);
+        propertyNameTableColumn = addJProp(baseGroup, "propertyNameTableColumn", getString("logics.tables.property.name"), captionProperty, propertyTableColumn, 1);
+
+        quantityTableColumn = addDProp(baseGroup, "quantityTableColumn", getString("logics.tables.column.variety.quantity"), IntegerClass.instance, tableColumn);
+        notNullQuantityTableColumn = addDProp(baseGroup, "notNullQuantityTableColumn", getString("logics.tables.column.notnull.quantity"), IntegerClass.instance, tableColumn);
+        perсentNotNullTableColumn = addDProp(baseGroup, "perсentNotNullTableColumn", getString("logics.tables.column.notnull.per.cent"), NumericClass.get(6, 2), tableColumn);
+
+        recalculateAggregationTableColumn = addAProp(actionGroup, new RecalculateTableColumnActionProperty(getString("logics.recalculate.aggregations"), tableColumn));
+
+        // Удаленные колонки
+        sidTableDropColumn = addDProp(baseGroup, "sidTableDropColumn", getString("logics.tables.name"), StringClass.get(100), dropColumn);
+
+        sidDropColumn = addDProp(baseGroup, "sidDropColumn", getString("logics.tables.column.name"), StringClass.get(100), dropColumn);
+        sidToDropColumn = addAGProp("sidToDropColumn", getString("logics.tables.deleted.column"), sidDropColumn);
+
+        timeDropColumn = addDProp(baseGroup, "timeDropColumn", getString("logics.tables.deleted.column.time"), DateTimeClass.instance, dropColumn);
+        revisionDropColumn = addDProp(baseGroup, "revisionDropColumn", getString("logics.launch.revision"), StringClass.get(10), dropColumn);
+
+        dropDropColumn = addAProp(baseGroup, new DropColumnActionProperty("dropDropColumn", getString("logics.tables.deleted.column.drop"), dropColumn));
+        dropDropColumn.setEventAction(this, IncrementType.DROP, false, is(dropColumn), 1); // event, который при удалении колонки из системы удаляет ее из базы
+
+        // ------- Управление почтой ------ //
+        email = addDProp(baseGroup, "email", getString("logics.email"), StringClass.get(50), contact);
+        email.setRegexp("^[-a-zA-Z0-9!#$%&'*+/=?^_`{|}~]+(?:\\.[-a-zA-Z0-9!#$%&'*+/=?^_`{|}~]+)*@(?:[a-zA-Z0-9]([-a-zA-Z0-9]{0,61}[a-zA-Z0-9])?\\.)*(?:aero|arpa|asia|biz|cat|com|coop|edu|gov|info|int|jobs|mil|mobi|museum|name|net|org|pro|tel|travel|[a-zA-Z][a-zA-Z])$");
+        email.setRegexpMessage("<html>Неверный формат e-mail</html>");
+
+        emailToObject = addAGProp("emailToObject", getString("logics.email.to.object"), email);
+
+        // Настройки почтового сервера
+        encryptedConnectionType = addDProp(emailGroup, "encryptedConnectionType", getString("logics.connection.type.status"), encryptedConnectionTypeStatus);
+        nameEncryptedConnectionType = addJProp(emailGroup, "nameEncryptedConnectionType", getString("logics.connection.type.status"), baseLM.name, encryptedConnectionType);
+        nameEncryptedConnectionType.setPreferredCharWidth(3);
+
+        smtpHost = addDProp(emailGroup, "smtpHost", getString("logics.host.smtphost"), StringClass.get(50));
+        smtpPort = addDProp(emailGroup, "smtpPort", getString("logics.host.smtpport"), StringClass.get(10));
+
+        emailAccount = addDProp(emailGroup, "emailAccount", getString("logics.email.accountname"), StringClass.get(50));
+        emailPassword = addDProp(emailGroup, "emailPassword", getString("logics.email.password"), StringClass.get(50));
+
+        emailBlindCarbonCopy = addDProp(emailGroup, "emailBlindCarbonCopy", getString("logics.email.copy.bcc"), StringClass.get(50));
+        fromAddress = addDProp(emailGroup, "fromAddress", getString("logics.email.sender"), StringClass.get(50));
+
+        disableEmail = addDProp(emailGroup, "disableEmail", getString("logics.email.disable.email.sending"), LogicalClass.instance);
+
+        // Пользователи
+        generateLoginPassword = addAProp(actionGroup, new GenerateLoginPasswordActionProperty(email, userLogin, userPassword, customUser));
+
+        emailUserPassUser = addEAProp(getString("logics.user.password.reminder"), customUser);
+        addEARecipients(emailUserPassUser, email, 1);
+
+        // Уведомления
         isEventNotification = addDProp(baseGroup, "isDerivedChangeNotification", getString("logics.notification.for.any.change"), LogicalClass.instance, notification);
         emailFromNotification = addDProp(baseGroup, "emailFromNotification", getString("logics.notification.sender.address"), StringClass.get(50), notification);
         emailToNotification = addDProp(baseGroup, "emailToNotification", getString("logics.notification.recipient.address"), StringClass.get(50), notification);
@@ -1068,6 +1146,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         subjectNotification = addDProp(baseGroup, "subjectNotification", getString("logics.notification.topic"), StringClass.get(100), notification);
         inNotificationProperty = addDProp(baseGroup, "inNotificationProperty", getString("logics.notification.enable"), LogicalClass.instance, notification, baseLM.property);
 
+        // ----- Планировщик ----------- //
         nameScheduledTask = addDProp(baseGroup, "nameScheduledTask", getString("logics.scheduled.task.name"), StringClass.get(100), scheduledTask);
         runAtStartScheduledTask = addDProp(baseGroup, "runAtStartScheduledTask", getString("logics.scheduled.task.run.at.start"), LogicalClass.instance, scheduledTask);
         startDateScheduledTask = addDProp(baseGroup, "startDateScheduledTask", getString("logics.scheduled.task.start.date"), DateTimeClass.instance, scheduledTask);
@@ -1085,7 +1164,14 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         currentScheduledTaskLogScheduledTask = addDProp(baseGroup, "currentScheduledTaskLogScheduledTask", getString("logics.scheduled.task.log.current"), IntegerClass.instance, scheduledTask);
         scheduledTaskLogScheduledClientTaskLog = addDProp(baseGroup, "scheduledTaskLogScheduledClientTaskLog", getString("logics.scheduled.task.log"), scheduledTaskLog, scheduledClientTaskLog);
         messageScheduledClientTaskLog = addDProp(baseGroup, "messageScheduledClientTaskLog", getString("logics.scheduled.task.log.message"), StringClass.get(200), scheduledClientTaskLog);
-        
+
+        // ------------------------ Политика безопасности ------------------ //
+        nameToPolicy = addAGProp("nameToPolicy", getString("logics.policy"), policy, name);
+        policyDescription = addDProp(baseGroup, "policyDescription", getString("logics.policy.description"), StringClass.get(100), policy);
+
+        userRolePolicyOrder = addDProp(baseGroup, "userRolePolicyOrder", getString("logics.policy.order"), IntegerClass.instance, userRole, policy);
+        userPolicyOrder = addJProp(baseGroup, "userPolicyOrder", getString("logics.policy.order"), userRolePolicyOrder, userMainRole, 1, 2);
+
         permitViewUserRoleProperty = addDProp(baseGroup, "permitViewUserRoleProperty", getString("logics.policy.permit.property.view"), LogicalClass.instance, userRole, property);
         permitViewUserProperty = addJProp(baseGroup, "permitViewUserProperty", getString("logics.policy.permit.property.view"), permitViewUserRoleProperty, userMainRole, 1, 2);
         forbidViewUserRoleProperty = addDProp(baseGroup, "forbidViewUserRoleProperty", getString("logics.policy.forbid.property.view"), LogicalClass.instance, userRole, property);
@@ -1129,35 +1215,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         selectUserRoles = addSelectFromListAction(null, getString("logics.user.role.edit.roles"), inUserRole, userRole, customUser);
         //selectRoleForms = addSelectFromListAction(null, "Редактировать формы", permissionUserRoleForm, navigatorElement, userRole);
 
-        sidTable = addDProp(recognizeGroup, "sidTable", getString("logics.tables.name"), StringClass.get(100), table);
-        sidTableKey = addDProp("sidTableKey", getString("logics.tables.key.sid"), StringClass.get(100), tableKey);
-        nameTableKey = addDProp(baseGroup, "nameTableKey", getString("logics.tables.key.name"), StringClass.get(20), tableKey);
-        sidTableColumn = addDProp(baseGroup, "sidTableColumn", getString("logics.tables.column.name"), StringClass.get(100), tableColumn);
-        propertyTableColumn = addJProp("propertyTableColumn", getString("logics.property"), SIDToProperty, sidTableColumn, 1);
-        propertyNameTableColumn = addJProp(baseGroup, "propertyNameTableColumn", getString("logics.tables.property.name"), captionProperty, propertyTableColumn, 1);
-        sidToTable = addAGProp("sidToTable", getString("logics.tables.table"), sidTable);
-        sidToTableKey = addAGProp("sidToTableKey", getString("logics.tables.key"), sidTableKey);
-        sidToTableColumn = addAGProp("sidToTableColumn", getString("logics.tables.column"), sidTableColumn);
-        tableTableKey = addDProp("tableTableKey", getString("logics.tables.table"), table, tableKey);
-        classTableKey = addDProp(baseGroup, "classTableKey", getString("logics.tables.key.class"), StringClass.get(40), tableKey);
-        tableTableColumn = addDProp("tableTableColumn", getString("logics.tables.table"), table, tableColumn);
-        rowsTable = addDProp(baseGroup, "rowsTable", getString("logics.tables.rows"), IntegerClass.instance, table);
-        sparseColumnsTable = addDProp(baseGroup, "sparseColumnsTable", getString("logics.tables.sparse.columns"), IntegerClass.instance, table);
-        quantityTableKey = addDProp(baseGroup, "quantityTableKey", getString("logics.tables.key.variety.quantity"), IntegerClass.instance, tableKey);
-        quantityTableColumn = addDProp(baseGroup, "quantityTableColumn", getString("logics.tables.column.variety.quantity"), IntegerClass.instance, tableColumn);
-        notNullQuantityTableColumn = addDProp(baseGroup, "notNullQuantityTableColumn", getString("logics.tables.column.notnull.quantity"), IntegerClass.instance, tableColumn);
-        perCentNotNullTableColumn = addDProp(baseGroup, "perCentNotNullTableColumn", getString("logics.tables.column.notnull.per.cent"), NumericClass.get(6, 2), tableColumn);
-        recalculateAggregationTableColumn = addAProp(actionGroup, new RecalculateTableColumnActionProperty(getString("logics.recalculate.aggregations"), tableColumn));
-
-        sidDropColumn = addDProp(baseGroup, "sidDropColumn", getString("logics.tables.column.name"), StringClass.get(100), dropColumn);
-        sidToDropColumn = addAGProp("sidToDropColumn", getString("logics.tables.deleted.column"), sidDropColumn);
-        sidTableDropColumn = addDProp(baseGroup, "sidTableDropColumn", getString("logics.tables.name"), StringClass.get(100), dropColumn);
-        timeDropColumn = addDProp(baseGroup, "timeDropColumn", getString("logics.tables.deleted.column.time"), DateTimeClass.instance, dropColumn);
-        revisionDropColumn = addDProp(baseGroup, "revisionDropColumn", getString("logics.launch.revision"), StringClass.get(10), dropColumn);
-
-        dropDropColumn = addAProp(baseGroup, new DropColumnActionProperty("dropDropColumn", getString("logics.tables.deleted.column.drop"), dropColumn));
-        dropDropColumn.setEventAction(this, IncrementType.DROP, false, is(dropColumn), 1); // event, который при удалении колонки из системы удаляет ее из базы
-
         // заполним сессии
         LCP sessionUser = addDProp("sessionUser", getString("logics.session.user"), user, session);
         sessionUser.setEventChangeNew(currentUser, is(session), 1);
@@ -1165,31 +1222,13 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         LCP sessionDate = addDProp(baseGroup, "sessionDate", getString("logics.session.date"), DateTimeClass.instance, session);
         sessionDate.setEventChangeNew(currentDateTime, is(session), 1);
 
-        objectByName = addMGProp(idGroup, "objectByName", getString("logics.object.name"), object(baseClass.named), name, 1);
-        seekObjectName = addJoinAProp(getString("logics.object.search"), addSAProp(null), objectByName, 1);
-
-        webHost = addDProp("webHost", getString("logics.host.webhost"), StringClass.get(50));
-
-        encryptedConnectionType = addDProp(emailGroup, "encryptedConnectionType", getString("logics.connection.type.status"), encryptedConnectionTypeStatus);
-        nameEncryptedConnectionType = addJProp(emailGroup, "nameEncryptedConnectionType", getString("logics.connection.type.status"), baseLM.name, encryptedConnectionType);
-        nameEncryptedConnectionType.setPreferredCharWidth(3);
-        smtpHost = addDProp(emailGroup, "smtpHost", getString("logics.host.smtphost"), StringClass.get(50));
-        smtpPort = addDProp(emailGroup, "smtpPort", getString("logics.host.smtpport"), StringClass.get(10));
-        emailAccount = addDProp(emailGroup, "emailAccount", getString("logics.email.accountname"), StringClass.get(50));
-        emailPassword = addDProp(emailGroup, "emailPassword", getString("logics.email.password"), StringClass.get(50));
-        emailBlindCarbonCopy = addDProp(emailGroup, "emailBlindCarbonCopy", getString("logics.email.copy.bcc"), StringClass.get(50));
-        fromAddress = addDProp(emailGroup, "fromAddress", getString("logics.email.sender"), StringClass.get(50));
-
-        emailUserPassUser = addEAProp(getString("logics.user.password.reminder"), customUser);
-        addEARecipients(emailUserPassUser, email, 1);
-
-        disableEmail = addDProp(emailGroup, "disableEmail", getString("logics.email.disable.email.sending"), LogicalClass.instance);
-
+        // Настройка форм
         defaultBackgroundColor = addDProp("defaultBackgroundColor", getString("logics.default.background.color"), ColorClass.instance);
         defaultOverrideBackgroundColor = addSUProp("defaultOverrideBackgroundColor", true, getString("logics.default.background.color"), Union.OVERRIDE, addCProp(ColorClass.instance, Color.YELLOW), defaultBackgroundColor);
         defaultForegroundColor = addDProp("defaultForegroundColor", getString("logics.default.foreground.color"), ColorClass.instance);
         defaultOverrideForegroundColor = addSUProp("defaultOverrideForegroundColor", true, getString("logics.default.foreground.color"), Union.OVERRIDE, addCProp(ColorClass.instance, Color.RED), defaultForegroundColor);
 
+        // Словари
         insensitiveDictionary = addDProp(recognizeGroup, "insensitiveDictionary", getString("logics.dictionary.insensitive"), LogicalClass.instance, dictionary);
         entryDictionary = addDProp("entryDictionary", getString("logics.dictionary"), dictionary, dictionaryEntry);
         termDictionary = addDProp(recognizeGroup, "termDictionary", getString("logics.dictionary.termin"), StringClass.get(50), dictionaryEntry);
@@ -1222,6 +1261,10 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         barcodeNotFoundMessage = addIfAProp(addJProp(baseLM.andNot1, is(StringClass.get(13)), 1, barcodeToObject, 1), 1, addMAProp(getString("logics.barcode.not.found"), getString("logics.error")));
 
         completeBarcode = addSFProp("completeBarcode", "completeBarcode(prm1)", StringClass.get(13), 1);
+
+        reverseBarcode = addSDProp("reverseBarcode", getString("logics.barcode.reverse"), LogicalClass.instance);
+
+        webHost = addDProp("webHost", getString("logics.host.webhost"), StringClass.get(50));
 
         // в отдельный Integration.lsf
         extSID = addDProp(recognizeGroup, "extSID", getString("logics.extsid"), StringClass.get(100), externalObject);
