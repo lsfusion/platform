@@ -65,7 +65,7 @@ FORM countries 'Страны'
 ;
 
 NAVIGATOR {
-    catalogElement {
+    catalogs {
         ADD countries;
     }
 }
@@ -101,7 +101,7 @@ DESIGN daysOffForm FROM DEFAULT {
 }
 
 NAVIGATOR {
-    catalogElement {
+    catalogs {
         ADD daysOffForm;
     }
 }

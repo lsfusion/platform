@@ -523,7 +523,8 @@ public class BudgetLogicsModule extends LogicsModule {
     FormEntity mainAccountForm, salesArticleStoreForm;
 
     private void initNavigators() {
-        NavigatorElement primaryData = addNavigatorElement(baseLM.baseElement, "primaryData", "Первичные данные");
+        NavigatorElement primaryData = addNavigatorElement(baseLM.root, "primaryData", "Первичные данные");
+        primaryData.window = baseLM.windows.toolbar;
         FormEntity incomeForm = addFormEntity(new IncomeFormEntity(primaryData, "incomeForm", "Приход"));
         FormEntity investmentNotMoney = addFormEntity(new InvestmentFormEntity(primaryData, "investment", "Инвестиции"));
         FormEntity specialRecordForm = addFormEntity(new SpecialRecordFormEntity(primaryData, "specialRecordForm", "Затраты по сотрудникам"));
@@ -535,7 +536,8 @@ public class BudgetLogicsModule extends LogicsModule {
         FormEntity depTransfer = new depTransfer(primaryData, "depTransfer", "Перемещение");
 
 
-        NavigatorElement aggregateData = addNavigatorElement(baseLM.baseElement, "aggregateData", "Сводная информация");
+        NavigatorElement aggregateData = addNavigatorElement(baseLM.root, "aggregateData", "Сводная информация");
+        aggregateData.window = baseLM.windows.toolbar;
         FormEntity departmentBalance = new DepartmentBalanceFormEntity(aggregateData, "departmentBalance", "Баланс по отделам");
         FormEntity employeeExtraSum = addFormEntity(new DepartmentRevenueFormEntity(aggregateData, "employeeExtraSum", "Обороты по отделам"));
         FormEntity reimbursement = addFormEntity(new ReimbursementFormEntity(aggregateData, "reimbursement", "Компенсация"));

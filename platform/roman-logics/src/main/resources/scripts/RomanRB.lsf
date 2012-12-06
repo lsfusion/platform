@@ -125,7 +125,7 @@ NAVIGATOR {
             ADD languages;
             ADD dictionaries;
         }
-        ADD currencyElement;
+        ADD currencyNavigator;
     }
     purchaseClassifier {
         ADD contractSkus;
@@ -140,12 +140,12 @@ NAVIGATOR {
             ADD customCategoryOrigins;
         }
 
-        NEW customDocument 'Документы' TO leftToolbar {
+        NEW customDocument 'Документы' {
             ADD declarations;
             ADD CStoWHs;
         }
 
-        NEW customReport 'Сводная информация' TO leftToolbar {
+        NEW customReport 'Сводная информация' {
             ADD innerInvoices;
         }
     }
@@ -251,17 +251,18 @@ NAVIGATOR {
         ADD priceListNavigator;
     }
 
-    ADD machineryNavigator AFTER wholesaleTrade TO leftToolbar;
+    ADD machineryNavigator AFTER wholesaleTrade TO toolbar;
 
-    ADD transportNavigator AFTER machineryNavigator TO leftToolbar;
+    ADD transportNavigator AFTER machineryNavigator TO toolbar;
 
-    NEW finance 'Финансы' AFTER transportNavigator TO leftToolbar {
+    NEW finance 'Финансы' AFTER transportNavigator TO toolbar {
         ADD contractNavigator;
     }
 
-    NEW hr 'Кадры' AFTER machineryNavigator TO leftToolbar {
+    NEW hr 'Кадры' AFTER machineryNavigator TO toolbar {
         ADD employees;
     }
 
-    ADD accountElement TO leftToolbar;
+    ADD account TO toolbar;
+    ADD administration TO toolbar;
 }

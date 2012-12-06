@@ -3258,9 +3258,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
         dateStatusDataProject = addDProp("dateStatusDataProject", "Дата", DateClass.instance, project);
         dateStatusProject = addSUProp(projectInformationGroup, "dateStatusProject", "Дата подачи на статус участника", Union.OVERRIDE, statusDateProject, dateStatusDataProject);
 
-        between = addJProp("between", "Между", baseLM.and1, baseLM.groeq2, 1, 2, baseLM.groeq2, 3, 1);
-        betweenDates = addJProp("Между датами", between, object(DateClass.instance), 1, object(DateClass.instance), 2, object(DateClass.instance), 3);
-
         betweenDateProject = addJProp(between, dateProject, 1, object(DateClass.instance), 2, object(DateClass.instance), 3);
 
         sumPositiveConsultingCenterCommentProject = addSGProp(consultingCenterStatGroup, "sumPositiveConsultingCenterCommentProject", "Сумма положительных комментариев",
@@ -4508,36 +4505,36 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         ToolBarNavigatorWindow leftToolbar = new ToolBarNavigatorWindow(JToolBar.VERTICAL, "leftToolbar", "Список", 0, 0, 20, 60);
 
-        baseLM.baseElement.window = mainToolbar;
-        baseLM.adminElement.window = leftToolbar;
+        baseLM.root.window = mainToolbar;
+        baseLM.administration.window = leftToolbar;
 
         TreeNavigatorWindow objectsWindow = new TreeNavigatorWindow("objectsWindow", "Объекты", 0, 30, 20, 40);
         objectsWindow.drawRoot = true;
-        baseLM.objectElement.window = objectsWindow;
+        baseLM.objects.window = objectsWindow;
 
-        baseLM.relevantFormsWindow.visible = false;
-        baseLM.relevantClassFormsWindow.visible = false;
-        baseLM.logWindow.visible = false;
+        baseLM.windows.relevantForms.visible = false;
+        baseLM.windows.relevantClassForms.visible = false;
+        baseLM.windows.log.visible = false;
 
 //        logNameStatusForm = new StatusLogFormEntity(null, "logNameStatusForm");
 //        formLogNameStatusProject = addMFAProp("История", logNameStatusForm, logNameStatusForm.objProject);
 //        formLogNameStatusProject.setImage("history.png");
 
-        projectFullNative = addFormEntity(new ProjectFullFormEntity(baseLM.objectElement, "projectFullNative", "Резюме проекта для эксперта", "rus"));
+        projectFullNative = addFormEntity(new ProjectFullFormEntity(baseLM.objects, "projectFullNative", "Резюме проекта для эксперта", "rus"));
         project.setEditForm(projectFullNative, projectFullNative.objProject);
-        projectFullBoth = addFormEntity(new ProjectFullFormEntity(baseLM.objectElement, "projectFullBoth", "Резюме проекта для эксперта", "both"));
-        projectFullForeign = addFormEntity(new ProjectFullFormEntity(baseLM.objectElement, "projectFullForeign", "Resume project for expert", "eng"));
+        projectFullBoth = addFormEntity(new ProjectFullFormEntity(baseLM.objects, "projectFullBoth", "Резюме проекта для эксперта", "both"));
+        projectFullForeign = addFormEntity(new ProjectFullFormEntity(baseLM.objects, "projectFullForeign", "Resume project for expert", "eng"));
 
-        projectFullR2Native = addFormEntity(new ProjectFullR2FormEntity(baseLM.objectElement, "projectFullR2Native", "Резюме проекта R2"));
-        projectFullR2Foreign = addFormEntity(new ProjectFullR2FormEntity(baseLM.objectElement, "projectFullR2Foreign", "Resume project R2"));
+        projectFullR2Native = addFormEntity(new ProjectFullR2FormEntity(baseLM.objects, "projectFullR2Native", "Резюме проекта R2"));
+        projectFullR2Foreign = addFormEntity(new ProjectFullR2FormEntity(baseLM.objects, "projectFullR2Foreign", "Resume project R2"));
 
-        projectCompleteR2Native = addFormEntity(new ProjectFullR2FormEntity(baseLM.objectElement, "projectCompleteR2Native", "Полная анкета R2"));
-        projectCompleteR2Foreign = addFormEntity(new ProjectFullR2FormEntity(baseLM.objectElement, "projectCompleteR2Foreign", "Full resume project R2"));
+        projectCompleteR2Native = addFormEntity(new ProjectFullR2FormEntity(baseLM.objects, "projectCompleteR2Native", "Полная анкета R2"));
+        projectCompleteR2Foreign = addFormEntity(new ProjectFullR2FormEntity(baseLM.objects, "projectCompleteR2Foreign", "Full resume project R2"));
 
-        claimerFull = addFormEntity(new ClaimerFullFormEntity(baseLM.objectElement, "claimerFull"));
+        claimerFull = addFormEntity(new ClaimerFullFormEntity(baseLM.objects, "claimerFull"));
         claimer.setEditForm(claimerFull, claimerFull.objClaimer);
 
-        NavigatorElement print = addNavigatorElement(baseLM.baseElement, "print", "Печатные формы");
+        NavigatorElement print = addNavigatorElement(baseLM.root, "print", "Печатные формы");
         print.window = leftToolbar;
 
         addFormEntity(new VoteStartFormEntity(print, "voteStart"));
@@ -4572,7 +4569,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         addFormEntity(new AcceptanceCertificateFormEntity(print, "acceptanceCertificate", "Акт оказанных услуг (резидент)", true));
         addFormEntity(new AcceptanceCertificateFormEntity(print, "acceptanceCertificateNonResident", "Акт оказанных услуг (нерезидент)", false));
 
-        NavigatorElement report = addNavigatorElement(baseLM.baseElement, "report", "Отчеты");
+        NavigatorElement report = addNavigatorElement(baseLM.root, "report", "Отчеты");
         report.window = leftToolbar;
 
         addFormEntity(new ApplicationsSubmittedFormEntity(report, "applicationsSubmitted"));
@@ -4584,36 +4581,36 @@ public class SkolkovoLogicsModule extends LogicsModule {
         addFormEntity(new ExpertStatsFormEntity(report, "expertStats"));
         addFormEntity(new ConsultingCenterFormEntity(report, "consultingCenter"));
 
-        addFormEntity(new ProjectFormEntity(baseLM.baseElement, "project"));
-        addFormEntity(new ApplicationFormEntity(baseLM.baseElement, "application"));
-        addFormEntity(new ClaimerFormEntity(baseLM.baseElement, "claimer"));
-        addFormEntity(new VoteFormEntity(baseLM.baseElement, "vote", false));
-        addFormEntity(new ExpertFormEntity(baseLM.baseElement, "expert"));
-        addFormEntity(new VoteExpertFormEntity(baseLM.baseElement, "voteExpert", false));
-        addFormEntity(new VoteExpertFormEntity(baseLM.baseElement, "voteExpertRestricted", true));
-        addFormEntity(new VoteFormEntity(baseLM.baseElement, "voterestricted", true));
-        addFormEntity(new LegalCheckAcceptPreliminaryFormEntity(baseLM.objectElement, "legalCheckAcceptPreliminary"));
-        addFormEntity(new LegalCheckRejectFormEntity(baseLM.objectElement, "legalCheckReject"));
-        addFormEntity(new LegalCheckExpertiseFormEntity(baseLM.baseElement, "legalCheckExpertise", "Юридическая проверка"));
-        addFormEntity(new ForesightExpertiseApplyFormEntity(baseLM.objectElement, "foresightExpertiseApply"));
-        addFormEntity(new ForesightExpertiseRejectFormEntity(baseLM.objectElement, "foresightExpertiseReject"));
-        addFormEntity(new ForesightExpertiseListFormEntity(baseLM.baseElement, "foresightExpertiseList", "Соответствие кластеру", 2));
-        addFormEntity(new ForesightExpertiseListFormEntity(baseLM.baseElement, "foresightExpertiseList2", "Проверка форсайтов", 1));
-//        addFormEntity(new ProjectDocumentsFormEntity(baseLM.baseElement, "projectdocs"));
-        addFormEntity(new ConferenceFormEntity(baseLM.baseElement, "conferences"));
+        addFormEntity(new ProjectFormEntity(baseLM.root, "project"));
+        addFormEntity(new ApplicationFormEntity(baseLM.root, "application"));
+        addFormEntity(new ClaimerFormEntity(baseLM.root, "claimer"));
+        addFormEntity(new VoteFormEntity(baseLM.root, "vote", false));
+        addFormEntity(new ExpertFormEntity(baseLM.root, "expert"));
+        addFormEntity(new VoteExpertFormEntity(baseLM.root, "voteExpert", false));
+        addFormEntity(new VoteExpertFormEntity(baseLM.root, "voteExpertRestricted", true));
+        addFormEntity(new VoteFormEntity(baseLM.root, "voterestricted", true));
+        addFormEntity(new LegalCheckAcceptPreliminaryFormEntity(baseLM.objects, "legalCheckAcceptPreliminary"));
+        addFormEntity(new LegalCheckRejectFormEntity(baseLM.objects, "legalCheckReject"));
+        addFormEntity(new LegalCheckExpertiseFormEntity(baseLM.root, "legalCheckExpertise", "Юридическая проверка"));
+        addFormEntity(new ForesightExpertiseApplyFormEntity(baseLM.objects, "foresightExpertiseApply"));
+        addFormEntity(new ForesightExpertiseRejectFormEntity(baseLM.objects, "foresightExpertiseReject"));
+        addFormEntity(new ForesightExpertiseListFormEntity(baseLM.root, "foresightExpertiseList", "Соответствие кластеру", 2));
+        addFormEntity(new ForesightExpertiseListFormEntity(baseLM.root, "foresightExpertiseList2", "Проверка форсайтов", 1));
+//        addFormEntity(new ProjectDocumentsFormEntity(baseLM.root, "projectdocs"));
+        addFormEntity(new ConferenceFormEntity(baseLM.root, "conferences"));
 
-        baseLM.baseElement.add(print);
-        baseLM.baseElement.add(report);
+        baseLM.root.add(print);
+        baseLM.root.add(report);
 
-        NavigatorElement summaryTables = addNavigatorElement(baseLM.baseElement, "summaryTables", "Сводные таблицы");
+        NavigatorElement summaryTables = addNavigatorElement(baseLM.root, "summaryTables", "Сводные таблицы");
         summaryTables.window = leftToolbar;
 
         addFormEntity(new ProjectClusterFormEntity(summaryTables, "projectCluster"));
-        baseLM.baseElement.add(summaryTables);
+        baseLM.root.add(summaryTables);
 
         addFormEntity(new ExpertForesightFormEntity(summaryTables, "expertForesight"));
 
-        NavigatorElement options = addNavigatorElement(baseLM.baseElement, "options", "Настройки");
+        NavigatorElement options = addNavigatorElement(baseLM.root, "options", "Настройки");
         options.window = leftToolbar;
 
         languageDocumentTypeForm = addFormEntity(new LanguageDocumentTypeFormEntity(options, "languageDocumentType"));
@@ -4622,8 +4619,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         addFormEntity(new ClusterUserFormEntity(options, "clusterUser"));
 
         addFormEntity(new ClusterForesightFormEntity(options, "clusterForesight"));
-        baseLM.baseElement.add(options);
-        baseLM.baseElement.add(baseLM.adminElement); // перемещаем adminElement в конец
+        baseLM.root.add(options);
+        baseLM.root.add(baseLM.administration); // перемещаем administration в конец
     }
 
     @Override

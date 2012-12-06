@@ -30,6 +30,7 @@ import platform.server.form.view.FormView;
 import platform.server.form.view.PropertyDrawView;
 import platform.server.form.window.AbstractWindow;
 import platform.server.form.window.NavigatorWindow;
+import platform.server.form.window.ToolBarNavigatorWindow;
 import platform.server.form.window.TreeNavigatorWindow;
 import platform.server.logics.linear.LAP;
 import platform.server.logics.linear.LCP;
@@ -487,27 +488,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public ObjectValuePropertySet objectValue;
 
 
-    // navigators
-    public NavigatorElement<T> baseElement;
-    public NavigatorElement<T> objectElement;
-    public NavigatorElement<T> accountElement;
-    public NavigatorElement<T> adminElement;
-
-    public NavigatorElement<T> applicationElement;
-    public NavigatorElement<T> accessElement;
-    public NavigatorElement<T> eventsElement;
-    public NavigatorElement<T> configElement;
-    public NavigatorElement<T> catalogElement;
-
-    public FormEntity<T> objectForm;
-
-    public NavigatorWindow navigatorWindow;
-    public AbstractWindow relevantFormsWindow;
-    public AbstractWindow relevantClassFormsWindow;
-    public AbstractWindow logWindow;
-    public AbstractWindow statusWindow;
-    public AbstractWindow formsWindow;
-
     public TableFactory tableFactory;
 
     public final StringClass navigatorElementSIDClass = StringClass.get(50);
@@ -591,8 +571,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
                 new String[]{getString("logics.connection.connected"), getString("logics.connection.disconnected")});
         launch = addConcreteClass("launch", getString("logics.launch"), baseClass);
 
-        multiLanguageNamed = addConcreteClass("multiLanguageNamed", "Мультиязычный объект", baseClass);
-
         navigatorElement = addConcreteClass("navigatorElement", getString("logics.navigator.element"), baseClass);
         form = addConcreteClass("form", getString("logics.forms.form"), navigatorElement);
         navigatorAction = addConcreteClass("navigatorAction", getString("logics.forms.action"), navigatorElement);
@@ -630,6 +608,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         // todo : раскидать по модулям
         transaction = addAbstractClass("transaction", getString("logics.transaction"), baseClass);
+
+        multiLanguageNamed = addConcreteClass("multiLanguageNamed", "Мультиязычный объект", baseClass);
     }
 
     @Override
@@ -829,6 +809,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         deleteApply.setAskConfirm(true);
         deleteApply.setShouldBeLast(true);
 
+        // Действия на форме
         formApply = addProperty(null, new LAP(new FormApplyActionProperty(BL)));
         formCancel = addProperty(null, new LAP(new FormCancelActionProperty()));
         formPrint = addProperty(null, new LAP(new PrintActionProperty()));
@@ -839,6 +820,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         formOk = addProperty(null, new LAP(new OkActionProperty()));
         formClose = addProperty(null, new LAP(new CloseActionProperty()));
 
+        // Текущие значения
         currentDate = addDProp(baseGroup, "currentDate", getString("logics.date.current.date"), DateClass.instance);
         currentMonth = addJProp(baseGroup, "currentMonth", getString("logics.date.current.month"), numberMonthInDate, currentDate);
         currentYear = addJProp(baseGroup, "currentYear", getString("logics.date.current.year"), yearInDate, currentDate);
@@ -849,6 +831,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         currentHour = addTProp("currentHour", getString("logics.date.current.hour"), Time.HOUR);
         currentEpoch = addTProp("currentEpoch", getString("logics.date.current.epoch"), Time.EPOCH);
 
+        // Сессия
         currentSession = addProperty(null, new LCP<ClassPropertyInterface>(new CurrentSessionDataProperty("currentSession", session)));
 
         // Компьютер
@@ -856,10 +839,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         hostname = addDProp(baseGroup, "hostname", getString("logics.host.name"), InsensitiveStringClass.get(100), computer);
         currentComputer = addProperty(null, new LCP<PropertyInterface>(new CurrentComputerFormulaProperty("currentComputer", computer)));
         hostnameCurrentComputer = addJProp("hostnameCurrentComputer", getString("logics.current.computer.hostname"), hostname, currentComputer);
-
-        // Действия по авторизация
-        changeUser = addProperty(null, new LAP(new ChangeUserActionProperty("changeUser", customUser)));
-        logOut = addProperty(null, new LAP(new LogOutActionProperty("logOut")));
 
         // Контакты
         // todo : переименовать в соответствии с namingPolicy
@@ -908,6 +887,10 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         currentUser = addProperty(null, new LCP<PropertyInterface>(new CurrentUserFormulaProperty("currentUser", user)));
         currentUserName = addJProp("currentUserName", getString("logics.user.current.user.name"), name, currentUser);
 
+        // Действия по авторизация
+        changeUser = addProperty(null, new LAP(new ChangeUserActionProperty("changeUser", customUser)));
+        logOut = addProperty(null, new LAP(new LogOutActionProperty("logOut")));
+
         // ---- Роли
         // todo : переименовать в соответствии с namingPolicy
         userRoleSID = addDProp(baseGroup, "userRoleSID", getString("logics.user.identificator"), StringClass.get(30), userRole);
@@ -929,6 +912,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         selectUserRoles = addSelectFromListAction(null, getString("logics.user.role.edit.roles"), inUserRole, userRole, customUser);
 
         // -------------------- Логирование сервера ----------------- //
+        // SystemLogLogicsModule
 
         // Сессии
         LCP sessionUser = addDProp("sessionUser", getString("logics.session.user"), user, session);
@@ -986,6 +970,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         packAction = addProperty(null, new LAP(new PackActionProperty("packAction", getString("logics.tables.pack"))));
         serviceDBAction = addProperty(null, new LAP(new ServiceDBActionProperty("serviceDBAction", getString("logics.service.db"))));
 
+        // ReflectionLogLogicsModule
         // ------------------------------------------------- Логическая модель ------------------------------------ //
 
         // ------- Доменная логика --------- //
@@ -1117,6 +1102,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         dropDropColumn = addAProp(baseGroup, new DropColumnActionProperty("dropDropColumn", getString("logics.tables.deleted.column.drop"), dropColumn));
         dropDropColumn.setEventAction(this, IncrementType.DROP, false, is(dropColumn), 1); // event, который при удалении колонки из системы удаляет ее из базы
 
+        // EmailLogicsModule
         // ------- Управление почтой ------ //
         email = addDProp(baseGroup, "email", getString("logics.email"), StringClass.get(50), contact);
         email.setRegexp("^[-a-zA-Z0-9!#$%&'*+/=?^_`{|}~]+(?:\\.[-a-zA-Z0-9!#$%&'*+/=?^_`{|}~]+)*@(?:[a-zA-Z0-9]([-a-zA-Z0-9]{0,61}[a-zA-Z0-9])?\\.)*(?:aero|arpa|asia|biz|cat|com|coop|edu|gov|info|int|jobs|mil|mobi|museum|name|net|org|pro|tel|travel|[a-zA-Z][a-zA-Z])$");
@@ -1156,6 +1142,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         subjectNotification = addDProp(baseGroup, "subjectNotification", getString("logics.notification.topic"), StringClass.get(100), notification);
         inNotificationProperty = addDProp(baseGroup, "inNotificationProperty", getString("logics.notification.enable"), LogicalClass.instance, notification, baseLM.property);
 
+        // SchedulerLogicsModule
         // ----- Планировщик ----------- //
         nameScheduledTask = addDProp(baseGroup, "nameScheduledTask", getString("logics.scheduled.task.name"), StringClass.get(100), scheduledTask);
         runAtStartScheduledTask = addDProp(baseGroup, "runAtStartScheduledTask", getString("logics.scheduled.task.run.at.start"), LogicalClass.instance, scheduledTask);
@@ -1592,63 +1579,111 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
     }
 
+    // Окна
+    public class Windows {
+        public NavigatorWindow root;
+        public NavigatorWindow toolbar;
+        public NavigatorWindow tree;
+        public AbstractWindow forms;
+        public AbstractWindow log;
+        public AbstractWindow status;
+        public AbstractWindow relevantForms;
+        public AbstractWindow relevantClassForms;
+    }
+
+    public Windows windows;
+
+    // Навигаторы
+    public NavigatorElement<T> root;
+    public NavigatorElement<T> objects;
+    public NavigatorElement<T> account;
+    public NavigatorElement<T> administration;
+
+    public NavigatorElement<T> application;
+    public NavigatorElement<T> security;
+    public NavigatorElement<T> systemEvents;
+    public NavigatorElement<T> configuration;
+    public NavigatorElement<T> catalogs;
+
+    public FormEntity<T> objectForm;
+
     private void initNavigators() {
-        NamedListFormEntity namedListFormEntity = new NamedListFormEntity(this, baseClass.named);
-        baseClass.named.setListForm(namedListFormEntity, namedListFormEntity.object);
 
-        navigatorWindow = addWindow(new TreeNavigatorWindow("navigator", getString("logics.navigator"), 0, 0, 20, 70));
-        relevantFormsWindow = addWindow(new AbstractWindow("relevantForms", getString("logics.forms.relevant.forms"), 0, 70, 20, 29));
-        relevantClassFormsWindow = addWindow(new AbstractWindow("relevantClassForms", getString("logics.forms.relevant.class.forms"), 0, 70, 20, 29));
-        logWindow = addWindow(new AbstractWindow("log", getString("logics.log"), 0, 70, 20, 29));
-        statusWindow = addWindow(new AbstractWindow("status", getString("logics.status"), 0, 99, 100, 1));
-        statusWindow.titleShown = false;
-        formsWindow = addWindow(new AbstractWindow("forms", getString("logics.forms"), 20, 20, 80, 79));
+        // Окна
+        windows = new Windows();
+        windows.root = addWindow(new ToolBarNavigatorWindow(JToolBar.HORIZONTAL, "root", getString("logics.window.root"), 0, 0, 100, 6));
+        windows.root.titleShown = false;
+        windows.root.drawScrollBars = false;
 
-        baseElement = addNavigatorElement("baseElement", getString("logics.forms"));
-        baseElement.window = navigatorWindow;
+        windows.toolbar = addWindow(new ToolBarNavigatorWindow(JToolBar.VERTICAL, "toolbar", getString("logics.window.toolbar"), 0, 6, 20, 64));
+        windows.toolbar.titleShown = false;
 
-        accountElement = addNavigatorElement(baseElement, "accountElement", getString("logics.account"));
-        addNavigatorAction(accountElement, "logout", getString("logics.logout"), logOut);
+        windows.tree = addWindow(new TreeNavigatorWindow("tree", getString("logics.window.tree"), 0, 6, 20, 64));
+        windows.tree.titleShown = false;
 
-        adminElement = addNavigatorElement(baseElement, "adminElement", getString("logics.administration"));
+        windows.forms = addWindow(new AbstractWindow("forms", getString("logics.window.forms"), 20, 20, 80, 79));
 
-        objectElement = addNavigatorElement(adminElement, "objectElement", getString("logics.object"));
-        adminElement.add(objectElement);
+        windows.log = addWindow(new AbstractWindow("log", getString("logics.window.log"), 0, 70, 20, 29));
 
-        applicationElement = addNavigatorElement(adminElement, "applicationElement", getString("logics.administration.application"));
-        addFormEntity(new OptionsFormEntity(applicationElement, "options"));
-        addFormEntity(new IntegrationDataFormEntity(applicationElement, "integrationData"));
-        addFormEntity(new MigrationDataFormEntity(applicationElement, "migrationData"));
+        windows.status = addWindow(new AbstractWindow("status", getString("logics.window.status"), 0, 99, 100, 1));
+        windows.status.titleShown = false;
 
-        catalogElement = addNavigatorElement(adminElement, "catalogElement", getString("logics.administration.catalogs"));
+        // временно не показываем
+        windows.relevantForms = addWindow(new AbstractWindow("relevantForms", getString("logics.forms.relevant.forms"), 0, 70, 20, 29));
+        windows.relevantForms.visible = false;
 
-        accessElement = addNavigatorElement(adminElement, "accessElement", getString("logics.administration.access"));
+        windows.relevantClassForms = addWindow(new AbstractWindow("relevantClassForms", getString("logics.forms.relevant.class.forms"), 0, 70, 20, 29));
+        windows.relevantClassForms.visible = false;
+
+        // todo : перенести во внутренний класс Navigator, как в Windows
+        // Навигатор
+        root = addNavigatorElement("root", getString("logics.forms"));
+        root.window = windows.root;
+
+        account = addNavigatorElement(root, "account", getString("logics.account"));
+        addNavigatorAction(account, "logout", getString("logics.logout"), logOut);
+        account.window = windows.toolbar;
+
+        administration = addNavigatorElement(root, "administration", getString("logics.administration"));
+        administration.window = windows.toolbar;
+
+        application = addNavigatorElement(administration, "application", getString("logics.administration.application"));
+        addFormEntity(new OptionsFormEntity(application, "options"));
+        addFormEntity(new IntegrationDataFormEntity(application, "integrationData"));
+        addFormEntity(new MigrationDataFormEntity(application, "migrationData"));
+
+        catalogs = addNavigatorElement(administration, "catalogs", getString("logics.administration.catalogs"));
+
+        objects = addNavigatorElement(catalogs, "objects", getString("logics.object"));
+        objects.window = windows.tree;
+
+        security = addNavigatorElement(administration, "security", getString("logics.administration.access"));
 
         UserEditFormEntity userEditForm = addFormEntity(new UserEditFormEntity(null, "userEditForm"));
         customUser.setEditForm(userEditForm, userEditForm.objUser);
 
-        addFormEntity(new UserPolicyFormEntity(accessElement, "userPolicyForm"));
-        addFormEntity(new SecurityPolicyFormEntity(accessElement, "securityPolicyForm"));
+        addFormEntity(new UserPolicyFormEntity(security, "userPolicyForm"));
+        addFormEntity(new SecurityPolicyFormEntity(security, "securityPolicyForm"));
 
-        configElement = addNavigatorElement(adminElement, "configElement", getString("logics.administration.config"));
-        addFormEntity(new AdminFormEntity(configElement, "adminForm"));
-        addFormEntity(new PropertiesFormEntity(configElement, "propertiesForm"));
-        addFormEntity(new PhysicalModelFormEntity(configElement, "physicalModelForm"));
-        addFormEntity(new FormsFormEntity(configElement, "formsForm"));
-        addFormEntity(new NotificationFormEntity(configElement, "notification"));
-        addFormEntity(new ScheduledTaskFormEntity(configElement, "scheduledTask"));
+        configuration = addNavigatorElement(administration, "configuration", getString("logics.administration.config"));
+        addFormEntity(new AdminFormEntity(configuration, "adminForm"));
+        addFormEntity(new PropertiesFormEntity(configuration, "propertiesForm"));
+        addFormEntity(new PhysicalModelFormEntity(configuration, "physicalModelForm"));
+        addFormEntity(new FormsFormEntity(configuration, "formsForm"));
+        addFormEntity(new NotificationFormEntity(configuration, "notification"));
+        addFormEntity(new ScheduledTaskFormEntity(configuration, "scheduledTask"));
 
-        eventsElement = addNavigatorElement(adminElement, "eventsElement", getString("logics.administration.events"));
-        addFormEntity(new LaunchesFormEntity(eventsElement, "launchesForm"));
-        addFormEntity(new ConnectionsFormEntity(eventsElement, "connectionsForm"));
-        addFormEntity(new ExceptionsFormEntity(eventsElement, "exceptionsForm"));
+        systemEvents = addNavigatorElement(administration, "systemEvents", getString("logics.administration.events"));
+        addFormEntity(new LaunchesFormEntity(systemEvents, "launchesForm"));
+        addFormEntity(new ConnectionsFormEntity(systemEvents, "connectionsForm"));
+        addFormEntity(new ExceptionsFormEntity(systemEvents, "exceptionsForm"));
 
         addFormEntity(new RemindUserPassFormEntity(null, "remindPasswordLetter"));
     }
 
     public void initClassForms() {
         objectForm = baseClass.getBaseClassForm(this);
-        objectElement.add(objectForm);
+        objects.add(objectForm);
     }
 
     @Override
@@ -2612,35 +2647,5 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
             setEditType(PropertyEditType.READONLY);
         }
-    }
-
-    private class NamedListFormEntity extends ListFormEntity {
-        public ObjectEntity objObjectName;
-
-
-        public NamedListFormEntity(BaseLogicsModule LM, CustomClass cls, String sID, String caption) {
-            super(LM, cls, sID, caption);
-
-            objObjectName = addSingleGroupObject(StringClass.get(50), getString("logics.search.by.name.beginning"), objectValue);
-            objObjectName.groupTo.setSingleClassView(ClassViewType.PANEL);
-
-            //двигаем в начало
-            groups.remove(objObjectName.groupTo);
-            groups.add(0, objObjectName.groupTo);
-
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(name, object), Compare.START_WITH, objObjectName));
-        }
-
-        public NamedListFormEntity(BaseLogicsModule LM, CustomClass cls) {
-            this(LM, cls, "namedListForm_" + cls.getSID(), cls.caption);
-        }
-
-        @Override
-        public FormView createDefaultRichDesign() {
-            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
-            design.get(getPropertyDraw(objectValue, objObjectName)).editKey = KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0);
-            return design;
-        }
-
     }
 }

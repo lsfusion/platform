@@ -31,7 +31,7 @@ FORM languages 'Языки'
 ;
 
 NAVIGATOR {
-    catalogElement {
+    catalogs {
         ADD languages;
     }
 }
@@ -65,7 +65,7 @@ FORM dictionaries 'Словари'
 ;
 
 NAVIGATOR {
-    catalogElement {
+    catalogs {
         ADD dictionaries;
     }
 }

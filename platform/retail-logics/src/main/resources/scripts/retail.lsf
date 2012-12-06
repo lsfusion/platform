@@ -1512,18 +1512,18 @@ EXTEND DESIGN integrationData {
 
 //---------------------------- Настройка навигатора ----------------------------------------//
 
-WINDOW TOOLBAR mainToolbar 'Навигатор' HORIZONTAL HIDETITLE HIDESCROLLBARS POSITION(0, 0, 100, 6);
-WINDOW TOOLBAR formsToolbar 'Формы' VERTICAL HIDETITLE POSITION (0, 6, 20, 64);
-WINDOW TREE formsTree 'Формы' HIDETITLE POSITION (0, 6, 20, 64);
-
-HIDE WINDOW System.relevantForms;
-HIDE WINDOW System.relevantClassForms;
+//WINDOW TOOLBAR root 'Навигатор' HORIZONTAL HIDETITLE HIDESCROLLBARS POSITION(0, 0, 100, 6);
+//WINDOW TOOLBAR toolbar 'Формы' VERTICAL HIDETITLE POSITION (0, 6, 20, 64);
+//WINDOW TREE formsTree 'Формы' HIDETITLE POSITION (0, 6, 20, 64);
+//
+//HIDE WINDOW System.relevantForms;
+//HIDE WINDOW System.relevantClassForms;
 
 NAVIGATOR {
 
-    baseElement TO mainToolbar;
+    root TO root;
 
-    NEW catalogs 'Справочники' TO formsToolbar {
+    NEW catalogs 'Справочники' TO toolbar {
         NEW itemCatalog 'Товары' {
             ADD items;
             ADD itemGroups;
@@ -1537,12 +1537,12 @@ NAVIGATOR {
         }
     }
 
-    NEW purchase 'Управление закупками' TO formsToolbar {
+    NEW purchase 'Управление закупками' TO toolbar {
         ADD purchasePurchaseNavigator;
         ADD purchaseReturnNavigator;
     }
 
-    NEW warehouse 'Управление складом' TO formsToolbar {
+    NEW warehouse 'Управление складом' TO toolbar {
         ADD inventoryNavigator {
             ADD naturalLosses;
             ADD naturalLossGroups;
@@ -1563,14 +1563,14 @@ NAVIGATOR {
         }
     }
 
-    NEW sale 'Управление продажами' TO formsToolbar {
+    NEW sale 'Управление продажами' TO toolbar {
         ADD saleSaleNavigator;
         ADD saleReturnNavigator;
         ADD salesNavigator;
         ADD statisticsNavigator;
     }
 
-    NEW retail 'Розничная торговля' TO formsToolbar {
+    NEW retail 'Розничная торговля' TO toolbar {
         ADD POSNavigator;
         NEW priceAccount 'Учет в розничных ценах' {
             ADD pricings;
@@ -1584,11 +1584,11 @@ NAVIGATOR {
         }
     }
 
-    ADD priceListNavigator TO formsToolbar;
-    ADD transportNavigator TO formsToolbar;
-    ADD machineryNavigator TO formsToolbar;
+    ADD priceListNavigator TO toolbar;
+    ADD transportNavigator TO toolbar;
+    ADD machineryNavigator TO toolbar;
 
-    NEW finance 'Финансы' TO formsToolbar {
+    NEW finance 'Финансы' TO toolbar {
         ADD contractNavigator;
         NEW financeCatalog 'Справочники' {
             ADD banks;
@@ -1596,15 +1596,15 @@ NAVIGATOR {
         }
     }
 
-    NEW manufactory 'Производство' TO formsToolbar {
+    NEW manufactory 'Производство' TO toolbar {
         ADD actOfStudies;
         ADD cuttings;
     }
-    NEW hr 'Кадры' TO formsToolbar {
+    NEW hr 'Кадры' TO toolbar {
         ADD employees;
     }
 
-    ADD accountElement TO formsToolbar;
-    ADD adminElement TO formsTree;
+    ADD account TO toolbar;
+    ADD administration TO toolbar;
 }
 

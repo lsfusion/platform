@@ -117,7 +117,7 @@ public class LsfLogicsParserNavigatorTest {
     public void testMoveToSubnavigatorFails() throws Exception {
         setupTest("NAVIGATOR {\n" +
                   "    NEW element1 'Element 1' AFTER userPolicyForm;\n" +
-                  "    ADD adminElement IN element1;\n" +
+                  "    ADD administration IN element1;\n" +
                   "}"
         );
     }
@@ -261,8 +261,8 @@ public class LsfLogicsParserNavigatorTest {
                   "HIDE WINDOW log;"
         );
 
-        assertFalse(LM.baseLM.statusWindow.visible);
-        assertFalse(LM.baseLM.logWindow.visible);
+        assertFalse(LM.baseLM.windows.status.visible);
+        assertFalse(LM.baseLM.windows.log.visible);
     }
 
     private NavigatorElement getElement(String name) throws ScriptingErrorLog.SemanticErrorException {

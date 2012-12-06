@@ -303,7 +303,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
             Collection<Map<String, Object>> formValues = qf.execute(session.sql).values();
             for (Map<String, Object> valueMap : formValues) {
-                NavigatorElement element = LM.baseElement.getNavigatorElement(((String) valueMap.get("sid")).trim());
+                NavigatorElement element = LM.root.getNavigatorElement(((String) valueMap.get("sid")).trim());
                 if (valueMap.get("forbid") != null)
                     policy.navigator.deny(element);
                 else if (valueMap.get("permit") != null)
@@ -380,7 +380,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
             Collection<Map<String, Object>> formValues = qf.execute(session.sql).values();
             for (Map<String, Object> valueMap : formValues) {
-                NavigatorElement element = LM.baseElement.getNavigatorElement(((String) valueMap.get("sid")).trim());
+                NavigatorElement element = LM.root.getNavigatorElement(((String) valueMap.get("sid")).trim());
                 if (valueMap.get("forbid") != null)
                     policy.navigator.deny(element);
                 else if (valueMap.get("permit") != null)
@@ -1020,7 +1020,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         ImportKey<?> keyNavigatorElement = new ImportKey(elementCustomClass, LM.SIDToNavigatorElement.getMapping(sidField));
 
         List<List<Object>> elementsData = new ArrayList<List<Object>>();
-        for (NavigatorElement<T> element : LM.baseElement.getChildren(true)) {
+        for (NavigatorElement<T> element : LM.root.getChildren(true)) {
             if (exactJavaClass ? filterJavaClass == element.getClass() : filterJavaClass.isInstance(element)) {
                 elementsData.add(asList((Object) element.getSID(), element.caption));
             }
@@ -1055,7 +1055,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         ImportField parentSidField = new ImportField(LM.navigatorElementSIDClass);
         ImportField numberField = new ImportField(LM.numberNavigatorElement);
 
-        List<List<Object>> dataParents = getRelations(LM.baseElement);
+        List<List<Object>> dataParents = getRelations(LM.root);
 
         ImportKey<?> keyElement = new ImportKey(LM.navigatorElement, LM.SIDToNavigatorElement.getMapping(sidField));
         ImportKey<?> keyParent = new ImportKey(LM.navigatorElement, LM.SIDToNavigatorElement.getMapping(parentSidField));
@@ -1081,7 +1081,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     private void synchronizePropertyDraws() {
 
         List<List<Object>> dataPropertyDraws = new ArrayList<List<Object>>();
-        for (NavigatorElement<T> formElement : LM.baseElement.getChildren(true)) {
+        for (NavigatorElement<T> formElement : LM.root.getChildren(true)) {
             if (formElement instanceof FormEntity) {
                 List<PropertyDrawEntity> propertyDraws = ((FormEntity<T>) formElement).propertyDraws;
                 for (PropertyDrawEntity drawEntity : propertyDraws) {
@@ -1130,7 +1130,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     private void synchronizeGroupObjects() {
 
         List<List<Object>> dataGroupObjectList = new ArrayList<List<Object>>();
-        for (NavigatorElement<T> formElement : LM.baseElement.getChildren(true)) {
+        for (NavigatorElement<T> formElement : LM.root.getChildren(true)) {
             if (formElement instanceof FormEntity)  //formSID - groupObjectSID
                 for (PropertyDrawEntity property : ((FormEntity<T>) formElement).propertyDraws) {
                     GroupObjectEntity groupObjectEntity = property.getToDraw((FormEntity<T>) formElement);
@@ -1403,7 +1403,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         //формируем полное дерево, сохраняя мэппинг элементов
         Map<String, NavigatorElement<?>> elementsMap = new HashMap<String, NavigatorElement<?>>();
-        for (NavigatorElement<?> parent : LM.baseElement.getChildren(true)) {
+        for (NavigatorElement<?> parent : LM.root.getChildren(true)) {
             String parentSID = parent.getSID();
             elementsMap.put(parentSID, parent);
 
@@ -1481,7 +1481,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     public void saveNavigatorTree() throws IOException {
-        Collection<NavigatorElement<T>> children = LM.baseElement.getChildren(true);
+        Collection<NavigatorElement<T>> children = LM.root.getChildren(true);
         File treeFile = new File(navigatorTreeFilePath);
         if (!treeFile.getParentFile().exists()) {
             treeFile.getParentFile().mkdirs();

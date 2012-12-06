@@ -4149,36 +4149,16 @@ public class RomanLogicsModule extends LogicsModule {
 
     private void initNavigators() {
 
-        ToolBarNavigatorWindow mainToolbar = addWindow(new ToolBarNavigatorWindow(JToolBar.HORIZONTAL, "mainToolbar", "Навигатор"));
-        mainToolbar.titleShown = false;
-        mainToolbar.drawScrollBars = false;
-
-        baseLM.navigatorWindow.y = 10;
-        baseLM.navigatorWindow.height -= 10;
-
         PanelNavigatorWindow generateToolbar = addWindow(new PanelNavigatorWindow(SwingConstants.HORIZONTAL, "generateToolbar", "Генерация"));
         generateToolbar.titleShown = false;
         generateToolbar.drawRoot = true;
         generateToolbar.drawScrollBars = false;
 
-        ToolBarNavigatorWindow leftToolbar = addWindow(new ToolBarNavigatorWindow(JToolBar.VERTICAL, "leftToolbar", "Список"));
-
-        baseLM.baseElement.window = mainToolbar;
-        baseLM.accountElement.window = leftToolbar;
-        baseLM.adminElement.window = leftToolbar;
-
-        TreeNavigatorWindow objectsWindow = addWindow(new TreeNavigatorWindow("objectsWindow", "Объекты"));
-        objectsWindow.drawRoot = true;
-        baseLM.objectElement.window = objectsWindow;
-
-        mainToolbar.setDockPosition(0, 0, 100, 6);
         generateToolbar.setDockPosition(20, 6, 80, 4);
-        leftToolbar.setDockPosition(0, 6, 20, 64);
-        objectsWindow.setDockPosition(0, 6, 20, 64);
-        baseLM.formsWindow.setDockPosition(20, 10, 80, 89);
+        baseLM.windows.forms.setDockPosition(20, 10, 80, 89);
 
-        NavigatorElement classifier = addNavigatorElement(baseLM.baseElement, "classifier", "Справочники");
-        classifier.window = leftToolbar;
+        NavigatorElement classifier = addNavigatorElement(baseLM.root, "classifier", "Справочники");
+        classifier.window = baseLM.windows.toolbar;
 
         NavigatorElement itemClassifier = addNavigatorElement(classifier, "itemClassifier", "Номенклатура");
 
@@ -4237,8 +4217,8 @@ public class RomanLogicsModule extends LogicsModule {
 
         invoiceExportForm = addFormEntity(new InvoiceExportFormEntity(null, "invoiceExportForm", "Экспорт инвойсов"));
 
-        NavigatorElement purchase = addNavigatorElement(baseLM.baseElement, "purchase", "Управление закупками");
-        purchase.window = leftToolbar;
+        NavigatorElement purchase = addNavigatorElement(baseLM.root, "purchase", "Управление закупками");
+        purchase.window = baseLM.windows.toolbar;
 
         NavigatorElement purchaseClassifier = addNavigatorElement(purchase, "purchaseClassifier", "Справочники");
         addFormEntity(new ColorSizeSupplierFormEntity(purchaseClassifier, "сolorSizeSupplierForm", "Поставщики"));
@@ -4273,8 +4253,8 @@ public class RomanLogicsModule extends LogicsModule {
         addFormEntity(new ShipmentExportFormEntity(shipments, "shipmentExportForm", "Экспорт поставки"));
 
 
-        NavigatorElement distribution = addNavigatorElement(baseLM.baseElement, "distribution", "Sintitex");
-        distribution.window = leftToolbar;
+        NavigatorElement distribution = addNavigatorElement(baseLM.root, "distribution", "Sintitex");
+        distribution.window = baseLM.windows.toolbar;
 
         NavigatorElement distributionClassifier = addNavigatorElement(distribution, "distributionClassifier", "Справочники");
         distributionClassifier.add(exporter.getListForm(baseLM).form);
@@ -4313,8 +4293,8 @@ public class RomanLogicsModule extends LogicsModule {
         addFormEntity(new BalanceWarehouseFormEntity(distributionReport, "balanceWarehouseForm", "Остатки на складе"));
         addFormEntity(new BalanceWarehousePeriodFormEntity(distributionReport, "balanceWarehousePeriodForm", "Движение товара за период"));
 
-        NavigatorElement shipment = addNavigatorElement(baseLM.baseElement, "shipment", "Управление фрахтами");
-        shipment.window = leftToolbar;
+        NavigatorElement shipment = addNavigatorElement(baseLM.root, "shipment", "Управление фрахтами");
+        shipment.window = baseLM.windows.toolbar;
 
         NavigatorElement shipmentClassifier = addNavigatorElement(shipment, "shipmentClassifier", "Справочники");
         shipmentClassifier.add(freightType.getListForm(baseLM).form);
@@ -4339,34 +4319,34 @@ public class RomanLogicsModule extends LogicsModule {
         addFormEntity(new FreightReportFormEntity(shipmentReport, "freightReporttForm", "Отчёт по фрахту"));
         addFormEntity(new FreightBoxContentFormEntity(shipmentReport, "freightBoxContentForm", "Содержимое короба"));
 
-        NavigatorElement customs = addNavigatorElement(baseLM.baseElement, "customs", "Таможенное оформление");
-        customs.window = leftToolbar;
+        NavigatorElement customs = addNavigatorElement(baseLM.root, "customs", "Таможенное оформление");
+        customs.window = baseLM.windows.toolbar;
 
         NavigatorElement customClassifier = addNavigatorElement(customs, "customClassifier", "Справочники");
 
-        NavigatorElement prices = addNavigatorElement(baseLM.baseElement, "prices", "Ценообразование");
-        prices.window = leftToolbar;
+        NavigatorElement prices = addNavigatorElement(baseLM.root, "prices", "Ценообразование");
+        prices.window = baseLM.windows.toolbar;
 
-        NavigatorElement stock = addNavigatorElement(baseLM.baseElement, "stock", "Управление складом");
-        stock.window = leftToolbar;
+        NavigatorElement stock = addNavigatorElement(baseLM.root, "stock", "Управление складом");
+        stock.window = baseLM.windows.toolbar;
 
         NavigatorElement stockClassifier = addNavigatorElement(stock, "stockClassifier", "Справочники");
 
-        NavigatorElement logistics = addNavigatorElement(baseLM.baseElement, "logistics", "Логистика");
-        logistics.window = leftToolbar;
+        NavigatorElement logistics = addNavigatorElement(baseLM.root, "logistics", "Логистика");
+        logistics.window = baseLM.windows.toolbar;
 
-        NavigatorElement retail = addNavigatorElement(baseLM.baseElement, "retail", "Розничная торговля");
-        retail.window = leftToolbar;
+        NavigatorElement retail = addNavigatorElement(baseLM.root, "retail", "Розничная торговля");
+        retail.window = baseLM.windows.toolbar;
 
-        NavigatorElement wholesaleTrade = addNavigatorElement(baseLM.baseElement, "wholesaleTrade", "Оптовая торговля");
-        wholesaleTrade.window = leftToolbar;
+        NavigatorElement wholesaleTrade = addNavigatorElement(baseLM.root, "wholesaleTrade", "Оптовая торговля");
+        wholesaleTrade.window = baseLM.windows.toolbar;
 
         NavigatorElement retailClassifier = addNavigatorElement(retail, "retailClassifier", "Справочники");
         retailClassifier.add(commonSize.getListForm(baseLM).form);
         addFormEntity(new CommonSizeEditFormEntity(retailClassifier, "commonEditSizeForm", "Белорусские размеры"));
         addFormEntity(new CommonSizeImportFormEntity(retailClassifier, "commonImportSizeForm", "Белорусские размеры (таблицей)"));
 
-        baseLM.baseElement.add(baseLM.adminElement);
+        baseLM.root.add(baseLM.administration);
     }
 
     @Override

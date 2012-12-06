@@ -288,7 +288,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
                 navigatorElements = currentClass.getRelevantElements(BL.LM, securityPolicy);
             }
         } else {
-            NavigatorElement singleElement = BL.LM.baseElement.getNavigatorElement(groupSID);
+            NavigatorElement singleElement = BL.LM.root.getNavigatorElement(groupSID);
             navigatorElements = singleElement == null
                                 ? Collections.singletonList(singleElement)
                                 : new ArrayList<NavigatorElement>(singleElement.getChildren(false));
@@ -404,7 +404,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
     }
 
     private FormEntity<T> getFormEntity(String formSID) {
-        FormEntity<T> formEntity = (FormEntity<T>) BL.LM.baseElement.getNavigatorElement(formSID);
+        FormEntity<T> formEntity = (FormEntity<T>) BL.LM.root.getNavigatorElement(formSID);
 
         if (formEntity == null) {
             throw new RuntimeException(ServerResourceBundle.getString("form.navigator.form.with.id.not.found") + " : " + formSID);
@@ -418,7 +418,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
     }
 
     private void setFormEntity(String formSID, FormEntity<T> formEntity) {
-        FormEntity<T> prevEntity = (FormEntity) BL.LM.baseElement.getNavigatorElement(formSID);
+        FormEntity<T> prevEntity = (FormEntity) BL.LM.root.getNavigatorElement(formSID);
         if (prevEntity == null)
             throw new RuntimeException(ServerResourceBundle.getString("form.navigator.form.with.id.not.found"));
 
@@ -641,7 +641,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
     @Override
     public byte[] getNavigatorTree() throws RemoteException {
 
-        List<NavigatorElement<T>> elements = BL.LM.baseElement.getChildrenNonUnique(securityPolicy);
+        List<NavigatorElement<T>> elements = BL.LM.root.getChildrenNonUnique(securityPolicy);
 
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         DataOutputStream dataStream = new DataOutputStream(outStream);
@@ -680,11 +680,11 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
         DataOutputStream dataStream = new DataOutputStream(outStream);
 
         try {
-            BL.LM.relevantFormsWindow.serialize(dataStream);
-            BL.LM.relevantClassFormsWindow.serialize(dataStream);
-            BL.LM.logWindow.serialize(dataStream);
-            BL.LM.statusWindow.serialize(dataStream);
-            BL.LM.formsWindow.serialize(dataStream);
+            BL.LM.windows.relevantForms.serialize(dataStream);
+            BL.LM.windows.relevantClassForms.serialize(dataStream);
+            BL.LM.windows.log.serialize(dataStream);
+            BL.LM.windows.status.serialize(dataStream);
+            BL.LM.windows.forms.serialize(dataStream);
         } catch (IOException e) {
             Throwables.propagate(e);
         }
@@ -702,7 +702,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
 
     @Override
     public ServerResponse executeNavigatorAction(String navigatorActionSID) throws RemoteException {
-        final NavigatorElement element = BL.LM.baseElement.getNavigatorElement(navigatorActionSID);
+        final NavigatorElement element = BL.LM.root.getNavigatorElement(navigatorActionSID);
 
         if (!(element instanceof NavigatorAction)) {
             throw new RuntimeException(ServerResourceBundle.getString("form.navigator.action.not.found"));

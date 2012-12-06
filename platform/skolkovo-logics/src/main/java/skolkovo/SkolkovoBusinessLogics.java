@@ -52,7 +52,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
 
     protected void initAuthentication() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
-        policyManager.defaultSecurityPolicy.navigator.deny(LM.adminElement, LM.objectElement, SkolkovoLM.languageDocumentTypeForm, SkolkovoLM.globalForm);
+        policyManager.defaultSecurityPolicy.navigator.deny(LM.administration, LM.objects, SkolkovoLM.languageDocumentTypeForm, SkolkovoLM.globalForm);
 
         policyManager.defaultSecurityPolicy.property.view.deny(LM.userPassword);
 

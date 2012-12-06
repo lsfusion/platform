@@ -161,10 +161,10 @@ public class PaasLogicsModule extends LogicsModule {
     }
 
     private void initNavigators() {
-        FormEntity modulesForm = new ModuleFormEntity(baseLM.baseElement, "modulesForm", "Модули");
+        FormEntity modulesForm = new ModuleFormEntity(baseLM.root, "modulesForm", "Модули");
         addFormEntity(modulesForm);
 
-        FormEntity projectsForm = new ProjectFormEntity(baseLM.baseElement, "projectsForm", "Проекты");
+        FormEntity projectsForm = new ProjectFormEntity(baseLM.root, "projectsForm", "Проекты");
         addFormEntity(projectsForm);
     }
 

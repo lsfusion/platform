@@ -166,11 +166,11 @@ public class SampleLogicsModule extends LogicsModule {
 
     private void initNavigators() {
 
-        NavigatorElement primaryData = addNavigatorElement(baseLM.baseElement, "primaryData", "Первичные данные");
+        NavigatorElement primaryData = addNavigatorElement(baseLM.root, "primaryData", "Первичные данные");
             FormEntity documentForm = new DocumentFormEntity(primaryData, "documentForm", "Документ");
             addFormEntity(documentForm);
 
-        NavigatorElement aggregateData = addNavigatorElement(baseLM.baseElement, "aggregateData", "Сводная информация");
+        NavigatorElement aggregateData = addNavigatorElement(baseLM.root, "aggregateData", "Сводная информация");
             FormEntity storeArticleForm = new StoreArticleFormEntity(aggregateData, "storeArticleForm", "Товары по складам");
             FormEntity systemForm = new SystemFormEntity(aggregateData, "systemForm", "Движение (документ*товар)");
             FormEntity treeStoreArticleForm = new TreeStoreArticleFormEntity(aggregateData, "treeStoreArticleForm", "Товары по складам (дерево)");

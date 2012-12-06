@@ -33,7 +33,7 @@ DESIGN mainForm FROM DEFAULT {
 }
 
 NAVIGATOR {
-    configElement {
+    configuration {
         ADD mainForm;
     }
 }

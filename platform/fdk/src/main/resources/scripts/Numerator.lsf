@@ -67,7 +67,7 @@ DESIGN defaultNumerators FROM DEFAULT {
 }
 
 NAVIGATOR {
-    catalogElement {
+    catalogs {
         ADD defaultNumerators;
     }
 }
