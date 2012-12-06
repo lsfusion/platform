@@ -239,16 +239,16 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP userRoleDefaultForms;
     public LCP forbidAllUserRoleForms;
     public LCP forbidAllUserForm;
-    public LCP allowAllUserRoleForms;
-    public LCP allowAllUserForm;
+    public LCP permitAllUserRoleForms;
+    public LCP permitAllUserForm;
     public LCP forbidViewAllUserRoleProperty;
     public LCP forbidViewAllUserForm;
-    public LCP allowViewAllUserRoleProperty;
-    public LCP allowViewAllUserForm;
+    public LCP permitViewAllUserRoleProperty;
+    public LCP permitViewAllUserForm;
     public LCP forbidChangeAllUserRoleProperty;
     public LCP forbidChangeAllUserForm;
-    public LCP allowChangeAllUserRoleProperty;
-    public LCP allowChangeAllUserForm;
+    public LCP permitChangeAllUserRoleProperty;
+    public LCP permitChangeAllUserForm;
 
     public LCP userDefaultForms;
     public LCP sidToRole;
@@ -912,9 +912,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         // todo : переименовать в соответствии с namingPolicy
         userRoleSID = addDProp(baseGroup, "userRoleSID", getString("logics.user.identificator"), StringClass.get(30), userRole);
         sidToRole = addAGProp(idGroup, "sidToRole", getString("logics.user.role.id"), userRole, userRoleSID);
-        inUserRole = addDProp(baseGroup, "inUserRole", getString("logics.user.role.in"), LogicalClass.instance, customUser, userRole);
-        userRoleDefaultForms = addDProp(baseGroup, "userRoleDefaultForms", getString("logics.user.displaying.forms.by.default"), LogicalClass.instance, userRole);
-        inLoginSID = addJProp("inLoginSID", true, getString("logics.login.has.a.role"), inUserRole, loginToUser, 1, sidToRole, 2);
 
         // Главная роль
         userMainRole = addDProp(idGroup, "userMainRole", getString("logics.user.role.main.role.id"), userRole, user);
@@ -922,10 +919,23 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         customUserSIDMainRole = addJProp("customUserSIDMainRole", getString("logics.user.role.main.role.identificator"), userRoleSID, customUserMainRole, 1);
         nameUserMainRole = addJProp(baseGroup, "nameUserMainRole", getString("logics.user.role.main.role"), name, userMainRole, 1);
 
+        // Список ролей для пользователей
+        inUserRole = addDProp(baseGroup, "inUserRole", getString("logics.user.role.in"), LogicalClass.instance, customUser, userRole);
+        inLoginSID = addJProp("inLoginSID", true, getString("logics.login.has.a.role"), inUserRole, loginToUser, 1, sidToRole, 2);
+
         inUserMainRole = addSUProp("inUserMainRole", getString("logics.user.role.in"), Union.OVERRIDE,
                 addJProp(equals2, customUserMainRole, 1, 2), inUserRole);
 
+        selectUserRoles = addSelectFromListAction(null, getString("logics.user.role.edit.roles"), inUserRole, userRole, customUser);
+
         // -------------------- Логирование сервера ----------------- //
+
+        // Сессии
+        LCP sessionUser = addDProp("sessionUser", getString("logics.session.user"), user, session);
+        sessionUser.setEventChangeNew(currentUser, is(session), 1);
+        addJProp(baseGroup, getString("logics.session.user"), name, sessionUser, 1);
+        LCP sessionDate = addDProp(baseGroup, "sessionDate", getString("logics.session.date"), DateTimeClass.instance, session);
+        sessionDate.setEventChangeNew(currentDateTime, is(session), 1);
 
         // Подключения к серверу
         connectionComputer = addDProp("connectionComputer", getString("logics.computer"), computer, connection);
@@ -1172,55 +1182,66 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         userRolePolicyOrder = addDProp(baseGroup, "userRolePolicyOrder", getString("logics.policy.order"), IntegerClass.instance, userRole, policy);
         userPolicyOrder = addJProp(baseGroup, "userPolicyOrder", getString("logics.policy.order"), userRolePolicyOrder, userMainRole, 1, 2);
 
-        permitViewUserRoleProperty = addDProp(baseGroup, "permitViewUserRoleProperty", getString("logics.policy.permit.property.view"), LogicalClass.instance, userRole, property);
-        permitViewUserProperty = addJProp(baseGroup, "permitViewUserProperty", getString("logics.policy.permit.property.view"), permitViewUserRoleProperty, userMainRole, 1, 2);
-        forbidViewUserRoleProperty = addDProp(baseGroup, "forbidViewUserRoleProperty", getString("logics.policy.forbid.property.view"), LogicalClass.instance, userRole, property);
-        forbidViewUserProperty = addJProp(baseGroup, "forbidViewUserProperty", getString("logics.policy.forbid.property.view"), forbidViewUserRoleProperty, userMainRole, 1, 2);
-        permitChangeUserRoleProperty = addDProp(baseGroup, "permitChangeUserRoleProperty", getString("logics.policy.permit.property.change"), LogicalClass.instance, userRole, property);
-        permitChangeUserProperty = addJProp(baseGroup, "permitChangeUserProperty", getString("logics.policy.permit.property.change"), permitChangeUserRoleProperty, userMainRole, 1, 2);
-        forbidChangeUserRoleProperty = addDProp(baseGroup, "forbidChangeUserRoleProperty", getString("logics.policy.forbid.property.change"), LogicalClass.instance, userRole, property);
-        forbidChangeUserProperty = addJProp(baseGroup, "forbidChangeUserProperty", getString("logics.policy.forbid.property.change"), forbidChangeUserRoleProperty, userMainRole, 1, 2);
-        notNullPermissionUserProperty = addSUProp("notNullPermissionUserProperty", Union.OVERRIDE, permitViewUserProperty, forbidViewUserProperty, permitChangeUserProperty, forbidChangeUserProperty);
+        // ---- Политики для доменной логики
+
+        // -- Глобальные разрешения для всех ролей
         permitViewProperty = addDProp(baseGroup, "permitViewProperty", getString("logics.policy.permit.property.view"), LogicalClass.instance, property);
         forbidViewProperty = addDProp(baseGroup, "forbidViewProperty", getString("logics.policy.forbid.property.view"), LogicalClass.instance, property);
         permitChangeProperty = addDProp(baseGroup, "permitChangeProperty", getString("logics.policy.permit.property.change"), LogicalClass.instance, property);
         forbidChangeProperty = addDProp(baseGroup, "forbidChangeProperty", getString("logics.policy.forbid.property.change"), LogicalClass.instance, property);
-        permitUserRoleForm = addDProp(baseGroup, "permitUserRoleForm", getString("logics.forms.permit.form"), LogicalClass.instance, userRole, navigatorElement);
-        permitUserForm = addJProp(baseGroup, "permitUserForm", getString("logics.forms.permit.form"), permitUserRoleForm, userMainRole, 1, 2);
-        forbidUserRoleForm = addDProp(baseGroup, "permissionUserRoleForm", getString("logics.forms.prohibit.form"), LogicalClass.instance, userRole, navigatorElement);
-        forbidUserForm = addJProp(baseGroup, "permissionUserForm", getString("logics.forms.prohibit.form"), forbidUserRoleForm, userMainRole, 1, 2);
-        permitForm = addDProp(baseGroup, "permitForm", getString("logics.forms.permit.form"), LogicalClass.instance, navigatorElement);
-        forbidForm = addDProp(baseGroup, "forbidForm", getString("logics.forms.prohibit.form"), LogicalClass.instance, navigatorElement);
 
-        allowAllUserRoleForms = addDProp(baseGroup, "allowAllUserRoleForms", getString("logics.user.allow.all.user.form"), LogicalClass.instance, userRole);
-        allowAllUserForm = addJProp(publicGroup, "allowAllUserForm", getString("logics.user.allow.all.user.form"), allowAllUserRoleForms, userMainRole, 1);
-        forbidAllUserRoleForms = addDProp(baseGroup, "forbidAllUserRoleForms", getString("logics.user.forbid.all.user.form"), LogicalClass.instance, userRole);
-        forbidAllUserForm = addJProp(publicGroup, "forbidAllUserForm", getString("logics.user.forbid.all.user.form"), forbidAllUserRoleForms, userMainRole, 1);
+        // -- Разрешения для каждой роли
 
-        allowViewAllUserRoleProperty = addDProp(baseGroup, "allowViewAllUserRoleProperty", getString("logics.user.allow.view.all.property"), LogicalClass.instance, userRole);
-        allowViewAllUserForm = addJProp(publicGroup, "allowViewAllUserForm", getString("logics.user.allow.view.all.property"), allowViewAllUserRoleProperty, userMainRole, 1);
+        // Разрешения для всех свойств
+        permitViewAllUserRoleProperty = addDProp(baseGroup, "permitViewAllUserRoleProperty", getString("logics.user.allow.view.all.property"), LogicalClass.instance, userRole);
+        permitViewAllUserForm = addJProp(publicGroup, "permitViewAllUserForm", getString("logics.user.allow.view.all.property"), permitViewAllUserRoleProperty, userMainRole, 1);
         forbidViewAllUserRoleProperty = addDProp(baseGroup, "forbidViewAllUserRoleProperty", getString("logics.user.forbid.view.all.property"), LogicalClass.instance, userRole);
         forbidViewAllUserForm = addJProp(publicGroup, "forbidViewAllUserForm", getString("logics.user.forbid.view.all.property"), forbidViewAllUserRoleProperty, userMainRole, 1);
 
-        allowChangeAllUserRoleProperty = addDProp(baseGroup, "allowChangeAllUserRoleProperty", getString("logics.user.allow.change.all.property"), LogicalClass.instance, userRole);
-        allowChangeAllUserForm = addJProp(publicGroup, "allowChangeAllUserForm", getString("logics.user.allow.change.all.property"), allowChangeAllUserRoleProperty, userMainRole, 1);
+        permitChangeAllUserRoleProperty = addDProp(baseGroup, "permitChangeAllUserRoleProperty", getString("logics.user.allow.change.all.property"), LogicalClass.instance, userRole);
+        permitChangeAllUserForm = addJProp(publicGroup, "permitChangeAllUserForm", getString("logics.user.allow.change.all.property"), permitChangeAllUserRoleProperty, userMainRole, 1);
         forbidChangeAllUserRoleProperty = addDProp(baseGroup, "forbidChangeAllUserRoleProperty", getString("logics.user.forbid.change.all.property"), LogicalClass.instance, userRole);
         forbidChangeAllUserForm = addJProp(publicGroup, "forbidChangeAllUserForm", getString("logics.user.forbid.change.all.property"), forbidChangeAllUserRoleProperty, userMainRole, 1);
+
+        // Разрешения для каждого свойства
+        permitViewUserRoleProperty = addDProp(baseGroup, "permitViewUserRoleProperty", getString("logics.policy.permit.property.view"), LogicalClass.instance, userRole, property);
+        permitViewUserProperty = addJProp(baseGroup, "permitViewUserProperty", getString("logics.policy.permit.property.view"), permitViewUserRoleProperty, userMainRole, 1, 2);
+        forbidViewUserRoleProperty = addDProp(baseGroup, "forbidViewUserRoleProperty", getString("logics.policy.forbid.property.view"), LogicalClass.instance, userRole, property);
+        forbidViewUserProperty = addJProp(baseGroup, "forbidViewUserProperty", getString("logics.policy.forbid.property.view"), forbidViewUserRoleProperty, userMainRole, 1, 2);
+
+        permitChangeUserRoleProperty = addDProp(baseGroup, "permitChangeUserRoleProperty", getString("logics.policy.permit.property.change"), LogicalClass.instance, userRole, property);
+        permitChangeUserProperty = addJProp(baseGroup, "permitChangeUserProperty", getString("logics.policy.permit.property.change"), permitChangeUserRoleProperty, userMainRole, 1, 2);
+        forbidChangeUserRoleProperty = addDProp(baseGroup, "forbidChangeUserRoleProperty", getString("logics.policy.forbid.property.change"), LogicalClass.instance, userRole, property);
+        forbidChangeUserProperty = addJProp(baseGroup, "forbidChangeUserProperty", getString("logics.policy.forbid.property.change"), forbidChangeUserRoleProperty, userMainRole, 1, 2);
+
+        notNullPermissionUserProperty = addSUProp("notNullPermissionUserProperty", Union.OVERRIDE, permitViewUserProperty, forbidViewUserProperty, permitChangeUserProperty, forbidChangeUserProperty);
+
+        // ---- Политики для логики представлений
+
+        // Открытие форм по умолчанию
+        userRoleDefaultForms = addDProp(baseGroup, "userRoleDefaultForms", getString("logics.user.displaying.forms.by.default"), LogicalClass.instance, userRole);
 
         userRoleFormDefaultNumber = addDProp(baseGroup, "userRoleFormDefaultNumber", getString("logics.forms.default.number"), IntegerClass.instance, userRole, navigatorElement);
         userFormDefaultNumber = addJProp(baseGroup, "userFormDefaultNumber", getString("logics.forms.default.number"), userRoleFormDefaultNumber, userMainRole, 1, 2);
         userDefaultForms = addJProp(publicGroup, "userDefaultForms", getString("logics.user.displaying.forms.by.default"), userRoleDefaultForms, userMainRole, 1);
-//        permissionUserForm = addDProp(baseGroup, "permissionUserForm", "Запретить форму", LogicalClass.instance, user, navigatorElement);
 
-        selectUserRoles = addSelectFromListAction(null, getString("logics.user.role.edit.roles"), inUserRole, userRole, customUser);
-        //selectRoleForms = addSelectFromListAction(null, "Редактировать формы", permissionUserRoleForm, navigatorElement, userRole);
+        // -- Глобальные разрешения для всех ролей
+        permitForm = addDProp(baseGroup, "permitForm", getString("logics.forms.permit.form"), LogicalClass.instance, navigatorElement);
+        forbidForm = addDProp(baseGroup, "forbidForm", getString("logics.forms.prohibit.form"), LogicalClass.instance, navigatorElement);
 
-        // заполним сессии
-        LCP sessionUser = addDProp("sessionUser", getString("logics.session.user"), user, session);
-        sessionUser.setEventChangeNew(currentUser, is(session), 1);
-        addJProp(baseGroup, getString("logics.session.user"), name, sessionUser, 1);
-        LCP sessionDate = addDProp(baseGroup, "sessionDate", getString("logics.session.date"), DateTimeClass.instance, session);
-        sessionDate.setEventChangeNew(currentDateTime, is(session), 1);
+        // -- Разрешения для каждой роли
+
+        // Разрешения для всех элементов
+        permitAllUserRoleForms = addDProp(baseGroup, "permitAllUserRoleForms", getString("logics.user.allow.all.user.form"), LogicalClass.instance, userRole);
+        permitAllUserForm = addJProp(publicGroup, "permitAllUserForm", getString("logics.user.allow.all.user.form"), permitAllUserRoleForms, userMainRole, 1);
+        forbidAllUserRoleForms = addDProp(baseGroup, "forbidAllUserRoleForms", getString("logics.user.forbid.all.user.form"), LogicalClass.instance, userRole);
+        forbidAllUserForm = addJProp(publicGroup, "forbidAllUserForm", getString("logics.user.forbid.all.user.form"), forbidAllUserRoleForms, userMainRole, 1);
+
+        // Разрешения для каждого элемента
+        permitUserRoleForm = addDProp(baseGroup, "permitUserRoleForm", getString("logics.forms.permit.form"), LogicalClass.instance, userRole, navigatorElement);
+        permitUserForm = addJProp(baseGroup, "permitUserForm", getString("logics.forms.permit.form"), permitUserRoleForm, userMainRole, 1, 2);
+        forbidUserRoleForm = addDProp(baseGroup, "permissionUserRoleForm", getString("logics.forms.prohibit.form"), LogicalClass.instance, userRole, navigatorElement);
+        forbidUserForm = addJProp(baseGroup, "permissionUserForm", getString("logics.forms.prohibit.form"), forbidUserRoleForm, userMainRole, 1, 2);
 
         // Настройка форм
         defaultBackgroundColor = addDProp("defaultBackgroundColor", getString("logics.default.background.color"), ColorClass.instance);

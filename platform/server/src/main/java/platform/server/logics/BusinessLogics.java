@@ -346,7 +346,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             DataObject userObject = new DataObject(user.ID, LM.customUser);
 
             Object forbidAll = LM.forbidAllUserForm.read(session, userObject);
-            Object allowAll = LM.allowAllUserForm.read(session, userObject);
+            Object allowAll = LM.permitAllUserForm.read(session, userObject);
             if (forbidAll != null)
                 policy.navigator.defaultPermission = false;
             else if (allowAll != null)
@@ -354,7 +354,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
 
             Object forbidViewAll = LM.forbidViewAllUserForm.read(session, userObject);
-            Object allowViewAll = LM.allowViewAllUserForm.read(session, userObject);
+            Object allowViewAll = LM.permitViewAllUserForm.read(session, userObject);
             if (forbidViewAll != null)
                 policy.property.view.defaultPermission = false;
             else if (allowViewAll != null)
@@ -362,7 +362,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
 
             Object forbidChangeAll = LM.forbidChangeAllUserForm.read(session, userObject);
-            Object allowChangeAll = LM.allowChangeAllUserForm.read(session, userObject);
+            Object allowChangeAll = LM.permitChangeAllUserForm.read(session, userObject);
             if (forbidChangeAll != null)
                 policy.property.change.defaultPermission = false;
             else if (allowChangeAll != null)
