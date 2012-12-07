@@ -42,12 +42,12 @@ public abstract class ImportOrderActionProperty extends BaseImportActionProperty
 
     private void initFields() {
         orderSIDField = new ImportField(LM.sidDocument);
-        dateOrderField = new ImportField(LM.baseLM.date);
+        dateOrderField = new ImportField(LM.date);
         dateFromOrderField = new ImportField(LM.dateFromOrder);
         dateToOrderField = new ImportField(LM.dateToOrder);
         dateFromOrderArticleField = new ImportField(LM.dateFromOrderArticle);
         dateToOrderArticleField = new ImportField(LM.dateToOrderArticle);
-        barCodeField = new ImportField(LM.baseLM.barcode);
+        barCodeField = new ImportField(LM.barcode);
         sidField = new ImportField(LM.sidArticle);
         colorCodeField = new ImportField(LM.sidColorSupplier);
         colorNameField = new ImportField(LM.baseLM.name);
@@ -87,7 +87,7 @@ public abstract class ImportOrderActionProperty extends BaseImportActionProperty
         ImportKey<?> orderKey = new ImportKey(LM.order, LM.documentSIDSupplier.getMapping(orderSIDField, supplier));
 
         properties.add(new ImportProperty(orderSIDField, LM.sidDocument.getMapping(orderKey)));
-        properties.add(new ImportProperty(dateOrderField, LM.baseLM.date.getMapping(orderKey)));
+        properties.add(new ImportProperty(dateOrderField, LM.date.getMapping(orderKey)));
         properties.add(new ImportProperty(dateFromOrderField, LM.dateFromOrder.getMapping(orderKey)));
         properties.add(new ImportProperty(dateToOrderField, LM.dateToOrder.getMapping(orderKey)));
         properties.add(new ImportProperty(supplier, LM.supplierDocument.getMapping(orderKey)));
@@ -101,8 +101,8 @@ public abstract class ImportOrderActionProperty extends BaseImportActionProperty
 
         ImportKey<?> itemKey = null;
         if (hasBarCode()) {
-            itemKey = new ImportKey(LM.item, LM.baseLM.barcodeToObject.getMapping(barCodeField));
-            properties.add(new ImportProperty(barCodeField, LM.baseLM.barcode.getMapping(itemKey)));
+            itemKey = new ImportKey(LM.item, LM.barcodeToObject.getMapping(barCodeField));
+            properties.add(new ImportProperty(barCodeField, LM.barcode.getMapping(itemKey)));
         } else {
             itemKey = new ImportKey(LM.item, LM.itemSupplierArticleSIDColorSIDSizeSID.getMapping(supplier, sidField, colorCodeField, sizeField));
         }

@@ -45,7 +45,7 @@ public class SampleLogicsModule extends LogicsModule {
         setBaseLogicsModule(baseLM);
     }
 
-    protected AbstractCustomClass document;
+    protected AbstractCustomClass transaction, document;
 
     protected ConcreteCustomClass article, descriptedArticle, store, descriptedStore, incomeDocument, outcomeDocument;
     protected ConcreteCustomClass articleGroup, descriptedArticleGroup;
@@ -69,7 +69,8 @@ public class SampleLogicsModule extends LogicsModule {
         store = addConcreteClass("store", "Склад", baseClass.named);
         descriptedStore = addConcreteClass("descriptedStore", "Склад с описанием", store);
 
-        document = addAbstractClass("document", "Документ", baseClass.named, baseLM.transaction);
+        transaction = addAbstractClass("transaction", "Транзакция", baseClass);
+        document = addAbstractClass("document", "Документ", baseClass.named, transaction);
         incomeDocument = addConcreteClass("incomeDocument", "Приход", document);
         outcomeDocument = addConcreteClass("outcomeDocument", "Расход", document);
 
@@ -79,6 +80,7 @@ public class SampleLogicsModule extends LogicsModule {
 
     @Override
     public void initTables() {
+        addTable("transaction", transaction);
     }
 
     @Override

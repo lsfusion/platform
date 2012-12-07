@@ -172,7 +172,7 @@ META implementPriceTransactionDocument(concrete)
 END
 //----------------------------------- Загрузка в ВУ -------------------------------------------------------
 
-CLASS ABSTRACT machineryPriceTransaction 'Загрузка прайса в оборудование' : historyObject;
+CLASS ABSTRACT machineryPriceTransaction 'Загрузка прайса в оборудование' : historizable;
 TABLE machineryPriceTransaction (machineryPriceTransaction);
 
 groupMachineryMachineryPriceTransaction (transaction) = ABSTRACT groupMachinery (machineryPriceTransaction);
@@ -324,7 +324,7 @@ FORM machineryPriceTransactions 'Загрузки прайса в оборудо
                            descriptionMachineryPriceTransaction, succeededMachineryPriceTransaction, canceledMachineryPriceTransaction,
                            quantityMachineryPriceTransactionErrorMachineryPriceTransaction BACKGROUND quantityMachineryPriceTransactionErrorMachineryPriceTransaction(t),
                            nppsMachineryPriceTransaction FORCE PANEL SHOWIF snapshotMachineryPriceTransaction(t)
-    PROPERTIES(t) READONLY nameUserCreated, hostnameComputerCreated
+    PROPERTIES(t) READONLY nameUserCreatedHistorizable, hostnameComputerCreatedHistorizable
     PROPERTIES(t)          ADDFORM, EDITFORM, delete
     FILTERS stockMachineryPriceTransaction(t) == s
 

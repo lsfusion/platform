@@ -658,7 +658,7 @@ DESIGN seriesNumberCuttingStudyInputDetail FROM DEFAULT {
 
 // Акты проработки
 
-CLASS actOfStudy 'Акт проработки (разделки)' : historyObject, numeratedDocument;
+CLASS actOfStudy 'Акт проработки (разделки)' : historizable, numeratedDocument;
 TABLE actOfStudy (actOfStudy);
 
 CLASS actOfStudyPosted 'Проведенный акт проработки' : actOfStudy, postedObject;
@@ -927,7 +927,7 @@ sumContainerOutAccountDocumentLedger (ledger) += 0.0 IF ledger IS saleDiscountDo
 
 //----------------------------------- Пересорт товара -------------------------------------------------------
 
-CLASS disparity 'Пересортица' : historyObject, numeratedDocument;
+CLASS disparity 'Пересортица' : historizable, numeratedDocument;
 CLASS disparityPosted 'Проведенная пересортица' : disparity, postedObject;
 CLASS disparityDetail 'Строка пересортицы';
 
@@ -1152,7 +1152,7 @@ FORM disparities 'Пересортицы'
                               countDisparityDetailDisparity, quantityDisparityDetailDisparity, retailSumDisparityDetailDisparity,
                               inputQuantityDisparityDetailDisparity, inputRetailSumDisparityDetailDisparity
 
-    PROPERTIES(dis)  READONLY FORCE PANEL timeCreated, nameUserCreated, hostnameComputerCreated, timeClosed, nameUserClosed, hostnameComputerClosed
+    PROPERTIES(dis)  READONLY FORCE PANEL timeCreatedHistorizable, nameUserCreatedHistorizable, hostnameComputerCreatedHistorizable, timeClosed, nameUserClosed, hostnameComputerClosed
 
     PROPERTIES (dis) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
 
@@ -1323,7 +1323,7 @@ FORM actOfStudies 'Акты проработки'
     PROPERTIES(a)  READONLY objectClassName, numberObject, seriesObject, dateActOfStudy, timeActOfStudy, nameDepartmentStoreActOfStudy,
                             nameContractorDepartmentStoreActOfStudy, quantityStudyOutputDetailActOfStudy, retailSumStudyOutputDetailActOfStudy, quantityStudyInputDetailActOfStudy, retailSumStudyInputDetailActOfStudy
 
-    PROPERTIES(a) READONLY FORCE PANEL timeCreated, nameUserCreated, hostnameComputerCreated, timeClosed, nameUserClosed, hostnameComputerClosed
+    PROPERTIES(a) READONLY FORCE PANEL timeCreatedHistorizable, nameUserCreatedHistorizable, hostnameComputerCreatedHistorizable, timeClosed, nameUserClosed, hostnameComputerClosed
 
     PROPERTIES (a)          ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
 

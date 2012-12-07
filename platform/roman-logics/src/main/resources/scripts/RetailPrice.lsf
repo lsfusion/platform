@@ -9,6 +9,7 @@ REQUIRE System,
         Currency,
         RomanSales,
         RomanLogicsModule,
+        Barcode,
         PriceList;
 
 PRIORITY MasterData, Stock, RomanLogicsModule;

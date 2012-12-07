@@ -117,7 +117,7 @@ FORM reason 'Причина списания'
 CLASS writeOff 'Списание' ;
 CLASS writeOffDetail 'Строка списания';
 
-CLASS userWriteOff 'Списание (польз.)' : writeOff, historyObject, numeratedDocument;
+CLASS userWriteOff 'Списание (польз.)' : writeOff, historizable, numeratedDocument;
 CLASS userWriteOffDetail 'Строка списания (польз.)' : writeOffDetail;
 CLASS userWriteOffPosted 'Проведенное списание (польз.)' : userWriteOff, postedObject;
 
@@ -284,7 +284,7 @@ FORM writeOffs 'Списания'
                             nameReasonWriteOff, noteWriteOff, quantityWriteOffDetailWriteOff, countWriteOffDetailWriteOff,
                             sumWriteOffDetailWriteOff, nameWriteOffCommitteeWriteOff
 
-    PROPERTIES (w) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
+    PROPERTIES (w) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
     PROPERTIES ()  addUserWriteOff TODRAW w
     PROPERTIES (w) editUserWriteOff
     PROPERTIES (w) delete FORCE PANEL DRAWTOTOOLBAR  SHOWIF isUserWriteOff(w)

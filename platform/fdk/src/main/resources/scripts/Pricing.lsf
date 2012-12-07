@@ -233,7 +233,7 @@ END
 CLASS ABSTRACT pricing 'Акт расценки';
 CLASS ABSTRACT pricingDetail 'Строка акта расценки';
 
-CLASS userPricing 'Акт расценки (польз.)' : pricing, historyObject, numeratedDocument;
+CLASS userPricing 'Акт расценки (польз.)' : pricing, historizable, numeratedDocument;
 CLASS userPricingDetail 'Строка акта расценки (польз.)' : pricingDetail;
 CLASS userPricingPosted 'Проведенный акт расценки (польз.)' : userPricing, postedObject;
 
@@ -407,7 +407,7 @@ FORM pricings 'Акты расценки' TITLE 'Акты расценки'
                             countPricingDetailPricing, quantityPricingDetailPricing, sumPricingDetailPricing,
                             retailSumPricingDetailPricing BACKGROUND backgroundRetailPricing(p), skipChangeLedgerPricing
 
-    PROPERTIES (p) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
+    PROPERTIES (p) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
     PROPERTIES ()  addUserPricing TODRAW p
     PROPERTIES (p) editUserPricing

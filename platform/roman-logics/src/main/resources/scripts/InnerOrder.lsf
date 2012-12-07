@@ -17,7 +17,7 @@ REQUIRE System,
 PRIORITY Stock, RomanLogicsModule;
 
 // ---------------------------------------- Внутренний заказ ------------------------------------ //
-CLASS innerOrder 'Внутренний заказ': historyObject, numeratedObject;
+CLASS innerOrder 'Внутренний заказ': historizable, numeratedObject;
 CLASS innerOrderDetail 'Строка внутреннего заказа';
 
 @defineNumeratedObjectDefault(innerOrder, 'Нумератор для внутренних заказов', 'ВЗ');
@@ -107,7 +107,7 @@ FORM innerOrders 'Внутренние заказы'
                             nameStockInnerOrder, nameDestinationStockInnerOrder,
                             countInnerOrderDetailInnerOrder, quantityInnerOrderDetailInnerOrder
 
-    PROPERTIES (o) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
+    PROPERTIES (o) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
     PROPERTIES (o) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
 
@@ -149,7 +149,7 @@ DESIGN innerOrders FROM DEFAULT {
 @extendFormDocumentDetailSkuArticleReadonly(innerOrders, d, innerOrder);
 
 // ---------------------------------------- Подбор товара ------------------------------------ //
-CLASS orderPicking 'Подбор товара по заказу': historyObject, numeratedObject;
+CLASS orderPicking 'Подбор товара по заказу': historizable, numeratedObject;
 CLASS orderPickingPosted 'Проведенный подбор товара по заказу': orderPicking, postedObject;
 
 CLASS orderPickingDetail 'Строка подбора товара по заказу';
@@ -670,7 +670,7 @@ EXTEND DESIGN innerOrders {
 
 // ---------------------------------------- Приемка ------------------------------------ //
 
-CLASS innerOrderRec 'Приемка товаров по внутреннему заказу' : historyObject;
+CLASS innerOrderRec 'Приемка товаров по внутреннему заказу' : historizable;
 CLASS innerOrderRecPosted 'Проведенная приемка товаров по внутреннему заказу' : innerOrderRec, postedObject;
 
 CLASS innerOrderRecDetail 'Строка приемки товаров по внутреннему заказу';
@@ -793,7 +793,7 @@ EXTEND DESIGN innerOrders {
 
 // ---------------------------------------- Акт расхождений ------------------------------------ //
 
-CLASS innerOrderDiff 'Акт расхождений приемки товаров по внутреннему заказу' : historyObject;
+CLASS innerOrderDiff 'Акт расхождений приемки товаров по внутреннему заказу' : historizable;
 
 CLASS ABSTRACT innerOrderDiffDetail 'Строка расхождений акта приемки товаров по по внутреннему заказу';
 CLASS innerOrderDiffEDetail 'Строка расхождений акта приемки товаров по внутреннему заказу (излишек)' : innerOrderDiffDetail;

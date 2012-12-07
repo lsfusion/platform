@@ -4,7 +4,7 @@ REQUIRE System, Stock, Hierarchy, RetailCRM, Barcode, PriceList;
 
 // ------------------------------------ Классификатор товаров --------------------------- //
 
-CLASS itemGroup 'Товарная группа' : named, externalObject, skuGroup, priceGroup;
+CLASS itemGroup 'Товарная группа' : named, externalizable, skuGroup, priceGroup;
 
 @defineHierarchy(itemGroup);
 
@@ -24,7 +24,7 @@ FORM itemGroups 'Товарные группы'
     ORDER BY name
 
     OBJECTS g=itemGroup
-    PROPERTIES(g) READONLY canonicalNameItemGroup, extSID, delete
+    PROPERTIES(g) READONLY canonicalNameItemGroup, sidExternalizable, delete
     PROPERTIES(g)          ADDFORM, EDITFORM
     ORDER BY canonicalNameItemGroup
 
@@ -45,7 +45,7 @@ DESIGN itemGroups FROM DEFAULT {
 
         ADD g.box {
             fillHorizontal = 4;
-            PROPERTY(extSID) {
+            PROPERTY(sidExternalizable) {
                 maximumCharWidth = 7;
             }
         }
@@ -55,7 +55,7 @@ DESIGN itemGroups FROM DEFAULT {
 
 // ----------------------------------- Товары ----------------------------------- //
 
-CLASS item 'Товар' : sku, externalObject;
+CLASS item 'Товар' : sku, externalizable;
 TABLE item(item);
 
 TABLE itemDate (item, DATE);
@@ -343,7 +343,7 @@ UOMSku(item) += UOMItem(item);
 @implementObjectShortItemAttribute(UOM, 'Единица измерения (сокр.)');
 
 // Брэнд
-CLASS brand 'Бренд' : named, externalObject;
+CLASS brand 'Бренд' : named, externalizable;
 TABLE brand(brand);
 
 @defineObjectItemAttribute(brand, name, 'Бренд', itemBaseGroup);

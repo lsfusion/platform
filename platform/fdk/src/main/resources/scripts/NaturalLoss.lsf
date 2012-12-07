@@ -6,10 +6,10 @@ GROUP rateGroup 'Нормы' : publicGroup;
 
  // ----------------------------------- Справочник норм естественной убыли -------------------------------------------- //
 
- CLASS naturalLossGroup 'Группа естественной убыли': named, externalObject;
+ CLASS naturalLossGroup 'Группа естественной убыли': named, externalizable;
 
- CLASS subNaturalLossGroup 'Группа естественной убыли': named, externalObject;
- CLASS subNaturalLossGroupDetail 'Строка группы естественной убыли' : externalObject;
+ CLASS subNaturalLossGroup 'Группа естественной убыли': named, externalizable;
+ CLASS subNaturalLossGroupDetail 'Строка группы естественной убыли' : externalizable;
 
  parentNaturalLossGroup = DATA naturalLossGroup (subNaturalLossGroup);
  nameParentNaturalLossGroup 'Родительская группа' (subNaturalLossGroup) = name(parentNaturalLossGroup(subNaturalLossGroup));
@@ -173,8 +173,8 @@ FORM naturalLossGroups 'Справочник норм естественной �
 
 //------------------------------------- Ведомость расчета естественной убыли ----------------------------------//
 
-CLASS naturalLoss 'Ведомость естественной убыли' : historyObject, externalObject, numberedObject;
-CLASS naturalLossDetail 'Строка ведомости естественной убыли': externalObject;
+CLASS naturalLoss 'Ведомость естественной убыли' : historizable, externalizable, numberedObject;
+CLASS naturalLossDetail 'Строка ведомости естественной убыли': externalizable;
 CLASS naturalLossPosted 'Проведенная ведомость естественной убыли' : naturalLoss, postedObject;
 
 @defineDocument(naturalLoss);
@@ -356,7 +356,7 @@ FORM naturalLosses 'Ведомости естественной убыли'
                            retailSumNaturalLossDetailNaturalLoss, noteNaturalLoss
     PROPERTIES(s) toPrintNaturalLoss FORCE PANEL
     PROPERTIES(s) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
-    PROPERTIES(s) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
+    PROPERTIES(s) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
     OBJECTS d=naturalLossDetail
     PROPERTIES(d) READONLY indexNaturalLossDetail, nameSkuNaturalLossDetail, codeNaturalLossDetail,
                            shortNameUOMSkuNaturalLossDetail, quantityLossNaturalLossDetail,

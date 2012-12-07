@@ -185,7 +185,7 @@ public class ImportProjectsActionProperty extends UserActionProperty {
     List<ImportProperty<?>> propertiesObjectivesForeign = new ArrayList<ImportProperty<?>>();
 
     private void initOldFieldsNProperties() {
-        dateProjectField = new ImportField(LM.baseLM.date);
+        dateProjectField = new ImportField(LM.date);
         dateStatusProjectField = new ImportField(LM.statusDateProject);
         projectIdField = new ImportField(LM.sidProject);
         nameNativeProjectField = new ImportField(LM.nameNativeJoinProject);
@@ -465,7 +465,7 @@ public class ImportProjectsActionProperty extends UserActionProperty {
     }
 
     private void initNewFieldsNProperties(boolean fillNative) {
-        dateProjectField = new ImportField(LM.baseLM.date);
+        dateProjectField = new ImportField(LM.date);
         dateStatusProjectField = new ImportField(LM.statusDateProject);
         projectIdField = new ImportField(LM.sidProject);
         nameNativeProjectField = new ImportField(LM.nameNativeJoinProject);
@@ -1026,7 +1026,7 @@ public class ImportProjectsActionProperty extends UserActionProperty {
         String string = cal.getTimeInMillis() / 1000 + "_1q2w3e";
 
         MessageDigest m = MessageDigest.getInstance("MD5");
-        String webHost = (String) LM.baseLM.webHost.read(pInfo.session);
+        String webHost = (String) LM.webHost.read(pInfo.session);
         webHost = webHost != null ? webHost.substring(0, webHost.indexOf("/")) : null;
         return webHost == null ? null : "http://" + webHost + "/xml.php?hash=" + Hex.encodeHexString(m.digest(string.getBytes()));
     }

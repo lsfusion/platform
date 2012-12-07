@@ -59,7 +59,7 @@ META defineShipment(sign, stockProp)
     CLASS ABSTRACT shipment 'Поставка'###sign : Shipment.shipment;
     CLASS ABSTRACT shipmentDetail 'Строка поставки'###sign : Shipment.shipmentDetail;
 
-    CLASS userShipment 'Поставка (польз.)'###sign : shipment, historyObject, numeratedDocument;
+    CLASS userShipment 'Поставка (польз.)'###sign : shipment, historizable, numeratedDocument;
     CLASS userShipmentDetail 'Строка поставки (польз.)'###sign : shipmentDetail;
     CLASS userShipmentPosted 'Проведенная поставка (польз.)'###sign : userShipment, postedObject;
 
@@ -216,7 +216,7 @@ META defineShipment(sign, stockProp)
                                 nameSupplierShipment, nameSupplierStockShipment, nameCustomerShipment, nameCustomerStockShipment,
                                 nameCurrencyShipment, noteShipment,
                                 countShipmentDetailShipment, quantityShipmentDetailShipment, sumShipmentDetailShipment
-        PROPERTIES (s) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
+        PROPERTIES (s) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
         PROPERTIES ()  addUserShipment TODRAW s
         PROPERTIES (s) editShipment

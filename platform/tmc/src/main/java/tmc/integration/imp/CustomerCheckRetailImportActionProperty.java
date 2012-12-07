@@ -44,7 +44,7 @@ public class CustomerCheckRetailImportActionProperty extends UserActionProperty 
                 impFile.read();
 
                 DataObject dataObject = context.addObject(BL.VEDLM.customerCheckRetail);
-                BL.LM.barcode.change(new String(impFile.getField("barcode").getBytes(), "Cp1251"), context, dataObject);
+                BL.VEDLM.barcode.change(new String(impFile.getField("barcode").getBytes(), "Cp1251"), context, dataObject);
                 BL.LM.name.change(new String(impFile.getField("name").getBytes(), "Cp1251"), context, dataObject);
                 BL.VEDLM.clientInitialSum.change(Double.parseDouble(impFile.getField("clientsum").get()), context, dataObject);
             }

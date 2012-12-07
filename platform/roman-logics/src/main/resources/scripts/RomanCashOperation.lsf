@@ -4,7 +4,7 @@ REQUIRE System, CashOperation, RomanPOS;
 
 NAMESPACE CashOperation;
 
-CLASS accountCollection 'Изъятие (упр.)' : outcomeCashOrder, historyObject, numeratedObject;
+CLASS accountCollection 'Изъятие (упр.)' : outcomeCashOrder, historizable, numeratedObject;
 TABLE accountCollection (accountCollection);
 
 @defineNumeratedObjectDefault(accountCollection, 'Нумератор для изъятий', 'ИЗ');

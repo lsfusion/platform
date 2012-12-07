@@ -104,7 +104,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public ConcreteCustomClass tableColumn;
     public ConcreteCustomClass dropColumn;
 
-    public AbstractCustomClass transaction, barcodeObject, externalObject, historyObject;
+    public AbstractCustomClass barcodeObject;
 
     public AbstractCustomClass emailObject;
 
@@ -157,8 +157,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP dayInDate;
     public LCP toDate;
     public LCP toTime;
-    public LCP jumpWorkdays;
-    public LCP completeBarcode;
 
     public LCP numberMonth;
     public LCP monthNumber;
@@ -178,10 +176,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP dumb2;
 
     public LCP<?> name;
-    public LCP<?> date;
-
-    public LCP redColor;
-    public LCP yellowColor;
 
     public LAP formPrint;
     public LAP formEdit;
@@ -193,8 +187,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LAP formOk;
     public LAP formClose;
 
-    public LCP sumDateWeekFrom;
-    public LCP sumDateWeekTo;
+    public LAP seek;
 
     protected LCP transactionLater;
     public LCP currentDate;
@@ -211,18 +204,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LAP changeUser;
     public LAP logOut;
     protected LCP isServerRestarting;
-    public LCP<PropertyInterface> barcode;
-    public LCP<PropertyInterface> barcodeToObject;
-    public LCP barcodeObjectName;
-    public LCP equalsObjectBarcode;
-    public LAP seekBarcodeAction;
-    public LAP barcodeNotFoundMessage;
-    public LCP extSID, extSIDToObject;
-    public LCP timeCreated, userCreated, nameUserCreated, computerCreated, hostnameComputerCreated;
     public LAP restartServerAction;
     public LAP runGarbageCollector;
     public LAP cancelRestartServerAction;
-    public LCP reverseBarcode;
 
     public LCP userLogin;
     public LCP userPassword;
@@ -285,7 +269,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP userPolicyOrder;
 
     public LCP hostname;
-    public LCP notZero;
 
     public LAP delete;
     public LAP deleteApply;
@@ -445,8 +428,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP integerID;
     public LCP dateID;
 
-    public LCP webHost;
-
     public LCP encryptedConnectionType;
     public LCP nameEncryptedConnectionType;
     public LCP smtpHost;
@@ -545,10 +526,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         barcodeObject = addAbstractClass("barcodeObject", getString("logics.object.barcoded.object"), baseClass);
 
-        externalObject = addAbstractClass("externalObject", getString("logics.object.external.object"), baseClass);
-
-        historyObject = addAbstractClass("historyObject", getString("logics.object.history.object"), baseClass);
-
         emailObject = addAbstractClass("emailObject", getString("logics.object.with.email"), baseClass);
 
         encryptedConnectionTypeStatus = addStaticClass("encryptedConnectionTypeStatus", getString("logics.connection.type.status"),
@@ -607,7 +584,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
                 new String[]{"Неизвестно", "Принять", "Закрыть"});
 
         // todo : раскидать по модулям
-        transaction = addAbstractClass("transaction", getString("logics.transaction"), baseClass);
 
         multiLanguageNamed = addConcreteClass("multiLanguageNamed", "Мультиязычный объект", baseClass);
     }
@@ -657,13 +633,10 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         addTable("scheduledTaskLog", scheduledTaskLog);
         addTable("scheduledClientTaskLog", scheduledClientTaskLog);
         addTable("launch", launch);
-        addTable("transaction", transaction);
         addTable("named", baseClass.named);
         addTable("sidClass", baseClass.sidClass);
         addTable("barcodeObject", barcodeObject);
         addTable("emailObject", emailObject);
-        addTable("externalObject", externalObject);
-        addTable("historyObject", historyObject);
         addTable("dictionary", dictionary);
         addTable("dictionaryEntry", dictionaryEntry);
 
@@ -819,6 +792,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         formRefresh = addProperty(null, new LAP(new RefreshActionProperty()));
         formOk = addProperty(null, new LAP(new OkActionProperty()));
         formClose = addProperty(null, new LAP(new CloseActionProperty()));
+        
+        seek = addSAProp(null);
 
         // Текущие значения
         currentDate = addDProp(baseGroup, "currentDate", getString("logics.date.current.date"), DateClass.instance);
@@ -1249,61 +1224,11 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         //todo : инлайнить в свои модули
 
-        date = addDProp(baseGroup, "date", getString("logics.date"), DateClass.instance, transaction);
-        date.setEventChange(currentDate, is(transaction), 1);
-
-        redColor = addCProp(ColorClass.instance, Color.RED);
-        yellowColor = addCProp(ColorClass.instance, Color.YELLOW);
-
-        notZero = addJProp(diff2, 1, vzero);
-
-        barcode = addDProp(recognizeGroup, "barcode", getString("logics.barcode"), StringClass.get(Settings.instance.getBarcodeLength()), barcodeObject);
-
-        barcode.setFixedCharWidth(13);
-        barcodeToObject = addAGProp("barcodeToObject", getString("logics.object"), barcode);
-        barcodeObjectName = addJProp(baseGroup, "barcodeObjectName", getString("logics.object"), name, barcodeToObject, 1);
-
-        equalsObjectBarcode = addJProp(equals2, barcode, 1, 2);
-
-        seekBarcodeAction = addJoinAProp(getString("logics.barcode.search"), addSAProp(null), barcodeToObject, 1);
-        barcodeNotFoundMessage = addIfAProp(addJProp(baseLM.andNot1, is(StringClass.get(13)), 1, barcodeToObject, 1), 1, addMAProp(getString("logics.barcode.not.found"), getString("logics.error")));
-
-        completeBarcode = addSFProp("completeBarcode", "completeBarcode(prm1)", StringClass.get(13), 1);
-
-        reverseBarcode = addSDProp("reverseBarcode", getString("logics.barcode.reverse"), LogicalClass.instance);
-
-        webHost = addDProp("webHost", getString("logics.host.webhost"), StringClass.get(50));
-
-        // в отдельный Integration.lsf
-        extSID = addDProp(recognizeGroup, "extSID", getString("logics.extsid"), StringClass.get(100), externalObject);
-        extSIDToObject = addAGProp("extSIDToObject", getString("logics.object"), extSID);
-
-        // в Historizable.lsf
-        timeCreated = addDProp(historyGroup, "timeCreated", getString("logics.timecreated"), DateTimeClass.instance, historyObject);
-        userCreated = addDProp(idGroup, "userCreated", getString("logics.usercreated"), customUser, historyObject);
-        nameUserCreated = addJProp(historyGroup, "nameUserCreated", getString("logics.usercreated"), name, userCreated, 1);
-        nameUserCreated.setMinimumCharWidth(10); nameUserCreated.setPreferredCharWidth(20);
-        computerCreated = addDProp(idGroup, "computerCreated", getString("logics.computercreated"), computer, historyObject);
-        hostnameComputerCreated = addJProp(historyGroup, "hostnameComputerCreated", getString("logics.computercreated"), hostname, computerCreated, 1);
-        hostnameComputerCreated.setMinimumCharWidth(10); hostnameComputerCreated.setPreferredCharWidth(20);
-
-        timeCreated.setEventChangeNew(currentDateTime, is(historyObject), 1);
-        userCreated.setEventChangeNew(currentUser, is(historyObject), 1);
-        computerCreated.setEventChangeNew(currentComputer, is(historyObject), 1);
-
-        // в Utils.lsf
-        sumDateWeekFrom = addJProp("sumDateWeekFrom", getString("logics.date.from"), and(false, false), addSFProp("((prm1)+(prm2)*7)", DateClass.instance, 2), 1, 2, is(DateClass.instance), 1, is(IntegerClass.instance), 2);
-        sumDateWeekTo = addJProp("sumDateWeekTo", getString("logics.date.to"), and(false, false), addSFProp("((prm1)+((prm2)*7+6))", DateClass.instance, 2), 1, 2, is(DateClass.instance), 1, is(IntegerClass.instance), 2);
-
-        // в Country.lsf
-        jumpWorkdays = addSFProp("jumpWorkdays", "jumpWorkdays(prm1, prm2, prm3)", DateClass.instance, 3); //1 - country, 2 - date, 3 - days to jump
-
         initNavigators();
     }
 
     @Override
     public void initIndexes() {
-        addIndex(barcode);
         addIndex(dataName);
     }
 
@@ -1992,7 +1917,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         protected UserPolicyFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, getString("logics.user.users"));
 
-            ObjectEntity objUser = addSingleGroupObject(customUser, nameUserMainRole, name, userLogin, email, barcode);
+            ObjectEntity objUser = addSingleGroupObject(customUser, nameUserMainRole, name, userLogin, email);
             setEditType(objUser, PropertyEditType.READONLY);
 
             addFormActions(this, objUser);
@@ -2007,7 +1932,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         protected UserEditFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, getString("logics.user.user"));
 
-            objUser = addSingleGroupObject(customUser, userFirstName, userLastName, userLogin, userPassword, email, nameUserMainRole, barcode);
+            objUser = addSingleGroupObject(customUser, userFirstName, userLastName, userLogin, userPassword, email, nameUserMainRole);
             objUser.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             objRole = addSingleGroupObject(userRole, name, userRoleSID);
@@ -2628,7 +2553,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         private AdminFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, getString("logics.global.parameters"));
 
-            addPropertyDraw(new LP[]{webHost, defaultBackgroundColor,
+            addPropertyDraw(new LP[]{defaultBackgroundColor,
                     defaultForegroundColor, restartServerAction, cancelRestartServerAction, checkAggregationsAction, recalculateAction,
                     recalculateFollowsAction, packAction, analyzeDBAction, serviceDBAction, runGarbageCollector});
         }

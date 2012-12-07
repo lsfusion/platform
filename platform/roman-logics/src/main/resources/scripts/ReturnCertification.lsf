@@ -18,7 +18,7 @@ REQUIRE System,
 
 PRIORITY Stock, RomanLogicsModule;
 
-CLASS returnCertification 'Возврат из сертификации' : historyObject, numeratedObject;
+CLASS returnCertification 'Возврат из сертификации' : historizable, numeratedObject;
 CLASS returnCertificationPosted 'Проведенный возврат из сертификации' : returnCertification, postedObject;
 CLASS returnCertificationDetail 'Строка возврата из сертификации' : batchB;
 
@@ -194,7 +194,7 @@ FORM returnCertifications 'Возвраты из сертификации'
 
     PROPERTIES(w) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
 
-    PROPERTIES (w) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed,
+    PROPERTIES (w) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed,
                                         hostnameComputerClosed
 
     OBJECTS d = returnCertificationDetail

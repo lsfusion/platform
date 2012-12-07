@@ -1,6 +1,6 @@
 MODULE Tax;
 
-REQUIRE System, Utils, Hierarchy, Country;
+REQUIRE System, Utils, Historizable, Hierarchy, Country;
 
 // ---------------------------------- Налог --------------------------------------- //
 
@@ -69,7 +69,7 @@ rangeVATTaxUnit 'Шкала субъекту' (taxUnit) = rangeTaxTaxUnit (tax.t
 
 // ---------------------------------- История изменений шкалы --------------------------------------- //
 
-CLASS rate 'История изменений шкалы' : historyObject;
+CLASS rate 'История изменений шкалы' : historizable;
 TABLE rate(rate);
 
 rangeRate = DATA range (rate) IN idGroup;
@@ -88,7 +88,7 @@ valueCurrentRateRange 'Действующая ставка' (range) = valueRate(
 
 dateFromActingRateRange 'Действует с' (range) = dateFromRate(currentRateRange(range)) IN baseGroup;
 dateToActingRateRange 'Действует по' (range) = dateToRate(currentRateRange(range)) IN baseGroup;
-nameUserCreatedActingRateRange 'Создан пользователем' (range) = nameUserCreated(currentRateRange(range)) IN baseGroup;
+nameUserCreatedActingRateRange 'Создан пользователем' (range) = nameUserCreatedHistorizable(currentRateRange(range)) IN baseGroup;
 
 CONSTRAINT rangeRate(rt1) == rangeRate(rt2) AND NOT (dateFromRate(rt2) <= dateFromRate(rt1) OR dateToRate(rt1) < dateFromRate(rt2))  MESSAGE 'ошибка: Одновременно не может быть несколько действующих ставок / или не задано: действует с';
 
@@ -116,7 +116,7 @@ FORM tax 'Налог'
     FILTERS           countryRange(ra) == c
 
     OBJECTS           rt=rate
-    PROPERTIES(rt)    valueRate, dateFromRate, dateToRate, timeCreated, nameUserCreated, ADDOBJ, delete
+    PROPERTIES(rt)    valueRate, dateFromRate, dateToRate, timeCreatedHistorizable, nameUserCreatedHistorizable, ADDOBJ, delete
     FILTERS           rangeRate(rt) == ra
 
     TREE treeTaxUnit  a=STRING[3], ug = taxUnitGroup PARENT parentTaxUnitGroup

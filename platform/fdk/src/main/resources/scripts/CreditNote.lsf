@@ -9,7 +9,7 @@ META defineCreditNote(sign, stockProp)//contact, contactCaption)
     CLASS ABSTRACT creditNote 'Акт расхождения'###sign ;
     CLASS ABSTRACT creditNoteDetail 'Строка акта расхождения'###sign ;
 
-    CLASS userCreditNote 'Акт расхождения (польз.)'###sign : creditNote, historyObject, numeratedDocument;
+    CLASS userCreditNote 'Акт расхождения (польз.)'###sign : creditNote, historizable, numeratedDocument;
     CLASS userCreditNoteDetail 'Строка акта расхождения (польз.)'###sign : creditNoteDetail;
     CLASS userCreditNotePosted 'Проведенный акта расхождения (польз.)'###sign : userCreditNote, postedObject;
 
@@ -143,7 +143,7 @@ META defineCreditNote(sign, stockProp)//contact, contactCaption)
                                 nameCurrencyCreditNote, noteCreditNote,
                                 countCreditNoteDetailCreditNote, quantityCreditNoteDetailCreditNote, sumCreditNoteDetailCreditNote,
                                 VATSumCreditNoteDetailCreditNote, invoiceSumCreditNoteDetailCreditNote
-        PROPERTIES (c) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
+        PROPERTIES (c) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
         PROPERTIES ()  addUserCreditNote TODRAW c
         PROPERTIES (c) editUserCreditNote

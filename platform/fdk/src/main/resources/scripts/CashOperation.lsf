@@ -80,7 +80,7 @@ fiscalCancelReceipt 'Отменить чек' = ABSTRACT ACTION();
 
 //---------------------------- Инкассация ----------------------------------------------------------------//
 
-CLASS collection 'Инкассация' : outcomeCashOrder, historyObject, numeratedObject;
+CLASS collection 'Инкассация' : outcomeCashOrder, historizable, numeratedObject;
 TABLE collection (collection);
 
 isCollection (collection) = collection IS collection;
@@ -216,7 +216,7 @@ isCompleteCashOperation 'Фискализировано' = DATA BOOLEAN (cashOpe
 
 //---------------------------- Внесение денег ----------------------------------------------------------------//
 
-CLASS incomeCashOperation 'Внесение денег' : outcomeCashOrder, historyObject, numeratedObject, cashOperation;
+CLASS incomeCashOperation 'Внесение денег' : outcomeCashOrder, historizable, numeratedObject, cashOperation;
 TABLE incomeCashOperation (incomeCashOperation);
 
 isIncomeCashOperation (cashOperation) = cashOperation IS incomeCashOperation;
@@ -264,7 +264,7 @@ cashRegisterCashOperation(incomeCashOperation) += cashRegisterIncomeCashOperatio
 
 //------------------------------ Изъятие денег -----------------------------------------------------------//
 
-CLASS outcomeCashOperation 'Изъятие денег' : incomeCashOrder, historyObject, numeratedObject, cashOperation;
+CLASS outcomeCashOperation 'Изъятие денег' : incomeCashOrder, historizable, numeratedObject, cashOperation;
 TABLE outcomeCashOperation (outcomeCashOperation);
 
 isOutcomeCashOperation (cashOperation) = cashOperation IS outcomeCashOperation;

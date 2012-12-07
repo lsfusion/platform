@@ -16,7 +16,7 @@ REQUIRE System,
 
 // ------------------------------------- Объявление Z-отчета ---------------------------------------- //
 
-CLASS zReport 'Z-отчет (открытый)' : incomeCashOrder, historyObject, numberedObject;
+CLASS zReport 'Z-отчет (открытый)' : incomeCashOrder, historizable, numberedObject;
 CLASS zReportPosted 'Z-отчет (проведенный)' : zReport, postedObject;
 
 TABLE zReport (zReport);
@@ -55,7 +55,7 @@ exportReceiptsZReport 'Экспортировать чеки' = ACTION CUSTOM 'p
 importReceiptsZReport 'Импортировать чеки' = ACTION CUSTOM 'platform.fdk.actions.ImportReceiptsActionProperty';
 //----------------------------------------------- Чеки ---------------------------------------------------//
 
-CLASS receipt 'Чек' : historyObject;
+CLASS receipt 'Чек' : historizable;
 
 CLASS ABSTRACT receiptDetail 'Строка чека';
 CLASS receiptSaleDetail 'Строка продажи' : receiptDetail;

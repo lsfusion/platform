@@ -15,7 +15,7 @@ PRIORITY Stock, RomanLogicsModule;
 
 // ---------------------------------------- Возврат ------------------------------------ //
 
-CLASS returnOut 'Возврат товаров по накладным' : historyObject, numberedObject, outAccountDocumentLedger, innerDocument;
+CLASS returnOut 'Возврат товаров по накладным' : historizable, numberedObject, outAccountDocumentLedger, innerDocument;
 CLASS returnOutPosted 'Проведенный возврат товаров по накладным' : returnOut, postedObject;
 CLASS returnOutDetail 'Строка возврата товаров по накладным';
 
@@ -165,7 +165,7 @@ EXTEND FORM returnOuts
 
 // ---------------------------------------- Поступление ------------------------------------ //
 
-CLASS returnIn 'Получение товаров по накладным' : historyObject, incAccountDocumentLedger;
+CLASS returnIn 'Получение товаров по накладным' : historizable, incAccountDocumentLedger;
 CLASS returnInDetail 'Строка получения товаров по накладным';
 
 @defineDocumentTransferIn(return, 'Получение товаров по накладным', sku, stock);
@@ -208,7 +208,7 @@ nameCurrencyReturnIn 'Валюта' (returnIn) = nameCurrencyReturnOut(returnOut
 
 // ---------------------------------------- Приемка ------------------------------------ //
 
-CLASS returnRec 'Приемка товаров по накладной (возврат)' : historyObject;
+CLASS returnRec 'Приемка товаров по накладной (возврат)' : historizable;
 CLASS returnRecPosted 'Проведенная приемка товаров по накладной (возврат)' : returnRec, postedObject;
 
 CLASS returnRecDetail 'Строка приемки товаров по накладной (возврат)';
@@ -222,7 +222,7 @@ CLASS returnRecDetail 'Строка приемки товаров по накл�
 @extendFormDocumentDetailSkuArticleReadonly(returnIns, r, returnRec);
 
 // ---------------------------------------- Акт расхождений ------------------------------------ //
-CLASS returnDiff 'Акт расхождений приемки товаров по накладной (возврат)' : historyObject;
+CLASS returnDiff 'Акт расхождений приемки товаров по накладной (возврат)' : historizable;
 
 CLASS ABSTRACT returnDiffDetail 'Строка расхождений акта приемки товаров по накладной (возврат)';
 CLASS returnDiffEDetail 'Строка расхождений акта приемки товаров по накладной (возврат, излишек)' : returnDiffDetail;

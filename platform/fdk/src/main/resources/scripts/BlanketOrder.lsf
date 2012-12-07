@@ -6,7 +6,7 @@ REQUIRE Order;
 
 META defineBlanketOrder(sign)
 
-    CLASS blanketOrder 'Множественный заказ'###sign : historyObject, numeratedDocument;
+    CLASS blanketOrder 'Множественный заказ'###sign : historizable, numeratedDocument;
     CLASS blanketOrderDetail 'Строка множественного заказа'###sign : named;
 
     CLASS blanketOrderPosted 'Проведенный множественный заказ'###sign : blanketOrder, postedObject;
@@ -199,7 +199,7 @@ META defineBlanketOrder(sign)
                                 countBlanketOrderDetailBlanketOrder, quantityBlanketOrderDetailBlanketOrder, sumBlanketOrderDetailBlanketOrder,
                                 shipmentDateBlanketOrder, shipmentTimeBlanketOrder, customerStocksBlanketOrder
 
-        PROPERTIES (o) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
+        PROPERTIES (o) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
         PROPERTIES (o) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
         PROPERTIES (o) closeBlanketOrder SHOWIF isOpendBlanketOrder(o)

@@ -151,7 +151,7 @@ META defineDocumentTransferAccount(concrete, retailProp)
 END
 
 // --------------------------------- Документы для генерации по трансферу -------------------------------- //
-CLASS ABSTRACT innerDocument 'Внутренний документ' : historyObject, numberedObject;
+CLASS ABSTRACT innerDocument 'Внутренний документ' : historizable, numberedObject;
 
 dateInnerDocument 'Дата' (innerDocument) = ABSTRACT DATE (innerDocument);
 

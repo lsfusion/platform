@@ -34,7 +34,7 @@ public class BudgetLogicsModule extends LogicsModule {
     }
 
     AbstractGroup salaryGroup, dateTimeGroup, personGroup, extraGroup, outGroup, inOperationGroup, payerGroup, baseCurGroup;
-    AbstractCustomClass operation, inAbsOperation, outAbsOperation, absOutPerson, absOutTime, departmentAbs, extraSection, payer, payerAbs;
+    AbstractCustomClass transaction, operation, inAbsOperation, outAbsOperation, absOutPerson, absOutTime, departmentAbs, extraSection, payer, payerAbs;
 
     ConcreteCustomClass exOperation, section, inOperation, outOperation, extraCost, person, pay, absMonth, mission, misOperation, department, sectionOut, city, extraPersonSection, extraAdmSection, contractor, reimbursement, vacation;
     ConcreteCustomClass incomeCash;
@@ -60,7 +60,8 @@ public class BudgetLogicsModule extends LogicsModule {
     public void initClasses() {
         initBaseClassAliases();
 
-        operation = addAbstractClass("operation", "Операции", baseLM.transaction);
+        transaction = addAbstractClass("transaction", "Транзакция", baseClass);
+        operation = addAbstractClass("operation", "Операции", transaction);
         inAbsOperation = addAbstractClass("inAbsOperation", "Абс. приход", operation);
         outAbsOperation = addAbstractClass("outAbsOperation", "Абс. расход", operation);
         absOutPerson = addAbstractClass("absOutPerson", "Абс. расход сотруд.", outAbsOperation);
@@ -90,7 +91,7 @@ public class BudgetLogicsModule extends LogicsModule {
         extraPersonSection = addConcreteClass("extraPersonSection", "Статья затрат перс.", extraSection);
         extraAdmSection = addConcreteClass("extraAdmSection", "Статья затрат админ.", extraSection);
         contractor = addConcreteClass("contractor", "Контрагент", payer);
-        reimbursement = addConcreteClass("reimbursement", "Возмещение", baseLM.transaction);
+        reimbursement = addConcreteClass("reimbursement", "Возмещение", transaction);
         vacation = addConcreteClass("vacation", "Отпуск", baseClass);
 
         incomeCash = addConcreteClass("incomeCash", "Приход по налу", inAbsOperation, departmentAbs);
@@ -110,11 +111,12 @@ public class BudgetLogicsModule extends LogicsModule {
         investmentCash = addConcreteClass("investmentCash", "Инвестиция (нал)", incomeCash, investmentMoney);
         investmentNotCash = addConcreteClass("investmentNotCash", "Инвестиция (безнал)", incomeNotCash, investmentMoney);
 
-        investmentNotMoney = addConcreteClass("investmentNotMoney", "Инвестиция (немат.)", investment, baseLM.transaction);
+        investmentNotMoney = addConcreteClass("investmentNotMoney", "Инвестиция (немат.)", investment, transaction);
     }
 
     @Override
     public void initTables() {
+        addTable("transaction", transaction);
         addTable("salary", person, absMonth, YearClass.instance);
         addTable("currency", person, absMonth, YearClass.instance);
         addTable("hour", person, absMonth, YearClass.instance);
@@ -153,6 +155,7 @@ public class BudgetLogicsModule extends LogicsModule {
     LCP exchangeRateCurrencyTransaction;
     LCP baseCurrency, baseCurrencyName;
     LCP rateDate, userRateDay, dateByMY, rateDay, incomeOutcome;
+    LCP date;
 
     LCP investorInvestment, nameInvestorInvestment;
 
@@ -236,8 +239,11 @@ public class BudgetLogicsModule extends LogicsModule {
         LCP totalVacationDays = addSGProp(baseGroup, "totalVacationDays", "Отпуск, календарных дней", vacationDaysQuantity, vacationPerson, 1);
         LCP totalVacationWorkDays = addSGProp(baseGroup, "totalVacationWorkDays", "Отпуск, рабочих дней", vacationWorkDays, vacationPerson, 1);
 
-        LCP transactionMonth = addJProp("Месяц", monthInDate, baseLM.date, 1);
-        LCP transactionYear = addJProp("Год", yearInDate, baseLM.date, 1);
+        date = addDProp(baseGroup, "date", "Дата", DateClass.instance, transaction);
+        date.setEventChange(baseLM.currentDate, is(transaction), 1);
+        
+        LCP transactionMonth = addJProp("Месяц", monthInDate, date, 1);
+        LCP transactionYear = addJProp("Год", yearInDate, date, 1);
 
         LCP payRate = addDProp(baseGroup, "rateP", "Курс", DoubleClass.instance, pay);
         LCP extraRate = addDProp(baseGroup, "rateExtra", "Курс", DoubleClass.instance, extraCost);
@@ -253,7 +259,7 @@ public class BudgetLogicsModule extends LogicsModule {
 
         // чисто проталкивание ключей внутрь
 
-        LCP lessCmpDateOp = addJProp(and(false, true, false), object(DateClass.instance), 3, exchangeRate, 1, 2, 3, addJProp(baseLM.greater2, 1, baseLM.date, 2), 3, 4, baseLM.date, 4);
+        LCP lessCmpDateOp = addJProp(and(false, true, false), object(DateClass.instance), 3, exchangeRate, 1, 2, 3, addJProp(baseLM.greater2, 1, date, 2), 3, 4, date, 4);
         LCP nearestPredDateOp = addMGProp((AbstractGroup) null, "nearestPredDateOp", "Ближайшая меньшая дата операции", lessCmpDateOp, 1, 2, 4);
         nearestExchangeRateOp = addJProp("nearestExchangeRateOp","Ближайший курс обмена операции", exchangeRate, 1, 2, nearestPredDateOp, 1, 2, 3);
 
@@ -627,14 +633,14 @@ public class BudgetLogicsModule extends LogicsModule {
         private InvestmentFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
 
-            ObjectEntity objInvestment = addSingleGroupObject(investment, baseLM.date, baseLM.objectClassName, nameCurInvestment, sumInvestment, exchangeBaseRateInvestment, sumBaseInvestment, nameInvestorInvestment, nameOperationDepartment);
+            ObjectEntity objInvestment = addSingleGroupObject(investment, date, baseLM.objectClassName, nameCurInvestment, sumInvestment, exchangeBaseRateInvestment, sumBaseInvestment, nameInvestorInvestment, nameOperationDepartment);
             addObjectActions(this, objInvestment);
 
             ObjectEntity objInvestor = addSingleGroupObject(investor, baseGroup, sumInvestmentInvestor, shareInvestor);
 
             addPropertyDraw(investmentTotal);
 
-            addDefaultOrder(baseLM.date, true);
+            addDefaultOrder(date, true);
         }
     }
 

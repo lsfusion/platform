@@ -14,14 +14,14 @@ EXTEND DESIGN options {
 }
 
 // ----------------------------------------- Группа посуды ----------------------------- //
-CLASS wareGroup 'Группа посуды' : named, externalObject, skuGroup;
+CLASS wareGroup 'Группа посуды' : named, externalizable, skuGroup;
 
 @defineHierarchy(wareGroup);
 
 parentSkuGroup (wareGroup) += parentWareGroup(wareGroup);
 
 // ------------------------------------------ Посуда ----------------------------------------------- //
-CLASS ware 'Посуда' : named, externalObject, sku;
+CLASS ware 'Посуда' : named, externalizable, sku;
 TABLE ware(ware);
 
 wareGroupWare = DATA wareGroup(ware) AUTOSET;

@@ -19,7 +19,7 @@ PRIORITY Stock, RomanLogicsModule;
 
 // ---------------------------------------- Перемещение ------------------------------------ //
 
-CLASS transferOut 'Перемещение товаров по накладным' : historyObject, numberedObject, innerDocument, outAccountDocumentLedger;
+CLASS transferOut 'Перемещение товаров по накладным' : historizable, numberedObject, innerDocument, outAccountDocumentLedger;
 CLASS transferOutPosted 'Проведенное перемещение товаров по накладным' : transferOut, postedObject;
 CLASS transferOutDetail 'Строка перемещения товаров по накладным';
 CLASS transferOutBatchDetail 'Строка перемещения товаров по накладным (по партиям)';
@@ -154,7 +154,7 @@ EXTEND FORM transferOuts
 ;
 // ---------------------------------------- Поступление ------------------------------------ //
 
-CLASS transferIn 'Поступление товаров по накладным' : historyObject, incAccountDocumentLedger;
+CLASS transferIn 'Поступление товаров по накладным' : historizable, incAccountDocumentLedger;
 CLASS transferInDetail 'Строка поступления товаров по накладным';
 
 @defineDocumentTransferIn(transfer, 'Поступление товаров по накладным', sku, stock);
@@ -189,7 +189,7 @@ nameCurrencyTransferIn 'Валюта' (transferIn) = nameCurrencyTransferOut(tra
 
 // ---------------------------------------- Приемка ------------------------------------ //
 
-CLASS transferRec 'Приемка товаров по накладной (перемещение)' : historyObject;
+CLASS transferRec 'Приемка товаров по накладной (перемещение)' : historizable;
 CLASS transferRecPosted 'Проведенная приемка товаров по накладной (перемещение)' : transferRec, postedObject;
 
 CLASS transferRecDetail 'Строка приемки товаров по накладной (перемещение)';
@@ -203,7 +203,7 @@ CLASS transferRecDetail 'Строка приемки товаров по нак�
 @extendFormDocumentDetailSkuArticleReadonly(transferIns, r, transferRec);
 
 // ---------------------------------------- Акт расхождений ------------------------------------ //
-CLASS transferDiff 'Акт расхождений приемки товаров по накладной (перемещение)' : historyObject;
+CLASS transferDiff 'Акт расхождений приемки товаров по накладной (перемещение)' : historizable;
 
 CLASS ABSTRACT transferDiffDetail 'Строка расхождений акта приемки товаров по накладной (перемещение)';
 CLASS transferDiffEDetail 'Строка расхождений акта приемки товаров по накладной (перемещение, излишек)' : transferDiffDetail;

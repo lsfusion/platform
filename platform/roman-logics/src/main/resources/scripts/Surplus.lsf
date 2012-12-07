@@ -20,7 +20,7 @@ PRIORITY Stock, RomanLogicsModule;
 
 // ---------------------------------------- Излишки ------------------------------------ //
 
-CLASS surplusOut 'Реализация излишков' : historyObject, numberedObject, consignment, outAccountDocumentLedger;
+CLASS surplusOut 'Реализация излишков' : historizable, numberedObject, consignment, outAccountDocumentLedger;
 CLASS surplusOutPosted 'Проведенная реализация излишков' : surplusOut, postedObject;
 CLASS surplusOutDetail 'Строка реализации излишков' : consignmentDetail;
 
@@ -228,7 +228,7 @@ FORM surplusOuts 'Реализации излишков'
                             nameStockSurplusOut, nameDestinationStockSurplusOut, nameCustomerSurplusOut, noteSurplusOut,
                             countSurplusOutDetailSurplusOut, quantitySurplusOutDetailSurplusOut
 
-    PROPERTIES (t) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
+    PROPERTIES (t) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
     PROPERTIES (t) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
 

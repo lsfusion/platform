@@ -20,7 +20,7 @@ PRIORITY Stock, RomanLogicsModule;
 
 // ---------------------------------------- Перемещение ------------------------------------ //
 
-CLASS invoiceWHOut 'Реализация товара по безналичному расчету' : historyObject, numberedObject, outAccountDocumentLedger, innerDocument;
+CLASS invoiceWHOut 'Реализация товара по безналичному расчету' : historizable, numberedObject, outAccountDocumentLedger, innerDocument;
 CLASS invoiceWHOutPosted 'Проведенная реализация товара по безналичному расчету' : invoiceWHOut, postedObject;
 CLASS invoiceWHOutDetail 'Строка реализации товара по безналичному расчету';
 
@@ -131,7 +131,7 @@ FORM invoiceWHOuts 'Реализации товара по безналично�
                             nameWarehouseInvoiceWHOut, nameCustomerInvoiceWHOut, noteInvoiceWHOut,
                             countInvoiceWHOutDetailInvoiceWHOut, quantityInvoiceWHOutDetailInvoiceWHOut
 
-    PROPERTIES (t) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
+    PROPERTIES (t) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
     PROPERTIES (t) ADDFORM, EDITFORM SHOWIF isDraftInvoiceWHOut(t), delete FORCE PANEL DRAWTOTOOLBAR SHOWIF isDraftInvoiceWHOut(t),
                    postInvoiceWHOut SHOWIF isDraftInvoiceWHOut(t), unpostInvoiceWHOut SHOWIF isPostedInvoiceWHOut(t)

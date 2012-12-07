@@ -2,6 +2,20 @@ MODULE Historizable;
 
 REQUIRE System;
 
+CLASS historizable 'Объект с историей создания' ;
+TABLE historizable (historizable);
+
+timeCreatedHistorizable = DATA DATETIME (historizable) IN historyGroup;
+timeCreatedHistorizable (object) <- currentDateTime() WHEN ASSIGNED(object IS historizable);
+
+userCreatedHistorizable = DATA customUser (historizable) IN historyGroup;
+nameUserCreatedHistorizable (historizable) = commonName (userCreatedHistorizable(historizable)) MINCHARWIDTH 10 PREFCHARWIDTH 20;
+userCreatedHistorizable (object) <- currentUser() WHEN ASSIGNED(object IS historizable);
+
+computerCreatedHistorizable = DATA computer (historizable) IN historyGroup;
+hostnameComputerCreatedHistorizable (historizable) = hostname (computerCreatedHistorizable(historizable)) MINCHARWIDTH 10 PREFCHARWIDTH 20;
+computerCreatedHistorizable (object) <- currentComputer() WHEN ASSIGNED(object IS historizable);
+
 META defineHistorizable(property, caption, type, object, objectIdentity, group)
     data###property##Date caption = DATA type (object, DATE) IN group;
 

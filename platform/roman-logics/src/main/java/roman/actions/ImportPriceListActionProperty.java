@@ -85,7 +85,7 @@ public class ImportPriceListActionProperty extends ScriptingActionProperty {
                         }
                         priceSetDocumentMap.put(key, priceSetDocumentObject);
 
-                        ObjectValue skuObject = LM.baseLM.barcodeToObject.readClasses(session, new DataObject(barcode, StringClass.get(14)));
+                        ObjectValue skuObject = LM.findLCPByCompoundName("barcodeToObject").readClasses(session, new DataObject(barcode, StringClass.get(14)));
                         if (!skuObject.isNull()) {
                             DataObject skuDataObject = (DataObject) skuObject;
                             Boolean isDelete = status.equals("D") ? null : true;

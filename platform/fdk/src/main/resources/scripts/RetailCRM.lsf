@@ -146,7 +146,7 @@ TABLE promotionGroup (promotionGroup);
 
 //--------------------------Акции----------------------------------------//
 
-CLASS promotion 'Акция' : historyObject, numeratedObject, named;
+CLASS promotion 'Акция' : historizable, numeratedObject, named;
 TABLE promotion (promotion);
 
 @defineNumeratedObjectDefault(promotion, 'Нумератор для акций', 'АК');
@@ -418,7 +418,7 @@ FORM promotions 'Акции'
                                 useCurrentReceiptPromotion, allDiscountCardPromotion
     PROPERTIES(sh)     ADDFORM, EDITFORM, delete
 
-    PROPERTIES (sh) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated
+    PROPERTIES (sh) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable
 
 ;
 

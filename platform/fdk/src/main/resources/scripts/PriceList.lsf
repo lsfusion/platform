@@ -192,7 +192,7 @@ currencyPriceListType(dataPriceListType) += currencyDataPriceListType(dataPriceL
 CLASS ABSTRACT priceList 'Прайс';
 CLASS ABSTRACT priceListDetail 'Строка прайса';
 
-CLASS userPriceList 'Прайс (польз.)' : priceList, historyObject, numeratedObject, externalObject;
+CLASS userPriceList 'Прайс (польз.)' : priceList, historizable, numeratedObject, externalizable;
 CLASS userPriceListDetail 'Строка прайса (польз.)' : priceListDetail;
 CLASS userPriceListPosted 'Проведенный прайс (польз.)' : userPriceList, postedObject;
 

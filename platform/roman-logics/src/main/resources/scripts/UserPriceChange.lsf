@@ -3,7 +3,7 @@ MODULE UserPriceChange;
 REQUIRE System, Stock, PriceChange, Numerator, Label, Machinery, Terminal, Barcode;
 
 
-CLASS userPriceChange 'Переоценка товаров' : priceChangeDocument, numeratedObject, historyObject;
+CLASS userPriceChange 'Переоценка товаров' : priceChangeDocument, numeratedObject, historizable;
 CLASS userPriceChangeDetail 'Строка переоценки товаров' : priceChangeDocumentDetail;
 CLASS userPriceChangePosted 'Проведенная переоценка товаров' : userPriceChange, postedObject;
 
@@ -205,7 +205,7 @@ FORM userPriceChanges 'Переоценки товаров'
                    diffWareSumPriceChangeDocumentDetailPriceChangeDocument SHOWIF showWare(), diffWareVATSumPriceChangeDocumentDetailPriceChangeDocument SHOWIF showWare(), diffRetailSumPriceChangeDocumentDetailPriceChangeDocument
 
 
-    PROPERTIES (u) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
+    PROPERTIES (u) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
     PROPERTIES (u)          printPriceChange FORCE PANEL,
                             ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR

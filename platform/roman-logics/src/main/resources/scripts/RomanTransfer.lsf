@@ -19,7 +19,7 @@ PRIORITY Stock, RomanLogicsModule;
 
 // ---------------------------------------- Трнансфер ------------------------------------ //
 
-CLASS transferTable 'Трансфер' : historyObject, numeratedObject;//, innerDocument, consignment, outAccountDocumentLedger;
+CLASS transferTable 'Трансфер' : historizable, numeratedObject;//, innerDocument, consignment, outAccountDocumentLedger;
 
 GROUP datesGroup 'Период продаж' : publicGroup;
 
@@ -297,7 +297,7 @@ FORM transferTables 'Трансферы'
     PROPERTIES (t) READONLY numberObject, seriesObject, dateTransferTable, timeTransferTable,
                             dateFromTransferTable, dateToTransferTable, noteTransferTable
 
-    PROPERTIES (t) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
+    PROPERTIES (t) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
     PROPERTIES (t) ADDFORM, EDITFORM, delete
 

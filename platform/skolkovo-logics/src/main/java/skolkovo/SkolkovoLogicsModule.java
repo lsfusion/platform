@@ -143,6 +143,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
     private LAP emailNoticeAcceptedPreliminaryVoteEA;
     private LAP emailNoticeAcceptedPreliminaryVote;
 
+    public LCP<?> date;
+    public LCP webHost;
+
+    public AbstractCustomClass transaction;
     public ConcreteCustomClass project;
     public ConcreteCustomClass expert;
     public ConcreteCustomClass cluster;
@@ -293,7 +297,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
         analogues = addConcreteClass("analogues", "Аналоги проекта", baseClass);
         objectives = addConcreteClass("objectives", "Цели проекта", baseClass);
 
-        project = addConcreteClass("project", "Проект", baseLM.multiLanguageNamed, baseLM.transaction);
+        transaction = addAbstractClass("transaction", "Транзакция", baseClass);
+
+        project = addConcreteClass("project", "Проект", baseLM.multiLanguageNamed, transaction);
         expert = addConcreteClass("expert", "Эксперт", baseLM.customUser);
         cluster = addConcreteClass("cluster", "Кластер", baseLM.multiLanguageNamed, baseLM.emailObject);
         foresight = addConcreteClass("foresight", "Форсайт", baseLM.multiLanguageNamed);
@@ -313,7 +319,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         document = addConcreteClass("document", "Документ", documentAbstract);
 
-        vote = addAbstractClass("vote", "Заседание", baseClass, baseLM.transaction);
+        vote = addAbstractClass("vote", "Заседание", baseClass, transaction);
 
         voteR1 = addConcreteClass("voteR1", "Заседание (регл. 1)", vote);
         voteR2 = addConcreteClass("voteR2", "Заседание (регл. 2)", vote);
@@ -366,7 +372,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         formalControl = addConcreteClass("formalControl", "Формальная экспертиза", baseClass);
         legalCheck = addConcreteClass("legalCheck", "Юридическая проверка", baseClass);
-        originalDocsCheck = addConcreteClass("originalDocsCheck", "Проверка оригиналов документов", baseLM.transaction);
+        originalDocsCheck = addConcreteClass("originalDocsCheck", "Проверка оригиналов документов", transaction);
 
         mileStone = addConcreteClass("mileStone", "Квартал", baseClass);
         mileStoneYear = addConcreteClass("mileStoneYear", "Год", baseClass);
@@ -379,7 +385,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 new String[]{"R1", "R2"},
                 new String[]{"R1", "R2"});
 
-        expertConference = addConcreteClass("expertConference", "Конференция экспертов", baseLM.transaction, baseClass.named);
+        expertConference = addConcreteClass("expertConference", "Конференция экспертов", transaction, baseClass.named);
         expertConferenceResult = addStaticClass("expertConferenceResult", "Участие в конференции",
                 new String[]{"confirmedConference", "rejectedConference"},
                 new String[]{"Подтвердил участие", "Отказался от участия"});
@@ -387,6 +393,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
     @Override
     public void initTables() {
+        addTable("transaction", transaction);
         addTable("property", baseLM.property);
         addTable("multiLanguageNamed", baseLM.multiLanguageNamed);
         addTable("project", project);
@@ -1642,7 +1649,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
         idGroup.add(baseLM.objectValue);
 
         negative = addJProp(baseLM.less2, 1, baseLM.vzero);
-        
+
+        date = addDProp(baseGroup, "date", "Дата", DateClass.instance, transaction);
+        date.setEventChange(baseLM.currentDate, is(transaction), 1);
+
+        webHost = addDProp("webHost", "Web хост", StringClass.get(50));
+
         LCP charLength = BL.getModule("Utils").getLCPByName("charLength");
 
         previousDate = addJProp("previousDate", "Вчерашняя дата", baseLM.subtractDate, baseLM.currentDate, addCProp("1", IntegerClass.instance, 1));
@@ -2813,7 +2825,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         businessExpertVote = addDProp(baseGroup, "businessExpertVote", "Выбран как бизнес", LogicalClass.instance, expert, voteR2);
 
-        dateStartVote = addJProp(baseGroup, "dateStartVote", true, "Дата начала", baseLM.and1, baseLM.date, 1, is(vote), 1);
+        dateStartVote = addJProp(baseGroup, "dateStartVote", true, "Дата начала", baseLM.and1, date, 1, is(vote), 1);
 //        dateEndVote = addJProp(baseGroup, "dateEndVote", "Дата окончания", sumDate, dateStartVote, 1, requiredPeriod);
         aggrDateEndVote = addJProp(baseGroup, "aggrDateEndVote", "Дата окончания (агр.)", baseLM.sumDate, dateStartVote, 1, requiredPeriod);
         dateEndVote = addDProp(baseGroup, "dateEndVote", "Дата окончания", DateClass.instance, vote);
@@ -3250,7 +3262,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 //        hideTranslatedToRussianProject = addHideCaptionProp(privateGroup, "Переведено", translatedToRussianProject, fillForeignProject);
 //        hideTranslatedToEnglishProject = addHideCaptionProp(privateGroup, "Переведено", translatedToEnglishProject, fillNativeProject);
 
-        dateJoinProject = addJProp(baseLM.and1, baseLM.date, 1, is(project), 1);
+        dateJoinProject = addJProp(baseLM.and1, date, 1, is(project), 1);
         dateDataProject = addDProp("dateDataProject", "Дата", DateClass.instance, project);
         dateProject = addSUProp("dateProject", "Дата проекта", Union.OVERRIDE, dateJoinProject, dateDataProject);
         updateDateProject = addDProp(projectInformationGroup, "updateDateProject", "Дата изменения проекта", DateTimeClass.instance, project);
@@ -3297,7 +3309,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         dateResultNoticedFormalControl = addDProp("dateResultNoticedFormalControl", "Дата отсылки уведомления", DateClass.instance, formalControl);
 
         LCP defaultCountry = BL.getModule("Country").getLCPByName("defaultCountry");
-        overdueDateFormalControl = addJProp("overdueDateFormalControl", "Дата просрочки формальной экспертизы", baseLM.sumDate, addJProp(baseLM.jumpWorkdays, defaultCountry, dateResultNoticedFormalControl, 1, addCProp(IntegerClass.instance, 1)), 1, addJProp(baseLM.subtractDate, overduePeriod, addCProp(IntegerClass.instance, 1)));
+        overdueDateFormalControl = addJProp("overdueDateFormalControl", "Дата просрочки формальной экспертизы", baseLM.sumDate, addJProp(BL.getModule("Country").getLCPByName("jumpWorkdays"), defaultCountry, dateResultNoticedFormalControl, 1, addCProp(IntegerClass.instance, 1)), 1, addJProp(baseLM.subtractDate, overduePeriod, addCProp(IntegerClass.instance, 1)));
 
         addNotEnoughDocumentsFCResult = addJoinAProp(formalControlResultGroup, "addNotEnoughDocumentsFCResult", "Неполный перечень документов", addAAProp(formalControl, resultFormalControl), addCProp(formalControlResult, "notEnoughDocuments"));
         addNoListOfExpertsFCResult = addJoinAProp(formalControlResultGroup, "Отсутствует перечень экспертов", addAAProp(formalControl, resultFormalControl), addCProp(formalControlResult, "noListOfExperts"));
@@ -3345,7 +3357,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         LCMinDateProjectActionProject = addMGProp("LCMinDateProjectActionProject", true, "Дата первой отсылки ЮП", true, dateResultNoticedLegalCheck, projectActionLegalCheck, 1, projectLegalCheck, 1);
         minDateLegalCheck = addJProp("minDateLegalCheck", "Дата отсылки", LCMinDateProjectActionProject, projectActionLegalCheck, 1, projectLegalCheck, 1);
         overdueDateLegalCheck = addJProp("overdueDateLegalCheck", "Дата просрочки юридической проверки", baseLM.sumDate,
-                addJProp(baseLM.jumpWorkdays, defaultCountry, minDateLegalCheck, 1, addCProp(IntegerClass.instance, 1)), 1,
+                addJProp(BL.getModule("Country").getLCPByName("jumpWorkdays"), defaultCountry, minDateLegalCheck, 1, addCProp(IntegerClass.instance, 1)), 1,
                 addJProp(baseLM.subtractDate, overduePeriod, addCProp(IntegerClass.instance, 1)));
 
         userLegalCheck = addDCProp("userLegalCheck", "Пользователь ЮП (ИД)", true, baseLM.currentUser, resultLegalCheck, 1);
@@ -3499,7 +3511,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         sentForTranslationProject.setEventChangeNewSet(addCProp(LogicalClass.instance, true), needTranslationProject, 1);
 
         dateSentForTranslationProject = addDCProp(translationGroup, "dateSentForTranslationProject", "Дата направления на перевод", true, baseLM.currentDate, sentForTranslationProject, 1);
-        dateToSentForTranslationProject = addDCProp(translationGroup, "dateToSentForTranslationProject", "Дата до которой д.б. переведен", baseLM.jumpWorkdays, true, defaultCountry, dateSentForTranslationProject, 1, addCProp(IntegerClass.instance, 5));
+        dateToSentForTranslationProject = addDCProp(translationGroup, "dateToSentForTranslationProject", "Дата до которой д.б. переведен", BL.getModule("Country").getLCPByName("jumpWorkdays"), true, defaultCountry, dateSentForTranslationProject, 1, addCProp(IntegerClass.instance, 5));
 
         oficialNameProjectStatus = addDProp(baseGroup, "oficialNameProjectStatus", "Наименование из регламента", StringClass.get(200), projectStatus);
         oficialNameProjectStatus.setMinimumWidth(10);
@@ -3532,16 +3544,16 @@ public class SkolkovoLogicsModule extends LogicsModule {
         projectOriginalDocsCheck = addDProp("projectOriginalDocsCheck", "Проект (ИД)", project, originalDocsCheck);
         resultOriginalDocsCheck = addDProp("resultOriginalDocsCheck", "Проверка оригиналов документов", originalDocsCheckResult, originalDocsCheck);
 
-        dateSubmitOriginalDocsCheck = addJProp(baseGroup, "dateSubmitOriginalDocsCheck", "Дата подачи документов", baseLM.and1, baseLM.date, 1, is(originalDocsCheck), 1);
+        dateSubmitOriginalDocsCheck = addJProp(baseGroup, "dateSubmitOriginalDocsCheck", "Дата подачи документов", baseLM.and1, date, 1, is(originalDocsCheck), 1);
         dateTimeOriginalDocsCheck = addTCProp(Time.DATETIME, "dateTimeOriginalDocsCheck", true, "Дата/время проверки документов", resultOriginalDocsCheck);
 
         commentOriginalDocsCheck = addDProp("commentOriginalDocsCheck", "Комментарий", TextClass.instance, originalDocsCheck);
         nameResultOriginalDocsCheck = addJProp("nameResultOriginalDocsCheck", "Проверка оригиналов документов", baseLM.name, resultOriginalDocsCheck, 1);
 
         dateOriginalDocsCheck = addJProp("dateOriginalDocsCheck", "Дата отправки уведомления", baseLM.toDate, dateTimeOriginalDocsCheck, 1);
-        overdueDateOriginalDocsCheck = addJProp("overdueDateOriginalDocsCheck", "Дата просрочки подачи оригиналов документов", baseLM.sumDate, addJProp(baseLM.jumpWorkdays, defaultCountry, dateOriginalDocsCheck, 1, addCProp(IntegerClass.instance, 1)), 1, addJProp(baseLM.subtractDate, overduePeriod, addCProp(IntegerClass.instance, 1)));
+        overdueDateOriginalDocsCheck = addJProp("overdueDateOriginalDocsCheck", "Дата просрочки подачи оригиналов документов", baseLM.sumDate, addJProp(BL.getModule("Country").getLCPByName("jumpWorkdays"), defaultCountry, dateOriginalDocsCheck, 1, addCProp(IntegerClass.instance, 1)), 1, addJProp(baseLM.subtractDate, overduePeriod, addCProp(IntegerClass.instance, 1)));
 
-        dateFirstSubmitOriginalDocsProject = addMGProp("dateFirstSubmitOriginalDocsProject", true, "Дата первой подачи документов", true, baseLM.date, projectOriginalDocsCheck, 1);
+        dateFirstSubmitOriginalDocsProject = addMGProp("dateFirstSubmitOriginalDocsProject", true, "Дата первой подачи документов", true, date, projectOriginalDocsCheck, 1);
 
         maxOriginalDocsCheckProjectProps = addMGProp((AbstractGroup) null, new String[]{"maxDateOriginalDocsCheckProject", "currentOCProject"}, new String[]{"Дата посл. проверки документов", "Посл. проверка документов"}, 1,
                 dateTimeOriginalDocsCheck, 1, projectOriginalDocsCheck, 1);
@@ -3716,10 +3728,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), enoughDocumentsCorExpertVote, 1, 2), 1);
         percentEnoughDocumentsExpert = addJProp(expertResultGroup, "percentEnoughDocumentsExpert", "Достаточно голосов (%)", share, quantityEnoughDocumentsExpert, 1, quantityIsR2DoneExpert, 1);
 
-        prevDateStartVote = addOProp("prevDateStartVote", "Пред. засед. (старт)", PartitionType.PREVIOUS, dateStartVote, true, true, 2, projectVote, 1, clusterVote, 1, baseLM.date, 1);
-        prevDateVote = addOProp("prevDateVote", "Пред. засед. (окончание)", PartitionType.PREVIOUS, dateEndVote, true, true, 2, projectVote, 1, clusterVote, 1, baseLM.date, 1);
+        prevDateStartVote = addOProp("prevDateStartVote", "Пред. засед. (старт)", PartitionType.PREVIOUS, dateStartVote, true, true, 2, projectVote, 1, clusterVote, 1, date, 1);
+        prevDateVote = addOProp("prevDateVote", "Пред. засед. (окончание)", PartitionType.PREVIOUS, dateEndVote, true, true, 2, projectVote, 1, clusterVote, 1, date, 1);
 
-        prevClusterVote = addOProp(idGroup, "prevClusterVote", "Пред. кластер. (ИД)", PartitionType.PREVIOUS, clusterVote, true, true, 1, projectVote, 1, baseLM.date, 1);
+        prevClusterVote = addOProp(idGroup, "prevClusterVote", "Пред. кластер. (ИД)", PartitionType.PREVIOUS, clusterVote, true, true, 1, projectVote, 1, date, 1);
         nameNativePrevClusterVote = addJProp("nameNativePrevClusterVote", "Пред. кластер", nameNative, prevClusterVote, 1);
 
         numberNewExpertVote = addOProp("numberNewExpertVote", "Номер (нов.)", PartitionType.SUM, addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), inNewExpertVote, 1, 2), true, true, 1, 2, 1);
@@ -3885,7 +3897,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailNeedVoteProject.setImage("email.png");
         emailNeedVoteProject.property.askConfirm = true;
         emailNeedVoteProject.setEventSetAction(this, needVoteProject, 1);
-        dateOverdueResultNeedVoteProject = addJProp("dateOverdueResultNeedVoteProject", "Дата до которой д.б. созвано заседание", baseLM.jumpWorkdays, defaultCountry, dateResultNeedVoteProject, 1, addCProp(IntegerClass.instance, 1));
+        dateOverdueResultNeedVoteProject = addJProp("dateOverdueResultNeedVoteProject", "Дата до которой д.б. созвано заседание", BL.getModule("Country").getLCPByName("jumpWorkdays"), defaultCountry, dateResultNeedVoteProject, 1, addCProp(IntegerClass.instance, 1));
 
         emailTransferredProjectEA = addEAProp(emailIO, project);
         addEARecipients(emailTransferredProjectEA, emailIO);
@@ -4324,7 +4336,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         datePositiveFSResultProject = addJProp("datePositiveFSResultProject", true, "Дата статуса", baseLM.and1, dateResultForesightCheckProject, 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "positiveFSResult")), 1);
 
-        dateNotificationPeriodProject = addJProp("dateNotificationPeriodProject", "Дата до которой д.б. проверен", baseLM.jumpWorkdays, defaultCountry, datePositiveLegalResultProject, 1, addCProp(IntegerClass.instance, 2));
+        dateNotificationPeriodProject = addJProp("dateNotificationPeriodProject", "Дата до которой д.б. проверен", BL.getModule("Country").getLCPByName("jumpWorkdays"), defaultCountry, datePositiveLegalResultProject, 1, addCProp(IntegerClass.instance, 2));
 
         dateNeedTranslationStatusProject = addJProp("dateNeedTranslationStatusProject", true, "Дата статуса", baseLM.and1, dateSentForTranslationProject, 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "needTranslation")), 1);
 
@@ -4372,7 +4384,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         isWorkDaysNormalPeriodStatus = addDProp(baseGroup, "isWorkDaysNormalPeriodStatus", "В рабочих днях", LogicalClass.instance, projectStatus);
         overdueDateStatusProject = addIfElseUProp(baseGroup, "overdueDateStatusProject", true, "Дата просрочки статуса",
-                addJProp(baseLM.jumpWorkdays, defaultCountry, dateInStatusProject, 1, normalPeriodStatusProject, 1),
+                addJProp(BL.getModule("Country").getLCPByName("jumpWorkdays"), defaultCountry, dateInStatusProject, 1, normalPeriodStatusProject, 1),
                 addJProp(baseLM.sumDate, dateInStatusProject, 1, normalPeriodStatusProject, 1), addJProp(isWorkDaysNormalPeriodStatus, statusProject, 1), 1);
         quantityDaysToOverdueDateStatusProject = addJProp("quantityDaysToOverdueDateStatusProject", true, "Количество дней до просрочки", baseLM.subtractInteger, overdueDateStatusProject, 1, baseLM.currentDate);
         quantityDaysToOverdueDateStatusProject.setFixedCharWidth(4);
@@ -4381,7 +4393,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         normalPeriodStatusApplication = addJProp(baseGroup, "normalPeriodStatusApplication", "Нормативный срок в статусе", normalPeriodStatus, statusApplication, 1);
         normalPeriodStatusApplication.setFixedCharWidth(2);
         overdueDateStatusApplication = addIfElseUProp(baseGroup, "overdueDateStatusApplication", "Дата просрочки статуса",
-                addJProp(baseLM.jumpWorkdays, defaultCountry, dateInStatusApplication, 1, normalPeriodStatusApplication, 1),
+                addJProp(BL.getModule("Country").getLCPByName("jumpWorkdays"), defaultCountry, dateInStatusApplication, 1, normalPeriodStatusApplication, 1),
                 addJProp(baseLM.sumDate, dateInStatusApplication, 1, normalPeriodStatusApplication, 1), addJProp(isWorkDaysNormalPeriodStatus, statusApplication, 1), 1);
         quantityDaysToOverdueDateStatusApplication = addJProp("quantityDaysToOverdueDateStatusApplication", "Количество дней до просрочки", baseLM.subtractInteger, overdueDateStatusApplication, 1, baseLM.currentDate);
         quantityDaysToOverdueDateStatusApplication.setFixedCharWidth(4);
@@ -4893,7 +4905,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             addPropertyDraw(objProject, problemGroup, analoguesGroup, commercializationGroup, historyGroup, projectmissionGroup, nativeResultsProject, foreignResultsProject);
             objProject.groupTo.setSingleClassView(ClassViewType.PANEL);
-            addPropertyDraw(baseLM.webHost, objProject.groupTo);
+            addPropertyDraw(webHost, objProject.groupTo);
             getPropertyDraw(baseLM.objectValue, objProject).setSID("project");
 
             objResearch = addSingleGroupObject(2, "research", research, "Исследования");
@@ -4930,7 +4942,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addPropertyDraw(objSpecialist, teamGroup);
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectSpecialist, objSpecialist), Compare.EQUALS, objProject));
             getPropertyDraw(baseLM.objectValue, objSpecialist).setSID("specialist");
-//            addPropertyDraw(baseLM.webHost, objSpecialist.groupTo);
+//            addPropertyDraw(webHost, objSpecialist.groupTo);
 
             addObjectActions(this, objSpecialist);
 
@@ -6561,7 +6573,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addGroupObject(gobjExpertVote);
             gobjExpertVote.initClassView = ClassViewType.PANEL;
 
-            addPropertyDraw(baseLM.webHost, gobjExpertVote);
+            addPropertyDraw(webHost, gobjExpertVote);
             addPropertyDraw(requiredPeriod, gobjExpertVote);
             addPropertyDraw(objExpert, baseLM.name, documentNameExpert, sidExpert, isForeignExpert, localeExpert);
             addPropertyDraw(objVote, nameNativeClaimerVote, nameForeignClaimerVote, nameNativeProjectVote, nameForeignProjectVote, isR1ProjectVote);
@@ -6612,7 +6624,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             objExpert = addSingleGroupObject(1, "expert", expert, baseLM.userLogin, baseLM.userPassword, baseLM.name, documentNameExpert, sidExpert, isForeignExpert, localeExpert);
             objExpert.groupTo.initClassView = ClassViewType.PANEL;
 
-            addPropertyDraw(baseLM.webHost, objExpert.groupTo);
+            addPropertyDraw(webHost, objExpert.groupTo);
 
             addInlineEAForm(emailAuthProfileExpertEA, this, objExpert, 1);
 
@@ -6629,7 +6641,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             objExpert = addSingleGroupObject(1, "expert", expert, baseLM.userLogin, baseLM.userPassword, baseLM.name, documentNameExpert, sidExpert, isForeignExpert, localeExpert);
             objExpert.groupTo.initClassView = ClassViewType.PANEL;
 
-            addPropertyDraw(baseLM.webHost, objExpert.groupTo);
+            addPropertyDraw(webHost, objExpert.groupTo);
 
             addInlineEAForm(emailReminderProfileExpertEA, this, objExpert, 1);
 
@@ -6689,7 +6701,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addPropertyDraw(objConference, textConference);
             addPropertyDraw(objExpert, baseLM.name, sidExpert);
 
-            addPropertyDraw(baseLM.webHost, gobjConferenceExpert);
+            addPropertyDraw(webHost, gobjConferenceExpert);
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(inConferenceExpert, objConference, objExpert)));
 
@@ -6710,7 +6722,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private VoteStartFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Созыв заседания", true);
 
-            objVote = addSingleGroupObject(1, "vote", vote, baseLM.date, dateProjectVote, nameNativeClaimerVote, nameNativeProjectVote, nameAblateClaimerVote, prevDateStartVote, prevDateVote, quantityInVote, quantityInOldVote, countPrevVote, isStatusVote, isR1ProjectVote, nameNativeClusterVote, nameMaxForesightVote);
+            objVote = addSingleGroupObject(1, "vote", vote, date, dateProjectVote, nameNativeClaimerVote, nameNativeProjectVote, nameAblateClaimerVote, prevDateStartVote, prevDateVote, quantityInVote, quantityInOldVote, countPrevVote, isStatusVote, isR1ProjectVote, nameNativeClusterVote, nameMaxForesightVote);
             objVote.groupTo.initClassView = ClassViewType.PANEL;
 
             objExpert = addSingleGroupObject(2, "expert", expert, baseLM.userLastName, baseLM.userFirstName, documentNameExpert, sidExpert);
@@ -6752,7 +6764,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private VoteProtocolFormEntity(NavigatorElement parent, String sID, boolean simple) {
             super(parent, sID, simple ? "Протокол заседания (без бюллетеней)" : "Протокол заседания", true);
 
-            objVote = addSingleGroupObject(1, "vote", vote, dateProjectVote, baseLM.date, dateEndVote, nameNativeProjectVote, nameNativeClaimerVote, nameNativeClusterVote,
+            objVote = addSingleGroupObject(1, "vote", vote, dateProjectVote, date, dateEndVote, nameNativeProjectVote, nameNativeClaimerVote, nameNativeClusterVote,
                     quantityInVote, quantityRepliedVote, quantityDoneVote, quantityDoneNewVote, quantityDoneOldVote, quantityRefusedVote, quantityConnectedVote, succeededVote, acceptedVote,
                     quantityInClusterVote, acceptedInClusterVote, quantityInnovativeVote, acceptedInnovativeVote, quantityForeignVote,
                     quantityCompetitiveAdvantagesVote, acceptedCompetitiveAdvantagesVote, quantityCommercePotentialVote, acceptedCommercePotentialVote, quantityCanBeImplementedVote, acceptedCanBeImplementedVote,
@@ -6821,7 +6833,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             objVoteHeader = addSingleGroupObject(5, "voteHeader", vote);
 
-            objVote = addSingleGroupObject(6, "vote", vote, dateProjectVote, baseLM.date, dateEndVote, nameNativeProjectVote, nameNativeClaimerVote, nameNativeClusterVote, revisionVote);
+            objVote = addSingleGroupObject(6, "vote", vote, dateProjectVote, date, dateEndVote, nameNativeProjectVote, nameNativeClaimerVote, nameNativeClusterVote, revisionVote);
 
             addPropertyDraw(nameNativeClaimerVote, objVoteHeader).setSID("nameNativeClaimerVoteHeader");
             addPropertyDraw(nameNativeProjectVote, objVoteHeader);
@@ -6892,7 +6904,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             objVoteHeader = addSingleGroupObject(6, "voteHeader", vote);
 
-            objVote = addSingleGroupObject(7, "vote", vote, dateProjectVote, baseLM.date, dateEndVote, nameNativeProjectVote, nameNativeClaimerVote, nameNativeClusterVote, revisionVote);
+            objVote = addSingleGroupObject(7, "vote", vote, dateProjectVote, date, dateEndVote, nameNativeProjectVote, nameNativeClaimerVote, nameNativeClusterVote, revisionVote);
 
             addPropertyDraw(nameNativeClaimerVote, objVoteHeader).setSID("nameNativeClaimerVoteHeader");
             addPropertyDraw(nameNativeProjectVote, objVoteHeader);
@@ -7053,7 +7065,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private ConferenceFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Конференции экспертов");
 
-            objConference = addSingleGroupObject(expertConference, textConference, baseLM.date, baseLM.name, confirmedConference, rejectedConference);
+            objConference = addSingleGroupObject(expertConference, textConference, date, baseLM.name, confirmedConference, rejectedConference);
             addObjectActions(this, objConference);
 
             objExpert = addSingleGroupObject(expert);
@@ -7203,7 +7215,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             objExpert = addSingleGroupObject(3, "expert", expert, baseLM.selection, baseLM.userFirstName, baseLM.userLastName, documentNameExpert, sidExpert, dateAgreementExpert, nameCountryExpert, caseCountryExpert, englCountryExpert, nameCurrencyExpert, baseCurrencyExpert, englCurrencyExpert, pluralCurrencyExpert, nameNativeClusterExpert, nameLanguageExpert, residencyCountryExpert);
             //   objExpert.groupTo.initClassView = ClassViewType.PANEL;
 
-            objVoteBallot = addSingleGroupObject(4, "voteBallot", vote, dateProjectVote, baseLM.date, dateEndVote, nameNativeProjectVote, nameNativeClaimerVote, nameNativeClusterVote, revisionVote);
+            objVoteBallot = addSingleGroupObject(4, "voteBallot", vote, dateProjectVote, date, dateEndVote, nameNativeProjectVote, nameNativeClaimerVote, nameNativeClusterVote, revisionVote);
 
             addPropertyDraw(voteResultGroup, true, objExpert, objVoteBallot);
 
@@ -7470,11 +7482,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addPropertyDraw(objDateFrom, objDateTo, applicationsSubmitDateDate, averageWeekApplSubmitDateDate);
 
             objWeek = addSingleGroupObject(4, "week", IntegerClass.instance, "Неделя", baseLM.objectValue);
-            addPropertyDraw(objDateFrom, objWeek, baseLM.sumDateWeekFrom, baseLM.sumDateWeekTo, applicationsSubmitDateWeek);
+            addPropertyDraw(objDateFrom, objWeek, BL.getModule("Utils").getLCPByName("sumDateWeekFrom"), BL.getModule("Utils").getLCPByName("sumDateWeekTo"), applicationsSubmitDateWeek);
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(applicationsSubmitDateWeek, objDateFrom, objWeek)));
             addFixedFilter(new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(negative, objWeek))));
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(baseLM.sumDateWeekTo, objDateFrom, objWeek), Compare.LESS_EQUALS, objDateTo));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(BL.getModule("Utils").getLCPByName("sumDateWeekTo"), objDateFrom, objWeek), Compare.LESS_EQUALS, objDateTo));
         }
     }
 
@@ -7499,11 +7511,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             objWeek = addSingleGroupObject(4, "week", IntegerClass.instance, "Неделя", baseLM.objectValue);
             addPropertyDraw(objDateFrom, objDateTo, statusApplicationsSubmitDateDate, averageDaysStatusApplicationsSubmitDateDate);
-            addPropertyDraw(objDateFrom, objWeek, baseLM.sumDateWeekFrom, baseLM.sumDateWeekTo, submitRegisterApplicationsDateWeek, risingDaysRegisterApplicationDateWeek, risingRegisterApplicationsDateWeek, averageDaysRegisterApplicationsDateWeekWeek, averageDaysRegisterApplicationsDateWeek);
+            addPropertyDraw(objDateFrom, objWeek, BL.getModule("Utils").getLCPByName("sumDateWeekFrom"), BL.getModule("Utils").getLCPByName("sumDateWeekTo"), submitRegisterApplicationsDateWeek, risingDaysRegisterApplicationDateWeek, risingRegisterApplicationsDateWeek, averageDaysRegisterApplicationsDateWeekWeek, averageDaysRegisterApplicationsDateWeek);
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(submitRegisterApplicationsDateWeek, objDateFrom, objWeek)));
             addFixedFilter(new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(negative, objWeek))));
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(baseLM.sumDateWeekTo, objDateFrom, objWeek), Compare.LESS_EQUALS, objDateTo));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(BL.getModule("Utils").getLCPByName("sumDateWeekTo"), objDateFrom, objWeek), Compare.LESS_EQUALS, objDateTo));
 
         }
     }

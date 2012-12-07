@@ -71,7 +71,7 @@ META defineOrder(sign, stockProp)
     CLASS ABSTRACT order 'Заказ'###sign : Order.order;
     CLASS ABSTRACT orderDetail 'Строка заказа'###sign : Order.orderDetail, named;
 
-    CLASS userOrder 'Заказ (польз.)'###sign : order, historyObject, numeratedObject;
+    CLASS userOrder 'Заказ (польз.)'###sign : order, historizable, numeratedObject;
     CLASS userOrderDetail 'Строка заказа (польз.)'###sign : orderDetail;
     CLASS userOrderPosted 'Проведенный заказ (польз.)'###sign : userOrder, postedObject;
 
@@ -293,7 +293,7 @@ META defineOrder(sign, stockProp)
                                 countOrderDetailOrder, quantityOrderDetailOrder, sumOrderDetailOrder,
                                 VATSumOrderDetailOrder, invoiceSumOrderDetailOrder, shipmentDateOrder, shipmentTimeOrder, toDateOrder
 
-        PROPERTIES (o) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
+        PROPERTIES (o) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
         PROPERTIES ()  addUserOrder TODRAW o
         PROPERTIES (o) editOrder

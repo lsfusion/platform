@@ -146,7 +146,7 @@ END
 CLASS ABSTRACT repricing 'Акт переоценки';
 CLASS ABSTRACT repricingDetail 'Строка акта переоценки';
 
-CLASS userRepricing 'Акт переоценки (польз.)' : repricing, historyObject, numeratedDocument;
+CLASS userRepricing 'Акт переоценки (польз.)' : repricing, historizable, numeratedDocument;
 CLASS userRepricingDetail 'Строка акта переоценки (польз.)' : repricingDetail;
 CLASS userRepricingPosted 'Проведенный акт переоценки (польз.)' : userRepricing, postedObject;
 
@@ -464,7 +464,7 @@ FORM repricings 'Акты переоценки' TITLE 'Акты переоцен
                diffRetailSumRepricingDetailRepricing,
                noteRepricing, numberDisposalRepricing, nameRepricingCommitteeRepricing, skipChangeLedgerRepricing
 
-    PROPERTIES (p) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
+    PROPERTIES (p) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
     PROPERTIES ()  addUserRepricing TODRAW p
     PROPERTIES (p) editUserRepricing

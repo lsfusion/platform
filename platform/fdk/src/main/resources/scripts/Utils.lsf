@@ -53,6 +53,11 @@ daysInclBetweenDates (date1, date2) = substractIntegerIncl (date2, date1) IF dat
 weeksInclBetweenDates(date1, date2) = divideInteger(daysInclBetweenDates(date1, date2), 7);
 weeksNullInclBetweenDates (date1, date2) = weeksInclBetweenDates (date1, date2) != 0;
 
+sumDateWeekFromFormula = FORMULA DATE '(($1)+($2)*7)';
+sumDateWeekFrom (date, int) = sumDateWeekFromFormula(date, int) IF date IS DATE AND int IS INTEGER;
+sumDateWeekToFormula = FORMULA DATE '(($1)+($2)*7+6)';
+sumDateWeekTo (date, int) = sumDateWeekToFormula(date, int) IF date IS DATE AND int IS INTEGER;
+
 // --------------------------------------------- Округления --------------------------------- //
 roundM1 (number) = round(number, -1);
 round0 (number) = round(number, 0);

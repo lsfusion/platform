@@ -5,7 +5,7 @@ REQUIRE System, Utils, Historizable, Stock, LegalEntity, Sales;
 
 // ----------------------------------- Статистический классификатор ------------------------------------------ //
 
-CLASS statisticGroup 'Статистическая группа' : named, externalObject;
+CLASS statisticGroup 'Статистическая группа' : named, externalizable;
 
 CLASS STATIC groupStatic 'Ед. изм.' {
     statisticLiter 'Литр',

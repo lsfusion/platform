@@ -1,6 +1,6 @@
 MODULE LegalEntity;
 
-REQUIRE System, Historizable, Tax, Country, I18n;
+REQUIRE System, Historizable, Tax, Country, I18n, Integration;
 
 // ----------------------------------- Форма собственности ------------------------------------------ //
 
@@ -23,7 +23,7 @@ FORM ownership 'Форма собственности'
 
 // ----------------------------------- Юридическое лицо --------------------------------- //
 
-CLASS legalEntity 'Организация' : named, externalObject, taxUnitGroup;
+CLASS legalEntity 'Организация' : named, externalizable, taxUnitGroup;
 TABLE legalEntity (legalEntity);
 TABLE legalEntityDate (legalEntity, DATE);
 
@@ -95,7 +95,7 @@ inLegalEntityGroupLegalEntity (legalEntityGroup, legalEntity) =
  ;
 // ----------------------------------- Банк ------------------------------------------- //
 
-CLASS bank 'Банк' : named, externalObject;
+CLASS bank 'Банк' : named, externalizable;
 TABLE bank (bank);
 TABLE bankDate (bank, DATE);
 

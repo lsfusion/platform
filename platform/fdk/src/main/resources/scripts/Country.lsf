@@ -27,6 +27,8 @@ countryName(name) = GROUP UNIQUE country BY name(country) WHERE country IS count
 defaultCountry 'Страна по умолчанию' () = DATA country (); // logics.country.default.country
 nameDefaultCountry 'Страна по умолчанию' () = name(defaultCountry()) PREFCHARWIDTH 30; // logics.country.default.country
 
+jumpWorkdays = FORMULA DATE 'jumpWorkdays($1, $2, $3)'; //1 - country, 2 - date, 3 - days to jump
+
 EXTEND FORM options
     PROPERTIES() nameDefaultCountry
 ;

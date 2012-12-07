@@ -14,7 +14,7 @@ REQUIRE System,
 PRIORITY Stock, RomanLogicsModule;
 
 // ---------------------------------------- Пересорт внутри между партиями внутри одного Sku ------------------------------------ //
-CLASS disparityBatch 'Пересорт м/у партиями': historyObject, numeratedObject;
+CLASS disparityBatch 'Пересорт м/у партиями': historizable, numeratedObject;
 TABLE disparityBatch(disparityBatch);
 CLASS disparityBatchPosted 'Проведенный пересорт м/у партиями' : disparityBatch, postedObject;
 
@@ -175,7 +175,7 @@ FORM disparityBatches 'Пересорты м/у партиями'
                    countDisparityInBatchDetailDisparityBatch, quantityDisparityInBatchDetailDisparityBatch,
                    countDisparityOutBatchDetailDisparityBatch, quantityDisparityOutBatchDetailDisparityBatch
 
-    PROPERTIES (o) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
+    PROPERTIES (o) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
     PROPERTIES (o)    ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
 
@@ -326,7 +326,7 @@ EXTEND FORM disparityBatches
 
 // ---------------------------------------- Пересорт на складе ------------------------------------ //
 
-CLASS disparityBatchA 'Пересорт м/у партиями (бухг.)': historyObject, numeratedObject;
+CLASS disparityBatchA 'Пересорт м/у партиями (бухг.)': historizable, numeratedObject;
 TABLE disparityBatchA(disparityBatchA);
 CLASS disparityBatchAPosted 'Проведенный пересорт м/у партиями (бухг.)' : disparityBatchA, postedObject;
 
@@ -527,7 +527,7 @@ FORM disparityBatchAs 'Пересорты м/у партиями (бухг.)'
                    countDisparityInBatchADetailDisparityBatchA, quantityDisparityInBatchADetailDisparityBatchA, sumDisparityInBatchADetailDisparityBatchA,
                    countDisparityOutBatchADetailDisparityBatchA, quantityDisparityOutBatchADetailDisparityBatchA, sumDisparityOutBatchADetailDisparityBatchA
 
-    PROPERTIES (o) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
+    PROPERTIES (o) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
     PROPERTIES (o)    ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
 

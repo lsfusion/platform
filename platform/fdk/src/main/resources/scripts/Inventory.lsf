@@ -84,7 +84,7 @@ CLASS STATIC typeOfAddition 'Тип инвентаризации' {
     many    'Множество товаров'
 };
 
-CLASS inventory 'Инвентаризация' : historyObject, numeratedDocument;
+CLASS inventory 'Инвентаризация' : historizable, numeratedDocument;
 CLASS inventoryPosted 'Проведенная инвентаризация' : inventory, postedObject;
 
 TABLE inventory (inventory);
@@ -1264,7 +1264,7 @@ FORM inventories 'Инвентаризации'
     OBJECTS in=inventory
     PROPERTIES(in) READONLY             isBatchInventory, objectClassName, numberObject, seriesObject, dateInventory, timeInventory,
                                         nameStockInventory, nameInventory, noteInventory
-    PROPERTIES(in) FORCE PANEL READONLY nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
+    PROPERTIES(in) FORCE PANEL READONLY nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
     PROPERTIES(in)                      ADDFORM, EDITFORM SHOWIF isDraftInventory(in), delete FORCE PANEL DRAWTOTOOLBAR SHOWIF isDraftInventory(in),
                                         postInventory SHOWIF isDraftInventory(in), unpostInventory SHOWIF isPostedInventory(in)
 

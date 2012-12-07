@@ -77,7 +77,7 @@ END
 
 //----------------------------------- Печать ценников -------------------------------------------------------
 
-CLASS labelTransaction 'Печать ценников' : historyObject;
+CLASS labelTransaction 'Печать ценников' : historizable;
 TABLE labelTransaction(labelTransaction);
 
 dateLabelTransaction 'Дата' = DATA DATE (labelTransaction);
@@ -148,7 +148,7 @@ FORM labelTransactions 'Печать ценников'
 
     OBJECTS l = labelTransaction
     PROPERTIES(l) READONLY nameLabelTypeLabelTransaction, descriptionLabelTransaction, dateLabelTransaction, timeLabelTransaction
-    PROPERTIES(l) READONLY nameUserCreated, hostnameComputerCreated
+    PROPERTIES(l) READONLY nameUserCreatedHistorizable, hostnameComputerCreatedHistorizable
     FILTERS departmentStoreLabelTransaction(l) == d
 
     OBJECTS b = barcode

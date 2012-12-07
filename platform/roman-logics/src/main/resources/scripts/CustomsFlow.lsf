@@ -14,7 +14,7 @@ REQUIRE System,
 
 PRIORITY Stock, RomanLogicsModule, Utils, Store;
 
-CLASS CStoWH 'Расход с СВХ' : historyObject, numberedObject;
+CLASS CStoWH 'Расход с СВХ' : historizable, numberedObject;
 CLASS CStoWHDetail 'Строка расхода с СВХ';
 CLASS CStoWHPosted 'Проведенный расход с СВХ' : CStoWH, postedObject;
 
@@ -291,7 +291,7 @@ FORM CStoWHs 'Расходы с СВХ'
     PROPERTIES (t) READONLY objectClassName, numberObject, seriesObject, dateCStoWH, timeCStoWH, nameCustomStoreCStoWH,
                             nameDestinationStockCStoWH, declarationsCStoWH, innerInvoicesCStoWH, quantityCStoWHDetailCStoWH, sumCStoWHDetailCStoWH
 
-    PROPERTIES (t) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
+    PROPERTIES (t) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
     PROPERTIES (t) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
 

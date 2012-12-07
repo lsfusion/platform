@@ -55,17 +55,17 @@ public class ImportDataActionProperty extends ScriptingActionProperty {
         ResultSet rs = conn.createStatement().executeQuery(
                 "SELECT num_class AS ext_id, name_u AS name, par AS par_id FROM klass");
 
-        ImportField itemGroupID = new ImportField(getLCP("extSID"));
+        ImportField itemGroupID = new ImportField(getLCP("sidExternalizable"));
         ImportField itemGroupName = new ImportField(getLCP("name"));
-        ImportField parentGroupID = new ImportField(getLCP("extSID"));
+        ImportField parentGroupID = new ImportField(getLCP("sidExternalizable"));
 
         ImportKey<?> itemGroupKey = new ImportKey((ConcreteCustomClass) getClass("itemGroup"),
-                getLCP("extSIDToObject").getMapping(itemGroupID));
-        ImportProperty<?> itemGroupIDProperty = new ImportProperty(itemGroupID, getLCP("extSID").getMapping(itemGroupKey));
+                getLCP("externalizableSID").getMapping(itemGroupID));
+        ImportProperty<?> itemGroupIDProperty = new ImportProperty(itemGroupID, getLCP("sidExternalizable").getMapping(itemGroupKey));
         ImportProperty<?> itemGroupNameProperty = new ImportProperty(itemGroupName, getLCP("name").getMapping(itemGroupKey));
 
         ImportKey<?> parentGroupKey = new ImportKey((ConcreteCustomClass) getClass("itemGroup"),
-                getLCP("extSIDToObject").getMapping(parentGroupID));
+                getLCP("externalizableSID").getMapping(parentGroupID));
 
         ImportProperty<?> parentGroupProperty = new ImportProperty(parentGroupID, getLCP("parentItemGroup").getMapping(itemGroupKey),
                 LM.object((ConcreteCustomClass) getClass("itemGroup")).getMapping(parentGroupKey));

@@ -17,7 +17,7 @@ REQUIRE System,
 
 PRIORITY Stock, RomanLogicsModule;
 
-CLASS WHfromRF 'Приход из РФ' : historyObject, numeratedObject;
+CLASS WHfromRF 'Приход из РФ' : historizable, numeratedObject;
 CLASS WHfromRFPosted 'Проведенный приход из РФ' : WHfromRF, postedObject;
 CLASS WHfromRFDetail 'Строка прихода из РФ';
 
@@ -672,7 +672,7 @@ FORM WHfromRFs 'Приход товара из РФ'
 
     PROPERTIES(w) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
 
-    PROPERTIES (w) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed,
+    PROPERTIES (w) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed,
                                         hostnameComputerClosed
 
     OBJECTS d = WHfromRFDetail

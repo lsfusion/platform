@@ -21,7 +21,7 @@ PRIORITY RomanLogicsModule, Stock;
 
 //--------------------------------------------- Поступление ---------------------------------------------------------- //
 
-CLASS WHfromCSI 'Приход на склад с СВХ' : historyObject;
+CLASS WHfromCSI 'Приход на склад с СВХ' : historizable;
 CLASS WHfromCSIDetail 'Строка прихода на склад';
 
 @defineDocumentTables(WHfromCSI);
@@ -58,7 +58,7 @@ nameCategoryArticleSkuWHfromCSIDetail 'Номенклатурная группа
 nameUnitOfMeasureArticleSkuWHfromCSIDetail 'Ед. измерения товара' (WHfromCSIDetail) = nameUnitOfMeasureArticleSku(skuWHfromCSIDetail(WHfromCSIDetail));
 barcodeFreightUnitWHfromCSIDetail 'Штрих-код короба' (WHfromCSIDetail) = barcode(freightUnitCStoWHDetail(CStoWHDetailWHfromCSIDetail(WHfromCSIDetail)));
 
-CLASS WHfromCSR 'Приемка на склад с СВХ' : historyObject;
+CLASS WHfromCSR 'Приемка на склад с СВХ' : historizable;
 CLASS WHfromCSRPosted 'Проведенная приемка на склад с СВХ' : WHfromCSR, postedObject;
 CLASS WHfromCSRDetail 'Строка приемки на склад с СВХ';
 
@@ -682,7 +682,7 @@ quantityWHfromCSRDetailWHfromCSI 'Кол-во принятое' (WHfromCSI) = qu
 
 // Излишки / Недостачи
 
-CLASS WHfromCSD 'Акт расхождений на приемке на склад с СВХ' : historyObject, numberedObject;
+CLASS WHfromCSD 'Акт расхождений на приемке на склад с СВХ' : historizable, numberedObject;
 CLASS ABSTRACT WHfromCSDDetail 'Строка акта расхождений на приемке на склад с СВХ';
 
 CLASS WHfromCSDEDetail 'Строка акта расхождений на приемке на склад с СВХ (излишек)' : WHfromCSDDetail;
@@ -970,7 +970,7 @@ FORM WHfromCSIs 'Поступления товара с СВХ'
 
     PROPERTIES(t) FORCE PANEL receiveWHfromCSI, postRecWHfromCSI SHOWIF isDraftRecWHfromCSI(t)
 
-    PROPERTIES (t) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
+    PROPERTIES (t) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
     OBJECTS d = WHfromCSIDetail
     PROPERTIES(d) READONLY indexWHfromCSIDetail, barcodeWHfromCSIDetail, nameCategoryArticleSkuWHfromCSIDetail,

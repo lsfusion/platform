@@ -107,8 +107,8 @@ public class DeclarationExportActionProperty extends UserActionProperty {
             map.put(G15Decl, formInstance.getPropertyDraw(BL.LM.name, countryObj.groupTo));
             map.put(G33Decl, formInstance.getPropertyDraw(BL.RomanLM.sidCustomCategory10));
             map.put(G33Dobl, formInstance.getPropertyDraw(BL.RomanLM.sidCustomCategory10));
-            map.put(G542Decl, formInstance.getPropertyDraw(BL.LM.date, freightObj.groupTo));
-            map.put(G542Dobl, formInstance.getPropertyDraw(BL.LM.date, freightObj.groupTo));
+            map.put(G542Decl, formInstance.getPropertyDraw(BL.RomanLM.date, freightObj.groupTo));
+            map.put(G542Dobl, formInstance.getPropertyDraw(BL.RomanLM.date, freightObj.groupTo));
             map.put(G082Decl, formInstance.getPropertyDraw(BL.LM.name, importerObj.groupTo));
             map.put(G142Decl, formInstance.getPropertyDraw(BL.LM.name, importerObj.groupTo));
             map.put(G092Decl, formInstance.getPropertyDraw(BL.LM.name, importerObj.groupTo));

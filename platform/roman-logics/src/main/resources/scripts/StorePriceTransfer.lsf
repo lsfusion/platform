@@ -9,7 +9,7 @@ REQUIRE System,
         Contract,
         Employee;
 
-CLASS inputTransferPriceAct 'Акт расценки' : inputListRegister, historyObject;
+CLASS inputTransferPriceAct 'Акт расценки' : inputListRegister, historizable;
 CLASS inputTransferPriceActDetail 'Строка акта расценки': inputListRegisterDetail, importerPriceLedger, supplierPriceLedger, retailVATLedger, retailPriceLedger, warePriceLedger;
 
 CLASS transferPriceAct 'Акт расценки' : inputTransferPriceAct, listRegister;

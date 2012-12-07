@@ -56,7 +56,7 @@ META defineInvoice(sign, stockProp)
     CLASS ABSTRACT invoice 'Накладная'###sign : Invoice.invoice;
     CLASS ABSTRACT invoiceDetail 'Строка накладной'###sign : Invoice.invoiceDetail;
 
-    CLASS userInvoice 'Накладная (польз.)'###sign : invoice, historyObject, numeratedDocument;
+    CLASS userInvoice 'Накладная (польз.)'###sign : invoice, historizable, numeratedDocument;
     CLASS userInvoiceDetail 'Строка накладной (польз.)'###sign : invoiceDetail;
     CLASS userInvoicePosted 'Проведенная накладная (польз.)'###sign : userInvoice, postedObject;
 
@@ -521,7 +521,7 @@ META defineInvoice(sign, stockProp)
                                 numberContractSkuInvoice, isCommissionInvoice,
                                 countInvoiceDetailInvoice, quantityInvoiceDetailInvoice, sumInvoiceDetailInvoice,
                                 VATSumInvoiceDetailInvoice, invoiceSumInvoiceDetailInvoice, ordersInvoice
-        PROPERTIES (i) READONLY FORCE PANEL nameUserCreated, timeCreated, hostnameComputerCreated, nameUserClosed, timeClosed, hostnameComputerClosed
+        PROPERTIES (i) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
         PROPERTIES ()  addUserInvoice TODRAW i
         PROPERTIES (i) editInvoice

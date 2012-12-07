@@ -40,6 +40,7 @@ import platform.server.logics.linear.LP;
 import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
+import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.actions.CustomReadValueActionProperty;
 import platform.server.logics.property.actions.DropObjectActionProperty;
 import platform.server.logics.property.actions.UserActionProperty;
@@ -58,8 +59,6 @@ import java.io.ByteArrayInputStream;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.*;
-
-import static platform.server.logics.ServerResourceBundle.getString;
 
 /**
  * User: DAle
@@ -84,6 +83,7 @@ public class VEDLogicsModule extends LogicsModule {
     private LCP addManfrOrder;
     private LCP sumManfrOrder;
     private CustomClass storeLegalEntity;
+    private AbstractCustomClass transaction;
     private CustomClass contract;
     private LCP permissionOrder;
     private LCP contractLegalEntityLegalEntity;
@@ -401,7 +401,19 @@ public class VEDLogicsModule extends LogicsModule {
     LCP roundSum;
     LCP round0;
     LCP calcPercent;
+    
+    LCP redColor;
+    LCP yellowColor;
+    
+    public LCP<?> date;
+    public LCP<PropertyInterface> barcode;
+    public LCP<PropertyInterface> barcodeToObject;
+    public LCP barcodeObjectName;
+    public LAP seekBarcodeAction;
+    public LAP barcodeNotFoundMessage;
+    public LCP reverseBarcode;
 
+    LAP dropStringActionProperty;
 
     @Override
     public void initModuleDependencies() {
@@ -422,7 +434,9 @@ public class VEDLogicsModule extends LogicsModule {
         saleAction = addConcreteClass("saleAction", "Распродажа", action);
         articleAction = addConcreteClass("articleAction", "Акции по позициям", action);
 
-        contract = addAbstractClass("contract", "Договор", baseClass.named, baseLM.transaction);
+        transaction = addAbstractClass("transaction", "Транзакция", baseClass);
+
+        contract = addAbstractClass("contract", "Договор", baseClass.named, transaction);
         contractDelivery = addAbstractClass("contractDelivery", "Договор на закупку", contract);
         contractSale = addAbstractClass("contractSale", "Договор на продажу", contract);
         contractSupplier = addConcreteClass("contractSupplier", "Договор с поставщиком", contractDelivery);
@@ -462,13 +476,13 @@ public class VEDLogicsModule extends LogicsModule {
 
         format = addConcreteClass("format", "Формат", baseClass.named);
 
-        documentShopPrice = addAbstractClass("documentShopPrice", "Изменение цены в магазине", baseLM.transaction);
+        documentShopPrice = addAbstractClass("documentShopPrice", "Изменение цены в магазине", transaction);
         documentRevalue = addConcreteClass("documentRevalue", "Переоценка в магазине", documentShopPrice);
 
-        documentNDS = addConcreteClass("documentNDS", "Изменение НДС", baseLM.transaction);
+        documentNDS = addConcreteClass("documentNDS", "Изменение НДС", transaction);
 
         // заявки на приход, расход
-        order = addAbstractClass("order", "Заявка", baseLM.transaction);
+        order = addAbstractClass("order", "Заявка", transaction);
 
         orderInc = addAbstractClass("orderInc", "Заявка прихода на склад", order);
         orderShopInc = addAbstractClass("orderShopInc", "Заявка прихода на магазин", orderInc);
@@ -517,12 +531,12 @@ public class VEDLogicsModule extends LogicsModule {
         orderInvoiceRetail = addAbstractClass("orderInvoiceRetail", "Розничная операция по накладной", order);
 
 
-        transactionInvoiceRetail = addAbstractClass("transactionInvoiceRetail", "Розничная операция с сертификатом по накладной", baseLM.transaction);
+        transactionInvoiceRetail = addAbstractClass("transactionInvoiceRetail", "Розничная операция с сертификатом по накладной", transaction);
 
         orderRetail = addAbstractClass("orderRetail", "Розничная операция", baseClass);
 
         orderSaleRetail = addAbstractClass("orderSaleRetail", "Реализация через кассу", order, orderRetail);
-//        orderSaleRetail = addAbstractClass("orderSaleRetail", "Реализация через кассу", baseLM.transaction, orderRetail);
+//        orderSaleRetail = addAbstractClass("orderSaleRetail", "Реализация через кассу", transaction, orderRetail);
 
         orderSaleWhole = addConcreteClass("orderSaleWhole", "Оптовый заказ", orderWarehouseOut, orderExtOutWhole, orderSale);
         invoiceSaleWhole = addConcreteClass("invoiceSaleWhole", "Выписанный оптовый заказ", orderSaleWhole, shipmentDocumentOut);
@@ -534,7 +548,7 @@ public class VEDLogicsModule extends LogicsModule {
                 addConcreteClass("writtenOutSaleInvoiceArticleRetail", "Выписанный розничный заказ по накладной", orderSaleInvoiceArticleRetail, shipmentDocumentOut));
         commitSaleCheckArticleRetail = addConcreteClass("commitSaleCheckArticleRetail", "Реализация товаров через кассу", orderSaleArticleRetail, commitInner, orderSaleRetail);
 
-        saleCert = addConcreteClass("saleCert", "Реализация сертификатов", baseLM.transaction);
+        saleCert = addConcreteClass("saleCert", "Реализация сертификатов", transaction);
 
         saleInvoiceCert = addConcreteClass("saleInvoiceCert", "Реализация сертификатов по накладной", saleCert, transactionInvoiceRetail);
         saleCheckCert = addConcreteClass("saleCheckCert", "Реализация сертификатов через кассу", saleCert, orderSaleRetail);
@@ -586,6 +600,7 @@ public class VEDLogicsModule extends LogicsModule {
 
     @Override
     public void initTables() {
+        addTable("transaction", transaction);
         addTable("article", article);
         addTable("orders", order);
         addTable("store", store);
@@ -663,6 +678,22 @@ public class VEDLogicsModule extends LogicsModule {
         round0 = addSFProp("(ROUND(CAST((prm1) as NUMERIC(15,3)),0))", DoubleClass.instance, 1);
         padl = addSFProp("lpad(prm1,12,'0')", StringClass.get(12), 1);
 
+        redColor = addCProp(ColorClass.instance, Color.RED);
+        yellowColor = addCProp(ColorClass.instance, Color.YELLOW);
+
+        date = addDProp(baseGroup, "date", "Дата", DateClass.instance, transaction);
+        date.setEventChange(baseLM.currentDate, is(transaction), 1);
+
+        barcode = addDProp(recognizeGroup, "barcode", "Штрихкод", StringClass.get(Settings.instance.getBarcodeLength()), baseLM.barcodeObject);
+        barcode.setFixedCharWidth(13);
+        barcodeToObject = addAGProp("barcodeToObject", "Объект", barcode);
+        barcodeObjectName = addJProp(baseGroup, "barcodeObjectName", "Объект", baseLM.name, barcodeToObject, 1);
+        seekBarcodeAction = addJoinAProp("Поиск штрихкода", addSAProp(null), barcodeToObject, 1);
+        barcodeNotFoundMessage = addIfAProp(addJProp(baseLM.andNot1, is(StringClass.get(13)), 1, barcodeToObject, 1), 1, addMAProp("Штрих-код не найден!", "Ошибка"));
+        reverseBarcode = addSDProp("reverseBarcode", "Реверс", LogicalClass.instance);
+
+        dropStringActionProperty = addAProp(new DropObjectActionProperty(StringClass.get(13)));
+
         LCP multiplyDouble2 = addMFProp(2);
 
         LCP positive = addJProp(baseLM.greater2, 1, baseLM.vzero);
@@ -671,7 +702,7 @@ public class VEDLogicsModule extends LogicsModule {
         LCP min = addSFProp(FormulaExpr.MIN2, DoubleClass.instance, 2);
         LCP abs = addSFProp("ABS(prm1)", DoubleClass.instance, 1);
 
-        addArticleBarcode = addAAProp("Ввод товара по штрих-коду", article, baseLM.barcode);
+        addArticleBarcode = addAAProp("Ввод товара по штрих-коду", article, barcode);
 
         LCP groupParent = addDProp("groupParent", "Родительская группа", articleGroup, articleGroup);
         LCP groupParentName = addJProp(baseGroup, "Родительская группа", baseLM.name, groupParent, 1);
@@ -812,7 +843,7 @@ public class VEDLogicsModule extends LogicsModule {
         LCP returnInnerConfirmedFreeQuantity = addJProp(documentGroup, "returnInnerFreeQuantity", "Дост. кол-во по возврату парт.", baseLM.andNot1,
                 addCUProp(addJProp(baseLM.and1, addICProp(DoubleClass.instance, orderReturnDeliveryLocal, article, commitDelivery), 1, 2, 3, baseLM.equals2, 3, 4), // для возврата поставщику - нет ограничений, все равно остаток меньше
                         addJProp(baseLM.and1, confirmedInnerQuantity, 4, 2, 3, returnSameClasses, 1, 4)), 1, 2, 3, 4, allowedReturn, 1, 4); // для возврата на склад, diff а не same чтобы можно было реализацию через кассы возвращать без контрагента
-        returnDistrCommitQuantity.setDG(false, returnInnerConfirmedFreeQuantity, 1, 2, 3, 4, baseLM.date, 4, 4);
+        returnDistrCommitQuantity.setDG(false, returnInnerConfirmedFreeQuantity, 1, 2, 3, 4, date, 4, 4);
 
         // создаем свойства ограничения для расчета себестоимости (являются следствием addConstraint)
         LCP fullFreeOrderArticleDelivery = addCUProp(documentOutSklFreeQuantity, addICProp(DoubleClass.instance, orderExtOutReturn, article, commitDelivery)); // для расхода не со склада нету ограничений
@@ -821,12 +852,12 @@ public class VEDLogicsModule extends LogicsModule {
         returnInnerFreeQuantity = addJProp(min, fullFreeOrderArticleDelivery, 1, 2, 3, returnInnerConfirmedFreeQuantity, 1, 2, 3, 4);
 
         // добавляем свойства по товарам
-        articleInnerQuantity = addDGProp(documentGroup, "articleInnerQuantity", true, "Кол-во", 2, false, innerQuantity, 1, 2, documentInnerFreeQuantity, 1, 2, 3, baseLM.date, 3, 3);
+        articleInnerQuantity = addDGProp(documentGroup, "articleInnerQuantity", true, "Кол-во", 2, false, innerQuantity, 1, 2, documentInnerFreeQuantity, 1, 2, 3, date, 3, 3);
         documentFreeQuantity = addSGProp(documentMoveGroup, "Доступ. кол-во", documentInnerFreeQuantity, 1, 2);
 
         // для док. \ товара \ парт. \ док. прод.   - кол-во подтв. парт. если совпадают контрагенты
         returnInnerQuantity = addDGProp(documentGroup, "returnInnerQuantity", "Кол-во возврата", 2, false, returnInnerCommitQuantity, 1, 2, 4,
-                returnInnerFreeQuantity, 1, 2, 3, 4, baseLM.date, 3, 3);
+                returnInnerFreeQuantity, 1, 2, 3, 4, date, 3, 3);
         returnFreeQuantity = addSGProp(documentGroup, "Дост. кол-во к возврату", returnInnerFreeQuantity, 1, 2, 4);
         LCP returnDocumentQuantity = addCUProp("Кол-во возврата", returnOuterQuantity, returnInnerQuantity); // возвратный документ\прямой документ
         addConstraint(addJProp("При возврате контрагент документа, по которому идет возврат, должен совпадать с контрагентом возврата", baseLM.and1, allowedReturn, 1, 3, returnDocumentQuantity, 1, 2, 3), false);
@@ -845,7 +876,7 @@ public class VEDLogicsModule extends LogicsModule {
         // ожидаемый приход на склад
         articleFreeOrderQuantity = addSUProp("articleFreeOrderQuantity", true, "Ожидаемое своб. кол-во", Union.SUM, articleFreeQuantity, addSGProp(moveGroup, "Ожидается приход", addJProp(baseLM.andNot1, articleOrderQuantity, 1, 2, is(commitInc), 1), subjectIncOrder, 1, 2)); // сумма по еще не пришедшим
 
-        articleBalanceCheck = addDGProp(documentGroup, "articleBalanceCheck", "Остаток инв.", 2, false, innerBalanceCheck, 1, 2, innerBalanceCheckDB, 1, 2, 3, baseLM.date, 3, 3);
+        articleBalanceCheck = addDGProp(documentGroup, "articleBalanceCheck", "Остаток инв.", 2, false, innerBalanceCheck, 1, 2, innerBalanceCheckDB, 1, 2, 3, date, 3, 3);
 
         LCP articleBalanceSklCommitedQuantity = addSGProp(moveGroup, "articleBalanceSklCommitedQuantity", "Остаток тов. на скл.", balanceSklCommitedQuantity, 1, 2);
         addJProp(documentMoveGroup, "Остаток тов. прих.", articleBalanceSklCommitedQuantity, subjectIncOrder, 1, 2);
@@ -947,7 +978,7 @@ public class VEDLogicsModule extends LogicsModule {
 
         NDS = addDProp(documentGroup, "NDS", "НДС", DoubleClass.instance, documentNDS, article);
         LCP[] maxNDSProps = addMGProp((AbstractGroup) null, true, new String[]{"currentNDSDate", "currentNDSDoc"}, new String[]{"Дата посл. НДС", "Посл. док. НДС"}, 1,
-                addJProp(baseLM.and1, baseLM.date, 1, NDS, 1, 2), 1, 2);
+                addJProp(baseLM.and1, date, 1, NDS, 1, 2), 1, 2);
         currentNDSDate = maxNDSProps[0];
         currentNDSDoc = maxNDSProps[1];
         addPersistent(currentNDSDate);
@@ -985,12 +1016,12 @@ public class VEDLogicsModule extends LogicsModule {
         LCP commitArticleQuantity = addJProp(baseLM.and1, is(commitDoShopInc), 1, articleQuantity, 1, 2);
 
         LCP[] maxCommitIncProps = addMGProp((AbstractGroup) null, true, new String[]{"currentCommitIncDate", "currentCommitIncDoc"}, new String[]{"Дата посл. прих. в маг.", "Посл. док. прих. в маг."}, 1,
-                addJProp(baseLM.and1, baseLM.date, 1, commitArticleQuantity, 1, 2), 1, subjectIncOrder, 1, 2);
+                addJProp(baseLM.and1, date, 1, commitArticleQuantity, 1, 2), 1, subjectIncOrder, 1, 2);
         LCP currentCommitIncDate = maxCommitIncProps[0]; addPersistent(currentCommitIncDate);
         LCP currentCommitIncDoc = maxCommitIncProps[1]; addPersistent(currentCommitIncDoc);
 
         LCP[] maxRevaluePriceProps = addMGProp((AbstractGroup) null, true, new String[]{"currentRevalueDate", "currentRevalueDoc"}, new String[]{"Дата посл. переоц. в маг.", "Посл. док. переоц. в маг."}, 1,
-                addJProp(baseLM.and1, baseLM.date, 1, documentRevalued, 1, 2), 1, revalueShop, 1, 2);
+                addJProp(baseLM.and1, date, 1, documentRevalued, 1, 2), 1, revalueShop, 1, 2);
         LCP currentRevalueDate = maxRevaluePriceProps[0]; addPersistent(currentRevalueDate);
         LCP currentRevalueDoc = maxRevaluePriceProps[1]; addPersistent(currentRevalueDoc);
 
@@ -1092,7 +1123,7 @@ public class VEDLogicsModule extends LogicsModule {
         changeQuantityOrder = addOProp(documentGroup, "Номер", PartitionType.SUM, addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), articleInnerQuantity, 1, 2), true, true, 1, 1, changeQuantityTime, 1, 2);
 
         LCP monthDay = addSFProp("EXTRACT(MONTH FROM prm1) * 40 + EXTRACT(DAY FROM prm1)", IntegerClass.instance, 1);
-        orderBirthDay = addDCProp("orderBirthDay", "День рожд.", addJProp(baseLM.equals2, monthDay, 1, addJProp(monthDay, bornCustomerCheckRetail, 1), 2), true, baseLM.date, 1, subjectIncOrder, 1);
+        orderBirthDay = addDCProp("orderBirthDay", "День рожд.", addJProp(baseLM.equals2, monthDay, 1, addJProp(monthDay, bornCustomerCheckRetail, 1), 2), true, date, 1, subjectIncOrder, 1);
 
         sumManfrOrderArticle = addJProp(documentManfrGroup, "sumManfrOrderArticle", "Сумма изг.", multiplyDouble2, articleQuantity, 1, 2, priceManfrOrderArticle, 1, 2);
         sumManfrOrder = addSGProp(documentManfrGroup, "sumManfrOrder", "Сумма изг.", sumManfrOrderArticle, 1);
@@ -1190,7 +1221,7 @@ public class VEDLogicsModule extends LogicsModule {
         LCP couponExpiry = addDProp(baseGroup, "couponExpiry", "Дата окончания купонов", DateClass.instance);
         LCP certExpiry = addDProp(baseGroup, "certExpiry", "Срок действия серт.", IntegerClass.instance);
 
-        dateIssued = addJProp("Дата выдачи", baseLM.date, obligationIssued, 1);
+        dateIssued = addJProp("Дата выдачи", date, obligationIssued, 1);
         couponFromIssued = addDCProp(baseGroup, "couponFromIssued", "Дата начала", couponStart, dateIssued, 1, coupon);
         LCP couponToIssued = addDCProp("couponToIssued", "Дата окончания", couponExpiry, obligationIssued, 1, coupon);
         LCP certToIssued = addDCProp("certToIssued", "Дата окончания", false, addJProp(addDays, 1, addOldProp(certExpiry)), true, dateIssued, 1, giftObligation);
@@ -1199,8 +1230,8 @@ public class VEDLogicsModule extends LogicsModule {
 
         LCP orderSaleObligationAllowed = addJProp(and(false, true, true, true), is(commitSaleCheckArticleRetail), 1, obligationIssued, 2,
                 addJProp(baseLM.less2, sumWithDiscountOrder, 1, obligationSumFrom, 2), 1, 2,
-                addJProp(baseLM.greater2, baseLM.date, 1, obligationToIssued, 2), 1, 2,
-                addJProp(baseLM.less2, baseLM.date, 1, couponFromIssued, 2), 1, 2);
+                addJProp(baseLM.greater2, date, 1, obligationToIssued, 2), 1, 2,
+                addJProp(baseLM.less2, date, 1, couponFromIssued, 2), 1, 2);
         addConstraint(addJProp("Нельзя использовать выбранный сертификат", baseLM.andNot1, orderSaleUseObligation, 1, 2, orderSaleObligationAllowed, 1, 2), false);
 
         LCP orderSaleObligationCanBeUsed = addJProp(baseLM.andNot1, orderSaleObligationAllowed, 1, 2, obligationDocument, 2);
@@ -1235,9 +1266,9 @@ public class VEDLogicsModule extends LogicsModule {
         impSumBank = addDProp(baseGroup, "inpSumBank", "Отправить в банк", DoubleClass.instance, DateClass.instance, shop);
         LCP curBank = addJProp(cashRegGroup, true, "Отправить в банк (ввод)", impSumBank, baseLM.currentDate, currentShop);
 
-        LCP allOrderSalePayCard = addSGProp(baseGroup, "Безнал. в кассе", orderSalePayCard, baseLM.date, 1, subjectOutOrder, 1);
+        LCP allOrderSalePayCard = addSGProp(baseGroup, "Безнал. в кассе", orderSalePayCard, date, 1, subjectOutOrder, 1);
         LCP retailSumOrderRetail = addJProp(baseLM.and1, sumWithDiscountObligationOrder, 1, is(orderRetail), 1);
-        LCP allOrderSalePayCash = addDUProp(cashRegGroup, "Наличных в кассе", addDUProp(addSGProp(retailSumOrderRetail, baseLM.date, 1, subjectOutOrder, 1), addSGProp(retailSumOrderRetail, baseLM.date, 1, subjectIncOrder, 1)), allOrderSalePayCard);
+        LCP allOrderSalePayCash = addDUProp(cashRegGroup, "Наличных в кассе", addDUProp(addSGProp(retailSumOrderRetail, date, 1, subjectOutOrder, 1), addSGProp(retailSumOrderRetail, date, 1, subjectIncOrder, 1)), allOrderSalePayCard);
 
         LCP allOrderSalePayCardCur = addJProp(cashRegGroup, "allOrderSalePayCardCur", "Безнал. в кассе", allOrderSalePayCard, baseLM.currentDate, currentShop);
         LCP allOrderSalePayCashCur = addJProp(cashRegGroup, "Наличных в кассе", allOrderSalePayCash, baseLM.currentDate, currentShop);
@@ -1254,15 +1285,15 @@ public class VEDLogicsModule extends LogicsModule {
         addConstraint(addJProp("Всё оплачено карточкой", baseLM.and1, addJProp(baseLM.equals2, orderSalePayCard, 1, sumWithDiscountObligationOrder, 1), 1, orderSalePayCash, 1), false);
         addConstraint(addJProp("Введенной суммы не достаточно", baseLM.and1, notEnoughSum, 1, orderSalePayAll, 1), false); // если ни карточки ни кэша не задали, значит заплатитли без сдачи
 
-        documentBarcodePrice = addJProp("Цена", priceAllOrderSaleArticle, 1, baseLM.barcodeToObject, 2);
-        documentBarcodePriceOv = addSUProp("Цена", Union.OVERRIDE, documentBarcodePrice, addJProp(baseLM.and1, addJProp(obligationSum, baseLM.barcodeToObject, 1), 2, is(order), 1));
+        documentBarcodePrice = addJProp("Цена", priceAllOrderSaleArticle, 1, barcodeToObject, 2);
+        documentBarcodePriceOv = addSUProp("Цена", Union.OVERRIDE, documentBarcodePrice, addJProp(baseLM.and1, addJProp(obligationSum, barcodeToObject, 1), 2, is(order), 1));
 
         barcodeAddClient = addSDProp("Доб. клиента", LogicalClass.instance);
 
-        barcodeAddClientAction = addIfAProp(true, baseLM.barcodeToObject, 1, addBAProp(customerCheckRetail, barcodeAddClient), 1);
+        barcodeAddClientAction = addIfAProp(true, barcodeToObject, 1, addBAProp(customerCheckRetail, barcodeAddClient), 1);
 
         barcodeAddCert = addSDProp("Доб. серт.", LogicalClass.instance);
-        barcodeAddCertAction = addIfAProp(true, baseLM.barcodeToObject, 1, addBAProp(giftObligation, barcodeAddCert), 1);
+        barcodeAddCertAction = addIfAProp(true, barcodeToObject, 1, addBAProp(giftObligation, barcodeAddCert), 1);
 
         barcodeAction2 = addJoinAProp("Ввод штрих-кода 2",
                 addListAProp(addSetPropertyAProp(addCUProp(
@@ -1271,12 +1302,12 @@ public class VEDLogicsModule extends LogicsModule {
                         addJProp(baseLM.equals2, subjectIncOrder, 1, 2),
                         xorActionArticle, articleFormatToSell, documentRevalued
                 ), 1, 2, baseLM.vtrue), 1, 2,
-                        addIfAProp(is(baseClass), 1, baseLM.changeUser, 2), 1, 2), 1, baseLM.barcodeToObject, 2);
+                        addIfAProp(is(baseClass), 1, baseLM.changeUser, 2), 1, 2), 1, barcodeToObject, 2);
         barcodeAction3 = addJoinAProp("Ввод штрих-кода 3",
                 addListAProp(addSetPropertyAProp(addCUProp(
                         addSCProp(returnInnerQuantity)
                 ), 1, 2, 3, baseLM.vtrue), 1, 2, 3, 
-                        addIfAProp(addJProp(baseLM.and1, is(baseClass), 1, is(baseClass), 2), 1, 3, baseLM.changeUser, 2), 1, 2, 3), 1, baseLM.barcodeToObject, 3, 2);
+                        addIfAProp(addJProp(baseLM.and1, is(baseClass), 1, is(baseClass), 2), 1, 3, baseLM.changeUser, 2), 1, 2, 3), 1, barcodeToObject, 3, 2);
 
         LCP xorCouponArticleGroup = addDProp(couponGroup, "xorCouponArticleGroup", "Вкл.", LogicalClass.instance, articleGroup);
         xorCouponArticle = addDProp(couponGroup, "xorCouponArticle", "Вкл./искл.", LogicalClass.instance, article);
@@ -1294,16 +1325,16 @@ public class VEDLogicsModule extends LogicsModule {
         orderUser = addDCProp("orderUser", "Исп-ль заказа", baseLM.currentUser, true, is(order), 1);
         orderUserName = addJProp("Исп-ль заказа", baseLM.name, orderUser, 1);
         // вспомогательные свойства
-        orderContragentBarcode = addJProp("Штрих-код (кому)", baseLM.barcode, subjectIncOrder, 1);
-        orderUserBarcode = addJProp("Кассир", baseLM.barcode, orderUser, 1);
+        orderContragentBarcode = addJProp("Штрих-код (кому)", barcode, subjectIncOrder, 1);
+        orderUserBarcode = addJProp("Кассир", barcode, orderUser, 1);
 
         orderComputer = addDCProp("orderComputer", "Компьютер заказа", baseLM.currentComputer, true, is(order), 1);
         orderComputerName = addJProp("Компьютер заказа", baseLM.hostname, orderComputer, 1);
 
-//        setNotNull(baseLM.barcode, customerCheckRetail);
-        setNotNull(addJProp("Штрих-код товара", baseLM.and1, baseLM.barcode, 1, is(customerCheckRetail), 1));
-//        setNotNull(baseLM.barcode, obligation);
-        setNotNull(addJProp("Сертификат", baseLM.and1, baseLM.barcode, 1, is(obligation), 1));
+//        setNotNull(barcode, customerCheckRetail);
+        setNotNull(addJProp("Штрих-код товара", baseLM.and1, barcode, 1, is(customerCheckRetail), 1));
+//        setNotNull(barcode, obligation);
+        setNotNull(addJProp("Сертификат", baseLM.and1, barcode, 1, is(obligation), 1));
 
         checkRetailExported = addDProp("checkRetailExported", "Экспортирован", LogicalClass.instance, orderRetail);
 
@@ -1316,7 +1347,7 @@ public class VEDLogicsModule extends LogicsModule {
         barcodeActionCheck = addJoinAProp("Ввод штрих-кода (проверки)",
                 addSetPropertyAProp(addCUProp(
                         addSCProp(addIfElseUProp(quantityCheckCommitInnerArticle, articleOrderQuantity, is(commitInner), 1))
-                ), 1, 2, baseLM.vtrue), 1, baseLM.barcodeToObject, 2);
+                ), 1, 2, baseLM.vtrue), 1, barcodeToObject, 2);
 
         quantityDiffCommitArticle = addDUProp(articleOrderQuantity, addCUProp("Кол-во свер.", outerCommitedQuantity, quantityCheckCommitInnerArticle));
 
@@ -1330,7 +1361,7 @@ public class VEDLogicsModule extends LogicsModule {
         dateLastImportShop = addDProp(cashRegGroup, "dateLastImportSh", "Дата прайса", DateClass.instance, shop);
         dateLastImport = addJProp(cashRegGroup, "dateLastImport", "Дата прайса", dateLastImportShop, currentShop);
 
-        padlBarcodeToObject = addJProp(privateGroup, true, "Объект (до 12)", baseLM.barcodeToObject, padl, 1);
+        padlBarcodeToObject = addJProp(privateGroup, true, "Объект (до 12)", barcodeToObject, padl, 1);
 
         // для накладной
         seriesInvoiceDocument = addDProp(documentShipmentGroup, "seriesInvoiceDocument", "Серия", StringClass.get(4), shipmentDocument);
@@ -1364,8 +1395,8 @@ public class VEDLogicsModule extends LogicsModule {
         //!!!
         articleToDocument = addMGProp(baseGroup, "articleToDocument", "Входит в договор документа", addJProp(and(false, false, false),
                 articleToSpecification, 1, 2,
-                addJProp(baseLM.less2, specificationDateFrom, 1, baseLM.date, 2), 2, 3,
-                addJProp(baseLM.greater2, specificationDateTo, 1, baseLM.date, 2), 2, 3,
+                addJProp(baseLM.less2, specificationDateFrom, 1, date, 2), 2, 3,
+                addJProp(baseLM.greater2, specificationDateTo, 1, date, 2), 2, 3,
                 addJProp(baseLM.equals2, contractSpecification, 1, contractOrder, 2), 2, 3), 1, 3);
 //        addConstraint(addJProp("Можно выбирать товары только согласно договору", baseLM.andNot1, articleInnerQuantity, 2, 1, addJProp(baseLM.equals2, baseLM.vtrue, articleToDocument, 1, 2), 1, 2), true);
 //        addConstraint(addJProp("Можно выбирать товары только согласно договору", baseLM.andNot1, outerOrderQuantity, 2, 1, addJProp(baseLM.equals2, baseLM.vtrue, articleToDocument, 1, 2), 1, 2), true);
@@ -1397,8 +1428,8 @@ public class VEDLogicsModule extends LogicsModule {
         sumWithDiscountObligation = addJProp(baseGroup, "sumWithDiscountObligation", "Сумма со скидкой", sumWithDiscountOrder, obligationDocument, 1);
         discountSumObligation = addJProp(baseGroup, "discountSumObligation", "Сумма скидки", discountSumOrder, obligationDocument, 1);
 
-        obligFromIssued = addJProp(baseGroup, "Дата выдачи", baseLM.date, obligationIssued,1);
-        obligToIssued = addJProp(baseGroup, "Дата использования", baseLM.date, obligationDocument, 1);
+        obligFromIssued = addJProp(baseGroup, "Дата выдачи", date, obligationIssued,1);
+        obligToIssued = addJProp(baseGroup, "Дата использования", date, obligationDocument, 1);
 
 
        articleIncDocumentQuantity = addJProp(baseGroup, "articleIncDocumentQuantity", "Кол-во", articleQuantity, obligationDocument, 1, 2);
@@ -1414,8 +1445,8 @@ public class VEDLogicsModule extends LogicsModule {
 
     void initDateProperties() {
 
-        between = addJProp("between", getString("logics.between"), baseLM.and1, baseLM.groeq2, 1, 2, baseLM.groeq2, 3, 1);
-        betweenDate2 = addJProp(between, baseLM.date, 1, object(DateClass.instance), 2, object(DateClass.instance), 3);
+        between = addJProp("between", "Между", baseLM.and1, baseLM.groeq2, 1, 2, baseLM.groeq2, 3, 1);
+        betweenDate2 = addJProp(between, date, 1, object(DateClass.instance), 2, object(DateClass.instance), 3);
 
         quantitySupplierArticleBetweenDates = addSGProp("quantitySupplierArticleBetweenDates", "Проданное кол-во",
                 addJProp(and(false,false), innerQuantity, 1, 2, 3, is(orderSale), 1, betweenDate2, 1, 4, 5), contragentOrder, 3, 2, 4, 5);
@@ -1435,7 +1466,7 @@ public class VEDLogicsModule extends LogicsModule {
 
 
 
-        betweenDate = addJProp(between, baseLM.date, 1, object(DateClass.instance), 2, object(DateClass.instance), 3);
+        betweenDate = addJProp(between, date, 1, object(DateClass.instance), 2, object(DateClass.instance), 3);
 
         sumRetailIncBetweenDate = addSGProp(baseGroup, "sumRetailIncBetweenDate", "Приходная сумма за интервал",
                 addJProp(baseLM.and1, sumRetailOrder, 1, betweenDate, 1, 2, 3), subjectIncOrder, 1, 2, 3);
@@ -1611,6 +1642,7 @@ public class VEDLogicsModule extends LogicsModule {
     @Override
     public void initIndexes() {
         baseLM.addIndex(articleInnerQuantity);
+        addIndex(barcode);
     }
 
     private NavigatorElement saleRetailCashRegisterElement;
@@ -1826,15 +1858,15 @@ public class VEDLogicsModule extends LogicsModule {
             ObjectEntity objClient = addSingleGroupObject(customerCheckRetail, "Клиент");
             ObjectEntity objDoc = addSingleGroupObject(commitSaleCheckArticleRetail, "Чек");
 
-            addPropertyDraw(objClient, baseLM.barcode, baseLM.name, propsCustomerCheckRetail, clientSum);
-            addPropertyDraw(objDoc, baseLM.objectValue, baseLM.date, orderHour, orderMinute, subjectOutOrder, sumWithDiscountObligationOrder);
+            addPropertyDraw(objClient, barcode, baseLM.name, propsCustomerCheckRetail, clientSum);
+            addPropertyDraw(objDoc, baseLM.objectValue, date, orderHour, orderMinute, subjectOutOrder, sumWithDiscountObligationOrder);
 
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(baseLM.barcode, objClient), Compare.EQUALS, addPropertyObject(orderContragentBarcode, objDoc)));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(barcode, objClient), Compare.EQUALS, addPropertyObject(orderContragentBarcode, objDoc)));
 
-            //addFixedFilter(new NotNullFilterEntity(addPropertyObject(baseLM.barcode, objClient)));
+            //addFixedFilter(new NotNullFilterEntity(addPropertyObject(barcode, objClient)));
 
             addFixedFilter(new OrFilterEntity(
-                    new CompareFilterEntity(addPropertyObject(baseLM.barcode, objClient), Compare.EQUALS, barcodeClient),
+                    new CompareFilterEntity(addPropertyObject(barcode, objClient), Compare.EQUALS, barcodeClient),
                     new CompareFilterEntity(addPropertyObject(baseLM.name, objClient), Compare.EQUALS, nameClient)));
         }
 
@@ -1865,13 +1897,15 @@ public class VEDLogicsModule extends LogicsModule {
             objBarcode.groupTo.initClassView = ClassViewType.PANEL;
             objBarcode.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
 
-            addActionsOnEvent(FormEventType.APPLY, addPropertyObject(addAProp(new DropObjectActionProperty(StringClass.get(13))), objBarcode));
+            //dropStringActionProperty = addAProp(new DropObjectActionProperty(StringClass.get(13)));
 
-            addPropertyDraw(baseLM.reverseBarcode);
+            addActionsOnEvent(FormEventType.APPLY, addPropertyObject(dropStringActionProperty, objBarcode));
+
+            addPropertyDraw(reverseBarcode);
 
             addActionsOnObjectChange(objBarcode,
                                      addPropertyObject(
-                                             addIfAProp(true, baseLM.barcodeToObject, 1,
+                                             addIfAProp(true, barcodeToObject, 1,
                                                           addMFAProp(
                                                                   null,
                                                                   "Ввод нового товара",
@@ -1895,27 +1929,27 @@ public class VEDLogicsModule extends LogicsModule {
 
             PropertyDrawView barcodeView = design.get(getPropertyDraw(baseLM.objectValue, objBarcode));
 
-            design.getPanelContainer(design.get(objBarcode.groupTo)).add(design.get(getPropertyDraw(baseLM.reverseBarcode)));
+            design.getPanelContainer(design.get(objBarcode.groupTo)).add(design.get(getPropertyDraw(reverseBarcode)));
             design.getPanelContainer(design.get(objBarcode.groupTo)).constraints.maxVariables = 0;
-            design.addIntersection(barcodeView, design.get(getPropertyDraw(baseLM.barcodeObjectName)), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
-            design.addIntersection(barcodeView, design.get(getPropertyDraw(baseLM.reverseBarcode)), DoNotIntersectSimplexConstraint.TOTHE_BOTTOM);
-            design.addIntersection(design.get(getPropertyDraw(baseLM.reverseBarcode)), design.get(getPropertyDraw(baseLM.barcodeObjectName)), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+            design.addIntersection(barcodeView, design.get(getPropertyDraw(barcodeObjectName)), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+            design.addIntersection(barcodeView, design.get(getPropertyDraw(reverseBarcode)), DoNotIntersectSimplexConstraint.TOTHE_BOTTOM);
+            design.addIntersection(design.get(getPropertyDraw(reverseBarcode)), design.get(getPropertyDraw(barcodeObjectName)), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
             if (getPropertyDraw(documentBarcodePriceOv) != null) {
-                design.addIntersection(design.get(getPropertyDraw(baseLM.barcodeObjectName)), design.get(getPropertyDraw(documentBarcodePriceOv)), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+                design.addIntersection(design.get(getPropertyDraw(barcodeObjectName)), design.get(getPropertyDraw(documentBarcodePriceOv)), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
             }
 
             design.setFont(barcodeView, FONT_LARGE_BOLD);
-            design.setFont(baseLM.reverseBarcode, FONT_SMALL_BOLD);
+            design.setFont(reverseBarcode, FONT_SMALL_BOLD);
             design.setFont(barcodeAddClient, FONT_SMALL_BOLD);
             design.setFont(barcodeAddCert, FONT_SMALL_BOLD);
-            design.setFont(baseLM.barcodeObjectName, FONT_LARGE_BOLD);
+            design.setFont(barcodeObjectName, FONT_LARGE_BOLD);
             design.setFont(documentBarcodePriceOv, FONT_LARGE_BOLD);
-            design.setBackground(baseLM.barcodeObjectName, new Color(240, 240, 240));
+            design.setBackground(barcodeObjectName, new Color(240, 240, 240));
 
             design.setEditKey(barcodeView, KeyStroke.getKeyStroke(KeyEvent.VK_F4, 0));
-            design.setEditKey(baseLM.reverseBarcode, KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0));
+            design.setEditKey(reverseBarcode, KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0));
 
-            design.setFocusable(baseLM.reverseBarcode, false);
+            design.setFocusable(reverseBarcode, false);
             design.setFocusable(false, objBarcode.groupTo);
             barcodeView.clearText = true;
             return design;
@@ -1957,8 +1991,8 @@ public class VEDLogicsModule extends LogicsModule {
             }
 
             addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeAction2, objDoc, objBarcode));
-            addActionsOnObjectChange(objBarcode, addPropertyObject(baseLM.seekBarcodeAction, objBarcode));
-            addActionsOnObjectChange(objBarcode, addPropertyObject(baseLM.barcodeNotFoundMessage, objBarcode));
+            addActionsOnObjectChange(objBarcode, addPropertyObject(seekBarcodeAction, objBarcode));
+            addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeNotFoundMessage, objBarcode));
 
             if (hasExternalScreen()) {
                 addPropertyDraw(documentBarcodePriceOv, objDoc, objBarcode).setToDraw(objBarcode.groupTo);
@@ -2050,7 +2084,7 @@ public class VEDLogicsModule extends LogicsModule {
                 }
 
                 if (hasExternalScreen()) {
-                    PropertyDrawEntity barcodeNavigator = getPropertyDraw(baseLM.barcodeObjectName);
+                    PropertyDrawEntity barcodeNavigator = getPropertyDraw(barcodeObjectName);
                     if (barcodeNavigator != null) {
                         design.get(barcodeNavigator).externalScreen = VEDBL.panelScreen;
                         design.get(barcodeNavigator).externalScreenConstraints.order = 1;
@@ -2154,7 +2188,7 @@ public class VEDLogicsModule extends LogicsModule {
 
             PropertyDrawEntity<?> addvOrderArticleDraw = getPropertyDraw(addvOrderArticle);
             if(addvOrderArticleDraw!=null)
-                addvOrderArticleDraw.setPropertyBackground(addPropertyObject(addJProp(baseLM.and1, baseLM.redColor, isNegativeAddvOrderArticle, 1, 2), objDoc, objArt));
+                addvOrderArticleDraw.setPropertyBackground(addPropertyObject(addJProp(baseLM.and1, redColor, isNegativeAddvOrderArticle, 1, 2), objDoc, objArt));
         }
 
         @Override
@@ -2301,7 +2335,7 @@ public class VEDLogicsModule extends LogicsModule {
 
         @Override
         protected Object[] getArticleProps() {
-            return new Object[]{baseLM.name, baseLM.barcode, currentRRP, nameCurrencyArticle};
+            return new Object[]{baseLM.name, barcode, currentRRP, nameCurrencyArticle};
         }
 
         @Override
@@ -2433,7 +2467,7 @@ public class VEDLogicsModule extends LogicsModule {
             nameArticle = addSingleGroupObject(StringClass.get(100), "Поиск по наименованию", baseLM.objectValue);
             nameArticle.groupTo.setSingleClassView(ClassViewType.PANEL);
 
-            objArticle = addSingleGroupObject(article, baseLM.barcode, nameArticleGroupArticle, nameBrendArticle, baseLM.name, nameArticleSupplier, balanceFreeQuantity);
+            objArticle = addSingleGroupObject(article, barcode, nameArticleGroupArticle, nameBrendArticle, baseLM.name, nameArticleSupplier, balanceFreeQuantity);
             objShop = addSingleGroupObject(shop, baseLM.name, addressSubject, nameShopFormat);
 
             addPropertyDraw(articleFreeQuantity, objShop, objArticle);
@@ -2510,7 +2544,7 @@ public class VEDLogicsModule extends LogicsModule {
             super(parent, sID, toAdd, documentClass, true);
 
             if (!toAdd)
-                addPropertyDraw(objDoc, baseLM.date, baseLM.objectValue, orderHour, orderMinute);
+                addPropertyDraw(objDoc, date, baseLM.objectValue, orderHour, orderMinute);
 
             if (allStores) {
                 addPropertyDraw(objDoc, subjectOutOrder, nameSubjectOutOrder);
@@ -2522,7 +2556,7 @@ public class VEDLogicsModule extends LogicsModule {
 
             // чтобы в порядке нужном
             addPropertyDraw(changeQuantityOrder, objDoc, objArt);
-            addPropertyDraw(baseLM.barcode, objArt);
+            addPropertyDraw(barcode, objArt);
 
             objArt.groupTo.filterProperty = addPropertyDraw(baseLM.name, objArt);
 
@@ -2547,8 +2581,8 @@ public class VEDLogicsModule extends LogicsModule {
             addActionsOnObjectChange(objBarcode, true,
                                      addPropertyObject(barcodeAddClientAction, objBarcode),
                                      addPropertyObject(barcodeAction2, objDoc, objBarcode),
-                                     addPropertyObject(baseLM.seekBarcodeAction, objBarcode),
-                                     addPropertyObject(baseLM.barcodeNotFoundMessage, objBarcode));
+                                     addPropertyObject(seekBarcodeAction, objBarcode),
+                                     addPropertyObject(barcodeNotFoundMessage, objBarcode));
         }
 
         @Override
@@ -2572,7 +2606,7 @@ public class VEDLogicsModule extends LogicsModule {
 
             if(isSubjectImpl()) {
                 design.getPanelContainer(design.get(objBarcode.groupTo)).add(design.get(getPropertyDraw(barcodeAddClient)));
-                design.addIntersection(design.get(getPropertyDraw(barcodeAddClient)), design.get(getPropertyDraw(baseLM.barcodeObjectName)), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+                design.addIntersection(design.get(getPropertyDraw(barcodeAddClient)), design.get(getPropertyDraw(barcodeObjectName)), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
             }
             design.setEditKey(barcodeAddClient, KeyStroke.getKeyStroke(KeyEvent.VK_F5, InputEvent.CTRL_DOWN_MASK));
 
@@ -2581,7 +2615,7 @@ public class VEDLogicsModule extends LogicsModule {
             design.get(getPropertyDraw(documentFreeQuantity, objArt)).minimumSize = new Dimension(90, 20);
             design.get(getPropertyDraw(discountOrderArticle, objArt)).minimumSize = new Dimension(20, 20);
             getPropertyDraw(discountSumOrderArticle, objArt).forceViewType = ClassViewType.HIDE;
-            design.get(getPropertyDraw(baseLM.barcode, objArt)).minimumSize = new Dimension(200, 100);
+            design.get(getPropertyDraw(barcode, objArt)).minimumSize = new Dimension(200, 100);
 
             return design;
         }
@@ -2620,7 +2654,7 @@ public class VEDLogicsModule extends LogicsModule {
             objDoc.caption = "Чек";
 
             objObligation = addSingleGroupObject(obligation, "Оплачено купонами/ сертификатами");
-            addPropertyDraw(baseLM.barcode, objObligation);
+            addPropertyDraw(barcode, objObligation);
             addPropertyDraw(baseLM.objectClassName, objObligation);
             addPropertyDraw(obligationSum, objObligation);
             addPropertyDraw(obligationSumFrom, objObligation);
@@ -2631,9 +2665,9 @@ public class VEDLogicsModule extends LogicsModule {
             addPropertyDraw(orderSaleUseObligation, objDoc, objObligation);
 
             if (toAdd) {
-                objArt.groupTo.propertyBackground = addPropertyObject(addJProp(baseLM.and1, baseLM.redColor, actionOutArticle, 1, 2), objDoc, objArt);
+                objArt.groupTo.propertyBackground = addPropertyObject(addJProp(baseLM.and1, redColor, actionOutArticle, 1, 2), objDoc, objArt);
 
-                objObligation.groupTo.propertyBackground = addPropertyObject(addJProp(baseLM.and1, baseLM.redColor, orderSaleObligationCanNotBeUsed, 1, 2), objDoc, objObligation);
+                objObligation.groupTo.propertyBackground = addPropertyObject(addJProp(baseLM.and1, redColor, orderSaleObligationCanNotBeUsed, 1, 2), objDoc, objObligation);
                 addHintsNoUpdate(obligationDocument);
             }
 
@@ -2746,11 +2780,11 @@ public class VEDLogicsModule extends LogicsModule {
                         BaseUtils.toSet(art.groupTo),
                         getPropertyDraw(priceAllOrderSaleArticle, objArt), getPropertyDraw(articleQuantity, objArt),
                         getPropertyDraw(baseLM.name, objArt), getPropertyDraw(sumWithDiscountOrderArticle, objArt),
-                        getPropertyDraw(sumWithDiscountObligationOrder, objDoc), getPropertyDraw(baseLM.barcode, objArt),
+                        getPropertyDraw(sumWithDiscountObligationOrder, objDoc), getPropertyDraw(barcode, objArt),
                         getPropertyDraw(orderSalePayCard, objDoc), getPropertyDraw(orderSalePayCash, objDoc),
                         getPropertyDraw(discountOrderArticle), getPropertyDraw(discountSumOrderArticle), getPropertyDraw(orderUserName),
                         getPropertyDraw(nameImplSubjectIncOrder), getPropertyDraw(accumulatedClientSum), getPropertyDraw(discountSumOrder, objDoc),
-                        BaseUtils.toSet(obligation.groupTo),getPropertyDraw(baseLM.objectClassName, objObligation), getPropertyDraw(obligationSum, objObligation), getPropertyDraw(baseLM.barcode, objObligation));
+                        BaseUtils.toSet(obligation.groupTo),getPropertyDraw(baseLM.objectClassName, objObligation), getPropertyDraw(obligationSum, objObligation), getPropertyDraw(barcode, objObligation));
             }
         }
 
@@ -2763,7 +2797,7 @@ public class VEDLogicsModule extends LogicsModule {
                         BaseUtils.toSet(art.groupTo),
                         getPropertyDraw(priceAllOrderSaleArticle, objArt), getPropertyDraw(articleQuantity, objArt),
                         getPropertyDraw(baseLM.name, objArt), getPropertyDraw(sumWithDiscountOrderArticle, objArt),
-                        getPropertyDraw(sumWithDiscountObligationOrder, objDoc), getPropertyDraw(baseLM.barcode, objArt));
+                        getPropertyDraw(sumWithDiscountObligationOrder, objDoc), getPropertyDraw(barcode, objArt));
             } else
                 return null;
         }
@@ -2801,17 +2835,17 @@ public class VEDLogicsModule extends LogicsModule {
             gobjDocArt.add(objArt);
             addGroupObject(gobjDocArt);
 
-            addPropertyDraw(objArt, baseLM.barcode, baseLM.name, nameBrendArticle);
+            addPropertyDraw(objArt, barcode, baseLM.name, nameBrendArticle);
             addPropertyDraw(objDoc, objArt, priceAllOrderSaleArticle, articleQuantity);
-            addPropertyDraw(objDoc, baseLM.objectValue, baseLM.date, orderHour, orderMinute, orderUserBarcode, orderComputerName, subjectOutOrder, orderContragentBarcode);
+            addPropertyDraw(objDoc, baseLM.objectValue, date, orderHour, orderMinute, orderUserBarcode, orderComputerName, subjectOutOrder, orderContragentBarcode);
             addPropertyDraw(objDoc, objArt, discountSumOrderArticle, discountOrderArticle, sumOrderArticle, sumWithDiscountOrderArticle, sumWithDiscountCouponOrderArticle, sumWithDiscountObligationOrderArticle);
 
 
             removePropertyDraw(documentMoveGroup); // нужно, чтобы убрать Доступ. кол-во, которое не может нормально выполнить PostgreSQL
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(articleQuantity, objDoc, objArt)));
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(baseLM.date, objDoc), Compare.GREATER_EQUALS, dateFrom));
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(baseLM.date, objDoc), Compare.LESS_EQUALS, dateTo));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(date, objDoc), Compare.GREATER_EQUALS, dateFrom));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(date, objDoc), Compare.LESS_EQUALS, dateTo));
         }
 
 
@@ -2847,8 +2881,8 @@ public class VEDLogicsModule extends LogicsModule {
             if (!toAdd)
                 addActionsOnObjectChange(objBarcode, true,
                                          addPropertyObject(barcodeActionCheck, objDoc, objBarcode),
-                                         addPropertyObject(baseLM.seekBarcodeAction, objBarcode),
-                                         addPropertyObject(baseLM.barcodeNotFoundMessage, objBarcode));
+                                         addPropertyObject(seekBarcodeAction, objBarcode),
+                                         addPropertyObject(barcodeNotFoundMessage, objBarcode));
         }
 
         @Override
@@ -2918,7 +2952,7 @@ public class VEDLogicsModule extends LogicsModule {
             objArt = addSingleGroupObject(article);
 
             addPropertyDraw(changeQuantityOrder, objInner, objArt);
-            addPropertyDraw(baseLM.barcode, objArt);
+            addPropertyDraw(barcode, objArt);
             addPropertyDraw(baseLM.name, objArt);
             addPropertyDraw(objInner, objDoc, objArt, baseGroup, true, documentGroup, true);
             addPropertyDraw(priceAllOrderSaleArticle, objInner, objArt);
@@ -2973,8 +3007,8 @@ public class VEDLogicsModule extends LogicsModule {
 
             addActionsOnObjectChange(objBarcode, true,
                                      addPropertyObject(barcodeAction3, objDoc, objInner, objBarcode),
-                                     addPropertyObject(baseLM.seekBarcodeAction, objBarcode),
-                                     addPropertyObject(baseLM.barcodeNotFoundMessage, objBarcode));
+                                     addPropertyObject(seekBarcodeAction, objBarcode),
+                                     addPropertyObject(barcodeNotFoundMessage, objBarcode));
         }
 
         @Override
@@ -3092,7 +3126,7 @@ public class VEDLogicsModule extends LogicsModule {
             if (toAdd) {
                 addPropertyDraw(cashRegOperGroup, true);
             } else {
-                addPropertyDraw(baseLM.date, objDoc);
+                addPropertyDraw(date, objDoc);
                 addPropertyDraw(checkRetailExported, objDoc);
             }
 
@@ -3120,7 +3154,7 @@ public class VEDLogicsModule extends LogicsModule {
             design.get(getPropertyDraw(baseLM.objectValue, objInner)).caption = "Номер чека";
             design.getGroupObjectContainer(objArt.groupTo).title = "Товарные позиции";
 
-            PropertyDrawEntity barcodeNavigator = getPropertyDraw(baseLM.barcodeObjectName);
+            PropertyDrawEntity barcodeNavigator = getPropertyDraw(barcodeObjectName);
             if (barcodeNavigator != null) {
                 design.get(barcodeNavigator).externalScreen = VEDBL.panelScreen;
                 design.get(barcodeNavigator).externalScreenConstraints.order = 1;
@@ -3158,7 +3192,7 @@ public class VEDLogicsModule extends LogicsModule {
                         BaseUtils.toSet(inner.groupTo, art.groupTo),
                         getPropertyDraw(priceAllOrderSaleArticle, objArt), getPropertyDraw(returnInnerQuantity, objArt),
                         getPropertyDraw(baseLM.name, objArt), getPropertyDraw(sumWithDiscountOrderArticle, objArt),
-                        getPropertyDraw(sumWithDiscountOrder, objDoc), getPropertyDraw(baseLM.barcode, objArt), null, null,
+                        getPropertyDraw(sumWithDiscountOrder, objDoc), getPropertyDraw(barcode, objArt), null, null,
                         getPropertyDraw(discountOrderArticle), getPropertyDraw(discountSumOrderArticle),
                         getPropertyDraw(orderUserName), null, null, null, null, null, null, null);
             }
@@ -3169,7 +3203,7 @@ public class VEDLogicsModule extends LogicsModule {
         protected SpecificationSupplierFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Спецификации");
 
-            ObjectEntity objContract = addSingleGroupObject(contract, baseLM.name, nameLegalOutContract, nameLegalIncContract, baseLM.date);
+            ObjectEntity objContract = addSingleGroupObject(contract, baseLM.name, nameLegalOutContract, nameLegalIncContract, date);
             addObjectActions(this, objContract);
 
             ObjectEntity objSpecification = addSingleGroupObject(specification, baseLM.name, nameContractSpecification, specificationDateFrom, specificationDateTo);
@@ -3202,7 +3236,7 @@ public class VEDLogicsModule extends LogicsModule {
             ObjectEntity objSupplier = addSingleGroupObject(supplier, publicGroup, true);
             addObjectActions(this, objSupplier);
 
-            ObjectEntity objContractSupplier = addSingleGroupObject(contractSupplier, baseLM.name, baseLM.date, nameLegalIncContract);
+            ObjectEntity objContractSupplier = addSingleGroupObject(contractSupplier, baseLM.name, date, nameLegalIncContract);
             addObjectActions(this, objContractSupplier);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(legalOutContract, objContractSupplier), Compare.EQUALS, objSupplier));
@@ -3224,10 +3258,10 @@ public class VEDLogicsModule extends LogicsModule {
 
             if (issupplier) {
                 objContragent = addSingleGroupObject(supplier);
-                objContract = addSingleGroupObject(contractSupplier, baseLM.name, baseLM.date, nameLegalOutContract);
+                objContract = addSingleGroupObject(contractSupplier, baseLM.name, date, nameLegalOutContract);
             } else {
                objContragent = addSingleGroupObject(customerWhole);
-               objContract = addSingleGroupObject(contractCustomer, baseLM.name, baseLM.date, nameLegalIncContract);
+               objContract = addSingleGroupObject(contractCustomer, baseLM.name, date, nameLegalIncContract);
             }
             addPropertyDraw(objContragent, publicGroup, true);
             addObjectActions(this, objContragent);
@@ -3286,7 +3320,7 @@ public class VEDLogicsModule extends LogicsModule {
             ObjectEntity objSupplier = addSingleGroupObject(storeLegalEntity, publicGroup, true);
             addObjectActions(this, objSupplier);
 
-            ObjectEntity objContractSale = addSingleGroupObject(contractSale, baseLM.name, baseLM.date, nameLegalIncContract);
+            ObjectEntity objContractSale = addSingleGroupObject(contractSale, baseLM.name, date, nameLegalIncContract);
             addObjectActions(this, objContractSale);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(legalOutContract, objContractSale), Compare.EQUALS, objSupplier));
@@ -3300,7 +3334,7 @@ public class VEDLogicsModule extends LogicsModule {
             ObjectEntity objCustomerWhole = addSingleGroupObject(customerWhole, publicGroup, true);
             addObjectActions(this, objCustomerWhole);
 
-            ObjectEntity objContractSale = addSingleGroupObject(contractCustomer, baseLM.name, baseLM.date, nameLegalOutContract);
+            ObjectEntity objContractSale = addSingleGroupObject(contractCustomer, baseLM.name, date, nameLegalOutContract);
             addObjectActions(this, objContractSale);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(legalIncContract, objContractSale), Compare.EQUALS, objCustomerWhole));
@@ -3452,9 +3486,9 @@ public class VEDLogicsModule extends LogicsModule {
         protected IncomePriceFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Реестр цен", true);
 
-            ObjectEntity objDoc = addSingleGroupObject(commitDoShopInc, "Документ", baseLM.date, nameSubjectIncOrder, nameSubjectOutOrder, nameLegalEntityIncOrder, nameLegalEntityOutOrder, numberInvoiceDocument, seriesInvoiceDocument, sumNDSOrder, sumWithDiscountOrder, sumNoNDSOrder, sumNDSRetailOrder, sumAddvOrder, sumRetailOrder, sumAddManfrOrder, sumManfrOrder);
+            ObjectEntity objDoc = addSingleGroupObject(commitDoShopInc, "Документ", date, nameSubjectIncOrder, nameSubjectOutOrder, nameLegalEntityIncOrder, nameLegalEntityOutOrder, numberInvoiceDocument, seriesInvoiceDocument, sumNDSOrder, sumWithDiscountOrder, sumNoNDSOrder, sumNDSRetailOrder, sumAddvOrder, sumRetailOrder, sumAddManfrOrder, sumManfrOrder);
             objDoc.groupTo.initClassView = ClassViewType.PANEL;
-            ObjectEntity objArt = addSingleGroupObject(article, baseLM.name, baseLM.objectValue, baseLM.barcode, nameUnitOfMeasureArticle);
+            ObjectEntity objArt = addSingleGroupObject(article, baseLM.name, baseLM.objectValue, barcode, nameUnitOfMeasureArticle);
 
             addPropertyDraw(objDoc, objArt, articleQuantity, priceOrderArticle, addvOrderArticle, ndsShopOrderPriceArticle, shopPrice, sumRetailOrderArticle, priceManfrOrderArticle, addManfrOrderArticle, ndsOrderArticle);
 
@@ -3469,9 +3503,9 @@ public class VEDLogicsModule extends LogicsModule {
         protected RevalueActFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Акт переоценки", true);
 
-            ObjectEntity objDoc = addSingleGroupObject(documentShopPrice, "Документ", baseLM.date, sumRevalBalance, sumPrevRetailOrder, sumNewPrevRetailOrder, sumPriceChangeOrder);
+            ObjectEntity objDoc = addSingleGroupObject(documentShopPrice, "Документ", date, sumRevalBalance, sumPrevRetailOrder, sumNewPrevRetailOrder, sumPriceChangeOrder);
             objDoc.groupTo.initClassView = ClassViewType.PANEL;
-            ObjectEntity objArt = addSingleGroupObject(article, baseLM.name, baseLM.objectValue, baseLM.barcode);
+            ObjectEntity objArt = addSingleGroupObject(article, baseLM.name, baseLM.objectValue, barcode);
 
             addPropertyDraw(objDoc, objArt, revalChangeBalance, prevPrice, sumPrevRetailOrderArticle, shopPrice, sumNewPrevRetailOrderArticle, sumPriceChangeOrderArticle);
 
@@ -3490,7 +3524,7 @@ public class VEDLogicsModule extends LogicsModule {
         protected PrintSaleFormEntity(NavigatorElement parent, String sID, String caption, boolean inclArticle) {
             super(parent, sID, caption, true);
 
-            objDoc = addSingleGroupObject(getDocClass(), "Документ", baseLM.date, nameSubjectIncOrder, nameSubjectOutOrder, nameLegalEntityIncOrder, nameLegalEntityOutOrder, addressSubjectIncOrder, addressSubjectOutOrder, sumWithDiscountOrder, sumNDSOrder, sumNoNDSOrder, propsLegalEntityIncOrder, propsLegalEntityOutOrder, quantityOrder);
+            objDoc = addSingleGroupObject(getDocClass(), "Документ", date, nameSubjectIncOrder, nameSubjectOutOrder, nameLegalEntityIncOrder, nameLegalEntityOutOrder, addressSubjectIncOrder, addressSubjectOutOrder, sumWithDiscountOrder, sumNDSOrder, sumNoNDSOrder, propsLegalEntityIncOrder, propsLegalEntityOutOrder, quantityOrder);
             objDoc.groupTo.initClassView = ClassViewType.PANEL;
 
             addPropertyDraw(objDoc, getDocGroups());
@@ -3613,7 +3647,7 @@ public class VEDLogicsModule extends LogicsModule {
             addRegularFilterGroup(inActionGroup);
 
             addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeAction2, objAction, objBarcode));
-            addActionsOnObjectChange(objBarcode, addPropertyObject(baseLM.seekBarcodeAction, objBarcode));
+            addActionsOnObjectChange(objBarcode, addPropertyObject(seekBarcodeAction, objBarcode));
         }
     }
 
@@ -3672,7 +3706,7 @@ public class VEDLogicsModule extends LogicsModule {
             super(parent, sID, documentClass, toAdd);
 
             if (!toAdd)
-                addPropertyDraw(baseLM.date, objDoc);
+                addPropertyDraw(date, objDoc);
 
             if (allStores) {
                 addPropertyDraw(objDoc, subjectOutOrder, nameSubjectOutOrder);
@@ -3683,7 +3717,7 @@ public class VEDLogicsModule extends LogicsModule {
             }
 
             objObligation = addSingleGroupObject(giftObligation);
-            addPropertyDraw(baseLM.barcode, objObligation);
+            addPropertyDraw(barcode, objObligation);
             addPropertyDraw(baseLM.name, objObligation);
             addPropertyDraw(obligationSum, objObligation);
             addPropertyDraw(obligationSumFrom, objObligation);
@@ -3707,8 +3741,8 @@ public class VEDLogicsModule extends LogicsModule {
                                      addPropertyObject(barcodeAddCertAction, objBarcode),
                                      addPropertyObject(barcodeAddClientAction, objBarcode),
                                      addPropertyObject(barcodeAction2, objDoc, objBarcode),
-                                     addPropertyObject(baseLM.seekBarcodeAction, objBarcode),
-                                     addPropertyObject(baseLM.barcodeNotFoundMessage, objBarcode));
+                                     addPropertyObject(seekBarcodeAction, objBarcode),
+                                     addPropertyObject(barcodeNotFoundMessage, objBarcode));
         }
 
         @Override
@@ -3726,7 +3760,7 @@ public class VEDLogicsModule extends LogicsModule {
             design.setKeyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_F3, InputEvent.SHIFT_DOWN_MASK | InputEvent.SHIFT_MASK));
 
             design.getPanelContainer(design.get(objBarcode.groupTo)).add(design.get(getPropertyDraw(barcodeAddClient)));
-            design.addIntersection(design.get(getPropertyDraw(barcodeAddClient)), design.get(getPropertyDraw(baseLM.barcodeObjectName)), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+            design.addIntersection(design.get(getPropertyDraw(barcodeAddClient)), design.get(getPropertyDraw(barcodeObjectName)), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
             design.setEditKey(barcodeAddClient, KeyStroke.getKeyStroke(KeyEvent.VK_F5, InputEvent.CTRL_DOWN_MASK));
 
             design.getPanelContainer(design.get(objBarcode.groupTo)).add(design.get(getPropertyDraw(barcodeAddCert)));
@@ -3773,7 +3807,7 @@ public class VEDLogicsModule extends LogicsModule {
                         BaseUtils.toSet(obligation.groupTo),
                         getPropertyDraw(obligationSum, objObligation), getPropertyDraw(issueObligation, objObligation),
                         getPropertyDraw(baseLM.name, objObligation), getPropertyDraw(obligationSum, objObligation),
-                        getPropertyDraw(sumWithDiscountOrder, objDoc), getPropertyDraw(baseLM.barcode, objObligation),
+                        getPropertyDraw(sumWithDiscountOrder, objDoc), getPropertyDraw(barcode, objObligation),
                         getPropertyDraw(orderSalePayCard, objDoc), getPropertyDraw(orderSalePayCash, objDoc), null, null,
                         getPropertyDraw(orderUserName), getPropertyDraw(nameImplSubjectIncOrder), getPropertyDraw(accumulatedClientSum),
                         null, null, null, null, null);
@@ -3789,7 +3823,7 @@ public class VEDLogicsModule extends LogicsModule {
                         BaseUtils.toSet(art.groupTo),
                         getPropertyDraw(obligationSum, objObligation), getPropertyDraw(issueObligation, objObligation),
                         getPropertyDraw(baseLM.name, objObligation), getPropertyDraw(obligationSum, objObligation),
-                        getPropertyDraw(sumWithDiscountOrder, objDoc), getPropertyDraw(baseLM.barcode, objObligation));
+                        getPropertyDraw(sumWithDiscountOrder, objDoc), getPropertyDraw(barcode, objObligation));
             } else
                 return null;
         }
@@ -3906,7 +3940,7 @@ public class VEDLogicsModule extends LogicsModule {
             addPropertyDraw(dateTo, baseLM.objectValue);
 
 
-            ObjectEntity objOblig = addSingleGroupObject(obligation, "Сертификаты", baseLM.objectValue, baseLM.name, baseLM.barcode, baseLM.objectClassName, certToSaled, obligationSum, obligationSumFrom);
+            ObjectEntity objOblig = addSingleGroupObject(obligation, "Сертификаты", baseLM.objectValue, baseLM.name, barcode, baseLM.objectClassName, certToSaled, obligationSum, obligationSumFrom);
 
             addPropertyDraw(obligFromIssued, objOblig);
             addPropertyDraw(obligationIssued, objOblig);
@@ -3922,11 +3956,11 @@ public class VEDLogicsModule extends LogicsModule {
             addObjectActions(this, objOblig);
 
 
-            ObjectEntity objOutArt = addSingleGroupObject(article, "Товары по выданному документу", baseLM.barcode, baseLM.name);
+            ObjectEntity objOutArt = addSingleGroupObject(article, "Товары по выданному документу", barcode, baseLM.name);
             addPropertyDraw(articleOutDocumentQuantity, objOblig, objOutArt);
             addPropertyDraw(articleOutDocumentPrice, objOblig, objOutArt);
 
-            ObjectEntity objIncArt = addSingleGroupObject(article, "Товары по использованному документу", baseLM.barcode, baseLM.name);
+            ObjectEntity objIncArt = addSingleGroupObject(article, "Товары по использованному документу", barcode, baseLM.name);
             addPropertyDraw(articleIncDocumentQuantity, objOblig, objIncArt);
             addPropertyDraw(articleIncDocumentPrice, objOblig, objIncArt);
 
@@ -3964,7 +3998,7 @@ public class VEDLogicsModule extends LogicsModule {
         protected ArticleInfoFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Справочник товаров");
 
-            objArt = addSingleGroupObject(article, baseLM.objectValue, baseLM.name, baseLM.barcode, addvArticle, currentRRP, nameCurrencyArticle, nameArticleGroupArticle, fullNameArticle, nameUnitOfMeasureArticle, nameBrendArticle, nameCountryArticle, gigienaArticle, spirtArticle, statusArticle, weightArticle, coeffTransArticle);
+            objArt = addSingleGroupObject(article, baseLM.objectValue, baseLM.name, barcode, addvArticle, currentRRP, nameCurrencyArticle, nameArticleGroupArticle, fullNameArticle, nameUnitOfMeasureArticle, nameBrendArticle, nameCountryArticle, gigienaArticle, spirtArticle, statusArticle, weightArticle, coeffTransArticle);
             addPropertyDraw(importArticlesRRP);
             addPropertyDraw(importArticlesInfo);
         }
@@ -3988,7 +4022,7 @@ public class VEDLogicsModule extends LogicsModule {
         protected DocumentArticleFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Операции с товарами");
 
-            objArt = addSingleGroupObject(article, baseLM.barcode, baseLM.name, nameArticleGroupArticle, nameBrendArticle, nameCountryArticle, nameUnitOfMeasureArticle);
+            objArt = addSingleGroupObject(article, barcode, baseLM.name, nameArticleGroupArticle, nameBrendArticle, nameCountryArticle, nameUnitOfMeasureArticle);
 
             objShop = addSingleGroupObject(shop, baseLM.objectValue, baseLM.name, shopFormat);
             addPropertyDraw(articleFreeQuantity, objShop, objArt);
@@ -4011,13 +4045,13 @@ public class VEDLogicsModule extends LogicsModule {
             addPropertyDraw(nameSubjectIncOrder, objDoc).forceViewType = ClassViewType.GRID;
             addPropertyDraw(priceOrderArticle, objDoc, objArt).forceViewType = ClassViewType.GRID;
 
-            addPropertyDraw(baseLM.date, objDoc);
+            addPropertyDraw(date, objDoc);
 
 
             addPropertyDraw(articleDocQuantity, objDoc, objArt);
 
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(baseLM.date, objDoc), Compare.GREATER_EQUALS, dateFrom));
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(baseLM.date, objDoc), Compare.LESS_EQUALS, dateTo));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(date, objDoc), Compare.GREATER_EQUALS, dateFrom));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(date, objDoc), Compare.LESS_EQUALS, dateTo));
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(articleDocQuantity, objDoc, objArt)));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(articleFreeQuantity, objShop, objArt)));
@@ -4026,7 +4060,7 @@ public class VEDLogicsModule extends LogicsModule {
                     new CompareFilterEntity(addPropertyObject(nameSubjectOutOrder, objDoc), Compare.EQUALS, addPropertyObject(baseLM.name, objShop)),
                     new CompareFilterEntity(addPropertyObject(nameSubjectIncOrder, objDoc), Compare.EQUALS, addPropertyObject(baseLM.name, objShop))));
 
-            addDefaultOrder(baseLM.date, true);
+            addDefaultOrder(date, true);
 
         }
 
@@ -4061,7 +4095,7 @@ public class VEDLogicsModule extends LogicsModule {
                    addPropertyDraw(dateFrom, baseLM.objectValue);
                    addPropertyDraw(dateTo, baseLM.objectValue);
 
-                   objArt = addSingleGroupObject(article, baseLM.objectValue, baseLM.name, baseLM.barcode);
+                   objArt = addSingleGroupObject(article, baseLM.objectValue, baseLM.name, barcode);
                    addPropertyDraw(quantitySupplierArticleBetweenDates, objSupplier, objArt, dateFrom, dateTo);
                    addPropertyDraw(sumNoNDSSupplierArticleBetweenDates, objSupplier, objArt, dateFrom, dateTo);
                    addPropertyDraw(sumNoNDSRetailSupplierArticleBetweenDates, objSupplier, objArt, dateFrom, dateTo);
@@ -4080,7 +4114,7 @@ public class VEDLogicsModule extends LogicsModule {
         protected ArticleSpecificationFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Спецификации товаров");
 
-            objArt = addSingleGroupObject(article, baseLM.objectValue, baseLM.name, baseLM.barcode, addvArticle, currentRRP, nameCurrencyArticle, nameArticleGroupArticle, fullNameArticle, nameUnitOfMeasureArticle, nameBrendArticle, nameCountryArticle, gigienaArticle, spirtArticle, statusArticle, weightArticle, coeffTransArticle);
+            objArt = addSingleGroupObject(article, baseLM.objectValue, baseLM.name, barcode, addvArticle, currentRRP, nameCurrencyArticle, nameArticleGroupArticle, fullNameArticle, nameUnitOfMeasureArticle, nameBrendArticle, nameCountryArticle, gigienaArticle, spirtArticle, statusArticle, weightArticle, coeffTransArticle);
 
             objSpecification = addSingleGroupObject(specification, baseLM.name);
 
@@ -4114,15 +4148,15 @@ public class VEDLogicsModule extends LogicsModule {
             objShop = addSingleGroupObject(shop, baseLM.name);
             objShop.groupTo.initClassView = ClassViewType.PANEL;
 
-            objOrderInc = addSingleGroupObject(orderInc, nameSubjectOutOrder, baseLM.date, numberInvoiceDocument, seriesInvoiceDocument, sumRetailOrder, sumWithDiscountCouponOrder, sumDiscountPayCouponOrder, sumPriceChangeOrder);
+            objOrderInc = addSingleGroupObject(orderInc, nameSubjectOutOrder, date, numberInvoiceDocument, seriesInvoiceDocument, sumRetailOrder, sumWithDiscountCouponOrder, sumDiscountPayCouponOrder, sumPriceChangeOrder);
 
-            objOrderOut = addSingleGroupObject(orderOut, nameSubjectIncOrder, baseLM.date, numberInvoiceDocument, seriesInvoiceDocument, sumRetailOrder, sumWithDiscountCouponOrder, sumDiscountPayCouponOrder, sumPriceChangeOrder);
+            objOrderOut = addSingleGroupObject(orderOut, nameSubjectIncOrder, date, numberInvoiceDocument, seriesInvoiceDocument, sumRetailOrder, sumWithDiscountCouponOrder, sumDiscountPayCouponOrder, sumPriceChangeOrder);
 
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(baseLM.date, objOrderInc), Compare.GREATER_EQUALS, objDateFrom));
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(baseLM.date, objOrderInc), Compare.LESS_EQUALS, objDateTo));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(date, objOrderInc), Compare.GREATER_EQUALS, objDateFrom));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(date, objOrderInc), Compare.LESS_EQUALS, objDateTo));
 
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(baseLM.date, objOrderOut), Compare.GREATER_EQUALS, objDateFrom));
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(baseLM.date, objOrderOut), Compare.LESS_EQUALS, objDateTo));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(date, objOrderOut), Compare.GREATER_EQUALS, objDateFrom));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(date, objOrderOut), Compare.LESS_EQUALS, objDateTo));
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(subjectOutOrder, objOrderOut), Compare.EQUALS, objShop));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(subjectIncOrder, objOrderInc), Compare.EQUALS, objShop));
@@ -4262,7 +4296,7 @@ public class VEDLogicsModule extends LogicsModule {
                     }
 
                     protected void setRemoteFormFilter(FormInstance formInstance) throws ParseException {
-                        PropertyDrawInstance<?> dateDraw = formInstance.getPropertyDraw(baseLM.date);
+                        PropertyDrawInstance<?> dateDraw = formInstance.getPropertyDraw(date);
                         CalcPropertyObjectInstance datePropertyObject = (CalcPropertyObjectInstance) dateDraw.propertyObject;
                         dateDraw.toDraw.addTempFilter(new CompareFilterInstance(datePropertyObject, Compare.GREATER_EQUALS, context.getKeyValue(dateFrom)));
                         dateDraw.toDraw.addTempFilter(new CompareFilterInstance(datePropertyObject, Compare.LESS_EQUALS, context.getKeyValue(dateTo)));
@@ -4364,7 +4398,7 @@ public class VEDLogicsModule extends LogicsModule {
 
             ImportField barcodeField = new ImportField(StringClass.get(Settings.instance.getBarcodeLength())); fields.add(barcodeField);
             ImportKey<?> articleKey = new ImportKey(article, padlBarcodeToObject.getMapping(barcodeField)); importKeys.add(articleKey);
-            properties.add(new ImportProperty(barcodeField, baseLM.barcode.getMapping(articleKey), padl.getMapping(barcodeField)));
+            properties.add(new ImportProperty(barcodeField, barcode.getMapping(articleKey), padl.getMapping(barcodeField)));
 
             addImportField(fields, properties, articleKey, baseLM.name);
             addImportField(fields, properties, priceOrderArticle, document, articleKey);
@@ -4426,9 +4460,9 @@ public class VEDLogicsModule extends LogicsModule {
             java.util.List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
             java.util.List<ImportKey<?>> importKeys = new ArrayList<ImportKey<?>>();
 
-            ImportField barcodeField = new ImportField(baseLM.barcode); fields.add(barcodeField);
+            ImportField barcodeField = new ImportField(barcode); fields.add(barcodeField);
             ImportKey<?> articleKey = new ImportKey(article, padlBarcodeToObject.getMapping(barcodeField)); importKeys.add(articleKey);
-            properties.add(new ImportProperty(barcodeField, baseLM.barcode.getMapping(articleKey), padl.getMapping(barcodeField)));
+            properties.add(new ImportProperty(barcodeField, barcode.getMapping(articleKey), padl.getMapping(barcodeField)));
 
             addImportField(fields, properties, articleKey, baseLM.name);
             addImportField(fields, properties, articleKey, currentRRP);
@@ -4480,9 +4514,9 @@ public class VEDLogicsModule extends LogicsModule {
             java.util.List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
             java.util.List<ImportKey<?>> importKeys = new ArrayList<ImportKey<?>>();
 
-            ImportField barcodeField = new ImportField(baseLM.barcode); fields.add(barcodeField);
+            ImportField barcodeField = new ImportField(barcode); fields.add(barcodeField);
             ImportKey<?> articleKey = new ImportKey(article, padlBarcodeToObject.getMapping(barcodeField)); importKeys.add(articleKey);
-            properties.add(new ImportProperty(barcodeField, baseLM.barcode.getMapping(articleKey), padl.getMapping(barcodeField)));
+            properties.add(new ImportProperty(barcodeField, barcode.getMapping(articleKey), padl.getMapping(barcodeField)));
 
             addImportField(fields, properties, articleKey, baseLM.name);
             addImportObjectNameField(fields, properties, importKeys, articleKey, nameToArticleGroup, articleToGroup, articleGroup);
@@ -4546,14 +4580,14 @@ public class VEDLogicsModule extends LogicsModule {
             ImportField numberField = new ImportField(numberInvoiceDocument); fields.add(numberField);
             ImportKey<?> documentKey = new ImportKey(commitDeliveryShopLocal, invoiceDocumentNumber.getMapping(numberField)); importKeys.add(documentKey);
             properties.add(new ImportProperty(numberField, numberInvoiceDocument.getMapping(documentKey)));
-            addImportField(fields, properties, baseLM.date, documentKey);
+            addImportField(fields, properties, date, documentKey);
 
             properties.add(new ImportProperty(null, subjectIncOrder.getMapping(documentKey), object(store).getMapping(storeObject)));
 
             // товар
-            ImportField barcodeField = new ImportField(baseLM.barcode); fields.add(barcodeField);
+            ImportField barcodeField = new ImportField(barcode); fields.add(barcodeField);
             ImportKey<?> articleKey = new ImportKey(article, padlBarcodeToObject.getMapping(barcodeField)); importKeys.add(articleKey);
-            properties.add(new ImportProperty(barcodeField, baseLM.barcode.getMapping(articleKey), padl.getMapping(barcodeField)));
+            properties.add(new ImportProperty(barcodeField, barcode.getMapping(articleKey), padl.getMapping(barcodeField)));
             addImportField(fields, properties, baseLM.name, articleKey);
 
             // поставщик
@@ -4622,7 +4656,7 @@ public class VEDLogicsModule extends LogicsModule {
         CalcProperty<?> addProperty;
 
         AddBarcodeActionProperty(ConcreteCustomClass customClass, CalcProperty addProperty, String sID) {
-            super(sID, getString("logics.add")+" [" + customClass + "] " + getString("logics.add.by.barcode"), new ValueClass[]{StringClass.get(13)});
+            super(sID, "Добавить"+" [" + customClass + "] " + "по бар-коду", new ValueClass[]{StringClass.get(13)});
 
             this.customClass = customClass;
             this.addProperty = addProperty;
@@ -4633,7 +4667,7 @@ public class VEDLogicsModule extends LogicsModule {
                 String barString = (String) context.getSingleKeyObject();
                 if (barString.trim().length() != 0) {
                     ((CalcProperty<?>)addProperty).change(context, null);
-                    baseLM.barcode.change(barString, context, context.addObject(customClass));
+                    barcode.change(barString, context, context.addObject(customClass));
                 }
             }
         }

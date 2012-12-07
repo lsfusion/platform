@@ -942,7 +942,7 @@ public abstract class LogicsModule {
 
     protected <P extends PropertyInterface> LCP addSCProp(AbstractGroup group, String caption, LCP<P> lp) {
         return addProperty(group, new LCP<ShiftChangeProperty.Interface<P>>(new ShiftChangeProperty<P, PropertyInterface>(genSID(), caption,
-                ((CalcProperty)lp.property), new CalcPropertyMapImplement<PropertyInterface, P>((CalcProperty<PropertyInterface>) baseLM.reverseBarcode.property))));
+                ((CalcProperty)lp.property), new CalcPropertyMapImplement<PropertyInterface, P>((CalcProperty<PropertyInterface>) getLCPByName("reverseBarcode").property))));
     }
 
     public LCP addCProp(StaticClass valueClass, Object value, ValueClass... params) {

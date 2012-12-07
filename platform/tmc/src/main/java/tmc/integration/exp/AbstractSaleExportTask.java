@@ -123,11 +123,11 @@ public abstract class AbstractSaleExportTask extends FlagSemaphoreTask {
         ObjectInstance doc = formInstance.instanceFactory.getInstance(BL.VEDLM.commitSaleBrowseForm.objDoc);
         ObjectInstance art = formInstance.instanceFactory.getInstance(BL.VEDLM.commitSaleBrowseForm.objArt);
 
-        map.put(barField, formInstance.getPropertyDraw(BL.VEDLM.baseLM.barcode));
+        map.put(barField, formInstance.getPropertyDraw(BL.VEDLM.barcode));
         map.put(nameField, formInstance.getPropertyDraw(BL.VEDLM.baseLM.name));
         map.put(cenField, formInstance.getPropertyDraw(BL.VEDLM.priceAllOrderSaleArticle));
         map.put(kolField, formInstance.getPropertyDraw(BL.VEDLM.articleQuantity));
-        map.put(dateField, formInstance.getPropertyDraw(BL.VEDLM.baseLM.date));
+        map.put(dateField, formInstance.getPropertyDraw(BL.VEDLM.date));
         map.put(summField, formInstance.getPropertyDraw(BL.VEDLM.sumWithDiscountObligationOrderArticle));
         map.put(percentField, formInstance.getPropertyDraw(BL.VEDLM.discountOrderArticle));
 
@@ -155,10 +155,10 @@ public abstract class AbstractSaleExportTask extends FlagSemaphoreTask {
         ObjectInstance doc = formInstance.instanceFactory.getInstance(BL.VEDLM.saleCheckCertBrowseForm.objDoc);
         ObjectInstance obligation = formInstance.instanceFactory.getInstance(BL.VEDLM.saleCheckCertBrowseForm.objObligation);
 
-        map.put(barField, formInstance.getPropertyDraw(BL.VEDLM.baseLM.barcode));
+        map.put(barField, formInstance.getPropertyDraw(BL.VEDLM.barcode));
         map.put(nameField, formInstance.getPropertyDraw(BL.VEDLM.baseLM.name));
         map.put(cenField, formInstance.getPropertyDraw(BL.VEDLM.obligationSum));
-        map.put(dateField, formInstance.getPropertyDraw(BL.VEDLM.baseLM.date));
+        map.put(dateField, formInstance.getPropertyDraw(BL.VEDLM.date));
         map.put(summField, formInstance.getPropertyDraw(BL.VEDLM.obligationSum));
 
         FormData data = formInstance.getFormData(map.values(), BaseUtils.toSet(doc.groupTo, obligation.groupTo));
@@ -186,11 +186,11 @@ public abstract class AbstractSaleExportTask extends FlagSemaphoreTask {
         PropertyDrawInstance incStore = formInstance.getPropertyDraw(BL.VEDLM.subjectIncOrder, doc.groupTo);
         incStore.toDraw.addTempFilter(new CompareFilterInstance((CalcPropertyObjectInstance) incStore.propertyObject, Compare.EQUALS, session.getDataObject(store, ObjectType.instance)));
 
-        map.put(barField, formInstance.getPropertyDraw(BL.VEDLM.baseLM.barcode));
+        map.put(barField, formInstance.getPropertyDraw(BL.VEDLM.barcode));
         map.put(nameField, formInstance.getPropertyDraw(BL.VEDLM.baseLM.name));
         map.put(cenField, formInstance.getPropertyDraw(BL.VEDLM.priceAllOrderSaleArticle));
         map.put(kolField, formInstance.getPropertyDraw(BL.VEDLM.returnInnerQuantity));
-        map.put(dateField, formInstance.getPropertyDraw(BL.VEDLM.baseLM.date, doc.groupTo));
+        map.put(dateField, formInstance.getPropertyDraw(BL.VEDLM.date, doc.groupTo));
         map.put(summField, formInstance.getPropertyDraw(BL.VEDLM.sumWithDiscountOrderArticle));
         map.put(percentField, formInstance.getPropertyDraw(BL.VEDLM.discountOrderArticle));
 

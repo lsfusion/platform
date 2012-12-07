@@ -60,7 +60,7 @@ nameRegionStock 'Регион' (stock)= name(regionStock(stock));
 
 // ----------------------------------- Единицы измерения ------------------------------------------ //
 
-CLASS UOM 'Единица измерения' : doubleNamed, externalObject;
+CLASS UOM 'Единица измерения' : doubleNamed, externalizable;
 TABLE UOM (UOM);
 
 baseUOM = DATA UOM(UOM) IN idGroup;

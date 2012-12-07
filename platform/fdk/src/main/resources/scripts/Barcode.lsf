@@ -21,6 +21,8 @@ activeBarcode 'Активный' (barcode) = barcodeId(idBarcode(barcode)) == ba
 dataAmountBarcode 'Множитель' = DATA NUMERIC[14,3] (barcode);
 amountBarcode 'Множитель' = (1.0 IF barcode IS barcode) OR dataAmountBarcode (barcode) PERSISTENT;
 
+completeBarcode = FORMULA STRING[13] 'completeBarcode($1)';
+
 // Sku
 skuBarcode = DATA sku(barcode) IN baseGroup NOT NULL DELETE;
 nameSkuBarcode 'Наименование' (barcode) = nameSku(skuBarcode(barcode)) IN recognizeGroup;
