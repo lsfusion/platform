@@ -684,7 +684,8 @@ DESIGN editPriceListType FROM DEFAULT{
     ADD functions.box;
 }
 EXTEND FORM editPriceListType
-    PROPERTIES(p) nameCurrencyDataPriceListType, nameCurrencyCalcPriceListType, nameBasePriceListTypeCalcPriceListType, nameRoundConditionCalcPriceListType
+    PROPERTIES(p) nameCurrencyDataPriceListType, nameCurrencyCalcPriceListType,
+                  nameBasePriceListTypeCalcPriceListType, nameRoundConditionCalcPriceListType
     PROPERTIES(p, g) markupCalcPriceListTypePriceGroup , nearestMarkupCalcPriceListTypePriceGroup
 ;
 

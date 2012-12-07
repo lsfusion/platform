@@ -96,7 +96,8 @@ REQUIRE System,
         WarehouseShipment,
         StockTax,
         ItemTax,
-        NaturalLoss;
+        NaturalLoss,
+        WarePriceList;
 
 // ----------------------------------- Свойства изменения объектов в Posted ------------------------------------------ //
 
