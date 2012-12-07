@@ -2221,7 +2221,7 @@ orientation returns [Orientation val]
 ////////////////////////////////////////////////////////////////////////////////
 
 navigatorStatement
-	:	'NAVIGATOR' navigatorElementStatementBody[self.baseLM.baseElement]
+	:	'NAVIGATOR' navigatorElementStatementBody[self.baseLM.root]
 	;
 
 navigatorElementStatementBody[NavigatorElement parentElement]
