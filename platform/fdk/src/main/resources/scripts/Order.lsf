@@ -56,6 +56,12 @@ toDateOrder 'Дата автоматического закрытия' = ABSTRAC
 @defineDocumentHeaderGrossWeight(order);
 @defineDocumentAbstractHeaderCurrency (order);
 
+quantityFromOrderStock 'Кол-во со склада' (order, stock) = GROUP SUM quantityOrderDetail(orderDetail) BY orderOrderDetail(orderDetail),
+                                                                                                         fromStockOrderDetail(orderDetail);
+
+quantityToOrderStock 'Кол-во на склад' (order, stock) = GROUP SUM quantityOrderDetail(orderDetail) BY orderOrderDetail(orderDetail),
+                                                                                                      toStockOrderDetail(orderDetail);
+
 editOrder 'Редактировать' = ABSTRACT ACTION (order) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
 
 //----------------------------------------------- Заказ ---------------------------------------------------//

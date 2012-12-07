@@ -28,9 +28,9 @@ inTripOrder 'Включен' (trip, order) = tripOrder(order)==trip;
 
 filterTripOrder(trip, order) = tripOrder(order)==trip OR (trip IS trip AND order IS order AND NOT tripOrder(order));
 
-quantityTripStockFrom (trip, stock) = GROUP SUM 1 BY tripOrder(order), fromStockOrder(order);
-quantityTripStockTo (trip, stock) = GROUP SUM 1 BY tripOrder(order), toStockOrder(order);
-quantityTripStock(trip, stock) = UNION SUM quantityTripStockFrom(trip, stock), quantityTripStockTo(trip, stock);
+quantityFromTripStock (trip, stock) = GROUP SUM 1 IF quantityFromOrderStock(order, stock) BY tripOrder(order), stock;
+quantityToTripStock (trip, stock) = GROUP SUM 1 IF quantityToOrderStock(order, stock) BY tripOrder(order), stock;
+quantityTripStock(trip, stock) = UNION SUM quantityFromTripStock(trip, stock), quantityToTripStock(trip, stock);
 
 numberStockTrip 'Порядковый номер' = DATA INTEGER(stock, trip);
 numberStockTrip(stock, trip) => quantityTripStock(trip, stock)>0 RESOLVE FALSE;
@@ -45,7 +45,7 @@ addressStockPrevTripStock 'Адрес' (trip, stock) = addressStock(stockPrevTri
 maxNumberTrip(trip) = GROUP MAX numberStockTrip(stock, trip) BY trip;
 indexTripOrder 'Номер' (trip, order) = maxNumberTrip(trip) - numberStockTrip(toStockOrder(order), trip) + 1 IF inTripOrder(trip, order);
 
-CONSTRAINT numberStockTrip(fromStockOrder(order), tripOrder(order)) >= numberStockTrip(toStockOrder(order), tripOrder(order))
+CONSTRAINT numberStockTrip(stock1, tripOrder(order)) >= numberStockTrip(stock2, tripOrder(order)) IF quantityFromOrderStock(order, stock1)>0 AND quantityToOrderStock(order, stock2)>0
     MESSAGE 'Номер не соответствует направлению заказа';
 
 grossWeightOrderedTrip 'Суммарный вес заказов' (trip) = GROUP SUM grossWeightOrderDetailOrder(order) BY tripOrder(order);
@@ -53,8 +53,6 @@ grossWeightOrderedTrip 'Суммарный вес заказов' (trip) = GROUP
 grossWeightTripToStock 'Вес' = GROUP SUM grossWeightOrderDetailOrder(order) BY tripOrder(order), toStockOrder(order);
 
 quantityOrderedTripSku 'Кол-во в заказах' (trip, sku) = GROUP SUM quantityOrderDetail(orderDetail) BY tripOrder(orderOrderDetail(orderDetail)), skuOrderDetail(orderDetail);
-
-//netWeightSkuOrderDetail 'Вес нетто' (orderDetail) = netWeightSku(skuOrderDetail(orderDetail));
 
 // поставки
 tripShipment = DATA trip(shipment);
@@ -82,9 +80,9 @@ showPointsTrip 'Показать путь на карте' (trip) = ACTION (trip
 
 selectTripOrder 'Отмечен' = SESSION DATA BOOLEAN(trip, order);
 
-quantityAllTripStockFrom (trip, stock) = GROUP SUM 1 IF selectTripOrder(trip, order) BY trip, fromStockOrder(order);
-quantityAllTripStockTo (trip, stock) = GROUP SUM 1 IF selectTripOrder(trip, order) BY trip, toStockOrder(order);
-quantityAllTripStock(trip, stock) = UNION SUM quantityAllTripStockFrom(trip, stock), quantityAllTripStockTo(trip, stock);
+quantityAllFromTripStock (trip, stock) = GROUP SUM 1 IF selectTripOrder(trip, order) BY trip, fromStockOrder(order);
+quantityAllToTripStock (trip, stock) = GROUP SUM 1 IF selectTripOrder(trip, order) BY trip, toStockOrder(order);
+quantityAllTripStock(trip, stock) = UNION SUM quantityAllFromTripStock(trip, stock), quantityAllToTripStock(trip, stock);
 
 showPointOrders 'Показать отмеченные заказы' (trip) = ACTION (trip) {
     SET numberPathPOI(stock) <- 1 IF quantityAllTripStock(trip, stock);
@@ -164,7 +162,7 @@ FORM trip 'Рейс'
         FILTER 'В текущем рейсе' 'F10' inTripOrder(t, o)
 
     OBJECTS od=orderDetail
-    PROPERTIES(od) READONLY idBarcodeSkuOrderDetail, nameSkuOrderDetail, shortNameUOMSkuOrderDetail, quantityOrderDetail, grossWeightOrderDetail
+    PROPERTIES(od) READONLY idBarcodeSkuOrderDetail, nameSkuOrderDetail, shortNameUOMSkuOrderDetail, quantityOrderDetail, grossWeightOrderDetail, nameFromStockOrderDetail, nameToStockOrderDetail
     FILTERS orderOrderDetail(od)==o
 
     OBJECTS s=shipment
@@ -187,7 +185,7 @@ FORM trip 'Рейс'
         FILTER 'В текущем рейсе' 'F10' inTripShipment(t, s)
 
     OBJECTS sd=shipmentDetail
-    PROPERTIES(sd) READONLY idBarcodeSkuShipmentDetail, nameSkuShipmentDetail, shortNameUOMSkuShipmentDetail, quantityShipmentDetail, grossWeightShipmentDetail
+    PROPERTIES(sd) READONLY idBarcodeSkuShipmentDetail, nameSkuShipmentDetail, shortNameUOMSkuShipmentDetail, quantityShipmentDetail, grossWeightShipmentDetail, nameFromStockShipmentDetail, nameToStockShipmentDetail
     FILTERS shipmentShipmentDetail(sd)==s
 
     OBJECTS sk=sku
