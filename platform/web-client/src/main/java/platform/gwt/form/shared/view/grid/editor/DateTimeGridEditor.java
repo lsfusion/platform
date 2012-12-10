@@ -19,29 +19,26 @@ import platform.gwt.form.shared.view.grid.EditEvent;
 import platform.gwt.form.shared.view.grid.EditManager;
 import platform.gwt.form.shared.view.grid.NativeEditEvent;
 
+import java.sql.Timestamp;
 import java.util.Date;
 
 import static com.google.gwt.dom.client.BrowserEvents.KEYDOWN;
 import static com.google.gwt.dom.client.BrowserEvents.KEYPRESS;
 
-public class DateGridEditor extends PopupBasedGridEditor {
-
-    private final DateTimeFormat format;
+public class DateTimeGridEditor extends PopupBasedGridEditor {
+    private DateTimeFormat format = GwtSharedUtils.getDefaultDateTimeFormat();
+    private DateTimeFormat dateOnlyFormat = GwtSharedUtils.getDefaultDateFormat();
     private DatePicker datePicker;
     private TextBox editBox;
 
-    public DateGridEditor(EditManager editManager) {
-        this(GwtSharedUtils.getDefaultDateFormat(), editManager);
-    }
-
-    public DateGridEditor(final DateTimeFormat format, EditManager editManager) {
+    public DateTimeGridEditor(EditManager editManager) {
         super(editManager, Style.TextAlign.RIGHT);
-        this.format = format;
 
         datePicker.addValueChangeHandler(new ValueChangeHandler<Date>() {
             @Override
             public void onValueChange(ValueChangeEvent<Date> event) {
-                commitEditing(event.getValue());
+                editBox.setValue(format.format(datePicker.getValue()));
+                editBox.getElement().focus();
             }
         });
 
@@ -56,20 +53,6 @@ public class DateGridEditor extends PopupBasedGridEditor {
                 }
             }
         });
-    }
-
-    @Override
-    protected Widget createPopupComponent() {
-        VerticalPanel panel = new VerticalPanel();
-
-        editBox = new TextBox();
-        editBox.addStyleName("dateTimeEditorBox");
-        panel.add(editBox);
-
-        datePicker = new DatePicker();
-        panel.add(datePicker);
-
-        return panel;
     }
 
     @Override
@@ -106,14 +89,40 @@ public class DateGridEditor extends PopupBasedGridEditor {
     }
 
     @Override
+    protected Widget createPopupComponent() {
+        VerticalPanel panel = new VerticalPanel();
+        datePicker = new DatePicker();
+
+        editBox = new TextBox();
+        editBox.addStyleName("dateTimeEditorBox");
+
+        panel.add(editBox);
+        panel.add(datePicker);
+
+        return panel;
+    }
+
+    @Override
     protected String renderToString(Object value) {
         return value == null ? "" : format.format((Date) value);
     }
 
-    private Date parseString(String value) {
-        if (value.split("\\.").length == 2) {
-            return format.parse(value + "." + (new Date().getYear() - 100));
+    private Timestamp parseString(String value) {
+        Timestamp result;
+        try {
+            if (value.split("\\.").length == 2) {
+                Date date = dateOnlyFormat.parse(value + "." + (new Date().getYear() - 100));
+                date.setHours(12);
+                result = new Timestamp(date.getTime());
+            } else {
+                result = value.isEmpty() ? null : new Timestamp(format.parse(value).getTime());
+            }
+        } catch (IllegalArgumentException e) {
+            Date date = dateOnlyFormat.parse(value);
+            date.setHours(12);
+            result = new Timestamp(date.getTime());
         }
-        return value.isEmpty() ? null : format.parse(value);
+
+        return result;
     }
 }

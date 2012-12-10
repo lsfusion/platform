@@ -1,5 +1,5 @@
 body, html, .gwt-Button, .messageBox-message, .ResizableWindow-header, .captionPanelLegend, .gwt-TreeItem, .gwt-TabBarItem,
-.checkBoxFilter, .comboBoxFilter, .filterDialogHeader, .customFontPresenter {
+.checkBoxFilter, .comboBoxFilter, .filterDialogHeader, .dateTimeEditorBox, .customFontPresenter {
     font-size: 8pt;
 }
 
@@ -213,7 +213,7 @@ input[type=checkbox] {
 .hSplitPanelContents {
     overflow-x: auto;
     overflow-y: hidden;
- }
+}
 
 .vSplitPanelContents {
     overflow-y: auto;
@@ -315,4 +315,11 @@ input[type=checkbox] {
 
 .errorLogMessage {
     color: #ff4500;
+}
+
+.dateTimeEditorBox {
+    width: 11em;
+    padding: 2px;
+    text-align: right;
+    float: right;
 }

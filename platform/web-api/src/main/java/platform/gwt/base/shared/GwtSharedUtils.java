@@ -1,6 +1,8 @@
 package platform.gwt.base.shared;
 
 import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.i18n.client.LocaleInfo;
+import com.google.gwt.i18n.shared.DateTimeFormatInfo;
 
 import java.util.*;
 
@@ -32,6 +34,15 @@ public class GwtSharedUtils {
 
     public static DateTimeFormat getDefaultDateFormat() {
         return DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_SHORT);
+    }
+
+    public static DateTimeFormat getDefaultDateTimeFormat() {
+        DateTimeFormatInfo info = LocaleInfo.getCurrentLocale().getDateTimeFormatInfo();
+        return DateTimeFormat.getFormat(info.dateTime(info.timeFormatMedium(), info.dateFormatShort()));
+    }
+
+    public static DateTimeFormat getDefaultTimeFormat() {
+        return DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.TIME_MEDIUM);
     }
 
     public static String formatDate(Date date) {
