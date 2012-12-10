@@ -9,9 +9,7 @@ CLASS warePriceListType 'Цена cо стеклопосудой' : priceListTyp
 basePriceListTypeWarePriceListType(type) = DATA basePriceListType (warePriceListType);
 nameBasePriceListTypeWarePriceListType 'Базовый вид цены' (type) = name(basePriceListTypeWarePriceListType(type));
 
-includeVATWarePriceListType 'Цена с НДС' = DATA BOOLEAN (warePriceListType);
-
-includeVATPriceListType(type) += includeVATWarePriceListType(type);
+includeVATPriceListType(type) += TRUE IF type IS warePriceListType;
 
 @defineDocumentHeaderCurrency(warePriceListType);
 currencyPriceListType(warePriceListType) += currencyWarePriceListType(warePriceListType);
