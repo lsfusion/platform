@@ -44,6 +44,7 @@ public class NavigatorProviderImpl implements NavigatorProvider, InitializingBea
                         }
                         navigator = ReflectionUtils.makeSynchronized(RemoteNavigatorInterface.class, unsynced);
                     } catch (RemoteException e) {
+                        blProvider.invalidate();
                         throw new RuntimeException("Не могу создать навигатор.", e);
                     }
                 }
