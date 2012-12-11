@@ -165,7 +165,7 @@ dateToLicense 'Действует по ' = DATA DATE (license) IN licenseGroup;
 countryLicense = DATA country (license);
 nameCountryLicense 'Страна' = name(countryLicense(license));
 
-legalEntityLicense 'ЮЛ (ИД)' = DATA legalEntity (license) IN idGroup;
+legalEntityLicense 'ЮЛ (ИД)' = DATA legalEntity (license);
 
 licenseLegalEntityDate 'Действующая на дату' (legalEntity, date) = GROUP MAX license AS license IF dateFromLicense(license) <= date AND NOT dateToLicense(license) < date AND date AS DATE
                                                                          BY legalEntityLicense(license), date;

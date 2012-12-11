@@ -5,6 +5,8 @@ REQUIRE System;
 CLASS historizable 'Объект с историей создания' ;
 TABLE historizable (historizable);
 
+GROUP historyGroup 'История' : rootGroup;
+
 timeCreatedHistorizable 'Время создания'= DATA DATETIME (historizable) IN historyGroup;
 timeCreatedHistorizable (object) <- currentDateTime() WHEN ASSIGNED(object IS historizable);
 

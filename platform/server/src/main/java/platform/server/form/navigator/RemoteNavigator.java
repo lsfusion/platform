@@ -367,13 +367,13 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
             if (connection != null) {
                 DataSession session = createSession();
 
-                Integer formId = (Integer) BL.reflectionLM.SIDToNavigatorElement.read(session, new DataObject(sid, BL.LM.navigatorElementSIDClass));
+                Integer formId = (Integer) BL.reflectionLM.SIDToNavigatorElement.read(session, new DataObject(sid, BL.reflectionLM.navigatorElementSIDClass));
                 if (formId == null) {
                     //будем считать, что к SID модифицированных форм будет добавляться что-нибудь через подчёркивание
                     int ind = sid.indexOf('_');
                     if (ind != -1) {
                         sid = sid.substring(0, ind);
-                        formId = (Integer) BL.reflectionLM.SIDToNavigatorElement.read(session, new DataObject(sid, BL.LM.navigatorElementSIDClass));
+                        formId = (Integer) BL.reflectionLM.SIDToNavigatorElement.read(session, new DataObject(sid, BL.reflectionLM.navigatorElementSIDClass));
                     }
 
                     if (formId == null) {

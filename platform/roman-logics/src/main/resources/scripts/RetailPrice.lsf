@@ -22,9 +22,9 @@ TABLE coefficientBrandRetail (coefficientBrandRetail);
 dateCoefficientBrandRetail 'Дата введения' = DATA DATE(coefficientBrandRetail) IN baseGroup;
 markupCoefficientBrandRetail 'Множитель' = DATA NUMERIC[14,2](coefficientBrandRetail) IN baseGroup;
 
-brandSupplierCoefficientBrandRetail = DATA brandSupplier(coefficientBrandRetail) IN idGroup AUTOSET;
-categorySupplierCoefficientBrandRetail = DATA categorySupplier(coefficientBrandRetail) IN idGroup AUTOSET;
-seasonYearCoefficientBrandRetail = DATA seasonYear(coefficientBrandRetail) IN idGroup AUTOSET;
+brandSupplierCoefficientBrandRetail = DATA brandSupplier(coefficientBrandRetail) AUTOSET;
+categorySupplierCoefficientBrandRetail = DATA categorySupplier(coefficientBrandRetail) AUTOSET;
+seasonYearCoefficientBrandRetail = DATA seasonYear(coefficientBrandRetail) AUTOSET;
 
 nameBrandSupplierCoefficientBrandRetail 'Бренд' (coefficientBrandRetail) = name(brandSupplierCoefficientBrandRetail(coefficientBrandRetail));
 nameCategorySupplierCoefficientBrandRetail 'Группа' (coefficientBrandRetail) = name(categorySupplierCoefficientBrandRetail(coefficientBrandRetail));

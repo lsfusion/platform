@@ -72,7 +72,7 @@ rangeVATTaxUnit 'Шкала субъекту' (taxUnit) = rangeTaxTaxUnit (tax.t
 CLASS rate 'История изменений шкалы' : historizable;
 TABLE rate(rate);
 
-rangeRate = DATA range (rate) IN idGroup;
+rangeRate = DATA range (rate);
 quantityRateRange 'Количество историй' (range) = GROUP SUM 1 IF rate BY rangeRate(rate);
 
 valueRate 'Значение ставки' = DATA NUMERIC[10,5] (rate) IN recognizeGroup NOT NULL;
@@ -83,7 +83,7 @@ rateRangeDate(range, date) = GROUP MAX rate IF dateFromRate(rate) <= date AND NO
                                          BY rangeRate(rate), date;
 valueRateRangeDate 'На дату' (range, date) = valueRate(rateRangeDate(range, date));
 
-currentRateRange (range) = rateRangeDate(range, currentDate()) IN idGroup PERSISTENT;
+currentRateRange (range) = rateRangeDate(range, currentDate()) PERSISTENT;
 valueCurrentRateRange 'Действующая ставка' (range) = valueRate(currentRateRange(range)) IN baseGroup;
 
 dateFromActingRateRange 'Действует с' (range) = dateFromRate(currentRateRange(range)) IN baseGroup;

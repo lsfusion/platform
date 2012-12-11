@@ -301,12 +301,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         project = addConcreteClass("project", "Проект", baseLM.multiLanguageNamed, transaction);
         expert = addConcreteClass("expert", "Эксперт", baseLM.customUser);
-        cluster = addConcreteClass("cluster", "Кластер", baseLM.multiLanguageNamed, baseLM.emailObject);
+        cluster = addConcreteClass("cluster", "Кластер", baseLM.multiLanguageNamed);
         foresight = addConcreteClass("foresight", "Форсайт", baseLM.multiLanguageNamed);
 
         clusterUser = addConcreteClass("clusterUser", "Сотрудник кластера", baseLM.customUser);
 
-        claimer = addConcreteClass("claimer", "Заявитель", baseLM.multiLanguageNamed, baseLM.emailObject);
+        claimer = addConcreteClass("claimer", "Заявитель", baseLM.multiLanguageNamed);
         claimer.dialogReadOnly = false;
 
         claimerExpert = addConcreteClass("claimerExpert", "Заявитель/эксперт", claimer, expert);
@@ -394,7 +394,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     @Override
     public void initTables() {
         addTable("transaction", transaction);
-        addTable("property", baseLM.property);
+        addTable("property", BL.reflectionLM.property);
         addTable("multiLanguageNamed", baseLM.multiLanguageNamed);
         addTable("project", project);
         addTable("expert", expert);
@@ -512,7 +512,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         commentExpertiseGroup = addAbstractGroup("commentExpertiseGroup", "Опыт в областях", publicGroup);
 
-        changeLegalCheckGroup = addAbstractGroup("changeLegalCheckGroup", "Изменение типа заявки", publicGroup); 
+        changeLegalCheckGroup = addAbstractGroup("changeLegalCheckGroup", "Изменение типа заявки", publicGroup);
+
+        idGroup = addAbstractGroup("idGroup", "Идентификаторы", publicGroup, false);
     }
 
     public LCP negative;
@@ -1676,7 +1678,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nameNativeShort = addDProp(baseGroup, "nameNativeShort", "Имя (сокр.)", InsensitiveStringClass.get(4), cluster);
         nameNativeShort.setFixedCharWidth(5);
 
-        baseGroup.add(baseLM.email.property); // сделано, чтобы email был не самой первой колонкой в диалогах
+        baseGroup.add(BL.emailLM.email.property); // сделано, чтобы email был не самой первой колонкой в диалогах
 
         // глобальные свойства
         requiredPeriod = addDProp(baseGroup, "votePeriod", "Срок заседания", IntegerClass.instance);
@@ -1718,9 +1720,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
         postAddressClaimer.setPreferredWidth(50);
 
         siteClaimer = addDProp(contactGroup, "siteClaimer", "Сайт", StringClass.get(100), claimer);
-        emailClaimer = addJProp(contactGroup, "emailClaimer", "E-mail", baseLM.and1, baseLM.email, 1, is(claimer), 1);
+        emailClaimer = addJProp(contactGroup, "emailClaimer", "E-mail", baseLM.and1, BL.emailLM.email, 1, is(claimer), 1);
         emailFirmClaimer = addDProp(contactGroup, "emailFirmClaimer", "E-mail организации", StringClass.get(50), claimer);
-        emailExpert = addJProp("emailExpert", "E-mail", baseLM.and1, baseLM.email, 1, is(expert), 1);
+        emailExpert = addJProp("emailExpert", "E-mail", baseLM.and1, BL.emailLM.email, 1, is(expert), 1);
 
         clusterClusterUser = addDProp(idGroup, "clusterClusterUser", "Кластер (ИД)", cluster, clusterUser);
         nameClusterClusterUser = addJProp(baseGroup, "nameClusterClusterUser", "Кластер", nameNativeShort, clusterClusterUser, 1);
@@ -3162,7 +3164,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nameNativeFinalClusterProject = addJProp(projectInformationGroup, "nameNativeFinalClusterProject", "Тек. кластер", nameNative, finalClusterProject, 1);
         nameForeignFinalClusterProject = addJProp(projectInformationGroup, "nameForeignFinalClusterProject", "Тек. кластер (иностр.)", nameForeign, finalClusterProject, 1);
         nameNativeShortFinalClusterProject = addJProp(projectInformationGroup, "nameShortFinalClusterProject", "Тек. кластер (сокр.)", nameNativeShort, finalClusterProject, 1);
-        emailFinalClusterProject = addJProp("emailFinalClusterProject", "E-mail тек. кластера", baseLM.email, finalClusterProject, 1);
+        emailFinalClusterProject = addJProp("emailFinalClusterProject", "E-mail тек. кластера", BL.emailLM.email, finalClusterProject, 1);
         inProjectCurrentCluster = addJProp(baseGroup, "inProjectCurrentCluster", "Вкл", inProjectCluster, 1, currentCluster);
 
         finalClusterProjectVote = addJProp("finalClusterProjectVote", "Тек. кластер (ИД)", finalClusterProject, projectVote, 1);
@@ -3223,7 +3225,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         includeProjectClusterForesight = addAProp(actionGroup, new IncludeProjectClusterForesightActionProperty(project, cluster, foresight));
         includeProjectClusterForesight.setImage("include.png");
 
-        baseLM.generateLoginPassword.setEventSetAction(this, is(expert), 1);
+        BL.emailLM.generateLoginPassword.setEventSetAction(this, is(expert), 1);
 
         expertLogin = addAGProp(baseGroup, "expertLogin", "Эксперт (ИД)", baseLM.userLogin);
         disableExpert = addDProp(baseGroup, "disableExpert", "Не акт.", LogicalClass.instance, expert);
@@ -3749,7 +3751,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailFondStartVote = addDProp(baseGroup, "emailFondStartVote", "E-mail для уведомления о начале заседания", StringClass.get(100));  // внести записи kzosin@corp.i-gorod.com; esinyatkina@corp.i-gorod.com;
 
         emailLetterExpertVoteEA = addEAProp(expert, vote);
-        addEARecipients(emailLetterExpertVoteEA, baseLM.email, 1);
+        addEARecipients(emailLetterExpertVoteEA, BL.emailLM.email, 1);
         addEARecipients(emailLetterExpertVoteEA, MimeMessage.RecipientType.BCC, emailExperts);
 
         emailLetterExpertVote = addJoinAProp(baseGroup, "emailLetterExpertVote", "Письмо о заседании (e-mail)",
@@ -3764,7 +3766,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailClaimerFromAddress = addDProp("emailClaimerFromAddress", "Адрес отправителя (для заявителей)", StringClass.get(50));
         emailClaimerVoteEA = addEAProp(emailClaimerFromAddress, emailClaimerFromAddress, vote);
 
-        claimerEmailVote = addJProp("claimerEmailVote", "E-mail (заявителя)", baseLM.email, claimerVote, 1);
+        claimerEmailVote = addJProp("claimerEmailVote", "E-mail (заявителя)", BL.emailLM.email, claimerVote, 1);
         addEARecipients(emailClaimerVoteEA, claimerEmailVote, 1);
 
         emailClaimerHeaderVote = addJProp("emailClaimerHeaderVote", "Заголовок уведомления заявителю", baseLM.string2SP, addCProp(StringClass.get(2000), "Уведомление."), nameNativeClaimerVote, 1);
@@ -3911,7 +3913,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailClaimerFormalControlEA = addEAProp(emailClaimerFromAddress, emailClaimerFromAddress, formalControl);
 
         claimerFormalControl = addJProp(idGroup, "claimerFormalControl", "Заявитель (ИД)", claimerProject, projectFormalControl, 1);
-        claimerEmailFormalControl = addJProp("claimerEmailFormalControl", "E-mail (заявителя)", baseLM.email, claimerFormalControl, 1);
+        claimerEmailFormalControl = addJProp("claimerEmailFormalControl", "E-mail (заявителя)", BL.emailLM.email, claimerFormalControl, 1);
 
         nameNativeJoinClaimerFormalControl = addJProp(baseGroup, "nameNativeJoinClaimerFormalControl", nameNativeClaimer, claimerFormalControl, 1);
         nameForeignJoinClaimerFormalControl = addJProp(baseGroup, "nameForeignJoinClaimerFormalControl", nameForeign, claimerFormalControl, 1);
@@ -3956,7 +3958,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailClaimerLegalCheckEA = addEAProp(emailClaimerFromAddress, emailClaimerFromAddress, legalCheck);
 
         claimerLegalCheck = addJProp(idGroup, "claimerLegalCheck", "Заявитель (ИД)", claimerProject, projectLegalCheck, 1);
-        claimerEmailLegalCheck = addJProp("claimerEmailLegalCheck", "E-mail (заявителя)", baseLM.email, claimerLegalCheck, 1);
+        claimerEmailLegalCheck = addJProp("claimerEmailLegalCheck", "E-mail (заявителя)", BL.emailLM.email, claimerLegalCheck, 1);
 
         nameNativeJoinClaimerLegalCheck = addJProp(baseGroup, "nameNativeJoinClaimerLegalCheck", nameNativeClaimer, claimerLegalCheck, 1);
         nameForeignJoinClaimerLegalCheck = addJProp(baseGroup, "nameForeignJoinClaimerLegalCheck", nameForeign, claimerLegalCheck, 1);
@@ -4006,7 +4008,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         localeExpert = addJProp("localeExpert", "Locale", localeLanguage, languageExpert, 1);
 
         emailAuthExpertEA = addEAProp(expert);
-        addEARecipients(emailAuthExpertEA, baseLM.email, 1);
+        addEARecipients(emailAuthExpertEA, BL.emailLM.email, 1);
         addEARecipients(emailAuthExpertEA, MimeMessage.RecipientType.BCC, emailExperts);
 
         emailAuthExpert = addJoinAProp(baseGroup, "emailAuthExpert", "Аутентификация эксперта (e-mail)",
@@ -4015,7 +4017,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailAuthExpert.property.askConfirm = true;
 
         emailAuthProfileExpertEA = addEAProp(expert);
-        addEARecipients(emailAuthProfileExpertEA, baseLM.email, 1);
+        addEARecipients(emailAuthProfileExpertEA, BL.emailLM.email, 1);
         addEARecipients(emailAuthProfileExpertEA, MimeMessage.RecipientType.BCC, emailExperts);
 
         emailAuthProfileExpert = addJoinAProp(baseGroup, "emailAuthProfileExpert", "Уведомление о заполнении профиля (e-mail)",
@@ -4024,7 +4026,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailAuthProfileExpert.property.askConfirm = true;
 
         emailReminderProfileExpertEA = addEAProp(expert);
-        addEARecipients(emailReminderProfileExpertEA, baseLM.email, 1);
+        addEARecipients(emailReminderProfileExpertEA, BL.emailLM.email, 1);
         addEARecipients(emailReminderProfileExpertEA, MimeMessage.RecipientType.BCC, emailExperts);
 
         emailReminderProfileExpert = addJoinAProp(baseGroup, "emailReminderProfileExpert", "Напоминание о заполнении профиля (e-mail)",
@@ -4045,7 +4047,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailAcceptedProject.property.askConfirm = true;
         emailAcceptedProject.setEventSetAction(this, acceptedProject, 1);
 
-        emailToExpert = addJProp("emailToExpert", "Эксперт по e-mail", addJProp(baseLM.and1, 1, is(expert), 1), baseLM.emailToObject, 1);
+        emailToExpert = addJProp("emailToExpert", "Эксперт по e-mail", addJProp(baseLM.and1, 1, is(expert), 1), BL.emailLM.emailToObject, 1);
 
         ConcreteCustomClass country = (ConcreteCustomClass) BL.getModule("Country").getClassByName("country");
 
@@ -4472,7 +4474,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nameNativeShortAggregateClusterExpert = addOGProp(baseGroup, "nameNativeShortAggregateClusterExpert", false, "Кластеры", GroupType.STRING_AGG, 1, true, addJProp(baseLM.and1, nameNativeShort, 1, inClusterExpert, 1, 2), addCProp(StringClass.get(5), ";"), numberCluster, 1, 2);
 
         emailConferenceExpertEA = addEAProp(expertConference, expert);
-        addEARecipients(emailConferenceExpertEA, baseLM.email, 2);
+        addEARecipients(emailConferenceExpertEA, BL.emailLM.email, 2);
 
         emailConferenceExpert = addIfAProp(baseGroup, "emailConferenceExpert", "Участие в конф. (e-mail)", addJProp(baseLM.andNot1, inConferenceExpert, 1, 2, resultConferenceExpert, 1, 2), 1, 2, addJoinAProp(emailConferenceExpertEA, 1, 2, addCProp(StringClass.get(50), "Участие в конференции")), 1, 2);
         emailConferenceExpert.setImage("email.png");
@@ -5091,7 +5093,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         public ClusterUserFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Сотрудники кластеров");
 
-            objClusterUser = addSingleGroupObject(clusterUser, "Сотрудник", baseLM.userFirstName, baseLM.userLastName, baseLM.userLogin, baseLM.userPassword, baseLM.email, BL.securityLM.nameUserMainRole, nameClusterClusterUser);
+            objClusterUser = addSingleGroupObject(clusterUser, "Сотрудник", baseLM.userFirstName, baseLM.userLastName, baseLM.userLogin, baseLM.userPassword, BL.emailLM.email, BL.securityLM.nameUserMainRole, nameClusterClusterUser);
             addObjectActions(this, objClusterUser);
         }
     }
@@ -5767,7 +5769,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             objExpert = addSingleGroupObject(expert);
             addPropertyDraw(objExpert, objVote, inExpertVote, oldExpertVote, businessExpertVote, exclExpertVote);
-            addPropertyDraw(objExpert, baseLM.name, documentNameExpert, sidExpert, baseLM.email);
+            addPropertyDraw(objExpert, baseLM.name, documentNameExpert, sidExpert, BL.emailLM.email);
             addPropertyDraw(voteResultGroup, true, objExpert, objVote);
 
             setForceViewType(voteResultCommentGroup, ClassViewType.PANEL);
@@ -6147,7 +6149,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             objExpert = new ObjectEntity(genID(), expert, "Эксперт");
             addPropertyDraw(objExpert, baseLM.userFirstName, baseLM.userLastName, documentNameExpert, sidExpert);        // baseLM.selection,
-            addPropertyDraw(objExpert, baseLM.email, disableExpert, nameLanguageExpert, dateAgreementExpert);
+            addPropertyDraw(objExpert, BL.emailLM.email, disableExpert, nameLanguageExpert, dateAgreementExpert);
 
             objForesight = new ObjectEntity(genID(), foresight, "Форсайты");
             addPropertyDraw(objForesight, sidForesight, nameNative, nameNativeShortClusterForesight);
@@ -6204,7 +6206,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             objExpert = addSingleGroupObject(expert);
             if (!restricted)
-                addPropertyDraw(objExpert, baseLM.userFirstName, baseLM.userLastName, documentNameExpert, sidExpert, baseLM.userLogin, baseLM.userPassword, baseLM.email);
+                addPropertyDraw(objExpert, baseLM.userFirstName, baseLM.userLastName, documentNameExpert, sidExpert, baseLM.userLogin, baseLM.userPassword, BL.emailLM.email);
 
             addPropertyDraw(objExpert, objVote, oldExpertVote, exclExpertVote);
             addPropertyDraw(voteResultGroup, true, objExpert, objVote);
@@ -6280,12 +6282,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
             super(parent, sID, "Реестр экспертов");
 
             objExpert = addSingleGroupObject(expert, baseLM.selection, baseLM.userFirstName, baseLM.userLastName, documentNameExpert,
-                    baseLM.userLogin, baseLM.userPassword, baseLM.email, disableExpert,
+                    baseLM.userLogin, baseLM.userPassword, BL.emailLM.email, disableExpert,
                     nameNativeShortClusterExpert, nameLanguageExpert,
                     dateAgreementExpert, nameCountryExpert, nameCurrencyExpert,
                     isScientificExpert, isTechnicalExpert, isBusinessExpert, expertiseExpert, grantExpert, profileBlockedExpert, profileUpdateDateExpert,
                     quantityInClusterExpert, quantityInForesightExpert,
-                    expertResultGroup, sidExpert, generateSIDExpert, baseLM.generateLoginPassword, emailAuthExpert, emailAuthProfileExpert, emailReminderProfileExpert);
+                    expertResultGroup, sidExpert, generateSIDExpert, BL.emailLM.generateLoginPassword, emailAuthExpert, emailAuthProfileExpert, emailReminderProfileExpert);
             addObjectActions(this, objExpert);
 
             addPropertyDraw(objExpert, commentExpertiseGroup);
@@ -6369,7 +6371,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             objWeek = addSingleGroupObject(1, "week", IntegerClass.instance, "Неделя");
 
-            objExpert = addSingleGroupObject(2, "expert", expert, baseLM.selection, disableExpert, nameNativeShortClusterExpert, baseLM.userFirstName, baseLM.userLastName, sidExpert, baseLM.email);
+            objExpert = addSingleGroupObject(2, "expert", expert, baseLM.selection, disableExpert, nameNativeShortClusterExpert, baseLM.userFirstName, baseLM.userLastName, sidExpert, BL.emailLM.email);
 
             PropertyDrawEntity quantity = addPropertyDraw(quantityNewExpertWeek, objExpert, objWeek);
             quantity.columnGroupObjects.add(objWeek.groupTo);
@@ -6407,7 +6409,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addPropertyDraw(objExpert, nameNativeClusterExpert, nameLanguageExpert);
 
             if (!restricted)
-                addPropertyDraw(objExpert, baseLM.userFirstName, baseLM.userLastName, documentNameExpert, sidExpert, baseLM.email);
+                addPropertyDraw(objExpert, baseLM.userFirstName, baseLM.userLastName, documentNameExpert, sidExpert, BL.emailLM.email);
 
             if (!restricted)
                 addPropertyDraw(objExpert, objVote, allowedEmailLetterExpertVote);
@@ -6514,7 +6516,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             super(parent, sID, "Кластеры");
 
             objCluster = addSingleGroupObject(1, "Кластер", cluster);
-            addPropertyDraw(objCluster, nameNative, nameForeign, baseLM.email, sidCluster, inTestCluster);
+            addPropertyDraw(objCluster, nameNative, nameForeign, BL.emailLM.email, sidCluster, inTestCluster);
             addObjectActions(this, objCluster);
 
             objForesight = addSingleGroupObject(2, "Форсайт", foresight);
@@ -6522,7 +6524,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addFixedFilter(new CompareFilterEntity(addPropertyObject(clusterForesight, objForesight), Compare.EQUALS, objCluster));
             addObjectActions(this, objForesight);
 
-            objExpert = addSingleGroupObject(3, "Эксперт", expert, baseLM.userFirstName, baseLM.userLastName, documentNameExpert, sidExpert, baseLM.email);
+            objExpert = addSingleGroupObject(3, "Эксперт", expert, baseLM.userFirstName, baseLM.userLastName, documentNameExpert, sidExpert, BL.emailLM.email);
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(inExpertForesight, objExpert, objForesight)));
 
@@ -6662,7 +6664,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             objCluster.groupTo.initClassView = ClassViewType.PANEL;
 
 
-            objExpert = addSingleGroupObject(2, "expert", expert, "Эксперт", baseLM.userFirstName, baseLM.userLastName, documentNameExpert, sidExpert, baseLM.email, baseLM.userPassword, nameNativeClusterExpert);
+            objExpert = addSingleGroupObject(2, "expert", expert, "Эксперт", baseLM.userFirstName, baseLM.userLastName, documentNameExpert, sidExpert, BL.emailLM.email, baseLM.userPassword, nameNativeClusterExpert);
             addPropertyDraw(objExpert, commentExpertiseGroup);
             addPropertyDraw(objExpert, isScientificExpert, isTechnicalExpert, isBusinessExpert, expertiseExpert, grantExpert, profileBlockedExpert, profileUpdateDateExpert);
 
@@ -7070,7 +7072,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             objExpert = addSingleGroupObject(expert);
             addPropertyDraw(objConference, objExpert, inConferenceExpert);
-            addPropertyDraw(objExpert, baseLM.userFirstName, baseLM.userLastName, documentNameExpert, sidExpert, baseLM.userLogin, baseLM.userPassword, baseLM.email,
+            addPropertyDraw(objExpert, baseLM.userFirstName, baseLM.userLastName, documentNameExpert, sidExpert, baseLM.userLogin, baseLM.userPassword, BL.emailLM.email,
                     nameLanguageExpert, nameCountryExpert, disableExpert, nameNativeShortClusterExpert, nameNativeShortAggregateClusterExpert);
             addPropertyDraw(objConference, objExpert, nameResultConferenceExpert, emailConferenceExpert);
             setForceViewType(textConference, ClassViewType.PANEL);

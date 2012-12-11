@@ -22,7 +22,7 @@ nameCountryStatisticGroup 'Страна' (statisticGroup)= name(countryStatistic
 CONSTRAINT  countryStatisticGroup(parentStatisticGroup(statisticGroup))!=  countryStatisticGroup(statisticGroup)
     CHECKED BY  parentStatisticGroup MESSAGE 'Страна родительской группы должна совпадать со страной группы';
 
-unitMeasureStatisticGroup 'Ед. изм. ИД' (statisticGroup) = DATA groupStatic (statisticGroup) IN idGroup;
+unitMeasureStatisticGroup 'Ед. изм. ИД' (statisticGroup) = DATA groupStatic (statisticGroup);
 nameUOMStatisticGroup 'Ед. изм.' (statisticGroup) = name(unitMeasureStatisticGroup(statisticGroup)) MINCHARWIDTH 12 MAXCHARWIDTH 12 PREFCHARWIDTH 12;
 
 sidStatisticGroup 'Код группы' (statisticGroup) = DATA STRING[12] (statisticGroup)  MINCHARWIDTH 12 MAXCHARWIDTH 12 PREFCHARWIDTH 12;

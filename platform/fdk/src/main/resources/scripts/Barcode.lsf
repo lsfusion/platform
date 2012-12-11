@@ -29,7 +29,7 @@ nameSkuBarcode 'Наименование' (barcode) = nameSku(skuBarcode(barcode
 
 skuBarcodeIdDate (id, date) = skuBarcode(barcodeIdDate(id, date));
 
-dataBarcodeSku = DATA barcode (sku) IN idGroup;
+dataBarcodeSku = DATA barcode (sku);
 CONSTRAINT skuBarcode(dataBarcodeSku(item)) != item CHECKED BY dataBarcodeSku MESSAGE 'Выбран неверный sku для штрих-кода';
 
 barcodeSku(sku) = [GROUP MIN barcode BY skuBarcode(barcode)](sku) OR dataBarcodeSku(sku) PERSISTENT;

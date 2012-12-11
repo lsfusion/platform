@@ -82,7 +82,7 @@ shortNameCurrencyWHfromRF 'Валюта фрахта' (WHfromRF) = shortNameCurr
 
 @defineDocumentDetailSkuArticle(WHfromRF);
 
-companyDataWHfromRF 'Импортёр (ИД)' = DATA company(WHfromRF) IN idGroup;
+companyDataWHfromRF 'Импортёр (ИД)' = DATA company(WHfromRF);
 nameCompanyDataWHfromRF 'Импортёр' = name(companyDataWHfromRF(WHfromRF)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
 
 overCompanyWHfromRF 'Импортёр (ИД)' (WHfromRF) = UNION OVERRIDE legalEntityStockWHfromRF(WHfromRF) IF legalEntityStockWHfromRF(WHfromRF) IS company,

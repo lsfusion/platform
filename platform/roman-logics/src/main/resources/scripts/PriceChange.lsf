@@ -299,7 +299,7 @@ FORM priceChangeCommitteeDialog 'Комиссии переоценки'
 META defineDocumentHeaderPriceChange (object)
     numberDisposal###object '№ распоряжения на переоценку' (object) = DATA STRING[30] (object) IN documentPrmGroup;
 
-    priceChangeCommittee###object = DATA priceChangeCommittee (object) IN idGroup;
+    priceChangeCommittee###object = DATA priceChangeCommittee (object);
     namePriceChangeCommittee###object 'Комиссия переоценки' (object) = name(priceChangeCommittee###object(object)) IN documentPrmGroup;
     priceChangeCommittee###object(object) <- priceChangeCommitteeDepartmentStore(departmentStore###object(object))
         WHEN object IS object;

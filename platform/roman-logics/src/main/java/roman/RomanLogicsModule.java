@@ -128,6 +128,7 @@ public class RomanLogicsModule extends LogicsModule {
     ConcreteCustomClass articleComposite;
     public ConcreteCustomClass articleSingle;
     ConcreteCustomClass item;
+    public AbstractCustomClass barcodeObject;
     protected AbstractCustomClass sku;
     private ConcreteCustomClass pallet;
     LCP sidArticle;
@@ -1527,7 +1528,8 @@ public class RomanLogicsModule extends LogicsModule {
 
         store = addConcreteClass("store", "Магазин", destination, (CustomClass) BL.Store.getClassByName("store"));//  baseClass.named
 
-        sku = addAbstractClass("sku", "SKU", baseLM.barcodeObject, (CustomClass) BL.Stock.getClassByName("sku"));
+        barcodeObject = addAbstractClass("barcodeObject", "Штрихкод", baseClass);
+        sku = addAbstractClass("sku", "SKU", barcodeObject, (CustomClass) BL.Stock.getClassByName("sku"));
 
         article = addAbstractClass("article", "Артикул", baseClass);
         articleComposite = addConcreteClass("articleComposite", "Артикул (составной)", article);
@@ -1550,7 +1552,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         typeInvoice = addConcreteClass("typeInvoice", "Тип инвойса", baseClass.named);
 
-        stock = addConcreteClass("stock", "Место хранения", baseLM.barcodeObject);  //, (CustomClass) BL.Stock.getClassByName("stock")
+        stock = addConcreteClass("stock", "Место хранения", barcodeObject);  //, (CustomClass) BL.Stock.getClassByName("stock")
 
         freightUnit = addAbstractClass("freightUnit", "Машиноместо", baseClass);
 
@@ -1567,7 +1569,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         shipDimension = addConcreteClass("shipDimension", "Разрез поставки", baseClass);
 
-        supplierBox = addConcreteClass("supplierBox", "Короб поставщика", list, shipDimension, baseLM.barcodeObject, freightUnit);
+        supplierBox = addConcreteClass("supplierBox", "Короб поставщика", list, shipDimension, barcodeObject, freightUnit);
 
         shipment = addAbstractClass("shipment", "Поставка", document);
         boxShipment = addConcreteClass("boxShipment", "Поставка по коробам", shipment);
@@ -1629,7 +1631,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         freightType = addConcreteClass("freightType", "Тип машины", baseClass.named);
 
-        pallet = addConcreteClass("pallet", "Паллета", baseLM.barcodeObject);
+        pallet = addConcreteClass("pallet", "Паллета", barcodeObject);
 
         category = addConcreteClass("category", "Номенклатурная группа", secondNameClass, baseClass.named, baseLM.multiLanguageNamed,
                                                                          (CustomClass) BL.Stock.getClassByName("skuGroup"));
@@ -1766,7 +1768,7 @@ public class RomanLogicsModule extends LogicsModule {
         addTable("pallet", pallet);
         addTable("freight", freight);
         addTable("freightUnit", freightUnit);
-        addTable("barcodeObject", baseLM.barcodeObject);
+        addTable("barcodeObject", barcodeObject);
 
         addTable("categoryGenderCompositionTypeFabric", category, gender, COMPOSITION_CLASS, typeFabric);
         addTable("categoryGenderCompositionTypeFabricCustomsZone", category, gender, COMPOSITION_CLASS, typeFabric, customsZone);
@@ -1784,6 +1786,8 @@ public class RomanLogicsModule extends LogicsModule {
         addTable("importerFreight", importer, freight);
 
         addTable("simpleInvoiceSimpleShipmentStockSku", simpleInvoice, simpleShipment, stock, sku);
+
+        addTable("barcodeObject", barcodeObject);
     }
 
     @Override
@@ -1797,6 +1801,7 @@ public class RomanLogicsModule extends LogicsModule {
         intraAttributeGroup = addAbstractGroup("intraAttributeGroup", "Внутренние атрибуты", publicGroup);
         importInvoiceActionGroup = addAbstractGroup("importInvoiceActionGroup","Импорт инвойсов", actionGroup, false);
         importOrderActionGroup = addAbstractGroup("importOrderActionGroup","Импорт заказов", actionGroup, false);
+        idGroup = addAbstractGroup("idGroup", "Идентификаторы", publicGroup, false);
     }
 
     @Override
@@ -1806,7 +1811,7 @@ public class RomanLogicsModule extends LogicsModule {
         date = addDProp(baseGroup, "date", "Дата", DateClass.instance, transaction);
         date.setEventChange(baseLM.currentDate, is(transaction), 1);
 
-        barcode = addDProp(recognizeGroup, "barcode", "Штрихкод", StringClass.get(Settings.instance.getBarcodeLength()), baseLM.barcodeObject);
+        barcode = addDProp(recognizeGroup, "barcode", "Штрихкод", StringClass.get(Settings.instance.getBarcodeLength()), barcodeObject);
         barcode.setFixedCharWidth(13);
         barcodeToObject = addAGProp("barcodeToObject", "Объект", barcode);
         barcodeObjectName = addJProp(baseGroup, "barcodeObjectName", "Объект", baseLM.name, barcodeToObject, 1);

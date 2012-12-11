@@ -58,12 +58,6 @@ import static platform.server.logics.PropertyUtils.mapCalcImplement;
 import static platform.server.logics.PropertyUtils.readCalcImplements;
 import static platform.server.logics.ServerResourceBundle.getString;
 
-/**
- * User: DAle
- * Date: 16.05.11
- * Time: 17:52
- */
-
 public class ReflectionLogicsModule<T extends BusinessLogics<T>> extends LogicsModule {
     Logger logger;
     T BL;
@@ -82,6 +76,7 @@ public class ReflectionLogicsModule<T extends BusinessLogics<T>> extends LogicsM
     public ConcreteCustomClass tableKey;
     public ConcreteCustomClass tableColumn;
     public ConcreteCustomClass dropColumn;
+    public ConcreteCustomClass property;
     
     public LCP captionAbstractGroup;
     public LCP navigatorElementCaption;
@@ -179,6 +174,16 @@ public class ReflectionLogicsModule<T extends BusinessLogics<T>> extends LogicsM
     
     public LCP connectionFormCount;
 
+    public final StringClass navigatorElementSIDClass = StringClass.get(50);
+    public final StringClass navigatorElementCaptionClass = StringClass.get(250);
+    public final StringClass propertySIDValueClass = StringClass.get(100);
+    public final StringClass propertyCaptionValueClass = StringClass.get(250);
+    public final StringClass propertySignatureValueClass = StringClass.get(100);
+    public final LogicalClass propertyLoggableValueClass = LogicalClass.instance;
+    public final LogicalClass propertyStoredValueClass = LogicalClass.instance;
+    public final LogicalClass propertyIsSetNotNullValueClass = LogicalClass.instance;
+    public final StringClass loginValueClass = StringClass.get(100);
+
     public ReflectionLogicsModule(T BL, BaseLogicsModule baseLM, Logger logger) {
         super("Reflection", "Reflection");
         setBaseLogicsModule(baseLM);
@@ -207,6 +212,7 @@ public class ReflectionLogicsModule<T extends BusinessLogics<T>> extends LogicsM
         tableKey = addConcreteClass("tableKey", getString("logics.tables.key"), baseLM.baseClass);
         tableColumn = addConcreteClass("tableColumn", getString("logics.tables.column"), baseLM.baseClass);
         dropColumn = addConcreteClass("dropColumn", getString("logics.tables.deleted.column"), baseLM.baseClass);
+        property = addConcreteClass("property", getString("logics.property"), baseLM.baseClass);
 
 
     }
@@ -229,7 +235,7 @@ public class ReflectionLogicsModule<T extends BusinessLogics<T>> extends LogicsM
         addTable("tableKey", tableKey);
         addTable("tableColumn", tableColumn);
         addTable("dropColumn", dropColumn);
-
+        addTable("property", property);
     }
 
     @Override
@@ -240,31 +246,31 @@ public class ReflectionLogicsModule<T extends BusinessLogics<T>> extends LogicsM
         // ------- Доменная логика --------- //
 
         // Группы свойства
-        captionAbstractGroup = addDProp(BL.LM.baseGroup, "captionAbstractGroup", getString("logics.name"), BL.LM.propertyCaptionValueClass, abstractGroup);
-        navigatorElementCaption = addDProp(BL.LM.baseGroup, "navigatorElementCaption", getString("logics.forms.name"), BL.LM.navigatorElementCaptionClass, navigatorElement);
+        captionAbstractGroup = addDProp(BL.LM.baseGroup, "captionAbstractGroup", getString("logics.name"), propertyCaptionValueClass, abstractGroup);
+        navigatorElementCaption = addDProp(BL.LM.baseGroup, "navigatorElementCaption", getString("logics.forms.name"), navigatorElementCaptionClass, navigatorElement);
         parentAbstractGroup = addDProp(BL.LM.baseGroup, "parentAbstractGroup", getString("logics.property.group"), abstractGroup, abstractGroup);
         numberAbstractGroup = addDProp(BL.LM.baseGroup, "numberAbstractGroup", getString("logics.property.number"), IntegerClass.instance, abstractGroup);
-        SIDAbstractGroup = addDProp(BL.LM.baseGroup, "SIDAbstractGroup", getString("logics.property.sid"), BL.LM.propertySIDValueClass, abstractGroup);
+        SIDAbstractGroup = addDProp(BL.LM.baseGroup, "SIDAbstractGroup", getString("logics.property.sid"), propertySIDValueClass, abstractGroup);
         SIDToAbstractGroup = addAGProp("SIDToAbstractGroup", getString("logics.property"), SIDAbstractGroup);
 
         // Свойства
-        parentProperty = addDProp(BL.LM.baseGroup, "parentProperty", getString("logics.property.group"), abstractGroup, BL.LM.property);
-        numberProperty = addDProp(BL.LM.baseGroup, "numberProperty", getString("logics.property.number"), IntegerClass.instance, BL.LM.property);
-        SIDProperty = addDProp(BL.LM.baseGroup, "SIDProperty", getString("logics.property.sid"), BL.LM.propertySIDValueClass, BL.LM.property);
-        loggableProperty = addDProp(BL.LM.baseGroup, "loggableProperty", getString("logics.property.loggable"), LogicalClass.instance, BL.LM.property);
-        userLoggableProperty = addDProp(BL.LM.baseGroup, "userLoggableProperty", getString("logics.property.user.loggable"), LogicalClass.instance, BL.LM.property);
-        storedProperty = addDProp(BL.LM.baseGroup, "storedProperty", getString("logics.property.stored"), LogicalClass.instance, BL.LM.property);
-        isSetNotNullProperty = addDProp(BL.LM.baseGroup, "isSetNotNullProperty", getString("logics.property.set.not.null"), LogicalClass.instance, BL.LM.property);
-        signatureProperty = addDProp(BL.LM.baseGroup, "signatureProperty", getString("logics.property.signature"), BL.LM.propertySignatureValueClass, BL.LM.property);
-        returnProperty = addDProp(BL.LM.baseGroup, "returnProperty", getString("logics.property.return"), BL.LM.propertySignatureValueClass, BL.LM.property);
-        classProperty = addDProp(BL.LM.baseGroup, "classProperty", getString("logics.property.class"), BL.LM.propertySignatureValueClass, BL.LM.property);
-        captionProperty = addDProp(BL.LM.baseGroup, "captionProperty", getString("logics.property.caption"), BL.LM.propertyCaptionValueClass, BL.LM.property);
+        parentProperty = addDProp(BL.LM.baseGroup, "parentProperty", getString("logics.property.group"), abstractGroup, property);
+        numberProperty = addDProp(BL.LM.baseGroup, "numberProperty", getString("logics.property.number"), IntegerClass.instance, property);
+        SIDProperty = addDProp(BL.LM.baseGroup, "SIDProperty", getString("logics.property.sid"), propertySIDValueClass, property);
+        loggableProperty = addDProp(BL.LM.baseGroup, "loggableProperty", getString("logics.property.loggable"), LogicalClass.instance, property);
+        userLoggableProperty = addDProp(BL.LM.baseGroup, "userLoggableProperty", getString("logics.property.user.loggable"), LogicalClass.instance, property);
+        storedProperty = addDProp(BL.LM.baseGroup, "storedProperty", getString("logics.property.stored"), LogicalClass.instance, property);
+        isSetNotNullProperty = addDProp(BL.LM.baseGroup, "isSetNotNullProperty", getString("logics.property.set.not.null"), LogicalClass.instance, property);
+        signatureProperty = addDProp(BL.LM.baseGroup, "signatureProperty", getString("logics.property.signature"), propertySignatureValueClass, property);
+        returnProperty = addDProp(BL.LM.baseGroup, "returnProperty", getString("logics.property.return"), propertySignatureValueClass, property);
+        classProperty = addDProp(BL.LM.baseGroup, "classProperty", getString("logics.property.class"), propertySignatureValueClass, property);
+        captionProperty = addDProp(BL.LM.baseGroup, "captionProperty", getString("logics.property.caption"), propertyCaptionValueClass, property);
         SIDToProperty = addAGProp("SIDToProperty", getString("logics.property"), SIDProperty);
 
         // ------- Логика представлений --------- //
 
         // Навигатор
-        navigatorElementSID = addDProp(BL.LM.baseGroup, "navigatorElementSID", getString("logics.forms.code"), BL.LM.navigatorElementSIDClass, navigatorElement);
+        navigatorElementSID = addDProp(BL.LM.baseGroup, "navigatorElementSID", getString("logics.forms.code"), navigatorElementSIDClass, navigatorElement);
         numberNavigatorElement = addDProp(BL.LM.baseGroup, "numberNavigatorElement", getString("logics.number"), IntegerClass.instance, navigatorElement);
         SIDToNavigatorElement = addAGProp("SIDToNavigatorElement", getString("logics.forms.form"), navigatorElementSID);
         parentNavigatorElement = addDProp("parentNavigatorElement", getString("logics.forms.parent.form"), navigatorElement, navigatorElement);
@@ -274,14 +280,14 @@ public class ReflectionLogicsModule<T extends BusinessLogics<T>> extends LogicsM
 
         // ----- Формы ---- //
         // Группа объектов
-        groupObjectSID = addDProp(BL.LM.baseGroup, "groupObjectSID", getString("logics.group.object.sid"), BL.LM.propertySIDValueClass, BL.securityLM.groupObject);
+        groupObjectSID = addDProp(BL.LM.baseGroup, "groupObjectSID", getString("logics.group.object.sid"), propertySIDValueClass, BL.securityLM.groupObject);
         navigatorElementGroupObject = addDProp(BL.LM.baseGroup, "navigatorElementGroupObject", getString("logics.navigator.element"), navigatorElement, BL.securityLM.groupObject);
         sidNavigatorElementGroupObject = addJProp(BL.LM.baseGroup, "sidNavigatorElementGroupObject", navigatorElementSID, navigatorElementGroupObject, 1);
         SIDNavigatorElementSIDGroupObjectToGroupObject = addAGProp(BL.LM.baseGroup, "SIDToGroupObject", getString("logics.group.object"), groupObjectSID, sidNavigatorElementGroupObject);
 
         // PropertyDraw
-        propertyDrawSID = addDProp(BL.LM.baseGroup, "propertyDrawSID", getString("logics.forms.property.draw.code"), BL.LM.propertySIDValueClass, propertyDraw);
-        captionPropertyDraw = addDProp(BL.LM.baseGroup, "captionPropertyDraw", getString("logics.forms.property.draw.caption"), BL.LM.propertyCaptionValueClass, propertyDraw);
+        propertyDrawSID = addDProp(BL.LM.baseGroup, "propertyDrawSID", getString("logics.forms.property.draw.code"), propertySIDValueClass, propertyDraw);
+        captionPropertyDraw = addDProp(BL.LM.baseGroup, "captionPropertyDraw", getString("logics.forms.property.draw.caption"), propertyCaptionValueClass, propertyDraw);
         formPropertyDraw = addDProp(BL.LM.baseGroup, "formPropertyDraw", getString("logics.forms.form"), form, propertyDraw);
         groupObjectPropertyDraw = addDProp(BL.LM.baseGroup, "groupObjectPropertyDraw", getString("logics.group.object"), BL.securityLM.groupObject, propertyDraw);
         SIDToPropertyDraw = addAGProp(BL.LM.baseGroup, "SIDToPropertyDraw", getString("logics.property.draw"), formPropertyDraw, propertyDrawSID);
@@ -377,10 +383,6 @@ public class ReflectionLogicsModule<T extends BusinessLogics<T>> extends LogicsM
         addFormEntity(new PhysicalModelFormEntity(BL.LM.configuration, "physicalModelForm"));
         addFormEntity(new FormsFormEntity(BL.LM.configuration, "formsForm"));
         addFormEntity(new PropertiesFormEntity(BL.LM.configuration, "propertiesForm"));
-        addFormEntity(new NotificationFormEntity(BL.LM.configuration, "notification"));
-        addFormEntity(new ScheduledTaskFormEntity(BL.LM.configuration, "scheduledTask"));
-
-
     }
     
     @Override
@@ -559,10 +561,10 @@ public class ReflectionLogicsModule<T extends BusinessLogics<T>> extends LogicsM
         protected PropertiesFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, getString("logics.tables.properties"));
 
-            objProperties = addSingleGroupObject(BL.LM.property, true);
+            objProperties = addSingleGroupObject(property, true);
 
             objTreeProps = addSingleGroupObject(abstractGroup, true);
-            objProps = addSingleGroupObject(BL.LM.property, true);
+            objProps = addSingleGroupObject(property, true);
 
             objTreeProps.groupTo.setIsParents(addPropertyObject(parentAbstractGroup, objTreeProps));
             treePropertiesObject = addTreeGroupObject(objTreeProps.groupTo, objProps.groupTo);
@@ -606,128 +608,4 @@ public class ReflectionLogicsModule<T extends BusinessLogics<T>> extends LogicsM
             return design;
         }
     }
-
-    public class NotificationFormEntity extends FormEntity {
-
-        private ObjectEntity objNotification;
-        private ObjectEntity objProperty;
-
-        public NotificationFormEntity(NavigatorElement parent, String sID) {
-            super(parent, sID, getString("logics.notification.notifications"));
-
-            addPropertyDraw(new LP[]{BL.LM.smtpHost, BL.LM.smtpPort, BL.LM.nameEncryptedConnectionType, BL.LM.fromAddress, BL.LM.emailAccount, BL.LM.emailPassword,
-                    BL.LM.emailBlindCarbonCopy, BL.LM.disableEmail});
-
-            objNotification = addSingleGroupObject(BL.LM.notification, getString("logics.notification"));
-            objProperty = addSingleGroupObject(BL.LM.property, getString("logics.property.properties"));
-
-            addPropertyDraw(BL.LM.inNotificationProperty, objNotification, objProperty);
-            addPropertyDraw(objNotification, BL.LM.subjectNotification, BL.LM.textNotification, BL.LM.emailFromNotification, BL.LM.emailToNotification, BL.LM.emailToCCNotification, BL.LM.emailToBCNotification, BL.LM.isEventNotification);
-            addObjectActions(this, objNotification);
-            addPropertyDraw(objProperty, captionProperty, SIDProperty);
-            setForceViewType(BL.LM.textNotification, ClassViewType.PANEL);
-            setEditType(captionProperty, PropertyEditType.READONLY);
-            setEditType(SIDProperty, PropertyEditType.READONLY);
-
-            RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
-            filterGroup.addFilter(
-                    new RegularFilterEntity(genID(),
-                            new NotNullFilterEntity(addPropertyObject(BL.LM.inNotificationProperty, objNotification, objProperty)),
-                            getString("logics.only.checked"),
-                            KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)
-                    ), true);
-            addRegularFilterGroup(filterGroup);
-        }
-
-        @Override
-        public FormView createDefaultRichDesign() {
-            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
-
-            ContainerView textContainer = design.createContainer(getString("logics.notification.text"));
-            textContainer.constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
-            textContainer.add(design.get(getPropertyDraw(BL.LM.textNotification, objNotification)));
-            textContainer.constraints.fillHorizontal = 1.0;
-            textContainer.constraints.fillVertical = 1.0;
-
-            PropertyDrawView textView = design.get(getPropertyDraw(BL.LM.textNotification, objNotification));
-            textView.constraints.fillHorizontal = 1.0;
-            textView.preferredSize = new Dimension(-1, 300);
-            textView.panelLabelAbove = true;
-
-            ContainerView specContainer = design.createContainer();
-            design.getMainContainer().addAfter(specContainer, design.getGroupObjectContainer(objNotification.groupTo));
-            specContainer.add(design.getGroupObjectContainer(objProperty.groupTo));
-            specContainer.add(textContainer);
-            specContainer.type = ContainerType.TABBED_PANE;
-
-            addDefaultOrder(getPropertyDraw(SIDProperty, objProperty), true);
-            return design;
-        }
-    }
-
-    public class ScheduledTaskFormEntity extends FormEntity {
-
-        private ObjectEntity objScheduledTask;
-        private ObjectEntity objProperty;
-        private ObjectEntity objScheduledTaskLog;
-        private ObjectEntity objScheduledClientTaskLog;
-
-        public ScheduledTaskFormEntity(NavigatorElement parent, String sID) {
-            super(parent, sID, getString("logics.scheduled.task.tasks"));
-
-            objScheduledTask = addSingleGroupObject(BL.LM.scheduledTask, getString("logics.scheduled.task"));
-            objProperty = addSingleGroupObject(BL.LM.property, getString("logics.property.properties"));
-            objScheduledTaskLog = addSingleGroupObject(BL.LM.scheduledTaskLog, getString("logics.scheduled.task.log"));
-            objScheduledClientTaskLog = addSingleGroupObject(BL.LM.scheduledClientTaskLog, getString("logics.scheduled.task.log.client"));
-
-            addPropertyDraw(objScheduledTask, objProperty, BL.LM.inScheduledTaskProperty, BL.LM.activeScheduledTaskProperty, BL.LM.orderScheduledTaskProperty);
-            addPropertyDraw(objScheduledTask, BL.LM.activeScheduledTask, BL.LM.nameScheduledTask, BL.LM.startDateScheduledTask, BL.LM.periodScheduledTask, BL.LM.runAtStartScheduledTask);
-            addObjectActions(this, objScheduledTask);
-            addPropertyDraw(objProperty, captionProperty, SIDProperty, classProperty, returnProperty);
-            addPropertyDraw(objScheduledTaskLog, BL.LM.propertyScheduledTaskLog, BL.LM.resultScheduledTaskLog, BL.LM.dateStartScheduledTaskLog, BL.LM.dateFinishScheduledTaskLog);
-            addPropertyDraw(objScheduledClientTaskLog, BL.LM.messageScheduledClientTaskLog);
-            setEditType(captionProperty, PropertyEditType.READONLY);
-            setEditType(SIDProperty, PropertyEditType.READONLY);
-            setEditType(classProperty, PropertyEditType.READONLY);
-            setEditType(returnProperty, PropertyEditType.READONLY);
-            setEditType(objScheduledTaskLog, PropertyEditType.READONLY);
-            setEditType(objScheduledClientTaskLog, PropertyEditType.READONLY);
-
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(BL.LM.scheduledTaskScheduledTaskLog, objScheduledTaskLog), Compare.EQUALS, objScheduledTask));
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(BL.LM.scheduledTaskLogScheduledClientTaskLog, objScheduledClientTaskLog), Compare.EQUALS, objScheduledTaskLog));
-            RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
-            filterGroup.addFilter(
-                    new RegularFilterEntity(genID(),
-                            new NotNullFilterEntity(addPropertyObject(BL.LM.inScheduledTaskProperty, objScheduledTask, objProperty)),
-                            getString("logics.only.checked"),
-                            KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)
-                    ), true);
-            addRegularFilterGroup(filterGroup);
-        }
-
-        @Override
-        public FormView createDefaultRichDesign() {
-            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
-
-            ContainerView specContainer = design.createContainer();
-            ContainerView bottomContainer = design.createContainer();
-            bottomContainer.add(design.getGroupObjectContainer(objProperty.groupTo));
-
-            ContainerView logContainer = design.createContainer("Лог");
-            logContainer.add(design.getGroupObjectContainer(objScheduledTaskLog.groupTo));
-            logContainer.add(design.getGroupObjectContainer(objScheduledClientTaskLog.groupTo));
-
-            bottomContainer.add(logContainer);
-            bottomContainer.type = ContainerType.TABBED_PANE;
-
-            specContainer.add(design.getGroupObjectContainer(objScheduledTask.groupTo));
-            specContainer.add(bottomContainer);
-            specContainer.type = ContainerType.SPLIT_PANE_VERTICAL;
-
-            design.getMainContainer().add(0, specContainer);
-            return design;
-        }
-    }
-
-
 }

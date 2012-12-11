@@ -143,7 +143,7 @@ listRegisterListRegisterDetail (inputListRegisterDetail) = ABSTRACT inputListReg
 fullInputListRegister 'Реестр полный' (inputListRegister) = ABSTRACT BOOLEAN (inputListRegister);
 
 indexListRegisterDetail 'Номер строки' (inputListRegisterDetail) = ABSTRACT INTEGER (inputListRegisterDetail);
-skuListRegisterDetail  (inputListRegisterDetail) = ABSTRACT sku (inputListRegisterDetail) IN idGroup;
+skuListRegisterDetail  (inputListRegisterDetail) = ABSTRACT sku (inputListRegisterDetail);
 nameSkuListRegisterDetail 'Товар' (inputListRegisterDetail) = nameSku(skuListRegisterDetail(inputListRegisterDetail));
 idBarcodeSkuListRegisterDetail 'Штрих-код' (inputListRegisterDetail) = idBarcodeSku(skuListRegisterDetail(inputListRegisterDetail));
 shortNameUOMSkuListRegisterDetail 'Ед. изм.' (inputListRegisterDetail) = shortNameUOMSku(skuListRegisterDetail(inputListRegisterDetail));
@@ -295,7 +295,7 @@ DESIGN inputListRegisters FROM DEFAULT {
 GROUP committeeGroup 'Комиссия' : publicGroup;
 
 META defineDocumentHeaderListRegister(object)
-    registerCommittee###object (object) = DATA registerCommittee(object) IN idGroup;
+    registerCommittee###object (object) = DATA registerCommittee(object);
 
     nameRegisterCommittee###object 'Комиссия для реестра цен' (object) = commonName(registerCommittee###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
     registerCommittee###object (object) <- registerCommitteeDepartmentStore(departmentStore###object(object))

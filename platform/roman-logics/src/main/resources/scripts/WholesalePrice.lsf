@@ -16,7 +16,7 @@ TABLE wholesalePriceDocumentArticle (wholesalePriceDocument, article);
 @defineDocumentHeaderTime(wholesalePriceDocument);
 @defineDocumentHeaderCurrency(wholesalePriceDocument);
 
-declarationWholesalePriceDocument 'Декларация оптового прайса (ИД)' = DATA declaration(wholesalePriceDocument) IN idGroup;
+declarationWholesalePriceDocument 'Декларация оптового прайса (ИД)' = DATA declaration(wholesalePriceDocument);
 
 quantityWholesalePriceSetDocumentDeclaration (declaration) = GROUP SUM 1 IF declarationWholesalePriceDocument(wholesalePriceDocument)
                                                            BY declarationWholesalePriceDocument(wholesalePriceDocument);

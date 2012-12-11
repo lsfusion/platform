@@ -42,7 +42,7 @@ CLASS ABSTRACT discountSkuGroup 'Дисконтная группа товаро�
 discountCardSeriesNumber (discountCard) = GROUP UNIQUE discountCard BY seriesNumberObject (discountCard) WHERE discountCard IS discountCard;
 discountCardNumber (discountCard) = GROUP MAX discountCard BY numberObject(discountCard) IF discountCard IS discountCard;
 
-clientDiscountCard (discountCard) = DATA client(discountCard) IN idGroup;
+clientDiscountCard (discountCard) = DATA client(discountCard);
 nameClientDiscountCard 'Держатель дисконтной карты' (discountCard) = commonName(clientDiscountCard(discountCard)) IN recognizeGroup;
 
 GROUP discountCardDateGroup 'Срок действия' : baseGroup;
@@ -151,7 +151,7 @@ TABLE promotion (promotion);
 
 @defineNumeratedObjectDefault(promotion, 'Нумератор для акций', 'АК');
 
-promotionGroupPromotion (promotion) = DATA promotionGroup(promotion) IN idGroup AUTOSET NOT NULL;
+promotionGroupPromotion (promotion) = DATA promotionGroup(promotion) AUTOSET NOT NULL;
 namePromotionGroupPromotion 'Группа акций' (promotion) = name(promotionGroupPromotion(promotion)) IN baseGroup;
 
 userOrderPromotion 'Порядок' (promotion) = DATA INTEGER (promotion);

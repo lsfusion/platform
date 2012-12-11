@@ -77,19 +77,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public ConcreteCustomClass multiLanguageNamed;
     public ConcreteCustomClass customUser;
     public ConcreteCustomClass computer;
-    public ConcreteCustomClass property;
-    public ConcreteCustomClass notification;
-    public ConcreteCustomClass scheduledTask;
-    public ConcreteCustomClass scheduledTaskLog;
-    public ConcreteCustomClass scheduledClientTaskLog;
     public ConcreteCustomClass dictionary;
     public ConcreteCustomClass dictionaryEntry;
-
-    public AbstractCustomClass barcodeObject;
-
-    public AbstractCustomClass emailObject;
-
-    public StaticCustomClass encryptedConnectionTypeStatus;
 
     public StaticCustomClass month;
     public StaticCustomClass DOW;
@@ -101,18 +90,14 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public AbstractGroup publicGroup;
     public AbstractGroup privateGroup;
     public AbstractGroup baseGroup;
-    public AbstractGroup idGroup;
     public AbstractGroup actionGroup;
     public AbstractGroup sessionGroup;
     public AbstractGroup recognizeGroup;
-    public AbstractGroup emailGroup;
-    public AbstractGroup historyGroup;
 
     // properties
     public LCP groeq2;
     public LCP lsoeq2;
     public LCP greater2, less2;
-    protected LCP betweenDate;
     public LCP object1, and1, andNot1;
     public LCP equals2, diff2;
     public LCP upper;
@@ -151,10 +136,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP vzero;
     public LCP vnull;
 
-    public LCP minusInteger;
     public LCP minus;
-
-    public LCP dumb2;
 
     public LCP<?> name;
 
@@ -170,7 +152,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     public LAP seek;
 
-    protected LCP transactionLater;
     public LCP currentDate;
     public LCP currentMonth;
     public LCP currentYear;
@@ -200,13 +181,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP currentUserName;
     public LCP<?> loginToUser;
 
-    public LCP email;
-    public LCP emailToObject;
-    public LAP generateLoginPassword;
-
-    public LAP emailUserPassUser;
-
-
     public LCP hostname;
 
     public LAP delete;
@@ -224,52 +198,10 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP classSID;
     public LCP dataName;
 
-    public LCP isEventNotification;
-    public LCP emailFromNotification;
-    public LCP emailToNotification;
-    public LCP emailToCCNotification;
-    public LCP emailToBCNotification;
-    public LCP textNotification;
-    public LCP subjectNotification;
-    public LCP inNotificationProperty;
-    public LCP nameScheduledTask;
-    public LCP runAtStartScheduledTask;
-    public LCP startDateScheduledTask;
-    public LCP periodScheduledTask;
-    public LCP activeScheduledTask;
-    public LCP inScheduledTaskProperty;
-    public LCP activeScheduledTaskProperty;
-    public LCP orderScheduledTaskProperty;
-    public LCP propertyScheduledTaskLog;
-    public LCP resultScheduledTaskLog;
-    public LCP dateStartScheduledTaskLog;
-    public LCP dateFinishScheduledTaskLog;
-    public LCP scheduledTaskScheduledTaskLog;
-    public LCP currentScheduledTaskLogScheduledTask;
-    public LCP messageScheduledClientTaskLog;
-    public LCP scheduledTaskLogScheduledClientTaskLog;
-
-    public LCP customID;
-    public LCP stringID;
-    public LCP integerID;
-    public LCP dateID;
-
-    public LCP encryptedConnectionType;
-    public LCP nameEncryptedConnectionType;
-    public LCP smtpHost;
-    public LCP smtpPort;
-    public LCP emailAccount;
-    public LCP emailPassword;
-    public LCP emailBlindCarbonCopy;
-    public LCP fromAddress;
-    public LCP disableEmail;
-
     public LCP defaultBackgroundColor;
     public LCP defaultOverrideBackgroundColor;
     public LCP defaultForegroundColor;
     public LCP defaultOverrideForegroundColor;
-
-    protected LCP nameToObject;
 
     protected LCP termDictionary;
     protected LCP translationDictionary;
@@ -280,34 +212,14 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP translationDictionaryTerm;
     public LCP insensitiveTranslationDictionaryTerm;
 
-    private LCP selectRoleForms;
-
-    private LAP checkAggregationsAction;
-    private LAP recalculateAction;
-    private LAP recalculateFollowsAction;
-    private LAP analyzeDBAction;
-    private LAP packAction;
-    private LAP serviceDBAction;
-
     public LCP dumb1;
 
     public SelectionPropertySet selection;
     protected CompositeNamePropertySet compositeName;
     public ObjectValuePropertySet objectValue;
 
-
     public TableFactory tableFactory;
 
-    public final StringClass navigatorElementSIDClass = StringClass.get(50);
-    public final StringClass navigatorElementCaptionClass = StringClass.get(250);
-
-    public final StringClass propertySIDValueClass = StringClass.get(100);
-    public final StringClass propertyCaptionValueClass = StringClass.get(250);
-    public final StringClass propertySignatureValueClass = StringClass.get(100);
-    public final LogicalClass propertyLoggableValueClass = LogicalClass.instance;
-    public final LogicalClass propertyStoredValueClass = LogicalClass.instance;
-    public final LogicalClass propertyIsSetNotNullValueClass = LogicalClass.instance;
-    public final StringClass loginValueClass = StringClass.get(100);
     public List<LP> lproperties = new ArrayList<LP>();
 
     // счетчик идентификаторов
@@ -351,28 +263,15 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public void initClasses() {
         baseClass = addBaseClass("object", getString("logics.object"));
 
-        barcodeObject = addAbstractClass("barcodeObject", getString("logics.object.barcoded.object"), baseClass);
-
-        emailObject = addAbstractClass("emailObject", getString("logics.object.with.email"), baseClass);
-
-        encryptedConnectionTypeStatus = addStaticClass("encryptedConnectionTypeStatus", getString("logics.connection.type.status"),
-                new String[]{"SSL", "TLS"},
-                new String[]{"SSL", "TLS"});
-
-        contact = addAbstractClass("contact", getString("logics.user.contact"), emailObject);
+        contact = addAbstractClass("contact", getString("logics.user.contact"), baseClass);
         user = addAbstractClass("user", getString("logics.user"), baseClass);
         systemUser = addConcreteClass("systemUser", getString("logics.user.system.user"), user);
 
         session = addConcreteClass("session", getString("logics.session"), baseClass);
 
-        customUser = addConcreteClass("customUser", getString("logics.user.ordinary.user"), BL.LM.user, BL.LM.contact, BL.LM.barcodeObject);
+        customUser = addConcreteClass("customUser", getString("logics.user.ordinary.user"), BL.LM.user, BL.LM.contact/*, BL.LM.barcodeObject*/);
         computer = addConcreteClass("computer", getString("logics.workplace"), baseClass);
 
-        property = addConcreteClass("property", getString("logics.property"), baseClass);
-        notification = addConcreteClass("notification", getString("logics.notification"), baseClass);
-        scheduledTask = addConcreteClass("scheduledTask", getString("logics.scheduled.task"), baseClass);
-        scheduledTaskLog = addConcreteClass("scheduledTaskLog", getString("logics.scheduled.task.log"), baseClass);
-        scheduledClientTaskLog = addConcreteClass("scheduledClientTaskLog", getString("logics.scheduled.task.log.client"), baseClass);
         dictionary = addConcreteClass("dictionary", getString("logics.dictionary"), baseClass.named);
         dictionaryEntry = addConcreteClass("dictionaryEntry", getString("logics.dictionary.entries"), baseClass);
 
@@ -399,10 +298,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         actionGroup = addAbstractGroup("actionGroup", getString("logics.groups.actiongroup"), rootGroup, false);
         privateGroup = addAbstractGroup("privateGroup", getString("logics.groups.privategroup"), rootGroup, false);
         baseGroup = addAbstractGroup("baseGroup", getString("logics.groups.basegroup"), publicGroup, false);
-        idGroup = addAbstractGroup("idGroup", getString("logics.groups.idgroup"), publicGroup, false);
         recognizeGroup = addAbstractGroup("recognizeGroup", getString("logics.groups.recognizegroup"), baseGroup, false);
-        emailGroup = addAbstractGroup("emailGroup", getString("logics.groups.emailgroup"), rootGroup, true);
-        historyGroup = addAbstractGroup("historyGroup", getString("logics.groups.historygroup"), rootGroup, true);
 
         initBaseGroupAliases();
     }
@@ -422,26 +318,14 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         addTable("contact", contact);
         addTable("loginSID", StringClass.get(30), StringClass.get(30));
         addTable("objectObjectDate", baseClass, baseClass, DateClass.instance);
-        addTable("property", property);
-
-        addTable("notification", notification);
-        addTable("scheduledTask", scheduledTask);
-        addTable("scheduledTaskLog", scheduledTaskLog);
-        addTable("scheduledClientTaskLog", scheduledClientTaskLog);
         addTable("named", baseClass.named);
         addTable("sidClass", baseClass.sidClass);
-        addTable("barcodeObject", barcodeObject);
-        addTable("emailObject", emailObject);
         addTable("dictionary", dictionary);
         addTable("dictionaryEntry", dictionaryEntry);
 
         addTable("session", session);
 
         addTable("sessionObject", session, baseClass);
-
-        addTable("notificationProperty", notification, property);
-        addTable("scheduledTaskProperty", scheduledTask, property);
-        addTable("scheduledTaskScheduledTaskLog", scheduledTask, scheduledTaskLog);
 
         addTable("month", month);
         addTable("dow", DOW);
@@ -654,78 +538,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         restartServerAction = addIfAProp(getString("logics.server.stop"), true, isServerRestarting, addRestartActionProp());
         runGarbageCollector = addGarbageCollectorActionProp();
         cancelRestartServerAction = addIfAProp(getString("logics.server.cancel.stop"), isServerRestarting, addCancelRestartActionProp());
-
-        // Управление сервером базы данных
-        // todo : правильно разрисовать контейнеры
-        checkAggregationsAction = addProperty(null, new LAP(new CheckAggregationsActionProperty("checkAggregationsAction", getString("logics.check.aggregations"))));
-        recalculateAction = addProperty(null, new LAP(new RecalculateActionProperty("recalculateAction", getString("logics.recalculate.aggregations"))));
-        recalculateFollowsAction = addProperty(null, new LAP(new RecalculateFollowsActionProperty("recalculateFollowsAction", getString("logics.recalculate.follows"))));
-        analyzeDBAction = addProperty(null, new LAP(new AnalyzeDBActionProperty("analyzeDBAction", getString("logics.vacuum.analyze"))));
-        packAction = addProperty(null, new LAP(new PackActionProperty("packAction", getString("logics.tables.pack"))));
-        serviceDBAction = addProperty(null, new LAP(new ServiceDBActionProperty("serviceDBAction", getString("logics.service.db"))));
-
-        // ReflectionLogLogicsModule
-
-
-        // EmailLogicsModule
-        // ------- Управление почтой ------ //
-        email = addDProp(baseGroup, "email", getString("logics.email"), StringClass.get(50), contact);
-        email.setRegexp("^[-a-zA-Z0-9!#$%&'*+/=?^_`{|}~]+(?:\\.[-a-zA-Z0-9!#$%&'*+/=?^_`{|}~]+)*@(?:[a-zA-Z0-9]([-a-zA-Z0-9]{0,61}[a-zA-Z0-9])?\\.)*(?:aero|arpa|asia|biz|cat|com|coop|edu|gov|info|int|jobs|mil|mobi|museum|name|net|org|pro|tel|travel|[a-zA-Z][a-zA-Z])$");
-        email.setRegexpMessage("<html>Неверный формат e-mail</html>");
-
-        emailToObject = addAGProp("emailToObject", getString("logics.email.to.object"), email);
-
-        // Настройки почтового сервера
-        encryptedConnectionType = addDProp(emailGroup, "encryptedConnectionType", getString("logics.connection.type.status"), encryptedConnectionTypeStatus);
-        nameEncryptedConnectionType = addJProp(emailGroup, "nameEncryptedConnectionType", getString("logics.connection.type.status"), baseLM.name, encryptedConnectionType);
-        nameEncryptedConnectionType.setPreferredCharWidth(3);
-
-        smtpHost = addDProp(emailGroup, "smtpHost", getString("logics.host.smtphost"), StringClass.get(50));
-        smtpPort = addDProp(emailGroup, "smtpPort", getString("logics.host.smtpport"), StringClass.get(10));
-
-        emailAccount = addDProp(emailGroup, "emailAccount", getString("logics.email.accountname"), StringClass.get(50));
-        emailPassword = addDProp(emailGroup, "emailPassword", getString("logics.email.password"), StringClass.get(50));
-
-        emailBlindCarbonCopy = addDProp(emailGroup, "emailBlindCarbonCopy", getString("logics.email.copy.bcc"), StringClass.get(50));
-        fromAddress = addDProp(emailGroup, "fromAddress", getString("logics.email.sender"), StringClass.get(50));
-
-        disableEmail = addDProp(emailGroup, "disableEmail", getString("logics.email.disable.email.sending"), LogicalClass.instance);
-
-        // Пользователи
-        generateLoginPassword = addAProp(actionGroup, new GenerateLoginPasswordActionProperty(email, userLogin, userPassword, customUser));
-
-        emailUserPassUser = addEAProp(getString("logics.user.password.reminder"), customUser);
-        addEARecipients(emailUserPassUser, email, 1);
-
-        // Уведомления
-        isEventNotification = addDProp(baseGroup, "isDerivedChangeNotification", getString("logics.notification.for.any.change"), LogicalClass.instance, notification);
-        emailFromNotification = addDProp(baseGroup, "emailFromNotification", getString("logics.notification.sender.address"), StringClass.get(50), notification);
-        emailToNotification = addDProp(baseGroup, "emailToNotification", getString("logics.notification.recipient.address"), StringClass.get(50), notification);
-        emailToCCNotification = addDProp(baseGroup, "emailToCCNotification", getString("logics.notification.copy"), StringClass.get(50), notification);
-        emailToBCNotification = addDProp(baseGroup, "emailToBCNotification", getString("logics.notification.blind.copy"), StringClass.get(50), notification);
-        textNotification = addDProp(baseGroup, "textNotification", getString("logics.notification.text"), TextClass.instance, notification);
-        subjectNotification = addDProp(baseGroup, "subjectNotification", getString("logics.notification.topic"), StringClass.get(100), notification);
-        inNotificationProperty = addDProp(baseGroup, "inNotificationProperty", getString("logics.notification.enable"), LogicalClass.instance, notification, baseLM.property);
-
-        // SchedulerLogicsModule
-        // ----- Планировщик ----------- //
-        nameScheduledTask = addDProp(baseGroup, "nameScheduledTask", getString("logics.scheduled.task.name"), StringClass.get(100), scheduledTask);
-        runAtStartScheduledTask = addDProp(baseGroup, "runAtStartScheduledTask", getString("logics.scheduled.task.run.at.start"), LogicalClass.instance, scheduledTask);
-        startDateScheduledTask = addDProp(baseGroup, "startDateScheduledTask", getString("logics.scheduled.task.start.date"), DateTimeClass.instance, scheduledTask);
-        periodScheduledTask = addDProp(baseGroup, "periodScheduledTask", getString("logics.scheduled.task.period"), IntegerClass.instance, scheduledTask);
-        activeScheduledTask = addDProp(baseGroup, "activeScheduledTask", getString("logics.scheduled.task.active"), LogicalClass.instance, scheduledTask);
-        inScheduledTaskProperty = addDProp(baseGroup, "inScheduledTaskProperty", getString("logics.scheduled.task.enable"), LogicalClass.instance, scheduledTask, baseLM.property);
-        activeScheduledTaskProperty = addDProp(baseGroup, "activeScheduledTaskProperty", getString("logics.scheduled.task.active"), LogicalClass.instance, scheduledTask, baseLM.property);
-        orderScheduledTaskProperty = addDProp(baseGroup, "orderScheduledTaskProperty", getString("logics.scheduled.task.order"), IntegerClass.instance, scheduledTask, baseLM.property);
-
-        resultScheduledTaskLog = addDProp(baseGroup, "resultScheduledTaskLog", getString("logics.scheduled.task.result"), StringClass.get(200), scheduledTaskLog);
-        propertyScheduledTaskLog = addDProp(baseGroup, "propertyScheduledTaskLog", getString("logics.scheduled.task.property"), StringClass.get(200), scheduledTaskLog);
-        dateStartScheduledTaskLog = addDProp(baseGroup, "dateStartScheduledTaskLog", getString("logics.scheduled.task.date.start"), DateTimeClass.instance, scheduledTaskLog);
-        dateFinishScheduledTaskLog = addDProp(baseGroup, "dateFinishScheduledTaskLog", getString("logics.scheduled.task.date.finish"), DateTimeClass.instance, scheduledTaskLog);
-        scheduledTaskScheduledTaskLog = addDProp(baseGroup, "scheduledTaskScheduledTaskLog", getString("logics.scheduled.task"), scheduledTask, scheduledTaskLog);
-        currentScheduledTaskLogScheduledTask = addDProp(baseGroup, "currentScheduledTaskLogScheduledTask", getString("logics.scheduled.task.log.current"), IntegerClass.instance, scheduledTask);
-        scheduledTaskLogScheduledClientTaskLog = addDProp(baseGroup, "scheduledTaskLogScheduledClientTaskLog", getString("logics.scheduled.task.log"), scheduledTaskLog, scheduledClientTaskLog);
-        messageScheduledClientTaskLog = addDProp(baseGroup, "messageScheduledClientTaskLog", getString("logics.scheduled.task.log.message"), StringClass.get(200), scheduledClientTaskLog);
 
         // Настройка форм
         defaultBackgroundColor = addDProp("defaultBackgroundColor", getString("logics.default.background.color"), ColorClass.instance);
@@ -1107,12 +919,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         security = addNavigatorElement(administration, "security", getString("logics.administration.access"));
 
         configuration = addNavigatorElement(administration, "configuration", getString("logics.administration.config"));
-        addFormEntity(new AdminFormEntity(configuration, "adminForm"));
 
         systemEvents = addNavigatorElement(administration, "systemEvents", getString("logics.administration.events"));
-
-
-        addFormEntity(new RemindUserPassFormEntity(null, "remindPasswordLetter"));
     }
 
     public void initClassForms() {
@@ -1240,116 +1048,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
     }
 
-    private class CheckAggregationsActionProperty extends AdminActionProperty {
-        private CheckAggregationsActionProperty(String sID, String caption) {
-            super(sID, caption, new ValueClass[]{});
-        }
-
-        @Override
-        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-            SQLSession sqlSession = context.getSession().sql;
-
-            sqlSession.startTransaction();
-            String message = BL.checkAggregations(sqlSession);
-            sqlSession.commitTransaction();
-
-            context.delayUserInterfaction(new MessageClientAction(getString("logics.check.aggregation.was.completed") + '\n' + '\n' + message, getString("logics.checking.aggregations"), true));
-        }
-    }
-
-    private class RecalculateActionProperty extends AdminActionProperty {
-        private RecalculateActionProperty(String sID, String caption) {
-            super(sID, caption, new ValueClass[]{});
-        }
-
-        @Override
-        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-            SQLSession sqlSession = context.getSession().sql;
-
-            sqlSession.startTransaction();
-            BL.recalculateAggregations(sqlSession, BL.getAggregateStoredProperties());
-            sqlSession.commitTransaction();
-
-            context.delayUserInterfaction(new MessageClientAction(getString("logics.recalculation.was.completed"), getString("logics.recalculation.aggregations")));
-        }
-    }
-
-    private class PackActionProperty extends AdminActionProperty {
-        private PackActionProperty(String sID, String caption) {
-            super(sID, caption, new ValueClass[]{});
-        }
-
-        @Override
-        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-            SQLSession sqlSession = context.getSession().sql;
-
-            sqlSession.startTransaction();
-            BL.packTables(sqlSession, tableFactory.getImplementTables());
-            sqlSession.commitTransaction();
-
-            context.delayUserInterfaction(new MessageClientAction(getString("logics.tables.packing.completed"), getString("logics.tables.packing")));
-        }
-    }
-
-    private class RecalculateFollowsActionProperty extends AdminActionProperty {
-        private RecalculateFollowsActionProperty(String sID, String caption) {
-            super(sID, caption, new ValueClass[]{});
-        }
-
-        @Override
-        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-            DataSession session = BL.createSession();
-            BL.recalculateFollows(session);
-            session.apply(BL);
-            session.close();
-
-            context.delayUserInterfaction(new MessageClientAction(getString("logics.recalculation.was.completed"), getString("logics.recalculation.follows")));
-        }
-    }
-
-    private class AnalyzeDBActionProperty extends AdminActionProperty {
-        private AnalyzeDBActionProperty(String sID, String caption) {
-            super(sID, caption, new ValueClass[]{});
-        }
-
-        @Override
-        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-            DataSession session = BL.createSession();
-            BL.analyzeDB(session.sql);
-            session.apply(BL);
-            session.close();
-
-            context.delayUserInterfaction(new MessageClientAction(getString("logics.vacuum.analyze.was.completed"), getString("logics.vacuum.analyze")));
-        }
-    }
-
-    private class ServiceDBActionProperty extends AdminActionProperty {
-        private ServiceDBActionProperty(String sID, String caption) {
-            super(sID, caption, new ValueClass[]{});
-        }
-
-        @Override
-        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-            SQLSession sqlSession = context.getSession().sql;
-
-            sqlSession.startTransaction();
-            BL.recalculateAggregations(sqlSession, BL.getAggregateStoredProperties());
-            sqlSession.commitTransaction();
-
-            BL.recalculateFollows(context.getSession());
-
-            sqlSession.startTransaction();
-            BL.packTables(sqlSession, tableFactory.getImplementTables());
-            sqlSession.commitTransaction();
-
-            BL.analyzeDB(sqlSession);
-
-            BL.recalculateStats(context.getSession());
-            context.getSession().apply(BL);
-
-            context.delayUserInterfaction(new MessageClientAction(getString("logics.service.db.completed"), getString("logics.service.db")));
-        }
-    }
 
     //////////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////////
@@ -1476,31 +1174,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     private class MigrationDataFormEntity extends ApplicationFormEntity {
         private MigrationDataFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, getString("logics.application.migrationData"));
-        }
-    }
-
-    private class AdminFormEntity extends FormEntity {
-        private AdminFormEntity(NavigatorElement parent, String sID) {
-            super(parent, sID, getString("logics.global.parameters"));
-
-            addPropertyDraw(new LP[]{defaultBackgroundColor,
-                    defaultForegroundColor, restartServerAction, cancelRestartServerAction, checkAggregationsAction, recalculateAction,
-                    recalculateFollowsAction, packAction, analyzeDBAction, serviceDBAction, runGarbageCollector});
-        }
-    }
-
-    private class RemindUserPassFormEntity extends FormEntity { // письмо пользователю о логине
-        private ObjectEntity objUser;
-
-        private RemindUserPassFormEntity(NavigatorElement parent, String sID) {
-            super(parent, sID, getString("logics.user.password.remind"), true);
-
-            objUser = addSingleGroupObject(1, "customUser", customUser, userLogin, userPassword, name);
-            objUser.groupTo.initClassView = ClassViewType.PANEL;
-
-            addInlineEAForm(emailUserPassUser, this, objUser, 1);
-
-            setEditType(PropertyEditType.READONLY);
         }
     }
 }

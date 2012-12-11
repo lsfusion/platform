@@ -14,7 +14,7 @@ REQUIRE System,
 // -------------------------------- Комиссия для инвентаризации ----------------------------------//
 CLASS inventoryCommittee 'Комиссия для инвентаризации' : committee;
 
-committeeInventory(inventory) = DATA inventoryCommittee (inventory) IN idGroup;
+committeeInventory(inventory) = DATA inventoryCommittee (inventory);
 nameCommitteeInventory 'Название комиссии' (inventory) = commonName(committeeInventory(inventory)) IN inventoryCommitteeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
 nameChairmanCommitteeInventory 'Председатель комиссии' (inventory) = nameChairmanCommittee(committeeInventory(inventory)) IN inventoryCommitteeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
 namePositionChairmanInventory 'Должность председателя' (inventory)  = namePositionChairmanCommittee(committeeInventory(inventory)) IN inventoryCommitteeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
@@ -140,7 +140,7 @@ TABLE listInventory (listInventory);
 @defineDocumentHeaderCurrency(listInventory);
 @deriveDocumentCurrency(listInventory, stock);
 
-inventoryListInventory = DATA inventory (listInventory) IN idGroup AUTOSET;
+inventoryListInventory = DATA inventory (listInventory);
 nameInventoryListInventory 'Название инвентаризации' (listInventory) = nameInventory(inventoryListInventory(listInventory));
 
 @defineDocumentDetailTime(inventory, listInventory);
@@ -155,7 +155,7 @@ isSkuListInventory (listInventory) = isSkuInventory(inventoryListInventory(listI
 // Комиссия инвентаризации
 GROUP inventoryCommitteeGroup 'Комиссия' : publicGroup;
 
-userCommitteeListInventory(listInventory) = DATA inventoryCommittee (listInventory) IN idGroup;
+userCommitteeListInventory(listInventory) = DATA inventoryCommittee (listInventory);
 committeeListInventory(listInventory) = UNION OVERRIDE committeeInventory(inventoryListInventory(listInventory)), userCommitteeListInventory(listInventory);
 nameCommitteeListInventory 'Название комиссии' (listInventory) = commonName(committeeListInventory(listInventory)) IN inventoryCommitteeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;
 nameChairmanCommitteeListInventory 'Председатель комиссии' (listInventory) = nameChairmanCommittee(committeeListInventory(listInventory)) IN inventoryCommitteeGroup MINCHARWIDTH 30 PREFCHARWIDTH 30;

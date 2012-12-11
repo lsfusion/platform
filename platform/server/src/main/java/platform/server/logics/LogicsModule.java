@@ -269,7 +269,6 @@ public abstract class LogicsModule {
         this.publicGroup = baseLM.publicGroup;
         this.privateGroup = baseLM.privateGroup;
         this.baseGroup = baseLM.baseGroup;
-        this.idGroup = baseLM.idGroup;
         this.actionGroup = baseLM.actionGroup;
         this.sessionGroup = baseLM.sessionGroup;
         this.recognizeGroup = baseLM.recognizeGroup;
@@ -804,11 +803,11 @@ public abstract class LogicsModule {
     }
 
     protected LAP addEAProp(LCP fromAddress, ValueClass... params) {
-        return addEAProp(null, fromAddress, baseLM.emailBlindCarbonCopy, params);
+        return addEAProp(null, fromAddress, baseLM.BL.emailLM.emailBlindCarbonCopy, params);
     }
 
     protected LAP addEAProp(String subject, ValueClass... params) {
-        return addEAProp(subject, baseLM.fromAddress, baseLM.emailBlindCarbonCopy, params);
+        return addEAProp(subject, baseLM.BL.emailLM.fromAddress, baseLM.BL.emailLM.emailBlindCarbonCopy, params);
     }
 
     protected LAP addEAProp(LCP fromAddress, LCP emailBlindCarbonCopy, ValueClass... params) {

@@ -156,7 +156,7 @@ CLASS orderPickingDetail 'Строка подбора товара по зака
 
 @defineNumeratedObjectDefault(orderPicking, 'Нумератор для подборок товара по заказу', 'ПЗ');
 
-innerOrderOrderPicking 'Подбор товара по заказу (ИД)' (orderPicking) = DATA innerOrder (orderPicking) IN idGroup AUTOSET NOT NULL DELETE;
+innerOrderOrderPicking 'Подбор товара по заказу (ИД)' (orderPicking) = DATA innerOrder (orderPicking) AUTOSET NOT NULL DELETE;
 //orderPickingInnerOrder 'Подбор заказа (ИД)' (innerOrder) = GROUP UNIQUE  orderPicking BY innerOrderOrderPicking(orderPicking);
 
 inInnerOrderOrderPicking (innerOrder, orderPicking) = innerOrderOrderPicking(orderPicking) == innerOrder;

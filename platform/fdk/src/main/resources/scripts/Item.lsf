@@ -61,7 +61,7 @@ TABLE item(item);
 TABLE itemDate (item, DATE);
 
 // Связь с группой товаров
-itemGroupItem = DATA itemGroup(item) IN idGroup AUTOSET;
+itemGroupItem = DATA itemGroup(item) AUTOSET;
 skuGroupSku(item) += itemGroupItem(item);
 //roundSkuGroupSkuSku(item) += itemGroupItem(item);
 

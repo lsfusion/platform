@@ -357,8 +357,8 @@ public class ImportProjectsActionProperty extends UserActionProperty {
         properties.add(new ImportProperty(projectActionProjectField, LM.projectActionProject.getMapping(projectKey),
                 LM.baseLM.object(LM.projectAction).getMapping(projectActionProjectKey)));
 
-        claimerKey = new ImportKey(LM.claimer, LM.baseLM.emailToObject.getMapping(emailClaimerField));
-        properties.add(new ImportProperty(emailClaimerField, LM.baseLM.email.getMapping(claimerKey)));
+        claimerKey = new ImportKey(LM.claimer, BL.emailLM.emailToObject.getMapping(emailClaimerField));
+        properties.add(new ImportProperty(emailClaimerField, BL.emailLM.email.getMapping(claimerKey)));
 
         propertiesFullClaimer = new ArrayList<ImportProperty<?>>();
         propertiesFullClaimer.add(new ImportProperty(phoneClaimerField, LM.phoneClaimer.getMapping(claimerKey)));
@@ -697,8 +697,8 @@ public class ImportProjectsActionProperty extends UserActionProperty {
         properties.add(new ImportProperty(projectActionProjectField, LM.projectActionProject.getMapping(projectKey),
                 LM.baseLM.object(LM.projectAction).getMapping(projectActionProjectKey)));
 
-        claimerKey = new ImportKey(LM.claimer, LM.baseLM.emailToObject.getMapping(emailClaimerField));
-        properties.add(new ImportProperty(emailClaimerField, LM.baseLM.email.getMapping(claimerKey)));
+        claimerKey = new ImportKey(LM.claimer, BL.emailLM.emailToObject.getMapping(emailClaimerField));
+        properties.add(new ImportProperty(emailClaimerField, BL.emailLM.email.getMapping(claimerKey)));
 
         propertiesFullClaimer = new ArrayList<ImportProperty<?>>();
         propertiesFullClaimer.add(new ImportProperty(phoneClaimerField, LM.phoneClaimer.getMapping(claimerKey)));

@@ -33,12 +33,6 @@ import java.awt.event.KeyEvent;
 
 import static platform.server.logics.ServerResourceBundle.getString;
 
-/**
- * User: DAle
- * Date: 16.05.11
- * Time: 17:52
- */
-
 public class SystemEventsLogicsModule<T extends BusinessLogics<T>> extends LogicsModule {
     Logger logger;
     T BL;
@@ -78,7 +72,6 @@ public class SystemEventsLogicsModule<T extends BusinessLogics<T>> extends Logic
     public SystemEventsLogicsModule(T BL, BaseLogicsModule baseLM, Logger logger) {
         super("SystemEvents", "SystemEvents");
         setBaseLogicsModule(baseLM);
-        //setSystemEventsLogicsModule(BL.systemEventsLM);
         this.BL = BL;
         this.logger = logger;
     }
@@ -148,13 +141,13 @@ public class SystemEventsLogicsModule<T extends BusinessLogics<T>> extends Logic
         launchRevision = addDProp(baseGroup, "launchRevision", getString("logics.launch.revision"), StringClass.get(10), launch);
 
         // Ошибки выполнения
-        messageException = addDProp(baseGroup, "messageException", getString("logics.exception.message"), BL.LM.propertyCaptionValueClass, exception);
+        messageException = addDProp(baseGroup, "messageException", getString("logics.exception.message"), BL.reflectionLM.propertyCaptionValueClass, exception);
         dateException = addDProp(baseGroup, "dateException", getString("logics.exception.date"), DateTimeClass.instance, exception);
         erTraceException = addDProp(baseGroup, "erTraceException", getString("logics.exception.ertrace"), TextClass.instance, exception);
         erTraceException.setPreferredWidth(500);
-        typeException =  addDProp(baseGroup, "typeException", getString("logics.exception.type"), BL.LM.propertyCaptionValueClass, exception);
-        clientClientException = addDProp(baseGroup, "clientClientException", getString("logics.exception.client.client"), BL.LM.loginValueClass, clientException);
-        loginClientException = addDProp(baseGroup, "loginClientException", getString("logics.exception.client.login"), BL.LM.loginValueClass, clientException);
+        typeException =  addDProp(baseGroup, "typeException", getString("logics.exception.type"), BL.reflectionLM.propertyCaptionValueClass, exception);
+        clientClientException = addDProp(baseGroup, "clientClientException", getString("logics.exception.client.client"), BL.reflectionLM.loginValueClass, clientException);
+        loginClientException = addDProp(baseGroup, "loginClientException", getString("logics.exception.client.login"), BL.reflectionLM.loginValueClass, clientException);
 
         
 

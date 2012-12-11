@@ -166,7 +166,7 @@ public class MockPaasLogic implements PaasRemoteInterface {
                                 "CLASS employee 'Сотрудник' : named;\n" +
                                 "CLASS document 'Документ' : named;\n" +
                                 "\n" +
-                                "documentEmployee = DATA employee (document) IN idGroup;\n" +
+                                "documentEmployee = DATA employee (document);\n" +
                                 "documentEmployeeName(document) = name(documentEmployee(document)) IN baseGroup;\n" +
                                 "\n" +
                                 "documentCount = DATA INTEGER (document) IN baseGroup;\n" +

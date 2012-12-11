@@ -60,7 +60,7 @@ public class NotificationActionProperty extends SystemActionProperty {
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
 
-        if (BL.LM.disableEmail.read(context) != null) {
+        if (BL.emailLM.disableEmail.read(context) != null) {
             logger.error(ServerResourceBundle.getString("mail.sending.disabled"));
             return;
         }
@@ -111,11 +111,11 @@ public class NotificationActionProperty extends SystemActionProperty {
         List<EmailSender.AttachmentProperties> attachmentForms = new ArrayList<EmailSender.AttachmentProperties>();
         Map<ByteArray, String> attachmentFiles = new HashMap<ByteArray, String>();
 
-        String encryptedConnectionType = (String) BL.LM.nameEncryptedConnectionType.read(context);
-        String smtpHost = (String) BL.LM.smtpHost.read(context);
-        String smtpPort = (String) BL.LM.smtpPort.read(context);
-        String userName = (String) BL.LM.emailAccount.read(context);
-        String password = (String) BL.LM.emailPassword.read(context);
+        String encryptedConnectionType = (String) BL.emailLM.nameEncryptedConnectionType.read(context);
+        String smtpHost = (String) BL.emailLM.smtpHost.read(context);
+        String smtpPort = (String) BL.emailLM.smtpPort.read(context);
+        String userName = (String) BL.emailLM.emailAccount.read(context);
+        String password = (String) BL.emailLM.emailPassword.read(context);
 
         if (smtpHost == null || emailFromNotification == null) {
             String errorMessage = ServerResourceBundle.getString("mail.smtp.host.or.sender.not.specified.letters.will.not.be.sent");

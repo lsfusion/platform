@@ -63,7 +63,7 @@ nameRegionStock 'Регион' (stock)= name(regionStock(stock));
 CLASS UOM 'Единица измерения' : doubleNamed, externalizable;
 TABLE UOM (UOM);
 
-baseUOM = DATA UOM(UOM) IN idGroup;
+baseUOM = DATA UOM(UOM);
 shortNameBaseUOM 'Базовая ед.изм.' (UOM) = shortName(baseUOM(UOM)) IN baseGroup;
 genitiveNameUOM 'Ед. изм. (родительный)' = DATA STRING[20](UOM) IN baseGroup;
 factorUOM 'Коэффициент пересчета в баз.ед.' = DATA NUMERIC[14,3] (UOM) IN baseGroup;

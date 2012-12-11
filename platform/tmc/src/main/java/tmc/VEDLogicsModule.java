@@ -261,6 +261,7 @@ public class VEDLogicsModule extends LogicsModule {
     CustomClass supplier;
     CustomClass specification;
     CustomClass assortment;
+    public AbstractCustomClass barcodeObject;
     public ConcreteCustomClass article;
     public ConcreteCustomClass unitOfMeasure;
     public ConcreteCustomClass gender;
@@ -448,7 +449,9 @@ public class VEDLogicsModule extends LogicsModule {
         store = addAbstractClass("store", "Склад", subject);
         shop = addConcreteClass("shop", "Магазин", store);
         warehouse = addConcreteClass("warehouse", "Распред. центр", store);
-        article = addConcreteClass("article", "Товар", baseClass.named, baseLM.barcodeObject);
+        barcodeObject = addAbstractClass("barcodeObject", "Штрихкод", baseClass);
+        baseLM.customUser.addParentClass(barcodeObject);
+        article = addConcreteClass("article", "Товар", baseClass.named, barcodeObject);
         articleGroup = addConcreteClass("articleGroup", "Группа товаров", baseClass.named);
         specification = addConcreteClass("specification", "Спецификация", baseClass.named);
         assortment = addConcreteClass("assortment", "Ассортимент", baseClass.named);
@@ -472,7 +475,7 @@ public class VEDLogicsModule extends LogicsModule {
         customer = addAbstractClass("customer", "Покупатель", contragent);
         customerWhole = addConcreteClass("customerWhole", "Оптовый покупатель", customer, contragentWhole);
         customerInvoiceRetail = addConcreteClass("customerInvoiceRetail", "Покупатель по накладным", customer, legalEntity);
-        customerCheckRetail = addConcreteClass("customerCheckRetail", "Розничный покупатель", customer, baseLM.barcodeObject);
+        customerCheckRetail = addConcreteClass("customerCheckRetail", "Розничный покупатель", customer, barcodeObject);
 
         format = addConcreteClass("format", "Формат", baseClass.named);
 
@@ -590,7 +593,7 @@ public class VEDLogicsModule extends LogicsModule {
                 addConcreteClass("loadedDistributeWarehouse", "Отгруженный возвр. внутр. перемещ. на распред. центр", commitReturnShopOut,
                         addConcreteClass("writtenOutDistributeWarehouse", "Выписанный возврат внутр. перемещ. на распред. центр", orderDistributeWarehouse, shipmentDocumentOut)));
 
-        obligation = addAbstractClass("obligation", "Сертификат", baseClass.named, baseLM.barcodeObject);
+        obligation = addAbstractClass("obligation", "Сертификат", baseClass.named, barcodeObject);
         coupon = addConcreteClass("coupon", "Купон", obligation);
         giftObligation = addConcreteClass("giftObligation", "Подарочный сертификат", obligation);
 
@@ -618,6 +621,7 @@ public class VEDLogicsModule extends LogicsModule {
 
         addTable("obligation", obligation);
         addTable("obligationorder", obligation, order);
+        addTable("barcodeObject", barcodeObject);
     }
 
     @Override
@@ -663,6 +667,8 @@ public class VEDLogicsModule extends LogicsModule {
         documentShipmentGroup = addAbstractGroup("documentShipmentGroup", "Накладная", documentPrintGroup);
         documentShipmentOutGroup = addAbstractGroup("documentShipmentOutGroup", "Отпуск", documentPrintGroup);
         documentShipmentTransportGroup = addAbstractGroup("documentShipmentTransportGroup", "Транспорт", documentPrintGroup);
+
+        idGroup = addAbstractGroup("idGroup", "Идентификаторы", publicGroup, false);
     }
 
     @Override
@@ -684,7 +690,7 @@ public class VEDLogicsModule extends LogicsModule {
         date = addDProp(baseGroup, "date", "Дата", DateClass.instance, transaction);
         date.setEventChange(baseLM.currentDate, is(transaction), 1);
 
-        barcode = addDProp(recognizeGroup, "barcode", "Штрихкод", StringClass.get(Settings.instance.getBarcodeLength()), baseLM.barcodeObject);
+        barcode = addDProp(recognizeGroup, "barcode", "Штрихкод", StringClass.get(Settings.instance.getBarcodeLength()), barcodeObject);
         barcode.setFixedCharWidth(13);
         barcodeToObject = addAGProp("barcodeToObject", "Объект", barcode);
         barcodeObjectName = addJProp(baseGroup, "barcodeObjectName", "Объект", baseLM.name, barcodeToObject, 1);

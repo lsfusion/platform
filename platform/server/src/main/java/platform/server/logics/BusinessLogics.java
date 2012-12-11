@@ -87,6 +87,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public final ReflectionLogicsModule<T> reflectionLM;
     public final SecurityLogicsModule<T> securityLM;
     public final SystemEventsLogicsModule<T> systemEventsLM;
+    public final EmailLogicsModule<T> emailLM;
+    public final SchedulerLogicsModule<T> schedulerLM;
     private String dbName;
 
     public final NavigatorsController navigatorsController;
@@ -541,6 +543,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         addModule(reflectionLM);
         addModule(securityLM);
         addModule(systemEventsLM);
+        addModule(emailLM);
+        addModule(schedulerLM);
     }
 
     protected void addModulesFromResource(String... paths) throws IOException {
@@ -837,6 +841,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         systemEventsLM = new SystemEventsLogicsModule(this, this.LM, logger);
 
+        emailLM = new EmailLogicsModule(this, this.LM, logger);
+
+        schedulerLM = new SchedulerLogicsModule(this, this.LM, logger);
+
         navigatorsController = new NavigatorsController(this);
 
         restartController = new RestartController(this);
@@ -1026,8 +1034,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     private void synchronizeNavigatorElements(ConcreteCustomClass elementCustomClass, Class<? extends NavigatorElement> filterJavaClass, boolean exactJavaClass, LCP deleteLP) {
-        ImportField sidField = new ImportField(LM.navigatorElementSIDClass);
-        ImportField captionField = new ImportField(LM.navigatorElementCaptionClass);
+        ImportField sidField = new ImportField(reflectionLM.navigatorElementSIDClass);
+        ImportField captionField = new ImportField(reflectionLM.navigatorElementCaptionClass);
 
         ImportKey<?> keyNavigatorElement = new ImportKey(elementCustomClass, reflectionLM.SIDToNavigatorElement.getMapping(sidField));
 
@@ -1063,8 +1071,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     private void synchronizeParents() {
-        ImportField sidField = new ImportField(LM.navigatorElementSIDClass);
-        ImportField parentSidField = new ImportField(LM.navigatorElementSIDClass);
+        ImportField sidField = new ImportField(reflectionLM.navigatorElementSIDClass);
+        ImportField parentSidField = new ImportField(reflectionLM.navigatorElementSIDClass);
         ImportField numberField = new ImportField(reflectionLM.numberNavigatorElement);
 
         List<List<Object>> dataParents = getRelations(LM.root);
@@ -1103,10 +1111,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             }
         }
 
-        ImportField captionPropertyDrawField = new ImportField(LM.propertyCaptionValueClass);
-        ImportField sidPropertyDrawField = new ImportField(LM.propertySIDValueClass);
-        ImportField sidNavigatorElementField = new ImportField(LM.navigatorElementSIDClass);
-        ImportField sidGroupObjectField = new ImportField(LM.propertySIDValueClass);
+        ImportField captionPropertyDrawField = new ImportField(reflectionLM.propertyCaptionValueClass);
+        ImportField sidPropertyDrawField = new ImportField(reflectionLM.propertySIDValueClass);
+        ImportField sidNavigatorElementField = new ImportField(reflectionLM.navigatorElementSIDClass);
+        ImportField sidGroupObjectField = new ImportField(reflectionLM.propertySIDValueClass);
 
         ImportKey<?> keyForm = new ImportKey(reflectionLM.form, reflectionLM.SIDToNavigatorElement.getMapping(sidNavigatorElementField));
         ImportKey<?> keyPropertyDraw = new ImportKey(reflectionLM.propertyDraw, reflectionLM.SIDNavigatorElementSIDPropertyDrawToPropertyDraw.getMapping(sidNavigatorElementField, sidPropertyDrawField));
@@ -1152,8 +1160,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 }
         }
 
-        ImportField sidNavigatorElementField = new ImportField(LM.navigatorElementSIDClass);
-        ImportField sidGroupObjectField = new ImportField(LM.propertySIDValueClass);
+        ImportField sidNavigatorElementField = new ImportField(reflectionLM.navigatorElementSIDClass);
+        ImportField sidGroupObjectField = new ImportField(reflectionLM.propertySIDValueClass);
 
         ImportKey<?> keyForm = new ImportKey(reflectionLM.form, reflectionLM.SIDToNavigatorElement.getMapping(sidNavigatorElementField));
         ImportKey<?> keyGroupObject = new ImportKey(securityLM.groupObject, reflectionLM.SIDNavigatorElementSIDGroupObjectToGroupObject.getMapping(sidGroupObjectField, sidNavigatorElementField));
@@ -1192,16 +1200,16 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     private void synchronizePropertyEntities() {
-        ImportField sidPropertyField = new ImportField(LM.propertySIDValueClass);
-        ImportField captionPropertyField = new ImportField(LM.propertyCaptionValueClass);
-        ImportField loggablePropertyField = new ImportField(LM.propertyLoggableValueClass);
-        ImportField storedPropertyField = new ImportField(LM.propertyStoredValueClass);
-        ImportField isSetNotNullPropertyField = new ImportField(LM.propertyIsSetNotNullValueClass);
-        ImportField signaturePropertyField = new ImportField(LM.propertySignatureValueClass);
-        ImportField returnPropertyField = new ImportField(LM.propertySignatureValueClass);
-        ImportField classPropertyField = new ImportField(LM.propertySignatureValueClass);
+        ImportField sidPropertyField = new ImportField(reflectionLM.propertySIDValueClass);
+        ImportField captionPropertyField = new ImportField(reflectionLM.propertyCaptionValueClass);
+        ImportField loggablePropertyField = new ImportField(reflectionLM.propertyLoggableValueClass);
+        ImportField storedPropertyField = new ImportField(reflectionLM.propertyStoredValueClass);
+        ImportField isSetNotNullPropertyField = new ImportField(reflectionLM.propertyIsSetNotNullValueClass);
+        ImportField signaturePropertyField = new ImportField(reflectionLM.propertySignatureValueClass);
+        ImportField returnPropertyField = new ImportField(reflectionLM.propertySignatureValueClass);
+        ImportField classPropertyField = new ImportField(reflectionLM.propertySignatureValueClass);
 
-        ImportKey<?> keyProperty = new ImportKey(LM.property, reflectionLM.SIDToProperty.getMapping(sidPropertyField));
+        ImportKey<?> keyProperty = new ImportKey(reflectionLM.property, reflectionLM.SIDToProperty.getMapping(sidPropertyField));
 
         List<List<Object>> dataProperty = new ArrayList<List<Object>>();
         for (Property property : getProperties()) {
@@ -1241,7 +1249,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         properties.add(new ImportProperty(classPropertyField, reflectionLM.classProperty.getMapping(keyProperty)));
 
         List<ImportDelete> deletes = new ArrayList<ImportDelete>();
-        deletes.add(new ImportDelete(keyProperty, LM.is(LM.property).getMapping(keyProperty), false));
+        deletes.add(new ImportDelete(keyProperty, LM.is(reflectionLM.property).getMapping(keyProperty), false));
 
         ImportTable table = new ImportTable(asList(sidPropertyField, captionPropertyField, loggablePropertyField, storedPropertyField, isSetNotNullPropertyField, signaturePropertyField, returnPropertyField, classPropertyField), dataProperty);
 
@@ -1261,9 +1269,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     private void synchronizePropertyParents() {
-        ImportField sidPropertyField = new ImportField(LM.propertySIDValueClass);
+        ImportField sidPropertyField = new ImportField(reflectionLM.propertySIDValueClass);
         ImportField numberPropertyField = new ImportField(reflectionLM.numberProperty);
-        ImportField parentSidField = new ImportField(LM.navigatorElementSIDClass);
+        ImportField parentSidField = new ImportField(reflectionLM.navigatorElementSIDClass);
 
         List<List<Object>> dataParent = new ArrayList<List<Object>>();
         for (Property property : getProperties()) {
@@ -1271,7 +1279,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 dataParent.add(asList(property.getSID(), (Object) property.getParent().getSID(), getNumberInListOfChildren(property)));
         }
 
-        ImportKey<?> keyProperty = new ImportKey(LM.property, reflectionLM.SIDToProperty.getMapping(sidPropertyField));
+        ImportKey<?> keyProperty = new ImportKey(reflectionLM.property, reflectionLM.SIDToProperty.getMapping(sidPropertyField));
         ImportKey<?> keyParent = new ImportKey(reflectionLM.abstractGroup, reflectionLM.SIDToAbstractGroup.getMapping(parentSidField));
         List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
 
@@ -1295,8 +1303,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected void synchronizeGroupProperties() {
-        ImportField sidField = new ImportField(LM.navigatorElementSIDClass);
-        ImportField captionField = new ImportField(LM.navigatorElementCaptionClass);
+        ImportField sidField = new ImportField(reflectionLM.navigatorElementSIDClass);
+        ImportField captionField = new ImportField(reflectionLM.navigatorElementCaptionClass);
         ImportField numberField = new ImportField(reflectionLM.numberAbstractGroup);
 
         ImportKey<?> key = new ImportKey(reflectionLM.abstractGroup, reflectionLM.SIDToAbstractGroup.getMapping(sidField));
@@ -1324,7 +1332,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             }
         }
 
-        ImportField parentSidField = new ImportField(LM.navigatorElementSIDClass);
+        ImportField parentSidField = new ImportField(reflectionLM.navigatorElementSIDClass);
         ImportKey<?> key2 = new ImportKey(reflectionLM.abstractGroup, reflectionLM.SIDToAbstractGroup.getMapping(parentSidField));
         List<ImportProperty<?>> props2 = new ArrayList<ImportProperty<?>>();
         props2.add(new ImportProperty(parentSidField, reflectionLM.parentAbstractGroup.getMapping(key), LM.object(reflectionLM.abstractGroup).getMapping(key2)));
@@ -2699,7 +2707,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         DataSession session = createSession();
 
-        LCP isProperty = LM.is(LM.property);
+        LCP isProperty = LM.is(reflectionLM.property);
         Map<Object, KeyExpr> keys = isProperty.getMapKeys();
         KeyExpr key = BaseUtils.singleValue(keys);
         Query<Object, Object> query = new Query<Object, Object>(keys);
@@ -2721,22 +2729,22 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         DataSession session = createSession();
 
-        LCP isNotification = LM.is(LM.notification);
+        LCP isNotification = LM.is(emailLM.notification);
         Map<Object, KeyExpr> keys = isNotification.getMapKeys();
         KeyExpr key = BaseUtils.singleValue(keys);
         Query<Object, Object> query = new Query<Object, Object>(keys);
-        query.properties.put("isDerivedChange", LM.isEventNotification.getExpr(session.getModifier(), key));
-        query.properties.put("subject", LM.subjectNotification.getExpr(session.getModifier(), key));
-        query.properties.put("text", LM.textNotification.getExpr(session.getModifier(), key));
-        query.properties.put("emailFrom", LM.emailFromNotification.getExpr(session.getModifier(), key));
-        query.properties.put("emailTo", LM.emailToNotification.getExpr(session.getModifier(), key));
-        query.properties.put("emailToCC", LM.emailToCCNotification.getExpr(session.getModifier(), key));
-        query.properties.put("emailToBC", LM.emailToBCNotification.getExpr(session.getModifier(), key));
+        query.properties.put("isDerivedChange", emailLM.isEventNotification.getExpr(session.getModifier(), key));
+        query.properties.put("subject", emailLM.subjectNotification.getExpr(session.getModifier(), key));
+        query.properties.put("text", emailLM.textNotification.getExpr(session.getModifier(), key));
+        query.properties.put("emailFrom", emailLM.emailFromNotification.getExpr(session.getModifier(), key));
+        query.properties.put("emailTo", emailLM.emailToNotification.getExpr(session.getModifier(), key));
+        query.properties.put("emailToCC", emailLM.emailToCCNotification.getExpr(session.getModifier(), key));
+        query.properties.put("emailToBC", emailLM.emailToBCNotification.getExpr(session.getModifier(), key));
         query.and(isNotification.getExpr(key).getWhere());
         OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(session.sql);
 
         for (Map.Entry<Map<Object, Object>, Map<Object, Object>> rows : result.entrySet()) {
-            DataObject notificationObject = new DataObject(rows.getKey().values().iterator().next(), LM.notification);
+            DataObject notificationObject = new DataObject(rows.getKey().values().iterator().next(), emailLM.notification);
             KeyExpr propertyExpr2 = new KeyExpr("property");
             KeyExpr notificationExpr2 = new KeyExpr("notification");
             Map<Object, KeyExpr> newKeys2 = new HashMap<Object, KeyExpr>();
@@ -2745,7 +2753,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
             Query<Object, Object> query2 = new Query<Object, Object>(newKeys2);
             query2.properties.put("SIDProperty", reflectionLM.SIDProperty.getExpr(session.getModifier(), propertyExpr2));
-            query2.and(LM.inNotificationProperty.getExpr(session.getModifier(), notificationExpr2, propertyExpr2).getWhere());
+            query2.and(emailLM.inNotificationProperty.getExpr(session.getModifier(), notificationExpr2, propertyExpr2).getWhere());
             query2.and(notificationExpr2.compare(notificationObject, Compare.EQUALS));
             OrderedMap<Map<Object, Object>, Map<Object, Object>> result2 = query2.execute(session.sql);
             List<LCP> listInNotificationProperty = new ArrayList();
@@ -2779,7 +2787,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         DataSession session = createSession();
 
-        LCP isProperty = LM.is(LM.property);
+        LCP isProperty = LM.is(reflectionLM.property);
         Map<Object, KeyExpr> keys = isProperty.getMapKeys();
         KeyExpr key = BaseUtils.singleValue(keys);
         Query<Object, Object> query = new Query<Object, Object>(keys);
@@ -3021,7 +3029,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected Integer getUserByEmail(DataSession session, String email) throws SQLException {
-        return (Integer) LM.emailToObject.read(session, new DataObject(email));
+        return (Integer) emailLM.emailToObject.read(session, new DataObject(email));
     }
 
     @Override
@@ -3037,7 +3045,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                     throw new RuntimeException(ServerResourceBundle.getString("mail.user.not.found") + ": " + email);
                 }
 
-                LM.emailUserPassUser.execute(session, new DataObject(userId, LM.customUser));
+                emailLM.emailUserPassUser.execute(session, new DataObject(userId, LM.customUser));
             } finally {
                 session.close();
             }
@@ -3067,7 +3075,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         Boolean default2;
         try {
             DataSession session = createSession();
-            DataObject propertyObject = new DataObject(reflectionLM.SIDToProperty.read(session, new DataObject(propertySid)), LM.property);
+            DataObject propertyObject = new DataObject(reflectionLM.SIDToProperty.read(session, new DataObject(propertySid)), reflectionLM.property);
             default2 = (Boolean) securityLM.permitViewProperty.read(session, propertyObject);
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -3103,14 +3111,14 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             if (userId != null)
                 return ServerResourceBundle.getString("logics.error.user.duplicate");
 
-            Object emailId = LM.emailToObject.read(session, new DataObject(email, StringClass.get(50)));
+            Object emailId = emailLM.emailToObject.read(session, new DataObject(email, StringClass.get(50)));
             if (emailId != null) {
                 return ServerResourceBundle.getString("logics.error.email.duplicate");
             }
 
             DataObject userObject = session.addObject(LM.customUser);
             LM.userLogin.change(username, session, userObject);
-            LM.email.change(email, session, userObject);
+            emailLM.email.change(email, session, userObject);
             LM.userPassword.change(password, session, userObject);
             LM.userFirstName.change(firstName, session, userObject);
             LM.userLastName.change(lastName, session, userObject);

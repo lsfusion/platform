@@ -44,7 +44,7 @@ public class ExportExpertsActionProperty extends UserActionProperty {
         query.properties.put("lastName", LM.baseLM.userLastName.getExpr(context.getModifier(), key));
         query.properties.put("documentName", LM.documentNameExpert.getExpr(context.getModifier(), key));
         query.properties.put("userLogin", LM.baseLM.userLogin.getExpr(context.getModifier(), key));
-        query.properties.put("email", LM.baseLM.email.getExpr(context.getModifier(), key));
+        query.properties.put("email", LM.baseLM.getBL().emailLM.email.getExpr(context.getModifier(), key));
         query.properties.put("nameLanguageExpert", LM.nameLanguageExpert.getExpr(context.getModifier(), key));
         query.properties.put("dateAgreement", LM.dateAgreementExpert.getExpr(context.getModifier(), key));
         query.properties.put("nameCountry", LM.nameCountryExpert.getExpr(context.getModifier(), key));

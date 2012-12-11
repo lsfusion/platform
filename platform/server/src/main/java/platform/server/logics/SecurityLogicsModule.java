@@ -36,11 +36,6 @@ import java.util.Iterator;
 
 import static platform.server.logics.ServerResourceBundle.getString;
 
-/**
- * User: DAle
- * Date: 16.05.11
- * Time: 17:52
- */
 
 public class SecurityLogicsModule<T extends BusinessLogics<T>> extends LogicsModule {
     Logger logger;
@@ -112,7 +107,6 @@ public class SecurityLogicsModule<T extends BusinessLogics<T>> extends LogicsMod
     public SecurityLogicsModule(T BL, BaseLogicsModule baseLM, Logger logger) {
         super("Security", "Security");
         setBaseLogicsModule(baseLM);
-        //setSecurityLogicsModule(BL.securityLM);
         this.BL = BL;
         this.logger = logger;
     }
@@ -133,7 +127,7 @@ public class SecurityLogicsModule<T extends BusinessLogics<T>> extends LogicsMod
 
     @Override
     public void initGroups() {
-
+        idGroup = addAbstractGroup("idGroup", "Идентификаторы", publicGroup, false);
     }
 
     @Override
@@ -144,7 +138,7 @@ public class SecurityLogicsModule<T extends BusinessLogics<T>> extends LogicsMod
         addTable("customUser", baseLM.customUser);
         addTable("groupObjectCustomUser", groupObject, baseLM.customUser);
         addTable("groupObject", groupObject);
-        addTable("userRoleProperty", userRole, baseLM.property);
+        addTable("userRoleProperty", userRole, BL.reflectionLM.property);
         addTable("policy", policy);
     }
 
@@ -179,10 +173,10 @@ public class SecurityLogicsModule<T extends BusinessLogics<T>> extends LogicsMod
         // ---- Политики для доменной логики
 
         // -- Глобальные разрешения для всех ролей
-        permitViewProperty = addDProp(BL.LM.baseGroup, "permitViewProperty", getString("logics.policy.permit.property.view"), LogicalClass.instance, BL.LM.property);
-        forbidViewProperty = addDProp(BL.LM.baseGroup, "forbidViewProperty", getString("logics.policy.forbid.property.view"), LogicalClass.instance, BL.LM.property);
-        permitChangeProperty = addDProp(BL.LM.baseGroup, "permitChangeProperty", getString("logics.policy.permit.property.change"), LogicalClass.instance, BL.LM.property);
-        forbidChangeProperty = addDProp(BL.LM.baseGroup, "forbidChangeProperty", getString("logics.policy.forbid.property.change"), LogicalClass.instance, BL.LM.property);
+        permitViewProperty = addDProp(BL.LM.baseGroup, "permitViewProperty", getString("logics.policy.permit.property.view"), LogicalClass.instance, BL.reflectionLM.property);
+        forbidViewProperty = addDProp(BL.LM.baseGroup, "forbidViewProperty", getString("logics.policy.forbid.property.view"), LogicalClass.instance, BL.reflectionLM.property);
+        permitChangeProperty = addDProp(BL.LM.baseGroup, "permitChangeProperty", getString("logics.policy.permit.property.change"), LogicalClass.instance, BL.reflectionLM.property);
+        forbidChangeProperty = addDProp(BL.LM.baseGroup, "forbidChangeProperty", getString("logics.policy.forbid.property.change"), LogicalClass.instance, BL.reflectionLM.property);
 
         // -- Разрешения для каждой роли
 
@@ -198,14 +192,14 @@ public class SecurityLogicsModule<T extends BusinessLogics<T>> extends LogicsMod
         forbidChangeAllUserForm = addJProp(publicGroup, "forbidChangeAllUserForm", getString("logics.user.forbid.change.all.property"), forbidChangeAllUserRoleProperty, userMainRole, 1);
 
         // Разрешения для каждого свойства
-        permitViewUserRoleProperty = addDProp(BL.LM.baseGroup, "permitViewUserRoleProperty", getString("logics.policy.permit.property.view"), LogicalClass.instance, userRole, BL.LM.property);
+        permitViewUserRoleProperty = addDProp(BL.LM.baseGroup, "permitViewUserRoleProperty", getString("logics.policy.permit.property.view"), LogicalClass.instance, userRole, BL.reflectionLM.property);
         permitViewUserProperty = addJProp(BL.LM.baseGroup, "permitViewUserProperty", getString("logics.policy.permit.property.view"), permitViewUserRoleProperty, userMainRole, 1, 2);
-        forbidViewUserRoleProperty = addDProp(BL.LM.baseGroup, "forbidViewUserRoleProperty", getString("logics.policy.forbid.property.view"), LogicalClass.instance, userRole, BL.LM.property);
+        forbidViewUserRoleProperty = addDProp(BL.LM.baseGroup, "forbidViewUserRoleProperty", getString("logics.policy.forbid.property.view"), LogicalClass.instance, userRole, BL.reflectionLM.property);
         forbidViewUserProperty = addJProp(BL.LM.baseGroup, "forbidViewUserProperty", getString("logics.policy.forbid.property.view"), forbidViewUserRoleProperty, userMainRole, 1, 2);
 
-        permitChangeUserRoleProperty = addDProp(BL.LM.baseGroup, "permitChangeUserRoleProperty", getString("logics.policy.permit.property.change"), LogicalClass.instance, userRole, BL.LM.property);
+        permitChangeUserRoleProperty = addDProp(BL.LM.baseGroup, "permitChangeUserRoleProperty", getString("logics.policy.permit.property.change"), LogicalClass.instance, userRole, BL.reflectionLM.property);
         permitChangeUserProperty = addJProp(BL.LM.baseGroup, "permitChangeUserProperty", getString("logics.policy.permit.property.change"), permitChangeUserRoleProperty, userMainRole, 1, 2);
-        forbidChangeUserRoleProperty = addDProp(BL.LM.baseGroup, "forbidChangeUserRoleProperty", getString("logics.policy.forbid.property.change"), LogicalClass.instance, userRole, BL.LM.property);
+        forbidChangeUserRoleProperty = addDProp(BL.LM.baseGroup, "forbidChangeUserRoleProperty", getString("logics.policy.forbid.property.change"), LogicalClass.instance, userRole, BL.reflectionLM.property);
         forbidChangeUserProperty = addJProp(BL.LM.baseGroup, "forbidChangeUserProperty", getString("logics.policy.forbid.property.change"), forbidChangeUserRoleProperty, userMainRole, 1, 2);
 
         notNullPermissionUserProperty = addSUProp("notNullPermissionUserProperty", Union.OVERRIDE, permitViewUserProperty, forbidViewUserProperty, permitChangeUserProperty, forbidChangeUserProperty);
@@ -265,7 +259,7 @@ public class SecurityLogicsModule<T extends BusinessLogics<T>> extends LogicsMod
         protected UserEditFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, getString("logics.user.user"));
 
-            objUser = addSingleGroupObject(baseLM.customUser, BL.LM.userFirstName, BL.LM.userLastName, BL.LM.userLogin, BL.LM.userPassword, BL.LM.email, nameUserMainRole);
+            objUser = addSingleGroupObject(baseLM.customUser, BL.LM.userFirstName, BL.LM.userLastName, BL.LM.userLogin, BL.LM.userPassword, BL.emailLM.email, nameUserMainRole);
             objUser.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             objRole = addSingleGroupObject(userRole, BL.LM.name, userRoleSID);
@@ -312,14 +306,14 @@ public class SecurityLogicsModule<T extends BusinessLogics<T>> extends LogicsMod
             objPolicy = addSingleGroupObject(policy, getString("logics.policy.additional.policies"), BL.LM.baseGroup, true);
             objForm = addSingleGroupObject(BL.reflectionLM.navigatorElement, getString("logics.grid"), true);
             objTreeForm = addSingleGroupObject(BL.reflectionLM.navigatorElement, getString("logics.tree"), true);
-            objProperty = addSingleGroupObject(BL.LM.property, getString("logics.grid"), true);
+            objProperty = addSingleGroupObject(BL.reflectionLM.property, getString("logics.grid"), true);
             objTreeProps = addSingleGroupObject(BL.reflectionLM.abstractGroup, getString("logics.tree"), true);
-            objProps = addSingleGroupObject(BL.LM.property, getString("logics.tree"), true);
+            objProps = addSingleGroupObject(BL.reflectionLM.property, getString("logics.tree"), true);
             objDefaultForm = addSingleGroupObject(BL.reflectionLM.navigatorElement, getString("logics.grid"), true);
             objTreeDefaultForm = addSingleGroupObject(BL.reflectionLM.navigatorElement, getString("logics.tree"), true);
-            objDefaultProperty = addSingleGroupObject(BL.LM.property, getString("logics.grid"), true);
+            objDefaultProperty = addSingleGroupObject(BL.reflectionLM.property, getString("logics.grid"), true);
             objTreeDefaultProps = addSingleGroupObject(BL.reflectionLM.abstractGroup, getString("logics.tree"), true);
-            objDefaultProps = addSingleGroupObject(BL.LM.property, getString("logics.grid"), true);
+            objDefaultProps = addSingleGroupObject(BL.reflectionLM.property, getString("logics.grid"), true);
 
             objTreeForm.groupTo.setIsParents(addPropertyObject(BL.reflectionLM.parentNavigatorElement, objTreeForm));
             treeFormObject = addTreeGroupObject(objTreeForm.groupTo);
@@ -426,7 +420,7 @@ public class SecurityLogicsModule<T extends BusinessLogics<T>> extends LogicsMod
         protected UserPolicyFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, getString("logics.user.users"));
 
-            ObjectEntity objUser = addSingleGroupObject(baseLM.customUser, nameUserMainRole, baseLM.name, baseLM.userLogin, baseLM.email);
+            ObjectEntity objUser = addSingleGroupObject(baseLM.customUser, nameUserMainRole, baseLM.name, baseLM.userLogin, BL.emailLM.email);
             setEditType(objUser, PropertyEditType.READONLY);
 
             addFormActions(this, objUser);

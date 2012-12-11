@@ -37,15 +37,15 @@ public class Scheduler {
         scheduledTaskKeys.put("scheduledTask", scheduledTask1Expr);
 
         Query<Object, Object> scheduledTaskQuery = new Query<Object, Object>(scheduledTaskKeys);
-        scheduledTaskQuery.properties.put("runAtStartScheduledTask", BL.LM.runAtStartScheduledTask.getExpr(BaseUtils.singleValue(scheduledTaskKeys)));
-        scheduledTaskQuery.properties.put("startDateScheduledTask", BL.LM.startDateScheduledTask.getExpr(BaseUtils.singleValue(scheduledTaskKeys)));
-        scheduledTaskQuery.properties.put("periodScheduledTask", BL.LM.periodScheduledTask.getExpr(BaseUtils.singleValue(scheduledTaskKeys)));
+        scheduledTaskQuery.properties.put("runAtStartScheduledTask", BL.schedulerLM.runAtStartScheduledTask.getExpr(BaseUtils.singleValue(scheduledTaskKeys)));
+        scheduledTaskQuery.properties.put("startDateScheduledTask", BL.schedulerLM.startDateScheduledTask.getExpr(BaseUtils.singleValue(scheduledTaskKeys)));
+        scheduledTaskQuery.properties.put("periodScheduledTask", BL.schedulerLM.periodScheduledTask.getExpr(BaseUtils.singleValue(scheduledTaskKeys)));
 
-        scheduledTaskQuery.and(BL.LM.activeScheduledTask.getExpr(scheduledTask1Expr).getWhere());
+        scheduledTaskQuery.and(BL.schedulerLM.activeScheduledTask.getExpr(scheduledTask1Expr).getWhere());
 
         OrderedMap<Map<Object, Object>, Map<Object, Object>> scheduledTaskResult = scheduledTaskQuery.execute(session.sql);
         for (Map.Entry<Map<Object, Object>, Map<Object, Object>> rows : scheduledTaskResult.entrySet()) {
-            currentScheduledTaskObject = new DataObject(rows.getKey().entrySet().iterator().next().getValue(), BL.LM.scheduledTask);
+            currentScheduledTaskObject = new DataObject(rows.getKey().entrySet().iterator().next().getValue(), BL.schedulerLM.scheduledTask);
             Boolean runAtStart = rows.getValue().get("runAtStartScheduledTask") != null;
             Timestamp startDate = (Timestamp) rows.getValue().get("startDateScheduledTask");
             Integer period = (Integer) rows.getValue().get("periodScheduledTask");
@@ -58,9 +58,9 @@ public class Scheduler {
 
             Query<Object, Object> propertyQuery = new Query<Object, Object>(propertyKeys);
             propertyQuery.properties.put("SIDProperty", BL.reflectionLM.SIDProperty.getExpr(propertyExpr));
-            propertyQuery.properties.put("orderScheduledTaskProperty", BL.LM.orderScheduledTaskProperty.getExpr(scheduledTaskExpr, propertyExpr));
-            propertyQuery.and(BL.LM.inScheduledTaskProperty.getExpr(scheduledTaskExpr, propertyExpr).getWhere());
-            propertyQuery.and(BL.LM.activeScheduledTaskProperty.getExpr(scheduledTaskExpr, propertyExpr).getWhere());
+            propertyQuery.properties.put("orderScheduledTaskProperty", BL.schedulerLM.orderScheduledTaskProperty.getExpr(scheduledTaskExpr, propertyExpr));
+            propertyQuery.and(BL.schedulerLM.inScheduledTaskProperty.getExpr(scheduledTaskExpr, propertyExpr).getWhere());
+            propertyQuery.and(BL.schedulerLM.activeScheduledTaskProperty.getExpr(scheduledTaskExpr, propertyExpr).getWhere());
             propertyQuery.and(scheduledTaskExpr.compare(currentScheduledTaskObject, Compare.EQUALS));
 
             ScheduledExecutorService daemonTasksExecutor = Executors.newScheduledThreadPool(1, new ContextAwareDaemonThreadFactory(new SchedulerContext(this)));

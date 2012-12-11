@@ -115,7 +115,7 @@ public class EmailActionProperty extends SystemActionProperty {
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
         try {
-            if (BL.LM.disableEmail.read(context) != null) {
+            if (BL.emailLM.disableEmail.read(context) != null) {
                 logger.error(getString("mail.sending.disabled"));
                 return;
             }
@@ -151,13 +151,13 @@ public class EmailActionProperty extends SystemActionProperty {
 
             Map<String, Message.RecipientType> recipients = getRecipientEmails(context);
 
-            String encryptedConnectionType = (String) BL.LM.nameEncryptedConnectionType.read(context);
-            String smtpHost = (String) BL.LM.smtpHost.read(context);
-            String smtpPort = (String) BL.LM.smtpPort.read(context);
+            String encryptedConnectionType = (String) BL.emailLM.nameEncryptedConnectionType.read(context);
+            String smtpHost = (String) BL.emailLM.smtpHost.read(context);
+            String smtpPort = (String) BL.emailLM.smtpPort.read(context);
             String fromAddress = (String) this.fromAddress.read(context, context.getKeys());
             String subject = (String) this.subject.read(context, context.getKeys());
-            String userName = (String) BL.LM.emailAccount.read(context);
-            String password = (String) BL.LM.emailPassword.read(context);
+            String userName = (String) BL.emailLM.emailAccount.read(context);
+            String password = (String) BL.emailLM.emailPassword.read(context);
 
             sendEmail(context, smtpHost, smtpPort, userName, password, encryptedConnectionType, fromAddress, subject, recipients, inlineForms, attachments, attachmentFiles);
         } catch (Exception e) {

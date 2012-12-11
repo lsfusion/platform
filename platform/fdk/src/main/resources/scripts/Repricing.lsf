@@ -111,7 +111,7 @@ FORM repricingCommitteeDialog 'Комиссии переоценки'
 META defineDocumentHeaderRepricingCommittee(object, stockProp)
     numberDisposal###object '№ распоряжения на переоценку' (object) = DATA STRING[30] (object) IN documentPrmGroup;
 
-    repricingCommittee###object (object) = DATA repricingCommittee(object) IN idGroup;
+    repricingCommittee###object (object) = DATA repricingCommittee(object);
     nameRepricingCommittee###object 'Комиссия переоценки' (object) = commonName(repricingCommittee###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
     repricingCommittee###object (object) <- repricingCommitteeDepartmentStore(stockProp###object(object))
         WHEN CHANGED(stockProp###object(object));
@@ -125,7 +125,7 @@ META defineDocumentHeaderRepricingCommittee(object, stockProp)
 END
 META defineDocumentHeaderAbstractRepricingCommittee(object)
     numberDisposal###object '№ распоряжения на переоценку' (object) = ABSTRACT STRING[30] (object) PERSISTENT IN documentPrmGroup;
-    repricingCommittee###object (object) = ABSTRACT repricingCommittee(object) PERSISTENT IN idGroup;
+    repricingCommittee###object (object) = ABSTRACT repricingCommittee(object) PERSISTENT;
     nameRepricingCommittee###object 'Комиссия переоценки' (object) = commonName(repricingCommittee###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
 
     inCommittee###object##Employee (object, employee) = inCommitteeEmployee(repricingCommittee###object (object), employee);

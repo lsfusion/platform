@@ -140,6 +140,7 @@ public class BudgetLogicsModule extends LogicsModule {
         inOperationGroup = addAbstractGroup("inOperationGroup", "Параметры прихода");
         payerGroup = addAbstractGroup("payerGroup", "Параметры плательщика");
         baseCurGroup = addAbstractGroup("baseCurGroup", "Сумма в базовой валюте");
+        idGroup = addAbstractGroup("idGroup", "Идентификаторы", publicGroup, false);
     }
 
     LCP concat2, greater22, less22;

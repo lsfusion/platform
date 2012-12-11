@@ -102,7 +102,7 @@ FORM pricingCommitteeDialog 'Комиссии для акта расценки'
 GROUP pricingCommitteeGroup 'Комиссия' : publicGroup;
 
 META defineDocumentHeaderPricingCommittee(object, stockClass)
-    pricingCommittee###object (object) = DATA pricingCommittee(object) IN idGroup;
+    pricingCommittee###object (object) = DATA pricingCommittee(object);
 
     namePricingCommittee###object 'Комиссия для акта расценки' (object) = commonName(pricingCommittee###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
     pricingCommittee###object (object) <- pricingCommitteeDepartmentStore(stockClass###object(object))
@@ -116,7 +116,7 @@ META defineDocumentHeaderPricingCommittee(object, stockClass)
 
 END
 META defineDocumentHeaderAbstractPricingCommittee(object, stockClass)
-    pricingCommittee###object (object) = ABSTRACT pricingCommittee(object) PERSISTENT IN idGroup;
+    pricingCommittee###object (object) = ABSTRACT pricingCommittee(object) PERSISTENT;
 
     namePricingCommittee###object 'Комиссия для акта расценки' (object) = commonName(pricingCommittee###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
 

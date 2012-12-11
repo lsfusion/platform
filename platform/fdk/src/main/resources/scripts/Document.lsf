@@ -10,8 +10,8 @@ TABLE postedObject (postedObject);
 GROUP postedGroup 'Информация о закрытии' : baseGroup;
 
 timeClosed 'Время закрытия' = DATA DATETIME (postedObject) IN postedGroup;
-userClosed 'Проведен пользователем' = DATA customUser (postedObject) IN idGroup;
-computerClosed 'Проведен на компьютере' = DATA computer (postedObject) IN idGroup;
+userClosed 'Проведен пользователем' = DATA customUser (postedObject);
+computerClosed 'Проведен на компьютере' = DATA computer (postedObject);
 
 nameUserClosed 'Проведен пользователем' (postedObject) = commonName(userClosed(postedObject)) IN postedGroup;
 hostnameComputerClosed 'Проведен на компьютере' (postedObject) = hostname(computerClosed(postedObject)) IN postedGroup;

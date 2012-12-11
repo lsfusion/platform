@@ -1,12 +1,12 @@
 MODULE Employee;
 
-REQUIRE System, Security, Hierarchy, Utils;
+REQUIRE System, Security, Email, Hierarchy, Utils;
 
 // ------------------------------------- Должности -------------------------------------- //
 CLASS position 'Должность' : named;
 TABLE position(position);
 
-positionEmployee(employee) = DATA position (employee) IN idGroup;
+positionEmployee(employee) = DATA position (employee);
 
 FORM position 'Должность'
     OBJECTS of=position FIXED PANEL

@@ -802,7 +802,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             eaProp.setFromAddress(allImplements.get(i++));
         } else {
             // по умолчанию используем стандартный fromAddress
-            eaProp.setFromAddress(new CalcPropertyMapImplement((CalcProperty) baseLM.fromAddress.property));
+            eaProp.setFromAddress(new CalcPropertyMapImplement((CalcProperty) BL.emailLM.fromAddress.property));
         }
         eaProp.setSubject(allImplements.get(i++));
 

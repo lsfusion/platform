@@ -43,7 +43,7 @@ declarationCStoWHDetail (CStoWHDetail) = declarationDeclarationDetail(declaratio
 @defineDocumentHeaderQuantity(CStoWH);
 @defineDocumentHeaderSkuQuantity(CStoWH, sku);
 
-freightUnitCStoWHDetail (CStoWHDetail) = DATA freightUnit(CStoWHDetail) IN idGroup;
+freightUnitCStoWHDetail (CStoWHDetail) = DATA freightUnit(CStoWHDetail);
 barcodeFreightUnitCStoWHDetail 'Штрих-код короба' (CStoWHDetail) = barcode(freightUnitCStoWHDetail(CStoWHDetail));
 destinationCStoWHDetail (CStoWHDetail) = destinationFreightUnit(freightUnitCStoWHDetail(CStoWHDetail));
 nameDestinationCStoWHDetail 'Пункт назначения' (CStoWHDetail) = nameDestinationFreightUnit(freightUnitCStoWHDetail(CStoWHDetail));

@@ -166,8 +166,8 @@ skuUserWriteOffDetail (detail)  <- skuBatch( batchUserWriteOffDetail(detail)) AN
 
 @defineDocumentInterfaceHeaderWriteOffCommittee(writeOff, stock);
 
-reasonWriteOff 'Причина списания (ИД)' = ABSTRACT reason (writeOff) IN idGroup;
-reasonUserWriteOff 'Причина списания (ИД)' = DATA reason (userWriteOff) IN idGroup;
+reasonWriteOff 'Причина списания (ИД)' = ABSTRACT reason (writeOff);
+reasonUserWriteOff 'Причина списания (ИД)' = DATA reason (userWriteOff);
 reasonWriteOff(writeOff) += reasonUserWriteOff(writeOff);
 nameReasonWriteOff 'Причина списания' (writeOff) = name(reasonWriteOff (writeOff)) IN documentPrmGroup;
 nameReasonUserWriteOff 'Причина списания' (userWriteOff) = name(reasonUserWriteOff (userWriteOff)) IN documentPrmGroup;

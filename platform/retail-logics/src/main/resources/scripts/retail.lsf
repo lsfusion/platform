@@ -376,9 +376,9 @@ CLASS stateExamination 'Акт гос. сан.-гиг. экспертизы' : p
 numberPaper 'Номер документа' (paper) = DATA STRING[30] (paper) IN baseGroup;
 datePaper 'Дата документа' (paper) = DATA DATE (paper) IN baseGroup;
 dateToPaper 'Срок действия' (paper) = DATA DATE (paper) IN baseGroup;
-holderPaper 'Держатель ИД' (paper) = DATA legalEntity (paper) IN idGroup;
+holderPaper 'Держатель ИД' (paper) = DATA legalEntity (paper);
 nameHolderPaper 'Наименование держателя' (paper) = name(holderPaper(paper)) IN baseGroup;
-issuedPaper 'Документ выдал ИД' (paper) = DATA legalEntity (paper) IN idGroup;
+issuedPaper 'Документ выдал ИД' (paper) = DATA legalEntity (paper);
 nameIssuedPaper 'Наименование органа, выдавшего документ' (paper) = name(issuedPaper(paper)) IN baseGroup;
 
 FORM paper 'Документ качества'
@@ -701,7 +701,7 @@ TABLE studyOutputDetail(studyOutputDetail);
 @defineDocumentHeaderItemRetailSumCustom(actOfStudy, studyInputDetail);
 
 // custom информация по акту
-contractorDepartmentStoreActOfStudy (actOfStudy)= DATA departmentStore (actOfStudy) IN idGroup;
+contractorDepartmentStoreActOfStudy (actOfStudy)= DATA departmentStore (actOfStudy);
 nameContractorDepartmentStoreActOfStudy 'Отдел-контрагент' (actOfStudy) = name(contractorDepartmentStoreActOfStudy(actOfStudy)) IN documentPrmGroup;
 
 numberOutputActOfStudy 'Номер расходной накладной' (actOfStudy) = DATA STRING[7] (actOfStudy) IN documentPrmGroup FIXEDCHARWIDTH 7;
@@ -714,7 +714,7 @@ descriptionActOfStudy 'Название документа' (actOfStudy) =
     [FORMULA STRING[200] '\'Акт разруба \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)'] (
     seriesNumberObject(actOfStudy), dateActOfStudy(actOfStudy), nameContractorDepartmentStoreActOfStudy(actOfStudy));
 
-cuttingStudyInputDetail = DATA cutting (studyInputDetail) IN idGroup;
+cuttingStudyInputDetail = DATA cutting (studyInputDetail);
 seriesNumberCuttingStudyInputDetail 'Номер карты' (studyInputDetail) = seriesNumberObject(cuttingStudyInputDetail(studyInputDetail)) IN actGroup;
 dateCuttingStudyInputDetail 'Дата создания карты' (studyInputDetail) = dateCutting(cuttingStudyInputDetail(studyInputDetail)) IN actGroup;
 descriptionCuttingStudyInputDetail 'Описание' (studyInputDetail) = descriptionCutting(cuttingStudyInputDetail(studyInputDetail)) IN actGroup MINCHARWIDTH 20 PREFCHARWIDTH 20;
@@ -725,7 +725,7 @@ percSweepsCuttingStudyInputDetail 'Процент зачисток, %' (studyInp
 
 // строки расхода
 
-studyInputDetailStudyOutputDetail = DATA studyInputDetail (studyOutputDetail) IN idGroup;
+studyInputDetailStudyOutputDetail = DATA studyInputDetail (studyOutputDetail);
 actOfStudyStudyOutputDetail(studyOutputDetail) = actOfStudyStudyInputDetail(studyInputDetailStudyOutputDetail(studyOutputDetail)) PERSISTENT;
 
 @defineDocumentDetailDepartmentStoreCustom(actOfStudy, studyOutputDetail);
