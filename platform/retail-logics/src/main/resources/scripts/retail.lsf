@@ -56,6 +56,7 @@ REQUIRE System,
         SalePurchase,
         Repricing,
         Employee,
+        StockAdjustment,
         StoreShipment,
         StoreWriteOff,
         Store,
@@ -1549,6 +1550,7 @@ NAVIGATOR {
             ADD naturalLossGroups;
         }
         ADD writeOffNavigator;
+        ADD adjustmentNavigator;
 
         NEW disparityDocuments 'Пересортица' {
             ADD disparities;

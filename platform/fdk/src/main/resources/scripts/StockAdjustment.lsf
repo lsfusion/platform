@@ -1,0 +1,287 @@
+MODULE StockAdjustment;
+
+REQUIRE System,
+        Utils,
+        Historizable,
+        Stock,
+        Numerator,
+        Document,
+        Currency,
+        PriceList,
+        Barcode;
+
+NAMESPACE Stock;
+
+CLASS ABSTRACT adjustment 'Изменение остатков' ;
+CLASS ABSTRACT adjustmentDetail 'Строка изменения остатков' : named;
+
+CLASS userAdjustment 'Изменение остатков (польз.)' : adjustment, historizable, numeratedObject;
+CLASS userAdjustmentDetail 'Строка изменения остатков (польз.)' : adjustmentDetail;
+CLASS userAdjustmentPosted 'Проведенное изменение остатков (польз.)' : userAdjustment, postedObject;
+
+@defineDocumentInterface(adjustment);
+@defineDocumentInterfaceNumber(adjustment);
+
+@defineDocumentInterfaceStock (adjustment, stock, 'Склад');
+@defineDocumentDetailStock (userAdjustment, stock, 'Склад');
+@defineDocumentInterfacePosted(adjustment);
+@defineNumeratedObjectDefault(adjustment, 'Нумератор для изменения остатков', 'ИО');
+
+@defineDocumentInterfaceDescription(adjustment, 'Изменение остатков');
+
+@defineDocumentInterfaceCurrency(adjustment);
+@deriveDocumentCurrency(userAdjustment, stock);
+
+@defineDocumentInterfaceDetailSku(adjustment, sku);
+@defineDocumentInterfaceDetailBatch(adjustment, batch);
+@defineDocumentInterfaceDetailQuantity(adjustment);
+@defineDocumentInterfaceDetailPrice(adjustment);
+priceUserAdjustmentDetail (detail)  <- IF batchUserAdjustmentDetail(detail)
+                THEN priceBatchStockDateTime(batchUserAdjustmentDetail(detail), stockUserAdjustmentDetail(detail), dateTimeUserAdjustmentDetail(detail))
+                ELSE priceSkuStockDateTime(skuUserAdjustmentDetail(detail), stockUserAdjustmentDetail(detail), dateTimeUserAdjustmentDetail(detail))
+                WHEN CHANGED(skuUserAdjustmentDetail(detail)) OR CHANGED(batchUserAdjustmentDetail(detail)) OR CHANGED(stockUserAdjustmentDetail(detail)) OR CHANGED (dateTimeUserAdjustmentDetail(detail));
+
+skuUserAdjustmentDetail (detail)  <- skuBatch( batchUserAdjustmentDetail(detail)) AND batchUserAdjustmentDetail(detail)
+                               WHEN CHANGED(batchUserAdjustmentDetail(detail));
+
+@defineDocumentInterfaceDetailDataSum(adjustment);
+@deriveDocumentDetailSum(userAdjustment, quantity);
+
+@defineDocumentInterfaceHeaderQuantity(adjustment);
+@defineDocumentHeaderSkuQuantity(adjustment, sku);
+@defineDocumentHeaderSkuQuantity(userAdjustment, sku);
+@defineDocumentInterfaceHeaderSum(adjustment);
+
+@defineAddDetailDialogSkuStock(userAdjustment, sku, stock, dialogSku);
+@defineAddDetailDialogBarcode(userAdjustment, sku);
+
+// --------------------------- Формы ---------------------------------- //
+
+editAdjustment 'Редактировать' = ABSTRACT ACTION (adjustment) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
+
+
+FORM userAdjustment 'Изменение остатков'
+    OBJECTS i = userAdjustment FIXED PANEL
+    PROPERTIES (i) objectClassName, nameStockUserAdjustment,
+                   nameNumeratorObject, numberObject, seriesObject, dateUserAdjustment, timeUserAdjustment,
+                   nameCurrencyUserAdjustment,  noteUserAdjustment,
+                   countUserAdjustmentDetailUserAdjustment, quantityUserAdjustmentDetailUserAdjustment, sumUserAdjustmentDetailUserAdjustment
+
+    OBJECTS d = userAdjustmentDetail
+    PROPERTIES (d) indexUserAdjustmentDetail, idBarcodeSkuUserAdjustmentDetail, nameSkuUserAdjustmentDetail, shortNameUOMSkuUserAdjustmentDetail,
+                   quantityUserAdjustmentDetail, priceUserAdjustmentDetail, sumUserAdjustmentDetail, ADDOBJ, delete
+
+    PROPERTIES(i) TODRAW d addDetailDialogSkuStockUserAdjustmentDetailUserAdjustment,
+                           addDetailInputBarcodeUserAdjustmentDetailUserAdjustment, deleteUserAdjustmentDetailUserAdjustment
+    FILTERS userAdjustmentUserAdjustmentDetail(d) == i
+
+    EVENTS
+        ON OK EXEC prePostUserAdjustment(i)
+
+//    HINTTABLE LIST dateTimeUserAdjustmentDetail, skuUserAdjustmentDetail, supplierStockUserAdjustmentDetail, customerStockUserAdjustmentDetail,
+//                   priceListTypeUserAdjustmentDetail, currencyUserAdjustmentDetail,
+//                   priceUserAdjustmentDetail, VATUserAdjustmentDetail, valueVATUserAdjustmentDetail, adjustmentPriceUserAdjustmentDetail,
+//                   prevListSkuPriceUserAdjustmentDetail, prevListSkuPriceMVATUserAdjustmentDetail, prevListSkuPricePVATUserAdjustmentDetail
+
+
+    EDIT userAdjustment OBJECT i
+;
+
+DESIGN userAdjustment FROM DEFAULT{
+    main {
+        preferredSize = (1024, 768);
+        NEW specification.box BEFORE functions.box{
+
+            ADD d.box {
+                title = 'Спецификация';
+                d.panel {
+                    childConstraints = TO THE RIGHTBOTTOM;
+                }
+            }
+        }
+        NEW header.box BEFORE specification.box {
+            childConstraints = TO THE RIGHT;
+
+            NEW headerRow1 {
+                childConstraints = TO THE BOTTOM;
+
+                ADD i.documentHeaderGroup {
+                    childConstraints = TO THE RIGHTBOTTOM;
+                    ADD PROPERTY(objectClassName) { preferredCharWidth = 10; }
+                    ADD PROPERTY(nameStockUserAdjustment);
+                    ADD PROPERTY(nameNumeratorObject);
+                    ADD PROPERTY(numberObject);
+                    ADD PROPERTY(seriesObject);
+                    ADD PROPERTY(dateUserAdjustment);
+                    ADD PROPERTY(timeUserAdjustment);
+                }
+
+                ADD i.documentPrmGroup {
+                    childConstraints = TO THE RIGHTBOTTOM;
+                }
+
+            }
+
+            ADD i.documentSumGroup {
+                childConstraints = TO THE BOTTOM;
+            }
+        }
+        PROPERTY(formOkAction) {
+            caption = 'Провести';
+        }
+    }
+}
+
+//-- SKU
+@defineDocumentSkuSystemLedgerPriceListType(userAdjustment, accountPriceListType, stock);
+@extendFormDocumentSku(userAdjustment, userAdjustment, i);
+
+addUserAdjustment 'Добавить' = ACTION ADDFORM userAdjustment;
+editUserAdjustment 'Редактировать' (userAdjustment) = ACTION EDITFORM userAdjustment;
+editAdjustment (adjustment) += editUserAdjustment(adjustment);
+
+actualBalanceSkuUserAdjustment 'Остаток фактический' = currentBalanceSkuUserAdjustment(sku, userAdjustment) (+) quantityUserAdjustmentDetailSkuUserAdjustment(sku, userAdjustment);
+
+changeActualQuantitySkuUserAdjustment = ACTION (sku, userAdjustment) {
+    REQUEST NUMERIC[14,3] INPUT;
+    SET requestedNumeric() <- (requestedNumeric() IF sku IS sku AND userAdjustment IS userAdjustment) (-) currentBalanceSkuUserAdjustment(sku, userAdjustment);
+
+    EXEC changeQuantityValueSkuUserAdjustment(sku, userAdjustment);
+}
+
+EXTEND FORM userAdjustment
+    PROPERTIES actualBalanceSkuUserAdjustment(s,i) ON CHANGE EXEC changeActualQuantitySkuUserAdjustment(s, i) BEFORE currentBalanceSkuUserAdjustment(s,i)
+;
+
+FORM adjustments 'Изменения остатков'
+    OBJECTS i = adjustment
+    PROPERTIES (i) READONLY isPostedAdjustment FORCE GRID, objectClassName, numberAdjustment, seriesAdjustment, dateAdjustment, timeAdjustment,
+                            nameStockAdjustment, nameCurrencyAdjustment, noteAdjustment,
+                            countAdjustmentDetailAdjustment, quantityAdjustmentDetailAdjustment, sumAdjustmentDetailAdjustment
+
+    PROPERTIES (i) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
+
+    PROPERTIES ()  addUserAdjustment TODRAW i
+    PROPERTIES (i) editAdjustment
+    PROPERTIES (i) delete FORCE PANEL DRAWTOTOOLBAR  SHOWIF isUserAdjustment(i)
+
+    OBJECTS d = adjustmentDetail
+    PROPERTIES (d) READONLY indexAdjustmentDetail, idBarcodeSkuAdjustmentDetail, nameSkuAdjustmentDetail, shortNameUOMSkuAdjustmentDetail,
+                   quantityAdjustmentDetail, priceAdjustmentDetail, sumAdjustmentDetail
+
+    FILTERS adjustmentAdjustmentDetail(d) == i
+
+    DIALOG adjustment OBJECT i
+;
+
+DESIGN adjustments FROM DEFAULT {
+    main {
+        preferredSize = (1024, 768);
+        PROPERTY (delete(i)) {
+            askConfirm = TRUE;
+        }
+
+        NEW documentContainer BEFORE functions.box {
+            type = SPLITV;
+            childConstraints = TO THE BOTTOM;
+
+            ADD i.box;
+
+            NEW documentDetail {
+                type = TABBED;
+
+                ADD d.box {
+                    title = 'Спецификация';
+                }
+                NEW documentHistory {
+                    title = 'История';
+
+                    ADD i.historyGroup;
+                    ADD i.postedGroup;
+                }
+                NEW printTab {
+                    title = 'Печатные формы';
+                    NEW printContainer {
+                        title = 'Печать';
+                        childConstraints = TO THE BOTTOM;
+                        fillVertical = 2.0; // todo : иначе кнопка не всегда показывается, нужно будет пофиксить как-нибудь
+                    }
+                }
+            }
+        }
+    }
+}
+
+NAVIGATOR {
+    NEW adjustmentNavigator 'Изменение остатков' {
+        ADD adjustments;
+    }
+}
+
+//---------------------------- Изменение остатка инвентаризации sku----------------------------//
+
+CLASS ABSTRACT adjustmentSkuDetail 'Изменение остатка ' : skuLedger;
+TABLE adjustmentSkuDetail (adjustmentSkuDetail);
+
+CLASS outAdjustmentSkuDetail 'Изменение остатка (-)' : adjustmentSkuDetail;
+CLASS inAdjustmentSkuDetail 'Изменение остатка (+)' : adjustmentSkuDetail;
+
+needToOutLedgerAdjustmentDetail (adjustmentDetail) = quantityAdjustmentDetail(adjustmentDetail) < 0
+    AND isPostedAdjustmentDetail(adjustmentDetail);
+needToOutLedgerAdjustment (adjustment) = GROUP SUM needToOutLedgerAdjustmentDetail(adjustmentDetail)
+    BY adjustmentAdjustmentDetail(adjustmentDetail);
+
+needToInLedgerAdjustmentDetail (adjustmentDetail) = quantityAdjustmentDetail(adjustmentDetail) > 0
+    AND isPostedAdjustmentDetail(adjustmentDetail);
+needToInLedgerAdjustment (adjustment) = GROUP SUM needToInLedgerAdjustmentDetail(adjustmentDetail)
+    BY adjustmentAdjustmentDetail(adjustmentDetail);
+
+@defineAggregation(adjustmentDetail, outAdjustmentSkuDetail, needToOutLedgerAdjustmentDetail);
+@defineAggregation(adjustmentDetail, inAdjustmentSkuDetail, needToInLedgerAdjustmentDetail);
+
+adjustmentDetailAdjustmentSkuDetail(adjustmentSkuDetail) = UNION EXCLUSIVE adjustmentDetailOutAdjustmentSkuDetail(adjustmentSkuDetail),
+                                                                                adjustmentDetailInAdjustmentSkuDetail(adjustmentSkuDetail);
+
+@defineDocumentDetailTime(adjustmentDetail, adjustmentSkuDetail);
+@defineDocumentDetailPosted(adjustmentDetail, adjustmentSkuDetail);
+
+stockInAdjustmentSkuDetail(adjustmentSkuDetail) = stockAdjustmentDetail(adjustmentDetailInAdjustmentSkuDetail(adjustmentSkuDetail));
+stockOutAdjustmentSkuDetail(adjustmentSkuDetail) = stockAdjustmentDetail(adjustmentDetailOutAdjustmentSkuDetail(adjustmentSkuDetail));
+stockAdjustmentSkuDetail(adjustmentSkuDetail) = UNION EXCLUSIVE stockInAdjustmentSkuDetail(adjustmentSkuDetail),
+                                                                stockOutAdjustmentSkuDetail(adjustmentSkuDetail) PERSISTENT;
+
+quantityOutAdjustmentSkuDetail (adjustmentSkuDetail) = quantityAdjustmentDetail(adjustmentDetailOutAdjustmentSkuDetail(adjustmentSkuDetail));
+quantityInAdjustmentSkuDetail (adjustmentSkuDetail) = quantityAdjustmentDetail(adjustmentDetailInAdjustmentSkuDetail(adjustmentSkuDetail));   // -
+quantityAdjustmentSkuDetail 'Кол-во изменения' (adjustmentSkuDetail) = UNION EXCLUSIVE quantityOutAdjustmentSkuDetail(adjustmentSkuDetail),
+                                                                                       quantityInAdjustmentSkuDetail(adjustmentSkuDetail) PERSISTENT;
+
+sumOutAdjustmentSkuDetail (adjustmentSkuDetail) = sumAdjustmentDetail(adjustmentDetailOutAdjustmentSkuDetail(adjustmentSkuDetail));
+sumInAdjustmentSkuDetail (adjustmentSkuDetail) = sumAdjustmentDetail(adjustmentDetailInAdjustmentSkuDetail(adjustmentSkuDetail));        // -
+sumAdjustmentSkuDetail 'Сумма изменения' (adjustmentSkuDetail) = UNION EXCLUSIVE sumOutAdjustmentSkuDetail(adjustmentSkuDetail),
+                                                                                 sumInAdjustmentSkuDetail(adjustmentSkuDetail) PERSISTENT;
+
+skuOutAdjustmentSkuDetail (adjustmentSkuDetail) = skuAdjustmentDetail(adjustmentDetailOutAdjustmentSkuDetail(adjustmentSkuDetail));
+skuInAdjustmentSkuDetail (adjustmentSkuDetail) = skuAdjustmentDetail(adjustmentDetailInAdjustmentSkuDetail(adjustmentSkuDetail));
+skuAdjustmentSkuDetail(adjustmentSkuDetail) = UNION EXCLUSIVE skuOutAdjustmentSkuDetail(adjustmentSkuDetail),
+                                                              skuInAdjustmentSkuDetail(adjustmentSkuDetail) PERSISTENT;
+nameSkuAdjustmentSkuDetail 'Товар' (adjustmentSkuDetail) = nameSku(skuAdjustmentSkuDetail(adjustmentSkuDetail)) MINCHARWIDTH 15 PREFCHARWIDTH 15;
+idBarcodeAdjustmentSkuDetail 'Штрих-код' (adjustmentSkuDetail) =  idBarcodeSku(skuAdjustmentSkuDetail(adjustmentSkuDetail));
+
+descriptionOutAdjustmentSkuDetail 'Название документа' (adjustmentSkuDetail) = descriptionAdjustmentDetail(adjustmentDetailOutAdjustmentSkuDetail(adjustmentSkuDetail));
+descriptionInAdjustmentSkuDetail 'Название документа' (adjustmentSkuDetail) = descriptionAdjustmentDetail(adjustmentDetailInAdjustmentSkuDetail(adjustmentSkuDetail));
+descriptionAdjustmentSkuDetail 'Название документа' (adjustmentSkuDetail) = UNION EXCLUSIVE descriptionOutAdjustmentSkuDetail(adjustmentSkuDetail),
+                                                                                            descriptionInAdjustmentSkuDetail(adjustmentSkuDetail) PERSISTENT;
+
+@implementSkuLedger(adjustmentSkuDetail, sku, stock);
+
+EXTEND CLASS outAdjustmentSkuDetail : outFIFOSkuLedger;
+quantityOutFIFOSkuLedger (ledger) += - quantityOutAdjustmentSkuDetail(ledger);
+@implementSkuLedgerOutFIFOBalance(outAdjustmentSkuDetail, sku, stock);
+sumOutSkuLedger (ledger) += - sumOutAdjustmentSkuDetail(ledger);
+
+EXTEND CLASS inAdjustmentSkuDetail : inLIFOSkuLedger;
+quantityInLIFOSkuLedger (ledger) += quantityInAdjustmentSkuDetail(ledger);
+@implementSkuLedgerInLIFOBalance(inAdjustmentSkuDetail, sku, stock);
+sumInSkuLedger (ledger) += sumInAdjustmentSkuDetail(ledger);
+
+

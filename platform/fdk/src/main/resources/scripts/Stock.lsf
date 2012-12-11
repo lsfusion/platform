@@ -1545,18 +1545,26 @@ END
 
 //----------- Изменение кол-ва для строки при изменении кол-ва для товара (один склад)---------------//
 
-META defineDocumentSkuCustom(object, detail, skuProp, stockProp)
+META defineDocumentSkuPriceListType(object, stockProp)
+    @defineDocumentSku(object, sku, stockProp);
+    priceListType###object###sku(object, sku) = (priceListType###object(object) AND sku IS sku) OR priceListTypeAgreementSkuOver(agreement###object(object), sku);
+
+    priceSku###object 'Цена' (sku, object) = pricePriceListTypeSkuStockDateTime(priceListType###object###sku(object, sku), sku, stockProp###object(object), dateTime###object(object));
+END
+META defineDocumentSkuSystemLedgerPriceListType(object, priceListTypeProp, stockProp)
+    @defineDocumentSku(object, sku, stockProp);
+    priceSku###object 'Цена' (sku, object) = pricePriceListTypeSkuStockDateTime(systemLedgerPriceListType.##priceListTypeProp, sku, stockProp###object(object), dateTime###object(object));
+END
+
+
+META defineDocumentSku(object, detail, skuProp, stockProp)
     detail###Sku###object###stockProp (sku, object, stock) =  GROUP MAX detail
         BY skuProp###detail(detail), object###detail(detail), stockProp###detail(detail);
     detail###Sku###object (sku, object) = detail###Sku###object###stockProp(sku, object, stockProp###object(object));
 
     currentBalanceSku###object 'Остаток' (sku, object) = currentBalanceSkuStock(sku, stockProp###object(object));
-    priceListType###object###sku(object, sku) = (priceListType###object(object) AND sku IS sku) OR priceListTypeAgreementSkuOver(agreement###object(object), sku);
 
-    priceSku###object 'Цена' (sku, object) = pricePriceListTypeSkuStockDateTime(priceListType###object###sku(object, sku), sku, stockProp###object(object), dateTime###object(object));
-
-    changeQuantitySku###object = ACTION (sku, object) {
-        REQUEST NUMERIC[14,3] INPUT;
+    changeQuantityValueSku###object = ACTION (sku, object) {
         IF detail###Sku###object(sku, object) THEN {
             IF requestedNumeric() THEN {
                 SET quantity###detail(detail) <- requestedNumeric() WHERE detail == detail###Sku###object(sku, object);
@@ -1575,9 +1583,15 @@ META defineDocumentSkuCustom(object, detail, skuProp, stockProp)
             }
         }
     }
+
+    changeQuantitySku###object = ACTION (sku, object) {
+        REQUEST NUMERIC[14,3] INPUT;
+        EXEC changeQuantityValueSku###object(sku, object);
+    }
 END
+
 META defineDocumentSku(object, skuProp, stockProp)
-    @defineDocumentSkuCustom(object, object##Detail, skuProp, stockProp);
+    @defineDocumentSku(object, object##Detail, skuProp, stockProp);
 END
 
 META extendFormDocumentSkuCustom(object, form, concrete, skuProp, detail)
@@ -1598,7 +1612,7 @@ META extendFormDocumentSkuCustom(object, form, concrete, skuProp, detail)
 
         FILTERGROUP filter
             FILTER 'Товары с остатком ' 'F10' currentBalanceSku###object(s, concrete) DEFAULT
-            FILTER 'Товары в заказе ' 'F9' quantity###detail###skuProp###object(s, concrete)
+            FILTER 'Товары в документе ' 'F9' quantity###detail###skuProp###object(s, concrete)
 
         FILTERGROUP filter1
             FILTER 'Товары с ценой ' 'F11' priceSku###object(s, concrete)
