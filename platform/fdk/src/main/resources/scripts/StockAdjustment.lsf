@@ -57,6 +57,15 @@ skuUserAdjustmentDetail (detail)  <- skuBatch( batchUserAdjustmentDetail(detail)
 
 // --------------------------- Формы ---------------------------------- //
 
+batchDialogUserAdjustmentDetail = ACTION (userAdjustmentDetail) {
+    FORM dialogBatch OBJECTS st = stockUserAdjustmentDetail(userAdjustmentDetail), t = dateTimeUserAdjustmentDetail(userAdjustmentDetail),
+    sk = skuUserAdjustmentDetail(userAdjustmentDetail) MODAL;
+
+    IF formResult() == formResult.ok THEN {
+        SET batchUserAdjustmentDetail(userAdjustmentDetail) <- chosenObject('bt');
+    }
+};
+
 editAdjustment 'Редактировать' = ABSTRACT ACTION (adjustment) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
 
 
@@ -69,7 +78,7 @@ FORM userAdjustment 'Изменение остатков'
 
     OBJECTS d = userAdjustmentDetail
     PROPERTIES (d) indexUserAdjustmentDetail, idBarcodeSkuUserAdjustmentDetail, nameSkuUserAdjustmentDetail, shortNameUOMSkuUserAdjustmentDetail,
-                   quantityUserAdjustmentDetail, priceUserAdjustmentDetail, sumUserAdjustmentDetail, ADDOBJ, delete
+                   descriptionBatchUserAdjustmentDetail ON CHANGE EXEC batchDialogUserAdjustmentDetail(d), quantityUserAdjustmentDetail, priceUserAdjustmentDetail, sumUserAdjustmentDetail, ADDOBJ, delete
 
     PROPERTIES(i) TODRAW d addDetailDialogSkuStockUserAdjustmentDetailUserAdjustment,
                            addDetailInputBarcodeUserAdjustmentDetailUserAdjustment, deleteUserAdjustmentDetailUserAdjustment
@@ -167,7 +176,7 @@ FORM adjustments 'Изменения остатков'
 
     OBJECTS d = adjustmentDetail
     PROPERTIES (d) READONLY indexAdjustmentDetail, idBarcodeSkuAdjustmentDetail, nameSkuAdjustmentDetail, shortNameUOMSkuAdjustmentDetail,
-                   quantityAdjustmentDetail, priceAdjustmentDetail, sumAdjustmentDetail
+                   descriptionBatchAdjustmentDetail, quantityAdjustmentDetail, priceAdjustmentDetail, sumAdjustmentDetail
 
     FILTERS adjustmentAdjustmentDetail(d) == i
 
@@ -250,6 +259,11 @@ stockOutAdjustmentSkuDetail(adjustmentSkuDetail) = stockAdjustmentDetail(adjustm
 stockAdjustmentSkuDetail(adjustmentSkuDetail) = UNION EXCLUSIVE stockInAdjustmentSkuDetail(adjustmentSkuDetail),
                                                                 stockOutAdjustmentSkuDetail(adjustmentSkuDetail) PERSISTENT;
 
+batchInAdjustmentSkuDetail(adjustmentSkuDetail) = batchAdjustmentDetail(adjustmentDetailInAdjustmentSkuDetail(adjustmentSkuDetail));
+batchOutAdjustmentSkuDetail(adjustmentSkuDetail) = batchAdjustmentDetail(adjustmentDetailOutAdjustmentSkuDetail(adjustmentSkuDetail));
+batchAdjustmentSkuDetail(adjustmentSkuDetail) = UNION EXCLUSIVE batchInAdjustmentSkuDetail(adjustmentSkuDetail),
+                                                                batchOutAdjustmentSkuDetail(adjustmentSkuDetail) PERSISTENT;
+
 quantityOutAdjustmentSkuDetail (adjustmentSkuDetail) = quantityAdjustmentDetail(adjustmentDetailOutAdjustmentSkuDetail(adjustmentSkuDetail));
 quantityInAdjustmentSkuDetail (adjustmentSkuDetail) = quantityAdjustmentDetail(adjustmentDetailInAdjustmentSkuDetail(adjustmentSkuDetail));   // -
 quantityAdjustmentSkuDetail 'Кол-во изменения' (adjustmentSkuDetail) = UNION EXCLUSIVE quantityOutAdjustmentSkuDetail(adjustmentSkuDetail),
@@ -276,12 +290,18 @@ descriptionAdjustmentSkuDetail 'Название документа' (adjustment
 
 EXTEND CLASS outAdjustmentSkuDetail : outFIFOSkuLedger;
 quantityOutFIFOSkuLedger (ledger) += - quantityOutAdjustmentSkuDetail(ledger);
-@implementSkuLedgerOutFIFOBalance(outAdjustmentSkuDetail, sku, stock);
+limitOutFIFOSkuLedgerBatch(ledger, batch) += IF batchOutAdjustmentSkuDetail(ledger) THEN
+                                                quantityOutAdjustmentSkuDetail (ledger) AND batchOutAdjustmentSkuDetail(ledger) == batch
+                                                ELSE currentBalanceBatchStock(batch, stockOutAdjustmentSkuDetail(ledger));
 sumOutSkuLedger (ledger) += - sumOutAdjustmentSkuDetail(ledger);
+changedDataSkuLedger(ledger) += CHANGED(batchOutAdjustmentSkuDetail(ledger));
 
 EXTEND CLASS inAdjustmentSkuDetail : inLIFOSkuLedger;
 quantityInLIFOSkuLedger (ledger) += quantityInAdjustmentSkuDetail(ledger);
-@implementSkuLedgerInLIFOBalance(inAdjustmentSkuDetail, sku, stock);
+limitInLIFOSkuLedgerBatch(ledger, batch) += IF batchInAdjustmentSkuDetail(ledger) THEN
+                                               quantityInAdjustmentSkuDetail(ledger) IF batchInAdjustmentSkuDetail(ledger) == batch
+                                               ELSE (quantityBatch(batch) (-) currentBalanceBatch(batch)) AND
+                                                    countLedgerSkuStock(skuInAdjustmentSkuDetail(ledger), stockInAdjustmentSkuDetail(ledger));
 sumInSkuLedger (ledger) += sumInAdjustmentSkuDetail(ledger);
-
+changedDataSkuLedger(ledger) += CHANGED(batchInAdjustmentSkuDetail(ledger));
 
