@@ -1,5 +1,6 @@
 package platform.fdk.actions.geo;
 
+import platform.interop.action.OpenUriClientAction;
 import platform.server.classes.DoubleClass;
 import platform.server.classes.ValueClass;
 import platform.server.logics.DataObject;

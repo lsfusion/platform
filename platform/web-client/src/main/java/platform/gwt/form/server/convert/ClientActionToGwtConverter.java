@@ -152,6 +152,16 @@ public class ClientActionToGwtConverter extends ObjectConverter {
         return new GLogOutAction();
     }
 
+    @Converter(from = OpenUriClientAction.class)
+    public GOpenUriAction convertAction(OpenUriClientAction action) {
+        return new GOpenUriAction(action.uri.toString());
+    }
+
+    @Converter(from = EditNotPerformedClientAction.class)
+    public GEditNotPerformedAction convertAction(EditNotPerformedClientAction action) {
+        return new GEditNotPerformedAction();
+    }
+
     private String generateReport(HttpSession session, boolean toExcel, ReportGenerationData reportData) {
         try {
             TimeZone zone = Calendar.getInstance().getTimeZone();

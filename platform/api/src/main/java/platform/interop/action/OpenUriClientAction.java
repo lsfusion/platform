@@ -1,28 +1,22 @@
-package platform.fdk.actions.geo;
-
-import java.net.URI;
-import platform.interop.action.ClientAction;
-import platform.interop.action.ClientActionDispatcher;
+package platform.interop.action;
 
 import java.awt.*;
 import java.io.IOException;
 import java.net.URI;
 
 
-public class OpenUriClientAction implements ClientAction {
+public class OpenUriClientAction extends ExecuteClientAction {
 
-    URI uri;
+    public URI uri;
 
     public OpenUriClientAction(URI uri) {
         this.uri = uri;
     }
 
-
-    public Object dispatch(ClientActionDispatcher dispatcher) throws IOException {
-
+    @Override
+    public void execute(ClientActionDispatcher dispatcher) throws IOException {
         Desktop desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
         if (desktop != null && desktop.isSupported(Desktop.Action.BROWSE))
             desktop.browse(uri);
-        return true;
     }
 }

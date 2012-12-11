@@ -28,4 +28,8 @@ public interface GActionDispatcher {
     public void execute(GAsyncResultAction action);
 
     public void execute(GLogOutAction action);
+
+    public void execute(GOpenUriAction action);
+
+    public void execute(GEditNotPerformedAction action);
 }

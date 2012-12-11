@@ -1,6 +1,7 @@
 package platform.gwt.form.client.form.dispatch;
 
 import com.allen_sauer.gwt.log.client.Log;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import platform.gwt.base.client.GwtClientUtils;
 import platform.gwt.form.client.ErrorHandlingCallback;
@@ -169,5 +170,14 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     @Override
     public void execute(GLogOutAction action) {
         GwtClientUtils.logout();
+    }
+
+    @Override
+    public void execute(GOpenUriAction action) {
+        Window.open(action.uri, "_blank", "");
+    }
+
+    @Override
+    public void execute(GEditNotPerformedAction action) {
     }
 }
