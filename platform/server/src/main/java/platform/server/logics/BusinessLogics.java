@@ -84,6 +84,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     private Map<String, LogicsModule> nameToModule = new HashMap<String, LogicsModule>();
 
     public final BaseLogicsModule<T> LM;
+    public final ReflectionLogicsModule<T> reflectionLM;
+    public final SecurityLogicsModule<T> securityLM;
+    public final SystemEventsLogicsModule<T> systemEventsLM;
     private String dbName;
 
     public final NavigatorsController navigatorsController;
@@ -264,7 +267,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             DataSession session = createSession();
 
             Query<String, Object> q = new Query<String, Object>(BaseUtils.toList("userId", "policyId"));
-            Expr orderExpr = LM.userPolicyOrder.getExpr(session.getModifier(), q.mapKeys.get("userId"), q.mapKeys.get("policyId"));
+            Expr orderExpr = securityLM.userPolicyOrder.getExpr(session.getModifier(), q.mapKeys.get("userId"), q.mapKeys.get("policyId"));
 
             q.properties.put("pOrder", orderExpr);
             q.and(orderExpr.getWhere());
@@ -295,11 +298,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             DataSession session = createSession();
 
             Query<String, String> qf = new Query<String, String>(BaseUtils.toList("formId"));
-            Expr expr = LM.navigatorElementSID.getExpr(session.getModifier(), qf.mapKeys.get("formId"));
+            Expr expr = reflectionLM.navigatorElementSID.getExpr(session.getModifier(), qf.mapKeys.get("formId"));
             qf.and(expr.getWhere());
             qf.properties.put("sid", expr);
-            qf.properties.put("permit", LM.permitForm.getExpr(session.getModifier(), qf.mapKeys.get("formId")));
-            qf.properties.put("forbid", LM.forbidForm.getExpr(session.getModifier(), qf.mapKeys.get("formId")));
+            qf.properties.put("permit", securityLM.permitForm.getExpr(session.getModifier(), qf.mapKeys.get("formId")));
+            qf.properties.put("forbid", securityLM.forbidForm.getExpr(session.getModifier(), qf.mapKeys.get("formId")));
 
             Collection<Map<String, Object>> formValues = qf.execute(session.sql).values();
             for (Map<String, Object> valueMap : formValues) {
@@ -311,13 +314,13 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             }
 
             Query<String, String> qp = new Query<String, String>(BaseUtils.toList("propertyId"));
-            Expr expr2 = LM.SIDProperty.getExpr(session.getModifier(), qp.mapKeys.get("propertyId"));
+            Expr expr2 = reflectionLM.SIDProperty.getExpr(session.getModifier(), qp.mapKeys.get("propertyId"));
             qp.and(expr2.getWhere());
             qp.properties.put("sid", expr2);
-            qp.properties.put("permitView", LM.permitViewProperty.getExpr(session.getModifier(), qp.mapKeys.get("propertyId")));
-            qp.properties.put("forbidView", LM.forbidViewProperty.getExpr(session.getModifier(), qp.mapKeys.get("propertyId")));
-            qp.properties.put("permitChange", LM.permitChangeProperty.getExpr(session.getModifier(), qp.mapKeys.get("propertyId")));
-            qp.properties.put("forbidChange", LM.forbidChangeProperty.getExpr(session.getModifier(), qp.mapKeys.get("propertyId")));
+            qp.properties.put("permitView", securityLM.permitViewProperty.getExpr(session.getModifier(), qp.mapKeys.get("propertyId")));
+            qp.properties.put("forbidView", securityLM.forbidViewProperty.getExpr(session.getModifier(), qp.mapKeys.get("propertyId")));
+            qp.properties.put("permitChange", securityLM.permitChangeProperty.getExpr(session.getModifier(), qp.mapKeys.get("propertyId")));
+            qp.properties.put("forbidChange", securityLM.forbidChangeProperty.getExpr(session.getModifier(), qp.mapKeys.get("propertyId")));
 
             Collection<Map<String, Object>> propertyValues = qp.execute(session.sql).values();
             for (Map<String, Object> valueMap : propertyValues) {
@@ -345,24 +348,24 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
             DataObject userObject = new DataObject(user.ID, LM.customUser);
 
-            Object forbidAll = LM.forbidAllUserForm.read(session, userObject);
-            Object allowAll = LM.permitAllUserForm.read(session, userObject);
+            Object forbidAll = securityLM.forbidAllUserForm.read(session, userObject);
+            Object allowAll = securityLM.permitAllUserForm.read(session, userObject);
             if (forbidAll != null)
                 policy.navigator.defaultPermission = false;
             else if (allowAll != null)
                 policy.navigator.defaultPermission = true;
 
 
-            Object forbidViewAll = LM.forbidViewAllUserForm.read(session, userObject);
-            Object allowViewAll = LM.permitViewAllUserForm.read(session, userObject);
+            Object forbidViewAll = securityLM.forbidViewAllUserForm.read(session, userObject);
+            Object allowViewAll = securityLM.permitViewAllUserForm.read(session, userObject);
             if (forbidViewAll != null)
                 policy.property.view.defaultPermission = false;
             else if (allowViewAll != null)
                 policy.property.view.defaultPermission = true;
 
 
-            Object forbidChangeAll = LM.forbidChangeAllUserForm.read(session, userObject);
-            Object allowChangeAll = LM.permitChangeAllUserForm.read(session, userObject);
+            Object forbidChangeAll = securityLM.forbidChangeAllUserForm.read(session, userObject);
+            Object allowChangeAll = securityLM.permitChangeAllUserForm.read(session, userObject);
             if (forbidChangeAll != null)
                 policy.property.change.defaultPermission = false;
             else if (allowChangeAll != null)
@@ -370,13 +373,13 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
 
             Query<String, String> qf = new Query<String, String>(BaseUtils.toList("userId", "formId"));
-            Expr formExpr = LM.navigatorElementSID.getExpr(session.getModifier(), qf.mapKeys.get("formId"));
+            Expr formExpr = reflectionLM.navigatorElementSID.getExpr(session.getModifier(), qf.mapKeys.get("formId"));
             qf.and(formExpr.getWhere());
             qf.and(qf.mapKeys.get("userId").compare(new DataObject(user.ID, LM.customUser), Compare.EQUALS));
 
             qf.properties.put("sid", formExpr);
-            qf.properties.put("permit", LM.permitUserForm.getExpr(session.getModifier(), qf.mapKeys.get("userId"), qf.mapKeys.get("formId")));
-            qf.properties.put("forbid", LM.forbidUserForm.getExpr(session.getModifier(), qf.mapKeys.get("userId"), qf.mapKeys.get("formId")));
+            qf.properties.put("permit", securityLM.permitUserForm.getExpr(session.getModifier(), qf.mapKeys.get("userId"), qf.mapKeys.get("formId")));
+            qf.properties.put("forbid", securityLM.forbidUserForm.getExpr(session.getModifier(), qf.mapKeys.get("userId"), qf.mapKeys.get("formId")));
 
             Collection<Map<String, Object>> formValues = qf.execute(session.sql).values();
             for (Map<String, Object> valueMap : formValues) {
@@ -388,16 +391,16 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             }
 
             Query<String, String> qp = new Query<String, String>(BaseUtils.toList("userId", "propertyId"));
-            Expr propExpr = LM.SIDProperty.getExpr(session.getModifier(), qp.mapKeys.get("propertyId"));
+            Expr propExpr = reflectionLM.SIDProperty.getExpr(session.getModifier(), qp.mapKeys.get("propertyId"));
             qp.and(propExpr.getWhere());
             qp.and(qp.mapKeys.get("userId").compare(new DataObject(user.ID, LM.customUser), Compare.EQUALS));
-            qp.and(LM.notNullPermissionUserProperty.getExpr(session.getModifier(), qp.mapKeys.get("userId"), qp.mapKeys.get("propertyId")).getWhere());
+            qp.and(securityLM.notNullPermissionUserProperty.getExpr(session.getModifier(), qp.mapKeys.get("userId"), qp.mapKeys.get("propertyId")).getWhere());
 
             qp.properties.put("sid", propExpr);
-            qp.properties.put("permitView", LM.permitViewUserProperty.getExpr(session.getModifier(), qp.mapKeys.get("userId"), qp.mapKeys.get("propertyId")));
-            qp.properties.put("forbidView", LM.forbidViewUserProperty.getExpr(session.getModifier(), qp.mapKeys.get("userId"), qp.mapKeys.get("propertyId")));
-            qp.properties.put("permitChange", LM.permitChangeUserProperty.getExpr(session.getModifier(), qp.mapKeys.get("userId"), qp.mapKeys.get("propertyId")));
-            qp.properties.put("forbidChange", LM.forbidChangeUserProperty.getExpr(session.getModifier(), qp.mapKeys.get("userId"), qp.mapKeys.get("propertyId")));
+            qp.properties.put("permitView", securityLM.permitViewUserProperty.getExpr(session.getModifier(), qp.mapKeys.get("userId"), qp.mapKeys.get("propertyId")));
+            qp.properties.put("forbidView", securityLM.forbidViewUserProperty.getExpr(session.getModifier(), qp.mapKeys.get("userId"), qp.mapKeys.get("propertyId")));
+            qp.properties.put("permitChange", securityLM.permitChangeUserProperty.getExpr(session.getModifier(), qp.mapKeys.get("userId"), qp.mapKeys.get("propertyId")));
+            qp.properties.put("forbidChange", securityLM.forbidChangeUserProperty.getExpr(session.getModifier(), qp.mapKeys.get("userId"), qp.mapKeys.get("propertyId")));
 
             Collection<Map<String, Object>> propValues = qp.execute(session.sql).values();
             for (Map<String, Object> valueMap : propValues) {
@@ -422,7 +425,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         try {
             DataSession session = createSession();
 
-            if (LM.userDefaultForms.read(session, user) != null) {
+            if (securityLM.userDefaultForms.read(session, user) != null) {
                 return true;
             }
         } catch (Exception e) {
@@ -436,12 +439,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             DataSession session = createSession();
 
             Query<String, String> q = new Query<String, String>(BaseUtils.toList("userId", "formId"));
-            Expr expr = LM.userFormDefaultNumber.getExpr(session.getModifier(), q.mapKeys.get("userId"), q.mapKeys.get("formId"));
+            Expr expr = securityLM.userFormDefaultNumber.getExpr(session.getModifier(), q.mapKeys.get("userId"), q.mapKeys.get("formId"));
             q.and(expr.getWhere());
             q.and(q.mapKeys.get("userId").compare(user, Compare.EQUALS));
 
-            q.properties.put("sid", LM.navigatorElementSID.getExpr(session.getModifier(), q.mapKeys.get("formId")));
-            q.properties.put("number", LM.userFormDefaultNumber.getExpr(session.getModifier(), q.mapKeys.get("userId"), q.mapKeys.get("formId")));
+            q.properties.put("sid", reflectionLM.navigatorElementSID.getExpr(session.getModifier(), q.mapKeys.get("formId")));
+            q.properties.put("number", securityLM.userFormDefaultNumber.getExpr(session.getModifier(), q.mapKeys.get("userId"), q.mapKeys.get("formId")));
 
 
             Collection<Map<String, Object>> values = q.execute(session.sql).values();
@@ -468,9 +471,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         Integer policyID = readPolicy(policyName, session);
         if (policyID == null) {
-            DataObject addObject = session.addObject(LM.policy);
+            DataObject addObject = session.addObject(securityLM.policy);
             LM.name.change(policyName, session, addObject);
-            LM.policyDescription.change(description, session, addObject);
+            securityLM.policyDescription.change(description, session, addObject);
             policyID = (Integer) addObject.object;
             session.apply(this);
         }
@@ -483,7 +486,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     private Integer readPolicy(String name, DataSession session) throws SQLException {
-        return (Integer) LM.nameToPolicy.read(session, new DataObject(name, StringClass.get(50)));
+        return (Integer) securityLM.nameToPolicy.read(session, new DataObject(name, StringClass.get(50)));
     }
 
     public Property getProperty(String sid) {
@@ -535,6 +538,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     protected void createModules() throws IOException {
         addModule(LM);
+        addModule(reflectionLM);
+        addModule(securityLM);
+        addModule(systemEventsLM);
     }
 
     protected void addModulesFromResource(String... paths) throws IOException {
@@ -825,6 +831,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         LM = new BaseLogicsModule(this, logger);
 
+        reflectionLM = new ReflectionLogicsModule(this, this.LM, logger);
+
+        securityLM = new SecurityLogicsModule(this, this.LM, logger);
+
+        systemEventsLM = new SystemEventsLogicsModule(this, this.LM, logger);
+
         navigatorsController = new NavigatorsController(this);
 
         restartController = new RestartController(this);
@@ -858,7 +870,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         initBaseAuthentication();
         initAuthentication();
 
-        resetConnectionStatus();
+        systemEventsLM.resetConnectionStatus();
         logLaunch();
 
         // считаем системного пользователя
@@ -970,10 +982,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         DataSession session = createSession();
 
-        DataObject newLaunch = session.addObject(LM.launch);
-        LM.launchComputer.change(getComputer(OSUtils.getLocalHostName()), session, newLaunch);
-        LM.launchTime.change(LM.currentDateTime.read(session), session, newLaunch);
-        LM.launchRevision.change(getRevision(), session, newLaunch);
+        DataObject newLaunch = session.addObject(systemEventsLM.launch);
+        systemEventsLM.launchComputer.change(getComputer(OSUtils.getLocalHostName()), session, newLaunch);
+        systemEventsLM.launchTime.change(LM.currentDateTime.read(session), session, newLaunch);
+        systemEventsLM.launchRevision.change(getRevision(), session, newLaunch);
 
         session.apply(this);
         session.close();
@@ -1005,9 +1017,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected void synchronizeForms() {
-        synchronizeNavigatorElements(LM.form, FormEntity.class, false, LM.isForm);
-        synchronizeNavigatorElements(LM.navigatorAction, NavigatorAction.class, true, LM.isNavigatorAction);
-        synchronizeNavigatorElements(LM.navigatorElement, NavigatorElement.class, true, LM.isNavigatorElement);
+        synchronizeNavigatorElements(reflectionLM.form, FormEntity.class, false, reflectionLM.isForm);
+        synchronizeNavigatorElements(reflectionLM.navigatorAction, NavigatorAction.class, true, reflectionLM.isNavigatorAction);
+        synchronizeNavigatorElements(reflectionLM.navigatorElement, NavigatorElement.class, true, reflectionLM.isNavigatorElement);
         synchronizeParents();
         synchronizeGroupObjects();
         synchronizePropertyDraws();
@@ -1017,7 +1029,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         ImportField sidField = new ImportField(LM.navigatorElementSIDClass);
         ImportField captionField = new ImportField(LM.navigatorElementCaptionClass);
 
-        ImportKey<?> keyNavigatorElement = new ImportKey(elementCustomClass, LM.SIDToNavigatorElement.getMapping(sidField));
+        ImportKey<?> keyNavigatorElement = new ImportKey(elementCustomClass, reflectionLM.SIDToNavigatorElement.getMapping(sidField));
 
         List<List<Object>> elementsData = new ArrayList<List<Object>>();
         for (NavigatorElement<T> element : LM.root.getChildren(true)) {
@@ -1027,8 +1039,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
 
         List<ImportProperty<?>> propsNavigatorElement = new ArrayList<ImportProperty<?>>();
-        propsNavigatorElement.add(new ImportProperty(sidField, LM.navigatorElementSID.getMapping(keyNavigatorElement)));
-        propsNavigatorElement.add(new ImportProperty(captionField, LM.navigatorElementCaption.getMapping(keyNavigatorElement)));
+        propsNavigatorElement.add(new ImportProperty(sidField, reflectionLM.navigatorElementSID.getMapping(keyNavigatorElement)));
+        propsNavigatorElement.add(new ImportProperty(captionField, reflectionLM.navigatorElementCaption.getMapping(keyNavigatorElement)));
 
         List<ImportDelete> deletes = asList(
                 new ImportDelete(keyNavigatorElement, deleteLP.getMapping(keyNavigatorElement), false)
@@ -1053,15 +1065,15 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     private void synchronizeParents() {
         ImportField sidField = new ImportField(LM.navigatorElementSIDClass);
         ImportField parentSidField = new ImportField(LM.navigatorElementSIDClass);
-        ImportField numberField = new ImportField(LM.numberNavigatorElement);
+        ImportField numberField = new ImportField(reflectionLM.numberNavigatorElement);
 
         List<List<Object>> dataParents = getRelations(LM.root);
 
-        ImportKey<?> keyElement = new ImportKey(LM.navigatorElement, LM.SIDToNavigatorElement.getMapping(sidField));
-        ImportKey<?> keyParent = new ImportKey(LM.navigatorElement, LM.SIDToNavigatorElement.getMapping(parentSidField));
+        ImportKey<?> keyElement = new ImportKey(reflectionLM.navigatorElement, reflectionLM.SIDToNavigatorElement.getMapping(sidField));
+        ImportKey<?> keyParent = new ImportKey(reflectionLM.navigatorElement, reflectionLM.SIDToNavigatorElement.getMapping(parentSidField));
         List<ImportProperty<?>> propsParent = new ArrayList<ImportProperty<?>>();
-        propsParent.add(new ImportProperty(parentSidField, LM.parentNavigatorElement.getMapping(keyElement), LM.object(LM.navigatorElement).getMapping(keyParent)));
-        propsParent.add(new ImportProperty(numberField, LM.numberNavigatorElement.getMapping(keyElement), GroupType.MIN));
+        propsParent.add(new ImportProperty(parentSidField, reflectionLM.parentNavigatorElement.getMapping(keyElement), LM.object(reflectionLM.navigatorElement).getMapping(keyParent)));
+        propsParent.add(new ImportProperty(numberField, reflectionLM.numberNavigatorElement.getMapping(keyElement), GroupType.MIN));
         ImportTable table = new ImportTable(asList(sidField, parentSidField, numberField), dataParents);
         try {
             DataSession session = createSession();
@@ -1096,19 +1108,19 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         ImportField sidNavigatorElementField = new ImportField(LM.navigatorElementSIDClass);
         ImportField sidGroupObjectField = new ImportField(LM.propertySIDValueClass);
 
-        ImportKey<?> keyForm = new ImportKey(LM.form, LM.SIDToNavigatorElement.getMapping(sidNavigatorElementField));
-        ImportKey<?> keyPropertyDraw = new ImportKey(LM.propertyDraw, LM.SIDNavigatorElementSIDPropertyDrawToPropertyDraw.getMapping(sidNavigatorElementField, sidPropertyDrawField));
-        ImportKey<?> keyGroupObject = new ImportKey(LM.groupObject, LM.SIDNavigatorElementSIDGroupObjectToGroupObject.getMapping(sidGroupObjectField, sidNavigatorElementField));
+        ImportKey<?> keyForm = new ImportKey(reflectionLM.form, reflectionLM.SIDToNavigatorElement.getMapping(sidNavigatorElementField));
+        ImportKey<?> keyPropertyDraw = new ImportKey(reflectionLM.propertyDraw, reflectionLM.SIDNavigatorElementSIDPropertyDrawToPropertyDraw.getMapping(sidNavigatorElementField, sidPropertyDrawField));
+        ImportKey<?> keyGroupObject = new ImportKey(securityLM.groupObject, reflectionLM.SIDNavigatorElementSIDGroupObjectToGroupObject.getMapping(sidGroupObjectField, sidNavigatorElementField));
 
         List<ImportProperty<?>> propsPropertyDraw = new ArrayList<ImportProperty<?>>();
-        propsPropertyDraw.add(new ImportProperty(captionPropertyDrawField, LM.captionPropertyDraw.getMapping(keyPropertyDraw)));
-        propsPropertyDraw.add(new ImportProperty(sidPropertyDrawField, LM.propertyDrawSID.getMapping(keyPropertyDraw)));
-        propsPropertyDraw.add(new ImportProperty(sidNavigatorElementField, LM.formPropertyDraw.getMapping(keyPropertyDraw), LM.object(LM.navigatorElement).getMapping(keyForm)));
-        propsPropertyDraw.add(new ImportProperty(sidGroupObjectField, LM.groupObjectPropertyDraw.getMapping(keyPropertyDraw), LM.object(LM.groupObject).getMapping(keyGroupObject)));
+        propsPropertyDraw.add(new ImportProperty(captionPropertyDrawField, reflectionLM.captionPropertyDraw.getMapping(keyPropertyDraw)));
+        propsPropertyDraw.add(new ImportProperty(sidPropertyDrawField, reflectionLM.propertyDrawSID.getMapping(keyPropertyDraw)));
+        propsPropertyDraw.add(new ImportProperty(sidNavigatorElementField, reflectionLM.formPropertyDraw.getMapping(keyPropertyDraw), LM.object(reflectionLM.navigatorElement).getMapping(keyForm)));
+        propsPropertyDraw.add(new ImportProperty(sidGroupObjectField, reflectionLM.groupObjectPropertyDraw.getMapping(keyPropertyDraw), LM.object(securityLM.groupObject).getMapping(keyGroupObject)));
 
 
         List<ImportDelete> deletes = new ArrayList<ImportDelete>();
-        deletes.add(new ImportDelete(keyPropertyDraw, LM.is(LM.propertyDraw).getMapping(keyPropertyDraw), false));
+        deletes.add(new ImportDelete(keyPropertyDraw, LM.is(reflectionLM.propertyDraw).getMapping(keyPropertyDraw), false));
 
         ImportTable table = new ImportTable(asList(captionPropertyDrawField, sidPropertyDrawField, sidNavigatorElementField, sidGroupObjectField), dataPropertyDraws);
 
@@ -1143,15 +1155,15 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         ImportField sidNavigatorElementField = new ImportField(LM.navigatorElementSIDClass);
         ImportField sidGroupObjectField = new ImportField(LM.propertySIDValueClass);
 
-        ImportKey<?> keyForm = new ImportKey(LM.form, LM.SIDToNavigatorElement.getMapping(sidNavigatorElementField));
-        ImportKey<?> keyGroupObject = new ImportKey(LM.groupObject, LM.SIDNavigatorElementSIDGroupObjectToGroupObject.getMapping(sidGroupObjectField, sidNavigatorElementField));
+        ImportKey<?> keyForm = new ImportKey(reflectionLM.form, reflectionLM.SIDToNavigatorElement.getMapping(sidNavigatorElementField));
+        ImportKey<?> keyGroupObject = new ImportKey(securityLM.groupObject, reflectionLM.SIDNavigatorElementSIDGroupObjectToGroupObject.getMapping(sidGroupObjectField, sidNavigatorElementField));
 
         List<ImportProperty<?>> propsGroupObject = new ArrayList<ImportProperty<?>>();
-        propsGroupObject.add(new ImportProperty(sidGroupObjectField, LM.groupObjectSID.getMapping(keyGroupObject)));
-        propsGroupObject.add(new ImportProperty(sidNavigatorElementField, LM.navigatorElementGroupObject.getMapping(keyGroupObject), LM.object(LM.navigatorElement).getMapping(keyForm)));
+        propsGroupObject.add(new ImportProperty(sidGroupObjectField, reflectionLM.groupObjectSID.getMapping(keyGroupObject)));
+        propsGroupObject.add(new ImportProperty(sidNavigatorElementField, reflectionLM.navigatorElementGroupObject.getMapping(keyGroupObject), LM.object(reflectionLM.navigatorElement).getMapping(keyForm)));
 
         List<ImportDelete> deletes = new ArrayList<ImportDelete>();
-        deletes.add(new ImportDelete(keyGroupObject, LM.is(LM.groupObject).getMapping(keyGroupObject), false));
+        deletes.add(new ImportDelete(keyGroupObject, LM.is(securityLM.groupObject).getMapping(keyGroupObject), false));
 
         ImportTable table = new ImportTable(asList(sidNavigatorElementField, sidGroupObjectField), dataGroupObjectList);
 
@@ -1189,7 +1201,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         ImportField returnPropertyField = new ImportField(LM.propertySignatureValueClass);
         ImportField classPropertyField = new ImportField(LM.propertySignatureValueClass);
 
-        ImportKey<?> keyProperty = new ImportKey(LM.property, LM.SIDToProperty.getMapping(sidPropertyField));
+        ImportKey<?> keyProperty = new ImportKey(LM.property, reflectionLM.SIDToProperty.getMapping(sidPropertyField));
 
         List<List<Object>> dataProperty = new ArrayList<List<Object>>();
         for (Property property : getProperties()) {
@@ -1219,14 +1231,14 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
 
         List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
-        properties.add(new ImportProperty(sidPropertyField, LM.SIDProperty.getMapping(keyProperty)));
-        properties.add(new ImportProperty(captionPropertyField, LM.captionProperty.getMapping(keyProperty)));
-        properties.add(new ImportProperty(loggablePropertyField, LM.loggableProperty.getMapping(keyProperty)));
-        properties.add(new ImportProperty(storedPropertyField, LM.storedProperty.getMapping(keyProperty)));
-        properties.add(new ImportProperty(isSetNotNullPropertyField, LM.isSetNotNullProperty.getMapping(keyProperty)));
-        properties.add(new ImportProperty(signaturePropertyField, LM.signatureProperty.getMapping(keyProperty)));
-        properties.add(new ImportProperty(returnPropertyField, LM.returnProperty.getMapping(keyProperty)));
-        properties.add(new ImportProperty(classPropertyField, LM.classProperty.getMapping(keyProperty)));
+        properties.add(new ImportProperty(sidPropertyField, reflectionLM.SIDProperty.getMapping(keyProperty)));
+        properties.add(new ImportProperty(captionPropertyField, reflectionLM.captionProperty.getMapping(keyProperty)));
+        properties.add(new ImportProperty(loggablePropertyField, reflectionLM.loggableProperty.getMapping(keyProperty)));
+        properties.add(new ImportProperty(storedPropertyField, reflectionLM.storedProperty.getMapping(keyProperty)));
+        properties.add(new ImportProperty(isSetNotNullPropertyField, reflectionLM.isSetNotNullProperty.getMapping(keyProperty)));
+        properties.add(new ImportProperty(signaturePropertyField, reflectionLM.signatureProperty.getMapping(keyProperty)));
+        properties.add(new ImportProperty(returnPropertyField, reflectionLM.returnProperty.getMapping(keyProperty)));
+        properties.add(new ImportProperty(classPropertyField, reflectionLM.classProperty.getMapping(keyProperty)));
 
         List<ImportDelete> deletes = new ArrayList<ImportDelete>();
         deletes.add(new ImportDelete(keyProperty, LM.is(LM.property).getMapping(keyProperty), false));
@@ -1250,7 +1262,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     private void synchronizePropertyParents() {
         ImportField sidPropertyField = new ImportField(LM.propertySIDValueClass);
-        ImportField numberPropertyField = new ImportField(LM.numberProperty);
+        ImportField numberPropertyField = new ImportField(reflectionLM.numberProperty);
         ImportField parentSidField = new ImportField(LM.navigatorElementSIDClass);
 
         List<List<Object>> dataParent = new ArrayList<List<Object>>();
@@ -1259,12 +1271,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 dataParent.add(asList(property.getSID(), (Object) property.getParent().getSID(), getNumberInListOfChildren(property)));
         }
 
-        ImportKey<?> keyProperty = new ImportKey(LM.property, LM.SIDToProperty.getMapping(sidPropertyField));
-        ImportKey<?> keyParent = new ImportKey(LM.abstractGroup, LM.SIDToAbstractGroup.getMapping(parentSidField));
+        ImportKey<?> keyProperty = new ImportKey(LM.property, reflectionLM.SIDToProperty.getMapping(sidPropertyField));
+        ImportKey<?> keyParent = new ImportKey(reflectionLM.abstractGroup, reflectionLM.SIDToAbstractGroup.getMapping(parentSidField));
         List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
 
-        properties.add(new ImportProperty(parentSidField, LM.parentProperty.getMapping(keyProperty), LM.object(LM.abstractGroup).getMapping(keyParent)));
-        properties.add(new ImportProperty(numberPropertyField, LM.numberProperty.getMapping(keyProperty)));
+        properties.add(new ImportProperty(parentSidField, reflectionLM.parentProperty.getMapping(keyProperty), LM.object(reflectionLM.abstractGroup).getMapping(keyParent)));
+        properties.add(new ImportProperty(numberPropertyField, reflectionLM.numberProperty.getMapping(keyProperty)));
         ImportTable table = new ImportTable(asList(sidPropertyField, parentSidField, numberPropertyField), dataParent);
 
         try {
@@ -1285,9 +1297,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected void synchronizeGroupProperties() {
         ImportField sidField = new ImportField(LM.navigatorElementSIDClass);
         ImportField captionField = new ImportField(LM.navigatorElementCaptionClass);
-        ImportField numberField = new ImportField(LM.numberAbstractGroup);
+        ImportField numberField = new ImportField(reflectionLM.numberAbstractGroup);
 
-        ImportKey<?> key = new ImportKey(LM.abstractGroup, LM.SIDToAbstractGroup.getMapping(sidField));
+        ImportKey<?> key = new ImportKey(reflectionLM.abstractGroup, reflectionLM.SIDToAbstractGroup.getMapping(sidField));
 
         List<List<Object>> data = new ArrayList<List<Object>>();
 
@@ -1296,11 +1308,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
 
         List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
-        props.add(new ImportProperty(sidField, LM.SIDAbstractGroup.getMapping(key)));
-        props.add(new ImportProperty(captionField, LM.captionAbstractGroup.getMapping(key)));
+        props.add(new ImportProperty(sidField, reflectionLM.SIDAbstractGroup.getMapping(key)));
+        props.add(new ImportProperty(captionField, reflectionLM.captionAbstractGroup.getMapping(key)));
 
         List<ImportDelete> deletes = new ArrayList<ImportDelete>();
-        deletes.add(new ImportDelete(key, LM.is(LM.abstractGroup).getMapping(key), false));
+        deletes.add(new ImportDelete(key, LM.is(reflectionLM.abstractGroup).getMapping(key), false));
 
         ImportTable table = new ImportTable(asList(sidField, captionField), data);
 
@@ -1313,10 +1325,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
 
         ImportField parentSidField = new ImportField(LM.navigatorElementSIDClass);
-        ImportKey<?> key2 = new ImportKey(LM.abstractGroup, LM.SIDToAbstractGroup.getMapping(parentSidField));
+        ImportKey<?> key2 = new ImportKey(reflectionLM.abstractGroup, reflectionLM.SIDToAbstractGroup.getMapping(parentSidField));
         List<ImportProperty<?>> props2 = new ArrayList<ImportProperty<?>>();
-        props2.add(new ImportProperty(parentSidField, LM.parentAbstractGroup.getMapping(key), LM.object(LM.abstractGroup).getMapping(key2)));
-        props2.add(new ImportProperty(numberField, LM.numberAbstractGroup.getMapping(key)));
+        props2.add(new ImportProperty(parentSidField, reflectionLM.parentAbstractGroup.getMapping(key), LM.object(reflectionLM.abstractGroup).getMapping(key2)));
+        props2.add(new ImportProperty(numberField, reflectionLM.numberAbstractGroup.getMapping(key)));
         ImportTable table2 = new ImportTable(asList(sidField, parentSidField, numberField), data2);
 
         try {
@@ -1355,22 +1367,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             }
         }
         return 0;
-    }
-
-    protected void resetConnectionStatus() {
-        try {
-            DataSession session = createSession();
-
-            PropertyChange statusChanges = new PropertyChange(LM.connectionStatus.getDataObject("disconnectedConnection"),
-                    BaseUtils.single(LM.connectionCurrentStatus.property.interfaces), LM.connectionStatus.getDataObject("connectedConnection"));
-
-            session.change((CalcProperty) LM.connectionCurrentStatus.property, statusChanges);
-
-            session.apply(this);
-            session.close();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
     }
 
     private final String navigatorTreeFilePath = "conf/navigatorTree.data";
@@ -2380,26 +2376,26 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         DataSession session = createSession();
         for (String sid : columnsToDrop.keySet()) {
-            DataObject object = session.addObject(LM.dropColumn);
-            LM.sidDropColumn.change(sid, session, object);
-            LM.sidTableDropColumn.change(columnsToDrop.get(sid), session, object);
-            LM.timeDropColumn.change(new Timestamp(Calendar.getInstance().getTimeInMillis()), session, object);
-            LM.revisionDropColumn.change(getRevision(), session, object);
+            DataObject object = session.addObject(reflectionLM.dropColumn);
+            reflectionLM.sidDropColumn.change(sid, session, object);
+            reflectionLM.sidTableDropColumn.change(columnsToDrop.get(sid), session, object);
+            reflectionLM.timeDropColumn.change(new Timestamp(Calendar.getInstance().getTimeInMillis()), session, object);
+            reflectionLM.revisionDropColumn.change(getRevision(), session, object);
         }
         session.apply(this);
         session.close();
     }
 
     public void synchronizeTables() {
-        ImportField tableSidField = new ImportField(LM.sidTable);
-        ImportField tableKeySidField = new ImportField(LM.sidTableKey);
-        ImportField tableKeyNameField = new ImportField(LM.nameTableKey);
-        ImportField tableKeyClassField = new ImportField(LM.classTableKey);
-        ImportField tableColumnSidField = new ImportField(LM.sidTableColumn);
+        ImportField tableSidField = new ImportField(reflectionLM.sidTable);
+        ImportField tableKeySidField = new ImportField(reflectionLM.sidTableKey);
+        ImportField tableKeyNameField = new ImportField(reflectionLM.nameTableKey);
+        ImportField tableKeyClassField = new ImportField(reflectionLM.classTableKey);
+        ImportField tableColumnSidField = new ImportField(reflectionLM.sidTableColumn);
 
-        ImportKey<?> tableKey = new ImportKey(LM.table, LM.sidToTable.getMapping(tableSidField));
-        ImportKey<?> tableKeyKey = new ImportKey(LM.tableKey, LM.sidToTableKey.getMapping(tableKeySidField));
-        ImportKey<?> tableColumnKey = new ImportKey(LM.tableColumn, LM.sidToTableColumn.getMapping(tableColumnSidField));
+        ImportKey<?> tableKey = new ImportKey(reflectionLM.table, reflectionLM.sidToTable.getMapping(tableSidField));
+        ImportKey<?> tableKeyKey = new ImportKey(reflectionLM.tableKey, reflectionLM.sidToTableKey.getMapping(tableKeySidField));
+        ImportKey<?> tableColumnKey = new ImportKey(reflectionLM.tableColumn, reflectionLM.sidToTableColumn.getMapping(tableColumnSidField));
 
         List<List<Object>> data = new ArrayList<List<Object>>();
         for (DataTable dataTable : LM.tableFactory.getDataTables(LM.baseClass)) {
@@ -2411,15 +2407,15 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
 
         List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
-        properties.add(new ImportProperty(tableSidField, LM.sidTable.getMapping(tableKey)));
-        properties.add(new ImportProperty(tableKeySidField, LM.sidTableKey.getMapping(tableKeyKey)));
-        properties.add(new ImportProperty(tableKeyNameField, LM.nameTableKey.getMapping(tableKeyKey)));
-        properties.add(new ImportProperty(tableSidField, LM.tableTableKey.getMapping(tableKeyKey), LM.object(LM.table).getMapping(tableKey)));
-        properties.add(new ImportProperty(tableKeyClassField, LM.classTableKey.getMapping(tableKeyKey)));
+        properties.add(new ImportProperty(tableSidField, reflectionLM.sidTable.getMapping(tableKey)));
+        properties.add(new ImportProperty(tableKeySidField, reflectionLM.sidTableKey.getMapping(tableKeyKey)));
+        properties.add(new ImportProperty(tableKeyNameField, reflectionLM.nameTableKey.getMapping(tableKeyKey)));
+        properties.add(new ImportProperty(tableSidField, reflectionLM.tableTableKey.getMapping(tableKeyKey), LM.object(reflectionLM.table).getMapping(tableKey)));
+        properties.add(new ImportProperty(tableKeyClassField, reflectionLM.classTableKey.getMapping(tableKeyKey)));
 
         List<ImportDelete> deletes = new ArrayList<ImportDelete>();
-        deletes.add(new ImportDelete(tableKey, LM.is(LM.table).getMapping(tableKey), false));
-        deletes.add(new ImportDelete(tableKeyKey, LM.is(LM.tableKey).getMapping(tableKeyKey), false));
+        deletes.add(new ImportDelete(tableKey, LM.is(reflectionLM.table).getMapping(tableKey), false));
+        deletes.add(new ImportDelete(tableKeyKey, LM.is(reflectionLM.tableKey).getMapping(tableKeyKey), false));
 
         ImportTable table = new ImportTable(asList(tableSidField, tableKeyNameField, tableKeySidField, tableKeyClassField), data);
 
@@ -2432,12 +2428,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
 
         List<ImportProperty<?>> properties2 = new ArrayList<ImportProperty<?>>();
-        properties2.add(new ImportProperty(tableSidField, LM.sidTable.getMapping(tableKey)));
-        properties2.add(new ImportProperty(tableColumnSidField, LM.sidTableColumn.getMapping(tableColumnKey)));
-        properties2.add(new ImportProperty(tableSidField, LM.tableTableColumn.getMapping(tableColumnKey), LM.object(LM.table).getMapping(tableKey)));
+        properties2.add(new ImportProperty(tableSidField, reflectionLM.sidTable.getMapping(tableKey)));
+        properties2.add(new ImportProperty(tableColumnSidField, reflectionLM.sidTableColumn.getMapping(tableColumnKey)));
+        properties2.add(new ImportProperty(tableSidField, reflectionLM.tableTableColumn.getMapping(tableColumnKey), LM.object(reflectionLM.table).getMapping(tableKey)));
 
         List<ImportDelete> deletes2 = new ArrayList<ImportDelete>();
-        deletes2.add(new ImportDelete(tableColumnKey, LM.is(LM.tableColumn).getMapping(tableColumnKey), false));
+        deletes2.add(new ImportDelete(tableColumnKey, LM.is(reflectionLM.tableColumn).getMapping(tableColumnKey), false));
 
         ImportTable table2 = new ImportTable(asList(tableSidField, tableColumnSidField), data2);
 
@@ -2461,7 +2457,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     public void recalculateStats(DataSession session) throws SQLException {
         for (DataTable dataTable : LM.tableFactory.getDataTables(LM.baseClass)) {
-            dataTable.calculateStat(LM, session);
+            dataTable.calculateStat(this.reflectionLM, session);
         }
     }
 
@@ -2483,7 +2479,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public void updateStats(boolean statDefault) throws SQLException {
         DataSession session = createSession();
         for (DataTable dataTable : LM.tableFactory.getDataTables(LM.baseClass)) {
-            dataTable.updateStat(LM, session, statDefault);
+            dataTable.updateStat(this.reflectionLM, session, statDefault);
         }
     }
 
@@ -2707,8 +2703,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         Map<Object, KeyExpr> keys = isProperty.getMapKeys();
         KeyExpr key = BaseUtils.singleValue(keys);
         Query<Object, Object> query = new Query<Object, Object>(keys);
-        query.properties.put("SIDProperty", LM.SIDProperty.getExpr(session.getModifier(), key));
-        query.properties.put("userLoggableProperty", LM.userLoggableProperty.getExpr(session.getModifier(), key));
+        query.properties.put("SIDProperty", reflectionLM.SIDProperty.getExpr(session.getModifier(), key));
+        query.properties.put("userLoggableProperty", reflectionLM.userLoggableProperty.getExpr(session.getModifier(), key));
         query.and(isProperty.getExpr(key).getWhere());
         OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(session.sql);
 
@@ -2748,7 +2744,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             newKeys2.put("notification", notificationExpr2);
 
             Query<Object, Object> query2 = new Query<Object, Object>(newKeys2);
-            query2.properties.put("SIDProperty", LM.SIDProperty.getExpr(session.getModifier(), propertyExpr2));
+            query2.properties.put("SIDProperty", reflectionLM.SIDProperty.getExpr(session.getModifier(), propertyExpr2));
             query2.and(LM.inNotificationProperty.getExpr(session.getModifier(), notificationExpr2, propertyExpr2).getWhere());
             query2.and(notificationExpr2.compare(notificationObject, Compare.EQUALS));
             OrderedMap<Map<Object, Object>, Map<Object, Object>> result2 = query2.execute(session.sql);
@@ -2787,8 +2783,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         Map<Object, KeyExpr> keys = isProperty.getMapKeys();
         KeyExpr key = BaseUtils.singleValue(keys);
         Query<Object, Object> query = new Query<Object, Object>(keys);
-        query.properties.put("SIDProperty", LM.SIDProperty.getExpr(session.getModifier(), key));
-        query.properties.put("isSetNotNullProperty", LM.isSetNotNullProperty.getExpr(session.getModifier(), key));
+        query.properties.put("SIDProperty", reflectionLM.SIDProperty.getExpr(session.getModifier(), key));
+        query.properties.put("isSetNotNullProperty", reflectionLM.isSetNotNullProperty.getExpr(session.getModifier(), key));
         query.and(isProperty.getExpr(key).getWhere());
         OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(session.sql);
 
@@ -2949,10 +2945,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 Expr roleExpr = keys.get("role");
 
                 Query<String, String> q = new Query<String, String>(keys);
-                q.and(LM.inUserMainRole.getExpr(session.getModifier(), userExpr, roleExpr).getWhere());
+                q.and(securityLM.inUserMainRole.getExpr(session.getModifier(), userExpr, roleExpr).getWhere());
                 q.and(LM.userLogin.getExpr(session.getModifier(), userExpr).compare(new DataObject(username), Compare.EQUALS));
 
-                q.properties.put("roleName", LM.userRoleSID.getExpr(session.getModifier(), roleExpr));
+                q.properties.put("roleName", securityLM.userRoleSID.getExpr(session.getModifier(), roleExpr));
 
                 OrderedMap<Map<String, Object>, Map<String, Object>> values = q.execute(session.sql);
 
@@ -3004,17 +3000,17 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         DataSession session = createSession();
         DataObject exceptionObject;
         if (client) {
-            exceptionObject = session.addObject(LM.clientException);
-            LM.clientClientException.change(clientName, session, exceptionObject);
+            exceptionObject = session.addObject(systemEventsLM.clientException);
+            systemEventsLM.clientClientException.change(clientName, session, exceptionObject);
             String userLogin = (String) LM.userLogin.read(session, user);
-            LM.loginClientException.change(userLogin, session, exceptionObject);
+            systemEventsLM.loginClientException.change(userLogin, session, exceptionObject);
         } else {
-            exceptionObject = session.addObject(LM.serverException);
+            exceptionObject = session.addObject(systemEventsLM.serverException);
         }
-        LM.messageException.change(message, session, exceptionObject);
-        LM.typeException.change(errorType, session, exceptionObject);
-        LM.erTraceException.change(erTrace, session, exceptionObject);
-        LM.dateException.change(DateConverter.dateToStamp(Calendar.getInstance().getTime()), session, exceptionObject);
+        systemEventsLM.messageException.change(message, session, exceptionObject);
+        systemEventsLM.typeException.change(errorType, session, exceptionObject);
+        systemEventsLM.erTraceException.change(erTrace, session, exceptionObject);
+        systemEventsLM.dateException.change(DateConverter.dateToStamp(Calendar.getInstance().getTime()), session, exceptionObject);
 
         session.apply(this);
         session.close();
@@ -3071,8 +3067,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         Boolean default2;
         try {
             DataSession session = createSession();
-            DataObject propertyObject = new DataObject(LM.SIDToProperty.read(session, new DataObject(propertySid)), LM.property);
-            default2 = (Boolean) LM.permitViewProperty.read(session, propertyObject);
+            DataObject propertyObject = new DataObject(reflectionLM.SIDToProperty.read(session, new DataObject(propertySid)), LM.property);
+            default2 = (Boolean) securityLM.permitViewProperty.read(session, propertyObject);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

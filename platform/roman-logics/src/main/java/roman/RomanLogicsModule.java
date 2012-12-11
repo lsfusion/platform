@@ -770,7 +770,6 @@ public class RomanLogicsModule extends LogicsModule {
     private LAP seekSupplierBoxSIDSupplier;
     private LCP between;
     private LCP betweenDates;
-    private LCP dumb1;
     private LCP quantityPalletShipmentBetweenDate;
     private LCP quantityPalletFreightBetweenDate;
     private LCP quantityShipmentStockSku;
@@ -1538,6 +1537,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         item = addConcreteClass("item", "Товар", sku);
 
+        transaction = addAbstractClass("transaction", "Транзакция", baseClass);
         document = addAbstractClass("document", "Документ", transaction);
         list = addAbstractClass("list", "Список", baseClass);
 
@@ -1617,8 +1617,6 @@ public class RomanLogicsModule extends LogicsModule {
         seasonSupplier = addConcreteClass("seasonSupplier", "Сезон поставщика", baseClass);
 
         typeFabric = addConcreteClass("typeFabric", "Тип одежды", baseClass.named, baseLM.multiLanguageNamed);
-
-        transaction = addAbstractClass("transaction", "Транзакция", baseClass);
 
         freightBox = addConcreteClass("freightBox", "Короб для транспортировки", stock, freightUnit);
 
@@ -1818,7 +1816,6 @@ public class RomanLogicsModule extends LogicsModule {
 
         between = addJProp("between", "Между", baseLM.and1, baseLM.groeq2, 1, 2, baseLM.groeq2, 3, 1);
         betweenDates = addJProp("Между датами", between, object(DateClass.instance), 1, object(DateClass.instance), 2, object(DateClass.instance), 3);
-        dumb1 = dumb(1);
 
         idGroup.add(baseLM.objectValue);
         baseLM.delete.property.askConfirm = true;
@@ -6496,7 +6493,7 @@ public class RomanLogicsModule extends LogicsModule {
         private BalanceBrandWarehouseFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
 
-            objSupplier = addSingleGroupObject(supplier, "Поставщик", baseLM.name, dumb1, dumb1, dumb1);
+            objSupplier = addSingleGroupObject(supplier, "Поставщик", baseLM.name, baseLM.dumb1, baseLM.dumb1, baseLM.dumb1);
 
             objBrand = addSingleGroupObject(brandSupplier, "Бренд", baseLM.name, quantityBrandSupplier);
 
@@ -6518,7 +6515,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             objArticle2 = addSingleGroupObject(article, "Артикул", sidArticle);
             addPropertyDraw(quantityDocumentArticle, objInvoice, objArticle2);
-            addPropertyDraw(objArticle2, dumb1, nameArticleSku, nameThemeSupplierArticle, nameCategoryArticleSku);
+            addPropertyDraw(objArticle2, baseLM.dumb1, nameArticleSku, nameThemeSupplierArticle, nameCategoryArticleSku);
 
             objSku = addSingleGroupObject(sku, "SKU", barcode);
             addPropertyDraw(quantityStockSku, objBox, objSku);
@@ -6529,7 +6526,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             objSku2 = addSingleGroupObject(sku, "SKU", barcode);
             addPropertyDraw(quantityDocumentSku, objInvoice, objSku2);
-            addPropertyDraw(objSku2, dumb1, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem,
+            addPropertyDraw(objSku2, baseLM.dumb1, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem,
                     nameCountrySku, netWeightSku, mainCompositionSku, additionalCompositionSku);
 
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku2.groupTo);

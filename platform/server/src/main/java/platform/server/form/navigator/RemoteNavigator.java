@@ -367,13 +367,13 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
             if (connection != null) {
                 DataSession session = createSession();
 
-                Integer formId = (Integer) BL.LM.SIDToNavigatorElement.read(session, new DataObject(sid, BL.LM.navigatorElementSIDClass));
+                Integer formId = (Integer) BL.reflectionLM.SIDToNavigatorElement.read(session, new DataObject(sid, BL.LM.navigatorElementSIDClass));
                 if (formId == null) {
                     //будем считать, что к SID модифицированных форм будет добавляться что-нибудь через подчёркивание
                     int ind = sid.indexOf('_');
                     if (ind != -1) {
                         sid = sid.substring(0, ind);
-                        formId = (Integer) BL.LM.SIDToNavigatorElement.read(session, new DataObject(sid, BL.LM.navigatorElementSIDClass));
+                        formId = (Integer) BL.reflectionLM.SIDToNavigatorElement.read(session, new DataObject(sid, BL.LM.navigatorElementSIDClass));
                     }
 
                     if (formId == null) {
@@ -381,10 +381,10 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
                     }
                 }
 
-                DataObject formObject = new DataObject(formId, BL.LM.navigatorElement);
+                DataObject formObject = new DataObject(formId, BL.reflectionLM.navigatorElement);
 
-                int count = 1 + nvl((Integer) BL.LM.connectionFormCount.read(session, connection, formObject), 0);
-                BL.LM.connectionFormCount.change(count, session, connection, formObject);
+                int count = 1 + nvl((Integer) BL.reflectionLM.connectionFormCount.read(session, connection, formObject), 0);
+                BL.reflectionLM.connectionFormCount.change(count, session, connection, formObject);
 
                 session.apply(BL);
                 session.close();

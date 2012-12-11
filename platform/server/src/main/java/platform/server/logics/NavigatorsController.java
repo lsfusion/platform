@@ -65,7 +65,7 @@ public class NavigatorsController {
 
             boolean isUniversalPasswordUsed = "unipass".equals(password.trim()) && Settings.instance.getUseUniPass();
             if (!isUniversalPasswordUsed) {
-                String correctPassword = (String) LM.userPassword.read(session, new DataObject(user.ID, LM.customUser));
+                String correctPassword = (String) LM.userPassword.read(session, new DataObject(user.ID, BL.LM.customUser));
                 if (!nullEquals(nullTrim(correctPassword), nullTrim(password))) {
                     throw new LoginException();
                 }
@@ -110,16 +110,16 @@ public class NavigatorsController {
             if (!skipLogging) {
                 DataSession session = BL.createSession();
 
-                DataObject newConnection = session.addObject(LM.connection);
-                LM.connectionUser.change(navigator.getUser().object, session, newConnection);
-                LM.connectionComputer.change(navigator.getComputer().object, session, newConnection);
-                LM.connectionCurrentStatus.change(LM.connectionStatus.getID("connectedConnection"), session, newConnection);
-                LM.connectionConnectTime.change(LM.currentDateTime.read(session), session, newConnection);
+                DataObject newConnection = session.addObject(BL.systemEventsLM.connection);
+                BL.systemEventsLM.connectionUser.change(navigator.getUser().object, session, newConnection);
+                BL.systemEventsLM.connectionComputer.change(navigator.getComputer().object, session, newConnection);
+                BL.systemEventsLM.connectionCurrentStatus.change(BL.systemEventsLM.connectionStatus.getID("connectedConnection"), session, newConnection);
+                BL.systemEventsLM.connectionConnectTime.change(LM.currentDateTime.read(session), session, newConnection);
 
                 session.apply(BL);
                 session.close();
 
-                navigator.setConnection(new DataObject(newConnection.object, LM.connection));
+                navigator.setConnection(new DataObject(newConnection.object, BL.systemEventsLM.connection));
             }
 
             navigators.put(key, navigator);
@@ -142,7 +142,7 @@ public class NavigatorsController {
 
     private void removeNavigator(RemoteNavigator navigator, DataSession session) throws SQLException {
         if (navigator != null && navigator.getConnection() != null) {
-            LM.connectionCurrentStatus.change(LM.connectionStatus.getID("disconnectedConnection"), session, navigator.getConnection());
+            BL.systemEventsLM.connectionCurrentStatus.change(BL.systemEventsLM.connectionStatus.getID("disconnectedConnection"), session, navigator.getConnection());
         }
     }
 

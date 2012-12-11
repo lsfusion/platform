@@ -73,36 +73,17 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public AbstractCustomClass contact;
     public AbstractCustomClass user;
     public ConcreteCustomClass systemUser;
+    public ConcreteCustomClass session;
+    public ConcreteCustomClass multiLanguageNamed;
     public ConcreteCustomClass customUser;
     public ConcreteCustomClass computer;
-    public ConcreteCustomClass policy;
-    public ConcreteCustomClass session;
-    public ConcreteCustomClass userRole;
-    public ConcreteCustomClass multiLanguageNamed;
-    public ConcreteCustomClass navigatorElement;
-    public ConcreteCustomClass form;
-    public ConcreteCustomClass navigatorAction;
-    public ConcreteCustomClass propertyDraw;
-    public ConcreteCustomClass groupObject;
-    public StaticCustomClass propertyDrawShowStatus;
-    public ConcreteCustomClass abstractGroup;
     public ConcreteCustomClass property;
     public ConcreteCustomClass notification;
     public ConcreteCustomClass scheduledTask;
     public ConcreteCustomClass scheduledTaskLog;
     public ConcreteCustomClass scheduledClientTaskLog;
-    public AbstractCustomClass exception;
-    public ConcreteCustomClass clientException;
-    public ConcreteCustomClass serverException;
-    public ConcreteCustomClass connection;
-    public ConcreteCustomClass launch;
-    public StaticCustomClass connectionStatus;
     public ConcreteCustomClass dictionary;
     public ConcreteCustomClass dictionaryEntry;
-    public ConcreteCustomClass table;
-    public ConcreteCustomClass tableKey;
-    public ConcreteCustomClass tableColumn;
-    public ConcreteCustomClass dropColumn;
 
     public AbstractCustomClass barcodeObject;
 
@@ -215,30 +196,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP userPhone;
     public LCP userPostAddress;
     public LCP userBirthday;
-    public LCP userMainRole;
-    public LCP customUserMainRole;
-    public LCP customUserSIDMainRole;
-    public LCP nameUserMainRole;
-    public LCP inUserMainRole;
-    public LCP userRoleSID;
-    public LCP userRoleDefaultForms;
-    public LCP forbidAllUserRoleForms;
-    public LCP forbidAllUserForm;
-    public LCP permitAllUserRoleForms;
-    public LCP permitAllUserForm;
-    public LCP forbidViewAllUserRoleProperty;
-    public LCP forbidViewAllUserForm;
-    public LCP permitViewAllUserRoleProperty;
-    public LCP permitViewAllUserForm;
-    public LCP forbidChangeAllUserRoleProperty;
-    public LCP forbidChangeAllUserForm;
-    public LCP permitChangeAllUserRoleProperty;
-    public LCP permitChangeAllUserForm;
 
-    public LCP userDefaultForms;
-    public LCP sidToRole;
-    public LCP inUserRole;
-    public LCP inLoginSID;
     public LCP currentUserName;
     public LCP<?> loginToUser;
 
@@ -248,25 +206,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     public LAP emailUserPassUser;
 
-    public LCP connectionUser;
-    public LCP userNameConnection;
-    public LCP connectionComputer;
-    public LCP<PropertyInterface> connectionCurrentStatus;
-    public LCP connectionFormCount;
-    public LCP connectionConnectTime;
-    public LCP connectionDisconnectTime;
-    public LAP disconnectConnection;
-
-
-    public LCP launchComputer;
-    public LCP computerNameLaunch;
-    public LCP launchTime;
-    public LCP launchRevision;
-
-    public LCP policyDescription;
-    protected LCP<?> nameToPolicy;
-    public LCP userRolePolicyOrder;
-    public LCP userPolicyOrder;
 
     public LCP hostname;
 
@@ -284,66 +223,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP objectClassName;
     public LCP classSID;
     public LCP dataName;
-    public LCP navigatorElementSID;
-    public LCP numberNavigatorElement;
-    public LCP navigatorElementCaption;
 
-    public LCP propertyDrawSID;
-    public LCP captionPropertyDraw;
-    public LCP SIDToPropertyDraw;
-    public LCP formPropertyDraw;
-    public LCP groupObjectPropertyDraw;
-    public LCP SIDNavigatorElementSIDPropertyDrawToPropertyDraw;
-    public LCP showPropertyDraw;
-    public LCP nameShowPropertyDraw;
-    public LCP showPropertyDrawCustomUser;
-    public LCP nameShowPropertyDrawCustomUser;
-    public LCP showOverridePropertyDrawCustomUser;
-    public LCP nameShowOverridePropertyDrawCustomUser;
-    public LCP columnWidthPropertyDrawCustomUser;
-    public LCP columnWidthPropertyDraw;
-    public LCP columnWidthOverridePropertyDrawCustomUser;
-    public LCP columnOrderPropertyDrawCustomUser;
-    public LCP columnOrderPropertyDraw;
-    public LCP columnOrderOverridePropertyDrawCustomUser;
-    public LCP columnSortPropertyDrawCustomUser;
-    public LCP columnSortPropertyDraw;
-    public LCP columnSortOverridePropertyDrawCustomUser;
-    public LCP columnAscendingSortPropertyDrawCustomUser;
-    public LCP columnAscendingSortPropertyDraw;
-    public LCP columnAscendingSortOverridePropertyDrawCustomUser;
-    public LCP hasUserPreferencesGroupObject;
-    public LCP hasUserPreferencesGroupObjectCustomUser;
-    public LCP hasUserPreferencesOverrideGroupObjectCustomUser;
-
-    public LCP groupObjectSID;
-    public LCP navigatorElementGroupObject;
-    public LCP sidNavigatorElementGroupObject;
-    public LCP SIDNavigatorElementSIDGroupObjectToGroupObject;
-    
-    public LCP messageException;
-    public LCP dateException;
-    public LCP erTraceException;
-    public LCP typeException;
-    public LCP clientClientException;
-    public LCP loginClientException;
-    public LCP captionAbstractGroup;
-    public LCP parentAbstractGroup;
-    public LCP numberAbstractGroup;
-    public LCP SIDAbstractGroup;
-    public LCP SIDToAbstractGroup;
-    public LCP parentProperty;
-    public LCP numberProperty;
-    public LCP SIDProperty;
-    public LCP loggableProperty;
-    public LCP userLoggableProperty;
-    public LCP storedProperty;
-    public LCP isSetNotNullProperty;
-    public LCP signatureProperty;
-    public LCP returnProperty;
-    public LCP classProperty;
-    public LCP captionProperty;
-    public LCP SIDToProperty;
     public LCP isEventNotification;
     public LCP emailFromNotification;
     public LCP emailToNotification;
@@ -368,60 +248,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP currentScheduledTaskLogScheduledTask;
     public LCP messageScheduledClientTaskLog;
     public LCP scheduledTaskLogScheduledClientTaskLog;
-    public LCP permitViewUserRoleProperty;
-    public LCP permitViewUserProperty;
-    public LCP forbidViewUserRoleProperty;
-    public LCP forbidViewUserProperty;
-    public LCP permitChangeUserRoleProperty;
-    public LCP permitChangeUserProperty;
-    public LCP forbidChangeUserRoleProperty;
-    public LCP forbidChangeUserProperty;
-    public LCP permitViewProperty;
-    public LCP forbidViewProperty;
-    public LCP permitChangeProperty;
-    public LCP forbidChangeProperty;
-    public LCP notNullPermissionUserProperty;
-
-    public LCP SIDToNavigatorElement;
-    public LCP parentNavigatorElement;
-    public LCP isNavigatorElement;
-    public LCP isNavigatorAction;
-    public LCP isForm;
-    public LCP permitUserRoleForm;
-    public LCP forbidUserRoleForm;
-    public LCP permitUserForm;
-    public LCP forbidUserForm;
-    public LCP permitForm;
-    public LCP forbidForm;
-    public LCP userRoleFormDefaultNumber;
-    public LCP userFormDefaultNumber;
-
-    public LCP sidTable;
-    public LCP sidTableKey;
-    public LCP nameTableKey;
-    public LCP sidTableColumn;
-    public LCP propertyTableColumn;
-    public LCP propertyNameTableColumn;
-    public LCP sidToTable;
-    public LCP sidToTableKey;
-    public LCP sidToTableColumn;
-    public LCP tableTableKey;
-    public LCP classTableKey;
-    public LCP tableTableColumn;
-    public LCP rowsTable;
-    public LCP sparseColumnsTable;
-    public LCP quantityTableKey;
-    public LCP quantityTableColumn;
-    public LCP notNullQuantityTableColumn;
-    public LCP perсentNotNullTableColumn;
-    public LAP recalculateAggregationTableColumn;
-
-    public LCP<?> sidDropColumn;
-    public LCP sidToDropColumn;
-    public LCP<?> sidTableDropColumn;
-    public LCP timeDropColumn;
-    public LCP revisionDropColumn;
-    public LAP dropDropColumn;
 
     public LCP customID;
     public LCP stringID;
@@ -455,7 +281,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP insensitiveTranslationDictionaryTerm;
 
     private LCP selectRoleForms;
-    private LAP selectUserRoles;
 
     private LAP checkAggregationsAction;
     private LAP recalculateAction;
@@ -463,6 +288,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     private LAP analyzeDBAction;
     private LAP packAction;
     private LAP serviceDBAction;
+
+    public LCP dumb1;
 
     public SelectionPropertySet selection;
     protected CompositeNamePropertySet compositeName;
@@ -534,44 +361,20 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         contact = addAbstractClass("contact", getString("logics.user.contact"), emailObject);
         user = addAbstractClass("user", getString("logics.user"), baseClass);
-        customUser = addConcreteClass("customUser", getString("logics.user.ordinary.user"), user, contact, barcodeObject);
         systemUser = addConcreteClass("systemUser", getString("logics.user.system.user"), user);
-        computer = addConcreteClass("computer", getString("logics.workplace"), baseClass);
-        userRole = addConcreteClass("userRole", getString("logics.role"), baseClass.named);
 
-        policy = addConcreteClass("policy", getString("logics.policy.security.policy"), baseClass.named);
         session = addConcreteClass("session", getString("logics.session"), baseClass);
 
-        connection = addConcreteClass("connection", getString("logics.connection"), baseClass);
-        connectionStatus = addStaticClass("connectionStatus", getString("logics.connection.status"),
-                new String[]{"connectedConnection", "disconnectedConnection"},
-                new String[]{getString("logics.connection.connected"), getString("logics.connection.disconnected")});
-        launch = addConcreteClass("launch", getString("logics.launch"), baseClass);
+        customUser = addConcreteClass("customUser", getString("logics.user.ordinary.user"), BL.LM.user, BL.LM.contact, BL.LM.barcodeObject);
+        computer = addConcreteClass("computer", getString("logics.workplace"), baseClass);
 
-        navigatorElement = addConcreteClass("navigatorElement", getString("logics.navigator.element"), baseClass);
-        form = addConcreteClass("form", getString("logics.forms.form"), navigatorElement);
-        navigatorAction = addConcreteClass("navigatorAction", getString("logics.forms.action"), navigatorElement);
-        propertyDraw = addConcreteClass("propertyDraw", getString("logics.property.draw"), baseClass);
-        propertyDrawShowStatus = addStaticClass("propertyDrawShowStatus", getString("logics.forms.property.show"),
-                new String[]{"Show", "Hide"},
-                new String[]{getString("logics.property.draw.show"), getString("logics.property.draw.hide")});
-        groupObject = addConcreteClass("groupObject", getString("logics.group.object"), baseClass);
-        abstractGroup = addConcreteClass("abstractGroup", getString("logics.property.group"), baseClass);
         property = addConcreteClass("property", getString("logics.property"), baseClass);
         notification = addConcreteClass("notification", getString("logics.notification"), baseClass);
         scheduledTask = addConcreteClass("scheduledTask", getString("logics.scheduled.task"), baseClass);
         scheduledTaskLog = addConcreteClass("scheduledTaskLog", getString("logics.scheduled.task.log"), baseClass);
         scheduledClientTaskLog = addConcreteClass("scheduledClientTaskLog", getString("logics.scheduled.task.log.client"), baseClass);
-        exception = addAbstractClass("exception", getString("logics.exception"), baseClass);
-        clientException = addConcreteClass("clientException", getString("logics.exception.client"), exception);
-        serverException = addConcreteClass("serverException", getString("logics.exception.server"), exception);
         dictionary = addConcreteClass("dictionary", getString("logics.dictionary"), baseClass.named);
         dictionaryEntry = addConcreteClass("dictionaryEntry", getString("logics.dictionary.entries"), baseClass);
-
-        table = addConcreteClass("table", getString("logics.tables.table"), baseClass);
-        tableKey = addConcreteClass("tableKey", getString("logics.tables.key"), baseClass);
-        tableColumn = addConcreteClass("tableColumn", getString("logics.tables.column"), baseClass);
-        dropColumn = addConcreteClass("dropColumn", getString("logics.tables.deleted.column"), baseClass);
 
         month = addStaticClass("month", getString("logics.month"),
                 new String[]{"january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"},
@@ -614,25 +417,17 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             addTable("base_" + i, baseClasses);
         }
 
+        addTable("computer", computer);
         addTable("userTable", user);
         addTable("contact", contact);
-        addTable("customUser", customUser);
-        addTable("userRole", userRole);
-        addTable("policy", policy);
         addTable("loginSID", StringClass.get(30), StringClass.get(30));
         addTable("objectObjectDate", baseClass, baseClass, DateClass.instance);
-        addTable("navigatorElement", navigatorElement);
-        addTable("abstractGroup", abstractGroup);
         addTable("property", property);
-        addTable("propertyDraw", propertyDraw);
-        addTable("groupObject", groupObject);
-        addTable("groupObjectCustomUser", groupObject, customUser);
-        addTable("exception", exception);
+
         addTable("notification", notification);
         addTable("scheduledTask", scheduledTask);
         addTable("scheduledTaskLog", scheduledTaskLog);
         addTable("scheduledClientTaskLog", scheduledClientTaskLog);
-        addTable("launch", launch);
         addTable("named", baseClass.named);
         addTable("sidClass", baseClass.sidClass);
         addTable("barcodeObject", barcodeObject);
@@ -641,27 +436,12 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         addTable("dictionaryEntry", dictionaryEntry);
 
         addTable("session", session);
-        addTable("connection", connection);
-        addTable("computer", computer);
 
         addTable("sessionObject", session, baseClass);
 
-        addTable("connectionNavigatorElement", connection, navigatorElement);
-        addTable("userRoleNavigatorElement", userRole, navigatorElement);
-        addTable("userRoleProperty", userRole, property);
         addTable("notificationProperty", notification, property);
         addTable("scheduledTaskProperty", scheduledTask, property);
         addTable("scheduledTaskScheduledTaskLog", scheduledTask, scheduledTaskLog);
-        addTable("propertyDrawCustomUser", propertyDraw, customUser);
-        addTable("formPropertyDraw", form, propertyDraw);
-
-        addTable("tables", table);
-        addTable("tableKey", tableKey);
-        addTable("tableColumn", tableColumn);
-        addTable("dropColumn", dropColumn);
-
-        addTable("customUserRole", customUser, userRole);
-        addTable("userRolePolicy", userRole, policy);
 
         addTable("month", month);
         addTable("dow", DOW);
@@ -669,6 +449,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     @Override
     public void initProperties() {
+
+        dumb1 = dumb(1);
 
         canceled = addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty("canceled", "Canceled", LogicalClass.instance)));
 
@@ -866,69 +648,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         changeUser = addProperty(null, new LAP(new ChangeUserActionProperty("changeUser", customUser)));
         logOut = addProperty(null, new LAP(new LogOutActionProperty("logOut")));
 
-        // ---- Роли
-        // todo : переименовать в соответствии с namingPolicy
-        userRoleSID = addDProp(baseGroup, "userRoleSID", getString("logics.user.identificator"), StringClass.get(30), userRole);
-        sidToRole = addAGProp(idGroup, "sidToRole", getString("logics.user.role.id"), userRole, userRoleSID);
-
-        // Главная роль
-        userMainRole = addDProp(idGroup, "userMainRole", getString("logics.user.role.main.role.id"), userRole, user);
-        customUserMainRole = addJProp(idGroup, "customUserMainRole", getString("logics.user.role.main.role.id"), and1, userMainRole, 1, is(customUser), 1);
-        customUserSIDMainRole = addJProp("customUserSIDMainRole", getString("logics.user.role.main.role.identificator"), userRoleSID, customUserMainRole, 1);
-        nameUserMainRole = addJProp(baseGroup, "nameUserMainRole", getString("logics.user.role.main.role"), name, userMainRole, 1);
-
-        // Список ролей для пользователей
-        inUserRole = addDProp(baseGroup, "inUserRole", getString("logics.user.role.in"), LogicalClass.instance, customUser, userRole);
-        inLoginSID = addJProp("inLoginSID", true, getString("logics.login.has.a.role"), inUserRole, loginToUser, 1, sidToRole, 2);
-
-        inUserMainRole = addSUProp("inUserMainRole", getString("logics.user.role.in"), Union.OVERRIDE,
-                addJProp(equals2, customUserMainRole, 1, 2), inUserRole);
-
-        selectUserRoles = addSelectFromListAction(null, getString("logics.user.role.edit.roles"), inUserRole, userRole, customUser);
-
-        // -------------------- Логирование сервера ----------------- //
-        // SystemLogLogicsModule
-
-        // Сессии
-        LCP sessionUser = addDProp("sessionUser", getString("logics.session.user"), user, session);
-        sessionUser.setEventChangeNew(currentUser, is(session), 1);
-        addJProp(baseGroup, getString("logics.session.user"), name, sessionUser, 1);
-        LCP sessionDate = addDProp(baseGroup, "sessionDate", getString("logics.session.date"), DateTimeClass.instance, session);
-        sessionDate.setEventChangeNew(currentDateTime, is(session), 1);
-
-        // Подключения к серверу
-        connectionComputer = addDProp("connectionComputer", getString("logics.computer"), computer, connection);
-        addJProp(baseGroup, getString("logics.computer"), hostname, connectionComputer, 1);
-        connectionUser = addDProp("connectionUser", getString("logics.user"), customUser, connection);
-        userNameConnection = addJProp(baseGroup, getString("logics.user"), userLogin, connectionUser, 1);
-        connectionCurrentStatus = addDProp("connectionCurrentStatus", getString("logics.connection.status"), connectionStatus, connection);
-        addJProp(baseGroup, getString("logics.connection.status"), name, connectionCurrentStatus, 1);
-
-        connectionConnectTime = addDProp(baseGroup, "connectionConnectTime", getString("logics.connection.connect.time"), DateTimeClass.instance, connection);
-        connectionDisconnectTime = addDProp(baseGroup, "connectionDisconnectTime", getString("logics.connection.disconnect.time"), DateTimeClass.instance, connection);
-        connectionDisconnectTime.setEventChangePrevSet(currentDateTime,
-                addJProp(equals2, connectionCurrentStatus, 1, addCProp(connectionStatus, "disconnectedConnection")), 1);
-        disconnectConnection = addProperty(null, new LAP(new DisconnectActionProperty(BL, this, connection)));
-        addIfAProp(baseGroup, getString("logics.connection.disconnect"), true, connectionDisconnectTime, 1, disconnectConnection, 1);
-
-        // Открытые формы во время подключения
-        connectionFormCount = addDProp(baseGroup, "connectionFormCount", getString("logics.forms.number.of.opened.forms"), IntegerClass.instance, connection, navigatorElement);
-
-        // Логирование старта сервера
-        launchComputer = addDProp("launchComputer", getString("logics.computer"), computer, launch);
-        computerNameLaunch = addJProp(baseGroup, getString("logics.computer"), hostname, launchComputer, 1);
-        launchTime = addDProp(baseGroup, "launchConnectTime", getString("logics.launch.time"), DateTimeClass.instance, launch);
-        launchRevision = addDProp(baseGroup, "launchRevision", getString("logics.launch.revision"), StringClass.get(10), launch);
-
-        // Ошибки выполнения
-        messageException = addDProp(baseGroup, "messageException", getString("logics.exception.message"), propertyCaptionValueClass, exception);
-        dateException = addDProp(baseGroup, "dateException", getString("logics.exception.date"), DateTimeClass.instance, exception);
-        erTraceException = addDProp(baseGroup, "erTraceException", getString("logics.exception.ertrace"), TextClass.instance, exception);
-        erTraceException.setPreferredWidth(500);
-        typeException =  addDProp(baseGroup, "typeException", getString("logics.exception.type"), propertyCaptionValueClass, exception);
-        clientClientException = addDProp(baseGroup, "clientClientException", getString("logics.exception.client.client"), loginValueClass, clientException);
-        loginClientException = addDProp(baseGroup, "loginClientException", getString("logics.exception.client.login"), loginValueClass, clientException);
-
         // Управление сервером приложений
         isServerRestarting = addProperty(null, new LCP<PropertyInterface>(new IsServerRestartingFormulaProperty("isServerRestarting")));
 
@@ -946,136 +665,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         serviceDBAction = addProperty(null, new LAP(new ServiceDBActionProperty("serviceDBAction", getString("logics.service.db"))));
 
         // ReflectionLogLogicsModule
-        // ------------------------------------------------- Логическая модель ------------------------------------ //
 
-        // ------- Доменная логика --------- //
-
-        // Группы свойства
-        captionAbstractGroup = addDProp(baseGroup, "captionAbstractGroup", getString("logics.name"), propertyCaptionValueClass, abstractGroup);
-        parentAbstractGroup = addDProp(baseGroup, "parentAbstractGroup", getString("logics.property.group"), abstractGroup, abstractGroup);
-        numberAbstractGroup = addDProp(baseGroup, "numberAbstractGroup", getString("logics.property.number"), IntegerClass.instance, abstractGroup);
-        SIDAbstractGroup = addDProp(baseGroup, "SIDAbstractGroup", getString("logics.property.sid"), propertySIDValueClass, abstractGroup);
-        SIDToAbstractGroup = addAGProp("SIDToAbstractGroup", getString("logics.property"), SIDAbstractGroup);
-
-        // Свойства
-        parentProperty = addDProp(baseGroup, "parentProperty", getString("logics.property.group"), abstractGroup, property);
-        numberProperty = addDProp(baseGroup, "numberProperty", getString("logics.property.number"), IntegerClass.instance, property);
-        SIDProperty = addDProp(baseGroup, "SIDProperty", getString("logics.property.sid"), propertySIDValueClass, property);
-        loggableProperty = addDProp(baseGroup, "loggableProperty", getString("logics.property.loggable"), LogicalClass.instance, property);
-        userLoggableProperty = addDProp(baseGroup, "userLoggableProperty", getString("logics.property.user.loggable"), LogicalClass.instance, property);
-        storedProperty = addDProp(baseGroup, "storedProperty", getString("logics.property.stored"), LogicalClass.instance, property);
-        isSetNotNullProperty = addDProp(baseGroup, "isSetNotNullProperty", getString("logics.property.set.not.null"), LogicalClass.instance, property);
-        signatureProperty = addDProp(baseGroup, "signatureProperty", getString("logics.property.signature"), propertySignatureValueClass, property);
-        returnProperty = addDProp(baseGroup, "returnProperty", getString("logics.property.return"), propertySignatureValueClass, property);
-        classProperty = addDProp(baseGroup, "classProperty", getString("logics.property.class"), propertySignatureValueClass, property);
-        captionProperty = addDProp(baseGroup, "captionProperty", getString("logics.property.caption"), propertyCaptionValueClass, property);
-        SIDToProperty = addAGProp("SIDToProperty", getString("logics.property"), SIDProperty);
-
-        // ------- Логика представлений --------- //
-
-        // Навигатор
-        navigatorElementSID = addDProp(baseGroup, "navigatorElementSID", getString("logics.forms.code"), navigatorElementSIDClass, navigatorElement);
-        numberNavigatorElement = addDProp(baseGroup, "numberNavigatorElement", getString("logics.number"), IntegerClass.instance, navigatorElement);
-        navigatorElementCaption = addDProp(baseGroup, "navigatorElementCaption", getString("logics.forms.name"), navigatorElementCaptionClass, navigatorElement);
-        SIDToNavigatorElement = addAGProp("SIDToNavigatorElement", getString("logics.forms.form"), navigatorElementSID);
-        parentNavigatorElement = addDProp("parentNavigatorElement", getString("logics.forms.parent.form"), navigatorElement, navigatorElement);
-        isNavigatorElement = addJProp("isNavigatorElement", and(true, true), is(navigatorElement), 1, is(form), 1, is(navigatorAction), 1);
-        isForm = is(form);
-        isNavigatorAction = is(navigatorAction);
-
-        // ----- Формы ---- //
-        // Группа объектов
-        groupObjectSID = addDProp(baseGroup, "groupObjectSID", getString("logics.group.object.sid"), propertySIDValueClass, groupObject);
-        navigatorElementGroupObject = addDProp(baseGroup, "navigatorElementGroupObject", getString("logics.navigator.element"), navigatorElement, groupObject);
-        sidNavigatorElementGroupObject = addJProp(baseGroup, "sidNavigatorElementGroupObject", navigatorElementSID, navigatorElementGroupObject, 1);
-        SIDNavigatorElementSIDGroupObjectToGroupObject = addAGProp(baseGroup, "SIDToGroupObject", getString("logics.group.object"), groupObjectSID, sidNavigatorElementGroupObject);
-
-        // PropertyDraw
-        propertyDrawSID = addDProp(baseGroup, "propertyDrawSID", getString("logics.forms.property.draw.code"), propertySIDValueClass, propertyDraw);
-        captionPropertyDraw = addDProp(baseGroup, "captionPropertyDraw", getString("logics.forms.property.draw.caption"), propertyCaptionValueClass, propertyDraw);
-        formPropertyDraw = addDProp(baseGroup, "formPropertyDraw", getString("logics.forms.form"), form, propertyDraw);
-        groupObjectPropertyDraw = addDProp(baseGroup, "groupObjectPropertyDraw", getString("logics.group.object"), groupObject, propertyDraw);
-        SIDToPropertyDraw = addAGProp(baseGroup, "SIDToPropertyDraw", getString("logics.property.draw"), formPropertyDraw, propertyDrawSID);
-        // todo : это свойство должно быть для форм, а не навигаторов
-        SIDNavigatorElementSIDPropertyDrawToPropertyDraw = addJProp(baseGroup, "SIDNavigatorElementSIDPropertyDrawToPropertyDraw", getString("logics.forms.code"), SIDToPropertyDraw, SIDToNavigatorElement, 1, 2);
-
-        // UserPreferences
-        showPropertyDraw = addDProp(baseGroup, "showPropertyDraw", getString("logics.forms.property.show"), propertyDrawShowStatus, propertyDraw);
-        showPropertyDrawCustomUser = addDProp(baseGroup, "showPropertyDrawCustomUser", getString("logics.forms.property.show.user"), propertyDrawShowStatus, propertyDraw, customUser);
-        showOverridePropertyDrawCustomUser = addSUProp(baseGroup, "showOverridePropertyDrawCustomUser", getString("logics.forms.property.show"), Union.OVERRIDE, addJProp(and1, showPropertyDraw, 1, is(customUser), 2), showPropertyDrawCustomUser);
-
-        nameShowPropertyDraw = addJProp(baseGroup, "nameShowPropertyDraw", getString("logics.forms.property.show"), name, showPropertyDraw, 1);
-        nameShowPropertyDraw.setPreferredWidth(50);
-        nameShowPropertyDrawCustomUser = addJProp(baseGroup, "nameShowPropertyDrawCustomUser", getString("logics.forms.property.show.user"), name, showPropertyDrawCustomUser, 1, 2);
-        nameShowPropertyDrawCustomUser.setPreferredWidth(50);
-        nameShowOverridePropertyDrawCustomUser = addJProp(baseGroup, "nameShowOverridePropertyDrawCustomUser", getString("logics.forms.property.show"), name, showOverridePropertyDrawCustomUser, 1, 2);
-
-        columnWidthPropertyDrawCustomUser = addDProp(baseGroup, "columnWidthPropertyDrawCustomUser", getString("logics.forms.property.width.user"), IntegerClass.instance, propertyDraw, customUser);
-        columnWidthPropertyDraw = addDProp(baseGroup, "columnWidthPropertyDraw", getString("logics.forms.property.width"), IntegerClass.instance, propertyDraw);
-        columnWidthOverridePropertyDrawCustomUser = addSUProp(baseGroup, "columnWidthOverridePropertyDrawCustomUser", getString("logics.forms.property.width"), Union.OVERRIDE, addJProp(and1, columnWidthPropertyDraw, 1, is(customUser), 2), columnWidthPropertyDrawCustomUser);
-
-        columnOrderPropertyDrawCustomUser = addDProp(baseGroup, "columnOrderPropertyDrawCustomUser", getString("logics.forms.property.order.user"), IntegerClass.instance, propertyDraw, customUser);
-        columnOrderPropertyDraw = addDProp(baseGroup, "columnOrderPropertyDraw", getString("logics.forms.property.order"), IntegerClass.instance, propertyDraw);
-        columnOrderOverridePropertyDrawCustomUser = addSUProp(baseGroup, "columnOrderOverridePropertyDrawCustomUser", getString("logics.forms.property.order"), Union.OVERRIDE, addJProp(and1, columnOrderPropertyDraw, 1, is(customUser), 2), columnOrderPropertyDrawCustomUser);
-
-        columnSortPropertyDrawCustomUser = addDProp(baseGroup, "columnSortPropertyDrawCustomUser", getString("logics.forms.property.sort.user"), IntegerClass.instance, propertyDraw, customUser);
-        columnSortPropertyDraw = addDProp(baseGroup, "columnSortPropertyDraw", getString("logics.forms.property.sort"), IntegerClass.instance, propertyDraw);
-        columnSortOverridePropertyDrawCustomUser = addSUProp(baseGroup, "columnSortOverridePropertyDrawCustomUser", getString("logics.forms.property.sort"), Union.OVERRIDE, addJProp(and1, columnSortPropertyDraw, 1, is(customUser), 2), columnSortPropertyDrawCustomUser);
-
-        columnAscendingSortPropertyDrawCustomUser = addDProp(baseGroup, "columnAscendingSortPropertyDrawCustomUser", getString("logics.forms.property.ascending.sort.user"), LogicalClass.instance, propertyDraw, customUser);
-        columnAscendingSortPropertyDraw = addDProp(baseGroup, "columnAscendingSortPropertyDraw", getString("logics.forms.property.ascending.sort"), LogicalClass.instance, propertyDraw);
-        columnAscendingSortOverridePropertyDrawCustomUser = addSUProp(baseGroup, "columnAscendingSortOverridePropertyDrawCustomUser", getString("logics.forms.property.ascending.sort"), Union.OVERRIDE, addJProp(and1, columnAscendingSortPropertyDraw, 1, is(customUser), 2), columnAscendingSortPropertyDrawCustomUser);
-
-        hasUserPreferencesGroupObjectCustomUser = addDProp(baseGroup, "hasUserPreferencesGroupObjectCustomUser", getString("logics.group.object.has.user.preferences.user"), LogicalClass.instance, groupObject, customUser);
-        hasUserPreferencesGroupObject = addDProp(baseGroup, "hasUserPreferencesGroupObject", getString("logics.group.object.has.user.preferences"), LogicalClass.instance, groupObject);
-        hasUserPreferencesOverrideGroupObjectCustomUser = addSUProp(baseGroup, "hasUserPreferencesOverrideGroupObjectCustomUser", getString("logics.group.object.has.user.preferences"), Union.OVERRIDE, addJProp(and1, hasUserPreferencesGroupObject, 1, is(customUser), 2), hasUserPreferencesGroupObjectCustomUser);
-
-        // ------------------------------------------------- Физическая модель ------------------------------------ //
-
-        // Таблицы
-        sidTable = addDProp(recognizeGroup, "sidTable", getString("logics.tables.name"), StringClass.get(100), table);
-        sidToTable = addAGProp("sidToTable", getString("logics.tables.table"), sidTable);
-
-        rowsTable = addDProp(baseGroup, "rowsTable", getString("logics.tables.rows"), IntegerClass.instance, table);
-        sparseColumnsTable = addDProp(baseGroup, "sparseColumnsTable", getString("logics.tables.sparse.columns"), IntegerClass.instance, table);
-
-        // Ключи таблиц
-        tableTableKey = addDProp("tableTableKey", getString("logics.tables.table"), table, tableKey);
-
-        sidTableKey = addDProp("sidTableKey", getString("logics.tables.key.sid"), StringClass.get(100), tableKey);
-        sidToTableKey = addAGProp("sidToTableKey", getString("logics.tables.key"), sidTableKey);
-
-        classTableKey = addDProp(baseGroup, "classTableKey", getString("logics.tables.key.class"), StringClass.get(40), tableKey);
-        nameTableKey = addDProp(baseGroup, "nameTableKey", getString("logics.tables.key.name"), StringClass.get(20), tableKey);
-
-        quantityTableKey = addDProp(baseGroup, "quantityTableKey", getString("logics.tables.key.variety.quantity"), IntegerClass.instance, tableKey);
-
-        // Колонки таблиц
-        tableTableColumn = addDProp("tableTableColumn", getString("logics.tables.table"), table, tableColumn);
-
-        sidTableColumn = addDProp(baseGroup, "sidTableColumn", getString("logics.tables.column.name"), StringClass.get(100), tableColumn);
-        sidToTableColumn = addAGProp("sidToTableColumn", getString("logics.tables.column"), sidTableColumn);
-
-        propertyTableColumn = addJProp("propertyTableColumn", getString("logics.property"), SIDToProperty, sidTableColumn, 1);
-        propertyNameTableColumn = addJProp(baseGroup, "propertyNameTableColumn", getString("logics.tables.property.name"), captionProperty, propertyTableColumn, 1);
-
-        quantityTableColumn = addDProp(baseGroup, "quantityTableColumn", getString("logics.tables.column.variety.quantity"), IntegerClass.instance, tableColumn);
-        notNullQuantityTableColumn = addDProp(baseGroup, "notNullQuantityTableColumn", getString("logics.tables.column.notnull.quantity"), IntegerClass.instance, tableColumn);
-        perсentNotNullTableColumn = addDProp(baseGroup, "perсentNotNullTableColumn", getString("logics.tables.column.notnull.per.cent"), NumericClass.get(6, 2), tableColumn);
-
-        recalculateAggregationTableColumn = addAProp(actionGroup, new RecalculateTableColumnActionProperty(getString("logics.recalculate.aggregations"), tableColumn));
-
-        // Удаленные колонки
-        sidTableDropColumn = addDProp(baseGroup, "sidTableDropColumn", getString("logics.tables.name"), StringClass.get(100), dropColumn);
-
-        sidDropColumn = addDProp(baseGroup, "sidDropColumn", getString("logics.tables.column.name"), StringClass.get(100), dropColumn);
-        sidToDropColumn = addAGProp("sidToDropColumn", getString("logics.tables.deleted.column"), sidDropColumn);
-
-        timeDropColumn = addDProp(baseGroup, "timeDropColumn", getString("logics.tables.deleted.column.time"), DateTimeClass.instance, dropColumn);
-        revisionDropColumn = addDProp(baseGroup, "revisionDropColumn", getString("logics.launch.revision"), StringClass.get(10), dropColumn);
-
-        dropDropColumn = addAProp(baseGroup, new DropColumnActionProperty("dropDropColumn", getString("logics.tables.deleted.column.drop"), dropColumn));
-        dropDropColumn.setEventAction(this, IncrementType.DROP, false, is(dropColumn), 1); // event, который при удалении колонки из системы удаляет ее из базы
 
         // EmailLogicsModule
         // ------- Управление почтой ------ //
@@ -1136,74 +726,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         currentScheduledTaskLogScheduledTask = addDProp(baseGroup, "currentScheduledTaskLogScheduledTask", getString("logics.scheduled.task.log.current"), IntegerClass.instance, scheduledTask);
         scheduledTaskLogScheduledClientTaskLog = addDProp(baseGroup, "scheduledTaskLogScheduledClientTaskLog", getString("logics.scheduled.task.log"), scheduledTaskLog, scheduledClientTaskLog);
         messageScheduledClientTaskLog = addDProp(baseGroup, "messageScheduledClientTaskLog", getString("logics.scheduled.task.log.message"), StringClass.get(200), scheduledClientTaskLog);
-
-        // ------------------------ Политика безопасности ------------------ //
-        nameToPolicy = addAGProp("nameToPolicy", getString("logics.policy"), policy, name);
-        policyDescription = addDProp(baseGroup, "policyDescription", getString("logics.policy.description"), StringClass.get(100), policy);
-
-        userRolePolicyOrder = addDProp(baseGroup, "userRolePolicyOrder", getString("logics.policy.order"), IntegerClass.instance, userRole, policy);
-        userPolicyOrder = addJProp(baseGroup, "userPolicyOrder", getString("logics.policy.order"), userRolePolicyOrder, userMainRole, 1, 2);
-
-        // ---- Политики для доменной логики
-
-        // -- Глобальные разрешения для всех ролей
-        permitViewProperty = addDProp(baseGroup, "permitViewProperty", getString("logics.policy.permit.property.view"), LogicalClass.instance, property);
-        forbidViewProperty = addDProp(baseGroup, "forbidViewProperty", getString("logics.policy.forbid.property.view"), LogicalClass.instance, property);
-        permitChangeProperty = addDProp(baseGroup, "permitChangeProperty", getString("logics.policy.permit.property.change"), LogicalClass.instance, property);
-        forbidChangeProperty = addDProp(baseGroup, "forbidChangeProperty", getString("logics.policy.forbid.property.change"), LogicalClass.instance, property);
-
-        // -- Разрешения для каждой роли
-
-        // Разрешения для всех свойств
-        permitViewAllUserRoleProperty = addDProp(baseGroup, "permitViewAllUserRoleProperty", getString("logics.user.allow.view.all.property"), LogicalClass.instance, userRole);
-        permitViewAllUserForm = addJProp(publicGroup, "permitViewAllUserForm", getString("logics.user.allow.view.all.property"), permitViewAllUserRoleProperty, userMainRole, 1);
-        forbidViewAllUserRoleProperty = addDProp(baseGroup, "forbidViewAllUserRoleProperty", getString("logics.user.forbid.view.all.property"), LogicalClass.instance, userRole);
-        forbidViewAllUserForm = addJProp(publicGroup, "forbidViewAllUserForm", getString("logics.user.forbid.view.all.property"), forbidViewAllUserRoleProperty, userMainRole, 1);
-
-        permitChangeAllUserRoleProperty = addDProp(baseGroup, "permitChangeAllUserRoleProperty", getString("logics.user.allow.change.all.property"), LogicalClass.instance, userRole);
-        permitChangeAllUserForm = addJProp(publicGroup, "permitChangeAllUserForm", getString("logics.user.allow.change.all.property"), permitChangeAllUserRoleProperty, userMainRole, 1);
-        forbidChangeAllUserRoleProperty = addDProp(baseGroup, "forbidChangeAllUserRoleProperty", getString("logics.user.forbid.change.all.property"), LogicalClass.instance, userRole);
-        forbidChangeAllUserForm = addJProp(publicGroup, "forbidChangeAllUserForm", getString("logics.user.forbid.change.all.property"), forbidChangeAllUserRoleProperty, userMainRole, 1);
-
-        // Разрешения для каждого свойства
-        permitViewUserRoleProperty = addDProp(baseGroup, "permitViewUserRoleProperty", getString("logics.policy.permit.property.view"), LogicalClass.instance, userRole, property);
-        permitViewUserProperty = addJProp(baseGroup, "permitViewUserProperty", getString("logics.policy.permit.property.view"), permitViewUserRoleProperty, userMainRole, 1, 2);
-        forbidViewUserRoleProperty = addDProp(baseGroup, "forbidViewUserRoleProperty", getString("logics.policy.forbid.property.view"), LogicalClass.instance, userRole, property);
-        forbidViewUserProperty = addJProp(baseGroup, "forbidViewUserProperty", getString("logics.policy.forbid.property.view"), forbidViewUserRoleProperty, userMainRole, 1, 2);
-
-        permitChangeUserRoleProperty = addDProp(baseGroup, "permitChangeUserRoleProperty", getString("logics.policy.permit.property.change"), LogicalClass.instance, userRole, property);
-        permitChangeUserProperty = addJProp(baseGroup, "permitChangeUserProperty", getString("logics.policy.permit.property.change"), permitChangeUserRoleProperty, userMainRole, 1, 2);
-        forbidChangeUserRoleProperty = addDProp(baseGroup, "forbidChangeUserRoleProperty", getString("logics.policy.forbid.property.change"), LogicalClass.instance, userRole, property);
-        forbidChangeUserProperty = addJProp(baseGroup, "forbidChangeUserProperty", getString("logics.policy.forbid.property.change"), forbidChangeUserRoleProperty, userMainRole, 1, 2);
-
-        notNullPermissionUserProperty = addSUProp("notNullPermissionUserProperty", Union.OVERRIDE, permitViewUserProperty, forbidViewUserProperty, permitChangeUserProperty, forbidChangeUserProperty);
-
-        // ---- Политики для логики представлений
-
-        // Открытие форм по умолчанию
-        userRoleDefaultForms = addDProp(baseGroup, "userRoleDefaultForms", getString("logics.user.displaying.forms.by.default"), LogicalClass.instance, userRole);
-
-        userRoleFormDefaultNumber = addDProp(baseGroup, "userRoleFormDefaultNumber", getString("logics.forms.default.number"), IntegerClass.instance, userRole, navigatorElement);
-        userFormDefaultNumber = addJProp(baseGroup, "userFormDefaultNumber", getString("logics.forms.default.number"), userRoleFormDefaultNumber, userMainRole, 1, 2);
-        userDefaultForms = addJProp(publicGroup, "userDefaultForms", getString("logics.user.displaying.forms.by.default"), userRoleDefaultForms, userMainRole, 1);
-
-        // -- Глобальные разрешения для всех ролей
-        permitForm = addDProp(baseGroup, "permitForm", getString("logics.forms.permit.form"), LogicalClass.instance, navigatorElement);
-        forbidForm = addDProp(baseGroup, "forbidForm", getString("logics.forms.prohibit.form"), LogicalClass.instance, navigatorElement);
-
-        // -- Разрешения для каждой роли
-
-        // Разрешения для всех элементов
-        permitAllUserRoleForms = addDProp(baseGroup, "permitAllUserRoleForms", getString("logics.user.allow.all.user.form"), LogicalClass.instance, userRole);
-        permitAllUserForm = addJProp(publicGroup, "permitAllUserForm", getString("logics.user.allow.all.user.form"), permitAllUserRoleForms, userMainRole, 1);
-        forbidAllUserRoleForms = addDProp(baseGroup, "forbidAllUserRoleForms", getString("logics.user.forbid.all.user.form"), LogicalClass.instance, userRole);
-        forbidAllUserForm = addJProp(publicGroup, "forbidAllUserForm", getString("logics.user.forbid.all.user.form"), forbidAllUserRoleForms, userMainRole, 1);
-
-        // Разрешения для каждого элемента
-        permitUserRoleForm = addDProp(baseGroup, "permitUserRoleForm", getString("logics.forms.permit.form"), LogicalClass.instance, userRole, navigatorElement);
-        permitUserForm = addJProp(baseGroup, "permitUserForm", getString("logics.forms.permit.form"), permitUserRoleForm, userMainRole, 1, 2);
-        forbidUserRoleForm = addDProp(baseGroup, "permissionUserRoleForm", getString("logics.forms.prohibit.form"), LogicalClass.instance, userRole, navigatorElement);
-        forbidUserForm = addJProp(baseGroup, "permissionUserForm", getString("logics.forms.prohibit.form"), forbidUserRoleForm, userMainRole, 1, 2);
 
         // Настройка форм
         defaultBackgroundColor = addDProp("defaultBackgroundColor", getString("logics.default.background.color"), ColorClass.instance);
@@ -1584,24 +1106,11 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         security = addNavigatorElement(administration, "security", getString("logics.administration.access"));
 
-        UserEditFormEntity userEditForm = addFormEntity(new UserEditFormEntity(null, "userEditForm"));
-        customUser.setEditForm(userEditForm, userEditForm.objUser);
-
-        addFormEntity(new UserPolicyFormEntity(security, "userPolicyForm"));
-        addFormEntity(new SecurityPolicyFormEntity(security, "securityPolicyForm"));
-
         configuration = addNavigatorElement(administration, "configuration", getString("logics.administration.config"));
         addFormEntity(new AdminFormEntity(configuration, "adminForm"));
-        addFormEntity(new PropertiesFormEntity(configuration, "propertiesForm"));
-        addFormEntity(new PhysicalModelFormEntity(configuration, "physicalModelForm"));
-        addFormEntity(new FormsFormEntity(configuration, "formsForm"));
-        addFormEntity(new NotificationFormEntity(configuration, "notification"));
-        addFormEntity(new ScheduledTaskFormEntity(configuration, "scheduledTask"));
 
         systemEvents = addNavigatorElement(administration, "systemEvents", getString("logics.administration.events"));
-        addFormEntity(new LaunchesFormEntity(systemEvents, "launchesForm"));
-        addFormEntity(new ConnectionsFormEntity(systemEvents, "connectionsForm"));
-        addFormEntity(new ExceptionsFormEntity(systemEvents, "exceptionsForm"));
+
 
         addFormEntity(new RemindUserPassFormEntity(null, "remindPasswordLetter"));
     }
@@ -1765,31 +1274,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
     }
 
-    private class RecalculateTableColumnActionProperty extends AdminActionProperty {
-
-        private final ClassPropertyInterface tableColumnInterface;
-
-        private RecalculateTableColumnActionProperty(String caption, ValueClass tableColumn) {
-            super(genSID(), caption, new ValueClass[]{tableColumn});
-            Iterator<ClassPropertyInterface> i = interfaces.iterator();
-            tableColumnInterface = i.next();
-        }
-
-        @Override
-        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-            SQLSession sqlSession = context.getSession().sql;
-
-            DataObject tableColumnObject = context.getKeyValue(tableColumnInterface);
-            String propertySID = (String) sidTableColumn.read(context, tableColumnObject);
-
-            sqlSession.startTransaction();
-            BL.recalculateAggregationTableColumn(sqlSession, propertySID.trim());
-            sqlSession.commitTransaction();
-
-            context.delayUserInterfaction(new MessageClientAction(getString("logics.recalculation.was.completed"), getString("logics.recalculation.aggregations")));
-        }
-    }
-
     private class PackActionProperty extends AdminActionProperty {
         private PackActionProperty(String sID, String caption) {
             super(sID, caption, new ValueClass[]{});
@@ -1866,30 +1350,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             context.delayUserInterfaction(new MessageClientAction(getString("logics.service.db.completed"), getString("logics.service.db")));
         }
     }
-    
-    private class RecalculateStatsActionProperty extends AdminActionProperty {
-        private RecalculateStatsActionProperty(String sID, String caption) {
-            super(sID, caption, new ValueClass[]{});
-        }
-
-        @Override
-        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-            BL.recalculateStats(context.getSession());
-        }
-    }
-
-    public class DropColumnActionProperty extends AdminActionProperty {
-        private DropColumnActionProperty(String sID, String caption, ValueClass dropColumn) {
-            super(sID, caption, new ValueClass[]{dropColumn});
-        }
-
-        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-            DataObject dropColumnObject = context.getSingleKeyValue();
-            String columnName = (String) sidDropColumn.getOld().read(context, dropColumnObject);
-            String tableName = (String) sidTableDropColumn.getOld().read(context, dropColumnObject);
-            BL.dropColumn(tableName, columnName);
-        }
-    }
 
     //////////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////////
@@ -1913,536 +1373,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     //////////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////////
 
-    private class UserPolicyFormEntity extends FormEntity {
-        protected UserPolicyFormEntity(NavigatorElement parent, String sID) {
-            super(parent, sID, getString("logics.user.users"));
-
-            ObjectEntity objUser = addSingleGroupObject(customUser, nameUserMainRole, name, userLogin, email);
-            setEditType(objUser, PropertyEditType.READONLY);
-
-            addFormActions(this, objUser);
-        }
-    }
-
-    private class UserEditFormEntity extends FormEntity {
-
-        private final ObjectEntity objUser;
-        private final ObjectEntity objRole;
-
-        protected UserEditFormEntity(NavigatorElement parent, String sID) {
-            super(parent, sID, getString("logics.user.user"));
-
-            objUser = addSingleGroupObject(customUser, userFirstName, userLastName, userLogin, userPassword, email, nameUserMainRole);
-            objUser.groupTo.setSingleClassView(ClassViewType.PANEL);
-
-            objRole = addSingleGroupObject(userRole, name, userRoleSID);
-            setEditType(objRole, PropertyEditType.READONLY);
-
-            addPropertyDraw(objUser, objRole, inUserMainRole);
-        }
-
-        @Override
-        public FormView createDefaultRichDesign() {
-            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
-
-            design.addIntersection(design.getGroupObjectContainer(objUser.groupTo),
-                                   design.getGroupObjectContainer(objRole.groupTo),
-                                   DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
-
-            return design;
-        }
-    }
-
-    private class SecurityPolicyFormEntity extends FormEntity {
-
-        private ObjectEntity objUserRole;
-        private ObjectEntity objPolicy;
-        private ObjectEntity objForm;
-        private ObjectEntity objTreeForm;
-        private TreeGroupEntity treeFormObject;
-        private ObjectEntity objProperty;
-        private ObjectEntity objTreeProps;
-        private ObjectEntity objProps;
-        private TreeGroupEntity treePropertyObject;
-        private ObjectEntity objDefaultForm;
-        private ObjectEntity objTreeDefaultForm;
-        private TreeGroupEntity treeDefaultForm;
-        private ObjectEntity objDefaultProperty;
-        private ObjectEntity objTreeDefaultProps;
-        private ObjectEntity objDefaultProps;
-        private TreeGroupEntity treeDefaultProperty;
-
-        protected SecurityPolicyFormEntity(NavigatorElement parent, String sID) {
-            super(parent, sID, getString("logics.policy.security.policy"));
-
-            objUserRole = addSingleGroupObject(userRole, baseGroup, true);
-            objPolicy = addSingleGroupObject(policy, getString("logics.policy.additional.policies"), baseGroup, true);
-            objForm = addSingleGroupObject(navigatorElement, getString("logics.grid"), true);
-            objTreeForm = addSingleGroupObject(navigatorElement, getString("logics.tree"), true);
-            objProperty = addSingleGroupObject(property, getString("logics.grid"), true);
-            objTreeProps = addSingleGroupObject(abstractGroup, getString("logics.tree"), true);
-            objProps = addSingleGroupObject(property, getString("logics.tree"), true);
-            objDefaultForm = addSingleGroupObject(navigatorElement, getString("logics.grid"), true);
-            objTreeDefaultForm = addSingleGroupObject(navigatorElement, getString("logics.tree"), true);
-            objDefaultProperty = addSingleGroupObject(property, getString("logics.grid"), true);
-            objTreeDefaultProps = addSingleGroupObject(abstractGroup, getString("logics.tree"), true);
-            objDefaultProps = addSingleGroupObject(property, getString("logics.grid"), true);
-
-            objTreeForm.groupTo.setIsParents(addPropertyObject(parentNavigatorElement, objTreeForm));
-            treeFormObject = addTreeGroupObject(objTreeForm.groupTo);
-            objTreeProps.groupTo.setIsParents(addPropertyObject(parentAbstractGroup, objTreeProps));
-            treePropertyObject = addTreeGroupObject(objTreeProps.groupTo, objProps.groupTo);
-
-            objTreeDefaultForm.groupTo.setIsParents(addPropertyObject(parentNavigatorElement, objTreeDefaultForm));
-            treeDefaultForm = addTreeGroupObject(objTreeDefaultForm.groupTo);
-            objTreeDefaultProps.groupTo.setIsParents(addPropertyObject(parentAbstractGroup, objTreeDefaultProps));
-            treeDefaultProperty = addTreeGroupObject(objTreeDefaultProps.groupTo, objDefaultProps.groupTo);
-
-            addObjectActions(this, objUserRole);
-
-            addPropertyDraw(new LP[]{navigatorElementCaption, navigatorElementSID, numberNavigatorElement}, objForm);
-            addPropertyDraw(new LP[]{navigatorElementCaption, navigatorElementSID, numberNavigatorElement}, objTreeForm);
-            addPropertyDraw(objUserRole, objPolicy, baseGroup, true);
-            addPropertyDraw(objUserRole, objForm, permitUserRoleForm, forbidUserRoleForm);
-            addPropertyDraw(objUserRole, objTreeForm, permitUserRoleForm, forbidUserRoleForm);
-            addPropertyDraw(forbidUserRoleForm, objUserRole, objTreeForm).toDraw = objUserRole.groupTo;
-            addPropertyDraw(objUserRole, objForm, userRoleFormDefaultNumber);
-            addPropertyDraw(objUserRole, objTreeForm, userRoleFormDefaultNumber);
-            addPropertyDraw(new LP[]{captionProperty, SIDProperty}, objProperty);
-            addPropertyDraw(objUserRole, objProperty, permitViewUserRoleProperty, forbidViewUserRoleProperty, permitChangeUserRoleProperty, forbidChangeUserRoleProperty);
-            addPropertyDraw(new LP[]{captionAbstractGroup, SIDAbstractGroup, numberAbstractGroup}, objTreeProps);
-            addPropertyDraw(new LP[]{captionProperty, SIDProperty, numberProperty}, objProps);
-            addPropertyDraw(objUserRole, objProps, permitViewUserRoleProperty, forbidViewUserRoleProperty, permitChangeUserRoleProperty, forbidChangeUserRoleProperty);
-
-            addPropertyDraw(new LP[]{navigatorElementCaption, navigatorElementSID, numberNavigatorElement, permitForm, forbidForm}, objDefaultForm);
-            addPropertyDraw(new LP[]{navigatorElementCaption, navigatorElementSID, numberNavigatorElement, permitForm, forbidForm}, objTreeDefaultForm);
-            addPropertyDraw(new LP[]{captionProperty, SIDProperty}, objDefaultProperty);
-            addPropertyDraw(objDefaultProperty, permitViewProperty, forbidViewProperty, permitChangeProperty, forbidChangeProperty);
-            addPropertyDraw(new LP[]{captionAbstractGroup, SIDAbstractGroup, numberAbstractGroup}, objTreeDefaultProps);
-            addPropertyDraw(new LP[]{captionProperty, SIDProperty, numberProperty}, objDefaultProps);
-            addPropertyDraw(objDefaultProps, permitViewProperty, forbidViewProperty, permitChangeProperty, forbidChangeProperty);
-
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(parentProperty, objProps), Compare.EQUALS, objTreeProps));
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(parentProperty, objDefaultProps), Compare.EQUALS, objTreeDefaultProps));
-
-            setEditType(navigatorElementSID, PropertyEditType.READONLY);
-            setEditType(navigatorElementCaption, PropertyEditType.READONLY);
-
-            PropertyDrawEntity balanceDraw = getPropertyDraw(userRolePolicyOrder, objPolicy.groupTo);
-            PropertyDrawEntity sidDraw = getPropertyDraw(userRoleSID, objUserRole.groupTo);
-            balanceDraw.addColumnGroupObject(objUserRole.groupTo);
-            balanceDraw.setPropertyCaption((CalcPropertyObjectEntity) sidDraw.propertyObject);
-
-            addDefaultOrder(getPropertyDraw(numberNavigatorElement, objTreeForm.groupTo), true);
-            addDefaultOrder(getPropertyDraw(numberNavigatorElement, objTreeDefaultForm.groupTo), true);
-            addDefaultOrder(getPropertyDraw(SIDProperty, objProperty.groupTo), true);
-            addDefaultOrder(getPropertyDraw(SIDProperty, objDefaultProperty.groupTo), true);
-            addDefaultOrder(getPropertyDraw(numberProperty, objProps.groupTo), true);
-            addDefaultOrder(getPropertyDraw(numberAbstractGroup, objTreeProps.groupTo), true);
-            addDefaultOrder(getPropertyDraw(numberProperty, objDefaultProps.groupTo), true);
-            addDefaultOrder(getPropertyDraw(numberAbstractGroup, objTreeDefaultProps.groupTo), true);
-        }
-
-        @Override
-        public FormView createDefaultRichDesign() {
-            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
-
-            ContainerView container = design.createContainer();
-            container.type = ContainerType.TABBED_PANE;
-
-            ContainerView defaultPolicyContainer = design.createContainer(getString("logics.policy.default"));
-            ContainerView defaultFormsContainer = design.createContainer(getString("logics.forms"));
-            defaultFormsContainer.type = ContainerType.TABBED_PANE;
-            defaultFormsContainer.add(design.getTreeContainer(treeDefaultForm));
-            defaultFormsContainer.add(design.getGroupObjectContainer(objDefaultForm.groupTo));
-            ContainerView defaultPropertyContainer = design.createContainer(getString("logics.property.properties"));
-            defaultPropertyContainer.type = ContainerType.TABBED_PANE;
-            defaultPropertyContainer.add(design.getTreeContainer(treeDefaultProperty));
-            defaultPropertyContainer.add(design.getGroupObjectContainer(objDefaultProperty.groupTo));
-            defaultPolicyContainer.type = ContainerType.TABBED_PANE;
-            defaultPolicyContainer.add(defaultFormsContainer);
-            defaultPolicyContainer.add(defaultPropertyContainer);
-
-            ContainerView rolesContainer = design.createContainer(getString("logics.policy.roles"));
-            ContainerView rolePolicyContainer = design.createContainer();
-            rolePolicyContainer.type = ContainerType.TABBED_PANE;
-            ContainerView formsContainer = design.createContainer(getString("logics.forms"));
-            formsContainer.type = ContainerType.TABBED_PANE;
-            formsContainer.add(design.getTreeContainer(treeFormObject));
-            formsContainer.add(design.getGroupObjectContainer(objForm.groupTo));
-            rolePolicyContainer.add(formsContainer);
-            ContainerView propertiesContainer = design.createContainer(getString("logics.property.properties"));
-            propertiesContainer.type = ContainerType.TABBED_PANE;
-            propertiesContainer.add(design.getTreeContainer(treePropertyObject));
-            propertiesContainer.add(design.getGroupObjectContainer(objProperty.groupTo));
-            rolePolicyContainer.add(propertiesContainer);
-            rolesContainer.add(design.getGroupObjectContainer(objUserRole.groupTo));
-            rolesContainer.add(rolePolicyContainer);
-
-            container.add(defaultPolicyContainer);
-            container.add(rolesContainer);
-            container.add(design.getGroupObjectContainer(objPolicy.groupTo));
-
-            design.getMainContainer().add(0, container);
-
-            return design;
-        }
-    }
-
-    private class ConnectionsFormEntity extends FormEntity {
-        protected ConnectionsFormEntity(NavigatorElement parent, String sID) {
-            super(parent, sID, getString("logics.connection.server.connections"));
-
-            ObjectEntity objConnection = addSingleGroupObject(connection, baseGroup, true);
-            ObjectEntity objForm = addSingleGroupObject(navigatorElement, getString("logics.forms.opened.forms"), baseGroup, true);
-
-//            setEditType(baseGroup, PropertyEditType.READONLY);
-
-            addPropertyDraw(objConnection, objForm, baseGroup, true);
-
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(connectionFormCount, objConnection, objForm), Compare.GREATER, 0));
-
-            RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
-            filterGroup.addFilter(new RegularFilterEntity(genID(),
-                    new CompareFilterEntity(addPropertyObject(connectionCurrentStatus, objConnection), Compare.EQUALS, addPropertyObject(addCProp(connectionStatus, "connectedConnection"))),
-                    getString("logics.connection.active.connections"),
-                    KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0)));
-            addRegularFilterGroup(filterGroup);
-        }
-    }
-
-    private class LaunchesFormEntity extends FormEntity {
-        protected LaunchesFormEntity(NavigatorElement parent, String sID) {
-            super(parent, sID, getString("logics.launch.log"));
-
-            ObjectEntity objLaunch = addSingleGroupObject(launch, baseGroup, true);
-            setEditType(PropertyEditType.READONLY);
-        }
-    }
-
-    class PhysicalModelFormEntity extends FormEntity{
-        PropertyDrawEntity recalculateStats;
-        ObjectEntity objTable;
-        ObjectEntity objKey;
-        ObjectEntity objColumn;
-        ObjectEntity objDropColumn;
-
-        protected PhysicalModelFormEntity(NavigatorElement parent, String sID) {
-            super(parent, sID, getString("logics.tables.physical.model"));
-
-            objTable = addSingleGroupObject(table, getString("logics.tables.tables"), baseGroup);
-            objKey = addSingleGroupObject(tableKey, getString("logics.tables.keys"), baseGroup);
-            objColumn = addSingleGroupObject(tableColumn, getString("logics.tables.columns"), baseGroup);
-            objDropColumn = addSingleGroupObject(dropColumn, getString("logics.tables.deleted.column"), baseGroup);
-            setEditType(objDropColumn, PropertyEditType.READONLY);
-            setEditType(dropDropColumn, PropertyEditType.EDITABLE);
-
-            recalculateStats = addPropertyDraw(addAProp(new RecalculateStatsActionProperty("recalculateStats", getString("logics.tables.recalculate.stats"))));
-            addPropertyDraw(recalculateAggregationTableColumn, objColumn);
-
-            setEditType(propertyNameTableColumn, PropertyEditType.READONLY);
-
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(tableTableKey, objKey), Compare.EQUALS, objTable));
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(tableTableColumn, objColumn), Compare.EQUALS, objTable));
-        }
-
-        @Override
-        public FormView createDefaultRichDesign() {
-            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
-
-            ContainerView modelContainer = design.createContainer(getString("logics.tables.physical.model"));
-            modelContainer.add(design.getGroupObjectContainer(objTable.groupTo));
-            modelContainer.add(design.getGroupObjectContainer(objKey.groupTo));
-            modelContainer.add(design.getGroupObjectContainer(objColumn.groupTo));
-            modelContainer.add(design.get(recalculateStats));
-
-            ContainerView dropColumnsContainer = design.createContainer(getString("logics.tables.deleted.columns"));
-            dropColumnsContainer.add(design.getGroupObjectContainer(objDropColumn.groupTo));
-
-            ContainerView container = design.createContainer();
-            container.type = ContainerType.TABBED_PANE;
-            container.add(modelContainer);
-            container.add(dropColumnsContainer);
-
-            design.getMainContainer().add(0, container);
-
-            return design;
-        }
-    }
-
-    class PropertiesFormEntity extends FormEntity {
-        ObjectEntity objProperties;
-        ObjectEntity objProps;
-        ObjectEntity objTreeProps;
-        TreeGroupEntity treePropertiesObject;
-        protected PropertiesFormEntity(NavigatorElement parent, String sID) {
-            super(parent, sID, getString("logics.tables.properties"));
-
-            objProperties = addSingleGroupObject(property, true);
-
-            objTreeProps = addSingleGroupObject(abstractGroup, true);
-            objProps = addSingleGroupObject(property, true);
-
-            objTreeProps.groupTo.setIsParents(addPropertyObject(parentAbstractGroup, objTreeProps));
-            treePropertiesObject = addTreeGroupObject(objTreeProps.groupTo, objProps.groupTo);
-
-            LP dumb1 = dumb(1);
-            addPropertyDraw(new LP[]{captionProperty, SIDProperty, signatureProperty, returnProperty, classProperty, parentProperty, numberProperty, userLoggableProperty, loggableProperty, storedProperty, isSetNotNullProperty}, objProperties);
-            addPropertyDraw(new LP[]{captionAbstractGroup, SIDAbstractGroup, dumb1, dumb1, dumb1, parentAbstractGroup, numberAbstractGroup, dumb1, dumb1, dumb1, dumb1}, objTreeProps);
-            addPropertyDraw(new LP[]{captionProperty, SIDProperty, signatureProperty, returnProperty, classProperty, parentProperty, numberProperty, userLoggableProperty, loggableProperty, storedProperty, isSetNotNullProperty}, objProps);
-
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(parentProperty, objProps), Compare.EQUALS, objTreeProps));
-
-            setEditType(PropertyEditType.READONLY);
-            setEditType(userLoggableProperty, PropertyEditType.EDITABLE);
-            setEditType(storedProperty, PropertyEditType.EDITABLE);
-            setEditType(isSetNotNullProperty, PropertyEditType.EDITABLE);
-        }
-
-        @Override
-        public FormView createDefaultRichDesign() {
-            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
-
-            ContainerView container = design.createContainer();
-            container.type = ContainerType.TABBED_PANE;
-
-            ContainerView treeContainer = design.createContainer(getString("logics.tree"));
-            ContainerView tableContainer = design.createContainer(getString("logics.tables.table"));
-
-            treeContainer.add(design.getTreeContainer(treePropertiesObject));
-            treeContainer.add(design.getGroupObjectContainer(objProperties.groupTo));
-
-            tableContainer.add(design.getGroupObjectContainer(objProperties.groupTo));
-
-            container.add(treeContainer);
-            container.add(tableContainer);
-
-            design.getMainContainer().add(0, container);
-
-            addDefaultOrder(getPropertyDraw(numberProperty, objProps.groupTo), true);
-            addDefaultOrder(getPropertyDraw(numberAbstractGroup, objTreeProps.groupTo), true);
-
-            return design;
-        }
-    }
-
-    public class NotificationFormEntity extends FormEntity {
-
-        private ObjectEntity objNotification;
-        private ObjectEntity objProperty;
-
-        public NotificationFormEntity(NavigatorElement parent, String sID) {
-            super(parent, sID, getString("logics.notification.notifications"));
-
-            addPropertyDraw(new LP[]{smtpHost, smtpPort, nameEncryptedConnectionType, fromAddress, emailAccount, emailPassword,
-                    emailBlindCarbonCopy, disableEmail});
-
-            objNotification = addSingleGroupObject(notification, getString("logics.notification"));
-            objProperty = addSingleGroupObject(property, getString("logics.property.properties"));
-
-            addPropertyDraw(inNotificationProperty, objNotification, objProperty);
-            addPropertyDraw(objNotification, subjectNotification, textNotification, emailFromNotification, emailToNotification, emailToCCNotification, emailToBCNotification, isEventNotification);
-            addObjectActions(this, objNotification);
-            addPropertyDraw(objProperty, captionProperty, SIDProperty);
-            setForceViewType(textNotification, ClassViewType.PANEL);
-            setEditType(captionProperty, PropertyEditType.READONLY);
-            setEditType(SIDProperty, PropertyEditType.READONLY);
-
-            RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
-            filterGroup.addFilter(
-                    new RegularFilterEntity(genID(),
-                            new NotNullFilterEntity(addPropertyObject(inNotificationProperty, objNotification, objProperty)),
-                            getString("logics.only.checked"),
-                            KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)
-                    ), true);
-            addRegularFilterGroup(filterGroup);
-        }
-
-        @Override
-        public FormView createDefaultRichDesign() {
-            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
-
-            ContainerView textContainer = design.createContainer(getString("logics.notification.text"));
-            textContainer.constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
-            textContainer.add(design.get(getPropertyDraw(textNotification, objNotification)));
-            textContainer.constraints.fillHorizontal = 1.0;
-            textContainer.constraints.fillVertical = 1.0;
-
-            PropertyDrawView textView = design.get(getPropertyDraw(textNotification, objNotification));
-            textView.constraints.fillHorizontal = 1.0;
-            textView.preferredSize = new Dimension(-1, 300);
-            textView.panelLabelAbove = true;
-
-            ContainerView specContainer = design.createContainer();
-            design.getMainContainer().addAfter(specContainer, design.getGroupObjectContainer(objNotification.groupTo));
-            specContainer.add(design.getGroupObjectContainer(objProperty.groupTo));
-            specContainer.add(textContainer);
-            specContainer.type = ContainerType.TABBED_PANE;
-
-            addDefaultOrder(getPropertyDraw(SIDProperty, objProperty), true);
-            return design;
-        }
-    }
-
-    public class ScheduledTaskFormEntity extends FormEntity {
-
-        private ObjectEntity objScheduledTask;
-        private ObjectEntity objProperty;
-        private ObjectEntity objScheduledTaskLog;
-        private ObjectEntity objScheduledClientTaskLog;
-
-        public ScheduledTaskFormEntity(NavigatorElement parent, String sID) {
-            super(parent, sID, getString("logics.scheduled.task.tasks"));
-
-            objScheduledTask = addSingleGroupObject(scheduledTask, getString("logics.scheduled.task"));
-            objProperty = addSingleGroupObject(property, getString("logics.property.properties"));
-            objScheduledTaskLog = addSingleGroupObject(scheduledTaskLog, getString("logics.scheduled.task.log"));
-            objScheduledClientTaskLog = addSingleGroupObject(scheduledClientTaskLog, getString("logics.scheduled.task.log.client"));
-
-            addPropertyDraw(objScheduledTask, objProperty, inScheduledTaskProperty, activeScheduledTaskProperty, orderScheduledTaskProperty);
-            addPropertyDraw(objScheduledTask, activeScheduledTask, nameScheduledTask, startDateScheduledTask, periodScheduledTask, runAtStartScheduledTask);
-            addObjectActions(this, objScheduledTask);
-            addPropertyDraw(objProperty, captionProperty, SIDProperty, classProperty, returnProperty);
-            addPropertyDraw(objScheduledTaskLog, propertyScheduledTaskLog, resultScheduledTaskLog, dateStartScheduledTaskLog, dateFinishScheduledTaskLog);
-            addPropertyDraw(objScheduledClientTaskLog, messageScheduledClientTaskLog);
-            setEditType(captionProperty, PropertyEditType.READONLY);
-            setEditType(SIDProperty, PropertyEditType.READONLY);
-            setEditType(classProperty, PropertyEditType.READONLY);
-            setEditType(returnProperty, PropertyEditType.READONLY);
-            setEditType(objScheduledTaskLog, PropertyEditType.READONLY);
-            setEditType(objScheduledClientTaskLog, PropertyEditType.READONLY);
-
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(scheduledTaskScheduledTaskLog, objScheduledTaskLog), Compare.EQUALS, objScheduledTask));
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(scheduledTaskLogScheduledClientTaskLog, objScheduledClientTaskLog), Compare.EQUALS, objScheduledTaskLog));
-            RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
-            filterGroup.addFilter(
-                    new RegularFilterEntity(genID(),
-                            new NotNullFilterEntity(addPropertyObject(inScheduledTaskProperty, objScheduledTask, objProperty)),
-                            getString("logics.only.checked"),
-                            KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)
-                    ), true);
-            addRegularFilterGroup(filterGroup);
-        }
-
-        @Override
-        public FormView createDefaultRichDesign() {
-            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
-
-            ContainerView specContainer = design.createContainer();
-            ContainerView bottomContainer = design.createContainer();
-            bottomContainer.add(design.getGroupObjectContainer(objProperty.groupTo));
-
-            ContainerView logContainer = design.createContainer("Лог");
-            logContainer.add(design.getGroupObjectContainer(objScheduledTaskLog.groupTo));
-            logContainer.add(design.getGroupObjectContainer(objScheduledClientTaskLog.groupTo));
-
-            bottomContainer.add(logContainer);
-            bottomContainer.type = ContainerType.TABBED_PANE;
-            
-            specContainer.add(design.getGroupObjectContainer(objScheduledTask.groupTo));
-            specContainer.add(bottomContainer);
-            specContainer.type = ContainerType.SPLIT_PANE_VERTICAL;
-
-            design.getMainContainer().add(0, specContainer);
-            return design;
-        }
-    }
-
-    class FormsFormEntity extends FormEntity{
-
-        ObjectEntity objTreeForm;
-        TreeGroupEntity treeFormObject;
-        ObjectEntity objUser;
-        ObjectEntity objGroupObject;
-        ObjectEntity objPropertyDraw;
-        protected FormsFormEntity(NavigatorElement parent, String sID) {
-            super(parent, sID, getString("logics.tables.forms"));
-
-            objTreeForm = addSingleGroupObject(navigatorElement, true);
-            objTreeForm.groupTo.setIsParents(addPropertyObject(parentNavigatorElement, objTreeForm));
-
-            treeFormObject = addTreeGroupObject(objTreeForm.groupTo);
-            addPropertyDraw(new LP[]{navigatorElementSID, navigatorElementCaption, parentNavigatorElement}, objTreeForm);
-            objUser = addSingleGroupObject(customUser, getString("logics.user"), userFirstName, userLastName, userLogin);
-            objGroupObject = addSingleGroupObject(groupObject, getString("logics.group.object"), groupObjectSID, hasUserPreferencesGroupObject);
-            objPropertyDraw = addSingleGroupObject(propertyDraw, getString("logics.property.draw"), propertyDrawSID, captionPropertyDraw);
-
-            addPropertyDraw(hasUserPreferencesGroupObjectCustomUser, objGroupObject, objUser);
-
-            addPropertyDraw(nameShowPropertyDraw, objPropertyDraw);
-            addPropertyDraw(nameShowPropertyDrawCustomUser, objPropertyDraw, objUser);
-            addPropertyDraw(columnWidthPropertyDraw, objPropertyDraw);
-            addPropertyDraw(columnWidthPropertyDrawCustomUser, objPropertyDraw, objUser);
-            addPropertyDraw(columnOrderPropertyDraw, objPropertyDraw);
-            addPropertyDraw(columnOrderPropertyDrawCustomUser, objPropertyDraw, objUser);
-            addPropertyDraw(columnSortPropertyDraw, objPropertyDraw);
-            addPropertyDraw(columnAscendingSortPropertyDraw, objPropertyDraw);
-            addPropertyDraw(columnSortPropertyDrawCustomUser, objPropertyDraw, objUser);
-            addPropertyDraw(columnAscendingSortPropertyDrawCustomUser, objPropertyDraw, objUser);
-
-            objUser.groupTo.initClassView = ClassViewType.PANEL;
-
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(navigatorElementGroupObject, objGroupObject), Compare.EQUALS, objTreeForm));
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(formPropertyDraw, objPropertyDraw), Compare.EQUALS, objTreeForm));
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(currentUser), Compare.EQUALS, objUser));
-
-            RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
-            filterGroup.addFilter(new RegularFilterEntity(genID(),
-                    new CompareFilterEntity(addPropertyObject(groupObjectPropertyDraw, objPropertyDraw), Compare.EQUALS, objGroupObject),
-                    getString("logics.group.object.only.current"),
-                    KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0)));
-            addRegularFilterGroup(filterGroup);
-
-            setEditType(PropertyEditType.READONLY);
-            setEditType(nameShowPropertyDraw, PropertyEditType.EDITABLE);
-            setEditType(nameShowPropertyDrawCustomUser, PropertyEditType.EDITABLE);
-            setEditType(columnWidthPropertyDrawCustomUser, PropertyEditType.EDITABLE);
-            setEditType(columnWidthPropertyDraw, PropertyEditType.EDITABLE);
-            setEditType(columnOrderPropertyDrawCustomUser, PropertyEditType.EDITABLE);
-            setEditType(columnOrderPropertyDraw, PropertyEditType.EDITABLE);
-            setEditType(columnSortPropertyDraw, PropertyEditType.EDITABLE);
-            setEditType(columnAscendingSortPropertyDraw, PropertyEditType.EDITABLE);
-            setEditType(columnSortPropertyDrawCustomUser, PropertyEditType.EDITABLE);
-            setEditType(columnAscendingSortPropertyDrawCustomUser, PropertyEditType.EDITABLE);
-        }
-    }
-
-
-    class ExceptionsFormEntity extends FormEntity {
-        ObjectEntity objExceptions;
-
-        protected ExceptionsFormEntity(NavigatorElement parent, String sID) {
-            super(parent, sID, getString("logics.tables.exceptions"));
-            objExceptions = addSingleGroupObject(exception, getString("logics.tables.exceptions"), messageException, clientClientException, loginClientException, typeException, dateException);
-            addPropertyDraw(erTraceException, objExceptions).forceViewType = ClassViewType.PANEL;
-            setEditType(PropertyEditType.READONLY);
-        }
-
-        @Override
-        public FormView createDefaultRichDesign() {
-            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
-
-            ContainerView textContainer = design.createContainer();
-            textContainer.constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
-            textContainer.add(design.get(getPropertyDraw(erTraceException, objExceptions)));
-            textContainer.constraints.fillHorizontal = 1.0;
-            textContainer.constraints.fillVertical = 1.0;
-
-            PropertyDrawView textView = design.get(getPropertyDraw(erTraceException, objExceptions));
-            textView.constraints.fillHorizontal = 1.0;
-            textView.constraints.fillVertical = 0.5;
-            textView.preferredSize = new Dimension(-1, 200);
-            textView.panelLabelAbove = true;
-
-            ContainerView specContainer = design.createContainer();
-            design.getMainContainer().addAfter(specContainer, design.getGroupObjectContainer(objExceptions.groupTo));
-            specContainer.add(design.getGroupObjectContainer(objExceptions.groupTo));
-            specContainer.add(textContainer);
-
-            return design;
-        }
-
-    }
 
     class SelectFromListFormEntity extends FormEntity implements FormActionProperty.SelfInstancePostProcessor {
         ObjectEntity[] mainObjects;

@@ -57,7 +57,7 @@ public class Scheduler {
             propertyKeys.put("scheduledTask", scheduledTaskExpr);
 
             Query<Object, Object> propertyQuery = new Query<Object, Object>(propertyKeys);
-            propertyQuery.properties.put("SIDProperty", BL.LM.SIDProperty.getExpr(propertyExpr));
+            propertyQuery.properties.put("SIDProperty", BL.reflectionLM.SIDProperty.getExpr(propertyExpr));
             propertyQuery.properties.put("orderScheduledTaskProperty", BL.LM.orderScheduledTaskProperty.getExpr(scheduledTaskExpr, propertyExpr));
             propertyQuery.and(BL.LM.inScheduledTaskProperty.getExpr(scheduledTaskExpr, propertyExpr).getWhere());
             propertyQuery.and(BL.LM.activeScheduledTaskProperty.getExpr(scheduledTaskExpr, propertyExpr).getWhere());

@@ -3229,7 +3229,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         disableExpert = addDProp(baseGroup, "disableExpert", "Не акт.", LogicalClass.instance, expert);
 
 //        LCP userRole = addCUProp("userRole", true, "Роль пользователя", baseLM.customUserSIDMainRole);
-        LCP userRole = addSUProp("userRole", true, "Роль пользователя", Union.OVERRIDE, baseLM.customUserSIDMainRole, addCProp(StringClass.get(30), "expert", expert));
+        LCP userRole = addSUProp("userRole", true, "Роль пользователя", Union.OVERRIDE, BL.securityLM.customUserSIDMainRole, addCProp(StringClass.get(30), "expert", expert));
 
 //        voteValuedProject, 1, addIfElseUProp(addCProp(projectStatus, "accepted", project), addCProp(projectStatus, "rejected", project), acceptedProject, 1), 1,
 //        voteSucceededProject, 1, addCProp(projectStatus, "succeeded", project), 1,
@@ -5091,7 +5091,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         public ClusterUserFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Сотрудники кластеров");
 
-            objClusterUser = addSingleGroupObject(clusterUser, "Сотрудник", baseLM.userFirstName, baseLM.userLastName, baseLM.userLogin, baseLM.userPassword, baseLM.email, baseLM.nameUserMainRole, nameClusterClusterUser);
+            objClusterUser = addSingleGroupObject(clusterUser, "Сотрудник", baseLM.userFirstName, baseLM.userLastName, baseLM.userLogin, baseLM.userPassword, baseLM.email, BL.securityLM.nameUserMainRole, nameClusterClusterUser);
             addObjectActions(this, objClusterUser);
         }
     }
