@@ -1254,9 +1254,9 @@ META deriveDocumentInvoicePriceDetailOnChangeValueVAT (object)
     @deriveDocumentInvoicePriceDetailOnChangeValueVATCustom(object###Detail);
 END
 
-META deriveDocumentInvoicePriceDetailOnChangeVATCustom (detail)
+META deriveDocumentInvoicePriceDetailOnChangeVATCustom (detail, stockProp)
     changeInvoicePriceVAT###detail (detail) = ACTION (detail) {
-        REQUEST OBJECT r FORM range MODAL;
+        FORM rangeDialog OBJECTS c = country###stockProp###detail(detail) MODAL;
         IF formResult() == formResult.ok THEN {
             IF rangeTypeRange(chosenObject('r')) == rangeType.units
                 THEN {
@@ -1271,8 +1271,8 @@ META deriveDocumentInvoicePriceDetailOnChangeVATCustom (detail)
     };
 END
 
-META deriveDocumentInvoicePriceDetailOnChangeVAT (object)
-    @deriveDocumentInvoicePriceDetailOnChangeVATCustom(object###Detail);
+META deriveDocumentInvoicePriceDetailOnChangeVAT (object, stockProp)
+    @deriveDocumentInvoicePriceDetailOnChangeVATCustom(object###Detail, stockProp);
 END
 
 META deriveDocumentDetailPricePriceListTypeBatchVAT (object, stockProp)

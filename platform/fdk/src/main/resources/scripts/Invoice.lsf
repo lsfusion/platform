@@ -140,7 +140,7 @@ META defineInvoice(sign, stockProp)
     @deriveDocumentDetailPricePriceListTypeVAT (userInvoice, stockProp);
     @deriveDocumentPriceDetailOnChangeInvoicePrice(userInvoice);
     @deriveDocumentInvoicePriceDetailOnChangePrice(userInvoice);
-    @deriveDocumentInvoicePriceDetailOnChangeVAT(userInvoice);
+    @deriveDocumentInvoicePriceDetailOnChangeVAT(userInvoice, stockProp);
     @deriveDocumentInvoicePriceDetailOnChangeValueVAT(userInvoice);
     Invoice.invoiceSumInvoiceDetail(detail) += invoiceSumInvoiceDetail(detail);
 

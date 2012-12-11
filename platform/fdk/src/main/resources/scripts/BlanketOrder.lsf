@@ -87,7 +87,8 @@ META defineBlanketOrder(sign)
     @deriveDocumentDetailPricePriceListTypeVAT (blanketOrder, supplierStock);
     @deriveDocumentPriceDetailOnChangeInvoicePrice(blanketOrder);
     @deriveDocumentInvoicePriceDetailOnChangePrice(blanketOrder);
-    @deriveDocumentInvoicePriceDetailOnChangeVAT(blanketOrder);
+    @deriveDocumentInvoicePriceDetailOnChangeVAT(blanketOrder, supplierStock);
+//    @deriveDocumentRangeDetailOnChange (blanketOrderDetail, supplierStock);
 
     @defineDocumentHeaderVATSumPrefix (blanketOrder, blanketOrderDetail, invoice);
 

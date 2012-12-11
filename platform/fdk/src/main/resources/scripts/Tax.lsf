@@ -217,6 +217,15 @@ FORM range 'Шкала'
     DIALOG range OBJECT r
 ;
 
+FORM rangeDialog 'Шкала'
+    OBJECTS c = country FIXED PANEL
+    OBJECTS r=range
+    PROPERTIES(r) READONLY numberRange, nameTaxRange, nameCountryRange, nameRangeTypeRange, valueCurrentRateRange, dateFromActingRateRange,
+                  dateToActingRateRange
+    PROPERTIES(r) ADDFORM, EDITFORM FORCE PANEL DRAWTOTOOLBAR
+    FILTERS countryRange(r) == c
+;
+
 
 // ----------------------------------------- Макросы по объявлению налогов в документах ---------------------------- //
 

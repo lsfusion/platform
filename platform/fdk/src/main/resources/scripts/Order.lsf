@@ -152,7 +152,7 @@ META defineOrder(sign, stockProp)
     @deriveDocumentDetailPricePriceListTypeVAT (userOrder, stockProp);
     @deriveDocumentPriceDetailOnChangeInvoicePrice(userOrder);
     @deriveDocumentInvoicePriceDetailOnChangePrice(userOrder);
-    @deriveDocumentInvoicePriceDetailOnChangeVAT(userOrder);
+    @deriveDocumentInvoicePriceDetailOnChangeVAT(userOrder, stockProp);
     Order.invoiceSumOrderDetail(detail) += invoiceSumOrderDetail(detail);
 
     @defineDocumentInterfaceHeaderVATSumPrefix (order, orderDetail, invoice);
