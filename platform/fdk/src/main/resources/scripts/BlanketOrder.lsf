@@ -75,6 +75,22 @@ META defineBlanketOrder(sign)
     @defineDocumentDetailDataSum (blanketOrder);
     @deriveDocumentDetailSum(blanketOrder, quantity);
 
+    @defineDocumentDetailVATPrefixCustom(blanketOrderDetail, , countrySupplierStock, );
+    @defineDocumentDetailVATDataSumCustom (blanketOrderDetail, invoice);
+    @deriveDocumentDetailPrefixSumCustom (blanketOrderDetail, invoice);
+    @deriveDocumentDetailDirectVATSum(blanketOrder);
+
+
+    @defineDocumentDetailPriceCustomPrefix (blanketOrderDetail, invoice, ' с НДС');
+    @deriveDocumentDetailVAT (blanketOrder, , date,  sku, supplierStock);
+    @deriveDocumentDetailValueVATPrefix(blanketOrder, );
+    @deriveDocumentDetailPricePriceListTypeVAT (blanketOrder, supplierStock);
+    @deriveDocumentPriceDetailOnChangeInvoicePrice(blanketOrder);
+    @deriveDocumentInvoicePriceDetailOnChangePrice(blanketOrder);
+    @deriveDocumentInvoicePriceDetailOnChangeVAT(blanketOrder);
+
+    @defineDocumentHeaderVATSumPrefix (blanketOrder, blanketOrderDetail, invoice);
+
     @defineDocumentHeaderSumContractor (blanketOrder, customerStock);
     @defineDocumentHeaderSum (blanketOrder);
     @defineDocumentHeaderCountContractor (blanketOrder, customerStock);
@@ -95,15 +111,19 @@ META defineBlanketOrder(sign)
         OBJECTS o = blanketOrder FIXED PANEL
         PROPERTIES (o) objectClassName, nameSupplierBlanketOrder, nameSupplierStockBlanketOrder, nameNumeratorObject, numberObject, seriesObject, dateBlanketOrder, timeBlanketOrder,
                        nameCurrencyBlanketOrder, noteBlanketOrder, nameCustomerBlanketOrder, nameAgreementBlanketOrder,
-                       countBlanketOrderDetailBlanketOrder, quantityBlanketOrderDetailBlanketOrder, sumBlanketOrderDetailBlanketOrder, shipmentDateBlanketOrder,
-                       shipmentTimeBlanketOrder
+                       countBlanketOrderDetailBlanketOrder, quantityBlanketOrderDetailBlanketOrder, sumBlanketOrderDetailBlanketOrder,
+                       VATSumBlanketOrderDetailBlanketOrder, invoiceSumBlanketOrderDetailBlanketOrder, shipmentDateBlanketOrder, shipmentTimeBlanketOrder
 
         OBJECTS d = blanketOrderDetail
         PROPERTIES (d) indexBlanketOrderDetail, idBarcodeSkuBlanketOrderDetail, nameSkuBlanketOrderDetail, shortNameUOMSkuBlanketOrderDetail,
                        quantityBlanketOrderDetail, namePriceListTypeBlanketOrderDetail,
-                       priceBlanketOrderDetail, sumBlanketOrderDetail, nameSupplierStockBlanketOrderDetail, nameCustomerStockBlanketOrderDetail,
-                       shipmentDateBlanketOrderDetail,
-                       shipmentTimeBlanketOrderDetail, ADDOBJ, delete
+
+                       priceBlanketOrderDetail ON CHANGE EXEC changeInvoicePriceBlanketOrderDetail(d), sumBlanketOrderDetail,
+                       numberVATBlanketOrderDetail ON CHANGE EXEC changeInvoicePriceVATBlanketOrderDetail(d),
+                       valueVATBlanketOrderDetail, invoicePriceBlanketOrderDetail ON CHANGE EXEC changePriceBlanketOrderDetail(d),
+                       VATSumBlanketOrderDetail, invoiceSumBlanketOrderDetail, nameSupplierStockBlanketOrderDetail, nameCustomerStockBlanketOrderDetail,
+                       shipmentDateBlanketOrderDetail, shipmentTimeBlanketOrderDetail, ADDOBJ, delete
+
         OBJECTS c = stock
         PROPERTIES     name(c) READONLY, inBlanketOrderStock(o,c)
         PROPERTIES(o,c) nameNumeratorBlanketOrderStock, numberBlanketOrderStock, seriesBlanketOrderStock,
@@ -197,6 +217,7 @@ META defineBlanketOrder(sign)
         PROPERTIES (o) READONLY isPostedBlanketOrder FORCE GRID, objectClassName, numberObject, seriesObject, dateBlanketOrder, timeBlanketOrder,
                                 nameSupplierBlanketOrder, nameSupplierStockBlanketOrder, nameCustomerBlanketOrder, nameCurrencyBlanketOrder, noteBlanketOrder,
                                 countBlanketOrderDetailBlanketOrder, quantityBlanketOrderDetailBlanketOrder, sumBlanketOrderDetailBlanketOrder,
+                                VATSumBlanketOrderDetailBlanketOrder, invoiceSumBlanketOrderDetailBlanketOrder,
                                 shipmentDateBlanketOrder, shipmentTimeBlanketOrder, customerStocksBlanketOrder
 
         PROPERTIES (o) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
@@ -208,7 +229,9 @@ META defineBlanketOrder(sign)
         OBJECTS d=blanketOrderDetail
         PROPERTIES (d) READONLY indexBlanketOrderDetail, idBarcodeSkuBlanketOrderDetail, nameSkuBlanketOrderDetail, shortNameUOMSkuBlanketOrderDetail,
                        quantityBlanketOrderDetail, namePriceListTypeBlanketOrderDetail,
-                       priceBlanketOrderDetail, sumBlanketOrderDetail, nameSupplierStockBlanketOrderDetail, nameCustomerStockBlanketOrderDetail,
+                       priceBlanketOrderDetail, sumBlanketOrderDetail,
+                       numberVATBlanketOrderDetail, valueVATBlanketOrderDetail, VATSumBlanketOrderDetail, invoiceSumBlanketOrderDetail,
+                       nameSupplierStockBlanketOrderDetail, nameCustomerStockBlanketOrderDetail,
                        shipmentDateBlanketOrderDetail, shipmentTimeBlanketOrderDetail
 
 

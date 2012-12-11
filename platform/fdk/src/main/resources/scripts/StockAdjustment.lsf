@@ -87,12 +87,6 @@ FORM userAdjustment 'Изменение остатков'
     EVENTS
         ON OK EXEC prePostUserAdjustment(i)
 
-//    HINTTABLE LIST dateTimeUserAdjustmentDetail, skuUserAdjustmentDetail, supplierStockUserAdjustmentDetail, customerStockUserAdjustmentDetail,
-//                   priceListTypeUserAdjustmentDetail, currencyUserAdjustmentDetail,
-//                   priceUserAdjustmentDetail, VATUserAdjustmentDetail, valueVATUserAdjustmentDetail, adjustmentPriceUserAdjustmentDetail,
-//                   prevListSkuPriceUserAdjustmentDetail, prevListSkuPriceMVATUserAdjustmentDetail, prevListSkuPricePVATUserAdjustmentDetail
-
-
     EDIT userAdjustment OBJECT i
 ;
 
