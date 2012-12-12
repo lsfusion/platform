@@ -98,7 +98,8 @@ REQUIRE System,
         StockTax,
         ItemTax,
         NaturalLoss,
-        WarePriceList;
+        WarePriceList,
+        ScheduleOrder;
 
 // ----------------------------------- Свойства изменения объектов в Posted ------------------------------------------ //
 
@@ -1536,6 +1537,7 @@ NAVIGATOR {
         NEW contragents 'Контрагенты' {
             ADD legalEntities;
             ADD contractSkus;
+            ADD scheduleOrders;
         }
     }
 

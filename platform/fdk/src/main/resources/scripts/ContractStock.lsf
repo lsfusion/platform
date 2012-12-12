@@ -201,9 +201,11 @@ EXTEND FORM legalEntity
 EXTEND DESIGN legalEntity {
 
     docContainer{
+        type = TABBED;
         ADD css.box;
     }
     docContainer2{
+        type = TABBED;
         ADD csc.box;
     }
 }
