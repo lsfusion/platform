@@ -28,6 +28,7 @@ import platform.server.session.DataSession;
 import javax.swing.*;
 import java.awt.event.KeyEvent;
 import java.sql.SQLException;
+import java.util.Arrays;
 
 import static platform.server.logics.ServerResourceBundle.getString;
 
@@ -54,6 +55,7 @@ public class ServiceLogicsModule<T extends BusinessLogics<T>> extends LogicsModu
     }
     @Override
     public void initModuleDependencies() {
+        setRequiredModules(Arrays.asList("System"));
     }
 
     @Override
@@ -62,11 +64,12 @@ public class ServiceLogicsModule<T extends BusinessLogics<T>> extends LogicsModu
 
     @Override
     public void initClasses() {
-
+        initBaseClassAliases();
     }
 
     @Override
     public void initGroups() {
+        initBaseGroupAliases();
     }
 
     @Override

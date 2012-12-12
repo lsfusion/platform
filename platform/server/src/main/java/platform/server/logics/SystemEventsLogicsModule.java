@@ -29,6 +29,7 @@ import javax.swing.*;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.util.Arrays;
 
 import static platform.server.logics.ServerResourceBundle.getString;
 
@@ -76,6 +77,7 @@ public class SystemEventsLogicsModule<T extends BusinessLogics<T>> extends Logic
     }
     @Override
     public void initModuleDependencies() {
+        setRequiredModules(Arrays.asList("System", "Reflection"));
     }
 
     @Override
@@ -84,6 +86,7 @@ public class SystemEventsLogicsModule<T extends BusinessLogics<T>> extends Logic
 
     @Override
     public void initClasses() {
+        initBaseClassAliases();
         exception = addAbstractClass("exception", getString("logics.exception"), baseLM.baseClass);
         clientException = addConcreteClass("clientException", getString("logics.exception.client"), exception);
         serverException = addConcreteClass("serverException", getString("logics.exception.server"), exception);
@@ -91,12 +94,12 @@ public class SystemEventsLogicsModule<T extends BusinessLogics<T>> extends Logic
         connection = addConcreteClass("connection", getString("logics.connection"), baseLM.baseClass);
         connectionStatus = addStaticClass("connectionStatus", getString("logics.connection.status"),
                 new String[]{"connectedConnection", "disconnectedConnection"},
-                new String[]{getString("logics.connection.connected"), getString("logics.connection.disconnected")});        
+                new String[]{getString("logics.connection.connected"), getString("logics.connection.disconnected")});
     }
 
     @Override
     public void initGroups() {
-
+         initBaseGroupAliases();
     }
 
     @Override
@@ -244,7 +247,7 @@ public class SystemEventsLogicsModule<T extends BusinessLogics<T>> extends Logic
         protected LaunchesFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, getString("logics.launch.log"));
 
-            ObjectEntity objLaunch = addSingleGroupObject(launch, baseGroup, true);
+            ObjectEntity objLaunch = addSingleGroupObject(launch, computerLaunch, hostnameLaunch, timeLaunch, revisionLaunch, launch);
             setEditType(PropertyEditType.READONLY);
         }
     }

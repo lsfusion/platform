@@ -18,6 +18,8 @@ import platform.server.logics.linear.LAP;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
 
+import java.util.Arrays;
+
 import static platform.server.logics.ServerResourceBundle.getString;
 
 
@@ -96,6 +98,7 @@ public class SecurityLogicsModule<T extends BusinessLogics<T>> extends LogicsMod
     }
     @Override
     public void initModuleDependencies() {
+        setRequiredModules(Arrays.asList("System", "Reflection", "Email"));
     }
 
     @Override
@@ -104,6 +107,7 @@ public class SecurityLogicsModule<T extends BusinessLogics<T>> extends LogicsMod
 
     @Override
     public void initClasses() {
+        initBaseClassAliases();
         userRole = addConcreteClass("userRole", getString("logics.role"), BL.LM.baseClass.named);
         groupObject = addConcreteClass("groupObject", getString("logics.group.object"), BL.LM.baseClass);
         policy = addConcreteClass("policy", getString("logics.policy.security.policy"), BL.LM.baseClass.named);
@@ -111,6 +115,7 @@ public class SecurityLogicsModule<T extends BusinessLogics<T>> extends LogicsMod
 
     @Override
     public void initGroups() {
+        initBaseGroupAliases();
         idGroup = addAbstractGroup("idGroup", "Идентификаторы", publicGroup, false);
     }
 

@@ -25,6 +25,7 @@ import platform.server.logics.property.group.AbstractGroup;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.util.Arrays;
 
 import static platform.server.logics.ServerResourceBundle.getString;
 
@@ -74,6 +75,7 @@ public class EmailLogicsModule<T extends BusinessLogics<T>> extends LogicsModule
     }
     @Override
     public void initModuleDependencies() {
+        setRequiredModules(Arrays.asList("System", "Reflection"));
     }
 
     @Override
@@ -82,6 +84,7 @@ public class EmailLogicsModule<T extends BusinessLogics<T>> extends LogicsModule
 
     @Override
     public void initClasses() {
+        initBaseClassAliases();
         encryptedConnectionTypeStatus = addStaticClass("encryptedConnectionTypeStatus", getString("logics.connection.type.status"),
                 new String[]{"SSL", "TLS"},
                 new String[]{"SSL", "TLS"});
@@ -90,6 +93,7 @@ public class EmailLogicsModule<T extends BusinessLogics<T>> extends LogicsModule
 
     @Override
     public void initGroups() {
+        initBaseGroupAliases();
         emailGroup = addAbstractGroup("emailGroup", getString("logics.groups.emailgroup"), rootGroup, true);
     }
 

@@ -19,6 +19,7 @@ import platform.server.logics.linear.LCP;
 
 import javax.swing.*;
 import java.awt.event.KeyEvent;
+import java.util.Arrays;
 
 import static platform.server.logics.ServerResourceBundle.getString;
 
@@ -59,6 +60,7 @@ public class SchedulerLogicsModule<T extends BusinessLogics<T>> extends LogicsMo
     }
     @Override
     public void initModuleDependencies() {
+        setRequiredModules(Arrays.asList("System", "Reflection"));
     }
 
     @Override
@@ -67,6 +69,7 @@ public class SchedulerLogicsModule<T extends BusinessLogics<T>> extends LogicsMo
 
     @Override
     public void initClasses() {
+        initBaseClassAliases();
         scheduledTask = addConcreteClass("scheduledTask", getString("logics.scheduled.task"), baseLM.baseClass);
         scheduledTaskLog = addConcreteClass("scheduledTaskLog", getString("logics.scheduled.task.log"), baseLM.baseClass);
         scheduledClientTaskLog = addConcreteClass("scheduledClientTaskLog", getString("logics.scheduled.task.log.client"), baseLM.baseClass);
@@ -75,6 +78,7 @@ public class SchedulerLogicsModule<T extends BusinessLogics<T>> extends LogicsMo
 
     @Override
     public void initGroups() {
+        initBaseClassAliases();
     }
 
     @Override

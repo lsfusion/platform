@@ -162,6 +162,7 @@ public class ReflectionLogicsModule<T extends BusinessLogics<T>> extends LogicsM
     }
     @Override
     public void initModuleDependencies() {
+        setRequiredModules(Arrays.asList("System"));
     }
 
     @Override
@@ -170,6 +171,7 @@ public class ReflectionLogicsModule<T extends BusinessLogics<T>> extends LogicsM
 
     @Override
     public void initClasses() {
+        initBaseClassAliases();
         abstractGroup = addConcreteClass("abstractGroup", getString("logics.property.group"), baseLM.baseClass);
         navigatorElement = addConcreteClass("navigatorElement", getString("logics.navigator.element"), baseLM.baseClass);
         navigatorAction = addConcreteClass("navigatorAction", getString("logics.forms.action"), navigatorElement);
@@ -189,6 +191,7 @@ public class ReflectionLogicsModule<T extends BusinessLogics<T>> extends LogicsM
 
     @Override
     public void initGroups() {
+        initBaseGroupAliases();
 
     }
 
@@ -539,9 +542,8 @@ public class ReflectionLogicsModule<T extends BusinessLogics<T>> extends LogicsM
             objTreeProps.groupTo.setIsParents(addPropertyObject(parentAbstractGroup, objTreeProps));
             treePropertiesObject = addTreeGroupObject(objTreeProps.groupTo, objProps.groupTo);
 
-            LP dumb1 = dumb(1);
             addPropertyDraw(new LP[]{captionProperty, SIDProperty, signatureProperty, returnProperty, classProperty, parentProperty, numberProperty, userLoggableProperty, loggableProperty, storedProperty, isSetNotNullProperty}, objProperties);
-            addPropertyDraw(new LP[]{captionAbstractGroup, SIDAbstractGroup, dumb1, dumb1, dumb1, parentAbstractGroup, numberAbstractGroup, dumb1, dumb1, dumb1, dumb1}, objTreeProps);
+            addPropertyDraw(new LP[]{captionAbstractGroup, SIDAbstractGroup, baseLM.dumb1, baseLM.dumb1, baseLM.dumb1, parentAbstractGroup, numberAbstractGroup, baseLM.dumb1, baseLM.dumb1, baseLM.dumb1, baseLM.dumb1}, objTreeProps);
             addPropertyDraw(new LP[]{captionProperty, SIDProperty, signatureProperty, returnProperty, classProperty, parentProperty, numberProperty, userLoggableProperty, loggableProperty, storedProperty, isSetNotNullProperty}, objProps);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(parentProperty, objProps), Compare.EQUALS, objTreeProps));
