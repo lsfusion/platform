@@ -111,10 +111,10 @@ public class NavigatorsController {
                 DataSession session = BL.createSession();
 
                 DataObject newConnection = session.addObject(BL.systemEventsLM.connection);
-                BL.systemEventsLM.connectionUser.change(navigator.getUser().object, session, newConnection);
-                BL.systemEventsLM.connectionComputer.change(navigator.getComputer().object, session, newConnection);
-                BL.systemEventsLM.connectionCurrentStatus.change(BL.systemEventsLM.connectionStatus.getID("connectedConnection"), session, newConnection);
-                BL.systemEventsLM.connectionConnectTime.change(LM.currentDateTime.read(session), session, newConnection);
+                BL.systemEventsLM.userConnection.change(navigator.getUser().object, session, newConnection);
+                BL.systemEventsLM.computerConnection.change(navigator.getComputer().object, session, newConnection);
+                BL.systemEventsLM.connectionStatusConnection.change(BL.systemEventsLM.connectionStatus.getID("connectedConnection"), session, newConnection);
+                BL.systemEventsLM.connectTimeConnection.change(LM.currentDateTime.read(session), session, newConnection);
 
                 session.apply(BL);
                 session.close();
@@ -142,7 +142,7 @@ public class NavigatorsController {
 
     private void removeNavigator(RemoteNavigator navigator, DataSession session) throws SQLException {
         if (navigator != null && navigator.getConnection() != null) {
-            BL.systemEventsLM.connectionCurrentStatus.change(BL.systemEventsLM.connectionStatus.getID("disconnectedConnection"), session, navigator.getConnection());
+            BL.systemEventsLM.connectionStatusConnection.change(BL.systemEventsLM.connectionStatus.getID("disconnectedConnection"), session, navigator.getConnection());
         }
     }
 

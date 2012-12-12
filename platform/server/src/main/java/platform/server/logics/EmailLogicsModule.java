@@ -1,16 +1,13 @@
 package platform.server.logics;
 
 import org.apache.log4j.Logger;
-import platform.base.BaseUtils;
 import platform.interop.ClassViewType;
-import platform.interop.Compare;
 import platform.interop.PropertyEditType;
 import platform.interop.form.layout.ContainerType;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.server.classes.*;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
-import platform.server.form.entity.filter.CompareFilterEntity;
 import platform.server.form.entity.filter.NotNullFilterEntity;
 import platform.server.form.entity.filter.RegularFilterEntity;
 import platform.server.form.entity.filter.RegularFilterGroupEntity;
@@ -22,13 +19,8 @@ import platform.server.form.view.PropertyDrawView;
 import platform.server.logics.linear.LAP;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
-import platform.server.logics.property.CalcProperty;
-import platform.server.logics.property.PropertyInterface;
-import platform.server.logics.property.actions.DisconnectActionProperty;
 import platform.server.logics.property.actions.GenerateLoginPasswordActionProperty;
 import platform.server.logics.property.group.AbstractGroup;
-import platform.server.session.DataSession;
-import platform.server.session.PropertyChange;
 
 import javax.swing.*;
 import java.awt.*;
@@ -49,8 +41,8 @@ public class EmailLogicsModule<T extends BusinessLogics<T>> extends LogicsModule
 
     public AbstractGroup emailGroup;
 
-    public LCP email;
-    public LCP emailToObject;
+    public LCP emailContact;
+    public LCP contactEmail;
 
     public LCP encryptedConnectionType;
     public LCP nameEncryptedConnectionType;
@@ -111,11 +103,11 @@ public class EmailLogicsModule<T extends BusinessLogics<T>> extends LogicsModule
     public void initProperties() {
         // EmailLogicsModule
         // ------- Управление почтой ------ //
-        email = addDProp(baseGroup, "email", getString("logics.email"), StringClass.get(50), baseLM.contact);
-        email.setRegexp("^[-a-zA-Z0-9!#$%&'*+/=?^_`{|}~]+(?:\\.[-a-zA-Z0-9!#$%&'*+/=?^_`{|}~]+)*@(?:[a-zA-Z0-9]([-a-zA-Z0-9]{0,61}[a-zA-Z0-9])?\\.)*(?:aero|arpa|asia|biz|cat|com|coop|edu|gov|info|int|jobs|mil|mobi|museum|name|net|org|pro|tel|travel|[a-zA-Z][a-zA-Z])$");
-        email.setRegexpMessage("<html>Неверный формат e-mail</html>");
+        emailContact = addDProp(baseGroup, "emailContact", getString("logics.email"), StringClass.get(50), baseLM.contact);
+        emailContact.setRegexp("^[-a-zA-Z0-9!#$%&'*+/=?^_`{|}~]+(?:\\.[-a-zA-Z0-9!#$%&'*+/=?^_`{|}~]+)*@(?:[a-zA-Z0-9]([-a-zA-Z0-9]{0,61}[a-zA-Z0-9])?\\.)*(?:aero|arpa|asia|biz|cat|com|coop|edu|gov|info|int|jobs|mil|mobi|museum|name|net|org|pro|tel|travel|[a-zA-Z][a-zA-Z])$");
+        emailContact.setRegexpMessage("<html>Неверный формат e-mail</html>");
 
-        emailToObject = addAGProp("emailToObject", getString("logics.email.to.object"), email);
+        contactEmail = addAGProp("contactEmail", getString("logics.email.to.object"), emailContact);
 
         // Настройки почтового сервера
         encryptedConnectionType = addDProp(emailGroup, "encryptedConnectionType", getString("logics.connection.type.status"), encryptedConnectionTypeStatus);
@@ -134,10 +126,10 @@ public class EmailLogicsModule<T extends BusinessLogics<T>> extends LogicsModule
         disableEmail = addDProp(emailGroup, "disableEmail", getString("logics.email.disable.email.sending"), LogicalClass.instance);
 
         // Пользователи
-        generateLoginPassword = addAProp(actionGroup, new GenerateLoginPasswordActionProperty(email, baseLM.userLogin, baseLM.userPassword, baseLM.customUser));
+        generateLoginPassword = addAProp(actionGroup, new GenerateLoginPasswordActionProperty(emailContact, baseLM.userLogin, baseLM.userPassword, baseLM.customUser));
 
         emailUserPassUser = addEAProp(getString("logics.user.password.reminder"), baseLM.customUser);
-        addEARecipients(emailUserPassUser, email, 1);
+        addEARecipients(emailUserPassUser, emailContact, 1);
 
         // Уведомления
         isEventNotification = addDProp(baseGroup, "isDerivedChangeNotification", getString("logics.notification.for.any.change"), LogicalClass.instance, notification);

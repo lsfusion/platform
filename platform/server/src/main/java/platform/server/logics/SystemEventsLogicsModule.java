@@ -7,7 +7,6 @@ import platform.interop.Compare;
 import platform.interop.PropertyEditType;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.server.classes.*;
-import platform.server.data.Union;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.entity.filter.CompareFilterEntity;
@@ -49,18 +48,18 @@ public class SystemEventsLogicsModule<T extends BusinessLogics<T>> extends Logic
     public StaticCustomClass connectionStatus;
     
     
-    public LCP connectionComputer;
-    public LCP connectionUser;
-    public LCP userNameConnection;
-    public LCP<PropertyInterface> connectionCurrentStatus;
-    public LCP connectionConnectTime;
-    public LCP connectionDisconnectTime;
+    public LCP computerConnection;
+    public LCP userConnection;
+    public LCP userLoginConnection;
+    public LCP<PropertyInterface> connectionStatusConnection;
+    public LCP connectTimeConnection;
+    public LCP disconnectTimeConnection;
     public LAP disconnectConnection;
 
-    public LCP launchComputer;
-    public LCP computerNameLaunch;
-    public LCP launchTime;
-    public LCP launchRevision;
+    public LCP computerLaunch;
+    public LCP hostnameLaunch;
+    public LCP timeLaunch;
+    public LCP revisionLaunch;
 
     public LCP messageException;
     public LCP dateException;
@@ -113,32 +112,32 @@ public class SystemEventsLogicsModule<T extends BusinessLogics<T>> extends Logic
         // SystemLogLogicsModule
 
         // Сессии
-        LCP sessionUser = addDProp("sessionUser", getString("logics.session.user"), BL.LM.user, BL.LM.session);
-        sessionUser.setEventChangeNew(BL.LM.currentUser, is(BL.LM.session), 1);
-        addJProp(baseGroup, getString("logics.session.user"), BL.LM.name, sessionUser, 1);
-        LCP sessionDate = addDProp(baseGroup, "sessionDate", getString("logics.session.date"), DateTimeClass.instance, BL.LM.session);
-        sessionDate.setEventChangeNew(BL.LM.currentDateTime, is(BL.LM.session), 1);
+        LCP userSession = addDProp("userSession", getString("logics.session.user"), BL.LM.user, BL.LM.session);
+        userSession.setEventChangeNew(BL.LM.currentUser, is(BL.LM.session), 1);
+        addJProp(baseGroup, getString("logics.session.user"), BL.LM.name, userSession, 1);
+        LCP dateSession = addDProp(baseGroup, "dateSession", getString("logics.session.date"), DateTimeClass.instance, BL.LM.session);
+        dateSession.setEventChangeNew(BL.LM.currentDateTime, is(BL.LM.session), 1);
 
         // Подключения к серверу
-        connectionComputer = addDProp("connectionComputer", getString("logics.computer"), BL.LM.computer, connection);
-        addJProp(baseGroup, getString("logics.computer"), BL.LM.hostname, connectionComputer, 1);
-        connectionUser = addDProp("connectionUser", getString("logics.user"), BL.LM.customUser, connection);
-        userNameConnection = addJProp(baseGroup, getString("logics.user"), BL.LM.userLogin, connectionUser, 1);
-        connectionCurrentStatus = addDProp("connectionCurrentStatus", getString("logics.connection.status"), connectionStatus, connection);
-        addJProp(baseGroup, getString("logics.connection.status"), BL.LM.name, connectionCurrentStatus, 1);
+        computerConnection = addDProp("computerConnection", getString("logics.computer"), BL.LM.computer, connection);
+        addJProp(baseGroup, getString("logics.computer"), BL.LM.hostname, computerConnection, 1);
+        userConnection = addDProp("userConnection", getString("logics.user"), BL.LM.customUser, connection);
+        userLoginConnection = addJProp(baseGroup, getString("logics.user"), BL.LM.userLogin, userConnection, 1);
+        connectionStatusConnection = addDProp("connectionStatusConnection", getString("logics.connection.status"), connectionStatus, connection);
+        addJProp(baseGroup, getString("logics.connection.status"), BL.LM.name, connectionStatusConnection, 1);
 
-        connectionConnectTime = addDProp(baseGroup, "connectionConnectTime", getString("logics.connection.connect.time"), DateTimeClass.instance, connection);
-        connectionDisconnectTime = addDProp(baseGroup, "connectionDisconnectTime", getString("logics.connection.disconnect.time"), DateTimeClass.instance, connection);
-        connectionDisconnectTime.setEventChangePrevSet(BL.LM.currentDateTime,
-                addJProp(BL.LM.equals2, connectionCurrentStatus, 1, addCProp(connectionStatus, "disconnectedConnection")), 1);
+        connectTimeConnection = addDProp(baseGroup, "connectTimeConnection", getString("logics.connection.connect.time"), DateTimeClass.instance, connection);
+        disconnectTimeConnection = addDProp(baseGroup, "disconnectTimeConnection", getString("logics.connection.disconnect.time"), DateTimeClass.instance, connection);
+        disconnectTimeConnection.setEventChangePrevSet(BL.LM.currentDateTime,
+                addJProp(BL.LM.equals2, connectionStatusConnection, 1, addCProp(connectionStatus, "disconnectedConnection")), 1);
         disconnectConnection = addProperty(null, new LAP(new DisconnectActionProperty(BL, connection)));
-        addIfAProp(baseGroup, getString("logics.connection.disconnect"), true, connectionDisconnectTime, 1, disconnectConnection, 1);
+        addIfAProp(baseGroup, getString("logics.connection.disconnect"), true, disconnectTimeConnection, 1, disconnectConnection, 1);
 
         // Логирование старта сервера
-        launchComputer = addDProp("launchComputer", getString("logics.computer"), BL.LM.computer, launch);
-        computerNameLaunch = addJProp(baseGroup, getString("logics.computer"), BL.LM.hostname, launchComputer, 1);
-        launchTime = addDProp(baseGroup, "launchConnectTime", getString("logics.launch.time"), DateTimeClass.instance, launch);
-        launchRevision = addDProp(baseGroup, "launchRevision", getString("logics.launch.revision"), StringClass.get(10), launch);
+        computerLaunch = addDProp("computerLaunch", getString("logics.computer"), BL.LM.computer, launch);
+        hostnameLaunch = addJProp(baseGroup, getString("logics.computer"), BL.LM.hostname, computerLaunch, 1);
+        timeLaunch = addDProp(baseGroup, "launchConnectTime", getString("logics.launch.time"), DateTimeClass.instance, launch);
+        revisionLaunch = addDProp(baseGroup, "revisionLaunch", getString("logics.launch.revision"), StringClass.get(10), launch);
 
         // Ошибки выполнения
         messageException = addDProp(baseGroup, "messageException", getString("logics.exception.message"), BL.reflectionLM.propertyCaptionValueClass, exception);
@@ -148,8 +147,6 @@ public class SystemEventsLogicsModule<T extends BusinessLogics<T>> extends Logic
         typeException =  addDProp(baseGroup, "typeException", getString("logics.exception.type"), BL.reflectionLM.propertyCaptionValueClass, exception);
         clientClientException = addDProp(baseGroup, "clientClientException", getString("logics.exception.client.client"), BL.reflectionLM.loginValueClass, clientException);
         loginClientException = addDProp(baseGroup, "loginClientException", getString("logics.exception.client.login"), BL.reflectionLM.loginValueClass, clientException);
-
-        
 
         initNavigators();
     }
@@ -184,7 +181,7 @@ public class SystemEventsLogicsModule<T extends BusinessLogics<T>> extends Logic
 
             RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
             filterGroup.addFilter(new RegularFilterEntity(genID(),
-                    new CompareFilterEntity(addPropertyObject(connectionCurrentStatus, objConnection), Compare.EQUALS, addPropertyObject(addCProp(connectionStatus, "connectedConnection"))),
+                    new CompareFilterEntity(addPropertyObject(connectionStatusConnection, objConnection), Compare.EQUALS, addPropertyObject(addCProp(connectionStatus, "connectedConnection"))),
                     getString("logics.connection.active.connections"),
                     KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0)));
             addRegularFilterGroup(filterGroup);
@@ -196,9 +193,9 @@ public class SystemEventsLogicsModule<T extends BusinessLogics<T>> extends Logic
             DataSession session = BL.createSession();
 
             PropertyChange statusChanges = new PropertyChange(connectionStatus.getDataObject("disconnectedConnection"),
-                    BaseUtils.single(connectionCurrentStatus.property.interfaces), connectionStatus.getDataObject("connectedConnection"));
+                    BaseUtils.single(connectionStatusConnection.property.interfaces), connectionStatus.getDataObject("connectedConnection"));
 
-            session.change((CalcProperty) connectionCurrentStatus.property, statusChanges);
+            session.change((CalcProperty) connectionStatusConnection.property, statusChanges);
 
             session.apply(this.BL);
             session.close();

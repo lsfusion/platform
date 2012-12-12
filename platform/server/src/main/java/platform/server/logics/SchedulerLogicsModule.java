@@ -1,7 +1,6 @@
 package platform.server.logics;
 
 import org.apache.log4j.Logger;
-import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.PropertyEditType;
 import platform.interop.form.layout.ContainerType;
@@ -16,10 +15,7 @@ import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.view.ContainerView;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.FormView;
-import platform.server.logics.linear.LAP;
 import platform.server.logics.linear.LCP;
-import platform.server.logics.property.actions.GenerateLoginPasswordActionProperty;
-import platform.server.logics.property.group.AbstractGroup;
 
 import javax.swing.*;
 import java.awt.event.KeyEvent;

@@ -19,7 +19,7 @@ CLASS client 'Покупатель (Ф.Л.)' : contact;
 FORM client 'Покупатель (Ф.Л.)'
     OBJECTS c=client FIXED PANEL
     PROPERTIES(c)      userFirstName, userLastName, userPostAddress, userPhone,
-                       email, userBirthday
+                       emailContact, userBirthday
 
     EDIT client OBJECT c
 ;
@@ -27,7 +27,7 @@ FORM client 'Покупатель (Ф.Л.)'
 FORM clients 'Покупатели (Ф.Л.)'
     OBJECTS c=client
     PROPERTIES(c)      READONLY userFirstName, userLastName, userPostAddress, userPhone,
-                       email, userBirthday
+                       emailContact, userBirthday
     PROPERTIES(c)      ADDFORM, EDITFORM, delete
 ;
 

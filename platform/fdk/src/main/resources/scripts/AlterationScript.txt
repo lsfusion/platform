@@ -42,3 +42,37 @@ V0.5 {
     PROPERTY userCreated -> Historizable_userCreatedHistorizable
     PROPERTY computerCreated -> Historizable_computerCreatedHistorizable
 }
+
+V0.6 {
+    PROPERTY userRoleSID -> sidUserRole
+    PROPERTY userMainRole -> mainRoleUser
+    PROPERTY policyDescription -> descriptionPolicy
+    PROPERTY userRolePolicyOrder -> orderUserRolePolicy
+    PROPERTY permitViewAllUserRoleProperty -> permitViewAllPropertyUserRole
+    PROPERTY forbidViewAllUserRoleProperty -> forbidViewAllPropertyUserRole
+    PROPERTY permitChangeAllUserRoleProperty -> permitChangeAllPropertyUserRole
+    PROPERTY forbidChangeAllUserRoleProperty -> forbidChangeAllPropertyUserRole
+    PROPERTY userRoleDefaultForms -> defaultFormsUserRole
+    PROPERTY userRoleFormDefaultNumber -> defaultNumberUserRoleNavigatorElement
+    PROPERTY permitForm -> permitNavigatorElement
+    PROPERTY forbidForm -> forbidNavigatorElement
+    PROPERTY permitAllUserRoleForms -> permitAllFormsUserRole
+    PROPERTY forbidAllUserRoleForms -> forbidAllFormsUserRole
+    PROPERTY permitUserRoleForm -> permitUserRoleNavigatorElement
+    PROPERTY forbidUserRoleForm -> forbidUserRoleNavigatorElement
+    PROPERTY sessionUser -> userSession
+    PROPERTY sessionDate -> dateSession
+    PROPERTY connectionComputer -> computerConnection
+    PROPERTY connectionUser -> UserConnection
+    PROPERTY connectionCurrentStatus -> connectionStatusConnection
+    PROPERTY connectionConnectTime -> connectTimeConnection
+    PROPERTY connectionDisconnectTime -> disconnectTimeConnection
+    PROPERTY launchComputer -> computerLaunch
+    PROPERTY launchTime -> timeLaunch
+    PROPERTY launchRevision -> revisionLaunch
+    PROPERTY navigatorElementCaption -> captionNavigatorElement
+    PROPERTY navigatorElementSID -> sidNavigatorElement
+    PROPERTY groupObjectSID -> sidGroupObject
+    PROPERTY propertyDrawSID -> sidPropertyDraw
+    PROPERTY email -> emailContact
+}

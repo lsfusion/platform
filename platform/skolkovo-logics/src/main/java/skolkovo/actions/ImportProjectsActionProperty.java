@@ -23,7 +23,6 @@ import platform.server.logics.linear.LCP;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.PropertyInterface;
-import platform.server.logics.property.actions.CustomActionProperty;
 import platform.server.logics.property.actions.UserActionProperty;
 import platform.server.session.DataSession;
 import platform.server.session.SessionTableUsage;
@@ -357,8 +356,8 @@ public class ImportProjectsActionProperty extends UserActionProperty {
         properties.add(new ImportProperty(projectActionProjectField, LM.projectActionProject.getMapping(projectKey),
                 LM.baseLM.object(LM.projectAction).getMapping(projectActionProjectKey)));
 
-        claimerKey = new ImportKey(LM.claimer, BL.emailLM.emailToObject.getMapping(emailClaimerField));
-        properties.add(new ImportProperty(emailClaimerField, BL.emailLM.email.getMapping(claimerKey)));
+        claimerKey = new ImportKey(LM.claimer, BL.emailLM.contactEmail.getMapping(emailClaimerField));
+        properties.add(new ImportProperty(emailClaimerField, BL.emailLM.emailContact.getMapping(claimerKey)));
 
         propertiesFullClaimer = new ArrayList<ImportProperty<?>>();
         propertiesFullClaimer.add(new ImportProperty(phoneClaimerField, LM.phoneClaimer.getMapping(claimerKey)));
@@ -697,8 +696,8 @@ public class ImportProjectsActionProperty extends UserActionProperty {
         properties.add(new ImportProperty(projectActionProjectField, LM.projectActionProject.getMapping(projectKey),
                 LM.baseLM.object(LM.projectAction).getMapping(projectActionProjectKey)));
 
-        claimerKey = new ImportKey(LM.claimer, BL.emailLM.emailToObject.getMapping(emailClaimerField));
-        properties.add(new ImportProperty(emailClaimerField, BL.emailLM.email.getMapping(claimerKey)));
+        claimerKey = new ImportKey(LM.claimer, BL.emailLM.contactEmail.getMapping(emailClaimerField));
+        properties.add(new ImportProperty(emailClaimerField, BL.emailLM.emailContact.getMapping(claimerKey)));
 
         propertiesFullClaimer = new ArrayList<ImportProperty<?>>();
         propertiesFullClaimer.add(new ImportProperty(phoneClaimerField, LM.phoneClaimer.getMapping(claimerKey)));
@@ -979,7 +978,7 @@ public class ImportProjectsActionProperty extends UserActionProperty {
             Map<PropertyInterface, KeyExpr> keys = isProject.getMapKeys();
             Query<PropertyInterface, Object> query = new Query<PropertyInterface, Object>(keys);
             query.properties.put("id", LM.sidProject.getExpr(BaseUtils.singleValue(keys)));
-            query.properties.put("email", LM.emailClaimerProject.getExpr(BaseUtils.singleValue(keys)));
+            query.properties.put("emailContact", LM.emailClaimerProject.getExpr(BaseUtils.singleValue(keys)));
             query.properties.put("name", LM.nameNative.getExpr(BaseUtils.singleValue(keys)));
             query.properties.put("date", LM.updateDateProject.getExpr(BaseUtils.singleValue(keys)));
             if (fillSids) {
@@ -1085,7 +1084,7 @@ public class ImportProjectsActionProperty extends UserActionProperty {
                     Timestamp date = (Timestamp) project.get("date");
                     if (project.get("id").toString().trim().equals(projectId)) {
                         if (date == null || currentProjectDate.after(date)) {
-                            Object email = project.get("email");
+                            Object email = project.get("emailContact");
                             toLogString(pInfo, projectId, email == null ? null : email.toString().trim(), element.getChildText("emailProject"), name.toString().trim(), name, date, currentProjectDate);
                             projectList.put(projectId, currentProjectDate);
                             counter++;
@@ -1115,7 +1114,7 @@ public class ImportProjectsActionProperty extends UserActionProperty {
     }
 
     public void toLogString(PrivateInfo pInfo, Object projectId, Object oldEmail, Object newEmail, Object oldName, Object newName, Object oldDate, Object newDate) {
-        pInfo.toLog += "\nprojectId: " + projectId + "\n\temail: " + oldEmail + " <- " + newEmail + "\n\tname: " + oldName +
+        pInfo.toLog += "\nprojectId: " + projectId + "\n\temailContact: " + oldEmail + " <- " + newEmail + "\n\tname: " + oldName +
                 " <- " + newName + "\n\tdate: " + oldDate + " <- " + newDate;
     }
 
@@ -1123,12 +1122,12 @@ public class ImportProjectsActionProperty extends UserActionProperty {
         for (Map<PropertyInterface, Object> key : data.keySet()) {
             Map<Object, Object> project = data.get(key);
             if (project.get("id") == null) {
-                Object email = project.get("email");
+                Object email = project.get("emailContact");
                 if (email != null && getEmailRepeatings(data, elements, email.toString().trim()) == 1) {
                     String projectId = getProjectId(elements, email.toString().trim());
                     if (projectId != null) {
                         LM.sidProject.change(projectId, pInfo.session, pInfo.session.getDataObject(BaseUtils.singleValue(key), LM.project.getType()));
-                        pInfo.toLog += "\nprojectId: " + projectId + "\n\temail: " + email.toString().trim() + "\n\t" +
+                        pInfo.toLog += "\nprojectId: " + projectId + "\n\temailContact: " + email.toString().trim() + "\n\t" +
                                 project.get("name").toString().trim() + " =? " + getProjectName(elements, email.toString().trim().toLowerCase());
                     }
                 }
@@ -1161,7 +1160,7 @@ public class ImportProjectsActionProperty extends UserActionProperty {
     public int getEmailRepeatings(OrderedMap<Map<PropertyInterface, Object>, Map<Object, Object>> data, List<Element> elements, String email) {
         int repeatings = 0;
         for (Map<Object, Object> project : data.values()) {
-            if (project.get("email") != null && project.get("email").toString().trim().toLowerCase().equals(email.toLowerCase())) {
+            if (project.get("emailContact") != null && project.get("emailContact").toString().trim().toLowerCase().equals(email.toLowerCase())) {
                 repeatings++;
             }
         }

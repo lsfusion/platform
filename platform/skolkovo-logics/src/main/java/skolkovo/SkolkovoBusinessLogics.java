@@ -229,7 +229,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                 ProfileInfo profileInfo = new ProfileInfo();
 
                 profileInfo.expertName = (String) LM.name.read(session, expertObj);
-                profileInfo.expertEmail = (String) emailLM.email.read(session, expertObj);
+                profileInfo.expertEmail = (String) emailLM.emailContact.read(session, expertObj);
 
                 boolean isForeign;
                 if (locale != null)

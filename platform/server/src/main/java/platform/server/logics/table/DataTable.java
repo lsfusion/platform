@@ -11,8 +11,6 @@ import platform.server.data.expr.query.*;
 import platform.server.data.query.Query;
 import platform.server.data.query.stat.StatKeys;
 import platform.server.data.where.Where;
-import platform.server.logics.BaseLogicsModule;
-import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ReflectionLogicsModule;
 import platform.server.session.DataSession;
@@ -70,16 +68,16 @@ public abstract class DataTable extends GlobalTable {
 
             Map<Object, Object> result = BaseUtils.singleValue(query.execute(session));
 
-            DataObject tableObject = session.getDataObject(reflectionLM.sidToTable.read(session, new DataObject(name)), reflectionLM.table.getType());
+            DataObject tableObject = session.getDataObject(reflectionLM.tableSID.read(session, new DataObject(name)), reflectionLM.table.getType());
             reflectionLM.rowsTable.change(BaseUtils.nvl(result.get(0), 0), session, tableObject);
 
             for (KeyField key : keys) {
-                DataObject keyObject = session.getDataObject(reflectionLM.sidToTableKey.read(session, new DataObject(name + "." + key.name)), reflectionLM.tableKey.getType());
+                DataObject keyObject = session.getDataObject(reflectionLM.tableKeySID.read(session, new DataObject(name + "." + key.name)), reflectionLM.tableKey.getType());
                 reflectionLM.quantityTableKey.change(BaseUtils.nvl(result.get(key), 0), session, keyObject);
             }
 
             for (PropertyField property : properties) {
-                DataObject propertyObject = session.getDataObject(reflectionLM.sidToTableColumn.read(session, new DataObject(property.name)), reflectionLM.tableColumn.getType());
+                DataObject propertyObject = session.getDataObject(reflectionLM.tableColumnSID.read(session, new DataObject(property.name)), reflectionLM.tableColumn.getType());
                 reflectionLM.quantityTableColumn.change(BaseUtils.nvl(result.get(property), 0), session, propertyObject);
             }
 
@@ -95,7 +93,7 @@ public abstract class DataTable extends GlobalTable {
                 Map<Object, Object> notNulls = BaseUtils.singleValue(notNullResult);
                 int sparseColumns = 0;
                 for (PropertyField property : properties) {
-                    DataObject propertyObject = session.getDataObject(reflectionLM.sidToTableColumn.read(session, new DataObject(property.name)), reflectionLM.tableColumn.getType());
+                    DataObject propertyObject = session.getDataObject(reflectionLM.tableColumnSID.read(session, new DataObject(property.name)), reflectionLM.tableColumn.getType());
                     int notNull = (Integer) BaseUtils.nvl(notNulls.get(property), 0);
                     int total = (Integer) BaseUtils.nvl(result.get(0), 0);
                     double perCent = total != 0 ? 100 * (double) notNull / total : 100;
@@ -113,7 +111,7 @@ public abstract class DataTable extends GlobalTable {
     public void updateStat(ReflectionLogicsModule reflectionLM, DataSession session, boolean statDefault) throws SQLException {
         Object tableValue;
         Stat rowStat;
-        if (statDefault || (tableValue = reflectionLM.sidToTable.read(session, new DataObject(name))) == null) {
+        if (statDefault || (tableValue = reflectionLM.tableSID.read(session, new DataObject(name))) == null) {
             rowStat = Stat.DEFAULT;
         } else {
             DataObject tableObject = new DataObject(tableValue, reflectionLM.table);
@@ -123,7 +121,7 @@ public abstract class DataTable extends GlobalTable {
         DistinctKeys<KeyField> distinctKeys = new DistinctKeys<KeyField>();
         for(KeyField key : keys) {
             Object keyValue;
-            if (statDefault || (keyValue = reflectionLM.sidToTableKey.read(session, new DataObject(name + "." + key.name))) == null) {
+            if (statDefault || (keyValue = reflectionLM.tableKeySID.read(session, new DataObject(name + "." + key.name))) == null) {
                 distinctKeys.add(key, Stat.DEFAULT);
             } else {
                 DataObject keyObject = new DataObject(keyValue, reflectionLM.tableKey);
@@ -138,7 +136,7 @@ public abstract class DataTable extends GlobalTable {
                 updateStatProps.put(prop, ((DataClass)prop.type).getTypeStat().min(rowStat));
             else {
                 Object propertyValue;
-                if (statDefault || (propertyValue = reflectionLM.sidToTableColumn.read(session, new DataObject(prop.name))) == null) {
+                if (statDefault || (propertyValue = reflectionLM.tableColumnSID.read(session, new DataObject(prop.name))) == null) {
                     updateStatProps.put(prop, Stat.DEFAULT);
                 } else {
                     DataObject propertyObject = new DataObject(propertyValue, reflectionLM.tableColumn);

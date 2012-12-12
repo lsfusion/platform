@@ -1,61 +1,31 @@
 package platform.server.logics;
 
 import org.apache.log4j.Logger;
-import platform.base.identity.DefaultIDGenerator;
-import platform.base.identity.IDGenerator;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
-import platform.interop.KeyStrokes;
 import platform.interop.PropertyEditType;
-import platform.interop.action.LogOutClientAction;
 import platform.interop.action.MessageClientAction;
-import platform.interop.action.UserChangedClientAction;
-import platform.interop.action.UserReloginClientAction;
 import platform.interop.form.layout.ContainerType;
-import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
-import platform.server.caches.IdentityLazy;
 import platform.server.classes.*;
 import platform.server.data.SQLSession;
-import platform.server.data.Time;
 import platform.server.data.Union;
-import platform.server.data.expr.query.PartitionType;
 import platform.server.form.entity.*;
 import platform.server.form.entity.filter.*;
-import platform.server.form.instance.FormInstance;
 import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.view.ContainerView;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.FormView;
-import platform.server.form.view.PropertyDrawView;
-import platform.server.form.window.AbstractWindow;
-import platform.server.form.window.NavigatorWindow;
-import platform.server.form.window.ToolBarNavigatorWindow;
-import platform.server.form.window.TreeNavigatorWindow;
 import platform.server.logics.linear.LAP;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
 import platform.server.logics.property.actions.*;
-import platform.server.logics.property.actions.flow.ApplyActionProperty;
-import platform.server.logics.property.actions.flow.BreakActionProperty;
-import platform.server.logics.property.actions.flow.CancelActionProperty;
-import platform.server.logics.property.actions.flow.ReturnActionProperty;
-import platform.server.logics.property.actions.form.*;
-import platform.server.logics.property.derived.DerivedProperty;
-import platform.server.logics.property.group.AbstractGroup;
-import platform.server.logics.property.group.PropertySet;
-import platform.server.logics.table.TableFactory;
-import platform.server.session.DataSession;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.List;
 
-import static platform.server.logics.PropertyUtils.mapCalcImplement;
-import static platform.server.logics.PropertyUtils.readCalcImplements;
 import static platform.server.logics.ServerResourceBundle.getString;
 
 public class ReflectionLogicsModule<T extends BusinessLogics<T>> extends LogicsModule {
@@ -79,11 +49,11 @@ public class ReflectionLogicsModule<T extends BusinessLogics<T>> extends LogicsM
     public ConcreteCustomClass property;
     
     public LCP captionAbstractGroup;
-    public LCP navigatorElementCaption;
+    public LCP captionNavigatorElement;
     public LCP parentAbstractGroup;
     public LCP numberAbstractGroup;
     public LCP SIDAbstractGroup;
-    public LCP SIDToAbstractGroup;
+    public LCP abstractGroupSID;
 
     public LCP parentProperty;
     public LCP numberProperty;
@@ -96,28 +66,28 @@ public class ReflectionLogicsModule<T extends BusinessLogics<T>> extends LogicsM
     public LCP returnProperty;
     public LCP classProperty;
     public LCP captionProperty;
-    public LCP SIDToProperty;
+    public LCP propertySID;
 
-    public LCP navigatorElementSID;
+    public LCP sidNavigatorElement;
     public LCP numberNavigatorElement;
     
-    public LCP SIDToNavigatorElement;
+    public LCP navigatorElementSID;
     public LCP parentNavigatorElement;
     public LCP isNavigatorElement;
     public LCP isForm;
     public LCP isNavigatorAction;
 
-    public LCP groupObjectSID;
+    public LCP sidGroupObject;
     public LCP navigatorElementGroupObject;
     public LCP sidNavigatorElementGroupObject;
-    public LCP SIDNavigatorElementSIDGroupObjectToGroupObject;
+    public LCP groupObjectSIDGroupObjectSIDNavigatorElementGroupObject;
 
-    public LCP propertyDrawSID;
+    public LCP sidPropertyDraw;
     public LCP captionPropertyDraw;
-    public LCP SIDToPropertyDraw;
+    public LCP propertyDrawFormSID;
     public LCP formPropertyDraw;
     public LCP groupObjectPropertyDraw;
-    public LCP SIDNavigatorElementSIDPropertyDrawToPropertyDraw;
+    public LCP PropertyDrawSIDNavigatorElementSIDPropertyDraw;
 
     public LCP showPropertyDraw;
     public LCP nameShowPropertyDraw;
@@ -144,20 +114,20 @@ public class ReflectionLogicsModule<T extends BusinessLogics<T>> extends LogicsM
     public LCP hasUserPreferencesOverrideGroupObjectCustomUser;
 
     public LCP sidTable;
-    public LCP sidToTable;
+    public LCP tableSID;
     public LCP rowsTable;
     public LCP sparseColumnsTable;
     public LCP tableTableKey;
     public LCP sidTableKey;
-    public LCP sidToTableKey;
+    public LCP tableKeySID;
     public LCP classTableKey;
     public LCP nameTableKey;
     public LCP quantityTableKey;
     public LCP tableTableColumn;
     public LCP sidTableColumn;
-    public LCP sidToTableColumn;
+    public LCP tableColumnSID;
     public LCP propertyTableColumn;
-    public LCP propertyNameTableColumn;
+    public LCP namePropertyTableColumn;
 
     public LCP quantityTableColumn;
     public LCP notNullQuantityTableColumn;
@@ -166,7 +136,7 @@ public class ReflectionLogicsModule<T extends BusinessLogics<T>> extends LogicsM
 
     public LCP<?> sidTableDropColumn;
     public LCP<?> sidDropColumn;
-    public LCP sidToDropColumn;
+    public LCP dropColumnSID;
 
     public LCP timeDropColumn;
     public LCP revisionDropColumn;
@@ -247,11 +217,11 @@ public class ReflectionLogicsModule<T extends BusinessLogics<T>> extends LogicsM
 
         // Группы свойства
         captionAbstractGroup = addDProp(BL.LM.baseGroup, "captionAbstractGroup", getString("logics.name"), propertyCaptionValueClass, abstractGroup);
-        navigatorElementCaption = addDProp(BL.LM.baseGroup, "navigatorElementCaption", getString("logics.forms.name"), navigatorElementCaptionClass, navigatorElement);
+        captionNavigatorElement = addDProp(BL.LM.baseGroup, "captionNavigatorElement", getString("logics.forms.name"), navigatorElementCaptionClass, navigatorElement);
         parentAbstractGroup = addDProp(BL.LM.baseGroup, "parentAbstractGroup", getString("logics.property.group"), abstractGroup, abstractGroup);
         numberAbstractGroup = addDProp(BL.LM.baseGroup, "numberAbstractGroup", getString("logics.property.number"), IntegerClass.instance, abstractGroup);
         SIDAbstractGroup = addDProp(BL.LM.baseGroup, "SIDAbstractGroup", getString("logics.property.sid"), propertySIDValueClass, abstractGroup);
-        SIDToAbstractGroup = addAGProp("SIDToAbstractGroup", getString("logics.property"), SIDAbstractGroup);
+        abstractGroupSID = addAGProp("abstractGroupSID", getString("logics.property"), SIDAbstractGroup);
 
         // Свойства
         parentProperty = addDProp(BL.LM.baseGroup, "parentProperty", getString("logics.property.group"), abstractGroup, property);
@@ -265,14 +235,14 @@ public class ReflectionLogicsModule<T extends BusinessLogics<T>> extends LogicsM
         returnProperty = addDProp(BL.LM.baseGroup, "returnProperty", getString("logics.property.return"), propertySignatureValueClass, property);
         classProperty = addDProp(BL.LM.baseGroup, "classProperty", getString("logics.property.class"), propertySignatureValueClass, property);
         captionProperty = addDProp(BL.LM.baseGroup, "captionProperty", getString("logics.property.caption"), propertyCaptionValueClass, property);
-        SIDToProperty = addAGProp("SIDToProperty", getString("logics.property"), SIDProperty);
+        propertySID = addAGProp("propertySID", getString("logics.property"), SIDProperty);
 
         // ------- Логика представлений --------- //
 
         // Навигатор
-        navigatorElementSID = addDProp(BL.LM.baseGroup, "navigatorElementSID", getString("logics.forms.code"), navigatorElementSIDClass, navigatorElement);
+        sidNavigatorElement = addDProp(BL.LM.baseGroup, "sidNavigatorElement", getString("logics.forms.code"), navigatorElementSIDClass, navigatorElement);
         numberNavigatorElement = addDProp(BL.LM.baseGroup, "numberNavigatorElement", getString("logics.number"), IntegerClass.instance, navigatorElement);
-        SIDToNavigatorElement = addAGProp("SIDToNavigatorElement", getString("logics.forms.form"), navigatorElementSID);
+        navigatorElementSID = addAGProp("navigatorElementSID", getString("logics.forms.form"), sidNavigatorElement);
         parentNavigatorElement = addDProp("parentNavigatorElement", getString("logics.forms.parent.form"), navigatorElement, navigatorElement);
         isNavigatorElement = addJProp("isNavigatorElement", and(true, true), is(navigatorElement), 1, is(form), 1, is(navigatorAction), 1);
         isForm = is(form);
@@ -280,19 +250,19 @@ public class ReflectionLogicsModule<T extends BusinessLogics<T>> extends LogicsM
 
         // ----- Формы ---- //
         // Группа объектов
-        groupObjectSID = addDProp(BL.LM.baseGroup, "groupObjectSID", getString("logics.group.object.sid"), propertySIDValueClass, BL.securityLM.groupObject);
+        sidGroupObject = addDProp(BL.LM.baseGroup, "sidGroupObject", getString("logics.group.object.sid"), propertySIDValueClass, BL.securityLM.groupObject);
         navigatorElementGroupObject = addDProp(BL.LM.baseGroup, "navigatorElementGroupObject", getString("logics.navigator.element"), navigatorElement, BL.securityLM.groupObject);
-        sidNavigatorElementGroupObject = addJProp(BL.LM.baseGroup, "sidNavigatorElementGroupObject", navigatorElementSID, navigatorElementGroupObject, 1);
-        SIDNavigatorElementSIDGroupObjectToGroupObject = addAGProp(BL.LM.baseGroup, "SIDToGroupObject", getString("logics.group.object"), groupObjectSID, sidNavigatorElementGroupObject);
+        sidNavigatorElementGroupObject = addJProp(BL.LM.baseGroup, "sidNavigatorElementGroupObject", sidNavigatorElement, navigatorElementGroupObject, 1);
+        groupObjectSIDGroupObjectSIDNavigatorElementGroupObject = addAGProp(BL.LM.baseGroup, "SIDToGroupObject", getString("logics.group.object"), sidGroupObject, sidNavigatorElementGroupObject);
 
         // PropertyDraw
-        propertyDrawSID = addDProp(BL.LM.baseGroup, "propertyDrawSID", getString("logics.forms.property.draw.code"), propertySIDValueClass, propertyDraw);
+        sidPropertyDraw = addDProp(BL.LM.baseGroup, "sidPropertyDraw", getString("logics.forms.property.draw.code"), propertySIDValueClass, propertyDraw);
         captionPropertyDraw = addDProp(BL.LM.baseGroup, "captionPropertyDraw", getString("logics.forms.property.draw.caption"), propertyCaptionValueClass, propertyDraw);
         formPropertyDraw = addDProp(BL.LM.baseGroup, "formPropertyDraw", getString("logics.forms.form"), form, propertyDraw);
         groupObjectPropertyDraw = addDProp(BL.LM.baseGroup, "groupObjectPropertyDraw", getString("logics.group.object"), BL.securityLM.groupObject, propertyDraw);
-        SIDToPropertyDraw = addAGProp(BL.LM.baseGroup, "SIDToPropertyDraw", getString("logics.property.draw"), formPropertyDraw, propertyDrawSID);
+        propertyDrawFormSID = addAGProp(BL.LM.baseGroup, "propertyDrawFormSID", getString("logics.property.draw"), formPropertyDraw, sidPropertyDraw);
         // todo : это свойство должно быть для форм, а не навигаторов
-        SIDNavigatorElementSIDPropertyDrawToPropertyDraw = addJProp(BL.LM.baseGroup, "SIDNavigatorElementSIDPropertyDrawToPropertyDraw", getString("logics.forms.code"), SIDToPropertyDraw, SIDToNavigatorElement, 1, 2);
+        PropertyDrawSIDNavigatorElementSIDPropertyDraw = addJProp(BL.LM.baseGroup, "PropertyDrawSIDNavigatorElementSIDPropertyDraw", getString("logics.forms.code"), propertyDrawFormSID, navigatorElementSID, 1, 2);
 
         // UserPreferences
         showPropertyDraw = addDProp(BL.LM.baseGroup, "showPropertyDraw", getString("logics.forms.property.show"), propertyDrawShowStatus, propertyDraw);
@@ -329,7 +299,7 @@ public class ReflectionLogicsModule<T extends BusinessLogics<T>> extends LogicsM
 
         // Таблицы
         sidTable = addDProp(recognizeGroup, "sidTable", getString("logics.tables.name"), StringClass.get(100), table);
-        sidToTable = addAGProp("sidToTable", getString("logics.tables.table"), sidTable);
+        tableSID = addAGProp("tableSID", getString("logics.tables.table"), sidTable);
 
         rowsTable = addDProp(BL.LM.baseGroup, "rowsTable", getString("logics.tables.rows"), IntegerClass.instance, table);
         sparseColumnsTable = addDProp(BL.LM.baseGroup, "sparseColumnsTable", getString("logics.tables.sparse.columns"), IntegerClass.instance, table);
@@ -338,7 +308,7 @@ public class ReflectionLogicsModule<T extends BusinessLogics<T>> extends LogicsM
         tableTableKey = addDProp("tableTableKey", getString("logics.tables.table"), table, tableKey);
 
         sidTableKey = addDProp("sidTableKey", getString("logics.tables.key.sid"), StringClass.get(100), tableKey);
-        sidToTableKey = addAGProp("sidToTableKey", getString("logics.tables.key"), sidTableKey);
+        tableKeySID = addAGProp("tableKeySID", getString("logics.tables.key"), sidTableKey);
 
         classTableKey = addDProp(BL.LM.baseGroup, "classTableKey", getString("logics.tables.key.class"), StringClass.get(40), tableKey);
         nameTableKey = addDProp(BL.LM.baseGroup, "nameTableKey", getString("logics.tables.key.name"), StringClass.get(20), tableKey);
@@ -349,10 +319,10 @@ public class ReflectionLogicsModule<T extends BusinessLogics<T>> extends LogicsM
         tableTableColumn = addDProp("tableTableColumn", getString("logics.tables.table"), table, tableColumn);
 
         sidTableColumn = addDProp(BL.LM.baseGroup, "sidTableColumn", getString("logics.tables.column.name"), StringClass.get(100), tableColumn);
-        sidToTableColumn = addAGProp("sidToTableColumn", getString("logics.tables.column"), sidTableColumn);
+        tableColumnSID = addAGProp("tableColumnSID", getString("logics.tables.column"), sidTableColumn);
 
-        propertyTableColumn = addJProp("propertyTableColumn", getString("logics.property"), SIDToProperty, sidTableColumn, 1);
-        propertyNameTableColumn = addJProp(BL.LM.baseGroup, "propertyNameTableColumn", getString("logics.tables.property.name"), captionProperty, propertyTableColumn, 1);
+        propertyTableColumn = addJProp("propertyTableColumn", getString("logics.property"), propertySID, sidTableColumn, 1);
+        namePropertyTableColumn = addJProp(BL.LM.baseGroup, "namePropertyTableColumn", getString("logics.tables.property.name"), captionProperty, propertyTableColumn, 1);
 
         quantityTableColumn = addDProp(BL.LM.baseGroup, "quantityTableColumn", getString("logics.tables.column.variety.quantity"), IntegerClass.instance, tableColumn);
         notNullQuantityTableColumn = addDProp(BL.LM.baseGroup, "notNullQuantityTableColumn", getString("logics.tables.column.notnull.quantity"), IntegerClass.instance, tableColumn);
@@ -364,7 +334,7 @@ public class ReflectionLogicsModule<T extends BusinessLogics<T>> extends LogicsM
         sidTableDropColumn = addDProp(BL.LM.baseGroup, "sidTableDropColumn", getString("logics.tables.name"), StringClass.get(100), dropColumn);
 
         sidDropColumn = addDProp(BL.LM.baseGroup, "sidDropColumn", getString("logics.tables.column.name"), StringClass.get(100), dropColumn);
-        sidToDropColumn = addAGProp("sidToDropColumn", getString("logics.tables.deleted.column"), sidDropColumn);
+        dropColumnSID = addAGProp("dropColumnSID", getString("logics.tables.deleted.column"), sidDropColumn);
 
         timeDropColumn = addDProp(BL.LM.baseGroup, "timeDropColumn", getString("logics.tables.deleted.column.time"), DateTimeClass.instance, dropColumn);
         revisionDropColumn = addDProp(BL.LM.baseGroup, "revisionDropColumn", getString("logics.launch.revision"), StringClass.get(10), dropColumn);
@@ -464,7 +434,7 @@ public class ReflectionLogicsModule<T extends BusinessLogics<T>> extends LogicsM
             recalculateStats = addPropertyDraw(addAProp(new RecalculateStatsActionProperty("recalculateStats", getString("logics.tables.recalculate.stats"))));
             addPropertyDraw(recalculateAggregationTableColumn, objColumn);
 
-            setEditType(propertyNameTableColumn, PropertyEditType.READONLY);
+            setEditType(namePropertyTableColumn, PropertyEditType.READONLY);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(tableTableKey, objKey), Compare.EQUALS, objTable));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(tableTableColumn, objColumn), Compare.EQUALS, objTable));
@@ -508,10 +478,10 @@ public class ReflectionLogicsModule<T extends BusinessLogics<T>> extends LogicsM
             objTreeForm.groupTo.setIsParents(addPropertyObject(parentNavigatorElement, objTreeForm));
 
             treeFormObject = addTreeGroupObject(objTreeForm.groupTo);
-            addPropertyDraw(new LP[]{navigatorElementSID, navigatorElementCaption, parentNavigatorElement}, objTreeForm);
+            addPropertyDraw(new LP[]{sidNavigatorElement, captionNavigatorElement, parentNavigatorElement}, objTreeForm);
             objUser = addSingleGroupObject(BL.LM.customUser, getString("logics.user"), BL.LM.userFirstName, BL.LM.userLastName, BL.LM.userLogin);
-            objGroupObject = addSingleGroupObject(BL.securityLM.groupObject, getString("logics.group.object"), groupObjectSID, hasUserPreferencesGroupObject);
-            objPropertyDraw = addSingleGroupObject(propertyDraw, getString("logics.property.draw"), propertyDrawSID, captionPropertyDraw);
+            objGroupObject = addSingleGroupObject(BL.securityLM.groupObject, getString("logics.group.object"), sidGroupObject, hasUserPreferencesGroupObject);
+            objPropertyDraw = addSingleGroupObject(propertyDraw, getString("logics.property.draw"), sidPropertyDraw, captionPropertyDraw);
 
             addPropertyDraw(hasUserPreferencesGroupObjectCustomUser, objGroupObject, objUser);
 

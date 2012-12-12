@@ -12,7 +12,6 @@ import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
-import platform.server.logics.property.actions.CustomActionProperty;
 import platform.server.logics.property.actions.UserActionProperty;
 import skolkovo.SkolkovoLogicsModule;
 
@@ -44,7 +43,7 @@ public class ExportExpertsActionProperty extends UserActionProperty {
         query.properties.put("lastName", LM.baseLM.userLastName.getExpr(context.getModifier(), key));
         query.properties.put("documentName", LM.documentNameExpert.getExpr(context.getModifier(), key));
         query.properties.put("userLogin", LM.baseLM.userLogin.getExpr(context.getModifier(), key));
-        query.properties.put("email", LM.baseLM.getBL().emailLM.email.getExpr(context.getModifier(), key));
+        query.properties.put("emailContact", LM.baseLM.getBL().emailLM.emailContact.getExpr(context.getModifier(), key));
         query.properties.put("nameLanguageExpert", LM.nameLanguageExpert.getExpr(context.getModifier(), key));
         query.properties.put("dateAgreement", LM.dateAgreementExpert.getExpr(context.getModifier(), key));
         query.properties.put("nameCountry", LM.nameCountryExpert.getExpr(context.getModifier(), key));

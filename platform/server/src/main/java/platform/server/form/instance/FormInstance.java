@@ -224,7 +224,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         List<GroupObjectUserPreferences> preferences = new ArrayList<GroupObjectUserPreferences>();
         try {
 
-            ObjectValue formValue = BL.reflectionLM.SIDToNavigatorElement.readClasses(session, new DataObject(entity.getSID(), StringClass.get(50)));
+            ObjectValue formValue = BL.reflectionLM.navigatorElementSID.readClasses(session, new DataObject(entity.getSID(), StringClass.get(50)));
             if (formValue.isNull())
                 return null;
             DataObject formObject = (DataObject) formValue;
@@ -240,7 +240,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             newKeys.put("propertyDraw", propertyDrawExpr);
 
             Query<Object, Object> query = new Query<Object, Object>(newKeys);
-            query.properties.put("propertyDrawSID", BL.reflectionLM.propertyDrawSID.getExpr(propertyDrawExpr));
+            query.properties.put("sidPropertyDraw", BL.reflectionLM.sidPropertyDraw.getExpr(propertyDrawExpr));
             query.properties.put("nameShowOverridePropertyDrawCustomUser", BL.reflectionLM.nameShowOverridePropertyDrawCustomUser.getExpr(propertyDrawExpr, customUserExpr));
             query.properties.put("columnWidthOverridePropertyDrawCustomUser", BL.reflectionLM.columnWidthOverridePropertyDrawCustomUser.getExpr(propertyDrawExpr, customUserExpr));
             query.properties.put("columnOrderOverridePropertyDrawCustomUser", BL.reflectionLM.columnOrderOverridePropertyDrawCustomUser.getExpr(propertyDrawExpr, customUserExpr));
@@ -252,7 +252,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(session.sql);
 
             for (Map<Object, Object> values : result.values()) {
-                String propertyDrawSID = values.get("propertyDrawSID").toString().trim();
+                String propertyDrawSID = values.get("sidPropertyDraw").toString().trim();
                 Boolean needToHide = null;
                 Object hide = values.get("nameShowOverridePropertyDrawCustomUser");
                 if (hide != null) {
@@ -267,7 +267,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 Boolean ascendingSort = (Boolean) values.get("columnAscendingSortOverridePropertyDrawCustomUser");
                 Integer groupObjectPropertyDraw = (Integer) values.get("groupObjectPropertyDraw");
                 if (groupObjectPropertyDraw != null) {
-                    String groupObjectSID = (String) BL.reflectionLM.groupObjectSID.read(session, new DataObject(groupObjectPropertyDraw, BL.securityLM.groupObject));
+                    String groupObjectSID = (String) BL.reflectionLM.sidGroupObject.read(session, new DataObject(groupObjectPropertyDraw, BL.securityLM.groupObject));
                     ColumnUserPreferences pref = new ColumnUserPreferences(needToHide, width, order, sort, ascendingSort != null ? ascendingSort : (sort != null ? false : null));
                     boolean found = false;
                     Object hasUserPreferences = BL.reflectionLM.hasUserPreferencesOverrideGroupObjectCustomUser.read(session, new DataObject(groupObjectPropertyDraw, BL.securityLM.groupObject), currentUser);
@@ -298,7 +298,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             DataObject userObject = dataSession.getDataObject(BL.LM.currentUser.read(dataSession), ObjectType.instance);
             for (GroupObjectUserPreferences groupObjectPreferences : preferences.getGroupObjectUserPreferencesList()) {
                 for (Map.Entry<String, ColumnUserPreferences> entry : groupObjectPreferences.getColumnUserPreferences().entrySet()) {
-                    Integer id = (Integer) BL.reflectionLM.SIDNavigatorElementSIDPropertyDrawToPropertyDraw.read(dataSession, new DataObject(entity.getSID(), StringClass.get(50)), new DataObject(entry.getKey(), StringClass.get(50)));
+                    Integer id = (Integer) BL.reflectionLM.PropertyDrawSIDNavigatorElementSIDPropertyDraw.read(dataSession, new DataObject(entity.getSID(), StringClass.get(50)), new DataObject(entry.getKey(), StringClass.get(50)));
                     DataObject propertyDrawObject = dataSession.getDataObject(id, ObjectType.instance);
                     Integer idShow = null;
                     if (entry.getValue().isNeedToHide() != null) {
@@ -320,7 +320,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                         BL.reflectionLM.columnOrderPropertyDraw.change(entry.getValue().getOrderUser(), dataSession, propertyDrawObject);
                     }
                 }
-                DataObject groupObjectObject = dataSession.getDataObject(BL.reflectionLM.SIDNavigatorElementSIDGroupObjectToGroupObject.read(dataSession, new DataObject(groupObjectPreferences.groupObjectSID, StringClass.get(50)), new DataObject(entity.getSID(), StringClass.get(50))), ObjectType.instance);
+                DataObject groupObjectObject = dataSession.getDataObject(BL.reflectionLM.groupObjectSIDGroupObjectSIDNavigatorElementGroupObject.read(dataSession, new DataObject(groupObjectPreferences.groupObjectSID, StringClass.get(50)), new DataObject(entity.getSID(), StringClass.get(50))), ObjectType.instance);
                 BL.reflectionLM.hasUserPreferencesGroupObjectCustomUser.change(groupObjectPreferences.hasUserPreferences ? true : null, dataSession, groupObjectObject, userObject);
                 if (forAllUsers)
                     BL.reflectionLM.hasUserPreferencesGroupObject.change(groupObjectPreferences.hasUserPreferences ? true : null, dataSession, groupObjectObject);

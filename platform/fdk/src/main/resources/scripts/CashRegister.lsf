@@ -96,7 +96,7 @@ FORM groupCashRegister 'Группа касс'
                     dateCashRegister, hostnameComputerCashRegister, nameLegalEntityCashRegister, ADDOBJ, delete
 
     OBJECTS cu=customUser
-    PROPERTIES(cu) userLogin, userFirstName, userLastName, customUserSIDMainRole
+    PROPERTIES(cu) userLogin, userFirstName, userLastName, sidMainRoleCustomUser
     PROPERTIES(grc, cu) operatorNumberGroupCashRegisterCustomUser
 
     FILTERGROUP filters2

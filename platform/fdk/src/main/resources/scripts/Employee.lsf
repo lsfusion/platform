@@ -43,7 +43,7 @@ inEmployeeDivisionEmployee 'Сотрудник отдела' = DATA BOOLEAN (emp
 FORM employee 'Сотрудник'
     OBJECTS e=employee FIXED PANEL
     PROPERTIES(e)      userFirstName, userLastName, namePositionEmployee,
-                       userLogin, userPassword, email, nameUserMainRole
+                       userLogin, userPassword, emailContact, nameMainRoleUser
 
     TREE treeEmployeeDivision dg = employeeDivisionGroup PARENT parentEmployeeDivisionGroup, dd = employeeDivision
     PROPERTIES READONLY  dgTreeName = name(dg), ddTreeName = name(dd)
@@ -77,8 +77,8 @@ DESIGN employee FROM DEFAULT {
                 childConstraints = TO THE BOTTOM;
                 ADD PROPERTY(userLogin(e));
                 ADD PROPERTY(userPassword(e));
-                ADD PROPERTY(email(e));
-                ADD PROPERTY(nameUserMainRole(e));
+                ADD PROPERTY(emailContact(e));
+                ADD PROPERTY(nameMainRoleUser(e));
             };
 
         }

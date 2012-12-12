@@ -4,7 +4,6 @@ import platform.base.Pair;
 import platform.server.classes.ValueClass;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.PropertyDrawView;
-import platform.server.logics.BaseLogicsModule;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.ClassPropertyInterface;
@@ -28,8 +27,8 @@ public class DisconnectActionProperty extends AdminActionProperty {
         List<ClassPropertyInterface> interfacesList = new ArrayList<ClassPropertyInterface>(interfaces);
         DataObject connection = context.getKeyValue(interfacesList.remove(0));
 
-        String login = ((String) BL.systemEventsLM.userNameConnection.read(context, connection)).trim();
-        Integer computer = (Integer) BL.systemEventsLM.connectionComputer.read(context, connection);
+        String login = ((String) BL.systemEventsLM.userLoginConnection.read(context, connection)).trim();
+        Integer computer = (Integer) BL.systemEventsLM.computerConnection.read(context, connection);
         Pair<String, Integer> key = new Pair<String, Integer>(login, computer);
         BL.navigatorsController.cutOffConnection(key);
     }

@@ -1786,8 +1786,6 @@ public class RomanLogicsModule extends LogicsModule {
         addTable("importerFreight", importer, freight);
 
         addTable("simpleInvoiceSimpleShipmentStockSku", simpleInvoice, simpleShipment, stock, sku);
-
-        addTable("barcodeObject", barcodeObject);
     }
 
     @Override

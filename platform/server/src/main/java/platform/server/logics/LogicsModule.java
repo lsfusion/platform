@@ -815,7 +815,7 @@ public abstract class LogicsModule {
     }
 
     protected LAP addEAProp(String subject, LCP fromAddress, LCP emailBlindCarbonCopy, ValueClass... params) {
-        return addEAProp(null, genSID(), "email", subject, fromAddress, emailBlindCarbonCopy, params);
+        return addEAProp(null, genSID(), "emailContact", subject, fromAddress, emailBlindCarbonCopy, params);
     }
 
     protected LAP addEAProp(AbstractGroup group, String name, String caption, String subject, LCP fromAddress, LCP emailBlindCarbonCopy, ValueClass... params) {
@@ -2332,19 +2332,19 @@ public abstract class LogicsModule {
      * <p/>
      * <pre>
      * Пример использования:
-     *       Скроем свойство policyDescription, если у текущего user'а логин - "Admin"
+     *       Скроем свойство descriptionPolicy, если у текущего user'а логин - "Admin"
      *
      *       Вводим свойство критерия:
      *
      *         LP hideUserPolicyDescription = addJProp(diff2, userLogin, 1, addCProp(StringClass.get(30), "Admin"));
      *
-     *       Вводим свойство которое будет использовано в качестве propertyCaption для policyDescription:
+     *       Вводим свойство которое будет использовано в качестве propertyCaption для descriptionPolicy:
      *
-     *         policyDescriptorCaption = addHideCaptionProp(null, "Policy caption", policyDescription, hideUserPolicyDescription);
+     *         policyDescriptorCaption = addHideCaptionProp(null, "Policy caption", descriptionPolicy, hideUserPolicyDescription);
      *
      *       Далее в форме указываем соответсвующий propertyCaption:
      *
-     *         PropertyDrawEntity descriptionDraw = getPropertyDraw(policyDescription, objPolicy.groupTo);
+     *         PropertyDrawEntity descriptionDraw = getPropertyDraw(descriptionPolicy, objPolicy.groupTo);
      *         PropertyDrawEntity descriptorCaptionDraw = addPropertyDraw(policyDescriptorCaption, objUser);
      *         descriptionDraw.setPropertyCaption(descriptorCaptionDraw.propertyObject);
      * </pre>
