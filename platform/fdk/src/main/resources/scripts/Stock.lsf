@@ -94,6 +94,7 @@ nameSkuGroupStock 'Наименование (иностр.)' (skuGroup, stock) =
 
 CLASS ABSTRACT sku 'SKU';
 TABLE sku(sku);
+TABLE legalEntitySku(legalEntity, sku);
 
 skuGroupSku (sku) = ABSTRACT skuGroup (sku) PERSISTENT;
 nameSku 'Наименование' (sku) = ABSTRACT STRING[200] (sku) PERSISTENT MINCHARWIDTH 40 PREFCHARWIDTH 80 INDEXED AGGPROP IN recognizeGroup;
@@ -2371,6 +2372,7 @@ META defineAddDetailDialogSkuStockCustom (object, detail, caption, skuProp, stoc
     addDetailDialogSkuStock###detail###object 'Подбор товаров'###caption = ACTION (object) {
         SET form###stock() <- stockProp###object(object);
         SET form###all(sku) <- NULL;
+
         EXEC addDetailDialogSku###detail###object(object AS object);
     } TOOLBAR;
 END

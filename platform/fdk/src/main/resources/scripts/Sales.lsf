@@ -36,7 +36,6 @@ valueVATSalesLedger 'НДС, %' (ledger) = valueRateRangeDate(VATSalesLedger(led
 sumVATSalesLedger 'Сумма НДС' (ledger) = [X*Y/(100+Y)](
         sumSalesLedger(ledger), valueVATSalesLedger(ledger));
 
-
 markupSumSalesLedger 'Надбавка' (ledger) = sumSalesLedger(ledger) - sumVATSalesLedger(ledger) - costSumSkuLedger(ledger);
 
 quantitySoldSkuStockDate (sku, stock, date) = GROUP SUM quantitySalesLedger(ledger) IF isPostedSalesLedger(ledger)
@@ -214,7 +213,6 @@ DESIGN salesSkuStock FROM DEFAULT {
             }
 
             NEW secondCase {
-                type = SPLITV;
                 fillHorizontal = 2;
                 childConstraints = TO THE BOTTOM;
 

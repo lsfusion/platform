@@ -70,6 +70,7 @@ REQUIRE System,
         AccountDocument,
         StorePrice,
         Sales,
+        Supply,
         Machinery,
         CashRegister,
         Scales,
@@ -1279,6 +1280,7 @@ NAVIGATOR {
     NEW purchase 'Управление закупками' TO toolbar {
         ADD purchasePurchaseNavigator;
         ADD purchaseReturnNavigator;
+        ADD supplyNavigator;
     }
 
     NEW warehouse 'Управление складом' TO toolbar {
