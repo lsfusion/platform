@@ -1289,19 +1289,23 @@ META deriveDocumentDetailPriceSystemLedgerPriceListType (concrete, priceListType
                                                          CHANGED(dateTime###concrete##Detail(detail));
 END
 
-META deriveDocumentDetailPriceSystemLedgerPriceListTypeBatch (concrete, priceListTypeProp, prefixP, skuProp, stockProp)
-    prefixP###price###concrete##Detail (detail)  <- IF batch###concrete##Detail(detail)
+META deriveDocumentDetailPriceSystemLedgerPriceListTypeBatch (concrete, priceListTypeProp, prefixP, prefixB, skuProp, stockProp)
+    prefixP###price###concrete##Detail (detail)  <- IF prefixB###batch###concrete##Detail(detail)
 
                                                     THEN prevPricePriceListTypeBatchStockDateTime (systemLedgerPriceListType.##priceListTypeProp,
-                                                                                               batch###concrete##Detail(detail),
+                                                                                               prefixB###batch###concrete##Detail(detail),
                                                                                                stockProp###concrete##Detail(detail),
                                                                                                dateTime###concrete##Detail(detail))
                                                     ELSE prevPricePriceListTypeSkuStockDateTime(systemLedgerPriceListType.##priceListTypeProp,
-                                                                                           skuProp###concrete##Detail(detail),
+                                                                                           prefixB###skuProp###concrete##Detail(detail),
                                                                                            stockProp###concrete##Detail(detail),
                                                                                            dateTime###concrete##Detail(detail))
-                                                    WHEN CHANGED(skuProp###concrete##Detail(detail)) OR
-                                                         CHANGED(skuProp###concrete##Detail(detail)) OR
+                                                    WHEN CHANGED(prefixB###skuProp###concrete##Detail(detail)) OR
                                                          CHANGED(stockProp###concrete##Detail(detail)) OR
-                                                         CHANGED(dateTime###concrete##Detail(detail));
+                                                         CHANGED(dateTime###concrete##Detail(detail)) OR
+                                                         CHANGED(prefixB###batch###concrete##Detail(detail));
+END
+
+META deriveDocumentDetailPriceSystemLedgerPriceListTypeBatch (concrete, priceListTypeProp, prefixP, skuProp, stockProp)
+    @deriveDocumentDetailPriceSystemLedgerPriceListTypeBatch (concrete, priceListTypeProp, prefixP, , skuProp, stockProp);
 END

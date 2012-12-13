@@ -1,0 +1,231 @@
+MODULE Disparity;
+
+REQUIRE System,
+        Stock,
+        Currency,
+        Numerator,
+        Terminal,
+        Barcode,
+        Document,
+        Employee,
+        AccountDocument,
+        Utils;
+
+//----------------------------------- Пересорт товара -------------------------------------------------------
+
+CLASS disparity 'Изменение сортности' : historizable, numeratedDocument;
+CLASS disparityPosted 'Проведенное изменение сортности' : disparity, postedObject;
+CLASS disparityDetail 'Строка изменения сортности';
+
+@defineDocument(disparity);
+@defineDocumentDataStock (disparity, stock, 'Склад', );
+@defineDocumentPosted(disparity);
+@defineDocumentDescription (disparity, 'Изменение сортности');
+@defineDocumentCurrency (disparity);
+@deriveDocumentCurrency(disparity, stock);
+
+@defineDocumentDetailSkuPrefix (disparity, sku, , ' (расход)');
+@defineDocumentDetailSkuPrefix (disparity, sku, input, ' (приход)');
+
+@defineDocumentDetailBatchCustomPrefix(disparityDetail, batch, );
+costBatchDisparityDetail 'Себестоимость партии' = DATA NUMERIC[14,2] (disparityDetail);
+costBatchDisparityDetail(detail) <- prevCostBatch(batchDisparityDetail(detail)) WHEN CHANGED(batchDisparityDetail(detail));
+
+expiryDateBatchDisparityDetail 'Годен до' = DATA DATE (disparityDetail);
+expiryDateBatchDisparityDetail(detail) <- prevExpiryDateBatch(batchDisparityDetail(detail)) WHEN CHANGED(batchDisparityDetail(detail));
+
+@defineDocumentDetailQuantityPrefix (disparity, , ' (расход)');
+@defineDocumentDetailQuantityPrefix (disparity, input, ' (приход)');
+
+@defineDocumentDetailPricePrefix (disparity, , ' учетная (расход)');
+@deriveDocumentDetailPriceSystemLedgerPriceListTypeBatch (disparity, accountPriceListType, , , sku, stock);
+@defineDocumentDetailPricePrefix (disparity, input, ' учетная (приход)');
+inputPriceDisparityDetail(detail) <- priceDisparityDetail(detail) WHEN CHANGED(priceDisparityDetail(detail));
+
+@defineDocumentDetailDataSumCustomPrefix (disparityDetail, , ' учетная (расход)');
+@deriveDocumentDetailSumPrefix(disparity, , currency, quantity);
+@defineDocumentDetailDataSumCustomPrefix (disparityDetail, input, ' учетная (приход)');
+@deriveDocumentDetailSumPrefix(disparity, input, currency, inputQuantity);
+
+@defineDocumentHeaderSumPrefix (disparity, , ' учетная (расход)');
+@defineDocumentHeaderSumPrefix (disparity, input, ' учетная (приход)');
+
+@defineDocumentHeaderQuantityPrefix (disparity, , ' (расход)');
+@defineDocumentHeaderQuantityPrefix (disparity, input, ' (приход)');
+
+@defineAddDetailDialogSkuStock(disparity, sku, stock, dialogSku);
+@defineAddDetailDialogBarcode(disparity, sku);
+@defineAddDetailDialogTerminal(disparity, sku);
+
+@implementSkuLedgerOutFIFO(disparityDetail, sku, stock);
+quantityOutFIFOSkuLedger (ledger) += quantityDisparityDetail(ledger);
+@implementSkuLedgerOutFIFOBalance(disparityDetail, sku, stock);
+sumOutSkuLedger (ledger) += sumDisparityDetail(ledger);
+
+
+//----------------------------  Изменение остатка пересорт --------------------------------------------//
+
+CLASS inputDisparityDetail 'Приход пересортицы';
+TABLE inputDisparityDetail (inputDisparityDetail);
+
+needToInputDisparityDetailDetail (disparityDetail) = inputQuantityDisparityDetail(disparityDetail) > 0
+    AND isPostedDisparityDetail(disparityDetail);
+
+@defineAggregation(disparityDetail, inputDisparityDetail, needToInputDisparityDetailDetail);
+
+@defineDocumentAggregationDetailTime(disparity, inputDisparity);
+@defineDocumentAggregationDetailPosted(disparity, inputDisparity);
+@defineDocumentAggregationDetailStock(disparity, inputDisparity, stock, 'Склад');
+@defineDocumentAggregationDetailSkuPrefix(disparity, inputDisparity, sku, input);
+quantityInputDisparityDetail(inputDisparityDetail) = inputQuantityDisparityDetail(disparityDetailInputDisparityDetail(inputDisparityDetail));
+priceInputDisparityDetail(inputDisparityDetail) = inputPriceDisparityDetail(disparityDetailInputDisparityDetail(inputDisparityDetail));
+sumInputDisparityDetail(inputDisparityDetail) = inputSumDisparityDetail(disparityDetailInputDisparityDetail(inputDisparityDetail));
+descriptionInputDisparityDetail(inputDisparityDetail) = descriptionDisparityDetail(disparityDetailInputDisparityDetail(inputDisparityDetail));
+costBatchInputDisparityDetail(inputDisparityDetail) = costBatchDisparityDetail(disparityDetailInputDisparityDetail(inputDisparityDetail));
+expiryDateBatchInputDisparityDetail (inputDisparityDetail) = expiryDateBatchDisparityDetail(disparityDetailInputDisparityDetail(inputDisparityDetail));
+
+
+@implementBatch(inputDisparityDetail, sku, stock, costBatch);
+quantityBatch (ledger) += quantityInputDisparityDetail(ledger);
+expiryDateBatch (ledger) += expiryDateBatchInputDisparityDetail(ledger);
+sumInSkuLedger (ledger) += sumInputDisparityDetail(ledger);
+
+//------------------------------------------- Пересорт товара----------------------------------------------------//
+
+quantityDisparityDetailSkuDisparity 'Кол-во для закачки в оборудование (приход)' (sku, disparity) = GROUP SUM inputQuantityDisparityDetail(disparityDetail) BY inputSkuDisparityDetail(disparityDetail), disparityDisparityDetail(disparityDetail);
+
+FORM disparity 'Изменение сортности'
+
+    OBJECTS dis=disparity FIXED PANEL
+
+    PROPERTIES(dis) objectClassName, nameNumeratorObject, numberObject, seriesObject, nameStockDisparity, dateDisparity, timeDisparity,
+                    quantityDisparityDetailDisparity, sumDisparityDetailDisparity,
+                    inputQuantityDisparityDetailDisparity, inputSumDisparityDetailDisparity, noteDisparity
+
+    OBJECTS d = disparityDetail
+    PROPERTIES(d)   indexDisparityDetail,
+                    idBarcodeSkuDisparityDetail, nameSkuDisparityDetail, shortNameUOMSkuDisparityDetail, descriptionBatchDisparityDetail,
+                    quantityDisparityDetail, priceDisparityDetail, sumDisparityDetail,
+                    inputIdBarcodeSkuDisparityDetail, inputNameSkuDisparityDetail, inputShortNameUOMSkuDisparityDetail,
+                    inputQuantityDisparityDetail, inputPriceDisparityDetail, inputSumDisparityDetail
+    PROPERTIES(d)   ADDOBJ, delete
+
+    PROPERTIES(dis) TODRAW d addDetailDialogSkuStockDisparityDetailDisparity, addDetailDialogTerminalDisparityDetailDisparity,
+                             addDetailInputBarcodeDisparityDetailDisparity, deleteDisparityDetailDisparity
+
+    FILTERS         disparityDisparityDetail(d) == dis
+
+    EVENTS
+        ON OK EXEC prePostDisparity(dis)
+
+    EDIT disparity OBJECT dis
+;
+
+DESIGN disparity FROM DEFAULT {
+    main {
+        preferredSize = (1024, 768);
+        NEW specification.box BEFORE functions.box{
+
+            ADD d.box {
+                title = 'Спецификация';
+                d.panel {
+                    childConstraints = TO THE RIGHTBOTTOM;
+                }
+            }
+        }
+        NEW header.box BEFORE specification.box {
+            childConstraints = TO THE RIGHT;
+
+            NEW headerRow1 {
+                childConstraints = TO THE BOTTOM;
+
+                ADD dis.documentHeaderGroup {
+                    childConstraints = TO THE RIGHTBOTTOM;
+                    ADD PROPERTY(objectClassName) { preferredCharWidth = 10; }
+                    ADD PROPERTY(nameStockDisparity);
+                    ADD PROPERTY(nameNumeratorObject);
+                    ADD PROPERTY(numberObject);
+                    ADD PROPERTY(seriesObject);
+                    ADD PROPERTY(dateDisparity);
+                    ADD PROPERTY(timeDisparity);
+                }
+
+                ADD dis.documentPrmGroup {
+                    childConstraints = TO THE RIGHTBOTTOM;
+                }
+
+            }
+
+            ADD dis.documentSumGroup {
+                childConstraints = TO THE BOTTOM;
+            }
+        }
+        PROPERTY(formOkAction) {
+            caption = 'Провести';
+        }
+    }
+}
+
+FORM disparities 'Изменения сортности'
+
+    OBJECTS dis=disparity
+    PROPERTIES(dis)  READONLY objectClassName, numberObject, seriesObject, nameStockDisparity, dateDisparity, timeDisparity,
+                              countDisparityDetailDisparity, quantityDisparityDetailDisparity, sumDisparityDetailDisparity,
+                              inputQuantityDisparityDetailDisparity, inputSumDisparityDetailDisparity, noteDisparity
+
+    PROPERTIES(dis)  READONLY FORCE PANEL timeCreatedHistorizable, nameUserCreatedHistorizable, hostnameComputerCreatedHistorizable, timeClosed, nameUserClosed, hostnameComputerClosed
+
+    PROPERTIES (dis) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
+
+    OBJECTS d=disparityDetail
+    PROPERTIES(d)   READONLY indexDisparityDetail,
+                    idBarcodeSkuDisparityDetail, nameSkuDisparityDetail, shortNameUOMSkuDisparityDetail, descriptionBatchDisparityDetail,
+                    quantityDisparityDetail, priceDisparityDetail, sumDisparityDetail,
+                    inputIdBarcodeSkuDisparityDetail, inputNameSkuDisparityDetail, inputShortNameUOMSkuDisparityDetail,
+                    inputQuantityDisparityDetail, inputPriceDisparityDetail, inputSumDisparityDetail
+
+    FILTERS         disparityDisparityDetail(d) == dis
+;
+DESIGN disparities FROM DEFAULT {
+    main {
+        preferredSize = (1024, 768);
+        PROPERTY (delete(dis)) {
+            askConfirm = TRUE;
+        }
+
+        NEW documentContainer BEFORE functions.box {
+            type = SPLITV;
+            childConstraints = TO THE BOTTOM;
+
+            ADD dis.box;
+
+            NEW documentDetail {
+                type = TABBED;
+
+                ADD d.box {
+                    title = 'Спецификация';
+                }
+                NEW documentHistory {
+                    title = 'История';
+
+                    ADD dis.historyGroup;
+                    ADD dis.postedGroup;
+                }
+                NEW printTab {
+                    title = 'Печатные формы';
+                    NEW printContainer {
+                        title = 'Печать';
+                        childConstraints = TO THE BOTTOM;
+                        fillVertical = 2.0; // todo : иначе кнопка не всегда показывается, нужно будет пофиксить как-нибудь
+                    }
+                }
+            }
+        }
+    }
+}
+
+NAVIGATOR {
+    NEW disparityNavigator 'Изменение сортности' {
+        ADD disparities;
+    }
+}

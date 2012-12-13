@@ -97,6 +97,8 @@ REQUIRE System,
         WarehouseShipment,
         StockTax,
         ItemTax,
+        Disparity,
+        DisparityRepricing,
         NaturalLoss,
         WarePriceList,
         ScheduleOrder;
@@ -928,102 +930,6 @@ sumOutAccountDocumentLedger (ledger) += discountSaleDiscountDocument(ledger);
 sumItemOutAccountDocumentLedger (ledger) += discountSaleDiscountDocument(ledger);
 sumContainerOutAccountDocumentLedger (ledger) += 0.0 IF ledger IS saleDiscountDocument;
 
-//----------------------------------- Пересорт товара -------------------------------------------------------
-
-CLASS disparity 'Пересортица' : historizable, numeratedDocument;
-CLASS disparityPosted 'Проведенная пересортица' : disparity, postedObject;
-CLASS disparityDetail 'Строка пересортицы';
-
-@defineDocument(disparity);
-@defineDocumentDepartmentStore(disparity);
-@defineDocumentPosted(disparity);
-
-@defineDocumentDetailSkuItem(disparity);
-
-@defineDocumentDetailQuantity(disparity);
-
-@defineDocumentDetailBasePrice(disparity, departmentStore);
-@derivePrevBasePriceLedgerOnSkuChange(disparity, item);
-
-@defineDocumentDetailBaseSum(disparity);
-
-@defineAddDetailDialogSkuStock(disparity, item, departmentStore, dialogSku);
-@defineAddDetailDialogBarcode(disparity, item);
-@defineAddDetailDialogTerminal(disparity, item);
-
-@defineDocumentHeaderQuantity(disparity);
-@defineDocumentHeaderBaseSum(disparity);
-
-descriptionDisparityDetail 'Название документа' (disparityDetail) =
-    [FORMULA STRING[200] '\'Пересортица (расход)\' ||  \' \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)'](
-    seriesNumberObject(disparityDisparityDetail(disparityDetail)), dateDisparity(disparityDisparityDetail(disparityDetail)));
-
-@implementSkuLedgerOutFIFO(disparityDetail, item, departmentStore);
-quantityOutFIFOSkuLedger (ledger) += quantityDisparityDetail(ledger);
-@implementSkuLedgerOutFIFOBalance(disparityDetail, item, departmentStore);
-sumOutSkuLedger (ledger) += retailSumDisparityDetail(ledger);
-
-                                  // Приход
-
-@defineDocumentDetailSkuItemPrefix(disparity, input, ' (приход)');
-
-@defineDocumentDetailQuantityPrefix(disparity, input, ' (приход)');
-
-@defineDocumentDetailBasePricePrefix(disparity, departmentStore, input, ' (приход)');
-@derivePrevBasePriceLedgerOnSkuChangePrefix(disparity, input, inputItem);
-
-//@defineDocumentDetailRetailSumPrefix(disparity, input, ' (приход)');
-inputRetailSumDisparityDetail 'Розничная сумма (приход)'(disparityDetail) = round0(inputQuantityDisparityDetail(disparityDetail) * inputRetailPriceDisparityDetail(disparityDetail));
-//inputQuantityDisparityDetailDisparity 'Кол-во (всего) (приход)' (disparityDetail) = GROUP SUM inputQuantityDisparityDetail(disparityDetail) BY disparityDisparityDetail(disparityDetail) IN documentSumGroup PERSISTENT;
-@defineDocumentHeaderQuantityPrefix(disparity, input, ' (приход)');
-@defineDocumentHeaderRetailSumPrefix(disparity, input, ' (приход)');
-
-                                  // Текущее значение расхода //
-
-@defineDocumentDetailBasePricePrefix(disparity, departmentStore, inputCur, ' (тек.)');
-@derivePrevBasePriceLedgerOnSkuChangePrefix(disparity, inputCur, inputItem);
-
-balanceBeforeDisparityDetail 'Остаток до пересорта (расход)' (disparityDetail) = DATA NUMERIC[14,3] (disparityDetail) IN baseGroup;
-balanceBeforeDisparityDetail (disparityDetail) <- balanceBSkuStockDateTime (
-                itemDisparityDetail(disparityDetail), departmentStoreDisparityDetail(disparityDetail), dateTimeDisparityDetail(disparityDetail))
-                WHEN CHANGED(itemDisparityDetail(disparityDetail));
-
-//----------------------------  Изменение остатка пересорт --------------------------------------------//
-
-CLASS inputDisparityDetail 'Приход пересортицы';
-TABLE inputDisparityDetail (inputDisparityDetail);
-
-needToInputDisparityDetailDetail (disparityDetail) = inputQuantityDisparityDetail(disparityDetail) > 0
-    AND isPostedDisparityDetail(disparityDetail);
-
-@defineAggregation(disparityDetail, inputDisparityDetail, needToInputDisparityDetailDetail);
-
-@defineDocumentAggregationDetailTime(disparity, inputDisparity);
-@defineDocumentAggregationDetailPosted(disparity, inputDisparity);
-@defineDocumentAggregationDetailStock(disparity, inputDisparity, departmentStore, 'Отдел магазина');
-@defineDocumentAggregationDetailSkuPrefix(disparity, inputDisparity, item, input);
-quantityInputDisparityDetail(inputDisparityDetail) = inputQuantityDisparityDetail(disparityDetailInputDisparityDetail(inputDisparityDetail));
-
-@defineDocumentAggregationDetailPricePrefix(disparity, inputDisparity, input, , );
-@defineDocumentDetailBaseSum(inputDisparity);
-
-expiryDateInputDisparityDetail 'Годен до' (inputDisparityDetail) = DATA DATE(inputDisparityDetail) IN baseGroup;
-
-descriptionInputDisparityDetail 'Название документа' (inputDisparityDetail) =
-    [FORMULA STRING[200] '\'Пересортица (приход)\' ||  \' \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)'](
-    seriesNumberObject(disparityDisparityDetail(disparityDetailInputDisparityDetail(inputDisparityDetail))), dateDisparity(disparityDisparityDetail(disparityDetailInputDisparityDetail(inputDisparityDetail))));
-
-@implementBatch(inputDisparityDetail, item, departmentStore, supplierPrice);
-quantityBatch (ledger) += quantityInputDisparityDetail(ledger);
-expiryDateBatch (ledger) += expiryDateInputDisparityDetail(ledger);
-sumInSkuLedger (ledger) += retailSumInputDisparityDetail(ledger);
-
-@implementBaseISkuDepartmentStoreLedger(inputDisparity, item);
-
-descriptionDisparity 'Название документа' (disparity) =
-    [FORMULA STRING[200] '\'Пересортица \' ||  \' \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)'](
-    seriesNumberObject(disparity), dateDisparity(disparity));
-
 // --------------------------------------- Печать ценников ---------------------------------------- //
 
 labelTypeBarcodeDepartmentStoreDate (barcode, departmentStore, date) += labelBarcodeDepartmentStoreDate(barcode, departmentStore, date);
@@ -1035,177 +941,6 @@ nameCountryItemBarcode = nameCountryItem(skuBarcode(barcode));
 nameManufacturerItemBarcode = nameManufacturerItem(skuBarcode(barcode));
 @defineLabelTransactionAttribute(manufacturer, 'Производитель', STRING[255], nameManufacturerItem);
 
-//------------------------------------------- Пересорт товара----------------------------------------------------//
-
-quantityDisparityDetailItemDisparity 'Кол-во для закачки в оборудование (приход)' (item, disparity) = GROUP SUM inputQuantityDisparityDetail(disparityDetail) BY inputItemDisparityDetail(disparityDetail), disparityDisparityDetail(disparityDetail);
-
-FORM disparity 'Пересортица'
-
-    OBJECTS dis=disparity FIXED PANEL
-
-    PROPERTIES(dis) objectClassName, nameNumeratorObject, numberObject, seriesObject, setValueNumeratedObject, nameDepartmentStoreDisparity,
-                    dateDisparity, timeDisparity,
-                    quantityDisparityDetailDisparity, retailSumDisparityDetailDisparity,
-                    inputQuantityDisparityDetailDisparity, inputRetailSumDisparityDetailDisparity
-
-    OBJECTS d = disparityDetail
-    PROPERTIES(d)   indexDisparityDetail,
-                    idBarcodeSkuDisparityDetail, nameAttributeItemDisparityDetail, shortNameUOMItemDisparityDetail,
-                    quantityDisparityDetail, retailPriceDisparityDetail, retailSumDisparityDetail,
-                    inputIdBarcodeSkuDisparityDetail, inputNameAttributeItemDisparityDetail, inputShortNameUOMItemDisparityDetail,
-                    inputQuantityDisparityDetail, inputRetailPriceDisparityDetail, inputRetailSumDisparityDetail
-    PROPERTIES(d)   ADDOBJ, delete
-
-    PROPERTIES(dis) TODRAW d addDetailDialogSkuStockDisparityDetailDisparity, addDetailDialogTerminalDisparityDetailDisparity,
-                             addDetailInputBarcodeDisparityDetailDisparity, deleteDisparityDetailDisparity
-
-    PROPERTIES (d)  FORCE PANEL importerPriceDisparityDetail, supplierPriceDisparityDetail, nameWareDisparityDetail,
-                                warePriceDisparityDetail, valueRetailVATDisparityDetail, balanceBeforeDisparityDetail,
-                                inputCurImporterPriceDisparityDetail, inputCurSupplierPriceDisparityDetail, inputCurNameWareDisparityDetail,
-                                inputCurWarePriceDisparityDetail, inputCurValueRetailVATDisparityDetail, inputCurRetailPriceDisparityDetail,
-                                inputImporterPriceDisparityDetail, inputSupplierPriceDisparityDetail, inputNameWareDisparityDetail,
-                                inputWarePriceDisparityDetail, inputValueRetailVATDisparityDetail
-
-    FILTERS         disparityDisparityDetail(d) == dis
-
-    EVENTS
-        ON OK EXEC prePostDisparity(dis)
-
-    EDIT disparity OBJECT dis
-;
-
-DESIGN disparity FROM DEFAULT {
-    main {
-        preferredSize = (1024, 768);
-
-        NEW header.box{
-            childConstraints = TO THE RIGHT;
-            NEW caseTwo {
-                childConstraints = TO THE BOTTOM;
-                ADD dis.documentHeaderGroup {
-                    childConstraints = TO THE RIGHT;
-                    ADD PROPERTY(objectClassName);
-                    ADD PROPERTY(nameDepartmentStoreDisparity);
-                    ADD PROPERTY(nameNumeratorObject);
-                    ADD PROPERTY(numberObject);
-                    ADD PROPERTY(seriesObject);
-                    ADD PROPERTY(dateDisparity);
-                    ADD PROPERTY(timeDisparity);
-                }
-            }
-                ADD dis.documentSumGroup {
-                    childConstraints = TO THE BOTTOM;
-                }
-
-        }
-
-        ADD d.box {
-            childConstraints = TO THE BOTTOM;
-            title = 'Ценовый и количественные показатели';
-
-            NEW row {
-                childConstraints = TO THE RIGHT;
-                title = 'Расход';
-                ADD PROPERTY (importerPriceDisparityDetail);
-                ADD PROPERTY (supplierPriceDisparityDetail);
-                ADD PROPERTY (nameWareDisparityDetail);
-                ADD PROPERTY (warePriceDisparityDetail);
-                ADD PROPERTY (valueRetailVATDisparityDetail);
-                ADD PROPERTY (balanceBeforeDisparityDetail);
-            }
-
-            NEW row1 {
-                title = 'Приход';
-                childConstraints = TO THE RIGHT;
-
-                NEW row11{
-                    fillHorizontal = 1;
-                    childConstraints = TO THE BOTTOM;
-                    title = 'Цены (приход) текущие';
-                    ADD PROPERTY (inputCurImporterPriceDisparityDetail);
-                    ADD PROPERTY (inputCurSupplierPriceDisparityDetail);
-                    ADD PROPERTY (inputCurNameWareDisparityDetail);
-                    ADD PROPERTY (inputCurWarePriceDisparityDetail);
-                    ADD PROPERTY (inputCurValueRetailVATDisparityDetail);
-                    ADD PROPERTY (inputCurRetailPriceDisparityDetail);
-                }
-                NEW row12{
-                    fillHorizontal = 1;
-                    childConstraints = TO THE BOTTOM;
-                    title = 'Цены (приход) новые';
-                    ADD PROPERTY (inputImporterPriceDisparityDetail);
-                    ADD PROPERTY (inputSupplierPriceDisparityDetail);
-                    ADD PROPERTY (inputNameWareDisparityDetail);
-                    ADD PROPERTY (inputWarePriceDisparityDetail);
-                    ADD PROPERTY (inputValueRetailVATDisparityDetail);
-                }
-            }
-        }
-        ADD functions.box;
-        PROPERTY(formOkAction) {
-            caption = 'Провести';
-        }
-    }
-}
-
-FORM disparities 'Пересортицы'
-
-    OBJECTS dis=disparity
-    PROPERTIES(dis)  READONLY objectClassName, numberObject, seriesObject, nameDepartmentStoreDisparity, dateDisparity, timeDisparity,
-                              countDisparityDetailDisparity, quantityDisparityDetailDisparity, retailSumDisparityDetailDisparity,
-                              inputQuantityDisparityDetailDisparity, inputRetailSumDisparityDetailDisparity
-
-    PROPERTIES(dis)  READONLY FORCE PANEL timeCreatedHistorizable, nameUserCreatedHistorizable, hostnameComputerCreatedHistorizable, timeClosed, nameUserClosed, hostnameComputerClosed
-
-    PROPERTIES (dis) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
-
-    OBJECTS d=disparityDetail
-    PROPERTIES(d)   READONLY indexDisparityDetail,
-                    idBarcodeSkuDisparityDetail, nameAttributeItemDisparityDetail, shortNameUOMItemDisparityDetail,
-                    quantityDisparityDetail, retailPriceDisparityDetail, retailSumDisparityDetail,
-                    inputIdBarcodeSkuDisparityDetail, inputNameAttributeItemDisparityDetail, inputShortNameUOMItemDisparityDetail,
-                    inputQuantityDisparityDetail, inputRetailPriceDisparityDetail, inputRetailSumDisparityDetail
-
-    FILTERS         disparityDisparityDetail(d) == dis
-;
-DESIGN disparities FROM DEFAULT {
-
-    NEW topContainer{
-
-        type = SPLITV;
-        childConstraints = TO THE BOTTOM;
-
-        ADD dis.box {
-            PROPERTY(objectClassName) {
-                preferredCharWidth = 25;
-            }
-            PROPERTY (delete(dis)) {
-                askConfirm = TRUE;
-            }
-        }
-        ADD d.box;
-    }
-
-    NEW caseOne {
-        childConstraints = TO THE RIGHT;
-        ADD dis.historyGroup {
-            childConstraints = TO THE BOTTOM;
-        }
-        ADD dis.postedGroup {
-            childConstraints = TO THE BOTTOM;
-        }
-    }
-
-    ADD functions.box;
-}
-
-@Label.implementPriceTransactionDocument(disparity);
-@defineDocumentLabelTransaction(disparity, item, departmentStore);
-@extendFormDocumentLabelTransaction(disparities, dis, disparity);
-
-@Machinery.implementPriceTransactionDocument(disparity);
-@defineDocumentMachineryPriceTransaction(disparity, item, departmentStore);
-@extendFormDocumentMachineryPriceTransaction(disparities, dis, disparity);
 
 //---------------------------Товарный отчет-------------------------------------//
 
@@ -1553,10 +1288,8 @@ NAVIGATOR {
         }
         ADD writeOffNavigator;
         ADD adjustmentNavigator;
+        ADD disparityNavigator;
 
-        NEW disparityDocuments 'Пересортица' {
-            ADD disparities;
-        }
         ADD stockCost;
         ADD stockBalance;
         NEW accountDocuments 'Бухгалтерские документы' {

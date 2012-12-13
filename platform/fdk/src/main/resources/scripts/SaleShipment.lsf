@@ -14,7 +14,7 @@ NAMESPACE Sale;
 
 // Берем учетную цену
 //@deriveDocumentDetailPriceBatchStockPrefix(userInvoice, shipment, supplierStock);
-@deriveDocumentDetailPriceSystemLedgerPriceListTypeBatch (userInvoice, accountPriceListType, shipment, sku, supplierStock);
+@deriveDocumentDetailPriceSystemLedgerPriceListTypeBatch (userInvoice, accountPriceListType, shipment, , sku, supplierStock);
 //@deriveDocumentDetailPriceBatchStock(userShipment, supplierStock);
 
 // Проводим по регистру

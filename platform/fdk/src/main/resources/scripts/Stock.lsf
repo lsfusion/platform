@@ -153,9 +153,13 @@ stockBatch (batch) = ABSTRACT stock (batch) PERSISTENT INDEXED ;
 nameStockBatch 'Склад' (batch) = name(stockBatch(batch)) IN recognizeGroup;
 
 costBatch 'Себестоимость' (batch) = ABSTRACT NUMERIC[14,2] (batch) PERSISTENT;
+prevCostBatch 'Себестоимость' (batch) = PREV(costBatch(batch));
+
 descriptionBatch 'Описание' (batch) = ABSTRACT STRING[200] (batch) PERSISTENT IN recognizeGroup MINCHARWIDTH 30 PREFCHARWIDTH 60;
 
 expiryDateBatch 'Годен до' (batch) = ABSTRACT DATE (batch) PERSISTENT INDEXED;
+prevExpiryDateBatch 'Годен до' (batch) = PREV(expiryDateBatch(batch));
+
 expiresBatchDateTime(batch, dateTime, period) = expiryDateBatch(batch) < sumDate(toDate(dateTime), period);
 expiresBatchDate(batch, date, period) = expiryDateBatch(batch) < sumDate(date, period);
 
@@ -1155,16 +1159,31 @@ META defineDocumentInterfaceDetailQuantityPack (object, skuProp)
 END
 
 //--------------------------------------------------Партия для Detail--------------------------------------//
-META defineDocumentDetailBatchCustom(detail, batchProp)
-    batch###detail = DATA batchProp (detail);
-    descriptionBatch###detail 'Партия' (detail) = descriptionBatch(batch###detail(detail)) MINCHARWIDTH 20 PREFCHARWIDTH 40;
+META defineDocumentDetailBatchCustomPrefix(detail, batchProp, prefix)
+    prefix###batch###detail = DATA batchProp (detail);
+    prefix###descriptionBatch###detail 'Партия' (detail) = descriptionBatch(prefix###batch###detail(detail)) MINCHARWIDTH 20 PREFCHARWIDTH 40;
 
-    CONSTRAINT skuBatch(batch###detail(detail)) != sku###detail(detail) CHECKED BY batch###detail
+    CONSTRAINT skuBatch(prefix###batch###detail(detail)) != prefix###sku###detail(detail) CHECKED BY prefix###batch###detail
         MESSAGE 'Товар партии строки должен соответствовать SKU строки';
 
-    CONSTRAINT batch###detail(detail) AND NOT sku###detail(detail) CHECKED BY batch###detail
+    CONSTRAINT prefix###batch###detail(detail) AND NOT prefix###sku###detail(detail) CHECKED BY prefix###batch###detail
         MESSAGE 'Для строки задана парктия, но не задан товар';
 END
+
+//META defineDocumentDetailBatchCustom(detail, batchProp)
+//    batch###detail = DATA batchProp (detail);
+//    descriptionBatch###detail 'Партия' (detail) = descriptionBatch(batch###detail(detail)) MINCHARWIDTH 20 PREFCHARWIDTH 40;
+//
+//    CONSTRAINT skuBatch(batch###detail(detail)) != sku###detail(detail) CHECKED BY batch###detail
+//        MESSAGE 'Товар партии строки должен соответствовать SKU строки';
+//
+//    CONSTRAINT batch###detail(detail) AND NOT sku###detail(detail) CHECKED BY batch###detail
+//        MESSAGE 'Для строки задана парктия, но не задан товар';
+//END
+META defineDocumentDetailBatchCustom(detail, batchProp)
+    @defineDocumentDetailBatchCustomPrefix(detail, batchProp, );
+END
+
 META defineDocumentAbstractDetailBatchCustom(detail, batchProp)
     batch###detail = ABSTRACT batchProp (detail) PERSISTENT;
     descriptionBatch###detail 'Партия' (detail) = descriptionBatch(batch###detail(detail)) MINCHARWIDTH 20 PREFCHARWIDTH 40;
