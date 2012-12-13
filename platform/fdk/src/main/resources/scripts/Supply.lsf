@@ -265,15 +265,15 @@ META defineSupplierDialogStockSku (form)
     form###supplier = SESSION DATA legalEntity ();
     form###nameSupplier 'Поставщик' () = name(form###supplier()) PREFCHARWIDTH 30;
 
-    form###suppliersFilter (sku) = quantitySupplierSku(form###supplier(), sku);
+    form###suppliersFilter (sku) =  ( TRUE AND quantitySupplierSku(form###supplier(), sku)) OR (sku IS sku AND NOT form###supplier());
 
 
     EXTEND FORM form
         PROPERTIES() form###nameSupplier
 
         PROPERTIES(s) READONLY form###balance SHOWIF form###stock()
-        FILTERGROUP suppliersFilter
-         FILTER 'В ассортименте поставщика' 'F11' form###suppliersFilter(s) //DEFAULT
+        FILTERS form###suppliersFilter(s)
+
     ;
 
     EXTEND DESIGN form {
