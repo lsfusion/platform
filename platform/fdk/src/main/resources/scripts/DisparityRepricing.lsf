@@ -145,12 +145,12 @@ EXTEND FORM disparity
     PROPERTIES(dis)   BACKGROUND backgroundCurDisparity(dis) SHOWIF createRepricingDisparity(dis) nameRepricingCommitteeDisparity, numberDisposalDisparity, dateBeforeDisparity
     PROPERTIES(dis)   BACKGROUND backgroundAfterDisparity(dis) SHOWIF createRepricingDisparity(dis) diffRetailSumDisparityDetailDisparity
 
-    PROPERTIES(d)   BACKGROUND backgroundCurDisparity(dis) SHOWIF createRepricingDisparity(dis) BEFORE inputPriceDisparityDetail(d)
+    PROPERTIES(d)   BACKGROUND backgroundCurDisparity(dis) SHOWIF createRepricingDisparity(dis) BEFORE delete(d)
                     curInputPriceDisparityDetail, curInputSumDisparityDetail,
                     curInputMarkupDisparityDetail ON CHANGE EXEC changeCurInputMarkupDisparityDetail(d), curInputMarkupSumDisparityDetail,
                     numberCurInputVATDisparityDetail, valueCurInputVATDisparityDetail, curInputVATSumDisparityDetail,
                     curInputRetailPriceDisparityDetail ON CHANGE EXEC changeCurInputRetailPriceDisparityDetail(d), curInputRetailSumDisparityDetail
-    PROPERTIES(d)   BACKGROUND backgroundAfterDisparity(dis) SHOWIF createRepricingDisparity(dis) BEFORE inputPriceDisparityDetail(d)
+    PROPERTIES(d)   BACKGROUND backgroundAfterDisparity(dis) SHOWIF createRepricingDisparity(dis) BEFORE delete(d)
                     afterInputPriceDisparityDetail, afterInputSumDisparityDetail,
                     afterInputMarkupDisparityDetail ON CHANGE EXEC changeAfterInputMarkupDisparityDetail(d), afterInputMarkupSumDisparityDetail,
                     numberAfterInputVATDisparityDetail, valueAfterInputVATDisparityDetail, afterInputVATSumDisparityDetail,
@@ -173,16 +173,16 @@ EXTEND FORM disparities
     PROPERTIES(dis) READONLY BACKGROUND backgroundCurDisparity(dis) createRepricingDisparity, diffRetailSumDisparityDetailDisparity AFTER inputSumDisparityDetailDisparity
     PROPERTIES(dis) FORCE PANEL  printRepricingDisparity SHOWIF createRepricingDisparity(dis)
 
-    PROPERTIES(d)   READONLY BACKGROUND backgroundCurDisparity(dis) SHOWIF createRepricingDisparity(dis) BEFORE inputPriceDisparityDetail(d)
+    PROPERTIES(d)   READONLY BACKGROUND backgroundCurDisparity(dis) SHOWIF createRepricingDisparity(dis)
                     curInputPriceDisparityDetail, curInputSumDisparityDetail,
-                    curInputMarkupDisparityDetail ON CHANGE EXEC changeCurInputMarkupDisparityDetail(d), curInputMarkupSumDisparityDetail,
+                    curInputMarkupDisparityDetail, curInputMarkupSumDisparityDetail,
                     numberCurInputVATDisparityDetail, valueCurInputVATDisparityDetail, curInputVATSumDisparityDetail,
-                    curInputRetailPriceDisparityDetail ON CHANGE EXEC changeCurInputRetailPriceDisparityDetail(d), curInputRetailSumDisparityDetail
-    PROPERTIES(d)   READONLY BACKGROUND backgroundAfterDisparity(dis) SHOWIF createRepricingDisparity(dis) BEFORE inputPriceDisparityDetail(d)
+                    curInputRetailPriceDisparityDetail, curInputRetailSumDisparityDetail
+    PROPERTIES(d)   READONLY BACKGROUND backgroundAfterDisparity(dis) SHOWIF createRepricingDisparity(dis)
                     afterInputPriceDisparityDetail, afterInputSumDisparityDetail,
-                    afterInputMarkupDisparityDetail ON CHANGE EXEC changeAfterInputMarkupDisparityDetail(d), afterInputMarkupSumDisparityDetail,
+                    afterInputMarkupDisparityDetail, afterInputMarkupSumDisparityDetail,
                     numberAfterInputVATDisparityDetail, valueAfterInputVATDisparityDetail, afterInputVATSumDisparityDetail,
-                    afterInputRetailPriceDisparityDetail ON CHANGE EXEC changeAfterInputRetailPriceDisparityDetail(d), afterInputRetailSumDisparityDetail
+                    afterInputRetailPriceDisparityDetail, afterInputRetailSumDisparityDetail
 
 ;
 EXTEND DESIGN disparities {

@@ -36,6 +36,7 @@ expiryDateBatchDisparityDetail(detail) <- prevExpiryDateBatch(batchDisparityDeta
 
 @defineDocumentDetailQuantityPrefix (disparity, , ' (расход)');
 @defineDocumentDetailQuantityPrefix (disparity, input, ' (приход)');
+inputQuantityDisparityDetail(detail) <- quantityDisparityDetail(detail) WHEN CHANGED(quantityDisparityDetail(detail));
 
 @defineDocumentDetailPricePrefix (disparity, , ' учетная (расход)');
 @deriveDocumentDetailPriceSystemLedgerPriceListTypeBatch (disparity, accountPriceListType, , , sku, stock);
@@ -105,6 +106,7 @@ FORM disparity 'Изменение сортности'
     OBJECTS d = disparityDetail
     PROPERTIES(d)   indexDisparityDetail,
                     idBarcodeSkuDisparityDetail, nameSkuDisparityDetail, shortNameUOMSkuDisparityDetail, descriptionBatchDisparityDetail,
+                    costBatchDisparityDetail, expiryDateBatchDisparityDetail,
                     quantityDisparityDetail, priceDisparityDetail, sumDisparityDetail,
                     inputIdBarcodeSkuDisparityDetail, inputNameSkuDisparityDetail, inputShortNameUOMSkuDisparityDetail,
                     inputQuantityDisparityDetail, inputPriceDisparityDetail, inputSumDisparityDetail
@@ -180,7 +182,7 @@ FORM disparities 'Изменения сортности'
     OBJECTS d=disparityDetail
     PROPERTIES(d)   READONLY indexDisparityDetail,
                     idBarcodeSkuDisparityDetail, nameSkuDisparityDetail, shortNameUOMSkuDisparityDetail, descriptionBatchDisparityDetail,
-                    quantityDisparityDetail, priceDisparityDetail, sumDisparityDetail,
+                    costBatchDisparityDetail, expiryDateBatchDisparityDetail, quantityDisparityDetail, priceDisparityDetail, sumDisparityDetail,
                     inputIdBarcodeSkuDisparityDetail, inputNameSkuDisparityDetail, inputShortNameUOMSkuDisparityDetail,
                     inputQuantityDisparityDetail, inputPriceDisparityDetail, inputSumDisparityDetail
 
