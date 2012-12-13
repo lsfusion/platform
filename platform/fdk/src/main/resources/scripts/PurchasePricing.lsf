@@ -43,7 +43,7 @@ retailPriceUserInvoiceDetail(detail)  <- IF retailPriceListTypeUserInvoiceDetail
          CHANGED(priceUserInvoiceDetail(detail)) OR
          CHANGED(retailMarkupUserInvoiceDetail(detail)) OR
          CHANGED(valueRetailVATUserInvoiceDetail(detail)) OR
-         CHANGED(roundConditionCalcPriceListType(retailPriceListTypeUserInvoiceDetail(detail)));
+         CHANGED(retailPriceListTypeUserInvoiceDetail(detail));
 
 retailMarkupUserInvoiceDetail(detail)  <- IF retailPriceListTypeUserInvoiceDetail(detail) IS calcPriceListType
     THEN markupCalcPriceListTypePriceGroupOver(retailPriceListTypeUserInvoiceDetail(detail), priceGroupSku(skuUserInvoiceDetail(detail)))
@@ -57,7 +57,6 @@ retailMarkupUserInvoiceDetail(detail)  <- IF retailPriceListTypeUserInvoiceDetai
 
 
     WHEN CHANGED(retailPriceListTypeUserInvoiceDetail(detail)) OR
-         CHANGED(priceGroupSku(skuUserInvoiceDetail(detail))) OR
          CHANGED(skuUserInvoiceDetail(detail)) OR
          CHANGED(customerStockUserInvoiceDetail(detail)) OR
          CHANGED(dateTimeUserInvoiceDetail(detail)) OR
