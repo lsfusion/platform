@@ -83,6 +83,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     private Map<String, LogicsModule> nameToModule = new HashMap<String, LogicsModule>();
 
     public final BaseLogicsModule<T> LM;
+    public final ServiceLogicsModule<T> serviceLM;
     public final ReflectionLogicsModule<T> reflectionLM;
     public final SecurityLogicsModule<T> securityLM;
     public final SystemEventsLogicsModule<T> systemEventsLM;
@@ -539,6 +540,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     protected void createModules() throws IOException {
         addModule(LM);
+        addModule(serviceLM);
         addModule(reflectionLM);
         addModule(securityLM);
         addModule(systemEventsLM);
@@ -833,6 +835,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         this.adapter = adapter;
 
         LM = new BaseLogicsModule(this, logger);
+
+        serviceLM = new ServiceLogicsModule(this, this.LM, logger);
 
         reflectionLM = new ReflectionLogicsModule(this, this.LM, logger);
 
