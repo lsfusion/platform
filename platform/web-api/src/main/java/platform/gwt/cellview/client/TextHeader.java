@@ -15,30 +15,31 @@
  */
 package platform.gwt.cellview.client;
 
-import com.google.gwt.cell.client.TextCell;
+import com.google.gwt.dom.client.TableCellElement;
+import platform.gwt.base.client.EscapeUtils;
 
-/**
- * A Header containing String data rendered by a {@link TextCell}.
- */
 public class TextHeader extends Header<String> {
 
-  private String text;
+    private final String text;
 
-  /**
-   * Construct a new TextHeader.
-   *
-   * @param text the header text as a String
-   */
-  public TextHeader(String text) {
-    super(new TextCell());
-    this.text = text;
-  }
+    /**
+     * Construct a new TextHeader.
+     *
+     * @param text the header text as a String
+     */
+    public TextHeader(String text) {
+        super();
+        this.text = text;
+    }
 
-  /**
-   * Return the header text.
-   */
-  @Override
-  public String getValue() {
-    return text;
-  }
+    @Override
+    public void renderDom(TableCellElement th) {
+        if (text != null) {
+            th.setInnerText(EscapeUtils.unicodeEscape(text));
+        }
+    }
+
+    public void updateDom(TableCellElement th) {
+        //do nothing as text is constant
+    }
 }

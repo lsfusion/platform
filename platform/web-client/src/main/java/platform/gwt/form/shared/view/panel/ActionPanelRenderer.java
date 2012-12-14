@@ -17,8 +17,9 @@ import platform.gwt.form.shared.view.changes.GGroupObjectValue;
 import platform.gwt.form.shared.view.classes.GType;
 import platform.gwt.form.shared.view.grid.EditManager;
 import platform.gwt.form.shared.view.grid.editor.GridCellEditor;
-import platform.gwt.form.shared.view.grid.editor.PopupBasedGridEditor;
+import platform.gwt.form.shared.view.grid.editor.PopupBasedGridCellEditor;
 
+import static platform.gwt.base.shared.GwtSharedUtils.nullEquals;
 import static platform.gwt.form.client.HotkeyManager.Binding;
 
 public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler {
@@ -32,6 +33,9 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
     private final ImageButton button;
     private boolean enabled = true;
     private EventTarget focusTargetAfterEdit;
+
+    private Object background;
+    private Object foreground;
 
     public ActionPanelRenderer(final GFormController iform, final GPropertyDraw iproperty, GGroupObjectValue icolumnKey) {
         this.form = iform;
@@ -73,8 +77,8 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
     @Override
     public void requestValue(GType valueType, Object oldValue) {
         GridCellEditor editor = valueType.createGridCellEditor(editManager, property);
-        if (editor instanceof PopupBasedGridEditor) {
-            ((PopupBasedGridEditor) editor).showPopup(null);
+        if (editor instanceof PopupBasedGridCellEditor) {
+            ((PopupBasedGridCellEditor) editor).showPopup(null);
         } else {
             editDispatcher.cancelEdit();
         }
@@ -91,9 +95,12 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
 
     @Override
     public void setValue(Object value) {
-        enabled = value != null && (Boolean) value;
-        button.setEnabled(enabled);
-        button.setImagePath(property.getIconPath(enabled));
+        boolean newEnabled = value != null && (Boolean) value;
+        if (enabled != newEnabled) {
+            enabled = newEnabled;
+            button.setEnabled(enabled);
+            button.setImagePath(property.getIconPath(enabled));
+        }
     }
 
     @Override
@@ -103,7 +110,7 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
 
     @Override
     public void setDefaultIcon() {
-        button.setImagePath(property.iconPath);
+        setIcon(property.iconPath);
     }
 
     @Override
@@ -113,12 +120,18 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
 
     @Override
     public void updateCellBackgroundValue(Object value) {
-        button.getElement().getStyle().setBorderColor(value == null ? null : value.toString());
+        if (!nullEquals(background, value)) {
+            background = value;
+            button.getElement().getStyle().setBorderColor(value == null ? null : value.toString());
+        }
     }
 
     @Override
     public void updateCellForegroundValue(Object value) {
-        button.getElement().getStyle().setColor(value == null ? null : value.toString());
+        if (!nullEquals(foreground, value)) {
+            foreground = value;
+            button.getElement().getStyle().setColor(value == null ? null : value.toString());
+        }
     }
 
     @Override

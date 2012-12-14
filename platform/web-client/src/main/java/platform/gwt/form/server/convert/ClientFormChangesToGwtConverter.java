@@ -1,11 +1,11 @@
 package platform.gwt.form.server.convert;
 
 import platform.client.logics.*;
-import platform.gwt.form.shared.view.GClassViewType;
-import platform.gwt.form.shared.view.changes.dto.ColorDTO;
 import platform.gwt.base.shared.GwtSharedUtils;
+import platform.gwt.form.shared.view.GClassViewType;
+import platform.gwt.form.shared.view.changes.GGroupObjectValue;
+import platform.gwt.form.shared.view.changes.dto.ColorDTO;
 import platform.gwt.form.shared.view.changes.dto.GFormChangesDTO;
-import platform.gwt.form.shared.view.changes.dto.GGroupObjectValueDTO;
 import platform.gwt.form.shared.view.changes.dto.GPropertyReaderDTO;
 import platform.interop.ClassViewType;
 
@@ -37,38 +37,38 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
         }
 
         for (Map.Entry<ClientGroupObject, ClientGroupObjectValue> e : changes.objects.entrySet()) {
-            GGroupObjectValueDTO groupObjectValueDTO = convertOrCast(e.getValue());
-            changesDTO.objects.put(e.getKey().ID, groupObjectValueDTO);
+            GGroupObjectValue groupObjectValue = convertOrCast(e.getValue());
+            changesDTO.objects.put(e.getKey().ID, groupObjectValue);
         }
 
         for (Map.Entry<ClientGroupObject, List<ClientGroupObjectValue>> entry : changes.gridObjects.entrySet()) {
-            ArrayList<GGroupObjectValueDTO> keys = new ArrayList<GGroupObjectValueDTO>();
+            ArrayList<GGroupObjectValue> keys = new ArrayList<GGroupObjectValue>();
 
             for (ClientGroupObjectValue keyValue : entry.getValue()) {
-                GGroupObjectValueDTO groupObjectValueDTO = convertOrCast(keyValue);
-                keys.add(groupObjectValueDTO);
+                GGroupObjectValue groupObjectValue = convertOrCast(keyValue);
+                keys.add(groupObjectValue);
             }
 
             changesDTO.gridObjects.put(entry.getKey().ID, keys);
         }
 
         for (Map.Entry<ClientGroupObject, List<ClientGroupObjectValue>> entry : changes.parentObjects.entrySet()) {
-            ArrayList<GGroupObjectValueDTO> keys = new ArrayList<GGroupObjectValueDTO>();
+            ArrayList<GGroupObjectValue> keys = new ArrayList<GGroupObjectValue>();
 
             for (ClientGroupObjectValue keyValue : entry.getValue()) {
-                GGroupObjectValueDTO groupObjectValueDTO = convertOrCast(keyValue);
-                keys.add(groupObjectValueDTO);
+                GGroupObjectValue groupObjectValue = convertOrCast(keyValue);
+                keys.add(groupObjectValue);
             }
 
             changesDTO.parentObjects.put(entry.getKey().ID, keys);
         }
 
         for (Map.Entry<ClientPropertyReader, Map<ClientGroupObjectValue, Object>> entry : changes.properties.entrySet()) {
-            HashMap<GGroupObjectValueDTO, Object> propValues = new HashMap<GGroupObjectValueDTO, Object>();
+            HashMap<GGroupObjectValue, Object> propValues = new HashMap<GGroupObjectValue, Object>();
             for (Map.Entry<ClientGroupObjectValue, Object> clientValues : entry.getValue().entrySet()) {
-                GGroupObjectValueDTO groupObjectValueDTO = convertOrCast(clientValues.getKey());
+                GGroupObjectValue groupObjectValue = convertOrCast(clientValues.getKey());
 
-                propValues.put(groupObjectValueDTO, convertOrCast(clientValues.getValue()));
+                propValues.put(groupObjectValue, convertOrCast(clientValues.getValue()));
             }
             ClientPropertyReader reader = entry.getKey();
             changesDTO.properties.put(new GPropertyReaderDTO(reader.getID(), reader.getGroupObject() != null ? reader.getGroupObject().ID : -1, reader.getType()), propValues);
@@ -100,11 +100,11 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
     }
 
     @Converter(from = ClientGroupObjectValue.class)
-    public GGroupObjectValueDTO convertIntegerClass(ClientGroupObjectValue groupObjectValue) {
-        GGroupObjectValueDTO groupObjectValueDTO = new GGroupObjectValueDTO();
-        for (Map.Entry<ClientObject, Object> keyPart : groupObjectValue.entrySet()) {
-            groupObjectValueDTO.put(keyPart.getKey().ID, keyPart.getValue());
+    public GGroupObjectValue convertGroupObjectValue(ClientGroupObjectValue clientGroupObjValue) {
+        GGroupObjectValue groupObjectValue = new GGroupObjectValue();
+        for (Map.Entry<ClientObject, Object> keyPart : clientGroupObjValue.entrySet()) {
+            groupObjectValue.put(keyPart.getKey().ID, keyPart.getValue());
         }
-        return groupObjectValueDTO;
+        return groupObjectValue;
     }
 }

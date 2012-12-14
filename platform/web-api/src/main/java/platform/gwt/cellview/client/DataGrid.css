@@ -67,23 +67,6 @@
   
 }
 
-.dataGridSortableHeader {
-  cursor: pointer;
-  cursor: hand;
-}
-
-.dataGridSortableHeader:hover {
-  color: #6c6b6b;
-}
-
-.dataGridSortedHeaderAscending {
-  
-}
-
-.dataGridSortedHeaderDescending {
-  
-}
-
 .dataGridEvenRow {
   background: #ffffff;
 }
@@ -100,14 +83,6 @@
   border: selectionBorderWidth solid #f3f7fb;
 }
 
-.dataGridHoveredRow {
-  background: #eee;
-}
-
-.dataGridHoveredRowCell {
-  border: selectionBorderWidth solid #eee;
-}
-
 .dataGridKeyboardSelectedRow {
   background: #ffc;
 }
@@ -116,20 +91,6 @@
   border: selectionBorderWidth solid #ffc;
 }
 
-.dataGridSelectedRow {
-  background: #628cd5;
-  color: white;
-  height: auto;
-  overflow: auto;
-}
-
-.dataGridSelectedRowCell {
-  border: selectionBorderWidth solid #628cd5;
-}
-
-/**
- * The keyboard selected cell is visible over selection.
- */
 .dataGridKeyboardSelectedCell {
   border: selectionBorderWidth solid #d7dde8;
 }

@@ -3,21 +3,21 @@ package platform.gwt.form.shared.view.classes;
 import platform.gwt.form.shared.view.GPropertyDraw;
 import platform.gwt.form.shared.view.grid.EditManager;
 import platform.gwt.form.shared.view.grid.editor.GridCellEditor;
-import platform.gwt.form.shared.view.grid.editor.LogicalGridEditor;
+import platform.gwt.form.shared.view.grid.editor.LogicalGridCellEditor;
 import platform.gwt.form.shared.view.grid.renderer.GridCellRenderer;
-import platform.gwt.form.shared.view.grid.renderer.LogicalGridRenderer;
+import platform.gwt.form.shared.view.grid.renderer.LogicalGridCellRenderer;
 
 public class GLogicalType extends GDataType {
     public static GLogicalType instance = new GLogicalType();
 
     @Override
     public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
-        return new LogicalGridRenderer();
+        return new LogicalGridCellRenderer();
     }
 
     @Override
     public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
-        return new LogicalGridEditor(editManager);
+        return new LogicalGridCellEditor(editManager);
     }
 
     @Override

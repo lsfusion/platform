@@ -43,20 +43,16 @@ public class GGridController {
         return table.getSelectedValue(property);
     }
 
-    public void rememberScrollPosition() {
-        table.rememberScrollPosition();
-    }
-
     public void update() {
         table.update();
     }
 
-    public void preparePendingState() {
-        table.preparePendingState();
+    void flushTable() {
+        table.flush();
     }
 
-    public void applyPendingState() {
-        table.applyPendingState();
+    void restoreScrollPosition() {
+        table.restoreScrollPosition();
     }
 
     public void addToLayout(GFormLayout formLayout) {

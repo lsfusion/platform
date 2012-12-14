@@ -115,6 +115,8 @@ public class GEditPropertyDispatcher extends GFormActionDispatcher {
             throw new IllegalStateException("value wasn't requested");
         }
 
+        valueRequested = false;
+
         if (simpleChangeProperty != null) {
             if (!inputResult.isCanceled()) {
                 form.changeProperty(editHandler, simpleChangeProperty, editColumnKey, inputResult.getValue(), oldValue);

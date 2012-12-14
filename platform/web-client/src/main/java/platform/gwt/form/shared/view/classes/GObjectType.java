@@ -4,9 +4,9 @@ import platform.gwt.form.shared.view.GPropertyDraw;
 import platform.gwt.form.shared.view.filter.GCompare;
 import platform.gwt.form.shared.view.grid.EditManager;
 import platform.gwt.form.shared.view.grid.editor.GridCellEditor;
-import platform.gwt.form.shared.view.grid.editor.IntegerGridEditor;
+import platform.gwt.form.shared.view.grid.editor.IntegerGridCellEditor;
 import platform.gwt.form.shared.view.grid.renderer.GridCellRenderer;
-import platform.gwt.form.shared.view.grid.renderer.NumberGridRenderer;
+import platform.gwt.form.shared.view.grid.renderer.NumberGridCellRenderer;
 
 import static platform.gwt.form.shared.view.filter.GCompare.*;
 
@@ -17,7 +17,7 @@ public class GObjectType extends GType {
 
     @Override
     public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
-        return new NumberGridRenderer();
+        return new NumberGridCellRenderer();
     }
 
     @Override
@@ -32,7 +32,7 @@ public class GObjectType extends GType {
 
     @Override
     public GridCellEditor createValueCellEditor(EditManager editManager, GPropertyDraw editProperty) {
-        return new IntegerGridEditor(editManager);
+        return new IntegerGridCellEditor(editManager);
     }
 
     @Override

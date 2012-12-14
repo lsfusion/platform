@@ -1,8 +1,8 @@
 package platform.gwt.form.client.form.ui;
 
-import com.google.gwt.cell.client.Cell;
-import com.google.gwt.view.client.SelectionChangeEvent;
 import platform.gwt.cellview.client.Column;
+import platform.gwt.cellview.client.KeyboardRowChangedEvent;
+import platform.gwt.cellview.client.cell.Cell;
 import platform.gwt.form.shared.view.GForm;
 import platform.gwt.form.shared.view.GGroupObject;
 import platform.gwt.form.shared.view.GOrder;
@@ -12,7 +12,13 @@ import platform.gwt.form.shared.view.grid.GridEditableCell;
 
 import java.util.*;
 
-public class GTreeTable extends GGridPropertyTable {
+import static java.util.Collections.singleton;
+
+public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
+    private boolean dataUpdated;
+
+    private ArrayList<GTreeGridRecord> currentRecords;
+
     private GTreeTableTree tree;
 
     private List<String> createdFields = new ArrayList<String>();
@@ -37,13 +43,13 @@ public class GTreeTable extends GGridPropertyTable {
         addColumn(column, header);
         setColumnWidth(column, "80px");
 
-        selectionModel.addSelectionChangeHandler(new SelectionChangeEvent.Handler() {
+        addKeyboardRowChangedHandler(new KeyboardRowChangedEvent.Handler() {
             @Override
-            public void onSelectionChange(SelectionChangeEvent event) {
-                GTreeGridRecord selectedRecord = (GTreeGridRecord) selectionModel.getSelectedRecord();
-                if (selectedRecord != null && !selectedRecord.equals(GTreeTable.this.selectedRecord)) {
-                    setCurrentRecord(selectedRecord);
-                    form.changeGroupObject(selectedRecord.getGroup(), selectedRecord.key);
+            public void onKeyboardRowChanged(KeyboardRowChangedEvent event) {
+                final GTreeGridRecord kbSelectedRecord = getKeyboardSelectedRowValue();
+                if (kbSelectedRecord != null && !kbSelectedRecord.equals(selectedRecord)) {
+                    setCurrentRecord(kbSelectedRecord);
+                    form.changeGroupObjectLater(kbSelectedRecord.getGroup(), kbSelectedRecord.getKey());
                 }
             }
         });
@@ -66,7 +72,6 @@ public class GTreeTable extends GGridPropertyTable {
         int index = tree.removeProperty(group, property);
         if (index > 0) {
             removeColumn(index);
-//            hideField(property.sID);
         }
     }
 
@@ -76,9 +81,7 @@ public class GTreeTable extends GGridPropertyTable {
         int index = tree.addProperty(group, property);
 
         if (index > -1) {
-            if (createdFields.contains(property.sID)) {
-//                showField(property.sID);
-            } else {
+            if (!createdFields.contains(property.sID)) {
                 Column<GTreeGridRecord, Object> gridColumn = createGridColumn(property);
                 GGridPropertyTableHeader header = new GGridPropertyTableHeader(this, property.getCaptionOrEmpty());
 
@@ -92,11 +95,11 @@ public class GTreeTable extends GGridPropertyTable {
     }
 
     private Column<GTreeGridRecord, Object> createGridColumn(final GPropertyDraw property) {
-        return new Column<GTreeGridRecord, Object>(new GridEditableCell(this)) {
+        return new Column<GTreeGridRecord, Object>(new GridEditableCell(this, true)) {
             @Override
             public Object getValue(GTreeGridRecord record) {
                 int column = tree.columnProperties.indexOf(property);
-                return tree.getValue(record.getGroup(), column, record.key);
+                return tree.getValue(record.getGroup(), column, record.getKey());
             }
         };
     }
@@ -104,7 +107,7 @@ public class GTreeTable extends GGridPropertyTable {
     public void setKeys(GGroupObject group, ArrayList<GGroupObjectValue> keys, ArrayList<GGroupObjectValue> parents) {
         tree.setKeys(group, keys, parents);
         dataUpdated = true;
-        needToScroll = true;
+        needToRestoreScrollPosition = true;
     }
 
     public void updatePropertyValues(GPropertyDraw property, Map<GGroupObjectValue, Object> propValues, boolean updateKeys) {
@@ -114,22 +117,40 @@ public class GTreeTable extends GGridPropertyTable {
         }
     }
 
-    public void rememberScrollPosition() {
-        GridDataRecord selectedRecord = selectionModel.getSelectedRecord();
-        if (selectedRecord != null && selectedRecord.rowIndex < getRowCount()) {
-            pendingState = new GridState();
-            pendingState.oldRecord = selectedRecord;
-            pendingState.oldKeyScrollTop = getRowElement(currentRecords.indexOf(selectedRecord)).getAbsoluteTop() - getTableDataScroller().getAbsoluteTop();
-        }
+    @Override
+    public void updateCellBackgroundValues(GPropertyDraw propertyDraw, Map<GGroupObjectValue, Object> values) {
+        super.updateCellBackgroundValues(propertyDraw, values);
+        dataUpdated = true;
+    }
+
+    @Override
+    public void updateCellForegroundValues(GPropertyDraw propertyDraw, Map<GGroupObjectValue, Object> values) {
+        super.updateCellForegroundValues(propertyDraw, values);
+        dataUpdated = true;
+    }
+
+    @Override
+    public void updateRowBackgroundValues(Map<GGroupObjectValue, Object> values) {
+        super.updateRowBackgroundValues(values);
+        dataUpdated = true;
+    }
+
+    @Override
+    public void updateRowForegroundValues(Map<GGroupObjectValue, Object> values) {
+        super.updateRowForegroundValues(values);
+        dataUpdated = true;
     }
 
     public void update() {
+        storeScrollPosition();
+
         if (dataUpdated) {
             restoreVisualState();
 
             currentRecords = tree.getUpdatedRecords();
             updatePropertyReaders();
             setRowData(currentRecords);
+            redraw();
 
             dataUpdated = false;
         }
@@ -137,33 +158,12 @@ public class GTreeTable extends GGridPropertyTable {
         updateHeader();
     }
 
-    public void preparePendingState() {
-        if (pendingState == null) {
-            pendingState = new GridState();
-        }
-        int currentInd = selectedRecord == null ? -1 : currentRecords.indexOf(this.selectedRecord);
-        rememberOldState(currentInd);
-    }
-
-    public void applyPendingState() {
-        int currentInd = selectedRecord == null ? -1 : currentRecords.indexOf(this.selectedRecord);
-        if (pendingState != null && currentInd != -1 && needToScroll) {
-            if (selectedRecord.equals(pendingState.oldRecord)) {
-                scrollRowToVerticalPosition();
-            } else {
-                scrollToNewKey();
-            }
-            needToScroll = false;
-        }
-        pendingState = null;
-    }
-
     protected void updatePropertyReaders() {
         if (currentRecords != null &&
                 //раскраска в дереве - редкое явление, поэтому сразу проверяем есть ли она
                 (rowBackgroundValues.size() != 0 || rowForegroundValues.size() != 0 || cellBackgroundValues.size() != 0 || cellForegroundValues.size() != 0)) {
             for (GridDataRecord record : currentRecords) {
-                GGroupObjectValue key = record.key;
+                GGroupObjectValue key = record.getKey();
 
                 Object rBackground = rowBackgroundValues.get(key);
                 Object rForeground = rowForegroundValues.get(key);
@@ -206,7 +206,7 @@ public class GTreeTable extends GGridPropertyTable {
             }
         }
         if (needsHeaderRefresh) {
-            redrawHeaders();
+            refreshHeaders();
         }
     }
 
@@ -259,7 +259,7 @@ public class GTreeTable extends GGridPropertyTable {
     }
 
     public GGroupObjectValue getCurrentKey() {
-        return selectedRecord == null ? new GGroupObjectValue() : selectedRecord.key;
+        return selectedRecord == null ? new GGroupObjectValue() : selectedRecord.getKey();
     }
 
     public GPropertyDraw getCurrentProperty() {
@@ -272,7 +272,7 @@ public class GTreeTable extends GGridPropertyTable {
 
     public Object getSelectedValue(GPropertyDraw property) {
         GTreeGridRecord record = getSelectedRecord();
-        return record == null ? null : tree.getValue(record.getGroup(), getColumnIndex(property) - 1, record.key);
+        return record == null ? null : tree.getValue(record.getGroup(), getColumnIndex(property) - 1, record.getKey());
     }
 
     private void expandNode(GTreeTableNode node) {
@@ -295,7 +295,7 @@ public class GTreeTable extends GGridPropertyTable {
     }
 
     private GGroupObject getRowGroup(int row) {
-        return ((GTreeGridRecord) currentRecords.get(row)).getGroup();
+        return currentRecords.get(row).getGroup();
     }
 
     @Override
@@ -305,7 +305,7 @@ public class GTreeTable extends GGridPropertyTable {
 
     @Override
     public GGroupObjectValue getColumnKey(Cell.Context context) {
-        return currentRecords.get(context.getIndex()).key;
+        return currentRecords.get(context.getIndex()).getKey();
     }
 
     @Override
@@ -319,8 +319,8 @@ public class GTreeTable extends GGridPropertyTable {
 
     @Override
     public Object getValueAt(Cell.Context context) {
-        GTreeGridRecord record = (GTreeGridRecord) context.getKey();
-        return tree.getValue(record.getGroup(), context.getColumn() - 1, record.key);
+        GTreeGridRecord record = (GTreeGridRecord) context.getRowValue();
+        return tree.getValue(record.getGroup(), context.getColumn() - 1, record.getKey());
     }
 
     @Override
@@ -328,15 +328,15 @@ public class GTreeTable extends GGridPropertyTable {
         int row = context.getIndex();
         int column = context.getColumn();
 
-        GridDataRecord rowRecord = (GridDataRecord) context.getKey();
+        GTreeGridRecord rowRecord = (GTreeGridRecord) context.getRowValue();
 
         GPropertyDraw property = getProperty(context);
         rowRecord.setAttribute(property.sID, value);
 
-        tree.putValue(property, rowRecord.key, value);
-
+        tree.putValue(property, rowRecord.getKey(), value);
 
         setRowData(row, Arrays.asList(rowRecord));
+        redrawColumns(singleton(getColumn(column)), false);
     }
 
     public void changeOrder(GPropertyDraw property, GOrder modiType) {

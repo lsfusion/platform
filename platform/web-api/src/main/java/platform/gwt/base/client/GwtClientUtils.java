@@ -1,11 +1,11 @@
 package platform.gwt.base.client;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.http.client.URL;
 import com.google.gwt.http.client.UrlBuilder;
 import com.google.gwt.i18n.client.Dictionary;
-import com.google.gwt.safehtml.shared.SimpleHtmlSanitizer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
@@ -98,13 +98,6 @@ public class GwtClientUtils {
         Window.open(GwtClientUtils.getLogoutUrl(), "_self", null);
     }
 
-    public static String toHtml(String plainString) {
-        if (plainString == null) {
-            return "";
-        }
-        return SimpleHtmlSanitizer.sanitizeHtml(plainString).asString().replaceAll("(\r\n|\n\r|\r|\n)", "<br />");
-    }
-
     public static Map<String, String> getPageParameters() {
         Map<String, String> params = new HashMap<String, String>();
         try {
@@ -136,5 +129,9 @@ public class GwtClientUtils {
     public static void stopPropagation(NativeEvent event) {
         event.stopPropagation();
         event.preventDefault();
+    }
+
+    public static void removeAllChildren(Element parent) {
+        parent.setInnerText("");
     }
 }

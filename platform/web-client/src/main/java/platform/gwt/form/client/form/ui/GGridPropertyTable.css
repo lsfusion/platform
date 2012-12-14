@@ -73,22 +73,6 @@
     border-right: 1px solid #CCCCCC;
 }
 
-.dataGridSortableHeader {
-    cursor: hand;
-}
-
-.dataGridSortableHeader:hover {
-    color: #6c6b6b;
-}
-
-.dataGridSortedHeaderAscending {
-
-}
-
-.dataGridSortedHeaderDescending {
-
-}
-
 .dataGridEvenRow {
     background: #ffffff;
 }
@@ -106,14 +90,6 @@
     /*border: 2px solid #ffffff;*/
 }
 
-.dataGridHoveredRow {
-    /*background: #eee;*/
-}
-
-.dataGridHoveredRowCell {
-    /*border: 2px solid #eee;*/
-}
-
 .dataGridKeyboardSelectedRow {
     background: #F0F0FF;
 }
@@ -122,24 +98,6 @@
     /*border: 1px solid #add8e6;*/
 }
 
-/* стайлим выделенный ряд, так же как ряд с клавиатурным выделением,
-   чтобы спокойно совместить понятия выделенного и текущего ряда */
-.dataGridSelectedRow {
-    background: #F0F0FF;
-    /*background: #628cd5;*/
-    /*color: white;*/
-    /*height: auto;*/
-    /*overflow: auto;*/
-}
-
-.dataGridSelectedRowCell {
-    /*border: 2px solid #ffc;*/
-    /*border: 2px solid #628cd5;*/
-}
-
-/**
-* The keyboard selected cell is visible over selection.
-*/
 .dataGridKeyboardSelectedCell {
     outline: 1px solid #6262FF;
     outline-offset: -1px;

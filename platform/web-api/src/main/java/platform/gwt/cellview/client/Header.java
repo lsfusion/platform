@@ -15,133 +15,52 @@
  */
 package platform.gwt.cellview.client;
 
-import com.google.gwt.cell.client.Cell;
-import com.google.gwt.cell.client.Cell.Context;
-import com.google.gwt.cell.client.ValueUpdater;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
-import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
+import com.google.gwt.dom.client.TableCellElement;
+
+import java.util.HashSet;
+import java.util.Set;
+
+import static java.util.Arrays.asList;
+import static java.util.Collections.unmodifiableSet;
 
 /**
  * A table column header or footer.
- * 
- * @param <H> the {@link Cell} type
+ *
+ * @param <H> the {@link platform.gwt.cellview.client.cell.Cell} type
  */
 public abstract class Header<H> {
 
-  private final Cell<H> cell;
+    private Set<String> consumedEvents;
 
-  private String headerStyleNames = null;
-  private ValueUpdater<H> updater;
+    public Header(String... consumedEvents) {
+        if (consumedEvents != null && consumedEvents.length > 0) {
+            this.consumedEvents = unmodifiableSet(new HashSet<String>(asList(consumedEvents)));
+        }
+    }
 
-  /**
-   * Construct a Header with a given {@link Cell}.
-   * 
-   * @param cell the {@link Cell} responsible for rendering items in the header
-   */
-  public Header(Cell<H> cell) {
-    this.cell = cell;
-  }
+    public Header(Set<String> consumedEvents) {
+        if (consumedEvents != null) {
+            this.consumedEvents = unmodifiableSet(consumedEvents);
+        }
+    }
 
-  /**
-   * Return the {@link Cell} responsible for rendering items in the header.
-   * 
-   * @return the header Cell
-   */
-  public Cell<H> getCell() {
-    return cell;
-  }
+    public Set<String> getConsumedEvents() {
+        return consumedEvents;
+    }
 
-  /**
-   * Get extra style names that should be applied to a cell in this header. May be overriden to
-   * get value dependent styles by calling {@link #getValue}.
-   * 
-   * @return the extra styles of the given row in a space-separated list, or
-   *         {@code null} if there are no extra styles for the cells in this
-   *         header
-   */
-  public String getHeaderStyleNames() {
-    return headerStyleNames;
-  }
-  
-  /**
-   * Get the key for the header value. By default, the key is the same as the
-   * value. Override this method to return a custom key.
-   * 
-   * @return the key associated with the value
-   */
-  public Object getKey() {
-    return getValue();
-  }
+    /**
+     * Handle a browser event that took place within the header.
+     *
+     * @param elem    the parent Element
+     * @param event   the native browser event
+     */
+    public void onBrowserEvent(Element elem, NativeEvent event) {
+        //do nothing by default
+    }
 
-  /**
-   * Return the header value.
-   * 
-   * @return the header value
-   */
-  public abstract H getValue();
+    public abstract void renderDom(TableCellElement th);
 
-  /**
-   * Handle a browser event that took place within the header.
-   * 
-   * @param context the context of the header
-   * @param elem the parent Element
-   * @param event the native browser event
-   */
-  public void onBrowserEvent(Context context, Element elem, NativeEvent event) {
-    cell.onBrowserEvent(context, elem, getValue(), event, updater);
-  }
-
-  /**
-   * Preview a browser event that may trigger a column sort event. Return true if the
-   * {@link CellTable} should proceed with sorting the column. Subclasses can override this method
-   * to disable column sort for some click events, or particular header/footer sections.
-   * <p>
-   * This method will be invoked even if the header's cell does not consume a click event.
-   * </p>
-   * 
-   * @param context the context of the header
-   * @param elem the parent Element
-   * @param event the native browser event
-   * @return true if the {@link CellTable} should continue respond to the event (i.e., if this is
-   *         a click event on a sortable column's header, fire {@link ColumnSortEvent}). False if
-   *         the {@link CellTable} should stop respond to the event. 
-   */
-  public boolean onPreviewColumnSortEvent(Context context, Element elem, NativeEvent event) {
-    return true;
-  }
-
-  /**
-   * Render the header.
-   * 
-   * @param context the context of the header
-   * @param sb a {@link SafeHtmlBuilder} to render into
-   */
-  public void render(Context context, SafeHtmlBuilder sb) {
-    cell.render(context, getValue(), sb);
-  }
-
-  /**
-   * Set extra style names that should be applied to every cell in this header.
-   * 
-   * <p>
-   * If you want to apply style names based on the header value, override
-   * {@link #getHeaderStyleNames(Object)} directly.
-   * </p>
-   * 
-   * @param styleNames the extra style names to apply in a space-separated list,
-   *          or {@code null} if there are no extra styles for this cell
-   */
-  public void setHeaderStyleNames(String styleNames) {
-    this.headerStyleNames = styleNames;
-  }
-    
-  /**
-   * Set the {@link ValueUpdater}.
-   * 
-   * @param updater the value updater to use
-   */
-  public void setUpdater(ValueUpdater<H> updater) {
-    this.updater = updater;
-  }
+    public abstract void updateDom(TableCellElement th);
 }

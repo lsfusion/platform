@@ -1,13 +1,13 @@
 package platform.gwt.form.client.form.ui;
 
-import com.google.gwt.cell.client.Cell;
 import com.google.gwt.core.client.GWT;
+import platform.gwt.base.shared.GwtSharedUtils;
+import platform.gwt.cellview.client.cell.Cell;
 import platform.gwt.cellview.client.Column;
 import platform.gwt.form.shared.view.GPropertyDraw;
 import platform.gwt.form.shared.view.changes.GGroupObjectValue;
 import platform.gwt.form.shared.view.changes.dto.ColorDTO;
 import platform.gwt.form.shared.view.grid.GridEditableCell;
-import platform.gwt.base.shared.GwtSharedUtils;
 
 import java.util.Arrays;
 
@@ -20,7 +20,7 @@ public class GSinglePropertyTable extends GPropertyTable {
      */
     public interface GSinglePropertyTableResource extends Resources {
         @Source("GSinglePropertyTable.css")
-        GSinglePropertyTableStyle dataGridStyle();
+        GSinglePropertyTableStyle style();
     }
     public interface GSinglePropertyTableStyle extends Style {}
 
@@ -38,7 +38,7 @@ public class GSinglePropertyTable extends GPropertyTable {
 
         setRemoveKeyboardStylesOnFocusLost(true);
 
-        setTableBuilder(new GSinglePropertyTableCellBuilder(this));
+        setTableBuilder(new GSinglePropertyTableBuilder(this));
 
         addColumn(new Column<Object, Object>(new GridEditableCell(this)) {
             @Override

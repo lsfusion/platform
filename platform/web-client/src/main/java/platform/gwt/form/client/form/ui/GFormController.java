@@ -283,9 +283,6 @@ public class GFormController extends SimplePanel {
 
         modifyFormChangesWithChangePropertyAsyncs(fc);
 
-        // для уменьшения количества вызовов flush() при скроллинге сначала запоминаем текущее положение скролла во всех таблицах
-        rememberScrollPositions();
-
         // затем одним скопом обновляем данные во всех таблицах
         for (GGroupObjectController controller : controllers.values()) {
             controller.processFormChanges(fc, currentGridObjects, changedGroups);
@@ -294,6 +291,8 @@ public class GFormController extends SimplePanel {
         for (GTreeGroupController treeController : treeControllers.values()) {
             treeController.processFormChanges(fc);
         }
+
+        flushTables();
 
         formLayout.hideEmptyContainerViews();
         if (!fc.classViews.isEmpty()) {
@@ -304,28 +303,21 @@ public class GFormController extends SimplePanel {
         applyScrollPositions();
     }
 
-    private void rememberScrollPositions() {
+    private void flushTables() {
         for (GGroupObjectController controller : controllers.values()) {
-            controller.rememberScrollPosition();
+            controller.flushTable();
         }
         for (GTreeGroupController treeController : treeControllers.values()) {
-            treeController.rememberScrollPosition();
+            treeController.flushTree();
         }
     }
 
     private void applyScrollPositions() {
         for (GGroupObjectController controller : controllers.values()) {
-            controller.preparePendingState();
+            controller.restoreScrollPosition();
         }
         for (GTreeGroupController treeController : treeControllers.values()) {
-            treeController.preparePendingState();
-        }
-
-        for (GGroupObjectController controller : controllers.values()) {
-            controller.applyPendingState();
-        }
-        for (GTreeGroupController treeController : treeControllers.values()) {
-            treeController.applyPendingState();
+            treeController.restoreScrollPosition();
         }
     }
 
@@ -428,7 +420,7 @@ public class GFormController extends SimplePanel {
     }
 
     public void changeGroupObject(final GGroupObject group, GGroupObjectValue key) {
-        long requestIndex = dispatcher.execute(new ChangeGroupObject(group.ID, key.getValueDTO()), new ServerResponseCallback() {
+        long requestIndex = dispatcher.execute(new ChangeGroupObject(group.ID, key), new ServerResponseCallback() {
             @Override
             public void preProcess() {
                 DeferredRunner.get().commitDelayedGroupObjectChange(group);
@@ -452,7 +444,7 @@ public class GFormController extends SimplePanel {
 
     public void executeEditAction(GPropertyDraw property, GGroupObjectValue columnKey, String actionSID, AsyncCallback<ServerResponseResult> callback) {
         DeferredRunner.get().commitDelayedGroupObjectChange(property.groupObject);
-        syncDispatch(new ExecuteEditAction(property.ID, columnKey == null ? null : columnKey.getValueDTO(), actionSID), callback);
+        syncDispatch(new ExecuteEditAction(property.ID, columnKey == null ? null : columnKey, actionSID), callback);
     }
 
     public void continueServerInvocation(Object[] actionResults, AsyncCallback<ServerResponseResult> callback) {
@@ -514,7 +506,7 @@ public class GFormController extends SimplePanel {
     public void changeProperty(GEditPropertyHandler editHandler, GPropertyDraw property, GGroupObjectValue columnKey, Serializable value, Object oldValue) {
         editHandler.updateEditValue(value);
 
-        long requestIndex = dispatcher.execute(new ChangeProperty(property.ID, getFullCurrentKey(columnKey).getValueDTO(), value, null), new ServerResponseCallback());
+        long requestIndex = dispatcher.execute(new ChangeProperty(property.ID, getFullCurrentKey(columnKey), value, null), new ServerResponseCallback());
 
         GGroupObjectLogicsSupplier controller = getGroupObjectLogicsSupplier(property.groupObject);
 
@@ -540,7 +532,7 @@ public class GFormController extends SimplePanel {
             NavigatorDispatchAsync.Instance.get().execute(new GenerateID(), new ErrorHandlingCallback<GenerateIDResult>() {
                 @Override
                 public void success(GenerateIDResult result) {
-                    executeModifyObject(property, columnKey, object, add, result.ID, new GGroupObjectValue(object, result.ID));
+                    executeModifyObject(property, columnKey, object, add, result.ID, new GGroupObjectValue(object.ID, result.ID));
                 }
             });
         } else {
@@ -555,7 +547,7 @@ public class GFormController extends SimplePanel {
 
         controllers.get(object.groupObject).modifyGroupObject(value, add);
 
-        long requestIndex = dispatcher.execute(new ChangeProperty(property.ID, fullCurrentKey.getValueDTO(), null, add ? ID : null), new ServerResponseCallback());
+        long requestIndex = dispatcher.execute(new ChangeProperty(property.ID, fullCurrentKey, null, add ? ID : null), new ServerResponseCallback());
         lastChangeCurrentObjectsRequestIndices.put(object.groupObject, requestIndex);
         lastModifyObjectRequests.put(requestIndex, new ModifyObject(object, add, value));
     }
@@ -567,16 +559,16 @@ public class GFormController extends SimplePanel {
 
     public void changePropertyOrder(GPropertyDraw property, GGroupObjectValue columnKey, GOrder modiType) {
         if (defaultOrdersInitialized) {
-            syncDispatch(new ChangePropertyOrder(property.ID, columnKey.getValueDTO(), modiType), new ServerResponseCallback());
+            syncDispatch(new ChangePropertyOrder(property.ID, columnKey, modiType), new ServerResponseCallback());
         }
     }
 
     public void expandGroupObject(GGroupObject group, GGroupObjectValue value) {
-        syncDispatch(new ExpandGroupObject(group.ID, value.getValueDTO()), new ServerResponseCallback());
+        syncDispatch(new ExpandGroupObject(group.ID, value), new ServerResponseCallback());
     }
 
     public void collapseGroupObject(GGroupObject group, GGroupObjectValue value) {
-        syncDispatch(new CollapseGroupObject(group.ID, value.getValueDTO()), new ServerResponseCallback());
+        syncDispatch(new CollapseGroupObject(group.ID, value), new ServerResponseCallback());
     }
 
     public void setTabVisible(GContainer tabbedPane, GComponent visibleComponent) {

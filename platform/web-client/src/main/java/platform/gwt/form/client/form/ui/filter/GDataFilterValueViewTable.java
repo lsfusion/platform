@@ -1,16 +1,14 @@
 package platform.gwt.form.client.form.ui.filter;
 
-import com.google.gwt.cell.client.AbstractCell;
-import com.google.gwt.cell.client.ValueUpdater;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.BrowserEvents;
+import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import platform.gwt.cellview.client.Column;
 import platform.gwt.cellview.client.DataGrid;
-import platform.gwt.form.client.form.ui.GPropertyTable;
+import platform.gwt.cellview.client.cell.AbstractCell;
 import platform.gwt.form.shared.view.GKeyStroke;
 import platform.gwt.form.shared.view.GPropertyDraw;
 import platform.gwt.form.shared.view.grid.EditEvent;
@@ -22,6 +20,7 @@ import platform.gwt.form.shared.view.grid.renderer.GridCellRenderer;
 import java.util.Arrays;
 
 import static com.google.gwt.dom.client.BrowserEvents.*;
+import static platform.gwt.base.client.GwtClientUtils.removeAllChildren;
 
 public class GDataFilterValueViewTable extends DataGrid implements EditManager {
     private GDataFilterValueView valueView;
@@ -33,15 +32,16 @@ public class GDataFilterValueViewTable extends DataGrid implements EditManager {
 
     public interface GDataFilterValueViewTableResource extends Resources {
         @Source("../GSinglePropertyTable.css")
-        GDataFilterValueViewTableStyle dataGridStyle();
+        GDataFilterValueViewTableStyle style();
     }
 
-    public interface GDataFilterValueViewTableStyle extends Style {}
+    public interface GDataFilterValueViewTableStyle extends Style {
+    }
 
     public static final GDataFilterValueViewTableResource GFILTER_VALUE_TABLE_RESOURCE = GWT.create(GDataFilterValueViewTableResource.class);
 
     public GDataFilterValueViewTable(GDataFilterValueView valueView, GPropertyDraw property) {
-        super(50, GFILTER_VALUE_TABLE_RESOURCE);
+        super(GFILTER_VALUE_TABLE_RESOURCE);
 
         this.valueView = valueView;
         this.property = property;
@@ -60,8 +60,6 @@ public class GDataFilterValueViewTable extends DataGrid implements EditManager {
             }
         });
         setRowData(Arrays.asList(new Object()));
-
-        setKeyboardSelectionHandler(new GPropertyTable.PropertyTableKeyboardSelectionHandler(this));
     }
 
     public void setProperty(GPropertyDraw property) {
@@ -103,34 +101,46 @@ public class GDataFilterValueViewTable extends DataGrid implements EditManager {
         }
 
         @Override
-        public void render(Context context, Object value, SafeHtmlBuilder sb) {
-            if (isInEditingState) {
-                cellEditor.render(context, value, sb);
-            } else {
-                GridCellRenderer renderer = property.getGridCellRenderer();
-                renderer.render(context, value, sb);
-            }
+        public boolean isEditing(Context context, Element parent, Object value) {
+            return isInEditingState;
         }
 
         @Override
-        public void onBrowserEvent(Context context, Element parent, Object value, NativeEvent event, ValueUpdater<Object> valueUpdater) {
+        public void renderDom(Context context, DivElement cellElement, Object value) {
+            assert !isInEditingState;
+
+            GridCellRenderer cellRenderer = property.getGridCellRenderer();
+            cellRenderer.renderDom(context, cellElement, value);
+        }
+
+        @Override
+        public void updateDom(Context context, DivElement cellElement, Object value) {
+            assert !isInEditingState;
+
+            GridCellRenderer cellRenderer = property.getGridCellRenderer();
+            cellRenderer.updateDom(cellElement, context, value);
+        }
+
+        @Override
+        public void onBrowserEvent(Context context, Element parent, Object value, NativeEvent event) {
             if ((BrowserEvents.DBLCLICK.equals(event.getType()) || GKeyStroke.isPossibleEditKeyEvent(event)) && cellEditor == null && event.getKeyCode() != KeyCodes.KEY_ESCAPE) {
                 startEditing(new NativeEditEvent(event), context, parent);
             }
             if (isInEditingState) {
-                cellEditor.onBrowserEvent(context, parent, value, event, valueUpdater);
+                cellEditor.onBrowserEvent(context, parent, value, event);
                 if (event.getKeyCode() == KeyCodes.KEY_ENTER && !isInEditingState) {
                     valueView.applyFilter();
                 }
-            } else {
-                super.onBrowserEvent(context, parent, value, event, valueUpdater);
             }
         }
 
         public void startEditing(EditEvent event, Context context, Element parent) {
             isInEditingState = true;
             cellEditor = property.createValueCellEdtor(GDataFilterValueViewTable.this);
-            setValue(context, parent, value);
+
+            removeAllChildren(parent);
+
+            cellEditor.renderDom(context, parent.<DivElement>cast(), value);
             cellEditor.startEditing(event, context, parent == null ? getElement().getParentElement() : parent, value);
         }
 

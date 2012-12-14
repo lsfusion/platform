@@ -3,7 +3,7 @@ package platform.gwt.form.shared.view.classes;
 import platform.gwt.form.client.form.ui.GFormController;
 import platform.gwt.form.shared.view.GPropertyDraw;
 import platform.gwt.form.shared.view.changes.GGroupObjectValue;
-import platform.gwt.form.shared.view.grid.renderer.ActionGridRenderer;
+import platform.gwt.form.shared.view.grid.renderer.ActionGridCellRenderer;
 import platform.gwt.form.shared.view.grid.renderer.GridCellRenderer;
 import platform.gwt.form.shared.view.panel.ActionPanelRenderer;
 import platform.gwt.form.shared.view.panel.PanelRenderer;
@@ -18,7 +18,7 @@ public class GActionType extends GDataType {
 
     @Override
     public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
-        return new ActionGridRenderer(property);
+        return new ActionGridCellRenderer(property);
     }
 
     @Override

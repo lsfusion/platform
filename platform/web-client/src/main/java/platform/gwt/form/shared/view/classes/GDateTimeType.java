@@ -3,9 +3,9 @@ package platform.gwt.form.shared.view.classes;
 import platform.gwt.base.shared.GwtSharedUtils;
 import platform.gwt.form.shared.view.GPropertyDraw;
 import platform.gwt.form.shared.view.grid.EditManager;
-import platform.gwt.form.shared.view.grid.editor.DateTimeGridEditor;
+import platform.gwt.form.shared.view.grid.editor.DateTimeGridCellEditor;
 import platform.gwt.form.shared.view.grid.editor.GridCellEditor;
-import platform.gwt.form.shared.view.grid.renderer.DateGridRenderer;
+import platform.gwt.form.shared.view.grid.renderer.DateGridCellRenderer;
 import platform.gwt.form.shared.view.grid.renderer.GridCellRenderer;
 
 public class GDateTimeType extends GDataType {
@@ -13,12 +13,12 @@ public class GDateTimeType extends GDataType {
 
     @Override
     public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
-        return new DateGridRenderer(GwtSharedUtils.getDefaultDateTimeFormat());
+        return new DateGridCellRenderer(GwtSharedUtils.getDefaultDateTimeFormat());
     }
 
     @Override
     public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
-        return new DateTimeGridEditor(editManager);
+        return new DateTimeGridCellEditor(editManager);
     }
 
     @Override

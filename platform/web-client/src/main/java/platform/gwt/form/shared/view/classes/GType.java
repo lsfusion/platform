@@ -7,7 +7,7 @@ import platform.gwt.form.shared.view.filter.GCompare;
 import platform.gwt.form.shared.view.grid.EditManager;
 import platform.gwt.form.shared.view.grid.editor.GridCellEditor;
 import platform.gwt.form.shared.view.grid.renderer.GridCellRenderer;
-import platform.gwt.form.shared.view.grid.renderer.StringGridRenderer;
+import platform.gwt.form.shared.view.grid.renderer.StringGridCellRenderer;
 import platform.gwt.form.shared.view.panel.DataPanelRenderer;
 import platform.gwt.form.shared.view.panel.PanelRenderer;
 
@@ -23,7 +23,7 @@ public abstract class GType implements Serializable {
     }
 
     public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
-        return new StringGridRenderer();
+        return new StringGridCellRenderer();
     }
 
     public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {

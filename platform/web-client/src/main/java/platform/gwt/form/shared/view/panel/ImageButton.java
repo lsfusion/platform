@@ -39,6 +39,8 @@ public class ImageButton extends Button {
 
         setText(caption);
         setImagePath(imagePath);
+
+        getElement().appendChild(panel.getElement());
     }
 
     public void setImagePath(String imagePath) {
@@ -47,10 +49,13 @@ public class ImageButton extends Button {
 
     public void setAbsoluteImagePath(String imagePath) {
         if (!GwtSharedUtils.nullEquals(this.imagePath, imagePath)) {
-            this.imagePath = imagePath;
             image.setUrl(imagePath == null ? "" : imagePath);
-            image.setVisible(imagePath != null);
-            refreshHTML();
+
+            if ((this.imagePath == null && imagePath != null) || (this.imagePath != null && imagePath == null)) {
+                image.setVisible(imagePath != null);
+            }
+
+            this.imagePath = imagePath;
         }
     }
 
@@ -58,11 +63,6 @@ public class ImageButton extends Button {
         if (!GwtSharedUtils.nullEquals(this.text, text)) {
             this.text = text;
             label.setText(text);
-            refreshHTML();
         }
-    }
-
-    private void refreshHTML() {
-        setHTML(panel.getElement().getString());
     }
 }

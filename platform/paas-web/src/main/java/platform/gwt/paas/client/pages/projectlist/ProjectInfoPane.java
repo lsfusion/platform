@@ -12,7 +12,7 @@ import platform.gwt.paas.client.data.ProjectRecord;
 import platform.gwt.paas.client.widgets.HLayoutWithUIHandlers;
 import platform.gwt.paas.client.widgets.VSpacer;
 
-import static platform.gwt.base.client.GwtClientUtils.toHtml;
+import static platform.gwt.base.client.EscapeUtils.toHtml;
 
 public class ProjectInfoPane extends HLayoutWithUIHandlers<ProjectsListPageUIHandlers> {
 

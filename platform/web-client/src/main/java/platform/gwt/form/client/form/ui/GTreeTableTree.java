@@ -190,9 +190,9 @@ public class GTreeTableTree {
 
     private int nodeCounter;
 
-    public ArrayList<GridDataRecord> getUpdatedRecords() {
+    public ArrayList<GTreeGridRecord> getUpdatedRecords() {
         nodeCounter = 0;
-        ArrayList<GridDataRecord> result = new ArrayList<GridDataRecord>();
+        ArrayList<GTreeGridRecord> result = new ArrayList<GTreeGridRecord>();
         result.addAll(getNodeChildrenRecords(root, 0, null));
         return result;
     }
@@ -272,7 +272,7 @@ public class GTreeTableTree {
         for (Map.Entry<GGroupObject, Set<GTreeTableNode>> entry : groupNodes.entrySet()) {
             if (entry.getKey().equals(record.getGroup())) {
                 for (GTreeTableNode node : entry.getValue()) {
-                    if (record.key.equals(node.getKey())) {
+                    if (record.getKey().equals(node.getKey())) {
                         return node;
                     }
                 }

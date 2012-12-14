@@ -4,8 +4,8 @@ import com.google.common.base.Throwables;
 import platform.base.DateConverter;
 import platform.gwt.form.shared.view.GClassViewType;
 import platform.gwt.form.shared.view.GUserInputResult;
+import platform.gwt.form.shared.view.changes.GGroupObjectValue;
 import platform.gwt.form.shared.view.changes.dto.ColorDTO;
-import platform.gwt.form.shared.view.changes.dto.GGroupObjectValueDTO;
 import platform.interop.ClassViewType;
 import platform.interop.form.UserInputResult;
 
@@ -52,14 +52,14 @@ public class GwtToClientConverter extends ObjectConverter {
         return ClassViewType.valueOf(gViewType.name());
     }
 
-    @Converter(from = GGroupObjectValueDTO.class)
-    public byte[] conertViewType(GGroupObjectValueDTO dto) {
+    @Converter(from = GGroupObjectValue.class)
+    public byte[] conertGroupObjectValue(GGroupObjectValue groupObjectValue) {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         DataOutputStream dataStream = new DataOutputStream(outStream);
 
         try {
-            dataStream.writeInt(dto.size());
-            for (Map.Entry<Integer, Object> entry : dto.entrySet()) {
+            dataStream.writeInt(groupObjectValue.size());
+            for (Map.Entry<Integer, Object> entry : groupObjectValue.entrySet()) {
                 dataStream.writeInt(entry.getKey());
                 serializeObject(dataStream, entry.getValue());
             }

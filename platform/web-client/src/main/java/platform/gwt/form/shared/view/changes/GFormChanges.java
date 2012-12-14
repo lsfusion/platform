@@ -5,7 +5,6 @@ import platform.gwt.form.shared.view.GForm;
 import platform.gwt.form.shared.view.GGroupObject;
 import platform.gwt.form.shared.view.GPropertyDraw;
 import platform.gwt.form.shared.view.changes.dto.GFormChangesDTO;
-import platform.gwt.form.shared.view.changes.dto.GGroupObjectValueDTO;
 import platform.gwt.form.shared.view.changes.dto.GPropertyReaderDTO;
 import platform.gwt.form.shared.view.reader.GPropertyReader;
 
@@ -31,16 +30,16 @@ public class GFormChanges {
             remapped.classViews.put(form.getGroupObject(e.getKey()), e.getValue());
         }
         
-        for (Map.Entry<Integer, ArrayList<GGroupObjectValueDTO>> e : dto.gridObjects.entrySet()) {
-            remapped.gridObjects.put(form.getGroupObject(e.getKey()), remapGroupObjectValues(form, e.getValue()));
+        for (Map.Entry<Integer, ArrayList<GGroupObjectValue>> e : dto.gridObjects.entrySet()) {
+            remapped.gridObjects.put(form.getGroupObject(e.getKey()), e.getValue());
         }
 
-        for (Map.Entry<Integer, ArrayList<GGroupObjectValueDTO>> e : dto.parentObjects.entrySet()) {
-            remapped.parentObjects.put(form.getGroupObject(e.getKey()), remapGroupObjectValues(form, e.getValue()));
+        for (Map.Entry<Integer, ArrayList<GGroupObjectValue>> e : dto.parentObjects.entrySet()) {
+            remapped.parentObjects.put(form.getGroupObject(e.getKey()), e.getValue());
         }
 
-        for (Map.Entry<GPropertyReaderDTO, HashMap<GGroupObjectValueDTO, Object>> e : dto.properties.entrySet()) {
-            remapped.properties.put(remapPropertyReader(form, e.getKey()), remapGroupObjectValueMap(form, e.getValue()));
+        for (Map.Entry<GPropertyReaderDTO, HashMap<GGroupObjectValue, Object>> e : dto.properties.entrySet()) {
+            remapped.properties.put(remapPropertyReader(form, e.getKey()), e.getValue());
         }
 
         for (GPropertyReaderDTO property : dto.panelProperties) {
@@ -51,34 +50,10 @@ public class GFormChanges {
             remapped.dropProperties.add(form.getProperty(propertyID));
         }
 
-        for (Map.Entry<Integer, GGroupObjectValueDTO> e : dto.objects.entrySet()) {
-            remapped.objects.put(form.getGroupObject(e.getKey()), remapGroupObjectValue(form, e.getValue()));
+        for (Map.Entry<Integer, GGroupObjectValue> e : dto.objects.entrySet()) {
+            remapped.objects.put(form.getGroupObject(e.getKey()), e.getValue());
         }
 
-        return remapped;
-    }
-
-    private static HashMap<GGroupObjectValue, Object> remapGroupObjectValueMap(GForm form, HashMap<GGroupObjectValueDTO, Object> values) {
-        HashMap<GGroupObjectValue, Object> res = new HashMap<GGroupObjectValue, Object>(values.size());
-        for (Map.Entry<GGroupObjectValueDTO, Object> e : values.entrySet()) {
-            res.put(remapGroupObjectValue(form, e.getKey()), e.getValue());
-        }
-        return res;
-    }
-
-    private static ArrayList<GGroupObjectValue> remapGroupObjectValues(GForm form, ArrayList<GGroupObjectValueDTO> values) {
-        ArrayList<GGroupObjectValue> res = new ArrayList<GGroupObjectValue>(values.size());
-        for (GGroupObjectValueDTO key : values) {
-            res.add(remapGroupObjectValue(form, key));
-        }
-        return res;
-    }
-
-    private static GGroupObjectValue remapGroupObjectValue(GForm form, GGroupObjectValueDTO key) {
-        GGroupObjectValue remapped = new GGroupObjectValue();
-        for (Map.Entry<Integer, Object> e : key.entrySet()) {
-            remapped.put(form.getObject(e.getKey()), e.getValue());
-        }
         return remapped;
     }
 

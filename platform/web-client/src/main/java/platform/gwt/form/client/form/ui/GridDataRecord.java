@@ -1,20 +1,23 @@
 package platform.gwt.form.client.form.ui;
 
-import platform.gwt.form.shared.view.GPropertyDraw;
 import platform.gwt.form.shared.view.changes.GGroupObjectValue;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class GridDataRecord {
     public final int rowIndex;
-    public final GGroupObjectValue key;
+
+    private GGroupObjectValue key;
+    private String rowBackground;
+    private String rowForeground;
 
     private HashMap<Object, Object> values;
     private HashMap<Object, String> backgrounds;
     private HashMap<Object, String> foregrounds;
+
+    public GridDataRecord(GGroupObjectValue key) {
+        this(-1, key);
+    }
 
     public GridDataRecord(int rowIndex, GGroupObjectValue key) {
         this.rowIndex = rowIndex;
@@ -24,6 +27,8 @@ public class GridDataRecord {
     public void setAttribute(Object key, Object value) {
         if (value != null) {
             createValues().put(key, value);
+        } else if (values != null) {
+            values.remove(key);
         }
     }
 
@@ -48,7 +53,9 @@ public class GridDataRecord {
     }
 
     public String getBackground(int column) {
-        return backgrounds == null ? null : backgrounds.get(column);
+        return rowBackground != null
+               ? rowBackground
+               : backgrounds == null ? null : backgrounds.get(column);
     }
 
     public void setForeground(int column, Object color) {
@@ -60,7 +67,21 @@ public class GridDataRecord {
     }
 
     public String getForeground(int column) {
-        return foregrounds == null ? null : foregrounds.get(column);
+        return rowForeground != null
+               ? rowForeground
+               : foregrounds == null ? null : foregrounds.get(column);
+    }
+
+    public void setRowBackground(Object newRowBackground) {
+        rowBackground = newRowBackground == null ? null : newRowBackground.toString();
+    }
+
+    public void setRowForeground(Object newRowForeground) {
+        rowForeground = newRowForeground == null ? null : newRowForeground.toString();
+    }
+
+    public GGroupObjectValue getKey() {
+        return key;
     }
 
     private HashMap<Object, Object> createValues() {
@@ -84,6 +105,22 @@ public class GridDataRecord {
         return foregrounds;
     }
 
+    public void reinit(GGroupObjectValue newKey, Object newRowBackground, Object newRowForeground) {
+        key = newKey;
+        setRowBackground(newRowBackground);
+        setRowForeground(newRowForeground);
+
+        if (values != null) {
+            values.clear();
+        }
+        if (backgrounds != null) {
+            backgrounds.clear();
+        }
+        if (foregrounds != null) {
+            foregrounds.clear();
+        }
+    }
+
     @Override
     public boolean equals(Object obj) {
         return obj instanceof GridDataRecord && key.equals(((GridDataRecord) obj).key);
@@ -92,44 +129,8 @@ public class GridDataRecord {
     @Override
     public String toString() {
         return "GridDataRecord{" +
-                "values=" + values +
+                "key=" + key +
+                ", values=" + values +
                 '}';
-    }
-
-    public static ArrayList<GridDataRecord> createRecords(ArrayList<GPropertyDraw> columnProperties,
-                                                          ArrayList<GGroupObjectValue> rowKeys,
-                                                          List<GGroupObjectValue> columnKeys,
-                                                          Map<GPropertyDraw, Map<GGroupObjectValue, Object>> values,
-                                                          Map<GGroupObjectValue, Object> rowBackgroundValues,
-                                                          Map<GGroupObjectValue, Object> rowForegroundValues,
-                                                          Map<GPropertyDraw, Map<GGroupObjectValue, Object>> cellBackgroundValues,
-                                                          Map<GPropertyDraw, Map<GGroupObjectValue, Object>> cellForegroundValues) {
-        ArrayList<GridDataRecord> result = new ArrayList<GridDataRecord>();
-        for (int i = 0; i < rowKeys.size(); i++) {
-            GGroupObjectValue rowKey = rowKeys.get(i);
-            Object rowBackground = rowBackgroundValues.get(rowKey);
-            Object rowForeground = rowForegroundValues.get(rowKey);
-
-            GridDataRecord record = new GridDataRecord(i, rowKey);
-            for (int j = 0; j < columnKeys.size(); j++) {
-                GPropertyDraw columnProperty = columnProperties.get(j);
-                GGroupObjectValue columnKey = columnKeys.get(j);
-                GGroupObjectValue fullKey = columnKey == null ? rowKey : new GGroupObjectValue(rowKey, columnKey);
-
-                Object value = values.get(columnProperty).get(fullKey);
-                Object background = rowBackground == null && cellBackgroundValues.containsKey(columnProperty)
-                                    ? cellBackgroundValues.get(columnProperty).get(fullKey)
-                                    : rowBackground;
-                Object foreground = rowForeground == null && cellForegroundValues.containsKey(columnProperty)
-                                    ? cellForegroundValues.get(columnProperty).get(fullKey)
-                                    : rowBackground;
-
-                record.setValue(j, value);
-                record.setBackground(j, background == null ? columnProperty.background : background);
-                record.setForeground(j, foreground == null ? columnProperty.foreground : foreground);
-            }
-            result.add(record);
-        }
-        return result;
     }
 }

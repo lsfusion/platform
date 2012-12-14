@@ -1,14 +1,11 @@
 package platform.gwt.form.client.form.ui;
 
-import com.google.gwt.cell.client.Cell;
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.PopupPanel;
+import platform.gwt.cellview.client.cell.Cell;
 import platform.gwt.form.shared.view.GPropertyDraw;
-import platform.gwt.form.shared.view.grid.GridEditableCell;
-import platform.gwt.form.shared.view.grid.InternalEditEvent;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -20,7 +17,7 @@ public class GGridPropertyTableMenuHandler {
         this.table = table;
     }
 
-    public void show(int x, int y, final GridEditableCell editCell, final Cell.Context editContext, final Element cellParent) {
+    public void show(int x, int y, final Cell.Context context) {
         GPropertyDraw property = table.getSelectedProperty();
         if (property != null) {
             LinkedHashMap<String, String> contextMenuItems = property.getContextMenuItems();
@@ -35,7 +32,7 @@ public class GGridPropertyTableMenuHandler {
                         @Override
                         public void execute() {
                             popup.hide();
-                            table.onEditEvent(editCell, new InternalEditEvent(action), editContext, cellParent);
+                            table.editCellAt(context.getIndex(), context.getColumn(), action);
                         }
                     });
 

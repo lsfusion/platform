@@ -6,6 +6,7 @@ import com.google.gwt.user.client.rpc.StatusCodeException;
 import com.smartgwt.client.util.BooleanCallback;
 import com.smartgwt.client.util.SC;
 import platform.gwt.base.client.AsyncCallbackEx;
+import platform.gwt.base.client.EscapeUtils;
 import platform.gwt.base.client.GwtClientUtils;
 import platform.gwt.base.shared.MessageException;
 
@@ -22,7 +23,7 @@ public class ErrorAsyncCallback<T> extends AsyncCallbackEx<T> {
 
         String message = getServerMessage(caught);
         if (message != null) {
-            SC.warn(GwtClientUtils.toHtml(message));
+            SC.warn(EscapeUtils.toHtml(message));
             return;
         } else if (caught instanceof RequestTimeoutException) {
             SC.warn(baseMessages.actionTimeoutErrorMessage());

@@ -2,9 +2,9 @@ package platform.gwt.form.shared.view.classes;
 
 import platform.gwt.form.shared.view.GPropertyDraw;
 import platform.gwt.form.shared.view.grid.EditManager;
-import platform.gwt.form.shared.view.grid.editor.ColorGridEditor;
+import platform.gwt.form.shared.view.grid.editor.ColorGridCellEditor;
 import platform.gwt.form.shared.view.grid.editor.GridCellEditor;
-import platform.gwt.form.shared.view.grid.renderer.ColorGridRenderer;
+import platform.gwt.form.shared.view.grid.renderer.ColorGridCellRenderer;
 import platform.gwt.form.shared.view.grid.renderer.GridCellRenderer;
 
 public class GColorType extends GDataType {
@@ -12,12 +12,12 @@ public class GColorType extends GDataType {
 
     @Override
     public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
-        return new ColorGridEditor(editManager);
+        return new ColorGridCellEditor(editManager);
     }
 
     @Override
     public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
-        return new ColorGridRenderer();
+        return new ColorGridCellRenderer();
     }
 
     @Override

@@ -66,7 +66,7 @@ public class DataPanelRenderer implements PanelRenderer {
                 @Override
                 public boolean onKeyPress(NativeEvent event, GKeyStroke key) {
                     focusTargetAfterEdit = event.getEventTarget();
-                    valueTable.startEdit(0, 0, GEditBindingMap.CHANGE);
+                    valueTable.editCellAt(0, 0, GEditBindingMap.CHANGE);
                     return true;
                 }
             });

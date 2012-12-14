@@ -9,10 +9,8 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
-import static com.google.gwt.dom.client.BrowserEvents.*;
-import static platform.gwt.form.shared.view.GKeyStroke.getKeyStroke;
-import static platform.gwt.form.shared.view.GKeyStroke.isCommonEditKeyEvent;
-import static platform.gwt.form.shared.view.GKeyStroke.isPossibleEditKeyEvent;
+import static com.google.gwt.dom.client.BrowserEvents.DBLCLICK;
+import static platform.gwt.form.shared.view.GKeyStroke.*;
 
 public class GEditBindingMap implements Serializable {
     public static final String CHANGE = "change";

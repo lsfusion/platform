@@ -2,12 +2,12 @@ package platform.gwt.form.shared.view.classes;
 
 import platform.gwt.form.shared.view.GPropertyDraw;
 import platform.gwt.form.shared.view.grid.renderer.GridCellRenderer;
-import platform.gwt.form.shared.view.grid.renderer.NumberGridRenderer;
+import platform.gwt.form.shared.view.grid.renderer.NumberGridCellRenderer;
 
 public abstract class GIntegralType extends GDataType {
     @Override
     public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
-        return new NumberGridRenderer();
+        return new NumberGridCellRenderer();
     }
 
     @Override

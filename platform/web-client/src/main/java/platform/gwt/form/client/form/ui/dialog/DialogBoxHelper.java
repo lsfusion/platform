@@ -3,7 +3,7 @@ package platform.gwt.form.client.form.ui.dialog;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.*;
-import platform.gwt.base.client.GwtClientUtils;
+import platform.gwt.base.client.EscapeUtils;
 
 public class DialogBoxHelper {
     public static interface CloseCallback {
@@ -54,7 +54,7 @@ public class DialogBoxHelper {
         private Button activeButton;
 
         private MessageBox(String caption, String message, final CloseCallback closeCallback, OptionType activeOption, OptionType... options) {
-            this(caption, new HTML(GwtClientUtils.toHtml(message)), closeCallback, activeOption, options);
+            this(caption, new HTML(EscapeUtils.toHtml(message)), closeCallback, activeOption, options);
         }
 
         private MessageBox(String caption, Widget contents, final CloseCallback closeCallback, OptionType activeOption, OptionType... options) {

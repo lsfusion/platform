@@ -89,16 +89,12 @@ public class GTreeGroupController extends GAbstractGroupObjectController {
         update();
     }
 
-    public void rememberScrollPosition() {
-        tree.rememberScrollPosition();
+    void flushTree() {
+        tree.flush();
     }
 
-    public void preparePendingState() {
-        tree.preparePendingState();
-    }
-
-    public void applyPendingState() {
-        tree.applyPendingState();
+    void restoreScrollPosition() {
+        tree.restoreScrollPosition();
     }
 
     private void removeProperty(GGroupObject group, GPropertyDraw property) {

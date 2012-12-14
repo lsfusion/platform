@@ -11,7 +11,7 @@ public class GTreeGridRecord extends GridDataRecord {
     private GGroupObject group;
 
     public GTreeGridRecord(GGroupObject group, GGroupObjectValue key, HashMap<GPropertyDraw, Object> values) {
-        super(-1, key);
+        super(key);
         this.group = group;
 
         for (Map.Entry<GPropertyDraw, Object> e : values.entrySet()) {

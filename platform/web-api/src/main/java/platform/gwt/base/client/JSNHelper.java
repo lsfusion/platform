@@ -1,6 +1,7 @@
 package platform.gwt.base.client;
 
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.dom.client.Element;
 
 public class JSNHelper {
 
@@ -28,4 +29,11 @@ public class JSNHelper {
         var ret = elem[attr];
         return (ret == null || ret === undefined) ? false : ret;
     }-*/;
+
+    public static native String getAttributeOrNull(Element elem, String name) /*-{
+        var ret = elem.getAttribute(name);
+        return (ret === undefined || ret == null) ? null : String(ret);
+    }-*/;
+
+
 }

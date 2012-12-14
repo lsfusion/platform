@@ -5,7 +5,7 @@ import platform.gwt.form.shared.view.GPropertyDraw;
 import platform.gwt.form.shared.view.filter.GCompare;
 import platform.gwt.form.shared.view.grid.EditManager;
 import platform.gwt.form.shared.view.grid.editor.GridCellEditor;
-import platform.gwt.form.shared.view.grid.editor.StringGridEditor;
+import platform.gwt.form.shared.view.grid.editor.StringGridCellEditor;
 
 public class GStringType extends GDataType {
     protected int length = 50;
@@ -24,7 +24,7 @@ public class GStringType extends GDataType {
 
     @Override
     public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
-        return new StringGridEditor(editManager);
+        return new StringGridCellEditor(editManager);
     }
 
     @Override

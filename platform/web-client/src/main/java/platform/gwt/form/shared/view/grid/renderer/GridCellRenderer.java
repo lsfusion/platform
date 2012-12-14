@@ -1,9 +1,9 @@
 package platform.gwt.form.shared.view.grid.renderer;
 
-import com.google.gwt.cell.client.Cell;
-import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
+import com.google.gwt.dom.client.DivElement;
+import platform.gwt.cellview.client.cell.Cell;
 
 public interface GridCellRenderer {
-
-    void render(Cell.Context context, Object value, SafeHtmlBuilder sb);
+    void renderDom(Cell.Context context, DivElement cellElement, Object value);
+    void updateDom(DivElement cellElement, Cell.Context context, Object value);
 }

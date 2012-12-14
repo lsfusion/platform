@@ -2,7 +2,7 @@ package platform.gwt.form.shared.view.classes;
 
 import platform.gwt.form.shared.view.GPropertyDraw;
 import platform.gwt.form.shared.view.grid.EditManager;
-import platform.gwt.form.shared.view.grid.editor.DoubleGridEditor;
+import platform.gwt.form.shared.view.grid.editor.DoubleGridCellEditor;
 import platform.gwt.form.shared.view.grid.editor.GridCellEditor;
 
 public class GDoubleType extends GIntegralType {
@@ -15,6 +15,6 @@ public class GDoubleType extends GIntegralType {
 
     @Override
     public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
-        return new DoubleGridEditor(editManager);
+        return new DoubleGridCellEditor(editManager);
     }
 }

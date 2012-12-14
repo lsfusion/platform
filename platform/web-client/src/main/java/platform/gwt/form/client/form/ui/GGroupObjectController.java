@@ -273,21 +273,15 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
         panel.update();
     }
 
-    public void rememberScrollPosition() {
+    void flushTable() {
         if (grid != null) {
-            grid.rememberScrollPosition();
+            grid.flushTable();
         }
     }
 
-    public void preparePendingState() {
+    void restoreScrollPosition() {
         if (grid != null) {
-            grid.preparePendingState();
-        }
-    }
-
-    public void applyPendingState() {
-        if (grid != null) {
-            grid.applyPendingState();
+            grid.restoreScrollPosition();
         }
     }
 
