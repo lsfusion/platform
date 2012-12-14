@@ -6,7 +6,7 @@ import platform.gwt.base.shared.GwtSharedUtils;
 
 import java.util.Date;
 
-public class DateGridCellRenderer extends TextGridCellRenderer<Date> {
+public class DateGridCellRenderer extends TextBasedGridCellRenderer<Date> {
     private final DateTimeFormat format;
 
     public DateGridCellRenderer() {

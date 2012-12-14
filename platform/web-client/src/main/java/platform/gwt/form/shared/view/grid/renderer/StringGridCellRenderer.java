@@ -1,6 +1,6 @@
 package platform.gwt.form.shared.view.grid.renderer;
 
-public class StringGridCellRenderer extends TextGridCellRenderer<String> {
+public class StringGridCellRenderer extends TextBasedGridCellRenderer<String> {
 
     @Override
     protected String renderToString(String value) {

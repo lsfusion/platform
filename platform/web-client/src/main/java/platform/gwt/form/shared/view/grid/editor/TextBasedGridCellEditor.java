@@ -12,15 +12,15 @@ import platform.gwt.form.shared.view.grid.NativeEditEvent;
 import static com.google.gwt.dom.client.BrowserEvents.*;
 import static platform.gwt.base.client.GwtClientUtils.stopPropagation;
 
-public abstract class TextGridCellEditor extends AbstractGridCellEditor {
+public abstract class TextBasedGridCellEditor extends AbstractGridCellEditor {
     protected final class ParseException extends Exception {
     }
 
-    public TextGridCellEditor(EditManager editManager) {
+    public TextBasedGridCellEditor(EditManager editManager) {
         this(editManager, null);
     }
 
-    public TextGridCellEditor(EditManager editManager, Style.TextAlign textAlign) {
+    public TextBasedGridCellEditor(EditManager editManager, Style.TextAlign textAlign) {
         this.textAlign = textAlign == Style.TextAlign.LEFT ? null : textAlign;
         this.editManager = editManager;
     }

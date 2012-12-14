@@ -3,7 +3,7 @@ package platform.gwt.form.shared.view.grid.renderer;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.i18n.client.NumberFormat;
 
-public class NumberGridCellRenderer extends TextGridCellRenderer<Number> {
+public class NumberGridCellRenderer extends TextBasedGridCellRenderer<Number> {
     private final NumberFormat format;
 
     public NumberGridCellRenderer() {

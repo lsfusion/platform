@@ -3,7 +3,7 @@ package platform.gwt.form.shared.view.grid.editor;
 import com.google.gwt.dom.client.Style;
 import platform.gwt.form.shared.view.grid.EditManager;
 
-public class IntegerGridCellEditor extends TextGridCellEditor {
+public class IntegerGridCellEditor extends TextBasedGridCellEditor {
     public IntegerGridCellEditor(EditManager editManager) {
         super(editManager, Style.TextAlign.RIGHT);
     }

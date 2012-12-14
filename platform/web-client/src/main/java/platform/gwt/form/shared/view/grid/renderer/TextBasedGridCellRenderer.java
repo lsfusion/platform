@@ -6,14 +6,14 @@ import com.google.gwt.dom.client.Style;
 import platform.gwt.base.client.EscapeUtils;
 import platform.gwt.cellview.client.cell.Cell;
 
-public abstract class TextGridCellRenderer<T> extends AbstractGridCellRenderer {
+public abstract class TextBasedGridCellRenderer<T> extends AbstractGridCellRenderer {
     protected final Style.TextAlign textAlign;
 
-    public TextGridCellRenderer() {
+    public TextBasedGridCellRenderer() {
         this(null);
     }
 
-    public TextGridCellRenderer(Style.TextAlign textAlign) {
+    public TextBasedGridCellRenderer(Style.TextAlign textAlign) {
         this.textAlign = textAlign == Style.TextAlign.LEFT ? null : textAlign;
     }
 
