@@ -1,6 +1,6 @@
 MODULE PurchaseInvoice;
 
-REQUIRE PurchaseOrder, Invoice, Supply;
+REQUIRE PurchaseOrder, Invoice;
 
 NAMESPACE Purchase;
 

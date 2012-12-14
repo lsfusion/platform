@@ -260,12 +260,13 @@ END
 
 EXTEND FORM currentBalanceSkuStock PROPERTIES(s, st) averagePurchaseSkuStock READONLY;
 
+//---------------------------------------------- Расширение формы подбор товаров -------------------------------------//
 META defineSupplierDialogStockSku (form)
 
     form###supplier = SESSION DATA legalEntity ();
     form###nameSupplier 'Поставщик' () = name(form###supplier()) PREFCHARWIDTH 30;
 
-    form###suppliersFilter (sku) =  ( TRUE AND quantitySupplierSku(form###supplier(), sku)) OR (sku IS sku AND NOT form###supplier());
+    form###suppliersFilter (sku) =  (TRUE AND quantitySupplierSku(form###supplier(), sku)) OR (sku IS sku AND NOT form###supplier());
 
 
     EXTEND FORM form
@@ -283,3 +284,21 @@ META defineSupplierDialogStockSku (form)
     }
 END
 @defineSupplierDialogStockSku(dialogSku);
+
+//-------------------------------- Расширение формы подбор товаров (заказ/инвойс)----------------------------//
+
+META defineDocumentSupplierSkuStock (object, form, concrete, concrete2)
+    supplierEntity###object = SESSION DATA legalEntity (object);
+    nameSupplierEntity###object 'Поставщик' (object) = name(supplierEntity###object(object));
+    relationSupplier###object###sku (object, sku) =  (TRUE AND quantitySupplierSku(supplierEntity###object(object), sku)) OR (sku IS sku AND NOT supplierEntity###object(object));
+
+    EXTEND FORM form
+    PROPERTIES nameSupplierEntity###object(concrete) FORCE PANEL
+    FILTERS           relationSupplier###object###sku(concrete, s)
+    ;
+    EXTEND DESIGN form {
+        row {
+            ADD concrete.panel BEFORE concrete2.box;
+        }
+    }
+END

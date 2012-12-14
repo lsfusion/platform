@@ -1480,7 +1480,6 @@ META defineDocumentSkuStockCustom(object, detail, skuProp, stockProp)
 
     priceSkuStock###object 'Цена' (sku, stock, object) = pricePriceListTypeSkuStockDateTime(priceListType###object###sku(object, sku), sku, stock, dateTime###object(object));
 
-
     changeQuantitySku###object###Stock = ACTION (sku, object, stock) {
         REQUEST NUMERIC[14,3] INPUT;
         IF detail###Sku###object###stockProp(sku, object, stock) THEN {
@@ -1553,9 +1552,12 @@ META extendFormDocumentSkuStockCustom(object, form, concrete, stockProp)
                     ADD stockTree.tree.box { title = 'Группы складов'; }
                     ADD skuTree.tree.box { title = 'Группы SKU'; }
                 }
-                ADD sts.box {
-                    title = 'SKU';
-                    sts.grid { fillHorizontal = 2; }
+                NEW row {
+                    childConstraints = TO THE BOTTOM;
+                    ADD sts.box {
+                        title = 'SKU';
+                        sts.grid { fillHorizontal = 2; }
+                    }
                 }
             }
         }
@@ -1647,8 +1649,11 @@ META extendFormDocumentSkuCustom(object, form, concrete, skuProp, detail)
                 type = SPLITH;
 
                 ADD skuTree.tree.box { title = 'Группы SKU'; }
-                ADD s.box {
-                    s.grid { fillHorizontal = 2; }
+                NEW row {
+                    childConstraints = TO THE BOTTOM;
+                    ADD s.box {
+                        s.grid { fillHorizontal = 2; }
+                    }
                 }
             }
         }
@@ -1761,9 +1766,12 @@ META extendFormDocumentSkuStockContractorCustom(object, form, concrete, stockPro
                     ADD stockTree.tree.box { title = 'Группы складов'; }
                     ADD skuTree.tree.box { title = 'Группы SKU'; }
                 }
-                ADD sts.box {
-                    title = 'SKU';
-                    sts.grid { fillHorizontal = 4; }
+                NEW row {
+                    childConstraints = TO THE BOTTOM;
+                    ADD sts.box {
+                        title = 'SKU';
+                        sts.grid { fillHorizontal = 4; }
+                    }
                 }
             }
         }

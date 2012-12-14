@@ -508,6 +508,7 @@ META defineInvoice(sign, stockProp)
 //-- SKU
     @defineDocumentSkuPriceListType(userInvoice, stockProp);
     @extendFormDocumentSku(userInvoice, userInvoice, i);
+    @defineDocumentSupplierSkuStock (userInvoice, userInvoice, i, s);
 
     addUserInvoice 'Добавить' = ACTION ADDFORM userInvoice;
     editUserInvoice 'Редактировать' (userInvoice) = ACTION EDITFORM userInvoice;

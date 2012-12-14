@@ -10,6 +10,7 @@ REQUIRE System,
         Barcode,
         PriceList,
         Agreement,
+        Supply,
         StockTax;
 
 
@@ -280,6 +281,7 @@ META defineOrder(sign, stockProp)
 //-- SKU
     @defineDocumentSkuStock(userOrder, sku, stockProp);
     @extendFormDocumentSkuStockCustom(userOrder, userOrder, o, stockProp);
+    @defineDocumentSupplierSkuStock (userOrder, userOrder, o, sts);
 
     addUserOrder 'Добавить' = ACTION ADDFORM userOrder;
     editUserOrder 'Редактировать' (userOrder) = ACTION EDITFORM userOrder;
