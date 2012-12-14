@@ -1,0 +1,10 @@
+MODULE ItemSale;
+
+REQUIRE Item, Sale;
+
+NAMESPACE Item;
+
+
+EXTEND FORM item
+    PROPERTIES(b) saleBarcode ON CHANGE EXEC changeSaleBarcodeSku(b,i) BEFORE delete(b)
+;

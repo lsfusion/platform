@@ -87,3 +87,21 @@ emailCustomerOrder 'Выслать подтвержденный заказ по�
 ;
 
 WHEN isPostedOrder(order) DO EXEC emailCustomerOrder(order);
+
+//Для sku
+saleBarcodeSku 'Штрих-код для продажи' = DATA barcode (sku);
+CONSTRAINT skuBarcode(saleBarcodeSku(item)) != item CHECKED BY saleBarcodeSku MESSAGE 'Выбран неверный sku для штрих-кода';
+saleBarcode 'Штрих-код для продажи' (barcode)=  saleBarcodeSku(skuBarcode(barcode)) == barcode;
+changeSaleBarcodeSku = ACTION (barcode, sku) {
+    REQUEST BOOLEAN INPUT;
+    IF requestedLogical() THEN {
+        SET saleBarcodeSku(sku) <- barcode;
+    } ELSE
+        SET saleBarcodeSku(sku) <- NULL;
+}
+
+EXTEND FORM barcodeDialog
+    PROPERTIES (b) READONLY saleBarcode
+;
+@definePackageOrder(sale, showSale, 'Отображать упаковку');
+@extendFormPackageOrder(sale, showSale);

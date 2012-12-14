@@ -188,11 +188,13 @@ META defineOrder(sign, stockProp)
                        nameCurrencyUserOrder, nameAgreementUserOrder, namePriceListTypeUserOrder SHOWIF noAgreementUserOrder(o), noteUserOrder,
                        countUserOrderDetailUserOrder, quantityUserOrderDetailUserOrder, sumUserOrderDetailUserOrder,
                        VATSumUserOrderDetailUserOrder, invoiceSumUserOrderDetailUserOrder,
-                       shipmentDateUserOrder, shipmentTimeUserOrder, toDateUserOrder
+                       shipmentDateUserOrder, shipmentTimeUserOrder, toDateUserOrder//, showOrdersUserOrder
 
         OBJECTS d = userOrderDetail
-        PROPERTIES (d) indexUserOrderDetail, idBarcodeSkuUserOrderDetail, nameSkuUserOrderDetail, shortNameUOMSkuUserOrderDetail,
-                       quantityUserOrderDetail, namePriceListTypeUserOrderDetail, //priceUserOrderDetail, sumUserOrderDetail,
+        PROPERTIES (d) indexUserOrderDetail, idBarcodeSkuUserOrderDetail, nameSkuUserOrderDetail
+//        PROPERTIES (d) SHOWIF showOrdersUserOrder(o) idBarcodeUserOrderDetail, shortNameUOMBarcodeUserOrderDetail,
+//                       amountBarcodeUserOrderDetail, barcodeQuantityUserOrderDetail
+        PROPERTIES (d) shortNameUOMSkuUserOrderDetail, quantityUserOrderDetail, namePriceListTypeUserOrderDetail,
                        priceUserOrderDetail ON CHANGE EXEC changeInvoicePriceUserOrderDetail(d), sumUserOrderDetail,
                        numberVATUserOrderDetail ON CHANGE EXEC changeInvoicePriceVATUserOrderDetail(d),
                        valueVATUserOrderDetail, invoicePriceUserOrderDetail ON CHANGE EXEC changePriceUserOrderDetail(d),
@@ -260,6 +262,7 @@ META defineOrder(sign, stockProp)
                         childConstraints = TO THE RIGHTBOTTOM;
                         ADD o.documentPrmGroup {
                             childConstraints = TO THE RIGHTBOTTOM;
+//                            ADD PROPERTY(showOrdersUserOrder);
                         }
                         ADD o.documentShipmentGroup {
                             childConstraints = TO THE RIGHTBOTTOM;
@@ -293,7 +296,7 @@ META defineOrder(sign, stockProp)
                                 nameSupplierOrder, nameSupplierStockOrder, nameCustomerOrder, nameCustomerStockOrder, nameCurrencyOrder,
                                 nameAgreementOrder, namePriceListTypeOrder, noteOrder,
                                 countOrderDetailOrder, quantityOrderDetailOrder, sumOrderDetailOrder,
-                                VATSumOrderDetailOrder, invoiceSumOrderDetailOrder, shipmentDateOrder, shipmentTimeOrder, toDateOrder
+                                VATSumOrderDetailOrder, invoiceSumOrderDetailOrder, shipmentDateOrder, shipmentTimeOrder, toDateOrder//, showOrdersOrder
 
         PROPERTIES (o) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
@@ -303,8 +306,10 @@ META defineOrder(sign, stockProp)
         PROPERTIES     delete(o) FORCE PANEL DRAWTOTOOLBAR  SHOWIF isUserOrder(o)
 
         OBJECTS d=orderDetail
-        PROPERTIES (d) READONLY indexOrderDetail, idBarcodeSkuOrderDetail, nameSkuOrderDetail, shortNameUOMSkuOrderDetail,
-                       quantityOrderDetail, namePriceListTypeOrderDetail, priceOrderDetail, sumOrderDetail,
+        PROPERTIES (d) READONLY indexOrderDetail, idBarcodeSkuOrderDetail, nameSkuOrderDetail
+//        PROPERTIES (d) READONLY SHOWIF showOrdersOrder(o) idBarcodeOrderDetail, shortNameUOMBarcodeOrderDetail, amountBarcodeOrderDetail, barcodeQuantityOrderDetail
+        PROPERTIES (d) READONLY shortNameUOMSkuOrderDetail, quantityOrderDetail,
+                       namePriceListTypeOrderDetail, priceOrderDetail, sumOrderDetail,
                        numberVATOrderDetail, valueVATOrderDetail, VATSumOrderDetail, invoiceSumOrderDetail,
                        name###stockProp###orderDetail, shipmentDateOrderDetail, shipmentTimeOrderDetail
 
@@ -356,3 +361,38 @@ META defineOrderStockDestination(fromStock, toStock)
     Order.dataToStockOrderDetail(detail) += data###toStock##OrderDetail(detail);
 END
 
+META definePackageOrder(prop, toShowProp, caption)
+    @defineDocumentInterfaceCreate (order, toShowProp, caption);
+
+    @defineDocumentInterfaceBarcodeSkuPrefix (order, sku, prop, , );
+    @defineDocumentInterfaceDetailQuantityPrefix (order, prop, ' упаковок');
+
+    prop###userOrderDetail(detail) <- prop###barcodeSku(skuUserOrderDetail(detail)) IF toShowProp###userOrderDetail(detail)
+        WHEN CHANGED(skuUserOrderDetail(detail));
+    amount###prop###UserOrderDetail(detail) <- amountBarcode(prop###barcodeSku(skuUserOrderDetail(detail))) IF toShowProp###userOrderDetail(detail)
+        WHEN CHANGED(skuUserOrderDetail(detail));
+    quantityUserOrderDetail(detail) <- prop###quantityUserOrderDetail(detail)*amount###prop###UserOrderDetail(detail)
+        WHEN CHANGED(prop###quantityUserOrderDetail(detail)) OR CHANGED(amount###prop###UserOrderDetail(detail));
+END
+META extendFormPackageOrder(prop, toShowProp)
+    EXTEND FORM userOrder
+        PROPERTIES (o) toShowProp###userOrder
+
+        PROPERTIES (d) SHOWIF toShowProp###userOrder(o) BEFORE shortNameUOMSkuUserOrderDetail(d) id###prop###userOrderDetail, shortNameUOM###prop###userOrderDetail,
+                       amount###prop###userOrderDetail, prop###quantityUserOrderDetail
+    ;
+    EXTEND DESIGN userOrder {
+        o.documentPrmGroup {
+            childConstraints = TO THE RIGHTBOTTOM;
+            ADD PROPERTY(toShowProp###userOrder);
+        }
+    }
+
+    EXTEND FORM orders
+        PROPERTIES (o) READONLY toShowProp###order
+
+        PROPERTIES (d) READONLY SHOWIF toShowProp###order(o) BEFORE shortNameUOMSkuOrderDetail(d) id###prop###orderDetail, shortNameUOM###prop###orderDetail,
+                       amount###prop###orderDetail, prop###quantityUserOrderDetail
+    ;
+
+END

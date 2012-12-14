@@ -14,3 +14,21 @@ CONSTRAINT supplierUserOrder(userOrder) AND NOT isSupplierLegalEntity(supplierUs
     CHECKED BY supplierUserOrder MESSAGE 'Для заказа выбрано в качестве поставщика организация, не являющаяся поставщиком';
 CONSTRAINT customerUserOrder(userOrder) AND NOT isCompanyLegalEntity(customerUserOrder(userOrder))
     CHECKED BY customerUserOrder MESSAGE 'Для заказа выбрано в качестве покупателя организация, не являющаяся компанией';
+
+//Для sku
+purchaseBarcodeSku 'Штрих-код для закупки' = DATA barcode (sku);
+CONSTRAINT skuBarcode(purchaseBarcodeSku(item)) != item CHECKED BY purchaseBarcodeSku MESSAGE 'Выбран неверный sku для штрих-кода';
+purchaseBarcode 'Штрих-код для закупки' (barcode)=  purchaseBarcodeSku(skuBarcode(barcode)) == barcode;
+changePurchaseBarcodeSku = ACTION (barcode, sku) {
+    REQUEST BOOLEAN INPUT;
+    IF requestedLogical() THEN {
+        SET purchaseBarcodeSku(sku) <- barcode;
+    } ELSE
+        SET purchaseBarcodeSku(sku) <- NULL;
+}
+
+EXTEND FORM barcodeDialog
+    PROPERTIES (b) READONLY purchaseBarcode
+;
+@definePackageOrder(purchase, showPurchase, 'Отображать упаковку');
+@extendFormPackageOrder(purchase, showPurchase);

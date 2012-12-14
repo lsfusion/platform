@@ -35,12 +35,16 @@ CONSTRAINT skuBarcode(dataBarcodeSku(item)) != item CHECKED BY dataBarcodeSku ME
 barcodeSku(sku) = [GROUP MIN barcode BY skuBarcode(barcode)](sku) OR dataBarcodeSku(sku) PERSISTENT;
 
 primaryBarcode 'Основной' (barcode) = barcodeSku(skuBarcode(barcode)) == barcode;
+changePrimaryBarcodeSku = ACTION (barcode, sku) {
+    REQUEST BOOLEAN INPUT;
+    IF requestedLogical() THEN {
+        SET dataBarcodeSku(sku) <- barcode;
+    }
+}
 
 idBarcodeSku 'Штрих-код' (sku) = idBarcode(barcodeSku(sku)) IN baseGroup AGGPROP PERSISTENT;
 idBarcodeSkuBatch 'Штрих-код' (batch) = idBarcodeSku(skuBatch(batch));
 idBarcodeSkuSkuLedger 'Штрих-код' (skuLedger) = idBarcodeSku(skuSkuLedger(skuLedger));
-
-// UOM
 
 dataUOMBarcode = DATA UOM (barcode);
 UOMBarcode = UOMSku(skuBarcode(barcode)) OR dataUOMBarcode(barcode) PERSISTENT;
@@ -63,6 +67,12 @@ generateBarcodeSku 'Сгенерировать штрих-код' = ACTION (sku)
     };
 } TOOLBAR CONFIRM;
 
+FORM barcodeDialog 'Штрих код'
+    OBJECTS b = barcode
+    PROPERTIES (b) READONLY idBarcode, nameSkuBarcode, dateBarcode, shortNameUOMBarcode, amountBarcode, activeBarcode, primaryBarcode//, ordersBarcode
+    PROPERTIES (b) ADDSESSIONFORM, EDITSESSIONFORM, delete
+    DIALOG barcode OBJECT b
+;
 
 // ----------------------------------- Форма по вводу штрих-кода ---------------------------- //
 
@@ -162,3 +172,35 @@ EXTEND FORM batchDialog
 EXTEND FORM dialogBatch
     PROPERTIES(bt) READONLY idBarcodeSkuBatch AFTER nameSkuBatch
 ;
+
+// Barcode
+META defineDocumentDetailBarcodeCustomPrefix (detail, skuProp, prop, prefixB, prefixS)
+    prefixB###prop###detail = DATA barcode (detail);
+    prefixB###id###prop###detail 'Штрих-код упаковки' (detail) = idBarcode(prefixB###prop###detail(detail)) IN recognizeGroup;
+    prefixB###shortNameUOM###prop###detail 'Ед. изм. упаковки' = shortNameUOMBarcode(prefixB###prop###detail(detail)) IN recognizeGroup;
+    prefixB###amount###prop###detail 'Кол-во в упаковке' = DATA NUMERIC[14,3] (detail) IN recognizeGroup;
+
+    prefixB###amount###prop###detail(detail) <- amountBarcode(prefixB###prop###detail(detail)) WHEN CHANGED(prefixB###prop###detail(detail));
+
+    CONSTRAINT skuBarcode(prefixB###prop###detail(detail)) != prefixS###skuProp###detail(detail) CHECKED BY prefixB###prop###detail
+        MESSAGE 'Выбран штрих-кода не соответствующий sku';
+END
+META defineDocumentAbstractDetailBarcodeCustomPrefix (detail, prop, prefixB)
+    prefixB###prop###detail = ABSTRACT barcode (detail);
+    prefixB###id###prop###detail 'Штрих-код упаковки' (detail) = idBarcode(prefixB###prop###detail(detail)) IN recognizeGroup;
+    prefixB###shortNameUOM###prop###detail 'Ед. изм. упаковки' = shortNameUOMBarcode(prefixB###prop###detail(detail)) IN recognizeGroup;
+    prefixB###amount###prop###detail 'Кол-во в упаковке' = ABSTRACT NUMERIC[14,3] (detail) IN recognizeGroup;
+END
+META defineDocumentInterfaceBarcodeSkuCustomPrefix (detail, skuProp, prop, prefixB, prefixS)
+    @defineDocumentAbstractDetailBarcodeCustomPrefix(detail, prop, prefixB);
+    @defineDocumentDetailBarcodeCustomPrefix(user###detail, skuProp, prop, prefixB, prefixS);
+    prefixB###prop###detail(detail) += prefixB###prop###user###detail(detail);
+    prefixB###amount###prop###detail(detail) += prefixB###amount###prop###user###detail(detail);
+END
+
+META defineDocumentInterfaceBarcodeSkuPrefix (object, skuProp, prop, prefixB, prefixS)
+    @defineDocumentInterfaceBarcodeSkuCustomPrefix(object###Detail, skuProp, prop, prefixB, prefixS);
+END
+META defineDocumentInterfaceBarcodeSkuPrefix (object, skuProp, prop, prefixB)
+    @defineDocumentInterfaceBarcodeSkuPrefix(object, skuProp, prop, prefixB, );
+END

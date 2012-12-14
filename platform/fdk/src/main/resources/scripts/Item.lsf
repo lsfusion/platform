@@ -91,7 +91,7 @@ FORM item 'Товар'
 
     OBJECTS b=barcode
     PROPERTIES(b)       idBarcode, dateBarcode, shortNameUOMBarcode,
-                        amountBarcode, activeBarcode, primaryBarcode
+                        amountBarcode, activeBarcode, primaryBarcode ON CHANGE EXEC changePrimaryBarcodeSku(b,i)
     PROPERTIES(i)       generateBarcodeSku TODRAW b FORCE PANEL
     PROPERTIES(b)       ADDOBJ, delete
     FILTERS skuBarcode(b) == i
