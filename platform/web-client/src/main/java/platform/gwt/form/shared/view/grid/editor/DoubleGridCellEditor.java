@@ -3,7 +3,7 @@ package platform.gwt.form.shared.view.grid.editor;
 import com.google.gwt.dom.client.Style;
 import platform.gwt.form.shared.view.grid.EditManager;
 
-public class DoubleGridCellEditor extends TextFieldGridCellEditor {
+public class DoubleGridCellEditor extends TextGridCellEditor {
     public DoubleGridCellEditor(EditManager editManager) {
         super(editManager, Style.TextAlign.RIGHT);
     }

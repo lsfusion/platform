@@ -3,9 +3,6 @@ package platform.gwt.form.shared.view.grid.editor;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.safehtml.client.SafeHtmlTemplates;
-import com.google.gwt.safehtml.shared.SafeHtml;
-import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.user.client.ui.impl.TextBoxImpl;
 import platform.gwt.cellview.client.cell.Cell;
 import platform.gwt.form.shared.view.grid.EditEvent;
@@ -15,28 +12,15 @@ import platform.gwt.form.shared.view.grid.NativeEditEvent;
 import static com.google.gwt.dom.client.BrowserEvents.*;
 import static platform.gwt.base.client.GwtClientUtils.stopPropagation;
 
-public abstract class TextFieldGridCellEditor extends AbstractGridCellEditor {
-    interface Template extends SafeHtmlTemplates {
-        @Template("<input style=\"border: 0px; margin: 0px; width: 100%; font-size: 8pt; \" type=\"text\" value=\"{0}\" tabindex=\"-1\"></input>")
-        SafeHtml input(String value);
-
-        @Template("<input style=\"border: 0px; margin: 0px; width: 100%; font-size: 8pt; text-align: {0};\" type=\"text\" value=\"{1}\" tabindex=\"-1\"></input>")
-        SafeHtml aligned(String alignment, String value);
-    }
-
-    protected static Template template;
-
+public abstract class TextGridCellEditor extends AbstractGridCellEditor {
     protected final class ParseException extends Exception {
     }
 
-    public TextFieldGridCellEditor(EditManager editManager) {
+    public TextGridCellEditor(EditManager editManager) {
         this(editManager, null);
     }
 
-    public TextFieldGridCellEditor(EditManager editManager, Style.TextAlign textAlign) {
-        if (template == null) {
-            template = GWT.create(Template.class);
-        }
+    public TextGridCellEditor(EditManager editManager, Style.TextAlign textAlign) {
         this.textAlign = textAlign == Style.TextAlign.LEFT ? null : textAlign;
         this.editManager = editManager;
     }
@@ -104,12 +88,21 @@ public abstract class TextFieldGridCellEditor extends AbstractGridCellEditor {
     }
 
     @Override
-    protected void render(Cell.Context context, Object value, SafeHtmlBuilder sb) {
+    public void renderDom(Cell.Context context, DivElement cellParent, Object value) {
+        InputElement input = Document.get().createTextInputElement();
+        input.setTabIndex(-1);
+        input.setValue(currentText);
+
+        Style inputStyle = input.getStyle();
+        inputStyle.setBorderWidth(0, Style.Unit.PX);
+        inputStyle.setMargin(0, Style.Unit.PX);
+        inputStyle.setWidth(100, Style.Unit.PCT);
+        inputStyle.setFontSize(8, Style.Unit.PT);
         if (textAlign != null) {
-            sb.append(template.aligned(textAlign.getCssName(), currentText));
-        } else {
-            sb.append(template.input(currentText));
+            inputStyle.setTextAlign(textAlign);
         }
+
+        cellParent.appendChild(input);
     }
 
     private void validateAndCommit(Element parent) {

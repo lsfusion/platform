@@ -2,7 +2,7 @@ package platform.gwt.form.shared.view.grid.editor;
 
 import platform.gwt.form.shared.view.grid.EditManager;
 
-public class StringGridCellEditor extends TextFieldGridCellEditor {
+public class StringGridCellEditor extends TextGridCellEditor {
     public StringGridCellEditor(EditManager editManager) {
         super(editManager);
     }

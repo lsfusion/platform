@@ -1,18 +1,13 @@
 package platform.gwt.form.shared.view.grid.editor;
 
-import com.google.gwt.core.client.GWT;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.NativeEvent;
-import com.google.gwt.dom.client.Style;
+import com.google.gwt.dom.client.*;
 import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.safehtml.client.SafeHtmlTemplates;
-import com.google.gwt.safehtml.shared.SafeHtml;
-import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.text.shared.SafeHtmlRenderer;
 import com.google.gwt.text.shared.SimpleSafeHtmlRenderer;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.Widget;
+import platform.gwt.base.client.EscapeUtils;
 import platform.gwt.cellview.client.cell.Cell;
 import platform.gwt.form.shared.view.grid.EditEvent;
 import platform.gwt.form.shared.view.grid.EditManager;
@@ -80,11 +75,24 @@ public abstract class PopupBasedGridCellEditor extends AbstractGridCellEditor {
     }
 
     @Override
-    protected void render(Cell.Context context, Object value, SafeHtmlBuilder sb) {
-        String sValue = value == null ? null : renderToString(value);
-        renderAligned(sValue, renderer, textAlign, sb);
-    }
+    public void renderDom(Cell.Context context, DivElement cellParent, Object value) {
+        String text = value == null ? null : renderToString(value);
 
+        DivElement div;
+        if (textAlign != null) {
+            div = cellParent.appendChild(Document.get().createDivElement());
+            div.getStyle().setTextAlign(textAlign);
+        } else {
+            div = cellParent;
+        }
+
+
+        if (text == null || text.trim().isEmpty()) {
+            div.setInnerText(EscapeUtils.UNICODE_NBSP);
+        } else {
+            div.setInnerText(EscapeUtils.unicodeEscape(text.trim()));
+        }
+    }
     protected String renderToString(Object value) {
         return value == null ? "" : value.toString();
     }
@@ -94,33 +102,4 @@ public abstract class PopupBasedGridCellEditor extends AbstractGridCellEditor {
     }
 
     protected abstract Widget createPopupComponent();
-
-
-    interface Template extends SafeHtmlTemplates {
-        @Template("<div style=\"text-align: {0};\">{1}</div>")
-        SafeHtml aligned(String alignment, SafeHtml text);
-    }
-
-    private static Template template;
-
-    public static Template getTemplate() {
-        if (template == null) {
-            template = GWT.create(Template.class);
-        }
-        return template;
-    }
-
-    public static void renderAligned(String text, SafeHtmlRenderer<String> renderer, Style.TextAlign textAlign, SafeHtmlBuilder sb) {
-        if (text == null || text.trim().isEmpty()) {
-            sb.appendHtmlConstant("&nbsp;");
-        } else {
-            SafeHtml safeText = renderer.render(text);
-
-            if (textAlign != null) {
-                safeText = getTemplate().aligned(textAlign.getCssName(), safeText);
-            }
-
-            sb.append(safeText);
-        }
-    }
 }

@@ -10,7 +10,7 @@ import platform.gwt.form.shared.view.grid.EditManager;
 
 import java.sql.Time;
 
-public class TimeGridCellEditor extends TextFieldGridCellEditor {
+public class TimeGridCellEditor extends TextGridCellEditor {
     private DateTimeFormat format = GwtSharedUtils.getDefaultTimeFormat();
 
     public TimeGridCellEditor(EditManager editManager) {

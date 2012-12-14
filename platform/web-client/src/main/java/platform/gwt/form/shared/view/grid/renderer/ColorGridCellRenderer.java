@@ -10,17 +10,7 @@ public class ColorGridCellRenderer extends AbstractGridCellRenderer {
 
     @Override
     public void renderDom(Cell.Context context, DivElement cellElement, Object value) {
-        String color = getColorValue(value);
-
-        DivElement div = cellElement.appendChild(Document.get().createDivElement());
-        Style divStyle = div.getStyle();
-        divStyle.setHeight(16, Style.Unit.PX);
-        divStyle.setBorderColor("black");
-        divStyle.setBorderWidth(0, Style.Unit.PX);
-        divStyle.setColor(color);
-        divStyle.setBackgroundColor(color);
-        divStyle.setProperty("minHeight", 16, Style.Unit.PX);
-        div.setInnerText(EscapeUtils.UNICODE_NBSP);
+        renderColorBox(cellElement, value);
     }
 
     @Override
@@ -32,7 +22,24 @@ public class ColorGridCellRenderer extends AbstractGridCellRenderer {
         div.getStyle().setBackgroundColor(color);
     }
 
-    private String getColorValue(Object value) {
+    public static void renderColorBox(DivElement cellParent, Object value) {
+        String color = getColorValue(value);
+
+        DivElement div = Document.get().createDivElement();
+        div.setInnerText(EscapeUtils.UNICODE_NBSP);
+
+        Style divStyle = div.getStyle();
+        divStyle.setHeight(16, Style.Unit.PX);
+        divStyle.setBorderColor("black");
+        divStyle.setBorderWidth(0, Style.Unit.PX);
+        divStyle.setColor(color);
+        divStyle.setBackgroundColor(color);
+        divStyle.setProperty("minHeight", 16, Style.Unit.PX);
+
+        cellParent.appendChild(div);
+    }
+
+    private static String getColorValue(Object value) {
         return value == null ? "" : value.toString();
     }
 }
