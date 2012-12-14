@@ -91,13 +91,15 @@ public class DefaultDataGridBuilder<T> extends AbstractDataGridBuilder<T> {
                 td.setVAlign(vAlign.getVerticalAlignString());
             }
 
-            DivElement div = td.appendChild(Document.get().createDivElement());
+            DivElement div = Document.get().createDivElement();
 
             // Add the inner div.
             div.getStyle().setOutlineStyle(com.google.gwt.dom.client.Style.OutlineStyle.NONE);
 
             // Render the cell into the div.
             renderCell(div, new Cell.Context(rowIndex, columnIndex, rowValue), column, rowValue);
+
+            td.appendChild(div);
         }
     }
 

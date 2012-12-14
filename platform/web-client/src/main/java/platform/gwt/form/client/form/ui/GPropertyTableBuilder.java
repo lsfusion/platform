@@ -81,13 +81,15 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
                 td.getStyle().setColor(foregroundColor);
             }
 
-            DivElement div = td.appendChild(Document.get().createDivElement());
+            DivElement div = Document.get().createDivElement();
 
             // Add the inner div.
             div.getStyle().setOutlineStyle(Style.OutlineStyle.NONE);
 
             // Render the cell into the div.
             renderCell(div, new Cell.Context(rowIndex, columnIndex, rowValue), column, rowValue);
+
+            td.appendChild(div);
         }
     }
 

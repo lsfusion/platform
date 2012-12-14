@@ -119,7 +119,7 @@ public class DefaultHeaderBuilder<T> extends DataGridHeaderBuilder<T> {
         for (curColumn = 0; curColumn < columnCount; curColumn++) {
             Header<?> header = getHeader(curColumn);
 
-            TableCellElement th = tr.appendChild(Document.get().createTHElement());
+            TableCellElement th = Document.get().createTHElement();
 
             //куча if-ов, чтобы не заморачиваться с StringBuilder
             if (curColumn == 0 && curColumn == columnCount - 1) {
@@ -133,6 +133,8 @@ public class DefaultHeaderBuilder<T> extends DataGridHeaderBuilder<T> {
             }
 
             renderHeader(th, header);
+
+            tr.appendChild(th);
         }
     }
 

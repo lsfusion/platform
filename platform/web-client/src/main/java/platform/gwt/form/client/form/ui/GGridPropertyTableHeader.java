@@ -98,28 +98,33 @@ public class GGridPropertyTableHeader extends Header<String> {
         String escapedCaption = getEscapedCaption();
 
         if (sortDir != null) {
-            DivElement div = th.appendChild(Document.get().createDivElement());
+            DivElement div = Document.get().createDivElement();
             div.setTitle(escapedCaption);
 
-            ImageElement img = div.appendChild(Document.get().createImageElement());
+            ImageElement img = Document.get().createImageElement();
             img.getStyle().setFloat(Style.Float.LEFT);
             img.getStyle().setHeight(15, Style.Unit.PX);
             img.getStyle().setWidth(15, Style.Unit.PX);
             img.setSrc(GWT.getModuleBaseURL() + "images/" + (sortDir ? "arrowup.png" : "arrowdown.png"));
 
-            SpanElement span = div.appendChild(Document.get().createSpanElement());
+            SpanElement span = Document.get().createSpanElement();
             span.getStyle().setWhiteSpace(Style.WhiteSpace.NORMAL);
             span.setInnerText(escapedCaption);
 
             renderedTooltipElement = div;
             renderedCaptionElement = span;
+
+            div.appendChild(img);
+            div.appendChild(span);
+            th.appendChild(div);
         } else {
-            DivElement div = th.appendChild(Document.get().createDivElement());
+            DivElement div = Document.get().createDivElement();
             div.getStyle().setWhiteSpace(Style.WhiteSpace.NORMAL);
             div.setTitle(escapedCaption);
             div.setInnerText(escapedCaption);
 
             renderedTooltipElement = renderedCaptionElement = div;
+            th.appendChild(div);
         }
 
         setRendered(caption, sortDir);
