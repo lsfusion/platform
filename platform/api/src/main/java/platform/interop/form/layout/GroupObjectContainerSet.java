@@ -125,14 +125,14 @@ public class GroupObjectContainerSet<C extends AbstractContainer<C, T>, T extend
         set.filterContainer.getConstraints().childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
 
         set.showTypeContainer = factory.createContainer(); // контейнер всех управляющих объектов
-        set.showTypeContainer.setDescription(getString("form.layout.filter.container"));
+        set.showTypeContainer.setDescription(getString("form.layout.showtype.container"));
         set.showTypeContainer.setSID(group.getSID() + SHOWTYPE_CONTAINER);
         set.showTypeContainer.getConstraints().insetsInside = new Insets(0, 2, 2, 2);
         set.showTypeContainer.getConstraints().childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
         set.showTypeContainer.getConstraints().directions = new SimplexComponentDirections(0.01, 0.0, 0.0, 0.0);
 
         set.toolbarContainer = factory.createContainer(); // контейнер всех управляющих объектов
-        set.toolbarContainer.setDescription(getString("form.layout.filter.container"));
+        set.toolbarContainer.setDescription(getString("form.layout.toolbar.container"));
         set.toolbarContainer.setSID(group.getSID() + TOOLBAR_CONTAINER);
         set.toolbarContainer.getConstraints().insetsInside = new Insets(1, 0, 2, 2);
         set.toolbarContainer.getConstraints().childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;

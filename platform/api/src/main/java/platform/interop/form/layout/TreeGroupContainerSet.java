@@ -86,7 +86,7 @@ public class TreeGroupContainerSet <C extends AbstractContainer<C, T>, T extends
         set.filterContainer.getConstraints().childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
 
         set.toolbarContainer = factory.createContainer(); // контейнер всех управляющих объектов
-        set.toolbarContainer.setDescription(getString("form.layout.filter.container"));
+        set.toolbarContainer.setDescription(getString("form.layout.toolbar.container"));
         set.toolbarContainer.setSID(treeGroup.getSID() + TOOLBAR_CONTAINER);
         set.toolbarContainer.getConstraints().insetsInside = new Insets(1, 0, 2, 2);
         set.toolbarContainer.getConstraints().childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
