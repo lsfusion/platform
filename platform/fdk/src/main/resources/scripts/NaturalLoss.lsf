@@ -1,6 +1,6 @@
 MODULE NaturalLoss;
 
-REQUIRE Document, StorePrice, Sales;
+REQUIRE Document, PriceList, Sales;
 
 GROUP rateGroup 'Нормы' : publicGroup;
 
@@ -112,9 +112,18 @@ FORM subNaturalLossGroup 'Группа естественное убыли'
 FORM dialogSubNaturalLossGroup 'Группа естественное убыли'
 
     OBJECTS s = subNaturalLossGroup
-    PROPERTIES(s) name, nameParentNaturalLossGroup, nameCountrySubNaturalLossGroup
+    PROPERTIES(s) READONLY name, nameParentNaturalLossGroup, nameCountrySubNaturalLossGroup
 
     DIALOG subNaturalLossGroup OBJECT s
+;
+
+FORM subNaturalLossGroupDetail 'Строка группы естественной убыли'
+
+    OBJECTS s = subNaturalLossGroupDetail
+    PROPERTIES(s) READONLY dayFromNaturalLossGroupDetail, nameMonthFromNaturalLossGroupDetail,
+                           dayToNaturalLossGroupDetail, nameMonthToNaturalLossGroupDetail, percentNaturalLossGroupDetail
+
+    DIALOG subNaturalLossGroupDetail OBJECT s
 ;
 
 FORM naturalLossGroups 'Справочник норм естественной убыли'
@@ -178,14 +187,15 @@ CLASS naturalLossDetail 'Строка ведомости естественно�
 CLASS naturalLossPosted 'Проведенная ведомость естественной убыли' : naturalLoss, postedObject;
 
 @defineDocument(naturalLoss);
-@defineDocumentDepartmentStore(naturalLoss);
+//@defineDocumentDepartmentStore(naturalLoss);
+@defineDocumentStock(naturalLoss, stock, 'Склад');
 @defineDocumentPosted(naturalLoss);
 
 @defineDocumentDetailSku(naturalLoss, sku);
 //@defineDocumentDetailSkuItem(naturalLoss);
 
 @defineDocumentDetailQuantity(naturalLoss);
-@defineDocumentDetailBasePrice(naturalLoss, departmentStore);
+//@defineDocumentDetailBasePrice(naturalLoss, departmentStore);
 
 @defineDocumentHeaderQuantity(naturalLoss);
 
@@ -198,92 +208,90 @@ dateToNaturalLoss 'по' = DATA DATE (naturalLoss) IN documentPrmGroup;
 dateFromNaturalLossDetail 'с' (naturalLossDetail) = dateFromNaturalLoss(naturalLossNaturalLossDetail(naturalLossDetail));
 dateToNaturalLossDetail 'по' (naturalLossDetail) = dateToNaturalLoss(naturalLossNaturalLossDetail(naturalLossDetail));
 
-subNaturalLossGroupNaturalLossDetail = DATA subNaturalLossGroup(naturalLossDetail);
+subNaturalLossGroupNaturalLossDetail = DATA subNaturalLossGroup (naturalLossDetail);
 nameSubNaturalLossGroupNaturalLossDetail 'Группа естественной убыли' =
     name(subNaturalLossGroupNaturalLossDetail(naturalLossDetail));
 codeNaturalLossDetail 'Код нормы естественной убыли' =
-    codeSubNaturalLossGroup(subNaturalLossGroupCountrySku(countryNaturalLossDetail(naturalLossDetail), skuNaturalLossDetail(naturalLossDetail)));
-percentNaturalLossDetail 'Норма естественной убыли, %' = DATA NUMERIC[10,3] (naturalLossDetail);
+    codeSubNaturalLossGroup(subNaturalLossGroupNaturalLossDetail(naturalLossDetail));
+
+quantityLossNaturalLossDetail 'Кол-во' = DATA NUMERIC[14,3] (naturalLossDetail);
+
+@defineDocumentDetailBatchCustomPrefix(naturalLossDetail, batch, );
+quantityLossNaturalLossDetail(naturalLossDetail) <- quantityBatch(batchNaturalLossDetail(naturalLossDetail))
+    WHEN CHANGED(batchNaturalLossDetail(naturalLossDetail));
+
+@defineDocumentDetailPricePrefix (naturalLoss, , ' учетная ');
+@deriveDocumentDetailPriceSystemLedgerPriceListTypeBatch (naturalLoss, accountPriceListType, , , sku, stock);
 
 subNaturalDetailNaturalLossDetail = DATA subNaturalLossGroupDetail(naturalLossDetail);
 nameSubNaturalDetailNaturalLossDetail 'Период' (naturalLossDetail) =
     castIntervalNaturalLoss(subNaturalDetailNaturalLossDetail(naturalLossDetail));
+
+percentNaturalLossDetail 'Норма естественной убыли, %' = DATA NUMERIC[10,3] (naturalLossDetail);
+percentNaturalLossDetail(naturalLossDetail) <- percentNaturalLossGroupDetail(subNaturalDetailNaturalLossDetail(naturalLossDetail))
+    WHEN CHANGED(subNaturalDetailNaturalLossDetail(naturalLossDetail));
 
 castTwoObjectsToString150 = FORMULA STRING[150] 'CAST($1 AS TEXT) || \'  \' || CAST($2 AS TEXT)';
 castNameSubNaturalLossGroup 'Группа естественной убыли' (naturalLossDetail) =
     castTwoObjectsToString150(nameSubNaturalLossGroupNaturalLossDetail(naturalLossDetail),
                               nameSubNaturalDetailNaturalLossDetail(naturalLossDetail));
 
-quantityLossNaturalLossDetail 'Кол-во' = DATA NUMERIC[14,3] (naturalLossDetail);
-//supplierSumLossNaturalLossDetail 'Сумма поставщика, руб.' = DATA NUMERIC[16,2] (naturalLossDetail);
-//retailSumLossNaturalLossDetail 'Розничная сумма, руб' = DATA NUMERIC[16,2] (naturalLossDetail);
-//supplierSumNaturalLossDetail 'Сумма поставщика, руб.' = DATA NUMERIC[16,2] (naturalLossDetail);
-//retailSumNaturalLossDetail 'Розничная сумма, руб.' = DATA NUMERIC[16,2] (naturalLossDetail);
+CONSTRAINT subNaturalLossGroupNaturalLossDetail(naturalLossDetail) != subNaturalLossGroupSubNaturalLossGroupDetail(subNaturalDetailNaturalLossDetail(naturalLossDetail))
+    CHECKED BY subNaturalDetailNaturalLossDetail MESSAGE 'Группа естественной убыли товара должна соответствовать группе периода';
 
-supplierPriceNaturalLossDetail(naturalLossDetail) <- supplierPriceBSkuDepartmentStoreDateTime(
-                                                        skuNaturalLossDetail(naturalLossDetail),
-                                                        departmentStoreNaturalLoss(naturalLossNaturalLossDetail(naturalLossDetail)),
-                                                        dateTimeNaturalLoss(naturalLossNaturalLossDetail(naturalLossDetail)))
-    WHEN CHANGED(skuNaturalLossDetail(naturalLossDetail));
+quantityNaturalLossDetail (naturalLossDetail) <- percentNaturalLossDetail(naturalLossDetail) * quantityLossNaturalLossDetail(naturalLossDetail) /100
+    WHEN CHANGED(percentNaturalLossDetail(naturalLossDetail)) OR
+         CHANGED(quantityLossNaturalLossDetail(naturalLossDetail));
 
-retailPriceNaturalLossDetail(naturalLossDetail) <- retailPriceBSkuDepartmentStoreDateTime(
-                                                        skuNaturalLossDetail(naturalLossDetail),
-                                                        departmentStoreNaturalLoss(naturalLossNaturalLossDetail(naturalLossDetail)),
-                                                        dateTimeNaturalLoss(naturalLossNaturalLossDetail(naturalLossDetail)))
-    WHEN CHANGED(skuNaturalLossDetail(naturalLossDetail));
-
-retailSumLossNaturalLossDetail 'Розничная сумма, руб' (naturalLossDetail) = round0(retailPriceNaturalLossDetail(naturalLossDetail) * quantityLossNaturalLossDetail(naturalLossDetail));
-supplierSumLossNaturalLossDetail 'Сумма поставщика, руб.' (naturalLossDetail) = round0(supplierPriceNaturalLossDetail(naturalLossDetail) * quantityLossNaturalLossDetail(naturalLossDetail));
-supplierSumNaturalLossDetail 'Сумма поставщика, руб.' (naturalLossDetail)  = round0(supplierPriceNaturalLossDetail(naturalLossDetail) * quantityNaturalLossDetail(naturalLossDetail));
-retailSumNaturalLossDetail 'Розничная сумма, руб.' (naturalLossDetail) = round0(retailPriceNaturalLossDetail(naturalLossDetail) * quantityNaturalLossDetail(naturalLossDetail));
-
-@defineDocumentHeaderRetailSum(naturalLoss);
-
-invoiceSumNaturalLossDetailNaturalLoss 'Сумма поставщика' (naturalLoss) =
-    GROUP SUM supplierSumNaturalLossDetail(naturalLossDetail) BY naturalLossNaturalLossDetail(naturalLossDetail) IN documentSumGroup PERSISTENT;
-
-quantitySoldSkuDepartmentNaturalLoss 'Продано' (sku, departmentStore, dateFrom, dateTo, subNaturalLossGroupDetail) =
+quantitySoldSkuDepartmentNaturalLoss 'Продано' (sku, stock, dateFrom, dateTo, subNaturalLossGroupDetail) =
     GROUP SUM quantitySalesLedger(ledger) AND dateSalesLedger(ledger) >= (dateFrom AS DATE) AND dateSalesLedger(ledger) <= (dateTo AS DATE)
               AND inIntervalNaturalLoss(dateSalesLedger(ledger), subNaturalLossGroupDetail)
               AND subNaturalLossGroupCountrySku(countryStock(stockSalesLedger(ledger)), skuSalesLedger(ledger)) == subNaturalLossGroupSubNaturalLossGroupDetail(subNaturalLossGroupDetail)
               BY skuSalesLedger(ledger), stockSalesLedger(ledger), dateFrom, dateTo, subNaturalLossGroupDetail;
 
-toFillNaturalLossDetail 'Заполнить ведомость естественной убыли' = ACTION (naturalLoss) {
+sumNaturalLossDetail 'Сумма' (naturalLossDetail) = DATA NUMERIC[16,2] (naturalLossDetail);
+sumNaturalLossDetail (naturalLossDetail) <- priceNaturalLossDetail(naturalLossDetail) * quantityNaturalLossDetail(naturalLossDetail)
+    WHEN CHANGED(priceNaturalLossDetail(naturalLossDetail)) OR
+         CHANGED(quantityNaturalLossDetail(naturalLossDetail));
+
+sumNaturalLoss 'Сумма' (naturalLoss) = GROUP SUM sumNaturalLossDetail(naturalLossDetail)
+    BY naturalLossNaturalLossDetail(naturalLossDetail) IN documentSumGroup;
+
+toFillNaturalLossDetail 'Заполнить на основе продаж' = ACTION (naturalLoss) {
     FOR quantitySoldSkuDepartmentNaturalLoss( sku,
-                                              departmentStoreNaturalLoss(naturalLoss),
+                                              stockNaturalLoss(naturalLoss),
                                               dateFromNaturalLoss(naturalLoss),
                                               dateToNaturalLoss(naturalLoss),
                                               subNaturalLossGroupDetail) ORDER nameSku(sku), subNaturalLossGroupDetail
         DO {
         FOR ADDOBJ d = naturalLossDetail DO {
+            SET naturalLossNaturalLossDetail(d) <- naturalLoss;
             SET skuNaturalLossDetail(d) <- sku AS sku;
             SET subNaturalLossGroupNaturalLossDetail(d) <- subNaturalLossGroupCountrySku(countryNaturalLoss(naturalLossNaturalLossDetail(d)), sku AS sku);
             SET quantityLossNaturalLossDetail(d) <- quantitySoldSkuDepartmentNaturalLoss(
                                                                     sku AS sku,
-                                                                    departmentStoreNaturalLoss(naturalLoss),
+                                                                    stockNaturalLoss(naturalLoss),
                                                                     dateFromNaturalLoss(naturalLoss),
                                                                     dateToNaturalLoss(naturalLoss),
                                                                     subNaturalLossGroupDetail AS subNaturalLossGroupDetail);
             SET subNaturalDetailNaturalLossDetail(d) <- subNaturalLossGroupDetail AS subNaturalLossGroupDetail;
             SET percentNaturalLossDetail(d) <- percentNaturalLossGroupDetail(subNaturalLossGroupDetail AS subNaturalLossGroupDetail);
             SET quantityNaturalLossDetail (d) <- percentNaturalLossDetail(d) * quantityLossNaturalLossDetail(d) /100;
+            SET sumNaturalLossDetail (d) <- priceNaturalLossDetail(d) * quantityNaturalLossDetail(d);
         };
     };
 } IN documentPrmGroup CONFIRM;
 
 FORM naturalLossPrint 'Ведомость естественной убыли' PRINT
     OBJECTS s=naturalLoss FIXED PANEL
-    PROPERTIES(s) READONLY SELECTOR numberObject, nameDepartmentStoreNaturalLoss, timeNaturalLoss, seriesObject,
+    PROPERTIES(s) READONLY SELECTOR numberObject, nameStockNaturalLoss, timeNaturalLoss, seriesObject,
                            dateNaturalLoss, dateFromNaturalLoss, dateToNaturalLoss,
-                           quantityNaturalLossDetailNaturalLoss, invoiceSumNaturalLossDetailNaturalLoss,
-                           retailSumNaturalLossDetailNaturalLoss, noteNaturalLoss
+                           quantityNaturalLossDetailNaturalLoss, sumNaturalLoss, noteNaturalLoss
     OBJECTS d=naturalLossDetail
-    PROPERTIES(d) READONLY indexNaturalLossDetail, nameSkuNaturalLossDetail, codeNaturalLossDetail,
-                           shortNameUOMSkuNaturalLossDetail, quantityLossNaturalLossDetail,
-                           supplierPriceNaturalLossDetail, retailPriceNaturalLossDetail, supplierSumLossNaturalLossDetail,
-                           retailSumLossNaturalLossDetail, nameSubNaturalLossGroupNaturalLossDetail,
-                           nameSubNaturalDetailNaturalLossDetail, castNameSubNaturalLossGroup, percentNaturalLossDetail,
-                           quantityNaturalLossDetail, supplierSumNaturalLossDetail, retailSumNaturalLossDetail
+    PROPERTIES(d) READONLY indexNaturalLossDetail, idBarcodeSkuNaturalLossDetail, nameSkuNaturalLossDetail, shortNameUOMSkuNaturalLossDetail,
+                           descriptionBatchNaturalLossDetail, quantityLossNaturalLossDetail, nameSubNaturalLossGroupNaturalLossDetail,
+                           codeNaturalLossDetail, nameSubNaturalDetailNaturalLossDetail, percentNaturalLossDetail, quantityNaturalLossDetail,
+                           priceNaturalLossDetail, sumNaturalLossDetail
 
     FILTERS inNaturalLossNaturalLossDetail(s, d)
 ;
@@ -292,17 +300,14 @@ toPrintNaturalLoss 'Ведомость естественной убыли' (nat
 
 FORM naturalLoss 'Ведомость естественной убыли'
     OBJECTS s=naturalLoss FIXED PANEL
-    PROPERTIES(s) objectClassName, numberObject, nameDepartmentStoreNaturalLoss, timeNaturalLoss, seriesObject,
+    PROPERTIES(s) objectClassName, numberObject, nameStockNaturalLoss, timeNaturalLoss, seriesObject,
                   dateNaturalLoss, dateFromNaturalLoss, dateToNaturalLoss, toFillNaturalLossDetail,
-                  quantityNaturalLossDetailNaturalLoss, invoiceSumNaturalLossDetailNaturalLoss,
-                  retailSumNaturalLossDetailNaturalLoss, noteNaturalLoss
+                  quantityNaturalLossDetailNaturalLoss, sumNaturalLoss, noteNaturalLoss
     OBJECTS d=naturalLossDetail
-    PROPERTIES(d) indexNaturalLossDetail, nameSkuNaturalLossDetail, codeNaturalLossDetail,
-                  quantityLossNaturalLossDetail, supplierPriceNaturalLossDetail, retailPriceNaturalLossDetail,
-                  supplierSumLossNaturalLossDetail, retailSumLossNaturalLossDetail,
-                  nameSubNaturalLossGroupNaturalLossDetail, shortNameUOMSkuNaturalLossDetail,
-                  nameSubNaturalDetailNaturalLossDetail, percentNaturalLossDetail,
-                  quantityNaturalLossDetail, supplierSumNaturalLossDetail, retailSumNaturalLossDetail, ADDOBJ, delete
+    PROPERTIES(d) indexNaturalLossDetail, idBarcodeSkuNaturalLossDetail, nameSkuNaturalLossDetail, shortNameUOMSkuNaturalLossDetail,
+                  descriptionBatchNaturalLossDetail, quantityLossNaturalLossDetail, nameSubNaturalLossGroupNaturalLossDetail,
+                  codeNaturalLossDetail, nameSubNaturalDetailNaturalLossDetail, percentNaturalLossDetail, quantityNaturalLossDetail, priceNaturalLossDetail,
+                  sumNaturalLossDetail, ADDOBJ, delete
 
     FILTERS inNaturalLossNaturalLossDetail(s, d)
 
@@ -323,7 +328,7 @@ DESIGN naturalLoss FROM DEFAULT{
             ADD s.documentHeaderGroup {
                 childConstraints = TO THE RIGHTBOTTOM;
                 ADD PROPERTY(objectClassName);
-                ADD PROPERTY(nameDepartmentStoreNaturalLoss);
+                ADD PROPERTY(nameStockNaturalLoss);
                 ADD PROPERTY(numberObject);
                 ADD PROPERTY(seriesObject);
                 ADD PROPERTY(dateNaturalLoss);
@@ -351,19 +356,16 @@ DESIGN naturalLoss FROM DEFAULT{
 FORM naturalLosses 'Ведомости естественной убыли'
     OBJECTS s=naturalLoss
     PROPERTIES(s) READONLY numberObject, seriesObject, dateNaturalLoss, timeNaturalLoss,
-                           nameDepartmentStoreNaturalLoss, dateFromNaturalLoss, dateToNaturalLoss,
-                           quantityNaturalLossDetailNaturalLoss, invoiceSumNaturalLossDetailNaturalLoss,
-                           retailSumNaturalLossDetailNaturalLoss, noteNaturalLoss
+                           nameStockNaturalLoss, dateFromNaturalLoss, dateToNaturalLoss,
+                           quantityNaturalLossDetailNaturalLoss, sumNaturalLoss, noteNaturalLoss
     PROPERTIES(s) toPrintNaturalLoss FORCE PANEL
     PROPERTIES(s) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
     PROPERTIES(s) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
     OBJECTS d=naturalLossDetail
-    PROPERTIES(d) READONLY indexNaturalLossDetail, nameSkuNaturalLossDetail, codeNaturalLossDetail,
-                           shortNameUOMSkuNaturalLossDetail, quantityLossNaturalLossDetail,
-                           supplierPriceNaturalLossDetail, retailPriceNaturalLossDetail, supplierSumLossNaturalLossDetail,
-                           retailSumLossNaturalLossDetail, nameSubNaturalLossGroupNaturalLossDetail,
-                           percentNaturalLossDetail, quantityNaturalLossDetail,
-                           supplierSumNaturalLossDetail, retailSumNaturalLossDetail
+    PROPERTIES(d) READONLY indexNaturalLossDetail, idBarcodeSkuNaturalLossDetail, nameSkuNaturalLossDetail, shortNameUOMSkuNaturalLossDetail,
+                           descriptionBatchNaturalLossDetail, quantityLossNaturalLossDetail,
+                           nameSubNaturalLossGroupNaturalLossDetail, codeNaturalLossDetail, nameSubNaturalDetailNaturalLossDetail,
+                           percentNaturalLossDetail, quantityNaturalLossDetail, priceNaturalLossDetail, sumNaturalLossDetail
 
     FILTERS inNaturalLossNaturalLossDetail(s, d)
 ;
