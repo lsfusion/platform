@@ -104,7 +104,9 @@ REQUIRE System,
         DisparityRepricing,
         NaturalLoss,
         WarePriceList,
-        ScheduleOrder;
+        ScheduleOrder,
+        SaleScheduleOrder,
+        PurchaseScheduleOrder;
 
 // ----------------------------------- Свойства изменения объектов в Posted ------------------------------------------ //
 
@@ -1275,12 +1277,17 @@ NAVIGATOR {
         NEW contragents 'Контрагенты' {
             ADD legalEntities;
             ADD contractSkus;
-            ADD scheduleOrders;
+            ADD saleScheduleOrders;
+            ADD purchaseScheduleOrders;
+            //ADD saleScheduleOrderDetails;
+            //ADD purchaseScheduleOrderDetails;
         }
     }
 
     NEW purchase 'Управление закупками' TO toolbar {
-        ADD purchasePurchaseNavigator;
+        ADD purchasePurchaseNavigator {
+            ADD purchaseScheduleOrderDetails;
+        };
         ADD purchaseReturnNavigator;
         ADD supplyNavigator;
     }
@@ -1306,7 +1313,9 @@ NAVIGATOR {
     }
 
     NEW sale 'Управление продажами' TO toolbar {
-        ADD saleSaleNavigator;
+        ADD saleSaleNavigator {
+            ADD saleScheduleOrderDetails;
+        };
         ADD saleReturnNavigator;
         ADD salesNavigator;
         ADD statisticsNavigator;

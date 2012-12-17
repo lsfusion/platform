@@ -1,0 +1,12 @@
+MODULE SaleScheduleOrder;
+
+REQUIRE Sale,
+        ScheduleOrder;
+
+@defineScheduleOrder(' (продажа)', sale);
+
+CONSTRAINT supplierSaleScheduleOrder(saleScheduleOrder) AND NOT isCompanyLegalEntity(supplierSaleScheduleOrder(saleScheduleOrder))
+    CHECKED BY supplierSaleScheduleOrder MESSAGE 'Для заказа выбрано в качестве поставщика организация, не являющаяся компанией';
+CONSTRAINT customerSaleScheduleOrder(saleScheduleOrder) AND NOT isCustomerLegalEntity(customerSaleScheduleOrder(saleScheduleOrder))
+    CHECKED BY customerSaleScheduleOrder MESSAGE 'Для заказа выбрано в качестве покупателя организация, не являющаяся покупателем';
+
