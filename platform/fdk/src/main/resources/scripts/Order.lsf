@@ -378,7 +378,7 @@ META extendFormPackageOrder(prop, toShowProp)
     EXTEND FORM userOrder
         PROPERTIES (o) toShowProp###userOrder
 
-        PROPERTIES (d) SHOWIF toShowProp###userOrder(o) BEFORE shortNameUOMSkuUserOrderDetail(d) id###prop###userOrderDetail, shortNameUOM###prop###userOrderDetail,
+        PROPERTIES (d) SHOWIF toShowProp###userOrder(o) BEFORE quantityUserOrderDetail(d) id###prop###userOrderDetail, shortNameUOM###prop###userOrderDetail,
                        amount###prop###userOrderDetail, prop###quantityUserOrderDetail
     ;
     EXTEND DESIGN userOrder {
@@ -391,8 +391,55 @@ META extendFormPackageOrder(prop, toShowProp)
     EXTEND FORM orders
         PROPERTIES (o) READONLY toShowProp###order
 
-        PROPERTIES (d) READONLY SHOWIF toShowProp###order(o) BEFORE shortNameUOMSkuOrderDetail(d) id###prop###orderDetail, shortNameUOM###prop###orderDetail,
-                       amount###prop###orderDetail, prop###quantityUserOrderDetail
+        PROPERTIES (d) READONLY SHOWIF toShowProp###order(o) BEFORE quantityOrderDetail(d) id###prop###orderDetail, shortNameUOM###prop###orderDetail,
+                       amount###prop###orderDetail, prop###quantityOrderDetail
     ;
 
+END
+
+//-- Расширение формы подбора упаковкой (несколько складов)
+META defineDocumentPackageSkuStockCustom(object, detail, skuProp, stockProp, prop)
+    prop###quantitySku###object###stockProp 'Кол-во упаковок в документе' (sku, object, stock) = GROUP SUM prop###quantity###detail(detail)
+        BY skuProp###detail(detail), object###detail(detail), stockProp###detail(detail);
+
+    id###prop###sku'Штрих-код упаковки' (sku)= idBarcode(prop###barcodeSku(sku));
+    shortNameUOM###prop###sku 'Ед. изм. упаковки' (sku)= shortNameUOMBarcode(prop###barcodeSku(sku));
+    amount###prop###sku 'Кол-во в упаковке'(sku) =amountBarcode(prop###barcodeSku(sku));
+
+    change###prop###quantitySku###object###Stock = ACTION (sku, object, stock) {
+        REQUEST NUMERIC[14,3] INPUT;
+        IF detail###Sku###object###stockProp(sku, object, stock) THEN {
+            IF requestedNumeric() THEN {
+                SET prop###quantity###detail(detail) <- requestedNumeric() WHERE detail == detail###Sku###object###stockProp(sku, object, stock);
+                SET prop###detail(detail) <- prop###barcodeSku(sku) WHERE detail == detail###Sku###object###stockProp(sku, object, stock);
+                SET amount###prop###detail(detail) <- amount###prop###sku(sku) WHERE detail == detail###Sku###object###stockProp(sku, object, stock);
+            } ELSE {
+//                FOR object###detail(detail) == object AND stockProp###detail(detail) == stock AND skuProp###detail(detail) == sku  DO {
+                    EXEC delete(detail###Sku###object###stockProp(sku, object, stock));
+//                }
+            }
+        } ELSE {
+            IF requestedNumeric() THEN
+                FOR ADDOBJ d = detail DO {
+                   SET object###detail(d) <- object;
+                   SET data###stockProp###detail (d) <- stock;
+                   SET skuProp###detail(d) <- sku;
+                   SET prop###quantity###detail (d) <- requestedNumeric();
+                   SET shipmentDataDate###detail (d) <- shipmentDate###object(object);
+                   SET shipmentDataTime###detail (d) <- shipmentTime###object(object);
+                }
+        }
+    }
+END
+META defineDocumentPackageSkuStock(object, skuProp, stockProp, prop)
+    @defineDocumentPackageSkuStockCustom(object, object##Detail, skuProp, stockProp, prop);
+END
+
+
+META extendFormDocumentPackageSkuStockCustom(object, form, concrete, stockProp, prop, toShowProp)
+
+    EXTEND FORM form
+        PROPERTIES SHOWIF toShowProp###object(concrete)  BEFORE quantitySku###object###stockProp(s, concrete, st) id###prop###sku(s) READONLY, shortNameUOM###prop###sku(s) READONLY, amount###prop###sku(s) READONLY,
+        prop###quantitySku###object###stockProp(s, concrete, st) ON CHANGE EXEC change###prop###quantitySku###object###Stock(s, concrete, st)// BEFORE idBarcodeSku(s)
+    ;
 END

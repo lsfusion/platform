@@ -1486,9 +1486,9 @@ META defineDocumentSkuStockCustom(object, detail, skuProp, stockProp)
             IF requestedNumeric() THEN {
                 SET quantity###detail(detail) <- requestedNumeric() WHERE detail == detail###Sku###object###stockProp(sku, object, stock);
             } ELSE {
-                FOR object###detail(detail) == object AND stockProp###detail(detail) == stock AND skuProp###detail(detail) == sku DO {
-                    EXEC delete(detail);
-                }
+//                FOR object###detail(detail) == object AND stockProp###detail(detail) == stock AND skuProp###detail(detail) == sku  DO {  //AND NOT quantity###detail(detail)
+                    EXEC delete(detail###Sku###object###stockProp(sku, object, stock));
+//                }
             }
         } ELSE {
             IF requestedNumeric() THEN
@@ -1522,7 +1522,7 @@ META extendFormDocumentSkuStockCustom(object, form, concrete, stockProp)
         ORDER BY skuTreeName
 
         OBJECTS           sts=(st=stock, s=sku)
-        PROPERTIES        READONLY nameSku(s), stockName = name(st), idBarcodeSku(s), shortNameUOMSku(s)
+        PROPERTIES        READONLY nameSku(s), idBarcodeSku(s), shortNameUOMSku(s), stockName = name(st)
 
         FILTERS           isParentSkuGroupSku(sk, s),
                           (st == ts AND sg IS stockGroup OR isParentStockGroupStock(sg, st) AND NOT ts OR st IS stock AND NOT sg AND NOT ts) AND NOT stockProp###object(concrete) OR
@@ -1591,8 +1591,8 @@ META defineDocumentSku(object, detail, skuProp, stockProp)
             IF requestedNumeric() THEN {
                 SET quantity###detail(detail) <- requestedNumeric() WHERE detail == detail###Sku###object(sku, object);
             } ELSE {
-                FOR object###detail(detail) == object AND stockProp###detail(detail) == stockProp###object(object) AND skuProp###detail(detail) == sku DO {
-                    EXEC delete(detail);
+                FOR object###detail(detail) == object AND stockProp###detail(detail) == stockProp###object(object) AND skuProp###detail(detail) == sku DO {    //AND NOT quantity###detail(detail)
+                    EXEC delete(detail###Sku###object(sku, object));
                 }
             }
         } ELSE {
@@ -1686,8 +1686,8 @@ META defineDocumentSkuStockContractorCustom(object, detail, skuProp, stockProp, 
             IF requestedNumeric() THEN {
                 SET quantity###detail(detail) <- requestedNumeric() WHERE detail == detail###Sku###object###stockProp###contactStock(sku, object, stockProp, contactStock);
             } ELSE {
-                FOR object###detail(detail) == object AND stockProp###detail(detail) == stockProp AND skuProp###detail(detail) == sku AND contactStock###detail(detail) == contactStock DO {
-                    EXEC delete(detail);
+                FOR object###detail(detail) == object AND stockProp###detail(detail) == stockProp AND skuProp###detail(detail) == sku AND contactStock###detail(detail) == contactStock DO { //AND NOT quantity###detail(detail)
+                    EXEC delete(detail###Sku###object###stockProp###contactStock(sku, object, stockProp, contactStock));
                 }
             }
         } ELSE {
@@ -1728,7 +1728,7 @@ META extendFormDocumentSkuStockContractorCustom(object, form, concrete, stockPro
         OBJECTS cc = stock FIXED GRID
 
         OBJECTS           sts=(st=stock, s=sku)
-        PROPERTIES        READONLY nameSku(s), stockName = name(st), idBarcodeSku(s), shortNameUOMSku(s)
+        PROPERTIES        READONLY nameSku(s), idBarcodeSku(s), shortNameUOMSku(s), stockName = name(st)
 
         FILTERS           isParentSkuGroupSku(sk, s),
                           (st == ts AND sg IS stockGroup OR isParentStockGroupStock(sg, st) AND NOT ts OR st IS stock AND NOT sg AND NOT ts) AND NOT stockProp###object(concrete) OR

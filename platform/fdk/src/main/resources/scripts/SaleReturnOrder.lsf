@@ -17,3 +17,6 @@ CONSTRAINT customerUserOrder(userOrder) AND NOT isCustomerLegalEntity(customerUs
 
 @definePackageOrder(sale, showSale, 'Отображать упаковку');
 @extendFormPackageOrder(sale, showSale);
+
+@defineDocumentPackageSkuStock(userOrder, sku, supplierStock, sale);
+@extendFormDocumentPackageSkuStockCustom(userOrder, userOrder, o, supplierStock, sale, showSale);

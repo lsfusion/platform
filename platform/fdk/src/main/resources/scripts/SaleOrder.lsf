@@ -88,7 +88,7 @@ emailCustomerOrder 'Выслать подтвержденный заказ по�
 
 WHEN isPostedOrder(order) DO EXEC emailCustomerOrder(order);
 
-//Для sku
+//-- Упаковка
 saleBarcodeSku 'Штрих-код для продажи' = DATA barcode (sku);
 CONSTRAINT skuBarcode(saleBarcodeSku(item)) != item CHECKED BY saleBarcodeSku MESSAGE 'Выбран неверный sku для штрих-кода';
 saleBarcode 'Штрих-код для продажи' (barcode)=  saleBarcodeSku(skuBarcode(barcode)) == barcode;
@@ -105,3 +105,6 @@ EXTEND FORM barcodeDialog
 ;
 @definePackageOrder(sale, showSale, 'Отображать упаковку');
 @extendFormPackageOrder(sale, showSale);
+
+@defineDocumentPackageSkuStock(userOrder, sku, supplierStock, sale);
+@extendFormDocumentPackageSkuStockCustom(userOrder, userOrder, o, supplierStock, sale, showSale);

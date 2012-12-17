@@ -32,3 +32,6 @@ EXTEND FORM barcodeDialog
 ;
 @definePackageOrder(purchase, showPurchase, 'Отображать упаковку');
 @extendFormPackageOrder(purchase, showPurchase);
+
+@defineDocumentPackageSkuStock(userOrder, sku, customerStock, purchase);
+@extendFormDocumentPackageSkuStockCustom(userOrder, userOrder, o, customerStock, purchase, showPurchase);
