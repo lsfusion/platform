@@ -151,11 +151,6 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         String dataGridHeader();
 
         /**
-         * Applied to the keyboard selected cell.
-         */
-        String dataGridKeyboardSelectedCell();
-
-        /**
          * Applied to the keyboard selected row.
          */
         String dataGridKeyboardSelectedRow();
@@ -164,6 +159,17 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
          * Applied to the cells in the keyboard selected row.
          */
         String dataGridKeyboardSelectedRowCell();
+
+        /**
+         * Applied to the keyboard selected cell.
+         */
+        String dataGridKeyboardSelectedCell();
+
+        String dataGridLastKeyboardSelectedCell();
+
+        String dataGridRightOfKeyboardSelectedCell();
+
+        String dataGridTopOfKeyboardSelectedCell();
 
         /**
          * Applied to the last column.
@@ -726,6 +732,13 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
     private final Resources resources;
     protected final Style style;
 
+    private String rowStyle;
+    private String rowCellStyle;
+    private String selectedCellStyle;
+    private String lastSelectedCellStyle;
+    private String topOfSelectedCellStyle;
+    private String rightOfSelectedCellStyle;
+
     private HeaderBuilder<T> footerBuilder;
     private int nonNullFootersCount = 0;
     private final List<Header<?>> footers = new ArrayList<Header<?>>();
@@ -806,6 +819,13 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         this.resources = resources;
         this.style = resources.style();
         this.style.ensureInjected();
+
+        rowStyle = style.dataGridKeyboardSelectedRow();
+        rowCellStyle = style.dataGridKeyboardSelectedRowCell();
+        selectedCellStyle = style.dataGridKeyboardSelectedCell();
+        lastSelectedCellStyle = style.dataGridLastKeyboardSelectedCell();
+        topOfSelectedCellStyle = style.dataGridTopOfKeyboardSelectedCell();
+        rightOfSelectedCellStyle = style.dataGridRightOfKeyboardSelectedCell();
 
         headerPanel = (HeaderPanel) getWidget();
 
@@ -2015,8 +2035,9 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         TableCellElement td = getKeyboardSelectedTableCellElement();
         if (td != null) {
             TableRowElement tr = td.getParentElement().cast();
-            td.removeClassName(style.dataGridKeyboardSelectedCell());
-            setRowStyleName(tr, style.dataGridKeyboardSelectedRow(), style.dataGridKeyboardSelectedRowCell(), !isRemoveKeyboardStylesOnFocusLost());
+            setRowStyleName(tr, rowStyle, rowCellStyle, !isRemoveKeyboardStylesOnFocusLost());
+
+            setFocusedCellStyles(getKeyboardSelectedRow(), getKeyboardSelectedColumn(), tr, td, false);
         }
     }
 
@@ -2024,8 +2045,9 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         TableCellElement td = getKeyboardSelectedTableCellElement();
         if (td != null) {
             TableRowElement tr = td.getParentElement().cast();
-            td.addClassName(style.dataGridKeyboardSelectedCell());
-            setRowStyleName(tr, style.dataGridKeyboardSelectedRow(), style.dataGridKeyboardSelectedRowCell(), true);
+            setRowStyleName(tr, rowStyle, rowCellStyle, true);
+
+            setFocusedCellStyles(getKeyboardSelectedRow(), getKeyboardSelectedColumn(), tr, td, true);
         }
     }
 
@@ -2041,42 +2063,38 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         T value = getRowValue(row);
         Context context = new Context(row, col, value);
         HasCell<T, ?> column = tableBuilder.getColumn(context, value, elem);
-        if (column == null) {
-            // The selected element does not contain a Cell.
-            return false;
-        }
-
-        return resetFocusOnCellImpl(context, value, column, elem);
+        return column != null && resetFocusOnCellImpl(context, value, column, elem);
     }
 
-    private void setKeyboardSelectedImpl(int index, boolean selected, boolean stealFocus) {
-        if (!isRowWithinBounds(index)) {
+    private void setKeyboardSelectedImpl(int row, boolean selected, boolean stealFocus) {
+        if (!isRowWithinBounds(row)) {
             return;
         }
 
         // Deselect the row.
-        TableRowElement tr = getRowElementNoFlush(index);
+        TableRowElement tr = getRowElementNoFlush(row);
         if (tr == null) {
             // The row does not exist.
             return;
         }
-        String rowStyle = style.dataGridKeyboardSelectedRow();
-        String rowCellStyle = style.dataGridKeyboardSelectedRowCell();
-        String cellStyle = style.dataGridKeyboardSelectedCell();
 
-        boolean updatedSelection = !selected || isFocused || stealFocus;
+        boolean focused = isFocused || stealFocus;
 
-        boolean addKeyboardStyles = selected && (isFocused || !isRemoveKeyboardStylesOnFocusLost());
-        setRowStyleName(tr, rowStyle, rowCellStyle, addKeyboardStyles);
+        boolean rowSelected = selected && (isFocused || !isRemoveKeyboardStylesOnFocusLost());
+        setRowStyleName(tr, rowStyle, rowCellStyle, rowSelected);
 
         NodeList<TableCellElement> cells = tr.getCells();
-        int keyboardColumn = Math.min(getKeyboardSelectedColumn(), cells.getLength() - 1);
-        for (int i = 0; i < cells.getLength(); i++) {
-            TableCellElement td = cells.getItem(i);
-            boolean isKeyboardSelected = (i == keyboardColumn);
+        int cellCount = cells.getLength();
+        int keyboardColumn = Math.min(getKeyboardSelectedColumn(), cellCount - 1);
+        for (int column = 0; column < cellCount; column++) {
+            TableCellElement td = cells.getItem(column);
+            boolean isKeyboardSelected = (column == keyboardColumn);
+            boolean isLastColumn = (column == cellCount - 1);
 
             // Update the selected style.
-            setStyleName(td, cellStyle, updatedSelection && selected && isKeyboardSelected);
+            boolean isFocusedCell = focused && selected && isKeyboardSelected;
+
+            setFocusedCellStyles(row, column, tr, td, isFocusedCell);
 
             // Mark as focusable.
             final Element focusable = getCellParentElement(td);
@@ -2091,6 +2109,23 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
                     }
                 });
             }
+        }
+    }
+
+    private void setFocusedCellStyles(int row, int column, TableRowElement tr, TableCellElement td, boolean focused) {
+        int cellCount = tr.getCells().getLength();
+
+        setStyleName(td, selectedCellStyle, focused && column != cellCount - 1);
+        setStyleName(td, lastSelectedCellStyle, focused && column == cellCount - 1);
+
+        if (row > 0) {
+            TableCellElement topTD = getRowElementNoFlush(row - 1).getCells().getItem(column);
+            setStyleName(topTD, topOfSelectedCellStyle, focused);
+        }
+
+        if (column < cellCount - 1) {
+            TableCellElement rightTD = tr.getCells().getItem(column + 1);
+            setStyleName(rightTD, rightOfSelectedCellStyle, focused);
         }
     }
 

@@ -30,7 +30,6 @@ public class ColorGridCellRenderer extends AbstractGridCellRenderer {
 
         Style divStyle = div.getStyle();
         divStyle.setHeight(16, Style.Unit.PX);
-        divStyle.setBorderColor("black");
         divStyle.setBorderWidth(0, Style.Unit.PX);
         divStyle.setColor(color);
         divStyle.setBackgroundColor(color);

@@ -5,13 +5,6 @@
     margin: 2px;
 }
 
-.dataGridFirstColumn {
-}
-
-.dataGridLastColumn {
-    border-right: 1px solid #CCCCCC;
-}
-
 .dataGridFooter {
     border-top: 2px solid #6f7277;
     padding: 3px 15px;
@@ -35,6 +28,30 @@
     white-space: nowrap;
 }
 
+
+.dataGridLastColumnHeader {
+    border-right: 1px solid #CCCCCC;
+}
+
+.dataGridFirstColumnHeader {
+
+}
+
+.dataGridFirstColumnFooter {
+
+}
+
+.dataGridLastColumnFooter {
+
+}
+
+.dataGridFirstColumn {
+}
+
+.dataGridLastColumn {
+    border-right: 1px solid #CCCCCC;
+}
+
 .dataGridCell {
     /*работает как min-height*/
     height: 16px;
@@ -55,22 +72,7 @@
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
-}
-
-.dataGridFirstColumnFooter {
-
-}
-
-.dataGridFirstColumnHeader {
-
-}
-
-.dataGridLastColumnFooter {
-
-}
-
-.dataGridLastColumnHeader {
-    border-right: 1px solid #CCCCCC;
+    outline: none;
 }
 
 .dataGridEvenRow {
@@ -78,7 +80,6 @@
 }
 
 .dataGridEvenRowCell {
-    /*border: 2px solid #ffffff;*/
 }
 
 /* убираем чередующиеся ряды */
@@ -87,7 +88,6 @@
 }
 
 .dataGridOddRowCell {
-    /*border: 2px solid #ffffff;*/
 }
 
 .dataGridKeyboardSelectedRow {
@@ -95,10 +95,23 @@
 }
 
 .dataGridKeyboardSelectedRowCell {
-    /*border: 1px solid #add8e6;*/
 }
 
 .dataGridKeyboardSelectedCell {
-    outline: 1px solid #6262FF;
-    outline-offset: -1px;
+    border-bottom: 1px solid #6262FF;
+    border-left: 1px solid #6262FF;
+}
+
+.dataGridLastKeyboardSelectedCell {
+    border-bottom: 1px solid #6262FF;
+    border-left: 1px solid #6262FF;
+    border-right: 1px solid #6262FF;
+}
+
+.dataGridRightOfKeyboardSelectedCell {
+    border-left: 1px solid #6262FF;
+}
+
+.dataGridTopOfKeyboardSelectedCell {
+    border-bottom: 1px solid #6262FF;
 }

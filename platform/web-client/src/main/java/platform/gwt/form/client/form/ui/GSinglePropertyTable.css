@@ -49,6 +49,7 @@
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
+    outline: none;
 }
 
 
@@ -93,6 +94,14 @@
 }
 
 .dataGridKeyboardSelectedCell {
-    outline: 1px solid #6262FF;
-    outline-offset: -1px;
+    border: 1px solid #6262FF;
+}
+
+.dataGridLastKeyboardSelectedCell {
+}
+
+.dataGridRightOfKeyboardSelectedCell {
+}
+
+.dataGridTopOfKeyboardSelectedCell {
 }

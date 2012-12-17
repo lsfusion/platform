@@ -94,3 +94,12 @@
 .dataGridKeyboardSelectedCell {
   border: selectionBorderWidth solid #d7dde8;
 }
+
+.dataGridLastKeyboardSelectedCell {
+}
+
+.dataGridRightOfKeyboardSelectedCell {
+}
+
+.dataGridTopOfKeyboardSelectedCell {
+}
