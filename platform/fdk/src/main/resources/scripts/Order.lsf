@@ -368,9 +368,9 @@ META definePackageOrder(prop, toShowProp, caption)
     @defineDocumentInterfaceDetailQuantityPrefix (order, prop, ' упаковок');
 
     prop###userOrderDetail(detail) <- prop###barcodeSku(skuUserOrderDetail(detail)) IF toShowProp###userOrderDetail(detail)
-        WHEN CHANGED(skuUserOrderDetail(detail));
+        WHEN CHANGED(skuUserOrderDetail(detail)) OR CHANGED(toShowProp###userOrderDetail(detail));
     amount###prop###UserOrderDetail(detail) <- amountBarcode(prop###barcodeSku(skuUserOrderDetail(detail))) IF toShowProp###userOrderDetail(detail)
-        WHEN CHANGED(skuUserOrderDetail(detail));
+        WHEN CHANGED(skuUserOrderDetail(detail)) OR CHANGED(toShowProp###userOrderDetail(detail));
     quantityUserOrderDetail(detail) <- prop###quantityUserOrderDetail(detail)*amount###prop###UserOrderDetail(detail)
         WHEN CHANGED(prop###quantityUserOrderDetail(detail)) OR CHANGED(amount###prop###UserOrderDetail(detail));
 END

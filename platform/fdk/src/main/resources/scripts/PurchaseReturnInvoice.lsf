@@ -6,7 +6,7 @@ NAMESPACE PurchaseReturn;
 
 //----------------------------------------------- Накладная ---------------------------------------------------//
 
-@defineInvoice(' (закупка-возврат)', customerStock);
+@defineInvoice(' (закупка-возврат)', customerStock, showPurchase, 'Отображать упаковку', purchase);
 @defineInvoiceBatch(customerStock);
 @defineInvoiceReturn(Purchase, PurchaseReturn, customerStock);
 

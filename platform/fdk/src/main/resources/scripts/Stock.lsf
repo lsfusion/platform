@@ -1158,6 +1158,22 @@ END
 META defineDocumentInterfaceDetailQuantityPack (object, skuProp)
     @defineDocumentInterfaceDetailQuantityPackPrefix(object, skuProp, , );
 END
+//--
+
+META defineDocumentDetailDataQuantityPackCustomPrefix (detail, prefix, caption)
+    prefix###quantityPack###detail 'Кол-во грузовых мест'###caption = DATA NUMERIC[14,3] (detail);
+END
+META defineDocumentDetailAbstractDataQuantityPackCustomPrefix (detail, prefix, caption)
+    prefix###quantityPack###detail 'Кол-во грузовых мест'###caption = ABSTRACT NUMERIC[14,3] (detail) PERSISTENT;
+END
+META defineDocumentDetailInterfaceDataQuantityPackCustomPrefix (detail, prefix, caption)
+    @defineDocumentDetailAbstractDataQuantityPackCustomPrefix(detail, prefix, caption);
+    @defineDocumentDetailDataQuantityPackCustomPrefix (user###detail, prefix, caption);
+    prefix###quantityPack###detail (detail) += prefix###quantityPack###user###detail(detail);
+END
+META defineDocumentDetailInterfaceDataQuantityPack (object)
+    @defineDocumentDetailInterfaceDataQuantityPackCustomPrefix(object##Detail, , );
+END
 
 //--------------------------------------------------Партия для Detail--------------------------------------//
 META defineDocumentDetailBatchCustomPrefix(detail, batchProp, prefix)

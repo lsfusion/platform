@@ -26,7 +26,8 @@ CLASS ABSTRACT invoiceDetail 'Строка накладной';
 
 @defineDocumentAbstractDetailQuantity(invoice);
 @defineDocumentDetailGrossWeight(invoice, sku);
-@defineDocumentDetailQuantityPack (invoice, sku);
+//@defineDocumentDetailQuantityPack (invoice, sku);
+@defineDocumentDetailAbstractDataQuantityPackCustomPrefix (invoiceDetail, , );
 @defineDocumentHeaderSkuQuantity(invoice, sku);
 
 @defineDocumentHeaderGrossWeight(invoice);
@@ -51,7 +52,7 @@ quantityOrderInvoice (order, invoice) = GROUP SUM quantityInvoiceDetail(invoiceD
 
 //----------------------------------------------- Накладная ---------------------------------------------------//
 
-META defineInvoice(sign, stockProp)
+META defineInvoice(sign, stockProp, toShowProp, captionProp, prop)
 
     CLASS ABSTRACT invoice 'Накладная'###sign : Invoice.invoice;
     CLASS ABSTRACT invoiceDetail 'Строка накладной'###sign : Invoice.invoiceDetail;
@@ -116,7 +117,7 @@ META defineInvoice(sign, stockProp)
     Invoice.quantityInvoiceDetail(detail) += quantityInvoiceDetail(detail);
 
     @defineDocumentDetailGrossWeight(invoice, sku);
-    @defineDocumentDetailQuantityPack(invoice, sku);
+//    @defineDocumentDetailQuantityPack(invoice, sku);
 
     @defineDocumentInterfaceDetailPrice(invoice);
    // @deriveDocumentDetailPricePriceListTypeCustom(userInvoiceDetail, stockProp);
@@ -160,6 +161,21 @@ META defineInvoice(sign, stockProp)
     noAgreementUserInvoice (invoice) = invoice IS userInvoice AND NOT agreementUserInvoice(invoice);
 
     countInvoiceDetailStockInvoice (stock, invoice) = GROUP SUM 1 BY stockProp###invoiceDetail(invoiceDetail), invoiceInvoiceDetail(invoiceDetail);
+
+//-- Упаковка
+    @defineDocumentInterfaceCreate (invoice, toShowProp, captionProp);
+
+    @defineDocumentInterfaceBarcodeSkuPrefix (invoice, sku, prop, , );
+    @defineDocumentInterfaceDetailQuantityPrefix (invoice, prop, ' упаковок');
+
+    prop###userInvoiceDetail(detail) <- prop###barcodeSku(skuUserInvoiceDetail(detail)) IF toShowProp###userInvoiceDetail(detail)
+        WHEN CHANGED(skuUserInvoiceDetail(detail))  OR CHANGED(toShowProp###userInvoiceDetail(detail));;
+    amount###prop###UserInvoiceDetail(detail) <- amountBarcode(prop###barcodeSku(skuUserInvoiceDetail(detail))) IF toShowProp###userInvoiceDetail(detail)
+        WHEN CHANGED(skuUserInvoiceDetail(detail)) OR CHANGED(toShowProp###userInvoiceDetail(detail));;
+    quantityUserInvoiceDetail(detail) <- prop###quantityUserInvoiceDetail(detail)*amount###prop###UserInvoiceDetail(detail)
+        WHEN CHANGED(prop###quantityUserInvoiceDetail(detail)) OR CHANGED(amount###prop###UserInvoiceDetail(detail));
+
+    Invoice.quantityPackInvoiceDetail(detail) += prop###quantityInvoiceDetail(detail);
 
 
 //--  Связь с заказом
@@ -219,7 +235,7 @@ META defineInvoice(sign, stockProp)
         OBJECTS o = order
         PROPERTIES (o) READONLY isPostedOrder FORCE GRID, objectClassName, numberOrder, seriesOrder, dateOrder, timeOrder,
                                 nameSupplierOrder, nameSupplierStockOrder, nameCustomerOrder, nameCustomerStockOrder, nameCurrencyOrder, noteOrder,
-                                countOrderDetailOrder, quantityOrderDetailOrder, sumOrderDetailOrder, VATSumOrderDetailOrder, invoiceSumOrderDetailOrder
+                                countOrderDetailOrder, quantityOrderDetailOrder, sumOrderDetailOrder, VATSumOrderDetailOrder, invoiceSumOrderDetailOrder, toShowProp###order
         FILTERS isPostedOrder(o),
                 inOrderSupplier(o, s),
                 customerOrder(o) == c,
@@ -229,10 +245,12 @@ META defineInvoice(sign, stockProp)
 //            FILTER 'Заказы со склада' 'F9' countOrderDetailStockOrder(s, o)
 
         OBJECTS d = orderDetail
-        PROPERTIES (d) READONLY indexOrderDetail, idBarcodeSkuOrderDetail, nameSkuOrderDetail, shortNameUOMSkuOrderDetail,
-                                quantityOrderDetail, invoicedOrderDetail, priceOrderDetail, sumOrderDetail,
-                                numberVATOrderDetail, valueVATOrderDetail, VATSumOrderDetail, invoiceSumOrderDetail,
-                                name###stockProp###orderDetail, toInvoiceOrderDetail
+        PROPERTIES (d) READONLY indexOrderDetail, idBarcodeSkuOrderDetail, nameSkuOrderDetail, shortNameUOMSkuOrderDetail
+        PROPERTIES (d) READONLY SHOWIF toShowProp###order(o) id###prop###orderDetail, shortNameUOM###prop###orderDetail,
+                       amount###prop###orderDetail, prop###quantityOrderDetail
+        PROPERTIES (d) READONLY quantityOrderDetail, invoicedOrderDetail, priceOrderDetail, sumOrderDetail,
+                        numberVATOrderDetail, valueVATOrderDetail, VATSumOrderDetail, invoiceSumOrderDetail,
+                        name###stockProp###orderDetail, toInvoiceOrderDetail
         FILTERS orderOrderDetail(d) == o
 //        FILTERGROUP orderDetail
 //            FILTER 'Строки с невыписанными товарами со склада' 'F10' stockProp###orderDetail(d) == s AND toInvoiceOrderDetail(d) > 0 DEFAULT
@@ -304,6 +322,9 @@ META defineInvoice(sign, stockProp)
                     SET userInvoiceUserInvoiceDetail(d) <- userInvoice;
                     SET orderUserInvoiceDetail(d) <- order;
                     SET skuUserInvoiceDetail(d) <- skuOrderDetail(orderDetail);
+                    SET prop###userInvoiceDetail(d) <- prop###orderDetail(orderDetail);
+                    SET amount###prop###userInvoiceDetail(d) <- amount###prop###orderDetail(orderDetail);
+                    SET prop###quantityUserInvoiceDetail (d) <- toInvoiceOrderDetail(orderDetail)/amount###prop###orderDetail(orderDetail);
                     SET quantityUserInvoiceDetail (d) <- toInvoiceOrderDetail(orderDetail);
                     SET VATUserInvoiceDetail (d) <- VATOrderDetail(orderDetail);
                     SET valueVATUserInvoiceDetail (d) <- valueVATOrderDetail(orderDetail);
@@ -394,10 +415,12 @@ META defineInvoice(sign, stockProp)
                        numberContractSkuUserInvoice, isCommissionUserInvoice,
                        fillOrderUserInvoice, ordersInvoice READONLY,
                        countUserInvoiceDetailUserInvoice, quantityUserInvoiceDetailUserInvoice, sumUserInvoiceDetailUserInvoice,
-                       VATSumUserInvoiceDetailUserInvoice, invoiceSumUserInvoiceDetailUserInvoice
+                       VATSumUserInvoiceDetailUserInvoice, invoiceSumUserInvoiceDetailUserInvoice, toShowProp###userInvoice
         OBJECTS d = userInvoiceDetail
-        PROPERTIES (d) indexUserInvoiceDetail, idBarcodeSkuUserInvoiceDetail, nameSkuUserInvoiceDetail, shortNameUOMSkuUserInvoiceDetail,
-                       quantityUserInvoiceDetail, namePriceListTypeUserInvoiceDetail,
+        PROPERTIES (d) indexUserInvoiceDetail, idBarcodeSkuUserInvoiceDetail, nameSkuUserInvoiceDetail, shortNameUOMSkuUserInvoiceDetail
+        PROPERTIES (d) SHOWIF toShowProp###userInvoice(i) id###prop###userInvoiceDetail, shortNameUOM###prop###userInvoiceDetail,
+                       amount###prop###userInvoiceDetail, prop###quantityUserInvoiceDetail
+        PROPERTIES (d) quantityUserInvoiceDetail, namePriceListTypeUserInvoiceDetail,
                        priceUserInvoiceDetail ON CHANGE EXEC changeInvoicePriceUserInvoiceDetail(d), sumUserInvoiceDetail,
                        numberVATUserInvoiceDetail ON CHANGE EXEC changeInvoicePriceVATUserInvoiceDetail(d),
                        valueVATUserInvoiceDetail ON CHANGE EXEC changeInvoicePriceValueVATUserInvoiceDetail(d),
@@ -471,6 +494,7 @@ META defineInvoice(sign, stockProp)
                     }
                     ADD i.documentPrmGroup {
                         childConstraints = TO THE RIGHTBOTTOM;
+                        ADD PROPERTY(toShowProp###userInvoice);
                     }
                     NEW headerRow13 {  // title = 'Сооздать на основании';
                         childConstraints = TO THE RIGHTBOTTOM;
@@ -521,7 +545,7 @@ META defineInvoice(sign, stockProp)
                                 nameCurrencyInvoice, nameAgreementInvoice, noteInvoice,
                                 numberContractSkuInvoice, isCommissionInvoice,
                                 countInvoiceDetailInvoice, quantityInvoiceDetailInvoice, sumInvoiceDetailInvoice,
-                                VATSumInvoiceDetailInvoice, invoiceSumInvoiceDetailInvoice, ordersInvoice
+                                VATSumInvoiceDetailInvoice, invoiceSumInvoiceDetailInvoice, ordersInvoice, toShowProp###invoice
         PROPERTIES (i) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
         PROPERTIES ()  addUserInvoice TODRAW i
@@ -529,8 +553,10 @@ META defineInvoice(sign, stockProp)
         PROPERTIES (i) delete FORCE PANEL DRAWTOTOOLBAR  SHOWIF isUserInvoice(i)
 
         OBJECTS d = invoiceDetail
-        PROPERTIES (d) READONLY indexInvoiceDetail, idBarcodeSkuInvoiceDetail, nameSkuInvoiceDetail, shortNameUOMSkuInvoiceDetail,
-                       quantityInvoiceDetail, namePriceListTypeInvoiceDetail, priceInvoiceDetail, sumInvoiceDetail,
+        PROPERTIES (d) READONLY indexInvoiceDetail, idBarcodeSkuInvoiceDetail, nameSkuInvoiceDetail, shortNameUOMSkuInvoiceDetail
+        PROPERTIES (d) READONLY SHOWIF toShowProp###Invoice(i) id###prop###invoiceDetail, shortNameUOM###prop###invoiceDetail,
+                       amount###prop###invoiceDetail, prop###quantityInvoiceDetail
+        PROPERTIES (d) READONLY quantityInvoiceDetail, namePriceListTypeInvoiceDetail, priceInvoiceDetail, sumInvoiceDetail,
                        numberVATInvoiceDetail, valueVATInvoiceDetail, VATSumInvoiceDetail, invoiceSumInvoiceDetail,
                        descriptionOrderInvoiceDetail
 
