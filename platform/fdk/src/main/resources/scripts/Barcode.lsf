@@ -204,3 +204,12 @@ END
 META defineDocumentInterfaceBarcodeSkuPrefix (object, skuProp, prop, prefixB)
     @defineDocumentInterfaceBarcodeSkuPrefix(object, skuProp, prop, prefixB, );
 END
+
+META deriveDocumentDetailQuantityBarcodeCustom (detail, skuProp, prop, toShowProp)
+    prop###detail(detail) <- prop###barcodeSku(skuProp###detail(detail)) IF toShowProp###detail(detail)
+        WHEN CHANGED(skuProp###detail(detail)) OR CHANGED(toShowProp###detail(detail));
+    amount###prop###detail(detail) <- amountBarcode(prop###barcodeSku(skuProp###detail(detail))) IF toShowProp###detail(detail)
+        WHEN CHANGED(skuProp###detail(detail)) OR CHANGED(toShowProp###detail(detail));
+    quantity###detail(detail) <- prop###quantity###detail(detail)*amount###prop###detail(detail)
+        WHEN CHANGED(prop###quantity###detail(detail)) OR CHANGED(amount###prop###detail(detail));
+END

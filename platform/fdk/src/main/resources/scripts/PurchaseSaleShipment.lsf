@@ -118,6 +118,11 @@ Purchase.sumShipmentDetail(shipmentDetail) += sumShipmentDetail(shipmentDetailPu
 
 Purchase.editShipment(shipment) += ACTION EXEC editShipment(shipmentPurchaseShipment(shipment));
 
+Purchase.showPurchaseShipment(shipment) +=  showSaleShipment(shipmentPurchaseShipment(shipment));
+Purchase.purchaseShipmentDetail(shipmentDetail) +=  saleShipmentDetail(shipmentDetailPurchaseShipmentDetail(shipmentDetail));
+Purchase.amountPurchaseShipmentDetail(shipmentDetail) +=  amountSaleShipmentDetail(shipmentDetailPurchaseShipmentDetail(shipmentDetail));
+Purchase.purchaseQuantityShipmentDetail(shipmentDetail) +=  saleQuantityShipmentDetail(shipmentDetailPurchaseShipmentDetail(shipmentDetail));
+
 shipmentDetailShipmentDetail(shipmentDetail) += shipmentDetailPurchaseShipmentDetail(shipmentDetail);
 
 // Создание поставки на основе поставки //
@@ -136,7 +141,7 @@ FORM shipmentShipments 'Поставки'
     OBJECTS o = shipment
     PROPERTIES (o) READONLY isPostedShipment FORCE GRID, objectClassName, numberShipment, seriesShipment, dateShipment, timeShipment,
                             nameCurrencyShipment, noteShipment,
-                            countShipmentDetailShipment, quantityShipmentDetailShipment, sumShipmentDetailShipment
+                            countShipmentDetailShipment, quantityShipmentDetailShipment, sumShipmentDetailShipment, showSaleShipment
     FILTERS supplierShipment(o) == s,
             customerShipment(o) == c,
             supplierStockShipment(o) == ss,
@@ -146,7 +151,9 @@ FORM shipmentShipments 'Поставки'
     OBJECTS d = shipmentDetail
 
     PROPERTIES (d) READONLY indexShipmentDetail, idBarcodeSkuShipmentDetail, nameSkuShipmentDetail, shortNameUOMSkuShipmentDetail,
-                            quantityShipmentDetail, priceShipmentDetail, sumShipmentDetail,
+                            quantityShipmentDetail
+    PROPERTIES (d) READONLY SHOWIF showSaleShipment(o) idSaleShipmentDetail, shortNameUOMSaleShipmentDetail, amountSaleShipmentDetail, saleQuantityShipmentDetail
+    PROPERTIES (d) READONLY priceShipmentDetail, sumShipmentDetail,
                             nameSupplierStockShipmentDetail, toShipShipmentDetail BACKGROUND backgroundPurchaseShipment(o)
     FILTERS shipmentShipmentDetail(d) == o
 ;
@@ -209,6 +216,10 @@ fillShipmentUserShipment 'Заполнить на основе поставки'
             SET Purchase.skuUserShipmentDetail(d) <- skuShipmentDetail(shipmentDetail);
             SET Purchase.batchUserShipmentDetail(d) <- batchShipmentDetail(shipmentDetail);
             SET Purchase.quantityUserShipmentDetail (d) <- quantityShipmentDetail(shipmentDetail);
+
+            SET Purchase.purchaseUserShipmentDetail(d) <- saleShipmentDetail(shipmentDetail);
+            SET Purchase.amountPurchaseUserShipmentDetail(d) <- amountSaleShipmentDetail(shipmentDetail);
+            SET Purchase.purchaseQuantityUserShipmentDetail(d) <- saleQuantityShipmentDetail(shipmentDetail);
         }
     }
 } IN shipmentGroup;

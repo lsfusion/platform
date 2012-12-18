@@ -25,7 +25,7 @@ FORM invoiceInvoices 'Накладные'
     OBJECTS o = invoice
     PROPERTIES (o) READONLY isPostedInvoice FORCE GRID, objectClassName, numberInvoice, seriesInvoice, dateInvoice, timeInvoice,
                             nameCurrencyInvoice, noteInvoice,
-                            countInvoiceDetailInvoice, quantityInvoiceDetailInvoice, sumInvoiceDetailInvoice
+                            countInvoiceDetailInvoice, quantityInvoiceDetailInvoice, sumInvoiceDetailInvoice, showSaleInvoice
     FILTERS supplierInvoice(o) == s,
             customerInvoice(o) == c,
             supplierStockInvoice(o) == ss,
@@ -37,8 +37,9 @@ FORM invoiceInvoices 'Накладные'
 
     OBJECTS d = invoiceDetail
 
-    PROPERTIES (d) READONLY indexInvoiceDetail, idBarcodeSkuInvoiceDetail, nameSkuInvoiceDetail, shortNameUOMSkuInvoiceDetail,
-                            quantityInvoiceDetail, priceInvoiceDetail, sumInvoiceDetail, numberVATInvoiceDetail, valueVATInvoiceDetail,
+    PROPERTIES (d) READONLY indexInvoiceDetail, idBarcodeSkuInvoiceDetail, nameSkuInvoiceDetail, shortNameUOMSkuInvoiceDetail
+    PROPERTIES (d) READONLY SHOWIF showSaleInvoice(o) idSaleInvoiceDetail, shortNameUOMSaleInvoiceDetail, amountSaleInvoiceDetail, saleQuantityInvoiceDetail
+    PROPERTIES (d) READONLY quantityInvoiceDetail, priceInvoiceDetail, sumInvoiceDetail, numberVATInvoiceDetail, valueVATInvoiceDetail,
                             VATSumInvoiceDetail, invoiceSumInvoiceDetail, nameSupplierStockInvoiceDetail
 
     FILTERS invoiceInvoiceDetail(d) == o
@@ -102,6 +103,9 @@ fillInvoiceUserInvoice 'Заполнить на основе накладной'
             SET Purchase.userInvoiceUserInvoiceDetail(d) <- userInvoice;
             SET Purchase.skuUserInvoiceDetail(d) <- skuInvoiceDetail(invoiceDetail);
             SET Purchase.batchUserInvoiceDetail(d) <- batchInvoiceDetail(invoiceDetail);
+            SET Purchase.purchaseUserInvoiceDetail(d) <- saleInvoiceDetail(invoiceDetail);
+            SET Purchase.amountPurchaseUserInvoiceDetail(d) <- amountSaleInvoiceDetail(invoiceDetail);
+            SET Purchase.purchaseQuantityUserInvoiceDetail(d) <- saleQuantityInvoiceDetail(invoiceDetail);
             SET Purchase.quantityUserInvoiceDetail (d) <- quantityInvoiceDetail(invoiceDetail);
             SET Purchase.VATUserInvoiceDetail(d) <- VATInvoiceDetail(invoiceDetail);
             SET Purchase.valueVATUserInvoiceDetail(d) <- valueVATInvoiceDetail(invoiceDetail);

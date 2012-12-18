@@ -88,10 +88,18 @@ Purchase.descriptionOrder (order) += descriptionPurchaseOrder(order);
 Purchase.skuOrderDetail(orderDetail) +=  skuPurchaseOrderDetail(orderDetail);
 
 Purchase.quantityOrderDetail(orderDetail) += quantityOrderDetail(orderDetailPurchaseOrderDetail(orderDetail));
-
 Purchase.priceOrderDetail(orderDetail) += priceOrderDetail(orderDetailPurchaseOrderDetail(orderDetail));
-
 Purchase.sumOrderDetail(orderDetail) += sumOrderDetail(orderDetailPurchaseOrderDetail(orderDetail));
+
+Purchase.VATOrderDetail(orderDetail) +=VATOrderDetail(orderDetailPurchaseOrderDetail(orderDetail));
+Purchase.valueVATOrderDetail(orderDetail) += valueVATOrderDetail(orderDetailPurchaseOrderDetail(orderDetail));
+Purchase.VATSumOrderDetail(orderDetail) += VATSumOrderDetail(orderDetailPurchaseOrderDetail(orderDetail));
+Purchase.invoiceSumOrderDetail(orderDetail) += invoiceSumOrderDetail(orderDetailPurchaseOrderDetail(orderDetail));
+
+Purchase.showPurchaseOrder(order) +=  showSaleOrder(orderPurchaseOrder(order));
+Purchase.purchaseOrderDetail(orderDetail) +=  saleOrderDetail(orderDetailPurchaseOrderDetail(orderDetail));
+Purchase.amountPurchaseOrderDetail(orderDetail) +=  amountSaleOrderDetail(orderDetailPurchaseOrderDetail(orderDetail));
+Purchase.purchaseQuantityOrderDetail(orderDetail) +=  saleQuantityOrderDetail(orderDetailPurchaseOrderDetail(orderDetail));
 
 Purchase.editOrder(order) += ACTION EXEC editOrder(orderPurchaseOrder(order));
 

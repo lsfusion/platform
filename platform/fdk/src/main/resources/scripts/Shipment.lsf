@@ -23,6 +23,7 @@ CLASS ABSTRACT shipmentDetail 'Строка поставки';
 
 @defineDocumentAbstractDetailQuantity(shipment);
 @defineDocumentDetailGrossWeight(shipment, sku);
+@defineDocumentDetailAbstractDataQuantityPackCustomPrefix (shipmentDetail, , );
 @defineDocumentHeaderSkuQuantity(shipment, sku);
 
 @defineDocumentHeaderGrossWeight(shipment);
@@ -54,7 +55,7 @@ END
 
 //----------------------------------------------- Поставка ---------------------------------------------------//
 
-META defineShipment(sign, stockProp)
+META defineShipment(sign, stockProp, toShowProp, captionProp, prop)
 
     CLASS ABSTRACT shipment 'Поставка'###sign : Shipment.shipment;
     CLASS ABSTRACT shipmentDetail 'Строка поставки'###sign : Shipment.shipmentDetail;
@@ -122,6 +123,16 @@ META defineShipment(sign, stockProp)
     @defineAddDetailDialogSkuStock(userShipment, sku, stockProp, dialogSku);
     @defineAddDetailDialogBarcode(userShipment, sku);
 
+//-- Упаковка
+    @defineDocumentInterfaceCreate (shipment, toShowProp, captionProp);
+
+    @defineDocumentInterfaceBarcodeSkuPrefix (shipment, sku, prop, , );
+    @defineDocumentInterfaceDetailQuantityPrefix (shipment, prop, ' упаковок');
+    @deriveDocumentDetailQuantityBarcodeCustom (userShipmentDetail, sku, prop, toShowProp);
+//    @deriveDocumentQuantityPackageDetailOnChangeQuantity(userShipmentDetail, prop);
+
+    Shipment.quantityPackShipmentDetail(detail) += prop###quantityShipmentDetail(detail);
+
 // --------------------------- Формы --------------------------------- //
 
     editShipment 'Редактировать' = ABSTRACT ACTION (shipment) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
@@ -132,11 +143,13 @@ META defineShipment(sign, stockProp)
         PROPERTIES (s) objectClassName, nameSupplierUserShipment, nameCustomerUserShipment, nameSupplierStockUserShipment, nameCustomerStockUserShipment,
                        nameNumeratorObject, numberObject, seriesObject, dateUserShipment, timeUserShipment,
                        nameCurrencyUserShipment, noteUserShipment,
-                       countUserShipmentDetailUserShipment, quantityUserShipmentDetailUserShipment, sumUserShipmentDetailUserShipment
+                       countUserShipmentDetailUserShipment, quantityUserShipmentDetailUserShipment, sumUserShipmentDetailUserShipment, toShowProp###userShipment
 
         OBJECTS d = userShipmentDetail
-        PROPERTIES (d) indexUserShipmentDetail, idBarcodeSkuUserShipmentDetail, nameSkuUserShipmentDetail, shortNameUOMSkuUserShipmentDetail,
-                       quantityUserShipmentDetail, priceUserShipmentDetail, sumUserShipmentDetail,
+        PROPERTIES (d) indexUserShipmentDetail, idBarcodeSkuUserShipmentDetail, nameSkuUserShipmentDetail, shortNameUOMSkuUserShipmentDetail
+        PROPERTIES (d) SHOWIF toShowProp###userShipment(s) id###prop###userShipmentDetail, shortNameUOM###prop###userShipmentDetail,
+                       amount###prop###userShipmentDetail, prop###quantityUserShipmentDetail
+        PROPERTIES (d) quantityUserShipmentDetail, priceUserShipmentDetail, sumUserShipmentDetail,
                        name###stockProp###shipmentDetail, ADDOBJ, delete
 
         PROPERTIES(s) TODRAW d addDetailDialogSkuStockUserShipmentDetailUserShipment,
@@ -185,6 +198,7 @@ META defineShipment(sign, stockProp)
                     }
                     ADD s.documentPrmGroup {
                         childConstraints = TO THE RIGHTBOTTOM;
+                        ADD PROPERTY(toShowProp###userShipment);
                     }
                     NEW headerRow12 {
 //                        title = 'Сооздать на основании';
@@ -215,7 +229,7 @@ META defineShipment(sign, stockProp)
         PROPERTIES (s) READONLY isPostedShipment FORCE GRID, objectClassName, numberShipment, seriesShipment, dateShipment, timeShipment,
                                 nameSupplierShipment, nameSupplierStockShipment, nameCustomerShipment, nameCustomerStockShipment,
                                 nameCurrencyShipment, noteShipment,
-                                countShipmentDetailShipment, quantityShipmentDetailShipment, sumShipmentDetailShipment
+                                countShipmentDetailShipment, quantityShipmentDetailShipment, sumShipmentDetailShipment, toShowProp###shipment
         PROPERTIES (s) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
         PROPERTIES ()  addUserShipment TODRAW s
@@ -223,9 +237,10 @@ META defineShipment(sign, stockProp)
         PROPERTIES (s) delete FORCE PANEL DRAWTOTOOLBAR SHOWIF isUserShipment(s)
 
         OBJECTS d = shipmentDetail
-        PROPERTIES (d)  READONLY indexShipmentDetail, idBarcodeSkuShipmentDetail, nameSkuShipmentDetail, shortNameUOMSkuShipmentDetail,
-                                quantityShipmentDetail, priceShipmentDetail, sumShipmentDetail,
-                                name###stockProp###shipmentDetail
+        PROPERTIES (d) READONLY indexShipmentDetail, idBarcodeSkuShipmentDetail, nameSkuShipmentDetail, shortNameUOMSkuShipmentDetail
+        PROPERTIES (d) READONLY SHOWIF toShowProp###shipment(s) id###prop###shipmentDetail, shortNameUOM###prop###shipmentDetail,
+                       amount###prop###shipmentDetail, prop###quantityShipmentDetail
+        PROPERTIES (d) READONLY quantityShipmentDetail, priceShipmentDetail, sumShipmentDetail, name###stockProp###shipmentDetail
         FILTERS shipmentShipmentDetail(d) == s
 
         DIALOG shipment OBJECT s
@@ -316,7 +331,7 @@ META defineShipment(sign, stockProp)
         OBJECTS o = order
         PROPERTIES (o) READONLY isPostedOrder FORCE GRID, objectClassName, numberOrder, seriesOrder, dateOrder, timeOrder,
                                 nameSupplierOrder, nameSupplierStockOrder, nameCustomerOrder, nameCustomerStockOrder, nameCurrencyOrder, noteOrder,
-                                countOrderDetailOrder, quantityOrderDetailOrder, shippedOrderDetailOrder, sumOrderDetailOrder
+                                countOrderDetailOrder, quantityOrderDetailOrder, shippedOrderDetailOrder, sumOrderDetailOrder, toShowProp###userOrder
         FILTERS isPostedOrder(o),
                 inOrderSupplier(o, s),
                 customerOrder(o) == c,
@@ -326,9 +341,11 @@ META defineShipment(sign, stockProp)
 //            FILTER 'Заказы со склада' 'F9' countOrderDetailStockOrder(s, o)
 
         OBJECTS d = orderDetail
-        PROPERTIES (d) READONLY indexOrderDetail, idBarcodeSkuOrderDetail, nameSkuOrderDetail, shortNameUOMSkuOrderDetail,
-                                quantityOrderDetail, shippedOrderDetail, priceOrderDetail, sumOrderDetail, name###stockProp###orderDetail,
-                                toShipOrderDetail
+        PROPERTIES (d) READONLY indexOrderDetail, idBarcodeSkuOrderDetail, nameSkuOrderDetail, shortNameUOMSkuOrderDetail
+        PROPERTIES (d) READONLY SHOWIF toShowProp###order(o) id###prop###orderDetail, shortNameUOM###prop###orderDetail,
+                       amount###prop###orderDetail, prop###quantityOrderDetail
+        PROPERTIES (d) READONLY quantityOrderDetail, shippedOrderDetail, priceOrderDetail, sumOrderDetail, name###stockProp###orderDetail,
+                       toShipOrderDetail
         FILTERS orderOrderDetail(d) == o
 //        FILTERGROUP orderDetail
 //            FILTER 'Строки с непоставленными товарами со склада' 'F10' stockOrderDetail(d) == s AND toShipOrderDetail(d) > 0 DEFAULT
@@ -399,6 +416,9 @@ META defineShipment(sign, stockProp)
                     SET userShipmentUserShipmentDetail(d) <- userShipment;
                     SET orderUserShipmentDetail(d) <- saleOrder();
                     SET skuUserShipmentDetail(d) <- skuOrderDetail(orderDetail);
+                    SET prop###userShipmentDetail(d) <- prop###orderDetail(orderDetail);
+                    SET amount###prop###userShipmentDetail(d) <- amount###prop###orderDetail(orderDetail);
+                    SET prop###quantityUserShipmentDetail (d) <- toShipOrderDetail(orderDetail)/amount###prop###orderDetail(orderDetail);
                     SET quantityUserShipmentDetail (d) <- toShipOrderDetail(orderDetail);
             }
         }
@@ -496,7 +516,7 @@ META defineShipment(sign, stockProp)
                                 nameCurrencyInvoice, noteInvoice,
                                 numberContractSkuInvoice, isCommissionInvoice,
                                 countInvoiceDetailInvoice, quantityInvoiceDetailInvoice, sumInvoiceDetailInvoice,
-                                VATSumInvoiceDetailInvoice, invoiceSumInvoiceDetailInvoice, ordersInvoice
+                                VATSumInvoiceDetailInvoice, invoiceSumInvoiceDetailInvoice, ordersInvoice, toShowProp###invoice
         FILTERS supplierInvoice(i) == s,
                 customerInvoice(i) == c,
                 isPostedInvoice(i)
@@ -505,8 +525,10 @@ META defineShipment(sign, stockProp)
 //            FILTER 'Накладные со склада' 'F9' countInvoiceDetailStockInvoice(s,i)
 
         OBJECTS d = invoiceDetail
-        PROPERTIES (d) READONLY indexInvoiceDetail, idBarcodeSkuInvoiceDetail, nameSkuInvoiceDetail, shortNameUOMSkuInvoiceDetail,
-                       quantityInvoiceDetail, shippedInvoiceDetail, priceInvoiceDetail, sumInvoiceDetail,
+        PROPERTIES (d) READONLY indexInvoiceDetail, idBarcodeSkuInvoiceDetail, nameSkuInvoiceDetail, shortNameUOMSkuInvoiceDetail
+        PROPERTIES (d) READONLY SHOWIF toShowProp##Invoice(i) id###prop###invoiceDetail, shortNameUOM###prop###invoiceDetail,
+                       amount###prop###invoiceDetail, prop###quantityInvoiceDetail
+        PROPERTIES (d) READONLY quantityInvoiceDetail, shippedInvoiceDetail, priceInvoiceDetail, sumInvoiceDetail,
                        numberVATInvoiceDetail, valueVATInvoiceDetail, VATSumInvoiceDetail, invoiceSumInvoiceDetail,
                        name###stockProp###InvoiceDetail, descriptionOrderInvoiceDetail
         FILTERS invoiceInvoiceDetail(d) == i
@@ -566,6 +588,10 @@ META defineShipment(sign, stockProp)
                     SET orderUserShipmentDetail(d) <- orderInvoiceDetail(invoiceDetail);
 
                     SET skuUserShipmentDetail(d) <- skuInvoiceDetail(invoiceDetail);
+                    SET prop###userShipmentDetail(d) <- prop###invoiceDetail(invoiceDetail);
+                    SET amount###prop###userShipmentDetail(d) <- amount###prop###invoiceDetail(invoiceDetail);
+                    SET prop###quantityUserShipmentDetail (d) <- toShipInvoiceDetail(invoiceDetail)/amount###prop###invoiceDetail(invoiceDetail);
+
                     SET quantityUserShipmentDetail (d) <- toShipInvoiceDetail(invoiceDetail);
 
                     EXEC fillInvoiceBatchUserShipmentDetail(d, invoiceDetail);
@@ -690,6 +716,11 @@ META defineShipment(sign, stockProp)
 
     sumInvoiceShipmentDetail(invoiceShipmentDetail) = shipmentSumInvoiceDetail(invoiceDetailInvoiceShipmentDetail(invoiceShipmentDetail));
     sumShipmentDetail(shipmentDetail) += sumInvoiceShipmentDetail(shipmentDetail);
+
+    toShowProp###shipment(shipment) +=  toShowProp###invoice(invoiceInvoiceShipment(shipment));
+    prop###shipmentDetail(shipmentDetail) +=  prop###invoiceDetail(invoiceDetailInvoiceShipmentDetail(shipmentDetail));
+    amount###prop###shipmentDetail(shipmentDetail) +=  amount###prop###invoiceDetail(invoiceDetailInvoiceShipmentDetail(shipmentDetail));
+    prop###quantityShipmentDetail(shipmentDetail) +=  prop###quantityInvoiceDetail(invoiceDetailInvoiceShipmentDetail(shipmentDetail));
 
     invoiceDetailShipmentDetail(shipmentDetail) += invoiceDetailInvoiceShipmentDetail(shipmentDetail);
 

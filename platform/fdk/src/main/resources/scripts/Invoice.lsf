@@ -117,7 +117,6 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, prop)
     Invoice.quantityInvoiceDetail(detail) += quantityInvoiceDetail(detail);
 
     @defineDocumentDetailGrossWeight(invoice, sku);
-//    @defineDocumentDetailQuantityPack(invoice, sku);
 
     @defineDocumentInterfaceDetailPrice(invoice);
    // @deriveDocumentDetailPricePriceListTypeCustom(userInvoiceDetail, stockProp);
@@ -167,14 +166,8 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, prop)
 
     @defineDocumentInterfaceBarcodeSkuPrefix (invoice, sku, prop, , );
     @defineDocumentInterfaceDetailQuantityPrefix (invoice, prop, ' упаковок');
-
-    prop###userInvoiceDetail(detail) <- prop###barcodeSku(skuUserInvoiceDetail(detail)) IF toShowProp###userInvoiceDetail(detail)
-        WHEN CHANGED(skuUserInvoiceDetail(detail))  OR CHANGED(toShowProp###userInvoiceDetail(detail));;
-    amount###prop###UserInvoiceDetail(detail) <- amountBarcode(prop###barcodeSku(skuUserInvoiceDetail(detail))) IF toShowProp###userInvoiceDetail(detail)
-        WHEN CHANGED(skuUserInvoiceDetail(detail)) OR CHANGED(toShowProp###userInvoiceDetail(detail));;
-    quantityUserInvoiceDetail(detail) <- prop###quantityUserInvoiceDetail(detail)*amount###prop###UserInvoiceDetail(detail)
-        WHEN CHANGED(prop###quantityUserInvoiceDetail(detail)) OR CHANGED(amount###prop###UserInvoiceDetail(detail));
-
+    @deriveDocumentDetailQuantityBarcodeCustom (userInvoiceDetail, sku, prop, toShowProp);
+    @deriveDocumentQuantityPackageDetailOnChangeQuantity(userInvoiceDetail, prop);
     Invoice.quantityPackInvoiceDetail(detail) += prop###quantityInvoiceDetail(detail);
 
 
@@ -554,7 +547,7 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, prop)
 
         OBJECTS d = invoiceDetail
         PROPERTIES (d) READONLY indexInvoiceDetail, idBarcodeSkuInvoiceDetail, nameSkuInvoiceDetail, shortNameUOMSkuInvoiceDetail
-        PROPERTIES (d) READONLY SHOWIF toShowProp###Invoice(i) id###prop###invoiceDetail, shortNameUOM###prop###invoiceDetail,
+        PROPERTIES (d) READONLY SHOWIF toShowProp##Invoice(i) id###prop###invoiceDetail, shortNameUOM###prop###invoiceDetail,
                        amount###prop###invoiceDetail, prop###quantityInvoiceDetail
         PROPERTIES (d) READONLY quantityInvoiceDetail, namePriceListTypeInvoiceDetail, priceInvoiceDetail, sumInvoiceDetail,
                        numberVATInvoiceDetail, valueVATInvoiceDetail, VATSumInvoiceDetail, invoiceSumInvoiceDetail,

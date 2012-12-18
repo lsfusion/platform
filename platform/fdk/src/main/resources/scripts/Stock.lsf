@@ -1504,8 +1504,8 @@ META defineDocumentSkuStockCustom(object, detail, skuProp, stockProp)
             } ELSE {
 //                FOR object###detail(detail) == object AND stockProp###detail(detail) == stock AND skuProp###detail(detail) == sku  DO {  //AND NOT quantity###detail(detail)
                     EXEC delete(detail###Sku###object###stockProp(sku, object, stock));
-//                }
-            }
+                }
+//            }
         } ELSE {
             IF requestedNumeric() THEN
                 FOR ADDOBJ d = detail DO {

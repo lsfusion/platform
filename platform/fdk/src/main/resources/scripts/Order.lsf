@@ -67,7 +67,7 @@ editOrder 'Редактировать' = ABSTRACT ACTION (order) IMAGE 'edit.png
 
 //----------------------------------------------- Заказ ---------------------------------------------------//
 
-META defineOrder(sign, stockProp)
+META defineOrder(sign, stockProp, prop, toShowProp, captionProp)
 
     CLASS ABSTRACT order 'Заказ'###sign : Order.order;
     CLASS ABSTRACT orderDetail 'Строка заказа'###sign : Order.orderDetail, named;
@@ -176,6 +176,13 @@ META defineOrder(sign, stockProp)
 
     countOrderDetailStockOrder 'Кол-во строк по складу '(stock, order) = GROUP SUM 1 BY stockProp###orderDetail(orderDetail), orderOrderDetail(orderDetail);
 
+//-- Упаковка
+    @defineDocumentInterfaceCreate (order, toShowProp, captionProp);
+    @defineDocumentInterfaceBarcodeSkuPrefix (order, sku, prop, , );
+    @defineDocumentInterfaceDetailQuantityPrefix (order, prop, ' упаковок');
+    @deriveDocumentDetailQuantityBarcodeCustom (userOrderDetail, sku, prop, toShowProp);
+
+
 // --------------------------- Формы Заказа ---------------------------------
 
     editOrder 'Редактировать' = ABSTRACT ACTION (order) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
@@ -188,13 +195,13 @@ META defineOrder(sign, stockProp)
                        nameCurrencyUserOrder, nameAgreementUserOrder, namePriceListTypeUserOrder SHOWIF noAgreementUserOrder(o), noteUserOrder,
                        countUserOrderDetailUserOrder, quantityUserOrderDetailUserOrder, sumUserOrderDetailUserOrder,
                        VATSumUserOrderDetailUserOrder, invoiceSumUserOrderDetailUserOrder,
-                       shipmentDateUserOrder, shipmentTimeUserOrder, toDateUserOrder//, showOrdersUserOrder
+                       shipmentDateUserOrder, shipmentTimeUserOrder, toDateUserOrder, toShowProp###userOrder
 
         OBJECTS d = userOrderDetail
-        PROPERTIES (d) indexUserOrderDetail, idBarcodeSkuUserOrderDetail, nameSkuUserOrderDetail
-//        PROPERTIES (d) SHOWIF showOrdersUserOrder(o) idBarcodeUserOrderDetail, shortNameUOMBarcodeUserOrderDetail,
-//                       amountBarcodeUserOrderDetail, barcodeQuantityUserOrderDetail
-        PROPERTIES (d) shortNameUOMSkuUserOrderDetail, quantityUserOrderDetail, namePriceListTypeUserOrderDetail,
+        PROPERTIES (d) indexUserOrderDetail, idBarcodeSkuUserOrderDetail, nameSkuUserOrderDetail, shortNameUOMSkuUserOrderDetail
+        PROPERTIES (d) SHOWIF toShowProp###userOrder(o) id###prop###userOrderDetail, shortNameUOM###prop###userOrderDetail,
+                       amount###prop###userOrderDetail, prop###quantityUserOrderDetail
+        PROPERTIES (d) quantityUserOrderDetail, namePriceListTypeUserOrderDetail,
                        priceUserOrderDetail ON CHANGE EXEC changeInvoicePriceUserOrderDetail(d), sumUserOrderDetail,
                        numberVATUserOrderDetail ON CHANGE EXEC changeInvoicePriceVATUserOrderDetail(d),
                        valueVATUserOrderDetail, invoicePriceUserOrderDetail ON CHANGE EXEC changePriceUserOrderDetail(d),
@@ -262,7 +269,7 @@ META defineOrder(sign, stockProp)
                         childConstraints = TO THE RIGHTBOTTOM;
                         ADD o.documentPrmGroup {
                             childConstraints = TO THE RIGHTBOTTOM;
-//                            ADD PROPERTY(showOrdersUserOrder);
+                            ADD PROPERTY(toShowProp###userOrder);
                         }
                         ADD o.documentShipmentGroup {
                             childConstraints = TO THE RIGHTBOTTOM;
@@ -296,7 +303,7 @@ META defineOrder(sign, stockProp)
                                 nameSupplierOrder, nameSupplierStockOrder, nameCustomerOrder, nameCustomerStockOrder, nameCurrencyOrder,
                                 nameAgreementOrder, namePriceListTypeOrder, noteOrder,
                                 countOrderDetailOrder, quantityOrderDetailOrder, sumOrderDetailOrder,
-                                VATSumOrderDetailOrder, invoiceSumOrderDetailOrder, shipmentDateOrder, shipmentTimeOrder, toDateOrder//, showOrdersOrder
+                                VATSumOrderDetailOrder, invoiceSumOrderDetailOrder, shipmentDateOrder, shipmentTimeOrder, toDateOrder, toShowProp###order
 
         PROPERTIES (o) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
@@ -306,10 +313,10 @@ META defineOrder(sign, stockProp)
         PROPERTIES     delete(o) FORCE PANEL DRAWTOTOOLBAR  SHOWIF isUserOrder(o)
 
         OBJECTS d=orderDetail
-        PROPERTIES (d) READONLY indexOrderDetail, idBarcodeSkuOrderDetail, nameSkuOrderDetail
-//        PROPERTIES (d) READONLY SHOWIF showOrdersOrder(o) idBarcodeOrderDetail, shortNameUOMBarcodeOrderDetail, amountBarcodeOrderDetail, barcodeQuantityOrderDetail
-        PROPERTIES (d) READONLY shortNameUOMSkuOrderDetail, quantityOrderDetail,
-                       namePriceListTypeOrderDetail, priceOrderDetail, sumOrderDetail,
+        PROPERTIES (d) READONLY indexOrderDetail, idBarcodeSkuOrderDetail, nameSkuOrderDetail, shortNameUOMSkuOrderDetail
+        PROPERTIES (d) READONLY SHOWIF toShowProp###order(o) id###prop###orderDetail, shortNameUOM###prop###orderDetail,
+                       amount###prop###orderDetail, prop###quantityOrderDetail
+        PROPERTIES (d) READONLY quantityOrderDetail, namePriceListTypeOrderDetail, priceOrderDetail, sumOrderDetail,
                        numberVATOrderDetail, valueVATOrderDetail, VATSumOrderDetail, invoiceSumOrderDetail,
                        name###stockProp###orderDetail, shipmentDateOrderDetail, shipmentTimeOrderDetail
 
@@ -361,40 +368,20 @@ META defineOrderStockDestination(fromStock, toStock)
     Order.dataToStockOrderDetail(detail) += data###toStock##OrderDetail(detail);
 END
 
-META definePackageOrder(prop, toShowProp, caption)
-    @defineDocumentInterfaceCreate (order, toShowProp, caption);
 
-    @defineDocumentInterfaceBarcodeSkuPrefix (order, sku, prop, , );
-    @defineDocumentInterfaceDetailQuantityPrefix (order, prop, ' упаковок');
+META deriveDocumentQuantityPackageDetailOnChangeQuantity(detail, prop);
+    changeQuantity###detail = ACTION (detail) {
+        REQUEST NUMERIC[14,3] INPUT;
+        IF requestedNumeric() THEN {
+            SET quantity###detail(detail) <- requestedNumeric();
 
-    prop###userOrderDetail(detail) <- prop###barcodeSku(skuUserOrderDetail(detail)) IF toShowProp###userOrderDetail(detail)
-        WHEN CHANGED(skuUserOrderDetail(detail)) OR CHANGED(toShowProp###userOrderDetail(detail));
-    amount###prop###UserOrderDetail(detail) <- amountBarcode(prop###barcodeSku(skuUserOrderDetail(detail))) IF toShowProp###userOrderDetail(detail)
-        WHEN CHANGED(skuUserOrderDetail(detail)) OR CHANGED(toShowProp###userOrderDetail(detail));
-    quantityUserOrderDetail(detail) <- prop###quantityUserOrderDetail(detail)*amount###prop###UserOrderDetail(detail)
-        WHEN CHANGED(prop###quantityUserOrderDetail(detail)) OR CHANGED(amount###prop###UserOrderDetail(detail));
-END
-META extendFormPackageOrder(prop, toShowProp)
-    EXTEND FORM userOrder
-        PROPERTIES (o) toShowProp###userOrder
-
-        PROPERTIES (d) SHOWIF toShowProp###userOrder(o) BEFORE quantityUserOrderDetail(d) id###prop###userOrderDetail, shortNameUOM###prop###userOrderDetail,
-                       amount###prop###userOrderDetail, prop###quantityUserOrderDetail
-    ;
-    EXTEND DESIGN userOrder {
-        o.documentPrmGroup {
-            childConstraints = TO THE RIGHTBOTTOM;
-            ADD PROPERTY(toShowProp###userOrder);
+            IF  prop###detail(detail) THEN {
+                SET prop###quantity###detail(detail) <- quantity###detail(detail)/amount###prop###detail(detail);
+            }
+        } ELSE {
+            EXEC delete(detail);
         }
     }
-
-    EXTEND FORM orders
-        PROPERTIES (o) READONLY toShowProp###order
-
-        PROPERTIES (d) READONLY SHOWIF toShowProp###order(o) BEFORE quantityOrderDetail(d) id###prop###orderDetail, shortNameUOM###prop###orderDetail,
-                       amount###prop###orderDetail, prop###quantityOrderDetail
-    ;
-
 END
 
 //-- Расширение формы подбора упаковкой (несколько складов)
@@ -414,9 +401,8 @@ META defineDocumentPackageSkuStockCustom(object, detail, skuProp, stockProp, pro
                 SET prop###detail(detail) <- prop###barcodeSku(sku) WHERE detail == detail###Sku###object###stockProp(sku, object, stock);
                 SET amount###prop###detail(detail) <- amount###prop###sku(sku) WHERE detail == detail###Sku###object###stockProp(sku, object, stock);
             } ELSE {
-//                FOR object###detail(detail) == object AND stockProp###detail(detail) == stock AND skuProp###detail(detail) == sku  DO {
-                    EXEC delete(detail###Sku###object###stockProp(sku, object, stock));
-//                }
+                EXEC delete(detail###Sku###object###stockProp(sku, object, stock));
+
             }
         } ELSE {
             IF requestedNumeric() THEN
