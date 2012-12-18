@@ -5,7 +5,7 @@ REQUIRE Shipment, PurchaseReturnInvoice;
 NAMESPACE PurchaseReturn;
 
 //----------------------------------------------- Поставка ---------------------------------------------------//
-@defineShipment(' (закупка-возврат)', customerStock, showPurchase, 'Отображать упаковку', purchase);
+@defineShipment(' (закупка-возврат)', customerStock, showPurchasePack, 'Отображать упаковку', purchasePack);
 @defineShipmentBatch(customerStock);
 
 @defineShipmentStockDestination(customerStock, supplierStock);

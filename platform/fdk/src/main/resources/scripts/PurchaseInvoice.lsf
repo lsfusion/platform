@@ -5,7 +5,7 @@ REQUIRE PurchaseOrder, Invoice;
 NAMESPACE Purchase;
 
 //----------------------------------------------- Накладная ---------------------------------------------------//
-@defineInvoice(' (закупка)', customerStock, showPurchase, 'Отображать упаковку', purchase);
+@defineInvoice(' (закупка)', customerStock, showPurchasePack, 'Отображать упаковку', purchasePack);
 @defineInvoiceBatch(customerStock);
 
 @defineInvoiceDestination(supplier, customer);

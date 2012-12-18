@@ -5,23 +5,23 @@ REQUIRE Order;
 NAMESPACE Purchase;
 
 //-- Для закупки упаковками
-purchaseBarcodeSku 'Штрих-код для закупки' = DATA barcode (sku);
-CONSTRAINT skuBarcode(purchaseBarcodeSku(item)) != item CHECKED BY purchaseBarcodeSku MESSAGE 'Выбран неверный sku для штрих-кода';
-purchaseBarcode 'Штрих-код для закупки' (barcode)=  purchaseBarcodeSku(skuBarcode(barcode)) == barcode;
-changePurchaseBarcodeSku = ACTION (barcode, sku) {
+purchasePackBarcodeSku 'Штрих-код для закупки' = DATA barcode (sku);
+CONSTRAINT skuBarcode(purchasePackBarcodeSku(item)) != item CHECKED BY purchasePackBarcodeSku MESSAGE 'Выбран неверный sku для штрих-кода';
+purchasePackBarcode 'Штрих-код для закупки' (barcode)=  purchasePackBarcodeSku(skuBarcode(barcode)) == barcode;
+changePurchasePackBarcodeSku = ACTION (barcode, sku) {
     REQUEST BOOLEAN INPUT;
     IF requestedLogical() THEN {
-        SET purchaseBarcodeSku(sku) <- barcode;
+        SET purchasePackBarcodeSku(sku) <- barcode;
     } ELSE
-        SET purchaseBarcodeSku(sku) <- NULL;
+        SET purchasePackBarcodeSku(sku) <- NULL;
 }
 
 EXTEND FORM barcodeDialog
-    PROPERTIES (b) READONLY purchaseBarcode
+    PROPERTIES (b) READONLY purchasePackBarcode
 ;
 //--
 
-@defineOrder(' (закупка)', customerStock, purchase, showPurchase, 'Отображать упаковку');
+@defineOrder(' (закупка)', customerStock, purchasePack, showPurchasePack, 'Отображать упаковку');
 
 @defineOrderStockDestination(supplierStock, customerStock);
 
@@ -34,5 +34,5 @@ CONSTRAINT customerUserOrder(userOrder) AND NOT isCompanyLegalEntity(customerUse
 
 
 
-@defineDocumentPackageSkuStock(userOrder, sku, customerStock, purchase);
-@extendFormDocumentPackageSkuStockCustom(userOrder, userOrder, o, customerStock, purchase, showPurchase);
+@defineDocumentPackageSkuStock(userOrder, sku, customerStock, purchasePack);
+@extendFormDocumentPackageSkuStockCustom(userOrder, userOrder, o, customerStock, showPurchasePack);

@@ -164,11 +164,11 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, prop)
 //-- Упаковка
     @defineDocumentInterfaceCreate (invoice, toShowProp, captionProp);
 
-    @defineDocumentInterfaceBarcodeSkuPrefix (invoice, sku, prop, , );
-    @defineDocumentInterfaceDetailQuantityPrefix (invoice, prop, ' упаковок');
+    @defineDocumentInterfaceBarcodeSkuPrefix (invoice, sku, , );
+    @defineDocumentInterfaceDetailQuantityPrefix (invoice, pack, ' упаковок');
     @deriveDocumentDetailQuantityBarcodeCustom (userInvoiceDetail, sku, prop, toShowProp);
-    @deriveDocumentQuantityPackageDetailOnChangeQuantity(userInvoiceDetail, prop);
-    Invoice.quantityPackInvoiceDetail(detail) += prop###quantityInvoiceDetail(detail);
+//    @deriveDocumentQuantityPackageDetailOnChangeQuantity(userInvoiceDetail, prop);
+    Invoice.quantityPackInvoiceDetail(detail) += packQuantityInvoiceDetail(detail);
 
 
 //--  Связь с заказом
@@ -239,8 +239,8 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, prop)
 
         OBJECTS d = orderDetail
         PROPERTIES (d) READONLY indexOrderDetail, idBarcodeSkuOrderDetail, nameSkuOrderDetail, shortNameUOMSkuOrderDetail
-        PROPERTIES (d) READONLY SHOWIF toShowProp###order(o) id###prop###orderDetail, shortNameUOM###prop###orderDetail,
-                       amount###prop###orderDetail, prop###quantityOrderDetail
+        PROPERTIES (d) READONLY SHOWIF toShowProp###order(o) idBarcodePackOrderDetail, shortNameUOMPackOrderDetail,
+                       amountPackOrderDetail, packQuantityOrderDetail
         PROPERTIES (d) READONLY quantityOrderDetail, invoicedOrderDetail, priceOrderDetail, sumOrderDetail,
                         numberVATOrderDetail, valueVATOrderDetail, VATSumOrderDetail, invoiceSumOrderDetail,
                         name###stockProp###orderDetail, toInvoiceOrderDetail
@@ -315,9 +315,9 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, prop)
                     SET userInvoiceUserInvoiceDetail(d) <- userInvoice;
                     SET orderUserInvoiceDetail(d) <- order;
                     SET skuUserInvoiceDetail(d) <- skuOrderDetail(orderDetail);
-                    SET prop###userInvoiceDetail(d) <- prop###orderDetail(orderDetail);
-                    SET amount###prop###userInvoiceDetail(d) <- amount###prop###orderDetail(orderDetail);
-                    SET prop###quantityUserInvoiceDetail (d) <- toInvoiceOrderDetail(orderDetail)/amount###prop###orderDetail(orderDetail);
+                    SET barcodePackUserInvoiceDetail(d) <- barcodePackOrderDetail(orderDetail);
+                    SET amountPackUserInvoiceDetail(d) <- amountPackOrderDetail(orderDetail);
+                    SET packQuantityUserInvoiceDetail (d) <- toInvoiceOrderDetail(orderDetail)/amountPackOrderDetail(orderDetail);
                     SET quantityUserInvoiceDetail (d) <- toInvoiceOrderDetail(orderDetail);
                     SET VATUserInvoiceDetail (d) <- VATOrderDetail(orderDetail);
                     SET valueVATUserInvoiceDetail (d) <- valueVATOrderDetail(orderDetail);
@@ -411,8 +411,8 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, prop)
                        VATSumUserInvoiceDetailUserInvoice, invoiceSumUserInvoiceDetailUserInvoice, toShowProp###userInvoice
         OBJECTS d = userInvoiceDetail
         PROPERTIES (d) indexUserInvoiceDetail, idBarcodeSkuUserInvoiceDetail, nameSkuUserInvoiceDetail, shortNameUOMSkuUserInvoiceDetail
-        PROPERTIES (d) SHOWIF toShowProp###userInvoice(i) id###prop###userInvoiceDetail, shortNameUOM###prop###userInvoiceDetail,
-                       amount###prop###userInvoiceDetail, prop###quantityUserInvoiceDetail
+        PROPERTIES (d) SHOWIF toShowProp###userInvoice(i) idBarcodePackUserInvoiceDetail, shortNameUOMPackUserInvoiceDetail,
+                       amountPackUserInvoiceDetail, packQuantityUserInvoiceDetail
         PROPERTIES (d) quantityUserInvoiceDetail, namePriceListTypeUserInvoiceDetail,
                        priceUserInvoiceDetail ON CHANGE EXEC changeInvoicePriceUserInvoiceDetail(d), sumUserInvoiceDetail,
                        numberVATUserInvoiceDetail ON CHANGE EXEC changeInvoicePriceVATUserInvoiceDetail(d),
@@ -547,8 +547,8 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, prop)
 
         OBJECTS d = invoiceDetail
         PROPERTIES (d) READONLY indexInvoiceDetail, idBarcodeSkuInvoiceDetail, nameSkuInvoiceDetail, shortNameUOMSkuInvoiceDetail
-        PROPERTIES (d) READONLY SHOWIF toShowProp##Invoice(i) id###prop###invoiceDetail, shortNameUOM###prop###invoiceDetail,
-                       amount###prop###invoiceDetail, prop###quantityInvoiceDetail
+        PROPERTIES (d) READONLY SHOWIF toShowProp##Invoice(i) idBarcodePackInvoiceDetail, shortNameUOMPackInvoiceDetail,
+                       amountPackInvoiceDetail, packQuantityInvoiceDetail
         PROPERTIES (d) READONLY quantityInvoiceDetail, namePriceListTypeInvoiceDetail, priceInvoiceDetail, sumInvoiceDetail,
                        numberVATInvoiceDetail, valueVATInvoiceDetail, VATSumInvoiceDetail, invoiceSumInvoiceDetail,
                        descriptionOrderInvoiceDetail

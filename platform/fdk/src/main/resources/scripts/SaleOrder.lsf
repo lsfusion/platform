@@ -5,22 +5,22 @@ REQUIRE Order, Store;
 NAMESPACE Sale;
 
 //-- Для продажи упаковками
-saleBarcodeSku 'Штрих-код для продажи' = DATA barcode (sku);
-CONSTRAINT skuBarcode(saleBarcodeSku(item)) != item CHECKED BY saleBarcodeSku MESSAGE 'Выбран неверный sku для штрих-кода';
-saleBarcode 'Штрих-код для продажи' (barcode)=  saleBarcodeSku(skuBarcode(barcode)) == barcode;
-changeSaleBarcodeSku = ACTION (barcode, sku) {
+salePackBarcodeSku 'Штрих-код для продажи' = DATA barcode (sku);
+CONSTRAINT skuBarcode(salePackBarcodeSku(item)) != item CHECKED BY salePackBarcodeSku MESSAGE 'Выбран неверный sku для штрих-кода';
+salePackBarcode 'Штрих-код для продажи' (barcode)=  salePackBarcodeSku(skuBarcode(barcode)) == barcode;
+changeSalePackBarcodeSku = ACTION (barcode, sku) {
     REQUEST BOOLEAN INPUT;
     IF requestedLogical() THEN {
-        SET saleBarcodeSku(sku) <- barcode;
+        SET salePackBarcodeSku(sku) <- barcode;
     } ELSE
-        SET saleBarcodeSku(sku) <- NULL;
+        SET salePackBarcodeSku(sku) <- NULL;
 }
 
 EXTEND FORM barcodeDialog
-    PROPERTIES (b) READONLY saleBarcode
+    PROPERTIES (b) READONLY salePackBarcode
 ;
 //--
-@defineOrder(' (продажа)', supplierStock, sale, showSale, 'Отображать упаковку');
+@defineOrder(' (продажа)', supplierStock, salePack, showSalePack, 'Отображать упаковку');
 
 @defineOrderStockDestination(supplierStock, customerStock);
 @defineDocumentInterfaceHeaderTAX(order, VAT, 'НДС расч.');
@@ -105,5 +105,5 @@ emailCustomerOrder 'Выслать подтвержденный заказ по�
 WHEN isPostedOrder(order) DO EXEC emailCustomerOrder(order);
 
 
-@defineDocumentPackageSkuStock(userOrder, sku, supplierStock, sale);
-@extendFormDocumentPackageSkuStockCustom(userOrder, userOrder, o, supplierStock, sale, showSale);
+@defineDocumentPackageSkuStock(userOrder, sku, supplierStock, salePack);
+@extendFormDocumentPackageSkuStockCustom(userOrder, userOrder, o, supplierStock, showSalePack);

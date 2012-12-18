@@ -6,5 +6,5 @@ NAMESPACE Item;
 
 
 EXTEND FORM item
-    PROPERTIES(b) saleBarcode ON CHANGE EXEC changeSaleBarcodeSku(b,i) BEFORE delete(b)
+    PROPERTIES(b) salePackBarcode ON CHANGE EXEC changeSalePackBarcodeSku(b,i) BEFORE delete(b)
 ;

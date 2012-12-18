@@ -174,42 +174,42 @@ EXTEND FORM dialogBatch
 ;
 
 // Barcode
-META defineDocumentDetailBarcodeCustomPrefix (detail, skuProp, prop, prefixB, prefixS)
-    prefixB###prop###detail = DATA barcode (detail);
-    prefixB###id###prop###detail 'Штрих-код упаковки' (detail) = idBarcode(prefixB###prop###detail(detail)) IN recognizeGroup;
-    prefixB###shortNameUOM###prop###detail 'Ед. изм. упаковки' = shortNameUOMBarcode(prefixB###prop###detail(detail)) IN recognizeGroup;
-    prefixB###amount###prop###detail 'Кол-во в упаковке' = DATA NUMERIC[14,3] (detail) IN recognizeGroup;
+META defineDocumentDetailBarcodeCustomPrefix (detail, skuProp, prefixB, prefixS)
+    prefixB###barcodePack###detail = DATA barcode (detail);
+    prefixB###idBarcodePack###detail 'Штрих-код упаковки' (detail) = idBarcode(prefixB###barcodePack###detail(detail)) IN recognizeGroup;
+    prefixB###shortNameUOMPack###detail 'Ед. изм. упаковки' = shortNameUOMBarcode(prefixB###barcodePack###detail(detail)) IN recognizeGroup;
+    prefixB###amountPack###detail 'Кол-во в упаковке' = DATA NUMERIC[14,3] (detail) IN recognizeGroup;
 
-    prefixB###amount###prop###detail(detail) <- amountBarcode(prefixB###prop###detail(detail)) WHEN CHANGED(prefixB###prop###detail(detail));
+    prefixB###amountPack###detail(detail) <- amountBarcode(prefixB###barcodePack###detail(detail)) WHEN CHANGED(prefixB###barcodePack###detail(detail));
 
-    CONSTRAINT skuBarcode(prefixB###prop###detail(detail)) != prefixS###skuProp###detail(detail) CHECKED BY prefixB###prop###detail
+    CONSTRAINT skuBarcode(prefixB###barcodePack###detail(detail)) != prefixS###skuProp###detail(detail) CHECKED BY prefixB###barcodePack###detail
         MESSAGE 'Выбран штрих-кода не соответствующий sku';
 END
-META defineDocumentAbstractDetailBarcodeCustomPrefix (detail, prop, prefixB)
-    prefixB###prop###detail = ABSTRACT barcode (detail);
-    prefixB###id###prop###detail 'Штрих-код упаковки' (detail) = idBarcode(prefixB###prop###detail(detail)) IN recognizeGroup;
-    prefixB###shortNameUOM###prop###detail 'Ед. изм. упаковки' = shortNameUOMBarcode(prefixB###prop###detail(detail)) IN recognizeGroup;
-    prefixB###amount###prop###detail 'Кол-во в упаковке' = ABSTRACT NUMERIC[14,3] (detail) IN recognizeGroup;
+META defineDocumentAbstractDetailBarcodeCustomPrefix (detail, prefixB)
+    prefixB###barcodePack###detail = ABSTRACT barcode (detail);
+    prefixB###idBarcodePack###detail 'Штрих-код упаковки' (detail) = idBarcode(prefixB###barcodePack###detail(detail)) IN recognizeGroup;
+    prefixB###shortNameUOMPack###detail 'Ед. изм. упаковки' = shortNameUOMBarcode(prefixB###barcodePack###detail(detail)) IN recognizeGroup;
+    prefixB###amountPack###detail 'Кол-во в упаковке' = ABSTRACT NUMERIC[14,3] (detail) IN recognizeGroup;
 END
-META defineDocumentInterfaceBarcodeSkuCustomPrefix (detail, skuProp, prop, prefixB, prefixS)
-    @defineDocumentAbstractDetailBarcodeCustomPrefix(detail, prop, prefixB);
-    @defineDocumentDetailBarcodeCustomPrefix(user###detail, skuProp, prop, prefixB, prefixS);
-    prefixB###prop###detail(detail) += prefixB###prop###user###detail(detail);
-    prefixB###amount###prop###detail(detail) += prefixB###amount###prop###user###detail(detail);
+META defineDocumentInterfaceBarcodeSkuCustomPrefix (detail, skuProp, prefixB, prefixS)
+    @defineDocumentAbstractDetailBarcodeCustomPrefix(detail, prefixB);
+    @defineDocumentDetailBarcodeCustomPrefix(user###detail, skuProp, prefixB, prefixS);
+    prefixB###barcodePack###detail(detail) += prefixB###barcodePack###user###detail(detail);
+    prefixB###amountPack###detail(detail) += prefixB###amountPack###user###detail(detail);
 END
 
-META defineDocumentInterfaceBarcodeSkuPrefix (object, skuProp, prop, prefixB, prefixS)
-    @defineDocumentInterfaceBarcodeSkuCustomPrefix(object###Detail, skuProp, prop, prefixB, prefixS);
+META defineDocumentInterfaceBarcodeSkuPrefix (object, skuProp, prefixB, prefixS)
+    @defineDocumentInterfaceBarcodeSkuCustomPrefix(object###Detail, skuProp, prefixB, prefixS);
 END
-META defineDocumentInterfaceBarcodeSkuPrefix (object, skuProp, prop, prefixB)
-    @defineDocumentInterfaceBarcodeSkuPrefix(object, skuProp, prop, prefixB, );
+META defineDocumentInterfaceBarcodeSkuPrefix (object, skuProp, prefixB)
+    @defineDocumentInterfaceBarcodeSkuPrefix(object, skuProp, prefixB, );
 END
 
 META deriveDocumentDetailQuantityBarcodeCustom (detail, skuProp, prop, toShowProp)
-    prop###detail(detail) <- prop###barcodeSku(skuProp###detail(detail)) IF toShowProp###detail(detail)
+    barcodePack###detail(detail) <- prop###barcodeSku(skuProp###detail(detail)) IF toShowProp###detail(detail)
         WHEN CHANGED(skuProp###detail(detail)) OR CHANGED(toShowProp###detail(detail));
-    amount###prop###detail(detail) <- amountBarcode(prop###barcodeSku(skuProp###detail(detail))) IF toShowProp###detail(detail)
+    amountPack###detail(detail) <- amountBarcode(prop###barcodeSku(skuProp###detail(detail))) IF toShowProp###detail(detail)
         WHEN CHANGED(skuProp###detail(detail)) OR CHANGED(toShowProp###detail(detail));
-    quantity###detail(detail) <- prop###quantity###detail(detail)*amount###prop###detail(detail)
-        WHEN CHANGED(prop###quantity###detail(detail)) OR CHANGED(amount###prop###detail(detail));
+    quantity###detail(detail) <- packQuantity###detail(detail)*amountPack###detail(detail)
+        WHEN CHANGED(packQuantity###detail(detail)) OR CHANGED(amountPack###detail(detail));
 END

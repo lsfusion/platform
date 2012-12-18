@@ -4,7 +4,7 @@ REQUIRE Order, PurchaseShipment;
 
 NAMESPACE PurchaseReturn;
 
-@defineOrder(' (закупка-возврат)', customerStock, purchase, showPurchase, 'Отображать упаковку');
+@defineOrder(' (закупка-возврат)', customerStock, purchasePack, showPurchasePack, 'Отображать упаковку');
 
 @defineOrderStockDestination(customerStock, supplierStock);
 
@@ -16,5 +16,5 @@ CONSTRAINT customerUserOrder(userOrder) AND NOT isCompanyLegalEntity(customerUse
     CHECKED BY customerUserOrder MESSAGE 'Для заказа выбрано в качестве покупателя организация, не являющаяся компанией';
 
 
-@defineDocumentPackageSkuStock(userOrder, sku, customerStock, purchase);
-@extendFormDocumentPackageSkuStockCustom(userOrder, userOrder, o, customerStock, purchase, showPurchase);
+@defineDocumentPackageSkuStock(userOrder, sku, customerStock, purchasePack);
+@extendFormDocumentPackageSkuStockCustom(userOrder, userOrder, o, customerStock, showPurchasePack);

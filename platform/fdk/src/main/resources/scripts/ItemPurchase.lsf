@@ -3,5 +3,5 @@ MODULE ItemPurchase;
 REQUIRE Item, Purchase;
 
 EXTEND FORM item
-    PROPERTIES(b) purchaseBarcode ON CHANGE EXEC changePurchaseBarcodeSku(b,i) BEFORE delete(b)
+    PROPERTIES(b) purchasePackBarcode ON CHANGE EXEC changePurchasePackBarcodeSku(b,i) BEFORE delete(b)
 ;

@@ -7,7 +7,7 @@ NAMESPACE Sale;
 
 //----------------------------------------------- Поставка ---------------------------------------------------//
 
-@defineShipment(' (продажа)', supplierStock, showSale, 'Отображать упаковку', sale);
+@defineShipment(' (продажа)', supplierStock, showSalePack, 'Отображать упаковку', salePack);
 @defineShipmentBatch(supplierStock);
 
 @defineShipmentStockDestination(supplierStock, customerStock);

@@ -5,7 +5,7 @@ REQUIRE SaleOrder, Invoice, StockTax, Store;
 NAMESPACE Sale;
 
 //----------------------------------------------- Накладная ---------------------------------------------------//
-@defineInvoice(' (продажа)', supplierStock, showSale, 'Отображать упаковку', sale);
+@defineInvoice(' (продажа)', supplierStock, showSalePack, 'Отображать упаковку', salePack);
 @defineInvoiceBatch(supplierStock);
 @defineDocumentInterfaceHeaderTAX(invoice, VAT, 'НДС расч.');
 
