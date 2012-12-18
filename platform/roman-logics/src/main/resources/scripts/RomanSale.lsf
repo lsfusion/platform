@@ -196,7 +196,7 @@ isCommissionSaleInBatchDetail 'Продажа на комиссию' (detail) = 
 isCommissionSaleIn 'Продажа на комиссию' (saleIn) = isCommissionSaleOut(saleOutSaleIn(saleIn));
 
 costSaleInBatchDetail = DATA NUMERIC[14,2] (saleInBatchDetail);
-costSaleInBatchDetail (detail) <- [PREV(costBatch(batch))](batchSaleInBatchDetail(detail)) WHEN ASSIGNED(isPostedSaleInBatchDetail(detail));
+costSaleInBatchDetail (detail) <- [prevCostBatch(batch)](batchSaleInBatchDetail(detail)) WHEN ASSIGNED(isPostedSaleInBatchDetail(detail));
 
 importerPriceSaleInBatchDetail = DATA NUMERIC[14,2] (saleInBatchDetail);
 importerPriceSaleInBatchDetail (detail) <- IF batchSaleInBatchDetail(detail) IS saleInBatchDetail THEN
