@@ -1,0 +1,36 @@
+MODULE NaturalLossBy;
+
+REQUIRE NaturalLoss;
+
+NAMESPACE NaturalLoss;
+
+FORM naturalLossPrintBy 'Ведомость естественной убыли' PRINT
+    OBJECTS s=naturalLoss FIXED PANEL
+    PROPERTIES(s) READONLY SELECTOR numberObject, nameStockNaturalLoss, timeNaturalLoss, seriesObject,
+                           dateNaturalLoss, dateFromNaturalLoss, dateToNaturalLoss,
+                           quantityNaturalLossDetailNaturalLoss, sumNaturalLoss, noteNaturalLoss
+    OBJECTS d=naturalLossDetail
+    PROPERTIES(d) READONLY indexNaturalLossDetail, idBarcodeSkuNaturalLossDetail, nameSkuNaturalLossDetail, shortNameUOMSkuNaturalLossDetail,
+                           descriptionBatchNaturalLossDetail, quantityLossNaturalLossDetail, nameSubNaturalLossGroupNaturalLossDetail,
+                           codeNaturalLossDetail, nameSubNaturalDetailNaturalLossDetail, percentNaturalLossDetail, quantityNaturalLossDetail,
+                           priceNaturalLossDetail, sumNaturalLossDetail
+
+    FILTERS inNaturalLossNaturalLossDetail(s, d)
+;
+
+printNaturalLoss 'Ведомость естественной убыли' (naturalLoss) = ACTION FORM naturalLossPrintBy OBJECTS s IMAGE 'print.png' IN printGroup;
+
+EXTEND FORM naturalLosses
+
+    PROPERTIES(s) printNaturalLoss FORCE PANEL
+;
+
+EXTEND DESIGN naturalLosses {
+
+    ADD s.printGroup BEFORE functions.box{
+        childConstraints = TO THE BOTTOM;
+    }
+
+    POSITION s.printGroup TO THE RIGHT s.postedGroup;
+    //POSITION s.printGroup TO THE BOTTOM s.historyGroup;
+}

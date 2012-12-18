@@ -151,6 +151,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                 "/scripts/by/WriteOffBy.lsf",
                 "/scripts/by/AccountDocumentBy.lsf",
                 "/scripts/by/LegalEntityBy.lsf",
+                "/scripts/by/NaturalLossBy.lsf",
                 "/scripts/by/ConsignmentBy.lsf",
                 "/scripts/by/OrderBy.lsf",
                 "/scripts/by/SaleOrderBy.lsf",

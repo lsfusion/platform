@@ -282,22 +282,6 @@ toFillNaturalLossDetail 'Заполнить на основе продаж' = AC
     };
 } IN documentPrmGroup CONFIRM;
 
-FORM naturalLossPrint 'Ведомость естественной убыли' PRINT
-    OBJECTS s=naturalLoss FIXED PANEL
-    PROPERTIES(s) READONLY SELECTOR numberObject, nameStockNaturalLoss, timeNaturalLoss, seriesObject,
-                           dateNaturalLoss, dateFromNaturalLoss, dateToNaturalLoss,
-                           quantityNaturalLossDetailNaturalLoss, sumNaturalLoss, noteNaturalLoss
-    OBJECTS d=naturalLossDetail
-    PROPERTIES(d) READONLY indexNaturalLossDetail, idBarcodeSkuNaturalLossDetail, nameSkuNaturalLossDetail, shortNameUOMSkuNaturalLossDetail,
-                           descriptionBatchNaturalLossDetail, quantityLossNaturalLossDetail, nameSubNaturalLossGroupNaturalLossDetail,
-                           codeNaturalLossDetail, nameSubNaturalDetailNaturalLossDetail, percentNaturalLossDetail, quantityNaturalLossDetail,
-                           priceNaturalLossDetail, sumNaturalLossDetail
-
-    FILTERS inNaturalLossNaturalLossDetail(s, d)
-;
-
-toPrintNaturalLoss 'Ведомость естественной убыли' (naturalLoss) = ACTION FORM naturalLossPrint OBJECTS s IMAGE 'print.png' IN printGroup;
-
 FORM naturalLoss 'Ведомость естественной убыли'
     OBJECTS s=naturalLoss FIXED PANEL
     PROPERTIES(s) objectClassName, numberObject, nameStockNaturalLoss, timeNaturalLoss, seriesObject,
@@ -358,7 +342,6 @@ FORM naturalLosses 'Ведомости естественной убыли'
     PROPERTIES(s) READONLY numberObject, seriesObject, dateNaturalLoss, timeNaturalLoss,
                            nameStockNaturalLoss, dateFromNaturalLoss, dateToNaturalLoss,
                            quantityNaturalLossDetailNaturalLoss, sumNaturalLoss, noteNaturalLoss
-    PROPERTIES(s) toPrintNaturalLoss FORCE PANEL
     PROPERTIES(s) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
     PROPERTIES(s) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
     OBJECTS d=naturalLossDetail
@@ -385,10 +368,6 @@ DESIGN naturalLosses FROM DEFAULT {
         askConfirm = TRUE;
     }
 
-    ADD s.printGroup{
-        childConstraints = TO THE BOTTOM;
-    }
-
     ADD s.historyGroup{
         childConstraints = TO THE BOTTOM;
     }
@@ -398,8 +377,6 @@ DESIGN naturalLosses FROM DEFAULT {
     }
 
     POSITION s.postedGroup TO THE RIGHT s.historyGroup;
-    POSITION s.printGroup TO THE BOTTOM s.postedGroup;
-    POSITION s.printGroup TO THE BOTTOM s.historyGroup;
 
     ADD functions.box;
 }
