@@ -1,12 +1,37 @@
 MODULE SaleScheduleOrder;
 
-REQUIRE Sale,
+REQUIRE SaleOrder,
         ScheduleOrder;
+
+NAMESPACE Sale;
 
 @defineScheduleOrder(' (продажа)', sale);
 
-CONSTRAINT supplierSaleScheduleOrder(saleScheduleOrder) AND NOT isCompanyLegalEntity(supplierSaleScheduleOrder(saleScheduleOrder))
-    CHECKED BY supplierSaleScheduleOrder MESSAGE 'Для заказа выбрано в качестве поставщика организация, не являющаяся компанией';
-CONSTRAINT customerSaleScheduleOrder(saleScheduleOrder) AND NOT isCustomerLegalEntity(customerSaleScheduleOrder(saleScheduleOrder))
-    CHECKED BY customerSaleScheduleOrder MESSAGE 'Для заказа выбрано в качестве покупателя организация, не являющаяся покупателем';
+CONSTRAINT supplierScheduleOrder(scheduleOrder) AND NOT isCompanyLegalEntity(supplierScheduleOrder(scheduleOrder))
+    CHECKED BY supplierScheduleOrder MESSAGE 'Для заказа выбрано в качестве поставщика организация, не являющаяся компанией';
+CONSTRAINT customerScheduleOrder(scheduleOrder) AND NOT isCustomerLegalEntity(customerScheduleOrder(scheduleOrder))
+    CHECKED BY customerScheduleOrder MESSAGE 'Для заказа выбрано в качестве покупателя организация, не являющаяся покупателем';
+
+CONSTRAINT supplier() AND NOT isCompanyLegalEntity(supplier())
+    CHECKED BY supplier MESSAGE 'Выбрана в качестве поставщика организация, не являющаяся компанией';
+CONSTRAINT customer() AND NOT isCustomerLegalEntity(customer())
+    CHECKED BY customer MESSAGE 'Выбрана в качестве покупателя организация, не являющаяся покупателем';
+
+
+EXTEND FORM legalEntity
+
+    OBJECTS ss=scheduleOrder
+    PROPERTIES(ss) READONLY startDateScheduleOrder, endDateScheduleOrder, nameTypeScheduleOrder
+    PROPERTIES(ss) ADDFORM, EDITFORM
+    FILTERS customerScheduleOrder(ss) == c, supplierScheduleOrder(ss) == l
+;
+
+EXTEND DESIGN legalEntity {
+    extendContainer {
+        docContainer2{
+            ADD ss.box;
+        }
+    }
+}
+
 

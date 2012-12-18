@@ -1277,16 +1277,15 @@ NAVIGATOR {
         NEW contragents 'Контрагенты' {
             ADD legalEntities;
             ADD contractSkus;
-            ADD saleScheduleOrders;
-            ADD purchaseScheduleOrders;
-            //ADD saleScheduleOrderDetails;
-            //ADD purchaseScheduleOrderDetails;
+            //ADD saleScheduleOrders;
+            //ADD purchaseScheduleOrders;
+
         }
     }
 
     NEW purchase 'Управление закупками' TO toolbar {
         ADD purchasePurchaseNavigator {
-            ADD purchaseScheduleOrderDetails;
+            //ADD purchaseScheduleOrderDetails;
         };
         ADD purchaseReturnNavigator;
         ADD supplyNavigator;
@@ -1314,7 +1313,7 @@ NAVIGATOR {
 
     NEW sale 'Управление продажами' TO toolbar {
         ADD saleSaleNavigator {
-            ADD saleScheduleOrderDetails;
+            //ADD saleScheduleOrderDetails;
         };
         ADD saleReturnNavigator;
         ADD salesNavigator;

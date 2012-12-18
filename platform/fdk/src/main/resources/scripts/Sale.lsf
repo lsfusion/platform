@@ -1,6 +1,6 @@
 MODULE Sale;
 
-REQUIRE SaleShipment, SaleReturnShipment, SaleCreditNote, SaleReturnCreditNote, SaleBlanketOrder
+REQUIRE SaleShipment, SaleReturnShipment, SaleCreditNote, SaleReturnCreditNote, SaleBlanketOrder, SaleScheduleOrder
 ;
 
 //-----------------------------------------------------------------------------------------------------------//
@@ -34,6 +34,8 @@ NAVIGATOR {
         ADD Sale.invoices;
         ADD Sale.shipments;
         ADD Sale.creditNotes;
+        ADD Sale.scheduleOrders;
+        ADD Sale.scheduleOrderDetails;
     }
     NEW saleReturnNavigator 'Возвраты' {
         ADD SaleReturn.orders;

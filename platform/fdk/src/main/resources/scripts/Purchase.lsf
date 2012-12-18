@@ -1,6 +1,6 @@
 MODULE Purchase;
 
-REQUIRE PurchaseShipment, PurchaseReturnShipment, PurchaseCreditNote, PurchaseReturnCreditNote, PurchasePricing
+REQUIRE PurchaseShipment, PurchaseReturnShipment, PurchaseCreditNote, PurchaseReturnCreditNote, PurchasePricing, PurchaseScheduleOrder
 ;
 
 //-----------------------------------------------------------------------------------------------------------//
@@ -32,6 +32,8 @@ NAVIGATOR {
         ADD Purchase.invoices;
         ADD Purchase.shipments;
         ADD Purchase.creditNotes;
+        ADD Purchase.scheduleOrders;
+        ADD Purchase.scheduleOrderDetails;
     }
     NEW purchaseReturnNavigator 'Возвраты' {
         ADD PurchaseReturn.orders;
