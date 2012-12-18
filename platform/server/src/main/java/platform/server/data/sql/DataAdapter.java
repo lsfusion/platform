@@ -4,9 +4,10 @@ import org.apache.log4j.Logger;
 import platform.server.data.AbstractConnectionPool;
 import platform.server.data.type.Type;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.sql.SQLException;
-import java.sql.Types;
+import java.io.InputStream;
+import java.sql.*;
 
 public abstract class DataAdapter extends AbstractConnectionPool implements SQLSyntax {
     protected final static Logger logger = Logger.getLogger(DataAdapter.class);
@@ -241,5 +242,48 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
 
     public String getAnalyze(){
         return "";
+    }
+
+    public void useDLL(){
+        /*try {
+            Class.forName("net.sourceforge.jtds.jdbc.Driver");
+
+            Connection connect = DriverManager.getConnection("jdbc:jtds:sqlserver://localhost:1433;instance=SQLEXPRESS;User=sa;Password=11111");
+
+            InputStream dllStream = Main.class.getResourceAsStream("SQLUtils.dll");
+            String dllName = "SQLUtils";
+
+            connect.createStatement().execute("USE test");
+
+            connect.createStatement().execute("IF OBJECT_ID(N'Concatenate', N'AF') is not null DROP Aggregate Concatenate;");
+
+            PreparedStatement statement = connect.prepareStatement("IF EXISTS (SELECT * FROM sys.assemblies WHERE [name] = ?) DROP ASSEMBLY SQLUtils;");
+            statement.setString(1, dllName);
+            statement.execute();
+            statement.clearParameters();
+
+            statement = connect.prepareStatement("CREATE ASSEMBLY [SQLUtils] \n" +
+                    "FROM  ? "+
+                    "WITH permission_set = Safe;");
+
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            byte[] buffer = new byte[1024];
+            while (dllStream.read(buffer) != -1) out.write(buffer);
+
+            statement.setBytes(1, out.toByteArray());
+            statement.execute();
+            statement.clearParameters();
+
+            connect.createStatement().execute("CREATE AGGREGATE [dbo].[Concatenate](@input nvarchar(4000))\n" +
+                    "RETURNS nvarchar(4000)\n" +
+                    "EXTERNAL NAME [SQLUtils].[Concatenate];");
+
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        } catch (SQLException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        } catch (IOException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }*/
     }
 }
