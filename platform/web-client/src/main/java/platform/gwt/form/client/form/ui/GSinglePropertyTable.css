@@ -94,10 +94,15 @@
 }
 
 .dataGridKeyboardSelectedCell {
-    border: 1px solid #6262FF;
+    /*border: 1px solid #6262FF;*/
+    outline: 1px solid #6262FF;
+    outline-offset: -1px;
 }
 
 .dataGridLastKeyboardSelectedCell {
+    /*border: 1px solid #6262FF;*/
+    outline: 1px solid #6262FF;
+    outline-offset: -1px;
 }
 
 .dataGridRightOfKeyboardSelectedCell {
