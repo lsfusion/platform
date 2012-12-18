@@ -108,58 +108,6 @@ REQUIRE System,
         SaleScheduleOrder,
         PurchaseScheduleOrder;
 
-// ----------------------------------- Свойства изменения объектов в Posted ------------------------------------------ //
-
-GROUP itemDetailGroup 'Товар' : publicGroup;
-
-META defineDocumentDetailSkuItemPrefix (object, prefix, caption)
-    @defineDocumentDetailSkuPrefix(object, item, prefix, caption);
-
-    prefix###nameAttributeItem###object##Detail 'Товар'###caption (detail) =
-        nameAttributeItem(prefix###item###object##Detail(detail)) IN itemDetailGroup;
-
-    prefix###shortNameUOMItem###object##Detail 'Ед. изм.'###caption (detail) =
-        shortNameUOMItem(prefix###item###object##Detail(detail)) IN itemDetailGroup;
-
-    prefix###articleItem###object##Detail 'Артикул'###caption (detail) = articleItem(prefix###item###object##Detail(detail)) IN itemDetailGroup;
-
-    prefix###nameCountryItem###object##Detail 'Страна'###caption (detail) = nameCountryItem(prefix###item###object##Detail(detail)) IN itemDetailGroup;
-
-    prefix###inWare###object##Detail 'Товар в посуде'###caption (detail) = inWareItem(prefix###item###object##Detail(detail)) IN itemDetailGroup;
-
-    prefix###controlExpiryItem###object##Detail 'Контролировать сроки годности товара?'###caption (detail) =
-        controlExpiryItem (prefix###item###object##Detail(detail)) IN itemDetailGroup;
-
-    prefix###isWeightItem###object##Detail 'Весовой товар?'###caption (detail) = isWeightItem(prefix###item###object##Detail(detail)) IN itemDetailGroup;
-END
-
-META defineDocumentDetailSkuItem (object)
-    @defineDocumentDetailSkuItemPrefix(object, , );
-END
-
-META defineDocumentHeaderItemRetailSumCustomPrefix (object, detail, prefix, caption)
-    prefix###retailSum###detail##Item###object 'Розничная сумма (окр.) товара в документе' (item, object) =
-            GROUP SUM retailSum###detail(idetail)
-                  BY  item###detail(idetail),
-                      object###detail(idetail);
-
-    prefix###retailSumItem###detail###object 'Розничная сумма (окр.), товар'###caption (idetail) =
-        GROUP SUM prefix###retailSum###detail(idetail) AND NOT isContainerItem(item###detail(idetail))
-            BY object###detail(idetail) IN documentSumGroup;
-    prefix###retailSumContainer###detail###object 'Розничная сумма (окр.), тара'###caption (idetail) =
-        GROUP SUM prefix###retailSum###detail(idetail) IF isContainerItem(item###detail(idetail))
-            BY object###detail(idetail) IN documentSumGroup;
-END
-META defineDocumentHeaderItemRetailSumCustom (object, detail)
-    @defineDocumentHeaderItemRetailSumCustomPrefix(object, detail, , );
-END
-META defineDocumentHeaderItemRetailSumPrefix (object, prefix, caption)
-    @defineDocumentHeaderItemRetailSumCustomPrefix(object, object##Detail, prefix, caption);
-END
-META defineDocumentHeaderItemRetailSum (object)
-    @defineDocumentHeaderItemRetailSumCustomPrefix(object, object##Detail, , );
-END
-
 // ----------------------------------- Товарный классификатор ------------------------------------------ //
 
 EXTEND CLASS itemGroup : roundGroup;
@@ -674,16 +622,7 @@ EXTEND DESIGN integrationData {
 
 //---------------------------- Настройка навигатора ----------------------------------------//
 
-//WINDOW TOOLBAR root 'Навигатор' HORIZONTAL HIDETITLE HIDESCROLLBARS POSITION(0, 0, 100, 6);
-//WINDOW TOOLBAR toolbar 'Формы' VERTICAL HIDETITLE POSITION (0, 6, 20, 64);
-//WINDOW TREE formsTree 'Формы' HIDETITLE POSITION (0, 6, 20, 64);
-//
-//HIDE WINDOW System.relevantForms;
-//HIDE WINDOW System.relevantClassForms;
-
 NAVIGATOR {
-
-    root TO root;
 
     NEW catalogs 'Справочники' TO toolbar {
         NEW itemCatalog 'Товары' {
@@ -696,16 +635,11 @@ NAVIGATOR {
         NEW contragents 'Контрагенты' {
             ADD legalEntities;
             ADD contractSkus;
-            //ADD saleScheduleOrders;
-            //ADD purchaseScheduleOrders;
-
         }
     }
 
     NEW purchase 'Управление закупками' TO toolbar {
-        ADD purchasePurchaseNavigator {
-            //ADD purchaseScheduleOrderDetails;
-        };
+        ADD purchasePurchaseNavigator;
         ADD purchaseReturnNavigator;
         ADD supplyNavigator;
     }
@@ -731,9 +665,7 @@ NAVIGATOR {
     }
 
     NEW sale 'Управление продажами' TO toolbar {
-        ADD saleSaleNavigator {
-            //ADD saleScheduleOrderDetails;
-        };
+        ADD saleSaleNavigator;
         ADD saleReturnNavigator;
         ADD salesNavigator;
         ADD statisticsNavigator;
