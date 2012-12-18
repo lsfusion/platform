@@ -6,6 +6,7 @@ import net.sf.jasperreports.engine.design.JasperDesign;
 import net.sf.jasperreports.engine.xml.JRXmlLoader;
 import net.sf.jasperreports.engine.xml.JRXmlWriter;
 import platform.base.Pair;
+import platform.base.ResourceList;
 import platform.interop.ClassViewType;
 import platform.interop.form.FormUserPreferences;
 import platform.interop.form.ReportGenerationData;
@@ -19,6 +20,7 @@ import platform.server.logics.BusinessLogics;
 import java.io.*;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.regex.Pattern;
 
 import static platform.base.BaseUtils.serializeObject;
 import static platform.server.logics.ServerResourceBundle.getString;
@@ -41,8 +43,8 @@ public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstan
             Set<String> keySet = customDesigns.keySet();
             for (String key : keySet) {
                 ret.put(
-                        System.getProperty("user.dir") + "/src/main/resources/" + getCustomReportName(key, sid),
-                        System.getProperty("user.dir") + "/target/classes/" + getCustomReportName(key, sid)
+                        System.getProperty("user.dir") + "/src/main/resources/" + findCustomReportDesignName(key, sid),
+                        System.getProperty("user.dir") + "/target/classes/" + findCustomReportDesignName(key, sid)
                 );
             }
         } else {
@@ -150,19 +152,21 @@ public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstan
         return getReportPrefix(toExcel, groupId) + getFormSID();
     }
 
-    private String getVariableCustomReportName(String name) {
-        if (!name.endsWith(".jrxml")) {
-            name = name + ".jrxml";
-        }
-        return "reports/custom/" + name;
-    }
+    private String findCustomReportDesignName(String name, String sid) {
 
-    private String getCustomReportName(String name, String sid) {
-        if (name.equals(GroupObjectHierarchy.rootNodeName)) {
-            return "reports/custom/" + sid + ".jrxml";
-        } else {
-            return "reports/custom/" + sid + "_" + name + ".jrxml";
+        boolean root = name.equals(GroupObjectHierarchy.rootNodeName);
+        String filePath = "".equals(sid) ? name : (sid + (root ? "" : ("_" + name))) + ".jrxml";
+        
+        Pattern pattern = Pattern.compile(".*" + "reports\\\\custom\\\\" + ".*\\.jrxml");
+
+        Collection<String> result = ResourceList.getResources(pattern);
+        
+        for(String entry : result){
+            if(entry.endsWith("\\" + filePath))
+                return "reports/custom/" + entry.split("reports\\\\custom\\\\")[1];
         }
+        
+        return "reports/custom/" + filePath;
     }
 
     private String getAutoReportName(String name, String sid) {
@@ -211,13 +215,13 @@ public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstan
                 CalcPropertyObjectInstance propInstance = form.instanceFactory.getInstance(reportPathProp);
                 String reportPath = (String) propInstance.read(form);
                 if (reportPath != null) {
-                    String resourceName = "/" + getVariableCustomReportName(getReportPrefix(toExcel, groupId) + reportPath.trim());
+                    String resourceName = "/" + findCustomReportDesignName(getReportPrefix(toExcel, groupId) + reportPath.trim(), "");
                     iStream = getClass().getResourceAsStream(resourceName);
                 }
             }
         }
         if (iStream == null) {
-            String resourceName = "/" + getCustomReportName(sid, getDefaultReportSID(toExcel, groupId));
+            String resourceName = "/" + findCustomReportDesignName(sid, getDefaultReportSID(toExcel, groupId));
             iStream = getClass().getResourceAsStream(resourceName);
         }
         return iStream;
