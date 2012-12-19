@@ -34,15 +34,15 @@ META defineScheduleOrder(sign, stockProp)
     customerStockScheduleOrder = DATA stock(scheduleOrder);
     nameCustomerStockScheduleOrder 'Склад покупателя' (scheduleOrder) = name(customerStockScheduleOrder(scheduleOrder));
 
-//    CONSTRAINT supplierScheduleOrder(scheduleOrder) AND supplierStockScheduleOrder(scheduleOrder) AND NOT
-//    inLegalEntityStock(supplierScheduleOrder(scheduleOrder), supplierStockScheduleOrder(scheduleOrder))
-//        CHECKED BY supplierScheduleOrder, supplierStockScheduleOrder
-//            MESSAGE 'Поставщик и склад поставщика не имеют связи';
-//
-//    CONSTRAINT customerScheduleOrder(scheduleOrder) AND customerStockScheduleOrder(scheduleOrder) AND NOT
-//    inLegalEntityStock(customerScheduleOrder(scheduleOrder), customerStockScheduleOrder(scheduleOrder))
-//        CHECKED BY customerScheduleOrder, customerStockScheduleOrder
-//            MESSAGE 'Покупатель и склад покупателя не имеют связи';
+    CONSTRAINT supplierScheduleOrder(scheduleOrder) AND supplierStockScheduleOrder(scheduleOrder) AND NOT
+    inLegalEntityStock(supplierScheduleOrder(scheduleOrder), supplierStockScheduleOrder(scheduleOrder))
+        CHECKED BY supplierScheduleOrder, supplierStockScheduleOrder
+            MESSAGE 'Поставщик и склад поставщика не имеют связи';
+
+    CONSTRAINT customerScheduleOrder(scheduleOrder) AND customerStockScheduleOrder(scheduleOrder) AND NOT
+    inLegalEntityStock(customerScheduleOrder(scheduleOrder), customerStockScheduleOrder(scheduleOrder))
+        CHECKED BY customerScheduleOrder, customerStockScheduleOrder
+            MESSAGE 'Покупатель и склад покупателя не имеют связи';
 
     startDateScheduleOrder 'Дата начала' = DATA DATE (scheduleOrder) IN baseGroup;
     endDateScheduleOrder 'Дата окончания' = DATA DATE (scheduleOrder) IN baseGroup;
@@ -290,7 +290,6 @@ META defineScheduleOrder(sign, stockProp)
     editScheduleOrderDetail 'Редактировать' (detail) = editScheduleOrder(scheduleOrderScheduleOrderDetail(detail)) TOOLBAR;
 
 
-
     supplier = SESSION DATA legalEntity();
     nameSupplier 'Поставщик' = name(supplier());
     customer = SESSION DATA legalEntity();
@@ -299,6 +298,12 @@ META defineScheduleOrder(sign, stockProp)
     nameSupplierStock 'Склад поставщика' = name(supplierStock());
     customerStock = SESSION DATA stock();
     nameCustomerStock 'Склад покупателя' = name(customerStock());
+
+    CONSTRAINT supplier() AND supplierStock() AND NOT inLegalEntityStock(supplier(), supplierStock())
+        CHECKED BY supplier, supplierStock MESSAGE 'Поставщик и склад поставщика не имеют связи';
+
+    CONSTRAINT customer() AND customerStock() AND NOT inLegalEntityStock(customer(), customerStock())
+        CHECKED BY customer, customerStock MESSAGE 'Покупатель и склад покупателя не имеют связи';
 
 
     FORM scheduleOrderDetails 'Заказы по графику'
