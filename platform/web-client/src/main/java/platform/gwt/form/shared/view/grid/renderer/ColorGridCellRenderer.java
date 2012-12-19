@@ -18,8 +18,7 @@ public class ColorGridCellRenderer extends AbstractGridCellRenderer {
         String color = getColorValue(value);
 
         DivElement div = cellElement.getFirstChild().cast();
-        div.getStyle().setColor(color);
-        div.getStyle().setBackgroundColor(color);
+        updateElement(div, color);
     }
 
     public static void renderColorBox(DivElement cellParent, Object value) {
@@ -28,12 +27,17 @@ public class ColorGridCellRenderer extends AbstractGridCellRenderer {
         DivElement div = Document.get().createDivElement();
         div.setInnerText(EscapeUtils.UNICODE_NBSP);
 
-        Style divStyle = div.getStyle();
-        divStyle.setBorderWidth(0, Style.Unit.PX);
-        divStyle.setColor(color);
-        divStyle.setBackgroundColor(color);
+        div.getStyle().setBorderWidth(0, Style.Unit.PX);
+
+        updateElement(div, color);
 
         cellParent.appendChild(div);
+    }
+
+    private static void updateElement(DivElement div, String colorValue) {
+        div.getStyle().setColor(colorValue);
+        div.getStyle().setBackgroundColor(colorValue);
+        div.setTitle(colorValue);
     }
 
     private static String getColorValue(Object value) {

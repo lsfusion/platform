@@ -39,8 +39,10 @@ public class TextGridCellRenderer extends AbstractGridCellRenderer {
     private void updateTextArea(TextAreaElement textArea, Object value) {
         if (value == null) {
             textArea.setValue(EscapeUtils.UNICODE_NBSP);
+            textArea.setTitle("");
         } else {
             textArea.setValue((String) value);
+            textArea.getParentElement().setTitle((String) value);
         }
     }
 }

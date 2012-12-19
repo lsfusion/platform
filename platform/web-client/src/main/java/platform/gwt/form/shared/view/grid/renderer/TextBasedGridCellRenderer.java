@@ -44,8 +44,11 @@ public abstract class TextBasedGridCellRenderer<T> extends AbstractGridCellRende
 
         if (text == null || text.trim().isEmpty()) {
             div.setInnerText(EscapeUtils.UNICODE_NBSP);
+            div.setTitle("");
         } else {
-            div.setInnerText(EscapeUtils.unicodeEscape(text.trim()));
+            String stringValue = EscapeUtils.unicodeEscape(text.trim());
+            div.setInnerText(stringValue);
+            div.setTitle(stringValue);
         }
     }
 
