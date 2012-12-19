@@ -103,23 +103,23 @@ public class Scheduler {
 
     private boolean executeLAP(LAP lap, DataObject scheduledTask) throws SQLException {
         currentLogSession = BL.createSession();
-        currentScheduledTaskLogObject = currentLogSession.addObject((ConcreteCustomClass) BL.LM.getClassBySID("scheduledTaskLog"));
+        currentScheduledTaskLogObject = currentLogSession.addObject(BL.schedulerLM.scheduledTaskLog);
         try {
-            BL.getLCP("scheduledTaskScheduledTaskLog").change(scheduledTask.getValue(), currentLogSession, currentScheduledTaskLogObject);
-            BL.getLCP("propertyScheduledTaskLog").change(lap.property.caption + " (" + lap.property.getSID() + ")", currentLogSession, currentScheduledTaskLogObject);
-            BL.getLCP("dateStartScheduledTaskLog").change(new Timestamp(System.currentTimeMillis()), currentLogSession, currentScheduledTaskLogObject);
+            BL.schedulerLM.scheduledTaskScheduledTaskLog.change(scheduledTask.getValue(), currentLogSession, currentScheduledTaskLogObject);
+            BL.schedulerLM.propertyScheduledTaskLog.change(lap.property.caption + " (" + lap.property.getSID() + ")", currentLogSession, currentScheduledTaskLogObject);
+            BL.schedulerLM.dateStartScheduledTaskLog.change(new Timestamp(System.currentTimeMillis()), currentLogSession, currentScheduledTaskLogObject);
 
             DataSession session = BL.createSession();
             lap.execute(session);
             String applyResult = session.applyMessage(BL);
 
-            BL.getLCP("resultScheduledTaskLog").change(applyResult == null ? "Выполнено успешно" : applyResult, currentLogSession, currentScheduledTaskLogObject);
-            BL.getLCP("dateFinishScheduledTaskLog").change(new Timestamp(System.currentTimeMillis()), currentLogSession, currentScheduledTaskLogObject);
+            BL.schedulerLM.resultScheduledTaskLog.change(applyResult == null ? "Выполнено успешно" : applyResult, currentLogSession, currentScheduledTaskLogObject);
+            BL.schedulerLM.dateFinishScheduledTaskLog.change(new Timestamp(System.currentTimeMillis()), currentLogSession, currentScheduledTaskLogObject);
             currentLogSession.apply(BL);
             return applyResult == null;
         } catch (Exception e) {
-            BL.getLCP("resultScheduledTaskLog").change(e, currentLogSession, currentScheduledTaskLogObject);
-            BL.getLCP("dateFinishScheduledTaskLog").change(new Timestamp(System.currentTimeMillis()), currentLogSession, currentScheduledTaskLogObject);
+            BL.schedulerLM.resultScheduledTaskLog.change(e, currentLogSession, currentScheduledTaskLogObject);
+            BL.schedulerLM.dateFinishScheduledTaskLog.change(new Timestamp(System.currentTimeMillis()), currentLogSession, currentScheduledTaskLogObject);
             currentLogSession.apply(BL);
             return false;
         }

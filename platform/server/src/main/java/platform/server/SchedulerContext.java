@@ -21,9 +21,9 @@ public class SchedulerContext extends WrapperContext {
     public void delayUserInteraction(ClientAction action) {
         if (action instanceof MessageClientAction) {
             try {
-                DataObject scheduledClientTaskLogObject = scheduler.currentLogSession.addObject((ConcreteCustomClass) getBL().LM.getClassBySID("scheduledClientTaskLog"));
-                getBL().getLCP("scheduledTaskLogScheduledClientTaskLog").change(scheduler.currentScheduledTaskLogObject.getValue(), scheduler.currentLogSession, scheduledClientTaskLogObject);
-                getBL().getLCP("messageScheduledClientTaskLog").change(((MessageClientAction) action).message, scheduler.currentLogSession, scheduledClientTaskLogObject);
+                DataObject scheduledClientTaskLogObject = scheduler.currentLogSession.addObject((ConcreteCustomClass) getBL().schedulerLM.scheduledClientTaskLog);
+                getBL().schedulerLM.scheduledTaskLogScheduledClientTaskLog.change(scheduler.currentScheduledTaskLogObject.getValue(), scheduler.currentLogSession, scheduledClientTaskLogObject);
+                getBL().schedulerLM.messageScheduledClientTaskLog.change(((MessageClientAction) action).message, scheduler.currentLogSession, scheduledClientTaskLogObject);
             } catch (SQLException e) {
                 e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }

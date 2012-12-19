@@ -1,0 +1,83 @@
+MODULE Scheduler;
+
+REQUIRE System, Reflection;
+
+
+CLASS scheduledTask 'Задание планировщика';
+TABLE scheduledTask (scheduledTask);
+TABLE scheduledTaskProperty (scheduledTask, property);
+
+nameScheduledTask 'Имя' = DATA STRING[100] (scheduledTask);
+runAtStartScheduledTask 'Выполнить при старте' = DATA BOOLEAN (scheduledTask);
+startDateScheduledTask 'Дата начала' = DATA DATETIME (scheduledTask);
+periodScheduledTask 'Повторять каждые (секунд)' = DATA INTEGER (scheduledTask);
+activeScheduledTask 'Активно' = DATA BOOLEAN (scheduledTask);
+inScheduledTaskProperty 'Вкл.' = DATA BOOLEAN (scheduledTask, property);
+activeScheduledTaskProperty 'Активно' = DATA BOOLEAN (scheduledTask, property);
+orderScheduledTaskProperty 'Порядок' = DATA INTEGER (scheduledTask, property);
+
+CLASS scheduledTaskLog 'Лог планировщика';
+TABLE scheduledTaskLog (scheduledTaskLog);
+TABLE scheduledTaskScheduledTaskLog (scheduledTask, scheduledTaskLog);
+
+resultScheduledTaskLog 'Результат' = DATA STRING[200] (scheduledTaskLog);
+propertyScheduledTaskLog 'Свойство' = DATA STRING[200] (scheduledTaskLog);
+dateStartScheduledTaskLog 'Начало' = DATA DATETIME (scheduledTaskLog);
+dateFinishScheduledTaskLog 'Конец' = DATA DATETIME (scheduledTaskLog);
+scheduledTaskScheduledTaskLog 'Задание планировщика' = DATA scheduledTask (scheduledTaskLog);
+
+
+CLASS scheduledClientTaskLog 'Сообщения клиента';
+TABLE scheduledClientTaskLog (scheduledClientTaskLog);
+
+scheduledTaskLogScheduledClientTaskLog 'Лог планировщика'= DATA scheduledTaskLog (scheduledClientTaskLog);
+messageScheduledClientTaskLog 'Сообщение'= DATA STRING[200] (scheduledClientTaskLog);
+
+
+FORM ScheduledTaskFormEntity 'Планировщик'
+
+    OBJECTS st=scheduledTask
+    PROPERTIES (st) activeScheduledTask, nameScheduledTask, startDateScheduledTask, periodScheduledTask, runAtStartScheduledTask
+
+    OBJECTS p=property
+    PROPERTIES (st, p) inScheduledTaskProperty, activeScheduledTaskProperty, orderScheduledTaskProperty
+    PROPERTIES (st) ADDOBJ, delete
+    PROPERTIES (p) READONLY captionProperty, SIDProperty, classProperty, returnProperty
+
+    OBJECTS stl=scheduledTaskLog
+    PROPERTIES (stl) READONLY propertyScheduledTaskLog, resultScheduledTaskLog, dateStartScheduledTaskLog, dateFinishScheduledTaskLog
+
+    OBJECTS sctl=scheduledClientTaskLog
+    PROPERTIES (sctl) READONLY messageScheduledClientTaskLog
+
+    FILTERS scheduledTaskScheduledTaskLog(stl) == st,
+            scheduledTaskLogScheduledClientTaskLog(sctl) == stl
+
+    FILTERGROUP filtersScheduler
+            FILTER 'Только отмеченные' 'F9' inScheduledTaskProperty(st, p)
+;
+
+EXTEND DESIGN ScheduledTaskFormEntity {
+    main {
+       NEW specContainer {
+            type = SPLITV;
+            ADD st.box;
+            NEW bottomContainer {
+                type = TABBED;
+                ADD p.box;
+                NEW logContainer {
+                    title = 'Лог';
+                    ADD stl.box;
+                    ADD sctl.box;
+                }
+            }
+       }
+       ADD functions.box;
+    }
+}
+
+NAVIGATOR {
+    configuration {
+        ADD Scheduler.ScheduledTaskFormEntity;
+    }
+}

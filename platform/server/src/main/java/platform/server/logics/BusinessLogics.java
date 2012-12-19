@@ -88,7 +88,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public final SecurityLogicsModule<T> securityLM;
     public final SystemEventsLogicsModule<T> systemEventsLM;
     public final EmailLogicsModule<T> emailLM;
-    public final SchedulerLogicsModule<T> schedulerLM;
+    public SchedulerLogicsModule schedulerLM;
     private String dbName;
 
     public final NavigatorsController navigatorsController;
@@ -827,7 +827,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             property.prereadCaches();
     }
 
-    public BusinessLogics(DataAdapter adapter, int exportPort) throws RemoteException {
+    public BusinessLogics(DataAdapter adapter, int exportPort) throws IOException {
         super(exportPort);
 
         Context.context.set(this);
@@ -846,7 +846,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         emailLM = new EmailLogicsModule(this, this.LM, logger);
 
-        schedulerLM = new SchedulerLogicsModule(this, this.LM, logger);
+        schedulerLM = new SchedulerLogicsModule(this, this.LM);
 
         navigatorsController = new NavigatorsController(this);
 

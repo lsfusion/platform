@@ -63,7 +63,7 @@ V0.6 {
     PROPERTY sessionUser -> userSession
     PROPERTY sessionDate -> dateSession
     PROPERTY connectionComputer -> computerConnection
-    PROPERTY connectionUser -> UserConnection
+    PROPERTY connectionUser -> userConnection
     PROPERTY connectionCurrentStatus -> connectionStatusConnection
     PROPERTY connectionConnectTime -> connectTimeConnection
     PROPERTY connectionDisconnectTime -> disconnectTimeConnection
