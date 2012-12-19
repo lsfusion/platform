@@ -38,14 +38,14 @@
 }
 
 .dataGridCell {
-    height: 16px;
     font-size: fontSize;
-    padding: 0px 4px;
+    padding: 0;
     overflow: hidden;
     white-space: nowrap;
 }
 
 .dataGridCell div {
+    height: 100%;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;

@@ -19,20 +19,23 @@ public abstract class TextBasedGridCellRenderer<T> extends AbstractGridCellRende
 
     @Override
     public void renderDom(Cell.Context context, DivElement cellElement, Object value) {
-        DivElement div;
+        DivElement div = cellElement.appendChild(Document.get().createDivElement());
+
+        Style divStyle = div.getStyle();
         if (textAlign != null) {
-            div = cellElement.appendChild(Document.get().createDivElement());
-            div.getStyle().setTextAlign(textAlign);
-        } else {
-            div = cellElement;
+            divStyle.setTextAlign(textAlign);
         }
+        divStyle.setPaddingTop(0, Style.Unit.PX);
+        divStyle.setPaddingRight(4, Style.Unit.PX);
+        divStyle.setPaddingBottom(0, Style.Unit.PX);
+        divStyle.setPaddingLeft(4, Style.Unit.PX);
 
         updateElement(div, value);
     }
 
     @Override
     public void updateDom(DivElement cellElement, Cell.Context context, Object value) {
-        DivElement div = textAlign == null ? cellElement : cellElement.getFirstChild().<DivElement>cast();
+        DivElement div = cellElement.getFirstChild().cast();
         updateElement(div, value);
     }
 

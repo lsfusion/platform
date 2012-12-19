@@ -9,6 +9,7 @@ import com.google.gwt.event.dom.client.KeyCodes;
 import platform.gwt.cellview.client.Column;
 import platform.gwt.cellview.client.DataGrid;
 import platform.gwt.cellview.client.cell.AbstractCell;
+import platform.gwt.form.client.form.ui.GPropertyTableBuilder;
 import platform.gwt.form.shared.view.GKeyStroke;
 import platform.gwt.form.shared.view.GPropertyDraw;
 import platform.gwt.form.shared.view.grid.EditEvent;
@@ -48,7 +49,7 @@ public class GDataFilterValueViewTable extends DataGrid implements EditManager {
 
         setRemoveKeyboardStylesOnFocusLost(true);
 
-        setSize("100%", "100%");
+        setSize("100%", property.getMinimumHeight());
         setTableWidth(property.getPreferredPixelWidth(), com.google.gwt.dom.client.Style.Unit.PX);
 
         cell = new DataFilterValueEditableCell();
@@ -59,12 +60,29 @@ public class GDataFilterValueViewTable extends DataGrid implements EditManager {
                 return value;
             }
         });
+        setTableBuilder(new GPropertyTableBuilder<Object>(this) {
+            @Override
+            public String getBackground(Object rowValue, int row, int column) {
+                return null;
+            }
+
+            @Override
+            public String getForeground(Object rowValue, int row, int column) {
+                return null;
+            }
+
+            @Override
+            public Double getCellPixelHeight() {
+                return (double) GDataFilterValueViewTable.this.property.getMinimumPixelHeight();
+            }
+        });
         setRowData(Arrays.asList(new Object()));
     }
 
     public void setProperty(GPropertyDraw property) {
         this.property = property;
         setTableWidth(property.getPreferredPixelWidth(), com.google.gwt.dom.client.Style.Unit.PX);
+        setHeight(property.getMinimumHeight());
     }
 
     public Object getValue() {
@@ -73,7 +91,7 @@ public class GDataFilterValueViewTable extends DataGrid implements EditManager {
 
     public void setValue(Object value) {
         this.value = value;
-        redraw();
+        cell.update();
     }
 
     public void focusOnValue() {
@@ -95,6 +113,8 @@ public class GDataFilterValueViewTable extends DataGrid implements EditManager {
     class DataFilterValueEditableCell extends AbstractCell<Object> {
         private boolean isInEditingState = false;
         private GridCellEditor cellEditor;
+        private DivElement parentElement;
+        private Context context;
 
         public DataFilterValueEditableCell() {
             super(DBLCLICK, KEYDOWN, KEYPRESS, BLUR);
@@ -108,6 +128,12 @@ public class GDataFilterValueViewTable extends DataGrid implements EditManager {
         @Override
         public void renderDom(Context context, DivElement cellElement, Object value) {
             assert !isInEditingState;
+            if (parentElement == null) {
+                parentElement = cellElement;
+            }
+            if (this.context == null) {
+                this.context = context;
+            }
 
             GridCellRenderer cellRenderer = property.getGridCellRenderer();
             cellRenderer.renderDom(context, cellElement, value);
@@ -147,7 +173,16 @@ public class GDataFilterValueViewTable extends DataGrid implements EditManager {
         public void finishEditing() {
             isInEditingState = false;
             cellEditor = null;
-            GDataFilterValueViewTable.this.setValue(value);
+            update();
+        }
+
+        public void update() {
+            if (context != null && parentElement != null) {
+                removeAllChildren(parentElement);
+                renderDom(context, parentElement, value);
+                redraw();
+                focusOnValue();
+            }
         }
     }
 }

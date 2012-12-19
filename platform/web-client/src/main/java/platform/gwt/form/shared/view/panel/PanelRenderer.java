@@ -15,4 +15,5 @@ public interface PanelRenderer extends Serializable {
     void updateCellForegroundValue(Object value);
 
     void focus();
+    String getWidth();
 }

@@ -184,21 +184,11 @@ public class GFormLayout extends FlowPanel {
 
         double sum = 0;
         for (GComponent child : container.children) {
-            if (width) {
-                if (!container.drawVertical()) {
-                    if (!shouldBeCollapsed(child, width)) {
-                        sum += child.fillHorizontal;
-                    }
+            if (!shouldBeCollapsed(child, width)) {
+                if (width) {
+                    sum += child.fillHorizontal;
                 } else {
-                    return "100%";
-                }
-            } else {
-                if (container.drawVertical()) {
-                    if (!shouldBeCollapsed(child, width)) {
-                        sum += child.fillVertical;
-                    }
-                } else {
-                    return "100%";
+                    sum += child.fillVertical;
                 }
             }
         }

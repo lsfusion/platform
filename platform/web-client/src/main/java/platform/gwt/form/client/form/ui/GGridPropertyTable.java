@@ -49,7 +49,12 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     public GGridPropertyTable(GFormController iform) {
         super(iform, GGRID_RESOURCES);
 
-        setTableBuilder(new GGridPropertyTableBuilder(this));
+        setTableBuilder(new GGridPropertyTableBuilder<T>(this) {
+            @Override
+            public Double getCellPixelHeight() {
+                return getRowHeight();
+            }
+        });
 
         setEmptyTableWidget(new HTML("The table is empty"));
 
@@ -103,6 +108,10 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
     public Boolean getSortDirection(Header header) {
         return sortableHeaderManager.getSortDirection(getHeaderIndex(header));
+    }
+
+    protected Double getRowHeight() {
+        return null;
     }
 
     public abstract GGroupObjectValue getCurrentKey();

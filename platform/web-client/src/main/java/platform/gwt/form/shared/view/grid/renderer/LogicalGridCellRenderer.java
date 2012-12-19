@@ -18,7 +18,7 @@ public class LogicalGridCellRenderer extends AbstractGridCellRenderer {
 
         ImageElement img = center.appendChild(Document.get().createImageElement());
         img.setSrc(getCBImagePath(checked));
-        img.getStyle().setVerticalAlign(Style.VerticalAlign.BOTTOM);
+        img.getStyle().setVerticalAlign(Style.VerticalAlign.TEXT_BOTTOM);
     }
 
     @Override

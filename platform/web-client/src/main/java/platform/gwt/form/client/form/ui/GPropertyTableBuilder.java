@@ -20,7 +20,7 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
     private final String firstColumnStyle;
     private final String lastColumnStyle;
 
-    public GPropertyTableBuilder(GPropertyTable table) {
+    public GPropertyTableBuilder(DataGrid table) {
         super(table);
 
         // Cache styles for faster access.
@@ -71,6 +71,12 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
                 td.setVAlign(vAlign.getVerticalAlignString());
             }
 
+            Double height = getCellPixelHeight();
+            if (height != null) {
+                td.getStyle().setHeight(height, Style.Unit.PX);
+                td.getStyle().setLineHeight(height, Style.Unit.PX);
+            }
+
             String backgroundColor = getBackground(rowValue, rowIndex, columnIndex);
             if (backgroundColor != null) {
                 td.getStyle().setBackgroundColor(backgroundColor);
@@ -113,6 +119,12 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
 
         TableCellElement td = tr.getCells().getItem(columnIndex);
 
+        Double height = getCellPixelHeight();
+        if (height != null) {
+            td.getStyle().setHeight(height, Style.Unit.PX);
+            td.getStyle().setLineHeight(height, Style.Unit.PX);
+        }
+
         String backgroundColor = getBackground(rowValue, rowIndex, columnIndex);
         if (backgroundColor != null) {
             td.getStyle().setBackgroundColor(backgroundColor);
@@ -131,5 +143,6 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
 
     public abstract String getBackground(T rowValue, int row, int column);
     public abstract String getForeground(T rowValue, int row, int column);
+    public abstract Double getCellPixelHeight();
 }
 

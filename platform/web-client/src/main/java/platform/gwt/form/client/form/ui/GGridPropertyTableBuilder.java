@@ -1,6 +1,6 @@
 package platform.gwt.form.client.form.ui;
 
-public class GGridPropertyTableBuilder<T extends GridDataRecord> extends GPropertyTableBuilder<T> {
+public abstract class GGridPropertyTableBuilder<T extends GridDataRecord> extends GPropertyTableBuilder<T> {
 
     public GGridPropertyTableBuilder(GGridPropertyTable table) {
         super(table);

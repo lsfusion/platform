@@ -13,6 +13,8 @@ import static com.google.gwt.dom.client.BrowserEvents.*;
 import static platform.gwt.base.client.GwtClientUtils.stopPropagation;
 
 public abstract class TextBasedGridCellEditor extends AbstractGridCellEditor {
+    protected String inputElementTagName = "input";
+
     protected final class ParseException extends Exception {
     }
 
@@ -66,8 +68,7 @@ public abstract class TextBasedGridCellEditor extends AbstractGridCellEditor {
         if (keyDown || keyPress) {
             int keyCode = event.getKeyCode();
             if (keyPress && keyCode == KeyCodes.KEY_ENTER) {
-                stopPropagation(event);
-                validateAndCommit(parent);
+                enterPressed(event, parent);
             } else if (keyDown && keyCode == KeyCodes.KEY_ESCAPE) {
                 stopPropagation(event);
                 editManager.cancelEditing();
@@ -80,11 +81,16 @@ public abstract class TextBasedGridCellEditor extends AbstractGridCellEditor {
             EventTarget eventTarget = event.getEventTarget();
             if (Element.is(eventTarget)) {
                 Element target = Element.as(eventTarget);
-                if ("input".equals(target.getTagName().toLowerCase())) {
+                if (inputElementTagName.equals(target.getTagName().toLowerCase())) {
                     editManager.cancelEditing();
                 }
             }
         }
+    }
+
+    protected void enterPressed(NativeEvent event, Element parent) {
+        stopPropagation(event);
+        validateAndCommit(parent);
     }
 
     @Override
@@ -96,7 +102,12 @@ public abstract class TextBasedGridCellEditor extends AbstractGridCellEditor {
         Style inputStyle = input.getStyle();
         inputStyle.setBorderWidth(0, Style.Unit.PX);
         inputStyle.setMargin(0, Style.Unit.PX);
+        inputStyle.setPaddingTop(0, Style.Unit.PX);
+        inputStyle.setPaddingRight(4, Style.Unit.PX);
+        inputStyle.setPaddingBottom(0, Style.Unit.PX);
+        inputStyle.setPaddingLeft(4, Style.Unit.PX);
         inputStyle.setWidth(100, Style.Unit.PCT);
+        inputStyle.setHeight(100, Style.Unit.PCT);
         inputStyle.setFontSize(8, Style.Unit.PT);
         if (textAlign != null) {
             inputStyle.setTextAlign(textAlign);

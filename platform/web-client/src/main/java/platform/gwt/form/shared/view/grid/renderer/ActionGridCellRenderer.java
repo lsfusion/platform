@@ -17,29 +17,31 @@ public class ActionGridCellRenderer extends AbstractGridCellRenderer {
 
     @Override
     public void renderDom(Cell.Context context, DivElement cellElement, Object value) {
-        DivElement center = cellElement.appendChild(Document.get().createDivElement());
-        center.setAttribute("align", "center");
-
-        DivElement div = center.appendChild(Document.get().createDivElement());
+        DivElement div = cellElement.appendChild(Document.get().createDivElement());
         Style divStyle = div.getStyle();
         divStyle.setBackgroundColor("#F1F1F1");
-        divStyle.setBorderColor("#BBB");
+        divStyle.setBorderColor("#BBB #BBB #A0A0A0");
         divStyle.setBorderWidth(1, Style.Unit.PX);
         divStyle.setBorderStyle(Style.BorderStyle.SOLID);
-        divStyle.setProperty("borderBottom", "1px solid #A0A0A0");
         divStyle.setProperty("borderRadius", 3, Style.Unit.PX);
-        divStyle.setWidth(48, Style.Unit.PX);
-        divStyle.setHeight(14, Style.Unit.PX);
+        divStyle.setProperty("display", "table");
+        divStyle.setWidth(100, Style.Unit.PCT);
+
+        DivElement innerDiv = div.appendChild(Document.get().createDivElement());
+        innerDiv.setAttribute("align", "center");
+        // здесь...
+        div.addClassName("mozBoxSized");
+        innerDiv.getStyle().setMarginBottom(-2, Style.Unit.PX);
 
         if (property.iconPath != null) {
-            ImageElement img = div.appendChild(Document.get().createImageElement());
+            ImageElement img = innerDiv.appendChild(Document.get().createImageElement());
             img.getStyle().setWidth(14, Style.Unit.PX);
             img.getStyle().setHeight(14, Style.Unit.PX);
             setImage(img, value);
+            // ... и здесь избавляемся от двух пикселов, добавляемых к 100%-й высоте рамкой
+            img.getStyle().setMarginBottom(-2, Style.Unit.PX);
         } else {
-            DivElement textDiv = div.appendChild(Document.get().createDivElement());
-            textDiv.setAttribute("align", "center");
-            textDiv.setInnerText("...");
+            innerDiv.setInnerText("...");
         }
     }
 

@@ -2,8 +2,8 @@ package platform.gwt.form.client.form.ui;
 
 import com.google.gwt.core.client.GWT;
 import platform.gwt.base.shared.GwtSharedUtils;
-import platform.gwt.cellview.client.cell.Cell;
 import platform.gwt.cellview.client.Column;
+import platform.gwt.cellview.client.cell.Cell;
 import platform.gwt.form.shared.view.GPropertyDraw;
 import platform.gwt.form.shared.view.changes.GGroupObjectValue;
 import platform.gwt.form.shared.view.changes.dto.ColorDTO;
@@ -38,7 +38,15 @@ public class GSinglePropertyTable extends GPropertyTable {
 
         setRemoveKeyboardStylesOnFocusLost(true);
 
-        setTableBuilder(new GSinglePropertyTableBuilder(this));
+        setTableBuilder(new GSinglePropertyTableBuilder(this) {
+            @Override
+            public Double getCellPixelHeight() {
+                return (double) property.getPreferredPixelHeight();
+            }
+        });
+
+        getTableDataScroller().removeHorizontalScrollbar();
+        getTableDataScroller().removeVerticalScrollbar();
 
         addColumn(new Column<Object, Object>(new GridEditableCell(this)) {
             @Override

@@ -52,6 +52,11 @@ public class GContainer extends GComponent {
         }
     }
 
+    public String getChildPercentSize(GComponent child, boolean width) {
+        assert children.contains(child);
+        return (width ? child.fillHorizontal : child.fillVertical) / getChildFill(!width) * 100 + "%";
+    }
+
     private double getChildFill(boolean vertical) {
         double fill = 0;
         for (GComponent child : children) {

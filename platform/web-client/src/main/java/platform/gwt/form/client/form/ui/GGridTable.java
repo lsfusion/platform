@@ -38,6 +38,8 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
     private boolean columnsUpdated = false;
     private boolean dataUpdated = false;
 
+    private Double rowHeight = 0.0;
+
     private final ArrayList<GridDataRecord> currentRecords = new ArrayList<GridDataRecord>();
     private GGroupObjectValue currentKey;
     private GGroupObject groupObject;
@@ -159,6 +161,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
                 }
             }
 
+            rowHeight = 0.0;
             Map<GPropertyDraw, HashMap<GGroupObjectValue, GridColumn>> newColumnsMap = new HashMap<GPropertyDraw, HashMap<GGroupObjectValue, GridColumn>>();
             for (int i = 0; i < columnProperties.size(); ++i) {
                 GPropertyDraw property = columnProperties.get(i);
@@ -176,6 +179,8 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
                 header.setCaption(columnCaptions.get(i));
 
                 putToDoubleMap(newColumnsMap, property, columnKey, column);
+
+                rowHeight = Math.max(rowHeight, columnProperties.get(i).getMinimumPixelHeight());
             }
 
             for (Map<GGroupObjectValue, GridColumn> columnsCollection : columnsMap.values()) {
@@ -280,11 +285,16 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
 
     public Object getSelectedValue(GPropertyDraw property) {
         GridDataRecord selectedRecord = getKeyboardSelectedRowValue();
-        if (selectedRecord != null) {
+        if (selectedRecord != null && getMinPropertyIndex(property) != -1) {
             return getColumn(getMinPropertyIndex(property)).getValue(selectedRecord);
         }
 
         return null;
+    }
+
+    @Override
+    protected Double getRowHeight() {
+        return rowHeight;
     }
 
     public void setCurrentKey(GGroupObjectValue currentKey) {

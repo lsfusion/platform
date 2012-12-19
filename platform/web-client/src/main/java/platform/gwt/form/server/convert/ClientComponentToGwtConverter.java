@@ -223,6 +223,8 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.maximumCharWidth = clientPropertyDraw.maximumCharWidth;
         propertyDraw.preferredCharWidth = clientPropertyDraw.preferredCharWidth;
 
+        propertyDraw.panelLabelAbove = clientPropertyDraw.panelLabelAbove;
+
         return propertyDraw;
     }
 

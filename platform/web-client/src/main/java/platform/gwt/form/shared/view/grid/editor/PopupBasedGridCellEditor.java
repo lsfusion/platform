@@ -86,6 +86,12 @@ public abstract class PopupBasedGridCellEditor extends AbstractGridCellEditor {
             div = cellParent;
         }
 
+        Style divStyle = div.getStyle();
+        divStyle.setPaddingTop(0, Style.Unit.PX);
+        divStyle.setPaddingRight(4, Style.Unit.PX);
+        divStyle.setPaddingBottom(0, Style.Unit.PX);
+        divStyle.setPaddingLeft(4, Style.Unit.PX);
+
 
         if (text == null || text.trim().isEmpty()) {
             div.setInnerText(EscapeUtils.UNICODE_NBSP);

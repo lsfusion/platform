@@ -1,6 +1,6 @@
 package platform.gwt.form.client.form.ui;
 
-public class GSinglePropertyTableBuilder extends GPropertyTableBuilder<Object> {
+public abstract class GSinglePropertyTableBuilder extends GPropertyTableBuilder<Object> {
 
     private GSinglePropertyTable table;
 

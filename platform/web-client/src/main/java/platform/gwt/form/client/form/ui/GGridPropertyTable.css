@@ -53,22 +53,19 @@
 }
 
 .dataGridCell {
-    /*работает как min-height*/
-    height: 16px;
     font-size: fontSize;
-
 
     border-bottom: 1px solid #CCCCCC;
     border-left: 1px solid #CCCCCC;
 
-    padding: 0px 4px;
+    padding: 0;
 
     overflow: hidden;
     white-space: nowrap;
 }
 
 .dataGridCell div {
-    height: 16px;
+    height: 100%;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;

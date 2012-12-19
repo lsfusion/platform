@@ -1,4 +1,4 @@
-body, html, .gwt-Button, .messageBox-message, .ResizableWindow-header, .captionPanelLegend, .gwt-TreeItem, .gwt-TabBarItem,
+body, html, textarea, .gwt-Button, .messageBox-message, .ResizableWindow-header, .captionPanelLegend, .gwt-TreeItem, .gwt-TabBarItem,
 .checkBoxFilter, .comboBoxFilter, .filterDialogHeader, .dateTimeEditorBox, .customFontPresenter {
     font-size: 8pt;
 }
@@ -33,6 +33,10 @@ input[type=checkbox] {
     vertical-align: middle;
     position: relative;
     bottom: 2px;
+}
+
+textarea {
+    font-family: 'Arial Unicode MS', Arial, sans-serif;
 }
 
 /* ------------ Tab panel ------------ */
@@ -177,7 +181,7 @@ input[type=checkbox] {
 }
 
 .dataPanelRendererPanel {
-    margin: 0 2px;
+    padding: 0 2px;
     white-space: nowrap;
 }
 
@@ -322,4 +326,8 @@ input[type=checkbox] {
     padding: 2px;
     text-align: right;
     float: right;
+}
+
+.mozBoxSized {
+    -moz-box-sizing: border-box;
 }

@@ -52,6 +52,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
     public int maximumCharWidth;
     public int preferredCharWidth;
 
+    public boolean panelLabelAbove;
+
     private transient GridCellRenderer cellRenderer;
 
     public static class AddRemove implements Serializable {
@@ -154,7 +156,15 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
     }
 
     public String getMinimumHeight() {
-        return minimumHeight + "px";
+        return getMinimumPixelWidth() + "px";
+    }
+
+    public int getMinimumPixelHeight() {
+        if (minimumHeight != -1) {
+            return minimumHeight;
+        } else {
+            return baseType.getMinimumPixelHeight();
+        }
     }
 
     public String getMaximumWidth() {
@@ -182,7 +192,15 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
     }
 
     public String getPreferredHeight() {
-        return preferredHeight + "px";
+        return getPreferredPixelHeight() + "px";
+    }
+
+    public int getPreferredPixelHeight() {
+        if (preferredHeight != -1) {
+            return preferredHeight;
+        } else {
+            return baseType.getPreferredPixelHeight();
+        }
     }
 
     public LinkedHashMap<String, String> getContextMenuItems() {

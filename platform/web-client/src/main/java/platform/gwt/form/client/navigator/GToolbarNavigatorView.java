@@ -64,7 +64,9 @@ public class GToolbarNavigatorView extends GNavigatorView {
         if (element.equals(selected)) {
             button.addStyleName("toolbarSelectedNavigatorButton");
         }
-        button.getElement().getStyle().setPaddingLeft(7 + PADDING_STEP * step, Style.Unit.PX);
+        if (vertical) {
+            button.getElement().getStyle().setPaddingLeft(7 + PADDING_STEP * step, Style.Unit.PX);
+        }
 
         panel.add(button);
 

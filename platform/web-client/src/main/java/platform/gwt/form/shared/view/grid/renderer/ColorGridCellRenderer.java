@@ -29,11 +29,9 @@ public class ColorGridCellRenderer extends AbstractGridCellRenderer {
         div.setInnerText(EscapeUtils.UNICODE_NBSP);
 
         Style divStyle = div.getStyle();
-        divStyle.setHeight(16, Style.Unit.PX);
         divStyle.setBorderWidth(0, Style.Unit.PX);
         divStyle.setColor(color);
         divStyle.setBackgroundColor(color);
-        divStyle.setProperty("minHeight", 16, Style.Unit.PX);
 
         cellParent.appendChild(div);
     }

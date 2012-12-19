@@ -164,6 +164,9 @@ public class GPanelController {
                     PanelRenderer renderer = renderers.get(columnKey);
                     if (renderer != null) {
                         renderersPanel.add(renderer.getComponent());
+                        if (renderer.getWidth() != null) {
+                            renderersPanel.setWidth(renderer.getWidth());
+                        }
                     }
                 }
 

@@ -22,13 +22,16 @@ public class DataPanelRenderer implements PanelRenderer {
 
     protected final Label label;
     protected final GSinglePropertyTable valueTable;
-    protected final HorizontalPanel panel;
+    protected final CellPanel panel;
+    protected ResizeLayoutPanel gridPanel;
 
     private String caption;
 
     private EventTarget focusTargetAfterEdit;
 
-    public DataPanelRenderer(GFormController form, GPropertyDraw property, GGroupObjectValue columnKey) {
+    private String componentWidth = null;
+
+    public DataPanelRenderer(GFormController form, final GPropertyDraw property, GGroupObjectValue columnKey) {
         label = new Label(caption = property.getEditCaption());
         label.addStyleName("customFontPresenter");
 
@@ -46,20 +49,36 @@ public class DataPanelRenderer implements PanelRenderer {
             }
         };
 
-        valueTable.setTableWidth(propertyPixelWidth, Style.Unit.PX);
-        valueTable.setWidth("100%");
-        valueTable.setHeight("100%");
-
-        ResizeLayoutPanel gridPanel = new ResizeLayoutPanel();
-        gridPanel.setPixelSize(propertyPixelWidth, 16);
+        gridPanel = new ResizeLayoutPanel();
         gridPanel.addStyleName("dataPanelRendererGridPanel");
         gridPanel.add(valueTable);
 
-        panel = new HorizontalPanel();
-        panel.add(label);
-        panel.add(gridPanel);
-        panel.setCellVerticalAlignment(label, HasVerticalAlignment.ALIGN_MIDDLE);
+        panel = property.panelLabelAbove ? new VerticalPanel() : new HorizontalPanel();
         panel.addStyleName("dataPanelRendererPanel");
+        panel.setWidth("100%");
+
+        panel.add(label);
+        panel.setCellVerticalAlignment(label, HasVerticalAlignment.ALIGN_MIDDLE);
+        panel.setCellHorizontalAlignment(label, HasAlignment.ALIGN_CENTER);
+
+        panel.add(gridPanel);
+        panel.setCellWidth(gridPanel, "100%");
+
+        if (property.preferredHeight != -1) {
+            gridPanel.setHeight(property.preferredHeight + "px");
+        } else {
+            gridPanel.setHeight(property.getPreferredHeight());
+        }
+
+        if (property.preferredWidth != -1) {
+            gridPanel.setWidth(property.preferredWidth + "px");
+        } else if (property.fillHorizontal > 0) {
+            componentWidth =  property.container.getChildPercentSize(property, true);
+            // в этом случае при высте < 34px небольшой косяк в FF
+        } else {
+            valueTable.setTableWidth(propertyPixelWidth, Style.Unit.PX);
+            gridPanel.setWidth(propertyPixelWidth + "px");
+        }
 
         if (property.editKey != null) {
             HotkeyManager.get().addHotkeyBinding(form.getElement(), property.editKey, new Binding() {
@@ -117,5 +136,10 @@ public class DataPanelRenderer implements PanelRenderer {
                 valueTable.setFocus(true);
             }
         });
+    }
+
+    @Override
+    public String getWidth() {
+        return componentWidth;
     }
 }
