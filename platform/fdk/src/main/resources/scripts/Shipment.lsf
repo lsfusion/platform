@@ -127,11 +127,11 @@ META defineShipment(sign, stockProp, toShowProp, captionProp, prop)
     @defineDocumentInterfaceCreate (shipment, toShowProp, captionProp);
 
     @defineDocumentInterfaceBarcodeSkuPrefix (shipment, sku, , );
-    @defineDocumentInterfaceDetailQuantityPrefix (shipment, pack, ' упаковок');
+    @defineDocumentDetailInterfaceDataQuantityPackCustomPrefix (shipmentDetail, , ' упаковок');
     @deriveDocumentDetailQuantityBarcodeCustom (userShipmentDetail, sku, prop, toShowProp);
 //    @deriveDocumentQuantityPackageDetailOnChangeQuantity(userShipmentDetail, prop);
 
-    Shipment.quantityPackShipmentDetail(detail) += packQuantityShipmentDetail(detail);
+    Shipment.quantityPackShipmentDetail(detail) += quantityPackShipmentDetail(detail);
 
 // --------------------------- Формы --------------------------------- //
 
@@ -148,7 +148,7 @@ META defineShipment(sign, stockProp, toShowProp, captionProp, prop)
         OBJECTS d = userShipmentDetail
         PROPERTIES (d) indexUserShipmentDetail, idBarcodeSkuUserShipmentDetail, nameSkuUserShipmentDetail, shortNameUOMSkuUserShipmentDetail
         PROPERTIES (d) SHOWIF toShowProp###userShipment(s) idBarcodePackUserShipmentDetail, shortNameUOMPackUserShipmentDetail,
-                       amountPackUserShipmentDetail, packQuantityUserShipmentDetail
+                       amountPackUserShipmentDetail, quantityPackUserShipmentDetail
         PROPERTIES (d) quantityUserShipmentDetail, priceUserShipmentDetail, sumUserShipmentDetail,
                        name###stockProp###shipmentDetail, ADDOBJ, delete
 
@@ -239,7 +239,7 @@ META defineShipment(sign, stockProp, toShowProp, captionProp, prop)
         OBJECTS d = shipmentDetail
         PROPERTIES (d) READONLY indexShipmentDetail, idBarcodeSkuShipmentDetail, nameSkuShipmentDetail, shortNameUOMSkuShipmentDetail
         PROPERTIES (d) READONLY SHOWIF toShowProp###shipment(s) idBarcodePackShipmentDetail, shortNameUOMPackShipmentDetail,
-                       amountPackShipmentDetail, packQuantityShipmentDetail
+                       amountPackShipmentDetail, quantityPackShipmentDetail
         PROPERTIES (d) READONLY quantityShipmentDetail, priceShipmentDetail, sumShipmentDetail, name###stockProp###shipmentDetail
         FILTERS shipmentShipmentDetail(d) == s
 
@@ -343,7 +343,7 @@ META defineShipment(sign, stockProp, toShowProp, captionProp, prop)
         OBJECTS d = orderDetail
         PROPERTIES (d) READONLY indexOrderDetail, idBarcodeSkuOrderDetail, nameSkuOrderDetail, shortNameUOMSkuOrderDetail
         PROPERTIES (d) READONLY SHOWIF toShowProp###order(o) idBarcodePackOrderDetail, shortNameUOMPackOrderDetail,
-                       amountPackOrderDetail, packQuantityOrderDetail
+                       amountPackOrderDetail, quantityPackOrderDetail
         PROPERTIES (d) READONLY quantityOrderDetail, shippedOrderDetail, priceOrderDetail, sumOrderDetail, name###stockProp###orderDetail,
                        toShipOrderDetail
         FILTERS orderOrderDetail(d) == o
@@ -418,7 +418,7 @@ META defineShipment(sign, stockProp, toShowProp, captionProp, prop)
                     SET skuUserShipmentDetail(d) <- skuOrderDetail(orderDetail);
                     SET barcodePackUserShipmentDetail(d) <- barcodePackOrderDetail(orderDetail);
                     SET amountPackUserShipmentDetail(d) <- amountPackOrderDetail(orderDetail);
-                    SET packQuantityUserShipmentDetail (d) <- toShipOrderDetail(orderDetail)/amountPackOrderDetail(orderDetail);
+                    SET quantityPackUserShipmentDetail (d) <- toShipOrderDetail(orderDetail)/amountPackOrderDetail(orderDetail);
                     SET quantityUserShipmentDetail (d) <- toShipOrderDetail(orderDetail);
             }
         }
@@ -527,7 +527,7 @@ META defineShipment(sign, stockProp, toShowProp, captionProp, prop)
         OBJECTS d = invoiceDetail
         PROPERTIES (d) READONLY indexInvoiceDetail, idBarcodeSkuInvoiceDetail, nameSkuInvoiceDetail, shortNameUOMSkuInvoiceDetail
         PROPERTIES (d) READONLY SHOWIF toShowProp##Invoice(i) idBarcodePackInvoiceDetail, shortNameUOMPackInvoiceDetail,
-                       amountPackInvoiceDetail, packQuantityInvoiceDetail
+                       amountPackInvoiceDetail, quantityPackInvoiceDetail
         PROPERTIES (d) READONLY quantityInvoiceDetail, shippedInvoiceDetail, priceInvoiceDetail, sumInvoiceDetail,
                        numberVATInvoiceDetail, valueVATInvoiceDetail, VATSumInvoiceDetail, invoiceSumInvoiceDetail,
                        name###stockProp###InvoiceDetail, descriptionOrderInvoiceDetail
@@ -590,7 +590,7 @@ META defineShipment(sign, stockProp, toShowProp, captionProp, prop)
                     SET skuUserShipmentDetail(d) <- skuInvoiceDetail(invoiceDetail);
                     SET barcodePackUserShipmentDetail(d) <- barcodePackInvoiceDetail(invoiceDetail);
                     SET amountPackUserShipmentDetail(d) <- amountPackInvoiceDetail(invoiceDetail);
-                    SET packQuantityUserShipmentDetail (d) <- toShipInvoiceDetail(invoiceDetail)/amountPackInvoiceDetail(invoiceDetail);
+                    SET quantityPackUserShipmentDetail (d) <- toShipInvoiceDetail(invoiceDetail)/amountPackInvoiceDetail(invoiceDetail);
 
                     SET quantityUserShipmentDetail (d) <- toShipInvoiceDetail(invoiceDetail);
 
@@ -720,7 +720,7 @@ META defineShipment(sign, stockProp, toShowProp, captionProp, prop)
     toShowProp###shipment(shipment) +=  toShowProp###invoice(invoiceInvoiceShipment(shipment));
     barcodePackShipmentDetail(shipmentDetail) +=  barcodePackInvoiceDetail(invoiceDetailInvoiceShipmentDetail(shipmentDetail));
     amountPackShipmentDetail(shipmentDetail) +=  amountPackInvoiceDetail(invoiceDetailInvoiceShipmentDetail(shipmentDetail));
-    packQuantityShipmentDetail(shipmentDetail) +=  packQuantityInvoiceDetail(invoiceDetailInvoiceShipmentDetail(shipmentDetail));
+    quantityPackShipmentDetail(shipmentDetail) +=  quantityPackInvoiceDetail(invoiceDetailInvoiceShipmentDetail(shipmentDetail));
 
     invoiceDetailShipmentDetail(shipmentDetail) += invoiceDetailInvoiceShipmentDetail(shipmentDetail);
 

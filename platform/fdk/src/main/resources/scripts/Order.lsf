@@ -179,7 +179,7 @@ META defineOrder(sign, stockProp, prop, toShowProp, captionProp)
 //-- Упаковка
     @defineDocumentInterfaceCreate (order, toShowProp, captionProp);
     @defineDocumentInterfaceBarcodeSkuPrefix (order, sku, , );
-    @defineDocumentInterfaceDetailQuantityPrefix (order, pack, ' упаковок');
+    @defineDocumentDetailInterfaceDataQuantityPackCustomPrefix (orderDetail, , ' упаковок');
     @deriveDocumentDetailQuantityBarcodeCustom (userOrderDetail, sku, prop, toShowProp);
 
 
@@ -200,7 +200,7 @@ META defineOrder(sign, stockProp, prop, toShowProp, captionProp)
         OBJECTS d = userOrderDetail
         PROPERTIES (d) indexUserOrderDetail, idBarcodeSkuUserOrderDetail, nameSkuUserOrderDetail, shortNameUOMSkuUserOrderDetail
         PROPERTIES (d) SHOWIF toShowProp###userOrder(o) idBarcodePackUserOrderDetail, shortNameUOMPackUserOrderDetail,
-                       amountPackUserOrderDetail, packQuantityUserOrderDetail
+                       amountPackUserOrderDetail, quantityPackUserOrderDetail
         PROPERTIES (d) quantityUserOrderDetail, namePriceListTypeUserOrderDetail,
                        priceUserOrderDetail ON CHANGE EXEC changeInvoicePriceUserOrderDetail(d), sumUserOrderDetail,
                        numberVATUserOrderDetail ON CHANGE EXEC changeInvoicePriceVATUserOrderDetail(d),
@@ -315,7 +315,7 @@ META defineOrder(sign, stockProp, prop, toShowProp, captionProp)
         OBJECTS d=orderDetail
         PROPERTIES (d) READONLY indexOrderDetail, idBarcodeSkuOrderDetail, nameSkuOrderDetail, shortNameUOMSkuOrderDetail
         PROPERTIES (d) READONLY SHOWIF toShowProp###order(o) idBarcodePackOrderDetail, shortNameUOMPackOrderDetail,
-                       amountPackOrderDetail, packQuantityOrderDetail
+                       amountPackOrderDetail, quantityPackOrderDetail
         PROPERTIES (d) READONLY quantityOrderDetail, namePriceListTypeOrderDetail, priceOrderDetail, sumOrderDetail,
                        numberVATOrderDetail, valueVATOrderDetail, VATSumOrderDetail, invoiceSumOrderDetail,
                        name###stockProp###orderDetail, shipmentDateOrderDetail, shipmentTimeOrderDetail
@@ -376,7 +376,7 @@ META deriveDocumentQuantityPackageDetailOnChangeQuantity(detail);
             SET quantity###detail(detail) <- requestedNumeric();
 
             IF  barcodePack###detail(detail) THEN {
-                SET packQuantity###detail(detail) <- quantity###detail(detail)/amountPack###detail(detail);
+                SET quantityPack###detail(detail) <- quantity###detail(detail)/amountPack###detail(detail);
             }
         } ELSE {
             EXEC delete(detail);
@@ -386,18 +386,18 @@ END
 
 //-- Расширение формы подбора упаковкой (несколько складов)
 META defineDocumentPackageSkuStockCustom(object, detail, skuProp, stockProp, prop)
-    packQuantitySku###object###stockProp 'Кол-во упаковок в документе' (sku, object, stock) = GROUP SUM packQuantity###detail(detail)
+    quantityPackSku###object###stockProp 'Кол-во упаковок в документе' (sku, object, stock) = GROUP SUM quantityPack###detail(detail)
         BY skuProp###detail(detail), object###detail(detail), stockProp###detail(detail);
 
     idBarcodePackSku 'Штрих-код упаковки' (sku)= idBarcode(prop###barcodeSku(sku));
     shortNameUOMPackSku 'Ед. изм. упаковки' (sku)= shortNameUOMBarcode(prop###barcodeSku(sku));
     amountPackSku 'Кол-во в упаковке'(sku) =amountBarcode(prop###barcodeSku(sku));
 
-    changePackQuantitySku###object###Stock = ACTION (sku, object, stock) {
+    changeQuantityPackSku###object###Stock = ACTION (sku, object, stock) {
         REQUEST NUMERIC[14,3] INPUT;
         IF detail###Sku###object###stockProp(sku, object, stock) THEN {
             IF requestedNumeric() THEN {
-                SET packQuantity###detail(detail) <- requestedNumeric() WHERE detail == detail###Sku###object###stockProp(sku, object, stock);
+                SET quantityPack###detail(detail) <- requestedNumeric() WHERE detail == detail###Sku###object###stockProp(sku, object, stock);
                 SET barcodePack###detail(detail) <- prop###barcodeSku(sku) WHERE detail == detail###Sku###object###stockProp(sku, object, stock);
                 SET amountPack###detail(detail) <- amountPackSku(sku) WHERE detail == detail###Sku###object###stockProp(sku, object, stock);
             } ELSE {
@@ -410,7 +410,7 @@ META defineDocumentPackageSkuStockCustom(object, detail, skuProp, stockProp, pro
                    SET object###detail(d) <- object;
                    SET data###stockProp###detail (d) <- stock;
                    SET skuProp###detail(d) <- sku;
-                   SET packQuantity###detail (d) <- requestedNumeric();
+                   SET quantityPack###detail (d) <- requestedNumeric();
                    SET shipmentDataDate###detail (d) <- shipmentDate###object(object);
                    SET shipmentDataTime###detail (d) <- shipmentTime###object(object);
                 }
@@ -426,6 +426,6 @@ META extendFormDocumentPackageSkuStockCustom(object, form, concrete, stockProp, 
 
     EXTEND FORM form
         PROPERTIES SHOWIF toShowProp###object(concrete)  BEFORE quantitySku###object###stockProp(s, concrete, st) idBarcodePackSku(s) READONLY, shortNameUOMPackSku(s) READONLY, amountPackSku(s) READONLY,
-        packQuantitySku###object###stockProp(s, concrete, st) ON CHANGE EXEC changePackQuantitySku###object###Stock(s, concrete, st)
+        quantityPackSku###object###stockProp(s, concrete, st) ON CHANGE EXEC changeQuantityPackSku###object###Stock(s, concrete, st)
     ;
 END

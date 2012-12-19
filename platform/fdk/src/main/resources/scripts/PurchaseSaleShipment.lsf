@@ -121,7 +121,7 @@ Purchase.editShipment(shipment) += ACTION EXEC editShipment(shipmentPurchaseShip
 Purchase.showPurchasePackShipment(shipment) +=  showSalePackShipment(shipmentPurchaseShipment(shipment));
 Purchase.barcodePackShipmentDetail(shipmentDetail) += barcodePackShipmentDetail(shipmentDetailPurchaseShipmentDetail(shipmentDetail));
 Purchase.amountPackShipmentDetail(shipmentDetail) +=  amountPackShipmentDetail(shipmentDetailPurchaseShipmentDetail(shipmentDetail));
-Purchase.packQuantityShipmentDetail(shipmentDetail) +=  packQuantityShipmentDetail(shipmentDetailPurchaseShipmentDetail(shipmentDetail));
+Purchase.quantityPackShipmentDetail(shipmentDetail) +=  quantityPackShipmentDetail(shipmentDetailPurchaseShipmentDetail(shipmentDetail));
 
 shipmentDetailShipmentDetail(shipmentDetail) += shipmentDetailPurchaseShipmentDetail(shipmentDetail);
 
@@ -152,7 +152,7 @@ FORM shipmentShipments 'Поставки'
 
     PROPERTIES (d) READONLY indexShipmentDetail, idBarcodeSkuShipmentDetail, nameSkuShipmentDetail, shortNameUOMSkuShipmentDetail,
                             quantityShipmentDetail
-    PROPERTIES (d) READONLY SHOWIF showSalePackShipment(o) idBarcodePackShipmentDetail, shortNameUOMPackShipmentDetail, amountPackShipmentDetail, packQuantityShipmentDetail
+    PROPERTIES (d) READONLY SHOWIF showSalePackShipment(o) idBarcodePackShipmentDetail, shortNameUOMPackShipmentDetail, amountPackShipmentDetail, quantityPackShipmentDetail
     PROPERTIES (d) READONLY priceShipmentDetail, sumShipmentDetail,
                             nameSupplierStockShipmentDetail, toShipShipmentDetail BACKGROUND backgroundPurchaseShipment(o)
     FILTERS shipmentShipmentDetail(d) == o
@@ -219,7 +219,7 @@ fillShipmentUserShipment 'Заполнить на основе поставки'
 
             SET Purchase.barcodePackUserShipmentDetail(d) <- barcodePackShipmentDetail(shipmentDetail);
             SET Purchase.amountPackUserShipmentDetail(d) <- amountPackShipmentDetail(shipmentDetail);
-            SET Purchase.packQuantityUserShipmentDetail(d) <- packQuantityShipmentDetail(shipmentDetail);
+            SET Purchase.quantityPackUserShipmentDetail(d) <- quantityPackShipmentDetail(shipmentDetail);
         }
     }
 } IN shipmentGroup;

@@ -246,7 +246,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
         ImportField dataSuppliersRangeItemField = new ImportField(getLCP("valueRate"));
         ImportField valueRetailVATItemField = new ImportField(getLCP("valueRate"));
         ImportField valueVATItemCountryDateField = new ImportField(getLCP("valueVATItemCountryDate"));
-        ImportField quantityPackItemField = new ImportField(getLCP("quantityPackItem"));
+//        ImportField quantityPackItemField = new ImportField(getLCP("quantityPackItem"));
         ImportField wareIDField = new ImportField(getLCP("sidExternalizable"));
         ImportField priceWareField = new ImportField(getLCP("dataWarePriceDate"));
         ImportField ndsWareField = new ImportField(getLCP("valueRate"));
@@ -331,7 +331,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                 LM.object(getClass("range")).getMapping(retailVATKey)));
         props.add(new ImportProperty(valueVATItemCountryDateField, getLCP("dataVATItemCountryDate").getMapping(itemKey, defaultCountryObject, dateField),
                 LM.object(getClass("range")).getMapping(VATKey)));
-        props.add(new ImportProperty(quantityPackItemField, getLCP("quantityPackItem").getMapping(itemKey)));
+//        props.add(new ImportProperty(quantityPackItemField, getLCP("quantityPackItem").getMapping(itemKey)));
 
         props.add(new ImportProperty(wareIDField, getLCP("wareItem").getMapping(itemKey),
                 LM.object(getClass("ware")).getMapping(wareKey)));
@@ -347,7 +347,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
         ImportTable table = new ImportTable(Arrays.asList(itemIDField, itemGroupIDField, itemCaptionField, UOMIDField,
                 nameUOMField, nameBrandField, brandIDField, nameCountryField, barcodeField, dateField,
                 importerPriceField, percentWholesaleMarkItemField, isFixPriceItemField, isLoafCutItemField, isWeightItemField,
-                compositionField, dataSuppliersRangeItemField, valueRetailVATItemField, valueVATItemCountryDateField, quantityPackItemField, wareIDField,
+                compositionField, dataSuppliersRangeItemField, valueRetailVATItemField, valueVATItemCountryDateField, wareIDField, //quantityPackItemField, wareIDField,
                 priceWareField, ndsWareField, writeOffRateIDField), data);
 
         DataSession session = createSession();
@@ -1011,13 +1011,13 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             quantityImportFile.read();
 
             String itemID = new String(quantityImportFile.getField("K_GRMAT").getBytes(), "Cp1251").trim();
-            Double quantityPackItem = new Double(new String(quantityImportFile.getField("PACKSIZE").getBytes(), "Cp1251").trim());
+//            Double quantityPackItem = new Double(new String(quantityImportFile.getField("PACKSIZE").getBytes(), "Cp1251").trim());
 
-            if (quantityPackItem == 0)
-                quantityPackItem = 1.0;
-            if (!quantities.containsKey(itemID)) {
-                quantities.put(itemID, quantityPackItem);
-            }
+//            if (quantityPackItem == 0)
+//                quantityPackItem = 1.0;
+//            if (!quantities.containsKey(itemID)) {
+//                quantities.put(itemID, quantityPackItem);
+//            }
         }
 
         DBF itemsImportFile = new DBF(itemsPath);

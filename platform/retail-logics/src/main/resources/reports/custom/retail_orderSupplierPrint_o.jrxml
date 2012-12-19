@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="o" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
-	<property name="ireport.zoom" value="0.7513148009015794"/>
+	<property name="ireport.zoom" value="2.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
@@ -56,7 +56,6 @@
 	<field name="topItem" class="java.lang.Integer"/>
 	<field name="packQuantityItemOrderSupplier" class="java.lang.Double"/>
 	<field name="sumQuantityItemOrderSupplier" class="java.lang.Double"/>
-	<field name="quantityPackItem" class="java.lang.Double"/>
 	<field name="minQuantityOrderItem" class="java.lang.Integer"/>
 	<field name="nameWareOrderSupplier" class="java.lang.String"/>
 	<field name="articleItem" class="java.lang.String"/>

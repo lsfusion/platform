@@ -239,9 +239,7 @@ EXTEND FORM item
                   nutritionalValueItem, energyItem,
                   fatsItem, carbohydratesItem, proteinsItem, isContainGMOItem,
 
-                  controlExpiryItem, daysExpiryItem, daysExpiryPackItem, hoursExpiryPackItem,
-
-                  quantityPackItem
+                  controlExpiryItem, daysExpiryItem, daysExpiryPackItem, hoursExpiryPackItem
 
     PROPERTIES(b) BEFORE delete titleScalesBarcode, titleCashRegisterBarcode
 

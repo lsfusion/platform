@@ -38,7 +38,7 @@ FORM invoiceInvoices 'Накладные'
     OBJECTS d = invoiceDetail
 
     PROPERTIES (d) READONLY indexInvoiceDetail, idBarcodeSkuInvoiceDetail, nameSkuInvoiceDetail, shortNameUOMSkuInvoiceDetail
-    PROPERTIES (d) READONLY SHOWIF showSalePackInvoice(o) idBarcodePackInvoiceDetail, shortNameUOMPackInvoiceDetail, amountPackInvoiceDetail, packQuantityInvoiceDetail
+    PROPERTIES (d) READONLY SHOWIF showSalePackInvoice(o) idBarcodePackInvoiceDetail, shortNameUOMPackInvoiceDetail, amountPackInvoiceDetail, quantityPackInvoiceDetail
     PROPERTIES (d) READONLY quantityInvoiceDetail, priceInvoiceDetail, sumInvoiceDetail, numberVATInvoiceDetail, valueVATInvoiceDetail,
                             VATSumInvoiceDetail, invoiceSumInvoiceDetail, nameSupplierStockInvoiceDetail
 
@@ -105,7 +105,7 @@ fillInvoiceUserInvoice 'Заполнить на основе накладной'
             SET Purchase.batchUserInvoiceDetail(d) <- batchInvoiceDetail(invoiceDetail);
             SET Purchase.barcodePackUserInvoiceDetail(d) <- barcodePackInvoiceDetail(invoiceDetail);
             SET Purchase.amountPackUserInvoiceDetail(d) <- amountPackInvoiceDetail(invoiceDetail);
-            SET Purchase.packQuantityUserInvoiceDetail(d) <- packQuantityInvoiceDetail(invoiceDetail);
+            SET Purchase.quantityPackUserInvoiceDetail(d) <- quantityPackInvoiceDetail(invoiceDetail);
             SET Purchase.quantityUserInvoiceDetail (d) <- quantityInvoiceDetail(invoiceDetail);
             SET Purchase.VATUserInvoiceDetail(d) <- VATInvoiceDetail(invoiceDetail);
             SET Purchase.valueVATUserInvoiceDetail(d) <- valueVATInvoiceDetail(invoiceDetail);

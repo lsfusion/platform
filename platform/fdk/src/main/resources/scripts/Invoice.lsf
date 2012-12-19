@@ -27,7 +27,7 @@ CLASS ABSTRACT invoiceDetail 'Строка накладной';
 @defineDocumentAbstractDetailQuantity(invoice);
 @defineDocumentDetailGrossWeight(invoice, sku);
 //@defineDocumentDetailQuantityPack (invoice, sku);
-@defineDocumentDetailAbstractDataQuantityPackCustomPrefix (invoiceDetail, , );
+@defineDocumentDetailAbstractDataQuantityPackCustomPrefix (invoiceDetail, , ' упаковок');
 @defineDocumentHeaderSkuQuantity(invoice, sku);
 
 @defineDocumentHeaderGrossWeight(invoice);
@@ -165,10 +165,10 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, prop)
     @defineDocumentInterfaceCreate (invoice, toShowProp, captionProp);
 
     @defineDocumentInterfaceBarcodeSkuPrefix (invoice, sku, , );
-    @defineDocumentInterfaceDetailQuantityPrefix (invoice, pack, ' упаковок');
+    @defineDocumentDetailInterfaceDataQuantityPackCustomPrefix (invoiceDetail, , ' упаковок');
     @deriveDocumentDetailQuantityBarcodeCustom (userInvoiceDetail, sku, prop, toShowProp);
 //    @deriveDocumentQuantityPackageDetailOnChangeQuantity(userInvoiceDetail, prop);
-    Invoice.quantityPackInvoiceDetail(detail) += packQuantityInvoiceDetail(detail);
+    Invoice.quantityPackInvoiceDetail(detail) += quantityPackInvoiceDetail(detail);
 
 
 //--  Связь с заказом
@@ -240,7 +240,7 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, prop)
         OBJECTS d = orderDetail
         PROPERTIES (d) READONLY indexOrderDetail, idBarcodeSkuOrderDetail, nameSkuOrderDetail, shortNameUOMSkuOrderDetail
         PROPERTIES (d) READONLY SHOWIF toShowProp###order(o) idBarcodePackOrderDetail, shortNameUOMPackOrderDetail,
-                       amountPackOrderDetail, packQuantityOrderDetail
+                       amountPackOrderDetail, quantityPackOrderDetail
         PROPERTIES (d) READONLY quantityOrderDetail, invoicedOrderDetail, priceOrderDetail, sumOrderDetail,
                         numberVATOrderDetail, valueVATOrderDetail, VATSumOrderDetail, invoiceSumOrderDetail,
                         name###stockProp###orderDetail, toInvoiceOrderDetail
@@ -317,7 +317,7 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, prop)
                     SET skuUserInvoiceDetail(d) <- skuOrderDetail(orderDetail);
                     SET barcodePackUserInvoiceDetail(d) <- barcodePackOrderDetail(orderDetail);
                     SET amountPackUserInvoiceDetail(d) <- amountPackOrderDetail(orderDetail);
-                    SET packQuantityUserInvoiceDetail (d) <- toInvoiceOrderDetail(orderDetail)/amountPackOrderDetail(orderDetail);
+                    SET quantityPackUserInvoiceDetail (d) <- toInvoiceOrderDetail(orderDetail)/amountPackOrderDetail(orderDetail);
                     SET quantityUserInvoiceDetail (d) <- toInvoiceOrderDetail(orderDetail);
                     SET VATUserInvoiceDetail (d) <- VATOrderDetail(orderDetail);
                     SET valueVATUserInvoiceDetail (d) <- valueVATOrderDetail(orderDetail);
@@ -412,7 +412,7 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, prop)
         OBJECTS d = userInvoiceDetail
         PROPERTIES (d) indexUserInvoiceDetail, idBarcodeSkuUserInvoiceDetail, nameSkuUserInvoiceDetail, shortNameUOMSkuUserInvoiceDetail
         PROPERTIES (d) SHOWIF toShowProp###userInvoice(i) idBarcodePackUserInvoiceDetail, shortNameUOMPackUserInvoiceDetail,
-                       amountPackUserInvoiceDetail, packQuantityUserInvoiceDetail
+                       amountPackUserInvoiceDetail, quantityPackUserInvoiceDetail
         PROPERTIES (d) quantityUserInvoiceDetail, namePriceListTypeUserInvoiceDetail,
                        priceUserInvoiceDetail ON CHANGE EXEC changeInvoicePriceUserInvoiceDetail(d), sumUserInvoiceDetail,
                        numberVATUserInvoiceDetail ON CHANGE EXEC changeInvoicePriceVATUserInvoiceDetail(d),
@@ -548,7 +548,7 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, prop)
         OBJECTS d = invoiceDetail
         PROPERTIES (d) READONLY indexInvoiceDetail, idBarcodeSkuInvoiceDetail, nameSkuInvoiceDetail, shortNameUOMSkuInvoiceDetail
         PROPERTIES (d) READONLY SHOWIF toShowProp##Invoice(i) idBarcodePackInvoiceDetail, shortNameUOMPackInvoiceDetail,
-                       amountPackInvoiceDetail, packQuantityInvoiceDetail
+                       amountPackInvoiceDetail, quantityPackInvoiceDetail
         PROPERTIES (d) READONLY quantityInvoiceDetail, namePriceListTypeInvoiceDetail, priceInvoiceDetail, sumInvoiceDetail,
                        numberVATInvoiceDetail, valueVATInvoiceDetail, VATSumInvoiceDetail, invoiceSumInvoiceDetail,
                        descriptionOrderInvoiceDetail

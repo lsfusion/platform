@@ -99,7 +99,7 @@ Purchase.invoiceSumOrderDetail(orderDetail) += invoiceSumOrderDetail(orderDetail
 Purchase.showPurchasePackOrder(order) +=  showSalePackOrder(orderPurchaseOrder(order));
 Purchase.barcodePackOrderDetail(orderDetail) +=  barcodePackOrderDetail(orderDetailPurchaseOrderDetail(orderDetail));
 Purchase.amountPackOrderDetail(orderDetail) +=  amountPackOrderDetail(orderDetailPurchaseOrderDetail(orderDetail));
-Purchase.packQuantityOrderDetail(orderDetail) +=  packQuantityOrderDetail(orderDetailPurchaseOrderDetail(orderDetail));
+Purchase.quantityPackOrderDetail(orderDetail) +=  quantityPackOrderDetail(orderDetailPurchaseOrderDetail(orderDetail));
 
 Purchase.editOrder(order) += ACTION EXEC editOrder(orderPurchaseOrder(order));
 

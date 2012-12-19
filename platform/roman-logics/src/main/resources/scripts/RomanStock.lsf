@@ -143,8 +143,39 @@ EXTEND FORM costSkuLedger
     PROPERTIES(bt) READONLY importerPriceBatchA, supplierPriceBatchA, numberSupplierVATBatchA, valueSupplierVATBatchA
 ;
 
+// ------------------------------------------------- Кол-во в грузовом месте ----------------------------------- //
+
+META defineDocumentDetailQuantityPackCustomPrefix (detail, skuProp, prefix, caption)
+    prefix###quantityPack###detail 'Кол-во грузовых мест'###caption (detail) = round0(quantity###detail(detail) / quantityPackSku(skuProp###detail(detail))) PERSISTENT;
+END
+META defineDocumentInterfaceDetailQuantityPackCustomPrefix (detail, skuProp, prefix, caption)
+    @defineDocumentDetailQuantityPackCustomPrefix(detail, skuProp, prefix, caption);
+    @defineDocumentDetailQuantityPackCustomPrefix (user###detail, skuProp, prefix, caption);
+    prefix###quantityPack###detail (detail) += prefix###quantityPack###user###detail(detail);
+END
+
+META defineDocumentDetailQuantityPackCustom (detail, skuProp)
+    @defineDocumentDetailQuantityPackCustomPrefix(detail, skuProp, , );
+END
+META defineDocumentInterfaceDetailQuantityPackCustom (detail, skuProp)
+    @defineDocumentInterfaceDetailQuantityPackCustomPrefix(detail, skuProp, , );
+END
+
+META defineDocumentDetailQuantityPackPrefix (object, skuProp, prefix, caption)
+    @defineDocumentDetailQuantityPackCustomPrefix(object##Detail, skuProp, prefix, caption);
+END
+META defineDocumentInterfaceDetailQuantityPackPrefix (object, skuProp, prefix, caption)
+    @defineDocumentInterfaceDetailQuantityPackCustomPrefix(object##Detail, skuProp, prefix, caption);
+END
+
+META defineDocumentDetailQuantityPack (object, skuProp)
+    @defineDocumentDetailQuantityPackPrefix(object, skuProp, , );
+END
+META defineDocumentInterfaceDetailQuantityPack (object, skuProp)
+    @defineDocumentInterfaceDetailQuantityPackPrefix(object, skuProp, , );
+END
+
 quantityPackSku 'Количество в грузовом месте' = DATA NUMERIC[9,3] (sku);
-Stock.quantityPackSku(sku) += RomanStock.quantityPackSku(sku);
 Stock.netWeightSku(sku) += RomanLogicsModule.netWeightSku(sku);
 
 FORM batchADialogForm 'Партия'

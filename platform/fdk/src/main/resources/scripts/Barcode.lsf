@@ -210,6 +210,6 @@ META deriveDocumentDetailQuantityBarcodeCustom (detail, skuProp, prop, toShowPro
         WHEN CHANGED(skuProp###detail(detail)) OR CHANGED(toShowProp###detail(detail));
     amountPack###detail(detail) <- amountBarcode(prop###barcodeSku(skuProp###detail(detail))) IF toShowProp###detail(detail)
         WHEN CHANGED(skuProp###detail(detail)) OR CHANGED(toShowProp###detail(detail));
-    quantity###detail(detail) <- packQuantity###detail(detail)*amountPack###detail(detail)
-        WHEN CHANGED(packQuantity###detail(detail)) OR CHANGED(amountPack###detail(detail));
+    quantity###detail(detail) <- quantityPack###detail(detail)*amountPack###detail(detail)
+        WHEN CHANGED(quantityPack###detail(detail)) OR CHANGED(amountPack###detail(detail));
 END
