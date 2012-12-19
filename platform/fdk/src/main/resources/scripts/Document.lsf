@@ -351,8 +351,34 @@ END
 META defineDocumentTimeShipment (object)
     @defineDocumentTimeShipment (object, object##Detail);
 END
+//-- Дата
+META defineDocumentHeaderDatePrefix (object, prefix, caption)
+    prefix###date###object 'Дата'##caption = DATA DATE (object) IN documentHeaderGroup;
 
+END
+META defineDocumentAbstractHeaderDatePrefix (object, prefix, caption)
+    prefix###date###object 'Дата'##caption = ABSTRACT DATE (object) IN documentHeaderGroup PERSISTENT;
+END
+META defineDocumentInterfaceHeaderDatePrefix(object, prefix, caption)
+    @defineDocumentAbstractHeaderDatePrefix(object, prefix, caption);
+    @defineDocumentHeaderDatePrefix(user###object, prefix, caption);
+    prefix###date###object(object) += prefix###date###user###object(object);
+END
+META defineDocumentDetailDatePrefix (object, detail, prefix, caption)
+    prefix###date###detail 'Дата'##caption = prefix###date###object(object###detail(detail)) PERSISTENT;
+END
+META defineDocumentInterfaceDetailDatePrefix (object, detail, prefix, caption)
+    @defineDocumentDetailDatePrefix(object, detail, prefix, caption);
+    @defineDocumentDetailDatePrefix(user###object, user###detail, prefix, caption);
+END
+META defineDocumentInterfaceDetailDatePrefix (object, prefix, caption)
+    @defineDocumentInterfaceDetailDatePrefix(object, object##Detail, prefix, caption);
+END
 
+META defineDocumentInterfaceDatePrefix (object, prefix, caption)
+    @defineDocumentInterfaceHeaderDatePrefix(object, prefix, caption);
+    @defineDocumentInterfaceDetailDatePrefix(object, prefix, caption);
+END
 // Примечание
 
 META defineDocumentHeaderNote (object)

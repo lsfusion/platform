@@ -14,8 +14,8 @@ NAMESPACE SaleReturn;
 @defineShipmentStockDestination(customerStock, supplierStock);
 
 // Берем учетную цену
-@deriveDocumentDetailPriceBatchStockPrefix(userInvoice, shipment, supplierStock);
-@deriveDocumentDetailPriceBatchStock(userShipment, supplierStock);
+@deriveDocumentDetailPriceSystemLedgerPriceListTypeBatch (userInvoice, accountPriceListType, shipment, , sku, supplierStock);
+@deriveDocumentDetailPriceSystemLedgerPriceListTypeBatch (userShipment, accountPriceListType, , , sku, supplierStock);
 
 // Проводим по регистру
 @implementSkuLedgerInLIFO(shipmentDetail, sku, supplierStock);

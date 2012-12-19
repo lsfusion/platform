@@ -11,7 +11,7 @@ NAMESPACE PurchaseReturn;
 @defineShipmentStockDestination(customerStock, supplierStock);
 
 // Берем учетную цену
-@deriveDocumentDetailPriceBatchStock(userShipment, customerStock);
+@deriveDocumentDetailPriceSystemLedgerPriceListTypeBatch (userShipment, accountPriceListType, , , sku, supplierStock);
 shipmentPriceUserInvoiceDetail(detail) <- calcShipmentPriceUserInvoiceDetail(detail) (+) extraShipmentPriceUserInvoiceDetail(detail) WHEN
     (CHANGED(calcShipmentPriceUserInvoiceDetail(detail)) OR CHANGED(extraShipmentPriceUserInvoiceDetail(detail)) OR CHANGED(createShipmentUserInvoiceDetail(detail)))
         AND createShipmentUserInvoiceDetail(detail);

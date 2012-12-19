@@ -11,6 +11,7 @@ REQUIRE System,
         PriceList,
         Agreement,
         Supply,
+        Sales,
         StockTax;
 
 
@@ -181,7 +182,11 @@ META defineOrder(sign, stockProp, prop, toShowProp, captionProp)
     @defineDocumentInterfaceBarcodeSkuPrefix (order, sku, , );
     @defineDocumentDetailInterfaceDataQuantityPackCustomPrefix (orderDetail, , ' упаковок');
     @deriveDocumentDetailQuantityBarcodeCustom (userOrderDetail, sku, prop, toShowProp);
-
+//-- Дата следующей поставки
+    @defineDocumentInterfaceDatePrefix (order, nextShipment, ' следующей поставки');
+    quantityDaysNextShipmentUserOrder 'Количество дней' (userOrder) =  subtractInteger(nextShipmentDateUserOrder(userOrder), dateUserOrder(userOrder));
+    fromShipmentDateUserOrder 'Начало периода' (userOrder) = subtractDate(dateUserOrder(userOrder), (quantityDaysNextShipmentUserOrder(userOrder) + 1));
+    quantitySoldSkuStockUserOrder 'Реализовано за интервал (кол-во)' (sku, stock, userOrder) = quantitySoldSkuStockDateFromTo(sku, stock, fromShipmentDateUserOrder(userOrder), dateUserOrder(userOrder));
 
 // --------------------------- Формы Заказа ---------------------------------
 
@@ -195,7 +200,7 @@ META defineOrder(sign, stockProp, prop, toShowProp, captionProp)
                        nameCurrencyUserOrder, nameAgreementUserOrder, namePriceListTypeUserOrder SHOWIF noAgreementUserOrder(o), noteUserOrder,
                        countUserOrderDetailUserOrder, quantityUserOrderDetailUserOrder, sumUserOrderDetailUserOrder,
                        VATSumUserOrderDetailUserOrder, invoiceSumUserOrderDetailUserOrder,
-                       shipmentDateUserOrder, shipmentTimeUserOrder, toDateUserOrder, toShowProp###userOrder
+                       shipmentDateUserOrder, shipmentTimeUserOrder, toDateUserOrder, nextShipmentDateUserOrder, quantityDaysNextShipmentUserOrder, toShowProp###userOrder
 
         OBJECTS d = userOrderDetail
         PROPERTIES (d) indexUserOrderDetail, idBarcodeSkuUserOrderDetail, nameSkuUserOrderDetail, shortNameUOMSkuUserOrderDetail
@@ -292,6 +297,10 @@ META defineOrder(sign, stockProp, prop, toShowProp, captionProp)
     @defineDocumentSkuStock(userOrder, sku, stockProp);
     @extendFormDocumentSkuStockCustom(userOrder, userOrder, o, stockProp);
     @defineDocumentSupplierSkuStock (userOrder, userOrder, o, sts);
+
+    EXTEND FORM userOrder
+    PROPERTIES READONLY quantitySoldSkuStockUserOrder(s,st,o)
+    ;
 
     addUserOrder 'Добавить' = ACTION ADDFORM userOrder;
     editUserOrder 'Редактировать' (userOrder) = ACTION EDITFORM userOrder;
