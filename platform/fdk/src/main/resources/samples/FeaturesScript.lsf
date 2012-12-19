@@ -7,7 +7,7 @@
 
 MODULE Features;
 
-REQUIRE System, I18n, Utils, Country;
+REQUIRE System, I18n, Utils, Country, Email, Security, Service;
 
 /////////// GROUP STATEMENT ////////////
 
@@ -26,9 +26,11 @@ CLASS ABSTRACT namedClass : named;
 CLASS emptyClass;
 CLASS article 'Товар' : namedClass;
 CLASS store 'Склад' : namedClass;
-CLASS ABSTRACT document 'Документ' : transaction;
+CLASS ABSTRACT document 'Документ';
 CLASS incomeDocument 'Приход' : document;
 CLASS outcomeDocument 'Расход' : document, emptyClass;
+
+date(doc) = DATA DATE (document);
 
 // Static class
 // Syntax:
@@ -617,19 +619,19 @@ showTestModalForm 'Показать док-модальную форму' = ACTI
 
 remindPasswordEmail 'Выслать пароль на этот email' (u, to) = ACTION EMAIL
 //    FROM 'luxsoft@adsl.by'
-    SUBJECT [FORMULA STRING[60] '\'Напоминание пароля для \' || $1'](email(u))
+    SUBJECT [FORMULA STRING[60] '\'Напоминание пароля для \' || $1'](emailContact(u))
     TO (to IF to IS STRING[200])
     CC 'some@someserv.net'
 //    BCC 'luxsoft@adsl.by'
     INLINE remindPasswordLetter OBJECTS customUser=(u AS customUser)
     ATTACH PDF
-           NAME [FORMULA STRING[60] '\'ATTACH: Напоминание пароля для \' || $1'](email(u))
+           NAME [FORMULA STRING[60] '\'ATTACH: Напоминание пароля для \' || $1'](emailContact(u))
            remindPasswordLetter OBJECTS customUser=(u AS customUser)
     ;
 
 FORM testEmailForm 'Тестирование EMAIL'
 OBJECTS s=STRING[100] 'Email:' FIXED PANEL, u=customUser
-PROPERTIES OBJVALUE(s), userLogin(u), userPassword(u), email(u), ADDOBJ(u), remindPasswordEmail(u, s) TODRAW s
+PROPERTIES OBJVALUE(s), userLogin(u), userPassword(u), emailContact(u), ADDOBJ(u), remindPasswordEmail(u, s) TODRAW s
 ;
 
 stime 'Время' (store) = DATA TIME (store) IN base;
@@ -711,7 +713,7 @@ colorizeElementWithNumberGreaterFour(element) = #5555ff IF numberNavigatorElemen
 
 FORM TestTree 'Тест дерева (формы)'
 TREE forms e=navigatorElement PARENT parentNavigatorElement
-PROPERTIES(e) navigatorElementCaption, navigatorElementSID, numberNavigatorElement BACKGROUND colorizeElementWithNumberGreaterFour(e), permitForm, forbidForm;
+PROPERTIES(e) captionNavigatorElement, sidNavigatorElement, numberNavigatorElement BACKGROUND colorizeElementWithNumberGreaterFour(e), permitNavigatorElement, forbidNavigatorElement;
 
 DESIGN TestTree FROM DEFAULT {
     forms.tree.box {
