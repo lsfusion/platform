@@ -8,26 +8,24 @@ import platform.interop.Compare;
 import platform.interop.KeyStrokes;
 import platform.interop.PropertyEditType;
 import platform.interop.action.LogOutClientAction;
-import platform.interop.action.MessageClientAction;
 import platform.interop.action.UserChangedClientAction;
 import platform.interop.action.UserReloginClientAction;
 import platform.interop.form.layout.ContainerType;
-import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
-import platform.server.Settings;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.*;
-import platform.server.data.SQLSession;
 import platform.server.data.Time;
 import platform.server.data.Union;
 import platform.server.data.expr.query.PartitionType;
-import platform.server.form.entity.*;
+import platform.server.form.entity.CalcPropertyObjectEntity;
+import platform.server.form.entity.FormEntity;
+import platform.server.form.entity.ObjectEntity;
+import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.entity.filter.*;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.view.ContainerView;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.FormView;
-import platform.server.form.view.PropertyDrawView;
 import platform.server.form.window.AbstractWindow;
 import platform.server.form.window.NavigatorWindow;
 import platform.server.form.window.ToolBarNavigatorWindow;
@@ -36,7 +34,9 @@ import platform.server.logics.linear.LAP;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
-import platform.server.logics.property.actions.*;
+import platform.server.logics.property.actions.AdminActionProperty;
+import platform.server.logics.property.actions.FormActionProperty;
+import platform.server.logics.property.actions.UserActionProperty;
 import platform.server.logics.property.actions.flow.ApplyActionProperty;
 import platform.server.logics.property.actions.flow.BreakActionProperty;
 import platform.server.logics.property.actions.flow.CancelActionProperty;
@@ -46,7 +46,6 @@ import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.property.group.PropertySet;
 import platform.server.logics.table.TableFactory;
-import platform.server.session.DataSession;
 
 import javax.swing.*;
 import java.awt.*;
@@ -114,7 +113,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     public LCP string2SP, istring2SP;
     public LCP string2, istring2;
-    public LCP ustring2CM, ustring2SP, ustring2, ustring3, ustring4, ustring5CM;
+    public LCP ustring2CM, ustring2SP, ustring3SP, ustring2, ustring3, ustring4, ustring5CM;
 
     public LCP weekInDate;
     public LCP numberDOWInDate;
@@ -375,6 +374,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         ustring2CM = addSFUProp("ustring2CM", " ", 2);
         ustring2SP = addSFUProp("ustring2SP", " ", 2);
+        ustring3SP = addSFUProp("ustring3SP", " ", 3);
         ustring2 = addSFUProp("ustring2", "", 2);
         ustring3 = addSFUProp("ustring3", "", 3);
         ustring4 = addSFUProp("ustring4", "", 4);

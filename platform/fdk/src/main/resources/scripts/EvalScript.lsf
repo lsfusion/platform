@@ -8,7 +8,7 @@ scriptStorage 'Скрипт' () = DATA TEXT ();
 
 scriptExecution 'Выполнить скрипт' () = ACTION EVAL scriptStorage();
 actionBodyExecution 'Выполнить action' () = ACTION EVAL ustring3('run() = ACTION {', scriptStorage(), ';\n};');
-formExecution 'Показать форму' () = ACTION EVAL ustring3('FORM form ', scriptStorage(), ';\nrun() = ACTION FORM form;');
+formExecution 'Показать форму' () = ACTION EVAL ustring3SP('FORM form', scriptStorage(), ';\nrun() = ACTION FORM form;');
 
 FORM mainForm 'Скрипт'
     PROPERTIES() scriptStorage,
