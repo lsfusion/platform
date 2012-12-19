@@ -29,13 +29,13 @@ reserveSaleASkuStockDateTime 'Остаток (после)'(sku, stock, dateTime)
 NAVIGATOR {
 
     NEW saleSaleNavigator 'Продажи' {
+        ADD Sale.scheduleOrderDetails;
         ADD Sale.blanketOrders;
         ADD Sale.orders;
         ADD Sale.invoices;
         ADD Sale.shipments;
         ADD Sale.creditNotes;
-        ADD Sale.scheduleOrders;
-        ADD Sale.scheduleOrderDetails;
+        //ADD Sale.scheduleOrders;
     }
     NEW saleReturnNavigator 'Возвраты' {
         ADD SaleReturn.orders;

@@ -16,7 +16,7 @@ CLASS STATIC genType 'Тип генерации' {
 META defineScheduleOrder(sign, stockProp)
 
     CLASS scheduleOrder 'График поставок'##sign;
-    CLASS scheduleOrderDetail 'Предварительный заказ'##sign;
+    CLASS scheduleOrderDetail 'Заказ по графику'##sign;
 
     //общие свойства
     typeScheduleOrder 'Тип генерации графика (ИД)' = DATA genType (scheduleOrder);
@@ -75,7 +75,12 @@ META defineScheduleOrder(sign, stockProp)
     dateOrderScheduleOrderDetail 'Дата заказа' = DATA DATE (scheduleOrderDetail) IN baseGroup;
     dateSupplyScheduleOrderDetail 'Дата поставки' = DATA DATE (scheduleOrderDetail) IN baseGroup;
 
-    scheduleOrderScheduleOrderDetail 'График поставок'  = DATA scheduleOrder(scheduleOrderDetail);
+    scheduleOrderScheduleOrderDetail 'График поставок' = DATA scheduleOrder(scheduleOrderDetail);
+
+    CONSTRAINT scheduleOrderScheduleOrderDetail(scheduleOrderDetail1) == scheduleOrderScheduleOrderDetail(scheduleOrderDetail2) AND
+               dateSupplyScheduleOrderDetail(scheduleOrderDetail1) == dateSupplyScheduleOrderDetail(scheduleOrderDetail2) AND
+               dateOrderScheduleOrderDetail(scheduleOrderDetail1) == dateOrderScheduleOrderDetail(scheduleOrderDetail2) AND NOT
+               scheduleOrderDetail1 == scheduleOrderDetail2 MESSAGE 'Совпадение даты заказа и даты поставки';
 
     supplierScheduleOrderDetail(scheduleOrderDetail) = supplierScheduleOrder(scheduleOrderScheduleOrderDetail(scheduleOrderDetail));
     nameSupplierScheduleOrderDetail 'Поставщик' (scheduleOrderDetail) = name(supplierScheduleOrderDetail(scheduleOrderDetail));
@@ -204,6 +209,7 @@ META defineScheduleOrder(sign, stockProp)
                         nameSupplierScheduleOrderDetail, nameSupplierStockScheduleOrderDetail,
                         nameCustomerScheduleOrderDetail, nameCustomerStockScheduleOrderDetail
         PROPERTIES (sd) createOrder, delete
+        ORDER BY dateSupplyScheduleOrderDetail
         PROPERTIES createScheduleOrder(s) TODRAW sd
 
         PROPERTIES(sd) ADDOBJ DRAWTOTOOLBAR
@@ -295,7 +301,7 @@ META defineScheduleOrder(sign, stockProp)
     nameCustomerStock 'Склад покупателя' = name(customerStock());
 
 
-    FORM scheduleOrderDetails 'Предварительные заказы'
+    FORM scheduleOrderDetails 'Заказы по графику'
 
         OBJECTS d=DATE FIXED PANEL
         PROPERTIES dv=OBJVALUE(d)

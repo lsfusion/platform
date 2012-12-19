@@ -28,12 +28,13 @@ reservePurchaseASkuStockDateTime 'Остаток (после)'(sku, stock, dateT
 NAVIGATOR {
 
     NEW purchasePurchaseNavigator 'Закупки' {
+        ADD Purchase.scheduleOrderDetails;
         ADD Purchase.orders;
         ADD Purchase.invoices;
         ADD Purchase.shipments;
         ADD Purchase.creditNotes;
-        ADD Purchase.scheduleOrders;
-        ADD Purchase.scheduleOrderDetails;
+        //ADD Purchase.scheduleOrders;
+
     }
     NEW purchaseReturnNavigator 'Возвраты' {
         ADD PurchaseReturn.orders;
