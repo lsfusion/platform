@@ -29,8 +29,7 @@ CLASS ABSTRACT numeratedDocument 'Нумерируемый документ' : n
 GROUP documentHeaderGroup 'Шапка документа' : baseGroup;
 GROUP documentSumGroup 'Суммы документа': publicGroup;
 GROUP documentPrmGroup 'Параметры документа': publicGroup;
-GROUP documentShipmentGroup 'Исполнение' : baseGroup;
-
+GROUP documentShipmentGroup 'Исполенние' : baseGroup;
 
 // Макросы по созданию документов
 
@@ -291,65 +290,65 @@ META defineDocumentInterfaceTimeBefore (object)
     @defineDocumentInterfaceDetailTimeBefore(object);
 END
 // ----- Time ----- //
-META defineDocumentHeaderTimeShipment (object)
-    shipmentDate###object 'Дата исполнения' = DATA DATE (object) IN documentShipmentGroup;
+META defineDocumentHeaderTimeShipment (object, prefix, caption)
+    prefix###date###object 'Дата'##caption = DATA DATE (object) IN documentShipmentGroup;
 
-    shipmentTime###object 'Время исполнения' = DATA TIME (object) IN documentShipmentGroup;
+    prefix###time###object 'Время'##caption = DATA TIME (object) IN documentShipmentGroup;
 
-    shipmentDateTime###object 'Дата/время исполнения' (object) = dateTimeToDateTime(shipmentDate###object(object), shipmentTime###object(object)) PERSISTENT;
+    prefix###dateTime###object 'Дата/время'##caption (object) = dateTimeToDateTime(prefix###date###object(object), prefix###time###object(object)) PERSISTENT;
 END
-META defineDocumentAbstractHeaderTimeShipment (object)
-    shipmentDate###object 'Дата исполнения' = ABSTRACT DATE (object) IN documentShipmentGroup PERSISTENT;
-    shipmentTime###object 'Время исполнения' = ABSTRACT TIME (object) IN documentShipmentGroup PERSISTENT;
-    shipmentDateTime###object 'Дата/время исполнения' (object) = dateTimeToDateTime(shipmentDate###object(object), shipmentTime###object(object)) PERSISTENT;
+META defineDocumentAbstractHeaderTimeShipment (object, prefix, caption)
+    prefix###date###object 'Дата'##caption = ABSTRACT DATE (object) IN documentShipmentGroup;
+    prefix###time###object 'Время'##caption = ABSTRACT TIME (object) IN documentShipmentGroup;
+    prefix###dateTime###object 'Дата/время'##caption (object) = dateTimeToDateTime(prefix###date###object(object), prefix###time###object(object)) PERSISTENT;
 END
-META defineDocumentInterfaceHeaderTimeShipment(object)
-    @defineDocumentAbstractHeaderTimeShipment(object);
-    @defineDocumentHeaderTimeShipment(user###object);
-    shipmentDate###object(object) += shipmentDate##User###object(object);
-    shipmentTime###object(object) += shipmentTime##User###object(object);
-END
-
-
-META defineDocumentDetailDataTimeShipment (object, detail)
-    shipmentDataDate###detail =  DATA DATE (detail);
-    shipmentDate###detail 'Дата исполнения' (idetail) = UNION OVERRIDE shipmentDate###object(object###detail(idetail)), shipmentDataDate###detail(idetail) PERSISTENT;
-    shipmentDataTime###detail =  DATA TIME (detail);
-    shipmentTime###detail 'Время исполнения' (idetail) = UNION OVERRIDE shipmentTime###object(object###detail(idetail)), shipmentDataTime###detail(idetail) PERSISTENT;
-    shipmentDateTime###detail 'Дата/время исполнения' (idetail) = dateTimeToDateTime(shipmentDate###detail(idetail), shipmentTime###detail(idetail)) PERSISTENT;
+META defineDocumentInterfaceHeaderTimeShipment(object, prefix, caption)
+    @defineDocumentAbstractHeaderTimeShipment(object, prefix, caption);
+    @defineDocumentHeaderTimeShipment(user###object, prefix, caption);
+    prefix###date###object(object) += prefix###date###user###object(object);
+    prefix###time###object(object) += prefix###time###user###object(object);
 END
 
-META defineDocumentAbstractDetailDataTimeShipment (object, detail)
-    shipmentDataDate###detail =  ABSTRACT DATE (detail);
-    shipmentDate###detail 'Дата исполнения' (idetail) = UNION OVERRIDE shipmentDate###object(object###detail(idetail)), shipmentDataDate###detail(idetail) PERSISTENT;
-    shipmentDataTime###detail =  ABSTRACT TIME (detail);
-    shipmentTime###detail 'Время исполнения' (idetail) = UNION OVERRIDE shipmentTime###object(object###detail(idetail)), shipmentDataTime###detail(idetail) PERSISTENT;
-    shipmentDateTime###detail 'Дата/время исполнения' (idetail) = dateTimeToDateTime(shipmentDate###detail(idetail), shipmentTime###detail(idetail)) PERSISTENT;
+
+META defineDocumentDetailDataTimeShipment (object, detail, prefix, caption)
+    prefix###dataDate###detail =  DATA DATE (detail);
+    prefix###date###detail 'Дата'##caption (idetail) = UNION OVERRIDE prefix###date###object(object###detail(idetail)), prefix###dataDate###detail(idetail) PERSISTENT;
+    prefix###dataTime###detail =  DATA TIME (detail);
+    prefix###time###detail 'Время'##caption (idetail) = UNION OVERRIDE prefix###time###object(object###detail(idetail)), prefix###dataTime###detail(idetail) PERSISTENT;
+    prefix###dateTime###detail 'Дата/время'##caption (idetail) = dateTimeToDateTime(prefix###date###detail(idetail), prefix###time###detail(idetail)) PERSISTENT;
 END
 
-META defineDocumentInterfaceDetailDataTimeShipment (object, detail)
-    @defineDocumentAbstractDetailDataTimeShipment(object, detail);
-    @defineDocumentDetailDataTimeShipment(user###object, user###detail);
-    shipmentDataDate###detail (detail) += shipmentDataDate###user###detail (detail);
-    shipmentDataTime###detail (detail) += shipmentDataTime###user###detail (detail);
+META defineDocumentAbstractDetailDataTimeShipment (object, detail, prefix, caption)
+    prefix###dataDate###detail =  ABSTRACT DATE (detail);
+    prefix###date###detail 'Дата'##caption (idetail) = UNION OVERRIDE prefix###date###object(object###detail(idetail)), prefix###dataDate###detail(idetail) PERSISTENT;
+    prefix###dataTime###detail =  ABSTRACT TIME (detail);
+    prefix###time###detail 'Время'##caption (idetail) = UNION OVERRIDE prefix###time###object(object###detail(idetail)), prefix###dataTime###detail(idetail) PERSISTENT;
+    prefix###dateTime###detail 'Дата/время'##caption (idetail) = dateTimeToDateTime(prefix###date###detail(idetail), prefix###time###detail(idetail)) PERSISTENT;
 END
 
-META defineDocumentInterfaceDetailDataTimeShipment (object)
-    @defineDocumentInterfaceDetailDataTimeShipment(object, object##Detail);
+META defineDocumentInterfaceDetailDataTimeShipment (object, detail, prefix, caption)
+    @defineDocumentAbstractDetailDataTimeShipment(object, detail, prefix, caption);
+    @defineDocumentDetailDataTimeShipment(user###object, user###detail, prefix, caption);
+    prefix###dataDate###detail (detail) += prefix###dataDate###user###detail (detail);
+    prefix###dataTime###detail (detail) += prefix###dataTime###user###detail (detail);
 END
 
-META defineDocumentInterfaceTimeShipment (object)
-    @defineDocumentInterfaceHeaderTimeShipment(object);
-    @defineDocumentInterfaceDetailDataTimeShipment(object);
+META defineDocumentInterfaceDetailDataTimeShipment (object, prefix, caption)
+    @defineDocumentInterfaceDetailDataTimeShipment(object, object##Detail, prefix, caption);
 END
 
-META defineDocumentTimeShipment (object, detail)
-    @defineDocumentHeaderTimeShipment(object);
-    @defineDocumentDetailDataTimeShipment (object, detail);
+META defineDocumentInterfaceTimeShipment (object, prefix, caption)
+    @defineDocumentInterfaceHeaderTimeShipment(object, prefix, caption);
+    @defineDocumentInterfaceDetailDataTimeShipment(object, prefix, caption);
 END
 
-META defineDocumentTimeShipment (object)
-    @defineDocumentTimeShipment (object, object##Detail);
+META defineDocumentTimeShipment (object, detail, prefix, caption)
+    @defineDocumentHeaderTimeShipment(object, prefix, caption);
+    @defineDocumentDetailDataTimeShipment (object, detail, prefix, caption);
+END
+
+META defineDocumentTimeShipment (object, prefix, caption)
+    @defineDocumentTimeShipment (object, object##Detail, prefix, caption);
 END
 //-- Дата
 META defineDocumentHeaderDatePrefix (object, prefix, caption)

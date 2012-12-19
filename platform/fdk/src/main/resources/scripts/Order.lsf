@@ -110,7 +110,7 @@ META defineOrder(sign, stockProp, prop, toShowProp, captionProp)
     @defineDocumentInterfacePosted(order);
     Order.isPostedOrder (order) += isPostedOrder(order);
 
-    @defineDocumentInterfaceTimeShipment(order);
+    @defineDocumentInterfaceTimeShipment(order, shipment, ' поставки');
     toDateOrder 'Дата автоматического закрытия' = ABSTRACT DATE (order) IN documentPrmGroup PERSISTENT;
     toDateUserOrder 'Дата автоматического закрытия' = DATA DATE (userOrder) IN documentPrmGroup;
     toDateOrder(order) += toDateUserOrder(order);
@@ -184,9 +184,9 @@ META defineOrder(sign, stockProp, prop, toShowProp, captionProp)
     @deriveDocumentDetailQuantityBarcodeCustom (userOrderDetail, sku, prop, toShowProp);
 //-- Дата следующей поставки
     @defineDocumentInterfaceDatePrefix (order, nextShipment, ' следующей поставки');
-    quantityDaysNextShipmentUserOrder 'Количество дней' (userOrder) =  subtractInteger(nextShipmentDateUserOrder(userOrder), dateUserOrder(userOrder));
-    fromShipmentDateUserOrder 'Начало периода' (userOrder) = subtractDate(dateUserOrder(userOrder), (quantityDaysNextShipmentUserOrder(userOrder) + 1));
-    quantitySoldSkuStockUserOrder 'Реализовано за интервал (кол-во)' (sku, stock, userOrder) = quantitySoldSkuStockDateFromTo(sku, stock, fromShipmentDateUserOrder(userOrder), dateUserOrder(userOrder));
+    quantityDaysNextShipmentUserOrder 'Кол-во дней до след. поставки' (userOrder) =  subtractInteger(nextShipmentDateUserOrder(userOrder), dateUserOrder(userOrder)) + 1;
+    fromShipmentDateUserOrder 'Начало периода' (userOrder) = subtractDate(dateUserOrder(userOrder), quantityDaysNextShipmentUserOrder(userOrder));
+    quantitySoldSkuStockUserOrder 'Реализовано' (sku, stock, userOrder) = quantitySoldSkuStockDateFromTo(sku, stock, fromShipmentDateUserOrder(userOrder), dateUserOrder(userOrder));
 
 // --------------------------- Формы Заказа ---------------------------------
 
@@ -200,7 +200,7 @@ META defineOrder(sign, stockProp, prop, toShowProp, captionProp)
                        nameCurrencyUserOrder, nameAgreementUserOrder, namePriceListTypeUserOrder SHOWIF noAgreementUserOrder(o), noteUserOrder,
                        countUserOrderDetailUserOrder, quantityUserOrderDetailUserOrder, sumUserOrderDetailUserOrder,
                        VATSumUserOrderDetailUserOrder, invoiceSumUserOrderDetailUserOrder,
-                       shipmentDateUserOrder, shipmentTimeUserOrder, toDateUserOrder, nextShipmentDateUserOrder, quantityDaysNextShipmentUserOrder, toShowProp###userOrder
+                       shipmentDateUserOrder, shipmentTimeUserOrder, toDateUserOrder, nextShipmentDateUserOrder, quantityDaysNextShipmentUserOrder READONLY, toShowProp###userOrder
 
         OBJECTS d = userOrderDetail
         PROPERTIES (d) indexUserOrderDetail, idBarcodeSkuUserOrderDetail, nameSkuUserOrderDetail, shortNameUOMSkuUserOrderDetail
@@ -279,6 +279,12 @@ META defineOrder(sign, stockProp, prop, toShowProp, captionProp)
                         ADD o.documentShipmentGroup {
                             childConstraints = TO THE RIGHTBOTTOM;
                         }
+                        NEW headerRow121 {
+                            title = 'Поставка';
+                            childConstraints = TO THE RIGHTBOTTOM;
+                            ADD PROPERTY(nextShipmentDateUserOrder);
+                            ADD PROPERTY(quantityDaysNextShipmentUserOrder);
+                        }
                     }
                 }
 
@@ -299,7 +305,7 @@ META defineOrder(sign, stockProp, prop, toShowProp, captionProp)
     @defineDocumentSupplierSkuStock (userOrder, userOrder, o, sts);
 
     EXTEND FORM userOrder
-    PROPERTIES READONLY quantitySoldSkuStockUserOrder(s,st,o)
+    PROPERTIES READONLY quantitySoldSkuStockUserOrder(s,st,o) BEFORE currentBalanceSkuStock(s,st)
     ;
 
     addUserOrder 'Добавить' = ACTION ADDFORM userOrder;

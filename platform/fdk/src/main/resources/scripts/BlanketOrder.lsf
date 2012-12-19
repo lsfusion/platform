@@ -27,7 +27,7 @@ META defineBlanketOrder(sign)
     @defineDocumentPosted(blanketOrder);
     @defineDocumentClosed (blanketOrder);
 
-    @defineDocumentTimeShipment (blanketOrder);
+    @defineDocumentTimeShipment (blanketOrder, shipment, ' поставки');
 
     @defineDocumentDescription(blanketOrder, 'Множественный заказ'###sign);
 

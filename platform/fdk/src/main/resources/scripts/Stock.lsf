@@ -1520,7 +1520,7 @@ META extendFormDocumentSkuStockCustom(object, form, concrete, stockProp)
             FILTER 'Товары в заказе ' 'F9' quantitySku###object###stockProp(s, concrete, st)
         FILTERGROUP filter1
             FILTER 'Товары с ценой ' 'F11' priceSkuStock###object(s, st, concrete)
-
+            FILTER 'Товары с реализацией ' 'F8' quantitySoldSkuStock###object(s, st, concrete)
     ;
 
     EXTEND DESIGN form {
