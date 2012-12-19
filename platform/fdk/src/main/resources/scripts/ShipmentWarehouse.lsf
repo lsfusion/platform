@@ -1,4 +1,4 @@
-MODULE WarehouseShipment;
+MODULE ShipmentWarehouse;
 
 REQUIRE Shipment, Warehouse;
 

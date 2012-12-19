@@ -1,4 +1,4 @@
-MODULE StoreShipment;
+MODULE ShipmentStore;
 
 REQUIRE Shipment, Store;
 

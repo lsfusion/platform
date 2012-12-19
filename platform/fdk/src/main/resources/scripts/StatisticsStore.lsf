@@ -1,4 +1,4 @@
-MODULE StoreStatistics;
+MODULE StatisticsStore;
 
 REQUIRE Statistics, POS;
 

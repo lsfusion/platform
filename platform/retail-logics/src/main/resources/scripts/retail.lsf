@@ -57,15 +57,15 @@ REQUIRE System,
         Repricing,
         Employee,
         StockAdjustment,
-        StoreShipment,
-        StoreWriteOff,
+        ShipmentStore,
+        PurchaseWriteOffStore,
         Store,
         PurchasePricingWriteOff,
         Statistics,
         ItemStatistics,
         ItemNaturalLoss,
-        StoreStatistics,
-        StorePricing,
+        StatisticsStore,
+        PricingStore,
         ConsignmentBy,
         AccountDocument,
         Sales,
@@ -96,7 +96,7 @@ REQUIRE System,
         Route,
         Trip,
         Warehouse,
-        WarehouseShipment,
+        ShipmentWarehouse,
         StockTax,
         ItemTax,
         Disparity,
@@ -484,15 +484,6 @@ EXTEND DESIGN departmentStore {
         ADD d. responsibilityGroup {childConstraints = TO THE BOTTOM;}
     }
 }
-
-//----------------------------------- Форма для остатков -------------------------------------------------//
-
-inChainStoresStoreTypeStoreDepartmentDepartment (chainStores, storeType, store, department, depStore) = UNION OVERRIDE
-    department == depStore AND store  AND chainStores AND storeType,
-    storeDepartmentStore(department) == store AND NOT depStore AND chainStores AND storeType,
-    storeTypeDepartmentStore(department) == storeType AND NOT depStore AND chainStores AND NOT store,
-    chainStoresDepartmentStore(department) == chainStores AND NOT store AND NOT storeType AND NOT depStore,
-    department IS departmentStore AND NOT store AND NOT storeType AND NOT chainStores AND NOT depStore;
 
 //------------------------------------Отчет по таре-------------------------------------------//
 

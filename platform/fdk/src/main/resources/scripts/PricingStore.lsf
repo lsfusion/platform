@@ -1,4 +1,4 @@
-MODULE StorePricing;
+MODULE PricingStore;
 
 REQUIRE Pricing, Store;
 

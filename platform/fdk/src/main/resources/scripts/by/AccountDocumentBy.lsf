@@ -1,4 +1,4 @@
-MODULE ByAccountDocument;
+MODULE AccountDocumentBy;
 
 REQUIRE AccountDocument, StockBy;
 

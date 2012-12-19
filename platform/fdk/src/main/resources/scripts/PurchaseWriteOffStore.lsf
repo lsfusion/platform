@@ -1,0 +1,11 @@
+MODULE PurchaseWriteOffStore;
+
+REQUIRE PurchaseWriteOff, Store;
+
+EXTEND FORM departmentStore PROPERTIES createPurchaseWriteOffStock(d);
+
+EXTEND DESIGN departmentStore{
+    row21 { ADD PROPERTY(createPurchaseWriteOffStock);}
+}
+
+toShowCreatePurchaseWriteOffInvoice (invoice) += customerStockUserInvoice(invoice) IS departmentStore;
