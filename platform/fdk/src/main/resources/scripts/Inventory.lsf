@@ -206,8 +206,8 @@ inventoryPageInventoryDetail(pageInventoryDetail) = inventoryListInventory(listI
 @defineDocumentHeaderSum(pageInventory);
 
 pricePageInventoryDetail (detail)  <- IF isBatchInventory(inventoryPageInventoryDetail(detail))
-                THEN priceBatchStockDateTime(batchPageInventoryDetail(detail), stockPageInventoryDetail(detail), dateTimePageInventoryDetail(detail))
-                ELSE priceSkuStockDateTime(skuPageInventoryDetail(detail), stockPageInventoryDetail(detail), dateTimePageInventoryDetail(detail))
+                THEN priceLedgerPriceListTypeBatchStockDateTime(systemLedgerPriceListType.accountPriceListType, batchPageInventoryDetail(detail), stockPageInventoryDetail(detail), dateTimePageInventoryDetail(detail))
+                ELSE priceLedgerPriceListTypeSkuStockDateTime(systemLedgerPriceListType.accountPriceListType, skuPageInventoryDetail(detail), stockPageInventoryDetail(detail), dateTimePageInventoryDetail(detail))
                 WHEN CHANGED(skuPageInventoryDetail(detail)) OR CHANGED(batchPageInventoryDetail(detail)) OR CHANGED (dateTimePageInventoryDetail(detail));
 
 //------------------------------------ Заполнение описи из ТСД ------------------------------------------ //
@@ -351,19 +351,19 @@ recalculateBalanceInventory 'Заполнить остатки' (inventory) = AC
 recalculatePriceCollationSheet 'Пересчитать цены в сличительной ведомости' (collationSheet) = ACTION (collationSheet) {
     IF isBatchCollationSheet (collationSheet) THEN {
         SET pricePageInventoryDetail(pageInventoryDetail)
-            <- priceBatchStockDateTime(batchPageInventoryDetail(pageInventoryDetail), stockPageInventoryDetail(pageInventoryDetail), dateTimePageInventoryDetail(pageInventoryDetail))
+            <- priceLedgerPriceListTypeBatchStockDateTime(systemLedgerPriceListType.accountPriceListType, batchPageInventoryDetail(pageInventoryDetail), stockPageInventoryDetail(pageInventoryDetail), dateTimePageInventoryDetail(pageInventoryDetail))
             WHERE collationSheetPageInventoryDetail(pageInventoryDetail) == collationSheet;
     } ELSE {
         SET pricePageInventoryDetail(pageInventoryDetail)
-            <- priceSkuStockDateTime(skuPageInventoryDetail(pageInventoryDetail), stockPageInventoryDetail(pageInventoryDetail), dateTimePageInventoryDetail(pageInventoryDetail))
+            <- priceLedgerPriceListTypeSkuStockDateTime(systemLedgerPriceListType.accountPriceListType, skuPageInventoryDetail(pageInventoryDetail), stockPageInventoryDetail(pageInventoryDetail), dateTimePageInventoryDetail(pageInventoryDetail))
             WHERE collationSheetPageInventoryDetail(pageInventoryDetail) == collationSheet;
     }
 
     SET priceBalanceCollationSheetSku(collationSheet, sku)
-        <- priceSkuStockDateTime(sku, stockCollationSheet(collationSheet), dateTimeInventory(inventoryCollationSheet(collationSheet)));
+        <- priceLedgerPriceListTypeSkuStockDateTime(systemLedgerPriceListType.accountPriceListType, sku, stockCollationSheet(collationSheet), dateTimeInventory(inventoryCollationSheet(collationSheet)));
     IF isBatchCollationSheet (collationSheet) THEN {
         SET priceBalanceCollationSheetBatch(collationSheet, batch)
-            <- priceBatchStockDateTime(batch, stockCollationSheet(collationSheet), dateTimeInventory(inventoryCollationSheet(collationSheet)));
+            <- priceLedgerPriceListTypeBatchStockDateTime(systemLedgerPriceListType.accountPriceListType, batch, stockCollationSheet(collationSheet), dateTimeInventory(inventoryCollationSheet(collationSheet)));
     }
 } CONFIRM IN inventoryActionGroup;
 
@@ -453,7 +453,7 @@ includeCollationSheetSku(collationSheet, sku) = UNION EXCLUSIVE
     (UNION OVERRIDE inManyCollationSheetSku(collationSheet, sku), collationSheet IS manyCollationSheet IF quantityPageInventoryDetailCollationSheetSku(collationSheet, sku)),
     (collationSheet IS remainsCollationSheet IF UNION OVERRIDE quantityBalanceCollationSheetSku(collationSheet, sku) != 0, TRUE IF quantityPageInventoryDetailCollationSheetSku(collationSheet, sku));
 
-priceBalanceCollationSheetSku(collationSheet, sku) <- priceSkuStockDateTime(
+priceBalanceCollationSheetSku(collationSheet, sku) <- priceLedgerPriceListTypeSkuStockDateTime(systemLedgerPriceListType.accountPriceListType,
                 sku, stockCollationSheet(collationSheet), dateTimeInventory(inventoryCollationSheet(collationSheet)))
                 WHEN ASSIGNED(includeCollationSheetSku(collationSheet, sku));
 
@@ -463,7 +463,7 @@ includeCollationSheetBatch(collationSheet, batch) = DATA BOOLEAN (collationSheet
 includeCollationSheetBatch(collationSheet, batch) <- includeCollationSheetSku(collationSheet, PREV(skuBatch(batch)))
                         WHEN [CHANGED(includeCollationSheetSku(collationSheet, sku))](collationSheet, PREV(skuBatch(batch)));
 
-priceBalanceCollationSheetBatch(collationSheet, batch) <- priceBatchStockDateTime(
+priceBalanceCollationSheetBatch(collationSheet, batch) <- priceLedgerPriceListTypeBatchStockDateTime(systemLedgerPriceListType.accountPriceListType,
                 batch, stockCollationSheet(collationSheet), dateTimeInventory(inventoryCollationSheet(collationSheet)))
                 WHEN ASSIGNED(includeCollationSheetBatch(collationSheet, batch));
 

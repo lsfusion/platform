@@ -20,8 +20,6 @@ userLegalEntityStock 'Отм.' = ABSTRACT BOOLEAN (legalEntity, stock);
 inLegalEntityStock 'Отм.' (legalEntity, stock) = (legalEntityStock(stock) == legalEntity) OR userLegalEntityStock(legalEntity, stock);
 isDefaultLegalEntityStock 'Свой склад' (legalEntity, stock) = legalEntityStock(stock) == legalEntity;
 
-isRetailStock (stock) = ABSTRACT BOOLEAN (stock) PERSISTENT;
-
 currencyStock (stock) = currencyLegalEntity(legalEntityStock(stock)) PERSISTENT;
 languageStock (stock) = languageLegalEntity(legalEntityStock(stock)) PERSISTENT;
 
@@ -348,13 +346,6 @@ sumOutSkuLedger 'Сумма' (ledger) = ABSTRACT NUMERIC[16,2] (outSkuLedger) PE
 
 signedSumSkuLedger 'Сумма' (ledger) = UNION EXCLUSIVE sumInSkuLedger(ledger),
                                                       -sumOutSkuLedger(ledger) PERSISTENT;
-
-// управленческие цены
-priceSkuStockDateTime 'Цена' = ABSTRACT NUMERIC[14,2] (sku, stock, DATETIME);
-priceBatchStockDateTime 'Цена' = ABSTRACT NUMERIC[14,2] (batch, stock, DATETIME);
-
-prevPriceSkuStockDateTime 'Цена' (sku, stock, dateTime) = PREV(priceSkuStockDateTime(sku, stock, dateTime));
-prevPriceBatchStockDateTime 'Цена' (batch, stock, dateTime) = PREV(priceBatchStockDateTime(batch, stock, dateTime));
 
 // ---------------------------- Остаток по товару -------------------------------- //
 
@@ -939,19 +930,6 @@ META defineDocumentInterfaceDetailPrice (object)
     @defineDocumentInterfaceDetailPricePrefix(object, ,);
 END
 
-META deriveDocumentDetailPriceBatchStockCustomPrefix (detail, prefix, stockProp)
-    prefix###price###detail (detail)  <- IF batch###detail(detail)
-                THEN prevPriceBatchStockDateTime(batch###detail(detail), stockProp###detail(detail), dateTime###detail(detail))
-                ELSE prevPriceSkuStockDateTime(sku###detail(detail), stockProp###detail(detail), dateTime###detail(detail))
-                WHEN CHANGED(sku###detail(detail)) OR CHANGED(batch###detail(detail)) OR CHANGED(stockProp###detail(detail)) OR CHANGED (dateTime###detail(detail));
-END
-META deriveDocumentDetailPriceBatchStockPrefix (object, prefix, stockProp)
-    @deriveDocumentDetailPriceBatchStockCustomPrefix(object##Detail, prefix, stockProp);
-END
-META deriveDocumentDetailPriceBatchStock (object, stockProp)
-    @deriveDocumentDetailPriceBatchStockPrefix(object, , stockProp);
-END
-
 META defineDocumentDetailSumCustom (detail, currencyProp)
     sum###detail 'Сумма' (detail) = roundCurrency((quantity###detail(detail) * price###detail(detail)), currencyProp###detail(detail));
 END
@@ -1024,31 +1002,6 @@ META deriveDocumentDetailSum(object, quantityProp)
 END
 
 //-
-
-META derivePriceOnSkuChangePrefix(concrete, skuProp, stockProp, prefix)
-    prefix###price###concrete##Detail (detail)  <- priceSkuStockDateTime(
-                    skuProp###concrete##Detail(detail), stockProp###concrete##Detail(detail), dateTime###concrete##Detail(detail))
-                    WHEN CHANGED(skuProp###concrete##Detail(detail)) OR CHANGED (dateTime###concrete##Detail(detail)) OR CHANGED (stockProp###concrete##Detail(detail));
-END
-META derivePriceOnSkuChangeCustom (concrete, skuProp, stockProp)
-    @derivePriceOnSkuChangePrefix(concrete, skuProp, stockProp,);
-END
-META derivePriceOnSkuChange (concrete)
-    @derivePriceOnSkuChangePrefix(concrete, sku, stock, );
-END
-
-META derivePriceOnBatchChangePrefix(concrete, batchProp, stockProp, prefix)
-    prefix###price###concrete##Detail (detail)  <- priceBatchStockDateTime(
-                    batchProp###concrete##Detail(detail), stockProp###concrete##Detail(detail), dateTime###concrete##Detail(detail))
-                    WHEN CHANGED(batchProp###concrete##Detail(detail)) OR CHANGED (dateTime###concrete##Detail(detail)) OR CHANGED (stockProp###concrete##Detail(detail));
-END
-META derivePriceOnBatchChangeCustom (concrete, batchProp, stockProp)
-    @derivePriceOnBatchChangePrefix(concrete, batchProp, stockProp, );
-END
-META derivePriceOnBatchChange (concrete)
-    @derivePriceOnBatchChangePrefix(concrete, batch, stock, );
-END
-
 META defineDocumentHeaderItemSumCustom (object, detail, prefixA, prefixB)
     prefixB###sumItem###detail###object 'Сумма, товар' (object) =
         GROUP SUM prefixA###sum###detail(idetail) AND NOT isContainerSku(sku###detail(idetail))

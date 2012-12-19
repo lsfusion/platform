@@ -2,6 +2,7 @@ MODULE WriteOff;
 
 REQUIRE System,
         Stock,
+        PriceList,
 //        Store,
         Currency,
         Numerator,
@@ -144,8 +145,8 @@ addressLegalEntityUserWriteOff 'Адрес' (userWriteOff) = addressLegalEntityD
 @deriveDocumentDetailSum(userWriteOff, quantity);
 
 priceUserWriteOffDetail (detail)  <- IF batchUserWriteOffDetail(detail)
-                THEN priceBatchStockDateTime(batchUserWriteOffDetail(detail), stockUserWriteOffDetail(detail), dateTimeUserWriteOffDetail(detail))
-                ELSE priceSkuStockDateTime(skuUserWriteOffDetail(detail), stockUserWriteOffDetail(detail), dateTimeUserWriteOffDetail(detail))
+                THEN priceLedgerPriceListTypeBatchStockDateTime(systemLedgerPriceListType.accountPriceListType, batchUserWriteOffDetail(detail), stockUserWriteOffDetail(detail), dateTimeUserWriteOffDetail(detail))
+                ELSE priceLedgerPriceListTypeSkuStockDateTime(systemLedgerPriceListType.accountPriceListType, skuUserWriteOffDetail(detail), stockUserWriteOffDetail(detail), dateTimeUserWriteOffDetail(detail))
                 WHEN CHANGED(skuUserWriteOffDetail(detail)) OR CHANGED(batchUserWriteOffDetail(detail)) OR CHANGED(stockUserWriteOffDetail(detail)) OR CHANGED (dateTimeUserWriteOffDetail(detail));
 
 skuUserWriteOffDetail (detail)  <- skuBatch( batchUserWriteOffDetail(detail)) AND batchUserWriteOffDetail(detail)

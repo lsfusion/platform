@@ -1,9 +1,12 @@
 MODULE Pricing;
 
-REQUIRE Invoice, Employee, Store, StorePrice, Label, Machinery, ItemTax;
+REQUIRE Invoice, Employee, Store, Label, Machinery, ItemTax;
 
 
 // ----------------------------------- Создавать акт расценки по умолчанию для отдела ------------------------------------------ //
+
+costLedgerDepartmentStore 'Учет по себестоимости' = DATA BOOLEAN (departmentStore) IN bookkeepingGroup;
+EXTEND FORM departmentStore PROPERTIES(d) costLedgerDepartmentStore;
 
 createPricingDepartmentStore 'Создавать акт расценки' = DATA BOOLEAN (departmentStore) IN createGroup;
 
@@ -461,24 +464,13 @@ DESIGN pricings FROM DEFAULT {
     }
 }
 
-// ------------------------------------- Проведение по регистру ------------------------------ //
-// todo : грохнуть когда уйдет StorePrice
-
-@implementSkuDepartmentStoreLedgerCustom(supplierPrice, pricing, sku, departmentStore, price);
-skipSupplierPriceLedger(ledger) +=  skipChangeLedgerPricingDetail(ledger);
-
-@implementSkuDepartmentStoreLedger(retailVAT, pricing, sku, departmentStore);
-skipRetailVATLedger(ledger) +=  skipChangeLedgerPricingDetail(ledger);
-
-@implementSkuDepartmentStoreLedger(retailPrice, pricing, sku, departmentStore);
-skipRetailPriceLedger(ledger) +=  skipChangeLedgerPricingDetail(ledger);
-
 // ---------------------------- Создание PriceList ----------------------------------- //
 
 EXTEND CLASS systemLedgerPriceListType {
     supplierPricingPriceListType 'Поставщика (расценка)',
     retailPricingPriceListType 'Розничная (расценка)'
 }
+includeVATBasePriceListType (priceListType) += priceListType == systemLedgerPriceListType.retailPricingPriceListType;
 
 EXTEND CLASS pricingDetail : priceListLedger;
 

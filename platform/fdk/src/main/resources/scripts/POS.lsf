@@ -6,6 +6,7 @@ REQUIRE System,
         Currency,
         Store,
         Stock,
+        StockTax,
         CashRegister,
         CashOperation,
         Sales,
@@ -227,8 +228,9 @@ discountSumReceipt 'Сумма скидки по чеку' (receipt) = discountS
 
 // -------------------------------------------------- НДС ------------------------------------------------ //
 
-VATRetailSkuDepartmentStoreDateTime = ABSTRACT range (sku, departmentStore, DATETIME);
-currentVATRetailSkuDepartmentStore (sku, departmentStore) = VATRetailSkuDepartmentStoreDateTime(sku, departmentStore, currentDateTime());
+overVATRetailSkuDepartmentStoreDateTime = ABSTRACT range (sku, departmentStore, DATETIME);
+VATRetailSkuDepartmentStoreDateTime (sku, departmentStore, dateTime) = VATSkuCountryDate(sku, countryStock(departmentStore AS departmentStore), toDate(dateTime)) OR
+                                                                       overVATRetailSkuDepartmentStoreDateTime(sku, departmentStore, dateTime);
 
 VATReceiptSaleDetail = DATA range (receiptSaleDetail);
 CONSTRAINT taxRange(VATReceiptSaleDetail(detail)) != tax.taxVAT OR

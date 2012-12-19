@@ -37,8 +37,8 @@ CLASS userAdjustmentPosted 'Проведенное изменение остат
 @defineDocumentInterfaceDetailQuantity(adjustment);
 @defineDocumentInterfaceDetailPrice(adjustment);
 priceUserAdjustmentDetail (detail)  <- IF batchUserAdjustmentDetail(detail)
-                THEN priceBatchStockDateTime(batchUserAdjustmentDetail(detail), stockUserAdjustmentDetail(detail), dateTimeUserAdjustmentDetail(detail))
-                ELSE priceSkuStockDateTime(skuUserAdjustmentDetail(detail), stockUserAdjustmentDetail(detail), dateTimeUserAdjustmentDetail(detail))
+                THEN priceLedgerPriceListTypeBatchStockDateTime(systemLedgerPriceListType.accountPriceListType, batchUserAdjustmentDetail(detail), stockUserAdjustmentDetail(detail), dateTimeUserAdjustmentDetail(detail))
+                ELSE priceLedgerPriceListTypeSkuStockDateTime(systemLedgerPriceListType.accountPriceListType, skuUserAdjustmentDetail(detail), stockUserAdjustmentDetail(detail), dateTimeUserAdjustmentDetail(detail))
                 WHEN CHANGED(skuUserAdjustmentDetail(detail)) OR CHANGED(batchUserAdjustmentDetail(detail)) OR CHANGED(stockUserAdjustmentDetail(detail)) OR CHANGED (dateTimeUserAdjustmentDetail(detail));
 
 skuUserAdjustmentDetail (detail)  <- skuBatch( batchUserAdjustmentDetail(detail)) AND batchUserAdjustmentDetail(detail)

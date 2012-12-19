@@ -419,11 +419,6 @@ TABLE retailPriceLedger (retailPriceLedger);
 costLedgerDepartmentStore 'Учет по себестоимости' = DATA BOOLEAN (departmentStore) IN bookkeepingGroup;
 EXTEND FORM departmentStore PROPERTIES(d) costLedgerDepartmentStore;
 
-priceSkuStockDateTime(sku, departmentStore, dateTime) += retailPriceBSkuDepartmentStoreDateTime(sku, departmentStore, dateTime) AND NOT costLedgerDepartmentStore(departmentStore);
-priceBatchStockDateTime(batch, departmentStore, dateTime) += IF costLedgerDepartmentStore(departmentStore)
-                                                                THEN costBatch(batch) IF departmentStore IS departmentStore AND dateTime IS DATETIME
-                                                                ELSE retailPriceBSkuDepartmentStoreDateTime(skuBatch(batch), departmentStore, dateTime);
-
 // ------------------------------------- Заполнение текущих параметров --------------------------------- //
 
 META derivePriceLedgerOnSkuChangePrefix (ledger, concrete, prefixP, skuProp, stockProp)

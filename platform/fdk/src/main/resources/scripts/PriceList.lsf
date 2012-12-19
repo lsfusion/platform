@@ -143,7 +143,7 @@ descriptionLedgerPriceListTypeSkuStockDateTime 'Описание' (type, sku, st
 descriptionLedgerPriceListTypeBatchStockDateTime 'Описание' (type, batch, stock, dateTime) =
     descriptionPriceListLedger(priceListLedgerLedgerPriceListTypeBatchStockDateTime(type, batch, stock, dateTime));
 
-includeVATLedgerPriceListType 'Цена с НДС' = DATA BOOLEAN (ledgerPriceListType);
+includeVATLedgerPriceListType 'Цена с НДС' = ABSTRACT BOOLEAN (ledgerPriceListType);
 
 priceBasePriceListTypeSkuStockDateTime(type, sku, stock, dateTime) += priceLedgerPriceListTypeSkuStockDateTime(type, sku, stock, dateTime);
 priceBasePriceListTypeBatchStockDateTime(type, batch, stock, dateTime) += priceLedgerPriceListTypeBatchStockDateTime(type, batch, stock, dateTime);
@@ -185,6 +185,9 @@ END
 
 CLASS dataPriceListType 'Пользовательский вид цены' : ledgerPriceListType;
 batchLedgerPriceListType (priceListType) += priceListType IS dataPriceListType;
+
+includeVATDataPriceListType 'Цена с НДС' = DATA BOOLEAN (dataPriceListType);
+includeVATLedgerPriceListType (priceListType) += includeVATDataPriceListType(priceListType);
 
 @defineDocumentHeaderCurrency(dataPriceListType);
 currencyPriceListType(dataPriceListType) += currencyDataPriceListType(dataPriceListType);

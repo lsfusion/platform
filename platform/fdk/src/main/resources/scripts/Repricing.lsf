@@ -527,17 +527,6 @@ DESIGN repricings FROM DEFAULT {
     }
 }
 
-// ------------------------------------- Проведение по регистру ------------------------------ //
-
-@implementSkuDepartmentStoreLedgerCustom(supplierPrice, repricing, sku, departmentStore, price);
-skipSupplierPriceLedger(ledger) +=  skipChangeLedgerRepricingDetail(ledger);
-
-@implementSkuDepartmentStoreLedgerCustom(retailVAT, repricing, sku, departmentStore, VAT);
-skipRetailVATLedger(ledger) +=  skipChangeLedgerRepricingDetail(ledger);
-
-@implementSkuDepartmentStoreLedger(retailPrice, repricing, sku, departmentStore);
-skipRetailPriceLedger(ledger) +=  skipChangeLedgerRepricingDetail(ledger);
-
 // ---------------------------- Создание PriceList ----------------------------------- //
 
 EXTEND CLASS repricingDetail : priceListLedger;

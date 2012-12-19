@@ -27,7 +27,7 @@ EXTEND FORM barcodeDialog
 
 VATUserOrder (userOrder) <- rangeTaxTaxUnit(tax.taxVAT, storeDepartmentStore(supplierStockUserOrder(userOrder)))
         WHEN CHANGED(supplierStockUserOrder(userOrder));
-@deriveDocumentHeaderTAXDetail(userOrder, VAT, supplierStock);
+@deriveDocumentDetailVATHeader(userOrder, VAT, supplierStock);
 
 derivedVATSumUserOrderDetail (userOrderDetail) =
     IF rangeTypeRange(VATUserOrderDetail(userOrderDetail)) == rangeType.units
@@ -71,7 +71,7 @@ CONSTRAINT taxRange(VATUserOrder(userOrder)) != tax.taxVAT OR
            CHECKED BY VATUserOrder
            MESSAGE 'ошибка: Шкала и страна строки должна соответствовать шкале и строке НДС';
 
-isDepartmentStoreSupplierStockOrder (order) = isDepartmentStoreStock (supplierStockOrder(order));
+isDepartmentStoreSupplierStockOrder (order) = supplierStockOrder(order) IS departmentStore;
 
 EXTEND FORM userOrder
     PROPERTIES(o) numberVATUserOrder SHOWIF isDepartmentStoreSupplierStockOrder(o), valueVATUserOrder SHOWIF isDepartmentStoreSupplierStockOrder(o);

@@ -45,14 +45,16 @@ END
 META defineDocumentInterfaceHeaderTAX(object, taxSID, taxCaption)
     @defineDocumentInterfaceHeaderTAX(object, taxSID, taxCaption, );
 END
-META deriveDocumentHeaderTAXDetail(object, taxSID, stockProp, skuProp, dateProp)
+META deriveDocumentDetailVATHeader(object, taxSID, stockProp, skuProp, dateProp)
     taxSID###object###Detail (object###Detail) <-
-        IF isRetailStock(stockProp###object###Detail(object###Detail))
+        IF taxSID###object(object###object###Detail(object###Detail))
             THEN taxSID###object(object###object###Detail(object###Detail))
             ELSE VATSkuCountryDate (skuProp###object##Detail(object###detail), countryStock(stockProp###object##Detail(object###detail)), dateProp###object##Detail(object###detail))
-        WHEN CHANGED(taxSID###object(object###object###Detail(object###Detail))) OR CHANGED(dateProp###object##Detail(object###detail))
-          OR CHANGED(skuProp###object##Detail(object###detail));
+        WHEN CHANGED(taxSID###object(object###object###Detail(object###Detail))) OR
+             CHANGED(dateProp###object##Detail(object###detail)) OR
+             CHANGED(stockProp###object##Detail(object###detail)) OR
+             CHANGED(skuProp###object##Detail(object###detail));
 END
-META deriveDocumentHeaderTAXDetail(object, taxSID, stockProp)
-    @deriveDocumentHeaderTAXDetail(object, taxSID, stockProp, sku, date);
+META deriveDocumentDetailVATHeader(object, taxSID, stockProp)
+    @deriveDocumentDetailVATHeader(object, taxSID, stockProp, sku, date);
 END

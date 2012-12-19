@@ -186,5 +186,8 @@ FORM batchADialogForm 'Партия'
     DIALOG batchA OBJECT ba
 ;
 
+priceSkuStockDateTime 'Цена' = ABSTRACT NUMERIC[14,2] (sku, stock, DATETIME);
+priceBatchStockDateTime 'Цена' = ABSTRACT NUMERIC[14,2] (batch, stock, DATETIME);
+
 priceBatchStockDateTime(batch, stock, dateTime) += supplierPriceBatchA(batch) IF stock IS warehouse AND dateTime IS DATETIME;
 //priceSkuStockDateTime(sku, stock, dateTime) += 155.2 IF sku IS sku IF stock IS warehouse AND dateTime IS DATETIME;

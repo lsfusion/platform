@@ -129,8 +129,6 @@ inChainStoresStoreTypeStoreDepartment (chainStores, storeType, store, department
     (chainStoresDepartmentStore(department) == chainStores AND NOT store AND NOT storeType) OR
     (department IS departmentStore AND NOT store AND NOT storeType AND NOT chainStores);
 
-isDepartmentStoreStock (stock) = TRUE IF stock IS departmentStore;
-isRetailStock (stock) += isDepartmentStoreStock (stock);
 // -------------------------------------- Формы отдела магазинов ------------------------------------------ //
 
 FORM departmentStore 'Отдел магазина'
@@ -165,7 +163,7 @@ DESIGN departmentStore FROM DEFAULT {
                 }
                 NEW row2 {
                     childConstraints = TO THE RIGHT;
-                    ADD d. bookkeepingGroup {childConstraints = TO THE BOTTOM;}
+                    ADD d.bookkeepingGroup {childConstraints = TO THE BOTTOM;}
                     NEW row21{
                         title = 'Создавать по умолчанию';
                         childConstraints = TO THE BOTTOM;

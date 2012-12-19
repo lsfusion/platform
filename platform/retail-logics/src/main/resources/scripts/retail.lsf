@@ -68,7 +68,6 @@ REQUIRE System,
         StorePricing,
         ConsignmentBy,
         AccountDocument,
-        StorePrice,
         Sales,
         Supply,
         Machinery,
@@ -442,7 +441,6 @@ sumItemOutAccountDocumentLedger (ledger) += sumItemWriteOffDetailWriteOff(ledger
 sumContainerOutAccountDocumentLedger (ledger) += sumContainerWriteOffDetailWriteOff(ledger);
 
 //------------------------------------------------- Z-отчет ---------------------------------------------------------------------//
-@derivePriceLedgerOnSkuChangePrefix(retailVAT, receipt, VAT, sku);
 
 // документ скидок для товарного отчета
 CLASS saleDiscountDocument 'Скидка по продаже через кассы';
