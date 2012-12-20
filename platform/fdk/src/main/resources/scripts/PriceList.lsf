@@ -98,7 +98,7 @@ descriptionPriceListLedger = ABSTRACT STRING[200] (priceListLedger) PERSISTENT;
 companyPriceListLedger = ABSTRACT legalEntity (priceListLedger) PERSISTENT;
 
 TABLE priceListLedgerLedgerPriceListType(priceListLedger, ledgerPriceListType);
-pricePriceListLedgerLedgerPriceListType = ABSTRACT NUMERIC[14,2] (priceListLedger, ledgerPriceListType) EXCLUSIVE PERSISTENT;
+pricePriceListLedgerLedgerPriceListType = ABSTRACT NUMERIC[14,2] (priceListLedger, ledgerPriceListType) PERSISTENT;
 
 TABLE priceListLedgerStock(priceListLedger, stock);
 inPriceListLedgerStock (ledger, stock) = ABSTRACT BOOLEAN (priceListLedger, stock) PERSISTENT;
@@ -158,6 +158,9 @@ CLASS STATIC systemLedgerPriceListType 'Системный вид цены (ре
 
 batchLedgerPriceListType (type) += type == systemLedgerPriceListType.accountPriceListType;
 
+pricePriceListLedgerSystemLedgerPriceListType = ABSTRACT NUMERIC[14,2] (priceListLedger, systemLedgerPriceListType) EXCLUSIVE PERSISTENT;
+pricePriceListLedgerLedgerPriceListType(ledger, type) += pricePriceListLedgerSystemLedgerPriceListType(ledger, type);
+
 META implementSystemLedgerPriceListType (type, object, stockProp, prefix)
     EXTEND CLASS object : priceListLedger;
 
@@ -169,7 +172,7 @@ META implementSystemLedgerPriceListType (type, object, stockProp, prefix)
 
     descriptionPriceListLedger (ledger) += description###object(ledger);
 
-    pricePriceListLedgerLedgerPriceListType (ledger, type) += prefix###price###object(ledger) IF type == systemLedgerPriceListType.##type##PriceListType;
+    pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += prefix###price###object(ledger) IF type == systemLedgerPriceListType.##type##PriceListType;
     inPriceListLedgerStock (ledger, stock) += stockProp###object(ledger) == stock;
 END
 
@@ -236,6 +239,9 @@ priceUserPriceListDetailDataPriceListType 'Цена (новая)' = DATA NUMERIC
 pricePriceListDetailDataPriceListType (priceListDetail, dataPriceListType) += priceUserPriceListDetailDataPriceListType(priceListDetail, dataPriceListType);
 
 //@defineAddDetailDialogSkuStock(userPriceList, sku, stock, dialogSku);
+
+TABLE priceListPriceListType (priceList, priceListType);
+TABLE priceListDetailPriceListType (priceListDetail, priceListType);
 
 TABLE priceListDataPriceListType (priceList, dataPriceListType);
 TABLE priceListDetailDataPriceListType (priceListDetail, dataPriceListType);

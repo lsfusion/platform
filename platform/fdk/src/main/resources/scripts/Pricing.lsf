@@ -483,9 +483,9 @@ skuPriceListLedger (ledger) += skuPricingDetail(ledger);
 
 descriptionPriceListLedger (ledger) += descriptionPricingDetail(ledger);
 
-pricePriceListLedgerLedgerPriceListType (ledger, type) += pricePricingDetail(ledger) IF type == systemLedgerPriceListType.supplierPricingPriceListType;
-pricePriceListLedgerLedgerPriceListType (ledger, type) += retailPricePricingDetail(ledger) IF type == systemLedgerPriceListType.retailPricingPriceListType;
-pricePriceListLedgerLedgerPriceListType (ledger, type) += retailPricePricingDetail(ledger) IF type == systemLedgerPriceListType.accountPriceListType;
+pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += pricePricingDetail(ledger) IF type == systemLedgerPriceListType.supplierPricingPriceListType;
+pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += retailPricePricingDetail(ledger) IF type == systemLedgerPriceListType.retailPricingPriceListType;
+pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += retailPricePricingDetail(ledger) IF type == systemLedgerPriceListType.accountPriceListType;
 inPriceListLedgerStock (ledger, stock) += departmentStorePricingDetail(ledger) == stock;
 
 // ------------------------------------- Печать ценников ------------------------------ //
