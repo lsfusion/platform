@@ -36,7 +36,7 @@ FORM labelType 'Тип ценника'
 
     OBJECTS d=departmentStore
     PROPERTIES(d) READONLY depName = name
-    FILTERS inChainStoresStoreTypeStoreDepartment(t, st, s, d)
+    FILTERS inChainStoresStoreTypeStoreDepartmentStore(t, st, s, d)
     ORDER BY depName
 
     PROPERTIES inLabelTypeDepartmentStore(l, d), isDefaultLabelTypeDepartmentStore(l, d)

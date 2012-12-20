@@ -56,7 +56,7 @@ FORM repricingCommittee 'Комиссия переоценки'
     OBJECTS dep=departmentStore
     PROPERTIES(dep)    READONLY depName = name
     PROPERTIES(c, dep) inCommitteeEmployeeDivision, isDefaultRepricingCommitteeDepartmentStore
-    FILTERS            inChainStoresStoreTypeStoreDepartment(t, st, s, dep)
+    FILTERS            inChainStoresStoreTypeStoreDepartmentStore(t, st, s, dep)
     ORDER BY depName
 
     OBJECTS e=employee

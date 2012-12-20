@@ -244,7 +244,7 @@ FORM priceChangeCommittee 'Комиссия переоценки'
     OBJECTS dep=departmentStore
     PROPERTIES(dep)    READONLY depName = name
     PROPERTIES(c, dep) inCommitteeEmployeeDivision, isPriceChangeCommitteeDepartmentStore
-    FILTERS            inChainStoresStoreTypeStoreDepartment(t, st, s, dep)
+    FILTERS            inChainStoresStoreTypeStoreDepartmentStore(t, st, s, dep)
     ORDER BY depName
 
 

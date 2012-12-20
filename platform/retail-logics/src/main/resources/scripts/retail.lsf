@@ -130,16 +130,6 @@ EXTEND FORM itemGroups
 ;
 // формы за формами товара
 
-
-// ----------------------------------- Товар ------------------------------------------ //
-GROUP expiryGroup 'Контроль сроков годности' : publicGroup;
-GROUP equipmentGroup 'Внешние устройства' : publicGroup;
-GROUP labelGroup 'Ценник' : publicGroup;
-
-GROUP activeGroup 'Активность товара' : publicGroup;
-
-tmpSku() = SESSION DATA sku ();
-
 //-----------------------------------------------------------------------------------------------//
 
 isContainerItem 'Тара' = DATA BOOLEAN (item) IN itemBaseGroup;
@@ -147,25 +137,27 @@ isContainerSku (sku) += isContainerItem(sku);
 //@defineItemAttribute(Container, 'Показывать явл-ся ли тарой', displayGroup);
 
 //equipmentGroup
+GROUP equipmentGroup 'Внешние устройства' : publicGroup;
+
 isWeightItem 'Весовой товар' = DATA BOOLEAN (item) IN itemBaseGroup;
 isWeightSku(sku) += isWeightItem(sku);
 
 compositionScalesItem 'Состав товара (ингредиенты) для весов' = DATA TEXT (item) IN equipmentGroup;
-isMarkItem 'Маркировать товар' = DATA BOOLEAN (item) IN equipmentGroup;
-isLoafCutItem 'Буханка разрезается' = DATA BOOLEAN (item) IN equipmentGroup;
 
 passScalesItem 'Передавать на весы' = DATA BOOLEAN (item) IN equipmentGroup;
+
 labelFormatPackItem = DATA labelFormat(item);
 idLabelFormatPackItem 'Код формата этикетки' (item) = idLabelFormat(labelFormatPackItem(item)) IN equipmentGroup;
 
 //substanceGroup
 GROUP substanceGroup 'Энергетическая ценность' : publicGroup;
+
 nutritionalValueItem 'Энергетическая и пищевая ценность' = DATA STRING[400] (item) IN substanceGroup MINCHARWIDTH 50;
 energyItem 'Энергетическая ценность на 100г, ккал' = DATA DOUBLE (item) IN substanceGroup;
 fatsItem 'Жиры на 100г, г' = DATA DOUBLE (item) IN substanceGroup;
 carbohydratesItem 'Углеводы на 100г, г' = DATA DOUBLE (item) IN substanceGroup;
 proteinsItem 'Белки на 100г, г' = DATA DOUBLE (item) IN substanceGroup;
-isContainGMOItem 'Содержит ГМО' = DATA BOOLEAN (item) IN substanceGroup;
+containsGMOItem 'Содержит ГМО' = DATA BOOLEAN (item) IN substanceGroup;
 
 //sizeGroup
 lengthPackItem 'Длина упаковки' = DATA NUMERIC[8,2] (item) IN itemSizeGroup;
@@ -174,8 +166,7 @@ heightPackItem 'Высота упаковки' = DATA NUMERIC[8,2] (item) IN ite
 grossWeightPackItem 'Вес брутто упаковки' = DATA NUMERIC[9,3] (item) IN itemSizeGroup;
 
 //expiryGroup
-controlExpiryItem 'Контролировать сроки годности товара?' = DATA BOOLEAN (item) IN expiryGroup;
-daysExpiryItem 'Срок годности в днях' = DATA NUMERIC[8,2] (item) IN expiryGroup;
+GROUP expiryGroup 'Контроль сроков годности' : publicGroup;
 daysExpiryPackItem 'Срок годности в днях с момента фасовки' = DATA NUMERIC[8,2] (item) IN expiryGroup;
 hoursExpiryPackItem 'Срок годности в часах с момента фасовки' = DATA INTEGER (item) IN expiryGroup;
 
@@ -195,6 +186,7 @@ barcodeNumeratorSku(item) += IF isWeightItem(item) THEN weightNumeratorItem(item
 
 //------------------------------------ Товар с историей -------------------------------------------------------------//
 
+GROUP activeGroup 'Активность товара' : publicGroup;
 @defineHistorizableCustom(inactiveItem, 'Неактивный товар', yesNo, name, item, nameAttributeItem, activeGroup);
 isActiveItem (item) = item IS item AND NOT inactiveItem(item) == yesNo.yes PERSISTENT;
 EXTEND FORM items
@@ -206,6 +198,8 @@ EXTEND FORM items
 
 TABLE itemDepartmentStore (item, departmentStore);
 TABLE itemDepartmentStoreDate (item, departmentStore, DATE);
+
+GROUP labelGroup 'Ценник' : publicGroup;
 
 defaultLabelTypeItemDepartmentStore(item, departmentStore) = defaultLabelTypeDepartmentStore(departmentStore) AND item IS item;
 @defineHistorizableCustomDefault(labelItemDepartmentStore, defaultLabelTypeItemDepartmentStore, 'Ценник', labelType, name, item, nameAttributeItem, departmentStore, name, 10, labelGroup);
@@ -232,13 +226,13 @@ EXTEND FORM item
                   nameInactiveItem, dialogInactiveItem,
 
                   // Дополнительные
-                  passScalesItem, isMarkItem, isLoafCutItem,
+                  passScalesItem,
                   compositionScalesItem, idLabelFormatPackItem,
 
                   nutritionalValueItem, energyItem,
-                  fatsItem, carbohydratesItem, proteinsItem, isContainGMOItem,
+                  fatsItem, carbohydratesItem, proteinsItem, containsGMOItem,
 
-                  controlExpiryItem, daysExpiryItem, daysExpiryPackItem, hoursExpiryPackItem
+                  daysExpiryPackItem, hoursExpiryPackItem
 
     PROPERTIES(b) BEFORE delete titleScalesBarcode, titleCashRegisterBarcode
 
@@ -249,7 +243,7 @@ EXTEND FORM item
 
     OBJECTS dt=DATE FIXED PANEL, d=departmentStore
     PROPERTIES (d) name
-    FILTERS inChainStoresStoreTypeStoreDepartment(t, st, s, d)
+    FILTERS inChainStoresStoreTypeStoreDepartmentStore(t, st, s, d)
 
     PROPERTIES (dt) OBJVALUE BACKGROUND dateDiffersCurrent(dt)
     PROPERTIES      overNameLabelItemDepartmentStoreDate(i, d, dt) BACKGROUND dataLabelItemDepartmentStoreDate(i, d, dt), overDialogLabelItemDepartmentStoreDate(i, d),

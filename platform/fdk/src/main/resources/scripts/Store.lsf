@@ -123,7 +123,7 @@ regionStock(stock) += regionStore(storeDepartmentStore(stock));
 tradingSquareStoreDate (store, date) = GROUP SUM tradingSquareDepartmentStoreDate(departmentStore, date) BY storeDepartmentStore(departmentStore), date;
 tradingSquareStore 'Торговая площадь' (store) = tradingSquareStoreDate(store, currentDate());
 
-inChainStoresStoreTypeStoreDepartment (chainStores, storeType, store, department) =
+inChainStoresStoreTypeStoreDepartmentStore (chainStores, storeType, store, department) =
     (storeDepartmentStore(department) == store AND storeType AND chainStores) OR
     (storeTypeDepartmentStore(department) == storeType AND chainStores AND NOT store) OR
     (chainStoresDepartmentStore(department) == chainStores AND NOT store AND NOT storeType) OR
@@ -189,7 +189,7 @@ FORM departmentStores 'Отделы магазинов'
 
     OBJECTS d=departmentStore
     PROPERTIES(d) READONLY depName = name
-    FILTERS inChainStoresStoreTypeStoreDepartment(t, st, s, d)
+    FILTERS inChainStoresStoreTypeStoreDepartmentStore(t, st, s, d)
     ORDER BY depName
 
     DIALOG departmentStore OBJECT d

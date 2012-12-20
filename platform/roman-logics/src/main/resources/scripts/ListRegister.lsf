@@ -36,7 +36,7 @@ FORM registerCommittee 'Комиссия для реестра цен'
     OBJECTS dep=departmentStore
     PROPERTIES(dep)    READONLY depName = name
     PROPERTIES(c, dep) inCommitteeEmployeeDivision, isRegisterCommitteeDepartmentStore
-    FILTERS            inChainStoresStoreTypeStoreDepartment(t, st, s, dep)
+    FILTERS            inChainStoresStoreTypeStoreDepartmentStore(t, st, s, dep)
     ORDER BY depName
 
     FILTERGROUP filters5
