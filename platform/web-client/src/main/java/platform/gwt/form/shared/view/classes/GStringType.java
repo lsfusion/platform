@@ -45,4 +45,14 @@ public class GStringType extends GDataType {
     public GCompare getDefaultCompare() {
         return GCompare.START_WITH;
     }
+
+    @Override
+    public int getMinimumPixelWidth(int minimumCharWidth) {
+        return getMinimumCharWidth(minimumCharWidth) * 10;
+    }
+
+    @Override
+    public int getPreferredPixelWidth(int preferredCharWidth) {
+        return getPreferredCharWidth(preferredCharWidth) * 10;
+    }
 }

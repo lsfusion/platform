@@ -22,6 +22,6 @@ public class GDateType extends GDataType {
 
     @Override
     public String getPreferredMask() {
-        return "01.01.2001";
+        return "01.01.01";
     }
 }

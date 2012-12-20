@@ -34,4 +34,14 @@ public class GTextType extends GDataType {
     public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
         return new TextGridCellEditor(editManager);
     }
+
+    @Override
+    public int getMinimumPixelWidth(int minimumCharWidth) {
+        return getMinimumCharWidth(minimumCharWidth) * 10;
+    }
+
+    @Override
+    public int getPreferredPixelWidth(int preferredCharWidth) {
+        return getPreferredCharWidth(preferredCharWidth) * 10;
+    }
 }
