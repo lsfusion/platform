@@ -244,12 +244,12 @@ inPriceListPriceListType 'Изменять цены' = ABSTRACT BOOLEAN (priceLi
 inUserPriceListPriceListType 'Изменять цены' = DATA BOOLEAN (userPriceList, dataPriceListType);
 inPriceListPriceListType (priceList, dataPriceListType) += inUserPriceListPriceListType(priceList, dataPriceListType);
 
-showPriceListPriceListType 'Показывать цены' = ABSTRACT BOOLEAN (priceList, dataPriceListType) PERSISTENT;
-showUserPriceListPriceListType 'Показывать цены' = DATA BOOLEAN (userPriceList, dataPriceListType);
-showPriceListPriceListType (priceList, dataPriceListType) += showUserPriceListPriceListType(priceList, dataPriceListType);
+showPriceListPriceListType 'Показывать цены' = ABSTRACT BOOLEAN (priceList, priceListType) PERSISTENT;
+showUserPriceListPriceListType 'Показывать цены' = DATA BOOLEAN (userPriceList, priceListType);
+showPriceListPriceListType (priceList, priceListType) += showUserPriceListPriceListType(priceList, priceListType);
 
-inShowPriceListPriceListType (priceList, dataPriceListType) = inPriceListPriceListType (priceList, dataPriceListType) AND
-                                                              showPriceListPriceListType (priceList, dataPriceListType);
+inShowPriceListPriceListType (priceList, priceListType) = inPriceListPriceListType (priceList, priceListType) AND
+                                                          showPriceListPriceListType (priceList, priceListType);
 
 priceListTypesPriceList 'Цены' (priceList) = GROUP CONCAT name(priceListType) IF inPriceListPriceListType(priceList, priceListType) , ', '
                                                BY priceList
@@ -307,17 +307,17 @@ markUpPricePriceListDetailDataPriceListTypeStock 'Изменение, %' (priceL
     pricePriceListDetailDataPriceListType(priceListDetail, dataPriceListType) * 100.0 /
     currentPricePriceListDetailDataPriceListTypeStock (priceListDetail, dataPriceListType, stock) - 100.0;
 
-extendNameCurrentDataPriceListType (dataPriceListType) =
+extendNameCurrentDataPriceListType (userPriceList, dataPriceListType) =
     [FORMULA STRING[50]  ' CAST($1 AS TEXT) || \' (старая) \''](
-    name(dataPriceListType)) MINCHARWIDTH 30 MAXCHARWIDTH 50;
+    name(dataPriceListType)) IF showPriceListPriceListType(userPriceList, dataPriceListType) MINCHARWIDTH 30 MAXCHARWIDTH 50;
 
-extendNameMarkUpDataPriceListType (dataPriceListType) =
+extendNameMarkUpDataPriceListType (userPriceList, dataPriceListType) =
     [FORMULA STRING[50]  'CAST($1 AS TEXT) || \' (изменение, %) \''](
-    name(dataPriceListType)) MINCHARWIDTH 30 MAXCHARWIDTH 50;
+    name(dataPriceListType)) IF inShowPriceListPriceListType(userPriceList, dataPriceListType) MINCHARWIDTH 30 MAXCHARWIDTH 50;
 
-extendNameDataPriceListType (dataPriceListType) =
+extendNameDataPriceListType (userPriceList, dataPriceListType) =
     [FORMULA STRING[50]  ' CAST($1 AS TEXT) || \' (новая) \''](
-    name(dataPriceListType)) MINCHARWIDTH 30 MAXCHARWIDTH 50;
+    name(dataPriceListType)) IF inPriceListPriceListType(userPriceList, dataPriceListType) MINCHARWIDTH 30 MAXCHARWIDTH 50;
 
 backgroundCurrentDataPriceListType 'Цвет' (dataPriceListType) = RGB(255,238,165) AND dataPriceListType IS dataPriceListType;
 backgroundMarkUpDataPriceListType 'Цвет' (dataPriceListType) = RGB(232,184,146) AND dataPriceListType IS dataPriceListType;
@@ -357,7 +357,7 @@ FORM chooseMarkUpSkuUserPriceList 'Наценка'
 
     OBJECTS p = userPriceList FIXED PANEL
 
-    OBJECTS t = dataPriceListType FIXED PANEL
+    OBJECTS t = priceListType FIXED PANEL
     PROPERTIES(t) SELECTOR name
 
     OBJECTS n = NUMERIC[20,7] FIXED PANEL
@@ -407,9 +407,9 @@ FORM userPriceList 'Прайс'
                   fromDateUserPriceList, fromTimeUserPriceList, toDateUserPriceList, toTimeUserPriceList,
                   nameCurrencyUserPriceList, nameCompanyUserPriceList, noteUserPriceList, includeVATLedgerPriceListType
 
-    OBJECTS t = dataPriceListType
+    OBJECTS t = priceListType
     PROPERTIES(t) READONLY name
-    PROPERTIES(p, t) inPriceListPriceListType, showPriceListPriceListType
+    PROPERTIES(p, t) inPriceListPriceListType TODRAW t FORCE GRID, showPriceListPriceListType
 
 //    OBJECTS st = dataPriceListType
 //    PROPERTIES(st) READONLY name
@@ -432,11 +432,11 @@ FORM userPriceList 'Прайс'
 
     PROPERTIES(p, t, ts) changeMarkUpSkuUserPriceList TODRAW d FORCE PANEL DRAWTOTOOLBAR
 
-    PROPERTIES(d, t, ts) currentPricePriceListDetailDataPriceListTypeStock COLUMNS (t) HEADER extendNameCurrentDataPriceListType(t) BACKGROUND backgroundCurrentDataPriceListType(t) TODRAW d FORCE GRID SHOWIF showPriceListPriceListType(p, t)
-    PROPERTIES(d, t, ts) markUpPricePriceListDetailDataPriceListTypeStock COLUMNS (t) HEADER extendNameMarkUpDataPriceListType(t) BACKGROUND backgroundMarkUpDataPriceListType(t) TODRAW d FORCE GRID SHOWIF inShowPriceListPriceListType(p, t)
-    PROPERTIES(d, t) pricePriceListDetailDataPriceListType COLUMNS (t) HEADER extendNameDataPriceListType(t) BACKGROUND backgroundDataPriceListType(t) TODRAW d FORCE GRID SHOWIF inPriceListPriceListType(p, t)
-    PROPERTIES(d, t, ts) currentPricePriceListDetailDataPriceListTypeStock COLUMNS (t) HEADER extendNameCurrentDataPriceListType(t) BACKGROUND backgroundCurrentDataPriceListType(t)
-    PROPERTIES(d, t, ts) markUpPricePriceListDetailDataPriceListTypeStock COLUMNS (t) HEADER extendNameMarkUpDataPriceListType(t) BACKGROUND backgroundMarkUpDataPriceListType(t)
+    PROPERTIES(d, t, ts) currentPricePriceListDetailDataPriceListTypeStock COLUMNS (t) HEADER extendNameCurrentDataPriceListType(p, t) BACKGROUND backgroundCurrentDataPriceListType(t) TODRAW d FORCE GRID
+    PROPERTIES(d, t, ts) markUpPricePriceListDetailDataPriceListTypeStock COLUMNS (t) HEADER extendNameMarkUpDataPriceListType(p, t) BACKGROUND backgroundMarkUpDataPriceListType(t) TODRAW d FORCE GRID
+    PROPERTIES(d, t) pricePriceListDetailDataPriceListType COLUMNS (t) HEADER extendNameDataPriceListType(p, t) BACKGROUND backgroundDataPriceListType(t) TODRAW d FORCE GRID
+    PROPERTIES(d, t, ts) currentPricePriceListDetailDataPriceListTypeStock COLUMNS (t) HEADER extendNameCurrentDataPriceListType(p, t) BACKGROUND backgroundCurrentDataPriceListType(t)
+    PROPERTIES(d, t, ts) markUpPricePriceListDetailDataPriceListTypeStock COLUMNS (t) HEADER extendNameMarkUpDataPriceListType(p, t) BACKGROUND backgroundMarkUpDataPriceListType(t)
 
     FILTERS userPriceListUserPriceListDetail(d) == p,
             isParentSkuGroupSku(sk, skuPriceListDetail(d)) OR (sk IS skuGroup AND d IS priceListDetail AND NOT skuPriceListDetail(d)),
@@ -460,7 +460,7 @@ FORM userPriceList 'Прайс'
     OBJECTS s2=sku
     PROPERTIES inSkuUserPriceList(s2, p) ON CHANGE EXEC changeInSkuUserPriceList(s2, p)
     PROPERTIES READONLY inputName2 = nameSku(s2), idBarcodeSku(s2), currentBalanceSkuStock(s2, ts2)
-    PROPERTIES READONLY currentPriceSkuPriceListDataPriceListTypeStock(s2, p, t, ts2) COLUMNS (t) HEADER extendNameCurrentDataPriceListType(t) BACKGROUND backgroundCurrentDataPriceListType(t)
+    PROPERTIES READONLY currentPriceSkuPriceListDataPriceListTypeStock(s2, p, t, ts2) COLUMNS (t) HEADER extendNameCurrentDataPriceListType(p, t) BACKGROUND backgroundCurrentDataPriceListType(t)
     FILTERGROUP filters
         FILTER 'С действующей ценой' 'F10' currentPriceSkuPriceListDataPriceListTypeStock(s2, p, t2, ts2) DEFAULT
 
